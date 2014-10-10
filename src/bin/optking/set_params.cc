@@ -162,8 +162,14 @@ void set_params(void)
 // Add auxiliary bonds for non-bonded (but nearby) atoms.
     Opt_params.add_auxiliary_bonds = options.get_bool("ADD_AUXILIARY_BONDS");
 
-// re-estimate the hessian every step
+// Re-estimate the hessian every step.  Usually default is false. 
     Opt_params.H_guess_every = options.get_bool("H_GUESS_EVERY");
+
+// Original Lindh specification was to redo at every step.
+    if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH) {
+      if (!options["H_GUESS_EVERY"].has_changed())
+        Opt_params.H_guess_every = true;
+    }
 
 // Covalent distance times this factor is used to choose extra stretch coordinates
     Opt_params.auxiliary_bond_factor = options.get_double("AUXILIARY_BOND_FACTOR");
