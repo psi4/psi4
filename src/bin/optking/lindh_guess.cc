@@ -228,6 +228,8 @@ in this set of internals. */
 
   free_bool_matrix(close);
 
+  form_trivial_coord_combinations();
+
   // Compute g_q = (BB^t)^-1 B g_x
   long int Nintco = coords.simples.size();
   double **B = compute_B();

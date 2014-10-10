@@ -426,7 +426,7 @@ void MOLECULE::H_guess(void) const {
   else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH) {
     double **H_xyz = Lindh_guess();      // generate Lindh cartesian Hessian
     bool read_H_worked = cartesian_H_to_internals(H_xyz); // transform to internals
-    // if fails, then what?  Fix later.
+    // if fails, then what?  Fix later. TODO
     free_matrix(H_xyz);
   }
 
