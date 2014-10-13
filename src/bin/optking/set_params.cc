@@ -382,6 +382,18 @@ void set_params(void)
 
   Opt_params.geom_maxiter = options.get_int("GEOM_MAXITER");
 
+  // For RFO step, eigenvectors of augmented Hessian are divided by the last
+  // element unless it is smaller than this value {double}.  Can be used to eliminate
+  // asymmetric steps not otherwise detected (e.g. in degenerate point groups).
+  Opt_params.rfo_normalization_min = options.get_double("RFO_NORMALIZATION_MIN");
+
+// Hessian update is avoided if the denominators (Dq*Dq) or (Dq*Dg) are smaller than this
+  Opt_params.H_update_den_tol = options.get_double("H_UPDATE_DEN_TOL");
+
+  // Absolute maximum for value of alpha in RS-RFO
+  Opt_params.rsrfo_alpha_max = options.get_double("RSRFO_ALPHA_MAX");
+
+
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
   int i;
@@ -614,10 +626,6 @@ void set_params(void)
 
 // ** Items are below unlikely to need modified
 
-// For RFO step, eigenvectors of augmented Hessian are divided by the last
-// element unless it is smaller than this value {double}
-  Opt_params.rfo_normalization_min = 1.0e-8;
-
 // how close to pi should a torsion be to assume it may have passed through 180
   Opt_params.fix_tors_near_pi = _pi / 2;
 
@@ -647,8 +655,6 @@ void set_params(void)
   //Opt_params.bt_dx_conv = 1.0e-10;
   //Opt_params.bt_dx_conv_rms_change = 1.0e-14;
 
-// Hessian update is avoided if the denominators (Dq*Dq) or (Dq*Dg) are smaller than this
-  Opt_params.H_update_den_tol = 1e-7;
 
 // Hessian update is avoided if any internal coordinate has changed by more than this in radians/au
   Opt_params.H_update_dq_tol = 0.5;
@@ -728,7 +734,9 @@ void print_params_out(void) {
   oprintf_out( "linesearch_static_min  = %18.3e\n", Opt_params.linesearch_static_min);
   oprintf_out( "linesearch_static_max  = %18.3e\n", Opt_params.linesearch_static_max);
 
-  oprintf_out("consecutive_backsteps  = %18d\n",  Opt_params.consecutive_backsteps_allowed);
+  oprintf_out( "consecutive_backsteps  = %18d\n",  Opt_params.consecutive_backsteps_allowed);
+
+  oprintf_out( "rfo_normalization_min  = %18.3e\n", Opt_params.rfo_normalization_min);
 
   if (Opt_params.intrafragment_H == OPT_PARAMS::FISCHER)
   oprintf_out( "intrafragment_H        = %18s\n", "Fischer");

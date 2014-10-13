@@ -134,7 +134,6 @@ void MOLECULE::rfo_step(void) {
     //Find the eigenvectors and eigenvalues of RFO matrix.
     opt_asymm_matrix_eig(SRFO, dim+1, SRFOevals);
     if (Opt_params.print_lvl >= 4) {
-
       oprintf_out("Eigenvectors of scaled RFO matrix.\n");
       oprint_matrix_out(SRFO, dim+1,dim+1);
     }
@@ -146,6 +145,9 @@ void MOLECULE::rfo_step(void) {
         if (++cnt2 == 6) oprintf_out("\n");
       }
       oprintf_out("\n");
+
+      oprintf_out("First eigenvector (unnormalized) of scaled RFO matrix.\n");
+      oprint_array_out(SRFO[0], dim+1);
     }
 
     // Do intermediate normalization.  
@@ -153,8 +155,8 @@ void MOLECULE::rfo_step(void) {
     // During the course of an optimization some evects may appear that are bogus leads
     // - the root following can avoid them. 
     for (i=0; i<dim+1; ++i) {
-      tval = SRFO[i][dim];
-      if (fabs(tval) > Opt_params.rfo_normalization_min) {
+      tval = abs( array_abs_max(SRFO[i], dim)/ SRFO[i][dim] ); // how big is dividing going to make it?
+      if (fabs(tval) < Opt_params.rfo_normalization_min) { // same check occurs below for acceptability
         for (j=0;j<dim+1;++j)
           SRFO[i][j] /= SRFO[i][dim];
       }
@@ -177,9 +179,17 @@ void MOLECULE::rfo_step(void) {
 
         if (!symm_rfo_step) {
           oprintf_out("\tRejecting RFO root %d because it breaks the molecular point group.\n", rfo_root+1);
-          oprintf_out("\tIf you are doing an energy minimization, there may exist a lower-energy, ");
-          oprintf_out("structure with less symmetry.\n");
+          oprintf_out("\tThere may exist a lower-energy, lower-symmetry structure.");
           ++rfo_root;
+        }
+        else {
+          tval = abs( array_abs_max(SRFO[rfo_root], dim)/ SRFO[rfo_root][dim] ); // how big is dividing going to make it?
+          if (fabs(tval) > Opt_params.rfo_normalization_min) { // same check occurs above for acceptability
+            oprintf_out("\tRejecting RFO root %d because normalization gives large value.\n", rfo_root+1);
+            oprintf_out("\t Step may break symmetry.  Test is modifiable with rfo_normalization_min keyword.\n");
+            symm_rfo_step = false;
+            ++rfo_root;
+          }
         }
 
         if (rfo_root == dim+1) // quit in the unlikely event we've checked them all
@@ -198,10 +208,12 @@ void MOLECULE::rfo_step(void) {
       if (iter == 0)
         oprintf_out("RFO vector %d overlaps most with earlier step.\n", rfo_root+1);
     }
+    if (iter == 0)
+      oprintf_out("\tUsing RFO vector %d.\n", rfo_root+1);
 
     // Print only the lowest eigenvalues/eigenvectors
     if (Opt_params.print_lvl >= 2) {
-      oprintf_out("\trfo_root is %d\n", rfo_root);
+      oprintf_out("\trfo_root is %d\n", rfo_root+1);
       for (i=0; i<dim+1; ++i) {
         if ((SRFOevals[i] < -0.000001) || (i <rfo_root)) {
           oprintf_out("\nScaled RFO eigenvalue %d: %15.10lf (or 2*%-15.10lf)\n", i+1, SRFOevals[i], SRFOevals[i]/2);
@@ -235,7 +247,11 @@ void MOLECULE::rfo_step(void) {
     // get norm |dq| and unit vector in the step direction
     dqtdq = array_dot(dq, dq, dim);
 
-    if (sqrt(dqtdq) < (trust+1e-5))
+    if (fabs(alpha) > Opt_params.rsrfo_alpha_max) { // don't call it converged if alpha explodes, and give up
+      converged = false;
+      iter = max_projected_rfo_iter - 1;
+    }
+    else if (sqrt(dqtdq) < (trust+1e-5))
       converged = true;
 
     if (iter == 0 && !converged) {
