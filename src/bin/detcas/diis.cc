@@ -40,6 +40,9 @@
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include <psi4-dec.h>
+#include <libpsio/psio.hpp>
+#include <libpsio/psio.h>
+#include <psifiles.h>
 #include "globaldefs.h"
 #include "globals.h"
 
@@ -66,9 +69,41 @@ int diis(int veclen, double *vec, double *errvec)
   int num_vecs, new_num_vecs, offset, diis_iter, do_diis;
   double **vecs, **errvecs, **bmat, *bvec, tval, det, scale_factor;
   FILE *fp;
-
+  char diis_char[80];
   
   /* add the vector and error vector to subspace */
+  if (psio_tocentry_exists(PSIF_DETCAS_DIIS, "Num vectors")){ 
+    psio_open(PSIF_DETCAS_DIIS, PSIO_OPEN_OLD);
+
+    psio_read_entry(PSIF_DETCAS_DIIS, "Num vectors", (char *) &(num_vecs),
+                    sizeof(int));
+    psio_read_entry(PSIF_DETCAS_DIIS, "Iteration number", (char *) &(diis_iter),
+                    sizeof(int));
+
+    vecs = block_matrix(num_vecs+1, veclen);
+    errvecs = block_matrix(num_vecs+1, veclen);
+
+    for (i=0; i<num_vecs; i++) {
+      sprintf(diis_char, "DIIS vector %3d", i);
+      psio_read_entry(PSIF_DETCAS_DIIS, diis_char, (char *) vecs[i],
+                      veclen*sizeof(double));
+
+      sprintf(diis_char, "DIIS error vector %3d", i);
+      psio_read_entry(PSIF_DETCAS_DIIS, diis_char, (char *) errvecs[i],
+                      veclen*sizeof(double));
+
+    }
+
+    psio_close(PSIF_DETCAS_DIIS, 1);
+  }
+  else {
+    num_vecs = 0;
+    diis_iter = 0;
+    vecs = block_matrix(num_vecs+1, veclen);
+    errvecs = block_matrix(num_vecs+1, veclen);
+  } 
+
+  /*
   ffileb_noexit(&fp,"diis.dat",2);
   if (fp != NULL) {
 
@@ -101,13 +136,13 @@ int diis(int veclen, double *vec, double *errvec)
 
     fclose(fp);
   }
-
   else {
     num_vecs = 0;
     diis_iter = 0;
     vecs = block_matrix(num_vecs+1, veclen);
     errvecs = block_matrix(num_vecs+1, veclen);
   } 
+  */
 
   /* will we do a diis this time? */
   diis_iter++;
@@ -131,6 +166,27 @@ int diis(int veclen, double *vec, double *errvec)
   new_num_vecs = num_vecs - offset;
 
   /* write out the diis info */
+  psio_open(PSIF_DETCAS_DIIS, PSIO_OPEN_OLD);
+
+  psio_write_entry(PSIF_DETCAS_DIIS, "Num vectors", (char *) &(new_num_vecs),
+                  sizeof(int));
+  psio_write_entry(PSIF_DETCAS_DIIS, "Iteration number", (char *) &(diis_iter),
+                  sizeof(int));
+
+  for (i=offset; i<num_vecs; i++) {
+    sprintf(diis_char, "DIIS vector %3d", i);
+    psio_write_entry(PSIF_DETCAS_DIIS, diis_char, (char *) vecs[i],
+                    veclen*sizeof(double));
+
+    sprintf(diis_char, "DIIS error vector %3d", i);
+    psio_write_entry(PSIF_DETCAS_DIIS, diis_char, (char *) errvecs[i],
+                    veclen*sizeof(double));
+
+  }
+
+  psio_close(PSIF_DETCAS_DIIS, 1);
+  
+  /*
   ffileb_noexit(&fp,"diis.dat",0);
   if (fp == NULL) {
     outfile->Printf("(diis): Error opening diis.dat\n");
@@ -157,7 +213,7 @@ int diis(int veclen, double *vec, double *errvec)
   }
 
   fclose(fp);
-
+  */
 
   /* don't take a diis step if it's not time */
   if (!do_diis) {
