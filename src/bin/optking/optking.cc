@@ -416,6 +416,27 @@ OptReturnType optking(void) {
     }
   }
 
+  if(p_Opt_data->g_iteration() == Opt_params.geom_maxiter) {
+    oprintf_out("\n  **** Optimization has failed! (in %d steps) ****\n", p_Opt_data->nsteps());
+      p_Opt_data->summary();
+      p_Opt_data->write(); // save data to optimization binary file
+
+/*  We could print out this info if it didn't confuse users.
+      oprintf_out("\tFinal energy is %20.13lf\n", p_Opt_data->g_energy());
+      oprintf_out("\tFinal (next step) structure:\n");
+      mol1->print_geom_out();  // write geometry -> output file
+      if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
+      oprintf_out("\tSaving final (next step) structure.\n");
+*/
+
+      p_Opt_data->reset_trust_radius();
+      delete p_Opt_data;
+      mol1->write_geom();  // write geometry -> chkpt file (also output for QChem)
+      print_end_out();
+      close_output_dat();
+      return OptReturnSuccess;
+  }
+
   p_Opt_data->write();
   delete p_Opt_data;
 
@@ -459,7 +480,6 @@ OptReturnType optking(void) {
     }
   }
   catch (BAD_STEP_EXCEPT exc) {
-
     oprintf_out("\tA bad-step exception has been caught.\n");
     oprintf_out("\t%s", exc.g_message());
 
@@ -479,6 +499,15 @@ OptReturnType optking(void) {
     close_output_dat();
     return OptReturnSuccess;
   }
+  catch (BROKEN_SYMMETRY_EXCEPT exc) {
+    p_Opt_data->reset_trust_radius();
+    oprintf_out("\n  **** Optimization has failed! (in %d steps) ****\n", p_Opt_data->nsteps());
+    delete p_Opt_data;
+    print_end_out();
+    close_output_dat();
+    return OptReturnFailure;
+  }
+
 #if defined (OPTKING_PACKAGE_PSI)
   catch (psi::PsiException e){
       oprintf_out("\t%s", e.what());

@@ -339,7 +339,8 @@ int **compute_atom_map(const Molecule* molecule)
                 mol.print();
                 outfile->Printf( "  attempted to find atom at\n");
                 outfile->Printf( "    %lf %lf %lf\n", np[0], np[1], np[2]);
-                abort();
+                outfile->Printf( "  atom_map() throwing PsiException\n");
+                throw PsiException("Broken Symmetry", __FILE__, __LINE__);
             }
         }
     }

@@ -2519,6 +2519,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("SIMPLE_STEP_SCALING", false);
       /*- Set number of consecutive backward steps allowed in optimization -*/
       options.add_int("CONSECUTIVE_BACKSTEPS", 0);
+      /*- Eigenvectors of RFO matrix whose final column is smaller than this are ignored. -*/
+      options.add_double("RFO_NORMALIZATION_MIN", 100);
+      /*- Denominator check for hessian update. -*/
+      options.add_double("H_UPDATE_DEN_TOL",1e-7);
+      /*- Absolute maximum value of RS-RFO. -*/
+      options.add_double("RSRFO_ALPHA_MAX", 1e8);
       /*- Specify distances between atoms to be frozen (unchanged) -*/
       options.add_str("FROZEN_DISTANCE", "");
       /*- Specify angles between atoms to be frozen (unchanged) -*/

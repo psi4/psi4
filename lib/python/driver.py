@@ -1104,12 +1104,14 @@ def optimize(name, **kwargs):
 
         # print 'cart_hess_read', psi4.get_global_option('CART_HESS_READ')
         # Take step
-        if psi4.optking() == psi4.PsiReturnType.EndLoop:
+        optking_rval = psi4.optking()
+        if optking_rval == psi4.PsiReturnType.EndLoop:
             print('Optimizer: Optimization complete!')
             psi4.print_out('\n    Final optimized geometry and variables:\n')
             psi4.get_active_molecule().print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
             if (psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
+              if (psi4.get_option('OPTKING', 'KEEP_INTCOS') == False):
                 psi4.opt_clean()
             psi4.clean()
 
@@ -1122,6 +1124,15 @@ def optimize(name, **kwargs):
 
             optstash.restore()
             return thisenergy
+
+        elif optking_rval == psi4.PsiReturnType.Failure: # new 10-14 RAK
+            print('Optimizer: Optimization failed!')
+            if (psi4.get_option('OPTKING', 'KEEP_INTCOS') == False):
+                psi4.opt_clean()
+            psi4.clean()
+            optstash.restore()
+            return thisenergy
+
         psi4.print_out('\n    Structure for next step:\n')
         psi4.get_active_molecule().print_in_input_format()
 
@@ -1133,6 +1144,9 @@ def optimize(name, **kwargs):
         n += 1
 
     psi4.print_out('\tOptimizer: Did not converge!')
+    if (psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
+      if (psi4.get_option('OPTKING', 'KEEP_INTCOS') == False):
+        psi4.opt_clean()
 
     optstash.restore()
     return 0.0

@@ -61,6 +61,7 @@ struct OPT_PARAMS {
   bool rfo_follow_root; // whether to do root following
   int rfo_root;         // which root to follow
   double rfo_normalization_min; // small threshold for rfo normalization
+  double rsrfo_alpha_max; // absolute maximum val
 
   enum OPT_TYPE {MIN, TS, IRC} opt_type;
   // Newton-Raphson (NR), rational function optimization step, steepest descent step

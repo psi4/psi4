@@ -90,10 +90,8 @@ void MOLECULE::forces(void) {
   f_x = g_grad_array(); // Hartree / bohr
   array_scm(f_x, -1, Ncart); // switch gradient -> forces
 
-  // u f_x
-  //double *u = g_u_vector();
-  //for (int i=0; i<Ncart; ++i)
-    //f_x[i] *= u[i];
+  if (Opt_params.print_lvl > 3)
+    oprint_array_out_precise(f_x, Ncart);
 
   // B (u f_x)
   B = compute_B();
@@ -131,7 +129,7 @@ void MOLECULE::forces(void) {
 
   if (Opt_params.print_lvl >= 3) {
     oprintf_out("Internal forces in au\n");
-    oprint_matrix_out(&f_q, 1, Ncoord());
+    oprint_array_out_precise(f_q, Ncoord());
   }
 
 /*
@@ -260,7 +258,8 @@ void MOLECULE::project_f_and_H(void) {
     oprintf_out("\tInternal forces in au, after projection of redundancies and constraints.\n");
     if (Opt_params.fb_fragments)
       oprintf_out("\tFB external coordinates are not projected.\n");
-    oprint_matrix_out(&f_q, 1, Ncoord());
+    oprint_array_out(f_q, Ncoord());
+    //oprint_array_out_precise(f_q, Ncoord());
   }
 
   // Project redundances and constraints out of Hessian matrix

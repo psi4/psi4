@@ -69,6 +69,17 @@ class BAD_STEP_EXCEPT {
     const char *g_message(void) { return message; }
 };
 
+class BROKEN_SYMMETRY_EXCEPT {
+  private:
+    const char * message;
+
+  public:
+    BROKEN_SYMMETRY_EXCEPT(const char * m) { message = m; }
+
+    ~BROKEN_SYMMETRY_EXCEPT() {};
+
+    const char *g_message(void) { return message; }
+};
 
 }
 
