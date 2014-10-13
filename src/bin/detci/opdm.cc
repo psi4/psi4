@@ -562,54 +562,30 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
     }
     */
     
-    /* DS EDIT */
-    outfile->Printf("Calling OEProp\n");
+
     /* Call OEProp here for each root opdm */
-    /*
-    boost::shared_ptr<OEProp> oe(new OEProp());
-    boost::shared_ptr<Wavefunction> wfn = 
-      Process::environment.wavefunction(); 
-    boost::shared_ptr<Matrix> Ca = wfn->Ca(); 
-    std::stringstream ss;
-    ss << "CI " << (transdens ? "TDM" : "OPDM");
-    if (transdens) {
-      ss << " Root " << (Iroot+1) << " -> Root " << (Jroot+1); 
-    } 
-    else {
-      ss << " Root " << (Iroot+1); 
-    }
 
-    std::stringstream ss_a;
-    ss_a << ss.str() << " alpha";
+    // DS EDIT
+    if (dipmom){
 
-    SharedMatrix opdm_a(new Matrix(ss_a.str(), Ca->colspi(), Ca->colspi())); 
-    int mo_offset = 0;
-    for (int h = 0; h < Ca->nirrep(); h++) {
-      int nmo = CalcInfo.orbs_per_irr[h];
-      int nfv = CalcInfo.frozen_uocc[h];
-      int nmor = nmo - nfv;
-      //int nmo = Ca->colspi()[h];
-      //int nmor = nmo - ref->frzvpi()[h];
-      if (!nmo || !nmor) continue;
-      double** opdmap = opdm_a->pointer(h);
-        
-      for (int i=0; i<CalcInfo.orbs_per_irr[h]- CalcInfo.frozen_uocc[h]; i++) {
-        for (int j=0; j<CalcInfo.orbs_per_irr[h]-
-          CalcInfo.frozen_uocc[h]; j++) {
-          int i_ci = CalcInfo.reorder[i+mo_offset];
-          int j_ci = CalcInfo.reorder[j+mo_offset]; 
-          opdmap[i][j] = onepdm_a[i_ci][j_ci];
-        } 
+      boost::shared_ptr<OEProp> oe(new OEProp());
+      boost::shared_ptr<Wavefunction> wfn = 
+        Process::environment.wavefunction(); 
+      boost::shared_ptr<Matrix> Ca = wfn->Ca(); 
+      std::stringstream ss;
+      ss << "CI " << (transdens ? "TDM" : "OPDM");
+      if (transdens) {
+        ss << " Root " << (Iroot+1) << " -> Root " << (Jroot+1); 
+      } 
+      else {
+        ss << " Root " << (Iroot+1); 
       }
-      mo_offset += CalcInfo.orbs_per_irr[h];
-    }
-    oe->set_Da_mo(opdm_a);
 
-    if (Parameters.ref == "ROHF") {
-      std::stringstream ss_b;
-      ss_b << ss.str() << " beta";
-      SharedMatrix opdm_b(new Matrix(ss_b.str(), Ca->colspi(), Ca->colspi())); 
-      mo_offset = 0;
+      std::stringstream ss_a;
+      ss_a << ss.str() << " alpha";
+
+      SharedMatrix opdm_a(new Matrix(ss_a.str(), Ca->colspi(), Ca->colspi())); 
+      int mo_offset = 0;
       for (int h = 0; h < Ca->nirrep(); h++) {
         int nmo = CalcInfo.orbs_per_irr[h];
         int nfv = CalcInfo.frozen_uocc[h];
@@ -617,117 +593,140 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
         //int nmo = Ca->colspi()[h];
         //int nmor = nmo - ref->frzvpi()[h];
         if (!nmo || !nmor) continue;
-        double** opdmbp = opdm_b->pointer(h);
-            
-        for (int i=0; i<CalcInfo.orbs_per_irr[h]-CalcInfo.frozen_uocc[h]; i++) {
+        double** opdmap = opdm_a->pointer(h);
+          
+        for (int i=0; i<CalcInfo.orbs_per_irr[h]- CalcInfo.frozen_uocc[h]; i++) {
           for (int j=0; j<CalcInfo.orbs_per_irr[h]-
             CalcInfo.frozen_uocc[h]; j++) {
             int i_ci = CalcInfo.reorder[i+mo_offset];
             int j_ci = CalcInfo.reorder[j+mo_offset]; 
-            opdmbp[i][j] = onepdm_b[i_ci][j_ci];
+            opdmap[i][j] = onepdm_a[i_ci][j_ci];
           } 
         }
         mo_offset += CalcInfo.orbs_per_irr[h];
       }
-      oe->set_Db_mo(opdm_b);
-    }
+      oe->set_Da_mo(opdm_a);
 
-    std::stringstream oeprop_label;
-    if (transdens) {
-      oeprop_label << "CI ROOT " << (Iroot+1) << " -> ROOT " << (Jroot+1); 
-    } 
-    else {
-      oeprop_label << "CI ROOT " << (Iroot+1); 
-    }
-    oe->set_title(oeprop_label.str());
-    if (!transdens) {
-        oe->add("DIPOLE");
-        oe->add("MULLIKEN_CHARGES");
-        oe->add("NO_OCCUPATIONS");
-        if (Parameters.print_lvl > 1) { 
-            oe->add("QUADRUPOLE");
+      if (Parameters.ref == "ROHF") {
+        std::stringstream ss_b;
+        ss_b << ss.str() << " beta";
+        SharedMatrix opdm_b(new Matrix(ss_b.str(), Ca->colspi(), Ca->colspi())); 
+        mo_offset = 0;
+        for (int h = 0; h < Ca->nirrep(); h++) {
+          int nmo = CalcInfo.orbs_per_irr[h];
+          int nfv = CalcInfo.frozen_uocc[h];
+          int nmor = nmo - nfv;
+          //int nmo = Ca->colspi()[h];
+          //int nmor = nmo - ref->frzvpi()[h];
+          if (!nmo || !nmor) continue;
+          double** opdmbp = opdm_b->pointer(h);
+              
+          for (int i=0; i<CalcInfo.orbs_per_irr[h]-CalcInfo.frozen_uocc[h]; i++) {
+            for (int j=0; j<CalcInfo.orbs_per_irr[h]-
+              CalcInfo.frozen_uocc[h]; j++) {
+              int i_ci = CalcInfo.reorder[i+mo_offset];
+              int j_ci = CalcInfo.reorder[j+mo_offset]; 
+              opdmbp[i][j] = onepdm_b[i_ci][j_ci];
+            } 
+          }
+          mo_offset += CalcInfo.orbs_per_irr[h];
         }
-    } 
-    else {
-        oe->add("TRANSITION_DIPOLE");
+        oe->set_Db_mo(opdm_b);
+      }
+
+      std::stringstream oeprop_label;
+      if (transdens) {
+        oeprop_label << "CI ROOT " << (Iroot+1) << " -> ROOT " << (Jroot+1); 
+      } 
+      else {
+        oeprop_label << "CI ROOT " << (Iroot+1); 
+      }
+      oe->set_title(oeprop_label.str());
+      if (!transdens) {
+          oe->add("DIPOLE");
+          oe->add("MULLIKEN_CHARGES");
+          oe->add("NO_OCCUPATIONS");
+          if (Parameters.print_lvl > 1) { 
+              oe->add("QUADRUPOLE");
+          }
+      } 
+      else {
+          oe->add("TRANSITION_DIPOLE");
+          if (Parameters.print_lvl > 1) { 
+              oe->add("TRANSITION_QUADRUPOLE");
+          }
+      }
+      
+      
+      outfile->Printf( "  ==> Properties %s <==\n", ss.str().c_str());
+      oe->compute();
+
+      // std::pair<SharedMatrix,SharedVector> nos = oe->Na_mo();
+
+      /*- Process::environment.globals["CI ROOT n DIPOLE X"] -*/
+      /*- Process::environment.globals["CI ROOT n DIPOLE Y"] -*/
+      /*- Process::environment.globals["CI ROOT n DIPOLE Z"] -*/
+      /*- Process::environment.globals["CI ROOT n QUADRUPOLE XX"] -*/
+      /*- Process::environment.globals["CI ROOT n QUADRUPOLE XY"] -*/
+      /*- Process::environment.globals["CI ROOT n QUADRUPOLE XZ"] -*/
+      /*- Process::environment.globals["CI ROOT n QUADRUPOLE YY"] -*/
+      /*- Process::environment.globals["CI ROOT n QUADRUPOLE YZ"] -*/
+      /*- Process::environment.globals["CI ROOT n QUADRUPOLE ZZ"] -*/
+      /*- Process::environment.globals["CI ROOT n -> ROOT m DIPOLE X"] -*/
+      /*- Process::environment.globals["CI ROOT n -> ROOT m DIPOLE Y"] -*/
+      /*- Process::environment.globals["CI ROOT n -> ROOT m DIPOLE Z"] -*/
+      /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE XX"] -*/
+      /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE XY"] -*/
+      /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE XZ"] -*/
+      /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE YY"] -*/
+      /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE YZ"] -*/
+      /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE ZZ"] -*/
+
+      // if this is the "special" root, then copy over OEProp 
+      // Process::environment variables from the current root into
+      // more general locations
+
+      if (Iroot == Parameters.root) {
+        std::stringstream ss2;
+        ss2 << oeprop_label.str() << " DIPOLE X"; 
+        Process::environment.globals["CI DIPOLE X"] = 
+          Process::environment.globals[ss2.str()]; 
+        ss2.str(std::string());
+        ss2 << oeprop_label.str() << " DIPOLE Y"; 
+        Process::environment.globals["CI DIPOLE Y"] = 
+          Process::environment.globals[ss2.str()]; 
+        ss2.str(std::string());
+        ss2 << oeprop_label.str() << " DIPOLE Z"; 
+        Process::environment.globals["CI DIPOLE Z"] = 
+          Process::environment.globals[ss2.str()]; 
         if (Parameters.print_lvl > 1) { 
-            oe->add("TRANSITION_QUADRUPOLE");
+           ss2.str(std::string());
+           ss2 << oeprop_label.str() << " QUADRUPOLE XX"; 
+           Process::environment.globals["CI QUADRUPOLE XX"] = 
+             Process::environment.globals[ss2.str()]; 
+           ss2.str(std::string());
+           ss2 << oeprop_label.str() << " QUADRUPOLE YY"; 
+           Process::environment.globals["CI QUADRUPOLE YY"] = 
+             Process::environment.globals[ss2.str()]; 
+           ss2.str(std::string());
+           ss2 << oeprop_label.str() << " QUADRUPOLE ZZ"; 
+           Process::environment.globals["CI QUADRUPOLE ZZ"] = 
+             Process::environment.globals[ss2.str()]; 
+           ss2.str(std::string());
+           ss2 << oeprop_label.str() << " QUADRUPOLE XY"; 
+           Process::environment.globals["CI QUADRUPOLE XY"] = 
+             Process::environment.globals[ss2.str()]; 
+           ss2.str(std::string());
+           ss2 << oeprop_label.str() << " QUADRUPOLE XZ"; 
+           Process::environment.globals["CI QUADRUPOLE XZ"] = 
+             Process::environment.globals[ss2.str()]; 
+           ss2.str(std::string());
+           ss2 << oeprop_label.str() << " QUADRUPOLE YZ"; 
+           Process::environment.globals["CI QUADRUPOLE YZ"] = 
+             Process::environment.globals[ss2.str()]; 
         }
-    }
-    
-    
-    outfile->Printf( "  ==> Properties %s <==\n", ss.str().c_str());
-    oe->compute();
-    DS EDIT */
-    outfile->Printf("Finishing OEProp\n");
-
-    // std::pair<SharedMatrix,SharedVector> nos = oe->Na_mo();
-
-    /*- Process::environment.globals["CI ROOT n DIPOLE X"] -*/
-    /*- Process::environment.globals["CI ROOT n DIPOLE Y"] -*/
-    /*- Process::environment.globals["CI ROOT n DIPOLE Z"] -*/
-    /*- Process::environment.globals["CI ROOT n QUADRUPOLE XX"] -*/
-    /*- Process::environment.globals["CI ROOT n QUADRUPOLE XY"] -*/
-    /*- Process::environment.globals["CI ROOT n QUADRUPOLE XZ"] -*/
-    /*- Process::environment.globals["CI ROOT n QUADRUPOLE YY"] -*/
-    /*- Process::environment.globals["CI ROOT n QUADRUPOLE YZ"] -*/
-    /*- Process::environment.globals["CI ROOT n QUADRUPOLE ZZ"] -*/
-    /*- Process::environment.globals["CI ROOT n -> ROOT m DIPOLE X"] -*/
-    /*- Process::environment.globals["CI ROOT n -> ROOT m DIPOLE Y"] -*/
-    /*- Process::environment.globals["CI ROOT n -> ROOT m DIPOLE Z"] -*/
-    /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE XX"] -*/
-    /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE XY"] -*/
-    /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE XZ"] -*/
-    /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE YY"] -*/
-    /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE YZ"] -*/
-    /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE ZZ"] -*/
-
-    // if this is the "special" root, then copy over OEProp 
-    // Process::environment variables from the current root into
-    // more general locations
-
-    /* DS EDIT
-    if (Iroot == Parameters.root) {
-      std::stringstream ss2;
-      ss2 << oeprop_label.str() << " DIPOLE X"; 
-      Process::environment.globals["CI DIPOLE X"] = 
-        Process::environment.globals[ss2.str()]; 
-      ss2.str(std::string());
-      ss2 << oeprop_label.str() << " DIPOLE Y"; 
-      Process::environment.globals["CI DIPOLE Y"] = 
-        Process::environment.globals[ss2.str()]; 
-      ss2.str(std::string());
-      ss2 << oeprop_label.str() << " DIPOLE Z"; 
-      Process::environment.globals["CI DIPOLE Z"] = 
-        Process::environment.globals[ss2.str()]; 
-      if (Parameters.print_lvl > 1) { 
-         ss2.str(std::string());
-         ss2 << oeprop_label.str() << " QUADRUPOLE XX"; 
-         Process::environment.globals["CI QUADRUPOLE XX"] = 
-           Process::environment.globals[ss2.str()]; 
-         ss2.str(std::string());
-         ss2 << oeprop_label.str() << " QUADRUPOLE YY"; 
-         Process::environment.globals["CI QUADRUPOLE YY"] = 
-           Process::environment.globals[ss2.str()]; 
-         ss2.str(std::string());
-         ss2 << oeprop_label.str() << " QUADRUPOLE ZZ"; 
-         Process::environment.globals["CI QUADRUPOLE ZZ"] = 
-           Process::environment.globals[ss2.str()]; 
-         ss2.str(std::string());
-         ss2 << oeprop_label.str() << " QUADRUPOLE XY"; 
-         Process::environment.globals["CI QUADRUPOLE XY"] = 
-           Process::environment.globals[ss2.str()]; 
-         ss2.str(std::string());
-         ss2 << oeprop_label.str() << " QUADRUPOLE XZ"; 
-         Process::environment.globals["CI QUADRUPOLE XZ"] = 
-           Process::environment.globals[ss2.str()]; 
-         ss2.str(std::string());
-         ss2 << oeprop_label.str() << " QUADRUPOLE YZ"; 
-         Process::environment.globals["CI QUADRUPOLE YZ"] = 
-           Process::environment.globals[ss2.str()]; 
       }
     }
-    */
 
     
     if (!transdens) Iroot++;
