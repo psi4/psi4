@@ -30,6 +30,9 @@
 //#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libpsio/psio.hpp>
+#include <libpsio/psio.h>
+#include <psifiles.h>
 #include "globaldefs.h"
 #include "globals.h"
 #include "psi4-dec.h"
@@ -219,21 +222,33 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
 void read_thetas(int npairs)
 {
 
-  FILE *fp;
 
   CalcInfo.theta_cur = init_array(npairs);
+  if (Params.print_lvl > 2)
+    outfile->Printf("\nReading orbital rotation angles\n");
+ 
+  if (psio_tocentry_exists(PSIF_DETCAS, "Thetas")){ 
+    psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
+    psio_read_entry(PSIF_DETCAS, "Thetas", (char *) CalcInfo.theta_cur,
+                    npairs*sizeof(double));
+    psio_close(PSIF_DETCAS, 1);
 
-  /* look for the thetas on disk...if they're around, read them in */
-  ffileb_noexit(&fp,"thetas.dat",2);
-  if (fp != NULL) {
-    if (Params.print_lvl > 2)
-      outfile->Printf("\nReading orbital rotation angles\n");
-    if (fread(CalcInfo.theta_cur, sizeof(double), npairs, fp) != npairs) {
-      outfile->Printf("Error reading angles.\n");
-      zero_arr(CalcInfo.theta_cur, npairs);
-    }
-    fclose(fp);
   }
+  else {
+    zero_arr(CalcInfo.theta_cur, npairs);
+  }
+  // FILE *fp;
+  // /* look for the thetas on disk...if they're around, read them in */
+  // ffileb_noexit(&fp,"thetas.dat",2);
+  // if (fp != NULL) {
+  //   if (Params.print_lvl > 2)
+  //     outfile->Printf("\nReading orbital rotation angles\n");
+  //   if (fread(CalcInfo.theta_cur, sizeof(double), npairs, fp) != npairs) {
+  //     outfile->Printf("Error reading angles.\n");
+  //     zero_arr(CalcInfo.theta_cur, npairs);
+  //   }
+  //   fclose(fp);
+  // }
 
     
 }
@@ -248,21 +263,30 @@ void read_thetas(int npairs)
 void write_thetas(int npairs)
 {
 
-  FILE *fp;
 
-  ffileb_noexit(&fp,"thetas.dat",0);
-  if (fp != NULL) {
-    if (Params.print_lvl > 2)
-      outfile->Printf("\nWriting orbital rotation angles\n");
-    if (fwrite(CalcInfo.theta_cur, sizeof(double), npairs, fp) != npairs) {
-      outfile->Printf("Error writing angles.\n");
-    }
-    fclose(fp);
-  }
+  if (Params.print_lvl > 2)
+    outfile->Printf("\nWriting orbital rotation angles\n");
+  
+  psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
+  psio_write_entry(PSIF_DETCAS, "Thetas", (char *) CalcInfo.theta_cur,
+                  npairs*sizeof(double));
 
-  else {
-    outfile->Printf("Error opening thetas.dat for writing\n");
-  }
+  psio_close(PSIF_DETCAS, 1);
+
+  // FILE *fp;
+  // ffileb_noexit(&fp,"thetas.dat",0);
+  // if (fp != NULL) {
+  //   if (Params.print_lvl > 2)
+  //     outfile->Printf("\nWriting orbital rotation angles\n");
+  //   if (fwrite(CalcInfo.theta_cur, sizeof(double), npairs, fp) != npairs) {
+  //     outfile->Printf("Error writing angles.\n");
+  //   }
+  //   fclose(fp);
+  // }
+
+  // else {
+  //   outfile->Printf("Error opening thetas.dat for writing\n");
+  // }
     
 }
 

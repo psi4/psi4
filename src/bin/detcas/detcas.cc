@@ -44,7 +44,7 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
-//#include <libipv1/ip_lib.h>
+// #include <libipv1/ip_lib.h>
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
@@ -279,7 +279,6 @@ PsiReturnType detcas(Options &options)
   //close_io();
   if (Params.print_lvl) tstop();
 
-  /* TODO  Fix this! Likely need to return non-Success flag */
   if (converged){
     return EndLoop; 
   }
