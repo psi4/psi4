@@ -20,11 +20,11 @@
  *@END LICENSE
  */
 
-/*! \file molecule_read_intcos.cc
+/*! \file molecule_read_coords.cc
     \ingroup optking
     \brief read internal coordinates from file
 
-     MOLECULE::read_intcos(void) reads internal coordinates from text file
+     MOLECULE::read_coords(void) reads internal coordinates from text file
      return false if coordinates cannot be read - possibly b/c they are not there
 */
 
@@ -81,7 +81,7 @@ bool myline(ifstream & fin, vector<string> & tokens, int & line_num) {
       line_present = false;
     else
       line_present = true;
-    //printf("getline read: %s\n", sline.c_str());
+    // printf("getline read: %s\n", sline.c_str());
     read_next = false;
 
     if (line_present) {
@@ -108,7 +108,7 @@ bool myline(ifstream & fin, vector<string> & tokens, int & line_num) {
   return false;
 }
 
-bool MOLECULE::read_intcos(std::ifstream & fintco) {
+bool MOLECULE::read_coords(std::ifstream & fintco) {
   stringstream error;
   int a, b, natom, line_num=0;
   bool D_on[6];     // interfragment coordinates active
@@ -157,12 +157,68 @@ bool MOLECULE::read_intcos(std::ifstream & fintco) {
       line_present = myline(fintco, vline, line_num);
       bool end_of_fragment = false;
       while(line_present && !end_of_fragment) {
-        if (fragments.back()->read_intco(vline, first_atom))
+        if (fragments.back()->read_coord(vline, first_atom))
           line_present = myline(fintco, vline, line_num);
         else
           end_of_fragment = true; // break out of fragment reading lines
       }
 
+      if (!line_present) // no more lines
+        return true;
+    }
+    else if ((vline[0] == "C") || (vline[0] == "C*")) { // Combination coordinate
+      bool frozen = has_asterisk(vline[0]); // implement later ?
+      int combo_length = 0;
+
+      if (vline.size() != 2) {
+        error << "Format of combination line header is \"C integer(number of lines) in line" << line_num << ".\n";
+        throw(INTCO_EXCEPT(error.str().c_str()));
+      }
+      if (!stoi(vline[1], &combo_length)) {
+        error << "Format of combination line header is \"C integer(number of lines) in line" << line_num << ".\n";
+        throw(INTCO_EXCEPT(error.str().c_str()));
+      }
+
+      vector<int> cc_index;
+      vector<double> cc_coeff;
+      for (int i=0; i<combo_length; ++i) { // Read each simple id and coefficient
+        line_present = myline(fintco, vline, line_num);
+        int simple_id = 0;
+        double simple_coeff = 0;
+
+        if (!line_present) {
+          error << "Missing line " << line_num << " in combination coordinate list.\n";
+          throw(INTCO_EXCEPT(error.str().c_str()));
+        }
+        if (vline.size() != 2) {
+          error << "Format of combination line \"integer(simple index)  double(coefficient)" << line_num << ".\n";
+          throw(INTCO_EXCEPT(error.str().c_str()));
+        }
+        if (!stoi(vline[0], &simple_id)) {
+          error << "Format of combination line \"integer(simple index)  double(coefficient)" << line_num << ".\n";
+          throw(INTCO_EXCEPT(error.str().c_str()));
+        }
+        --simple_id;  // internal numbering starts with 0
+        if (!stof(vline[1], &simple_coeff)) {
+          error << "Format of combination line \"integer(simple index)  double(coefficient)" << line_num << ".\n";
+          throw(INTCO_EXCEPT(error.str().c_str()));
+        }
+
+        cc_index.push_back(simple_id);
+        cc_coeff.push_back(simple_coeff);
+      }
+      // Normalize
+      double tval = 0.0;
+      for (int j=0; j<cc_coeff.size(); ++j)
+        tval += cc_coeff[j] * cc_coeff[j];
+      tval = 1.0/sqrt(tval);
+      for (int j=0; j<cc_coeff.size(); ++j)
+        cc_coeff[j] *= tval;
+      
+      fragments.back()->add_combination_coord(cc_index, cc_coeff);
+
+// read next line
+      line_present = myline(fintco, vline, line_num);
       if (!line_present) // no more lines
         return true;
     }
@@ -349,14 +405,14 @@ bool MOLECULE::read_intcos(std::ifstream & fintco) {
   }
   
   return true;
-} // end MOLECULE::read_intcos
+} // end MOLECULE::read_coords
 
 
 // this function belongs to the FRAG class - not MOLECULE but the reading of the intco
 // definitions is so linked with that above, I'll put the function here
 // reads internal coordinate definition line
 // offset is the first atom number in the fragment so fragment can store relative numbering
-bool FRAG::read_intco(vector<string> & s, int offset) {
+bool FRAG::read_coord(vector<string> & s, int offset) {
   int a, b, c, d;
   std::string error;
   double eq_val; // for imposing a constraint
@@ -383,7 +439,7 @@ bool FRAG::read_intco(vector<string> & s, int offset) {
     if (has_eq_val) one_stre->set_fixed_eq_val(eq_val);
 
     if ( !present(one_stre) )
-      intcos.push_back(one_stre);
+      coords.simples.push_back(one_stre);
     else
       delete one_stre;
 
@@ -412,7 +468,7 @@ bool FRAG::read_intco(vector<string> & s, int offset) {
     if (has_eq_val) one_cart->set_fixed_eq_val(eq_val);
 
     if ( !present(one_cart) )
-      intcos.push_back(one_cart);
+      coords.simples.push_back(one_cart);
     else
       delete one_cart;
 
@@ -436,7 +492,7 @@ bool FRAG::read_intco(vector<string> & s, int offset) {
     if (has_eq_val) one_bend->set_fixed_eq_val(eq_val);
 
     if ( !present(one_bend) )
-      intcos.push_back(one_bend);
+      coords.simples.push_back(one_bend);
     else
       delete one_bend;
 
@@ -459,14 +515,23 @@ bool FRAG::read_intco(vector<string> & s, int offset) {
     if (has_eq_val) one_tors->set_fixed_eq_val(eq_val);
     
     if ( !present(one_tors) )
-      intcos.push_back(one_tors);
+      coords.simples.push_back(one_tors);
     else
       delete one_tors;
 
     return true;
   }
-  //printf("read_intco returning false\n");
+  //printf("read_coord returning false\n");
   return false;
+}
+
+// this function belongs to the FRAG class - not MOLECULE but the reading of the intco
+// definitions is so linked with that above, I'll put the function here
+// reads the lines in a combination coordinate.
+void FRAG::add_combination_coord(vector<int> ids, vector<double> coeffs) {
+  coords.index.push_back(ids);
+  coords.coeff.push_back(coeffs);;
+  return;
 }
 
 // convert string to integer

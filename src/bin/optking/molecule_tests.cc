@@ -52,7 +52,7 @@ using namespace std;
 // analytic DqDx to finite-difference DqDx
 void MOLECULE::test_B(void) {
   int Natom = g_natom();
-  int Nintco = g_nintco();
+  int Nintco = Ncoord();
   const double disp_size = 0.01;
   // 5-point formula should be good to h^4; a few will be slightly worse
   const double MAX_ERROR = 50*disp_size*disp_size*disp_size*disp_size;
@@ -64,7 +64,6 @@ void MOLECULE::test_B(void) {
   if (Opt_params.print_lvl >= 3) {
     oprintf_out( "Analytic B matrix in au\n");
     oprint_matrix_out(B_analytic, Nintco, 3*Natom);
-    
   }
 
   double **coord, *q_p, *q_m, **B_fd;
@@ -82,13 +81,13 @@ void MOLECULE::test_B(void) {
     for (int xyz=0; xyz<3; ++xyz) {
 
       coord[atom][xyz] -= disp_size;
-      q_m   = intco_values(coord);
+      q_m   = coord_values(coord);
       coord[atom][xyz] -= disp_size;
-      q_m2  = intco_values(coord);
+      q_m2  = coord_values(coord);
       coord[atom][xyz] += 3*disp_size;
-      q_p  = intco_values(coord);
+      q_p  = coord_values(coord);
       coord[atom][xyz] += disp_size;
-      q_p2 = intco_values(coord);
+      q_p2 = coord_values(coord);
       coord[atom][xyz] -= 2*disp_size; // restore to original
       for (int i=0; i<Nintco; ++i)
         B_fd[i][3*atom+xyz] = (q_m2[i]-8*q_m[i]+8*q_p[i]-q_p2[i]) / (12.0*disp_size);
@@ -125,10 +124,8 @@ void MOLECULE::test_B(void) {
 
   oprintf_out("\t\tMaximum difference is %.1e for internal coordinate %d.\n",
     max_error, max_error_intco+1);
-  string coord_def = get_intco_definition_from_global_index(max_error_intco);
-oprintf_out("a, \n");
+  string coord_def = get_coord_definition_from_global_index(max_error_intco);
   oprintf_out("\t\tThis coordinate is %s\n", coord_def.c_str() );
-oprintf_out("b, \n");
   if (max_error > MAX_ERROR) {
     oprintf_out( "\t\tB-matrix could be in error.  However, numerical test will fail for ");
     oprintf_out( "linear bond angles.  This is OK.\n");
@@ -145,7 +142,7 @@ oprintf_out("b, \n");
 
 void MOLECULE::test_derivative_B(void) {
   int Natom = g_natom();
-  int Nintco = g_nintco();
+  int Nintco = Ncoord();
   const double disp_size = 0.01;
   // 5-point formula should be good to h^4; a few will be slightly worse
   const double MAX_ERROR = 10*disp_size*disp_size*disp_size*disp_size;
@@ -157,7 +154,7 @@ void MOLECULE::test_derivative_B(void) {
   dq2dx2_fd = init_matrix(3*Natom, 3*Natom);
   coord = g_geom_2D();     // in au
 
-  q = intco_values(coord); // necesessary to set torsional near-180 variables?
+  q = coord_values(coord); // necesessary to set torsional near-180 variables?
 
   oprintf_out("\n\tTesting Derivative B-matrix numerically...\n");
   for (int i=0; i<Nintco; ++i) {

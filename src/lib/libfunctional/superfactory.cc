@@ -20,9 +20,9 @@
  *@END LICENSE
  */
 
-#include <boost/shared_ptr.hpp>
 #include <boost/python.hpp>
 #include <boost/python/object.hpp>
+#include <boost/shared_ptr.hpp>
 #include <liboptions/liboptions.h>
 #include <liboptions/liboptions_python.h>
 #include <psi4-dec.h>

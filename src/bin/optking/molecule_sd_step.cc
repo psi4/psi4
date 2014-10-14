@@ -52,7 +52,7 @@ inline double DE_quadratic_energy(double step, double grad, double hess) {
 }
 
 void MOLECULE::sd_step(void) {
-  int dim = g_nintco();
+  int dim = Ncoord();
   double *fq = p_Opt_data->g_forces_pointer();
   double *dq = p_Opt_data->g_dq_pointer();
 
@@ -104,8 +104,8 @@ void MOLECULE::sd_step(void) {
   for (int f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
       oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f+1);
-      for (int i=0; i<fragments[f]->g_nintco(); ++i)
-        dq[ g_intco_offset(f) + i ] = 0.0;
+      for (int i=0; i<fragments[f]->Ncoord(); ++i)
+        dq[ g_coord_offset(f) + i ] = 0.0;
     }
   }
 
@@ -132,7 +132,7 @@ void MOLECULE::sd_step(void) {
       oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
-    fragments[f]->displace(&(dq[g_intco_offset(f)]), &(fq[g_intco_offset(f)]), g_atom_offset(f));
+    fragments[f]->displace(&(dq[g_coord_offset(f)]), &(fq[g_coord_offset(f)]), g_atom_offset(f));
   }
 
   // do displacements for interfragment coordinates
@@ -141,15 +141,13 @@ void MOLECULE::sd_step(void) {
       oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
       continue;
     }
-    interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
-                                        &(fq[g_interfragment_intco_offset(I)]) );
+    interfragments[I]->orient_fragment( &(dq[g_interfragment_coord_offset(I)]),
+                                        &(fq[g_interfragment_coord_offset(I)]) );
   }
 
-#if defined(OPTKING_PACKAGE_QCHEM)
   // fix rotation matrix for rotations in QCHEM EFP code
-  for (int I=0; I<efp_fragments.size(); ++I)
-    efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
-#endif
+  for (int I=0; I<fb_fragments.size(); ++I)
+    fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
 
   symmetrize_geom(); // now symmetrize the geometry for next step
 
@@ -171,7 +169,7 @@ void MOLECULE::sd_step_cartesians(void) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
      oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f+1);
       for (int i=0; i<fragments[f]->g_natom(); ++i)
-        step[ g_intco_offset(f) + i ] = 0.0;
+        step[ g_coord_offset(f) + i ] = 0.0;
     }
   }
 
@@ -197,7 +195,7 @@ void MOLECULE::sd_step_cartesians(void) {
 
   set_geom_array(x);
 
-  double *sd_u = init_array(g_nintco());
+  double *sd_u = init_array(Ncoord());
 
   symmetrize_geom(); // now symmetrize the geometry for next step
 
