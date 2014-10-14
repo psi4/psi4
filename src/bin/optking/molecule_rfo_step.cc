@@ -156,7 +156,7 @@ void MOLECULE::rfo_step(void) {
     // - the root following can avoid them. 
     for (i=0; i<dim+1; ++i) {
       tval = abs( array_abs_max(SRFO[i], dim)/ SRFO[i][dim] ); // how big is dividing going to make it?
-      if (fabs(tval) < Opt_params.rfo_normalization_min) { // same check occurs below for acceptability
+      if (fabs(tval) < Opt_params.rfo_normalization_max) { // same check occurs below for acceptability
         for (j=0;j<dim+1;++j)
           SRFO[i][j] /= SRFO[i][dim];
       }
@@ -184,9 +184,9 @@ void MOLECULE::rfo_step(void) {
         }
         else {
           tval = abs( array_abs_max(SRFO[rfo_root], dim)/ SRFO[rfo_root][dim] ); // how big is dividing going to make it?
-          if (fabs(tval) > Opt_params.rfo_normalization_min) { // same check occurs above for acceptability
+          if (fabs(tval) > Opt_params.rfo_normalization_max) { // same check occurs above for acceptability
             oprintf_out("\tRejecting RFO root %d because normalization gives large value.\n", rfo_root+1);
-            oprintf_out("\t Step may break symmetry.  Test is modifiable with rfo_normalization_min keyword.\n");
+            oprintf_out("\t Step may break symmetry.  Test is modifiable with rfo_normalization_max keyword.\n");
             symm_rfo_step = false;
             ++rfo_root;
           }

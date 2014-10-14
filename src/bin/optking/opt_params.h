@@ -60,7 +60,7 @@ struct OPT_PARAMS {
 
   bool rfo_follow_root; // whether to do root following
   int rfo_root;         // which root to follow
-  double rfo_normalization_min; // small threshold for rfo normalization
+  double rfo_normalization_max; // small threshold for rfo normalization
   double rsrfo_alpha_max; // absolute maximum val
 
   enum OPT_TYPE {MIN, TS, IRC} opt_type;
@@ -168,6 +168,8 @@ struct OPT_PARAMS {
 
   //1=default; 2=medium; 3=lots
   int print_lvl;
+
+  bool print_params;
 
   // Hessian update is avoided if the denominators (Dq*Dq) or (Dq*Dg) are smaller than this
   double H_update_den_tol;
