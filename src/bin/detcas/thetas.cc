@@ -27,7 +27,6 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
-//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libpsio/psio.hpp>
@@ -237,20 +236,6 @@ void read_thetas(int npairs)
   else {
     zero_arr(CalcInfo.theta_cur, npairs);
   }
-  // FILE *fp;
-  // /* look for the thetas on disk...if they're around, read them in */
-  // ffileb_noexit(&fp,"thetas.dat",2);
-  // if (fp != NULL) {
-  //   if (Params.print_lvl > 2)
-  //     outfile->Printf("\nReading orbital rotation angles\n");
-  //   if (fread(CalcInfo.theta_cur, sizeof(double), npairs, fp) != npairs) {
-  //     outfile->Printf("Error reading angles.\n");
-  //     zero_arr(CalcInfo.theta_cur, npairs);
-  //   }
-  //   fclose(fp);
-  // }
-
-    
 }
 
 
@@ -272,22 +257,6 @@ void write_thetas(int npairs)
                   npairs*sizeof(double));
 
   psio_close(PSIF_DETCAS, 1);
-
-  // FILE *fp;
-  // ffileb_noexit(&fp,"thetas.dat",0);
-  // if (fp != NULL) {
-  //   if (Params.print_lvl > 2)
-  //     outfile->Printf("\nWriting orbital rotation angles\n");
-  //   if (fwrite(CalcInfo.theta_cur, sizeof(double), npairs, fp) != npairs) {
-  //     outfile->Printf("Error writing angles.\n");
-  //   }
-  //   fclose(fp);
-  // }
-
-  // else {
-  //   outfile->Printf("Error opening thetas.dat for writing\n");
-  // }
-    
 }
 
 

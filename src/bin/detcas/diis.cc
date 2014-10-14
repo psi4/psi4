@@ -72,12 +72,12 @@ int diis(int veclen, double *vec, double *errvec)
   char diis_char[80];
   
   /* add the vector and error vector to subspace */
-  if (psio_tocentry_exists(PSIF_DETCAS_DIIS, "Num vectors")){ 
-    psio_open(PSIF_DETCAS_DIIS, PSIO_OPEN_OLD);
+  if (psio_tocentry_exists(PSIF_DETCAS, "Num vectors")){ 
+    psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
 
-    psio_read_entry(PSIF_DETCAS_DIIS, "Num vectors", (char *) &(num_vecs),
+    psio_read_entry(PSIF_DETCAS, "Num vectors", (char *) &(num_vecs),
                     sizeof(int));
-    psio_read_entry(PSIF_DETCAS_DIIS, "Iteration number", (char *) &(diis_iter),
+    psio_read_entry(PSIF_DETCAS, "Iteration number", (char *) &(diis_iter),
                     sizeof(int));
 
     vecs = block_matrix(num_vecs+1, veclen);
@@ -85,16 +85,16 @@ int diis(int veclen, double *vec, double *errvec)
 
     for (i=0; i<num_vecs; i++) {
       sprintf(diis_char, "DIIS vector %3d", i);
-      psio_read_entry(PSIF_DETCAS_DIIS, diis_char, (char *) vecs[i],
+      psio_read_entry(PSIF_DETCAS, diis_char, (char *) vecs[i],
                       veclen*sizeof(double));
 
       sprintf(diis_char, "DIIS error vector %3d", i);
-      psio_read_entry(PSIF_DETCAS_DIIS, diis_char, (char *) errvecs[i],
+      psio_read_entry(PSIF_DETCAS, diis_char, (char *) errvecs[i],
                       veclen*sizeof(double));
 
     }
 
-    psio_close(PSIF_DETCAS_DIIS, 1);
+    psio_close(PSIF_DETCAS, 1);
   }
   else {
     num_vecs = 0;
@@ -102,47 +102,7 @@ int diis(int veclen, double *vec, double *errvec)
     vecs = block_matrix(num_vecs+1, veclen);
     errvecs = block_matrix(num_vecs+1, veclen);
   } 
-
-  /*
-  ffileb_noexit(&fp,"diis.dat",2);
-  if (fp != NULL) {
-
-    if (fread(&num_vecs, sizeof(int), 1, fp) != 1) {
-      outfile->Printf("(diis): Error reading number of diis vectors.\n");
-      return(0);
-    }
-
-    if (fread(&diis_iter, sizeof(int), 1, fp) != 1) {
-      outfile->Printf("(diis): Error reading diis iteration number.\n");
-      return(0);
-    }
-
-    vecs = block_matrix(num_vecs+1, veclen);
-    errvecs = block_matrix(num_vecs+1, veclen);
-
-    for (i=0; i<num_vecs; i++) {
-
-      if (fread(vecs[i], sizeof(double), veclen, fp) != veclen) { 
-        outfile->Printf("(diis): Error reading diis vector %d\n", i);
-        return(0);
-      }
-
-      if (fread(errvecs[i], sizeof(double), veclen, fp) != veclen) { 
-        outfile->Printf("(diis): Error reading diis error vector %d\n", i);
-        return(0);
-      }
-
-    }
-
-    fclose(fp);
-  }
-  else {
-    num_vecs = 0;
-    diis_iter = 0;
-    vecs = block_matrix(num_vecs+1, veclen);
-    errvecs = block_matrix(num_vecs+1, veclen);
-  } 
-  */
+  /* end diis read */
 
   /* will we do a diis this time? */
   diis_iter++;
@@ -166,54 +126,26 @@ int diis(int veclen, double *vec, double *errvec)
   new_num_vecs = num_vecs - offset;
 
   /* write out the diis info */
-  psio_open(PSIF_DETCAS_DIIS, PSIO_OPEN_OLD);
+  psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
 
-  psio_write_entry(PSIF_DETCAS_DIIS, "Num vectors", (char *) &(new_num_vecs),
+  psio_write_entry(PSIF_DETCAS, "Num vectors", (char *) &(new_num_vecs),
                   sizeof(int));
-  psio_write_entry(PSIF_DETCAS_DIIS, "Iteration number", (char *) &(diis_iter),
+  psio_write_entry(PSIF_DETCAS, "Iteration number", (char *) &(diis_iter),
                   sizeof(int));
 
   for (i=offset; i<num_vecs; i++) {
     sprintf(diis_char, "DIIS vector %3d", i);
-    psio_write_entry(PSIF_DETCAS_DIIS, diis_char, (char *) vecs[i],
+    psio_write_entry(PSIF_DETCAS, diis_char, (char *) vecs[i],
                     veclen*sizeof(double));
 
     sprintf(diis_char, "DIIS error vector %3d", i);
-    psio_write_entry(PSIF_DETCAS_DIIS, diis_char, (char *) errvecs[i],
+    psio_write_entry(PSIF_DETCAS, diis_char, (char *) errvecs[i],
                     veclen*sizeof(double));
 
   }
 
-  psio_close(PSIF_DETCAS_DIIS, 1);
-  
-  /*
-  ffileb_noexit(&fp,"diis.dat",0);
-  if (fp == NULL) {
-    outfile->Printf("(diis): Error opening diis.dat\n");
-    return(0);
-  } 
-
-  if (fwrite(&new_num_vecs, sizeof(int), 1, fp) != 1) {
-    outfile->Printf("(diis): Error writing number of diis vectors.\n");
-    return(0);
-  }
-
-  if (fwrite(&diis_iter, sizeof(int), 1, fp) != 1) {
-    outfile->Printf("(diis): Error writing diis iteration number.\n");
-    return(0);
-  }
-
-  for (i=offset; i<num_vecs; i++) {
-    if (fwrite(vecs[i], sizeof(double), veclen, fp) != veclen) {
-      outfile->Printf("(diis): Error writing vector %d.\n", i);
-    }
-    if (fwrite(errvecs[i], sizeof(double), veclen, fp) != veclen) {
-      outfile->Printf("(diis): Error writing error vector %d.\n", i);
-    }
-  }
-
-  fclose(fp);
-  */
+  psio_close(PSIF_DETCAS, 1);
+  /* end write out*/  
 
   /* don't take a diis step if it's not time */
   if (!do_diis) {

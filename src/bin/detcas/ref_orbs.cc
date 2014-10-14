@@ -80,31 +80,6 @@ int read_ref_orbs(void)
       outfile->Printf("No previous orbitals ... using new reference orbitals\n");
     return(0);
   }
-
-
-  // FILE *fp;
-  // int h, ir_orbs;
-
-  // ffileb_noexit(&fp,"orbs.dat",2);
-  // if (fp == NULL) {
-  //   if (Params.print_lvl) 
-  //     outfile->Printf("No orbs.dat file ... using new reference orbitals\n");
-  //   return(0);
-  // }
-
-  // for (h=0; h<CalcInfo.nirreps; h++) {
-  //   ir_orbs = CalcInfo.orbs_per_irr[h];
-  //   if (ir_orbs == 0) continue;
-  //   if (fread(CalcInfo.mo_coeffs[h][0], sizeof(double), ir_orbs * ir_orbs,
-  //             fp) != ir_orbs * ir_orbs) {
-  //     outfile->Printf("Error reading reference orbitals.\n");
-  //     fclose(fp);
-  //     return(0);
-  //   }
-  // }
-  //   
-  // fclose(fp);
-  // return(1);
 }
 
 
@@ -131,30 +106,6 @@ int write_ref_orbs(void)
   }
   psio_close(PSIF_DETCAS, 1);
   return(1);
-
-  // FILE *fp;
-  // int h, ir_orbs;
-
-  // ffileb_noexit(&fp,"orbs.dat",0);
-  // if (fp == NULL) {
-  //   if (Params.print_lvl) 
-  //     outfile->Printf("Can't open orbs.dat file!\n");
-  //   return(0);
-  // }
-
-  // for (h=0; h<CalcInfo.nirreps; h++) {
-  //   ir_orbs = CalcInfo.orbs_per_irr[h];
-  //   if (ir_orbs == 0) continue;
-  //   if (fwrite(CalcInfo.mo_coeffs[h][0], sizeof(double), ir_orbs * ir_orbs,
-  //             fp) != ir_orbs * ir_orbs) {
-  //     outfile->Printf("Error writing reference orbitals.\n");
-  //     fclose(fp);
-  //     return(0);
-  //   }
-  // }
-  //   
-  // fclose(fp);
-  // return(1);
 }
 
 }} // end namespace psi::detcas
