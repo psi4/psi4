@@ -28,11 +28,11 @@
 #ifndef _opt_bend_h_
 #define _opt_bend_h_
 
-#include "simple.h"
+#include "simple_base.h"
 
 namespace opt {
 
-class BEND : public SIMPLE {
+class BEND : public SIMPLE_COORDINATE {
 
     // if true, this bend is a secondary complement to another linear bend
     bool linear_bend;
@@ -41,7 +41,7 @@ class BEND : public SIMPLE {
 
     BEND(int A_in, int B_in, int C_in, bool freeze_in=false);
 
-    ~BEND() { } // also calls ~SIMPLE()
+    ~BEND() { } // also calls ~SIMPLE_COORDINATE()
 
     double value(GeomType geom) const;
 
@@ -56,7 +56,7 @@ class BEND : public SIMPLE {
     void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const;
     void print_disp(std::string psi_fp, FILE *qc_fp, const double old_q, const double f_q,
       const double dq, const double new_q, int atom_offset=0) const;
-    bool operator==(const SIMPLE & s2) const;
+    bool operator==(const SIMPLE_COORDINATE & s2) const;
     std::string get_definition_string(int atom_offset=0) const;
 
     void make_linear_bend(void) { linear_bend = true; }

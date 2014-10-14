@@ -51,6 +51,15 @@ void oprintf(const std::string psi_fp, const FILE *qc_fp, const char* format,...
 #endif
 }
 
+void offlush_out(void) {
+#if defined(OPTKING_PACKAGE_PSI)
+  boost::shared_ptr<psi::PsiOutStream> printer(psi::outfile);
+  printer->Flush();
+#elif defined(OPTKING_PACKAGE_QCHEM)
+  fflush(qc_outfile);
+#endif
+}
+
 // oprintf_out is always to primary output file
 void oprintf_out(const char* format,...) {
   char line[256];

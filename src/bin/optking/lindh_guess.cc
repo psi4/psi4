@@ -203,7 +203,7 @@ in this set of internals. */
     for (int j=i+1; j<natom; ++j)
       if (close[i][j]) {
         STRE *one_stre = new STRE(i, j);
-        intcos.push_back(one_stre);
+        coords.simples.push_back(one_stre);
       }
 
   for (int i=0; i<natom; ++i)
@@ -212,7 +212,7 @@ in this set of internals. */
         for (int k=i+1; k<natom; ++k)
           if (close[k][j] && (k != j)) {
             BEND *one_bend = new BEND(i, j, k);
-            intcos.push_back(one_bend);
+            coords.simples.push_back(one_bend);
           }
 
   for (int i=0; i<natom; ++i)
@@ -223,13 +223,15 @@ in this set of internals. */
             for (int l=i+1; l<natom; ++l)
               if (close[l][k] && l!=j && l!=k) {
                 TORS *one_tors = new TORS(i, j, k, l);
-                intcos.push_back(one_tors);
+                coords.simples.push_back(one_tors);
               }
 
   free_bool_matrix(close);
 
+  form_trivial_coord_combinations();
+
   // Compute g_q = (BB^t)^-1 B g_x
-  long int Nintco = intcos.size();
+  long int Nintco = coords.simples.size();
   double **B = compute_B();
   double *g_x = g_grad_array();
   //oprintf_out("g_x\n");
@@ -258,10 +260,10 @@ in this set of internals. */
 
   double **Hx = init_matrix(3*natom, 3*natom);
 
-  print_intcos(psi_outfile,qc_outfile,0);
+  print_simples(psi_outfile, qc_outfile, 0);
 
-  for (int i=0; i<intcos.size(); ++i) {  // loop over intcos
-    SIMPLE * q = intcos.at(i);
+  for (int i=0; i<coords.simples.size(); ++i) {  // loop over coords.simples
+    SIMPLE_COORDINATE * q = coords.simples.at(i);
 
     double **Bintco = q->DqDx(geom); // dq_i / da_xyz
     int natom_intco = q->g_natom();
@@ -319,7 +321,7 @@ in this set of internals. */
     }
     free_matrix(Dq2);
 
-  } // end loop over intcos
+  } // end loop over coords.simples
 
   free_array(g_q);
   free_matrix(R);

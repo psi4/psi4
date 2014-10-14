@@ -65,13 +65,22 @@ PsiOutStream::PsiOutStream(SharedOutStream Stream){
 
 
 void PsiOutStream::Printf(const char* format,...){
-   char buffer[1000];
+   int HardLimit=10000;
+   char* buffer=new char[HardLimit];
    va_list args;
    va_start (args, format);
-   int left=vsnprintf(buffer,1000,format,args);
-   //if(left>1000)outfile->Printf("WARNING::Your entire message was not printed");
+   int left=vsnprintf(buffer,HardLimit,format,args);
+   if(left>=HardLimit){
+      //Now we know the size (left doesn't include f'ing \0 character)
+      delete [] buffer;
+      buffer=new char[left+1];
+      int newleft=vsnprintf(buffer,left+1,format,args);
+      if(newleft>left)throw PSIEXCEPTION("How do we still not have enough"
+            " room in the buffer?");
+   }
    va_end(args);
    Write2Buffer(buffer);
+   delete [] buffer;
 }
 
 std::ostream& PsiOutStream::Write2Buffer(StreamManips fp){

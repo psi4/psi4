@@ -489,16 +489,15 @@ void MOLECULE::freeze_interfragment_asymm(void) {
 
   oprintf_out("\tChecking interfragment coordinates for ones that break symmetry.\n");
   
-
   for (int I=0; I<interfragments.size(); ++I) {
-    double **B = interfragments[I]->compute_B(); // ->g_nintco() X (3*atom A)+3(natom_B)
+    double **B = interfragments[I]->compute_B(); // ->Ncoord() X (3*atom A)+3(natom_B)
 
     int iA = interfragments[I]->g_A_index();
     int iB = interfragments[I]->g_B_index();
     int nA = interfragments[I]->g_natom_A();
     int nB = interfragments[I]->g_natom_B();
 
-    for (int i=0; i<interfragments[I]->g_nintco(); ++i) {
+    for (int i=0; i<interfragments[I]->Ncoord(); ++i) {
       bool symmetric_intco = true;
 
       double **coord = matrix_return_copy(coord_orig, g_natom(), 3);

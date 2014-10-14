@@ -72,10 +72,10 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
   R_AB  = 1.0;
   theta_A = theta_B = tau = phi_A = phi_B = _pi/2;
 
-  double *q_orig = intco_values();
-  double *q_target = init_array(g_nintco());
+  double *q_orig = coord_values();
+  double *q_target = init_array(Ncoord());
 
-  for (i=0; i<g_nintco(); ++i) {
+  for (i=0; i<Ncoord(); ++i) {
     if (D_on[i])
       q_target[i] = q_orig[i] + dq[i];
   }
@@ -91,10 +91,10 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
   // Make labels for printing
   std::vector<string> lbl(6);
   for (i=0; i<6; ++i)
-    if (inter_frag->intcos[i]->is_frozen())
+    if (inter_frag->coords.simples[i]->is_frozen())
       lbl[i] = "*";
 
-  if (inter_frag->intcos[0]->is_inverse_stre())
+  if (inter_frag->coords.simples[0]->is_inverse_stre())
     lbl[0] += "1/R_AB";
   else
     lbl[0] += "R_AB";
@@ -120,7 +120,7 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
       target = q_target[cnt];
 
       if (i == 0) { // change units for bond length coordinate
-        if (inter_frag->intcos[0]->is_inverse_stre()) { // 1/R(AB)
+        if (inter_frag->coords.simples[0]->is_inverse_stre()) { // 1/R(AB)
           val    /= _bohr2angstroms;
           force  /= _hartree2aJ/_bohr2angstroms;
           change /= _bohr2angstroms;

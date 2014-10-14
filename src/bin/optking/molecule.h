@@ -31,7 +31,7 @@
 
 #include "frag.h"
 #include "interfrag.h"
-#include "efp_frag.h"
+#include "fb_frag.h"
 #include "print.h"
 #include "libparallel/ParallelPrinter.h"
 #include <fstream>
@@ -42,10 +42,8 @@ class MOLECULE {
 
   vector<FRAG *> fragments;           // fragments with intrafragment coordinates
   vector<INTERFRAG *> interfragments; // interfragment coordinates
-#if defined(OPTKING_PACKAGE_QCHEM)
-  vector<EFP_FRAG *> efp_fragments;   // EFP fixed-body fragment - does not actually
+  vector<FB_FRAG *> fb_fragments;     // EFP fixed-body fragment - does not actually
                                       // store atoms (for now at least)
-#endif
   double energy;
 
  public:
@@ -59,11 +57,9 @@ class MOLECULE {
     for (int i=0; i<interfragments.size(); ++i)
       delete interfragments[i];
     interfragments.clear();
-#if defined(OPTKING_PACKAGE_QCHEM)
-    for (int i=0; i<efp_fragments.size(); ++i)
-      delete efp_fragments[i];
-    efp_fragments.clear();
-#endif
+    for (int i=0; i<fb_fragments.size(); ++i)
+      delete fb_fragments[i];
+    fb_fragments.clear();
   }
 
   // if you have one fragment - make sure all atoms are bonded
@@ -72,56 +68,59 @@ class MOLECULE {
 
   void add_interfragment(void);
 
+  // Determine trivial, simple coordinate combinations.
+  int form_trivial_coord_combinations(void);
+
+  // Determine initial delocalized coordinate coefficients.
+  int form_delocalized_coord_combinations(void);
+
+  // Determine Pulay natural coordinate combinations.
+  int form_natural_coord_combinations(void);
+
   int add_cartesians(void);
 
   int g_nfragment(void) const { return fragments.size(); };
 
-#if defined(OPTKING_PACKAGE_QCHEM)
-  int g_nefp_fragment(void) const { return efp_fragments.size(); };
-#endif
+  int g_nfb_fragment(void) const { return fb_fragments.size(); };
 
-  int g_natom(void) const { // excludes atoms in efp fragments
+  int g_natom(void) const { // excludes atoms in fb fragments
     int n = 0;
     for (int f=0; f<fragments.size(); ++f)
       n += fragments[f]->g_natom();
     return n;
   }
 
-  int g_nintco(void) const {
+  int Ncoord(void) const {
     int n=0;
     for (int f=0; f<fragments.size(); ++f)
-      n += fragments[f]->g_nintco();
+      n += fragments[f]->Ncoord();
     for (int i=0; i<interfragments.size(); ++i)
-      n += interfragments[i]->g_nintco();
-#if defined (OPTKING_PACKAGE_QCHEM)
-    for (int e=0; e<efp_fragments.size(); ++e)
-      n += efp_fragments[e]->g_nintco();
-#endif
+      n += interfragments[i]->Ncoord();
+    for (int e=0; e<fb_fragments.size(); ++e)
+      n += fb_fragments[e]->Ncoord();
     return n;
   }
 
-  int g_nintco_intrafragment(void) const {
+  int Ncoord_intrafragment(void) const {
     int n=0;
     for (int f=0; f<fragments.size(); ++f)
-      n += fragments[f]->g_nintco();
+      n += fragments[f]->Ncoord();
     return n;
   }
 
-  int g_nintco_interfragment(void) const {
+  int Ncoord_interfragment(void) const {
     int n=0;
     for (int f=0; f<interfragments.size(); ++f)
-      n += interfragments[f]->g_nintco();
+      n += interfragments[f]->Ncoord();
     return n;
   }
 
-#if defined (OPTKING_PACKAGE_QCHEM)
-  int g_nintco_efp_fragment(void) const {
+  int Ncoord_fb_fragment(void) const {
     int n=0;
-    for (int f=0; f<efp_fragments.size(); ++f)
-      n += efp_fragments[f]->g_nintco();
+    for (int f=0; f<fb_fragments.size(); ++f)
+      n += fb_fragments[f]->Ncoord();
     return n;
   }
-#endif
 
   // given fragment index returns first atom in that fragment
   int g_atom_offset(int index) const {
@@ -133,32 +132,30 @@ class MOLECULE {
 
   // given fragment index, returns the absolute index
   // for the first internal coordinate on that fragment
-  int g_intco_offset(int index) const {
+  int g_coord_offset(int index) const {
     int n = 0;
     for (int f=0; f<index; ++f)
-      n += fragments[f]->g_nintco();
+      n += fragments[f]->Ncoord();
     return n;
   }
 
   // given interfragment index, returns the absolute index for the first 
   // internal coordinate of that interfragment set
-  int g_interfragment_intco_offset(int index) const {
-    int n = g_nintco_intrafragment();
+  int g_interfragment_coord_offset(int index) const {
+    int n = Ncoord_intrafragment();
     for (int f=0; f<index; ++f)
-      n += interfragments[f]->g_nintco();
+      n += interfragments[f]->Ncoord();
     return n;
   }
 
-  // given efp_fragment index, returns the absolute index for the first
-  // internal coordinate of that efp set
-#if defined (OPTKING_PACKAGE_QCHEM)
-  int g_efp_fragment_intco_offset(int index) const {
-    int n = g_nintco_intrafragment() + g_nintco_interfragment();
+  // given fb_fragment index, returns the absolute index for the first
+  // internal coordinate of that fb set
+  int g_fb_fragment_coord_offset(int index) const {
+    int n = Ncoord_intrafragment() + Ncoord_interfragment();
     for (int f=0; f<index; ++f)
-      n += efp_fragments[f]->g_nintco();
+      n += fb_fragments[f]->Ncoord();
     return n;
   }
-#endif
 
   double g_energy(void) const { return energy; }
 
@@ -189,16 +186,15 @@ class MOLECULE {
       fragments[i]->print_geom_grad(psi_fp, qc_fp, i, print_mass);
   }
 
-  void print_intcos(std::string psi_fp, FILE *qc_fp);
+  void print_coords(std::string psi_fp, FILE *qc_fp) const;
+  void print_simples(std::string psi_fp, FILE *qc_fp) const;
 
   // print definition of an internal coordinate from global index 
-  std::string get_intco_definition_from_global_index(int coord_index) const;
+  std::string get_coord_definition_from_global_index(int coord_index) const;
 
-#if defined (OPTKING_PACKAGE_QCHEM)
-  void update_efp_values(void);
-#endif
+  void update_fb_values(void);
 
-  void print_intco_dat(std::string psi_fp_intco, FILE *qc_fp);
+  void print_intco_dat(std::string psi_fp_coord, FILE *qc_fp);
 
   int add_intrafragment_simples_by_connectivity(void) {
     int n=0;
@@ -214,23 +210,23 @@ class MOLECULE {
     return n;
   }
 
-  // compute intco values from frag member geometries
-  double * intco_values(void) const {
+  // compute coord values from frag member geometries
+  double * coord_values(void) const {
     GeomType x = g_geom_2D();
-    double *q = intco_values(x);
+    double *q = coord_values(x);
     return q;
   }
 
-  // compute intco values from given geometry ; empty space for EFP coordinates included
-  double * intco_values(GeomType new_geom) const {
+  // compute coord values from given geometry ; empty space for EFP coordinates included
+  double * coord_values(GeomType new_geom) const {
     double *q, *q_frag, *q_IF;
-    q = init_array(g_nintco());
+    q = init_array(Ncoord());
 
     for (int f=0; f<fragments.size(); ++f) {
-      q_frag = fragments[f]->intco_values( &(new_geom[g_atom_offset(f)]) );
+      q_frag = fragments[f]->coord_values( &(new_geom[g_atom_offset(f)]) );
 
-      for (int i=0; i<fragments[f]->g_nintco(); ++i)
-        q[g_intco_offset(f)+i]  = q_frag[i];
+      for (int i=0; i<fragments[f]->Ncoord(); ++i)
+        q[g_coord_offset(f)+i]  = q_frag[i];
 
       free_array(q_frag);
     }
@@ -239,11 +235,11 @@ class MOLECULE {
       int A_index = interfragments[I]->g_A_index();
       int B_index = interfragments[I]->g_B_index();
       
-      q_IF = interfragments[I]->intco_values( &(new_geom[g_atom_offset(A_index)]),
+      q_IF = interfragments[I]->coord_values( &(new_geom[g_atom_offset(A_index)]),
         &(new_geom[g_atom_offset(B_index)]) );
 
-      for (int i=0; i<interfragments[I]->g_nintco(); ++i)
-        q[g_interfragment_intco_offset(I)+i]  = q_IF[i];
+      for (int i=0; i<interfragments[I]->Ncoord(); ++i)
+        q[g_interfragment_coord_offset(I)+i]  = q_IF[i];
 
       free_array(q_IF);
     }
@@ -256,7 +252,7 @@ class MOLECULE {
   void print_geom_out(void);
 
   double ** compute_B(void) const;
-  double ** compute_derivative_B(int intco_index) const ;
+  double ** compute_derivative_B(int coord_index) const ;
 
   double ** compute_G(bool use_masses=false) const;
 
@@ -371,20 +367,20 @@ class MOLECULE {
       fragments[f]->set_masses();
   }
 
-  bool read_intcos(std::ifstream & fin);
+  bool read_coords(std::ifstream & fin);
   // function to obtain geometry and gradient
   void read_geom_grad(void);
 
   // Compute constraint matrix
   double ** compute_constraints(void);
 
-  void add_efp_fragments(void);
+  void add_fb_fragments(void);
 
   // freeze interfragment modes that break symmetry
   void freeze_interfragment_asymm(void);
 
-  // determine whether a linear combination of intcos breaks symmetry
-  bool intco_combo_is_symmetric(double *intco_combo, int dim);
+  // determine whether a linear combination of coords breaks symmetry
+  bool coord_combo_is_symmetric(double *coord_combo, int dim);
 
   // Apply string list of user-specified internals to be frozen.
   bool apply_input_constraints();

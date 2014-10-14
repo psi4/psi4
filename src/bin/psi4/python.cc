@@ -48,6 +48,7 @@
 #include <psi4-dec.h>
 #include "script.h"
 #include "psi4.h"
+#include "gitversion.h"
 #include "libparallel/ParallelPrinter.h"
 #include "../ccenergy/ccwave.h"
 #include "../cclambda/cclambda.h"
@@ -645,6 +646,11 @@ char const* py_psi_version()
     return PSI_VERSION;
 }
 
+char const* py_psi_git_version()
+{
+    return GIT_VERSION;
+}
+
 void py_psi_clean()
 {
     PSIOManager::shared_object()->psiclean();
@@ -672,7 +678,7 @@ boost::python::list py_psi_get_global_option_list()
 
 void py_psi_print_out(std::string s)
 {
-    outfile->Printf("%s",s.c_str());
+    (*outfile)<<s;
 }
 
 /**
@@ -1315,6 +1321,7 @@ BOOST_PYTHON_MODULE(psi4)
 
 
     def("version", py_psi_version, "Returns the version ID of this copy of Psi.");
+    def("git_version", py_psi_git_version, "Returns the git version of this copy of Psi.");
     def("clean", py_psi_clean, "Function to remove scratch files. Call between independent jobs.");
 
     // Benchmarks
