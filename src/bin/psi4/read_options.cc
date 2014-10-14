@@ -2483,6 +2483,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- Maximum number of geometry optimization steps -*/
       options.add_int("GEOM_MAXITER", 50);
+      /*- Print all optking parameters. -*/
+      options.add_bool("PRINT_OPT_PARAMS", false);
       /*- Specifies minimum search, transition-state search, or IRC following -*/
       options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
       /*- Geometry optimization step type, either Newton-Raphson or Rational Function Optimization -*/
@@ -2505,13 +2507,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Decide when to stop IRC calculations -*/
       options.add_str("IRC_STOP", "STOP", "ASK STOP GO");
       /*- Initial maximum step size in bohr or radian along an internal coordinate -*/
-      options.add_double("INTRAFRAG_STEP_LIMIT", 0.4);
+      options.add_double("INTRAFRAG_STEP_LIMIT", 0.5);
       /*- Lower bound for dynamic trust radius [au] -*/
       options.add_double("INTRAFRAG_STEP_LIMIT_MIN", 0.001);
       /*- Upper bound for dynamic trust radius [au] -*/
       options.add_double("INTRAFRAG_STEP_LIMIT_MAX", 1.0);
       /*- Maximum step size in bohr or radian along an interfragment coordinate -*/
-      options.add_double("INTERFRAG_STEP_LIMIT", 0.4);
+      options.add_double("INTERFRAG_STEP_LIMIT", 0.5);
       /*- Reduce step size as necessary to ensure back-transformation of internal
           coordinate step to cartesian coordinates. -*/
       options.add_bool("ENSURE_BT_CONVERGENCE", false);
@@ -2520,7 +2522,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Set number of consecutive backward steps allowed in optimization -*/
       options.add_int("CONSECUTIVE_BACKSTEPS", 0);
       /*- Eigenvectors of RFO matrix whose final column is smaller than this are ignored. -*/
-      options.add_double("RFO_NORMALIZATION_MIN", 100);
+      options.add_double("RFO_NORMALIZATION_MAX", 100);
       /*- Denominator check for hessian update. -*/
       options.add_double("H_UPDATE_DEN_TOL",1e-7);
       /*- Absolute maximum value of RS-RFO. -*/
@@ -2569,7 +2571,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Hessian update scheme -*/
       options.add_str("HESS_UPDATE", "BFGS", "NONE BFGS MS POWELL BOFILL");
       /*- Number of previous steps to use in Hessian update, 0 uses all -*/
-      options.add_int("HESS_UPDATE_USE_LAST", 1);
+      options.add_int("HESS_UPDATE_USE_LAST", 2);
       /*- Do limit the magnitude of changes caused by the Hessian update? -*/
       options.add_bool("HESS_UPDATE_LIMIT", true);
       /*- If |optking__hess_update_limit| is true, changes to the Hessian
@@ -2604,7 +2606,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("FREEZE_INTERFRAG", false);
       /*- When interfragment coordinates are present, use as reference points either
       principal axes or fixed linear combinations of atoms. -*/
-      options.add_str("INTERFRAG_MODE", "FIXED", "FIXED INTERFRAGMENT");
+      options.add_str("INTERFRAG_MODE", "FIXED", "FIXED PRINCIPAL_AXES");
       /*- Do add bond coordinates at nearby atoms for non-bonded systems? -*/
       options.add_bool("ADD_AUXILIARY_BONDS", true);
       /*- Re-estimate the Hessian at every step, i.e., ignore the currently stored Hessian. -*/

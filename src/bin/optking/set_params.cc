@@ -338,6 +338,8 @@ void set_params(void)
 //  Opt_params.print_lvl = 1;
     Opt_params.print_lvl = options.get_int("PRINT");
 
+    Opt_params.print_params = options.get_bool("PRINT_OPT_PARAMS");
+
     Opt_params.print_trajectory_xyz_file = options.get_bool("PRINT_TRAJECTORY_XYZ_FILE");
 
 // Read cartesian Hessian.  Make reading the default for IRC.
@@ -385,7 +387,7 @@ void set_params(void)
   // For RFO step, eigenvectors of augmented Hessian are divided by the last
   // element unless it is smaller than this value {double}.  Can be used to eliminate
   // asymmetric steps not otherwise detected (e.g. in degenerate point groups).
-  Opt_params.rfo_normalization_min = options.get_double("RFO_NORMALIZATION_MIN");
+  Opt_params.rfo_normalization_max = options.get_double("RFO_NORMALIZATION_MAX");
 
 // Hessian update is avoided if the denominators (Dq*Dq) or (Dq*Dg) are smaller than this
   Opt_params.H_update_den_tol = options.get_double("H_UPDATE_DEN_TOL");
@@ -665,7 +667,7 @@ void set_params(void)
     Opt_params.test_derivative_B = false;
   }
 
-  if (Opt_params.print_lvl > 1) print_params_out();
+  if (Opt_params.print_lvl > 1 || Opt_params.print_params) print_params_out();
 
 }
 
@@ -692,9 +694,18 @@ void print_params_out(void) {
   oprintf_out( "interfragment_mode        = %18s\n", "principal axes");
 
   if (Opt_params.generate_intcos_only)
-  oprintf_out( "generate_intcos_only   = %18s\n", "true");
+    oprintf_out( "generate_intcos_only   = %18s\n", "true");
   else
-  oprintf_out( "generate_intcos_only   = %18s\n", "false");
+    oprintf_out( "generate_intcos_only   = %18s\n", "false");
+
+  //if (Opt_params.print_params)
+  //oprintf_out( "print_params           = %18s\n", "true");
+  //else
+  //oprintf_out( "print_params           = %18s\n", "false");
+  
+  oprintf_out( "print_params           = %18s\n", Opt_params.print_params ? "true" : "false");
+
+  oprintf_out( "print_lvl              = %d\n", Opt_params.print_lvl);
 
   if (Opt_params.ensure_bt_convergence)
     oprintf_out("ensure_bt_convergence = %17s\n", "true");
@@ -708,7 +719,8 @@ void print_params_out(void) {
 
   oprintf_out( "rfo_root               = %18d\n", Opt_params.rfo_root);
 
-  oprintf_out( "rfo_normalization_min  = %18.2e\n", Opt_params.rfo_normalization_min);
+  oprintf_out( "rfo_normalization_max  = %18.2e\n", Opt_params.rfo_normalization_max);
+  oprintf_out( "rsrfo_alpha_max        = %18.3e\n", Opt_params.rsrfo_alpha_max);
 
   if (Opt_params.step_type == OPT_PARAMS::NR)
   oprintf_out( "step_type              = %18s\n", "N-R");
@@ -735,8 +747,6 @@ void print_params_out(void) {
   oprintf_out( "linesearch_static_max  = %18.3e\n", Opt_params.linesearch_static_max);
 
   oprintf_out( "consecutive_backsteps  = %18d\n",  Opt_params.consecutive_backsteps_allowed);
-
-  oprintf_out( "rfo_normalization_min  = %18.3e\n", Opt_params.rfo_normalization_min);
 
   if (Opt_params.intrafragment_H == OPT_PARAMS::FISCHER)
   oprintf_out( "intrafragment_H        = %18s\n", "Fischer");
@@ -795,6 +805,7 @@ void print_params_out(void) {
 
   oprintf_out( "H_update_limit_scale   = %18.2e\n", Opt_params.H_update_limit_scale);
   oprintf_out( "H_update_limit_max     = %18.2e\n", Opt_params.H_update_limit_max);
+  oprintf_out( "H_update_den_tol       = %18.2e\n", Opt_params.H_update_den_tol);
 
   if (Opt_params.interfragment_distance_inverse)
   oprintf_out( "interfragment_distance_inverse=%12s\n", "true");
