@@ -478,7 +478,7 @@ public:
      * Force the molecule to have the symmetry specified in pg_.
      * This is to handle noise coming in from optking.
      */
-    void symmetrize();
+    void symmetrize(double tol=0.05);
     /// @}
 
     /**
@@ -627,7 +627,7 @@ public:
     /// Returns the Schoenflies symbol
     std::string schoenflies_symbol() const;
     /// Check if current geometry fits current point group
-    bool valid_atom_map(double tol = 0.01) const;
+    bool valid_atom_map(double tol = 0.05) const;
     /// Return point group name such as C3v or S8.
     std::string full_point_group() const;
     /// Return point group name such as Cnv or Sn.

@@ -100,6 +100,11 @@ void MOLECULE::rfo_step(void) {
   double *rfo_u = init_array(dim); // unit vector in step direction
   bool converged = false;
 
+  bool rfo_follow_root = Opt_params.rfo_follow_root;
+  double *last_iter_evect = init_array(dim);
+  if (p_Opt_data->g_iteration() > 1 && rfo_follow_root)
+    array_copy(rfo_old_evect, last_iter_evect, dim); // start with vector from previous iter
+
   //Iterative sequence to find alpha; we'll give it max_projected_rfo_iter tries
   int iter = -1;
   while (!converged && iter<max_projected_rfo_iter) {
@@ -120,9 +125,8 @@ void MOLECULE::rfo_step(void) {
 
     // Scale the RFO matrix.
     for (i=0; i<=dim; i++) {
-      for (j=0; j<dim; j++) {
+      for (j=0; j<dim; j++)
         SRFO[j][i] = RFO[j][i] / alpha;
-      };
       SRFO[dim][i] = RFO[dim][i];
     }
     if (Opt_params.print_lvl >= 4) {
@@ -142,7 +146,7 @@ void MOLECULE::rfo_step(void) {
       int cnt2=0;
       for (i=0; i<dim+1; ++i) {
         oprintf_out("%10.6lf", SRFOevals[i]);
-        if (++cnt2 == 6) oprintf_out("\n");
+        if (++cnt2 == 6) { oprintf_out("\n"); cnt2 = 0; }
       }
       oprintf_out("\n");
 
@@ -168,7 +172,8 @@ void MOLECULE::rfo_step(void) {
 
     // Choose which RFO eigenvector to use.
     // if not root following, then use rfo_root'th lowest eigenvalue; default is 0 (lowest)
-    if ( (!Opt_params.rfo_follow_root) || (p_Opt_data->g_iteration() == 1)) {
+    if ((!rfo_follow_root) || (p_Opt_data->g_iteration() == 1)) {
+
       rfo_root = Opt_params.rfo_root;
       if (iter == 0)
         oprintf_out("\tGoing to follow RFO solution %d.\n", rfo_root+1);
@@ -191,22 +196,27 @@ void MOLECULE::rfo_step(void) {
             ++rfo_root;
           }
         }
-
-        if (rfo_root == dim+1) // quit in the unlikely event we've checked them all
-        break;
+        if (rfo_root == dim+1) {
+          oprintf_out("Did not find a good rfo eigenvector. Using root 1.\n"); 
+          rfo_root = Opt_params.rfo_root; // probably 0, the default
+          break;
+        }
       }
+      rfo_follow_root = true;
+      array_copy(SRFO[rfo_root], last_iter_evect, dim);
     }
     else { // do root following
       tval = 0;
       for (i=0; i<dim; ++i) { // dot only within H block, excluding rows and columns approaching 0
-        tval2 = array_dot(SRFO[i], rfo_old_evect, dim);
+        tval2 = array_dot(SRFO[i], last_iter_evect, dim);
         if (tval2 > tval) {
           tval = tval2;
           rfo_root = i;
         }
       }
-      if (iter == 0)
-        oprintf_out("RFO vector %d overlaps most with earlier step.\n", rfo_root+1);
+      //if (iter == 0)
+      oprintf_out("RFO root-following gives eigenvector %d.\n", rfo_root+1);
+      array_copy(SRFO[rfo_root], last_iter_evect, dim);
     }
     if (iter == 0)
       oprintf_out("\tUsing RFO vector %d.\n", rfo_root+1);
@@ -227,7 +237,6 @@ void MOLECULE::rfo_step(void) {
     for (j=0; j<dim; ++j)
       dq[j] = SRFO[rfo_root][j]; // leave out last column
 
-    // Project out redundancies in steps.
     // Project out redundancies in steps.
     // RAK added this projection in 2014, but doesn't seem to be necessary. f,H are already projected.
     project_dq(dq);
@@ -258,9 +267,9 @@ void MOLECULE::rfo_step(void) {
 
       oprintf_out("\n\tDetermining step-restricting scale parameter for RS-RFO.\n");
       oprintf_out("\tMaximum step size allowed %10.5lf\n\n", trust);
-      oprintf_out("\t Iter      |step|        alpha \n");
-      oprintf_out("\t---------------------------------\n");
-      oprintf_out("\t%5d%12.5lf%14.5lf\n", iter, sqrt(dqtdq), alpha);
+      oprintf_out("\t Iter      |step|        alpha          rfo_root  \n");
+      oprintf_out("\t--------------------------------------------------\n");
+      oprintf_out("\t%5d%12.5lf%14.5lf%14d\n", iter, sqrt(dqtdq), alpha, rfo_root+1);
     }
     else if ( (iter > 0) && !Opt_params.simple_step_scaling)
       oprintf_out("\t%5d%12.5lf%14.5lf\n", iter, sqrt(dqtdq), alpha);
@@ -268,8 +277,11 @@ void MOLECULE::rfo_step(void) {
 
     // Find the analytical derivative.
     lambda = -1 * array_dot(fq, dq, dim);
-    if (Opt_params.print_lvl >= 2)
+    if (Opt_params.print_lvl >= 2) {
+      oprintf_out("dq:\n"); oprint_array_out(dq, dim);
+      oprintf_out("fq:\n"); oprint_array_out(fq,dim);
       oprintf_out("\tlambda calculated by (dq^t).(-f)     = %20.10lf\n", lambda);
+    }
 
     // Calculate derivative of step size wrt alpha.
     // Equation 20, Besalu and Bofill, Theor. Chem. Acc., 1999, 100:265-274

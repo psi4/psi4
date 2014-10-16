@@ -330,7 +330,7 @@ class MOLECULE {
   void prfo_step(void);
   void backstep(void);
   void sd_step(void);
-  void sd_step_cartesians(void);
+  //void sd_step_cartesians(void); now obsolete
   void linesearch_step(void);
 
   void apply_intrafragment_step_limit(double * & dq);

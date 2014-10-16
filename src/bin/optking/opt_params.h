@@ -95,6 +95,8 @@ struct OPT_PARAMS {
 
   double interfragment_step_limit;
 
+  double symm_tol; // for atom making, symmetry checking
+
   bool simple_step_scaling; // do stupid, linear scaling of internal coordinates to step limit (not RS-RFO);
 
   // whether to limit changes in Hessian due to update

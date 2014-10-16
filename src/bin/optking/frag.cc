@@ -419,14 +419,15 @@ int FRAG::form_delocalized_coord_combinations(void) {
   double **B = compute_B();
   coords.clear_combos();
 
-  oprintf_out(" Diagonalizing (B B^t) to form delocalized coordinates for fragment.\n");
-  oprintf_out(" Starting with %d simple coordinates.\n", Nsimples);
+  oprintf_out("\n\tDiagonalizing (B B^t) to form delocalized coordinates for fragment.\n");
+  oprintf_out("\tStarting with %d simple coordinates.\n", Nsimples);
 
   // Diagonalize B*B^t to get coordinate rows
   double **BBt = init_matrix(Nsimples, Nsimples);
   opt_matrix_mult(B, 0, B, 1, BBt, 0, Nsimples, 3*g_natom(), Nsimples, 0);
+  free_matrix(B);
 
-  double *evals = init_array(3*g_natom());
+  double *evals = init_array(Nsimples);
   opt_symm_matrix_eig(BBt, Nsimples, evals);
 
   if (Opt_params.print_lvl > 2) {
@@ -472,11 +473,10 @@ int FRAG::form_delocalized_coord_combinations(void) {
       coords.coeff.push_back(one_coeff);
     }
   }
-  oprintf_out(" Initially, formed %d delocalized coordinates for fragment.\n", coords.index.size());
+  free_matrix(BBt);
+  free_array(evals);
 
-  // We could check for symmetry, but this is really a property of the whole
-  // molecule, not a fragment.  An motion asymmetric wrt to the fragment, could
-  // be symmetric in a dimer e.g..
+  oprintf_out("\tInitially, formed %d delocalized coordinates for fragment.\n", coords.index.size());
   return coords.index.size();
 }
 

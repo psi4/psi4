@@ -60,8 +60,8 @@ inline int64_t i_offset64(int64_t i)
  *  \param mol Molecule to form mapping matrix from.
  *  \returns Integer matrix of dimension natoms X nirreps.
  */
-int **compute_atom_map(const boost::shared_ptr<Molecule> &mol);
-int **compute_atom_map(const Molecule* mol);
+int **compute_atom_map(const boost::shared_ptr<Molecule> &mol, double tol = 0.5);
+int **compute_atom_map(const Molecule* mol, double tol = 0.5);
 /// @}
 
 /*! @{
@@ -189,7 +189,7 @@ class PetiteList
     unsigned short *stablizer_;
     int max_stablizer_;
 
-    void init();
+    void init(double tol=0.05);
 
 public:
     PetiteList(const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>&, bool include_pure_transform = false);
