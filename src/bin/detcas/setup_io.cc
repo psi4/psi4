@@ -39,7 +39,6 @@
 #include <cstring>
 #include <string>
 #include <libciomr/libciomr.h>
-//#include <libipv1/ip_lib.h>
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
 #include "globals.h"

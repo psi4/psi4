@@ -24,8 +24,16 @@
 
 namespace psi { namespace detcas {
 
-#define INDEX(x,y) ((x>y) ? ioff[x] + y : ioff[y] + x)
+// #define INDEX(x,y) ((x>y) ? ioff[x] + y : ioff[y] + x)
 
+// Compute the Lagrangian matrix
+//
+// this code assumes h is the bare one-electron ints, not the frozen
+// core operator [if desired, it is possible to write one that would take the 
+// fzc operator, along the lines of equations 4.3 in Chaban, Schmidt, and
+// Gordon, Theor. Chem. Acc. 97, 88-95 (1997), but the computational cost
+// of this step is pretty negligible anyway] 
+//
 double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
                  int nmo, int npop, int print_lvl, int lag_file)
 {
@@ -103,10 +111,6 @@ double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
   /*
   ** check the trace of the Lagrangian (supposedly = energy)
   */
-  for (lagtrace=0.0,i=0; i<nmo; i++)
-    lagtrace += oe_lag[i][i] + 0.5 * te_lag[i][i];
-
-  outfile->Printf("Lagrangian Trace is %6.10f\n", lagtrace);
   psio_write_entry(lag_file, "MO-basis Lagrangian", (char *) lag[0],
     nmo*nmo*sizeof(double));
 
@@ -118,6 +122,11 @@ double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
     outfile->Printf("\nLagrangian Matrix\n\n");
     print_mat(lag, nmo, nmo, "outfile");
     }
+
+  for (lagtrace=0.0,i=0; i<nmo; i++)
+    lagtrace += oe_lag[i][i] + 0.5 * te_lag[i][i];
+
+  outfile->Printf("Lagrangian Trace is %6.10f\n", lagtrace);
 
   psio_close(lag_file, 1);
 
