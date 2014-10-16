@@ -69,6 +69,13 @@ namespace psi {
         break;
       case PSIO_ERROR_OPEN:
         fprintf(stderr, "PSIO_ERROR: %d (file not open or open call failed)\n", PSIO_ERROR_OPEN);
+        fprintf(stderr, "PSIO_ERROR:\n");
+        fprintf(stderr, "PSIO_ERROR: Check the location of your scratch directory which can be\n");
+        fprintf(stderr, "PSIO_ERROR: specified via the $PSI_SCRATCH environment variable or in\n");
+        fprintf(stderr, "PSIO_ERROR: the $HOME/.psi4rc file.\n");
+        fprintf(stderr, "PSIO_ERROR:\n");
+        fprintf(stderr, "PSIO_ERROR: Please note that the scratch directory must exist and be\n");
+        fprintf(stderr, "PSIO_ERROR: writable by PSI4\n");
         break;
       case PSIO_ERROR_REOPEN:
         fprintf(stderr, "PSIO_ERROR: %d (file is already open)\n", PSIO_ERROR_REOPEN);
