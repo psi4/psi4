@@ -338,7 +338,7 @@ std::string BasisSet::print_detail_cfour() const
 
             // Write number of contracted basis functions for each shell
             for (int am = 0; am <= max_am_center; am++) {
-                sprintf(buffer, "%5d", shell_per_am[am].size());
+                sprintf(buffer, "%5lu", shell_per_am[am].size());
                 ss << buffer;
             }
             sprintf(buffer, "\n");
@@ -378,7 +378,7 @@ std::string BasisSet::print_detail_cfour() const
 
             // Write number of exponents for each shell
             for (int am = 0; am <= max_am_center; am++) {
-                sprintf(buffer, "%5d", exp_per_am[am].size());
+                sprintf(buffer, "%5lu", exp_per_am[am].size());
                 ss << buffer;
             }
             sprintf(buffer, "\n\n");
@@ -452,7 +452,7 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
     mol->update_geometry();
 
     // For each one try to load the basis set
-    std::string psiPath = PSIOManager::shared_object()->get_default_path() + 
+    std::string psiPath = PSIOManager::shared_object()->get_default_path() +
         ":" + Process::environment("PSIPATH");
 
     // Map of GaussianShells
@@ -492,11 +492,11 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
             std::string psiPathWithBasis = *tok_iter + "/" + BasisSet::make_filename(basis.first);
 //outfile->Printf( "file %s\n", psiPathWithBasis.c_str());
             try {
-                parser->load_file(psiPathWithBasis); 
+                parser->load_file(psiPathWithBasis);
                 user_list.push_front(psiPathWithBasis.c_str());
             }
             catch (BasisSetFileNotFound& e) {}
-        }   
+        }
 
         BOOST_FOREACH(string user_file, user_list)
         {
