@@ -41,7 +41,8 @@ public:
     CASWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
     virtual ~CASWavefunction();
 
-    double compute_energy();
+    //double compute_energy();
+    PsiReturnType cas_update();
 
 private:
     void init();

@@ -130,14 +130,14 @@ void SCF::construct_Feff(int cycle)
       }    	  
     }
   }
-//  // Level shift
-//  double shift = options_.get_double("LEVELSHIFT");
-//  outfile->Printf("\n  Setting level shift to %.3f",shift);
-//  for(int h =0; h < nirreps; ++h){
-//    for(int i = docc[h] + actv[h]; i < sopi[h]; ++i){
-//      Feff_t->add(h,i,i,shift);
-//    }
-//  }
+  // Level shift
+  double shift = options_.get_double("LEVEL_SHIFT");
+  outfile->Printf("\n  Setting level shift to %.3f",shift);
+  for(int h =0; h < nirreps; ++h){
+    for(int i = docc[h] + actv[h]; i < sopi[h]; ++i){
+      Feff_t->add(h,i,i,shift);
+    }
+  }
 //
 //  double dumping = static_cast<double>(options_.get_int("DUMPING")) / 100.0;
 //  outfile->Printf("\n  Setting dumping to %.3f",dumping);

@@ -391,12 +391,15 @@ void MintsHelper::one_electron_integrals()
 
     // Overlap
     so_overlap()->save(psio_, PSIF_OEI);
+    if (options_.get_str("RELATIVISTIC") == "NO"){
+        // Kinetic
+        so_kinetic()->save(psio_, PSIF_OEI);
 
-    // Kinetic
-    so_kinetic()->save(psio_, PSIF_OEI);
-
-    // Potential
-    so_potential()->save(psio_, PSIF_OEI);
+        // Potential
+        so_potential()->save(psio_, PSIF_OEI);
+    }else if (options_.get_str("RELATIVISTIC") == "X2C"){
+        outfile->Printf( "      Using modified relativistic integrals from X2C\n");
+    }
 
     // Dipoles
     std::vector<SharedMatrix> dipole_mats = so_dipole();

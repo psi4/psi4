@@ -44,7 +44,7 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
-//#include <libipv1/ip_lib.h>
+// #include <libipv1/ip_lib.h>
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
@@ -186,17 +186,26 @@ void CASWavefunction::init()
     }
 }
 
-double CASWavefunction::compute_energy()
-{
-    energy_ = 0.0;
-    PsiReturnType cas_return;
-    if ((cas_return = psi::detcas::detcas(options_)) == Success) {
-        // Get the total energy
-        energy_ = Process::environment.globals["CURRENT ENERGY"];
-    }
+// double CASWavefunction::compute_energy()
+// {
+//     energy_ = 0.0;
+//     PsiReturnType cas_return;
+//     if ((cas_return = psi::detcas::detcas(options_)) == Success) {
+//         // Get the total energy
+//         energy_ = Process::environment.globals["CURRENT ENERGY"];
+//     }
+//     
+//     return energy_;
+// 
+// }
 
-    return energy_;
+PsiReturnType CASWavefunction::cas_update()
+{
+    PsiReturnType cas_return;
+    cas_return = psi::detcas::detcas(options_);
+    return cas_return;
 }
+
 
 //using namespace psi::detcas;
 
@@ -221,9 +230,10 @@ PsiReturnType detcas(Options &options)
   read_integrals();            /* get the 1 and 2 elec MO integrals        */
   read_density_matrices(options);
 
-  CalcInfo.lag = lagcalc(CalcInfo.opdm, CalcInfo.tpdm, CalcInfo.onel_ints,
+  CalcInfo.lag = lagcalc(CalcInfo.opdm, CalcInfo.tpdm, CalcInfo.onel_ints_bare,
                      CalcInfo.twoel_ints, CalcInfo.nmo,
                      CalcInfo.npop, Params.print_lvl, PSIF_MO_LAG); 
+
 
   read_lagrangian();
 
@@ -268,8 +278,13 @@ PsiReturnType detcas(Options &options)
   cleanup();
   //close_io();
   if (Params.print_lvl) tstop();
-  /* TODO  Fix this! Likely need to return non-Success flag */
-  return Success;
+
+  if (converged){
+    return EndLoop; 
+  }
+  else{
+    return Success;
+  }
 }
 
 

@@ -39,6 +39,9 @@
 #include <cstdio>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libpsio/psio.hpp>
+#include <libpsio/psio.h>
+#include <psifiles.h>
 #include "globaldefs.h"
 #include "globals.h"
 #include "psi4-dec.h"
@@ -58,29 +61,25 @@ namespace psi { namespace detcas {
 */
 int read_ref_orbs(void)
 {
-  FILE *fp;
   int h, ir_orbs;
+  char orb_key[80];
 
-  ffileb_noexit(&fp,"orbs.dat",2);
-  if (fp == NULL) {
+  if (psio_tocentry_exists(PSIF_DETCAS, "Orbs Irrep  0")){ 
+    psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
+    for (h=0; h<CalcInfo.nirreps; h++) {
+      ir_orbs = CalcInfo.orbs_per_irr[h];
+      sprintf(orb_key, "Orbs Irrep %2d", h);
+      psio_read_entry(PSIF_DETCAS, orb_key, (char *) CalcInfo.mo_coeffs[h][0],
+                      ir_orbs*ir_orbs*sizeof(double));
+    }
+    psio_close(PSIF_DETCAS, 1);
+    return(1);
+  }
+  else {
     if (Params.print_lvl) 
-      outfile->Printf("No orbs.dat file ... using new reference orbitals\n");
+      outfile->Printf("No previous orbitals ... using new reference orbitals\n");
     return(0);
   }
-
-  for (h=0; h<CalcInfo.nirreps; h++) {
-    ir_orbs = CalcInfo.orbs_per_irr[h];
-    if (ir_orbs == 0) continue;
-    if (fread(CalcInfo.mo_coeffs[h][0], sizeof(double), ir_orbs * ir_orbs,
-              fp) != ir_orbs * ir_orbs) {
-      outfile->Printf("Error reading reference orbitals.\n");
-      fclose(fp);
-      return(0);
-    }
-  }
-    
-  fclose(fp);
-  return(1);
 }
 
 
@@ -95,28 +94,17 @@ int read_ref_orbs(void)
 */
 int write_ref_orbs(void)
 {
-  FILE *fp;
   int h, ir_orbs;
+  char orb_key[80];
 
-  ffileb_noexit(&fp,"orbs.dat",0);
-  if (fp == NULL) {
-    if (Params.print_lvl) 
-      outfile->Printf("Can't open orbs.dat file!\n");
-    return(0);
-  }
-
+  psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
   for (h=0; h<CalcInfo.nirreps; h++) {
     ir_orbs = CalcInfo.orbs_per_irr[h];
-    if (ir_orbs == 0) continue;
-    if (fwrite(CalcInfo.mo_coeffs[h][0], sizeof(double), ir_orbs * ir_orbs,
-              fp) != ir_orbs * ir_orbs) {
-      outfile->Printf("Error writing reference orbitals.\n");
-      fclose(fp);
-      return(0);
-    }
+    sprintf(orb_key, "Orbs Irrep %2d", h);
+    psio_write_entry(PSIF_DETCAS, orb_key, (char *) CalcInfo.mo_coeffs[h][0],
+                    ir_orbs*ir_orbs*sizeof(double));
   }
-    
-  fclose(fp);
+  psio_close(PSIF_DETCAS, 1);
   return(1);
 }
 
