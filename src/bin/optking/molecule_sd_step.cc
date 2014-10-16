@@ -58,13 +58,6 @@ void MOLECULE::sd_step(void) {
 
   double *last_fq = p_Opt_data->g_last_forces_pointer();
   double h = 1;
-  // now obseleted by addition of cartesian coordinate type
-  //bool use_cartesians = true;
-
-  //if (use_cartesians) {
-    //sd_step_cartesians();
-    //return;
-  //}
 
   if (last_fq != NULL) {
     // compute overlap of previous forces with current forces
@@ -81,15 +74,12 @@ void MOLECULE::sd_step(void) {
     free_array(fq_u);
     free_array(last_fq_u);
 
-    if (fq_overlap > 0.90) {
+    if (fq_overlap > 0.50) {
       // component of current forces in step direction (norm of fq)
       double fq_norm = sqrt( array_dot(fq, fq, dim) );
       // component of previous forces in step direction
       double last_fq_norm = array_dot(last_fq, fq, dim) / fq_norm;
 
-      //oprintf_out( "fq_norm:        %15.10lf\n", fq_norm);
-      //oprintf_out( "last_fq_norm:   %15.10lf\n", last_fq_norm);
-      //oprintf_out( "g_last_dq_norm: %15.10lf\n", p_Opt_data->g_last_dq_norm());
       if (p_Opt_data->g_last_dq_norm() != 0.0)
         h = (last_fq_norm - fq_norm) / p_Opt_data->g_last_dq_norm();
 
@@ -155,11 +145,9 @@ void MOLECULE::sd_step(void) {
   p_Opt_data->save_step_info(DE_projected, sd_u, sd_dqnorm, sd_g, sd_h);
 
   free_array(sd_u);
-  
-
 }
 
-// make primitive for now
+ /*
 void MOLECULE::sd_step_cartesians(void) {
 
   double *step = g_grad_array();
@@ -208,6 +196,7 @@ void MOLECULE::sd_step_cartesians(void) {
 
   free_array(sd_u);
 }
+*/
 
 }
 

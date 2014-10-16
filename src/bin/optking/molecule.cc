@@ -432,6 +432,7 @@ void MOLECULE::H_guess(void) const {
   if (Opt_params.print_lvl >= 2) {
     oprintf_out("\nInitial Hessian guess\n");
     oprint_matrix_out(H, Ncoord(), Ncoord());
+    offlush_out();
   }
   
   return;
@@ -443,6 +444,12 @@ bool MOLECULE::cartesian_H_to_internals(double **H_cart) const {
   bool success = true; // to be dynamic later
 
   double **H_int = p_Opt_data->g_H_pointer();
+
+  // If the "internals" are really cartesian, do nothing.
+  if ( Opt_params.coordinates == OPT_PARAMS::CARTESIAN ) {
+    opt_matrix_copy(H_cart, H_int, Ncart, Ncart);
+    return true;
+  }
 
   // compute A = u B^t (B u B^t)^-1 where u=unit matrix and -1 is generalized inverse
   double **B = compute_B();
@@ -725,6 +732,8 @@ int MOLECULE::form_trivial_coord_combinations(void) {
   int nadded = 0;
   for (int f=0; f<fragments.size(); ++f)
     nadded += fragments[f]->form_trivial_coord_combinations();
+  for (int I=0; I<interfragments.size(); ++I)
+    nadded += interfragments[I]->form_trivial_coord_combinations();
   return nadded;
 }
 
@@ -735,16 +744,17 @@ int MOLECULE::form_delocalized_coord_combinations(void) {
     nadded += fragments[f]->form_delocalized_coord_combinations();
 
   // We can throw out coordinates which are asymmetric wrt to the ENTIRE system. 
-  if (g_nfragment() + g_nfb_fragment() == 1) { // there is only 1 fragment
+  if (g_nfragment() == 2 && g_nfb_fragment() == 0) { // there is only 1 fragment
+
+    // Determine asymmetric combinations; Check each coordinate = row of B.
     int Natom = g_natom();
     double **Bs = fragments[0]->compute_B();
     double **orig_geom = g_geom_2D();
+    std::vector<int> asymm_coord;
 
-    for (int cc=0; cc<Ncoord(); ++cc) {  // Check each coordinate, row of B.
-
-      // Construct displaced geometry, then test it.
+    // Construct each displaced geometry, then test it.
+    for (int cc=0; cc<Ncoord(); ++cc) {
       double **displaced_geom = matrix_return_copy(orig_geom, Natom, 3);
-
       for (int a=0; a<Natom; ++a)
         for (int xyz=0; xyz<3; ++xyz)
           displaced_geom[a][xyz] += 0.1 * Bs[cc][3*a+xyz];
@@ -752,7 +762,7 @@ int MOLECULE::form_delocalized_coord_combinations(void) {
       bool symm_rfo_step = false;
 #if defined(OPTKING_PACKAGE_PSI)
       psi::Process::environment.molecule()->set_geometry(displaced_geom);
-      symm_rfo_step = psi::Process::environment.molecule()->valid_atom_map();
+      symm_rfo_step = psi::Process::environment.molecule()->valid_atom_map(Opt_params.symm_tol);
       psi::Process::environment.molecule()->set_geometry(orig_geom);
 #elif defined(OPTKING_PACKAGE_QCHEM)
       // TODO QCHEM
@@ -760,14 +770,28 @@ int MOLECULE::form_delocalized_coord_combinations(void) {
 #endif
       free_matrix(displaced_geom);
 
-      if (!symm_rfo_step) {
-        oprintf_out(" Removing coordinate %d because it breaks molecular point group.\n", cc+1);
-        --nadded;
-        fragments[0]->erase_combo_coord(cc);
-      }
+      if (!symm_rfo_step)
+        asymm_coord.push_back(cc);
     }
+
+    // Remove asymmetric combinations
+    nadded -= asymm_coord.size();
+    if (asymm_coord.size()) 
+      oprintf_out("\tRemoving the following coordinates because they break molecular point group:\n\t");
+    for (int i=0; i<asymm_coord.size(); ++i)
+      oprintf_out(" %d", asymm_coord[i]+1);
+    oprintf_out("\n");
+
+    for (int i=0; i<asymm_coord.size(); ++i) {
+      fragments[0]->erase_combo_coord(asymm_coord[i]);
+      for (int j=i; j<asymm_coord.size(); ++j)
+        asymm_coord[j] -= 1;
+    }
+    free_matrix(Bs);
+    free_matrix(orig_geom);
+    asymm_coord.clear();
   }
-  oprintf_out(" A total of %d delocalized coordinates added.\n\n", nadded);
+  oprintf_out("\tA total of %d delocalized coordinates added.\n\n", nadded);
   return nadded;
 }
 
@@ -839,7 +863,7 @@ bool MOLECULE::coord_combo_is_symmetric(double *intco_combo, int dim) {
   bool symm_rfo_step = false;
 #if defined(OPTKING_PACKAGE_PSI)
   psi::Process::environment.molecule()->set_geometry(displaced_geom);
-  symm_rfo_step = psi::Process::environment.molecule()->valid_atom_map();
+  symm_rfo_step = psi::Process::environment.molecule()->valid_atom_map(Opt_params.symm_tol);
   psi::Process::environment.molecule()->set_geometry(orig_geom);
 #elif defined(OPTKING_PACKAGE_QCHEM)
   // TODO QCHEM

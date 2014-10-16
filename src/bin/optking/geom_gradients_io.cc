@@ -302,7 +302,7 @@ void MOLECULE::symmetrize_geom(void) {
   psi::Process::environment.molecule()->set_geometry(geom_2D);
 
   try {
-    psi::Process::environment.molecule()->symmetrize();
+    psi::Process::environment.molecule()->symmetrize(Opt_params.symm_tol);
   }
   catch (psi::PsiException exc) {
     free_matrix(geom_2D);

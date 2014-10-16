@@ -148,6 +148,25 @@ void set_params(void)
     else if (s == "LINDH") Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
     else if (s == "LINDH_SIMPLE") Opt_params.intrafragment_H = OPT_PARAMS::LINDH_SIMPLE;
 
+// Re-estimate the hessian every step.  Usually default is false. 
+    Opt_params.H_guess_every = options.get_bool("H_GUESS_EVERY");
+
+// Original Lindh specification was to redo at every step.
+    if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH) {
+      if (!options["H_GUESS_EVERY"].has_changed())
+        Opt_params.H_guess_every = true;
+    }
+
+//  The default for cartesian coordinates will be to use Lindh force field
+//  for initial guess, and then switch to BFGS.  This should be a flexible approach for
+//  difficult problems.
+    if (Opt_params.coordinates == OPT_PARAMS::CARTESIAN) {
+      if (!options["INTRAFRAG_HESS"].has_changed())
+        Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
+      if (!options["H_GUESS_EVERY"].has_changed())
+        Opt_params.H_guess_every = false;
+    }
+
 // Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE}
     s = options.get_str("INTERFRAG_HESS");
     if (s == "DEFAULT")           Opt_params.interfragment_H = OPT_PARAMS::DEFAULT;
@@ -161,15 +180,6 @@ void set_params(void)
 
 // Add auxiliary bonds for non-bonded (but nearby) atoms.
     Opt_params.add_auxiliary_bonds = options.get_bool("ADD_AUXILIARY_BONDS");
-
-// Re-estimate the hessian every step.  Usually default is false. 
-    Opt_params.H_guess_every = options.get_bool("H_GUESS_EVERY");
-
-// Original Lindh specification was to redo at every step.
-    if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH) {
-      if (!options["H_GUESS_EVERY"].has_changed())
-        Opt_params.H_guess_every = true;
-    }
 
 // Covalent distance times this factor is used to choose extra stretch coordinates
     Opt_params.auxiliary_bond_factor = options.get_double("AUXILIARY_BOND_FACTOR");
@@ -391,6 +401,8 @@ void set_params(void)
 
 // Hessian update is avoided if the denominators (Dq*Dq) or (Dq*Dg) are smaller than this
   Opt_params.H_update_den_tol = options.get_double("H_UPDATE_DEN_TOL");
+
+  Opt_params.symm_tol = 0.01;
 
   // Absolute maximum for value of alpha in RS-RFO
   Opt_params.rsrfo_alpha_max = options.get_double("RSRFO_ALPHA_MAX");

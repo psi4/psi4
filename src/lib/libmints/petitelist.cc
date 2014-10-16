@@ -299,7 +299,7 @@ struct lin_comb {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int **compute_atom_map(const Molecule* molecule)
+int **compute_atom_map(const Molecule* molecule, double tol)
 {
     // grab references to the Molecule
     const Molecule& mol = *molecule;
@@ -332,7 +332,7 @@ int **compute_atom_map(const Molecule* molecule)
                     np[ii] += so(ii,jj) * ac[jj];
             }
 
-            atom_map[i][g] = mol.atom_at_position1(np, 0.05);
+            atom_map[i][g] = mol.atom_at_position1(np, tol);
             if (atom_map[i][g] < 0) {
                 outfile->Printf( "ERROR: Symmetry operation %d did not map atom %d to another atom:\n", g, i+1);
                 outfile->Printf( "  Molecule:\n");
@@ -348,9 +348,9 @@ int **compute_atom_map(const Molecule* molecule)
     return atom_map;
 }
 
-int **compute_atom_map(const boost::shared_ptr<Molecule> &molecule)
+int **compute_atom_map(const boost::shared_ptr<Molecule> &molecule, double tol)
 {
-    return compute_atom_map(molecule.get());
+    return compute_atom_map(molecule.get(), tol);
 }
 
 void delete_atom_map(int **atom_map, const Molecule* molecule)
@@ -479,7 +479,7 @@ int PetiteList::nfunction(int i) const
     return (c1_) ? basis_->nbf() : nbf_in_ir_[i];
 }
 
-void PetiteList::init()
+void PetiteList::init(double tol)
 {
     int i;
 
@@ -561,7 +561,7 @@ void PetiteList::init()
                     np[ii] += so(ii,jj) * ac[jj];
             }
 
-            atom_map_[i][g] = mol.atom_at_position1(np, 0.05);
+            atom_map_[i][g] = mol.atom_at_position1(np, tol);
 
             // We want the list of operations that keeps the atom the same that is not E.
             if (atom_map_[i][g] == i)
