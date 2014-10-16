@@ -54,10 +54,11 @@ PsiException::rewrite_msg(string msg) throw()
 const char*
 PsiException::what() const throw()
 {
-    stringstream sstr;
-    sstr << msg_ << "\n";
-    sstr << location();
-    return sstr.str().c_str();
+    //stringstream sstr;
+    //sstr << msg_ << "\n";
+    //sstr << location();
+    //return sstr.str().c_str();
+    return msg_.c_str();
 }
 
 const char*
