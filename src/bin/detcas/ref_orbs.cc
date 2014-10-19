@@ -68,9 +68,11 @@ int read_ref_orbs(void)
     psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
     for (h=0; h<CalcInfo.nirreps; h++) {
       ir_orbs = CalcInfo.orbs_per_irr[h];
-      sprintf(orb_key, "Orbs Irrep %2d", h);
-      psio_read_entry(PSIF_DETCAS, orb_key, (char *) CalcInfo.mo_coeffs[h][0],
-                      ir_orbs*ir_orbs*sizeof(double));
+      if (ir_orbs){
+        sprintf(orb_key, "Orbs Irrep %2d", h);
+        psio_read_entry(PSIF_DETCAS, orb_key, (char *) CalcInfo.mo_coeffs[h][0],
+                        ir_orbs*ir_orbs*sizeof(double));
+      }
     }
     psio_close(PSIF_DETCAS, 1);
     return(1);
@@ -100,9 +102,11 @@ int write_ref_orbs(void)
   psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
   for (h=0; h<CalcInfo.nirreps; h++) {
     ir_orbs = CalcInfo.orbs_per_irr[h];
-    sprintf(orb_key, "Orbs Irrep %2d", h);
-    psio_write_entry(PSIF_DETCAS, orb_key, (char *) CalcInfo.mo_coeffs[h][0],
-                    ir_orbs*ir_orbs*sizeof(double));
+    if (ir_orbs){
+      sprintf(orb_key, "Orbs Irrep %2d", h);
+      psio_write_entry(PSIF_DETCAS, orb_key, (char *) CalcInfo.mo_coeffs[h][0],
+                       ir_orbs*ir_orbs*sizeof(double));
+    }
   }
   psio_close(PSIF_DETCAS, 1);
   return(1);
