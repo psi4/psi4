@@ -50,6 +50,7 @@
 #include <libchkpt/chkpt.h>
 #include <libmints/wavefunction.h>
 #include <libmints/molecule.h>
+#include <libmints/matrix.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include "psifiles.h"
@@ -269,10 +270,11 @@ PsiReturnType detcas(Options &options)
     rotate_orbs();
     write_thetas(num_pairs);
   }
-  else
+  else{
     steptype = 0;
-
+  }
   print_step(num_pairs, steptype);
+
 
   if (Params.print_lvl) quote();
   cleanup();
@@ -1073,7 +1075,16 @@ void rotate_orbs(void)
     }
   }
 
-
+  /* Temporary hack: Push the rotated orbitals to the Wavefunction object */
+  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+  for (int h=0; h<CalcInfo.nirreps; h++) {
+    int ir_orbs = CalcInfo.orbs_per_irr[h];
+    for (int p = 0; p < ir_orbs; ++p){
+      for (int q = 0; q < ir_orbs; ++q){
+        wfn->Ca()->set(h,p,q,CalcInfo.mo_coeffs[h][p][q]);
+      }
+    }
+  }
 }
 
 
