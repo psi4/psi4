@@ -537,12 +537,12 @@ void get_parameters(Options &options)
   if (Parameters.opdm) Parameters.dipmom = 1;
   else Parameters.dipmom = 0;
 
+  if (Parameters.transdens) Parameters.dipmom = 1;
+
   if (Parameters.wfn == "RASSCF" ||
       Parameters.wfn == "CASSCF" ||
       Parameters.wfn == "DETCAS")
     Parameters.dipmom = 0;
-
-  if (Parameters.transdens) Parameters.dipmom = 1;
 
   if (options["DIPMOM"].has_changed())
     Parameters.dipmom = options["DIPMOM"].to_integer();
