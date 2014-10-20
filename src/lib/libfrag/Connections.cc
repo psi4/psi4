@@ -27,20 +27,20 @@
 #include "physconst.h"
 #include "cov_radii.h"
 #include <algorithm>
-
+#include "libparallel/TableSpecs.h"
 namespace psi{
 namespace LibFrag{
 
 Connections::Connections(GroupType& Groups,
       const Connections& AtomConnec):
-      NConnecs(Groups.size(),0),CTable(nbonds*Groups.size(),0),
-      Distance(Groups.size(),Groups.size()),
-      bondthresh(AtomConnec.bondthresh){
+      NConnecs_(Groups.size(),0),CTable_(nbonds_*Groups.size(),0),
+      Distance_(Groups.size(),Groups.size()),
+      bondthresh_(AtomConnec.bondthresh_){
   for(int i=0;i<Groups.size();i++){
-     Distance(i,i)=0.0;
+     Distance_(i,i)=0.0;
      for(int j=i+1;j<Groups.size();j++){
-        Distance(i,j)=Groups[i]->Distance((*Groups[j]));
-        Distance(j,i)=Distance(i,j);
+        Distance_(i,j)=Groups[i]->Distance((*Groups[j]));
+        Distance_(j,i)=Distance_(i,j);
         bool bonded=false;
         for(int k=0;k<Groups[i]->size()&&!bonded;k++){
            int atom=(*Groups[i])[k];
@@ -50,9 +50,9 @@ Connections::Connections(GroupType& Groups,
            }
         }
         if(bonded){
-           CTable[i*nbonds+NConnecs[i]]=j+1;
-           CTable[j*nbonds+NConnecs[j]]=i+1;
-           NConnecs[i]++;NConnecs[j]++;
+           CTable_[i*MaxBonds()+GetNConnecs(i)]=j+1;
+           CTable_[j*MaxBonds()+GetNConnecs(j)]=i+1;
+           NConnecs_[i]++;NConnecs_[j]++;
         }
 
      }
@@ -60,36 +60,52 @@ Connections::Connections(GroupType& Groups,
 }
 
 
-void Connections::print_out(){
-   psi::outfile->Printf("Connections by atom:");
-   for(int i=0;i<NConnecs.size();i++){
-      psi::outfile->Printf("\n%d 's connections: ",i+1);
-      for(int j=0;j<NConnecs[i];j++){
-         psi::outfile->Printf(" %d",CTable[i*nbonds+j]);
+void Connections::print_out()const{
+   std::vector<std::string> Titles;
+   Titles.push_back("Atom/Group #");
+   int natoms=NConnecs_.size();
+   std::vector<boost::shared_ptr<int[]> > Bonds;
+   for(int i=0;i<MaxBonds();i++){
+      std::stringstream title;
+      title<<"Bond # "<<i;
+      Titles.push_back(title.str());
+      boost::shared_ptr<int[]> temp(new int[natoms]);
+      Bonds.push_back(temp);
+   }
+   std::vector<int> Atom;
+   for(int i=0;i<natoms;i++){
+      Atom.push_back(i);
+      for(int j=0;j<MaxBonds();j++){
+         Bonds[j][i]=((*this)(i,j));
       }
    }
-   psi::outfile->Printf("\n");
+   TableSpecs<int,int,int,int,int> Specs(natoms);
+   Specs.Init(&Atom[0],&(Bonds[0][0]),&(Bonds[1][0]),&(Bonds[2][0]),
+         &(Bonds[3][0]));
+   Specs.SetTitles(Titles);
+   (*outfile)<<Specs.Table();
+   (*outfile)<<std::endl;
 }
 
-Connections::Connections(SharedMol& Mol):Distance(Mol->distance_matrix()),
-NConnecs(Mol->natom(),0),CTable(nbonds*Mol->natom(),0),
-bondthresh(2.0/pc_bohr2angstroms){
+Connections::Connections(SharedMol& Mol):Distance_(Mol->distance_matrix()),
+NConnecs_(Mol->natom(),0),CTable_(nbonds_*(Mol->natom()),0),
+bondthresh_(2.0/pc_bohr2angstroms){
    RoughTable(Mol);
 }
 
 void Connections::RoughTable(SharedMol Mol){
-   for(int i=0;i<Distance.rowdim();i++){
-      for(int j=i+1;j<Distance.coldim();j++){
+   for(int i=0;i<Distance_.rowdim();i++){
+      for(int j=i+1;j<Distance_.coldim();j++){
          //allow bonds to be up to 10% longer
-         if(Mol)bondthresh=1.1*(cov_radii[(int)Mol->Z(i)] +
+         if(Mol)bondthresh_=1.1*(cov_radii[(int)Mol->Z(i)] +
                cov_radii[(int)Mol->Z(j)])/pc_bohr2angstroms;
-         if(Distance(i,j)<=bondthresh){
-            NConnecs[i]++;
-            NConnecs[j]++;
-            if(NConnecs[i]>nbonds||NConnecs[j]>nbonds)
+         if(Distance_(i,j)<=bondthresh_){
+            NConnecs_[i]++;
+            NConnecs_[j]++;
+            if(NConnecs_[i]>nbonds_||NConnecs_[j]>nbonds_)
               throw psi::PSIEXCEPTION("Hard-coded number of bonds exceeded");
-            CTable[i*nbonds+(NConnecs[i]-1)]=j+1;
-            CTable[j*nbonds+(NConnecs[j]-1)]=i+1;
+            CTable_[i*nbonds_+(NConnecs_[i]-1)]=j+1;
+            CTable_[j*nbonds_+(NConnecs_[j]-1)]=i+1;
          }
       }
    }

@@ -40,7 +40,7 @@
 #include "MBEFrag.h"
 #include "libparallel/TableSpecs.h"
 #include "libparallel/ParallelScanner.h"
-
+#include "Symmetrizer.h"
 typedef std::vector<int> SVec;
 typedef std::string str;
 typedef const int cint;
@@ -60,6 +60,17 @@ template <typename T, typename S>
 void ToC(T& cvalue, S& pyvalue) {
    cvalue=boost::python::extract<T>(pyvalue);
 }
+/*
+void StartParallel(int N){
+   MPIScheduler Scheduler();
+   shared_ptr<MPIQueue> MyQueue=Scheduler.Schedule(GetNNMers(N));
+
+}
+
+PyStr GetNextNMer(){
+
+}
+*/
 
 LibFragHelper::LibFragHelper(){
    tstart();
@@ -114,7 +125,7 @@ void LibFragHelper::WriteMOs(cint N, cint x) {
             psi::MOFile temp=File2Write.DirectSum(MOFiles_[frag]);
             File2Write=temp;
          }
-         //File2Write.print_out();
+         File2Write.print_out();
          File2Write.Write();
       }
       else MOFiles_[x].Write();
@@ -146,6 +157,17 @@ void LibFragHelper::Fragment_Helper(PyStr& FragMethod, cint N,
                 <<" tested it yet, like at all.  You probably shouldn't use it."
                 <<std::endl;
    }
+   //In order to exploit symmetry we need to generate all n-mers now
+   DaOptions_->MBEOrder_=N;
+   Expansion_->SetN(N);
+   if (Expansion_->IsGMBE())
+      Systems_.push_back(MBEFragSet(Systems_[0],N));
+   else{
+      for(int i=2;i<=N;i++)
+         Systems_.push_back(MBEFragSet(Systems_[0],i));
+      }
+   Symmetrizer Symm;
+   //Symm.RemoveDuplicates(Systems_[0]);
 
 }
 
@@ -217,14 +239,7 @@ double LibFragHelper::CalcEnergy(PyList& Energies,PyStr& Name) {
 }
 
 void LibFragHelper::NMer_Helper(cint N) {
-   DaOptions_->MBEOrder_=N;
-   Expansion_->SetN(N);
-   if (Expansion_->IsGMBE())
-      Systems_.push_back(MBEFragSet(Systems_[0],N));
-   else{
-      for(int i=2;i<=N;i++)
-         Systems_.push_back(MBEFragSet(Systems_[0],i));
-   }
+
 }
 
 int LibFragHelper::IsGMBE() {return Expansion_->IsGMBE();}
@@ -246,8 +261,9 @@ void LibFragHelper::BroadCastWrapper(cint i, cint j, str& comm,
          tempChargeSets.push_back(ChargeSets_[j]);
       }
       else {
-         boost::shared_ptr<double[]>(new double[natoms]);
-         psi::WorldComm->bcast(&(tempChargeSets.back()[0]), natoms, i, comm);
+         boost::shared_ptr<double[]> charges(new double[natoms]);
+         psi::WorldComm->bcast(&(charges[0]), natoms, i, comm);
+         tempChargeSets.push_back(charges);
       }
    }
 }

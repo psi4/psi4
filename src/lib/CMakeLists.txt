@@ -1,6 +1,7 @@
 add_subdirectory(libint)
 add_subdirectory(libderiv)
 add_subdirectory(lib3index)
+add_subdirectory(libbabel)
 add_subdirectory(libchkpt)
 add_subdirectory(libciomr)
 add_subdirectory(libdiis)

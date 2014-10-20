@@ -104,7 +104,7 @@ def Magic(frag,N,Egys,CEgys,name,molecule,**kwargs):
     RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,CEgys,N,**kwargs)
     if(N==0):
         lfrag.GatherData()
-        psi4.set_global_option("GUESS",oldguess)
+    psi4.set_global_option("GUESS",oldguess)
     psi4.clean()
         
 

@@ -213,6 +213,10 @@ string(REPLACE " " ";" PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
 #find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 
+
+
+
+
 #
 # Boost Detection 
 #
@@ -258,6 +262,23 @@ endif()
 include_directories(${Boost_INCLUDE_DIRS})
 
 #
+# OpenBabel
+#
+set(BABEL_FOUND FALSE)
+if(BABEL_INCLUDE_DIR AND BABEL_LIBRARYDIR)
+   set(BABEL_FOUND TRUE)
+   message(STATUS "Using OpenBabel with include dir: ${BABEL_INCLUDE_DIR}")
+   message(STATUS "Using OpenBabel with library dir: ${BABEL_LIBRARYDIR}")
+   set(BABEL_INC_DIR ${BABEL_INCLUDE_DIR})
+   set(BABEL_LIB_DIR ${PROJECT_LIBRARYDIR})
+else()
+   message(STATUS "No OpenBabel detected. Building OpenBabel for you.")
+   add_subdirectory(openbabel)
+   set(BABEL_INC_DIR ${PROJECT_BINARY_DIR}/include/openbabel-2.0)
+   set(BABEL_LIB_DIR ${PROJECT_BINARY_DIR}/lib)
+endif()
+
+#
 # PThreads
 #
 find_package(Threads)
@@ -279,7 +300,7 @@ set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2
            cchbar cclambda ccdensity transqt ccresponse detci detcas occ mrcc fnocc
            cceom adc thermo functional disp thce 3index deriv_wrapper optking
            findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util
-           stable deriv scfgrad int util diis plugin parallel frag)
+           stable deriv scfgrad int util diis plugin parallel frag babel)
 
 
 #RMR---This is our plugin workaround
@@ -368,6 +389,9 @@ configure_file(cmake/reconfigure.sh.in reconfigure.sh)
 if(NOT Boost_FOUND)
    add_dependencies(psi4 ${Boost_LIBRARIES})
 endif()
+#Add openbabel as a dependency
+add_dependencies(psi4 OpenBabel)
+
 
 #FILE(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION

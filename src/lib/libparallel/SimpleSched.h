@@ -19,47 +19,34 @@
  *
  *@END LICENSE
  */
+#ifndef SIMPLESCHED_H_
+#define SIMPLESCHED_H_
 
-#include "MBEFrag.h"
-#include "FragOptions.h"
-#include "Fragmenter.h"
+#include "TaskQueue.h"
+#include "MPIProperty.h"
 
-namespace psi {
-namespace LibFrag {
+namespace psi{
 
-MBEFrag& MBEFrag::operator++(){
-   ++Mult_;
-   return *this;
-}
-
-MBEFrag& MBEFrag::operator--(){
-   --Mult_;
-   return *this;
-}
-
-MBEFrag MBEFrag::operator++(int){
-   MBEFrag ACopy(*this);
-   ++(*this);
-   return ACopy;
-}
-
-MBEFrag MBEFrag::operator--(int){
-   MBEFrag ACopy(*this);
-   --(*this);
-   return ACopy;
-}
-
-
-void MBEFrag::Copy(const MBEFrag& other) {
-   this->Parents_=other.Parents_;
-   this->MBEOrder_=other.MBEOrder_;
-   this->Mult_=other.Mult_;
-   this->Atoms_=other.Atoms_;
-   this->Caps_=other.Caps_;
-   this->Charges_=other.Charges_;
-   this->Ghosts_=other.Ghosts_;
-}
+class SimpleScheduler: public MPIScheduler<SimpleScheduler>{
+   private:
+      typedef MPIScheduler<SimpleScheduler> BaseType;
+      friend class BaseType;
+      int NTasks_;
+      int Remainder_;
+      int BatchSize_;
+      int MyStart_;
+      int MyEnd_;
+      void SetValues();
+      boost::shared_ptr<MPIQueue> SynchImpl(std::vector<MPIProperty<T> >);
+   public:
+      SimpleScheduler(int NTasks):
+         BaseType(this),NTasks_(NTasks),Remainder_(0),BatchSize_(0){}
+      boost::shared_ptr<MPIQueue> Schedule();
+};
 
 }
-} //End namespaces
 
+
+
+
+#endif /* SIMPLESCHED_H_ */

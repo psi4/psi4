@@ -7,6 +7,8 @@ set(libfragsrc Fragmenter.h
                Connections.h
                libfrag.h
                MBE.h
+               Grouper.h
+               Grouper.cc
                MBEFrag.h
                MBEFrag.cc
                MBEFragSet.h
@@ -23,6 +25,8 @@ set(libfragsrc Fragmenter.h
                MBE.cc
                Capper.cc
                AtomSet.cc
+               Symmetrizer.h
+               Symmetrizer.cc
 )
 add_library(frag STATIC ${libfragsrc})  
 target_link_libraries(frag parallel)             
