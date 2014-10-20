@@ -52,6 +52,7 @@
 #include "libparallel/ParallelPrinter.h"
 #include "../ccenergy/ccwave.h"
 #include "../cclambda/cclambda.h"
+#include "../../lib/libbabel/LibBabel.h"
 //#include "../mp2/mp2wave.h"
 
 #if defined(MAKE_PYTHON_MODULE)
@@ -1360,7 +1361,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("sync",&py_sync,"Waits for all MPI processes to ketchup");
     def("bcast_double",&py_bcast_double,"broadcasts a list of doubles");
     def("all_gather_double",&py_all_gather_double,"all_gathers a list of doubles");
-
+    def("mol_from_file",&LibBabel::ParseFile,"Reads a molecule from another input file");
     def("set_parent_symmetry", py_psi_set_parent_symmetry, "Sets the symmetry of the 'parent' (undisplaced) geometry, by Schoenflies symbol, at the beginning of a finite difference computation.");
     def("print_options", py_psi_print_options, "Prints the currently set options (to the output file) for the current module.");
     def("print_global_options", py_psi_print_global_options, "Prints the currently set global (all modules) options to the output file.");

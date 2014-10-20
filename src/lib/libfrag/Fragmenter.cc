@@ -27,6 +27,7 @@
 #include <boost/shared_ptr.hpp>
 #include <iostream>
 #include "exception.h"
+#include "Grouper.h"
 
 namespace psi {
 namespace LibFrag {
@@ -55,12 +56,12 @@ FragProps Fragmenter::Fragment(SharedMol& AMol, NMerSet& Monomers) {
    GroupType AtomSets;
    FragProps Properties=FragmentImpl(AMol, AtomSets);
    Properties.Disjoint_=SortUnique(Monomers, AtomSets);
-   if(!Properties.Disjoint_)MakeIntersections(Monomers);
+   if (!Properties.Disjoint_) MakeIntersections(Monomers);
    return Properties;
 }
 
-void Fragmenter::MakeNMers(const NMerSet& Monomers,const int N,
-      NMerSet& Frags,bool Disjoint){
+void Fragmenter::MakeNMers(const NMerSet& Monomers, const int N, NMerSet& Frags,
+      bool Disjoint) {
    int NFrags=Monomers.size();
    NMerSet tempNMers;
    std::vector<int> indices;
@@ -95,59 +96,14 @@ void Fragmenter::MakeNMers(const NMerSet& Monomers,const int N,
    std::vector<bool> IsGood(tempNMers.size(), true);
    for (int i=0; i<tempNMers.size(); i++) {
       for (int j=i+1; j<tempNMers.size(); j++) {
-         if(tempNMers[i]->Atoms()<=tempNMers[j]->Atoms())
-            IsGood[i]=false;
-         else if (tempNMers[j]->Atoms()<=tempNMers[i]->Atoms())
-            IsGood[j]=false;
+         if (tempNMers[i]->Atoms()<=tempNMers[j]->Atoms()) IsGood[i]=false;
+         else if (tempNMers[j]->Atoms()<=tempNMers[i]->Atoms()) IsGood[j]=false;
       }
    }
    for (int i=0,index=0; i<IsGood.size(); i++) {
       if (IsGood[i]) Frags.push_back(tempNMers[i]);
    }
-   if(!Disjoint)MakeIntersections(Frags);
-}
-
-inline void AddAtomToGroup(std::vector<bool>& Assigned, GroupType Groups,
-      int atom) {
-   if (Assigned[atom])
-      throw PSIEXCEPTION("Atom is already assigned to a group");
-   (*(Groups.back()))<<atom;
-   Assigned[atom]=true;
-}
-
-GroupType Fragmenter::MakeGroups(Connections& CTable, SharedMol& Mol2Frag) {
-   GroupType Groups;
-   //Loop and find hydrogens, assign them and all atoms connected to them
-   //to a group
-   std::vector<bool> Assigned(Mol2Frag->natom(), false);
-   for (int i=0; i<Assigned.size(); i++) {
-      if (Mol2Frag->Z(i)==1&&!Assigned[i]) {
-         if (CTable.GetNConnecs(i)!=1)
-            throw PSIEXCEPTION(
-                  "This hydrogen is not connected to one and only one atom");
-         CommonInit(Mol2Frag, Groups);
-         AddAtomToGroup(Assigned, Groups, i);
-         int center=CTable(i, 0)-1;
-         AddAtomToGroup(Assigned, Groups, center);
-         for (int j=0; j<CTable.GetNConnecs(center); j++) {
-            int atom=CTable(center, j)-1;
-            //We already know it's attached to i
-            if (atom!=i&&Mol2Frag->Z(atom)==1) {
-               if (CTable.GetNConnecs(atom)!=1) throw psi::PSIEXCEPTION(
-                     "This hydrogen is not connected to only one atom");
-               AddAtomToGroup(Assigned, Groups, atom);
-            }
-         }
-         (*(Groups.back())).Sort();
-      }
-   }
-   for (int i=0; i<Assigned.size(); i++) {
-      if (!Assigned[i]) {
-         CommonInit(Mol2Frag, Groups);
-         AddAtomToGroup(Assigned, Groups, i);
-      }
-   }
-   return Groups;
+   if (!Disjoint) MakeIntersections(Frags);
 }
 
 void Fragmenter::Groups2Frag(GroupType& Groups, std::vector<int>& Groups2Add,
@@ -267,8 +223,8 @@ void BondFragmenter::BondRecursion(std::vector<int>& BondedGroups,
 }
 
 FragProps BondFragmenter::FragmentImpl(SharedMol& AMol, GroupType& Monomers) {
-   Connections CTable(AMol);
-   GroupType Groups=MakeGroups(CTable, AMol);
+   Connections CTable(AMol);   Grouper Fish;//Groupers are fish aren't they?
+   GroupType Groups=Fish.MakeGroups(CTable,AMol);
    Connections GConnec(Groups, CTable);
    bool severed=false;
    for (int nbonds=0; nbonds<=GConnec.MaxBonds(); nbonds++) {
@@ -293,6 +249,10 @@ FragProps BondFragmenter::FragmentImpl(SharedMol& AMol, GroupType& Monomers) {
 }
 
 FragProps UDFragmenter::FragmentImpl(SharedMol& AMol, GroupType& Monomers) {
+   int nfrags=AMol->nfragments();
+   if(nfrags==1)throw PSIEXCEPTION("You didn't specify fragments in the input"
+         " file.  Please do so or use a fragmentation algorithm.");
+
    for (int frags=0,index=0; frags<AMol->nfragments(); frags++) {
       SharedMol Frag=AMol->py_extract_subsets_6(frags+1);
       CommonInit(AMol, Monomers);
@@ -306,7 +266,8 @@ FragProps UDFragmenter::FragmentImpl(SharedMol& AMol, GroupType& Monomers) {
 
 FragProps DistFragmenter::FragmentImpl(SharedMol& AMol, GroupType& Monomers) {
    Connections CTable(AMol);
-   GroupType Groups=MakeGroups(CTable, AMol);
+   Grouper Fish;//Groupers are fish aren't they?
+   GroupType Groups=Fish.MakeGroups(CTable, AMol);
    for (int i=0; i<Groups.size(); i++) {
       SharedAtomSet temp(new CartSet<SharedAtom>(*Groups[i]));
       for (int j=0; j<Groups.size(); j++) {
@@ -329,11 +290,11 @@ FragProps DistFragmenter::FragmentImpl(SharedMol& AMol, GroupType& Monomers) {
  *  \param[in] Sign   True if the fragment whose multiplicty we are adjusting
  *                     is positive
  */
-inline void AdjustMult(int& Mult,const bool AreOpp,const bool Sign){
-   if(AreOpp&&Sign)Mult--;
-   else if(AreOpp&&!Sign)Mult++;
-   else if(!AreOpp&&Sign)Mult++;
-   else if(!AreOpp&&!Sign)Mult--;
+inline void AdjustMult(int& Mult, const bool AreOpp, const bool Sign) {
+   if (AreOpp&&Sign) Mult--;
+   else if (AreOpp&&!Sign) Mult++;
+   else if (!AreOpp&&Sign) Mult++;
+   else if (!AreOpp&&!Sign) Mult--;
 }
 
 void Fragmenter::MakeIntersections(NMerSet& NMers) const {
@@ -342,7 +303,7 @@ void Fragmenter::MakeIntersections(NMerSet& NMers) const {
 
    //In order to set the signs appropriately of each fragment
    //we need to keep track of it's original sign
-   std::vector<bool>IsPositive;
+   std::vector<bool> IsPositive;
    for (int i=0; i<NMers.size(); i++) {
       SharedFrag NMer=NMers[i];
       //Set for this iteration
@@ -354,31 +315,31 @@ void Fragmenter::MakeIntersections(NMerSet& NMers) const {
          int tempsize=temp->Atoms_.size();
          if (tempsize>0) {
             bool IsGood=true;
-            temp->Mult_=(!IsPositive[j]?1:-1);
-            for(int k=0;k<TempSet.size()&&IsGood;k++){//Check for uniqueness
+            temp->Mult_=(!IsPositive[j] ? 1 : -1);
+            for (int k=0; k<TempSet.size()&&IsGood; k++) { //Check for uniqueness
                SharedFrag CompNMer2=TempSet[k];
-               if(k==j){//Have a faster check
-                  if(tempsize==CompNMer->Atoms().size()){
+               if (k==j) {   //Have a faster check
+                  if (tempsize==CompNMer->Atoms().size()) {
                      IsGood=false;
                      //Always have the opposite sign
-                     AdjustMult(CompNMer->Mult_,true,IsPositive[j]);
+                     AdjustMult(CompNMer->Mult_, true, IsPositive[j]);
                   }
                }
-               if(temp->Atoms_==CompNMer2->Atoms_){
+               if (temp->Atoms_==CompNMer2->Atoms_) {
                   IsGood=false;
                   bool AreOpp=(IsPositive[j]&&IsPositive[k]);
-                  AdjustMult(CompNMer2->Mult_,AreOpp,IsPositive[k]);
+                  AdjustMult(CompNMer2->Mult_, AreOpp, IsPositive[k]);
                }
             }
-            if(IsGood){
+            if (IsGood) {
                ItrSet.push_back(temp);
                IsPositive.push_back(!IsPositive[j]);
             }
 
          }
       }
-      if(ItrSet.size()>0)
-         TempSet.insert(TempSet.end(),ItrSet.begin(),ItrSet.end());
+      if (ItrSet.size()>0)
+         TempSet.insert(TempSet.end(), ItrSet.begin(), ItrSet.end());
       TempSet.push_back(NMer);
       IsPositive.push_back(true);
    }

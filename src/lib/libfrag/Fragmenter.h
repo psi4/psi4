@@ -58,7 +58,7 @@ typedef std::vector<SharedAtomSet > GroupType;
 
 
 /** \brief The class that is in charge of setting up the Atoms_ array of
- *  a MBEFrag that is a fragment.
+ *  a MBEFrag that is a fragment or NMer.
  *
  *  The Fragmenter class is a friend of MBEFrag, which allows it to set
  *  the Atoms_ arrays.  The various algorithms that are implemented by
@@ -76,9 +76,6 @@ typedef std::vector<SharedAtomSet > GroupType;
  */
 class Fragmenter{
    protected:
-      ///Function takes a SharedMol and returns a vector of the groups in it
-      GroupType MakeGroups(Connections& CTable,SharedMol& Mol2Frag);
-
       /** \brief Function for converting copying groups to fragments
        *
        *  \param[in] Groups      The vector of groups from MakeGroups

@@ -19,47 +19,29 @@
  *
  *@END LICENSE
  */
+#ifndef MPIPROPERTY_H_
+#define MPIPROPERTY_H_
 
-#include "MBEFrag.h"
-#include "FragOptions.h"
-#include "Fragmenter.h"
+namespace psi{
 
-namespace psi {
-namespace LibFrag {
+template<typename T>
+class MPIProperty;
 
-MBEFrag& MBEFrag::operator++(){
-   ++Mult_;
-   return *this;
-}
-
-MBEFrag& MBEFrag::operator--(){
-   --Mult_;
-   return *this;
-}
-
-MBEFrag MBEFrag::operator++(int){
-   MBEFrag ACopy(*this);
-   ++(*this);
-   return ACopy;
-}
-
-MBEFrag MBEFrag::operator--(int){
-   MBEFrag ACopy(*this);
-   --(*this);
-   return ACopy;
-}
-
-
-void MBEFrag::Copy(const MBEFrag& other) {
-   this->Parents_=other.Parents_;
-   this->MBEOrder_=other.MBEOrder_;
-   this->Mult_=other.Mult_;
-   this->Atoms_=other.Atoms_;
-   this->Caps_=other.Caps_;
-   this->Charges_=other.Charges_;
-   this->Ghosts_=other.Ghosts_;
-}
+template<typename T>
+class MPIProperty<T*>{
+   protected:
+      T* Property_;
+      std::string Name_;
+      int Length_;
+   public:
+      MPIProperty<T>(const T* Property,const int Length):
+      Property_(Property),Length_(Length){}
+      T GetProp()const{return *Property_;}
+      int GetLength()const{return Length_;}
+};
 
 }
-} //End namespaces
 
+
+
+#endif /* MPIPROPERTY_H_ */

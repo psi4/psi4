@@ -93,8 +93,6 @@ class MBEFrag {
        *  orders lower than or equal to the current order so the coefficient
        *  and sign changes.
        *
-       *  TODO: Account for symmetry
-       *  (Note: Symmetry doesn't actually work right now).
        *
        *  For the GMBE this will be the fragment/intersection's signed
        *  coefficent.  This is because I do not know a formula that allows
@@ -156,7 +154,10 @@ class MBEFrag {
       MBEFrag(const MBEFrag& other) {
          Copy(other);
       }
-
+      MBEFrag& operator++();
+      MBEFrag& operator--();
+      MBEFrag operator++(int);
+      MBEFrag operator--(int);
       const MBEFrag& operator=(const MBEFrag& other) {
          if (this!=&other) Copy(other);
          return *this;

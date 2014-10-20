@@ -19,47 +19,29 @@
  *
  *@END LICENSE
  */
+#ifndef PSI4OBUNITCELL_H_
+#define PSI4OBUNITCELL_H_
+#include "openbabel/mol.h"
+#include "openbabel/generic.h"
 
-#include "MBEFrag.h"
-#include "FragOptions.h"
-#include "Fragmenter.h"
+namespace psi{
 
-namespace psi {
-namespace LibFrag {
-
-MBEFrag& MBEFrag::operator++(){
-   ++Mult_;
-   return *this;
-}
-
-MBEFrag& MBEFrag::operator--(){
-   --Mult_;
-   return *this;
-}
-
-MBEFrag MBEFrag::operator++(int){
-   MBEFrag ACopy(*this);
-   ++(*this);
-   return ACopy;
-}
-
-MBEFrag MBEFrag::operator--(int){
-   MBEFrag ACopy(*this);
-   --(*this);
-   return ACopy;
-}
-
-
-void MBEFrag::Copy(const MBEFrag& other) {
-   this->Parents_=other.Parents_;
-   this->MBEOrder_=other.MBEOrder_;
-   this->Mult_=other.Mult_;
-   this->Atoms_=other.Atoms_;
-   this->Caps_=other.Caps_;
-   this->Charges_=other.Charges_;
-   this->Ghosts_=other.Ghosts_;
-}
+/** \brief Class created by Professor Rafal Podeszwa to avoid dangling bonds
+ *               that occur in the normal OpenBabel OBUnitCell
+ *
+ *
+ *   This class implements a FillUnitCell2 function that should be called
+ *   instead of OpenBabel::OBUnitCell::FillUnitCell because
+ *
+ */
+class OBUnitCellChild : public OpenBabel::OBUnitCell{
+ public:
+   void FillUnitCell2(OpenBabel::OBMol *mol);
+   OBUnitCellChild(const OBUnitCell& other):OBUnitCell(other){}
+};
 
 }
-} //End namespaces
 
+
+
+#endif /* PSI4OBUNITCELL_H_ */

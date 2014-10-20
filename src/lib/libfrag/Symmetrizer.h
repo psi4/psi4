@@ -19,47 +19,23 @@
  *
  *@END LICENSE
  */
-
-#include "MBEFrag.h"
-#include "FragOptions.h"
-#include "Fragmenter.h"
-
-namespace psi {
-namespace LibFrag {
-
-MBEFrag& MBEFrag::operator++(){
-   ++Mult_;
-   return *this;
-}
-
-MBEFrag& MBEFrag::operator--(){
-   --Mult_;
-   return *this;
-}
-
-MBEFrag MBEFrag::operator++(int){
-   MBEFrag ACopy(*this);
-   ++(*this);
-   return ACopy;
-}
-
-MBEFrag MBEFrag::operator--(int){
-   MBEFrag ACopy(*this);
-   --(*this);
-   return ACopy;
-}
+#ifndef SYMMETRIZER_H_
+#define SYMMETRIZER_H_
 
 
-void MBEFrag::Copy(const MBEFrag& other) {
-   this->Parents_=other.Parents_;
-   this->MBEOrder_=other.MBEOrder_;
-   this->Mult_=other.Mult_;
-   this->Atoms_=other.Atoms_;
-   this->Caps_=other.Caps_;
-   this->Charges_=other.Charges_;
-   this->Ghosts_=other.Ghosts_;
-}
+#include "MBEFragSet.h"
 
-}
-} //End namespaces
+namespace psi{
+namespace LibFrag{
 
+class Symmetrizer{
+   public:
+      Symmetrizer(){}
+      void RemoveDuplicates(MBEFragSet& FragSet)const;
+};
+
+}}//
+
+
+
+#endif /* SYMMETRIZER_H_ */

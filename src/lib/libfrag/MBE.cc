@@ -22,6 +22,7 @@
 
 #include "MBE.h"
 #include "MBEFragSet.h"
+#include "MBEFrag.h"
 #include "../../bin/psi4/psi4.h"
 #include "../../../include/psi4-dec.h"
 #include "libparallel/TableSpecs.h"
@@ -63,7 +64,7 @@ double MBE::Energy(const std::vector<MBEFragSet>& Systems,
 		En.push_back(0);//Initialize our vector
 		int nfrags=Systems[i].size();
 		for(int j=0;j<nfrags;j++){
-			En[i]+=Energies[i][j];
+			En[i]+=Systems[i][j]->Mult()*Energies[i][j];
 		}
 		energy=NBodyE(i+1,Systems[0].size(),&En[0]);
 		Egys.push_back(energy);
