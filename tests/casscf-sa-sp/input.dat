@@ -48,7 +48,7 @@ set detci {
   filter_guess_det1 [56, 56]
   filter_guess_det2 [66, 66]
   avg_states [1, 2]
-  s_squared True
+  calc_s_squared True
 }
 
 
