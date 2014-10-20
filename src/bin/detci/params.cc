@@ -257,7 +257,7 @@ void get_parameters(Options &options)
   Parameters.mixed4 = options["MIXED4"].to_integer();
   Parameters.r4s = options["R4S"].to_integer();
   Parameters.repl_otf = options["REPL_OTF"].to_integer();
-  Parameters.calc_ssq = options["S_SQUARED"].to_integer();
+  Parameters.calc_ssq = options["CALC_S_SQUARED"].to_integer();
 
   if (options["MPN"].has_changed())
     Parameters.mpn = options["MPN"].to_integer();
