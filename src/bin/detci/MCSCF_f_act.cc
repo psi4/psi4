@@ -30,7 +30,7 @@
 #include <libqt/qt.h>
 #include <psi4-dec.h>
 #include "MCSCF_globaldefs.h"
-#include "MCSCF_globals.h"
+#include "globals.h"
 
 namespace psi { namespace detcas {
 
@@ -64,7 +64,7 @@ void form_F_act(void)
            CalcInfo.twoel_ints, CalcInfo.opdm, CalcInfo.tpdm);
   */
 
-  if (Parameters.print_lvl > 3) {
+  if (MCSCF_Parameters.print_lvl > 3) {
     outfile->Printf("\nActive Fock matrix:\n");
     print_array(CalcInfo.F_act, CalcInfo.nmo, "outfile");
   }

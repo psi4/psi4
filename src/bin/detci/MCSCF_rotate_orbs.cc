@@ -33,7 +33,7 @@
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include "MCSCF_globaldefs.h"
-#include "MCSCF_globals.h"
+#include "globals.h"
 #include "psi4-dec.h"
 
 namespace psi { namespace detcas {
@@ -49,7 +49,7 @@ void rotate_orbs_irrep(int irrep, int dim, double **mo_coeffs,
   int p, q, i, j, pair;
   double **tmpmat, theta, sintheta, costheta;
 
-  if (Parameters.print_lvl > 3) {
+  if (MCSCF_Parameters.print_lvl > 3) {
     outfile->Printf("Thetas for irrep %d\n", irrep);
     for (pair=0; pair<npairs; pair++) {
       outfile->Printf("Pair (%2d,%2d) = %12.6lf\n",
@@ -71,7 +71,7 @@ void rotate_orbs_irrep(int irrep, int dim, double **mo_coeffs,
   }
  
   /* print new coefficients */
-  if (Parameters.print_mos) {
+  if (MCSCF_Parameters.print_mos) {
     outfile->Printf("\n\tOld molecular orbitals for irrep %s\n", 
       CalcInfo.labels[irrep]);
     print_mat(tmpmat, dim, dim, "outfile");
@@ -90,7 +90,7 @@ void rotate_orbs_irrep(int irrep, int dim, double **mo_coeffs,
   }
 
   /* print new coefficients */
-  if (Parameters.print_mos) {
+  if (MCSCF_Parameters.print_mos) {
     outfile->Printf("\n\tNew molecular orbitals for irrep %s\n", 
       CalcInfo.labels[irrep]);
     print_mat(tmpmat, dim, dim, "outfile");

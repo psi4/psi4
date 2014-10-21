@@ -43,7 +43,7 @@
 #include <libpsio/psio.h>
 #include <psifiles.h>
 #include "MCSCF_globaldefs.h"
-#include "MCSCF_globals.h"
+#include "globals.h"
 #include "psi4-dec.h"
 
 
@@ -76,7 +76,7 @@ int read_ref_orbs(void)
     return(1);
   }
   else {
-    if (Parameters.print_lvl) 
+    if (MCSCF_Parameters.print_lvl) 
       outfile->Printf("No previous orbitals ... using new reference orbitals\n");
     return(0);
   }

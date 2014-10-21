@@ -34,6 +34,11 @@ Make a pass through options:
            CalcInfo.mcscf_frozen_uocc
            CalcInfo.mcscf_restricted_uocc
 
+    mcscf_parameters:
+        Need MCSCF infront of _every_ parameter.
+         Change params.cc and python options
+         I *think* we can leave this as a seperate object 
+
 Merges:
     
 

@@ -44,7 +44,7 @@
 #include <libpsio/psio.h>
 #include <psifiles.h>
 #include "MCSCF_globaldefs.h"
-#include "MCSCF_globals.h"
+#include "globals.h"
 
 namespace psi { namespace detcas {
 
@@ -55,7 +55,7 @@ namespace psi { namespace detcas {
 **
 ** This top-level routine manages all the DIIS stuff.  
 **
-** Parameters:
+** MCSCF_Parameters:
 **   veclen = length of the vectors to extrapolate
 **   vec    = new vector to add
 **   errvec = new error vector to add
@@ -107,7 +107,7 @@ int diis(int veclen, double *vec, double *errvec)
   /* will we do a diis this time? */
   diis_iter++;
   num_vecs++;
-  if ((diis_iter % Parameters.diis_freq) || (num_vecs < Parameters.diis_min_vecs)) 
+  if ((diis_iter % MCSCF_Parameters.diis_freq) || (num_vecs < MCSCF_Parameters.diis_min_vecs)) 
     do_diis = 0; 
   else
     do_diis = 1;
@@ -116,10 +116,10 @@ int diis(int veclen, double *vec, double *errvec)
   for (i=0; i<veclen; i++) errvecs[num_vecs-1][i] = errvec[i];
 
   offset = 0;
-  if (num_vecs > Parameters.diis_max_vecs) 
-    offset = num_vecs - Parameters.diis_max_vecs;
+  if (num_vecs > MCSCF_Parameters.diis_max_vecs) 
+    offset = num_vecs - MCSCF_Parameters.diis_max_vecs;
 
-  if (Parameters.print_lvl > 2) 
+  if (MCSCF_Parameters.print_lvl > 2) 
     outfile->Printf("Diis: iter %2d, vecs %d, do_diis %d, offset %d\n", 
             diis_iter, num_vecs, do_diis, offset);
 
@@ -155,7 +155,7 @@ int diis(int veclen, double *vec, double *errvec)
   }
 
   /* form diis matrix, solve equations */
-  if (Parameters.print_lvl) 
+  if (MCSCF_Parameters.print_lvl) 
     outfile->Printf("Attempting a DIIS step\n");
 
   bmat = block_matrix(new_num_vecs+1, new_num_vecs+1);
@@ -180,7 +180,7 @@ int diis(int veclen, double *vec, double *errvec)
   bmat[new_num_vecs][new_num_vecs] = 0.0;
   bvec[new_num_vecs] = -1.0;
 
-  if (Parameters.print_lvl > 2) {
+  if (MCSCF_Parameters.print_lvl > 2) {
     outfile->Printf("DIIS B Matrix:\n");
     print_mat(bmat, new_num_vecs+1, new_num_vecs+1, "outfile");
   }
@@ -193,7 +193,7 @@ int diis(int veclen, double *vec, double *errvec)
     }
   }
 
-  if (Parameters.print_lvl > 2) {
+  if (MCSCF_Parameters.print_lvl > 2) {
     outfile->Printf("DIIS B Matrix:\n");
     print_mat(bmat, new_num_vecs+1, new_num_vecs+1, "outfile");
   }
@@ -206,7 +206,7 @@ int diis(int veclen, double *vec, double *errvec)
     outfile->Printf("Determinant is %6.3E\n", det);
   }
 
-  if (Parameters.print_lvl > 3) {
+  if (MCSCF_Parameters.print_lvl > 3) {
     outfile->Printf("\nCoefficients of DIIS extrapolant:\n");
     for (i=0; i<new_num_vecs; i++) {
       outfile->Printf("%12.6lf\n", bvec[i]);
