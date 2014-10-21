@@ -20,7 +20,7 @@
 #include <libpsio/psio.h>
 #include "psi4-dec.h"
 #include "MCSCF_globaldefs.h"
-#include "MCSCF_globals.h"
+#include "globals.h"
 
 namespace psi { namespace detcas {
 

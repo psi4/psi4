@@ -43,7 +43,7 @@
 #include <libqt/qt.h>
 #include <psifiles.h>
 #include "MCSCF_globaldefs.h"
-#include "MCSCF_globals.h"
+#include "globals.h"
 #include "psi4-dec.h"
 
 namespace psi { namespace detcas {
@@ -62,21 +62,21 @@ void read_integrals()
 
   /* now read them in */
 
-  if (Parameters.use_fzc_h) {
-    if (Parameters.print_lvl > 3) {
+  if (MCSCF_Parameters.use_fzc_h) {
+    if (MCSCF_Parameters.print_lvl > 3) {
       outfile->Printf("\n\tOne-electron integrals (frozen core operator):\n");
     }
     // can't erase file, re-reading it below
-    iwl_rdone(Parameters.oei_file, PSIF_MO_FZC, CalcInfo.onel_ints, nbstri, 
-              0, (Parameters.print_lvl>3), "outfile");
+    iwl_rdone(MCSCF_Parameters.oei_file, PSIF_MO_FZC, CalcInfo.onel_ints, nbstri, 
+              0, (MCSCF_Parameters.print_lvl>3), "outfile");
   }
   else {
-    if (Parameters.print_lvl > 3) {
+    if (MCSCF_Parameters.print_lvl > 3) {
       outfile->Printf("\n\tOne-electron integrals (bare):\n");
     }
     // can't erase file, re-reading it below
-    iwl_rdone(Parameters.oei_file, PSIF_MO_OEI, CalcInfo.onel_ints, nbstri, 
-              0, (Parameters.print_lvl>3), "outfile");
+    iwl_rdone(MCSCF_Parameters.oei_file, PSIF_MO_OEI, CalcInfo.onel_ints, nbstri, 
+              0, (MCSCF_Parameters.print_lvl>3), "outfile");
   }
 
   /* even if we utilize frozen core operator for some terms, the
@@ -84,20 +84,20 @@ void read_integrals()
      that, too (both should be available from the transformation code)
      -CDS 10/3/14
   */
-  if (Parameters.print_lvl > 3) { 
+  if (MCSCF_Parameters.print_lvl > 3) { 
     outfile->Printf("\n\tOne-electron integrals (bare):\n");
     }
-  iwl_rdone(Parameters.oei_file, PSIF_MO_OEI, CalcInfo.onel_ints_bare, nbstri,
-            Parameters.oei_erase ? 0 : 1, (Parameters.print_lvl>3), "outfile");
+  iwl_rdone(MCSCF_Parameters.oei_file, PSIF_MO_OEI, CalcInfo.onel_ints_bare, nbstri,
+            MCSCF_Parameters.oei_erase ? 0 : 1, (MCSCF_Parameters.print_lvl>3), "outfile");
 
   
-  if (Parameters.print_lvl > 6) 
+  if (MCSCF_Parameters.print_lvl > 6) 
     outfile->Printf("\n\tTwo-electron integrals:\n");
 
-  iwl_rdtwo(Parameters.tei_file, CalcInfo.twoel_ints, ioff, 
-     CalcInfo.nmo, Parameters.filter_ints ? CalcInfo.num_fzc_orbs : 0, 
-     Parameters.filter_ints ? CalcInfo.num_fzv_orbs : 0, 
-     (Parameters.print_lvl>6), "outfile");
+  iwl_rdtwo(MCSCF_Parameters.tei_file, CalcInfo.twoel_ints, ioff, 
+     CalcInfo.nmo, MCSCF_Parameters.filter_ints ? CalcInfo.num_fzc_orbs : 0, 
+     MCSCF_Parameters.filter_ints ? CalcInfo.num_fzv_orbs : 0, 
+     (MCSCF_Parameters.print_lvl>6), "outfile");
 
 } 
 

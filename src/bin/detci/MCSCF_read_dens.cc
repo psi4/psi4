@@ -41,7 +41,7 @@
 #include <libiwl/iwl.h>
 #include <libciomr/libciomr.h>
 #include "MCSCF_globaldefs.h"
-#include "MCSCF_globals.h"
+#include "globals.h"
 #include "psi4-dec.h"
 
 namespace psi { namespace detcas {
@@ -54,12 +54,12 @@ void read_density_matrices(Options& options)
 {
 
   /* read the one-particle density matrix */
-  CalcInfo.opdm = rdopdm(CalcInfo.npop, Parameters.print_lvl, Parameters.opdm_file,
-                         Parameters.opdm_erase, options);
+  CalcInfo.opdm = rdopdm(CalcInfo.npop, MCSCF_Parameters.print_lvl, MCSCF_Parameters.opdm_file,
+                         MCSCF_Parameters.opdm_erase, options);
 
   /* read the two-particle density matrix */
-  CalcInfo.tpdm = rdtpdm(CalcInfo.npop, Parameters.print_lvl, Parameters.tpdm_file,
-                         Parameters.tpdm_erase);
+  CalcInfo.tpdm = rdtpdm(CalcInfo.npop, MCSCF_Parameters.print_lvl, MCSCF_Parameters.tpdm_file,
+                         MCSCF_Parameters.tpdm_erase);
 
 }
 

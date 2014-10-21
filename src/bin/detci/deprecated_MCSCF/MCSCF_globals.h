@@ -50,7 +50,7 @@ extern "C" {
 namespace psi { namespace detcas {
 
 extern struct calcinfo CalcInfo;
-extern struct params Parameters;
+extern struct params MCSCF_Parameters;
 extern int *ioff;
 
 }} // end namespace psi::detcas

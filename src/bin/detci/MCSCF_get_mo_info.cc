@@ -35,7 +35,7 @@
 #include <psi4-dec.h>
 #include <libmints/wavefunction.h>
 #include "MCSCF_globaldefs.h"
-#include "MCSCF_globals.h"
+#include "globals.h"
 
 namespace psi { namespace detcas {
 
@@ -150,7 +150,7 @@ void get_mo_info(Options &options)
     }
   } 
 
-  if (Parameters.print_lvl > 4) {
+  if (MCSCF_Parameters.print_lvl > 4) {
     outfile->Printf("\nPitzer to CI order array = \n");
     for (i=0; i<CalcInfo.nmo; i++) {
       outfile->Printf("%3d ", CalcInfo.pitz2ci[i]);
@@ -255,7 +255,7 @@ void get_mo_info(Options &options)
     CalcInfo.mo_coeffs[irrep] = block_matrix(i,i);   
   }
   
-  if (Parameters.print_lvl > 0) {
+  if (MCSCF_Parameters.print_lvl > 0) {
     outfile->Printf("ORBITALS:");
     outfile->Printf("\n   FROZEN_DOCC   = ");
     for (i=0; i<CalcInfo.nirreps; i++) {

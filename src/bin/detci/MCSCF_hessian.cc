@@ -29,7 +29,7 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "MCSCF_globaldefs.h"
-#include "MCSCF_globals.h"
+#include "globals.h"
 #include "psi4-dec.h"
 
 namespace psi { namespace detcas {
@@ -193,7 +193,7 @@ void form_appx_diag_mo_hess(int npairs, int *ppair, int *qpair,
         }
       }
       hess[pair] += 2.0 * value;
-      if (Parameters.scale_act_act != 1.0) hess[pair] *= Parameters.scale_act_act;
+      if (MCSCF_Parameters.scale_act_act != 1.0) hess[pair] *= MCSCF_Parameters.scale_act_act;
     } /* end case H_{t1t2,t1t2} */
 
 
@@ -429,7 +429,7 @@ void form_diag_mo_hess(int npairs, int *ppair, int *qpair,
         }
       }
       hess[pair] += 2.0 * value;
-      if (Parameters.scale_act_act != 1.0) hess[pair] *= Parameters.scale_act_act;
+      if (MCSCF_Parameters.scale_act_act != 1.0) hess[pair] *= MCSCF_Parameters.scale_act_act;
     } /* end case H_{t1t2,t1t2} */
 
     else {

@@ -1563,5 +1563,56 @@ void print_ras_parms(void)
      "*******************************************************\n\n");
 }
 
+void set_mcscf_parameters(Options &options)
+{
+  int i, errcod;
+  char line1[133];
+   
+  MCSCF_Parameters.wfn = options.get_str("WFN");
+  MCSCF_Parameters.dertype = options.get_str("DERTYPE");
+  if (MCSCF_Parameters.dertype == "NONE") {
+    MCSCF_Parameters.rms_grad_convergence = 1e-4;
+    MCSCF_Parameters.energy_convergence = 1e-7;
+  }
+  else {
+    MCSCF_Parameters.rms_grad_convergence = 1e-7;
+    MCSCF_Parameters.energy_convergence = 1e-10;
+  }
+
+  if (options["R_CONVERGENCE"].has_changed()) {
+    MCSCF_Parameters.rms_grad_convergence = options.get_double("R_CONVERGENCE");
+  }
+  if (options["E_CONVERGENCE"].has_changed()) {
+    MCSCF_Parameters.energy_convergence = options.get_double("E_CONVERGENCE");
+  }
+
+
+  MCSCF_Parameters.filter_ints = 0;  /* assume we need all for MCSCF */
+  MCSCF_Parameters.oei_file = PSIF_OEI;  /* contains frozen core operator */
+  MCSCF_Parameters.tei_file = PSIF_MO_TEI;
+  MCSCF_Parameters.opdm_file = PSIF_MO_OPDM;
+  MCSCF_Parameters.tpdm_file = PSIF_MO_TPDM;
+  MCSCF_Parameters.lag_file = PSIF_MO_LAG;
+
+  MCSCF_Parameters.ignore_fz = true;     /* ignore frozen orbitals for ind pairs? */
+  
+  if ((MCSCF_Parameters.wfn == "CASSCF") || (MCSCF_Parameters.wfn == "DETCAS"))
+    MCSCF_Parameters.ignore_ras_ras = true;   /* ignore RAS/RAS independent pairs? */
+  else
+    MCSCF_Parameters.ignore_ras_ras = false;
+
+  MCSCF_Parameters.print_lvl = options.get_int("PRINT");
+  MCSCF_Parameters.print_mos = options.get_bool("PRINT_MOS");
+
+  MCSCF_Parameters.oei_erase = options.get_bool("OEI_ERASE");
+  MCSCF_Parameters.tei_erase = options.get_bool("TEI_ERASE");
+  MCSCF_Parameters.ignore_fz = options.get_bool("IGNORE_FZ");
+  MCSCF_Parameters.scale_grad = true; /* scale orb grad by inverse Hessian? */
+
+  MCSCF_Parameters.diis_start = options.get_int("DIIS_START");
+  MCSCF_Parameters.diis_freq = options.get_int("DIIS_FREQ");
+  MCSCF_Parameters.diis_min_vecs = options.get_int("DIIS_MIN_VECS");
+  MCSCF_Parameters.diis_max_vecs = options.get_int("DIIS_MAX_VECS");
+
 }} // namespace psi::detci
 

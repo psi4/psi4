@@ -29,7 +29,7 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "MCSCF_globaldefs.h"
-#include "MCSCF_globals.h"
+#include "globals.h"
 
 namespace psi { namespace detcas {
 
