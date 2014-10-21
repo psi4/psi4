@@ -72,7 +72,7 @@ void get_mo_info(Options &options)
    chkpt_init(PSIO_OPEN_OLD);
    CalcInfo.nirreps = chkpt_rd_nirreps();
    CalcInfo.nmo = chkpt_rd_nmo();
-   CalcInfo.nbfso = chkpt_rd_nmo(); /* change to nbfso after conversion */
+   CalcInfo.nso = chkpt_rd_nmo(); /* change to nbfso after conversion */
    CalcInfo.labels = chkpt_rd_irr_labs();
    CalcInfo.orbs_per_irr = chkpt_rd_orbspi();
    CalcInfo.enuc = chkpt_rd_enuc();
@@ -150,7 +150,7 @@ void get_mo_info(Options &options)
     }
   } 
 
-  if (Params.print_lvl > 4) {
+  if (Parameters.print_lvl > 4) {
     outfile->Printf("\nPitzer to CI order array = \n");
     for (i=0; i<CalcInfo.nmo; i++) {
       outfile->Printf("%3d ", CalcInfo.pitz2ci[i]);
@@ -159,8 +159,8 @@ void get_mo_info(Options &options)
   }
 
 
-  CalcInfo.nbstri = (CalcInfo.nmo * (CalcInfo.nmo + 1)) / 2 ;
-  check((CalcInfo.nbstri <= IOFF_MAX), 
+  CalcInfo.nmotri = (CalcInfo.nmo * (CalcInfo.nmo + 1)) / 2 ;
+  check((CalcInfo.nmotri <= IOFF_MAX), 
         "(get_mo_info): IOFF_MAX may not large enough!");
 
   /* transform orbsym vector to new MO order */
@@ -255,7 +255,7 @@ void get_mo_info(Options &options)
     CalcInfo.mo_coeffs[irrep] = block_matrix(i,i);   
   }
   
-  if (Params.print_lvl > 0) {
+  if (Parameters.print_lvl > 0) {
     outfile->Printf("ORBITALS:");
     outfile->Printf("\n   FROZEN_DOCC   = ");
     for (i=0; i<CalcInfo.nirreps; i++) {

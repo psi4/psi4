@@ -117,11 +117,11 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
      trouble converging the orbitals.  Guarantee it's positive definite
      by levelshifting
   */
-  if (Params.level_shift) {
-    while (hess_det < Params.determ_min) {
-      outfile->Printf("Level shifting the hessian by %8.3E\n",Params.shift);
+  if (Parameters.level_shift) {
+    while (hess_det < Parameters.determ_min) {
+      outfile->Printf("Level shifting the hessian by %8.3E\n",Parameters.shift);
       for (i=0;i<npairs;i++) {
-        hess[i][i] += Params.shift;
+        hess[i][i] += Parameters.shift;
       }
       for (i=0;i<npairs;i++) {
         for (j=0;j<npairs;j++) {
@@ -135,7 +135,7 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
       outfile->Printf("The determinant of the hessian is %8.3E\n",hess_det);
     }
     outfile->Printf("Determinant of the hessian is greater than %8.3E\n",
-      Params.determ_min);
+      Parameters.determ_min);
   }
 
 
@@ -146,7 +146,7 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
     }
   }
  
-  if (!Params.invert_hessian) { /* solve H delta = - g */
+  if (!Parameters.invert_hessian) { /* solve H delta = - g */
     outfile->Printf("Solving system of linear equations for orbital step...");
     BVector = init_array(npairs);
     pivots = init_int_array((npairs * (npairs - 1))/2);
@@ -210,10 +210,10 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
     if (fabs(tval) > biggest_step) biggest_step = fabs(tval);
   }
   outfile->Printf("\nLargest step in theta space is %12.6lf \n", biggest_step);
-  if (biggest_step > Params.step_max) {
+  if (biggest_step > Parameters.step_max) {
     outfile->Printf("Scaling the step\n");
     for (i=0;i<npairs;i++) {
-      theta[i] = theta[i] * Params.step_max / biggest_step;
+      theta[i] = theta[i] * Parameters.step_max / biggest_step;
     }
   }
 
@@ -253,11 +253,11 @@ void calc_orb_step_bfgs(int npairs, double *grad, double **hess, double *theta)
     if (fabs(tval) > biggest_step) biggest_step = fabs(tval);
   }
   outfile->Printf("\nLargest step in theta space is %12.6lf \n", biggest_step);
-  if (biggest_step > Params.step_max) {
+  if (biggest_step > Parameters.step_max) {
     outfile->Printf("Largest allowed step %12.6lf --- scaling the step\n",
-      Params.step_max);
+      Parameters.step_max);
     for (i=0;i<npairs;i++) {
-      theta[i] = theta[i] * Params.step_max / biggest_step;
+      theta[i] = theta[i] * Parameters.step_max / biggest_step;
     }
   }
 
@@ -282,7 +282,7 @@ void print_step(int npairs, int steptype)
   ffile_noexit(&sumfile,sumfile_name,2);
   if (sumfile == NULL) { /* the file doesn't exist yet */
     entries = 0;
-    if (Params.print_lvl)
+    if (Parameters.print_lvl)
       outfile->Printf("\nPreparing new file %s\n", sumfile_name);
   }
   else {

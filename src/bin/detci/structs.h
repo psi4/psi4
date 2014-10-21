@@ -333,6 +333,20 @@ struct calcinfo {
    int max_orbs_per_irrep; /* maximum orbials per irrep fzv not included */
    int max_pop_per_irrep;/* maximum populated orbitals per irrep fzv included */
    int sigma_initialized; /* has sigma_init been called yet? */
+
+
+   /* Start MCSCF values*/
+   int mcscf_iter               /* number of MCSCF iterations */
+   int mcscf_num_fzc_orbs;      /* MCSCF number of FZC orbitals (i.e. frozen core) */
+   int mcscf_num_cor_orbs;      /* MCSCF number of COR orbitals (i.e. restricted core) */
+   int mcscf_num_vir_orbs;      /* MCSCF number of VIR orbitals (i.e. restricted virtual) */
+   int mcscf_num_fzv_orbs;      /* MCSCF number of frozen/deleted virtual orbitals */
+   int *mcscf_docc;             /* MCSCF doubly occupied orbitals per irrep */
+   int *mcscf_socc;             /* MCSCF singly occupied orbitals per irrep */
+   int *mcscf_frozen_docc;      /* MCSCF frozen doubly occupied orbs per irrep */
+   int *mcscf_frozen_uocc;      /* MCSCF frozen virtual orbs per irrep */
+   int *mcscf_rstr_docc;        /* MCSCF restricted doubly occupied orbs per irrep */
+   int *mcscf_rstr_uocc;        /* MCSCF restricted virtual orbs per irrep */
    };
 
 
@@ -566,6 +580,58 @@ struct params {
                                               [1] = max IV particles
                                               [2] = max (I h + IV p)        */
    int cc_variational;     /* variational energy expression?                */
+
+
+};
+
+/*
+** parameters structure: holds MCSCF run-time parameters
+*/
+struct mcscf_params {
+   std::string dertype;        /* derivative level: none, first, etc.          */
+   std::string wfn;            /* wavefunction, CASSCF, RASSCF, ..             */
+   int print_lvl;               /* print verbosity level                        */
+   bool print_mos;              /* print the molecular orbitals ?               */
+   double rms_grad_convergence; /* convergence on RMS of orbital grad           */
+   double energy_convergence;   /* convergence on CI energy                     */
+   int oei_file;                /* file number for one-electron integrals       */
+   bool oei_erase;              /* erase onel ints after reading them?          */
+   int tei_file;                /* file number for two-electron integrals       */
+   bool tei_erase;              /* erase twoel ints after reading them?         */
+   int opdm_file;               /* file number for one-particle density matrix  */
+   bool opdm_erase;             /* erase onepdm ints after reading?             */
+   int tpdm_file;               /* file number for two-particle density matrix  */
+   bool tpdm_erase;             /* erase twopdm after reading?                  */
+   int lag_file;                /* file number for lagrangian                   */
+   bool lag_erase;              /* erase lagrangian after reading?              */
+   bool ignore_ras_ras;         /* ignore RAS/RAS rotations in independ pairs?  */
+   bool ignore_fz;              /* ignore FZC/FZV in independent pair list?     */
+   int filter_ints;             /* filter out the frozen orbital integrals?     */
+   bool scale_grad;             /* scale the orbital gradient by the appx Hess? */
+   int diis_start;              /* how many diis vectors built up before start  */
+   int diis_freq;               /* how many iters to go before a diis step      */
+   int diis_min_vecs;           /* how many vectors required before do diis?    */
+   int diis_max_vecs;           /* how many vectors maximum to hold?            */
+   double scale_step;           /* stepsize scaling factor                      */
+   std::string hessian;         /* string describing type of MO Hessian         */
+                                /* DIAG, APPROX_DIAG, or FULL                   */
+   bool use_fzc_h;              /* Use frozen-core operator h?(1) Or bare h?(0) */
+                                /* this determines which onel ints are read     */
+   bool level_shift;            /* Allow for level shifting of the hessian?     */
+   double shift;                /* How much do I level shift the hessian        */
+   double determ_min;           /* Min det of MO Hessian before levelshift      */
+   double step_max;             /* Biggest single allowed theta step            */
+   bool invert_hessian;         /* If=True, directly invert the Hessian,
+                                   if=False, solve linear equations H delta = -g*/
+   bool use_thetas;             /* If=True, use Givens matrix formalism,
+                                   if=False, use YY 2nd-order expansion U=e^R   */
+   bool force_step;             /* Ignore usual updating and force a user
+                                   specified step?  (For debugging)             */
+   int force_pair;              /* If force_step=True, which indep pair to step?*/
+   double force_value;          /* If force_step=True, how far to step?         */
+   double scale_act_act;        /* Scale the active-active Hessian by this      */
+   bool bfgs;                   /* Do BFGS update of Hessian?                   */
+   bool ds_hessian;             /* Do a DS Hessian update?                      */
 };
 
 

@@ -57,16 +57,16 @@ void read_lagrangian(void)
   
   CalcInfo.lag = block_matrix(nmo, nmo);
 
-  psio_open(Params.lag_file, PSIO_OPEN_OLD);  
-  psio_read_entry(Params.lag_file, "MO-basis Lagrangian", 
+  psio_open(Parameters.lag_file, PSIO_OPEN_OLD);  
+  psio_read_entry(Parameters.lag_file, "MO-basis Lagrangian", 
     (char *) CalcInfo.lag[0], nmo*nmo*sizeof(double));
 
-  if (Params.print_lvl > 3) {
+  if (Parameters.print_lvl > 3) {
     outfile->Printf("Lagrangian matrix\n");
     print_mat(CalcInfo.lag, nmo, nmo, "outfile");
   }
 
-  psio_close(Params.lag_file, Params.lag_erase ? 0 : 1);
+  psio_close(Parameters.lag_file, Parameters.lag_erase ? 0 : 1);
 
 } 
 

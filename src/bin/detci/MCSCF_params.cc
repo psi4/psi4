@@ -53,68 +53,68 @@ void get_parameters(Options &options)
   int i, errcod;
   char line1[133];
    
-  Params.wfn = options.get_str("WFN");
-  Params.dertype = options.get_str("DERTYPE");
-  if (Params.dertype == "NONE") {
-    Params.rms_grad_convergence = 1e-4;
-    Params.energy_convergence = 1e-7;
+  Parameters.wfn = options.get_str("WFN");
+  Parameters.dertype = options.get_str("DERTYPE");
+  if (Parameters.dertype == "NONE") {
+    Parameters.rms_grad_convergence = 1e-4;
+    Parameters.energy_convergence = 1e-7;
   }
   else {
-    Params.rms_grad_convergence = 1e-7;
-    Params.energy_convergence = 1e-10;
+    Parameters.rms_grad_convergence = 1e-7;
+    Parameters.energy_convergence = 1e-10;
   }
 
   if (options["R_CONVERGENCE"].has_changed()) {
-    Params.rms_grad_convergence = options.get_double("R_CONVERGENCE");
+    Parameters.rms_grad_convergence = options.get_double("R_CONVERGENCE");
   }
   if (options["E_CONVERGENCE"].has_changed()) {
-    Params.energy_convergence = options.get_double("E_CONVERGENCE");
+    Parameters.energy_convergence = options.get_double("E_CONVERGENCE");
   }
 
 
-  Params.filter_ints = 0;  /* assume we need all for MCSCF */
-  Params.oei_file = PSIF_OEI;  /* contains frozen core operator */
-  Params.tei_file = PSIF_MO_TEI;
-  Params.opdm_file = PSIF_MO_OPDM;
-  Params.tpdm_file = PSIF_MO_TPDM;
-  Params.lag_file = PSIF_MO_LAG;
+  Parameters.filter_ints = 0;  /* assume we need all for MCSCF */
+  Parameters.oei_file = PSIF_OEI;  /* contains frozen core operator */
+  Parameters.tei_file = PSIF_MO_TEI;
+  Parameters.opdm_file = PSIF_MO_OPDM;
+  Parameters.tpdm_file = PSIF_MO_TPDM;
+  Parameters.lag_file = PSIF_MO_LAG;
 
-  Params.ignore_fz = true;     /* ignore frozen orbitals for ind pairs? */
+  Parameters.ignore_fz = true;     /* ignore frozen orbitals for ind pairs? */
   
-  if ((Params.wfn == "CASSCF") || (Params.wfn == "DETCAS"))
-    Params.ignore_ras_ras = true;   /* ignore RAS/RAS independent pairs? */
+  if ((Parameters.wfn == "CASSCF") || (Parameters.wfn == "DETCAS"))
+    Parameters.ignore_ras_ras = true;   /* ignore RAS/RAS independent pairs? */
   else
-    Params.ignore_ras_ras = false;
+    Parameters.ignore_ras_ras = false;
 
-  Params.print_lvl = options.get_int("PRINT");
-  Params.print_mos = options.get_bool("PRINT_MOS");
+  Parameters.print_lvl = options.get_int("PRINT");
+  Parameters.print_mos = options.get_bool("PRINT_MOS");
 
-  Params.oei_erase = options.get_bool("OEI_ERASE");
-  Params.tei_erase = options.get_bool("TEI_ERASE");
-  Params.ignore_fz = options.get_bool("IGNORE_FZ");
-  Params.scale_grad = true; /* scale orb grad by inverse Hessian? */
+  Parameters.oei_erase = options.get_bool("OEI_ERASE");
+  Parameters.tei_erase = options.get_bool("TEI_ERASE");
+  Parameters.ignore_fz = options.get_bool("IGNORE_FZ");
+  Parameters.scale_grad = true; /* scale orb grad by inverse Hessian? */
 
-  Params.diis_start = options.get_int("DIIS_START");
-  Params.diis_freq = options.get_int("DIIS_FREQ");
-  Params.diis_min_vecs = options.get_int("DIIS_MIN_VECS");
-  Params.diis_max_vecs = options.get_int("DIIS_MAX_VECS");
+  Parameters.diis_start = options.get_int("DIIS_START");
+  Parameters.diis_freq = options.get_int("DIIS_FREQ");
+  Parameters.diis_min_vecs = options.get_int("DIIS_MIN_VECS");
+  Parameters.diis_max_vecs = options.get_int("DIIS_MAX_VECS");
 
-  Params.scale_step = options.get_double("SCALE_STEP");
-  Params.use_fzc_h = options.get_bool("USE_FZC_H");
-  Params.invert_hessian = options.get_bool("INVERT_HESSIAN");
-  Params.hessian = options.get_str("HESSIAN");
+  Parameters.scale_step = options.get_double("SCALE_STEP");
+  Parameters.use_fzc_h = options.get_bool("USE_FZC_H");
+  Parameters.invert_hessian = options.get_bool("INVERT_HESSIAN");
+  Parameters.hessian = options.get_str("HESSIAN");
  
-  Params.level_shift = options.get_bool("DO_LEVEL_SHIFT");
-  Params.shift = options.get_double("SHIFT");
-  Params.determ_min = options.get_double("DETERM_MIN");
-  Params.step_max = options.get_double("STEP_MAX");
-  Params.use_thetas = options.get_bool("USE_THETAS");
-  Params.force_step = options.get_bool("FORCE_STEP");
-  Params.force_pair = options.get_int("FORCE_PAIR");
-  Params.force_value = options.get_double("FORCE_VALUE");
-  Params.scale_act_act = options.get_double("SCALE_ACT_ACT");
-  Params.bfgs = options.get_bool("BFGS");
-  Params.ds_hessian = options.get_bool("DS_HESSIAN");
+  Parameters.level_shift = options.get_bool("DO_LEVEL_SHIFT");
+  Parameters.shift = options.get_double("SHIFT");
+  Parameters.determ_min = options.get_double("DETERM_MIN");
+  Parameters.step_max = options.get_double("STEP_MAX");
+  Parameters.use_thetas = options.get_bool("USE_THETAS");
+  Parameters.force_step = options.get_bool("FORCE_STEP");
+  Parameters.force_pair = options.get_int("FORCE_PAIR");
+  Parameters.force_value = options.get_double("FORCE_VALUE");
+  Parameters.scale_act_act = options.get_double("SCALE_ACT_ACT");
+  Parameters.bfgs = options.get_bool("BFGS");
+  Parameters.ds_hessian = options.get_bool("DS_HESSIAN");
 
 }
 
@@ -128,31 +128,31 @@ void print_parameters(void)
   outfile->Printf("\n") ;
   outfile->Printf("PARAMETERS: \n") ;
   outfile->Printf("   PRINT          =   %6d      PRINT_MOS     =   %6s\n", 
-      Params.print_lvl, Params.print_mos ? "yes" : "no");
+      Parameters.print_lvl, Parameters.print_mos ? "yes" : "no");
   outfile->Printf("   R_CONVERGENCE  =   %6.2e    E CONVERG     =   %6.2e\n",
-      Params.rms_grad_convergence, Params.energy_convergence);
+      Parameters.rms_grad_convergence, Parameters.energy_convergence);
   outfile->Printf("   IGNORE_RAS_RAS =   %6s      IGNORE_FZ     =   %6s\n", 
-      Params.ignore_ras_ras ? "yes" : "no", Params.ignore_fz ? "yes" : "no") ;
+      Parameters.ignore_ras_ras ? "yes" : "no", Parameters.ignore_fz ? "yes" : "no") ;
   outfile->Printf("   OEI FILE       =   %6d      OEI ERASE     =   %6s\n", 
-      Params.oei_file, Params.oei_erase ? "yes" : "no");
+      Parameters.oei_file, Parameters.oei_erase ? "yes" : "no");
   outfile->Printf("   TEI FILE       =   %6d      TEI ERASE     =   %6s\n", 
-      Params.tei_file, Params.tei_erase ? "yes" : "no");
+      Parameters.tei_file, Parameters.tei_erase ? "yes" : "no");
   outfile->Printf("   OPDM FILE      =   %6d      OPDM ERASE    =   %6s\n", 
-      Params.lag_file, Params.opdm_erase ? "yes" : "no");
+      Parameters.lag_file, Parameters.opdm_erase ? "yes" : "no");
   outfile->Printf("   TPDM FILE      =   %6d      TPDM ERASE    =   %6s\n", 
-      Params.tpdm_file, Params.tpdm_erase ? "yes" : "no");
+      Parameters.tpdm_file, Parameters.tpdm_erase ? "yes" : "no");
   outfile->Printf("   LAG FILE       =   %6d      LAG ERASE     =   %6s\n", 
-      Params.lag_file, Params.lag_erase ? "yes" : "no");
+      Parameters.lag_file, Parameters.lag_erase ? "yes" : "no");
   outfile->Printf("   DIIS START     =   %6d      DIIS FREQ     =   %6d\n", 
-      Params.diis_start, Params.diis_freq);
+      Parameters.diis_start, Parameters.diis_freq);
   outfile->Printf("   DIIS MIN VECS  =   %6d      DIIS MAX VECS =   %6d\n", 
-      Params.diis_min_vecs, Params.diis_max_vecs);
+      Parameters.diis_min_vecs, Parameters.diis_max_vecs);
   outfile->Printf("   SCALE STEP     =   %6.2E    MAX STEP      =   %6.2lf\n",
-      Params.scale_step, Params.step_max);
+      Parameters.scale_step, Parameters.step_max);
   outfile->Printf("   DO_LEVEL SHIFT =   %6s      SHIFT         =   %6.2lf\n",
-      Params.level_shift ? "yes" : "no", Params.shift);
+      Parameters.level_shift ? "yes" : "no", Parameters.shift);
   outfile->Printf("   USE FZC H      =   %6s      HESSIAN       = %-12s\n",
-      Params.use_fzc_h ? "yes" : "no", Params.hessian.c_str());
+      Parameters.use_fzc_h ? "yes" : "no", Parameters.hessian.c_str());
   outfile->Printf("\n") ;
   //fflush(outfile);
 }

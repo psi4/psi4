@@ -49,7 +49,7 @@ void form_F_act(void)
   int ncore;
 
   /* Form the intermediates we need */
-  CalcInfo.F_act = init_array(CalcInfo.nbstri);
+  CalcInfo.F_act = init_array(CalcInfo.nmotri);
   ncore = CalcInfo.num_fzc_orbs + CalcInfo.num_cor_orbs;
   calc_F_act(CalcInfo.F_act, CalcInfo.nmo, ncore,  CalcInfo.npop, 
              CalcInfo.opdm, CalcInfo.twoel_ints);
@@ -64,7 +64,7 @@ void form_F_act(void)
            CalcInfo.twoel_ints, CalcInfo.opdm, CalcInfo.tpdm);
   */
 
-  if (Params.print_lvl > 3) {
+  if (Parameters.print_lvl > 3) {
     outfile->Printf("\nActive Fock matrix:\n");
     print_array(CalcInfo.F_act, CalcInfo.nmo, "outfile");
   }

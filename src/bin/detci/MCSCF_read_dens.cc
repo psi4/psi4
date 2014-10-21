@@ -54,12 +54,12 @@ void read_density_matrices(Options& options)
 {
 
   /* read the one-particle density matrix */
-  CalcInfo.opdm = rdopdm(CalcInfo.npop, Params.print_lvl, Params.opdm_file,
-                         Params.opdm_erase, options);
+  CalcInfo.opdm = rdopdm(CalcInfo.npop, Parameters.print_lvl, Parameters.opdm_file,
+                         Parameters.opdm_erase, options);
 
   /* read the two-particle density matrix */
-  CalcInfo.tpdm = rdtpdm(CalcInfo.npop, Params.print_lvl, Params.tpdm_file,
-                         Params.tpdm_erase);
+  CalcInfo.tpdm = rdtpdm(CalcInfo.npop, Parameters.print_lvl, Parameters.tpdm_file,
+                         Parameters.tpdm_erase);
 
 }
 

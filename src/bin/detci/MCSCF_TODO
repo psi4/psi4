@@ -1,5 +1,6 @@
-Make a pass through options:
-    Prepend MCSCF
+
+########## TODO
+
 
 Wavefunction:
     DETCAS and DETCI wfn's. 
@@ -13,9 +14,6 @@ DETCAS driver in detci main function:
         Optimize orbitals.
 
 Merges:
-    CalcInfo class:
-        Identical Values:
-            restricted_docc
 
         Two seperate integral buffers:
             One e bare/fzc
@@ -23,3 +21,83 @@ Merges:
 
 
 All psi headers should be in "" not <>
+
+########## In Progress
+Make a pass through options:
+    Prepend MCSCF
+    MCSCF_calcinfo.h
+
+    CalcInfo class:
+        Non-duplicates
+           CalcInfo.mcscf_frozen_docc
+           CalcInfo.mcscf_restricted_docc
+           CalcInfo.mcscf_frozen_uocc
+           CalcInfo.mcscf_restricted_uocc
+
+Merges:
+    
+
+
+########## Completed
+Temporary: mcscf_params
+
+
+
+########## Details
+
+
+
+# CalcInfo Changes
+
+MCSCF identical values that need name change:
+  iter      -> mcscf_iter
+  nbfso     -> nso
+  nbstri    -> nmotri
+  
+
+DETCI_calcinfo additions:
+  int mcscf_iter               /* number of MCSCF iterations */
+  int mcscf_num_fzc_orbs;      /* MCSCF number of FZC orbitals (i.e. frozen core) */
+  int mcscf_num_cor_orbs;      /* MCSCF number of COR orbitals (i.e. restricted core) */
+  int mcscf_num_vir_orbs;      /* MCSCF number of VIR orbitals (i.e. restricted virtual) */
+  int mcscf_num_fzv_orbs;      /* MCSCF number of frozen/deleted virtual orbitals */
+  int *mcscf_docc;             /* MCSCF doubly occupied orbitals per irrep */
+  int *mcscf_socc;             /* MCSCF singly occupied orbitals per irrep */
+  int *mcscf_frozen_docc;      /* MCSCF frozen doubly occupied orbs per irrep */
+  int *mcscf_frozen_uocc;      /* MCSCF frozen virtual orbs per irrep */
+  int *mcscf_rstr_docc;        /* MCSCF restricted doubly occupied orbs per irrep */
+  int *mcscf_rstr_uocc;        /* MCSCF restricted virtual orbs per irrep */
+  
+
+Identical calcinfo values:
+  int nmo;              /* number of molecular orbitals */
+  int npop;              /* number of populated orbitals, nbfso - nfzv */
+  int max_orbs_per_irrep;/* max orbitals per irrep fzv not included */
+  int max_pop_per_irrep; /* max populated orbitals per irrep fzv included */
+  int *orbs_per_irr;     /* number of orbitals per irrep */
+  int *orbsym;           /* irrep for each orbital */
+  int *pitz2ci;          /* map Pitzer-ordered orbitals to our ordering */
+  int *ci2pitz;          /* map our ordering back to Pitzer ordering */
+  int *ci2relpitz;       /* map CI ordering to _relative_ pitzer ordering */
+  char **labels;         /* labels for irreps */
+  int **ras_opi;         /* num orbs per irr per ras space ras_opi[ras][irr] */
+  int **fzc_orbs;        /* frozen core orbitals numbers [irrep][orbnum] */
+  int **cor_orbs;        /* restricted core orbitals numbers [irrep][orbnum] */
+  int **vir_orbs;        /* restr virtual orbitals numbers [irrep][orbnum] */
+  int **fzv_orbs;        /* frozen virtual orbitals numbers [irrep][orbnum] */
+  int ***ras_orbs;       /* ras_orbs[ras][irr][cnt] gives an orbital number */
+  int *first;            /* first orbital per irrep (in Pitzer order)    */
+  int *last;             /* last  orbital per irrep (in Pitzer order)    */
+  int *fstact;           /* first active orb per irrep (in Pitzer order) */
+  int *lstact;           /* last  active orb per irrep (in Pitzer order) */
+  int *active;           /* num active orbs per irrep                    */
+  double enuc;           /* nuclear repulsion energy */
+
+Unclear and unchanged calcinfo values:
+  double efzc;           /* frozen-core energy */
+  double ***mo_coeffs;   /* matrix of molecular orbitals in Pitzer order */
+  double *onel_ints;     /* one-electron integrals */
+  double *onel_ints_bare;/* one-electron integrals, bare h only */
+  double *twoel_ints;    /* two-electron integrals */
+  double **opdm;         /* one-particle density matrix */
+  double *tpdm;          /* two-particle density matrix */

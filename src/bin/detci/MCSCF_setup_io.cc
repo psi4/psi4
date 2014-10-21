@@ -58,7 +58,7 @@ namespace psi { namespace detcas {
 //   extra_args = (char **) malloc(argc*sizeof(char *)); 
 //   for (i=1,num_extra_args=0; i<argc; i++) {
 //     if (strcmp(argv[i], "--quiet") == 0) {
-//       Params.print_lvl = 0;
+//       Parameters.print_lvl = 0;
 //     }
 //     else {
 //       extra_args[num_extra_args++] = argv[i];
@@ -75,7 +75,7 @@ namespace psi { namespace detcas {
 //   ip_cwk_add(":DEFAULT");
 //   */
 // 
-//   if (Params.print_lvl) tstart(outfile);
+//   if (Parameters.print_lvl) tstart(outfile);
 //   ip_cwk_add(":DETCAS");
 //   psio_init(); psio_ipv1_config();
 // 
@@ -90,7 +90,7 @@ namespace psi { namespace detcas {
 // void close_io(void)
 // {
 //    psio_done();
-//    if (Params.print_lvl) tstop(outfile);
+//    if (Parameters.print_lvl) tstop(outfile);
 //    psi_stop(infile,outfile,psi_file_prefix);
 // }
 // 

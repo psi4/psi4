@@ -126,7 +126,7 @@ double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
                int nmo, int npop, int print_lvl, int lag_file);
 
 struct calcinfo CalcInfo;
-struct params Params;
+struct params Parameters;
 int *ioff;
 IndepPairs IndPairs;
 PsiReturnType detcas(Options &options);
@@ -215,16 +215,16 @@ PsiReturnType detcas(Options &options)
   int num_pairs = 0;
   int steptype = 0;
 
-  Params.print_lvl = 1;
+  Parameters.print_lvl = 1;
   CalcInfo.mo_hess = NULL;
   CalcInfo.mo_hess_diag = NULL;
 
-  if (Params.print_lvl) tstart();
+  if (Parameters.print_lvl) tstart();
   get_parameters(options);     /* get running params (convergence, etc)    */
   init_ioff();                 /* set up the ioff array                    */
   title();                     /* print program identification             */
 
-  if (Params.print_lvl) print_parameters();
+  if (Parameters.print_lvl) print_parameters();
 
   get_mo_info(options);               /* read DOCC, SOCC, frozen, nbfso, etc      */
   read_integrals();            /* get the 1 and 2 elec MO integrals        */
@@ -232,7 +232,7 @@ PsiReturnType detcas(Options &options)
 
   CalcInfo.lag = lagcalc(CalcInfo.opdm, CalcInfo.tpdm, CalcInfo.onel_ints_bare,
                      CalcInfo.twoel_ints, CalcInfo.nmo,
-                     CalcInfo.npop, Params.print_lvl, PSIF_MO_LAG); 
+                     CalcInfo.npop, Parameters.print_lvl, PSIF_MO_LAG); 
 
 
   read_lagrangian();
@@ -241,7 +241,7 @@ PsiReturnType detcas(Options &options)
   num_pairs = IndPairs.get_num_pairs();
 
   read_thetas(num_pairs);
-  if (Params.print_lvl > 2)
+  if (Parameters.print_lvl > 2)
     IndPairs.print_vec(CalcInfo.theta_cur, "\n\tRotation Angles:");
 
   if (!read_ref_orbs()) {
@@ -255,9 +255,9 @@ PsiReturnType detcas(Options &options)
   calc_gradient();
   converged = check_conv();
 
-  if (Params.bfgs)
+  if (Parameters.bfgs)
     bfgs_hessian();
-  else if (Params.ds_hessian)
+  else if (Parameters.ds_hessian)
     ds_hessian();
   else
     calc_hessian();
@@ -274,10 +274,10 @@ PsiReturnType detcas(Options &options)
 
   print_step(num_pairs, steptype);
 
-  if (Params.print_lvl) quote();
+  if (Parameters.print_lvl) quote();
   cleanup();
   //close_io();
-  if (Params.print_lvl) tstop();
+  if (Parameters.print_lvl) tstop();
 
   if (converged){
     return EndLoop; 
@@ -308,7 +308,7 @@ void init_ioff(void)
 */
 void title(void)
 {
-  if (Params.print_lvl) {
+  if (Parameters.print_lvl) {
    outfile->Printf("\n");
    outfile->Printf("*******************************************************\n");
    outfile->Printf("                      D E T C A S \n");
@@ -343,9 +343,9 @@ void form_independent_pairs(void)
                CalcInfo.rstr_docc, CalcInfo.cor_orbs,
                CalcInfo.rstr_uocc, CalcInfo.vir_orbs,
                CalcInfo.frozen_uocc, CalcInfo.fzv_orbs,
-               CalcInfo.ci2relpitz, Params.ignore_ras_ras, Params.ignore_fz);
+               CalcInfo.ci2relpitz, Parameters.ignore_ras_ras, Parameters.ignore_fz);
 
-  if (Params.print_lvl > 3) IndPairs.print();
+  if (Parameters.print_lvl > 3) IndPairs.print();
 
 }
 
@@ -394,7 +394,7 @@ void calc_gradient(void)
     ir_lag = block_matrix(ir_norbs, ir_norbs);
     get_mat_block(CalcInfo.lag, ir_lag, ir_norbs, offset, CalcInfo.pitz2ci);
 
-    if (Params.print_lvl > 3) {
+    if (Parameters.print_lvl > 3) {
       outfile->Printf( "Irrep %d of lagrangian:\n", h);
       print_mat(ir_lag, ir_norbs, ir_norbs, "outfile");
     }
@@ -404,17 +404,17 @@ void calc_gradient(void)
     // Need to mult the Lagrangian by 2 to get dEdU
     C_DSCAL(ir_norbs*ir_norbs, 2.0, ir_lag[0], 1);
 
-    if (Params.print_lvl > 3) {
+    if (Parameters.print_lvl > 3) {
       outfile->Printf( "Irrep %d of 2 * lagrangian:\n", h);
       print_mat(ir_lag, ir_norbs, ir_norbs, "outfile");
     }
 
-    if (Params.use_thetas) {
+    if (Parameters.use_thetas) {
       // Calc dEdU
       premult_by_U(h, CalcInfo.orbs_per_irr[h], ir_lag, ir_npairs,
                    ir_ppair, ir_qpair, ir_theta_cur);
 
-      if (Params.print_lvl > 3) {
+      if (Parameters.print_lvl > 3) {
         outfile->Printf( "dE/dU:\n", h);
         print_mat(ir_lag, ir_norbs, ir_norbs, "outfile");
       }
@@ -445,13 +445,13 @@ void calc_gradient(void)
     rms += value * value;
   }
 
-  if (Params.print_lvl > 2) 
+  if (Parameters.print_lvl > 2) 
     IndPairs.print_vec(CalcInfo.mo_grad, "\n\tOrbital Gradient:");
 
   rms = sqrt(rms);
   CalcInfo.mo_grad_rms = rms;
 
-  if (Params.print_lvl)
+  if (Parameters.print_lvl)
     outfile->Printf( "\n\tRMS Orbital Gradient: %6.4E\n", rms);
 }
 
@@ -480,7 +480,7 @@ void bfgs_hessian(void)
   /* If no Hessian in the file */
   if (psio_tocscan(PSIF_DETCAS, "Hessian Inverse") == NULL) {
     calc_hessian();
-    if (Params.hessian == "FULL") {
+    if (Parameters.hessian == "FULL") {
       CalcInfo.mo_hess = block_matrix(npairs,npairs);
       for (i=0; i<npairs; i++) {
         CalcInfo.mo_hess[i][i] = 1.0 / CalcInfo.mo_hess_diag[i];
@@ -499,11 +499,11 @@ void bfgs_hessian(void)
       for (i=0;i<npairs;i++) hess_det *= hess_copy[i][i];
       outfile->Printf("The determinant of the hessian is %8.3E\n",hess_det);
 
-      if (Params.level_shift) {
-        while (hess_det < Params.determ_min) {
-          outfile->Printf( "Level shifting hessian by %8.3E\n", Params.shift);
+      if (Parameters.level_shift) {
+        while (hess_det < Parameters.determ_min) {
+          outfile->Printf( "Level shifting hessian by %8.3E\n", Parameters.shift);
           for (i=0; i<npairs; i++) {
-            CalcInfo.mo_hess[i][i] += Params.shift;
+            CalcInfo.mo_hess[i][i] += Parameters.shift;
             for (j=0; j<npairs; j++) {
               hess_copy[i][j] = CalcInfo.mo_hess[i][j];
             }
@@ -523,7 +523,7 @@ void bfgs_hessian(void)
       /* n.b. this destroys hess_copy, and mo_hess now is INVERSE Hess */
       invert_matrix(hess_copy,CalcInfo.mo_hess,npairs,"outfile");
 
-      if (Params.print_lvl > 3) {
+      if (Parameters.print_lvl > 3) {
         outfile->Printf( "\nInitial MO Hessian Inverse:\n");
         print_mat(CalcInfo.mo_hess,npairs,npairs,"outfile");
         outfile->Printf( "\n");
@@ -572,7 +572,7 @@ void bfgs_hessian(void)
     dg[i] = CalcInfo.mo_grad[i] - dg[i];
   }
 
-  if (Params.print_lvl > 3) {
+  if (Parameters.print_lvl > 3) {
     outfile->Printf( "Delta Theta and Delta Grad arrays:\n");
     for (i=0; i<npairs; i++) {
       outfile->Printf( "%12.7lf   %12.7lf\n", dx[i], dg[i]);
@@ -606,7 +606,7 @@ void bfgs_hessian(void)
     }
   }
 
-  if (Params.print_lvl > 3) {
+  if (Parameters.print_lvl > 3) {
     outfile->Printf( "\nBFGS MO Hessian Inverse:\n");
     print_mat(CalcInfo.mo_hess,npairs,npairs,"outfile");
     outfile->Printf( "\n");
@@ -617,7 +617,7 @@ void bfgs_hessian(void)
      when that's ensured, it seems to match 
    */
   /*
-  if (Params.print_lvl > 3) {
+  if (Parameters.print_lvl > 3) {
     outfile->Printf( "Check of dx = H dg\n");
     for (i=0; i<npairs; i++) {
       tval = 0.0;
@@ -655,7 +655,7 @@ void bfgs_hessian(void)
     /* n.b. this destroys hess_copy */
     invert_matrix(hess_copy,hess_copy2,npairs,"outfile");
 
-    if (Params.print_lvl > 3) {
+    if (Parameters.print_lvl > 3) {
       outfile->Printf( "\nMO Hessian:\n");
       print_mat(hess_copy2,npairs,npairs,"outfile");
       outfile->Printf( "\n");
@@ -665,11 +665,11 @@ void bfgs_hessian(void)
     for (i=0;i<npairs;i++) hess_det *= hess_copy2[i][i];
     outfile->Printf("The determinant of the hessian is %8.3E\n",hess_det);
 
-      if (Params.level_shift) {
-        while (hess_det < Params.determ_min) {
-          outfile->Printf( "Level shifting hessian by %8.3E\n", Params.shift);
+      if (Parameters.level_shift) {
+        while (hess_det < Parameters.determ_min) {
+          outfile->Printf( "Level shifting hessian by %8.3E\n", Parameters.shift);
           for (i=0; i<npairs; i++) {
-            hess_copy2[i][i] += Params.shift;
+            hess_copy2[i][i] += Parameters.shift;
             for (j=0; j<npairs; j++) {
               hess_copy[i][j] = hess_copy2[i][j];
             }
@@ -735,7 +735,7 @@ void ds_hessian(void)
   /* If no Hessian in the file */
   if (psio_tocscan(PSIF_DETCAS, "Hessian") == NULL) {
     calc_hessian();
-    if (Params.hessian == "FULL") {
+    if (Parameters.hessian == "FULL") {
       CalcInfo.mo_hess_diag = init_array(npairs);
       for (i=0; i<npairs; i++) {
         CalcInfo.mo_hess_diag[i] = CalcInfo.mo_hess[i][i];
@@ -748,7 +748,7 @@ void ds_hessian(void)
       }
     }
 
-    if (Params.print_lvl > 3) {
+    if (Parameters.print_lvl > 3) {
       outfile->Printf( "\nInitial MO Hessian:\n");
       for (i=0; i<npairs; i++) 
         outfile->Printf( "%12.6lf\n", CalcInfo.mo_hess_diag[i]);
@@ -791,7 +791,7 @@ void ds_hessian(void)
     dg[i] = CalcInfo.mo_grad[i] - dg[i];
   }
 
-  if (Params.print_lvl > 3) {
+  if (Parameters.print_lvl > 3) {
     outfile->Printf( "Delta Theta and Delta Grad arrays:\n");
     for (i=0; i<npairs; i++) {
       outfile->Printf( "%12.7lf   %12.7lf\n", dx[i], dg[i]);
@@ -808,7 +808,7 @@ void ds_hessian(void)
       CalcInfo.mo_hess_diag[i] = MO_HESS_MIN;
   }
 
-  if (Params.print_lvl > 3) {
+  if (Parameters.print_lvl > 3) {
     outfile->Printf( "\nDS MO Hessian:\n");
     for (i=0; i<npairs; i++) 
       outfile->Printf( "%12.6lf\n", CalcInfo.mo_hess_diag[i]);
@@ -856,10 +856,10 @@ void calc_hessian(void)
   /* Now calculate the approximate diagonal MO Hessian */
   ncore = CalcInfo.num_fzc_orbs + CalcInfo.num_cor_orbs;
 
-  if (Params.hessian == "DIAG") {
+  if (Parameters.hessian == "DIAG") {
     CalcInfo.mo_hess_diag = init_array(npairs);
     
-    if (Params.use_fzc_h == 1) 
+    if (Parameters.use_fzc_h == 1) 
       form_diag_mo_hess(npairs, ppair, qpair, CalcInfo.onel_ints, 
         CalcInfo.twoel_ints, CalcInfo.opdm, CalcInfo.tpdm, CalcInfo.F_act, 
         ncore, CalcInfo.npop, CalcInfo.mo_hess_diag);
@@ -868,24 +868,24 @@ void calc_hessian(void)
         CalcInfo.twoel_ints, CalcInfo.opdm, CalcInfo.tpdm, CalcInfo.lag,
         CalcInfo.mo_hess_diag);
 
-    if (Params.print_lvl > 3)  
+    if (Parameters.print_lvl > 3)  
       IndPairs.print_vec(CalcInfo.mo_hess_diag,"\n\tDiagonal MO Hessian:");
   }
-  else if (Params.hessian == "APPROX_DIAG") {
+  else if (Parameters.hessian == "APPROX_DIAG") {
     CalcInfo.mo_hess_diag = init_array(npairs);
     form_appx_diag_mo_hess(npairs, ppair, qpair, CalcInfo.onel_ints, 
                       CalcInfo.twoel_ints, CalcInfo.opdm, CalcInfo.tpdm, 
                       CalcInfo.F_act, ncore, CalcInfo.npop, 
                       CalcInfo.mo_hess_diag);
-    if (Params.print_lvl > 3)  
+    if (Parameters.print_lvl > 3)  
       IndPairs.print_vec(CalcInfo.mo_hess_diag,"\n\tAppx Diagonal MO Hessian:");
   }
-  else if (Params.hessian == "FULL") {
+  else if (Parameters.hessian == "FULL") {
     CalcInfo.mo_hess = block_matrix(npairs,npairs);
     form_full_mo_hess(npairs, ppair, qpair, CalcInfo.onel_ints, 
       CalcInfo.twoel_ints, CalcInfo.opdm, CalcInfo.tpdm, CalcInfo.lag,
       CalcInfo.mo_hess);
-    if (Params.print_lvl > 3) {
+    if (Parameters.print_lvl > 3) {
       outfile->Printf( "\nMO Hessian:\n");
       print_mat(CalcInfo.mo_hess,npairs,npairs,"outfile");
       outfile->Printf( "\n");
@@ -893,7 +893,7 @@ void calc_hessian(void)
   }
   else {
     outfile->Printf( "(detcas): Unrecognized Hessian option %s\n", 
-      Params.hessian.c_str());
+      Parameters.hessian.c_str());
   }
  
 
@@ -921,19 +921,19 @@ void scale_gradient(void)
   // If we have a diagonal (exact or approximate) Hessian
 
   // BFGS
-  if (Params.scale_grad && Params.bfgs) {
+  if (Parameters.scale_grad && Parameters.bfgs) {
     calc_orb_step_bfgs(npairs, CalcInfo.mo_grad, CalcInfo.mo_hess,
       CalcInfo.theta_step);
   }
   // non-BFGS diagonal Hessian
-  else if (Params.scale_grad && ((Params.hessian == "DIAG") || 
-       (Params.hessian == "APPROX_DIAG"))) {
+  else if (Parameters.scale_grad && ((Parameters.hessian == "DIAG") || 
+       (Parameters.hessian == "APPROX_DIAG"))) {
     calc_orb_step(npairs, CalcInfo.mo_grad, CalcInfo.mo_hess_diag,
       CalcInfo.theta_step);
   }
   // non-BFGS full Hessian
-  else if ((Params.scale_grad && (Params.hessian == "FULL")) ||
-    Params.bfgs) {
+  else if ((Parameters.scale_grad && (Parameters.hessian == "FULL")) ||
+    Parameters.bfgs) {
     calc_orb_step_full(npairs, CalcInfo.mo_grad, CalcInfo.mo_hess,
       CalcInfo.theta_step);
   }
@@ -944,7 +944,7 @@ void scale_gradient(void)
   }
     
 
-  if (Params.print_lvl > 3)  
+  if (Parameters.print_lvl > 3)  
     IndPairs.print_vec(CalcInfo.theta_step,"\n\tScaled Orbital Grad:");
 
   rms = 0.0;
@@ -956,12 +956,12 @@ void scale_gradient(void)
   rms = sqrt(rms);
   CalcInfo.scaled_mo_grad_rms = rms;
  
-  if (Params.print_lvl)
+  if (Parameters.print_lvl)
     outfile->Printf( "\n\tScaled RMS Orbital Gradient: %6.4E\n", rms);
 
-  if (Params.scale_step != 1.0) {
+  if (Parameters.scale_step != 1.0) {
     for (pair=0; pair<npairs; pair++) 
-      CalcInfo.theta_step[pair] *= Params.scale_step;
+      CalcInfo.theta_step[pair] *= Parameters.scale_step;
   }
 
 }
@@ -983,10 +983,10 @@ int take_step(void)
   npairs = IndPairs.get_num_pairs();
 
   /* for debugging purposes */
-  if (Params.force_step) {
-    CalcInfo.theta_cur[Params.force_pair] = Params.force_value;
+  if (Parameters.force_step) {
+    CalcInfo.theta_cur[Parameters.force_pair] = Parameters.force_value;
     outfile->Printf( "Forcing step for pair %d of size %8.3E\n",
-      Params.force_pair, Params.force_value);
+      Parameters.force_pair, Parameters.force_value);
     return(1);
   }
 
@@ -994,14 +994,14 @@ int take_step(void)
     CalcInfo.theta_cur[pair] += CalcInfo.theta_step[pair];
     //CalcInfo.theta_cur[pair] = CalcInfo.theta_step[pair];
 
-  if (CalcInfo.iter >= Params.diis_start) 
+  if (CalcInfo.mcscf_iter >= Parameters.diis_start) 
     took_diis = diis(npairs, CalcInfo.theta_cur, CalcInfo.theta_step);
     //took_diis = diis(npairs, CalcInfo.theta_cur, CalcInfo.mo_grad);
   else 
     took_diis = 0;
 
   if (!took_diis) {
-    if (Params.print_lvl) 
+    if (Parameters.print_lvl) 
       outfile->Printf( "Taking regular step\n");
   }
 
@@ -1033,7 +1033,7 @@ void rotate_orbs(void)
       ir_ppair  = IndPairs.get_ir_prel_ptr(h);
       ir_qpair  = IndPairs.get_ir_qrel_ptr(h);
       
-      if (Params.print_lvl > 3) {
+      if (Parameters.print_lvl > 3) {
         outfile->Printf( "Thetas for irrep %d\n", h);
         for (pair=0; pair<ir_npairs; pair++) {
           outfile->Printf( "Pair (%2d,%2d) = %12.6lf\n",
@@ -1044,13 +1044,13 @@ void rotate_orbs(void)
       }
 
       /* print old coefficients */
-      if (Params.print_mos) {
+      if (Parameters.print_mos) {
         outfile->Printf( "\n\tOld molecular orbitals for irrep %s\n", 
           CalcInfo.labels[h]);
         print_mat(CalcInfo.mo_coeffs[h], ir_norbs, ir_norbs, "outfile");
       }
 
-      if (Params.use_thetas)
+      if (Parameters.use_thetas)
         postmult_by_U(h, ir_norbs, CalcInfo.mo_coeffs[h], ir_npairs, 
           ir_ppair, ir_qpair, ir_theta);
       else
@@ -1058,7 +1058,7 @@ void rotate_orbs(void)
           ir_ppair, ir_qpair, ir_theta);
 
       /* print new coefficients */
-      if (Params.print_mos) {
+      if (Parameters.print_mos) {
         outfile->Printf( "\n\tNew molecular orbitals for irrep %s\n", 
           CalcInfo.labels[h]);
         print_mat(CalcInfo.mo_coeffs[h], ir_norbs, ir_norbs, "outfile");
@@ -1098,7 +1098,7 @@ int check_conv(void)
   ffile_noexit(&sumfile,sumfile_name,2);
 
   if (sumfile == NULL) {
-    CalcInfo.iter = 0;
+    CalcInfo.mcscf_iter = 0;
     return(0);
   }
 
@@ -1106,11 +1106,11 @@ int check_conv(void)
     outfile->Printf("(print_step): Trouble reading num entries in file %s\n",
             sumfile_name);
     fclose(sumfile);
-    CalcInfo.iter = 0;
+    CalcInfo.mcscf_iter = 0;
     return(0);
   } 
 
-  CalcInfo.iter = entries;
+  CalcInfo.mcscf_iter = entries;
   for (i=0; i<entries; i++) {
     fscanf(sumfile, "%d %d %lf %lf %lf %s", &iter, &nind, &scaled_rmsgrad,
            &rmsgrad, &energy_last, comment);
@@ -1122,9 +1122,9 @@ int check_conv(void)
   chkpt_close();
 
   /* check for convergence */
-  if (rmsgrad < Params.rms_grad_convergence)
+  if (rmsgrad < Parameters.rms_grad_convergence)
     converged_grad = 1;
-  if (fabs(energy_last - energy) < Params.energy_convergence)
+  if (fabs(energy_last - energy) < Parameters.energy_convergence)
     converged_energy = 1;
   if (strstr(comment, "CONV") != NULL)
     last_converged = 1;
