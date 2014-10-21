@@ -39,7 +39,7 @@
 #ifndef _psi_src_bin_detcas_globals_h
 #define _psi_src_bin_detcas_globals_h
 
-#include "MCSCF_calcinfo.h"
+#include "calcinfo.h"
 #include "MCSCF_params.h"
 
 extern "C" {
@@ -50,7 +50,7 @@ extern "C" {
 namespace psi { namespace detcas {
 
 extern struct calcinfo CalcInfo;
-extern struct params Params;
+extern struct params Parameters;
 extern int *ioff;
 
 }} // end namespace psi::detcas

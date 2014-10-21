@@ -76,7 +76,7 @@ int read_ref_orbs(void)
     return(1);
   }
   else {
-    if (Params.print_lvl) 
+    if (Parameters.print_lvl) 
       outfile->Printf("No previous orbitals ... using new reference orbitals\n");
     return(0);
   }

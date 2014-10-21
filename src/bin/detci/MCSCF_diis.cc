@@ -107,7 +107,7 @@ int diis(int veclen, double *vec, double *errvec)
   /* will we do a diis this time? */
   diis_iter++;
   num_vecs++;
-  if ((diis_iter % Params.diis_freq) || (num_vecs < Params.diis_min_vecs)) 
+  if ((diis_iter % Parameters.diis_freq) || (num_vecs < Parameters.diis_min_vecs)) 
     do_diis = 0; 
   else
     do_diis = 1;
@@ -116,10 +116,10 @@ int diis(int veclen, double *vec, double *errvec)
   for (i=0; i<veclen; i++) errvecs[num_vecs-1][i] = errvec[i];
 
   offset = 0;
-  if (num_vecs > Params.diis_max_vecs) 
-    offset = num_vecs - Params.diis_max_vecs;
+  if (num_vecs > Parameters.diis_max_vecs) 
+    offset = num_vecs - Parameters.diis_max_vecs;
 
-  if (Params.print_lvl > 2) 
+  if (Parameters.print_lvl > 2) 
     outfile->Printf("Diis: iter %2d, vecs %d, do_diis %d, offset %d\n", 
             diis_iter, num_vecs, do_diis, offset);
 
@@ -155,7 +155,7 @@ int diis(int veclen, double *vec, double *errvec)
   }
 
   /* form diis matrix, solve equations */
-  if (Params.print_lvl) 
+  if (Parameters.print_lvl) 
     outfile->Printf("Attempting a DIIS step\n");
 
   bmat = block_matrix(new_num_vecs+1, new_num_vecs+1);
@@ -180,7 +180,7 @@ int diis(int veclen, double *vec, double *errvec)
   bmat[new_num_vecs][new_num_vecs] = 0.0;
   bvec[new_num_vecs] = -1.0;
 
-  if (Params.print_lvl > 2) {
+  if (Parameters.print_lvl > 2) {
     outfile->Printf("DIIS B Matrix:\n");
     print_mat(bmat, new_num_vecs+1, new_num_vecs+1, "outfile");
   }
@@ -193,7 +193,7 @@ int diis(int veclen, double *vec, double *errvec)
     }
   }
 
-  if (Params.print_lvl > 2) {
+  if (Parameters.print_lvl > 2) {
     outfile->Printf("DIIS B Matrix:\n");
     print_mat(bmat, new_num_vecs+1, new_num_vecs+1, "outfile");
   }
@@ -206,7 +206,7 @@ int diis(int veclen, double *vec, double *errvec)
     outfile->Printf("Determinant is %6.3E\n", det);
   }
 
-  if (Params.print_lvl > 3) {
+  if (Parameters.print_lvl > 3) {
     outfile->Printf("\nCoefficients of DIIS extrapolant:\n");
     for (i=0; i<new_num_vecs; i++) {
       outfile->Printf("%12.6lf\n", bvec[i]);

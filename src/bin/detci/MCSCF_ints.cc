@@ -55,28 +55,28 @@ void read_integrals()
   double value;
 
   /* allocate memory for one and two electron integrals */
-  nbstri = CalcInfo.nbstri;
+  nbstri = CalcInfo.nmotri;
   CalcInfo.onel_ints = init_array(nbstri);
   CalcInfo.onel_ints_bare = init_array(nbstri);
   CalcInfo.twoel_ints = init_array(nbstri * (nbstri + 1) / 2);
 
   /* now read them in */
 
-  if (Params.use_fzc_h) {
-    if (Params.print_lvl > 3) {
+  if (Parameters.use_fzc_h) {
+    if (Parameters.print_lvl > 3) {
       outfile->Printf("\n\tOne-electron integrals (frozen core operator):\n");
     }
     // can't erase file, re-reading it below
-    iwl_rdone(Params.oei_file, PSIF_MO_FZC, CalcInfo.onel_ints, nbstri, 
-              0, (Params.print_lvl>3), "outfile");
+    iwl_rdone(Parameters.oei_file, PSIF_MO_FZC, CalcInfo.onel_ints, nbstri, 
+              0, (Parameters.print_lvl>3), "outfile");
   }
   else {
-    if (Params.print_lvl > 3) {
+    if (Parameters.print_lvl > 3) {
       outfile->Printf("\n\tOne-electron integrals (bare):\n");
     }
     // can't erase file, re-reading it below
-    iwl_rdone(Params.oei_file, PSIF_MO_OEI, CalcInfo.onel_ints, nbstri, 
-              0, (Params.print_lvl>3), "outfile");
+    iwl_rdone(Parameters.oei_file, PSIF_MO_OEI, CalcInfo.onel_ints, nbstri, 
+              0, (Parameters.print_lvl>3), "outfile");
   }
 
   /* even if we utilize frozen core operator for some terms, the
@@ -84,20 +84,20 @@ void read_integrals()
      that, too (both should be available from the transformation code)
      -CDS 10/3/14
   */
-  if (Params.print_lvl > 3) { 
+  if (Parameters.print_lvl > 3) { 
     outfile->Printf("\n\tOne-electron integrals (bare):\n");
     }
-  iwl_rdone(Params.oei_file, PSIF_MO_OEI, CalcInfo.onel_ints_bare, nbstri,
-            Params.oei_erase ? 0 : 1, (Params.print_lvl>3), "outfile");
+  iwl_rdone(Parameters.oei_file, PSIF_MO_OEI, CalcInfo.onel_ints_bare, nbstri,
+            Parameters.oei_erase ? 0 : 1, (Parameters.print_lvl>3), "outfile");
 
   
-  if (Params.print_lvl > 6) 
+  if (Parameters.print_lvl > 6) 
     outfile->Printf("\n\tTwo-electron integrals:\n");
 
-  iwl_rdtwo(Params.tei_file, CalcInfo.twoel_ints, ioff, 
-     CalcInfo.nmo, Params.filter_ints ? CalcInfo.num_fzc_orbs : 0, 
-     Params.filter_ints ? CalcInfo.num_fzv_orbs : 0, 
-     (Params.print_lvl>6), "outfile");
+  iwl_rdtwo(Parameters.tei_file, CalcInfo.twoel_ints, ioff, 
+     CalcInfo.nmo, Parameters.filter_ints ? CalcInfo.num_fzc_orbs : 0, 
+     Parameters.filter_ints ? CalcInfo.num_fzv_orbs : 0, 
+     (Parameters.print_lvl>6), "outfile");
 
 } 
 

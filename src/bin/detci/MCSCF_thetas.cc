@@ -197,7 +197,7 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
     outfile->Printf("Cos(theta)=%12.6lf, Sin(theta)=%12.6lf\n", 
             costheta, sintheta);
     C_DROT(dim,&(tmpmat[0][q]),dim,&(tmpmat[0][p]),dim,costheta,sintheta);
-    if (Params.print_lvl > 3) {
+    if (Parameters.print_lvl > 3) {
       outfile->Printf("\n\tMatrix after transformation:\n");
       print_mat(tmpmat, dim, dim, "outfile");
     }
@@ -223,7 +223,7 @@ void read_thetas(int npairs)
 
 
   CalcInfo.theta_cur = init_array(npairs);
-  if (Params.print_lvl > 2)
+  if (Parameters.print_lvl > 2)
     outfile->Printf("\nReading orbital rotation angles\n");
  
   if (psio_tocentry_exists(PSIF_DETCAS, "Thetas")){ 
@@ -249,7 +249,7 @@ void write_thetas(int npairs)
 {
 
 
-  if (Params.print_lvl > 2)
+  if (Parameters.print_lvl > 2)
     outfile->Printf("\nWriting orbital rotation angles\n");
   
   psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
@@ -315,7 +315,7 @@ void calc_dE_dT(int n, double **dEU, int npairs, int *ppair, int *qpair,
       }
   }
 
-  if (Params.print_lvl > 3) {
+  if (Parameters.print_lvl > 3) {
     outfile->Printf("dE/dU after backtransform: \n");
     print_mat(dEU, n, n, "outfile");
   }
