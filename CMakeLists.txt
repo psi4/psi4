@@ -10,6 +10,8 @@ list(APPEND CMAKE_MODULE_PATH
      ${CMAKE_SOURCE_DIR}/cmake/compilers
      )
 # Include CMake modules as needed
+include(ConfigArchitecture)
+include(ConfigCompilerFlags)
 include(CheckCXX11Features)
 
 # Command line options
@@ -108,8 +110,6 @@ endif()
 if(NOT HAVE_FUNC_ERF)
    message(FATAL_ERROR "ERROR: ERF was not found")
 endif()
-include(cmake/Restrict.cmake)
-test_restrict(restrict)
 
 if(CMAKE_Fortran_COMPILER)
     if(DEFINED USEERD)
