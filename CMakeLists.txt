@@ -1,15 +1,18 @@
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+# Declare project name and programming languages
 project(psi4)
-cmake_minimum_required(VERSION 2.8)
+enable_language(CXX C Fortran)
+#  Options  
+option(ENABLE_PCMSOLVER "Enable PCMSolver library" OFF)
+# Custom CMake modules location
+list(APPEND CMAKE_MODULE_PATH
+     ${CMAKE_SOURCE_DIR}/cmake
+     ${CMAKE_SOURCE_DIR}/cmake/compilers
+     )
+# Include CMake modules as needed
+include(CheckCXX11Features)
 
-enable_language(Fortran)
-
-# cmake modules are relative to this file
-get_filename_component(ROOT_SRC_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
-set(CMAKE_MODULE_PATH "${ROOT_SRC_DIR}/cmake/")
-
-#
 # Command line options
-#
 set(ALL_USEROPTS "")
 set(EMPTY "\"\"")
 
