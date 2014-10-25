@@ -57,23 +57,40 @@ void read_integrals()
   /* allocate memory for one and two electron integrals */
   nbstri = CalcInfo.nbstri;
   CalcInfo.onel_ints = init_array(nbstri);
+  CalcInfo.onel_ints_bare = init_array(nbstri);
   CalcInfo.twoel_ints = init_array(nbstri * (nbstri + 1) / 2);
 
   /* now read them in */
 
   if (Params.use_fzc_h) {
-    if (Params.print_lvl > 3) 
+    if (Params.print_lvl > 3) {
       outfile->Printf("\n\tOne-electron integrals (frozen core operator):\n");
+    }
+    // can't erase file, re-reading it below
     iwl_rdone(Params.oei_file, PSIF_MO_FZC, CalcInfo.onel_ints, nbstri, 
-              Params.oei_erase ? 0 : 1, (Params.print_lvl>3), "outfile");
+              0, (Params.print_lvl>3), "outfile");
   }
   else {
-    if (Params.print_lvl > 3) 
+    if (Params.print_lvl > 3) {
       outfile->Printf("\n\tOne-electron integrals (bare):\n");
+    }
+    // can't erase file, re-reading it below
     iwl_rdone(Params.oei_file, PSIF_MO_OEI, CalcInfo.onel_ints, nbstri, 
-              Params.oei_erase ? 0 : 1, (Params.print_lvl>3), "outfile");
+              0, (Params.print_lvl>3), "outfile");
   }
 
+  /* even if we utilize frozen core operator for some terms, the
+     current Lagrangian code is forced to use bare h, so let's grab
+     that, too (both should be available from the transformation code)
+     -CDS 10/3/14
+  */
+  if (Params.print_lvl > 3) { 
+    outfile->Printf("\n\tOne-electron integrals (bare):\n");
+    }
+  iwl_rdone(Params.oei_file, PSIF_MO_OEI, CalcInfo.onel_ints_bare, nbstri,
+            Params.oei_erase ? 0 : 1, (Params.print_lvl>3), "outfile");
+
+  
   if (Params.print_lvl > 6) 
     outfile->Printf("\n\tTwo-electron integrals:\n");
 

@@ -202,20 +202,6 @@ void get_moinfo(Options& options)
         // should not be zeroed out even if the frozen orbitals are to be
         // transformed
         moinfo.pitz2corr_one = init_int_array(moinfo.nmo);
-        // DS EDIT
-        outfile->Printf("DS Checkpoint Start!\n");
-
-        outfile->Printf("nirreps %d\n", moinfo.nirreps);
-        outfile->Printf("nmo %d\n", moinfo.nmo);
-        outfile->Printf("orb_irr, docc, socc, fdocc, fuocc\n"); 
-        for(i=0; i<moinfo.nirreps; i++){
-          outfile->Printf("%d  ", moinfo.mopi[i]);
-          outfile->Printf("%d  ", moinfo.clsdpi[i]);
-          outfile->Printf("%d  ", moinfo.openpi[i]);
-          outfile->Printf("%d  ", moinfo.frdocc[i]);
-          outfile->Printf("%d  ", moinfo.fruocc[i]);
-          outfile->Printf("\n");    
-        }
 
         if (!ras_set2(moinfo.nirreps, moinfo.nmo, 1, 1,
                       moinfo.mopi, moinfo.clsdpi, moinfo.openpi,
@@ -225,8 +211,6 @@ void get_moinfo(Options& options)
         {
             throw PsiException("Error in ras_set(). Aborting.", __FILE__, __LINE__);
         }
-        // DS EDIT
-        outfile->Printf("DS Checkpoint END!\n");
 
         /* "core" array needed for frozen-core operator */
         /* core for CI wfns is frozen-docc plus restricted-docc */

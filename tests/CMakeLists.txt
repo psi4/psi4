@@ -23,7 +23,7 @@ set(ADCLong adc1 adc2)
 set(CastUpShort castup1)
 set(CastUpLong castup2 castup3)
 set(CCShort cc1 cc2 cc3 cc4 cc8 cc8a cc12 cc15 cc16 cc17 cc18 cc19 cc23 cc24 cc28 cc32 cc49 )
-set(CCLong cc10 cc11 cc13 cc13a cc14 cc21 cc22 cc25 cc26 cc27 cc29 cc30 cc31 cc33 cc34 cc35 cc36 cc37 cc38 cc39 cc40 cc41 cc42 cc43 cc44 cc45 cc46 cc47 cc48 cc4a cc5 cc50 cc51 cc52 cc53 cc54 cc55 cc5a cc6 cc8b cc8c cc9 cc9a)
+set(CCLong cc10 cc11 cc13 cc13a cc14 cc21 cc22 cc25 cc26 cc27 cc29 cc30 cc31 cc33 cc34 cc35 cc36 cc37 cc38 cc39 cc40 cc41 cc42 cc43 cc44 cc45 cc46 cc47 cc48 cc4a cc50 cc51 cc52 cc53 cc54 cc55 cc5a cc6 cc8b cc8c cc9 cc9a)
 
 set(CDShort cdomp2-1 cdomp2-2)
 #No long CD jobs
@@ -81,6 +81,8 @@ set(TutorialLong tu6-cp-ne2)
 set(MISCShort ci-multi sad1 matrix1 gibbs)
 set(MISCLong frac ghosts large_atoms min_input mom psithon1 psithon2 pubchem1 zaptn-nh2)
 
+set(CASShort casscf-fzc-sp casscf-sp)
+
 set(AutoTestSubjects cc8 cc9 cc11 cc18 cc19 cc28 cc29 cc30 cc31 cc34 cc36 cc37 cc38 cc39 cc40 cc41 cc42 cc43 cc46 cc47 cc48 cc49 cc50 cc51 cc52 cc55)
 
 ###### END test definitions ################
@@ -93,7 +95,7 @@ set(QuickTests ${CastUpShort} ${CCShort} ${CDShort} ${CISDShort} ${DCFTShort}
     ${DFShort} ${DFTShort} ${FCIShort} ${FNOCCShort} ${MCSCFShort}
 ${MintsShort} ${MP2Short} ${OCEPAShort} ${OMPShort} ${OPTShort}
 ${PSIMRCCShort} ${PYWrapShort} ${RASCIShort} ${SAPTShort} ${SCFShort}
-${TutorialShort} ${MISCShort}
+${TutorialShort} ${MISCShort} ${CASShort}
 )
 
 #And these are the rest of the tests

@@ -91,6 +91,7 @@ struct calcinfo {
   double efzc;           /* frozen-core energy */
   double ***mo_coeffs;   /* matrix of molecular orbitals in Pitzer order */
   double *onel_ints;     /* one-electron integrals */
+  double *onel_ints_bare;/* one-electron integrals, bare h only */
   double *twoel_ints;    /* two-electron integrals */
   double **opdm;         /* one-particle density matrix */
   double *tpdm;          /* two-particle density matrix */
