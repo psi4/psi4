@@ -657,6 +657,7 @@ bool OPT_DATA::previous_step_report(void) const {
     Opt_params.intrafragment_step_limit_orig = Opt_params.intrafragment_step_limit;
     return true;
   }
+  bool dont_backup_yet = ((steps.size() < 5) ? true : false);
 
   oprintf_out("\tEnergy change for the previous step:\n");
   oprintf_out("\t\tProjected    : %20.10lf\n", p_Opt_data->g_last_DE_predicted());
@@ -664,30 +665,33 @@ bool OPT_DATA::previous_step_report(void) const {
       p_Opt_data->g_energy() - p_Opt_data->g_last_energy());
 
   double Energy_ratio = (p_Opt_data->g_energy() - p_Opt_data->g_last_energy()) / g_last_DE_predicted();
+  double Energy_change = p_Opt_data->g_energy() - p_Opt_data->g_last_energy();
 
   if (Opt_params.print_lvl >= 2)
     oprintf_out("\tEnergy ratio = %10.5lf\n", Energy_ratio);
 
   // Minimum search
   if (Opt_params.opt_type == OPT_PARAMS::MIN) {
-    if (p_Opt_data->g_last_DE_predicted() > 0) {
-      // In odd situations, the predicted energy change might be positive.  If the step was negative, 
-      // keep step size the same and proceed.
-      if (Energy_ratio < 0.0)
+
+    // Predicted up. Actual down.  OK.  Do nothing.
+    if (p_Opt_data->g_last_DE_predicted() > 0 && Energy_ratio < 0.0) {
         return true;
-      // if actual step was positive too, throw bad step
+    }
+    // Actual step is  up.
+    else if (Energy_change > 0) {
+
+      // Always throw exception for bad step.
+      if (Opt_params.dynamic && !dont_backup_yet)
+        throw(BAD_STEP_EXCEPT("Energy has increased in a minimization.\n"));
+      // Not dynamic.  Do limited backsteps only upon request.  Otherwise, keep going.
       else if (consecutive_backsteps < Opt_params.consecutive_backsteps_allowed)
         throw(BAD_STEP_EXCEPT("Energy has increased in a minimization.\n"));
     }
-    else if (Energy_ratio < 0.0 && consecutive_backsteps < Opt_params.consecutive_backsteps_allowed) {
-      throw(BAD_STEP_EXCEPT("Energy has increased in a minimization.\n"));
-    }
-    else if (Energy_ratio < 0.25)
-    {
+    // Predicted down.  Actual down.
+    else if (Energy_ratio < 0.25) {
       decrease_trust_radius();
     }
-    else if (Energy_ratio > 0.75)
-    {
+    else if (Energy_ratio > 0.75) {
       increase_trust_radius();
     }
   }

@@ -165,7 +165,7 @@ void INTERFRAG::add_coordinates_of_reference_pts(void) {
             if (weightB[0][y] != 0.0 && is_XB[y]) { // electronegative Y atom is part of B[0]
               if (v3d_angle(A->geom[x], A->geom[h], B->geom[y], ang)) { //check angle
                 if (ang < _pi/2)
-                  one_stre->make_hbond();
+                  one_stre->set_hbond(true);
               }
             }
           }
@@ -183,7 +183,7 @@ void INTERFRAG::add_coordinates_of_reference_pts(void) {
             if (weightA[0][y] != 0.0 && is_XA[y]) { // electronegative Y atom is part of A[0]
               if (v3d_angle(B->geom[x], B->geom[h], A->geom[y], ang)) { //check angle
                 if (ang < _pi/2)
-                  one_stre->make_hbond();
+                  one_stre->set_hbond(true);
               }
             }
           }

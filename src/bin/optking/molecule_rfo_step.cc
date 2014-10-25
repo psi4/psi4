@@ -62,6 +62,8 @@ void MOLECULE::rfo_step(void) {
   double *dq = p_Opt_data->g_dq_pointer();
   const int max_projected_rfo_iter = 25;
 
+  oprintf_out("\tTaking RFO optimization step.\n");
+
   // Determine the eigenvectors/eigenvalues of H.  Used in RS-RFO
   double **Hevects = matrix_return_copy(H,dim,dim); 
   double *h = init_array(dim);
@@ -171,34 +173,31 @@ void MOLECULE::rfo_step(void) {
     }
 
     // Choose which RFO eigenvector to use.
-    // if not root following, then use rfo_root'th lowest eigenvalue; default is 0 (lowest)
     if ((!rfo_follow_root) || (p_Opt_data->g_iteration() == 1)) {
 
       rfo_root = Opt_params.rfo_root;
       if (iter == 0)
         oprintf_out("\tGoing to follow RFO solution %d.\n", rfo_root+1);
 
-      // Now test RFO eigenvector and make sure that it is totally symmetric.
       while (!symm_rfo_step) {
         symm_rfo_step = coord_combo_is_symmetric(SRFO[rfo_root], dim);
 
         if (!symm_rfo_step) {
-          oprintf_out("\tRejecting RFO root %d because it breaks the molecular point group.\n", rfo_root+1);
-          oprintf_out("\tThere may exist a lower-energy, lower-symmetry structure.");
+          if (iter == 0)
+            oprintf_out("\tRejecting RFO root %d because it breaks the molecular point group.\n", rfo_root+1);
           ++rfo_root;
         }
         else {
-          tval = abs( array_abs_max(SRFO[rfo_root], dim)/ SRFO[rfo_root][dim] ); // how big is dividing going to make it?
-          if (fabs(tval) > Opt_params.rfo_normalization_max) { // same check occurs above for acceptability
-            oprintf_out("\tRejecting RFO root %d because normalization gives large value.\n", rfo_root+1);
-            oprintf_out("\t Step may break symmetry.  Test is modifiable with rfo_normalization_max keyword.\n");
+          tval = abs( array_abs_max(SRFO[rfo_root], dim)/ SRFO[rfo_root][dim] );
+          if (fabs(tval) > Opt_params.rfo_normalization_max) { // matching test in code below
+            if (iter == 0)
+              oprintf_out("\tRejecting RFO root %d because normalization gives large value.\n", rfo_root+1);
             symm_rfo_step = false;
             ++rfo_root;
           }
         }
         if (rfo_root == dim+1) {
-          oprintf_out("Did not find a good rfo eigenvector. Using root 1.\n"); 
-          rfo_root = Opt_params.rfo_root; // probably 0, the default
+          rfo_root = Opt_params.rfo_root; // no good one found, use the default
           break;
         }
       }
@@ -207,15 +206,13 @@ void MOLECULE::rfo_step(void) {
     }
     else { // do root following
       tval = 0;
-      for (i=0; i<dim; ++i) { // dot only within H block, excluding rows and columns approaching 0
+      for (i=0; i<dim; ++i) { // dot only within H block
         tval2 = array_dot(SRFO[i], last_iter_evect, dim);
         if (tval2 > tval) {
           tval = tval2;
           rfo_root = i;
         }
       }
-      //if (iter == 0)
-      oprintf_out("RFO root-following gives eigenvector %d.\n", rfo_root+1);
       array_copy(SRFO[rfo_root], last_iter_evect, dim);
     }
     if (iter == 0)
@@ -267,12 +264,12 @@ void MOLECULE::rfo_step(void) {
 
       oprintf_out("\n\tDetermining step-restricting scale parameter for RS-RFO.\n");
       oprintf_out("\tMaximum step size allowed %10.5lf\n\n", trust);
-      oprintf_out("\t Iter      |step|        alpha          rfo_root  \n");
-      oprintf_out("\t--------------------------------------------------\n");
-      oprintf_out("\t%5d%12.5lf%14.5lf%14d\n", iter, sqrt(dqtdq), alpha, rfo_root+1);
+      oprintf_out("\t Iter      |step|        alpha        rfo_root  \n");
+      oprintf_out("\t------------------------------------------------\n");
+      oprintf_out("\t%5d%12.5lf%14.5lf%12d\n", iter, sqrt(dqtdq), alpha, rfo_root+1);
     }
     else if ( (iter > 0) && !Opt_params.simple_step_scaling)
-      oprintf_out("\t%5d%12.5lf%14.5lf\n", iter, sqrt(dqtdq), alpha);
+      oprintf_out("\t%5d%12.5lf%14.5lf%12d\n", iter, sqrt(dqtdq), alpha, rfo_root+1);
 
 
     // Find the analytical derivative.
@@ -299,7 +296,7 @@ void MOLECULE::rfo_step(void) {
   }
 
   if ((iter > 0) && !Opt_params.simple_step_scaling)
-    oprintf_out("\t-------------------------------\n");
+    oprintf_out("\t------------------------------------------------\n");
 
   // Crude/old way to limit step size if restricted step algorithm failed.
   if (!converged)
@@ -331,6 +328,10 @@ void MOLECULE::rfo_step(void) {
   free_matrix(RFO);
   free_matrix(SRFO);
   free_array(SRFOevals);
+
+  std::vector<int> lin_angles = validate_angles(dq);
+  if (!lin_angles.empty())
+    throw(INTCO_EXCEPT("New linear angles", lin_angles));
 
 /* Test step sizes
   double *x_before = g_geom_array();
@@ -369,6 +370,10 @@ void MOLECULE::rfo_step(void) {
     fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
 
   symmetrize_geom(); // now symmetrize the geometry for next step
+
+  // Before quitting, make sure step is reasonable.  It should only be screwball if we are using the
+  // "First Guess" after the back-transformation failed.
+  double norm = sqrt(array_dot(dq, dq, dim));
   
 /* Test step sizes
   double *x_after = g_geom_array();
@@ -391,7 +396,10 @@ void MOLECULE::rfo_step(void) {
   p_Opt_data->save_step_info(DE_projected, rfo_u, rfo_dqnorm, rfo_g, rfo_h);
 
   free_array(rfo_u);
-  
+
+  if (norm > 10 * trust) {
+    throw(BAD_STEP_EXCEPT("Step is far too large.\n"));
+  }
 
 } // end take RFO step
 

@@ -20,6 +20,8 @@
  *@END LICENSE
  */
 
+#include <vector>
+
 namespace opt {
 
 /**
@@ -33,28 +35,41 @@ namespace opt {
 class INTCO_EXCEPT {
   private:
    const char * message;
-   bool try_other_intcos;
+   bool really_quit;
 
   public:
 
-    static bool already_tried_other_intcos; // defined in optking.cc
-    static bool override_fragment_mode;
+    static int dynamic_level; // defined in optking.cc
+    //static bool override_fragment_mode;
+    static std::vector<int> linear_angles;
 
 
     INTCO_EXCEPT(const char * m) {
       message = m;
-      try_other_intcos = false;
+      really_quit = false;
+      //try_other_intcos = false;
     }
 
     INTCO_EXCEPT(const char * m, bool t) {
       message = m;
-      try_other_intcos = t;
+      really_quit = t;
+      //try_other_intcos = t;
     }
+
+    INTCO_EXCEPT(const char * m, std::vector<int> l) {
+      message = m;
+      linear_angles = l;
+      really_quit = false;
+      //try_other_intcos = t;
+    }
+
+    void increment_dynamic_level(void) { dynamic_level += 1; }
 
     ~INTCO_EXCEPT() {};
 
-    bool try_again() { return try_other_intcos; }
+    //bool try_again() { return try_other_intcos; }
     const char *g_message(void) { return message; }
+    bool g_really_quit(void) { return really_quit; }
 };
 
 class BAD_STEP_EXCEPT {

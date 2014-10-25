@@ -367,10 +367,27 @@ void MOLECULE::apply_intrafragment_step_limit(double * & dq) {
   
 }
 
-// don't let any angles get smaller than 0.0
-void MOLECULE::check_intrafragment_zero_angles(double const * const dq) {
-  for (int f=0; f<fragments.size(); ++f)
-    fragments[f]->check_zero_angles(&(dq[g_coord_offset(f)]));
+// Identify if some angles are passing through 0 or going to 180.
+std::vector<int> MOLECULE::validate_angles(double const * const dq) {
+
+  std::vector<int> lin_angle;
+  std::vector<int> frag_angle;
+
+  for (int f=0; f<fragments.size(); ++f) {
+    frag_angle = fragments[f]->validate_angles(&(dq[g_coord_offset(f)]), g_atom_offset(f));
+
+    for (int i=0; i<frag_angle.size(); ++i)
+      lin_angle.push_back( frag_angle[i] );
+
+    frag_angle.clear();
+  }
+
+  if (!lin_angle.empty()) { 
+    oprintf_out("\tNewly linear bends that need to be incoporated into the internal coordinates:");
+    for (int i=0; i<lin_angle.size(); i+=3)
+      oprintf_out("\t%5d%5d%5d\n", lin_angle[i]+1, lin_angle[i+1]+1, lin_angle[i+2]+1);
+  }
+  return lin_angle;
 }
 
 void MOLECULE::H_guess(void) const {

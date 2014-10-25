@@ -155,25 +155,33 @@ void STRE::print(std::string psi_fp, FILE *qc_fp, GeomType geom, int off) const 
 // function to return string of coordinate definition
 std::string STRE::get_definition_string(int off) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
-  if (inverse_stre)
-    iss << "1/R(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << ")" << std::flush ;
-  else
-    iss << "R(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << ")" << std::flush ;
+  if (!hbond) {
+    if (inverse_stre)
+      iss << "1/R(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << ")" << std::flush ;
+    else
+      iss << "R(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << ")" << std::flush ;
+  }
+  else {
+    if (inverse_stre)
+      iss << "1/H(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << ")" << std::flush ;
+    else
+      iss << "H(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << ")" << std::flush ;
+  }
   return iss.str();
 }
 
 void STRE::print_intco_dat(std::string psi_fp, FILE *qc_fp, int off) const {
-   if (hbond) {
-    if (s_frozen)
-      oprintf(psi_fp, qc_fp, "H*%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
-    else
-      oprintf(psi_fp, qc_fp, "H %6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
-  }
-  else {
+   if (!hbond) {
     if (s_frozen)
       oprintf(psi_fp, qc_fp, "R*%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
     else
       oprintf(psi_fp, qc_fp, "R %6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
+  }
+  else {
+    if (s_frozen)
+      oprintf(psi_fp, qc_fp, "H*%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
+    else
+      oprintf(psi_fp, qc_fp, "H %6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
   }
   if (s_has_fixed_eq_val)
     oprintf(psi_fp, qc_fp, "%10.5lf", s_fixed_eq_val);
@@ -185,7 +193,12 @@ void STRE::print_disp(std::string psi_fp, FILE *qc_fp, const double q_orig, cons
     const double dq, const double new_q, int atom_offset) const {
   ostringstream iss(ostringstream::out);
   if (s_frozen) iss << "*";
-  iss << "R(" << s_atom[0]+atom_offset+1 << "," << s_atom[1]+atom_offset+1 << ")" << std::flush ;
+
+  if (!hbond)
+    iss << "R(" << s_atom[0]+atom_offset+1 << "," << s_atom[1]+atom_offset+1 << ")" << std::flush ;
+  else
+    iss << "H(" << s_atom[0]+atom_offset+1 << "," << s_atom[1]+atom_offset+1 << ")" << std::flush ;
+
   oprintf(psi_fp, qc_fp, "%-15s = %13.6lf%13.6lf%13.6lf%13.6lf\n",
     iss.str().c_str(), q_orig*_bohr2angstroms, f_q*_hartree2aJ/_bohr2angstroms,
     dq*_bohr2angstroms, new_q*_bohr2angstroms);
@@ -195,7 +208,7 @@ void STRE::print_disp(std::string psi_fp, FILE *qc_fp, const double q_orig, cons
 
 // print s vectors
 void STRE::print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const {
-  oprintf(psi_fp, qc_fp, "S vector for stretch R(%d %d): \n",
+  oprintf(psi_fp, qc_fp, "S vector for stretch (%d %d): \n",
     s_atom[0]+1, s_atom[1]+1);
   double **dqdx = DqDx(geom);
   oprintf(psi_fp, qc_fp, "Atom 1: %12.8f %12.8f,%12.8f\n", dqdx[0][0],dqdx[0][1],dqdx[0][2]);
