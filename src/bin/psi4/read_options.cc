@@ -2500,6 +2500,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("RFO_FOLLOW_ROOT", false);
       /*- Root for RFO to follow, 0 being lowest (for a minimum) -*/
       options.add_int("RFO_ROOT", 0);
+      /*- Starting level for dynamic optimization (0=nondynamic, higher=>more conservative) -*/
+      options.add_int("DYNAMIC_LEVEL",0);
       /*- IRC step size in bohr(amu)\ $^{1/2}$. -*/
       options.add_double("IRC_STEP_SIZE", 0.2);
       /*- IRC mapping direction -*/

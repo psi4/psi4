@@ -69,8 +69,10 @@ namespace opt {
   void print_title_out(void); // print header
   void print_end_out(void);   // print footer
   void init_ioff(void);
-  bool INTCO_EXCEPT::already_tried_other_intcos = false;
-  bool INTCO_EXCEPT::override_fragment_mode = false; // to override MULTI setting by exception algorithm
+  int INTCO_EXCEPT::dynamic_level = 0;          // initialized only once
+  std::vector<int> INTCO_EXCEPT::linear_angles; // static class members must be defined
+  //bool INTCO_EXCEPT::already_tried_other_intcos = false;
+  //bool INTCO_EXCEPT::override_fragment_mode = false; // to override MULTI setting by exception algorithm
 
 #if defined(OPTKING_PACKAGE_PSI)
   void set_params(psi::Options & options);      // set optimization parameters
@@ -94,15 +96,16 @@ OptReturnType optking(void) {
 
   print_title_out(); // print header
 
-  try {
+  try { // STEP2 ; do other exceptions
+  try { // STEP1 ; check bad_step exception first
 
 #if defined(OPTKING_PACKAGE_PSI)
   set_params(options);
 #else
   set_params(); // set optimization parameters
 #endif
-  if (INTCO_EXCEPT::override_fragment_mode && (Opt_params.fragment_mode == OPT_PARAMS::MULTI))
-    Opt_params.fragment_mode = OPT_PARAMS::SINGLE;
+  //if (INTCO_EXCEPT::override_fragment_mode && (Opt_params.fragment_mode == OPT_PARAMS::MULTI))
+  //  Opt_params.fragment_mode = OPT_PARAMS::SINGLE;
 
   // try to open old internal coordinates
   std::ifstream if_intco(FILENAME_INTCO_DAT, ios_base::in);
@@ -155,6 +158,7 @@ OptReturnType optking(void) {
 
     // use covalent radii to define connectivity
     mol1->update_connectivity_by_distances();
+    mol1->add_intrafragment_hbonds();
 
     // Critical function here.
     // If fragment_mode == SINGLE, it connects all separated groups of atoms with additional connections.
@@ -266,35 +270,39 @@ OptReturnType optking(void) {
   mol1->forces(); // puts forces in p_Opt_data->step[last one]
 
   bool read_H_worked = false;
-  if (Opt_params.H_guess_every) { // ignore Hessian already present
-      mol1->H_guess(); // empirical model guess Hessian
-  }  /* if one wants to read_cartesian_H every time, then user can set this to true and H_update to none */
-  else if (Opt_params.read_cartesian_H) {
-    double **H_cart = p_Opt_data->read_cartesian_H();       // read Cartesian Hessian
-    read_H_worked = mol1->cartesian_H_to_internals(H_cart); // transform to internal coordinates
-    free_matrix(H_cart);                                    // free Cartesian Hessian
-    if (read_H_worked) {
-      oprintf_out("\tRead in cartesian Hessian and transformed it.\n");
-      p_Opt_data->reset_steps_since_last_H();
+
+  if (Opt_params.step_type != OPT_PARAMS::SD) {  // ignore all hessian stuff if SD
+
+    if (Opt_params.H_guess_every) { // ignore Hessian already present
+        mol1->H_guess(); // empirical model guess Hessian
+    }  /* if one wants to read_cartesian_H every time, then user can set this to true and H_update to none */
+    else if (Opt_params.read_cartesian_H) {
+      double **H_cart = p_Opt_data->read_cartesian_H();       // read Cartesian Hessian
+      read_H_worked = mol1->cartesian_H_to_internals(H_cart); // transform to internal coordinates
+      free_matrix(H_cart);                                    // free Cartesian Hessian
+      if (read_H_worked) {
+        oprintf_out("\tRead in cartesian Hessian and transformed it.\n");
+        p_Opt_data->reset_steps_since_last_H();
+      }
+      else { 
+        oprintf_out("\tUnable to read and transform cartesian Hessian.\n");
+        mol1->H_guess(); // empirical model guess Hessian
+      }
     }
-    else { 
-      oprintf_out("\tUnable to read and transform cartesian Hessian.\n");
-      mol1->H_guess(); // empirical model guess Hessian
+    else if (p_Opt_data->g_iteration() == 1) {
+        mol1->H_guess(); // empirical model guess Hessian
     }
-  }
-  else if (p_Opt_data->g_iteration() == 1) {
-      mol1->H_guess(); // empirical model guess Hessian
-  }
-  else { // do Hessian update
-    try {
-        p_Opt_data->H_update(*mol1);
-    } catch (const char * str) {
-      fprintf(stderr, "%s\n", str);
-      oprintf_out( "H_update failed\n");
-      oprintf_out( "%s\n", str);
-      return OptReturnFailure;
+    else { // do Hessian update
+      try {
+          p_Opt_data->H_update(*mol1);
+      } catch (const char * str) {
+        fprintf(stderr, "%s\n", str);
+        oprintf_out( "H_update failed\n");
+        oprintf_out( "%s\n", str);
+        return OptReturnFailure;
+      }
     }
-  }
+  } // end !steepest descent
   
   // Increase number of steps since last Hessian by 1 unless we read in a new one
   if (read_H_worked)
@@ -447,58 +455,36 @@ OptReturnType optking(void) {
   mol1->write_geom(); // write geometry -> chkpt (also output for QChem)
   print_end_out();
 
-  } // end big try
-  catch (INTCO_EXCEPT exc) {
+  } // end try STEP1
+  catch (BAD_STEP_EXCEPT exc) {
+    oprintf_out("\tThe BAD_STEP_EXCEPTion handler:\n\t%s\n", exc.g_message());
 
-    if (exc.try_again() && !exc.already_tried_other_intcos) {
+    if (!Opt_params.dynamic || (p_Opt_data->g_consecutive_backsteps() < Opt_params.consecutive_backsteps_allowed) &&
+         p_Opt_data->g_iteration() > 1) {
+      // Do backward step.  backstep() function increments counter in opt_data.
+      p_Opt_data->decrease_trust_radius();
+      mol1->backstep();
+      p_Opt_data->write();
+      delete p_Opt_data;
 
-      oprintf_out("\tThe optimizer encountered the following error:\n\t%s\n", exc.g_message());
-      oprintf_out("\tWill attempt to restart optimization with redefined internal coordinates.\n");
+      oprintf_out("\tStructure for next step:\n");
+      mol1->print_geom_out(); // write geometry for next step to output file
+      if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
 
-      opt_intco_dat_remove(); // rm intco definitions
-      opt_io_remove(); // rm optimization data
-
-#if defined(OPTKING_PACKAGE_QCHEM)
-      rem_write(0, REM_GEOM_OPT_CYCLE); // reset iteration counter
-#endif
-      // if multi mode has failed, for now try single mode.
-      if (Opt_params.fragment_mode == OPT_PARAMS::MULTI)
-        exc.override_fragment_mode = true;
-
-      exc.already_tried_other_intcos = true;
+      mol1->write_geom(); // write geometry -> chkpt (also output for QChem)
+      print_end_out();
       close_output_dat();
-      return OptReturnSuccess;
+    }
+    else if (Opt_params.dynamic) {
+      throw(INTCO_EXCEPT("Too many bad steps."));
     }
     else {
-      fprintf(stderr, "%s\n", exc.g_message());
-      oprintf_out( "%s\n", exc.g_message());
-#if defined (OPTKING_PACKAGE_QCHEM)
-      QCrash(exc.g_message());
-#elif defined (OPTKING_PACKAGE_PSI)
-      abort();
-#endif
+      oprintf_out("This exception should not be called when neither dynamic nor backsteps are allowed.\n");
+      throw("This exception should not be called when neither dynamic nor backsteps are allowed.");
     }
-  }
-  catch (BAD_STEP_EXCEPT exc) {
-    oprintf_out("\tA bad-step exception has been caught.\n");
-    oprintf_out("\t%s", exc.g_message());
-
-    p_Opt_data->decrease_trust_radius();
-
-    mol1->backstep();
-
-    p_Opt_data->write();
-    delete p_Opt_data;
-    oprintf_out("\tStructure for next step:\n");
-    mol1->print_geom_out(); // write geometry for next step to output file
-    if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
-
-    mol1->write_geom(); // write geometry -> chkpt (also output for QChem)
-    print_end_out();
-
-    close_output_dat();
     return OptReturnSuccess;
-  }
+  } // end BAD_STEP_EXCEPT
+  } // end try STEP2
   catch (BROKEN_SYMMETRY_EXCEPT exc) {
     p_Opt_data->reset_trust_radius();
     oprintf_out("\n  **** Optimization has failed! (in %d steps) ****\n", p_Opt_data->nsteps());
@@ -507,7 +493,50 @@ OptReturnType optking(void) {
     close_output_dat();
     return OptReturnFailure;
   }
+  catch (INTCO_EXCEPT exc) {
+    oprintf_out("\tThe INTCO_EXCEPTion handler:\n\t%s\n", exc.g_message());
+    oprintf_out("\tDynamic level is %d.\n", Opt_params.dynamic);
+    oprintf_out("\texc.g_really_quit() is %d.\n", exc.g_really_quit());
 
+    // Give up and quit.
+    if (Opt_params.dynamic == 0 || Opt_params.dynamic == 7 || exc.g_really_quit()) {
+      fprintf(stderr, "%s\n", exc.g_message());
+      oprintf_out( "%s\n", exc.g_message());
+#if defined (OPTKING_PACKAGE_QCHEM)
+      QCrash(exc.g_message());
+#elif defined (OPTKING_PACKAGE_PSI)
+      abort();
+#endif
+    }
+    else {
+      if (exc.linear_angles.empty()) {
+        oprintf_out("\tRaising dynamic level to %d. ~\n", Opt_params.dynamic+1);
+        exc.increment_dynamic_level();
+      }
+      else 
+        oprintf_out("\tRestarting with new internal coordinates at same level.");
+
+      // put previous geometry into place
+      if (p_Opt_data->nsteps()>1) {
+        double *x = p_Opt_data->g_geom_const_pointer(p_Opt_data->nsteps()-1);
+        mol1->set_geom_array(x);
+        mol1->write_geom();
+      }
+
+      delete p_Opt_data;
+      opt_intco_dat_remove(); // rm intco definitions
+      opt_io_remove();        // rm optimization data
+
+      //if (Opt_params.fragment_mode == OPT_PARAMS::MULTI)
+      //  exc.override_fragment_mode = true;
+
+#if defined(OPTKING_PACKAGE_QCHEM)
+      rem_write(0, REM_GEOM_OPT_CYCLE); // reset iteration counter
+#endif
+      close_output_dat();
+      return OptReturnSuccess;
+    }
+  }
 #if defined (OPTKING_PACKAGE_PSI)
   catch (psi::PsiException e){
       oprintf_out("\t%s", e.what());

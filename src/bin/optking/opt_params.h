@@ -81,6 +81,9 @@ struct OPT_PARAMS {
   enum IRC_DIRECTION {FORWARD, BACKWARD} IRC_direction;
   enum IRC_STOP {ASK, STOP, GO} IRC_stop;
 
+  int dynamic;       // tracks dynamic optimization mode level
+  double sd_hessian; // steepest-descent second derivative guess
+
   bool freeze_intrafragment; // freeze all fragments
   bool freeze_interfragment; // freeze all interfragment modes
   bool add_auxiliary_bonds;

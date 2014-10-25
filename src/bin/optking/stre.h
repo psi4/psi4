@@ -61,7 +61,7 @@ class STRE : public SIMPLE_COORDINATE {
     bool operator==(const SIMPLE_COORDINATE & s2) const;
     std::string get_definition_string(int atom_offset=0) const;
 
-    void make_hbond(void) { hbond = true; }
+    void set_hbond(bool val) { hbond = val; }
     bool is_hbond(void) const { return hbond; }
     void make_inverse_stre(void) { inverse_stre = true; }
     bool is_inverse_stre(void) const { return inverse_stre; }

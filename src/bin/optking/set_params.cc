@@ -98,6 +98,15 @@ void set_params(void)
 
     Opt_params.interfragment_step_limit = options.get_double("INTERFRAG_STEP_LIMIT");
 
+// For now, the initial Hessian guess for cartesians with BOTH is stupid, so don't scale
+// step size down too much.
+    if (!options["INTRAFRAG_STEP_LIMIT_MIN"].has_changed() && Opt_params.coordinates == OPT_PARAMS::BOTH)
+      Opt_params.intrafragment_step_limit_min = Opt_params.intrafragment_step_limit / 2.0;
+
+// Steepest descent has no good hessian, so don't restrict step much
+    if (!options["INTRAFRAG_STEP_LIMIT_MIN"].has_changed() && Opt_params.step_type == OPT_PARAMS::SD)
+      Opt_params.intrafragment_step_limit_min = Opt_params.intrafragment_step_limit;
+
 // Reduce step size to ensure convergence of back-transformation of internal coordinate
 // step to cartesians.
     Opt_params.ensure_bt_convergence = options.get_bool("ENSURE_BT_CONVERGENCE");
@@ -580,7 +589,7 @@ void set_params(void)
 
   // if steepest-descent, then make much larger default
   if (Opt_params.step_type == OPT_PARAMS::SD && RemUninitialized(REM_GEOM_OPT2_CONSECUTIVE_BACKSTEPS))
-    Opt_params.consecutive_backsteps_allowed = 10;
+    Opt_params.consecutive_backsteps_allowed = 1;
 
 //TO DO: initialize IRC_step_size for Q-Chem
 
@@ -679,17 +688,127 @@ void set_params(void)
     Opt_params.test_derivative_B = false;
   }
 
+/*  if dynamic mode is on, then other settings are overridden.
+* step_type = step
+* intrafragment_step_limit = step_limit
+* consecutive_backsteps = backsteps
+* RI = redundant internals; D = default anyway
+
+*dynamic  step   coord   step_limit      backsteps              criteria
+* level                                               for downmove    for upmove
+*  0      RFO    RI      dynamic         no           none            none
+*
+*  1      RFO    RI      dynamic(D)      no           1 bad step
+*
+*  2      RFO    RI      small initial   yes (1)      1 bad step
+*                        dynamic(D)    
+*
+*  3      SD     RI      large(D)        yes (1)      1 bad step
+*
+*  4      SD     RI+XYZ  large(D)        yes (1)      1 bad step
+*
+*  5      SD     XYZ     large(D)        yes (1)      1 bad step
+*
+*  6      SD     XYZ     small           yes (1)      1 bad step
+*
+*  7  abort
+*
+*  BackStep:
+*   DE > 0 in minimization
+*
+*  BadStep:
+*   DE > 0 and backsteps exceeded and iterations > 5  ** OR **
+*   badly defined internal coordinate or derivative
+*
+* */
+
+  if (options["DYNAMIC_LEVEL"].has_changed())
+    Opt_params.dynamic = options.get_int("DYNAMIC_LEVEL");
+  else
+    Opt_params.dynamic = INTCO_EXCEPT::dynamic_level;
+
+  Opt_params.sd_hessian = 1.0; // small step
+
+  switch(Opt_params.dynamic) {
+    case 0: // not dynamic
+      break;
+    case 1:
+      Opt_params.coordinates = OPT_PARAMS::REDUNDANT;
+      Opt_params.consecutive_backsteps_allowed = 0;
+      Opt_params.step_type = OPT_PARAMS::RFO;
+             printf("At level 1: Red. Int., RFO, no backsteps, dynamic trust\n");
+      oprintf_out("\tAt level 1: Red. Int., RFO, no backsteps, dynamic trust\n");
+      break;
+    case 2:
+      Opt_params.coordinates = OPT_PARAMS::REDUNDANT;
+      Opt_params.consecutive_backsteps_allowed = 2;
+      Opt_params.step_type = OPT_PARAMS::RFO;
+      Opt_params.intrafragment_step_limit = 0.2;
+      Opt_params.intrafragment_step_limit_min = 0.2; //this code overwrites changes anyway
+      Opt_params.intrafragment_step_limit_max = 0.2;
+             printf("At level 2: Red. Int., RFO, backsteps, smaller trust.\n");
+      oprintf_out("\tAt level 2: Red. Int., RFO, backsteps, smaller trust.\n");
+      break;
+    case 3:
+      Opt_params.coordinates = OPT_PARAMS::BOTH;
+      Opt_params.consecutive_backsteps_allowed = 2;
+      Opt_params.step_type = OPT_PARAMS::RFO;
+      Opt_params.intrafragment_step_limit = 0.1;
+      Opt_params.intrafragment_step_limit_min = 0.1; //this code overwrites changes anyway
+      Opt_params.intrafragment_step_limit_max = 0.1;
+             printf("At level 3: Red. Int., RFO, backsteps, smaller trust.\n");
+      oprintf_out("\tAt level 3: Red. Int., RFO, backsteps, smaller trust.\n");
+      break;
+    case 4:
+      Opt_params.coordinates = OPT_PARAMS::BOTH;
+      Opt_params.consecutive_backsteps_allowed = 1;
+      Opt_params.step_type = OPT_PARAMS::SD;
+      Opt_params.sd_hessian = 0.2;
+      Opt_params.intrafragment_step_limit = 0.4;
+      Opt_params.intrafragment_step_limit_min = 0.4; //this code overwrites changes anyway
+      Opt_params.intrafragment_step_limit_max = 0.4;
+             printf("At level 4: Red. Int. + XYZ, SD, backsteps, larger trust.\n");
+      oprintf_out("\tAt level 4: Red. Int. + XYZ, SD, backsteps, larger trust.\n");
+      break;
+    case 5:
+      Opt_params.coordinates = OPT_PARAMS::CARTESIAN;
+      Opt_params.consecutive_backsteps_allowed = 1;
+      Opt_params.step_type = OPT_PARAMS::SD;
+      Opt_params.sd_hessian = 0.2;
+      Opt_params.intrafragment_step_limit = 0.3;
+      Opt_params.intrafragment_step_limit_min = 0.3; //this code overwrites changes anyway
+      Opt_params.intrafragment_step_limit_max = 0.3;
+             printf("At level 5: XYZ, SD, backsteps, larger trust.\n");
+      oprintf_out("\tAt level 5: XYZ, SD, backsteps, larger trust.\n");
+      break;
+    case 6:
+      Opt_params.coordinates = OPT_PARAMS::CARTESIAN;
+      Opt_params.consecutive_backsteps_allowed = 2;
+      Opt_params.step_type = OPT_PARAMS::SD;
+      Opt_params.sd_hessian = 0.5;
+      Opt_params.intrafragment_step_limit = 0.1;
+      Opt_params.intrafragment_step_limit_min = 0.1; //this code overwrites changes anyway
+      Opt_params.intrafragment_step_limit_max = 0.1;
+             printf("Moving to level 6: XYZ, SD, backsteps, small trust, smaller steps.\n");
+      oprintf_out("\tMoving to level 6: XYZ, SD, backsteps, small trust, smaller steps.\n");
+      break;
+  default:
+      oprintf_out("Unknown value of Opt_params.dynamic variable.\n");
+  }
+
   if (Opt_params.print_lvl > 1 || Opt_params.print_params) print_params_out();
 
 }
 
 void print_params_out(void) {
 
+  oprintf_out( "dynamic level          = %18d\n", Opt_params.dynamic);
   oprintf_out( "conv_max_force         = %18.2e\n", Opt_params.conv_max_force);
   oprintf_out( "conv_rms_force         = %18.2e\n", Opt_params.conv_rms_force);
   oprintf_out( "conv_max_DE            = %18.2e\n", Opt_params.conv_max_DE);
   oprintf_out( "conv_max_disp          = %18.2e\n", Opt_params.conv_max_disp);
   oprintf_out( "conv_rms_disp          = %18.2e\n", Opt_params.conv_rms_disp);
+  oprintf_out( "SD Hessian             = %18.2e\n", Opt_params.sd_hessian);
 
   oprintf_out( "scale_connectivity     = %18.2e\n", Opt_params.scale_connectivity);
   oprintf_out( "interfragment_scale_connectivity = %18.2e\n",

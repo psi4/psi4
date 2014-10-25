@@ -55,6 +55,8 @@ void MOLECULE::prfo_step(void) {
   int rfo_root; // ultimately, should be array of roots to maximize
   int cnt_i, cnt_j;
 
+  oprintf_out("\tTaking PRFO optimization step.\n");
+
   // don't use Horig anymore -it's the pointer to the good, original Hessian
   double **H = matrix_return_copy(Horig, Nintco, Nintco);
 
