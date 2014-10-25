@@ -746,6 +746,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     different calculation types. -*/
     options.add_double("E_CONVERGENCE", 1e-7);
 
+    /*- Maximum number CASSCF of iterations -*/
+    options.add_int("MAXITER", 30);
+
     /*- Print the MOs? -*/
     options.add_bool("PRINT_MOS", false); 
  

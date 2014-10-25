@@ -23,7 +23,6 @@
 #include "mints.h"
 
 using namespace psi;
-using namespace boost;
 
 MultipoleInt::MultipoleInt(std::vector<SphericalTransform>& spherical_transforms, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int order, int nderiv) :
     order_(order),

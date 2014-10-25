@@ -562,11 +562,7 @@ double py_psi_detci()
 double py_psi_detcas()
 {
     py_psi_prepare_options_for_module("DETCAS");
-    if (detcas::detcas(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return detcas::detcas(Process::environment.options);
 }
 
 double py_psi_cchbar()
