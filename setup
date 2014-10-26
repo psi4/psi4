@@ -21,7 +21,6 @@ import argparse
 root_directory = os.path.dirname(os.path.realpath(__file__))
 default_path = os.path.join(root_directory, 'obj')
 
-blankstring = "No default"  # This looks prettier when the user prints out the help
 def parse_input():
 
     parser = argparse.ArgumentParser(description="Configure Psi4 using CMake",
@@ -37,22 +36,19 @@ def parse_input():
     # The C compiler
     group.add_argument('--cc',
             action='store',
-            type=str,
-            default=blankstring,
+            default=None,
             help='set the C compiler [default: pick automatically or based on CC=...]',
             metavar='STRING')
     # The C++ compiler
     group.add_argument('--cxx',
             action='store',
-            type=str,
-            default=blankstring,
+            default=None,
             help='set the C++ compiler [default: pick automatically or based on CXX=...]',
             metavar='STRING')
     # The Fortran compiler
     group.add_argument('--fc',
             action='store',
-            type=str,
-            default=blankstring,
+            default=None,
             help='set the Fortran compiler [default: pick automatically or based on FC=...]',
             metavar='STRING')
     # Libint maximum angular momentum.
@@ -91,21 +87,18 @@ def parse_input():
     group = parser.add_argument_group('Boost and Python options')
     group.add_argument('--boost-incdir',
             action='store',
-            type=str,
-            default=blankstring,
+            default=None,
             help='The includes directory for boost.  If this is left blank cmake will attempt to find one on your system.  Failing that it will build one for you',
             metavar='PATH')
     group.add_argument('--boost-libdir',
             action='store',
-            type=str,
-            default=blankstring,
+            default=None,
             help='The libraries directory for boost.  If this is left blank cmake will attempt to find one on your system.  Failing that it will build one for you',
             metavar='PATH')
     group.add_argument('--python',
             metavar='= PYTHON',
             action='store',
-            type=str,
-            default=blankstring,
+            default=None,
             help='The Python interpreter (development version) to use.  CMake will detect one automatically, if omitted.')
 
     group = parser.add_argument_group('Parallelization')
@@ -232,25 +225,39 @@ def parse_input():
             action='store_true',
             default=False,
             help='Enable dummy plugin external project.')
+    
+    group = parser.add_argument_group('Pass extra flags to the compiler')
+    group.add_argument('--extra-cc-flags',
+            action='store',
+            default=None,
+            help='extra C flags [default: %(default)s]',
+            metavar='STRING')
+    group.add_argument('--extra-cxx-flags',
+            action='store',
+            default=None,
+            help='extra C++ flags [default: %(default)s]',
+            metavar='STRING')
+    group.add_argument('--extra-fc-flags',
+            action='store',
+            default=None,
+            help='extra Fortran flags [default: %(default)s]',
+            metavar='STRING')
 
     group = parser.add_argument_group('Bypass compiler flags')
-    group.add_argument('--fc-flags',
+    group.add_argument('--custom-cc-flags',
             action='store',
-            type=str,
-            default=blankstring,
-            help='Fortran flags [default: %(default)s]',
-            metavar='STRING')
-    group.add_argument('--cc-flags',
-            action='store',
-            type=str,
-            default=blankstring,
+            default=None,
             help='C flags [default: %(default)s]',
             metavar='STRING')
-    group.add_argument('--cxx-flags',
+    group.add_argument('--custom-cxx-flags',
             action='store',
-            type=str,
-            default=blankstring,
+            default=None,
             help='C++ flags [default: %(default)s]',
+            metavar='STRING')
+    group.add_argument('--custom-fc-flags',
+            action='store',
+            default=None,
+            help='Fortran flags [default: %(default)s]',
             metavar='STRING')
 
     return parser.parse_args()
@@ -361,13 +368,20 @@ def gen_cmake_command(args):
     
     if args.python:
         command += ' -DPYTHON_INTERPRETER={0}'.format(args.python)
-
-    if args.fc_flags:
-        command += ' -DEXTRA_Fortran_FLAGS="%s"' % args.fc_flags
-    if args.cc_flags:
-        command += ' -DEXTRA_C_FLAGS="%s"' % args.cc_flags
-    if args.cxx_flags:
-        command += ' -DEXTRA_CXX_FLAGS="%s"' % args.cxx_flags
+    
+    if args.extra_cc_flags:
+        command += ' -DEXTRA_C_FLAGS="%s"' % args.extra_cc_flags
+    if args.extra_cxx_flags:
+        command += ' -DEXTRA_CXX_FLAGS="%s"' % args.extra_cxx_flags
+    if args.extra_fc_flags:
+        command += ' -DEXTRA_Fortran_FLAGS="%s"' % args.extra_fc_flags
+        
+    if args.custom_cc_flags:
+        command += ' -DCUSTOM_C_FLAGS="%s"' % args.custom_cc_flags
+    if args.custom_cxx_flags:
+        command += ' -DCUSTOM_CXX_FLAGS="%s"' % args.custom_cxx_flags
+    if args.custom_fc_flags:
+        command += ' -DCUSTOM_Fortran_FLAGS="%s"' % args.custom_fc_flags
 
     if args.check:
         command += ' -DENABLE_BOUNDS_CHECK=ON'
