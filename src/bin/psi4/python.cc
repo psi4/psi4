@@ -130,7 +130,7 @@ namespace psi {
     namespace ccresponse { PsiReturnType ccresponse(Options&);}
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
-    namespace detcas     { PsiReturnType detcas(Options&);     }
+//    namespace detcas     { PsiReturnType detcas(Options&);     }
     namespace fnocc      { PsiReturnType fnocc(Options&);     }
     namespace efp        { PsiReturnType efp_init(Options&);  }
     namespace efp        { PsiReturnType efp_set_options();   }
@@ -578,11 +578,12 @@ double py_psi_detci()
         return 0.0;
 }
 
-double py_psi_detcas()
-{
-    py_psi_prepare_options_for_module("DETCAS");
-    return detcas::detcas(Process::environment.options);
-}
+// DGAS
+// double py_psi_detcas()
+// {
+//     py_psi_prepare_options_for_module("DETCAS");
+//     return detcas::detcas(Process::environment.options);
+// }
 
 double py_psi_cchbar()
 {
@@ -1530,7 +1531,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");
     def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
-    def("detcas", py_psi_detcas, "Runs the determinant-based complete active space self consistent field.");
+// DGAS    def("detcas", py_psi_detcas, "Runs the determinant-based complete active space self consistent field.");
     def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
     def("efp_init", py_psi_efp_init, "Initializes the EFP library and returns an EFP object.");
     def("efp_set_options", py_psi_efp_set_options, "Set EFP options from environment options object.");

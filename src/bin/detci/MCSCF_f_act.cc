@@ -29,10 +29,12 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <psi4-dec.h>
-#include "MCSCF_globaldefs.h"
+#include "globaldefs.h"
+#include "structs.h"
+#define EXTERN
 #include "globals.h"
 
-namespace psi { namespace detcas {
+namespace psi { namespace detci {
 
 void calc_F_act(double *F_act, int nmo, int firstact, int lastact, 
                 double **onepdm, double *tei);
@@ -49,24 +51,24 @@ void form_F_act(void)
   int ncore;
 
   /* Form the intermediates we need */
-  CalcInfo.F_act = init_array(CalcInfo.nmotri);
-  ncore = CalcInfo.num_fzc_orbs + CalcInfo.num_cor_orbs;
-  calc_F_act(CalcInfo.F_act, CalcInfo.nmo, ncore,  CalcInfo.npop, 
-             CalcInfo.opdm, CalcInfo.twoel_ints);
+  MCSCF_CalcInfo.F_act = init_array(MCSCF_CalcInfo.nmotri);
+  ncore = MCSCF_CalcInfo.num_fzc_orbs + MCSCF_CalcInfo.num_cor_orbs;
+  calc_F_act(MCSCF_CalcInfo.F_act, MCSCF_CalcInfo.nmo, ncore,  MCSCF_CalcInfo.npop, 
+             MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.twoel_ints);
   /*
-  check_F_act(CalcInfo.F_act, CalcInfo.nmo, ncore,  CalcInfo.npop, 
-             CalcInfo.opdm, CalcInfo.twoel_ints);
-  test_lag(CalcInfo.nmo, ncore, CalcInfo.npop, CalcInfo.onel_ints,
-           CalcInfo.twoel_ints, CalcInfo.opdm, CalcInfo.tpdm);
-  test_fzc(CalcInfo.nmo, ncore, CalcInfo.onel_ints, CalcInfo.twoel_ints);
+  check_F_act(MCSCF_CalcInfo.F_act, MCSCF_CalcInfo.nmo, ncore,  MCSCF_CalcInfo.npop, 
+             MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.twoel_ints);
+  test_lag(MCSCF_CalcInfo.nmo, ncore, MCSCF_CalcInfo.npop, MCSCF_CalcInfo.onel_ints,
+           MCSCF_CalcInfo.twoel_ints, MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm);
+  test_fzc(MCSCF_CalcInfo.nmo, ncore, MCSCF_CalcInfo.onel_ints, MCSCF_CalcInfo.twoel_ints);
 
-  test_lag2(CalcInfo.nmo, ncore, CalcInfo.npop, CalcInfo.onel_ints,
-           CalcInfo.twoel_ints, CalcInfo.opdm, CalcInfo.tpdm);
+  test_lag2(MCSCF_CalcInfo.nmo, ncore, MCSCF_CalcInfo.npop, MCSCF_CalcInfo.onel_ints,
+           MCSCF_CalcInfo.twoel_ints, MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm);
   */
 
   if (MCSCF_Parameters.print_lvl > 3) {
     outfile->Printf("\nActive Fock matrix:\n");
-    print_array(CalcInfo.F_act, CalcInfo.nmo, "outfile");
+    print_array(MCSCF_CalcInfo.F_act, MCSCF_CalcInfo.nmo, "outfile");
   }
 
 }
@@ -265,5 +267,5 @@ void test_lag2(int nbf, int ncore, int npop, double *oei,
 }
 
 
-}} // end namespace psi::detcas
+}} // end namespace psi::detci
 

@@ -42,6 +42,7 @@ public:
     virtual ~CIWavefunction();
 
     double compute_energy();
+    PsiReturnType cas_update();
 
 private:
     void init();

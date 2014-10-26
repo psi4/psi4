@@ -42,13 +42,13 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
-#include "MCSCF_globaldefs.h"
+#include "globaldefs.h"
 #include "globals.h"
 #include "psi4-dec.h"
 
-namespace psi { namespace detcas {
+namespace psi { namespace detci {
 
-void read_integrals()
+void mcscf_read_integrals()
 {
   int i, j, ij, k, l, kl, ijkl;
   int nbstri;
@@ -103,7 +103,7 @@ void read_integrals()
 
 
 
-double get_onel(int i, int j)
+double mcscf_get_onel(int i, int j)
 {
   int ij;
 
@@ -112,7 +112,7 @@ double get_onel(int i, int j)
 }
 
 
-double get_twoel(int i, int j, int k, int l)
+double mcscf_get_twoel(int i, int j, int k, int l)
 {
   int ij, kl, ijkl;
 
@@ -125,14 +125,14 @@ double get_twoel(int i, int j, int k, int l)
 
 
 /*
-** get_mat_block()
+** mcscf_get_mat_block()
 **
 ** This function gets an irrep block of a full matrix
 **
 ** C. David Sherrill
 ** May 1998
 */
-void get_mat_block(double **src, double **dst, int dst_dim, int dst_offset,
+void mcscf_get_mat_block(double **src, double **dst, int dst_dim, int dst_offset,
                    int *dst2src)
 {
 
@@ -148,5 +148,5 @@ void get_mat_block(double **src, double **dst, int dst_dim, int dst_offset,
 
 }
 
-}} // end namespace psi::detcas
+}} // end namespace psi::detci
 

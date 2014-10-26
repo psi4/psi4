@@ -29,11 +29,13 @@
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
-#include "MCSCF_globaldefs.h"
+#include "globaldefs.h"
+#include "structs.h"
+#define EXTERN
 #include "globals.h"
 #include "psi4-dec.h"
 
-namespace psi { namespace detcas {
+namespace psi { namespace detci {
 
 /*
 ** calc_grad_1
@@ -176,5 +178,5 @@ void calc_grad_2(int npairs, int *ppair, int *qpair, double *F_core,
 
 }
 
-}} // end namespace psi::detcas
+}} // end namespace psi::detci
 

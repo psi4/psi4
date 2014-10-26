@@ -40,11 +40,13 @@
 #include <cstdio>
 #include <libiwl/iwl.h>
 #include <libciomr/libciomr.h>
-#include "MCSCF_globaldefs.h"
+#include "globaldefs.h"
+#include "structs.h"
+#define EXTERN
 #include "globals.h"
 #include "psi4-dec.h"
 
-namespace psi { namespace detcas {
+namespace psi { namespace detci {
 
 double **rdopdm(int nbf, int print_lvl, int opdm_file, bool erase, Options& options);
 double *rdtpdm(int nbf, int print_lvl, int tpdm_file, bool erase);
@@ -54,11 +56,11 @@ void read_density_matrices(Options& options)
 {
 
   /* read the one-particle density matrix */
-  CalcInfo.opdm = rdopdm(CalcInfo.npop, MCSCF_Parameters.print_lvl, MCSCF_Parameters.opdm_file,
+  MCSCF_CalcInfo.opdm = rdopdm(MCSCF_CalcInfo.npop, MCSCF_Parameters.print_lvl, MCSCF_Parameters.opdm_file,
                          MCSCF_Parameters.opdm_erase, options);
 
   /* read the two-particle density matrix */
-  CalcInfo.tpdm = rdtpdm(CalcInfo.npop, MCSCF_Parameters.print_lvl, MCSCF_Parameters.tpdm_file,
+  MCSCF_CalcInfo.tpdm = rdtpdm(MCSCF_CalcInfo.npop, MCSCF_Parameters.print_lvl, MCSCF_Parameters.tpdm_file,
                          MCSCF_Parameters.tpdm_erase);
 
 }
@@ -224,5 +226,5 @@ double *rdtpdm(int nbf, int print_lvl, int tpdm_file, bool erase)
   return (symm_tpdm);
 }
 
-}} // end namespace psi::detcas
+}} // end namespace psi::detci
 

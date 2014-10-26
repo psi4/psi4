@@ -42,7 +42,7 @@
 #include "MCSCF_indpairs.h"
 #include "psi4-dec.h"
 
-namespace psi { namespace detcas {
+namespace psi { namespace detci {
 
 IndepPairs::IndepPairs() // Default constructor
 {
@@ -467,5 +467,5 @@ void IndepPairs::put_irrep_vec(int irrep, double *ir_vec, double *tot_vec)
 } 
 
 
-}} // end namespace psi::detcas
+}} // end namespace psi::detci
 

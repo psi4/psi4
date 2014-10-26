@@ -40,7 +40,7 @@
 #include <libciomr/libciomr.h>
 #include "psi4-dec.h"
 
-namespace psi { namespace detcas {
+namespace psi { namespace detci {
 
 void test_bfgs(void)
 {
@@ -158,5 +158,5 @@ double dfunc(double *x, double *g)
   return(E);
 }
 
-}} // end namespace psi::detcas
+}} // end namespace psi::detci
 

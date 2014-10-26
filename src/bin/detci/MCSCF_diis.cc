@@ -43,10 +43,12 @@
 #include <libpsio/psio.hpp>
 #include <libpsio/psio.h>
 #include <psifiles.h>
-#include "MCSCF_globaldefs.h"
+#include "globaldefs.h"
+#include "structs.h"
+#define EXTERN
 #include "globals.h"
 
-namespace psi { namespace detcas {
+namespace psi { namespace detci {
 
 #define DIIS_MIN_DET 1.0E-16
 
@@ -216,10 +218,10 @@ int diis(int veclen, double *vec, double *errvec)
   }
 
   /* get extrapolated vector */
-  zero_arr(CalcInfo.theta_cur, veclen);
+  zero_arr(MCSCF_CalcInfo.theta_cur, veclen);
   for (i=0; i<new_num_vecs; i++) {
     for (j=0; j<veclen; j++) {
-      CalcInfo.theta_cur[j] += bvec[i] * vecs[i+offset][j];
+      MCSCF_CalcInfo.theta_cur[j] += bvec[i] * vecs[i+offset][j];
     }
   }
 
@@ -231,5 +233,5 @@ int diis(int veclen, double *vec, double *errvec)
   return(1);
 }
 
-}} // end namespace psi::detcas
+}} // end namespace psi::detci
 

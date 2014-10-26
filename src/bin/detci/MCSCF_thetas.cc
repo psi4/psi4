@@ -32,11 +32,13 @@
 #include <libpsio/psio.hpp>
 #include <libpsio/psio.h>
 #include <psifiles.h>
-#include "MCSCF_globaldefs.h"
+#include "globaldefs.h"
+#include "structs.h"
+#define EXTERN
 #include "globals.h"
 #include "psi4-dec.h"
 
-namespace psi { namespace detcas { 
+namespace psi { namespace detci { 
 
 void rotate_test(int dim, int npairs, int *p_arr, int *q_arr, 
                  double *theta_arr);
@@ -222,19 +224,19 @@ void read_thetas(int npairs)
 {
 
 
-  CalcInfo.theta_cur = init_array(npairs);
+  MCSCF_CalcInfo.theta_cur = init_array(npairs);
   if (MCSCF_Parameters.print_lvl > 2)
     outfile->Printf("\nReading orbital rotation angles\n");
  
   if (psio_tocentry_exists(PSIF_DETCAS, "Thetas")){ 
     psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
-    psio_read_entry(PSIF_DETCAS, "Thetas", (char *) CalcInfo.theta_cur,
+    psio_read_entry(PSIF_DETCAS, "Thetas", (char *) MCSCF_CalcInfo.theta_cur,
                     npairs*sizeof(double));
     psio_close(PSIF_DETCAS, 1);
 
   }
   else {
-    zero_arr(CalcInfo.theta_cur, npairs);
+    zero_arr(MCSCF_CalcInfo.theta_cur, npairs);
   }
 }
 
@@ -253,7 +255,7 @@ void write_thetas(int npairs)
     outfile->Printf("\nWriting orbital rotation angles\n");
   
   psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
-  psio_write_entry(PSIF_DETCAS, "Thetas", (char *) CalcInfo.theta_cur,
+  psio_write_entry(PSIF_DETCAS, "Thetas", (char *) MCSCF_CalcInfo.theta_cur,
                   npairs*sizeof(double));
 
   psio_close(PSIF_DETCAS, 1);
@@ -399,5 +401,5 @@ void calc_dE_dT(int n, double **dEU, int npairs, int *ppair, int *qpair,
   free_block(Scratch);
 }
 
-}} // end namespace psi::detcas
+}} // end namespace psi::detci
 

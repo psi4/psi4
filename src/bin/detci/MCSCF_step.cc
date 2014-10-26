@@ -33,11 +33,13 @@
 #include <cmath>
 #include <psifiles.h>
 #include <psi4-dec.h>
-#include "MCSCF_globaldefs.h"
+#include "globaldefs.h"
+#include "structs.h"
+#define EXTERN
 #include "globals.h"
 #include "libpsio/psio.h"
 
-namespace psi { namespace detcas {
+namespace psi { namespace detci {
 
 #define MO_HESS_MIN 1.0E-2
 
@@ -316,8 +318,8 @@ void print_step(int npairs, int steptype)
     energy = chkpt_rd_etot();
   chkpt_close();
 
-  scaled_rmsgrad[entries] = CalcInfo.scaled_mo_grad_rms;
-  rmsgrad[entries] = CalcInfo.mo_grad_rms;
+  scaled_rmsgrad[entries] = MCSCF_CalcInfo.scaled_mo_grad_rms;
+  rmsgrad[entries] = MCSCF_CalcInfo.mo_grad_rms;
   energies[entries] = energy;
   nind[entries] = npairs;
 
@@ -359,5 +361,5 @@ void print_step(int npairs, int steptype)
 
 }
 
-}} // end namespace psi::detcas
+}} // end namespace psi::detci
 

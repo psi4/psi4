@@ -149,8 +149,10 @@ extern void tpdm(struct stringwr **alplist, struct stringwr **betlist,
    int Inroots, int Inunits, int Ifirstunit,
    int Jnroots, int Jnunits, int Jfirstunit,
    int targetfile, int writeflag, int printflag);
+extern PsiReturnType mcscf_update(Options &options);
 extern void compute_cc(void);
 extern void calc_mrpt(void);
+
 
 PsiReturnType detci(Options &options);
 
@@ -275,6 +277,8 @@ PsiReturnType detci(Options &options)
      mpn(alplist, betlist);
    else if (Parameters.cc)
      compute_cc();
+   else if (Parameters.mcscf)
+     mcscf_update(options);
    else
      diag_h(alplist, betlist);
 

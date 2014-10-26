@@ -41,10 +41,12 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
+#include "structs.h"
+#define EXTERN
 #include "globals.h"
 #include "psi4-dec.h"
 
-namespace psi { namespace detcas {
+namespace psi { namespace detci {
 
 // /*
 // ** init_io(): Function opens input and output files
@@ -111,7 +113,7 @@ void check(int a, const char *errmsg)
   }
 }
 
-}} // end namespace psi::detcas
+}} // end namespace psi::detci
 
 
 /*

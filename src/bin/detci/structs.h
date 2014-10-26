@@ -334,20 +334,7 @@ struct calcinfo {
    int max_pop_per_irrep;/* maximum populated orbitals per irrep fzv included */
    int sigma_initialized; /* has sigma_init been called yet? */
 
-
-   /* Start MCSCF values*/
-   int mcscf_iter               /* number of MCSCF iterations */
-   int mcscf_num_fzc_orbs;      /* MCSCF number of FZC orbitals (i.e. frozen core) */
-   int mcscf_num_cor_orbs;      /* MCSCF number of COR orbitals (i.e. restricted core) */
-   int mcscf_num_vir_orbs;      /* MCSCF number of VIR orbitals (i.e. restricted virtual) */
-   int mcscf_num_fzv_orbs;      /* MCSCF number of frozen/deleted virtual orbitals */
-   int *mcscf_docc;             /* MCSCF doubly occupied orbitals per irrep */
-   int *mcscf_socc;             /* MCSCF singly occupied orbitals per irrep */
-   int *mcscf_frozen_docc;      /* MCSCF frozen doubly occupied orbs per irrep */
-   int *mcscf_frozen_uocc;      /* MCSCF frozen virtual orbs per irrep */
-   int *mcscf_rstr_docc;        /* MCSCF restricted doubly occupied orbs per irrep */
-   int *mcscf_rstr_uocc;        /* MCSCF restricted virtual orbs per irrep */
-   };
+};
 
 
 /*
@@ -452,6 +439,7 @@ struct params {
    int update;             /* update vector in diag method  
                               1 = Davidson
                               2 = Olsen */
+   int mcscf;             /* 1(0) if computing MCSCF is TRUE(FALSE) */
    int mpn;                /* 1(0) if computing mpn series is TRUE(FALSE) */
    int zaptn;              /* 1(0) if computing zaptn series is TRUE(FALSE) */
    int save_mpn2;          /* 0 = save MPn energy, 1 = save MP(2n-1) energy, 
@@ -581,8 +569,74 @@ struct params {
                                               [2] = max (I h + IV p)        */
    int cc_variational;     /* variational energy expression?                */
 
-
 };
+
+/*
+** CalcInfo: Data Structure for MCSCF holding calculation information such
+**   as nuclear repulsion energy, number of atoms, number of basis functions,
+**   etc.
+*/
+struct mcscf_calcinfo {
+  int iter;              /* iteration number */
+  int nmo;               /* number of molecular orbitals... the code often
+                            uses nbfso instead but it shouldn't in case
+                            of linear dependencies */
+  int nso;               /* number of basis functions in symmetry orbitals */
+  int nmotri;            /* num elements in lwr diag matrix nbfso big */
+  int nbfao;             /* number of basis functions in atomic orbitals */
+  int nirreps;           /* number of irreducible representations in pt grp */
+  int num_fzc_orbs;      /* number of FZC orbitals (i.e. frozen core) */
+  int num_cor_orbs;      /* number of COR orbitals (i.e. restricted core) */
+  int num_vir_orbs;      /* number of VIR orbitals (i.e. restricted virtual) */
+  int num_fzv_orbs;      /* number of frozen/deleted virtual orbitals */
+  int npop;              /* number of populated orbitals, nbfso - nfzv */
+  int max_orbs_per_irrep;/* max orbitals per irrep fzv not included */
+  int max_pop_per_irrep; /* max populated orbitals per irrep fzv included */
+
+  int *orbs_per_irr;     /* number of orbitals per irrep */
+  int *docc;             /* doubly occupied orbitals per irrep */
+  int *socc;             /* singly occupied orbitals per irrep */
+  int *frozen_docc;      /* frozen doubly occupied orbs per irrep */
+  int *frozen_uocc;      /* frozen virtual orbs per irrep */
+  int *rstr_docc;        /* restricted doubly occupied orbs per irrep */
+  int *rstr_uocc;        /* restricted virtual orbs per irrep */
+  int *orbsym;           /* irrep for each orbital */
+  int *pitz2ci;          /* map Pitzer-ordered orbitals to our ordering */
+  int *ci2pitz;          /* map our ordering back to Pitzer ordering */
+  int *ci2relpitz;       /* map CI ordering to _relative_ pitzer ordering */
+  char **labels;         /* labels for irreps */
+  int **ras_opi;         /* num orbs per irr per ras space ras_opi[ras][irr] */
+  int **fzc_orbs;        /* frozen core orbitals numbers [irrep][orbnum] */
+  int **cor_orbs;        /* restricted core orbitals numbers [irrep][orbnum] */
+  int **vir_orbs;        /* restr virtual orbitals numbers [irrep][orbnum] */
+  int **fzv_orbs;        /* frozen virtual orbitals numbers [irrep][orbnum] */
+
+  int ***ras_orbs;       /* ras_orbs[ras][irr][cnt] gives an orbital number */
+
+  int *first;            /* first orbital per irrep (in Pitzer order)    */
+  int *last;             /* last  orbital per irrep (in Pitzer order)    */
+  int *fstact;           /* first active orb per irrep (in Pitzer order) */
+  int *lstact;           /* last  active orb per irrep (in Pitzer order) */
+  int *active;           /* num active orbs per irrep                    */
+  double enuc;           /* nuclear repulsion energy */
+  double efzc;           /* frozen-core energy */
+  double ***mo_coeffs;   /* matrix of molecular orbitals in Pitzer order */
+  double *onel_ints;     /* one-electron integrals */
+  double *onel_ints_bare;/* one-electron integrals, bare h only */
+  double *twoel_ints;    /* two-electron integrals */
+  double **opdm;         /* one-particle density matrix */
+  double *tpdm;          /* two-particle density matrix */
+  double **lag;          /* the MO Lagrangian */
+  double *F_act;         /* Active Fock Matrix */
+  double *mo_grad;       /* the MO gradient, dimension number of ind pairs */
+  double mo_grad_rms;    /* the RMS of the MO gradient */
+  double scaled_mo_grad_rms;
+  double *mo_hess_diag;  /* the MO Hessian, diagonal elements only         */
+  double **mo_hess;      /* full MO Hessian */
+  double *theta_cur;     /* current orbital rotation angles */
+  double *theta_step;    /* step in orbital rotation angles */
+  };
+
 
 /*
 ** parameters structure: holds MCSCF run-time parameters

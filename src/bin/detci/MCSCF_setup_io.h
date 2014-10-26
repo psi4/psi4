@@ -28,12 +28,12 @@
 #ifndef _psi_src_bin_detcas_setup_io_h
 #define _psi_src_bin_detcas_setup_io_h
 
-namespace psi { namespace detcas {
+namespace psi { namespace detci {
 
 // extern void init_io(int argc, char *argv[]);
 // extern void close_io(void);
 extern void check(int a, char *errmsg);
 
-}} // end namespace psi::detcas
+}} // end namespace psi::detci
 
 #endif // header guard

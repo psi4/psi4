@@ -28,11 +28,13 @@
 #include <cstdio>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
-#include "MCSCF_globaldefs.h"
+#include "globaldefs.h"
+#include "structs.h"
+#define EXTERN
 #include "globals.h"
 #include "psi4-dec.h"
 
-namespace psi { namespace detcas {
+namespace psi { namespace detci {
 
 /*
 ** form_appx_diag_mo_hess
@@ -481,8 +483,8 @@ void form_full_mo_hess(int npairs, int *ppair, int *qpair, double *oei,
 
   outfile->Printf("Forming full MCSCF orbital Hessian\n");
  
-  nmo = CalcInfo.nmo;
-  npop = CalcInfo.npop;
+  nmo = MCSCF_CalcInfo.nmo;
+  npop = MCSCF_CalcInfo.npop;
 
   /* loop over the pairs of independent pairs */
   for (pair1=0; pair1<npairs; pair1++) {
@@ -635,8 +637,8 @@ void form_diag_mo_hess_yy(int npairs, int *ppair, int *qpair, double *oei,
  
   outfile->Printf("Forming diagonal MCSCF orbital Hessian (YY)\n");
 
-  nmo = CalcInfo.nmo;
-  npop = CalcInfo.npop;
+  nmo = MCSCF_CalcInfo.nmo;
+  npop = MCSCF_CalcInfo.npop;
 
   /* loop over the pairs of independent pairs */
   for (pair1=0; pair1<npairs; pair1++) {
@@ -723,5 +725,5 @@ void form_diag_mo_hess_yy(int npairs, int *ppair, int *qpair, double *oei,
 
 }
 
-}} // end namespace psi::detcas
+}} // end namespace psi::detci
 
