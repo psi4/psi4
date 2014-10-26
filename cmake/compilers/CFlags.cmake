@@ -31,13 +31,13 @@ else()
     elseif(CMAKE_C_COMPILER_ID MATCHES Intel)
         set(CMAKE_C_FLAGS "-restrict -DRESTRICT=${restrict_keyword} -vec-report0 -std=c99 -fPIC") 
         set(CMAKE_C_FLAGS_DEBUG   "-O0 -g -w3 -vec-report -Wall -Wuninitialized ")
-        # Check if xHost flag is available and add it CMAKE_CXX_FLAGS_RELEASE
+        # Check if xHost flag is available and add it CMAKE_C_FLAGS_RELEASE
         set(xHost "")
-        check_cxx_compiler_flag("-xHost" has_xHost)
+        check_c_compiler_flag("-xHost" has_xHost)
         if(has_xHost)
 	   set(xHost "-xHost")
         endif()
-        set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ip -DNDEBUG ${xHost}")
+        set(CMAKE_C_FLAGS_RELEASE "-O3 -ip -DNDEBUG ${xHost}")
         set(CMAKE_C_LINK_FLAGS    "-shared-intel -fPIC")
         set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
         
