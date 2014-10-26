@@ -15,41 +15,17 @@ import re
 import subprocess
 import shutil
 
-try:
-    from argparse import ArgumentParser
-except ImportError:
-    print(
-"""ERROR: Unable to import module "argparse" needed by this script. This
-is probably because your Python interpreter (version %s) is older
-than 2.7. While psi4 itself runs with >=2.6 at present, we may require
->=2.7 in future. You can:
-
-(a) Upgrade python now to 2.7. Get the the python development libraries
-    (provides "python-config") while you're at it. Then re-execute this
-    script and continue with the psi4 build.
-
-(b) Keep python 2.6 and install just the "argparse" module from
-    https://pypi.python.org/pypi/argparse . Then re-execute this script
-    and continue with the psi4 build.
-
-(c) This script is just a wrapper that translates --with-option=VALUE
-    specifications into cmake -DOPTION=VALUE style arguments, does some
-    sanity checking, and defines common sets of options (e.g., --with-opt).
-    It does not peer into your computer's libraries or compilers. So, you
-    are welcome to skip this script and call "cmake" directly. Or, you
-    can run this script with the options you want on a computer with
-    python >=2.7, note the options passed to "cmake" and use those to
-    proceed on this computer with the psi4 build.
-""" % (sys.version[:6].strip()))
-    sys.exit(1)
+sys.path.append('cmake')
+import argparse
 
 root_directory = os.path.dirname(os.path.realpath(__file__))
-default_path = os.path.join(root_directory, 'build')
+default_path = os.path.join(root_directory, 'obj')
 
+blankstring = "No default"  # This looks prettier when the user prints out the help
 def parse_input():
 
-    parser = ArgumentParser(description="Configure Psi4 using CMake",
-                            formatter_class=argparse.AgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description="Configure Psi4 using CMake",
+                            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('builddir', nargs='?',
             action='store',
@@ -59,28 +35,28 @@ def parse_input():
 
     group = parser.add_argument_group('Basic options')
     # The C compiler
-    group.add_argument('--with-cc',
+    group.add_argument('--cc',
             action='store',
             type=str,
-            default=None,
+            default=blankstring,
             help='set the C compiler [default: pick automatically or based on CC=...]',
             metavar='STRING')
     # The C++ compiler
-    group.add_argument('--with-cxx',
+    group.add_argument('--cxx',
             action='store',
             type=str,
-            default=None,
+            default=blankstring,
             help='set the C++ compiler [default: pick automatically or based on CXX=...]',
             metavar='STRING')
     # The Fortran compiler
-    group.add_argument('--with-fc',
+    group.add_argument('--fc',
             action='store',
             type=str,
-            default=None,
+            default=blankstring,
             help='set the Fortran compiler [default: pick automatically or based on FC=...]',
             metavar='STRING')
     # Libint maximum angular momentum.
-    parser.add_argument('--with-max-am-eri',
+    parser.add_argument('--max-am-eri',
                         metavar="= MAX_ANGULAR_MOMENTUM",
                         type=int,
                         default=5,
@@ -105,7 +81,7 @@ def parse_input():
             action='store_true',
             default=False,
             help='show CMake command and exit [default: %(default)s]')
-    group.add_argument('--with-cmake',
+    group.add_argument('--cmake',
             action='store',
             type=str,
             default='cmake',
@@ -113,23 +89,23 @@ def parse_input():
             metavar='STRING')
     
     group = parser.add_argument_group('Boost and Python options')
-    group.add_argument('--with-boost-incdir',
+    group.add_argument('--boost-incdir',
             action='store',
-            type=str
-            default=None,
+            type=str,
+            default=blankstring,
             help='The includes directory for boost.  If this is left blank cmake will attempt to find one on your system.  Failing that it will build one for you',
             metavar='PATH')
-    group.add_argument('--with-boost-libdir',
+    group.add_argument('--boost-libdir',
             action='store',
-            type=str
-            default=None,
+            type=str,
+            default=blankstring,
             help='The libraries directory for boost.  If this is left blank cmake will attempt to find one on your system.  Failing that it will build one for you',
             metavar='PATH')
-    group.add_argument('--with-python',
+    group.add_argument('--python',
             metavar='= PYTHON',
             action='store',
-            type=str
-            default=None,
+            type=str,
+            default=blankstring,
             help='The Python interpreter (development version) to use.  CMake will detect one automatically, if omitted.')
 
     group = parser.add_argument_group('Parallelization')
@@ -163,6 +139,11 @@ def parse_input():
             default='auto',
             help='specify LAPACK library; possible choices are "auto", "builtin", "none", or full path [default: %(default)s]',
             metavar='[{auto,builtin,none,/full/path/lib.a}]')
+    group.add_argument('--explicit-libs',
+            action='store',
+            default=None,
+            help='explicit linker specification for extra libraries; passed directly to the linker',
+            metavar='STRING')
     group.add_argument('--cray',
             action='store_true',
             default=False,
@@ -182,7 +163,7 @@ def parse_input():
 
     # Advanced options
     group = parser.add_argument_group('Advanced options')
-    group.add_argument('--with-ldflags',
+    group.add_argument('--ldflags',
             action='store',
             default=None,
             help="Any extra flags to pass to the linker (usually -Llibdir -llibname type arguments). You shouldn't need this.",
@@ -237,38 +218,38 @@ def parse_input():
 
     group = parser.add_argument_group('External libraries')
     # ERD package
-    group.add_argument('--with-erd',
+    group.add_argument('--erd',
             action='store_true',
             default=False,
             help='Add support for the ERD integral package.')
     # GPU_DFCC package
-    group.add_argument('--with-gpu-dfcc',
+    group.add_argument('--gpu-dfcc',
             action='store_true',
             default=False,
             help='Enable GPU_DFCC external project.')
     # Dummy plugin
-    group.add_argument('--with-dummy-plugin',
+    group.add_argument('--dummy-plugin',
             action='store_true',
             default=False,
             help='Enable dummy plugin external project.')
 
     group = parser.add_argument_group('Bypass compiler flags')
-    group.add_argument('--with-fc-flags',
+    group.add_argument('--fc-flags',
             action='store',
             type=str,
-            default=None,
+            default=blankstring,
             help='Fortran flags [default: %(default)s]',
             metavar='STRING')
-    group.add_argument('--with-cc-flags',
+    group.add_argument('--cc-flags',
             action='store',
             type=str,
-            default=None,
+            default=blankstring,
             help='C flags [default: %(default)s]',
             metavar='STRING')
-    group.add_argument('--with-cxx-flags',
+    group.add_argument('--cxx-flags',
             action='store',
             type=str,
-            default=None,
+            default=blankstring,
             help='C++ flags [default: %(default)s]',
             metavar='STRING')
 
@@ -372,21 +353,21 @@ def gen_cmake_command(args):
         # otherwise CMake complains
         command += ' -DEXPLICIT_LIBS="%s"' % args.explicit_libs.strip()
     
-    if args.boost_headers:
-        command += ' -DBOOST_INCLUDEDIR={0}'.format(args.with_boost_incdir)
+    if args.boost_incdir:
+        command += ' -DBOOST_INCLUDEDIR={0}'.format(args.boost_incdir)
     
-    if args.boost_libs:
-        command += ' -DBOOST_LIBRARYDIR={0}'.format(args.with_boost_libdir)
+    if args.boost_libdir:
+        command += ' -DBOOST_LIBRARYDIR={0}'.format(args.boost_libdir)
     
     if args.python:
-        command += ' -DPYTHON_INTERPRETER={0}'.format(args.with_python)
+        command += ' -DPYTHON_INTERPRETER={0}'.format(args.python)
 
-    if args.extra_fc_flags:
-        command += ' -DEXTRA_Fortran_FLAGS="%s"' % args.with_fc_flags
-    if args.extra_cc_flags:
-        command += ' -DEXTRA_C_FLAGS="%s"' % args.with_cc_flags
-    if args.extra_cxx_flags:
-        command += ' -DEXTRA_CXX_FLAGS="%s"' % args.with_cxx_flags
+    if args.fc_flags:
+        command += ' -DEXTRA_Fortran_FLAGS="%s"' % args.fc_flags
+    if args.cc_flags:
+        command += ' -DEXTRA_C_FLAGS="%s"' % args.cc_flags
+    if args.cxx_flags:
+        command += ' -DEXTRA_CXX_FLAGS="%s"' % args.cxx_flags
 
     if args.check:
         command += ' -DENABLE_BOUNDS_CHECK=ON'
