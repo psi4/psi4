@@ -45,6 +45,7 @@ namespace psi { namespace detci {
 EXTERN int errcod;
 EXTERN struct calcinfo CalcInfo;
 EXTERN struct params Parameters;
+EXTERN struct mcscf_calcinfo MCSCF_CalcInfo;
 EXTERN struct mcscf_params MCSCF_Parameters;
 EXTERN int *ioff;
 EXTERN struct ci_blks CIblks;

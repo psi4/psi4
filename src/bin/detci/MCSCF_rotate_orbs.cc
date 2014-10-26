@@ -32,11 +32,13 @@
 #include <libqt/qt.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
-#include "MCSCF_globaldefs.h"
+#include "globaldefs.h"
+#include "structs.h"
+#define EXTERN
 #include "globals.h"
 #include "psi4-dec.h"
 
-namespace psi { namespace detcas {
+namespace psi { namespace detci {
 
 void rotate_test(int dim, int npairs, int *p_arr, int *q_arr, 
                  double *theta_arr);
@@ -73,7 +75,7 @@ void rotate_orbs_irrep(int irrep, int dim, double **mo_coeffs,
   /* print new coefficients */
   if (MCSCF_Parameters.print_mos) {
     outfile->Printf("\n\tOld molecular orbitals for irrep %s\n", 
-      CalcInfo.labels[irrep]);
+      MCSCF_CalcInfo.labels[irrep]);
     print_mat(tmpmat, dim, dim, "outfile");
   }
 
@@ -92,7 +94,7 @@ void rotate_orbs_irrep(int irrep, int dim, double **mo_coeffs,
   /* print new coefficients */
   if (MCSCF_Parameters.print_mos) {
     outfile->Printf("\n\tNew molecular orbitals for irrep %s\n", 
-      CalcInfo.labels[irrep]);
+      MCSCF_CalcInfo.labels[irrep]);
     print_mat(tmpmat, dim, dim, "outfile");
   }
 
@@ -154,5 +156,5 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
 
 }
 
-}} // end namespace psi::detcas
+}} // end namespace psi::detci
 

@@ -49,11 +49,12 @@
 #include "structs.h"
 #define EXTERN
 #include "globals.h"
+#include "globaldefs.h"
 
 namespace psi { namespace detci {
 
-#define MIN0(a,b) (((a)<(b)) ? (a) : (b))
-#define MAX0(a,b) (((a)>(b)) ? (a) : (b))
+// #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
+// #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 
 void read_integrals()
 {
@@ -329,6 +330,108 @@ void form_gmat(int printflag, std::string out)
       print_mat(CalcInfo.gmat, nbf, nbf, "outfile") ;
       outfile->Printf( "\n") ;
       }
+}
+
+/* Start MCSCF read*/
+
+void mcscf_read_integrals()
+{
+  int i, j, ij, k, l, kl, ijkl;
+  int nbstri;
+  double value;
+
+  /* allocate memory for one and two electron integrals */
+  nbstri = MCSCF_CalcInfo.nmotri;
+  MCSCF_CalcInfo.onel_ints = init_array(nbstri);
+  MCSCF_CalcInfo.onel_ints_bare = init_array(nbstri);
+  MCSCF_CalcInfo.twoel_ints = init_array(nbstri * (nbstri + 1) / 2);
+
+  /* now read them in */
+
+  if (MCSCF_Parameters.use_fzc_h) {
+    if (MCSCF_Parameters.print_lvl > 3) {
+      outfile->Printf("\n\tOne-electron integrals (frozen core operator):\n");
+    }
+    // can't erase file, re-reading it below
+    iwl_rdone(MCSCF_Parameters.oei_file, PSIF_MO_FZC, MCSCF_CalcInfo.onel_ints, nbstri, 
+              0, (MCSCF_Parameters.print_lvl>3), "outfile");
+  }
+  else {
+    if (MCSCF_Parameters.print_lvl > 3) {
+      outfile->Printf("\n\tOne-electron integrals (bare):\n");
+    }
+    // can't erase file, re-reading it below
+    iwl_rdone(MCSCF_Parameters.oei_file, PSIF_MO_OEI, MCSCF_CalcInfo.onel_ints, nbstri, 
+              0, (MCSCF_Parameters.print_lvl>3), "outfile");
+  }
+
+  /* even if we utilize frozen core operator for some terms, the
+     current Lagrangian code is forced to use bare h, so let's grab
+     that, too (both should be available from the transformation code)
+     -CDS 10/3/14
+  */
+  if (MCSCF_Parameters.print_lvl > 3) { 
+    outfile->Printf("\n\tOne-electron integrals (bare):\n");
+    }
+  iwl_rdone(MCSCF_Parameters.oei_file, PSIF_MO_OEI, MCSCF_CalcInfo.onel_ints_bare, nbstri,
+            MCSCF_Parameters.oei_erase ? 0 : 1, (MCSCF_Parameters.print_lvl>3), "outfile");
+
+  
+  if (MCSCF_Parameters.print_lvl > 6) 
+    outfile->Printf("\n\tTwo-electron integrals:\n");
+
+  iwl_rdtwo(MCSCF_Parameters.tei_file, MCSCF_CalcInfo.twoel_ints, ioff, 
+     MCSCF_CalcInfo.nmo, MCSCF_Parameters.filter_ints ? MCSCF_CalcInfo.num_fzc_orbs : 0, 
+     MCSCF_Parameters.filter_ints ? MCSCF_CalcInfo.num_fzv_orbs : 0, 
+     (MCSCF_Parameters.print_lvl>6), "outfile");
+
+} 
+
+
+
+double mcscf_get_onel(int i, int j)
+{
+  int ij;
+
+  ij = INDEX(i,j);
+  return(MCSCF_CalcInfo.onel_ints[ij]);
+}
+
+
+double mcscf_get_twoel(int i, int j, int k, int l)
+{
+  int ij, kl, ijkl;
+
+  ij = INDEX(i,j);
+  kl = INDEX(k,l);
+  ijkl = INDEX(ij,kl);
+
+  return(MCSCF_CalcInfo.twoel_ints[ijkl]);
+}
+
+
+/*
+** get_mat_block()
+**
+** This function gets an irrep block of a full matrix
+**
+** C. David Sherrill
+** May 1998
+*/
+void mcscf_get_mat_block(double **src, double **dst, int dst_dim, int dst_offset,
+                   int *dst2src)
+{
+
+  int P, Q, p, q;
+
+  for (P=0; P<dst_dim; P++) {
+    p = dst2src[P+dst_offset];
+    for (Q=0; Q<dst_dim; Q++) {
+      q = dst2src[Q+dst_offset];
+      dst[P][Q] = src[p][q];
+    } 
+  }
+
 }
 
 }} // namespace psi::detci

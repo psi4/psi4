@@ -27,7 +27,7 @@
 #ifndef _psi_src_bin_detcas_indpairs_h
 #define _psi_src_bin_detcas_indpairs_h
 
-namespace psi { namespace detcas {
+namespace psi { namespace detci {
 
 /*
 ** INDPAIRS.H
@@ -94,6 +94,6 @@ class IndepPairs {
 
 };
 
-}} // end namespace psi::detcas
+}} // end namespace psi::detci
 
 #endif // header guard

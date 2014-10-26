@@ -33,7 +33,7 @@ class Wavefunction;
 class Options;
 }
 
-namespace psi { namespace detcas {
+namespace psi { namespace detci {
 
 class CASWavefunction : public Wavefunction
 {

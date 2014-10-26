@@ -19,10 +19,12 @@
 #include <libqt/qt.h>         
 #include <libpsio/psio.h>
 #include "psi4-dec.h"
-#include "MCSCF_globaldefs.h"
+#include "globaldefs.h"
+#include "structs.h"
+#define EXTERN
 #include "globals.h"
 
-namespace psi { namespace detcas {
+namespace psi { namespace detci {
 
 // #define INDEX(x,y) ((x>y) ? ioff[x] + y : ioff[y] + x)
 
@@ -136,5 +138,5 @@ double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
   return(lag);
 }
 
-}} // end namespace psi::detcas
+}} // end namespace psi::detci
 

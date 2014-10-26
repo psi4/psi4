@@ -42,33 +42,35 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
-#include "MCSCF_globaldefs.h"
+#include "globaldefs.h"
+#include "structs.h"
+#define EXTERN
 #include "globals.h"
 #include "psi4-dec.h"
 
 
-namespace psi { namespace detcas {
+namespace psi { namespace detci {
 
 void read_lagrangian(void)
 {
   int nmo;
 
-  nmo = CalcInfo.nmo;
+  nmo = MCSCF_CalcInfo.nmo;
   
-  CalcInfo.lag = block_matrix(nmo, nmo);
+  MCSCF_CalcInfo.lag = block_matrix(nmo, nmo);
 
   psio_open(MCSCF_Parameters.lag_file, PSIO_OPEN_OLD);  
   psio_read_entry(MCSCF_Parameters.lag_file, "MO-basis Lagrangian", 
-    (char *) CalcInfo.lag[0], nmo*nmo*sizeof(double));
+    (char *) MCSCF_CalcInfo.lag[0], nmo*nmo*sizeof(double));
 
   if (MCSCF_Parameters.print_lvl > 3) {
     outfile->Printf("Lagrangian matrix\n");
-    print_mat(CalcInfo.lag, nmo, nmo, "outfile");
+    print_mat(MCSCF_CalcInfo.lag, nmo, nmo, "outfile");
   }
 
   psio_close(MCSCF_Parameters.lag_file, MCSCF_Parameters.lag_erase ? 0 : 1);
 
 } 
 
-}} // end namespace psi::detcas
+}} // end namespace psi::detci
 
