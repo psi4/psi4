@@ -5,7 +5,7 @@
 # (c) Radovan Bast <radovan.bast@irsamc.ups-tlse.fr>
 # (c) Jonas Juselius <jonas.juselius@uit.no>
 # licensed under the GNU Lesser General Public License
-# Ported to PSI4 by Roberto Di Remigio Oct. 2014
+# Ported to Psi4 by Roberto Di Remigio Oct. 2014
 # based on initial work by Andy Simmonett (May 2013)
 
 import os
@@ -53,10 +53,10 @@ def parse_input():
             metavar='STRING')
     # Libint maximum angular momentum.
     parser.add_argument('--max-am-eri',
-                        metavar="= MAX_ANGULAR_MOMENTUM",
-                        type=int,
-                        default=5,
-                        help='The maximum angular momentum level (1=p, 2=d, 3=f, etc.) for the libint and libderiv packages.  Note: A value of N implies a maximum first derivative of N-1, and maximum second derivative of N-2.')
+            metavar="= MAX_ANGULAR_MOMENTUM",
+            type=int,
+            default=5,
+            help='The maximum angular momentum level (1=p, 2=d, 3=f, etc.) for the libint and libderiv packages.  Note: A value of N implies a maximum first derivative of N-1, and maximum second derivative of N-2.')
     # Release, debug or profiling build
     group.add_argument('--type',
             nargs='?',
@@ -178,7 +178,7 @@ def parse_input():
             action='store_true',
             default=False,
             help='link statically [default: %(default)s]')
-    group.add_argument('--tests',
+    group.add_argument('--unit-tests',
             action='store_true',
             default=False,
             help='build unit test suite [default: %(default)s]')
@@ -309,8 +309,13 @@ def gen_cmake_command(args):
     command += ' -DENABLE_CSR=%s'            % translate_cmake(args.csr)
     command += ' -DENABLE_SCALAPACK=%s'      % translate_cmake(args.scalapack)
     command += ' -DENABLE_SCALASCA=%s'       % translate_cmake(args.scalasca)
-    command += ' -DENABLE_TESTS=%s'          % translate_cmake(args.tests)
+    command += ' -DENABLE_UNIT_TESTS=%s'     % translate_cmake(args.unit_tests)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
+    command += ' -DENABLE_PLUGINS=%s'        % translate_cmake(args.with_plugins)
+    command += ' -DENABLE_LIBERD=%s'         % translate_cmake(args.erd)
+    command += ' -DENABLE_GPU_DFCC=%s'       % translate_cmake(args.gpu_dfcc)
+    command += ' -DENABLE_DUMMY_PLUGIN=%s'   % translate_cmake(args.dummy_plugin)
+    command += ' -DLIBINT_OPT_AM={0}'.format(args.max_am_eri)
 
     if args.blas == 'builtin':
         command += ' -DENABLE_BUILTIN_BLAS=ON'
@@ -367,7 +372,7 @@ def gen_cmake_command(args):
         command += ' -DBOOST_LIBRARYDIR={0}'.format(args.boost_libdir)
     
     if args.python:
-        command += ' -DPYTHON_INTERPRETER={0}'.format(args.python)
+        command += ' -DPYTHON_EXECUTABLE={0}'.format(args.python)
     
     if args.extra_cc_flags:
         command += ' -DEXTRA_C_FLAGS="%s"' % args.extra_cc_flags
