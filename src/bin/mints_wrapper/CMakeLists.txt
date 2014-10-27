@@ -1,3 +1,6 @@
 set(SRC mints.cc)
 add_library(mints_wrapper ${SRC})
 add_dependencies(mints_wrapper mints)
+if(CUSTOM_BOOST_BUILD)
+   add_dependencies(mints_wrapper custom_boost)
+endif()

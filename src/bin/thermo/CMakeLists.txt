@@ -1,3 +1,6 @@
 set(SRC thermo.cc)
 add_library(thermo ${SRC})
 add_dependencies(thermo mints)
+if(CUSTOM_BOOST_BUILD)
+   add_dependencies(thermo custom_boost)
+endif()
