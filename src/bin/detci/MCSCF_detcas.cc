@@ -63,9 +63,9 @@
 namespace psi { namespace detci {
 
 extern void mcscf_get_mo_info(Options& options);
-extern void get_parameters(Options &options);
-extern void print_parameters(void);
-extern void read_integrals(void);
+extern void set_mcscf_parameters(Options &options);
+extern void mcscf_print_parameters(void);
+extern void mcscf_read_integrals(void);
 extern void read_density_matrices(Options& options);
 extern void read_lagrangian(void);
 extern void form_independent_pairs(void);
@@ -151,14 +151,17 @@ PsiReturnType mcscf_update(Options &options)
   MCSCF_CalcInfo.mo_hess_diag = NULL;
 
   if (MCSCF_Parameters.print_lvl) tstart();
-  get_parameters(options);     /* get running params (convergence, etc)    */
+  set_mcscf_parameters(options);     /* get running params (convergence, etc)    */
   mcscf_title();                     /* print program identification             */
 
-  if (MCSCF_Parameters.print_lvl) print_parameters();
+  if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
 
+  outfile->Printf("DGAS: I am here!\n");
   mcscf_get_mo_info(options);               /* read DOCC, SOCC, frozen, nbfso, etc      */
-  read_integrals();            /* get the 1 and 2 elec MO integrals        */
+  mcscf_read_integrals();            /* get the 1 and 2 elec MO integrals        */
+  outfile->Printf("DGAS: I am here!\n");
   read_density_matrices(options);
+  outfile->Printf("DGAS: I am here!\n");
 
   MCSCF_CalcInfo.lag = lagcalc(MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm, MCSCF_CalcInfo.onel_ints_bare,
                      MCSCF_CalcInfo.twoel_ints, MCSCF_CalcInfo.nmo,
