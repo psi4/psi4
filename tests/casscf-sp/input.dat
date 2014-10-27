@@ -18,6 +18,7 @@ set detci {
     mcscf_maxiter 2
 
     # I think the below actually says "Do not erase the file!"
+    # Need to set this until we can call transqt
     MCSCF_OEI_ERASE True
     MCSCF_OEI_ERASE True
 }
