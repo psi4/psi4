@@ -26,3 +26,6 @@ set(libfragsrc Fragmenter.h
 )
 add_library(frag STATIC ${libfragsrc})  
 target_link_libraries(frag parallel)             
+if(BUILD_CUSTOM_BOOST)
+   add_dependencies(frag custom_boost)
+endif()   

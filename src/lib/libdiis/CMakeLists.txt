@@ -1,3 +1,6 @@
 set(SRC diisentry.cc diismanager.cc)
 add_library(diis ${SRC})
 add_dependencies(diis mints)
+if(BUILD_CUSTOM_BOOST)
+   add_dependencies(diis custom_boost)
+endif()   

@@ -1,2 +1,5 @@
 set(SRC close_plugin.cc load_plugin.cc plugin.cc)
 add_library(plugin ${SRC})
+if(BUILD_CUSTOM_BOOST)
+   add_dependencies(plugin custom_boost)
+endif()   

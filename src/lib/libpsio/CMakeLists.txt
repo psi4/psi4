@@ -35,3 +35,6 @@ set(SRC aio_handler.cc
         write_entry.cc 
         zero_disk.cc)
 add_library(psio ${SRC})
+if(BUILD_CUSTOM_BOOST)
+   add_dependencies(psio custom_boost)
+endif()   
