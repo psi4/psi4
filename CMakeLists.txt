@@ -283,11 +283,9 @@ string(STRIP ${PLUGIN_INCLUDE_DIRECTORIES} PLUGIN_INCLUDE_DIRECTORIES)
 string(STRIP ${PLUGIN_DEFINES} PLUGIN_DEFINES)
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
 
-# Echo the directory information back
-set(RECONFIGURE_PSI "${PROJECT_BINARY_DIR}/reconfigure.sh")
-message("The following command can be used to exactly reproduce this build. It can also be found in ${RECONFIGURE_PSI}:\n")
-message("${CONFIGURE_CMD}\n")
-configure_file(cmake/reconfigure.sh.in reconfigure.sh)
+# Make known that the setup command given and the corresponding CMake
+# line are available in the file setup_command in the build directory
+message(STATUS "Use the commands in setup_command to reproduce this build")
 
 #If we are making Boost add it as a dependency
 if(BUILD_CUSTOM_BOOST)
