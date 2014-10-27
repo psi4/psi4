@@ -151,6 +151,7 @@ extern void tpdm(struct stringwr **alplist, struct stringwr **betlist,
    int Jnroots, int Jnunits, int Jfirstunit,
    int targetfile, int writeflag, int printflag);
 extern PsiReturnType mcscf_update(Options &options);
+extern void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist);
 extern void compute_cc(void);
 extern void calc_mrpt(void);
 
@@ -159,6 +160,7 @@ PsiReturnType detci(Options &options);
 
 }} // namespace psi::detci
 
+//extern psi::PsiReturnType psi::transqt2::transqt2(psi::Options &options);
 
 namespace psi { namespace detci {
 
@@ -279,11 +281,7 @@ PsiReturnType detci(Options &options)
    else if (Parameters.cc)
      compute_cc();
    else if (Parameters.mcscf){
-     diag_h(alplist, betlist);
-     form_opdm();
-     form_tpdm();
-     close_io();
-     mcscf_update(options);
+     compute_mcscf(options, alplist, betlist);
      }
    else
      diag_h(alplist, betlist);
@@ -1540,6 +1538,67 @@ BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx) {
    addr += alp_idx * CIblks.Ib_size[blknum] + bet_idx;
 
    return(addr);
+
+}
+
+/*
+** compute_mcscf(); Optimizes MO and CI coefficients
+**
+** Parameters:
+**    options = options object
+**    alplist = list of alpha strings
+**    betlist = list of beta strings
+**
+** Returns: none
+*/
+void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist)
+{
+  // Parameters
+  PsiReturnType finished;
+
+  MCSCF_Parameters.print_lvl = 1;
+  MCSCF_CalcInfo.mo_hess = NULL;
+  MCSCF_CalcInfo.mo_hess_diag = NULL;
+
+  if (MCSCF_Parameters.print_lvl) tstart();
+  set_mcscf_parameters(options);     /* get running params (convergence, etc)    */
+  mcscf_title();                     /* print program identification             */
+
+  if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
+
+  // Make sure a few things are working
+  outfile->Printf("Starting MCSCF\n");
+  outfile->Printf("MCSCF MAXITER %d \n", MCSCF_Parameters.max_iter);
+
+
+  // Iterate
+  for (int i=0; i<MCSCF_Parameters.max_iter; i++){
+    outfile->Printf("\nStarting MCSCF iteration %d\n\n", i);
+
+    outfile->Printf("\nMCSCF diag_h(alplist, betlist) \n\n");
+    diag_h(alplist, betlist);
+    outfile->Printf("\nMCSCF form_opdm() \n\n");
+    form_opdm();
+    outfile->Printf("\nMCSCF form_tpdm() \n\n");
+    form_tpdm();
+    outfile->Printf("\nMCSCF close_io() \n\n");
+    close_io();
+
+    outfile->Printf("\nMCSCF mcscf_update() \n\n");
+    finished = mcscf_update(options);
+
+    outfile->Printf("\nFinishing MCSCF iteration %d\n\n", i);
+
+//    if (finished==EndLoop){
+//      outfile->Printf("MCSCF converged");
+//      break;
+//    }
+
+//    psi::transqt2::transqt2(options);    
+
+
+  }
+  outfile->Printf("Finishing MCSCF\n");
 
 }
 

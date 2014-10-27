@@ -129,7 +129,6 @@ double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
 // struct params MCSCF_Parameters;
 // int *ioff;
 IndepPairs IndPairs;
-// PsiReturnType detcas(Options &options);
 PsiReturnType mcscf_update(Options &options);
 
 #define MO_HESS_MIN 1.0E-1
@@ -146,22 +145,19 @@ PsiReturnType mcscf_update(Options &options)
   int num_pairs = 0;
   int steptype = 0;
 
-  MCSCF_Parameters.print_lvl = 1;
-  MCSCF_CalcInfo.mo_hess = NULL;
-  MCSCF_CalcInfo.mo_hess_diag = NULL;
+  // MCSCF_Parameters.print_lvl = 1;
+  // MCSCF_CalcInfo.mo_hess = NULL;
+  // MCSCF_CalcInfo.mo_hess_diag = NULL;
 
-  if (MCSCF_Parameters.print_lvl) tstart();
-  set_mcscf_parameters(options);     /* get running params (convergence, etc)    */
-  mcscf_title();                     /* print program identification             */
+  // if (MCSCF_Parameters.print_lvl) tstart();
+  // set_mcscf_parameters(options);     /* get running params (convergence, etc)    */
+  // mcscf_title();                     /* print program identification             */
 
-  if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
+  // if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
 
-  outfile->Printf("DGAS: I am here!\n");
   mcscf_get_mo_info(options);               /* read DOCC, SOCC, frozen, nbfso, etc      */
   mcscf_read_integrals();            /* get the 1 and 2 elec MO integrals        */
-  outfile->Printf("DGAS: I am here!\n");
   read_density_matrices(options);
-  outfile->Printf("DGAS: I am here!\n");
 
   MCSCF_CalcInfo.lag = lagcalc(MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm, MCSCF_CalcInfo.onel_ints_bare,
                      MCSCF_CalcInfo.twoel_ints, MCSCF_CalcInfo.nmo,
@@ -252,7 +248,7 @@ void mcscf_title(void)
 void form_independent_pairs(void)
 {
 
-  IndPairs.set(MCSCF_CalcInfo.nirreps, MAX_RAS_SPACES, MCSCF_CalcInfo.ras_opi,
+  IndPairs.set(CalcInfo.nirreps, MAX_RAS_SPACES, MCSCF_CalcInfo.ras_opi,
                MCSCF_CalcInfo.ras_orbs, MCSCF_CalcInfo.frozen_docc, MCSCF_CalcInfo.fzc_orbs, 
                MCSCF_CalcInfo.rstr_docc, MCSCF_CalcInfo.cor_orbs,
                MCSCF_CalcInfo.rstr_uocc, MCSCF_CalcInfo.vir_orbs,
@@ -296,7 +292,7 @@ void calc_gradient(void)
   ir_mo_grad = init_array(npair);
   
   // calculate dEdU, then dEdTheta
-  for (h=0,offset=0; h<MCSCF_CalcInfo.nirreps; h++) {
+  for (h=0,offset=0; h<CalcInfo.nirreps; h++) {
 
     // Setup for this irrep
     ir_npairs = IndPairs.get_ir_num_pairs(h);
@@ -939,7 +935,7 @@ void rotate_orbs(void)
 
   // First, we need to come up with Theta vectors for each irrep
   ir_theta = init_array(IndPairs.get_num_pairs());  // always big enough
-  for (h=0; h<MCSCF_CalcInfo.nirreps; h++) {
+  for (h=0; h<CalcInfo.nirreps; h++) {
     ir_npairs = IndPairs.get_ir_num_pairs(h);
     if (ir_npairs) {
       ir_norbs = MCSCF_CalcInfo.orbs_per_irr[h];

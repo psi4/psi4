@@ -1590,6 +1590,7 @@ void set_mcscf_parameters(Options &options)
     MCSCF_Parameters.energy_convergence = options.get_double("MCSCF_E_CONVERGENCE");
   }
 
+  MCSCF_Parameters.max_iter = options.get_int("MCSCF_MAXITER"); 
 
   MCSCF_Parameters.filter_ints = 0;  /* assume we need all for MCSCF */
   MCSCF_Parameters.oei_file = PSIF_OEI;  /* contains frozen core operator */

@@ -68,7 +68,7 @@ int read_ref_orbs(void)
 
   if (psio_tocentry_exists(PSIF_DETCAS, "Orbs Irrep  0")){ 
     psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
-    for (h=0; h<MCSCF_CalcInfo.nirreps; h++) {
+    for (h=0; h<CalcInfo.nirreps; h++) {
       ir_orbs = MCSCF_CalcInfo.orbs_per_irr[h];
       sprintf(orb_key, "Orbs Irrep %2d", h);
       psio_read_entry(PSIF_DETCAS, orb_key, (char *) MCSCF_CalcInfo.mo_coeffs[h][0],
@@ -100,7 +100,7 @@ int write_ref_orbs(void)
   char orb_key[80];
 
   psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
-  for (h=0; h<MCSCF_CalcInfo.nirreps; h++) {
+  for (h=0; h<CalcInfo.nirreps; h++) {
     ir_orbs = MCSCF_CalcInfo.orbs_per_irr[h];
     sprintf(orb_key, "Orbs Irrep %2d", h);
     psio_write_entry(PSIF_DETCAS, orb_key, (char *) MCSCF_CalcInfo.mo_coeffs[h][0],

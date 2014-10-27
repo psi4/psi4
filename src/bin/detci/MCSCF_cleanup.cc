@@ -66,10 +66,10 @@ void cleanup(void)
   for (i=0; i<MAX_RAS_SPACES; i++) 
     free_int_matrix(MCSCF_CalcInfo.ras_orbs[i]);
   free(MCSCF_CalcInfo.ras_orbs);
-  for (i=0; i<MCSCF_CalcInfo.nirreps; i++) 
+  for (i=0; i<CalcInfo.nirreps; i++) 
     free(MCSCF_CalcInfo.labels[i]);
 
-  for (i=0; i<MCSCF_CalcInfo.nirreps; i++) {
+  for (i=0; i<CalcInfo.nirreps; i++) {
     if (MCSCF_CalcInfo.orbs_per_irr[i]) 
       free_block(MCSCF_CalcInfo.mo_coeffs[i]);
   }

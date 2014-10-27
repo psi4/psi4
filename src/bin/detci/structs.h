@@ -642,12 +642,13 @@ struct mcscf_calcinfo {
 ** parameters structure: holds MCSCF run-time parameters
 */
 struct mcscf_params {
-   std::string dertype;        /* derivative level: none, first, etc.          */
-   std::string wfn;            /* wavefunction, CASSCF, RASSCF, ..             */
+   std::string dertype;         /* derivative level: none, first, etc.          */
+   std::string wfn;             /* wavefunction, CASSCF, RASSCF, ..             */
    int print_lvl;               /* print verbosity level                        */
    bool print_mos;              /* print the molecular orbitals ?               */
    double rms_grad_convergence; /* convergence on RMS of orbital grad           */
    double energy_convergence;   /* convergence on CI energy                     */
+   int max_iter;                /* maximum number of casscf iterations          */
    int oei_file;                /* file number for one-electron integrals       */
    bool oei_erase;              /* erase onel ints after reading them?          */
    int tei_file;                /* file number for two-electron integrals       */
