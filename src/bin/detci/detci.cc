@@ -278,8 +278,13 @@ PsiReturnType detci(Options &options)
      mpn(alplist, betlist);
    else if (Parameters.cc)
      compute_cc();
-   else if (Parameters.mcscf)
+   else if (Parameters.mcscf){
+     diag_h(alplist, betlist);
+     form_opdm();
+     form_tpdm();
+     close_io();
      mcscf_update(options);
+     }
    else
      diag_h(alplist, betlist);
 

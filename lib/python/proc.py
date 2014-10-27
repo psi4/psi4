@@ -2803,7 +2803,6 @@ def run_detcas(name, **kwargs):
     optstash = p4util.OptionsState(
         ['TRANSQT2', 'WFN'],
         ['DETCI', 'WFN'],
-        ['DETCAS', 'WFN']
     )
 
     user_ref = psi4.get_option('DETCI', 'REFERENCE')
@@ -2813,11 +2812,9 @@ def run_detcas(name, **kwargs):
     if (name.lower() == 'rasscf'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'RASSCF')
         psi4.set_local_option('DETCI', 'WFN', 'RASSCF')
-        psi4.set_local_option('DETCAS', 'WFN', 'RASSCF')
     elif (name.lower() == 'casscf'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CASSCF')
         psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
-        psi4.set_local_option('DETCAS', 'WFN', 'CASSCF')
 
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
@@ -2827,24 +2824,9 @@ def run_detcas(name, **kwargs):
         if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') or (psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
             psi4.MintsHelper().integrals()
 
-    for iteration in range(1, psi4.get_option('DETCAS', 'MAXITER') + 1):
-        psi4.print_out("\nStarting DETCAS iteration %d.\n" % iteration)
 
-        # Run DETCAS
-        psi4.transqt2()
-        psi4.detci()
-        finished = psi4.detcas()
-
-        # Check convergence
-        if finished == psi4.PsiReturnType.EndLoop:
-            print_string = '\n*******************************************************\n'
-            print_string += '                  ORBITALS CONVERGED\n\n'
-            print_string += '         * %s total energy = %16.12f\n\n' % (name.upper(), psi4.get_variable("CURRENT ENERGY"))
-            print_string += '                    DETCAS Exiting\n'
-            print_string += '*******************************************************'
-
-            psi4.print_out(print_string)
-            break
+    psi4.transqt2()
+    psi4.detci()
 
     optstash.restore()
 

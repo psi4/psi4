@@ -1636,5 +1636,44 @@ void set_mcscf_parameters(Options &options)
   MCSCF_Parameters.ds_hessian = options.get_bool("MCSCF_DS_HESSIAN");
 }
 
-}} // namespace psi::detci
+/*
+** mcscf_print_parameters(): Function prints the program's running parameters
+**   found in the Parameters structure.
+*/
+void mcscf_print_parameters(void)
+{
+  outfile->Printf("\n") ;
+  outfile->Printf("PARAMETERS: \n") ;
+  outfile->Printf("   PRINT          =   %6d      PRINT_MOS     =   %6s\n",
+      MCSCF_Parameters.print_lvl, MCSCF_Parameters.print_mos ? "yes" : "no");
+  outfile->Printf("   R_CONVERGENCE  =   %6.2e    E CONVERG     =   %6.2e\n",
+      MCSCF_Parameters.rms_grad_convergence, MCSCF_Parameters.energy_convergence);
+  outfile->Printf("   IGNORE_RAS_RAS =   %6s      IGNORE_FZ     =   %6s\n",
+      MCSCF_Parameters.ignore_ras_ras ? "yes" : "no", MCSCF_Parameters.ignore_fz ? "yes" : "no") ;
+  outfile->Printf("   OEI FILE       =   %6d      OEI ERASE     =   %6s\n",
+      MCSCF_Parameters.oei_file, MCSCF_Parameters.oei_erase ? "yes" : "no");
+  outfile->Printf("   TEI FILE       =   %6d      TEI ERASE     =   %6s\n",
+      MCSCF_Parameters.tei_file, MCSCF_Parameters.tei_erase ? "yes" : "no");
+  outfile->Printf("   OPDM FILE      =   %6d      OPDM ERASE    =   %6s\n",
+      MCSCF_Parameters.lag_file, MCSCF_Parameters.opdm_erase ? "yes" : "no");
+  outfile->Printf("   TPDM FILE      =   %6d      TPDM ERASE    =   %6s\n",
+      MCSCF_Parameters.tpdm_file, MCSCF_Parameters.tpdm_erase ? "yes" : "no");
+  outfile->Printf("   LAG FILE       =   %6d      LAG ERASE     =   %6s\n",
+      MCSCF_Parameters.lag_file, MCSCF_Parameters.lag_erase ? "yes" : "no");
+  outfile->Printf("   DIIS START     =   %6d      DIIS FREQ     =   %6d\n",
+      MCSCF_Parameters.diis_start, MCSCF_Parameters.diis_freq);
+  outfile->Printf("   DIIS MIN VECS  =   %6d      DIIS MAX VECS =   %6d\n",
+      MCSCF_Parameters.diis_min_vecs, MCSCF_Parameters.diis_max_vecs);
+  outfile->Printf("   SCALE STEP     =   %6.2E    MAX STEP      =   %6.2lf\n",
+      MCSCF_Parameters.scale_step, MCSCF_Parameters.step_max);
+  outfile->Printf("   DO_LEVEL SHIFT =   %6s      SHIFT         =   %6.2lf\n",
+      MCSCF_Parameters.level_shift ? "yes" : "no", MCSCF_Parameters.shift);
+  outfile->Printf("   USE FZC H      =   %6s      HESSIAN       = %-12s\n",
+      MCSCF_Parameters.use_fzc_h ? "yes" : "no", MCSCF_Parameters.hessian.c_str());
+  outfile->Printf("\n") ;
+  //fflush(outfile);
+}
 
+
+}} // namespace psi::detci
+ 
