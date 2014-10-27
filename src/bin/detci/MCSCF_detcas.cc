@@ -62,7 +62,7 @@
 
 namespace psi { namespace detci {
 
-extern void get_mo_info(Options& options);
+extern void mcscf_get_mo_info(Options& options);
 extern void get_parameters(Options &options);
 extern void print_parameters(void);
 extern void read_integrals(void);
@@ -76,7 +76,7 @@ extern int  write_ref_orbs(void);
 extern void read_cur_orbs(void);
 extern void form_F_act(void);
 extern int  diis(int veclen, double *vec, double *errvec);
-extern void get_mat_block(double **src, double **dst, int dst_dim,
+extern void mcscf_get_mat_block(double **src, double **dst, int dst_dim,
                           int dst_offset, int *dst2src);
 extern void calc_dE_dT(int n, double **dEU, int npairs, int *ppair, 
                        int *qpair, double *theta, double *dET);
@@ -113,8 +113,7 @@ extern void postmult_by_exp_R(int irrep, int dim, double **mat,
 extern void cleanup(void);
 
 
-void title(void);
-void quote(void);
+void mcscf_title(void);
 void calc_gradient(void);
 void bfgs_hessian(void);
 void ds_hessian(void);
@@ -141,7 +140,7 @@ PsiReturnType mcscf_update(Options &options);
 namespace psi { namespace detci {
 
 
-PsiReturnType detcas(Options &options)
+PsiReturnType mcscf_update(Options &options)
 {
   int converged = 0;
   int num_pairs = 0;
@@ -153,11 +152,11 @@ PsiReturnType detcas(Options &options)
 
   if (MCSCF_Parameters.print_lvl) tstart();
   get_parameters(options);     /* get running params (convergence, etc)    */
-  title();                     /* print program identification             */
+  mcscf_title();                     /* print program identification             */
 
   if (MCSCF_Parameters.print_lvl) print_parameters();
 
-  get_mo_info(options);               /* read DOCC, SOCC, frozen, nbfso, etc      */
+  mcscf_get_mo_info(options);               /* read DOCC, SOCC, frozen, nbfso, etc      */
   read_integrals();            /* get the 1 and 2 elec MO integrals        */
   read_density_matrices(options);
 
@@ -205,7 +204,7 @@ PsiReturnType detcas(Options &options)
 
   print_step(num_pairs, steptype);
 
-  if (MCSCF_Parameters.print_lvl) quote();
+//  if (MCSCF_Parameters.print_lvl) quote();
   cleanup();
   //close_io();
   if (MCSCF_Parameters.print_lvl) tstop();
@@ -223,9 +222,9 @@ PsiReturnType detcas(Options &options)
 
 
 /*
-** title(): Function prints a program identification
+** mcscf_title(): Function prints a program identification
 */
-void title(void)
+void mcscf_title(void)
 {
   if (MCSCF_Parameters.print_lvl) {
    outfile->Printf("\n");
@@ -244,13 +243,6 @@ void title(void)
   //fflush(outfile);
 }
 
-
-void quote(void)
-{
-  outfile->Printf("\n\t\t \"Good bug ... dead bug\" \n\n");
-  outfile->Printf("\t\t\t - Ed Valeev\n\n");
-  //fflush(outfile);
-}
 
 
 
@@ -311,7 +303,7 @@ void calc_gradient(void)
     ir_ppair = IndPairs.get_ir_prel_ptr(h);
     ir_qpair = IndPairs.get_ir_qrel_ptr(h);
     ir_lag = block_matrix(ir_norbs, ir_norbs);
-    get_mat_block(MCSCF_CalcInfo.lag, ir_lag, ir_norbs, offset, MCSCF_CalcInfo.pitz2ci);
+    mcscf_get_mat_block(MCSCF_CalcInfo.lag, ir_lag, ir_norbs, offset, MCSCF_CalcInfo.pitz2ci);
 
     if (MCSCF_Parameters.print_lvl > 3) {
       outfile->Printf( "Irrep %d of lagrangian:\n", h);
