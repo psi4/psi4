@@ -411,7 +411,7 @@ double mcscf_get_twoel(int i, int j, int k, int l)
 
 
 /*
-** get_mat_block()
+** mcscf_get_mat_block()
 **
 ** This function gets an irrep block of a full matrix
 **

@@ -60,7 +60,7 @@ extern void check(int a, const char *errmsg);
 ** based on the version in DETCI
 **
 */
-void get_mo_info(Options &options)
+void mcscf_get_mo_info(Options &options)
 {
    int h, i, j, k, tmp, cnt, irrep, errcod, errbad;
    int size;

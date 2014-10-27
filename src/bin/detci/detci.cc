@@ -68,6 +68,7 @@
 #include "slaterd.h"
 #include "civect.h"
 #include "ciwave.h"
+#include "MCSCF_detcas.cc"
 
 namespace psi { namespace detci {
 
