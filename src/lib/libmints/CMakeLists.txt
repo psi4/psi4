@@ -1,3 +1,6 @@
 set(SRC 3coverlap.cc angularmomentum.cc basisset.cc basisset_parser.cc benchmark.cc cartesianiter.cc cdsalclist.cc chartab.cc coordentry.cc corrtab.cc cubefile.cc deriv.cc dimension.cc dipole.cc efpmultipolepotential.cc electricfield.cc electrostatic.cc eri.cc erd_eri.cc eribase.cc extern.cc factory.cc fjt.cc get_writer_file_prefix.cc gshell.cc integral.cc integraliter.cc integralparameters.cc intvector.cc irrep.cc kinetic.cc local.cc maketab.cc matrix.cc mintshelper.cc molecule.cc multipoles.cc multipolesymmetry.cc nabla.cc oeprop.cc onebody.cc orbitalspace.cc orthog.cc osrecur.cc overlap.cc petitelist.cc pointgrp.cc potential.cc potentialint.cc pseudospectral.cc psimath.cc quadrupole.cc rep.cc shellrotation.cc sieve.cc sobasis.cc sointegral.cc solidharmonics.cc svd.cc symop.cc tracelessquadrupole.cc transform.cc twobody.cc vector.cc view.cc wavefunction.cc writer.cc)
 add_library(mints ${SRC})
 add_dependencies(mints int deriv)
+if(BUILD_CUSTOM_BOOST)
+   add_dependencies(mints custom_boost)
+endif()   

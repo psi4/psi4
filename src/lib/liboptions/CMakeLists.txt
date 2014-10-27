@@ -1,2 +1,5 @@
 set(SRC liboptions.cc print.cc python.cc)
 add_library(options ${SRC})
+if(BUILD_CUSTOM_BOOST)
+   add_dependencies(options custom_boost)
+endif()   

@@ -59,6 +59,15 @@ init_FCMangle()
 get_fc_symbol(FC_SYMBOL)
 add_definitions(-DFC_SYMBOL=${FC_SYMBOL})
 
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+   set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
+   set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+   set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
+else()
+   set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+   set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
+endif()
+
 #Not setting ldflags was causing a problem
 if(LDFLAGS)
    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LDFLAGS}")
@@ -143,78 +152,60 @@ include_directories(
 
 # Python Detection 
 find_package(Python 2.6 REQUIRED)
-#if(NOT useroptPYTHON STREQUAL EMPTY)
-#    set(PYTHON_EXECUTABLE ${useroptPYTHON})
-#    message(WARNING "Skipping Python detection and using this version: ${useroptPYTHON}")
-#else()
-#    find_package(PythonInterp 2.6 REQUIRED)
-#endif()
-#set(PYCONFIG ${PYTHON_EXECUTABLE}-config)
-#execute_process(COMMAND ${PYCONFIG} --ldflags  OUTPUT_VARIABLE PYTHON_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
-#execute_process(COMMAND ${PYCONFIG} --includes  OUTPUT_VARIABLE PYTHON_INCLUDE_DIRS OUTPUT_STRIP_TRAILING_WHITESPACE)
-#if (("${PYTHON_LIBRARIES}" STREQUAL "") OR ("${PYTHON_INCLUDE_DIRS}" STREQUAL ""))
-#    message(FATAL_ERROR "Python development libraries not detected. Make sure that the development version is installed and that 'python-config' exists in the same directory as the python executable.")
-#endif()
-## Strip leading whitespace & turn the flags into proper lists
-#string(STRIP ${PYTHON_INCLUDE_DIRS} PYTHON_INCLUDE_DIRS)
-#string(STRIP ${PYTHON_LIBRARIES} PYTHON_LIBRARIES)
-#string(REPLACE "-I" "" PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
-#string(REPLACE " " ";" PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
+link_directories("${PYTHON_LIBRARIES}")
+include_directories(SYSTEM "${PYTHON_INCLUDE_DIRS}")
 
-include_directories(${PYTHON_INCLUDE_DIRS})
-
-#
 # Boost Detection 
-#
-# N.B. Update boost/CMakeLists.txt if this list of components changes
-set(Boost_USE_STATIC_LIBS ON)
-if(MPI_FOUND)
-  set(Boost_COMPONENTS filesystem python mpi regex serialization system thread )
+# Just change the Boost version number here
+set(BOOSTVER 1.55.0)
+set(BUILD_CUSTOM_BOOST FALSE)
+# List all components needed (except mpi and unit_test_framework) here.
+# mpi and unit_test_framework will be added afterwards, if needed.
+list(APPEND needed_components filesystem python regex serialization system thread)
+set(Boost_USE_STATIC_LIBS    ON)
+set(Boost_USE_MULTITHREADED  ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+if(ENABLE_UNIT_TESTS)
+   list(APPEND needed_components unit_test_framework)
+   find_package(Boost ${BOOSTVER} COMPONENTS "${needed_components}")
 else()
-  set(Boost_COMPONENTS filesystem python regex serialization system thread )
-endif()
-if(NOT useroptUSE_SYSTEM_BOOST)
-    message(WARNING "Skipping Boost detection, and forcing Psi to build the bundled version.")
-else()
-    find_package(Boost 1.55.0 COMPONENTS ${Boost_COMPONENTS})
+   find_package(Boost ${BOOSTVER} COMPONENTS "${needed_components}")
 endif()
 if(NOT Boost_FOUND)
-    # Add the Boost version bundled with Psi4 as a dependency
-    message(WARNING "Boost not found. The pre-packaged version will be built.")
-    # The version bundled with Psi4
-    set(BOOSTVER boost_1_55_0)
-    # Link and include information
-
-	#This is the official cmake boost library macro
-    set(BOOST_LIBRARYDIR ${PROJECT_BINARY_DIR}/boost/${BOOSTVER}/stage/lib)
-    #This is the one that was in use in the PSI4 cmake files and is included
-    #to maintain the scripts in some working order, but the former should
-    #be preferred
-    set(BOOSTLIBDIR ${BOOST_LIBRARYDIR})
-    
-    #Same as for the lib dir above,this is the "real" one
-    set(Boost_INCLUDE_DIR ${PROJECT_BINARY_DIR}/boost/${BOOSTVER})
-    set(Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIR})
-    
-    foreach(component ${Boost_COMPONENTS})
-        set(Boost_LIBRARIES ${Boost_LIBRARIES} "${BOOSTLIBDIR}/libboost_${component}.a")
-    endforeach()
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        set(Boost_LIBRARIES ${Boost_LIBRARIES} -lrt)
-    endif()
-    add_subdirectory(boost)
-    set(Boost_FOUND TRUE)
+   # Set also variables usually set by find_package
+   message(STATUS "Boost ${BOOSTVER} not found. The pre-packaged version will be built.")
+   set(BUILD_CUSTOM_BOOST TRUE)
+   set(CUSTOM_BOOST_LOCATION ${PROJECT_BINARY_DIR}/boost)
+   string(REGEX REPLACE "\\." "0" Boost_VERSION ${BOOSTVER})
+   math(EXPR Boost_MAJOR_VERSION "${Boost_VERSION} / 100000")
+   math(EXPR Boost_MINOR_VERSION "${Boost_VERSION} / 100 % 1000")
+   math(EXPR Boost_SUBMINOR_VERSION "${Boost_VERSION} % 100")
+   set(Boost_LIB_VERSION ${Boost_MAJOR_VERSION}_${Boost_MINOR_VERSION})
+   add_subdirectory(boost)
+   set(Boost_FOUND TRUE)
+   set(Boost_LIBRARIES "")
+   # Read documentation in FindBoost.cmake for the difference between the singular and plural forms
+   set(Boost_INCLUDE_DIR  ${CUSTOM_BOOST_LOCATION}/include)
+   set(Boost_INCLUDE_DIRS ${CUSTOM_BOOST_LOCATION}/include) 
+   set(Boost_LIBRARY_DIR  ${CUSTOM_BOOST_LOCATION}/lib)
+   set(Boost_LIBRARY_DIRS ${CUSTOM_BOOST_LOCATION}/lib)
+   # This is the one that was in use in the PSI4 cmake files and is included
+   # to maintain the scripts in some working order, but the former should
+   # be preferred
+   set(BOOSTLIBDIR ${Boost_LIBRARY_DIR})
+   # We will link statically, so just set the Boost_<C>_LIBRARY for the static library 
+   foreach(_component ${needed_components})
+   	string(TOUPPER ${_component} _COMP)
+   	set(Boost_${_COMP}_FOUND TRUE)
+   	set(Boost_${_COMP}_LIBRARY libboost_${_component}-${Boost_LIB_VERSION}.a)
+   	list(APPEND Boost_LIBRARIES Boost_${_COMP}_LIBRARY)
+   endforeach()
 endif()
-include_directories(${Boost_INCLUDE_DIRS})
+link_directories("${Boost_LIBRARY_DIRS}")
+include_directories(SYSTEM "${Boost_INCLUDE_DIRS}")
 
-#
 # PThreads
-#
 find_package(Threads)
-#get_cmake_property(_variableNames VARIABLES)
-#foreach (_variableName ${_variableNames})
-#    message(STATUS "${_variableName}=${${_variableName}}")
-#endforeach()
 
 #
 # The location of compiled libraries and executables
@@ -240,14 +231,14 @@ add_subdirectory(plugins)
 set(PSILIB ${PSILIB} ${PLUGINS})
 
 
-if(DEFINED USEERD)
+if(DEFINED ENABLE_LIBERD)
     set(PSILIB ${PSILIB} erd)
     set(JK_ERD ${CMAKE_BINARY_DIR}/lib/liberd.a)
 endif()
 
 #If we have MPI also build the JKFactory library for awesome SCF performance
 if(MPI_FOUND)
-   set(BUILD_JK_FACTORY "FALSE")
+   set(BUILD_JK_FACTORY "TRUE")
 endif()
 
 if(BUILD_JK_FACTORY)
@@ -260,19 +251,11 @@ if(BUILD_JK_FACTORY)
     set(PSILIB ${PSILIB} ${CMAKE_BINARY_DIR}/lib/libga.a)
     set(PSILIB ${PSILIB} ${CMAKE_BINARY_DIR}/lib/libarmci.a)
     set(PSILIB ${PSILIB} oed)
-    if(NOT DEFINED USEERD)
+    if(NOT DEFINED ENABLE_LIBERD)
        set(PSILIB ${PSILIB} erd)
     endif()
     set(PSILIB ${PSILIB} -lmkl_scalapack_lp64 -lmkl_blacs_lp64)
 endif()
-
-#Goodbye python warning messages and boost warning messages...
-#all remaining warnings should be addressed as they are actually caused by
-#poor psi4 coding...
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd47 -wd2196 -wd411 -wd279")
-endif()
-
 
 #Add the doxygen documentation
 add_subdirectory(doc/doxygen)
@@ -280,19 +263,13 @@ add_subdirectory(doc/doxygen)
 # Add the sphinx documentation
 add_subdirectory(doc/sphinxman)
 
-#
 # Recursively add source directories
-#
 add_subdirectory(src)
 
-#
 # Add the library directory, for install purposes
-#
 add_subdirectory(lib)
 
-#
 # Handle creation of Makefile for plugins
-#
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 get_property(defs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS)
 foreach(dir ${dirs})
@@ -306,22 +283,19 @@ string(STRIP ${PLUGIN_INCLUDE_DIRECTORIES} PLUGIN_INCLUDE_DIRECTORIES)
 string(STRIP ${PLUGIN_DEFINES} PLUGIN_DEFINES)
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
 
-#
 # Echo the directory information back
-#
 set(RECONFIGURE_PSI "${PROJECT_BINARY_DIR}/reconfigure.sh")
 message("The following command can be used to exactly reproduce this build. It can also be found in ${RECONFIGURE_PSI}:\n")
 message("${CONFIGURE_CMD}\n")
 configure_file(cmake/reconfigure.sh.in reconfigure.sh)
 
-#If we are making boost add it as a dependency
-if(NOT Boost_FOUND)
-   add_dependencies(psi4 ${Boost_LIBRARIES})
+#If we are making Boost add it as a dependency
+if(BUILD_CUSTOM_BOOST)
+   add_dependencies(psi4 custom_boost)
 endif()
 
 #FILE(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
-INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION
-${CMAKE_INSTALL_PREFIX}/bin)
+INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
 add_subdirectory(external)
 

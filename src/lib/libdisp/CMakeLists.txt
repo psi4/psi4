@@ -1,3 +1,6 @@
 set(SRC dispersion.cc)
 add_library(disp ${SRC})
 add_dependencies(disp mints)
+if(BUILD_CUSTOM_BOOST)
+   add_dependencies(disp custom_boost)
+endif()   

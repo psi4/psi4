@@ -16,3 +16,6 @@ set(SRC am2canon_shell_order.cc atom_dummy.cc atom_pos.cc cartrep.cc
        statespi.cc stype.cc sym_label.cc symoper.cc ua2a.cc us2s.cc usotao.cc
        usotbf.cc zmat.cc zvals.cc)
 add_library(chkpt ${SRC})
+if(BUILD_CUSTOM_BOOST)
+   add_dependencies(chkpt custom_boost)
+endif()   
