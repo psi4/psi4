@@ -1,3 +1,6 @@
 set(SRC wrapper.cc)
 add_library(sapt ${SRC})
 add_dependencies(sapt mints)
+if(CUSTOM_BOOST_BUILD)
+   add_dependencies(sapt custom_boost)
+endif()

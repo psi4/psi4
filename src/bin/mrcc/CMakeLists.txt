@@ -1,3 +1,6 @@
 set(SRC mrcc.cc)
 add_library(mrcc ${SRC})
 add_dependencies(mrcc mints)
+if(CUSTOM_BOOST_BUILD)
+   add_dependencies(mrcc custom_boost)
+endif()

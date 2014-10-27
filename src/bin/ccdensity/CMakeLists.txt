@@ -137,3 +137,6 @@ set(SRC
 )
 add_library(ccdensity ${SRC})
 add_dependencies(ccdensity mints)
+if(CUSTOM_BOOST_BUILD)
+   add_dependencies(ccdensity custom_boost)
+endif()

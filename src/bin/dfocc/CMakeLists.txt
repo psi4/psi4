@@ -24,3 +24,6 @@ update_hfmo.cc
 )
 add_library(dfocc ${SRC})
 add_dependencies(dfocc mints)
+if(CUSTOM_BOOST_BUILD)
+   add_dependencies(dfocc custom_boost)
+endif()

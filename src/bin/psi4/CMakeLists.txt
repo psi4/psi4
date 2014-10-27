@@ -21,6 +21,9 @@ set (LINKLIBS ${PSILIB} ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES}
 
 # executable psi4
 add_executable(psi4 ${SRC})
+if(CUSTOM_BOOST_BUILD)
+   add_dependencies(psi4 custom_boost)
+endif()
 target_link_libraries(psi4 ${LINKLIBS})
 
 # standalone python module psi4.so

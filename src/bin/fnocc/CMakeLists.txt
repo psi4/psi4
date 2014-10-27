@@ -17,3 +17,6 @@ set(SRC
 )
 add_library(fnocc ${SRC})
 add_dependencies(fnocc mints)
+if(CUSTOM_BOOST_BUILD)
+   add_dependencies(fnocc custom_boost)
+endif()

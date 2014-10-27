@@ -10,3 +10,6 @@ set(SRC amp_write.cc c_clean.cc cache.cc cc2_hbar_extra.cc cc2_sigma.cc
         WmnieSD.cc WmnijDD.cc WnmjeDS.cc write_Rs.cc overlap.cc)
 add_library(cceom ${SRC})
 add_dependencies(cceom mints)
+if(CUSTOM_BOOST_BUILD)
+   add_dependencies(cceom custom_boost)
+endif()

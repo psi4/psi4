@@ -57,3 +57,6 @@ set(SRC
 )
 add_library(occ ${SRC})
 add_dependencies(occ mints)
+if(CUSTOM_BOOST_BUILD)
+   add_dependencies(occ custom_boost)
+endif()
