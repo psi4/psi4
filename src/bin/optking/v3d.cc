@@ -41,19 +41,19 @@ bool v3d_angle(const double *A, const double *B, const double *C, double & phi, 
 
   // eBA
   if (! v3d_eAB(B, A, eBA) ) {
-oprintf_out( "could not normalize eBA, B:");
-for (int i=0; i<3; ++i) oprintf_out("%15.10lf", B[i]);
-oprintf_out("\n A:");
-for (int i=0; i<3; ++i) oprintf_out("%15.10lf", A[i]);
+    oprintf_out( "could not normalize eBA, B:");
+    for (int i=0; i<3; ++i) oprintf_out("%15.10lf", B[i]);
+      oprintf_out("\n A:");
+    for (int i=0; i<3; ++i) oprintf_out("%15.10lf", A[i]);
     return false;
   }
 
   // eBC
   if (! v3d_eAB(B, C, eBC) ) {
-oprintf_out( "could not normalize eBC, B:");
-for (int i=0; i<3; ++i) oprintf_out("%15.10lf", B[i]);
-oprintf_out("\n A:");
-for (int i=0; i<3; ++i) oprintf_out("%15.10lf", A[i]);
+    oprintf_out( "could not normalize eBC, B:");
+    for (int i=0; i<3; ++i) oprintf_out("%15.10lf", B[i]);
+        oprintf_out("\n A:");
+    for (int i=0; i<3; ++i) oprintf_out("%15.10lf", A[i]);
     return false;
   }
 
@@ -111,6 +111,32 @@ bool v3d_tors(const double *A, const double *B, const double *C, const double *D
   return true;
 }
 
+bool v3d_oofp(const double *A, const double *B, const double *C, const double *D,
+  double & oop_angle) {
+
+  double eBA[3], eBC[3], eBD[3], tmp[3];
+  if ( !v3d_eAB(B,A,eBA) || !v3d_eAB(B,C,eBC) || !v3d_eAB(B,D,eBD) )
+    throw(INTCO_EXCEPT("v3d_oofp: distances are not reasonably normalized for e vectors.",true));
+
+  double phi_CBD;
+  if ( !v3d_angle(C, B, D, phi_CBD) )
+    throw(INTCO_EXCEPT("v3d_oofp: distances are not reasonably normalized for angle.",true));
+  
+  v3d_cross_product(eBC, eBD, tmp);
+  double dotprod = v3d_dot(tmp, eBA);
+
+  // This shouldn't happen unless angle B-C-D -> 0, 
+  if (sin(phi_CBD) < Opt_params.tors_cos_tol) // reusing parameter from torsions
+    throw(INTCO_EXCEPT("v3d_oofp: C-B-D angle is too close to 0 or pi, so bad coordinate.",true));
+
+  dotprod /= sin(phi_CBD) ;
+
+  if      (dotprod >  1.0) oop_angle = _pi;
+  else if (dotprod < -1.0) oop_angle = (-1) * _pi;
+  else                     oop_angle = asin(dotprod) ;
+
+  return true;
+}
 
 }}
 

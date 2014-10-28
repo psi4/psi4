@@ -318,6 +318,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
   mol.set_geom_array(x);
   q = mol.coord_values();
   mol.fix_tors_near_180(); // Fix configurations of torsions.
+  mol.fix_oofp_near_180();
 
   if (Opt_params.H_update_use_last == 0) { // use all available old gradients
     step_start = 0;

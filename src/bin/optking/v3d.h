@@ -113,6 +113,11 @@ bool v3d_angle(const double *A, const double *B, const double *C, double & phi, 
 // Returns false if bond angles ABC or BCD are too close to 0 or 180
 bool v3d_tors(const double *A, const double *B, const double *C, const double *D, double & tau);
 
+// Computed out-of-plane angle in radians A-B-C-D for angle between A-B and C-B-D planes.
+// Returns false if bond angles BCD is too close to 0 or 180
+bool v3d_oofp(const double *A, const double *B, const double *C, const double *D,
+  double & oop_angle);
+
 }}
 
 #endif
