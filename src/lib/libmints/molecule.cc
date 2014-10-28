@@ -2617,13 +2617,13 @@ bool Molecule::has_symmetry_element(Vector3& op, double tol) const
     return true;
 }
 
-void Molecule::symmetrize()
+void Molecule::symmetrize(double tol)
 {
     Matrix temp(natom(), 3);
     CharacterTable ct = point_group()->char_table();
 
     // Obtain atom mapping of atom * symm op to atom
-    int **atom_map = compute_atom_map(this);
+    int **atom_map = compute_atom_map(this, tol);
 
     // Symmetrize the molecule to remove any noise
     for (int atom=0; atom<natom(); ++atom) {

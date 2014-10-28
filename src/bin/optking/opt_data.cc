@@ -295,19 +295,18 @@ inline int sign_of_double(double d) {
 void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
   if (Opt_params.H_update == OPT_PARAMS::BFGS)
-    oprintf_out("\n\tPerforming BFGS update");
+    oprintf_out("\n\tPerforming BFGS update.\n");
   else if (Opt_params.H_update == OPT_PARAMS::MS)
-    oprintf_out("\n\tPerforming Murtagh/Sargent update");
+    oprintf_out("\n\tPerforming Murtagh/Sargent update.\n");
   else if (Opt_params.H_update == OPT_PARAMS::POWELL)
-    oprintf_out("\n\tPerforming Powell update");
+    oprintf_out("\n\tPerforming Powell update.\n");
   else if (Opt_params.H_update == OPT_PARAMS::BOFILL)
-    oprintf_out("\n\tPerforming Bofill update");
+    oprintf_out("\n\tPerforming Bofill update.\n");
   else if (Opt_params.H_update == OPT_PARAMS::NONE) {
     oprintf_out("\n\tNo Hessian update performed.\n");
     return;
   }
 
-  int i_step, step_start, i, j;
   int step_this = steps.size()-1;
 
   /*** Read/compute current internals and forces ***/
@@ -320,30 +319,71 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
   mol.fix_tors_near_180(); // Fix configurations of torsions.
   mol.fix_oofp_near_180();
 
-  if (Opt_params.H_update_use_last == 0) { // use all available old gradients
-    step_start = 0;
-  }
-  else {
-    step_start = steps.size() - 1 - Opt_params.H_update_use_last;
-    if (step_start < 0) step_start = 0;
-  }
-
-  // Check to make sure that the last analytical second derivative isn't newer
-  if ( (step_this-step_start) > steps_since_last_H)
-    step_start = step_this - steps_since_last_H;
-
-  oprintf_out(" with previous %d gradient(s).\n", step_this-step_start);
-
-  double *f_old, *x_old, *q_old, *dq, *dg, *tors_through_180;
+  double *f_old, *x_old, *q_old, *dq, *dg;
   double gq, qq, qz, zz, phi;
+  dq = init_array(Nintco);
+  dg = init_array(Nintco);
+
+  // Don't go further back than the last Hessian calculation 
+  int check_start = step_this - steps_since_last_H;
+  if (check_start < 0) check_start = 0;
+  if (steps_since_last_H)
+    oprintf_out("\tPrevious computed or guess Hessian on step %d.\n", check_start+1);
+
+  // Make list of old geometries to update with.  Check each one to see if it is too close for stability.
+  std::vector<int> use_steps;
+
+  for (int i_step=steps.size()-2; i_step>=check_start; --i_step) {
+
+    // Read/compute old internals and forces
+    f_old = g_forces_pointer(i_step);
+    x_old = g_geom_const_pointer(i_step);
+  
+    mol.set_geom_array(x_old);
+    q_old = mol.coord_values();
+  
+    for (int i=0;i<Nintco;++i) {
+      dq[i] = q[i] - q_old[i];
+      dg[i] = (-1.0) * (f[i] - f_old[i]); // gradients -- not forces!
+    }
+  
+    gq = array_dot(dq, dg, Nintco);
+    qq = array_dot(dq, dq, Nintco);
+
+    // If there is only one left, take it no matter what.
+    if (use_steps.empty() && i_step == check_start) {
+      use_steps.push_back(i_step);
+      break;
+    }
+ 
+    if ( (fabs(gq) < Opt_params.H_update_den_tol) ||(fabs(qq) < Opt_params.H_update_den_tol) ) {
+      oprintf_out("\tDenominators (dg)(dq) or (dq)(dq) are very small.\n");
+      oprintf_out("\t Skipping Hessian update for step %d.\n", i_step+1);
+      continue;
+    }
+  
+    double max_change = array_abs_max(dq, Nintco);
+    if ( max_change > Opt_params.H_update_dq_tol ) {
+      oprintf_out("\tChange in internal coordinate of %5.2e exceeds limit of %5.2e.\n", max_change, Opt_params.H_update_dq_tol );
+      oprintf_out("\t Skipping Hessian update for step %d.\n", i_step+1);
+      continue;
+    }
+    use_steps.push_back(i_step);
+    if (use_steps.size() == Opt_params.H_update_use_last)
+      break;
+  }
+
+  oprintf_out("\tSteps to be used in Hessian update:");
+  for (int i=0; i<use_steps.size(); ++i)
+    oprintf_out(" %d", use_steps[i]+1);
+  oprintf_out("\n");
 
   double **H = g_H_pointer();
   double **H_new = init_matrix(Nintco, Nintco);
 
-  dq = init_array(Nintco);
-  dg = init_array(Nintco);
+  for (int s=0; s<use_steps.size(); ++s) {
 
-  for (i_step=step_start; i_step < step_this; ++i_step) {
+    int i_step = use_steps[s];
 
     // Read/compute old internals and forces
     f_old = g_forces_pointer(i_step);
@@ -352,7 +392,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
     mol.set_geom_array(x_old);
     q_old = mol.coord_values();
 
-    for (i=0;i<Nintco;++i) {
+    for (int i=0;i<Nintco;++i) {
       // Turns out you don't have to correct for torsional changes through 180 in the forces.
       dq[i] = q[i] - q_old[i];
       dg[i] = (-1.0) * (f[i] - f_old[i]); // gradients -- not forces!
@@ -361,28 +401,11 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
     gq = array_dot(dq, dg, Nintco);
     qq = array_dot(dq, dq, Nintco);
 
-    // skip Hessian updates with very small denominators (dq)(dq) and (dq)(dg_q)
-    if ( (fabs(gq) < Opt_params.H_update_den_tol) ||(fabs(qq) < Opt_params.H_update_den_tol) ) {
-      oprintf_out("\tDenominators (dg)(dq) or (dq)(dq) are very small.\n");
-      oprintf_out("\t Skipping Hessian update for step %d.\n", i_step + 1);
-      continue;
-    }
-
-    // skip Hessian updates if a dq element is too large ; helps to avoid use of inapplicable data
-    // as well as torsional angles that stray too far from one side to the other of 180
-    double max_change = array_abs_max(dq, Nintco);
-    if ( max_change > Opt_params.H_update_dq_tol ) {
-      oprintf_out("\tChange in internal coordinate of %5.2e exceeds limit of %5.2e.\n",
-        max_change, Opt_params.H_update_dq_tol );
-      oprintf_out("\t Skipping Hessian update for step %d.\n", i_step + 1);
-      continue;
-    }
-
     // See  J. M. Bofill, J. Comp. Chem., Vol. 15, pages 1-11 (1994)
     //  and Helgaker, JCP 2002 for formula.
     if (Opt_params.H_update == OPT_PARAMS::BFGS) {
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j)
+      for (int i=0; i<Nintco; ++i)
+        for (int j=0; j<Nintco; ++j)
           H_new[i][j] = H[i][j] + dg[i] * dg[j] / gq ;
 
       double *Hdq = init_array(Nintco);
@@ -390,8 +413,8 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
       double qHq = array_dot(dq, Hdq, Nintco);
 
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j)
+      for (int i=0; i<Nintco; ++i)
+        for (int j=0; j<Nintco; ++j)
           H_new[i][j] -=  Hdq[i] * Hdq[j] / qHq ;
 
       free_array(Hdq);
@@ -400,13 +423,13 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       double *Z = init_array(Nintco);
       opt_matrix_mult(H, 0, &dq, 1, &Z, 1, Nintco, Nintco, 1, 0);
 
-      for (i=0; i<Nintco; ++i)
+      for (int i=0; i<Nintco; ++i)
         Z[i] = dg[i] - Z[i];
 
       qz = array_dot(dq, Z, Nintco);
 
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j)
+      for (int i=0; i<Nintco; ++i)
+        for (int j=0; j<Nintco; ++j)
           H_new[i][j] = H[i][j] + Z[i] * Z[j] / qz ;
 
       free_array(Z);
@@ -415,13 +438,13 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       double * Z = init_array(Nintco);
       opt_matrix_mult(H, 0, &dq, 1, &Z, 1, Nintco, Nintco, 1, 0);
 
-      for (i=0; i<Nintco; ++i)
+      for (int i=0; i<Nintco; ++i)
         Z[i] = dg[i] - Z[i];
 
       qz = array_dot(dq, Z, Nintco);
 
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j)
+      for (int i=0; i<Nintco; ++i)
+        for (int j=0; j<Nintco; ++j)
           H_new[i][j] = H[i][j] - qz/(qq*qq)*dq[i]*dq[j] + (Z[i]*dq[j] + dq[i]*Z[j])/qq;
 
       free_array(Z);
@@ -431,7 +454,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       double *Z = init_array(Nintco);
       opt_matrix_mult(H, 0, &dq, 1, &Z, 1, Nintco, Nintco, 1, 0);
 
-      for (i=0; i<Nintco; ++i)
+      for (int i=0; i<Nintco; ++i)
         Z[i] = dg[i] - Z[i];
 
       qz = array_dot(dq, Z, Nintco);
@@ -441,12 +464,12 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       if (phi < 0.0) phi = 0.0;
       if (phi > 1.0) phi = 1.0;
 
-      for (i=0; i<Nintco; ++i) // (1-phi)*MS
-        for (j=0; j<Nintco; ++j)
+      for (int i=0; i<Nintco; ++i) // (1-phi)*MS
+        for (int j=0; j<Nintco; ++j)
           H_new[i][j] = H[i][j] + (1.0-phi) * Z[i] * Z[j] / qz ;
 
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j) // (phi * Powell)
+      for (int i=0; i<Nintco; ++i)
+        for (int j=0; j<Nintco; ++j) // (phi * Powell)
           H_new[i][j] += phi * (-1.0*qz/(qq*qq)*dq[i]*dq[j] + (Z[i]*dq[j] + dq[i]*Z[j])/qq);
 
       free_array(Z);
@@ -460,12 +483,12 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       double max;
   
       // compute change in Hessian
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j)
+      for (int i=0; i<Nintco; ++i)
+        for (int j=0; j<Nintco; ++j)
           H_new[i][j] -= H[i][j];
   
-      for (i=0; i<Nintco; ++i) {
-        for (j=0; j<Nintco; ++j) {
+      for (int i=0; i<Nintco; ++i) {
+        for (int j=0; j<Nintco; ++j) {
           double val = fabs(scale_limit*H[i][j]);
           max = ((val > max_limit) ? val : max_limit);
   
@@ -477,8 +500,8 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       }
     }
     else { // copy H_new into H
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j)
+      for (int i=0; i<Nintco; ++i)
+        for (int j=0; j<Nintco; ++j)
           H[i][j] = H_new[i][j];
     }
 
@@ -635,6 +658,7 @@ bool OPT_DATA::previous_step_report(void) const {
     Opt_params.intrafragment_step_limit_orig = Opt_params.intrafragment_step_limit;
     return true;
   }
+  bool dont_backup_yet = ((steps.size() < 5) ? true : false);
 
   oprintf_out("\tEnergy change for the previous step:\n");
   oprintf_out("\t\tProjected    : %20.10lf\n", p_Opt_data->g_last_DE_predicted());
@@ -642,30 +666,33 @@ bool OPT_DATA::previous_step_report(void) const {
       p_Opt_data->g_energy() - p_Opt_data->g_last_energy());
 
   double Energy_ratio = (p_Opt_data->g_energy() - p_Opt_data->g_last_energy()) / g_last_DE_predicted();
+  double Energy_change = p_Opt_data->g_energy() - p_Opt_data->g_last_energy();
 
   if (Opt_params.print_lvl >= 2)
     oprintf_out("\tEnergy ratio = %10.5lf\n", Energy_ratio);
 
   // Minimum search
   if (Opt_params.opt_type == OPT_PARAMS::MIN) {
-    if (p_Opt_data->g_last_DE_predicted() > 0) {
-      // In odd situations, the predicted energy change might be positive.  If the step was negative, 
-      // keep step size the same and proceed.
-      if (Energy_ratio < 0.0)
+
+    // Predicted up. Actual down.  OK.  Do nothing.
+    if (p_Opt_data->g_last_DE_predicted() > 0 && Energy_ratio < 0.0) {
         return true;
-      // if actual step was positive too, throw bad step
+    }
+    // Actual step is  up.
+    else if (Energy_change > 0) {
+
+      // Always throw exception for bad step.
+      if (Opt_params.dynamic && !dont_backup_yet)
+        throw(BAD_STEP_EXCEPT("Energy has increased in a minimization.\n"));
+      // Not dynamic.  Do limited backsteps only upon request.  Otherwise, keep going.
       else if (consecutive_backsteps < Opt_params.consecutive_backsteps_allowed)
         throw(BAD_STEP_EXCEPT("Energy has increased in a minimization.\n"));
     }
-    else if (Energy_ratio < 0.0 && consecutive_backsteps < Opt_params.consecutive_backsteps_allowed) {
-      throw(BAD_STEP_EXCEPT("Energy has increased in a minimization.\n"));
-    }
-    else if (Energy_ratio < 0.25)
-    {
+    // Predicted down.  Actual down.
+    else if (Energy_ratio < 0.25) {
       decrease_trust_radius();
     }
-    else if (Energy_ratio > 0.75)
-    {
+    else if (Energy_ratio > 0.75) {
       increase_trust_radius();
     }
   }

@@ -45,9 +45,13 @@ void oprint_matrix(const std::string psi_fp, const FILE *qc_fp, double **A, cons
 
 void oprint_matrix_out(double **A, const int x, const int y);
 
+void oprint_matrix_out_precise(double **A, const int x, const int y);
+
 void oprint_array(const std::string psi_fp, const FILE *qc_fp, double *A, const int x);
 
 void oprint_array_out(double *A, const int x);
+
+void oprint_array_out_precise(double *A, const int x);
 
 void offlush_out(void);
 

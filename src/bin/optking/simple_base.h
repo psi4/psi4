@@ -84,6 +84,9 @@ class SIMPLE_COORDINATE {
     virtual bool is_hbond(void) const { return false; }
 
     // do-nothing function overridden by stretch class 
+    virtual void set_hbond(bool) { printf("base_hbond"); return; }
+
+    // do-nothing function overridden by stretch class 
     virtual bool is_inverse_stre(void) const { return false; }
 
     // do-nothing function overridden by bend class

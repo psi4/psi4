@@ -185,8 +185,8 @@ class FRAG {
   double coord_value(int lookup) const;
   double coord_value(GeomType geom, int lookup) const;
 
-  // don't let angles pass through 0
-  void check_zero_angles(double const * const dq);
+  // Identify wayward angles
+  std::vector<int>  validate_angles(double const * const dq, int atom_offset);
 
   // is simple one already present?
   bool present(const SIMPLE_COORDINATE *one) const;

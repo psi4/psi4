@@ -50,6 +50,8 @@
 
 namespace opt {
 
+class BROKEN_SYMMETRY_EXCEPT;
+
 using namespace std;
 
 bool is_integer(const char *check) {
@@ -298,7 +300,15 @@ void MOLECULE::symmetrize_geom(void) {
   // put matrix into environment molecule and it will symmetrize it
   double **geom_2D = g_geom_2D();
   psi::Process::environment.molecule()->set_geometry(geom_2D);
-  psi::Process::environment.molecule()->symmetrize();
+
+  try {
+    psi::Process::environment.molecule()->symmetrize(Opt_params.symm_tol);
+  }
+  catch (psi::PsiException exc) {
+    free_matrix(geom_2D);
+    oprintf_out("Could not symmetrize geometry in OPT::MOLECULE::SYMMETRIZE_GEOM()\n");
+    throw(BROKEN_SYMMETRY_EXCEPT("Broken symmetry in OPT::MOLECULE::SYMMETRIZE_GEOM\n"));
+  }
   free_matrix(geom_2D);
 
   psi::Matrix geom = psi::Process::environment.molecule()->geometry();

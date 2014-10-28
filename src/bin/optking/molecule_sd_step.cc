@@ -57,14 +57,9 @@ void MOLECULE::sd_step(void) {
   double *dq = p_Opt_data->g_dq_pointer();
 
   double *last_fq = p_Opt_data->g_last_forces_pointer();
-  double h = 1;
-  // now obseleted by addition of cartesian coordinate type
-  //bool use_cartesians = true;
+  double sd_h = Opt_params.sd_hessian;
 
-  //if (use_cartesians) {
-    //sd_step_cartesians();
-    //return;
-  //}
+  oprintf_out("\tTaking SD optimization step.\n");
 
   if (last_fq != NULL) {
     // compute overlap of previous forces with current forces
@@ -87,18 +82,15 @@ void MOLECULE::sd_step(void) {
       // component of previous forces in step direction
       double last_fq_norm = array_dot(last_fq, fq, dim) / fq_norm;
 
-      //oprintf_out( "fq_norm:        %15.10lf\n", fq_norm);
-      //oprintf_out( "last_fq_norm:   %15.10lf\n", last_fq_norm);
-      //oprintf_out( "g_last_dq_norm: %15.10lf\n", p_Opt_data->g_last_dq_norm());
       if (p_Opt_data->g_last_dq_norm() != 0.0)
-        h = (last_fq_norm - fq_norm) / p_Opt_data->g_last_dq_norm();
+        sd_h = (last_fq_norm - fq_norm) / p_Opt_data->g_last_dq_norm();
 
-      oprintf_out("\tEstimate of Hessian along step: %10.5e\n", h);
+      oprintf_out("\tEstimate of Hessian along step: %10.5e\n", sd_h);
     }
   }
 
   for (int i=0; i<dim; ++i)
-    dq[i] = fq[i] / h;
+    dq[i] = fq[i] / sd_h;
 
   // Zero steps for frozen fragment
   for (int f=0; f<fragments.size(); ++f) {
@@ -121,10 +113,13 @@ void MOLECULE::sd_step(void) {
 
   // gradient in step direction
   double sd_g = - sd_dqnorm;
-  double sd_h = 0;
 
   double DE_projected = DE_quadratic_energy(sd_dqnorm, sd_g, sd_h);
   oprintf_out("\tProjected energy change: %20.10lf\n", DE_projected);
+
+  std::vector<int> lin_angles = validate_angles(dq);
+  if (!lin_angles.empty())
+    throw(INTCO_EXCEPT("New linear angles", lin_angles));
 
   // do displacements for each fragment separately
   for (int f=0; f<fragments.size(); ++f) {
@@ -155,11 +150,9 @@ void MOLECULE::sd_step(void) {
   p_Opt_data->save_step_info(DE_projected, sd_u, sd_dqnorm, sd_g, sd_h);
 
   free_array(sd_u);
-  
-
 }
 
-// make primitive for now
+ /*
 void MOLECULE::sd_step_cartesians(void) {
 
   double *step = g_grad_array();
@@ -208,6 +201,7 @@ void MOLECULE::sd_step_cartesians(void) {
 
   free_array(sd_u);
 }
+*/
 
 }
 

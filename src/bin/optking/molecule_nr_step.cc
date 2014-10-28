@@ -66,6 +66,8 @@ void MOLECULE::nr_step(void) {
   double nr_h;         // hessian in step direction
   double DE_projected; // projected energy change by quadratic approximation
 
+  oprintf_out("\tTaking NR optimization step.\n");
+
   // Hinv fq = dq
   H_inv = symm_matrix_inv(H, Nintco, 1);
   opt_matrix_mult(H_inv, 0, &fq, 1, &dq, 1, Nintco, Nintco, 1, 0);

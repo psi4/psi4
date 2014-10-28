@@ -59,6 +59,8 @@ public:
     CoordValue(bool fixed, bool computed) : fixed_(fixed), computed_(computed)
     { }
 
+    virtual ~CoordValue() {}
+
     void set_fixed(bool fixed) { fixed_ = fixed; }
     bool fixed() const { return fixed_; }
 
