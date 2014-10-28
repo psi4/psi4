@@ -34,7 +34,7 @@
 
 namespace opt {
 
-enum INTCO_TYPE {min_type, stre_type, bend_type, tors_type, cart_type, max_type};
+enum INTCO_TYPE {min_type, stre_type, bend_type, tors_type, oofp_type, cart_type, max_type};
 
 typedef const double * const * const GeomType;
 
@@ -76,7 +76,9 @@ class SIMPLE_COORDINATE {
 
     // do-nothing function overridden only by torsion class
     virtual void fix_tors_near_180(GeomType geom) { return; }
-    //virtual bool fix_tors_value_corrected(GeomType geom) const {return false; }
+
+    // do-nothing function overridden only by oofp class
+    virtual void fix_oofp_near_180(GeomType geom) { return; }
 
     // do-nothing function overridden by stretch class 
     virtual bool is_hbond(void) const { return false; }

@@ -172,6 +172,10 @@ double ** FRAG::H_guess(void) {
           f[cnt++] = (A - (B*(R[b][c] - rBCcov)));
         break;
 
+        case (oofp_type) :
+          f[cnt++] = 0.045;
+        break;
+
         case (cart_type) :
           f[cnt++] = 0.1;
         break;
@@ -186,8 +190,8 @@ double ** FRAG::H_guess(void) {
     for (int i=0; i<coords.simples.size(); ++i) {
       SIMPLE_COORDINATE *q = coords.simples.at(i);
 
-      int a,b,c,L;
-      double A,B,C,D,E,rABcov, rBCcov;
+      int a,b,c,d,L;
+      double A,B,C,D,E,rABcov,rBCcov,rBDcov;
 
       switch (q->g_type()) {
 
@@ -238,6 +242,24 @@ double ** FRAG::H_guess(void) {
           f[cnt++] = A + B * pow(L,D) / pow(R[b][c] * rBCcov, E) * exp(-C * (R[b][c] - rBCcov));
         break;
 
+        case (oofp_type) :
+          a = q->g_atom(0);
+          b = q->g_atom(1);
+          c = q->g_atom(2);
+          d = q->g_atom(3);
+
+          rABcov = Rcov(Z[a], Z[b]);
+          rBCcov = Rcov(Z[b], Z[c]);
+          rBDcov = Rcov(Z[b], Z[d]);
+
+          double phi; // compute value of angle
+          if (!v3d_oofp(geom[a], geom[b], geom[c], geom[d], phi))
+            phi = _pi/4;
+
+          A = 0.0025; B = 0.0061; C = 3.0; D = 4.0; E = 0.8;
+          f[cnt++] = A + B * pow(rBCcov*rBDcov, E) * pow(cos(phi), D) * exp(-C * (R[a][b] - rABcov));
+        break;
+
         case (cart_type) :
           f[cnt++] = 0.1;
         break;
@@ -261,6 +283,10 @@ double ** FRAG::H_guess(void) {
         break;
 
         case (tors_type) :
+          f[cnt++] = 0.1;
+        break;
+
+        case (oofp_type) :
           f[cnt++] = 0.1;
         break;
 
@@ -306,6 +332,10 @@ double ** FRAG::H_guess(void) {
           c = q->g_atom(2);
           d = q->g_atom(3);
           f[cnt++] = k_tau * Lindh_rho(a, b, R[a][b]) * Lindh_rho(b, c, R[b][c]) * Lindh_rho(c, d, R[c][d]);
+        break;
+
+        case (oofp_type) :
+          f[cnt++] = 0.1;
         break;
 
         case (cart_type) :
