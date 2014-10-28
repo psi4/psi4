@@ -123,19 +123,6 @@ void get_mo_info(Options &options)
    CalcInfo.reorder = init_int_array(CalcInfo.nmo);
    CalcInfo.ras_opi = init_int_matrix(4,CalcInfo.nirreps);
 
-   // DS Edit
-   outfile->Printf("DS Edit\n");
-   outfile->Printf("nirreps %d\n", CalcInfo.nirreps);
-   outfile->Printf("nmo %d\n", CalcInfo.nmo);
-   outfile->Printf("orb_irr, docc, socc, fdocc, fuocc\n"); 
-   for(i=0; i<CalcInfo.nirreps; i++){
-     outfile->Printf("%d  ", CalcInfo.orbs_per_irr[i]);
-     outfile->Printf("%d  ", CalcInfo.docc[i]);
-     outfile->Printf("%d  ", CalcInfo.socc[i]);
-     outfile->Printf("%d  ", CalcInfo.frozen_docc[i]);
-     outfile->Printf("%d  ", CalcInfo.frozen_uocc[i]);
-     outfile->Printf("\n");    
-   }
 
    if (!ras_set2(CalcInfo.nirreps, CalcInfo.nmo, 1, (Parameters.fzc) ?  1:0,
                 CalcInfo.orbs_per_irr, CalcInfo.docc, CalcInfo.socc,

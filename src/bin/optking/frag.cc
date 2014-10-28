@@ -176,6 +176,9 @@ int FRAG::add_hbonds(void) {
       is_X[i] = true;
   }
 
+  double cov_scale = Opt_params.interfragment_scale_connectivity;
+  double cov_H     = cov_radii[1]/_bohr2angstroms;
+
   for (int x=0; x<natom; ++x) {
     if (is_X[x]) { // electronegative atom
       for (int h=0; h<natom; ++h) {
@@ -187,12 +190,21 @@ int FRAG::add_hbonds(void) {
                 if (v3d_angle(geom[x], geom[h], geom[y], ang)) { // now check bond angle
                   if (ang > pi/2) {
                     STRE *one_stre = new STRE(h,y);
-                    one_stre->make_hbond();
-                    if (!present(one_stre)) {
+                    int index = find(one_stre);
+                    if (index == coords.simples.size()) { // H-bond is absent
+                      one_stre->set_hbond(true);
                       coords.simples.push_back(one_stre);
                       ++nadded;
-                    } 
-                    else delete one_stre;
+                    }
+                    else { // X-H ... Y stretch already exists, 
+                      // if it is not a covalent bond, make it a H bond
+                      double cov_Y = cov_radii[ (int) Z[y] ]/_bohr2angstroms;
+                      if (dist > cov_scale * (cov_H + cov_Y)) {
+                        coords.simples[index]->set_hbond(true);
+oprintf_out("Recognized frag stretch %d as a H bond.\n", index+1);
+                      }
+                      delete one_stre;
+                    }
                   }
                 }
               }
@@ -249,9 +261,9 @@ int FRAG::add_auxiliary_bonds(void) {
           }
           else delete one_stre;
         }
-        else {
-          oprintf_out("\tOmitting auxiliary bond %d %d bc of connectivity.\n", a+1, b+1);
-        }
+        //else {
+        //  oprintf_out("\tOmitting auxiliary bond %d %d bc of connectivity.\n", a+1, b+1);
+        //}
       }
     }
   }
@@ -292,6 +304,32 @@ int FRAG::add_bend_by_connectivity(void) {
             }
           } // ijk
 
+  for (int i=0; i<opt::INTCO_EXCEPT::linear_angles.size(); i+=3) {
+    int A = opt::INTCO_EXCEPT::linear_angles[i];
+    int B = opt::INTCO_EXCEPT::linear_angles[i+1];
+    int C = opt::INTCO_EXCEPT::linear_angles[i+2];
+
+    BEND *one_bend = new BEND(A,B,C);
+    if (!present(one_bend)) {
+      oprintf_out("\tException forcing addition of linear bend (%d,%d,%d)\n", A, B, C);
+      coords.simples.push_back(one_bend);
+      ++nadded;
+    }
+    else
+      delete one_bend;
+
+    one_bend = new BEND(A,B,C);
+    one_bend->make_linear_bend();
+    if (!present(one_bend)) {
+      oprintf_out("\tException forcing addition of linear bend complement (%d,%d,%d)\n", A+1, B+1, C+1);
+      coords.simples.push_back(one_bend);
+      ++nadded;
+    }
+    else
+      delete one_bend;
+  }
+  opt::INTCO_EXCEPT::linear_angles.clear();
+
   return nadded;
 }
 
@@ -300,7 +338,7 @@ int FRAG::add_tors_by_connectivity(void) {
   int nadded = 0;
   int i,j,k,l;
   double phi;
-  double const pi = acos(-1);
+  double const phi_lim = Opt_params.linear_bend_threshold;
 
   // bonding i-j-k-l but i-j-k && j-k-l are not collinear
   for (i=0; i<natom; ++i)
@@ -309,13 +347,13 @@ int FRAG::add_tors_by_connectivity(void) {
         for (k=0; k<natom; ++k)
           if ( connectivity[k][j] && k!=i ) {
             // ensure i-j-k is not collinear
-            if ( !v3d_angle(geom[i], geom[j], geom[k], phi) ) continue;
-            if (phi == pi) continue;
+            if (!v3d_angle(geom[i], geom[j], geom[k], phi)) continue;
+            if (phi > phi_lim) continue;
             for (l=i+1; l<natom; ++l) {
-              if ( connectivity[l][k] && l!=j) {
+              if (connectivity[l][k] && l!=j) {
                 // ensure j-k-l is not collinear
-                if ( !v3d_angle(geom[j], geom[k], geom[l], phi) ) continue; // can't compute
-                if (phi == pi) continue;
+                if (!v3d_angle(geom[j], geom[k], geom[l], phi)) continue; // can't compute
+                if (phi > phi_lim) continue;
                 TORS *one_tors = new TORS(i,j,k,l);
                 if (!present(one_tors)) {
                   coords.simples.push_back(one_tors);
@@ -335,23 +373,23 @@ int FRAG::add_tors_by_connectivity(void) {
   // find collinear fragment j-m-k
   for (j=0; j<natom; ++j)
     for (m=0; m<natom; ++m)
-      if (connectivity[j][m])
-        for (k=j+1; k<natom; ++k)
-          if (connectivity[k][m]) {
+      if (connectivity[j][m])       // j!=m
+        for (k=j+1; k<natom; ++k)   // k!=j
+          if (connectivity[k][m]) { // m!=k
             if ( !v3d_angle(geom[j], geom[m], geom[k], phi) ) continue;
-            if (phi == pi) { // found j-m-k collinear
+            if (phi > phi_lim) { // found j-m-k collinear, j-m-k unique
 
-              nbonds = 0;
+              nbonds = 0; // count atoms bonded to m
               for (int n=0; n<natom; ++n)
                 if (connectivity[n][m]) ++nbonds;
-              if (nbonds == 2) { // nothing else is bonded to j
+              if (nbonds == 2) { // nothing else is bonded to m
 
-                // look for an 'I' for I-j-[m]-k-L such that I-J-K is not collinear
+                // look for an 'I' for I-J-[m]-k-L such that I-J-K is not collinear
                 J = j;
                 for (i=0; i<natom; ++i) {
-                  if (connectivity[i][J] && i!=m) {
+                  if (connectivity[i][J] && i!=m) { // i!=J i!=m
                     if ( !v3d_angle(geom[i], geom[J], geom[k], phi) ) continue;
-                    if (phi == pi) {
+                    if (phi > phi_lim) {
                       J = i;
                       i = 0;
                       continue;
@@ -360,9 +398,9 @@ int FRAG::add_tors_by_connectivity(void) {
                       I = i;
                       K = k;
                       for (l=0; l<natom; ++l) {
-                        if (connectivity[l][K] && l!=m) {
+                        if (connectivity[l][K] && l!=m && l!=j && l!=i) { // l!=K l!=m
                           if ( !v3d_angle(geom[l], geom[K], geom[J], phi) ) continue;
-                          if (phi == pi) {
+                          if (phi > phi_lim) {
                             K = l;
                             continue;
                           }
@@ -428,14 +466,15 @@ int FRAG::form_delocalized_coord_combinations(void) {
   double **B = compute_B();
   coords.clear_combos();
 
-  oprintf_out(" Diagonalizing (B B^t) to form delocalized coordinates for fragment.\n");
-  oprintf_out(" Starting with %d simple coordinates.\n", Nsimples);
+  oprintf_out("\n\tDiagonalizing (B B^t) to form delocalized coordinates for fragment.\n");
+  oprintf_out("\tStarting with %d simple coordinates.\n", Nsimples);
 
   // Diagonalize B*B^t to get coordinate rows
   double **BBt = init_matrix(Nsimples, Nsimples);
   opt_matrix_mult(B, 0, B, 1, BBt, 0, Nsimples, 3*g_natom(), Nsimples, 0);
+  free_matrix(B);
 
-  double *evals = init_array(3*g_natom());
+  double *evals = init_array(Nsimples);
   opt_symm_matrix_eig(BBt, Nsimples, evals);
 
   if (Opt_params.print_lvl > 2) {
@@ -481,11 +520,10 @@ int FRAG::form_delocalized_coord_combinations(void) {
       coords.coeff.push_back(one_coeff);
     }
   }
-  oprintf_out(" Initially, formed %d delocalized coordinates for fragment.\n", coords.index.size());
+  free_matrix(BBt);
+  free_array(evals);
 
-  // We could check for symmetry, but this is really a property of the whole
-  // molecule, not a fragment.  An motion asymmetric wrt to the fragment, could
-  // be symmetric in a dimer e.g..
+  oprintf_out("\tInitially, formed %d delocalized coordinates for fragment.\n", coords.index.size());
   return coords.index.size();
 }
 
@@ -688,15 +726,50 @@ double * FRAG::g_Z(void) const {
   return z;
 }
 
-// don't let bends pass through zero - assumes dq is in right order for fragment
-void FRAG::check_zero_angles(double const * const dq) {
-  int i, cnt = 0;
-  for (i=0; i<coords.simples.size(); ++i) {
-    if (coords.simples[i]->g_type() == bend_type) {
-      if (coords.simples[i]->value(geom) + dq[cnt++] < 0.0) 
-        throw(INTCO_EXCEPT("Bond angle passing through zero", true));
+// Identify simple bond angles passing through 0 or going to 180.
+//  returns a std::vector<int> containing quadruplets of frag #, A, B, C
+// for atoms that should have linear coordinates
+std::vector<int> FRAG::validate_angles(double const * const dq, int atom_offset) {
+
+  // Compute change in simple coordinates.
+  double *dq_simple = init_array(coords.simples.size());
+  for (int cc=0; cc<coords.index.size(); ++cc)
+    for (int s=0; s<coords.index[cc].size(); ++s)
+      dq_simple[ coords.index[cc][s] ] += dq[cc] * coords.coeff[cc][s];
+
+  std::vector<int> lin_angle;
+
+  for (int s=0; s<coords.simples.size(); ++s)
+    if (coords.simples[s]->g_type() == bend_type) {
+
+      int A = coords.simples[s]->g_atom(0)+atom_offset;
+      int B = coords.simples[s]->g_atom(1)+atom_offset;
+      int C = coords.simples[s]->g_atom(2)+atom_offset;
+      double new_bend_val = coords.simples[s]->value(geom) + dq_simple[s];
+
+//oprintf_out("bend (%d,%d,%d) old: %10.5f new: %10.5f\n",A+1,B+1,C+1,coords.simples[s]->value(geom), new_bend_val);
+
+      // angle is passing through 0.
+      if (new_bend_val < 0.0) { // < ABC<0.  A-C-B should be linear bends.
+        if (A < B) { lin_angle.push_back(A); lin_angle.push_back(C); lin_angle.push_back(B); }
+        else       { lin_angle.push_back(B); lin_angle.push_back(C); lin_angle.push_back(A); }
+      }
+
+      // angle is passing through 180.0.  // < ABC~pi. Add A-B-C linear bends.
+      if (new_bend_val > Opt_params.linear_bend_threshold) {
+        BEND *one_bend = new BEND(A, B, C);
+        one_bend->make_linear_bend();
+        int loc = find(one_bend);
+        if (loc != coords.simples.size()) // linear bend is already there.  No problem.
+          continue;
+        else {
+          lin_angle.push_back(A); lin_angle.push_back(B); lin_angle.push_back(C);
+        }
+        delete one_bend;
+      }
+
     }
-  }
+  return lin_angle;
 }
 
 bool ** FRAG::g_connectivity(void) const {

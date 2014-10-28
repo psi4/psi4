@@ -55,6 +55,8 @@ void MOLECULE::prfo_step(void) {
   int rfo_root; // ultimately, should be array of roots to maximize
   int cnt_i, cnt_j;
 
+  oprintf_out("\tTaking PRFO optimization step.\n");
+
   // don't use Horig anymore -it's the pointer to the good, original Hessian
   double **H = matrix_return_copy(Horig, Nintco, Nintco);
 
@@ -177,7 +179,7 @@ void MOLECULE::prfo_step(void) {
   //Normalize all eigenvectors.
   for (int i=0; i<mu+1; ++i) {
     double tval = rfo_max[i][mu];
-    if (fabs(tval) > Opt_params.rfo_normalization_min) {
+    if (fabs(tval) > Opt_params.rfo_normalization_max) {
       for (int j=0; j<mu+1; ++j)
         rfo_max[i][j] /= rfo_max[i][mu];
     }
@@ -190,7 +192,7 @@ void MOLECULE::prfo_step(void) {
   //rfo_min contains normalized eigenvectors as rows
   for (int i=0; i<Nintco-mu+1; ++i) {
     double tval = rfo_min[i][Nintco-mu];
-    if (fabs(tval) > Opt_params.rfo_normalization_min) {
+    if (fabs(tval) > Opt_params.rfo_normalization_max) {
       for (int j=0;j<Nintco-mu+1;++j)
         rfo_min[i][j] /= rfo_min[i][Nintco-mu];
     }

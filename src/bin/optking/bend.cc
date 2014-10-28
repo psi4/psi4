@@ -48,7 +48,7 @@ BEND::BEND(int A_in, int B_in, int C_in, bool freeze_in) : SIMPLE_COORDINATE(ben
   linear_bend = false;
 
   if (A_in == B_in || B_in == C_in || A_in == C_in)
-    throw(INTCO_EXCEPT("BEND::BEND() Atoms defining bend are not unique."));
+    throw(INTCO_EXCEPT("BEND::BEND() Atoms defining bend are not unique.", true)); // bad error, abort
 
   s_atom[1] = B_in;
   if (A_in <= C_in) {
@@ -66,7 +66,7 @@ double BEND::value(GeomType geom) const {
   double phi=0.0, tval;
   if (!linear_bend) {
     if ( ! v3d_angle(geom[s_atom[0]], geom[s_atom[1]], geom[s_atom[2]], phi) )
-      throw(INTCO_EXCEPT("BEND::compute_val: could not compute angle",true));
+      throw(INTCO_EXCEPT("BEND::compute_val: could not compute angle"));
   }
   else { //linear bending complement
     double u[3], v[3], w[3], tvect[3];

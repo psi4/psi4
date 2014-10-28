@@ -60,7 +60,8 @@ struct OPT_PARAMS {
 
   bool rfo_follow_root; // whether to do root following
   int rfo_root;         // which root to follow
-  double rfo_normalization_min; // small threshold for rfo normalization
+  double rfo_normalization_max; // small threshold for rfo normalization
+  double rsrfo_alpha_max; // absolute maximum val
 
   enum OPT_TYPE {MIN, TS, IRC} opt_type;
   // Newton-Raphson (NR), rational function optimization step, steepest descent step
@@ -80,6 +81,9 @@ struct OPT_PARAMS {
   enum IRC_DIRECTION {FORWARD, BACKWARD} IRC_direction;
   enum IRC_STOP {ASK, STOP, GO} IRC_stop;
 
+  int dynamic;       // tracks dynamic optimization mode level
+  double sd_hessian; // steepest-descent second derivative guess
+
   bool freeze_intrafragment; // freeze all fragments
   bool freeze_interfragment; // freeze all interfragment modes
   bool add_auxiliary_bonds;
@@ -93,6 +97,8 @@ struct OPT_PARAMS {
   double intrafragment_step_limit_max;  // the largest trust radius is allowed to go
 
   double interfragment_step_limit;
+
+  double symm_tol; // for atom making, symmetry checking
 
   bool simple_step_scaling; // do stupid, linear scaling of internal coordinates to step limit (not RS-RFO);
 
@@ -167,6 +173,8 @@ struct OPT_PARAMS {
 
   //1=default; 2=medium; 3=lots
   int print_lvl;
+
+  bool print_params;
 
   // Hessian update is avoided if the denominators (Dq*Dq) or (Dq*Dg) are smaller than this
   double H_update_den_tol;

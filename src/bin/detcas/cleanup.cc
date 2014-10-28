@@ -26,7 +26,6 @@
 */
 #include <cstdlib>
 #include <cstdio>
-//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "globaldefs.h"
@@ -75,6 +74,7 @@ void cleanup(void)
   free(CalcInfo.mo_coeffs);
 
   free(CalcInfo.onel_ints);
+  free(CalcInfo.onel_ints_bare);
   free(CalcInfo.twoel_ints);
   free_block(CalcInfo.opdm);
   free(CalcInfo.tpdm);

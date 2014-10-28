@@ -200,6 +200,8 @@ class INTERFRAG {
 
   void add_coordinates_of_reference_pts(void);
 
+  int form_trivial_coord_combinations(void);
+
 }; // class INTERFRAG
 
 } // opt
