@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+# Prefer custom CMake modules
+cmake_policy(SET CMP0017 OLD)
+
 
 # Declare project name and programming languages
 project(psi4 CXX C Fortran)
