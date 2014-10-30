@@ -17,8 +17,7 @@ if(ENABLE_VECTORIZATION)
 endif()	
 
 # Test for restrict keyword
-set(restrict_keyword "")
-test_restrict(restrict_keyword)
+test_restrict(restrict)
 
 if(CMAKE_C_COMPILER_WORKS)
     include(CFlags)
