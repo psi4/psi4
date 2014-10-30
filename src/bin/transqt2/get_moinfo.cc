@@ -290,9 +290,6 @@ void get_moinfo(Options& options)
                 moinfo.C_offset[h] = moinfo.frdocc[h];
         }
 
-        free_int_matrix(ras_opi);
-        free(rstr_docc);
-        free(rstr_uocc);
     }
     else if(cc_wfn(params.wfn) || (params.wfn == "MP2")) {
 
@@ -462,9 +459,40 @@ void get_moinfo(Options& options)
                     moinfo.clsdpi[i]-moinfo.frdocc[i],moinfo.openpi[i],moinfo.uoccpi[i]-moinfo.fruocc[i],
                     moinfo.fruocc[i]);
         }
+        if (ci_wfn(params.wfn)) {
+            outfile->Printf("\n\tDOCC         = ");
+            for (i=0; i<moinfo.nirreps; i++)
+                outfile->Printf("%2d ", moinfo.clsdpi[i]);
+            outfile->Printf("\n\tSOCC         = ");
+            for (i=0; i<moinfo.nirreps; i++)
+                outfile->Printf("%2d ", moinfo.openpi[i]);
+            outfile->Printf("\n\tFROZEN DOCC  = ");
+            for (i=0; i<moinfo.nirreps; i++)
+                outfile->Printf("%2d ", moinfo.frdocc[i]);
+            outfile->Printf("\n\tFROZEN UOCC  = ");
+            for (i=0; i<moinfo.nirreps; i++)
+                outfile->Printf("%2d ", moinfo.fruocc[i]);
+            outfile->Printf("\n\tRESTR DOCC   = ");
+            for (i=0; i<moinfo.nirreps; i++)
+                outfile->Printf("%2d ", rstr_docc[i]);
+            outfile->Printf("\n\tRESTR UOCC   = ");
+            for (i=0; i<moinfo.nirreps; i++)
+                outfile->Printf("%2d ", rstr_uocc[i]);
+            for (i=0; i<4; i++) {
+                outfile->Printf("\n\tRAS %d        = ",i+1);
+                for (int j=0; j<moinfo.nirreps; j++)
+                    outfile->Printf("%2d ", ras_opi[i][j]);
+            }
+            outfile->Printf("\n");
+
+            free_int_matrix(ras_opi);
+            free(rstr_docc);
+            free(rstr_uocc);
+        }
         outfile->Printf("\n\tNuclear Rep. energy (chkpt) =  %20.14f\n", moinfo.enuc);
         outfile->Printf(  "\tSCF energy          (chkpt) =  %20.14f\n", escf);
     }
+ 
 }
 
 void cleanup(void)

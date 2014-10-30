@@ -70,6 +70,11 @@
 #include "ciwave.h"
 #include "MCSCF_detcas.cc"
 
+namespace psi {
+  extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
+  namespace transqt2 { extern PsiReturnType transqt2(Options &); }
+}
+
 namespace psi { namespace detci {
 
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
@@ -160,7 +165,6 @@ PsiReturnType detci(Options &options);
 
 }} // namespace psi::detci
 
-//extern psi::PsiReturnType psi::transqt2::transqt2(psi::Options &options);
 
 namespace psi { namespace detci {
 
@@ -1571,6 +1575,15 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
   outfile->Printf("MCSCF MAXITER %d \n", MCSCF_Parameters.max_iter);
 
 
+  // Need a TRANSQT2 Options object to be able to call that module correctly
+  // Can delete this when we replace TRANSQT2 with libtrans
+  Options transqt_options = options;
+  transqt_options.set_current_module("TRANSQT2");
+  psi::read_options("TRANSQT2", transqt_options, false);
+  transqt_options.set_str("TRANSQT2", "WFN", Parameters.wfn);
+  transqt_options.validate_options();
+  //transqt_options.print(); // debug
+  
   // Iterate
   for (int i=0; i<MCSCF_Parameters.max_iter; i++){
     outfile->Printf("\nStarting MCSCF iteration %d\n\n", i);
@@ -1594,8 +1607,8 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
 //      break;
 //    }
 
-//    psi::transqt2::transqt2(options);    
 
+    psi::transqt2::transqt2(transqt_options);    
 
   }
   outfile->Printf("Finishing MCSCF\n");
