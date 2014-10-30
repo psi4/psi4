@@ -1582,7 +1582,7 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
   psi::read_options("TRANSQT2", transqt_options, false);
   transqt_options.set_str("TRANSQT2", "WFN", Parameters.wfn);
   transqt_options.validate_options();
-  //transqt_options.print(); // debug
+  transqt_options.print(); // debug
   
   // Iterate
   for (int i=0; i<MCSCF_Parameters.max_iter; i++){
@@ -1590,10 +1590,13 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
 
     outfile->Printf("\nMCSCF diag_h(alplist, betlist) \n\n");
     diag_h(alplist, betlist);
+ 
     outfile->Printf("\nMCSCF form_opdm() \n\n");
     form_opdm();
+
     outfile->Printf("\nMCSCF form_tpdm() \n\n");
     form_tpdm();
+
     outfile->Printf("\nMCSCF close_io() \n\n");
     close_io();
 
@@ -1602,14 +1605,17 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
 
     outfile->Printf("\nFinishing MCSCF iteration %d\n\n", i);
 
-//    if (finished==EndLoop){
-//      outfile->Printf("MCSCF converged");
-//      break;
-//    }
+    if (finished==EndLoop){
+      outfile->Printf("MCSCF converged");
+      break;
+    }
 
 
     psi::transqt2::transqt2(transqt_options);    
+    get_mo_info(options);        /* read DOCC, SOCC, frozen, nmo, etc        */
     read_integrals();
+    tf_onel_ints((Parameters.print_lvl>3), "outfile");
+    form_gmat((Parameters.print_lvl>3), "outfile");
 
   }
   outfile->Printf("Finishing MCSCF\n");
