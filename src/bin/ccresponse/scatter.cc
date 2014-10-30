@@ -80,11 +80,11 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
 {
     double mstep = options.get_double("DISP_SIZE");
     //-> This is troublesome, need to decide if option should be set as global or local-"FINDIF"
-    printf("STEPSIZE from Options Object = %lf bohr\n\n",mstep);
-    printf("STEPSIZE passed from roa.py and used = %lf bohr\n\n",step);
+    outfile->Printf("STEPSIZE from Options Object = %lf bohr\n\n",mstep);
+    outfile->Printf("STEPSIZE passed from roa.py and used = %lf bohr\n\n",step);
 
     int print = options.get_int("PRINT");
-    printf("Print Level = %d\n", print);
+    outfile->Printf("Print Level = %d\n", print);
     int i,j,k;
     int a,b,c,d;
 
@@ -130,9 +130,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
       throw PsiException("ROA Scattering only working for one wavelength at a time", __FILE__,__LINE__);
     }
     // Print the Wavelength
-    printf("Omega = %20.12f\n\n", omega);
-    fprintf(outfile, "\t Wavelength (in au): = %20.12f\n\n", omega);
-    fflush(stdout);
+    outfile->Printf(outfile, "\t Wavelength (in au): = %20.12f\n\n", omega);
 
     // COMPUTE TENSOR DERIVATIVES
     // Replicate the part of the roa.pl code that does this here in C++
@@ -181,23 +179,23 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
         quad_grad.push_back(grad_mat);
     }
    
-	// Write Out the Tensor Derivatives to File tender.dat //
-	FILE *derivs = fopen("tender.dat", "w");
-	fprintf(derivs, "******************************************************\n");
-	fprintf(derivs, "**********                                  **********\n");
-	fprintf(derivs, "**********        TENSOR DERIVATIVES        **********\n");
-	fprintf(derivs, "**********   FOR COMPUTING ROA SCATTERING   **********\n");
-	fprintf(derivs, "**********                                  **********\n");
-	fprintf(derivs, "******************************************************\n\n\n");
-	fprintf(derivs, "\t*** Dipole Polarizability Derivative Tensors ***\n\n");
-	print_tensor_der(derivs, pol_grad);
-	fprintf(derivs, "*********************************************************\n\n");
-	fprintf(derivs, "\t*** Optical Rotation Derivative Tensors ***\n\n");
-	print_tensor_der(derivs, rot_grad);
-	fprintf(derivs, "*********************************************************\n\n");
-	fprintf(derivs, "\t*** Dipole/Quadrupole Derivative Tensors ***\n\n");
-	print_tensor_der(derivs, quad_grad);
-	fclose(derivs);
+    // Write Out the Tensor Derivatives to File tender.dat //
+    Outfile derivs("tender.dat", "w");
+    derivs->Printf(derivs, "******************************************************\n");
+    derivs->Printf(derivs, "**********                                  **********\n");
+    derivs->Printf(derivs, "**********        TENSOR DERIVATIVES        **********\n");
+    derivs->Printf(derivs, "**********   FOR COMPUTING ROA SCATTERING   **********\n");
+    derivs->Printf(derivs, "**********                                  **********\n");
+    derivs->Printf(derivs, "******************************************************\n\n\n");
+    derivs->Printf(derivs, "\t*** Dipole Polarizability Derivative Tensors ***\n\n");
+    print_tensor_der(derivs, pol_grad);
+    derivs->Printf(derivs, "*********************************************************\n\n");
+    derivs->Printf(derivs, "\t*** Optical Rotation Derivative Tensors ***\n\n");
+    print_tensor_der(derivs, rot_grad);
+    derivs->Printf(derivs, "*********************************************************\n\n");
+    derivs->Printf(derivs, "\t*** Dipole/Quadrupole Derivative Tensors ***\n\n");
+    print_tensor_der(derivs, quad_grad);
+    fclose(derivs);
 
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
     int natom = molecule->natom();
@@ -274,7 +272,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
 
 	// Translate Molecule to Center of Mass //
 	if(print >= 1)  {
-      fprintf(outfile, "\tInput coordinates (bohr):\n");
+      outfile->Printf("\tInput coordinates (bohr):\n");
 	  molecule->geometry().print();
     }
 	molecule->move_to_com();
@@ -303,7 +301,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
         }
     }
 	if(print >= 1)  {
-	  fprintf(outfile, "\tMass-Weighted coordinates relative to the center of mass:\n");
+	  outfile->Printf("\tMass-Weighted coordinates relative to the center of mass:\n");
 	  geom->print();
     }
     //delete[] massi;
@@ -314,9 +312,8 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
     I->copy(molecule->inertia_tensor());
     //I = molecule->inertia_tensor();
 	if(print >= 2)  {
-	  fprintf(outfile, "\tMoment of Inertia Tensor:\n");
+	  outfile->Printf("\tMoment of Inertia Tensor:\n");
       I->print();
-	  fflush(outfile);
     }
     
 /*
@@ -361,11 +358,10 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
     Iinv->gemm(0,0,1.0,Ievecs,Itmp,0.0);
 
 	if(print >= 2)  {
-	  fprintf(outfile,"\tInertia Tensor EigenData\n\n");
+	  outfile->Printf("\tInertia Tensor EigenData\n\n");
 	  Ievecs->print();
 	  Ievals->print();
       Iinv->print();
-	  fflush(outfile);
     }
  
     // Generating the 6 pure rotation and translation vectors //
@@ -431,9 +427,8 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
     T->gemm(0,0,1.0,F,P,0.0);
     F->gemm(0,0,1.0,P,T,0.0);
 	if(print >= 2)  {
-	  fprintf(outfile,"\tProjected, Mass-Weighted Hessian:\n");
+	  outfile->Printf("\tProjected, Mass-Weighted Hessian:\n");
 	  F->print();
-	  fflush(outfile);
     }
 
     // Diagonalize projected mass-weighted Hessian //
@@ -448,7 +443,6 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
 	if(print >= 3)  {
 	  Fevals->print();
 	  Fevecs->print();
-      fflush(outfile);
     }
 
     Lx->gemm(0,0,1.0,M,Fevecs,0.0);
@@ -465,7 +459,6 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
 */
 	if(print >= 2)  {
 	  Lx->print();
-      fflush(outfile);
     }
 
     for(i=0; i < 3*natom; i++)
@@ -505,11 +498,10 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
    SharedMatrix polder_q(new Matrix(9,3*natom));
    polder_q->gemm(1,0,1.0,polder,Lx,0.0);
    if(print >=2) {
-     fprintf(outfile,"\n\tPolarizability Derivatives in Cart. Coord.\n");
+     outfile->Printf("\n\tPolarizability Derivatives in Cart. Coord.\n");
      polder->print();
-     fprintf(outfile,"\n\tPolarizability Derivatives in Normal Coord.\n");
+     outfile->Printf("\n\tPolarizability Derivatives in Normal Coord.\n");
      polder_q->print();
-     fflush(outfile);
    }
    int jk=0;
    std::vector<SharedMatrix> alpha_der(3*natom);
@@ -535,11 +527,10 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
    SharedMatrix optder_q(new Matrix(9,3*natom));
    optder_q->gemm(1,0,1.0,optder,Lx,0.0);
    if(print >=2) {
-     fprintf(outfile,"\n\tOptical Rotation Tensor Derivatives in Cart. Coord..\n");
+     outfile->Printf("\n\tOptical Rotation Tensor Derivatives in Cart. Coord..\n");
      optder->print();
-     fprintf(outfile,"\n\tOptical Rotation Tensor Derivatives in Normal Coord.\n");
+     outfile->Printf("\n\tOptical Rotation Tensor Derivatives in Normal Coord.\n");
      optder_q->print();
-     fflush(outfile);
    }
   
    std::vector<SharedMatrix> G_der(3*natom);
@@ -565,11 +556,10 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
    SharedMatrix quadder_q(new Matrix(27,3*natom));
    quadder_q->gemm(1,0,1.0,quadder,Lx,0.0);
    if(print >=2) {
-     fprintf(outfile,"\n\tDipole/Quadrupole Tensor Derivatives in Cart. Coord..\n");
+     outfile->Printf("\n\tDipole/Quadrupole Tensor Derivatives in Cart. Coord..\n");
      quadder->print();
-     fprintf(outfile,"\n\tDipole/Quadrupole Tensor Derivatives in Normal Coord.\n");
+     outfile->Printf("\n\tDipole/Quadrupole Tensor Derivatives in Normal Coord.\n");
      quadder_q->print();
-     fflush(outfile);
    }
  
    int jkl,l;
@@ -725,47 +715,47 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
 
   /* compute the frequencies and spit them out in a nice table in the output file*/
   /* I know, very inefficient, recalculating everything. But it's only temporary.*/
-  fprintf(outfile, "\n\t     Harmonic Freq.  IR Intensity   Red. Mass       Alpha^2        Beta^2    Raman Int.  Depol. Ratio\n");
-  fprintf(outfile, "\t        (cm-1)         (km/mol)       (amu) \n");
-  fprintf(outfile, "\t---------------------------------------------------------------------------------------------------\n");
+  outfile->Printf("\n\t     Harmonic Freq.  IR Intensity   Red. Mass       Alpha^2        Beta^2    Raman Int.  Depol. Ratio\n");
+  outfile->Printf("\t        (cm-1)         (km/mol)       (amu) \n");
+  outfile->Printf("\t---------------------------------------------------------------------------------------------------\n");
   for(i=natom*3-1; i >= 0; i--)
   {
     if(Fevals->get(i) < 0.0)
-      fprintf(outfile, "\t  %3d  %9.3fi    %9.4f       %7.4f      %9.4f     %9.4f    %9.4f    %9.4f\n",
+      outfile->Printf("\t  %3d  %9.3fi    %9.4f       %7.4f      %9.4f     %9.4f    %9.4f    %9.4f\n",
        (natom*3-i), cm_convert*sqrt(-km_convert*Fevals->get(i)), IRint->get(i),
        redmass->get(i), alpha->get(i)*alpha->get(i)*raman_conv, betaalpha2->get(i)*raman_conv,
        ramint_linear->get(i)*raman_conv, depol_linear->get(i));
     else
-      fprintf(outfile, "\t  %3d  %9.3f     %9.4f       %7.4f      %9.4f     %9.4f    %9.4f    %9.4f\n",
+      outfile->Printf("\t  %3d  %9.3f     %9.4f       %7.4f      %9.4f     %9.4f    %9.4f    %9.4f\n",
        (natom*3-i), cm_convert*sqrt(km_convert*Fevals->get(i)), IRint->get(i),
        redmass->get(i), alpha->get(i)*alpha->get(i)*raman_conv, betaalpha2->get(i)*raman_conv,
        ramint_linear->get(i)*raman_conv, depol_linear->get(i));
   }
-  fprintf(outfile, "\t---------------------------------------------------------------------------------------------------\n");
+  outfile->Printf("\t---------------------------------------------------------------------------------------------------\n");
 
   /* compute the frequencies and spit them out in a nice table */
-  fprintf(outfile, "----------------------------------------------------------------------------------------------\n");
-  fprintf(outfile, "                                Raman Scattering Parameters\n");
-  fprintf(outfile, "----------------------------------------------------------------------------------------------\n");
-  fprintf(outfile, "     Harmonic Freq.  Alpha^2   Beta^2    Raman Act.   Dep. Ratio  Raman Act.  Dep. Ratio\n");
-  fprintf(outfile, "        (cm-1)                           (linear)      (linear)   (natural)   (natural)\n");
-  fprintf(outfile, "----------------------------------------------------------------------------------------------\n");
+  outfile->Printf("----------------------------------------------------------------------------------------------\n");
+  outfile->Printf("                                Raman Scattering Parameters\n");
+  outfile->Printf("----------------------------------------------------------------------------------------------\n");
+  outfile->Printf("     Harmonic Freq.  Alpha^2   Beta^2    Raman Act.   Dep. Ratio  Raman Act.  Dep. Ratio\n");
+  outfile->Printf("        (cm-1)                           (linear)      (linear)   (natural)   (natural)\n");
+  outfile->Printf("----------------------------------------------------------------------------------------------\n");
   for(i=natom*3-1; i >= 0; i--)
   {
     if(Fevals->get(i) < 0.0)
-      fprintf(outfile, "  %3d  %9.3fi %9.4f   %9.4f  %9.4f  %9.4f    %9.4f  %9.4f\n",
+      outfile->Printf("  %3d  %9.3fi %9.4f   %9.4f  %9.4f  %9.4f    %9.4f  %9.4f\n",
        (natom*3-i), cm_convert*sqrt(-km_convert*Fevals->get(i)),
        alpha->get(i)*alpha->get(i)*raman_conv, betaalpha2->get(i)*raman_conv,
        ramint_linear->get(i)*raman_conv, depol_linear->get(i),
        ramint_circular->get(i)*raman_conv, depol_circular->get(i));
     else
-      fprintf(outfile, "  %3d  %9.3f  %9.4f   %9.4f  %9.4f  %9.4f    %9.4f  %9.4f\n",
+      outfile->Printf("  %3d  %9.3f  %9.4f   %9.4f  %9.4f  %9.4f    %9.4f  %9.4f\n",
        (natom*3-i), cm_convert*sqrt(km_convert*Fevals->get(i)),
        alpha->get(i)*alpha->get(i)*raman_conv, betaalpha2->get(i)*raman_conv,
        ramint_linear->get(i)*raman_conv, depol_linear->get(i),
        ramint_circular->get(i)*raman_conv, depol_circular->get(i));
   }
-  fprintf(outfile, "----------------------------------------------------------------------------------------------\n");
+  outfile->Printf("----------------------------------------------------------------------------------------------\n");
 
   //SharedVector G(new Vector("G",3*natom));
   //SharedVector betaG2(new Vector("betaG2",3*natom));
@@ -784,34 +774,34 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
   //double roa_conv;
 
   cvel = pc_c * pc_me * pc_bohr2angstroms * 1e-10 / (pc_h/(2.0*pc_pi));
-  fprintf(outfile, "cvel = %20.14f\n", cvel);
+  outfile->Printf("cvel = %20.14f\n", cvel);
   roa_conv = raman_conv * 1e6 / cvel;
 //  roa_conv /= _c * _me * _bohr2angstroms * 1e-10;
 //  roa_conv *= _h /(2.0 * _pi);
-  fprintf(outfile, "-----------------------------------------------------\n");
-  fprintf(outfile, "               ROA Scattering Invariants\n");
-  fprintf(outfile, "-----------------------------------------------------\n");
-  fprintf(outfile, "     Harmonic Freq.  AlphaG   Beta(G)^2  Beta(A)^2\n");
-  fprintf(outfile, "        (cm-1)\n");
-  fprintf(outfile, "-----------------------------------------------------\n");
+  outfile->Printf("-----------------------------------------------------\n");
+  outfile->Printf("               ROA Scattering Invariants\n");
+  outfile->Printf("-----------------------------------------------------\n");
+  outfile->Printf("     Harmonic Freq.  AlphaG   Beta(G)^2  Beta(A)^2\n");
+  outfile->Printf("        (cm-1)\n");
+  outfile->Printf("-----------------------------------------------------\n");
   for(i=natom*3-1; i >= 0; i--) {
     if(Fevals->get(i) < 0.0)
-      fprintf(outfile, "  %3d  %9.3fi %9.4f   %10.4f  %10.4f\n",
+      outfile->Printf("  %3d  %9.3fi %9.4f   %10.4f  %10.4f\n",
        (natom*3-i), cm_convert*sqrt(-km_convert*Fevals->get(i)),
        alpha->get(i)*G->get(i)*roa_conv, betaG2->get(i)*roa_conv, betaA2->get(i)*roa_conv);
     else
-      fprintf(outfile, "  %3d  %9.3f  %9.4f   %10.4f  %10.4f\n",
+      outfile->Printf("  %3d  %9.3f  %9.4f   %10.4f  %10.4f\n",
        (natom*3-i), cm_convert*sqrt(km_convert*Fevals->get(i)),
        alpha->get(i)*G->get(i)*roa_conv, betaG2->get(i)*roa_conv, betaA2->get(i)*roa_conv);
   }
-  fprintf(outfile, "-----------------------------------------------------\n");
+  outfile->Printf("-----------------------------------------------------\n");
 
-  fprintf(outfile, "\n----------------------------------------------------------------------\n");
-  fprintf(outfile, "         ROA Difference Parameter R-L (Angstrom^4/amu * 1000) \n");
-  fprintf(outfile, "----------------------------------------------------------------------\n");
-  fprintf(outfile, "     Harmonic Freq. Delta_z(90) Delta_x(90)   Delta(0)  Delta(180)\n");
-  fprintf(outfile, "        (cm-1)\n");
-  fprintf(outfile, "----------------------------------------------------------------------\n");
+  outfile->Printf("\n----------------------------------------------------------------------\n");
+  outfile->Printf("         ROA Difference Parameter R-L (Angstrom^4/amu * 1000) \n");
+  outfile->Printf("----------------------------------------------------------------------\n");
+  outfile->Printf("     Harmonic Freq. Delta_z(90) Delta_x(90)   Delta(0)  Delta(180)\n");
+  outfile->Printf("        (cm-1)\n");
+  outfile->Printf("----------------------------------------------------------------------\n");
   
   //double delta_0,delta_180,delta_x,delta_z;
   for(i=natom*3-1; i >= 0; i--)
@@ -826,11 +816,11 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
     delta_z = 4.0 * (6.0 * betaG2->get(i) - 2.0 * betaA2->get(i));
     delta_z *= 1.0 / cvel;
     if(Fevals->get(i) < 0.0)
-      fprintf(outfile, "  %3d  %9.3fi %10.4f   %10.4f   %10.4f   %10.4f\n",
+      outfile->Printf("  %3d  %9.3fi %10.4f   %10.4f   %10.4f   %10.4f\n",
        (natom*3-i), cm_convert*sqrt(-km_convert*Fevals->get(i)),
        delta_z*raman_conv*1e3, delta_x*raman_conv*1e3, delta_0*raman_conv*1e3, delta_180*raman_conv*1e3);
     else
-      fprintf(outfile, "  %3d  %9.3f  %10.4f   %10.4f   %10.4f   %10.4f\n",
+      outfile->Printf("  %3d  %9.3f  %10.4f   %10.4f   %10.4f   %10.4f\n",
        (natom*3-i), cm_convert*sqrt(km_convert*Fevals->get(i)),
        delta_z*raman_conv*1e3, delta_x*raman_conv*1e3, delta_0*raman_conv*1e3, delta_180*raman_conv*1e3);
   }
