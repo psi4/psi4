@@ -127,9 +127,9 @@ namespace psi {
     namespace cclambda   { PsiReturnType cclambda(Options&);  }
     namespace ccdensity  { PsiReturnType ccdensity(Options&); }
     namespace ccresponse { 
-		PsiReturnType ccresponse(Options&);
-		void scatter(Options&, double step, std::vector<SharedMatrix> dip, std::vector<SharedMatrix> rot, std::vector<SharedMatrix> quad);
-	}
+        PsiReturnType ccresponse(Options&);
+        void scatter(Options&, double step, std::vector<SharedMatrix> dip, std::vector<SharedMatrix> rot, std::vector<SharedMatrix> quad);
+    }
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
     namespace detcas     { PsiReturnType detcas(Options&);     }
