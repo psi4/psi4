@@ -18,10 +18,10 @@ macro(test_restrict variable)
         endforeach(keyword)
 
         if(test_${variable})
-            set(${variable} ${last_restrict_keyword} CACHE INTERNAL "Restrict keyword" FORCE)
+            set(${variable} ${last_restrict_keyword} CACHE INTERNAL "Restrict keyword")
             message(STATUS "   keyword found : ${last_restrict_keyword}")
         else(test_${variable})
-            set(${variable} " " CACHE INTERNAL "Restrict keyword" FORCE)
+            set(${variable} " " CACHE INTERNAL "Restrict keyword")
             message(STATUS "   keyword NOT found")
         endif(test_${variable})
 

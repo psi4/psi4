@@ -27,6 +27,8 @@ option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                           
 option(ENABLE_PLUGINS        "Enable plugins"                                   OFF)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                              OFF)
 
+# Prepare for restrict keyword detection
+set(restrict "")
 # Include CMake modules as needed
 #include(ConfigVersion)
 include(ConfigArchitecture)
@@ -36,11 +38,6 @@ include(CheckCXX11Features)
 include(ConfigOMP)
 include(ConfigMPI)
 
-set(BLAS_LANG   "CXX")
-set(LAPACK_LANG "CXX")
-set(MKL_COMPILER_BINDINGS ${CMAKE_CXX_COMPILER_ID})
-include(ConfigMath)
-
 #include(ConfigExplicitLibs)
 #include(ConfigSafeGuards)
 #include(ConfigTesting)
@@ -49,6 +46,12 @@ include(GenericMacros)
 #include(mergestaticlibs)
 include(CheckIncludeFiles)
 include(CheckFunctionExists)
+
+# Math: find BLAS and LAPACK
+set(BLAS_LANG   "CXX")
+set(LAPACK_LANG "CXX")
+set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
+include(ConfigMath)
 
 # Determine Fortran name mangling, used for external linking
 include(FortranCInterface)
@@ -88,14 +91,26 @@ set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
 set(PACKAGE_BUGREPORT "psicode@users.sourceforge.net")
 
 # Dynamic linking header
-check_include_files(dlfcn.h HAVE_DLFCN)
+check_include_files(dlfcn.h HAVE_DLFCN_H)
 # MKL_Free_Buffers NEEDS TO BE TESTED
 check_function_exists(MKL_Free_Buffers HAVE_MKL) 
-# Error function
-check_function_exists(erf HAVE_FUNC_ERF)
-#GCC thinks it's funny "building in" types including erf
-if(CMAKE_C_COMPILER_ID MATCHES GNU)
-   set(HAVE_FUNC_ERF TRUE)
+
+# Detection of erf, __builtin_expect, __builtin_prefetch, __builtin_constant_p
+# This step is skipped for GCC and Clang: they are all defined for but for some reasons not detected by CMake
+if(CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
+   set(HAVE_BUILTIN_EXPECT     TRUE)
+   set(HAVE_BUILTIN_PREFETCH   TRUE)
+   set(HAVE_BUILTIN_CONSTANT_P TRUE)
+   set(HAVE_FUNC_ERF           TRUE)
+else()
+   # Check that __builtin_expect is available
+   check_function_exists(__builtin_expect HAVE_BUILTIN_EXPECT)
+   # Check that __builtin_prefetch is available
+   check_function_exists(__builtin_prefetch HAVE_BUILTIN_PREFETCH)
+   # Check that __builtin_constant_p is available
+   check_function_exists(__builtin_constant_p HAVE_BUILTIN_CONSTANT_P)
+   # Error function
+   check_function_exists(erf HAVE_FUNC_ERF)
 endif()
 
 if(NOT HAVE_FUNC_ERF)
@@ -198,7 +213,7 @@ if(NOT Boost_FOUND)
    	string(TOUPPER ${_component} _COMP)
    	set(Boost_${_COMP}_FOUND TRUE)
    	set(Boost_${_COMP}_LIBRARY libboost_${_component}-${Boost_LIB_VERSION}.a)
-   	list(APPEND Boost_LIBRARIES Boost_${_COMP}_LIBRARY)
+   	list(APPEND Boost_LIBRARIES ${Boost_${_COMP}_LIBRARY})
    endforeach()
 endif()
 link_directories("${Boost_LIBRARY_DIRS}")
@@ -231,7 +246,7 @@ add_subdirectory(plugins)
 set(PSILIB ${PSILIB} ${PLUGINS})
 
 
-if(DEFINED ENABLE_LIBERD)
+if(ENABLE_LIBERD)
     set(PSILIB ${PSILIB} erd)
     set(JK_ERD ${CMAKE_BINARY_DIR}/lib/liberd.a)
 endif()
