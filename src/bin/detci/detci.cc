@@ -1609,6 +1609,7 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
 
 
     psi::transqt2::transqt2(transqt_options);    
+    read_integrals();
 
   }
   outfile->Printf("Finishing MCSCF\n");
