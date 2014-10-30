@@ -144,8 +144,8 @@ double dot(SBlockMatrix& A,SBlockMatrix& B)
 void SBlockMatrix::check(const char* cstr)
 {
   if(!is_allocated()){
-    fprintf(outfile,"\n\n  Error: SBlockMatrix operation '%s' is using an uninitialized matrix",cstr);
-    fflush(outfile);
+    outfile->Printf("\n\n  Error: SBlockMatrix operation '%s' is using an uninitialized matrix",cstr);
+    
     exit(PSI_RETURN_FAILURE);
   }
 }

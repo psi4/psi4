@@ -44,9 +44,9 @@
 
 #include "frag.h"
 #include "interfrag.h"
-#include "print.h"
 #include "v3d.h"
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -72,10 +72,10 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
   R_AB  = 1.0;
   theta_A = theta_B = tau = phi_A = phi_B = _pi/2;
 
-  double *q_orig = intco_values();
-  double *q_target = init_array(g_nintco());
+  double *q_orig = coord_values();
+  double *q_target = init_array(Ncoord());
 
-  for (i=0; i<g_nintco(); ++i) {
+  for (i=0; i<Ncoord(); ++i) {
     if (D_on[i])
       q_target[i] = q_orig[i] + dq[i];
   }
@@ -91,10 +91,10 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
   // Make labels for printing
   std::vector<string> lbl(6);
   for (i=0; i<6; ++i)
-    if (inter_frag->intcos[i]->is_frozen())
+    if (inter_frag->coords.simples[i]->is_frozen())
       lbl[i] = "*";
 
-  if (inter_frag->intcos[0]->is_inverse_stre())
+  if (inter_frag->coords.simples[0]->is_inverse_stre())
     lbl[0] += "1/R_AB";
   else
     lbl[0] += "R_AB";
@@ -104,11 +104,11 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
   lbl[4] += "phi_A";
   lbl[5] += "phi_B";
 
-  fprintf(outfile,"\t---Interfragment coordinates between fragments %d and %d\n", A_index+1, B_index+1);
-  fprintf(outfile,"\t---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---\n");
-  fprintf(outfile,"\t ----------------------------------------------------------------------\n");
-  fprintf(outfile,"\t Coordinate             Previous        Force       Change         New \n");
-  fprintf(outfile,"\t ----------             --------       ------       ------       ------\n");
+  oprintf_out("\t---Interfragment coordinates between fragments %d and %d\n", A_index+1, B_index+1);
+  oprintf_out("\t---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---\n");
+  oprintf_out("\t ----------------------------------------------------------------------\n");
+  oprintf_out("\t Coordinate             Previous        Force       Change         New \n");
+  oprintf_out("\t ----------             --------       ------       ------       ------\n");
 
   cnt = 0;
   for (i=0; i<6; ++i) {
@@ -120,7 +120,7 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
       target = q_target[cnt];
 
       if (i == 0) { // change units for bond length coordinate
-        if (inter_frag->intcos[0]->is_inverse_stre()) { // 1/R(AB)
+        if (inter_frag->coords.simples[0]->is_inverse_stre()) { // 1/R(AB)
           val    /= _bohr2angstroms;
           force  /= _hartree2aJ/_bohr2angstroms;
           change /= _bohr2angstroms;
@@ -138,11 +138,11 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
         change *= 180.0/_pi;
         target *= 180.0/_pi;
       }
-      fprintf(outfile,"\t%-20s%12.5f%13.5f%13.5f%13.5f\n", lbl[i].c_str(), val, force, change, target);
+      oprintf_out("\t%-20s%12.5f%13.5f%13.5f%13.5f\n", lbl[i].c_str(), val, force, change, target);
       ++cnt;
     }
   }
-  fprintf(outfile,  "\t ----------------------------------------------------------------------\n");
+  oprintf_out(  "\t ----------------------------------------------------------------------\n");
 
   // copy B->geom in case this fails
   double **B_geom = B->g_geom();
@@ -187,10 +187,10 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
   if (ndB>2)
     zmat_point(ref_A[0], ref_B_final[0], ref_B_final[1], R_B2B3, B_angle, phi_B, ref_B_final[2]);
 
-  //fprintf(outfile,"ref_B original location\n");
-  //print_matrix(outfile, ref_B, ndB, 3);
-  //fprintf(outfile,"ref_B_final target\n");
-  //print_matrix(outfile, ref_B_final, ndB, 3);
+  //oprintf_out("ref_B original location\n");
+  //oprint_matrix_out(ref_B, ndB, 3);
+  //oprintf_out("ref_B_final target\n");
+  //oprint_matrix_out(ref_B_final, ndB, 3);
 
   // translate B->geom to place B1 in correct location
   for (xyz=0; xyz<3; ++xyz) {
@@ -206,8 +206,8 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
       for (xyz=0; xyz<3; ++xyz)
         ref_B[pts][xyz] += weightB[pts][i] * B_geom[i][xyz];
 
-  //fprintf(outfile,"ref_B with B1 corrected\n");
-  //print_matrix(outfile, ref_B, ndB, 3);
+  //oprintf_out("ref_B with B1 corrected\n");
+  //oprint_matrix_out(ref_B, ndB, 3);
 
   if (ndB>1) { /* move fragment B to place reference point B2 in correct location */
     /* Determine rotational angle and axis */
@@ -238,8 +238,8 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
           for (i=0; i<B->natom;++i)
             ref_B[pts][xyz] += weightB[pts][i] * B_geom[i][xyz];
     }
-    //fprintf(outfile,"ref_B with B2 corrected\n");
-    //print_matrix(outfile, ref_B, ndB, 3);
+    //oprintf_out("ref_B with B2 corrected\n");
+    //oprint_matrix_out(ref_B, ndB, 3);
   }
   if (ndB==3) { // move fragment B to place reference point B3 in correct location
     // Determine rotational angle and axis
@@ -248,7 +248,7 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
     // Calculate B3-B1-B2-B3' torsion angle
     v3d_tors(ref_B[2], ref_B[0], ref_B[1], ref_B_final[2], B_angle);
 
-    //fprintf(outfile,"B_angle: %15.10lf\n",B_angle);
+    //oprintf_out("B_angle: %15.10lf\n",B_angle);
     if (fabs(B_angle) > 1.0e-10) {
 
       // Move B to put B2 at origin
@@ -270,8 +270,8 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
           for (i=0; i<B->natom;++i)
             ref_B[pts][xyz] += weightB[pts][i] * B_geom[i][xyz];
     }
-    //fprintf(outfile,"ref_B with B3 corrected\n");
-    //print_matrix(outfile, ref_B, ndB, 3);
+    //oprintf_out("ref_B with B3 corrected\n");
+    //oprint_matrix_out(ref_B, ndB, 3);
   }
 
   // check to see if desired reference points were obtained
@@ -285,16 +285,16 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
   free_matrix(ref_B);
   free_matrix(ref_B_final);
 
-  fprintf(outfile,"\tDifference from target, |x_target - x_achieved| = %.2e\n",tval);
+  oprintf_out("\tDifference from target, |x_target - x_achieved| = %.2e\n",tval);
 
   if (tval > 1.0e-8) {
-    fprintf(outfile,"\tUnsuccessful at orienting fragments!\n");
-    fflush(outfile);
+    oprintf_out("\tUnsuccessful at orienting fragments!\n");
+    
     return false;
   }
   else {
-    fprintf(outfile,"\tSuccessfully oriented fragments.\n");
-    fflush(outfile);
+    oprintf_out("\tSuccessfully oriented fragments.\n");
+    
     B->set_geom(B_geom);
     free_matrix(B_geom);
     return true;

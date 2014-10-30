@@ -74,9 +74,10 @@ void preppert()
   // Electric dipole integrals
   for(i=0; i < 3; i++) {
     double **TMP1 = dipole[i]->to_block_matrix();
+    double **TMP3 = block_matrix(nmo, nmo);
     C_DGEMM('n','n',nso,nmo,nso,1,TMP1[0],nso,moinfo.scf[0],nmo,0,TMP2[0],nso);
-    C_DGEMM('t','n',nmo,nmo,nso,1,moinfo.scf[0],nmo,TMP2[0],nso,0,TMP1[0],nmo);
-    moinfo.MU[i] = TMP1;
+    C_DGEMM('t','n',nmo,nmo,nso,1,moinfo.scf[0],nmo,TMP2[0],nso,0,TMP3[0],nmo);
+    moinfo.MU[i] = TMP3;
     sprintf(lbl, "Mu_%1s", cartcomp[i]);
     sort_pert(lbl, moinfo.MU[i], moinfo.mu_irreps[i]);
   }
@@ -84,9 +85,10 @@ void preppert()
   // Velocity-gauge electric dipole integrals
   for(i=0; i < 3; i++) {
     double **TMP1 = nabla[i]->to_block_matrix();
+    double **TMP3 = block_matrix(nmo, nmo);
     C_DGEMM('n','n',nso,nmo,nso,1,TMP1[0],nso,moinfo.scf[0],nmo,0,TMP2[0],nso);
-    C_DGEMM('t','n',nmo,nmo,nso,1,moinfo.scf[0],nmo,TMP2[0],nso,0,TMP1[0],nmo);
-    moinfo.P[i] = TMP1;
+    C_DGEMM('t','n',nmo,nmo,nso,1,moinfo.scf[0],nmo,TMP2[0],nso,0,TMP3[0],nmo);
+    moinfo.P[i] = TMP3;
     sprintf(lbl, "P_%1s", cartcomp[i]);
     sort_pert(lbl, moinfo.P[i], moinfo.mu_irreps[i]);
   }
@@ -95,9 +97,10 @@ void preppert()
   for(i=0; i < 3; i++) nabla[i]->scale(-1.0);
   for(i=0; i < 3; i++) {
     double **TMP1 = nabla[i]->to_block_matrix();
+    double **TMP3 = block_matrix(nmo, nmo);
     C_DGEMM('n','n',nso,nmo,nso,1,TMP1[0],nso,moinfo.scf[0],nmo,0,TMP2[0],nso);
-    C_DGEMM('t','n',nmo,nmo,nso,1,moinfo.scf[0],nmo,TMP2[0],nso,0,TMP1[0],nmo);
-    moinfo.Pcc[i] = TMP1;
+    C_DGEMM('t','n',nmo,nmo,nso,1,moinfo.scf[0],nmo,TMP2[0],nso,0,TMP3[0],nmo);
+    moinfo.Pcc[i] = TMP3;
     sprintf(lbl, "P*_%1s", cartcomp[i]);
     sort_pert(lbl, moinfo.Pcc[i], moinfo.mu_irreps[i]);
   }
@@ -106,12 +109,13 @@ void preppert()
   for(i=0; i < 3; i++) {
     angmom[i]->scale(-0.5);
     double **TMP1 = angmom[i]->to_block_matrix();
+    double **TMP3 = block_matrix(nmo, nmo);
     sprintf(lbl, "L_%1s", cartcomp[i]);
-  //  fprintf(outfile, "%s Angular Momentum Integrals (SO)\n",lbl);
+  //  outfile->Printf( "%s Angular Momentum Integrals (SO)\n",lbl);
 //    mat_print(TMP1,nmo, nmo, outfile);
     C_DGEMM('n','n',nso,nmo,nso,1,TMP1[0],nso,moinfo.scf[0],nmo,0,TMP2[0],nso);
-    C_DGEMM('t','n',nmo,nmo,nso,1,moinfo.scf[0],nmo,TMP2[0],nso,0,TMP1[0],nmo);
-    moinfo.L[i] = TMP1;
+    C_DGEMM('t','n',nmo,nmo,nso,1,moinfo.scf[0],nmo,TMP2[0],nso,0,TMP3[0],nmo);
+    moinfo.L[i] = TMP3;
     sort_pert(lbl, moinfo.L[i], moinfo.l_irreps[i]);
   }
 
@@ -119,9 +123,10 @@ void preppert()
   for(i=0; i < 3; i++) angmom[i]->scale(-1.0);
   for(i=0; i < 3; i++) {
     double **TMP1 = angmom[i]->to_block_matrix();
+    double **TMP3 = block_matrix(nmo, nmo);
     C_DGEMM('n','n',nso,nmo,nso,1,TMP1[0],nso,moinfo.scf[0],nmo,0,TMP2[0],nso);
-    C_DGEMM('t','n',nmo,nmo,nso,1,moinfo.scf[0],nmo,TMP2[0],nso,0,TMP1[0],nmo);
-    moinfo.Lcc[i] = TMP1;
+    C_DGEMM('t','n',nmo,nmo,nso,1,moinfo.scf[0],nmo,TMP2[0],nso,0,TMP3[0],nmo);
+    moinfo.Lcc[i] = TMP3;
     sprintf(lbl, "L*_%1s", cartcomp[i]);
     sort_pert(lbl, moinfo.Lcc[i], moinfo.l_irreps[i]);
   }
@@ -130,13 +135,14 @@ void preppert()
   for(i=0,ij=0; i < 3; i++) {
     for(j=i; j < 3; j++,ij++) {
       double **TMP1 = trquad[ij]->to_block_matrix();
+      double **TMP3 = block_matrix(nmo, nmo);
       C_DGEMM('n','n',nso,nmo,nso,1,TMP1[0],nso,moinfo.scf[0],nmo,0,TMP2[0],nso);
-      C_DGEMM('t','n',nmo,nmo,nso,1,moinfo.scf[0],nmo,TMP2[0],nso,0,TMP1[0],nmo);
-      moinfo.Q[i][j] = TMP1;
+      C_DGEMM('t','n',nmo,nmo,nso,1,moinfo.scf[0],nmo,TMP2[0],nso,0,TMP3[0],nmo);
+      moinfo.Q[i][j] = TMP3;
       sprintf(lbl, "Q_%1s%1s", cartcomp[i], cartcomp[j]);
       sort_pert(lbl, moinfo.Q[i][j], moinfo.mu_irreps[i]^moinfo.mu_irreps[j]);
       if(i!=j) {
-        moinfo.Q[j][i] = TMP1;
+        moinfo.Q[j][i] = TMP3;
         sprintf(lbl, "Q_%1s%1s", cartcomp[j], cartcomp[i]);
         sort_pert(lbl, moinfo.Q[j][i], moinfo.mu_irreps[j]^moinfo.mu_irreps[i]);
       }

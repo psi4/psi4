@@ -26,60 +26,158 @@
 */
 
 #include "print.h"
+#include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 
 namespace opt {
 
+// Argument 1 determines file for printing in Psi4.  2nd argument ignored.
+// Argument 2 determines file for printing in QChem. 1st argument ignored.
+void oprintf(const std::string psi_fp, const FILE *qc_fp, const char* format,...) {
 
-void print_matrix(const FILE *fp, double **A, const int nrow, const int ncol) {
-  int i,j,col=0;
+  char line[256];
+  va_list args;
+  va_start(args, format);
+  vsprintf(line, format, args);
+  va_end(args);
 
-  //const int max_col = 12;
-  const int max_col = 18;
+#if defined(OPTKING_PACKAGE_PSI)
+  boost::shared_ptr<psi::PsiOutStream> printer(psi_fp=="outfile"? psi::outfile:
+     boost::shared_ptr<psi::OutFile>(new psi::OutFile(psi_fp,psi::APPEND)));
 
-  for (i=0; i<nrow; ++i) {
-    for (j=0; j<ncol; ++j) {
-      //fprintf(const_cast<FILE *>(fp), "%13.8f", A[i][j]);
-      fprintf(const_cast<FILE *>(fp), "%10.6f", A[i][j]);
+  printer->Printf("%s", line);
+#elif defined(OPTKING_PACKAGE_QCHEM)
+  fprintf(qc_fp, "%s", line);
+#endif
+}
+
+void offlush_out(void) {
+#if defined(OPTKING_PACKAGE_PSI)
+  boost::shared_ptr<psi::PsiOutStream> printer(psi::outfile);
+  printer->Flush();
+#elif defined(OPTKING_PACKAGE_QCHEM)
+  fflush(qc_outfile);
+#endif
+}
+
+// oprintf_out is always to primary output file
+void oprintf_out(const char* format,...) {
+  char line[256];
+  va_list args;
+  va_start(args, format);
+  vsprintf(line, format, args);
+  va_end(args);
+
+#if defined(OPTKING_PACKAGE_PSI)
+  *(psi::outfile) << line;
+#elif defined(OPTKING_PACKAGE_QCHEM)
+  fprintf(qc_outfile, "%s", line);
+#endif
+}
+
+void oprint_matrix(const std::string psi_fp, const FILE *qc_fp, double **A, const int nrow, const int ncol) {
+  int col=0;
+  const int max_col = 8;
+
+  for (int i=0; i<nrow; ++i) {
+    for (int j=0; j<ncol; ++j) {
+      oprintf(psi_fp, qc_fp, "%10.6f", A[i][j]);
       ++col;
       if ((col == max_col) && (j != ncol-1)) {
-        fprintf(const_cast<FILE *>(fp), "\n");
+        oprintf(psi_fp, qc_fp, "\n");
         col = 0;
       }
     }
-    fprintf(const_cast<FILE *>(fp),"\n");
+    oprintf(psi_fp, qc_fp, "\n");
     col = 0;
   }
-  fflush(const_cast<FILE *>(fp));
+  return;
 }
 
-void print_array(const FILE *fp, double *A, const int ncol) {
-  int j,col=0;
+void oprint_matrix_out(double **A, const int nrow, const int ncol) {
+  int col=0;
+  const int max_col = 8;
 
-  const int max_col = 9;
+  for (int i=0; i<nrow; ++i) {
+    for (int j=0; j<ncol; ++j) {
+      oprintf_out("%10.6f", A[i][j]);
+      ++col;
+      if ((col == max_col) && (j != ncol-1)) {
+        oprintf_out("\n");
+        col = 0;
+      }
+    }
+    oprintf_out("\n");
+    col = 0;
+  }
+  return;
+}
 
-  for (j=0; j<ncol; ++j) {
-    fprintf(const_cast<FILE *>(fp), "%13.8f", A[j]);
+void oprint_matrix_out_precise(double **A, const int nrow, const int ncol) {
+  int col=0;
+  const int max_col = 4;
+
+  for (int i=0; i<nrow; ++i) {
+    for (int j=0; j<ncol; ++j) {
+      oprintf_out("%20.15f", A[i][j]);
+      ++col;
+      if ((col == max_col) && (j != ncol-1)) {
+        oprintf_out("\n");
+        col = 0;
+      }
+    }
+    oprintf_out("\n");
+    col = 0;
+  }
+  return;
+}
+
+void oprint_array(const std::string psi_fp, const FILE *qc_fp, double *A, const int ncol) {
+  int col=0;
+  const int max_col = 8;
+
+  for (int j=0; j<ncol; ++j) {
+    oprintf(psi_fp, qc_fp, "%10.6f", A[j]);
     ++col;
     if ((col == max_col) && (j != ncol-1)) {
-      fprintf(const_cast<FILE *>(fp), "\n");
+      oprintf(psi_fp, qc_fp, "\n");
       col = 0;
     }
   }
-  fprintf(const_cast<FILE *>(fp),"\n");
-  fflush(const_cast<FILE *>(fp));
+  oprintf(psi_fp, qc_fp, "\n");
+  return;
 }
 
-void print_geom_array(const FILE *fp, double *A, const int natom) {
-  int i;
+void oprint_array_out(double *A, const int ncol) {
+  int col=0;
+  const int max_col = 8;
 
-  int cnt = -1;
-  for (int i=0; i<natom; ++i) {
-    fprintf(const_cast<FILE *>(fp), "\t%13.8f", A[++cnt]);
-    fprintf(const_cast<FILE *>(fp), "%13.8f", A[++cnt]);
-    fprintf(const_cast<FILE *>(fp), "%13.8f", A[++cnt]);
-    fprintf(const_cast<FILE *>(fp), "\n");
+  for (int j=0; j<ncol; ++j) {
+    oprintf_out("%10.6f", A[j]);
+    ++col;
+    if ((col == max_col) && (j != ncol-1)) {
+      oprintf_out("\n");
+      col = 0;
+    }
   }
-  fprintf(const_cast<FILE *>(fp),"\n");
+  oprintf_out("\n");
+  return;
+}
+
+void oprint_array_out_precise(double *A, const int ncol) {
+  int col=0;
+  const int max_col = 4;
+
+  for (int j=0; j<ncol; ++j) {
+    oprintf_out("%20.15f", A[j]);
+    ++col;
+    if ((col == max_col) && (j != ncol-1)) {
+      oprintf_out("\n");
+      col = 0;
+    }
+  }
+  oprintf_out("\n");
+  return;
 }
 
 }

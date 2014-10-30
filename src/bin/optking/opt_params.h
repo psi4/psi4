@@ -60,15 +60,19 @@ struct OPT_PARAMS {
 
   bool rfo_follow_root; // whether to do root following
   int rfo_root;         // which root to follow
-  double rfo_normalization_min; // small threshold for rfo normalization
+  double rfo_normalization_max; // small threshold for rfo normalization
+  double rsrfo_alpha_max; // absolute maximum val
 
   enum OPT_TYPE {MIN, TS, IRC} opt_type;
   // Newton-Raphson (NR), rational function optimization step, steepest descent step
   enum STEP_TYPE {NR, RFO, P_RFO, SD, LINESEARCH_STATIC} step_type;
 
+  // Coordinates for optimization
+  enum COORDINATES {REDUNDANT, DELOCALIZED, NATURAL, CARTESIAN, BOTH} coordinates;
+
   // Hessian guess
   // Note the Lindh "intrafragment" option is cartesian so it applies to all coordinates.
-  enum INTRAFRAGMENT_HESSIAN {FISCHER, SCHLEGEL, SIMPLE, LINDH} intrafragment_H;
+  enum INTRAFRAGMENT_HESSIAN {FISCHER, SCHLEGEL, SIMPLE, LINDH, LINDH_SIMPLE} intrafragment_H;
   enum INTERFRAGMENT_HESSIAN {DEFAULT, FISCHER_LIKE}  interfragment_H;
 
   enum H_UPDATE {NONE, BFGS, MS, POWELL, BOFILL} H_update;
@@ -77,16 +81,26 @@ struct OPT_PARAMS {
   enum IRC_DIRECTION {FORWARD, BACKWARD} IRC_direction;
   enum IRC_STOP {ASK, STOP, GO} IRC_stop;
 
+  int dynamic;       // tracks dynamic optimization mode level
+  double sd_hessian; // steepest-descent second derivative guess
+
   bool freeze_intrafragment; // freeze all fragments
   bool freeze_interfragment; // freeze all interfragment modes
   bool add_auxiliary_bonds;
+  double auxiliary_bond_factor;  // covalent length times this to add extra-redundant stretches
+  bool H_guess_every; // re-estimate the hessian every step
 
   // related to step taken
-  double intrafragment_step_limit;
-  double intrafragment_step_limit_min;
-  double intrafragment_step_limit_max;
+  double intrafragment_step_limit;      // current step limit
+  double intrafragment_step_limit_orig; // store original user-specified or default value
+  double intrafragment_step_limit_min;  // the smallest trust radius is allowed to go
+  double intrafragment_step_limit_max;  // the largest trust radius is allowed to go
 
   double interfragment_step_limit;
+
+  double symm_tol; // for atom making, symmetry checking
+
+  bool simple_step_scaling; // do stupid, linear scaling of internal coordinates to step limit (not RS-RFO);
 
   // whether to limit changes in Hessian due to update
   bool H_update_limit;
@@ -102,13 +116,14 @@ struct OPT_PARAMS {
   // optimization, i.e., the one at which a gradient was computed.
   // If true, then the structure obtained from the last anticipated step is printed and saved instead.
   bool write_final_step_geometry;
+  bool print_trajectory_xyz_file;
 
   double maximum_H_bond_distance;
 
   bool read_cartesian_H;
 
-  bool efp_fragments;
-  bool efp_fragments_only;
+  bool fb_fragments;
+  bool fb_fragments_only;
 
   int consecutive_backsteps_allowed;
 
@@ -145,6 +160,7 @@ struct OPT_PARAMS {
 
   // maximum number of allowed iterations in backtransformation to cartesian coordinates
   double bt_max_iter;
+  bool ensure_bt_convergence;
 
   double geom_maxiter;
 
@@ -157,6 +173,8 @@ struct OPT_PARAMS {
 
   //1=default; 2=medium; 3=lots
   int print_lvl;
+
+  bool print_params;
 
   // Hessian update is avoided if the denominators (Dq*Dq) or (Dq*Dg) are smaller than this
   double H_update_den_tol;

@@ -1,0 +1,92 @@
+
+.PHONY: tests quicktests cc_tests clean quicktestsclean longtests longtestsclean
+
+sp_subdirs = dftd3-energy psithon2
+
+opt_subdirs = dftd3-grad
+
+subdirs = \
+$(sp_subdirs) \
+$(opt_subdirs)
+
+# only short tests, only one from each type of computation
+# the idea is that all these should run in ~ 5-10 minutes
+quicktestdirs = dftd3-energy
+
+define gatherresults
+    ERRORS=0; \
+    echo > ../test-case-results; \
+    for dir in $1; do \
+        if [ -e $${dir}/$${dir}.passed ]; \
+        then echo "Testing $${dir}..." >> ../test-case-results; \
+             cat $${dir}/$${dir}.passed >> ../test-case-results;\
+        else ERRORS=1; \
+        fi; \
+    done; \
+    for dir in $1; do \
+        if [ ! -e $${dir}/$${dir}.passed ]; \
+        then echo "\n\nTEST FAILURE in $${dir}$$!!!";           \
+             cat $${dir}/$${dir}.test;                          \
+             echo;                                              \
+             echo "Testing $${dir}..." >> ../test-case-results; \
+             cat $${dir}/$${dir}.test >> ../test-case-results;  \
+             echo "\tFAILED" >>../test-case-results; \
+        fi; \
+    done; \
+    if [ $$ERRORS -eq 1 ]; then echo "One or more tests failed! Check test-case-results for more information.\n" && exit 1; fi;\
+    echo ERRORS = $$ERRORS
+endef
+
+tests: $(subdirs)
+	$(call gatherresults, $(subdirs))
+
+quicktests: $(quicktestdirs)
+	$(call gatherresults, $(quicktestdirs))
+
+longtests: $(longtest_subdirs)
+	$(call gatherresults, $(longtest_subdirs)
+
+sp_tests: $(sp_subdirs)
+	$(call gatherresults, $(sp_subdirs))
+
+opt_tests: $(opt_subdirs)
+	$(call gatherresults, $(opt_subdirs))
+
+clean:
+	for dir in $(subdirs); \
+	do \
+	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
+	done
+	rm -f ../test-case-results
+
+quicktestsclean:
+	for dir in $(quicktestdirs); \
+	do \
+	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
+	done
+	rm -f ../test-case-results
+
+longtestsclean:
+	for dir in $(longtest_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
+	done
+
+top_srcdir = @top_srcdir@
+srcdir = @srcdir@
+top_objdir = ../..
+
+$(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
+	cd $(top_srcdir) && autoconf
+
+$(top_objdir)/config.status: $(top_srcdir)/configure
+	cd $(top_objdir) && ./config.status --recheck
+
+Makefile: $(srcdir)/Makefile.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=tests/cfour/Makefile ./config.status
+
+.PHONY: $(subdirs)
+$(subdirs):
+	echo "Testing $@..."
+	$(MAKE) -C $@; true
+

@@ -39,7 +39,6 @@ class IntVector;
 class Vector3;
 class BlockOPoints;
 
-extern FILE* outfile;
 
 class BasisFunctions {
 
@@ -85,7 +84,7 @@ public:
     int max_points() const { return max_points_; }
     int deriv() const { return deriv_; }
 
-    virtual void print(FILE* out = outfile, int print = 2) const;
+    virtual void print(std::string OutFileRMR = "outfile", int print = 2) const;
     
     // => Setters <= //
 
@@ -182,7 +181,7 @@ public:
     std::vector<SharedMatrix> scratch();
     std::vector<SharedMatrix> D_scratch();
 
-    void print(FILE* out = outfile, int print = 2) const;
+    void print(std::string OutFileRMR = "outfile", int print = 2) const;
 
     void compute_orbitals(boost::shared_ptr<BlockOPoints> block);
     void set_Cs(SharedMatrix Cocc);
@@ -238,7 +237,7 @@ public:
     std::vector<SharedMatrix> scratch();
     std::vector<SharedMatrix> D_scratch();
 
-    void print(FILE* out = outfile, int print = 2) const;
+    void print(std::string OutFileRMR = "outfile", int print = 2) const;
 
     void compute_orbitals(boost::shared_ptr<BlockOPoints> block);
     void set_Cs(SharedMatrix Cocc);

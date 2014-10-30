@@ -106,7 +106,7 @@ class CIvect {
          int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc, 
          int nirr, int cdperirr, int maxvect, int nunits, int funit, 
          int *fablk, int *lablk, int **dc);
-      void print(FILE *outfile);
+      void print(std::string OutFileRMR);
       double operator*(CIvect &b);
       void set_nvect(int i);
       void setarray(const double *a, BIGINT len);
@@ -147,9 +147,9 @@ class CIvect {
       void zero(void);
       void dcalc(int nr, int L, double **alpha, double *lambda,
          double *norm_arr, CIvect &C, CIvect &S, double *buf1, double *buf2, 
-         int *root_converged, int printflag, FILE *outfile, double *E_est);
+         int *root_converged, int printflag, std::string OutFileRMR, double *E_est);
       void sigma_renorm(int nr, int L, double renorm_C, CIvect &S, 
-         double *buf1, int printflag, FILE *outfile);
+         double *buf1, int printflag, std::string OutFileRMR);
       double dcalc2(int rootnum, double lambda, CIvect &Hd, 
            int precon, struct stringwr **alplist, struct stringwr **betlist);
       double dcalc_evangelisti(int rootnum, int num_vecs, double lambda, 
@@ -164,7 +164,7 @@ class CIvect {
            struct stringwr **alplist, struct stringwr **betlist, double *buf1,
            double *buf2, int k, double *mp2k_energy, double **wfn_overlap,
            double **bvec_overlap, double *bvec_norm, int kvec_offset);
-      void print_buf(FILE *outfile);
+      void print_buf(std::string OutFileRMR);
       void civ_xeay(double a, CIvect &Y, int xvect, int yvect);
       void civ_xpeay(double a, CIvect &Y, int xvect, int yvect);
       void transp_block(int iblock, double **tmparr);
@@ -227,7 +227,7 @@ class CIvect {
          struct stringwr **betlist);
       friend void olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, 
          double E_est, double *norm, double *c1norm, double *ovrlap, 
-         double *buffer1, double *buffer2, int curr, int next, FILE *outfile, 
+         double *buffer1, double *buffer2, int curr, int next, std::string out,
          int iter, struct stringwr **alplist, struct stringwr **betlist);
       friend void mitrush_update(CIvect &C, CIvect &S, double norm, double
          acur, double alast, double *buffer1, double *buffer2, int curr,

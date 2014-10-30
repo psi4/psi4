@@ -37,7 +37,6 @@
 #include "globals.h"
 
 namespace psi {
-extern FILE* outfile;
   namespace transqt2 {
 
 void transtwo_rhf(void)
@@ -62,8 +61,8 @@ void transtwo_rhf(void)
   TMP = block_matrix(nso,nso);
 
   if(params.print_lvl) {
-    fprintf(outfile, "\tStarting first half-transformation.\n");
-    fflush(outfile);
+    outfile->Printf( "\tStarting first half-transformation.\n");
+    
   }
 
   psio_open(PSIF_SO_PRESORT, PSIO_OPEN_OLD);
@@ -88,11 +87,11 @@ void transtwo_rhf(void)
     }
 
     if(params.print_lvl > 1) {
-      fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memfree);
-      fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rows_per_bucket);
-      fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rows_left);
-      fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nbuckets);
-      fflush(outfile);
+      outfile->Printf( "\th = %d; memfree         = %lu\n", h, memfree);
+      outfile->Printf( "\th = %d; rows_per_bucket = %lu\n", h, rows_per_bucket);
+      outfile->Printf( "\th = %d; rows_left       = %lu\n", h, rows_left);
+      outfile->Printf( "\th = %d; nbuckets        = %d\n", h, nbuckets);
+      
     }
 
     global_dpd_->buf4_mat_irrep_init_block(&J, h, rows_per_bucket);
@@ -136,8 +135,8 @@ void transtwo_rhf(void)
   timer_off("RHF:1sthalf");
   timer_on("RHF:midsort");
   if(params.print_lvl) {
-    fprintf(outfile, "\tSorting half-transformed integrals.\n");
-    fflush(outfile);
+    outfile->Printf( "\tSorting half-transformed integrals.\n");
+    
   }
 
   psio_open(PSIF_HALFT1, PSIO_OPEN_NEW);
@@ -151,8 +150,8 @@ void transtwo_rhf(void)
   timer_on("RHF:2ndhalf");
 
   if(params.print_lvl) {
-    fprintf(outfile, "\tStarting second half-transformation.\n");
-    fflush(outfile);
+    outfile->Printf( "\tStarting second half-transformation.\n");
+    
   }
   iwl_buf_init(&MBuff, PSIF_MO_TEI, params.tolerance, 0, 0);
 
@@ -174,11 +173,11 @@ void transtwo_rhf(void)
     }
 
     if(params.print_lvl > 1) {
-      fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memfree);
-      fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rows_per_bucket);
-      fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rows_left);
-      fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nbuckets);
-      fflush(outfile);
+      outfile->Printf( "\th = %d; memfree         = %lu\n", h, memfree);
+      outfile->Printf( "\th = %d; rows_per_bucket = %lu\n", h, rows_per_bucket);
+      outfile->Printf( "\th = %d; rows_left       = %lu\n", h, rows_left);
+      outfile->Printf( "\th = %d; nbuckets        = %d\n", h, nbuckets);
+      
     }
 
     global_dpd_->buf4_mat_irrep_init_block(&J, h, rows_per_bucket);
@@ -216,7 +215,7 @@ void transtwo_rhf(void)
           s = moinfo.pitz2corr_two[K.params->colorb[h][rs][1]];
           RS = INDEX(r,s);
           if(r >= s && RS <= PQ)
-            iwl_buf_wrt_val(&MBuff, p, q, r, s, K.matrix[h][pq][rs], params.print_tei, outfile, 0);
+            iwl_buf_wrt_val(&MBuff, p, q, r, s, K.matrix[h][pq][rs], params.print_tei, "outfile", 0);
         } /* rs */
       } /* pq */
     }
@@ -236,8 +235,8 @@ void transtwo_rhf(void)
   psio_close(PSIF_HALFT1, 0);
 
   if(params.print_lvl) {
-    fprintf(outfile, "\tTwo-electron integral transformation complete.\n");
-    fflush(outfile);
+    outfile->Printf( "\tTwo-electron integral transformation complete.\n");
+    
   }
 }
 

@@ -48,13 +48,31 @@ DCFTSolver::compute_dcft_energy()
                   ID("[O>O]-"), ID("[V>V]-"), 0, "G <OO|VV>");
     eGaa = global_dpd_->buf4_dot(&G, &L);
     global_dpd_->buf4_close(&G);
-
-    // E += 1/4 gbar_IJAB L_IJAB
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-                  ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
-    eIaa = global_dpd_->buf4_dot(&I, &L);
-    global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
+
+    if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-13") {
+        psio_->open(PSIF_DCFT_DENSITY, PSIO_OPEN_OLD);
+
+        // E += gbar_IJAB Gamma_IJAB
+        global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O>O]-"), ID("[V>V]-"),
+                      ID("[O>O]-"), ID("[V>V]-"), 0, "Gamma <OO|VV>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                      ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
+        eIaa = 4.0 * global_dpd_->buf4_dot(&I, &G);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&G);
+
+    }
+    else {
+        // E += 1/2 gbar_IJAB L_IJAB
+        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                      ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                      ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
+        eIaa = 2.0 * global_dpd_->buf4_dot(&I, &L);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&L);
+    }
 
     // E += L_IjAb G_IjAb
     global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
@@ -63,13 +81,28 @@ DCFTSolver::compute_dcft_energy()
                   ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
     eGab =  global_dpd_->buf4_dot(&G, &L);
     global_dpd_->buf4_close(&G);
-
-    // E += gbar_IjAb L_IjAb
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
-    eIab = global_dpd_->buf4_dot(&I, &L);
-    global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
+
+    if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-13") {
+        // E += 4.0 * gbar_IjAb Gamma_IjAb
+        global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"),
+                      ID("[O,o]"), ID("[V,v]"), 0, "Gamma <Oo|Vv>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                      ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
+        eIab = 4.0 * global_dpd_->buf4_dot(&I, &G);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&G);
+    }
+    else {
+        // E += 2.0 gbar_IjAb L_IjAb
+        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                      ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                      ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
+        eIab = 2.0 * global_dpd_->buf4_dot(&I, &L);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&L);
+    }
 
     // E += 1/4 L_ijab G_ijab
     global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
@@ -78,25 +111,42 @@ DCFTSolver::compute_dcft_energy()
                   ID("[o>o]-"), ID("[v>v]-"), 0, "G <oo|vv>");
     eGbb = global_dpd_->buf4_dot(&G, &L);
     global_dpd_->buf4_close(&G);
-
-
-    // E += 1/4 gbar_ijab L_ijab
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-                  ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
-    eIbb = global_dpd_->buf4_dot(&I, &L);
-    global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
+
+    if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-13") {
+        // E += gbar_ijab Gamma_ijab
+        global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o>o]-"), ID("[v>v]-"),
+                      ID("[o>o]-"), ID("[v>v]-"), 0, "Gamma <oo|vv>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                      ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
+        eIbb = 4.0 * global_dpd_->buf4_dot(&I, &G);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&G);
+
+        psio_->close(PSIF_DCFT_DENSITY, 1);
+    }
+    else {
+        // E += 1/2 gbar_ijab L_ijab
+        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                      ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                      ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
+        eIbb = 2.0 * global_dpd_->buf4_dot(&I, &L);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&L);
+    }
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
+
 #if PRINT_ENERGY_COMPONENTS
-    fprintf(outfile, "\tAA G Energy = %20.12f\n", eGaa);
-    fprintf(outfile, "\tAB G Energy = %20.12f\n", eGab);
-    fprintf(outfile, "\tBB G Energy = %20.12f\n", eGbb);
-    fprintf(outfile, "\tAA I Energy = %20.12f\n", eIaa);
-    fprintf(outfile, "\tAB I Energy = %20.12f\n", eIab);
-    fprintf(outfile, "\tBB I Energy = %20.12f\n", eIbb);
-    fprintf(outfile, "\tTotal G Energy = %20.12f\n", eGaa + eGab + eGbb);
-    fprintf(outfile, "\tTotal I Energy = %20.12f\n", eIaa + eIab + eIbb);
+    outfile->Printf( "\tAA G Energy = %20.12f\n", eGaa);
+    outfile->Printf( "\tAB G Energy = %20.12f\n", eGab);
+    outfile->Printf( "\tBB G Energy = %20.12f\n", eGbb);
+    outfile->Printf( "\tAA I Energy = %20.12f\n", eIaa);
+    outfile->Printf( "\tAB I Energy = %20.12f\n", eIab);
+    outfile->Printf( "\tBB I Energy = %20.12f\n", eIbb);
+    outfile->Printf( "\tTotal G Energy = %20.12f\n", eGaa + eGab + eGbb);
+    outfile->Printf( "\tTotal I Energy = %20.12f\n", eIaa + eIab + eIbb);
 #endif
 
     lambda_energy_ = eGaa + eGab + eGbb + eIaa + eIab + eIbb;

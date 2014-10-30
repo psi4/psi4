@@ -49,7 +49,7 @@
 #include <vector>
 
 namespace psi{
-    extern FILE *outfile;
+    
     namespace psimrcc{
 
 typedef std::vector<std::vector<int> > vecvecint;

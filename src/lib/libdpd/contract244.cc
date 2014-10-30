@@ -32,7 +32,7 @@
 
 namespace psi {
 
-extern FILE *outfile;
+
 
 /* dpd_contract244(): Contracts a two-index quantity with a
 ** four-index quantity to compute the contribution to another
@@ -86,7 +86,7 @@ int DPD::contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y,
 
     if(sum_X == 0) { Xtrans = 1; numlinks = X->params->rowtot; symlink = 0; }
     else if(sum_X == 1) { Xtrans = 0; numlinks = X->params->coltot; symlink = GX; }
-    else { fprintf(stderr, "Junk X index %d\n", sum_X); exit(PSI_RETURN_FAILURE); }
+    else { outfile->Printf( "Junk X index %d\n", sum_X); exit(PSI_RETURN_FAILURE); }
 
     if((sum_Y == 1) || (sum_Y == 2)) trans4_init(&Yt, Y);
 
@@ -118,8 +118,8 @@ int DPD::contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y,
         if(coltot) {
             maxrows = DPD_BIGNUM/coltot;
             if(maxrows < 1) {
-                fprintf(stderr, "\nLIBDPD Error: cannot compute even the number of rows in contract244.\n");
-                dpd_error("contract244", stderr);
+                outfile->Printf( "\nLIBDPD Error: cannot compute even the number of rows in contract244.\n");
+                dpd_error("contract244", "outfile");
             }
         }
         else maxrows = DPD_BIGNUM;
@@ -138,8 +138,8 @@ int DPD::contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y,
         if(coltot) {
             maxrows = DPD_BIGNUM/coltot;
             if(maxrows < 1) {
-                fprintf(stderr, "\nLIBDPD Error: cannot compute even the number of rows in contract244.\n");
-                dpd_error("contract244", stderr);
+                outfile->Printf( "\nLIBDPD Error: cannot compute even the number of rows in contract244.\n");
+                dpd_error("contract244", "outfile");
             }
         }
         else maxrows = DPD_BIGNUM;
@@ -257,9 +257,9 @@ int DPD::contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y,
 #ifdef DPD_DEBUG
                     if((xrow[Hz] != zrow[Hz]) || (ycol[Hz] != zcol[Hz]) ||
                             (xcol[Hz] != yrow[Hz])) {
-                        fprintf(stderr, "** Alignment error in contract244 **\n");
-                        fprintf(stderr, "** Irrep: %d; Subirrep: %d **\n",hzbuf,Hz);
-                        dpd_error("dpd_contract244", stderr);
+                        outfile->Printf( "** Alignment error in contract244 **\n");
+                        outfile->Printf( "** Irrep: %d; Subirrep: %d **\n",hzbuf,Hz);
+                        dpd_error("dpd_contract244", "outfile");
                     }
 #endif
                     newmm_rking(X->matrix[Hx],Xtrans, Ymat[Hy], Ytrans,
@@ -276,12 +276,12 @@ int DPD::contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y,
 #ifdef DPD_DEBUG
                     if((xrow[Hz] != zrow[Hz]) || (ycol[Hz] != zcol[Hz]) ||
                             (xcol[Hz] != yrow[Hz])) {
-                        fprintf(stderr, "** Alignment error in contract244 **\n");
-                        fprintf(stderr, "** Irrep: %d; Subirrep: %d **\n",hzbuf,Hz);
-                        dpd_error("dpd_contract244", stderr);
+                        outfile->Printf( "** Alignment error in contract244 **\n");
+                        outfile->Printf( "** Irrep: %d; Subirrep: %d **\n",hzbuf,Hz);
+                        dpd_error("dpd_contract244", "outfile");
                     }
 #endif
-                    /* fprintf(outfile,"Hz %d, Hx %d, Hy %d, numrows %d, numlinks %d, numcols %d\n",
+                    /* outfile->Printf("Hz %d, Hx %d, Hy %d, numrows %d, numlinks %d, numcols %d\n",
          Hz, Hx, Hy, numrows[Hz],numlinks[Hx],numcols[Hz]); */
 
                     if(numrows[Hz] && numcols[Hz] && numlinks[Hx^symlink]) {
@@ -337,7 +337,7 @@ int DPD::contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y,
             /* Prepare the input buffer for the X factor and the target*/
 
 #ifdef DPD_DEBUG
-            fprintf(stderr, "\t244 out-of-core: %d\n", hybuf);
+            outfile->Printf( "\t244 out-of-core: %d\n", hybuf);
 #endif
             buf4_mat_irrep_row_init(Y, hybuf);
             buf4_mat_irrep_row_init(Z, hzbuf);

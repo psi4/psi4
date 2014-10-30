@@ -117,7 +117,7 @@ void get_params( Options& options)
   if(options["OPDM_RELAX"].has_changed())
     params.relax_opdm = options.get_bool("OPDM_RELAX");
   if ( (params.onepdm) && (params.relax_opdm) ) { /* can't do relaxation without twopdm */
-    fprintf(outfile,"\tTurning orbital relaxation off since only onepdm is requested.\n");
+    outfile->Printf("\tTurning orbital relaxation off since only onepdm is requested.\n");
     params.relax_opdm = 0;
   }
 
@@ -128,26 +128,26 @@ void get_params( Options& options)
   if(options["XI_CONNECT"].has_changed()) 
     params.connect_xi = options.get_bool("XI_CONNECT");
 
-  fprintf(outfile, "\n\tInput parameters:\n");
-  fprintf(outfile, "\t-----------------\n");
-  fprintf(outfile, "\tWave function    = %6s\n", params.wfn.c_str() );
-  fprintf(outfile, "\tReference wfn    = %5s\n", (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
-  fprintf(outfile, "\tDertype          = %d\n", params.dertype);
-  fprintf(outfile, "\tTolerance        = %3.1e\n", params.tolerance);
-  fprintf(outfile, "\tCache Level      = %1d\n", params.cachelev);
-  fprintf(outfile, "\tAO Basis         = %s\n",
+  outfile->Printf( "\n\tInput parameters:\n");
+  outfile->Printf( "\t-----------------\n");
+  outfile->Printf( "\tWave function    = %6s\n", params.wfn.c_str() );
+  outfile->Printf( "\tReference wfn    = %5s\n", (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
+  outfile->Printf( "\tDertype          = %d\n", params.dertype);
+  outfile->Printf( "\tTolerance        = %3.1e\n", params.tolerance);
+  outfile->Printf( "\tCache Level      = %1d\n", params.cachelev);
+  outfile->Printf( "\tAO Basis         = %s\n",
           params.aobasis ? "Yes" : "No");
-  fprintf(outfile, "\tOPDM Only        = %s\n",
+  outfile->Printf( "\tOPDM Only        = %s\n",
           params.onepdm ? "Yes" : "No");
-  fprintf(outfile, "\tRelax OPDM       = %s\n",
+  outfile->Printf( "\tRelax OPDM       = %s\n",
           params.relax_opdm ? "Yes" : "No");
-  fprintf(outfile, "\tCompute Xi       = %s\n",
+  outfile->Printf( "\tCompute Xi       = %s\n",
           (params.calc_xi) ? "Yes" : "No");
-  fprintf(outfile, "\tUse Zeta         = %s\n",
+  outfile->Printf( "\tUse Zeta         = %s\n",
           (params.use_zeta) ? "Yes" : "No");
-  fprintf(outfile, "\tXi connected     = %s\n",
+  outfile->Printf( "\tXi connected     = %s\n",
           (params.connect_xi) ? "Yes" : "No");
-  fflush(outfile);
+  
 }
 
 

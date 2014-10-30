@@ -62,19 +62,19 @@ void print_vibrations(std::vector<VIBRATION *> modes) {
   sort(modes.begin(), modes.end(), ascending);
 
   // Print out frequencies and irreps to output file.
-  fprintf(outfile, "\n\t  Irrep      Harmonic Frequency   \n");
-  fprintf(outfile,   "\t                  (cm-1)          \n");
-  fprintf(outfile,   "\t-----------------------------------------------\n");
+  outfile->Printf( "\n\t  Irrep      Harmonic Frequency   \n");
+  outfile->Printf(   "\t                  (cm-1)          \n");
+  outfile->Printf(   "\t-----------------------------------------------\n");
 
   for(int i=0; i<modes.size(); ++i) {
     if(modes[i]->cm < 0.0)
-      fprintf(outfile, "\t  %5s   %15.4fi \n", irrep_lbls[modes[i]->irrep], -modes[i]->cm);
+      outfile->Printf( "\t  %5s   %15.4fi \n", irrep_lbls[modes[i]->irrep], -modes[i]->cm);
     else
-      fprintf(outfile, "\t  %5s   %15.4f  \n", irrep_lbls[modes[i]->irrep], modes[i]->cm);
+      outfile->Printf( "\t  %5s   %15.4f  \n", irrep_lbls[modes[i]->irrep], modes[i]->cm);
   }
 
-  fprintf(outfile,   "\t-----------------------------------------------\n");
-  fflush(outfile);
+  outfile->Printf(   "\t-----------------------------------------------\n");
+  
 
   // Return list of frequencies to wavefunction object.
   boost::shared_ptr<Vector> freq_vector(new Vector(modes.size()));
@@ -92,32 +92,32 @@ void print_vibrations(std::vector<VIBRATION *> modes) {
      sum += mol->mass(a);
 
   // print out normal modes in format that WebMO likes
-  fprintf(outfile, "\n\tNormal Modes (mass-weighted).\n");
-  fprintf(outfile, "\tMolecular mass is %10.5f amu.\n", sum);
-  fprintf(outfile, "\tFrequencies in cm^-1; force constants in au.\n");
+  outfile->Printf( "\n\tNormal Modes (mass-weighted).\n");
+  outfile->Printf( "\tMolecular mass is %10.5f amu.\n", sum);
+  outfile->Printf( "\tFrequencies in cm^-1; force constants in au.\n");
 
   for(int i=0; i<modes.size(); ++i) { // print descending order
     if (fabs(cm_convert * sqrt(k_convert * fabs(modes[i]->km))) < 5.0) continue;
-    fprintf(outfile,"\n");
+    outfile->Printf("\n");
     if (modes[i]->km < 0.0)
-      fprintf(outfile, "   Frequency:      %8.2fi\n", cm_convert * sqrt(-k_convert * modes[i]->km));
+      outfile->Printf( "   Frequency:      %8.2fi\n", cm_convert * sqrt(-k_convert * modes[i]->km));
     else
-      fprintf(outfile, "   Frequency:      %8.2f\n", cm_convert * sqrt(k_convert * modes[i]->km));
+      outfile->Printf( "   Frequency:      %8.2f\n", cm_convert * sqrt(k_convert * modes[i]->km));
 
-    fprintf(outfile,   "   Force constant: %8.4f\n", modes[i]->km);
+    outfile->Printf(   "   Force constant: %8.4f\n", modes[i]->km);
 
-    //fprintf(outfile,   "   IR Intensity: %8.2f\n", irint[i]*ir_prefactor);
+    //outfile->Printf(   "   IR Intensity: %8.2f\n", irint[i]*ir_prefactor);
 
-    fprintf(outfile, "\t     X       Y       Z           mass\t\n");
+    outfile->Printf( "\t     X       Y       Z           mass\t\n");
     for (int a=0; a<Natom; a++) {
-      fprintf(outfile, "  %s \t", mol->symbol(a).c_str() );
+      outfile->Printf( "  %s \t", mol->symbol(a).c_str() );
 
       for (int xyz=0; xyz<3; ++xyz)
-        fprintf(outfile, "%8.3f", modes[i]->lx[3*a+xyz]);
+        outfile->Printf( "%8.3f", modes[i]->lx[3*a+xyz]);
 
-      fprintf(outfile,"%15.6f", mol->mass(a));
+      outfile->Printf("%15.6f", mol->mass(a));
 
-      fprintf(outfile, "\n");
+      outfile->Printf( "\n");
     }
   }
 
@@ -130,7 +130,7 @@ void print_vibrations(std::vector<VIBRATION *> modes) {
 }
 
 // displaces from a reference geometry: geom += salclist[salc_i] * disp_i * disp_size
-// disp_size is in mass-weighted coordinates; cartesian displacment is DX/sqrt(mass)
+// disp_size is in mass-weighted coordinates; cartesian displacement is DX/sqrt(mass)
 void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
   int salc_i, int disp_factor, double disp_size) {
 
@@ -153,7 +153,7 @@ void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
 
 // displaces from a reference geometry.
 // geom += salclist[salc_i] * disp_i * disp_size + salclist[salc_j] * disp_j * disp_size
-// disp_size is in mass-weighted coordinates; cartesian displacment is DX/sqrt(mass)
+// disp_size is in mass-weighted coordinates; cartesian displacement is DX/sqrt(mass)
 void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
   int salc_i, int salc_j, int disp_factor_i, int disp_factor_j, double disp_size) {
 

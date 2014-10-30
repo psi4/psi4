@@ -33,6 +33,7 @@ import subprocess
 import socket
 import shutil
 import random
+import collections
 from libmintsmolecule import *
 
 
@@ -55,10 +56,24 @@ class Molecule(LibmintsMolecule):
         text += self.save_string_for_psi4()
         return text
 
+#    def __getstate__(self):
+#        print 'im being pickled'
+#        return self.__dict__
+
+#    def __setstate__(self, d):
+#        #print 'im being unpickled with these values', d
+#        self.__dict__ = d
+
     @classmethod
-    def init_with_xyz(cls, xyzfilename, no_com=False, no_reorient=False):
+    def init_with_xyz(cls, xyzfilename, no_com=False, no_reorient=False, contentsNotFilename=False):
         """Pull information from an XYZ file. No fragment info detected.
-        Charge, multiplicity, tagline pulled from second line if available.
+        Bohr/Angstrom pulled from first line if available.  Charge,
+        multiplicity, tagline pulled from second line if available.  Body
+        accepts atom symbol or atom charge in first column. Arguments
+        *no_com* and *no_reorient* can be used to turn off shift and
+        rotation. If *xyzfilename* is a string of the contents of an XYZ
+        file, rather than the name of a file, set *contentsNotFilename*
+        to ``True``.
 
         >>> H2O = qcdb.Molecule.init_with_xyz('h2o.xyz')
 
@@ -68,17 +83,21 @@ class Molecule(LibmintsMolecule):
         instance.PYmove_to_com = not no_com
         instance.PYfix_orientation = no_reorient
 
-        try:
-            infile = open(xyzfilename, 'r')
-        except IOError:
-            raise ValidationError("""Molecule::init_with_xyz: given filename '%s' does not exist.""" % (xyzfilename))
-        if os.stat(xyzfilename).st_size == 0:
-            raise ValidationError("""Molecule::init_with_xyz: given filename '%s' is blank.""" % (xyzfilename))
-        text = infile.readlines()
+        if contentsNotFilename:
+            text = xyzfilename.splitlines()
+        else:
+            try:
+                infile = open(xyzfilename, 'r')
+            except IOError:
+                raise ValidationError("""Molecule::init_with_xyz: given filename '%s' does not exist.""" % (xyzfilename))
+            if os.stat(xyzfilename).st_size == 0:
+                raise ValidationError("""Molecule::init_with_xyz: given filename '%s' is blank.""" % (xyzfilename))
+            text = infile.readlines()
 
         xyz1 = re.compile(r"^\s*(\d+)\s*(bohr|au)?\s*$", re.IGNORECASE)
         xyz2 = re.compile(r'^\s*(-?\d+)\s+(\d+)\s+(.*)\s*$')
         xyzN = re.compile(r"(?:\s*)([A-Z](?:[a-z])?)(?:\s+)(-?\d+\.\d+)(?:\s+)(-?\d+\.\d+)(?:\s+)(-?\d+\.\d+)(?:\s*)", re.IGNORECASE)
+        xyzC = re.compile(r"(?:\s*)(\d+\.?\d*)(?:\s+)(-?\d+\.\d+)(?:\s+)(-?\d+\.\d+)(?:\s+)(-?\d+\.\d+)(?:\s*)", re.IGNORECASE)
 
         # Try to match the first line
         if xyz1.match(text[0]):
@@ -110,10 +129,24 @@ class Molecule(LibmintsMolecule):
 
                     # Check that the atom symbol is valid
                     if not fileAtom in el2z:
-                        raise ValidationError('Illegal atom symbol in geometry specification: %s' % (atomSym))
+                        raise ValidationError('Illegal atom symbol in geometry specification: %s' % (fileAtom))
 
                     # Add it to the molecule.
-                    instance.add_atom(el2z[fileAtom], fileX, fileY, fileZ, fileAtom, el2masses[fileAtom])
+                    instance.add_atom(el2z[fileAtom], fileX, fileY, fileZ, fileAtom, el2masses[fileAtom], el2z[fileAtom])
+
+                elif xyzC.match(text[2 + i]):
+
+                    fileAtom = int(float(xyzC.match(text[2 + i]).group(1)))
+                    fileX = float(xyzC.match(text[2 + i]).group(2))
+                    fileY = float(xyzC.match(text[2 + i]).group(3))
+                    fileZ = float(xyzC.match(text[2 + i]).group(4))
+
+                    # Check that the atomic number is valid
+                    if not fileAtom in z2el:
+                        raise ValidationError('Illegal atom symbol in geometry specification: %d' % (fileAtom))
+
+                    # Add it to the molecule.
+                    instance.add_atom(fileAtom, fileX, fileY, fileZ, z2el[fileAtom], z2masses[fileAtom], fileAtom)
 
                 else:
                     raise ValidationError("Molecule::init_with_xyz: Malformed atom information line %d." % (i + 3))
@@ -171,7 +204,7 @@ class Molecule(LibmintsMolecule):
 #        """Returns a string of Molecule formatted for psi4.
 #        Includes fragments and reorienting, if specified.
 #
-#        >>> print(H2OH2O.save_string_for_psi4())
+#        >>> print H2OH2O.save_string_for_psi4()
 #        6
 #        0 1
 #        O         -1.55100700      -0.11452000       0.00000000
@@ -241,10 +274,14 @@ class Molecule(LibmintsMolecule):
         text += 'angstrom\n'
         text += 'geometry={\n'
 
-        for i in range(self.natom()):
-            [x, y, z] = self.atoms[i].compute()
-            text += '%2s %17.12f %17.12f %17.12f\n' % (self.symbol(i), \
-                x * factor, y * factor, z * factor)
+        for fr in range(self.nfragments()):
+            if self.fragment_types[fr] == 'Absent':
+                pass
+            else:
+                for at in range(self.fragments[fr][0], self.fragments[fr][1] + 1):
+                    [x, y, z] = self.atoms[at].compute()
+                    text += '%2s %17.12f %17.12f %17.12f\n' % (self.symbol(at), \
+                        x * factor, y * factor, z * factor)
         text += '}\n\n'
         text += 'SET,CHARGE=%d\n' % (self.molecular_charge())
         text += 'SET,SPIN=%d\n' % (self.multiplicity() - 1)  # Molpro wants (mult-1)
@@ -258,6 +295,144 @@ class Molecule(LibmintsMolecule):
         if len(textDummy) > 6:
             text += textDummy
         return text
+
+    def format_molecule_for_cfour(self):
+        """Function to print Molecule in a form readable by Cfour.
+
+        """
+        self.update_geometry()
+        factor = 1.0 if self.PYunits == 'Angstrom' else psi_bohr2angstroms
+        #factor = 1.0 if self.PYunits == 'Bohr' else 1.0/psi_bohr2angstroms
+
+        text = 'auto-generated by qcdb from molecule %s\n' % (self.tagline)
+
+        # append atoms and coordentries
+        for fr in range(self.nfragments()):
+            if self.fragment_types[fr] == 'Absent':
+                pass
+            else:
+                for at in range(self.fragments[fr][0], self.fragments[fr][1] + 1):
+                    [x, y, z] = self.atoms[at].compute()
+                    text += '%-2s %17.12f %17.12f %17.12f\n' % ((self.symbol(at) if self.Z(at) else "GH"), \
+                        x * factor, y * factor, z * factor)
+        text += '\n'
+
+        # prepare molecule keywords to be set as c-side keywords
+        options = collections.defaultdict(lambda: collections.defaultdict(dict))
+        options['CFOUR']['CFOUR_CHARGE']['value'] = self.molecular_charge()
+        options['CFOUR']['CFOUR_MULTIPLICITY']['value'] = self.multiplicity()
+        options['CFOUR']['CFOUR_UNITS']['value'] = 'ANGSTROM'
+#        options['CFOUR']['CFOUR_UNITS']['value'] = 'BOHR'
+        options['CFOUR']['CFOUR_COORDINATES']['value'] = 'CARTESIAN'
+#        options['CFOUR']['CFOUR_SUBGROUP']['value'] = self.symmetry_from_input().upper()
+#        print self.inertia_tensor()
+#        print self.inertial_system()
+
+        options['CFOUR']['CFOUR_CHARGE']['clobber'] = True
+        options['CFOUR']['CFOUR_MULTIPLICITY']['clobber'] = True
+        options['CFOUR']['CFOUR_UNITS']['clobber'] = True
+        options['CFOUR']['CFOUR_COORDINATES']['clobber'] = True
+
+        return text, options
+
+    def format_basis_for_cfour(self, puream):
+        """Function to print the BASIS=SPECIAL block for Cfour according
+        to the active atoms in Molecule. Special short basis names
+        are used by Psi4 libmints GENBAS-writer in accordance with
+        Cfour constraints.
+
+        """
+        text = ''
+        cr = 1
+        for fr in range(self.nfragments()):
+            if self.fragment_types[fr] == 'Absent':
+                pass
+            else:
+                for at in range(self.fragments[fr][0], self.fragments[fr][1] + 1):
+                    text += """%s:P4_%d\n""" % (self.symbol(at).upper(), cr)
+                    cr += 1
+        text += '\n'
+
+        options = collections.defaultdict(lambda: collections.defaultdict(dict))
+        options['CFOUR']['CFOUR_BASIS']['value'] = 'SPECIAL'
+        options['CFOUR']['CFOUR_SPHERICAL']['value'] = puream
+
+        options['CFOUR']['CFOUR_BASIS']['clobber'] = True
+        options['CFOUR']['CFOUR_SPHERICAL']['clobber'] = True
+
+        options['CFOUR']['CFOUR_BASIS']['superclobber'] = True
+        options['CFOUR']['CFOUR_SPHERICAL']['superclobber'] = True
+
+        return text, options
+
+    def format_molecule_for_cfour_old(self):
+        """Function to print Molecule in a form readable by Cfour. This
+        version works as long as zmat is composed entirely of variables,
+        not internal values, while cartesian is all internal values,
+        no variables. Cutting off this line of development because,
+        with getting molecules after passing through libmints Molecule,
+        all zmats with dummies (Cfour's favorite kind) have already been
+        converted into cartesian. Next step, if this line was pursued
+        would be to shift any zmat internal values to external and any
+        cartesian external values to internal.
+
+        """
+
+        text = ''
+        text += 'auto-generated by qcdb from molecule %s\n' % (self.tagline)
+
+#        # append units and any other non-default molecule keywords
+#        text += "    units %-s\n" % ("Angstrom" if self.units() == 'Angstrom' else "Bohr")
+#        if not self.PYmove_to_com:
+#            text += "    no_com\n"
+#        if self.PYfix_orientation:
+#            text += "    no_reorient\n"
+
+        # append atoms and coordentries and fragment separators with charge and multiplicity
+        Pfr = 0
+        isZMat = False
+        isCart = False
+        for fr in range(self.nfragments()):
+            if self.fragment_types[fr] == 'Absent' and not self.has_zmatrix():
+                continue
+#            text += "%s    %s%d %d\n" % (
+#                "" if Pfr == 0 else "    --\n",
+#                "#" if self.fragment_types[fr] == 'Ghost' or self.fragment_types[fr] == 'Absent' else "",
+#                self.fragment_charges[fr], self.fragment_multiplicities[fr])
+            Pfr += 1
+            for at in range(self.fragments[fr][0], self.fragments[fr][1] + 1):
+                if type(self.full_atoms[at]) == ZMatrixEntry:
+                    isZMat = True
+                elif type(self.full_atoms[at]) == CartesianEntry:
+                    isCart = True
+                if self.fragment_types[fr] == 'Absent':
+                    text += "%s" % ("X")
+                elif self.fZ(at) or self.fsymbol(at) == "X":
+                    text += "%s" % (self.fsymbol(at))
+                else:
+                    text += "%s" % ("GH")  # atom info is lost + self.fsymbol(at) + ")")
+                text += "%s" % (self.full_atoms[at].print_in_input_format_cfour())
+        text += "\n"
+
+        # append any coordinate variables
+        if len(self.geometry_variables):
+            for vb, val in self.geometry_variables.items():
+                text += """%s=%.10f\n""" % (vb, val)
+            text += "\n"
+
+        # prepare molecule keywords to be set as c-side keywords
+        options = collections.defaultdict(lambda: collections.defaultdict(dict))
+        options['CFOUR']['CFOUR_CHARGE']['value'] = self.molecular_charge()
+        options['CFOUR']['CFOUR_MULTIPLICITY']['value'] = self.multiplicity()
+        options['CFOUR']['CFOUR_UNITS']['value'] = self.units()
+        if isZMat and not isCart:
+            options['CFOUR']['CFOUR_COORDINATES']['value'] = 'INTERNAL'
+        elif isCart and not isZMat:
+            options['CFOUR']['CFOUR_COORDINATES']['value'] = 'CARTESIAN'
+        else:
+            raise ValidationError("""Strange mix of Cartesian and ZMatrixEntries in molecule unsuitable for Cfour.""")
+
+        return text, options
 
     def format_molecule_for_nwchem(self):
         """
@@ -286,7 +461,7 @@ class Molecule(LibmintsMolecule):
 
         """
         if self.nfragments() != 1:
-            print('Molecule already fragmented so no further action by auto_fragments().')
+            print 'Molecule already fragmented so no further action by auto_fragments().'
             return self
 
         flist = self.BFS()
@@ -397,16 +572,16 @@ class Molecule(LibmintsMolecule):
 
         return Fragment
 
-    def inertia_tensor(self, masswt=True):
+    def inertia_tensor(self, masswt=True, zero=ZERO):
         """Compute inertia tensor.
 
-        >>> print(H2OH2O.inertia_tensor())
+        >>> print H2OH2O.inertia_tensor()
         [[8.704574864178731, -8.828375721817082, 0.0], [-8.828375721817082, 280.82861714077666, 0.0], [0.0, 0.0, 281.249500988553]]
 
         """
-        return self.inertia_tensor_partial(range(self.natom()), masswt)
+        return self.inertia_tensor_partial(range(self.natom()), masswt, zero)
 
-    def inertia_tensor_partial(self, part, masswt=True):
+    def inertia_tensor_partial(self, part, masswt=True, zero=ZERO):
         """Compute inertia tensor based on atoms in *part*.
 
         """
@@ -443,17 +618,17 @@ class Molecule(LibmintsMolecule):
         # Check the elements for zero and make them a hard zero.
         for i in range(3):
             for j in range(3):
-                if math.fabs(tensor[i][j]) < ZERO:
+                if math.fabs(tensor[i][j]) < zero:
                     tensor[i][j] = 0.0
         return tensor
 
-    def inertial_system_partial(self, part, masswt=True):
+    def inertial_system_partial(self, part, masswt=True, zero=ZERO):
         """Solve inertial system based on atoms in *part*"""
-        return diagonalize3x3symmat(self.inertia_tensor_partial(part, masswt))
+        return diagonalize3x3symmat(self.inertia_tensor_partial(part, masswt, zero))
 
-    def inertial_system(self, masswt=True):
+    def inertial_system(self, masswt=True, zero=ZERO):
         """Solve inertial system"""
-        return diagonalize3x3symmat(self.inertia_tensor(masswt))
+        return diagonalize3x3symmat(self.inertia_tensor(masswt, zero))
 
     def print_ring_planes(self, entity1, entity2, entity3=None, entity4=None):
         """(reals only, 1-indexed)
@@ -513,7 +688,7 @@ class Molecule(LibmintsMolecule):
             text += '  Eqn. of Plane: %14.8f %14.8f %14.8f %14.8f   [Ai + Bj + Ck + D = 0]\n' % \
                 (xplane[0], xplane[1], xplane[2], xplane[3])
             dtemp = math.sqrt(evecs[0][midx] * evecs[0][midx] + evecs[1][midx] * evecs[1][midx] + evecs[2][midx] * evecs[2][midx])
-            print('denom %s' % dtemp)
+            print 'denom', dtemp
             hessplane = [evecs[0][midx] / dtemp, evecs[1][midx] / dtemp, evecs[2][midx] / dtemp, xplane[3] / dtemp]
             hessplane2 = [xplane[0] / dtemp, xplane[1] / dtemp, xplane[2] / dtemp, xplane[3] / dtemp]
             text += '  Eqn. of Plane: %14.8f %14.8f %14.8f %14.8f   [Ai + Bj + Ck + D = 0] H\n' % \
@@ -558,7 +733,7 @@ class Molecule(LibmintsMolecule):
             text += '  Distance from Center of %s to Center of %s along Plane of %s:  %14.8f   [Angstrom]\n' % \
                 ('2', '1', '1', distCPC * psi_bohr2angstroms)
 
-        print(text)
+        print text
 
 #        text = "        Interatomic Distances (Angstroms)\n\n"
 #        for i in range(self.natom()):
@@ -699,7 +874,7 @@ class Molecule(LibmintsMolecule):
                 # case where all param read from dashparam dict (which must have all correct keys)
                 func = 'custom'
                 dashcoeff[dashlvl][func] = {}
-                dashparam = dict((k.lower(), v) for k, v in dashparam.items())
+                dashparam = dict((k.lower(), v) for k, v in dashparam.iteritems())
                 for key in dashcoeff[dashlvl]['b3lyp'].keys():
                     if key in dashparam.keys():
                         dashcoeff[dashlvl][func][key] = dashparam[key]
@@ -714,7 +889,7 @@ class Molecule(LibmintsMolecule):
                 pass
             else:
                 # case where items in dashparam dict can override param taken from dashcoeff above
-                dashparam = dict((k.lower(), v) for k, v in dashparam.items())
+                dashparam = dict((k.lower(), v) for k, v in dashparam.iteritems())
                 for key in dashcoeff[dashlvl]['b3lyp'].keys():
                     if key in dashparam.keys():
                         dashcoeff[dashlvl][func][key] = dashparam[key]
@@ -767,7 +942,7 @@ class Molecule(LibmintsMolecule):
             raise ValidationError('Program dftd3 not found in path.')
         out, err = dashout.communicate()
         if verbosity >= 3:
-            print(out)
+            print out
 
         # Parse output (could go further and break into E6, E8, E10 and Cn coeff)
         success = False
@@ -808,3 +983,74 @@ class Molecule(LibmintsMolecule):
 
         # return -D & d(-D)/dx
         return dashd, dashdderiv
+
+    def rotor_type(self, tol=FULL_PG_TOL):
+        """Returns the rotor type.
+
+        >>> H2OH2O.rotor_type()
+        RT_ASYMMETRIC_TOP
+
+        """
+        evals, evecs = diagonalize3x3symmat(self.inertia_tensor())
+        evals = sorted(evals)
+
+        rot_const = [1.0 / evals[0] if evals[0] > 1.0e-6 else 0.0,
+                     1.0 / evals[1] if evals[1] > 1.0e-6 else 0.0,
+                     1.0 / evals[2] if evals[2] > 1.0e-6 else 0.0]
+
+        # Determine degeneracy of rotational constants.
+        degen = 0
+        for i in range(2):
+            for j in range(i + 1, 3):
+                if degen >= 2:
+                    continue
+                rabs = math.fabs(rot_const[i] - rot_const[j])
+                tmp = rot_const[i] if rot_const[i] > rot_const[j] else rot_const[j]
+                if rabs > ZERO:
+                    rel = rabs / tmp
+                else:
+                    rel = 0.0
+                if rel < tol:
+                    degen += 1
+        #print "\tDegeneracy is %d\n" % (degen)
+
+        # Determine rotor type
+        if self.natom() == 1:
+            rotor_type = 'RT_ATOM'
+        elif rot_const[0] == 0.0:
+            rotor_type = 'RT_LINEAR'                     # 0  <  IB == IC      inf > B == C
+        elif degen == 2:
+            rotor_type = 'RT_SPHERICAL_TOP'              # IA == IB == IC       A == B == C
+        elif degen == 1:
+            if (rot_const[1] - rot_const[2]) < 1.0e-6:
+                rotor_type = 'RT_PROLATE_SYMMETRIC_TOP'  # IA <  IB == IC       A >  B == C
+            elif (rot_const[0] - rot_const[1]) < 1.0e-6:
+                rotor_type = 'RT_OBLATE_SYMMETRIC_TOP'   # IA == IB <  IC       A == B >  C
+        else:
+            rotor_type = 'RT_ASYMMETRIC_TOP'             # IA <  IB <  IC       A  > B >  C
+        return rotor_type
+
+    def center_of_charge(self):
+        """Computes center of charge of molecule (does not translate molecule).
+
+        >>> H2OH2O.center_of_charge()
+        [-0.073339893272065401, 0.002959783555632145, 0.0]
+
+        """
+        ret = [0.0, 0.0, 0.0]
+        total_c = 0.0
+
+        for at in range(self.natom()):
+            c = self.charge(at)
+            ret = add(ret, scale(self.xyz(at), c))
+            total_c += c
+
+        ret = scale(ret, 1.0 / total_c)
+        return ret
+
+    def move_to_coc(self):
+        """Moves molecule to center of charge
+
+        """
+        coc = scale(self.center_of_charge(), -1.0)
+        self.translate(coc)

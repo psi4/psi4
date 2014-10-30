@@ -45,8 +45,6 @@
 #include <libqt/qt.h>
 #include "psifiles.h"
 
-extern FILE* outfile;
-
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
 
@@ -66,7 +64,7 @@ void CCTransform::read_oei_so_integrals()
 
   // Read the kinetic energy integrals
   for(int k=0; k<nso*(nso+1)/2;++k) H[k] = 0.0;
-  iwl_rdone(PSIF_OEI,const_cast<char*>(PSIF_SO_T),H,nso*(nso+1)/2,0,0,outfile);
+  iwl_rdone(PSIF_OEI,const_cast<char*>(PSIF_SO_T),H,nso*(nso+1)/2,0,0,"outfile");
 
   for(int i=0; i < nso; i++)
     for(int j=0; j < nso; j++)
@@ -74,7 +72,7 @@ void CCTransform::read_oei_so_integrals()
 
   // Read the potential energy integrals
   for(int k=0; k<nso*(nso+1)/2;++k) H[k] = 0.0;
-  iwl_rdone(PSIF_OEI,const_cast<char*>(PSIF_SO_V),H,nso*(nso+1)/2,0,0,outfile);
+  iwl_rdone(PSIF_OEI,const_cast<char*>(PSIF_SO_V),H,nso*(nso+1)/2,0,0,"outfile");
 
   for(int i=0; i < nso; i++)
     for(int j=0; j < nso; j++)
@@ -82,7 +80,7 @@ void CCTransform::read_oei_so_integrals()
 
   // Read the overlap integrals
   for(int k=0; k<nso*(nso+1)/2;++k) H[k] = 0.0;
-  iwl_rdone(PSIF_OEI,const_cast<char*>(PSIF_SO_S),H,nso*(nso+1)/2,0,0,outfile);
+  iwl_rdone(PSIF_OEI,const_cast<char*>(PSIF_SO_S),H,nso*(nso+1)/2,0,0,"outfile");
 
   for(int i=0; i < nso; i++)
     for(int j=0; j < nso; j++)

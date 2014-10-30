@@ -1,0 +1,158 @@
+
+.PHONY: tests quicktests cc_tests clean quicktestsclean longtests longtestsclean
+
+sp_rhf_subdirs = sp-rhf-scf sp-rhf-mp2 sp-rhf-ccsd sp-rhf-ccsd-ao sp-rhf-ccsd_t_ \
+sp-rhf-ccsd_t_-ao sp-rhf-ccsd_t_-ao-ecc sp-rhf-ccsd_t_-ecc sp-rhf-ccsd_t_-fc \
+sp-rhf-cc3 sp-rhf-ccsdt
+
+sp_uhf_subdirs = sp-uhf-scf sp-uhf-mp2 sp-uhf-ccsd sp-uhf-ccsd_t_ sp-uhf-ccsd_t_-ao \
+sp-uhf-ccsd_t_-ao-ecc sp-uhf-ccsd_t_-ecc sp-uhf-cc3 sp-uhf-ccsdt
+
+sp_rohf_subdirs = sp-rohf-scf sp-rohf-mp2-sc sp-rohf-mp4-sc sp-rohf-ccsd \
+sp-rohf-ccsd_t_ sp-rohf-ccsdt sp-rohf-ccsd-ao sp-rohf-ccsd_t_-ao \
+sp-rohf-ccsd_t_-ao-ecc sp-rohf-ccsd_t_-fc
+
+psi_subdirs = psi-rhf-scsmp2 psi-uhf-scsmp2 psi-rohf-scsmp2 psi-rhf-mp3 \
+psi-uhf-mp3 psi-mp4 
+
+opt_subdirs = opt-rhf-scf opt-rhf-mp2 opt-rhf-ccsd_t_ opt-rhf-ccsd_t_-ecc \
+psi-a24-grad
+
+infra_subdirs = puream mints5 mints5-grad pywrap-cbs1 kw-1 kw-2 kw-3 kw-4 \
+kw-5 kw-6 kw-7 kw-8 psi-ghost-grad scf4 mp2-1 pywrap-db1 pywrap-basis dfmp2-1
+
+subdirs = \
+$(infra_subdirs) \
+$(sp_rhf_subdirs) \
+$(sp_uhf_subdirs) \
+$(sp_rohf_subdirs) \
+$(opt_subdirs) \
+$(psi_subdirs)
+
+# Compile the plugins, if we activated them
+HAVE_PLUGINS=@HAVE_PLUGINS@
+ifeq ($(HAVE_PLUGINS),yes)
+   subdirs += $(plugin_subdirs)
+endif
+
+# only short tests, only one from each type of computation
+# the idea is that all these should run in ~ 5-10 minutes
+quicktestdirs = sp-uhf-mp2 sp-rohf-scf sp-rhf-ccsd_t_-ecc opt-rhf-scf \
+  psi-rhf-scsmp2 pywrap-cbs1
+
+#HAVE_MADNESS=@HAVE_MPI@
+#ifeq ($(HAVE_MADNESS),1)
+#   subdirs += $(maddness_subdirs)
+#endif
+# 
+#have_dftd3 := $(shell which dftd3)
+#ifneq ($(have_dftd3),)
+#   subdirs += $(dftd3_subdirs)
+#   quicktestdirs += dftd3-energy
+#endif
+#
+#have_dmrcc := $(shell which dmrcc)
+#ifneq ($(have_mrcc),)
+#   subdirs += $(mrcc_subdirs)
+#endif
+
+define gatherresults
+    ERRORS=0; \
+    echo > ../test-case-results; \
+    for dir in $1; do \
+        if [ -e $${dir}/$${dir}.passed ]; \
+        then echo "Testing $${dir}..." >> ../test-case-results; \
+             cat $${dir}/$${dir}.passed >> ../test-case-results;\
+        else ERRORS=1; \
+        fi; \
+    done; \
+    for dir in $1; do \
+        if [ ! -e $${dir}/$${dir}.passed ]; \
+        then echo "\n\nTEST FAILURE in $${dir}$$!!!";           \
+             cat $${dir}/$${dir}.test;                          \
+             echo;                                              \
+             echo "Testing $${dir}..." >> ../test-case-results; \
+             cat $${dir}/$${dir}.test >> ../test-case-results;  \
+             echo "\tFAILED" >>../test-case-results; \
+        fi; \
+    done; \
+    if [ $$ERRORS -eq 1 ]; then echo "One or more tests failed! Check test-case-results for more information.\n" && exit 1; fi;\
+    echo ERRORS = $$ERRORS
+endef
+
+tests: $(subdirs)
+	$(call gatherresults, $(subdirs))
+
+quicktests: $(quicktestdirs)
+	$(call gatherresults, $(quicktestdirs))
+
+longtests: $(longtest_subdirs)
+	$(call gatherresults, $(longtest_subdirs)
+
+sp_rhf_tests: $(sp_rhf_subdirs)
+	$(call gatherresults, $(sp_rhf_subdirs))
+
+sp_uhf_tests: $(sp_uhf_subdirs)
+	$(call gatherresults, $(sp_uhf_subdirs))
+
+sp_rohf_tests: $(sp_rohf_subdirs)
+	$(call gatherresults, $(sp_rohf_subdirs))
+
+opt_tests: $(opt_subdirs)
+	$(call gatherresults, $(opt_subdirs))
+
+psi_tests: $(psi_subdirs)
+	$(call gatherresults, $(psi_subdirs))
+
+infra_tests: $(infra_subdirs)
+	$(call gatherresults, $(infra_subdirs))
+
+plugins:
+	for dir in $(plugin_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+clean:
+	for dir in $(subdirs); \
+	do \
+	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
+	done
+	rm -f ../test-case-results
+
+quicktestsclean:
+	for dir in $(quicktestdirs); \
+	do \
+	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
+	done
+	rm -f ../test-case-results
+
+longtestsclean:
+	for dir in $(longtest_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
+	done
+
+cfourtests:
+	do \
+	 (cd cfour && $(MAKE) tests) || exit 1; \
+	done
+
+top_srcdir = @top_srcdir@
+srcdir = @srcdir@
+top_objdir = ../..
+
+$(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
+	cd $(top_srcdir) && autoconf
+
+$(top_objdir)/config.status: $(top_srcdir)/configure
+	cd $(top_objdir) && ./config.status --recheck
+
+Makefile: $(srcdir)/Makefile.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=tests/cfour/Makefile ./config.status
+
+.PHONY: $(subdirs)
+$(subdirs):
+	echo "Testing $@..."
+	$(MAKE) -C $@; true
+

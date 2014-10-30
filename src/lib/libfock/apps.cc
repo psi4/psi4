@@ -58,7 +58,7 @@ RBase::RBase() :
 RBase::RBase(bool flag) :
     Wavefunction(Process::environment.options,_default_psio_lib_) 
 {
-    fprintf(outfile, "Dirty hack %s\n\n", (flag ? "true" : "false"));
+    outfile->Printf( "Dirty hack %s\n\n", (flag ? "true" : "false"));
 }
 RBase::~RBase()
 {
@@ -70,7 +70,7 @@ void RBase::common_init()
     
     if (!ref) {
         // Try to build an RHF from Checkpoint
-        fprintf(outfile, "    Attempting to build reference from Chkpt.\n\n");
+        outfile->Printf( "    Attempting to build reference from Chkpt.\n\n");
         // WTF init_with_chkpt is not defined
 
         // Sizing
@@ -175,7 +175,7 @@ void RBase::preiterations()
     if (!jk_) {
         if (options_.get_bool("SAVE_JK")) {
             jk_ = (static_cast<psi::scf::HF*>(reference_wavefunction_.get()))->jk();
-            fprintf(outfile,"    Reusing JK object from SCF.\n\n");
+            outfile->Printf("    Reusing JK object from SCF.\n\n");
         } else {
             jk_ = JK::build_JK();
             unsigned long int effective_memory = (unsigned long int)(0.125 * options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
@@ -204,30 +204,30 @@ RCPHF::~RCPHF()
 }
 void RCPHF::print_header()
 {
-    fprintf(outfile, "\n");
-    fprintf(outfile, "         ------------------------------------------------------------\n");
-    fprintf(outfile, "                                     CPHF                           \n");
-    fprintf(outfile, "                                  Rob Parrish                       \n");
-    fprintf(outfile, "         ------------------------------------------------------------\n\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "         ------------------------------------------------------------\n");
+    outfile->Printf( "                                     CPHF                           \n");
+    outfile->Printf( "                                  Rob Parrish                       \n");
+    outfile->Printf( "         ------------------------------------------------------------\n\n");
 
-    fprintf(outfile, "  ==> Geometry <==\n\n");
+    outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
-    fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
-    fprintf(outfile, "  Reference energy  = %20.15f\n\n", Eref_);
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
 
-    fprintf(outfile, "  ==> Basis Set <==\n\n");
-    basisset_->print_by_level(outfile, print_);
+    outfile->Printf( "  ==> Basis Set <==\n\n");
+    basisset_->print_by_level("outfile", print_);
 
     if (tasks_.size()) {
-        fprintf(outfile, "  ==> Named Tasks <==\n\n");
+        outfile->Printf( "  ==> Named Tasks <==\n\n");
         for (std::set<std::string>::const_iterator it = tasks_.begin(); it != tasks_.end(); ++it) {
-            fprintf(outfile, "    %s\n", (*it).c_str());
+            outfile->Printf( "    %s\n", (*it).c_str());
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
 
     if (debug_ > 1) {
-        fprintf(outfile, "  ==> Fock Matrix (MO Basis) <==\n\n");
+        outfile->Printf( "  ==> Fock Matrix (MO Basis) <==\n\n");
         eps_aocc_->print();
         eps_avir_->print();
     }
@@ -347,7 +347,7 @@ double RCPHF::compute_energy()
     jk_->print_header();
 
     if (print_) {
-        fprintf(outfile, "  ==> CPHF Iterations <==\n\n");
+        outfile->Printf( "  ==> CPHF Iterations <==\n\n");
     }
 
     if (options_.get_bool("EXPLICIT_HAMILTONIAN")) {
@@ -394,22 +394,22 @@ RCIS::~RCIS()
 }
 void RCIS::print_header()
 {
-    fprintf(outfile, "\n");
-    fprintf(outfile, "         ------------------------------------------------------------\n");
-    fprintf(outfile, "                                      CIS                           \n");
-    fprintf(outfile, "                                  Rob Parrish                       \n");
-    fprintf(outfile, "         ------------------------------------------------------------\n\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "         ------------------------------------------------------------\n");
+    outfile->Printf( "                                      CIS                           \n");
+    outfile->Printf( "                                  Rob Parrish                       \n");
+    outfile->Printf( "         ------------------------------------------------------------\n\n");
 
-    fprintf(outfile, "  ==> Geometry <==\n\n");
+    outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
-    fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
-    fprintf(outfile, "  Reference energy  = %20.15f\n\n", Eref_);
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
 
-    fprintf(outfile, "  ==> Basis Set <==\n\n");
-    basisset_->print_by_level(outfile, print_);
+    outfile->Printf( "  ==> Basis Set <==\n\n");
+    basisset_->print_by_level("outfile", print_);
 
     if (debug_ > 1) {
-        fprintf(outfile, "  ==> Fock Matrix (MO Basis) <==\n\n");
+        outfile->Printf( "  ==> Fock Matrix (MO Basis) <==\n\n");
         eps_aocc_->print();
         eps_avir_->print();
     }
@@ -427,30 +427,30 @@ void RCIS::sort_states()
 }
 void RCIS::print_wavefunctions()
 {
-    fprintf(outfile, "  ==> Excitation Energies <==\n\n");
+    outfile->Printf( "  ==> Excitation Energies <==\n\n");
 
-    fprintf(outfile,"  -----------------------------------------------\n");
-    fprintf(outfile,"  %5s %11s %14s %14s\n",
+    outfile->Printf("  -----------------------------------------------\n");
+    outfile->Printf("  %5s %11s %14s %14s\n",
         "State", "Description", "dE (H)", "dE (eV)");
-    fprintf(outfile,"  -----------------------------------------------\n");
+    outfile->Printf("  -----------------------------------------------\n");
     char** labels = basisset_->molecule()->irrep_labels();
     for (int i = 0; i < states_.size(); i++) {
         double E = get<0>(states_[i]);
         int    j = get<1>(states_[i]);
         int    m = get<2>(states_[i]);
         int    h = get<3>(states_[i]);
-        fprintf(outfile,"  %-5d %1s%-5d(%3s) %14.6E %14.6E\n",
+        outfile->Printf("  %-5d %1s%-5d(%3s) %14.6E %14.6E\n",
             i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], E, pc_hartree2ev * E);
     }
-    fprintf(outfile,"  -----------------------------------------------\n");
-    fprintf(outfile, "\n");
+    outfile->Printf("  -----------------------------------------------\n");
+    outfile->Printf( "\n");
 
     for(int h = 0; h < Caocc_->nirrep(); ++h) free(labels[h]); free(labels);
 
 
     if (debug_ > 1) {
         if (singlets_.size()) {
-            fprintf(outfile, "  ==> Singlet States <==\n\n");
+            outfile->Printf( "  ==> Singlet States <==\n\n");
             for (int n = 0; n < singlets_.size(); n++) {
                 singlets_[n]->print();
                 Dmo(singlets_[n])->print();
@@ -459,7 +459,7 @@ void RCIS::print_wavefunctions()
         }
 
         if (triplets_.size()) {
-            fprintf(outfile, "  ==> Triplet States <==\n\n");
+            outfile->Printf( "  ==> Triplet States <==\n\n");
             for (int n = 0; n < triplets_.size(); n++) {
                 triplets_[n]->print();
                 Dmo(triplets_[n])->print();
@@ -474,12 +474,12 @@ void RCIS::print_amplitudes()
 
     double cutoff = options_.get_double("CIS_AMPLITUDE_CUTOFF");
 
-    fprintf(outfile, "  ==> Significant Amplitudes <==\n\n");
+    outfile->Printf( "  ==> Significant Amplitudes <==\n\n");
 
-    fprintf(outfile,"  --------------------------------------------------\n");
-    fprintf(outfile,"  %5s %11s %20s %11s\n",
+    outfile->Printf("  --------------------------------------------------\n");
+    outfile->Printf("  %5s %11s %20s %11s\n",
         "State", "Description", "Excitation", "Amplitude");
-    fprintf(outfile,"  --------------------------------------------------\n");
+    outfile->Printf("  --------------------------------------------------\n");
     char** labels = basisset_->molecule()->irrep_labels();
     for (int i = 0; i < states_.size(); i++) {
         double E = get<0>(states_[i]);
@@ -514,25 +514,25 @@ void RCIS::print_amplitudes()
         if (amps.size()) {
             std::sort(amps.begin(), amps.end());
             std::reverse(amps.begin(), amps.end());
-            fprintf(outfile,"  %-5d %1s%-5d(%3s) %5d%-3s -> %5d%-3s %11.3E\n",
+            outfile->Printf("  %-5d %1s%-5d(%3s) %5d%-3s -> %5d%-3s %11.3E\n",
                 i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h],
                 get<1>(amps[0]) + 1, labels[get<2>(amps[0])],
                 get<3>(amps[0]) + 1, labels[get<4>(amps[0])],
                 get<0>(amps[0]));
             for (int index = 1; index < amps.size(); index++) {
-                fprintf(outfile,"                    %5d%-3s -> %5d%-3s %11.3E\n",
+                outfile->Printf("                    %5d%-3s -> %5d%-3s %11.3E\n",
                     get<1>(amps[index]) + 1, labels[get<2>(amps[index])],
                     get<3>(amps[index]) + 1, labels[get<4>(amps[index])],
                     get<0>(amps[index]));
             }
         } else {
-            fprintf(outfile,"  %-5d %1s%-5d(%3s) %s\n",
+            outfile->Printf("  %-5d %1s%-5d(%3s) %s\n",
                 i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], "No Significant Amplitudes");
         }
 
-        fprintf(outfile,"  --------------------------------------------------\n");
+        outfile->Printf("  --------------------------------------------------\n");
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
     for(int h = 0; h < Caocc_->nirrep(); ++h) free(labels[h]); free(labels);
 }
 void RCIS::print_transitions()
@@ -550,12 +550,12 @@ void RCIS::print_transitions()
     dipole_ints.push_back(SharedMatrix(new Matrix("Dipole Z", nso, nso)));
     dipole->compute(dipole_ints);
 
-    fprintf(outfile, "  ==> GS->XS Oscillator Strengths <==\n\n");
+    outfile->Printf( "  ==> GS->XS Oscillator Strengths <==\n\n");
 
-    fprintf(outfile,"  --------------------------------------------------------------------\n");
-    fprintf(outfile,"  %5s %11s %11s %11s %11s %14s\n",
+    outfile->Printf("  --------------------------------------------------------------------\n");
+    outfile->Printf("  %5s %11s %11s %11s %11s %14s\n",
         "State", "Description", "mu_x", "mu_y", "mu_z", "f");
-    fprintf(outfile,"  --------------------------------------------------------------------\n");
+    outfile->Printf("  --------------------------------------------------------------------\n");
     char** labels = basisset_->molecule()->irrep_labels();
     for (int i = 0; i < states_.size(); i++) {
 
@@ -582,11 +582,11 @@ void RCIS::print_transitions()
         // Oscillator strength
         double f = 2.0 / 3.0 * E * (mu[0] * mu[0] + mu[1] * mu[1] + mu[2] * mu[2]);
 
-        fprintf(outfile,"  %-5d %1s%-5d(%3s) %11.3E %11.3E %11.3E %14.6E\n",
+        outfile->Printf("  %-5d %1s%-5d(%3s) %11.3E %11.3E %11.3E %14.6E\n",
             i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], mu[0],mu[1],mu[2],f);
     }
-    fprintf(outfile,"  --------------------------------------------------------------------\n");
-    fprintf(outfile, "\n");
+    outfile->Printf("  --------------------------------------------------------------------\n");
+    outfile->Printf( "\n");
     for(int h = 0; h < Caocc_->nirrep(); ++h) free(labels[h]); free(labels);
 }
 void RCIS::print_densities()
@@ -1081,7 +1081,7 @@ double RCIS::compute_energy()
         H->set_singlet(true);
 
         if (print_) {
-            fprintf(outfile, "  ==> Singlets <==\n\n");
+            outfile->Printf( "  ==> Singlets <==\n\n");
         }
 
         if (options_.get_bool("EXPLICIT_HAMILTONIAN")) {
@@ -1131,7 +1131,7 @@ double RCIS::compute_energy()
         H->set_singlet(false);
 
         if (print_) {
-            fprintf(outfile, "  ==> Triplets <==\n\n");
+            outfile->Printf( "  ==> Triplets <==\n\n");
         }
 
         solver->solve();
@@ -1186,22 +1186,22 @@ RTDHF::~RTDHF()
 }
 void RTDHF::print_header()
 {
-    fprintf(outfile, "\n");
-    fprintf(outfile, "         ------------------------------------------------------------\n");
-    fprintf(outfile, "                                      TDHF                           \n");
-    fprintf(outfile, "                                  Rob Parrish                       \n");
-    fprintf(outfile, "         ------------------------------------------------------------\n\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "         ------------------------------------------------------------\n");
+    outfile->Printf( "                                      TDHF                           \n");
+    outfile->Printf( "                                  Rob Parrish                       \n");
+    outfile->Printf( "         ------------------------------------------------------------\n\n");
 
-    fprintf(outfile, "  ==> Geometry <==\n\n");
+    outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
-    fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
-    fprintf(outfile, "  Reference energy  = %20.15f\n\n", Eref_);
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
 
-    fprintf(outfile, "  ==> Basis Set <==\n\n");
-    basisset_->print_by_level(outfile, print_);
+    outfile->Printf( "  ==> Basis Set <==\n\n");
+    basisset_->print_by_level("outfile", print_);
 
     if (debug_ > 1) {
-        fprintf(outfile, "  ==> Fock Matrix (MO Basis) <==\n\n");
+        outfile->Printf( "  ==> Fock Matrix (MO Basis) <==\n\n");
         eps_aocc_->print();
         eps_avir_->print();
     }
@@ -1237,7 +1237,7 @@ double RTDHF::compute_energy()
         H->set_singlet(true);
 
         if (print_) {
-            fprintf(outfile, "  ==> Singlets <==\n\n");
+            outfile->Printf( "  ==> Singlets <==\n\n");
         }
 
         solver->solve();
@@ -1265,7 +1265,7 @@ double RTDHF::compute_energy()
         H->set_singlet(false);
 
         if (print_) {
-            fprintf(outfile, "  ==> Triplets <==\n\n");
+            outfile->Printf( "  ==> Triplets <==\n\n");
         }
 
         solver->solve();
@@ -1307,19 +1307,19 @@ RCPKS::~RCPKS()
 }
 void RCPKS::print_header()
 {
-    fprintf(outfile, "\n");
-    fprintf(outfile, "         ------------------------------------------------------------\n");
-    fprintf(outfile, "                                     CPKS                            \n");
-    fprintf(outfile, "                                  Rob Parrish                       \n");
-    fprintf(outfile, "         ------------------------------------------------------------\n\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "         ------------------------------------------------------------\n");
+    outfile->Printf( "                                     CPKS                            \n");
+    outfile->Printf( "                                  Rob Parrish                       \n");
+    outfile->Printf( "         ------------------------------------------------------------\n\n");
 
-    fprintf(outfile, "  ==> Geometry <==\n\n");
+    outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
-    fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
-    fprintf(outfile, "  Reference energy  = %20.15f\n\n", Eref_);
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
 
-    fprintf(outfile, "  ==> Basis Set <==\n\n");
-    basisset_->print_by_level(outfile, print_);
+    outfile->Printf( "  ==> Basis Set <==\n\n");
+    basisset_->print_by_level("outfile", print_);
 }
 double RCPKS::compute_energy()
 {
@@ -1358,7 +1358,7 @@ double RCPKS::compute_energy()
     jk_->print_header();
 
     if (print_) {
-        fprintf(outfile, "  ==> CPHF Iterations <==\n\n");
+        outfile->Printf( "  ==> CPHF Iterations <==\n\n");
     }
 
     if (options_.get_bool("EXPLICIT_HAMILTONIAN")) {
@@ -1405,19 +1405,19 @@ RTDA::~RTDA()
 }
 void RTDA::print_header()
 {
-    fprintf(outfile, "\n");
-    fprintf(outfile, "         ------------------------------------------------------------\n");
-    fprintf(outfile, "                                      TDA                            \n");
-    fprintf(outfile, "                                  Rob Parrish                       \n");
-    fprintf(outfile, "         ------------------------------------------------------------\n\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "         ------------------------------------------------------------\n");
+    outfile->Printf( "                                      TDA                            \n");
+    outfile->Printf( "                                  Rob Parrish                       \n");
+    outfile->Printf( "         ------------------------------------------------------------\n\n");
 
-    fprintf(outfile, "  ==> Geometry <==\n\n");
+    outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
-    fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
-    fprintf(outfile, "  Reference energy  = %20.15f\n\n", Eref_);
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
 
-    fprintf(outfile, "  ==> Basis Set <==\n\n");
-    basisset_->print_by_level(outfile, print_);
+    outfile->Printf( "  ==> Basis Set <==\n\n");
+    basisset_->print_by_level("outfile", print_);
 }
 double RTDA::compute_energy()
 {
@@ -1450,7 +1450,7 @@ double RTDA::compute_energy()
         H->set_singlet(true);
 
         if (print_) {
-            fprintf(outfile, "  ==> Singlets <==\n\n");
+            outfile->Printf( "  ==> Singlets <==\n\n");
         }
 
         if (options_.get_bool("EXPLICIT_HAMILTONIAN")) {
@@ -1500,7 +1500,7 @@ double RTDA::compute_energy()
         H->set_singlet(false);
 
         if (print_) {
-            fprintf(outfile, "  ==> Triplets <==\n\n");
+            outfile->Printf( "  ==> Triplets <==\n\n");
         }
 
         solver->solve();
@@ -1555,19 +1555,19 @@ RTDDFT::~RTDDFT()
 }
 void RTDDFT::print_header()
 {
-    fprintf(outfile, "\n");
-    fprintf(outfile, "         ------------------------------------------------------------\n");
-    fprintf(outfile, "                                     TDDFT                           \n");
-    fprintf(outfile, "                                  Rob Parrish                       \n");
-    fprintf(outfile, "         ------------------------------------------------------------\n\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "         ------------------------------------------------------------\n");
+    outfile->Printf( "                                     TDDFT                           \n");
+    outfile->Printf( "                                  Rob Parrish                       \n");
+    outfile->Printf( "         ------------------------------------------------------------\n\n");
 
-    fprintf(outfile, "  ==> Geometry <==\n\n");
+    outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
-    fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
-    fprintf(outfile, "  Reference energy  = %20.15f\n\n", Eref_);
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
 
-    fprintf(outfile, "  ==> Basis Set <==\n\n");
-    basisset_->print_by_level(outfile, print_);
+    outfile->Printf( "  ==> Basis Set <==\n\n");
+    basisset_->print_by_level("outfile", print_);
 }
 double RTDDFT::compute_energy()
 {
@@ -1600,7 +1600,7 @@ double RTDDFT::compute_energy()
         H->set_singlet(true);
 
         if (print_) {
-            fprintf(outfile, "  ==> Singlets <==\n\n");
+            outfile->Printf( "  ==> Singlets <==\n\n");
         }
 
         solver->solve();
@@ -1628,7 +1628,7 @@ double RTDDFT::compute_energy()
         H->set_singlet(false);
 
         if (print_) {
-            fprintf(outfile, "  ==> Triplets <==\n\n");
+            outfile->Printf( "  ==> Triplets <==\n\n");
         }
 
         solver->solve();

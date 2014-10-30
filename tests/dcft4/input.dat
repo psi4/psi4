@@ -24,6 +24,10 @@ refodc06    = -98.2086151665222360    #TEST
 refodc12scf = -98.163060134490195     #TEST
 refodc12    = -98.2083640708414407    #TEST
 
+# ODC-13
+refodc13scf = -98.162361155505053     #TEST
+refodc13    = -98.2084516176586817    #TEST
+
 molecule HF {
 1 2
 H
@@ -77,14 +81,6 @@ energy('dcft')
 
 compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DC-06 SCF Energy (qc, qc_type=simultaneous, ao_basis=none)");     #TEST
 compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 10, "DC-06 Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
-
-set ao_basis disk
-set algorithm qc
-set qc_type simultaneous
-energy('dcft')
-
-compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DC-06 SCF Energy (qc, qc_type=simultaneous, ao_basis=disk)");     #TEST
-compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 10, "DC-06 Energy (qc, qc_type=simultaneous, ao_basis=disk)");                #TEST
 
 set ao_basis none
 set algorithm qc
@@ -140,14 +136,6 @@ energy('dcft')
 compare_values(refdcftscfexact, get_variable("DCFT SCF ENERGY"), 10, "DC-12 SCF Energy (qc, qc_type=simultaneous, ao_basis=none)");     #TEST
 compare_values(refdcftexact, get_variable("DCFT TOTAL ENERGY"), 10, "DC-12 Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
 
-set ao_basis disk
-set algorithm qc
-set qc_type simultaneous
-energy('dcft')
-
-compare_values(refdcftscfexact, get_variable("DCFT SCF ENERGY"), 10, "DC-12 SCF Energty (qc, qc_type=simultaneous, ao_basis=disk)");     #TEST
-compare_values(refdcftexact, get_variable("DCFT TOTAL ENERGY"), 10, "DC-12 Energy (qc, qc_type=simultaneous, ao_basis=disk)");                #TEST
-
 #ODC-06
 set dcft_functional odc-06
 set ao_basis none
@@ -202,3 +190,26 @@ energy('dcft')
 
 compare_values(refodc12scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-12 SCF Energy (qc, qc_type=simultaneous, ao_basis=none)");     #TEST
 compare_values(refodc12, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-12 Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
+
+#ODC-13
+set dcft_functional odc-13
+set ao_basis none
+set algorithm simultaneous
+energy('dcft')
+
+compare_values(refodc13scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-13 SCF Energy (simultaneous, ao_basis=none)");     #TEST
+compare_values(refodc13, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-13 Energy (simultaneous, ao_basis=none)");                #TEST
+
+set ao_basis disk
+set algorithm simultaneous
+energy('dcft')
+compare_values(refodc13scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-13 SCF Energy (simultaneous, ao_basis=disk)");     #TEST
+compare_values(refodc13, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-13 Energy (simultaneous, ao_basis=disk)");                #TEST
+
+set ao_basis none
+set algorithm qc
+set qc_type simultaneous
+energy('dcft')
+
+compare_values(refodc13scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-13 SCF Energy (qc, qc_type=simultaneous, ao_basis=none)");     #TEST
+compare_values(refodc13, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-13 Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST

@@ -32,11 +32,11 @@
 #include "v3d.h"
 #include "atom_data.h"
 #include "cov_radii.h"
-#include "print.h"
 #include "opt_data.h"
 #include "physconst.h"
 #include "linear_algebra.h"
-
+#include "psi4-dec.h"
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -45,7 +45,7 @@
 #elif defined (OPTKING_PACKAGE_QCHEM)
  #include "qcmath.h"
 #endif
-
+#include "libparallel/ParallelPrinter.h"
 namespace opt {
 
 using namespace v3d;
@@ -81,9 +81,10 @@ FRAG::~FRAG() {
   free_matrix(grad);
   free_array(mass);
   free_bool_matrix(connectivity);
-  for (int i=0; i<intcos.size(); ++i)
-  delete intcos[i];
-  intcos.clear();
+  coords.clear_combos();
+  for (int i=0; i<coords.simples.size(); ++i)
+    delete coords.simples[i];
+  coords.simples.clear();
 }
 
 // for now just set default masses - fix later
@@ -92,79 +93,6 @@ void FRAG::set_masses(void) {
   for (i=0; i<natom; ++i)
     mass[i] = Z_to_mass[(int) Z[i]];
   return;
-}
-
-void FRAG::print_geom(FILE *fp, const int id, bool print_masses) {
-  int i;
-  fprintf(fp,"\t---Fragment %d Geometry---\n", id+1);
-  if (print_masses) {
-    for (i=0; i<natom; ++i)
-      fprintf(fp,"\t %-4s%20.10lf%20.10lf%20.10lf%20.10lf\n",
-        Z_to_symbol[(int) Z[i]], mass[i], geom[i][0], geom[i][1], geom[i][2]);
-  }
-  else {
-    for (i=0; i<natom; ++i)
-      fprintf(fp,"\t %-4s%20.10lf%20.10lf%20.10lf\n",
-        Z_to_symbol[(int) Z[i]], geom[i][0], geom[i][1], geom[i][2]);
-  }
-  fprintf(fp, "\n");
-  fflush(fp);
-}
-
-void FRAG::print_geom_grad(FILE *fp, const int id, bool print_masses) {
-  int i;
-  fprintf(fp,"\t---Fragment %d Geometry and Gradient---\n", id+1);
-  if (print_masses) {
-    for (i=0; i<natom; ++i)
-      fprintf(fp,"\t %-4s%20.10lf%20.10lf%20.10lf%20.10lf\n",
-        Z_to_symbol[(int) Z[i]], mass[i], geom[i][0], geom[i][1], geom[i][2]);
-  }
-  else {
-    for (i=0; i<natom; ++i)
-      fprintf(fp,"\t %-4s%20.10lf%20.10lf%20.10lf\n",
-        Z_to_symbol[(int) Z[i]], geom[i][0], geom[i][1], geom[i][2]);
-  }
-  for (i=0; i<natom; ++i)
-    fprintf(fp,"\t %24.10lf%20.10lf%20.10lf\n", grad[i][0], grad[i][1], grad[i][2]);
-  fprintf(fp, "\n");
-  fflush(fp);
-}
-
-#if defined(OPTKING_PACKAGE_QCHEM)
-void FRAG::print_geom(FILE *fp_geom) {
-  for (int i=0; i<natom; ++i)
-    fprintf(fp_geom, "\t  %3s  %15.10lf%15.10lf%15.10lf\n",
-      Z_to_symbol[(int) Z[i]], geom[i][0], geom[i][1], geom[i][2]);
-  fflush(fp_geom);
-}
-#elif defined(OPTKING_PACKAGE_PSI)
-void FRAG::print_geom(FILE *fp_geom) {
-  for (int i=0; i<natom; ++i)
-    fprintf(fp_geom, "\t  %3s  %15.10lf%15.10lf%15.10lf\n",
-      Z_to_symbol[(int) Z[i]], geom[i][0] * _bohr2angstroms, 
-      geom[i][1] * _bohr2angstroms, geom[i][2] * _bohr2angstroms);
-  fflush(fp_geom);
-}
-#endif
-
-void FRAG::print_intcos(FILE *fp, int atom_offset) {
-  fprintf(fp,"\t - Coordinate -           - BOHR/RAD -       - ANG/DEG -\n");
-  for (int i=0; i<intcos.size(); ++i)
-    intcos.at(i)->print(fp,geom,atom_offset);
-  fprintf(fp, "\n");
-  fflush(fp);
-}
-
-// fetch string definition of intco
-std::string FRAG::get_intco_definition(int coord_index, int atom_offset) {
-  fprintf(outfile,"coord_index: %d; atom_offset: %d\n", coord_index, atom_offset);
-  return intcos.at(coord_index)->get_definition_string(atom_offset);
-}
-
-void FRAG::print_intco_dat(FILE *fp, int atom_offset) {
-  //fprintf(fp,"\t---Fragment %d Intrafragment Coordinates---\n", id+1);
-  for (int i=0; i<intcos.size(); ++i)
-    intcos.at(i)->print_intco_dat(fp,atom_offset);
 }
 
 // automatically determine bond connectivity by comparison of interatomic distance
@@ -201,26 +129,13 @@ void FRAG::update_connectivity_by_bonds(void) {
     for (int j=0; j<natom; ++j)
       connectivity[i][j] = false;
 
-  for (int i=0; i<intcos.size(); ++i) {
-    if (intcos.at(i)->g_type() == stre_type) {
-      int a = intcos.at(i)->g_atom(0);
-      int b = intcos.at(i)->g_atom(1);
+  for (int i=0; i<coords.simples.size(); ++i) {
+    if (coords.simples.at(i)->g_type() == stre_type) {
+      int a = coords.simples.at(i)->g_atom(0);
+      int b = coords.simples.at(i)->g_atom(1);
       connectivity[a][b] = connectivity[b][a] = true;
     }
   }
-}
-
-void FRAG::print_connectivity(FILE *fp, const int id, const int offset) const {
-  fprintf(fp,"\t---Fragment %d Bond Connectivity---\n", id+1);
-  int i,j;
-  for (i=0; i<natom; ++i) {
-    fprintf(fp,"\t %d :", i+1+offset);
-      for (j=0; j<natom; ++j)
-        if (connectivity[i][j]) fprintf(fp," %d", j+1+offset);
-    fprintf(fp,"\n");
-  }
-  fprintf(fp,"\n");
-  fflush(fp);
 }
 
 // automatically add bond stretch coodinates based on connectivity matrix
@@ -233,7 +148,7 @@ int FRAG::add_stre_by_connectivity(void) {
       if (connectivity[i][j]) {
         STRE *one_stre = new STRE(i,j);
         if (!present(one_stre)) {
-          intcos.push_back(one_stre);
+          coords.simples.push_back(one_stre);
           ++nadded;
         }
         else
@@ -261,6 +176,9 @@ int FRAG::add_hbonds(void) {
       is_X[i] = true;
   }
 
+  double cov_scale = Opt_params.interfragment_scale_connectivity;
+  double cov_H     = cov_radii[1]/_bohr2angstroms;
+
   for (int x=0; x<natom; ++x) {
     if (is_X[x]) { // electronegative atom
       for (int h=0; h<natom; ++h) {
@@ -272,12 +190,21 @@ int FRAG::add_hbonds(void) {
                 if (v3d_angle(geom[x], geom[h], geom[y], ang)) { // now check bond angle
                   if (ang > pi/2) {
                     STRE *one_stre = new STRE(h,y);
-                    one_stre->make_hbond();
-                    if (!present(one_stre)) {
-                      intcos.push_back(one_stre);
+                    int index = find(one_stre);
+                    if (index == coords.simples.size()) { // H-bond is absent
+                      one_stre->set_hbond(true);
+                      coords.simples.push_back(one_stre);
                       ++nadded;
-                    } 
-                    else delete one_stre;
+                    }
+                    else { // X-H ... Y stretch already exists, 
+                      // if it is not a covalent bond, make it a H bond
+                      double cov_Y = cov_radii[ (int) Z[y] ]/_bohr2angstroms;
+                      if (dist > cov_scale * (cov_H + cov_Y)) {
+                        coords.simples[index]->set_hbond(true);
+oprintf_out("Recognized frag stretch %d as a H bond.\n", index+1);
+                      }
+                      delete one_stre;
+                    }
                   }
                 }
               }
@@ -302,16 +229,41 @@ int FRAG::add_auxiliary_bonds(void) {
     for (int b=a+1; b<natom; ++b) {
       if (connectivity[a][b]) continue; // already joined by regular bond
 
+      // Omit auxiliary bonds involving H atoms
+      if (Zint[a] == 1 || Zint[b] == 1) continue;
+
       double R = v3d_dist(geom[a], geom[b]);
       double Rcov = (cov_radii[Zint[a]] + cov_radii[Zint[b]])/_bohr2angstroms;
 
-      if (R < 2.5 * Rcov) {
-        STRE *one_stre = new STRE(a,b);
-        if (!present(one_stre)) {
-          intcos.push_back(one_stre);
-          ++nadded;
+      if (R < Rcov * Opt_params.auxiliary_bond_factor) {
+
+        bool omit = false;
+        // Omit auxiliary bonds between a and b, if a-c-b
+        for (int c=0; c<natom; ++c)
+          if (c != a && c != b)
+            if (connectivity[a][c] && connectivity[b][c])
+              omit = true; 
+
+        // Omit auxiliary bonds between a and b, if a-c-d-b
+        for (int c=0; c<natom; ++c)
+          if (c != a && c != b)
+            if (connectivity[c][a])
+              for (int d=0; d<natom; ++d)
+                if (d != a && d != b && d !=c)
+                  if (connectivity[d][c] && connectivity[d][b])
+                    omit = true;
+        
+        if (!omit) {
+          STRE *one_stre = new STRE(a,b);
+          if (!present(one_stre)) {
+            coords.simples.push_back(one_stre);
+            ++nadded;
+          }
+          else delete one_stre;
         }
-        else delete one_stre;
+        //else {
+        //  oprintf_out("\tOmitting auxiliary bond %d %d bc of connectivity.\n", a+1, b+1);
+        //}
       }
     }
   }
@@ -331,7 +283,7 @@ int FRAG::add_bend_by_connectivity(void) {
           if (connectivity[j][k]) {
             BEND *one_bend = new BEND(i,j,k);
             if (!present(one_bend)) {
-              intcos.push_back(one_bend);
+              coords.simples.push_back(one_bend);
               ++nadded;
             }
             else
@@ -343,7 +295,7 @@ int FRAG::add_bend_by_connectivity(void) {
                 one_bend = new BEND(i,j,k);
                 one_bend->make_linear_bend();
                 if (!present(one_bend)) {
-                  intcos.push_back(one_bend);
+                  coords.simples.push_back(one_bend);
                   ++nadded;
                 }
                 else
@@ -351,6 +303,32 @@ int FRAG::add_bend_by_connectivity(void) {
               }
             }
           } // ijk
+
+  for (int i=0; i<opt::INTCO_EXCEPT::linear_angles.size(); i+=3) {
+    int A = opt::INTCO_EXCEPT::linear_angles[i];
+    int B = opt::INTCO_EXCEPT::linear_angles[i+1];
+    int C = opt::INTCO_EXCEPT::linear_angles[i+2];
+
+    BEND *one_bend = new BEND(A,B,C);
+    if (!present(one_bend)) {
+      oprintf_out("\tException forcing addition of linear bend (%d,%d,%d)\n", A, B, C);
+      coords.simples.push_back(one_bend);
+      ++nadded;
+    }
+    else
+      delete one_bend;
+
+    one_bend = new BEND(A,B,C);
+    one_bend->make_linear_bend();
+    if (!present(one_bend)) {
+      oprintf_out("\tException forcing addition of linear bend complement (%d,%d,%d)\n", A+1, B+1, C+1);
+      coords.simples.push_back(one_bend);
+      ++nadded;
+    }
+    else
+      delete one_bend;
+  }
+  opt::INTCO_EXCEPT::linear_angles.clear();
 
   return nadded;
 }
@@ -360,7 +338,7 @@ int FRAG::add_tors_by_connectivity(void) {
   int nadded = 0;
   int i,j,k,l;
   double phi;
-  double const pi = acos(-1);
+  double const phi_lim = Opt_params.linear_bend_threshold;
 
   // bonding i-j-k-l but i-j-k && j-k-l are not collinear
   for (i=0; i<natom; ++i)
@@ -369,16 +347,16 @@ int FRAG::add_tors_by_connectivity(void) {
         for (k=0; k<natom; ++k)
           if ( connectivity[k][j] && k!=i ) {
             // ensure i-j-k is not collinear
-            if ( !v3d_angle(geom[i], geom[j], geom[k], phi) ) continue;
-            if (phi == pi) continue;
+            if (!v3d_angle(geom[i], geom[j], geom[k], phi)) continue;
+            if (phi > phi_lim) continue;
             for (l=i+1; l<natom; ++l) {
-              if ( connectivity[l][k] && l!=j) {
+              if (connectivity[l][k] && l!=j) {
                 // ensure j-k-l is not collinear
-                if ( !v3d_angle(geom[j], geom[k], geom[l], phi) ) continue; // can't compute
-                if (phi == pi) continue;
+                if (!v3d_angle(geom[j], geom[k], geom[l], phi)) continue; // can't compute
+                if (phi > phi_lim) continue;
                 TORS *one_tors = new TORS(i,j,k,l);
                 if (!present(one_tors)) {
-                  intcos.push_back(one_tors);
+                  coords.simples.push_back(one_tors);
                   ++nadded;
                 }
                 else
@@ -395,23 +373,23 @@ int FRAG::add_tors_by_connectivity(void) {
   // find collinear fragment j-m-k
   for (j=0; j<natom; ++j)
     for (m=0; m<natom; ++m)
-      if (connectivity[j][m])
-        for (k=j+1; k<natom; ++k)
-          if (connectivity[k][m]) {
+      if (connectivity[j][m])       // j!=m
+        for (k=j+1; k<natom; ++k)   // k!=j
+          if (connectivity[k][m]) { // m!=k
             if ( !v3d_angle(geom[j], geom[m], geom[k], phi) ) continue;
-            if (phi == pi) { // found j-m-k collinear
+            if (phi > phi_lim) { // found j-m-k collinear, j-m-k unique
 
-              nbonds = 0;
+              nbonds = 0; // count atoms bonded to m
               for (int n=0; n<natom; ++n)
                 if (connectivity[n][m]) ++nbonds;
-              if (nbonds == 2) { // nothing else is bonded to j
+              if (nbonds == 2) { // nothing else is bonded to m
 
-                // look for an 'I' for I-j-[m]-k-L such that I-J-K is not collinear
+                // look for an 'I' for I-J-[m]-k-L such that I-J-K is not collinear
                 J = j;
                 for (i=0; i<natom; ++i) {
-                  if (connectivity[i][J] && i!=m) {
+                  if (connectivity[i][J] && i!=m) { // i!=J i!=m
                     if ( !v3d_angle(geom[i], geom[J], geom[k], phi) ) continue;
-                    if (phi == pi) {
+                    if (phi > phi_lim) {
                       J = i;
                       i = 0;
                       continue;
@@ -420,9 +398,9 @@ int FRAG::add_tors_by_connectivity(void) {
                       I = i;
                       K = k;
                       for (l=0; l<natom; ++l) {
-                        if (connectivity[l][K] && l!=m) {
+                        if (connectivity[l][K] && l!=m && l!=j && l!=i) { // l!=K l!=m
                           if ( !v3d_angle(geom[l], geom[K], geom[J], phi) ) continue;
-                          if (phi == pi) {
+                          if (phi > phi_lim) {
                             K = l;
                             continue;
                           }
@@ -432,7 +410,7 @@ int FRAG::add_tors_by_connectivity(void) {
                             TORS *one_tors = new TORS(I,J,K,L);
                             if ( !v3d_tors(geom[I], geom[J], geom[K], geom[L], phi) ) continue;
                             if (!present(one_tors)) {
-                              intcos.push_back(one_tors);
+                              coords.simples.push_back(one_tors);
                               ++nadded;
                             }
                             else
@@ -450,135 +428,241 @@ int FRAG::add_tors_by_connectivity(void) {
 }
 
 // is simple already present in list ?
-bool FRAG::present(const SIMPLE *one) const {
+bool FRAG::present(const SIMPLE_COORDINATE *one) const {
   int k;
-  for (k=0; k<intcos.size(); ++k) {
-    if (*one == *(intcos[k]))
+  for (k=0; k<coords.simples.size(); ++k) {
+    if (*one == *(coords.simples[k]))
       return true;
   }
   return false;
 }
 
+int FRAG::form_trivial_coord_combinations(void) {
+  coords.clear_combos();
+  for (int s=0; s<coords.simples.size(); ++s) {
+    std::vector<int> i1;
+    i1.push_back(s); 
+    coords.index.push_back(i1);
+    std::vector<double> c1;
+    c1.push_back(1.0); 
+    coords.coeff.push_back(c1);
+  }
+  return coords.index.size();
+}
+
+// Determine initial delocalized coordinate coefficients.
+int FRAG::form_delocalized_coord_combinations(void) {
+  // Get B matrix for simples
+  int Nsimples = form_trivial_coord_combinations();
+  double **B = compute_B();
+  coords.clear_combos();
+
+  oprintf_out("\n\tDiagonalizing (B B^t) to form delocalized coordinates for fragment.\n");
+  oprintf_out("\tStarting with %d simple coordinates.\n", Nsimples);
+
+  // Diagonalize B*B^t to get coordinate rows
+  double **BBt = init_matrix(Nsimples, Nsimples);
+  opt_matrix_mult(B, 0, B, 1, BBt, 0, Nsimples, 3*g_natom(), Nsimples, 0);
+  free_matrix(B);
+
+  double *evals = init_array(Nsimples);
+  opt_symm_matrix_eig(BBt, Nsimples, evals);
+
+  if (Opt_params.print_lvl > 2) {
+    oprintf_out("Eigenvectors of BBt\n");
+    oprint_matrix_out(BBt, Nsimples, Nsimples);
+    oprintf_out("Eigenvalues of BBt\n");
+    oprint_array_out(evals, Nsimples);
+  }
+
+  double eval_threshold  = 1e-8; // ??
+  double evect_threshold = 1e-5; // ??
+
+  for (int i=0; i<Nsimples; ++i) {
+    if (fabs(evals[i]) < eval_threshold) {
+      if (Opt_params.print_lvl > 2)
+        oprintf_out("Eigenvector %d removed for low eigenvalue.\n",i+1);
+    }
+    else {
+      // Delete tiny components to get cleaner functions.
+      for (int j=0; j<Nsimples; ++j)
+        if (fabs(BBt[i][j]) < evect_threshold)
+          BBt[i][j] = 0.0;
+
+      // Make largest component positive.
+      double sign = array_max(BBt[i], Nsimples) / array_abs_max(BBt[i], Nsimples);
+      if (sign < 0.99)
+        array_scm(BBt[i], -1.0, Nsimples);
+
+      // Normalize
+      array_normalize(BBt[i], Nsimples);
+
+      // Add to fragment coordinate set.
+      vector<int> one_index;
+      vector<double> one_coeff;
+
+      for (int j=0; j<Nsimples; ++j) {
+        if (fabs(BBt[i][j]) > 1.0e-14) {
+          one_index.push_back(j);
+          one_coeff.push_back(BBt[i][j]);
+        }
+      }
+      coords.index.push_back(one_index);
+      coords.coeff.push_back(one_coeff);
+    }
+  }
+  free_matrix(BBt);
+  free_array(evals);
+
+  oprintf_out("\tInitially, formed %d delocalized coordinates for fragment.\n", coords.index.size());
+  return coords.index.size();
+}
+
+// Determine Pulay simple coordinate combinations.
+int FRAG::form_natural_coord_combinations(void) {
+  coords.clear_combos();
+
+  throw("natural internals not yet implemented");
+
+  return 0;
+}
+
+int FRAG::add_cartesians(void) {
+  int nadded = 0;
+
+  for (int i=0; i<natom; ++i)
+    for (int xyz=0; xyz<3;++xyz) {
+      CART *one_cart = new CART(i,xyz);
+      if (!present(one_cart)) {
+        coords.simples.push_back(one_cart);
+        ++nadded;
+        vector<int> one_id;
+        vector<double> one_coeff;
+        one_id.push_back(coords.index.size());
+        one_coeff.push_back(1.0);
+        coords.index.push_back(one_id);
+        coords.coeff.push_back(one_coeff);
+      }
+    }
+  return nadded;
+}
+
 // given any simple coordinate - this function looks to see if that coordinate
 // is already present in the set.  If so, it returns the index.
 // If not, it returns the index of the end + 1.
-int FRAG::find(const SIMPLE *one) const {
-  int k;
-  for (k=0; k<intcos.size(); ++k) {
-    if (*one == *(intcos[k]))
+int FRAG::find(const SIMPLE_COORDINATE *one) const {
+  for (int k=0; k<coords.simples.size(); ++k) {
+    if (*one == *(coords.simples[k]))
       return k;
   }
-  return intcos.size();
+  return coords.simples.size();
 }
 
-// returns values of internal coordinates - using member geometry
-double * FRAG::intco_values(void) const {
-  double * q = init_array(intcos.size());
-  for (int i=0; i<intcos.size(); ++i)
-    q[i] = intcos.at(i)->value(geom);
-  return q;
+// Return values of all coordinates.
+double * FRAG::coord_values(void) const {
+  return coords.values(geom);
+}
+double * FRAG::coord_values(GeomType new_geom) const {
+  return coords.values(new_geom);
 }
 
 // return the value of a single internal
-double FRAG::intco_value(int intco_index) const {
-  return intcos.at(intco_index)->value(geom);
+double FRAG::coord_value(int coord_index) const {
+  return coords.value(geom, coord_index);
+}
+double FRAG::coord_value(GeomType new_geom, int coord_index) const {
+  return coords.value(new_geom, coord_index);
 }
 
-// returns values of internal coordinates - using given geometry
-double * FRAG::intco_values(GeomType new_geom) const {
-  double * q = init_array(intcos.size());
-  for (int i=0; i<intcos.size(); ++i)
-    q[i] = intcos.at(i)->value(new_geom);
-  return q;
+// Fills in B matrix of coordinates for this fragment.
+// Uses passed-in memory.  Optional offsets allow molecule to build B matrix directly.
+void FRAG::compute_B(double **B, int coord_offset, int atom_offset) const {
+
+  for (int cc=0; cc<Ncoord(); ++cc)
+    for (int x = 0; x <3*natom; ++x)
+      B[coord_offset+cc][3*atom_offset + x] = 0.0;
+
+  for (int cc=0; cc<Ncoord(); ++cc)
+    coords.DqDx(geom, cc, B[coord_offset+cc], atom_offset);
 }
 
-// returns B' matrix for one internal coordinate
-double ** FRAG::compute_derivative_B(int intco_index) const {
-  return compute_derivative_B(intco_index,geom);
-}
 
-// returns B' matrix for one internal coordinate computed with given geometry
-double ** FRAG::compute_derivative_B(int intco_index, GeomType new_geom) const {
-  double **frag_dq2dx2 = intcos.at(intco_index)->Dq2Dx2(new_geom);
-  return frag_dq2dx2;
-}
+// Returns B matrix of only the simple coordinates for this fragment.
+/*
+void FRAG::compute_B_simples(double **B, int coord_offset, int atom_offset) const {
 
-// returns B matrix of internal coordinates
-double ** FRAG::compute_B(void) const {
-  double **Bintco;
-  double **B = init_matrix(intcos.size(), 3*natom);
+  for (int s=0; s<coords.simples.size(); ++s) {
+    double **dqdx_simple = coords.simples[s]->DqDx(geom);
 
-  for (int i=0; i<intcos.size(); ++i) {
-    Bintco = intcos.at(i)->DqDx(geom);
+    for (int j=0; j < coords.simples[s]->g_natom(); ++j) { // loop over atoms in s vector
+      int atom = atom_offset + coords.simples[s]->g_atom(j);
 
-    for (int j=0; j < intcos.at(i)->g_natom(); ++j)
       for (int xyz=0; xyz<3; ++xyz)
-        B[i][3*intcos.at(i)->g_atom(j) + xyz] = Bintco[j][xyz];
-
-    free_matrix(Bintco);
+        B[s+coord_offset][3*atom + xyz] = dqdx_simple[j][xyz];
+    }
   }
-  return B;
+  return;
+}
+*/
+
+// Returns B matrix of coordinates only for this fragment.
+double ** FRAG::compute_B(void) const {
+  double **newB = init_matrix(Ncoord(), 3*natom);
+  compute_B(newB, 0, 0);
+  return newB;
+}
+
+// Returns B' matrix for one internal coordinate computed with given geometry.
+void FRAG::compute_derivative_B(GeomType new_geom, int coord_index, double **Bprime,
+    int frag_atom_offset) const {
+  coords.Dq2Dx2(new_geom, coord_index, Bprime, frag_atom_offset);
+  return;
+}
+
+// Use present geometry
+void FRAG::compute_derivative_B(int coord_index, double **Bprime, int frag_atom_offset) const {
+  compute_derivative_B(geom, coord_index, Bprime, frag_atom_offset);
+}
+
+// Allocates and return B' matrix only for this fragment.
+double ** FRAG::compute_derivative_B(int coord_index) const {
+  double **Bprime =init_matrix(3*natom, 3*natom);
+  compute_derivative_B(geom, coord_index, Bprime, 0);
+  return Bprime;
 }
 
 // returns matrix of constraints (for now, 1's on diagonals to be frozen)
 double ** FRAG::compute_constraints(void) const {
-  double **C = init_matrix(intcos.size(), intcos.size());
+  double **C = init_matrix(coords.simples.size(), coords.simples.size());
 
-  for (int i=0; i<intcos.size(); ++i)
-    if (intcos[i]->is_frozen())
+  for (int i=0; i<coords.simples.size(); ++i)
+    if (coords.simples[i]->is_frozen())
       C[i][i] = 1.0;
 
   return C;
 }
 
 
-// returns B matrix of internal coordinates; use previously allocated memory
-void FRAG::compute_B(double **B) const {
-  double **Bintco;
-
-  zero_matrix(B, intcos.size(), 3*natom);  
-  for (int i=0; i<intcos.size(); ++i) {
-    Bintco = intcos.at(i)->DqDx(geom);
-
-    for (int j=0; j < intcos.at(i)->g_natom(); ++j)
-      for (int xyz=0; xyz<3; ++xyz)
-        B[i][3*intcos.at(i)->g_atom(j) + xyz] = Bintco[j][xyz];
-
-    free_matrix(Bintco);
-  }
-  return;
-}
-
 //// returns G matrix, mass-weighted or not
 void FRAG::compute_G(double **G, bool use_masses) const {
   double **B = compute_B();
 
   if (use_masses) {
-    for (int i=0; i<intcos.size(); ++i)
+    for (int i=0; i<Ncoord(); ++i)
       for (int a=0; a<natom; ++a)
         for(int xyz=0; xyz<3; ++xyz)
           B[i][3*a+xyz] /= sqrt(mass[a]);
   }
 
-  opt_matrix_mult(B, 0, B, 1, G, 0, intcos.size(), 3*natom, intcos.size(), 0);
+  opt_matrix_mult(B, 0, B, 1, G, 0, Ncoord(), 3*natom, Ncoord(), 0);
   free_matrix(B);
   return;
 }
 
-// computes and print B matrix
-void FRAG::print_B(FILE *fp) const {
-  double **B = compute_B();
-  fprintf(fp,"\t---B matrix---\n");
-  print_matrix(fp, B, intcos.size(), 3*natom);
-  fprintf(fp,"\n");
-  fflush(fp);
-  free_matrix(B);
-}
-
 void FRAG::fix_tors_near_180(void) {
-  for (int i=0; i<intcos.size(); ++i) {
-    if (intcos[i]->g_type() == tors_type)
-      intcos[i]->fix_tors_near_180(geom);
+  for (int i=0; i<coords.simples.size(); ++i) {
+    if (coords.simples[i]->g_type() == tors_type)
+      coords.simples[i]->fix_tors_near_180(geom);
   }
 }
 
@@ -637,15 +721,50 @@ double * FRAG::g_Z(void) const {
   return z;
 }
 
-// don't let bends pass through zero - assumes dq is in right order for fragment
-void FRAG::check_zero_angles(double const * const dq) {
-  int i, cnt = 0;
-  for (i=0; i<intcos.size(); ++i) {
-    if (intcos[i]->g_type() == bend_type) {
-      if (intcos[i]->value(geom) + dq[cnt++] < 0.0) 
-        throw(INTCO_EXCEPT("Bond angle passing through zero", true));
+// Identify simple bond angles passing through 0 or going to 180.
+//  returns a std::vector<int> containing quadruplets of frag #, A, B, C
+// for atoms that should have linear coordinates
+std::vector<int> FRAG::validate_angles(double const * const dq, int atom_offset) {
+
+  // Compute change in simple coordinates.
+  double *dq_simple = init_array(coords.simples.size());
+  for (int cc=0; cc<coords.index.size(); ++cc)
+    for (int s=0; s<coords.index[cc].size(); ++s)
+      dq_simple[ coords.index[cc][s] ] += dq[cc] * coords.coeff[cc][s];
+
+  std::vector<int> lin_angle;
+
+  for (int s=0; s<coords.simples.size(); ++s)
+    if (coords.simples[s]->g_type() == bend_type) {
+
+      int A = coords.simples[s]->g_atom(0)+atom_offset;
+      int B = coords.simples[s]->g_atom(1)+atom_offset;
+      int C = coords.simples[s]->g_atom(2)+atom_offset;
+      double new_bend_val = coords.simples[s]->value(geom) + dq_simple[s];
+
+//oprintf_out("bend (%d,%d,%d) old: %10.5f new: %10.5f\n",A+1,B+1,C+1,coords.simples[s]->value(geom), new_bend_val);
+
+      // angle is passing through 0.
+      if (new_bend_val < 0.0) { // < ABC<0.  A-C-B should be linear bends.
+        if (A < B) { lin_angle.push_back(A); lin_angle.push_back(C); lin_angle.push_back(B); }
+        else       { lin_angle.push_back(B); lin_angle.push_back(C); lin_angle.push_back(A); }
+      }
+
+      // angle is passing through 180.0.  // < ABC~pi. Add A-B-C linear bends.
+      if (new_bend_val > Opt_params.linear_bend_threshold) {
+        BEND *one_bend = new BEND(A, B, C);
+        one_bend->make_linear_bend();
+        int loc = find(one_bend);
+        if (loc != coords.simples.size()) // linear bend is already there.  No problem.
+          continue;
+        else {
+          lin_angle.push_back(A); lin_angle.push_back(B); lin_angle.push_back(C);
+        }
+        delete one_bend;
+      }
+
     }
-  }
+  return lin_angle;
 }
 
 bool ** FRAG::g_connectivity(void) const {

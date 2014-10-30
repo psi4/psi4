@@ -1,4 +1,5 @@
-"""
+"""Derivative Collection
+
 """
 import numpy as np
 
@@ -14,7 +15,9 @@ __author__ = 'dhollman'
 
 # TODO Split this into two classes, a Coordinate-dependent form and a Representation dependent form
 class DerivativeCollection(object):
-    """ A collection of derivatives with indices that are coordinates in a given representation.
+    """A collection of derivatives with indices that are coordinates in a
+    given representation.
+
     """
 
     ##############

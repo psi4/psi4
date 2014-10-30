@@ -394,7 +394,7 @@ void b2brepl_test(unsigned char ***occs, int *Jcnt, int **Jij, int **Joij,
    nirreps = Graph->nirreps;
    ncodes = Graph->subgr_per_irrep;
 
-   fprintf(outfile,"\nTesting block to block single-replacements b2brepl()\n"); 
+   outfile->Printf("\nTesting block to block single-replacements b2brepl()\n"); 
    for (Iirrep=0,Ilistnum=0; Iirrep<nirreps; Iirrep++) {
       for (Icode=0; Icode<ncodes; Icode++,Ilistnum++) {
          Isubgraph = Graph->sg[Iirrep] + Icode;
@@ -408,13 +408,13 @@ void b2brepl_test(unsigned char ***occs, int *Jcnt, int **Jij, int **Joij,
                   Graph, Ilistnum, Jlistnum, Isubgraph->num_strings);
 
                for (i=0; i<Isubgraph->num_strings; i++) {
-                  fprintf(outfile, "\nString %4d (",i);
+                  outfile->Printf( "\nString %4d (",i);
                      for (j=0; j<Graph->num_el_expl; j++) {
-                        fprintf(outfile, "%2d ", (int) occs[Ilistnum][i][j]);
+                        outfile->Printf( "%2d ", (int) occs[Ilistnum][i][j]);
                         }
-                  fprintf(outfile, ")\n   Links:\n") ;
+                  outfile->Printf( ")\n   Links:\n") ;
                   for (j=0; j<Jcnt[i]; j++) {
-                     fprintf(outfile, "   %3d [%3d] %c (%2d %3d)\n",
+                     outfile->Printf( "   %3d [%3d] %c (%2d %3d)\n",
                         Jij[i][j], Joij[i][j], (Jsgn[i][j]==1) ? '+' : '-', 
                         Jlistnum, Jridx[i][j]);
                      }                     

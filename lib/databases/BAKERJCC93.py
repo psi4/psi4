@@ -252,14 +252,18 @@ TAGL['%s-%s-reagent'    % (dbse, 'water'                 )] = ''
 
 # <<< Geometry Specification Strings >>>
 GEOS = {}
+# These atoms were replaced below to avoid a D3h related symmetry bug
+# the point group wasn't getting detected and optimization couldn't proceed
+#C        2.27501122     1.31347834     0.00000000
+#C       -2.27501122     1.31347834     0.00000000
 
 GEOS['%s-%s-reagent' % (dbse, '1_3_5_trifluorobenzene')] = qcdb.Molecule("""
 0 1
 F        4.45124771     2.56992907     0.00000000
 F       -4.45124771     2.56992907     0.00000000
 F        0.00000000    -5.13985813     0.00000000
-C        2.27501122     1.31347834     0.00000000
-C       -2.27501122     1.31347834     0.00000000
+C        2.27501122     1.31348     0.00000000
+C       -2.27501122     1.31348     0.00000000
 C        0.00000000    -2.62695668     0.00000000
 C        2.27446593    -1.31316352     0.00000000
 C       -2.27446593    -1.31316352     0.00000000

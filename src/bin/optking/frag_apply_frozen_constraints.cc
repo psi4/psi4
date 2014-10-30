@@ -37,6 +37,7 @@
 #include <sstream>
 #include <vector>
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -76,19 +77,19 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
     throw(INTCO_EXCEPT("Frozen dihedral string should contain 4*(whole number) of atoms."));
 
   if (R_atoms.size()) {
-    fprintf(outfile,"\tFrozen distance atom list: \n");
+    oprintf_out("\tFrozen distance atom list: \n");
     for (int i=0; i<R_atoms.size(); i+=2)
-      fprintf(outfile,"\t %5d %5d\n", R_atoms[i]+1, R_atoms[i+1]+1);
+      oprintf_out("\t %5d %5d\n", R_atoms[i]+1, R_atoms[i+1]+1);
   }
   if (B_atoms.size()) {
-    fprintf(outfile,"\tFrozen bend atom list: \n");
+    oprintf_out("\tFrozen bend atom list: \n");
     for (int i=0; i<B_atoms.size(); i+=3)
-      fprintf(outfile,"\t %5d %5d %5d\n", B_atoms[i]+1, B_atoms[i+1]+1, B_atoms[i+2]+1);
+      oprintf_out("\t %5d %5d %5d\n", B_atoms[i]+1, B_atoms[i+1]+1, B_atoms[i+2]+1);
   }
   if (D_atoms.size()) {
-    fprintf(outfile,"\tFrozen dihedral atom list: \n");
+    oprintf_out("\tFrozen dihedral atom list: \n");
     for (int i=0; i<D_atoms.size(); i+=4)
-      fprintf(outfile,"\t %5d %5d %5d %5d\n", D_atoms[i]+1, D_atoms[i+1]+1,
+      oprintf_out("\t %5d %5d %5d %5d\n", D_atoms[i]+1, D_atoms[i+1]+1,
         D_atoms[i+2]+1, D_atoms[i+3]+1);
   }
 
@@ -105,13 +106,13 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
 
     STRE *one_stre = new STRE(a, b, 1); // create frozen stretch between atoms a and b
 
-    // check if intco is already present; returns 1 past the end if not found
+    // check if coord is already present; returns 1 past the end if not found
     int index = find(one_stre);
 
-    if (index == intcos.size())
-      intcos.push_back(one_stre);// add it
+    if (index == coords.simples.size())
+      coords.simples.push_back(one_stre);// add it
     else { 
-      intcos[index]->freeze();   // it's there already; make sure it's frozen
+      coords.simples[index]->freeze();   // it's there already; make sure it's frozen
       delete one_stre;
     }
   }
@@ -126,13 +127,13 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
 
     BEND *one_bend = new BEND(a, b, c, 1); // create frozen bend between atoms a,b,c
 
-    // check if intco is already present; returns 1 past the end if not found
+    // check if coord is already present; returns 1 past the end if not found
     int index = find(one_bend);
 
-    if (index == intcos.size())
-      intcos.push_back(one_bend);// add it
+    if (index == coords.simples.size())
+      coords.simples.push_back(one_bend);// add it
     else { 
-      intcos[index]->freeze();   // it's there already; make sure it's frozen
+      coords.simples[index]->freeze();   // it's there already; make sure it's frozen
       delete one_bend;
     }
   }
@@ -148,13 +149,13 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
 
     TORS *one_tors = new TORS(a, b, c, d, 1); // create frozen dihedral between a,b,c,d
 
-    // check if intco is already present; returns 1 past the end if not found
+    // check if coord is already present; returns 1 past the end if not found
     int index = find(one_tors);
 
-    if (index == intcos.size())
-      intcos.push_back(one_tors);// add it
+    if (index == coords.simples.size())
+      coords.simples.push_back(one_tors);// add it
     else { 
-      intcos[index]->freeze();   // it's there already; make sure it's frozen
+      coords.simples[index]->freeze();   // it's there already; make sure it's frozen
       delete one_tors;
     }
   }
@@ -171,23 +172,23 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
     return false;
 
   if (R.size()) {
-    fprintf(outfile,"\tFixed distance atom list: \n");
+    oprintf_out("\tFixed distance atom list: \n");
     for (int i=0; i<R.size(); ++i)
-      fprintf(outfile,"\t %5d %5d\n", R[i].atoms[0]+1, R[i].atoms[1]+1);
+      oprintf_out("\t %5d %5d\n", R[i].atoms[0]+1, R[i].atoms[1]+1);
   }
 
   if (B.size()) {
-    fprintf(outfile,"\tFixed bend atom list: \n");
+    oprintf_out("\tFixed bend atom list: \n");
     for (int i=0; i<B.size(); ++i)
-      fprintf(outfile,"\t %5d %5d %5d\n", B[i].atoms[0]+1, B[i].atoms[1]+1, B[i].atoms[2]+1);
+      oprintf_out("\t %5d %5d %5d\n", B[i].atoms[0]+1, B[i].atoms[1]+1, B[i].atoms[2]+1);
   }
 
   if (D.size()) {
-    fprintf(outfile,"\tFixed dihedral atom list: \n");
+    oprintf_out("\tFixed dihedral atom list: \n");
     for (int i=0; i<D.size(); ++i)
-      fprintf(outfile,"\t %5d %5d %5d %5d\n", D[i].atoms[0]+1, D[i].atoms[i+1]+1, D[i].atoms[2]+1, D[i].atoms[3]+1);
+      oprintf_out("\t %5d %5d %5d %5d\n", D[i].atoms[0]+1, D[i].atoms[i+1]+1, D[i].atoms[2]+1, D[i].atoms[3]+1);
   }
-  fflush(outfile);
+  
 
   // do fixed distances
   for (int i=0; i<R.size(); ++i) {
@@ -201,13 +202,13 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
     // Insist on user-specified fixed coordinates to be given in Angstroms/radians
     one_stre->set_fixed_eq_val(R[i].eq_val/_bohr2angstroms);
 
-    // check if intco is already present; returns 1 past the end if not found
+    // check if coord is already present; returns 1 past the end if not found
     int index = find(one_stre);
 
-    if (index == intcos.size())
-      intcos.push_back(one_stre);// add it
+    if (index == coords.simples.size())
+      coords.simples.push_back(one_stre);// add it
     else { 
-      intcos[index]->set_fixed_eq_val(R[i].eq_val/_bohr2angstroms); // it's there already, add the fixed value
+      coords.simples[index]->set_fixed_eq_val(R[i].eq_val/_bohr2angstroms); // it's there already, add the fixed value
       delete one_stre;
     }
   }
@@ -224,13 +225,13 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
     // Insist on user-specified fixed coordinates to be given in Angstroms/radians
     one_bend->set_fixed_eq_val(B[i].eq_val/180.0*_pi);
 
-    // check if intco is already present; returns 1 past the end if not found
+    // check if coord is already present; returns 1 past the end if not found
     int index = find(one_bend);
   
-    if (index == intcos.size())
-      intcos.push_back(one_bend);// add it
+    if (index == coords.simples.size())
+      coords.simples.push_back(one_bend);// add it
     else {
-      intcos[index]->set_fixed_eq_val(B[i].eq_val/180.0*_pi); // it's there already, add the fixed value
+      coords.simples[index]->set_fixed_eq_val(B[i].eq_val/180.0*_pi); // it's there already, add the fixed value
       delete one_bend;
     }
   }
@@ -248,13 +249,13 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
     // Insist on user-specified fixed coordinates to be given in Angstroms/radians
     one_tors->set_fixed_eq_val(D[i].eq_val/180.0*_pi);
 
-    // check if intco is already present; returns 1 past the end if not found
+    // check if coord is already present; returns 1 past the end if not found
     int index = find(one_tors);
 
-    if (index == intcos.size())
-      intcos.push_back(one_tors);// add it
+    if (index == coords.simples.size())
+      coords.simples.push_back(one_tors);// add it
     else {
-      intcos[index]->set_fixed_eq_val(D[i].eq_val/180.0*_pi); // it's there already, add the fixed value
+      coords.simples[index]->set_fixed_eq_val(D[i].eq_val/180.0*_pi); // it's there already, add the fixed value
       delete one_tors;
     }
   }

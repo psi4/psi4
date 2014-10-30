@@ -18,6 +18,7 @@ platform capabilities, *etc*.
    mrcc
    dftd3
    molden
+   cfour
 
 .. comment * MPI4Py
 .. comment * MADNESS

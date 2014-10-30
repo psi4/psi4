@@ -34,35 +34,38 @@ namespace psi{ namespace occwave{
 void OCCWave::coord_grad()
 {
       if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
-          fprintf(outfile,"\tComputing G_abcd...\n");
-          fflush(outfile);
+          outfile->Printf("\tComputing G_abcd...\n");
+          
           omp3_tpdm_vvvv();
       }
       else if (wfn_type_ == "OCEPA") { 
-          fprintf(outfile,"\tComputing G_abcd...\n");
-          fflush(outfile);
+          outfile->Printf("\tComputing G_abcd...\n");
+          
           ocepa_tpdm_vvvv();
       }
-      fprintf(outfile,"\tComputing diagonal blocks of GFM...\n");
-      fflush(outfile);
+      outfile->Printf("\tComputing diagonal blocks of GFM...\n");
+      
       gfock_diag();
      
       // For Standard methods  
       if (orb_opt_ == "FALSE" && relaxed_ == "TRUE") {
-          fprintf(outfile,"\tSolving orbital Z-vector equations...\n");
-          fflush(outfile);
+          outfile->Printf("\tSolving orbital Z-vector equations...\n");
+          
           z_vector();
-          fprintf(outfile,"\tForming relaxed response density matrices...\n");
-          fflush(outfile);
+          outfile->Printf("\tForming relaxed response density matrices...\n");
+          
           effective_pdms();
-          fprintf(outfile,"\tForming relaxed GFM...\n");
-          fflush(outfile);
+          outfile->Printf("\tForming relaxed GFM...\n");
+          
           effective_gfock();
       }
 
+     // OEPROP
+     if (oeprop_ == "TRUE") oeprop();
+
       dump_ints();
-      fprintf(outfile,"\tWriting particle density matrices and GFM to disk...\n");
-      fflush(outfile);
+      outfile->Printf("\tWriting particle density matrices and GFM to disk...\n");
+      
       dump_pdms();
 }// 
 
@@ -71,7 +74,7 @@ void OCCWave::coord_grad()
 //========================================================================         
 void OCCWave::dump_ints()
 {
-    //fprintf(outfile,"\n dump_ints is starting... \n"); fflush(outfile);
+    //outfile->Printf("\n dump_ints is starting... \n"); 
     dpdfile2 H;
     dpdbuf4 K;
 
@@ -153,7 +156,7 @@ void OCCWave::dump_ints()
  }// end uhf
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
-    //fprintf(outfile,"\n dump_ints done. \n"); fflush(outfile);
+    //outfile->Printf("\n dump_ints done. \n"); 
 
 }// end of dump_ints
 
@@ -162,7 +165,7 @@ void OCCWave::dump_ints()
 //========================================================================         
 void OCCWave::dump_pdms()
 {
-    //fprintf(outfile,"\n dump_pdms is starting... \n"); fflush(outfile);
+    //outfile->Printf("\n dump_pdms is starting... \n"); 
 
 //===========================================================================================
 //========================= RHF =============================================================
@@ -276,7 +279,7 @@ if (reference_ == "RESTRICTED") {
                    double value = 2.0 * G.matrix[h][ij][kl];
                    if (I > K) value *= 2.0;                
                    if (J > L) value *= 2.0;                
-                   iwl_buf_wrt_val(&AA, I, K, J, L, value, 0, (FILE *) NULL, 0);
+                   iwl_buf_wrt_val(&AA, I, K, J, L, value, 0, "NULL", 0);
                 }
             }
         }
@@ -307,7 +310,7 @@ if (wfn_type_ != "OMP2") {
                    double value = 2.0 * G.matrix[h][ab][cd];
                    if (A > C) value *= 2.0;                
                    if (B > D) value *= 2.0;                
-                   iwl_buf_wrt_val(&AA, A, C, B, D, value, 0, (FILE *) NULL, 0);
+                   iwl_buf_wrt_val(&AA, A, C, B, D, value, 0, "NULL", 0);
                 }
             }
         }
@@ -336,7 +339,7 @@ if (wfn_type_ != "OMP2") {
                 int JB = ((B - nooA) * nooA)  + J;
                 if (IA >= JB) {
                    double value = 8.0 * G.matrix[h][ij][ab];
-                   iwl_buf_wrt_val(&AA, A, I, B, J, value, 0, (FILE *) NULL, 0);
+                   iwl_buf_wrt_val(&AA, A, I, B, J, value, 0, "NULL", 0);
                 }
             }
         }
@@ -539,7 +542,7 @@ else if (reference_ == "UNRESTRICTED") {
                 int K = aocc_qt[k];
                 int L = bocc_qt[l];
                 double value = 4.0 * G.matrix[h][ij][kl];
-                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -603,7 +606,7 @@ if (wfn_type_ != "OMP2") {
                 int A = avir_qt[a];
                 int B = bvir_qt[b];
                 double value = 8.0 * G.matrix[h][ij][ab];
-                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -628,7 +631,7 @@ if (wfn_type_ != "OMP2") {
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = 2.0 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -652,7 +655,7 @@ if (wfn_type_ != "OMP2") {
                 int J = bocc_qt[j];
                 int B = bvir_qt[b];
                 double value = 2.0 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -676,7 +679,7 @@ if (wfn_type_ != "OMP2") {
                 int J = aocc_qt[j];
                 int B = bvir_qt[b];
                 double value = 4.0 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, I, J, A, B, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, I, J, A, B, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -702,7 +705,7 @@ if (wfn_type_ != "OMP2") {
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = -2.0 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -727,7 +730,7 @@ if (wfn_type_ != "OMP2") {
                 int J = bocc_qt[j];
                 int B = bvir_qt[b];
                 double value = -2.0 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -753,7 +756,7 @@ if (wfn_type_ != "OMP2") {
                 int B = avir_qt[b];
                 int J = bocc_qt[j];
                 double value = 8.0 * G.matrix[h][ia][bj];
-                iwl_buf_wrt_val(&AB, I, B, A, J, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, I, B, A, J, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -779,7 +782,7 @@ if (wfn_type_ != "OMP2") {
                 int B = avir_qt[b];
                 int J = bocc_qt[j];
                 double value = 4.0 * G.matrix[h][ai][bj];
-                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -819,7 +822,7 @@ if (wfn_type_ != "OMP2") {
                 int I = aocc_qt[i];
                 int N = bocc_qt[n];
                 double value = G.matrix[h][am][in];
-                iwl_buf_wrt_val(&AB, A, I, M, N, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, A, I, M, N, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&G, h);
@@ -844,7 +847,7 @@ if (wfn_type_ != "OMP2") {
                 int N = aocc_qt[n];
                 int I = bocc_qt[i];
                 double value = G.matrix[h][ma][ni];
-                iwl_buf_wrt_val(&AB, M, N, A, I, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, M, N, A, I, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&G, h);
@@ -868,7 +871,7 @@ if (wfn_type_ != "OMP2") {
     iwl_buf_close(&BB, 1);
 
 }// end if (reference_ == "UNRESTRICTED") 
- //fprintf(outfile,"\n dump_pdms done. \n"); fflush(outfile);
+ //outfile->Printf("\n dump_pdms done. \n"); 
 }// end of dump_pdms
 
 //========================================================================
@@ -1478,7 +1481,7 @@ void OCCWave::effective_gfock()
     global_dpd_->buf4_close(&K);
 
     // F_AI += 2 \sum_{e,m} Z_em <Im|Ae> 	
-    //fprintf(outfile, "\tI am here\n"); fflush(outfile);
+    //outfile->Printf( "\tI am here\n"); 
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                  ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1885,6 +1888,46 @@ void OCCWave::effective_gfock()
  }// else if (reference_ == "UNRESTRICTED") 
 
 }// end of effective_gfock 
+
+//=========================
+// OEPROP
+//=========================
+void OCCWave::oeprop()
+{ 
+    outfile->Printf("\tComputing one-electron properties...\n");  
+    
+
+    //SharedMatrix Da_ = SharedMatrix(new Matrix("MO-basis alpha OPDM", nmo_, nmo_));
+    //SharedMatrix Db_ = SharedMatrix(new Matrix("MO-basis beta OPDM", nmo_, nmo_));
+    SharedMatrix Da_ = SharedMatrix(new Matrix("MO-basis alpha OPDM", nirrep_, nmopi_, nmopi_));
+    SharedMatrix Db_ = SharedMatrix(new Matrix("MO-basis beta OPDM", nirrep_, nmopi_, nmopi_));
+    if (reference_ == "RESTRICTED") {
+        Da_->copy(g1symm);
+        Da_->scale(0.5);
+        Db_->copy(Da_);
+    }
+
+    else if (reference_ == "UNRESTRICTED") {
+        Da_->copy(g1symmA);
+        Db_->copy(g1symmB);
+    }
+
+    // Compute oeprop
+    boost::shared_ptr<OEProp> oe(new OEProp());
+    oe->set_Da_mo(Da_);
+    if (reference_ == "UNRESTRICTED") oe->set_Db_mo(Db_);
+    oe->add("DIPOLE");
+    oe->add("QUADRUPOLE");
+    oe->add("MULLIKEN_CHARGES");
+    oe->add("NO_OCCUPATIONS");
+    oe->set_title("DF-OMP2");
+    oe->compute();
+    Da_.reset();
+    Db_.reset();
+
+} // end oeprop
+
+
 }} // End Namespaces
 
 

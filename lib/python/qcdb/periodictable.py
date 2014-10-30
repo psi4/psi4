@@ -62,5 +62,8 @@ _temp_mass = [
     285.183698,287.191186,292.199786,291.206564,293.214670]
 
 el2masses = dict(zip(_temp_symbol, _temp_mass))
+el2masses["GH"] = 0.  # note that ghost atoms in Cfour have mass 100.
 el2z = dict(zip(_temp_symbol, _temp_z))
-an2masses = dict(zip(_temp_z, _temp_mass))
+el2z["GH"] = 0
+z2masses = dict(zip(_temp_z, _temp_mass))
+z2el = dict(zip(_temp_z, _temp_symbol))

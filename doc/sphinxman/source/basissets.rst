@@ -1,8 +1,7 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. index:: basis set; available by family
-.. _`sec:basisBuiltIn`:
+.. _`sec:basisSets`:
 
 ==========
 Basis Sets
@@ -17,18 +16,26 @@ but their mixtures are not, neither within a basis set (*e.g.*, 6D/7F) nor withi
 For built-in basis sets, the correct ``spherical``/``cartesian`` value for |globals__puream|
 is set internally from the orbital basis.
 
+* :ref:`sec:basisBuiltIn`
 * :ref:`Specifying basis sets <sec:jobControl>`
-* Built-in basis sets by family (below)
+* :ref:`Built-in basis sets by family <apdx:basisTables>`
 * :ref:`Built-in basis sets by element <apdx:basisElement>`
 * :ref:`User-Defined basis sets <sec:basisUserDefined>`
 * :ref:`Auxiliary bases for built-in orbital basis sets <apdx:basisFamily>`
 
+.. index:: basis set; available by family
+.. _`sec:basisBuiltIn`:
 
-Tables :ref:`Pople <table:basisPopleOrbital>`,
+Built-In Basis Sets
+===================
+
+A wide range of orbital basis sets are built into |PSIfour|. These are
+summarized in Tables :ref:`Pople <table:basisPopleOrbital>`,
 :ref:`Dunning <table:basisDunningOrbital>`, 
-:ref:`Dunning (Douglas-Kroll) <table:basisDunningDK>`, and
-:ref:`Other <table:basisOther>` summarize the orbital basis sets available in
-|PSIfour|.  These tables are arranged so that columns indicate degree of
+:ref:`Dunning (Douglas-Kroll) <table:basisDunningDK>`, 
+:ref:`Karlsruhe <table:basisKarlsruhe>`,
+and :ref:`Other <table:basisOther>` in Appendix :ref:`apdx:basisTables`.
+These tables are arranged so that columns indicate degree of
 augmentation by diffuse functions (generally necessary for anions, excited
 states, and noncovalent interactions) and DTQ56 indicate the :math:`X\;=\zeta` levels
 available.  Several intermediate levels of diffuse space between the customary
@@ -46,241 +53,179 @@ definition files at :source:`lib/basis` in the source.  For basis set availabili
 element and the default value for keyword |globals__puream|, consult
 Appendix :ref:`apdx:basisElement`.
 
-|
-|
+.. index:: basis set; multiple within molecule
+.. _`sec:psithonBasissets`:
 
-.. _`table:basisPopleOrbital`:
+Mixing Basis Sets
+=================
 
-.. table:: Summary of Pople-style orbital basis sets available in |PSIfour| [#f1]_
+While the above syntax will suffice for specifying basis sets in most cases,
+the user may need to assign basis sets to specific atoms.  To achieve this, a
+``basis`` block can be used.  We use a snippet from the :srcsample:`mints2` sample
+input file, which performs a benzene SCF computation, to demonstrate this
+feature. ::
 
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | no diffuse                     | heavy-augmented                  | augmented                          |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | basis set       | [alias]      | basis set        | [alias]       | basis set         | [alias]        |
-    +=================+==============+==================+===============+===================+================+
-    | STO-3G          |              |                  |               |                   |                |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 3-21G           |              |                  |               |                   |                |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-31G           |              | 6-31+G           |               | 6-31++G           |                |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-31G(d)        | [6-31G\*]    | 6-31+G(d)        | [6-31+G\*]    | 6-31++G(d)        | [6-31++G\*]    |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-31G(d_p)      | [6-31G\*\*]  | 6-31+G(d_p)      | [6-31+G\*\*]  | 6-31++G(d_p)      | [6-31++G\*\*]  |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G          |              | 6-311+G          |               | 6-311++G          |                |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G(d)       | [6-311G\*]   | 6-311+G(d)       | [6-311+G\*]   | 6-311++G(d)       | [6-311++G\*]   |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G(d_p)     | [6-311G\*\*] | 6-311+G(d_p)     | [6-311+G\*\*] | 6-311++G(d_p)     | [6-311++G\*\*] |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G(2d)      |              | 6-311+G(2d)      |               | 6-311++G(2d)      |                |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G(2d_p)    |              | 6-311+G(2d_p)    |               | 6-311++G(2d_p)    |                |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G(2d_2p)   |              | 6-311+G(2d_2p)   |               | 6-311++G(2d_2p)   |                |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G(2df)     |              | 6-311+G(2df)     |               | 6-311++G(2df)     |                |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G(2df_p)   |              | 6-311+G(2df_p)   |               | 6-311++G(2df_p)   |                |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G(2df_2p)  |              | 6-311+G(2df_2p)  |               | 6-311++G(2df_2p)  |                |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G(2df_2pd) |              | 6-311+G(2df_2pd) |               | 6-311++G(2df_2pd) |                |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G(3df)     |              | 6-311+G(3df)     |               | 6-311++G(3df)     |                |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G(3df_p)   |              | 6-311+G(3df_p)   |               | 6-311++G(3df_p)   |                |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G(3df_2p)  |              | 6-311+G(3df_2p)  |               | 6-311++G(3df_2p)  |                |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G(3df_2pd) |              | 6-311+G(3df_2pd) |               | 6-311++G(3df_2pd) |                |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G(3df_3pd) |              | 6-311+G(3df_3pd) |               | 6-311++G(3df_3pd) |                |
-    +-----------------+--------------+------------------+---------------+-------------------+----------------+
+    basis {
+       assign DZ
+       assign C 3-21G
+       assign H1 sto-3g
+       assign C1 sto-3g
+    }
 
-|
-|
+The first line in this block assigns the DZ basis set to all atoms.  The next
+line then assigns 3-21G to all carbon atoms, leaving the hydrogens with the DZ
+basis set.  On the third line, the hydrogen atoms which have been specifically
+labelled as ``H1`` are given the STO-3G basis set, leaving the unlabelled hydrogen
+atoms with the DZ basis set.  Likewise, the fourth line assigns the STO-3G
+basis set to just the carbon atoms labelled ``C1``.  This bizzare example was
+constructed to demonstrate the syntax, but the flexibility of the basis set
+specification is advantageous, for example, when selectivily omitting diffuse
+functions to make computations more tractable.
 
-.. _`table:basisMonths`:
+.. index:: basis set; auxiliary
 
-.. table:: Levels of truncation for diffuse functions in standard basis sets
+In the above example the basis sets have been assigned asymmetrically, reducing
+the effective symmetry from :math:`D_{6h}` to :math:`C_{2v}`; |PSIfour| will detect this
+automatically and run in the appropriate point group.  The same syntax can be
+used to specify basis sets other than that used to define orbitals.  For
+example, ::
 
-    +--------------------------+--------------------------------------------------------------------------------------+--------------------------------------------+------------------+------------------+------------------+
-    | augmentation level       | angular momenta in the diffuse space [#f4]_                                                                                       | valid basis sets                                       |
-    +--------------------------+--------------------------------------------------------------------------------------+--------------------------------------------+------------------+------------------+------------------+
-    |                          | Li-Kr main group                                                                     | H & He                                     | D\ :math:`\zeta` | T\ :math:`\zeta` | Q\ :math:`\zeta` |
-    +==========================+======================================================================================+============================================+==================+==================+==================+
-    | aug-cc-pVXZ              | s, p, :math:`\cdots`, :math:`\ell_{max}-2`, :math:`\ell_{max}-1`, :math:`\ell_{max}` | s, p, :math:`\cdots`, :math:`\ell_{max}-1` |  aDZ             |  aTZ             |  aQZ             |
-    +--------------------------+--------------------------------------------------------------------------------------+--------------------------------------------+------------------+------------------+------------------+
-    | heavy-aug-cc-pVXZ [#f2]_ | s, p, :math:`\cdots`, :math:`\ell_{max}-2`, :math:`\ell_{max}-1`, :math:`\ell_{max}` |                                            | haDZ             | haTZ             | haQZ             |
-    +--------------------------+--------------------------------------------------------------------------------------+--------------------------------------------+------------------+------------------+------------------+
-    | jun-cc-pVXZ              | s, p, :math:`\cdots`, :math:`\ell_{max}-2`, :math:`\ell_{max}-1`                     |                                            | jaDZ             | jaTZ             | jaQZ             |
-    +--------------------------+--------------------------------------------------------------------------------------+--------------------------------------------+------------------+------------------+------------------+
-    | may-cc-pVXZ              | s, p, :math:`\cdots`, :math:`\ell_{max}-2`                                           |                                            |                  | maTZ             | maQZ             |
-    +--------------------------+--------------------------------------------------------------------------------------+--------------------------------------------+------------------+------------------+------------------+
-    | :math:`\cdots`           | s, p                                                                                 |                                            |                  |                  | aaQZ             |
-    +--------------------------+--------------------------------------------------------------------------------------+--------------------------------------------+------------------+------------------+------------------+
-    | cc-pVXZ                  |                                                                                      |                                            |   DZ             |   TZ             |               QZ |
-    +--------------------------+--------------------------------------------------------------------------------------+--------------------------------------------+------------------+------------------+------------------+
+    set df_basis_mp2 cc-pvdz-ri
+    
+     or
+    
+    basis {
+       assign cc-pVDZ-RI df_basis_mp2
+    }
+
+are both equivalent ways to set the auxiliary basis set for density fitted MP2
+computations.  To assign the aug-cc-pVDZ-RI to carbon atoms, the following
+command is used::
+
+    basis {
+       assign C aug-cc-pVDZ-RI df_basis_mp2
+    }
+
+When most popular basis sets are being used, including Dunning and
+Pople-style, the SCF, DF-MP2, and SAPT codes will chose the appropriate
+auxiliary basis set automatically according to :ref:`apdx:basisFamily`,
+unless instructed otherwise by setting the auxiliary basis set in the
+input.  Finally, we note that the ``basis {...}`` block may also be used
+for defining basis sets, as detailed in :ref:`sec:basisUserDefined`.
+
+.. index::
+   pair: basis set; adding new
+
+.. _`sec:basisUserDefined`:
+
+User-Defined Basis Sets
+=======================
+
+.. note:: No recompile of the PSI program is necessary for changes made to
+    files in ``$PSIDATADIR``, including those described below.
+
+There are three routes by which a basis set in G94 format can be introduced to |PSIfours| notice.
 
 
-|
-|
+.. rubric:: (1) Install new basis set file into |PSIfour| basis library.
 
-.. _`table:basisDunningOrbital`:
+Copy the basis set definitions for all elements into a blank file. Exclamation points denote comments.
+As the first line of the file, add the word ``spherical`` or ``cartesian`` to indicate
+whether the basis set will run in (5D/7F) or (6D/10F). ::
 
-.. table:: Summary of Dunning orbital basis sets available in |PSIfour|
+   cartesian
+   ****
+   H     0
+   S   3   1.00
+         3.42525091             0.15432897
+         0.62391373             0.53532814
+         0.16885540             0.44463454
+   ****
+   O     0
+   S   3   1.00
+       130.7093200              0.15432897
+        23.8088610              0.53532814
+         6.4436083              0.44463454
+   SP   3   1.00
+         5.0331513             -0.09996723             0.15591627
+         1.1695961              0.39951283             0.60768372
+         0.3803890              0.70011547             0.39195739
+   ****
 
-    +---------------+------------+-----+-----+-----+------+-------+------------------+-------+-------+
-    | basis set     | no diffuse | feb | mar | apr | may  | jun   | heavy-aug [#f2]_ | aug   | d-aug |
-    +===============+============+=====+=====+=====+======+=======+==================+=======+=======+
-    | cc-pVXZ       | DTQ56      | 6   | 56  | Q56 | TQ56 | DTQ56 | DTQ56            | DTQ56 | DTQ56 |
-    +---------------+------------+-----+-----+-----+------+-------+------------------+-------+-------+
-    | cc-pV(X+d)Z   | DTQ56      | 6   | 56  | Q56 | TQ56 | DTQ56 | DTQ56            | DTQ56 | DTQ56 |
-    +---------------+------------+-----+-----+-----+------+-------+------------------+-------+-------+
-    | cc-pCVXZ      | DTQ56      | 6   | 56  | Q56 | TQ56 | DTQ56 | DTQ56            | DTQ56 | DTQ56 |
-    +---------------+------------+-----+-----+-----+------+-------+------------------+-------+-------+
-    | cc-pCV(X+d)Z  | DTQ56      | 6   | 56  | Q56 | TQ56 | DTQ56 | DTQ56            | DTQ56 | DTQ56 |
-    +---------------+------------+-----+-----+-----+------+-------+------------------+-------+-------+
-    | cc-pwCVXZ     | DTQ5       |     | 5   | Q5  | TQ5  | DTQ5  | DTQ5             | DTQ5  | DTQ5  |
-    +---------------+------------+-----+-----+-----+------+-------+------------------+-------+-------+
-    | cc-pwCV(X+d)Z | DTQ5       |     | 5   | Q5  | TQ5  | DTQ5  | DTQ5             | DTQ5  | DTQ5  |
-    +---------------+------------+-----+-----+-----+------+-------+------------------+-------+-------+
+Name the file with the name of the basis set and a ``.gbs`` extension,
+after applying the following transformations.
 
-|
-|
+* All letters lowercase
+* Replace all ``*`` with ``s``
+* Replace all ``+`` with ``p``
+* Replace all ``(`` ``)`` ``,`` with ``_`` (underscores replace parentheses and commas)
 
-.. _`table:basisDunningDK`:
+For example, basis 6-31++G** is stored in :source:`lib/basis/6-31ppgss.gbs`, 
+and cc-pV(D+d)Z is stored in :source:`lib/basis/cc-pv_dpd_z.gbs`.
+Only one basis set may be specified per file.
+Copy the new basis set file into :source:`lib/basis`.
+Request the new basis set in an input file in the usual manner. ::
 
-.. table:: Summary of Dunning Douglas-Kroll orbital basis sets available in |PSIfour|
+   set basis new_basis_name
 
-    +------------------+------------+-----+-----+-----+-----+-----+------------------+--------+-------+
-    | basis set        | no diffuse | feb | mar | apr | may | jun | heavy-aug [#f2]_ | aug    | d-aug |
-    +==================+============+=====+=====+=====+=====+=====+==================+========+=======+
-    | cc-pVXZ-DK       | DTQ5       |     |     |     |     |     | DTQ5             | DTQ5   |       |
-    +------------------+------------+-----+-----+-----+-----+-----+------------------+--------+-------+
-    | cc-pV(X+d)Z-DK   |            |     |     |     |     |     |                  |        |       |
-    +------------------+------------+-----+-----+-----+-----+-----+------------------+--------+-------+
-    | cc-pCVXZ-DK      | DTQ5       |     |     |     |     |     | DTQ5             | DTQ5   |       |
-    +------------------+------------+-----+-----+-----+-----+-----+------------------+--------+-------+
-    | cc-pCV(X+d)Z-DK  |            |     |     |     |     |     |                  |        |       |
-    +------------------+------------+-----+-----+-----+-----+-----+------------------+--------+-------+
-    | cc-pwCVXZ-DK     | --TQ5      |     |     |     |     |     | --TQ5            | --TQ5  |       |
-    +------------------+------------+-----+-----+-----+-----+-----+------------------+--------+-------+
-    | cc-pwCV(X+d)Z-DK |            |     |     |     |     |     |                  |        |       |
-    +------------------+------------+-----+-----+-----+-----+-----+------------------+--------+-------+
 
-|
-|
+.. rubric:: (2) Use new basis set file in arbitrary location.
 
-.. _`table:basisDunningJKFIT`:
+Prepare a basis set file exactly as above. Append the directory
+containing the basis set file to the environment variable
+:envvar:`PSIPATH`.
 
-.. table:: Summary of Dunning JK-fitting basis sets available in |PSIfour|
+Request the new basis set in an input file in the usual manner. ::
 
-    +------------------------+------------+-----+-----+-----+-----+-----+------------------+------+-------+
-    | basis set              | no diffuse | feb | mar | apr | may | jun | heavy-aug [#f2]_ | aug  | d-aug |
-    +========================+============+=====+=====+=====+=====+=====+==================+======+=======+
-    | cc-pVXZ-JKFIT [#f3]_   | DTQ5       |     | 5   | Q5  | TQ5 | DTQ5| DTQ5             | DTQ5 |       |
-    +------------------------+------------+-----+-----+-----+-----+-----+------------------+------+-------+
-    | cc-pV(X+d)Z-JKFIT      | DTQ5       |     | 5   | Q5  | TQ5 | DTQ5| DTQ5             | DTQ5 |       |
-    +------------------------+------------+-----+-----+-----+-----+-----+------------------+------+-------+
-    | cc-pCVXZ-JKFIT [#f3]_  |            |     |     |     |     |     |                  |      |       |
-    +------------------------+------------+-----+-----+-----+-----+-----+------------------+------+-------+
-    | cc-pCV(X+d)Z-JKFIT     |            |     |     |     |     |     |                  |      |       |
-    +------------------------+------------+-----+-----+-----+-----+-----+------------------+------+-------+
-    | cc-pwCVXZ-JKFIT [#f3]_ |            |     |     |     |     |     |                  |      |       |
-    +------------------------+------------+-----+-----+-----+-----+-----+------------------+------+-------+
-    | cc-pwCV(X+d)Z-JKFIT    |            |     |     |     |     |     |                  |      |       |
-    +------------------------+------------+-----+-----+-----+-----+-----+------------------+------+-------+
+   set basis new_basis_name
 
-|
-|
+.. rubric:: (3) Include new basis set in input file.
 
-.. _`table:basisDunningMP2FIT`:
+Construct for a basis set a section like the one below that includes
+``[basis name]``, |globals__puream| value, and element basis set
+specifications. Hash signs denote comments.  This format is exactly like
+the stand-alone basis file except for the addition of the basis name in
+brackets. ::
 
-.. table:: Summary of Dunning MP2-fitting basis sets available in |PSIfour|
+   [ sto-3g ]
+   cartesian
+   ****
+   H     0
+   S   3   1.00
+         3.42525091             0.15432897
+         0.62391373             0.53532814
+         0.16885540             0.44463454
+   ****
+   O     0
+   S   3   1.00
+       130.7093200              0.15432897
+        23.8088610              0.53532814
+         6.4436083              0.44463454
+   SP   3   1.00
+         5.0331513             -0.09996723             0.15591627
+         1.1695961              0.39951283             0.60768372
+         0.3803890              0.70011547             0.39195739
+   ****
 
-    +------------------+------------+-----+-----+-----+------+-------+------------------+-------+-------+
-    | basis set        | no diffuse | feb | mar | apr | may  | jun   | heavy-aug [#f2]_ | aug   | d-aug |
-    +==================+============+=====+=====+=====+======+=======+==================+=======+=======+
-    | cc-pVXZ-RI       | DTQ56      | 6   | 56  | Q56 | TQ56 | DTQ56 | DTQ56            | DTQ56 |       |
-    +------------------+------------+-----+-----+-----+------+-------+------------------+-------+-------+
-    | cc-pV(X+d)Z-RI   | DTQ56      | 6   | 56  | Q56 | TQ56 | DTQ56 | DTQ56            | DTQ56 |       |
-    +------------------+------------+-----+-----+-----+------+-------+------------------+-------+-------+
-    | cc-pCVXZ-RI      |            |     |     |     |      |       |                  |       |       |
-    +------------------+------------+-----+-----+-----+------+-------+------------------+-------+-------+
-    | cc-pCV(X+d)Z-RI  |            |     |     |     |      |       |                  |       |       |
-    +------------------+------------+-----+-----+-----+------+-------+------------------+-------+-------+
-    | cc-pwCVXZ-RI     | DTQ5       |     | 5   | Q5  | TQ5  | DTQ5  | DTQ5             | DTQ5  |       |
-    +------------------+------------+-----+-----+-----+------+-------+------------------+-------+-------+
-    | cc-pwCV(X+d)Z-RI | DTQ5       |     | 5   | Q5  | TQ5  | DTQ5  | DTQ5             | DTQ5  |       |
-    +------------------+------------+-----+-----+-----+------+-------+------------------+-------+-------+
+Copy the section into a |PSIfour| input file and surround it with the
+command ``basis {...}``, as shown below.  Multiple basis sets can be
+specified by adding additional sections within the surrounding brackets.
+Use ``assign`` statements to actually request the basis set. (See
+:srcsample:`mints2` for an example.) ::
 
-|
-|
+   basis {
 
-.. _`table:basisDunningDUAL`:
+   # assign basset to all atoms and addl to hydrogens
+   assign basset
+   assign H addl
 
-.. table:: Summary of Dunning dual-basis helper basis sets available in |PSIfour|
+   # basis set section like in snippet above goes here
+   [basset]
+   ...
 
-    +----------------------+------------+-----+-----+-----+-----+-----+------------------+-----+-------+
-    | basis set            | no diffuse | feb | mar | apr | may | jun | heavy-aug [#f2]_ | aug | d-aug |
-    +======================+============+=====+=====+=====+=====+=====+==================+=====+=======+
-    | cc-pVXZ-DUAL         | TQ         |     |     |     |     |     | TQ               | DTQ |       |
-    +----------------------+------------+-----+-----+-----+-----+-----+------------------+-----+-------+
-    | cc-pV(X+d)Z-DUAL     |            |     |     |     |     |     |                  |     |       |
-    +----------------------+------------+-----+-----+-----+-----+-----+------------------+-----+-------+
-    | cc-pCVXZ-DUAL        |            |     |     |     |     |     |                  |     |       |
-    +----------------------+------------+-----+-----+-----+-----+-----+------------------+-----+-------+
-    | cc-pCV(X+d)Z-DUAL    |            |     |     |     |     |     |                  |     |       |
-    +----------------------+------------+-----+-----+-----+-----+-----+------------------+-----+-------+
-    | cc-pwCVXZ-DUAL       |            |     |     |     |     |     |                  |     |       |
-    +----------------------+------------+-----+-----+-----+-----+-----+------------------+-----+-------+
-    | cc-pwCV(X+d)Z-DUAL   |            |     |     |     |     |     |                  |     |       |
-    +----------------------+------------+-----+-----+-----+-----+-----+------------------+-----+-------+
+   # additional basis set sections follow
+   [addl]
+   ...
+   }
 
-|
-|
-
-.. _`table:basisOther`:
-
-.. table:: Summary of other orbital basis sets available in |PSIfour|
-
-    +--------------+-------------+----------------+
-    | Karlsruhe                  | other          |
-    +--------------+-------------+----------------+
-    | no diffuse   | augmented   |                |
-    +==============+=============+================+
-    | def2-SV(P)   |             | DZP            |
-    +--------------+-------------+----------------+
-    | def2-SVP     | def2-SVPD   | TZ2P           |
-    +--------------+-------------+----------------+
-    | def2-TZVP    | def2-TZVPD  | TZ2PF          |
-    +--------------+-------------+----------------+
-    | def2-TZVPP   | def2-TZVPPD | Sadlej-LPol-ds |
-    +--------------+-------------+----------------+
-    | def2-QZVP    | def2-QZVPD  | Sadlej-LPol-dl |
-    +--------------+-------------+----------------+
-    | def2-QZVPP   | def2-QZVPPD | Sadlej-LPol-fs |
-    +--------------+-------------+----------------+
-    |              |             | Sadlej-LPol-fl |
-    +--------------+-------------+----------------+
-
-|
-|
-
-.. rubric:: Footnotes
-
-.. [#f1] Absolutely no commas are allowed in basis set specification. Use the underscore character instead.
-.. [#f2] The heavy-aug-cc-\ *stub* and jul-cc-\ *stub* basis sets are identical.
-.. [#f3] The JKFIT basis sets are designed in the cc-\ *stub*\ (X+d)Z 
-         framework that includes an additional set of
-         *d*-fuctions for second-row *p*-block elements. Identical basis sets
-         with the cc-\ *stub*\ XZ-JKFIT label are provided for convenience.
-.. [#f4] D\ :math:`\zeta` has :math:`\ell_{max}=2` or d.
-         T\ :math:`\zeta` has :math:`\ell_{max}=3` or f.
-         Q\ :math:`\zeta` has :math:`\ell_{max}=4` or g, *etc*.
 

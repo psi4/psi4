@@ -29,35 +29,37 @@
 #include <boost/shared_ptr.hpp>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
-
+#include "psi4-dec.h"
 namespace psi {
 
-    extern FILE *outfile;
+    
 
 void PSIO::tocprint(unsigned int unit) {
   psio_tocentry *this_entry;
 
+  bool already_open = open_check(unit);
+  if(!already_open) open(unit, PSIO_OPEN_OLD);
+
   this_entry = psio_unit[unit].toc;
 
-  fprintf(outfile, "\nTable of Contents for Unit %5u\n", unit);
-  fprintf(
-          outfile,
+  outfile->Printf( "\nTable of Contents for Unit %5u\n", unit);
+  outfile->Printf(
           "----------------------------------------------------------------------------\n");
-  fprintf(
-          outfile,
+  outfile->Printf(
           "Key                                   Spage    Soffset      Epage    Eoffset\n");
-  fprintf(
-          outfile,
+  outfile->Printf(
           "----------------------------------------------------------------------------\n");
 
   while (this_entry != NULL) {
-    fprintf(outfile, "%-32s %10lu %10lu %10lu %10lu\n", this_entry->key,
+    outfile->Printf("%-32s %10lu %10lu %10lu %10lu\n", this_entry->key,
             this_entry->sadd.page, this_entry->sadd.offset,
             this_entry->eadd.page, this_entry->eadd.offset);
     this_entry = this_entry->next;
   }
-  fprintf(outfile, "\n");
-  fflush(outfile);
+  outfile->Printf("\n");
+  
+
+  if(!already_open) close(unit, 1); // keep
 }
 
   /*!

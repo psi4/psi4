@@ -1,0 +1,24 @@
+#! testing best practices options, part ii
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set basis 6-31g
+
+energy('c4-ccsd')
+compare_values(-76.119378156918, get_variable('current energy'), 5, 'Total Energy')
+
+clean()
+clean_variables()
+
+set cfour_cc_program vcc
+
+energy('c4-ccsd')
+compare_values(-76.119378156918, get_variable('current energy'), 5, 'Total Energy')
+

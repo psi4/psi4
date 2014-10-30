@@ -221,6 +221,7 @@ void DFERI::common_init()
     schwarz_cutoff_ = 0.0;
     J_cutoff_ = 1.0E-10;
     keep_raw_integrals_ = false;
+    omega_ = 0.0;
 }
 boost::shared_ptr<DFERI> DFERI::build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, Options& options)
 {
@@ -247,49 +248,56 @@ void DFERI::add_pair_space(const std::string& name, const std::string& space1, c
     pair_powers_[name] = power;
     pair_transposes_[name] = transpose12;
 }
-void DFERI::clear()
+void DFERI::clear_pair_spaces()
 {
-    LRERI::clear();
     pair_spaces_.clear();
     pair_spaces_order_.clear();
     pair_powers_.clear();
     pair_transposes_.clear();
     ints_.clear();
 }
+void DFERI::clear()
+{
+    clear_pair_spaces();
+    LRERI::clear();
+}
 void DFERI::print_header(int level)
 {
-    fprintf(outfile, "  ==> DFERI: Density Fitted 3-Index Tensors <==\n\n");
-    fprintf(outfile, "    Schwarz cutoff = %11.3E\n", schwarz_cutoff_);
-    fprintf(outfile, "    J cutoff       = %11.3E\n", J_cutoff_);
-    fprintf(outfile, "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L)); 
-    fprintf(outfile, "\n");
+    outfile->Printf( "  ==> DFERI: Density Fitted 3-Index Tensors <==\n\n");
+    if (omega_ != 0.0) {
+        outfile->Printf( "    LRC Omega      = %11.3E\n", omega_);
+    }
+    outfile->Printf( "    Schwarz cutoff = %11.3E\n", schwarz_cutoff_);
+    outfile->Printf( "    J cutoff       = %11.3E\n", J_cutoff_);
+    outfile->Printf( "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L)); 
+    outfile->Printf( "\n");
 
     if (level > 1) {
-        fprintf(outfile, "   => Primary Basis <=\n\n");
-        primary_->print_by_level(outfile, print_);
+        outfile->Printf( "   => Primary Basis <=\n\n");
+        primary_->print_by_level("outfile", print_);
     }
     
-    fprintf(outfile, "   => Auxiliary Basis <=\n\n");
-    auxiliary_->print_by_level(outfile, print_);
+    outfile->Printf( "   => Auxiliary Basis <=\n\n");
+    auxiliary_->print_by_level("outfile", print_);
     
     if (level > 1) {
-        fprintf(outfile, "   => Orbital Spaces: <=\n\n");
-        fprintf(outfile, "    %12s %12s %12s\n", "Space", "Start", "End");
+        outfile->Printf( "   => Orbital Spaces: <=\n\n");
+        outfile->Printf( "    %12s %12s %12s\n", "Space", "Start", "End");
         for (int i = 0; i < spaces_order_.size(); i++) {
-            fprintf(outfile, "    %12s %12d %12d\n", spaces_order_[i].c_str(), spaces_[spaces_order_[i]].first, spaces_[spaces_order_[i]].second);
+            outfile->Printf( "    %12s %12d %12d\n", spaces_order_[i].c_str(), spaces_[spaces_order_[i]].first, spaces_[spaces_order_[i]].second);
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
     
     if (level > 1) {
-        fprintf(outfile, "   => Required Orbital Pair Spaces: <=\n\n");
-        fprintf(outfile, "    %12s %12s %12s %11s %11s\n", "Tensor", "Space 1", "Space 2", "J Power", "Transpose12");
+        outfile->Printf( "   => Required Orbital Pair Spaces: <=\n\n");
+        outfile->Printf( "    %12s %12s %12s %11s %11s\n", "Tensor", "Space 1", "Space 2", "J Power", "Transpose12");
         for (int i = 0; i < pair_spaces_order_.size(); i++) {
-            fprintf(outfile, "    %12s %12s %12s %11.3E %11s\n", pair_spaces_order_[i].c_str(), pair_spaces_[pair_spaces_order_[i]].first.c_str(), pair_spaces_[pair_spaces_order_[i]].second.c_str(),
+            outfile->Printf( "    %12s %12s %12s %11.3E %11s\n", pair_spaces_order_[i].c_str(), pair_spaces_[pair_spaces_order_[i]].first.c_str(), pair_spaces_[pair_spaces_order_[i]].second.c_str(),
                 pair_powers_[pair_spaces_order_[i]],
                 pair_transposes_[pair_spaces_order_[i]]);
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
 }
 boost::shared_ptr<Matrix> DFERI::Jpow(double power)
@@ -309,7 +317,11 @@ boost::shared_ptr<Matrix> DFERI::Jpow(double power)
     boost::shared_ptr<IntegralFactory> Jfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set()));
     std::vector<boost::shared_ptr<TwoBodyAOInt> > Jeri;
     for (int thread = 0; thread < nthread; thread++) {
-        Jeri.push_back(boost::shared_ptr<TwoBodyAOInt>(Jfactory->eri()));
+        if (omega_ == 0.0) {
+            Jeri.push_back(boost::shared_ptr<TwoBodyAOInt>(Jfactory->eri()));
+        } else {
+            Jeri.push_back(boost::shared_ptr<TwoBodyAOInt>(Jfactory->erf_eri(omega_)));
+        }
     }
 
     std::vector<std::pair<int, int> > Jpairs;
@@ -499,7 +511,11 @@ void DFERI::transform()
     boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
     std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
     for (int thread = 0; thread < nthread; thread++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->eri()));
+        if (omega_ == 0.0) {
+            eri.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->eri()));
+        } else {
+            eri.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
+        }
     }
 
     // => ERI Sieve <= //
@@ -760,49 +776,48 @@ void LSTHCERI::clear()
 }
 void LSTHCERI::print_header(int level)
 {
-    if (print_) {
-        fprintf(outfile, "\n");
-        fprintf(outfile, "         ------------------------------------------------------------\n");
-        fprintf(outfile, "                                   LSTHC-ERI                         \n"); 
-        fprintf(outfile, "                         Rob Parrish and Ed Hohenstein               \n"); 
-        fprintf(outfile, "         ------------------------------------------------------------\n\n");
+    outfile->Printf( "  ==> LSTHCERI: LS-THC 2-Index Tensors <==\n\n");
 
-        fprintf(outfile, " ==> Options <==\n\n");
-        fprintf(outfile, "    Schwarz cutoff = %11.3E\n", schwarz_cutoff_);
-        fprintf(outfile, "    J cutoff       = %11.3E\n", J_cutoff_);
-        fprintf(outfile, "    S cutoff       = %11.3E\n", S_cutoff_);
-        fprintf(outfile, "    Balance        = %11s\n", (balance_ ? "Yes" : "No"));
-        fprintf(outfile, "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L)); 
-        fprintf(outfile, "\n");
+    outfile->Printf( "    Schwarz cutoff = %11.3E\n", schwarz_cutoff_);
+    outfile->Printf( "    J cutoff       = %11.3E\n", J_cutoff_);
+    outfile->Printf( "    S cutoff       = %11.3E\n", S_cutoff_);
+    outfile->Printf( "    Balance        = %11s\n", (balance_ ? "Yes" : "No"));
+    outfile->Printf( "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L)); 
+    outfile->Printf( "\n");
 
-        fprintf(outfile, " ==> Primary Basis <==\n\n");
-        primary_->print_by_level(outfile, print_);
+    if (level > 1) {
+        outfile->Printf( "   => Primary Basis <=\n\n");
+        primary_->print_by_level("outfile", print_);
+    }
 
-        if (auxiliary_) {
-            fprintf(outfile, " ==> Auxiliary Basis <==\n\n");
-            auxiliary_->print_by_level(outfile, print_);
-        }    
+    if (auxiliary_) {
+        outfile->Printf( "   => Auxiliary Basis <=\n\n");
+        auxiliary_->print_by_level("outfile", print_);
+    }    
     
-        fprintf(outfile, " ==> Orbital Spaces: <==\n\n");
-        fprintf(outfile, "    %12s %12s %12s\n", "Space", "Start", "End");
+    if (level > 1) {
+        outfile->Printf( "   => Orbital Spaces: <=\n\n");
+        outfile->Printf( "    %12s %12s %12s\n", "Space", "Start", "End");
         for (int i = 0; i < spaces_order_.size(); i++) {
-            fprintf(outfile, "    %12s %12d %12d\n", spaces_order_[i].c_str(), spaces_[spaces_order_[i]].first, spaces_[spaces_order_[i]].second);
+            outfile->Printf( "    %12s %12d %12d\n", spaces_order_[i].c_str(), spaces_[spaces_order_[i]].first, spaces_[spaces_order_[i]].second);
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
+    }
 
-        fprintf(outfile, " ==> Required ERI Spaces: <==\n\n");
-        fprintf(outfile, "    %12s %12s %12s %12s %12s\n", "Tensor", "Space 1", "Space 2", "Space 3", "Space 4");
+    if (level > 1) {
+        outfile->Printf( "   => Required ERI Spaces: <=\n\n");
+        outfile->Printf( "    %12s %12s %12s %12s %12s\n", "Tensor", "Space 1", "Space 2", "Space 3", "Space 4");
         for (int i = 0; i < eri_spaces_order_.size(); i++) {
             std::string tensor = eri_spaces_order_[i];
             std::vector<std::string> task = eri_spaces_[tensor];
-            fprintf(outfile, "    %12s %12s %12s %12s %12s\n", tensor.c_str(), task[0].c_str(), task[1].c_str(), task[2].c_str(), task[3].c_str());
+            outfile->Printf( "    %12s %12s %12s %12s %12s\n", tensor.c_str(), task[0].c_str(), task[1].c_str(), task[2].c_str(), task[3].c_str());
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
 }
 void LSTHCERI::compute()
 {
-    print_header();
+    //print_header();
     ints_.clear();
 
     // => Roll some X matrices <= //

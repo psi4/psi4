@@ -34,7 +34,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::z_vector()
 { 
-//fprintf(outfile,"\n z_vector is starting... \n"); fflush(outfile);
+//outfile->Printf("\n z_vector is starting... \n"); 
 
 if (reference_ == "RESTRICTED") {
     // Mem alloc
@@ -148,9 +148,9 @@ if (reference_ == "RESTRICTED") {
          double det = 0.0;      
          Aorb->lineq_flin(zvectorA, &det);
          if (fabs(det) < DIIS_MIN_DET) { 
-             fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
-             fprintf(outfile, "Determinant is %6.3E\n", det);
-             fflush(outfile);
+             outfile->Printf( "Warning!!! MO Hessian matrix is near-singular\n");
+             outfile->Printf( "Determinant is %6.3E\n", det);
+             
              pcg_conver = 1;// here 1 means unsuccessful
          }
     }
@@ -159,8 +159,8 @@ if (reference_ == "RESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver != 0) {
-       fprintf(outfile,"\tWarning!!! MO Hessian matrix is near-singular, switching to MSD. \n");
-       fflush(outfile);
+       outfile->Printf("\tWarning!!! MO Hessian matrix is near-singular, switching to MSD. \n");
+       
     } // end if pcg_conver = 0
 	
     // print
@@ -451,9 +451,9 @@ else if (reference_ == "UNRESTRICTED") {
          Aorb->lineq_flin(zvector, &det);
          if (fabs(det) < DIIS_MIN_DET) { 
          //if (fabs(det) < 1e-2) { 
-             fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
-             fprintf(outfile, "Determinant is %6.3E\n", det);
-             fflush(outfile);
+             outfile->Printf( "Warning!!! MO Hessian matrix is near-singular\n");
+             outfile->Printf( "Determinant is %6.3E\n", det);
+             
              pcg_conver = 1;// here 1 means unsuccessful
          }
     }
@@ -469,8 +469,8 @@ else if (reference_ == "UNRESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver != 0) {
-       fprintf(outfile,"\tWarning!!! MO Hessian matrix is near-singular\n");
-       fflush(outfile);
+       outfile->Printf("\tWarning!!! MO Hessian matrix is near-singular\n");
+       
     } // end if pcg_conver = 0
 	
     // print
@@ -504,7 +504,7 @@ else if (reference_ == "UNRESTRICTED") {
     delete zvector;
       
 }// end if (reference_ == "UNRESTRICTED") 
- //fprintf(outfile,"\n zvector_orb_resp done. \n"); fflush(outfile);
+ //outfile->Printf("\n zvector_orb_resp done. \n"); 
 }// end z_vector
 }} // End Namespaces
 

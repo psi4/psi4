@@ -28,12 +28,13 @@ properties, and vibrational frequency calculations.
 
 """
 import sys
-import psi4
-import p4util
-import p4const
+#CUimport psi4
+#CUimport p4util
+#CUimport p4const
 from proc import *
-from functional import *
-from p4regex import *
+from interface_cfour import *
+#CUfrom functional import *
+#CUfrom p4regex import *
 # never import wrappers or aliases into this file
 
 # Procedure lookup tables
@@ -46,11 +47,14 @@ procedures = {
             'oldmp2'        : run_oldmp2,
             'dfmp2'         : run_dfmp2,
             'df-mp2'        : run_dfmp2,
+            'rimp2'         : run_rimp2,
+            'ri-mp2'        : run_rimp2,
             'conv-mp2'      : run_mp2,
             'mp3'           : run_mp3,
             'mp2.5'         : run_mp2_5,
             'mp2'           : run_mp2_select,
             'omp2'          : run_omp2,
+            'conv-omp2'     : run_conv_omp2,
             'scs-omp2'      : run_scs_omp2,
             'scsn-omp2'     : run_scs_omp2,
             'scs-mi-omp2'   : run_scs_omp2,
@@ -67,6 +71,12 @@ procedures = {
             'ocepa'         : run_ocepa,
             'cepa0'         : run_cepa0,
             'omp2.5'        : run_omp2_5,
+            'df-omp2'       : run_dfomp2,
+            'dfomp2'        : run_dfomp2,
+            'cd-omp2'       : run_cdomp2,
+            'cdomp2'        : run_cdomp2,
+            'cd-mp2'        : run_cdmp2,
+            'cdmp2'         : run_cdmp2,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
@@ -106,6 +116,8 @@ procedures = {
             'cisdtq'        : run_detci,
             'ci'            : run_detci,  # arbitrary order ci(n)
             'fci'           : run_detci,
+            'casscf'        : run_detcas,
+            'rasscf'        : run_detcas,
             'adc'           : run_adc,
             'cphf'          : run_libfock,
             'cis'           : run_libfock,
@@ -164,9 +176,14 @@ procedures = {
             'conv-mp2'      : run_mp2_gradient,
             'df-mp2'        : run_dfmp2_gradient,
             'dfmp2'         : run_dfmp2_gradient,
+            'rimp2'         : run_rimp2_gradient,
+            'ri-mp2'        : run_rimp2_gradient,
             'eom-ccsd'      : run_eom_cc_gradient,
             'dcft'          : run_dcft_gradient,
             'omp2'          : run_omp2_gradient,
+            'conv-omp2'     : run_conv_omp2_gradient,
+            'df-omp2'       : run_dfomp2_gradient,
+            'dfomp2'        : run_dfomp2_gradient,
             'omp3'          : run_omp3_gradient,
             'mp3'           : run_mp3_gradient,
             'mp2.5'         : run_mp2_5_gradient,
@@ -179,13 +196,27 @@ procedures = {
             # Upon adding a method to this list, add it to the docstring in frequency() below
         },
         'property' : {
-            'scf'  : run_scf_property,
-            'cc2'  : run_cc_property,
-            'ccsd' : run_cc_property,
-            'df-mp2' : run_dfmp2_property,
-            'dfmp2'  : run_dfmp2_property,
+            'scf'      : run_scf_property,
+            'cc2'      : run_cc_property,
+            'ccsd'     : run_cc_property,
+            'df-mp2'   : run_dfmp2_property,
+            'dfmp2'    : run_dfmp2_property,
+            'rimp2'    : run_rimp2_property,
+            'ri-mp2'   : run_rimp2_property,
+            'dfomp2'   : run_dfomp2_property,
+            'df-omp2'  : run_dfomp2_property,
+            'omp2'     : run_dfomp2_property,
             'eom-cc2'  : run_cc_property,
             'eom-ccsd' : run_cc_property,
+            'detci'    : run_detci_property,  # full control over detci
+            'mp'       : run_detci_property,  # arbitrary order mp(n)
+            'detci-mp' : run_detci_property,  # arbitrary order mp(n)
+            'zapt'     : run_detci_property,  # arbitrary order zapt(n)
+            'cisd'     : run_detci_property,
+            'cisdt'    : run_detci_property,
+            'cisdtq'   : run_detci_property,
+            'ci'       : run_detci_property,  # arbitrary order ci(n)
+            'fci'      : run_detci_property,
             # Upon adding a method to this list, add it to the docstring in property() below
         }}
 
@@ -197,6 +228,12 @@ for ssuper in superfunctional_list():
     if ((not ssuper.is_c_hybrid()) and (not ssuper.is_c_lrc()) and (not ssuper.is_x_lrc())):
         procedures['gradient'][ssuper.name().lower()] = run_dft_gradient
 
+# Integrate CFOUR with driver routines
+for ssuper in cfour_list():
+    procedures['energy'][ssuper] = run_cfour
+
+for ssuper in cfour_gradient_list():
+    procedures['gradient'][ssuper] = run_cfour
 
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
@@ -276,6 +313,12 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | cepa0                   | coupled electron pair approximation, equiv. linear. CCD :ref:`[manual] <sec:convocc>` |
     +-------------------------+---------------------------------------------------------------------------------------+
+    | df-omp2                 | density-fitted orbital-optimized MP2 :ref:`[manual] <sec:dfocc>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cd-omp2                 | cholesky decomposed orbital-optimized MP2 :ref:`[manual] <sec:dfocc>`                 |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cd-mp2                  | cholesky decomposed MP2 :ref:`[manual] <sec:dfocc>`                                   |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | cepa(0)                 | coupled electron pair approximation variant 0 :ref:`[manual] <sec:fnocepa>`           |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cepa(1)                 | coupled electron pair approximation variant 1 :ref:`[manual] <sec:fnocepa>`           |
@@ -317,6 +360,10 @@ def energy(name, **kwargs):
     | fci                     | full configuration interaction (FCI) :ref:`[manual] <sec:ci>`                         |
     +-------------------------+---------------------------------------------------------------------------------------+
     | detci                   | **expert** full control over detci module                                             |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | casscf                  | complete active space self consistent field (CASSCF)  :ref:`[manual] <sec:cas>`    |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | rasscf                  | restricted active space self consistent field (RASSCF)  :ref:`[manual] <sec:cas>`    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | gaussian-2 (g2)         | gaussian-2 composite method :ref:`[manual] <sec:fnogn>`                               |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -383,71 +430,9 @@ def energy(name, **kwargs):
 
     .. include:: autodoc_dft_energy.rst
 
-    .. _`table:energy_mrcc`:
+    .. include:: mrcc_table_energy.rst
 
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method in Kallay's MRCC program :ref:`[manual] <sec:mrcc>`                      |
-    +=========================+=======================================================================================+
-    | mrccsd                  | CC through doubles                                                                    |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt                 | CC through triples                                                                    |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq                | CC through quadruples                                                                 |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp               | CC through quintuples                                                                 |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqph              | CC through sextuples                                                                  |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsd(t)               | CC through doubles with perturbative triples                                          |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt(q)              | CC through triples with perturbative quadruples                                       |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq(p)             | CC through quadruples with pertubative quintuples                                     |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp(h)            | CC through quintuples with pertubative sextuples                                      |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsd(t)_l             |                                                                                       |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt(q)_l            |                                                                                       |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq(p)_l           |                                                                                       |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp(h)_l          |                                                                                       |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt-1a              | CC through doubles with iterative triples (cheapest terms)                            |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq-1a             | CC through triples with iterative quadruples (cheapest terms)                         |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp-1a            | CC through quadruples with iterative quintuples (cheapest terms)                      |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqph-1a           | CC through quintuples with iterative sextuples (cheapest terms)                       |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt-1b              | CC through doubles with iterative triples (cheaper terms)                             |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq-1b             | CC through triples with iterative quadruples (cheaper terms)                          |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp-1b            | CC through quadruples with iterative quintuples (cheaper terms)                       |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqph-1b           | CC through quintuples with iterative sextuples (cheaper terms)                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc2                   | approximate CC through doubles                                                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc3                   | approximate CC through triples                                                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc4                   | approximate CC through quadruples                                                     |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc5                   | approximate CC through quintuples                                                     |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc6                   | approximate CC through sextuples                                                      |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt-3               | CC through doubles with iterative triples (all but the most expensive terms)          |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq-3              | CC through triples with iterative quadruples (all but the most expensive terms)       |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp-3             | CC through quadruples with iterative quintuples (all but the most expensive terms)    |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqph-3            | CC through quintuples with iterative sextuples (all but the most expensive terms)     |
-    +-------------------------+---------------------------------------------------------------------------------------+
+    .. include:: cfour_table_energy.rst
 
     :type name: string
     :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
@@ -503,10 +488,21 @@ def energy(name, **kwargs):
     >>> energy('mp4')
 
     >>> # [4] Converge scf as singlet, then run detci as triplet upon singlet reference
+    >>> # Note that the integral transformation is not done automatically when detci is run in a separate step.
     >>> molecule H2 {\\n0 1\\nH\\nH 1 0.74\\n}
+    >>> set global basis cc-pVDZ
+    >>> set global reference rohf
     >>> energy('scf')
     >>> H2.set_multiplicity(3)
+    >>> psi4.MintsHelper().integrals()
     >>> energy('detci', bypass_scf=True)
+
+    >>> # [5] Run two CI calculations, keeping the integrals generated in the first one.
+    >>> molecule ne {\\nNe\\n}
+    >>> set globals  basis cc-pVDZ
+    >>> set transqt2 delete_tei false
+    >>> energy('cisd')
+    >>> energy('fci', bypass_scf='True')
 
     """
     lowername = name.lower()
@@ -550,7 +546,11 @@ def energy(name, **kwargs):
         procedures['energy'][lowername](lowername, **kwargs)
 
     except KeyError:
-        raise ValidationError('Energy method %s not available.' % (lowername))
+        alternatives = ""
+        alt_lowername = p4util.text.find_approximate_string_matches(lowername,procedures['energy'].keys(),2)
+        if len(alt_lowername) > 0:
+            alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
+        raise ValidationError('Energy method %s not available.%s' % (lowername,alternatives))
 
     optstash.restore()
     return psi4.get_variable('CURRENT ENERGY')
@@ -597,7 +597,7 @@ def gradient(name, **kwargs):
         elif der1st.match(str(opt_dertype)):
             dertype = 1
         else:
-            raise ValidationError('Requested derivative level \'dertype\' %s not valid for helper function optimize.' % (opt_dertype))
+            raise ValidationError('Derivative level \'dertype\' %s not valid for helper function optimize.' % (opt_dertype))
 
     # 3. if the user provides a custom function THAT takes precendence
     if ('opt_func' in kwargs) or ('func' in kwargs):
@@ -615,8 +615,12 @@ def gradient(name, **kwargs):
     elif (dertype == 0) and not(func is energy):
         pass
     else:
-        raise ValidationError('Requested method \'name\' %s and derivative level \'dertype\' %s are not available.'
-            % (lowername, dertype))
+        alternatives = ""
+        alt_lowername = p4util.text.find_approximate_string_matches(lowername,procedures['gradient'].keys(),2)
+        if len(alt_lowername) > 0:
+            alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
+        raise ValidationError('Derivative method \'name\' %s and derivative level \'dertype\' %s are not available.%s'
+            % (lowername, dertype,alternatives))
 
     # no analytic derivatives for scf_type cd
     if psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
@@ -673,7 +677,7 @@ def gradient(name, **kwargs):
 
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
             raise ValidationError('Optimize execution mode \'sow\' not valid for analytic gradient calculation.')
-        psi4.wavefunction().energy()
+        #psi4.wavefunction().energy()
 
         optstash.restore()
         return psi4.get_variable('CURRENT ENERGY')
@@ -899,7 +903,11 @@ def property(name, **kwargs):
         returnvalue = procedures['property'][lowername](lowername, **kwargs)
 
     except KeyError:
-        raise ValidationError('Property method %s not available.' % (lowername))
+        alternatives = ""
+        alt_lowername = p4util.text.find_approximate_string_matches(lowername,procedures['property'].keys(),2)
+        if len(alt_lowername) > 0:
+            alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
+        raise ValidationError('Property method %s not available.%s' % (lowername,alternatives))
 
     optstash.restore()
     return returnvalue
@@ -964,6 +972,8 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. include:: autodoc_dft_opt.rst
+
+    .. include:: cfour_table_grad.rst
 
     .. warning:: Optimizations where the molecule is specified in Z-matrix format
        with dummy atoms will result in the geometry being converted to a Cartesian representation.
@@ -1030,6 +1040,7 @@ def optimize(name, **kwargs):
     if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
         isSowReap = True
     optstash = p4util.OptionsState(
+        ['OPTKING', 'INTRAFRAG_STEP_LIMIT'],
         ['SCF', 'GUESS'])
 
     n = 1
@@ -1040,6 +1051,7 @@ def optimize(name, **kwargs):
     mol = psi4.get_active_molecule()
     mol.update_geometry()
     initial_sym = mol.schoenflies_symbol()
+    guessPersist = psi4.get_global_option('GUESS_PERSIST')
     while n <= psi4.get_global_option('GEOM_MAXITER'):
         mol = psi4.get_active_molecule()
         mol.update_geometry()
@@ -1052,7 +1064,7 @@ def optimize(name, **kwargs):
         kwargs['opt_iter'] = n
 
         # Use orbitals from previous iteration as a guess
-        if (n > 1) and (not isSowReap):
+        if (n > 1) and (not isSowReap) and (not guessPersist):
             psi4.set_local_option('SCF', 'GUESS', 'READ')
 
         # Compute the gradient
@@ -1078,6 +1090,7 @@ def optimize(name, **kwargs):
             G = psi4.get_gradient()
             psi4.IOManager.shared_object().set_specific_retention(1, True)
             psi4.IOManager.shared_object().set_specific_path(1, './')
+            psi4.set_global_option('HESSIAN_WRITE',True)
             frequencies(name, **kwargs)
             steps_since_last_hessian = 0
             psi4.set_gradient(G)
@@ -1091,12 +1104,14 @@ def optimize(name, **kwargs):
 
         # print 'cart_hess_read', psi4.get_global_option('CART_HESS_READ')
         # Take step
-        if psi4.optking() == psi4.PsiReturnType.EndLoop:
+        optking_rval = psi4.optking()
+        if optking_rval == psi4.PsiReturnType.EndLoop:
             print('Optimizer: Optimization complete!')
             psi4.print_out('\n    Final optimized geometry and variables:\n')
             psi4.get_active_molecule().print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
             if (psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
+              if (psi4.get_option('OPTKING', 'KEEP_INTCOS') == False):
                 psi4.opt_clean()
             psi4.clean()
 
@@ -1109,6 +1124,15 @@ def optimize(name, **kwargs):
 
             optstash.restore()
             return thisenergy
+
+        elif optking_rval == psi4.PsiReturnType.Failure: # new 10-14 RAK
+            print('Optimizer: Optimization failed!')
+            if (psi4.get_option('OPTKING', 'KEEP_INTCOS') == False):
+                psi4.opt_clean()
+            psi4.clean()
+            optstash.restore()
+            return thisenergy
+
         psi4.print_out('\n    Structure for next step:\n')
         psi4.get_active_molecule().print_in_input_format()
 
@@ -1120,6 +1144,9 @@ def optimize(name, **kwargs):
         n += 1
 
     psi4.print_out('\tOptimizer: Did not converge!')
+    if (psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
+      if (psi4.get_option('OPTKING', 'KEEP_INTCOS') == False):
+        psi4.opt_clean()
 
     optstash.restore()
     return 0.0
@@ -1137,6 +1164,11 @@ def parse_arbitrary_order(name):
 
     # matches 'mrccsdt(q)'
     if namelower.startswith('mrcc'):
+
+        # avoid undoing fn's good work when called twice
+        if namelower == 'mrcc':
+            return namelower, None
+
         # grabs 'sdt(q)'
         ccfullname = namelower[4:]
 
@@ -1186,9 +1218,15 @@ def parse_arbitrary_order(name):
         namelevel = int(decompose.group(2))
 
         if (namestump == 'mp') or (namestump == 'zapt') or (namestump == 'ci'):
-            # Let 'mp2' and 'mp3' pass through as themselves to occ module
-            if (namestump == 'mp') and ((namelevel == 2) or (namelevel == 3)):
+            # Let 'mp2' pass through to occ module
+            if (namestump == 'mp') and (namelevel == 2):
                 return namelower, None
+            # Let 'mp3' pass through to occ module for rhf/uhf, direct to detci for rohf
+            elif (namestump == 'mp') and (namelevel == 3):
+                if psi4.get_option('SCF','REFERENCE') == 'ROHF':
+                    return 'detci-mp', 3
+                else:
+                    return namelower, None
             # Let 'mp4' be redirected to fnocc module if rhf
             elif (namestump == 'mp') and (namelevel == 4):
                 if psi4.get_option('SCF', 'REFERENCE') == 'RHF':
@@ -1252,7 +1290,7 @@ def hessian(name, **kwargs):
         elif der2nd.match(str(freq_dertype)):
             dertype = 2
         else:
-            raise ValidationError('Requested derivative level \'dertype\' %s not valid for helper function frequency.' % (freq_dertype))
+            raise ValidationError('Derivative level \'dertype\' %s not valid for helper function frequency.' % (freq_dertype))
 
     # 3. if the user provides a custom function THAT takes precedence
     if ('freq_func' in kwargs) or ('func' in kwargs):
@@ -1274,8 +1312,13 @@ def hessian(name, **kwargs):
     elif (dertype == 0) and not(func is energy):
         pass
     else:
-        raise ValidationError('Requested method \'name\' %s and derivative level \'dertype\' %s are not available.'
-            % (lowername, dertype))
+        alternatives = ""
+        alt_lowername = p4util.text.find_approximate_string_matches(lowername,procedures['energy'].keys(),2)
+        if len(alt_lowername) > 0:
+            alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
+
+        raise ValidationError('Derivative method \'name\' %s and derivative level \'dertype\' %s are not available.%s'
+            % (lowername, dertype, alternatives))
 
     # Make sure the molecule the user provided is the active one
     if ('molecule' in kwargs):

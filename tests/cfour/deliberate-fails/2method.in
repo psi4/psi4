@@ -1,0 +1,13 @@
+memory 300 mb
+
+molecule {
+H
+H 1 0.7
+}
+
+set basis 6-31g
+set cfour_calc_level ccsd        # clash with 'c4-scf' below
+
+energy('c4-scf')
+
+

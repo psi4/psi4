@@ -1,5 +1,6 @@
 #! Benzene vertical singlet-triplet energy difference computation, using the
-#! PubChem database to obtain the initial geometry, at the UHF an ROHF levels of theory.
+#! PubChem database to obtain the initial geometry, which is optimized at the HF/STO-3G
+#! level, before computing single point energies at the RHF, UHF and ROHF levels of theory.
 
 memory 250 mb
 
@@ -8,13 +9,15 @@ molecule benz{
 }
 
 set {
-   basis     DZ
+   basis     sto-3g
    reference rhf
    max_energy_g_convergence 8
-   scf_type pk
 }
 
-e_sing_rhf = optimize('scf')
+optimize('scf')
+
+set basis cc-pvdz
+e_sing_rhf = energy('scf')
 
 benz.set_multiplicity(3)
 #
@@ -34,10 +37,10 @@ vertical_rohf = psi_hartree2ev * (e_trip_rohf - e_sing_rhf)
 print_out("\nSinglet-Triplet gap (vertical, UHF)   = %8.2f eV\n" % vertical_uhf)
 print_out("\nSinglet-Triplet gap (vertical, ROHF)  = %8.2f eV\n" % vertical_rohf)
 
-enuc  =  203.65056339380897                                                          #TEST
-erhf  = -230.64169476819367                                                          #TEST
-erohf = -230.44750163089151                                                          #TEST
-euhf  = -230.45330949687190                                                          #TEST
+enuc  =  204.531600152395043                                                         #TEST
+erhf  = -230.72190557842444                                                          #TEST
+erohf = -230.4166131085004849                                                        #TEST
+euhf  = -230.5397290551616720                                                        #TEST
 compare_values(enuc, benz.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy") #TEST 
 compare_values(erhf,  e_sing_rhf,  6, "Singlet benzene RHF energy")                  #TEST 
 compare_values(erohf, e_trip_rohf, 6, "Triplet benzene UHF energy")                  #TEST 

@@ -183,17 +183,17 @@ void SAPT0::exch10_s2()
   e_exch10_s2_ = -2.0*(ex1+ex2+ex3-ex4-ex5+ex6);
 
   if (debug_) {
-    fprintf(outfile,"\n    Ex1                 = %18.12lf H\n",ex1);
-    fprintf(outfile,"    Ex2                 = %18.12lf H\n",ex2);
-    fprintf(outfile,"    Ex3                 = %18.12lf H\n",ex3);
-    fprintf(outfile,"    Ex4                 = %18.12lf H\n",ex4);
-    fprintf(outfile,"    Ex5                 = %18.12lf H\n",ex5);
-    fprintf(outfile,"    Ex6                 = %18.12lf H\n\n",ex6);
+    outfile->Printf("\n    Ex1                 = %18.12lf H\n",ex1);
+    outfile->Printf("    Ex2                 = %18.12lf H\n",ex2);
+    outfile->Printf("    Ex3                 = %18.12lf H\n",ex3);
+    outfile->Printf("    Ex4                 = %18.12lf H\n",ex4);
+    outfile->Printf("    Ex5                 = %18.12lf H\n",ex5);
+    outfile->Printf("    Ex6                 = %18.12lf H\n\n",ex6);
   }
 
   if (print_) {
-    fprintf(outfile,"    Exch10 (S^2)        = %18.12lf H\n",e_exch10_s2_);
-    fflush(outfile);
+    outfile->Printf("    Exch10 (S^2)        = %18.12lf H\n",e_exch10_s2_);
+    
   }
 }
 
@@ -416,20 +416,20 @@ void SAPT0::exch10()
   e_exch10_ = -2.0*(ex1+ex2+ex3+ex4+ex5+ex6+ex7+ex8+ex9);
 
   if (debug_) {
-    fprintf(outfile,"\n    Ex1                 = %18.12lf H\n",ex1);
-    fprintf(outfile,"    Ex2                 = %18.12lf H\n",ex2);
-    fprintf(outfile,"    Ex3                 = %18.12lf H\n",ex3);
-    fprintf(outfile,"    Ex4                 = %18.12lf H\n",ex4);
-    fprintf(outfile,"    Ex5                 = %18.12lf H\n",ex5);
-    fprintf(outfile,"    Ex6                 = %18.12lf H\n",ex6);
-    fprintf(outfile,"    Ex7                 = %18.12lf H\n",ex7);
-    fprintf(outfile,"    Ex8                 = %18.12lf H\n",ex8);
-    fprintf(outfile,"    Ex9                 = %18.12lf H\n\n",ex9);
+    outfile->Printf("\n    Ex1                 = %18.12lf H\n",ex1);
+    outfile->Printf("    Ex2                 = %18.12lf H\n",ex2);
+    outfile->Printf("    Ex3                 = %18.12lf H\n",ex3);
+    outfile->Printf("    Ex4                 = %18.12lf H\n",ex4);
+    outfile->Printf("    Ex5                 = %18.12lf H\n",ex5);
+    outfile->Printf("    Ex6                 = %18.12lf H\n",ex6);
+    outfile->Printf("    Ex7                 = %18.12lf H\n",ex7);
+    outfile->Printf("    Ex8                 = %18.12lf H\n",ex8);
+    outfile->Printf("    Ex9                 = %18.12lf H\n\n",ex9);
   }
 
   if (print_) {
-    fprintf(outfile,"    Exch10              = %18.12lf H\n",e_exch10_);
-    fflush(outfile);
+    outfile->Printf("    Exch10              = %18.12lf H\n",e_exch10_);
+    
   }
 }
 
@@ -532,17 +532,17 @@ void SAPT2::exch10_s2()
   e_exch10_s2_ = -2.0*(ex1+ex2+ex3-ex4-ex5+ex6);
 
   if (debug_) {
-    fprintf(outfile,"\n    Ex1                 = %18.12lf H\n",ex1);
-    fprintf(outfile,"    Ex2                 = %18.12lf H\n",ex2);
-    fprintf(outfile,"    Ex3                 = %18.12lf H\n",ex3);
-    fprintf(outfile,"    Ex4                 = %18.12lf H\n",ex4);
-    fprintf(outfile,"    Ex5                 = %18.12lf H\n",ex5);
-    fprintf(outfile,"    Ex6                 = %18.12lf H\n\n",ex6);
+    outfile->Printf("\n    Ex1                 = %18.12lf H\n",ex1);
+    outfile->Printf("    Ex2                 = %18.12lf H\n",ex2);
+    outfile->Printf("    Ex3                 = %18.12lf H\n",ex3);
+    outfile->Printf("    Ex4                 = %18.12lf H\n",ex4);
+    outfile->Printf("    Ex5                 = %18.12lf H\n",ex5);
+    outfile->Printf("    Ex6                 = %18.12lf H\n\n",ex6);
   }
 
   if (print_) {
-    fprintf(outfile,"    Exch10 (S^2)        = %18.12lf H\n",e_exch10_s2_);
-    fflush(outfile);
+    outfile->Printf("    Exch10 (S^2)        = %18.12lf H\n",e_exch10_s2_);
+    
   }
 }
 
@@ -752,20 +752,20 @@ void SAPT2::exch10()
   e_exch10_ = ex1+ex2+ex3+ex4+ex5+ex6+ex7+ex8+ex9;
 
   if (debug_) {
-    fprintf(outfile,"\n    Ex1                 = %18.12lf H\n",ex1);
-    fprintf(outfile,"    Ex2                 = %18.12lf H\n",ex2);
-    fprintf(outfile,"    Ex3                 = %18.12lf H\n",ex3);
-    fprintf(outfile,"    Ex4                 = %18.12lf H\n",ex4);
-    fprintf(outfile,"    Ex5                 = %18.12lf H\n",ex5);
-    fprintf(outfile,"    Ex6                 = %18.12lf H\n",ex6);
-    fprintf(outfile,"    Ex7                 = %18.12lf H\n",ex7);
-    fprintf(outfile,"    Ex8                 = %18.12lf H\n",ex8);
-    fprintf(outfile,"    Ex9                 = %18.12lf H\n\n",ex9);
+    outfile->Printf("\n    Ex1                 = %18.12lf H\n",ex1);
+    outfile->Printf("    Ex2                 = %18.12lf H\n",ex2);
+    outfile->Printf("    Ex3                 = %18.12lf H\n",ex3);
+    outfile->Printf("    Ex4                 = %18.12lf H\n",ex4);
+    outfile->Printf("    Ex5                 = %18.12lf H\n",ex5);
+    outfile->Printf("    Ex6                 = %18.12lf H\n",ex6);
+    outfile->Printf("    Ex7                 = %18.12lf H\n",ex7);
+    outfile->Printf("    Ex8                 = %18.12lf H\n",ex8);
+    outfile->Printf("    Ex9                 = %18.12lf H\n\n",ex9);
   }
 
   if (print_) {
-    fprintf(outfile,"    Exch10              = %18.12lf H\n",e_exch10_);
-    fflush(outfile);
+    outfile->Printf("    Exch10              = %18.12lf H\n",e_exch10_);
+    
   }
 }
 

@@ -109,7 +109,7 @@ double cc2_LHX1Y2(const char *pert_x, int irrep_x, double omega_x,
   global_dpd_->file2_close(&l1);
   global_dpd_->file2_close(&z);
 
-  /*  fprintf(outfile, "L(1)HX1Y2 = %20.12f\n", polar); */
+  /*  outfile->Printf( "L(1)HX1Y2 = %20.12f\n", polar); */
 
   return polar;
 }

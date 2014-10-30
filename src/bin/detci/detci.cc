@@ -79,18 +79,18 @@ struct stringwr **alplist;
 struct stringwr **betlist;
 
 extern void eivout_t(double **evecs, double *evals, int rows, int cols,
-   FILE *outfile);
+   std::string OutFileRMR);
 extern void read_integrals(void);
-extern void tf_onel_ints(int printflg, FILE *outfile);
+extern void tf_onel_ints(int printflg, std::string OutFileRMR);
 extern void zapt_shift(double *TEI, int nirreps, int nmo, int *doccpi,
    int *soccpi, int *orbspi, int *frzdoccpi, int *reorder);
-extern void form_gmat(int printflg, FILE *outfile);
+extern void form_gmat(int printflg, std::string OutFileRMR);
 extern void get_mo_info(Options &);
 extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
    int *Iaidx, int *Ibidx, double *coeff,
    struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
    struct stringwr **alplist, struct stringwr **betlist,
-   FILE *outfile);
+   std::string OutFileRMR);
 extern void print_config(int nbf, int num_alp_el, int num_bet_el,
    struct stringwr *stralp, struct stringwr *strbet,
    int num_fzc_orbs, char *outstring);
@@ -110,7 +110,7 @@ extern void H0block_spin_cpl_chk(void);
 extern void H0block_filter_setup(void);
 extern void sem_test(double **A, int N, int M, int L, double **evecs,
    double *evals, double **b, double conv_e, double conv_rms,
-   int maxiter, double offst, int *vu, int maxnvect, FILE *outfile);
+   int maxiter, double offst, int *vu, int maxnvect, std::string OutFileRMR);
 extern void form_ov(struct stringwr **alplist);
 extern void write_energy(int nroots, double *evals, double offset);
 
@@ -132,12 +132,12 @@ extern void form_strings(void);
 extern void mitrush_iter(CIvect &Hd,
    struct stringwr **alplist, struct stringwr **betlist,
    int nroots, double *evals, double conv_rms, double conv_e, double enuc,
-   double efzc, int maxiter, int maxnvect, FILE *outfile,
+   double efzc, int maxiter, int maxnvect, std::string OutFileRMR,
    int print_lvl);
 extern void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    **betlist, double *evals, double conv_e,
    double conv_rms, double enuc, double efzc,
-   int nroots, int maxiter, int maxnvect, FILE *outfile, int print_lvl);
+   int nroots, int maxiter, int maxnvect, std::string OutFileRMR, int print_lvl);
 extern void mpn_generator(CIvect &Hd, struct stringwr **alplist,
    struct stringwr **betlist);
 extern void opdm(struct stringwr **alplist, struct stringwr **betlist,
@@ -234,18 +234,19 @@ PsiReturnType detci(Options &options)
      print_parameters();       /* print running parameters                 */
      print_ras_parms();
    }
-   fflush(outfile);
+   
 
    form_strings();              /* form the alpha/beta strings              */
    if (Parameters.nthreads > 1)
      tpool_init(&thread_pool, Parameters.nthreads, CalcInfo.num_alp_str, 0);
                                 /* initialize thread pool */
    init_time_new(detci_time);             /* initialize timing routines */
-   fflush(outfile);
+   
 
    if (Parameters.istop) {      /* Print size of space, other stuff, only   */
      close_io();
      cleanup();
+     outfile->Printf("DS: DETCI complete \n");
      Process::environment.globals["CURRENT ENERGY"] = 0.0;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = 0.0;
      Process::environment.globals["CI TOTAL ENERGY"] = 0.0;
@@ -265,11 +266,11 @@ PsiReturnType detci(Options &options)
    if (Parameters.bendazzoli) /* form the Bendazzoli OV arrays            */
       form_ov(alplist);
                                 /* lump together one-electron contributions */
-   tf_onel_ints((Parameters.print_lvl>3), outfile);
+   tf_onel_ints((Parameters.print_lvl>3), "outfile");
 
                                 /* form the RAS g matrix (eq 28-29)         */
-   form_gmat((Parameters.print_lvl>3), outfile);
-   fflush(outfile);
+   form_gmat((Parameters.print_lvl>3), "outfile");
+   
 
    if (Parameters.mpn)
      mpn(alplist, betlist);
@@ -315,11 +316,11 @@ void init_io(void)
       else if (strcmp(argv[i], "-c") == 0) {
          Parameters.have_special_conv = 1;
          if (i+1 >= argc) {
-            fprintf(stderr, "detci: -c flag requires an argument\n");
+            outfile->Printf( "detci: -c flag requires an argument\n");
             exit(1);
          }
          if (sscanf(argv[i+1], "%lf", &(Parameters.special_conv)) != 1) {
-            fprintf(stderr, "detci: trouble reading argument to -c flag\n");
+            outfile->Printf( "detci: trouble reading argument to -c flag\n");
             exit(1);
          }
       i++;
@@ -400,21 +401,21 @@ void cleanup(void)
 void title(void)
 {
   if (Parameters.print_lvl) {
-   fprintf(outfile,"\n");
-   fprintf(outfile,"*******************************************************\n");
-   fprintf(outfile,"                       D E T C I  \n");
-   fprintf(outfile,"\n");
-   fprintf(outfile,"                   C. David Sherrill\n") ;
-   fprintf(outfile,"                   Matt L. Leininger\n") ;
-   fprintf(outfile,"                     18 June 1999\n") ;
-   fprintf(outfile,"*******************************************************\n");
-   fprintf(outfile,"\n\n\n");
+   outfile->Printf("\n");
+   outfile->Printf("*******************************************************\n");
+   outfile->Printf("                       D E T C I  \n");
+   outfile->Printf("\n");
+   outfile->Printf("                   C. David Sherrill\n") ;
+   outfile->Printf("                   Matt L. Leininger\n") ;
+   outfile->Printf("                     18 June 1999\n") ;
+   outfile->Printf("*******************************************************\n");
+   outfile->Printf("\n\n\n");
    }
   else {
-   fprintf(outfile,
+   outfile->Printf(
    "\nD E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999\n");
    }
-  fflush(outfile);
+  
 }
 
 
@@ -459,7 +460,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
    H0block.osize = 0;
 
    if (Parameters.bendazzoli)
-      fprintf(outfile, "\nBendazzoli algorithm selected for sigma3\n");
+      outfile->Printf( "\nBendazzoli algorithm selected for sigma3\n");
 
    /* Direct Method --- use RSP diagonalization routine */
    if (Parameters.diag_method == METHOD_RSP) {
@@ -479,9 +480,8 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
       double *mi_coeff;
 
       if (Parameters.print_lvl) {
-         fprintf(outfile, "\nFind all roots with RSP\n") ;
-         fprintf(outfile, "\n") ;
-         fflush(outfile) ;
+         outfile->Printf( "\nFind all roots with RSP\n") ;
+         outfile->Printf( "\n") ;
          }
 
       /* construct and print one block at a time for debugging */
@@ -509,8 +509,8 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
             }
           }
           if (Parameters.print_lvl > 4 && size < 200) {
-            fprintf(outfile, "\nBlock %d %d of ", blk, blk2);
-            fprintf(outfile, "Hamiltonian matrix:\n");
+            outfile->Printf( "\nBlock %d %d of ", blk, blk2);
+            outfile->Printf( "Hamiltonian matrix:\n");
             print_mat(Hpart, CIblks.Ia_size[blk]*CIblks.Ib_size[blk],
                              CIblks.Ia_size[blk2]*CIblks.Ib_size[blk2],
                       outfile);
@@ -545,13 +545,13 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          }
 
       if (Parameters.print_lvl > 4 && size < 200) {
-         fprintf(outfile, "\nHamiltonian matrix:\n");
-         print_mat(H, size, size, outfile);
+         outfile->Printf( "\nHamiltonian matrix:\n");
+         print_mat(H, size, size, "outfile");
          }
 
       sq_rsp(size, size, H, evals, 1, rsp_evecs, 1.0E-14);
       if (Parameters.print_lvl > 4) {
-         eivout(rsp_evecs, evals, size, nroots, outfile) ;
+         eivout(rsp_evecs, evals, size, nroots, "outfile") ;
          }
       evecs = init_matrix(nroots, size);
       for (ii=0; ii<nroots; ii++) {
@@ -570,7 +570,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          mi_coeff = init_array(Parameters.nprint);
 
          for (i=0; i<nroots; i++) {
-            fprintf(outfile,
+            outfile->Printf(
                "\n\n* ROOT %2d CI total energy = %17.13lf\n",
                i+1,evals[i]+nucrep);
             Cvec.setarray(evecs[i], size);
@@ -578,7 +578,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
             Cvec.max_abs_vals(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx,
                mi_ibidx, mi_coeff, Parameters.neg_only);
             print_vec(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
-               mi_coeff, AlphaG, BetaG, alplist, betlist, outfile);
+               mi_coeff, AlphaG, BetaG, alplist, betlist, "outfile");
             }
 
          free(mi_iac);  free(mi_ibc);
@@ -703,11 +703,10 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
       double *sm_evals, *sm_mat, **sm_evecs, tval;
 
       if (Parameters.print_lvl) {
-         fprintf(outfile, "\nFind the roots by the SEM Test Method\n");
-         fprintf(outfile, "(n.b. this is for debugging purposes only!)\n");
-         fprintf(outfile, "Energy convergence = %3g\n", conv_e);
-         fprintf(outfile, "RMS CI vector convergence = %3g\n\n", conv_rms);
-         fflush(outfile) ;
+         outfile->Printf( "\nFind the roots by the SEM Test Method\n");
+         outfile->Printf( "(n.b. this is for debugging purposes only!)\n");
+         outfile->Printf( "Energy convergence = %3g\n", conv_e);
+         outfile->Printf( "RMS CI vector convergence = %3g\n\n", conv_rms);
          }
 
       H0block_init(size);
@@ -733,24 +732,24 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
       if (Parameters.hd_ave) {
         H0block_spin_cpl_chk();
          if (H0block.osize - H0block.size) {
-            fprintf(outfile,"H0block size reduced by %d to %d to ensure"
+            outfile->Printf("H0block size reduced by %d to %d to ensure"
              "completion of spin-coupling sets\n",
              (H0block.osize - H0block.size), H0block.size);
-            fflush(outfile);
+            
             }
         }
       if (Parameters.Ms0) {
          H0block_pairup(0);
          if (H0block.osize - H0block.size) {
-            fprintf(outfile,"H0block size reduced by %d to ensure pairing.\n",
+            outfile->Printf("H0block size reduced by %d to ensure pairing.\n",
                (H0block.osize - H0block.size));
-            fflush(outfile);
+            
             }
          }
 
       if (Parameters.print_lvl > 4 && Parameters.hd_otf == FALSE) {
-         fprintf(outfile, "\nDiagonal elements of the Hamiltonian\n");
-         Hd.print(outfile);
+         outfile->Printf( "\nDiagonal elements of the Hamiltonian\n");
+         Hd.print("outfile");
          }
 
 
@@ -763,8 +762,8 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          }
 
       if (Parameters.print_lvl > 3 && H0block.size) {
-         fprintf(outfile, "\n\nH0 Block:\n");
-         print_mat(H0block.H0b, H0block.size, H0block.size, outfile);
+         outfile->Printf( "\n\nH0 Block:\n");
+         print_mat(H0block.H0b, H0block.size, H0block.size, "outfile");
          }
 
       H = init_matrix(size, size);
@@ -854,12 +853,12 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          }
       sem_test(H, size, Parameters.num_roots, L, evecs, evals, b, conv_e,
          conv_rms, Parameters.maxiter, (nucrep+CalcInfo.efzc), &i,
-         Parameters.maxnvect, outfile);
+         Parameters.maxnvect, "outfile");
 
-      fprintf(outfile, "SEM used %d expansion vectors\n", i);
+      outfile->Printf( "SEM used %d expansion vectors\n", i);
 
       if (Parameters.print_lvl > 4) {
-         eivout(evecs, evals, size, nroots, outfile) ;
+         eivout(evecs, evals, size, nroots, "outfile") ;
          }
       free_matrix(H, size);
 
@@ -871,7 +870,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          mi_coeff = init_array(Parameters.nprint);
 
          for (i=0; i<nroots; i++) {
-            fprintf(outfile,
+            outfile->Printf(
                "\n\n* ROOT %2d CI total energy = %17.13lf\n",
                i+1,evals[i]+nucrep);
             Cvec.setarray(evecs[i], size);
@@ -879,7 +878,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
             Cvec.max_abs_vals(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx,
                mi_ibidx, mi_coeff, Parameters.neg_only);
             print_vec(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
-               mi_coeff, AlphaG, BetaG, alplist, betlist, outfile);
+               mi_coeff, AlphaG, BetaG, alplist, betlist, "outfile");
             }
          free(mi_iac);  free(mi_ibc);
          free(mi_iaidx);  free(mi_ibidx);
@@ -916,8 +915,8 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
       /* get the diagonal elements of H into an array Hd */
       if (!Parameters.restart || (Parameters.restart && Parameters.hd_otf)) {
          if (Parameters.print_lvl > 1) {
-            fprintf(outfile, "\nForming diagonal elements of H\n");
-            fflush(outfile);
+            outfile->Printf( "\nForming diagonal elements of H\n");
+            
            }
          Hd.diag_mat_els(alplist, betlist, CalcInfo.onel_ints,
             CalcInfo.twoel_ints, efzc, CalcInfo.num_alp_expl,
@@ -931,8 +930,8 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
       if (H0block.size) {
 
          if (Parameters.print_lvl > 1) {
-            fprintf(outfile, "\nForming H0 block\n");
-            fflush(outfile);
+            outfile->Printf( "\nForming H0 block\n");
+            
            }
 
          if (!Parameters.hd_otf)
@@ -949,26 +948,26 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
       if (Parameters.hd_ave) {
         H0block_spin_cpl_chk();
          if ((H0block.osize - H0block.size) && Parameters.print_lvl > 1) {
-            fprintf(outfile,"H0block size reduced by %d to ensure "
+            outfile->Printf("H0block size reduced by %d to ensure "
              "completion of spin-coupling sets\n",
              (H0block.osize - H0block.size));
             H0block.osize = H0block.size;
             }
          if ((H0block.oguess_size - H0block.guess_size) &&
              Parameters.print_lvl > 1) {
-           fprintf(outfile,"H0block guess size reduced by %d to ensure "
+           outfile->Printf("H0block guess size reduced by %d to ensure "
              "completion of spin-coupling sets\n",
              (H0block.oguess_size - H0block.guess_size));
             H0block.oguess_size = H0block.guess_size;
            }
          if ((H0block.ocoupling_size - H0block.coupling_size) &&
              Parameters.print_lvl > 1) {
-           fprintf(outfile,"H0block coupling size reduced by %d to ensure "
+           outfile->Printf("H0block coupling size reduced by %d to ensure "
              "completion of spin-coupling sets\n",
              (H0block.ocoupling_size - H0block.coupling_size));
             H0block.ocoupling_size = H0block.coupling_size;
            }
-        fflush(outfile);
+        
         }
       if (Parameters.Ms0) {
          /* if (H0block.guess_size < H0block.size) */
@@ -976,28 +975,28 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          H0block_pairup(1); /* pairup guess_size */
          H0block_pairup(2); /* pairup coupling size */
          if ((H0block.osize - H0block.size) && Parameters.print_lvl > 1) {
-           fprintf(outfile,"H0block size reduced by %d to ensure pairing"
+           outfile->Printf("H0block size reduced by %d to ensure pairing"
                "and spin-coupling.\n", (H0block.osize - H0block.size));
             }
          if ((H0block.oguess_size - H0block.guess_size) &&
              Parameters.print_lvl > 1) {
-           fprintf(outfile,"H0block guess size reduced by %d to "
+           outfile->Printf("H0block guess size reduced by %d to "
                "ensure pairing and spin-coupling.\n",
                (H0block.oguess_size - H0block.guess_size));
             }
          if ((H0block.ocoupling_size - H0block.coupling_size) &&
              Parameters.print_lvl > 1) {
-           fprintf(outfile,"H0block coupling size reduced by %d to "
+           outfile->Printf("H0block coupling size reduced by %d to "
                "ensure pairing and spin-coupling.\n",
                (H0block.ocoupling_size - H0block.coupling_size));
             }
-         fflush(outfile);
+         
          }
 
       Parameters.neg_only = 0; /* MLL 7-2-97 */
       if (Parameters.print_lvl > 4) {
-         fprintf(outfile, "\nDiagonal elements of the Hamiltonian\n");
-         Hd.print(outfile);
+         outfile->Printf( "\nDiagonal elements of the Hamiltonian\n");
+         Hd.print("outfile");
          }
 
       if (H0block.size) {
@@ -1009,27 +1008,27 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          }
 
       if (Parameters.print_lvl > 3 && H0block.size) {
-         fprintf(outfile, "\n\nH0 Block:\n");
-         print_mat(H0block.H0b, H0block.size, H0block.size, outfile);
+         outfile->Printf( "\n\nH0 Block:\n");
+         print_mat(H0block.H0b, H0block.size, H0block.size, "outfile");
          }
 
       /* Davidson/Liu Simultaneous Expansion Method */
       if (Parameters.diag_method == METHOD_DAVIDSON_LIU_SEM) {
 
          if (Parameters.print_lvl) {
-            fprintf(outfile,
+            outfile->Printf(
                "\nFind the roots by the Simultaneous Expansion Method ");
-            fprintf(outfile, "(Block Davidson Method)\n");
-            fprintf(outfile, "Energy convergence = %3g\n", conv_e);
-            fprintf(outfile, "RMS CI vector convergence = %3g\n\n", conv_rms);
-            fflush(outfile);
+            outfile->Printf( "(Block Davidson Method)\n");
+            outfile->Printf( "Energy convergence = %3g\n", conv_e);
+            outfile->Printf( "RMS CI vector convergence = %3g\n\n", conv_rms);
+            
             }
 
          evals = init_array(nroots);
 
          sem_iter(Hd, alplist, betlist, evals, conv_e, conv_rms,
             nucrep, efzc, nroots, Parameters.maxiter,
-            Parameters.maxnvect, outfile, Parameters.print_lvl);
+            Parameters.maxnvect, "outfile", Parameters.print_lvl);
          }
 
       /* Mitrushenkov's Olsen Method */
@@ -1037,20 +1036,20 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 
          if (Parameters.print_lvl) {
             if (Parameters.diag_method == METHOD_MITRUSHENKOV)
-              fprintf(outfile,
+              outfile->Printf(
                 "\nFind the roots with Mitrushenkov's two vector algorithm\n");
             else if (Parameters.diag_method == METHOD_OLSEN)
-              fprintf(outfile,
+              outfile->Printf(
                 "\nFind the roots with Olsen's single vector algorithm\n");
-            fprintf(outfile, "Energy convergence = %3g\n", conv_e);
-            fprintf(outfile, "RMS CI vector convergence = %3g\n", conv_rms);
-            fflush(outfile);
+            outfile->Printf( "Energy convergence = %3g\n", conv_e);
+            outfile->Printf( "RMS CI vector convergence = %3g\n", conv_rms);
+            
             }
 
          evals = init_array(nroots);
 
          mitrush_iter(Hd, alplist, betlist, nroots, evals, conv_rms, conv_e,
-            nucrep, efzc, Parameters.maxiter, Parameters.maxnvect, outfile,
+            nucrep, efzc, Parameters.maxiter, Parameters.maxnvect, "outfile",
             Parameters.print_lvl);
 
          H0block_free();
@@ -1168,7 +1167,7 @@ void H0block_fill(struct stringwr **alplist, struct stringwr **betlist)
          /* pointers in next line avoids copying structures I and J */
          H0block.H0b[i][j] = matrix_element(&I, &J);
          if (i==j) H0block.H0b[i][i] += CalcInfo.efzc;
-         /* fprintf(outfile," i = %d   j = %d\n",i,j); */
+         /* outfile->Printf(" i = %d   j = %d\n",i,j); */
          }
 
       H0block.H00[i] = H0block.H0b[i][i];
@@ -1183,40 +1182,40 @@ void H0block_fill(struct stringwr **alplist, struct stringwr **betlist)
    */
    evals = init_array(H0block.guess_size);
    evecs = init_matrix(H0block.guess_size, H0block.guess_size);
-   fflush(outfile);
+   
    if (Parameters.precon == PRECON_GEN_DAVIDSON)
      size = H0block.size;
    else
      size = H0block.guess_size;
 
    if (Parameters.print_lvl > 2) {
-     fprintf(outfile,"H0block size = %d in H0block_fill\n",H0block.size);
-     fprintf(outfile,
+     outfile->Printf("H0block size = %d in H0block_fill\n",H0block.size);
+     outfile->Printf(
              "H0block guess size = %d in H0block_fill\n",H0block.guess_size);
-     fprintf(outfile,
+     outfile->Printf(
              "H0block coupling size = %d in H0block_fill\n",
              H0block.coupling_size);
-     fprintf(outfile,"Diagonalizing H0block.H0b size %d in h0block_fill in"
+     outfile->Printf("Diagonalizing H0block.H0b size %d in h0block_fill in"
                      " detci.cc ... ", size);
-     fflush(outfile);
+     
    }
 
    sq_rsp(size, size, H0block.H0b, H0block.H0b_eigvals, 1,
           H0block.H0b_diag, 1.0E-14);
 
    if (Parameters.print_lvl) {
-      fprintf(outfile, "\n*** H0 Block Eigenvalue = %12.8lf\n",
+      outfile->Printf( "\n*** H0 Block Eigenvalue = %12.8lf\n",
              H0block.H0b_eigvals[0] + CalcInfo.enuc);
-      fflush(outfile);
+      
       }
 
    if (Parameters.print_lvl > 5 && size < 1000) {
       for (i=0; i<size; i++) H0block.H0b_eigvals[i] += CalcInfo.enuc;
-      fprintf(outfile, "\nH0 Block Eigenvectors\n");
+      outfile->Printf( "\nH0 Block Eigenvectors\n");
       eivout(H0block.H0b_diag, H0block.H0b_eigvals,
-             size, size, outfile);
-      fprintf(outfile, "\nH0b matrix\n");
-      print_mat(H0block.H0b, size, size, outfile);
+             size, size, "outfile");
+      outfile->Printf( "\nH0b matrix\n");
+      print_mat(H0block.H0b, size, size, "outfile");
       }
 }
 
@@ -1235,20 +1234,20 @@ void form_opdm(void)
   //  geom = chkpt_rd_geom();
   //  chkpt_close();
 
-  //  fprintf(outfile, "   Cartesian Coordinates of Nuclear Centers (a.u.)\n\n");
-  //  fprintf(outfile,
+  //  outfile->Printf( "   Cartesian Coordinates of Nuclear Centers (a.u.)\n\n");
+  //  outfile->Printf(
   //     "   Center           X                   Y                    Z\n");
-  //  fprintf(outfile,
+  //  outfile->Printf(
   //     "   ------   -----------------   -----------------   -----------------\n");
 
   //  for(i=0;i<natom;i++){
-  //    fprintf(outfile,"   %4s ",atomic_labels[(int) zvals[i]]);
+  //    outfile->Printf("   %4s ",atomic_labels[(int) zvals[i]]);
   //    for(j=0;j<3;j++)
-  //      fprintf(outfile,"   %17.12lf",geom[i][j]);
-  //    fprintf(outfile,"\n");
+  //      outfile->Printf("   %17.12lf",geom[i][j]);
+  //    outfile->Printf("\n");
   //  }
-  //  fprintf(outfile,"\n");
-  //  fflush(outfile);
+  //  outfile->Printf("\n");
+  //  
 
   //  free(zvals);
   //  free_block(geom);
@@ -1287,11 +1286,11 @@ void form_tpdm(void)
 
 void quote(void)
 {
-   fprintf(outfile,"\t\t \"A good bug is a dead bug\" \n\n");
-   fprintf(outfile,"\t\t\t - Starship Troopers\n\n");
-   fprintf(outfile,"\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
-   fprintf(outfile,"\t\t\t - Edward Valeev\n\n");
-   fflush(outfile);
+   outfile->Printf("\t\t \"A good bug is a dead bug\" \n\n");
+   outfile->Printf("\t\t\t - Starship Troopers\n\n");
+   outfile->Printf("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
+   outfile->Printf("\t\t\t - Edward Valeev\n\n");
+   
 }
 
 void H0block_coupling_calc(double E, struct stringwr **alplist, struct
@@ -1316,10 +1315,10 @@ void H0block_coupling_calc(double E, struct stringwr **alplist, struct
    gamma_2 = init_array(H0block.coupling_size);
 
    if (Parameters.print_lvl > 5) {
-      fprintf(outfile, "\nc0b in H0block_coupling_calc = \n");
-      print_mat(&(H0block.c0b), 1, size2, outfile);
-      fprintf(outfile, "\nc0bp in H0block_coupling_calc = \n");
-      print_mat(&(H0block.c0bp), 1, size2, outfile);
+      outfile->Printf( "\nc0b in H0block_coupling_calc = \n");
+      print_mat(&(H0block.c0b), 1, size2, "outfile");
+      outfile->Printf( "\nc0bp in H0block_coupling_calc = \n");
+      print_mat(&(H0block.c0bp), 1, size2, "outfile");
       }
 
      /* copy to delta_1 */
@@ -1336,7 +1335,7 @@ void H0block_coupling_calc(double E, struct stringwr **alplist, struct
         }
 /*
      for (i=0; i<size2; i++)
-        fprintf(outfile,"In Hcc H0block.c0bp[%d] = %lf\n", i, H0block.c0bp[i]);
+        outfile->Printf("In Hcc H0block.c0bp[%d] = %lf\n", i, H0block.c0bp[i]);
 */
 
      zero_arr(gamma_2, size);
@@ -1387,14 +1386,14 @@ void H0block_coupling_calc(double E, struct stringwr **alplist, struct
         }
 
      if (Parameters.print_lvl > 4) {
-        fprintf(outfile, "\n E = %lf\n", E);
-        fprintf(outfile, " H0 - E\n");
-        print_mat(H0block.tmp1, H0block.size, H0block.size, outfile);
+        outfile->Printf( "\n E = %lf\n", E);
+        outfile->Printf( " H0 - E\n");
+        print_mat(H0block.tmp1, H0block.size, H0block.size, "outfile");
         }
 
 /*
        for (i=0; i<size; i++)
-          fprintf(outfile,"gamma_1[%d] = %lf\n", i, gamma_1[i]);
+          outfile->Printf("gamma_1[%d] = %lf\n", i, gamma_1[i]);
 
        pople(H0block.tmp1, delta_1, size, 1, 1e-9, outfile,
              Parameters.print_lvl);
@@ -1483,7 +1482,7 @@ void mpn(struct stringwr **alplist, struct stringwr **betlist)
   CalcInfo.e0 = 0.0;
   CalcInfo.e0_fzc = 0.0;
   for (i=0; i<CalcInfo.num_fzc_orbs; i++) {
-     fprintf(outfile," orb_energy[%d] = %lf\n", i, CalcInfo.scfeigval[i]);
+     outfile->Printf(" orb_energy[%d] = %lf\n", i, CalcInfo.scfeigval[i]);
      tval = 2.0 * CalcInfo.scfeigval[i];
      CalcInfo.e0 += tval;
      CalcInfo.e0_fzc += tval;

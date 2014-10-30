@@ -1,0 +1,89 @@
+#! MP2 optimization of dimers with one momomer ghosted. Gradients
+#! after three opt cycles are compared with those from psi4.
+
+arr = [                                        #TEST
+    [-0.0000590,    0.0001572,    0.0000000],  #TEST
+    [-0.0000792,   -0.0002937,    0.0000000],  #TEST
+    [ 0.0000184,    0.0004954,    0.0000000],  #TEST
+    [ 0.0006027,    0.0000104,    0.0000594],  #TEST
+    [-0.0010855,   -0.0003797,    0.0000000],  #TEST
+    [ 0.0006027,    0.0000104,   -0.0000594]   #TEST
+      ]                                        #TEST
+grad_p4_dimer = psi4.Matrix(6, 3)              #TEST
+grad_p4_dimer.set(arr)                         #TEST
+
+arr = [                                        #TEST
+    [-0.0004244,   -0.0000197,    0.0000000],  #TEST
+    [ 0.0002313,    0.0001608,    0.0000000],  #TEST
+    [-0.0004138,   -0.0000068,    0.0000000],  #TEST
+    [ 0.0000953,   -0.0000090,    0.0000074],  #TEST
+    [ 0.0004163,   -0.0001162,    0.0000000],  #TEST
+    [ 0.0000953,   -0.0000090,   -0.0000074]   #TEST
+      ]                                        #TEST
+grad_p4_mA = psi4.Matrix(6, 3)                 #TEST
+grad_p4_mA.set(arr)                            #TEST
+
+arr = [                                        #TEST
+    [ 0.0000000,   -0.0000273,    0.0000000],  #TEST
+    [-0.0000022,   -0.0000422,   -0.0000038],  #TEST
+    [-0.0000022,   -0.0000422,    0.0000038],  #TEST
+    [ 0.0000044,   -0.0000422,    0.0000000],  #TEST
+    [-0.0000000,   -0.0000077,    0.0000000],  #TEST
+    [-0.0000041,    0.0004254,    0.0000000],  #TEST
+    [ 0.0000021,    0.0000733,    0.0000000],  #TEST
+    [ 0.0000689,   -0.0001119,   -0.0001297],  #TEST
+    [ 0.0000689,   -0.0001119,    0.0001297],  #TEST
+    [-0.0001359,   -0.0001134,    0.0000000]   #TEST
+      ]                                        #TEST
+grad_p4_mB = psi4.Matrix(10, 3)                #TEST
+grad_p4_mB.set(arr)                            #TEST
+
+
+molecule watdim {
+0 1
+H  -1.934259   0.762503   0.000000
+O  -1.551007  -0.114520   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+@H   1.680398  -0.373741  -0.758561
+@O   1.350625   0.111469   0.000000
+@H   1.680398  -0.373741   0.758561
+}
+
+molecule methdim {
+0 1
+@C   0.000000  -0.000140   1.859161
+@H  -0.888551   0.513060   1.494685
+@H   0.888551   0.513060   1.494685
+@H   0.000000  -1.026339   1.494868
+@H   0.000000   0.000089   2.948284
+--
+0 1
+C   0.000000   0.000140  -1.859161
+H   0.000000  -0.000089  -2.948284
+H  -0.888551  -0.513060  -1.494685
+H   0.888551  -0.513060  -1.494685
+H   0.000000   1.026339  -1.494868
+}
+
+set basis 6-31g*
+set cfour_SCF_CONV=12
+set rms_force_g_convergence 6
+set geom_maxiter 3
+set mp2_type conv
+set scf_type pk
+
+activate(watdim)
+optimize('c4-mp2')
+compare_matrices(grad_p4_mA, psi4.get_gradient(), 5, 'P4 vs C4 gradient w/ghosts')  #TEST
+
+clean()
+opt_clean()
+
+activate(methdim)
+optimize('c4-mp2')
+compare_matrices(grad_p4_mB, psi4.get_gradient(), 5, 'P4 vs C4 gradient w/ghosts')  #TEST
+
+opt_clean()
+

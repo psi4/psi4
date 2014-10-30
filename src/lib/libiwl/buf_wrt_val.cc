@@ -29,12 +29,15 @@
 #include <libciomr/libciomr.h>
 #include "iwl.h"
 #include "iwl.hpp"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
   
 void IWL::write_value(int p, int q, int r, int s, double value, int printflag,
-    FILE *out, int dirac)
+    std::string out, int dirac)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
+
     int idx;
     Label *lblptr;
     Value *valptr;
@@ -69,11 +72,11 @@ void IWL::write_value(int p, int q, int r, int s, double value, int printflag,
 
         if (printflag) {
             if(dirac) {
-                fprintf(out, ">%d %d %d %d = %20.10f\n",
+                printer->Printf( ">%d %d %d %d = %20.10f\n",
                     p, r, q, s, value);
             }
             else {
-                fprintf(out, ">%d %d %d %d = %20.10f\n",
+                printer->Printf( ">%d %d %d %d = %20.10f\n",
                     p, q, r, s, value);
             }
         }
@@ -97,8 +100,10 @@ void IWL::write_value(int p, int q, int r, int s, double value, int printflag,
 ** \ingroup IWL
 */
 void iwl_buf_wrt_val(struct iwlbuf *Buf, int p, int q, int r, int s,
-                     double value, int printflag, FILE *out, int dirac)
+                     double value, int printflag, std::string out, int dirac)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
   int idx;
   Label *lblptr;
   Value *valptr;
@@ -133,11 +138,11 @@ void iwl_buf_wrt_val(struct iwlbuf *Buf, int p, int q, int r, int s,
      
     if (printflag) {
       if(dirac) {
-	fprintf(out, ">%d %d %d %d = %20.10f\n",
+	printer->Printf( ">%d %d %d %d = %20.10f\n",
 		p, r, q, s, value);
       }
       else {
-	fprintf(out, ">%d %d %d %d = %20.10f\n",
+	printer->Printf( ">%d %d %d %d = %20.10f\n",
 		p, q, r, s, value);
       }
     }

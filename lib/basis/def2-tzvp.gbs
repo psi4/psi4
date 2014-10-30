@@ -1,13 +1,11 @@
 spherical
 
 !
-!  Def2-TZVP  EMSL  Basis Set Exchange Library   5/18/11 2:14 PM
+!  Def2-TZVP  EMSL  Basis Set Exchange Library   3/17/14 10:21 AM
 ! Elements                             References
 ! --------                             ----------
-! H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr:
-! F. Weigend and R. Ahlrichs, Phys. Chem. Chem. Phys., Balanced basis sets of split valence, triple 
-!    zeta valence and quadruple zeta valence quality for H to Rn: Design and assessment of accuracy 
-!    7, 3297 (2005).
+! H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr :F. Weigend and R. Ahlrichs, Phys. Chem. Chem. Phys., Balanced basis sets of split valence, triple zeta valence and quadruple zeta valence
+! quality for H to Rn: Design and assessment of accuracy 7, 3297 (2005).
 ! 
 
 
@@ -1583,6 +1581,5 @@ D   1   1.00
 F   1   1.00
       0.6280000              1.0000000        
 ****
-
 
 

@@ -62,19 +62,19 @@ void read_integrals()
 
   if (Params.use_fzc_h) {
     if (Params.print_lvl > 3) 
-      fprintf(outfile, "\n\tOne-electron integrals (frozen core operator):\n");
+      outfile->Printf( "\n\tOne-electron integrals (frozen core operator):\n");
     iwl_rdone(Params.oei_file, PSIF_MO_FZC, CalcInfo.onel_ints, nbstri, 
               Params.oei_erase, (Params.print_lvl>3), outfile);
   }
   else {
     if (Params.print_lvl > 3) 
-      fprintf(outfile, "\n\tOne-electron integrals (bare):\n");
+      outfile->Printf( "\n\tOne-electron integrals (bare):\n");
     iwl_rdone(Params.oei_file, PSIF_MO_OEI, CalcInfo.onel_ints, nbstri, 
               Params.oei_erase, (Params.print_lvl>3), outfile);
   }
 
   if (Params.print_lvl > 4) 
-    fprintf(outfile, "\n\tTwo-electron integrals:\n");
+    outfile->Printf( "\n\tTwo-electron integrals:\n");
 
   iwl_rdtwo(Params.tei_file, CalcInfo.twoel_ints, ioff, 
      CalcInfo.nmo, Params.filter_ints ? CalcInfo.num_fzc_orbs : 0, 

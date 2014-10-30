@@ -20,7 +20,7 @@ WmnefDD.cc    dgeev_eom.cc       norm_HC1.cc           sigma_full.cc \
 WmnieSD.cc    diag.cc            precondition.cc       sort_C.cc \
 WmnijDD.cc    diagSS.cc          sort_amps.cc \
 WnmjeDS.cc    follow_root.cc     restart.cc            write_Rs.cc \
-amp_write.cc  form_diagonal.cc   restart_with_root.cc 
+amp_write.cc  form_diagonal.cc   restart_with_root.cc  overlap.cc 
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 

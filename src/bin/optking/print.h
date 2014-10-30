@@ -30,14 +30,30 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <string>
+
+#include "package.h"
 
 namespace opt {
 
-void print_matrix(const FILE *fp, double **A, const int x, const int y);
+// Functions to all printing in either psi or qchem.
+void oprintf(std::string psi_fp, const FILE *qc_fp, const char* format,...);
 
-void print_array(const FILE *fp, double *A, const int x);
+void oprintf_out(const char* format,...);
 
-void print_geom_array(const FILE *fp, double *A, const int natom);
+void oprint_matrix(const std::string psi_fp, const FILE *qc_fp, double **A, const int x, const int y);
+
+void oprint_matrix_out(double **A, const int x, const int y);
+
+void oprint_matrix_out_precise(double **A, const int x, const int y);
+
+void oprint_array(const std::string psi_fp, const FILE *qc_fp, double *A, const int x);
+
+void oprint_array_out(double *A, const int x);
+
+void oprint_array_out_precise(double *A, const int x);
+
+void offlush_out(void);
 
 }
 

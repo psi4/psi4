@@ -162,35 +162,35 @@ void print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, doubl
       double ecc_aa_tot = 0.0;  
       double ecc_ab_tot = 0.0;  
 
-      fprintf(outfile, "\tAlpha-alpha pair energies\n");
-      fprintf(outfile, "\t    i       j         MP2             %s\n",params.wfn.c_str());
-      fprintf(outfile, "\t  -----   -----   ------------   ------------\n");
+      outfile->Printf( "\tAlpha-alpha pair energies\n");
+      outfile->Printf( "\t    i       j         MP2             %s\n",params.wfn.c_str());
+      outfile->Printf( "\t  -----   -----   ------------   ------------\n");
       if (naa) {
         ij = 0;
         for(i=0; i<nocc_act; i++)
           for(j=0; j<i; j++,ij++) {
-            fprintf(outfile, "\t  %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, emp2_aa[ij], ecc_aa[ij]);
+            outfile->Printf( "\t  %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, emp2_aa[ij], ecc_aa[ij]);
             emp2_aa_tot += emp2_aa[ij];
             ecc_aa_tot += ecc_aa[ij];
           }
       }
-      fprintf(outfile, "\t  -------------   ------------   ------------\n");
-      fprintf(outfile, "\t      Total       %12.9lf   %12.9lf\n\n", emp2_aa_tot, ecc_aa_tot);
+      outfile->Printf( "\t  -------------   ------------   ------------\n");
+      outfile->Printf( "\t      Total       %12.9lf   %12.9lf\n\n", emp2_aa_tot, ecc_aa_tot);
 
-      fprintf(outfile, "\tAlpha-beta pair energies\n");
-      fprintf(outfile, "\t    i       j         MP2             %s\n",params.wfn.c_str());
-      fprintf(outfile, "\t  -----   -----   ------------   ------------\n");
+      outfile->Printf( "\tAlpha-beta pair energies\n");
+      outfile->Printf( "\t    i       j         MP2             %s\n",params.wfn.c_str());
+      outfile->Printf( "\t  -----   -----   ------------   ------------\n");
       if (nab) {
         ij = 0;
         for(i=0; i<nocc_act; i++)
           for(j=0; j<nocc_act; j++,ij++) {
-            fprintf(outfile, "\t  %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, emp2_ab[ij], ecc_ab[ij]);
+            outfile->Printf( "\t  %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, emp2_ab[ij], ecc_ab[ij]);
             emp2_ab_tot += emp2_ab[ij];
             ecc_ab_tot += ecc_ab[ij];
           }
       }
-      fprintf(outfile, "\t  -------------   ------------   ------------\n");
-      fprintf(outfile, "\t      Total       %12.9lf   %12.9lf\n", emp2_ab_tot, ecc_ab_tot);
+      outfile->Printf( "\t  -------------   ------------   ------------\n");
+      outfile->Printf( "\t      Total       %12.9lf   %12.9lf\n", emp2_ab_tot, ecc_ab_tot);
 
     }
     else {
@@ -200,9 +200,9 @@ void print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, doubl
       double ecc_s_tot = 0.0;
       double ecc_t_tot = 0.0;
 
-      fprintf(outfile, "\tSinglet pair energies\n");
-      fprintf(outfile, "\t    i       j         MP2             %s\n",params.wfn.c_str());
-      fprintf(outfile, "\t  -----   -----   ------------   ------------\n");
+      outfile->Printf( "\tSinglet pair energies\n");
+      outfile->Printf( "\t    i       j         MP2             %s\n",params.wfn.c_str());
+      outfile->Printf( "\t  -----   -----   ------------   ------------\n");
       ij = 0;
       for(i=0; i<nocc_act; i++)
         for(j=0; j<=i; j++,ij++) {
@@ -227,31 +227,31 @@ void print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, doubl
             eaa = 0.0;
           ecc_s = (i != j ? 2.0 : 1.0) * eab - 0.5 * eaa;
           
-          fprintf(outfile, "\t  %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, emp2_s, ecc_s);
+          outfile->Printf( "\t  %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, emp2_s, ecc_s);
           emp2_s_tot += emp2_s;
           ecc_s_tot += ecc_s;
         }
-      fprintf(outfile, "\t  -------------   ------------   ------------\n");
-      fprintf(outfile, "\t      Total       %12.9lf   %12.9lf\n\n", emp2_s_tot, ecc_s_tot);
+      outfile->Printf( "\t  -------------   ------------   ------------\n");
+      outfile->Printf( "\t      Total       %12.9lf   %12.9lf\n\n", emp2_s_tot, ecc_s_tot);
 
-      fprintf(outfile, "\tTriplet pair energies\n");
-      fprintf(outfile, "\t    i       j         MP2             %s\n",params.wfn.c_str());
-      fprintf(outfile, "\t  -----   -----   ------------   ------------\n");
+      outfile->Printf( "\tTriplet pair energies\n");
+      outfile->Printf( "\t    i       j         MP2             %s\n",params.wfn.c_str());
+      outfile->Printf( "\t  -----   -----   ------------   ------------\n");
       if (naa) {
         ij = 0;
         for(i=0; i<nocc_act; i++)
           for(j=0; j<i; j++,ij++) {
-            fprintf(outfile, "\t  %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, 1.5*emp2_aa[ij], 1.5*ecc_aa[ij]);
+            outfile->Printf( "\t  %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, 1.5*emp2_aa[ij], 1.5*ecc_aa[ij]);
             emp2_t_tot += 1.5*emp2_aa[ij];
             ecc_t_tot += 1.5*ecc_aa[ij];
           }
       }
-      fprintf(outfile, "\t  -------------   ------------   ------------\n");
-      fprintf(outfile, "\t      Total       %12.9lf   %12.9lf\n", emp2_t_tot, ecc_t_tot);
+      outfile->Printf( "\t  -------------   ------------   ------------\n");
+      outfile->Printf( "\t      Total       %12.9lf   %12.9lf\n", emp2_t_tot, ecc_t_tot);
 
     }      
     
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
   }
 }
 }} // namespace psi::ccenergy

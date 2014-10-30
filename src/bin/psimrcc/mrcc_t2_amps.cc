@@ -56,8 +56,8 @@ void CCMRCC::build_t2_ijab_amplitudes()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the t2_ijab Amplitudes   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the t2_ijab Amplitudes   ...");
+    
   )
   if(moinfo->get_ref_size(UniqueOpenShellRefs) == 0){
     blas->append("t2_eqns[oo][vv]{c}  = t2_eqns[oO][vV]{c}");
@@ -155,8 +155,8 @@ void CCMRCC::build_t2_ijab_amplitudes()
   );
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -164,8 +164,8 @@ void CCMRCC::build_t2_iJaB_amplitudes()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the t2_iJaB Amplitudes   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the t2_iJaB Amplitudes   ...");
+    
   );
   // Closed-shell
   blas->append("t2_eqns[oO][vV]{c}  = <[oo]|[vv]>");
@@ -266,7 +266,7 @@ void CCMRCC::build_t2_iJaB_amplitudes()
   )
 
   if(pert_cbs && pert_cbs_coupling){
-    fprintf(outfile,"\n Computing frozen-virtual contribution to H(iJaB)");
+    outfile->Printf("\n Computing frozen-virtual contribution to H(iJaB)");
 
     blas->append("t2_eqns[oO][vV]{u} +=  t2_1[oO][vF]{u} 2@1 <[vf]|[vv]>");
     blas->append("t2_eqns[oO][vV]{u} +=  t2_1[oO][fV]{u} 2@1 <[fv]|[vv]>");
@@ -281,8 +281,8 @@ void CCMRCC::build_t2_iJaB_amplitudes()
   }
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   )
 }
 
@@ -290,8 +290,8 @@ void CCMRCC::build_t2_IJAB_amplitudes()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the t2_IJAB Amplitudes   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the t2_IJAB Amplitudes   ...");
+    
   )
   // Closed-shell
   blas->append("t2_eqns[OO][VV]{c}  = t2_eqns[oo][vv]{c}");
@@ -340,8 +340,8 @@ void CCMRCC::build_t2_IJAB_amplitudes()
   DEBUGGING(3,blas->print("t2_eqns[OO][VV]{o}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   )
 }
 
@@ -349,8 +349,8 @@ void CCMRCC::build_t2_amplitudes_triples()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the T3->T2 Amplitudes   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the T3->T2 Amplitudes   ...");
+    
   )
   build_t2_ijab_amplitudes_triples_diagram1();
   build_t2_iJaB_amplitudes_triples_diagram1();
@@ -364,8 +364,8 @@ void CCMRCC::build_t2_amplitudes_triples()
   build_t2_iJaB_amplitudes_triples_diagram3();
   build_t2_IJAB_amplitudes_triples_diagram3();
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   )
 }
 

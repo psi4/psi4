@@ -46,7 +46,7 @@ static inline int ipure(int l, int m) { return m<0?2*-m:(m==0?0:2*m-1); }
 void SphericalTransformComponent::init(int a, int b, int c, double coef,
                                        int cartindex, int pureindex)
 {
-//    fprintf(outfile, "a = %d, b = %d, c = %d, coef = %f, cartindex = %d, pureindex = %d\n", a, b, c, coef, cartindex, pureindex);
+//    outfile->Printf( "a = %d, b = %d, c = %d, coef = %f, cartindex = %d, pureindex = %d\n", a, b, c, coef, cartindex, pureindex);
     a_ = a;
     b_ = b;
     c_ = c;
@@ -70,7 +70,7 @@ SphericalTransform::SphericalTransform(int l, int subl) : l_(l)
 
 void SphericalTransform::init()
 {
-//    fprintf(outfile, "spher\n");
+//    outfile->Printf( "spher\n");
     int cartdim = INT_NCART(l_);
     Matrix coefmat(cartdim, cartdim);
     coefmat.zero();
@@ -78,7 +78,7 @@ void SphericalTransform::init()
     // Compute the solid harmonic matrix elements
     solidharmonic(l_, coefmat);
 
-//    fprintf(outfile, "SphericalTransform: l = %d\n", l_);
+//    outfile->Printf( "SphericalTransform: l = %d\n", l_);
 //    coefmat.print();
 
     // Go through and grab the values.
@@ -102,7 +102,7 @@ void SphericalTransform::init()
                 int cart1 = icart(a, b, c);
                 int cart2 = INT_CARTINDEX(a+b+c, a, b);
 
-//                fprintf(outfile, "cart1 = %d, p+pureindex=%d\n", cart1, p+pureindex);
+//                outfile->Printf( "cart1 = %d, p+pureindex=%d\n", cart1, p+pureindex);
                 double coef = coefmat(cart1, p+pureindex);
 
                 if (fabs(coef) > 1.0e-16) {
@@ -133,7 +133,7 @@ ISphericalTransform::ISphericalTransform(int l, int subl)
 
 void ISphericalTransform::init()
 {
-//    fprintf(outfile, "ispher\n");
+//    outfile->Printf( "ispher\n");
     int cartdim = ncart(l_);
     Matrix coefmat(cartdim, cartdim);
     coefmat.zero();

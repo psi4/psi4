@@ -1,0 +1,138 @@
+#! Sample with post-Argon atoms
+
+memory 250 mb
+
+
+molecule {
+Ba
+Ba 1 2.0
+units bohr
+}
+
+set globals {
+  basis def2-sv_p_
+  scf_type df
+  DF_BASIS_SCF def2-sv_p_-jkfit
+}
+
+gradient('df-mp2')
+analytic_grad = psi4.get_gradient()
+clean()
+memory 250 mb
+
+
+molecule {
+Ba
+Ba 1 2.0
+units bohr
+}
+
+set globals {
+  basis def2-sv_p_
+  scf_type df
+  DF_BASIS_SCF def2-sv_p_-jkfit
+}
+
+gradient('scf')
+analytic_grad = psi4.get_gradient()
+clean()
+memory 250 mb
+
+
+molecule {
+In
+In 1 2.0
+units bohr
+}
+
+set globals {
+  basis STO-3G
+  scf_type pk
+}
+
+thisenergy = energy('mp2')
+clean()
+memory 250 mb
+
+
+molecule {
+In
+In 1 2.0
+units bohr
+}
+
+set globals {
+  basis STO-3G
+  scf_type pk
+}
+
+thisenergy = energy('scf')
+clean()
+memory 250 mb
+
+
+molecule {
+Rn
+Rn 1 2.0
+units bohr
+}
+
+set globals {
+  basis def2-svpd
+  scf_type df
+  DF_BASIS_SCF def2-svpd-ri
+}
+
+thisenergy = energy('df-mp2')
+clean()
+memory 250 mb
+
+
+molecule {
+Rn
+Rn 1 2.0
+units bohr
+}
+
+set globals {
+  basis def2-svpd
+  scf_type df
+  DF_BASIS_SCF def2-svpd-ri
+}
+
+thisenergy = energy('scf')
+clean()
+memory 250 mb
+
+
+molecule {
+Sr
+Sr 1 2.0
+units bohr
+}
+
+set globals {
+  basis def2-svp
+  scf_type pk
+}
+
+gradient('mp2')
+analytic_grad = psi4.get_gradient()
+clean()
+memory 250 mb
+
+
+molecule {
+Sr
+Sr 1 2.0
+units bohr
+}
+
+set globals {
+  basis def2-svp
+  scf_type pk
+}
+
+gradient('scf')
+analytic_grad = psi4.get_gradient()
+clean()

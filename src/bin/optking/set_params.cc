@@ -25,6 +25,7 @@
     \brief set optimization parameters
 */
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -38,7 +39,7 @@
 
 namespace opt {
 
-void print_params(void);
+void print_params_out(void);
 
 #if defined(OPTKING_PACKAGE_PSI)
 void set_params(psi::Options & options)
@@ -77,6 +78,18 @@ void set_params(void)
      // else if (Opt_params.opt_type == OPT_PARAMS::IRC) options?
    }
 
+   s = options.get_str("OPT_COORDINATES");
+   if (s == "INTERNAL" || s == "REDUNDANT")
+     Opt_params.coordinates = OPT_PARAMS::REDUNDANT;
+   else if (s == "DELOCALIZED")
+     Opt_params.coordinates = OPT_PARAMS::DELOCALIZED;
+   else if (s == "NATURAL")
+     Opt_params.coordinates = OPT_PARAMS::NATURAL;
+   else if (s == "CARTESIAN")
+     Opt_params.coordinates = OPT_PARAMS::CARTESIAN;
+   else if (s == "BOTH")
+     Opt_params.coordinates = OPT_PARAMS::BOTH;
+
 // Maximum step size in bohr or radian along an internal coordinate {double}
 //  Opt_params.intrafragment_step_limit = 0.4;
     Opt_params.intrafragment_step_limit = options.get_double("INTRAFRAG_STEP_LIMIT");
@@ -84,6 +97,22 @@ void set_params(void)
     Opt_params.intrafragment_step_limit_max = options.get_double("INTRAFRAG_STEP_LIMIT_MAX");
 
     Opt_params.interfragment_step_limit = options.get_double("INTERFRAG_STEP_LIMIT");
+
+// For now, the initial Hessian guess for cartesians with BOTH is stupid, so don't scale
+// step size down too much.
+    if (!options["INTRAFRAG_STEP_LIMIT_MIN"].has_changed() && Opt_params.coordinates == OPT_PARAMS::BOTH)
+      Opt_params.intrafragment_step_limit_min = Opt_params.intrafragment_step_limit / 2.0;
+
+// Steepest descent has no good hessian, so don't restrict step much
+    if (!options["INTRAFRAG_STEP_LIMIT_MIN"].has_changed() && Opt_params.step_type == OPT_PARAMS::SD)
+      Opt_params.intrafragment_step_limit_min = Opt_params.intrafragment_step_limit;
+
+// Reduce step size to ensure convergence of back-transformation of internal coordinate
+// step to cartesians.
+    Opt_params.ensure_bt_convergence = options.get_bool("ENSURE_BT_CONVERGENCE");
+
+// do stupid, linear scaling of internal coordinates to step limit (not RS-RFO);
+    Opt_params.simple_step_scaling = options.get_bool("SIMPLE_STEP_SCALING");
 
 // Whether to 'follow' the initial RFO vector after the first step {true, false}
     Opt_params.rfo_follow_root = options.get_bool("RFO_FOLLOW_ROOT");
@@ -126,6 +155,26 @@ void set_params(void)
     else if (s == "SCHLEGEL") Opt_params.intrafragment_H = OPT_PARAMS::SCHLEGEL;
     else if (s == "SIMPLE") Opt_params.intrafragment_H = OPT_PARAMS::SIMPLE;
     else if (s == "LINDH") Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
+    else if (s == "LINDH_SIMPLE") Opt_params.intrafragment_H = OPT_PARAMS::LINDH_SIMPLE;
+
+// Re-estimate the hessian every step.  Usually default is false. 
+    Opt_params.H_guess_every = options.get_bool("H_GUESS_EVERY");
+
+// Original Lindh specification was to redo at every step.
+    if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH) {
+      if (!options["H_GUESS_EVERY"].has_changed())
+        Opt_params.H_guess_every = true;
+    }
+
+//  The default for cartesian coordinates will be to use Lindh force field
+//  for initial guess, and then switch to BFGS.  This should be a flexible approach for
+//  difficult problems.
+    if (Opt_params.coordinates == OPT_PARAMS::CARTESIAN) {
+      if (!options["INTRAFRAG_HESS"].has_changed())
+        Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
+      if (!options["H_GUESS_EVERY"].has_changed())
+        Opt_params.H_guess_every = false;
+    }
 
 // Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE}
     s = options.get_str("INTERFRAG_HESS");
@@ -140,6 +189,9 @@ void set_params(void)
 
 // Add auxiliary bonds for non-bonded (but nearby) atoms.
     Opt_params.add_auxiliary_bonds = options.get_bool("ADD_AUXILIARY_BONDS");
+
+// Covalent distance times this factor is used to choose extra stretch coordinates
+    Opt_params.auxiliary_bond_factor = options.get_double("AUXILIARY_BOND_FACTOR");
 
 // By default, optking prints and saves the last (previous) geometry at the end of an
 // optimization, i.e., the one at which a gradient was computed.  If this keyword is
@@ -305,6 +357,10 @@ void set_params(void)
 //  Opt_params.print_lvl = 1;
     Opt_params.print_lvl = options.get_int("PRINT");
 
+    Opt_params.print_params = options.get_bool("PRINT_OPT_PARAMS");
+
+    Opt_params.print_trajectory_xyz_file = options.get_bool("PRINT_TRAJECTORY_XYZ_FILE");
+
 // Read cartesian Hessian.  Make reading the default for IRC.
     if ((Opt_params.opt_type == OPT_PARAMS::IRC) &&
         (options["CART_HESS_READ"].has_changed() == 0))
@@ -315,8 +371,8 @@ void set_params(void)
 // only treating "dummy fragments"
     // These are not found in psi4/read_options.cc
     // Not sure if we need these.
-  Opt_params.efp_fragments = false;
-  Opt_params.efp_fragments_only = false;
+  Opt_params.fb_fragments = false;
+  Opt_params.fb_fragments_only = false;
 
 //IRC stepsize
   Opt_params.IRC_step_size = options.get_double("IRC_STEP_SIZE");
@@ -347,6 +403,20 @@ void set_params(void)
 
   Opt_params.geom_maxiter = options.get_int("GEOM_MAXITER");
 
+  // For RFO step, eigenvectors of augmented Hessian are divided by the last
+  // element unless it is smaller than this value {double}.  Can be used to eliminate
+  // asymmetric steps not otherwise detected (e.g. in degenerate point groups).
+  Opt_params.rfo_normalization_max = options.get_double("RFO_NORMALIZATION_MAX");
+
+// Hessian update is avoided if the denominators (Dq*Dq) or (Dq*Dg) are smaller than this
+  Opt_params.H_update_den_tol = options.get_double("H_UPDATE_DEN_TOL");
+
+  Opt_params.symm_tol = 0.01;
+
+  // Absolute maximum for value of alpha in RS-RFO
+  Opt_params.rsrfo_alpha_max = options.get_double("RSRFO_ALPHA_MAX");
+
+
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
   int i;
@@ -370,6 +440,15 @@ void set_params(void)
   else if (i == 1) Opt_params.step_type = OPT_PARAMS::NR;
   else if (i == 2) Opt_params.step_type = OPT_PARAMS::P_RFO;
 
+// coordinates for optimization; default is 0
+  i = rem_read(REM_GEOM_OPT2_OPT_COORDINATES);
+  if (i == 0)
+    Opt_params.coordinates = OPT_PARAMS::INTERNAL;
+  else if (i == 1)
+    Opt_params.coordinates = OPT_PARAMS::CARTESIAN;
+  else if (i == 2)
+    Opt_params.coordinates = OPT_PARAMS::BOTH;
+
   // Maximum change in an internal coordinate is au; limits on steps are rem / 1000
   i = rem_read(REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT);     // default is  400 -> 0.4
   Opt_params.intrafragment_step_limit =     i / 1000.0;
@@ -379,6 +458,10 @@ void set_params(void)
   Opt_params.intrafragment_step_limit_max = i / 1000.0;
   i = rem_read(REM_GEOM_OPT2_INTERFRAG_STEP_LIMIT);
   Opt_params.interfragment_step_limit     = i / 1000.0; // default is  400 -> 0.4
+
+  // Reduce step size to ensure convergence of back-transformation of internal coordinate
+  // step to cartesians.
+  Opt_params.ensure_bt_convergence = rem_read("REM_GEOM_OPT2_ENSURE_BT_CONVERGENCE");
 
 // follow root   (default 0)
   Opt_params.rfo_follow_root = rem_read(REM_GEOM_OPT2_RFO_FOLLOW_ROOT);
@@ -420,6 +503,9 @@ void set_params(void)
 
 // Whether to freeze all fragments rigid (default 0);
   Opt_params.freeze_intrafragment = rem_read(REM_GEOM_OPT2_FREEZE_INTRAFRAGMENT);
+
+// Needs added to QChem
+  Opt_params.H_guess_every = rem_read("REM_GEOM_OPT2_H_GUESS_EVERY");
 
 // Whether to freeze all interfragment modes:
   Opt_params.freeze_interfragment = rem_read(REM_GEOM_OPT2_FREEZE_INTERFRAGMENT);
@@ -479,18 +565,20 @@ void set_params(void)
 // (default 1)
   Opt_params.print_lvl = rem_read(REM_GEOM_OPT2_PRINT_LVL);
 
+  Opt_params.print_trajectory_xyz_file = rem_read(REM_GEOM_OPT2_PRINT_TRAJECTORY_XYZ_FILE);
+
 // read Hessian (default 0)
   Opt_params.read_cartesian_H = rem_read(REM_GEOM_OPT2_READ_CARTESIAN_H);
 
 // This optimizer will not work unless only EFP fragments are present
 // Last I tried, I can't even get geometry data when running EFP_opt.in
-  Opt_params.efp_fragments = rem_read(REM_EFP);
+  Opt_params.fb_fragments = rem_read(REM_EFP);
 
 // are ONLY EFP fragments present
-  if(Opt_params.efp_fragments)
-    Opt_params.efp_fragments_only = rem_read(REM_EFP_FRAGMENTS_ONLY);
+  if(Opt_params.fb_fragments)
+    Opt_params.fb_fragments_only = rem_read(REM_EFP_FRAGMENTS_ONLY);
   else {
-    Opt_params.efp_fragments_only = false;
+    Opt_params.fb_fragments_only = false;
   }
 
   // for intcos with user-specified equilibrium values - this is the force constant
@@ -501,7 +589,7 @@ void set_params(void)
 
   // if steepest-descent, then make much larger default
   if (Opt_params.step_type == OPT_PARAMS::SD && RemUninitialized(REM_GEOM_OPT2_CONSECUTIVE_BACKSTEPS))
-    Opt_params.consecutive_backsteps_allowed = 10;
+    Opt_params.consecutive_backsteps_allowed = 1;
 
 //TO DO: initialize IRC_step_size for Q-Chem
 
@@ -561,10 +649,6 @@ void set_params(void)
 
 // ** Items are below unlikely to need modified
 
-// For RFO step, eigenvectors of augmented Hessian are divided by the last
-// element unless it is smaller than this value {double}
-  Opt_params.rfo_normalization_min = 1.0e-8;
-
 // how close to pi should a torsion be to assume it may have passed through 180
   Opt_params.fix_tors_near_pi = _pi / 2;
 
@@ -594,153 +678,321 @@ void set_params(void)
   //Opt_params.bt_dx_conv = 1.0e-10;
   //Opt_params.bt_dx_conv_rms_change = 1.0e-14;
 
-// Hessian update is avoided if the denominators (Dq*Dq) or (Dq*Dg) are smaller than this
-  Opt_params.H_update_den_tol = 1e-7;
 
 // Hessian update is avoided if any internal coordinate has changed by more than this in radians/au
   Opt_params.H_update_dq_tol = 0.5;
 
 // Some parameter error-checking / modification
-  if (Opt_params.efp_fragments_only) {
+  if (Opt_params.fb_fragments_only) {
     Opt_params.test_B = false;
     Opt_params.test_derivative_B = false;
   }
 
-  if (Opt_params.print_lvl > 1) print_params();
+/*  if dynamic mode is on, then other settings are overridden.
+* step_type = step
+* intrafragment_step_limit = step_limit
+* consecutive_backsteps = backsteps
+* RI = redundant internals; D = default anyway
+
+*dynamic  step   coord   step_limit      backsteps              criteria
+* level                                               for downmove    for upmove
+*  0      RFO    RI      dynamic         no           none            none
+*
+*  1      RFO    RI      dynamic(D)      no           1 bad step
+*
+*  2      RFO    RI      small initial   yes (1)      1 bad step
+*                        dynamic(D)    
+*
+*  3      SD     RI      large(D)        yes (1)      1 bad step
+*
+*  4      SD     RI+XYZ  large(D)        yes (1)      1 bad step
+*
+*  5      SD     XYZ     large(D)        yes (1)      1 bad step
+*
+*  6      SD     XYZ     small           yes (1)      1 bad step
+*
+*  7  abort
+*
+*  BackStep:
+*   DE > 0 in minimization
+*
+*  BadStep:
+*   DE > 0 and backsteps exceeded and iterations > 5  ** OR **
+*   badly defined internal coordinate or derivative
+*
+* */
+
+  if (options["DYNAMIC_LEVEL"].has_changed())
+    Opt_params.dynamic = options.get_int("DYNAMIC_LEVEL");
+  else
+    Opt_params.dynamic = INTCO_EXCEPT::dynamic_level;
+
+  Opt_params.sd_hessian = 1.0; // small step
+
+  switch(Opt_params.dynamic) {
+    case 0: // not dynamic
+      break;
+    case 1:
+      Opt_params.coordinates = OPT_PARAMS::REDUNDANT;
+      Opt_params.consecutive_backsteps_allowed = 0;
+      Opt_params.step_type = OPT_PARAMS::RFO;
+             printf("At level 1: Red. Int., RFO, no backsteps, dynamic trust\n");
+      oprintf_out("\tAt level 1: Red. Int., RFO, no backsteps, dynamic trust\n");
+      break;
+    case 2:
+      Opt_params.coordinates = OPT_PARAMS::REDUNDANT;
+      Opt_params.consecutive_backsteps_allowed = 2;
+      Opt_params.step_type = OPT_PARAMS::RFO;
+      Opt_params.intrafragment_step_limit = 0.2;
+      Opt_params.intrafragment_step_limit_min = 0.2; //this code overwrites changes anyway
+      Opt_params.intrafragment_step_limit_max = 0.2;
+             printf("At level 2: Red. Int., RFO, backsteps, smaller trust.\n");
+      oprintf_out("\tAt level 2: Red. Int., RFO, backsteps, smaller trust.\n");
+      break;
+    case 3:
+      Opt_params.coordinates = OPT_PARAMS::BOTH;
+      Opt_params.consecutive_backsteps_allowed = 2;
+      Opt_params.step_type = OPT_PARAMS::RFO;
+      Opt_params.intrafragment_step_limit = 0.1;
+      Opt_params.intrafragment_step_limit_min = 0.1; //this code overwrites changes anyway
+      Opt_params.intrafragment_step_limit_max = 0.1;
+             printf("At level 3: Red. Int., RFO, backsteps, smaller trust.\n");
+      oprintf_out("\tAt level 3: Red. Int., RFO, backsteps, smaller trust.\n");
+      break;
+    case 4:
+      Opt_params.coordinates = OPT_PARAMS::BOTH;
+      Opt_params.consecutive_backsteps_allowed = 1;
+      Opt_params.step_type = OPT_PARAMS::SD;
+      Opt_params.sd_hessian = 0.2;
+      Opt_params.intrafragment_step_limit = 0.4;
+      Opt_params.intrafragment_step_limit_min = 0.4; //this code overwrites changes anyway
+      Opt_params.intrafragment_step_limit_max = 0.4;
+             printf("At level 4: Red. Int. + XYZ, SD, backsteps, larger trust.\n");
+      oprintf_out("\tAt level 4: Red. Int. + XYZ, SD, backsteps, larger trust.\n");
+      break;
+    case 5:
+      Opt_params.coordinates = OPT_PARAMS::CARTESIAN;
+      Opt_params.consecutive_backsteps_allowed = 1;
+      Opt_params.step_type = OPT_PARAMS::SD;
+      Opt_params.sd_hessian = 0.2;
+      Opt_params.intrafragment_step_limit = 0.3;
+      Opt_params.intrafragment_step_limit_min = 0.3; //this code overwrites changes anyway
+      Opt_params.intrafragment_step_limit_max = 0.3;
+             printf("At level 5: XYZ, SD, backsteps, larger trust.\n");
+      oprintf_out("\tAt level 5: XYZ, SD, backsteps, larger trust.\n");
+      break;
+    case 6:
+      Opt_params.coordinates = OPT_PARAMS::CARTESIAN;
+      Opt_params.consecutive_backsteps_allowed = 2;
+      Opt_params.step_type = OPT_PARAMS::SD;
+      Opt_params.sd_hessian = 0.5;
+      Opt_params.intrafragment_step_limit = 0.1;
+      Opt_params.intrafragment_step_limit_min = 0.1; //this code overwrites changes anyway
+      Opt_params.intrafragment_step_limit_max = 0.1;
+             printf("Moving to level 6: XYZ, SD, backsteps, small trust, smaller steps.\n");
+      oprintf_out("\tMoving to level 6: XYZ, SD, backsteps, small trust, smaller steps.\n");
+      break;
+  default:
+      oprintf_out("Unknown value of Opt_params.dynamic variable.\n");
+  }
+
+  if (Opt_params.print_lvl > 1 || Opt_params.print_params) print_params_out();
 
 }
 
-void print_params(void) {
+void print_params_out(void) {
 
-  fprintf(outfile, "conv_max_force         = %18.2e\n", Opt_params.conv_max_force);
-  fprintf(outfile, "conv_rms_force         = %18.2e\n", Opt_params.conv_rms_force);
-  fprintf(outfile, "conv_max_DE            = %18.2e\n", Opt_params.conv_max_DE);
-  fprintf(outfile, "conv_max_disp          = %18.2e\n", Opt_params.conv_max_disp);
-  fprintf(outfile, "conv_rms_disp          = %18.2e\n", Opt_params.conv_rms_disp);
+  oprintf_out( "dynamic level          = %18d\n", Opt_params.dynamic);
+  oprintf_out( "conv_max_force         = %18.2e\n", Opt_params.conv_max_force);
+  oprintf_out( "conv_rms_force         = %18.2e\n", Opt_params.conv_rms_force);
+  oprintf_out( "conv_max_DE            = %18.2e\n", Opt_params.conv_max_DE);
+  oprintf_out( "conv_max_disp          = %18.2e\n", Opt_params.conv_max_disp);
+  oprintf_out( "conv_rms_disp          = %18.2e\n", Opt_params.conv_rms_disp);
+  oprintf_out( "SD Hessian             = %18.2e\n", Opt_params.sd_hessian);
 
-  fprintf(outfile, "scale_connectivity     = %18.2e\n", Opt_params.scale_connectivity);
-  fprintf(outfile, "interfragment_scale_connectivity = %18.2e\n",
+  oprintf_out( "scale_connectivity     = %18.2e\n", Opt_params.scale_connectivity);
+  oprintf_out( "interfragment_scale_connectivity = %18.2e\n",
     Opt_params.interfragment_scale_connectivity);
 
   if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE)
-  fprintf(outfile, "fragment_mode          = %18s\n", "single");
+  oprintf_out( "fragment_mode          = %18s\n", "single");
   else if (Opt_params.fragment_mode == OPT_PARAMS::MULTI)
-  fprintf(outfile, "fragment_mode          = %18s\n", "multi");
+  oprintf_out( "fragment_mode          = %18s\n", "multi");
 
   if (Opt_params.interfragment_mode == OPT_PARAMS::FIXED)
-  fprintf(outfile, "interfragment_mode        = %18s\n", "fixed");
+  oprintf_out( "interfragment_mode        = %18s\n", "fixed");
   else if (Opt_params.interfragment_mode == OPT_PARAMS::PRINCIPAL_AXES)
-  fprintf(outfile, "interfragment_mode        = %18s\n", "principal axes");
+  oprintf_out( "interfragment_mode        = %18s\n", "principal axes");
 
   if (Opt_params.generate_intcos_only)
-  fprintf(outfile, "generate_intcos_only   = %18s\n", "true");
+    oprintf_out( "generate_intcos_only   = %18s\n", "true");
   else
-  fprintf(outfile, "generate_intcos_only   = %18s\n", "false");
+    oprintf_out( "generate_intcos_only   = %18s\n", "false");
+
+  //if (Opt_params.print_params)
+  //oprintf_out( "print_params           = %18s\n", "true");
+  //else
+  //oprintf_out( "print_params           = %18s\n", "false");
+  
+  oprintf_out( "print_params           = %18s\n", Opt_params.print_params ? "true" : "false");
+
+  oprintf_out( "print_lvl              = %d\n", Opt_params.print_lvl);
+
+  if (Opt_params.ensure_bt_convergence)
+    oprintf_out("ensure_bt_convergence = %17s\n", "true");
+  else
+    oprintf_out("ensure_bt_convergence = %17s\n", "false");
 
   if (Opt_params.rfo_follow_root)
-  fprintf(outfile, "rfo_follow_root        = %18s\n", "true");
+  oprintf_out( "rfo_follow_root        = %18s\n", "true");
   else
-  fprintf(outfile, "rfo_follow_root        = %18s\n", "false");
+  oprintf_out( "rfo_follow_root        = %18s\n", "false");
 
-  fprintf(outfile, "rfo_root               = %18d\n", Opt_params.rfo_root);
+  oprintf_out( "rfo_root               = %18d\n", Opt_params.rfo_root);
 
-  fprintf(outfile, "rfo_normalization_min  = %18.2e\n", Opt_params.rfo_normalization_min);
+  oprintf_out( "rfo_normalization_max  = %18.2e\n", Opt_params.rfo_normalization_max);
+  oprintf_out( "rsrfo_alpha_max        = %18.3e\n", Opt_params.rsrfo_alpha_max);
 
   if (Opt_params.step_type == OPT_PARAMS::NR)
-  fprintf(outfile, "step_type              = %18s\n", "N-R");
+  oprintf_out( "step_type              = %18s\n", "N-R");
   else if (Opt_params.step_type == OPT_PARAMS::RFO)
-  fprintf(outfile, "step_type              = %18s\n", "RFO");
+  oprintf_out( "step_type              = %18s\n", "RFO");
   else if (Opt_params.step_type == OPT_PARAMS::P_RFO)
-  fprintf(outfile, "step_type              = %18s\n", "P_RFO");
+  oprintf_out( "step_type              = %18s\n", "P_RFO");
   else if (Opt_params.step_type == OPT_PARAMS::LINESEARCH_STATIC)
-  fprintf(outfile, "step_type              = %18s\n", "Static linesearch");
+  oprintf_out( "step_type              = %18s\n", "Static linesearch");
 
-  fprintf(outfile, "linesearch_static_N    = %18d\n", Opt_params.linesearch_static_N);
-  fprintf(outfile, "linesearch_static_min  = %18.3e\n", Opt_params.linesearch_static_min);
-  fprintf(outfile, "linesearch_static_max  = %18.3e\n", Opt_params.linesearch_static_max);
+  if (Opt_params.coordinates == OPT_PARAMS::REDUNDANT)
+  oprintf_out( "opt. coordinates       = %18s\n", "Redundant Internals");
+  else if (Opt_params.coordinates == OPT_PARAMS::DELOCALIZED)
+  oprintf_out( "opt. coordinates       = %18s\n", "Delocalized");
+  else if (Opt_params.coordinates == OPT_PARAMS::NATURAL)
+  oprintf_out( "opt. coordinates       = %18s\n", "Natural");
+  else if (Opt_params.coordinates == OPT_PARAMS::CARTESIAN)
+  oprintf_out( "opt. coordinates       = %18s\n", "Cartesian");
+  else if (Opt_params.coordinates == OPT_PARAMS::BOTH)
+  oprintf_out( "opt. coordinates       = %18s\n", "Add Cartesians");
+
+  oprintf_out( "linesearch_static_N    = %18d\n", Opt_params.linesearch_static_N);
+  oprintf_out( "linesearch_static_min  = %18.3e\n", Opt_params.linesearch_static_min);
+  oprintf_out( "linesearch_static_max  = %18.3e\n", Opt_params.linesearch_static_max);
+
+  oprintf_out( "consecutive_backsteps  = %18d\n",  Opt_params.consecutive_backsteps_allowed);
 
   if (Opt_params.intrafragment_H == OPT_PARAMS::FISCHER)
-  fprintf(outfile, "intrafragment_H        = %18s\n", "Fischer");
+  oprintf_out( "intrafragment_H        = %18s\n", "Fischer");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL)
-  fprintf(outfile, "intrafragment_H        = %18s\n", "Schlegel");
+  oprintf_out( "intrafragment_H        = %18s\n", "Schlegel");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE)
-  fprintf(outfile, "intrafragment_H        = %18s\n", "Simple");
+  oprintf_out( "intrafragment_H        = %18s\n", "Simple");
+  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH)
+  oprintf_out( "intrafragment_H        = %18s\n", "Lindh");
+  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH_SIMPLE)
+  oprintf_out( "intrafragment_H        = %18s\n", "Lindh - Simple");
 
   if (Opt_params.interfragment_H == OPT_PARAMS::DEFAULT)
-  fprintf(outfile, "interfragment_H        = %18s\n", "Default");
+  oprintf_out( "interfragment_H        = %18s\n", "Default");
   else if (Opt_params.interfragment_H == OPT_PARAMS::FISCHER_LIKE)
-  fprintf(outfile, "interfragment_H        = %18s\n", "Fischer_like");
+  oprintf_out( "interfragment_H        = %18s\n", "Fischer_like");
 
   if (Opt_params.H_update == OPT_PARAMS::NONE)
-  fprintf(outfile, "H_update               = %18s\n", "None");
+  oprintf_out( "H_update               = %18s\n", "None");
   else if (Opt_params.H_update == OPT_PARAMS::BFGS)
-  fprintf(outfile, "H_update               = %18s\n", "BFGS");
+  oprintf_out( "H_update               = %18s\n", "BFGS");
   else if (Opt_params.H_update == OPT_PARAMS::MS)
-  fprintf(outfile, "H_update               = %18s\n", "MS");
+  oprintf_out( "H_update               = %18s\n", "MS");
   else if (Opt_params.H_update == OPT_PARAMS::POWELL)
-  fprintf(outfile, "H_update               = %18s\n", "Powell");
+  oprintf_out( "H_update               = %18s\n", "Powell");
   else if (Opt_params.H_update == OPT_PARAMS::BOFILL)
-  fprintf(outfile, "H_update               = %18s\n", "Bofill");
+  oprintf_out( "H_update               = %18s\n", "Bofill");
 
-  fprintf(outfile, "H_update_use_last      = %18d\n", Opt_params.H_update_use_last);
+  oprintf_out( "H_update_use_last      = %18d\n", Opt_params.H_update_use_last);
 
   if (Opt_params.freeze_intrafragment)
-  fprintf(outfile, "freeze_intrafragment   = %18s\n", "true");
+  oprintf_out( "freeze_intrafragment   = %18s\n", "true");
   else
-  fprintf(outfile, "freeze_intrafragment   = %18s\n", "false");
+  oprintf_out( "freeze_intrafragment   = %18s\n", "false");
 
-  fprintf(outfile, "intrafragment_step_limit=%18.2e\n", Opt_params.intrafragment_step_limit);
+  oprintf_out( "intrafragment_step_limit=%18.2e\n", Opt_params.intrafragment_step_limit);
 
-  fprintf(outfile, "interfragment_step_limit=%18.2e\n", Opt_params.interfragment_step_limit);
+  oprintf_out( "interfragment_step_limit=%18.2e\n", Opt_params.interfragment_step_limit);
+
+  if (Opt_params.add_auxiliary_bonds)
+    oprintf_out( "add_auxiliary_bonds   = %18s\n", "true");
+  else
+    oprintf_out( "add_auxiliary_bonds   = %18s\n", "false");
+
+  if (Opt_params.H_guess_every)
+    oprintf_out( "H_guess_every         = %18s\n", "true");
+  else
+    oprintf_out( "H_guess_every         = %18s\n", "false");
+
+  oprintf_out( "auxiliary_bond_factor =%18.2e\n", Opt_params.auxiliary_bond_factor);
 
   if (Opt_params.H_update_limit)
-    fprintf(outfile, "H_update_limit         = %18s\n", "true");
+    oprintf_out( "H_update_limit         = %18s\n", "true");
   else
-    fprintf(outfile, "H_update_limit         = %18s\n", "false");
+    oprintf_out( "H_update_limit         = %18s\n", "false");
 
-  fprintf(outfile, "H_update_limit_scale   = %18.2e\n", Opt_params.H_update_limit_scale);
-  fprintf(outfile, "H_update_limit_max     = %18.2e\n", Opt_params.H_update_limit_max);
+  oprintf_out( "H_update_limit_scale   = %18.2e\n", Opt_params.H_update_limit_scale);
+  oprintf_out( "H_update_limit_max     = %18.2e\n", Opt_params.H_update_limit_max);
+  oprintf_out( "H_update_den_tol       = %18.2e\n", Opt_params.H_update_den_tol);
 
   if (Opt_params.interfragment_distance_inverse)
-  fprintf(outfile, "interfragment_distance_inverse=%12s\n", "true");
+  oprintf_out( "interfragment_distance_inverse=%12s\n", "true");
   else
-  fprintf(outfile, "interfragment_distance_inverse=%12s\n", "false");
+  oprintf_out( "interfragment_distance_inverse=%12s\n", "false");
 
   if (Opt_params.write_final_step_geometry)
-  fprintf(outfile, "write_final_step_geometry= %16s\n", "true");
+  oprintf_out( "write_final_step_geometry= %16s\n", "true");
   else
-  fprintf(outfile, "write_final_step_geometry= %16s\n", "false");
+  oprintf_out( "write_final_step_geometry= %16s\n", "false");
 
-  fprintf(outfile, "maximum_H_bond_distance= %18.2e\n", Opt_params.maximum_H_bond_distance);
+  oprintf_out( "maximum_H_bond_distance= %18.2e\n", Opt_params.maximum_H_bond_distance);
 
   if (Opt_params.read_cartesian_H)
-  fprintf(outfile, "read_cartesian_H       = %18s\n", "true");
+  oprintf_out( "read_cartesian_H       = %18s\n", "true");
   else
-  fprintf(outfile, "read_cartesian_H       = %18s\n", "false");
+  oprintf_out( "read_cartesian_H       = %18s\n", "false");
 
-  if (Opt_params.efp_fragments)
-  fprintf(outfile, "efp_fragments          = %18s\n", "true");
+  if (Opt_params.fb_fragments)
+  oprintf_out( "fb_fragments          = %18s\n", "true");
   else
-  fprintf(outfile, "efp_fragments          = %18s\n", "false");
+  oprintf_out( "fb_fragments          = %18s\n", "false");
 
-  if (Opt_params.efp_fragments_only)
-  fprintf(outfile, "efp_fragments_only     = %18s\n", "true");
+  if (Opt_params.fb_fragments_only)
+  oprintf_out( "fb_fragments_only     = %18s\n", "true");
   else
-  fprintf(outfile, "efp_fragments_only     = %18s\n", "false");
+  oprintf_out( "fb_fragments_only     = %18s\n", "false");
 
-  fprintf(outfile, "frozen_distance: \n");
-  fprintf(outfile, "%s\n", Opt_params.frozen_distance_str.c_str());
-  fprintf(outfile, "frozen_bend: \n");
-  fprintf(outfile, "%s\n", Opt_params.frozen_bend_str.c_str());
-  fprintf(outfile, "frozen_dihedral: \n");
-  fprintf(outfile, "%s\n", Opt_params.frozen_dihedral_str.c_str());
+  oprintf_out( "frozen_distance: \n");
+  if (!Opt_params.frozen_distance_str.empty())
+    oprintf_out( "%s\n", Opt_params.frozen_distance_str.c_str());
 
-  fprintf(outfile, "fixed_distance: \n");
-  fprintf(outfile, "%s\n", Opt_params.fixed_distance_str.c_str());
-  fprintf(outfile, "fixed_bend: \n");
-  fprintf(outfile, "%s\n", Opt_params.fixed_bend_str.c_str());
-  fprintf(outfile, "fixed_dihedral: \n");
-  fprintf(outfile, "%s\n", Opt_params.fixed_dihedral_str.c_str());
+  oprintf_out( "frozen_bend: \n");
+  if (!Opt_params.frozen_bend_str.empty())
+    oprintf_out( "%s\n", Opt_params.frozen_bend_str.c_str());
+
+  oprintf_out( "frozen_dihedral: \n");
+  if (!Opt_params.frozen_dihedral_str.empty())
+    oprintf_out( "%s\n", Opt_params.frozen_dihedral_str.c_str());
+
+  oprintf_out( "fixed_distance: \n");
+  if (!Opt_params.fixed_distance_str.empty())
+    oprintf_out( "%s\n", Opt_params.fixed_distance_str.c_str());
+
+  oprintf_out( "fixed_bend: \n");
+  if (!Opt_params.fixed_bend_str.empty())
+    oprintf_out( "%s\n", Opt_params.fixed_bend_str.c_str());
+
+  oprintf_out( "fixed_dihedral: \n");
+  if (!Opt_params.fixed_dihedral_str.empty())
+    oprintf_out( "%s\n", Opt_params.fixed_dihedral_str.c_str());
+
+  if (Opt_params.print_trajectory_xyz_file)
+    oprintf_out("print_trajectory_xyz_file = %18s\n", "true");
+  else
+    oprintf_out("print_trajectory_xyz_file = %18s\n", "false");
 }
 
 }

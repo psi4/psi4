@@ -22,7 +22,7 @@
 
 #include <cstdlib>
 #include <cstdio>
-
+#include "psi4-dec.h"
 #include <libutil/libutil.h>
 
 #include "blas.h"
@@ -31,7 +31,7 @@
 
 
 namespace psi{
-    extern FILE *outfile;
+    
     namespace psimrcc{
 
 using namespace std;
@@ -58,9 +58,9 @@ bool CCOperation::compatible_dot()
   if((A_left==1) && (B_left==C_left) && (A_right==1) && (B_right==C_right))
     same = true;
   if(!same){
-    fprintf(outfile,"\n\nSolve couldn't perform the operation ");
+    outfile->Printf("\n\nSolve couldn't perform the operation ");
     print_operation();
-    fflush(outfile);
+    
     exit(1);
   }
   return(same);
@@ -94,9 +94,9 @@ bool CCOperation::compatible_element_by_element()
     if((A_left==B_left) && (B_left==C_left) && (A_right==B_right) && (B_right==C_right))
       same = true;
     if((B_left!=C_left) || (B_right!=C_right)){
-      fprintf(outfile,"\n\nSolve couldn't perform the operation ");
+      outfile->Printf("\n\nSolve couldn't perform the operation ");
       print_operation();
-      fflush(outfile);
+      
       exit(1);
     }
   }
@@ -140,9 +140,9 @@ bool CCOperation::compatible_contract()
   if((B_contracted==C_contracted) && (A_left==B_index) && (A_right==C_index))
     same = true;
   if(B_contracted!=C_contracted){
-    fprintf(outfile,"\n\nSolve couldn't perform the operation ");
+    outfile->Printf("\n\nSolve couldn't perform the operation ");
     print_operation();
-    fflush(outfile);
+    
     exit(1);
   }
   return(same);

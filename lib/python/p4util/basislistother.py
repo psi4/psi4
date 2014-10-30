@@ -25,7 +25,7 @@ for Pople and other non-Dunning orbital basis sets. Some
 plausible fitting basis sets are supplied as defaults.
 
 """
-from basislist import *
+from p4util.basislist import *
 
 
 def load_basfam_other():
@@ -189,7 +189,42 @@ def load_basfam_other():
     basis_def2qzvpd = BasisFamily('def2-QZVPD')
     basis_def2qzvpp = BasisFamily('def2-QZVPP')
     basis_def2qzvppd = BasisFamily('def2-QZVPPD')
-
+    
+    basis_def2sv_p_.add_jfit('def2-SV(P)-JFIT')
+    basis_def2svp.add_jfit('def2-SVP-JFIT')
+    basis_def2svpd.add_jfit('def2-SVP-JFIT')
+    basis_def2tzvp.add_jfit('def2-TZVP-JFIT')
+    basis_def2tzvpd.add_jfit('def2-TZVP-JFIT')
+    basis_def2tzvpp.add_jfit('def2-TZVPP-JFIT')
+    basis_def2tzvppd.add_jfit('def2-TZVPP-JFIT')
+    basis_def2qzvp.add_jfit('def2-QZVP-JFIT')
+    basis_def2qzvpd.add_jfit('def2-QZVP-JFIT')
+    basis_def2qzvpp.add_jfit('def2-QZVPP-JFIT')
+    basis_def2qzvppd.add_jfit('def2-QZVPP-JFIT')
+    
+    basis_def2sv_p_.add_jkfit('def2-SV(P)-JKFIT')
+    basis_def2svp.add_jkfit('def2-SVP-JKFIT')
+    basis_def2svpd.add_jkfit('def2-SVP-JKFIT')
+    basis_def2tzvp.add_jkfit('def2-TZVP-JKFIT')
+    basis_def2tzvpd.add_jkfit('def2-TZVP-JKFIT')
+    basis_def2tzvpp.add_jkfit('def2-TZVPP-JKFIT')
+    basis_def2tzvppd.add_jkfit('def2-TZVPP-JKFIT')
+    basis_def2qzvp.add_jkfit('def2-QZVP-JKFIT')
+    basis_def2qzvpd.add_jkfit('def2-QZVP-JKFIT')
+    basis_def2qzvpp.add_jkfit('def2-QZVPP-JKFIT')
+    basis_def2qzvppd.add_jkfit('def2-QZVPP-JKFIT')
+    
+    basis_def2sv_p_.add_rifit('def2-SV(P)-RI')
+    basis_def2svp.add_rifit('def2-SVP-RI')
+    basis_def2svpd.add_rifit('def2-SVPD-RI')
+    basis_def2tzvp.add_rifit('def2-TZVP-RI')
+    basis_def2tzvpd.add_rifit('def2-TZVPD-RI')
+    basis_def2tzvpp.add_rifit('def2-TZVPP-RI')
+    basis_def2tzvppd.add_rifit('def2-TZVPPD-RI')
+    basis_def2qzvp.add_rifit('def2-QZVP-RI')
+    basis_def2qzvpp.add_rifit('def2-QZVPP-RI')
+    basis_def2qzvppd.add_rifit('def2-QZVPPD-RI')
+    
     basisfamily_list.append(basis_def2sv_p_)
     basisfamily_list.append(basis_def2svp)
     basisfamily_list.append(basis_def2svpd)

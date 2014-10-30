@@ -644,7 +644,7 @@ if test "x${have_boost}" == "x0"; then
     HAVE_BOOST=0
     AC_SUBST(HAVE_BOOST)
 
-    BOOSTVER='boost_1_53_0'
+    BOOSTVER='boost_1_55_0'
     AC_SUBST(BOOSTVER)
 
     BOOST_CPPFLAGS='-I$(top_objdir)/boost/$(BOOSTVER)'
@@ -861,11 +861,13 @@ case $withval in
      AC_SUBST(HAVE_PLUGINS, yes)
      case $target_os in
        linux*)
-         CXXOTH="$CXXOTH -fpic"
+         COTH="$COTH -fpic -fPIC"
+         CXXOTH="$CXXOTH -fpic -fPIC"
          LDFLAGS="$LDFLAGS -Wl,-export-dynamic"
          ;;
        darwin*)
-         CXXOTH="$CXXOTH -fpic"
+         COTH="$COTH -fpic -fPIC"
+         CXXOTH="$CXXOTH -fpic -fPIC"
          LDFLAGS="$LDFLAGS -all_load"
          ;;
      esac
@@ -969,6 +971,8 @@ AC_CONFIG_FILES([
           src/bin/detci/Makefile
           src/bin/stable/Makefile
           src/bin/fnocc/Makefile
+          src/bin/occ/Makefile
+          src/bin/dfocc/Makefile
           src/bin/ccsort/Makefile
           src/bin/ccenergy/Makefile
           src/bin/cctriples/Makefile
@@ -988,7 +992,6 @@ AC_CONFIG_FILES([
           src/bin/scfgrad/Makefile
           src/bin/optking/Makefile
           src/bin/findif/Makefile
-          src/bin/occ/Makefile
           src/bin/adc/Makefile
           src/bin/thermo/Makefile
 
@@ -1009,6 +1012,7 @@ AC_CONFIG_FILES([
           tests/dcft5/Makefile
           tests/dcft6/Makefile
           tests/dcft7/Makefile
+          tests/dcft8/Makefile
           tests/dcft-grad1/Makefile
           tests/scf1/Makefile
           tests/scf2/Makefile
@@ -1028,6 +1032,7 @@ AC_CONFIG_FILES([
           tests/opt5/Makefile
           tests/opt6/Makefile
           tests/opt7/Makefile
+          tests/opt-lindep-change/Makefile
           tests/sad1/Makefile
           tests/fd-gradient/Makefile
           tests/fd-freq-energy/Makefile
@@ -1063,8 +1068,7 @@ AC_CONFIG_FILES([
           tests/pywrap-checkrun-convcrit/Makefile
           tests/pywrap-molecule/Makefile
           tests/psithon1/Makefile
-          tests/dftd3-energy/Makefile
-          tests/dftd3-grad/Makefile
+          tests/psithon2/Makefile
           tests/cisd-h2o+-0/Makefile
           tests/cisd-h2o+-1/Makefile
           tests/cisd-h2o+-2/Makefile
@@ -1148,6 +1152,7 @@ AC_CONFIG_FILES([
           tests/cc51/Makefile
           tests/cc52/Makefile
           tests/cc53/Makefile
+          tests/cc55/Makefile
           tests/mcscf1/Makefile
           tests/mcscf2/Makefile
           tests/mcscf3/Makefile
@@ -1199,6 +1204,18 @@ AC_CONFIG_FILES([
           tests/cepa0-grad2/Makefile
           tests/ocepa-freq1/Makefile
           tests/mp2-1/Makefile
+          tests/dfomp2-1/Makefile
+          tests/dfomp2-2/Makefile
+          tests/dfomp2-3/Makefile
+          tests/dfomp2-4/Makefile
+          tests/cdomp2-1/Makefile
+          tests/cdomp2-2/Makefile
+          tests/dfomp2-grad1/Makefile
+          tests/dfomp2-grad2/Makefile
+          tests/dfmp2-grad1/Makefile
+          tests/dfmp2-grad2/Makefile
+          tests/dfmp2-grad3/Makefile
+          tests/dfmp2-grad4/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile
           tests/props1/Makefile
@@ -1214,9 +1231,78 @@ AC_CONFIG_FILES([
           tests/dft-psivar/Makefile
           tests/mom/Makefile
           tests/frac/Makefile
+	  tests/mp2-def2/Makefile
           tests/docs-psimod/Makefile
           tests/docs-dft/Makefile
           tests/docs-bases/Makefile
+          tests/dftd3/Makefile
+          tests/dftd3/MakeVars
+          tests/dftd3/MakeRules
+          tests/dftd3/dftd3-energy/Makefile
+          tests/dftd3/dftd3-grad/Makefile
+          tests/dftd3/psithon2/Makefile
+          tests/cfour/Makefile
+          tests/cfour/MakeVars
+          tests/cfour/MakeRules
+          tests/cfour/sp-rhf-scf/Makefile
+          tests/cfour/sp-rhf-cc3/Makefile
+          tests/cfour/sp-rhf-ccsd/Makefile
+          tests/cfour/sp-rhf-ccsd-ao/Makefile
+          tests/cfour/sp-rhf-ccsdt/Makefile
+          tests/cfour/sp-rhf-ccsd_t_/Makefile
+          tests/cfour/sp-rhf-ccsd_t_-ao/Makefile
+          tests/cfour/sp-rhf-ccsd_t_-ao-ecc/Makefile
+          tests/cfour/sp-rhf-ccsd_t_-ecc/Makefile
+          tests/cfour/sp-rhf-ccsd_t_-fc/Makefile
+          tests/cfour/sp-rhf-mp2/Makefile
+          tests/cfour/sp-uhf-cc3/Makefile
+          tests/cfour/sp-uhf-ccsd/Makefile
+          tests/cfour/sp-uhf-ccsdt/Makefile
+          tests/cfour/sp-uhf-ccsd_t_/Makefile
+          tests/cfour/sp-uhf-ccsd_t_-ao/Makefile
+          tests/cfour/sp-uhf-ccsd_t_-ao-ecc/Makefile
+          tests/cfour/sp-uhf-ccsd_t_-ecc/Makefile
+          tests/cfour/sp-uhf-mp2/Makefile
+          tests/cfour/sp-uhf-scf/Makefile
+          tests/cfour/sp-rohf-ccsd/Makefile
+          tests/cfour/sp-rohf-ccsdt/Makefile
+          tests/cfour/sp-rohf-ccsd_t_/Makefile
+          tests/cfour/sp-rohf-mp2-sc/Makefile
+          tests/cfour/sp-rohf-mp4-sc/Makefile
+          tests/cfour/sp-rohf-scf/Makefile
+          tests/cfour/mints5/Makefile
+          tests/cfour/psi-rhf-scsmp2/Makefile
+          tests/cfour/psi-uhf-scsmp2/Makefile
+          tests/cfour/psi-rohf-scsmp2/Makefile
+          tests/cfour/psi-rhf-mp3/Makefile
+          tests/cfour/psi-uhf-mp3/Makefile
+          tests/cfour/psi-mp4/Makefile
+          tests/cfour/sp-rohf-ccsd-ao/Makefile
+          tests/cfour/sp-rohf-ccsd_t_-ao/Makefile
+          tests/cfour/sp-rohf-ccsd_t_-ao-ecc/Makefile
+          tests/cfour/sp-rohf-ccsd_t_-fc/Makefile
+          tests/cfour/opt-rhf-ccsd_t_-ecc/Makefile
+          tests/cfour/opt-rhf-ccsd_t_/Makefile
+          tests/cfour/opt-rhf-mp2/Makefile
+          tests/cfour/opt-rhf-scf/Makefile
+          tests/cfour/puream/Makefile
+          tests/cfour/pywrap-cbs1/Makefile
+          tests/cfour/mints5-grad/Makefile
+          tests/cfour/psi-a24-grad/Makefile
+          tests/cfour/psi-ghost-grad/Makefile
+          tests/cfour/scf4/Makefile
+          tests/cfour/mp2-1/Makefile
+          tests/cfour/pywrap-db1/Makefile
+          tests/cfour/pywrap-basis/Makefile
+          tests/cfour/dfmp2-1/Makefile
+          tests/cfour/kw-1/Makefile
+          tests/cfour/kw-2/Makefile
+          tests/cfour/kw-3/Makefile
+          tests/cfour/kw-4/Makefile
+          tests/cfour/kw-5/Makefile
+          tests/cfour/kw-6/Makefile
+          tests/cfour/kw-7/Makefile
+          tests/cfour/kw-8/Makefile
           plugins/Makefile
           plugins/aointegrals/Makefile
           plugins/backtrans/Makefile

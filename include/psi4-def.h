@@ -28,10 +28,12 @@
 #include <psi4-dec.h>
 
 namespace psi {
-  FILE *outfile;
+  //FILE *outfile;
   char *psi_file_prefix;
   std::string outfile_name;
+  boost::shared_ptr<worldcomm> WorldComm;
+  boost::shared_ptr<PsiOutStream> outfile;
+  std::string restart_id;
 }
-
 #endif
 

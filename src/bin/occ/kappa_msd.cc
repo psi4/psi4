@@ -31,7 +31,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::kappa_msd()
 { 
-//fprintf(outfile,"\n kappa_msd is starting... \n"); fflush(outfile);
+//outfile->Printf("\n kappa_msd is starting... \n"); 
 
 if (reference_ == "RESTRICTED") {
         // Get kappa
@@ -158,7 +158,7 @@ else if (reference_ == "UNRESTRICTED") {
         }
       
 }// end if (reference_ == "UNRESTRICTED") 
- //fprintf(outfile,"\n kappa_msd done. \n"); fflush(outfile);
+ //outfile->Printf("\n kappa_msd done. \n"); 
 	
 }// end main
 }} // End Namespaces

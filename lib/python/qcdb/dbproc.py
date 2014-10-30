@@ -30,7 +30,7 @@ import ast
 
 
 def useful():
-    print("in qcdb.useful()")
+    print "in qcdb.useful()"
     return 'qcdb successfully accessed'
 
 
@@ -50,8 +50,7 @@ def dictify_database_docstrings():
     """
 
     """
-    db_path = os.path.expanduser('~loriab/linux/qcdb/databases')
-    sys.path.append(db_path)
+    db_path = os.path.dirname(__file__) + '/../databases'
 
     DSD = {}
     module_choices = []

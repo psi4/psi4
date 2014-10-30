@@ -76,7 +76,7 @@ if (reference_ == "RESTRICTED") {
      global_dpd_->buf4_close(&Tau);
      global_dpd_->buf4_close(&Tss);
      
-     if (print_ > 4) global_dpd_->buf4_print(&T, outfile, 1);
+     if (print_ > 4) global_dpd_->buf4_print(&T, "outfile", 1);
      global_dpd_->buf4_close(&T);
 
 
@@ -184,7 +184,7 @@ else if (reference_ == "UNRESTRICTED") {
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
     global_dpd_->buf4_dirprd(&D, &T);
     global_dpd_->buf4_close(&D);
-    if (print_ > 1) global_dpd_->buf4_print(&T, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&T, "outfile", 1);
     global_dpd_->buf4_close(&T);
     
     
@@ -203,7 +203,7 @@ else if (reference_ == "UNRESTRICTED") {
                   ID("[o,o]"), ID("[v,v]"), 0, "T2_1 <oo|vv>");
     global_dpd_->buf4_dirprd(&D, &T);
     global_dpd_->buf4_close(&D);
-    if (print_ > 1) global_dpd_->buf4_print(&T, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&T, "outfile", 1);
     global_dpd_->buf4_close(&T);
     
     
@@ -222,7 +222,7 @@ else if (reference_ == "UNRESTRICTED") {
                   ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
     global_dpd_->buf4_dirprd(&D, &T);
     global_dpd_->buf4_close(&D);
-    if (print_ > 1) global_dpd_->buf4_print(&T, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&T, "outfile", 1);
     global_dpd_->buf4_close(&T);
     
     

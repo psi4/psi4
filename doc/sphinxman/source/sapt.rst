@@ -10,7 +10,7 @@
 SAPT: Symmetry-Adapted Perturbation Theory
 ==========================================
 
-.. codeauthor:: Edward G. Hohenstein
+.. codeauthor:: Edward G. Hohenstein and Rob M. Parrish
 .. sectionauthor:: Edward G. Hohenstein
 
 *Module:* :ref:`Keywords <apdx:sapt>`, :ref:`PSI Variables <apdx:sapt_psivar>`, :source:`LIBSAPT_SOLVER <src/lib/libsapt_solver>`
@@ -19,6 +19,12 @@ SAPT: Symmetry-Adapted Perturbation Theory
    |Psifour| gives (very obviously) wrong answers for SAPT computations 
    when the specification is in Z-matrix format. Use a Cartesian representation 
    to avoid this problem.
+
+.. caution:: In early versions (notably |Psifour| alpha circa 2011
+   and before), frozen core was implemented incompletely and for
+   only selected terms. Comparisons with papers published using early
+   |PSIfour| SAPT code may show discrepancies of 0.01-0.10 kcal/mol in
+   individual terms, particularly E_{exch}^{(11)} and E_{exch}^{(12)}.
 
 Symmetry-adapted perturbation theory (SAPT) provides a means of directly
 computing the noncovalent interaction between two molecules, that is, the
@@ -67,7 +73,10 @@ subscript, :math:`resp`, indicates that orbital relaxation effects are included.
    :label: SAPT2p3
 
 A thorough analysis of the performance of these truncations of SAPT can be
-found in a review by Hohenstein and Sherrill [Hohenstein:2012:WIREs]_.
+found in a review by Hohenstein and Sherrill [Hohenstein:2012:WIREs]_,
+and a systematic study of the accuracy of these truncations (with and 
+without an improved CCD treatment of dispersion) usng different basis sets
+is reported in [Parker:2014:094106]_.
 
 The SAPT module relies entirely on the density-fitting approximation
 of the two-electron integrals. The factorization of the SAPT energy
@@ -149,7 +158,10 @@ Generally speaking, SAPT0 should be applied to large systems or large data
 sets. The performance of SAPT0 relies entirely on error cancellation, which
 seems to be optimal with a truncated aug-cc-pVDZ basis, namely,
 jun-cc-pVDZ (which we have referred to in previous work as
-aug-cc-pVDZ').
+aug-cc-pVDZ').  We do not recommend using SAPT0 with large basis sets
+like aug-cc-pVTZ.  A systematic study of the accuracy of SAPT0 and other SAPT 
+truncations, using different basis sets, is reported in 
+[Parker:2014:094106]_.
 The SAPT module has been used to perform SAPT0 computations with over
 200 atoms and 2800 basis functions; this code should be scalable to 4000
 basis functions. Publications resulting from the use of the SAPT0 code 
@@ -194,11 +206,22 @@ of SAPT2, SAPT2+, SAPT2+(3), and SAPT2+3 energies. Publications resulting
 from the use of the higher-order SAPT code should cite the following: 
 [Hohenstein:2010:014101]_.
 
+For methods SAPT2+ and above, one can replace the many-body treatment of
+dispersion by an improved method based on coupled-cluster doubles (CCD).
+This approach tends to give good improvements when dispersion effects
+are very large, as in the PCCP dimer (see [Hohenstein:2011:2842]_).
+As shown in [Parker:2014:094106]_, whether or not CCD dispersion offers
+more accurate interaction energies tends to depend on the SAPT truncation
+and basis set employed, due to cancellations of errors.  Thanks to
+natural orbital methods [Parrish:2013:174102]_, the SAPT code in Psi
+is able to include CCD dispersion with only a modest additional cost.
+Computations employing CCD dispersion should cite [Parrish:2013:174102]_.
+
 A brief note on memory usage: the higher-order SAPT code assumes that
 certain quantities can be held in core. This code requires sufficient
-memory to hold :math:`3o^2v^2+v^2N_{aux}` arrays in core. With this requirement 
-computations on the adenine-thymine complex can be performed with an
-aug-cc-pVTZ basis in less than 64GB of memory.
+memory to hold :math:`3o^2v^2+v^2N_{aux}` arrays in core. With this
+requirement computations on the adenine-thymine complex can be performed
+with an aug-cc-pVTZ basis in less than 64GB of memory.
 
 Higher-order SAPT is treated separately from the higly optimized SAPT0
 code, therefore, higher-order SAPT uses a separate set of keywords. 

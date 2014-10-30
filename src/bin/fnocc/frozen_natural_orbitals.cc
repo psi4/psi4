@@ -43,6 +43,7 @@
 #include<lib3index/dftensor.h>
 #include<lib3index/cholesky.h>
 #include <libmints/sieve.h>
+#include<libqt/qt.h>
 
 #include<libdpd/dpd.h>
 #define ID(x) ints->DPD_ID(x)
@@ -93,18 +94,18 @@ double FrozenNO::compute_energy(){
 void FrozenNO::ComputeNaturalOrbitals(){
     tstart();
 
-    fflush(outfile);
-    fprintf(outfile,"\n\n");
-    fprintf(outfile, "        *******************************************************\n");
-    fprintf(outfile, "        *                                                     *\n");
-    fprintf(outfile, "        *               Frozen Natural Orbitals               *\n");
-    fprintf(outfile, "        *                                                     *\n");
-    fprintf(outfile, "        *******************************************************\n");
-    fprintf(outfile,"\n\n");
-    fflush(outfile);
+    
+    outfile->Printf("\n\n");
+    outfile->Printf( "        *******************************************************\n");
+    outfile->Printf( "        *                                                     *\n");
+    outfile->Printf( "        *               Frozen Natural Orbitals               *\n");
+    outfile->Printf( "        *                                                     *\n");
+    outfile->Printf( "        *******************************************************\n");
+    outfile->Printf("\n\n");
+    
 
-    fprintf(outfile,"        ==> Transform (OV|OV) integrals <==\n");
-    fprintf(outfile,"\n");
+    outfile->Printf("        ==> Transform (OV|OV) integrals <==\n");
+    outfile->Printf("\n");
 
     std::vector<shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
@@ -118,9 +119,9 @@ void FrozenNO::ComputeNaturalOrbitals(){
     ints->initialize();
     ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
 
-    fprintf(outfile,"\n");
-    fprintf(outfile,"        ==> Build MP2 amplitudes, OPDM, and NOs <==\n");
-    fprintf(outfile,"\n");
+    outfile->Printf("\n");
+    outfile->Printf("        ==> Build MP2 amplitudes, OPDM, and NOs <==\n");
+    outfile->Printf("\n");
 
     dpdbuf4 amps1,amps2;
     boost::shared_ptr<PSIO> psio = _default_psio_lib_;
@@ -216,11 +217,11 @@ void FrozenNO::ComputeNaturalOrbitals(){
     global_dpd_->buf4_close(&amps1);
     global_dpd_->buf4_close(&amps2);
 
-    fprintf(outfile,"        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
-    fprintf(outfile,"        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
-    fprintf(outfile,"        MP2 correlation energy:          %20.12lf\n",emp2_os+emp2_ss);
-    fprintf(outfile,"      * MP2 total energy:                %20.12lf\n",emp2_os+emp2_ss+escf);
-    fprintf(outfile,"\n");
+    outfile->Printf("        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
+    outfile->Printf("        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
+    outfile->Printf("        MP2 correlation energy:          %20.12lf\n",emp2_os+emp2_ss);
+    outfile->Printf("      * MP2 total energy:                %20.12lf\n",emp2_os+emp2_ss+escf);
+    outfile->Printf("\n");
 
     // scale amps by denominator
     global_dpd_->buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
@@ -329,8 +330,8 @@ void FrozenNO::ComputeNaturalOrbitals(){
                 if ( vec[a] > cutoff ) newVirOrbsPI[h]++;
             }
         }
-        fprintf(outfile,"        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
-        fprintf(outfile,"\n");
+        outfile->Printf("        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
+        outfile->Printf("\n");
     }else{
         // use user-specified number of virtuals
         for (int h = 0; h < nirrep_; h++) {
@@ -338,13 +339,13 @@ void FrozenNO::ComputeNaturalOrbitals(){
         }
     }
 
-    fprintf(outfile,"        No. virtuals per irrep (original):  [");
-    for (int h = 0; h < nirrep_; h++) fprintf(outfile,"%4i",aVirOrbsPI[h]);
-    fprintf(outfile," ]\n");
-    fprintf(outfile,"        No. virtuals per irrep (truncated): [");
-    for (int h = 0; h < nirrep_; h++) fprintf(outfile,"%4i",newVirOrbsPI[h]);
-    fprintf(outfile," ]\n");
-    fprintf(outfile,"\n");
+    outfile->Printf("        No. virtuals per irrep (original):  [");
+    for (int h = 0; h < nirrep_; h++) outfile->Printf("%4i",aVirOrbsPI[h]);
+    outfile->Printf(" ]\n");
+    outfile->Printf("        No. virtuals per irrep (truncated): [");
+    for (int h = 0; h < nirrep_; h++) outfile->Printf("%4i",newVirOrbsPI[h]);
+    outfile->Printf(" ]\n");
+    outfile->Printf("\n");
 
     int nvirt_no = 0;
     int nvirt    = 0;
@@ -352,8 +353,8 @@ void FrozenNO::ComputeNaturalOrbitals(){
         nvirt    += aVirOrbsPI[h];
         nvirt_no += newVirOrbsPI[h];
     }
-    fprintf(outfile,"        Retaining %i of %i virtual orbitals.\n",nvirt_no,nvirt);
-    fprintf(outfile,"\n");
+    outfile->Printf("        Retaining %i of %i virtual orbitals.\n",nvirt_no,nvirt);
+    outfile->Printf("\n");
 
     // transform Fock matrix to truncated NO basis
 
@@ -454,8 +455,8 @@ double DFFrozenNO::compute_energy(){
 
 void DFFrozenNO::ThreeIndexIntegrals() {
 
-  fprintf(outfile,"  ==> 3-index integrals <==\n");
-  fprintf(outfile,"\n");
+  outfile->Printf("  ==> 3-index integrals <==\n");
+  outfile->Printf("\n");
 
   long int o = ndoccact;
   long int v = nvirt;
@@ -516,7 +517,7 @@ void DFFrozenNO::ThreeIndexIntegrals() {
       psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
       psio->write_entry(PSIF_DCC_QSO,"Qso CC",(char*)&Qso[0][0],nQ*nso*nso*sizeof(double));
       psio->close(PSIF_DCC_QSO,1);
-      fprintf(outfile,"        Number of auxiliary functions:       %5li\n",nQ);
+      outfile->Printf("        Number of auxiliary functions:       %5li\n",nQ);
 
       // stick nQ in process environment so ccsd can know it
       Process::environment.globals["NAUX (CC)"] = (double)nQ;
@@ -526,10 +527,10 @@ void DFFrozenNO::ThreeIndexIntegrals() {
 
       // read integrals from disk if they were generated in the SCF
       if ( options_.get_str("SCF_TYPE") == "CD" ) {
-          fprintf(outfile,"        Reading Cholesky vectors from disk ...\n");
+          outfile->Printf("        Reading Cholesky vectors from disk ...\n");
           nQ = Process::environment.globals["NAUX (SCF)"];
-          fprintf(outfile,"        Cholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
-          fprintf(outfile,"        Number of Cholesky vectors:          %5li\n",nQ);
+          outfile->Printf("        Cholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
+          outfile->Printf("        Number of Cholesky vectors:          %5li\n",nQ);
 
           // ntri comes from sieve above
           boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ,ntri));
@@ -555,7 +556,7 @@ void DFFrozenNO::ThreeIndexIntegrals() {
       }else {
 
           // generate Cholesky 3-index integrals
-          fprintf(outfile,"        Generating Cholesky vectors ...\n");
+          outfile->Printf("        Generating Cholesky vectors ...\n");
           boost::shared_ptr<BasisSet> primary = basisset();
           boost::shared_ptr<IntegralFactory> integral (new IntegralFactory(primary,primary,primary,primary));
           double tol = options_.get_double("CHOLESKY_TOLERANCE");
@@ -569,15 +570,15 @@ void DFFrozenNO::ThreeIndexIntegrals() {
           psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
           psio->write_entry(PSIF_DCC_QSO,"Qso CC",(char*)&Lp[0][0],nQ*nso*nso*sizeof(double));
           psio->close(PSIF_DCC_QSO,1);
-          fprintf(outfile,"        Cholesky decomposition threshold: %8.2le\n", tol);
-          fprintf(outfile,"        Number of Cholesky vectors:          %5li\n",nQ);
+          outfile->Printf("        Cholesky decomposition threshold: %8.2le\n", tol);
+          outfile->Printf("        Number of Cholesky vectors:          %5li\n",nQ);
 
       }
 
       // stick nQ in process environment so ccsd can know it
       Process::environment.globals["NAUX (CC)"] = (double)nQ;
   }
-  fprintf(outfile,"\n");
+  outfile->Printf("\n");
 }
 
 /* 
@@ -585,8 +586,8 @@ void DFFrozenNO::ThreeIndexIntegrals() {
 */
 void DFFrozenNO::FourIndexIntegrals() {
 
-    fprintf(outfile,"  ==> Build 4-index ERI's from 3-index integrals <==\n");
-    fprintf(outfile,"\n");
+    outfile->Printf("  ==> Build 4-index ERI's from 3-index integrals <==\n");
+    outfile->Printf("\n");
 
     long int o  = ndoccact;
     long int v  = nvirt;
@@ -635,8 +636,8 @@ void DFFrozenNO::FourIndexIntegrals() {
                 for (int s = r; s < nmo; s++) {
                     int rs = Position(r,s);
                     if ( rs > pq ) continue;
-                    double val = F_DDOT(nQ,Qmo+pq,nmo*(nmo+1)/2,Qmo+rs,nmo*(nmo+1)/2);
-                    iwl->write_value(p, q, r, s, val, false, outfile, 0);
+                    double val = C_DDOT(nQ,Qmo+pq,nmo*(nmo+1)/2,Qmo+rs,nmo*(nmo+1)/2);
+                    iwl->write_value(p, q, r, s, val, false, "outfile", 0);
                 }
             }
         }
@@ -653,10 +654,10 @@ void DFFrozenNO::FourIndexIntegrals() {
  */
 void DFFrozenNO::ComputeNaturalOrbitals(){
 
-  fflush(outfile);
-  fprintf(outfile, "  ==> Frozen Natural Orbitals <==\n");
-  fprintf(outfile,"\n");
-  fflush(outfile);
+  
+  outfile->Printf( "  ==> Frozen Natural Orbitals <==\n");
+  outfile->Printf("\n");
+  
 
   long int o      = ndoccact;
   long int v      = nvirt;
@@ -679,7 +680,7 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
   // transform Qso -> Qov:
   TransformQ(nQ,tmp2);
   double * Qov = (double*)malloc(o*v*nQ*sizeof(double));
-  F_DCOPY(o*v*nQ,tmp2,1,Qov,1);
+  C_DCOPY(o*v*nQ,tmp2,1,Qov,1);
   free(tmp2);
 
   if ( memory < 8L*(o*o*v*v+o*v*nQ) ) {
@@ -732,8 +733,8 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
   }
   emp2 = emp2_os + emp2_ss;
 
-  fprintf(outfile,"        Doubles contribution to MP2 energy in full space: %20.12lf\n",emp2);
-  fprintf(outfile,"\n");
+  outfile->Printf("        Doubles contribution to MP2 energy in full space: %20.12lf\n",emp2);
+  outfile->Printf("\n");
 
   Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = emp2_os;
   Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = emp2_ss;
@@ -762,7 +763,7 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
 
   // reorder transformation matrix:
   for (long int i=0; i<v; i++){
-      F_DCOPY(v,Dab+(v-1-i)*v,1,temp+i*v,1);
+      C_DCOPY(v,Dab+(v-1-i)*v,1,temp+i*v,1);
   }
 
   // establish cutoff for frozen virtuals
@@ -772,20 +773,20 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
   if (!options_["ACTIVE_NAT_ORBS"].has_changed()) {
       // use occupancy tolerance:
       for (long int i=0; i<v; i++) if (eigvalDab[i]>cutoff) nvirt_no++;
-      fprintf(outfile,"        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
-      fprintf(outfile,"\n");
+      outfile->Printf("        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
+      outfile->Printf("\n");
   }else{
       // use user-specified number of virtuals
       nvirt_no = (long int)options_["ACTIVE_NAT_ORBS"][0].to_double();
   }
 
-  fprintf(outfile,"        Number of virtual orbitals in original space:  %5li\n",v);
-  fprintf(outfile,"        Number of virtual orbitals in truncated space: %5li\n",nvirt_no);
-  fprintf(outfile,"\n");
+  outfile->Printf("        Number of virtual orbitals in original space:  %5li\n",v);
+  outfile->Printf("        Number of virtual orbitals in truncated space: %5li\n",nvirt_no);
+  outfile->Printf("\n");
 
   // transform Fock matrix to MP2 NO basis
   memset((void*)newFock,'\0',v*v*sizeof(double));
-  F_DCOPY(v,F+ndoccact,1,newFock,v+1);
+  C_DCOPY(v,F+ndoccact,1,newFock,v+1);
   F_DGEMM('n','n',v,nvirt_no,v,1.0,newFock,v,temp,v,0.0,Dab,v);
   F_DGEMM('t','n',nvirt_no,nvirt_no,v,1.0,temp,v,Dab,v,0.0,newFock,nvirt_no);
 
@@ -796,7 +797,7 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
   F_DGEMM('n','n',v,nvirt_no,nvirt_no,1.0,temp,v,newFock,nvirt_no,0.0,Dab,v);
 
   // put orbital energies back in F - doesn't matter in this implementation
-  F_DCOPY(nvirt_no,neweps,1,F+ndoccact,1);
+  C_DCOPY(nvirt_no,neweps,1,F+ndoccact,1);
 
   // free memory before using libtrans
   free(temp);
@@ -912,12 +913,12 @@ void DFFrozenNO::BuildFock(long int nQ,double*Qso,double*F) {
 
     // Transform Qso to MO basis:
     double * tmp = (double*)malloc(nso*nso*nQ*sizeof(double));
-    F_DCOPY(nso*nso*nQ,Qso,1,tmp,1);
+    C_DCOPY(nso*nso*nQ,Qso,1,tmp,1);
     F_DGEMM('n','n',nmo,nso*nQ,nso,1.0,&Cap[0][0],nmo,tmp,nso,0.0,Qso,nmo);
     #pragma omp parallel for schedule (static)
     for (long int q = 0; q < nQ; q++) {
         for (long int mu = 0; mu < nso; mu++) {
-            F_DCOPY(nmo,Qso+q*nso*nmo+mu*nmo,1,tmp+q*nso*nmo+mu,nmo);
+            C_DCOPY(nmo,Qso+q*nso*nmo+mu*nmo,1,tmp+q*nso*nmo+mu,nmo);
         }
     }
     F_DGEMM('n','n',nmo,nmo*nQ,nso,1.0,&Cap[0][0],nmo,tmp,nso,0.0,Qso,nmo);
@@ -966,7 +967,7 @@ void DFFrozenNO::BuildFock(long int nQ,double*Qso,double*F) {
     for (long int i = 0; i < nmo; i++) {
         for (long int j = 0; j < nmo; j++) {
             double dum = h[i*nmo+j] - temp3[i*nmo+j];
-            dum += F_DDOT(nQ,temp2,1,Qso + i*nmo + j , nmo*nmo);
+            dum += C_DDOT(nQ,temp2,1,Qso + i*nmo + j , nmo*nmo);
             F[i*nmo+j] = dum;
         }
     }

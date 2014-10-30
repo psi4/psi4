@@ -29,7 +29,7 @@
 #include <libciomr/libciomr.h>
 #include "iwl.h"
 #include "iwl.hpp"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
@@ -37,7 +37,7 @@ namespace psi {
 #define INDEX(i,j) ((i>j) ? (((i)*((i)+1))/2+(j)) : (((j)*((j)+1))/2+(i)))
   
 int IWL::read_all_mp2r12a(double *ints, int *ioff_lt, int *ioff_rt, 
-    int bra_ket_symm, int *, int printflg, FILE *out)
+    int bra_ket_symm, int *, int printflg, std::string out)
 {
     int lastbuf;
     Label *lblptr;
@@ -49,7 +49,8 @@ int IWL::read_all_mp2r12a(double *ints, int *ioff_lt, int *ioff_rt,
     valptr = values_;
 
     lastbuf = lastbuf_;
-
+    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+          boost::shared_ptr<OutFile>(new OutFile(out)));
     for (idx=4*idx_; idx_ < inbuf_; idx_++) {
         p = (int) lblptr[idx++];
         q = (int) lblptr[idx++];
@@ -71,7 +72,7 @@ int IWL::read_all_mp2r12a(double *ints, int *ioff_lt, int *ioff_rt,
         }
 
         if (printflg) 
-            fprintf(out, "<%2d %2d %2d %2d [%2ld][%2ld] [[%3ld]] = %20.10f\n",
+            printer->Printf( "<%2d %2d %2d %2d [%2ld][%2ld] [[%3ld]] = %20.10f\n",
             p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
 
     } /*! end loop through current buffer */
@@ -102,7 +103,7 @@ int IWL::read_all_mp2r12a(double *ints, int *ioff_lt, int *ioff_rt,
             }
 
             if (printflg) 
-                fprintf(out, "<%d %d %d %d [%ld][%ld] [[%ld]] = %20.10f\n",
+                printer->Printf( "<%d %d %d %d [%ld][%ld] [[%ld]] = %20.10f\n",
                 p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
 
         } /*! end loop through current buffer */
@@ -138,9 +139,12 @@ int IWL::read_all_mp2r12a(double *ints, int *ioff_lt, int *ioff_rt,
 */
 int iwl_buf_rd_all_mp2r12a(struct iwlbuf *Buf, double *ints,
 			   int *ioff_lt, int *ioff_rt, int bra_ket_symm, 
-                           int *, int printflg, FILE *out)
+                           int *, int printflg, std::string out)
 {
-  int lastbuf;
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
+
+   int lastbuf;
   Label *lblptr;
   Value *valptr;
   int idx, p, q, r, s;
@@ -172,7 +176,7 @@ int iwl_buf_rd_all_mp2r12a(struct iwlbuf *Buf, double *ints,
     }
     
     if (printflg) 
-      fprintf(out, "<%2d %2d %2d %2d [%2ld][%2ld] [[%3ld]] = %20.10f\n",
+      printer->Printf( "<%2d %2d %2d %2d [%2ld][%2ld] [[%3ld]] = %20.10f\n",
 	      p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
     
   } /*! end loop through current buffer */
@@ -203,7 +207,7 @@ int iwl_buf_rd_all_mp2r12a(struct iwlbuf *Buf, double *ints,
       }
       
       if (printflg) 
-	fprintf(out, "<%d %d %d %d [%ld][%ld] [[%ld]] = %20.10f\n",
+	printer->Printf( "<%d %d %d %d [%ld][%ld] [[%ld]] = %20.10f\n",
 		p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
       
     } /*! end loop through current buffer */

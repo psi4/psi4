@@ -123,6 +123,9 @@ void amp_write_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int length);
 void amp_write_UHF(dpdfile2 *, dpdfile2 *, dpdbuf4 *, dpdbuf4 *, dpdbuf4 *, int length);
 void amp_write_ROHF(dpdfile2 *, dpdfile2 *, dpdbuf4 *, dpdbuf4 *, dpdbuf4 *, int length);
 
+void overlap(int C_irr, int current);
+void overlap_stash(int C_irr);
+
 void diag(void) {
   dpdfile2 CME, CME2, Cme, SIA, Sia, RIA, Ria, DIA, Dia, tIA, tia, LIA, Lia;
   dpdbuf4 CMNEF, Cmnef, CMnEf, SIJAB, Sijab, SIjAb, RIJAB, Rijab, RIjAb, RIjbA;
@@ -160,7 +163,7 @@ timer_off("HBAR_EXTRA");
   if (params.wfn == "EOM_CC3")
     cc3_stage = 0; /* do EOM_CCSD first */
 
-  fprintf(outfile,"Symmetry of ground state: %s\n", moinfo.irr_labs[moinfo.sym]);
+  outfile->Printf("Symmetry of ground state: %s\n", moinfo.irr_labs[moinfo.sym]);
   /* loop over symmetry of C's */
   for (C_irr=0; C_irr<moinfo.nirreps; ++C_irr) {
 
@@ -173,10 +176,10 @@ timer_off("HBAR_EXTRA");
 #ifdef TIME_CCEOM
 timer_on("INIT GUESS");
 #endif
-    fprintf(outfile,"Symmetry of excited state: %s\n", moinfo.irr_labs[moinfo.sym ^ C_irr]);
-    fprintf(outfile,"Symmetry of right eigenvector: %s\n",moinfo.irr_labs[C_irr]);
+    outfile->Printf("Symmetry of excited state: %s\n", moinfo.irr_labs[moinfo.sym ^ C_irr]);
+    outfile->Printf("Symmetry of right eigenvector: %s\n",moinfo.irr_labs[C_irr]);
     if (params.eom_ref == 0)
-      fprintf(outfile,"Seeking states with multiplicity of %d\n", eom_params.mult);
+      outfile->Printf("Seeking states with multiplicity of %d\n", eom_params.mult);
 
     /* zero out files between irreps */
     if (!first_irrep) {
@@ -201,7 +204,7 @@ timer_on("INIT GUESS");
     }
     else if(params.local) {
       if(eom_params.guess == "DISK") { /* only do this if we don't already have guesses on disk */
-	fprintf(outfile, "\n\tUsing C1 vectors on disk as initial guesses.\n");
+	outfile->Printf( "\n\tUsing C1 vectors on disk as initial guesses.\n");
       }
       else {
 	local_guess();
@@ -211,15 +214,15 @@ timer_on("INIT GUESS");
     else {
       if(eom_params.guess == "SINGLES") {
 	/* Diagonalize Hbar-SS to obtain initial CME and Cme guess */
-	fprintf(outfile,"Obtaining initial guess from singles-singles block of Hbar...");
+	outfile->Printf("Obtaining initial guess from singles-singles block of Hbar...");
 	diagSS(C_irr);
-        if (!eom_params.print_singles) fprintf(outfile,"Done.\n\n");
+        if (!eom_params.print_singles) outfile->Printf("Done.\n\n");
       }
 //      else if(eom_params.guess == "INPUT") {
 //        read_guess(C_irr);
 //      }
       else if(eom_params.guess == "DISK" && params.ref == 0) {
-        fprintf(outfile, "Using C1 vectors on disk as initial guesses.\n");
+        outfile->Printf( "Using C1 vectors on disk as initial guesses.\n");
         /* normalize first guess */
         sprintf(lbl, "%s %d", "CME", 0);
         global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
@@ -243,14 +246,14 @@ timer_on("INIT GUESS");
         }
 #ifdef EOM_DEBUG
         /* check initial guesses - overlap matrix */
-        fprintf(outfile,"Checking overlap of orthogonalized initial guesses\n");
+        outfile->Printf("Checking overlap of orthogonalized initial guesses\n");
         for(i=0; i < eom_params.cs_per_irrep[C_irr]; i++) {
           sprintf(lbl, "%s %d", "CME", i);
           dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
           for(j=0; j < eom_params.cs_per_irrep[C_irr]; j++) {
             sprintf(lbl, "%s %d", "CME", j);
             dpd_file2_init(&CME2, EOM_CME, C_irr, 0, 1, lbl);
-            fprintf(outfile,"C[%d][%d] = %15.10lf\n",i,j, 2.0 * dpd_file2_dot(&CME, &CME2));
+            outfile->Printf("C[%d][%d] = %15.10lf\n",i,j, 2.0 * dpd_file2_dot(&CME, &CME2));
             dpd_file2_close(&CME2);
           }
           dpd_file2_close(&CME);
@@ -258,7 +261,7 @@ timer_on("INIT GUESS");
 #endif
       }
       else {
-        fprintf(outfile, "Invalid initial guess method.\n");
+        outfile->Printf( "Invalid initial guess method.\n");
         exit(PSI_RETURN_FAILURE);
       }
     }
@@ -287,7 +290,7 @@ timer_off("INIT GUESS");
         dpd_file2_close(&Cme);
       }
     }
-    fflush(outfile);
+    
 #endif
 
     /* Setup and zero initial C2 and S2 vector to go with Hbar_SS */
@@ -313,7 +316,7 @@ timer_off("INIT GUESS");
     vectors_per_root = eom_params.vectors_per_root; /* used for CCSD */
 
     while ((keep_going == 1) && (iter < eom_params.max_iter)) {
-      fprintf(outfile,"Iter=%-4d L=%-4d", iter+1, L); fflush(outfile);
+      outfile->Printf("Iter=%-4d L=%-4d", iter+1, L); 
       keep_going = 0;
       numCs = L_start_iter = L;
       num_converged = 0;
@@ -405,7 +408,7 @@ timer_off("INIT GUESS");
           global_dpd_->buf4_close(&SIJAB);
           global_dpd_->buf4_close(&Sijab);
           global_dpd_->buf4_close(&SIjAb);
-          fflush(outfile);
+          
         }
       }
 
@@ -478,7 +481,7 @@ timer_off("INIT GUESS");
         for (j=0;j<L;++j) {
 				  if (i<already_sigma && j<already_sigma)
 					  continue;
-           /* fprintf(outfile,"Computing G[%d][%d].\n",i,j); */
+           /* outfile->Printf("Computing G[%d][%d].\n",i,j); */
 
           if(params.eom_ref == 0) {
             sprintf(lbl, "%s %d", "SIA", j);
@@ -516,7 +519,7 @@ timer_off("INIT GUESS");
             global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
             tval += r2ab = global_dpd_->buf4_dot(&CMnEf, &SIjAb);
             global_dpd_->buf4_close(&SIjAb);
-            /* fprintf(outfile,"r2aa %12.7lf r2bb %12.7lf r2ab %12.7lf\n", r2aa, r2bb, r2ab); */
+            /* outfile->Printf("r2aa %12.7lf r2bb %12.7lf r2ab %12.7lf\n", r2aa, r2bb, r2ab); */
           }
           else if (params.eom_ref == 2) {
             sprintf(lbl, "%s %d", "SIA", j);
@@ -559,7 +562,7 @@ timer_off("INIT GUESS");
       timer_off("BUILD G");
 #endif /* timing */
 #ifdef EOM_DEBUG
-      fprintf(outfile,"The G Matrix\n");
+      outfile->Printf("The G Matrix\n");
       mat_print(G, L, L, outfile);
 #endif
       for (i=0;i<L;++i) {
@@ -594,7 +597,7 @@ timer_off("INIT GUESS");
         global_dpd_->buf4_init(&Rijab, PSIF_EOM_R, C_irr, 12, 17, 12, 17, 0, "Rijab");
         global_dpd_->buf4_init(&RIjAb, PSIF_EOM_R, C_irr, 22, 28, 22, 28, 0, "RIjAb");
       }
-      fprintf(outfile,"  Root    EOM Energy     Delta E   Res. Norm    Conv?\n");
+      outfile->Printf("  Root    EOM Energy     Delta E   Res. Norm    Conv?\n");
       for (k=0;k<eom_params.cs_per_irrep[C_irr];++k) {
 #ifdef TIME_CCEOM
       timer_on("CALC RES");
@@ -742,7 +745,7 @@ timer_off("INIT GUESS");
           dpd_buf4_close(&RIjbA);
         }
         else norm = norm_C(&RIA, &Ria, &RIJAB, &Rijab, &RIjAb);
-        fprintf(outfile,"Norm of residual vector %d  before precondition %18.13lf\n",k,norm);
+        outfile->Printf("Norm of residual vector %d  before precondition %18.13lf\n",k,norm);
 #endif
 #ifdef TIME_CCEOM
       timer_off("CALC RES");
@@ -763,14 +766,14 @@ timer_off("INIT GUESS");
         else norm = norm_C(&RIA, &Ria, &RIJAB, &Rijab, &RIjAb);
 
 #ifdef EOM_DEBUG
-        fprintf(outfile,"Norm of residual vector %d  after precondition %18.13lf\n",k,norm);
+        outfile->Printf("Norm of residual vector %d  after precondition %18.13lf\n",k,norm);
 #endif
 
-        fprintf(outfile,"%22d%15.10lf%11.2e%12.2e",k+1,lambda[k], lambda[k]-lambda_old[k], norm);
+        outfile->Printf("%22d%15.10lf%11.2e%12.2e",k+1,lambda[k], lambda[k]-lambda_old[k], norm);
 
         /* Check for convergence and add new vector if not converged */
         if ( (norm > eom_params.residual_tol) || (fabs(lambda[k]-lambda_old[k]) > eom_params.eval_tol) ) {
-          fprintf(outfile,"%7s\n","N");
+          outfile->Printf("%7s\n","N");
 
           if(params.eom_ref == 0) precondition_RHF(&RIA, &RIjAb, lambda[k]);
           else precondition(&RIA, &Ria, &RIJAB, &Rijab, &RIjAb, lambda[k]);
@@ -801,14 +804,14 @@ timer_off("INIT GUESS");
           }
 
 #ifdef EOM_DEBUG
-          fprintf(outfile,"Norm of residual vector af preconditioning %18.13lf\n",norm);
+          outfile->Printf("Norm of residual vector af preconditioning %18.13lf\n",norm);
 #endif
 
           if(params.eom_ref == 0) schmidt_add_RHF(&RIA, &RIjAb, &numCs, C_irr);
           else schmidt_add(&RIA, &Ria, &RIJAB, &Rijab, &RIjAb, &numCs, C_irr);
         }
         else {
-          fprintf(outfile,"%7s\n","Y");
+          outfile->Printf("%7s\n","Y");
           ++num_converged;
           converged[k] = 1;
         }
@@ -817,7 +820,7 @@ timer_off("INIT GUESS");
         if ( (params.wfn == "EOM_CC3") && (cc3_stage>0) ) {
           cc3_index = k;
           cc3_eval = lambda[k];
-          /* fprintf(outfile,"Setting CC3 eigenvalue to %15.10lf\n",cc3_eval); */
+          /* outfile->Printf("Setting CC3 eigenvalue to %15.10lf\n",cc3_eval); */
         }
       }
 
@@ -842,7 +845,7 @@ timer_off("INIT GUESS");
           L_old = L;
           L = cc3_index+1;
           if (eom_params.collapse_with_last) L *= 2;
-          fprintf(outfile,"Collapsing to %d vector(s).\n",L);
+          outfile->Printf("Collapsing to %d vector(s).\n",L);
           already_sigma = 0;
           ignore_G_old = 1;
         }
@@ -859,7 +862,7 @@ timer_off("INIT GUESS");
         keep_going = 1;
         /* keep track of number of triples restarts */
         if ( (params.wfn == "EOM_CC3") && (cc3_stage>0) ) {
-          fprintf(outfile,"Change in CC3 energy from last iterated value %15.10lf\n",
+          outfile->Printf("Change in CC3 energy from last iterated value %15.10lf\n",
               cc3_eval - cc3_last_converged_eval);
           cc3_last_converged_eval = cc3_eval;
           ++num_cc3_restarts;
@@ -877,22 +880,22 @@ timer_off("INIT GUESS");
 
       ++iter;
       if (eom_params.restart_eom_cc3 && (cc3_stage==0)) {
-        fprintf(outfile,"Jumping to EOM CC3 iterations\n");
+        outfile->Printf("Jumping to EOM CC3 iterations\n");
         keep_going = 0;
       }
       if ((keep_going == 0) && (iter < eom_params.max_iter)) {
 
         /* for CC3: done with EOM CCSD - now do EOM CC3 */
         if ( (params.wfn == "EOM_CC3") && (cc3_stage == 0) ) {
-          fprintf(outfile, "Completed EOM_CCSD\n");
-          fprintf(outfile,"Collapsing to only %d vector(s).\n", eom_params.cs_per_irrep[C_irr]);
+          outfile->Printf( "Completed EOM_CCSD\n");
+          outfile->Printf("Collapsing to only %d vector(s).\n", eom_params.cs_per_irrep[C_irr]);
           if (!eom_params.restart_eom_cc3) {
             restart(alpha, L, eom_params.cs_per_irrep[C_irr], C_irr, 1,alpha_old,L_old,0);
             save_C_ccsd(eom_params.prop_root, C_irr);
           }
 
           cc3_last_converged_eval = cc3_eval = lambda_old[eom_params.prop_root];
-          fprintf(outfile,"Setting initial CC3 eigenvalue to %15.10lf\n",cc3_eval);
+          outfile->Printf("Setting initial CC3 eigenvalue to %15.10lf\n",cc3_eval);
 
           L_old = L;
           L = eom_params.cs_per_irrep[C_irr];
@@ -907,18 +910,18 @@ timer_off("INIT GUESS");
         else if( (params.wfn == "EOM_CC3") && /* can't trust sigmas yet */
                ( (cc3_stage == 1) || fabs(cc3_eval-cc3_last_converged_eval)>eom_params.eval_tol)) {
           /* for CC3: restart one time if no cc3_restarts have yet been done */
-          if (cc3_stage == 1) fprintf(outfile, "Forcing one restart with sigma recomputation.\n");
-          else fprintf(outfile,"Forcing restart to make sure new sigma vectors give same eigenvalue.\n");
-          fprintf(outfile,"Collapsing to only %d vector(s).\n", cc3_index+1);
+          if (cc3_stage == 1) outfile->Printf( "Forcing one restart with sigma recomputation.\n");
+          else outfile->Printf("Forcing restart to make sure new sigma vectors give same eigenvalue.\n");
+          outfile->Printf("Collapsing to only %d vector(s).\n", cc3_index+1);
           restart(alpha, L, cc3_index+1, C_irr, 1, alpha_old, L_old, 0);
           cc3_eval = lambda_old[cc3_index];
           if (cc3_stage == 1)
-            fprintf(outfile,"Change in CC3 energy from last iterated value %15.10lf\n", cc3_eval - 0.0);
+            outfile->Printf("Change in CC3 energy from last iterated value %15.10lf\n", cc3_eval - 0.0);
           else
-            fprintf(outfile,"Change in CC3 energy from last iterated value %15.10lf\n",
+            outfile->Printf("Change in CC3 energy from last iterated value %15.10lf\n",
               cc3_eval-cc3_last_converged_eval);
           cc3_last_converged_eval = cc3_eval;
-          fprintf(outfile,"Setting old CC3 eigenvalue to %15.10lf\n",cc3_eval);
+          outfile->Printf("Setting old CC3 eigenvalue to %15.10lf\n",cc3_eval);
           keep_going = 1;
           already_sigma = 0;
           ignore_G_old = 1;
@@ -928,16 +931,16 @@ timer_off("INIT GUESS");
         }
         else if (params.wfn == "EOM_CC3") {
           /* for CC3: collapse to one final root and place in location 0 */
-          fprintf(outfile,"Collapsing to only %d vector(s).\n", cc3_index+1);
+          outfile->Printf("Collapsing to only %d vector(s).\n", cc3_index+1);
           restart(alpha, L, cc3_index+1, C_irr, 0, alpha_old, L_old, 0);
           if (cc3_index > 0) restart_with_root(cc3_index, C_irr);
           converged[0] = 1;
           cc3_eval = lambda_old[0] = lambda_old[cc3_index];
-          fprintf(outfile,"Change in CC3 energy from last iterated value %15.10lf\n",
+          outfile->Printf("Change in CC3 energy from last iterated value %15.10lf\n",
               cc3_eval - cc3_last_converged_eval);
         }
         else {
-          fprintf(outfile,"Collapsing to only %d vector(s).\n", eom_params.cs_per_irrep[C_irr]);
+          outfile->Printf("Collapsing to only %d vector(s).\n", eom_params.cs_per_irrep[C_irr]);
           restart(alpha, L, eom_params.cs_per_irrep[C_irr], C_irr, 0, alpha_old, L_old, 0);
         }
       }
@@ -949,16 +952,16 @@ timer_off("INIT GUESS");
     }
     free_block(G_old);
 
-    fprintf(outfile,"\nProcedure converged for %d root(s).\n",num_converged);
+    outfile->Printf("\nProcedure converged for %d root(s).\n",num_converged);
     if (num_converged == eom_params.cs_per_irrep[C_irr]) { }
     else if (iter == eom_params.max_iter) {
-      fprintf(outfile,"\nMaximum number of iterations exceeded, ");
-      fprintf(outfile,"so not all roots converged!\n\n");
+      outfile->Printf("\nMaximum number of iterations exceeded, ");
+      outfile->Printf("so not all roots converged!\n\n");
     }
     else if ( (params.wfn == "EOM_CC3") && (num_converged == 1) ) { }
     else {
-      fprintf(outfile,"\nAlgorithm failure: No vectors could be added, ");
-      fprintf(outfile,"though not all roots converged!\n\n");
+      outfile->Printf("\nAlgorithm failure: No vectors could be added, ");
+      outfile->Printf("though not all roots converged!\n\n");
     }
 
     /* write Cs and energies to RAMPS file */
@@ -970,10 +973,10 @@ timer_off("INIT GUESS");
       rzero(C_irr, converged);
 
     if (num_converged > 0) {
-      fprintf(outfile,"\nFinal Energetic Summary for Converged Roots of Irrep %s\n",
+      outfile->Printf("\nFinal Energetic Summary for Converged Roots of Irrep %s\n",
 	      moinfo.irr_labs[moinfo.sym^C_irr]);
-      fprintf(outfile,"                     Excitation Energy              Total Energy\n");
-      fprintf(outfile,"                (eV)     (cm^-1)     (au)             (au)\n");
+      outfile->Printf("                     Excitation Energy              Total Energy\n");
+      outfile->Printf("                (eV)     (cm^-1)     (au)             (au)\n");
       for (i=0;i<eom_params.cs_per_irrep[C_irr];++i) {
         if (converged[i] == 1) {
           if (!params.full_matrix) totalE =lambda_old[i]+moinfo.eref+moinfo.ecc; 
@@ -990,11 +993,11 @@ timer_off("INIT GUESS");
           s << "CC ROOT " << (num_converged_index+1) << " TOTAL ENERGY";
           Process::environment.globals[s.str()] = totalE;
 					
-          fprintf(outfile,"EOM State %d %10.3lf %10.1lf %14.10lf  %17.12lf\n", ++num_converged_index,
+          outfile->Printf("EOM State %d %10.3lf %10.1lf %14.10lf  %17.12lf\n", ++num_converged_index,
              lambda_old[i]* pc_hartree2ev, lambda_old[i]* pc_hartree2wavenumbers, lambda_old[i], totalE);
 
           /* print out largest components of wavefunction */
-          fprintf(outfile, "\nLargest components of excited wave function #%d:\n", num_converged_index);
+          outfile->Printf( "\nLargest components of excited wave function #%d:\n", num_converged_index);
           if(params.eom_ref == 0) {
             sprintf(lbl, "%s %d %d", "RIA", C_irr, i);
             global_dpd_->file2_init(&CME, PSIF_CC_RAMPS, C_irr, 0, 1, lbl);
@@ -1050,17 +1053,22 @@ timer_off("INIT GUESS");
           // The 'key' or 'property' root is stored in eom_params.prop_sym and prop_root
           // by default it is the uppermost state but not necesarily
           if (C_irr == eom_params.prop_sym && i == eom_params.prop_root) {
-            fprintf(outfile,"\n\tPutting into environment energy for root of R irrep %d and root %d.\n", C_irr+1, i+1);
+            outfile->Printf("\n\tPutting into environment energy for root of R irrep %d and root %d.\n", C_irr+1, i+1);
             Process::environment.globals["CURRENT ENERGY"] = totalE;
-            fprintf(outfile,"\tPutting into environment CURRENT ENERGY:             %15.10lf\n", totalE);
+            outfile->Printf("\tPutting into environment CURRENT ENERGY:             %15.10lf\n", totalE);
 //            Process::environment.globals["CURRENT CORRELATION ENERGY"] = lambda_old[i]+moinfo.ecc;
-//            fprintf(outfile,"\tPutting into environment CURRENT CORRELATION ENERGY: %15.10lf\n", lambda_old[i]+moinfo.ecc);
+//            outfile->Printf("\tPutting into environment CURRENT CORRELATION ENERGY: %15.10lf\n", lambda_old[i]+moinfo.ecc);
           }
+
+          // Check overlap with old wfns, if requested
+          if(params.overlap) overlap(C_irr, i);
 
         } // converged[i] == 1
       } // i
     } // if num_converged > 0
-    fprintf(outfile,"\n");
+    outfile->Printf("\n");
+
+    if(params.overlap) overlap_stash(C_irr);
 
     free(lambda_old);
     free_block(alpha_old);
@@ -1077,7 +1085,7 @@ timer_off("INIT GUESS");
   free(keyw);
   chkpt_close();
 
-  fprintf(outfile,"\tTotal # of sigma evaluations: %d\n",nsigma_evaluations);
+  outfile->Printf("\tTotal # of sigma evaluations: %d\n",nsigma_evaluations);
   return;
 }
 

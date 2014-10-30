@@ -69,10 +69,10 @@ madness::Void Distributed_Matrix::print_tile_tij(const int &tij, const madness::
             ": Tile " + to_string(tij);
     else fname = ": Owner " + to_string(owner(tij)) + ": Tile " + to_string(tij);
 
-    fprintf(outfile, "\n  ## %s ##\n", fname.c_str());
+    outfile->Printf( "\n  ## %s ##\n", fname.c_str());
 
     if (tile.size() == 0) {
-        fprintf(outfile, "\n\t## %s ## (empty)\n", fname.c_str());
+        outfile->Printf( "\n\t## %s ## (empty)\n", fname.c_str());
     }
     else {
         const int print_ncol = 5;
@@ -81,43 +81,43 @@ madness::Void Distributed_Matrix::print_tile_tij(const int &tij, const madness::
         int num_frame_counter = 0;
         //for each frame
         for(num_frame_counter=0;num_frame_counter<num_frames;num_frame_counter++){
-            fprintf(outfile,"\n");
+            outfile->Printf("\n");
             for(int j=print_ncol*num_frame_counter+1;j<print_ncol*num_frame_counter+print_ncol+1;j++){
-                if(j==print_ncol*num_frame_counter+1){ fprintf(outfile,"%18d",j); }
-                else{ fprintf(outfile,"        %5d",j); }
+                if(j==print_ncol*num_frame_counter+1){ outfile->Printf("%18d",j); }
+                else{ outfile->Printf("        %5d",j); }
             }
-            fprintf(outfile,"\n\n");
+            outfile->Printf("\n\n");
 
             for(int k=1; k<=nrows; ++k){
                 for(int j=print_ncol*num_frame_counter+1;j<print_ncol*num_frame_counter+print_ncol+2;j++){
-                    if(j==print_ncol*num_frame_counter+1){ fprintf(outfile,"%5d",k);}
-                    else{ fprintf(outfile," %12.7f", tile(k-1, j-2)); } //[(k-1)*ncols + (j-2)]); }
+                    if(j==print_ncol*num_frame_counter+1){ outfile->Printf("%5d",k);}
+                    else{ outfile->Printf(" %12.7f", tile(k-1, j-2)); } //[(k-1)*ncols + (j-2)]); }
                 }
-                fprintf(outfile,"\n");
+                outfile->Printf("\n");
             }
         }
 
         // ALREADY DID THE FULL FRAMES BY THIS POINT
         // NEED TO TAKE CARE OF THE REMAINDER
         if(num_frames_rem != 0){
-            fprintf(outfile,"\n");
+            outfile->Printf("\n");
             for(int j=print_ncol*num_frame_counter+1;j<=ncols;j++){
-                if(j==print_ncol*num_frame_counter+1){ fprintf(outfile,"%18d",j); }
-                else{ fprintf(outfile,"        %5d",j); }
+                if(j==print_ncol*num_frame_counter+1){ outfile->Printf("%18d",j); }
+                else{ outfile->Printf("        %5d",j); }
             }
-            fprintf(outfile,"\n\n");
+            outfile->Printf("\n\n");
 
             for(int k=1; k<=nrows; ++k){
                 for(int j=print_ncol*num_frame_counter+1;j<ncols+2;j++){
-                    if(j==print_ncol*num_frame_counter+1){ fprintf(outfile,"%5d",k); }
-                    else{ fprintf(outfile," %12.7f", tile(k-1, j-2)); } //tile_.get()[(k-1)*ncols + (j-2)]); }
+                    if(j==print_ncol*num_frame_counter+1){ outfile->Printf("%5d",k); }
+                    else{ outfile->Printf(" %12.7f", tile(k-1, j-2)); } //tile_.get()[(k-1)*ncols + (j-2)]); }
                 }
-                fprintf(outfile,"\n");
+                outfile->Printf("\n");
             }
         }
-        fprintf(outfile,"\n\n");        }
+        outfile->Printf("\n\n");        }
 
-    fflush(outfile);
+    
     print_mutex_->unlock();
 
 }
@@ -128,7 +128,7 @@ madness::Void Distributed_Matrix::print(const std::string str) const
     WorldComm->sync();
     if (me_ == 0) {
         if (nelements_) {
-            fprintf(outfile, "\n\n%s\n", str.c_str());
+            outfile->Printf( "\n\n%s\n", str.c_str());
             for (int tij=0; tij < ntiles_; tij++) {
                 madness::Future<madness::Tensor<double> > tile = task(owner(tij), &Distributed_Matrix::get_remote_tile_tij, tij, 0, 0);
                 task(me_, &Distributed_Matrix::print_tile_tij, tij, tile);

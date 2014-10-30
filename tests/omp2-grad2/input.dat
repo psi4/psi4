@@ -20,7 +20,7 @@ set {
   reference uhf
   guess gwh
 }
-gradient('omp2')
+gradient('conv-omp2')
 
 grad = psi4.wavefunction().gradient()                           #TEST
 compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST

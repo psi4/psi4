@@ -31,10 +31,10 @@
 #include <sstream>
 
 #include "linear_algebra.h"
-#include "print.h"
 #include "atom_data.h"
 #include "physconst.h"
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -53,7 +53,7 @@ inline double DE_nr_energy(double step, double grad, double hess) {
 
 void MOLECULE::nr_step(void) {
   int i, f;
-  int Nintco = g_nintco();
+  int Nintco = Ncoord();
   double **H_inv;
 
   double *fq = p_Opt_data->g_forces_pointer();
@@ -66,6 +66,8 @@ void MOLECULE::nr_step(void) {
   double nr_h;         // hessian in step direction
   double DE_projected; // projected energy change by quadratic approximation
 
+  oprintf_out("\tTaking NR optimization step.\n");
+
   // Hinv fq = dq
   H_inv = symm_matrix_inv(H, Nintco, 1);
   opt_matrix_mult(H_inv, 0, &fq, 1, &dq, 1, Nintco, Nintco, 1, 0);
@@ -74,9 +76,9 @@ void MOLECULE::nr_step(void) {
   // Zero steps for frozen fragment
   for (f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      fprintf(outfile,"\tZero'ing out displacements for frozen fragment %d\n", f+1);
-      for (i=0; i<fragments[f]->g_nintco(); ++i)
-        dq[ g_intco_offset(f) + i ] = 0.0;
+      oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f+1);
+      for (i=0; i<fragments[f]->Ncoord(); ++i)
+        dq[ g_coord_offset(f) + i ] = 0.0;
     }
   }
 
@@ -97,32 +99,30 @@ void MOLECULE::nr_step(void) {
     nr_h += nr_u[i] * array_dot(H[i], nr_u, Nintco);
 
   DE_projected = DE_nr_energy(nr_dqnorm, nr_g, nr_h);
-  fprintf(outfile,"\tProjected energy change by quadratic approximation: %20.10lf\n", DE_projected);
+  oprintf_out("\tProjected energy change by quadratic approximation: %20.10lf\n", DE_projected);
 
   // do displacements for each fragment separately
   for (f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
+      oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
-    fragments[f]->displace(&(dq[g_intco_offset(f)]), &(fq[g_intco_offset(f)]), g_atom_offset(f));
+    fragments[f]->displace(&(dq[g_coord_offset(f)]), &(fq[g_coord_offset(f)]), g_atom_offset(f));
   }
 
   // do displacements for interfragment coordinates
   for (int I=0; I<interfragments.size(); ++I) {
     if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-      fprintf(outfile,"\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+      oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
       continue;
     }
-    interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
-                                        &(fq[g_interfragment_intco_offset(I)]) );
+    interfragments[I]->orient_fragment( &(dq[g_interfragment_coord_offset(I)]),
+                                        &(fq[g_interfragment_coord_offset(I)]) );
   }
 
-#if defined(OPTKING_PACKAGE_QCHEM)
   // fix rotation matrix for rotations in QCHEM EFP code
-  for (int I=0; I<efp_fragments.size(); ++I)
-    efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
-#endif
+  for (int I=0; I<fb_fragments.size(); ++I)
+    fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
 
   symmetrize_geom(); // now symmetrize the geometry for next step
 
@@ -130,7 +130,7 @@ void MOLECULE::nr_step(void) {
   p_Opt_data->save_step_info(DE_projected, nr_u, nr_dqnorm, nr_g, nr_h);
 
   free_array(nr_u);
-  fflush(outfile);
+  
 }
 
 }

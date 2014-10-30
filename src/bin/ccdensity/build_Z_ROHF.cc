@@ -65,7 +65,7 @@ void build_Z_ROHF(void)
   for(h=0; h < nirreps; h++)
     num_ai += virtpi[h] * occpi[h];
 
-  /*  fprintf(outfile, "num_ai = %d\n", num_ai); */
+  /*  outfile->Printf( "num_ai = %d\n", num_ai); */
 
   /* Malloc space for the transformation matrix */
   T = block_matrix(num_ai,num_ai);
@@ -147,7 +147,7 @@ void build_Z_ROHF(void)
   free_block(Y);
 
   /* Trying out Matt's Pople code --- way to go, Matt! */
-  pople(A.matrix[0], X[0], rank, 1, 1e-12, outfile, 0);
+  pople(A.matrix[0], X[0], rank, 1, 1e-12, "outfile", 0);
 
   global_dpd_->buf4_mat_irrep_close(&A, 0);
   global_dpd_->buf4_close(&A);
@@ -162,7 +162,7 @@ void build_Z_ROHF(void)
   free_block(T);
 
   /*
-  for(ai=0; ai < num_ai; ai++) fprintf(outfile, "Z[%d] = %20.15f\n", ai, Z[0][ai]);
+  for(ai=0; ai < num_ai; ai++) outfile->Printf( "Z[%d] = %20.15f\n", ai, Z[0][ai]);
   */
 
   /* Build the orbital component of Dai --- we'll build these as separate

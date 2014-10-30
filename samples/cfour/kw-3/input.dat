@@ -1,0 +1,37 @@
+#! Basis set spherical/Cartesian with cfour_basis and cfour_spherical
+
+
+molecule h2o {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set cfour_basis pvdz
+
+energy('c4-mp2')
+clean()
+clean_variables()
+
+set cfour_basis 6-31g*
+
+energy('c4-mp2')
+clean()
+clean_variables()
+
+set cfour_basis pvdz
+set cfour_spherical false
+
+energy('c4-mp2')
+clean()
+clean_variables()
+
+set cfour_basis 6-31g*
+
+energy('c4-mp2')
+clean()
+clean_variables()
+

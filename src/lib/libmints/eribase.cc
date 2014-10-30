@@ -938,36 +938,63 @@ namespace {
                                       int am,
                                       int nprim1, int nprim2, int nprim3, int nprim4,
                                       bool sh1eqsh2, bool sh3eqsh4, int deriv_lvl) {
-        double zeta, eta, ooze, rho, poz, coef1, PQ[3], PQ2, W[3], o12, o34, T, *F;
+        double zeta, eta, ooze, rho, poz, coef1, PQx, PQy, PQz, PQ2, Wx, Wy, Wz, o12, o34, T, *F;
         double a1, a2, a3, a4;
-        int max_p2, max_p4, p1, p2, p3, p4, m, n, i;
+        int max_p2, max_p4, p1, p2, p3, p4, i;
         size_t nprim = 0L;
-
+        double restrict *pai = p12->ai;
+        double restrict *pgamma12 = p12->gamma[0];
+        double restrict *poverlap12 = p12->overlap[0];
         for (p1 = 0; p1 < nprim1; ++p1) {
-            max_p2 = sh1eqsh2 ? p1+1 : nprim2;
-            a1 = p12->ai[p1];
+            a1 = *pai;
+            ++pai;
+            double *paj = p12->aj;
+            for (p2 = 0; p2 < nprim2; ++p2) {
+                a2   = *paj;
+                zeta = *pgamma12;
+                o12  = *poverlap12;
+                ++paj;
+                ++pgamma12;
+                ++poverlap12;
+                double PAx = p12->PA[p1][p2][0];
+                double PAy = p12->PA[p1][p2][1];
+                double PAz = p12->PA[p1][p2][2];
+                double PBx = p12->PB[p1][p2][0];
+                double PBy = p12->PB[p1][p2][1];
+                double PBz = p12->PB[p1][p2][2];
+                double PABx = p12->P[p1][p2][0];
+                double PABy = p12->P[p1][p2][1];
+                double PABz = p12->P[p1][p2][2];
 
-            for (p2 = 0; p2 < max_p2; ++p2) {
-                m = (1 + (sh1eqsh2 && p1 != p2));
-
-                a2   = p12->aj[p2];
-                zeta = p12->gamma[p1][p2];
-                o12  = p12->overlap[p1][p2];
-
+                double restrict *pak = p34->ai;
+                double restrict *pgamma34 = p34->gamma[0];
+                double restrict *poverlap34 = p34->overlap[0];
                 for (p3 = 0; p3 < nprim3; ++p3) {
-                    max_p4 = sh3eqsh4 ? p3+1 : nprim4;
-                    a3 = p34->ai[p3];
+                    a3 = *pak;
+                    ++pak;
+                    double restrict *pal = p34->aj;
+                    for (p4 = 0; p4 < nprim4; ++p4) {
+                        a4 = *pal;
+                        eta  = *pgamma34;
+                        o34  = *poverlap34;
+                        ++pal;
+                        ++pgamma34;
+                        ++poverlap34;
 
-                    for (p4 = 0; p4 < max_p4; ++p4) {
-                        n = m * (1 + (sh3eqsh4 && p3 != p4));
-                        a4 = p34->aj[p4];
+                        double PCx = p34->PA[p3][p4][0];
+                        double PCy = p34->PA[p3][p4][1];
+                        double PCz = p34->PA[p3][p4][2];
+                        double PDx = p34->PB[p3][p4][0];
+                        double PDy = p34->PB[p3][p4][1];
+                        double PDz = p34->PB[p3][p4][2];
+                        double PCDx = p34->P[p3][p4][0];
+                        double PCDy = p34->P[p3][p4][1];
+                        double PCDz = p34->P[p3][p4][2];
 
-                        eta  = p34->gamma[p3][p4];
-                        o34  = p34->overlap[p3][p4];
                         ooze = 1.0 / (zeta + eta);
                         poz  = eta * ooze;
                         rho  = zeta * poz;
-                        coef1= 2.0 * sqrt(rho*M_1_PI) * o12 * o34 * n;
+                        coef1= 2.0 * sqrt(rho*M_1_PI) * o12 * o34;
 
                         PrimQuartet[nprim].poz   = poz;
                         PrimQuartet[nprim].oo2zn = 0.5 * ooze;
@@ -979,39 +1006,39 @@ namespace {
                         PrimQuartet[nprim].twozeta_c = 2.0 * a3;
                         PrimQuartet[nprim].twozeta_d = 2.0 * a4;
 
-                        PQ[0] = p12->P[p1][p2][0] - p34->P[p3][p4][0];
-                        PQ[1] = p12->P[p1][p2][1] - p34->P[p3][p4][1];
-                        PQ[2] = p12->P[p1][p2][2] - p34->P[p3][p4][2];
-                        PQ2   = PQ[0]*PQ[0] + PQ[1]*PQ[1] + PQ[2]*PQ[2];
+                        PQx = PABx - PCDx;
+                        PQy = PABy - PCDy;
+                        PQz = PABz - PCDz;
+                        PQ2   = PQx*PQx + PQy*PQy + PQz*PQz;
 
-                        W[0]  = (p12->P[p1][p2][0] * zeta + p34->P[p3][p4][0] * eta) * ooze;
-                        W[1]  = (p12->P[p1][p2][1] * zeta + p34->P[p3][p4][1] * eta) * ooze;
-                        W[2]  = (p12->P[p1][p2][2] * zeta + p34->P[p3][p4][2] * eta) * ooze;
+                        Wx  = (PABx * zeta + PCDx * eta) * ooze;
+                        Wy  = (PABy * zeta + PCDy * eta) * ooze;
+                        Wz  = (PABz * zeta + PCDz * eta) * ooze;
 
                         // PA
-                        PrimQuartet[nprim].U[0][0] = p12->PA[p1][p2][0];
-                        PrimQuartet[nprim].U[0][1] = p12->PA[p1][p2][1];
-                        PrimQuartet[nprim].U[0][2] = p12->PA[p1][p2][2];
+                        PrimQuartet[nprim].U[0][0] = PAx;
+                        PrimQuartet[nprim].U[0][1] = PAy;
+                        PrimQuartet[nprim].U[0][2] = PAz;
                         // PB
-                        PrimQuartet[nprim].U[1][0] = p12->PB[p1][p2][0];
-                        PrimQuartet[nprim].U[1][1] = p12->PB[p1][p2][1];
-                        PrimQuartet[nprim].U[1][2] = p12->PB[p1][p2][2];
+                        PrimQuartet[nprim].U[1][0] = PBx;
+                        PrimQuartet[nprim].U[1][1] = PBy;
+                        PrimQuartet[nprim].U[1][2] = PBz;
                         // QC
-                        PrimQuartet[nprim].U[2][0] = p34->PA[p3][p4][0];
-                        PrimQuartet[nprim].U[2][1] = p34->PA[p3][p4][1];
-                        PrimQuartet[nprim].U[2][2] = p34->PA[p3][p4][2];
+                        PrimQuartet[nprim].U[2][0] = PCx;
+                        PrimQuartet[nprim].U[2][1] = PCy;
+                        PrimQuartet[nprim].U[2][2] = PCz;
                         // QD
-                        PrimQuartet[nprim].U[3][0] = p34->PB[p3][p4][0];
-                        PrimQuartet[nprim].U[3][1] = p34->PB[p3][p4][1];
-                        PrimQuartet[nprim].U[3][2] = p34->PB[p3][p4][2];
+                        PrimQuartet[nprim].U[3][0] = PDx;
+                        PrimQuartet[nprim].U[3][1] = PDy;
+                        PrimQuartet[nprim].U[3][2] = PDz;
                         // WP
-                        PrimQuartet[nprim].U[4][0] = W[0] - p12->P[p1][p2][0];
-                        PrimQuartet[nprim].U[4][1] = W[1] - p12->P[p1][p2][1];
-                        PrimQuartet[nprim].U[4][2] = W[2] - p12->P[p1][p2][2];
+                        PrimQuartet[nprim].U[4][0] = Wx - PABx;
+                        PrimQuartet[nprim].U[4][1] = Wy - PABy;
+                        PrimQuartet[nprim].U[4][2] = Wz - PABz;
                         // WQ
-                        PrimQuartet[nprim].U[5][0] = W[0] - p34->P[p3][p4][0];
-                        PrimQuartet[nprim].U[5][1] = W[1] - p34->P[p3][p4][1];
-                        PrimQuartet[nprim].U[5][2] = W[2] - p34->P[p3][p4][2];
+                        PrimQuartet[nprim].U[5][0] = Wx - PCDx;
+                        PrimQuartet[nprim].U[5][1] = Wy - PCDy;
+                        PrimQuartet[nprim].U[5][2] = Wz - PCDz;
 
                         T = rho * PQ2;
                         fjt->set_rho(rho);
@@ -1048,27 +1075,28 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, bool 
 
     // Make sure libint is compiled to handle our max AM
     if (max_am >= LIBINT_MAX_AM) {
-        fprintf(stderr, "ERROR: ERI - libint cannot handle angular momentum this high.\n"
-                        "       In a fresh object directory, reconfigure libint for higher angular momentum, then recompile.\n");
+        outfile->Printf( "ERROR: ERI - libint cannot handle angular momentum this high (%d).\n"
+                        "       In a fresh object directory, reconfigure libint for higher angular momentum, then recompile.\n"
+                        "       LibInt was compiled for angular momentum of: %d\n",max_am,LIBINT_MAX_AM);
         throw LimitExceeded<int>("ERI - libint cannot handle angular momentum this high.\n"
                                  "In a fresh object directory, reconfigure libint for higher angular momentum, then recompile.", LIBINT_MAX_AM, max_am, __FILE__, __LINE__);
     }
     else if (deriv_ == 1 && max_am >= LIBDERIV_MAX_AM1) {
-        fprintf(stderr, "ERROR: ERI - libderiv cannot handle angular momentum this high.\n"
+        outfile->Printf( "ERROR: ERI - libderiv cannot handle angular momentum this high.\n"
                         "     In a fresh object directory, reconfigure libderiv for higher angular momentum, then recompile.\n");
         throw LimitExceeded<int>("ERI - libderiv cannot handle angular momentum this high.\n"
                                  "In a fresh object directory, reconfigure libderiv for higher angular momentum, then recompile.",
                                  LIBDERIV_MAX_AM1, max_am, __FILE__, __LINE__);
     }
     else if (deriv_ == 2 && max_am >= LIBDERIV_MAX_AM12) {
-        fprintf(stderr, "ERROR: ERI - libderiv cannot handle angular momentum this high.\n"
+        outfile->Printf( "ERROR: ERI - libderiv cannot handle angular momentum this high.\n"
                         "       In a fresh object directory, reconfigure libderiv for higher angular momentum, then recompile.\n");
         throw LimitExceeded<int>("ERI - libderiv cannot handle angular momentum this high.\n"
                                  "In a fresh object directory, reconfigure libderiv for higher angular momentum, then recompile.",
                                  LIBDERIV_MAX_AM12, max_am, __FILE__, __LINE__);
     }
     else if (deriv_ > 2) {
-        fprintf(stderr, "ERROR: ERI - Cannot compute higher than second derivatives.");
+        outfile->Printf( "ERROR: ERI - Cannot compute higher than second derivatives.");
         throw PSIEXCEPTION("ERI - Cannot compute higher than second derivatives.");
     }
 
@@ -1082,7 +1110,7 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, bool 
             init_libderiv12(&libderiv_, max_am, max_nprim, max_cart_);
     }
     catch (std::bad_alloc& e) {
-        fprintf(stderr, "Error allocating memory for libint/libderiv.\n");
+        outfile->Printf( "Error allocating memory for libint/libderiv.\n");
         exit(EXIT_FAILURE);
     }
     size_t size = INT_NCART(basis1()->max_am()) * INT_NCART(basis2()->max_am()) *
@@ -1093,7 +1121,7 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, bool 
         tformbuf_ = new double[size];
     }
     catch (std::bad_alloc& e) {
-        fprintf(stderr, "Error allocating tformbuf_.\n%s\n", e.what());
+        outfile->Printf( "Error allocating tformbuf_.\n%s\n", e.what());
         exit(EXIT_FAILURE);
     }
     memset(tformbuf_, 0, sizeof(double)*size);
@@ -1105,7 +1133,7 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, bool 
         target_ = new double[size];
     }
     catch (std::bad_alloc& e) {
-        fprintf(stderr, "Error allocating target_.\n%s\n", e.what());
+        outfile->Printf( "Error allocating target_.\n%s\n", e.what());
         exit(EXIT_FAILURE);
     }
     memset(target_, 0, sizeof(double)*size);
@@ -1114,7 +1142,7 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, bool 
         source_ = new double[size];
     }
     catch (std::bad_alloc& e) {
-        fprintf(stderr, "Error allocating source_.\n%s\n", e.what());
+        outfile->Printf( "Error allocating source_.\n%s\n", e.what());
         exit(EXIT_FAILURE);
     }
     memset(source_, 0, sizeof(double)*size);
@@ -1268,7 +1296,7 @@ void TwoElectronInt::init_shell_pairs34()
         return;
     }
 #if 0
-    fprintf(outfile, "  Pre-computing additional values for two-electron integrals. [ |34) does not equal (12| ]\n");
+    outfile->Printf( "  Pre-computing additional values for two-electron integrals. [ |34) does not equal (12| ]\n");
 
     // Estimate memory needed by allocated space for the dynamically allocated parts of ShellPair structure
     memd = ERIBase::memory_to_store_shell_pairs(basis3(), basis4());
@@ -1463,14 +1491,14 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
     am2 = original_bs2_->shell(sh2).am();
     am3 = original_bs3_->shell(sh3).am();
     am4 = original_bs4_->shell(sh4).am();
-	temp = am1+am2+am3+am4;
-	
-	c1 = original_bs1_->shell(sh1).ncenter();
-	c2 = original_bs1_->shell(sh2).ncenter();
-	c3 = original_bs1_->shell(sh3).ncenter();
-	c4 = original_bs1_->shell(sh4).ncenter();
-	
-	// TODO: Check this!
+    temp = am1+am2+am3+am4;
+
+    //c1 = original_bs1_->shell(sh1).ncenter();
+    //c2 = original_bs1_->shell(sh2).ncenter();
+    //c3 = original_bs1_->shell(sh3).ncenter();
+    //c4 = original_bs1_->shell(sh4).ncenter();
+
+    // TODO: Check this!
 //	if (c1 == c2 && c1 == c3 && c1 && c4 && temp % 2 != 0) {
 //#ifdef MINTS_TIMER
 //		timer_off("reorder");
@@ -1478,7 +1506,7 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
 //#endif
 //		return 0;
 //	}
-	
+
     int n1, n2, n3, n4;
 
     if (force_cartesian_) {
@@ -1567,7 +1595,7 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
 	size_t ncomputed = compute_quartet(s1, s2, s3, s4);
     if (ncomputed) {
 		// Only do the following if we did any work.
-		
+
     	// Permute integrals back, if needed
     	if (p12_ || p34_ || p13p24_) {
 #ifdef MINTS_TIMER
@@ -1816,7 +1844,7 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
         for (size_t i=0; i<nprim; ++i)
             temp += (double)libint_.PrimQuartet[i].F[0];
         source_[0] = temp;
-//        fprintf(outfile, "s-functions = %8.5f\n", temp);
+//        outfile->Printf( "s-functions = %8.5f\n", temp);
     }
 
 #ifdef MINTS_TIMER
@@ -1839,7 +1867,7 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 size_t TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
 {
     if (deriv_ < 1) {
-        fprintf(stderr, "ERROR - ERI: ERI object not initialized to handle derivatives.\n");
+        outfile->Printf( "ERROR - ERI: ERI object not initialized to handle derivatives.\n");
         abort();
     }
     // Need to ensure the ordering asked by the user is valid for libint
@@ -1983,7 +2011,7 @@ size_t TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
         // copy the integrals to the target_, 3n of them
         memcpy(target_, source_, ERI_1DER_NTYPE * size *sizeof(double));
     }
-	
+
 	return size;
 }
 

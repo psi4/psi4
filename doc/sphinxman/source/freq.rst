@@ -1,7 +1,7 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. _`func:freq()`:
+.. _`sec:freq()`:
 
 Frequency
 =========

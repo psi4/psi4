@@ -74,7 +74,7 @@ extern struct stringwr **betlist;
 void sem_genci(struct stringwr **alplist, struct stringwr **betlist,
    int N, int M, double *evals, double conv_e, double conv_rms, 
    int maxiter, double nucrep, double efzc, int maxnvect, 
-   FILE *outfile, int print_lvl, int h0blocksize, int guess_vector,
+   std::string OutFileRMR, int print_lvl, int h0blocksize, int guess_vector,
    int restart, int restart_vecs);
 void calc_h0_blk(double *h0, int *detref, double *detval, int h0blocksize, 
    int tridim, struct stringwr **alplist, struct stringwr **betlist);
@@ -120,11 +120,11 @@ void diag_h_genci(struct stringwr **alplist, struct stringwr **betlist)
   if (Parameters.diag_method == 3) {
      
     if (Parameters.print_lvl) {
-      fprintf(outfile, 
+      outfile->Printf( 
         "\nFind the roots by the Simultaneous Expansion Method \n");
-      fprintf(outfile, "Energy convergence = %3g\n", conv_e);
-      fprintf(outfile, "RMS CI vector convergence = %3g\n\n", conv_rms);
-      fflush(outfile);
+      outfile->Printf( "Energy convergence = %3g\n", conv_e);
+      outfile->Printf( "RMS CI vector convergence = %3g\n\n", conv_rms);
+      
     }
      
     evals = init_array(nroots);
@@ -137,7 +137,7 @@ void diag_h_genci(struct stringwr **alplist, struct stringwr **betlist)
   } /* end the Davidson-Liu section for GENCI */
    
   else { 
-    fprintf(outfile, "\n Diagonalization Method not available for GENCI\n"); 
+    outfile->Printf( "\n Diagonalization Method not available for GENCI\n"); 
     return; 
   }
    
@@ -179,7 +179,7 @@ void diag_h_genci(struct stringwr **alplist, struct stringwr **betlist)
 void sem_genci(struct stringwr **alplist, struct stringwr **betlist,
                int N, int M, double *evals, double conv_e, double conv_rms, 
                int maxiter, double nucrep, double efzc, int maxnvect, 
-               FILE *outfile, int print_lvl, int h0blocksize, int guess_vector,
+               std::string OutFileRMR, int print_lvl, int h0blocksize, int guess_vector,
                int restart, int restart_vecs)
 {
    double *G, *Gprime, *lambda;   /* arrays for G, Gprime, and lambda */ 
@@ -246,8 +246,8 @@ void sem_genci(struct stringwr **alplist, struct stringwr **betlist,
      if (num_buf3 > N) num_buf3 = N-1;
      extra_buf3 = (N%(num_buf3));
      switch_buf3 = 0;
-     fprintf(outfile,"Using himem\n");
-     fflush(outfile);
+     outfile->Printf("Using himem\n");
+     
      }
    if (core_memory > (2*N)) {
      buf_size2 = N;
@@ -257,10 +257,10 @@ void sem_genci(struct stringwr **alplist, struct stringwr **betlist,
      if (num_buf2 > N) num_buf2 = N; 
      extra_buf2 = (N%(num_buf2));
      switch_buf2 = 0; 
-     fflush(outfile);
+     
      if (!buf_size3) {
-       fprintf(outfile,"Using core_memory > (2*N)\n");
-       fflush(outfile);
+       outfile->Printf("Using core_memory > (2*N)\n");
+       
        buf_size3 = core_memory/3;
        /* num_buf3 = N/buf_size3; */
        num_buf3 = (N/buf_size3 - (N%buf_size3)/buf_size3); 
@@ -279,32 +279,32 @@ void sem_genci(struct stringwr **alplist, struct stringwr **betlist,
      num_buf2 = (N/buf_size2 - (N%buf_size2)/buf_size2);
      buf_val2 = 1;
      buffer = block_matrix(2, buf_size2);
-     fprintf(outfile,"Using lomem\n");
-     fflush(outfile);
+     outfile->Printf("Using lomem\n");
+     
      }
 
    buf_size = buf_size3;
    extra_buf = extra_buf3;
    num_buf = num_buf3;
 
-   fprintf(outfile,"\n");
-   fprintf(outfile,"memory       = %lf\n", memory);
-   fprintf(outfile,"num_roots    = %d\n", M);
-   fprintf(outfile,"maxiter      = %d\n", maxiter);
-   fprintf(outfile,"core_memeory = %d\n", core_memory);
-   fprintf(outfile,"buf_size2    = %d\n", buf_size2);
-   fprintf(outfile,"num_buf2     = %d\n", num_buf2);
-   fprintf(outfile,"extra_buf2   = %d\n", extra_buf2);
-   fprintf(outfile,"switch_buf2  = %d\n", switch_buf2);
-   fprintf(outfile,"buf_size3    = %d\n", buf_size3);
-   fprintf(outfile,"num_buf3     = %d\n", num_buf3);
-   fprintf(outfile,"extra_buf3   = %d\n", extra_buf3);
-   fprintf(outfile,"switch_buf3  = %d\n", switch_buf3);
-   fprintf(outfile,"nucrep       = %lf\n", nucrep);
-   fprintf(outfile,"efzc         = %lf\n", efzc);
-   fprintf(outfile,"\n");
-   fprintf(outfile,"\n");
-   fflush(outfile);
+   outfile->Printf("\n");
+   outfile->Printf("memory       = %lf\n", memory);
+   outfile->Printf("num_roots    = %d\n", M);
+   outfile->Printf("maxiter      = %d\n", maxiter);
+   outfile->Printf("core_memeory = %d\n", core_memory);
+   outfile->Printf("buf_size2    = %d\n", buf_size2);
+   outfile->Printf("num_buf2     = %d\n", num_buf2);
+   outfile->Printf("extra_buf2   = %d\n", extra_buf2);
+   outfile->Printf("switch_buf2  = %d\n", switch_buf2);
+   outfile->Printf("buf_size3    = %d\n", buf_size3);
+   outfile->Printf("num_buf3     = %d\n", num_buf3);
+   outfile->Printf("extra_buf3   = %d\n", extra_buf3);
+   outfile->Printf("switch_buf3  = %d\n", switch_buf3);
+   outfile->Printf("nucrep       = %lf\n", nucrep);
+   outfile->Printf("efzc         = %lf\n", efzc);
+   outfile->Printf("\n");
+   outfile->Printf("\n");
+   
 
    if (switch_buf3) {
      buffer4 = buffer[1];
@@ -327,7 +327,7 @@ void sem_genci(struct stringwr **alplist, struct stringwr **betlist,
      rfile(d_file);  /* file store the d part of the correction vectors */
      rfile(c_file);  /* file to write CI vector to */
 
- fprintf(outfile,"Determining initial guess vector(s)....");
+ outfile->Printf("Determining initial guess vector(s)....");
  if (restart == 1) 
    read_c(switch_buf3, buffer[0], buf_size, num_buf, extra_buf, b_file,
           b_writ, c_file, c_index);
@@ -436,9 +436,9 @@ void sem_genci(struct stringwr **alplist, struct stringwr **betlist,
    /* end form G matrix */
 
    if (print_lvl > 4) {
-     fprintf(outfile,"-----------------------------------------------------\n");
+     outfile->Printf("-----------------------------------------------------\n");
      print_array(G, L,outfile);
-     fprintf(outfile,"-----------------------------------------------------\n");
+     outfile->Printf("-----------------------------------------------------\n");
      } 
  
   /* solve the L x L eigenvalue problem G a = lambda a for M roots */
@@ -506,19 +506,19 @@ void sem_genci(struct stringwr **alplist, struct stringwr **betlist,
        tval += tmp;
        } /* end if extra_buf */ 
      tval = sqrt(tval); 
-     fprintf(outfile, "Iter %3d  Root %d = %13.9lf", iter-1, i+1, 
+     outfile->Printf( "Iter %3d  Root %d = %13.9lf", iter-1, i+1, 
              (lambda[i] + nucrep + efzc));
-     fprintf(outfile, "    Delta_E %.3E   Delta_C %.3E\n",  
+     outfile->Printf( "    Delta_E %.3E   Delta_C %.3E\n",  
              lambda[i] - lastroot[i], tval);
-     fflush(outfile); 
+      
      } /* end i loop */
 
-  if (M > 1) fprintf(outfile,"\n");
+  if (M > 1) outfile->Printf("\n");
   if (fabs(lambda[0]-lastroot[0]) <= conv_e && tval <= conv_rms) {
     converged = 1;
     for (i=0; i<M; i++) {
        evals[i] = lambda[i];
-       fprintf(outfile, "\nROOT %d ECI = %17.13lf\n\n\n", i+1, 
+       outfile->Printf( "\nROOT %d ECI = %17.13lf\n\n\n", i+1, 
                evals[i] + nucrep + efzc); 
        for (k=0; k<num_buf; k++) { /* for b */
           b_index2 = (PSI_FPTR) k*buf_size*sizeof(double); 
@@ -535,9 +535,9 @@ void sem_genci(struct stringwr **alplist, struct stringwr **betlist,
                  c_index, &c_index);
           imdet = (N > 20) ? 20 : N; 
           if (k == -1) {
-            fprintf(outfile,"The %d most important determinants\n",imdet);
+            outfile->Printf("The %d most important determinants\n",imdet);
             for (I=0; I<imdet; I++)
-               fprintf(outfile,"     %d   %7.6f\n", I, buffer[1][I]); 
+               outfile->Printf("     %d   %7.6f\n", I, buffer[1][I]); 
             }
           } /* end k loop */
        if (extra_buf != 0) {
@@ -610,8 +610,8 @@ void sem_genci(struct stringwr **alplist, struct stringwr **betlist,
   num_new_vec = L - num_new_vec;  
 
   if (L>maxnvect) {
-    fprintf(outfile, "(test_sem): L(%2d) > maxnvect(%2d)!",L,maxnvect);
-    fprintf(outfile, " Aborting!\n");
+    outfile->Printf( "(test_sem): L(%2d) > maxnvect(%2d)!",L,maxnvect);
+    outfile->Printf( " Aborting!\n");
     exit(0);
     } 
 
@@ -661,10 +661,10 @@ void sem_genci(struct stringwr **alplist, struct stringwr **betlist,
         wwritw(c_file, (char *) buffer[1], sizeof(double)*extra_buf,
                c_index, &c_index);
         } /* end if extra_buf */
-      fprintf(outfile, "\nROOT %d ECI = %17.13lf\n\n\n", i+1,
+      outfile->Printf( "\nROOT %d ECI = %17.13lf\n\n\n", i+1,
               evals[i] + nucrep + efzc);
       } /* end i loop */
-   fprintf(outfile,"Maximum number of iterations exceded.\n");
+   outfile->Printf("Maximum number of iterations exceded.\n");
    }
 
 /* free up arrays */
@@ -814,7 +814,7 @@ PSI_FPTR sigma(struct stringwr **alplist, struct stringwr **betlist,
         }
       if (print_lvl > 5) 
         for (I=0; I<buf_size; I++) 
-           fprintf(outfile,"sigma[%d] = %15.7f\n", I, buffer[1][I]); 
+           outfile->Printf("sigma[%d] = %15.7f\n", I, buffer[1][I]); 
 
       wwritw(bA_file, (char *) buffer[1], sizeof(double)*buf_size, 
              byte, &byte);
@@ -853,7 +853,7 @@ PSI_FPTR sigma(struct stringwr **alplist, struct stringwr **betlist,
            } /* end if extra_buf */
        if (print_lvl > 5) { 
          for (I=0; I<buf_size; I++) 
-            fprintf(outfile,"sigma[%d] = %15.7f\n", I+k*buf_size, buffer[1][I]);
+            outfile->Printf("sigma[%d] = %15.7f\n", I+k*buf_size, buffer[1][I]);
          }
        wwritw(bA_file, (char *) buffer[1], sizeof(double)*buf_size, 
               byte, &byte);
@@ -889,7 +889,7 @@ PSI_FPTR sigma(struct stringwr **alplist, struct stringwr **betlist,
  
      if (print_lvl > 5) {
        for (I=0; I<extra_buf; I++) 
-          fprintf(outfile,"sigma[%d] = %15.7f\n", I+num_buf*buf_size,
+          outfile->Printf("sigma[%d] = %15.7f\n", I+num_buf*buf_size,
              buffer[1][I]);
        }
      wwritw(bA_file, (char *) buffer[1], sizeof(double)*extra_buf, byte, &byte);
@@ -935,19 +935,19 @@ void h0_guess(int alp_code, int alp_idx, int bet_code, int bet_idx,
    eigvec = block_matrix(h0blocksize, h0blocksize);
    i = strings2det(CalcInfo.ref_alp_list, CalcInfo.ref_alp_rel,
                    CalcInfo.ref_bet_list, CalcInfo.ref_bet_rel);
-   fprintf(outfile,"reference det = %d\n", i);
-   fflush(outfile);
+   outfile->Printf("reference det = %d\n", i);
+   
    if (N < h0blocksize) {
-     fprintf(outfile, "blocksize larger than number of determinants.\n");
+     outfile->Printf( "blocksize larger than number of determinants.\n");
      exit(0);
      } 
 
    num_h0blocksize = N/h0blocksize;
    extra_h0blocksize = N%h0blocksize;
 
-   fprintf(outfile,"num_h0blocksize = %d\n", num_h0blocksize);
-   fprintf(outfile,"extra_h0blocksize = %d\n", extra_h0blocksize);
-   fflush(outfile);
+   outfile->Printf("num_h0blocksize = %d\n", num_h0blocksize);
+   outfile->Printf("extra_h0blocksize = %d\n", extra_h0blocksize);
+   
 
    for (j=0; j<num_h0blocksize; j++) {
       offst = j*h0blocksize;
@@ -996,18 +996,18 @@ void h0_guess(int alp_code, int alp_idx, int bet_code, int bet_idx,
       }
  
    /* for (I=0; I<h0blocksize; I++) {
-      fprintf(outfile,"detval[%d] = %lf\t detref[%d] = %d\n",
+      outfile->Printf("detval[%d] = %lf\t detref[%d] = %d\n",
               I, detval[I], I, detref[I]); 
       } */
    calc_h0_blk(h0, detref, detval, h0blocksize, tridim, alplist, betlist);
    rsp(h0blocksize, h0blocksize, tridim, h0, eigval, 1, eigvec, 1.0e-14);
    
-   fprintf(outfile,"eigval = %20.8f\n", eigval[0]);
-   fprintf(outfile,"efzc   = %20.8f\n", efzc);
-   fprintf(outfile,"nucrep = %20.8f\n", nucrep);
-   fprintf(outfile,"*** H0 Block Eigenvalue = %20.8f\n\n",
+   outfile->Printf("eigval = %20.8f\n", eigval[0]);
+   outfile->Printf("efzc   = %20.8f\n", efzc);
+   outfile->Printf("nucrep = %20.8f\n", nucrep);
+   outfile->Printf("*** H0 Block Eigenvalue = %20.8f\n\n",
            (eigval[0]+efzc+nucrep));
-   fflush(outfile);
+   
     /* Form initial guess b vector */
    if (!switch_buf3) {
      for (k=0; k<M; k++) {
@@ -1053,7 +1053,7 @@ void h0_guess(int alp_code, int alp_idx, int bet_code, int bet_idx,
         wreadw(b_file, (char *) buffer, sizeof(double)*buf_size,
                b_writ, &b_writ);
         for (I=0; I<buf_size; I++)
-           if (buffer[I] != 0.0) fprintf(outfile,"b[0][%d] = %lf\n\n",
+           if (buffer[I] != 0.0) outfile->Printf("b[0][%d] = %lf\n\n",
                I, buffer[I]);
         printf("Done reading in b trial vector for check.\n"); */
 

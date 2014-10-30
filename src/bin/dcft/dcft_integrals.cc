@@ -41,8 +41,8 @@ DCFTSolver::transform_integrals()
 
     _ints->update_orbitals();
     if(print_ > 1){
-        fprintf(outfile, "\tTransforming integrals...\n");
-        fflush(outfile);
+        outfile->Printf( "\tTransforming integrals...\n");
+        
     }
     _ints->set_print(print_ - 2 >= 0 ? print_ - 2 : 0);
 
@@ -161,7 +161,34 @@ DCFTSolver:: sort_OVOV_integrals() {
 
     }
 
+    if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-13") {
 
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                      ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
+        global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, qprs, ID("[V,O]"), ID("[O,V]"), "MO Ints (VO|OV)");
+        global_dpd_->buf4_close(&I);
+
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                      ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
+        global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, qprs, ID("[V,O]"), ID("[o,v]"), "MO Ints (VO|ov)");
+        global_dpd_->buf4_close(&I);
+
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                      ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
+        global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, srpq, ID("[v,o]"), ID("[O,V]"), "MO Ints (vo|OV)");
+        global_dpd_->buf4_close(&I);
+
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                      ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
+        global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, qprs, ID("[v,o]"), ID("[o,v]"), "MO Ints (vo|ov)");
+        global_dpd_->buf4_close(&I);
+
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                      ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
+        global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, psqr, ID("[O,v]"), ID("[V,o]"), "MO Ints <Ov|Vo>");
+        global_dpd_->buf4_close(&I);
+
+    }
 
 }
 

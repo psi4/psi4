@@ -58,6 +58,8 @@ private:
     std::vector<double> exp_;
     /// Contraction coefficients (of length nprimitives_)
     std::vector<double> coef_;
+    /// ERD normalized contraction coefficients (of length nprimitives_)
+    std::vector<double> erd_coef_;
     /// Original (un-normalized) contraction coefficients (of length nprimitives)
     /// Only used in printing.
     std::vector<double> original_coef_;
@@ -112,6 +114,7 @@ public:
 
     /** Handles calling primitive_normalization and contraction_normalization for you. */
     void normalize_shell();
+    void erd_normalize_shell();
 
     /// Make a copy of the ShellInfo.
     ShellInfo copy();
@@ -143,9 +146,11 @@ public:
 
     /// Returns the exponent of the given primitive
     double exp(int prim) const      { return exp_[prim]; }
-    /// Return coefficient of pi'th primitive and ci'th contraction
+    /// Return coefficient of pi'th primitive
     double coef(int pi) const       { return coef_[pi]; }
-    /// Return unnormalized coefficient of pi'th primitive and ci'th contraction
+    /// Return ERD normalized coefficient of pi'th primitive
+    double erd_coef(int pi) const       { return erd_coef_[pi]; }
+    /// Return unnormalized coefficient of pi'th primitive
     double original_coef(int pi) const { return original_coef_[pi]; }
     /// Returns the exponent of the given primitive
     const std::vector<double>& exps() const { return exp_; }
@@ -155,7 +160,7 @@ public:
     const std::vector<double>& original_coefs() const { return original_coef_; }
 
     /// Print out the shell
-    void print(FILE *out) const;
+    void print(std::string out) const;
 
     /// Normalize the angular momentum component
     static double normalize(int l, int m, int n);
@@ -183,6 +188,8 @@ private:
     const double* original_coef_;
     /// Contraction coefficients (of length nprimitives_)
     const double* coef_;
+    /// Contraction coefficients normalized for the ERD integral package (of length nprimitives_)
+    const double* erd_coef_;
 
     /// Atom number this shell goes to. Needed when indexing integral derivatives.
     int nc_;
@@ -217,10 +224,13 @@ private:
 
 public:
     /** Constructor.
-     *  @param e An array of exponent values.
      *  @param am Angular momentum.
      *  @param pure Pure spherical harmonics, or Cartesian.
-     *  @param c An array of contraction coefficients.
+     *  @param oc An array of contraction coefficients.
+     *  @param c An array of normalized contraction coefficients.
+     *  @param ec An array of ERD normalized contraction coefficients.
+     *  @param e An array of exponent values.
+     *  @param pure an enum describing whether this shell uses pure or Cartesian functions.
      *  @param nc The atomic center that this shell is located on. Must map back to the correct atom in the owning BasisSet molecule_. Used in integral derivatives for indexing.
      *  @param center The x, y, z position of the shell. This is passed to reduce the number of calls to the molecule.
      *  @param start The starting index of the first function this shell provides. Used to provide starting positions in matrices.
@@ -229,7 +239,7 @@ public:
     GaussianShell(int am,
                   int nprimitive,
                   const double *oc,
-                  const double *c,
+                  const double *c, const double *ec,
                   const double *e,
                   GaussianType pure,
                   int nc,
@@ -237,13 +247,7 @@ public:
                   int start);
 
     ///Builds and empty GShell
-    GaussianShell() {};
-
-    /// Make a copy of the GaussianShell.
-    GaussianShell copy();
-
-    /// Make a copy of the GaussianShell.
-    GaussianShell copy(int nc, const double *center);
+    GaussianShell() {}
 
     /// The number of primitive Gaussians
     int nprimitive() const;
@@ -269,19 +273,23 @@ public:
 
     /// Returns the exponent of the given primitive
     double exp(int prim) const      { return exp_[prim]; }
-    /// Return coefficient of pi'th primitive and ci'th contraction
+    /// Return coefficient of pi'th primitive
     double coef(int pi) const       { return coef_[pi]; }
-    /// Return unnormalized coefficient of pi'th primitive and ci'th contraction
+    /// Return unnormalized coefficient of pi'th primitive
     double original_coef(int pi) const { return original_coef_[pi]; }
-    /// Returns the exponent of the given primitive
+    /// Return unnormalized coefficient of pi'th primitive
+    double erd_coef(int pi) const { return erd_coef_[pi]; }
+    /// Returns the exponents
     const double* exps() const { return exp_; }
-    /// Return coefficient of pi'th primitive and ci'th contraction
+    /// Return coefficients
     const double* coefs() const { return coef_; }
-    /// Return unnormalized coefficient of pi'th primitive and ci'th contraction
+    /// Return unnormalized coefficients
     const double* original_coefs() const { return original_coef_; }
+    /// Return ERD normalized coefficients
+    const double* erd_coefs() const { return erd_coef_; }
 
     /// Print out the shell
-    void print(FILE *out) const;
+    void print(std::string out) const;
 
     /// Basis function index where this shell starts.
     int function_index() const      { return start_; }

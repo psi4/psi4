@@ -34,7 +34,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::trans_ints_ump2()
 {    
-    //fprintf(outfile,"\n trans_ints is starting... \n"); fflush(outfile);
+    //outfile->Printf("\n trans_ints is starting... \n"); 
 /********************************************************************************************/
 /************************** Transform 2-electron int. to MO space ***************************/
 /********************************************************************************************/  
@@ -176,14 +176,14 @@ void OCCWave::trans_ints_ump2()
       denominators_ump2();
       timer_off("Build Denominators");
       psio_->close(PSIF_LIBTRANS_DPD, 1);
-      //fprintf(outfile,"\n trans_ints done. \n"); fflush(outfile);
+      //outfile->Printf("\n trans_ints done. \n"); 
  
 }//
 
 
 void OCCWave::denominators_ump2()
 {
-    //fprintf(outfile,"\n denominators is starting... \n"); fflush(outfile);
+    //outfile->Printf("\n denominators is starting... \n"); 
     dpdbuf4 D;
     dpdfile2 Fo,Fv;
     
@@ -226,7 +226,7 @@ void OCCWave::denominators_ump2()
         global_dpd_->buf4_mat_irrep_wrt(&D, h);
         global_dpd_->buf4_mat_irrep_close(&D, h);
     }
-    if (print_ > 2) global_dpd_->buf4_print(&D, outfile, 1);
+    if (print_ > 2) global_dpd_->buf4_print(&D, "outfile", 1);
     global_dpd_->buf4_close(&D);
     
 
@@ -247,7 +247,7 @@ void OCCWave::denominators_ump2()
         global_dpd_->buf4_mat_irrep_wrt(&D, h);
         global_dpd_->buf4_mat_irrep_close(&D, h);
     }
-    if (print_ > 2) global_dpd_->buf4_print(&D, outfile, 1);
+    if (print_ > 2) global_dpd_->buf4_print(&D, "outfile", 1);
     global_dpd_->buf4_close(&D);
     
     
@@ -268,33 +268,33 @@ void OCCWave::denominators_ump2()
         global_dpd_->buf4_mat_irrep_wrt(&D, h);
         global_dpd_->buf4_mat_irrep_close(&D, h);
     }
-    if (print_ > 2) global_dpd_->buf4_print(&D, outfile, 1);
+    if (print_ > 2) global_dpd_->buf4_print(&D, "outfile", 1);
     global_dpd_->buf4_close(&D);
     
     //Print
     if(print_ > 1){
-      fprintf(outfile,"\n \n"); fflush(outfile);
+      outfile->Printf("\n \n"); 
       for(int i = 0; i<nacooA; i++) {
-	fprintf(outfile,"\taOccEvals[%1d]: %20.14f\n", i, aOccEvals[i]); 
-	fflush(outfile);
+	outfile->Printf("\taOccEvals[%1d]: %20.14f\n", i, aOccEvals[i]); 
+	
       }
       
-      fprintf(outfile,"\n \n"); fflush(outfile);
+      outfile->Printf("\n \n"); 
       for(int i = 0; i<nacooB; i++) {
-	fprintf(outfile,"\tbOccEvals[%1d]: %20.14f\n", i, bOccEvals[i]); 
-	fflush(outfile);
+	outfile->Printf("\tbOccEvals[%1d]: %20.14f\n", i, bOccEvals[i]); 
+	
       }
       
-      fprintf(outfile,"\n \n"); fflush(outfile);
+      outfile->Printf("\n \n"); 
       for(int i = 0; i<nacvoA; i++) {
-	fprintf(outfile,"\taVirEvals[%1d]: %20.14f\n", i, aVirEvals[i]); 
-	fflush(outfile);
+	outfile->Printf("\taVirEvals[%1d]: %20.14f\n", i, aVirEvals[i]); 
+	
       }
       
-      fprintf(outfile,"\n \n"); fflush(outfile);
+      outfile->Printf("\n \n"); 
       for(int i = 0; i<nacvoB; i++) {
-	fprintf(outfile,"\tbVirEvals[%1d]: %20.14f\n", i, bVirEvals[i]);
-	fflush(outfile);
+	outfile->Printf("\tbVirEvals[%1d]: %20.14f\n", i, bVirEvals[i]);
+	
       }      
     }
     
@@ -303,7 +303,7 @@ void OCCWave::denominators_ump2()
     delete [] aVirEvals;
     delete [] bVirEvals;
  
-//fprintf(outfile,"\n denominators done. \n"); fflush(outfile);
+//outfile->Printf("\n denominators done. \n"); 
 }// end denominators
 }} // End Namespaces
 

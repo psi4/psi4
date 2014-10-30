@@ -11,8 +11,6 @@ InsertPath = '/../../../'
 if (len(sys.argv) == 2):
     DriverPath = sys.argv[1] + '/'
     sys.path.insert(0, os.path.abspath(os.getcwd()))
-    import apply_relpath
-    IncludePath = apply_relpath.get_topsrcdir_asrelativepathto_objdirsfnxsource()[1]
 
 
 def pts(category, pyfile):
@@ -66,17 +64,17 @@ frst.write('.. _`apdx:psiFiles`:\n\n')
 frst.write('PSIOH Intermediate Files\n')
 frst.write('========================\n\n')
 frst.write('.. table:: Auxiliary files in |PSIfour|\n\n')
-frst.write('   +-%-4s-+-%-27s-+-%-120s-+\n' % 
+frst.write('   +-%-4s-+-%-27s-+-%-120s-+\n' %
     (4 * '-', 27 * '-', 120 * '-'))
-frst.write('   | %-4s | %-27s | %-120s |\n' % 
+frst.write('   | %-4s | %-27s | %-120s |\n' %
     ('File', 'File Label', 'Contents'))
-frst.write('   +=%4s=+=%27s=+=%120s=+\n' % 
+frst.write('   +=%4s=+=%27s=+=%120s=+\n' %
     (4 * '=', 27 * '=', 120 * '='))
 
 for key in sorted(psifDict.keys()):
-    frst.write('   | %4d | %-27s | %-120s |\n' % 
+    frst.write('   | %4d | %-27s | %-120s |\n' %
         (key, psifDict[key]['label'], psifDict[key]['notes']))
-    frst.write('   +-%-4s-+-%-27s-+-%-120s-+\n' % 
+    frst.write('   +-%-4s-+-%-27s-+-%-120s-+\n' %
         (4 * '-', 27 * '-', 120 * '-'))
 
 frst.write('\n')

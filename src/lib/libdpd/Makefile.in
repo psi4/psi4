@@ -44,7 +44,8 @@ buf4_symm.cc                  buf4_scmcopy.cc    file2_scm.cc                  \
 buf4_sort_ooc.cc              block_matrix.cc    memfree.cc                    \
 trace42_13.cc                 buf4_sort_axpy.cc  3d_sort.cc \
 T3_AAA.cc                     T3_AAB.cc          T3_RHF.cc  T3_RHF_ic.cc \
-cc3_sigma_RHF.cc              cc3_sigma_UHF.cc   cc3_sigma_RHF_ic.cc
+cc3_sigma_RHF.cc              cc3_sigma_UHF.cc   cc3_sigma_RHF_ic.cc \
+contract444_df.cc
 
 DEPENDINCLUDE = dpd.h dpd.gbl
 

@@ -967,7 +967,7 @@ void x_Gijab_ROHF(void)
   dpd_buf4_init(&V, CC_GAMMA, G_irr, 0, 5, 0, 5, 0, "GIjAb");
   tval += dpd_buf4_dot_self(&V);
   dpd_buf4_close(&V);
-  fprintf(outfile,"<Gijab|Gijab> = %15.10lf\n", tval);
+  outfile->Printf("<Gijab|Gijab> = %15.10lf\n", tval);
   */
 
 

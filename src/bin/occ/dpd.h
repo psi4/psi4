@@ -77,7 +77,7 @@ class SymBlockMatrix
   double get(int h, int m, int n);
   double *to_lower_triangle();
   double **to_block_matrix();
-  void print(FILE *out);
+  void print(std::string OutFileRMR);
   void print();
   void set_to_identity();
   void gemm(bool transa, bool transb, double alpha, const SymBlockMatrix* a, const SymBlockMatrix* b, double beta);
@@ -143,7 +143,7 @@ class SymBlockVector
   void set(double *Avec);
   double get(int h, int m);
   double *to_vector();
-  void print(FILE *out);
+  void print(std::string OutFileRMR);
   void print();
   void set_to_unit();
   void gemv(bool transa, double alpha, SymBlockMatrix* A, SymBlockVector* X, double beta);

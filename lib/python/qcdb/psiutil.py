@@ -27,6 +27,8 @@ or some better way. Apologies to the coders.
 import sys
 import math
 import re
+import os
+import string
 from vecutil import *
 
 
@@ -116,3 +118,20 @@ def query_yes_no(question, default=True):
             return False
         else:
             sys.stdout.write("    Please respond with 'yes' or 'no'.\n")
+
+
+## {{{ http://code.activestate.com/recipes/52224/ (r1)
+def search_file(filename, search_path):
+   """Given a search path, find file
+   """
+   file_found = False
+   paths = string.split(search_path, os.pathsep)
+   for path in paths:
+      if os.path.exists(os.path.join(path, filename)):
+          file_found = True
+          break
+   if file_found:
+      return os.path.abspath(os.path.join(path, filename))
+   else:
+      return None
+## end of http://code.activestate.com/recipes/52224/ }}}

@@ -73,62 +73,62 @@ void SlaterDeterminant::set(unsigned int na, unsigned char *alpoccs,
 
 void SlaterDeterminant::print(void)
 {
-   print(stdout);
+   print("outfile");
 }
 
 
 
-void SlaterDeterminant::print(FILE *outfile)
+void SlaterDeterminant::print(std::string OutFileRMR)
 {
    int i;
 
-   fprintf(outfile, "Alpha string: ");
+   outfile->Printf( "Alpha string: ");
    for (i=0; i<nalp; i++) {
-      fprintf(outfile, "%3d ", Occs[0][i]);
+      outfile->Printf( "%3d ", Occs[0][i]);
       }
-   fprintf(outfile, "\n");
+   outfile->Printf( "\n");
 
-   fprintf(outfile, "Beta string : ");
+   outfile->Printf( "Beta string : ");
    for (i=0; i<nbet; i++) {
-      fprintf(outfile, "%3d ", Occs[1][i]);
+      outfile->Printf( "%3d ", Occs[1][i]);
       }
-   fprintf(outfile, "\n");
+   outfile->Printf( "\n");
 }
 
 
-void SlaterDeterminant::print_config(FILE *outfile)
+void SlaterDeterminant::print_config(std::string OutFileRMR)
 {
    int i=0, j=0;
 
    while ((i < nalp) && (j < nbet)) {
       if (Occs[0][i] == Occs[1][j]) {
-         fprintf(outfile, "%dX ", Occs[0][i]+1);
+         outfile->Printf( "%dX ", Occs[0][i]+1);
          i++; j++;
          }
       else if (Occs[0][i] < Occs[1][j]) {
-         fprintf(outfile, "%dA ", Occs[0][i]+1);
+         outfile->Printf( "%dA ", Occs[0][i]+1);
          i++;
          } 
       else if (Occs[0][i] > Occs[1][j]) {
-         fprintf(outfile, "%dB ", Occs[1][j]+1);
+         outfile->Printf( "%dB ", Occs[1][j]+1);
          j++;
          }
       }
 
    if (i < j) {
       while (i < nalp) {
-         fprintf(outfile, "%dA ", Occs[0][i]+1);
+         outfile->Printf( "%dA ", Occs[0][i]+1);
          i++;
          }
       }
    else if (i > j) {
       while (j < nbet) {
-         fprintf(outfile, "%dB ", Occs[1][j]+1);
+         outfile->Printf( "%dB ", Occs[1][j]+1);
          j++;
          }
       }
 
-   fprintf(outfile, "\n") ;
+   outfile->Printf( "\n") ;
 
 }
 
@@ -185,7 +185,7 @@ double matrix_element(SlaterDeterminant* I, SlaterDeterminant* J)
    double val = 0.0;
   
    if (I->nalp != J->nalp || I->nbet != J->nbet) {
-      fprintf(stderr,"(matrix_element): unequal length alp/bet strings!\n");
+      outfile->Printf("(matrix_element): unequal length alp/bet strings!\n");
       return(0.0);
       }
 
@@ -255,8 +255,8 @@ double matrix_element(SlaterDeterminant* I, SlaterDeterminant* J)
    #endif
 
    if ((alpha_diff == -2) || (beta_diff == -2)) {
-      fprintf(stderr, "(matrix_element): Problem with calc_orb_diff.\n");
-      fprintf(stderr, "  Returns -2 value. \n");
+      outfile->Printf( "(matrix_element): Problem with calc_orb_diff.\n");
+      outfile->Printf( "  Returns -2 value. \n");
       } 
 
    else if ((alpha_diff == -1) || (beta_diff == -1) || total_diff > 2) {

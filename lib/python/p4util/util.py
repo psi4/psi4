@@ -21,11 +21,21 @@
 #
 
 """Module with utility functions for use in input files."""
-import psi4
+#CUimport psi4
 import sys
 import os
 import math
-from psiexceptions import *
+from p4xcpt import *
+
+def cubefile(filename='psi4.cube', nptsx=50, nptsy=50, nptsz=50, buffer_size=5.0, prop='density',**kwargs):
+    cube = psi4.CubeFile()
+    cube.set_filename(filename)
+    cube.set_npts(nptsx, nptsy, nptsz)
+    cube.set_buffer(buffer_size)
+    if prop.upper() == 'DENSITY':
+        cube.process_density();
+    else:
+        raise ValidationError('%s is not a valid property')
 
 def oeprop(*args, **kwargs):
     oe = psi4.OEProp()

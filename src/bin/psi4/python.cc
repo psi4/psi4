@@ -21,14 +21,17 @@
  */
 
 // This tells us the Python version number
+#include <boost/python.hpp>
 #include <boost/python/detail/wrap_python.hpp>
 #include <boost/python/module.hpp>
-#include <boost/python.hpp>
+
+#include <boost/tokenizer.hpp>
 #include <boost/python/list.hpp>
 #include <boost/python/dict.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include <cstdio>
 #include <sstream>
 #include <map>
@@ -45,7 +48,8 @@
 #include <psi4-dec.h>
 #include "script.h"
 #include "psi4.h"
-
+#include "gitversion.h"
+#include "libparallel/ParallelPrinter.h"
 #include "../ccenergy/ccwave.h"
 #include "../cclambda/cclambda.h"
 //#include "../mp2/mp2wave.h"
@@ -58,7 +62,7 @@
 #include <libparallel/parallel.h>
 namespace psi {
     int psi_start(int argc, char *argv[]);
-    int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix);
+    int psi_stop(FILE* infile, std::string, char* psi_file_prefix);
 }
 #endif
 
@@ -76,6 +80,9 @@ void export_chkpt();
 void export_mints();
 void export_functional();
 void export_oeprop();
+void export_cubefile();
+void export_libfrag();
+
 
 // In export_plugins.cc
 void py_psi_plugin_close_all();
@@ -99,6 +106,7 @@ namespace psi {
     namespace scfgrad    { PsiReturnType scfgrad(Options &);  }
     namespace scfgrad    { PsiReturnType scfhess(Options &);  }
     namespace scf        { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
+    namespace scf        { PsiReturnType scf_dummy(Options &);   }
     namespace libfock    { PsiReturnType libfock(Options &);  }
     namespace dfmp2      { PsiReturnType dfmp2(Options &);    }
     namespace dfmp2      { PsiReturnType dfmp2grad(Options &);}
@@ -124,9 +132,11 @@ namespace psi {
 	}
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
+    namespace detcas     { PsiReturnType detcas(Options&);     }
     namespace fnocc      { PsiReturnType fnocc(Options&);     }
     namespace stable     { PsiReturnType stability(Options&); }
     namespace occwave    { PsiReturnType occwave(Options&);   }
+    namespace dfoccwave  { PsiReturnType dfoccwave(Options&);   }
     namespace adc        { PsiReturnType adc(Options&);       }
     namespace thermo     { PsiReturnType thermo(Options&);    }
     namespace mrcc       {
@@ -152,30 +162,30 @@ namespace psi {
     }
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
-    extern void print_version(FILE *myout);
-    extern FILE *outfile;
+    extern void print_version(std::string);
+    
 }
 
 void py_flush_outfile()
 {
-    fflush(outfile);
+    
 }
 
 void py_close_outfile()
 {
-    if (outfile != stdout) {
-        fclose(outfile);
-        outfile = NULL;
+    if (outfile) {
+        outfile =boost::shared_ptr<OutFile>();
     }
 }
 
 void py_reopen_outfile()
 {
-    if (outfile_name == "stdout")
-        outfile = stdout;
+    if (outfile_name == "stdout"){
+        //outfile = stdout;
+    }
     else {
-        outfile = fopen(outfile_name.c_str(), "a");
-        if (outfile == NULL)
+        outfile = boost::shared_ptr<OutFile>(new OutFile(outfile_name,APPEND));
+        if(!outfile)
             throw PSIEXCEPTION("PSI4: Unable to reopen output file.");
     }
 }
@@ -183,8 +193,8 @@ void py_reopen_outfile()
 void py_be_quiet()
 {
 	py_close_outfile();
-	outfile = fopen("/dev/null", "a");
-	if (outfile == NULL)
+	outfile = boost::shared_ptr<OutFile>(new OutFile("/dev/null", APPEND));
+	if (!outfile)
 		throw PSIEXCEPTION("PSI4: Unable to redirect output to /dev/null.");
 }
 
@@ -255,6 +265,16 @@ double py_psi_occ()
 {
     py_psi_prepare_options_for_module("OCC");
     if (occwave::occwave(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
+}
+
+double py_psi_dfocc()
+{
+    py_psi_prepare_options_for_module("DFOCC");
+    if (dfoccwave::dfoccwave(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
@@ -387,6 +407,12 @@ SharedMatrix py_psi_displace_atom(SharedMatrix geom, const int atom,
 double py_psi_scf()
 {
     return py_psi_scf_callbacks(Py_None, Py_None);
+}
+
+double py_psi_scf_dummy()
+{
+    py_psi_prepare_options_for_module("SCF");
+    return scf::scf_dummy(Process::environment.options);
 }
 
 double py_psi_dcft()
@@ -543,6 +569,7 @@ double py_psi_fnocc()
     else
         return 0.0;
 }
+
 double py_psi_detci()
 {
     py_psi_prepare_options_for_module("DETCI");
@@ -551,6 +578,12 @@ double py_psi_detci()
     }
     else
         return 0.0;
+}
+
+double py_psi_detcas()
+{
+    py_psi_prepare_options_for_module("DETCAS");
+    return detcas::detcas(Process::environment.options);
 }
 
 double py_psi_cchbar()
@@ -682,6 +715,11 @@ char const* py_psi_version()
     return PSI_VERSION;
 }
 
+char const* py_psi_git_version()
+{
+    return GIT_VERSION;
+}
+
 void py_psi_clean()
 {
     PSIOManager::shared_object()->psiclean();
@@ -709,7 +747,7 @@ boost::python::list py_psi_get_global_option_list()
 
 void py_psi_print_out(std::string s)
 {
-    fprintf(outfile,"%s",s.c_str());
+    (*outfile)<<s;
 }
 
 /**
@@ -766,6 +804,8 @@ bool py_psi_set_local_option_int(std::string const & module, std::string const &
         Process::environment.options.set_double(module, nonconst_key, val);
     }else if (data.type() == "boolean") {
         Process::environment.options.set_bool(module, nonconst_key, value ? true : false);
+    }else if (data.type() == "string") {
+        Process::environment.options.set_str(module, nonconst_key, boost::lexical_cast<std::string>(value));
     }else{
         Process::environment.options.set_int(module, nonconst_key, value);
     }
@@ -824,6 +864,8 @@ bool py_psi_set_global_option_int(std::string const & key, int value)
         Process::environment.options.set_global_double(nonconst_key, val);
     }else if (data.type() == "boolean") {
         Process::environment.options.set_global_bool(nonconst_key, value ? true : false);
+    }else if (data.type() == "string") {
+        Process::environment.options.set_global_str(nonconst_key, boost::lexical_cast<std::string>(value));
     }else{
         Process::environment.options.set_global_int(nonconst_key, value);
     }
@@ -1043,7 +1085,6 @@ void py_psi_set_parent_symmetry(std::string pg)
     Process::environment.set_parent_symmetry(group);
 }
 
-
 boost::shared_ptr<Molecule> py_psi_get_active_molecule()
 {
     return Process::environment.molecule();
@@ -1101,10 +1142,15 @@ void py_psi_set_variable(const std::string & key, double val)
     Process::environment.globals[uppercase_key] = val;
 }
 
+void py_psi_clean_variable_map()
+{
+    Process::environment.globals.clear();
+}
+
 void py_psi_set_memory(unsigned long int mem)
 {
     Process::environment.set_memory(mem);
-    fprintf(outfile,"\n  Memory set to %7.3f %s by Python script.\n",(mem > 1000000000 ? mem/1.0E9 : mem/1.0E6), \
+    outfile->Printf("\n  Memory set to %7.3f %s by Python script.\n",(mem > 1000000000 ? mem/1.0E9 : mem/1.0E6), \
         (mem > 1000000000 ? "GiB" : "MiB" ));
 }
 
@@ -1123,24 +1169,77 @@ int py_psi_get_n_threads()
     return Process::environment.get_n_threads();
 }
 
-int py_psi_get_nproc()
+int py_psi_get_nproc(const std::string& CommName)
 {
-    return WorldComm->nproc();
+    return WorldComm->nproc(CommName);
 }
 
-int py_psi_get_me()
+int py_psi_get_me(const std::string& CommName)
 {
-    return WorldComm->me();
+    return WorldComm->me(CommName);
+}
+
+void py_make_comm(const std::string& CommName,const int Color,const std::string& Comm2Split){
+	WorldComm->MakeComm(CommName,Color,Comm2Split);
+}
+
+void py_free_comm(const std::string& CommName){
+	WorldComm->FreeComm(CommName);
+}
+
+std::string py_get_comm(){
+	std::string the_comm=WorldComm->communicator();
+	return the_comm;
+}
+
+
+template <typename T>
+boost::python::list bcast_wrapper(T* data,int nelem, int broadcaster,const std::string& CommName){
+	int me=WorldComm->me(CommName);
+	T* datatarget;
+	if(me!=broadcaster)datatarget=new T[nelem];
+	else datatarget=data;
+	WorldComm->bcast(datatarget,nelem,broadcaster,CommName);
+	boost::python::list data2return;
+	for(int i=0;i<nelem;i++)data2return.append(datatarget[i]);
+	if(me!=broadcaster)delete [] datatarget;
+	return data2return;
+}
+
+boost::python::list py_bcast_double(boost::python::list& data,int broadcaster,const std::string& CommName){
+	std::vector<double>data2bcast;
+	int nelem=boost::python::len(data);
+	for(int i=0;i<nelem;i++)data2bcast.push_back(boost::python::extract<double>(data[i]));
+	return bcast_wrapper(&data2bcast[0],nelem,broadcaster,CommName);
+}
+
+template <typename T>
+boost::python::list all_gather_wrapper(const T* data, int nelem,const std::string& CommName){
+	int nproc=WorldComm->nproc(CommName);
+	int TotalElem=nproc*nelem;
+	T *datatarget=new T[TotalElem];
+	WorldComm->all_gather(data,nelem,datatarget,CommName);
+	boost::python::list data2return;
+	for(int i=0;i<TotalElem;i++)data2return.append(datatarget[i]);
+	delete [] datatarget;
+	return data2return;
+}
+
+
+boost::python::list py_all_gather_double(const boost::python::list& data,const std::string& CommName){
+	std::vector<double>data2gather;
+	int nelem=boost::python::len(data);
+	for(int i=0;i<nelem;i++)data2gather.push_back(boost::python::extract<double>(data[i]));
+	return all_gather_wrapper(&data2gather[0],nelem,CommName);
+}
+
+void py_sync(const std::string& CommName){
+	WorldComm->sync(CommName);
 }
 
 boost::shared_ptr<Wavefunction> py_psi_wavefunction()
 {
     return Process::environment.wavefunction();
-}
-
-void py_psi_add_user_specified_basis_file(const string& file)
-{
-    Process::environment.user_basis_files.push_front(file);
 }
 
 string py_psi_get_input_directory()
@@ -1165,9 +1264,9 @@ void py_psi_print_variable_map()
             std::fixed << std::setprecision(12) << it->second << std::endl;
     }
 
-    fprintf(outfile, "\n\n  Variable Map:");
-    fprintf(outfile, "\n  ----------------------------------------------------------------------------\n");
-    fprintf(outfile, "%s\n\n", line.str().c_str());
+    outfile->Printf( "\n\n  Variable Map:");
+    outfile->Printf( "\n  ----------------------------------------------------------------------------\n");
+    outfile->Printf( "%s\n\n", line.str().c_str());
 }
 
 std::string py_psi_top_srcdir()
@@ -1185,13 +1284,14 @@ bool psi4_python_module_initialize()
         return true;
     }
 
-    print_version(stdout);
+    print_version("stdout");
 
     // Track down the location of PSI4's python script directory.
     std::string psiDataDirName = Process::environment("PSIDATADIR");
-    std::string psiDataDirWithPython = psiDataDirName + "/python";
+    std::string psiDataDirWithPython = psiDataDirName + "/psi4";
     boost::filesystem::path bf_path;
     bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
+    // printf("Python dir is at %s\n", psiDataDirName.c_str()); 
     if(!boost::filesystem::is_directory(bf_path)) {
         printf("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
                 "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
@@ -1227,11 +1327,11 @@ void psi4_python_module_finalize()
     // There is only one timer:
     timer_done();
 
-    psi_stop(infile, outfile, psi_file_prefix);
+    psi_stop(infile, "outfile", psi_file_prefix);
     Script::language->finalize();
 
     WorldComm->sync();
-    WorldComm->finalize();
+    //WorldComm->finalize();
 }
 #endif
 
@@ -1247,12 +1347,12 @@ BOOST_PYTHON_FUNCTION_OVERLOADS(set_local_option_overloads, py_psi_set_local_opt
 BOOST_PYTHON_MODULE(psi4)
 {
 #if defined(MAKE_PYTHON_MODULE)
+    // Initialize the world communicator
+    WorldComm = boost::shared_ptr<worldcomm>(new worldcomm(0, 0));
+
     // Setup the environment
     Process::arguments.initialize(0, 0);
     Process::environment.initialize(); // Defaults to obtaining the environment from the global environ variable
-
-    // Initialize the world communicator
-    WorldComm = initialize_communicator(0, 0);
 
     // There is only one timer:
     timer_init();
@@ -1274,9 +1374,13 @@ BOOST_PYTHON_MODULE(psi4)
     def("finalize", &psi4_python_module_finalize);
 #endif
 
+
+
+
+
     register_exception_translator<PsiException>(&translate_psi_exception);
 
-    docstring_options sphx_doc_options(true, true, false);
+//    docstring_options sphx_doc_options(true, true, false);
 
     enum_<PsiReturnType>("PsiReturnType", "docstring")
             .value("Success", Success)
@@ -1287,6 +1391,7 @@ BOOST_PYTHON_MODULE(psi4)
 
 
     def("version", py_psi_version, "Returns the version ID of this copy of Psi.");
+    def("git_version", py_psi_git_version, "Returns the git version of this copy of Psi.");
     def("clean", py_psi_clean, "Function to remove scratch files. Call between independent jobs.");
 
     // Benchmarks
@@ -1301,10 +1406,12 @@ BOOST_PYTHON_MODULE(psi4)
     // OEProp/GridProp
     export_oeprop();
 
-    def("print_list", py_psi_print_list, "Prints a python list using a C function.");
-
+    // CubeFile
+    export_cubefile();
 
     // Options
+// The following line was conflct between master and roa branch (TDC, 10/29/2014)
+//    def("print_list", py_psi_print_list, "Prints a python list using a C function.");
     def("prepare_options_for_module", py_psi_prepare_options_for_module, "Sets the options module up to return options pertaining to the named argument (e.g. SCF).");
     def("set_active_molecule", py_psi_set_active_molecule, "Activates a previously defined (in the input) molecule, by name.");
     def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
@@ -1317,8 +1424,14 @@ BOOST_PYTHON_MODULE(psi4)
     def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
     def("set_nthread", &py_psi_set_n_threads, "Sets the number of threads to use in SMP parallel computations.");
     def("nthread", &py_psi_get_n_threads, "Returns the number of threads to use in SMP parallel computations.");
-    def("nproc", &py_psi_get_nproc, "Returns the number of processors being used in a MADNESS parallel run.");
-    def("me", &py_psi_get_me, "Returns the current process ID in a MADNESS parallel run.");
+    def("nproc", &py_psi_get_nproc, "Returns the number of processes.");
+    def("me", &py_psi_get_me, "Returns the current process ID.");
+    def("make_comm",&py_make_comm, "Makes a communicator");
+    def("free_comm",&py_free_comm, "Frees a communicator");
+    def("get_comm",&py_get_comm, "Returns the current communicator");
+    def("sync",&py_sync,"Waits for all MPI processes to ketchup");
+    def("bcast_double",&py_bcast_double,"broadcasts a list of doubles");
+    def("all_gather_double",&py_all_gather_double,"all_gathers a list of doubles");
 
     def("set_parent_symmetry", py_psi_set_parent_symmetry, "Sets the symmetry of the 'parent' (undisplaced) geometry, by Schoenflies symbol, at the beginning of a finite difference computation.");
     def("print_options", py_psi_print_options, "Prints the currently set options (to the output file) for the current module.");
@@ -1326,16 +1439,16 @@ BOOST_PYTHON_MODULE(psi4)
     def("print_out", py_psi_print_out, "Prints a string (using sprintf-like notation) to the output file.");
 
     // Set the different local option types
-    def("set_local_option", py_psi_set_local_option_string, "Sets a string option scoped only to a specific module.");
-    def("set_local_option", py_psi_set_local_option_double, "Sets a double option scoped only to a specific module.");
-    def("set_local_option", py_psi_set_local_option_int, "Sets an integer option scoped only to a specific module.");
+    def("set_local_option", py_psi_set_local_option_string, "Sets value *arg3* to string keyword *arg2* scoped only to a specific module *arg1*.");
+    def("set_local_option", py_psi_set_local_option_double, "Sets value *arg3* to double keyword *arg2* scoped only to a specific module *arg1*.");
+    def("set_local_option", py_psi_set_local_option_int, "Sets value *arg3* to integer keyword *arg2* scoped only to a specific module *arg1*.");
     def("set_local_option", py_psi_set_local_option_array, set_local_option_overloads());
     def("set_local_option_python", py_psi_set_local_option_python, "Sets an option to a Python object, but scoped only to a single module.");
 
     // Set the different global option types
-    def("set_global_option", py_psi_set_global_option_string, "Sets a string option for all modules.");
-    def("set_global_option", py_psi_set_global_option_double, "Sets a double option for all modules.");
-    def("set_global_option", py_psi_set_global_option_int, "Sets an integer option for all modules.");
+    def("set_global_option", py_psi_set_global_option_string, "Sets value *arg2* to string keyword *arg1* for all modules.");
+    def("set_global_option", py_psi_set_global_option_double, "Sets value *arg2* to double keyword *arg1* for all modules.");
+    def("set_global_option", py_psi_set_global_option_int, "Sets value *arg2* to integer keyword *arg1* for all modules.");
     def("set_global_option", py_psi_set_global_option_array, set_global_option_overloads());
     def("set_global_option_python", py_psi_set_global_option_python, "Sets a global option to a Python object type.");
 
@@ -1343,24 +1456,22 @@ BOOST_PYTHON_MODULE(psi4)
     def("get_global_option_list", py_psi_get_global_option_list, "Returns a list of all global options.");
 
     // Get the option; either global or local or let liboptions decide whether to use global or local
-    def("get_global_option", py_psi_get_global_option, "Given a string of a keyword name, returns the value associated with the keyword from the global options. Returns error if keyword is not recognized.");
-    def("get_local_option", py_psi_get_local_option, "Given a string of a keyword name and a particular module, returns the value associated with the keyword in the module options scope. Returns error if keyword is not recognized for the module.");
-    def("get_option", py_psi_get_option, "Given a string of a keyword name and a particular module, returns the local value associated with the keyword if it's been set, else the global value if it's been set, else the local default value. Returns error if keyword is not recognized globally or if keyword is not recognized for the module.");
+    def("get_global_option", py_psi_get_global_option, "Given a string of a keyword name *arg1*, returns the value associated with the keyword from the global options. Returns error if keyword is not recognized.");
+    def("get_local_option", py_psi_get_local_option, "Given a string of a keyword name *arg2* and a particular module *arg1*, returns the value associated with the keyword in the module options scope. Returns error if keyword is not recognized for the module.");
+    def("get_option", py_psi_get_option, "Given a string of a keyword name *arg2* and a particular module *arg1*, returns the local value associated with the keyword if it's been set, else the global value if it's been set, else the local default value. Returns error if keyword is not recognized globally or if keyword is not recognized for the module.");
 
     // Returns whether the option has changed/revoke has changed for silent resets
-    def("has_global_option_changed", py_psi_has_global_option_changed, "Returns boolean for whether the option has been touched in the global scope, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched in the global scope by the user.");
-    def("has_local_option_changed", py_psi_has_local_option_changed, "Returns boolean for whether the option has been touched in the scope of the specified module, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched in the module scope by the user.");
-    def("has_option_changed", py_psi_has_option_changed, "Returns boolean for whether the option has been touched either locally to the specified module or globally, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched by the user.");
-    def("revoke_global_option_changed", py_psi_revoke_global_option_changed, "Given a string of a keyword name, sets the has_changed attribute in the global options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
-    def("revoke_local_option_changed", py_psi_revoke_local_option_changed, "Given a string of a keyword name and a particular module, sets the has_changed attribute in the module options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
+    def("has_global_option_changed", py_psi_has_global_option_changed, "Returns boolean for whether the keyword *arg1* has been touched in the global scope, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched in the global scope by the user.");
+    def("has_local_option_changed", py_psi_has_local_option_changed, "Returns boolean for whether the keyword *arg2* has been touched in the scope of the specified module *arg1*, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched in the module scope by the user.");
+    def("has_option_changed", py_psi_has_option_changed, "Returns boolean for whether the option *arg2* has been touched either locally to the specified module *arg1* or globally, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched by the user.");
+    def("revoke_global_option_changed", py_psi_revoke_global_option_changed, "Given a string of a keyword name *arg1*, sets the has_changed attribute in the global options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
+    def("revoke_local_option_changed", py_psi_revoke_local_option_changed, "Given a string of a keyword name *arg2* and a particular module *arg1*, sets the has_changed attribute in the module options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
 
     // These return/set/print PSI variables found in Process::environment.globals
     def("get_variable", py_psi_get_variable, "Returns one of the PSI variables set internally by the modules or python driver (see manual for full listing of variables available).");
     def("set_variable", py_psi_set_variable, "Sets a PSI variable, by name.");
     def("print_variables", py_psi_print_variable_map, "Prints all PSI variables that have been set internally.");
-
-    // Adds a custom user basis set file.
-    def("add_user_basis_file", py_psi_add_user_specified_basis_file, "Adds a custom basis set file, provided by the user.");
+    def("clean_variables", py_psi_clean_variable_map, "Empties all PSI variables that have set internally.");
 
     // Get the name of the directory where the input file is at
     def("get_input_directory", py_psi_get_input_directory, "Returns the location of the input file.");
@@ -1385,6 +1496,7 @@ BOOST_PYTHON_MODULE(psi4)
 
     def("scf", py_psi_scf_callbacks, "Runs the SCF code.");
     def("scf", py_psi_scf, "Runs the SCF code.");
+    def("scf_dummy", py_psi_scf_dummy, "Builds SCF wavefunctionobject only. Does not execute scf.");
     def("dcft", py_psi_dcft, "Runs the density cumulant functional theory code.");
     def("lmp2", py_psi_lmp2, "Runs the local MP2 code.");
     def("libfock", py_psi_libfock, "Runs a CPHF calculation, using libfock.");
@@ -1419,6 +1531,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");
     def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
+    def("detcas", py_psi_detcas, "Runs the determinant-based complete active space self consistent field.");
     def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
     def("cchbar", py_psi_cchbar, "Runs the code to generate the similariry transformed Hamiltonian.");
     def("cclambda", py_psi_cclambda, "Runs the coupled cluster lambda equations code.");
@@ -1427,6 +1540,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("scatter", py_psi_scatter, "New Scatter function.");
     def("cceom", py_psi_cceom, "Runs the equation of motion coupled cluster code, for excited states.");
     def("occ", py_psi_occ, "Runs the orbital optimized CC codes.");
+    def("dfocc", py_psi_dfocc, "Runs the density-fitted orbital optimized CC codes.");
     def("adc", py_psi_adc, "Runs the ADC propagator code, for excited states.");
     def("thermo", py_psi_thermo, "Computes thermodynamic data.");
     def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
@@ -1436,6 +1550,8 @@ BOOST_PYTHON_MODULE(psi4)
     export_chkpt();
     export_mints();
     export_functional();
+    export_libfrag();
+
 
     typedef string (Process::Environment::*environmentStringFunction)(const string&);
 
@@ -1480,12 +1596,12 @@ void Python::run(FILE *input)
 
 #if PY_MAJOR_VERSION == 2
         if (PyImport_AppendInittab(strdup("psi4"), initpsi4) == -1) {
-            fprintf(stderr, "Unable to register psi4 with your Python.\n");
+            outfile->Printf( "Unable to register psi4 with your Python.\n");
             abort();
         }
 #else
         if (PyImport_AppendInittab(strdup("psi4"), PyInit_psi4) == -1) {
-            fprintf(stderr, "Unable to register psi4 with your Python.\n");
+            outfile->Printf( "Unable to register psi4 with your Python.\n");
             abort();
         }
 #endif
@@ -1497,12 +1613,40 @@ void Python::run(FILE *input)
         #else
         Py_SetProgramName(s);
         #endif
+        
+        // Track down the location of PSI4's auxiliary directories path
+        std::string psiPath = Process::environment("PSIPATH") + ":./";
+        boost::char_separator<char> sep(":");
+        typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+        tokenizer tokens(psiPath, sep);
+        PyObject *path, *sysmod, *str;
+        PY_TRY(sysmod , PyImport_ImportModule("sys"));
+        PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
+        for( tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter) {
+            boost::filesystem::path bf_path2;
+            bf_path2 = boost::filesystem::system_complete(*tok_iter);
+            if(!boost::filesystem::is_directory(bf_path2)) {
+                printf("Unable to read the PSI4 Auxililary folder - check the PSIPATH environmental variable\n"
+                        "      Current value of PSIPATH is %s\n", psiPath.c_str());
+                exit(1);
+            }
+#if PY_MAJOR_VERSION == 2
+            PY_TRY(str    , PyString_FromString((*tok_iter).c_str()));
+#else
+            PY_TRY(str    , PyBytes_FromString((*tok_iter).c_str()));
+#endif
+            PyList_Append(path, str);
+        }
+        Py_DECREF(str);
+        Py_DECREF(path);
+        Py_DECREF(sysmod);
 
         // Track down the location of PSI4's python script directory.
         std::string psiDataDirName = Process::environment("PSIDATADIR");
         std::string psiDataDirWithPython = psiDataDirName + "/python";
         boost::filesystem::path bf_path;
         bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
+        // printf("Python dir is at %s\n", psiDataDirName.c_str());
         if(!boost::filesystem::is_directory(bf_path)) {
             printf("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
                     "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
@@ -1510,7 +1654,6 @@ void Python::run(FILE *input)
         }
 
         // Add PSI library python path
-        PyObject *path, *sysmod, *str;
         PY_TRY(sysmod , PyImport_ImportModule("sys"));
         PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
 #if PY_MAJOR_VERSION == 2
@@ -1568,8 +1711,8 @@ void Python::run(FILE *input)
                     inputfile = file.str();
 
                 if (verbose) {
-                    fprintf(outfile, "\n Input file to run:\n%s", inputfile.c_str());
-                    fflush(outfile);
+                    outfile->Printf( "\n Input file to run:\n%s", inputfile.c_str());
+                    
                 }
 
                 str strStartScript(inputfile);
@@ -1594,7 +1737,7 @@ void Python::run(FILE *input)
         }
     }
     else {
-        fprintf(stderr, "Unable to run Python input file.\n");
+        outfile->Printf( "Unable to run Python input file.\n");
         return;
     }
 

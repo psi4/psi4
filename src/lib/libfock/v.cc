@@ -388,9 +388,9 @@ void VBase::finalize()
 }
 void VBase::print_header() const
 {
-    fprintf(outfile, "  ==> DFT Potential <==\n\n");
-    functional_->print(outfile, print_);  
-    grid_->print(outfile,print_);
+    outfile->Printf( "  ==> DFT Potential <==\n\n");
+    functional_->print("outfile", print_);  
+    grid_->print("outfile",print_);
 }
 
 RV::RV(boost::shared_ptr<SuperFunctional> functional,
@@ -475,8 +475,8 @@ void RV::compute_V()
         timer_off("Functional");
 
         if (debug_ > 4) {
-            block->print(outfile, debug_);
-            properties_->print(outfile, debug_);
+            block->print("outfile", debug_);
+            properties_->print("outfile", debug_);
         }
 
         timer_on("V_XC");
@@ -583,12 +583,12 @@ void RV::compute_V()
     quad_values_["RHO_BZ"]     = rhoazq; 
  
     if (debug_) {
-        fprintf(outfile, "   => Numerical Integrals <=\n\n");
-        fprintf(outfile, "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
-        fprintf(outfile, "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
-        fprintf(outfile, "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
-        fprintf(outfile, "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
-        fprintf(outfile, "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
+        outfile->Printf( "   => Numerical Integrals <=\n\n");
+        outfile->Printf( "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
+        outfile->Printf( "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
+        outfile->Printf( "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
+        outfile->Printf( "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
+        outfile->Printf( "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
     }
 }
 SharedMatrix RV::compute_gradient()
@@ -816,12 +816,12 @@ SharedMatrix RV::compute_gradient()
     quad_values_["RHO_BZ"]     = rhoazq; 
  
     if (debug_) {
-        fprintf(outfile, "   => XC Gradient: Numerical Integrals <=\n\n");
-        fprintf(outfile, "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
-        fprintf(outfile, "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
-        fprintf(outfile, "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
-        fprintf(outfile, "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
-        fprintf(outfile, "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
+        outfile->Printf( "   => XC Gradient: Numerical Integrals <=\n\n");
+        outfile->Printf( "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
+        outfile->Printf( "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
+        outfile->Printf( "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
+        outfile->Printf( "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
+        outfile->Printf( "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
     }
 
     properties_->set_deriv(old_deriv);
@@ -925,8 +925,8 @@ void UV::compute_V()
         timer_off("Functional");
 
         if (debug_ > 3) {
-            block->print(outfile, debug_);
-            properties_->print(outfile, debug_);
+            block->print("outfile", debug_);
+            properties_->print("outfile", debug_);
         }
 
         timer_on("V_XC");
@@ -1068,12 +1068,12 @@ void UV::compute_V()
     quad_values_["RHO_BZ"]     = rhobzq; 
  
     if (debug_) {
-        fprintf(outfile, "   => Numerical Integrals <=\n\n");
-        fprintf(outfile, "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
-        fprintf(outfile, "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
-        fprintf(outfile, "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
-        fprintf(outfile, "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
-        fprintf(outfile, "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
+        outfile->Printf( "   => Numerical Integrals <=\n\n");
+        outfile->Printf( "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
+        outfile->Printf( "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
+        outfile->Printf( "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
+        outfile->Printf( "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
+        outfile->Printf( "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
     }
 }
 SharedMatrix UV::compute_gradient()
@@ -1352,12 +1352,12 @@ SharedMatrix UV::compute_gradient()
     } 
  
     if (debug_) {
-        fprintf(outfile, "   => XC Gradient: Numerical Integrals <=\n\n");
-        fprintf(outfile, "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
-        fprintf(outfile, "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
-        fprintf(outfile, "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
-        fprintf(outfile, "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
-        fprintf(outfile, "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
+        outfile->Printf( "   => XC Gradient: Numerical Integrals <=\n\n");
+        outfile->Printf( "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
+        outfile->Printf( "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
+        outfile->Printf( "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
+        outfile->Printf( "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
+        outfile->Printf( "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
     }
 
     properties_->set_deriv(old_deriv);

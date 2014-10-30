@@ -129,11 +129,11 @@ public:
 
     inline void sync() { madworld_->gop.fence(); }
 
-    inline void print(FILE *out=outfile) const
+    inline void print(std::string OutFileRMR) const
     {
         if (me_ == 0) {
-            fprintf(out, "\n    Using MadCommunicator (Number of procs = %d)\n", nproc_);
-            fprintf(out, "                          (Number of threads in pool = %d)\n\n", nthread_);
+            printer->Printf( "\n    Using MadCommunicator (Number of procs = %d)\n", nproc_);
+            printer->Printf( "                          (Number of threads in pool = %d)\n\n", nthread_);
         }
     }
 

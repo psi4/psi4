@@ -36,6 +36,8 @@
 #include <libscf_solver/hf.h>
 #include <libscf_solver/rhf.h>
 
+#include <libfock/jk.h>
+
 #include <string>
 
 using namespace boost;
@@ -43,26 +45,26 @@ using namespace boost::python;
 using namespace psi;
 
 dict matrix_array_interface(SharedMatrix mat, int irrep){
-	dict rv;
-	int rows = mat->rowspi(irrep);
-	int cols = mat->colspi(irrep);
-	rv["shape"] = boost::python::make_tuple(rows, cols);
-	rv["data"] = boost::python::make_tuple((long)mat->get_pointer(irrep), true);
-	std::string typestr = is_big_endian() ? ">" : "<";
+    dict rv;
+    int rows = mat->rowspi(irrep);
+    int cols = mat->colspi(irrep);
+    rv["shape"] = boost::python::make_tuple(rows, cols);
+    rv["data"] = boost::python::make_tuple((long)mat->get_pointer(irrep), true);
+    std::string typestr = is_big_endian() ? ">" : "<";
     {
         std::stringstream sstr;
         sstr << (int)sizeof(double);
         typestr += "f" + sstr.str();
     }
-	rv["typestr"] = typestr;
-	return rv;
+    rv["typestr"] = typestr;
+    return rv;
 }
 
 dict matrix_array_interface_c1(SharedMatrix mat){
-	if(mat->nirrep() != 1){
-		throw PSIEXCEPTION("Pointer export of multiple irrep matrices not yet implemented.");
-	}
-	return matrix_array_interface(mat, 0);
+    if(mat->nirrep() != 1){
+        throw PSIEXCEPTION("Pointer export of multiple irrep matrices not yet implemented.");
+    }
+    return matrix_array_interface(mat, 0);
 }
 
 boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
@@ -76,11 +78,11 @@ boost::shared_ptr<MatrixFactory> get_matrix_factory()
     // We need a valid molecule with a valid point group to create a matrix factory.
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
     if (!molecule) {
-        fprintf(outfile, "  Active molecule not set!");
+        outfile->Printf( "  Active molecule not set!");
         throw PSIEXCEPTION("Active molecule not set!");
     }
     if (!molecule->point_group()) {
-        fprintf(outfile, "  Active molecule does not have point group set!");
+        outfile->Printf( "  Active molecule does not have point group set!");
         throw PSIEXCEPTION("Active molecule does not have point group set!");
     }
 
@@ -198,8 +200,14 @@ void export_mints()
             .value("Descending", descending)
             .export_values();
 
+    enum_<Molecule::GeometryUnits>("GeometryUnits", "docstring")
+            .value("Angstrom", Molecule::Angstrom)
+            .value("Bohr", Molecule::Bohr)
+            .export_values();
+
+
     class_<PyBuffer<double>, shared_ptr<PyBuffer<double> > >("DoublePyBuffer", "Buffer interface to NumPy arrays").
-    		add_property("__array_interface__", &PyBuffer<double>::array_interface, "docstring");
+            add_property("__array_interface__", &PyBuffer<double>::array_interface, "docstring");
 
     typedef void   (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&, const SharedMatrix&, double);
     typedef void   (Matrix::*matrix_diagonalize)(SharedMatrix&, boost::shared_ptr<Vector>&, diagonalize_order);
@@ -369,8 +377,8 @@ void export_mints()
             def("is_done", &AOShellCombinationsIterator::is_done, "docstring");
 
     class_<ThreeCenterOverlapInt, boost::shared_ptr<ThreeCenterOverlapInt>, boost::noncopyable>("ThreeCenterOverlapInt", "docstring", no_init).
-    		def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "docstring").
-    		add_property("py_buffer_object", make_function(&ThreeCenterOverlapInt::py_buffer_object, return_internal_reference<>()), "docstring").
+            def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "docstring").
+            add_property("py_buffer_object", make_function(&ThreeCenterOverlapInt::py_buffer_object, return_internal_reference<>()), "docstring").
             def("set_enable_pybuffer", &ThreeCenterOverlapInt::set_enable_pybuffer, "docstring");
 
     class_<IntegralFactory, boost::shared_ptr<IntegralFactory>, boost::noncopyable>("IntegralFactory", "docstring", no_init).
@@ -552,7 +560,8 @@ void export_mints()
             def("nfragments", &Molecule::nfragments, "Gets the number of fragments in the molecule").
             def("print_in_input_format", &Molecule::print_in_input_format, "Prints the molecule as Cartesian or ZMatrix entries, just as inputted.").
             def("create_psi4_string_from_molecule", &Molecule::create_psi4_string_from_molecule, "Gets a string reexpressing in input format the current states of the molecule").
-            def("save_xyz", &Molecule::save_xyz, "Saves an XYZ file to arg2").
+            def("save_xyz_file", &Molecule::save_xyz_file, "Saves an XYZ file to arg2").
+            def("save_string_xyz_file", &Molecule::save_string_xyz_file, "Saves an XYZ file to arg2").
             def("save_string_xyz", &Molecule::save_string_xyz, "Saves the string of an XYZ file to arg2").
             def("Z", &Molecule::Z, return_value_policy<copy_const_reference>(), "Nuclear charge of atom").
             def("x", &Molecule::x, "x position of atom").
@@ -583,6 +592,7 @@ void export_mints()
             def("print_out", &Molecule::print, "Prints the molecule in Cartesians in input units").
             def("print_out_in_bohr", &Molecule::print_in_bohr, "Prints the molecule in Cartesians in Bohr").
             def("print_out_in_angstrom", &Molecule::print_in_angstrom, "Prints the molecule in Cartesians in Angstroms").
+            def("rotational_constants", &Molecule::rotational_constants, "Prints the rotational constants of the molecule").
             def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy, "Computes nuclear repulsion energy").
             def("find_point_group", &Molecule::find_point_group, "Finds computational molecular point group, user can override this with the symmetry keyword").
             def("reset_point_group", &Molecule::reset_point_group, "Overrides symmetry from outside the molecule string").
@@ -604,6 +614,7 @@ void export_mints()
             def("set_basis_by_symbol", &Molecule::set_basis_by_symbol, "Sets basis set arg3 to all atoms with symbol (e.g., H) arg2").
             def("set_basis_by_label", &Molecule::set_basis_by_label, "Sets basis set arg3 to all atoms with label (e.g., H4) arg2").
             def("set_basis_by_number", &Molecule::set_basis_by_number, "Sets basis set arg3 to atom number (1-indexed, incl. dummies) arg2").
+            add_property("units", &Molecule::units, &Molecule::set_units, "Units (Angstrom or Bohr) used to define the geometry").
             def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1").
             def("geometry", &Molecule::geometry, "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)");
 
@@ -622,20 +633,21 @@ void export_mints()
     class_<BasisSet, boost::shared_ptr<BasisSet>, boost::noncopyable>("BasisSet", "docstring", no_init).
             def("print_out", basis_print_out(&BasisSet::print), "docstring").
             def("print_detail_out", basis_print_out(&BasisSet::print_detail), "docstring").
-            def("make_filename", &BasisSet::make_filename, "docstring").
+            def("genbas", &BasisSet::print_detail_cfour, "Returns basis set per atom in CFOUR format").
+            def("make_filename", &BasisSet::make_filename, "Returns filename for basis name: pluses, stars, parentheses replaced and gbs extension added").
             staticmethod("make_filename").
             def("construct", &BasisSet::construct, "docstring").
             staticmethod("construct").
             def("zero_ao_basis_set", &BasisSet::zero_ao_basis_set, "Returns a BasisSet object that actually has a single s-function at the origin with an exponent of 0.0 and contraction of 1.0.").
             staticmethod("zero_ao_basis_set").
-            def("nbf", &BasisSet::nbf, "docstring").
-            def("nao", &BasisSet::nao, "docstring").
-            def("nprimitive", &BasisSet::nprimitive, "docstring").
-            def("nshell", &BasisSet::nshell, "docstring").
+            def("nbf", &BasisSet::nbf, "Returns number of basis functions (Cartesian or spherical depending on has_puream)").
+            def("nao", &BasisSet::nao, "Returns number of atomic orbitals (Cartesian)").
+            def("nprimitive", &BasisSet::nprimitive, "Returns total number of primitives in all contractions").
+            def("nshell", &BasisSet::nshell, "Returns number of shells").
             def("shell", no_center_version(&BasisSet::shell), return_value_policy<copy_const_reference>(), "docstring").
             def("shell", center_version(&BasisSet::shell), return_value_policy<copy_const_reference>(), "docstring").
-            def("max_am", &BasisSet::max_am, "docstring").
-            def("has_puream", &BasisSet::has_puream, "docstring").
+            def("max_am", &BasisSet::max_am, "Returns maximum angular momentum used").
+            def("has_puream", &BasisSet::has_puream, "Spherical harmonics?").
             def("shell_to_basis_function", &BasisSet::shell_to_basis_function, "docstring").
             def("shell_to_center", &BasisSet::shell_to_center, "docstring").
             def("shell_to_ao_function", &BasisSet::shell_to_ao_function, "docstring").
@@ -741,4 +753,21 @@ void export_mints()
             def(init<double>()).
             def("exponent", &FittedSlaterCorrelationFactor::exponent);
 
+
+    // LIBFOCK wrappers
+    class_<JK, boost::shared_ptr<JK>, boost::noncopyable>("JK", "docstring", no_init)
+//            .def(init<boost::shared_ptr<BasisSet> >())
+            .def("build_JK", &JK::build_JK, "docstring")
+            .staticmethod("build_JK")
+            .def("initialize", &JK::initialize)
+            .def("compute", &JK::compute)
+            .def("finalize", &JK::finalize)
+            .def("C_left", &JK::C_left, return_internal_reference<>())
+            .def("C_right", &JK::C_right, return_internal_reference<>())
+            .def("J", &JK::J, return_internal_reference<>())
+            .def("K", &JK::K, return_internal_reference<>())
+            .def("wK", &JK::wK, return_internal_reference<>())
+            .def("D", &JK::D, return_internal_reference<>())
+            .def("print_header", &JK::print_header, "docstring")
+            ;
 }

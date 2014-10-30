@@ -66,11 +66,13 @@ namespace psi { void psiclean(void); }
 namespace opt {
   void open_output_dat(void); // open/link outfile to text output
   void close_output_dat(void);// close above
-  void print_title(void); // print header
-  void print_end(void);   // print footer
+  void print_title_out(void); // print header
+  void print_end_out(void);   // print footer
   void init_ioff(void);
-  bool INTCO_EXCEPT::already_tried_other_intcos = false;
-  bool INTCO_EXCEPT::override_fragment_mode = false; // to override MULTI setting by exception algorithm
+  int INTCO_EXCEPT::dynamic_level = 0;          // initialized only once
+  std::vector<int> INTCO_EXCEPT::linear_angles; // static class members must be defined
+  //bool INTCO_EXCEPT::already_tried_other_intcos = false;
+  //bool INTCO_EXCEPT::override_fragment_mode = false; // to override MULTI setting by exception algorithm
 
 #if defined(OPTKING_PACKAGE_PSI)
   void set_params(psi::Options & options);      // set optimization parameters
@@ -92,35 +94,40 @@ OptReturnType optking(void) {
   MOLECULE *mol1;
   bool newly_generated_coordinates; // Are internal coordinates produced or read-in?
 
-  print_title(); // print header
+  print_title_out(); // print header
 
-  try {
+  try { // STEP2 ; do other exceptions
+  try { // STEP1 ; check bad_step exception first
 
 #if defined(OPTKING_PACKAGE_PSI)
   set_params(options);
 #else
   set_params(); // set optimization parameters
 #endif
-  if (INTCO_EXCEPT::override_fragment_mode && (Opt_params.fragment_mode == OPT_PARAMS::MULTI))
-    Opt_params.fragment_mode = OPT_PARAMS::SINGLE;
+  //if (INTCO_EXCEPT::override_fragment_mode && (Opt_params.fragment_mode == OPT_PARAMS::MULTI))
+  //  Opt_params.fragment_mode = OPT_PARAMS::SINGLE;
 
   // try to open old internal coordinates
   std::ifstream if_intco(FILENAME_INTCO_DAT, ios_base::in);
 
   if (if_intco.is_open()) { // old internal coordinates are present
 
-    fprintf(outfile,"\n\tPrevious internal coordinate definitions found.\n"); fflush(outfile);
+    oprintf_out("\n\tPrevious internal coordinate definitions found.\n"); 
     newly_generated_coordinates = false;
 
     mol1 = new MOLECULE(0);    // make an empty molecule
 
     // read internal coordinate and fragment definitions
     // create, allocate, and add fragment objects
-    mol1->read_intcos(if_intco);
-#if defined(OPTKING_PACKAGE_PSI)
-    psi::WorldComm->sync();
-#endif
+    mol1->read_coords(if_intco);
+
     if_intco.close();
+    //mol1->form_intrafragment_coord_combinations();  // skip if already present
+
+    // If we only read simples, and there are no combinations indicated, then
+    // assume 'trivial' (no combos);
+    if (mol1->Ncoord() == 0)
+      mol1->form_trivial_coord_combinations();
 
     mol1->update_connectivity_by_bonds();
 
@@ -131,7 +138,7 @@ OptReturnType optking(void) {
   }
   else { // automatically generate coordinates
 
-    fprintf(outfile,"\n\tInternal coordinates to be generated automatically.\n"); fflush(outfile);
+    oprintf_out("\n\tInternal coordinates to be generated automatically.\n"); 
     newly_generated_coordinates = true;
 
     // read number of atoms ; make one fragment of that size ;
@@ -142,47 +149,73 @@ OptReturnType optking(void) {
 
     // Quit nicely if there is only one atom present
     if (mol1->g_natom() == 1) {
-      fprintf(outfile,"\tThere is only one atom present, so your optimization is complete!\n");
+      oprintf_out("\tThere is only one atom present, so your optimization is complete!\n");
       close_output_dat();
       return OptReturnEndloop;
     }
 
     mol1->set_masses();
 
-    // use covalent radii to define bonds
+    // use covalent radii to define connectivity
     mol1->update_connectivity_by_distances();
+    mol1->add_intrafragment_hbonds();
 
-    // if fragment_mode == SINGLE, connects all separated groups of atoms by modifying frag.connectivity
-    // if fragment_mode == MULTI, splits into fragments and makes interfragment coordinates
+    // Critical function here.
+    // If fragment_mode == SINGLE, it connects all separated groups of atoms with additional connections.
+    // If fragment_mode == MULTI, splits into fragments based on connectivity.
     mol1->fragmentize();
-    mol1->print_connectivity(outfile);
+    mol1->print_connectivity(psi_outfile, qc_outfile);
 
-    if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE) {
-      mol1->add_intrafragment_simples_by_connectivity();
-      if (Opt_params.add_auxiliary_bonds)
-        mol1->add_intrafragment_auxiliary_bonds();
+    // General simple internal coordinates
+    if (Opt_params.coordinates == OPT_PARAMS::REDUNDANT ||
+        Opt_params.coordinates == OPT_PARAMS::DELOCALIZED ||
+        Opt_params.coordinates == OPT_PARAMS::NATURAL ||
+        Opt_params.coordinates == OPT_PARAMS::BOTH) {
+
+          mol1->add_intrafragment_simples_by_connectivity();
+
+          if (Opt_params.add_auxiliary_bonds) { // adds auxiliary bonds (only) within existing fragments
+            if (Opt_params.coordinates == OPT_PARAMS::NATURAL)
+              oprintf_out("\tAuxiliary bonds not added, as considered contrary to natural internals.\n"); 
+            else 
+              mol1->add_intrafragment_auxiliary_bonds();
+          }
     }
-    else if (Opt_params.fragment_mode == OPT_PARAMS::MULTI) {
-      mol1->add_intrafragment_simples_by_connectivity();
-      if (Opt_params.add_auxiliary_bonds)
-        mol1->add_intrafragment_auxiliary_bonds();
+
+    if (mol1->g_nfragment() > 1) { // >1 EFP fragment need connected
       mol1->add_interfragment();
-      mol1->freeze_interfragment_asymm(); // remove problematic ones?
+      mol1->freeze_interfragment_asymm(); // Try to remove some assymetric problematic ones.
     }
 
+    if (Opt_params.coordinates == OPT_PARAMS::REDUNDANT ||
+        Opt_params.coordinates == OPT_PARAMS::BOTH)
+      mol1->form_trivial_coord_combinations();
+    else if (Opt_params.coordinates == OPT_PARAMS::DELOCALIZED)
+      mol1->form_delocalized_coord_combinations();
+    else if (Opt_params.coordinates == OPT_PARAMS::NATURAL)
+      mol1->form_natural_coord_combinations();
+
+    if ( Opt_params.coordinates == OPT_PARAMS::CARTESIAN ||
+         Opt_params.coordinates == OPT_PARAMS::BOTH )
+      mol1->add_cartesians(); // also adds trivial combos
+
+    // In the future, which all types of constraints will be support?
     mol1->apply_input_constraints();
 
     // print out internal coordinates for future steps
-    FILE *fp_intco = fopen(FILENAME_INTCO_DAT, "w");
-    mol1->print_intco_dat(fp_intco);
-#if defined(OPTKING_PACKAGE_PSI)
-    psi::WorldComm->sync();
+    FILE *qc_intco;
+    std::string psi_intco = FILENAME_INTCO_DAT;
+#if defined(OPTKING_PACKAGE_QCHEM)
+    qc_intco = fopen(FILENAME_INTCO_DAT, "w");
 #endif
-    fclose(fp_intco);
+    mol1->print_intco_dat(psi_intco, qc_intco);
+#if defined(OPTKING_PACKAGE_QCHEM)
+    fclose(qc_intco);
+#endif
 
     // only generate coordinates and print them out
     if (Opt_params.generate_intcos_only) {
-      fprintf(outfile,"\tGenerating intcos and halting.");
+      oprintf_out("\tUpon request, generating intcos and halting.");
       close_output_dat();
 #if defined(OPTKING_PACKAGE_PSI)
       psi::psiclean();
@@ -192,30 +225,31 @@ OptReturnType optking(void) {
 
   }
 
-#if defined(OPTKING_PACKAGE_QCHEM)
-  if (Opt_params.efp_fragments_only)
+  if (Opt_params.fb_fragments_only)
     mol1 = new MOLECULE(0);       // construct an empty molecule
-  if (Opt_params.efp_fragments)
-    mol1->add_efp_fragments();    // add EFP fragments
-#endif
+  if (Opt_params.fb_fragments)
+    mol1->add_fb_fragments();    // add EFP fragments
 
   // print geometry and gradient
-  mol1->print_geom_grad(outfile);
-  //mol1->print_connectivity(outfile); fflush(outfile);
+  mol1->print_geom_grad(psi_outfile, qc_outfile);
+  //mol1->print_connectivity(psi_outfile, qc_outfile); 
 
   // read binary file for previous steps ; history needed to compute EFP values
-  p_Opt_data = new OPT_DATA(mol1->g_nintco(), 3*mol1->g_natom());
+  p_Opt_data = new OPT_DATA(mol1->Ncoord(), 3*mol1->g_natom());
   if (p_Opt_data->g_iteration() == 1 && Opt_params.opt_type == OPT_PARAMS::IRC) {
     p_irc_data = new IRC_DATA();
-    fprintf(stdout,"IRC data object created\n");
+    oprintf_out("IRC data object created\n");
   }
 
-#if defined(OPTKING_PACKAGE_QCHEM)
-  mol1->update_efp_values(); // EFP values calculated from old opt_data
-#endif
+  // If first iteration, start optional xyz trajectory file.
+  if (p_Opt_data->g_iteration() == 1)
+    if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz(-1);
+
+  mol1->update_fb_values(); // EFP values calculated from old opt_data
 
   // print internal coordinate definitions and values
-  mol1->print_intcos(outfile);
+  mol1->print_coords(psi_outfile, qc_outfile);
+  //mol1->print_simples(psi_outfile, qc_outfile);
 
   if (Opt_params.test_B)
     mol1->test_B();
@@ -236,32 +270,39 @@ OptReturnType optking(void) {
   mol1->forces(); // puts forces in p_Opt_data->step[last one]
 
   bool read_H_worked = false;
-  if (Opt_params.read_cartesian_H) {
-    double **H_cart = p_Opt_data->read_cartesian_H();       // read Cartesian Hessian
-    read_H_worked = mol1->cartesian_H_to_internals(H_cart); // transform to internal coordinates
-    free_matrix(H_cart);                                    // free Cartesian Hessian
-    if (read_H_worked) {
-      fprintf(outfile,"\tRead in cartesian Hessian and transformed it.\n");
-      p_Opt_data->reset_steps_since_last_H();
+
+  if (Opt_params.step_type != OPT_PARAMS::SD) {  // ignore all hessian stuff if SD
+
+    if (Opt_params.H_guess_every) { // ignore Hessian already present
+        mol1->H_guess(); // empirical model guess Hessian
+    }  /* if one wants to read_cartesian_H every time, then user can set this to true and H_update to none */
+    else if (Opt_params.read_cartesian_H) {
+      double **H_cart = p_Opt_data->read_cartesian_H();       // read Cartesian Hessian
+      read_H_worked = mol1->cartesian_H_to_internals(H_cart); // transform to internal coordinates
+      free_matrix(H_cart);                                    // free Cartesian Hessian
+      if (read_H_worked) {
+        oprintf_out("\tRead in cartesian Hessian and transformed it.\n");
+        p_Opt_data->reset_steps_since_last_H();
+      }
+      else { 
+        oprintf_out("\tUnable to read and transform cartesian Hessian.\n");
+        mol1->H_guess(); // empirical model guess Hessian
+      }
     }
-    else { 
-      fprintf(outfile,"\tUnable to read and transform cartesian Hessian.\n");
-      mol1->H_guess(); // empirical model guess Hessian
+    else if (p_Opt_data->g_iteration() == 1) {
+        mol1->H_guess(); // empirical model guess Hessian
     }
-  }
-  else if (p_Opt_data->g_iteration() == 1) {
-      mol1->H_guess(); // empirical model guess Hessian
-  }
-  else { // do Hessian update
-    try {
-        p_Opt_data->H_update(*mol1);
-    } catch (const char * str) {
-      fprintf(stderr, "%s\n", str);
-      fprintf(outfile, "H_update failed\n");
-      fprintf(outfile, "%s\n", str);
-      return OptReturnFailure;
+    else { // do Hessian update
+      try {
+          p_Opt_data->H_update(*mol1);
+      } catch (const char * str) {
+        fprintf(stderr, "%s\n", str);
+        oprintf_out( "H_update failed\n");
+        oprintf_out( "%s\n", str);
+        return OptReturnFailure;
+      }
     }
-  }
+  } // end !steepest descent
   
   // Increase number of steps since last Hessian by 1 unless we read in a new one
   if (read_H_worked)
@@ -290,7 +331,7 @@ OptReturnType optking(void) {
       // compute geometries and then quit
       mol1->linesearch_step();
       delete p_Opt_data;
-      print_end();
+      print_end_out();
       close_output_dat();
       return OptReturnEndloop;
     }
@@ -311,27 +352,30 @@ OptReturnType optking(void) {
     {
       if(!p_irc_data->go)
       {
-        fprintf(outfile,"\n\t **** Optimization is complete! ****\n");
+        oprintf_out("\n\t **** Optimization is complete! ****\n");
         p_Opt_data->write(); // save data to optimization binary file
-        fprintf(outfile,"\tFinal energy is %20.13lf\n", p_Opt_data->g_energy());
+        oprintf_out("\tFinal energy is %20.13lf\n", p_Opt_data->g_energy());
 
         if (Opt_params.write_final_step_geometry) {
-          fprintf(outfile,"\tFinal (next step) structure:\n");
-          mol1->print_geom();  // write geometry -> output file
-          fprintf(outfile,"\tSaving final (next step) structure.\n");
+          oprintf_out("\tFinal (next step) structure:\n");
+          mol1->print_geom_out();  // write geometry -> output file
+          if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
+          oprintf_out("\tSaving final (next step) structure.\n");
         }
         else { // default - get last geometry and write that one
           double *x = p_Opt_data->g_geom_const_pointer(p_Opt_data->nsteps()-1);
           mol1->set_geom_array(x);
-          fprintf(outfile,"\tFinal (previous) structure:\n");
-          mol1->print_geom();  // write geometry -> output file
-          fprintf(outfile,"\tSaving final (previous) structure.\n");
+          oprintf_out("\tFinal (previous) structure:\n");
+          mol1->print_geom_out();  // write geometry -> output file
+          if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
+          oprintf_out("\tSaving final (previous) structure.\n");
         }
         p_irc_data->progress_report(*mol1);
 
+        p_Opt_data->reset_trust_radius();
         delete p_Opt_data;
         mol1->write_geom();  // write geometry -> chkpt file (also output for QChem)
-        print_end();
+        print_end_out();
 
         close_output_dat();
         return OptReturnEndloop;
@@ -349,100 +393,153 @@ OptReturnType optking(void) {
     }
     else
     {
-      fprintf(outfile,"\n  **** Optimization is complete! ****\n");
+      oprintf_out("\n  **** Optimization is complete! (in %d steps) ****\n", p_Opt_data->nsteps());
       p_Opt_data->summary();
       p_Opt_data->write(); // save data to optimization binary file
 
-      fprintf(outfile,"\tFinal energy is %20.13lf\n", p_Opt_data->g_energy());
+      oprintf_out("\tFinal energy is %20.13lf\n", p_Opt_data->g_energy());
 
       if (Opt_params.write_final_step_geometry) {
-        fprintf(outfile,"\tFinal (next step) structure:\n");
-        mol1->print_geom();  // write geometry -> output file
-        fprintf(outfile,"\tSaving final (next step) structure.\n");
+        oprintf_out("\tFinal (next step) structure:\n");
+        mol1->print_geom_out();  // write geometry -> output file
+        if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
+        oprintf_out("\tSaving final (next step) structure.\n");
       }
       else { // default - get last geometry and write that one
         double *x = p_Opt_data->g_geom_const_pointer(p_Opt_data->nsteps()-1);
         mol1->set_geom_array(x);
-        fprintf(outfile,"\tFinal (previous) structure:\n");
-        mol1->print_geom();  // write geometry -> output file
-        fprintf(outfile,"\tSaving final (previous) structure.\n");
+        oprintf_out("\tFinal (previous) structure:\n");
+        mol1->print_geom_out();  // write geometry -> output file
+        if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
+        oprintf_out("\tSaving final (previous) structure.\n");
       }
 
+      p_Opt_data->reset_trust_radius();
       delete p_Opt_data;
       mol1->write_geom();  // write geometry -> chkpt file (also output for QChem)
-      print_end();
+      print_end_out();
 
       close_output_dat();
       return OptReturnEndloop;
     }
   }
 
+  if(p_Opt_data->g_iteration() == Opt_params.geom_maxiter) {
+    oprintf_out("\n  **** Optimization has failed! (in %d steps) ****\n", p_Opt_data->nsteps());
+      p_Opt_data->summary();
+      p_Opt_data->write(); // save data to optimization binary file
+
+/*  We could print out this info if it didn't confuse users.
+      oprintf_out("\tFinal energy is %20.13lf\n", p_Opt_data->g_energy());
+      oprintf_out("\tFinal (next step) structure:\n");
+      mol1->print_geom_out();  // write geometry -> output file
+      if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
+      oprintf_out("\tSaving final (next step) structure.\n");
+*/
+
+      p_Opt_data->reset_trust_radius();
+      delete p_Opt_data;
+      mol1->write_geom();  // write geometry -> chkpt file (also output for QChem)
+      print_end_out();
+      close_output_dat();
+      return OptReturnSuccess;
+  }
+
   p_Opt_data->write();
   delete p_Opt_data;
 
-//#if defined(OPTKING_PACKAGE_PSI)
-  fprintf(outfile,"\tStructure for next step:\n");
-  mol1->print_geom(); // write geometry for next step to output file
-//#endif
+  oprintf_out("\tStructure for next step:\n");
+  mol1->print_geom_out(); // write geometry for next step to output file
+  if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
 
   mol1->write_geom(); // write geometry -> chkpt (also output for QChem)
-  print_end();
+  print_end_out();
 
-  } // end big try
-  catch (INTCO_EXCEPT exc) {
+  } // end try STEP1
+  catch (BAD_STEP_EXCEPT exc) {
+    oprintf_out("\tThe BAD_STEP_EXCEPTion handler:\n\t%s\n", exc.g_message());
 
-    if (exc.try_again() && !exc.already_tried_other_intcos) {
+    if (!Opt_params.dynamic || (p_Opt_data->g_consecutive_backsteps() < Opt_params.consecutive_backsteps_allowed) &&
+         p_Opt_data->g_iteration() > 1) {
+      // Do backward step.  backstep() function increments counter in opt_data.
+      p_Opt_data->decrease_trust_radius();
+      mol1->backstep();
+      p_Opt_data->write();
+      delete p_Opt_data;
 
-      fprintf(outfile,"\tThe optimizer encountered the following error:\n\t%s\n", exc.g_message());
-      fprintf(outfile,"\tWill attempt to restart optimization with redefined internal coordinates.\n");
+      oprintf_out("\tStructure for next step:\n");
+      mol1->print_geom_out(); // write geometry for next step to output file
+      if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
 
-      opt_intco_dat_remove(); // rm intco definitions
-      opt_io_remove(); // rm optimization data
-
-#if defined(OPTKING_PACKAGE_QCHEM)
-      rem_write(0, REM_GEOM_OPT_CYCLE); // reset iteration counter
-#endif
-      // if multi mode has failed, for now try single mode.
-      if (Opt_params.fragment_mode == OPT_PARAMS::MULTI)
-        exc.override_fragment_mode = true;
-
-      exc.already_tried_other_intcos = true;
+      mol1->write_geom(); // write geometry -> chkpt (also output for QChem)
+      print_end_out();
       close_output_dat();
-      return OptReturnSuccess;
+    }
+    else if (Opt_params.dynamic) {
+      throw(INTCO_EXCEPT("Too many bad steps."));
     }
     else {
+      oprintf_out("This exception should not be called when neither dynamic nor backsteps are allowed.\n");
+      throw("This exception should not be called when neither dynamic nor backsteps are allowed.");
+    }
+    return OptReturnSuccess;
+  } // end BAD_STEP_EXCEPT
+  } // end try STEP2
+  catch (BROKEN_SYMMETRY_EXCEPT exc) {
+    p_Opt_data->reset_trust_radius();
+    oprintf_out("\n  **** Optimization has failed! (in %d steps) ****\n", p_Opt_data->nsteps());
+    delete p_Opt_data;
+    print_end_out();
+    close_output_dat();
+    return OptReturnFailure;
+  }
+  catch (INTCO_EXCEPT exc) {
+    oprintf_out("\tThe INTCO_EXCEPTion handler:\n\t%s\n", exc.g_message());
+    oprintf_out("\tDynamic level is %d.\n", Opt_params.dynamic);
+    oprintf_out("\texc.g_really_quit() is %d.\n", exc.g_really_quit());
+
+    // Give up and quit.
+    if (Opt_params.dynamic == 0 || Opt_params.dynamic == 7 || exc.g_really_quit()) {
       fprintf(stderr, "%s\n", exc.g_message());
-      fprintf(outfile, "%s\n", exc.g_message());
+      oprintf_out( "%s\n", exc.g_message());
 #if defined (OPTKING_PACKAGE_QCHEM)
       QCrash(exc.g_message());
 #elif defined (OPTKING_PACKAGE_PSI)
       abort();
 #endif
     }
-  }
-  catch (BAD_STEP_EXCEPT exc) {
+    else {
+      if (exc.linear_angles.empty()) {
+        oprintf_out("\tRaising dynamic level to %d. ~\n", Opt_params.dynamic+1);
+        exc.increment_dynamic_level();
+      }
+      else 
+        oprintf_out("\tRestarting with new internal coordinates at same level.");
 
-    fprintf(outfile,"\tA bad-step exception has been caught.\n");
-    fprintf(outfile,"\t%s", exc.g_message());
+      // put previous geometry into place
+      if (p_Opt_data->nsteps()>1) {
+        double *x = p_Opt_data->g_geom_const_pointer(p_Opt_data->nsteps()-1);
+        mol1->set_geom_array(x);
+        mol1->write_geom();
+      }
 
-    p_Opt_data->decrease_trust_radius();
+      delete p_Opt_data;
+      opt_intco_dat_remove(); // rm intco definitions
+      opt_io_remove();        // rm optimization data
 
-    mol1->backstep();
+      //if (Opt_params.fragment_mode == OPT_PARAMS::MULTI)
+      //  exc.override_fragment_mode = true;
 
-    p_Opt_data->write();
-    delete p_Opt_data;
-    fprintf(outfile,"\tStructure for next step:\n");
-    mol1->print_geom(); // write geometry for next step to output file
-
-    mol1->write_geom(); // write geometry -> chkpt (also output for QChem)
-    print_end();
-
-    close_output_dat();
-    return OptReturnSuccess;
+#if defined(OPTKING_PACKAGE_QCHEM)
+      rem_write(0, REM_GEOM_OPT_CYCLE); // reset iteration counter
+#endif
+      close_output_dat();
+      return OptReturnSuccess;
+    }
   }
 #if defined (OPTKING_PACKAGE_PSI)
   catch (psi::PsiException e){
-      fprintf(outfile,"\t%s", e.what());
+      oprintf_out("\t%s", e.what());
   }
 #endif
   catch (...) {
@@ -457,35 +554,35 @@ OptReturnType optking(void) {
   return OptReturnSuccess;
 }
 
-// Functions to set and release (possibly open and close) the file pointer for
-// the standard text output file
+// Standard text output file string (psi) or file pointer (qchem)
+// Interpreted by functions in print.cc
 void open_output_dat(void) {
 #if defined (OPTKING_PACKAGE_PSI)
-  outfile = psi::outfile;
+  psi_outfile = "outfile";
 #elif defined (OPTKING_PACKAGE_QCHEM)
-  outfile = stdout;
+  qc_outfile = stdout;
 #endif
 }
 
 void close_output_dat(void) {
 #if defined(OPTKING_PACKAGE_QCHEM)
-  fflush(outfile);
+  
 #endif
 }
 
-void print_title(void) {
-  fprintf(outfile, "\n\t\t\t-----------------------------------------\n");
-  fprintf(outfile,   "\t\t\t OPTKING 2.0: for geometry optimizations \n");
-  fprintf(outfile,   "\t\t\t  - R.A. King,  Bethel University        \n");
-  fprintf(outfile,   "\t\t\t-----------------------------------------\n");
-  fflush(outfile);
+void print_title_out(void) {
+  oprintf_out( "\n\t\t\t-----------------------------------------\n");
+  oprintf_out(   "\t\t\t OPTKING 2.0: for geometry optimizations \n");
+  oprintf_out(   "\t\t\t  - R.A. King,  Bethel University        \n");
+  oprintf_out(   "\t\t\t-----------------------------------------\n");
+  
 }
 
-void print_end(void) {
+void print_end_out(void) {
 #if defined (OPTKING_PACKAGE_PSI)
-  fprintf(outfile, "\t\t\t--------------------------\n");
-  fprintf(outfile, "\t\t\t OPTKING Finished Execution \n");
-  fprintf(outfile, "\t\t\t--------------------------\n");
+  oprintf_out( "\t\t\t--------------------------\n");
+  oprintf_out( "\t\t\t OPTKING Finished Execution \n");
+  oprintf_out( "\t\t\t--------------------------\n");
 #endif
 }
 

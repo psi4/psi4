@@ -81,6 +81,7 @@ protected:
     void compute_scf_energy();
     void mp2_guess();
     void build_tau();
+    void build_tau_fourth_order();
     void transform_tau();
     void build_gtau();
     void print_opdm();
@@ -140,6 +141,7 @@ protected:
     void compute_relaxed_density_OOVV();
     void compute_relaxed_density_OVOV();
     void compute_relaxed_density_VVVV();
+    void compute_TPDM_trace();
     // Quadratically-convergent DCFT
     void run_qc_dcft();
     void compute_orbital_gradient();
@@ -158,8 +160,21 @@ protected:
     void davidson_guess();
     // Exact Tau
     void refine_tau();
-    void compute_F_intermediate();
     void form_density_weighted_fock();
+    // Cumulant residual intermediates
+    void compute_G_intermediate();
+    void compute_F_intermediate();
+    void compute_V_intermediate();
+    void compute_W_intermediate();
+    void compute_H_intermediate();
+    void compute_I_intermediate();
+    void compute_J_intermediate();
+    void compute_K_intermediate();
+    void compute_L_intermediate();
+    void compute_O_intermediate();
+    void compute_M_intermediate();
+    void compute_N_intermediate();
+
     // Orbital-optimized DCFT
     void run_simult_dc_guess();
     double compute_orbital_residual();
@@ -171,6 +186,21 @@ protected:
     void compute_orbital_gradient_VO();
     void compute_orbital_rotation_jacobi();
     void rotate_orbitals();
+    void compute_oe_properties();
+    void write_molden_file();
+    // Three-particle cumulant contributions
+    double compute_three_particle_energy();
+    void dcft_semicanonicalize();
+    void transform_integrals_triples();
+    void dump_semicanonical();
+    void semicanonicalize_gbar_ovvv();
+    void semicanonicalize_gbar_ooov();
+    void semicanonicalize_dc();
+    double compute_triples_aaa();
+    double compute_triples_aab();
+    double compute_triples_abb();
+    double compute_triples_bbb();
+
 
     bool augment_b(double *vec, double tol);
     /// Controls convergence of the orbital updates
@@ -252,6 +282,14 @@ protected:
     Dimension navirpi_;
     /// The number of virtual beta orbitals per irrep
     Dimension nbvirpi_;
+    /// Alpha occupied MO offset
+    int *aocc_off_;
+    /// Alpha virtual MO offset
+    int *avir_off_;
+    /// Beta occupied MO offset
+    int *bocc_off_;
+    /// Beta virtual MO offset
+    int *bvir_off_;
     /// The nuclear repulsion energy in Hartree
     double enuc_;
     /// The cutoff below which and integral is assumed to be zero
@@ -282,6 +320,8 @@ protected:
     double new_total_energy_;
     /// The Tikhonow regularizer used to remove singularities (c.f. Taube and Bartlett, JCP, 2009)
     double regularizer_;
+    /// Level shift for denominators in orbital updates
+    double orbital_level_shift_;
     /// The threshold for the norm of the residual part of the subspace (|b'> = |b'> - |b><b|b'>) that is used to augment the subspace
     double vec_add_tol_;
 
@@ -333,6 +373,10 @@ protected:
     SharedMatrix moFa_;
     /// The beta Fock matrix in the MO basis
     SharedMatrix moFb_;
+    /// The alpha density-weighted Fock matrix in the MO basis
+    SharedMatrix Ftilde_a_;
+    /// The beta density-weighted Fock matrix in the MO basis
+    SharedMatrix Ftilde_b_;
     /// The inverse square root overlap matrix in the SO basis
     SharedMatrix s_half_inv_;
     /// The old full alpha MO coefficients

@@ -1,14 +1,11 @@
 spherical
 
 !
-!  Def2-TZVPPD  EMSL  Basis Set Exchange Library   5/18/11 2:05 PM
+!  Def2-TZVPPD  EMSL  Basis Set Exchange Library   3/17/14 10:26 AM
 ! Elements                             References
 ! --------                             ----------
-! H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr:
-! Dmitrij Rappoport and F. Furche, Property-optimized Gaussian basis sets for molecular response 
-!    calculations, J. Chem. Phys. 133, 134105 (2010).
+! H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr : Dmitrij Rappoport and F. Furche, Property-optimized Gaussian basis sets for molecular response calculations, J. Chem. Phys. 133, 134105 (2010).
 ! 
-
 
 
 
@@ -1781,6 +1778,3 @@ D   1   1.00
 F   1   1.00
       0.62800000000          1.0000000        
 ****
-
-
-

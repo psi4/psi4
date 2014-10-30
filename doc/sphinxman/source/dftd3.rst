@@ -10,7 +10,7 @@ Interface to DFTD3 by S. Grimme
 .. codeauthor:: Lori A. Burns
 .. sectionauthor:: Lori A. Burns
 
-.. *Module:* :ref:`Keywords <apdx:mrcc>`, :ref:`PSI Variables <apdx:mrcc_psivar>`, :source:`MRCC <src/bin/mrcc>`
+*Module:* :ref:`Samples <apdx:testSuitedftd3>`
 
 |PSIfour| contains code to interface to the DFTD3 program of S. Grimme, which is freely
 downloadable from `http://www.thch.uni-bonn.de/tc/index.php?section=downloads&subsection=getd3&lang=english <http://www.thch.uni-bonn.de/tc/index.php?section=downloads&subsection=getd3&lang=english>`_).
@@ -199,7 +199,7 @@ A few practical examples:
 
 If only dispersion corrections (rather than total energies) are of
 interest, the ``dftd3`` program can be run independently of the scf
-through the python function :py:func:`~molutil.run_dftd3`. (This function
+through the python function :py:func:`~interface_dftd3.run_dftd3`. (This function
 is the same |PSIfour|/``dftd3`` interface that is called during an scf job.)
 This route is much faster than running a DFT-D energy.
 
@@ -229,7 +229,7 @@ This route is much faster than running a DFT-D energy.
    >>> print E
    -0.00024762
 
-.. autofunction:: molutil.run_dftd3
+.. autofunction:: interface_dftd3.run_dftd3
 
 
 .. comment print_stdout('  -D correction from Py-side')

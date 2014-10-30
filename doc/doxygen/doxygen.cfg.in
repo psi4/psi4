@@ -307,6 +307,15 @@ RECURSIVE              = YES
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
 EXCLUDE                = @top_srcdir@/src/bin/psiclean \
+                         @top_srcdir@/src/lib/libJKFactory \
+                         @top_srcdir@/include/armci.h \
+                         @top_srcdir@/include/coms.h \
+                         @top_srcdir@/include/dra.h \
+                         @top_srcdir@/include/data.h \
+                         @top_srcdir@/include/ga.h \
+                         @top_srcdir@/include/ga-mpi.h \
+                         @top_srcdir@/include/ga-papi.h \
+                         @top_srcdir@/include/ga-wapi.h \
                          @top_srcdir@/include/boost \
                          @top_srcdir@/src/bin/input \
                          @top_srcdir@/src/bin/input3 \
@@ -386,7 +395,7 @@ IGNORE_PREFIX          =
 # that can be used as input for Qt's qhelpgenerator to generate a
 # Qt Compressed Help (.qch) of the generated HTML documentation.
 
-GENERATE_QHP           = YES
+GENERATE_QHP           = @HAVE_QHP@
 
 # If the QHG_LOCATION tag is specified, the QCH_FILE tag can
 # be used to specify the file name of the resulting .qch file.

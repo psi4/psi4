@@ -32,7 +32,7 @@
 
 namespace psi {
 
-extern FILE *outfile;
+
 
 class BasisSet;
 class Molecule;
@@ -60,8 +60,8 @@ inline int64_t i_offset64(int64_t i)
  *  \param mol Molecule to form mapping matrix from.
  *  \returns Integer matrix of dimension natoms X nirreps.
  */
-int **compute_atom_map(const boost::shared_ptr<Molecule> &mol);
-int **compute_atom_map(const Molecule* mol);
+int **compute_atom_map(const boost::shared_ptr<Molecule> &mol, double tol = 0.5);
+int **compute_atom_map(const Molecule* mol, double tol = 0.5);
 /// @}
 
 /*! @{
@@ -135,10 +135,10 @@ struct SOCoefficients{
     }
 
     void print() const {
-        fprintf(outfile, "\nSOCoefficients, irrep = %d\n", irrep);
+        outfile->Printf("\nSOCoefficients, irrep = %d\n", irrep);
         std::map<int, double>::const_iterator iter;
         for(iter = coefficients.begin(); iter != coefficients.end(); ++iter){
-            fprintf(outfile, "Basis function:%d Coefficient: %.5f\n", iter->first, iter->second);
+            outfile->Printf( "Basis function:%d Coefficient: %.5f\n", iter->first, iter->second);
         }
     }
 
@@ -189,7 +189,7 @@ class PetiteList
     unsigned short *stablizer_;
     int max_stablizer_;
 
-    void init();
+    void init(double tol=0.05);
 
 public:
     PetiteList(const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>&, bool include_pure_transform = false);
@@ -238,7 +238,7 @@ public:
      */
     int nblocks() const { return nblocks_; }
 
-    void print(FILE *out=outfile);
+    void print(std::string out="outfile");
 
     /** The symmetry operations that keep the atom unchanged in bit representation.
      *  \param atom The atom of interest.

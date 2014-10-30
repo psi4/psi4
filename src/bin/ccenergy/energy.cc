@@ -81,7 +81,7 @@ double rhf_energy(void)
   global_dpd_->buf4_close(&D);
 
   /*
-    fprintf(outfile, "Two AB Energy = %20.14f\n", tauIjAb_energy);
+    outfile->Printf( "Two AB Energy = %20.14f\n", tauIjAb_energy);
   */
 
   return (tauIjAb_energy+tIA_energy);
@@ -126,11 +126,11 @@ double rohf_energy(void)
   global_dpd_->buf4_close(&D);
 
   /*
-  fprintf(outfile, "One A Energy = %20.14f\n", tIA_energy);
-  fprintf(outfile, "One B Energy = %20.14f\n", tia_energy);
-  fprintf(outfile, "Two AA Energy = %20.14f\n", tauIJAB_energy);
-  fprintf(outfile, "Two BB Energy = %20.14f\n", tauijab_energy);
-  fprintf(outfile, "Two AB Energy = %20.14f\n", tauIjAb_energy);
+  outfile->Printf( "One A Energy = %20.14f\n", tIA_energy);
+  outfile->Printf( "One B Energy = %20.14f\n", tia_energy);
+  outfile->Printf( "Two AA Energy = %20.14f\n", tauIJAB_energy);
+  outfile->Printf( "Two BB Energy = %20.14f\n", tauijab_energy);
+  outfile->Printf( "Two AB Energy = %20.14f\n", tauIjAb_energy);
   */
 
   // Store the same-spin and opposite-spin pair energies
@@ -181,16 +181,16 @@ double uhf_energy(void)
   global_dpd_->buf4_close(&T2);
 
   /*
-  fprintf(outfile, "One A Energy = %20.14f\n", T1A);
-  fprintf(outfile, "One B Energy = %20.14f\n", T1B);
-  fprintf(outfile, "Two AA Energy = %20.14f\n", E2AA);
-  fprintf(outfile, "Two BB Energy = %20.14f\n", E2BB);
-  fprintf(outfile, "Two AB Energy = %20.14f\n", E2AB);
+  outfile->Printf( "One A Energy = %20.14f\n", T1A);
+  outfile->Printf( "One B Energy = %20.14f\n", T1B);
+  outfile->Printf( "Two AA Energy = %20.14f\n", E2AA);
+  outfile->Printf( "Two BB Energy = %20.14f\n", E2BB);
+  outfile->Printf( "Two AB Energy = %20.14f\n", E2AB);
   */
 
   /*
-  fprintf(outfile,"\n\tOpposite-spin energy  = %20.15f\n",E2AB);
-  fprintf(outfile,"\tSame-spin energy  = %20.15f\n",E2AA+E2BB);
+  outfile->Printf("\n\tOpposite-spin energy  = %20.15f\n",E2AB);
+  outfile->Printf("\tSame-spin energy  = %20.15f\n",E2AA+E2BB);
   */
 
   // Store the same-spin and opposite-spin pair energies

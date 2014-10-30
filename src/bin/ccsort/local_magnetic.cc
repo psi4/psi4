@@ -83,7 +83,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
   rank = (int *) malloc(natom * sizeof(int *));
 
   if (!strcmp(cart, "X")) {
-    iwl_rdone(PSIF_OEI, PSIF_AO_LX, scratch, noei_ao, 0, 0, outfile);
+    iwl_rdone(PSIF_OEI, PSIF_AO_LX, scratch, noei_ao, 0, 0, "outfile");
     for(i=0,ij=0; i<nao; i++)
       for(j=0; j<=i; j++,ij++) {
 	TMP[i][j] = -0.5 * scratch[ij];
@@ -177,7 +177,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
   }
 
   if (!strcmp(cart, "Y")) {
-    iwl_rdone(PSIF_OEI, PSIF_AO_LY, scratch, noei_ao, 0, 0, outfile);
+    iwl_rdone(PSIF_OEI, PSIF_AO_LY, scratch, noei_ao, 0, 0, "outfile");
     for(i=0,ij=0; i<nao; i++)
       for(j=0; j<=i; j++,ij++) {
 	TMP[i][j] = -0.5 * scratch[ij];
@@ -270,7 +270,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
   }
 
   if (!strcmp(cart, "Z")) {
-    iwl_rdone(PSIF_OEI, PSIF_AO_LZ, scratch, noei_ao, 0, 0, outfile);
+    iwl_rdone(PSIF_OEI, PSIF_AO_LZ, scratch, noei_ao, 0, 0, "outfile");
     for(i=0,ij=0; i<nao; i++)
       for(j=0; j<=i; j++,ij++) {
 	TMP[i][j] = -0.5 * scratch[ij];

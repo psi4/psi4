@@ -29,10 +29,10 @@
 #include <exception.h>
 #include <liboptions/liboptions.h>
 #include <libutil/libutil.h>
-
+#include "psi4-dec.h"
 #include "moinfo.h"
 
-extern FILE *outfile;
+
 
 using namespace std;
 
@@ -45,17 +45,17 @@ std::string MOInfo::get_determinant_label(int i)
 
 void MOInfo::print_model_space()
 {
-    fprintf(outfile,"\n");
-    fprintf(outfile,"\n  Model space");
-    fprintf(outfile,"\n  ------------------------------------------------------------------------------");
+    outfile->Printf("\n");
+    outfile->Printf("\n  Model space");
+    outfile->Printf("\n  ------------------------------------------------------------------------------");
     if(references.size() <= 20){
         for(int i = 0; i < references.size(); ++i){
-            fprintf(outfile,"\n  %2d  %s",i,references[i].get_label().c_str());
+            outfile->Printf("\n  %2d  %s",i,references[i].get_label().c_str());
         }
     }else{
-        fprintf(outfile,"\n  There are %d determinants in the model space",static_cast<int>(references.size()));
+        outfile->Printf("\n  There are %d determinants in the model space",static_cast<int>(references.size()));
     }
-    fprintf(outfile,"\n  ==============================================================================\n");
+    outfile->Printf("\n  ==============================================================================\n");
 }
 
 void MOInfo::build_model_space()
@@ -184,14 +184,14 @@ void MOInfo::build_model_space()
     }
 
     if(references.size() == 0){
-        fprintf(outfile,"\n\n  MOInfo found no reference in the model space");
-        fprintf(outfile,"\n  Please check the following:");
-        fprintf(outfile,"\n  1) Definition of FROZEN_DOCC, RESTRICTED_DOCC, ACTIVE, and FROZEN_UOCC");
-//        fprintf(outfile,"\n  1) Definition of FOCC, DOCC, ACTV, and FVIR");
-        fprintf(outfile,"\n  2) Symmetry of the wavefunction");
-        fprintf(outfile,"\n  3) Charge and multiplicity");
-        fprintf(outfile,"\n\n  PSIMRCC will end the computation.\n");
-        fflush(outfile);
+        outfile->Printf("\n\n  MOInfo found no reference in the model space");
+        outfile->Printf("\n  Please check the following:");
+        outfile->Printf("\n  1) Definition of FROZEN_DOCC, RESTRICTED_DOCC, ACTIVE, and FROZEN_UOCC");
+//        outfile->Printf("\n  1) Definition of FOCC, DOCC, ACTV, and FVIR");
+        outfile->Printf("\n  2) Symmetry of the wavefunction");
+        outfile->Printf("\n  3) Charge and multiplicity");
+        outfile->Printf("\n\n  PSIMRCC will end the computation.\n");
+        
         exit(PSI_RETURN_FAILURE);
     }
 }
@@ -209,8 +209,8 @@ void MOInfo::make_internal_excitations()
         vector<vector<pair<int,int> > > alpha_internals_ref_m;
         vector<vector<pair<int,int> > >  beta_internals_ref_m;
         vector<double>                   sign_internals_ref_m;
-        //       fprintf(outfile,"\n\n\tReference %s",references[m].get_label().c_str());
-        //       fprintf(outfile," gives:");
+        //       outfile->Printf("\n\n\tReference %s",references[m].get_label().c_str());
+        //       outfile->Printf(" gives:");
         for(int n=0;n<references.size();n++){
             double sign=1.0;
             std::vector<pair<int,int> > alpha_operators;
@@ -219,14 +219,14 @@ void MOInfo::make_internal_excitations()
             alpha_internals_ref_m.push_back(alpha_operators);
             beta_internals_ref_m.push_back(beta_operators);
             sign_internals_ref_m.push_back(sign);
-            //         fprintf(outfile,"\n\t  %s",references[n].get_label().c_str());
-            //         fprintf(outfile," = %s{",sign > 0.0 ? "+" : (sign == 0.0 ? "0" : "-"));
+            //         outfile->Printf("\n\t  %s",references[n].get_label().c_str());
+            //         outfile->Printf(" = %s{",sign > 0.0 ? "+" : (sign == 0.0 ? "0" : "-"));
             //         for(int i = 0; i<beta_operators.size();i++)
-            //           fprintf(outfile," %db+ %db-",beta_operators[i].second,beta_operators[i].first);
+            //           outfile->Printf(" %db+ %db-",beta_operators[i].second,beta_operators[i].first);
             //         for(int i = 0; i<alpha_operators.size();i++)
-            //           fprintf(outfile," %da+ %da-",alpha_operators[i].second,alpha_operators[i].first);
-            //         fprintf(outfile," }");
-            //         fprintf(outfile,"%s",references[m].get_label().c_str());
+            //           outfile->Printf(" %da+ %da-",alpha_operators[i].second,alpha_operators[i].first);
+            //         outfile->Printf(" }");
+            //         outfile->Printf("%s",references[m].get_label().c_str());
         }
         alpha_internal_excitations.push_back(alpha_internals_ref_m);
         beta_internal_excitations.push_back(beta_internals_ref_m);

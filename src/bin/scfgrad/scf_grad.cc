@@ -75,21 +75,21 @@ SharedMatrix SCFGrad::compute_gradient()
 {
     // => Echo <= //
 
-    fprintf(outfile, "\n");
-    fprintf(outfile, "         ------------------------------------------------------------\n");
-    fprintf(outfile, "                                   SCF GRAD                          \n"); 
-    fprintf(outfile, "                          Rob Parrish, Justin Turney,                \n"); 
-    fprintf(outfile, "                       Andy Simmonett, and Alex Sokolov              \n"); 
-    fprintf(outfile, "         ------------------------------------------------------------\n\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "         ------------------------------------------------------------\n");
+    outfile->Printf( "                                   SCF GRAD                          \n"); 
+    outfile->Printf( "                          Rob Parrish, Justin Turney,                \n"); 
+    outfile->Printf( "                       Andy Simmonett, and Alex Sokolov              \n"); 
+    outfile->Printf( "         ------------------------------------------------------------\n\n");
 
-    fprintf(outfile, "  ==> Geometry <==\n\n");
+    outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
 
-    fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
-    fprintf(outfile, "\n");
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "  ==> Basis Set <==\n\n");
-    basisset_->print_by_level(outfile, print_);
+    outfile->Printf( "  ==> Basis Set <==\n\n");
+    basisset_->print_by_level("outfile", print_);
 
     // => Registers <= //
 
@@ -519,21 +519,21 @@ SharedMatrix SCFGrad::compute_hessian()
 {
     // => Echo <= //
 
-    fprintf(outfile, "\n");
-    fprintf(outfile, "         ------------------------------------------------------------\n");
-    fprintf(outfile, "                                   SCF HESS                          \n"); 
-    fprintf(outfile, "                          Rob Parrish, Justin Turney,                \n"); 
-    fprintf(outfile, "                       Andy Simmonett, and Alex Sokolov              \n"); 
-    fprintf(outfile, "         ------------------------------------------------------------\n\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "         ------------------------------------------------------------\n");
+    outfile->Printf( "                                   SCF HESS                          \n"); 
+    outfile->Printf( "                          Rob Parrish, Justin Turney,                \n"); 
+    outfile->Printf( "                       Andy Simmonett, and Alex Sokolov              \n"); 
+    outfile->Printf( "         ------------------------------------------------------------\n\n");
 
-    fprintf(outfile, "  ==> Geometry <==\n\n");
+    outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
 
-    fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
-    fprintf(outfile, "\n");
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "  ==> Basis Set <==\n\n");
-    basisset_->print_by_level(outfile, print_);
+    outfile->Printf( "  ==> Basis Set <==\n\n");
+    basisset_->print_by_level("outfile", print_);
 
     // => Registers <= //
 

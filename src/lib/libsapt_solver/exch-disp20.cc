@@ -91,11 +91,11 @@ void SAPT0::exch_disp20_n5()
   }
 
   if (debug_) {
-    fprintf(outfile,"\n    A in core = %d\n",A_in_core);
-    fprintf(outfile,"    B in core = %d\n",B_in_core);
-    fprintf(outfile,"    A read in %3d blocks with length %d\n",
+    outfile->Printf("\n    A in core = %d\n",A_in_core);
+    outfile->Printf("    B in core = %d\n",B_in_core);
+    outfile->Printf("    A read in %3d blocks with length %d\n",
       A_blocks,A_chunk);
-    fprintf(outfile,"    B read in %3d blocks with length %d\n\n",
+    outfile->Printf("    B read in %3d blocks with length %d\n\n",
       B_blocks,B_chunk);
   }
 
@@ -238,16 +238,16 @@ void SAPT0::exch_disp20_n5()
   e_exch_disp20_ = -2.0*(v_1+q_12);
 
   if (print_) {
-    fprintf(outfile,"    Disp20              = %18.12lf H\n",e_disp20_);
-    fprintf(outfile,"    Disp20 (SS)         = %18.12lf H\n",e_disp20_ss_);
-    fprintf(outfile,"    Disp20 (OS)         = %18.12lf H\n",e_disp20_os_);
-    fflush(outfile);
+    outfile->Printf("    Disp20              = %18.12lf H\n",e_disp20_);
+    outfile->Printf("    Disp20 (SS)         = %18.12lf H\n",e_disp20_ss_);
+    outfile->Printf("    Disp20 (OS)         = %18.12lf H\n",e_disp20_os_);
+    
   }
 
   if (debug_) {
-    fprintf(outfile,"\n    V1 + H2 + H4 + Q9   = %18.12lf H\n",v_1);
-    fprintf(outfile,"    Q12                 = %18.12lf H\n",q_12);
-    fflush(outfile);
+    outfile->Printf("\n    V1 + H2 + H4 + Q9   = %18.12lf H\n",v_1);
+    outfile->Printf("    Q12                 = %18.12lf H\n",q_12);
+    
   }
 }
 
@@ -276,13 +276,13 @@ void SAPT0::exch_disp20_n4()
   q_14 = q14();
 
   if (debug_) {
-    fprintf(outfile,"    H2                  = %18.12lf H\n",h_2);
-    fprintf(outfile,"    H4                  = %18.12lf H\n",h_4);
-    fprintf(outfile,"    Q2                  = %18.12lf H\n",q_2);
-    fprintf(outfile,"    Q6                  = %18.12lf H\n",q_6);
-    fprintf(outfile,"    Q13                 = %18.12lf H\n",q_13);
-    fprintf(outfile,"    Q14                 = %18.12lf H\n",q_14);
-    fflush(outfile);
+    outfile->Printf("    H2                  = %18.12lf H\n",h_2);
+    outfile->Printf("    H4                  = %18.12lf H\n",h_4);
+    outfile->Printf("    Q2                  = %18.12lf H\n",q_2);
+    outfile->Printf("    Q6                  = %18.12lf H\n",q_6);
+    outfile->Printf("    Q13                 = %18.12lf H\n",q_13);
+    outfile->Printf("    Q14                 = %18.12lf H\n",q_14);
+    
   }
 
   h1();
@@ -517,16 +517,16 @@ void SAPT0::exch_disp20_n4()
   }
 
   if (debug_) {
-    fprintf(outfile,"    H1                  = %18.12lf H\n",h_1);
-    fprintf(outfile,"    H3                  = %18.12lf H\n",h_3);
-    fprintf(outfile,"    Q1                  = %18.12lf H\n",q_1);
-    fprintf(outfile,"    Q3                  = %18.12lf H\n",q_3);
-    fprintf(outfile,"    Q4                  = %18.12lf H\n",q_4);
-    fprintf(outfile,"    Q5                  = %18.12lf H\n",q_5);
-    fprintf(outfile,"    Q7                  = %18.12lf H\n",q_7);
-    fprintf(outfile,"    Q8                  = %18.12lf H\n",q_8);
-    fprintf(outfile,"    Q10                 = %18.12lf H\n",q_10);
-    fprintf(outfile,"    Q11                 = %18.12lf H\n\n",q_11);
+    outfile->Printf("    H1                  = %18.12lf H\n",h_1);
+    outfile->Printf("    H3                  = %18.12lf H\n",h_3);
+    outfile->Printf("    Q1                  = %18.12lf H\n",q_1);
+    outfile->Printf("    Q3                  = %18.12lf H\n",q_3);
+    outfile->Printf("    Q4                  = %18.12lf H\n",q_4);
+    outfile->Printf("    Q5                  = %18.12lf H\n",q_5);
+    outfile->Printf("    Q7                  = %18.12lf H\n",q_7);
+    outfile->Printf("    Q8                  = %18.12lf H\n",q_8);
+    outfile->Printf("    Q10                 = %18.12lf H\n",q_10);
+    outfile->Printf("    Q11                 = %18.12lf H\n\n",q_11);
   }
 
   free_block(sAS);
@@ -559,10 +559,10 @@ void SAPT0::exch_disp20_n4()
   e_exch_disp20_ss_ = e_exch_disp20_ - e_exch_disp20_os_;
 
   if (print_) {
-    fprintf(outfile,"    Exch-Disp20         = %18.12lf H\n",e_exch_disp20_);
-    fprintf(outfile,"    Exch-Disp20 (SS)    = %18.12lf H\n",e_exch_disp20_ss_);
-    fprintf(outfile,"    Exch-Disp20 (OS)    = %18.12lf H\n",e_exch_disp20_os_);
-    fflush(outfile);
+    outfile->Printf("    Exch-Disp20         = %18.12lf H\n",e_exch_disp20_);
+    outfile->Printf("    Exch-Disp20 (SS)    = %18.12lf H\n",e_exch_disp20_ss_);
+    outfile->Printf("    Exch-Disp20 (OS)    = %18.12lf H\n",e_exch_disp20_os_);
+    
   }
 }
 
@@ -917,9 +917,9 @@ void SAPT0::test_theta()
   free_block(xPQ); 
   free_block(yPQ);
 
-  fprintf(outfile,"    Disp20 (xPQ yPQ)    = %18.12lf H\n",disp_xy);
-//fprintf(outfile,"    Disp20 (Theta AR)   = %18.12lf H\n",disp_ar);
-//fprintf(outfile,"    Disp20 (Theta BS)   = %18.12lf H\n",disp_bs);
+  outfile->Printf("    Disp20 (xPQ yPQ)    = %18.12lf H\n",disp_xy);
+//outfile->Printf("    Disp20 (Theta AR)   = %18.12lf H\n",disp_ar);
+//outfile->Printf("    Disp20 (Theta BS)   = %18.12lf H\n",disp_bs);
 }
 
 void SAPT0::arbs()
@@ -2138,8 +2138,8 @@ void SAPT2::exch_disp20()
   free_block(X_RB);
 
   if (print_) {
-    fprintf(outfile,"    Exch-Disp20         = %18.12lf H\n",e_exch_disp20_);
-    fflush(outfile);
+    outfile->Printf("    Exch-Disp20         = %18.12lf H\n",e_exch_disp20_);
+    
   }
 
   psio_->write_entry(PSIF_SAPT_AMPS,"Exch-Disp V_ARBS",(char *) yARBS[0],

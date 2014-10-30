@@ -32,15 +32,36 @@ import re
 import os
 import math
 import warnings
-import psi4
-import p4util
-from driver import *
+#CUimport psi4
+#CUimport p4util
+#CUfrom driver import *
 from wrappers import *
+from gaussian_n import * #CU
 #from extend_Molecule import *
-from molutil import *
+#CUfrom molutil import *
+from wrappers_cfour import * #CU
+from qmmm import * #CU
 
 # Python procedures like these can be run directly from the input file or integrated
 #   with the energy(), etc. routines by means of lines like those at the end of this file.
+
+
+def fake_file11(filename='fake_file11.dat'):
+    r"""Function to print a file *filename* of the old file11 format.
+
+    """
+    molecule = psi4.get_active_molecule()
+    gradient = psi4.get_gradient()
+
+    with open(filename, 'w') as handle:
+        handle.write('%d\n' % (molecule.natom()))
+
+        for at in range(molecule.natom()):
+            handle.write('%6s %16.8f %16.8f %16.8f\n' % (molecule.symbol(at), molecule.x(at), molecule.y(at), molecule.z(at)))
+
+        for at in range(molecule.natom()):
+            handle.write('%6s %16.8f %16.8f %16.8f\n' % ('', gradient.get(at, 0), gradient.get(at, 1), gradient.get(at, 2)))
+
 
 
 def sherrill_gold_standard(name='mp2', **kwargs):

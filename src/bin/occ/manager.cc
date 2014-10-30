@@ -57,26 +57,26 @@ void OCCWave::omp2_manager()
         if (ip_poles == "TRUE") omp2_ip_poles();
         if (ep_ip_poles == "TRUE") ep2_ip();
 	
-	fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
-	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
-	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
-	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
-	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
-	fprintf(outfile,"\t============================================================================== \n");
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	outfile->Printf("\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
+	outfile->Printf("\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
+	outfile->Printf("\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
+	outfile->Printf("\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
+	outfile->Printf("\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
+	outfile->Printf("\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
+	outfile->Printf("\t============================================================================== \n");
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -102,13 +102,13 @@ void OCCWave::omp2_manager()
 	
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
            orbs_already_opt = 1;
-	   if (conver == 1) fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+	   if (conver == 1) outfile->Printf("\n\tOrbitals are optimized now.\n");
 	   else if (conver == 0) { 
-                    fprintf(outfile,"\n\tMAX MOGRAD did NOEscsmp2 - EscfoT converged, but RMS MOGRAD converged!!!\n");
-	            fprintf(outfile,"\tI will consider the present orbitals as optimized.\n");
+                    outfile->Printf("\n\tMAX MOGRAD did NOEscsmp2 - EscfoT converged, but RMS MOGRAD converged!!!\n");
+	            outfile->Printf("\tI will consider the present orbitals as optimized.\n");
            }
-	   fprintf(outfile,"\tSwitching to the standard MP2 computation after semicanonicalization of the MOs... \n");
-	   fflush(outfile);
+	   outfile->Printf("\tSwitching to the standard MP2 computation after semicanonicalization of the MOs... \n");
+	   
 	   semi_canonic();
 	   if (reference_ == "RESTRICTED") trans_ints_rhf();  
 	   else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
@@ -124,6 +124,9 @@ void OCCWave::omp2_manager()
         ref_energy();
 	omp2_mp2_energy();
         if (orbs_already_opt == 1) Emp2L = Emp2;
+
+       // S2
+       //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
 
         // Green's function
         if (ip_poles == "TRUE") {
@@ -156,46 +159,46 @@ void OCCWave::omp2_manager()
             if (ekt_ea_ == "TRUE") ekt_ea();
         }
 	
-	fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP2 energy using optimized MOs... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
-	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
-	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
-	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
-	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
-	fprintf(outfile,"\t============================================================================== \n");
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\tComputing MP2 energy using optimized MOs... \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	outfile->Printf("\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
+	outfile->Printf("\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
+	outfile->Printf("\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
+	outfile->Printf("\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
+	outfile->Printf("\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
+	outfile->Printf("\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
+	outfile->Printf("\t============================================================================== \n");
+	
 
 
-	fprintf(outfile,"\n");
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\t================ OMP2 FINAL RESULTS ========================================== \n");
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tSCS-OMP2 Total Energy (a.u.)       : %20.14f\n", Escsmp2);
-	fprintf(outfile,"\tSOS-OMP2 Total Energy (a.u.)       : %20.14f\n", Esosmp2);
-	fprintf(outfile,"\tSCSN-OMP2 Total Energy (a.u.)      : %20.14f\n", Escsnmp2);
-	fprintf(outfile,"\tSCS-OMP2-VDW Total Energy (a.u.)   : %20.14f\n", Escsmp2vdw);
-	fprintf(outfile,"\tSOS-PI-OMP2 Total Energy (a.u.)    : %20.14f\n", Esospimp2);
-	fprintf(outfile,"\tOMP2 Correlation Energy (a.u.)     : %20.14f\n", Emp2L-Escf);
-	fprintf(outfile,"\tEomp2 - Eref (a.u.)                : %20.14f\n", Emp2L-Eref);
-	fprintf(outfile,"\tOMP2 Total Energy (a.u.)           : %20.14f\n", Emp2L);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n");
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\t================ OMP2 FINAL RESULTS ========================================== \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tSCS-OMP2 Total Energy (a.u.)       : %20.14f\n", Escsmp2);
+	outfile->Printf("\tSOS-OMP2 Total Energy (a.u.)       : %20.14f\n", Esosmp2);
+	outfile->Printf("\tSCSN-OMP2 Total Energy (a.u.)      : %20.14f\n", Escsnmp2);
+	outfile->Printf("\tSCS-OMP2-VDW Total Energy (a.u.)   : %20.14f\n", Escsmp2vdw);
+	outfile->Printf("\tSOS-PI-OMP2 Total Energy (a.u.)    : %20.14f\n", Esospimp2);
+	outfile->Printf("\tOMP2 Correlation Energy (a.u.)     : %20.14f\n", Emp2L-Escf);
+	outfile->Printf("\tEomp2 - Eref (a.u.)                : %20.14f\n", Emp2L-Eref);
+	outfile->Printf("\tOMP2 Total Energy (a.u.)           : %20.14f\n", Emp2L);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 
 	// Set the global variables with the energies
 	Process::environment.globals["OMP2 TOTAL ENERGY"] = Emp2L;
@@ -252,11 +255,11 @@ void OCCWave::omp2_manager()
 
         // Compute Analytic Gradients
         if (dertype == "FIRST") {
-	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-	    fflush(outfile);
+	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
+	    
             coord_grad();
-	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	    fflush(outfile);
+	    outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	    
         }
 
   }// end if (conver == 1)
@@ -269,11 +272,15 @@ void OCCWave::mp2_manager()
 {
         time4grad = 0;// means i will not compute the gradient
         timer_on("trans_ints");
-        if (reference_ == "RESTRICTED" && dertype == "NONE") trans_ints_rmp2(); 
-        else if (reference_ == "RESTRICTED" && dertype == "FIRST") trans_ints_rhf();
-	else if (reference_ == "UNRESTRICTED" && dertype == "FIRST") trans_ints_uhf();  
-	else if (reference_ == "UNRESTRICTED" && dertype == "NONE" && reference == "ROHF") trans_ints_uhf();  
-	else if (reference_ == "UNRESTRICTED" && dertype == "NONE" && reference != "ROHF") trans_ints_ump2();  
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
+            if (reference_ == "RESTRICTED") trans_ints_rhf();
+	    else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
+        }
+        else {
+            if (reference_ == "RESTRICTED") trans_ints_rmp2(); 
+	    else if (reference_ == "UNRESTRICTED" && reference == "ROHF") trans_ints_uhf();  
+	    else if (reference_ == "UNRESTRICTED" && reference != "ROHF") trans_ints_ump2();  
+        }
         timer_off("trans_ints");
         // ROHF REF
         if (reference == "ROHF") {
@@ -294,29 +301,29 @@ void OCCWave::mp2_manager()
         if (ip_poles == "TRUE") omp2_ip_poles();
         if (ep_ip_poles == "TRUE") ep2_ip();
 	
-	fprintf(outfile,"\n"); 
-	if (reference == "ROHF") fprintf(outfile,"\tComputing MP2 energy using SCF MOs (ROHF-MP2)... \n"); 
-	else fprintf(outfile,"\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
-	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
-	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
-	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
-	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
-	if (reference == "ROHF") fprintf(outfile,"\tMP2 Singles Energy (a.u.)          : %20.14f\n", Emp2_t1);
-	if (reference == "ROHF") fprintf(outfile,"\tMP2 Doubles Energy (a.u.)          : %20.14f\n", Ecorr - Emp2_t1);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
-	fprintf(outfile,"\t============================================================================== \n");
-	fflush(outfile);
+	outfile->Printf("\n");
+	if (reference == "ROHF") outfile->Printf("\tComputing MP2 energy using SCF MOs (ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n"); 
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	outfile->Printf("\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
+	outfile->Printf("\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
+	outfile->Printf("\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
+	outfile->Printf("\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
+	outfile->Printf("\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
+	if (reference == "ROHF") outfile->Printf("\tMP2 Singles Energy (a.u.)          : %20.14f\n", Emp2_t1);
+	if (reference == "ROHF") outfile->Printf("\tMP2 Doubles Energy (a.u.)          : %20.14f\n", Ecorr - Emp2_t1);
+	outfile->Printf("\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
+	outfile->Printf("\t============================================================================== \n");
+	
 	Process::environment.globals["CURRENT ENERGY"] = Emp2;
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
@@ -334,8 +341,9 @@ void OCCWave::mp2_manager()
         Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
         Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-       Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
-       Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
+    Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+    Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
+    if (reference == "ROHF") Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
 
         // if scs on	
 	if (do_scs == "TRUE") {
@@ -368,47 +376,46 @@ void OCCWave::mp2_manager()
              }
 	}
  
+        // S2
+        //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
+ 
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
-	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-	    fprintf(outfile,"\tComputing response density matrices...\n");
-	    fflush(outfile);
+	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
+	    outfile->Printf("\tComputing response density matrices...\n");
+	    
 	    omp2_response_pdms();
-            fprintf(outfile,"\tComputing off-diagonal blocks of GFM...\n");
-            fflush(outfile);
+            outfile->Printf("\tComputing off-diagonal blocks of GFM...\n");
+            
 	    gfock();
-            fprintf(outfile,"\tForming independent-pairs...\n");
-            fflush(outfile);
+            outfile->Printf("\tForming independent-pairs...\n");
+            
 	    idp2();
-            fprintf(outfile,"\tComputing orbital gradient...\n");
-            fflush(outfile);
+            outfile->Printf("\tComputing orbital gradient...\n");
+            
 	    mograd();
             coord_grad();
 
             if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
                 ekt_ip();
                 ekt_ea();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
+                //outfile->Printf("\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                //tstop();
+                //exit(EXIT_SUCCESS);
             }
 
             else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
                 ekt_ip();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
             else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
                 ekt_ea();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
-	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	    fflush(outfile);
+            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+	        outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	        
+            }
         }
 
 }// end mp2_manager 
@@ -437,27 +444,27 @@ void OCCWave::omp3_manager()
 	omp3_mp2_energy();
         timer_off("MP2 Energy");
 
-	fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
-	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
-	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
-	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
-	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n"); 
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	outfile->Printf("\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
+	outfile->Printf("\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
+	outfile->Printf("\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
+	outfile->Printf("\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
+	outfile->Printf("\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
+	outfile->Printf("\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -486,28 +493,28 @@ void OCCWave::omp3_manager()
 	Emp3L_old=Emp3;
         if (ip_poles == "TRUE") omp3_ip_poles();
 	
-	fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP3 energy using SCF MOs (Canonical MP3)... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
-	fprintf(outfile,"\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", (Emp2 - Escf) + 0.5 * (Emp3-Emp2));
-	fprintf(outfile,"\tMP2.5 Total Energy (a.u.)          : %20.14f\n", 0.5 * (Emp3+Emp2));
-	fprintf(outfile,"\tSCS-MP3 Total Energy (a.u.)        : %20.14f\n", Escsmp3);
-	fprintf(outfile,"\tSOS-MP3 Total Energy (a.u.)        : %20.14f\n", Esosmp3);
-	fprintf(outfile,"\tSCSN-MP3 Total Energy (a.u.)       : %20.14f\n", Escsnmp3);
-	fprintf(outfile,"\tSCS-MP3-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp3vdw);
-	fprintf(outfile,"\tSOS-PI-MP3 Total Energy (a.u.)     : %20.14f\n", Esospimp3);
-	fprintf(outfile,"\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3-Emp2);
-	fprintf(outfile,"\tMP3 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP3 Total Energy (a.u.)            : %20.14f\n", Emp3);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n"); 
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\tComputing MP3 energy using SCF MOs (Canonical MP3)... \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
+	outfile->Printf("\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", (Emp2 - Escf) + 0.5 * (Emp3-Emp2));
+	outfile->Printf("\tMP2.5 Total Energy (a.u.)          : %20.14f\n", 0.5 * (Emp3+Emp2));
+	outfile->Printf("\tSCS-MP3 Total Energy (a.u.)        : %20.14f\n", Escsmp3);
+	outfile->Printf("\tSOS-MP3 Total Energy (a.u.)        : %20.14f\n", Esosmp3);
+	outfile->Printf("\tSCSN-MP3 Total Energy (a.u.)       : %20.14f\n", Escsnmp3);
+	outfile->Printf("\tSCS-MP3-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp3vdw);
+	outfile->Printf("\tSOS-PI-MP3 Total Energy (a.u.)     : %20.14f\n", Esospimp3);
+	outfile->Printf("\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3-Emp2);
+	outfile->Printf("\tMP3 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP3 Total Energy (a.u.)            : %20.14f\n", Emp3);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 	Process::environment.globals["MP3 TOTAL ENERGY"] = Emp3;
 	Process::environment.globals["SCS-MP3 TOTAL ENERGY"] = Escsmp3;
 	Process::environment.globals["SOS-MP3 TOTAL ENERGY"] = Esosmp3;
@@ -532,13 +539,13 @@ void OCCWave::omp3_manager()
 	
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
            orbs_already_opt = 1;
-	   if (conver == 1) fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+	   if (conver == 1) outfile->Printf("\n\tOrbitals are optimized now.\n");
 	   else if (conver == 0) { 
-                    fprintf(outfile,"\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
-	            fprintf(outfile,"\tI will consider the present orbitals as optimized.\n");
+                    outfile->Printf("\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
+	            outfile->Printf("\tI will consider the present orbitals as optimized.\n");
            }
-	   fprintf(outfile,"\tSwitching to the standard MP3 computation after semicanonicalization of the MOs... \n");
-	   fflush(outfile);
+	   outfile->Printf("\tSwitching to the standard MP3 computation after semicanonicalization of the MOs... \n");
+	   
 	   semi_canonic();
 	   if (reference_ == "RESTRICTED") trans_ints_rhf();  
 	   else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
@@ -579,70 +586,70 @@ void OCCWave::omp3_manager()
             if (ekt_ea_ == "TRUE") ekt_ea();
         }
 
-        fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP2 energy using optimized MOs... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
-	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
-	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
-	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
-	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n"); 
-	fflush(outfile);
+        outfile->Printf("\n"); 
+	outfile->Printf("\tComputing MP2 energy using optimized MOs... \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	outfile->Printf("\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
+	outfile->Printf("\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
+	outfile->Printf("\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
+	outfile->Printf("\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
+	outfile->Printf("\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
+	outfile->Printf("\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 
-	fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP3 energy using optimized MOs... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
-	fprintf(outfile,"\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", (Emp2 - Escf) + 0.5 * (Emp3-Emp2));
-	fprintf(outfile,"\tMP2.5 Total Energy (a.u.)          : %20.14f\n", 0.5 * (Emp3+Emp2));
-	fprintf(outfile,"\tSCS-MP3 Total Energy (a.u.)        : %20.14f\n", Escsmp3);
-	fprintf(outfile,"\tSOS-MP3 Total Energy (a.u.)        : %20.14f\n", Esosmp3);
-	fprintf(outfile,"\tSCSN-MP3 Total Energy (a.u.)       : %20.14f\n", Escsnmp3);
-	fprintf(outfile,"\tSCS-MP3-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp3vdw);
-	fprintf(outfile,"\tSOS-PI-MP3 Total Energy (a.u.)     : %20.14f\n", Esospimp3);
-	fprintf(outfile,"\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3-Emp2);
-	fprintf(outfile,"\tMP3 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP3 Total Energy (a.u.)            : %20.14f\n", Emp3);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n"); 
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\tComputing MP3 energy using optimized MOs... \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
+	outfile->Printf("\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", (Emp2 - Escf) + 0.5 * (Emp3-Emp2));
+	outfile->Printf("\tMP2.5 Total Energy (a.u.)          : %20.14f\n", 0.5 * (Emp3+Emp2));
+	outfile->Printf("\tSCS-MP3 Total Energy (a.u.)        : %20.14f\n", Escsmp3);
+	outfile->Printf("\tSOS-MP3 Total Energy (a.u.)        : %20.14f\n", Esosmp3);
+	outfile->Printf("\tSCSN-MP3 Total Energy (a.u.)       : %20.14f\n", Escsnmp3);
+	outfile->Printf("\tSCS-MP3-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp3vdw);
+	outfile->Printf("\tSOS-PI-MP3 Total Energy (a.u.)     : %20.14f\n", Esospimp3);
+	outfile->Printf("\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3-Emp2);
+	outfile->Printf("\tMP3 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP3 Total Energy (a.u.)            : %20.14f\n", Emp3);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 
 
-	fprintf(outfile,"\n");
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\t================ OMP3 FINAL RESULTS ========================================== \n");
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tSCS-OMP3 Total Energy (a.u.)       : %20.14f\n", Escsmp3);
-	fprintf(outfile,"\tSOS-OMP3 Total Energy (a.u.)       : %20.14f\n", Esosmp3);
-	fprintf(outfile,"\tSCSN-OMP3 Total Energy (a.u.)      : %20.14f\n", Escsnmp3);
-	fprintf(outfile,"\tSCS-OMP3-VDW Total Energy (a.u.    : %20.14f\n", Escsmp3vdw);
-	fprintf(outfile,"\tSOS-PI-OMP3 Total Energy (a.u.)    : %20.14f\n", Esospimp3);
-	fprintf(outfile,"\tOMP3 Correlation Energy (a.u.)     : %20.14f\n", Emp3L-Escf);
-	fprintf(outfile,"\tEomp3 - Eref (a.u.)                : %20.14f\n", Emp3L-Eref);
-	fprintf(outfile,"\tOMP3 Total Energy (a.u.)           : %20.14f\n", Emp3L);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n");
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\t================ OMP3 FINAL RESULTS ========================================== \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tSCS-OMP3 Total Energy (a.u.)       : %20.14f\n", Escsmp3);
+	outfile->Printf("\tSOS-OMP3 Total Energy (a.u.)       : %20.14f\n", Esosmp3);
+	outfile->Printf("\tSCSN-OMP3 Total Energy (a.u.)      : %20.14f\n", Escsnmp3);
+	outfile->Printf("\tSCS-OMP3-VDW Total Energy (a.u.    : %20.14f\n", Escsmp3vdw);
+	outfile->Printf("\tSOS-PI-OMP3 Total Energy (a.u.)    : %20.14f\n", Esospimp3);
+	outfile->Printf("\tOMP3 Correlation Energy (a.u.)     : %20.14f\n", Emp3L-Escf);
+	outfile->Printf("\tEomp3 - Eref (a.u.)                : %20.14f\n", Emp3L-Eref);
+	outfile->Printf("\tOMP3 Total Energy (a.u.)           : %20.14f\n", Emp3L);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 	
 	// Set the global variables with the energies
 	Process::environment.globals["OMP3 TOTAL ENERGY"] = Emp3L;
@@ -699,11 +706,11 @@ void OCCWave::omp3_manager()
         // Compute Analytic Gradients
         if (dertype == "FIRST") {
             time4grad = 1;
-	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-	    fflush(outfile);
+	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
+	    
             coord_grad();
-	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	    fflush(outfile);
+	    outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	    
         }
 
   }// end if (conver == 1)
@@ -727,27 +734,27 @@ void OCCWave::mp3_manager()
 	omp3_mp2_energy();
         timer_off("MP2 Energy");
 
-	fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
-	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
-	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
-	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
-	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n"); 
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	outfile->Printf("\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
+	outfile->Printf("\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
+	outfile->Printf("\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
+	outfile->Printf("\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
+	outfile->Printf("\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
+	outfile->Printf("\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -776,28 +783,28 @@ void OCCWave::mp3_manager()
 	Emp3L_old=Emp3;
         if (ip_poles == "TRUE") omp3_ip_poles();
 	
-	fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP3 energy using SCF MOs (Canonical MP3)... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
-	fprintf(outfile,"\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", (Emp2 - Escf) + 0.5 * (Emp3-Emp2));
-	fprintf(outfile,"\tMP2.5 Total Energy (a.u.)          : %20.14f\n", 0.5 * (Emp3+Emp2));
-	fprintf(outfile,"\tSCS-MP3 Total Energy (a.u.)        : %20.14f\n", Escsmp3);
-	fprintf(outfile,"\tSOS-MP3 Total Energy (a.u.)        : %20.14f\n", Esosmp3);
-	fprintf(outfile,"\tSCSN-MP3 Total Energy (a.u.)       : %20.14f\n", Escsnmp3);
-	fprintf(outfile,"\tSCS-MP3-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp3vdw);
-	fprintf(outfile,"\tSOS-PI-MP3 Total Energy (a.u.)     : %20.14f\n", Esospimp3);
-	fprintf(outfile,"\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3-Emp2);
-	fprintf(outfile,"\tMP3 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP3 Total Energy (a.u.)            : %20.14f\n", Emp3);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n"); 
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\tComputing MP3 energy using SCF MOs (Canonical MP3)... \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
+	outfile->Printf("\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", (Emp2 - Escf) + 0.5 * (Emp3-Emp2));
+	outfile->Printf("\tMP2.5 Total Energy (a.u.)          : %20.14f\n", 0.5 * (Emp3+Emp2));
+	outfile->Printf("\tSCS-MP3 Total Energy (a.u.)        : %20.14f\n", Escsmp3);
+	outfile->Printf("\tSOS-MP3 Total Energy (a.u.)        : %20.14f\n", Esosmp3);
+	outfile->Printf("\tSCSN-MP3 Total Energy (a.u.)       : %20.14f\n", Escsnmp3);
+	outfile->Printf("\tSCS-MP3-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp3vdw);
+	outfile->Printf("\tSOS-PI-MP3 Total Energy (a.u.)     : %20.14f\n", Esospimp3);
+	outfile->Printf("\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3-Emp2);
+	outfile->Printf("\tMP3 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP3 Total Energy (a.u.)            : %20.14f\n", Emp3);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 	Process::environment.globals["CURRENT ENERGY"] = Emp3;
 	Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3 - Escf;
 	Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
@@ -852,45 +859,39 @@ void OCCWave::mp3_manager()
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
             time4grad = 1;
-	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-            fprintf(outfile,"\tComputing response density matrices...\n");
-            fflush(outfile);
+	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
+            outfile->Printf("\tComputing response density matrices...\n");
+            
 	    omp3_response_pdms();
-            fprintf(outfile,"\tComputing off-diagonal blocks of GFM...\n");
-            fflush(outfile);
+            outfile->Printf("\tComputing off-diagonal blocks of GFM...\n");
+            
 	    gfock();
-            fprintf(outfile,"\tForming independent-pairs...\n");
-            fflush(outfile);
+            outfile->Printf("\tForming independent-pairs...\n");
+            
 	    idp2();
-            fprintf(outfile,"\tComputing orbital gradient...\n");
-            fflush(outfile);
+            outfile->Printf("\tComputing orbital gradient...\n");
+            
 	    mograd();
             coord_grad();
 
             if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
                 ekt_ip();
                 ekt_ea();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
             else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
                 ekt_ip();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
             else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
                 ekt_ea();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
-	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	    fflush(outfile);
+            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+	        outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	        
+            }
+
         }
 
 }// end mp3_manager 
@@ -923,26 +924,26 @@ void OCCWave::ocepa_manager()
         EcorrL = Ecorr;
 	EcepaL_old = Ecepa;
 
-	fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
-	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
-	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
-	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
-	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
-	fprintf(outfile,"\t============================================================================== \n");
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	outfile->Printf("\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
+	outfile->Printf("\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
+	outfile->Printf("\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
+	outfile->Printf("\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
+	outfile->Printf("\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
+	outfile->Printf("\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
+	outfile->Printf("\t============================================================================== \n");
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -967,20 +968,20 @@ void OCCWave::ocepa_manager()
         if (rms_wog > tol_grad) occ_iterations();
         else {
            orbs_already_opt = 1;
-	   fprintf(outfile,"\n\tOrbitals are already optimized, switching to the canonical CEPA computation... \n");
-	   fflush(outfile);
+	   outfile->Printf("\n\tOrbitals are already optimized, switching to the canonical CEPA computation... \n");
+	   
            cepa_iterations();
         }
 	
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
            orbs_already_opt = 1;
-	   if (conver == 1) fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+	   if (conver == 1) outfile->Printf("\n\tOrbitals are optimized now.\n");
 	   else if (conver == 0) { 
-                    fprintf(outfile,"\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
-	            fprintf(outfile,"\tI will consider the present orbitals as optimized.\n");
+                    outfile->Printf("\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
+	            outfile->Printf("\tI will consider the present orbitals as optimized.\n");
            }
-	   fprintf(outfile,"\tSwitching to the standard CEPA computation... \n");
-	   fflush(outfile);
+	   outfile->Printf("\tSwitching to the standard CEPA computation... \n");
+	   
            ref_energy();
 	   cepa_energy();
            Ecepa_old = EcepaL;
@@ -1007,21 +1008,21 @@ void OCCWave::ocepa_manager()
             if (ekt_ea_ == "TRUE") ekt_ea();
         }
 
-	fprintf(outfile,"\n");
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\t================ OCEPA FINAL RESULTS ========================================= \n");
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tSCS-OCEPA(0) Total Energy (a.u.)   : %20.14f\n", Escscepa);
-	fprintf(outfile,"\tSOS-OCEPA(0) Total Energy (a.u.)   : %20.14f\n", Esoscepa);
-	fprintf(outfile,"\tOCEPA(0) Correlation Energy (a.u.) : %20.14f\n", EcepaL-Escf);
-	fprintf(outfile,"\tEocepa - Eref (a.u.)               : %20.14f\n", EcepaL-Eref);
-	fprintf(outfile,"\tOCEPA(0) Total Energy (a.u.)       : %20.14f\n", EcepaL);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n");
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\t================ OCEPA FINAL RESULTS ========================================= \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tSCS-OCEPA(0) Total Energy (a.u.)   : %20.14f\n", Escscepa);
+	outfile->Printf("\tSOS-OCEPA(0) Total Energy (a.u.)   : %20.14f\n", Esoscepa);
+	outfile->Printf("\tOCEPA(0) Correlation Energy (a.u.) : %20.14f\n", EcepaL-Escf);
+	outfile->Printf("\tEocepa - Eref (a.u.)               : %20.14f\n", EcepaL-Eref);
+	outfile->Printf("\tOCEPA(0) Total Energy (a.u.)       : %20.14f\n", EcepaL);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 	
 	// Set the global variables with the energies
 	Process::environment.globals["OCEPA(0) TOTAL ENERGY"] = EcepaL;
@@ -1054,11 +1055,11 @@ void OCCWave::ocepa_manager()
         // Compute Analytic Gradients
         if (dertype == "FIRST") {
             time4grad = 1;
-	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-	    fflush(outfile);
+	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
+	    
             coord_grad();
-	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	    fflush(outfile);
+	    outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	    
         }
 
   }// end if (conver == 1)
@@ -1084,26 +1085,26 @@ void OCCWave::cepa_manager()
         Ecepa = Emp2;
 	Ecepa_old = Emp2;
 
-	fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
-	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
-	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
-	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
-	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
-	fprintf(outfile,"\t============================================================================== \n");
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	outfile->Printf("\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
+	outfile->Printf("\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
+	outfile->Printf("\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
+	outfile->Printf("\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
+	outfile->Printf("\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
+	outfile->Printf("\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
+	outfile->Printf("\t============================================================================== \n");
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -1124,18 +1125,18 @@ void OCCWave::cepa_manager()
         // Perform CEPA iterations
         cepa_iterations();
 
-	fprintf(outfile,"\n");
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\t================ CEPA FINAL RESULTS ========================================== \n");
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tCEPA(0) Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tCEPA(0) Total Energy (a.u.)        : %20.14f\n", Ecepa);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n");
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\t================ CEPA FINAL RESULTS ========================================== \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tCEPA(0) Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
+	outfile->Printf("\tCEPA(0) Total Energy (a.u.)        : %20.14f\n", Ecepa);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 	
 	// Set the global variables with the energies
 	Process::environment.globals["CEPA(0) TOTAL ENERGY"] = Ecepa;
@@ -1147,45 +1148,39 @@ void OCCWave::cepa_manager()
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
             time4grad = 1;
-	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-            fprintf(outfile,"\tComputing response density matrices...\n");
-            fflush(outfile);
+	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
+            outfile->Printf("\tComputing response density matrices...\n");
+            
 	    ocepa_response_pdms();
-            fprintf(outfile,"\tComputing off-diagonal blocks of GFM...\n");
-            fflush(outfile);
+            outfile->Printf("\tComputing off-diagonal blocks of GFM...\n");
+            
 	    gfock();
-            fprintf(outfile,"\tForming independent-pairs...\n");
-            fflush(outfile);
+            outfile->Printf("\tForming independent-pairs...\n");
+            
 	    idp2();
-            fprintf(outfile,"\tComputing orbital gradient...\n");
-            fflush(outfile);
+            outfile->Printf("\tComputing orbital gradient...\n");
+            
 	    mograd();
             coord_grad();
 
             if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
                 ekt_ip();
                 ekt_ea();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
             else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
                 ekt_ip();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
             else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
                 ekt_ea();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
-	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	    fflush(outfile);
+            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+	        outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	        
+            }
+
         }
 }// end cepa_manager 
 
@@ -1213,27 +1208,27 @@ void OCCWave::omp2_5_manager()
 	omp3_mp2_energy();
         timer_off("MP2 Energy");
 
-	fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
-	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
-	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
-	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
-	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n"); 
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	outfile->Printf("\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
+	outfile->Printf("\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
+	outfile->Printf("\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
+	outfile->Printf("\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
+	outfile->Printf("\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
+	outfile->Printf("\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -1262,21 +1257,21 @@ void OCCWave::omp2_5_manager()
 	Emp3L_old=Emp3;
         if (ip_poles == "TRUE") omp3_ip_poles();
 	
-	fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP2.5 energy using SCF MOs (Canonical MP2.5)... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
-	fprintf(outfile,"\t0.5 Energy Correction (a.u.)       : %20.14f\n", Emp3-Emp2);
-	fprintf(outfile,"\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2.5 Total Energy (a.u.)          : %20.14f\n", Emp3);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n"); 
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\tComputing MP2.5 energy using SCF MOs (Canonical MP2.5)... \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
+	outfile->Printf("\t0.5 Energy Correction (a.u.)       : %20.14f\n", Emp3-Emp2);
+	outfile->Printf("\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP2.5 Total Energy (a.u.)          : %20.14f\n", Emp3);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 	Process::environment.globals["MP2.5 TOTAL ENERGY"] = Emp3;
 
 	omp3_response_pdms();
@@ -1288,13 +1283,13 @@ void OCCWave::omp2_5_manager()
 	
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
            orbs_already_opt = 1;
-	   if (conver == 1) fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+	   if (conver == 1) outfile->Printf("\n\tOrbitals are optimized now.\n");
 	   else if (conver == 0) { 
-                    fprintf(outfile,"\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
-	            fprintf(outfile,"\tI will consider the present orbitals as optimized.\n");
+                    outfile->Printf("\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
+	            outfile->Printf("\tI will consider the present orbitals as optimized.\n");
            }
-	   fprintf(outfile,"\tSwitching to the standard MP2.5 computation after semicanonicalization of the MOs... \n");
-	   fflush(outfile);
+	   outfile->Printf("\tSwitching to the standard MP2.5 computation after semicanonicalization of the MOs... \n");
+	   
 	   semi_canonic();
 	   if (reference_ == "RESTRICTED") trans_ints_rhf();  
 	   else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
@@ -1335,58 +1330,58 @@ void OCCWave::omp2_5_manager()
             if (ekt_ea_ == "TRUE") ekt_ea();
         }
 
-        fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP2 energy using optimized MOs... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
-	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
-	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
-	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
-	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n"); 
-	fflush(outfile);
+        outfile->Printf("\n"); 
+	outfile->Printf("\tComputing MP2 energy using optimized MOs... \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	outfile->Printf("\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
+	outfile->Printf("\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
+	outfile->Printf("\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
+	outfile->Printf("\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
+	outfile->Printf("\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
+	outfile->Printf("\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 
-	fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP2.5 energy using optimized MOs... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
-	fprintf(outfile,"\t0.5 Energy Correction (a.u.)       : %20.14f\n", Emp3-Emp2);
-	fprintf(outfile,"\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2.5 Total Energy (a.u.)          : %20.14f\n", Emp3);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n"); 
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\tComputing MP2.5 energy using optimized MOs... \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
+	outfile->Printf("\t0.5 Energy Correction (a.u.)       : %20.14f\n", Emp3-Emp2);
+	outfile->Printf("\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP2.5 Total Energy (a.u.)          : %20.14f\n", Emp3);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 
 
-	fprintf(outfile,"\n");
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\t================ OMP2.5 FINAL RESULTS ======================================== \n");
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tOMP2.5 Correlation Energy (a.u.)   : %20.14f\n", Emp3L-Escf);
-	fprintf(outfile,"\tEomp2.5 - Eref (a.u.)              : %20.14f\n", Emp3L-Eref);
-	fprintf(outfile,"\tOMP2.5 Total Energy (a.u.)         : %20.14f\n", Emp3L);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n");
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\t================ OMP2.5 FINAL RESULTS ======================================== \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tOMP2.5 Correlation Energy (a.u.)   : %20.14f\n", Emp3L-Escf);
+	outfile->Printf("\tEomp2.5 - Eref (a.u.)              : %20.14f\n", Emp3L-Eref);
+	outfile->Printf("\tOMP2.5 Total Energy (a.u.)         : %20.14f\n", Emp3L);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 	
 	// Set the global variables with the energies
 	Process::environment.globals["OMP2.5 TOTAL ENERGY"] = Emp3L;
@@ -1401,11 +1396,11 @@ void OCCWave::omp2_5_manager()
         // Compute Analytic Gradients
         if (dertype == "FIRST") {
             time4grad = 1;
-	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-	    fflush(outfile);
+	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
+	    
             coord_grad();
-	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	    fflush(outfile);
+	    outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	    
         }
 
   }// end if (conver == 1)
@@ -1430,27 +1425,27 @@ void OCCWave::mp2_5_manager()
 	omp3_mp2_energy();
         timer_off("MP2 Energy");
 
-	fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
-	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
-	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
-	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
-	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n"); 
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	outfile->Printf("\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
+	outfile->Printf("\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
+	outfile->Printf("\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
+	outfile->Printf("\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
+	outfile->Printf("\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
+	outfile->Printf("\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -1479,21 +1474,21 @@ void OCCWave::mp2_5_manager()
 	Emp3L_old=Emp3;
         if (ip_poles == "TRUE") omp3_ip_poles();
 	
-	fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP2.5 energy using SCF MOs (Canonical MP2.5)... \n"); 
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
-	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
-	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
-	fprintf(outfile,"\t0.5 Energy Correction (a.u.)       : %20.14f\n", Emp3-Emp2);
-	fprintf(outfile,"\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2.5 Total Energy (a.u.)          : %20.14f\n", Emp3);
-	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n"); 
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\tComputing MP2.5 energy using SCF MOs (Canonical MP2.5)... \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
+	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
+	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
+	outfile->Printf("\t0.5 Energy Correction (a.u.)       : %20.14f\n", Emp3-Emp2);
+	outfile->Printf("\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", Ecorr);
+	outfile->Printf("\tMP2.5 Total Energy (a.u.)          : %20.14f\n", Emp3);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
 	Process::environment.globals["MP2.5 TOTAL ENERGY"] = Emp3;
 	Process::environment.globals["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
 	Process::environment.globals["CURRENT ENERGY"] = Emp3L;
@@ -1503,45 +1498,39 @@ void OCCWave::mp2_5_manager()
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
             time4grad = 1;
-	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-            fprintf(outfile,"\tComputing response density matrices...\n");
-            fflush(outfile);
+	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
+            outfile->Printf("\tComputing response density matrices...\n");
+            
 	    omp3_response_pdms();
-            fprintf(outfile,"\tComputing off-diagonal blocks of GFM...\n");
-            fflush(outfile);
+            outfile->Printf("\tComputing off-diagonal blocks of GFM...\n");
+            
 	    gfock();
-            fprintf(outfile,"\tForming independent-pairs...\n");
-            fflush(outfile);
+            outfile->Printf("\tForming independent-pairs...\n");
+            
 	    idp2();
-            fprintf(outfile,"\tComputing orbital gradient...\n");
-            fflush(outfile);
+            outfile->Printf("\tComputing orbital gradient...\n");
+            
 	    mograd();
             coord_grad();
 
             if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
                 ekt_ip();
                 ekt_ea();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
             else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
                 ekt_ip();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
             else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
                 ekt_ea();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
-	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	    fflush(outfile);
+            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+	        outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	        
+            }
+
         }
 
 }// end omp2.5_manager 

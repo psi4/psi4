@@ -10,7 +10,8 @@ Interface to MRCC by M. K\ |a_acute|\ llay
 .. codeauthor:: Justin M. Turney and Andrew C. Simmonett
 .. sectionauthor:: Justin M. Turney
 
-*Module:* :ref:`Keywords <apdx:mrcc>`, :ref:`PSI Variables <apdx:mrcc_psivar>`, :source:`MRCC <src/bin/mrcc>`
+
+*Module:* :ref:`Keywords <apdx:mrcc>`, :ref:`PSI Variables <apdx:mrcc_psivar>`, :source:`MRCC <src/bin/mrcc>`, :ref:`Samples <apdx:testSuitedftd3>`
 
 |PSIfour| contains code to interface to the MRCC program of M. K\ |a_acute|\ llay
 and J. Gauss.  The license and source code of the MRCC program must be
@@ -51,42 +52,10 @@ input file for MRCC for the methods listed in table below.
 To utilize any method described in the table, you must prefix
 the method name with ``MR``. For other methods, you will be required to
 use the MRCC keywords described in Appendix :ref:`apdx:mrcc`.
+Note that perturbative methods (``ccsd(t)``, ``ccsdtqp(h)_l``, etc.)
+are not available with |scf__reference| ROHF.
 
-.. _`table:mrccauto`:
-
-.. table:: Methods available in automatic interface with MRCC
-
-   +------------+-------------------+--------------------+
-   |CCSD        | CCSD(T) [1]_      | CCSD(T)\_L [1]_    |
-   +------------+-------------------+--------------------+
-   |CCSDT       | CCSDT(Q) [1]_     | CCSDT(Q)\_L [1]_   |
-   +------------+-------------------+--------------------+
-   |CCSDTQ      | CCSDTQ(P) [1]_    | CCSDTQ(P)\_L [1]_  |
-   +------------+-------------------+--------------------+
-   |CCSDTQP     | CCSDTQP(H) [1]_   | CCSDTQP(H)\_L [1]_ |
-   +------------+-------------------+--------------------+
-   |CCSDTQPH    |                   |                    |
-   +------------+-------------------+--------------------+
-   |CCSDT-1a    | CCSDT-1b          | CCSDT-3            |
-   +------------+-------------------+--------------------+
-   |CCSDTQ-1a   | CCSDTQ-1b         | CCSDTQ-3           |
-   +------------+-------------------+--------------------+
-   |CCSDTQP-1a  | CCSDTQP-1b        | CCSDTQP-3          |
-   +------------+-------------------+--------------------+
-   |CCSDTQPH-1a | CCSDTQPH-1b       | CCSDTQPH-3         |
-   +------------+-------------------+--------------------+
-   |CC2         |                   |                    |
-   +------------+-------------------+--------------------+
-   |CC3         |                   |                    |
-   +------------+-------------------+--------------------+
-   |CC4         |                   |                    |
-   +------------+-------------------+--------------------+
-   |CC5         |                   |                    |
-   +------------+-------------------+--------------------+
-   |CC6         |                   |                    |
-   +------------+-------------------+--------------------+
-
-.. [1] Pertubative methods not available with ROHF reference.
+.. include:: mrcc_table_energy.rst
 
 Frozen-core approximation is also supported in the MRCC interface.
 To optimize CH\ :sub:`4` with CCSDT freezing the 1\ *s* on carbon, run::
@@ -106,4 +75,30 @@ To optimize CH\ :sub:`4` with CCSDT freezing the 1\ *s* on carbon, run::
    
    optimize('mrccsdt')
 
+Interface Details
+~~~~~~~~~~~~~~~~~
+
+.. _`table:mrcc__mrcc_method`:
+
+.. table:: MRCC methods 
+
+    +---------------------+--------------+-------------------------------------------------------------+
+    | |mrcc__mrcc_method| | Method       | Description                                                 | 
+    +=====================+==============+=============================================================+ 
+    | 1                   | CC           |                                                             |
+    +---------------------+--------------+-------------------------------------------------------------+
+    | 2                   | CC(n-1)[n]   |                                                             |
+    +---------------------+--------------+-------------------------------------------------------------+
+    | 3                   | CC(n-1)(n)   | (CC(n-1)[n] energy is also calculated)                      | 
+    +---------------------+--------------+-------------------------------------------------------------+
+    | 4                   | CC(n-1)(n)_L | (CC(n-1)[n] and CC(n-1)(n) energies are also calculated)    | 
+    +---------------------+--------------+-------------------------------------------------------------+
+    | 5                   | CC(n)-1a     |                                                             |
+    +---------------------+--------------+-------------------------------------------------------------+
+    | 6                   | CC(n)-1b     |                                                             |
+    +---------------------+--------------+-------------------------------------------------------------+
+    | 7                   | CCn          |                                                             |
+    +---------------------+--------------+-------------------------------------------------------------+
+    | 8                   | CC(n)-3      |                                                             |
+    +---------------------+--------------+-------------------------------------------------------------+
 

@@ -194,6 +194,13 @@ void opt_free_array(double *f) {
   free(f);
 }
 
+void opt_matrix_copy(double **from, double **to, long int nr, long int nc) {
+  double *from1 = from[0];
+  double *to1 = to[0];
+  for (long int i=0; i<nr*nc; ++i)
+    to1[i] = from1[i];
+}
+
 double **opt_init_matrix(long int m, long int n) {
   double **A = NULL;
   double *B = NULL;

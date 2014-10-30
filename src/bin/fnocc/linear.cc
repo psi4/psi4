@@ -52,7 +52,7 @@ void CoupledCluster::CPU_t1_vmeai_linear(CCTaskParams params){
   F_DAXPY(o*o*v*v,-2.0,integrals,1,tempv,1);
   
   for (i=0; i<o; i++){
-      F_DCOPY(v,t1+i,o,tempt+i*v,1);
+      C_DCOPY(v,t1+i,o,tempt+i*v,1);
   }
   F_DGEMV('n',o*v,o*v,-1.0,tempv,o*v,tempt,1,0.0,integrals,1);
   for (a=0; a<v; a++){
@@ -208,9 +208,9 @@ void CoupledCluster::UpdateT1_mp4(long int iter){
      }
   }
   // error vector for diis is in tempv:
-  F_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
+  C_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
   F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
-  F_DCOPY(o*v,w1,1,t1,1);
+  C_DCOPY(o*v,w1,1,t1,1);
 }
 void CoupledCluster::UpdateT2_mp4(long int iter){
 
@@ -336,7 +336,7 @@ void CoupledCluster::UpdateT2_mp4(long int iter){
       psio->write_entry(PSIF_DCC_T2,"first",(char*)&tempt[0],o*o*v*v*sizeof(double));
       psio->close(PSIF_DCC_T2,1);
 
-      if (!t2_on_disk) F_DCOPY(o*o*v*v,tempt,1,tb,1);
+      if (!t2_on_disk) C_DCOPY(o*o*v*v,tempt,1,tb,1);
 
   }
   else if (iter == 1) {
@@ -374,7 +374,7 @@ void CoupledCluster::I2ijkl_linear(CCTaskParams params){
      psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
   }else{
-     F_DCOPY(o*o*v*v,tb,1,tempt,1);
+     C_DCOPY(o*o*v*v,tb,1,tempt,1);
   }
 
   psio->open(PSIF_DCC_IJKL,PSIO_OPEN_OLD);
@@ -444,7 +444,7 @@ void CoupledCluster::Vabcd1_linear(CCTaskParams params){
      psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
   }else{
-     F_DCOPY(o*o*v*v,tb,1,tempt,1);
+     C_DCOPY(o*o*v*v,tb,1,tempt,1);
   }
   for (i=0; i<o; i++){
       for (j=i; j<o; j++){
@@ -501,7 +501,7 @@ void CoupledCluster::Vabcd2_linear(CCTaskParams params){
      psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
   }else{
-     F_DCOPY(o*o*v*v,tb,1,tempt,1);
+     C_DCOPY(o*o*v*v,tb,1,tempt,1);
   }
   for (i=0; i<o; i++){
       for (j=i; j<o; j++){
@@ -557,7 +557,7 @@ void CoupledCluster::I2iabj_linear(CCTaskParams params){
   psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);
-  F_DCOPY(o*o*v*v,integrals,1,tempv,1);
+  C_DCOPY(o*o*v*v,integrals,1,tempv,1);
 
   // use I2iabj
   if (t2_on_disk){

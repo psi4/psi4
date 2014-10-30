@@ -118,12 +118,17 @@ public:
     MolecularGrid(boost::shared_ptr<Molecule> molecule);
     virtual ~MolecularGrid();   
 
-    /// Build the grid
+    /// Build the grid 
     void buildGridFromOptions(MolecularGridOptions const& opt);
+    /// Build the grid 
+    void buildGridFromOptions(MolecularGridOptions const& opt,
+        const std::vector<std::vector<double> >& rs,  // Radial nodes,     per atom
+        const std::vector<std::vector<double> >& ws,  // Radial weights,   per atom
+        const std::vector<std::vector<int> >&    Ls); // Spherical orders, per atom
 
     /// Print information about the grid
-    void print(FILE* out = outfile, int print = 2) const;
-    void print_details(FILE* out = outfile, int print = 2) const;
+    void print(std::string OutFileRMR = "outfile", int print = 2) const;
+    void print_details(std::string OutFileRMR = "outfile", int print = 2) const;
 
     /// Orientation matrix
     boost::shared_ptr<Matrix> orientation() const { return orientation_; }
@@ -255,7 +260,7 @@ public:
     double* w() const { return w_; }
 
     /// Reflection
-    void print(FILE* out = outfile, int level = 1) const; 
+    void print(std::string OutFileRMR = "outfile", int level = 1) const;
 };
 
 class SphericalGrid {
@@ -341,7 +346,7 @@ public:
     double* theta() const { return theta_; }
 
     /// Reflection
-    void print(FILE* out = outfile, int level = 1) const; 
+    void print(std::string OutFileRMR = "outfile", int level = 1) const;
     
     // ==> Unique Lebedev Grids (statically stored) <== //
 
@@ -396,7 +401,7 @@ public:
     /// Number of grid points
     int npoints() const { return npoints_; } 
     /// Print a trace of this BlockOPoints
-    void print(FILE* out = outfile, int print = 2); 
+    void print(std::string OutFileRMR = "outfile", int print = 2);
     
     /// The x points. You do not own this 
     double* x() const { return x_; }
@@ -432,7 +437,7 @@ public:
     virtual ~BasisExtents(); 
 
     /// Print a trace of these extents
-    void print(FILE* out = outfile);
+    void print(std::string OutFileRMR = "outfile");
     /// Reset delta and recompute extents
     void set_delta(double delta) { delta_ = delta; computeExtents(); }   
 

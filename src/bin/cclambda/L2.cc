@@ -51,7 +51,7 @@ void GmiL2(int L_irr);
 void dijabL2(int L_irr);
 
 void BL2_AO(int L_irr);
-void status(const char *, FILE *);
+void status(const char *, std::string);
 
 void L2_build(struct L_Params L_params) {
   dpdbuf4 L2;
@@ -59,7 +59,7 @@ void L2_build(struct L_Params L_params) {
   L_irr = L_params.irrep;
 
   DL2(L_params);
-  if(params.print & 2) status("<ij||ab> -> L2", outfile);
+  if(params.print & 2) status("<ij||ab> -> L2", "outfile");
 
 #ifdef EOM_DEBUG
   check_sum("DL2", L_irr);
@@ -69,25 +69,25 @@ void L2_build(struct L_Params L_params) {
 #ifdef EOM_DEBUG
   check_sum("WijmnL2", L_irr);
 #endif
-  if(params.print & 2) status("Wmnij -> L2", outfile);
+  if(params.print & 2) status("Wmnij -> L2", "outfile");
 
   WefabL2(L_irr);
 #ifdef EOM_DEBUG
   check_sum("WefabL2", L_irr);
 #endif
-  if(params.print & 2) status("Wabef -> L2", outfile);
+  if(params.print & 2) status("Wabef -> L2", "outfile");
 
   WejabL2(L_irr);
 #ifdef EOM_DEBUG
   check_sum("WejabL2", L_irr);
 #endif
-  if(params.print & 2) status("Wamef -> L2", outfile);
+  if(params.print & 2) status("Wamef -> L2", "outfile");
 
   WijmbL2(L_irr);
 #ifdef EOM_DEBUG
   check_sum("WijmbL2", L_irr);
 #endif
-  if(params.print & 2) status("Wmnie -> L2", outfile);
+  if(params.print & 2) status("Wmnie -> L2", "outfile");
 
   GaeL2(L_irr);
 #ifdef EOM_DEBUG
@@ -98,7 +98,7 @@ void L2_build(struct L_Params L_params) {
 #ifdef EOM_DEBUG
   check_sum("GmiL2", L_irr);
 #endif
-  if(params.print & 2) status("G -> L2", outfile);
+  if(params.print & 2) status("G -> L2", "outfile");
 
   /* For RHF-CCSD response calculations, save all the above
      contributions to the L2 residual for use in the ccresponse code
@@ -118,25 +118,25 @@ void L2_build(struct L_Params L_params) {
 #ifdef EOM_DEBUG
   check_sum("FmiL2", L_irr);
 #endif
-  if(params.print & 2) status("F -> L2", outfile);
+  if(params.print & 2) status("F -> L2", "outfile");
 
   WmbejL2(L_irr); 
 #ifdef EOM_DEBUG
   check_sum("WmbejL2", L_irr);
 #endif
-  if(params.print & 2) status("Wmbej -> L2", outfile);
+  if(params.print & 2) status("Wmbej -> L2", "outfile");
 
   if(!params.sekino) L1FL2(L_irr); /* should be dropped for Sekino-Bartlett modelIII approach */
 #ifdef EOM_DEBUG
   check_sum("L1FL2", L_irr);
 #endif
-  if(params.print & 2) status("L1*F -> L2", outfile);
+  if(params.print & 2) status("L1*F -> L2", "outfile");
 
   dijabL2(L_irr);
 #ifdef EOM_DEBUG
   check_sum("after D2s", L_irr);
 #endif
-  if(params.print & 2) status("L2 amplitudes", outfile);
+  if(params.print & 2) status("L2 amplitudes", "outfile");
 }
 
 

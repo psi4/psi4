@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 #include <libmints/mints.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
@@ -106,7 +107,7 @@ void densgrid_RHF(Options& options)
 
   // Scan along Cartesian axes to determine dimensions of box 
   molecule->print();
-  fprintf(outfile, "  Grid domain:\n");
+  outfile->Printf( "  Grid domain:\n");
   xmin = xmax = molecule->xyz(0, 0);
   ymin = ymax = molecule->xyz(0, 1);
   zmin = zmax = molecule->xyz(0, 2);
@@ -136,7 +137,7 @@ void densgrid_RHF(Options& options)
       for(int j=0; j < nmo; j++)
         dens += delta[i][j] * D[i][j];
   } while((dens/b2a3) > options.get_double("ONEPDM_GRID_CUTOFF"));
-  fprintf(outfile, "  xmin = %8.6f (Angstrom);  density(xmin,0,0) (e/Ang^3) = %8.6e\n", xmin, dens);
+  outfile->Printf( "  xmin = %8.6f (Angstrom);  density(xmin,0,0) (e/Ang^3) = %8.6e\n", xmin, dens);
 
   do {
     xmax += 0.1;
@@ -146,7 +147,7 @@ void densgrid_RHF(Options& options)
       for(int j=0; j < nmo; j++)
         dens += delta[i][j] * D[i][j];
   } while((dens/b2a3) > options.get_double("ONEPDM_GRID_CUTOFF"));
-  fprintf(outfile, "  xmax = %8.6f (Angstrom);   density(xmax,0,0) (e/Ang^3) = %8.6e\n", xmax, dens);
+  outfile->Printf( "  xmax = %8.6f (Angstrom);   density(xmax,0,0) (e/Ang^3) = %8.6e\n", xmax, dens);
 
   do {
     ymin -= 0.1;
@@ -156,7 +157,7 @@ void densgrid_RHF(Options& options)
       for(int j=0; j < nmo; j++)
         dens += delta[i][j] * D[i][j];
   } while((dens/b2a3) > options.get_double("ONEPDM_GRID_CUTOFF"));
-  fprintf(outfile, "  ymin = %8.6f (Angstrom);  density(0,ymin,0) (e/Ang^3) = %8.6e\n", ymin, dens);
+  outfile->Printf( "  ymin = %8.6f (Angstrom);  density(0,ymin,0) (e/Ang^3) = %8.6e\n", ymin, dens);
 
   do {
     ymax += 0.1;
@@ -166,7 +167,7 @@ void densgrid_RHF(Options& options)
       for(int j=0; j < nmo; j++)
         dens += delta[i][j] * D[i][j];
   } while((dens/b2a3) > options.get_double("ONEPDM_GRID_CUTOFF"));
-  fprintf(outfile, "  ymax = %8.6f (Angstrom);   density(0,ymax,0) (e/Ang^3) = %8.6e\n", ymax, dens);
+  outfile->Printf( "  ymax = %8.6f (Angstrom);   density(0,ymax,0) (e/Ang^3) = %8.6e\n", ymax, dens);
 
   do {
     zmin -= 0.1;
@@ -176,7 +177,7 @@ void densgrid_RHF(Options& options)
       for(int j=0; j < nmo; j++)
         dens += delta[i][j] * D[i][j];
   } while((dens/b2a3) > options.get_double("ONEPDM_GRID_CUTOFF"));
-  fprintf(outfile, "  zmin = %8.6f (Angstrom);  density(0,0,zmin) (e/Ang^3) = %8.6e\n", zmin, dens);
+  outfile->Printf( "  zmin = %8.6f (Angstrom);  density(0,0,zmin) (e/Ang^3) = %8.6e\n", zmin, dens);
 
   do {
     zmax += 0.1;
@@ -186,10 +187,10 @@ void densgrid_RHF(Options& options)
       for(int j=0; j < nmo; j++)
         dens += delta[i][j] * D[i][j];
   } while((dens/b2a3) > options.get_double("ONEPDM_GRID_CUTOFF"));
-  fprintf(outfile, "  zmax = %8.6f (Angstrom);   density(0,0,zmax) (e/Ang^3) = %8.6e\n", zmax, dens);
+  outfile->Printf( "  zmax = %8.6f (Angstrom);   density(0,0,zmax) (e/Ang^3) = %8.6e\n", zmax, dens);
 
   // Compute density at the nuclei
-  fprintf(outfile, "  Density at nuclei:\n");
+  outfile->Printf( "  Density at nuclei:\n");
   for(int atom=0; atom < molecule->natom(); atom++) {
     x = molecule->xyz(atom, 0);
     y = molecule->xyz(atom, 1);
@@ -200,7 +201,7 @@ void densgrid_RHF(Options& options)
       for(int j=0; j < nmo; j++)
         dens += delta[i][j] * D[i][j];
 
-    fprintf(outfile, "  Atom %d (%8.6f, %8.6f, %8.5f), dens = %20.12f (e/Ang^3)\n", atom, x*pc_bohr2angstroms,
+    outfile->Printf( "  Atom %d (%8.6f, %8.6f, %8.5f), dens = %20.12f (e/Ang^3)\n", atom, x*pc_bohr2angstroms,
 y*pc_bohr2angstroms, z*pc_bohr2angstroms, dens/b2a3);
    }
 
@@ -210,17 +211,16 @@ y*pc_bohr2angstroms, z*pc_bohr2angstroms, dens/b2a3);
   int zsteps = (int) ((zmax - zmin)/step_size + 1);
 
   // Prep .dx file
-  FILE *dxfile;
-  ffile(&dxfile, "density.dx", 0);
-  fprintf(dxfile, "#  Output from PSI4 calculation\n");
-  fprintf(dxfile, "#  Electronic density (in e/ang^3) for: \n");
-  fprintf(dxfile, "object 1 class gridpositions counts %d %d %d\n", xsteps, ysteps, zsteps);
-  fprintf(dxfile, "origin %8.6E  %8.6E  %8.6E\n", xmin, ymin, zmin);
-  fprintf(dxfile, "delta %8.6E  %8.6E  %8.6E\n", step_size, 0.0, 0.0);
-  fprintf(dxfile, "delta %8.6E  %8.6E  %8.6E\n", 0.0, step_size, 0.0);
-  fprintf(dxfile, "delta %8.6E  %8.6E  %8.6E\n", 0.0, 0.0, step_size);
-  fprintf(dxfile, "object 1 class gridconnections counts %d %d %d\n", xsteps, ysteps, zsteps);
-  fprintf(dxfile, "object 3 class array double rank 0 items %d data follows\n", xsteps*ysteps*zsteps);
+  boost::shared_ptr<OutFile> printer(new OutFile("density.dx",TRUNCATE));
+  printer->Printf( "#  Output from PSI4 calculation\n");
+  printer->Printf( "#  Electronic density (in e/ang^3) for: \n");
+  printer->Printf( "object 1 class gridpositions counts %d %d %d\n", xsteps, ysteps, zsteps);
+  printer->Printf( "origin %8.6E  %8.6E  %8.6E\n", xmin, ymin, zmin);
+  printer->Printf( "delta %8.6E  %8.6E  %8.6E\n", step_size, 0.0, 0.0);
+  printer->Printf( "delta %8.6E  %8.6E  %8.6E\n", 0.0, step_size, 0.0);
+  printer->Printf( "delta %8.6E  %8.6E  %8.6E\n", 0.0, 0.0, step_size);
+  printer->Printf( "object 1 class gridconnections counts %d %d %d\n", xsteps, ysteps, zsteps);
+  printer->Printf( "object 3 class array double rank 0 items %d data follows\n", xsteps*ysteps*zsteps);
 
   // Loop over points and integrate along the way
   double charge = 0;
@@ -239,9 +239,9 @@ y*pc_bohr2angstroms, z*pc_bohr2angstroms, dens/b2a3);
 
         dens /= b2a3; // convert to e/Ang^3
 
-        fprintf(dxfile, "  %8.6E", dens);
+        printer->Printf( "  %8.6E", dens);
         count++;
-        if(count % 3 == 0) fprintf(dxfile, "\n");
+        if(count % 3 == 0) printer->Printf( "\n");
 
         charge += dens * step_size * step_size * step_size;
 
@@ -249,27 +249,26 @@ y*pc_bohr2angstroms, z*pc_bohr2angstroms, dens/b2a3);
     }  // y
   } // x
 
-  fprintf(outfile, "    Number of electrons = %20.12f?\n", charge);
+  outfile->Printf( "    Number of electrons = %20.12f?\n", charge);
 
-  if(count % 3 != 0) fprintf(dxfile, "\n");
-  fprintf(dxfile, "attribute \"dep\" string \"positions\"\n");
-  fprintf(dxfile, "object \"regular positions regular connections\" class field\n");
-  fprintf(dxfile, "component \"positions\" value 1\n");
-  fprintf(dxfile, "component \"connections\" value 2\n");
-  fprintf(dxfile, "component \"data\" value 3\n");
-  fprintf(dxfile, "\n");
-  fprintf(dxfile, "end");
-  fclose(dxfile);
+  if(count % 3 != 0) printer->Printf( "\n");
+  printer->Printf( "attribute \"dep\" string \"positions\"\n");
+  printer->Printf( "object \"regular positions regular connections\" class field\n");
+  printer->Printf( "component \"positions\" value 1\n");
+  printer->Printf( "component \"connections\" value 2\n");
+  printer->Printf( "component \"data\" value 3\n");
+  printer->Printf( "\n");
+  printer->Printf( "end");
 
-  ffile(&dxfile, "molecule.dx", 0);
-  fprintf(dxfile, "%d\n", molecule->natom());
-  fprintf(dxfile, "Initial atomic coordinates\n");
+  boost::shared_ptr<OutFile> printer2(new OutFile("molecule.dx",TRUNCATE));
+
+  printer2->Printf("%d\n", molecule->natom());
+  printer2->Printf("Initial atomic coordinates\n");
   for(int i=0; i < molecule->natom(); i++) {
-    fprintf(dxfile, "%2s  ", molecule->symbol(i).c_str());
-    fprintf(dxfile, "  %9.6f  %9.6f  %9.6f\n", molecule->x(i)*pc_bohr2angstroms, molecule->y(i)*pc_bohr2angstroms, molecule->z(i)*pc_bohr2angstroms);
+    printer2->Printf("%2s  ", molecule->symbol(i).c_str());
+    printer2->Printf("  %9.6f  %9.6f  %9.6f\n", molecule->x(i)*pc_bohr2angstroms, molecule->y(i)*pc_bohr2angstroms, molecule->z(i)*pc_bohr2angstroms);
   }
-  fflush(dxfile);
-  fclose(dxfile);
+
 
   free_block(delta);
   free_block(scf);

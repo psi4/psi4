@@ -39,13 +39,13 @@
 #include <psiconfig.h>
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
-
+#include "libparallel/ParallelPrinter.h"
 using namespace std;
 
 namespace psi {
 
 void create_new_plugin(std::string plugin_name, const std::string& template_name);
-void print_version(FILE *);
+void print_version(std::string);
 void print_usage();
 
 /*!
@@ -82,19 +82,22 @@ int psi_start(int argc, char *argv[])
     interactive_python  = false;
 
     // A string listing of valid short option letters
-    const char* const short_options = "ahvVdcwo:p:i:sn:mkt";
+    const char* const short_options = "ahvVdcwo:p:i:l:s:n:r:mkt";
     const struct option long_options[] = {
         { "append",  0, NULL, 'a' },
         { "help",    0, NULL, 'h' },
         { "verbose", 0, NULL, 'v' },
         { "version", 0, NULL, 'V' },
         { "check",   0, NULL, 'c' },
-        { "nthread", 0, NULL, 'n' },
+        { "nthread", 1, NULL, 'n' },
         { "debug",   0, NULL, 'd' },
         { "wipe",    0, NULL, 'w' },
         { "output",  1, NULL, 'o' },
         { "prefix",  1, NULL, 'p' },
         { "input",   1, NULL, 'i' },
+        { "psidatadir", 1, NULL, 'l' },
+        { "scratch", 1, NULL, 's' },
+        { "restart", 1, NULL, 'r' },
         { "messy",   0, NULL, 'm' },
         { "skip-preprocessor",  0, NULL, 'k' },
         { "interactive", 0, NULL, 't' },
@@ -144,12 +147,25 @@ int psi_start(int argc, char *argv[])
                 ifname = optarg;
                 break;
 
+            case 'l': // -l or --psidatadir
+                // This is ok so long as all reads of this var are after here
+                Process::environment.set("PSIDATADIR",optarg);
+                break;
+
+            case 's': // -s or --scratch
+                Process::environment.set("PSI_SCRATCH",optarg);
+                break;
+
             case 'o': // -o or --output
                 ofname = optarg;
                 break;
 
             case 'p': // -p or --prefix
                 fprefix = optarg;
+                break;
+
+            case 'r': // -r or --restart
+                restart_id = optarg;
                 break;
 
             case 'v': // -v or --verbose
@@ -161,7 +177,7 @@ int psi_start(int argc, char *argv[])
                 break;
 
             case 'V': // -V or --version
-                print_version(stdout);
+                print_version("stdout");
                 exit(EXIT_SUCCESS);
                 break;
 
@@ -215,6 +231,8 @@ int psi_start(int argc, char *argv[])
         ofname = Process::environment("PSI_OUTPUT");
     if (fprefix.empty() && Process::environment("PSI_PREFIX").size())
         fprefix = Process::environment("PSI_PREFIX");
+    if (restart_id.empty() && Process::environment("PSI_RESTART").size())
+        restart_id = Process::environment("PSI_RESTART");
 
     /* if some arguments still not defined - assign default values */
     if (ifname.empty()) ifname = "input.dat";
@@ -257,36 +275,26 @@ int psi_start(int argc, char *argv[])
         }
 
         if(infile == NULL) {
-            fprintf(stderr, "Error: could not open input file %s\n",ifname.c_str());
+            printf( "Error: could not open input file %s\n",ifname.c_str());
             return(PSI_RETURN_FAILURE);
         }
     }
 #endif
 
 #if defined(MAKE_PYTHON_MODULE)
-    outfile = stdout;
+        outfile = boost::shared_ptr<PsiOutStream>(new PsiOutStream());
 #else
-    if(append) {
-        if(ofname == "stdout")
-            outfile=stdout;
-        else
-            outfile = fopen(ofname.c_str(), "a");
-    }
-    else {
-        if(ofname == "stdout")
-            outfile=stdout;
-        else
-            outfile = fopen(ofname.c_str(), "w");
-    }
-
-    if(outfile == NULL) {
-        fprintf(stderr, "Error: could not open output file %s\n",ofname.c_str());
-        return(PSI_RETURN_FAILURE);
-    }
+        if(ofname == "stdout"){
+            outfile=boost::shared_ptr<PsiOutStream>(new PsiOutStream());
+        }
+        else{
+           outfile=boost::shared_ptr<PsiOutStream>
+              (new OutFile(ofname,(append?APPEND:TRUNCATE)));
+        }
 #endif
 
-    if(debug)
-        setbuf(outfile,NULL);
+    //if(debug)
+    //    setbuf(outfile,NULL);
 
     // Initialize Yeti's env
     //yetiEnv.init(WorldComm->me(), ofname.c_str());
@@ -303,8 +311,8 @@ int psi_start(int argc, char *argv[])
     psi_file_prefix = strdup(fprefix.c_str());
 
     // If check_only, force output to stdout because we don't need anything more
-    if (check_only)
-        outfile = stdout;
+    //if (check_only)
+    //    outfile = stdout;
     outfile_name = ofname;
 
     return(PSI_RETURN_SUCCESS);
@@ -316,13 +324,19 @@ void print_usage(void)
     printf("Usage:  psi4 [options] inputfile\n");
     printf(" -a  --append             Append results to output file. Default: Truncate first\n");
     printf(" -c  --check              Run input checks (not implemented).\n");
-    printf(" -d  --debug              Flush the outfile at every fprintf.\n"
+    printf(" -d  --debug              Flush the outfile at every psi::fprintf.\n"
            "                          Default: true iff --with-debug.\n");
     printf(" -h  --help               Display this usage information.\n");
-    printf(" -i  --input filename     Input file name. Default: input.dat\n");
+    printf(" -i  --input filename     Input file name. Default: filename\n");
     printf(" -k  --skip-preprocessor  Skips input preprocessing. Expert mode.\n");
-    printf(" -o  --output filename    Redirect output elsewhere. Default: output.dat\n");
+    printf(" -o  --output filename    Redirect output elsewhere. Default:\n");
+    printf("                          filename.out if input is filename\n");
+    printf("                          filename.out if input is filename.in\n");
+    printf("                          output.dat if input is input.dat\n");
+    printf(" -l  --psidatadir         Specify where to look for the Psi data directory.\n");
+    printf("                          Overrides PSIDATADIR.\n");
     printf(" -m  --messy              Leave temporary files after the run is completed.\n");
+    printf(" -r  --restart            Number to be used instead of process id.\n");
     printf(" -n  --nthread            Number of threads to use (overrides OMP_NUM_THREADS)\n");
     printf("     --new-plugin name    Creates a new directory with files for writing a\n"
            "                          new plugin. You can specify an additional argument\n"
@@ -333,6 +347,10 @@ void print_usage(void)
     printf(" -v  --verbose            Print a lot of information.\n");
     printf(" -V  --version            Print version information.\n");
     printf(" -w  --wipe               Clean out your scratch area.\n");
+    printf("\n");
+    printf("Environment Variables\n");
+    printf("     PSI_SCRATCH          Directory where scratch files are written. Default: /tmp/\n");
+    printf("                          This should be a local, not network, disk\n");
 
     exit(EXIT_FAILURE);
 }

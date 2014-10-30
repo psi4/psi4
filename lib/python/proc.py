@@ -30,10 +30,10 @@ import shutil
 import os
 import subprocess
 import re
-import psi4
-import p4const
+#CU#CUimport psi4
+#CUimport p4const
 import p4util
-from p4regex import *
+#CUfrom p4regex import *
 #from extend_Molecule import *
 from molutil import *
 from functional import *
@@ -98,19 +98,194 @@ def run_dcft_gradient(name, **kwargs):
     optstash.restore()
 
 
+def run_dfomp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted orbital-optimized MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF','DF_INTS_IO'],
+        ['DF_BASIS_SCF'],
+        ['GLOBALS', 'DF_BASIS_CC'])
+
+    # override symmetry:
+    molecule = psi4.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(1)
+    molecule.update_geometry()
+    if user_pg != 'c1':
+        psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
+
+    # if the df_basis_scf basis is not set, pick a sensible one.
+    if psi4.get_global_option('DF_BASIS_SCF') == '':
+        jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
+        if jkbasis:
+            psi4.set_global_option('DF_BASIS_SCF', jkbasis)
+            psi4.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
+        else:
+            raise ValidationError('Keyword DF_BASIS_SCF is required.')
+
+    #psi4.set_global_option('SCF_TYPE', 'DF')
+    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    # if the df_basis_cc basis is not set, pick a sensible one.
+    if psi4.get_global_option('DF_BASIS_CC') == '':
+        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
+        if ribasis:
+            psi4.set_global_option('DF_BASIS_CC', ribasis)
+            psi4.print_out('  No DF_BASIS_CC auxiliary basis selected, defaulting to %s\n' % (ribasis))
+        else:
+            raise ValidationError('Keyword DF_BASIS_CC is required.')
+
+    psi4.dfocc()
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
+
+    return psi4.get_variable("CURRENT ENERGY")
+
+
+def run_dfomp2_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    DF-OMP2 gradient calculation.
+
+    """
+    optstash = p4util.OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
+
+    psi4.set_global_option('DERTYPE', 'FIRST')
+    run_dfomp2(name, **kwargs)
+
+    optstash.restore()
+
+
+def run_dfomp2_property(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    DF-OMP2 gradient calculation.
+
+    """
+    optstash = p4util.OptionsState(
+        ['DFOCC', 'OEPROP'])
+
+    psi4.set_local_option('DFOCC', 'OEPROP', 'TRUE')
+    run_dfomp2(name, **kwargs)
+
+    optstash.restore()
+
+
+def run_rimp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a density-fitted MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['DFOCC', 'ORB_OPT'])
+
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    run_dfomp2(name, **kwargs)
+
+
+def run_rimp2_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a density-fitted MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['DFOCC', 'ORB_OPT'])
+
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    run_dfomp2_gradient(name, **kwargs)
+
+
+def run_rimp2_property(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a cholesky-decomposed MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['DFOCC', 'ORB_OPT'])
+
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    run_dfomp2_property(name, **kwargs)
+
+
+def run_cdomp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a cholesky-decomposed orbital-optimized MP2 computation
+
+    """
+
+    optstash = p4util.OptionsState(
+        ['SCF','DF_INTS_IO'],
+        ['DFOCC', 'WFN_TYPE'])
+
+    # overwrite symmetry
+    molecule = psi4.get_active_molecule()
+    molecule.update_geometry()
+    molecule.reset_point_group('c1')
+
+    #psi4.set_global_option('SCF_TYPE', 'CD')
+    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'CD-OMP2')
+    return psi4.dfocc()
+
+
+def run_cdmp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a cholesky-decomposed MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['DFOCC', 'ORB_OPT'])
+
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    run_cdomp2(name, **kwargs)
+    optstash.restore()
+
+
 def run_omp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an orbital-optimized MP2 computation
 
     """
-    # Bypass routine scf if user did something special to get it to converge
+    run_dfomp2(name, **kwargs)
+
+
+def run_conv_omp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an orbital-optimized MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF','SCF_TYPE'])
+
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
 
-    return psi4.occ()
+    psi4.occ()
+
+    #return psi4.occ()
+    optstash.restore()
 
 
 def run_omp2_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    OMP2 gradient calculation.
+
+    """
+    run_dfomp2_gradient(name, **kwargs)
+
+
+def run_conv_omp2_gradient(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     OMP2 gradient calculation.
 
@@ -120,7 +295,7 @@ def run_omp2_gradient(name, **kwargs):
         ['GLOBALS', 'DERTYPE'])
 
     psi4.set_global_option('DERTYPE', 'FIRST')
-    run_omp2(name, **kwargs)
+    run_conv_omp2(name, **kwargs)
     psi4.deriv()
 
     optstash.restore()
@@ -140,7 +315,7 @@ def run_mp2(name, **kwargs):
             mints.integrals()
 
     psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_omp2(name, **kwargs)
+    run_conv_omp2(name, **kwargs)
 
     optstash.restore()
 
@@ -186,7 +361,7 @@ def run_mp2_gradient(name, **kwargs):
 
     psi4.set_global_option('DERTYPE', 'FIRST')
     psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_omp2(name, **kwargs)
+    run_conv_omp2(name, **kwargs)
     psi4.deriv()
 
     optstash.restore()
@@ -263,6 +438,11 @@ def run_omp3(name, **kwargs):
         scf_helper(name, **kwargs)
 
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+        psi4.MintsHelper().integrals()
+
     psi4.occ()
 
     optstash.restore()
@@ -346,6 +526,10 @@ def run_scs_omp3(name, **kwargs):
 
     psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+        psi4.MintsHelper().integrals()
     psi4.occ()
 
     optstash.restore()
@@ -375,6 +559,10 @@ def run_sos_omp3(name, **kwargs):
 
     psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+        psi4.MintsHelper().integrals()
     psi4.occ()
 
     optstash.restore()
@@ -393,6 +581,10 @@ def run_ocepa(name, **kwargs):
         scf_helper(name, **kwargs)
 
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+        psi4.MintsHelper().integrals()
     psi4.occ()
 
     optstash.restore()
@@ -461,6 +653,10 @@ def run_omp2_5(name, **kwargs):
         scf_helper(name, **kwargs)
 
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+        psi4.MintsHelper().integrals()
     psi4.occ()
 
     optstash.restore()
@@ -800,10 +996,17 @@ def run_mp2_select_gradient(name, **kwargs):
     and directing toward the OCC (conv MP2) or the DFMP2 modules.
 
     """
+    optstash = p4util.OptionsState(
+        ['DFOCC', 'ORB_OPT'])
+
     if (psi4.get_option("DFMP2", "MP2_TYPE") == "CONV") or (psi4.get_option("OCC", "MP2_TYPE") == "CONV"):
         return run_mp2_gradient(name, **kwargs)
     else:
-        return run_dfmp2_gradient(name, **kwargs)
+        if (psi4.get_option("SCF", "REFERENCE") == "UHF") or (psi4.get_option("SCF", "REFERENCE") == "UKS"):
+            psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+            return run_dfomp2_gradient(name, **kwargs)
+        else: 
+            return run_dfmp2_gradient(name, **kwargs)
 
 
 def run_dfmp2_gradient(name, **kwargs):
@@ -920,13 +1123,18 @@ def run_ccenergy(name, **kwargs):
         pass
 
     # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+    bypass = ('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))
+    if not bypass:
         scf_helper(name, **kwargs)
 
-        # If the scf type is DF/CD, then the AO integrals were never written to disk
-        if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
-            mints = psi4.MintsHelper()
-            mints.integrals()
+    # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
+    # written to disk
+    IsDF= psi4.get_option('SCF', 'SCF_TYPE') == 'DF'
+    IsCD=psi4.get_option('SCF', 'SCF_TYPE') == 'CD'
+    IsDirect=psi4.get_option('SCF','SCF_TYPE') == 'DIRECT'
+    if bypass or IsDF or IsCD or IsDirect:
+        mints = psi4.MintsHelper()
+        mints.integrals()
 
     psi4.transqt2()
     psi4.ccsort()
@@ -1243,6 +1451,123 @@ def run_dfmp2_property(name, **kwargs):
         return e_dfmp2
 
 
+def run_detci_property(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a configuration interaction calculation, namely FCI,
+    CIn, MPn, and ZAPTn, computing properties.
+
+    """
+    oneel_properties = ['dipole', 'quadrupole']
+    excited_properties = ['transition_dipole', 'transition_quadrupole']
+
+    one = []
+    excited = []
+    invalid = []
+
+    if 'properties' in kwargs:
+        properties = kwargs.pop('properties')
+        properties = p4util.drop_duplicates(properties)
+
+        for prop in properties:
+            if prop in oneel_properties:
+                one.append(prop)
+            elif prop in excited_properties:
+                excited.append(prop)
+            else:
+                invalid.append(prop)
+    else:
+        raise ValidationError("The \"properties\" keyword is required with the property() function.")
+
+    n_one = len(one)
+    n_excited = len(excited)
+    n_invalid = len(invalid)
+
+    if (n_invalid > 0):
+        print("The following properties are not currently supported: %s" % invalid)
+    
+    if ('quadrupole' in one) or ('transition_quadrupole' in excited):
+        psi4.set_global_option('PRINT', 2)
+
+    if (n_one > 0):
+        psi4.set_global_option('OPDM', 'TRUE')
+
+    if (n_excited > 0):
+        psi4.set_global_option('TDM', 'TRUE')
+
+    optstash = p4util.OptionsState(
+        ['TRANSQT2', 'WFN'],
+        ['DETCI', 'WFN'],
+        ['DETCI', 'MAX_NUM_VECS'],
+        ['DETCI', 'MPN_ORDER_SAVE'],
+        ['DETCI', 'MPN'],
+        ['DETCI', 'FCI'],
+        ['DETCI', 'EX_LEVEL'])
+
+    user_ref = psi4.get_option('DETCI', 'REFERENCE')
+    if (user_ref != 'RHF') and (user_ref != 'ROHF'):
+        raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
+
+    if (name.lower() == 'zapt'):
+        psi4.set_local_option('TRANSQT2', 'WFN', 'ZAPTN')
+        psi4.set_local_option('DETCI', 'WFN', 'ZAPTN')
+        level = kwargs['level']
+        maxnvect = int((level + 1) / 2) + (level + 1) % 2
+        psi4.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
+        if ((level + 1) % 2):
+            psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
+        else:
+            psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
+    elif (name.lower() == 'detci-mp') or (name.lower() == 'mp'):
+        psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+        psi4.set_local_option('DETCI', 'WFN', 'DETCI')
+        psi4.set_local_option('DETCI', 'MPN', 'TRUE')
+
+        level = kwargs['level']
+        maxnvect = int((level + 1) / 2) + (level + 1) % 2
+        psi4.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
+        if ((level + 1) % 2):
+            psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
+        else:
+            psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
+    elif (name.lower() == 'fci'):
+            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+            psi4.set_local_option('DETCI', 'WFN', 'DETCI')
+            psi4.set_local_option('DETCI', 'FCI', 'TRUE')
+    elif (name.lower() == 'cisd'):
+            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+            psi4.set_local_option('DETCI', 'WFN', 'DETCI')
+            psi4.set_local_option('DETCI', 'EX_LEVEL', 2)
+    elif (name.lower() == 'cisdt'):
+            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+            psi4.set_local_option('DETCI', 'WFN', 'DETCI')
+            psi4.set_local_option('DETCI', 'EX_LEVEL', 3)
+    elif (name.lower() == 'cisdtq'):
+            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+            psi4.set_local_option('DETCI', 'WFN', 'DETCI')
+            psi4.set_local_option('DETCI', 'EX_LEVEL', 4)
+    elif (name.lower() == 'ci'):
+        psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+        psi4.set_local_option('DETCI', 'WFN', 'DETCI')
+        level = kwargs['level']
+        psi4.set_local_option('DETCI', 'EX_LEVEL', level)
+    # Call a plain energy('detci') and have full control over options
+    elif(name.lower() == 'detci'):
+        pass
+
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+        # If the scf type is DF/CD, then the AO integrals were never written to disk
+        if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
+            psi4.MintsHelper().integrals()
+
+    psi4.transqt2()
+    psi4.detci()
+
+    optstash.restore()
+
+
 def run_eom_cc(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an EOM-CC calculation, namely EOM-CC2, EOM-CCSD, and EOM-CC3.
@@ -1401,6 +1726,12 @@ def run_dft(name, **kwargs):
         returnvalue += vdh
         psi4.set_variable('DFT TOTAL ENERGY', returnvalue)
         psi4.set_variable('CURRENT ENERGY', returnvalue)
+        psi4.print_out('\n\n')
+        psi4.print_out('    %s Energy Summary\n' % (name.upper()))
+        psi4.print_out('    -------------------------\n')
+        psi4.print_out('    DFT Reference Energy                  = %22.16lf\n' % (returnvalue-vdh))
+        psi4.print_out('    Scaled MP2 Correlation                = %22.16lf\n' % (vdh))
+        psi4.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
 
     optstash.restore()
 
@@ -2010,6 +2341,10 @@ def run_mrcc(name, **kwargs):
     # Save current directory location
     current_directory = os.getcwd()
 
+    # Find environment by merging PSIPATH and PATH environment variables
+    lenv = os.environ
+    lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH')
+
     # Need to move to the scratch directory, perferrably into a separate directory in that location
     psi_io = psi4.IOManager.shared_object()
     os.chdir(psi_io.get_default_path())
@@ -2035,8 +2370,10 @@ def run_mrcc(name, **kwargs):
     psi4.print_out(open('fort.56', 'r').read())
     psi4.print_out('===== End   fort.56 input for MRCC ======\n')
 
-    # Close output file
+    # Close psi4 output file and reopen with filehandle
     psi4.close_outfile()
+    pathfill = '' if os.path.isabs(psi4.outfile_name()) else current_directory + os.path.sep
+    p4out = open(pathfill + psi4.outfile_name(), 'a')
 
     # Modify the environment:
     #    PGI Fortan prints warning to screen if STOP is used
@@ -2052,22 +2389,42 @@ def run_mrcc(name, **kwargs):
         os.environ['OMP_NUM_THREADS'] = str(psi4.get_option('MRCC', 'MRCC_OMP_NUM_THREADS'))
 
     # Call dmrcc, directing all screen output to the output file
+    external_exe = 'dmrcc'
     try:
-        if psi4.outfile_name() == 'stdout':
-            retcode = subprocess.call('dmrcc', shell=True)
-        else:
-            retcode = subprocess.call('dmrcc >> ' + current_directory + '/' + psi4.outfile_name(), shell=True)
-
-        if retcode < 0:
-            print('MRCC was terminated by signal %d' % -retcode, file=sys.stderr)
-            exit(1)
-        elif retcode > 0:
-            print('MRCC errored %d' % retcode, file=sys.stderr)
-            exit(1)
-
+        retcode = subprocess.Popen([external_exe], bufsize=0, stdout=subprocess.PIPE, env=lenv)
     except OSError as e:
-        print('Execution failed: %s' % e, file=sys.stderr)
-        exit(1)
+        sys.stderr.write('Program %s not found in path or execution failed: %s\n' % (cfour_executable, e.strerror))
+        p4out.write('Program %s not found in path or execution failed: %s\n' % (external_exe, e.strerror))
+        sys.exit(1)
+
+    c4out = ''
+    while True:
+        data = retcode.stdout.readline()
+        if not data:
+            break
+        if psi4.outfile_name() == 'stdout':
+            sys.stdout.write(data)
+        else:
+            p4out.write(data)
+            p4out.flush()
+        c4out += data
+
+#    try:
+#        if psi4.outfile_name() == 'stdout':
+#            retcode = subprocess.call('dmrcc', shell=True, env=lenv)
+#        else:
+#            retcode = subprocess.call('dmrcc >> ' + current_directory + '/' + psi4.outfile_name(), shell=True, env=lenv)
+#
+#        if retcode < 0:
+#            print('MRCC was terminated by signal %d' % -retcode, file=sys.stderr)
+#            exit(1)
+#        elif retcode > 0:
+#            print('MRCC errored %d' % retcode, file=sys.stderr)
+#            exit(1)
+#
+#    except OSError as e:
+#        print('Execution failed: %s' % e, file=sys.stderr)
+#        exit(1)
 
     # Restore the OMP_NUM_THREADS that the user set.
     if omp_num_threads_found == True:
@@ -2106,10 +2463,9 @@ def run_mrcc(name, **kwargs):
         print('Unable to remove MRCC temporary directory %s' % e, file=sys.stderr)
         exit(1)
 
-    # Revert to previous current directory location
+    # Return to submission directory and reopen output file
     os.chdir(current_directory)
-
-    # Reopen output file
+    p4out.close()
     psi4.reopen_outfile()
 
     # If we're told to keep the files or the user provided a path, do nothing.
@@ -2163,7 +2519,7 @@ def run_fnodfcc(name, **kwargs):
         psi4.print_out('  FNOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
     # hack to ensure puream (or not) throughout
-    psi4.set_global_option('PUREAM', psi4.MintsHelper().basisset().has_puream())
+    #psi4.set_global_option('PUREAM', psi4.MintsHelper().basisset().has_puream())
 
     # triples?
     if (lowername == 'df-ccsd'):
@@ -2457,4 +2813,65 @@ def run_cepa(name, **kwargs):
     optstash.restore()
 
     return psi4.get_variable("CURRENT ENERGY")
+
+
+def run_detcas(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    determinant-based multireference wavefuncations,
+    namely CASSCF and RASSCF.
+    """
+
+    optstash = p4util.OptionsState(
+        ['TRANSQT2', 'WFN'],
+        ['DETCI', 'WFN'],
+        ['DETCAS', 'WFN']
+    )
+
+
+    user_ref = psi4.get_option('DETCI', 'REFERENCE')
+    if (user_ref != 'RHF') and (user_ref != 'ROHF'):
+        raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
+
+    if (name.lower() == 'rasscf'):
+        psi4.set_local_option('TRANSQT2', 'WFN', 'RASSCF')
+        psi4.set_local_option('DETCI', 'WFN', 'RASSCF')
+        psi4.set_local_option('DETCAS', 'WFN', 'RASSCF')
+    elif (name.lower() == 'casscf'):
+        psi4.set_local_option('TRANSQT2', 'WFN', 'CASSCF')
+        psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
+        psi4.set_local_option('DETCAS', 'WFN', 'CASSCF')
+
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+        # If the scf type is DF/CD, then the AO integrals were never written to disk
+        if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') or (psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+            psi4.MintsHelper().integrals()
+
+
+    for iteration in range(1, psi4.get_option('DETCAS', 'MAXITER')+1):
+        psi4.print_out("\nStarting DETCAS iteration %d.\n" % iteration)
+
+        # Run DETCAS
+        psi4.transqt2()
+        psi4.detci()
+        finished = psi4.detcas()
+
+        # Check convergence
+        if finished == psi4.PsiReturnType.EndLoop:
+            print_string =  '\n*******************************************************\n'
+            print_string += '                  ORBITALS CONVERGED\n\n'
+            print_string += '         * %s total energy = %16.12f\n\n' % (name.upper(), psi4.get_variable("CURRENT ENERGY"))
+            print_string += '                    DETCAS Exiting\n'
+            print_string += '*******************************************************'
+                              
+            psi4.print_out(print_string)
+            break
+
+
+    optstash.restore()
+
+    return psi4.get_variable("CURRENT ENERGY")
+
 

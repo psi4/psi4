@@ -36,7 +36,7 @@
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
-
+#include "libparallel/ParallelPrinter.h"
 //MKL Header
 #ifdef HAVE_MKL
 #include <mkl.h>
@@ -75,13 +75,41 @@ double ET_RHF(void)
   vir_off = moinfo.vir_off;
 
   nthreads = params.nthreads;
-  thread_data_array = (struct thread_data *) malloc(nthreads*sizeof(struct thread_data));
-  p_thread = (pthread_t *) malloc(nthreads*sizeof(pthread_t));
 
+  long int mem_avail = dpd_memfree();
+  // Find the size of 4 abc-blocks of the largest irrep
+  long int max_a = 0;
+  for (h=0; h<nirreps; ++h)
+    if (virtpi[h] > max_a)
+      max_a = virtpi[h];
+  long int thread_mem_estimate = 4 * max_a * max_a * max_a;
+
+  outfile->Printf("\tMemory available in words        : %15ld\n", mem_avail);
+  outfile->Printf("\t~Words needed per explicit thread: %15ld\n", thread_mem_estimate);
+
+  // subtract at least 1/2 for non-abc quantities (mainly 2 ijab's + other buffers)
+  double tval = (double) mem_avail / (double) thread_mem_estimate;
+  int possible_nthreads = tval - 0.5;
+  if (possible_nthreads < 1) possible_nthreads = 1;
+
+  // note keyword is not detected in cctriples section if cctriples is called 
+  // by ccenergy directly as in energy(ccsd't') at present.
+  if (possible_nthreads < nthreads) {
+    nthreads = possible_nthreads;
+    outfile->Printf("\tReducing threads due to memory limitations.\n");
+  }
+
+  outfile->Printf("\tNumber of threads for explicit ijk threading: %4d.\n", nthreads);
+
+// Don't parallelize mkl if explicit threads are used; should be added for acml too.
 #ifdef HAVE_MKL
   int old_threads = mkl_get_max_threads();
   mkl_set_num_threads(1);
+  outfile->Printf("\tMKL num_threads set to 1 for explicit threading.\n\n");
 #endif
+
+  thread_data_array = (struct thread_data *) malloc(nthreads*sizeof(struct thread_data));
+  p_thread = (pthread_t *) malloc(nthreads*sizeof(pthread_t));
 
   global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
   global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
@@ -110,7 +138,8 @@ double ET_RHF(void)
     global_dpd_->buf4_mat_irrep_init(&Dints, h);
     global_dpd_->buf4_mat_irrep_rd(&Dints, h);
   }
-  ffile(&ijkfile,"ijk.dat", 0);
+  boost::shared_ptr<OutFile> printer(new OutFile("ijk.dat",TRUNCATE));
+  //ffile(&ijkfile,"ijk.dat", 0);
 
   /* each thread gets its own F buffer to assign memory and read blocks
      into and its own energy double - all else shared */
@@ -147,8 +176,7 @@ double ET_RHF(void)
             }
           }
         }
-  fprintf(ijkfile, "Total number of IJK combinations =: %d\n", nijk);
-  fflush(ijkfile);
+  printer->Printf( "Total number of IJK combinations =: %d\n", nijk);
 
   ET = 0.0;
   for(Gi=0; Gi < nirreps; Gi++) {
@@ -166,9 +194,8 @@ double ET_RHF(void)
             }
           }
         }
-        fprintf(ijkfile, "Num. of IJK with (Gi,Gj,Gk)=(%d,%d,%d) =: %d\n",
+        printer->Printf( "Num. of IJK with (Gi,Gj,Gk)=(%d,%d,%d) =: %d\n",
           Gi, Gj, Gk, nijk);
-        fflush(ijkfile);
         if (nijk == 0) continue;
 
         for (thread=0; thread<nthreads;++thread) {
@@ -191,9 +218,8 @@ double ET_RHF(void)
         /* execute threads */
         for (thread=0; thread<nthreads;++thread) {
           if (!ijk_part[thread]) continue;
-          fprintf(ijkfile,"\tthread %d: first_ijk=%d,  last_ijk=%d\n", thread,
+          printer->Printf("\tthread %d: first_ijk=%d,  last_ijk=%d\n", thread,
             thread_data_array[thread].first_ijk, thread_data_array[thread].last_ijk);
-          fflush(ijkfile);
         }
 
         for (thread=0;thread<nthreads;++thread) {
@@ -220,7 +246,6 @@ double ET_RHF(void)
     } /* Gj */
   } /* Gi */
 
-  fclose(ijkfile);
 
   for(h=0; h < nirreps; h++) {
     global_dpd_->buf4_mat_irrep_close(&T2, h);

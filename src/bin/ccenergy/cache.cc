@@ -31,7 +31,7 @@
 #include <exception.h>
 
 namespace psi {
-extern FILE *outfile;
+
 namespace ccenergy {
 
 void cache_abcd_rhf(int **cachelist);
