@@ -45,20 +45,20 @@ set freeze_core false
 set dft_radial_points 99
 set dft_spherical_points 302
 
-activate(h2)
-eb2plyp = energy('dsd-pbep86')
-compare_values(-1.169933887984, eb2plyp, 4, 'H2 with DSD-PBEP86')       #TEST
-clean()
+#activate(h2)
+#eb2plyp = energy('dsd-pbep86')
+#compare_values(-1.169933887984, eb2plyp, 4, 'H2 with DSD-PBEP86')       #TEST
+#clean()
 
 activate(h2)
 eb2plyp = energy('b2plyp')
 compare_values(-1.1709, eb2plyp, 4, 'H2 with B2PLYP')       #TEST
 clean()
 
-#activate(h2o)
-#eb2plyp = energy('b2plyp')
-#compare_values(-76.4309, eb2plyp, 4, 'Water')   #TEST
-#clean()
+activate(h2o)
+eb2plyp = energy('b2plyp')
+compare_values(-76.4309, eb2plyp, 4, 'Water')   #TEST
+clean()
 
 #activate(n2)
 #eb2plyp = energy('b2plyp')

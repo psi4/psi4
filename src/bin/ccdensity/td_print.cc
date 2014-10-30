@@ -42,18 +42,21 @@ void td_print(void)
 {
   int i;
 
-  fprintf(outfile,"\n\t                   Excitation Energy          OS       RS        RS\n");
-  fprintf(outfile,"\tState   (eV)    (cm^-1)    (nm)     (au)              (l,au)   (v,au)\n");
+  outfile->Printf("\n\t                   Ground State -> Excited State Transitions\n");
+  outfile->Printf("\n\t                   Excitation Energy          OS       RS        RS     Einstein A\n");
+  outfile->Printf("\tState   (eV)    (cm^-1)    (nm)     (au)              (l,au)   (v,au)     (s^-1)\n");
   for(i=0; i<params.nstates; i++) {
-    fprintf(outfile,"\t %d%3s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf\n",
+    //outfile->Printf("\t %d%3s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %12.1lf\n",
+    outfile->Printf("\t %d%3s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %7.6E\n",
             td_params[i].root+1,moinfo.labels[td_params[i].irrep],
             td_params[i].cceom_energy*pc_hartree2ev,
             td_params[i].cceom_energy*pc_hartree2wavenumbers,
             1/(td_params[i].cceom_energy*_hartree2nm),
             td_params[i].cceom_energy, td_params[i].OS,
-            td_params[i].RS_length,td_params[i].RS_velocity);
+            td_params[i].RS_length,td_params[i].RS_velocity,
+            td_params[i].einstein_a);
   }
-  fprintf(outfile,"\n");
+  outfile->Printf("\n");
 }
 
 }} // namespace psi::ccdensity

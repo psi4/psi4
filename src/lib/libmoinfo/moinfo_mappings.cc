@@ -22,7 +22,7 @@
 
 #include "moinfo.h"
 
-extern FILE *outfile;
+
 
 using namespace std;
 

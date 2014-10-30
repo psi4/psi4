@@ -29,23 +29,23 @@ void SAPT2::exch11()
   double e_exch110 = exch110(PSIF_SAPT_AMPS,"Theta AR Intermediates");
 
   if (debug_) {
-    fprintf(outfile,"    Exch110             = %18.12lf H\n",e_exch110);
-    fflush(outfile);
+    outfile->Printf("    Exch110             = %18.12lf H\n",e_exch110);
+    
   }
 
   double e_exch101 = exch101(PSIF_SAPT_AMPS,"Theta BS Intermediates");
 
   if (debug_) {
-    fprintf(outfile,"    Exch101             = %18.12lf H\n\n",e_exch101);
-    fflush(outfile);
+    outfile->Printf("    Exch101             = %18.12lf H\n\n",e_exch101);
+    
   }
 
   e_exch11_ = e_exch110 + e_exch101; 
 
 
   if (print_) {
-    fprintf(outfile,"    Exch11              = %18.12lf H\n",e_exch11_);
-    fflush(outfile);
+    outfile->Printf("    Exch11              = %18.12lf H\n",e_exch11_);
+    
   }
 }
 
@@ -114,11 +114,11 @@ double SAPT2::exch110(int ampfile, const char *thetalabel)
   free_block(T_p_AR);
 
   if (debug_) {
-    fprintf(outfile,"\n    Exch11_1            = %18.12lf H\n",e1);
-    fprintf(outfile,"    Exch11_2            = %18.12lf H\n",e2);
-    fprintf(outfile,"    Exch11_3            = %18.12lf H\n",e3);
-    fprintf(outfile,"    Exch11_4            = %18.12lf H\n",e4);
-    fflush(outfile);
+    outfile->Printf("\n    Exch11_1            = %18.12lf H\n",e1);
+    outfile->Printf("    Exch11_2            = %18.12lf H\n",e2);
+    outfile->Printf("    Exch11_3            = %18.12lf H\n",e3);
+    outfile->Printf("    Exch11_4            = %18.12lf H\n",e4);
+    
   }
 
   return(e1+e2+e3+e4);
@@ -189,11 +189,11 @@ double SAPT2::exch101(int ampfile, const char *thetalabel)
   free_block(T_p_BS);
 
   if (debug_) {
-    fprintf(outfile,"\n    Exch11_1            = %18.12lf H\n",e1);
-    fprintf(outfile,"    Exch11_2            = %18.12lf H\n",e2);
-    fprintf(outfile,"    Exch11_3            = %18.12lf H\n",e3);
-    fprintf(outfile,"    Exch11_4            = %18.12lf H\n",e4);
-    fflush(outfile);
+    outfile->Printf("\n    Exch11_1            = %18.12lf H\n",e1);
+    outfile->Printf("    Exch11_2            = %18.12lf H\n",e2);
+    outfile->Printf("    Exch11_3            = %18.12lf H\n",e3);
+    outfile->Printf("    Exch11_4            = %18.12lf H\n",e4);
+    
   }
 
   return(e1+e2+e3+e4);

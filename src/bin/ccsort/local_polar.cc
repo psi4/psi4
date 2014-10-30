@@ -83,7 +83,7 @@ void local_polar(const char *cart, int **domain, int *domain_len,
   rank = (int *) malloc(natom * sizeof(int *));
 
   if (!strcmp(cart,"X")) {
-    stat = iwl_rdone(PSIF_OEI, PSIF_AO_MX, scratch, noei_ao, 0, 0, outfile);
+    stat = iwl_rdone(PSIF_OEI, PSIF_AO_MX, scratch, noei_ao, 0, 0, "outfile");
     for(i=0, ij=0; i < nao; i++)
       for(j=0; j <= i; j++,ij++)
 	TMP[i][j] = TMP[j][i] = scratch[ij];
@@ -175,7 +175,7 @@ void local_polar(const char *cart, int **domain, int *domain_len,
   }
 
   if (!strcmp(cart,"Y")) {
-    stat = iwl_rdone(PSIF_OEI, PSIF_AO_MY, scratch, noei_ao, 0, 0, outfile);
+    stat = iwl_rdone(PSIF_OEI, PSIF_AO_MY, scratch, noei_ao, 0, 0, "outfile");
     for(i=0, ij=0; i < nao; i++)
       for(j=0; j <= i; j++,ij++)
 	TMP[i][j] = TMP[j][i] = scratch[ij];
@@ -266,7 +266,7 @@ void local_polar(const char *cart, int **domain, int *domain_len,
   }
 
   if (!strcmp(cart,"Z")) {
-    stat = iwl_rdone(PSIF_OEI, PSIF_AO_MZ, scratch, noei_ao, 0, 0, outfile);
+    stat = iwl_rdone(PSIF_OEI, PSIF_AO_MZ, scratch, noei_ao, 0, 0, "outfile");
     for(i=0, ij=0; i < nao; i++)
       for(j=0; j <= i; j++,ij++)
 	TMP[i][j] = TMP[j][i] = scratch[ij];

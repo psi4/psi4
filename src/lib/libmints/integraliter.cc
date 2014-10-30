@@ -412,7 +412,7 @@ void SOShellCombinationsIterator::next()
                 }
             }
         }
-//        fprintf(outfile, ">usii %d usjj %d uskk %d usll %d\n", usii, usjj, uskk, usll);
+//        outfile->Printf( ">usii %d usjj %d uskk %d usll %d\n", usii, usjj, uskk, usll);
 
         usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
         if ((usii == usjj && usii == uskk) || (usjj == uskk && usjj == usll))
@@ -439,7 +439,7 @@ void SOShellCombinationsIterator::next()
     int usi, usj, usk, usl;
     usi = usi_arr[upk]; usj = usj_arr[upk]; usk = usk_arr[upk]; usl = usl_arr[upk];
 
-//    fprintf(outfile, ">si %d usj %d usk %d usl %d\n", usi, usj, usk, usl);
+//    outfile->Printf( ">si %d usj %d usk %d usl %d\n", usi, usj, usk, usl);
 
     // Sort shells based on AM, save ERI some work doing permutation resorting.
     if (bs1_->am(usi) < bs2_->am(usj)) {
@@ -534,7 +534,7 @@ void SO_RS_Iterator::first()
 
     int usi, usj, usk, usl;
 
-//    fprintf(outfile, ">usii %d usjj %d uskk %d usll %d\n", usii, usjj, uskk, usll);
+//    outfile->Printf( ">usii %d usjj %d uskk %d usll %d\n", usii, usjj, uskk, usll);
 
     usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
     if ((usii == usjj && usii == uskk) || (usjj == uskk && usjj == usll))
@@ -559,7 +559,7 @@ void SO_RS_Iterator::first()
 
     usi = usii; usj = usjj; usk = uskk; usl = usll;
 
-//    fprintf(outfile, ">si %d usj %d usk %d usl %d\n", usi, usj, usk, usl);
+//    outfile->Printf( ">si %d usj %d usk %d usl %d\n", usi, usj, usk, usl);
 
     // Sort shells based on AM, save ERI some work doing permutation resorting.
     if (bs1_->am(usi) < bs2_->am(usj)) {
@@ -596,7 +596,7 @@ void SO_RS_Iterator::next()
             usll = 0;
         }
 
-//        fprintf(outfile, ">usii %d usjj %d uskk %d usll %d\n", usii, usjj, uskk, usll);
+//        outfile->Printf( ">usii %d usjj %d uskk %d usll %d\n", usii, usjj, uskk, usll);
 
         usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
         if ((usii == usjj && usii == uskk) || (usjj == uskk && usjj == usll))
@@ -623,7 +623,7 @@ void SO_RS_Iterator::next()
     int usi, usj, usk, usl;
     usi = usi_arr[upk]; usj = usj_arr[upk]; usk = usk_arr[upk]; usl = usl_arr[upk];
 
-//    fprintf(outfile, ">si %d usj %d usk %d usl %d\n", usi, usj, usk, usl);
+//    outfile->Printf( ">si %d usj %d usk %d usl %d\n", usi, usj, usk, usl);
 
     // Sort shells based on AM, save ERI some work doing permutation resorting.
     if (bs1_->am(usi) < bs2_->am(usj)) {

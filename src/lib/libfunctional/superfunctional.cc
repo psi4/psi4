@@ -24,7 +24,7 @@
 #include <libdisp/dispersion.h>
 #include "superfunctional.h"
 #include "functional.h"
-
+#include "libparallel/ParallelPrinter.h"
 using namespace psi;
 
 namespace psi {
@@ -54,78 +54,79 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::blank()
 {
     return boost::shared_ptr<SuperFunctional>(new SuperFunctional());
 }
-void SuperFunctional::print(FILE* out, int level) const 
+void SuperFunctional::print(std::string out, int level) const
 {
     if (level < 1) return;
+    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+             boost::shared_ptr<OutFile>(new OutFile(out)));
+    printer->Printf( "   => %s Composite Functional <= \n\n", name_.c_str());
 
-    fprintf(out, "   => %s Composite Functional <= \n\n", name_.c_str());
+    printer->Printf( "%s", description_.c_str());
+    printer->Printf( "\n");
+    
+    printer->Printf( "%s", citation_.c_str());
+    printer->Printf( "\n");
+    
+    printer->Printf( "    Points   = %14d\n", max_points_);
+    printer->Printf( "    Deriv    = %14d\n", deriv_);
+    printer->Printf( "    GGA      = %14s\n", (is_gga() ? "TRUE" : "FALSE"));
+    printer->Printf( "    Meta     = %14s\n", (is_meta() ? "TRUE" : "FALSE"));
+    printer->Printf( "\n");
 
-    fprintf(out, "%s", description_.c_str());
-    fprintf(out, "\n");
+    printer->Printf( "    X_LRC        = %14s\n", (is_x_lrc() ? "TRUE" : "FALSE"));
+    printer->Printf( "    X_Hybrid     = %14s\n", (is_x_hybrid() ? "TRUE" : "FALSE"));
+    printer->Printf( "    X_Alpha      = %14.6E\n", x_alpha_);
+    printer->Printf( "    X_Omega      = %14.6E\n", x_omega_);
+    printer->Printf( "    C_LRC        = %14s\n", (is_c_lrc() ? "TRUE" : "FALSE"));
+    printer->Printf( "    C_Hybrid     = %14s\n", (is_c_hybrid() ? "TRUE" : "FALSE"));
+    printer->Printf( "    C_Alpha      = %14.6E\n", c_alpha_);
+    printer->Printf( "    C_Omega      = %14.6E\n", c_omega_);
+    //printer->Printf( "    C_SCS_Hybrid = %14s\n", (is_c_scs_hybrid() ? "TRUE" : "FALSE"));
+    //printer->Printf( "    C_SS_Alpha   = %14.6E\n", c_ss_alpha_);
+    //printer->Printf( "    C_OS_Alpha   = %14.6E\n", c_os_alpha_);
+    printer->Printf( "\n");
     
-    fprintf(out, "%s", citation_.c_str());
-    fprintf(out, "\n");
-    
-    fprintf(out, "    Points   = %14d\n", max_points_);
-    fprintf(out, "    Deriv    = %14d\n", deriv_);
-    fprintf(out, "    GGA      = %14s\n", (is_gga() ? "TRUE" : "FALSE"));
-    fprintf(out, "    Meta     = %14s\n", (is_meta() ? "TRUE" : "FALSE"));
-    fprintf(out, "\n");
-
-    fprintf(out, "    X_LRC        = %14s\n", (is_x_lrc() ? "TRUE" : "FALSE"));
-    fprintf(out, "    X_Hybrid     = %14s\n", (is_x_hybrid() ? "TRUE" : "FALSE"));
-    fprintf(out, "    X_Alpha      = %14.6E\n", x_alpha_);
-    fprintf(out, "    X_Omega      = %14.6E\n", x_omega_);
-    fprintf(out, "    C_LRC        = %14s\n", (is_c_lrc() ? "TRUE" : "FALSE"));
-    fprintf(out, "    C_Hybrid     = %14s\n", (is_c_hybrid() ? "TRUE" : "FALSE"));
-    fprintf(out, "    C_SCS_Hybrid = %14s\n", (is_c_scs_hybrid() ? "TRUE" : "FALSE"));
-    fprintf(out, "    C_Alpha      = %14.6E\n", c_alpha_);
-    fprintf(out, "    C_SS_Alpha   = %14.6E\n", c_ss_alpha_);
-    fprintf(out, "    C_OS_Alpha   = %14.6E\n", c_os_alpha_);
-//    fprintf(out, "    C_Omega      = %14.6E\n", c_omega_);
-    fprintf(out, "\n");
-    
-    fprintf(out, "   => Exchange Functionals <=\n\n");
+    printer->Printf( "   => Exchange Functionals <=\n\n");
     for (int i = 0; i < x_functionals_.size(); i++) {
-        fprintf(out, "    %6.4f %5s", (1.0 - x_alpha_) * x_functionals_[i]->alpha(),
+        printer->Printf( "    %6.4f %7s", (1.0 - x_alpha_) * x_functionals_[i]->alpha(),
             x_functionals_[i]->name().c_str());
         if (x_functionals_[i]->omega()) {
-            fprintf(out, " [\\omega = %6.4f]", x_functionals_[i]->omega());
+            printer->Printf( " [omega = %6.4f]", x_functionals_[i]->omega());
         }
-        fprintf(out,"\n");
+        printer->Printf("\n");
     }    
     if (x_omega_) {
-        fprintf(out, "    %6.4f %5s [\\omega = %6.4f]\n", (1.0 - x_alpha_), "HF,LR", x_omega_);
+        printer->Printf( "    %6.4f %7s [omega = %6.4f]\n", (1.0 - x_alpha_), "HF,LR", x_omega_);
     }
     if (x_alpha_) {
-        fprintf(out, "    %6.4f %5s \n", x_alpha_, "HF");
+        printer->Printf( "    %6.4f %7s \n", x_alpha_, "HF");
     }
-    fprintf(out, "\n");
+    printer->Printf( "\n");
      
-    fprintf(out, "   => Correlation Functionals <=\n\n");
+    printer->Printf( "   => Correlation Functionals <=\n\n");
     for (int i = 0; i < c_functionals_.size(); i++) {
-        fprintf(out, "    %6.4f %5s", c_functionals_[i]->alpha(),
+        printer->Printf( "    %6.4f %7s", (1.0 - c_alpha_) * c_functionals_[i]->alpha(),
             c_functionals_[i]->name().c_str());
         if (c_functionals_[i]->omega()) {
-            fprintf(out, " [\\omega = %6.4f]", c_functionals_[i]->omega());
+            printer->Printf( " [omega = %6.4f]", c_functionals_[i]->omega());
         }
-        fprintf(out,"\n");
+        printer->Printf("\n");
     }
     
      // Not currently defined   
     if (c_omega_) {
-        fprintf(out, "    %6.4f %5s [\\omega = %6.4f]\n", (1.0 - c_alpha_), "MP2,LR", c_omega_);
+        printer->Printf( "    %6.4f %7s [omega = %6.4f]\n", (1.0 - c_alpha_), "MP2,LR", c_omega_);
     }
-    if (c_alpha_ != 1.0) {
-        fprintf(out, "    %6.4f %5s \n", c_alpha_, "DF-MP2");
+    if (c_alpha_) {
+        printer->Printf( "    %6.4f %7s \n", c_alpha_, "MP2");
     }
     if (c_ss_alpha_) {
-        fprintf(out, "    %6.4f %s \n", c_ss_alpha_, "Same-Spin SCS-DF-MP2");
+        printer->Printf( "    %6.4f %s \n", c_ss_alpha_, "Same-Spin SCS-DF-MP2");
     } 
     if (c_os_alpha_) {
-        fprintf(out, "    %6.4f %s \n", c_os_alpha_, "Opposite-Spin SCS-DF-MP2");
+        printer->Printf( "    %6.4f %s \n", c_os_alpha_, "Opposite-Spin SCS-DF-MP2");
     } 
-    fprintf(out, "\n");
+    printer->Printf( "\n");
 
     if (level > 1) {
         for (int i = 0; i < x_functionals_.size(); i++) {
@@ -300,8 +301,7 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(const s
         x_functionals_[i]->compute_functional(vals, values_, npoints, deriv_, (1.0 - x_alpha_));
     }
     for (int i = 0; i < c_functionals_.size(); i++) {
-//        c_functionals_[i]->compute_functional(vals, values_, npoints, deriv_, (1.0 - c_alpha_));
-        c_functionals_[i]->compute_functional(vals, values_, npoints, deriv_, (1.0));
+        c_functionals_[i]->compute_functional(vals, values_, npoints, deriv_, (1.0 - c_alpha_));
     }
     
     return values_;

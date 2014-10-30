@@ -329,7 +329,7 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
 			    ac = Fints.params->colidx[A][C];
 			    bc = Fints.params->colidx[B][C];
 			    for(d=0; d < virtpi[Gd]; d++) {
-			      Dab.matrix[Ga][a][b] += (1.0/12.0) * WABC[Gac][ac][d] * (WABC[Gbc][bc][d] + VABC[Gbc][bc][d]);
+			      Dab.matrix[Ga][b][a] += (1.0/12.0) * WABC[Gac][ac][d] * (WABC[Gbc][bc][d] + VABC[Gbc][bc][d]);
 			    } /* d */
 			  } /* c */
 			} /* b */

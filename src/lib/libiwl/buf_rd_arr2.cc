@@ -28,7 +28,7 @@
 #include <libciomr/libciomr.h>
 #include "iwl.h"
 #include "iwl.hpp"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
@@ -36,8 +36,10 @@ namespace psi {
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
       
 int IWL::read_array2(double *ints, int *plist, int *qlist, int *rlist, int *slist,
-    int *size, int *ioff, int printflg, FILE *out)
+    int *size, int *ioff, int printflg, std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
     int lastbuf;
     Label *lblptr;
     Value *valptr;
@@ -68,7 +70,7 @@ int IWL::read_array2(double *ints, int *plist, int *qlist, int *rlist, int *slis
         *size= *size + 1;
 
         if (printflg) 
-            fprintf(out, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
+            printer->Printf( "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
             pq, value);
     } /*! end loop through current buffer */
 
@@ -94,7 +96,7 @@ int IWL::read_array2(double *ints, int *plist, int *qlist, int *rlist, int *slis
             *size = *size + 1;
 
             if (printflg) 
-                fprintf(out, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
+                printer->Printf( "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
                 pq, value);
         } /*! end loop through current buffer */
     } /*! end loop over reading buffers */
@@ -118,9 +120,11 @@ int IWL::read_array2(double *ints, int *plist, int *qlist, int *rlist, int *slis
 */
 int iwl_buf_rd_arr2(struct iwlbuf *Buf, double *ints, int *plist, 
       int *qlist, int *rlist, int *slist, int *size, int *ioff,
-      int printflg, FILE *out)
+      int printflg, std::string out)
 {
-  int lastbuf;
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
+   int lastbuf;
   Label *lblptr;
   Value *valptr;
   int idx, p, q, pq, r, s;
@@ -150,7 +154,7 @@ int iwl_buf_rd_arr2(struct iwlbuf *Buf, double *ints, int *plist,
     *size= *size + 1;
     
     if (printflg) 
-      fprintf(out, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
+      printer->Printf( "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
 	      pq, value);
     
   } /*! end loop through current buffer */
@@ -177,7 +181,7 @@ int iwl_buf_rd_arr2(struct iwlbuf *Buf, double *ints, int *plist,
       *size = *size + 1;
       
       if (printflg) 
-	fprintf(out, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
+	printer->Printf( "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
 		pq, value);
       
     } /*! end loop through current buffer */

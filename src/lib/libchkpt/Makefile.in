@@ -85,6 +85,7 @@ disp_irrep.cc \
 cdsalcpi.cc \
 cdsalc2cd.cc \
 exist.cc \
+exist_add_prefix.cc \
 override_occ.cc \
 statespi.cc \
 eccsd.cc \

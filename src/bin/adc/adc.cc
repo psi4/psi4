@@ -81,15 +81,15 @@ ADC::ADC(): Wavefunction(Process::environment.options, _default_psio_lib_)
             bvire_[bvircount++] = epsilon_b_->get(h, b);
     }
     
-    fprintf(outfile, "\n\n\tIrrep  Core  Docc  Socc  aOcc  aVir  bOcc  bVir  FVir\n");
-    fprintf(outfile,     "\t*****************************************************\n");
+    outfile->Printf( "\n\n\tIrrep  Core  Docc  Socc  aOcc  aVir  bOcc  bVir  FVir\n");
+    outfile->Printf(     "\t*****************************************************\n");
     for(int h = 0; h < nirrep_; h++){
-        fprintf(outfile, "\t %3s   %3d   %3d   %3d   %3d   %3d   %3d   %3d   %3d\n",
+        outfile->Printf( "\t %3s   %3d   %3d   %3d   %3d   %3d   %3d   %3d   %3d\n",
                 irreps_[h], frzcpi_[h], doccpi_[h], soccpi_[h], 
                 aoccpi_[h], avirpi_[h], boccpi_[h], bvirpi_[h], frzvpi_[h]);
     }
-    fprintf(outfile,     "\t*****************************************************\n\n");
-    fflush(outfile);
+    outfile->Printf(     "\t*****************************************************\n\n");
+    
   
     conv_     = options_.get_double("NEWTON_CONVERGENCE");
     norm_tol_ = options_.get_double("NORM_TOLERANCE");
@@ -101,7 +101,7 @@ ADC::ADC(): Wavefunction(Process::environment.options, _default_psio_lib_)
         int i = options_["ROOTS_PER_IRREP"].size();
         
         if(i != nirrep_){
-            fprintf(outfile, "dim of states_per_irrep vector must be %d\n", nirrep_);
+            outfile->Printf( "dim of states_per_irrep vector must be %d\n", nirrep_);
             throw PsiException("adc input comparison error ROOTS_PER_IRREP and nirrep_", __FILE__, __LINE__);
         }
         rpi_ = options_.get_int_array("ROOTS_PER_IRREP");
@@ -126,28 +126,28 @@ ADC::ADC(): Wavefunction(Process::environment.options, _default_psio_lib_)
         nxs_ += nxspi_[h];
     }
 
-    fprintf(outfile, "\t==> Input Parameters <==\n");
-    fprintf(outfile, "\tNEWTON_CONV = %3g, NORM_TOL = %3g\n", conv_, norm_tol_);
-    fprintf(outfile, "\tPOLE_MAX    = %3d, SEM_MAX  = %3d\n\n", pole_max_, sem_max_);
+    outfile->Printf( "\t==> Input Parameters <==\n");
+    outfile->Printf( "\tNEWTON_CONV = %3g, NORM_TOL = %3g\n", conv_, norm_tol_);
+    outfile->Printf( "\tPOLE_MAX    = %3d, SEM_MAX  = %3d\n\n", pole_max_, sem_max_);
     
-    fprintf(outfile, "\tNXS           = %d\n", nxs_);
-//    fprintf(outfile, "\tIRREP_XYZ     = [");
+    outfile->Printf( "\tNXS           = %d\n", nxs_);
+//    outfile->Printf( "\tIRREP_XYZ     = [");
 //    for(int i = 0;i < 3;i++)
-//        fprintf(outfile, " %3s ", irreps_[irrep_axis_[i]]);
-//    fprintf(outfile, "]\n");
-    fprintf(outfile, "\tNXS_PER_IRREP = [");
+//        outfile->Printf( " %3s ", irreps_[irrep_axis_[i]]);
+//    outfile->Printf( "]\n");
+    outfile->Printf( "\tNXS_PER_IRREP = [");
     for(int i = 0;i < nirrep_;i++){
-        fprintf(outfile, " %d ", nxspi_[i]);
+        outfile->Printf( " %d ", nxspi_[i]);
     }
-    fprintf(outfile, "]\n");
+    outfile->Printf( "]\n");
 
     if(DEBUG_){
-        fprintf(outfile, "Debagging mode...\n");
-        fprintf(outfile, "\tNMO   = %3d, NXS = %3d\n", nmo_, nxs_);
-        fprintf(outfile, "\tNOPEN = %3d\n", nopen_);
-        fprintf(outfile, "\tROOTS_PER_IRREP = [");
-        for(int i = 0;i < nirrep_;i++) fprintf(outfile, "%3d", rpi_[i]);
-        fprintf(outfile, " ]\n");
+        outfile->Printf( "Debagging mode...\n");
+        outfile->Printf( "\tNMO   = %3d, NXS = %3d\n", nmo_, nxs_);
+        outfile->Printf( "\tNOPEN = %3d\n", nopen_);
+        outfile->Printf( "\tROOTS_PER_IRREP = [");
+        for(int i = 0;i < nirrep_;i++) outfile->Printf( "%3d", rpi_[i]);
+        outfile->Printf( " ]\n");
     }
     
 }

@@ -102,9 +102,12 @@ struct MOInfo {
   double d1diag;         /* Janssen and Nielsen's D1 Diagnostic */
   double new_d1diag;     /* Lee's modified D1 Diagnostic */
   double d2diag;         /* Nielsen and Janssen's D2 Diagnostic */
-  double ***C;           /* Virtual orbital transformation matrix (for AO-basis B terms) */
-  double ***Ca;          /* UHF alpha virtual orbital transformation matrix (for AO-basis B terms) */
-  double ***Cb;          /* UHF beta virtual orbital transformation matrix (for AO-basis B terms) */
+  double ***Cv;           /* Virtual orbital transformation matrix (for AO-basis B terms) */
+  double ***Cav;          /* UHF alpha virtual orbital transformation matrix (for AO-basis B terms) */
+  double ***Cbv;          /* UHF beta virtual orbital transformation matrix (for AO-basis B terms) */
+  double ***Co;           /* Occupied orbital transformation matrix (for AO-basis B terms) */
+  double ***Cao;          /* UHF alpha occupied orbital transformation matrix (for AO-basis B terms) */
+  double ***Cbo;          /* UHF beta occupied orbital transformation matrix (for AO-basis B terms) */
 };
 
 }} // namespace psi::ccenergy

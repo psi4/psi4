@@ -30,7 +30,7 @@
 #include <boost/python.hpp>
 #include <boost/python/list.hpp>
 #include <libmints/writer_file_prefix.h>
-
+#include "libparallel/ParallelPrinter.h"
 using namespace boost;
 using namespace boost::python;
 
@@ -91,24 +91,24 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
   for (int h=0; h<Nirrep; ++h)
     Ndisp_all += Ndisp_pi[h];
 
-  fprintf(outfile,"\n-------------------------------------------------------------\n\n");
+  outfile->Printf("\n-------------------------------------------------------------\n\n");
 
-  fprintf(outfile, "  Computing second-derivative from gradients using projected, \n");
-  fprintf(outfile, "  symmetry-adapted, cartesian coordinates (fd_freq_1).\n\n");
+  outfile->Printf( "  Computing second-derivative from gradients using projected, \n");
+  outfile->Printf( "  symmetry-adapted, cartesian coordinates (fd_freq_1).\n\n");
 
-  fprintf(outfile, "  %d gradients passed in, including the reference geometry.\n", (int) len(grad_list));
+  outfile->Printf( "  %d gradients passed in, including the reference geometry.\n", (int) len(grad_list));
 
   // We are passing in the reference geometry at the moment, though we are not using
   // its gradient.  Could be removed later.
 
   if ((int) len(grad_list) != Ndisp_all+1) { // last gradient is the reference, non-displaced one
-    fprintf(outfile,"gradients.size() is %d\n", (int) len(grad_list));
-    fprintf(outfile,"Ndisp_all is %d\n", Ndisp_all);
+    outfile->Printf("gradients.size() is %d\n", (int) len(grad_list));
+    outfile->Printf("Ndisp_all is %d\n", Ndisp_all);
     throw PsiException("FINDIF: Incorrect number of gradients passed in!",__FILE__,__LINE__);
   }
 
   // *** Generate complete list of gradients from unique ones.
-  fprintf(outfile,"  Generating complete list of displacements from unique ones.\n\n");
+  outfile->Printf("  Generating complete list of displacements from unique ones.\n\n");
 
   boost::shared_ptr<PointGroup> pg = mol->point_group();
   CharacterTable ct = mol->point_group()->char_table();
@@ -117,14 +117,14 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
   // atom_map, how atoms are mapped to other atoms by operations
   int **atom_map = compute_atom_map(mol);
   if (print_lvl >= 3) {
-    fprintf(outfile,"\tThe atom map:\n");
+    outfile->Printf("\tThe atom map:\n");
     for (int i=0; i<Natom; ++i) {
-      fprintf(outfile,"\t %d : ", i+1);
+      outfile->Printf("\t %d : ", i+1);
       for (int j=0; j<order; ++j)
-        fprintf(outfile,"%4d", atom_map[i][j]+1);
-      fprintf(outfile,"\n");
+        outfile->Printf("%4d", atom_map[i][j]+1);
+      outfile->Printf("\n");
     }
-    fprintf(outfile,"\n");
+    outfile->Printf("\n");
   }
 
   // Extract the symmetric gradients.
@@ -133,7 +133,7 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
     gradients.push_back( (SharedMatrix) extract< SharedMatrix >(grad_list[i]) );
 
   if (print_lvl >= 3) {
-    fprintf(outfile,"\tSymmetric gradients\n");
+    outfile->Printf("\tSymmetric gradients\n");
     for (int i=0; i<gradients.size(); ++i)
       gradients[i]->print();
   }
@@ -150,10 +150,10 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
     IrreducibleRepresentation gamma = ct.gamma(h);
 
     if (print_lvl >= 3) {
-      fprintf(outfile,"Characters for irrep %d\n", h);
+      outfile->Printf("Characters for irrep %d\n", h);
       for (int i=0; i<order; ++i)
-        fprintf(outfile," %5.1lf", gamma.character(i));
-      fprintf(outfile,"\n");
+        outfile->Printf(" %5.1lf", gamma.character(i));
+      outfile->Printf("\n");
     }
 
     // Find operation that takes + to - displacement.
@@ -161,7 +161,7 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
     for (op_disp=0; op_disp<order; ++op_disp)
       if (gamma.character(op_disp) == -1)
         break;
-    fprintf(outfile,"\tOperation %d takes plus displacements of irrep %s to minus ones.\n",
+    outfile->Printf("\tOperation %d takes plus displacements of irrep %s to minus ones.\n",
       op_disp+1, gamma.symbol());
 
     // Get 3x3 matrix representation of operation.
@@ -239,7 +239,7 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
   }
 
   if (print_lvl >= 3) {
-    fprintf(outfile,"\tAll mass-weighted gradients\n");
+    outfile->Printf("\tAll mass-weighted gradients\n");
     for (int i=0; i<gradients.size(); ++i)
       gradients[i]->print();
   }
@@ -271,27 +271,27 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
               gradients[disp_irr_start[h]+disp]->get(a,xyz);
 
   if (print_lvl >= 3) {
-    fprintf(outfile,"Gradients in B-matrix coordinates\n");
+    outfile->Printf("Gradients in B-matrix coordinates\n");
     for (int disp=0; disp<Ndisp_pi[h]; ++disp) {
-      fprintf(outfile," disp %d: ", disp);
+      outfile->Printf(" disp %d: ", disp);
       for (int salc=0; salc<salcs_pi[h].size(); ++salc)
-        fprintf(outfile, "%15.10lf", grads_adapted[disp][salc]);
-      fprintf(outfile,"\n");
+        outfile->Printf( "%15.10lf", grads_adapted[disp][salc]);
+      outfile->Printf("\n");
     }
   }
 
   /* Test forces by recomputed cartesian, mass-weighted gradient: // B^t f_q = f_x
-  fprintf(outfile,"Test gradients - recomputed\n");
+  outfile->Printf("Test gradients - recomputed\n");
   for (int disp=0; disp<Ndisp_pi[h]; ++disp) {
-    fprintf(outfile, "g_x %d : \n", disp);
+    outfile->Printf( "g_x %d : \n", disp);
     for (int a=0; a<Natom; ++a) {
       for (int xyz=0; xyz<3; ++xyz) {
         double tval = 0;
         for (int salc=0; salc<salcs_pi[h].size(); ++salc)
           tval += B_irr[salc][3*a+xyz] * grads_adapted[disp][salc];
-        fprintf(outfile,"%15.10lf", tval);
+        outfile->Printf("%15.10lf", tval);
       }
-      fprintf(outfile,"\n");
+      outfile->Printf("\n");
     }
   }*/
 
@@ -316,9 +316,9 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
     }
 
     if (print_lvl >= 3) {
-      fprintf(outfile, "\n\tForce Constants for irrep %s in mass-weighted, ", irrep_lbls[h]);
-      fprintf(outfile, "symmetry-adapted cartesian coordinates.\n");
-      mat_print(H_irr[h], salcs_pi[h].size(), salcs_pi[h].size(), outfile); fflush(outfile);
+      outfile->Printf( "\n\tForce Constants for irrep %s in mass-weighted, ", irrep_lbls[h]);
+      outfile->Printf( "symmetry-adapted cartesian coordinates.\n");
+      mat_print(H_irr[h], salcs_pi[h].size(), salcs_pi[h].size(), "outfile");
     }
 
     // diagonalize force constant matrix
@@ -334,8 +334,8 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
       dim, 0, normal_irr[0], dim);
 
     if (print_lvl >= 2) {
-      fprintf(outfile,"\n\tNormal coordinates (mass-weighted) for irrep %s:\n", irrep_lbls[h]);
-      eivout(normal_irr, evals, 3*Natom, dim, outfile);
+      outfile->Printf("\n\tNormal coordinates (mass-weighted) for irrep %s:\n", irrep_lbls[h]);
+      eivout(normal_irr, evals, 3*Natom, dim, "outfile");
     }
 
     for (int i=0; i<salcs_pi[h].size(); ++i) {
@@ -373,8 +373,8 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
 
   // Transform Hessian into cartesian coordinates
   if (print_lvl >= 3) {
-    fprintf(outfile, "\n\tFull force constant matrix in mass-weighted SALCS.\n");
-    mat_print(H, Nsalc_all, Nsalc_all, outfile);
+    outfile->Printf( "\n\tFull force constant matrix in mass-weighted SALCS.\n");
+    mat_print(H, Nsalc_all, Nsalc_all, "outfile");
   }
 
   // Build Bu^-1/2 matrix for the whole Hessian
@@ -397,8 +397,8 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
   free_block(H);
 
   if (print_lvl >= 3) {
-    fprintf(outfile, "\n\tForce Constants in mass-weighted cartesian coordinates.\n");
-    mat_print(Hx, 3*Natom, 3*Natom, outfile);
+    outfile->Printf( "\n\tForce Constants in mass-weighted cartesian coordinates.\n");
+    mat_print(Hx, 3*Natom, 3*Natom, "outfile");
   }
 
   // Un-mass-weight Hessian
@@ -407,32 +407,32 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
       Hx[x1][x2] *= sqrt(mol->mass(x1/3)) * sqrt(mol->mass(x2/3));
 
   if (print_lvl >= 3) {
-    fprintf(outfile, "\n\tForce Constants in cartesian coordinates.\n");
-    mat_print(Hx, 3*Natom, 3*Natom, outfile);
+    outfile->Printf( "\n\tForce Constants in cartesian coordinates.\n");
+    mat_print(Hx, 3*Natom, 3*Natom, "outfile");
   }
 
   // Print a hessian file
   if ( options.get_bool("HESSIAN_WRITE") ) {
     std::string hess_fname = get_writer_file_prefix() + ".hess";
-    FILE *of_Hx = fopen(hess_fname.c_str(),"w");
-    fprintf(of_Hx,"%5d", Natom);
-    fprintf(of_Hx,"%5d\n", 6*Natom);
+    boost::shared_ptr<OutFile> printer(new OutFile(hess_fname,APPEND));
+    //FILE *of_Hx = fopen(hess_fname.c_str(),"w");
+    printer->Printf("%5d", Natom);
+    printer->Printf("%5d\n", 6*Natom);
 
     int cnt = -1;
     for (int i=0; i<3*Natom; ++i) {
       for (int j=0; j<3*Natom; ++j) {
-        fprintf(of_Hx, "%20.10lf", Hx[i][j]);
+        printer->Printf("%20.10lf", Hx[i][j]);
         if (++cnt == 2) {
-          fprintf(of_Hx,"\n");
+          printer->Printf("\n");
           cnt = -1;
         }
       }
     }
-    fclose(of_Hx);
   }
   free_block(Hx);
 
-  fprintf(outfile,"\n-------------------------------------------------------------\n");
+  outfile->Printf("\n-------------------------------------------------------------\n");
 
   return Success;
 }

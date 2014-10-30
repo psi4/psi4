@@ -28,7 +28,6 @@
 #include <cstdio>
 
 namespace psi {
-extern FILE* outfile;
 namespace ccresponse {
 
 /* Global variables */

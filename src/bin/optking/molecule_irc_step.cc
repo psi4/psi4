@@ -31,11 +31,11 @@
 #include <sstream>
 
 #include "linear_algebra.h"
-#include "print.h"
 #include "atom_data.h"
 #include "physconst.h"
 #include "IRC_data.h"
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -66,11 +66,11 @@ void IRC_DATA::point_converged(opt::MOLECULE &mol)
 {
   if(!go)
 cout << "we made it.";
-  fprintf(outfile,"\tPoint is converged. Setting sphere_step to 0, and calling irc_step().\n\n");
+  oprintf_out("\tPoint is converged. Setting sphere_step to 0, and calling irc_step().\n\n");
   if(steps.size() > 1)
   {
-    double f_dot = array_dot(steps[steps.size()-1]->g_f_q(), steps[steps.size()-2]->g_f_q(), mol.g_nintco());
-    fprintf(outfile,"\nforce vector - current dotted with previous: %f\n", f_dot);
+    double f_dot = array_dot(steps[steps.size()-1]->g_f_q(), steps[steps.size()-2]->g_f_q(), mol.Ncoord());
+    oprintf_out("\nforce vector - current dotted with previous: %f\n", f_dot);
   }
 
   sphere_step = 0;
@@ -81,7 +81,7 @@ cout << "we made it.";
 void IRC_DATA::progress_report(opt::MOLECULE &mol) 
 {
   double DE;
-  int dim = mol.g_nintco();
+  int dim = mol.Ncoord();
   int blocks = 4;
   int sign = 1;
 
@@ -89,97 +89,98 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
     sign = -1;
 
 //Printing Energies and Energy Changes for Each Step
-  fprintf(outfile,  "\t----------------------------------------------");
-  fprintf(outfile,"\n\t            ****      IRC Report      ****\n");
-  fprintf(outfile,  "\t----------------------------------------------\n");
-  fprintf(outfile,  "\t Step    Energy              Change in Energy");
-  fprintf(outfile,"\n");
-  fprintf(outfile,  "\t----------------------------------------------\n");
+  oprintf_out(  "\t----------------------------------------------");
+  oprintf_out("\n\t            ****      IRC Report      ****\n");
+  oprintf_out(  "\t----------------------------------------------\n");
+  oprintf_out(  "\t Step    Energy              Change in Energy");
+  oprintf_out("\n");
+  oprintf_out(  "\t----------------------------------------------\n");
   for (int i=0; i<steps.size(); ++i)
   {
     if (i == 0) DE = g_step(i).g_energy();
     else DE = g_step(i).g_energy() - g_step(i-1).g_energy();
 
-    fprintf(outfile,"\t %3d %18.12lf  %18.12lf\n", i, g_step(i).g_energy(), DE);
+    oprintf_out("\t %3d %18.12lf  %18.12lf\n", i, g_step(i).g_energy(), DE);
   }
-  fprintf(outfile,  "\t----------------------------------------------\n");
-  fprintf(outfile,"\n");
+  oprintf_out(  "\t----------------------------------------------\n");
+  oprintf_out("\n");
 
 //Printing Internal Coordinates for Each step
-  fprintf(outfile,"\t--------------------------------------");
+  oprintf_out("\t--------------------------------------");
   for(int i=0; i<(dim/blocks)*blocks; i++)
   {
-    fprintf(outfile,"-------------");
+    oprintf_out("-------------");
   }
-  fprintf(outfile,"\n");
-  fprintf(outfile,"\t              ****     IRC Steps     ****\n");
-  fprintf(outfile,"\t--------------------------------------");
+  oprintf_out("\n");
+  oprintf_out("\t              ****     IRC Steps     ****\n");
+  oprintf_out("\t--------------------------------------");
   for(int i=0; i<(dim/blocks)*blocks; i++)
   {
-    fprintf(outfile,"-------------");
+    oprintf_out("-------------");
   }
 
   for(int j=0; j < dim/blocks; j++)
   {
-    fprintf(outfile,"\n\t        |          Distance         |\n");
-    fprintf(outfile,"  \t Step   | Step    Arc       Line    |");
+    oprintf_out("\n\t        |          Distance         |\n");
+    oprintf_out("  \t Step   | Step    Arc       Line    |");
     for(int i = (j*blocks); i < ((j+1)* blocks); i++)
     {
-      fprintf(outfile,"    Coord %3d", i);
+      oprintf_out("    Coord %3d", i);
     }
-    fprintf(outfile,"\n");
-    fprintf(outfile,"\t--------------------------------------");
+    oprintf_out("\n");
+    oprintf_out("\t--------------------------------------");
     for(int i = (j*blocks); i < ((j+1)* blocks); i++)
     {
-      fprintf(outfile,"-------------");
+      oprintf_out("-------------");
     }
-    fprintf(outfile,"\n");
+    oprintf_out("\n");
     for (int i=0; i<steps.size(); ++i)
     {
-      fprintf(outfile,"\t %3d %9.2lf %9.5lf  %9.5lf   ", i, sign*g_step(i).g_step_dist(), sign*g_step(i).g_arc_dist(), sign*g_step(i).g_line_dist());
+      oprintf_out("\t %3d %9.2lf %9.5lf  %9.5lf   ", i, sign*g_step(i).g_step_dist(), sign*g_step(i).g_arc_dist(), sign*g_step(i).g_line_dist());
       for(int k = (j*blocks); k < ((j+1)*blocks); k++)
-        fprintf(outfile,"%13.8f",g_step(i).g_q()[k]);
-      fprintf(outfile,"\n");
+        oprintf_out("%13.8f",g_step(i).g_q()[k]);
+      oprintf_out("\n");
     }
-    fprintf(outfile,"\t--------------------------------------");
+    oprintf_out("\t--------------------------------------");
     for(int i = (j*blocks); i < ((j+1)* blocks); i++)
     {
-      fprintf(outfile,"-------------");
+      oprintf_out("-------------");
     }
   }
   if(dim % blocks != 0)
   {
-    fprintf(outfile,"\n\t        |          Distance         |\n");
-    fprintf(outfile,"  \t Step   | Step    Arc       Line    |");
+    oprintf_out("\n\t        |          Distance         |\n");
+    oprintf_out("  \t Step   | Step    Arc       Line    |");
     for(int i = (dim - (dim % blocks)); i < dim; i++)
     {
-      fprintf(outfile,"    Coord %3d", i);
+      oprintf_out("    Coord %3d", i);
     }
-    fprintf(outfile,"\n");
-    fprintf(outfile,"\t--------------------------------------");
+    oprintf_out("\n");
+    oprintf_out("\t--------------------------------------");
     for(int i = (dim - (dim % blocks)); i < dim; i++)
     {
-      fprintf(outfile,"-------------");
+      oprintf_out("-------------");
     }
-    fprintf(outfile,"\n");
+    oprintf_out("\n");
     for (int i=0; i<steps.size(); ++i)
     {
-      fprintf(outfile,"\t %3d %9.2lf %9.5lf  %9.5lf   ", i, sign*g_step(i).g_step_dist(), sign*g_step(i).g_arc_dist(), sign*g_step(i).g_line_dist());
+      oprintf_out("\t %3d %9.2lf %9.5lf  %9.5lf   ", i, sign*g_step(i).g_step_dist(), sign*g_step(i).g_arc_dist(), sign*g_step(i).g_line_dist());
       for(int k = (dim - (dim % blocks)); k < dim; k++)
-        fprintf(outfile,"%13.8f",g_step(i).g_q()[k]);
-      fprintf(outfile,"\n");
+        oprintf_out("%13.8f",g_step(i).g_q()[k]);
+      oprintf_out("\n");
     }
-    fprintf(outfile,"\t--------------------------------------");
+    oprintf_out("\t--------------------------------------");
     for(int i = (dim - (dim % blocks)); i < dim; i++)
     {
-      fprintf(outfile,"-------------");
+      oprintf_out("-------------");
     }
   }
 
-  fprintf(outfile,"\n");
-  fprintf(outfile,"\n");
+  oprintf_out("\n");
+  oprintf_out("\n");
 
-  mol.print_intcos(outfile);
+  mol.print_coords(psi_outfile, qc_outfile);
+  mol.print_simples(psi_outfile, qc_outfile);
 }
 
 
@@ -188,21 +189,21 @@ void MOLECULE::irc_step(void)
 {
   // Are we at the TS?  at_TS
   bool at_TS = !(p_irc_data->size());        
-  if (at_TS) fprintf(outfile,"\n\tIRC_DATA is empty, so we are at the transition state.\n");
+  if (at_TS) oprintf_out("\n\tIRC_DATA is empty, so we are at the transition state.\n");
 
   // Is this one the first step toward a new path point?  at_FS 
   bool at_FS = !(p_irc_data->sphere_step);    
-  if (at_FS) fprintf(outfile,"\tIRC_DATA->sphere_step == 0, so now is time \
+  if (at_FS) oprintf_out("\tIRC_DATA->sphere_step == 0, so now is time \
 for a first step toward new point on path.\n");
 
-  fprintf(outfile,"\n\tRxn path step %d, constrained step %d\n", p_irc_data->size(),
+  oprintf_out("\n\tRxn path step %d, constrained step %d\n", p_irc_data->size(),
     p_irc_data->sphere_step);
 
   double s    = Opt_params.IRC_step_size;      //step size
   p_irc_data->step_length = s;
   double *dq  = p_Opt_data->g_dq_pointer();    //internal coordinate change
   double *f_q = p_Opt_data->g_forces_pointer();//internal coordinate gradient
-  int Nintco = g_nintco();
+  int Nintco = Ncoord();
   int Natom = g_natom();
   int Ncart = 3 * Natom;
   bool answer = 1;
@@ -229,7 +230,7 @@ cout << "DE02:    " << p_Opt_data->g_energy(opt_iter - 1) - p_Opt_data->g_energy
       array_normalize(u_f_q, Nintco);
       array_normalize(u_f_q_0, Nintco);
       double u_f_q_dot = array_dot(u_f_q, u_f_q_0, Nintco);
-      fprintf(outfile,"\ninternal force vector dot - current with previous: %20.15f\n", u_f_q_dot);
+      oprintf_out("\ninternal force vector dot - current with previous: %20.15f\n", u_f_q_dot);
 cout << "u_f_q_dot: " << u_f_q_dot << "\n";
 cout << "line_dist: " << p_irc_data->g_line_dist(p_irc_data->size()-1);
 
@@ -265,7 +266,7 @@ cout << "line_dist: " << p_irc_data->g_line_dist(p_irc_data->size()-1);
     }
 /*    if(!p_irc_data->go)
     {
-      double *q = intco_values();
+      double *q = coord_values();
       double *q_pivot = init_array(Nintco);
 
       double *x = g_geom_array();
@@ -289,16 +290,16 @@ cout << "line_dist: " << p_irc_data->g_line_dist(p_irc_data->size()-1);
   matrix_root(rootG_reg, Nintco, 0);
 
   if (Opt_params.print_lvl > 2) {
-    fprintf(outfile, "\nrootG matrix:\n");
-    print_matrix(outfile, rootG_reg, Nintco, Nintco);
+    oprintf_out( "\nrootG matrix:\n");
+    oprint_matrix_out(rootG_reg, Nintco, Nintco);
   }
 
   double **rootG_inv = matrix_return_copy(G, Nintco, Nintco); //G^-1/2
   matrix_root(rootG_inv, Nintco, 1);
 
   if (Opt_params.print_lvl > 2) {
-    fprintf(outfile, "G matrix:\n");
-    print_matrix(outfile, G, Nintco, Nintco);
+    oprintf_out( "G matrix:\n");
+    oprint_matrix_out(G, Nintco, Nintco);
   }
 
   // Compute mass-weighted Hessian matrix:
@@ -312,8 +313,8 @@ cout << "line_dist: " << p_irc_data->g_line_dist(p_irc_data->size()-1);
   free_matrix(T);
 
   if (Opt_params.print_lvl > 2) {
-    fprintf(outfile,"Mass-weighted Hessian:\n");
-    print_matrix(outfile, H_m, Nintco, Nintco);
+    oprintf_out("Mass-weighted Hessian:\n");
+    oprint_matrix_out(H_m, Nintco, Nintco);
   }
 
   // Variables to calculate predicted energy change (DE_predicted)
@@ -326,8 +327,7 @@ cout << "line_dist: " << p_irc_data->g_line_dist(p_irc_data->size()-1);
   //Pivot Point and Initial Working Geometry:
   //step along along normalized, mass-weighted v
   if(at_FS) {
-cout << "First point of constrained optimization.\n";
-    fprintf(outfile, "\tFirst point of constrained optimization.\n");
+    oprintf_out( "\tFirst point of constrained optimization.\n");
     // If starting from TS, follow lowest-eigenvalued eigenvector.
     // Otherwise, follow the gradient (negative of the force vector).
     double *v;
@@ -336,14 +336,14 @@ cout << "First point of constrained optimization.\n";
       v = lowest_evector(H, Nintco);
 
       if(Opt_params.IRC_direction == OPT_PARAMS::FORWARD)
-        fprintf(outfile, "\tStepping in forward direction from TS.\n");
+        oprintf_out( "\tStepping in forward direction from TS.\n");
       else if (Opt_params.IRC_direction == OPT_PARAMS::BACKWARD) {
-        fprintf(outfile, "\tStepping in backward direction from TS.\n");
+        oprintf_out( "\tStepping in backward direction from TS.\n");
         array_scm(v, -1, Nintco);
       }
     }
     else {
-      fprintf(outfile, "\tStepping along IRC using gradient.\n");
+      oprintf_out( "\tStepping along IRC using gradient.\n");
       v = init_array(Nintco);
       for(int i=0; i<Nintco; i++)
         v[i] = -f_q[i];
@@ -358,14 +358,14 @@ cout << "First point of constrained optimization.\n";
       dq_pivot[i] = dq[i] / 2;
     }
 
-    fprintf(outfile, "\n\tVector to follow: \n");
-    print_array(outfile, v, Nintco);
+    oprintf_out( "\n\tVector to follow: \n");
+    oprint_array_out(v, Nintco);
 
     if (Opt_params.print_lvl > 2) {
-      fprintf(outfile, "\nDq to pivot point: \n");
-      print_array(outfile, dq_pivot, Nintco);
-      fprintf(outfile, "\nDq to next geometry: \n");
-      print_array(outfile, dq, Nintco);
+      oprintf_out( "\nDq to pivot point: \n");
+      oprint_array_out(dq_pivot, Nintco);
+      oprintf_out( "\nDq to next geometry: \n");
+      oprint_array_out(dq, Nintco);
     }
 
     free_array(v);
@@ -375,15 +375,15 @@ double **G_inv = symm_matrix_inv(G, Nintco, Nintco);
 double *G_inv_dq = init_array(Nintco);
 opt_matrix_mult(G_inv, 0, &dq, 1, &G_inv_dq, 1, Nintco, Nintco, 1, 0);
 double dq_norm = sqrt( array_dot(dq, G_inv_dq, Nintco) );
-fprintf(outfile, "\nCheck dq_norm to first point (dq G^-1 dq^t)^1/2: %20.15f\n", dq_norm);
+oprintf_out( "\nCheck dq_norm to first point (dq G^-1 dq^t)^1/2: %20.15f\n", dq_norm);
 opt_matrix_mult(G_inv, 0, &dq_pivot, 1, &G_inv_dq, 1, Nintco, Nintco, 1, 0);
 dq_norm = sqrt( array_dot(dq_pivot, G_inv_dq, Nintco) );
-fprintf(outfile, "\nCheck dq_norm to pivot point (dq G^-1 dq^t)^1/2: %20.15f\n", dq_norm);
+oprintf_out( "\nCheck dq_norm to pivot point (dq G^-1 dq^t)^1/2: %20.15f\n", dq_norm);
 free_array(G_inv_dq);
 free_matrix(G_inv);
 // */
 
-    double *q = intco_values();
+    double *q = coord_values();
     double *q_pivot = init_array(Nintco);
     for(int i=0; i<Nintco; i++)
       q_pivot[i] = q[i] + dq_pivot[i];
@@ -402,19 +402,19 @@ free_matrix(G_inv);
     // Do displacements for each fragment separately.
     for (int f=0; f<fragments.size(); ++f) {
       if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-        fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
+        oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
         continue;
       }
-      fragments[f]->displace(&(dq[g_intco_offset(f)]), &(f_q[g_intco_offset(f)]), g_atom_offset(f));
+      fragments[f]->displace(&(dq[g_coord_offset(f)]), &(f_q[g_coord_offset(f)]), g_atom_offset(f));
     }
     // Do displacements for interfragment coordinates.
     for (int I=0; I<interfragments.size(); ++I) {
       if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-        fprintf(outfile,"\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+        oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
         continue;
       }
-      interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
-                                         &(f_q[g_interfragment_intco_offset(I)]) );
+      interfragments[I]->orient_fragment( &(dq[g_interfragment_coord_offset(I)]),
+                                         &(f_q[g_interfragment_coord_offset(I)]) );
     }
 
     // Compute norm, unit vector, gradient and Hessian in the step direction
@@ -431,11 +431,11 @@ free_matrix(G_inv);
     for(int i=0; i<Nintco; i++)
       dq_h += dq_u[i] * array_dot(H[i], dq_u, Nintco);
 
-    fprintf(outfile,"\tGradient in step direction: %15.10lf\n", dq_g);
-    fprintf(outfile,"\tHessian in step direction : %15.10lf\n", dq_h);
+    oprintf_out("\tGradient in step direction: %15.10lf\n", dq_g);
+    oprintf_out("\tHessian in step direction : %15.10lf\n", dq_h);
 
     DE_projected = DE_nr_energy(dq_n, dq_g, dq_h);
-    fprintf(outfile,"\tProjected energy change for next step: %20.15lf\n", DE_projected);
+    oprintf_out("\tProjected energy change for next step: %20.15lf\n", DE_projected);
 
     p_Opt_data->save_step_info(DE_projected, dq_u, dq_n, dq_g, dq_h);
     free_array(dq_u);
@@ -444,8 +444,8 @@ free_matrix(G_inv);
     p_irc_data->sphere_step++;
 
     // g2D = g_geom_2D();
-    // fprintf(outfile,"Geometry after symmetrization\n");
-    // print_matrix(outfile, g2D, Natom, 3);
+    // oprintf_out("Geometry after symmetrization\n");
+    // oprint_matrix_out(g2D, Natom, 3);
     // free_matrix(g2D);
     symmetrize_geom();
 
@@ -464,22 +464,22 @@ free_matrix(G_inv);
 
   if (Opt_params.print_lvl > 2) {
     for(int i=0; i<Nintco; i++) {
-      fprintf(outfile, "Eigenvector %i of mass-weighted Hessian:\n", i);
-      print_array(outfile, V[i], Nintco);
+      oprintf_out( "Eigenvector %i of mass-weighted Hessian:\n", i);
+      oprint_array_out(V[i], Nintco);
     }
   }
-  fprintf(outfile, "\n\tEigenvalues of the mass-weighted Hessian:\n");
-  print_array(outfile, h, Nintco);
+  oprintf_out( "\n\tEigenvalues of the mass-weighted Hessian:\n");
+  oprint_array_out(h, Nintco);
 
 //2. Express p and g, in mass-weighted coordinates and in the eigenbasis of Hm, the mass-weighted Hessian.
-  double *q = intco_values();
+  double *q = coord_values();
   double *q_pivot = p_irc_data->steps.back()->g_q_pivot();
 
   double *dq_0 = p_Opt_data->g_dq_pointer(p_Opt_data->nsteps() - 2);
   double *f_q_0 = p_Opt_data->g_forces_pointer(p_Opt_data->nsteps() - 2);
 
-  //fprintf(outfile, "\nRetrieved pivot point from IRC_data: \n");
-  //print_array(outfile, q_pivot, Nintco);
+  //oprintf_out( "\nRetrieved pivot point from IRC_data: \n");
+  //oprint_array_out(q_pivot, Nintco);
 
   double *p = init_array(Nintco);  //vector step from pivot point
   double *p_0 = init_array(Nintco);
@@ -507,10 +507,10 @@ free_matrix(G_inv);
   for(int i=0; i<Nintco; i++)
     g_m0[i] = array_dot(rootG_reg[i], g_0, Nintco);
 
-fprintf(outfile, "\np_m before linear interpolation: ");
-print_array(outfile, p_m, Nintco);
-fprintf(outfile, "\ng_m before linear interpolation: ");
-print_array(outfile, g_m, Nintco);
+oprintf_out( "\np_m before linear interpolation: ");
+oprint_array_out(p_m, Nintco);
+oprintf_out( "\ng_m before linear interpolation: ");
+oprint_array_out(g_m, Nintco);
 
 if(0 && p_irc_data->sphere_step > 1)
 {
@@ -520,10 +520,10 @@ if(0 && p_irc_data->sphere_step > 1)
     interpolation(p_m, p_m0, g_m, g_m0, s, Nintco);
 }
 
-fprintf(outfile, "\np_m after linear interpolation:  ");
-print_array(outfile, p_m, Nintco);
-fprintf(outfile, "\ng_m after linear interpolation:  ");
-print_array(outfile, g_m, Nintco);
+oprintf_out( "\np_m after linear interpolation:  ");
+oprint_array_out(p_m, Nintco);
+oprintf_out( "\ng_m after linear interpolation:  ");
+oprint_array_out(g_m, Nintco);
 
   double *p_h = init_array(Nintco);//in the basis of H_m
   for(int i=0; i<Nintco; i++)
@@ -533,16 +533,16 @@ print_array(outfile, g_m, Nintco);
     g_h[i] = array_dot(g_m, V[i], Nintco);
 
   if (Opt_params.print_lvl > 2) {
-    fprintf(outfile, "\np (q-q_pivot):\n");
-    print_array(outfile, p, Nintco);
-    fprintf(outfile, "\np_m:\n");
-    print_array(outfile, p_m, Nintco);
-    fprintf(outfile, "\np_h:\n");
-    print_array(outfile, p_h, Nintco);
-    fprintf(outfile, "\ng_m:\n");
-    print_array(outfile, g_m, Nintco);
-    fprintf(outfile, "\ng_h:\n");
-    print_array(outfile, g_h, Nintco);
+    oprintf_out( "\np (q-q_pivot):\n");
+    oprint_array_out(p, Nintco);
+    oprintf_out( "\np_m:\n");
+    oprint_array_out(p_m, Nintco);
+    oprintf_out( "\np_h:\n");
+    oprint_array_out(p_h, Nintco);
+    oprintf_out( "\ng_m:\n");
+    oprint_array_out(g_m, Nintco);
+    oprintf_out( "\ng_h:\n");
+    oprint_array_out(g_h, Nintco);
   }
 
 //3. solve equation 26 in Gonzalez & Schlegel (1990) for lambda based on current p-vector
@@ -586,8 +586,8 @@ print_array(outfile, g_m, Nintco);
     lagrangian = lag_function(lambda, df, h, p_h, g_h, Nintco, s);
   }
 
-  fprintf(outfile, "\n\tDetermining lagrangian multiplier for constrained minimization.\n");
-  fprintf(outfile, "\t   Iter     Multiplier     Lagrangian\n");
+  oprintf_out( "\n\tDetermining lagrangian multiplier for constrained minimization.\n");
+  oprintf_out( "\t   Iter     Multiplier     Lagrangian\n");
 
   while (fabs(lambda - old_lambda) > 1e-16)
   {
@@ -636,7 +636,7 @@ print_array(outfile, g_m, Nintco);
                              + 8*df[3] * h_f * h_f + df[4] * h_f * h_f * h_f);
     }
 
-    fprintf(outfile, "\t  %5d%15.3e%15.3e\n", lag_iter, lambda, lagrangian);
+    oprintf_out( "\t  %5d%15.3e%15.3e\n", lag_iter, lambda, lagrangian);
 
     ++lag_iter;
 
@@ -676,7 +676,7 @@ print_array(outfile, g_m, Nintco);
   for (int i=0; i<Nintco; ++i)
     ss += (p_m[i] + dq_m[i]) * (p_m[i] + dq_m[i]) ;
   ss -= (0.5 * s) * (0.5 * s);
-  fprintf(outfile,"Eqn. 22 step size check %20.15lf\n", ss);
+  oprintf_out("Eqn. 22 step size check %20.15lf\n", ss);
 
   double *lhs1 = init_array(Nintco);
   double *lhs2 = init_array(Nintco);
@@ -685,9 +685,9 @@ print_array(outfile, g_m, Nintco);
     for (int j=0; j<Nintco; ++j)
       lhs2[i] += H_m[i][j] * dq_m[j];
   }
-  fprintf(outfile,"Eqn. 23 check\n");
+  oprintf_out("Eqn. 23 check\n");
   for (int i=0; i<Nintco; ++i)
-    fprintf(outfile, "%20.15lf\n", lhs1[i] + lhs2[i]);
+    oprintf_out( "%20.15lf\n", lhs1[i] + lhs2[i]);
 
   free_array(lhs1);
   free_array(lhs2); */
@@ -695,23 +695,23 @@ print_array(outfile, g_m, Nintco);
   // Do displacements for each fragment separately.
   for (int f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
+      oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
-    fragments[f]->displace(&(dq[g_intco_offset(f)]), &(f_q[g_intco_offset(f)]), g_atom_offset(f));
+    fragments[f]->displace(&(dq[g_coord_offset(f)]), &(f_q[g_coord_offset(f)]), g_atom_offset(f));
   }
   // Do displacements for interfragment coordinates.
   for (int I=0; I<interfragments.size(); ++I) {
     if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-      fprintf(outfile,"\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+      oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
       continue;
     }
-    interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
-                                       &(f_q[g_interfragment_intco_offset(I)]) );
+    interfragments[I]->orient_fragment( &(dq[g_interfragment_coord_offset(I)]),
+                                       &(f_q[g_interfragment_coord_offset(I)]) );
   }
 
 //find arclength of step and pass to irc_data to be stored on convergence
-  double *new_q = intco_values();
+  double *new_q = coord_values();
   double *old_q = p_irc_data->g_q();
   double *new_dq = init_array(Nintco);
   for(int i=0; i<Nintco; i++)
@@ -758,19 +758,19 @@ print_array(outfile, g_m, Nintco);
   for(int i=0; i<Nintco; i++)
     dq_h += dq_u[i] * array_dot(H[i], dq_u, Nintco);
 
-  fprintf(outfile,"\tGradient in step direction: %15.10lf\n", dq_g);
-  fprintf(outfile,"\tHessian in step direction : %15.10lf\n", dq_h);
+  oprintf_out("\tGradient in step direction: %15.10lf\n", dq_g);
+  oprintf_out("\tHessian in step direction : %15.10lf\n", dq_h);
 
   DE_projected = DE_nr_energy(dq_n, dq_g, dq_h);
-  fprintf(outfile,"\tProjected energy change for next step: %20.15lf\n", DE_projected);
+  oprintf_out("\tProjected energy change for next step: %20.15lf\n", DE_projected);
 
   p_Opt_data->save_step_info(DE_projected, dq_u, dq_n, dq_g, dq_h);
   free_array(dq_u);
   p_irc_data->sphere_step++;
 
   //double **g2D = g_geom_2D();
-  //fprintf(outfile,"Geometry before symmetrization\n");
-  //print_matrix(outfile, g2D, Natom, 3);
+  //oprintf_out("Geometry before symmetrization\n");
+  //oprint_matrix_out(g2D, Natom, 3);
   //free_matrix(g2D);
   symmetrize_geom();
 
@@ -802,7 +802,7 @@ double step_N_factor(double **G, double *g, int Nintco) {
   }
   N = 1 / sqrt(N);
   if (Opt_params.print_lvl > 2)
-    fprintf(outfile,"\tNormalizing factor N: %15.10lf\n", N);
+    oprintf_out("\tNormalizing factor N: %15.10lf\n", N);
 
   return N;
 }
@@ -899,25 +899,25 @@ void interpolation(double *p, double *p_0, double *g, double *g_0, double s, int
 {
   double p_p = array_dot(p, p, dim);
   double p0_p0 = array_dot(p_0, p_0, dim);
-fprintf(outfile, "p_norm is %f\n", sqrt(p_p));
-fprintf(outfile, "p0_norm is %f\n", sqrt(p0_p0));
+oprintf_out( "p_norm is %f\n", sqrt(p_p));
+oprintf_out( "p0_norm is %f\n", sqrt(p0_p0));
 
   double cosTh = array_dot(p, p_0, dim) / sqrt(p_p * p0_p0);
   double Th = acos( cosTh );
 
-print_array(outfile, p, dim);
-print_array(outfile, p_0, dim);
-print_array(outfile, g, dim);
-print_array(outfile, g_0, dim);
-fprintf(outfile, "step size is %f\n", s);
-fprintf(outfile, "p_p is %f\n", p_p);
-fprintf(outfile, "cosTh is %f\n", cosTh);
-fprintf(outfile, "Th is %f\n", Th);
+oprint_array_out(p, dim);
+oprint_array_out(p_0, dim);
+oprint_array_out(g, dim);
+oprint_array_out(g_0, dim);
+oprintf_out( "step size is %f\n", s);
+oprintf_out( "p_p is %f\n", p_p);
+oprintf_out( "cosTh is %f\n", cosTh);
+oprintf_out( "Th is %f\n", Th);
 
   double g_p = array_dot(g, p, dim);
   double g0_p0 = array_dot(g_0, p_0, dim);
-fprintf(outfile, "g_p is %f\n", g_p);
-fprintf(outfile, "g0_p0 is %f\n", g0_p0);
+oprintf_out( "g_p is %f\n", g_p);
+oprintf_out( "g0_p0 is %f\n", g0_p0);
 
   double proj;
   double proj_0;
@@ -939,20 +939,20 @@ fprintf(outfile, "g0_p0 is %f\n", g0_p0);
   gPer = sqrt(gPer);
   gPer_0 = sqrt(gPer_0);
 
-fprintf(outfile, "gPer is %f\n", gPer);
-fprintf(outfile, "gPer_0 is %f\n", gPer_0);
+oprintf_out( "gPer is %f\n", gPer);
+oprintf_out( "gPer_0 is %f\n", gPer_0);
 
   double Th_i = (Th * gPer) / (gPer - gPer_0);
   double cosTh_i = cos( Th_i );
   double sinTh_i = sin( Th_i );
-fprintf(outfile, "Th_i is %f\n", Th_i);
+oprintf_out( "Th_i is %f\n", Th_i);
 
   double *pPer = init_array(dim);
   for(int i=0; i<dim; i++)
     pPer[i] = p_0[i] - cosTh * p[i];
   array_normalize(pPer, dim);
   array_scm(pPer, sqrt(p0_p0), dim);
-print_array(outfile, pPer, dim);
+oprint_array_out(pPer, dim);
 
   for(int i=0; i<dim; i++)
   {

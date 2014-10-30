@@ -1,3 +1,27 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * @plugin@ by Psi4 Developer, a plugin to:
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <libplugin/plugin.h>
 #include "psi4-dec.h"
 #include <libdpd/dpd.h>
@@ -60,11 +84,11 @@ extern "C" PsiReturnType
     dpdbuf4 K;
     psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
     // To only process the permutationally unique integrals, change the ID("[A,A]") to ID("[A>=A]+")
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[A,A]"), ID("[A,A]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[A,A]"), ID("[A,A]"),
                   ID("[A>=A]+"), ID("[A>=A]+"), 0, "MO Ints (AA|AA)");
     for(int h = 0; h < nirrep; ++h){
-        dpd_->buf4_mat_irrep_init(&K, h);
-        dpd_->buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int pq = 0; pq < K.params->rowtot[h]; ++pq){
             int p = K.params->roworb[h][pq][0];
             int q = K.params->roworb[h][pq][1];
@@ -81,7 +105,7 @@ extern "C" PsiReturnType
                 int srel = s - K.params->soff[ssym];
                 // Print out the absolute orbital numbers, the relative (within irrep)
                 // numbers, the symmetries, and the integral itself
-                fprintf(outfile, "(%2d %2d | %2d %2d) = %16.10f, "
+                psi::fprintf(outfile, "(%2d %2d | %2d %2d) = %16.10f, "
                                  "symmetries = (%1d %1d | %1d %1d), "
                                  "relative indices = (%2d %2d | %2d %2d)\n",
                                  p, q, r, s, K.matrix[h][pq][rs], 
@@ -89,9 +113,9 @@ extern "C" PsiReturnType
                                  prel, qrel, rrel, srel);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
     psio->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     return Success;

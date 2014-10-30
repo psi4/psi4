@@ -31,10 +31,10 @@
 #include <sstream>
 
 #include "linear_algebra.h"
-#include "print.h"
 #include "atom_data.h"
 #include "physconst.h"
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -83,8 +83,8 @@ inline double DE_rfo_energy(double rfo_t, double rfo_g, double rfo_h) {
 
 void MOLECULE::backstep(void) {
 
-  fprintf(outfile,"\tRe-doing last optimization step - smaller this time.\n");
-  fprintf(outfile,"\tConsecutive backstep number %d.\n", p_Opt_data->g_consecutive_backsteps()+1);
+  oprintf_out("\tRe-doing last optimization step - smaller this time.\n");
+  oprintf_out("\tConsecutive backstep number %d.\n", p_Opt_data->g_consecutive_backsteps()+1);
 
   // Erase data created when opt_data was initialized for this step.
   p_Opt_data->erase_last_step();
@@ -93,7 +93,7 @@ void MOLECULE::backstep(void) {
   p_Opt_data->increment_consecutive_backsteps();
 
   int Nsteps = p_Opt_data->nsteps();
-  int Nintco = g_nintco();
+  int Nintco = Ncoord();
 
   // Put old cartesian geometry into molecule.
   double *x = p_Opt_data->g_geom_const_pointer(Nsteps-1);
@@ -117,33 +117,33 @@ void MOLECULE::backstep(void) {
   else if (Opt_params.step_type == OPT_PARAMS::SD)
     DE_projected = DE_nr_energy(dq_norm, dq_grad, dq_hess);
 
-  fprintf(outfile, "\tNewly projected energy change : %20.10lf\n", DE_projected);
+  oprintf_out( "\tNewly projected energy change : %20.10lf\n", DE_projected);
 
   double *fq = p_Opt_data->g_forces_pointer();
 
   // do displacements for each fragment separately
   for (int f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
+      oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
-    fragments[f]->displace(&(dq[g_intco_offset(f)]), &(fq[g_intco_offset(f)]), g_atom_offset(f));
+    fragments[f]->displace(&(dq[g_coord_offset(f)]), &(fq[g_coord_offset(f)]), g_atom_offset(f));
   }
 
   // do displacements for interfragment coordinates
   for (int I=0; I<interfragments.size(); ++I) {
     if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-      fprintf(outfile,"\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+      oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
       continue;
     }
-    interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
-                                        &(fq[g_interfragment_intco_offset(I)]) );
+    interfragments[I]->orient_fragment( &(dq[g_interfragment_coord_offset(I)]),
+                                        &(fq[g_interfragment_coord_offset(I)]) );
   }
 
 #if defined(OPTKING_PACKAGE_QCHEM)
   // fix rotation matrix for rotations in QCHEM EFP code
-  for (int I=0; I<efp_fragments.size(); ++I)
-    efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
+  for (int I=0; I<fb_fragments.size(); ++I)
+    fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
 #endif
 
   symmetrize_geom(); // now symmetrize the geometry for next step
@@ -151,7 +151,7 @@ void MOLECULE::backstep(void) {
   // save values in step data
   p_Opt_data->save_step_info(DE_projected, rfo_u, dq_norm, dq_grad, dq_hess);
 
-  fflush(outfile);
+  
 } // end take RFO step
 
 }

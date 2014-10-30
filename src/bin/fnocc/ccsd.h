@@ -106,6 +106,7 @@ class CoupledCluster: public Wavefunction{
     double emp4_t;
   
     void WriteBanner();
+    void WriteOptions();
 
     /// allocate memory
     virtual void AllocateMemory();
@@ -309,6 +310,10 @@ class CoupledPair : public CoupledCluster{
 
     /// check energy
     double CheckEnergy();
+
+    /// check energy for coupled pair methods that have an energy functional
+    double VariationalEnergy();
+    double evar;
 
     /// update t1 amplitudes
     void UpdateT1();

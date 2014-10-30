@@ -1,3 +1,27 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * @plugin@ by Psi4 Developer, a plugin to:
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <libplugin/plugin.h>
 #include <psi4-dec.h>
 #include <libparallel/parallel.h>
@@ -46,7 +70,7 @@ PsiReturnType @plugin@(Options &options)
     molecule->print();
     int nbf[] = { aoBasis->nbf() };
     double nucrep = molecule->nuclear_repulsion_energy();
-    fprintf(outfile, "\n    Nuclear repulsion energy: %16.8f\n\n", nucrep);
+    psi::fprintf(outfile, "\n    Nuclear repulsion energy: %16.8f\n\n", nucrep);
 
     // The matrix factory can create matrices of the correct dimensions...
     boost::shared_ptr<MatrixFactory> factory(new MatrixFactory);
@@ -76,7 +100,7 @@ PsiReturnType @plugin@(Options &options)
     hMat->print();
 
     if(doTei){
-         fprintf(outfile, "\n  Two-electron Integrals\n\n");
+         psi::fprintf(outfile, "\n  Two-electron Integrals\n\n");
 
         // Now, the two-electron integrals
         boost::shared_ptr<TwoBodyAOInt> eri(integral->eri());
@@ -87,20 +111,21 @@ PsiReturnType @plugin@(Options &options)
         int count=0;
         for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
             // Compute quartet
-            eri->compute_shell(shellIter);
-            // From the quartet get all the integrals
-            AOIntegralsIterator intIter = shellIter.integrals_iterator();
-            for (intIter.first(); intIter.is_done() == false; intIter.next()) {
-                int p = intIter.i();
-                int q = intIter.j();
-                int r = intIter.k();
-                int s = intIter.l();
-                fprintf(outfile, "\t(%2d %2d | %2d %2d) = %20.15f\n",
-                    p, q, r, s, buffer[intIter.index()]);
-                ++count;
+            if (eri->compute_shell(shellIter)) {
+                // From the quartet get all the integrals
+                AOIntegralsIterator intIter = shellIter.integrals_iterator();
+                for (intIter.first(); intIter.is_done() == false; intIter.next()) {
+                    int p = intIter.i();
+                    int q = intIter.j();
+                    int r = intIter.k();
+                    int s = intIter.l();
+                    psi::fprintf(outfile, "\t(%2d %2d | %2d %2d) = %20.15f\n",
+                        p, q, r, s, buffer[intIter.index()]);
+                    ++count;
+                }
             }
         }
-        fprintf(outfile, "\n\tThere are %d unique integrals\n\n", count);
+        psi::fprintf(outfile, "\n\tThere are %d unique integrals\n\n", count);
     }
 
     return Success;

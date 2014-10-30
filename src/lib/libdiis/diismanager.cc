@@ -222,8 +222,8 @@ DIISManager::add_entry(int numQuantities, ...)
         switch(type){
             case DIISEntry::Pointer:
                 array = va_arg(args, double*);
-                for(int i = 0; i < _componentSizes[i]; ++i)
-                    *arrayPtr++ = array[i];
+                for(int j = 0; j < _componentSizes[i]; ++j)
+                    *arrayPtr++ = array[j];
                 break;
             case DIISEntry::DPDBuf4:
                 buf4 = va_arg(args, dpdbuf4*);
@@ -437,10 +437,10 @@ DIISManager::extrapolate(int numQuantities, ...)
     double *array;
     va_list args;
     int print  = Process::environment.options.get_int("PRINT");
-    if(print > 2) fprintf(outfile, "DIIS coefficients: ");
+    if(print > 2) outfile->Printf( "DIIS coefficients: ");
     for(int n = 0; n < _subspace.size(); ++n){
         double coefficient = coefficients[n];
-        if(print > 2) fprintf(outfile, " %.3f ", coefficient);
+        if(print > 2) outfile->Printf( " %.3f ", coefficient);
         const double *arrayPtr = _subspace[n]->vector();
         va_start(args, numQuantities);
         for(int i=0; i < numQuantities; ++i) {
@@ -452,8 +452,8 @@ DIISManager::extrapolate(int numQuantities, ...)
                 case DIISEntry::Pointer:
                     array = va_arg(args, double*);
                     if(!n) ::memset(array, 0, _componentSizes[componentIndex] * sizeof(double));
-                    for(int i = 0; i < _componentSizes[componentIndex]; ++i)
-                        array[i] += coefficient * *arrayPtr++;
+                    for(int j = 0; j < _componentSizes[componentIndex]; ++j)
+                        array[j] += coefficient * *arrayPtr++;
                     break;
                 case DIISEntry::DPDBuf4:
                     buf4 = va_arg(args, dpdbuf4*);
@@ -522,7 +522,7 @@ DIISManager::extrapolate(int numQuantities, ...)
 
     timer_off("DIISManager::extrapolate: form new data");
 
-    if(print > 2) fprintf(outfile, "\n");
+    if(print > 2) outfile->Printf( "\n");
     free(coefficients);
     free(force);
 

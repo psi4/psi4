@@ -74,7 +74,7 @@ void QR::form_QR()
 
         R2->print();
         T2->print();
-        P2->print(outfile);
+        P2->print("outfile");
     }
 
     // Combination of R and reflector generators
@@ -120,7 +120,7 @@ void QR::form_QR()
         }
 
         if (debug_) {
-            fprintf(outfile, "Step l = %d: pivoting to column %d\n\n", l, pivot);
+            outfile->Printf( "Step l = %d: pivoting to column %d\n\n", l, pivot);
         }
 
         // Perform pivot
@@ -217,7 +217,7 @@ void QR::form_QR()
     if (debug_) {
         Q_->print();
         R_->print();
-        fflush(outfile);
+        
     }
 }
 void QR::form_PN()

@@ -59,7 +59,7 @@ x_xi_check("begin xi1");
     global_dpd_->file2_init(&I1, PSIF_EOM_TMP_XI, R_irr, 2, 2, "RD_oo");
     params.RD_overlap += 0.5 * global_dpd_->file2_trace(&I1);
     global_dpd_->file2_close(&I1);
-   /*fprintf(outfile,"RD overlap %15.10lf\n", params.RD_overlap);*/
+   /*outfile->Printf("RD overlap %15.10lf\n", params.RD_overlap);*/
 
     global_dpd_->file2_init(&L1, PSIF_CC_GL, L_irr, 0, 1, "LIA");
     global_dpd_->file2_copy(&L1, PSIF_EOM_XI, "XIA");

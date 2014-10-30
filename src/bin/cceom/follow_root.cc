@@ -154,9 +154,9 @@ int follow_root(int L, double **alpha, int C_irr) {
     global_dpd_->buf4_close(&RMnEf);
   }
 
-  fprintf(outfile,"Overlaps of Rs with EOM CCSD eigenvector:\n");
+  outfile->Printf("Overlaps of Rs with EOM CCSD eigenvector:\n");
   for(i=0;i<L;++i) {
-    fprintf(outfile,"\t %d  %12.6lf\n", i, CR_overlap[i]);
+    outfile->Printf("\t %d  %12.6lf\n", i, CR_overlap[i]);
   }
 
   /* return index with greatest overlap */
@@ -169,7 +169,7 @@ int follow_root(int L, double **alpha, int C_irr) {
     }
   }
 
-  fprintf(outfile,"follow_root returning: %d\n", j);
+  outfile->Printf("follow_root returning: %d\n", j);
   return j;
 }
 

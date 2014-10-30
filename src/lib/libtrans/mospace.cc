@@ -34,6 +34,7 @@ boost::shared_ptr<MOSpace> MOSpace::vir(new MOSpace(MOSPACE_VIR));
 boost::shared_ptr<MOSpace> MOSpace::fzv(new MOSpace(MOSPACE_FZV));
 boost::shared_ptr<MOSpace> MOSpace::all(new MOSpace(MOSPACE_ALL));
 boost::shared_ptr<MOSpace> MOSpace::nil(new MOSpace(MOSPACE_NIL));
+boost::shared_ptr<MOSpace> MOSpace::dum(new MOSpace(MOSPACE_DUM));
 
 /**
  * This creates an empty MOSpace with just a label.  This is solely for the
@@ -67,7 +68,8 @@ MOSpace::MOSpace(const char label, const std::vector<int> aOrbs, const std::vect
         aOrbs_(aOrbs),
         bOrbs_(aOrbs),
         aIndex_(aIndex),
-        bIndex_(aIndex)
+        bIndex_(aIndex),
+        placeholder_(false)
 {
     if(labelsUsed.count(label)){
         std::string error("Space ");
@@ -98,7 +100,29 @@ MOSpace::MOSpace(const char label, const std::vector<int> aOrbs, const std::vect
         aOrbs_(aOrbs),
         bOrbs_(bOrbs),
         aIndex_(aIndex),
-        bIndex_(bIndex)
+        bIndex_(bIndex),
+        placeholder_(false)
+{
+    if(labelsUsed.count(label)){
+        std::string error("Space ");
+        error += label;
+        error += " is already in use.  Choose a unique name for the custom MOSpace.";
+        throw SanityCheckError(error, __FILE__, __LINE__);
+    }
+    ++labelsUsed[label];
+}
+
+/**
+ * Defines a custom orbital space over (symmetrized) atomic orbitals.  Used for auxilliary basis sets.
+ * @param label  - a single character to label this space.  This must be unique to this
+ *                 space, so see the MOSpace static member variables for a list of the
+ *                 labels already used.  The uniqueness is checked internally.
+ * @param orbsPI - the numer of orbitals per irrep in this SO space
+ */
+MOSpace::MOSpace(const char label, const std::vector<int> orbsPI):
+        label_(label),
+        aOrbs_(orbsPI),
+        placeholder_(true)
 {
     if(labelsUsed.count(label)){
         std::string error("Space ");

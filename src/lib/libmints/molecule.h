@@ -43,7 +43,7 @@ namespace python{
 }}
 
 namespace psi {
-extern FILE *outfile;
+
 
 enum RotorType {RT_ASYMMETRIC_TOP, RT_SYMMETRIC_TOP, RT_SPHERICAL_TOP, RT_LINEAR, RT_ATOM};
 enum FullPointGroup {PG_ATOM, PG_Cinfv, PG_Dinfh, PG_C1, PG_Cs, PG_Ci, PG_Cn, PG_Cnv,
@@ -376,6 +376,8 @@ public:
     /// Compute the rotational constants and return them in wavenumbers
     Vector rotational_constants(double tol = FULL_PG_TOL) const;
 
+    /// Print the rotational constants
+    void print_rotational_constants(void) const;
     /// Return the rotor type
     RotorType rotor_type(double tol = FULL_PG_TOL) const;
 
@@ -404,7 +406,9 @@ public:
     void print_out_of_planes() const;
 
     /// Save an XYZ file
-    void save_xyz(const std::string & filename, bool save_ghosts = true) const;
+    void save_xyz_file(const std::string & filename, bool save_ghosts = true) const;
+    /// Save an XYZ file to a string
+    std::string save_string_xyz_file() const;
 
     /// Save an XYZ string
     std::string save_string_xyz() const;
@@ -474,7 +478,7 @@ public:
      * Force the molecule to have the symmetry specified in pg_.
      * This is to handle noise coming in from optking.
      */
-    void symmetrize();
+    void symmetrize(double tol=0.05);
     /// @}
 
     /**
@@ -488,7 +492,7 @@ public:
     /**
      * Regenerates a input file molecule specification string
      * from the current state of the Molecule. Contains Cartesian
-     * geometry info, fragmentation, charges and multiplicities, 
+     * geometry info, fragmentation, charges and multiplicities,
      * and any frame restriction.
      */
     std::string create_psi4_string_from_molecule() const;
@@ -623,7 +627,7 @@ public:
     /// Returns the Schoenflies symbol
     std::string schoenflies_symbol() const;
     /// Check if current geometry fits current point group
-    bool valid_atom_map(double tol = 0.01) const;
+    bool valid_atom_map(double tol = 0.05) const;
     /// Return point group name such as C3v or S8.
     std::string full_point_group() const;
     /// Return point group name such as Cnv or Sn.

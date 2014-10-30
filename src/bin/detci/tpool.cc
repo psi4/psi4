@@ -78,7 +78,7 @@ void tpool_init(tpool_t   *tpoolp,
   tpool->queue_tail = NULL;
   tpool->queue_closed = 0;  
   tpool->shutdown = 0; 
-  tpool->threads_awake = 0;
+  tpool->threads_awake = num_worker_threads;
   if ((rtn = pthread_mutex_init(&(tpool->queue_lock), NULL)) != 0){
     str = "pthread_mutex_init ";
     str += strerror(rtn);
@@ -115,7 +115,6 @@ void tpool_init(tpool_t   *tpoolp,
       str += boost::lexical_cast<std::string>( rtn) ;
       throw PsiException(str,__FILE__,__LINE__);
   }
-    tpool->threads_awake++;
   }
 
   *tpoolp = tpool;
@@ -285,10 +284,22 @@ int tpool_destroy(tpool_t          tpool,
 }
 void tpool_queue_open(tpool_t tpool)
 {
-  pthread_mutex_lock(&tpool->queue_lock);
+  int rtn;
+  std::string str;
+
+  if ((rtn = pthread_mutex_lock(&(tpool->queue_lock))) != 0){
+      str = "pthread_mutex_lock ";
+      str += boost::lexical_cast<std::string>( rtn) ;
+      throw PsiException(str,__FILE__,__LINE__);
+  }
+
   tpool->queue_closed = 0;
-  tpool->threads_awake = 0;
-  pthread_mutex_unlock(&tpool->queue_lock);
+
+  if ((rtn = pthread_mutex_unlock(&(tpool->queue_lock))) != 0){
+      str = "pthread_mutex_unlock ";
+      str += boost::lexical_cast<std::string>( rtn) ;
+      throw PsiException(str,__FILE__,__LINE__);
+  }
 }
   
 void tpool_queue_close(tpool_t tpool, int finish)
@@ -296,7 +307,12 @@ void tpool_queue_close(tpool_t tpool, int finish)
   std::string str;
   int rtn;
   
-  pthread_mutex_lock(&tpool->queue_lock);
+  if ((rtn = pthread_mutex_lock(&(tpool->queue_lock))) != 0){
+      str = "pthread_mutex_lock ";
+      str += boost::lexical_cast<std::string>( rtn) ;
+      throw PsiException(str,__FILE__,__LINE__);
+  }
+
   tpool->queue_closed = 1;
   
   if (finish) {
@@ -310,7 +326,11 @@ void tpool_queue_close(tpool_t tpool, int finish)
     
     }
   
-  pthread_mutex_unlock(&tpool->queue_lock);
+  if ((rtn = pthread_mutex_unlock(&(tpool->queue_lock))) != 0){
+      str = "pthread_mutex_unlock ";
+      str += boost::lexical_cast<std::string>( rtn) ;
+      throw PsiException(str,__FILE__,__LINE__);
+  }
   
 }
   

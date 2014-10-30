@@ -247,7 +247,7 @@ int LMP2::build_projection_matrix(const int &ij)
 #endif
     }
 
-    fflush(outfile);
+    
 
     return 0;
 

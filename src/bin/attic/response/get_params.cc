@@ -67,9 +67,9 @@ void get_params()
 
   /* Make sure the value of ref matches that from CC_INFO */
   if(params.ref != ref) {
-    fprintf(outfile, "Value of REFERENCE from input.dat (%1d) and CC_INFO (%1d) do not match!\n",
+    outfile->Printf( "Value of REFERENCE from input.dat (%1d) and CC_INFO (%1d) do not match!\n",
            ref, params.ref);
-    fprintf(outfile, "Is this what you want to do?\n");
+    outfile->Printf( "Is this what you want to do?\n");
     params.ref = ref;
   }
 
@@ -93,16 +93,16 @@ void get_params()
       else if(units == "NM") params.omega[i] = (pc_c*pc_h*1e9)/(params.omega[i]*pc_hartree2J);
       else if(units == "EV") params.omega[i] /= pc_hartree2ev;
       else {
-        fprintf(outfile, "\n\tError in unit for input field frequencies.  Must use one of:\n");
-        fprintf(outfile,   "\tau, hz, nm, or ev.\n");
+        outfile->Printf( "\n\tError in unit for input field frequencies.  Must use one of:\n");
+        outfile->Printf(   "\tau, hz, nm, or ev.\n");
         throw PsiException("Failure in response involving the OMEGA option.", __FILE__, __LINE__);
       }
     }
   }
   else {
-    fprintf(outfile, "\n\tError reading input field frequencies.  Please use the format:\n");
-    fprintf(outfile,   "\t  omega = (value1 value2 ... units)\n");
-    fprintf(outfile,   "\twhere units = hartrees, hz, nm, or ev.\n");
+    outfile->Printf( "\n\tError reading input field frequencies.  Please use the format:\n");
+    outfile->Printf(   "\t  omega = (value1 value2 ... units)\n");
+    outfile->Printf(   "\twhere units = hartrees, hz, nm, or ev.\n");
     throw PsiException("Failure in response involving the OMEGA option.", __FILE__, __LINE__);
   }
 
@@ -114,16 +114,16 @@ void get_params()
     }
   }
 
-  fprintf(outfile, "\n\tInput parameters:\n");
-  fprintf(outfile, "\t-----------------\n");
-  fprintf(outfile, "\tProperty        = ");
-  fprintf(outfile, params.prop.c_str());
-  fprintf(outfile, "\n\tReference wfn   =    %5s\n",
+  outfile->Printf( "\n\tInput parameters:\n");
+  outfile->Printf( "\t-----------------\n");
+  outfile->Printf( "\tProperty        = ");
+  outfile->Printf( params.prop.c_str());
+  outfile->Printf( "\n\tReference wfn   =    %5s\n",
            (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
-  fprintf(outfile, "\tMemory (Mbytes) =  %5.1f\n",params.memory/1e6);
-  fprintf(outfile, "\tCache Level     =    %1d\n", params.cachelev);
-  fprintf(outfile, "\tPrint Level     =    %1d\n",  params.print);
-  fprintf(outfile, "\tApplied field   =    %5.3f E_h\n", params.omega);
+  outfile->Printf( "\tMemory (Mbytes) =  %5.1f\n",params.memory/1e6);
+  outfile->Printf( "\tCache Level     =    %1d\n", params.cachelev);
+  outfile->Printf( "\tPrint Level     =    %1d\n",  params.print);
+  outfile->Printf( "\tApplied field   =    %5.3f E_h\n", params.omega);
 }
 
 

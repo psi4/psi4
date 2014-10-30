@@ -39,7 +39,7 @@ set psimrcc {
   active          [0,2]        # Active MOs
   frozen_uocc     [0,0]        # Frozen virtual MOs
   corr_multp      1            # Select the Ms = 0 component
-  wfn_sym         A'           # Select the A1 state
+  wfn_sym         Ap           # Select the A1 state
 }
 
 energy('psimrcc')

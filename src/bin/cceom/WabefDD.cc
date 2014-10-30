@@ -210,7 +210,7 @@ void WabefDD(int i, int C_irr) {
 
     global_dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 5, 0, 5, 0, 0, "WabefDD Z(Ab,Ij)");
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, H_IRR, 0, 1, "tIA");
-    /* fprintf(outfile,"\n begin contract244 in WabefDD\n"); */
+    /* outfile->Printf("\n begin contract244 in WabefDD\n"); */
     global_dpd_->contract244(&tIA, &X, &Z, 0, 0, 0, 1.0, 0.0);
     global_dpd_->file2_close(&tIA);
     /* dpd_buf4_print(&Z,outfile,1); */

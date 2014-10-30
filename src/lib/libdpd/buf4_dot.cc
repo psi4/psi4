@@ -59,7 +59,7 @@ double DPD::buf4_dot(dpdbuf4 *BufA, dpdbuf4 *BufB)
                 rows_per_bucket = BufA->params->rowtot[h];
 
             if(!rows_per_bucket)
-                dpd_error("buf4_dot: Not enough memory for one row!", stderr);
+                dpd_error("buf4_dot: Not enough memory for one row!", "outfile");
 
             nbuckets = (int) ceil((double) BufA->params->rowtot[h]/
                                   (double) rows_per_bucket);

@@ -54,7 +54,7 @@
 
 #include <libciomr/libciomr.h>
 #include <libmints/pointgrp.h>
-
+#include "libparallel/ParallelPrinter.h"
 using namespace std;
 using namespace psi;
 
@@ -197,22 +197,24 @@ SymmetryOperation::transpose()
 }
 
 void
-SymmetryOperation::print(FILE *out)
+SymmetryOperation::print(std::string out)
 {
-    fprintf(out, "        1          2          3\n");
-    fprintf(out, "  1  ");
-    fprintf(out, "%10.7f ", d[0][0]);
-    fprintf(out, "%10.7f ", d[0][1]);
-    fprintf(out, "%10.7f \n", d[0][2]);
-    fprintf(out, "  2  ");
-    fprintf(out, "%10.7f ", d[1][0]);
-    fprintf(out, "%10.7f ", d[1][1]);
-    fprintf(out, "%10.7f \n", d[1][2]);
-    fprintf(out, "  3  ");
-    fprintf(out, "%10.7f ", d[2][0]);
-    fprintf(out, "%10.7f ", d[2][1]);
-    fprintf(out, "%10.7f \n", d[2][2]);
-    fprintf(outfile, "bits_ = %d\n", bits_);
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   printer->Printf( "        1          2          3\n");
+    printer->Printf( "  1  ");
+    printer->Printf( "%10.7f ", d[0][0]);
+    printer->Printf( "%10.7f ", d[0][1]);
+    printer->Printf( "%10.7f \n", d[0][2]);
+    printer->Printf( "  2  ");
+    printer->Printf( "%10.7f ", d[1][0]);
+    printer->Printf( "%10.7f ", d[1][1]);
+    printer->Printf( "%10.7f \n", d[1][2]);
+    printer->Printf( "  3  ");
+    printer->Printf( "%10.7f ", d[2][0]);
+    printer->Printf( "%10.7f ", d[2][1]);
+    printer->Printf( "%10.7f \n", d[2][2]);
+    outfile->Printf( "bits_ = %d\n", bits_);
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -37,7 +37,7 @@
 #include <sstream>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
-#include <libparallel/parallel.h>
+#include "psi4-dec.h"
 
 namespace psi {
 
@@ -110,21 +110,18 @@ void PSIO::open(unsigned int unit, int status) {
       if (WorldComm->me() == 0) {
         this_unit->vol[i].stream = ::open(this_unit->vol[i].path,O_CREAT|O_RDWR,0644);
       }
-      WorldComm->bcast(&(this_unit->vol[i].stream), 1, 0);
-      //WorldComm->raw_bcast(&(this_unit->vol[i].stream), sizeof(int), 0);
-      if(this_unit->vol[i].stream == -1)
-        psio_error(unit,PSIO_ERROR_OPEN);
     }
     else if(status == PSIO_OPEN_NEW) {
       if (WorldComm->me() == 0) {
         this_unit->vol[i].stream = ::open(this_unit->vol[i].path,O_CREAT|O_RDWR|O_TRUNC,0644);
       }
-      WorldComm->bcast(&(this_unit->vol[i].stream), 1, 0);
-      //WorldComm->raw_bcast(&(this_unit->vol[i].stream), sizeof(int), 0);
-      if(this_unit->vol[i].stream == -1)
-        psio_error(unit,PSIO_ERROR_OPEN);
     }
     else psio_error(unit,PSIO_ERROR_OSTAT);
+
+    WorldComm->bcast(&(this_unit->vol[i].stream), 1, 0);
+    //WorldComm->raw_bcast(&(this_unit->vol[i].stream), sizeof(int), 0);
+    if(this_unit->vol[i].stream == -1)
+      psio_error(unit,PSIO_ERROR_OPEN);
 
     free(path);
   }
@@ -208,7 +205,12 @@ bool PSIO::exists(unsigned int unit) {
     /* Now open the volume */
     if (WorldComm->me() == 0) {
       stream = ::open(fullpath,O_RDWR);
+      /* and close it again, if opening worked */
+      if (stream != -1) {
+        ::close(stream);
+      }
     }
+    WorldComm->bcast(&stream, 1, 0);
     if (stream == -1) {
       file_exists = false;
     }

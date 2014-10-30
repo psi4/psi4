@@ -10,13 +10,24 @@ run by running ``make tests`` in the compilation directory. Sample input
 files can be found in the the :source:`samples` subdirectory of the top-level Psi
 directory. The samples and a brief description are provided below.
 
+Sample inputs accessible through :ref:`interfaced executables
+<sec:interfacing>` are bulleted below.
+
+.. toctree::
+
+   autodoc_testsuite_dftd3
+   autodoc_testsuite_mrcc
+   autodoc_testsuite_cfour
+
+Sample inputs for |PSIfour| as distributed are below.
+
 .. comment This toctree directive only here to suppress warning at build time.
    include line below is doing the work.
 
 .. toctree::
    :hidden:
 
-   autodoc_testsuite
+   autodoc_testsuite_corepsi4
 
-.. include:: autodoc_testsuite.rst
+.. include:: autodoc_testsuite_corepsi4.rst
 

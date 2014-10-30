@@ -27,12 +27,15 @@
 #include <cstdio>
 #include <cstdlib>
 #include "dpd.h"
-
+#include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 int DPD::mat4_irrep_print(double **matrix, dpdparams4 *Params,
-                     int block, int my_irrep, FILE *outfile)
+                     int block, int my_irrep, std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
     div_t fraction;
     int i,j,r_irrep;
     int rows, cols, cols_per_page, num_pages, last_page, page, first_col;
@@ -53,50 +56,50 @@ int DPD::mat4_irrep_print(double **matrix, dpdparams4 *Params,
     for(page=0; page < num_pages; page++) {
         first_col = page*cols_per_page;
 
-        fprintf(outfile,"\n           ");
+        outfile->Printf("\n           ");
         for(i=first_col; i < first_col+cols_per_page; i++)
-            fprintf(outfile,"              %5d",i);
+            outfile->Printf("              %5d",i);
 
-        fprintf(outfile,"\n               ");
+        outfile->Printf("\n               ");
         for(i=first_col; i < first_col+cols_per_page; i++)
-            fprintf(outfile,"          (%3d,%3d)",
+            outfile->Printf("          (%3d,%3d)",
                     Params->colorb[r_irrep][i][0], Params->colorb[r_irrep][i][1]);
 
-        fprintf (outfile,"\n");
+        outfile->Printf("\n");
         for(i=0; i < rows; i++) {
-            fprintf(outfile,"\n%5d  (%3d,%3d)",i,
+            outfile->Printf("\n%5d  (%3d,%3d)",i,
                     Params->roworb[block][i][0], Params->roworb[block][i][1]);
 
             for(j=first_col; j < first_col+cols_per_page; j++)
-                fprintf (outfile,"%19.15f",matrix[i][j]);
+                outfile->Printf("%19.15f",matrix[i][j]);
         }
 
-        fprintf (outfile,"\n");
+        outfile->Printf("\n");
     }
 
     /* Now print the remaining columns */
     if(last_page) {
         first_col = page*cols_per_page;
 
-        fprintf(outfile,"\n           ");
+        outfile->Printf("\n           ");
         for(i=first_col; i < first_col+last_page; i++)
-            fprintf(outfile,"              %5d",i);
+            outfile->Printf("              %5d",i);
 
-        fprintf(outfile,"\n               ");
+        outfile->Printf("\n               ");
         for(i=first_col; i < first_col+last_page; i++)
-            fprintf(outfile,"          (%3d,%3d)",
+            outfile->Printf("          (%3d,%3d)",
                     Params->colorb[r_irrep][i][0], Params->colorb[r_irrep][i][1]);
 
-        fprintf (outfile,"\n");
+        outfile->Printf("\n");
         for(i=0; i < rows; i++) {
-            fprintf(outfile,"\n%5d  (%3d,%3d)",i,
+            outfile->Printf("\n%5d  (%3d,%3d)",i,
                     Params->roworb[block][i][0], Params->roworb[block][i][1]);
 
             for(j=first_col; j < first_col+last_page; j++)
-                fprintf (outfile,"%19.15f",matrix[i][j]);
+                outfile->Printf("%19.15f",matrix[i][j]);
         }
 
-        fprintf (outfile,"\n");
+        outfile->Printf("\n");
     }
 
     return 0;

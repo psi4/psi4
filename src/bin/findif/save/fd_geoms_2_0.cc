@@ -51,21 +51,21 @@ void displace_simple_cart(boost::shared_ptr<Matrix> geom, int coord, int a,
 
 std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &options) {
 
-  fprintf(outfile,"\tUsing finite-differences of energies to determine second derivatives.\n");
+  outfile->Printf("\tUsing finite-differences of energies to determine second derivatives.\n");
 
   int pts = options.get_int("POINTS");
-  fprintf(outfile,"\tGenerating geometries for use with %d-point formula.\n",pts);
+  outfile->Printf("\tGenerating geometries for use with %d-point formula.\n",pts);
   if (pts != 3 && pts != 5)
     throw PsiException("FINDIF: Invalid number of points!",__FILE__,__LINE__);
 
   double disp_size = options.get_double("DISP_SIZE");
-  fprintf(outfile,"\tDisplacement size will be %6.2e.\n", disp_size);
+  outfile->Printf("\tDisplacement size will be %6.2e.\n", disp_size);
 
   // read in molecular data: Natom, reference geometry, and SALC coordinates
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
 
   int Natom = mol->natom();
-  fprintf(outfile,"\tNumber of atoms is %d.\n", Natom);
+  outfile->Printf("\tNumber of atoms is %d.\n", Natom);
 
   // count number of displacements
   int Ndisp;
@@ -82,7 +82,7 @@ std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &options) {
   else if (pts == 5)
     Ndisp += 8 * (3*Natom) * (3*Natom - 1) / 2;
 
-  fprintf(outfile,"\tNumber of displacements is: %d (plus reference).\n", Ndisp);
+  outfile->Printf("\tNumber of displacements is: %d (plus reference).\n", Ndisp);
 
   // Get reference geometry
   Matrix ref_geom_temp = mol->geometry();

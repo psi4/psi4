@@ -28,21 +28,22 @@
 #include <cstdlib>
 #include <exception.h>
 #include <psifiles.h>
-
+#include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
-extern FILE* outfile;
 namespace ccdensity {
 
 void idx_error(const char *message, int p, int q, int r, int s, int pq, int rs,
-               int pq_sym, int rs_sym, FILE *outfile)
+               int pq_sym, int rs_sym, std::string out)
 {
-
-  fprintf(outfile, "\n\tDPD Parameter Error in %s\n", message);
-  fprintf(outfile,
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+  printer->Printf( "\n\tDPD Parameter Error in %s\n", message);
+  printer->Printf(
           "\t-------------------------------------------------\n");
-  fprintf(outfile,
+  printer->Printf(
           "\t    p      q      r      s  [   pq]  [   rs] pq_symm rs_symm\n");
-  fprintf(outfile,"\t%5d  %5d  %5d  %5d  [%5d]  [%5d]   %1d   %1d\n", p,q,r,s,
+  printer->Printf("\t%5d  %5d  %5d  %5d  [%5d]  [%5d]   %1d   %1d\n", p,q,r,s,
           pq,rs,pq_sym,rs_sym);
   throw PsiException("ccdensity: error", __FILE__, __LINE__);
 }

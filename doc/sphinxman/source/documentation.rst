@@ -19,7 +19,7 @@ Installing Sphinx
 
 Installing Sphinx is only necessary to build the documentation 
 yourself, locally. The docs are served from
-from trac and psicode, so most users/developers won't need Sphinx 
+from psicode, so most users/developers won't need Sphinx 
 installed. Nevertheless, installation is easy.
 
 On Mac::
@@ -53,30 +53,20 @@ Documentation Structure
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 Sphinx has nice capabilities for extracting docstrings from python files,
-presenting both auto-generated and narrative documentation in
-the same format, hyperlinking within and to trac/external websites, and
-generating documentation in different formats from the same source.
-|PSIfours| documentation is a unified document covering information for
-both users and programmers, with different portions served up depending on
-the target audience. To this end, one can navigate to ``$(OBJDIR)/doc/sphinxman``
-and build the following targets.::
+presenting both auto-generated and narrative documentation in the same
+format, hyperlinking within and to trac/external websites, and generating
+documentation in different formats from the same source.  |PSIfours|
+documentation is a unified document covering information for both users
+and programmers in separate sections. From the top-level object directory,
+build the following target (note that a working version of the |PSIfour|
+executable in ``bin/psi4`` is a requirement for building the
+documentation).::
 
-    >>> make help  # to see options
-    >>> make       # to build html
+    >>> make sphinxman
 
-    >>> make html
-    >>> make html-user
-    >>> make html-prog
-    >>> make latexpdf-user 
-    >>> make latexpdf-prog
+This will build a full set of documentation in the ``html`` directory that can be viewed offline through any browser. ::
 
-This will build the following files, respectively. ::
-
-    build/html/index.html
-    build/html-user/index.html
-    build/html-prog/index.html
-    build/latex-prog/psi4_userman.pdf
-    build/latex-prog/psi4_progman.pdf
+    doc/sphinxman/html/index.html
     
 Much of the documentation is auto-generated from the source. At present,
 this covers:
@@ -97,15 +87,21 @@ Some documentation is even extracted from Psi4 objects at runtime.
 * DFT: functional availibility and characteristics as encoded in :source:`lib/python/functional.py`
 * BasisFamily: fitting basis sets for each orbital basis as encoded in :source:`lib/python/basislistdunning.py` and :source:`lib/python/basislistother.py`
 
-Run ``make help`` to see choices for cleaning various stages of the build.
-Running ``make realclean`` clears out the built documentation. Building
-all the documentation takes ~10 minutes. There is now good
-dependency structure built into the :source:`doc/sphinxman/Makefile.in` ,
-so very long builds should be infrequent (unless you're touching :source:`src/bin/psi4/read_options.cc`.
-Note that not all dependencies
-are encoded (PSI variables, for instance, depend on every .cc file in the
-source tree), so for a definitive doc build, run ``make realclean`` and
-start from scratch.
+Building all the documentation takes ~10 minutes. There is now good
+dependency structure built into the :source:`doc/sphinxman/CMakeLists.txt`
+, so very long builds should be infrequent (unless you're touching
+:source:`src/bin/psi4/read_options.cc`. Note that not all dependencies are
+encoded (PSI variables, for instance, depend on every .cc file in the
+source tree), so for a definitive doc build, remove (in the object
+directory) ``doc/sphinxman`` and start from scratch.
+
+Even ~10 minutes of build time can be annoying when developing
+documentation and testing ``rst`` files. In that situation, use the target
+below which builds only the written docs (not autodocs) in
+``psi4/doc/sphinxman/source`` quickly, though with a lot of warnings for
+unresolved links::
+
+    >>> make sphinxmini
 
 reStructuredText
 ^^^^^^^^^^^^^^^^
@@ -148,13 +144,11 @@ The Map of the Sphinx
 * Adding a new Appendix or First-TOC-Level page
 
   Create your reST file and fill it with information. Add the name of your
-  file to :source:`doc/sphinxman/source/template_appendices.rst` for an
-  appendix or to :source:`doc/sphinxman/source/template_index.rst` for a
-  first-TOC-level.  Consider the ``#####`` lines to be like preprocessor
-  directives that separate user and programmer manuals. Finally, add your
-  file to the ``STATICDOC`` variable in the Makefile at
-  :source:`doc/sphinxman/Makefile.in`. Sphinx will now build with your new
-  page.
+  file to :source:`doc/sphinxman/source/appendices.rst` for an appendix or
+  to :source:`doc/sphinxman/source/index.rst` for a first-TOC-level.
+  Finally, add your file to the ``STATICDOC`` variable in
+  :source:`doc/sphinxman/CMakeLists.txt`. Sphinx will now build with your
+  new page.
 
 * Adding a new module to "Theoretical Methods"
 
@@ -163,8 +157,8 @@ The Map of the Sphinx
   label, ref, and source labels at the top of the file to point instead to
   your code. Edit :source:`doc/sphinxman/source/methods.rst` to add the
   name of your file so that it will appear in the TOC tree. Add your file
-  to the ``STATICDOC`` variable in the Makefile at
-  :source:`doc/sphinxman/Makefile.in`. Sphinx will now build with your new
+  to the ``STATICDOC`` variable in 
+  :source:`doc/sphinxman/CMakeLists.txt`. Sphinx will now build with your new
   file.  Follow the models in existing methods pages to write your
   documentation. If you don't get all the keyword links, bibliography
   links, sample inputs, math, tables, etc. working in Sphinx, don't worry

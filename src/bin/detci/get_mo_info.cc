@@ -81,25 +81,40 @@ void get_mo_info(Options &options)
    chkpt_close();
 
    if (CalcInfo.iopen && Parameters.opentype == PARM_OPENTYPE_NONE) {
-      fprintf(outfile, "Warning: iopen=1,opentype=none. Making iopen=0\n");
+      outfile->Printf( "Warning: iopen=1,opentype=none. Making iopen=0\n");
       CalcInfo.iopen = 0;
       }
    else if (!CalcInfo.iopen && (Parameters.opentype == PARM_OPENTYPE_HIGHSPIN
       || Parameters.opentype == PARM_OPENTYPE_SINGLET)) {
-      fprintf(outfile,"Warning: iopen=0,opentype!=closed. Making iopen=1\n");
+      outfile->Printf("Warning: iopen=0,opentype!=closed. Making iopen=1\n");
       CalcInfo.iopen = 1;
       }
    if (Parameters.ref_sym >= CalcInfo.nirreps) {
-      fprintf(outfile,"Warning: ref_sym >= nirreps.  Setting ref_sym=0\n");
+      outfile->Printf("Warning: ref_sym >= nirreps.  Setting ref_sym=0\n");
       Parameters.ref_sym = 0;
       }
 
-   //CalcInfo.frozen_docc = init_int_array(CalcInfo.nirreps);
-   //CalcInfo.frozen_uocc = init_int_array(CalcInfo.nirreps);
-   CalcInfo.frozen_docc =
-     Process::environment.wavefunction()->frzcpi();
-   CalcInfo.frozen_uocc =
-     Process::environment.wavefunction()->frzvpi();
+
+   CalcInfo.frozen_docc = init_int_array(CalcInfo.nirreps);
+   CalcInfo.frozen_uocc = init_int_array(CalcInfo.nirreps);
+
+   //Process::environment.wavefunction()->frzcpi().copy_into_int_array(CalcInfo.frozen_docc);
+   for (int h=0; h<CalcInfo.nirreps; h++) {
+     CalcInfo.frozen_docc[h] = Process::environment.wavefunction()->frzcpi()[h];
+     CalcInfo.frozen_uocc[h] = Process::environment.wavefunction()->frzvpi()[h];
+   }
+    if(options["FROZEN_DOCC"].has_changed()){
+        if(options["FROZEN_DOCC"].size() != CalcInfo.nirreps)
+            throw PSIEXCEPTION("FROZEN_DOCC array should be the same size as the number of irreps.");
+        for(int h = 0; h < CalcInfo.nirreps; ++h)
+            CalcInfo.frozen_docc[h] = options["FROZEN_DOCC"][h].to_integer();
+    }
+    if(options["FROZEN_UOCC"].has_changed()){
+        if(options["FROZEN_UOCC"].size() != CalcInfo.nirreps)
+            throw PSIEXCEPTION("FROZEN_UOCC array should be the same size as the number of irreps.");
+        for(int h = 0; h < CalcInfo.nirreps; ++h)
+            CalcInfo.frozen_uocc[h] = options["FROZEN_UOCC"][h].to_integer();
+    }
 
    rstr_docc = init_int_array(CalcInfo.nirreps);
    rstr_uocc = init_int_array(CalcInfo.nirreps);
@@ -107,6 +122,7 @@ void get_mo_info(Options &options)
    CalcInfo.explicit_vir  = init_int_array(CalcInfo.nirreps);
    CalcInfo.reorder = init_int_array(CalcInfo.nmo);
    CalcInfo.ras_opi = init_int_matrix(4,CalcInfo.nirreps);
+
 
    if (!ras_set2(CalcInfo.nirreps, CalcInfo.nmo, 1, (Parameters.fzc) ?  1:0,
                 CalcInfo.orbs_per_irr, CalcInfo.docc, CalcInfo.socc,
@@ -171,11 +187,11 @@ void get_mo_info(Options &options)
 
 
    if (Parameters.print_lvl > 4) {
-      fprintf(outfile, "\nReordering array = \n");
+      outfile->Printf( "\nReordering array = \n");
       for (i=0; i<CalcInfo.nmo; i++) {
-         fprintf(outfile, "%3d ", CalcInfo.reorder[i]);
+         outfile->Printf( "%3d ", CalcInfo.reorder[i]);
          }
-      fprintf(outfile, "\n");
+      outfile->Printf( "\n");
       }
 
    CalcInfo.nmotri = (CalcInfo.nmo * (CalcInfo.nmo + 1)) / 2 ;

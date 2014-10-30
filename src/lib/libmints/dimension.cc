@@ -22,7 +22,7 @@
 
 #include <string.h>
 #include "dimension.h"
-
+#include "psi4-dec.h"
 #include <string.h>
 
 namespace psi {
@@ -89,11 +89,11 @@ int Dimension::max() const
 
 void Dimension::print() const
 {
-    fprintf(outfile, "  %s (n = %d): ", name_.c_str(), n_);
+    outfile->Printf( "  %s (n = %d): ", name_.c_str(), n_);
     for (int i=0; i<n(); ++i) {
-        fprintf(outfile, "%d  ", blocks_[i]);
+        outfile->Printf( "%d  ", blocks_[i]);
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 }
 
 Dimension& Dimension::operator =(const Dimension& other)

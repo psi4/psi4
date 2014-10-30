@@ -68,7 +68,7 @@ using namespace std;
 using namespace psi;
 
 namespace psi{
-    extern FILE  *outfile;
+    
     namespace psimrcc{
     // Global variables
     Timer               *global_timer;
@@ -86,14 +86,14 @@ psimrcc(Options &options)
   using namespace psi::psimrcc;
   _default_psio_lib_->open(PSIF_PSIMRCC_INTEGRALS,PSIO_OPEN_NEW);
 
-  fprintf(outfile,"\n  MRCC          MRCC");
-  fprintf(outfile,"\n   MRCC  MRCC  MRCC");
-  fprintf(outfile,"\n   MRCC  MRCC  MRCC      PSIMRCC Version 0.9.3.3, July 2009");
-  fprintf(outfile,"\n   MRCC  MRCC  MRCC      Multireference Coupled Cluster, written by");
-  fprintf(outfile,"\n     MRCCMRCCMRCC        Francesco A. Evangelista and Andrew C. Simmonett");
-  fprintf(outfile,"\n         MRCC            Compiled on %s at %s",__DATE__,__TIME__);
-  fprintf(outfile,"\n         MRCC            id =%s",GIT_ID);
-  fprintf(outfile,"\n       MRCCMRCC");
+  outfile->Printf("\n  MRCC          MRCC");
+  outfile->Printf("\n   MRCC  MRCC  MRCC");
+  outfile->Printf("\n   MRCC  MRCC  MRCC      PSIMRCC Version 0.9.3.3, July 2009");
+  outfile->Printf("\n   MRCC  MRCC  MRCC      Multireference Coupled Cluster, written by");
+  outfile->Printf("\n     MRCCMRCCMRCC        Francesco A. Evangelista and Andrew C. Simmonett");
+  outfile->Printf("\n         MRCC            Compiled on %s at %s",__DATE__,__TIME__);
+  outfile->Printf("\n         MRCC            id =%s",GIT_ID);
+  outfile->Printf("\n       MRCCMRCC");
 
   global_timer = new Timer;
   debugging = new Debugging(options);
@@ -107,13 +107,13 @@ psimrcc(Options &options)
   int nactmo = moinfo->get_nactv();
   int nactel = moinfo->get_nactive_ael() + moinfo->get_nactive_bel();
   if(nactel > 2 and nactmo > 2){
-      fprintf(outfile,"\n   WARNING: PSIMRCC detected that you are not using a CAS(2,n) or CAS(m,2) active space");
-      fprintf(outfile,"\n            You requested a CAS(%d,%d) space.  In this case the program will run",nactel,nactmo);
-      fprintf(outfile,"\n            but will negled matrix elements of the effective Hamiltonian between");
-      fprintf(outfile,"\n            reference determinats that differ by more than two spin orbitals.");
-      fprintf(outfile,"\n            The final answer will NOT be the Mk-MRCC energy but only an approximation to it.");
-      fprintf(outfile,"\n            If you are going to report this number in a publication make sure that you");
-      fprintf(outfile,"\n            understand what is going on and that you document it in your publication.");
+      outfile->Printf("\n   WARNING: PSIMRCC detected that you are not using a CAS(2,n) or CAS(m,2) active space");
+      outfile->Printf("\n            You requested a CAS(%d,%d) space.  In this case the program will run",nactel,nactmo);
+      outfile->Printf("\n            but will negled matrix elements of the effective Hamiltonian between");
+      outfile->Printf("\n            reference determinats that differ by more than two spin orbitals.");
+      outfile->Printf("\n            The final answer will NOT be the Mk-MRCC energy but only an approximation to it.");
+      outfile->Printf("\n            If you are going to report this number in a publication make sure that you");
+      outfile->Printf("\n            understand what is going on and that you document it in your publication.");
   }
 
   blas   = new CCBLAS(options);
@@ -123,13 +123,13 @@ psimrcc(Options &options)
   }else{
     mrccsd(options);
     if(nactel > 2 and nactmo > 2){
-        fprintf(outfile,"\n   WARNING: PSIMRCC detected that you are not using a CAS(2,n) or CAS(m,2) active space");
-        fprintf(outfile,"\n            You requested a CAS(%d,%d) space.  In this case the program will run",nactel,nactmo);
-        fprintf(outfile,"\n            but will negled matrix elements of the effective Hamiltonian between");
-        fprintf(outfile,"\n            reference determinats that differ by more than two spin orbitals.");
-        fprintf(outfile,"\n            The final answer will NOT be the Mk-MRCC energy but only an approximation to it.");
-        fprintf(outfile,"\n            If you are going to report this number in a publication make sure that you");
-        fprintf(outfile,"\n            understand what is going on and that you document it in your publication.");
+        outfile->Printf("\n   WARNING: PSIMRCC detected that you are not using a CAS(2,n) or CAS(m,2) active space");
+        outfile->Printf("\n            You requested a CAS(%d,%d) space.  In this case the program will run",nactel,nactmo);
+        outfile->Printf("\n            but will negled matrix elements of the effective Hamiltonian between");
+        outfile->Printf("\n            reference determinats that differ by more than two spin orbitals.");
+        outfile->Printf("\n            The final answer will NOT be the Mk-MRCC energy but only an approximation to it.");
+        outfile->Printf("\n            If you are going to report this number in a publication make sure that you");
+        outfile->Printf("\n            understand what is going on and that you document it in your publication.");
     }
   }
 
@@ -137,12 +137,12 @@ psimrcc(Options &options)
   delete trans;
   delete blas;
 
-  fprintf(outfile,"\n\n  PSIMRCC job completed.");
-  fprintf(outfile,"\n  Wall Time = %20.6f s",global_timer->get());
-  fprintf(outfile,"\n  GEMM Time = %20.6f s",moinfo->get_dgemm_timing());
-  fflush(outfile);
+  outfile->Printf("\n\n  PSIMRCC job completed.");
+  outfile->Printf("\n  Wall Time = %20.6f s",global_timer->get());
+  outfile->Printf("\n  GEMM Time = %20.6f s",moinfo->get_dgemm_timing());
+  
 
-  memory_manager->MemCheck(outfile);
+  memory_manager->MemCheck("outfile");
 
   delete model_space;
   delete moinfo;
@@ -151,7 +151,7 @@ psimrcc(Options &options)
   delete global_timer;
 
   _default_psio_lib_->close(PSIF_PSIMRCC_INTEGRALS,1);
-  fflush(outfile);
+  
   return Success;
 }
 

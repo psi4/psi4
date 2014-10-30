@@ -169,13 +169,12 @@ class Vector(LightVector, Tensor):
 
     :Examples:
 
-
-    * Multiplication *
+    *Multiplication*
     >>> from grendel.gmath import Matrix, Vector
     >>> Matrix([1,2],[3,4]) * Vector([5,6])
     Vector([ 17.,  39.])
 
-    * Cartesian components *
+    *Cartesian components*
     >>> vtwo = Vector(1., 2.)
     >>> vthree = Vector(1.11, 2.22, 3.33)
     >>> vtwo[0]
@@ -413,8 +412,7 @@ class Vector(LightVector, Tensor):
     #        a row vector.  Thus, do not call this from outside of `grendel.math` unless you have a good reason to do so.
     #        The `Vector.column` property should almost always give you what you need.
 
-    #    Examples
-    #    --------
+    #    :Examples:
 
     #    >>> Vector(1.0, 2.0, 3.0).transpose()
     #    Matrix([[ 1.],

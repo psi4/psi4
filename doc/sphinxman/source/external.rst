@@ -35,13 +35,9 @@ the file :source:`INSTALL` distributed with the package).
 Compiling and Installing
 ========================
 
-* :ref:`I.   Compilation Prerequisites                                     <sec:install_I>`
-* :ref:`II.  Brief Summary of Configuration, Compilation, and Installation <sec:install_II>`
-* :ref:`III. Detailed Installation Instructions                            <sec:install_III>`
-* :ref:`IV.  Recommendations for BLAS and LAPACK libraries                 <sec:install_IV>`
-* :ref:`V.   Miscellaneous architecture-specific notes                     <sec:install_V>`
-* :ref:`VI.  Common Problems with PSI Compilation                          <sec:install_VI>`
+.. toctree::
 
+   installfile
 
 .. index:: scratch files, psirc, psi4rc
 .. _`sec:psirc`:
@@ -242,6 +238,10 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
    Append results to output file. Default: Truncate first
 
+.. option:: -d, --debug
+
+   Flush the outfile at every fprintf. Default: true iff ``--with-debug``
+
 .. option:: -h, --help
 
    Display the command-line options and usage information.
@@ -250,13 +250,11 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
    Input file name. Default: input.dat
 
-.. option:: -o <filename>, --output <filename>
+.. option:: -l <name>, --psidatadir <name>
 
-   Output file name. Use ``stdout`` as <filename> to redirect 
-   to the screen. Default: when the input filename is "input.dat",
-   then the output filename defaults to "output.dat".  Otherwise, the
-   output filename defaults to the the input filename (subtracting
-   any ".in" or ".dat" suffix) plus ".out"
+   Mainly for use by developers, this overrides the value of
+   :envvar:`PSIDATADIR` and specifies the path to the Psi data
+   library (psi4/lib) 
 
 .. option:: -m, --messy
 
@@ -266,6 +264,23 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
    Number of threads to use (overrides :envvar:`OMP_NUM_THREADS`)
 
+.. option:: -o <filename>, --output <filename>
+
+   Output file name. Use ``stdout`` as <filename> to redirect 
+   to the screen. Default: when the input filename is "input.dat",
+   then the output filename defaults to "output.dat".  Otherwise, the
+   output filename defaults to the the input filename (subtracting
+   any ".in" or ".dat" suffix) plus ".out"
+
+.. option:: -p <prefix>, --prefix <prefix>
+
+   Prefix for psi files. Default: psi
+
+.. option:: -s <name>, --scratch <name>
+
+   This overrides the value of :envvar:`PSI_SCRATCH` and provides
+   a path to the location of scratch files
+
 .. option:: --new-plugin <name>
 
    Creates a new directory <name> with files for writing a
@@ -273,17 +288,9 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
    to use, for example: ``--new-plugin name +mointegrals``.
    See Sec. :ref:`sec:plugins` for available templates.
 
-.. option:: -p <prefix>, --prefix <prefix>
-
-   Prefix for psi files. Default: psi
-
 .. option:: -v, --verbose
 
    Print a lot of information, including the Psithon translation of the input file
-
-.. option:: -d, --debug
-
-   Flush the outfile at every fprintf. Default: true iff ``--with-debug``
 
 .. option:: -V, --version
 
@@ -318,7 +325,12 @@ These environment variables will influence |PSIfours| behavior.
 
 .. envvar:: PATH
 
-   Path for executables. To run K\ |a_acute|\ llay's MRCC program 
+   Path for interfaced executables. 
+
+   .. note:: Configuring |PSIfour| through :envvar:`PSIPATH` is preferred
+      to modifying this environment variable.
+
+   To run K\ |a_acute|\ llay's MRCC program 
    (see :ref:`MRCC <sec:mrcc>`), the ``dmrcc`` executable must be in :envvar:`PATH`.
    Likewise to run Grimme's dftd3 program (see :ref:`dftd3 <sec:dftd3>`), the 
    ``dftd3`` executable must be in :envvar:`PATH`.
@@ -327,10 +339,45 @@ These environment variables will influence |PSIfours| behavior.
 
    Directory where scratch files are written. Overrides settings in |psirc|.
 
+.. envvar:: PSIPATH
+
+   Path in which |PSIfour| looks for user extensions to the built-in
+   libraries. Specifically, directories containing 
+   :ref:`user basis sets <sec:basisUserDefined>`,
+   :ref:`EFP fragments <sec:findingEFPFragments>`,
+   :ref:`databases <sec:createDatabase>`, 
+   :ref:`plugins <sec:plugins>`, and 
+   interfaced executables (
+   ``dmrcc`` for :ref:`MRCC <sec:mrcc>` and 
+   ``dftd3`` for :ref:`DFTD3 <sec:dftd3>`
+   ) should be placed in this colon-separated list.
+
+   |PSIfour| is designed so that user extensions that are findable through
+   :envvar:`PSIPATH` can be used in input files entirely like their
+   built-in counterparts, without additional tagging as non-standard.
+
+   The typical search path is first the built-in libraries, next each
+   :envvar:`PSIPATH` directory in order, and finally the execution
+   directory (I won't swear everything tacks on the execution directory).
+
+   Path in which the Python interpreter looks for modules to import. For 
+   |PSIfour|, these are generally plugins (see :ref:`sec:plugins`) or databases.
+
+   Modify :envvar:`PSIPATH` though normal Linux shell commands before invoking ``psi4`` ::
+
+      # csh, tcsh
+      >>> setenv PSIPATH /home/user/psiadditions:/home/user/gbs
+
+      # bash
+      >>> export PSIPATH=/home/user/psiadditions:/home/user/gbs
+
 .. envvar:: PYTHONPATH
 
    Path in which the Python interpreter looks for modules to import. For 
    |PSIfour|, these are generally plugins (see :ref:`sec:plugins`) or databases.
+
+   .. note:: Configuring |PSIfour| through :envvar:`PSIPATH` is preferred
+      to modifying this environment variable.
 
    Modification of :envvar:`PYTHONPATH` can be done in three ways, equivalently.
 
@@ -348,4 +395,14 @@ These environment variables will influence |PSIfours| behavior.
 
         sys.path.insert(0, '../../psiadditions')
         sys.path.insert(0, '/home/user/psiadditions')
+
+.. envvar:: PSIDATADIR
+
+   Path in which the |PSIfour| executable looks for its non-compiled
+   dependencies (*i.e.*, Python driver, basis sets, databases, *etc.*).
+   Not used when running from an installed (``make install``) executable,
+   so this variable is relevant primarily to developers running the
+   executable directly from the compilation directory. Value should be set
+   to directory containing driver, basis, *etc.* directories, generally
+   ``psi4/lib``.
 

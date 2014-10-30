@@ -42,7 +42,7 @@ namespace psi { namespace ccdensity {
 void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf,
                  int **bucket_map, int p, int q, int r, int s,
                  int perm_pr, int perm_qs, int perm_prqs,
-                 double value, FILE *outfile);
+                 double value, std::string out);
 
 int file_build(dpdfile4 *File, int inputfile, double tolerance,
                int perm_pr, int perm_qs, int perm_prqs, int keep)
@@ -119,7 +119,7 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
         }
     }
 
-  fprintf(outfile, "\tSorting File: %s nbuckets = %d\n",
+  outfile->Printf( "\tSorting File: %s nbuckets = %d\n",
           File->label, nbuckets);
 
   /* Set up IWL buffers for sorting */
@@ -142,7 +142,7 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
       value = (double) valptr[InBuf.idx];
 
       idx_permute(File,SortBuf,bucket_map,p,q,r,s,
-                  perm_pr,perm_qs,perm_prqs,value,outfile);
+                  perm_pr,perm_qs,perm_prqs,value,"outfile");
 
           } /* end loop through current buffer */
 
@@ -160,7 +160,7 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
       value = (double) valptr[InBuf.idx];
 
       idx_permute(File,SortBuf,bucket_map,p,q,r,s,
-                  perm_pr,perm_qs,perm_prqs,value,outfile);
+                  perm_pr,perm_qs,perm_prqs,value,"outfile");
 
       } /* end loop through current buffer */
     } /* end loop over reading buffers */

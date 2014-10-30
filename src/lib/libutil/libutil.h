@@ -55,6 +55,15 @@ void append_reference(std::string& str, int reference);
 std::string find_and_replace(std::string & source, const std::string & target, const std::string & replace);
 void trim_spaces(std::string& str);
 
+/**
+ * @brief Compute the Levenshtein distance between two strings
+ * @param s1
+ * @param s2
+ * @return the distance as an unsigned integer
+ */
+unsigned int edit_distance(const std::string& s1, const std::string& s2);
+
+
 class Timer
 {
 public:

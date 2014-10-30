@@ -59,9 +59,10 @@ void diis_RHF(int iter)
 {
   int nvector=8;  /* Number of error vectors to keep */
   int h, nirreps;
-  int row, col, word, t1_word, p, q;
-  int diis_cycle;
-  int vector_length=0;
+  int row, col;
+  ULI p, q, diis_cycle;
+  ULI vector_length=0;
+  ULI t1_word, word;
   int errcod, *ipiv;
   dpdfile2 T1, T1a, T1b;
   dpdbuf4 T2, T2a, T2b, T2c;

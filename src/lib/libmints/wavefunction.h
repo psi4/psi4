@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "typedefs.h"
+#include "exception.h"
 #include <libparallel/parallel.h>
 
 #define MAX_IOFF 30000
@@ -202,6 +203,9 @@ protected:
     SharedVector epsilon_subset_helper(SharedVector epsilon, const Dimension& noccpi, const std::string& basis, const std::string& subset);
     std::vector<std::vector<int> > subset_occupation(const Dimension& noccpi, const std::string& subset);
 
+    /// If atomic point charges are available they will be here
+    boost::shared_ptr<double[]> atomic_point_charges_;
+
     /// If frequencies are available, they will be here:
     boost::shared_ptr<Vector> frequencies_;
 
@@ -255,7 +259,8 @@ public:
     /// Compute gradient.  Subclasses override this function to compute the gradient.
 
     /// Initialize internal variables from checkpoint file.
-    void init_with_chkpt();
+    //void init_with_chkpt(); // Does this function exist??
+    void load_values_from_chkpt();
 
     /// Is this a restricted wavefunction?
     virtual bool same_a_b_orbs() const { return true;  }
@@ -449,10 +454,20 @@ public:
     /// Set the gradient for the wavefunction
     void set_gradient(SharedMatrix& grad);
 
+    /// Returns the atomic point charges
+    boost::shared_ptr<double[]> atomic_point_charges()const{
+       return atomic_point_charges_;
+    }
+    /// Sets the atomic point charges
+    void set_atomic_point_charges(const boost::shared_ptr<double[]>& apcs){
+       atomic_point_charges_=apcs;
+    }
+
     /// Returns the frequencies
     boost::shared_ptr<Vector> frequencies() const;
     /// Set the frequencies for the wavefunction
     void set_frequencies(boost::shared_ptr<Vector>& freqs);
+
 
     /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
     void set_name(const std::string& name) { name_ = name; }

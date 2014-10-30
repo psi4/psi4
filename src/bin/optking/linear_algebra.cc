@@ -31,6 +31,7 @@
 #include <cstdlib>
 #include "mem.h"
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -42,14 +43,16 @@
 
 extern "C" {
 
+// defines correct format of BLAS/LAPACK functions
 #if defined(OPTKING_PACKAGE_PSI)
- // defines correct format of BLAS/LAPACK functions
  #define F_DGEMM dgemm_
  #define F_DSYEV dsyev_
+ #define F_DGEEV dgeev_
 #elif defined(OPTKING_PACKAGE_QCHEM)
  #include "qccfg.h"
  #define F_DGEMM FTN_EXTNAME(dgemm,DGEMM)
  #define F_DSYEV FTN_EXTNAME(dsyev,DSYEV)
+ #define F_DGEEV FTN_EXTNAME(dgeev,DGEEV)
 #endif
 
 // declations of BLAS/LAPACK routines
@@ -60,8 +63,10 @@ extern void F_DGEMM(char *transa, char *transb, int *m, int *n, int *k,
 extern int F_DSYEV(char *, char *, int *, double *, int *, double *,
   double *, int *, int *);
 
-// C functions called from opt that use the BLAS/LAPACK routines
+extern int F_DGEEV(char *, char *, int *N1, double *A, int *N2, double *w1, double *w2,
+  double *vl, int *N3, double *vr, int *N4, double *work, int *lwork, int *info);
 
+// C functions called from opt that use the BLAS/LAPACK routines
 /*
   matrix multiplication using DGEMM :  A * B += C 
   tA (tB) indicate if A (B) is transposed;
@@ -109,7 +114,6 @@ bool opt_symm_matrix_eig(double **A, int dim, double *evals) {
 //  char cl = 'L';  // lower triangle (upper in C) is necessary
   char cl = 'U';  // upper triangle (lower triangle in C) is necessary
   int rval, i, j;
-  double tval;
 
 // Call to discover optimal memory
   double *work = opt_init_array(1);
@@ -127,7 +131,81 @@ bool opt_symm_matrix_eig(double **A, int dim, double *evals) {
   return true;
 }
 
+/*
+  Compute eigenvectors and eigenvalues of a real, asymmetric matrix.
+  Right eigenvectors are stored as rows of A.
+  We return only the real eigenvalues in ascending order.
+*/
+bool opt_asymm_matrix_eig(double **A, int dim, double *evals) {
+
+  int rval;           // return value
+  char noLeft  = 'N'; // don't compute left evects;
+  char doRight = 'V'; // compute right evects;
+  double *evals_i;    // holds imaginary components
+  double **Revects;   // right eigenvectors
+  double **Levects;   // left eigenvectors
+
+  // Copy the input matrix. A may be overwritten.
+  double **At = opt_init_matrix(dim, dim);
+
+  for (int i=0; i<dim; ++i)
+    for (int j=0; j<dim; ++j)
+      At[j][i] = A[i][j];
+
+  evals_i = opt_init_array(dim);
+  Revects = opt_init_matrix(dim, dim);
+  Levects = opt_init_matrix(dim, dim);
+
+// Call to discover optimal memory
+  double *work = opt_init_array(1); // workspace
+  int lwork = -1;
+
+  F_DGEEV( &noLeft, &doRight, &dim, A[0], &dim, evals, evals_i, Levects[0], &dim,
+    Revects[0], &dim, work, &lwork, &rval );
+
+  lwork = (int) work[0];
+  opt_free_array(work);
+
+  work = opt_init_array(lwork);
+
+  F_DGEEV( &noLeft, &doRight, &dim, At[0], &dim, evals, evals_i, Levects[0], &dim,
+    Revects[0], &dim, work, &lwork, &rval );
+
+  opt_free_array(work);
+  opt_free_matrix(At);
+
+  // Put right eigenvectors into A in increasing real order. also reorder evals.
+  int cnt = 0;
+  for (int i=0; i<dim; ++i) {
+
+    double smallest = 1e20;
+    int small = 0;
+    for (int j=0; j<dim; ++j) {
+      if (evals[j] < smallest) {
+        small = j;
+        smallest = evals[j];
+      }
+    }
+
+    evals_i[cnt] = evals[small]; // not imaginary; just reusing memory
+    evals[small] = 1e20; // so as not to recount
+    for (int j=0; j<dim; ++j)
+      A[cnt][j] = Revects[small][j];
+    cnt++;
+  }
+
+  for (int j=0; j<dim; ++j)
+    evals[j] = evals_i[j];
+
+  opt_free_array(evals_i);
+  opt_free_matrix(Revects);
+  opt_free_matrix(Levects);
+
+  if (rval != 0) return false;
+  return true;
 }
+
+} // end extern "C"
 
 namespace opt {
 
@@ -146,7 +224,7 @@ double ** symm_matrix_inv(double **A, int dim, bool redundant) {
 
   if (! opt_symm_matrix_eig(A_evects, dim, evals) )
     throw(INTCO_EXCEPT("symm_matrix_inv : opt_symm_matrix_eig could not diagonalize"));
-  //for (i=0; i<dim; ++i) fprintf(outfile, "evals[%d] = %15.10lf\n", i, evals[i]);
+  //for (i=0; i<dim; ++i) oprintf_out( "evals[%d] = %15.10lf\n", i, evals[i]);
 
   for (i=0;i<dim;++i)
     det *= evals[i];
@@ -236,6 +314,13 @@ double array_abs_max(double *v1, int n) {
   double max = 0.0;
   for (int i=0; i<n; ++i)
     if (fabs(v1[i]) > max) max = fabs(v1[i]);
+  return max;
+}
+
+double array_max(double *v1, int n) {
+  double max = 0.0;
+  for (int i=0; i<n; ++i)
+    if (v1[i] > max) max = v1[i];
   return max;
 }
 

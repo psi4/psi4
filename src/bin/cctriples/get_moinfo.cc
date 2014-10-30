@@ -33,6 +33,8 @@
 #include <libchkpt/chkpt.h>
 #include <liboptions/liboptions.h>
 #include "psi4-dec.h"
+#include "libmints/wavefunction.h"
+#include "libmints/molecule.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
@@ -40,7 +42,7 @@
 
 namespace psi { namespace cctriples {
 
-    /*
+/*
     ** get_moinfo():  Routine to obtain basic orbital information from
     ** CHKPT and CC_INFO.
     **
@@ -48,69 +50,75 @@ namespace psi { namespace cctriples {
     ** Modified by TDC, March 1999.
     */
 
-    void get_moinfo(Options &options)
-    {
-      int i, h, errcod, nactive, nirreps;
-      std::string junk;
-      chkpt_init(PSIO_OPEN_OLD);
-      moinfo.nirreps = chkpt_rd_nirreps();
-      moinfo.nmo = chkpt_rd_nmo();
-      moinfo.iopen = chkpt_rd_iopen();
-      moinfo.labels = chkpt_rd_irr_labs();
-      moinfo.enuc = chkpt_rd_enuc();
-      moinfo.escf = chkpt_rd_escf();
-      moinfo.orbspi = chkpt_rd_orbspi();
-      moinfo.clsdpi = chkpt_rd_clsdpi();
-      moinfo.openpi = chkpt_rd_openpi();
-      moinfo.phase = chkpt_rd_phase_check();
-      chkpt_close();
+void get_moinfo(Options &options)
+{
+    int i, h, errcod, nactive, nirreps;
+    std::string junk;
+    chkpt_init(PSIO_OPEN_OLD);
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+    moinfo.nirreps = wfn->nirrep();
+    moinfo.nmo = wfn->nmo();
+    moinfo.iopen = chkpt_rd_iopen();
+    moinfo.labels = wfn->molecule()->irrep_labels();
+    moinfo.enuc = wfn->molecule()->nuclear_repulsion_energy();
+    if(wfn->reference_wavefunction())
+        moinfo.escf = wfn->reference_wavefunction()->reference_energy();
+    else
+        moinfo.escf = wfn->reference_energy();
+    moinfo.orbspi = wfn->nmopi();
+    moinfo.openpi = wfn->soccpi();
+    moinfo.clsdpi = init_int_array(moinfo.nirreps);
+    for(int h = 0; h < moinfo.nirreps; ++h)
+        moinfo.clsdpi[h] = wfn->doccpi()[h];
+    moinfo.phase = chkpt_rd_phase_check();
+    chkpt_close();
 
-      nirreps = moinfo.nirreps;
+    nirreps = moinfo.nirreps;
 
-      params.wfn = options.get_str("WFN");
-      if( params.wfn != "CCSD" && params.wfn != "CCSD_T" && params.wfn != "CCSD_AT" &&
-                params.wfn != "BCCD" && params.wfn != "BCCD_T" ) {
+    params.wfn = options.get_str("WFN");
+    if( params.wfn != "CCSD" && params.wfn != "CCSD_T" && params.wfn != "CCSD_AT" &&
+            params.wfn != "BCCD" && params.wfn != "BCCD_T" ) {
         throw PsiException("Invalid value of input keyword WFN",__FILE__,__LINE__);
-      }
+    }
 
-  params.nthreads = Process::environment.get_n_threads();
-  if (options["CC_NUM_THREADS"].has_changed()){
-     params.nthreads = options.get_int("CC_NUM_THREADS");
-  }
+    params.nthreads = Process::environment.get_n_threads();
+    if (options["CC_NUM_THREADS"].has_changed()){
+        params.nthreads = options.get_int("CC_NUM_THREADS");
+    }
 
-  params.semicanonical = 0;
-  junk = options.get_str("REFERENCE");
-  /* if no reference is given, assume rhf */
-  if(junk == "RHF") params.ref = 0;
-  else if(junk == "ROHF" && params.wfn == "CCSD_T") {
-    params.ref = 2;
-    params.semicanonical = 1;
-  }
-  else if(junk == "ROHF") params.ref = 1;
-  else if(junk == "UHF") params.ref = 2;
-  else {
-    throw PsiException("Invalid value of input keyword REFERENCE",__FILE__,__LINE__);
-  }
+    params.semicanonical = 0;
+    junk = options.get_str("REFERENCE");
+    /* if no reference is given, assume rhf */
+    if(junk == "RHF") params.ref = 0;
+    else if(junk == "ROHF" && params.wfn == "CCSD_T") {
+        params.ref = 2;
+        params.semicanonical = 1;
+    }
+    else if(junk == "ROHF") params.ref = 1;
+    else if(junk == "UHF") params.ref = 2;
+    else {
+        throw PsiException("Invalid value of input keyword REFERENCE",__FILE__,__LINE__);
+    }
 
-  junk = options.get_str("DERTYPE");
-  if(junk == "NONE") params.dertype = 0;
-  else if(junk == "FIRST") params.dertype = 1;
-  else {
-          throw PsiException("Value of keyword DERTYPE is not applicable to CCSD(T)",__FILE__,__LINE__);
-        }
+    junk = options.get_str("DERTYPE");
+    if(junk == "NONE") params.dertype = 0;
+    else if(junk == "FIRST") params.dertype = 1;
+    else {
+        throw PsiException("Value of keyword DERTYPE is not applicable to CCSD(T)",__FILE__,__LINE__);
+    }
 
-      /* Get frozen and active orbital lookups from CC_INFO */
-      moinfo.frdocc = init_int_array(moinfo.nirreps);
-      moinfo.fruocc = init_int_array(moinfo.nirreps);
-      psio_read_entry(PSIF_CC_INFO, "Frozen Core Orbs Per Irrep",
-                      (char *) moinfo.frdocc, sizeof(int)*moinfo.nirreps);
-      psio_read_entry(PSIF_CC_INFO, "Frozen Virt Orbs Per Irrep",
-                      (char *) moinfo.fruocc, sizeof(int)*moinfo.nirreps);
+    /* Get frozen and active orbital lookups from CC_INFO */
+    moinfo.frdocc = init_int_array(moinfo.nirreps);
+    moinfo.fruocc = init_int_array(moinfo.nirreps);
+    psio_read_entry(PSIF_CC_INFO, "Frozen Core Orbs Per Irrep",
+                    (char *) moinfo.frdocc, sizeof(int)*moinfo.nirreps);
+    psio_read_entry(PSIF_CC_INFO, "Frozen Virt Orbs Per Irrep",
+                    (char *) moinfo.fruocc, sizeof(int)*moinfo.nirreps);
 
-      psio_read_entry(PSIF_CC_INFO, "No. of Active Orbitals", (char *) &(nactive),
-                      sizeof(int));
+    psio_read_entry(PSIF_CC_INFO, "No. of Active Orbitals", (char *) &(nactive),
+                    sizeof(int));
 
-      if(params.ref == 2) { /** UHF **/
+    if(params.ref == 2) { /** UHF **/
 
         moinfo.aoccpi = init_int_array(nirreps);
         moinfo.boccpi = init_int_array(nirreps);
@@ -155,8 +163,8 @@ namespace psi { namespace cctriples {
         psio_read_entry(PSIF_CC_INFO, "Active Beta Virt Orb Offsets",
                         (char *) moinfo.bvir_off, sizeof(int)*moinfo.nirreps);
 
-      }
-      else { /** RHF or ROHF **/
+    }
+    else { /** RHF or ROHF **/
 
         moinfo.occpi = init_int_array(moinfo.nirreps);
         moinfo.virtpi = init_int_array(moinfo.nirreps);
@@ -182,55 +190,55 @@ namespace psi { namespace cctriples {
         psio_read_entry(PSIF_CC_INFO, "Active Virt Orb Offsets",
                         (char *) moinfo.vir_off, sizeof(int)*moinfo.nirreps);
 
-      }
-
-      /* Adjust clsdpi array for frozen orbitals */
-      for(i=0; i < moinfo.nirreps; i++)
-        moinfo.clsdpi[i] -= moinfo.frdocc[i];
-
-      moinfo.uoccpi = init_int_array(moinfo.nirreps);
-      for(i=0; i < moinfo.nirreps; i++)
-        moinfo.uoccpi[i] = moinfo.orbspi[i] - moinfo.clsdpi[i] -
-          moinfo.openpi[i] - moinfo.fruocc[i] -
-          moinfo.frdocc[i];
-
-      fprintf(outfile,"\n\n");
-      fprintf(outfile, "\tWave function   =    %6s\n",params.wfn.c_str());
-      if(params.semicanonical) {
-        fprintf(outfile, "\tReference wfn   =    ROHF changed to UHF for Semicanonical Orbitals\n");
-      }
-      else {
-        fprintf(outfile, "\tReference wfn   =    %5s\n",
-                (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
-      }
-      psio_read_entry(PSIF_CC_INFO, "Reference Energy", (char *) &(moinfo.eref),
-                      sizeof(double));
-      psio_read_entry(PSIF_CC_INFO, "CCSD Energy", (char *) &(moinfo.ecc),
-                      sizeof(double));
-
-      fprintf(outfile,"\n\tNuclear Rep. energy (chkpt)   = %20.15f\n",moinfo.enuc);
-      fprintf(outfile,  "\tSCF energy          (chkpt)   = %20.15f\n",moinfo.escf);
-      fprintf(outfile,  "\tReference energy    (file100) = %20.15f\n",moinfo.eref);
-      fprintf(outfile,  "\tCCSD energy         (file100) = %20.15f\n",moinfo.ecc);
-      fprintf(outfile,  "\tTotal CCSD energy   (file100) = %20.15f\n",
-              moinfo.eref+moinfo.ecc);
     }
 
-    /* Frees memory allocated in get_moinfo() and dumps some info. */
-    void cleanup(void)
-    {
-      int i;
+    /* Adjust clsdpi array for frozen orbitals */
+    for(i=0; i < moinfo.nirreps; i++)
+        moinfo.clsdpi[i] -= moinfo.frdocc[i];
 
-      free(moinfo.orbspi);
-      free(moinfo.clsdpi);
-      free(moinfo.openpi);
-      free(moinfo.uoccpi);
-      free(moinfo.fruocc);
-      free(moinfo.frdocc);
-      for(i=0; i < moinfo.nirreps; i++)
+    moinfo.uoccpi = init_int_array(moinfo.nirreps);
+    for(i=0; i < moinfo.nirreps; i++)
+        moinfo.uoccpi[i] = moinfo.orbspi[i] - moinfo.clsdpi[i] -
+                moinfo.openpi[i] - moinfo.fruocc[i] -
+                moinfo.frdocc[i];
+
+    outfile->Printf("\n\n");
+    outfile->Printf( "\tWave function   =    %6s\n",params.wfn.c_str());
+    if(params.semicanonical) {
+        outfile->Printf( "\tReference wfn   =    ROHF changed to UHF for Semicanonical Orbitals\n");
+    }
+    else {
+        outfile->Printf( "\tReference wfn   =    %5s\n",
+                (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
+    }
+    psio_read_entry(PSIF_CC_INFO, "Reference Energy", (char *) &(moinfo.eref),
+                    sizeof(double));
+    psio_read_entry(PSIF_CC_INFO, "CCSD Energy", (char *) &(moinfo.ecc),
+                    sizeof(double));
+
+    outfile->Printf("\n\tNuclear Rep. energy (chkpt)   = %20.15f\n",moinfo.enuc);
+    outfile->Printf(  "\tSCF energy          (chkpt)   = %20.15f\n",moinfo.escf);
+    outfile->Printf(  "\tReference energy    (file100) = %20.15f\n",moinfo.eref);
+    outfile->Printf(  "\tCCSD energy         (file100) = %20.15f\n",moinfo.ecc);
+    outfile->Printf(  "\tTotal CCSD energy   (file100) = %20.15f\n",
+            moinfo.eref+moinfo.ecc);
+}
+
+/* Frees memory allocated in get_moinfo() and dumps some info. */
+void cleanup(void)
+{
+    int i;
+
+//    free(moinfo.orbspi);
+    free(moinfo.clsdpi);
+//    free(moinfo.openpi);
+//    free(moinfo.uoccpi);
+//    free(moinfo.fruocc);
+//    free(moinfo.frdocc);
+    for(i=0; i < moinfo.nirreps; i++)
         free(moinfo.labels[i]);
-      free(moinfo.labels);
-      if(params.ref == 2) {
+    free(moinfo.labels);
+    if(params.ref == 2) {
         free(moinfo.aoccpi);
         free(moinfo.boccpi);
         free(moinfo.avirtpi);
@@ -239,16 +247,16 @@ namespace psi { namespace cctriples {
         free(moinfo.bocc_sym);
         free(moinfo.avir_sym);
         free(moinfo.bvir_sym);
-      }
-      else {
+    }
+    else {
         free(moinfo.occ_sym);
         free(moinfo.vir_sym);
         free(moinfo.occ_off);
         free(moinfo.vir_off);
         free(moinfo.occpi);
         free(moinfo.virtpi);
-      }
     }
+}
 
 
-  }} // namespace psi::CCTRIPLES
+}} // namespace psi::CCTRIPLES

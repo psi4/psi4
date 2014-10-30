@@ -39,7 +39,7 @@ struct onestack {
 
 void onestack_insert(struct onestack *stack, double value, int i, int a, int level, int stacklen);
 
-void amp_write_T1(dpdfile2 *T1, int length, FILE *outfile)
+void amp_write_T1(dpdfile2 *T1, int length, std::string OutFileRMR)
 {
   int m, h, nirreps, Gia;
   int i, I, a, A, numt1;
@@ -79,7 +79,7 @@ void amp_write_T1(dpdfile2 *T1, int length, FILE *outfile)
 
   for(m=0; m < ((numt1 < length) ? numt1 : length); m++)
     if(fabs(t1stack[m].value) > 1e-6)
-      fprintf(outfile, "\t        %3d %3d %20.10f\n", t1stack[m].i, t1stack[m].a, t1stack[m].value);
+      outfile->Printf( "\t        %3d %3d %20.10f\n", t1stack[m].i, t1stack[m].a, t1stack[m].value);
 
   free(t1stack);
 }

@@ -25,7 +25,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
-
+#include "libparallel/ParallelPrinter.h"
 using namespace psi;
 
 namespace psi {
@@ -61,15 +61,17 @@ ChebyshevIIQuadrature::ChebyshevIIQuadrature(int npoints, double t0) :
     }
 }
 
-void ChebyshevIIQuadrature::print(FILE* out)
+void ChebyshevIIQuadrature::print(std::string out)
 {
-    fprintf(out, "  Chebyshev Type II Quadrature of %d Points\n", npoints_);
-    fprintf(out, "        for integration on [0, \\infty)\n");
-    fprintf(out, "           Center %14.10E\n", center_);
-    fprintf(out, "\n");
-    fprintf(out, "  Index       Point         Weight\n");
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   printer->Printf( "  Chebyshev Type II Quadrature of %d Points\n", npoints_);
+    printer->Printf( "        for integration on [0, \\infty)\n");
+    printer->Printf( "           Center %14.10E\n", center_);
+    printer->Printf( "\n");
+    printer->Printf( "  Index       Point         Weight\n");
     for (int k = 0; k < npoints_; k++)
-        fprintf(out, "   %3d      %8.3E    %8.3E\n", k+1, t_[k], w_[k]);
+        printer->Printf( "   %3d      %8.3E    %8.3E\n", k+1, t_[k], w_[k]);
 }
 
 }

@@ -56,10 +56,10 @@ DCFTSolver::init()
     frzvpi_ = reference_wavefunction_->frzvpi();
     nmopi_  = reference_wavefunction_->nmopi();
     nsopi_  = reference_wavefunction_->nsopi();
-    naoccpi_ = doccpi_ + soccpi_;
-    nboccpi_ = doccpi_;
-    navirpi_ = nmopi_ - doccpi_ - soccpi_ - frzvpi_;
-    nbvirpi_ = nmopi_ - doccpi_ - frzvpi_;
+    nalphapi_ = naoccpi_ = reference_wavefunction_->nalphapi();
+    nbetapi_ = nboccpi_ = reference_wavefunction_->nbetapi();
+    navirpi_ = (nmopi_ - naoccpi_ - frzvpi_);
+    nbvirpi_ = (nmopi_ - nboccpi_ - frzvpi_);
     nalpha_  = naoccpi_.sum();
     nbeta_  = nboccpi_.sum();
     navir_  = navirpi_.sum();
@@ -75,6 +75,8 @@ DCFTSolver::init()
     Fb_          = SharedMatrix(reference_wavefunction_->Fb());
     moF0a_         = SharedMatrix(new Matrix("Alpha MO F0 Matrix", nirrep_, nmopi_, nmopi_));
     moF0b_         = SharedMatrix(new Matrix("Beta MO F0 Matrix", nirrep_, nmopi_, nmopi_));
+    Ftilde_a_      = SharedMatrix(new Matrix("Alpha MO Ftilde Matrix", nirrep_, nmopi_, nmopi_));
+    Ftilde_b_      = SharedMatrix(new Matrix("Beta MO Ftilde Matrix", nirrep_, nmopi_, nmopi_));
     Ca_          = SharedMatrix(new Matrix("Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
     Cb_          = SharedMatrix(new Matrix("Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
     moFa_        = SharedMatrix(new Matrix("Alpha MO Fock Matrix", nirrep_, nmopi_, nmopi_));
@@ -100,6 +102,29 @@ DCFTSolver::init()
     bocc_tau_    = SharedMatrix(new Matrix("MO basis Tau (Beta Occupied)", nirrep_, nboccpi_, nboccpi_));
     avir_tau_    = SharedMatrix(new Matrix("MO basis Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_));
     bvir_tau_    = SharedMatrix(new Matrix("MO basis Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_));
+
+    // Compute MO offsets
+    aocc_off_ = init_int_array(nirrep_);
+    avir_off_ = init_int_array(nirrep_);
+    double ocount = naoccpi_[0];
+    double vcount = navirpi_[0];
+    for(int h=1; h < nirrep_; h++) {
+      aocc_off_[h] = ocount;
+      ocount += naoccpi_[h];
+      avir_off_[h] = vcount;
+      vcount += navirpi_[h];
+    }
+
+    bocc_off_ = init_int_array(nirrep_);
+    bvir_off_ = init_int_array(nirrep_);
+    ocount = nboccpi_[0];
+    vcount = nbvirpi_[0];
+    for(int h=1; h < nirrep_; h++) {
+      bocc_off_[h] = ocount;
+      ocount += nboccpi_[h];
+      bvir_off_[h] = vcount;
+      vcount += nbvirpi_[h];
+    }
 
     // Quadratically-convergent algorithm or orbital-optimized methods
     if (options_.get_str("ALGORITHM") == "QC" || orbital_optimized_) {
@@ -143,7 +168,7 @@ DCFTSolver::init()
 
     // Store the AO overlap matrix
     double *sArray = new double[ntriso_];
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_S, sArray, ntriso_, 0, 0, outfile);
+    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_S, sArray, ntriso_, 0, 0, "outfile");
     ao_s_->set(sArray);
     delete [] sArray;
 

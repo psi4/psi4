@@ -48,7 +48,7 @@ void check_sum(char *term_lbl, int irrep) {
   char lbl[80];
 
   if (!strcmp(term_lbl,"reset"))  {
-    fprintf(outfile,"resetting norm\n");
+    outfile->Printf("resetting norm\n");
   	old_norm = 0;
   	return;
   }
@@ -84,8 +84,8 @@ void check_sum(char *term_lbl, int irrep) {
     global_dpd_->buf4_close(&LIjAb);
   }
 
-  fprintf(outfile,"%7s, D(norm L)=%15.10lf\n", term_lbl, norm - old_norm);
-  fflush(outfile);
+  outfile->Printf("%7s, D(norm L)=%15.10lf\n", term_lbl, norm - old_norm);
+  
   old_norm = norm;
   return;
 }

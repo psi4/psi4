@@ -50,15 +50,20 @@ set dcft_functional odc-12
 set algorithm       qc
 gradient('dcft')
 
+set ao_basis        none
+set dcft_functional odc-13
+set algorithm       simultaneous
+gradient('dcft')
+
+set ao_basis        none
+set dcft_functional odc-13
+set algorithm       qc
+gradient('dcft')
+
 #AO_BASIS = DISK
 set ao_basis        disk
 set dcft_functional dc-06
 set algorithm       simultaneous
-gradient('dcft')
-
-set ao_basis        disk
-set dcft_functional dc-06
-set algorithm       qc
 gradient('dcft')
 
 set ao_basis        disk
@@ -67,34 +72,11 @@ set algorithm simultaneous
 gradient('dcft')
 
 set ao_basis        disk
-set dcft_functional odc-06
-set algorithm       qc
-gradient('dcft')
-
-set ao_basis        disk
 set dcft_functional odc-12
 set algorithm       simultaneous
 gradient('dcft')
 
 set ao_basis        disk
-set dcft_functional odc-12
-set algorithm       qc
-gradient('dcft')
-
-set ao_basis        disk
-set dcft_functional dc-06
-set algorithm       qc
-set qc_coupling     false
-gradient('dcft')
-
-set ao_basis        disk
-set dcft_functional odc-06
-set algorithm       qc
-set qc_coupling     false
-gradient('dcft')
-
-set ao_basis        disk
-set dcft_functional odc-12
-set algorithm       qc
-set qc_coupling     false
+set dcft_functional odc-13
+set algorithm       simultaneous
 gradient('dcft')

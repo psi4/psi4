@@ -44,7 +44,7 @@ class Quadrature {
         virtual ~Quadrature();
 
         /// Prints the Quadrature rule
-        virtual void print(FILE* out = outfile) = 0;
+        virtual void print(std::string = "outfile") = 0;
 
         /// Get the current quadrature weight
         double getWeight() { return w_[index_]; }
@@ -80,7 +80,7 @@ class ChebyshevIIQuadrature : public Quadrature {
         ~ChebyshevIIQuadrature() {}
 
         /// Prints the Quadrature rule
-        void print(FILE* out = outfile);
+        void print(std::string OutFileRMR = "outfile");
 
 };
 

@@ -27,6 +27,7 @@
 
 #include "opt_data.h"
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -117,7 +118,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
 
     // compute p_m, mass-weighted hypersphere vector
     const double *q_pivot = p_irc_data->g_q_pivot();
-    double *q = mol.intco_values();
+    double *q = mol.coord_values();
     double *p = init_array(Nintco);
     for (int i=0; i<Nintco; ++i)
       p[i] = q[i] - q_pivot[i];
@@ -138,11 +139,11 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
     free_array(Ginv_p);
 
     if (Opt_params.print_lvl >= 1) {
-      fprintf(outfile,"\tForces perpendicular to hypersphere.\n");
-      print_array(outfile, f, Nintco);
+      oprintf_out("\tForces perpendicular to hypersphere.\n");
+      oprint_array_out(f, Nintco);
     }
 
-    fprintf(outfile,"\tFor IRC computations, the forces perpendicular to the rxnpath are tested.\n");
+    oprintf_out("\tFor IRC computations, the forces perpendicular to the rxnpath are tested.\n");
   }
 
   double max_force = array_abs_max(f, Nintco);
@@ -150,50 +151,51 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
 
 /*
   if (mol.has_fixed_eq_vals()) {
-    fprintf(outfile,"\t Forces are not used to judge convergence, since artificial forces were added according\n");
-    fprintf(outfile,"\t  to user-defined equilibrium values.\n");
+    oprintf_out("\t Forces are not used to judge convergence, since artificial forces were added according\n");
+    oprintf_out("\t  to user-defined equilibrium values.\n");
     Opt_params.i_max_force = false;
     Opt_params.i_rms_force = false;
   }
 */
 
-  fprintf(outfile, "\n  ==> Convergence Check <==\n\n");
-  fprintf(outfile, "  Measures of convergence in internal coordinates in au.\n");
-  fprintf(outfile, "  Criteria marked as inactive (o), active & met (*), and active & unmet ( ).\n");
+  oprintf_out( "\n  ==> Convergence Check <==\n\n");
+  oprintf_out( "  Measures of convergence in internal coordinates in au.\n");
+  oprintf_out( "  Criteria marked as inactive (o), active & met (*), and active & unmet ( ).\n");
 
-  fprintf(outfile, "  ---------------------------------------------------------------------------------------------");
-  if (g_iteration() == 1) fprintf(outfile, " ~");
-  fprintf(outfile, "\n");
+  oprintf_out( "  ---------------------------------------------------------------------------------------------");
+  if (g_iteration() == 1) oprintf_out( " ~");
+  oprintf_out( "\n");
 
-  fprintf(outfile, "   Step     Total Energy     Delta E     MAX Force     RMS Force      MAX Disp      RMS Disp   ");
-  if (g_iteration() == 1) fprintf(outfile, " ~");
-  fprintf(outfile, "\n");
+  oprintf_out( "   Step     Total Energy     Delta E     MAX Force     RMS Force      MAX Disp      RMS Disp   ");
+  if (g_iteration() == 1) oprintf_out( " ~");
+  oprintf_out( "\n");
 
-  fprintf(outfile, "  ---------------------------------------------------------------------------------------------");
-  if (g_iteration() == 1) fprintf(outfile, " ~");
-  fprintf(outfile, "\n");
+  oprintf_out( "  ---------------------------------------------------------------------------------------------");
+  if (g_iteration() == 1) oprintf_out( " ~");
+  oprintf_out( "\n");
 
-  fprintf(outfile, "    Convergence Criteria");
-  Opt_params.i_max_DE ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_DE, "*") : fprintf(outfile, "             %1s", "o");
-  Opt_params.i_max_force ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_force, "*") : fprintf(outfile, "             %1s", "o");
-  Opt_params.i_rms_force ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_rms_force, "*") : fprintf(outfile, "             %1s", "o");
-  Opt_params.i_max_disp ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_disp, "*") : fprintf(outfile, "             %1s", "o");
-  Opt_params.i_rms_disp ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_rms_disp, "*") : fprintf(outfile, "             %1s", "o");
-  if (g_iteration() == 1) fprintf(outfile, "  ~");
-  fprintf(outfile, "\n");
+  oprintf_out( "    Convergence Criteria");
+  Opt_params.i_max_DE    ? oprintf_out( "  %10.2e %1s", Opt_params.conv_max_DE,    "*") : oprintf_out("             %1s", "o");
+  Opt_params.i_max_force ? oprintf_out( "  %10.2e %1s", Opt_params.conv_max_force, "*") : oprintf_out("             %1s", "o");
+  Opt_params.i_rms_force ? oprintf_out( "  %10.2e %1s", Opt_params.conv_rms_force, "*") : oprintf_out("             %1s", "o");
+  Opt_params.i_max_disp  ? oprintf_out( "  %10.2e %1s", Opt_params.conv_max_disp,  "*") : oprintf_out("             %1s", "o");
+  Opt_params.i_rms_disp  ? oprintf_out( "  %10.2e %1s", Opt_params.conv_rms_disp,  "*") : oprintf_out("             %1s", "o");
 
-  fprintf(outfile, "  ---------------------------------------------------------------------------------------------");
-  if (g_iteration() == 1) fprintf(outfile, " ~");
-  fprintf(outfile, "\n");
+  if (g_iteration() == 1) oprintf_out( "  ~");
+  oprintf_out( "\n");
 
-  fprintf(outfile, "   %4d %16.8f  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  ~\n", iteration, g_energy(),
+  oprintf_out( "  ---------------------------------------------------------------------------------------------");
+  if (g_iteration() == 1) oprintf_out( " ~");
+  oprintf_out( "\n");
+
+  oprintf_out( "   %4d %16.8f  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  ~\n", iteration, g_energy(),
     DE, (Opt_params.i_max_DE ? ((fabs(DE) < Opt_params.conv_max_DE) ? "*" : "") : "o"), 
     max_force, (Opt_params.i_max_force ? ((fabs(max_force) < Opt_params.conv_max_force) ? "*" : "") : "o"),
     rms_force, (Opt_params.i_rms_force ? ((fabs(rms_force) < Opt_params.conv_rms_force) ? "*" : "") : "o"),
     max_disp, (Opt_params.i_max_disp ? ((fabs(max_disp) < Opt_params.conv_max_disp) ? "*" : "") : "o"),
     rms_disp, (Opt_params.i_rms_disp ? ((fabs(rms_disp) < Opt_params.conv_rms_disp) ? "*" : "") : "o"));
 
-  fprintf(outfile, "  ---------------------------------------------------------------------------------------------\n\n");
+  oprintf_out( "  ---------------------------------------------------------------------------------------------\n\n");
 
   // return all forces to canonical place
   if (Opt_params.opt_type == OPT_PARAMS::IRC) {
@@ -258,12 +260,12 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
 void OPT_DATA::summary(void) const {
   double DE, *f, *dq, max_force, max_disp, rms_force, rms_disp;
 
-  fprintf(outfile, "\n  ==> Optimization Summary <==\n\n");
-  fprintf(outfile, "  Measures of convergence in internal coordinates in au.\n");
+  oprintf_out( "\n  ==> Optimization Summary <==\n\n");
+  oprintf_out( "  Measures of convergence in internal coordinates in au.\n");
 
-  fprintf(outfile, "  --------------------------------------------------------------------------------------------------------------- ~\n");
-  fprintf(outfile, "   Step         Total Energy             Delta E       MAX Force       RMS Force        MAX Disp        RMS Disp  ~\n");
-  fprintf(outfile, "  --------------------------------------------------------------------------------------------------------------- ~\n");
+  oprintf_out( "  --------------------------------------------------------------------------------------------------------------- ~\n");
+  oprintf_out( "   Step         Total Energy             Delta E       MAX Force       RMS Force        MAX Disp        RMS Disp  ~\n");
+  oprintf_out( "  --------------------------------------------------------------------------------------------------------------- ~\n");
   for (int i=0; i<iteration; ++i) {
 
     if (i == 0) DE = g_energy(i);
@@ -277,10 +279,10 @@ void OPT_DATA::summary(void) const {
     max_disp = array_abs_max(dq, Nintco);
     rms_disp = array_rms(dq, Nintco);
 
-    fprintf(outfile, "   %4d %20.12lf  %18.12lf    %12.8lf    %12.8lf    %12.8lf    %12.8lf  ~\n", i + 1, g_energy(i),
+    oprintf_out( "   %4d %20.12lf  %18.12lf    %12.8lf    %12.8lf    %12.8lf    %12.8lf  ~\n", i + 1, g_energy(i),
       DE, max_force, rms_force, max_disp, rms_disp); 
   }
-  fprintf(outfile, "  --------------------------------------------------------------------------------------------------------------- ~\n\n");
+  oprintf_out( "  --------------------------------------------------------------------------------------------------------------- ~\n\n");
 }
 
 inline int sign_of_double(double d) {
@@ -293,19 +295,18 @@ inline int sign_of_double(double d) {
 void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
   if (Opt_params.H_update == OPT_PARAMS::BFGS)
-    fprintf(outfile,"\n\tPerforming BFGS update");
+    oprintf_out("\n\tPerforming BFGS update.\n");
   else if (Opt_params.H_update == OPT_PARAMS::MS)
-    fprintf(outfile,"\n\tPerforming Murtagh/Sargent update");
+    oprintf_out("\n\tPerforming Murtagh/Sargent update.\n");
   else if (Opt_params.H_update == OPT_PARAMS::POWELL)
-    fprintf(outfile,"\n\tPerforming Powell update");
+    oprintf_out("\n\tPerforming Powell update.\n");
   else if (Opt_params.H_update == OPT_PARAMS::BOFILL)
-    fprintf(outfile,"\n\tPerforming Bofill update");
+    oprintf_out("\n\tPerforming Bofill update.\n");
   else if (Opt_params.H_update == OPT_PARAMS::NONE) {
-    fprintf(outfile,"\n\tNo Hessian update performed.\n");
+    oprintf_out("\n\tNo Hessian update performed.\n");
     return;
   }
 
-  int i_step, step_start, i, j;
   int step_this = steps.size()-1;
 
   /*** Read/compute current internals and forces ***/
@@ -314,42 +315,83 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
   x = steps[step_this]->g_geom_const_pointer();
 
   mol.set_geom_array(x);
-  q = mol.intco_values();
+  q = mol.coord_values();
   mol.fix_tors_near_180(); // Fix configurations of torsions.
 
-  if (Opt_params.H_update_use_last == 0) { // use all available old gradients
-    step_start = 0;
-  }
-  else {
-    step_start = steps.size() - 1 - Opt_params.H_update_use_last;
-    if (step_start < 0) step_start = 0;
-  }
-
-  // Check to make sure that the last analytical second derivative isn't newer
-  if ( (step_this-step_start) > steps_since_last_H)
-    step_start = step_this - steps_since_last_H;
-
-  fprintf(outfile," with previous %d gradient(s).\n", step_this-step_start);
-
-  double *f_old, *x_old, *q_old, *dq, *dg, *tors_through_180;
+  double *f_old, *x_old, *q_old, *dq, *dg;
   double gq, qq, qz, zz, phi;
+  dq = init_array(Nintco);
+  dg = init_array(Nintco);
+
+  // Don't go further back than the last Hessian calculation 
+  int check_start = step_this - steps_since_last_H;
+  if (check_start < 0) check_start = 0;
+  if (steps_since_last_H)
+    oprintf_out("\tPrevious computed or guess Hessian on step %d.\n", check_start+1);
+
+  // Make list of old geometries to update with.  Check each one to see if it is too close for stability.
+  std::vector<int> use_steps;
+
+  for (int i_step=steps.size()-2; i_step>=check_start; --i_step) {
+
+    // Read/compute old internals and forces
+    f_old = g_forces_pointer(i_step);
+    x_old = g_geom_const_pointer(i_step);
+  
+    mol.set_geom_array(x_old);
+    q_old = mol.coord_values();
+  
+    for (int i=0;i<Nintco;++i) {
+      dq[i] = q[i] - q_old[i];
+      dg[i] = (-1.0) * (f[i] - f_old[i]); // gradients -- not forces!
+    }
+  
+    gq = array_dot(dq, dg, Nintco);
+    qq = array_dot(dq, dq, Nintco);
+
+    // If there is only one left, take it no matter what.
+    if (use_steps.empty() && i_step == check_start) {
+      use_steps.push_back(i_step);
+      break;
+    }
+ 
+    if ( (fabs(gq) < Opt_params.H_update_den_tol) ||(fabs(qq) < Opt_params.H_update_den_tol) ) {
+      oprintf_out("\tDenominators (dg)(dq) or (dq)(dq) are very small.\n");
+      oprintf_out("\t Skipping Hessian update for step %d.\n", i_step+1);
+      continue;
+    }
+  
+    double max_change = array_abs_max(dq, Nintco);
+    if ( max_change > Opt_params.H_update_dq_tol ) {
+      oprintf_out("\tChange in internal coordinate of %5.2e exceeds limit of %5.2e.\n", max_change, Opt_params.H_update_dq_tol );
+      oprintf_out("\t Skipping Hessian update for step %d.\n", i_step+1);
+      continue;
+    }
+    use_steps.push_back(i_step);
+    if (use_steps.size() == Opt_params.H_update_use_last)
+      break;
+  }
+
+  oprintf_out("\tSteps to be used in Hessian update:");
+  for (int i=0; i<use_steps.size(); ++i)
+    oprintf_out(" %d", use_steps[i]+1);
+  oprintf_out("\n");
 
   double **H = g_H_pointer();
   double **H_new = init_matrix(Nintco, Nintco);
 
-  dq = init_array(Nintco);
-  dg = init_array(Nintco);
+  for (int s=0; s<use_steps.size(); ++s) {
 
-  for (i_step=step_start; i_step < step_this; ++i_step) {
+    int i_step = use_steps[s];
 
     // Read/compute old internals and forces
     f_old = g_forces_pointer(i_step);
     x_old = g_geom_const_pointer(i_step);
 
     mol.set_geom_array(x_old);
-    q_old = mol.intco_values();
+    q_old = mol.coord_values();
 
-    for (i=0;i<Nintco;++i) {
+    for (int i=0;i<Nintco;++i) {
       // Turns out you don't have to correct for torsional changes through 180 in the forces.
       dq[i] = q[i] - q_old[i];
       dg[i] = (-1.0) * (f[i] - f_old[i]); // gradients -- not forces!
@@ -358,28 +400,11 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
     gq = array_dot(dq, dg, Nintco);
     qq = array_dot(dq, dq, Nintco);
 
-    // skip Hessian updates with very small denominators (dq)(dq) and (dq)(dg_q)
-    if ( (fabs(gq) < Opt_params.H_update_den_tol) ||(fabs(qq) < Opt_params.H_update_den_tol) ) {
-      fprintf(outfile,"\tDenominators (dg)(dq) or (dq)(dq) are very small.\n");
-      fprintf(outfile,"\t Skipping Hessian update for step %d.\n", i_step + 1);
-      continue;
-    }
-
-    // skip Hessian updates if a dq element is too large ; helps to avoid use of inapplicable data
-    // as well as torsional angles that stray too far from one side to the other of 180
-    double max_change = array_abs_max(dq, Nintco);
-    if ( max_change > Opt_params.H_update_dq_tol ) {
-      fprintf(outfile,"\tChange in internal coordinate of %5.2e exceeds limit of %5.2e.\n",
-        max_change, Opt_params.H_update_dq_tol );
-      fprintf(outfile,"\t Skipping Hessian update for step %d.\n", i_step + 1);
-      continue;
-    }
-
     // See  J. M. Bofill, J. Comp. Chem., Vol. 15, pages 1-11 (1994)
     //  and Helgaker, JCP 2002 for formula.
     if (Opt_params.H_update == OPT_PARAMS::BFGS) {
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j)
+      for (int i=0; i<Nintco; ++i)
+        for (int j=0; j<Nintco; ++j)
           H_new[i][j] = H[i][j] + dg[i] * dg[j] / gq ;
 
       double *Hdq = init_array(Nintco);
@@ -387,8 +412,8 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
       double qHq = array_dot(dq, Hdq, Nintco);
 
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j)
+      for (int i=0; i<Nintco; ++i)
+        for (int j=0; j<Nintco; ++j)
           H_new[i][j] -=  Hdq[i] * Hdq[j] / qHq ;
 
       free_array(Hdq);
@@ -397,13 +422,13 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       double *Z = init_array(Nintco);
       opt_matrix_mult(H, 0, &dq, 1, &Z, 1, Nintco, Nintco, 1, 0);
 
-      for (i=0; i<Nintco; ++i)
+      for (int i=0; i<Nintco; ++i)
         Z[i] = dg[i] - Z[i];
 
       qz = array_dot(dq, Z, Nintco);
 
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j)
+      for (int i=0; i<Nintco; ++i)
+        for (int j=0; j<Nintco; ++j)
           H_new[i][j] = H[i][j] + Z[i] * Z[j] / qz ;
 
       free_array(Z);
@@ -412,13 +437,13 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       double * Z = init_array(Nintco);
       opt_matrix_mult(H, 0, &dq, 1, &Z, 1, Nintco, Nintco, 1, 0);
 
-      for (i=0; i<Nintco; ++i)
+      for (int i=0; i<Nintco; ++i)
         Z[i] = dg[i] - Z[i];
 
       qz = array_dot(dq, Z, Nintco);
 
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j)
+      for (int i=0; i<Nintco; ++i)
+        for (int j=0; j<Nintco; ++j)
           H_new[i][j] = H[i][j] - qz/(qq*qq)*dq[i]*dq[j] + (Z[i]*dq[j] + dq[i]*Z[j])/qq;
 
       free_array(Z);
@@ -428,7 +453,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       double *Z = init_array(Nintco);
       opt_matrix_mult(H, 0, &dq, 1, &Z, 1, Nintco, Nintco, 1, 0);
 
-      for (i=0; i<Nintco; ++i)
+      for (int i=0; i<Nintco; ++i)
         Z[i] = dg[i] - Z[i];
 
       qz = array_dot(dq, Z, Nintco);
@@ -438,12 +463,12 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       if (phi < 0.0) phi = 0.0;
       if (phi > 1.0) phi = 1.0;
 
-      for (i=0; i<Nintco; ++i) // (1-phi)*MS
-        for (j=0; j<Nintco; ++j)
+      for (int i=0; i<Nintco; ++i) // (1-phi)*MS
+        for (int j=0; j<Nintco; ++j)
           H_new[i][j] = H[i][j] + (1.0-phi) * Z[i] * Z[j] / qz ;
 
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j) // (phi * Powell)
+      for (int i=0; i<Nintco; ++i)
+        for (int j=0; j<Nintco; ++j) // (phi * Powell)
           H_new[i][j] += phi * (-1.0*qz/(qq*qq)*dq[i]*dq[j] + (Z[i]*dq[j] + dq[i]*Z[j])/qq);
 
       free_array(Z);
@@ -457,12 +482,12 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       double max;
   
       // compute change in Hessian
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j)
+      for (int i=0; i<Nintco; ++i)
+        for (int j=0; j<Nintco; ++j)
           H_new[i][j] -= H[i][j];
   
-      for (i=0; i<Nintco; ++i) {
-        for (j=0; j<Nintco; ++j) {
+      for (int i=0; i<Nintco; ++i) {
+        for (int j=0; j<Nintco; ++j) {
           double val = fabs(scale_limit*H[i][j]);
           max = ((val > max_limit) ? val : max_limit);
   
@@ -474,8 +499,8 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       }
     }
     else { // copy H_new into H
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j)
+      for (int i=0; i<Nintco; ++i)
+        for (int j=0; j<Nintco; ++j)
           H[i][j] = H_new[i][j];
     }
 
@@ -492,8 +517,8 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
   free_matrix(H_new);
   if (Opt_params.print_lvl >= 2) {
-    fprintf(outfile, "Updated Hessian (in au)\n");
-    print_matrix(outfile, H, Nintco, Nintco);
+    oprintf_out("\nUpdated Hessian (in au)\n");
+    oprint_matrix_out(H, Nintco, Nintco);
   }
   return;
 }
@@ -555,7 +580,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
   bool data_file_present = opt_io_is_present(); // determine if old data file is present
 
   if (!data_file_present) {
-    fprintf(outfile, "\tPrevious optimization step data not found.  Starting new optimization.\n\n");
+    oprintf_out( "\tPrevious optimization step data not found.  Starting new optimization.\n\n");
     iteration = 0;
     steps_since_last_H = 0;
     consecutive_backsteps = 0;
@@ -567,9 +592,9 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
     opt_io_read_entry("Ncart",  (char *) &Ncart_old, sizeof(int));
 
     if (Nintco_old != Nintco)
-      fprintf(outfile, "\tThe number of coordinates has changed.  Ignoring old data.\n");
+      oprintf_out( "\tThe number of coordinates has changed.  Ignoring old data.\n");
     if (Ncart_old != Ncart)
-      fprintf(outfile, "\tThe number of atoms has changed.  Ignoring old data.\n");
+      oprintf_out( "\tThe number of atoms has changed.  Ignoring old data.\n");
 
     if ( (Nintco_old != Nintco) || (Ncart_old != Ncart) ) {
       iteration = 0;
@@ -603,7 +628,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
 void OPT_DATA::write(void) {
   opt_io_open(opt::OPT_IO_OPEN_OLD);
 
-  fprintf(outfile,"\tWriting optimization data to binary file.\n");
+  oprintf_out("\tWriting optimization data to binary file.\n");
   opt_io_write_entry("Nintco", (char *) &Nintco, sizeof(int));
   opt_io_write_entry("Ncart" , (char *) &Ncart , sizeof(int));
   opt_io_write_entry("H", (char *) H[0], Nintco * Nintco * sizeof(double) );
@@ -616,36 +641,57 @@ void OPT_DATA::write(void) {
     steps[i]->write(i+1, Nintco, Ncart);
   opt_io_close(1);
 
-  fflush(outfile);
+  
   return;
 }
 
 // Report on performance of last step
 // Eventually might have this function return false to reject a step
 bool OPT_DATA::previous_step_report(void) const {
-  fprintf(outfile,  "\tCurrent energy   : %20.10lf\n\n", p_Opt_data->g_energy());
+  oprintf_out(  "\tCurrent energy   : %20.10lf\n\n", p_Opt_data->g_energy());
 
-  if (steps.size() == 1) 
+  if (steps.size() == 1) {
+    // optking changes the intrafragment_step_limit keyword value when it changes the trust
+    // radius.  So on the first step, save the initial user-given step size so that it can be
+    // reset to the user-defined value after one molecule is optimized.
+    Opt_params.intrafragment_step_limit_orig = Opt_params.intrafragment_step_limit;
     return true;
+  }
+  bool dont_backup_yet = ((steps.size() < 5) ? true : false);
 
-  fprintf(outfile,"\tEnergy change for the previous step:\n");
-  fprintf(outfile,"\t\tProjected    : %20.10lf\n", p_Opt_data->g_last_DE_predicted());
-  fprintf(outfile,"\t\tActual       : %20.10lf\n",
+  oprintf_out("\tEnergy change for the previous step:\n");
+  oprintf_out("\t\tProjected    : %20.10lf\n", p_Opt_data->g_last_DE_predicted());
+  oprintf_out("\t\tActual       : %20.10lf\n",
       p_Opt_data->g_energy() - p_Opt_data->g_last_energy());
 
   double Energy_ratio = (p_Opt_data->g_energy() - p_Opt_data->g_last_energy()) / g_last_DE_predicted();
+  double Energy_change = p_Opt_data->g_energy() - p_Opt_data->g_last_energy();
+
+  if (Opt_params.print_lvl >= 2)
+    oprintf_out("\tEnergy ratio = %10.5lf\n", Energy_ratio);
 
   // Minimum search
   if (Opt_params.opt_type == OPT_PARAMS::MIN) {
-    if (Energy_ratio < 0.0 && consecutive_backsteps < Opt_params.consecutive_backsteps_allowed) {
-      throw(BAD_STEP_EXCEPT("Energy has increased in a minimization.\n"));
+
+    // Predicted up. Actual down.  OK.  Do nothing.
+    if (p_Opt_data->g_last_DE_predicted() > 0 && Energy_ratio < 0.0) {
+        return true;
     }
-    else if (Energy_ratio < 0.25)
-    {
+    // Actual step is  up.
+    else if (Energy_change > 0) {
+
+      // Always throw exception for bad step.
+      if (Opt_params.dynamic && !dont_backup_yet)
+        throw(BAD_STEP_EXCEPT("Energy has increased in a minimization.\n"));
+      // Not dynamic.  Do limited backsteps only upon request.  Otherwise, keep going.
+      else if (consecutive_backsteps < Opt_params.consecutive_backsteps_allowed)
+        throw(BAD_STEP_EXCEPT("Energy has increased in a minimization.\n"));
+    }
+    // Predicted down.  Actual down.
+    else if (Energy_ratio < 0.25) {
       decrease_trust_radius();
     }
-    else if (Energy_ratio > 0.75)
-    {
+    else if (Energy_ratio > 0.75) {
       increase_trust_radius();
     }
   }
@@ -660,9 +706,10 @@ void OPT_DATA::increase_trust_radius(void) const {
   std::string key = "INTRAFRAG_STEP_LIMIT";
   double max = Opt_params.intrafragment_step_limit_max;
   if (Opt_params.intrafragment_step_limit != max) {
-    double new_val = Opt_params.intrafragment_step_limit * 2;
+    //double new_val = Opt_params.intrafragment_step_limit * 2;
+    double new_val = Opt_params.intrafragment_step_limit * 3;
     Opt_params.intrafragment_step_limit = ((new_val > max) ? max : new_val);
-    fprintf(outfile,"\tEnergy ratio indicates good step: Trust radius increased to %6.3e.\n\n",
+    oprintf_out("\tEnergy ratio indicates good step: Trust radius increased to %6.3e.\n\n",
         Opt_params.intrafragment_step_limit);
 
     // Save new trust radii in environment
@@ -683,7 +730,7 @@ void OPT_DATA::decrease_trust_radius(void) const {
   if (Opt_params.intrafragment_step_limit != min) {
     double new_val = Opt_params.intrafragment_step_limit / 4;
     Opt_params.intrafragment_step_limit = ((new_val < min) ? min : new_val);
-    fprintf(outfile,"\tEnergy ratio indicates iffy step: Trust radius decreased to %6.3e.\n\n",
+    oprintf_out("\tEnergy ratio indicates iffy step: Trust radius decreased to %6.3e.\n\n",
             Opt_params.intrafragment_step_limit);
 #if defined(OPTKING_PACKAGE_PSI)
     psi::Process::environment.options.set_double(module, key, Opt_params.intrafragment_step_limit);
@@ -692,6 +739,21 @@ void OPT_DATA::decrease_trust_radius(void) const {
     rem_write(qchem_limit_val, REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT);
 #endif
   }
+  return;
+}
+
+void OPT_DATA::reset_trust_radius(void) const {
+  std::string module = "OPTKING";
+  std::string key = "INTRAFRAG_STEP_LIMIT";
+
+  Opt_params.intrafragment_step_limit = Opt_params.intrafragment_step_limit_orig;
+
+#if defined(OPTKING_PACKAGE_PSI)
+    psi::Process::environment.options.set_double(module, key, Opt_params.intrafragment_step_limit);
+#elif defined(OPTKING_PACKAGE_QCHEM)
+    int qchem_limit_val = (int) (Opt_params.intrafragment_step_limit * 1000);
+    rem_write(qchem_limit_val, REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT);
+#endif
   return;
 }
 

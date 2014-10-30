@@ -40,7 +40,7 @@ namespace boost{
 }
 
 namespace psi {
-extern FILE *outfile;
+
 
 class DataTypeException : public PsiException
 {

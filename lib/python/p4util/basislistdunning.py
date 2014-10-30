@@ -27,7 +27,7 @@ encode the Dunning basis set orbital definitions in
 orbital bases.
 
 """
-from basislist import *
+from p4util.basislist import *
 
 
 def load_basfam_dunning():

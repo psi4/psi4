@@ -47,8 +47,8 @@ void MP2_CCSD::build_W_mNiJ_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_mNiJ Intermediates ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the W_mNiJ Intermediates ...");
+    
   );
 
   blas->solve("W_mNiJ[oO][oO]{u}  = <[oo]|[oo]>");
@@ -62,8 +62,8 @@ void MP2_CCSD::build_W_mNiJ_intermediates()
   DEBUGGING(3,blas->print("W_mNiJ[oO][aA]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -71,8 +71,8 @@ void MP2_CCSD::build_W_jbme_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_jbme Intermediates ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the W_jbme Intermediates ...");
+    
   );
 
   blas->solve("W_jbme[aa][ov]{u}  = #3241# <[oa]:[va]>");
@@ -102,8 +102,8 @@ void MP2_CCSD::build_W_jbme_intermediates()
   // 
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -111,8 +111,8 @@ void MP2_CCSD::build_W_jBmE_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_jBmE Intermediates ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the W_jBmE Intermediates ...");
+    
   );
 
   blas->solve("W_jBmE[aA][oV]{u}  = #3214# - <[oa]|[av]>");
@@ -135,8 +135,8 @@ void MP2_CCSD::build_W_jBmE_intermediates()
   );
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -144,8 +144,8 @@ void MP2_CCSD::build_W_jbME_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_jbME Intermediates ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the W_jbME Intermediates ...");
+    
   );
 
   blas->solve("W_jbME[aa][OV]{u}  = #3241# <[oa]|[va]>");
@@ -171,8 +171,8 @@ void MP2_CCSD::build_W_jbME_intermediates()
     blas->print("W_jbME[aa][OV]{u}");
   );
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 

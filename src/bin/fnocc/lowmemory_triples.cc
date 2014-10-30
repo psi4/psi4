@@ -23,6 +23,7 @@
 #include"ccsd.h"
 #include"blas.h"
 #include<libmints/wavefunction.h>
+#include<libqt/qt.h>
 #ifdef _OPENMP
    #include<omp.h>
 #endif
@@ -50,14 +51,14 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
      fac = 0.0;
   }
 
-  fprintf(outfile,"\n");
-  fprintf(outfile, "        *******************************************************\n");
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *                  %8s(T)                        *\n",name);
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *******************************************************\n");
-  fprintf(outfile,"\n");
-  fflush(outfile);
+  outfile->Printf("\n");
+  outfile->Printf( "        *******************************************************\n");
+  outfile->Printf( "        *                                                     *\n");
+  outfile->Printf( "        *                  %8s(T)                        *\n",name);
+  outfile->Printf( "        *                                                     *\n");
+  outfile->Printf( "        *******************************************************\n");
+  outfile->Printf("\n");
+  
 
   int o = ndoccact;
   int v = nvirt_no;
@@ -77,33 +78,33 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   }
   memory -= 8L*(2L*o*o*v*v+o*o*o*v+o*v+5L*nthreads*o*o*o);
 
-  fprintf(outfile,"        num_threads =             %9i\n",nthreads);
-  fprintf(outfile,"        available memory =     %9.2lf mb\n",memory/1024./1024.);
-  fprintf(outfile,"        memory requirements =  %9.2lf mb\n",
+  outfile->Printf("        num_threads =             %9i\n",nthreads);
+  outfile->Printf("        available memory =     %9.2lf mb\n",memory/1024./1024.);
+  outfile->Printf("        memory requirements =  %9.2lf mb\n",
            8.*(2.*o*o*v*v+1.*o*o*o*v+(5.*nthreads)*o*o*o+1.*o*v)/1024./1024.);
-  fprintf(outfile,"\n");
-  fflush(outfile);
+  outfile->Printf("\n");
+  
 
   bool threaded = true;
   if (memory<0){
      memory += (nthreads-1)*8L*5L*o*o*o;
      if (nthreads==1){
-        fprintf(outfile,"        Error: not enough memory.\n");
-        fprintf(outfile,"\n");
-        fprintf(outfile,"        (T) requires at least %7.2lf mb\n",
+        outfile->Printf("        Error: not enough memory.\n");
+        outfile->Printf("\n");
+        outfile->Printf("        (T) requires at least %7.2lf mb\n",
              8.*(2.*o*o*v*v+1.*o*o*o*v+5.*o*o*o+1.*o*v)/1024./1024.);
-        fprintf(outfile,"\n");
-        fflush(outfile);
+        outfile->Printf("\n");
+        
         return Failure;
      }
      threaded = false;
      nthreads = 1;
-     fprintf(outfile,"        Not enough memory for explicit threading ... \n");
-     fprintf(outfile,"\n");
-     fprintf(outfile,"        memory requirements =  %9.2lf mb\n",
+     outfile->Printf("        Not enough memory for explicit threading ... \n");
+     outfile->Printf("\n");
+     outfile->Printf("        memory requirements =  %9.2lf mb\n",
               8.*(2.*o*o*v*v+1.*o*o*o*v+(5.)*o*o*o+1.*o*v)/1024./1024.);
-     fprintf(outfile,"\n");
-     fflush(outfile);
+     outfile->Printf("\n");
+     
   }
 
   E2abci = (double**)malloc(nthreads*sizeof(double*));
@@ -148,7 +149,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
      psio->close(PSIF_DCC_T2,1);
   }
 
-  F_DCOPY(o*o*v*v,tb,1,tempt,1);
+  C_DCOPY(o*o*v*v,tb,1,tempt,1);
 
   // might as well use t2's memory
   double*E2klcd = tb;
@@ -184,15 +185,15 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
           }
       }
   }
-  fprintf(outfile,"        Number of abc combinations: %i\n",nabc);
-  fprintf(outfile,"\n");
-  fflush(outfile);
+  outfile->Printf("        Number of abc combinations: %i\n",nabc);
+  outfile->Printf("\n");
+  
   for (int i=0; i<nthreads; i++) etrip[i] = 0.0;
 
-  fprintf(outfile,"        Computing (T) correction...\n");
-  fprintf(outfile,"\n");
-  fprintf(outfile,"        %% complete  total time\n");
-  fflush(outfile);
+  outfile->Printf("        Computing (T) correction...\n");
+  outfile->Printf("\n");
+  outfile->Printf("        %% complete  total time\n");
+  
   /**
     *  if there is enough memory to explicitly thread, do so
     */
@@ -274,7 +275,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
              }
          }
 
-         F_DCOPY(o*o*o,Z[thread],1,Z2[thread],1);
+         C_DCOPY(o*o*o,Z[thread],1,Z2[thread],1);
          double dabc = -F[a+o]-F[b+o]-F[c+o];
          for (int i=0; i<o; i++){
              double dabci = dabc+F[i];
@@ -299,7 +300,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
              }
          }
 
-         F_DCOPY(o*o*o,Z[thread],1,Z3[thread],1);
+         C_DCOPY(o*o*o,Z[thread],1,Z3[thread],1);
          for (int i=0; i<o; i++){
              for (int j=0; j<o; j++){
                  for (int k=0; k<o; k++){
@@ -419,8 +420,8 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
             else if ((double)ind/nabc >= 0.8 && !pct80){ pct80 = 1; print=1;}
             else if ((double)ind/nabc >= 0.9 && !pct90){ pct90 = 1; print=1;}
             if (print){
-               fprintf(outfile,"              %3.1lf  %8d s\n",100.0*ind/nabc,(int)stop-(int)start);
-               fflush(outfile);
+               outfile->Printf("              %3.1lf  %8d s\n",100.0*ind/nabc,(int)stop-(int)start);
+               
             }
          }
          mypsio->close(PSIF_DCC_ABCI4,1);
@@ -428,7 +429,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
      }
   }
   else{
-     fprintf(outfile,"on the to do pile!\n");
+     outfile->Printf("on the to do pile!\n");
      return Failure;
   }
 
@@ -439,22 +440,22 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   // ccsd(t) or qcisd(t)
   if (ccmethod <= 1) {
       et = myet;
-      fprintf(outfile,"\n");
-      fprintf(outfile,"        (T) energy   %s                   %20.12lf\n",space,et);
-      fprintf(outfile,"\n");
-      fprintf(outfile,"        %s(T) correlation energy       %20.12lf\n",name,eccsd+et);
-      fprintf(outfile,"      * %s(T) total energy             %20.12lf\n",name,eccsd+et+escf);
-      fprintf(outfile,"\n");
+      outfile->Printf("\n");
+      outfile->Printf("        (T) energy   %s                   %20.12lf\n",space,et);
+      outfile->Printf("\n");
+      outfile->Printf("        %s(T) correlation energy       %20.12lf\n",name,eccsd+et);
+      outfile->Printf("      * %s(T) total energy             %20.12lf\n",name,eccsd+et+escf);
+      outfile->Printf("\n");
   }else {
       emp4_t = myet;
-      fprintf(outfile,"\n");
-      fprintf(outfile,"        MP4(T) correlation energy:         %20.12lf\n",emp4_t);
-      fprintf(outfile,"\n");
-      fprintf(outfile,"        MP4(SDTQ) correlation energy:      %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+emp4_t);
-      fprintf(outfile,"      * MP4(SDTQ) total energy:            %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+emp4_t+escf);
-      fprintf(outfile,"\n");
+      outfile->Printf("\n");
+      outfile->Printf("        MP4(T) correlation energy:         %20.12lf\n",emp4_t);
+      outfile->Printf("\n");
+      outfile->Printf("        MP4(SDTQ) correlation energy:      %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+emp4_t);
+      outfile->Printf("      * MP4(SDTQ) total energy:            %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+emp4_t+escf);
+      outfile->Printf("\n");
   }
-  fflush(outfile);
+  
 
   delete name;
   delete space;

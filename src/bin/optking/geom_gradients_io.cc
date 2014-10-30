@@ -28,7 +28,8 @@
 #include <cstring>
 #include <sstream>
 #include "molecule.h"
-
+#include "psi4-dec.h"
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -48,6 +49,8 @@
 #endif
 
 namespace opt {
+
+class BROKEN_SYMMETRY_EXCEPT;
 
 using namespace std;
 
@@ -72,10 +75,10 @@ int read_natoms(void) {
   natom = rem_read(REM_NATOMS);
 
   // now substract out EFP fragment atoms ?
-  if (Opt_params.efp_fragments) {
+  if (Opt_params.fb_fragments) {
     int n = ::EFP::GetInstance()->GetNumEFPatoms();
     natom -= n;
-    fprintf(outfile, "\nNumber of atoms besides EFP fragments %d\n", natom);
+    oprintf_out( "\nNumber of atoms besides EFP fragments %d\n", natom);
   }
 
 #endif
@@ -195,26 +198,25 @@ void MOLECULE::read_geom_grad(void) {
         fin >> grad[i][2];
       }
     }
-    psi::WorldComm->sync();
     fin.close();
   } // end try reading geometries
   catch (std::ios_base::failure & bf) {
     printf("Error reading molecular geometry and gradient\n");
-    fprintf(outfile,"Error reading molecular geometry and gradient\n");
+    oprintf_out("Error reading molecular geometry and gradient\n");
     throw(INTCO_EXCEPT("Error reading molecular geometry and gradient"));
   }
 #endif
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
-  int EFPfrag = 0;
-  int EFPatom = 0;
-  if (Opt_params.efp_fragments) {
-    EFPfrag = EFP::GetInstance()->NFragments();
-    std::vector<int> AtomsinEFP = EFP::GetInstance()->NEFPAtoms();
-    for (int i = 0; i < EFPfrag; ++i)
-      EFPatom += AtomsinEFP[i];
-    fprintf(outfile,"\t %d EFP fragments containing %d atoms.\n", EFPfrag, EFPatom);
+  int FBfrag = 0;
+  int FBatom = 0;
+  if (Opt_params.fb_fragments) {
+    FBfrag = EFP::GetInstance()->NFragments();
+    std::vector<int> AtomsinFB = EFP::GetInstance()->NEFPAtoms();
+    for (int i = 0; i < FBfrag; ++i)
+      FBatom += AtomsinFB[i];
+    oprintf_out("\t %d FB fragments containing %d atoms.\n", FBfrag, FBatom);
   }
 
   double *QX;
@@ -224,17 +226,17 @@ void MOLECULE::read_geom_grad(void) {
   ::get_carts(NULL, &QX, &QZ, &QNATOMS, Qnoghosts);
 
   int QNATOMS_real = g_natom();
-  if (QNATOMS_real != (QNATOMS-EFPatom))
+  if (QNATOMS_real != (QNATOMS-FBatom))
     QCrash("Number of computed real atoms is inconsistent.");
 
-  fprintf(outfile, "\tNATOMS (total)=%d (minus EFP)=%d\n", QNATOMS, QNATOMS_real);
+  oprintf_out( "\tNATOMS (total)=%d (minus EFP)=%d\n", QNATOMS, QNATOMS_real);
 
   if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile,"\tCartesian coordinates from ::get_carts().\n");
-    print_array(outfile, QX, 3*QNATOMS);
+    oprintf_out("\tCartesian coordinates from ::get_carts().\n");
+    oprint_array_out(QX, 3*QNATOMS);
   }
 
-  int Numgrad = QNATOMS_real*3 + 6*EFPfrag;
+  int Numgrad = QNATOMS_real*3 + 6*FBfrag;
   double* QGrad = init_array(Numgrad);
 
   ::FileMan_Open_Read(FILE_NUCLEAR_GRADIENT);
@@ -260,7 +262,7 @@ void MOLECULE::read_geom_grad(void) {
 
   }
   // Now read in gradients for EFP fragments
-  for (int f=0; f<EFPfrag; ++f) {
+  for (int f=0; f<FBfrag; ++f) {
 
     double *efp_f = init_array(6);
     for (int i=0; i<6; ++i)
@@ -298,7 +300,15 @@ void MOLECULE::symmetrize_geom(void) {
   // put matrix into environment molecule and it will symmetrize it
   double **geom_2D = g_geom_2D();
   psi::Process::environment.molecule()->set_geometry(geom_2D);
-  psi::Process::environment.molecule()->symmetrize();
+
+  try {
+    psi::Process::environment.molecule()->symmetrize(Opt_params.symm_tol);
+  }
+  catch (psi::PsiException exc) {
+    free_matrix(geom_2D);
+    oprintf_out("Could not symmetrize geometry in OPT::MOLECULE::SYMMETRIZE_GEOM()\n");
+    throw(BROKEN_SYMMETRY_EXCEPT("Broken symmetry in OPT::MOLECULE::SYMMETRIZE_GEOM\n"));
+  }
   free_matrix(geom_2D);
 
   psi::Matrix geom = psi::Process::environment.molecule()->geometry();
@@ -354,12 +364,11 @@ double ** OPT_DATA::read_cartesian_H(void) const {
       for (int j=0; j<Ncart; ++j)
         if_Hcart >> H_cart[i][j];
 
-    psi::WorldComm->sync();
     if_Hcart.close();
   }
   catch (std::ios_base::failure & bf) {
     printf("Error reading cartesian Hessian matrix\n");
-    fprintf(outfile,"Error reading cartesian Hessian matrix\n");
+    oprintf_out("Error reading cartesian Hessian matrix\n");
     throw(INTCO_EXCEPT("Error reading cartesian Hessian matrix"));
   }
 
@@ -370,7 +379,7 @@ double ** OPT_DATA::read_cartesian_H(void) const {
   FileMan_Open_Read(FILE_NUCLEAR_HESSIAN);
   FileMan(FM_READ, FILE_NUCLEAR_HESSIAN, FM_DP, Ncart*Ncart, 0, FM_BEG, Hess);
   FileMan_Close(FILE_NUCLEAR_HESSIAN);
-  //print_matrix(outfile, &Hess, 1, Ncart * Ncart);
+  //oprint_matrix_out(&Hess, 1, Ncart * Ncart);
 
 // instead read from $QCSCRATCH/scr_dir_name/HESS ?
 
@@ -384,13 +393,13 @@ double ** OPT_DATA::read_cartesian_H(void) const {
 #endif
 
   if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile,"\tCartesian Hessian matrix read: \n");
-    print_matrix(outfile, H_cart, Ncart, Ncart);
-    fflush(outfile);
+    oprintf_out("\tCartesian Hessian matrix read: \n");
+    oprint_matrix_out(H_cart, Ncart, Ncart);
+    
   }
   else {
-      fprintf(outfile, "\tCartesian Hessian matrix read in from external file.\n");
-      fflush(outfile);
+      oprintf_out("\tCartesian Hessian matrix read in from external file.\n");
+      
   }
 
   return H_cart;

@@ -75,8 +75,8 @@ namespace psi { namespace ccdensity {
       dpdbuf4 A, B, C, DInts, E, FInts;
 
       if(!params.aobasis) {
-	fprintf(outfile, "\n\tEnergies re-computed from Mulliken density:\n");
-	fprintf(outfile,   "\t-------------------------------------------\n");
+	outfile->Printf( "\n\tEnergies re-computed from Mulliken density:\n");
+	outfile->Printf(   "\t-------------------------------------------\n");
 
 	global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
 	global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
@@ -102,8 +102,8 @@ namespace psi { namespace ccdensity {
 	global_dpd_->file2_close(&F);
 	global_dpd_->file2_close(&D);
 
-	fprintf(outfile, "\tOne-electron energy        = %20.15f\n", one_energy);
-	fflush(outfile);
+	outfile->Printf( "\tOne-electron energy        = %20.15f\n", one_energy);
+	
       }
 
       /* E_ijkl = (2 Gijkl - Gijlk) <ij|kl> */
@@ -118,7 +118,7 @@ namespace psi { namespace ccdensity {
 	global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
 	two_energy = global_dpd_->buf4_dot(&A, &G1);
 	global_dpd_->buf4_close(&A);
-	fprintf(outfile, "\tIJKL energy                = %20.15f\n", two_energy);
+	outfile->Printf( "\tIJKL energy                = %20.15f\n", two_energy);
 	total_two_energy += two_energy;
       }
       global_dpd_->buf4_close(&G1);
@@ -138,7 +138,7 @@ namespace psi { namespace ccdensity {
 	two_energy = global_dpd_->buf4_dot(&E, &G1);
 	global_dpd_->buf4_close(&E);
 	/* The factor of 4 here is necessary because Gijka is multiplied by 1/2 in Gijka.cc */
-	fprintf(outfile, "\tIJKA energy                = %20.15f\n", 4*two_energy);
+	outfile->Printf( "\tIJKA energy                = %20.15f\n", 4*two_energy);
 	total_two_energy += 4*two_energy;
       }
       global_dpd_->buf4_close(&G1);
@@ -162,7 +162,7 @@ namespace psi { namespace ccdensity {
 	global_dpd_->buf4_init(&DInts, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
 	two_energy = 2.0 * global_dpd_->buf4_dot(&DInts, &G1);
 	global_dpd_->buf4_close(&DInts);
-	fprintf(outfile, "\tIJAB energy                = %20.15f\n", two_energy);
+	outfile->Printf( "\tIJAB energy                = %20.15f\n", two_energy);
 	total_two_energy += two_energy;
       }
 
@@ -178,7 +178,7 @@ namespace psi { namespace ccdensity {
 	global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
 	two_energy = 2.0 * global_dpd_->buf4_dot(&C, &G1);
 	global_dpd_->buf4_close(&C);
-	fprintf(outfile, "\tIBJA energy                = %20.15f\n", two_energy);
+	outfile->Printf( "\tIBJA energy                = %20.15f\n", two_energy);
 	total_two_energy += two_energy;
       }
 
@@ -202,7 +202,7 @@ namespace psi { namespace ccdensity {
 	two_energy = global_dpd_->buf4_dot(&FInts, &G1);
 	global_dpd_->buf4_close(&FInts);
 	/* The factor of 4 here is necessary because Gciab is multiplied by 1/2 in Gciab.cc */
-	fprintf(outfile, "\tCIAB energy                = %20.15f\n", 4*two_energy);
+	outfile->Printf( "\tCIAB energy                = %20.15f\n", 4*two_energy);
 	total_two_energy += 4*two_energy;
       }
 
@@ -221,26 +221,26 @@ namespace psi { namespace ccdensity {
 	global_dpd_->buf4_init(&B, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
 	two_energy = global_dpd_->buf4_dot(&B, &G1);
 	global_dpd_->buf4_close(&B);
-	fprintf(outfile, "\tABCD energy                = %20.15f\n", two_energy);
+	outfile->Printf( "\tABCD energy                = %20.15f\n", two_energy);
 	total_two_energy += two_energy;
       }
 
       global_dpd_->buf4_close(&G1);
 
       if(!params.aobasis) {
-	fprintf(outfile, "\tTotal two-electron energy  = %20.15f\n", total_two_energy);
+	outfile->Printf( "\tTotal two-electron energy  = %20.15f\n", total_two_energy);
 	if (params.ground) {
-	  fprintf(outfile, "\tCCSD correlation energy    = %20.15f\n",
+	  outfile->Printf( "\tCCSD correlation energy    = %20.15f\n",
 		  one_energy + total_two_energy);
-	  fprintf(outfile, "\tTotal CCSD energy          = %20.15f\n",
+	  outfile->Printf( "\tTotal CCSD energy          = %20.15f\n",
 		  one_energy + total_two_energy + moinfo.eref);
 	}
 	else {
-	  fprintf(outfile, "\tTotal EOM CCSD correlation energy        = %20.15f\n",
+	  outfile->Printf( "\tTotal EOM CCSD correlation energy        = %20.15f\n",
 		  one_energy + total_two_energy);
-	  fprintf(outfile, "\tCCSD correlation + EOM excitation energy = %20.15f\n",
+	  outfile->Printf( "\tCCSD correlation + EOM excitation energy = %20.15f\n",
 		  moinfo.ecc + params.cceom_energy);
-	  fprintf(outfile, "\tTotal EOM CCSD energy                    = %20.15f\n",
+	  outfile->Printf( "\tTotal EOM CCSD energy                    = %20.15f\n",
 		  one_energy + total_two_energy + moinfo.eref);
 	}
       }

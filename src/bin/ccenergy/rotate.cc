@@ -122,19 +122,19 @@ int rotate(void)
   }
 
   if(fabs(max) <= params.bconv) {
-    fprintf(outfile, "\tBrueckner orbitals converged.  Maximum T1 = %15.12f\n",
+    outfile->Printf( "\tBrueckner orbitals converged.  Maximum T1 = %15.12f\n",
 	    fabs(max));
     chkpt_close();
     return(1);
   }
   else 
-    fprintf(outfile, "\tRotating orbitals.  Maximum T1 = %15.12f\n", fabs(max));
+    outfile->Printf( "\tRotating orbitals.  Maximum T1 = %15.12f\n", fabs(max));
 
   /* grab the SO-basis overlap integrals for later use */
   SO_S = block_matrix(nso, nso);
   ntri = nso * (nso+1)/2;
   scratch = init_array(ntri);
-  stat = iwl_rdone(PSIF_OEI, PSIF_SO_S, scratch, ntri, 0, 0, outfile);
+  stat = iwl_rdone(PSIF_OEI, PSIF_SO_S, scratch, ntri, 0, 0, "outfile");
   for(i=0,ij=0; i < nso; i++)
     for(j=0; j <= i; j++,ij++) {
       SO_S[i][j] = SO_S[j][i] = scratch[ij];
@@ -185,7 +185,7 @@ int rotate(void)
     evals = init_array(nmo);
     work = init_array(nmo*3);
     if((stat = C_DSYEV('v','u', nmo,&(MO_S[0][0]),nmo,evals,work,nmo*3))) {
-      fprintf(outfile, "rotate(): Error in overlap diagonalization. stat = %d\n", stat);
+      outfile->Printf( "rotate(): Error in overlap diagonalization. stat = %d\n", stat);
       throw PsiException("rotate(): Error in overlap diagonalization.", __FILE__, __LINE__);
     }
     S = block_matrix(nmo, nmo);
@@ -227,7 +227,7 @@ int rotate(void)
     Process::environment.wavefunction()->Fb()->set(fock);
 
     /*
-    fprintf(outfile, "\n\tSO-basis Fock matrix:\n");
+    outfile->Printf( "\n\tSO-basis Fock matrix:\n");
     mat_print(fock, nso, nso, outfile);
     */
 
@@ -240,7 +240,7 @@ int rotate(void)
     free_block(X);
 
     /*
-    fprintf(outfile, "\n\tMO-basis Fock matrix:\n");
+    outfile->Printf( "\n\tMO-basis Fock matrix:\n");
     mat_print(fock, nmo, nmo, outfile);
     */
 
@@ -265,10 +265,10 @@ int rotate(void)
 	  Fvv[h][A][B] = fock[a][b];
 
       /*
-      fprintf(outfile, "\n\tOcc-occ Fock matrix for irrep %d:\n", h);
+      outfile->Printf( "\n\tOcc-occ Fock matrix for irrep %d:\n", h);
       mat_print(Foo[h], moinfo.occpi[h], moinfo.occpi[h], outfile);
 
-      fprintf(outfile, "\n\tVir-vir Fock matrix for irrep %d:\n", h);
+      outfile->Printf( "\n\tVir-vir Fock matrix for irrep %d:\n", h);
       mat_print(Fvv[h], moinfo.virtpi[h], moinfo.virtpi[h], outfile);
       */
 
@@ -277,7 +277,7 @@ int rotate(void)
 	work = init_array(3*moinfo.occpi[h]);
 	if((stat = C_DSYEV('v','u', moinfo.occpi[h], &(Foo[h][0][0]), 
 			  moinfo.occpi[h], evals, work, moinfo.occpi[h]*3))) {
-	  fprintf(outfile, "rotate(): Error in Foo[%1d] diagonalization. stat = %d\n", 
+	  outfile->Printf( "rotate(): Error in Foo[%1d] diagonalization. stat = %d\n", 
 		  h, stat);
       throw PsiException("rotate(): Error in Foo diagonalization.", __FILE__, __LINE__);
 	}
@@ -285,7 +285,7 @@ int rotate(void)
 	free(work);
 
 	/*
-	fprintf(outfile, "\n\tEigenfunctions of Occ-occ Fock matrix for irrep %1d:\n", h);
+	outfile->Printf( "\n\tEigenfunctions of Occ-occ Fock matrix for irrep %1d:\n", h);
 	mat_print(Foo[h], moinfo.occpi[h], moinfo.occpi[h], outfile);
 	*/
 
@@ -299,7 +299,7 @@ int rotate(void)
 	work = init_array(3*moinfo.virtpi[h]);
 	if((stat = C_DSYEV('v','u', moinfo.virtpi[h], &(Fvv[h][0][0]), moinfo.virtpi[h], 
 			  evals, work, moinfo.virtpi[h]*3))) {
-	  fprintf(outfile, "rotate(): Error in Fvv[%1d] diagonalization. stat = %d\n", 
+	  outfile->Printf( "rotate(): Error in Fvv[%1d] diagonalization. stat = %d\n", 
 		  h, stat);
       throw PsiException("rotate(): Error in Foo diagonalization.", __FILE__, __LINE__);
 	}
@@ -307,7 +307,7 @@ int rotate(void)
 	free(work);
 
 	/*
-	fprintf(outfile, "\n\tEigenfunctions of Vir-vir Fock matrix for irrep %1d:\n", h);
+	outfile->Printf( "\n\tEigenfunctions of Vir-vir Fock matrix for irrep %1d:\n", h);
 	mat_print(Fvv[h], moinfo.virtpi[h], moinfo.virtpi[h], outfile);
 	*/
 
@@ -325,7 +325,7 @@ int rotate(void)
 
     /* semicanonicalization of the basis */
     /*
-    fprintf(outfile, "\n\tSemicanonical transformation matrix:\n");
+    outfile->Printf( "\n\tSemicanonical transformation matrix:\n");
     mat_print(X, nmo, nmo, outfile);
     */
 
@@ -337,7 +337,7 @@ int rotate(void)
 
     /* Reorder new MO's to Pitzer and write to chkpt */
     /*
-    fprintf(outfile, "\n\tSemicanonical Brueckner orbitals (Pitzer order):\n");
+    outfile->Printf( "\n\tSemicanonical Brueckner orbitals (Pitzer order):\n");
     mat_print(scf_new, nso, nmo, outfile);
     */
 
@@ -372,9 +372,9 @@ int rotate(void)
     free_block(MO_S);
 
     /*
-    fprintf(outfile, "\n\tOriginal SCF MOs:\n");
+    outfile->Printf( "\n\tOriginal SCF MOs:\n");
     mat_print(scf_orig, nso, nmo, outfile);
-    fprintf(outfile, "\n\tNew SCF MOs:\n");
+    outfile->Printf( "\n\tNew SCF MOs:\n");
     mat_print(scf_new, nso, nmo, outfile);
     */
 
@@ -431,7 +431,7 @@ int rotate(void)
     evals = init_array(nmo);
     work = init_array(nmo*3);
     if((stat = C_DSYEV('v','u', nmo,&(MO_S[0][0]),nmo,evals,work,nmo*3))) {
-      fprintf(outfile, "rotate(): Error in overlap diagonalization. stat = %d\n", stat);
+      outfile->Printf( "rotate(): Error in overlap diagonalization. stat = %d\n", stat);
       throw PsiException("rotate(): Error in overlap diagonalization.", __FILE__, __LINE__);
     }
 
@@ -501,7 +501,7 @@ int rotate(void)
     evals = init_array(nmo);
     work = init_array(nmo*3);
     if((stat = C_DSYEV('v','u', nmo,&(MO_S[0][0]),nmo,evals,work,nmo*3))) {
-      fprintf(outfile, "rotate(): Error in overlap diagonalization. stat = %d\n", stat);
+      outfile->Printf( "rotate(): Error in overlap diagonalization. stat = %d\n", stat);
       throw PsiException("rotate(): Error in Foo diagonalization.", __FILE__, __LINE__);
     }
 
@@ -588,7 +588,7 @@ int rotate(void)
 	work = init_array(3*moinfo.aoccpi[h]);
 	if((stat = C_DSYEV('v','u', moinfo.aoccpi[h], &(Foo[h][0][0]), 
 			  moinfo.aoccpi[h], evals, work, moinfo.aoccpi[h]*3))) {
-	  fprintf(outfile, "rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n", 
+	  outfile->Printf( "rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n", 
 		  h, stat);
       throw PsiException("rotate(): Error in Foo diagonalization.", __FILE__, __LINE__);
 	}
@@ -605,7 +605,7 @@ int rotate(void)
 	work = init_array(3*moinfo.avirtpi[h]);
 	if((stat = C_DSYEV('v','u', moinfo.avirtpi[h], &(Fvv[h][0][0]), moinfo.avirtpi[h], 
 			  evals, work, moinfo.avirtpi[h]*3))) {
-	  fprintf(outfile, "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n", 
+	  outfile->Printf( "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n", 
 		  h, stat);
       throw PsiException("rotate(): Error in alpha Fvv diagonalization.", __FILE__, __LINE__);
 	}
@@ -692,7 +692,7 @@ int rotate(void)
 	work = init_array(3*moinfo.boccpi[h]);
 	if((stat = C_DSYEV('v','u', moinfo.boccpi[h], &(Foo[h][0][0]), 
 			  moinfo.boccpi[h], evals, work, moinfo.boccpi[h]*3))) {
-	  fprintf(outfile, "rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n", 
+	  outfile->Printf( "rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n", 
 		  h, stat);
       throw PsiException("rotate(): Error in alpha Foo diagonalization.", __FILE__, __LINE__);
 	}
@@ -709,7 +709,7 @@ int rotate(void)
 	work = init_array(3*moinfo.bvirtpi[h]);
 	if((stat = C_DSYEV('v','u', moinfo.bvirtpi[h], &(Fvv[h][0][0]), moinfo.bvirtpi[h], 
 			  evals, work, moinfo.bvirtpi[h]*3))) {
-	  fprintf(outfile, "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n", 
+	  outfile->Printf( "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n", 
 		  h, stat);
       throw PsiException("rotate(): Error in alpha Fvv diagonalization.", __FILE__, __LINE__);
 	}

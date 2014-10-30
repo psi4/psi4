@@ -142,7 +142,7 @@ public:
 
   // Printing
   void         print();
-  void         print_dpdmatrix(int n, FILE *out);
+  void         print_dpdmatrix(int n, std::string OutFileRMR);
 
   // Memory
   bool         is_allocated();

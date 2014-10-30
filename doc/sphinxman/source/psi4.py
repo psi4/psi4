@@ -18,6 +18,8 @@ def sldkfjksl():
 def plugin_load(sofile):
     return 4
 
+def LibFragHelper():
+    pass
 
 class SuperFunctional():
 

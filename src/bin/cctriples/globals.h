@@ -31,7 +31,7 @@
 #include <libpsio/psio.h>
 
 namespace psi {
-extern FILE* outfile;
+
 namespace cctriples {
 
 /* Global variables */

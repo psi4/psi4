@@ -27,4 +27,5 @@ extent |PSIfours| functionality.
    cbs
    diatomic
    intercalls
+   sowreap
 

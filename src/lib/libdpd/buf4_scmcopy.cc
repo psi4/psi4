@@ -71,7 +71,7 @@ int DPD::buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, double 
             if(rows_per_bucket > InBuf->params->rowtot[h])
                 rows_per_bucket = InBuf->params->rowtot[h];
 
-            if(!rows_per_bucket) dpd_error("buf4_scmcopy: Not enough memory for one row!", stderr);
+            if(!rows_per_bucket) dpd_error("buf4_scmcopy: Not enough memory for one row!", "outfile");
 
             nbuckets = (int) ceil(((double) InBuf->params->rowtot[h])/((double) rows_per_bucket));
 
@@ -81,12 +81,12 @@ int DPD::buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, double 
             if(nbuckets > 1) {
                 incore = 0;
 #if DPD_DEBUG
-                fprintf(stderr, "buf4_scmcopy: memory information.\n");
-                fprintf(stderr, "buf4_scmcopy: rowtot[%d] = %d.\n", h, InBuf->params->rowtot[h]);
-                fprintf(stderr, "buf4_scmcopy: nbuckets = %d\n", nbuckets);
-                fprintf(stderr, "buf4_scmcopy: rows_per_bucket = %d\n", rows_per_bucket);
-                fprintf(stderr, "buf4_scmcopy: rows_left = %d\n", rows_left);
-                fprintf(stderr, "buf4_scmcopy: out-of-core algorithm used\n");
+                outfile->Printf( "buf4_scmcopy: memory information.\n");
+                outfile->Printf( "buf4_scmcopy: rowtot[%d] = %d.\n", h, InBuf->params->rowtot[h]);
+                outfile->Printf( "buf4_scmcopy: nbuckets = %d\n", nbuckets);
+                outfile->Printf( "buf4_scmcopy: rows_per_bucket = %d\n", rows_per_bucket);
+                outfile->Printf( "buf4_scmcopy: rows_left = %d\n", rows_left);
+                outfile->Printf( "buf4_scmcopy: out-of-core algorithm used\n");
 #endif
             }
 

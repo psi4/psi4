@@ -58,7 +58,7 @@ PSIO::PSIO()
     state_ = 1;
 
     if (psio_unit == NULL) {
-        fprintf(stderr, "Error in PSIO_INIT()!\n");
+        ::fprintf(stderr, "Error in PSIO_INIT()!\n");
         exit(_error_exit_code_);
     }
 
@@ -102,12 +102,7 @@ PSIO::PSIO()
     filecfg_kwd("DEFAULT", "NAME", -1, psi_file_prefix);
     filecfg_kwd("DEFAULT", "NVOLUME", -1, "1");
 
-
-    // Get the process ID and convert to string.
-    pid_t pid = getpid();
-    std::stringstream ss;
-    ss << pid;
-    pid_ = ss.str();
+    pid_ = getpid();
 }
 
 boost::shared_ptr<PSIO> PSIO::shared_object()
@@ -120,7 +115,7 @@ int psio_init(void) {
         boost::shared_ptr<PSIO> temp(new PSIO);
         _default_psio_lib_ = temp;
         if (_default_psio_lib_ == 0) {
-            fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");
+            ::fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");
             exit(PSIO::_error_exit_code_);
         }
     }
@@ -128,7 +123,7 @@ int psio_init(void) {
         boost::shared_ptr<PSIOManager> temp(new PSIOManager);
         _default_psio_manager_ = temp;
         if (_default_psio_manager_ == 0) {
-            fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");
+            ::fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");
             exit(PSIO::_error_exit_code_);
         }
     }

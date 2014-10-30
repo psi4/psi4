@@ -22,17 +22,17 @@
 
 /*! \file    H_guess.cc
     \ingroup optking
-    \brief   generates empirical Hessian according to
-      Schlegel, Theor. Chim. Acta, 66, 333 (1984) or
+    \brief   generates diagonal empirical Hessians in a.u. such as 
+      Schlegel, Theor. Chim. Acta, 66, 333 (1984) and
       Fischer and Almlof, J. Phys. Chem., 96, 9770 (1992).
-      currently returned in atomic units
 */
 
 #include "frag.h"
 #include "cov_radii.h"
 #include "physconst.h"
 #include "v3d.h"
-
+#include "psi4-dec.h"
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -47,7 +47,7 @@ namespace opt {
 using namespace v3d;
 
 // return period from atomic number
-int period(int Z) { 
+static inline int period(int Z) { 
   if      (Z <=  2) return 1;
   else if (Z <= 10) return 2;
   else if (Z <= 18) return 3;
@@ -55,15 +55,18 @@ int period(int Z) {
   else              return 5;
 }
 
-// return generic distance from two periods; I modifed based on DZP RHF
-inline double r_ref_table(int perA, int perB) {
+// return generic distance from two periods;
+// based on DZP RHF, I have suggested: 1.38 1.9 2.53
+// my values certainly work better for water
+static inline double r_ref_table(int perA, int perB) {
   if (perA == 1) {
-    if (perB == 1) return 1.38;     // Lindh used 1.35;
-    else if (perB == 2) return 1.9; // Lindh used 2.10; O-H=1.78; C-H=2.05
+    if (perB == 1) return 1.35;     // Lindh 1.35
+    else if (perB == 2) return 2.1; // Lindh 2.1
     else return 2.53;
   }
   else if (perA == 2) {
-    if (perB == 1) return 1.9;      // Lindh used 2.10; O-H=1.78; C-H=2.05
+// based on DZP RHF, I have suggested: 1.9 2.87 3.40
+    if (perB == 1) return 2.1;      // Lindh 2.1
     else if (perB == 2) return 2.87;
     else return 3.40;
   }
@@ -74,7 +77,7 @@ inline double r_ref_table(int perA, int perB) {
 }
 
 // return Lindh alpha value from two periods
-inline double alpha_table(int perA, int perB) {
+static inline double alpha_table(int perA, int perB) {
   if (perA == 1) {
     if (perB == 1)
       return 1.000;
@@ -102,28 +105,32 @@ double FRAG::Lindh_rho(int A, int B, double RAB) const {
 }
 
 // covalent bond length in bohr from atomic numbers
-inline double Rcov(double ZA, double ZB) {
+static inline double Rcov(double ZA, double ZB) {
   return (cov_radii[(int) ZA] + cov_radii[(int) ZB]) / _bohr2angstroms;
 }
 
+// This function generates various diagonal Hessian guesses.
 double ** FRAG::H_guess(void) {
-  int i, j, a, b, c, d, cnt = 0, perA, perB;
-  double rABcov, rBCcov, rBDcov;
-  double A, B, C, D, L, E, val;
 
   double **R = init_matrix(natom, natom);
-  for (int A=0; A<natom; ++A)
-    for (int B=0; B<natom; ++B)
-      R[A][B] = v3d_dist(geom[A], geom[B]);
+  for (int i=0; i<natom; ++i)
+    for (int j=i+1; j<natom; ++j)
+      R[i][j] = R[j][i] = v3d_dist(geom[i], geom[j]);
 
-  double *f = init_array(intcos.size());
+  // to hold diagonal force constant guesses for simples
+  double *f = init_array(coords.simples.size());
+
+  int cnt = 0;
 
   // Form diagonal Hessian in simple internals
   if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL) {
-    for (i=0; i<intcos.size(); ++i) {
-      SIMPLE *q = intcos.at(i);
+    for (int i=0; i<coords.simples.size(); ++i) {
+      SIMPLE_COORDINATE *q = coords.simples.at(i);
 
-      switch (q->g_type()) { 
+      int a,b,c;
+      double A,B,rBCcov;
+
+      switch (q->g_type()) {
 
         case (stre_type) :
           if (q->is_hbond()) f[cnt++] = 0.03;
@@ -152,11 +159,7 @@ double ** FRAG::H_guess(void) {
           b = q->g_atom(1);
           c = q->g_atom(2);
 
-          if ( (((int) Z[a]) == 1) || (((int) Z[c]) == 1) )
-            val = 0.160;
-          else
-            val = 0.250;
-          f[cnt++] = val;
+          f[cnt++] = ( ( (((int) Z[a]) == 1) || (((int) Z[c]) == 1) ) ? 0.160 : 0.250);
         break;
 
         case (tors_type) :
@@ -169,14 +172,24 @@ double ** FRAG::H_guess(void) {
           f[cnt++] = (A - (B*(R[b][c] - rBCcov)));
         break;
 
+        case (cart_type) :
+          f[cnt++] = 0.1;
+        break;
+
+        default:
+          oprintf_out("H_guess encountered unknown internal type.\n");
+          f[cnt++] = 1.0;
       } // end switch coordinate type
-    } // loop over intcos
+    } // loop over coords.simples
   } // end Schlegel
   else if (Opt_params.intrafragment_H == OPT_PARAMS::FISCHER) {
-    for (i=0; i<intcos.size(); ++i) {
-      SIMPLE *q = intcos.at(i);
+    for (int i=0; i<coords.simples.size(); ++i) {
+      SIMPLE_COORDINATE *q = coords.simples.at(i);
 
-      switch (q->g_type()) { 
+      int a,b,c,L;
+      double A,B,C,D,E,rABcov, rBCcov;
+
+      switch (q->g_type()) {
 
         case (stre_type) :
           if (q->is_hbond()) f[cnt++] = 0.03;
@@ -186,7 +199,8 @@ double ** FRAG::H_guess(void) {
   
             rABcov = Rcov(Z[a], Z[b]);
   
-            A = 0.3601; B = 1.944;
+            A = 0.3601; 
+            B = 1.944;
             f[cnt++] = A * exp(-B*(R[a][b] - rABcov)); 
           }
         break;
@@ -199,7 +213,7 @@ double ** FRAG::H_guess(void) {
           rABcov = Rcov(Z[a], Z[b]);
           rBCcov = Rcov(Z[b], Z[c]);
 
-          A = 0.089; B = 0.11; C = 0.44; D = -0.42;
+          A = 0.089; B =  0.11; C =  0.44; D = -0.42;
           f[cnt++] = A + B/(pow(rABcov*rBCcov, D)) *
             exp(-C*( R[a][b] + R[b][c] - rABcov - rBCcov));
         break;
@@ -212,23 +226,31 @@ double ** FRAG::H_guess(void) {
 
           // count number of additional bonds on central atoms
           L = 0;
-          for (j=0; j<natom; ++j) {
+          for (int j=0; j<natom; ++j) {
             if (j == c) continue;
             if (connectivity[b][j]) ++L;
           }
-          for (j=0; j<natom; ++j) {
+          for (int j=0; j<natom; ++j) {
             if (j == b) continue;
             if (connectivity[c][j]) ++L;
           }
           A = 0.0015; B = 14.0; C = 2.85; D = 0.57; E = 4.00;
           f[cnt++] = A + B * pow(L,D) / pow(R[b][c] * rBCcov, E) * exp(-C * (R[b][c] - rBCcov));
         break;
-      } // end switch intcos
-    } // end loop intcos
+
+        case (cart_type) :
+          f[cnt++] = 0.1;
+        break;
+
+        default:
+          oprintf_out("H_guess encountered unknown internal type.\n");
+          f[cnt++] = 1.0;
+      } // end switch simples
+    } // end loop simples
   } // end Fischer
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE) {
-    for (i=0; i<intcos.size(); ++i) {
-      SIMPLE *q = intcos.at(i);
+    for (int i=0; i<coords.simples.size(); ++i) {
+      SIMPLE_COORDINATE *q = coords.simples.at(i);
       switch (q->g_type()) {
         case (stre_type) :
           f[cnt++] = 0.5;
@@ -241,18 +263,27 @@ double ** FRAG::H_guess(void) {
         case (tors_type) :
           f[cnt++] = 0.1;
         break;
+
+        case (cart_type) :
+          f[cnt++] = 0.1;
+        break;
+
+        default:
+          oprintf_out("H_guess encountered unknown internal type.\n");
+          f[cnt++] = 1.0;
       }
     }
   }
-  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH) {
+  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH_SIMPLE) {
 
     const double k_r   = 0.45;
     const double k_phi = 0.15;
     const double k_tau = 0.005;
-    double k;
 
-    for (i=0; i<intcos.size(); ++i) {
-      SIMPLE * q = intcos.at(i);
+    for (int i=0; i<coords.simples.size(); ++i) {
+      SIMPLE_COORDINATE * q = coords.simples.at(i);
+
+      int a,b,c,d;
 
       switch (q->g_type()) { 
 
@@ -266,8 +297,7 @@ double ** FRAG::H_guess(void) {
           a = q->g_atom(0);
           b = q->g_atom(1);
           c = q->g_atom(2);
-          f[cnt++] = k_phi * Lindh_rho(a, b, R[a][b])
-                    * Lindh_rho(b, c, R[b][c]);
+          f[cnt++] = k_phi * Lindh_rho(a, b, R[a][b]) * Lindh_rho(b, c, R[b][c]);
         break;
 
         case (tors_type) :
@@ -275,20 +305,39 @@ double ** FRAG::H_guess(void) {
           b = q->g_atom(1);
           c = q->g_atom(2);
           d = q->g_atom(3);
-          f[cnt++] = k_tau * Lindh_rho(a, b, R[a][b])
-                    * Lindh_rho(b, c, R[b][c])
-                    * Lindh_rho(c, d, R[c][d]);
+          f[cnt++] = k_tau * Lindh_rho(a, b, R[a][b]) * Lindh_rho(b, c, R[b][c]) * Lindh_rho(c, d, R[c][d]);
         break;
+
+        case (cart_type) :
+          f[cnt++] = 0.1;
+        break;
+
+        default:
+          oprintf_out("H_guess encountered unknown internal type.\n");
+          f[cnt++] = 1.0;
       }
     }
+  }
+  else {
+    oprintf_out("FRAG::H_guess(): Unknown Hessian guess type.\n");
   }
 
   free_matrix(R);
 
-  double **H = init_matrix(intcos.size(), intcos.size());
-  for (i=0; i<intcos.size(); ++i)
-    H[i][i] = f[i];
+  if (Opt_params.print_lvl > 1) {
+    oprintf_out("diagonal Hessian values for simple coordinates.\n");
+    oprint_array_out(f, coords.simples.size());
+  }
+
+  // all off-diagonal entries are zero, so this seem silly
+  double **H_simple = init_matrix(coords.simples.size(), coords.simples.size());
+  for (int i=0; i<coords.simples.size(); ++i)
+    H_simple[i][i] = f[i];
   free_array(f);
+
+  double **H = coords.transform_simples_to_combo(H_simple);
+  free_matrix(H_simple);
+
   return H;
 }
 

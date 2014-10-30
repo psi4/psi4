@@ -32,7 +32,8 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
-
+#include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 /*
@@ -51,9 +52,11 @@ void DPD::cc3_sigma_RHF(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
                    int do_singles, dpdbuf4 *Dints, dpdfile2 *SIA,
                    int do_doubles, dpdfile2 *FME, dpdbuf4 *WmAEf, dpdbuf4 *WMnIe,
                    dpdbuf4 *SIjAb, int *occpi, int *occ_off, int *virtpi, int *vir_off,
-                   double omega, FILE *outfile, int newtrips)
+                   double omega, std::string out, int newtrips)
 {
-    int h, nirreps;
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   int h, nirreps;
     int Gi, Gj, Gk, Gl, Ga, Gb, Gc, Gd;
     int i, j, k, l, a, b, c, d;
     int I, J, K, L, A, B, C, D;
@@ -100,7 +103,7 @@ void DPD::cc3_sigma_RHF(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     GW = WmAEf->file.my_irrep;
     GS = SIjAb->file.my_irrep;
     if (GS != (GX3^GW)) {
-        fprintf(outfile,"problem with irreps in cc3_sigma_RHF()\n");
+        outfile->Printf("problem with irreps in cc3_sigma_RHF()\n");
         exit(1);
     }
     if (do_singles) {

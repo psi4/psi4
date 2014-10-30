@@ -86,9 +86,9 @@ void kinetic(void)
   /*** Transform the kinetic energy integrals to the MO basis ***/
 
   t = init_array(noei);
-  stat = iwl_rdone(PSIF_OEI,PSIF_SO_T,t,noei,0,0,outfile);
+  stat = iwl_rdone(PSIF_OEI,PSIF_SO_T,t,noei,0,0,"outfile");
   s = init_array(noei);
-  stat = iwl_rdone(PSIF_OEI,PSIF_SO_S,s,noei,0,0,outfile);
+  stat = iwl_rdone(PSIF_OEI,PSIF_SO_S,s,noei,0,0,"outfile");
 
   T = block_matrix(nmo,nmo);
   S = block_matrix(nmo,nmo);
@@ -127,17 +127,17 @@ void kinetic(void)
   vref = moinfo.eref - tref;
   vcorr = moinfo.ecc - tcorr;
   
-  fprintf(outfile,"\n\tVirial Theorem Data:\n");
-  fprintf(outfile,  "\t--------------------\n");
-  fprintf(outfile,"\tKinetic energy (ref)   = %20.15f\n", tref);
-  fprintf(outfile,"\tKinetic energy (corr)  = %20.15f\n", tcorr);
-  fprintf(outfile,"\tKinetic energy (total) = %20.15f\n", ttot);
+  outfile->Printf("\n\tVirial Theorem Data:\n");
+  outfile->Printf(  "\t--------------------\n");
+  outfile->Printf("\tKinetic energy (ref)   = %20.15f\n", tref);
+  outfile->Printf("\tKinetic energy (corr)  = %20.15f\n", tcorr);
+  outfile->Printf("\tKinetic energy (total) = %20.15f\n", ttot);
 
-  fprintf(outfile,"\t-V/T (ref)             = %20.15f\n", -vref/tref);
-  fprintf(outfile,"\t-V/T (corr)            = %20.15f\n", -vcorr/tcorr);
-  fprintf(outfile,"\t-V/T (total)           = %20.15f\n", -vtot/ttot);
+  outfile->Printf("\t-V/T (ref)             = %20.15f\n", -vref/tref);
+  outfile->Printf("\t-V/T (corr)            = %20.15f\n", -vcorr/tcorr);
+  outfile->Printf("\t-V/T (total)           = %20.15f\n", -vtot/ttot);
 
-  fflush(outfile);
+  
 
   /*** Release memory ***/
   free_block(X);

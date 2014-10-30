@@ -133,7 +133,7 @@ void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
     }
 
     if (molecule_.get() == 0) {
-        fprintf(outfile, "  Active molecule not set!");
+        outfile->Printf( "  Active molecule not set!");
         throw PSIEXCEPTION("Active molecule not set!");
     }
 
@@ -229,7 +229,7 @@ int MintsHelper::nbf() const
 
 void MintsHelper::integrals()
 {
-    fprintf(outfile, " MINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
+    outfile->Printf( " MINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
 
     // Get ERI object
     std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
@@ -238,20 +238,20 @@ void MintsHelper::integrals()
     boost::shared_ptr<TwoBodySOInt> eri(new TwoBodySOInt(tb, integral_));
 
     // Print out some useful information
-    fprintf(outfile, "   Calculation information:\n");
-    fprintf(outfile, "      Number of atoms:                %4d\n", molecule_->natom());
-    fprintf(outfile, "      Number of AO shells:            %4d\n", basisset_->nshell());
-    fprintf(outfile, "      Number of SO shells:            %4d\n", sobasis_->nshell());
-    fprintf(outfile, "      Number of primitives:           %4d\n", basisset_->nprimitive());
-    fprintf(outfile, "      Number of atomic orbitals:      %4d\n", basisset_->nao());
-    fprintf(outfile, "      Number of basis functions:      %4d\n\n", basisset_->nbf());
-    fprintf(outfile, "      Number of irreps:               %4d\n", sobasis_->nirrep());
-    fprintf(outfile, "      Integral cutoff                 %4.2e\n", cutoff_);
-    fprintf(outfile, "      Number of functions per irrep: [");
+    outfile->Printf( "   Calculation information:\n");
+    outfile->Printf( "      Number of atoms:                %4d\n", molecule_->natom());
+    outfile->Printf( "      Number of AO shells:            %4d\n", basisset_->nshell());
+    outfile->Printf( "      Number of SO shells:            %4d\n", sobasis_->nshell());
+    outfile->Printf( "      Number of primitives:           %4d\n", basisset_->nprimitive());
+    outfile->Printf( "      Number of atomic orbitals:      %4d\n", basisset_->nao());
+    outfile->Printf( "      Number of basis functions:      %4d\n\n", basisset_->nbf());
+    outfile->Printf( "      Number of irreps:               %4d\n", sobasis_->nirrep());
+    outfile->Printf( "      Integral cutoff                 %4.2e\n", cutoff_);
+    outfile->Printf( "      Number of functions per irrep: [");
     for (int i=0; i<sobasis_->nirrep(); ++i) {
-        fprintf(outfile, "%4d ", sobasis_->nfunction_in_irrep(i));
+        outfile->Printf( "%4d ", sobasis_->nfunction_in_irrep(i));
     }
-    fprintf(outfile, "]\n\n");
+    outfile->Printf( "]\n\n");
 
     // Compute and dump one-electron SO integrals.
 
@@ -276,7 +276,7 @@ void MintsHelper::integrals()
         m->save(psio_, PSIF_OEI);
     }
 
-    fprintf(outfile, "      Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
+    outfile->Printf( "      Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
                      "        stored in file %d.\n\n", PSIF_OEI);
 
     // Open the IWL buffer where we will store the integrals.
@@ -284,7 +284,7 @@ void MintsHelper::integrals()
     IWLWriter writer(ERIOUT);
 
     // Let the user know what we're doing.
-    fprintf(outfile, "      Computing two-electron integrals..."); fflush(outfile);
+    outfile->Printf( "      Computing two-electron integrals..."); 
 
     SOShellCombinationsIterator shellIter(sobasis_, sobasis_, sobasis_, sobasis_);
     for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
@@ -298,8 +298,8 @@ void MintsHelper::integrals()
     ERIOUT.set_keep_flag(true);
     ERIOUT.close();
 
-    fprintf(outfile, "done\n");
-    fprintf(outfile, "      Computed %lu non-zero two-electron integrals.\n"
+    outfile->Printf( "done\n");
+    outfile->Printf( "      Computed %lu non-zero two-electron integrals.\n"
                      "        Stored in file %d.\n\n", writer.count(), PSIF_SO_TEI);
 }
 
@@ -317,7 +317,7 @@ void MintsHelper::integrals_erf(double w)
     boost::shared_ptr<TwoBodySOInt> erf(new TwoBodySOInt(tb, integral_));
 
     // Let the user know what we're doing.
-    fprintf(outfile, "      Computing non-zero ERF integrals (omega = %.3f)...", omega); fflush(outfile);
+    outfile->Printf( "      Computing non-zero ERF integrals (omega = %.3f)...", omega); 
 
     SOShellCombinationsIterator shellIter(sobasis_, sobasis_, sobasis_, sobasis_);
     for (shellIter.first(); shellIter.is_done() == false; shellIter.next())
@@ -330,8 +330,8 @@ void MintsHelper::integrals_erf(double w)
     ERIOUT.set_keep_flag(true);
     ERIOUT.close();
 
-    fprintf(outfile, "done\n");
-    fprintf(outfile, "      Computed %lu non-zero ERF integrals.\n"
+    outfile->Printf( "done\n");
+    outfile->Printf( "      Computed %lu non-zero ERF integrals.\n"
                      "        Stored in file %d.\n\n", writer.count(), PSIF_SO_ERF_TEI);
 }
 
@@ -349,7 +349,7 @@ void MintsHelper::integrals_erfc(double w)
     boost::shared_ptr<TwoBodySOInt> erf(new TwoBodySOInt(tb, integral_));
 
     // Let the user know what we're doing.
-    fprintf(outfile, "      Computing non-zero ERFComplement integrals..."); fflush(outfile);
+    outfile->Printf( "      Computing non-zero ERFComplement integrals..."); 
 
     SOShellCombinationsIterator shellIter(sobasis_, sobasis_, sobasis_, sobasis_);
     for (shellIter.first(); shellIter.is_done() == false; shellIter.next())
@@ -362,41 +362,44 @@ void MintsHelper::integrals_erfc(double w)
     ERIOUT.set_keep_flag(true);
     ERIOUT.close();
 
-    fprintf(outfile, "done\n");
-    fprintf(outfile, "      Computed %lu non-zero ERFComplement integrals.\n"
+    outfile->Printf( "done\n");
+    outfile->Printf( "      Computed %lu non-zero ERFComplement integrals.\n"
                      "        Stored in file %d.\n\n", writer.count(), PSIF_SO_ERFC_TEI);
 }
 
 
 void MintsHelper::one_electron_integrals()
 {
-    fprintf(outfile, " OEINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
+    outfile->Printf( " OEINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
 
     // Print out some useful information
-    fprintf(outfile, "   Calculation information:\n");
-    fprintf(outfile, "      Number of atoms:                %4d\n", molecule_->natom());
-    fprintf(outfile, "      Number of AO shells:            %4d\n", basisset_->nshell());
-    fprintf(outfile, "      Number of SO shells:            %4d\n", sobasis_->nshell());
-    fprintf(outfile, "      Number of primitives:           %4d\n", basisset_->nprimitive());
-    fprintf(outfile, "      Number of atomic orbitals:      %4d\n", basisset_->nao());
-    fprintf(outfile, "      Number of basis functions:      %4d\n\n", basisset_->nbf());
-    fprintf(outfile, "      Number of irreps:               %4d\n", sobasis_->nirrep());
-    fprintf(outfile, "      Number of functions per irrep: [");
+    outfile->Printf( "   Calculation information:\n");
+    outfile->Printf( "      Number of atoms:                %4d\n", molecule_->natom());
+    outfile->Printf( "      Number of AO shells:            %4d\n", basisset_->nshell());
+    outfile->Printf( "      Number of SO shells:            %4d\n", sobasis_->nshell());
+    outfile->Printf( "      Number of primitives:           %4d\n", basisset_->nprimitive());
+    outfile->Printf( "      Number of atomic orbitals:      %4d\n", basisset_->nao());
+    outfile->Printf( "      Number of basis functions:      %4d\n\n", basisset_->nbf());
+    outfile->Printf( "      Number of irreps:               %4d\n", sobasis_->nirrep());
+    outfile->Printf( "      Number of functions per irrep: [");
     for (int i=0; i<sobasis_->nirrep(); ++i) {
-        fprintf(outfile, "%4d ", sobasis_->nfunction_in_irrep(i));
+        outfile->Printf( "%4d ", sobasis_->nfunction_in_irrep(i));
     }
-    fprintf(outfile, "]\n\n");
+    outfile->Printf( "]\n\n");
 
     // Compute and dump one-electron SO integrals.
 
     // Overlap
     so_overlap()->save(psio_, PSIF_OEI);
+    if (options_.get_str("RELATIVISTIC") == "NO"){
+        // Kinetic
+        so_kinetic()->save(psio_, PSIF_OEI);
 
-    // Kinetic
-    so_kinetic()->save(psio_, PSIF_OEI);
-
-    // Potential
-    so_potential()->save(psio_, PSIF_OEI);
+        // Potential
+        so_potential()->save(psio_, PSIF_OEI);
+    }else if (options_.get_str("RELATIVISTIC") == "X2C"){
+        outfile->Printf( "      Using modified relativistic integrals from X2C\n");
+    }
 
     // Dipoles
     std::vector<SharedMatrix> dipole_mats = so_dipole();
@@ -410,7 +413,7 @@ void MintsHelper::one_electron_integrals()
         m->save(psio_, PSIF_OEI);
     }
 
-    fprintf(outfile, "      Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
+    outfile->Printf( "      Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
                      "        stored in file %d.\n\n", PSIF_OEI);
 
 }
@@ -788,36 +791,36 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations)
 
             if (perturb_with == "DIPOLE_X") {
                 if (msymm.component_symmetry(0) != 0) {
-                    fprintf(outfile, "  WARNING: Requested mu(x) perturbation, but mu(x) is not symmetric.\n");
+                    outfile->Printf( "  WARNING: Requested mu(x) perturbation, but mu(x) is not symmetric.\n");
                 }
                 else {
-                    fprintf(outfile, "  Perturbing V by %f mu(x).\n", lambda);
+                    outfile->Printf( "  Perturbing V by %f mu(x).\n", lambda);
                     dipoles[0]->scale(lambda);
                     potential_mat->add(dipoles[0]);
                 }
             }
             else if (perturb_with == "DIPOLE_Y") {
                 if (msymm.component_symmetry(1) != 0) {
-                    fprintf(outfile, "  WARNING: Requested mu(y) perturbation, but mu(y) is not symmetric.\n");
+                    outfile->Printf( "  WARNING: Requested mu(y) perturbation, but mu(y) is not symmetric.\n");
                 }
                 else {
-                    fprintf(outfile, "  Perturbing V by %f mu(y).\n", lambda);
+                    outfile->Printf( "  Perturbing V by %f mu(y).\n", lambda);
                     dipoles[1]->scale(lambda);
                     potential_mat->add(dipoles[1]);
                 }
             }
             else if (perturb_with == "DIPOLE_Z") {
                 if (msymm.component_symmetry(2) != 0) {
-                    fprintf(outfile, "  WARNING: Requested mu(z) perturbation, but mu(z) is not symmetric.\n");
+                    outfile->Printf( "  WARNING: Requested mu(z) perturbation, but mu(z) is not symmetric.\n");
                 }
                 else {
-                    fprintf(outfile, "  Perturbing V by %f mu(z).\n", lambda);
+                    outfile->Printf( "  Perturbing V by %f mu(z).\n", lambda);
                     dipoles[2]->scale(lambda);
                     potential_mat->add(dipoles[2]);
                 }
             }
             else {
-                fprintf(outfile, "  MintsHelper doesn't understand the requested perturbation, might be done in SCF.");
+                outfile->Printf( "  MintsHelper doesn't understand the requested perturbation, might be done in SCF.");
             }
         }
     }

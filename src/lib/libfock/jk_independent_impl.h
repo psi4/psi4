@@ -41,12 +41,12 @@ void JKIndependent<JDriver, KDriver>::compute_JK()
     //J_ao_ = j_driver_.J();
     J_ = j_driver_.J();
     
-    //fprintf(outfile, "J_ao in jk_independent\n");
+    //outfile->Printf( "J_ao in jk_independent\n");
     //J_ao_[0]->print(outfile);
     if (!do_separately_ && do_K_) {
       std::cout << "Doing independent K computation with J driver.\n";
       //K_ao_ = j_driver_.K();
-      //fprintf(outfile, "K_ao in jk_independent\n");
+      //outfile->Printf( "K_ao in jk_independent\n");
       //K_ao_[0]->print(outfile);
       K_ = j_driver_.K();
     }
@@ -118,12 +118,12 @@ void JKIndependent<JDriver, KDriver>::print_header() const
 {
   
   if (print_) {
-    fprintf(outfile, "  ==> Independent J and K computations <==\n\n");
-    fprintf(outfile, "Coulomb computation: \n");
+    outfile->Printf( "  ==> Independent J and K computations <==\n\n");
+    outfile->Printf( "Coulomb computation: \n");
     
     j_driver_.print_header();
     
-    fprintf(outfile, "Exchange computation: \n");
+    outfile->Printf( "Exchange computation: \n");
     
     k_driver_.print_header();
     

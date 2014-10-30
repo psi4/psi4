@@ -130,8 +130,8 @@ void d_corr(void)
 	  global_dpd_->buf4_close(&U);
 	  global_dpd_->buf4_close(&Z);
 
-	  /*	fprintf(outfile, "Singlet: irrep = %d; root = %d; e1 = %20.14f\n", h, root, e1); */
-	  /*	  fprintf(outfile, "Singlet: irrep = %d; root = %d; e2 = %20.14f\n", h, root, e2); */
+	  /*	outfile->Printf( "Singlet: irrep = %d; root = %d; e1 = %20.14f\n", h, root, e1); */
+	  /*	  outfile->Printf( "Singlet: irrep = %d; root = %d; e2 = %20.14f\n", h, root, e2); */
 	  singlet_d[h][root] = e1 + e2;
 
 	  if(params.local) { /* compute the weak-pair E2 correction */
@@ -211,8 +211,8 @@ void d_corr(void)
 	  dpd_buf4_close(&Z);
 	*/
 
-	/*	fprintf(outfile, "Triplet: irrep = %d; root = %d; e1 = %20.14f\n", h, root, e1); */
-	/* fprintf(outfile, "Triplet: irrep = %d; root = %d; e1 = %20.14f\n", h, root, e2); */
+	/*	outfile->Printf( "Triplet: irrep = %d; root = %d; e1 = %20.14f\n", h, root, e1); */
+	/* outfile->Printf( "Triplet: irrep = %d; root = %d; e1 = %20.14f\n", h, root, e2); */
 
 	/*	triplet_d[h][root] = e1 + e2; */
       }

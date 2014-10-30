@@ -82,7 +82,7 @@ void rzero(int C_irr, int *converged) {
     if(params.wfn == "EOM_CC2") {
       sprintf(E_lbl, "EOM CC2 Energy for root %d %d", C_irr, R_index);
       if(psio_tocscan(PSIF_CC_INFO, E_lbl) == NULL) {
-        fprintf(outfile,"No EOM CC2 Energy found in CC_INFO.  Not normalizing R.\n");
+        outfile->Printf("No EOM CC2 Energy found in CC_INFO.  Not normalizing R.\n");
         return;
       }
       psio_read_entry(PSIF_CC_INFO, E_lbl, (char *) &(energy), sizeof(double));
@@ -90,7 +90,7 @@ void rzero(int C_irr, int *converged) {
     else if(params.wfn == "EOM_CCSD") {
       sprintf(E_lbl, "EOM CCSD Energy for root %d %d", C_irr, R_index);
       if(psio_tocscan(PSIF_CC_INFO, E_lbl) == NULL) {
-        fprintf(outfile,"No EOM CCSD Energy found in CC_INFO.  Not normalizing R.\n");
+        outfile->Printf("No EOM CCSD Energy found in CC_INFO.  Not normalizing R.\n");
         return;
       }
       psio_read_entry(PSIF_CC_INFO, E_lbl, (char *) &(energy), sizeof(double));
@@ -98,7 +98,7 @@ void rzero(int C_irr, int *converged) {
     else if(params.wfn == "EOM_CC3") {
       sprintf(E_lbl, "EOM CC3 Energy for root %d %d", C_irr, R_index);
       if(psio_tocscan(PSIF_CC_INFO, E_lbl) == NULL) {
-        fprintf(outfile,"No EOM CC3 Energy found in CC_INFO.  Not normalizing R.\n");
+        outfile->Printf("No EOM CC3 Energy found in CC_INFO.  Not normalizing R.\n");
         return;
       }
       psio_read_entry(PSIF_CC_INFO, E_lbl, (char *) &(energy), sizeof(double));
@@ -196,7 +196,7 @@ void rzero(int C_irr, int *converged) {
 
     norm = dot_C(&RIA, &Ria, &fRIJAB, &fRijab, &fRIjAb);
     norm += rzero * rzero;
-    fprintf(outfile,"<R|R> = %20.16lf\n",norm);
+    outfile->Printf("<R|R> = %20.16lf\n",norm);
 
 /* just debugging with converged solutions - also my need a sort_C() */
 /*
@@ -216,17 +216,17 @@ dpd_buf4_copy(&fRIjAb, EOM_CMnEf, "CMnEf 0");
     global_dpd_->buf4_close(&fRIjAb);
 
     if(params.wfn == "EOM_CC2") {
-      fprintf(outfile,"EOM CC2 R0 for root %d = %15.11lf\n", R_index, rzero);
+      outfile->Printf("EOM CC2 R0 for root %d = %15.11lf\n", R_index, rzero);
       sprintf(lbl, "EOM CC2 R0 for root %d %d", C_irr, R_index);
       psio_write_entry(PSIF_CC_INFO, lbl, (char *) &rzero, sizeof(double));
     }
     else if(params.wfn == "EOM_CCSD") {
-      fprintf(outfile,"EOM CCSD R0 for root %d = %15.11lf\n", R_index, rzero);
+      outfile->Printf("EOM CCSD R0 for root %d = %15.11lf\n", R_index, rzero);
       sprintf(lbl, "EOM CCSD R0 for root %d %d", C_irr, R_index);
       psio_write_entry(PSIF_CC_INFO, lbl, (char *) &rzero, sizeof(double));
     }
     else if(params.wfn == "EOM_CC3") {
-      fprintf(outfile,"EOM CC3 R0 for root %d = %15.11lf\n", R_index, rzero);
+      outfile->Printf("EOM CC3 R0 for root %d = %15.11lf\n", R_index, rzero);
       sprintf(lbl, "EOM CC3 R0 for root %d %d", C_irr, R_index);
       psio_write_entry(PSIF_CC_INFO, lbl, (char *) &rzero, sizeof(double));
     }
@@ -246,19 +246,19 @@ dpd_buf4_copy(&fRIjAb, EOM_CMnEf, "CMnEf 0");
         global_dpd_->buf4_init(&Lijab, PSIF_CC_LAMPS, L_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, "Lijab");
         global_dpd_->buf4_init(&LIjAb, PSIF_CC_LAMPS, L_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, "LIjAb");
   
-        fprintf(outfile,"\nROHF orthogonality test\n");
-        fprintf(outfile,"<L0|R0>            = %15.10lf\n", eom_params.L0 * rzero);
+        outfile->Printf("\nROHF orthogonality test\n");
+        outfile->Printf("<L0|R0>            = %15.10lf\n", eom_params.L0 * rzero);
         dot_IA = global_dpd_->file2_dot(&LIA, &RIA);
-        fprintf(outfile,"<LIA|RIA>          = %15.10lf\n", dot_IA);
+        outfile->Printf("<LIA|RIA>          = %15.10lf\n", dot_IA);
         dot_ia = global_dpd_->file2_dot(&Lia, &Ria);
-        fprintf(outfile,"<Lia|Ria>          = %15.10lf\n", dot_ia);
+        outfile->Printf("<Lia|Ria>          = %15.10lf\n", dot_ia);
         dot_IJAB = global_dpd_->buf4_dot(&LIJAB, &RIJAB);
-        fprintf(outfile,"<LIJAB|RIJAB>      = %15.10lf\n", dot_IJAB);
+        outfile->Printf("<LIJAB|RIJAB>      = %15.10lf\n", dot_IJAB);
         dot_ijab = global_dpd_->buf4_dot(&Lijab, &Rijab);
-        fprintf(outfile,"<Lijab|Rijab>      = %15.10lf\n", dot_ijab);
+        outfile->Printf("<Lijab|Rijab>      = %15.10lf\n", dot_ijab);
         dot_IjAb = global_dpd_->buf4_dot(&LIjAb, &RIjAb);
-        fprintf(outfile,"<LIjAb|RIjAb>      = %15.10lf\n", dot_IjAb);
-        fprintf(outfile,"<L|R>              = %15.10lf\n", (eom_params.L0 * rzero)
+        outfile->Printf("<LIjAb|RIjAb>      = %15.10lf\n", dot_IjAb);
+        outfile->Printf("<L|R>              = %15.10lf\n", (eom_params.L0 * rzero)
             + dot_IA + dot_ia + dot_IJAB + dot_ijab + dot_IjAb);
   
         global_dpd_->file2_close(&LIA);
@@ -273,7 +273,7 @@ dpd_buf4_copy(&fRIjAb, EOM_CMnEf, "CMnEf 0");
         global_dpd_->buf4_close(&RIjAb);
       }
       else {
-        fprintf(outfile,"\nOverlap <R|L> zero by symmetry\n");
+        outfile->Printf("\nOverlap <R|L> zero by symmetry\n");
       }
     } /* end dot_with_L loop */
   }
@@ -303,7 +303,7 @@ void rzero_rhf(int C_irr, int *converged) {
     if(params.wfn == "EOM_CC2") {
       sprintf(E_lbl, "EOM CC2 Energy for root %d %d", C_irr, R_index);
       if(psio_tocscan(PSIF_CC_INFO, E_lbl) == NULL) { 
-        fprintf(outfile,"No EOM CC2 Energy found in CC_INFO.  Not normalizing R.\n");
+        outfile->Printf("No EOM CC2 Energy found in CC_INFO.  Not normalizing R.\n");
         return;
       }
       psio_read_entry(PSIF_CC_INFO, E_lbl, (char *) &(energy), sizeof(double));
@@ -311,7 +311,7 @@ void rzero_rhf(int C_irr, int *converged) {
     else if(params.wfn == "EOM_CCSD") {
       sprintf(E_lbl, "EOM CCSD Energy for root %d %d", C_irr, R_index);
       if(psio_tocscan(PSIF_CC_INFO, E_lbl) == NULL) { 
-        fprintf(outfile,"No EOM CCSD Energy found in CC_INFO.  Not normalizing R.\n");
+        outfile->Printf("No EOM CCSD Energy found in CC_INFO.  Not normalizing R.\n");
         return;
       }
       psio_read_entry(PSIF_CC_INFO, E_lbl, (char *) &(energy), sizeof(double));
@@ -319,7 +319,7 @@ void rzero_rhf(int C_irr, int *converged) {
     else if(params.wfn == "EOM_CC3") {
       sprintf(E_lbl, "EOM CC3 Energy for root %d %d", C_irr, R_index);
       if(psio_tocscan(PSIF_CC_INFO, E_lbl) == NULL) { 
-        fprintf(outfile,"No EOM CC3 Energy found in CC_INFO.  Not normalizing R.\n");
+        outfile->Printf("No EOM CC3 Energy found in CC_INFO.  Not normalizing R.\n");
         return;
       }
       psio_read_entry(PSIF_CC_INFO, E_lbl, (char *) &(energy), sizeof(double));
@@ -407,17 +407,17 @@ dpd_buf4_copy(&RIjAb, EOM_CMnEf, "CMnEf 0");
     global_dpd_->buf4_close(&RIjbA);
 
     if(params.wfn == "EOM_CC2") {
-      fprintf(outfile,"EOM CC2 R0 for root %d = %15.11lf\n", R_index, rzero);
+      outfile->Printf("EOM CC2 R0 for root %d = %15.11lf\n", R_index, rzero);
       sprintf(lbl, "EOM CC2 R0 for root %d %d", C_irr, R_index);
       psio_write_entry(PSIF_CC_INFO, lbl, (char *) &rzero, sizeof(double));
     }
     else if(params.wfn == "EOM_CCSD") {
-      fprintf(outfile,"EOM CCSD R0 for root %d = %15.11lf\n", R_index, rzero);
+      outfile->Printf("EOM CCSD R0 for root %d = %15.11lf\n", R_index, rzero);
       sprintf(lbl, "EOM CCSD R0 for root %d %d", C_irr, R_index);
       psio_write_entry(PSIF_CC_INFO, lbl, (char *) &rzero, sizeof(double));
     }
     else if(params.wfn == "EOM_CC3") {
-      fprintf(outfile,"EOM CC3 R0 for root %d = %15.11lf\n", R_index, rzero);
+      outfile->Printf("EOM CC3 R0 for root %d = %15.11lf\n", R_index, rzero);
       sprintf(lbl, "EOM CC3 R0 for root %d %d", C_irr, R_index);
       psio_write_entry(PSIF_CC_INFO, lbl, (char *) &rzero, sizeof(double));
     }
@@ -465,7 +465,7 @@ dpd_buf4_copy(&RIjAb, EOM_CMnEf, "CMnEf 0");
     norm += rzero * rzero;
 
 #ifdef EOM_DEBUG
-    fprintf(outfile,"Norm with produced ROHF-like quantities = %15.10lf\n", norm);
+    outfile->Printf("Norm with produced ROHF-like quantities = %15.10lf\n", norm);
     dpd_file2_init(&RIA, CC_RAMPS, C_irr, 0, 1, R1A_lbl);
     dpd_file2_print(&RIA, outfile);
     dpd_file2_close(&RIA);
@@ -488,14 +488,14 @@ dpd_buf4_copy(&RIjAb, EOM_CMnEf, "CMnEf 0");
         global_dpd_->buf4_close(&LIjAb);
   
         dotval = r1 + r2 + (eom_params.L0 * rzero);
-        fprintf(outfile,"Performing RHF orthogonality test\n");
-        fprintf(outfile,"<L0|R0>              = %15.10lf\n", eom_params.L0 * rzero);
-        fprintf(outfile,"2*<LIA|RIA>          = %15.10lf\n", r1);
-        fprintf(outfile,"<LIjAb|2RIjAb-RIjbA> = %15.10lf\n", r2);
-        fprintf(outfile,"<L|R>                = %15.10lf\n", dotval);
+        outfile->Printf("Performing RHF orthogonality test\n");
+        outfile->Printf("<L0|R0>              = %15.10lf\n", eom_params.L0 * rzero);
+        outfile->Printf("2*<LIA|RIA>          = %15.10lf\n", r1);
+        outfile->Printf("<LIjAb|2RIjAb-RIjbA> = %15.10lf\n", r2);
+        outfile->Printf("<L|R>                = %15.10lf\n", dotval);
       }
       else {
-        fprintf(outfile,"<L|R> zero by symmetry\n");
+        outfile->Printf("<L|R> zero by symmetry\n");
       }
       if (C_irr == L_irr ) {
        /* double check orthogonality rohf-like */
@@ -529,14 +529,14 @@ dpd_buf4_copy(&RIjAb, EOM_CMnEf, "CMnEf 0");
         global_dpd_->buf4_close(&Lijab);
         global_dpd_->buf4_close(&LIjAb);
 
-        fprintf(outfile,"\nROHF-like orthogonality test\n");
-        fprintf(outfile,"<L0|R0>              = %15.10lf\n", eom_params.L0 * rzero);
-        fprintf(outfile,"<LIA|RIA>            = %15.10lf\n", dot_IA);
-        fprintf(outfile,"<Lia|Ria>            = %15.10lf\n", dot_ia);
-        fprintf(outfile,"<LIJAB|RIJAB>        = %15.10lf\n", dot_IJAB);
-        fprintf(outfile,"<Lijab|Rijab>        = %15.10lf\n", dot_ijab);
-        fprintf(outfile,"<LIjAb|RIjAb>        = %15.10lf\n", dot_IjAb);
-        fprintf(outfile,"<L|R>                = %15.10lf\n", eom_params.L0 * rzero +
+        outfile->Printf("\nROHF-like orthogonality test\n");
+        outfile->Printf("<L0|R0>              = %15.10lf\n", eom_params.L0 * rzero);
+        outfile->Printf("<LIA|RIA>            = %15.10lf\n", dot_IA);
+        outfile->Printf("<Lia|Ria>            = %15.10lf\n", dot_ia);
+        outfile->Printf("<LIJAB|RIJAB>        = %15.10lf\n", dot_IJAB);
+        outfile->Printf("<Lijab|Rijab>        = %15.10lf\n", dot_ijab);
+        outfile->Printf("<LIjAb|RIjAb>        = %15.10lf\n", dot_IjAb);
+        outfile->Printf("<L|R>                = %15.10lf\n", eom_params.L0 * rzero +
         dot_IA + dot_ia + dot_IJAB + dot_ijab + dot_IjAb);
       }
     } /* end dot with L, <L|R> overlap checks */
