@@ -67,7 +67,7 @@
 #cmakedefine HAVE_BUILTIN_CONSTANT_P
 
 /* Restrict keyword definition */
-#cmakedefine restrict @restrict@
+#cmakedefine restrict
 
 #endif /* _psi_src_psiconfig_h */
 
