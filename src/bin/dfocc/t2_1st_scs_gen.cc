@@ -42,8 +42,7 @@ if (reference_ == "RESTRICTED") {
     // Build amplitudes in Mulliken order 
     t2p_1new = SharedTensor2d(new Tensor2d("T2_1new(ia,jb)", naoccA, navirA, naoccA, navirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_iajb_chem_directAA(K);
+    tei_iajb_chem_directAA(K);
     t2p_1new->copy(K);
     K.reset();
 
@@ -102,20 +101,14 @@ if (reference_ == "RESTRICTED") {
 
 else if (reference_ == "UNRESTRICTED") {
     // T2AA
-    if (conv_tei_type == "DISK") {
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
-        K->read(psio_, PSIF_DFOCC_INTS);
-    }
-    else {
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
-        tei_iajb_chem_directAA(L);
-        M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA));
-        M->sort(1324, L, 1.0, 0.0);
-        L.reset();
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
-        tei_pqrs_anti_symm_direct(K, M);
-        M.reset();
-    }
+    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    tei_iajb_chem_directAA(L);
+    M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    M->sort(1324, L, 1.0, 0.0);
+    L.reset();
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
+    tei_pqrs_anti_symm_direct(K, M);
+    M.reset();
     t2_1newAA = SharedTensor2d(new Tensor2d("T2_1new <IJ|AB>", naoccA, naoccA, navirA, navirA));
     t2_1newAA->copy(K);
     K.reset();
@@ -156,20 +149,14 @@ else if (reference_ == "UNRESTRICTED") {
     t2p_1.reset();
 
     // T2BB
-    if (conv_tei_type == "DISK") {
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
-        K->read(psio_, PSIF_DFOCC_INTS);
-    }
-    else {
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB));
-        tei_iajb_chem_directBB(L);
-        M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB));
-        M->sort(1324, L, 1.0, 0.0);
-        L.reset();
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
-        tei_pqrs_anti_symm_direct(K, M);
-        M.reset();
-    }
+    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB));
+    tei_iajb_chem_directBB(L);
+    M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB));
+    M->sort(1324, L, 1.0, 0.0);
+    L.reset();
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
+    tei_pqrs_anti_symm_direct(K, M);
+    M.reset();
     t2_1newBB = SharedTensor2d(new Tensor2d("T2_1new <ij|ab>", naoccB, naoccB, navirB, navirB));
     t2_1newBB->copy(K);
     K.reset();
@@ -210,17 +197,11 @@ else if (reference_ == "UNRESTRICTED") {
     t2p_1.reset();
 
     // T2AB
-    if (conv_tei_type == "DISK") {
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-        K->read(psio_, PSIF_DFOCC_INTS);
-    }
-    else {
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB));
-        tei_iajb_chem_directAB(L);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-        K->sort(1324, L, 1.0, 0.0);
-        L.reset();
-    }
+    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB));
+    tei_iajb_chem_directAB(L);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+    K->sort(1324, L, 1.0, 0.0);
+    L.reset();
     t2_1newAB = SharedTensor2d(new Tensor2d("T2_1new <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     t2_1newAB->copy(K);
     K.reset();

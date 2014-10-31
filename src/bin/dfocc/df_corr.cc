@@ -47,7 +47,7 @@ void DFOCC::trans_corr()
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     trans_ab = 1;
-    if (orb_opt_ == "TRUE" || dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
+    if (orb_opt_ == "TRUE" || dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
         // Form B(Q,ij)
         timer_on("Form B(Q,ij)");
         b_oo();

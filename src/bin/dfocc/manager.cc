@@ -55,30 +55,8 @@ void DFOCC::omp2_manager()
         g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
         g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
 
-        if (conv_tei_type == "DISK") { 
-           tei_oooo_chem_ref();
-           tei_ooov_chem_ref();
-           tei_oovv_chem_ref();
-           tei_ovov_chem_ref(); 
-           if (reference_ == "UNRESTRICTED") {
-            tei_oooo_phys_ref();
-            tei_ooov_phys_ref();
-            tei_oovv_phys_ref();
-            tei_ovov_phys_ref();
-            tei_oooo_anti_symm_ref();
-            tei_ooov_anti_symm_ref();
-            tei_oovv_anti_symm_ref();
-            tei_ovov_anti_symm_ref();
-           }
-
-           tei_iajb_chem();
-           //tei_ijab_chem();// for Hessian
-           if (reference_ == "UNRESTRICTED") {
-               tei_ijab_phys();
-               tei_ijab_anti_symm();
-           }
-        }// if (conv_tei_type == "DISK")  
-           fock();
+        // Fock 
+        fock();
 
         // QCHF
         if (qchf_ == "TRUE") qchf();
@@ -156,30 +134,7 @@ void DFOCC::omp2_manager()
 	   outfile->Printf("\tSwitching to the standard DF-MP2 computation... \n");
 	   
            trans_corr();
-        if (conv_tei_type == "DISK") { 
-           tei_iajb_chem();
-           if (reference_ == "UNRESTRICTED") {
-               tei_ijab_phys();
-               tei_ijab_anti_symm();
-           }
-        }// if (conv_tei_type == "DISK") 
            trans_ref();
-        if (conv_tei_type == "DISK") { 
-           tei_oooo_chem_ref();
-           tei_ooov_chem_ref();
-           tei_oovv_chem_ref();
-           tei_ovov_chem_ref();
-           if (reference_ == "UNRESTRICTED") {
-            tei_oooo_phys_ref();
-            tei_ooov_phys_ref();
-            tei_oovv_phys_ref();
-            tei_ovov_phys_ref();
-            tei_oooo_anti_symm_ref();
-            tei_ooov_anti_symm_ref();
-            tei_oovv_anti_symm_ref();
-            tei_ovov_anti_symm_ref();
-           }
-        }// if (conv_tei_type == "DISK") 
            fock();
 	   t2_1st_sc();
            conver = 1;
@@ -330,15 +285,7 @@ void DFOCC::mp2_manager()
         // ROHF REF
         //outfile->Printf("\tI am here.\n"); 
         if (reference == "ROHF") t1_1st_sc();
-
-        if (conv_tei_type == "DISK") { 
-            tei_iajb_chem();
-            if (reference_ == "UNRESTRICTED") {
-                tei_ijab_phys();
-                tei_ijab_anti_symm();
-            }
-        }// if (conv_tei_type == "DISK")  
-        if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE" && comput_s2_ == "FALSE") mp2_direct();
+        if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && comput_s2_ == "FALSE") mp2_direct();
         else {
              fock();
              if (mp2_amp_type_ == "DIRECT") mp2_direct();
@@ -394,7 +341,7 @@ void DFOCC::mp2_manager()
         }
 
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
+        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
             outfile->Printf("\n\tComputing unrelaxed response density matrices...\n");
             
  	    omp2_opdm();
@@ -402,25 +349,120 @@ void DFOCC::mp2_manager()
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
+            //if (ekt_ip_ == "TRUE") ekt_ip(); 
 
-            /*
-            if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
-                ekt_ip();
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
-                ekt_ip();
-            }
-
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
-                ekt_ea();
-            }
-            */
-        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") 
+        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
 }// end mp2_manager 
 
+
+//======================================================================
+//             CCSD Manager
+//======================================================================             
+void DFOCC::ccsd_manager()
+{
+        time4grad = 0;// means i will not compute the gradient
+	mo_optimized = 0;// means MOs are not optimized
+        timer_on("DF CC Integrals");
+        df_corr();
+        if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && comput_s2_ == "FALSE" && qchf_ == "FALSE") {
+            trans_mp2();
+        }
+        else {
+            trans_corr();
+            df_ref();
+            trans_ref();
+            outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
+
+            // memalloc for density intermediates
+            Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+            g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
+            g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
+            g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
+            g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+            if (reference == "ROHF") {
+                g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
+            }
+        }
+        outfile->Printf("\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
+        
+        timer_off("DF CC Integrals");
+
+        // QCHF
+        if (qchf_ == "TRUE") qchf();
+
+        // ROHF REF
+        //outfile->Printf("\tI am here.\n"); 
+        if (reference == "ROHF") t1_1st_sc();
+        if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && comput_s2_ == "FALSE") mp2_direct();
+        else {
+             fock();
+             if (mp2_amp_type_ == "DIRECT") mp2_direct();
+             else { 
+	         t2_1st_sc();
+                 mp2_energy();
+             }
+        }
+	Emp2L=Emp2;
+        EcorrL=Emp2L-Escf;
+	
+	outfile->Printf("\n");
+	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (DF-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... \n"); 
+	outfile->Printf("\t======================================================================= \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCSN-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+	if (reference_ == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
+	if (reference_ == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
+	outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
+	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
+	outfile->Printf("\t======================================================================= \n");
+	
+	Process::environment.globals["CURRENT ENERGY"] = Emp2;
+	Process::environment.globals["DF-MP2 TOTAL ENERGY"] = Emp2;
+	Process::environment.globals["DF-SCS-MP2 TOTAL ENERGY"] = Escsmp2;
+	Process::environment.globals["DF-SOS-MP2 TOTAL ENERGY"] = Esosmp2;
+	Process::environment.globals["DF-SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+
+        Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
+        Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp2 - Escf;
+        Process::environment.globals["DF-MP2 CORRELATION ENERGY"] = Emp2 - Escf;
+        Process::environment.globals["DF-SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
+        Process::environment.globals["DF-SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
+        Process::environment.globals["DF-SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+
+        Process::environment.globals["DF-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        Process::environment.globals["DF-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
+
+        // S2
+        //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED" && dertype == "NONE") s2_response();
+        if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") {
+            if (reference == "UHF" || reference == "UKS") s2_response();
+        }
+
+        // Compute Analytic Gradients
+        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
+            outfile->Printf("\n\tComputing unrelaxed response density matrices...\n");
+            
+ 	    omp2_opdm();
+	    omp2_tpdm();
+            prepare4grad();
+            if (oeprop_ == "TRUE") oeprop();
+            if (dertype == "FIRST") dfgrad();
+            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+
+        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
+
+}// end ccsd_manager 
 
 //======================================================================
 //             OMP3 Manager
@@ -578,14 +620,13 @@ void DFOCC::omp3_manager()
         }
 
         // EKT
-        if (ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") { 
+        if (ekt_ip_ == "TRUE") { 
             if (orbs_already_sc == 1) {
 	        omp3_response_pdms();
 	        gfock();
             }
             gfock_diag();
             if (ekt_ip_ == "TRUE") ekt_ip();
-            if (ekt_ea_ == "TRUE") ekt_ea();
         }
 
         outfile->Printf("\n"); 
@@ -861,7 +902,7 @@ void DFOCC::mp3_manager()
 	}
 
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
             time4grad = 1;
 	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
             outfile->Printf("\tComputing response density matrices...\n");
@@ -878,20 +919,11 @@ void DFOCC::mp3_manager()
 	    mograd();
             coord_grad();
 
-            if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
-                ekt_ip();
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
+            if (ekt_ip_ == "TRUE") {
                 ekt_ip();
             }
 
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+            else if (ekt_ip_ == "FALSE") {
 	        outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
 	        
             }
@@ -1004,14 +1036,13 @@ void DFOCC::ocepa_manager()
         if (orbs_already_opt == 1) EcepaL = Ecepa;
 
         // EKT
-        if (ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") { 
+        if (ekt_ip_ == "TRUE") { 
             if (orbs_already_opt == 1) {
 	        ocepa_response_pdms();
 	        gfock();
             }
             gfock_diag();
             if (ekt_ip_ == "TRUE") ekt_ip();
-            if (ekt_ea_ == "TRUE") ekt_ea();
         }
 
 	outfile->Printf("\n");
@@ -1154,7 +1185,7 @@ void DFOCC::cepa_manager()
         //EcepaL = Ecepa;
         
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
             time4grad = 1;
 	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
             outfile->Printf("\tComputing response density matrices...\n");
@@ -1171,20 +1202,11 @@ void DFOCC::cepa_manager()
 	    mograd();
             coord_grad();
 
-            if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
-                ekt_ip();
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
+            if (ekt_ip_ == "TRUE") {
                 ekt_ip();
             }
 
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+            else if (ekt_ip_ == "FALSE") {
 	        outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
 	        
             }
@@ -1330,14 +1352,13 @@ void DFOCC::omp2_5_manager()
         }
 
         // EKT
-        if (ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") { 
+        if (ekt_ip_ == "TRUE") { 
             if (orbs_already_sc == 1) {
 	        omp3_response_pdms();
 	        gfock();
             }
             gfock_diag();
             if (ekt_ip_ == "TRUE") ekt_ip();
-            if (ekt_ea_ == "TRUE") ekt_ea();
         }
 
         outfile->Printf("\n"); 
@@ -1508,7 +1529,7 @@ void DFOCC::mp2_5_manager()
 	Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L-Escf;
 
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
             time4grad = 1;
 	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
             outfile->Printf("\tComputing response density matrices...\n");
@@ -1525,20 +1546,11 @@ void DFOCC::mp2_5_manager()
 	    mograd();
             coord_grad();
 
-            if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
-                ekt_ip();
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
+            if (ekt_ip_ == "TRUE") {
                 ekt_ip();
             }
 
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+            else if (ekt_ip_ == "FALSE"") {
 	        outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
 	        
             }
