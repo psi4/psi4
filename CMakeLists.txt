@@ -80,11 +80,6 @@ if(LDFLAGS)
    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LDFLAGS}")
 endif()
 
-#On Ubuntu -lm needs to be last...
-if(UNIX)
-   link_libraries(m)
-endif(UNIX)
-
 # Dynamic linking header
 check_include_files(dlfcn.h HAVE_DLFCN_H)
 # MKL_Free_Buffers NEEDS TO BE TESTED
@@ -195,6 +190,9 @@ if(NOT Boost_FOUND)
    	set(Boost_${_COMP}_LIBRARY libboost_${_component}-${Boost_LIB_VERSION}.a)
    	list(APPEND Boost_LIBRARIES ${Boost_${_COMP}_LIBRARY})
    endforeach()
+   if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+      list(APPEND Boost_LIBRARIES rt)
+   endif()
 endif()
 link_directories("${Boost_LIBRARY_DIRS}")
 include_directories(SYSTEM "${Boost_INCLUDE_DIRS}")
