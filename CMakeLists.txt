@@ -34,7 +34,7 @@ set(EXTERNAL_LIBS)
 set(restrict "")
 
 # Include CMake modules as needed
-#include(ConfigVersion)
+include(ConfigVersion)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(CheckCXX11Features)
@@ -48,8 +48,8 @@ set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
 include(ConfigMath)
 
 include(ConfigMPI)
-#include(ConfigExplicitLibs)
-#include(ConfigSafeGuards)
+include(ConfigExplicitLibs)
+include(ConfigSafeGuards)
 #include(ConfigTesting)
 include(GenericMacros)
 #include(BinaryInfo)
@@ -84,15 +84,6 @@ endif()
 if(UNIX)
    link_libraries(m)
 endif(UNIX)
-
-#
-# Psi4 configuration
-#
-set(PSI_VERSION \"4.0\")
-set(PACKAGE_VERSION "4.0git")
-set(PACKAGE_NAME "Psi")
-set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
-set(PACKAGE_BUGREPORT "psicode@users.sourceforge.net")
 
 # Dynamic linking header
 check_include_files(dlfcn.h HAVE_DLFCN_H)
@@ -153,21 +144,6 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/lib
     ${PROJECT_BINARY_DIR}/src/lib
 )
-
-#
-# BLAS and LAPACK
-#
-#if(NOT ${useroptLAPACKLIBS} STREQUAL ${EMPTY})
-#    #RMR only have a library check at this time
-#    # and then set the variables that would be set by find_package
-#    set(LAPACK_LIBRARIES ${useroptLAPACKLIBS})
-#    set(LAPACK_INCLUDE_DIR ${useroptLAPACKINCS})
-#    message(WARNING "Skipping LAPACK detection and using these linker flags: ${useroptLAPACKLIBS}")
-#    set(LAPACK_FOUND TRUE)
-#else()
-#    find_package(LAPACK REQUIRED)
-#endif()
-
 
 # Python Detection 
 find_package(Python 2.6 REQUIRED)
