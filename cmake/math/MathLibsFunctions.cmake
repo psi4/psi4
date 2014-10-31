@@ -34,6 +34,12 @@ macro(find_math_header _service _header)
         PATH_SUFFIXES ${MATH_INCLUDE_PATH_SUFFIXES}
         NO_DEFAULT_PATH
         )
+    # the following is needed for Atlas' clapack.h
+    # this whole code needs major cleanup soon (2014-10-31)
+    find_path(${_SERVICE}_INCLUDE_DIRS
+        NAMES ${_header}
+        PATH_SUFFIXES ${MATH_INCLUDE_PATH_SUFFIXES}
+        )
     find_path(${_SERVICE}_INCLUDE_DIRS
         NAMES ${_header}
         PATH_SUFFIXES include
