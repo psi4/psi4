@@ -65,22 +65,22 @@ void DFOCC::semi_canonic()
 
         // Print orbital energies
 	if (occ_orb_energy == "TRUE" && mo_optimized == 1) {
-	  fprintf(outfile,"\n\n\tOCC Alpha Orbital Energies (a.u.) \n"); 
-	  fprintf(outfile,"\t  ---------------------------------- \n"); 
-	  fflush(outfile);
+	  outfile->Printf("\n\n\tOCC Alpha Orbital Energies (a.u.) \n"); 
+	  outfile->Printf("\t  ---------------------------------- \n"); 
+	  
 	  
 	  // print occ orb energy
-	 fprintf(outfile, "\tAlpha occupied orbitals\n");
+	 outfile->Printf( "\tAlpha occupied orbitals\n");
 	 for (int i = 0; i < naoccA; i++){
-	      fprintf(outfile,"\t%2d %20.10f \n",i,eigooA->get(i));
-	      fflush(outfile);   
+	      outfile->Printf("\t%2d %20.10f \n",i,eigooA->get(i));
+	         
 	 }// end loop over naocc
 	  
 	  // print vir orb energy
-	  fprintf(outfile, "\n\tAlpha virtual orbitals\n");
+	  outfile->Printf( "\n\tAlpha virtual orbitals\n");
 	  for (int i = 0; i < navirA; i++){
-	      fprintf(outfile,"\t%2d %20.10f \n",i + noccA,eigvvA->get(i));
-	      fflush(outfile);
+	      outfile->Printf("\t%2d %20.10f \n",i + noccA,eigvvA->get(i));
+	      
 	  }// end loop over naocc
 	  
 	}// end main if
@@ -194,22 +194,22 @@ void DFOCC::semi_canonic()
 
         // Print orbital energies
 	if (occ_orb_energy == "TRUE" && mo_optimized == 1) {
-	  fprintf(outfile,"\n\n\tOCC Beta Orbital Energies (a.u.) \n"); 
-	  fprintf(outfile,"\t  ---------------------------------- \n"); 
-	  fflush(outfile);
+	  outfile->Printf("\n\n\tOCC Beta Orbital Energies (a.u.) \n"); 
+	  outfile->Printf("\t  ---------------------------------- \n"); 
+	  
 	  
 	  // print occ orb energy
-	 fprintf(outfile, "\tBeta occupied orbitals\n");
+	 outfile->Printf( "\tBeta occupied orbitals\n");
 	 for (int i = 0; i < naoccB; i++){
-	      fprintf(outfile,"\t%2d %20.10f \n",i,eigooB->get(i));
-	      fflush(outfile);   
+	      outfile->Printf("\t%2d %20.10f \n",i,eigooB->get(i));
+	         
 	 }// end loop over naocc
 	  
 	  // print vir orb energy
-	  fprintf(outfile, "\n\tBeta virtual orbitals\n");
+	  outfile->Printf( "\n\tBeta virtual orbitals\n");
 	  for (int i = 0; i < navirB; i++){
-	      fprintf(outfile,"\t%2d %20.10f \n",i + noccB,eigvvB->get(i));
-	      fflush(outfile);
+	      outfile->Printf("\t%2d %20.10f \n",i + noccB,eigvvB->get(i));
+	      
 	  }// end loop over naocc
 	  
 	}// end main if

@@ -174,7 +174,7 @@ void DFOCC::approx_diag_ekt_mohess_oo()
 //=========================
 void DFOCC::kappa_diag_hess()
 { 
-//fprintf(outfile,"\n kappa_diag_hess is starting... \n"); fflush(outfile);
+//outfile->Printf("\n kappa_diag_hess is starting... \n"); 
         double value;
 
  if (hess_type == "APPROX_DIAG") {
@@ -319,7 +319,7 @@ else if (reference_ == "UNRESTRICTED") {
         }
       
 }// end if (reference_ == "UNRESTRICTED") 
- //fprintf(outfile,"\n kappa_diag_hess done. \n"); fflush(outfile);
+ //outfile->Printf("\n kappa_diag_hess done. \n"); 
 	
 }// end main
 }} // End Namespaces

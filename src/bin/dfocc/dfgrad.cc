@@ -45,16 +45,16 @@ void DFOCC::dfgrad()
 //============================ Preliminaries ================================================
 //===========================================================================================
     title_grad();
-    fprintf(outfile,"\tAnalytic gradients computation is starting...\n");
-    fflush(outfile);
+    outfile->Printf("\tAnalytic gradients computation is starting...\n");
+    
     tpdm_tilde();
     back_trans();
 
 //===========================================================================================
 //============================ Gradient =====================================================
 //===========================================================================================
-    fprintf(outfile,"\tComputing analytic gradients...\n");  
-    fflush(outfile);
+    outfile->Printf("\tComputing analytic gradients...\n");  
+    
 
     gradient_terms.push_back("Nuclear");
     gradient_terms.push_back("Kinetic");
@@ -123,7 +123,7 @@ void DFOCC::dfgrad()
     Process::environment.wavefunction()->set_gradient(total);
 
 
-//fprintf(outfile,"\tdfgrad is done. \n"); fflush(outfile);
+//outfile->Printf("\tdfgrad is done. \n"); 
 }// end dfgrad 
 
 }} // End Namespaces
