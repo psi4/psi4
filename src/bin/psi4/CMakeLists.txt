@@ -17,7 +17,7 @@ add_custom_command(
 
 set(SRC clean.cc create_new_plugin.cc export_benchmarks.cc export_blas_lapack.cc export_libfrag.cc export_chkpt.cc export_cubefile.cc export_functional.cc export_mints.cc export_oeprop.cc export_plugins.cc export_psio.cc psi4.cc psi_start.cc psi_stop.cc python.cc read_options.cc script.cc set_memory.cc version.cc)
 
-set(LINKLIBS ${PSILIB} ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${PYTHON_LIBRARIES})
+set(LINKLIBS ${PSILIB} ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${PYTHON_LIBRARIES} dl)
 
 # executable psi4
 add_executable(psi4 ${SRC})
@@ -31,4 +31,4 @@ add_executable(psi4so EXCLUDE_FROM_ALL ${SRC})
 set_property(TARGET psi4so PROPERTY COMPILE_DEFINITIONS MAKE_PYTHON_MODULE)
 set_property(TARGET psi4so PROPERTY LINK_FLAGS "-shared")
 set_property(TARGET psi4so PROPERTY OUTPUT_NAME "psi4.so")
-target_link_libraries(psi4so ${LINKLIBS} dl)
+target_link_libraries(psi4so ${LINKLIBS})
