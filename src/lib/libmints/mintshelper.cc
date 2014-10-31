@@ -255,14 +255,18 @@ void MintsHelper::integrals()
 
     // Compute and dump one-electron SO integrals.
 
-    // Overlap
-    so_overlap()->save(psio_, PSIF_OEI);
+    if (options_.get_str("RELATIVISTIC") == "NO"){
+        // Overlap
+        so_overlap()->save(psio_, PSIF_OEI);
 
-    // Kinetic
-    so_kinetic()->save(psio_, PSIF_OEI);
+        // Kinetic
+        so_kinetic()->save(psio_, PSIF_OEI);
 
-    // Potential
-    so_potential()->save(psio_, PSIF_OEI);
+        // Potential
+        so_potential()->save(psio_, PSIF_OEI);
+    }else if (options_.get_str("RELATIVISTIC") == "X2C"){
+        outfile->Printf( "      Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
+    }
 
     // Dipoles
     std::vector<SharedMatrix> dipole_mats = so_dipole();
@@ -389,16 +393,17 @@ void MintsHelper::one_electron_integrals()
 
     // Compute and dump one-electron SO integrals.
 
-    // Overlap
-    so_overlap()->save(psio_, PSIF_OEI);
     if (options_.get_str("RELATIVISTIC") == "NO"){
+        // Overlap
+        so_overlap()->save(psio_, PSIF_OEI);
+
         // Kinetic
         so_kinetic()->save(psio_, PSIF_OEI);
 
         // Potential
         so_potential()->save(psio_, PSIF_OEI);
     }else if (options_.get_str("RELATIVISTIC") == "X2C"){
-        outfile->Printf( "      Using modified relativistic integrals from X2C\n");
+        outfile->Printf( "      Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
     }
 
     // Dipoles
