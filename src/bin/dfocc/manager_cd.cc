@@ -53,30 +53,8 @@ void DFOCC::cd_omp2_manager()
         g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
         g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
 
-        if (conv_tei_type == "DISK") { 
-           tei_oooo_chem_ref();
-           tei_ooov_chem_ref();
-           tei_oovv_chem_ref();
-           tei_ovov_chem_ref(); 
-           if (reference_ == "UNRESTRICTED") {
-            tei_oooo_phys_ref();
-            tei_ooov_phys_ref();
-            tei_oovv_phys_ref();
-            tei_ovov_phys_ref();
-            tei_oooo_anti_symm_ref();
-            tei_ooov_anti_symm_ref();
-            tei_oovv_anti_symm_ref();
-            tei_ovov_anti_symm_ref();
-           }
-
-           tei_iajb_chem();
-           //tei_ijab_chem();// for Hessian
-           if (reference_ == "UNRESTRICTED") {
-               tei_ijab_phys();
-               tei_ijab_anti_symm();
-           }
-        }// if (conv_tei_type == "DISK")  
-           fock();
+        // Fock
+        fock();
 
         // ROHF REF
         if (reference == "ROHF") t1_1st_sc();
@@ -85,27 +63,27 @@ void DFOCC::cd_omp2_manager()
         EcorrL=Emp2L-Escf;
 	Emp2L_old=Emp2;
 	
-	fprintf(outfile,"\n"); 
-	if (reference == "ROHF") fprintf(outfile,"\tComputing CD-MP2 energy using SCF MOs (CD-ROHF-MP2)... \n"); 
-	else fprintf(outfile,"\tComputing CD-MP2 energy using SCF MOs (Canonical CD-MP2)... \n"); 
-	fprintf(outfile,"\t======================================================================= \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tCD-HF Energy (a.u.)                : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tCD-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tCD-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tCD-SCSN-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
-	if (reference == "ROHF") fprintf(outfile,"\tCD-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
-	if (reference == "ROHF") fprintf(outfile,"\tCD-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
-	fprintf(outfile,"\tCD-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tCD-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
-	fprintf(outfile,"\t======================================================================= \n");
-	fflush(outfile);
+	outfile->Printf("\n");
+	if (reference == "ROHF") outfile->Printf("\tComputing CD-MP2 energy using SCF MOs (CD-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing CD-MP2 energy using SCF MOs (Canonical CD-MP2)... \n"); 
+	outfile->Printf("\t======================================================================= \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tCD-HF Energy (a.u.)                : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tCD-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tCD-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tCD-SCSN-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+	if (reference == "ROHF") outfile->Printf("\tCD-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
+	if (reference == "ROHF") outfile->Printf("\tCD-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
+	outfile->Printf("\tCD-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
+	outfile->Printf("\tCD-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
+	outfile->Printf("\t======================================================================= \n");
+	
 	Process::environment.globals["CURRENT ENERGY"] = Emp2;
 	Process::environment.globals["CD-MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["CD-SCS-MP2 TOTAL ENERGY"] = Escsmp2;
@@ -136,38 +114,15 @@ void DFOCC::cd_omp2_manager()
 	
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
            orbs_already_opt = 1;
-	   if (conver == 1) fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+	   if (conver == 1) outfile->Printf("\n\tOrbitals are optimized now.\n");
 	   else if (conver == 0) { 
-                    fprintf(outfile,"\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
-	            fprintf(outfile,"\tI will consider the present orbitals as optimized.\n");
+                    outfile->Printf("\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
+	            outfile->Printf("\tI will consider the present orbitals as optimized.\n");
            }
-	   fprintf(outfile,"\tSwitching to the standard CD-MP2 computation after semicanonicalization of the MOs... \n");
-	   fflush(outfile);
+	   outfile->Printf("\tSwitching to the standard CD-MP2 computation after semicanonicalization of the MOs... \n");
+	   
 	   semi_canonic();
            trans_cd();
-        if (conv_tei_type == "DISK") { 
-           tei_iajb_chem();
-           if (reference_ == "UNRESTRICTED") {
-               tei_ijab_phys();
-               tei_ijab_anti_symm();
-           }
-        }// if (conv_tei_type == "DISK") 
-        if (conv_tei_type == "DISK") { 
-           tei_oooo_chem_ref();
-           tei_ooov_chem_ref();
-           tei_oovv_chem_ref();
-           tei_ovov_chem_ref();
-           if (reference_ == "UNRESTRICTED") {
-            tei_oooo_phys_ref();
-            tei_ooov_phys_ref();
-            tei_oovv_phys_ref();
-            tei_ovov_phys_ref();
-            tei_oooo_anti_symm_ref();
-            tei_ooov_anti_symm_ref();
-            tei_oovv_anti_symm_ref();
-            tei_ovov_anti_symm_ref();
-           }
-        }// if (conv_tei_type == "DISK") 
            fock();
 	   t2_1st_sc();
            conver = 1;
@@ -187,41 +142,41 @@ void DFOCC::cd_omp2_manager()
 	mp2_energy();
         if (orbs_already_opt == 1) Emp2L = Emp2;
 	
-	fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP2 energy using optimized MOs... \n"); 
-	fprintf(outfile,"\t======================================================================= \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tCD-HF Energy (a.u.)                : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tCD-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tCD-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tCD-SCSN-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
-	fprintf(outfile,"\tCD-MP2 Correlation Energy (a.u.)   : %20.14f\n", Emp2 - Escf);
-	fprintf(outfile,"\tCD-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
-	fprintf(outfile,"\t======================================================================= \n");
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\tComputing MP2 energy using optimized MOs... \n");
+	outfile->Printf("\t======================================================================= \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tCD-HF Energy (a.u.)                : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tCD-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tCD-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tCD-SCSN-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+	outfile->Printf("\tCD-MP2 Correlation Energy (a.u.)   : %20.14f\n", Emp2 - Escf);
+	outfile->Printf("\tCD-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
+	outfile->Printf("\t======================================================================= \n");
+	
 
-	fprintf(outfile,"\n");
-	fprintf(outfile,"\t======================================================================= \n");
-	fprintf(outfile,"\t================ CD-OMP2 FINAL RESULTS ================================ \n");
-	fprintf(outfile,"\t======================================================================= \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tCD-HF Energy (a.u.)                : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tCD-SCS-OMP2 Total Energy (a.u.)    : %20.14f\n", Escsmp2);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tCD-SOS-OMP2 Total Energy (a.u.)    : %20.14f\n", Esosmp2);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tCD-SCSN-OMP2 Total Energy (a.u.)   : %20.14f\n", Escsnmp2);
-	fprintf(outfile,"\tCD-OMP2 Correlation Energy (a.u.)  : %20.14f\n", Emp2L-Escf);
-	fprintf(outfile,"\tEcdomp2 - Eref (a.u.)              : %20.14f\n", Emp2L-Eref);
-	fprintf(outfile,"\tCD-OMP2 Total Energy (a.u.)        : %20.14f\n", Emp2L);
-	fprintf(outfile,"\t======================================================================= \n");
-	fprintf(outfile,"\n");
-	fflush(outfile);
+	outfile->Printf("\n");
+	outfile->Printf("\t======================================================================= \n");
+	outfile->Printf("\t================ CD-OMP2 FINAL RESULTS ================================ \n");
+	outfile->Printf("\t======================================================================= \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tCD-HF Energy (a.u.)                : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tCD-SCS-OMP2 Total Energy (a.u.)    : %20.14f\n", Escsmp2);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tCD-SOS-OMP2 Total Energy (a.u.)    : %20.14f\n", Esosmp2);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tCD-SCSN-OMP2 Total Energy (a.u.)   : %20.14f\n", Escsnmp2);
+	outfile->Printf("\tCD-OMP2 Correlation Energy (a.u.)  : %20.14f\n", Emp2L-Escf);
+	outfile->Printf("\tEcdomp2 - Eref (a.u.)              : %20.14f\n", Emp2L-Eref);
+	outfile->Printf("\tCD-OMP2 Total Energy (a.u.)        : %20.14f\n", Emp2L);
+	outfile->Printf("\t======================================================================= \n");
+	outfile->Printf("\n");
+	
 
 	// Set the global variables with the energies
 	Process::environment.globals["CD-OMP2 TOTAL ENERGY"] = Emp2L;
@@ -267,11 +222,11 @@ void DFOCC::cd_omp2_manager()
         // Compute Analytic Gradients
         /*
         if (dertype == "FIRST") {
-	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-	    fflush(outfile);
+	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
+	    
             coord_grad();
-	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	    fflush(outfile);
+	    outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	    
         }
         */
 
@@ -288,26 +243,19 @@ void DFOCC::cd_mp2_manager()
 	mo_optimized = 0;// means MOs are not optimized
         timer_on("CD Integrals");
         cd_ints();
-        if (dertype == "NONE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+        if (dertype == "NONE" && ekt_ip_ == "FALSE") {
             trans_cd_mp2();
         }
         else trans_cd();
         timer_off("CD Integrals");
 
         // ROHF REF
-        //fprintf(outfile,"\tI am here.\n"); fflush(outfile);
+        //outfile->Printf("\tI am here.\n"); 
         if (reference == "ROHF") t1_1st_sc();
 
-        if (conv_tei_type == "DISK") { 
-            tei_iajb_chem();
-            if (reference_ == "UNRESTRICTED") {
-                tei_ijab_phys();
-                tei_ijab_anti_symm();
-            }
-        }// if (conv_tei_type == "DISK")  
 	//t2_1st_sc();
         //mp2_energy();
-        if (dertype == "NONE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") mp2_direct();
+        if (dertype == "NONE" && ekt_ip_ == "FALSE") mp2_direct();
         else {
 	     t2_1st_sc();
              mp2_energy();
@@ -315,27 +263,27 @@ void DFOCC::cd_mp2_manager()
 	Emp2L=Emp2;
         EcorrL=Emp2L-Escf;
 	
-	fprintf(outfile,"\n"); 
-	if (reference == "ROHF") fprintf(outfile,"\tComputing CD-MP2 energy using SCF MOs (CD-ROHF-MP2)... \n"); 
-	else fprintf(outfile,"\tComputing CD-MP2 energy using SCF MOs (Canonical CD-MP2)... \n"); 
-	fprintf(outfile,"\t======================================================================= \n");
-	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	fprintf(outfile,"\tCD-HF Energy (a.u.)                : %20.14f\n", Escf);
-	fprintf(outfile,"\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tCD-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tCD-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tCD-SCSN-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
-	if (reference_ == "ROHF") fprintf(outfile,"\tCD-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
-	if (reference_ == "ROHF") fprintf(outfile,"\tCD-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
-	fprintf(outfile,"\tCD-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
-	fprintf(outfile,"\tCD-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
-	fprintf(outfile,"\t======================================================================= \n");
-	fflush(outfile);
+	outfile->Printf("\n");
+	if (reference == "ROHF") outfile->Printf("\tComputing CD-MP2 energy using SCF MOs (CD-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing CD-MP2 energy using SCF MOs (Canonical CD-MP2)... \n"); 
+	outfile->Printf("\t======================================================================= \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tCD-HF Energy (a.u.)                : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tCD-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tCD-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tCD-SCSN-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+	if (reference_ == "ROHF") outfile->Printf("\tCD-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
+	if (reference_ == "ROHF") outfile->Printf("\tCD-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
+	outfile->Printf("\tCD-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
+	outfile->Printf("\tCD-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
+	outfile->Printf("\t======================================================================= \n");
+	
 	Process::environment.globals["CURRENT ENERGY"] = Emp2;
 	Process::environment.globals["CD-MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["CD-SCS-MP2 TOTAL ENERGY"] = Escsmp2;
@@ -352,43 +300,6 @@ void DFOCC::cd_mp2_manager()
         Process::environment.globals["CD-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["CD-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
-        /*
-        // Compute Analytic Gradients
-        if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
-	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-	    fprintf(outfile,"\tComputing response density matrices...\n");
-	    fflush(outfile);
-	    omp2_response_pdms();
-            fprintf(outfile,"\tComputing off-diagonal blocks of GFM...\n");
-            fflush(outfile);
-	    gfock();
-            fprintf(outfile,"\tForming independent-pairs...\n");
-            fflush(outfile);
-	    idp2();
-            fprintf(outfile,"\tComputing orbital gradient...\n");
-            fflush(outfile);
-	    mograd();
-            coord_grad();
-
-            if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
-                ekt_ip();
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
-                ekt_ip();
-            }
-
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
-	        fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	        fflush(outfile);
-            }
-        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") 
-        */
 
 }// end mp2_manager 
 

@@ -51,8 +51,7 @@ if (reference_ == "RESTRICTED") {
 
     // A_ij += 4 \sum_{m} [(mi|mi) - (mj|mj)] 
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|OO)", noccA, noccA, noccA, noccA));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_oooo_chem_ref_directAA(K);
+    tei_oooo_chem_ref_directAA(K);
     for (int i = 0; i < naoccA; i++) {
          for (int j = 0; j < nfrzc; j++) {
               int ii = oo_idxAA->get(i + nfrzc, i + nfrzc);
@@ -151,8 +150,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     // A_IJ += 2 \sum_{M} [(MI|MI) - (MJ|MJ)] 
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|OO)", noccA, noccA, noccA, noccA));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_oooo_chem_ref_directAA(K);
+    tei_oooo_chem_ref_directAA(K);
     for (int i = 0; i < naoccA; i++) {
          for (int j = 0; j < nfrzc; j++) {
               int ii = oo_idxAA->get(i + nfrzc, i + nfrzc);
@@ -171,8 +169,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     // A_ij += 2 \sum_{m} [(mi|mi) - (mj|mj)] 
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|oo)", noccB, noccB, noccB, noccB));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_oooo_chem_ref_directBB(K);
+    tei_oooo_chem_ref_directBB(K);
     for (int i = 0; i < naoccB; i++) {
          for (int j = 0; j < nfrzc; j++) {
               int ii = oo_idxBB->get(i + nfrzc, i + nfrzc);
