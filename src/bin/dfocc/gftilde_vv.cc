@@ -89,8 +89,7 @@ if (reference_ == "RESTRICTED") {
 
     // Ft_ab -= 2 \sum_{m} (ma|mb)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_ovov_chem_ref_directAA(K);
+    tei_ovov_chem_ref_directAA(K);
     #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int b = 0; b < nvirA; b++) {
@@ -228,8 +227,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Ft_AB -= \sum_{M} (MA|MB)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_ovov_chem_ref_directAA(K);
+    tei_ovov_chem_ref_directAA(K);
     #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int b = 0; b < nvirA; b++) {
@@ -246,8 +244,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Ft_ab -= \sum_{m} (ma|mb)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_ovov_chem_ref_directBB(K);
+    tei_ovov_chem_ref_directBB(K);
     #pragma omp parallel for
     for (int a = 0; a < nvirB; a++) {
          for (int b = 0; b < nvirB; b++) {
