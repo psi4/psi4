@@ -1,6 +1,7 @@
 # Configuration of Psi version
 file(READ "${CMAKE_SOURCE_DIR}/VERSION" PSI_VERSION)
 string(STRIP "${PSI_VERSION}" PSI_VERSION)
+set(PSI_VERSION "\"${PSI_VERSION}\"")
 
 # reset GIT_REVISION
 set(GIT_REVISION)

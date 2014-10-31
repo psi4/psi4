@@ -30,15 +30,12 @@ option(ENABLE_PLUGINS        "Enable plugins"                                   
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                              OFF)
 
 set(EXTERNAL_LIBS)
-# Prepare for restrict keyword detection
-set(restrict "")
 
 # Include CMake modules as needed
 include(ConfigVersion)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
-include(CheckCXX11Features)
-#include(ConfigExternal)
+include(ConfigExternal)
 include(ConfigOMP)
 
 # Math: find BLAS and LAPACK
@@ -74,6 +71,10 @@ else()
    set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
    set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
 endif()
+
+if(UNIX)
+   link_libraries(m)
+endif(UNIX)
 
 #Not setting ldflags was causing a problem
 if(LDFLAGS)
@@ -293,3 +294,5 @@ add_subdirectory(external)
 enable_testing()
 add_subdirectory(tests)
 
+# This has to be the very last CMake module to be included
+include(ConfigInfo)
