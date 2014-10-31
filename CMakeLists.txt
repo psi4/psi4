@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 # Prefer custom CMake modules
 cmake_policy(SET CMP0017 OLD)
 
-
 # Declare project name and programming languages
 project(psi4 CXX C Fortran)
 
@@ -30,8 +29,10 @@ option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                           
 option(ENABLE_PLUGINS        "Enable plugins"                                   OFF)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                              OFF)
 
+set(EXTERNAL_LIBS)
 # Prepare for restrict keyword detection
 set(restrict "")
+
 # Include CMake modules as needed
 #include(ConfigVersion)
 include(ConfigArchitecture)
@@ -39,8 +40,14 @@ include(ConfigCompilerFlags)
 include(CheckCXX11Features)
 #include(ConfigExternal)
 include(ConfigOMP)
-include(ConfigMPI)
 
+# Math: find BLAS and LAPACK
+set(BLAS_LANG   "CXX")
+set(LAPACK_LANG "CXX")
+set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
+include(ConfigMath)
+
+include(ConfigMPI)
 #include(ConfigExplicitLibs)
 #include(ConfigSafeGuards)
 #include(ConfigTesting)
@@ -49,12 +56,6 @@ include(GenericMacros)
 #include(mergestaticlibs)
 include(CheckIncludeFiles)
 include(CheckFunctionExists)
-
-# Math: find BLAS and LAPACK
-set(BLAS_LANG   "CXX")
-set(LAPACK_LANG "CXX")
-set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
-include(ConfigMath)
 
 # Determine Fortran name mangling, used for external linking
 include(FortranCInterface)
