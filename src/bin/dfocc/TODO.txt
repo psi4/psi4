@@ -1,3 +1,3 @@
-* QC-SCF 
-* GWH Guess
 * DF-OMP2.5 and DF-OMP3
+* DF-OLCCD
+* DF-OCCD

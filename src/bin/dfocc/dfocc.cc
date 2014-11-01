@@ -148,13 +148,6 @@ void DFOCC::common_init()
              throw PSIEXCEPTION("ROHF DF-MP2 analytic gradients are not available, UHF DF-MP2 is recommended.");
     }
 
-    // Frozen Core
-    /*
-    if (freeze_core_ == "TRUE" && orb_opt_ == "FALSE" && dertype == "FIRST") {
-             throw PSIEXCEPTION("Frozen core gradients are available only for orbital-optimized methods.");
-    }
-    */
-
     // DIIS
     if (options_.get_str("DO_DIIS") == "TRUE") do_diis_ = 1;
     else if (options_.get_str("DO_DIIS") == "FALSE") do_diis_ = 0;
@@ -207,6 +200,13 @@ if (reference_ == "RESTRICTED") {
         HvoA = SharedTensor2d(new Tensor2d("OEI <V|O>", nvirA, noccA));
         HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
 
+    if (wfn_type_ == "DF-CCSD") {
+        t1A = SharedTensor2d(new Tensor2d("T1 <I|A>", naoccA, navirA));
+        FiaA = SharedTensor2d(new Tensor2d("Fint <I|A>", naoccA, navirA));
+        FtijA = SharedTensor2d(new Tensor2d("Ftilde <I|J>", naoccA, naoccA));
+        FtabA = SharedTensor2d(new Tensor2d("Ftilde <A|B>", navirA, navirA));
+    }
+
     // if we need PDMs
     if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE") {
         GijA = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
@@ -255,6 +255,10 @@ if (reference_ == "RESTRICTED") {
 }  // end if (reference_ == "RESTRICTED")
 
 else if (reference_ == "UNRESTRICTED") {
+
+    if (wfn_type_ == "DF-CCSD") {
+        throw PSIEXCEPTION("UHF DF-CCSD has NOT been implemented yet!");
+    }
 	// Memory allocation
 	HmoA = SharedTensor2d(new Tensor2d("MO-basis alpha one-electron ints", nmo_, nmo_));
 	HmoB = SharedTensor2d(new Tensor2d("MO-basis beta one-electron ints", nmo_, nmo_));
@@ -333,6 +337,17 @@ else if (reference_ == "UNRESTRICTED") {
             G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
         }
 
+        else if (wfn_type_ == "DF-CCSD") {
+            t1A = SharedTensor2d(new Tensor2d("T1 <I|A>", naoccA, navirA));
+            t1B = SharedTensor2d(new Tensor2d("T1 <i|a>", naoccB, navirB));
+            FiaA = SharedTensor2d(new Tensor2d("Fint <I|A>", naoccA, navirA));
+            FiaB = SharedTensor2d(new Tensor2d("Fint <i|a>", naoccB, navirB));
+            FtijA = SharedTensor2d(new Tensor2d("Ftilde <I|J>", naoccA, naoccA));
+            FtabA = SharedTensor2d(new Tensor2d("Ftilde <A|B>", navirA, navirA));
+            FtijB = SharedTensor2d(new Tensor2d("Ftilde <i|j>", naoccB, naoccB));
+            FtabB = SharedTensor2d(new Tensor2d("Ftilde <a|b>", navirB, navirB));
+        }
+
         outfile->Printf("\n\tMO spaces... \n\n"); 
         outfile->Printf( "\t FC   AOCC   BOCC  AVIR   BVIR   FV \n");
         outfile->Printf( "\t------------------------------------------\n");
@@ -373,6 +388,7 @@ void DFOCC::title()
    outfile->Printf("\n");
    if (wfn_type_ == "DF-OMP2" && orb_opt_ == "TRUE") outfile->Printf("                      DF-OMP2 (DF-OO-MP2)   \n");
    else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       DF-MP2   \n");
+   else if (wfn_type_ == "DF-CCSD" && orb_opt_ == "FALSE") outfile->Printf("                       DF-CCSD   \n");
    else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE") outfile->Printf("                       DF-OMP3 (DF-OO-MP3)   \n");
    else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE") outfile->Printf("                       DF-MP3   \n");
    else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "TRUE") outfile->Printf("                       DF-OCEPA(0) (DF-OO-CEPA)   \n");
@@ -382,7 +398,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") outfile->Printf("                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP2   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision October 31, 2014\n") ;
+   outfile->Printf("              Latest Revision November 1, 2014\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");

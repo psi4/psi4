@@ -282,11 +282,12 @@ else if (reference_ == "UNRESTRICTED") {
     timer_off("MP2 Energy");
 } // end mp2_energy
 
-
-
 //=======================================================
-//          MP3 Energy
+//          CCSD Energy
 //=======================================================          
+void DFOCC::ccsd_energy()
+{   
+} // end ccsd_energy
 
 }} // End Namespaces
 
