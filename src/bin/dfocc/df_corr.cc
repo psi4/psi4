@@ -47,7 +47,7 @@ void DFOCC::trans_corr()
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     trans_ab = 1;
-    if (orb_opt_ == "TRUE" || dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
+    if (orb_opt_ == "TRUE" || dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
         // Form B(Q,ij)
         timer_on("Form B(Q,ij)");
         b_oo();
@@ -110,7 +110,7 @@ void DFOCC::trans_mp2()
 //=======================================================          
 void DFOCC::df_corr()
 {   
-    //outfile->Printf("\tComputing DF-BASIS-CC integrals... \n"); 
+    //fprintf(outfile,"\tComputing DF-BASIS-CC integrals... \n"); fflush(outfile);
 
     // Read in the basis set informations
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());

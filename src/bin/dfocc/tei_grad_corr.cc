@@ -40,7 +40,7 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::tei_grad_corr()
 {      
-  //outfile->Printf("\ttei_grad_corr is starting... \n"); 
+  //fprintf(outfile,"\ttei_grad_corr is starting... \n"); fflush(outfile);
 
 //===========================================================================================
 //========================= Two-electron Gradient:Corr ======================================
@@ -330,7 +330,7 @@ void DFOCC::tei_grad_corr()
     //gradients["3-Index:Corr"]->print_atom_vector();
     timer_off("Grad: 3-Index:Corr");    
 
-//outfile->Printf("\tref_grad is done. \n"); 
+//fprintf(outfile,"\tref_grad is done. \n"); fflush(outfile);
 }// end 
 
 

@@ -31,7 +31,7 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::z_vector()
 { 
-//outfile->Printf("\n z_vector is starting... \n"); 
+//fprintf(outfile,"\n z_vector is starting... \n"); fflush(outfile);
 
     SharedTensor2d K;
 
@@ -59,9 +59,9 @@ if (reference_ == "RESTRICTED") {
          double det = 0.0;      
          Aorb->lineq_flin(zvectorA, &det);
          if (fabs(det) < DIIS_MIN_DET) { 
-             outfile->Printf( "Warning!!! MO Hessian matrix is near-singular\n");
-             outfile->Printf( "Determinant is %6.3E\n", det);
-             
+             fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
+             fprintf(outfile, "Determinant is %6.3E\n", det);
+             fflush(outfile);
              pcg_conver = 0;// means unsuccessful
          }
     }
@@ -86,8 +86,8 @@ if (reference_ == "RESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
-        outfile->Printf("\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
-        
+        fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
+        fflush(outfile);
     } // end if pcg_conver = 0
  
 }// end if (reference_ == "RESTRICTED") 
@@ -122,9 +122,9 @@ else if (reference_ == "UNRESTRICTED") {
          double det = 0.0;      
          Aorb->lineq_flin(zvector, &det);
          if (fabs(det) < DIIS_MIN_DET) { 
-             outfile->Printf( "Warning!!! MO Hessian matrix is near-singular\n");
-             outfile->Printf( "Determinant is %6.3E\n", det);
-             
+             fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
+             fprintf(outfile, "Determinant is %6.3E\n", det);
+             fflush(outfile);
              pcg_conver = 0;// means unsuccessful
          }
     }
@@ -177,12 +177,12 @@ else if (reference_ == "UNRESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
-        outfile->Printf("\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
-        
+        fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
+        fflush(outfile);
     } 
       
 }// end if (reference_ == "UNRESTRICTED") 
- //outfile->Printf("\n z_vector done. \n"); 
+ //fprintf(outfile,"\n z_vector done. \n"); fflush(outfile);
 }// end z_vector
 
 //=======================================================
@@ -227,7 +227,8 @@ void DFOCC::build_rhf_mohess(SharedTensor2d& Aorb_)
 
     // A(ai,bj) += -2(ij|ab)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
-    tei_oovv_chem_ref_directAA(K);
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_oovv_chem_ref_directAA(K);
     Aorb_->sort(3142, K, -2.0, 1.0);
     K.reset();
     if (print_ > 3) Aorb_->print();
@@ -292,7 +293,8 @@ void DFOCC::build_uhf_mohess(SharedTensor2d& Aorb_)
 
     // A(ai,bj) += -2(ij|ab)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
-    tei_oovv_chem_ref_directAA(K);
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_oovv_chem_ref_directAA(K);
     AorbAA->sort(3142, K, -2.0, 1.0);
     K.reset();
     if (print_ > 3) AorbAA->print();
@@ -344,7 +346,8 @@ void DFOCC::build_uhf_mohess(SharedTensor2d& Aorb_)
 
     // A(ai,bj) += -2(ij|ab)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB));
-    tei_oovv_chem_ref_directBB(K);
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_oovv_chem_ref_directBB(K);
     AorbBB->sort(3142, K, -2.0, 1.0);
     K.reset();
     if (print_ > 3) AorbBB->print();

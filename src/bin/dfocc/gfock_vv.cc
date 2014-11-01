@@ -92,8 +92,8 @@ if (reference_ == "RESTRICTED") {
          Etemp += 0.5*GF->get(p,p); 
     }
     Etemp += Enuc;
-    outfile->Printf("\tDF-MP2L Total Energy via GFM (a.u.): %20.14f\n", Etemp);
-    
+    fprintf(outfile,"\tDF-MP2L Total Energy via GFM (a.u.): %20.14f\n", Etemp);
+    fflush(outfile);
     */
 
 }// end if (reference_ == "RESTRICTED")
@@ -203,8 +203,8 @@ else if (reference_ == "UNRESTRICTED") {
          Etemp += 0.5 * GFB->get(p,p); 
     }
     Etemp += Enuc;
-    outfile->Printf("\tDF-MP2L Total Energy via GFM (a.u.): %20.14f\n", Etemp);
-    
+    fprintf(outfile,"\tDF-MP2L Total Energy via GFM (a.u.): %20.14f\n", Etemp);
+    fflush(outfile);
     */
 
 }// else if (reference_ == "UNRESTRICTED")

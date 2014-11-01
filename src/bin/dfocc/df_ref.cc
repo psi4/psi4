@@ -77,7 +77,7 @@ void DFOCC::trans_ref()
 //=======================================================          
 void DFOCC::df_ref()
 {   
-    //outfile->Printf("\tComputing DF-BASIS-SCF integrals... \n"); 
+    //fprintf(outfile,"\tComputing DF-BASIS-SCF integrals... \n"); fflush(outfile);
 
   //if (read_scf_3index == "TRUE" && dertype == "NONE") {
   // 1.  read scf 3-index integrals from disk
@@ -89,7 +89,7 @@ void DFOCC::df_ref()
 
       // read integrals from disk if they were generated in the SCF
       if ( options_.get_str("SCF_TYPE") == "DF") {
-          outfile->Printf("\tReading DF integrals from disk ...\n");
+          fprintf(outfile,"\tReading DF integrals from disk ...\n");
           boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
           boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, molecule(), "DF_BASIS_SCF");
           boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
@@ -124,10 +124,10 @@ void DFOCC::df_ref()
 
       // read integrals from disk if they were generated in the SCF
       else if ( options_.get_str("SCF_TYPE") == "CD") {
-          outfile->Printf("\tReading Cholesky vectors from disk ...\n");
+          fprintf(outfile,"\tReading Cholesky vectors from disk ...\n");
           nQ_ref = Process::environment.globals["NAUX (SCF)"];
-          outfile->Printf("\tCholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
-          //outfile->Printf("\tNumber of Cholesky vectors:   %5li\n",nQ_ref);
+          fprintf(outfile,"\tCholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
+          //fprintf(outfile,"\tNumber of Cholesky vectors:   %5li\n",nQ_ref);
 
           // ntri comes from sieve above
           boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ_ref,ntri_cd));
@@ -174,7 +174,7 @@ void DFOCC::df_ref()
     timer_off("Form B(Q,munu)");
   }// end if (read_scf_3index == "FALSE") 
 
-  //outfile->Printf("\tDF-BASIS-SCF integrals were done. \n"); 
+  //fprintf(outfile,"\tDF-BASIS-SCF integrals were done. \n"); fflush(outfile);
 } // end df_ref
 
 
