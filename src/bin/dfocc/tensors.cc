@@ -2579,6 +2579,48 @@ void Tensor2d::dirprd112(const SharedTensor1d &a, const SharedTensor1d &b)
      }
 }//
 
+void Tensor2d::dirprd112(const SharedTensor1d &a, const SharedTensor1d &b, double alpha, double beta)
+{
+     #pragma omp parallel for
+     for (int i=0; i<dim1_; i++) {
+          for (int j=0; j<dim2_; j++) {
+               A2d_[i][j] = (alpha * a->get(i) * b->get(j)) + (beta * A2d_[i][j]);
+          }
+     }
+}//
+
+void Tensor2d::dirprd224(const SharedTensor2d &a, const SharedTensor2d &b)
+{
+     #pragma omp parallel for
+     for (int i=0; i<d1_; i++) {
+          for (int j=0; j<d2_; j++) {
+               int ij = row_idx_[i][j];
+               for (int k=0; k<d3_; k++) {
+                    for (int l=0; l<d4_; l++) {
+                         int kl = col_idx_[k][l];
+                         A2d_[ij][kl] = a->get(i,j) * b->get(k,l);
+                    }
+               }
+          }
+     }
+}//
+
+void Tensor2d::dirprd224(const SharedTensor2d &a, const SharedTensor2d &b, double alpha, double beta)
+{
+     #pragma omp parallel for
+     for (int i=0; i<d1_; i++) {
+          for (int j=0; j<d2_; j++) {
+               int ij = row_idx_[i][j];
+               for (int k=0; k<d3_; k++) {
+                    for (int l=0; l<d4_; l++) {
+                         int kl = col_idx_[k][l];
+                         A2d_[ij][kl] = (alpha * a->get(i,j) * b->get(k,l)) + (beta * A2d_[ij][kl]);
+                    }
+               }
+          }
+     }
+}//
+
 double* Tensor2d::to_vector(const SharedTensor2i &pair_idx)
 {
      double* temp = new double[dim1_ * dim2_];

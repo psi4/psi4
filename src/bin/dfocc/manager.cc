@@ -365,50 +365,40 @@ void DFOCC::ccsd_manager()
 	mo_optimized = 0;// means MOs are not optimized
         timer_on("DF CC Integrals");
         df_corr();
-        if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && comput_s2_ == "FALSE" && qchf_ == "FALSE") {
-            trans_mp2();
-        }
-        else {
-            trans_corr();
-            df_ref();
-            trans_ref();
-            outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
+        trans_corr();
+        timer_off("DF CC Integrals");
+        timer_on("DF REF Integrals");
+        df_ref();
+        trans_ref();
+        timer_off("DF REF Integrals");
+        outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
+        outfile->Printf("\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
 
-            // memalloc for density intermediates
-            Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+        // memalloc for intermediates
+        T1c = SharedTensor1d(new Tensor1d("DF_BASIS_CC T1_Q", nQ));
+
+        // memalloc for density intermediates
+        Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+        if (qchf_ == "TRUE" || dertype == "FIRST") { 
             g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
             g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
             g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
             g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
-            if (reference == "ROHF") {
-                g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
-            }
         }
-        outfile->Printf("\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
-        
-        timer_off("DF CC Integrals");
 
         // QCHF
         if (qchf_ == "TRUE") qchf();
 
-        // ROHF REF
-        //outfile->Printf("\tI am here.\n"); 
+        // Fock
+        if (dertype == "FIRST" && oeprop_ == "TRUE" && ekt_ip_ == "TRUE") fock();
+
+        // Compute MP2 energy
         if (reference == "ROHF") t1_1st_sc();
-        if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && comput_s2_ == "FALSE") mp2_direct();
-        else {
-             fock();
-             if (mp2_amp_type_ == "DIRECT") mp2_direct();
-             else { 
-	         t2_1st_sc();
-                 mp2_energy();
-             }
-        }
-	Emp2L=Emp2;
-        EcorrL=Emp2L-Escf;
+        ccsd_mp2();
 	
 	outfile->Printf("\n");
-	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (DF-ROHF-MP2)... \n"); 
-	else outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... \n"); 
+	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing DF-MP2 energy ... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
@@ -427,27 +417,38 @@ void DFOCC::ccsd_manager()
 	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
 	outfile->Printf("\t======================================================================= \n");
 	
-	Process::environment.globals["CURRENT ENERGY"] = Emp2;
 	Process::environment.globals["DF-MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["DF-SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["DF-SOS-MP2 TOTAL ENERGY"] = Esosmp2;
 	Process::environment.globals["DF-SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
-
-        Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp2 - Escf;
         Process::environment.globals["DF-MP2 CORRELATION ENERGY"] = Emp2 - Escf;
         Process::environment.globals["DF-SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
         Process::environment.globals["DF-SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
         Process::environment.globals["DF-SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
-
         Process::environment.globals["DF-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["DF-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
-        // S2
-        //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED" && dertype == "NONE") s2_response();
-        if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") {
-            if (reference == "UHF" || reference == "UKS") s2_response();
-        }
+        // Perform CCSD iterations
+        ccsd_iterations();
+
+	outfile->Printf("\n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\t================ CCSD FINAL RESULTS ========================================== \n");
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tDF-CCSD Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
+	outfile->Printf("\tDF-CCSD Total Energy (a.u.)        : %20.14f\n", Eccsd);
+	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\n");
+	
+	Process::environment.globals["CURRENT ENERGY"] = Eccsd;
+        Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
+        Process::environment.globals["CURRENT CORRELATION ENERGY"] = Eccsd - Escf;
+	Process::environment.globals["DF-CCSD TOTAL ENERGY"] = Eccsd;
+        Process::environment.globals["DF-CCSD CORRELATION ENERGY"] = Eccsd - Escf;
+
 
         // Compute Analytic Gradients
         if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
@@ -459,7 +460,6 @@ void DFOCC::ccsd_manager()
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
             //if (ekt_ip_ == "TRUE") ekt_ip(); 
-
         }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
 }// end ccsd_manager 

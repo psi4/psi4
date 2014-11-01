@@ -20,7 +20,9 @@ oei_grad.cc               tei_grad_ref.cc           tei_grad_corr.cc
 z_vector_pcg.cc           z_vector.cc               prepare4grad.cc
 dfgrad.cc                 s2_response.cc            z_vector_cg.cc
 t2_mp2_direct.cc          effective_mograd.cc       qchf.cc
-update_hfmo.cc
+update_hfmo.cc            ccsd_iterations.cc        ccsd_3index_intr.cc
+ccsd_F_intr.cc            ccsd_W_intr.cc            ccsd_t1_amps.cc
+ccsd_t2_amps.cc
 )
 add_library(dfocc ${SRC})
 add_dependencies(dfocc mints)

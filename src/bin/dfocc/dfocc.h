@@ -121,6 +121,7 @@ protected:
     void s2_lagrangian();
     void gwh();
     void qchf();
+    void mo_coeff_blocks();
 
     void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new);
     void sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec);
@@ -370,6 +371,18 @@ protected:
 
     // CCSD
     void ccsd_manager();
+    void ccsd_mp2();
+    void ccsd_iterations();
+    void ccsd_3index_intr();
+    void ccsd_F_intr();
+    void ccsd_W_intr();
+    void ccsd_t1_amps();
+    void ccsd_t2_amps();
+    void ccsd_energy();
+
+    // CCSDL
+    void ccsd_l1_amps();
+    void ccsd_l2_amps();
 
     // orbital pairs
     int so_pair_idx(int i, int j);
@@ -580,6 +593,9 @@ protected:
      double EccsdAA;
      double EccsdBB;
      double EccsdAB;
+     double rms_t1;
+     double rms_t1A;
+     double rms_t1B;
      
      string wfn;
      string reference;
@@ -914,11 +930,18 @@ protected:
 
      SharedTensor2d t1A;               // T_i^a(1)
      SharedTensor2d t1B;               // T_i^a(1)
+     SharedTensor1d T1c;               // T1_Q
 
      SharedTensor2d FijA;               
      SharedTensor2d FijB;               
      SharedTensor2d FabA;               
      SharedTensor2d FabB;               
+     SharedTensor2d FiaA;               
+     SharedTensor2d FiaB;               
+     SharedTensor2d FtijA;               
+     SharedTensor2d FtijB;               
+     SharedTensor2d FtabA;               
+     SharedTensor2d FtabB;               
 
      // Intermediates
      SharedTensor2d uQia;              

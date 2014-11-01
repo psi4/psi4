@@ -290,6 +290,11 @@ class Tensor2d
   void dirprd123(bool transb, const SharedTensor1d &a, const SharedTensor2d &b, double alpha, double beta);
   // dirprd112: A2d_[i][j] = a[i] * b[j]
   void dirprd112(const SharedTensor1d &a, const SharedTensor1d &b);
+  // dirprd112: A2d_[i][j] = alpha *a[i] * b[j] + beta * A2d_[i][j]
+  void dirprd112(const SharedTensor1d &a, const SharedTensor1d &b, double alpha, double beta);
+  // dirprd224: A2d_[ij][kl] = a[i][j] * b[k][l]
+  void dirprd224(const SharedTensor2d &a, const SharedTensor2d &b);
+  void dirprd224(const SharedTensor2d &a, const SharedTensor2d &b, double alpha, double beta);
   double* to_vector(const SharedTensor2i &pair_idx);
   double* to_vector();
   double rms();
