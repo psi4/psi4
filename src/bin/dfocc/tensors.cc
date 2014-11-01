@@ -27,7 +27,7 @@
 #include <libpsio/psio.hpp>
 #include <libiwl/iwl.hpp>
 #include "tensors.h"
-#include "libparallel/ParallelPrinter.h"
+
 using namespace boost;
 using namespace psi;
 using namespace std;
@@ -101,21 +101,20 @@ void Tensor1d::zero()
 
 void Tensor1d::print()
 {
-  if (name_.length()) outfile->Printf( "\n ## %s ##\n", name_.c_str());
+  if (name_.length()) fprintf(outfile, "\n ## %s ##\n", name_.c_str());
   for (int p=0; p<dim1_; p++){
-    outfile->Printf(" %3d %10.7f \n",p,A1d_[p]);
+    fprintf(outfile," %3d %10.7f \n",p,A1d_[p]);
   }
-  
+  fflush(outfile);
 }//
 
-void Tensor1d::print(std::string OutFileRMR)
+void Tensor1d::print(FILE *out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(OutFileRMR)));
-   if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
+  if (name_.length()) fprintf(out, "\n ## %s ##\n", name_.c_str());
   for (int p=0; p<dim1_; p++){
-    printer->Printf(" %3d %10.7f \n",p,A1d_[p]);
+    fprintf(out," %3d %10.7f \n",p,A1d_[p]);
   }
+  fflush(out);
 }//
 
 void Tensor1d::set(int i, double value)
@@ -651,19 +650,18 @@ void Tensor2d::zero_diagonal()
 void Tensor2d::print()
 {
   if (A2d_) {
-      if (name_.length()) outfile->Printf( "\n ## %s ##\n", name_.c_str());
-      print_mat(A2d_,dim1_,dim2_,"outfile");
-      
+      if (name_.length()) fprintf(outfile, "\n ## %s ##\n", name_.c_str());
+      print_mat(A2d_,dim1_,dim2_,outfile);
+      fflush(outfile);
   }
 }//
 
-void Tensor2d::print(std::string OutFileRMR)
+void Tensor2d::print(FILE *out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(OutFileRMR)));
-   if (A2d_) {
-      if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
-      print_mat(A2d_,dim1_,dim2_,OutFileRMR);
+  if (A2d_) {
+      if (name_.length()) fprintf(out, "\n ## %s ##\n", name_.c_str());
+      print_mat(A2d_,dim1_,dim2_,out);
+      fflush(out);
   }
 }//
 
@@ -1155,8 +1153,8 @@ void Tensor2d::contract424(int target_x, int target_y, const SharedTensor2d& a, 
     */
 
     else {
-         outfile->Printf("\tcontract424: Unrecognized targets! \n");
-         
+         fprintf(outfile,"\tcontract424: Unrecognized targets! \n");
+         fflush(outfile);
     }
 
 }//
@@ -1325,8 +1323,8 @@ void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d& a, 
     }
 
     else {
-         outfile->Printf("contract442: Unrecognized targets!");
-         
+         fprintf(outfile,"contract442: Unrecognized targets!");
+         fflush(outfile);
     }
 
 }//
@@ -1556,14 +1554,14 @@ void Tensor2d::lineq_flin(double* Xvec, double *det)
 void Tensor2d::lineq_pople(const SharedTensor1d& Xvec, int num_vecs, double cutoff)
 {
       if (dim1_) {
-	pople(A2d_, Xvec->A1d_, dim1_, num_vecs, cutoff, "outfile", 0);
+	pople(A2d_, Xvec->A1d_, dim1_, num_vecs, cutoff, outfile, 0);
       }
 }//
 
 void Tensor2d::lineq_pople(double* Xvec, int num_vecs, double cutoff)
 {
       if (dim1_) {
-	pople(A2d_, Xvec, dim1_, num_vecs, cutoff, "outfile", 0);
+	pople(A2d_, Xvec, dim1_, num_vecs, cutoff, outfile, 0);
       }
 }//
 
@@ -1658,8 +1656,8 @@ void Tensor2d::triple_gemm(const SharedTensor2d& a, const SharedTensor2d& b, con
     gemm(false, false, a, bc, 1.0, 0.0);
   }
   else {
-    outfile->Printf("\n Warning!!! Matrix dimensions do NOT match in triple_gemm().\n");
-    
+    fprintf(outfile,"\n Warning!!! Matrix dimensions do NOT match in triple_gemm().\n");
+    fflush(outfile);
   }
 
 }//
@@ -1977,7 +1975,7 @@ bool Tensor2d::read(PSIO* psio, int itap, const char *label, int dim)
     int ntri = 0.5 * dim * (dim + 1);
     double *mybuffer = init_array(ntri);
     memset(mybuffer, 0, sizeof(double)*ntri);
-    IWL::read_one(psio, itap, label, mybuffer, ntri, 0, 0, "outfile");
+    IWL::read_one(psio, itap, label, mybuffer, ntri, 0, 0, outfile);
 
     double **Asq = block_matrix(dim, dim);
     memset(Asq[0], 0, sizeof(double)*dim*dim);
@@ -1994,7 +1992,7 @@ bool Tensor2d::read(boost::shared_ptr<psi::PSIO> psio, int itap, const char *lab
     int ntri = 0.5 * dim * (dim + 1);
     double *mybuffer = init_array(ntri);
     memset(mybuffer, 0, sizeof(double)*ntri);
-    IWL::read_one(psio.get(), itap, label, mybuffer, ntri, 0, 0, "outfile");
+    IWL::read_one(psio.get(), itap, label, mybuffer, ntri, 0, 0, outfile);
 
     double **Asq = block_matrix(dim, dim);
     memset(Asq[0], 0, sizeof(double)*dim*dim);
@@ -2108,7 +2106,7 @@ void Tensor2d::mgs()
 void Tensor2d::gs()
 {
     if (dim1_ != 0 && dim2_ != 0 ) {
-       schmidt(A2d_, dim1_, dim2_, "outfile");
+       schmidt(A2d_, dim1_, dim2_, outfile);
     }
 }//
 
@@ -2360,8 +2358,8 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
 
 
  else {
-    outfile->Printf("\tUnrecognized sort type!\n");
-    
+    fprintf(outfile,"\tUnrecognized sort type!\n");
+    fflush(outfile);
  }
 
 }//
@@ -3347,12 +3345,12 @@ void Tensor3d::zero()
 
 void Tensor3d::print()
 {
-  if (name_.length()) outfile->Printf( "\n ## %s ##\n", name_.c_str());
+  if (name_.length()) fprintf(outfile, "\n ## %s ##\n", name_.c_str());
   for (int i=0; i<dim1_;i++){
-    outfile->Printf( "\n Irrep: %d\n", i+1);
-    print_mat(A3d_[i],dim2_,dim3_,"outfile");
+    fprintf(outfile, "\n Irrep: %d\n", i+1);
+    print_mat(A3d_[i],dim2_,dim3_,outfile);
   }
-  
+  fflush(outfile);
 }//
 
 void Tensor3d::release()
@@ -3432,11 +3430,11 @@ void Tensor1i::zero()
 
 void Tensor1i::print()
 {
-  if (name_.length()) outfile->Printf( "\n ## %s ##\n", name_.c_str());
+  if (name_.length()) fprintf(outfile, "\n ## %s ##\n", name_.c_str());
   for (int p=0; p<dim1_; p++){
-    outfile->Printf(" %3d %3d \n",p,A1i_[p]);
+    fprintf(outfile," %3d %3d \n",p,A1i_[p]);
   }
-  
+  fflush(outfile);
 }//
 
 void Tensor1i::release()
@@ -3573,17 +3571,16 @@ void Tensor2i::zero_diagonal()
 
 void Tensor2i::print()
 {
-  if (name_.length()) outfile->Printf( "\n ## %s ##\n", name_.c_str());
-  print_int_mat(A2i_,dim1_,dim2_,"outfile");
-  
+  if (name_.length()) fprintf(outfile, "\n ## %s ##\n", name_.c_str());
+  print_int_mat(A2i_,dim1_,dim2_,outfile);
+  fflush(outfile);
 }//
 
-void Tensor2i::print(std::string OutFileRMR)
+void Tensor2i::print(FILE *out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(OutFileRMR)));
-   if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
-  print_int_mat(A2i_,dim1_,dim2_,OutFileRMR);
+  if (name_.length()) fprintf(out, "\n ## %s ##\n", name_.c_str());
+  print_int_mat(A2i_,dim1_,dim2_,out);
+  fflush(out);
 }//
 
 void Tensor2i::release()
@@ -3805,12 +3802,12 @@ void Tensor3i::zero()
 
 void Tensor3i::print()
 {
-  if (name_.length()) outfile->Printf( "\n ## %s ##\n", name_.c_str());
+  if (name_.length()) fprintf(outfile, "\n ## %s ##\n", name_.c_str());
   for (int i=0; i<dim1_;i++){
-    outfile->Printf( "\n Irrep: %d\n", i+1);
-    print_int_mat(A3i_[i],dim2_,dim3_,"outfile");
+    fprintf(outfile, "\n Irrep: %d\n", i+1);
+    print_int_mat(A3i_[i],dim2_,dim3_,outfile);
   }
-  
+  fflush(outfile);
 }//
 
 void Tensor3i::release()

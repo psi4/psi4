@@ -368,9 +368,6 @@ protected:
     void ocepa_manager();
     void cepa_manager();
 
-    // CCSD
-    void ccsd_manager();
-
     // orbital pairs
     int so_pair_idx(int i, int j);
     int mo_pair_idx(int i, int j);
@@ -385,7 +382,6 @@ protected:
     int get_rotation_block(string rotblock);
 
     // DIIS
-    DIISManager *t1DiisManager;
     DIISManager *t2DiisManager;
 
     // Gradients
@@ -489,7 +485,6 @@ protected:
      double Emp2L_old;
      double Ecorr;
      double EcorrL;
-     double EccL;
      double Ecc_rdm;
      double Escsmp2;
      double Escsmp2BB;
@@ -573,13 +568,6 @@ protected:
      double Escscepa;
      double EsoscepaAB;
      double Esoscepa;
-
-     // CCSD
-     double Eccsd;
-     double Eccsd_old;
-     double EccsdAA;
-     double EccsdBB;
-     double EccsdAB;
      
      string wfn;
      string reference;
@@ -603,6 +591,7 @@ protected:
      string orb_resp_solver_;
      string pcg_beta_type_;
      string ekt_ip_;
+     string ekt_ea_;
      string orb_opt_;
      string rotation_blocks;
      string conv_tei_type;

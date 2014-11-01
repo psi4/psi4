@@ -85,10 +85,11 @@ void DFOCC::common_init()
     dertype=options_.get_str("DERTYPE");
     orb_resp_solver_=options_.get_str("ORB_RESP_SOLVER");
     ekt_ip_=options_.get_str("EKT_IP");
+    ekt_ea_=options_.get_str("EKT_EA");
     reference=options_.get_str("REFERENCE");
     wfn_type_=options_.get_str("WFN_TYPE");
     orb_opt_=options_.get_str("ORB_OPT");
-    //conv_tei_type=options_.get_str("CONV_TEI_TYPE");
+    conv_tei_type=options_.get_str("CONV_TEI_TYPE");
     pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
     regularization=options_.get_str("REGULARIZATION");
     read_scf_3index=options_.get_str("READ_SCF_3INDEX");
@@ -118,8 +119,8 @@ void DFOCC::common_init()
         }
         tol_grad = pow(10.0, -temp);
         //tol_grad = 100.0*tol_Eod; 
-        outfile->Printf("\tRMS orbital gradient is changed to : %12.2e\n", tol_grad);
-        
+        fprintf(outfile,"\tRMS orbital gradient is changed to : %12.2e\n", tol_grad);
+        fflush(outfile);
     }
 
     // Determine the MAXIMUM MOGRAD CONVERGENCE
@@ -134,8 +135,8 @@ void DFOCC::common_init()
         }
         mograd_max = pow(10.0, -temp2);
         //mograd_max = 10.0*tol_grad;
-        outfile->Printf("\tMAX orbital gradient is changed to : %12.2e\n", mograd_max);
-        
+        fprintf(outfile,"\tMAX orbital gradient is changed to : %12.2e\n", mograd_max);
+        fflush(outfile);
     }
 
     // Figure out REF
@@ -172,16 +173,16 @@ void DFOCC::common_init()
          }
          else if (reference_ == "UNRESTRICTED") {
              hess_type = "APPROX_DIAG";
-             outfile->Printf("\tMO Hessian type is changed to 'APPROX_DIAG'\n");
-             
+             fprintf(outfile,"\tMO Hessian type is changed to 'APPROX_DIAG'\n");
+             fflush(outfile);
          }
     }
 
     // Regularization 
     if (regularization == "TRUE") {
-        outfile->Printf("\n\tNOTE: A regularization procedure will be applied to the method.\n");
-        outfile->Printf("\tThe regularization parameter is : %12.2f mh\n", reg_param * 1000.0);
-        
+        fprintf(outfile,"\n\tNOTE: A regularization procedure will be applied to the method.\n");
+        fprintf(outfile,"\tThe regularization parameter is : %12.2f mh\n", reg_param * 1000.0);
+        fflush(outfile);
     }
 
     cutoff = pow(10.0,-exp_cutoff);
@@ -234,11 +235,11 @@ if (reference_ == "RESTRICTED") {
         if (nfrzc > 0) AooA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <I|FC>", naoccA, nfrzc));
     }
 
-        outfile->Printf("\n\tMO spaces... \n\n"); 
-        outfile->Printf( "\t FC   OCC   VIR   FV \n");
-        outfile->Printf( "\t----------------------\n");                                                 
-        outfile->Printf( "\t%3d  %3d   %3d  %3d\n", nfrzc, naoccA, navirA, nfrzv);
-	
+        fprintf(outfile,"\n\tMO spaces... \n\n"); fflush(outfile);
+        fprintf(outfile, "\t FC   OCC   VIR   FV \n");
+        fprintf(outfile, "\t----------------------\n");                                                 
+        fprintf(outfile, "\t%3d  %3d   %3d  %3d\n", nfrzc, naoccA, navirA, nfrzv);
+	fflush(outfile);
 
         // memory requirements
         cost_ampAA = 0;
@@ -248,9 +249,9 @@ if (reference_ == "RESTRICTED") {
         cost_amp = (ULI)3.0 * cost_ampAA;
         memory = Process::environment.get_memory();
         memory_mb = memory/1000000L;
-        outfile->Printf("\n\tAvailable memory is: %6lu MB \n", memory_mb);
-        outfile->Printf("\tMinimum required memory for the DFOCC module is: %6lu MB \n", cost_amp);
-        
+        fprintf(outfile,"\n\tAvailable memory is: %6lu MB \n", memory_mb);
+        fprintf(outfile,"\tMinimum required memory for the DFOCC module is: %6lu MB \n", cost_amp);
+        fflush(outfile);
 
 }  // end if (reference_ == "RESTRICTED")
 
@@ -333,11 +334,11 @@ else if (reference_ == "UNRESTRICTED") {
             G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
         }
 
-        outfile->Printf("\n\tMO spaces... \n\n"); 
-        outfile->Printf( "\t FC   AOCC   BOCC  AVIR   BVIR   FV \n");
-        outfile->Printf( "\t------------------------------------------\n");
-        outfile->Printf( "\t%3d   %3d   %3d   %3d    %3d   %3d\n", nfrzc, naoccA, naoccB, navirA, navirB, nfrzv);
-        
+        fprintf(outfile,"\n\tMO spaces... \n\n"); fflush(outfile);
+        fprintf(outfile, "\t FC   AOCC   BOCC  AVIR   BVIR   FV \n");
+        fprintf(outfile, "\t------------------------------------------\n");
+        fprintf(outfile, "\t%3d   %3d   %3d   %3d    %3d   %3d\n", nfrzc, naoccA, naoccB, navirA, navirB, nfrzv);
+        fflush(outfile);
 
         // memory requirements
         cost_ampAA = 0;
@@ -355,60 +356,61 @@ else if (reference_ == "UNRESTRICTED") {
         cost_amp = (ULI)3.0 * cost_amp;
         memory = Process::environment.get_memory();
         memory_mb = memory/1000000L;
-        outfile->Printf("\n\tAvailable memory is: %6lu MB \n", memory_mb);
-        outfile->Printf("\tMinimum required memory for the DFOCC module is: %6lu MB \n", cost_amp);
-        
+        fprintf(outfile,"\n\tAvailable memory is: %6lu MB \n", memory_mb);
+        fprintf(outfile,"\tMinimum required memory for the DFOCC module is: %6lu MB \n", cost_amp);
+        fflush(outfile);
 }// else if (reference_ == "UNRESTRICTED")
 	
-        //outfile->Printf("\tI am here.\n"); 
+        //fprintf(outfile,"\tI am here.\n"); fflush(outfile);
 
 }// end common_init
 
 void DFOCC::title()
 {
-   outfile->Printf("\n");
-   outfile->Printf(" ============================================================================== \n");
-   outfile->Printf(" ============================================================================== \n");
-   outfile->Printf(" ============================================================================== \n");
-   outfile->Printf("\n");
-   if (wfn_type_ == "DF-OMP2" && orb_opt_ == "TRUE") outfile->Printf("                      DF-OMP2 (DF-OO-MP2)   \n");
-   else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       DF-MP2   \n");
-   else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE") outfile->Printf("                       DF-OMP3 (DF-OO-MP3)   \n");
-   else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE") outfile->Printf("                       DF-MP3   \n");
-   else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "TRUE") outfile->Printf("                       DF-OCEPA(0) (DF-OO-CEPA)   \n");
-   else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "FALSE") outfile->Printf("                       DF-CEPA(0)   \n");
-   else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") outfile->Printf("                       DF-OMP2.5 (DF-OO-MP2.5)   \n");
-   else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") outfile->Printf("                       DF-MP2.5  \n");
-   else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") outfile->Printf("                      CD-OMP2 (CD-OO-MP2)   \n");
-   else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP2   \n");
-   outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision October 31, 2014\n") ;
-   outfile->Printf("\n");
-   outfile->Printf(" ============================================================================== \n");
-   outfile->Printf(" ============================================================================== \n");
-   outfile->Printf(" ============================================================================== \n");
-   outfile->Printf("\n");
+   fprintf(outfile,"\n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile,"\n");
+   if (wfn_type_ == "DF-OMP2" && orb_opt_ == "TRUE") fprintf(outfile,"                      DF-OMP2 (DF-OO-MP2)   \n");
+   else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-MP2   \n");
+   else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE") fprintf(outfile,"                       DF-OMP3 (DF-OO-MP3)   \n");
+   else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-MP3   \n");
+   else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "TRUE") fprintf(outfile,"                       DF-OCEPA(0) (DF-OO-CEPA)   \n");
+   else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-CEPA(0)   \n");
+   else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       DF-OMP2.5 (DF-OO-MP2.5)   \n");
+   else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-MP2.5  \n");
+   else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") fprintf(outfile,"                      CD-OMP2 (CD-OO-MP2)   \n");
+   else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") fprintf(outfile,"                       CD-MP2   \n");
+   fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
+   fprintf(outfile,"              Latest Revision July 25, 2014\n") ;
+   fprintf(outfile,"\n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile,"\n");
+   fflush(outfile);
 
 }//
 
 void DFOCC::title_grad()
 {
-   outfile->Printf("\n");
-   outfile->Printf(" ============================================================================== \n");
-   outfile->Printf(" ============================================================================== \n");
-   outfile->Printf(" ============================================================================== \n");
-   outfile->Printf("\n");
-   outfile->Printf("                         DFGRAD   \n");
-   outfile->Printf("            A General Analytic Gradients Code   \n");
-   outfile->Printf("               for Density-Fitted Methods       \n");
-   outfile->Printf("                   by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision October 31, 2014\n") ;
-   outfile->Printf("\n");
-   outfile->Printf(" ============================================================================== \n");
-   outfile->Printf(" ============================================================================== \n");
-   outfile->Printf(" ============================================================================== \n");
-   outfile->Printf("\n");
-   
+   fprintf(outfile,"\n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile,"\n");
+   fprintf(outfile,"                         DFGRAD   \n");
+   fprintf(outfile,"            A General Analytic Gradients Code   \n");
+   fprintf(outfile,"               for Density-Fitted Methods       \n");
+   fprintf(outfile,"                   by Ugur Bozkaya\n") ; 
+   fprintf(outfile,"              Latest Revision July 02, 2014\n") ;
+   fprintf(outfile,"\n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile,"\n");
+   fflush(outfile);
 
 }//
 
@@ -419,23 +421,24 @@ double DFOCC::compute_energy()
         do_cd = "FALSE";
         if (wfn_type_ == "DF-OMP2" && orb_opt_ == "TRUE") omp2_manager();
         else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE") mp2_manager();
+        else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE") omp3_manager();
+        else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE") mp3_manager();
+        else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "TRUE") ocepa_manager();
+        else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "FALSE") cepa_manager();
+        else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") omp2_5_manager();
+        else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") mp2_5_manager();
         else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") cd_omp2_manager();
         else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") cd_mp2_manager();
-        else if (wfn_type_ == "DF-CCSD" && orb_opt_ == "FALSE") ccsd_manager();
-        //else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE") omp3_manager();
-        //else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE") mp3_manager();
-        //else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "TRUE") ocepa_manager();
-        //else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "FALSE") cepa_manager();
-        //else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") omp2_5_manager();
-        //else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") mp2_5_manager();
-        else {
-             throw PSIEXCEPTION("Unrecognized WFN_TYPE!");
-        }
 
-        if (wfn_type_ == "DF-OMP2" || wfn_type_ == "CD-OMP2") Etotal = Emp2L;
-        else if (wfn_type_ == "DF-CCSD" || wfn_type_ == "CD-CCSD") Etotal = Eccsd;
-        //else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5") Etotal = Emp3L;
-        //else if (wfn_type_ == "DF-OCEPA") Etotal = EcepaL;
+        /*
+        timer_on("DF-RHF GRAD");
+	ref_grad();  
+        timer_off("DF-RHF GRAD");
+        */
+
+        if (wfn_type_ == "DF-OMP2") Etotal = Emp2L;
+        else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5") Etotal = Emp3L;
+        else if (wfn_type_ == "DF-OCEPA") Etotal = EcepaL;
 
         return Etotal;
 

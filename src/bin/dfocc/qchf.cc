@@ -33,17 +33,17 @@ namespace psi{ namespace dfoccwave{
 void DFOCC::qchf()
 {
    
-outfile->Printf("\n");
-outfile->Printf(" ============================================================================== \n");
-outfile->Printf(" ================ Performing QCHF iterations... =============================== \n");
-outfile->Printf(" ============================================================================== \n");
-outfile->Printf( "\t            QCHF \n");
-outfile->Printf( "\t   ------------------------------ \n");
-//outfile->Printf( " Iter       E_total           DE           RMS MO Grad \n");
-//outfile->Printf( " ----    ---------------    ----------     ----------- \n");
-outfile->Printf( " Iter       E_total           DE           RMS MO Grad      MAX MO Grad  \n");
-outfile->Printf( " ----    ---------------    ----------     -----------      -----------  \n");
-
+fprintf(outfile,"\n");      
+fprintf(outfile," ============================================================================== \n");    
+fprintf(outfile," ================ Performing QCHF iterations... =============================== \n");  
+fprintf(outfile," ============================================================================== \n");
+fprintf(outfile, "\t            QCHF \n");
+fprintf(outfile, "\t   ------------------------------ \n");
+//fprintf(outfile, " Iter       E_total           DE           RMS MO Grad \n");
+//fprintf(outfile, " ----    ---------------    ----------     ----------- \n");
+fprintf(outfile, " Iter       E_total           DE           RMS MO Grad      MAX MO Grad  \n");
+fprintf(outfile, " ----    ---------------    ----------     -----------      -----------  \n");
+fflush(outfile);
 
 //==========================================================================================
 //========================= NR iterations ==================================================
@@ -237,7 +237,8 @@ do
 	biggest_mograd=MAX0(biggest_mogradA,biggest_mogradB);
     }
 	
-outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e \n",itr_occ,Eref,DE,rms_wog,biggest_mograd);
+fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e \n",itr_occ,Eref,DE,rms_wog,biggest_mograd);
+fflush(outfile);
 
 //==========================================================================================
 //========================= Convergence? ===================================================
@@ -258,11 +259,11 @@ outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e \n",itr_occ,Eref,D
 while(rms_wog >= tol_grad || biggest_mograd >= mograd_max); 
 
 if (conver_hf == 1) {
-outfile->Printf("\n");
-outfile->Printf(" ============================================================================== \n");
-outfile->Printf(" ======================== QCHF ITERATIONS ARE CONVERGED ======================= \n");
-outfile->Printf(" ============================================================================== \n");
-
+fprintf(outfile,"\n");
+fprintf(outfile," ============================================================================== \n");
+fprintf(outfile," ======================== QCHF ITERATIONS ARE CONVERGED ======================= \n");
+fprintf(outfile," ============================================================================== \n");
+fflush(outfile);
 
     // canonicalize
     canonic();
@@ -307,7 +308,8 @@ outfile->Printf(" ==============================================================
 }// end conver-hf = 1
 
 else if (conver_hf == 0) {
-  outfile->Printf("\n\tQCHF IS NOT CONVERGED IN %2d ITERATIONS ========== \n", mo_maxiter);
+  fprintf(outfile,"\n\tQCHF IS NOT CONVERGED IN %2d ITERATIONS ========== \n", mo_maxiter);
+  fflush(outfile);
   throw PSIEXCEPTION("QCHF iterations did not converge");
 }
 
@@ -353,7 +355,7 @@ if (reference_ == "RESTRICTED") {
     }// end if nidpA != 0
 
     else if (nidpA == 0) {
-            outfile->Printf("\tThere is not any non-redundant orbital rotation pair! \n");
+            fprintf(outfile,"\tThere is not any non-redundant orbital rotation pair! \n");
             tstop();
             exit(EXIT_SUCCESS);
     }
@@ -370,7 +372,7 @@ else if (reference_ == "UNRESTRICTED") {
     nidpB += nvirB * noccB; 
 
     if (nidpA == 0 && nidpB == 0) {
-        outfile->Printf("\tThere is not any non-redundant orbital rotation pair! \n");
+        fprintf(outfile,"\tThere is not any non-redundant orbital rotation pair! \n");
         tstop();
         exit(EXIT_SUCCESS);
     }

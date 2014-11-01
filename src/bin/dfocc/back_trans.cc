@@ -34,8 +34,8 @@ namespace psi{ namespace dfoccwave{
   
 void DFOCC::back_trans()
 { 
-    outfile->Printf("\tBacktransforming OPDM, TPDM, and GFM to the AO basis...\n");  
-    
+    fprintf(outfile,"\tBacktransforming OPDM, TPDM, and GFM to the AO basis...\n");  
+    fflush(outfile);
 
     SharedTensor2d Gmo, Gao, Gao2, G, Gref, Gsep, Gcorr, cQso2;
     timer_on("back_trans");
@@ -411,8 +411,8 @@ else if (reference_ == "UNRESTRICTED") {
 
 }// else if (reference_ == "UNRESTRICTED")
     timer_off("back_trans");
-    //outfile->Printf("\tBacktransformation is done.\n");  
-    //
+    //fprintf(outfile,"\tBacktransformation is done.\n");  
+    //fflush(outfile);
 } // end back_trans
 
 //=========================
@@ -420,8 +420,8 @@ else if (reference_ == "UNRESTRICTED") {
 //=========================
 void DFOCC::oeprop()
 { 
-    outfile->Printf("\tComputing one-electron properties...\n");  
-    
+    fprintf(outfile,"\tComputing one-electron properties...\n");  
+    fflush(outfile);
 
     timer_on("oeprop");
     SharedMatrix Da_ = SharedMatrix(new Matrix("MO-basis alpha OPDM", nmo_, nmo_));

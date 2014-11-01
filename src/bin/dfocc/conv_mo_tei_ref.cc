@@ -497,7 +497,7 @@ void DFOCC::tei_ovov_anti_symm_ref()
     IovovBB.reset();
     AIovovBB->write(psio_, PSIF_DFOCC_INTS);
     AIovovBB.reset();
-    //outfile->Printf("\tI am here.\n"); 
+    //fprintf(outfile,"\tI am here.\n"); fflush(outfile);
  }
     timer_off("Build <ia||jb>");
 }// end tei_ovov_anti_symm_ref

@@ -31,7 +31,7 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::kappa_orb_resp()
 { 
-//outfile->Printf("\n kappa_orb_resp is starting... \n"); 
+//fprintf(outfile,"\n kappa_orb_resp is starting... \n"); fflush(outfile);
 
     SharedTensor2d K;
 
@@ -84,7 +84,8 @@ if (reference_ == "RESTRICTED") {
 
     // A(ai,bj) += -2(ij|ab)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
-    tei_oovv_chem_ref_directAA(K);
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_oovv_chem_ref_directAA(K);
     Aorb->sort(3142, K, -2.0, 1.0);
     K.reset();
     if (print_ > 3) Aorb->print();
@@ -111,9 +112,9 @@ if (reference_ == "RESTRICTED") {
          double det = 0.0;      
          Aorb->lineq_flin(zvectorA, &det);
          if (fabs(det) < DIIS_MIN_DET) { 
-             outfile->Printf( "Warning!!! MO Hessian matrix is near-singular\n");
-             outfile->Printf( "Determinant is %6.3E\n", det);
-             
+             fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
+             fprintf(outfile, "Determinant is %6.3E\n", det);
+             fflush(outfile);
              pcg_conver = 0;// means unsuccessful
          }
     }
@@ -169,8 +170,8 @@ if (reference_ == "RESTRICTED") {
             else if (p < noccA && q < noccA) value = AooA->get(p-nfrzc,q); 
 	    kappaA->set(x, -wogA->get(x)/value);
         }
-       outfile->Printf("\tWarning!!! MO Hessian matrix is near-singular, switching to an approximately diagonal Hartree-Fock Hessian. \n");
-       
+       fprintf(outfile,"\tWarning!!! MO Hessian matrix is near-singular, switching to an approximately diagonal Hartree-Fock Hessian. \n");
+       fflush(outfile);
     } // end if pcg_conver = 0
 
         // find biggest_kappa 
@@ -248,7 +249,8 @@ else if (reference_ == "UNRESTRICTED") {
 
     // A(ai,bj) += -2(ij|ab)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
-    tei_oovv_chem_ref_directAA(K);
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_oovv_chem_ref_directAA(K);
     AorbAA->sort(3142, K, -2.0, 1.0);
     K.reset();
     if (print_ > 3) AorbAA->print();
@@ -302,7 +304,8 @@ else if (reference_ == "UNRESTRICTED") {
 
     // A(ai,bj) += -2(ij|ab)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB));
-    tei_oovv_chem_ref_directBB(K);
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_oovv_chem_ref_directBB(K);
     AorbBB->sort(3142, K, -2.0, 1.0);
     K.reset();
     if (print_ > 3) AorbBB->print();
@@ -379,9 +382,9 @@ else if (reference_ == "UNRESTRICTED") {
          double det = 0.0;      
          Aorb->lineq_flin(zvector, &det);
          if (fabs(det) < DIIS_MIN_DET) { 
-             outfile->Printf( "Warning!!! MO Hessian matrix is near-singular\n");
-             outfile->Printf( "Determinant is %6.3E\n", det);
-             
+             fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
+             fprintf(outfile, "Determinant is %6.3E\n", det);
+             fflush(outfile);
              pcg_conver = 0;// means unsuccessful
          }
     }
@@ -478,8 +481,8 @@ else if (reference_ == "UNRESTRICTED") {
 	    kappaB->set(x, -wogB->get(x)/value);
         }
 
-       outfile->Printf("\tWarning!!! MO Hessian matrix is near-singular, switching to MSD. \n");
-       
+       fprintf(outfile,"\tWarning!!! MO Hessian matrix is near-singular, switching to MSD. \n");
+       fflush(outfile);
     } // end if pcg_conver = 0
 
         // find biggest_kappa 
@@ -540,7 +543,7 @@ else if (reference_ == "UNRESTRICTED") {
         }
       
 }// end if (reference_ == "UNRESTRICTED") 
- //outfile->Printf("\n kappa_orb_resp done. \n"); 
+ //fprintf(outfile,"\n kappa_orb_resp done. \n"); fflush(outfile);
 }// end kappa_orb_resp
 }} // End Namespaces
 

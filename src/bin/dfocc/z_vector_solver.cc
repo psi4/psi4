@@ -30,9 +30,9 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::z_vector_solver()
 { 
-//outfile->Printf("\n z_vector_solver is starting... \n"); 
-    outfile->Printf("\tSolving orbital Z-vector equations...\n");
-    
+//fprintf(outfile,"\n z_vector_solver is starting... \n"); fflush(outfile);
+    fprintf(outfile,"\tSolving orbital Z-vector equations...\n");
+    fflush(outfile);
 
     SharedTensor2d K, L;
 
@@ -92,9 +92,9 @@ if (reference_ == "RESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
-        outfile->Printf("\tWarning!!! Iterative solver did NOT converged in %2d iterations. \n", itr_pcg);
-        outfile->Printf("\tI will solve the z-vector equation with a direct method.\n");
-        
+        fprintf(outfile,"\tWarning!!! Iterative solver did NOT converged in %2d iterations. \n", itr_pcg);
+        fprintf(outfile,"\tI will solve the z-vector equation with a direct method.\n");
+        fflush(outfile);
         z_vector();
     } // end if pcg_conver = 0
 
@@ -339,12 +339,12 @@ else if (reference_ == "UNRESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
-        outfile->Printf("\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
-        
+        fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
+        fflush(outfile);
     } 
 
 }// end if (reference_ == "UNRESTRICTED") 
- //outfile->Printf("\n z_vector_pcg done. \n"); 
+ //fprintf(outfile,"\n z_vector_pcg done. \n"); fflush(outfile);
 }// end z_vector_pcg
 
 //=======================================================
@@ -359,11 +359,11 @@ void DFOCC::zvec_solver_rhf()
     double rms_pcg = 0.0;
     pcg_conver = 1; // assuming pcg will converge
 
-outfile->Printf( "\n\t          Z-Vector Solver \n");
-outfile->Printf( "\t   ------------------------------ \n");
-outfile->Printf( "\tIter     RMS Z-Vector        RMS Residual  \n");
-outfile->Printf( "\t----    ---------------    --------------\n");
-
+fprintf(outfile, "\n\t          Z-Vector Solver \n");
+fprintf(outfile, "\t   ------------------------------ \n");
+fprintf(outfile, "\tIter     RMS Z-Vector        RMS Residual  \n");
+fprintf(outfile, "\t----    ---------------    --------------\n");
+fflush(outfile);
    //Minv_pcgA->print();
    //zvectorA->print();
 
@@ -371,7 +371,7 @@ outfile->Printf( "\t----    ---------------    --------------\n");
  do
  {
 
-   //outfile->Printf( "pcg iter: %3d \n", itr_pcg); 
+   //fprintf(outfile, "pcg iter: %3d \n", itr_pcg); fflush(outfile);
    // Build sigma
    sigma_pcgA->zero();
    sigma_orb_resp_rhf(sigma_pcgA, zvectorA);
@@ -447,8 +447,8 @@ if (do_diis_ == 1) {
    itr_pcg++;
 
    // Print
-   outfile->Printf("\t%3d     %12.2e     %12.2e\n",itr_pcg,rms_pcg,rms_residual);
-   
+   fprintf(outfile,"\t%3d     %12.2e     %12.2e\n",itr_pcg,rms_pcg,rms_residual);
+   fflush(outfile);
 
    // If we exceed maximum number of iteration, break the loop
    if (itr_pcg >= pcg_maxiter) {
@@ -498,7 +498,7 @@ void DFOCC::zvec_solver_uhf()
  // Head of the loop
  do
  {
-    //outfile->Printf( "pcg iter: %3d \n", itr_pcg); 
+    //fprintf(outfile, "pcg iter: %3d \n", itr_pcg); fflush(outfile);
 
     // Set 
     SvoA->set(sigma_pcgA);
