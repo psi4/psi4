@@ -28,6 +28,7 @@ option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  
 option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                           OFF)
 option(ENABLE_PLUGINS        "Enable plugins"                                   OFF)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                              OFF)
+option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"                    ON)
 
 set(EXTERNAL_LIBS)
 

@@ -162,6 +162,10 @@ def parse_input():
             default=None,
             help="Any extra flags to pass to the linker (usually -Llibdir -llibname type arguments). You shouldn't need this.",
             metavar='STRING')
+    group.add_argument('--disable_cxx11',
+            action='store_true',
+            default=False,
+            help='disable C++11 support [default: %(default)s]')
     # Plugins
     group.add_argument('--with-plugins',
             action="store_true",
@@ -316,6 +320,7 @@ def gen_cmake_command(args):
     command += ' -DENABLE_LIBERD=%s'         % translate_cmake(args.erd)
     command += ' -DENABLE_GPU_DFCC=%s'       % translate_cmake(args.gpu_dfcc)
     command += ' -DENABLE_DUMMY_PLUGIN=%s'   % translate_cmake(args.dummy_plugin)
+    command += ' -DENABLE_CXX11_SUPPORT=%s'  % translate_cmake(not args.disable_cxx11)
     command += ' -DLIBINT_OPT_AM={0}'.format(args.max_am_eri)
 
     if args.blas == 'builtin':
