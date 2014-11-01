@@ -1,5 +1,7 @@
 include(SaveCompilerFlags)
-include(CheckCXX11Features)
+if(ENABLE_CXX11_SUPPORT)
+   include(CheckCXX11Features)
+endif()   
 include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
 include(CheckFortranCompilerFlag)
