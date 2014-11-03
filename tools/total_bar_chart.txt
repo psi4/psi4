@@ -44,3 +44,5 @@ autolabel(rects)
 
 # Save to file
 savefig('total.png', format = 'png', dpi = 100, bbox_inches = 'tight')
+# Close plot
+plt.close()
