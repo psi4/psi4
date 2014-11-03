@@ -1,5 +1,41 @@
-set(SRC add_arr.cc add_mat.cc block_matrix.cc dot.cc eigout.cc eigsort.cc eivout.cc ffile.cc flin.cc init_array.cc init_matrix.cc int_array.cc long_int_array.cc lubksb.cc ludcmp.cc mmult.cc mxmb.cc print_array.cc print_mat.cc rsp.cc sq_rsp.cc sq_to_tri.cc tqli.cc tred2.cc tri_to_sq.cc tstart.cc zero.cc)
-add_library(ciomr ${SRC})
+include(GlobUtils)
+
+set(headers_list "")
+# Get headers with .h extension
+get_h_headers(headers_list)
+# If you want to remove some headers specify them explictly here
+if(DEVELOPMENT_CODE)
+   list(REMOVE_ITEM headers_list "")
+else()
+   list(REMOVE_ITEM headers_list "")
+endif()
+# Sort alphabetically
+list(SORT headers_list)
+
+set(sources_list "")
+# Get sources with .cc extension
+get_cc_sources(sources_list)
+# If you want to remove some sources specify them explictly here
+if(DEVELOPMENT_CODE)
+   list(REMOVE_ITEM sources_list "")
+else()
+   list(REMOVE_ITEM sources_list "")
+endif()
+
+# Write list of files to be passed to cloc for counting lines of code.
+# Only files that are actually compiled are counted.
+set(to_count "${sources_list}" "${headers_list}")
+write_to_cloc_list("${to_count}")
+
+# Build static library
+add_library(ciomr STATIC ${sources_list})
+# Specify dependencies for the library
+#add_dependencies(ciomr )
+set(libs_to_merge ciomr ${libs_to_merge} PARENT_SCOPE)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(ciomr custom_boost)
-endif()   
+endif()
+install(TARGETS ciomr ARCHIVE DESTINATION lib)
+
+# Sets install directory for all the headers in the list
+install_list_FILES("${headers_list}" include/libciomr)

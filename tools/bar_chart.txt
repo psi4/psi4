@@ -1,0 +1,56 @@
+# Handle to font properties
+font = FontProperties()
+
+# Font properties for x-ticks labels
+labels_font = font.copy()
+labels_font.set_weight('bold')
+labels_font.set_size('medium')
+
+# Set properties of bar chart
+N = 3
+data = (nr_blanks, nr_comments, nr_code)
+ind = np.arange(N)
+width = 1.0
+my_colors = 'gcy'
+
+fig, ax = plt.subplots()    
+# Remove frame and adjust x-ticks and respective labels
+fig.set_facecolor('white')
+ax.set_frame_on(False)
+ax.get_xaxis().tick_bottom()
+ax.get_xaxis().set_tick_params(bottom = 'off')
+ax.spines['right'].set_color('none')
+ax.spines['left'].set_color('none')
+ax.set_yticks([])
+for label in ax.get_xticklabels() :
+        label.set_fontproperties(labels_font)
+
+# Plot the data
+rects = ax.bar(ind, data, width, color = my_colors, edgecolor = 'white', alpha = 0.5)
+ax.set_xticks(ind + 0.5)
+ax.set_xticklabels(('# Blank', '# Comment', '# Code'))
+
+def autolabel(rects):
+    # attach some text labels on top of the bars
+    bar_font = font.copy()
+    bar_font.set_weight('bold')
+    bar_font.set_size('large')
+    for rect in rects:
+        height = rect.get_height()
+        ax.text(rect.get_x()+rect.get_width()/2., height, '%d'%int(height),
+                ha='center', va='bottom', fontproperties = bar_font)
+
+autolabel(rects)
+
+# Create box with library name and language
+box_font = font.copy()
+box_font.set_size('large')
+box_font.set_weight('bold')
+props = dict(boxstyle = 'round', facecolor = 'wheat', edgecolor = 'black', alpha = 0.5, linewidth = 1.5)
+fig.text(0.15, 0.75, annotation, 
+        style = 'normal', 
+        fontsize = 12,
+        bbox = props, fontproperties = box_font)
+
+# Save to file
+savefig(lib_name + '.png', format = 'png', dpi = 100, bbox_inches = 'tight')

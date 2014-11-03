@@ -261,7 +261,7 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name)
 
     std::stringstream ss;
     ss << filepath_ << "/" << name << ".cube";
-    printer=boost::shared_ptr<OutFile>(new OutFile(ss.str()));
+    boost::shared_ptr<psi::PsiOutStream> printer=boost::shared_ptr<OutFile>(new OutFile(ss.str()));
 
     // Two comment lines
     printer->Printf("PSI4 Gaussian Cube File.\n");
@@ -283,10 +283,9 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name)
     // Data, striped (x, y, z)
     for (size_t ind = 0; ind < npoints_; ind++) {
         printer->Printf("%12.5E ", v2[ind]);
-        if (ind % 6 == 5) outfile->Printf(fh,"\n");
+        if (ind % 6 == 5) outfile->Printf("\n");
     }
 
-    fclose(fh);   
 }
 void CubicScalarGrid::add_density(double* v, boost::shared_ptr<Matrix> D)
 {

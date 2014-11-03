@@ -1,21 +1,41 @@
-set(SRC am2canon_shell_order.cc atom_dummy.cc atom_pos.cc cartrep.cc
-       ccvecs.cc cdsalc2cd.cc cdsalcpi.cc close.cc clsdpi.cc contr.cc
-       contr_full.cc disp.cc disp_irrep.cc e_labeled.cc e_t.cc
-       eccsd.cc ecorr.cc efzc.cc emp2.cc enuc.cc eref.cc escf.cc
-       etot.cc evals.cc exist_add_prefix.cc exist.cc exps.cc felement.cc 
-       fgeom.cc fock.cc
-       fragment_coeff.cc frzcpi.cc frzvpi.cc geom.cc grad.cc ict.cc init.cc
-       iopen.cc irr_labs.cc keyword.cc label.cc lagr.cc max_am.cc
-       nallatom.cc nallatom_per_fragment.cc nao.cc natom.cc
-       natom_per_fragment.cc ncalcs.cc nfragment.cc nfzc.cc nfzv.cc
-       nirreps.cc nmo.cc nprim.cc nref_per_fragment.cc nshell.cc nso.cc
-       nsymhf.cc num_unique_atom.cc num_unique_shell.cc openpi.cc orbspi.cc
-       override_occ.cc phase_check.cc prefix.cc puream.cc ref.cc
-       rot_symm_num.cc rotconst.cc rottype.cc rref.cc scf.cc shell_transm.cc
-       shells_per_am.cc sloc.cc sloc_new.cc snuc.cc snumg.cc sopi.cc sprim.cc
-       statespi.cc stype.cc sym_label.cc symoper.cc ua2a.cc us2s.cc usotao.cc
-       usotbf.cc zmat.cc zvals.cc)
-add_library(chkpt ${SRC})
+include(GlobUtils)
+
+set(headers_list "")
+# Get headers with .h extension
+get_h_headers(headers_list)
+# If you want to remove some headers specify them explictly here
+if(DEVELOPMENT_CODE)
+   list(REMOVE_ITEM headers_list "")
+else()
+   list(REMOVE_ITEM headers_list "")
+endif()
+# Sort alphabetically
+list(SORT headers_list)
+
+set(sources_list "")
+# Get sources with .cc extension
+get_cc_sources(sources_list)
+# If you want to remove some sources specify them explictly here
+if(DEVELOPMENT_CODE)
+   list(REMOVE_ITEM sources_list "vib_freqs.cc")
+else()
+   list(REMOVE_ITEM sources_list "vib_freqs.cc")
+endif()
+
+# Write list of files to be passed to cloc for counting lines of code.
+# Only files that are actually compiled are counted.
+set(to_count "${sources_list}" "${headers_list}")
+write_to_cloc_list("${to_count}")
+
+# Build static library
+add_library(chkpt STATIC ${sources_list})
+# Specify dependencies for the library
+#add_dependencies(chkpt )
+set(libs_to_merge chkpt ${libs_to_merge} PARENT_SCOPE)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(chkpt custom_boost)
-endif()   
+endif()
+install(TARGETS chkpt ARCHIVE DESTINATION lib)
+
+# Sets install directory for all the headers in the list
+install_list_FILES("${headers_list}" include)
