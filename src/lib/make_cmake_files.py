@@ -25,8 +25,6 @@ parser.add_argument('--lang',
         const='CXX',
         help='Source file language')
 
-args = parser.parse_args()
-
 args = parser.parse_args() 
 libname = args.libname
 lang    = args.lang
