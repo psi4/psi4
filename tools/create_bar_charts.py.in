@@ -8,7 +8,6 @@
 
 import os
 import shutil
-import subprocess
 
 build  = '@CMAKE_BINARY_DIR@'
 scripts = build+'/doc/cloc/matplotlib'
