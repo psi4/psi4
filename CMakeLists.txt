@@ -10,6 +10,7 @@ list(APPEND CMAKE_MODULE_PATH
      ${CMAKE_SOURCE_DIR}/cmake
      ${CMAKE_SOURCE_DIR}/cmake/compilers
      ${CMAKE_SOURCE_DIR}/cmake/math
+     ${CMAKE_SOURCE_DIR}/cmake/testing
      )
 
 #  Options  
@@ -290,6 +291,7 @@ INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION ${CMAKE_INSTAL
 
 add_subdirectory(external)
 
+include(CTest)
 enable_testing()
 add_subdirectory(tests)
 
