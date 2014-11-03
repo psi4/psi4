@@ -49,13 +49,15 @@ include(ConfigMath)
 include(ConfigMPI)
 include(ConfigExplicitLibs)
 include(ConfigSafeGuards)
-#include(ConfigTesting)
 include(GenericMacros)
 #include(BinaryInfo)
 #include(mergestaticlibs)
 include(CheckIncludeFiles)
 include(CheckFunctionExists)
-include(ConfigDocumentation)
+# Here we look for Perl, Sphinx, Doxygen and LaTeX
+include(ConfigDocumentation) 
+# This must come after ConfigDocumentation, as it needs Perl detection 
+include(ConfigTesting)
 
 # Determine Fortran name mangling, used for external linking
 include(FortranCInterface)
@@ -290,10 +292,6 @@ endif()
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
 add_subdirectory(external)
-
-include(CTest)
-enable_testing()
-add_subdirectory(tests)
 
 # Configure some scripts
 configure_files()
