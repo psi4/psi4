@@ -1,15 +1,41 @@
-set(SRC amp_write.cc c_clean.cc cache.cc cc2_hbar_extra.cc cc2_sigma.cc 
-        cc3_HC1.cc cc3_HC1ET1.cc cceom.cc check_sum.cc dgeev_eom.cc 
-        diag.cc diagSS.cc FDD.cc follow_root.cc form_diagonal.cc FSD.cc
-        get_eom_params.cc get_moinfo.cc get_params.cc hbar_extra.cc 
-        hbar_norms.cc local.cc local_guess.cc norm.cc norm_HC1.cc
-        precondition.cc restart.cc restart_with_root.cc rzero.cc schmidt_add.cc
-        sigma_full.cc sigmaCC3.cc sigmaCC3_RHF.cc sigmaDD.cc sigmaDS.cc
-        sigmaSD.cc sigmaSS.cc sort_amps.cc sort_C.cc WabefDD.cc WabejDS.cc
-        WamefSD.cc WbmfeDS.cc WmaijDS.cc WmbejDD.cc WmnefDD.cc 
-        WmnieSD.cc WmnijDD.cc WnmjeDS.cc write_Rs.cc overlap.cc)
-add_library(cceom ${SRC})
+include(GlobUtils)
+
+set(headers_list "")
+# Get headers with .h extension
+get_h_headers(headers_list)
+# If you want to remove some headers specify them explictly here
+if(DEVELOPMENT_CODE)
+   list(REMOVE_ITEM headers_list "")
+else()
+   list(REMOVE_ITEM headers_list "")
+endif()
+# Sort alphabetically
+list(SORT headers_list)
+
+set(sources_list "")
+# Get sources with .cc extension
+get_cc_sources(sources_list)
+# If you want to remove some sources specify them explictly here
+if(DEVELOPMENT_CODE)
+   list(REMOVE_ITEM sources_list "read_guess.cc")
+else()
+   list(REMOVE_ITEM sources_list "read_guess.cc")
+endif()
+
+# Write list of files to be passed to cloc for counting lines of code.
+# Only files that are actually compiled are counted.
+set(to_count "${sources_list}" "${headers_list}")
+write_to_cloc_list("${to_count}")
+
+# Build static library
+add_library(cceom STATIC ${sources_list})
+# Specify dependencies for the library (if any)
 add_dependencies(cceom mints)
-if(CUSTOM_BOOST_BUILD)
+set(libs_to_merge cceom ${libs_to_merge} PARENT_SCOPE)
+if(BUILD_CUSTOM_BOOST)
    add_dependencies(cceom custom_boost)
 endif()
+install(TARGETS cceom ARCHIVE DESTINATION lib)
+
+# Sets install directory for all the headers in the list
+install_list_FILES("${headers_list}" include/libcceom)

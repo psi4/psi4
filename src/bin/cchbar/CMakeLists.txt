@@ -1,6 +1,41 @@
-set(SRC cache.cc cc2_Wabei.cc cc2_Wmbej.cc cc2_Wmbij.cc cc2_Zmbej.cc cc3_HET1.cc cchbar.cc F.cc Fai.cc get_moinfo.cc get_params.cc HET1_Wabef.cc norm_HET1.cc purge.cc reference.cc sort_amps.cc status.cc tau.cc taut.cc Wabei.cc Wabei_AAAA_UHF.cc Wabei_ABAB_UHF.cc Wabei_BABA_UHF.cc Wabei_BBBB_UHF.cc Wabei_RHF.cc Wabei_RHF_FT2_a.cc Wabei_ROHF.cc Wabij.cc Wamef.cc Wmbej.cc Wmbij.cc Wmnie.cc)
-add_library(cchbar ${SRC})
+include(GlobUtils)
+
+set(headers_list "")
+# Get headers with .h extension
+get_h_headers(headers_list)
+# If you want to remove some headers specify them explictly here
+if(DEVELOPMENT_CODE)
+   list(REMOVE_ITEM headers_list "")
+else()
+   list(REMOVE_ITEM headers_list "")
+endif()
+# Sort alphabetically
+list(SORT headers_list)
+
+set(sources_list "")
+# Get sources with .cc extension
+get_cc_sources(sources_list)
+# If you want to remove some sources specify them explictly here
+if(DEVELOPMENT_CODE)
+   list(REMOVE_ITEM sources_list "")
+else()
+   list(REMOVE_ITEM sources_list "")
+endif()
+
+# Write list of files to be passed to cloc for counting lines of code.
+# Only files that are actually compiled are counted.
+set(to_count "${sources_list}" "${headers_list}")
+write_to_cloc_list("${to_count}")
+
+# Build static library
+add_library(cchbar STATIC ${sources_list})
+# Specify dependencies for the library (if any)
 add_dependencies(cchbar mints)
-if(CUSTOM_BOOST_BUILD)
+set(libs_to_merge cchbar ${libs_to_merge} PARENT_SCOPE)
+if(BUILD_CUSTOM_BOOST)
    add_dependencies(cchbar custom_boost)
 endif()
+install(TARGETS cchbar ARCHIVE DESTINATION lib)
+
+# Sets install directory for all the headers in the list
+install_list_FILES("${headers_list}" include/libcchbar)

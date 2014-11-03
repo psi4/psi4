@@ -1,6 +1,41 @@
-set(SRC amp_write.cc analyze.cc AO_contribute.cc BT2.cc BT2_AO.cc cache.cc cc2_faeT2.cc cc2_fmiT2.cc cc2_t2.cc cc2_Wabei.cc cc2_WabeiT2.cc cc2_WabijT2.cc cc2_Wmbij.cc cc2_WmbijT2.cc cc2_Wmnij.cc cc3.cc cc3_Wabei.cc cc3_Wamef.cc cc3_Wmbij.cc cc3_Wmnie.cc cc3_Wmnij.cc ccenergy.cc converged.cc CT2.cc d1diag.cc d2diag.cc denom.cc diagnostic.cc diis.cc diis_RHF.cc diis_ROHF.cc diis_UHF.cc dijabT2.cc DT2.cc energy.cc ET2.cc Fae.cc FaetT2.cc Fme.cc Fmi.cc FmitT2.cc fock_build.cc form_df_ints.cc FT2.cc FT2_cc2.cc get_moinfo.cc get_params.cc halftrans.cc init_amps.cc lmp2.cc local.cc mp2_energy.cc new_d1diag.cc pair_energies.cc priority.cc rotate.cc sort_amps.cc spinad_amps.cc status.cc t1.cc t2.cc tau.cc taut.cc tsave.cc update.cc Wmbej.cc WmbejT2.cc Wmnij.cc WmnijT2.cc Z.cc ZT2.cc)
-add_library(ccenergy ${SRC})
+include(GlobUtils)
+
+set(headers_list "")
+# Get headers with .h extension
+get_h_headers(headers_list)
+# If you want to remove some headers specify them explictly here
+if(DEVELOPMENT_CODE)
+   list(REMOVE_ITEM headers_list "")
+else()
+   list(REMOVE_ITEM headers_list "")
+endif()
+# Sort alphabetically
+list(SORT headers_list)
+
+set(sources_list "")
+# Get sources with .cc extension
+get_cc_sources(sources_list)
+# If you want to remove some sources specify them explictly here
+if(DEVELOPMENT_CODE)
+   list(REMOVE_ITEM sources_list "")
+else()
+   list(REMOVE_ITEM sources_list "")
+endif()
+
+# Write list of files to be passed to cloc for counting lines of code.
+# Only files that are actually compiled are counted.
+set(to_count "${sources_list}" "${headers_list}")
+write_to_cloc_list("${to_count}")
+
+# Build static library
+add_library(ccenergy STATIC ${sources_list})
+# Specify dependencies for the library (if any)
 add_dependencies(ccenergy mints)
-if(CUSTOM_BOOST_BUILD)
+set(libs_to_merge ccenergy ${libs_to_merge} PARENT_SCOPE)
+if(BUILD_CUSTOM_BOOST)
    add_dependencies(ccenergy custom_boost)
 endif()
+install(TARGETS ccenergy ARCHIVE DESTINATION lib)
+
+# Sets install directory for all the headers in the list
+install_list_FILES("${headers_list}" include/libccenergy)
