@@ -1,6 +1,41 @@
-set(SRC b2brepl.cc calc_d.cc calc_hd_block.cc check_energy.cc civect.cc compute_cc.cc detci.cc form_ov.cc get_mo_info.cc h0block.cc import_vector.cc ints.cc misc.cc mitrush_iter.cc mpn.cc odometer.cc og_addr.cc olsengraph.cc olsenupdt.cc opdm.cc params.cc printing.cc s1.cc s1v.cc s2.cc s2v.cc s3.cc s3_block_bz.cc s3v.cc sem.cc sem_test.cc set_ciblks.cc shift.cc sigma.cc slater.cc slaterd.cc ssq.cc stringlist.cc time.cc tpdm.cc tpool.cc vector.cc)
-add_library(detci ${SRC})
+include(GlobUtils)
+
+set(headers_list "")
+# Get headers with .h extension
+get_h_headers(headers_list)
+# If you want to remove some headers specify them explictly here
+if(DEVELOPMENT_CODE)
+   list(REMOVE_ITEM headers_list "")
+else()
+   list(REMOVE_ITEM headers_list "")
+endif()
+# Sort alphabetically
+list(SORT headers_list)
+
+set(sources_list "")
+# Get sources with .cc extension
+get_cc_sources(sources_list)
+# If you want to remove some sources specify them explictly here
+if(DEVELOPMENT_CODE)
+   list(REMOVE_ITEM sources_list "calc_pt_block.cc" "graphset.cc")
+else()
+   list(REMOVE_ITEM sources_list "calc_pt_block.cc" "graphset.cc")
+endif()
+
+# Write list of files to be passed to cloc for counting lines of code.
+# Only files that are actually compiled are counted.
+set(to_count "${sources_list}" "${headers_list}")
+write_to_cloc_list("${to_count}")
+
+# Build static library
+add_library(detci STATIC ${sources_list})
+# Specify dependencies for the library (if any)
 add_dependencies(detci mints)
-if(CUSTOM_BOOST_BUILD)
+set(libs_to_merge detci ${libs_to_merge} PARENT_SCOPE)
+if(BUILD_CUSTOM_BOOST)
    add_dependencies(detci custom_boost)
 endif()
+install(TARGETS detci ARCHIVE DESTINATION lib)
+
+# Sets install directory for all the headers in the list
+install_list_FILES("${headers_list}" include/libdetci)

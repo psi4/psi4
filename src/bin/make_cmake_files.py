@@ -1,28 +1,124 @@
-from glob import glob
-import os
-exclude = ["cceom/read_guess.cc", "detci/calc_pt_block.cc", "detci/graphset.cc"]
-libs = []
-for d in [name for name in os.listdir(".") if os.path.isdir(os.path.join(".", name))]:
-    print "Processing", d
-    if d in ["attic", "psi4"]:
-        continue
-    libs.append(d)
-    files = glob("%s/*.cc" % d)
-    # Remove the lib part now
-    filenames = []
-    for f in files:
-        if f in exclude:
-            continue
-        filenames.append(os.path.basename(f))
+#!/usr/bin/python
+# -*- python -*-
+# -*- coding: utf-8 -*-
+# vim:filetype=python:
+# Create CMakeLists.txt template for leaf directories 
+# (c) Roberto Di Remigio  <roberto.d.remigio@uit.no>
+# licensed under the GNU Lesser General Public License
 
-    # These are handled differently
-    outfile = open("%s/CMakeLists.txt" % d, "w")
-    outfile.write("set(SRC %s)\n" % (" ".join(filenames)))
-    outfile.write("add_library(%s ${SRC})\n" % d)
-    outfile.close()
-outfile = open("CMakeLists.txt", "w")
-for l in libs:
-    outfile.write("add_subdirectory(%s)\n" % l)
-outfile.write("add_subdirectory(psi4)\n")
-outfile.close()
+import sys
 
+sys.path.append('../../cmake')
+import argparse
+
+parser = argparse.ArgumentParser(description='Create CMakeLists.txt template')
+parser.add_argument('libname',
+                     action='store',
+                     metavar='LIBNAME',
+                     nargs='?',
+                     help='Name of the library to be created')
+parser.add_argument('--lang',
+        nargs='?',
+        action='store',
+        choices=('CXX', 'C', 'F'),
+        default='CXX',
+        const='CXX',
+        help='Source file language')
+
+args = parser.parse_args()
+
+args = parser.parse_args() 
+libname = args.libname
+lang    = args.lang
+
+def glob_sources_cxx():
+    message = 'set(headers_list "")\n'                                     \
+    + '# Get headers with .h extension\n'                                  \
+    + 'get_h_headers(headers_list)\n'                                      \
+    + '# If you want to remove some headers specify them explictly here\n' \
+    + 'if(DEVELOPMENT_CODE)\n'                                             \
+    + '   list(REMOVE_ITEM headers_list "")\n'                             \
+    + 'else()\n'                                                           \
+    + '   list(REMOVE_ITEM headers_list "")\n'                             \
+    + 'endif()\n'                                                          \
+    + '# Sort alphabetically\n'                                            \
+    + 'list(SORT headers_list)\n\n'                                        \
+    + 'set(sources_list "")\n'                                             \
+    + '# Get sources with .cc extension\n'                                 \
+    + 'get_cc_sources(sources_list)\n'                                     \
+    + '# If you want to remove some sources specify them explictly here\n' \
+    + 'if(DEVELOPMENT_CODE)\n'                                             \
+    + '   list(REMOVE_ITEM sources_list "")\n'                             \
+    + 'else()\n'                                                           \
+    + '   list(REMOVE_ITEM sources_list "")\n'                             \
+    + 'endif()\n\n'                                                                 
+    return message            
+
+def glob_sources_c():
+    message = 'set(headers_list "")\n'                                     \
+    + '# Get headers with .h extension\n'                                  \
+    + 'get_h_headers(headers_list)\n'                                      \
+    + '# If you want to remove some headers specify them explictly here\n' \
+    + 'if(DEVELOPMENT_CODE)\n'                                             \
+    + '   list(REMOVE_ITEM headers_list "")\n'                             \
+    + 'else()\n'                                                           \
+    + '   list(REMOVE_ITEM headers_list "")\n'                             \
+    + 'endif()\n'                                                          \
+    + '# Sort alphabetically\n'                                            \
+    + 'list(SORT headers_list)\n\n'                                        \
+    + 'set(sources_list "")\n'                                             \
+    + '# Get sources with .c extension\n'                                  \
+    + 'get_c_sources(sources_list)\n'                                      \
+    + '# If you want to remove some sources specify them explictly here\n' \
+    + 'if(DEVELOPMENT_CODE)\n'                                             \
+    + '   list(REMOVE_ITEM sources_list "")\n'                             \
+    + 'else()\n'                                                           \
+    + '   list(REMOVE_ITEM sources_list "")\n'                             \
+    + 'endif()\n\n'                                                                 
+    return message            
+
+def glob_sources_fortran():
+    message = 'set(sources_list "")\n'                                     \
+    + '# Get sources with Fortran extension\n'                             \
+    + 'get_fortran_sources(sources_list)\n'                                \
+    + '# If you want to remove some sources specify them explictly here\n' \
+    + 'if(DEVELOPMENT_CODE)\n'                                             \
+    + '   list(REMOVE_ITEM sources_list "")\n'                             \
+    + 'else()\n'                                                           \
+    + '   list(REMOVE_ITEM sources_list "")\n'                             \
+    + 'endif()\n\n'
+    return message            
+
+f = open('CMakeLists.txt.try', 'w')
+f.write('include(GlobUtils)\n\n')
+if (lang == 'CXX'):
+    f.write(glob_sources_cxx())
+elif (lang == 'C'):
+    f.write(glob_sources_c())
+else:
+    f.write(glob_sources_fortran())
+
+f.write('# Write list of files to be passed to cloc for counting lines of code.\n')
+f.write('# Only files that are actually compiled are counted.\n')
+f.write('set(to_count "${sources_list}" "${headers_list}")\n')
+f.write('write_to_cloc_list("${to_count}")\n\n')
+
+f.write('# Build static library\n')
+f.write('add_library('+ libname + ' STATIC ${sources_list})\n')
+f.write('# Specify dependencies for the library (if any)\n')
+f.write('#add_dependencies('+ libname + ' )\n')
+f.write('set(libs_to_merge '+ libname + ' ${libs_to_merge} PARENT_SCOPE)\n')
+if (not (lang == 'C' or lang == 'F')):
+    f.write('if(BUILD_CUSTOM_BOOST)\n')
+    f.write('   add_dependencies('+ libname + ' custom_boost)\n')
+    f.write('endif()\n')
+f.write('install(TARGETS ' + libname + ' ARCHIVE DESTINATION lib)\n\n')
+
+if (not lang == 'F'):
+    f.write('# Sets install directory for all the headers in the list\n')
+    f.write('install_list_FILES("${headers_list}" include/lib' + libname + ')\n')
+
+print('Template for {} created'.format(args.libname))
+print('Don\'t forget to fix excluded files and dependencies!!!')
+
+# vim:et:ts=4:sw=4
