@@ -295,5 +295,7 @@ add_subdirectory(external)
 enable_testing()
 add_subdirectory(tests)
 
+# Configure some scripts
+configure_files()
 # This has to be the very last CMake module to be included
 include(ConfigInfo)

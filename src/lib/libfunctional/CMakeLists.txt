@@ -1,6 +1,41 @@
-set(SRC cfunctional.cc factory.cc FT97_Cfunctional.cc FT97B_Xfunctional.cc functional.cc LYP_Cfunctional.cc P86_Cfunctional.cc PBE_Cfunctional.cc PW91_Cfunctional.cc PW92_Cfunctional.cc PZ81_Cfunctional.cc superfactory.cc superfunctional.cc utility.cc VWN3_Cfunctional.cc VWN5_Cfunctional.cc wpbex_functional.cc xfunctional.cc wpbec_functional.cc)
-add_library(functional ${SRC})
-add_dependencies(functional mints)
+include(GlobUtils)
+
+set(headers_list "")
+# Get headers with .h extension
+get_h_headers(headers_list)
+# If you want to remove some headers specify them explictly here
+if(DEVELOPMENT_CODE)
+   list(REMOVE_ITEM headers_list "")
+else()
+   list(REMOVE_ITEM headers_list "")
+endif()
+# Sort alphabetically
+list(SORT headers_list)
+
+set(sources_list "")
+# Get sources with .cc extension
+get_cc_sources(sources_list)
+# If you want to remove some sources specify them explictly here
+if(DEVELOPMENT_CODE)
+   list(REMOVE_ITEM sources_list "")
+else()
+   list(REMOVE_ITEM sources_list "")
+endif()
+
+# Write list of files to be passed to cloc for counting lines of code.
+# Only files that are actually compiled are counted.
+set(to_count "${sources_list}" "${headers_list}")
+write_to_cloc_list("${to_count}")
+
+# Build static library
+add_library(functional STATIC ${sources_list})
+# Specify dependencies for the library (if any)
+#add_dependencies(functional )
+set(libs_to_merge functional ${libs_to_merge} PARENT_SCOPE)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(functional custom_boost)
-endif()   
+endif()
+install(TARGETS functional ARCHIVE DESTINATION lib)
+
+# Sets install directory for all the headers in the list
+install_list_FILES("${headers_list}" include/libfunctional)

@@ -1,40 +1,41 @@
-set(SRC aio_handler.cc
-		BinaryFile.h
-		BinaryFile.cc  
-        change_namespace.cc 
-        close.cc 
-        done.cc 
-        error.cc 
-        filemanager.cc 
-        filescfg.cc 
-        get_address.cc 
-        get_filename.cc 
-        get_global_address.cc 
-        get_length.cc 
-        get_numvols.cc 
-        getpid.cc
-        get_volpath.cc 
-        init.cc
-        MOFile.h
-        MOFile.cc
-        open.cc 
-        open_check.cc 
-        read.cc 
-        read_entry.cc 
-        rename_file.cc 
-        rw.cc 
-        tocclean.cc 
-        toclast.cc 
-        toclen.cc 
-        tocprint.cc 
-        tocread.cc 
-        tocscan.cc 
-        tocwrite.cc 
-        volseek.cc 
-        write.cc 
-        write_entry.cc 
-        zero_disk.cc)
-add_library(psio ${SRC})
+include(GlobUtils)
+
+set(headers_list "")
+# Get headers with .h extension
+get_h_headers(headers_list)
+# If you want to remove some headers specify them explictly here
+if(DEVELOPMENT_CODE)
+   list(REMOVE_ITEM headers_list "")
+else()
+   list(REMOVE_ITEM headers_list "")
+endif()
+# Sort alphabetically
+list(SORT headers_list)
+
+set(sources_list "")
+# Get sources with .cc extension
+get_cc_sources(sources_list)
+# If you want to remove some sources specify them explictly here
+if(DEVELOPMENT_CODE)
+   list(REMOVE_ITEM sources_list "")
+else()
+   list(REMOVE_ITEM sources_list "")
+endif()
+
+# Write list of files to be passed to cloc for counting lines of code.
+# Only files that are actually compiled are counted.
+set(to_count "${sources_list}" "${headers_list}")
+write_to_cloc_list("${to_count}")
+
+# Build static library
+add_library(psio STATIC ${sources_list})
+# Specify dependencies for the library (if any)
+#add_dependencies(psio )
+set(libs_to_merge psio ${libs_to_merge} PARENT_SCOPE)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(psio custom_boost)
-endif()   
+endif()
+install(TARGETS psio ARCHIVE DESTINATION lib)
+
+# Sets install directory for all the headers in the list
+install_list_FILES("${headers_list}" include/libpsio)
