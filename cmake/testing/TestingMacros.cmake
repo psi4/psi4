@@ -1,12 +1,49 @@
-# This macro is used to add regression tests.
+# This macro is used to add a regression test.
 # Tests are identified by their name (one) and by labels (more than one)
 # all tests with label short should run in less than 30 seconds sequential on a 2GHz CPU
 macro(add_regression_test _name _labels)
-    add_test(
-        ${_name}
+    # This is the psi command to actually run the tests
+    set(PSIEXE ${CMAKE_BINARY_DIR}/bin/psi4)
+    # This is where the test directories live
+    set(TESTDIR ${CMAKE_CURRENT_SOURCE_DIR})
+    # This is the python script that we call, to call psi4, to run the tests
+    set(TESTEXE ${TESTDIR}/runtest.py)
+
+    # A full report
+    set(LOGFILE ${CMAKE_BINARY_DIR}/testresults.log)
+    
+    # Generic setup
+    file(MAKE_DIRECTORY ${TEST_RUN_DIR})
+    set(INPUTFILE ${TEST_SRC_DIR}/input.dat)
+    set(OUTFILE ${TEST_RUN_DIR}/output.dat)
+
+    # Turn on psitest.pl if eligible
+    set(AUTOTEST FALSE)
+    if(_labels) 
+       list(FIND _labels "autotest" IS_AUTOTEST)
+       if(PERL_FOUND AND IS_AUTOTEST)
+	  set(AUTOTEST TRUE)
+       endif()
+    endif()       
+
+    # Add the test
+    if(MPI_FOUND)
+       # If this was an MPI-build, we test on two processors
+       # RDR: this is really hardcoded, maybe generalize?
+       # In theory would like to make sure all tests run in parallel as well
+       # but... most do not right now...
+       add_test(NAME ${_name}
 	WORKING_DIRECTORY ${TEST_RUN_DIR}
-	COMMAND ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE})
-    if(NOT "${_labels}" STREQUAL "")
+	COMMAND ${MPIEXEC} -n 2 ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE}
+	)
+    else()
+       # Serial build
+       add_test(NAME ${_name}
+	WORKING_DIRECTORY ${TEST_RUN_DIR}
+	COMMAND ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE}
+	)
+
+    if(_labels)
         set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
     endif()
 endmacro()
