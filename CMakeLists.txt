@@ -54,6 +54,7 @@ include(GenericMacros)
 #include(mergestaticlibs)
 include(CheckIncludeFiles)
 include(CheckFunctionExists)
+include(ConfigDocumentation)
 
 # Determine Fortran name mangling, used for external linking
 include(FortranCInterface)
@@ -252,11 +253,8 @@ if(BUILD_JK_FACTORY)
     set(PSILIB ${PSILIB} -lmkl_scalapack_lp64 -lmkl_blacs_lp64)
 endif()
 
-#Add the doxygen documentation
-add_subdirectory(doc/doxygen)
-
-# Add the sphinx documentation
-add_subdirectory(doc/sphinxman)
+#Add the documentation subdirectory
+add_subdirectory(doc)
 
 # Recursively add source directories
 add_subdirectory(src)

@@ -54,3 +54,5 @@ fig.text(0.15, 0.75, annotation,
 
 # Save to file
 savefig(lib_name + '.png', format = 'png', dpi = 100, bbox_inches = 'tight')
+# Close plot
+plt.close()

@@ -1,0 +1,26 @@
+#!@PYTHON_EXECUTABLE@
+# -*- python -*-
+# -*- coding: utf-8 -*-
+# vim:filetype=python:
+# Touch all CMakeLists.txt files in the project tree
+# (c) Roberto Di Remigio  <roberto.d.remigio@uit.no>
+# licensed under the GNU Lesser General Public License
+
+import os
+import re
+import time
+
+location = "@CMAKE_SOURCE_DIR@"
+is_CMakeLists = re.compile('CMakeLists.txt', re.I)
+
+def find_CMakeLists(root):
+    for current, dirnames, filenames in os.walk(root):
+        for filename in filter(lambda p: is_CMakeLists.search(p),  filenames):
+            yield  os.path.normpath(os.path.join(current, filename))
+
+def touch(filename):
+    os.utime(filename,(time.time(),time.time()))
+
+map(touch, find_CMakeLists(location))
+
+# vim:et:ts=4:sw=4
