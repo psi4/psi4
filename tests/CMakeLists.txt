@@ -1,11 +1,20 @@
+include(TestingMacros)
 #These tests aren't set-up the same way as the others
 set(TestsNotSetUpRight cfour optking testgrendel)
 
-#In order to get CTest to run tests in three seperate categories:
+# In order to get CTest to run tests in separate categories,
+# labels are used. All tests must carry the label "psi".
+# 
+# The following labels are defined:
 #
-#  LongTests=  The (as of right now) 4 really long tests
-#  Tests=      Every test in the test folder less LongTests
-#  QuickTests= Proper subset of tests deemed to run quickly
+#  LongTests   = The (as of right now) 4 really long tests
+#  LongerTests = Every test in the test folder less LongTests
+#  QuickTests  = Proper subset of tests deemed to run quickly
+#
+# It is possible to specify more than one label per test. CMake
+# expects a ;-separated list, e.g. "psi;QuickTests;scf"
+# It is mandatory that any test carries a length label!
+# It is suggested to add at least a second label to specify the method tested.
 #
 #  We use ctest -I [start,end] where start is the test number we start with
 #  and end is the test number we end with.  We will then use math to back out
@@ -15,96 +24,303 @@ set(TestsNotSetUpRight cfour optking testgrendel)
 #  In order to ensure that this works properly, please add your tests to the
 #  appropriate variables given below
 
+add_regression_test(adc1 "psi;LongerTests;adc")
+add_regression_test(adc2 "psi;LongerTests;adc")
 
+add_regression_test(castup1 "psi;QuickTests;scf") 
+add_regression_test(castup2 "psi;LongerTests;scf") 
+add_regression_test(castup2 "psi;LongerTests;scf") 
 
+add_regression_test(cc1 "psi;QuickTests;cc")
+add_regression_test(cc2 "psi;QuickTests;cc")
+add_regression_test(cc3 "psi;QuickTests;cc")
+add_regression_test(cc4 "psi;QuickTests;cc")
+add_regression_test(cc8 "psi;QuickTests;cc")
+add_regression_test(cc8a "psi;QuickTests;cc")
+add_regression_test(cc12 "psi;QuickTests;cc")
+add_regression_test(cc15 "psi;QuickTests;cc")
+add_regression_test(cc16 "psi;QuickTests;cc")
+add_regression_test(cc17 "psi;QuickTests;cc")
+add_regression_test(cc18 "psi;QuickTests;cc")
+add_regression_test(cc19 "psi;QuickTests;cc")
+add_regression_test(cc23 "psi;QuickTests;cc")
+add_regression_test(cc24 "psi;QuickTests;cc")
+add_regression_test(cc28 "psi;QuickTests;cc")
+add_regression_test(cc32 "psi;QuickTests;cc")
+add_regression_test(cc49 "psi;QuickTests;cc")
 
-set(ADCLong adc1 adc2)
+add_regression_test(cc4a "psi;LongerTests;cc")
+add_regression_test(cc5a "psi;LongerTests;cc")
+add_regression_test(cc6 "psi;LongerTests;cc")
+add_regression_test(cc8b "psi;LongerTests;cc")
+add_regression_test(cc8c "psi;LongerTests;cc")
+add_regression_test(cc8b "psi;LongerTests;cc")
+add_regression_test(cc9 "psi;LongerTests;cc")
+add_regression_test(cc9a "psi;LongerTests;cc")
+add_regression_test(cc10 "psi;LongerTests;cc")
+add_regression_test(cc11 "psi;LongerTests;cc")
+add_regression_test(cc13 "psi;LongerTests;cc")
+add_regression_test(cc13a "psi;LongerTests;cc")
+add_regression_test(cc14 "psi;LongerTests;cc")
+add_regression_test(cc21 "psi;LongerTests;cc")
+add_regression_test(cc22 "psi;LongerTests;cc")
+add_regression_test(cc25 "psi;LongerTests;cc")
+add_regression_test(cc26 "psi;LongerTests;cc")
+add_regression_test(cc27 "psi;LongerTests;cc")
+add_regression_test(cc29 "psi;LongerTests;cc")
+add_regression_test(cc30 "psi;LongerTests;cc")
+add_regression_test(cc31 "psi;LongerTests;cc")
+add_regression_test(cc33 "psi;LongerTests;cc")
+add_regression_test(cc34 "psi;LongerTests;cc")
+add_regression_test(cc35 "psi;LongerTests;cc")
+add_regression_test(cc36 "psi;LongerTests;cc")
+add_regression_test(cc37 "psi;LongerTests;cc")
+add_regression_test(cc38 "psi;LongerTests;cc")
+add_regression_test(cc39 "psi;LongerTests;cc")
+add_regression_test(cc40 "psi;LongerTests;cc")
+add_regression_test(cc41 "psi;LongerTests;cc")
+add_regression_test(cc42 "psi;LongerTests;cc")
+add_regression_test(cc43 "psi;LongerTests;cc")
+add_regression_test(cc44 "psi;LongerTests;cc")
+add_regression_test(cc45 "psi;LongerTests;cc")
+add_regression_test(cc46 "psi;LongerTests;cc")
+add_regression_test(cc47 "psi;LongerTests;cc")
+add_regression_test(cc48 "psi;LongerTests;cc")
+add_regression_test(cc49 "psi;LongerTests;cc")
+add_regression_test(cc50 "psi;LongerTests;cc")
+add_regression_test(cc51 "psi;LongerTests;cc")
+add_regression_test(cc52 "psi;LongerTests;cc")
+add_regression_test(cc53 "psi;LongerTests;cc")
+add_regression_test(cc54 "psi;LongerTests;cc")
+add_regression_test(cc55 "psi;LongerTests;cc")
 
-set(CastUpShort castup1)
-set(CastUpLong castup2 castup3)
-set(CCShort cc1 cc2 cc3 cc4 cc8 cc8a cc12 cc15 cc16 cc17 cc18 cc19 cc23 cc24 cc28 cc32 cc49 )
-set(CCLong cc10 cc11 cc13 cc13a cc14 cc21 cc22 cc25 cc26 cc27 cc29 cc30 cc31 cc33 cc34 cc35 cc36 cc37 cc38 cc39 cc40 cc41 cc42 cc43 cc44 cc45 cc46 cc47 cc48 cc4a cc50 cc51 cc52 cc53 cc54 cc55 cc5a cc6 cc8b cc8c cc9 cc9a)
+add_regression_test(cdomp2-1 "psi;QuickTests;cdomp2")
+add_regression_test(cdomp2-2 "psi;QuickTests;cdomp2")
 
-set(CDShort cdomp2-1 cdomp2-2)
-#No long CD jobs
-#No CEPAShort
-set(CEPALong cepa0-grad1 cepa0-grad2 cepa1 cepa2 cepa3)
-set(CISDShort cisd-h2o+-0 cisd-opt-fd)
-set(CISDLong cisd-h2o+-1 cisd-h2o+-2 cisd-h2o-clpse cisd-sp cisd-sp-2)
+add_regression_test(cepa0-grad1 "psi;LongerTests;cepa")
+add_regression_test(cepa0-grad2 "psi;LongerTests;cepa")
+add_regression_test(cepa1 "psi;LongerTests;cepa")
+add_regression_test(cepa2 "psi;LongerTests;cepa")
+add_regression_test(cepa3 "psi;LongerTests;cepa")
 
-set(DCFTShort dcft-grad1 dcft1 dcft2 dcft3 dcft4)
-set(DCFTLong dcft5 dcft6 dcft7)
-set(DFShort dfmp2-1 dfomp2-1 dfomp2-2)
-set(DFLong dfmp2-2 dfmp2-3 dfmp2-4 dfomp2-3 dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfscf-bz2)
-set(DFTShort dft1)
-set(DFTLong dft1-alt dft2 dft3 dft-b2plyp dft-dldf dft-freq dft-grad dft-pbe0-2 dft-psivar)
-#No Docs Short
-set(DocsLong docs-bases docs-dft docs-psimod)
+add_regression_test(cisd-h20+-0 "psi;QuickTests;cisd")
+add_regression_test(cisd-opt-fd "psi;QuickTests;cisd")
 
-set(FCIShort fci-dipole)
-set(FCILong fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2)
-set(FDLong fd-freq-energy fd-freq-energy-large fd-freq-gradient fd-gradient)
-set(FNOCCShort fnocc2 fnocc4)
-set(FNOCCLong fnocc1 fnocc3) 
+add_regression_test(cisd-h20+-1 "psi;LongerTests;cisd")
+add_regression_test(cisd-h20+-2 "psi;LongerTests;cisd")
+add_regression_test(cisd-h20-clpse "psi;LongerTests;cisd")
+add_regression_test(cisd-h20-sp "psi;LongerTests;cisd")
+add_regression_test(cisd-h20-sp-2 "psi;LongerTests;cisd")
 
-set(MCSCFShort mcscf1)
-set(MCSCFLong mcscf2 mcscf3)
-set(MintsShort mints1 mints2)
-set(MintsLong mints3 mints4 mints5 mints6 mints8)
-set(MP2Short mp2_5-grad1 mpn-bh)
-set(MP2Long mp2-1 mp2_5-grad2 mp2-grad1 mp2-grad2 mp3-grad1 mp3-grad2)
+add_regression_test(dcft-grad1 "psi;QuickTests;dcft")
+add_regression_test(dcft1 "psi;QuickTests;dcft")
+add_regression_test(dcft2 "psi;QuickTests;dcft")
+add_regression_test(dcft3 "psi;QuickTests;dcft")
+add_regression_test(dcft4 "psi;QuickTests;dcft")
 
-set(OCEPAShort ocepa1 ocepa-grad2)
-set(OCEPALong ocepa2 ocepa3 ocepa-freq1 ocepa-grad1)
-set(OMPShort omp2-2 omp3-1 omp2_5-2 omp2-grad1)
-set(OMPLong omp2-1 omp2-3 omp2-4 omp2-5 omp2_5-1 omp2_5-grad1 omp2_5-grad2 omp2-grad2 omp3-2 omp3-3 omp3-4 omp3-5 omp3-grad1 omp3-grad2) 
-set(OPTShort opt1 opt1-fd)
-set(OPTLong opt2 opt2-fd opt3 opt4 opt5 opt6 opt7 opt-lindep-change)
+add_regression_test(dcft5 "psi;LongerTests;dcft")
+add_regression_test(dcft6 "psi;LongerTests;dcft")
+add_regression_test(dcft7 "psi;LongerTests;dcft")
 
-#No props short
-set(PropsLong props1 props2 props3)
-set(PSIMRCCShort psimrcc-sp1)
-set(PSIMRCCLong psimrcc-ccsd_t-1 psimrcc-ccsd_t-2 psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-fd-freq1 psimrcc-fd-freq2 psimrcc-pt2)
-set(PYWrapShort pywrap-db1 pywrap-db2 pywrap-cbs1 pywrap-all pywrap-alias pywrap-molecule pywrap-freq-e-sowreap)
-set(PYWrapLong pywrap-basis pywrap-checkrun-convcrit pywrap-checkrun-rhf pywrap-checkrun-rohf pywrap-checkrun-uhf pywrap-db3 pywrap-opt-sowreap)
+add_regression_test(dfmp2-1 "psi;QuickTests;df;dfmp2")
 
-set(RASCIShort rasci-h2o)
-set(RASCILong rasci-c2-active rasci-ne)
+add_regression_test(dfmp2-2 "psi;LongerTests;df;dfmp2")
+add_regression_test(dfmp2-3 "psi;LongerTests;df;dfmp2")
+add_regression_test(dfmp2-4 "psi;LongerTests;df;dfmp2")
 
-set(SAPTShort sapt1)
-set(SAPTLong  sapt3 sapt5)
-set(SCFShort scf1 scf2 scf3 scf5 scf-guess-read)
-set(SCFLong scf11-freq-from-energies scf4 scf6 scf-bz2)
+add_regression_test(dfomp2-1 "psi;QuickTests;df;dfomp2")
+add_regression_test(dfomp2-2 "psi;QuickTests;df;dfomp2")
 
-set(TutorialShort tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt tu4-h2o-freq tu5-sapt )
-set(TutorialLong tu6-cp-ne2)
-set(MISCShort ci-multi sad1 matrix1 gibbs)
-set(MISCLong frac ghosts large_atoms min_input mom psithon1 psithon2 pubchem1 zaptn-nh2)
+add_regression_test(dfomp2-3 "psi;LongerTests;df;dfomp2")
+add_regression_test(dfomp2-4 "psi;LongerTests;df;dfomp2")
+add_regression_test(dfomp2-grad1 "psi;LongerTests;df;dfomp2")
+add_regression_test(dfomp2-grad2 "psi;LongerTests;df;dfomp2")
 
-set(CASShort casscf-fzc-sp casscf-sp)
+add_regression_test(dfscf-bz2 "psi;LongerTests;df;dfscf")
+
+add_regression_test(dft1 "psi;QuickTests;dft;scf")
+
+add_regression_test(dft1-alt "psi;LongerTests;dft;scf")
+add_regression_test(dft2 "psi;LongerTests;dft;scf")
+add_regression_test(dft3 "psi;LongerTests;dft;scf")
+add_regression_test(dft-b2plyp "psi;LongerTests;dft;scf")
+add_regression_test(dft-dldf "psi;LongerTests;dft;scf")
+add_regression_test(dft-freq "psi;LongerTests;dft;scf")
+add_regression_test(dft-grad "psi;LongerTests;dft;scf")
+add_regression_test(dft-pbe0-2 "psi;LongerTests;dft;scf")
+add_regression_test(dft-psivar "psi;LongerTests;dft;scf")
+
+add_regression_test(docs-bases "psi;LongerTests;docs")
+add_regression_test(docs-dft "psi;LongerTests;docs")
+add_regression_test(docs-psimod "psi;LongerTests;docs")
+
+add_regression_test(fci-dipole "psi;QuickTests;fci")
+
+add_regression_test(fci-h2o "psi;LongerTests;fci")
+add_regression_test(fci-h2o-2 "psi;LongerTests;fci")
+add_regression_test(fci-h2o-fzcv "psi;LongerTests;fci")
+add_regression_test(fci-tdm "psi;LongerTests;fci")
+add_regression_test(fci-tdm-2 "psi;LongerTests;fci")
+
+add_regression_test(fd-freq-energy "psi;LongerTests;findif")
+add_regression_test(fd-freq-energy-large "psi;LongerTests;findif")
+add_regression_test(fd-freq-gradient "psi;LongerTests;findif")
+add_regression_test(fd-gradient "psi;LongerTests;findif")
+
+add_regression_test(fd-freq-gradient-large "psi;LongTests;findif")
+
+add_regression_test(fnocc2 "psi;QuickTests;fnocc")
+add_regression_test(fnocc4 "psi;QuickTests;fnocc")
+
+add_regression_test(fnocc1 "psi;LongerTests;fnocc")
+add_regression_test(fnocc3 "psi;LongerTests;fnocc")
+
+add_regression_test(mcscf1 "psi;QuickTests;mcscf")
+
+add_regression_test(mcscf2 "psi;LongerTests;mcscf")
+add_regression_test(mcscf3 "psi;LongerTests;mcscf")
+
+add_regression_test(mints1 "psi;QuickTests;mints")
+add_regression_test(mints2 "psi;QuickTests;mints")
+
+add_regression_test(mints3 "psi;LongerTests;mints")
+add_regression_test(mints4 "psi;LongerTests;mints")
+add_regression_test(mints5 "psi;LongerTests;mints")
+add_regression_test(mints6 "psi;LongerTests;mints")
+add_regression_test(mints8 "psi;LongerTests;mints")
+
+add_regression_test(mp2_5-grad1 "psi;QuickTests;mp2")
+add_regression_test(mpn "psi;QuickTests;mp2")
+
+add_regression_test(mp2-1 "psi;LongerTests;mp2")
+add_regression_test(mp2_5-grad2 "psi;LongerTests;mp2")
+add_regression_test(mp2-grad1 "psi;LongerTests;mp2")
+add_regression_test(mp2-grad2 "psi;LongerTests;mp2")
+add_regression_test(mp2-def2 "psi;LongTests;mp2")
+add_regression_test(mp3-grad1 "psi;LongerTests;mp3")
+add_regression_test(mp3-grad2 "psi;LongerTests;mp3")
+
+add_regression_test(ocepa1 "psi;QuickTests;ocepa")
+add_regression_test(ocepa-grad2 "psi;QuickTests;ocepa")
+
+add_regression_test(ocepa2 "psi;LongerTests;ocepa")
+add_regression_test(ocepa3 "psi;LongerTests;ocepa")
+add_regression_test(ocepa-freq1 "psi;LongerTests;ocepa")
+add_regression_test(ocepa-grad1 "psi;LongerTests;ocepa")
+
+add_regression_test(omp2-2 "psi;QuickTests;omp")
+add_regression_test(omp3-1 "psi;QuickTests;omp")
+add_regression_test(omp2_5-2 "psi;QuickTests;omp")
+add_regression_test(omp2-grad1 "psi;QuickTests;omp")
+
+add_regression_test(omp2-1 "psi;LongerTests;omp")
+add_regression_test(omp2-3 "psi;LongerTests;omp")
+add_regression_test(omp2-4 "psi;LongerTests;omp")
+add_regression_test(omp2_5-1 "psi;LongerTests;omp")
+add_regression_test(omp2_5-grad1 "psi;LongerTests;omp")
+add_regression_test(omp2_5-grad2 "psi;LongerTests;omp")
+add_regression_test(omp2-grad2 "psi;LongerTests;omp")
+add_regression_test(omp3-2 "psi;LongerTests;omp")
+add_regression_test(omp3-3 "psi;LongerTests;omp")
+add_regression_test(omp3-4 "psi;LongerTests;omp")
+add_regression_test(omp3-5 "psi;LongerTests;omp")
+add_regression_test(omp3-grad1 "psi;LongerTests;omp")
+add_regression_test(omp3-grad2 "psi;LongerTests;omp")
+
+add_regression_test(opt1 "psi;QuickTests;opt")
+add_regression_test(opt1-fd "psi;QuickTests;opt")
+
+add_regression_test(opt2 "psi;LongerTests;opt")
+add_regression_test(opt2-fd "psi;LongerTests;opt")
+add_regression_test(opt3 "psi;LongerTests;opt")
+add_regression_test(opt4 "psi;LongerTests;opt")
+add_regression_test(opt5 "psi;LongerTests;opt")
+add_regression_test(opt6 "psi;LongerTests;opt")
+add_regression_test(opt7 "psi;LongerTests;opt")
+add_regression_test(opt-lindep-change "psi;LongerTests;opt")
+
+add_regression_test(props1 "psi;LongerTests;prop")
+add_regression_test(props2 "psi;LongerTests;prop")
+add_regression_test(props3 "psi;LongerTests;prop")
+
+add_regression_test(psimrcc-sp1 "psi;QuickTests;psimrcc")
+
+add_regression_test(psimrcc-ccsd_t-1 "psi;LongerTests;psimrcc")
+add_regression_test(psimrcc-ccsd_t-2 "psi;LongerTests;psimrcc")
+add_regression_test(psimrcc-ccsd_t-3 "psi;LongerTests;psimrcc")
+add_regression_test(psimrcc-ccsd_t-4 "psi;LongerTests;psimrcc")
+add_regression_test(psimrcc-fd-freq1 "psi;LongerTests;psimrcc")
+add_regression_test(psimrcc-fd-freq2 "psi;LongerTests;psimrcc")
+add_regression_test(psimrcc-pt2 "psi;LongerTests;psimrcc")
+
+add_regression_test(pywrap-db1 "psi;QuickTests;pywrap")
+add_regression_test(pywrap-db2 "psi;QuickTests;pywrap")
+add_regression_test(pywrap-cbs1 "psi;QuickTests;pywrap")
+add_regression_test(pywrap-all "psi;QuickTests;pywrap")
+add_regression_test(pywrap-alias "psi;QuickTests;pywrap")
+add_regression_test(pywrap-molecule "psi;QuickTests;pywrap")
+add_regression_test(pywrap-freq-e-sowreap "psi;QuickTests;pywrap")
+
+add_regression_test(pywrap-basis "psi;LongerTests;pywrap")
+add_regression_test(pywrap-checkrun-convcrit "psi;LongerTests;pywrap")
+add_regression_test(pywrap-checkrun-rhf "psi;LongerTests;pywrap")
+add_regression_test(pywrap-checkrun-rohf "psi;LongerTests;pywrap")
+add_regression_test(pywrap-checkrun-uhf "psi;LongerTests;pywrap")
+add_regression_test(pywrap-db2 "psi;LongerTests;pywrap")
+add_regression_test(pywrap-opt-sowreap "psi;LongerTests;pywrap")
+
+add_regression_test(rasci-h2o "psi;QuickTests;rasci")
+
+add_regression_test(rasci-c2-active "psi;LongerTests;rasci")
+add_regression_test(rasci-ne "psi;LongerTests;rasci")
+
+add_regression_test(sapt1 "psi;QuickTests;sapt")
+
+add_regression_test(sapt3 "psi;LongerTests;sapt")
+add_regression_test(sapt5 "psi;LongerTests;sapt")
+
+add_regression_test(sapt2 "psi;LongTests;sapt")
+
+add_regression_test(scf1 "psi;QuickTests;scf")
+add_regression_test(scf2 "psi;QuickTests;scf")
+add_regression_test(scf3 "psi;QuickTests;scf")
+add_regression_test(scf5 "psi;QuickTests;scf")
+add_regression_test(scf-guess-read "psi;QuickTests;scf")
+
+add_regression_test(scf11-freq-from-energies "psi;LongerTests;scf")
+add_regression_test(scf4 "psi;LongerTests;scf")
+add_regression_test(scf6 "psi;LongerTests;scf")
+add_regression_test(scf-bz2 "psi;LongerTests;scf")
+
+add_regression_test(tu1-h2o-energy "psi;QuickTests;tutorial")
+add_regression_test(tu2-ch2-energy "psi;QuickTests;tutorial")
+add_regression_test(tu3-h2o-opt "psi;QuickTests;tutorial;opt")
+add_regression_test(tu4-h2o-freq "psi;QuickTests;tutorial;freq")
+add_regression_test(tu5-sapt "psi;QuickTests;tutorial;sapt")
+
+add_regression_test(tu6-cp-ne2 "psi;LongerTests;tutorial")
+
+add_regression_test(ci-multi "psi;QuickTests;misc")
+add_regression_test(sad1 "psi;QuickTests;misc")
+add_regression_test(matrix1 "psi;QuickTests;misc")
+add_regression_test(gibbs "psi;QuickTests;misc")
+
+add_regression_test(frac "psi;LongerTests;misc")
+add_regression_test(ghosts "psi;LongerTests;misc")
+add_regression_test(large_atoms "psi;LongerTests;misc")
+add_regression_test(min_input "psi;LongerTests;misc")
+add_regression_test(mom "psi;LongerTests;misc")
+add_regression_test(psithon1 "psi;LongerTests;misc")
+add_regression_test(psithon2 "psi;LongerTests;misc")
+add_regression_test(pubchem1 "psi;LongerTests;misc")
+add_regression_test(zaptn-nh2 "psi;LongerTests;misc")
+
+add_regression_test(casscf-fzc-sp "psi;QuickTests;casscf")
+add_regression_test(casscf-sp "psi;QuickTests;casscf")
 
 set(AutoTestSubjects cc8 cc9 cc11 cc18 cc19 cc28 cc29 cc30 cc31 cc34 cc36 cc37 cc38 cc39 cc40 cc41 cc42 cc43 cc46 cc47 cc48 cc49 cc50 cc51 cc52 cc55)
 
 ###### END test definitions ################
-
-#These are the truly long tests
-set(LongTests mp2-def2 sapt2 sapt4 fd-freq-gradient-large)
-
-#These are the tests that will become the quicktest target
-set(QuickTests ${CastUpShort} ${CCShort} ${CDShort} ${CISDShort} ${DCFTShort}
-    ${DFShort} ${DFTShort} ${FCIShort} ${FNOCCShort} ${MCSCFShort}
-${MintsShort} ${MP2Short} ${OCEPAShort} ${OMPShort} ${OPTShort}
-${PSIMRCCShort} ${PYWrapShort} ${RASCIShort} ${SAPTShort} ${SCFShort}
-${TutorialShort} ${MISCShort} ${CASShort}
-)
-
-#And these are the rest of the tests
-set(LongerTests ${ADCLong} ${CastUpLong} ${CCLong} ${CEPALong} ${CISDLong}
-${DCFTLong} ${DFLong} ${DFTLong} ${DocsLong} ${FCILong} ${FDLong} ${FNOCCLong}
-${MCSCFLong} ${MintsLong} ${MP2Long} ${OCEPALong} ${OMPLong}
-${OPTLong} ${PropsLong} ${PSIMRCCLong} ${PYWrapLong} ${RASCILong} ${SAPTLong}
-${SCFLong} ${TutorialLong} ${MISCLong}
-)
 
 ###### START external-executable-dependent tests ################
 
@@ -117,17 +333,15 @@ ${SCFLong} ${TutorialLong} ${MISCLong}
 
 # <<<  DFTD3  >>>
 
-set(DFTD3Short dftd3-energy)
-set(DFTD3Long dftd3-grad dftd3-psithon2)
-
-find_program (DFTD3_EXECUTABLE
+find_program(DFTD3_EXECUTABLE
              NAMES dftd3
              DOC "Path to Grimme's dftd3 executable")
 
 if(DFTD3_EXECUTABLE)
-    list(APPEND QuickTests ${DFTD3Short})
-    list(APPEND LongerTests ${DFTD3Long})
-    message("-- dftd3 executable for interfaced DFTD3 found. Test cases added.")
+   add_regression_test(dftd3-energy "psi;QuickTests;dftd;ext-exe-dep")
+   add_regression_test(dftd3-grad "psi;LongerTests;dftd;ext-exe-dep")
+   add_regression_test(dftd3-psithon2 "psi;LongerTests;dftd;ext-exe-dep")
+   message(STATUS "dftd3 executable for interfaced DFTD3 found. Test cases added.")
 endif()
 
 # <<<  MRCC  >>>
@@ -135,44 +349,101 @@ endif()
 set(MRCCShort mrcc-ccsdt mrcc-ccsd_t_)
 set(MRCCLong mrcc-ccsdt_q_ mrcc-optfreq)
 
-find_program (MRCC_EXECUTABLE
+find_program(MRCC_EXECUTABLE
              NAMES dmrcc
              DOC "Path to Kallay's mrcc executable")
 
 if(MRCC_EXECUTABLE)
-    list(APPEND QuickTests ${MRCCShort})
-    list(APPEND LongerTests ${MRCCLong})
-    message("-- dmrcc executable for interfaced MRCC found. Test cases added.")
+   add_regression_test(mrcc-ccsdt "psi;QuickTests;mrcc;cc;ext-exe-dep")
+   add_regression_test(mrcc-ccsd_t_ "psi;QuickTests;mrcc;cc;ext-exe-dep")
+   add_regression_test(mrcc-ccsdt_q_ "psi;LongerTests;mrcc;cc;ext-exe-dep")
+   add_regression_test(mrcc-optfreq "psi;LongerTests;mrcc;cc;ext-exe-dep")
+   message(STATUS "dmrcc executable for interfaced MRCC found. Test cases added.")
 endif()
 
 # <<<  CFOUR  >>>
 
-set(CFOURShort cfour-sp-uhf-mp2 cfour-sp-rohf-scf cfour-sp-rhf-ccsd_t_-ecc cfour-opt-rhf-scf cfour-psi-rhf-scsmp2 cfour-pywrap-cbs1)
-set(CFOURLong cfour-puream cfour-mints5 cfour-mints5-grad cfour-kw-1 cfour-kw-2 cfour-kw-3 cfour-kw-4 cfour-kw-5 cfour-kw-6 cfour-kw-7 cfour-kw-8 cfour-psi-ghost-grad cfour-scf4 cfour-mp2-1 cfour-pywrap-db1 cfour-pywrap-basis cfour-dfmp2-1 cfour-sp-rhf-scf cfour-sp-rhf-mp2 cfour-sp-rhf-ccsd cfour-sp-rhf-ccsd-ao cfour-sp-rhf-ccsd_t_ cfour-sp-rhf-ccsd_t_-ao cfour-sp-rhf-ccsd_t_-ao-ecc cfour-sp-rhf-ccsd_t_-fc cfour-sp-rhf-cc3 cfour-sp-rhf-ccsdt cfour-sp-uhf-scf cfour-sp-uhf-ccsd cfour-sp-uhf-ccsd_t_ cfour-sp-uhf-ccsd_t_-ao cfour-sp-uhf-ccsd_t_-ao-ecc cfour-sp-uhf-ccsd_t_-ecc cfour-sp-uhf-cc3 cfour-sp-uhf-ccsdt cfour-sp-rohf-mp2-sc cfour-sp-rohf-mp4-sc cfour-sp-rohf-ccsd cfour-sp-rohf-ccsd_t_ cfour-sp-rohf-ccsdt cfour-sp-rohf-ccsd-ao cfour-sp-rohf-ccsd_t_-ao cfour-sp-rohf-ccsd_t_-ao-ecc cfour-sp-rohf-ccsd_t_-fc cfour-opt-rhf-mp2 cfour-opt-rhf-ccsd_t_ cfour-opt-rhf-ccsd_t_-ecc cfour-psi-a24-grad cfour-psi-uhf-scsmp2 cfour-psi-rohf-scsmp2 cfour-psi-rhf-mp3 cfour-psi-uhf-mp3 cfour-psi-mp4)
-
-find_program (CFOUR_EXECUTABLE
+find_program(CFOUR_EXECUTABLE
              NAMES xcfour
              DOC "Path to Stanton and Gauss's xcfour executable")
 
 if(CFOUR_EXECUTABLE)
-    list(APPEND QuickTests ${CFOURShort})
-    list(APPEND LongerTests ${CFOURLong})
-    message("-- xcfour executable for interfaced CFOUR found. Test cases added.")
+   add_regression_test(cfour-sp-uhf-mp2 "psi;QuickTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rohf-scf "psi;QuickTests;cfour;scf;ext-exe-dep")
+   add_regression_test(cfour-sp-rhf-ccsd_t_-ecc "psi;QuickTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-opt-rhf-scf "psi;QuickTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-psi-rhf-scsmp2 "psi;QuickTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-pywrap-cbs1 "psi;QuickTests;cfour;ext-exe-dep")
+
+   add_regression_test(cfour-puream "psi;LongerTests;cfour;ext-exe-dep")            
+   add_regression_test(cfour-mints5 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-mints5-grad "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-kw-1 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-kw-2 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-kw-3 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-kw-4 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-kw-5 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-kw-6 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-kw-7 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-kw-8 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-psi-ghost-grad "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-scf4 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-mp2-1 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-pywrap-db1 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-pywrap-basis "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-dfmp2-1 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rhf-scf "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rhf-mp2 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rhf-ccsd "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rhf-ccsd-ao "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rhf-ccsd_t_ "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rhf-ccsd_t_-ao "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rhf-ccsd_t_-ao-ecc "psi;LongerTests;cfour;ext-exe-dep") 
+   add_regression_test(cfour-sp-rhf-ccsd_t_-fc "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rhf-cc3 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rhf-ccsdt "psi;LongerTests;cfour;ext-exe-dep") 
+   add_regression_test(cfour-sp-uhf-scf "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-uhf-ccsd "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-uhf-ccsd_t_ "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-uhf-ccsd_t_-ao "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-uhf-ccsd_t_-ao-ecc "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-uhf-ccsd_t_-ecc "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-uhf-cc3 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-uhf-ccsdt "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rohf-mp2-sc "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rohf-mp4-sc "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rohf-ccsd "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rohf-ccsd_t_ "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rohf-ccsdt "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rohf-ccsd-ao "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rohf-ccsd_t_-ao "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rohf-ccsd_t_-ao-ecc "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-sp-rohf-ccsd_t_-fc "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-opt-rhf-mp2 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-opt-rhf-ccsd_t_ "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-opt-rhf-ccsd_t_-ecc "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-psi-a24-grad "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-psi-uhf-scsmp2 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-psi-rohf-scsmp2 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-psi-rhf-mp3 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-psi-uhf-mp3 "psi;LongerTests;cfour;ext-exe-dep")
+   add_regression_test(cfour-psi-mp4 "psi;LongerTests;cfour;ext-exe-dep")
+   message(STATUS "xcfour executable for interfaced CFOUR found. Test cases added.")
 endif()
 
 ###### END external-executable-dependent tests ################
 
-set(TestSet ${LongTests} ${QuickTests} ${LongerTests})
-
-list(LENGTH TestSet NumberOfTests)
-list(LENGTH LongTests NLong)
-list(LENGTH QuickTests NShort)
-MATH(EXPR Start "${NLong} +1")
-MATH(EXPR Stop "${NLong} + ${NShort}")
-
-add_custom_target(longtests ${CMAKE_CTEST_COMMAND} -I 1,${NLong})
-add_custom_target(quicktests ${CMAKE_CTEST_COMMAND} -I ${Start},${Stop})
-add_custom_target(tests ${CMAKE_CTEST_COMMAND} -I ${Start},${NumberOfTests})
+#set(TestSet ${LongTests} ${QuickTests} ${LongerTests})
+#
+#list(LENGTH TestSet NumberOfTests)
+#list(LENGTH LongTests NLong)
+#list(LENGTH QuickTests NShort)
+#math(EXPR Start "${NLong} +1")
+#math(EXPR Stop "${NLong} + ${NShort}")
+#
+#add_custom_target(longtests ${CMAKE_CTEST_COMMAND} -I 1,${NLong})
+#add_custom_target(quicktests ${CMAKE_CTEST_COMMAND} -I ${Start},${Stop})
+#add_custom_target(tests ${CMAKE_CTEST_COMMAND} -I ${Start},${NumberOfTests})
 
 
 #The commands below this point are used to set up cmake's test suite with
@@ -190,8 +461,7 @@ set(LOGFILE ${CMAKE_BINARY_DIR}/testresults.log)
 
 find_package(Perl QUIET)
 if(NOT PERL_FOUND)
-   message(WARNING "Perl was not found. Some Coupled Cluster test cases will
-not be thoroughly checked.")
+   message(WARNING "Perl was not found. Some Coupled Cluster test cases will not be thoroughly checked.")
 endif()
 
 # Declare each test as a possible test target even though no one will likely
