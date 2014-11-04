@@ -9,7 +9,7 @@ set(BUILDNAME
 
 # set ctest own timeout
 set(DART_TESTING_TIMEOUT
-    "1200"
+    "1800"
     CACHE STRING
     "Set timeout in seconds for every single test"
     )

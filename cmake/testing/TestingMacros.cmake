@@ -43,15 +43,15 @@ macro(add_regression_test _name _labels)
        # RDR: this is really hardcoded, maybe generalize?
        # In theory would like to make sure all tests run in parallel as well
        # but... most do not right now...
-       add_test(NAME ${_name}
-        WORKING_DIRECTORY ${TEST_RUN_DIR}
-        COMMAND ${MPIEXEC} -n 2 ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE}
+       add_test(NAME "${_name}"
+        WORKING_DIRECTORY "${TEST_RUN_DIR}"
+        COMMAND "${MPIEXEC}" -n 2 "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${PROJECT_SOURCE_DIR}" "${OUTFILE}" "${PSIEXE}"
         )
     else()
        # Serial build
-       add_test(NAME ${_name}
-        WORKING_DIRECTORY ${TEST_RUN_DIR}
-        COMMAND ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE}
+       add_test(NAME "${_name}"
+        WORKING_DIRECTORY "${TEST_RUN_DIR}"
+        COMMAND "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${PROJECT_SOURCE_DIR}" "${OUTFILE}" "${PSIEXE}"
         )
     endif()
 
