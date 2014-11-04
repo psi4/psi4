@@ -43,7 +43,7 @@ set(to_count "${sources_list}" "${headers_list}")
 write_to_cloc_list("${to_count}")
 
 # Prepare for linking executable
-list(APPEND LINKLIBS "${PSILIB}" "${Boost_LIBRARIES}" "${LAPACK_LIBRARIES}" "${BLAS_LIBRARIES}" "${PYTHON_LIBRARIES}" dl)
+list(APPEND LINKLIBS "${PSILIB}" "${Boost_LIBRARIES}" "${LAPACK_LIBRARIES}" "${BLAS_LIBRARIES}" "${PYTHON_LIBRARIES}" "${EXTERNAL_LIBS}" dl)
 
 # Executable psi4
 add_executable(psi4 ${sources_list})
