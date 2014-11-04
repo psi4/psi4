@@ -1,28 +1,39 @@
 # This macro is used to add a regression test.
 # Tests are identified by their name (one) and by labels (more than one)
-# all tests with label short should run in less than 30 seconds sequential on a 2GHz CPU
+# all tests with label quicktests should run in less than 30 seconds sequential on a 2GHz CPU
 macro(add_regression_test _name _labels)
-    # This is the psi command to actually run the tests
-    set(PSIEXE ${CMAKE_BINARY_DIR}/bin/psi4)
     # This is where the test directories live
-    set(TESTDIR ${CMAKE_CURRENT_SOURCE_DIR})
+    set(TESTDIR ${PROJECT_SOURCE_DIR}/tests)
+    # This is the psi command to actually run the tests
+    set(PSIEXE ${PROJECT_BINARY_DIR}/bin/psi4)
     # This is the python script that we call, to call psi4, to run the tests
     set(TESTEXE ${TESTDIR}/runtest.py)
 
     # A full report
-    set(LOGFILE ${CMAKE_BINARY_DIR}/testresults.log)
+    set(LOGFILE ${PROJECT_BINARY_DIR}/testresults.log)
     
     # Generic setup
+    set(TEST_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+    # Some tests are in subdirectories of subdirectories (cfour, mrcc, dftd3) 
+    get_filename_component(dir ${TEST_SRC_DIR} DIRECTORY)
+    get_filename_component(dir ${dir} NAME)
+    if("${dir}" STREQUAL "tests")
+       set(TEST_RUN_DIR ${PROJECT_BINARY_DIR}/tests/${_name})
+    else()	    
+       set(TEST_RUN_DIR ${PROJECT_BINARY_DIR}/tests/${dir}/${_name})
+    endif()
     file(MAKE_DIRECTORY ${TEST_RUN_DIR})
+
     set(INPUTFILE ${TEST_SRC_DIR}/input.dat)
     set(OUTFILE ${TEST_RUN_DIR}/output.dat)
 
     # Turn on psitest.pl if eligible
-    set(AUTOTEST FALSE)
+    # true/false have to be _lowecase_, CTest will otherwise spit out a BAD COMMAND error
+    set(AUTOTEST false)
     if(_labels) 
        list(FIND _labels "autotest" IS_AUTOTEST)
        if(PERL_FOUND AND IS_AUTOTEST)
-	  set(AUTOTEST TRUE)
+          set(AUTOTEST true)
        endif()
     endif()       
 
@@ -33,15 +44,16 @@ macro(add_regression_test _name _labels)
        # In theory would like to make sure all tests run in parallel as well
        # but... most do not right now...
        add_test(NAME ${_name}
-	WORKING_DIRECTORY ${TEST_RUN_DIR}
-	COMMAND ${MPIEXEC} -n 2 ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE}
-	)
+        WORKING_DIRECTORY ${TEST_RUN_DIR}
+        COMMAND ${MPIEXEC} -n 2 ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE}
+        )
     else()
        # Serial build
        add_test(NAME ${_name}
-	WORKING_DIRECTORY ${TEST_RUN_DIR}
-	COMMAND ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE}
-	)
+        WORKING_DIRECTORY ${TEST_RUN_DIR}
+        COMMAND ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE}
+        )
+    endif()
 
     if(_labels)
         set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
