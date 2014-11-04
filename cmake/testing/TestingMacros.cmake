@@ -15,7 +15,7 @@ macro(add_regression_test _name _labels)
     # Generic setup
     set(TEST_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
     # Some tests are in subdirectories of subdirectories (cfour, mrcc, dftd3) 
-    get_filename_component(dir ${TEST_SRC_DIR} DIRECTORY)
+    get_filename_component(dir ${TEST_SRC_DIR} PATH)
     get_filename_component(dir ${dir} NAME)
     if("${dir}" STREQUAL "tests")
        set(TEST_RUN_DIR ${PROJECT_BINARY_DIR}/tests/${_name})

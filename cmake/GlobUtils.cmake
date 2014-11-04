@@ -70,7 +70,7 @@ endmacro()
 # cloc Perl script to count lines of code
 macro(write_to_cloc_list list_of_sources)
      # It might be that sources are not under src/${lib} but under src/${dir}/${lib}
-     get_filename_component(dir ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
+     get_filename_component(dir ${CMAKE_CURRENT_SOURCE_DIR} PATH)
      get_filename_component(dir ${dir} NAME)
      get_filename_component(lib ${CMAKE_CURRENT_SOURCE_DIR} NAME)
      if(EXISTS "${PROJECT_BINARY_DIR}/doc/cloc/cloc_list-${lib}")
