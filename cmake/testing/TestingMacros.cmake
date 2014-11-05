@@ -30,9 +30,15 @@ macro(add_regression_test _name _labels)
     # Turn on psitest.pl if eligible
     # true/false have to be _lowecase_, CTest will otherwise spit out a BAD COMMAND error
     set(AUTOTEST false)
-    list(FIND _labels "autotest" IS_AUTOTEST)
-    if(PERL_FOUND AND IS_AUTOTEST)
-       set(AUTOTEST true)
+    if(NOT "${_labels}" STREQUAL "")
+       list(FIND _labels "autotest" IS_AUTOTEST) 
+       # If not found IS_AUTOTEST == -1; convert to FALSE
+       if(${IS_AUTOTEST} EQUAL "-1")
+	  set(IS_AUTOTEST FALSE)
+       endif()
+       if(PERL_FOUND AND IS_AUTOTEST)
+          set(AUTOTEST true)
+       endif()
     endif()
 
     # Add the test
@@ -53,7 +59,9 @@ macro(add_regression_test _name _labels)
         )
     endif()
 
-    set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    if(NOT "${_labels}" STREQUAL "")
+       set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    endif()
 endmacro()
 
 # This macro is used to add a unit test using Google Unit Testing framework

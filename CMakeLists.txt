@@ -27,7 +27,7 @@ option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    
 option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"          OFF) 
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                           OFF)
-option(ENABLE_PLUGINS        "Enable plugins"                                   OFF)
+option(ENABLE_PLUGINS        "Enable plugins"                                   ON)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                              OFF)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"                    ON)
 
@@ -85,6 +85,10 @@ endif(UNIX)
 if(LDFLAGS)
    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LDFLAGS}")
 endif()
+
+if(ENABLE_PLUGINS)
+   message(STATUS "Plugins support ENABLED")
+endif()   
 
 # Dynamic linking header
 check_include_files(dlfcn.h HAVE_DLFCN_H)

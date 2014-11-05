@@ -57,7 +57,9 @@ def parse_input():
             metavar="= MAX_ANGULAR_MOMENTUM",
             type=int,
             default=5,
-            help='The maximum angular momentum level (1=p, 2=d, 3=f, etc.) for the libint and libderiv packages.  Note: A value of N implies a maximum first derivative of N-1, and maximum second derivative of N-2.')
+            help="""The maximum angular momentum level (1=p, 2=d, 3=f, etc.) for the libint and libderiv packages.  
+            Note: A value of N implies a maximum first derivative of N-1, and maximum second derivative of N-2.
+            [default: %(default)s]""")
     # Release, debug or profiling build
     group.add_argument('--type',
             nargs='?',
@@ -89,18 +91,22 @@ def parse_input():
     group.add_argument('--boost-incdir',
             action='store',
             default=None,
-            help='The includes directory for boost.  If this is left blank cmake will attempt to find one on your system.  Failing that it will build one for you',
+            help="""The includes directory for boost.  
+            If this is left blank cmake will attempt to find one on your system.  
+            Failing that it will build one for you""",
             metavar='PATH')
     group.add_argument('--boost-libdir',
             action='store',
             default=None,
-            help='The libraries directory for boost.  If this is left blank cmake will attempt to find one on your system.  Failing that it will build one for you',
+            help="""The libraries directory for boost.  
+            If this is left blank cmake will attempt to find one on your system.  
+            Failing that it will build one for you""",
             metavar='PATH')
     group.add_argument('--python',
             metavar='= PYTHON',
             action='store',
             default=None,
-            help='The Python interpreter (development version) to use.  CMake will detect one automatically, if omitted.')
+            help="""The Python interpreter (development version) to use.  CMake will detect one automatically, if omitted.""")
 
     group = parser.add_argument_group('Parallelization')
     group.add_argument('--mpi',
@@ -162,15 +168,20 @@ def parse_input():
             default=None,
             help="Any extra flags to pass to the linker (usually -Llibdir -llibname type arguments). You shouldn't need this.",
             metavar='STRING')
-    group.add_argument('--disable_cxx11',
-            action='store_true',
-            default=False,
-            help='disable C++11 support [default: %(default)s]')
+    # C++11 support (CMake will detect what's available)
+    group.add_argument('--cxx11',
+            nargs='?',
+            action='store',
+            choices=('on', 'off'),
+            default='on',
+            help='C++11 support [default: %(default)s]')
     # Plugins
-    group.add_argument('--with-plugins',
-            action="store_true",
-            default=False,
-            help='Compile with support for plugins.')
+    group.add_argument('--plugins',
+            nargs='?',
+            action='store',
+            choices=('on', 'off'),
+            default='on',
+            help='Compile with support for plugins [default: %(default)s]')
     group.add_argument('--check',
             action='store_true',
             default=False,
@@ -195,9 +206,9 @@ def parse_input():
             action="append",
             dest='define',
             default=[],
-            help='forward directly to cmake (example: -D ENABLE_THIS=1 -D ENABLE_THAT=1); \
-                    you can also forward CPP defintions all the way to the program \
-                    (example: -D CPP="-DDEBUG")',
+            help="""forward directly to cmake (example: -D ENABLE_THIS=1 -D ENABLE_THAT=1); 
+                    you can also forward CPP defintions all the way to the program 
+                    (example: -D CPP="-DDEBUG")""",
                     metavar='STRING')
     group.add_argument('--host',
             action='store',
@@ -219,17 +230,17 @@ def parse_input():
     group.add_argument('--erd',
             action='store_true',
             default=False,
-            help='Add support for the ERD integral package.')
+            help='Add support for the ERD integral package [default: %(default)s]')
     # GPU_DFCC package
     group.add_argument('--gpu-dfcc',
             action='store_true',
             default=False,
-            help='Enable GPU_DFCC external project.')
+            help='Enable GPU_DFCC external project [default: %(default)s]')
     # Dummy plugin
     group.add_argument('--dummy-plugin',
             action='store_true',
             default=False,
-            help='Enable dummy plugin external project.')
+            help='Enable dummy plugin external project [default: %(default)s]')
     
     group = parser.add_argument_group('Pass extra flags to the compiler')
     group.add_argument('--extra-cc-flags',
@@ -316,11 +327,11 @@ def gen_cmake_command(args):
     command += ' -DENABLE_SCALASCA=%s'       % translate_cmake(args.scalasca)
     command += ' -DENABLE_UNIT_TESTS=%s'     % translate_cmake(args.unit_tests)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
-    command += ' -DENABLE_PLUGINS=%s'        % translate_cmake(args.with_plugins)
+    command += ' -DENABLE_PLUGINS=%s'        % translate_cmake(args.plugins)
     command += ' -DENABLE_LIBERD=%s'         % translate_cmake(args.erd)
     command += ' -DENABLE_GPU_DFCC=%s'       % translate_cmake(args.gpu_dfcc)
     command += ' -DENABLE_DUMMY_PLUGIN=%s'   % translate_cmake(args.dummy_plugin)
-    command += ' -DENABLE_CXX11_SUPPORT=%s'  % translate_cmake(not args.disable_cxx11)
+    command += ' -DENABLE_CXX11_SUPPORT=%s'  % translate_cmake(args.cxx11)
     command += ' -DLIBINT_OPT_AM={0}'.format(args.max_am_eri)
 
     if args.blas == 'builtin':
