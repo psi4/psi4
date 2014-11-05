@@ -24,7 +24,8 @@ endmacro()
 
 # Generate the FCMangle header and post-process it to add the copyright notice
 macro(init_FCMangle)
-	FortranCInterface_HEADER(${PROJECT_BINARY_DIR}/include/FCMangle.h)
+	FortranCInterface_HEADER(${PROJECT_BINARY_DIR}/include/FCMangle.h 
+		MACRO_NAMESPACE "FC_")
 	file(STRINGS ${PROJECT_BINARY_DIR}/include/FCMangle.h contents NEWLINE_CONSUME)
         file(WRITE ${PROJECT_BINARY_DIR}/include/FCMangle.h
 		"/*\n *@BEGIN LICENSE\n *@END LICENSE\n */\n\n")
