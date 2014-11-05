@@ -63,10 +63,8 @@ include(ConfigTesting)
 include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)
 init_FCMangle()
-# The interface files for BLAS/LAPACK should be rewritten
-# to use the FCMangle.h header produced by CMake
-get_fc_symbol(FC_SYMBOL)
-add_definitions(-DFC_SYMBOL=${FC_SYMBOL})
+# This is to use the CMake generated macros and not those based on FC_SYMBOL
+add_definitions(-DUSE_FCMANGLE_H)
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
    set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
