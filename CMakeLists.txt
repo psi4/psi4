@@ -149,7 +149,12 @@ include_directories(
 )
 
 # Python Detection 
-find_package(Python 2.6 REQUIRED)
+if(CMAKE_VERSION_MAJOR VERSION_EQUAL 3)
+   find_package(PythonInterp 2.6 REQUIRED)
+   find_package(PythonLibs 2.6 REQUIRED)
+else()
+   find_package(Python 2.6 REQUIRED)
+endif()   
 link_directories("${PYTHON_LIBRARIES}")
 include_directories(SYSTEM "${PYTHON_INCLUDE_DIRS}")
 
