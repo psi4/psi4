@@ -149,9 +149,9 @@ include_directories(
 )
 
 # Python Detection 
-if(CMAKE_VERSION_MAJOR VERSION_EQUAL 3)
-   find_package(PythonInterp 2.6 REQUIRED)
-   find_package(PythonLibs 2.6 REQUIRED)
+if(CMAKE_MAJOR_VERSION VERSION_EQUAL "3")
+   find_package(PythonInterp REQUIRED)
+   find_package(PythonLibs REQUIRED)
 else()
    find_package(Python 2.6 REQUIRED)
 endif()   
