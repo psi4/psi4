@@ -67,6 +67,28 @@ dict matrix_array_interface_c1(SharedMatrix mat){
     return matrix_array_interface(mat, 0);
 }
 
+dict vector_array_interface(SharedVector vec, int irrep){
+    dict rv;
+    int elements = vec->dim(irrep);
+    rv["shape"] = boost::python::make_tuple(elements);
+    rv["data"] = boost::python::make_tuple((long)vec->pointer(irrep), true);
+    std::string typestr = is_big_endian() ? ">" : "<";
+    {
+        std::stringstream sstr;
+        sstr << (int)sizeof(double);
+        typestr += "f" + sstr.str();
+    }
+    rv["typestr"] = typestr;
+    return rv;
+}
+
+dict vector_array_interface_c1(SharedVector vec){
+    if(vec->nirrep() != 1){
+        throw PSIEXCEPTION("Pointer export of multiple irrep vectorss not yet implemented.");
+    }
+    return vector_array_interface(vec, 0);
+}
+
 boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
 {
     //SharedMolecule mol = Process::environment.molecule();
@@ -184,7 +206,8 @@ void export_mints()
             def("__setitem__", vector_setitem_1(&Vector::pyset), "docstring").
             def("__getitem__", vector_getitem_n(&Vector::pyget), "docstring").
             def("__setitem__", vector_setitem_n(&Vector::pyset), "docstring").
-            def("nirrep", &Vector::nirrep, "docstring");
+            def("nirrep", &Vector::nirrep, "docstring").
+            add_property("__array_interface__", vector_array_interface_c1, "docstring");
 
     typedef void  (IntVector::*int_vector_set)(int, int, int);
     class_<IntVector, boost::shared_ptr<IntVector> >( "IntVector", "docstring").
