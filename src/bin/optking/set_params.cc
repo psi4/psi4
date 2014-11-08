@@ -208,7 +208,7 @@ void set_params(void)
     else if (s == "BOFILL") Opt_params.H_update = OPT_PARAMS::BOFILL;
 
 // Set Bofill as default for TS optimizations
-    if (Opt_params.opt_type == OPT_PARAMS::TS)
+    if ( Opt_params.opt_type == OPT_PARAMS::TS || Opt_params.opt_type == OPT_PARAMS::IRC)
       if (!options["HESS_UPDATE"].has_changed())
         Opt_params.H_update = OPT_PARAMS::BOFILL;
 
