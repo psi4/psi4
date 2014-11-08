@@ -520,7 +520,6 @@ free_matrix(G_inv);
   double *p_0 = init_array(Nintco);
   double *p_m = init_array(Nintco);//mass-weighted step
   double *p_m0 = init_array(Nintco);
-printf("\nq[5]: %15.10lf q_pivot[5]: %15.10lf\n", q[5], q_pivot[5]);
   for(int i=0; i<Nintco; i++)
     p[i] = q[i] - q_pivot[i];
   for(int i=0; i<Nintco; i++)
