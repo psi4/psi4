@@ -29,7 +29,7 @@ else()
             set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static")
         endif()
     elseif(CMAKE_C_COMPILER_ID MATCHES Intel)
-        set(CMAKE_C_FLAGS "-restrict -DRESTRICT=${restrict} -vec-report0 -std=c99 -fPIC") 
+        set(CMAKE_C_FLAGS "-restrict -DRESTRICT=${restrict} -std=c99 -fPIC") 
         set(CMAKE_C_FLAGS_DEBUG   "-O0 -g -w3 -vec-report -Wall -Wuninitialized ")
         # Check if xHost flag is available and add it CMAKE_C_FLAGS_RELEASE
         set(xHost "")
