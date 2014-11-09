@@ -1,6 +1,4 @@
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-# Prefer custom CMake modules
-cmake_policy(SET CMP0017 OLD)
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 # Declare project name and programming languages
 project(psi4 CXX C Fortran)
@@ -14,22 +12,22 @@ list(APPEND CMAKE_MODULE_PATH
      )
 
 #  Options  
-option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                              OFF)
-option(ENABLE_CODE_COVERAGE  "Enable code coverage"                             OFF)
-option(ENABLE_MPI            "Enable MPI parallelization"                       OFF)
-option(ENABLE_OMP            "Enable OpenMP parallelization"                    ON)
-option(ENABLE_UNIT_TESTS     "Enable compilation of unit test suite"            OFF)
-option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
-option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
-option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
-option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
-option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    OFF)
-option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"          OFF) 
-option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
-option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                           OFF)
-option(ENABLE_PLUGINS        "Enable plugins"                                   ON)
-option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                              OFF)
-option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"                    ON)
+option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                     OFF)
+option(ENABLE_CODE_COVERAGE  "Enable code coverage"                    OFF)
+option(ENABLE_MPI            "Enable MPI parallelization"              OFF)
+option(ENABLE_OMP            "Enable OpenMP parallelization"           ON)
+option(ENABLE_UNIT_TESTS     "Enable compilation of unit test suite"   OFF)
+option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"         ON)
+option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"       ON)
+option(ENABLE_CSR            "Enable MKL compressed sparse row"        OFF)
+option(ENABLE_SCALAPACK      "Enable SCALAPACK"                        OFF)
+option(ENABLE_SCALASCA       "Enable scalasca profiler mode"           OFF)
+option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts" OFF) 
+option(ENABLE_STATIC_LINKING "Enable static libraries linking"         OFF)
+option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                  OFF)
+option(ENABLE_PLUGINS        "Enable plugins"                          ON)
+option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                     OFF)
+option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"           ON)
 
 set(EXTERNAL_LIBS)
 
@@ -149,12 +147,8 @@ include_directories(
 )
 
 # Python Detection 
-if(CMAKE_VERSION_MAJOR VERSION_EQUAL 3)
-   find_package(PythonInterp 2.6 REQUIRED)
-   find_package(PythonLibs 2.6 REQUIRED)
-else()
-   find_package(Python 2.6 REQUIRED)
-endif()   
+find_package(PythonInterp 2.6 REQUIRED)
+find_package(PythonLibs 2.6 REQUIRED)
 link_directories("${PYTHON_LIBRARIES}")
 include_directories(SYSTEM "${PYTHON_INCLUDE_DIRS}")
 
