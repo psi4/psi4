@@ -570,9 +570,18 @@ boost::shared_ptr<BasisSet> BasisSet::zero_ao_basis_set()
 //}
 
 
-boost::shared_ptr<BasisSet> BasisSet::pyconstruct(const boost::shared_ptr<Molecule>& mol,
+boost::shared_ptr<BasisSet> BasisSet::pyconstruct_orbital(const boost::shared_ptr<Molecule>& mol,
         const std::string& key, const std::string& target,
-        const std::string& fitrole, const std::string& other)
+        const int forced_puream)
+{
+    boost::shared_ptr<BasisSet> basisset = pyconstruct_auxiliary(mol, key, target, "BASIS", "", forced_puream);
+    return basisset;
+}
+
+boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_ptr<Molecule>& mol,
+        const std::string& key, const std::string& target,
+        const std::string& fitrole, const std::string& other,
+        const int forced_puream)
 {
     // Refactor arguments to make code more comprehensible
     bool orbonly = ((fitrole == "BASIS") && (other == "")) ? true: false;
@@ -631,7 +640,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct(const boost::shared_ptr<Molecu
             fitrole.c_str(), orbfunc));
     }
     PY_TRY(ret, PyEval_CallObject(method, pargs));
-    boost::python::list pybs = boost::python::extract<boost::python::list>(ret);
+    boost::python::dict pybs = boost::python::extract<boost::python::dict>(ret);
 
     // Decref Python env pointers (not main_module, and not global_dict (messes up MintsHelper in proc.py)
     Py_DECREF(ret);
@@ -643,11 +652,12 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct(const boost::shared_ptr<Molecu
     Py_DECREF(module);
 
     const std::string basisname = orbonly ? boost::to_upper_copy(orb) : boost::to_upper_copy(aux);
-    std::string puream = boost::python::extract<std::string>((pybs)[1]);
-    fprintf(outfile, "  ==> Loading Basis Set <==\n\n");
-    fprintf(outfile, "  Role: %s\n", fitrole.c_str());
-    fprintf(outfile, "  Keyword: %s\n", key.c_str());
-    fprintf(outfile, "  Basis Set: %s\n", basisname.c_str());
+    std::string name = boost::python::extract<std::string>(pybs.get("name"));
+    // TODO still need to reconcile name
+    int puream = boost::python::extract<int>(pybs.get("puream"));
+    std::string message = boost::python::extract<std::string>(pybs.get("message"));
+    if (Process::environment.options.get_int("PRINT") > 1)
+        fprintf(outfile, "%s\n", message.c_str());
 
     // Not like we're ever using a non-G94 format
     const boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
@@ -657,12 +667,16 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct(const boost::shared_ptr<Molecu
     // Map of GaussianShells: basis_atom_shell[basisname][atomlabel] = gaussian_shells
     typedef map<string, map<string, vector<ShellInfo> > > map_ssv;
     map_ssv basis_atom_shell;
-    // basisname is uniform; fill map with key/value (gbs entry) pairs of elements from pybs
-    for (int ent=0; ent<(len(pybs)-2); ent+=2) {
-        std::string label = boost::python::extract<std::string>((pybs)[ent+2]);
-        vector<string> basbit = parser->string_to_vector(boost::python::extract<std::string>((pybs)[ent+3]));
+    // basisname is uniform; fill map with key/value (gbs entry) pairs of elements from pybs['shell_map']
+    boost::python::list shmp = boost::python::extract<boost::python::list>(pybs.get("shell_map"));
+    for (int ent=0; ent<(len(shmp)); ent+=3) {
+        std::string label = boost::python::extract<std::string>((shmp)[ent]);
+        std::string hash = boost::python::extract<std::string>((shmp)[ent+1]);
+        vector<string> basbit = parser->string_to_vector(boost::python::extract<std::string>((shmp)[ent+2]));
+        mol->set_shell_by_label(label, hash, key);
         basis_atom_shell[basisname][label] = parser->parse(label, basbit);
     }
+    mol->update_geometry();  // update symmetry with basisset info
 
     boost::shared_ptr<BasisSet> basisset(new BasisSet(key, mol, basis_atom_shell));
     basisset->name_.clear();

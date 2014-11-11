@@ -146,7 +146,8 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(erf_complement_eri_overloads, IntegralFac
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Ca_subset_overloads, Wavefunction::Ca_subset, 0, 2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Cb_subset_overloads, Wavefunction::Cb_subset, 0, 2);
 
-BOOST_PYTHON_FUNCTION_OVERLOADS(pyconstruct_overloads, BasisSet::pyconstruct, 3, 5);
+BOOST_PYTHON_FUNCTION_OVERLOADS(pyconstruct_orb_overloads, BasisSet::pyconstruct_orbital, 3, 4);
+BOOST_PYTHON_FUNCTION_OVERLOADS(pyconstruct_aux_overloads, BasisSet::pyconstruct_auxiliary, 5, 6);
 
 void export_mints()
 {
@@ -681,8 +682,10 @@ void export_mints()
             def("function_to_center", &BasisSet::function_to_center, "Given a function number, return the number of the center it is on.").
             def("nshell_on_center", &BasisSet::nshell_on_center, "docstring").
             def("ao_to_shell", &BasisSet::ao_to_shell, "docstring").
-            def("pyconstruct", &BasisSet::pyconstruct, pyconstruct_overloads("Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required.")).
-            staticmethod("pyconstruct").
+            def("pyconstruct_orbital", &BasisSet::pyconstruct_orbital, pyconstruct_orb_overloads("Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.")).
+            staticmethod("pyconstruct_orbital").
+            def("pyconstruct_auxiliary", &BasisSet::pyconstruct_auxiliary, pyconstruct_aux_overloads("Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.")).
+            staticmethod("pyconstruct_auxiliary").
             def("concatenate", ptrversion(&BasisSet::concatenate), "Concatenates two basis sets together into a new basis without reordering anything. Unless you know what you're doing, you should use the '+' operator instead of this method.").
             def("add", ptrversion(&BasisSet::add), "Combine two basis sets to make a new one.").
             //staticmethod("concatinate").

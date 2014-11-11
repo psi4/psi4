@@ -139,7 +139,7 @@ void Wavefunction::common_init()
     molecule_ = Process::environment.molecule();
 
     // Load in the basis set
-    basisset_ = BasisSet::pyconstruct(molecule_, "BASIS", options_.get_str("BASIS"));
+    basisset_ = BasisSet::pyconstruct_orbital(molecule_, "BASIS", options_.get_str("BASIS"));
 
     // Check the point group of the molecule. If it is not set, set it.
     if (!molecule_->point_group()) {
