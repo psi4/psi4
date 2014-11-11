@@ -337,15 +337,27 @@ public:
     /** Returns a new BasisSet object with qcdb Python machinery.
      *
      * @param mol    Molecule to construct the basis set for.
-     * @param key    keyword to build basis set for
-     * @param target keyword value to build basis set for, either orbital or auxilliary
-     * @param role   e.g., RIFIT, JKFIT; defaults to BASIS.
-     * @param other  keyword value for "hints" basis set; when target is auxiliary, use this for orbital
+     * @param key    keyword to build basis set for, usually BASIS
+     * @param target keyword value to build basis set for, e.g., CC-PVDZ or MYCOBALTBASIS
+     * @param puream puream value to force basis set for; -1 for unforced
      * @return A new basis set object constructed from the information passed in.
      */
-    static boost::shared_ptr<BasisSet> pyconstruct(const boost::shared_ptr<Molecule>&,
+    static boost::shared_ptr<BasisSet> pyconstruct_orbital(const boost::shared_ptr<Molecule>&,
+        const std::string&, const std::string&, int = -1);
+
+    /** Returns a new BasisSet object with qcdb Python machinery.
+     *
+     * @param mol    Molecule to construct the basis set for.
+     * @param key    keyword to build basis set for, e.g., DF_BASIS_SCF
+     * @param target keyword value to build basis set for, e.g., CC-PVDZ-JKFIT or MYCOBALTBASISJK
+     * @param role   e.g., RIFIT, JKFIT
+     * @param other  orbital keyword value for "hints" basis set when target is auxiliary
+     * @param puream puream value to force basis set for; -1 for unforced
+     * @return A new basis set object constructed from the information passed in.
+     */
+    static boost::shared_ptr<BasisSet> pyconstruct_auxiliary(const boost::shared_ptr<Molecule>&,
         const std::string&, const std::string&, 
-        const std::string& = std::string("BASIS"), const std::string& = std::string());
+        const std::string&, const std::string&, int = -1);
 
     /** Converts basis set name to a compatible filename.
      * @param basisname Basis name

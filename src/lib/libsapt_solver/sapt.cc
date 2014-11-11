@@ -74,12 +74,12 @@ void SAPT::initialize()
   vAAB_ = NULL;
   vBAB_ = NULL;
 
-  ribasis_ = boost::shared_ptr<BasisSet>(BasisSet::pyconstruct(molecule_, 
+  ribasis_ = boost::shared_ptr<BasisSet>(BasisSet::pyconstruct_auxiliary(molecule_, 
     "DF_BASIS_SAPT", options_.get_str("DF_BASIS_SAPT"),
     "RIFIT", options_.get_str("BASIS")));
   elst_basis_ = 0;
   if (options_.get_str("DF_BASIS_ELST") != "") {
-    elstbasis_ = boost::shared_ptr<BasisSet>(BasisSet::pyconstruct(molecule_,
+    elstbasis_ = boost::shared_ptr<BasisSet>(BasisSet::pyconstruct_auxiliary(molecule_,
     "DF_BASIS_ELST", options_.get_str("DF_BASIS_ELST"),
     "RIFIT", options_.get_str("BASIS")));
     // TODO: never dealt with an optional basis set before. right default role?

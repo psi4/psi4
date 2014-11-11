@@ -144,7 +144,7 @@ void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
     if (wavefunction && !basisset_)
         basisset_ = wavefunction->basisset();
     else if (!basisset_){
-        basisset_ = boost::shared_ptr<BasisSet>(BasisSet::pyconstruct(molecule_, "BASIS", options_.get_str("BASIS")));
+        basisset_ = boost::shared_ptr<BasisSet>(BasisSet::pyconstruct_orbital(molecule_, "BASIS", options_.get_str("BASIS")));
     }
 
     common_init();
