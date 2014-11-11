@@ -18,3 +18,12 @@ if(    NOT cmake_build_type_tolower STREQUAL "debug"
    AND NOT cmake_build_type_tolower STREQUAL "relwithdebinfo")
       message(FATAL_ERROR "Unknown build type \"${CMAKE_BUILD_TYPE}\". Allowed values are Debug, Release, Profile, RelWithDebInfo (case-insensitive).")
 endif()
+
+# guard against math-less build
+if(NOT BLAS_FOUND OR NOT LAPACK_FOUND) 
+   if(NOT EXPLICIT_LIBS)
+      message(FATAL_ERROR "No BLAS/LAPACK implementation found and no explicit libraries specified")
+   else()
+      message(STATUS "No BLAS/LAPACK implementation found, but explicit libraries specified")
+   endif()
+endif()

@@ -144,6 +144,10 @@ def parse_input():
             default=None,
             help='explicit linker specification for extra libraries; passed directly to the linker',
             metavar='STRING')
+    group.add_argument('--accelerate',
+            action='store_true',
+            default=False,
+            help='build using Mac OS X Accelerate Framework [default: %(default)s]')
     group.add_argument('--cray',
             action='store_true',
             default=False,
@@ -362,6 +366,11 @@ def gen_cmake_command(args):
             print('--lapack=%s does not exist' % args.lapack)
             sys.exit(1)
         command += ' -DEXPLICIT_LAPACK_LIB=%s' % args.lapack
+        command += ' -DENABLE_AUTO_LAPACK=OFF'
+    
+    if args.accelerate:
+        command += ' -DENABLE_ACCELERATE=ON'
+        command += ' -DENABLE_AUTO_BLAS=OFF'
         command += ' -DENABLE_AUTO_LAPACK=OFF'
 
     if args.cray:
