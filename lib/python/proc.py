@@ -116,29 +116,11 @@ def run_dfomp2(name, **kwargs):
     if user_pg != 'c1':
         psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
-    # if the df_basis_scf basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_SCF') == '':
-        jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
-        if jkbasis:
-            psi4.set_global_option('DF_BASIS_SCF', jkbasis)
-            psi4.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_SCF is required.')
-
     #psi4.set_global_option('SCF_TYPE', 'DF')
     psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
-
-    # if the df_basis_cc basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_CC') == '':
-        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
-        if ribasis:
-            psi4.set_global_option('DF_BASIS_CC', ribasis)
-            psi4.print_out('  No DF_BASIS_CC auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_CC is required.')
 
     psi4.dfocc()
 
@@ -776,17 +758,6 @@ def run_scf_gradient(name, **kwargs):
 
     run_scf(name, **kwargs)
 
-    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF'):
-
-        # if the df_basis_scf basis is not set, pick a sensible one.
-        if psi4.get_global_option('DF_BASIS_SCF') == '':
-            jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
-            if jkbasis:
-                psi4.set_global_option('DF_BASIS_SCF', jkbasis)
-                psi4.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
-            else:
-                raise ValidationError('Keyword DF_BASIS_SCF is required.')
-
     psi4.scfgrad()
     optstash.restore()
 
@@ -1029,29 +1000,11 @@ def run_dfmp2_gradient(name, **kwargs):
         if(psi4.me() == 0):
             shutil.copy(restartfile, targetfile)
     else:
-        # if the df_basis_scf basis is not set, pick a sensible one.
-        if psi4.get_global_option('DF_BASIS_SCF') == '':
-            jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
-            if jkbasis:
-                psi4.set_global_option('DF_BASIS_SCF', jkbasis)
-                psi4.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
-            else:
-                raise ValidationError('Keyword DF_BASIS_SCF is required.')
-
         scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
     p4util.banner('DFMP2')
     psi4.print_out('\n')
-
-    # if the df_basis_mp2 basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_MP2') == '':
-        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
-        if ribasis:
-            psi4.set_global_option('DF_BASIS_MP2', ribasis)
-            psi4.print_out('  No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
     psi4.dfmp2grad()
     e_dfmp2 = psi4.get_variable('MP2 TOTAL ENERGY')
@@ -1399,29 +1352,11 @@ def run_dfmp2_property(name, **kwargs):
         if(psi4.me() == 0):
             shutil.copy(restartfile, targetfile)
     else:
-        # if the df_basis_scf basis is not set, pick a sensible one.
-        if psi4.get_global_option('DF_BASIS_SCF') == '':
-            jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
-            if jkbasis:
-                psi4.set_global_option('DF_BASIS_SCF', jkbasis)
-                psi4.print_out('\nNo DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
-            else:
-                raise ValidationError('Keyword DF_BASIS_SCF is required.')
-
         scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
     p4util.banner('DFMP2')
     psi4.print_out('\n')
-
-    # if the df_basis_mp2 basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_MP2') == '':
-        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
-        if ribasis:
-            psi4.set_global_option('DF_BASIS_MP2', ribasis)
-            psi4.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
     psi4.dfmp2grad()
     e_dfmp2 = psi4.get_variable('MP2 TOTAL ENERGY')
@@ -1686,16 +1621,6 @@ def run_dft(name, **kwargs):
             dfun = ssuper
 
     if dfun.is_c_hybrid():
-
-        # if the df_basis_mp2 basis is not set, pick a sensible one.
-        if psi4.get_global_option('DF_BASIS_MP2') == '':
-            ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
-            if ribasis:
-                psi4.set_global_option('DF_BASIS_MP2', ribasis)
-                psi4.print_out('  No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
-            else:
-                raise ValidationError('Keyword DF_BASIS_MP2 is required.')
-
         if dfun.is_c_scs_hybrid():
             psi4.set_local_option('DFMP2', 'MP2_OS_SCALE', dfun.c_os_alpha())
             psi4.set_local_option('DFMP2', 'MP2_SS_SCALE', dfun.c_ss_alpha())
@@ -1911,15 +1836,6 @@ def run_mp2c(name, **kwargs):
     monomerA.set_name('monomerA')
     monomerB = molecule.extract_subsets(2, 1)
     monomerB.set_name('monomerB')
-
-    # if the df_basis_mp2 basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_MP2') == '':
-        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
-        if ribasis:
-            psi4.set_global_option('DF_BASIS_MP2', ribasis)
-            psi4.print_out('  No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
     ri = psi4.get_option('SCF', 'SCF_TYPE')
     df_ints_io = psi4.get_option('SCF', 'DF_INTS_IO')
@@ -2234,15 +2150,6 @@ def run_sapt_ct(name, **kwargs):
     p4util.banner('SAPT Charge Transfer')
     psi4.print_out('\n')
 
-    # if the df_basis_sapt basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_SAPT') == '':
-        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
-        if ribasis:
-            psi4.set_global_option('DF_BASIS_SAPT', ribasis)
-            psi4.print_out('  No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_SAPT is required.')
-
     psi4.print_out('\n')
     p4util.banner('Dimer Basis SAPT')
     psi4.print_out('\n')
@@ -2509,21 +2416,6 @@ def run_fnodfcc(name, **kwargs):
 
     # save DF or CD ints generated by SCF for use in CC
     psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
-
-    # the default auxiliary basis
-    if psi4.get_option('FNOCC','DF_BASIS_CC') == '':
-       basis   = psi4.get_global_option('BASIS')
-       dfbasis = p4util.corresponding_rifit(basis)
-       psi4.set_local_option('FNOCC','DF_BASIS_CC',dfbasis)
-
-    # make sure this module knows what df basis was used in the scf
-    if ( psi4.get_option('SCF','SCF_TYPE') == "DF" ):
-        df_basis_scf = psi4.get_option('SCF','DF_BASIS_SCF')
-        if df_basis_scf == '':
-           basis        = psi4.get_global_option('BASIS')
-           df_basis_scf = p4util.corresponding_jkfit(basis)
-
-        psi4.set_global_option('DF_BASIS_SCF',df_basis_scf)
 
     scf_helper(name,**kwargs)
 
