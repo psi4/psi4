@@ -80,9 +80,7 @@ bool has_ending (std::string const &fullString, std::string const &ending)
 // Constructs a zero AO basis set
 BasisSet::BasisSet()
 {
-    if (initialized_shared_ == false)
-        initialize_singletons();
-    initialized_shared_ = true;
+    initialize_singletons();
 
     // Add a dummy atom at the origin, to hold this basis function
     molecule_ = boost::shared_ptr<Molecule>(new Molecule);
@@ -146,6 +144,9 @@ boost::shared_ptr<BasisSet> BasisSet::build(boost::shared_ptr<Molecule> molecule
 
 void BasisSet::initialize_singletons()
 {
+    if (initialized_shared_ == true)
+        return;
+
     // Populate the exp_ao arrays
     for (int l=0; l<LIBINT_MAX_AM; ++l) {
         for (int i=0; i<=l; ++i) {
@@ -159,6 +160,8 @@ void BasisSet::initialize_singletons()
             }
         }
     }
+
+    initialized_shared_ = true;
 }
 
 boost::shared_ptr<Molecule> BasisSet::molecule() const
@@ -576,9 +579,7 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
     name_(basistype)
 {
     // Singletons
-    if (initialized_shared_ == false)
-        initialize_singletons();
-    initialized_shared_ = true;
+    initialize_singletons();
 
     int natom = molecule_->natom();
 
@@ -725,10 +726,7 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
 
 BasisSet::BasisSet(const BasisSet *bs, const int center)
 {
-    // Singletons; these should've been initialized by this point, but just in case
-    if (initialized_shared_ == false)
-        initialize_singletons();
-    initialized_shared_ = true;
+    initialize_singletons();
 
     /*
      * First, find the shells we need, and grab the data
