@@ -113,9 +113,10 @@ void DFOCC::df_corr()
     //outfile->Printf("\tComputing DF-BASIS-CC integrals... \n"); 
 
     // Read in the basis set informations
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::construct(parser, reference_wavefunction_->molecule(), "DF_BASIS_CC");
-    boost::shared_ptr<BasisSet> primary_ = BasisSet::construct(parser, reference_wavefunction_->molecule(), "BASIS");
+    boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
+        "DF_BASIS_CC", options_.get_str("DF_BASIS_CC"), "RIFIT", options_.get_str("BASIS"));
+    boost::shared_ptr<BasisSet> primary_ = BasisSet::pyconstruct_orbital(reference_wavefunction_->molecule(),
+        "BASIS", options_.get_str("BASIS"));
     boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
     //auxiliary_->print();
 

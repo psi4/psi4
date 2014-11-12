@@ -109,8 +109,8 @@ boost::shared_ptr<MatrixFactory> get_matrix_factory()
     }
 
     // Read in the basis set
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser);
-    boost::shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
+    boost::shared_ptr<BasisSet> basis = BasisSet::pyconstruct_orbital(molecule,
+        "BASIS", Process::environment.options.get_str("BASIS"));
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
     boost::shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
     const Dimension& dim = sobasis->dimension();

@@ -1587,7 +1587,7 @@ void Molecule::print() const
             if (Process::environment.options.get_int("PRINT") > 2) {
                 outfile->Printf("\n");
                 for(int i = 0; i < natom(); ++i) {
-                    outfile->Printf("    %8s\n", symbol(i).c_str());
+                    outfile->Printf("    %8s\n", label(i).c_str());
                     std::map<std::string, std::string>::const_iterator iter;
                     for (iter = atoms_[i]->basissets().begin(); iter!=atoms_[i]->basissets().end(); ++iter){
                         std::map<std::string, std::string>::const_iterator otheriter = atoms_[i]->shells().find(iter->first);
