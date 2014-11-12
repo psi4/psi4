@@ -20,7 +20,7 @@
  *@END LICENSE
  */
 
-#ifndef _psi_src_bin_occ_dpd_h__
+#ifndef _psi_src_bin_occ_dpd_h_
 #define _psi_src_bin_occ_dpd_h_
 
 using namespace boost;
@@ -29,17 +29,17 @@ using namespace std;
 
 namespace psi{ namespace occwave{
 
-class SymBlockVector;  
+class SymBlockVector;
 
 class SymBlockMatrix
 {
 
   private:
   double ***matrix_; // Object
-  int *rowspi_;      // Rows per irrep 
-  int *colspi_;      // Columns per irrep 
+  int *rowspi_;      // Rows per irrep
+  int *colspi_;      // Columns per irrep
   std::string name_;      // Name of the matrix
-  int nirreps_;     // Number of irreps 
+  int nirreps_;     // Number of irreps
 
 
   public:
@@ -48,7 +48,7 @@ class SymBlockMatrix
   SymBlockMatrix(int nirreps, int *ins_rowspi, int *ins_colspi);
   SymBlockMatrix(std::string name, int nirreps, int *ins_rowspi, int *ins_colspi);
   ~SymBlockMatrix(); //destructer
-  
+
   SymBlockMatrix* generate(int nirreps, int *ins_rowspi, int *ins_colspi);
   SymBlockMatrix* generate(std::string name, int nirreps, int *ins_rowspi, int *ins_colspi);
   SymBlockMatrix* transpose();
@@ -96,24 +96,24 @@ class SymBlockMatrix
   void davidson(int n_eigval, SymBlockMatrix* eigvectors, SymBlockVector* eigvalues, double cutoff, int print); // diagonalize via davidson alg.
   void cdgesv(SymBlockVector* Xvec); // solve lineq via acml
   void lineq_flin(SymBlockVector* Xvec, double *det); // solve lineq via flin
-  void lineq_pople(SymBlockVector* Xvec, int num_vecs, double cutoff); // solve lineq via pople    
+  void lineq_pople(SymBlockVector* Xvec, int num_vecs, double cutoff); // solve lineq via pople
   void read_oooo(boost::shared_ptr<psi::PSIO> psio, int itap, int *mosym, int *qt2pitzer, int *occ_off, int *occpi, Array3i *oo_pairidx);
   void read_oovv(boost::shared_ptr<psi::PSIO> psio, int itap, int nocc, int *mosym, int *qt2pitzer, int *occ_off, int *vir_off, int *occpi,
                  int *virpi, Array3i *oo_pairidx, Array3i *vv_pairidx);
- 
-  
-  friend class SymBlockVector; 
+
+
+  friend class SymBlockVector;
 };
 
 
-class SymBlockVector 
+class SymBlockVector
 {
 
   private:
   double **vector_; // Object
-  int *dimvec_;      // dimensions per irrep 
+  int *dimvec_;      // dimensions per irrep
   string name_;      // Name of the vector
-  int nirreps_;     // Number of irreps 
+  int nirreps_;     // Number of irreps
 
 
   public:
@@ -122,7 +122,7 @@ class SymBlockVector
   SymBlockVector(int nirreps, int *ins_dimvec);
   SymBlockVector(string name, int nirreps, int *ins_dimvec);
   ~SymBlockVector(); //destructer
-  
+
   int *dimvec();
   void memalloc();
   void release();
@@ -148,7 +148,7 @@ class SymBlockVector
   void set_to_unit();
   void gemv(bool transa, double alpha, SymBlockMatrix* A, SymBlockVector* X, double beta);
   double dot(SymBlockVector* X);
-  
+
   friend class SymBlockMatrix;
 };
 
