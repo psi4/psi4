@@ -277,6 +277,7 @@ def process_basis_block(matchobj):
     spaces = matchobj.group(1)
     basistype = matchobj.group(2).upper()
     name = matchobj.group(3)
+    name = 'anonymous' if name == '' else name
     cleanbas = basname(name).replace('-', '')  # further remove hyphens so can be function name
     command_lines = re.split('\n', matchobj.group(4))
 
@@ -314,7 +315,7 @@ def process_basis_block(matchobj):
     # Now look for regular basis set definitions
     basblock = filter(None, basislabel.split('\n'.join(leftover_lines)))
     if len(basblock) == 1:
-        if len(result.split('\n') == 2):  # TODO check
+        if len(result.split('\n')) == 3:
             # case with no [basname] markers where whole block is contents of gbs file
             result += """%s    mol.set_basis_all_atoms("%s", role=role)\n""" % \
                 (spaces, name)
