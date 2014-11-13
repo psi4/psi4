@@ -358,9 +358,9 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | detci                   | **expert** full control over detci module                                             |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | casscf                  | complete active space self consistent field (CASSCF)  :ref:`[manual] <sec:cas>`    |
+    | casscf                  | complete active space self consistent field (CASSCF)  :ref:`[manual] <sec:cas>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | rasscf                  | restricted active space self consistent field (RASSCF)  :ref:`[manual] <sec:cas>`    |
+    | rasscf                  | restricted active space self consistent field (RASSCF)  :ref:`[manual] <sec:cas>`     |
     +-------------------------+---------------------------------------------------------------------------------------+
     | gaussian-2 (g2)         | gaussian-2 composite method :ref:`[manual] <sec:fnogn>`                               |
     +-------------------------+---------------------------------------------------------------------------------------+

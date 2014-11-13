@@ -422,123 +422,6 @@ std::string BasisSet::print_detail_cfour() const
     return ss.str();
 }
 
-std::string BasisSet::print_detail_cfour() const
-{
-    char buffer[120];
-    std::stringstream ss;
-
-    for (int uA = 0; uA < molecule_->nunique(); uA++) {
-        const int A = molecule_->unique(uA);
-        if (WorldComm->me() == 0) {
-            sprintf(buffer, "%s:P4_%d\n", molecule_->symbol(A).c_str(), A+1);
-            ss << buffer;
-            sprintf(buffer, "PSI4 basis %s for element %s atom %d\n\n",
-                boost::to_upper_copy(name_).c_str(), molecule_->symbol(A).c_str(), A+1);
-            ss << buffer;
-        }
-
-        int first_shell = center_to_shell_[A];
-        int n_shell = center_to_nshell_[A];
-
-        int max_am_center = 0;
-        for (int Q = 0; Q < n_shell; Q++)
-            max_am_center = (shells_[Q + first_shell].am() > max_am_center) ? shells_[Q + first_shell].am() : max_am_center;
-
-        std::vector< std::vector<int> > shell_per_am (max_am_center + 1);
-        for (int Q = 0; Q < n_shell; Q++)
-            shell_per_am[shells_[Q + first_shell].am()].push_back(Q);
-
-        if (WorldComm->me() == 0) {
-            // Write number of shells in the basis set
-            sprintf(buffer, "%3d\n", max_am_center + 1);
-            ss << buffer;
-
-            // Write angular momentum for each shell
-            for (int am = 0; am <= max_am_center; am++) {
-                sprintf(buffer, "%5d", am);
-                ss << buffer;
-            }
-            sprintf(buffer, "\n");
-            ss << buffer;
-
-            // Write number of contracted basis functions for each shell
-            for (int am = 0; am <= max_am_center; am++) {
-                sprintf(buffer, "%5d", shell_per_am[am].size());
-                ss << buffer;
-            }
-            sprintf(buffer, "\n");
-            ss << buffer;
-        }
-
-        std::vector< std::vector <double> > exp_per_am(max_am_center + 1);
-        std::vector< std::vector <double> > coef_per_am(max_am_center + 1);
-        for (int am = 0; am <= max_am_center; am++) {
-            // TODO: std::find safe on floats? seems to work
-            // Collect unique exponents among all functions
-            for (int Q = 0; Q < shell_per_am[am].size(); Q++) {
-                for (int K = 0; K < shells_[shell_per_am[am][Q] + first_shell].nprimitive(); K++) {
-                    if (!(std::find(exp_per_am[am].begin(), exp_per_am[am].end(),
-                          shells_[shell_per_am[am][Q] + first_shell].exp(K)) != exp_per_am[am].end())) {
-                        exp_per_am[am].push_back(shells_[shell_per_am[am][Q] + first_shell].exp(K));
-                    }
-                }
-            }
-
-            // Collect coefficients for each exp among all functions, zero otherwise
-            for (int Q = 0; Q < shell_per_am[am].size(); Q++) {
-                for (int ep = 0, K = 0; ep < exp_per_am[am].size(); ep++) {
-                    if (abs(exp_per_am[am][ep] - shells_[shell_per_am[am][Q] + first_shell].exp(K)) < 1.0e-8) {
-                        coef_per_am[am].push_back(shells_[shell_per_am[am][Q] + first_shell].original_coef(K));
-                        if ((K+1) != shells_[shell_per_am[am][Q] + first_shell].nprimitive()) {
-                            K++;
-                        }
-                    }
-                    else {
-                        coef_per_am[am].push_back(0.0);
-                    }
-                }
-            }
-        }
-
-        if (WorldComm->me() == 0) {
-            // Write number of exponents for each shell
-            for (int am = 0; am <= max_am_center; am++) {
-                sprintf(buffer, "%5d", exp_per_am[am].size());
-                ss << buffer;
-            }
-            sprintf(buffer, "\n\n");
-            ss << buffer;
-
-            for (int am = 0; am <= max_am_center; am++) {
-                // Write exponents for each shell
-                for (int ep = 0; ep < exp_per_am[am].size(); ep++) {
-                    sprintf(buffer, "%14.7f", exp_per_am[am][ep]);
-                    ss << buffer;
-                    if (((ep+1) % 5 == 0) || ((ep+1) == exp_per_am[am].size())) {
-                        sprintf(buffer, "\n");
-                        ss << buffer;
-                    }
-                }
-                sprintf(buffer, "\n");
-                ss << buffer;
-
-                // Write contraction coefficients for each shell
-                for (int ep = 0; ep < exp_per_am[am].size(); ep++) {
-                    for (int bf = 0; bf < shell_per_am[am].size(); bf++) {
-                        sprintf(buffer, "%10.7f ", coef_per_am[am][bf*exp_per_am[am].size()+ep]);
-                        ss << buffer;
-                    }
-                    sprintf(buffer, "\n");
-                    ss << buffer;
-                }
-                sprintf(buffer, "\n");
-                ss << buffer;
-            }
-        }
-    }
-    return ss.str();
-}
-
 const GaussianShell& BasisSet::shell(int si) const
 {
     if (si < 0 || si > nshell()) {
@@ -656,7 +539,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
     // TODO still need to reconcile name
     std::string message = boost::python::extract<std::string>(pybs.get("message"));
     if (Process::environment.options.get_int("PRINT") > 1)
-        fprintf(outfile, "%s\n", message.c_str());
+        outfile->Printf("%s\n", message.c_str());
 
     // Handle mixed puream signals and seed parser with the resolution
     int native_puream = boost::python::extract<int>(pybs.get("puream"));
