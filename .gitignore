@@ -100,6 +100,9 @@ bin/adjust.x
 bin/collisions.x
 bin/ga-config
 
+# Ignore cdash.py and cdash.run scripts
+cdash/cdash.py
+cdash/cdash.run
 
 # Ignore Jet's Vagrantfile (might be added later for auto testing)
 Vagrantfile

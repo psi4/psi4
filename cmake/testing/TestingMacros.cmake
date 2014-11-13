@@ -2,6 +2,13 @@
 # Tests are identified by their name (one) and by labels (more than one)
 # all tests with label quicktests should run in less than 30 seconds sequential on a 2GHz CPU
 macro(add_regression_test _name _labels)
+    # _labels is not a list, it's a string... Transform it into a list
+    set(labels)
+    string(REPLACE ";" " " _labels "${_labels}")
+    foreach(_label "${_labels}")
+       list(APPEND labels ${_label})
+    endforeach()
+    unset(_labels)
     # This is where the test directories live
     set(TESTDIR ${PROJECT_SOURCE_DIR}/tests)
     # This is the psi command to actually run the tests
@@ -28,15 +35,12 @@ macro(add_regression_test _name _labels)
     set(OUTFILE ${TEST_RUN_DIR}/output.dat)
 
     # Turn on psitest.pl if eligible
-    # true/false have to be _lowecase_, CTest will otherwise spit out a BAD COMMAND error
+    # true/false have to be _lowercase_, CTest will otherwise spit out a BAD COMMAND error
     set(AUTOTEST false)
-    if(NOT "${_labels}" STREQUAL "")
-       list(FIND _labels "autotest" IS_AUTOTEST) 
-       # If not found IS_AUTOTEST == -1; convert to FALSE
-       if(${IS_AUTOTEST} EQUAL "-1")
-	  set(IS_AUTOTEST FALSE)
-       endif()
-       if(PERL_FOUND AND IS_AUTOTEST)
+    if(labels)
+       list(FIND labels "autotest" _index) 
+       # If not found _index == -1; convert to FALSE
+       if(PERL_FOUND AND (${_index} GREATER -1))
           set(AUTOTEST true)
        endif()
     endif()
@@ -59,8 +63,8 @@ macro(add_regression_test _name _labels)
         )
     endif()
 
-    if(NOT "${_labels}" STREQUAL "")
-       set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    if(labels)
+       set_tests_properties(${_name} PROPERTIES LABELS "${labels}")
     endif()
 endmacro()
 
