@@ -695,7 +695,7 @@ def process_input(raw_input, print_level=1):
     temp = re.sub(memory_string, process_memory_command, temp)
 
     # Process "basis name? { ... }"
-    basis_block = re.compile(r'^(\s*?)(basis|df_basis_scf|df_basis_mp2)[=\s]*(\w*?)\s*\{(.*?)\}',
+    basis_block = re.compile(r'^(\s*?)(basis|df_basis_scf|df_basis_mp2|df_basis_cc|df_basis_sapt)[=\s]*(\w*?)\s*\{(.*?)\}',
                              re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(basis_block, process_basis_block, temp)
 
