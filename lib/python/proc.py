@@ -860,8 +860,8 @@ def scf_helper(name, **kwargs):
     # Note that can't query PUREAM option directly, as it only
     #   reflects user changes to value, so load basis and
     #   read effective PUREAM setting off of it
-    psi4.set_global_option('BASIS', psi4.get_global_option('BASIS'))
-    psi4.set_global_option('PUREAM', psi4.MintsHelper().basisset().has_puream())
+    #psi4.set_global_option('BASIS', psi4.get_global_option('BASIS'))
+    #psi4.set_global_option('PUREAM', psi4.MintsHelper().basisset().has_puream())
 
     # broken set-up
     if do_broken:
@@ -878,11 +878,11 @@ def scf_helper(name, **kwargs):
         else:
             guessbasis = cast
 
-        if (castdf):
-            if yes.match(str(castdf)):
-                guessbasisdf = p4util.corresponding_jkfit(guessbasis)
-            else:
-                guessbasisdf = castdf
+        #if (castdf):
+        #    if yes.match(str(castdf)):
+        #        guessbasisdf = p4util.corresponding_jkfit(guessbasis)
+        #    else:
+        #        guessbasisdf = castdf
 
         # Switch to the guess namespace
         namespace = psi4.IO.get_default_namespace()
@@ -896,7 +896,9 @@ def scf_helper(name, **kwargs):
         if (castdf):
             psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
             psi4.set_local_option('SCF', 'DF_INTS_IO', 'none')
-            psi4.set_global_option('DF_BASIS_SCF', guessbasisdf)
+            #psi4.set_global_option('DF_BASIS_SCF', guessbasisdf)
+            if not yes.match(str(castdf)):
+                psi4.set_global_option('DF_BASIS_SCF', castdf)
 
         # Print some info about the guess
         psi4.print_out('\n')
