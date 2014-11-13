@@ -654,13 +654,22 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
     const std::string basisname = orbonly ? boost::to_upper_copy(orb) : boost::to_upper_copy(aux);
     std::string name = boost::python::extract<std::string>(pybs.get("name"));
     // TODO still need to reconcile name
-    int puream = boost::python::extract<int>(pybs.get("puream"));
     std::string message = boost::python::extract<std::string>(pybs.get("message"));
     if (Process::environment.options.get_int("PRINT") > 1)
         fprintf(outfile, "%s\n", message.c_str());
 
+    // Handle mixed puream signals and seed parser with the resolution
+    int native_puream = boost::python::extract<int>(pybs.get("puream"));
+    int user_puream = (Process::environment.options.get_global("PUREAM").has_changed()) ?
+        ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian) : -1;
+    int resolved_puream;
+    if (user_puream == -1)
+        resolved_puream = (forced_puream == -1) ? native_puream : forced_puream;
+    else
+        resolved_puream = user_puream;
+
     // Not like we're ever using a non-G94 format
-    const boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    const boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(resolved_puream));
 
     mol->set_basis_all_atoms(basisname, key);
 
@@ -682,6 +691,8 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
     basisset->name_.clear();
     basisset->name_ = basisname;
 
+    //printf("puream: basis %d, arg %d, user %d, resolved %d, final %d\n", 
+    //    native_puream, forced_puream, user_puream, resolved_puream, basisset->has_puream());
     return basisset;
 }
 
