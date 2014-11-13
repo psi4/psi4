@@ -15,6 +15,8 @@ set(DART_TESTING_TIMEOUT
     )
 
 include(CTest)
+set(DASHBOARD_DIR ${CMAKE_SOURCE_DIR}/cdash)
+add_subdirectory(cdash)
 enable_testing()
 # This must come last!!
 add_subdirectory(tests)
