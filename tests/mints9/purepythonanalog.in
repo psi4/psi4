@@ -1,0 +1,128 @@
+import qcdb
+
+#           cc-pvdz                 aug-cc-pvdz
+# BASIS     H  5/ 5   C  14/15      H +4/ 4   C  +9/10
+# RIFIT     H 14/15   C  56/66      H +9/10   C +16/20
+# JKFIT     H 23/25   C  70/81      H +9/10   C +16/20
+
+mymol = qcdb.Molecule("""
+C    0.0  0.0 0.0
+O    1.4  0.0 0.0
+H_r -0.5 -0.7 0.0
+H_l -0.5  0.7 0.0
+""")
+
+print '    <<<  uniform cc-pVDZ  >>>'
+wert = qcdb.BasisSet.pyconstruct(mymol, 'BASIS', 'cc-pvdz')
+compare_integers(38, wert.nbf(), 'nbf()')
+compare_integers(40, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '        <<<  RIFIT (default)  >>>'
+wert = qcdb.BasisSet.pyconstruct(mymol, 'DF_BASIS_MP2', '', 'RIFIT', 'cc-pvdz')
+qcdb.compare_integers(140, wert.nbf(), 'nbf()')
+qcdb.compare_integers(162, wert.nao(), 'nao()')
+qcdb.compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '    <<<  cc-pVDZ w/ aug-cc-pVDZ on C  >>>'
+basis dz_PLUS {
+    assign cc-pvdz
+    assign c aug-cc-pvdz
+}
+wert = qcdb.BasisSet.pyconstruct(mymol, 'BASIS', basisspec_psi4_yo__dz_plus)
+qcdb.compare_integers(47, wert.nbf(), 'nbf()')
+qcdb.compare_integers(50, wert.nao(), 'nao()')
+qcdb.compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '        <<<  RIFIT (default)  >>>'
+wert = qcdb.BasisSet.pyconstruct(mymol, 'DF_BASIS_MP2', '', 'RIFIT', basisspec_psi4_yo__dz_plus)
+qcdb.compare_integers(156, wert.nbf(), 'nbf()')
+qcdb.compare_integers(182, wert.nao(), 'nao()')
+qcdb.compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H_R  >>>'
+basis dz_PLUSplus {
+    assign cc-pvdz
+    assign c aug-cc-pvdz
+    assign h_r aug-cc-pvdz
+}
+wert = qcdb.BasisSet.pyconstruct(mymol, 'BASIS', basisspec_psi4_yo__dz_plusplus)
+qcdb.compare_integers(51, wert.nbf(), 'nbf()')
+qcdb.compare_integers(54, wert.nao(), 'nao()')
+qcdb.compare_strings('cs', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '    <<<  RIFIT (custom: force cc-pVDZ on H, default on C, O)  >>>'
+basis dz_PLUSplusRI {
+    #assign aug-cc-pvdz-ri
+    assign h cc-pvdz-ri
+}
+wert = qcdb.BasisSet.pyconstruct(mymol, 'DF_BASIS_MP2', basisspec_psi4_yo__dz_plusplusri, 'RIFIT', basisspec_psi4_yo__dz_plusplus)
+qcdb.compare_integers(156, wert.nbf(), 'nbf()')
+qcdb.compare_integers(182, wert.nao(), 'nao()')
+qcdb.compare_strings('cs', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>'
+basis dz_PLUSplusplus {
+    assign cc-pvdz
+    assign c aug-cc-pvdz
+    assign h aug-cc-pvdz
+}
+wert = qcdb.BasisSet.pyconstruct(mymol, 'BASIS', basisspec_psi4_yo__dz_plusplusplus)
+qcdb.compare_integers(55, wert.nbf(), 'nbf()')
+qcdb.compare_integers(58, wert.nao(), 'nao()')
+qcdb.compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '        <<<  JKFIT (default)  >>>'
+wert = qcdb.BasisSet.pyconstruct(mymol, 'DF_BASIS_SCF', '', 'JKFIT', basisspec_psi4_yo__dz_plusplusplus)
+qcdb.compare_integers(220, wert.nbf(), 'nbf()')
+qcdb.compare_integers(252, wert.nao(), 'nao()')
+qcdb.compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '    <<<  aug-cc-pVDZ  >>>'
+wert = qcdb.BasisSet.pyconstruct(mymol, 'BASIS', 'aug-cc-pvdz')
+qcdb.compare_integers(64, wert.nbf(), 'nbf()')
+qcdb.compare_integers(68, wert.nao(), 'nao()')
+qcdb.compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '        <<<  JKFIT (default)  >>>'
+wert = qcdb.BasisSet.pyconstruct(mymol, 'DF_BASIS_SCF', '', 'JKFIT', 'aug-cc-pvdz')
+qcdb.compare_integers(236, wert.nbf(), 'nbf()')
+qcdb.compare_integers(272, wert.nao(), 'nao()')
+qcdb.compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+mymol2 = qcdb.Molecule("""
+C    0.0  0.0 0.0
+O    1.4  0.0 0.0
+H_r -0.5 -0.6 0.3
+H_l -0.5  0.6 0.3
+H_c -0.5  0.0 0.7
+""")
+
+print '    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>'
+wert = qcdb.BasisSet.pyconstruct(mymol2, 'BASIS', basisspec_psi4_yo__dz_plusplusplus)
+qcdb.compare_integers(64, wert.nbf(), 'nbf()')
+qcdb.compare_integers(67, wert.nao(), 'nao()')
+qcdb.compare_strings('cs', mymol2.schoenflies_symbol(), 'symm')
+mymol2.print_out()
+
+
