@@ -304,7 +304,7 @@ def harvest_outfile_pass(outtext):
         psivar['CCSD(T) TOTAL ENERGY'] = mobj.group(3)
 
     mobj = re.search(
-        r'^\s+' + r'(?:E\(SCF\))' + r'\s+=\s+' + NUMBER + r'\s+a\.u\.\s*' +
+        r'^\s+' + r'(?:E\(SCF\))' + r'\s+=\s*' + NUMBER + r'\s+a\.u\.\s*' +
         r'(?:.*?)' +
         r'^\s+' + r'(?:CCSD energy)' + r'\s+' + NUMBER + r'\s*' +
         r'(?:.*?)' +
@@ -317,7 +317,7 @@ def harvest_outfile_pass(outtext):
         psivar['SCF TOTAL ENERGY'] = mobj.group(1)
         psivar['CCSD TOTAL ENERGY'] = mobj.group(2)
         psivar['(T) CORRECTION ENERGY'] = mobj.group(3)
-        psivar['CCSD(T) CORRELATION ENERGY'] = Decimal(mobj.group(4)) - Decimal(mobj.group(2))
+        psivar['CCSD(T) CORRELATION ENERGY'] = Decimal(mobj.group(4)) - Decimal(mobj.group(1))
         psivar['CCSD(T) TOTAL ENERGY'] = mobj.group(4)
 
     mobj = re.search(
@@ -554,7 +554,6 @@ def harvest(p4Mol, c4out, **largs):
 #    if oriGrad is not None:
 #        for item in oriGrad:
 #            print('       %16.8f %16.8f %16.8f' % (item[0], item[1], item[2]))
-
 
     retMol = None if p4Mol else grdMol
 

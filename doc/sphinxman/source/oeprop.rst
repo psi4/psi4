@@ -15,17 +15,7 @@ Evaluation of One-Electron Properties
 .. sectionauthor:: Andrew C. Simmonett
 
 |PSIfour| is capable of computing a number of one-electron properties
-summarized in the table below. The properties will be computed from the last
-computed one-particle density, using the following syntax::
-
-  oeprop("MO_EXTENTS", "MULTIPOLE(4)", title = "hello!")
-
-The named argument, *title*, is completely optional and is prepended to any
-globals variables set during the computation.  The unnamed arguments are the
-properties to be computed.  These can appear in any order, and multiple
-properties may be requested, as in the example above.  Note that, due to Python
-syntax restrictions, the title argument must appear after the list of
-properties to compute.  The available properties are shown in the table below.
+summarized in the table below. 
 
 .. table:: Current one-electron property capabilities of |PSIfour|
 
@@ -56,6 +46,33 @@ properties to compute.  The available properties are shown in the table below.
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Natural orbital occupations        | NO_OCCUPATIONS        |                                                                                   |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
+
+There are two ways the computation of one-electron properties can be requested. 
+Firstly, the properties can be evaluated from the last
+computed one-particle density, using the following syntax::
+
+  oeprop("MO_EXTENTS", "MULTIPOLE(4)", title = "hello!")
+
+Note that it is the user's responsibility to ensure that the relaxed density
+matrix is computed using the method of interest, which may require setting
+additional keywords (see the method's manual section for details). The named
+argument, *title*, is completely optional and is prepended to any
+globals variables set during the computation.  The unnamed arguments are the
+properties to be computed.  These can appear in any order, and multiple
+properties may be requested, as in the example above.  Note that, due to Python
+syntax restrictions, the title argument must appear after the list of
+properties to compute.  The available properties are shown in the table above.
+
+The syntax above works well for computing properties using the SCF
+wavefunction, however, may be difficult (or impossible) to use for some of the
+correlated levels of theory. Alternatively, one-electron properties can be
+computed using the built-in property() function, e.g.::
+
+  property('ccsd', properties=['dipole'])
+
+The :py:func:`~driver.property` function provides limited functionality, but is a lot easier to
+use for correlated methods. For capabilities of :py:func:`~driver.property` see the
+corresponding section of the manual.
 
 
 Basic Keywords

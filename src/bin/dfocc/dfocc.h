@@ -121,6 +121,7 @@ protected:
     void s2_lagrangian();
     void gwh();
     void qchf();
+    void mo_coeff_blocks();
 
     void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new);
     void sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec);
@@ -368,6 +369,26 @@ protected:
     void ocepa_manager();
     void cepa_manager();
 
+    // CCSD
+    void ccsd_manager();
+    void ccsd_mp2();
+    void ccsd_iterations();
+    void ccsd_3index_intr();
+    void ccsd_F_intr();
+    void ccsd_W_intr();
+    void ccsd_Wmnij();
+    void ccsd_WmnijT2();
+    void ccsd_WijamT2();
+    void ccsd_WmbejT2();
+    void ccsd_WmbjeT2();
+    void ccsd_t1_amps();
+    void ccsd_t2_amps();
+    void ccsd_energy();
+
+    // CCSDL
+    void ccsd_l1_amps();
+    void ccsd_l2_amps();
+
     // orbital pairs
     int so_pair_idx(int i, int j);
     int mo_pair_idx(int i, int j);
@@ -382,6 +403,7 @@ protected:
     int get_rotation_block(string rotblock);
 
     // DIIS
+    DIISManager *t1DiisManager;
     DIISManager *t2DiisManager;
 
     // Gradients
@@ -485,6 +507,7 @@ protected:
      double Emp2L_old;
      double Ecorr;
      double EcorrL;
+     double EccL;
      double Ecc_rdm;
      double Escsmp2;
      double Escsmp2BB;
@@ -568,6 +591,16 @@ protected:
      double Escscepa;
      double EsoscepaAB;
      double Esoscepa;
+
+     // CCSD
+     double Eccsd;
+     double Eccsd_old;
+     double EccsdAA;
+     double EccsdBB;
+     double EccsdAB;
+     double rms_t1;
+     double rms_t1A;
+     double rms_t1B;
      
      string wfn;
      string reference;
@@ -591,7 +624,6 @@ protected:
      string orb_resp_solver_;
      string pcg_beta_type_;
      string ekt_ip_;
-     string ekt_ea_;
      string orb_opt_;
      string rotation_blocks;
      string conv_tei_type;
@@ -642,14 +674,14 @@ protected:
      SharedTensor2d HvoB;	 
      SharedTensor2d HvvA;	 
      SharedTensor2d HvvB;	 
-     SharedTensor2d FooA;               
-     SharedTensor2d FooB;               
-     SharedTensor2d FovA;               
-     SharedTensor2d FovB;               
-     SharedTensor2d FvoA;               
-     SharedTensor2d FvoB;               
-     SharedTensor2d FvvA;               
-     SharedTensor2d FvvB;               
+     SharedTensor2d FooA;          // Fock OO block     
+     SharedTensor2d FooB;          // Fock oo block     
+     SharedTensor2d FovA;          // Fock OV block     
+     SharedTensor2d FovB;          // Fock ov block     
+     SharedTensor2d FvoA;          // Fock VO block     
+     SharedTensor2d FvoB;          // Fock vo block     
+     SharedTensor2d FvvA;          // Fock VV block     
+     SharedTensor2d FvvB;          // Fock vv block     
 
      // DF Integrals
      SharedTensor2d Jmhalf;             // J Metric DF_BASIS_CC (RI)
@@ -903,11 +935,20 @@ protected:
 
      SharedTensor2d t1A;               // T_i^a(1)
      SharedTensor2d t1B;               // T_i^a(1)
+     SharedTensor2d t1newA;               // T_i^a(1)
+     SharedTensor2d t1newB;               // T_i^a(1)
+     SharedTensor1d T1c;               // T1_Q
 
      SharedTensor2d FijA;               
      SharedTensor2d FijB;               
      SharedTensor2d FabA;               
      SharedTensor2d FabB;               
+     SharedTensor2d FiaA;               
+     SharedTensor2d FiaB;               
+     SharedTensor2d FtijA;               
+     SharedTensor2d FtijB;               
+     SharedTensor2d FtabA;               
+     SharedTensor2d FtabB;               
 
      // Intermediates
      SharedTensor2d uQia;              

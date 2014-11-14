@@ -87,7 +87,7 @@ namespace psi {
 
 boost::regex realNumber_("(-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+)", boost::regbase::normal | boost::regbase::icase);
 boost::regex integerNumber_("(-?\\d+)", boost::regbase::normal | boost::regbase::icase);
-boost::regex atomSymbol_("([A-Z]{1,2})\\d*", boost::regbase::normal | boost::regbase::icase);
+boost::regex atomSymbol_("(([A-Z]{1,3})(?:(_\\w+)|(\\d+))?)", boost::regbase::normal | boost::regbase::icase);
 boost::regex variableDefinition_("\\s*(\\w+)\\s*=\\s*((-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+)|(tda))\\s*", boost::regbase::normal | boost::regbase::icase);
 boost::regex blankLine_("[\\s%]*", boost::regbase::normal | boost::regbase::icase);
 boost::regex commentLine_("\\s*[#%].*", boost::regbase::normal | boost::regbase::icase);
@@ -587,6 +587,11 @@ void Molecule::set_geometry(double** geom)
             std::map<std::string, std::string>::const_iterator bs = basissets.begin();
             for(; bs != basissets.end(); ++bs)
                 new_atom->set_basisset(bs->second, bs->first);
+            // Copy over all known basis hashes
+            const std::map<std::string, std::string>& shells = at->shells();
+            std::map<std::string, std::string>::const_iterator sh = shells.begin();
+            for(; sh != shells.end(); ++sh)
+                new_atom->set_shell(sh->second, sh->first);
             atoms_.push_back(new_atom);
             count++;
         }
@@ -1021,7 +1026,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                                + " on line\n" + *(line));
 
         // Save the actual atom symbol (H1 => H)
-        atomSym = reMatches[1].str();
+        atomSym = reMatches[2].str();
 
         double zVal = zVals[atomSym];
         double charge = zVal;
@@ -1178,11 +1183,11 @@ std::string Molecule::create_psi4_string_from_molecule() const
                         ss << buffer;
                     }
                     else if (fZ(at) || fsymbol(at) == "X") {
-                        sprintf(buffer, "    %-8s", fsymbol(at).c_str());
+                        sprintf(buffer, "    %-8s", flabel(at).c_str());
                         ss << buffer;
                     }
                     else {
-                        std::string stmp = std::string("Gh(") + fsymbol(at) + ")";
+                        std::string stmp = std::string("Gh(") + flabel(at) + ")";
                         sprintf(buffer, "    %-8s", stmp.c_str());
                         ss << buffer;
                     }
@@ -1579,8 +1584,19 @@ void Molecule::print() const
                     outfile->Printf( "  %17.12f", geom[j]);
                 outfile->Printf("\n");
             }
+            if (Process::environment.options.get_int("PRINT") > 2) {
+                outfile->Printf("\n");
+                for(int i = 0; i < natom(); ++i) {
+                    outfile->Printf("    %8s\n", label(i).c_str());
+                    std::map<std::string, std::string>::const_iterator iter;
+                    for (iter = atoms_[i]->basissets().begin(); iter!=atoms_[i]->basissets().end(); ++iter){
+                        std::map<std::string, std::string>::const_iterator otheriter = atoms_[i]->shells().find(iter->first);
+                        outfile->Printf("              %-15s %-20s %s\n", iter->first.c_str(), 
+                            iter->second.c_str(), otheriter->second.c_str());
+                    }
+                }
+            }
             outfile->Printf("\n");
-            
         }
         else
             outfile->Printf( "  No atoms in this molecule.\n");
@@ -1905,25 +1921,27 @@ Vector Molecule::rotational_constants(double zero_tol) const {
 
 void Molecule::print_rotational_constants(void) const {
   Vector rot_const = rotational_constants(1e-8);
-  outfile->Printf("\n\tRotational constants (cm^-1):\n");
+  outfile->Printf("  Rotational constants:");
   if (rot_const[0] == 0.0) // linear
-    outfile->Printf("\tA = **********  ");
+    outfile->Printf(" A = ************");
   else               // non-linear
-    outfile->Printf("\tA = %10.5lf  ", rot_const[0]);
+    outfile->Printf(" A = %12.5lf", rot_const[0]);
   if (rot_const[1] == 0.0) // atom
-    outfile->Printf("  B = **********    C = **********  \n");
+    outfile->Printf("  B = ************  C = ************");
   else               // molecule
-    outfile->Printf("  B = %10.5lf   C = %10.5lf\n", rot_const[1], rot_const[2]);
+    outfile->Printf("  B = %12.5lf  C = %12.5lf", rot_const[1], rot_const[2]);
+  outfile->Printf(" [cm^-1]\n");
 
-  outfile->Printf("\n\tRotational constants (MHz):\n");
+  outfile->Printf("  Rotational constants:");
   if (rot_const[0] == 0.0) // linear
-    outfile->Printf("\tA = **********  ");
+    outfile->Printf(" A = ************");
   else               // non-linear
-    outfile->Printf("\tA = %10.5lf  ", rot_const[0]*pc_c/10000);
+    outfile->Printf(" A = %12.5lf", rot_const[0]*pc_c/10000);
   if (rot_const[1] == 0.0) // atom
-    outfile->Printf("  B = **********    C = **********  \n");
+    outfile->Printf("  B = ************  C = ************");
   else               // molecule
-    outfile->Printf("  B = %10.5lf   C = %10.5lf\n", rot_const[1]*pc_c/10000, rot_const[2]*pc_c/10000);
+    outfile->Printf("  B = %12.5lf  C = %12.5lf", rot_const[1]*pc_c/10000, rot_const[2]*pc_c/10000);
+  outfile->Printf(" [MHz]\n");
 }
 
 RotorType Molecule::rotor_type(double zero_tol) const {
@@ -2895,12 +2913,12 @@ void Molecule::set_basis_all_atoms(const std::string& name, const std::string& t
 
 void Molecule::set_basis_by_number(int number, const std::string& name, const std::string& type)
 {
-    if (number >= nallatom()){
+    if (number >= natom()){
         char msg[100];
         sprintf(&msg[0], "Basis specified for atom %d, but there are only %d atoms in this molecule", number, natom());
         throw PSIEXCEPTION(msg);
     }
-    full_atoms_[number-1]->set_basisset(name, type);
+    atoms_[number]->set_basisset(name, type);
 }
 
 void Molecule::set_basis_by_symbol(const std::string& symbol, const std::string& name, const std::string& type)
@@ -2916,6 +2934,15 @@ void Molecule::set_basis_by_label(const std::string& label, const std::string& n
     BOOST_FOREACH(boost::shared_ptr<CoordEntry> atom, full_atoms_) {
         if (boost::iequals(atom->label(),label))
             atom->set_basisset(name, type);
+    }
+}
+
+void Molecule::set_shell_by_label(const std::string& label, const std::string& name, const std::string& type)
+{
+    lock_frame_ = false;  // force symmetry recompute after adding shell info
+    BOOST_FOREACH(boost::shared_ptr<CoordEntry> atom, full_atoms_) {
+        if (boost::iequals(atom->label(),label))
+            atom->set_shell(name, type);
     }
 }
 

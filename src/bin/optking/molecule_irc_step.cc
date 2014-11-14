@@ -383,29 +383,49 @@ free_array(G_inv_dq);
 free_matrix(G_inv);
 // */
 
-    double *q = coord_values();
-    double *q_pivot = init_array(Nintco);
-    for(int i=0; i<Nintco; i++)
-      q_pivot[i] = q[i] + dq_pivot[i];
-    free_array(dq_pivot);
-
     double *x = g_geom_array();
     double *f_x = g_grad_array();
     array_scm(f_x, -1, Ncart);
     double *f_q_copy = init_array(Nintco);
     array_copy(f_q, f_q_copy, Nintco);
 
-    // q_pivot, q, x,f_q, f_x should NOT be freed; pointers are assigned in IRC_data
-    p_irc_data->add_irc_point(p_irc_data->g_next_coord_step(), q_pivot, q, x, f_q_copy, f_x, g_energy(),
-                              p_irc_data->step_length, p_irc_data->arc_length, p_irc_data->line_length);
-
-    // Do displacements for each fragment separately.
+    // RAK 11-14 Try to calculate xyz coordinates of the pivot point
+    oprintf_out("Attempting to calculate xyz coordinates of pivot point.");
     for (int f=0; f<fragments.size(); ++f) {
       if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
         oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
         continue;
       }
-      fragments[f]->displace(&(dq[g_coord_offset(f)]), &(f_q[g_coord_offset(f)]), g_atom_offset(f));
+      fragments[f]->displace(&(dq_pivot[g_coord_offset(f)]), &(f_q[g_coord_offset(f)]), g_atom_offset(f));
+    }
+    for (int I=0; I<interfragments.size(); ++I) {
+      if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
+        oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+        continue;
+      }
+      interfragments[I]->orient_fragment( &(dq_pivot[g_interfragment_coord_offset(I)]), &(f_q[g_interfragment_coord_offset(I)]) );
+    }
+    double *x_pivot = g_geom_array();
+
+    // new we can calculate q and q_pivot consistently (wrt the 180 discontinuity)
+    set_geom_array(x);
+    fix_tors_near_180();
+    double *q = coord_values();
+    set_geom_array(x_pivot);
+    double *q_pivot = coord_values();
+
+    // q_pivot, q, x,f_q, f_x should NOT be freed; pointers are assigned in IRC_data
+    p_irc_data->add_irc_point(p_irc_data->g_next_coord_step(), q_pivot, x_pivot, q, x, f_q_copy, f_x, g_energy(),
+                              p_irc_data->step_length, p_irc_data->arc_length, p_irc_data->line_length);
+
+    // Take step of dq_pivot length again since dq is 2*dq_pivot
+    oprintf_out("Attempting to calculate xyz coordinates of next point.");
+    for (int f=0; f<fragments.size(); ++f) {
+      if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
+        oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
+        continue;
+      }
+      fragments[f]->displace(&(dq_pivot[g_coord_offset(f)]), &(f_q[g_coord_offset(f)]), g_atom_offset(f));
     }
     // Do displacements for interfragment coordinates.
     for (int I=0; I<interfragments.size(); ++I) {
@@ -413,9 +433,11 @@ free_matrix(G_inv);
         oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
         continue;
       }
-      interfragments[I]->orient_fragment( &(dq[g_interfragment_coord_offset(I)]),
+      interfragments[I]->orient_fragment( &(dq_pivot[g_interfragment_coord_offset(I)]),
                                          &(f_q[g_interfragment_coord_offset(I)]) );
     }
+    // end RAK 11-14
+    free_array(dq_pivot);
 
     // Compute norm, unit vector, gradient and Hessian in the step direction
     // Save results to Opt_data.
@@ -452,7 +474,7 @@ free_matrix(G_inv);
     symmetrize_geom();
 
     return;
-  }
+  }  // end first/pivot point
 
 // Constrained Optimization On Hypersphere:
 // Step along hypersphere (radius s/2) to find succeeding point with the following properties:
@@ -474,8 +496,21 @@ free_matrix(G_inv);
   oprint_array_out(h, Nintco);
 
 //2. Express p and g, in mass-weighted coordinates and in the eigenbasis of Hm, the mass-weighted Hessian.
-  double *q = coord_values();
-  double *q_pivot = p_irc_data->steps.back()->g_q_pivot();
+
+  /* RAK 11-14 Recompute pivot point internal coordinates; this is so that the
+     torsional convention can be applied and it makes sense to subtract differences. */
+  //double *q_pivot = p_irc_data->steps.back()->g_q_pivot();
+  //double *q = coord_values();  
+  // save xyz, note configuration of torsions, compute q's, put xyz back.
+  double *x_orig = g_geom_array();
+  fix_tors_near_180();      
+  double *q = coord_values();  
+  double *x_pivot = p_irc_data->g_x_pivot();
+  set_geom_array(x_pivot);
+  double *q_pivot = coord_values();
+  set_geom_array(x_orig);
+  free_array(x_orig);
+  // end RAK 11-14
 
   double *dq_0 = p_Opt_data->g_dq_pointer(p_Opt_data->nsteps() - 2);
   double *f_q_0 = p_Opt_data->g_forces_pointer(p_Opt_data->nsteps() - 2);
@@ -509,24 +544,23 @@ free_matrix(G_inv);
   for(int i=0; i<Nintco; i++)
     g_m0[i] = array_dot(rootG_reg[i], g_0, Nintco);
 
-oprintf_out( "\np_m before linear interpolation: ");
-oprint_array_out(p_m, Nintco);
-oprintf_out( "\ng_m before linear interpolation: ");
-oprint_array_out(g_m, Nintco);
+  oprintf_out( "\np_m before linear interpolation: ");
+  oprint_array_out(p_m, Nintco);
+  oprintf_out( "\ng_m before linear interpolation: ");
+  oprint_array_out(g_m, Nintco);
 
-if(0 && p_irc_data->sphere_step > 1)
-{
-  if(0)
-    GS_interpolation(p_m, p_m0, g_m, g_m0, s, Nintco);
-  else
-    interpolation(p_m, p_m0, g_m, g_m0, s, Nintco);
-}
+  if(0 && p_irc_data->sphere_step > 1) {
+    if(0)
+      GS_interpolation(p_m, p_m0, g_m, g_m0, s, Nintco);
+    else
+      interpolation(p_m, p_m0, g_m, g_m0, s, Nintco);
+  }
 
-oprintf_out( "\np_m after linear interpolation:  ");
-oprint_array_out(p_m, Nintco);
-oprintf_out( "\ng_m after linear interpolation:  ");
-oprint_array_out(g_m, Nintco);
-
+  oprintf_out( "\np_m after linear interpolation:  ");
+  oprint_array_out(p_m, Nintco);
+  oprintf_out( "\ng_m after linear interpolation:  ");
+  oprint_array_out(g_m, Nintco);
+  
   double *p_h = init_array(Nintco);//in the basis of H_m
   for(int i=0; i<Nintco; i++)
     p_h[i] = array_dot(p_m, V[i], Nintco);
@@ -713,8 +747,20 @@ oprint_array_out(g_m, Nintco);
   }
 
 //find arclength of step and pass to irc_data to be stored on convergence
+  // RAK 11-14
+  //double *new_q = coord_values();
+  //double *old_q = p_irc_data->g_q();
+  // save xyz, note configuration of torsions, compute q's, put old xyz back
+  x_orig = g_geom_array();
+  fix_tors_near_180();          
   double *new_q = coord_values();
-  double *old_q = p_irc_data->g_q();
+  double *old_x = p_irc_data->g_x();
+  set_geom_array(old_x);
+  double *old_q = coord_values();
+  set_geom_array(x_orig); 
+  free_array(x_orig);
+  // end RAK 11-14
+
   double *new_dq = init_array(Nintco);
   for(int i=0; i<Nintco; i++)
   {

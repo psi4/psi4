@@ -157,17 +157,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   block. -*/
   options.add_str_i("LITERAL_CFOUR", "");
 
-  /*- CubicScalarGrid basis cutoff. !expert -*/
-  options.add_double("CUBIC_BASIS_TOLERANCE", 1.0E-12);
-  /*- CubicScalarGrid maximum number of grid points per evaluation block. !expert -*/
-  options.add_int("CUBIC_BLOCK_MAX_POINTS",1000);
-  /*- CubicScalarGrid filepath -*/ 
-  options.add_str_i("CUBIC_GRID_FILEPATH", ".");
-  /*- CubicScalarGrid overages in bohr [O_X, O_Y, O_Z]. Defaults to 2.0 bohr each. -*/ 
-  options.add("CUBIC_GRID_OVERAGE", new ArrayType());
-  /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/ 
-  options.add("CUBIC_GRID_SPACING", new ArrayType());
-  
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
   // That would create problems.  (This was formerly checked in DETCI
@@ -2895,11 +2884,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Type of the SOS method -*/
     options.add_str("SOS_TYPE","SOS","SOS SOSPI");
     /*- Type of the wavefunction. -*/
-    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OCEPA(0) DF-OMP2.5 DFGRAD CD-OMP2");
+    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OCEPA(0) DF-OMP2.5 DFGRAD DF-CCSD DF-CCD CD-OMP2 CD-CCSD CD-CCD");
     /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
     options.add_str("CEPA_TYPE","CEPA(0)","CEPA(0)");
     /*- The algorithm that used for 4 index MO TEIs. -*/
-    options.add_str("CONV_TEI_TYPE","DIRECT","DIRECT DISK");
+    //options.add_str("CONV_TEI_TYPE","DIRECT","DIRECT DISK");
     /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
     options.add_str("PCG_BETA_TYPE","FLETCHER_REEVES","FLETCHER_REEVES POLAK_RIBIERE");
     /*- The algorithm that used to handle mp2 amplitudes. The DIRECT option means compute amplitudes on the fly whenever they are necessary. -*/
@@ -2921,10 +2910,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DO_SOS",false);
     /*- Do apply DIIS extrapolation? -*/
     options.add_bool("DO_DIIS",true);
-    /*- Do compute occupied orbital energies based on extended Koopmans' theorem? -*/
+    /*- Do compute ionization potentials based on the extended Koopmans' theorem? -*/
     options.add_bool("EKT_IP",false);
-    /*- Do compute virtual orbital energies based on extended Koopmans' theorem?  -*/
-    options.add_bool("EKT_EA",false);
     /*- Do optimize the orbitals?  -*/
     options.add_bool("ORB_OPT",true);
     /*- Do use regularized denominators?  -*/
