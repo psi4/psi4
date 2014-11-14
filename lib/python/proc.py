@@ -259,6 +259,57 @@ def run_omp2(name, **kwargs):
     run_dfomp2(name, **kwargs)
 
 
+def run_dfocc(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted orbital-optimized MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF','DF_INTS_IO'],
+        ['DF_BASIS_SCF'],
+        ['GLOBALS', 'DF_BASIS_CC'])
+
+    # override symmetry:
+    molecule = psi4.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(1)
+    molecule.update_geometry()
+    if user_pg != 'c1':
+        psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
+
+    # if the df_basis_scf basis is not set, pick a sensible one.
+    if psi4.get_global_option('DF_BASIS_SCF') == '':
+        jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
+        if jkbasis:
+            psi4.set_global_option('DF_BASIS_SCF', jkbasis)
+            psi4.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
+        else:
+            raise ValidationError('Keyword DF_BASIS_SCF is required.')
+
+    #psi4.set_global_option('SCF_TYPE', 'DF')
+    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    # if the df_basis_cc basis is not set, pick a sensible one.
+    if psi4.get_global_option('DF_BASIS_CC') == '':
+        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
+        if ribasis:
+            psi4.set_global_option('DF_BASIS_CC', ribasis)
+            psi4.print_out('  No DF_BASIS_CC auxiliary basis selected, defaulting to %s\n' % (ribasis))
+        else:
+            raise ValidationError('Keyword DF_BASIS_CC is required.')
+
+    psi4.dfocc()
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
+
+    return psi4.get_variable("CURRENT ENERGY")
+
+
 def run_conv_omp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an orbital-optimized MP2 computation
