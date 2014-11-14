@@ -421,6 +421,8 @@ free_matrix(G_inv);
     // Save results to Opt_data.
     dq_n = sqrt( array_dot(dq, dq, Nintco) );
 
+    oprintf_out("\tNorm of target step-size %10.5lf\n", dq_n);
+
     dq_u = init_array(Nintco);
     array_copy(dq, dq_u, Nintco);
     array_normalize(dq_u, Nintco);

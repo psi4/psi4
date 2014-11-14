@@ -721,11 +721,12 @@ void set_params(void)
 *   badly defined internal coordinate or derivative
 *
 * */
-
-  if (options["DYNAMIC_LEVEL"].has_changed())
-    Opt_params.dynamic = options.get_int("DYNAMIC_LEVEL");
-  else
+  if (options.get_int("DYNAMIC_LEVEL") == 0) // if 0, then not dynamic
+    Opt_params.dynamic = 0;
+  else if (INTCO_EXCEPT::dynamic_level != 0) // already set
     Opt_params.dynamic = INTCO_EXCEPT::dynamic_level;
+  else
+    Opt_params.dynamic = options.get_int("DYNAMIC_LEVEL");
 
   Opt_params.sd_hessian = 1.0; // small step
 
@@ -741,7 +742,7 @@ void set_params(void)
       break;
     case 2:
       Opt_params.coordinates = OPT_PARAMS::REDUNDANT;
-      Opt_params.consecutive_backsteps_allowed = 2;
+      Opt_params.consecutive_backsteps_allowed = 1;
       Opt_params.step_type = OPT_PARAMS::RFO;
       Opt_params.intrafragment_step_limit = 0.2;
       Opt_params.intrafragment_step_limit_min = 0.2; //this code overwrites changes anyway
@@ -751,41 +752,61 @@ void set_params(void)
       break;
     case 3:
       Opt_params.coordinates = OPT_PARAMS::BOTH;
-      Opt_params.consecutive_backsteps_allowed = 2;
+      Opt_params.consecutive_backsteps_allowed = 1;
       Opt_params.step_type = OPT_PARAMS::RFO;
       Opt_params.intrafragment_step_limit = 0.1;
       Opt_params.intrafragment_step_limit_min = 0.1; //this code overwrites changes anyway
       Opt_params.intrafragment_step_limit_max = 0.1;
-             printf("At level 3: Red. Int., RFO, backsteps, smaller trust.\n");
-      oprintf_out("\tAt level 3: Red. Int., RFO, backsteps, smaller trust.\n");
+             printf("At level 3: Red. Int. + XYZ, RFO, backsteps, smaller trust.\n");
+      oprintf_out("\tAt level 3: Red. Int. + XYZ, RFO, backsteps, smaller trust.\n");
       break;
     case 4:
-      Opt_params.coordinates = OPT_PARAMS::BOTH;
+      Opt_params.coordinates = OPT_PARAMS::CARTESIAN;
+      Opt_params.consecutive_backsteps_allowed = 1;
+      Opt_params.step_type = OPT_PARAMS::RFO;
+      Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
+      Opt_params.intrafragment_step_limit = 0.3;
+      Opt_params.intrafragment_step_limit_min = 0.3; //this code overwrites changes anyway
+      Opt_params.intrafragment_step_limit_max = 0.3;
+             printf("At level 4: XYZ, RFO, backsteps, larger trust.\n");
+      oprintf_out("\tAt level 4: XYZ, RFO, backsteps, larger trust.\n");
+      break;
+    case 5:   // Try repeating level 4 which is working well
+      Opt_params.coordinates = OPT_PARAMS::CARTESIAN;
+      Opt_params.consecutive_backsteps_allowed = 1;
+      Opt_params.step_type = OPT_PARAMS::RFO;
+      Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
+      Opt_params.intrafragment_step_limit = 0.2;
+      Opt_params.intrafragment_step_limit_min = 0.2; //this code overwrites changes anyway
+      Opt_params.intrafragment_step_limit_max = 0.2;
+             printf("At level 5: XYZ, RFO, backsteps, medium trust.\n");
+      oprintf_out("\tAt level 5: XYZ, RFO, backsteps, medium trust.\n");
+/* Opt_params.coordinates = OPT_PARAMS::CARTESIAN;
       Opt_params.consecutive_backsteps_allowed = 1;
       Opt_params.step_type = OPT_PARAMS::SD;
-      Opt_params.sd_hessian = 0.2;
-      Opt_params.intrafragment_step_limit = 0.4;
-      Opt_params.intrafragment_step_limit_min = 0.4; //this code overwrites changes anyway
-      Opt_params.intrafragment_step_limit_max = 0.4;
-             printf("At level 4: Red. Int. + XYZ, SD, backsteps, larger trust.\n");
-      oprintf_out("\tAt level 4: Red. Int. + XYZ, SD, backsteps, larger trust.\n");
+      Opt_params.sd_hessian = 0.1;
+      Opt_params.intrafragment_step_limit = 0.3;
+      Opt_params.intrafragment_step_limit_min = 0.3; //this code overwrites changes anyway
+      Opt_params.intrafragment_step_limit_max = 0.3;
+             printf("At level 5: XYZ, SD, backsteps, larger trust.\n");
+      oprintf_out("\tAt level 5: XYZ, SD, backsteps, larger trust.\n"); */
       break;
-    case 5:
+    case 6:
       Opt_params.coordinates = OPT_PARAMS::CARTESIAN;
       Opt_params.consecutive_backsteps_allowed = 1;
       Opt_params.step_type = OPT_PARAMS::SD;
-      Opt_params.sd_hessian = 0.2;
+      Opt_params.sd_hessian = 0.3;
       Opt_params.intrafragment_step_limit = 0.3;
       Opt_params.intrafragment_step_limit_min = 0.3; //this code overwrites changes anyway
       Opt_params.intrafragment_step_limit_max = 0.3;
              printf("At level 5: XYZ, SD, backsteps, larger trust.\n");
       oprintf_out("\tAt level 5: XYZ, SD, backsteps, larger trust.\n");
       break;
-    case 6:
+    case 7:
       Opt_params.coordinates = OPT_PARAMS::CARTESIAN;
-      Opt_params.consecutive_backsteps_allowed = 2;
+      Opt_params.consecutive_backsteps_allowed = 1;
       Opt_params.step_type = OPT_PARAMS::SD;
-      Opt_params.sd_hessian = 0.5;
+      Opt_params.sd_hessian = 0.6;
       Opt_params.intrafragment_step_limit = 0.1;
       Opt_params.intrafragment_step_limit_min = 0.1; //this code overwrites changes anyway
       Opt_params.intrafragment_step_limit_max = 0.1;
