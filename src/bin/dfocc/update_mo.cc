@@ -129,37 +129,8 @@ if (do_diis_ == 1) {
 	  CmoA->print();
 	}
 
-        // Build Cocc
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < noccA; i++) {
-                 CoccA->set(mu, i, CmoA->get(mu, i));
-             }
-        }
-        if (print_ > 2) CoccA->print();
-
-        // Build Cvir
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < nvirA; a++) {
-                 CvirA->set(mu, a, CmoA->get(mu, a + noccA));
-             }
-        }
-        if (print_ > 2) CvirA->print();
- 
-        // Build active Caocc
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < naoccA; i++) {
-                 CaoccA->set(mu, i, CmoA->get(mu, i + nfrzc));
-             }
-        }
-        if (print_ > 2) CaoccA->print();
-
-        // Build active Cvir
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < navirA; a++) {
-                 CavirA->set(mu, a, CmoA->get(mu, a + noccA));
-             }
-        }
-        if (print_ > 2) CavirA->print();
+     // build mo coeff blocks
+     mo_coeff_blocks();
 
 }// end if (reference_ == "RESTRICTED") 
 
@@ -313,73 +284,8 @@ if (do_diis_ == 1) {
 	  CmoB->print();
 	}
 
-        // Build Cocc
-        // alpha
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < noccA; i++) {
-                 CoccA->set(mu, i, CmoA->get(mu, i));
-             }
-        }
-        if (print_ > 2) CoccA->print();
-
-        // beta
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < noccB; i++) {
-                 CoccB->set(mu, i, CmoB->get(mu, i));
-             }
-        }
-        if (print_ > 2) CoccB->print();
-
-        // Build Cvir
-        // alpha
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < nvirA; a++) {
-                 CvirA->set(mu, a, CmoA->get(mu, a + noccA));
-             }
-        }
-        if (print_ > 2) CvirA->print();
- 
-        // beta
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < nvirB; a++) {
-                 CvirB->set(mu, a, CmoB->get(mu, a + noccB));
-             }
-        }
-        if (print_ > 2) CvirB->print();
-
-        // Build active Caocc
-        // alpha
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < naoccA; i++) {
-                 CaoccA->set(mu, i, CmoA->get(mu, i + nfrzc));
-             }
-        }
-        if (print_ > 2) CaoccA->print();
-
-        // beta
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < naoccB; i++) {
-                 CaoccB->set(mu, i, CmoB->get(mu, i + nfrzc));
-             }
-        }
-        if (print_ > 2) CaoccB->print();
-
-        // Build active Cvir
-        // alpha
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < navirA; a++) {
-                 CavirA->set(mu, a, CmoA->get(mu, a + noccA));
-             }
-        }
-        if (print_ > 2) CavirA->print();
- 
-        // beta
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < navirB; a++) {
-                 CavirB->set(mu, a, CmoB->get(mu, a + noccB));
-             }
-        }
-        if (print_ > 2) CavirB->print();
+     // build mo coeff blocks
+     mo_coeff_blocks();
 
 }// end if (reference_ == "UNRESTRICTED") 
 

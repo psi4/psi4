@@ -127,42 +127,13 @@ if (reference_ == "RESTRICTED") {
         }
         if (print_ > 2) CmoA->print();
 
-        // Build Cocc
+        // build mo coeff blocks 
         CoccA = SharedTensor2d(new Tensor2d("Alpha C(mu,i)", nso_, noccA));
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < noccA; i++) {
-                 CoccA->set(mu, i, CmoA->get(mu, i));
-             }
-        }
-        if (print_ > 2) CoccA->print();
-
-        // Build Cvir
         CvirA = SharedTensor2d(new Tensor2d("Alpha C(mu,a)", nso_, nvirA));
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < nvirA; a++) {
-                 CvirA->set(mu, a, CmoA->get(mu, a + noccA));
-             }
-        }
-        if (print_ > 2) CvirA->print();
- 
-
-        // Build active Caocc
         CaoccA = SharedTensor2d(new Tensor2d("Alpha Active C(mu,i)", nso_, naoccA));
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < naoccA; i++) {
-                 CaoccA->set(mu, i, CmoA->get(mu, i + nfrzc));
-             }
-        }
-        if (print_ > 2) CaoccA->print();
-
-        // Build active Cvir
         CavirA = SharedTensor2d(new Tensor2d("Alpha Active C(mu,a)", nso_, navirA));
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < navirA; a++) {
-                 CavirA->set(mu, a, CmoA->get(mu, a + noccA));
-             }
-        }
-        if (print_ > 2) CavirA->print();
+        mo_coeff_blocks();
+
 }// if (reference_ == "RESTRICTED") 
 
 //===========================================================================================
@@ -300,73 +271,17 @@ else if (reference_ == "UNRESTRICTED") {
         }
         if (print_ > 2) CmoB->print();
 
-        // Build Cocc
+        // build mo coeff blocks
         CoccA = SharedTensor2d(new Tensor2d("Alpha C(mu,i)", nso_, noccA));
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < noccA; i++) {
-                 CoccA->set(mu, i, CmoA->get(mu, i));
-             }
-        }
-        if (print_ > 2) CoccA->print();
-
         CoccB = SharedTensor2d(new Tensor2d("Beta C(mu,i)", nso_, noccB));
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < noccB; i++) {
-                 CoccB->set(mu, i, CmoB->get(mu, i));
-             }
-        }
-        if (print_ > 2) CoccB->print();
-
-        // Build Cvir
         CvirA = SharedTensor2d(new Tensor2d("Alpha C(mu,a)", nso_, nvirA));
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < nvirA; a++) {
-                 CvirA->set(mu, a, CmoA->get(mu, a + noccA));
-             }
-        }
-        if (print_ > 2) CvirA->print();
- 
         CvirB = SharedTensor2d(new Tensor2d("Beta C(mu,a)", nso_, nvirB));
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < nvirB; a++) {
-                 CvirB->set(mu, a, CmoB->get(mu, a + noccB));
-             }
-        }
-        if (print_ > 2) CvirB->print();
-
-        // Build active Caocc
         CaoccA = SharedTensor2d(new Tensor2d("Alpha Active C(mu,i)", nso_, naoccA));
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < naoccA; i++) {
-                 CaoccA->set(mu, i, CmoA->get(mu, i + nfrzc));
-             }
-        }
-        if (print_ > 2) CaoccA->print();
-
         CaoccB = SharedTensor2d(new Tensor2d("Beta Active C(mu,i)", nso_, naoccB));
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < naoccB; i++) {
-                 CaoccB->set(mu, i, CmoB->get(mu, i + nfrzc));
-             }
-        }
-        if (print_ > 2) CaoccB->print();
-
-        // Build active Cvir
         CavirA = SharedTensor2d(new Tensor2d("Alpha Active C(mu,a)", nso_, navirA));
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < navirA; a++) {
-                 CavirA->set(mu, a, CmoA->get(mu, a + noccA));
-             }
-        }
-        if (print_ > 2) CavirA->print();
- 
         CavirB = SharedTensor2d(new Tensor2d("Beta Active C(mu,a)", nso_, navirB));
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < navirB; a++) {
-                 CavirB->set(mu, a, CmoB->get(mu, a + noccB));
-             }
-        }
-        if (print_ > 2) CavirB->print();
+        mo_coeff_blocks();
+
 
     if (reference == "ROHF") {
         Fa_ = SharedMatrix(reference_wavefunction_->Fa());
@@ -416,6 +331,109 @@ else if (reference_ == "UNRESTRICTED") {
 
 //outfile->Printf("\n get_moinfo is done. \n"); 
 }// end get_moinfo
+
+//======================================================================
+//      MO COEFFIENT BLOCKS
+//======================================================================             
+void DFOCC::mo_coeff_blocks()
+{
+  // RHF
+  if (reference_ == "RESTRICTED") {
+        // Build Cocc
+        for (int mu = 0; mu < nso_; mu++) {
+             for (int i = 0; i < noccA; i++) {
+                 CoccA->set(mu, i, CmoA->get(mu, i));
+             }
+        }
+
+        // Build Cvir
+        for (int mu = 0; mu < nso_; mu++) {
+             for (int a = 0; a < nvirA; a++) {
+                 CvirA->set(mu, a, CmoA->get(mu, a + noccA));
+             }
+        }
+
+        // Build active Caocc
+        for (int mu = 0; mu < nso_; mu++) {
+             for (int i = 0; i < naoccA; i++) {
+                 CaoccA->set(mu, i, CmoA->get(mu, i + nfrzc));
+             }
+        }
+
+        // Build active Cvir
+        for (int mu = 0; mu < nso_; mu++) {
+             for (int a = 0; a < navirA; a++) {
+                 CavirA->set(mu, a, CmoA->get(mu, a + noccA));
+             }
+        }
+  }// if (reference_ == "RESTRICTED") 
+
+//======================================================================             
+  // UHF
+  else if (reference_ == "UNRESTRICTED") {
+        // Build Cocc
+        // Alpha
+        for (int mu = 0; mu < nso_; mu++) {
+             for (int i = 0; i < noccA; i++) {
+                 CoccA->set(mu, i, CmoA->get(mu, i));
+             }
+        }
+
+        // Beta
+        for (int mu = 0; mu < nso_; mu++) {
+             for (int i = 0; i < noccB; i++) {
+                 CoccB->set(mu, i, CmoB->get(mu, i));
+             }
+        }
+
+        // Build Cvir
+        // Alpha
+        for (int mu = 0; mu < nso_; mu++) {
+             for (int a = 0; a < nvirA; a++) {
+                 CvirA->set(mu, a, CmoA->get(mu, a + noccA));
+             }
+        }
+ 
+        // Beta
+        for (int mu = 0; mu < nso_; mu++) {
+             for (int a = 0; a < nvirB; a++) {
+                 CvirB->set(mu, a, CmoB->get(mu, a + noccB));
+             }
+        }
+
+        // Build active Caocc
+        // Alpha
+        for (int mu = 0; mu < nso_; mu++) {
+             for (int i = 0; i < naoccA; i++) {
+                 CaoccA->set(mu, i, CmoA->get(mu, i + nfrzc));
+             }
+        }
+
+        // Beta
+        for (int mu = 0; mu < nso_; mu++) {
+             for (int i = 0; i < naoccB; i++) {
+                 CaoccB->set(mu, i, CmoB->get(mu, i + nfrzc));
+             }
+        }
+
+        // Build active Cvir
+        // Alpha
+        for (int mu = 0; mu < nso_; mu++) {
+             for (int a = 0; a < navirA; a++) {
+                 CavirA->set(mu, a, CmoA->get(mu, a + noccA));
+             }
+        }
+ 
+        // Beta
+        for (int mu = 0; mu < nso_; mu++) {
+             for (int a = 0; a < navirB; a++) {
+                 CavirB->set(mu, a, CmoB->get(mu, a + noccB));
+             }
+        }
+  }// end else if (reference_ == "UNRESTRICTED") 
+
+}// end of mo_coeff_blocks
+
 }} // End Namespaces
 
 

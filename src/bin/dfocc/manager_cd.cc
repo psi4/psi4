@@ -53,30 +53,8 @@ void DFOCC::cd_omp2_manager()
         g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
         g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
 
-        if (conv_tei_type == "DISK") { 
-           tei_oooo_chem_ref();
-           tei_ooov_chem_ref();
-           tei_oovv_chem_ref();
-           tei_ovov_chem_ref(); 
-           if (reference_ == "UNRESTRICTED") {
-            tei_oooo_phys_ref();
-            tei_ooov_phys_ref();
-            tei_oovv_phys_ref();
-            tei_ovov_phys_ref();
-            tei_oooo_anti_symm_ref();
-            tei_ooov_anti_symm_ref();
-            tei_oovv_anti_symm_ref();
-            tei_ovov_anti_symm_ref();
-           }
-
-           tei_iajb_chem();
-           //tei_ijab_chem();// for Hessian
-           if (reference_ == "UNRESTRICTED") {
-               tei_ijab_phys();
-               tei_ijab_anti_symm();
-           }
-        }// if (conv_tei_type == "DISK")  
-           fock();
+        // Fock
+        fock();
 
         // ROHF REF
         if (reference == "ROHF") t1_1st_sc();
@@ -145,29 +123,6 @@ void DFOCC::cd_omp2_manager()
 	   
 	   semi_canonic();
            trans_cd();
-        if (conv_tei_type == "DISK") { 
-           tei_iajb_chem();
-           if (reference_ == "UNRESTRICTED") {
-               tei_ijab_phys();
-               tei_ijab_anti_symm();
-           }
-        }// if (conv_tei_type == "DISK") 
-        if (conv_tei_type == "DISK") { 
-           tei_oooo_chem_ref();
-           tei_ooov_chem_ref();
-           tei_oovv_chem_ref();
-           tei_ovov_chem_ref();
-           if (reference_ == "UNRESTRICTED") {
-            tei_oooo_phys_ref();
-            tei_ooov_phys_ref();
-            tei_oovv_phys_ref();
-            tei_ovov_phys_ref();
-            tei_oooo_anti_symm_ref();
-            tei_ooov_anti_symm_ref();
-            tei_oovv_anti_symm_ref();
-            tei_ovov_anti_symm_ref();
-           }
-        }// if (conv_tei_type == "DISK") 
            fock();
 	   t2_1st_sc();
            conver = 1;
@@ -288,7 +243,7 @@ void DFOCC::cd_mp2_manager()
 	mo_optimized = 0;// means MOs are not optimized
         timer_on("CD Integrals");
         cd_ints();
-        if (dertype == "NONE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+        if (dertype == "NONE" && ekt_ip_ == "FALSE") {
             trans_cd_mp2();
         }
         else trans_cd();
@@ -298,16 +253,9 @@ void DFOCC::cd_mp2_manager()
         //outfile->Printf("\tI am here.\n"); 
         if (reference == "ROHF") t1_1st_sc();
 
-        if (conv_tei_type == "DISK") { 
-            tei_iajb_chem();
-            if (reference_ == "UNRESTRICTED") {
-                tei_ijab_phys();
-                tei_ijab_anti_symm();
-            }
-        }// if (conv_tei_type == "DISK")  
 	//t2_1st_sc();
         //mp2_energy();
-        if (dertype == "NONE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") mp2_direct();
+        if (dertype == "NONE" && ekt_ip_ == "FALSE") mp2_direct();
         else {
 	     t2_1st_sc();
              mp2_energy();
@@ -352,43 +300,6 @@ void DFOCC::cd_mp2_manager()
         Process::environment.globals["CD-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["CD-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
-        /*
-        // Compute Analytic Gradients
-        if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
-	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
-	    outfile->Printf("\tComputing response density matrices...\n");
-	    
-	    omp2_response_pdms();
-            outfile->Printf("\tComputing off-diagonal blocks of GFM...\n");
-            
-	    gfock();
-            outfile->Printf("\tForming independent-pairs...\n");
-            
-	    idp2();
-            outfile->Printf("\tComputing orbital gradient...\n");
-            
-	    mograd();
-            coord_grad();
-
-            if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
-                ekt_ip();
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
-                ekt_ip();
-            }
-
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
-	        outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	        
-            }
-        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") 
-        */
 
 }// end mp2_manager 
 

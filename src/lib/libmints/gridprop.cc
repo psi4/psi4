@@ -306,8 +306,8 @@ void CubicScalarGrid::add_esp(double* v, boost::shared_ptr<Matrix> D)
 {
     // => Auxiliary Basis Set (TODO: Get appropriate default) <= //
 
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, primary_->molecule(), "DF_BASIS_SCF");
+    boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+            "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"));
     
     // => DF Options (TODO: Should these be in here?) <= //
 
