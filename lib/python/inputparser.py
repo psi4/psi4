@@ -277,7 +277,7 @@ def process_basis_block(matchobj):
     spaces = matchobj.group(1)
     basistype = matchobj.group(2).upper()
     name = matchobj.group(3)
-    name = 'anonymous' if name == '' else name
+    name = ('anonymous' + str(random.randint(0, 999))) if name == '' else name
     cleanbas = basname(name).replace('-', '')  # further remove hyphens so can be function name
     command_lines = re.split('\n', matchobj.group(4))
 
