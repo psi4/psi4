@@ -361,6 +361,7 @@ void DFOCC::mp2_manager()
 //======================================================================             
 void DFOCC::ccsd_manager()
 {
+
         time4grad = 0;// means i will not compute the gradient
 	mo_optimized = 0;// means MOs are not optimized
         timer_on("DF CC Integrals");
@@ -374,11 +375,67 @@ void DFOCC::ccsd_manager()
         outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
         outfile->Printf("\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
 
-        // memalloc for intermediates
+        // Memory allocation
         T1c = SharedTensor1d(new Tensor1d("DF_BASIS_CC T1_Q", nQ));
+        Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+
+     if (reference_ == "RESTRICTED") {
+        t1A = SharedTensor2d(new Tensor2d("T1 <I|A>", naoccA, navirA));
+        t1newA = SharedTensor2d(new Tensor2d("New T1 <I|A>", naoccA, navirA));
+        FiaA = SharedTensor2d(new Tensor2d("Fint <I|A>", naoccA, navirA));
+        FtijA = SharedTensor2d(new Tensor2d("Ftilde <I|J>", naoccA, naoccA));
+        FtabA = SharedTensor2d(new Tensor2d("Ftilde <A|B>", navirA, navirA));
+
+        // memory requirements
+        // DF-HF B(Q,mn)
+        cost_ampAA = 0;
+        cost_ampAA = (ULI)nQ_ref * (ULI)nso2_;
+        cost_ampAA /= (ULI)1024 * (ULI)1024;
+        cost_ampAA *= (ULI)sizeof(double);
+        cost_amp = (ULI)3.0 * cost_ampAA;
+        outfile->Printf("\n\tMemory requirement for B-HF (Q|mu nu) is     : %6lu MB \n", cost_ampAA);
+        outfile->Printf("\tMemory requirement for 3*B-HF (Q|mu nu) is   : %6lu MB \n", cost_amp);
+ 
+        // DF-HF B(Q,ab)
+        cost_ampAA = 0;
+        cost_ampAA = (ULI)nQ_ref * (ULI)nvir2AA;
+        cost_ampAA /= (ULI)1024 * (ULI)1024;
+        cost_ampAA *= (ULI)sizeof(double);
+        cost_amp = (ULI)3.0 * cost_ampAA;
+        outfile->Printf("\tMemory requirement for B-HF (Q|ab) is        : %6lu MB \n", cost_ampAA);
+        outfile->Printf("\tMemory requirement for 3*B-HF (Q|ab) is      : %6lu MB \n", cost_amp);
+
+        // DF-CC B(Q,mn)
+        cost_ampAA = 0;
+        cost_ampAA = (ULI)nQ * (ULI)nso2_;
+        cost_ampAA /= (ULI)1024 * (ULI)1024;
+        cost_ampAA *= (ULI)sizeof(double);
+        cost_amp = (ULI)3.0 * cost_ampAA;
+        outfile->Printf("\n\tMemory requirement for B-CC (Q|mu nu) is     : %6lu MB \n", cost_ampAA);
+        outfile->Printf("\tMemory requirement for 3*B-CC (Q|mu nu) is   : %6lu MB \n", cost_amp);
+ 
+        // DF-CC B(Q,ab)
+        cost_ampAA = 0;
+        cost_ampAA = (ULI)nQ * (ULI)nvir2AA;
+        cost_ampAA /= (ULI)1024 * (ULI)1024;
+        cost_ampAA *= (ULI)sizeof(double);
+        cost_amp = (ULI)3.0 * cost_ampAA;
+        outfile->Printf("\tMemory requirement for B-CC (Q|ab) is        : %6lu MB \n", cost_ampAA);
+        outfile->Printf("\tMemory requirement for 3*B-CC (Q|ab) is      : %6lu MB \n", cost_amp);
+     }  // end if (reference_ == "RESTRICTED")
+
+     else if (reference_ == "UNRESTRICTED") {
+        t1A = SharedTensor2d(new Tensor2d("T1 <I|A>", naoccA, navirA));
+        t1B = SharedTensor2d(new Tensor2d("T1 <i|a>", naoccB, navirB));
+        FiaA = SharedTensor2d(new Tensor2d("Fint <I|A>", naoccA, navirA));
+        FiaB = SharedTensor2d(new Tensor2d("Fint <i|a>", naoccB, navirB));
+        FtijA = SharedTensor2d(new Tensor2d("Ftilde <I|J>", naoccA, naoccA));
+        FtabA = SharedTensor2d(new Tensor2d("Ftilde <A|B>", navirA, navirA));
+        FtijB = SharedTensor2d(new Tensor2d("Ftilde <i|j>", naoccB, naoccB));
+        FtabB = SharedTensor2d(new Tensor2d("Ftilde <a|b>", navirB, navirB));
+     }// else if (reference_ == "UNRESTRICTED")
 
         // memalloc for density intermediates
-        Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
         if (qchf_ == "TRUE" || dertype == "FIRST") { 
             g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
             g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
@@ -432,15 +489,15 @@ void DFOCC::ccsd_manager()
         ccsd_iterations();
 
 	outfile->Printf("\n");
-	outfile->Printf("\t============================================================================== \n");
-	outfile->Printf("\t================ CCSD FINAL RESULTS ========================================== \n");
-	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\t======================================================================= \n");
+	outfile->Printf("\t================ CCSD FINAL RESULTS =================================== \n");
+	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
 	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
 	outfile->Printf("\tDF-CCSD Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
 	outfile->Printf("\tDF-CCSD Total Energy (a.u.)        : %20.14f\n", Eccsd);
-	outfile->Printf("\t============================================================================== \n");
+	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\n");
 	
 	Process::environment.globals["CURRENT ENERGY"] = Eccsd;

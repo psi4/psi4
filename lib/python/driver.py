@@ -73,6 +73,7 @@ procedures = {
             'omp2.5'        : run_omp2_5,
             'df-omp2'       : run_dfomp2,
             'dfomp2'        : run_dfomp2,
+            'dfocc'         : run_dfocc,
             'cd-omp2'       : run_cdomp2,
             'cdomp2'        : run_cdomp2,
             'cd-mp2'        : run_cdmp2,

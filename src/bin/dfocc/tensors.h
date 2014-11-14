@@ -155,12 +155,24 @@ class Tensor2d
   void set(SharedTensor2d &A);
   void set(SharedMatrix A);
   void set(SharedTensor1d &A);
+  // A2d_[n][ij] = A(i,j)
+  void set_row(const SharedTensor2d &A, int n);
+  // A2d_[ij][n] = A(i,j)
+  void set_column(const SharedTensor2d &A, int n);
   double get(int i, int j);
+  // A2d_[ij] = A(n, ij)
+  void get_row(const SharedTensor2d &A, int n);
+  // A2d_[ij] = A(ij, n)
+  void get_column(const SharedTensor2d &A, int n);
   // A2d = alpha * Adum
   void add(const SharedTensor2d &a);
   void add(double **a);
   void add(double alpha, const SharedTensor2d &a);
   void add(int i, int j, double value);
+  // A2d_[n][ij] += A(i,j)
+  void add2row(const SharedTensor2d &A, int n);
+  // A2d_[ij][n] += A(i,j)
+  void add2col(const SharedTensor2d &A, int n);
   void subtract(const SharedTensor2d &a);
   void subtract(int i, int j, double value);
   // axpy: Y <-- a * X + Y
