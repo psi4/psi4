@@ -376,6 +376,11 @@ protected:
     void ccsd_3index_intr();
     void ccsd_F_intr();
     void ccsd_W_intr();
+    void ccsd_Wmnij();
+    void ccsd_WmnijT2();
+    void ccsd_WijamT2();
+    void ccsd_WmbejT2();
+    void ccsd_WmbjeT2();
     void ccsd_t1_amps();
     void ccsd_t2_amps();
     void ccsd_energy();
@@ -669,14 +674,14 @@ protected:
      SharedTensor2d HvoB;	 
      SharedTensor2d HvvA;	 
      SharedTensor2d HvvB;	 
-     SharedTensor2d FooA;               
-     SharedTensor2d FooB;               
-     SharedTensor2d FovA;               
-     SharedTensor2d FovB;               
-     SharedTensor2d FvoA;               
-     SharedTensor2d FvoB;               
-     SharedTensor2d FvvA;               
-     SharedTensor2d FvvB;               
+     SharedTensor2d FooA;          // Fock OO block     
+     SharedTensor2d FooB;          // Fock oo block     
+     SharedTensor2d FovA;          // Fock OV block     
+     SharedTensor2d FovB;          // Fock ov block     
+     SharedTensor2d FvoA;          // Fock VO block     
+     SharedTensor2d FvoB;          // Fock vo block     
+     SharedTensor2d FvvA;          // Fock VV block     
+     SharedTensor2d FvvB;          // Fock vv block     
 
      // DF Integrals
      SharedTensor2d Jmhalf;             // J Metric DF_BASIS_CC (RI)
@@ -930,6 +935,8 @@ protected:
 
      SharedTensor2d t1A;               // T_i^a(1)
      SharedTensor2d t1B;               // T_i^a(1)
+     SharedTensor2d t1newA;               // T_i^a(1)
+     SharedTensor2d t1newB;               // T_i^a(1)
      SharedTensor1d T1c;               // T1_Q
 
      SharedTensor2d FijA;               
