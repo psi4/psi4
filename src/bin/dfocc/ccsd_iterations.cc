@@ -48,34 +48,25 @@ outfile->Printf("  ----   -------------    ---------------    ----------   -----
       conver = 1; // Assuming that the iterations will converge
       Eccsd_old = Eccsd;
 
+      /*
       // DIIS
-      SharedTensor2d T;
-      T = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-      T->read_symm(psio_, PSIF_DFOCC_AMPS);
+      double **T2 = block_matrix(naoccA*navirA, naoccA*navirA);
+      double **T1 = block_matrix(naoccA, navirA);
       if (reference_ == "RESTRICTED") {
           t2DiisManager = new DIISManager(cc_maxdiis_, "CCSD DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
-          t2DiisManager->set_error_vector_size(2, DIISEntry::Pointer, &T, 
-                                                  DIISEntry::Pointer, &t1A);
-          t2DiisManager->set_vector_size(2, DIISEntry::Pointer, &T, 
-                                            DIISEntry::Pointer, &t1A);
+          t2DiisManager->set_error_vector_size(2, DIISEntry::Pointer, T2[0], 
+                                                  DIISEntry::Pointer, T1[0]);
+          t2DiisManager->set_vector_size(2, DIISEntry::Pointer, T2[0], 
+                                            DIISEntry::Pointer, T1[0]);
       }
-      T.reset();
-
-      /*
-      else if (reference_ == "UNRESTRICTED") {
-          t2DiisManager = new DIISManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
-          t2DiisManager->set_error_vector_size(3, DIISEntry::DPDBuf4, &Taa,
-                                                  DIISEntry::DPDBuf4, &Tbb,
-                                                  DIISEntry::DPDBuf4, &Tab);
-          t2DiisManager->set_vector_size(3, DIISEntry::DPDBuf4, &Taa,
-                                            DIISEntry::DPDBuf4, &Tbb,
-                                            DIISEntry::DPDBuf4, &Tab);
-      }
+      free_block(T2);
+      free_block(T1);
       */
 
 // head of loop      
 do
 {
+        // iterate
         itr_occ++;
 
         // 3-index intermediates
@@ -88,11 +79,6 @@ do
         ccsd_F_intr();
         timer_off("CCSD F intr");
 
-        // W intermediates
-        timer_on("CCSD W intr");
-        ccsd_W_intr();
-        timer_off("CCSD W intr");
-
         // T1 amplitudes
         timer_on("T1 AMPS");
 	ccsd_t1_amps();  
@@ -102,11 +88,6 @@ do
         timer_on("T2 AMPS");
 	ccsd_t2_amps();  
         timer_off("T2 AMPS");
-
-        // CCSD energy
-        timer_on("CCSD Energy");
-        ccsd_energy();
-        timer_off("CCSD Energy");
 
         DE = Eccsd - Eccsd_old;
         Eccsd_old = Eccsd;
@@ -135,7 +116,7 @@ do
 while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2); 
 
 //delete
-delete t2DiisManager;
+//delete t2DiisManager;
 
 if (conver == 1) {
 outfile->Printf("\n");
