@@ -376,11 +376,11 @@ protected:
     void ccsd_3index_intr();
     void ccsd_F_intr();
     void ccsd_W_intr();
-    void ccsd_Wmnij();
     void ccsd_WmnijT2();
     void ccsd_WijamT2();
     void ccsd_WmbejT2();
     void ccsd_WmbjeT2();
+    void ccsd_WabefT2();
     void ccsd_t1_amps();
     void ccsd_t2_amps();
     void ccsd_energy();
@@ -431,6 +431,8 @@ protected:
      int dimtei;	// dimension of tei in pitzer order for all integrals 
      int ntri; 		// square matrix dimension (nmo) -> pitzer order
      int ntri_so;	// square matrix dimension (nso) -> pitzer order
+     int ntri_ijAA;
+     int ntri_abAA;
      int nQ;          // numer of aux-basis
      int nQ_ref;      // numer of aux-basis for DF_BASIS_SCF
      int nso2_;       // nso * nso
