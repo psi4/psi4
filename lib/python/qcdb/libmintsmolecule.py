@@ -22,13 +22,20 @@
 
 import os
 import re
-import math
 import copy
+import math
+import collections
 from periodictable import *
 from physconst import *
 from vecutil import *
 from exceptions import *
-from libmintscoordentry import *
+#from libmintscoordentry import *
+from libmintscoordentry import NumberValue, VariableValue, CartesianEntry, ZMatrixEntry
+from libmintspointgrp import SymmOps, similar, SymmetryOperation, PointGroup
+
+#from libmintspointgrp import PointGroups
+#print PointGroups
+
 
 LINEAR_A_TOL = 1.0E-2  # When sin(a) is below this, we consider the angle to be linear
 DEFAULT_SYM_TOL = 1.0E-8
@@ -76,18 +83,18 @@ class LibmintsMolecule(object):
         self.PYname = 'default'
         # The molecular charge
         self.PYmolecular_charge = 0
-        # Whether the charge was given by the user  UNUSED
+        # Whether the charge was given by the user
         self.PYcharge_specified = False
         # The multiplicity (defined as 2Ms + 1)
         self.PYmultiplicity = 1
-        # Whether the multiplicity was specified by the user  UNUSED
+        # Whether the multiplicity was specified by the user
         self.PYmultiplicity_specified = False
         # The units used to define the geometry
         self.PYunits = 'Angstrom'
         # The conversion factor to take input units to Bohr
         self.input_units_to_au = 1.0 / psi_bohr2angstroms
         # Whether this molecule has at least one zmatrix entry
-        self.zmat = False
+        self.zmat = False  # TODO None?
 
         # <<< Coordinates >>>
 
@@ -125,19 +132,19 @@ class LibmintsMolecule(object):
 
         # <<< Symmetry >>>
 
-        # Point group to use with this molecule UNUSED
+        # Point group to use with this molecule
         self.pg = None
-        # Full point group UNUSED
-        self.full_pg = 'PG_C1'
-        # n of the highest rotational axis Cn UNUSED
-        self.full_pg_n = 1
+        # Full point group
+        self.full_pg = 'C1'
+        # n of the highest rotational axis Cn
+        self.PYfull_pg_n = 1
         # Symmetry string from geometry specification
-        self.PYsymmetry_from_input = 'C1'
+        self.PYsymmetry_from_input = None
         # Number of unique atoms
         self.PYnunique = 0
         # Number of equivalent atoms per unique atom (length nunique)
         self.nequiv = 0
-        # Equivalent atom mapping array
+        # Equivalent atom mapping array (length 1st dim nunique)
         self.equiv = 0
         # Atom to unique atom mapping array (length natom)
         self.PYatom_to_unique = 0
@@ -253,7 +260,7 @@ class LibmintsMolecule(object):
         if units == 'Angstrom' or units == 'Bohr':
             self.PYunits = units
         else:
-            raise ValidationError("""Argument to Molecule::set_units must be 'Angstrom' or 'Bohr'.""")
+            raise ValidationError("""Molecule::set_units: argument must be 'Angstrom' or 'Bohr'.""")
 
     def has_zmatrix(self):
         """Gets the presence of any zmatrix entry
@@ -319,10 +326,10 @@ class LibmintsMolecule(object):
 
         """
         temp = scale(self.atoms[atom].compute(), self.input_units_to_au)
-        if posn >= 0:
-            return temp[posn]
-        else:
+        if posn is None:
             return temp
+        else:
+            return temp[posn]
 
     def mass(self, atom):
         """Returns mass of atom (0-indexed)
@@ -349,7 +356,7 @@ class LibmintsMolecule(object):
         return self.atoms[atom].symbol()
 
     def label(self, atom):
-        """Returns the original label of the atom (0-indexed) as given in the input file (C2, H4).
+        """Returns the original label of the atom (0-indexed) as given in the input file (C2, H4). (0-indexed)
 
         >>> print H2OH2O.label(4)
         H3
@@ -423,7 +430,7 @@ class LibmintsMolecule(object):
         return self.full_atoms[atom].mass()
 
     def fsymbol(self, atom):
-        """Returns the cleaned up label of the atom (C2 => C, H4 = H) (includes dummies)
+        """Returns the cleaned up label of the atom (C2 => C, H4 = H) (includes dummies) (0-indexed)
 
         >>> print H2OH2O.fsymbol(4)
         O
@@ -523,7 +530,7 @@ class LibmintsMolecule(object):
         >>> obj.extract_subsets(1,[2,3])  # monomer A, CP-corrected if obj is tri-molecular complex
 
         """
-        return self.extract_fragments(reals, ghosts=[])
+        return self.extract_fragments(reals, ghosts=ghosts)
 
     def extract_fragments(self, reals, ghosts=[]):
         """Makes a copy of the molecule, returning a new molecule with
@@ -549,7 +556,7 @@ class LibmintsMolecule(object):
         except TypeError:
             lghosts = [ghosts - 1]
         if len(lreals) + len(lghosts) > self.nfragments():
-            raise ValidationError('The sum of real- and ghost-atom subsets is greater than the number of subsets')
+            raise ValidationError('Molecule::extract_fragments: sum of real- and ghost-atom subsets is greater than the number of subsets')
 
         subset = self.clone()
         subset.deactivate_all_fragments()
@@ -576,7 +583,8 @@ class LibmintsMolecule(object):
         orient = re.compile(r'^\s*(no_reorient|noreorient)\s*$', re.IGNORECASE)
         com = re.compile(r'^\s*(no_com|nocom)\s*$', re.IGNORECASE)
         symmetry = re.compile(r'^\s*symmetry[\s=]+(\w+)\s*$', re.IGNORECASE)
-        atom = re.compile(r'^\s*(@?[A-Z]{1,2})\s*', re.IGNORECASE)
+        ATOM = '((([A-Z]{1,3})_\w+)|(([A-Z]{1,3})\d*))'  # match 'C', 'al', 'p88', 'p_pass' not 'Ofail', 'h99_text'  # good, but unused
+        atom = re.compile(r'^(?:(?P<gh1>@)|(?P<gh2>Gh\())?(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)(?(gh2)\))$', re.IGNORECASE)
         cgmp = re.compile(r'^\s*(-?\d+)\s+(\d+)\s*$')
         frag = re.compile(r'^\s*--\s*$')
         variable = re.compile(r'^\s*(\w+)\s*=\s*(-?\d+\.\d+|-?\d+\.|-?\.\d+|-?\d+|tda)\s*$', re.IGNORECASE)
@@ -610,10 +618,7 @@ class LibmintsMolecule(object):
 
             # handle symmetry
             elif symmetry.match(line):
-                tempSymm = symmetry.match(line).group(1)
-                temp2 = re.sub('[23456789]', 'n', tempSymm).upper()
-                if temp2 in (item.upper() for item in self.FullPointGroupList):
-                    self.PYsymmetry_from_input = tempSymm
+                self.PYsymmetry_from_input = symmetry.match(line).group(1).lower()
 
             # handle variables
             elif variable.match(line):
@@ -645,8 +650,10 @@ class LibmintsMolecule(object):
                 ifrag += 1
                 glines.append(line)
 
-            elif atom.match(line):
+            elif atom.match(line.split()[0].strip()):
                 glines.append(line)
+            else:
+                raise ValidationError('Molecule::create_molecule_from_string: Unidentifiable line in geometry specification: %s' % (line))
 
         # catch last default fragment cgmp
         try:
@@ -672,24 +679,18 @@ class LibmintsMolecule(object):
                 tempfrag = []
 
             # handle atom markers
-            elif atom.match(line):
+            else:
                 entries = re.split(r'\s+|\s*,\s*', line.strip())
-                atomLabel = entries[0]
+                atomm = atom.match(line.split()[0].strip().upper())
+                atomLabel = atomm.group('label')
+                atomSym = atomm.group('symbol')
 
-                # handle ghost atoms
-                ghostAtom = False
-                if ghost.match(atomLabel):
-                    # We don't know whether the @C or Gh(C) notation matched.  Do a quick check.
-                    atomLabel = ghost.match(atomLabel).group(2) if not ghost.match(atomLabel).group(1) \
-                        else ghost.match(atomLabel).group(1)
-                    ghostAtom = True
-
-                # Save the actual atom symbol (H1 => H)
-                atomSym = re.split('(\d+)', atomLabel)[0].upper()
+                # We don't know whether the @C or Gh(C) notation matched. Do a quick check.
+                ghostAtom = False if (atomm.group('gh1') is None and atomm.group('gh2') is None) else True
 
                 # Check that the atom symbol is valid
                 if not atomSym in el2z:
-                    raise ValidationError('Illegal atom symbol in geometry specification: %s' % (atomSym))
+                    raise ValidationError('Molecule::create_molecule_from_string: Illegal atom symbol in geometry specification: %s' % (atomSym))
 
                 zVal = el2z[atomSym]
                 charge = float(zVal)
@@ -721,7 +722,7 @@ class LibmintsMolecule(object):
 
                     rTo = self.get_anchor_atom(entries[1], line)
                     if rTo >= iatom:
-                        raise ValidationError("Error on geometry input line %s. Atom %s has not been defined yet.\n" % (line, entries[1]))
+                        raise ValidationError("Molecule::create_molecule_from_string: Error on geometry input line %s. Atom %s has not been defined yet.\n" % (line, entries[1]))
                     rval = self.get_coord_value(entries[2])
 
                     if self.full_atoms[rTo].symbol() == 'X':
@@ -738,12 +739,12 @@ class LibmintsMolecule(object):
 
                     rTo = self.get_anchor_atom(entries[1], line)
                     if rTo >= iatom:
-                        raise ValidationError("Error on geometry input line %s. Atom %s has not been defined yet.\n" % (line, entries[1]))
+                        raise ValidationError("Molecule::create_molecule_from_string: Error on geometry input line %s. Atom %s has not been defined yet.\n" % (line, entries[1]))
                     aTo = self.get_anchor_atom(entries[3], line)
                     if aTo >= iatom:
-                        raise ValidationError("Error on geometry input line %s. Atom %s has not been defined yet.\n" % (line, entries[3]))
+                        raise ValidationError("Molecule::create_molecule_from_string: Error on geometry input line %s. Atom %s has not been defined yet.\n" % (line, entries[3]))
                     if aTo == rTo:
-                        raise ValidationError("Atom used multiple times on line %s." % (line))
+                        raise ValidationError("Molecule::create_molecule_from_string: Atom used multiple times on line %s." % (line))
                     rval = self.get_coord_value(entries[2])
                     aval = self.get_coord_value(entries[4])
 
@@ -764,15 +765,15 @@ class LibmintsMolecule(object):
 
                     rTo = self.get_anchor_atom(entries[1], line)
                     if rTo >= iatom:
-                        raise ValidationError("Error on geometry input line %s. Atom %s has not been defined yet.\n" % (line, entries[1]))
+                        raise ValidationError("Molecule::create_molecule_from_string: Error on geometry input line %s. Atom %s has not been defined yet.\n" % (line, entries[1]))
                     aTo = self.get_anchor_atom(entries[3], line)
                     if aTo >= iatom:
-                        raise ValidationError("Error on geometry input line %s. Atom %s has not been defined yet.\n" % (line, entries[3]))
+                        raise ValidationError("Molecule::create_molecule_from_string: Error on geometry input line %s. Atom %s has not been defined yet.\n" % (line, entries[3]))
                     dTo = self.get_anchor_atom(entries[5], line)
                     if dTo >= iatom:
-                        raise ValidationError("Error on geometry input line %s. Atom %s has not been defined yet.\n" % (line, entries[5]))
+                        raise ValidationError("Molecule::create_molecule_from_string: Error on geometry input line %s. Atom %s has not been defined yet.\n" % (line, entries[5]))
                     if aTo == rTo or rTo == dTo or aTo == dTo:  # for you star wars fans
-                        raise ValidationError("Atom used multiple times on line %s" % (line))
+                        raise ValidationError("Molecule::create_molecule_from_string: Atom used multiple times on line %s" % (line))
 
                     rval = self.get_coord_value(entries[2])
                     aval = self.get_coord_value(entries[4])
@@ -792,7 +793,7 @@ class LibmintsMolecule(object):
                         self.full_atoms[dTo], dval))
 
                 else:
-                    raise ValidationError('Illegal geometry specification line : %s. \
+                    raise ValidationError('Molecule::create_molecule_from_string: Illegal geometry specification line : %s. \
                         You should provide either Z-Matrix or Cartesian input' % (line))
 
                 iatom += 1
@@ -866,7 +867,7 @@ class LibmintsMolecule(object):
 
                     # Check that the atom symbol is valid
                     if not fileAtom in el2z:
-                        raise ValidationError('Illegal atom symbol in geometry specification: %s' % (atomSym))
+                        raise ValidationError('Molecule::init_with_xyz: Illegal atom symbol in geometry specification: %s' % (atomSym))
 
                     # Add it to the molecule.
                     instance.add_atom(el2z[fileAtom], fileX, fileY, fileZ, fileAtom, el2masses[fileAtom])
@@ -918,8 +919,8 @@ class LibmintsMolecule(object):
         if self.natom():
             if self.pg:
                 text += """    Molecular point group: %s\n""" % (self.pg.symbol())
-#            if self.full_pg:  TODO symmetry
-#                text += """    Full point group: %s\n\n""" % (self.full_point_group())  TODO symmetry
+            if self.full_pg:
+                text += """    Full point group: %s\n\n""" % (self.get_full_point_group())
             text += """    Geometry (in %s), charge = %d, multiplicity = %d:\n\n""" % \
                 ('Angstrom' if self.units() == 'Angstrom' else 'Bohr', self.molecular_charge(), self.multiplicity())
             text += """       Center              X                  Y                   Z       \n"""
@@ -931,6 +932,13 @@ class LibmintsMolecule(object):
                 for j in range(3):
                     text += """  %17.12f""" % (geom[j])
                 text += "\n"
+            # TODO if (Process::environment.options.get_int("PRINT") > 2) {
+            text += "\n"
+            for i in range(self.natom()):
+                text += """    %8s\n""" % (self.label(i))
+                for bas in self.atoms[i].basissets().keys():
+                    text += """              %-15s %-20s %s\n""" % (bas, 
+                        self.atoms[i].basissets()[bas], self.atoms[i].shells()[bas])
             text += "\n"
         else:
             text += "  No atoms in this molecule.\n"
@@ -946,8 +954,8 @@ class LibmintsMolecule(object):
         if self.natom():
             if self.pg:
                 text += """    Molecular point group: %s\n""" % (self.pg.symbol())
-#            if self.full_pg:  TODO symmetry
-#                text += """    Full point group: %s\n\n""" % (self.full_point_group())  TODO symmetry
+            if self.full_pg:
+                text += """    Full point group: %s\n\n""" % (self.get_full_point_group())
             text += """    Geometry (in %s), charge = %d, multiplicity = %d:\n\n""" % \
                 ('Bohr', self.molecular_charge(), self.multiplicity())
             text += """       Center              X                  Y                   Z       \n"""
@@ -973,8 +981,8 @@ class LibmintsMolecule(object):
         if self.natom():
             if self.pg:
                 text += """    Molecular point group: %s\n""" % (self.pg.symbol())
-#            if self.full_pg:  TODO symmetry
-#                text += """    Full point group: %s\n\n""" % (self.full_point_group())  TODO symmetry
+            if self.full_pg:
+                text += """    Full point group: %s\n\n""" % (self.get_full_point_group())
             text += """    Geometry (in %s), charge = %d, multiplicity = %d:\n\n""" % \
                 ('Angstrom', self.molecular_charge(), self.multiplicity())
             text += """       Center              X                  Y                   Z       \n"""
@@ -999,8 +1007,8 @@ class LibmintsMolecule(object):
         if self.natom():
             if self.pg:
                 text += """    Molecular point group: %s\n""" % (self.pg.symbol())
-#            if self.full_pg:  TODO symmetry
-#                text += """    Full point group: %s\n\n""" % (self.full_point_group())  TODO symmetry
+            if self.full_pg:
+                text += """    Full point group: %s\n\n""" % (self.get_full_point_group())
             text += """    Geometry (in %s), charge = %d, multiplicity = %d:\n\n""" % \
                 (self.units(), self.molecular_charge(), self.multiplicity())
             text += """       Center              X                  Y                   Z       \n"""
@@ -1085,9 +1093,9 @@ class LibmintsMolecule(object):
                     if self.fragment_types[fr] == 'Absent':
                         text += "    %-8s" % ("X")
                     elif self.fZ(at) or self.fsymbol(at) == "X":
-                        text += "    %-8s" % (self.fsymbol(at))
+                        text += "    %-8s" % (self.flabel(at))
                     else:
-                        text += "    %-8s" % ("Gh(" + self.fsymbol(at) + ")")
+                        text += "    %-8s" % ("Gh(" + self.flabel(at) + ")")
                     text += "    %s" % (self.full_atoms[at].print_in_input_format())
             text += "\n"
 
@@ -1162,7 +1170,7 @@ class LibmintsMolecule(object):
 
         """
         if len(b) != 3:
-            raise ValidationError('ERROR: atom_at_position() requires as argument a vector of length 3\n')
+            raise ValidationError('Molecule::atom_at_position: Argument vector not of length 3\n')
 
         for at in range(self.natom()):
             a = self.xyz(at)
@@ -1178,6 +1186,8 @@ class LibmintsMolecule(object):
         False
 
         """
+        #if self.all_variables
+        #print 'vstr', vstr, 'all_variables', self.all_variables, (vstr.upper() in self.all_variables), '\n'
         return True if vstr.upper() in self.all_variables else False
 
     def get_variable(self, vstr):
@@ -1189,7 +1199,7 @@ class LibmintsMolecule(object):
         try:
             return self.geometry_variables[vstr]
         except KeyError:
-            raise ValidationError('ERROR: Geometry variable %s not known.\n' % (vstr))
+            raise ValidationError('Molecule::get_variable: Geometry variable %s not known.\n' % (vstr))
 
     def set_variable(self, vstr, val):
         """Assigns the value val to the variable labelled string in the
@@ -1205,6 +1215,51 @@ class LibmintsMolecule(object):
             # Update geometry might have added some atoms, delete them to be safe.
             self.atoms = []
         # TODO outfile
+
+#    def __setattr__(self, name, value):
+#        """Function to overload setting attributes to allow geometry
+#        variable assigment as if member data.
+#
+#        """
+#        try:
+#            if name.upper() in self.__dict__['all_variables']:
+#                self.set_variable(name, value)
+#            else:
+#                self.__dict__[name] = value
+#        except KeyError:
+#            self.__dict__[name] = value
+#
+#    def __getattr__(self, name):
+#        """Function to overload accessing attribute contents to allow
+#        retrivial geometry variable values as if member data.
+#
+#        """
+##        #if not name in self.__dict__:
+##        if not name in self.__dict__['__dict__']:
+##            if object.__getattribute__(self, 'is_variable')(name):
+##                return object.__getattribute__(self, 'get_variable')(name)
+##            else:
+##                raise AttributeError
+##        else:
+##            #return self.__dict__[name]
+##            return self.__dict__['__dict__'][name]
+#
+##        if name in self.__dict__:
+##            return self.__dict__[name]
+##        elif '__dict__' in self.__dict__ and name in self.__dict__['__dict__']:
+##            return self.__dict__['__dict__'][name]
+##        elif object.__getattribute__(self, 'is_variable')(name):
+##            return object.__getattribute__(self, 'get_variable')(name)
+##        else:
+##            raise AttributeError
+#
+#        if not name in self.__dict__:
+#            if object.__getattribute__(self, 'is_variable')(name):
+#                return object.__getattribute__(self, 'get_variable')(name)
+#            else:
+#                raise AttributeError
+#        else:
+#            return self.__dict__[name]
 
     def __setattr__(self, name, value):
         """Function to overload setting attributes to allow geometry
@@ -1247,7 +1302,7 @@ class LibmintsMolecule(object):
             for i in range(self.nallatom()):
                 if self.full_atoms[i].label() == vstr:
                     return i
-            raise ValidationError("Illegal value %s in atom specification on line %s.\n" % (vstr, line))
+            raise ValidationError("Molecule::get_anchor_atom: Illegal value %s in atom specification on line %s.\n" % (vstr, line))
 
     def geometry(self):
         """Returns the geometry in Bohr as a N X 3 array.
@@ -1576,14 +1631,14 @@ class LibmintsMolecule(object):
             #self.print_full()
 
         # Recompute point group of the molecule, so the symmetry info is updated to the new frame
-# TODO        self.set_point_group(self.find_point_group())
-# TODO        self.set_full_point_group()
+        self.set_point_group(self.find_point_group())
+        self.set_full_point_group()
 
         # Disabling symmetrize for now if orientation is fixed, as it is not
         #   correct.  We may want to fix this in the future, but in some cases of
         #   finite-differences the set geometry is not totally symmetric anyway.
         # Symmetrize the molecule to remove any noise
-# TODO        self.symmetrize()
+        self.symmetrize()
         #print "after symmetry:"
         #self.print_full()
 
@@ -1639,21 +1694,47 @@ class LibmintsMolecule(object):
         """ **NYI** Computes nuclear repulsion energy second derivatives"""
         raise FeatureNotImplemented('Molecule::nuclear_repulsion_energy_deriv2')  # FINAL
 
-    def set_basis_all_atoms(self, name, type="BASIS"):
-        """ **NYI** Assigns basis *name* to all atoms."""
-        raise FeatureNotImplemented('Molecule::set_basis_all_atoms')  # FINAL
+    def set_basis_all_atoms(self, name, role="BASIS"):
+        """Assigns basis *name* to all atoms."""
+        uc = name.upper()
+        if uc in ['SPECIAL', 'GENERAL', 'CUSTOM']:
+            # These aren't really basis set specifications, just return.
+            return
+        for atom in self.full_atoms:
+            atom.set_basisset(name, role)
 
-    def set_basis_by_symbol(self, symbol, name, type="BASIS"):
-        """ **NYI** Assigns basis *name* to all *symbol* atoms."""
-        raise FeatureNotImplemented('Molecule::set_basis_by_symbol')  # FINAL
+    def set_basis_by_symbol(self, symbol, name, role="BASIS"):
+        """Assigns basis *name* to all *symbol* atoms."""
+        for atom in self.full_atoms:
+            if symbol.upper() == atom.symbol():
+                atom.set_basisset(name, role)
 
-    def set_basis_by_number(self, number, name, type="BASIS"):
-        """ **NYI** Assigns basis *name* to atom number *number* (1-indexed, includes dummies)."""
-        raise FeatureNotImplemented('Molecule::set_basis_by_number')  # FINAL
+    def clear_basis_all_atoms(self):
+        """Remove all basis information from atoms."""
+        for atom in self.full_atoms:
+            atom.PYbasissets = collections.OrderedDict()
 
-    def set_basis_by_label(self, label, name, type="BASIS"):
-        """ **NYI** Assigns basis *name* to all atoms with *label*."""
-        raise FeatureNotImplemented('Molecule::set_basis_by_label')  # FINAL
+    def set_basis_by_number(self, number, name, role="BASIS"):
+        """Assigns basis *name* to atom number *number* (0-indexed, excludes dummies)."""
+        # change from libmints to 0-indexing and to real/ghost numbering, dummies not included (libmints >= error)
+        if number >= self.natom():
+            raise ValidationError("Molecule::set_basis_by_number: Basis specified for atom %d, but there are only %d atoms in this molecule." % \
+                (number, self.natom()))
+        self.atoms[number].set_basisset(name, role)
+
+    def set_basis_by_label(self, label, name, role="BASIS"):
+        """Assigns basis *name* to all atoms with *label*."""
+        for atom in self.full_atoms:
+            if label.upper() == atom.label():
+                atom.set_basisset(name, role)
+
+    def set_shell_by_number(self, number, bshash, role="BASIS"):
+        """Assigns BasisSet *bshash* to atom number *number* (0-indexed, excludes dummies)."""
+        self.lock_frame = False
+        if number >= self.natom():
+            raise ValidationError("Molecule::set_shell_by_number: Basis specified for atom %d, but there are only %d atoms in this molecule." % \
+                (number, self.natom()))
+        self.atoms[number].set_shell(bshash, role)
 
     def nfrozen_core(self, depth=False):
         """Number of frozen core for molecule given freezing state.
@@ -1685,11 +1766,11 @@ class LibmintsMolecule(object):
                 if self.Z(A) > 86:
                     nfzc += 16
                 if self.Z(A) > 108:
-                    raise ValidationError("Invalid atomic number")
+                    raise ValidationError("Molecule::nfrozen_core: Invalid atomic number")
             return nfzc
 
         else:
-            raise ValidationError("Frozen core '%s' is not supported, options are {true, false}." % (depth))
+            raise ValidationError("Molecule::nfrozen_core: Frozen core '%s' is not supported, options are {true, false}." % (depth))
 
     # <<< Involved Methods for Frame >>>
 
@@ -1956,23 +2037,312 @@ class LibmintsMolecule(object):
     # <<< Methods for Symmetry >>>
 
     def has_symmetry_element(self, op, tol=DEFAULT_SYM_TOL):
-        """ **NYI** Whether molecule satisfies the vector symmetry operation *op* """
-        raise FeatureNotImplemented('Molecule::has_symmetry_element')  # FINAL SYMM
+        """ **NYI** Whether molecule satisfies the vector symmetry
+        operation *op*. Not used by libmints.
+
+        """
+        raise FeatureNotImplemented('Molecule::has_symmetry_element')  # FINAL
+        for i in range(self.natom()):
+            result = naivemult(self.xyz(i), op)
+            atom = self.atom_at_position(result, tol)
+
+            if atom != -1:
+                if not self.atoms[atom].is_equivalent_to(self.atoms[i]):
+                    return False
+            else:
+                return False
+        return True
 
     def point_group(self):
-        """ **NYI** Returns the point group (object) if set"""
-        raise FeatureNotImplemented('Molecule::point_group')  # FINAL SYMM
+        """Returns the point group (object) if set"""
+        if self.pg is None:
+            raise ValidationError("Molecule::point_group: Molecular point group has not been set.")
+        return self.pg
 
     def set_point_group(self, pg):
-        """ **NYI** Set the point group to object *pg* """
-        raise FeatureNotImplemented('Molecule::set_point_group')  # FINAL SYMM
+        """Set the point group to object *pg* """
+        self.pg = pg
+        # Call this here, the programmer will forget to call it, as I have many times.
+        self.form_symmetry_information()
 
     def set_full_point_group(self, tol=FULL_PG_TOL):
-        """ **NYI** Determine and set FULL point group"""
-        raise FeatureNotImplemented('Molecule::set_full_point_group')  # FINAL SYMM
+        """Determine and set FULL point group. full_pg_n_ is highest
+        order n in Cn. 0 for atoms or infinity.
+
+        """
+        verbose = 1  # TODO
+        # Get cartesian geometry and put COM at origin
+        geom = self.geometry()
+        com = self.center_of_mass()
+        for at in range(self.natom()):
+            geom[at][0] += -com[0]
+            geom[at][1] += -com[1]
+            geom[at][2] += -com[2]
+
+        # Get rotor type
+        rotor = self.rotor_type(tol)
+        if verbose > 2:
+            print """  Rotor type                       : %s""" % (rotor)
+
+        # Get the D2h point group from Jet and Ed's code: c1 ci c2 cs d2 c2v c2h d2h
+        #   and ignore the user-specified subgroup in this case.
+        pg = self.find_highest_point_group(tol)
+        d2h_subgroup = pg.symbol()
+        if verbose > 2:
+            print """  D2h_subgroup                     : %s""" % (self.point_group().symbol())
+
+        # Check inversion
+        v3_zero = [0.0, 0.0, 0.0]
+        op_i = self.has_inversion(v3_zero, tol)
+        if verbose > 2:
+            print """  Inversion symmetry               : %s""" % ('yes' if op_i else 'no')
+
+        x_axis = [1, 0, 0]
+        y_axis = [0, 1, 0]
+        z_axis = [0, 0, 1]
+        rot_axis = [0.0, 0.0, 0.0]
+
+        if rotor == 'RT_ATOM':  # atoms
+            self.full_pg = 'ATOM'
+            self.PYfull_pg_n = 0
+
+        elif rotor == 'RT_LINEAR':  # linear molecules
+            self.full_pg = 'D_inf_h' if op_i else 'C_inf_v'
+            self.PYfull_pg_n = 0
+
+        elif rotor == 'RT_SPHERICAL_TOP':  # spherical tops
+            if not op_i:  # The only spherical top without inversion is Td.
+                self.full_pg = 'Td'
+                self.PYfull_pg_n = 3
+            else:  # Oh or Ih ?
+                # Oh has a S4 and should be oriented properly already.
+                test_mat = matrix_3d_rotation(geom, z_axis, math.pi / 2.0, True)
+                op_symm = equal_but_for_row_order(geom, test_mat, tol)
+                if verbose > 2:
+                    print """  S4z                              : %s""" % ('yes' if op_symm else 'no')
+
+                if op_symm:
+                    self.full_pg = 'Oh'
+                    self.PYfull_pg_n = 4
+                else:
+                    self.full_pg = 'Ih'
+                    self.PYfull_pg_n = 5
+
+        elif rotor == 'RT_ASYMMETRIC_TOP':  # asymmetric tops cannot exceed D2h, right?
+
+            if d2h_subgroup == 'c1':
+                self.full_pg = 'C1'
+                self.PYfull_pg_n = 1
+
+            elif d2h_subgroup == 'ci':
+                self.full_pg = 'Ci'
+                self.PYfull_pg_n = 1
+
+            elif d2h_subgroup == 'c2':
+                self.full_pg = 'Cn'
+                self.PYfull_pg_n = 2
+
+            elif d2h_subgroup == 'cs':
+                self.full_pg = 'Cs'
+                self.PYfull_pg_n = 1
+
+            elif d2h_subgroup == 'd2':
+                self.full_pg = 'Dn'
+                self.PYfull_pg_n = 2
+
+            elif d2h_subgroup == 'c2v':
+                self.full_pg = 'Cnv'
+                self.PYfull_pg_n = 2
+
+            elif d2h_subgroup == 'c2h':
+                self.full_pg = 'Cnh'
+                self.PYfull_pg_n = 2
+
+            elif d2h_subgroup == 'd2h':
+                self.full_pg = 'Dnh'
+                self.PYfull_pg_n = 2
+
+            else:
+                print """  Warning: Cannot determine point group."""
+
+        elif rotor in ['RT_SYMMETRIC_TOP', 'RT_PROLATE_SYMMETRIC_TOP', 'RT_OBLATE_SYMMETRIC_TOP']:
+
+            # Find principal axis that is unique and make it z-axis.
+            It = self.inertia_tensor()
+            I_evals, I_evecs = diagonalize3x3symmat(It)
+            ev_list = zip(I_evals, transpose(I_evecs))  # eigenvectors are cols of I_evecs
+            ev_list.sort(key=lambda tup: tup[0], reverse=False)
+            I_evals, I_evecs = zip(*ev_list)  # sorted eigenvectors are now rows of I_evecs
+            if verbose > 2:
+                print """  I_evals: %15.10lf %15.10lf %15.10lf""" % (I_evals[0], I_evals[1], I_evals[2])
+
+            unique_axis = 1
+            if abs(I_evals[0] - I_evals[1]) < tol:
+                unique_axis = 2
+            elif abs(I_evals[1] - I_evals[2]) < tol:
+                unique_axis = 0
+
+            # Compute angle between unique axis and the z-axis
+            old_axis = I_evecs[unique_axis]
+
+            ddot = dot(z_axis, old_axis)
+            if abs(ddot - 1) < 1.0e-10:
+                phi = 0.0
+            elif abs(ddot + 1) < 1.0e-10:
+                phi = math.pi
+            else:
+                phi = math.acos(ddot)
+
+            # Rotate geometry to put unique axis on the z-axis, if it isn't already.
+            if abs(phi) > 1.0e-14:
+                rot_axis = cross(z_axis, old_axis)  # right order?
+                test_mat = matrix_3d_rotation(geom, rot_axis, phi, False)
+                if verbose > 2:
+                    print """  Rotating by %lf to get principal axis on z-axis ...""" % (phi)
+                geom = [row[:] for row in test_mat]
+
+            if verbose > 2:
+                print """  Geometry to analyze - principal axis on z-axis:"""
+                for at in range(self.natom()):
+                    print "%20.15lf %20.15lf %20.15lf" % (geom[at][0], geom[at][1], geom[at][2])
+                print "\n"
+
+            # Determine order Cn and Sn of principal axis.
+            Cn_z = matrix_3d_rotation_Cn(geom, z_axis, False, tol)
+            if verbose > 2:
+                print """  Highest rotation axis (Cn_z)     : %d""" % (Cn_z)
+
+            Sn_z = matrix_3d_rotation_Cn(geom, z_axis, True, tol)
+            if verbose > 2:
+                print """  Rotation axis (Sn_z)             : %d""" % (Sn_z)
+
+            # Check for sigma_h (xy plane).
+            op_sigma_h = False
+            for at in range(self.natom()):
+                if abs(geom[at][2]) < tol:
+                    continue  # atom is in xy plane
+                else:
+                    test_atom = [geom[at][0], geom[at][1], -1 * geom[at][2]]
+                    if not atom_present_in_geom(geom, test_atom, tol):
+                        break
+            else:
+                op_sigma_h = True
+            if verbose > 2:
+                print """  sigma_h                          : %s""" % ('yes' if op_sigma_h else 'no')
+
+            # Rotate one off-axis atom to the yz plane and check for sigma_v's.
+            for at in range(self.natom()):
+                dist_from_z = math.sqrt(geom[at][0] * geom[at][0] + geom[at][1] * geom[at][1])
+                if abs(dist_from_z) > tol:
+                    pivot_atom_i = at
+                    break
+
+            if pivot_atom_i == self.natom():  # needs to be in else clause?
+                raise ValidationError("Molecule::set_full_point_group: Not a linear molecule but could not find off-axis atom.")
+
+            # Rotate around z-axis to put pivot atom in the yz plane
+            xy_point = normalize([geom[pivot_atom_i][0], geom[pivot_atom_i][1], 0])
+            ddot = dot(y_axis, xy_point)
+            if abs(ddot - 1) < 1.0e-10:
+                phi = 0.0
+            elif abs(ddot + 1) < 1.0e-10:
+                phi = math.pi
+            else:
+                phi = math.acos(ddot)
+
+            is_D = False
+            if abs(phi) > 1.0e-14:
+                test_mat = matrix_3d_rotation(geom, z_axis, phi, False)
+                if verbose > 2:
+                    print "  Rotating by %8.3e to get atom %d in yz-plane ..." % (phi, pivot_atom_i + 1)
+                geom = [row[:] for row in test_mat]
+
+            # Check for sigma_v (yz plane).
+            op_sigma_v = False
+            for at in range(self.natom()):
+                if abs(geom[at][0]) < tol:
+                    continue  # atom is in yz plane
+                else:
+                    test_atom = [-1 * geom[at][0], geom[at][1], geom[at][2]]
+                    if not atom_present_in_geom(geom, test_atom, tol):
+                        break
+            else:
+            #if at == self.natom():
+                op_sigma_v = True
+            if verbose > 2:
+                print """  sigma_v                          : %s""" % ('yes' if op_sigma_v else 'no')
+
+                print """  geom to analyze - one atom in yz plane:"""
+                for at in range(self.natom()):
+                    print "%20.15lf %20.15lf %20.15lf" % (geom[at][0], geom[at][1], geom[at][2])
+                print "\n"
+
+            # Check for perpendicular C2's.
+            # Loop through pairs of atoms to find c2 axis candidates.
+            for i in range(self.natom()):
+                A = [geom[i][0], geom[i][1], geom[i][2]]
+                AdotA = dot(A, A)
+                for j in range(at):
+                    if self.Z(at) != self.Z(j):
+                        continue  # ensure same atomic number
+
+                    B = [geom[j][0], geom[j][1], geom[j][2]]  # ensure same distance from com
+                    if abs(AdotA - dot(B, B)) > 1.0e-6:
+                        continue  # loose check
+
+                    # Use sum of atom vectors as axis if not 0.
+                    axis = add(A, B)
+                    if norm(axis) < 1.0e-12:
+                        continue
+                    axis = normalize(axis)
+
+                    # Check if axis is perpendicular to z-axis.
+                    if abs(dot(axis, z_axis)) > 1.0e-6:
+                        continue
+
+                    # Do the thorough check for C2.
+                    if matrix_3d_rotation_Cn(geom, axis, False, tol, 2) == 2:
+                        is_D = True
+            if verbose > 2:
+                print """  perp. C2's                       : %s""" % ('yes' if is_D else 'no')
+
+            # Now assign point groups!  Sn first.
+            if Sn_z == 2 * Cn_z and not is_D:
+                self.full_pg = 'Sn'
+                self.PYfull_pg_n = Sn_z
+                return
+
+            if is_D:  # has perpendicular C2's
+                if op_sigma_h and op_sigma_v:  # Dnh : Cn, nC2, sigma_h, nSigma_v
+                    self.full_pg = 'Dnh'
+                    self.PYfull_pg_n = Cn_z
+
+                elif Sn_z == 2 * Cn_z:  # Dnd : Cn, nC2, S2n axis coincident with Cn
+                    self.full_pg = 'Dnd'
+                    self.PYfull_pg_n = Cn_z
+
+                else:  # Dn : Cn, nC2
+                    self.full_pg = 'Dn'
+                    self.PYfull_pg_n = Cn_z
+
+            else:  # lacks perpendicular C2's
+                if op_sigma_h and Sn_z == Cn_z:  # Cnh : Cn, sigma_h, Sn coincident with Cn
+                    self.full_pg = 'Cnh'
+                    self.PYfull_pg_n = Cn_z
+
+                elif op_sigma_v:  # Cnv : Cn, nCv
+                    self.full_pg = 'Cnv'
+                    self.PYfull_pg_n = Cn_z
+
+                else:  # Cn  : Cn
+                    self.full_pg = 'Cn'
+                    self.PYfull_pg_n = Cn_z
+        return
 
     def has_inversion(self, origin, tol=DEFAULT_SYM_TOL):
-        """Does the molecule have an inversion center at origin"""
+        """Does the molecule have an inversion center at origin
+
+        """
         for i in range(self.natom()):
             inverted = sub(origin, sub(self.xyz(i), origin))
             atom = self.atom_at_position(inverted, tol)
@@ -1981,7 +2351,9 @@ class LibmintsMolecule(object):
         return True
 
     def is_plane(self, origin, uperp, tol=DEFAULT_SYM_TOL):
-        """Is a plane?"""
+        """Is a plane?
+
+        """
         for i in range(self.natom()):
             A = sub(self.xyz(i), origin)
             Apar = scale(uperp, dot(uperp, A))
@@ -1993,7 +2365,9 @@ class LibmintsMolecule(object):
         return True
 
     def is_axis(self, origin, axis, order, tol=DEFAULT_SYM_TOL):
-        """Is *axis* an axis of order *order* with respect to *origin*?"""
+        """Is *axis* an axis of order *order* with respect to *origin*?
+
+        """
         for i in range(self.natom()):
             A = sub(self.xyz(i), origin)
             for j in range(1, order):
@@ -2066,12 +2440,10 @@ class LibmintsMolecule(object):
         zlikeness = math.fabs(dot(axis, worldzaxis))
 
         if (xlikeness - ylikeness) > 1.0E-12 and (xlikeness - zlikeness) > 1.0E-12:
-#        if xlikeness > ylikeness and xlikeness > zlikeness:
             like = 'XAxis'
             if dot(axis, worldxaxis) < 0:
                 axis = scale(axis, -1.0)
         elif (ylikeness - zlikeness) > 1.0E-12:
-#        elif ylikeness > zlikeness:
             like = 'YAxis'
             if dot(axis, worldyaxis) < 0:
                 axis = scale(axis, -1.0)
@@ -2082,19 +2454,112 @@ class LibmintsMolecule(object):
         return like, axis
 
     def find_point_group(self, tol=DEFAULT_SYM_TOL):
-        """ **NYI** Find computational molecular point group,
-        user can override this with the "symmetry" keyword
+        """Find computational molecular point group, user can override
+        this with the "symmetry" keyword. Result is highest D2h subgroup
+        attendant on molecule and allowed by the user.
 
         """
-        raise FeatureNotImplemented('Molecule::find_point_group')  # FINAL SYMM
+        pg = self.find_highest_point_group(tol)  # D2h subgroup
+        user = self.symmetry_from_input()
+
+        if user is not None:
+            # Need to handle the cases that the user only provides C2, C2v, C2h, Cs.
+            #   These point groups need directionality.
+
+            # Did the user provide directionality? If they did, the last letter would be x, y, or z
+            #   Directionality given, assume the user is smart enough to know what they're doing.
+            user_specified_direction = True if user[-1] in ['X', 'x', 'Y', 'y', 'Z', 'z'] else False
+
+            if self.symmetry_from_input() != pg.symbol():
+                user = PointGroup(self.symmetry_from_input())
+
+                if user_specified_direction:
+                    # Assume the user knows what they're doing.
+                    #   Make sure user is subgroup of pg
+                    if (pg.bits() & user.bits()) != user.bits():
+                        raise ValidationError("Molecule::find_point_group: User specified point group (%s) is not a subgroup of the highest detected point group (%s)" % (PointGroup.bits_to_full_name(user.bits()), PointGroup.bits_to_full_name(pg.bits())))
+
+                else:
+                    similars, count = similar(user.bits())
+                    found = False
+                    for typ in range(count):
+                        # If what the user specified and the similar type
+                        #   matches the full point group we've got a match
+                        if (similars[typ] & pg.bits()) == similars[typ]:
+                            found = True
+                            break
+
+                    if found:
+                        # Construct a point group object using the found similar
+                        user = PointGroup(similars[typ])
+
+                    else:
+                        raise ValidationError("Molecule::find_point_group: User specified point group (%s) is not a subgroup of the highest detected point group (%s). If this is because the symmetry increased, try to start the calculation again from the last geometry, after checking any symmetry-dependent input, such as DOCC." % (PointGroup.bits_to_full_name(user.bits()), PointGroup.bits_to_full_name(pg.bits())))
+
+                # If we make it here, what the user specified is good.
+                pg = user
+
+        return pg
 
     def reset_point_group(self, pgname):
-        """ **NYI** Override symmetry from outside the molecule string"""
-        raise FeatureNotImplemented('Molecule::reset_point_group')  # FINAL SYMM
+        """Override symmetry from outside the molecule string"""
+        self.PYsymmetry_from_input = pgname.lower()
+        self.set_point_group(self.find_point_group())
 
     def find_highest_point_group(self, tol=DEFAULT_SYM_TOL):
-        """ **NYI** Find highest molecular point group"""
-        raise FeatureNotImplemented('Molecule::find_highest_point_group')  # FINAL SYMM
+        """Find the highest D2h point group from Jet and Ed's code: c1
+        ci c2 cs d2 c2v c2h d2h. Ignore the user-specified subgroup in
+        this case.
+
+        """
+        pg_bits = 0
+
+        # The order of the next 2 arrays MUST match!
+        symm_bit = [
+            SymmOps['C2_z'],
+            SymmOps['C2_y'],
+            SymmOps['C2_x'],
+            SymmOps['i'],
+            SymmOps['Sigma_xy'],
+            SymmOps['Sigma_xz'],
+            SymmOps['Sigma_yz']]
+
+        symm_func = [
+            SymmetryOperation.c2_z,
+            SymmetryOperation.c2_y,
+            SymmetryOperation.c2_x,
+            SymmetryOperation.i,
+            SymmetryOperation.sigma_xy,
+            SymmetryOperation.sigma_xz,
+            SymmetryOperation.sigma_yz]
+
+        symop = SymmetryOperation()
+        matching_atom = -1
+
+        # Only needs to detect the 8 symmetry operations
+        for g in range(7):
+
+            # Call the function pointer
+            symm_func[g](symop)
+            found = True
+
+            for at in range(self.natom()):
+                op = [symop[0][0], symop[1][1], symop[2][2]]
+                pos = naivemult(self.xyz(at), op)
+
+                matching_atom = self.atom_at_position(pos, tol)
+                if matching_atom >= 0:
+                    if not self.atoms[at].is_equivalent_to(self.atoms[matching_atom]):
+                        found = False
+                        break
+                else:
+                    found = False
+                    break
+
+            if found:
+                pg_bits |= symm_bit[g]
+
+        return PointGroup(pg_bits)
 
     def symmetry_frame(self, tol=DEFAULT_SYM_TOL):
         """Determine symmetry reference frame. If noreorient is not set,
@@ -2407,23 +2872,122 @@ class LibmintsMolecule(object):
         return frame
 
     def release_symmetry_information(self):
-        """ **NYI** Release symmetry information"""
-        raise FeatureNotImplemented('Molecule::release_symmetry_information')  # FINAL SYMM
+        """Release symmetry information"""
+        self.PYnunique = 0
+        self.nequiv = 0
+        self.PYatom_to_unique = 0
+        self.equiv = 0
 
     def form_symmetry_information(self, tol=DEFAULT_SYM_TOL):
-        """ **NYI** Initialize molecular specific symmetry information.
+        """Initialize molecular specific symmetry information.
         Uses the point group object obtain by calling point_group()
 
         """
-        raise FeatureNotImplemented('Molecule::form_symmetry_information')  # FINAL SYMM
+        if self.equiv:
+            self.release_symmetry_information()
+
+        if self.natom() == 0:
+            self.PYnunique = 0
+            self.nequiv = 0
+            self.PYatom_to_unique = 0
+            self.equiv = 0
+            print "No atoms detected, returning\n"
+            return
+
+        self.nequiv = []
+        self.PYatom_to_unique = [0] * self.natom()
+        self.equiv = []
+
+        if self.point_group().symbol() == 'c1':
+            self.PYnunique = self.natom()
+            for at in range(self.natom()):
+                self.nequiv.append(1)
+                self.PYatom_to_unique[at] = at
+                self.equiv.append([at])
+            return
+
+        # The first atom is always unique
+        self.PYnunique = 1
+        self.nequiv.append(1)
+        self.PYatom_to_unique[0] = 0
+        self.equiv.append([0])
+
+        ct = self.point_group().char_table()
+        so = SymmetryOperation()
+        np = [0.0, 0.0, 0.0]
+
+        # Find the equivalent atoms
+        for i in range(1, self.natom()):
+            ac = self.xyz(i)
+            i_is_unique = True
+            i_equiv = 0
+
+            # Apply all symmetry ops in the group to the atom
+            for g in range(ct.order()):
+                so = ct.symm_operation(g)
+                for ii in range(3):
+                    np[ii] = 0
+                    for jj in range(3):
+                        np[ii] += so[ii][jj] * ac[jj]
+
+                # See if the transformed atom is equivalent to a unique atom
+                for j in range(self.PYnunique):
+                    unique = self.equiv[j][0]
+                    aj = self.xyz(unique)
+                    if distance(np, aj) < tol and \
+                        self.Z(unique) == self.Z(i) and \
+                        abs(self.mass(unique) - self.mass(i)) < tol:
+                        i_is_unique = False
+                        i_equiv = j
+                        break
+
+            if i_is_unique:
+                self.nequiv.append(1)
+                self.PYatom_to_unique[i] = self.PYnunique
+                self.equiv.append([i])
+                self.PYnunique += 1
+
+            else:
+                self.equiv[i_equiv].append(i)
+                self.nequiv[i_equiv] += 1
+                self.PYatom_to_unique[i] = i_equiv
+
+        # The first atom in the equiv list is considered the primary
+        #   unique atom. Just to make things look pretty, make the
+        #   atom with the most zeros in its x, y, z coordinate the
+        #   unique atom. Nothing else should rely on this being done.
+        ztol = 1.0e-5
+        for i in range(self.PYnunique):
+            maxzero = 0
+            jmaxzero = 0
+            for j in range(self.nequiv[i]):
+                nzero = 0
+                for k in range(3):
+                    tmp = self.equiv[i][j]
+                    if abs(self.xyz(tmp, k)) < ztol:
+                        nzero += 1
+                if nzero > maxzero:
+                    maxzero = nzero
+                    jmaxzero = j
+            tmp = self.equiv[i][jmaxzero]
+            self.equiv[i][jmaxzero] = self.equiv[i][0]
+            self.equiv[i][0] = tmp
+        #print 'nunique', self.PYnunique
+        #print 'nequiv', self.nequiv
+        #print 'atom_to_unique', self.PYatom_to_unique
+        #print 'equiv', self.equiv
 
     def sym_label(self):
-        """ **NYI** Returns the symmetry label"""
-        raise FeatureNotImplemented('Molecule::sym_label')  # FINAL SYMM
+        """Returns the symmetry label"""
+        if self.pg is None:
+            self.set_point_group(self.find_point_group())
+        return self.pg.symbol()
 
     def irrep_labels(self):
-        """ **NYI** Returns the irrep labels"""
-        raise FeatureNotImplemented('Molecule::irrep_labels')  # FINAL SYMM
+        """Returns the irrep labels"""
+        if self.pg is None:
+            self.set_point_group(self.find_point_group())
+        return [self.pg.char_table().gamma(i).symbol_ns() for i in range(self.pg.char_table().nirrep())]
 
     def symmetry_from_input(self):
         """Returns the symmetry specified in the input.
@@ -2435,86 +2999,298 @@ class LibmintsMolecule(object):
         return self.PYsymmetry_from_input
 
     def symmetrize(self):
-        """ **NYI** Force the molecule to have the symmetry specified in pg.
+        """Force the molecule to have the symmetry specified in pg.
         This is to handle noise coming in from optking.
 
         """
-        raise FeatureNotImplemented('Molecule::symmetrize')  # FINAL SYMM
+        #raise FeatureNotImplemented('Molecule::symmetrize')  # FINAL SYMM
+        temp = zero(self.natom(), 3)
+        ct = self.point_group().char_table()
+
+        # Obtain atom mapping of atom * symm op to atom
+        atom_map = compute_atom_map(self)
+
+        # Symmetrize the molecule to remove any noise
+        for at in range(self.natom()):
+            for g in range(ct.order()):
+                Gatom = atom_map[at][g]
+                so = ct.symm_operation(g)
+
+                # Full so must be used if molecule is not in standard orientation
+                temp[at][0] += so[0][0] * self.x(Gatom) / ct.order()
+                temp[at][0] += so[0][1] * self.y(Gatom) / ct.order()
+                temp[at][0] += so[0][2] * self.z(Gatom) / ct.order()
+                temp[at][1] += so[1][0] * self.x(Gatom) / ct.order()
+                temp[at][1] += so[1][1] * self.y(Gatom) / ct.order()
+                temp[at][1] += so[1][2] * self.z(Gatom) / ct.order()
+                temp[at][2] += so[2][0] * self.x(Gatom) / ct.order()
+                temp[at][2] += so[2][1] * self.y(Gatom) / ct.order()
+                temp[at][2] += so[2][2] * self.z(Gatom) / ct.order()
+
+        # Set the geometry to ensure z-matrix variables get updated
+        self.set_geometry(temp)
 
     def schoenflies_symbol(self):
-        """ **NYI** Returns the Schoenflies symbol"""
-        raise FeatureNotImplemented('Molecule::schoenflies_symbol')  # FINAL SYMM
+        """Returns the Schoenflies symbol"""
+        return self.point_group().symbol()
 
     def valid_atom_map(self, tol=0.01):
-        """ **NYI** Check if current geometry fits current point group"""
-        raise FeatureNotImplemented('Molecule::valid_atom_map')  # FINAL SYMM
+        """Check if current geometry fits current point group
+
+        """
+        np = [0.0, 0.0, 0.0]
+        ct = self.point_group().char_table()
+
+        # loop over all centers
+        for at in range(self.natom()):
+            ac = self.xyz(at)
+
+            # For each operation in the pointgroup, transform the coordinates of
+            #   center "at" and see which atom it maps into
+            for g in range(ct.order()):
+                so = ct.symm_operation(g)
+
+                for ii in range(3):
+                    np[ii] = 0
+                    for jj in range(3):
+                        np[ii] += so[ii][jj] * ac[jj]
+
+                if self.atom_at_position(np, tol) < 0:
+                    return False
+        return True
 
     def full_point_group_with_n(self):
-        """ **NYI** Return point group name such as Cnv or Sn."""
-        #return FullPointGroupList[self.full_pg]
-        raise FeatureNotImplemented('Molecule::full_point_group_n')  # FINAL SYMM
+        """Return point group name such as Cnv or Sn."""
+        return self.full_pg
 
     def full_pg_n(self):
-        """ **NYI** Return n in Cnv, etc.; If there is no n (e.g. Td)
+        """Return n in Cnv, etc.; If there is no n (e.g. Td)
         it's the highest-order rotation axis.
 
         """
-        #return self.full_pg_n
-        raise FeatureNotImplemented('Molecule::full_pg_n')  # FINAL SYMM
+        return self.PYfull_pg_n
 
     def get_full_point_group(self):
-        """ **NYI** Return point group name such as C3v or S8.
+        """Return point group name such as C3v or S8.
         (method name in libmints is full_point_group)
 
         """
-        raise FeatureNotImplemented('Molecule::get_full_point_group')  # FINAL SYMM
+        pg_with_n = self.full_pg
+        if pg_with_n in ['D_inf_h', 'C_inf_v', 'C1', 'Cs', 'Ci', 'Td', 'Oh', 'Ih']:
+            return pg_with_n  # These don't need changes - have no 'n'.
+        else:
+            return pg_with_n.replace('n', str(self.PYfull_pg_n), 1)
 
     # <<< Methods for Uniqueness >>> (assume molecular point group has been determined)
 
     def nunique(self):
-        """ **NYI** Return the number of unique atoms."""
-        #w#return PYnunique
-        raise FeatureNotImplemented('Molecule::nunique')  # FINAL SYMM
+        """Return the number of unique atoms."""
+        return self.PYnunique
 
     def unique(self, iuniq):
-        """ **NYI** Returns the overall number of the iuniq'th unique atom."""
-        #w#return self.equiv[iuniq][0]
-        raise FeatureNotImplemented('Molecule::unique')  # FINAL SYMM
+        """Returns the overall number of the iuniq'th unique atom."""
+        return self.equiv[iuniq][0]
 
     def nequivalent(self, iuniq):
-        """ **NYI** Returns the number of atoms equivalent to iuniq."""
-        #w#return self.nequiv[iuniq]
-        raise FeatureNotImplemented('Molecule::nequivalent')  # FINAL SYMM
+        """Returns the number of atoms equivalent to iuniq."""
+        return self.nequiv[iuniq]
 
     def equivalent(self, iuniq, j):
-        """ **NYI** Returns the j'th atom equivalent to iuniq."""
-        #w#return self.equiv[iuniq][j]
-        raise FeatureNotImplemented('Molecule::equivalent')  # FINAL SYMM
+        """Returns the j'th atom equivalent to iuniq."""
+        return self.equiv[iuniq][j]
 
     def atom_to_unique(self, iatom):
-        """ **NYI** Converts an atom number to the number of its generating unique atom.
+        """Converts an atom number to the number of its generating unique atom.
         The return value is in [0, nunique).
 
         """
-        #w#return PYatom_to_unique[iatom]
-        raise FeatureNotImplemented('Molecule::atom_to_unique')  # FINAL SYMM
+        return self.PYatom_to_unique[iatom]
 
     def atom_to_unique_offset(self, iatom):
-        """ **NYI** Converts an atom number to the offset of this atom
+        """Converts an atom number to the offset of this atom
         in the list of generated atoms. The unique atom itself is allowed offset 0.
 
         """
-        raise FeatureNotImplemented('Molecule::atom_to_unique_offset')  # FINAL SYMM
+        iuniq = self.PYatom_to_unique[iatom]
+        nequiv = self.nequiv[iuniq]
+        for i in range(nequiv):
+            if self.equiv[iuniq][i] == iatom:
+                return i
+        raise ValidationError("Molecule::atom_to_unique_offset: I should've found the atom requested...but didn't.")
+        return -1
 
     def max_nequivalent(self):
-        """  **NYI** Returns the maximum number of equivalent atoms."""
-        raise FeatureNotImplemented('Molecule::max_nequivalent')  # FINAL SYMM
+        """Returns the maximum number of equivalent atoms."""
+        mmax = 0
+        for i in range(self.nunique()):
+            if mmax < self.nequivalent(i):
+                mmax = self.nequivalent(i)
+        return mmax
+
+
+def atom_present_in_geom(geom, b, tol=DEFAULT_SYM_TOL):
+    """Function used by set_full_point_group() to scan a given geometry
+    and determine if an atom is present at a given location.
+
+    """
+    for i in range(len(geom)):
+        a = [geom[i][0], geom[i][1], geom[i][2]]
+        if distance(b, a) < tol:
+            return True
+    return False
+
+
+def matrix_3d_rotation_Cn(coord, axis, reflect, tol=DEFAULT_SYM_TOL, max_Cn_to_check=-1):
+    """Find maximum n in Cn around given axis, i.e., the highest-order rotation axis.
+    @param coord Matrix    : points to rotate - column dim is 3
+    @param axis  Vector3   : axis around which to rotate, does not need to be normalized
+    @param bool  reflect   : if true, really look for Sn not Cn
+    @returns n
+
+    """
+    # Check all atoms. In future, make more intelligent.
+    max_possible = len(coord) if max_Cn_to_check == -1 else max_Cn_to_check
+
+    Cn = 1  # C1 is there for sure
+    for n in range(2, max_possible + 1):
+        rotated_mat = matrix_3d_rotation(coord, axis, 2 * math.pi / n, reflect)
+        if equal_but_for_row_order(coord, rotated_mat, tol):
+            Cn = n
+    return Cn
+
+
+def matrix_3d_rotation(mat, axis, phi, Sn):
+    """For a matrix of 3D vectors (ncol==3), rotate a set of points around an
+    arbitrary axis.  Vectors are the rows of the matrix.
+    @param  axis  Vector3   : axis around which to rotate (need not be normalized)
+    @param  phi   double    : magnitude of rotation in rad
+    @param  Sn    bool      : if true, then also reflect in plane through origin and
+                              perpendicular to rotation
+    @returns SharedMatrix with rotated points (rows)
+
+    """
+    if len(mat[0]) != 3 or len(axis) != 3:
+        raise ValidationError("matrix_3d_rotation: Can only rotate matrix with 3d vectors")
+
+    # Normalize rotation vector
+    [wx, wy, wz] = normalize(axis)
+    cp = 1.0 - math.cos(phi)
+
+    R = zero(3, 3)
+    R[0][0] = wx * wx * cp + math.cos(phi)
+    R[0][1] = wx * wy * cp + math.sin(phi) * wz * -1
+    R[0][2] = wx * wz * cp + math.sin(phi) * wy
+    R[1][0] = wx * wy * cp + math.sin(phi) * wz
+    R[1][1] = wy * wy * cp + math.cos(phi)
+    R[1][2] = wy * wz * cp + math.sin(phi) * wx * -1
+    R[2][0] = wx * wz * cp + math.sin(phi) * wy * -1
+    R[2][1] = wy * wz * cp + math.sin(phi) * wx
+    R[2][2] = wz * wz * cp + math.cos(phi)
+
+    # R * coord^t = R_coord^t or coord * R^t = R_coord
+    #Matrix rotated_coord(nrow(),3);
+    #rotated_coord.gemm(false, true, 1.0, *this, R, 0.0);
+    rotated_coord = mult(mat, transpose(R))
+#    print 'after C'
+#    show(rotated_coord)
+
+    if Sn:  # delta_ij - 2 a_i a_j / ||a||^2
+        R = identity(3)
+        #R = zero(3, 3)
+        R[0][0] -= 2 * wx * wx
+        R[1][1] -= 2 * wy * wy
+        R[2][2] -= 2 * wz * wz
+        #R[0][0] = 1 - 2 * wx * wx
+        #R[1][1] = 1 - 2 * wy * wy
+        #R[2][2] = 1 - 2 * wz * wz
+        R[1][0] = 2 * wx * wy
+        R[2][0] = 2 * wx * wz
+        R[2][1] = 2 * wy * wz
+        R[0][1] = 2 * wx * wy
+        R[0][2] = 2 * wx * wz
+        R[1][2] = 2 * wy * wz
+        rotated_coord = mult(rotated_coord, transpose(R))
+        #tmp = mult(rotated_coord, transpose(R))
+        #Matrix tmp(nrow(),3);
+        #tmp.gemm(false, true, 1.0, rotated_coord, R, 0.0);
+        #rotated_coord.copy(tmp);
+        #rotated_coord = [row[:] for row in tmp]
+
+    #SharedMatrix to_return = rotated_coord.clone();
+    #return to_return
+    return rotated_coord
+
+
+def equal_but_for_row_order(mat, rhs, tol=DEFAULT_SYM_TOL):
+    """Checks matrix equality, but allows rows to be in a different order.
+    @param rhs Matrix to compare to.
+    @returns true if equal, otherwise false.
+
+    """
+    for m in range(len(mat)):
+        for m_rhs in range(len(mat)):
+
+            for n in range(len(mat[m])):
+                if abs(mat[m][n] - rhs[m_rhs][n]) > tol:
+                    break  # from n
+            else:
+                # whole row matched, goto next m row
+                break  # from m_rhs
+        else:
+            # no matching row was found
+            return False
+    else:
+        return True
+
+
+def compute_atom_map(mol):
+    """Computes atom mappings during symmetry operations. Useful in
+    generating SO information and Cartesian displacement SALCs.
+    param mol Molecule to form mapping matrix from.
+    returns Integer matrix of dimension natoms X nirreps.
+
+    """
+    # create the character table for the point group
+    ct = mol.point_group().char_table()
+
+    natom = mol.natom()
+    ng = ct.order()
+    atom_map = [0] * natom
+    for i in range(natom):
+        atom_map[i] = [0] * ng
+
+    np = [0.0, 0.0, 0.0]
+    so = SymmetryOperation()
+
+    # loop over all centers
+    for i in range(natom):
+        ac = mol.xyz(i)
+
+        # then for each symop in the pointgroup, transform the coordinates of
+        #   center "i" and see which atom it maps into
+        for g in range(ng):
+            so = ct.symm_operation(g)
+
+            for ii in range(3):
+                np[ii] = 0
+                for jj in range(3):
+                    np[ii] += so[ii][jj] * ac[jj]
+
+            atom_map[i][g] = mol.atom_at_position(np, 0.05)
+            if atom_map[i][g] < 0:
+                print "  Molecule:\n"
+                mol.print_out()
+                print "  attempted to find atom at\n"
+                print "    %lf %lf %lf\n" % (np[0], np[1], np[2])
+                raise ValidationError("ERROR: Symmetry operation %d did not map atom %d to another atom:\n" % (g, i + 1))
+
+    return atom_map
+
 
 
 
 # TODO outfile
 # ignored =, +, 0, += assignment operators
 # no pubchem
-# no symmetry
 # TODO rename save_string_for_psi4
 # TODO add no_com no_reorint in save string for psi4
