@@ -162,7 +162,7 @@ void mcscf_get_mo_info(Options &options)
 
   MCSCF_CalcInfo.nmotri = (MCSCF_CalcInfo.nmo * (MCSCF_CalcInfo.nmo + 1)) / 2 ;
 
-  if (MCSCF_CalcInfo.nmotri <= IOFF_MAX){
+  if (MCSCF_CalcInfo.nmotri >= IOFF_MAX){
     throw PsiException("(get_mo_info): IOFF_MAX may not large enough!",
                               __FILE__, __LINE__);
   }
