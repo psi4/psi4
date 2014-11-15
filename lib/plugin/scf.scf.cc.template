@@ -48,7 +48,7 @@ SCF::~SCF()
 
 void SCF::init_matrix(double****& matrix, int size1, int size2, int size3, int size4) {
     if ((size1 == 0) || (size2 == 0) || (size3 == 0) || (size4 == 0)) {
-        printf("\n\n\tNULL Matrix\n");
+        outfile->Printf("\n\n\tNULL Matrix\n");
         matrix = NULL;
     } else {
         matrix = new double***[size1];
@@ -75,7 +75,7 @@ void SCF::init_matrix(double****& matrix, int size1, int size2, int size3, int s
 
 void SCF::free_matrix(double****& matrix, int size1, int size2, int size3, int size4) {
     if ((size1 == 0) || (size2 == 0) || (size3 == 0) || (size4 == 0)) {
-        printf("\n\n\tNULL Matrix\n");
+        outfile->Printf("\n\n\tNULL Matrix\n");
     }
     if (matrix != NULL) {
         for (int i = 0; i < size1; i++) {
@@ -126,7 +126,7 @@ void SCF::init_integrals()
         throw PSIEXCEPTION("This is only an RHF code, but you gave it an odd number of electrons.  Try again!");
     ndocc_ = nelec / 2;
 
-    psi::fprintf(outfile, "\tThere are %d doubly occupied orbitals\n", ndocc_);
+    psi::outfile->Printf("\tThere are %d doubly occupied orbitals\n", ndocc_);
     molecule->print();
     if(print_ > 1){ 
          aoBasis->print_detail();
@@ -136,7 +136,7 @@ void SCF::init_integrals()
     nso_ =  aoBasis->nbf();
 
     e_nuc_ = molecule->nuclear_repulsion_energy();
-    psi::fprintf(outfile, "\n    Nuclear repulsion energy: %16.8f\n\n", e_nuc_);
+    psi::outfile->Printf("\n    Nuclear repulsion energy: %16.8f\n\n", e_nuc_);
 
     // These don't need to be declared, because they belong to the class
     S_ = SharedMatrix(new Matrix("Overlap matrix", nso_, nso_));
@@ -165,7 +165,7 @@ void SCF::init_integrals()
         H_->print();
     }
 
-    psi::fprintf(outfile, "\tForming Two-electron Integrals\n\n");
+    psi::outfile->Printf("\tForming Two-electron Integrals\n\n");
     // Allocate some storage for the integrals
     init_matrix(tei_, nso_, nso_, nso_, nso_);
 
@@ -188,13 +188,13 @@ void SCF::init_integrals()
             int s = intIter.l();
             double val = buffer[intIter.index()];
             if(print_ > 4)
-                psi::fprintf(outfile, "\t(%2d %2d | %2d %2d) = %20.15f\n", p, q, r, s, val);
+                psi::outfile->Printf("\t(%2d %2d | %2d %2d) = %20.15f\n", p, q, r, s, val);
             tei_[p][q][r][s] = tei_[p][q][s][r] = tei_[q][p][r][s] = tei_[q][p][s][r] =
             tei_[r][s][p][q] = tei_[s][r][p][q] = tei_[r][s][q][p] = tei_[s][r][q][p] = val;
             ++count;
         }
     }
-    psi::fprintf(outfile, "\n\tThere are %d unique integrals\n\n", count);
+    psi::outfile->Printf("\n\tThere are %d unique integrals\n\n", count);
 }
 
 
@@ -252,7 +252,7 @@ double SCF::compute_energy()
    C_->gemm(false, false, 1.0, X_, Evecs, 0.0);
    form_density();
    if(print_ > 1){
-       psi::fprintf(outfile, "MO Coefficients and density from Core Hamiltonian guess:\n");
+       psi::outfile->Printf("MO Coefficients and density from Core Hamiltonian guess:\n");
        C_->print();
        D_->print();
    }
@@ -262,11 +262,11 @@ double SCF::compute_energy()
    double e_old;
    double e_new = e_nuc_ + compute_electronic_energy();
 
-   psi::fprintf(outfile, "\tEnergy from core Hamiltonian guess: %20.16f\n\n", e_new);
+   psi::outfile->Printf("\tEnergy from core Hamiltonian guess: %20.16f\n\n", e_new);
 
-   psi::fprintf(outfile, "\t*=======================================================*\n");
-   psi::fprintf(outfile, "\t* Iter       Energy            delta E    ||gradient||  *\n");
-   psi::fprintf(outfile, "\t*-------------------------------------------------------*\n");
+   psi::outfile->Printf("\t*=======================================================*\n");
+   psi::outfile->Printf("\t* Iter       Energy            delta E    ||gradient||  *\n");
+   psi::outfile->Printf("\t*-------------------------------------------------------*\n");
 
    while(!converged && iter < maxiter_){
        e_old = e_new;
@@ -326,10 +326,10 @@ double SCF::compute_energy()
      
        converged = (fabs(dE) < e_convergence_) && (dRMS < d_convergence_);
 
-       psi::fprintf(outfile, "\t* %3d %20.14f    %9.2e    %9.2e    *\n", iter, e_new, dE, dRMS);
+       psi::outfile->Printf("\t* %3d %20.14f    %9.2e    %9.2e    *\n", iter, e_new, dE, dRMS);
        iter++;
    }
-   psi::fprintf(outfile, "\t*=======================================================*\n");
+   psi::outfile->Printf("\t*=======================================================*\n");
 
    if(!converged)
        throw PSIEXCEPTION("The SCF iterations did not converge.");
