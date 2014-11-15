@@ -78,3 +78,28 @@ cfour_cc_program vcc
 energy('c4-ccsd')
 
 
+print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_ABCDTYPE=AOBASIS
+cfour_BASIS=qz2p
+reference rohf
+d_convergence 12
+cfour_OCCUPATION= [[3,1,1,0],[3,0,1,0]]
+cfour_PRINT=2
+cfour_cc_program vcc
+}
+
+energy('c4-ccsd')
+
+
