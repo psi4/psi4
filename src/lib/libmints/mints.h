@@ -30,6 +30,7 @@
 #include <libmints/twobody.h>
 #include <libmints/sointegral_onebody.h>
 #include <libmints/potential.h>
+#include <libmints/rel_potential.h>
 #include <libmints/pseudospectral.h>
 #include <libmints/dipole.h>
 #include <libmints/electricfield.h>

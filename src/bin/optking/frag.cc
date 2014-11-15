@@ -201,7 +201,6 @@ int FRAG::add_hbonds(void) {
                       double cov_Y = cov_radii[ (int) Z[y] ]/_bohr2angstroms;
                       if (dist > cov_scale * (cov_H + cov_Y)) {
                         coords.simples[index]->set_hbond(true);
-oprintf_out("Recognized frag stretch %d as a H bond.\n", index+1);
                       }
                       delete one_stre;
                     }

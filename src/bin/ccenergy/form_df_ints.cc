@@ -47,9 +47,10 @@ void form_df_ints(Options &options, int **cachelist, int *cachefiles, dpd_file4_
      */
     boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    boost::shared_ptr<BasisSet> aoBasis = BasisSet::construct(parser, molecule, "BASIS");
-    boost::shared_ptr<BasisSet> dfBasis = BasisSet::construct(parser, molecule, "DF_BASIS_CC");
+    boost::shared_ptr<BasisSet> aoBasis = BasisSet::pyconstruct_orbital(molecule,
+        "BASIS", options.get_str("BASIS"));
+    boost::shared_ptr<BasisSet> dfBasis = BasisSet::pyconstruct_auxiliary(molecule,
+        "DF_BASIS_CC", options.get_str("DF_BASIS_CC"), "RIFIT", options.get_str("BASIS"));
     int nmo = wfn->nmo();
     int nocc = wfn->doccpi().sum();
     int nvir = nmo - nocc;

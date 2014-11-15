@@ -90,9 +90,9 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
 
     // print the basis set
     if ( options.get_bool("PRINT_BASIS") ) {
-       boost::shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
-       boost::shared_ptr<BasisSet> basisset = boost::shared_ptr<BasisSet>(BasisSet::construct(parser, Process::environment.molecule(), "BASIS"));
-       basisset->print_detail();
+        boost::shared_ptr<BasisSet> basisset = BasisSet::pyconstruct_orbital(Process::environment.molecule(),
+            "BASIS", options.get_str("BASIS"));
+        basisset->print_detail();
     }
 
     // Set this early because the callback mechanism uses it.

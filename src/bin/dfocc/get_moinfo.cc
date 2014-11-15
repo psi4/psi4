@@ -80,6 +80,8 @@ if (reference_ == "RESTRICTED") {
         ntri = 0.5*nmo_*(nmo_+1);
 	dimtei = 0.5*ntri*(ntri+1);
         nso2_ = nso_ * nso_;
+        ntri_ijAA = 0.5*naoccA*(naoccA+1);
+        ntri_abAA = 0.5*navirA*(navirA+1);
     
 /********************************************************************************************/
 /************************** Read orbital coefficients ***************************************/
