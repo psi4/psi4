@@ -69,56 +69,6 @@ void DFOCC::ccsd_t2_amps()
     Tnew->axpy(X, 2.0);
     X.reset();
 
-    // t_ij^ab <= \sum_{ef} Tau_ij^ef <ab|ef>
-    Tau = SharedTensor2d(new Tensor2d("Tau (IA|JB)", naoccA, navirA, naoccA, navirA));
-    Tau->read_symm(psio_, PSIF_DFOCC_AMPS);
-    U = SharedTensor2d(new Tensor2d("Tau <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    U->sort(1324, Tau, 1.0, 0.0);
-    Tau.reset();
-    // Read B(Q, a>=b)
-    int ntri_vv = 0.5 * navirA * (navirA + 1);
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, ntri_vv));
-    K->read(psio_, PSIF_DFOCC_INTS);
-    I = SharedTensor2d(new Tensor2d("I[AB] <E|F>", navirA, navirA));
-    T = SharedTensor2d(new Tensor2d("T[AB] <I|J>", naoccA, naoccA));
-
-    // Main loop
-    for(int a = 0 ; a < navirA; ++a){
-        for(int b = 0 ; b < navirA; ++b){
-            int ab = ab_idxAA->get(a,b);
-            // Form I[ab]
-            #pragma omp parallel for
-            for(int e = 0 ; e < navirA; ++e){
-                int ae = index2(a,e); 
-                for(int f = 0 ; f < navirA; ++f){
-                    int bf = index2(b,f); 
-                    double value = 0.0;
-                    for(int Q = 0 ; Q < nQ; ++Q){
-                        value += K->get(Q,ae) * K->get(Q,bf);
-                    }
-                    I->set(e,f,value);
-                }
-            }
-            // Form T[ab]
-            T->gemv(false, U, I, 1.0, 0.0);
-
-            // Form T(ij,ab)
-            //Tnew->add2col(T,ab);
-            #pragma omp parallel for
-            for(int i = 0 ; i < naoccA; ++i){
-                int ia = ia_idxAA->get(i,a);
-                for(int j = 0 ; j < naoccA; ++j){
-                    int jb = ia_idxAA->get(j,b);
-                    Tnew->add(ia, jb, T->get(i,j));
-                }
-            }
-        }
-    }
-    K.reset();
-    U.reset();
-    I.reset();
-    T.reset();
-
     // Write and close
     Tnew->write_symm(psio_, PSIF_DFOCC_AMPS);
     Tnew.reset();
@@ -134,6 +84,9 @@ void DFOCC::ccsd_t2_amps()
 
     // WijamT2
     ccsd_WijamT2();
+
+    // WabefT2
+    ccsd_WabefT2();
 
     // Denom
     Tnew = SharedTensor2d(new Tensor2d("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
