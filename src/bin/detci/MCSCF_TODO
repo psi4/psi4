@@ -72,7 +72,7 @@ DETCI_calcinfo additions:
   int *rstr_uocc;        /* MCSCF restricted virtual orbs per irrep */
   
 
-Identical calcinfo values:
+Identical (?) calcinfo values:
   int nmo;              /* number of molecular orbitals */
   int npop;              /* number of populated orbitals, nbfso - nfzv */
   int max_orbs_per_irrep;/* max orbitals per irrep fzv not included */
@@ -95,12 +95,21 @@ Identical calcinfo values:
   int *lstact;           /* last  active orb per irrep (in Pitzer order) */
   int *active;           /* num active orbs per irrep                    */
   double enuc;           /* nuclear repulsion energy */
+  double efzc;           /* frozen-core energy */
 
 Unclear and unchanged calcinfo values:
-  double efzc;           /* frozen-core energy */
   double ***mo_coeffs;   /* matrix of molecular orbitals in Pitzer order */
   double *onel_ints;     /* one-electron integrals */
   double *onel_ints_bare;/* one-electron integrals, bare h only */
   double *twoel_ints;    /* two-electron integrals */
   double **opdm;         /* one-particle density matrix */
   double *tpdm;          /* two-particle density matrix */
+
+
+
+
+DGAS TODO list
+Remove read_lag
+Use psi diis
+First crack at CI wfn
+
