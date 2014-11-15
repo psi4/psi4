@@ -21,7 +21,6 @@
 #
 
 import math
-import collections
 
 from exceptions import *
 import qcformat
@@ -46,7 +45,7 @@ class Infile(qcformat.InputFormat2):
     def muster_basis_options(self):
         text = ''
         lowername = self.method.lower()
-        options = collections.defaultdict(lambda: collections.defaultdict(dict))
+        options = defaultdict(lambda: defaultdict(dict))
     
         options['BASIS']['ORBITAL']['value'] = self.basis
     
@@ -142,7 +141,7 @@ class Infile(qcformat.InputFormat2):
 def muster_cdsgroup_options(name):
     text = ''
     lowername = name.lower()
-    options = collections.defaultdict(lambda: collections.defaultdict(dict))
+    options = defaultdict(lambda: defaultdict(dict))
 
     options['GTHRESH']['ZERO']['value'] = 1.0e-14
     options['GTHRESH']['ONEINT']['value'] = 1.0e-14
@@ -207,7 +206,7 @@ def muster_modelchem(name, dertype, mol):
     """
     text = ''
     lowername = name.lower()
-    options = collections.defaultdict(lambda: collections.defaultdict(dict))
+    options = defaultdict(lambda: defaultdict(dict))
     proc = []
 
     if dertype == 0:

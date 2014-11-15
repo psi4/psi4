@@ -1,5 +1,4 @@
 import itertools
-from collections import OrderedDict
 from qcdb.modelchems import Method, BasisSet, Error, methods, bases, errors
 
 mc_archive = {'mtd': methods, 'bas': bases, 'err': errors}
