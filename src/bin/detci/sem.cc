@@ -93,6 +93,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    double cknorm, tvalmatt=0.0, tmp; /* Add by CDS for debugging purposes */
    int errcod;
    std::string str;
+   bool dvec_read_fail = false;
 
    CIvect Cvec;
    CIvect Cvec2;
@@ -242,11 +243,12 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
    if (Parameters.lse) lse_tolerance = Parameters.lse_tolerance;
 
-   if (Parameters.nodfile == FALSE) {
-     if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE &&
-         (i = Dvec.read_num_vecs()) != nroots) {
-       outfile->Printf( "D file contains %d not %d vectors.  Attempting ",
-               i, nroots);
+   if (Parameters.nodfile == FALSE && 
+     Parameters.guess_vector == PARM_GUESS_VEC_DFILE) {
+     if ((i = Dvec.read_num_vecs()) != nroots) {
+       outfile->Printf( "D file contains %d not %d vectors.  Trying another guess.", i, nroots);
+       dvec_read_fail = true;
+       /*
        if (Parameters.h0blocksize == 0) {
          Parameters.guess_vector = PARM_GUESS_VEC_UNIT;
          outfile->Printf( "unit vector guess.\n");
@@ -255,6 +257,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          Parameters.guess_vector = PARM_GUESS_VEC_H0_BLOCK;
          outfile->Printf( "H0block guess.\n");
        }
+       */
      }
    }
 
@@ -391,9 +394,10 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       }
 
    /* previous-run d vector */
-   else if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE) {
+   else if (Parameters.guess_vector==PARM_GUESS_VEC_DFILE && !dvec_read_fail) {
      outfile->Printf( "Attempting to use %d previous converged vectors\n",
         nroots);
+
      if (Parameters.nodfile) {
        i = Cvec.read_new_first_buf();
        Cvec.set_new_first_buf(i);
@@ -430,7 +434,8 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    }
 
    /* unit vector */
-   else if (Parameters.guess_vector == PARM_GUESS_VEC_UNIT) {
+   else if (Parameters.guess_vector == PARM_GUESS_VEC_UNIT ||
+            (dvec_read_fail && Parameters.h0blocksize==0)) {
      tval = 1.0;
      Cvec.buf_lock(buffer1);
      Cvec.init_vals(0, 1, &(CalcInfo.ref_alp_list), &(CalcInfo.ref_alp_rel),
