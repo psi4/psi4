@@ -21,7 +21,6 @@
 #
 
 import re
-import collections
 import struct
 from decimal import Decimal
 from pdict import PreservingDict
@@ -685,7 +684,7 @@ def muster_memory(mem):
     text = ''
 
     # prepare memory keywords to be set as c-side keywords
-    options = collections.defaultdict(lambda: collections.defaultdict(dict))
+    options = defaultdict(lambda: defaultdict(dict))
     options['CFOUR']['CFOUR_MEMORY_SIZE']['value'] = int(mem)
     options['CFOUR']['CFOUR_MEM_UNIT']['value'] = 'MB'
 
@@ -720,7 +719,7 @@ def muster_psi4options(opt):
 
     """
     text = ''
-    options = collections.defaultdict(lambda: collections.defaultdict(dict))
+    options = defaultdict(lambda: defaultdict(dict))
 
     if 'GLOBALS' in opt:
         if 'PUREAM' in opt['GLOBALS']:
@@ -785,7 +784,7 @@ def muster_modelchem(name, dertype):
     """
     text = ''
     lowername = name.lower()
-    options = collections.defaultdict(lambda: collections.defaultdict(dict))
+    options = defaultdict(lambda: defaultdict(dict))
 
     if dertype == 0:
         if lowername == 'cfour':

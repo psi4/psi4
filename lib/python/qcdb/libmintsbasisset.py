@@ -3,7 +3,6 @@ import re
 import string
 import hashlib
 import itertools
-import collections
 from exceptions import *
 from psiutil import search_file
 from molecule import Molecule
@@ -100,7 +99,7 @@ class BasisSet(object):
         elif len(args) == 3 and \
             isinstance(args[0], basestring) and \
             isinstance(args[1], Molecule) and \
-            isinstance(args[2], collections.OrderedDict):
+            isinstance(args[2], OrderedDict):
             self.constructor_role_mol_shellmap(*args)
         else:
             raise ValidationError('BasisSet::constructor: Inappropriate configuration of constructor arguments')
@@ -487,7 +486,7 @@ class BasisSet(object):
         #   - error checking not needed since C-side already checked for NULL ptr
         mol.clear_basis_all_atoms()
         # TODO now need to clear shells, too
-        basstrings = collections.defaultdict(dict)
+        basstrings = defaultdict(dict)
         if orb is None or orb == '':
             raise ValidationError("""Orbital basis argument must not be empty.""")
         elif callable(orb):
@@ -560,7 +559,7 @@ class BasisSet(object):
                 raise ValidationError("""BasisSet::construct: deffit argument invalid: %s""" % (deffit))
 
         # Map of GaussianShells
-        basis_atom_shell = collections.OrderedDict()
+        basis_atom_shell = OrderedDict()
         names = {}
         summary = []
 
@@ -634,7 +633,7 @@ class BasisSet(object):
 
                     # Found!
                     if bas not in basis_atom_shell:
-                        basis_atom_shell[bas] = collections.OrderedDict()
+                        basis_atom_shell[bas] = OrderedDict()
                     basis_atom_shell[bas][label] = shells
                     mol.set_basis_by_number(at, bas, role=role)
                     summary.append("""entry %-10s %s %s""" % (entry, msg, index))
@@ -668,10 +667,10 @@ class BasisSet(object):
         basisset.name = ' + '.join(names)
 
         # Summary printing
-        tmp = collections.defaultdict(list)
+        tmp = defaultdict(list)
         for at, v in enumerate(summary):
             tmp[v].append(at + 1)
-        tmp2 = collections.OrderedDict()
+        tmp2 = OrderedDict()
         maxsats = 0
         for item in sorted(tmp.values()):
             for msg, ats in tmp.items():

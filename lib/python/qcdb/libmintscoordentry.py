@@ -28,7 +28,6 @@ psi4 developers.
 """
 import math
 import copy
-import collections
 from vecutil import *
 from exceptions import *
 
@@ -183,9 +182,9 @@ class CoordEntry(object):
         # Is this a ghost atom?
         self.ghosted = False
         # Different types of basis sets that can be assigned to this atom.
-        self.PYbasissets = basis if basis is not None else collections.OrderedDict()
+        self.PYbasissets = basis if basis is not None else OrderedDict()
         # Hash of one-atom BasisSet attached to this atom
-        self.PYshells = shells if shells is not None else collections.OrderedDict()
+        self.PYshells = shells if shells is not None else OrderedDict()
 
     @staticmethod
     def r(a1, a2):

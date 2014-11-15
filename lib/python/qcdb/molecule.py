@@ -33,7 +33,6 @@ import subprocess
 import socket
 import shutil
 import random
-import collections
 from libmintsmolecule import *
 
 
@@ -320,7 +319,7 @@ class Molecule(LibmintsMolecule):
         text += '\n'
 
         # prepare molecule keywords to be set as c-side keywords
-        options = collections.defaultdict(lambda: collections.defaultdict(dict))
+        options = defaultdict(lambda: defaultdict(dict))
         options['CFOUR']['CFOUR_CHARGE']['value'] = self.molecular_charge()
         options['CFOUR']['CFOUR_MULTIPLICITY']['value'] = self.multiplicity()
         options['CFOUR']['CFOUR_UNITS']['value'] = 'ANGSTROM'
@@ -355,7 +354,7 @@ class Molecule(LibmintsMolecule):
                     cr += 1
         text += '\n'
 
-        options = collections.defaultdict(lambda: collections.defaultdict(dict))
+        options = defaultdict(lambda: defaultdict(dict))
         options['CFOUR']['CFOUR_BASIS']['value'] = 'SPECIAL'
         options['CFOUR']['CFOUR_SPHERICAL']['value'] = puream
 
@@ -423,7 +422,7 @@ class Molecule(LibmintsMolecule):
             text += "\n"
 
         # prepare molecule keywords to be set as c-side keywords
-        options = collections.defaultdict(lambda: collections.defaultdict(dict))
+        options = defaultdict(lambda: defaultdict(dict))
         options['CFOUR']['CFOUR_CHARGE']['value'] = self.molecular_charge()
         options['CFOUR']['CFOUR_MULTIPLICITY']['value'] = self.multiplicity()
         options['CFOUR']['CFOUR_UNITS']['value'] = self.units()

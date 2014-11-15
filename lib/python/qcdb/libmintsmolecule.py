@@ -24,7 +24,6 @@ import os
 import re
 import copy
 import math
-import collections
 from periodictable import *
 from physconst import *
 from vecutil import *
@@ -1712,7 +1711,7 @@ class LibmintsMolecule(object):
     def clear_basis_all_atoms(self):
         """Remove all basis information from atoms."""
         for atom in self.full_atoms:
-            atom.PYbasissets = collections.OrderedDict()
+            atom.PYbasissets = OrderedDict()
 
     def set_basis_by_number(self, number, name, role="BASIS"):
         """Assigns basis *name* to atom number *number* (0-indexed, excludes dummies)."""
