@@ -57,7 +57,6 @@
 #include "structs.h"
 #define EXTERN
 #include "globals.h"
-#include "MCSCF_setup_io.h"
 #include "MCSCF_indpairs.h"
 
 namespace psi { namespace detci {

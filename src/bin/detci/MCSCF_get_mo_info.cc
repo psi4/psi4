@@ -47,7 +47,6 @@ void pitzer_arrays(int nirreps, int *frdocc, int *fruocc, int *orbspi,
 double *** construct_evects(int nirreps, int *active, int *orbspi,
                             int *first, int *last, int *fstact, int *lstact,
                             int printflag);
-extern void check(int a, const char *errmsg);
 
 /*
 ** GET_MO_INFO
@@ -162,8 +161,11 @@ void mcscf_get_mo_info(Options &options)
 
 
   MCSCF_CalcInfo.nmotri = (MCSCF_CalcInfo.nmo * (MCSCF_CalcInfo.nmo + 1)) / 2 ;
-  check((MCSCF_CalcInfo.nmotri <= IOFF_MAX), 
-        "(get_mo_info): IOFF_MAX may not large enough!");
+
+  if (MCSCF_CalcInfo.nmotri <= IOFF_MAX){
+    throw PsiException("(get_mo_info): IOFF_MAX may not large enough!",
+                              __FILE__, __LINE__);
+  }
 
   /* transform orbsym vector to new MO order */
   MCSCF_CalcInfo.orbsym = init_int_array(MCSCF_CalcInfo.nmo);
