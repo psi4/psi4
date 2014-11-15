@@ -155,7 +155,7 @@ else if (reference_ == "UNRESTRICTED") {
 //======================================================================             
 void DFOCC::ccsd_mp2()
 {
-    SharedTensor2d K, L, M, T, U;
+    SharedTensor2d K, L, M, T, U, Tau;
     timer_on("MP2");
 if (reference_ == "RESTRICTED") {
     // Build amplitudes in Mulliken order 
@@ -172,6 +172,12 @@ if (reference_ == "RESTRICTED") {
     U->write(psio_, PSIF_DFOCC_AMPS);
     U.reset();
     */
+
+    // Form T'(ib,ja) = T(ia,jb)
+    U = SharedTensor2d(new Tensor2d("T2p (IA|JB)", naoccA, navirA, naoccA, navirA));
+    U->sort(1432, T, 1.0, 0.0);
+    U->write_symm(psio_, PSIF_DFOCC_AMPS);
+    U.reset();
 
     // Form Tau(ia,jb) = T(ia,jb) + t(ia) * t(jb)
     U = SharedTensor2d(new Tensor2d("Tau (IA|JB)", naoccA, navirA, naoccA, navirA));
@@ -192,7 +198,6 @@ if (reference_ == "RESTRICTED") {
     K.reset();
     Emp2 = Eref + Ecorr;
     Eccsd = Emp2;
-
 
 }// end if (reference_ == "RESTRICTED")
 

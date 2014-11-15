@@ -49,7 +49,7 @@ set(FNOCCLong fnocc1 fnocc3)
 
 set(MCSCFShort mcscf1)
 set(MCSCFLong mcscf2 mcscf3)
-set(MintsShort mints1 mints2)
+set(MintsShort mints1 mints2 mints9)
 set(MintsLong mints3 mints4 mints5 mints6 mints8)
 set(MP2Short mp2_5-grad1 mpn-bh)
 set(MP2Long mp2-1 mp2_5-grad2 mp2-grad1 mp2-grad2 mp3-grad1 mp3-grad2)

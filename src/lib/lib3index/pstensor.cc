@@ -204,9 +204,10 @@ void PSTensorII::buildDealiasSet()
         if (print_)
             outfile->Printf("  Dealias Basis Read from %s.\n\n", options_.get_str("DEALIAS_BASIS_CC").c_str());
 
-        boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+        // basis access translated but code defunct
         molecule_->set_basis_all_atoms(options_.get_str("DEALIAS_BASIS_CC"),"DEALIAS_BASIS");
-        dealias_ = BasisSet::construct(parser,molecule_,"DEALIAS_BASIS");
+        dealias_ = BasisSet::pyconstruct_auxiliary(molecule_,
+            "DEALIAS_BASIS", options_.get_str("DEALIAS_BASIS_CC"), "JKFIT", options_.get_str("BASIS"));
     }
 
     if (print_) {
@@ -928,7 +929,6 @@ void PSTensor::print_header()
 }
 void PSTensor::buildDealiasSet()
 {
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
 
     if (print_) {
         outfile->Printf(" => Primary Basis Set <= \n\n");
@@ -947,8 +947,10 @@ void PSTensor::buildDealiasSet()
 
         } else {
             outfile->Printf("  Dealias Basis Read from %s", options_.get_str("DEALIAS_BASIS_CC").c_str());
+            // basis access translated but code defunct
             molecule_->set_basis_all_atoms(options_.get_str("DEALIAS_BASIS_CC"),"DEALIAS_BASIS");
-            dealias_ = BasisSet::construct(parser,molecule_,"DEALIAS_BASIS");
+            dealias_ = BasisSet::pyconstruct_auxiliary(molecule_,
+                "DEALIAS_BASIS", options_.get_str("DEALIAS_BASIS_CC"), "JKFIT", options_.get_str("BASIS"));
         }
         dealias_->print_by_level("outfile",print_);
     }

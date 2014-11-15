@@ -312,21 +312,21 @@ void DFOCC::b_ov_cd()
 //=======================================================          
 void DFOCC::b_ab_cd()
 {
-    bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA * navirA));
+    bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
     bQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mA)", nQ, nso_ * navirA));
     bQnvA->read(psio_, PSIF_DFOCC_INTS);
     bQabA->contract233(true, false, navirA, navirA, CavirA, bQnvA, 1.0, 0.0);
     bQnvA.reset();
-    bQabA->write(psio_, PSIF_DFOCC_INTS);
+    bQabA->write(psio_, PSIF_DFOCC_INTS, true, true);
     bQabA.reset();
 
  if (reference_ == "UNRESTRICTED") {
-    bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB * navirB));
+    bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB, navirB));
     bQnvB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ma)", nQ, nso_ * navirB));
     bQnvB->read(psio_, PSIF_DFOCC_INTS);
     bQabB->contract233(true, false, navirB, navirB, CavirB, bQnvB, 1.0, 0.0);
     bQnvB.reset();
-    bQabB->write(psio_, PSIF_DFOCC_INTS);
+    bQabB->write(psio_, PSIF_DFOCC_INTS, true, true);
     bQabB.reset();
  }
 

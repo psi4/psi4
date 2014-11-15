@@ -149,10 +149,8 @@ void forPermutation(int depth, vector<int>& array,
 void RHF::form_G()
 {
     if(!JKFactory){
-       boost::shared_ptr<BasisSetParser>parser
-       (new Gaussian94BasisSetParser());
        boost::shared_ptr<BasisSet> primary =
-        BasisSet::construct(parser,Process::environment.molecule(),"BASIS");
+        BasisSet::pyconstruct_orbital(Process::environment.molecule(), "BASIS", options_.get_str("BASIS"));
        JKFactory=boost::shared_ptr<Psi4JK>(new Psi4JK(primary));
     }
     //SharedMatrix corrJ_(new Matrix(*J_));

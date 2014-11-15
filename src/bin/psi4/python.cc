@@ -688,22 +688,6 @@ bool specifies_convergence(std::string const & key){
     return ((key.find("CONV") != key.npos) || (key.find("TOL") != key.npos));
 }
 
-bool check_for_basis(std::string const & name, std::string const & type)
-{
-    if (type.find("BASIS") != type.npos) {
-        // check the exceptions
-        if (type == "BASIS_PATH" ||
-            type == "AO_BASIS" ||
-            type == "DUAL_BASIS")
-            return false;
-
-        // else set the basis for all atoms.
-        Process::environment.molecule()->set_basis_all_atoms(name, type);
-        return true;
-    }
-    return false;
-}
-
 bool py_psi_set_local_option_string(std::string const & module, std::string const & key, std::string const & value)
 {
     string nonconst_key = boost::to_upper_copy(key);
@@ -711,7 +695,6 @@ bool py_psi_set_local_option_string(std::string const & module, std::string cons
 
     if (data.type() == "string") {
         Process::environment.options.set_str(module, nonconst_key, value);
-        check_for_basis(value, nonconst_key);
     } else if (data.type() == "boolean") {
         if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
           boost::to_upper_copy(value) == "ON")
@@ -771,7 +754,6 @@ bool py_psi_set_global_option_string(std::string const & key, std::string const 
 
     if (data.type() == "string") {
         Process::environment.options.set_global_str(nonconst_key, value);
-        check_for_basis(value, nonconst_key);
     } else if (data.type() == "boolean") {
         if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
           boost::to_upper_copy(value) == "ON")
@@ -790,7 +772,7 @@ bool py_psi_set_global_option_int(std::string const & key, int value)
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options[nonconst_key];
 
-    if( data.type() == "double" && specifies_convergence(nonconst_key)){
+    if(data.type() == "double" && specifies_convergence(nonconst_key)){
         double val = pow(10.0, -value);
         Process::environment.options.set_global_double(nonconst_key, val);
     }else if (data.type() == "boolean") {

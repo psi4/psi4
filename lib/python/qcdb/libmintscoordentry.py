@@ -156,17 +156,19 @@ class VariableValue(CoordValue):
 
 
 class CoordEntry(object):
-    """Class to
+    """Class to store all the attributes associated with an atom, not the
+    larger Molecule. Specialized into CartesianEntry and ZMatrixEntry.
 
     """
-    def __init__(self, entry_number, Z, charge, mass, symbol, label=""):
+
+    def __init__(self, entry_number, Z, charge, mass, symbol, label="", basis=None, shells=None):
+        """Constructor"""
         # Order in full atomic list
         self.PYentry_number = entry_number
         # Whether the coordinates have been computed
         self.computed = False
         # Actual cartesian coordinates of the atom
         self.coordinates = [None, None, None]
-
         # Atomic number of the atom
         self.PYZ = Z
         # Charge of the atom (SAD-related)
@@ -179,6 +181,10 @@ class CoordEntry(object):
         self.PYlabel = label
         # Is this a ghost atom?
         self.ghosted = False
+        # Different types of basis sets that can be assigned to this atom.
+        self.PYbasissets = basis if basis is not None else OrderedDict()
+        # Hash of one-atom BasisSet attached to this atom
+        self.PYshells = shells if shells is not None else OrderedDict()
 
     @staticmethod
     def r(a1, a2):
@@ -223,7 +229,8 @@ class CoordEntry(object):
 
     def is_equivalent_to(self, other):
         """Whether this atom has the same mass and ghost status as atom *other*.
-        Unlike the libmints version, this does not compare basisset assignment.
+        Also compares basis set assignment down to nbf(), has_puream() level
+        with code borrowed from Robert M. Parrish's SAD guess in Psi4.
 
         """
         if other.PYZ != self.PYZ:
@@ -232,6 +239,25 @@ class CoordEntry(object):
             return False
         if other.ghosted != self.ghosted:
             return False
+        if other.PYshells is not None and self.PYshells is not None:
+            for bas in self.PYshells:  # do we instead care only about orbital basis?
+                if bas in other.PYshells:
+                    if other.PYshells[bas] != self.PYshells[bas]:
+                        return False
+                    #if other.PYshells[bas].nbf() != self.PYshells[bas].nbf():
+                    #    return False
+                    #if other.PYshells[bas].nshell() != self.PYshells[bas].nshell():
+                    #    return False
+                    #if other.PYshells[bas].nprimitive() != self.PYshells[bas].nprimitive():
+                    #    return False
+                    #if other.PYshells[bas].max_am() != self.PYshells[bas].max_am():
+                    #    return False
+                    #if other.PYshells[bas].max_nprimitive() != self.PYshells[bas].max_nprimitive():
+                    #    return False
+                    #if other.PYshells[bas].has_puream() != self.PYshells[bas].has_puream():
+                    #    return False
+                else:
+                    raise ValidationError("""Basis set %s set for one and not other. This shouldn't happen. Investigate.""" % (bas))
         return True
 
     def is_ghosted(self):
@@ -269,9 +295,59 @@ class CoordEntry(object):
         """The order in which this appears in the full atom list."""
         return self.PYentry_number
 
+    def set_basisset(self, name, role='BASIS'):
+        """Set the basis for this atom
+        * @param type Keyword from input file, basis, ri_basis, etc.
+        * @param name Value from input file
+
+        """
+        self.PYbasissets[role] = name
+
+    def basisset(self, role='BASIS'):
+        """Returns the basis name for the provided type.
+        * @param type Keyword from input file.
+        * @returns the value from input.
+
+        """
+        try:
+            return self.PYbasissets[role]
+        except ValueError:
+            raise ValidationError('CoordEntry::basisset: Basisset not set for %s and type of %s' % \
+                (self.PYlabel, role))
+
+    def basissets(self):
+        """Returns basisset to atom map"""
+        return self.PYbasissets
+
+    def set_shell(self, bshash, key='BASIS'):
+        """Set the hash for this atom
+        * @param key Keyword from input file, basis, ri_basis, etc.
+        * @param bshash hash string of one-atom BasisSet
+
+        """
+        self.PYshells[key] = bshash
+
+    def shell(self, key='BASIS'):
+        """Returns the hash for the provided type.
+        * @param type Keyword from input file.
+        * @returns the hash string for basis.
+
+        """
+        try:
+            return self.PYshells[key]
+        except (ValueError, KeyError):
+            raise ValidationError('CoordEntry::shells: Shells not set for %s and type of %s' % \
+                (self.PYlabel, key))
+
+    def shells(self):
+        """Returns shells sets to atom map"""
+        return self.PYshells
+
     def everything(self):
-        print '\nCoordEntry\n  Entry Number = %d\n  Computed = %s\n  Z = %d\n  Charge = %f\n  Mass = %f\n  Symbol = %s\n  Label = %s\n  Ghosted = %s\n  Coordinates = %s\n\n' % \
-            (self.entry_number(), self.is_computed(), self.Z(), self.charge(), self.mass(), self.symbol(), self.label(), self.is_ghosted(), self.coordinates)
+        print '\nCoordEntry\n  Entry Number = %d\n  Computed = %s\n  Z = %d\n  Charge = %f\n  Mass = %f\n  Symbol = %s\n  Label = %s\n  Ghosted = %s\n  Coordinates = %s\n  Basissets = %s\n\n  Shells = %s\n\n' % \
+            (self.entry_number(), self.is_computed(), self.Z(), self.charge(),
+            self.mass(), self.symbol(), self.label(), self.is_ghosted(),
+            self.coordinates, self.PYbasissets, self.PYshells)
 
 
 class CartesianEntry(CoordEntry):
@@ -279,8 +355,9 @@ class CartesianEntry(CoordEntry):
     coordinate specification as three Cartesians.
 
     """
-    def __init__(self, entry_number, Z, charge, mass, symbol, label, x, y, z):
-        CoordEntry.__init__(self, entry_number, Z, charge, mass, symbol, label)
+
+    def __init__(self, entry_number, Z, charge, mass, symbol, label, x, y, z, basis=None, shells=None):
+        CoordEntry.__init__(self, entry_number, Z, charge, mass, symbol, label, basis, shells)
         self.x = x
         self.y = y
         self.z = z
@@ -357,9 +434,11 @@ class ZMatrixEntry(CoordEntry):
     coordinate specification as any position of ZMatrix.
 
     """
+
     def __init__(self, entry_number, Z, charge, mass, symbol, label, \
-        rto=None, rval=0, ato=None, aval=0, dto=None, dval=0):
-        CoordEntry.__init__(self, entry_number, Z, charge, mass, symbol, label)
+        rto=None, rval=0, ato=None, aval=0, dto=None, dval=0, basis=None, shells=None):
+        """Constructor"""  # note that pos'n of basis arg changed from libmints
+        CoordEntry.__init__(self, entry_number, Z, charge, mass, symbol, label, basis, shells)
         self.rto = rto
         self.rval = rval
         self.ato = ato

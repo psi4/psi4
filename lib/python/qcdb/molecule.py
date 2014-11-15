@@ -33,7 +33,6 @@ import subprocess
 import socket
 import shutil
 import random
-import collections
 from libmintsmolecule import *
 
 
@@ -53,7 +52,7 @@ class Molecule(LibmintsMolecule):
     def __str__(self):
         text = """  ==> qcdb Molecule %s <==\n\n""" % (self.name())
         text += """   => %s <=\n\n""" % (self.tagline)
-        text += self.save_string_for_psi4()
+        text += self.create_psi4_string_from_molecule()
         return text
 
 #    def __getstate__(self):
@@ -61,7 +60,7 @@ class Molecule(LibmintsMolecule):
 #        return self.__dict__
 
 #    def __setstate__(self, d):
-#        #print 'im being unpickled with these values', d
+#        print 'im being unpickled with these values', d
 #        self.__dict__ = d
 
     @classmethod
@@ -251,12 +250,14 @@ class Molecule(LibmintsMolecule):
         factor = 1.0 if self.PYunits == 'Angstrom' else psi_bohr2angstroms
 
         text = ""
+        text += '$molecule\n'
         text += '%d %d %s\n' % (self.molecular_charge(), self.multiplicity(), self.tagline)
 
         for i in range(self.natom()):
             [x, y, z] = self.atoms[i].compute()
             text += '%2s %17.12f %17.12f %17.12f\n' % ((self.symbol(i) if self.Z(i) else "Gh"), \
                 x * factor, y * factor, z * factor)
+        text += '$end\n'
         return text
         pass
 
@@ -318,7 +319,7 @@ class Molecule(LibmintsMolecule):
         text += '\n'
 
         # prepare molecule keywords to be set as c-side keywords
-        options = collections.defaultdict(lambda: collections.defaultdict(dict))
+        options = defaultdict(lambda: defaultdict(dict))
         options['CFOUR']['CFOUR_CHARGE']['value'] = self.molecular_charge()
         options['CFOUR']['CFOUR_MULTIPLICITY']['value'] = self.multiplicity()
         options['CFOUR']['CFOUR_UNITS']['value'] = 'ANGSTROM'
@@ -353,7 +354,7 @@ class Molecule(LibmintsMolecule):
                     cr += 1
         text += '\n'
 
-        options = collections.defaultdict(lambda: collections.defaultdict(dict))
+        options = defaultdict(lambda: defaultdict(dict))
         options['CFOUR']['CFOUR_BASIS']['value'] = 'SPECIAL'
         options['CFOUR']['CFOUR_SPHERICAL']['value'] = puream
 
@@ -421,7 +422,7 @@ class Molecule(LibmintsMolecule):
             text += "\n"
 
         # prepare molecule keywords to be set as c-side keywords
-        options = collections.defaultdict(lambda: collections.defaultdict(dict))
+        options = defaultdict(lambda: defaultdict(dict))
         options['CFOUR']['CFOUR_CHARGE']['value'] = self.molecular_charge()
         options['CFOUR']['CFOUR_MULTIPLICITY']['value'] = self.multiplicity()
         options['CFOUR']['CFOUR_UNITS']['value'] = self.units()
@@ -519,25 +520,25 @@ class Molecule(LibmintsMolecule):
             #'CL': 1.639 / 1.5,  # JMol
             'AR': 1.595 / 1.5,  # JMol
 
-            'H':   1.06 / 1.5,  # Bondi JPC 68 441 (1964)
-            'B':   1.65 / 1.5,  # Bondi JPC 68 441 (1964)
-            'C':   1.53 / 1.5,  # Bondi JPC 68 441 (1964)
-            'N':   1.46 / 1.5,  # Bondi JPC 68 441 (1964)
-            'O':   1.42 / 1.5,  # Bondi JPC 68 441 (1964)
-            'F':   1.40 / 1.5,  # Bondi JPC 68 441 (1964)
-            'SI':  1.93 / 1.5,  # Bondi JPC 68 441 (1964)
-            'P':   1.86 / 1.5,  # Bondi JPC 68 441 (1964)
-            'S':   1.80 / 1.5,  # Bondi JPC 68 441 (1964)
-            'CL':  1.75 / 1.5,  # Bondi JPC 68 441 (1964)
-            'GE':  1.98 / 1.5,  # Bondi JPC 68 441 (1964)
-            'AS':  1.94 / 1.5,  # Bondi JPC 68 441 (1964)
-            'SE':  1.90 / 1.5,  # Bondi JPC 68 441 (1964)
-            'BR':  1.87 / 1.5,  # Bondi JPC 68 441 (1964)
-            'SN':  2.16 / 1.5,  # Bondi JPC 68 441 (1964)
-            'SB':  2.12 / 1.5,  # Bondi JPC 68 441 (1964)
-            'TE':  2.08 / 1.5,  # Bondi JPC 68 441 (1964)
-            'I':   2.04 / 1.5,  # Bondi JPC 68 441 (1964)
-            'XE':  2.05 / 1.5}  # Bondi JPC 68 441 (1964)
+            'H': 1.06 / 1.5,  # Bondi JPC 68 441 (1964)
+            'B': 1.65 / 1.5,  # Bondi JPC 68 441 (1964)
+            'C': 1.53 / 1.5,  # Bondi JPC 68 441 (1964)
+            'N': 1.46 / 1.5,  # Bondi JPC 68 441 (1964)
+            'O': 1.42 / 1.5,  # Bondi JPC 68 441 (1964)
+            'F': 1.40 / 1.5,  # Bondi JPC 68 441 (1964)
+            'SI': 1.93 / 1.5,  # Bondi JPC 68 441 (1964)
+            'P': 1.86 / 1.5,  # Bondi JPC 68 441 (1964)
+            'S': 1.80 / 1.5,  # Bondi JPC 68 441 (1964)
+            'CL': 1.75 / 1.5,  # Bondi JPC 68 441 (1964)
+            'GE': 1.98 / 1.5,  # Bondi JPC 68 441 (1964)
+            'AS': 1.94 / 1.5,  # Bondi JPC 68 441 (1964)
+            'SE': 1.90 / 1.5,  # Bondi JPC 68 441 (1964)
+            'BR': 1.87 / 1.5,  # Bondi JPC 68 441 (1964)
+            'SN': 2.16 / 1.5,  # Bondi JPC 68 441 (1964)
+            'SB': 2.12 / 1.5,  # Bondi JPC 68 441 (1964)
+            'TE': 2.08 / 1.5,  # Bondi JPC 68 441 (1964)
+            'I': 2.04 / 1.5,  # Bondi JPC 68 441 (1964)
+            'XE': 2.05 / 1.5}  # Bondi JPC 68 441 (1964)
 
         Queue = []
         White = range(self.natom())  # untouched
@@ -744,246 +745,6 @@ class Molecule(LibmintsMolecule):
 #        text += "\n\n"
 #        return text
 
-    def grimme_dftd3(self, func=None, dashlvl=None, dashparam=None, verbosity=1):
-        """Function to call Grimme's dftd3 program (http://toc.uni-muenster.de/DFTD3/)
-        to compute the -D correction of level *dashlvl* using parameters for
-        the functional *func*. The dictionary *dashparam* can be used to supply
-        a full set of dispersion parameters in the absense of *func* or to supply
-        individual overrides in the presence of *func*. The dftd3 executable must be
-        independently compiled and found in :envvar:PATH.
-
-        """
-        # Parameters from http://toc.uni-muenster.de/DFTD3/ on September 25, 2012
-        #   dict keys translated from Turbomole to Psi4 functional names
-        dashcoeff = {
-            'd2': {
-                'blyp'        : {'s6': 1.2,  'sr6': 1.1,   's8': 0.0,   'alpha6': 20.0},  # in psi4
-                'bp86'        : {'s6': 1.05, 'sr6': 1.1,   's8': 0.0,   'alpha6': 20.0},  # in psi4
-                'b97-d'       : {'s6': 1.25, 'sr6': 1.1,   's8': 0.0,   'alpha6': 20.0},  # in psi4
-                'revpbe'      : {'s6': 1.25, 'sr6': 1.1,   's8': 0.0,   'alpha6': 20.0},
-                'pbe'         : {'s6': 0.75, 'sr6': 1.1,   's8': 0.0,   'alpha6': 20.0},  # in psi4
-                'tpss'        : {'s6': 1.0,  'sr6': 1.1,   's8': 0.0,   'alpha6': 20.0},
-                'b3lyp'       : {'s6': 1.05, 'sr6': 1.1,   's8': 0.0,   'alpha6': 20.0},  # in psi4
-                'pbe0'        : {'s6': 0.6,  'sr6': 1.1,   's8': 0.0,   'alpha6': 20.0},  # in psi4
-                'pw6b95'      : {'s6': 0.5,  'sr6': 1.1,   's8': 0.0,   'alpha6': 20.0},
-                'tpss0'       : {'s6': 0.85, 'sr6': 1.1,   's8': 0.0,   'alpha6': 20.0},
-                'b2plyp'      : {'s6': 0.55, 'sr6': 1.1,   's8': 0.0,   'alpha6': 20.0},  # in psi4
-                'b2gp-plyp'   : {'s6': 0.4,  'sr6': 1.1,   's8': 0.0,   'alpha6': 20.0},
-                'dsd-blyp'    : {'s6': 0.41, 'sr6': 1.1,   's8': 0.0,   'alpha6': 60.0},  # in psi4
-            },
-            'd3zero': {
-                'b1b95'       : {'s6': 1.0,  'sr6': 1.613, 's8': 1.868, 'alpha6': 14.0},
-                'b2gpplyp'    : {'s6': 0.56, 'sr6': 1.586, 's8': 0.760, 'alpha6': 14.0},
-                'b3lyp'       : {'s6': 1.0,  'sr6': 1.261, 's8': 1.703, 'alpha6': 14.0},  # in psi4
-                'b97-d'       : {'s6': 1.0,  'sr6': 0.892, 's8': 0.909, 'alpha6': 14.0},  # in psi4
-                'bhlyp'       : {'s6': 1.0,  'sr6': 1.370, 's8': 1.442, 'alpha6': 14.0},
-                'blyp'        : {'s6': 1.0,  'sr6': 1.094, 's8': 1.682, 'alpha6': 14.0},
-                'bp86'        : {'s6': 1.0,  'sr6': 1.139, 's8': 1.683, 'alpha6': 14.0},  # in psi4
-                'bpbe'        : {'s6': 1.0,  'sr6': 1.087, 's8': 2.033, 'alpha6': 14.0},
-                'mpwlyp'      : {'s6': 1.0,  'sr6': 1.239, 's8': 1.098, 'alpha6': 14.0},
-                'pbe'         : {'s6': 1.0,  'sr6': 1.217, 's8': 0.722, 'alpha6': 14.0},  # in psi4
-                'pbe0'        : {'s6': 1.0,  'sr6': 1.287, 's8': 0.928, 'alpha6': 14.0},  # in psi4
-                'pw6b95'      : {'s6': 1.0,  'sr6': 1.532, 's8': 0.862, 'alpha6': 14.0},
-                'pwb6k'       : {'s6': 1.0,  'sr6': 1.660, 's8': 0.550, 'alpha6': 14.0},
-                'revpbe'      : {'s6': 1.0,  'sr6': 0.923, 's8': 1.010, 'alpha6': 14.0},
-                'tpss'        : {'s6': 1.0,  'sr6': 1.166, 's8': 1.105, 'alpha6': 14.0},
-                'tpss0'       : {'s6': 1.0,  'sr6': 1.252, 's8': 1.242, 'alpha6': 14.0},
-                'tpssh'       : {'s6': 1.0,  'sr6': 1.223, 's8': 1.219, 'alpha6': 14.0},
-                'bop'         : {'s6': 1.0,  'sr6': 0.929, 's8': 1.975, 'alpha6': 14.0},
-                'mpw1b95'     : {'s6': 1.0,  'sr6': 1.605, 's8': 1.118, 'alpha6': 14.0},
-                'mpwb1k'      : {'s6': 1.0,  'sr6': 1.671, 's8': 1.061, 'alpha6': 14.0},
-                'olyp'        : {'s6': 1.0,  'sr6': 0.806, 's8': 1.764, 'alpha6': 14.0},
-                'opbe'        : {'s6': 1.0,  'sr6': 0.837, 's8': 2.055, 'alpha6': 14.0},
-                'otpss'       : {'s6': 1.0,  'sr6': 1.128, 's8': 1.494, 'alpha6': 14.0},
-                'pbe38'       : {'s6': 1.0,  'sr6': 1.333, 's8': 0.998, 'alpha6': 14.0},
-                'pbesol'      : {'s6': 1.0,  'sr6': 1.345, 's8': 0.612, 'alpha6': 14.0},
-                'revssb'      : {'s6': 1.0,  'sr6': 1.221, 's8': 0.560, 'alpha6': 14.0},
-                'ssb'         : {'s6': 1.0,  'sr6': 1.215, 's8': 0.663, 'alpha6': 14.0},
-                'b3pw91'      : {'s6': 1.0,  'sr6': 1.176, 's8': 1.775, 'alpha6': 14.0},
-                'bmk'         : {'s6': 1.0,  'sr6': 1.931, 's8': 2.168, 'alpha6': 14.0},
-                'camb3lyp'    : {'s6': 1.0,  'sr6': 1.378, 's8': 1.217, 'alpha6': 14.0},
-                'lcwpbe'      : {'s6': 1.0,  'sr6': 1.355, 's8': 1.279, 'alpha6': 14.0},
-                'm05-2x'      : {'s6': 1.0,  'sr6': 1.417, 's8': 0.00 , 'alpha6': 14.0},  # in psi4
-                'm05'         : {'s6': 1.0,  'sr6': 1.373, 's8': 0.595, 'alpha6': 14.0},  # in psi4
-                'm062x'       : {'s6': 1.0,  'sr6': 1.619, 's8': 0.00 , 'alpha6': 14.0},
-                'm06hf'       : {'s6': 1.0,  'sr6': 1.446, 's8': 0.00 , 'alpha6': 14.0},
-                'm06l'        : {'s6': 1.0,  'sr6': 1.581, 's8': 0.00 , 'alpha6': 14.0},
-                'm06'         : {'s6': 1.0,  'sr6': 1.325, 's8': 0.00 , 'alpha6': 14.0},
-                'hcth120'     : {'s6': 1.0,  'sr6': 1.221, 's8': 1.206, 'alpha6': 14.0},  # in psi4
-                'b2plyp'      : {'s6': 0.64, 'sr6': 1.427, 's8': 1.022, 'alpha6': 14.0},  # in psi4
-                'dsd-blyp'    : {'s6': 0.50, 'sr6': 1.569, 's8': 0.705, 'alpha6': 14.0},  # in psi4
-                'ptpss'       : {'s6': 0.75, 'sr6': 1.541, 's8': 0.879, 'alpha6': 14.0},
-                'pwpb95'      : {'s6': 0.82, 'sr6': 1.557, 's8': 0.705, 'alpha6': 14.0},
-                'revpbe0'     : {'s6': 1.0,  'sr6': 0.949, 's8': 0.792, 'alpha6': 14.0},
-                'revpbe38'    : {'s6': 1.0,  'sr6': 1.021, 's8': 0.862, 'alpha6': 14.0},
-                'rpw86pbe'    : {'s6': 1.0,  'sr6': 1.224, 's8': 0.901, 'alpha6': 14.0},
-            },
-            'd3bj': {
-                'b1b95'       : {'s6': 1.000, 'a1':  0.2092, 's8':  1.4507, 'a2': 5.5545},
-                'b2gpplyp'    : {'s6': 0.560, 'a1':  0.0000, 's8':  0.2597, 'a2': 6.3332},
-                'b3pw91'      : {'s6': 1.000, 'a1':  0.4312, 's8':  2.8524, 'a2': 4.4693},
-                'bhlyp'       : {'s6': 1.000, 'a1':  0.2793, 's8':  1.0354, 'a2': 4.9615},
-                'bmk'         : {'s6': 1.000, 'a1':  0.1940, 's8':  2.0860, 'a2': 5.9197},
-                'bop'         : {'s6': 1.000, 'a1':  0.4870, 's8':  3.295,  'a2': 3.5043},
-                'bpbe'        : {'s6': 1.000, 'a1':  0.4567, 's8':  4.0728, 'a2': 4.3908},
-                'camb3lyp'    : {'s6': 1.000, 'a1':  0.3708, 's8':  2.0674, 'a2': 5.4743},
-                'lcwpbe'      : {'s6': 1.000, 'a1':  0.3919, 's8':  1.8541, 'a2': 5.0897},
-                'mpw1b95'     : {'s6': 1.000, 'a1':  0.1955, 's8':  1.0508, 'a2': 6.4177},
-                'mpwb1k'      : {'s6': 1.000, 'a1':  0.1474, 's8':  0.9499, 'a2': 6.6223},
-                'mpwlyp'      : {'s6': 1.000, 'a1':  0.4831, 's8':  2.0077, 'a2': 4.5323},
-                'olyp'        : {'s6': 1.000, 'a1':  0.5299, 's8':  2.6205, 'a2': 2.8065},
-                'opbe'        : {'s6': 1.000, 'a1':  0.5512, 's8':  3.3816, 'a2': 2.9444},
-                'otpss'       : {'s6': 1.000, 'a1':  0.4634, 's8':  2.7495, 'a2': 4.3153},
-                'pbe38'       : {'s6': 1.000, 'a1':  0.3995, 's8':  1.4623, 'a2': 5.1405},
-                'pbesol'      : {'s6': 1.000, 'a1':  0.4466, 's8':  2.9491, 'a2': 6.1742},
-                'ptpss'       : {'s6': 0.750, 'a1':  0.000,  's8':  0.2804, 'a2': 6.5745},
-                'pwb6k'       : {'s6': 1.000, 'a1':  0.1805, 's8':  0.9383, 'a2': 7.7627},
-                'revssb'      : {'s6': 1.000, 'a1':  0.4720, 's8':  0.4389, 'a2': 4.0986},
-                'ssb'         : {'s6': 1.000, 'a1': -0.0952, 's8': -0.1744, 'a2': 5.2170},
-                'tpssh'       : {'s6': 1.000, 'a1':  0.0000, 's8':  0.4243, 'a2': 5.5253},
-                'hcth120'     : {'s6': 1.000, 'a1':  0.3563, 's8':  1.0821, 'a2': 4.3359},  # in psi4
-                'b2plyp'      : {'s6': 0.640, 'a1':  0.3065, 's8':  0.9147, 'a2': 5.0570},  # in psi4
-                'b3lyp'       : {'s6': 1.000, 'a1':  0.3981, 's8':  1.9889, 'a2': 4.4211},  # in psi4
-                'b97-d'       : {'s6': 1.000, 'a1':  0.5545, 's8':  2.2609, 'a2': 3.2297},  # in psi4
-                'blyp'        : {'s6': 1.000, 'a1':  0.4298, 's8':  2.6996, 'a2': 4.2359},  # in psi4
-                'bp86'        : {'s6': 1.000, 'a1':  0.3946, 's8':  3.2822, 'a2': 4.8516},  # in psi4
-                'dsd-blyp'    : {'s6': 0.500, 'a1':  0.000,  's8':  0.2130, 'a2': 6.0519},  # in psi4
-                'pbe0'        : {'s6': 1.000, 'a1':  0.4145, 's8':  1.2177, 'a2': 4.8593},  # in psi4
-                'pbe'         : {'s6': 1.000, 'a1':  0.4289, 's8':  0.7875, 'a2': 4.4407},  # in psi4
-                'pw6b95'      : {'s6': 1.000, 'a1':  0.2076, 's8':  0.7257, 'a2': 6.3750},
-                'pwpb95'      : {'s6': 0.820, 'a1':  0.0000, 's8':  0.2904, 'a2': 7.3141},
-                'revpbe0'     : {'s6': 1.000, 'a1':  0.4679, 's8':  1.7588, 'a2': 3.7619},
-                'revpbe38'    : {'s6': 1.000, 'a1':  0.4309, 's8':  1.4760, 'a2': 3.9446},
-                'revpbe'      : {'s6': 1.000, 'a1':  0.5238, 's8':  2.3550, 'a2': 3.5016},
-                'rpw86pbe'    : {'s6': 1.000, 'a1':  0.4613, 's8':  1.3845, 'a2': 4.5062},
-                'tpss0'       : {'s6': 1.000, 'a1':  0.3768, 's8':  1.2576, 'a2': 4.5865},
-                'tpss'        : {'s6': 1.000, 'a1':  0.4535, 's8':  1.9435, 'a2': 4.4752},
-            }
-        }
-
-        # Validate arguments
-        dashlvl = dashlvl.lower()
-        if dashlvl not in dashcoeff.keys():
-            raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl, dashcoeff.keys()))
-
-        if func is None:
-            if dashparam is None:
-                # defunct case
-                raise ValidationError("""Parameters for -D correction missing. Provide a func or a dashparam kwarg.""")
-            else:
-                # case where all param read from dashparam dict (which must have all correct keys)
-                func = 'custom'
-                dashcoeff[dashlvl][func] = {}
-                dashparam = dict((k.lower(), v) for k, v in dashparam.iteritems())
-                for key in dashcoeff[dashlvl]['b3lyp'].keys():
-                    if key in dashparam.keys():
-                        dashcoeff[dashlvl][func][key] = dashparam[key]
-                    else:
-                        raise ValidationError("""Parameter %s is missing from dashparam dict %s.""" % (key, dashparam))
-        else:
-            func = func.lower()
-            if func not in dashcoeff[dashlvl].keys():
-                raise ValidationError("""Functional %s is not available for -D level %s.""" % (func, dashlvl))
-            if dashparam is None:
-                # (normal) case where all param taken from dashcoeff above
-                pass
-            else:
-                # case where items in dashparam dict can override param taken from dashcoeff above
-                dashparam = dict((k.lower(), v) for k, v in dashparam.iteritems())
-                for key in dashcoeff[dashlvl]['b3lyp'].keys():
-                    if key in dashparam.keys():
-                        dashcoeff[dashlvl][func][key] = dashparam[key]
-
-        # Move ~/.dftd3par.<hostname> out of the way so it won't interfere
-        defaultfile = os.path.expanduser('~') + '/.dftd3par.' + socket.gethostname()
-        defmoved = False
-        if os.path.isfile(defaultfile):
-            os.rename(defaultfile, defaultfile + '_hide')
-            defmoved = True
-
-        # Setup unique scratch directory and move in
-        current_directory = os.getcwd()
-        dftd3_tmpdir = 'dftd3_' + str(random.randint(0, 99999))
-        if os.path.exists(dftd3_tmpdir) is False:
-            os.mkdir(dftd3_tmpdir)
-        os.chdir(dftd3_tmpdir)
-
-        # Write dftd3_parameters file that governs dispersion calc
-        paramfile = './dftd3_parameters'
-        pfile = open(paramfile, 'w')
-
-        if dashlvl == 'd2':
-            # d2:      s6 sr6 s8 a2=None alpha6 version=2
-            pfile.write('%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' %
-                (dashcoeff[dashlvl][func]['s6'], dashcoeff[dashlvl][func]['sr6'], dashcoeff[dashlvl][func]['s8'],
-                0.0, dashcoeff[dashlvl][func]['alpha6'], 2))
-        elif dashlvl == 'd3zero':
-            # d3zero:  s6 sr6 s8 a2=None alpha6 version=3
-            pfile.write('%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' %
-                (dashcoeff[dashlvl][func]['s6'], dashcoeff[dashlvl][func]['sr6'], dashcoeff[dashlvl][func]['s8'],
-                1.0, dashcoeff[dashlvl][func]['alpha6'], 3))
-        elif dashlvl == 'd3bj':
-            # d3bj:    s6 a1 s8 a2 alpha6=None version=4
-            pfile.write('%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' %
-                (dashcoeff[dashlvl][func]['s6'], dashcoeff[dashlvl][func]['a1'], dashcoeff[dashlvl][func]['s8'],
-                dashcoeff[dashlvl][func]['a2'], 0.0, 4))
-        pfile.close()
-
-        # Write dftd3_geometry file that supplies geometry to dispersion calc
-        geomfile = './dftd3_geometry.xyz'
-        gfile = open(geomfile, 'w')
-        gfile.write(self.save_string_xyz())
-        gfile.close()
-
-        # Call dftd3 program
-        try:
-            dashout = subprocess.Popen(['dftd3', geomfile, '-grad'], stdout=subprocess.PIPE)
-        except OSError:
-            raise ValidationError('Program dftd3 not found in path.')
-        out, err = dashout.communicate()
-        if verbosity >= 3:
-            print out
-
-        # Parse output (could go further and break into E6, E8, E10 and Cn coeff)
-        success = False
-        for line in out.splitlines():
-            if re.match(' Edisp /kcal,au', line):
-                sline = line.split()
-                dashd = float(sline[3])
-            if re.match(' normal termination of dftd3', line):
-                success = True
-
-        if not success:
-            raise ValidationError('Program dftd3 did not complete successfully.')
-
-        # Parse grad output
-        derivfile = './dftd3_gradient'
-        dfile = open(derivfile, 'r')
-        dashdderiv = []
-        for at in dfile.readlines():
-            dashdderiv.append([float(x.replace('D', 'E')) for x in at.split()])
-        dfile.close()
-        if len(dashdderiv) != self.natom():
-            raise ValidationError('Program dftd3 gradient file has %d atoms- %d expected.' % \
-                (len(dashdderiv), self.natom()))
-
-        # Clean up files and remove scratch directory
-#        os.unlink(paramfile)
-#        os.unlink(geomfile)
-#        os.unlink(derivfile)
-        if defmoved is True:
-            os.rename(defaultfile + '_hide', defaultfile)
-
-        os.chdir('..')
-#        try:
-#            shutil.rmtree(dftd3_tmpdir)
-#        except OSError as e:
-#            ValidationError('Unable to remove dftd3 temporary directory %s' % e, file=sys.stderr)
-        os.chdir(current_directory)
-
-        # return -D & d(-D)/dx
-        return dashd, dashdderiv
-
     def rotor_type(self, tol=FULL_PG_TOL):
         """Returns the rotor type.
 
@@ -1054,3 +815,7 @@ class Molecule(LibmintsMolecule):
         """
         coc = scale(self.center_of_charge(), -1.0)
         self.translate(coc)
+
+# Attach method to qcdb.Molecule class
+from interface_dftd3 import run_dftd3 as _dftd3_qcdb_yo
+Molecule.run_dftd3 = _dftd3_qcdb_yo

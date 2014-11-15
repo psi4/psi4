@@ -73,6 +73,7 @@ procedures = {
             'omp2.5'        : run_omp2_5,
             'df-omp2'       : run_dfomp2,
             'dfomp2'        : run_dfomp2,
+            'dfocc'         : run_dfocc,
             'cd-omp2'       : run_cdomp2,
             'cdomp2'        : run_cdomp2,
             'cd-mp2'        : run_cdmp2,
@@ -209,9 +210,6 @@ procedures = {
             'eom-cc2'  : run_cc_property,
             'eom-ccsd' : run_cc_property,
             'detci'    : run_detci_property,  # full control over detci
-            'mp'       : run_detci_property,  # arbitrary order mp(n)
-            'detci-mp' : run_detci_property,  # arbitrary order mp(n)
-            'zapt'     : run_detci_property,  # arbitrary order zapt(n)
             'cisd'     : run_detci_property,
             'cisdt'    : run_detci_property,
             'cisdtq'   : run_detci_property,
@@ -361,9 +359,9 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | detci                   | **expert** full control over detci module                                             |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | casscf                  | complete active space self consistent field (CASSCF)  :ref:`[manual] <sec:cas>`    |
+    | casscf                  | complete active space self consistent field (CASSCF)  :ref:`[manual] <sec:cas>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | rasscf                  | restricted active space self consistent field (RASSCF)  :ref:`[manual] <sec:cas>`    |
+    | rasscf                  | restricted active space self consistent field (RASSCF)  :ref:`[manual] <sec:cas>`     |
     +-------------------------+---------------------------------------------------------------------------------------+
     | gaussian-2 (g2)         | gaussian-2 composite method :ref:`[manual] <sec:fnogn>`                               |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -620,7 +618,7 @@ def gradient(name, **kwargs):
         if len(alt_lowername) > 0:
             alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
         raise ValidationError('Derivative method \'name\' %s and derivative level \'dertype\' %s are not available.%s'
-            % (lowername, dertype,alternatives))
+            % (lowername, dertype, alternatives))
 
     # no analytic derivatives for scf_type cd
     if psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
@@ -818,25 +816,31 @@ def property(name, **kwargs):
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
-       - This function at present handles property functions only for CC methods.
-         Consult the keywords sections for other modules for further property capabilities.
+       - This function at present has a limited functionality.
+         Consult the keywords sections of other modules for further property capabilities.
 
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method                                                                          |
-    +=========================+=======================================================================================+
-    | scf                     | Self-consistent field method(s)                                                       |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | cc2                     | 2nd-order approximate CCSD                                                            |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | df-mp2                  | MP2 with density fitting                                                              |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | eom-cc2                 | 2nd-order approximate EOM-CCSD                                                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | eom-ccsd                | equation-of-motion coupled cluster singles and doubles (EOM-CCSD)                     |
-    +-------------------------+---------------------------------------------------------------------------------------+
-
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | Name               | Calls Method                                  | Reference      | Supported Properties                                          |
+    +====================+===============================================+================+===============================================================+
+    | scf                | Self-consistent field method(s)               | RHF/ROHF/UHF   | Listed :ref:`here <sec:oeprop>`                               |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | cc2                | 2nd-order approximate CCSD                    | RHF            | dipole, quadrupole, polarizability, rotation, roa             |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | ccsd               | Coupled cluster singles and doubles (CCSD)    | RHF            | dipole, quadrupole, polarizability, rotation, roa             |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | df-mp2             | MP2 with density fitting                      | RHF            | dipole, quadrupole, mulliken_charges, no_occupations          |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | eom-cc2            | 2nd-order approximate EOM-CCSD                | RHF            | oscillator_strength, rotational_strength                      |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | eom-ccsd           | Equation-of-motion CCSD (EOM-CCSD)            | RHF            | oscillator_strength, rotational_strength                      |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | 'cisd', 'cisdt',   | Configuration interaction                     | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
+    | 'cisdt', 'cisdtq', |                                               |                |                                                               |
+    | 'ci5', etc...      |                                               |                |                                                               |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | 'fci'              | Full configuration interaction                | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+     
     :type name: string
     :param name: ``'ccsd'`` || etc.
 

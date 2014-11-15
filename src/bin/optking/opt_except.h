@@ -63,7 +63,12 @@ class INTCO_EXCEPT {
       //try_other_intcos = t;
     }
 
-    void increment_dynamic_level(void) { dynamic_level += 1; }
+    void increment_dynamic_level(void) {
+      if (dynamic_level == 0) // turning 'on' dynamic
+        dynamic_level = 1;
+
+      dynamic_level += 1;
+    }
 
     ~INTCO_EXCEPT() {};
 

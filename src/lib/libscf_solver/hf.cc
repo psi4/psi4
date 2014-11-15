@@ -46,8 +46,6 @@
 #include <psifiles.h>
 #include <libfock/jk.h>
 
-#include <libmints/gridprop.h>
-
 #include "hf.h"
 
 #include <psi4-dec.h>
@@ -1338,6 +1336,12 @@ void HF::load_orbitals()
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(old_forced_puream));
     molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
     boost::shared_ptr<BasisSet> dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
+    // TODO: oh my, forced_puream!
+    // TODO: oh my, a basis for which a fn hasn't been set in the input translation
+    // TODO: oh my, a non-fitting basis to be looked up (in Mol) not under BASIS
+    //boost::shared_ptr<BasisSet> dual_basis = BasisSet::pyconstruct(molecule_, basisname,
+    //            "DUAL_BASIS_SCF");
+    // TODO: I think Rob was planning to rework this projection bit anyways
 
     psio_->read_entry(PSIF_SCF_MOS,"SCF ENERGY",(char *) &(E_),sizeof(double));
 
@@ -1831,6 +1835,13 @@ double HF::compute_energy()
 
                 outfile->Printf( "  ==> Properties <==\n\n");
             oe->compute();
+
+            // TODO: Hack to test CubicScalarGrid
+            /*
+            boost::shared_ptr<CubicScalarGrid> grid(new CubicScalarGrid(basisset_));
+            grid->print_header();
+            grid->compute_density_cube(Da_, "Da");
+            */
 
 //  Comments so that autodoc utility will find these PSI variables
 //
