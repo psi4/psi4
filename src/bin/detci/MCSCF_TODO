@@ -112,4 +112,4 @@ DGAS TODO list
 Remove read_lag
 Use psi diis
 First crack at CI wfn
-
+Fix exit if out of iterations

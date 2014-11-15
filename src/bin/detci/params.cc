@@ -113,6 +113,10 @@ void get_parameters(Options &options)
     Parameters.fci = 1;
     Parameters.mcscf = 1;
   }
+  else if (Parameters.wfn == "RASSCF"){
+    Parameters.fci = 0;
+    Parameters.mcscf = 1;
+  }
   else {
     Parameters.fci = 0;
     Parameters.mcscf = 0;

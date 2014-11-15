@@ -1583,7 +1583,7 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
   transqt_options.set_str("TRANSQT2", "WFN", Parameters.wfn);
   transqt_options.validate_options();
   transqt_options.print(); // debug
-  
+
   // Iterate
   for (int i=0; i<MCSCF_Parameters.max_iter; i++){
     outfile->Printf("\nStarting MCSCF iteration %d\n\n", i);
@@ -1612,7 +1612,9 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
 
 
     psi::transqt2::transqt2(transqt_options);    
+
     get_mo_info(options);        /* read DOCC, SOCC, frozen, nmo, etc        */
+
     read_integrals();
     tf_onel_ints((Parameters.print_lvl>3), "outfile");
     form_gmat((Parameters.print_lvl>3), "outfile");
