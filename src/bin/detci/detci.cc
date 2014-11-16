@@ -157,6 +157,7 @@ extern void tpdm(struct stringwr **alplist, struct stringwr **betlist,
    int targetfile, int writeflag, int printflag);
 extern PsiReturnType mcscf_update(Options &options);
 extern void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist);
+extern void mcscf_cleanup();
 extern void compute_cc(void);
 extern void calc_mrpt(void);
 
@@ -1604,6 +1605,7 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
     finished = mcscf_update(options);
 
     outfile->Printf("\nFinishing MCSCF iteration %d\n\n", i);
+    mcscf_cleanup();
 
     if (finished==EndLoop){
       outfile->Printf("MCSCF converged");

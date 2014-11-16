@@ -41,7 +41,7 @@ namespace psi { namespace detci {
 ** This function frees any allocated global variables
 **
 */
-void cleanup(void)
+void mcscf_cleanup(void)
 {
   int i;
   

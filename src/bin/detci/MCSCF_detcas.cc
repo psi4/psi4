@@ -66,7 +66,7 @@ extern void set_mcscf_parameters(Options &options);
 extern void mcscf_print_parameters(void);
 extern void mcscf_read_integrals(void);
 extern void read_density_matrices(Options& options);
-extern void read_lagrangian(void);
+// extern void read_lagrangian(void);
 extern void form_independent_pairs(void);
 extern void read_thetas(int npairs);
 extern void write_thetas(int npairs);
@@ -163,7 +163,7 @@ PsiReturnType mcscf_update(Options &options)
                      MCSCF_CalcInfo.npop, MCSCF_Parameters.print_lvl, PSIF_MO_LAG); 
 
 
-  read_lagrangian();
+  // read_lagrangian();
 
   form_independent_pairs();
   num_pairs = IndPairs.get_num_pairs();
@@ -203,7 +203,7 @@ PsiReturnType mcscf_update(Options &options)
   print_step(num_pairs, steptype);
 
 //  if (MCSCF_Parameters.print_lvl) quote();
-  cleanup();
+  // cleanup();
   //close_io();
   if (MCSCF_Parameters.print_lvl) tstop();
 
@@ -866,7 +866,7 @@ void scale_gradient(void)
   MCSCF_CalcInfo.scaled_mo_grad_rms = rms;
  
   if (MCSCF_Parameters.print_lvl)
-    outfile->Printf( "\n\tScaled RMS Orbital Gradient: %6.4E\n", rms);
+    outfile->Printf( "\n\tScaled RMS Orbital Gradient: %6.10E\n", rms);
 
   if (MCSCF_Parameters.scale_step != 1.0) {
     for (pair=0; pair<npairs; pair++) 
