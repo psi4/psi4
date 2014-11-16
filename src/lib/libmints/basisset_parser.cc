@@ -160,14 +160,14 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
     // Regular expressions that we'll be checking for.
     regex cartesian("^\\s*cartesian\\s*", regbase::icase);
     regex spherical("^\\s*spherical\\s*", regbase::icase);
-    regex comment("^\\s*\\!.*");                                       // line starts with !
-    regex separator("^\\s*\\*\\*\\*\\*");                                  // line starts with ****
-    regex atom_array("^\\s*([A-Za-z]+)\\s+0.*");                       // array of atomic symbols terminated by 0
-    regex shell("^\\s*(\\w+)\\s*(\\d+)\\s*(-?\\d+\\.\\d+)");           // Match beginning of contraction
+    regex comment("^\\s*\\!.*");                                         // line starts with !
+    regex separator("^\\s*\\*\\*\\*\\*");                                // line starts with ****
+    regex shell("^\\s*(\\w+)\\s*(\\d+)\\s*(-?\\d+\\.\\d+)");             // Match beginning of contraction
+    regex atom_array("^\\s*(([A-Z]{1,3})(?:(_\\w+)|(\\d+))?)\\s+0\\s*$", regbase::icase);  // atomic symbol/label terminated by 0
 
     // NUMBER is in psi4-dec.h
-    regex primitives1("^\\s*" NUMBER "\\s+" NUMBER ".*");    // Match s, p, d, f, g, ... functions
-    regex primitives2("^\\s*" NUMBER "\\s+" NUMBER "\\s+" NUMBER ".*"); // match sp functions
+    regex primitives1("^\\s*" NUMBER "\\s+" NUMBER ".*");                // Match s, p, d, f, g, ... functions
+    regex primitives2("^\\s*" NUMBER "\\s+" NUMBER "\\s+" NUMBER ".*");  // match sp functions
 
     // s, p and s, p, d can be grouped together in Pople-style basis sets
     const string sp("SP"), spd("SPD");
@@ -227,7 +227,8 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
         }
 
         // Match: H    0
-        // or:    H    O...     0
+        // or:    Al_99     0
+        // 11 May 2014 LAB, dropped "H O 0" atom_array capability since code didn't follow through; permitted py-side
         if (regex_match(line, what, atom_array)) {
             // Check the captures and see if this basis set is for the atom we need.
             found = false;

@@ -21,7 +21,6 @@
 #
 
 import re
-import collections
 import struct
 from decimal import Decimal
 from pdict import PreservingDict
@@ -304,7 +303,7 @@ def harvest_outfile_pass(outtext):
         psivar['CCSD(T) TOTAL ENERGY'] = mobj.group(3)
 
     mobj = re.search(
-        r'^\s+' + r'(?:E\(SCF\))' + r'\s+=\s+' + NUMBER + r'\s+a\.u\.\s*' +
+        r'^\s+' + r'(?:E\(SCF\))' + r'\s+=\s*' + NUMBER + r'\s+a\.u\.\s*' +
         r'(?:.*?)' +
         r'^\s+' + r'(?:CCSD energy)' + r'\s+' + NUMBER + r'\s*' +
         r'(?:.*?)' +
@@ -317,7 +316,7 @@ def harvest_outfile_pass(outtext):
         psivar['SCF TOTAL ENERGY'] = mobj.group(1)
         psivar['CCSD TOTAL ENERGY'] = mobj.group(2)
         psivar['(T) CORRECTION ENERGY'] = mobj.group(3)
-        psivar['CCSD(T) CORRELATION ENERGY'] = Decimal(mobj.group(4)) - Decimal(mobj.group(2))
+        psivar['CCSD(T) CORRELATION ENERGY'] = Decimal(mobj.group(4)) - Decimal(mobj.group(1))
         psivar['CCSD(T) TOTAL ENERGY'] = mobj.group(4)
 
     mobj = re.search(
@@ -555,7 +554,6 @@ def harvest(p4Mol, c4out, **largs):
 #        for item in oriGrad:
 #            print('       %16.8f %16.8f %16.8f' % (item[0], item[1], item[2]))
 
-
     retMol = None if p4Mol else grdMol
 
     if oriDip:
@@ -686,7 +684,7 @@ def muster_memory(mem):
     text = ''
 
     # prepare memory keywords to be set as c-side keywords
-    options = collections.defaultdict(lambda: collections.defaultdict(dict))
+    options = defaultdict(lambda: defaultdict(dict))
     options['CFOUR']['CFOUR_MEMORY_SIZE']['value'] = int(mem)
     options['CFOUR']['CFOUR_MEM_UNIT']['value'] = 'MB'
 
@@ -721,7 +719,7 @@ def muster_psi4options(opt):
 
     """
     text = ''
-    options = collections.defaultdict(lambda: collections.defaultdict(dict))
+    options = defaultdict(lambda: defaultdict(dict))
 
     if 'GLOBALS' in opt:
         if 'PUREAM' in opt['GLOBALS']:
@@ -786,7 +784,7 @@ def muster_modelchem(name, dertype):
     """
     text = ''
     lowername = name.lower()
-    options = collections.defaultdict(lambda: collections.defaultdict(dict))
+    options = defaultdict(lambda: defaultdict(dict))
 
     if dertype == 0:
         if lowername == 'cfour':
