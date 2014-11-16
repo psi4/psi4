@@ -71,31 +71,22 @@ DETCI_calcinfo additions:
   int *rstr_docc;        /* MCSCF restricted doubly occupied orbs per irrep */
   int *rstr_uocc;        /* MCSCF restricted virtual orbs per irrep */
   
-
-Identical (?) calcinfo values:
-  int nmo;              /* number of molecular orbitals */
-  int npop;              /* number of populated orbitals, nbfso - nfzv */
-  int max_orbs_per_irrep;/* max orbitals per irrep fzv not included */
-  int max_pop_per_irrep; /* max populated orbitals per irrep fzv included */
+Combined calcinfo values:
+  char **labels;         /* labels for irreps */
   int *orbs_per_irr;     /* number of orbitals per irrep */
-  int *orbsym;           /* irrep for each orbital */
+
+Should be identical (untested) calcinfo values:
+  int nmo;               /* number of molecular orbitals */
+  int npop;              /* number of populated orbitals, nbfso - nfzv */
   int *pitz2ci;          /* map Pitzer-ordered orbitals to our ordering */
   int *ci2pitz;          /* map our ordering back to Pitzer ordering */
   int *ci2relpitz;       /* map CI ordering to _relative_ pitzer ordering */
-  char **labels;         /* labels for irreps */
   int **ras_opi;         /* num orbs per irr per ras space ras_opi[ras][irr] */
   int **fzc_orbs;        /* frozen core orbitals numbers [irrep][orbnum] */
   int **cor_orbs;        /* restricted core orbitals numbers [irrep][orbnum] */
   int **vir_orbs;        /* restr virtual orbitals numbers [irrep][orbnum] */
   int **fzv_orbs;        /* frozen virtual orbitals numbers [irrep][orbnum] */
   int ***ras_orbs;       /* ras_orbs[ras][irr][cnt] gives an orbital number */
-  int *first;            /* first orbital per irrep (in Pitzer order)    */
-  int *last;             /* last  orbital per irrep (in Pitzer order)    */
-  int *fstact;           /* first active orb per irrep (in Pitzer order) */
-  int *lstact;           /* last  active orb per irrep (in Pitzer order) */
-  int *active;           /* num active orbs per irrep                    */
-  double enuc;           /* nuclear repulsion energy */
-  double efzc;           /* frozen-core energy */
 
 Unclear and unchanged calcinfo values:
   double ***mo_coeffs;   /* matrix of molecular orbitals in Pitzer order */
@@ -105,12 +96,22 @@ Unclear and unchanged calcinfo values:
   double **opdm;         /* one-particle density matrix */
   double *tpdm;          /* two-particle density matrix */
 
+Not needed
+  int *orbsym;           /* irrep for each orbital */
+  double enuc;           /* nuclear repulsion energy */
+  double efzc;           /* frozen-core energy */
+  int max_orbs_per_irrep;/* max orbitals per irrep fzv not included */
+  int max_pop_per_irrep; /* max populated orbitals per irrep fzv included */
+  int *first;            /* first orbital per irrep (in Pitzer order)    */
+  int *last;             /* last  orbital per irrep (in Pitzer order)    */
+  int *fstact;           /* first active orb per irrep (in Pitzer order) */
+  int *lstact;           /* last  active orb per irrep (in Pitzer order) */
+  int *active;           /* num active orbs per irrep                    */
 
 
 
 DGAS TODO list
 Remove get_mo_info from mcscf loop - cleanup issue
-Remove read_lag
 Use psi diis
 First crack at CI wfn
 Fix exit if out of iterations

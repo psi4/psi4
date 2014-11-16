@@ -295,8 +295,8 @@ void calc_gradient(void)
 
     // Setup for this irrep
     ir_npairs = IndPairs.get_ir_num_pairs(h);
-    ir_norbs = MCSCF_CalcInfo.orbs_per_irr[h];
-    if (h>0) offset += MCSCF_CalcInfo.orbs_per_irr[h-1];
+    ir_norbs = CalcInfo.orbs_per_irr[h];
+    if (h>0) offset += CalcInfo.orbs_per_irr[h-1];
     if (!ir_npairs) continue;
     ir_ppair = IndPairs.get_ir_prel_ptr(h);
     ir_qpair = IndPairs.get_ir_qrel_ptr(h);
@@ -320,7 +320,7 @@ void calc_gradient(void)
 
     if (MCSCF_Parameters.use_thetas) {
       // Calc dEdU
-      premult_by_U(h, MCSCF_CalcInfo.orbs_per_irr[h], ir_lag, ir_npairs,
+      premult_by_U(h, CalcInfo.orbs_per_irr[h], ir_lag, ir_npairs,
                    ir_ppair, ir_qpair, ir_theta_cur);
 
       if (MCSCF_Parameters.print_lvl > 3) {
@@ -329,7 +329,7 @@ void calc_gradient(void)
       }
 
       // Calculate dEdTheta
-      calc_dE_dT(MCSCF_CalcInfo.orbs_per_irr[h], ir_lag, ir_npairs,
+      calc_dE_dT(CalcInfo.orbs_per_irr[h], ir_lag, ir_npairs,
                  ir_ppair, ir_qpair, ir_theta_cur, ir_mo_grad);
     }
 
@@ -937,7 +937,7 @@ void rotate_orbs(void)
   for (h=0; h<CalcInfo.nirreps; h++) {
     ir_npairs = IndPairs.get_ir_num_pairs(h);
     if (ir_npairs) {
-      ir_norbs = MCSCF_CalcInfo.orbs_per_irr[h];
+      ir_norbs = CalcInfo.orbs_per_irr[h];
       ir_theta = IndPairs.get_irrep_vec(h, MCSCF_CalcInfo.theta_cur);
       ir_ppair  = IndPairs.get_ir_prel_ptr(h);
       ir_qpair  = IndPairs.get_ir_qrel_ptr(h);
@@ -955,7 +955,7 @@ void rotate_orbs(void)
       /* print old coefficients */
       if (MCSCF_Parameters.print_mos) {
         outfile->Printf( "\n\tOld molecular orbitals for irrep %s\n", 
-          MCSCF_CalcInfo.labels[h]);
+          CalcInfo.labels[h]);
         print_mat(MCSCF_CalcInfo.mo_coeffs[h], ir_norbs, ir_norbs, "outfile");
       }
 
@@ -969,7 +969,7 @@ void rotate_orbs(void)
       /* print new coefficients */
       if (MCSCF_Parameters.print_mos) {
         outfile->Printf( "\n\tNew molecular orbitals for irrep %s\n", 
-          MCSCF_CalcInfo.labels[h]);
+          CalcInfo.labels[h]);
         print_mat(MCSCF_CalcInfo.mo_coeffs[h], ir_norbs, ir_norbs, "outfile");
       }
 
