@@ -20,105 +20,255 @@
 #@END LICENSE
 #
 
+import re
 import math
 
-import qcdb.exceptions
+from exceptions import *
 import qcformat
 #import molpro_basissets
+import options
+from pdict import PreservingDict
 
 
-class Psi4In(qcformat.InputFormat):
+def harvest_output(outtext):
+    """Function to separate portions of a PSI4 output file *outtext*.
 
-    def __init__(self, mem, mtd, bas, mol, sys, cast):
-        qcformat.InputFormat.__init__(self, mem, mtd, bas, mol, sys, cast)
+    """
+    psivar = PreservingDict()
+    psivar_coord = None
+    psivar_grad = None
 
-        # memory in MB --> MW
-        #self.memory = int(math.ceil(mem / 8.0))
-        # auxiliary basis sets
-        #[self.unaugbasis, self.augbasis, self.auxbasis] = self.corresponding_aux_basis()
+    NUMBER = "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
 
-    def format_global_parameters(self):
-        text = ''
+    # Process PsiVariables
+    mobj = re.search(r'^(?:  Variable Map:)\s*' +
+        r'^\s*(?:-+)\s*' +
+        r'^(.*?)' +
+        r'^(?:\s*?)$',
+        outtext, re.MULTILINE | re.DOTALL)
 
-        #if self.method in ['mp2c', 'dft-sapt-shift', 'dft-sapt', 'dft-sapt-pbe0ac', 'dft-sapt-pbe0acalda']:
-        #    text += """GTHRESH,ZERO=1.e-14,ONEINT=1.e-14,TWOINT=1.e-14,ENERGY=1.e-8,ORBITAL=1.e-8,GRID=1.e-8\n\n"""
-        #elif self.method in ['b3lyp', 'b3lyp-d', 'df-b3lyp', 'df-b3lyp-d']:
-        #    text += """GTHRESH,ZERO=1.e-14,ONEINT=1.e-14,TWOINT=1.e-14,ENERGY=1.e-8,ORBITAL=1.e-7,GRID=1.e-8\n\n"""
-        #else:
-        #    text += """GTHRESH,ZERO=1.e-14,ONEINT=1.e-14,TWOINT=1.e-14,ENERGY=1.e-9\n\n"""
+    if mobj:
+        for pv in mobj.group(1).split('\n'):
+            submobj = re.search(r'^\s+' + r'"(.+?)"' + r'\s+=>\s+' + NUMBER + r'\s*$', pv)
+            if submobj:
+                psivar['%s' % (submobj.group(1))] = submobj.group(2)
 
-        return text
+    # Process Completion
+    mobj = re.search(r'PSI4 exiting successfully. Buy a developer a beer!',
+        outtext, re.MULTILINE)
+    if mobj:
+        psivar['SUCCESS'] = True
 
-    def format_basis(self):
-        text = ''
-        text += """set basis %s\n\n""" % (self.basis)
-#        text += """basis={\n"""
-#
-#        try:
-#            # jaxz, maxz, etc.
-#            for line in molpro_basissets.altbasis[self.basis]:
-#                text += """%s\n""" % (line)
-#            text += '\n'
-#        except KeyError:
-#            # haxz
-#            if self.basis.startswith('heavy-aug-'):
-#                text += """set,orbital; default,%s,H=%s\n""" % (self.basis[6:], self.unaugbasis)
-#            # xz, axz, 6-31g*
-#            else:
-#                text += """set,orbital; default,%s\n""" % (self.basis)
-#
-#        if ('df-' in self.method) or ('f12' in self.method) or (self.method in ['mp2c', 'dft-sapt', 'dft-sapt-pbe0acalda']):
-#            if self.unaugbasis and self.auxbasis:
-#
-#                text += """set,jkfit;   default,%s/jkfit\n""" % (self.auxbasis)
-#                text += """set,jkfitb;  default,%s/jkfit\n""" % (self.unaugbasis)
-#                text += """set,mp2fit;  default,%s/mp2fit\n""" % (self.auxbasis)
-#                text += """set,dflhf;   default,%s/jkfit\n""" % (self.auxbasis)
-#            else:
-#                raise qcdb.exceptions.ValidationError("""Auxiliary basis not predictable from orbital basis '%s'""" % (self.basis))
-#
-#        text += """}\n\n"""
-        return text
+    return psivar, psivar_coord, psivar_grad
+
+
+class Infile(qcformat.InputFormat2):
+
+    def __init__(self, mem, mol, mtd, der, opt):
+        qcformat.InputFormat2.__init__(self, mem, mol, mtd, der, opt)
+
+        print self.method, self.molecule.nactive_fragments()
+        if 'sapt' in self.method and self.molecule.nactive_fragments() != 2:
+            raise FragmentCountError("""Requested molecule has %d, not 2, fragments.""" % (self.molecule.nactive_fragments()))
+
+#        # memory in MB --> MW
+#        self.memory = int(math.ceil(mem / 8.0))
+#        # auxiliary basis sets
+#        [self.unaugbasis, self.augbasis, self.auxbasis] = self.corresponding_aux_basis()
 
     def format_infile_string(self):
-        text = ''
+        """
 
-        # format comment and memory
-        text += """# %s %s\n""" % (self.index, self.molecule.tagline)
-        text += """memory %d mb\n""" % (self.memory)
+        """
+        # Handle memory and comment
+        memcmd, memkw = """# %s\n\nmemory %d mb\n\n""" % (self.molecule.tagline, self.memory), {}
 
-        # format molecule, incl. charges and dummy atoms
-        text += self.molecule.format_molecule_for_psi4()
+        # Handle molecule and basis set
+        molcmd, molkw = self.molecule.format_molecule_for_psi4(), {}
 
         # format global convergence directions
-        #text += self.format_global_parameters()
+#        text += self.format_global_parameters()
+        _cdscmd, cdskw = muster_cdsgroup_options()
 
-        # format castup directions
-        if self.castup is True:
-            text += """set basis_guess sto-3g\n"""
+        # Handle calc type and quantum chemical method
+        mdccmd, mdckw = procedures['energy'][self.method](self.method, self.dertype)
 
-        # format basis set
-        text += self.format_basis()
+#        # format options
+#        optcmd = qcdb.options.prepare_options_for_psi4(mdckw)
 
-        # format method
-        for line in qcmtdIN[self.method]:
-            text += """%s\n""" % (line)
-        text += """print_variables()\n"""
-        text += '\n'
+# make options from imdb only user options (currently non-existent). set basis and castup from here.
+        # Handle driver vs input/default keyword reconciliation
+        userkw = self.options
+#        userkw = p4util.prepare_options_for_modules()
+        #userkw = qcdb.options.reconcile_options(userkw, memkw)
+        #userkw = qcdb.options.reconcile_options(userkw, molkw)
+        #userkw = qcdb.options.reconcile_options(userkw, baskw)
+        #userkw = qcdb.options.reconcile_options(userkw, psikw)
+        userkw = options.reconcile_options2(userkw, cdskw)
+        userkw = options.reconcile_options2(userkw, mdckw)
 
-        return text
+        # Handle conversion of psi4 keyword structure into cfour format
+        optcmd = options.prepare_options_for_psi4(userkw)
+
+        # Handle text to be passed untouched to psi4
+        litcmd = """\nprint_variables()\n\n"""
+
+        # Assemble infile pieces
+        return memcmd + molcmd + optcmd + mdccmd + litcmd
+
+#'hf'
+#'df-hf'
+#'b3lyp'
+#'blyp'
+#'bp86'
+#'fno-ccsd(t)'
+#'df-ccsd(t)'
+#'fno-df-ccsd(t)'
+#'df-b97-d'
+#'df-b97-d3'
+#'pbe0-2'
+#'dsd-pbep86'
+#'wb97x-2'
+#'DLdf+d'
+#'DLdf+d09'
+#'df-b3lyp'
+#'df-b3lyp-d'
+#'df-b3lyp-d3'
+#'df-wb97x-d'
 
 
-qcmtdIN = {
-'sapt0': [
-    """energy('sapt0')"""],
-'saptccd': [
-    """set scf_type df""",
-    """set guess sad""",
-    """set freeze_core true""",
-    """set nat_orbs_t2 true""",
-    """set nat_orbs_t3 true""",
-    """set nat_orbs_v4 true""",
-    """energy('sapt2+3(ccd)')"""],
+def muster_cdsgroup_options():
+    text = ''
+    options = defaultdict(lambda: defaultdict(dict))
+    options['GLOBALS']['E_CONVERGENCE']['value'] = 8
+    options['SCF']['GUESS']['value'] = 'sad'
+    options['SCF']['MAXITER']['value'] = 200
 
+    return text, options
+
+
+def muster_modelchem(name, dertype):
+    """Transform calculation method *name* and derivative level *dertype*
+    into options for cfour. While deliberately requested pieces,
+    generally |cfour__cfour_deriv_level| and |cfour__cfour_calc_level|,
+    are set to complain if contradicted ('clobber' set to True), other
+    'recommended' settings, like |cfour__cfour_cc_program|, can be
+    countermanded by keywords in input file ('clobber' set to False).
+    Occasionally, want these pieces to actually overcome keywords in
+    input file ('superclobber' set to True).
+
+    """
+    text = ''
+    lowername = name.lower()
+    options = defaultdict(lambda: defaultdict(dict))
+
+    if dertype == 0:
+        text += """energy('"""
+    else:
+        raise ValidationError("""Requested Psi4 dertype %d is not available.""" % (dertype))
+
+    if lowername == 'mp2':
+        options['GLOBALS']['FREEZE_CORE']['value'] = True
+        options['SCF']['SCF_TYPE']['value'] = 'direct'
+        options['MP2']['MP2_TYPE']['value'] = 'conv'
+        text += """mp2')\n\n"""
+
+    elif lowername == 'df-mp2':
+        options['GLOBALS']['FREEZE_CORE']['value'] = True
+        options['SCF']['SCF_TYPE']['value'] = 'df'
+        options['MP2']['MP2_TYPE']['value'] = 'df'
+        text += """mp2')\n\n"""
+
+    elif lowername == 'sapt0':
+        options['GLOBALS']['FREEZE_CORE']['value'] = True
+        options['SCF']['SCF_TYPE']['value'] = 'df'
+        text += """sapt0')\n\n"""
+
+    elif lowername == 'sapt2+':
+        options['GLOBALS']['FREEZE_CORE']['value'] = True
+        options['SCF']['SCF_TYPE']['value'] = 'df'
+        options['SAPT']['NAT_ORBS_T2']['value'] = True
+        options['SAPT']['NAT_ORBS_T3']['value'] = True
+        options['SAPT']['NAT_ORBS_V4']['value'] = True
+        options['SAPT']['OCC_TOLERANCE']['value'] = 1.0e-6
+        text += """sapt2+')\n\n"""
+
+    elif lowername == 'sapt2+(3)':
+        options['GLOBALS']['FREEZE_CORE']['value'] = True
+        options['SCF']['SCF_TYPE']['value'] = 'df'
+        options['SAPT']['NAT_ORBS_T2']['value'] = True
+        options['SAPT']['NAT_ORBS_T3']['value'] = True
+        options['SAPT']['NAT_ORBS_V4']['value'] = True
+        options['SAPT']['OCC_TOLERANCE']['value'] = 1.0e-6
+        text += """sapt2+(3)')\n\n"""
+
+    elif lowername == 'sapt2+3(ccd)':
+        options['GLOBALS']['FREEZE_CORE']['value'] = True
+        options['SCF']['SCF_TYPE']['value'] = 'df'
+        options['SAPT']['NAT_ORBS_T2']['value'] = True
+        options['SAPT']['NAT_ORBS_T3']['value'] = True
+        options['SAPT']['NAT_ORBS_V4']['value'] = True
+        options['SAPT']['OCC_TOLERANCE']['value'] = 1.0e-6
+        options['SAPT']['DO_MBPT_DISP']['value'] = True
+        text += """sapt2+3(ccd)')\n\n"""
+
+    elif lowername == 'df-b97-d3':
+        options['SCF']['SCF_TYPE']['value'] = 'df'
+        options['SCF']['DFT_SPHERICAL_POINTS']['value'] = 302
+        options['SCF']['DFT_RADIAL_POINTS']['value'] = 100
+        text += """b97-d3')\n\n"""
+
+    elif lowername == 'df-wb97x-d':
+        options['SCF']['SCF_TYPE']['value'] = 'df'
+        options['SCF']['DFT_SPHERICAL_POINTS']['value'] = 302
+        options['SCF']['DFT_RADIAL_POINTS']['value'] = 100
+        text += """wb97x-d')\n\n"""
+
+    elif lowername == 'df-b3lyp-d3':
+        options['SCF']['SCF_TYPE']['value'] = 'df'
+        options['SCF']['DFT_SPHERICAL_POINTS']['value'] = 302
+        options['SCF']['DFT_RADIAL_POINTS']['value'] = 100
+        text += """b3lyp-d3')\n\n"""
+
+    elif lowername == 'ccsd-polarizability':
+        options['GLOBALS']['FREEZE_CORE']['value'] = True
+        text = """property('ccsd', properties=['polarizability'])\n\n"""
+
+    else:
+        raise ValidationError("""Requested Cfour computational methods %d is not available.""" % (lowername))
+
+#    # Set clobbering
+#    if 'CFOUR_DERIV_LEVEL' in options['CFOUR']:
+#        options['CFOUR']['CFOUR_DERIV_LEVEL']['clobber'] = True
+#        options['CFOUR']['CFOUR_DERIV_LEVEL']['superclobber'] = True
+#    if 'CFOUR_CALC_LEVEL' in options['CFOUR']:
+#        options['CFOUR']['CFOUR_CALC_LEVEL']['clobber'] = True
+#        options['CFOUR']['CFOUR_CALC_LEVEL']['superclobber'] = True
+#    if 'CFOUR_CC_PROGRAM' in options['CFOUR']:
+#        options['CFOUR']['CFOUR_CC_PROGRAM']['clobber'] = False
+
+    return text, options
+
+procedures = {
+    'energy': {
+        'df-b97-d3'     : muster_modelchem,
+        'df-wb97x-d'    : muster_modelchem,
+        'df-b3lyp-d3'   : muster_modelchem,
+        'mp2'           : muster_modelchem,
+        'df-mp2'        : muster_modelchem,
+        'sapt0'         : muster_modelchem,
+        'sapt2+'        : muster_modelchem,
+        'sapt2+(3)'     : muster_modelchem,
+        'sapt2+3(ccd)'  : muster_modelchem,
+        'ccsd-polarizability'  : muster_modelchem,
+    }
 }
+
+qcmtdIN = procedures['energy']
+
+
+def psi4_list():
+    """Return an array of Psi4 methods with energies.
+
+    """
+    return sorted(procedures['energy'].keys())

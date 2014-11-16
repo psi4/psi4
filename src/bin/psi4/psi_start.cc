@@ -45,6 +45,7 @@ using namespace std;
 namespace psi {
 
 void create_new_plugin(std::string plugin_name, const std::string& template_name);
+void create_new_plugin_makefile();
 void print_version(std::string);
 void print_usage();
 
@@ -102,6 +103,7 @@ int psi_start(int argc, char *argv[])
         { "skip-preprocessor",  0, NULL, 'k' },
         { "interactive", 0, NULL, 't' },
         { "new-plugin", 1, NULL, 1 },  // requires 1 argument
+        { "new-plugin-makefile", 0, NULL, 2 },
         { NULL,      0, NULL,  0  }
     };
 
@@ -123,6 +125,11 @@ int psi_start(int argc, char *argv[])
                     }
                 }
                 create_new_plugin(pluginname, templatename);
+                exit(EXIT_SUCCESS);
+                break;
+
+            case 2: // --new-makefile
+                create_new_plugin_makefile();
                 exit(EXIT_SUCCESS);
                 break;
 
@@ -322,35 +329,38 @@ int psi_start(int argc, char *argv[])
 void print_usage(void)
 {
     printf("Usage:  psi4 [options] inputfile\n");
-    printf(" -a  --append             Append results to output file. Default: Truncate first\n");
-    printf(" -c  --check              Run input checks (not implemented).\n");
-    printf(" -d  --debug              Flush the outfile at every psi::fprintf.\n"
-           "                          Default: true iff --with-debug.\n");
-    printf(" -h  --help               Display this usage information.\n");
-    printf(" -i  --input filename     Input file name. Default: filename\n");
-    printf(" -k  --skip-preprocessor  Skips input preprocessing. Expert mode.\n");
-    printf(" -o  --output filename    Redirect output elsewhere. Default:\n");
-    printf("                          filename.out if input is filename\n");
-    printf("                          filename.out if input is filename.in\n");
-    printf("                          output.dat if input is input.dat\n");
-    printf(" -l  --psidatadir         Specify where to look for the Psi data directory.\n");
-    printf("                          Overrides PSIDATADIR.\n");
-    printf(" -m  --messy              Leave temporary files after the run is completed.\n");
-    printf(" -r  --restart            Number to be used instead of process id.\n");
-    printf(" -n  --nthread            Number of threads to use (overrides OMP_NUM_THREADS)\n");
-    printf("     --new-plugin name    Creates a new directory with files for writing a\n"
-           "                          new plugin. You can specify an additional argument\n"
-           "                          that specifies a template to use, for example:\n"
-           "                              --new-plugin name +mointegrals\n");
-    printf(" -p  --prefix prefix      Prefix name for psi files. Default: psi\n");
-    printf(" -t  --interactive        Start interactive Python session. Expert mode.\n");
-    printf(" -v  --verbose            Print a lot of information.\n");
-    printf(" -V  --version            Print version information.\n");
-    printf(" -w  --wipe               Clean out your scratch area.\n");
+    printf(" -a  --append              Append results to output file. Default: Truncate first\n");
+    printf(" -c  --check               Run input checks (not implemented).\n");
+    printf(" -d  --debug               Flush the outfile at every psi::fprintf.\n"
+           "                           Default: true iff --with-debug.\n");
+    printf(" -h  --help                Display this usage information.\n");
+    printf(" -i  --input filename      Input file name. Default: filename\n");
+    printf(" -k  --skip-preprocessor   Skips input preprocessing. Expert mode.\n");
+    printf(" -o  --output filename     Redirect output elsewhere. Default:\n");
+    printf("                           filename.out if input is filename\n");
+    printf("                           filename.out if input is filename.in\n");
+    printf("                           output.dat if input is input.dat\n");
+    printf(" -l  --psidatadir          Specify where to look for the Psi data directory.\n");
+    printf("                           Overrides PSIDATADIR.\n");
+    printf(" -m  --messy               Leave temporary files after the run is completed.\n");
+    printf(" -r  --restart             Number to be used instead of process id.\n");
+    printf(" -n  --nthread             Number of threads to use (overrides OMP_NUM_THREADS)\n");
+    printf("     --new-plugin name     Creates a new directory with files for writing a\n"
+           "                           new plugin. You can specify an additional argument\n"
+           "                           that specifies a template to use, for example:\n"
+           "                               --new-plugin name +mointegrals\n");
+    printf("     --new-plugin-makefile Creates Makefile that can be used to compile\n"
+           "                           plugins. The Makefile is placed in the current\n"
+           "                           directory.\n");
+    printf(" -p  --prefix prefix       Prefix name for psi files. Default: psi\n");
+    printf(" -t  --interactive         Start interactive Python session. Expert mode.\n");
+    printf(" -v  --verbose             Print a lot of information.\n");
+    printf(" -V  --version             Print version information.\n");
+    printf(" -w  --wipe                Clean out your scratch area.\n");
     printf("\n");
     printf("Environment Variables\n");
-    printf("     PSI_SCRATCH          Directory where scratch files are written. Default: /tmp/\n");
-    printf("                          This should be a local, not network, disk\n");
+    printf("     PSI_SCRATCH           Directory where scratch files are written. Default: /tmp/\n");
+    printf("                           This should be a local, not network, disk\n");
 
     exit(EXIT_FAILURE);
 }

@@ -96,7 +96,7 @@ bool v3d_tors(const double *A, const double *B, const double *C, const double *D
   v3d_cross_product(eBC,eCD,tmp2);
   tval = v3d_dot(tmp,tmp2) / (sin(phi_123) * sin(phi_234) );
 
-  if (tval >= 1.0 - Opt_params.tors_cos_tol)
+  if (tval >= 1.0 - Opt_params.tors_cos_tol) // accounts for numerical leaking out of range
     tau = 0.0;
   else if (tval <= -1.0 + Opt_params.tors_cos_tol)
     tau = _pi;
@@ -104,9 +104,11 @@ bool v3d_tors(const double *A, const double *B, const double *C, const double *D
     tau = acos(tval);
 
   // determine sign of torsion ; this convention matches Wilson, Decius and Cross
-  v3d_cross_product(eBC,eCD,tmp);
-  tval = v3d_dot(eAB, tmp);
-  if (tval < 0) tau *= -1;
+  if (tau != _pi) { // no torsion will get value of -pi; Range is (-pi,pi].
+    v3d_cross_product(eBC,eCD,tmp);
+    tval = v3d_dot(eAB, tmp);
+    if (tval < 0) tau *= -1;
+  }
 
   return true;
 }

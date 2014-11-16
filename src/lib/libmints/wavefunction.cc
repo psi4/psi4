@@ -139,8 +139,7 @@ void Wavefunction::common_init()
     molecule_ = Process::environment.molecule();
 
     // Load in the basis set
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    basisset_ = BasisSet::construct(parser, molecule_, "BASIS");
+    basisset_ = BasisSet::pyconstruct_orbital(molecule_, "BASIS", options_.get_str("BASIS"));
 
     // Check the point group of the molecule. If it is not set, set it.
     if (!molecule_->point_group()) {

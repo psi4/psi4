@@ -1,0 +1,678 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0 Driver
+
+               Git: Rev {psiworkweek} e445e15e409b9820232eaa2d8aa596d35394e56e
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  98826
+    PSI4DATADIR: /Users/loriab/linux/psihub/master/psi4/obj-ana/../lib
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+
+#           cc-pvdz                 aug-cc-pvdz
+# BASIS     H  5/ 5   C  14/15      H +4/ 4   C  +9/10
+# RIFIT     H 14/15   C  56/66      H +9/10   C +16/20
+# JKFIT     H 23/25   C  70/81      H +9/10   C +16/20
+
+
+molecule mymol {
+C    0.0  0.0 0.0
+O    1.4  0.0 0.0
+H_r -0.5 -0.7 0.0
+H_l -0.5  0.7 0.0
+}
+
+set print 3
+set basis cc-pvdz
+
+print '    <<<  uniform cc-pVDZ  >>>'
+wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
+compare_strings('CC-PVDZ', get_global_option('BASIS'), 'name')
+compare_integers(38, wert.nbf(), 'nbf()')
+compare_integers(40, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '        <<<  RIFIT (default)  >>>'
+wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_MP2', '', 'RIFIT', get_global_option('BASIS'))
+compare_integers(140, wert.nbf(), 'nbf()')
+compare_integers(162, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '    <<<  cc-pVDZ w/ aug-cc-pVDZ on C  >>>'
+basis dz_PLUS {  # basis block resets BASIS to DZ_PLUS
+    assign cc-pvdz
+    assign c aug-cc-pvdz
+}
+wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
+compare_integers(47, wert.nbf(), 'nbf()')
+compare_integers(50, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '        <<<  RIFIT (default)  >>>'
+wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_MP2', '', 'RIFIT', get_global_option('BASIS'))
+compare_integers(156, wert.nbf(), 'nbf()')
+compare_integers(182, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H_R  >>>'
+basis dz_PLUSplus {
+    assign cc-pvdz
+    assign c aug-cc-pvdz
+    assign h_r aug-cc-pvdz
+}
+wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
+compare_strings('DZ_PLUSPLUS', get_global_option('BASIS'), 'name')
+compare_integers(51, wert.nbf(), 'nbf()')
+compare_integers(54, wert.nao(), 'nao()')
+compare_strings('cs', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '    <<<  RIFIT (custom: force cc-pVDZ on H, default on C, O)  >>>'
+df_basis_mp2 dz_PLUSplusRI {
+    #assign aug-cc-pvdz-ri
+    assign h cc-pvdz-ri
+}
+#wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_MP2', 'dz_plusplusri', 'RIFIT', 'dz_plusplus')
+wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_MP2', get_global_option('DF_BASIS_MP2'), 'RIFIT', get_global_option('BASIS'))
+compare_integers(156, wert.nbf(), 'nbf()')
+compare_integers(182, wert.nao(), 'nao()')
+compare_strings('cs', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>'
+basis dz_PLUSplusplus {
+    assign cc-pvdz
+    assign c aug-cc-pvdz
+    assign h aug-cc-pvdz
+}
+#wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', 'dz_plusplusplus')
+wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
+compare_integers(55, wert.nbf(), 'nbf()')
+compare_integers(58, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '        <<<  JKFIT (default)  >>>'
+#wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_SCF', '', 'JKFIT', 'dz_plusplusplus')
+wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_SCF', '', 'JKFIT', get_global_option('BASIS'))
+compare_integers(220, wert.nbf(), 'nbf()')
+compare_integers(252, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+set basis aug-cc-pvdz
+
+print '    <<<  aug-cc-pVDZ  >>>'
+wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
+compare_integers(64, wert.nbf(), 'nbf()')
+compare_integers(68, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '        <<<  JKFIT (default)  >>>'
+wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_SCF', '', 'JKFIT', get_global_option('BASIS'))
+compare_integers(236, wert.nbf(), 'nbf()')
+compare_integers(272, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+molecule mymol2 {
+C    0.0  0.0 0.0
+O    1.4  0.0 0.0
+H_r -0.5 -0.6 0.3
+H_l -0.5  0.6 0.3
+H_c -0.5  0.0 0.7
+}
+
+set basis dz_plusplusplus
+
+print '    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>'
+wert = psi4.BasisSet.pyconstruct_orbital(mymol2, 'BASIS', get_global_option('BASIS'))
+compare_integers(64, wert.nbf(), 'nbf()')
+compare_integers(67, wert.nao(), 'nao()')
+compare_strings('cs', mymol2.schoenflies_symbol(), 'symm')
+mymol2.print_out()
+
+
+--------------------------------------------------------------------------
+
+ Input file to run:
+from psi4 import *
+from p4const import *
+from p4util import *
+from molutil import *
+from aliases import *
+psi4_io = psi4.IOManager.shared_object()
+geometry("""
+0 1
+H
+H 1 0.74
+""","blank_molecule_psi4_yo")
+
+mymol = geometry("""
+C    0.0  0.0 0.0
+O    1.4  0.0 0.0
+H_r -0.5 -0.7 0.0
+H_l -0.5  0.7 0.0
+""","mymol")
+psi4.IO.set_default_namespace("mymol")
+psi4.set_global_option("PRINT", 3)
+psi4.set_global_option("BASIS", "cc-pvdz")
+print '    <<<  uniform cc-pVDZ  >>>'
+wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
+compare_strings('CC-PVDZ', get_global_option('BASIS'), 'name')
+compare_integers(38, wert.nbf(), 'nbf()')
+compare_integers(40, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+print '        <<<  RIFIT (default)  >>>'
+wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_MP2', '', 'RIFIT', get_global_option('BASIS'))
+compare_integers(140, wert.nbf(), 'nbf()')
+compare_integers(162, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+print '    <<<  cc-pVDZ w/ aug-cc-pVDZ on C  >>>'
+def basisspec_psi4_yo__dz_plus(mol, role):
+    basstrings = {}
+    mol.set_basis_all_atoms("cc-pvdz", role=role)
+    mol.set_basis_by_symbol("c", "aug-cc-pvdz", role=role)
+    return basstrings
+psi4.set_global_option("BASIS", "dz_PLUS")
+wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
+compare_integers(47, wert.nbf(), 'nbf()')
+compare_integers(50, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+print '        <<<  RIFIT (default)  >>>'
+wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_MP2', '', 'RIFIT', get_global_option('BASIS'))
+compare_integers(156, wert.nbf(), 'nbf()')
+compare_integers(182, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+print '    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H_R  >>>'
+def basisspec_psi4_yo__dz_plusplus(mol, role):
+    basstrings = {}
+    mol.set_basis_all_atoms("cc-pvdz", role=role)
+    mol.set_basis_by_symbol("c", "aug-cc-pvdz", role=role)
+    mol.set_basis_by_label("h_r", "aug-cc-pvdz", role=role)
+    return basstrings
+psi4.set_global_option("BASIS", "dz_PLUSplus")
+wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
+compare_strings('DZ_PLUSPLUS', get_global_option('BASIS'), 'name')
+compare_integers(51, wert.nbf(), 'nbf()')
+compare_integers(54, wert.nao(), 'nao()')
+compare_strings('cs', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+print '    <<<  RIFIT (custom: force cc-pVDZ on H, default on C, O)  >>>'
+def basisspec_psi4_yo__dz_plusplusri(mol, role):
+    basstrings = {}
+    mol.set_basis_by_symbol("h", "cc-pvdz-ri", role=role)
+    return basstrings
+psi4.set_global_option("DF_BASIS_MP2", "dz_PLUSplusRI")
+wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_MP2', get_global_option('DF_BASIS_MP2'), 'RIFIT', get_global_option('BASIS'))
+compare_integers(156, wert.nbf(), 'nbf()')
+compare_integers(182, wert.nao(), 'nao()')
+compare_strings('cs', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+print '    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>'
+def basisspec_psi4_yo__dz_plusplusplus(mol, role):
+    basstrings = {}
+    mol.set_basis_all_atoms("cc-pvdz", role=role)
+    mol.set_basis_by_symbol("c", "aug-cc-pvdz", role=role)
+    mol.set_basis_by_symbol("h", "aug-cc-pvdz", role=role)
+    return basstrings
+psi4.set_global_option("BASIS", "dz_PLUSplusplus")
+wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
+compare_integers(55, wert.nbf(), 'nbf()')
+compare_integers(58, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+print '        <<<  JKFIT (default)  >>>'
+wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_SCF', '', 'JKFIT', get_global_option('BASIS'))
+compare_integers(220, wert.nbf(), 'nbf()')
+compare_integers(252, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+psi4.set_global_option("BASIS", "aug-cc-pvdz")
+print '    <<<  aug-cc-pVDZ  >>>'
+wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
+compare_integers(64, wert.nbf(), 'nbf()')
+compare_integers(68, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+print '        <<<  JKFIT (default)  >>>'
+wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_SCF', '', 'JKFIT', get_global_option('BASIS'))
+compare_integers(236, wert.nbf(), 'nbf()')
+compare_integers(272, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+mymol2 = geometry("""
+C    0.0  0.0 0.0
+O    1.4  0.0 0.0
+H_r -0.5 -0.6 0.3
+H_l -0.5  0.6 0.3
+H_c -0.5  0.0 0.7
+""","mymol2")
+psi4.IO.set_default_namespace("mymol2")
+psi4.set_global_option("BASIS", "dz_plusplusplus")
+print '    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>'
+wert = psi4.BasisSet.pyconstruct_orbital(mymol2, 'BASIS', get_global_option('BASIS'))
+compare_integers(64, wert.nbf(), 'nbf()')
+compare_integers(67, wert.nao(), 'nao()')
+compare_strings('cs', mymol2.schoenflies_symbol(), 'symm')
+mymol2.print_out()
+
+*** tstart() called on lawn-128-61-38-191.lawn.gatech.edu
+*** at Thu Nov 13 18:13:57 2014
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: CC-PVDZ
+    atoms 1   entry C          line   130 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz.gbs
+    atoms 2   entry O          line   190 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz.gbs
+    atoms 3-4 entry H          line    20 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz.gbs
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.712584240274
+           O          0.000000000000     0.000000000000     0.687415759726
+           H         -0.000000000000     0.700000000000    -1.212584240274
+           H          0.000000000000    -0.700000000000    -1.212584240274
+
+           C
+              BASIS           CC-PVDZ              0e724cb73142cf91fc8efb053438f61693ddaf05
+           O
+              BASIS           CC-PVDZ              4b23616154e82d50a6d0df2f31088751546b64db
+         H_R
+              BASIS           CC-PVDZ              ffa48e68d852b7ce2683e22f1b3edf2f547a71f6
+         H_L
+              BASIS           CC-PVDZ              ffa48e68d852b7ce2683e22f1b3edf2f547a71f6
+
+   => Loading Basis Set <=
+
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    Name: 
+    atoms 1   entry C          line   158 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz-ri.gbs
+    atoms 2   entry O          line   234 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz-ri.gbs
+    atoms 3-4 entry H          line    18 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz-ri.gbs
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.712584240274
+           O          0.000000000000     0.000000000000     0.687415759726
+           H         -0.000000000000     0.700000000000    -1.212584240274
+           H          0.000000000000    -0.700000000000    -1.212584240274
+
+           C
+              BASIS           CC-PVDZ              0e724cb73142cf91fc8efb053438f61693ddaf05
+              DF_BASIS_MP2                         f7e3ac0f34f4db83ec3786fa4a365afe1229ed00
+           O
+              BASIS           CC-PVDZ              4b23616154e82d50a6d0df2f31088751546b64db
+              DF_BASIS_MP2                         c9cfd93b8bc18bff9e4f26df236866bbf3abfb89
+         H_R
+              BASIS           CC-PVDZ              ffa48e68d852b7ce2683e22f1b3edf2f547a71f6
+              DF_BASIS_MP2                         9def901180abb965e97b353ec392740a75f2e2c8
+         H_L
+              BASIS           CC-PVDZ              ffa48e68d852b7ce2683e22f1b3edf2f547a71f6
+              DF_BASIS_MP2                         9def901180abb965e97b353ec392740a75f2e2c8
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: <function basisspec_psi4_yo__dz_plus at 0x10f0795f0>
+    atoms 1   entry C          line   171 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz.gbs
+    atoms 2   entry O          line   190 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz.gbs
+    atoms 3-4 entry H          line    20 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz.gbs
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.712584240274
+           O          0.000000000000     0.000000000000     0.687415759726
+           H         -0.000000000000     0.700000000000    -1.212584240274
+           H          0.000000000000    -0.700000000000    -1.212584240274
+
+           C
+              BASIS           DZ_PLUS              050458aac9c6d43a15234b5b7892e956d0d08e7e
+              DF_BASIS_MP2                         f7e3ac0f34f4db83ec3786fa4a365afe1229ed00
+           O
+              BASIS           DZ_PLUS              4b23616154e82d50a6d0df2f31088751546b64db
+              DF_BASIS_MP2                         c9cfd93b8bc18bff9e4f26df236866bbf3abfb89
+         H_R
+              BASIS           DZ_PLUS              ffa48e68d852b7ce2683e22f1b3edf2f547a71f6
+              DF_BASIS_MP2                         9def901180abb965e97b353ec392740a75f2e2c8
+         H_L
+              BASIS           DZ_PLUS              ffa48e68d852b7ce2683e22f1b3edf2f547a71f6
+              DF_BASIS_MP2                         9def901180abb965e97b353ec392740a75f2e2c8
+
+   => Loading Basis Set <=
+
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    Name: 
+    atoms 1   entry C          line   111 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz-ri.gbs
+    atoms 2   entry O          line   234 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz-ri.gbs
+    atoms 3-4 entry H          line    18 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz-ri.gbs
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.712584240274
+           O          0.000000000000     0.000000000000     0.687415759726
+           H         -0.000000000000     0.700000000000    -1.212584240274
+           H          0.000000000000    -0.700000000000    -1.212584240274
+
+           C
+              BASIS           DZ_PLUS              050458aac9c6d43a15234b5b7892e956d0d08e7e
+              DF_BASIS_MP2                         20fa965e3a9088d80a644a5abdd4ad75b02fdcfe
+           O
+              BASIS           DZ_PLUS              4b23616154e82d50a6d0df2f31088751546b64db
+              DF_BASIS_MP2                         c9cfd93b8bc18bff9e4f26df236866bbf3abfb89
+         H_R
+              BASIS           DZ_PLUS              ffa48e68d852b7ce2683e22f1b3edf2f547a71f6
+              DF_BASIS_MP2                         9def901180abb965e97b353ec392740a75f2e2c8
+         H_L
+              BASIS           DZ_PLUS              ffa48e68d852b7ce2683e22f1b3edf2f547a71f6
+              DF_BASIS_MP2                         9def901180abb965e97b353ec392740a75f2e2c8
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: <function basisspec_psi4_yo__dz_plusplus at 0x10f079938>
+    atoms 1 entry C          line   171 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz.gbs
+    atoms 2 entry O          line   190 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz.gbs
+    atoms 3 entry H          line    35 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz.gbs
+    atoms 4 entry H          line    20 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz.gbs
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.712584240274     0.000000000000
+           O          0.000000000000    -0.687415759726     0.000000000000
+           H         -0.700000000000     1.212584240274     0.000000000000
+           H          0.700000000000     1.212584240274     0.000000000000
+
+           C
+              BASIS           DZ_PLUSPLUS          050458aac9c6d43a15234b5b7892e956d0d08e7e
+              DF_BASIS_MP2                         20fa965e3a9088d80a644a5abdd4ad75b02fdcfe
+           O
+              BASIS           DZ_PLUSPLUS          4b23616154e82d50a6d0df2f31088751546b64db
+              DF_BASIS_MP2                         c9cfd93b8bc18bff9e4f26df236866bbf3abfb89
+         H_R
+              BASIS           DZ_PLUSPLUS          3e7196597f57f7998553b45fd84984840e42efa2
+              DF_BASIS_MP2                         9def901180abb965e97b353ec392740a75f2e2c8
+         H_L
+              BASIS           DZ_PLUSPLUS          ffa48e68d852b7ce2683e22f1b3edf2f547a71f6
+              DF_BASIS_MP2                         9def901180abb965e97b353ec392740a75f2e2c8
+
+   => Loading Basis Set <=
+
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    Name: <function basisspec_psi4_yo__dz_plusplusri at 0x10f079758>
+    atoms 1   entry C          line   111 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz-ri.gbs
+    atoms 2   entry O          line   234 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz-ri.gbs
+    atoms 3-4 entry H          line    18 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz-ri.gbs
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.712584240274     0.000000000000
+           O          0.000000000000    -0.687415759726     0.000000000000
+           H         -0.700000000000     1.212584240274     0.000000000000
+           H          0.700000000000     1.212584240274     0.000000000000
+
+           C
+              BASIS           DZ_PLUSPLUS          050458aac9c6d43a15234b5b7892e956d0d08e7e
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        20fa965e3a9088d80a644a5abdd4ad75b02fdcfe
+           O
+              BASIS           DZ_PLUSPLUS          4b23616154e82d50a6d0df2f31088751546b64db
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        c9cfd93b8bc18bff9e4f26df236866bbf3abfb89
+         H_R
+              BASIS           DZ_PLUSPLUS          3e7196597f57f7998553b45fd84984840e42efa2
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        9def901180abb965e97b353ec392740a75f2e2c8
+         H_L
+              BASIS           DZ_PLUSPLUS          ffa48e68d852b7ce2683e22f1b3edf2f547a71f6
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        9def901180abb965e97b353ec392740a75f2e2c8
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: <function basisspec_psi4_yo__dz_plusplusplus at 0x10f079cf8>
+    atoms 1   entry C          line   171 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz.gbs
+    atoms 2   entry O          line   190 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz.gbs
+    atoms 3-4 entry H          line    35 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz.gbs
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.712584240274
+           O          0.000000000000     0.000000000000    -0.687415759726
+           H         -0.700000000000    -0.000000000000     1.212584240274
+           H          0.700000000000     0.000000000000     1.212584240274
+
+           C
+              BASIS           DZ_PLUSPLUSPLUS      050458aac9c6d43a15234b5b7892e956d0d08e7e
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        20fa965e3a9088d80a644a5abdd4ad75b02fdcfe
+           O
+              BASIS           DZ_PLUSPLUSPLUS      4b23616154e82d50a6d0df2f31088751546b64db
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        c9cfd93b8bc18bff9e4f26df236866bbf3abfb89
+         H_R
+              BASIS           DZ_PLUSPLUSPLUS      3e7196597f57f7998553b45fd84984840e42efa2
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        9def901180abb965e97b353ec392740a75f2e2c8
+         H_L
+              BASIS           DZ_PLUSPLUSPLUS      3e7196597f57f7998553b45fd84984840e42efa2
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        9def901180abb965e97b353ec392740a75f2e2c8
+
+   => Loading Basis Set <=
+
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    Name: 
+    atoms 1   entry C          line   153 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz-jkfit.gbs
+    atoms 2   entry O          line   220 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz-jkfit.gbs
+    atoms 3-4 entry H          line    69 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz-jkfit.gbs
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.712584240274
+           O          0.000000000000     0.000000000000    -0.687415759726
+           H         -0.700000000000    -0.000000000000     1.212584240274
+           H          0.700000000000     0.000000000000     1.212584240274
+
+           C
+              BASIS           DZ_PLUSPLUSPLUS      050458aac9c6d43a15234b5b7892e956d0d08e7e
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        20fa965e3a9088d80a644a5abdd4ad75b02fdcfe
+              DF_BASIS_SCF                         3aa15befa04249a1d732b31368c835333ae3caca
+           O
+              BASIS           DZ_PLUSPLUSPLUS      4b23616154e82d50a6d0df2f31088751546b64db
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        c9cfd93b8bc18bff9e4f26df236866bbf3abfb89
+              DF_BASIS_SCF                         b57462463db1b385e39e4428a46364991bcd7673
+         H_R
+              BASIS           DZ_PLUSPLUSPLUS      3e7196597f57f7998553b45fd84984840e42efa2
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        9def901180abb965e97b353ec392740a75f2e2c8
+              DF_BASIS_SCF                         dd07fd373d072b971f6eab5a45ba57f5ccb78cab
+         H_L
+              BASIS           DZ_PLUSPLUSPLUS      3e7196597f57f7998553b45fd84984840e42efa2
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        9def901180abb965e97b353ec392740a75f2e2c8
+              DF_BASIS_SCF                         dd07fd373d072b971f6eab5a45ba57f5ccb78cab
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: AUG-CC-PVDZ
+    atoms 1   entry C          line   171 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz.gbs
+    atoms 2   entry O          line   243 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz.gbs
+    atoms 3-4 entry H          line    35 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz.gbs
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.712584240274
+           O          0.000000000000     0.000000000000    -0.687415759726
+           H         -0.700000000000    -0.000000000000     1.212584240274
+           H          0.700000000000     0.000000000000     1.212584240274
+
+           C
+              BASIS           AUG-CC-PVDZ          050458aac9c6d43a15234b5b7892e956d0d08e7e
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        20fa965e3a9088d80a644a5abdd4ad75b02fdcfe
+              DF_BASIS_SCF                         3aa15befa04249a1d732b31368c835333ae3caca
+           O
+              BASIS           AUG-CC-PVDZ          9425041369023020e2f8e1265469269400e53377
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        c9cfd93b8bc18bff9e4f26df236866bbf3abfb89
+              DF_BASIS_SCF                         b57462463db1b385e39e4428a46364991bcd7673
+         H_R
+              BASIS           AUG-CC-PVDZ          3e7196597f57f7998553b45fd84984840e42efa2
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        9def901180abb965e97b353ec392740a75f2e2c8
+              DF_BASIS_SCF                         dd07fd373d072b971f6eab5a45ba57f5ccb78cab
+         H_L
+              BASIS           AUG-CC-PVDZ          3e7196597f57f7998553b45fd84984840e42efa2
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        9def901180abb965e97b353ec392740a75f2e2c8
+              DF_BASIS_SCF                         dd07fd373d072b971f6eab5a45ba57f5ccb78cab
+
+   => Loading Basis Set <=
+
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    Name: 
+    atoms 1   entry C          line   153 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz-jkfit.gbs
+    atoms 2   entry O          line   269 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz-jkfit.gbs
+    atoms 3-4 entry H          line    69 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz-jkfit.gbs
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.712584240274
+           O          0.000000000000     0.000000000000    -0.687415759726
+           H         -0.700000000000    -0.000000000000     1.212584240274
+           H          0.700000000000     0.000000000000     1.212584240274
+
+           C
+              BASIS           AUG-CC-PVDZ          050458aac9c6d43a15234b5b7892e956d0d08e7e
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        20fa965e3a9088d80a644a5abdd4ad75b02fdcfe
+              DF_BASIS_SCF                         3aa15befa04249a1d732b31368c835333ae3caca
+           O
+              BASIS           AUG-CC-PVDZ          9425041369023020e2f8e1265469269400e53377
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        c9cfd93b8bc18bff9e4f26df236866bbf3abfb89
+              DF_BASIS_SCF                         fe190216f71d69a519116a9ba34e028785e1d366
+         H_R
+              BASIS           AUG-CC-PVDZ          3e7196597f57f7998553b45fd84984840e42efa2
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        9def901180abb965e97b353ec392740a75f2e2c8
+              DF_BASIS_SCF                         dd07fd373d072b971f6eab5a45ba57f5ccb78cab
+         H_L
+              BASIS           AUG-CC-PVDZ          3e7196597f57f7998553b45fd84984840e42efa2
+              DF_BASIS_MP2    DZ_PLUSPLUSRI        9def901180abb965e97b353ec392740a75f2e2c8
+              DF_BASIS_SCF                         dd07fd373d072b971f6eab5a45ba57f5ccb78cab
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: <function basisspec_psi4_yo__dz_plusplusplus at 0x10f079cf8>
+    atoms 1   entry C          line   171 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz.gbs
+    atoms 2   entry O          line   190 file /Users/loriab/linux/psihub/master/psi4/lib/basis/cc-pvdz.gbs
+    atoms 3-5 entry H          line    35 file /Users/loriab/linux/psihub/master/psi4/lib/basis/aug-cc-pvdz.gbs
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.673185910378    -0.042238573752     0.000000000000
+           O         -0.726814089622    -0.042238573752     0.000000000000
+           H          1.173185910378     0.257761426248    -0.600000000000
+           H          1.173185910378     0.257761426248     0.600000000000
+           H          1.173185910378     0.657761426248     0.000000000000
+
+           C
+              BASIS           DZ_PLUSPLUSPLUS      050458aac9c6d43a15234b5b7892e956d0d08e7e
+           O
+              BASIS           DZ_PLUSPLUSPLUS      4b23616154e82d50a6d0df2f31088751546b64db
+         H_R
+              BASIS           DZ_PLUSPLUSPLUS      3e7196597f57f7998553b45fd84984840e42efa2
+         H_L
+              BASIS           DZ_PLUSPLUSPLUS      3e7196597f57f7998553b45fd84984840e42efa2
+         H_C
+              BASIS           DZ_PLUSPLUSPLUS      3e7196597f57f7998553b45fd84984840e42efa2
+
+
+*** PSI4 exiting successfully. Buy a developer a beer!
