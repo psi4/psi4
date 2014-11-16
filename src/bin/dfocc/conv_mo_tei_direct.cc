@@ -246,10 +246,10 @@ void DFOCC::tei_ovoo_chem_directAB(SharedTensor2d &K)
 void DFOCC::tei_ijab_chem_directAA(SharedTensor2d &K)
 {   
     timer_on("Build (IJ|AB)");
-    bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA * naoccA));
-    bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA * navirA));
+    bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
+    bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
     bQijA->read(psio_, PSIF_DFOCC_INTS);
-    bQabA->read(psio_, PSIF_DFOCC_INTS);
+    bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
     K->gemm(true, false, bQijA, bQabA, 1.0, 0.0);
     bQijA.reset();
     bQabA.reset();
@@ -262,10 +262,10 @@ void DFOCC::tei_ijab_chem_directAA(SharedTensor2d &K)
 void DFOCC::tei_ijab_chem_directBB(SharedTensor2d &K)
 {   
     timer_on("Build (ij|ab)");
-    bQijB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ij)", nQ, naoccB * naoccB));
-    bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB * navirB));
+    bQijB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ij)", nQ, naoccB, naoccB));
+    bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB, navirB));
     bQijB->read(psio_, PSIF_DFOCC_INTS);
-    bQabB->read(psio_, PSIF_DFOCC_INTS);
+    bQabB->read(psio_, PSIF_DFOCC_INTS, true, true);
     K->gemm(true, false, bQijB, bQabB, 1.0, 0.0);
     bQijB.reset();
     bQabB.reset();
@@ -278,10 +278,10 @@ void DFOCC::tei_ijab_chem_directBB(SharedTensor2d &K)
 void DFOCC::tei_ijab_chem_directAB(SharedTensor2d &K)
 {   
     timer_on("Build (IJ|ab)");
-    bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA * naoccA));
-    bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB * navirB));
+    bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
+    bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB, navirB));
     bQijA->read(psio_, PSIF_DFOCC_INTS);
-    bQabB->read(psio_, PSIF_DFOCC_INTS);
+    bQabB->read(psio_, PSIF_DFOCC_INTS, true, true);
     K->gemm(true, false, bQijA, bQabB, 1.0, 0.0);
     bQijA.reset();
     bQabB.reset();
@@ -297,7 +297,7 @@ void DFOCC::tei_abij_chem_directAB(SharedTensor2d &K)
     bQijB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ij)", nQ, naoccB * naoccB));
     bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA * navirA));
     bQijB->read(psio_, PSIF_DFOCC_INTS);
-    bQabA->read(psio_, PSIF_DFOCC_INTS);
+    bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
     K->gemm(true, false, bQabA, bQijB, 1.0, 0.0);
     bQijB.reset();
     bQabA.reset();

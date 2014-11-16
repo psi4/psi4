@@ -57,6 +57,13 @@ def scale(v, d):
     return [d * v[i] for i in range(len(v))]
 
 
+def naivemult(v, u):
+    """Compute by-element multiplication of vectors *v* and *u*."""
+    if len(u) != len(v):
+        raise ValidationError('naivemult() only defined for vectors of same length \n')
+    return [u[i] * v[i] for i in range(len(v))]
+
+
 def normalize(v):
     """Compute normalized vector *v*."""
     vmag = norm(v)
@@ -266,6 +273,14 @@ def zero(m, n):
     return new_matrix
 
 
+def identity(m):
+    """Create identity matrix"""
+    new_matrix = zero(m, m)
+    for i in range(m):
+        new_matrix[i][i] = 1.0
+    return new_matrix
+
+
 def show(matrix):
     """ Print out matrix"""
     for col in matrix:
@@ -321,4 +336,3 @@ def matadd(matrix1, matrix2, fac1=1.0, fac2=1.0):
         for j in range(len(matrix1[0])):
             new_matrix[i][j] = fac1 * matrix1[i][j] + fac2 * matrix2[i][j]
     return new_matrix
-

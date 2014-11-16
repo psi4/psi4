@@ -71,10 +71,11 @@ CoordEntry::CoordEntry(int entry_number, double Z, double charge, double mass, c
 }
 
 CoordEntry::CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol,
-           const std::string& label, const std::map<std::string, std::string>& basis)
+           const std::string& label, const std::map<std::string, std::string>& basis,
+           const std::map<std::string, std::string>& shells)
     : entry_number_(entry_number), computed_(false), Z_(Z),
       charge_(charge), mass_(mass), symbol_(symbol), label_(label), ghosted_(false),
-      basissets_(basis)
+      basissets_(basis), shells_(shells)
 {
 
 }
@@ -103,11 +104,12 @@ bool CoordEntry::is_equivalent_to(const boost::shared_ptr<CoordEntry> &other) co
     if(other->Z_ != Z_) return false;
     if(other->mass_ != mass_) return false;
     if(other->ghosted_ != ghosted_) return false;
-    std::map<std::string, std::string>::const_iterator iter = basissets_.begin();
-    std::map<std::string, std::string>::const_iterator stop = basissets_.end();
-    for(; iter != stop; ++iter){
-        std::map<std::string, std::string>::const_iterator other_it = other->basissets_.find(iter->first);
-        if(other_it == other->basissets_.end()) return false; // This basis was never defined for the other atom
+    std::map<std::string, std::string>::const_iterator iter = shells_.begin();
+    std::map<std::string, std::string>::const_iterator stop = shells_.end();
+    // TODO do we instead care only about orbital basis?
+    for(; iter != stop; ++iter){  // compare basis set contents in shells_ not names in basissets_
+        std::map<std::string, std::string>::const_iterator other_it = other->shells_.find(iter->first);
+        if(other_it == other->shells_.end()) return false; // This basis was never defined for the other atom
         if(iter->second != other_it->second) return false; // The basis sets are different
     }
     return true;
@@ -129,6 +131,22 @@ const std::string& CoordEntry::basisset(const std::string& type) const
 }
 
 
+void CoordEntry::set_shell(const std::string& name, const std::string& type)
+{
+    shells_[type] = name;
+}
+
+const std::string& CoordEntry::shell(const std::string& type) const
+{
+    std::map<std::string, std::string>::const_iterator iter = shells_.find(type);
+
+    if (iter == shells_.end())
+        throw PSIEXCEPTION("CoordEntry::shell: Basisset not set for "+label_+" and type of " + type);
+
+    return (*iter).second;
+}
+
+
 CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
                                boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z)
     : CoordEntry(entry_number, Z, charge, mass, symbol, label), x_(x), y_(y), z_(z)
@@ -137,8 +155,9 @@ CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double
 
 CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
                boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z,
-               const std::map<std::string, std::string>& basis)
-    : CoordEntry(entry_number, Z, charge, mass, symbol, label, basis), x_(x), y_(y), z_(z)
+               const std::map<std::string, std::string>& basis,
+               const std::map<std::string, std::string>& shells)
+    : CoordEntry(entry_number, Z, charge, mass, symbol, label, basis, shells), x_(x), y_(y), z_(z)
 {
 }
 
@@ -202,13 +221,14 @@ ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mas
 
 ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
              const std::map<std::string, std::string>& basis,
+             const std::map<std::string, std::string>& shells,
              boost::shared_ptr<CoordEntry> rto,
              boost::shared_ptr<CoordValue> rval,
              boost::shared_ptr<CoordEntry> ato,
              boost::shared_ptr<CoordValue> aval,
              boost::shared_ptr<CoordEntry> dto,
              boost::shared_ptr<CoordValue> dval)
-    : CoordEntry(entry_number, Z, charge, mass, symbol, label, basis),
+    : CoordEntry(entry_number, Z, charge, mass, symbol, label, basis, shells),
       rto_(rto), rval_(rval),
       ato_(ato), aval_(aval),
       dto_(dto), dval_(dval)

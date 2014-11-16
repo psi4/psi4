@@ -155,21 +155,35 @@ class Tensor2d
   void set(SharedTensor2d &A);
   void set(SharedMatrix A);
   void set(SharedTensor1d &A);
+  // A2d_[n][ij] = A(i,j)
+  void set_row(const SharedTensor2d &A, int n);
+  // A2d_[ij][n] = A(i,j)
+  void set_column(const SharedTensor2d &A, int n);
   double get(int i, int j);
+  // A2d_[ij] = A(n, ij)
+  void get_row(const SharedTensor2d &A, int n);
+  // A2d_[ij] = A(ij, n)
+  void get_column(const SharedTensor2d &A, int n);
   // A2d = alpha * Adum
   void add(const SharedTensor2d &a);
   void add(double **a);
   void add(double alpha, const SharedTensor2d &a);
   void add(int i, int j, double value);
+  // A2d_[n][ij] += A(i,j)
+  void add2row(const SharedTensor2d &A, int n);
+  // A2d_[ij][n] += A(i,j)
+  void add2col(const SharedTensor2d &A, int n);
   void subtract(const SharedTensor2d &a);
   void subtract(int i, int j, double value);
   // axpy: Y <-- a * X + Y
   void axpy(double **a, double alpha);
   void axpy(const SharedTensor2d &a, double alpha);
+  void axpy(ULI length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha);
   double **transpose2();
   SharedTensor2d transpose();
   void copy(const SharedTensor2d &Adum);
   void copy(double **a);
+  void copy(ULI length, const SharedTensor2d &A, int inc_a, int inc_2d);
   // diagonalize: diagonalize via rsp
   void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff);
   // cdsyev: diagonalize via lapack

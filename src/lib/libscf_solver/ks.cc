@@ -65,8 +65,8 @@ void KS::common_init()
     molecule_ = Process::environment.molecule();
 
     // Load in the basis set
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    basisset_ = BasisSet::construct(parser, molecule_, "BASIS");
+    basisset_ = BasisSet::pyconstruct_orbital(molecule_,
+        "BASIS", options_.get_str("BASIS"));
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
     sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, fact));
 
