@@ -109,6 +109,7 @@ Unclear and unchanged calcinfo values:
 
 
 DGAS TODO list
+Remove get_mo_info from mcscf loop - cleanup issue
 Remove read_lag
 Use psi diis
 First crack at CI wfn
