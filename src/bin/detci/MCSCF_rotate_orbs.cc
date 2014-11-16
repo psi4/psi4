@@ -75,7 +75,7 @@ void rotate_orbs_irrep(int irrep, int dim, double **mo_coeffs,
   /* print new coefficients */
   if (MCSCF_Parameters.print_mos) {
     outfile->Printf("\n\tOld molecular orbitals for irrep %s\n", 
-      MCSCF_CalcInfo.labels[irrep]);
+      CalcInfo.labels[irrep]);
     print_mat(tmpmat, dim, dim, "outfile");
   }
 
@@ -94,7 +94,7 @@ void rotate_orbs_irrep(int irrep, int dim, double **mo_coeffs,
   /* print new coefficients */
   if (MCSCF_Parameters.print_mos) {
     outfile->Printf("\n\tNew molecular orbitals for irrep %s\n", 
-      MCSCF_CalcInfo.labels[irrep]);
+      CalcInfo.labels[irrep]);
     print_mat(tmpmat, dim, dim, "outfile");
   }
 

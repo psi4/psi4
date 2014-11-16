@@ -41,9 +41,9 @@
 
 namespace psi { namespace detci {
 
-void pitzer_arrays(int nirreps, int *frdocc, int *fruocc, int *orbspi, 
-                   int *first, int *last, int *fstact, int *lstact,
-                   int *active);
+// void pitzer_arrays(int nirreps, int *frdocc, int *fruocc, int *orbspi, 
+//                    int *first, int *last, int *fstact, int *lstact,
+//                    int *active);
 double *** construct_evects(int nirreps, int *active, int *orbspi,
                             int *first, int *last, int *fstact, int *lstact,
                             int printflag);
@@ -69,15 +69,15 @@ void mcscf_get_mo_info(Options &options)
    MCSCF_CalcInfo.mo_hess = NULL;
    MCSCF_CalcInfo.mo_hess_diag = NULL;
 
-   /* information from checkpoint file */
+   // /* information from checkpoint file */
    chkpt_init(PSIO_OPEN_OLD);
-   CalcInfo.nirreps = chkpt_rd_nirreps();
+   // CalcInfo.nirreps = chkpt_rd_nirreps();
    MCSCF_CalcInfo.nmo = chkpt_rd_nmo();
    MCSCF_CalcInfo.nso = chkpt_rd_nmo(); /* change to nbfso after conversion */
-   MCSCF_CalcInfo.labels = chkpt_rd_irr_labs();
-   MCSCF_CalcInfo.orbs_per_irr = chkpt_rd_orbspi();
-   MCSCF_CalcInfo.enuc = chkpt_rd_enuc();
-   MCSCF_CalcInfo.efzc = chkpt_rd_efzc();
+   CalcInfo.labels = chkpt_rd_irr_labs();
+   CalcInfo.orbs_per_irr = chkpt_rd_orbspi();
+   // MCSCF_CalcInfo.enuc = chkpt_rd_enuc();
+   // MCSCF_CalcInfo.efzc = chkpt_rd_efzc();
    MCSCF_CalcInfo.docc = chkpt_rd_clsdpi();
    MCSCF_CalcInfo.socc = chkpt_rd_openpi();
    chkpt_close();
@@ -109,7 +109,7 @@ void mcscf_get_mo_info(Options &options)
    MCSCF_CalcInfo.ras_opi = init_int_matrix(MAX_RAS_SPACES,CalcInfo.nirreps);
       
    if (!ras_set2(CalcInfo.nirreps, MCSCF_CalcInfo.nmo, 1, 1,
-                MCSCF_CalcInfo.orbs_per_irr, MCSCF_CalcInfo.docc, MCSCF_CalcInfo.socc, 
+                CalcInfo.orbs_per_irr, MCSCF_CalcInfo.docc, MCSCF_CalcInfo.socc, 
                 MCSCF_CalcInfo.frozen_docc, MCSCF_CalcInfo.frozen_uocc, 
                 MCSCF_CalcInfo.rstr_docc, MCSCF_CalcInfo.rstr_uocc,
                 MCSCF_CalcInfo.ras_opi, MCSCF_CalcInfo.pitz2ci, 1, 0, options)) 
@@ -118,19 +118,19 @@ void mcscf_get_mo_info(Options &options)
    }
    
 
-  /* Compute maximum number of orbitals per irrep including
-  ** and not including fzv
-  */
-  MCSCF_CalcInfo.max_orbs_per_irrep = 0;
-  MCSCF_CalcInfo.max_pop_per_irrep = 0;
-  for (i=0; i<CalcInfo.nirreps; i++) {
-    if (MCSCF_CalcInfo.max_orbs_per_irrep < MCSCF_CalcInfo.orbs_per_irr[i])
-      MCSCF_CalcInfo.max_orbs_per_irrep = MCSCF_CalcInfo.orbs_per_irr[i];
-    if (MCSCF_CalcInfo.max_pop_per_irrep < (MCSCF_CalcInfo.orbs_per_irr[i] - 
-                                   MCSCF_CalcInfo.frozen_uocc[i]))
-      MCSCF_CalcInfo.max_pop_per_irrep = MCSCF_CalcInfo.orbs_per_irr[i] -
-                                   MCSCF_CalcInfo.frozen_uocc[i];      
-  }
+  // /* Compute maximum number of orbitals per irrep including
+  // ** and not including fzv
+  // */
+  // MCSCF_CalcInfo.max_orbs_per_irrep = 0;
+  // MCSCF_CalcInfo.max_pop_per_irrep = 0;
+  // for (i=0; i<CalcInfo.nirreps; i++) {
+  //   if (MCSCF_CalcInfo.max_orbs_per_irrep < CalcInfo.orbs_per_irr[i])
+  //     MCSCF_CalcInfo.max_orbs_per_irrep = CalcInfo.orbs_per_irr[i];
+  //   if (MCSCF_CalcInfo.max_pop_per_irrep < (CalcInfo.orbs_per_irr[i] - 
+  //                                  MCSCF_CalcInfo.frozen_uocc[i]))
+  //     MCSCF_CalcInfo.max_pop_per_irrep = CalcInfo.orbs_per_irr[i] -
+  //                                  MCSCF_CalcInfo.frozen_uocc[i];      
+  // }
 
 
   /* construct the "ordering" array, which maps the other direction */
@@ -145,7 +145,7 @@ void mcscf_get_mo_info(Options &options)
   /* Set up an array to map absolute ci order to relative Pitzer order */
   MCSCF_CalcInfo.ci2relpitz = init_int_array(MCSCF_CalcInfo.nmo);
   for (h=0,cnt=0; h<CalcInfo.nirreps; h++) {
-    for (i=0; i<MCSCF_CalcInfo.orbs_per_irr[h]; i++,cnt++) {
+    for (i=0; i<CalcInfo.orbs_per_irr[h]; i++,cnt++) {
       j = MCSCF_CalcInfo.pitz2ci[cnt];
       MCSCF_CalcInfo.ci2relpitz[j] = i;
     }
@@ -167,15 +167,15 @@ void mcscf_get_mo_info(Options &options)
                               __FILE__, __LINE__);
   }
 
-  /* transform orbsym vector to new MO order */
-  MCSCF_CalcInfo.orbsym = init_int_array(MCSCF_CalcInfo.nmo);
+  // /* transform orbsym vector to new MO order */
+  // MCSCF_CalcInfo.orbsym = init_int_array(MCSCF_CalcInfo.nmo);
 
-  for (i=0,cnt=0; i<CalcInfo.nirreps; i++) {
-    for (j=0; j<MCSCF_CalcInfo.orbs_per_irr[i]; j++,cnt++) {
-      k = MCSCF_CalcInfo.pitz2ci[cnt];
-      MCSCF_CalcInfo.orbsym[k] = i;
-    }
-  }
+  // for (i=0,cnt=0; i<CalcInfo.nirreps; i++) {
+  //   for (j=0; j<CalcInfo.orbs_per_irr[i]; j++,cnt++) {
+  //     k = MCSCF_CalcInfo.pitz2ci[cnt];
+  //     MCSCF_CalcInfo.orbsym[k] = i;
+  //   }
+  // }
 
   MCSCF_CalcInfo.num_fzv_orbs = 0;  MCSCF_CalcInfo.num_vir_orbs = 0;
   for (i=0; i<CalcInfo.nirreps; i++) {
@@ -236,17 +236,17 @@ void mcscf_get_mo_info(Options &options)
 
 
 
-  /* get the Pitzer arrays first, last, fstact, lstact, and active */
-  MCSCF_CalcInfo.first = init_int_array(CalcInfo.nirreps);
-  MCSCF_CalcInfo.last = init_int_array(CalcInfo.nirreps);
-  MCSCF_CalcInfo.fstact = init_int_array(CalcInfo.nirreps);
-  MCSCF_CalcInfo.lstact = init_int_array(CalcInfo.nirreps);
-  MCSCF_CalcInfo.active = init_int_array(CalcInfo.nirreps);
+  // /* get the Pitzer arrays first, last, fstact, lstact, and active */
+  // MCSCF_CalcInfo.first = init_int_array(CalcInfo.nirreps);
+  // MCSCF_CalcInfo.last = init_int_array(CalcInfo.nirreps);
+  // MCSCF_CalcInfo.fstact = init_int_array(CalcInfo.nirreps);
+  // MCSCF_CalcInfo.lstact = init_int_array(CalcInfo.nirreps);
+  // MCSCF_CalcInfo.active = init_int_array(CalcInfo.nirreps);
 
   /* I think I never use this... --CDS 6/12/04
-  pitzer_arrays(CalcInfo.nirreps, MCSCF_CalcInfo.frozen_docc, MCSCF_CalcInfo.frozen_uocc,
-                MCSCF_CalcInfo.orbs_per_irr, MCSCF_CalcInfo.first, MCSCF_CalcInfo.last,
-                MCSCF_CalcInfo.fstact, MCSCF_CalcInfo.lstact, MCSCF_CalcInfo.active);
+  // pitzer_arrays(CalcInfo.nirreps, MCSCF_CalcInfo.frozen_docc, MCSCF_CalcInfo.frozen_uocc,
+  //               CalcInfo.orbs_per_irr, MCSCF_CalcInfo.first, MCSCF_CalcInfo.last,
+  //               MCSCF_CalcInfo.fstact, MCSCF_CalcInfo.lstact, MCSCF_CalcInfo.active);
   */
 
   /* allocate memory to store the MO coefficient matrix symm blocked */
@@ -254,7 +254,7 @@ void mcscf_get_mo_info(Options &options)
   MCSCF_CalcInfo.mo_coeffs = (double ***) malloc(CalcInfo.nirreps * 
                                            sizeof(double **));
   for (irrep=0; irrep<CalcInfo.nirreps; irrep++) {
-    i = MCSCF_CalcInfo.orbs_per_irr[irrep];
+    i = CalcInfo.orbs_per_irr[irrep];
     if (i==0) continue;
     MCSCF_CalcInfo.mo_coeffs[irrep] = block_matrix(i,i);   
   }
@@ -312,72 +312,72 @@ void mcscf_get_mo_info(Options &options)
 ** C. David Sherrill
 ** April 1998
 */
-void pitzer_arrays(int nirreps, int *frdocc, int *fruocc, int *orbspi, 
-                   int *first, int *last, int *fstact, int *lstact,int *active)
-{
-
-  int h;
-  int first_offset, last_offset;
-
-  /*
-   * Construct first and last index arrays: this defines the first
-   * absolute orbital index (Pitzer ordering) and last absolute orbital
-   * index for each irrep.  When there are no orbitals for an irrep, the
-   * value is -1 for first[] and -2 for last[].  Note that there must be
-   * orbitals in the first irrep (i.e. totally symmetric) for this to work.
-   */
-  for(h=0; h < nirreps; h++) {
-    first[h] = -1;
-    last[h] = -2;
-  }
-
-  first_offset = 0;
-  last_offset = orbspi[0] - 1; 
-  first[0] = first_offset;
-  last[0] = last_offset;
-
-  for(h=1; h < nirreps; h++) {
-    first_offset += orbspi[h-1];
-    last_offset += orbspi[h];
-    if(orbspi[h]) {
-      first[h] = first_offset;
-      last[h] = last_offset;
-    }
-  }
-
-  /*
-   * Construct first and last active index arrays: this defines the first
-   * absolute orbital index (Pitzer ordering) and last absolute orbital
-   * index for each irrep, excluding frozen orbitals.  When there are no
-   * orbitals for an irrep, the value is -1 for first[] and -2 for last[].
-   * Note that there must be orbitals in the first irrep (i.e. totally
-   * symmetric) for this to work.  
-   */
-  for(h=0; h < nirreps; h++) {
-    fstact[h] = -1;
-    lstact[h] = -2;
-  }
-
-  first_offset = frdocc[0];
-  last_offset = orbspi[0] - fruocc[0] - 1; 
-  fstact[0] = first_offset;
-  lstact[0] = last_offset;
-
-  for(h=1; h < nirreps; h++) {
-    first_offset += orbspi[h-1]+frdocc[h]-frdocc[h-1];
-    last_offset += orbspi[h] - fruocc[h] + fruocc[h-1];
-    if(orbspi[h]) {
-      fstact[h] = first_offset;
-      lstact[h] = last_offset;
-    }
-  }
-
-  /* Now define active[] such that frozen orbitals are taken into account */
-  for(h=0; h < nirreps; h++) {
-    active[h] = orbspi[h]-frdocc[h]-fruocc[h];
-  }
-
-}
+// void pitzer_arrays(int nirreps, int *frdocc, int *fruocc, int *orbspi, 
+//                    int *first, int *last, int *fstact, int *lstact,int *active)
+// {
+// 
+//   int h;
+//   int first_offset, last_offset;
+// 
+//   /*
+//    * Construct first and last index arrays: this defines the first
+//    * absolute orbital index (Pitzer ordering) and last absolute orbital
+//    * index for each irrep.  When there are no orbitals for an irrep, the
+//    * value is -1 for first[] and -2 for last[].  Note that there must be
+//    * orbitals in the first irrep (i.e. totally symmetric) for this to work.
+//    */
+//   for(h=0; h < nirreps; h++) {
+//     first[h] = -1;
+//     last[h] = -2;
+//   }
+// 
+//   first_offset = 0;
+//   last_offset = orbspi[0] - 1; 
+//   first[0] = first_offset;
+//   last[0] = last_offset;
+// 
+//   for(h=1; h < nirreps; h++) {
+//     first_offset += orbspi[h-1];
+//     last_offset += orbspi[h];
+//     if(orbspi[h]) {
+//       first[h] = first_offset;
+//       last[h] = last_offset;
+//     }
+//   }
+// 
+//   /*
+//    * Construct first and last active index arrays: this defines the first
+//    * absolute orbital index (Pitzer ordering) and last absolute orbital
+//    * index for each irrep, excluding frozen orbitals.  When there are no
+//    * orbitals for an irrep, the value is -1 for first[] and -2 for last[].
+//    * Note that there must be orbitals in the first irrep (i.e. totally
+//    * symmetric) for this to work.  
+//    */
+//   for(h=0; h < nirreps; h++) {
+//     fstact[h] = -1;
+//     lstact[h] = -2;
+//   }
+// 
+//   first_offset = frdocc[0];
+//   last_offset = orbspi[0] - fruocc[0] - 1; 
+//   fstact[0] = first_offset;
+//   lstact[0] = last_offset;
+// 
+//   for(h=1; h < nirreps; h++) {
+//     first_offset += orbspi[h-1]+frdocc[h]-frdocc[h-1];
+//     last_offset += orbspi[h] - fruocc[h] + fruocc[h-1];
+//     if(orbspi[h]) {
+//       fstact[h] = first_offset;
+//       lstact[h] = last_offset;
+//     }
+//   }
+// 
+//   /* Now define active[] such that frozen orbitals are taken into account */
+//   for(h=0; h < nirreps; h++) {
+//     active[h] = orbspi[h]-frdocc[h]-fruocc[h];
+//   }
+// 
+// }
 
 
 
@@ -395,7 +395,7 @@ void read_cur_orbs(void)
 
   chkpt_init(PSIO_OPEN_OLD);
   for (h=0; h<nirreps; h++) {
-    dim = MCSCF_CalcInfo.orbs_per_irr[h];
+    dim = CalcInfo.orbs_per_irr[h];
     if (dim==0) continue;
     tmat = chkpt_rd_scf_irrep(h); 
     for (i=0; i<dim; i++) 
@@ -444,7 +444,7 @@ double *** construct_evects(int nirreps, int *active, int *orbspi,
 
       if(printflag) {
         outfile->Prinft("\n\tMolecular Orbitals for Irrep %s\n",
-                MCSCF_CalcInfo.labels[h]);
+                CalcInfo.labels[h]);
         print_mat(evects[h],orbspi[h],active[h],"outfile");
       }
     }

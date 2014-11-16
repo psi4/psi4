@@ -51,26 +51,27 @@ void mcscf_cleanup(void)
   free(MCSCF_CalcInfo.frozen_uocc);
   free(MCSCF_CalcInfo.rstr_docc);
   free(MCSCF_CalcInfo.rstr_uocc);
-  free(MCSCF_CalcInfo.orbsym);
+  // free(MCSCF_CalcInfo.orbsym);
   free(MCSCF_CalcInfo.pitz2ci);
   free(MCSCF_CalcInfo.ci2pitz);
   free(MCSCF_CalcInfo.ci2relpitz);
-  free(MCSCF_CalcInfo.first);
-  free(MCSCF_CalcInfo.last);
-  free(MCSCF_CalcInfo.fstact);
-  free(MCSCF_CalcInfo.lstact);
-  free(MCSCF_CalcInfo.active);
+  // free(MCSCF_CalcInfo.first);
+  // free(MCSCF_CalcInfo.last);
+  // free(MCSCF_CalcInfo.fstact);
+  // free(MCSCF_CalcInfo.lstact);
+  // free(MCSCF_CalcInfo.active);
   free_int_matrix(MCSCF_CalcInfo.ras_opi);
   free_int_matrix(MCSCF_CalcInfo.fzc_orbs);
   free_int_matrix(MCSCF_CalcInfo.fzv_orbs);
   for (i=0; i<MAX_RAS_SPACES; i++) 
     free_int_matrix(MCSCF_CalcInfo.ras_orbs[i]);
   free(MCSCF_CalcInfo.ras_orbs);
-  for (i=0; i<CalcInfo.nirreps; i++) 
-    free(MCSCF_CalcInfo.labels[i]);
+
+  // for (i=0; i<CalcInfo.nirreps; i++) 
+  //   free(CalcInfo.labels[i]);
 
   for (i=0; i<CalcInfo.nirreps; i++) {
-    if (MCSCF_CalcInfo.orbs_per_irr[i]) 
+    if (CalcInfo.orbs_per_irr[i]) 
       free_block(MCSCF_CalcInfo.mo_coeffs[i]);
   }
   free(MCSCF_CalcInfo.mo_coeffs);
@@ -87,7 +88,7 @@ void mcscf_cleanup(void)
   if (MCSCF_CalcInfo.mo_hess != NULL) free_block(MCSCF_CalcInfo.mo_hess);
   free(MCSCF_CalcInfo.theta_cur);
   free(MCSCF_CalcInfo.theta_step);
-  free(MCSCF_CalcInfo.orbs_per_irr);
+  // free(CalcInfo.orbs_per_irr);
 }
 
 }} // end namespace psi::detci

@@ -584,16 +584,16 @@ struct mcscf_calcinfo {
   int nso;               /* number of basis functions in symmetry orbitals */
   int nmotri;            /* num elements in lwr diag matrix nbfso big */
   int nbfao;             /* number of basis functions in atomic orbitals */
-  int nirreps;           /* number of irreducible representations in pt grp */
+  // int nirreps;           /* number of irreducible representations in pt grp */
   int num_fzc_orbs;      /* number of FZC orbitals (i.e. frozen core) */
   int num_cor_orbs;      /* number of COR orbitals (i.e. restricted core) */
   int num_vir_orbs;      /* number of VIR orbitals (i.e. restricted virtual) */
   int num_fzv_orbs;      /* number of frozen/deleted virtual orbitals */
   int npop;              /* number of populated orbitals, nbfso - nfzv */
-  int max_orbs_per_irrep;/* max orbitals per irrep fzv not included */
-  int max_pop_per_irrep; /* max populated orbitals per irrep fzv included */
+  // int max_orbs_per_irrep;/* max orbitals per irrep fzv not included */
+  // int max_pop_per_irrep; /* max populated orbitals per irrep fzv included */
 
-  int *orbs_per_irr;     /* number of orbitals per irrep */
+  // int *orbs_per_irr;     /* number of orbitals per irrep */
   int *docc;             /* doubly occupied orbitals per irrep */
   int *socc;             /* singly occupied orbitals per irrep */
   int *frozen_docc;      /* frozen doubly occupied orbs per irrep */
@@ -604,7 +604,7 @@ struct mcscf_calcinfo {
   int *pitz2ci;          /* map Pitzer-ordered orbitals to our ordering */
   int *ci2pitz;          /* map our ordering back to Pitzer ordering */
   int *ci2relpitz;       /* map CI ordering to _relative_ pitzer ordering */
-  char **labels;         /* labels for irreps */
+  // char **labels;         /* labels for irreps */
   int **ras_opi;         /* num orbs per irr per ras space ras_opi[ras][irr] */
   int **fzc_orbs;        /* frozen core orbitals numbers [irrep][orbnum] */
   int **cor_orbs;        /* restricted core orbitals numbers [irrep][orbnum] */
@@ -613,13 +613,13 @@ struct mcscf_calcinfo {
 
   int ***ras_orbs;       /* ras_orbs[ras][irr][cnt] gives an orbital number */
 
-  int *first;            /* first orbital per irrep (in Pitzer order)    */
-  int *last;             /* last  orbital per irrep (in Pitzer order)    */
-  int *fstact;           /* first active orb per irrep (in Pitzer order) */
-  int *lstact;           /* last  active orb per irrep (in Pitzer order) */
-  int *active;           /* num active orbs per irrep                    */
-  double enuc;           /* nuclear repulsion energy */
-  double efzc;           /* frozen-core energy */
+  // int *first;            /* first orbital per irrep (in Pitzer order)    */
+  // int *last;             /* last  orbital per irrep (in Pitzer order)    */
+  // int *fstact;           /* first active orb per irrep (in Pitzer order) */
+  // int *lstact;           /* last  active orb per irrep (in Pitzer order) */
+  // int *active;           /* num active orbs per irrep                    */
+  // double enuc;           /* nuclear repulsion energy */
+  // double efzc;           /* frozen-core energy */
   double ***mo_coeffs;   /* matrix of molecular orbitals in Pitzer order */
   double *onel_ints;     /* one-electron integrals */
   double *onel_ints_bare;/* one-electron integrals, bare h only */
