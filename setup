@@ -190,6 +190,10 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable bounds checking [default: %(default)s]')
+    group.add_argument('--memcheck',
+            action='store_true',
+            default=False,
+            help='enable memcheck build with Valgrind [default: %(default)s]')
     group.add_argument('--coverage',
             action='store_true',
             default=False,
@@ -228,6 +232,24 @@ def parse_input():
             action='store_true',
             default=False,
             help='build using timings [default: %(default)s]')
+    
+    group = parser.add_mutually_exclusive_group(required=False) 
+    group.add_argument('--asan',
+            action='store_true',
+            default=False,
+            help='enable address sanitizer (ASan) build [default: %(default)s]')
+    group.add_argument('--msan',
+            action='store_true',
+            default=False,
+            help='enable memory sanitizer (MSan) build [default: %(default)s]')
+    group.add_argument('--tsan',
+            action='store_true',
+            default=False,
+            help='enable thread sanitizer (TSan) build [default: %(default)s]')
+    group.add_argument('--ubsan',
+            action='store_true',
+            default=False,
+            help='enable undefined behaviour sanitizer (UBSan) build [default: %(default)s]')
 
     group = parser.add_argument_group('External libraries')
     # ERD package
@@ -416,6 +438,21 @@ def gen_cmake_command(args):
 
     if args.check:
         command += ' -DENABLE_BOUNDS_CHECK=ON'
+    
+    if args.memcheck:
+        command += ' -DENABLE_MEMCHECK=ON'
+    
+    if args.asan:
+        command += ' -DENABLE_ASAN=ON'
+    
+    if args.msan:
+        command += ' -DENABLE_MSAN=ON'
+    
+    if args.tsan:
+        command += ' -DENABLE_TSAN=ON'
+    
+    if args.ubsan:
+        command += ' -DENABLE_UBSAN=ON'
 
     if args.coverage:
         command += ' -DENABLE_CODE_COVERAGE=ON'
@@ -423,7 +460,10 @@ def gen_cmake_command(args):
     if args.prefix:
         command += ' -DCMAKE_INSTALL_PREFIX=' + args.prefix
 
-    command += ' -DCMAKE_BUILD_TYPE=%s' % args.type
+    if (args.asan or args.msan or args.tsan or args.ubsan):
+        command += ' -DCMAKE_BUILD_TYPE=debug'
+    else:
+        command += ' -DCMAKE_BUILD_TYPE=%s' % args.type
 
     if args.define:
         for definition in args.define:

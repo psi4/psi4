@@ -100,7 +100,7 @@ add_custom_command(
 # Clean-up
 add_custom_command(
     OUTPUT boost.cleanedup
-    COMMAND ${CMAKE_COMMAND} -E remove ${BOOST_BUILD_DIR}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${BOOST_BUILD_DIR}
     COMMAND ${CMAKE_COMMAND} -E touch ${PROJECT_BINARY_DIR}/boost/boost.cleanedup
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/boost
     DEPENDS boost.installed 
