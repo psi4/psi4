@@ -44,9 +44,9 @@ namespace psi { namespace detci {
 // void pitzer_arrays(int nirreps, int *frdocc, int *fruocc, int *orbspi, 
 //                    int *first, int *last, int *fstact, int *lstact,
 //                    int *active);
-double *** construct_evects(int nirreps, int *active, int *orbspi,
-                            int *first, int *last, int *fstact, int *lstact,
-                            int printflag);
+// double *** construct_evects(int nirreps, int *active, int *orbspi,
+//                             int *first, int *last, int *fstact, int *lstact,
+//                             int printflag);
 
 /*
 ** GET_MO_INFO
@@ -74,8 +74,8 @@ void mcscf_get_mo_info(Options &options)
    // CalcInfo.nirreps = chkpt_rd_nirreps();
    MCSCF_CalcInfo.nmo = chkpt_rd_nmo();
    MCSCF_CalcInfo.nso = chkpt_rd_nmo(); /* change to nbfso after conversion */
-   CalcInfo.labels = chkpt_rd_irr_labs();
-   CalcInfo.orbs_per_irr = chkpt_rd_orbspi();
+   // CalcInfo.labels = chkpt_rd_irr_labs();
+   // CalcInfo.orbs_per_irr = chkpt_rd_orbspi();
    // MCSCF_CalcInfo.enuc = chkpt_rd_enuc();
    // MCSCF_CalcInfo.efzc = chkpt_rd_efzc();
    MCSCF_CalcInfo.docc = chkpt_rd_clsdpi();
@@ -105,14 +105,14 @@ void mcscf_get_mo_info(Options &options)
 
    MCSCF_CalcInfo.rstr_docc = init_int_array(CalcInfo.nirreps);
    MCSCF_CalcInfo.rstr_uocc = init_int_array(CalcInfo.nirreps);
-   MCSCF_CalcInfo.pitz2ci = init_int_array(MCSCF_CalcInfo.nmo);
-   MCSCF_CalcInfo.ras_opi = init_int_matrix(MAX_RAS_SPACES,CalcInfo.nirreps);
+   CalcInfo.reorder = init_int_array(MCSCF_CalcInfo.nmo);
+   CalcInfo.ras_opi = init_int_matrix(MAX_RAS_SPACES,CalcInfo.nirreps);
       
    if (!ras_set2(CalcInfo.nirreps, MCSCF_CalcInfo.nmo, 1, 1,
                 CalcInfo.orbs_per_irr, MCSCF_CalcInfo.docc, MCSCF_CalcInfo.socc, 
                 MCSCF_CalcInfo.frozen_docc, MCSCF_CalcInfo.frozen_uocc, 
                 MCSCF_CalcInfo.rstr_docc, MCSCF_CalcInfo.rstr_uocc,
-                MCSCF_CalcInfo.ras_opi, MCSCF_CalcInfo.pitz2ci, 1, 0, options)) 
+                CalcInfo.ras_opi, CalcInfo.reorder, 1, 0, options)) 
    { 
      throw PsiException("Error in ras_set().  Aborting.", __FILE__, __LINE__) ;
    }
@@ -133,20 +133,20 @@ void mcscf_get_mo_info(Options &options)
   // }
 
 
-  /* construct the "ordering" array, which maps the other direction */
-  /* i.e. from a CI orbital to a Pitzer orbital                     */
-  MCSCF_CalcInfo.ci2pitz = init_int_array(MCSCF_CalcInfo.nmo);
-  for (i=0; i<MCSCF_CalcInfo.nmo; i++) {
-    j = MCSCF_CalcInfo.pitz2ci[i];
-    MCSCF_CalcInfo.ci2pitz[j] = i;
-  }
+  // /* construct the "ordering" array, which maps the other direction */
+  // /* i.e. from a CI orbital to a Pitzer orbital                     */
+  // CalcInfo.order = init_int_array(MCSCF_CalcInfo.nmo);
+  // for (i=0; i<MCSCF_CalcInfo.nmo; i++) {
+  //   j = CalcInfo.reorder[i];
+  //   CalcInfo.order[j] = i;
+  // }
 
 
   /* Set up an array to map absolute ci order to relative Pitzer order */
   MCSCF_CalcInfo.ci2relpitz = init_int_array(MCSCF_CalcInfo.nmo);
   for (h=0,cnt=0; h<CalcInfo.nirreps; h++) {
     for (i=0; i<CalcInfo.orbs_per_irr[h]; i++,cnt++) {
-      j = MCSCF_CalcInfo.pitz2ci[cnt];
+      j = CalcInfo.reorder[cnt];
       MCSCF_CalcInfo.ci2relpitz[j] = i;
     }
   } 
@@ -154,7 +154,7 @@ void mcscf_get_mo_info(Options &options)
   if (MCSCF_Parameters.print_lvl > 4) {
     outfile->Printf("\nPitzer to CI order array = \n");
     for (i=0; i<MCSCF_CalcInfo.nmo; i++) {
-      outfile->Printf("%3d ", MCSCF_CalcInfo.pitz2ci[i]);
+      outfile->Printf("%3d ", CalcInfo.reorder[i]);
     }
     outfile->Printf("\n");
   }
@@ -172,7 +172,7 @@ void mcscf_get_mo_info(Options &options)
 
   // for (i=0,cnt=0; i<CalcInfo.nirreps; i++) {
   //   for (j=0; j<CalcInfo.orbs_per_irr[i]; j++,cnt++) {
-  //     k = MCSCF_CalcInfo.pitz2ci[cnt];
+  //     k = CalcInfo.reorder[cnt];
   //     MCSCF_CalcInfo.orbsym[k] = i;
   //   }
   // }
@@ -218,7 +218,7 @@ void mcscf_get_mo_info(Options &options)
     MCSCF_CalcInfo.ras_orbs[i] = init_int_matrix(CalcInfo.nirreps,
       MCSCF_CalcInfo.nmo);
     for (irrep=0; irrep<CalcInfo.nirreps; irrep++) {
-      for (j=0; j<MCSCF_CalcInfo.ras_opi[i][irrep]; j++) {
+      for (j=0; j<CalcInfo.ras_opi[i][irrep]; j++) {
         MCSCF_CalcInfo.ras_orbs[i][irrep][j] = cnt++;
       }
     }
@@ -289,7 +289,7 @@ void mcscf_get_mo_info(Options &options)
     for (i=0; i<MAX_RAS_SPACES; i++) {
       outfile->Printf("\n   RAS %d         = ",i+1);
       for (j=0; j<CalcInfo.nirreps; j++) {
-        outfile->Printf("%2d ", MCSCF_CalcInfo.ras_opi[i][j]);
+        outfile->Printf("%2d ", CalcInfo.ras_opi[i][j]);
       }
     }
     outfile->Printf("\n");

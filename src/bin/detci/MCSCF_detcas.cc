@@ -247,7 +247,7 @@ void mcscf_title(void)
 void form_independent_pairs(void)
 {
 
-  IndPairs.set(CalcInfo.nirreps, MAX_RAS_SPACES, MCSCF_CalcInfo.ras_opi,
+  IndPairs.set(CalcInfo.nirreps, MAX_RAS_SPACES, CalcInfo.ras_opi,
                MCSCF_CalcInfo.ras_orbs, MCSCF_CalcInfo.frozen_docc, MCSCF_CalcInfo.fzc_orbs, 
                MCSCF_CalcInfo.rstr_docc, MCSCF_CalcInfo.cor_orbs,
                MCSCF_CalcInfo.rstr_uocc, MCSCF_CalcInfo.vir_orbs,
@@ -301,7 +301,7 @@ void calc_gradient(void)
     ir_ppair = IndPairs.get_ir_prel_ptr(h);
     ir_qpair = IndPairs.get_ir_qrel_ptr(h);
     ir_lag = block_matrix(ir_norbs, ir_norbs);
-    mcscf_get_mat_block(MCSCF_CalcInfo.lag, ir_lag, ir_norbs, offset, MCSCF_CalcInfo.pitz2ci);
+    mcscf_get_mat_block(MCSCF_CalcInfo.lag, ir_lag, ir_norbs, offset, CalcInfo.reorder);
 
     if (MCSCF_Parameters.print_lvl > 3) {
       outfile->Printf( "Irrep %d of lagrangian:\n", h);

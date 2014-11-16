@@ -581,7 +581,7 @@ struct mcscf_calcinfo {
   int nmo;               /* number of molecular orbitals... the code often
                             uses nbfso instead but it shouldn't in case
                             of linear dependencies */
-  int nso;               /* number of basis functions in symmetry orbitals */
+  // int nso;               /* number of basis functions in symmetry orbitals */
   int nmotri;            /* num elements in lwr diag matrix nbfso big */
   int nbfao;             /* number of basis functions in atomic orbitals */
   // int nirreps;           /* number of irreducible representations in pt grp */
@@ -600,9 +600,9 @@ struct mcscf_calcinfo {
   int *frozen_uocc;      /* frozen virtual orbs per irrep */
   int *rstr_docc;        /* restricted doubly occupied orbs per irrep */
   int *rstr_uocc;        /* restricted virtual orbs per irrep */
-  int *orbsym;           /* irrep for each orbital */
-  int *pitz2ci;          /* map Pitzer-ordered orbitals to our ordering */
-  int *ci2pitz;          /* map our ordering back to Pitzer ordering */
+  // int *orbsym;           /* irrep for each orbital */
+  // int *pitz2ci;          /* map Pitzer-ordered orbitals to our ordering */
+  // int *ci2pitz;          /* map our ordering back to Pitzer ordering */
   int *ci2relpitz;       /* map CI ordering to _relative_ pitzer ordering */
   // char **labels;         /* labels for irreps */
   int **ras_opi;         /* num orbs per irr per ras space ras_opi[ras][irr] */
