@@ -368,12 +368,15 @@ void DFOCC::ccsd_manager()
         df_corr();
         trans_corr();
         timer_off("DF CC Integrals");
-        timer_on("DF REF Integrals");
-        df_ref();
-        trans_ref();
-        timer_off("DF REF Integrals");
-        outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
         outfile->Printf("\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
+
+        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE") {
+            timer_on("DF REF Integrals");
+            df_ref();
+            trans_ref();
+            timer_off("DF REF Integrals");
+            outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
+        }
 
         // Memory allocation
         T1c = SharedTensor1d(new Tensor1d("DF_BASIS_CC T1_Q", nQ));
@@ -387,6 +390,7 @@ void DFOCC::ccsd_manager()
         FtabA = SharedTensor2d(new Tensor2d("Ftilde <A|B>", navirA, navirA));
 
         // memory requirements
+        /*
         // DF-HF B(Q,mn)
         cost_ampAA = 0;
         cost_ampAA = (ULI)nQ_ref * (ULI)nso2_;
@@ -404,6 +408,7 @@ void DFOCC::ccsd_manager()
         cost_amp = (ULI)3.0 * cost_ampAA;
         outfile->Printf("\tMemory requirement for B-HF (Q|ab) is        : %6lu MB \n", cost_ampAA);
         outfile->Printf("\tMemory requirement for 3*B-HF (Q|ab) is      : %6lu MB \n", cost_amp);
+        */
 
         // DF-CC B(Q,mn)
         cost_ampAA = 0;
@@ -447,7 +452,7 @@ void DFOCC::ccsd_manager()
         if (qchf_ == "TRUE") qchf();
 
         // Fock
-        if (dertype == "FIRST" && oeprop_ == "TRUE" && ekt_ip_ == "TRUE") fock();
+        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") fock();
 
         // Compute MP2 energy
         if (reference == "ROHF") t1_1st_sc();
