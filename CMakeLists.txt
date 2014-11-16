@@ -36,6 +36,7 @@ set(EXTERNAL_LIBS)
 include(ConfigVersion)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
+include(PerTargetCompilerFlags)
 include(ConfigExternal)
 include(ConfigOMP)
 

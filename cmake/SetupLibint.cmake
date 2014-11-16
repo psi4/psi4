@@ -1,7 +1,12 @@
+#
+# Macros preparing compilation of Libint and Libderiv
+# Written by Andrew Simmonett
+#
+
 set(AM 0 p d f g h i k l m n o q r t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)
-#
-# A function to populate a list of files expected from LIBINT
-#
+
+# This macros populates a list of files expected from LIBINT
+# Written by Andrew Simmonett
 macro(BUILD_LIBINT_FILES MYINTFILES MYOPT_AM)
     math(EXPR MYNEW_AM ${MYOPT_AM}*2)
     # hrr_order_WXYZ.cc
@@ -79,10 +84,8 @@ macro(BUILD_LIBINT_FILES MYINTFILES MYOPT_AM)
     set(TMPINTFILES "")
 endmacro(BUILD_LIBINT_FILES)
 
-
-#
-# A function to populate a list of files expected from LIBINT for derivatives
-#
+# This macro populates a list of files expected from LIBINT for derivatives
+# Written by Andrew Simmonett
 macro(BUILD_LIBDERIV_FILES MYINTFILES MYOPT_AM ADDBUILD)
     math(EXPR MYNEW_AM ${MYOPT_AM}*2)
     # hrr_order_WXYZ.cc
