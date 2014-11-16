@@ -61,8 +61,8 @@ JK::~JK()
 boost::shared_ptr<JK> JK::build_JK()
 {
     Options& options = Process::environment.options;
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    boost::shared_ptr<BasisSet> primary = BasisSet::construct(parser, Process::environment.molecule(), "BASIS");
+    boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(Process::environment.molecule(), 
+        "BASIS", options.get_str("BASIS"));
 
     if (options.get_str("SCF_TYPE") == "CD") {
 
@@ -87,7 +87,8 @@ boost::shared_ptr<JK> JK::build_JK()
 
     } else if (options.get_str("SCF_TYPE") == "DF") {
 
-        boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, primary->molecule(), "DF_BASIS_SCF");
+        boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(), 
+            "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT", options.get_str("BASIS"));
 
         DFJK* jk = new DFJK(primary,auxiliary);
 
@@ -110,7 +111,8 @@ boost::shared_ptr<JK> JK::build_JK()
 
     } else if (options.get_str("SCF_TYPE") == "FAST_DF") {
 
-        boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, primary->molecule(), "DF_BASIS_SCF");
+        boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(), 
+            "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT", options.get_str("BASIS"));
 
         FastDFJK* jk = new FastDFJK(primary,auxiliary);
 

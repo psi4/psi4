@@ -52,8 +52,8 @@ void VBase::common_init()
 }
 boost::shared_ptr<VBase> VBase::build_V(Options& options, const std::string& type)
 {
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    boost::shared_ptr<BasisSet> primary = BasisSet::construct(parser, Process::environment.molecule(), "BASIS");
+    boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(Process::environment.molecule(),
+        "BASIS", options.get_str("BASIS"));
 
     int depth = 1; // By default, do first partials of the kernel
     if (type == "RK" || type == "UK")

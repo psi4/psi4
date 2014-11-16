@@ -513,7 +513,7 @@ void MOLECULE::freeze_interfragment_asymm(void) {
 
 #if defined(OPTKING_PACKAGE_PSI)
       psi::Process::environment.molecule()->set_geometry(coord);
-      symmetric_intco = psi::Process::environment.molecule()->valid_atom_map();
+      symmetric_intco = psi::Process::environment.molecule()->valid_atom_map(Opt_params.symm_tol);
 #elif defined(OPTKING_PACKAGE_QCHEM)
   // not implemented yet
 #endif

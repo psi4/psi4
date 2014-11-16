@@ -144,8 +144,7 @@ void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
     if (wavefunction && !basisset_)
         basisset_ = wavefunction->basisset();
     else if (!basisset_){
-        boost::shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
-        basisset_ = boost::shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, "BASIS"));
+        basisset_ = boost::shared_ptr<BasisSet>(BasisSet::pyconstruct_orbital(molecule_, "BASIS", options_.get_str("BASIS")));
     }
 
     common_init();
@@ -255,14 +254,18 @@ void MintsHelper::integrals()
 
     // Compute and dump one-electron SO integrals.
 
-    // Overlap
-    so_overlap()->save(psio_, PSIF_OEI);
+    if (options_.get_str("RELATIVISTIC") == "NO"){
+        // Overlap
+        so_overlap()->save(psio_, PSIF_OEI);
 
-    // Kinetic
-    so_kinetic()->save(psio_, PSIF_OEI);
+        // Kinetic
+        so_kinetic()->save(psio_, PSIF_OEI);
 
-    // Potential
-    so_potential()->save(psio_, PSIF_OEI);
+        // Potential
+        so_potential()->save(psio_, PSIF_OEI);
+    }else if (options_.get_str("RELATIVISTIC") == "X2C"){
+        outfile->Printf( "      Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
+    }
 
     // Dipoles
     std::vector<SharedMatrix> dipole_mats = so_dipole();
@@ -389,16 +392,17 @@ void MintsHelper::one_electron_integrals()
 
     // Compute and dump one-electron SO integrals.
 
-    // Overlap
-    so_overlap()->save(psio_, PSIF_OEI);
     if (options_.get_str("RELATIVISTIC") == "NO"){
+        // Overlap
+        so_overlap()->save(psio_, PSIF_OEI);
+
         // Kinetic
         so_kinetic()->save(psio_, PSIF_OEI);
 
         // Potential
         so_potential()->save(psio_, PSIF_OEI);
     }else if (options_.get_str("RELATIVISTIC") == "X2C"){
-        outfile->Printf( "      Using modified relativistic integrals from X2C\n");
+        outfile->Printf( "      Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
     }
 
     // Dipoles

@@ -49,12 +49,13 @@ JKGrad::~JKGrad()
 boost::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv)
 {
     Options& options = Process::environment.options;
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    boost::shared_ptr<BasisSet> primary = BasisSet::construct(parser, Process::environment.molecule(), "BASIS");
+    boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(Process::environment.molecule(),
+        "BASIS", options.get_str("BASIS"));
 
     if (options.get_str("SCF_TYPE") == "DF") {
 
-        boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, primary->molecule(), "DF_BASIS_SCF");
+        boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
+            "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT", options.get_str("BASIS"));
 
         DFJKGrad* jk = new DFJKGrad(deriv,primary,auxiliary);
 

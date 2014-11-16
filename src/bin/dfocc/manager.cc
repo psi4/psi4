@@ -45,7 +45,6 @@ void DFOCC::omp2_manager()
         trans_ref();
         outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
         outfile->Printf("\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
-        
         timer_off("DF CC Integrals");
 
         // memalloc for density intermediates
@@ -55,30 +54,57 @@ void DFOCC::omp2_manager()
         g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
         g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
 
-        if (conv_tei_type == "DISK") { 
-           tei_oooo_chem_ref();
-           tei_ooov_chem_ref();
-           tei_oovv_chem_ref();
-           tei_ovov_chem_ref(); 
-           if (reference_ == "UNRESTRICTED") {
-            tei_oooo_phys_ref();
-            tei_ooov_phys_ref();
-            tei_oovv_phys_ref();
-            tei_ovov_phys_ref();
-            tei_oooo_anti_symm_ref();
-            tei_ooov_anti_symm_ref();
-            tei_oovv_anti_symm_ref();
-            tei_ovov_anti_symm_ref();
-           }
+     if (reference_ == "RESTRICTED") {
+        // memory requirements
+        // DF-HF B(Q,mn)
+        cost_ampAA = 0;
+        cost_ampAA = nQ_ref * nso2_;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\n\tMemory requirement for B-HF (Q|mu nu) is     : %9.2lf MB \n", cost_ampAA);
+ 
+        // DF-HF B(Q,ab)
+        cost_ampAA = 0;
+        cost_ampAA = nQ_ref * nvir2AA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for B-HF (Q|ab) is        : %9.2lf MB \n", cost_ampAA);
 
-           tei_iajb_chem();
-           //tei_ijab_chem();// for Hessian
-           if (reference_ == "UNRESTRICTED") {
-               tei_ijab_phys();
-               tei_ijab_anti_symm();
-           }
-        }// if (conv_tei_type == "DISK")  
-           fock();
+        // Cost of Integral transform for DF-HF B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ_ref * nso2_;
+        cost_ampAA += nQ_ref * navirA * navirA;
+        cost_ampAA += nQ_ref * nso_ * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for DF-HF int trans is    : %9.2lf MB \n", cost_ampAA);
+
+        // DF-CC B(Q,mn)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * nso2_;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\n\tMemory requirement for B-CC (Q|mu nu) is     : %9.2lf MB \n", cost_ampAA);
+ 
+        // DF-CC B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * navirA * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for B-CC (Q|ab) is        : %9.2lf MB \n", cost_ampAA);
+
+        // Cost of Integral transform for DF-CC B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * nso2_;
+        cost_ampAA += nQ * navirA * navirA;
+        cost_ampAA += nQ * nso_ * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for DF-CC int trans is    : %9.2lf MB \n", cost_ampAA);
+     }  // end if (reference_ == "RESTRICTED")
+
+        // Fock 
+        fock();
 
         // QCHF
         if (qchf_ == "TRUE") qchf();
@@ -156,30 +182,7 @@ void DFOCC::omp2_manager()
 	   outfile->Printf("\tSwitching to the standard DF-MP2 computation... \n");
 	   
            trans_corr();
-        if (conv_tei_type == "DISK") { 
-           tei_iajb_chem();
-           if (reference_ == "UNRESTRICTED") {
-               tei_ijab_phys();
-               tei_ijab_anti_symm();
-           }
-        }// if (conv_tei_type == "DISK") 
            trans_ref();
-        if (conv_tei_type == "DISK") { 
-           tei_oooo_chem_ref();
-           tei_ooov_chem_ref();
-           tei_oovv_chem_ref();
-           tei_ovov_chem_ref();
-           if (reference_ == "UNRESTRICTED") {
-            tei_oooo_phys_ref();
-            tei_ooov_phys_ref();
-            tei_oovv_phys_ref();
-            tei_ovov_phys_ref();
-            tei_oooo_anti_symm_ref();
-            tei_ooov_anti_symm_ref();
-            tei_oovv_anti_symm_ref();
-            tei_ovov_anti_symm_ref();
-           }
-        }// if (conv_tei_type == "DISK") 
            fock();
 	   t2_1st_sc();
            conver = 1;
@@ -324,21 +327,64 @@ void DFOCC::mp2_manager()
         
         timer_off("DF CC Integrals");
 
+     if (reference_ == "RESTRICTED") {
+        // memory requirements
+        /*
+        // DF-HF B(Q,mn)
+        cost_ampAA = 0;
+        cost_ampAA = nQ_ref * nso2_;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\n\tMemory requirement for B-HF (Q|mu nu) is     : %9.2lf MB \n", cost_ampAA);
+ 
+        // DF-HF B(Q,ab)
+        cost_ampAA = 0;
+        cost_ampAA = nQ_ref * nvir2AA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for B-HF (Q|ab) is        : %9.2lf MB \n", cost_ampAA);
+
+        // Cost of Integral transform for DF-HF B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ_ref * nso2_;
+        cost_ampAA += nQ_ref * navirA * navirA;
+        cost_ampAA += nQ_ref * nso_ * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for DF-HF int trans is    : %9.2lf MB \n", cost_ampAA);
+        */
+
+        // DF-CC B(Q,mn)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * nso2_;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\n\tMemory requirement for B-CC (Q|mu nu) is     : %9.2lf MB \n", cost_ampAA);
+ 
+        // DF-CC B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * navirA * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for B-CC (Q|ab) is        : %9.2lf MB \n", cost_ampAA);
+
+        // Cost of Integral transform for DF-CC B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * nso2_;
+        cost_ampAA += nQ * navirA * navirA;
+        cost_ampAA += nQ * nso_ * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for DF-CC int trans is    : %9.2lf MB \n", cost_ampAA);
+     }  // end if (reference_ == "RESTRICTED")
+
         // QCHF
         if (qchf_ == "TRUE") qchf();
 
         // ROHF REF
         //outfile->Printf("\tI am here.\n"); 
         if (reference == "ROHF") t1_1st_sc();
-
-        if (conv_tei_type == "DISK") { 
-            tei_iajb_chem();
-            if (reference_ == "UNRESTRICTED") {
-                tei_ijab_phys();
-                tei_ijab_anti_symm();
-            }
-        }// if (conv_tei_type == "DISK")  
-        if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE" && comput_s2_ == "FALSE") mp2_direct();
+        if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && comput_s2_ == "FALSE") mp2_direct();
         else {
              fock();
              if (mp2_amp_type_ == "DIRECT") mp2_direct();
@@ -394,7 +440,7 @@ void DFOCC::mp2_manager()
         }
 
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
+        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
             outfile->Printf("\n\tComputing unrelaxed response density matrices...\n");
             
  	    omp2_opdm();
@@ -402,25 +448,196 @@ void DFOCC::mp2_manager()
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
+            //if (ekt_ip_ == "TRUE") ekt_ip(); 
 
-            /*
-            if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
-                ekt_ip();
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
-                ekt_ip();
-            }
-
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
-                ekt_ea();
-            }
-            */
-        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") 
+        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
 }// end mp2_manager 
 
+
+//======================================================================
+//             CCSD Manager
+//======================================================================             
+void DFOCC::ccsd_manager()
+{
+
+        time4grad = 0;// means i will not compute the gradient
+	mo_optimized = 0;// means MOs are not optimized
+        timer_on("DF CC Integrals");
+        df_corr();
+        trans_corr();
+        timer_off("DF CC Integrals");
+        outfile->Printf("\n\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
+
+        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE") {
+            timer_on("DF REF Integrals");
+            df_ref();
+            trans_ref();
+            timer_off("DF REF Integrals");
+            outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
+        }
+
+        // Memory allocation
+        T1c = SharedTensor1d(new Tensor1d("DF_BASIS_CC T1_Q", nQ));
+        Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+
+     if (reference_ == "RESTRICTED") {
+        t1A = SharedTensor2d(new Tensor2d("T1 <I|A>", naoccA, navirA));
+        t1newA = SharedTensor2d(new Tensor2d("New T1 <I|A>", naoccA, navirA));
+        FiaA = SharedTensor2d(new Tensor2d("Fint <I|A>", naoccA, navirA));
+        FtijA = SharedTensor2d(new Tensor2d("Ftilde <I|J>", naoccA, naoccA));
+        FtabA = SharedTensor2d(new Tensor2d("Ftilde <A|B>", navirA, navirA));
+
+        // memory requirements
+        /*
+        // DF-HF B(Q,mn)
+        cost_ampAA = 0;
+        cost_ampAA = nQ_ref * nso2_;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        cost_amp = 3.0 * cost_ampAA;
+        outfile->Printf("\n\tMemory requirement for B-HF (Q|mu nu) is     : %9.2lf MB \n", cost_ampAA);
+        outfile->Printf("\tMemory requirement for 3*B-HF (Q|mu nu) is   : %9.2lf MB \n", cost_amp);
+ 
+        // DF-HF B(Q,ab)
+        cost_ampAA = 0;
+        cost_ampAA = nQ_ref * nvir2AA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        cost_amp = 3.0 * cost_ampAA;
+        outfile->Printf("\tMemory requirement for B-HF (Q|ab) is        : %9.2lf MB \n", cost_ampAA);
+        outfile->Printf("\tMemory requirement for 3*B-HF (Q|ab) is      : %9.2lf MB \n", cost_amp);
+        */
+
+        // DF-CC B(Q,mn)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * nso2_;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\n\tMemory requirement for B-CC (Q|mu nu) is     : %9.2lf MB \n", cost_ampAA);
+ 
+        // DF-CC B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * navirA * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for B-CC (Q|ab) is        : %9.2lf MB \n", cost_ampAA);
+
+        // Cost of Integral transform for B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * nso2_;
+        cost_ampAA += nQ * navirA * navirA;
+        cost_ampAA += nQ * nso_ * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for DF-CC int trans is    : %9.2lf MB \n", cost_ampAA);
+
+        // W_abef term
+        cost_ampAA = 0.0;
+        cost_ampAA = 1.5 * naoccA * naoccA * navirA * navirA;
+        cost_ampAA += nQ * navirA * navirA;
+        cost_ampAA += 2.0 * navirA * navirA * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for Wabef term is         : %9.2lf MB \n", cost_ampAA);
+     }  // end if (reference_ == "RESTRICTED")
+
+     else if (reference_ == "UNRESTRICTED") {
+        t1A = SharedTensor2d(new Tensor2d("T1 <I|A>", naoccA, navirA));
+        t1B = SharedTensor2d(new Tensor2d("T1 <i|a>", naoccB, navirB));
+        FiaA = SharedTensor2d(new Tensor2d("Fint <I|A>", naoccA, navirA));
+        FiaB = SharedTensor2d(new Tensor2d("Fint <i|a>", naoccB, navirB));
+        FtijA = SharedTensor2d(new Tensor2d("Ftilde <I|J>", naoccA, naoccA));
+        FtabA = SharedTensor2d(new Tensor2d("Ftilde <A|B>", navirA, navirA));
+        FtijB = SharedTensor2d(new Tensor2d("Ftilde <i|j>", naoccB, naoccB));
+        FtabB = SharedTensor2d(new Tensor2d("Ftilde <a|b>", navirB, navirB));
+     }// else if (reference_ == "UNRESTRICTED")
+
+        // memalloc for density intermediates
+        if (qchf_ == "TRUE" || dertype == "FIRST") { 
+            g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
+            g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
+            g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
+            g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+        }
+
+        // QCHF
+        if (qchf_ == "TRUE") qchf();
+
+        // Fock
+        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") fock();
+
+        // Compute MP2 energy
+        if (reference == "ROHF") t1_1st_sc();
+        ccsd_mp2();
+	
+	outfile->Printf("\n");
+	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing DF-MP2 energy ... \n"); 
+	outfile->Printf("\t======================================================================= \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCSN-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+	if (reference_ == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
+	if (reference_ == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
+	outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
+	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
+	outfile->Printf("\t======================================================================= \n");
+	
+	Process::environment.globals["DF-MP2 TOTAL ENERGY"] = Emp2;
+	Process::environment.globals["DF-SCS-MP2 TOTAL ENERGY"] = Escsmp2;
+	Process::environment.globals["DF-SOS-MP2 TOTAL ENERGY"] = Esosmp2;
+	Process::environment.globals["DF-SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+        Process::environment.globals["DF-MP2 CORRELATION ENERGY"] = Emp2 - Escf;
+        Process::environment.globals["DF-SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
+        Process::environment.globals["DF-SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
+        Process::environment.globals["DF-SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+        Process::environment.globals["DF-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        Process::environment.globals["DF-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
+
+        // Perform CCSD iterations
+        ccsd_iterations();
+
+	outfile->Printf("\n");
+	outfile->Printf("\t======================================================================= \n");
+	outfile->Printf("\t================ CCSD FINAL RESULTS =================================== \n");
+	outfile->Printf("\t======================================================================= \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	outfile->Printf("\tDF-CCSD Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
+	outfile->Printf("\tDF-CCSD Total Energy (a.u.)        : %20.14f\n", Eccsd);
+	outfile->Printf("\t======================================================================= \n");
+	outfile->Printf("\n");
+	
+	Process::environment.globals["CURRENT ENERGY"] = Eccsd;
+        Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
+        Process::environment.globals["CURRENT CORRELATION ENERGY"] = Eccsd - Escf;
+	Process::environment.globals["DF-CCSD TOTAL ENERGY"] = Eccsd;
+        Process::environment.globals["DF-CCSD CORRELATION ENERGY"] = Eccsd - Escf;
+
+
+        // Compute Analytic Gradients
+        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
+            outfile->Printf("\n\tComputing unrelaxed response density matrices...\n");
+            
+ 	    omp2_opdm();
+	    omp2_tpdm();
+            prepare4grad();
+            if (oeprop_ == "TRUE") oeprop();
+            if (dertype == "FIRST") dfgrad();
+            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
+
+}// end ccsd_manager 
 
 //======================================================================
 //             OMP3 Manager
@@ -578,14 +795,13 @@ void DFOCC::omp3_manager()
         }
 
         // EKT
-        if (ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") { 
+        if (ekt_ip_ == "TRUE") { 
             if (orbs_already_sc == 1) {
 	        omp3_response_pdms();
 	        gfock();
             }
             gfock_diag();
             if (ekt_ip_ == "TRUE") ekt_ip();
-            if (ekt_ea_ == "TRUE") ekt_ea();
         }
 
         outfile->Printf("\n"); 
@@ -861,7 +1077,7 @@ void DFOCC::mp3_manager()
 	}
 
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
             time4grad = 1;
 	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
             outfile->Printf("\tComputing response density matrices...\n");
@@ -878,20 +1094,11 @@ void DFOCC::mp3_manager()
 	    mograd();
             coord_grad();
 
-            if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
-                ekt_ip();
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
+            if (ekt_ip_ == "TRUE") {
                 ekt_ip();
             }
 
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+            else if (ekt_ip_ == "FALSE") {
 	        outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
 	        
             }
@@ -1004,14 +1211,13 @@ void DFOCC::ocepa_manager()
         if (orbs_already_opt == 1) EcepaL = Ecepa;
 
         // EKT
-        if (ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") { 
+        if (ekt_ip_ == "TRUE") { 
             if (orbs_already_opt == 1) {
 	        ocepa_response_pdms();
 	        gfock();
             }
             gfock_diag();
             if (ekt_ip_ == "TRUE") ekt_ip();
-            if (ekt_ea_ == "TRUE") ekt_ea();
         }
 
 	outfile->Printf("\n");
@@ -1154,7 +1360,7 @@ void DFOCC::cepa_manager()
         //EcepaL = Ecepa;
         
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
             time4grad = 1;
 	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
             outfile->Printf("\tComputing response density matrices...\n");
@@ -1171,20 +1377,11 @@ void DFOCC::cepa_manager()
 	    mograd();
             coord_grad();
 
-            if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
-                ekt_ip();
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
+            if (ekt_ip_ == "TRUE") {
                 ekt_ip();
             }
 
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+            else if (ekt_ip_ == "FALSE") {
 	        outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
 	        
             }
@@ -1330,14 +1527,13 @@ void DFOCC::omp2_5_manager()
         }
 
         // EKT
-        if (ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") { 
+        if (ekt_ip_ == "TRUE") { 
             if (orbs_already_sc == 1) {
 	        omp3_response_pdms();
 	        gfock();
             }
             gfock_diag();
             if (ekt_ip_ == "TRUE") ekt_ip();
-            if (ekt_ea_ == "TRUE") ekt_ea();
         }
 
         outfile->Printf("\n"); 
@@ -1508,7 +1704,7 @@ void DFOCC::mp2_5_manager()
 	Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L-Escf;
 
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
             time4grad = 1;
 	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
             outfile->Printf("\tComputing response density matrices...\n");
@@ -1525,20 +1721,11 @@ void DFOCC::mp2_5_manager()
 	    mograd();
             coord_grad();
 
-            if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
-                ekt_ip();
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
+            if (ekt_ip_ == "TRUE") {
                 ekt_ip();
             }
 
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
-                ekt_ea();
-            }
-
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+            else if (ekt_ip_ == "FALSE"") {
 	        outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
 	        
             }

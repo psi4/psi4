@@ -1,3 +1,6 @@
-* QC-SCF 
-* GWH Guess
 * DF-OMP2.5 and DF-OMP3
+* DF-OLCCD
+* DF-OCCD
+* Consider perm symmetry in RHF T2(1) in t2_1st_gen.cc
+* Re-write symmetrize() function
+* Implement CROP for amplitudes

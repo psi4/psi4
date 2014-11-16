@@ -288,6 +288,7 @@ public:
     void set_basis_by_symbol(const std::string& symbol, const std::string& name, const std::string& type="BASIS");
     void set_basis_by_number(int number, const std::string& name, const std::string& type="BASIS");
     void set_basis_by_label(const std::string& label, const std::string& name, const std::string& type="BASIS");
+    void set_shell_by_label(const std::string& label, const std::string& name, const std::string& type="BASIS");
 
     /// Number of frozen core for molecule given freezing state
     int nfrozen_core(const std::string& depth = "");
@@ -478,7 +479,7 @@ public:
      * Force the molecule to have the symmetry specified in pg_.
      * This is to handle noise coming in from optking.
      */
-    void symmetrize();
+    void symmetrize(double tol=0.05);
     /// @}
 
     /**
@@ -627,7 +628,7 @@ public:
     /// Returns the Schoenflies symbol
     std::string schoenflies_symbol() const;
     /// Check if current geometry fits current point group
-    bool valid_atom_map(double tol = 0.01) const;
+    bool valid_atom_map(double tol = 0.05) const;
     /// Return point group name such as C3v or S8.
     std::string full_point_group() const;
     /// Return point group name such as Cnv or Sn.

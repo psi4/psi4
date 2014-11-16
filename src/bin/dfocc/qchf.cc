@@ -482,98 +482,8 @@ void DFOCC::gwh()
      e_orb.reset();
      DiagS.reset();
 
-if (reference_ == "RESTRICTED") { 
-        // Build Cocc
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < noccA; i++) {
-                 CoccA->set(mu, i, CmoA->get(mu, i));
-             }
-        }
-
-        // Build Cvir
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < nvirA; a++) {
-                 CvirA->set(mu, a, CmoA->get(mu, a + noccA));
-             }
-        }
- 
-        // Build active Caocc
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < naoccA; i++) {
-                 CaoccA->set(mu, i, CmoA->get(mu, i + nfrzc));
-             }
-        }
-
-        // Build active Cvir
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < navirA; a++) {
-                 CavirA->set(mu, a, CmoA->get(mu, a + noccA));
-             }
-        }
-}// end if (reference_ == "RESTRICTED") 
-
-else if (reference_ == "UNRESTRICTED") {
-        // Build Cocc
-        // alpha
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < noccA; i++) {
-                 CoccA->set(mu, i, CmoA->get(mu, i));
-             }
-        }
-
-        // beta
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < noccB; i++) {
-                 CoccB->set(mu, i, CmoB->get(mu, i));
-             }
-        }
-
-        // Build Cvir
-        // alpha
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < nvirA; a++) {
-                 CvirA->set(mu, a, CmoA->get(mu, a + noccA));
-             }
-        }
- 
-        // beta
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < nvirB; a++) {
-                 CvirB->set(mu, a, CmoB->get(mu, a + noccB));
-             }
-        }
-
-        // Build active Caocc
-        // alpha
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < naoccA; i++) {
-                 CaoccA->set(mu, i, CmoA->get(mu, i + nfrzc));
-             }
-        }
-
-        // beta
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < naoccB; i++) {
-                 CaoccB->set(mu, i, CmoB->get(mu, i + nfrzc));
-             }
-        }
-
-        // Build active Cvir
-        // alpha
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < navirA; a++) {
-                 CavirA->set(mu, a, CmoA->get(mu, a + noccA));
-             }
-        }
- 
-        // beta
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < navirB; a++) {
-                 CavirB->set(mu, a, CmoB->get(mu, a + noccB));
-             }
-        }
-
-}// end if (reference_ == "UNRESTRICTED") 
+     // build mo coeff blocks
+     mo_coeff_blocks();
 
 }// end of gwh
 
@@ -602,33 +512,6 @@ void DFOCC::canonic()
         UeigA.reset();
 	eigA.reset();
 
-        // Build Cocc
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < noccA; i++) {
-                 CoccA->set(mu, i, CmoA->get(mu, i));
-             }
-        }
-
-        // Build Cvir
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < nvirA; a++) {
-                 CvirA->set(mu, a, CmoA->get(mu, a + noccA));
-             }
-        }
- 
-        // Build active Caocc
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < naoccA; i++) {
-                 CaoccA->set(mu, i, CmoA->get(mu, i + nfrzc));
-             }
-        }
-
-        // Build active Cvir
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < navirA; a++) {
-                 CavirA->set(mu, a, CmoA->get(mu, a + noccA));
-             }
-        }
 //==========================================================================================
 //========================= UHF REFERENCE ==================================================
 //==========================================================================================
@@ -653,34 +536,10 @@ void DFOCC::canonic()
         UeigB.reset();
 	eigB.reset();
 
-        // Build Cocc
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < noccB; i++) {
-                 CoccB->set(mu, i, CmoB->get(mu, i));
-             }
-        }
-
-        // Build Cvir
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < nvirB; a++) {
-                 CvirB->set(mu, a, CmoB->get(mu, a + noccB));
-             }
-        }
- 
-        // Build active Caocc
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int i = 0; i < naoccB; i++) {
-                 CaoccB->set(mu, i, CmoB->get(mu, i + nfrzc));
-             }
-        }
-
-        // Build active Cvir
-        for (int mu = 0; mu < nso_; mu++) {
-             for (int a = 0; a < navirB; a++) {
-                 CavirB->set(mu, a, CmoB->get(mu, a + noccB));
-             }
-        }
      }// end uhf	
+
+     // build mo coeff blocks
+     mo_coeff_blocks();
 
 }// end of canonic
 

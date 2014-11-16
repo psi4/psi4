@@ -60,7 +60,7 @@ public:
                      int sirrep, int sso,
                      double value)
     {
-        psi::fprintf(outfile, "\t(%2d %2d | %2d %2d) = %20.10lf\n", 
+        psi::outfile->Printf("\t(%2d %2d | %2d %2d) = %20.10lf\n", 
 			pabs, qabs, rabs, sabs, value);
     }
 };

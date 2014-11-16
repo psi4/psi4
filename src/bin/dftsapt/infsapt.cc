@@ -75,8 +75,8 @@ boost::shared_ptr<INFSAPT> INFSAPT::build(boost::shared_ptr<Wavefunction> d,
     sapt->monomers_ = m;
 
     sapt->primary_  = d->basisset();
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    sapt->mp2fit_ = BasisSet::construct(parser, sapt->cluster_->molecule(), "DF_BASIS_SAPT");
+    sapt->mp2fit_ = BasisSet::pyconstruct_auxiliary(sapt->cluster_->molecule(),
+            "DF_BASIS_SAPT", options.get_str("DF_BASIS_SAPT"), "RIFIT", options.get_str("BASIS"));
 
     return boost::shared_ptr<INFSAPT>(sapt);
 }
