@@ -52,13 +52,24 @@ Temporary: params
 
 # MCSCF_CalcInfo Changes
 
-MCSCF identical values that need name change:
+MCSCF_CalcInfo identical to CalcInfo that need name change:
+MCSCF_CalcInfo -> CalcInfo
   iter      -> iter
   nbfso     -> nso
   nbstri    -> nmotri
+  pitz2ci   -> reorder
+  ci2pitz   -> order
   
+MCSCF_CalcInfo values merged with CalcInfo values:
+  int **ras_opi;         /* num orbs per irr per ras space ras_opi[ras][irr] */
+  char **labels;         /* labels for irreps */
+  int *orbs_per_irr;     /* number of orbitals per irrep */
 
-DETCI_calcinfo additions:
+Perhaps MCSCF_CalcInfo the same as CalcInfo:
+  int nmo;               /* number of molecular orbitals */
+  int npop;              /* number of populated orbitals, nbfso - nfzv */
+
+Required MCSCF_CalcInfo values:
   int iter               /* number of MCSCF iterations */
   int num_fzc_orbs;      /* MCSCF number of FZC orbitals (i.e. frozen core) */
   int num_cor_orbs;      /* MCSCF number of COR orbitals (i.e. restricted core) */
@@ -70,25 +81,15 @@ DETCI_calcinfo additions:
   int *frozen_uocc;      /* MCSCF frozen virtual orbs per irrep */
   int *rstr_docc;        /* MCSCF restricted doubly occupied orbs per irrep */
   int *rstr_uocc;        /* MCSCF restricted virtual orbs per irrep */
-  
-Combined calcinfo values:
-  char **labels;         /* labels for irreps */
-  int *orbs_per_irr;     /* number of orbitals per irrep */
-
-Should be identical (untested) calcinfo values:
-  int nmo;               /* number of molecular orbitals */
-  int npop;              /* number of populated orbitals, nbfso - nfzv */
-  int *pitz2ci;          /* map Pitzer-ordered orbitals to our ordering */
-  int *ci2pitz;          /* map our ordering back to Pitzer ordering */
   int *ci2relpitz;       /* map CI ordering to _relative_ pitzer ordering */
-  int **ras_opi;         /* num orbs per irr per ras space ras_opi[ras][irr] */
   int **fzc_orbs;        /* frozen core orbitals numbers [irrep][orbnum] */
   int **cor_orbs;        /* restricted core orbitals numbers [irrep][orbnum] */
   int **vir_orbs;        /* restr virtual orbitals numbers [irrep][orbnum] */
   int **fzv_orbs;        /* frozen virtual orbitals numbers [irrep][orbnum] */
   int ***ras_orbs;       /* ras_orbs[ras][irr][cnt] gives an orbital number */
 
-Unclear and unchanged calcinfo values:
+
+Unclear and unchanged MCSCF_CalcInfo values:
   double ***mo_coeffs;   /* matrix of molecular orbitals in Pitzer order */
   double *onel_ints;     /* one-electron integrals */
   double *onel_ints_bare;/* one-electron integrals, bare h only */
@@ -96,7 +97,7 @@ Unclear and unchanged calcinfo values:
   double **opdm;         /* one-particle density matrix */
   double *tpdm;          /* two-particle density matrix */
 
-Not needed
+MCSCF_CalcInfo not used
   int *orbsym;           /* irrep for each orbital */
   double enuc;           /* nuclear repulsion energy */
   double efzc;           /* frozen-core energy */
