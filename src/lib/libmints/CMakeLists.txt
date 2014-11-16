@@ -17,9 +17,9 @@ list(APPEND sources_list local.cc onebody.cc orbitalspace.cc osrecur.cc maketab.
 
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
-   list(REMOVE_ITEM sources_list "")
+   list(REMOVE_ITEM sources_list "gridprop.cc")
 else()
-   list(REMOVE_ITEM sources_list "")
+   list(REMOVE_ITEM sources_list "gridprop.cc")
 endif()
 
 # Write list of files to be passed to cloc for counting lines of code.
