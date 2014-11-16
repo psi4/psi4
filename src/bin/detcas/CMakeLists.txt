@@ -1,8 +1,7 @@
-include(GlobUtils)
-
 set(headers_list "")
-# Get headers with .h extension
-get_h_headers(headers_list)
+# List of headers
+list(APPEND headers_list setup_io.h globals.h indpairs.h calcinfo.h params.h caswave.h globaldefs.h )
+
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM headers_list "")
@@ -13,8 +12,9 @@ endif()
 list(SORT headers_list)
 
 set(sources_list "")
-# Get sources with .cc extension
-get_cc_sources(sources_list)
+# List of sources
+list(APPEND sources_list step.cc ref_orbs.cc lagcalc.cc get_mo_info.cc read_dens.cc hessian.cc read_lag.cc detcas.cc diis.cc ints.cc params.cc setup_io.cc cleanup.cc f_act.cc test_bfgs.cc thetas.cc gradient.cc indpairs.cc rotate_orbs.cc )
+
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM sources_list "")

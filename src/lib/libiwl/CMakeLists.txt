@@ -1,8 +1,7 @@
-include(GlobUtils)
-
 set(headers_list "")
-# Get headers with .h extension
-get_h_headers(headers_list)
+# List of headers
+list(APPEND headers_list iwl.h config.h )
+
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM headers_list "")
@@ -13,8 +12,9 @@ endif()
 list(SORT headers_list)
 
 set(sources_list "")
-# Get sources with .cc extension
-get_cc_sources(sources_list)
+# List of sources
+list(APPEND sources_list buf_rd_arr2.cc buf_wrt_mp2.cc buf_wrt_mp2r12a.cc buf_rd_all_mp2r12a.cc rdtwo.cc buf_fetch.cc rdone.cc buf_wrt_val.cc buf_wrt_arr2.cc buf_rd_arr.cc buf_wrt_val_SI.cc buf_wrt_arr_SI_nocut.cc buf_rd_all_act.cc buf_close.cc buf_toend.cc buf_wrt_mat.cc buf_wrt_all.cc buf_wrt_arr.cc buf_wrt.cc buf_flush.cc buf_wrt_arr_SI.cc buf_rd.cc sortbuf.cc wrtone.cc buf_init.cc wrttwo.cc buf_put.cc buf_rd_all.cc )
+
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM sources_list "")

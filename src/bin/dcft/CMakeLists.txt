@@ -1,8 +1,7 @@
-include(GlobUtils)
-
 set(headers_list "")
-# Get headers with .h extension
-get_h_headers(headers_list)
+# List of headers
+list(APPEND headers_list defines.h dcft.h )
+
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM headers_list "")
@@ -13,8 +12,9 @@ endif()
 list(SORT headers_list)
 
 set(sources_list "")
-# Get sources with .cc extension
-get_cc_sources(sources_list)
+# List of sources
+list(APPEND sources_list dcft_lambda.cc main.cc AO_contribute.cc dcft.cc dcft_gradient.cc dcft_density.cc dcft_integrals.cc dcft_tau.cc dcft_oo.cc dcft_qc.cc half_transform.cc dcft_compute.cc dcft_scf.cc dcft_memory.cc dcft_n_representability.cc dcft_energy.cc dcft_mp2.cc dcft_triples.cc dcft_intermediates.cc )
+
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM sources_list "")

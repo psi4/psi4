@@ -1,8 +1,7 @@
-include(GlobUtils)
-
 set(headers_list "")
-# Get headers with .h extension
-get_h_headers(headers_list)
+# List of headers
+list(APPEND headers_list ccsd.h blas_mangle.h blas.h frozen_natural_orbitals.h )
+
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM headers_list "")
@@ -13,8 +12,9 @@ endif()
 list(SORT headers_list)
 
 set(sources_list "")
-# Get sources with .cc extension
-get_cc_sources(sources_list)
+# List of sources
+list(APPEND sources_list frozen_natural_orbitals.cc triples.cc ccsd.cc lowmemory_triples.cc sortintegrals.cc coupled_pair.cc mp2.cc blas.cc df_ccsd.cc opdm.cc quadratic.cc diis.cc local_triples.cc fnocc.cc linear.cc )
+
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM sources_list "")

@@ -12,14 +12,19 @@ macro(install_list_FILES list_of_files where)
 	endforeach()
 endmacro()
 
+# Writes list of files in given directory to a file to be used by the
+# cloc Perl script to count lines of code
 macro(write_to_cloc_list list_of_sources)
-	get_filename_component(lib ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-	if(EXISTS "${PROJECT_BINARY_DIR}/cloc/cloc_list-${lib}")
-		file(REMOVE ${PROJECT_BINARY_DIR}/cloc/cloc_list-${lib})
-	endif()
-	foreach(source ${list_of_sources})
-		file(APPEND ${PROJECT_BINARY_DIR}/cloc/cloc_list-${lib} "${PROJECT_SOURCE_DIR}/src/${lib}/${source}\n")
-        endforeach()
+     # It might be that sources are not under src/${lib} but under src/${dir}/${lib}
+     get_filename_component(dir ${CMAKE_CURRENT_SOURCE_DIR} PATH)
+     get_filename_component(dir ${dir} NAME)
+     get_filename_component(lib ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+     if(EXISTS "${PROJECT_BINARY_DIR}/doc/cloc/cloc_list-${lib}")
+     	file(REMOVE ${PROJECT_BINARY_DIR}/doc/cloc/cloc_list-${lib})
+     endif()
+     foreach(source ${list_of_sources})
+     	file(APPEND ${PROJECT_BINARY_DIR}/doc/cloc/cloc_list-${lib} "${PROJECT_SOURCE_DIR}/src/${dir}/${lib}/${source}\n")
+     endforeach()
 endmacro()
 
 # Generate the FCMangle header and post-process it to add the copyright notice

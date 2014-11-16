@@ -1,8 +1,7 @@
-include(GlobUtils)
-
 set(headers_list "")
-# Get headers with .h extension
-get_h_headers(headers_list)
+# List of headers
+list(APPEND headers_list MOInfo.h globals.h Params.h Local.h )
+
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM headers_list "")
@@ -13,8 +12,9 @@ endif()
 list(SORT headers_list)
 
 set(sources_list "")
-# Get sources with .cc extension
-get_cc_sources(sources_list)
+# List of sources
+list(APPEND sources_list local.cc local_polar.cc transpert.cc cc_memcheck.cc classify.cc f_spinad.cc cache.cc build_F_RHF.cc local_magnetic.cc sort_tei.cc cphf_F.cc fock.cc get_params.cc scf_check.cc f_sort.cc cphf_B.cc idx_permute_multipass.cc d_sort.cc b_sort.cc build_B_RHF.cc build_abcd_packed.cc c_sort.cc distribute.cc sort_oei.cc idx_permute.cc e_spinad.cc file_build_multipass.cc get_moinfo.cc file_build.cc ccsort.cc d_spinad.cc file_build_presort.cc e_sort.cc idx_error.cc denom.cc sort_pert.cc domain_print.cc idx_permute_presort.cc )
+
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM sources_list "")

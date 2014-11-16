@@ -1,5 +1,3 @@
-include(GlobUtils)
-
 # Run the git version script, and update gitversion.h, if it's changed
 add_custom_command(
     COMMAND ${PYTHON_EXECUTABLE} gitversion.py
@@ -16,8 +14,9 @@ add_custom_command(
 )
 
 set(headers_list "")
-# Get headers with .h extension
-get_h_headers(headers_list)
+# List of headers
+list(APPEND headers_list script.h psi4.h )
+
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM headers_list "")
@@ -28,8 +27,9 @@ endif()
 list(SORT headers_list)
 
 set(sources_list "")
-# Get sources with .cc extension
-get_cc_sources(sources_list)
+# List of sources
+list(APPEND sources_list export_psio.cc export_mints.cc psi_stop.cc export_functional.cc export_chkpt.cc export_oeprop.cc python.cc export_plugins.cc version.cc export_libfrag.cc export_blas_lapack.cc psi4.cc export_cubefile.cc export_benchmarks.cc clean.cc create_new_plugin.cc psi_start.cc script.cc set_memory.cc read_options.cc )
+
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM sources_list "")

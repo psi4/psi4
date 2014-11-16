@@ -1,8 +1,7 @@
-include(GlobUtils)
-
 set(headers_list "")
-# Get headers with .h extension
-get_h_headers(headers_list)
+# List of headers
+list(APPEND headers_list electrostatic.h writer_file_prefix.h gridblock.h factory.h wavefunction.h oeprop.h gridprop.h cubefile.h potentialint.h benchmark.h overlap.h cdsalclist.h angularmomentum.h vector3.h potential.h local.h integral.h sointegral_onebody.h dimension.h 3coverlap.h corrtab.h vector.h extern.h pointgrp.h molecule.h sieve.h sointegral.h quadrupole.h typedefs.h electricfield.h fjt.h psimath.h osrecur.h sobasis.h integralparameters.h sointegral_twobody.h mints.h onebody.h petitelist.h efpmultipolepotential.h coordentry.h orbitalspace.h nabla.h eri.h orthog.h serializers.h erd_eri.h tracelessquadrupole.h basisset_parser.h dipole.h kinetic.h dcd.h twobody.h basisset.h shellrotation.h gshell.h view.h multipoles.h mintshelper.h writer.h pybuffer.h cartesianiter.h multipolesymmetry.h deriv.h pseudospectral.h matrix.h )
+
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM headers_list "")
@@ -13,8 +12,9 @@ endif()
 list(SORT headers_list)
 
 set(sources_list "")
-# Get sources with .cc extension
-get_cc_sources(sources_list)
+# List of sources
+list(APPEND sources_list local.cc onebody.cc orbitalspace.cc osrecur.cc maketab.cc efpmultipolepotential.cc oeprop.cc writer.cc transform.cc cubefile.cc sieve.cc multipolesymmetry.cc shellrotation.cc deriv.cc overlap.cc integralparameters.cc twobody.cc vector.cc sobasis.cc view.cc cartesianiter.cc basisset.cc electrostatic.cc wavefunction.cc basisset_parser.cc irrep.cc eribase.cc fjt.cc potentialint.cc chartab.cc corrtab.cc quadrupole.cc gridprop.cc eri.cc symop.cc benchmark.cc get_writer_file_prefix.cc 3coverlap.cc petitelist.cc solidharmonics.cc orthog.cc electricfield.cc multipoles.cc dipole.cc sointegral.cc extern.cc nabla.cc factory.cc psimath.cc dimension.cc molecule.cc intvector.cc potential.cc mintshelper.cc coordentry.cc kinetic.cc tracelessquadrupole.cc pseudospectral.cc integral.cc matrix.cc svd.cc gshell.cc integraliter.cc pointgrp.cc rep.cc cdsalclist.cc erd_eri.cc angularmomentum.cc )
+
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM sources_list "")
