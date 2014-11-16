@@ -13,7 +13,6 @@ list(APPEND CMAKE_MODULE_PATH
 
 #  Options  
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                         OFF)
-option(ENABLE_CODE_COVERAGE  "Enable code coverage"                        OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"                  OFF)
 option(ENABLE_OMP            "Enable OpenMP parallelization"               ON)
 option(ENABLE_UNIT_TESTS     "Enable compilation of unit test suite"       OFF)
@@ -29,6 +28,13 @@ option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
 option(ENABLE_PLUGINS        "Enable plugins"                              ON)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
+# Options for dashboard builds
+option(ENABLE_CODE_COVERAGE  "Enable code coverage"                        OFF)
+option(ENABLE_MEMCHECK       "Enable Valgrind memory check"                OFF)
+option(ENABLE_ASAN           "Enable address sanitizer"                    OFF)
+option(ENABLE_MSAN           "Enable memory sanitizer"                     OFF)
+option(ENABLE_TSAN           "Enable thread sanitizer"                     OFF)
+option(ENABLE_UBSAN          "Enable undefined behaviour sanitizer"        OFF)
 
 set(EXTERNAL_LIBS)
 
