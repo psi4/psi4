@@ -1,8 +1,7 @@
-include(GlobUtils)
-
 set(headers_list "")
-# Get headers with .h extension
-get_h_headers(headers_list)
+# List of headers
+list(APPEND headers_list MOInfo.h globals.h Params.h )
+
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM headers_list "")
@@ -13,8 +12,9 @@ endif()
 list(SORT headers_list)
 
 set(sources_list "")
-# Get sources with .cc extension
-get_cc_sources(sources_list)
+# List of sources
+list(APPEND sources_list T3_UHF_ABC.cc triples.cc ET_ABB.cc cache.cc ET_RHF.cc count_ijk.cc T3_grad_UHF_AAA.cc ET_AAB.cc transpose_integrals.cc ET_AAA.cc test_abc_loops.cc T3_grad_UHF_AAB.cc ET_UHF_AAB.cc get_moinfo.cc ET_UHF_AAA.cc ET_UHF_ABB.cc T3_UHF_AAB.cc EaT_RHF.cc ET_BBB.cc ET_UHF_BBB.cc T3_UHF_AAA.cc T3_grad_UHF_BBA.cc T3_grad_UHF_BBB.cc T3_grad_RHF.cc )
+
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM sources_list "")

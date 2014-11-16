@@ -1,8 +1,7 @@
-include(GlobUtils)
-
 set(headers_list "")
-# Get headers with .h extension
-get_h_headers(headers_list)
+# List of headers
+list(APPEND headers_list mospace.h integraltransform_functors.h integraltransform.h )
+
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM headers_list "")
@@ -13,8 +12,9 @@ endif()
 list(SORT headers_list)
 
 set(sources_list "")
-# Get sources with .cc extension
-get_cc_sources(sources_list)
+# List of sources
+list(APPEND sources_list integraltransform_moinfo.cc integraltransform_tpdm_unrestricted.cc integraltransform_sort_so_tei.cc integraltransform_tpdm.cc integraltransform_oei.cc integraltransform_sort_mo_tpdm.cc integraltransform_tei_2nd_half.cc integraltransform_tei_1st_half.cc integraltransform_sort_so_tpdm.cc integraltransform.cc integraltransform_tpdm_restricted.cc integraltransform_dpd_id.cc mospace.cc integraltransform_tei.cc )
+
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM sources_list "")

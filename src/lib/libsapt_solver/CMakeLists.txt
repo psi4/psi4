@@ -1,8 +1,7 @@
-include(GlobUtils)
-
 set(headers_list "")
-# Get headers with .h extension
-get_h_headers(headers_list)
+# List of headers
+list(APPEND headers_list sapt2p3.h sapt.h sapt2.h sapt0.h sapt2p.h )
+
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM headers_list "")
@@ -13,8 +12,9 @@ endif()
 list(SORT headers_list)
 
 set(sources_list "")
-# Get sources with .cc extension
-get_cc_sources(sources_list)
+# List of sources
+list(APPEND sources_list exch-ind-disp30.cc exch12.cc sapt2.cc sapt.cc sapt0.cc exch-disp30.cc exch-disp20.cc amplitudes.cc utils.cc disp20.cc ind30.cc disp22sdq.cc ind-disp30.cc sapt2p.cc elst13.cc disp30.cc disp22t.cc ind20.cc elst10.cc exch-ind30.cc exch11.cc disp21.cc disp2ccd.cc exch10.cc exch-ind20.cc elst12.cc sapt2p3.cc ind22.cc )
+
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
    list(REMOVE_ITEM sources_list "")
