@@ -142,12 +142,6 @@ endfunction(get_fc_symbol)
 # This macro configures all files that depend on some variables known only when 
 # the setup script or CMake are run
 macro(configure_files)
-    # Configure the touch_cmakelists utility script
-    configure_file(${PROJECT_SOURCE_DIR}/tools/touch_cmakelists.py.in touch_cmakelists.py)
-    file(COPY ${PROJECT_BINARY_DIR}/touch_cmakelists.py 
-      DESTINATION ${PROJECT_BINARY_DIR}/bin
-      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-      GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
     # Configure the counter utility script
     configure_file(${PROJECT_SOURCE_DIR}/tools/counter.py.in counter.py)
     file(COPY ${PROJECT_BINARY_DIR}/counter.py 

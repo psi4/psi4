@@ -55,9 +55,9 @@ file(APPEND ${BOOST_BUILD_DIR}/user-config.jam "${MPI_SENT}")
 # Unpack Boost and copy boostcpp.jam
 add_custom_command(
     OUTPUT boost.unpacked 
-    COMMAND tar -xzf ${PROJECT_SOURCE_DIR}/boost/boost_${BOOSTVER}.tar.gz 
+    COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/boost/boost_${BOOSTVER}.tar.gz 
     # Copy custom boostcpp.jam (to get versioned format as I want it!)
-    COMMAND cp ${PROJECT_SOURCE_DIR}/boost/boostcpp.jam ${BOOST_BUILD_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/boost/boostcpp.jam ${BOOST_BUILD_DIR}
     # Append to project-config.jam 
     # It can't be done with file(APPEND ...) because it will be destroyed when unpacking
     COMMAND ${CMAKE_COMMAND} -E echo "${MPI_SENT}" >> ${BOOST_BUILD_DIR}/project-config.jam
@@ -74,7 +74,7 @@ add_custom_command(
             --with-libraries="${b2_needed_components}"
 	    --with-python=${PYTHON_EXECUTABLE}
 	    --prefix=${CUSTOM_BOOST_LOCATION} 1> boost.configured.log 2> boost.configured.err
-    COMMAND touch ${PROJECT_BINARY_DIR}/boost/boost.configured	    
+    COMMAND ${CMAKE_COMMAND} -E touch ${PROJECT_BINARY_DIR}/boost/boost.configured	    
     WORKING_DIRECTORY ${BOOST_BUILD_DIR}
     DEPENDS boost.unpacked
     COMMENT "Configuring Boost")
@@ -83,7 +83,7 @@ add_custom_command(
 add_custom_command(
     OUTPUT boost.built
     COMMAND ./b2 variant=${type} link=static threading=multi 1> boost.built.log 2> boost.built.err
-    COMMAND touch ${PROJECT_BINARY_DIR}/boost/boost.built
+    COMMAND ${CMAKE_COMMAND} -E touch ${PROJECT_BINARY_DIR}/boost/boost.built
     WORKING_DIRECTORY ${BOOST_BUILD_DIR}
     DEPENDS boost.configured 
     COMMENT "Building Boost")
@@ -92,7 +92,7 @@ add_custom_command(
 add_custom_command(
     OUTPUT boost.installed
     COMMAND ./b2 install variant=${type} link=static threading=multi 1> boost.installed.log 2> boost.installed.err	   
-    COMMAND touch ${PROJECT_BINARY_DIR}/boost/boost.installed
+    COMMAND ${CMAKE_COMMAND} -E touch ${PROJECT_BINARY_DIR}/boost/boost.installed
     WORKING_DIRECTORY ${BOOST_BUILD_DIR}
     DEPENDS boost.built 
     COMMENT "Installing Boost")
@@ -100,8 +100,8 @@ add_custom_command(
 # Clean-up
 add_custom_command(
     OUTPUT boost.cleanedup
-    COMMAND rm -rf ${BOOST_BUILD_DIR}
-    COMMAND touch ${PROJECT_BINARY_DIR}/boost/boost.cleanedup
+    COMMAND ${CMAKE_COMMAND} -E remove ${BOOST_BUILD_DIR}
+    COMMAND ${CMAKE_COMMAND} -E touch ${PROJECT_BINARY_DIR}/boost/boost.cleanedup
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/boost
     DEPENDS boost.installed 
     COMMENT "Clean-up Boost")
