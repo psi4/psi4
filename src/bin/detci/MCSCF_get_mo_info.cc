@@ -73,7 +73,7 @@ void mcscf_get_mo_info(Options &options)
    chkpt_init(PSIO_OPEN_OLD);
    // CalcInfo.nirreps = chkpt_rd_nirreps();
    MCSCF_CalcInfo.nmo = chkpt_rd_nmo();
-   MCSCF_CalcInfo.nso = chkpt_rd_nmo(); /* change to nbfso after conversion */
+   // MCSCF_CalcInfo.nso = chkpt_rd_nmo(); /* change to nbfso after conversion */
    // CalcInfo.labels = chkpt_rd_irr_labs();
    // CalcInfo.orbs_per_irr = chkpt_rd_orbspi();
    // MCSCF_CalcInfo.enuc = chkpt_rd_enuc();
