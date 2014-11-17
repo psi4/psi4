@@ -128,7 +128,7 @@ double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
 // struct params MCSCF_Parameters;
 // int *ioff;
 IndepPairs IndPairs;
-PsiReturnType mcscf_update(Options &options);
+int mcscf_update(Options &options);
 
 #define MO_HESS_MIN 1.0E-1
 
@@ -138,7 +138,7 @@ PsiReturnType mcscf_update(Options &options);
 namespace psi { namespace detci {
 
 
-PsiReturnType mcscf_update(Options &options)
+int mcscf_update(Options &options)
 {
   int converged = 0;
   int num_pairs = 0;
@@ -200,19 +200,20 @@ PsiReturnType mcscf_update(Options &options)
   else
     steptype = 0;
 
-  print_step(num_pairs, steptype);
+  // print_step(num_pairs, steptype);
 
 //  if (MCSCF_Parameters.print_lvl) quote();
   // cleanup();
   //close_io();
   if (MCSCF_Parameters.print_lvl) tstop();
 
-  if (converged){
-    return EndLoop; 
-  }
-  else{
-    return Success;
-  }
+  // if (converged){
+  //   return EndLoop; 
+  // }
+  // else{
+  //   return Success;
+  // }
+  return converged;
 }
 
 
@@ -997,48 +998,49 @@ void rotate_orbs(void)
 */
 int check_conv(void)
 {
-  FILE *sumfile;
-  char sumfile_name[] = "file14.dat";
-  char comment[MAX_COMMENT];
-  int i, entries, iter, nind;
-  double rmsgrad, scaled_rmsgrad, energy, energy_last;
+  // FILE *sumfile;
+  // char sumfile_name[] = "file14.dat";
+  // char comment[MAX_COMMENT];
+  // int i, entries, iter, nind;
+  // double rmsgrad, scaled_rmsgrad, energy, energy_last;
   int converged_energy=0, converged_grad=0, last_converged=0;
 
-  ffile_noexit(&sumfile,sumfile_name,2);
+  // ffile_noexit(&sumfile,sumfile_name,2);
 
-  if (sumfile == NULL) {
-    MCSCF_CalcInfo.iter = 0;
-    return(0);
-  }
+  // if (sumfile == NULL) {
+  //   MCSCF_CalcInfo.iter = 0;
+  //   return(0);
+  // }
 
-  if (fscanf(sumfile, "%d", &entries) != 1) {
-    outfile->Printf("(print_step): Trouble reading num entries in file %s\n",
-            sumfile_name);
-    fclose(sumfile);
-    MCSCF_CalcInfo.iter = 0;
-    return(0);
-  } 
+  // if (fscanf(sumfile, "%d", &entries) != 1) {
+  //   outfile->Printf("(print_step): Trouble reading num entries in file %s\n",
+  //           sumfile_name);
+  //   fclose(sumfile);
+  //   MCSCF_CalcInfo.iter = 0;
+  //   return(0);
+  // } 
 
-  MCSCF_CalcInfo.iter = entries;
-  for (i=0; i<entries; i++) {
-    fscanf(sumfile, "%d %d %lf %lf %lf %s", &iter, &nind, &scaled_rmsgrad,
-           &rmsgrad, &energy_last, comment);
-  }
-  fclose(sumfile);
+  // MCSCF_CalcInfo.iter = entries;
+  // for (i=0; i<entries; i++) {
+  //   fscanf(sumfile, "%d %d %lf %lf %lf %s", &iter, &nind, &scaled_rmsgrad,
+  //          &rmsgrad, &energy_last, comment);
+  // }
+  // fclose(sumfile);
 
-  chkpt_init(PSIO_OPEN_OLD);
-  energy = chkpt_rd_etot();
-  chkpt_close();
+  // chkpt_init(PSIO_OPEN_OLD);
+  // energy = chkpt_rd_etot();
+  // chkpt_close();
 
   /* check for convergence */
-  if (rmsgrad < MCSCF_Parameters.rms_grad_convergence)
+  if (MCSCF_CalcInfo.mo_grad_rms < MCSCF_Parameters.rms_grad_convergence)
     converged_grad = 1;
-  if (fabs(energy_last - energy) < MCSCF_Parameters.energy_convergence)
+  if (fabs(MCSCF_CalcInfo.energy_old - MCSCF_CalcInfo.energy) < MCSCF_Parameters.energy_convergence)
     converged_energy = 1;
-  if (strstr(comment, "CONV") != NULL)
-    last_converged = 1;
+  // if (strstr(comment, "CONV") != NULL)
+  //   last_converged = 1;
 
-  if (converged_grad && converged_energy && !last_converged) {
+  // if (converged_grad && converged_energy && !last_converged) {
+  if (converged_grad && converged_energy) {
     outfile->Printf( "\n\t*** Calculation Converged ***\n");
     return(1);
   }
