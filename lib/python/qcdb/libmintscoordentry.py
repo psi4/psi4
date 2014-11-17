@@ -35,12 +35,6 @@ try:
 except ImportError:
     from oldpymodules import OrderedDict
 
-# Load Generic Python Modules
-try:
-    from collections import defaultdict, OrderedDict
-except ImportError:
-    from collections import defaultdict
-    from oldpymodules import OrderedDict
 
 class CoordValue(object):
     """An abstract class to handle storage of Cartesian coordinate values, which

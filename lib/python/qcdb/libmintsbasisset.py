@@ -15,13 +15,6 @@ from libmintsgshell import GaussianShell
 from libmintsbasissetparser import Gaussian94BasisSetParser
 from basislist import corresponding_basis
 
-# Load Generic Python Modules
-try:
-    from collections import defaultdict, OrderedDict
-except ImportError:
-    from collections import defaultdict
-    from oldpymodules import OrderedDict
-
 
 class BasisSet(object):
     """Basis set container class
