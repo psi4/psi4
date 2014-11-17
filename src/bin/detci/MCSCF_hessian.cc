@@ -483,7 +483,7 @@ void form_full_mo_hess(int npairs, int *ppair, int *qpair, double *oei,
 
   outfile->Printf("Forming full MCSCF orbital Hessian\n");
  
-  nmo = MCSCF_CalcInfo.nmo;
+  nmo = CalcInfo.nmo;
   npop = MCSCF_CalcInfo.npop;
 
   /* loop over the pairs of independent pairs */
@@ -637,7 +637,7 @@ void form_diag_mo_hess_yy(int npairs, int *ppair, int *qpair, double *oei,
  
   outfile->Printf("Forming diagonal MCSCF orbital Hessian (YY)\n");
 
-  nmo = MCSCF_CalcInfo.nmo;
+  nmo = CalcInfo.nmo;
   npop = MCSCF_CalcInfo.npop;
 
   /* loop over the pairs of independent pairs */

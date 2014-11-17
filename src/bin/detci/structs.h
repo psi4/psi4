@@ -578,11 +578,11 @@ struct params {
 */
 struct mcscf_calcinfo {
   int iter;              /* iteration number */
-  int nmo;               /* number of molecular orbitals... the code often
-                            uses nbfso instead but it shouldn't in case
-                            of linear dependencies */
+  // int nmo;               /* number of molecular orbitals... the code often
+  //                          uses nbfso instead but it shouldn't in case
+  //                          of linear dependencies */
   // int nso;               /* number of basis functions in symmetry orbitals */
-  int nmotri;            /* num elements in lwr diag matrix nbfso big */
+  // int nmotri;            /* num elements in lwr diag matrix nbfso big */
   int nbfao;             /* number of basis functions in atomic orbitals */
   // int nirreps;           /* number of irreducible representations in pt grp */
   int num_fzc_orbs;      /* number of FZC orbitals (i.e. frozen core) */
@@ -594,8 +594,8 @@ struct mcscf_calcinfo {
   // int max_pop_per_irrep; /* max populated orbitals per irrep fzv included */
 
   // int *orbs_per_irr;     /* number of orbitals per irrep */
-  int *docc;             /* doubly occupied orbitals per irrep */
-  int *socc;             /* singly occupied orbitals per irrep */
+  // int *docc;             /* doubly occupied orbitals per irrep */
+  // int *socc;             /* singly occupied orbitals per irrep */
   int *frozen_docc;      /* frozen doubly occupied orbs per irrep */
   int *frozen_uocc;      /* frozen virtual orbs per irrep */
   int *rstr_docc;        /* restricted doubly occupied orbs per irrep */

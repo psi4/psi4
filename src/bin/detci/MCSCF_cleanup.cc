@@ -45,8 +45,8 @@ void mcscf_cleanup(void)
 {
   int i;
   
-  free(MCSCF_CalcInfo.docc);
-  free(MCSCF_CalcInfo.socc);
+  // free(CalcInfo.docc);
+  // free(CalcInfo.socc);
   free(MCSCF_CalcInfo.frozen_docc);
   free(MCSCF_CalcInfo.frozen_uocc);
   free(MCSCF_CalcInfo.rstr_docc);
