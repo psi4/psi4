@@ -160,7 +160,7 @@ extern void compute_cc(void);
 extern void calc_mrpt(void);
 
 // MCSCF
-extern PsiReturnType mcscf_update(Options &options);
+extern int mcscf_update(Options &options);
 extern void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist);
 extern void mcscf_get_mo_info(Options& options);
 extern void mcscf_cleanup(void);
@@ -1561,17 +1561,15 @@ BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx) {
 */
 void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist)
 {
-  // Parameters
-  PsiReturnType finished;
 
   MCSCF_Parameters.print_lvl = 1;
   MCSCF_CalcInfo.mo_hess = NULL;
   MCSCF_CalcInfo.mo_hess_diag = NULL;
+  MCSCF_CalcInfo.energy_old = 0;
 
   if (MCSCF_Parameters.print_lvl) tstart();
   set_mcscf_parameters(options);     /* get running params (convergence, etc)    */
   mcscf_title();                     /* print program identification             */
-
   if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
 
   mcscf_get_mo_info(options);
@@ -1588,32 +1586,28 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
   psi::read_options("TRANSQT2", transqt_options, false);
   transqt_options.set_str("TRANSQT2", "WFN", Parameters.wfn);
   transqt_options.validate_options();
-  transqt_options.print(); // debug
+  // transqt_options.print(); // debug
+
+  // Parameters
+  int conv;
 
   // Iterate
   for (int i=0; i<MCSCF_Parameters.max_iter; i++){
     outfile->Printf("\nStarting MCSCF iteration %d\n\n", i+1);
+    outfile->Printf("\nMCSCF_CalcInfo.iter: %d \n", MCSCF_CalcInfo.iter);
 
-    outfile->Printf("\nMCSCF diag_h(alplist, betlist) \n\n");
     diag_h(alplist, betlist);
- 
-    outfile->Printf("\nMCSCF form_opdm() \n\n");
+    chkpt_init(PSIO_OPEN_OLD);
+    MCSCF_CalcInfo.energy = chkpt_rd_etot();
+    chkpt_close();
+
     form_opdm();
-
-    outfile->Printf("\nMCSCF form_tpdm() \n\n");
     form_tpdm();
-
-    outfile->Printf("\nMCSCF close_io() \n\n");
     close_io();
-
-    outfile->Printf("\nMCSCF mcscf_update() \n\n");
-    finished = mcscf_update(options);
-
-    outfile->Printf("\nFinishing MCSCF iteration %d\n\n", i+1);
-    // mcscf_cleanup();
+    conv = mcscf_update(options);
 
     // If converged
-    if (finished==EndLoop){
+    if (conv){
       outfile->Printf("\nMCSCF converged\n");
       break;
     }
@@ -1624,11 +1618,16 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
       break;
     }
 
+    MCSCF_CalcInfo.iter++;
+    MCSCF_CalcInfo.energy_old = MCSCF_CalcInfo.energy;
+    outfile->Printf("\nFinished MCSCF iteration %d\n\n", i+1);
+
     psi::transqt2::transqt2(transqt_options);    
 
-    // Need to grab the new efzc energy
+    // Need to grab the new efzc energy after transqt2 computations
     chkpt_init(PSIO_OPEN_OLD);
     CalcInfo.efzc = chkpt_rd_efzc();
+    CalcInfo.escf = chkpt_rd_escf();
     chkpt_close();
 
     read_integrals();

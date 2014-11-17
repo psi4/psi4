@@ -635,6 +635,9 @@ struct mcscf_calcinfo {
   double **mo_hess;      /* full MO Hessian */
   double *theta_cur;     /* current orbital rotation angles */
   double *theta_step;    /* step in orbital rotation angles */
+
+  double energy;         /* Energy of current CI iteration */
+  double energy_old;     /* Energy of last CI iteration */
   };
 
 
