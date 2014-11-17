@@ -155,12 +155,15 @@ extern void tpdm(struct stringwr **alplist, struct stringwr **betlist,
    int Inroots, int Inunits, int Ifirstunit,
    int Jnroots, int Jnunits, int Jfirstunit,
    int targetfile, int writeflag, int printflag);
-extern PsiReturnType mcscf_update(Options &options);
-extern void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist);
 extern void mcscf_cleanup();
 extern void compute_cc(void);
 extern void calc_mrpt(void);
 
+// MCSCF
+extern PsiReturnType mcscf_update(Options &options);
+extern void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist);
+extern void mcscf_get_mo_info(Options& options);
+extern void mcscf_cleanup(void);
 
 PsiReturnType detci(Options &options);
 
@@ -1571,6 +1574,8 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
 
   if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
 
+  mcscf_get_mo_info(options);
+
   // Make sure a few things are working
   outfile->Printf("Starting MCSCF\n");
   outfile->Printf("MCSCF MAXITER %d \n", MCSCF_Parameters.max_iter);
@@ -1587,7 +1592,7 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
 
   // Iterate
   for (int i=0; i<MCSCF_Parameters.max_iter; i++){
-    outfile->Printf("\nStarting MCSCF iteration %d\n\n", i);
+    outfile->Printf("\nStarting MCSCF iteration %d\n\n", i+1);
 
     outfile->Printf("\nMCSCF diag_h(alplist, betlist) \n\n");
     diag_h(alplist, betlist);
@@ -1604,25 +1609,45 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
     outfile->Printf("\nMCSCF mcscf_update() \n\n");
     finished = mcscf_update(options);
 
-    outfile->Printf("\nFinishing MCSCF iteration %d\n\n", i);
-    mcscf_cleanup();
+    outfile->Printf("\nFinishing MCSCF iteration %d\n\n", i+1);
+    // mcscf_cleanup();
 
+    // If converged
     if (finished==EndLoop){
-      outfile->Printf("MCSCF converged");
+      outfile->Printf("\nMCSCF converged\n");
       break;
     }
 
+    // If max iter
+    if (i == (MCSCF_Parameters.max_iter - 1)){
+      outfile->Printf("\nMCSCF did not converge\n");
+      break;
+    }
 
     psi::transqt2::transqt2(transqt_options);    
 
-    get_mo_info(options);        /* read DOCC, SOCC, frozen, nmo, etc        */
+    // Need to grab the new efzc energy
+    chkpt_init(PSIO_OPEN_OLD);
+    CalcInfo.efzc = chkpt_rd_efzc();
+    chkpt_close();
 
     read_integrals();
     tf_onel_ints((Parameters.print_lvl>3), "outfile");
     form_gmat((Parameters.print_lvl>3), "outfile");
+    
+    // DGAS Debug
+    outfile->Printf("\nDGAS ----------------\n");
+    
+    outfile->Printf("CalcInfo.escf %f \n", CalcInfo.escf);
+    outfile->Printf("CalcInfo.efzc %f \n", CalcInfo.efzc);
+
+    outfile->Printf("\nDGAS ----------------\n");
 
   }
-  outfile->Printf("Finishing MCSCF\n");
+
+  
+  outfile->Printf("\nFinishing MCSCF\n");
+  mcscf_cleanup();
 
 }
 
