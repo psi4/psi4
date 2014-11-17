@@ -15,14 +15,17 @@ exchange hf
 basis 6-31G(d)
 jobtype sp
 purecart 2222
-!efp_use_efpman2 0
+efp_use_efpman2 0
+scf_guess core
 mem_total 1024
 THRESH             12
-SCF_CONVERGENCE    9
+SCF_CONVERGENCE    10
 $end
 
 $efp_fragments
 H2O -2.12417561  1.22597097 -0.95332054 -2.902133 1.734999 -1.953647
+$end
+$comment
 NH3  1.04358758  1.90477190  2.88279926 -1.105309 2.033306 -1.488582
 NH3 -4.16795656 -0.98129149 -1.27785935  2.526442 1.658262 -2.742084
 $end

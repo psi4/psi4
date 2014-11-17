@@ -438,11 +438,14 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     }
     free(atoms);
 
+    SharedMatrix polterm = V2->clone();
+    polterm->set_name("Polarization contribution to H");
+    polterm->zero();
     // induced dipole contributions to Fock matrix
     xyz_p  = xyz_id->pointer();
     mult_p = id->pointer();
     for (int n = 0; n < n_id; n++) {
-        for(int i=0; i < 20; ++i){
+        for(int i=0; i < 4; ++i){
            mats[i]->zero();
         }
         Vector3 coords(xyz_p[n*3],xyz_p[n*3+1],xyz_p[n*3+2]);
@@ -452,8 +455,10 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
         for(int i=0; i < 3; ++i){
             mats[i+1]->scale( -prefacs[i+1] * mult_p[3*n+i] );
             V2->add(mats[i+1]);
+            polterm->add(mats[i+1]);
         }
     }
+    polterm->print();
 
     boost::shared_ptr<PetiteList> pet(new PetiteList(wfn->basisset(),wfn->integral(),true));
     boost::shared_ptr<Matrix> U = pet->aotoso();
@@ -461,8 +466,6 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     boost::shared_ptr<Matrix> V = Matrix::triplet(U,V2,U,true,false,false);  
     V->set_name("EFP contribution to the Fock Matrix");
 
-    V2->print();
-    V->print();
     return V;
 }
 
