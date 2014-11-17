@@ -380,7 +380,8 @@ protected:
     void ccsd_WijamT2();
     void ccsd_WmbejT2();
     void ccsd_WmbjeT2();
-    void ccsd_WabefT2();
+    void ccsd_WabefT2_high();     // Mem = 3/2*O^2V^2 + V^2N + 2*V^3
+    void ccsd_WabefT2_low();      // Mem = 2*O^2V^2 + V^2N + V^3
     void ccsd_t1_amps();
     void ccsd_t2_amps();
     void ccsd_energy();
@@ -487,12 +488,12 @@ protected:
      int orbs_already_sc;       // 0 false, 1 true
 
      ULI memory;
-     ULI memory_mb;
-     ULI cost_ampAA;          // Mem required for the amplitudes
-     ULI cost_ampBB;          // Mem required for the amplitudes
-     ULI cost_ampAB;          // Mem required for the amplitudes
-     ULI cost_amp;            // Mem required for the amplitudes
-     ULI cost_df;             // Mem required for the df integrals
+     double memory_mb;
+     double cost_ampAA;          // Mem required for the amplitudes
+     double cost_ampBB;          // Mem required for the amplitudes
+     double cost_ampAB;          // Mem required for the amplitudes
+     double cost_amp;            // Mem required for the amplitudes
+     double cost_df;             // Mem required for the df integrals
 
      // Common
      double Enuc;
