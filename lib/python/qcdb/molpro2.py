@@ -21,7 +21,7 @@
 #
 
 import math
-
+from collections import defaultdict
 from exceptions import *
 import qcformat
 import molpro_basissets
