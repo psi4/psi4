@@ -332,17 +332,13 @@ def gen_cmake_command(args):
     command = ''
 
     if args.fc:
-        command += ' FC=%s'  % args.fc
+        command += ' -DCMAKE_Fortran_COMPILER=%s'  % args.fc
     if args.cc:
-        command += ' CC=%s'  % args.cc
+        command += ' -DCMAKE_C_COMPILER=%s'  % args.cc
     if args.cxx:
-        command += ' CXX=%s' % args.cxx
+        command += ' -DCMAKE_CXX_COMPILER=%s' % args.cxx
 
-    if sys.platform != "win32":
-        command += ' %s' % args.cmake
-    else:
-        # fix for windows
-        command = ' %s ' % args.cmake + command
+    command = ' %s ' % args.cmake + command
 
     command += ' -DENABLE_MPI=%s'            % translate_cmake(args.mpi)
     command += ' -DENABLE_SGI_MPT=%s'        % translate_cmake(args.sgi_mpt)
