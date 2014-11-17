@@ -64,10 +64,10 @@ MCSCF_CalcInfo values merged with CalcInfo values:
   int **ras_opi;         /* num orbs per irr per ras space ras_opi[ras][irr] */
   char **labels;         /* labels for irreps */
   int *orbs_per_irr;     /* number of orbitals per irrep */
-
-Perhaps MCSCF_CalcInfo the same as CalcInfo:
   int nmo;               /* number of molecular orbitals */
   int npop;              /* number of populated orbitals, nbfso - nfzv */
+  int *docc;             /* MCSCF doubly occupied orbitals per irrep */
+  int *socc;             /* MCSCF singly occupied orbitals per irrep */
 
 Required MCSCF_CalcInfo values:
   int iter               /* number of MCSCF iterations */
@@ -75,8 +75,6 @@ Required MCSCF_CalcInfo values:
   int num_cor_orbs;      /* MCSCF number of COR orbitals (i.e. restricted core) */
   int num_vir_orbs;      /* MCSCF number of VIR orbitals (i.e. restricted virtual) */
   int num_fzv_orbs;      /* MCSCF number of frozen/deleted virtual orbitals */
-  int *docc;             /* MCSCF doubly occupied orbitals per irrep */
-  int *socc;             /* MCSCF singly occupied orbitals per irrep */
   int *frozen_docc;      /* MCSCF frozen doubly occupied orbs per irrep */
   int *frozen_uocc;      /* MCSCF frozen virtual orbs per irrep */
   int *rstr_docc;        /* MCSCF restricted doubly occupied orbs per irrep */

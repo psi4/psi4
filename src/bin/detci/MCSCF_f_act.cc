@@ -51,24 +51,24 @@ void form_F_act(void)
   int ncore;
 
   /* Form the intermediates we need */
-  MCSCF_CalcInfo.F_act = init_array(MCSCF_CalcInfo.nmotri);
+  MCSCF_CalcInfo.F_act = init_array(CalcInfo.nmotri);
   ncore = MCSCF_CalcInfo.num_fzc_orbs + MCSCF_CalcInfo.num_cor_orbs;
-  calc_F_act(MCSCF_CalcInfo.F_act, MCSCF_CalcInfo.nmo, ncore,  MCSCF_CalcInfo.npop, 
+  calc_F_act(MCSCF_CalcInfo.F_act, CalcInfo.nmo, ncore,  MCSCF_CalcInfo.npop, 
              MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.twoel_ints);
   /*
-  check_F_act(MCSCF_CalcInfo.F_act, MCSCF_CalcInfo.nmo, ncore,  MCSCF_CalcInfo.npop, 
+  check_F_act(MCSCF_CalcInfo.F_act, CalcInfo.nmo, ncore,  MCSCF_CalcInfo.npop, 
              MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.twoel_ints);
-  test_lag(MCSCF_CalcInfo.nmo, ncore, MCSCF_CalcInfo.npop, MCSCF_CalcInfo.onel_ints,
+  test_lag(CalcInfo.nmo, ncore, MCSCF_CalcInfo.npop, MCSCF_CalcInfo.onel_ints,
            MCSCF_CalcInfo.twoel_ints, MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm);
-  test_fzc(MCSCF_CalcInfo.nmo, ncore, MCSCF_CalcInfo.onel_ints, MCSCF_CalcInfo.twoel_ints);
+  test_fzc(CalcInfo.nmo, ncore, MCSCF_CalcInfo.onel_ints, MCSCF_CalcInfo.twoel_ints);
 
-  test_lag2(MCSCF_CalcInfo.nmo, ncore, MCSCF_CalcInfo.npop, MCSCF_CalcInfo.onel_ints,
+  test_lag2(CalcInfo.nmo, ncore, MCSCF_CalcInfo.npop, MCSCF_CalcInfo.onel_ints,
            MCSCF_CalcInfo.twoel_ints, MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm);
   */
 
   if (MCSCF_Parameters.print_lvl > 3) {
     outfile->Printf("\nActive Fock matrix:\n");
-    print_array(MCSCF_CalcInfo.F_act, MCSCF_CalcInfo.nmo, "outfile");
+    print_array(MCSCF_CalcInfo.F_act, CalcInfo.nmo, "outfile");
   }
 
 }

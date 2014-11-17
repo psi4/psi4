@@ -159,7 +159,7 @@ PsiReturnType mcscf_update(Options &options)
   read_density_matrices(options);
 
   MCSCF_CalcInfo.lag = lagcalc(MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm, MCSCF_CalcInfo.onel_ints_bare,
-                     MCSCF_CalcInfo.twoel_ints, MCSCF_CalcInfo.nmo,
+                     MCSCF_CalcInfo.twoel_ints, CalcInfo.nmo,
                      MCSCF_CalcInfo.npop, MCSCF_Parameters.print_lvl, PSIF_MO_LAG); 
 
 
