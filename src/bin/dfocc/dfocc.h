@@ -380,8 +380,8 @@ protected:
     void ccsd_WijamT2();
     void ccsd_WmbejT2();
     void ccsd_WmbjeT2();
-    void ccsd_WabefT2_high();     // Mem = 3/2*O^2V^2 + V^2N + 2*V^3
-    void ccsd_WabefT2_low();      // Mem = 2*O^2V^2 + V^2N + V^3
+    void ccsd_WabefT2_high();     
+    void ccsd_WabefT2_low();      
     void ccsd_t1_amps();
     void ccsd_t2_amps();
     void ccsd_energy();

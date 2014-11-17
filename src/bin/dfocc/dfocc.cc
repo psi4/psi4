@@ -242,8 +242,8 @@ if (reference_ == "RESTRICTED") {
         cost_amp = 3.0 * cost_ampAA;
         memory = Process::environment.get_memory();
         memory_mb = (double)memory/(1024.0 * 1024.0);
-        outfile->Printf("\n\tAvailable memory is: %9.2lf MB \n", memory_mb);
-        outfile->Printf("\tMinimum required memory for amplitudes is    : %9.2lf MB \n", cost_amp);
+        outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
+        outfile->Printf("\tMinimum required memory for amplitudes: %9.2lf MB \n", cost_amp);
 
 }  // end if (reference_ == "RESTRICTED")
 
@@ -352,8 +352,8 @@ else if (reference_ == "UNRESTRICTED") {
         cost_amp = 3.0 * cost_amp;
         memory = Process::environment.get_memory();
         memory_mb = (double)memory/(1024.0 * 1024.0);
-        outfile->Printf("\n\tAvailable memory is: %9.2lf MB \n", memory_mb);
-        outfile->Printf("\tMinimum required memory for amplitudes is    : %9.2lf MB \n", cost_amp);
+        outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
+        outfile->Printf("\tMinimum required memory for amplitudes: %9.2lf MB \n", cost_amp);
         
 }// else if (reference_ == "UNRESTRICTED")
 	
