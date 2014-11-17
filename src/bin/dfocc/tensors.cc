@@ -1486,6 +1486,41 @@ void Tensor2d::copy(ULI length, const SharedTensor2d &A, int inc_a, int inc_2d)
     C_DCOPY(length, A->A2d_[0], inc_a, A2d_[0], inc_2d);
 }//
 
+void Tensor2d::copy(const SharedTensor2d &A, int start)
+{
+    memcpy(A2d_[0], A->A2d_[0]+start, dim1_ * dim2_ * sizeof(double));
+}//
+
+void Tensor2d::pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip)
+{
+    double *temp = new double[dim_copy];
+    int syc = 0;
+    // A[m] is getting the pointer to the m-th row of A.
+    // A[0]+m is getting the pointer to the m-th element of A.
+    for (int i = 0; i < dim1_*dim2_; i+=dim_copy) {
+         memcpy(temp, A->A2d_[0]+syc, dim_copy * sizeof(double));
+         memcpy(A2d_[0]+i, temp, dim_copy * sizeof(double));
+         syc += dim_copy + dim_skip;
+    }
+    delete [] temp;
+
+}//
+
+void Tensor2d::pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip, int start)
+{
+    double *temp = new double[dim_copy];
+    int syc = 0;
+    // A[m] is getting the pointer to the m-th row of A.
+    // A[0]+m is getting the pointer to the m-th element of A.
+    for (int i = 0; i < dim1_*dim2_; i+=dim_copy) {
+         memcpy(temp, A->A2d_[0]+start+syc, dim_copy * sizeof(double));
+         memcpy(A2d_[0]+i, temp, dim_copy * sizeof(double));
+         syc += dim_copy + dim_skip;
+    }
+    delete [] temp;
+
+}//
+
 void Tensor2d::diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff)
 {
    sq_rsp(dim1_, dim2_, A2d_, eigvalues->A1d_, 1, eigvectors->A2d_, cutoff);

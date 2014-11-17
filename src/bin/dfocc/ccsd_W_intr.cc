@@ -352,11 +352,9 @@ void DFOCC::ccsd_WabefT2_high()
     Tau.reset();
 
     // Read B(Q,ab)
-    //K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA));
-    //K->read(psio_, PSIF_DFOCC_INTS);
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
     K->read(psio_, PSIF_DFOCC_INTS, true, true);
-    M = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (E|Q)", navirA, nQ));
+    M = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|E)", nQ, navirA));
 
     // Symmetric & Anti-symmetric contributions
     S = SharedTensor2d(new Tensor2d("S (AB, I>=J)", navirA * navirA, ntri_ijAA));
@@ -367,32 +365,17 @@ void DFOCC::ccsd_WabefT2_high()
             I = SharedTensor2d(new Tensor2d("I[A] <E|FB>", navirA, navirA * nb));
             L = SharedTensor2d(new Tensor2d("B (Q|FB)", nQ, navirA * nb));
 
-            // Form b[a](e,Q), cost = V^2N
+            // Form b[a](Qe) = b_ea^Q, cost = V^2N
             timer_on("B[a](Qe)");
-            #pragma omp parallel for
-            for(int e = 0 ; e < navirA; ++e){
-                int ae = ab_idxAA->get(a,e);
-                for(int Q = 0 ; Q < nQ; ++Q){
-                    M->set(e, Q, K->get(Q,ae));
-                }
-            }
+            M->pcopy(K,1,navirA-1,a);
             timer_off("B[a](Qe)");
 
             // Form V[a](e,fb) = \sum_{Q} b[a](e,Q) b(Q,fb), cost = V^4N/2
             timer_on("V[a](efb)");
-            #pragma omp parallel for
-            for(int f = 0 ; f < navirA; ++f){
-                for(int b = 0 ; b < nb; ++b){
-                    int fb1 = b + (f * nb);
-                    int fb2 = b + (f * navirA);
-                    for(int Q = 0 ; Q < nQ; ++Q){
-                        L->set(Q, fb1, K->get(Q,fb2));
-                    }
-                }
-            }
-            I->gemm(false, false, M, L, 1.0, 0.0);
-            timer_off("V[a](efb)");
+            L->pcopy(K,nb,navirA-nb);
+            I->gemm(true, false, M, L, 1.0, 0.0);
             L.reset();
+            timer_off("V[a](efb)");
 
             // memalloc
             Vs = SharedTensor2d(new Tensor2d("(+)V[A] (B, E>=F)", nb, ntri_abAA));
