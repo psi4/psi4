@@ -61,7 +61,7 @@
 
 namespace psi { namespace detci {
 
-extern void mcscf_get_mo_info(Options& options);
+// extern void mcscf_get_mo_info(Options& options);
 extern void set_mcscf_parameters(Options &options);
 extern void mcscf_print_parameters(void);
 extern void mcscf_read_integrals(void);
@@ -154,7 +154,7 @@ PsiReturnType mcscf_update(Options &options)
 
   // if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
 
-  mcscf_get_mo_info(options);               /* read DOCC, SOCC, frozen, nbfso, etc      */
+//  mcscf_get_mo_info(options);               /* read DOCC, SOCC, frozen, nbfso, etc      */
   mcscf_read_integrals();            /* get the 1 and 2 elec MO integrals        */
   read_density_matrices(options);
 
