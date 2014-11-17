@@ -1410,13 +1410,18 @@ void Tensor2d::axpy(double **a, double alpha)
 {
     ULI length = (ULI)dim1_ * (ULI)dim2_;
     C_DAXPY(length, alpha, a[0], 1, A2d_[0], 1);
-}
+}//
 
 void Tensor2d::axpy(const SharedTensor2d &a, double alpha)
 {
     ULI length = (ULI)dim1_ * (ULI)dim2_;
     C_DAXPY(length, alpha, a->A2d_[0], 1, A2d_[0], 1);
-}
+}//
+
+void Tensor2d::axpy(ULI length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha)
+{
+    C_DAXPY(length, alpha, a->A2d_[0], inc_a, A2d_[0], inc_2d);
+}//
 
 double **Tensor2d::transpose2()
 {
@@ -1474,6 +1479,11 @@ void Tensor2d::copy(const SharedTensor2d &Adum)
         //memcpy(A2d_[0], Adum->A2d_[0], dim1_ * dim2_ * sizeof(double));
         C_DCOPY(length, Adum->A2d_[0], 1, A2d_[0], 1);
     }
+}//
+
+void Tensor2d::copy(ULI length, const SharedTensor2d &A, int inc_a, int inc_2d)
+{
+    C_DCOPY(length, A->A2d_[0], inc_a, A2d_[0], inc_2d);
 }//
 
 void Tensor2d::diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff)
@@ -3356,6 +3366,12 @@ void Tensor2d::set_column(const SharedTensor2d &A, int n)
            A2d_[ij][n] = A->get(i, j);
        }
   }
+
+  /*
+    ULI length;
+    length = (ULI)dim1_ * (ULI)dim2_;
+    C_DCOPY(length, A->A2d_[0], 1, &(A2d_[0][n]), 1);
+  */
 }//
 
 void Tensor2d::get_row(const SharedTensor2d &A, int n)
@@ -3378,6 +3394,12 @@ void Tensor2d::get_column(const SharedTensor2d &A, int n)
            A2d_[i][j] = A->get(ij, n);
        }
   }
+
+  /*
+    ULI length;
+    length = (ULI)dim1_ * (ULI)dim2_;
+    C_DCOPY(length, &(A->A2d_[0][n]), 1, A2d_[0], 1);
+  */
 }//
 
 void Tensor2d::add2row(const SharedTensor2d &A, int n)

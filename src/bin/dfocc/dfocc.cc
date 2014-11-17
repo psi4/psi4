@@ -233,19 +233,17 @@ if (reference_ == "RESTRICTED") {
         outfile->Printf( "\t FC   OCC   VIR   FV \n");
         outfile->Printf( "\t----------------------\n");                                                 
         outfile->Printf( "\t%3d  %3d   %3d  %3d\n", nfrzc, naoccA, navirA, nfrzv);
-	
 
         // memory requirements
-        cost_ampAA = 0;
-        cost_ampAA = (ULI)nocc2AA * (ULI)nvir2AA;
-        cost_ampAA /= (ULI)1024 * (ULI)1024;
-        cost_ampAA *= (ULI)sizeof(double);
-        cost_amp = (ULI)3.0 * cost_ampAA;
+        cost_ampAA = 0.0;
+        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        cost_amp = 3.0 * cost_ampAA;
         memory = Process::environment.get_memory();
-        memory_mb = memory/1000000L;
-        outfile->Printf("\n\tAvailable memory is: %6lu MB \n", memory_mb);
-        outfile->Printf("\tMinimum required memory for the amplitudes is: %6lu MB \n", cost_amp);
-        
+        memory_mb = (double)memory/(1024.0 * 1024.0);
+        outfile->Printf("\n\tAvailable memory is: %9.2lf MB \n", memory_mb);
+        outfile->Printf("\tMinimum required memory for amplitudes is    : %9.2lf MB \n", cost_amp);
 
 }  // end if (reference_ == "RESTRICTED")
 
@@ -339,23 +337,23 @@ else if (reference_ == "UNRESTRICTED") {
         
 
         // memory requirements
-        cost_ampAA = 0;
-        cost_ampAA = (ULI)nocc2AA * (ULI)nvir2AA;
-        cost_ampAA /= (ULI)1024 * (ULI)1024;
-        cost_ampAA *= (ULI)sizeof(double);
-        cost_ampBB = (ULI)nocc2BB * (ULI)nvir2BB;
-        cost_ampBB /= (ULI)1024 * (ULI)1024;
-        cost_ampBB *= (ULI)sizeof(double);
-        cost_ampAB = (ULI)nocc2AB * (ULI)nvir2AB;
-        cost_ampAB /= (ULI)1024 * (ULI)1024;
-        cost_ampAB *= (ULI)sizeof(double);
+        cost_ampAA = 0.0;
+        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        cost_ampBB = nocc2BB * nvir2BB;
+        cost_ampBB /= 1024.0 * 1024.0;
+        cost_ampBB *= sizeof(double);
+        cost_ampAB = nocc2AB * nvir2AB;
+        cost_ampAB /= 1024.0 * 1024.0;
+        cost_ampAB *= sizeof(double);
         cost_amp = MAX0(cost_ampAA, cost_ampBB);
         cost_amp = MAX0(cost_amp, cost_ampAB);
-        cost_amp = (ULI)3.0 * cost_amp;
+        cost_amp = 3.0 * cost_amp;
         memory = Process::environment.get_memory();
-        memory_mb = memory/1000000L;
-        outfile->Printf("\n\tAvailable memory is: %6lu MB \n", memory_mb);
-        outfile->Printf("\tMinimum required memory for the amplitudes is: %6lu MB \n", cost_amp);
+        memory_mb = (double)memory/(1024.0 * 1024.0);
+        outfile->Printf("\n\tAvailable memory is: %9.2lf MB \n", memory_mb);
+        outfile->Printf("\tMinimum required memory for amplitudes is    : %9.2lf MB \n", cost_amp);
         
 }// else if (reference_ == "UNRESTRICTED")
 	
@@ -382,7 +380,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") outfile->Printf("                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP2   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision November 14, 2014\n") ;
+   outfile->Printf("              Latest Revision November 16, 2014\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");

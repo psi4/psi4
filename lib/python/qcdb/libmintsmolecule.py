@@ -39,6 +39,12 @@ from libmintspointgrp import SymmOps, similar, SymmetryOperation, PointGroup
 #from libmintspointgrp import PointGroups
 #print PointGroups
 
+# Load Generic Python Modules
+try:
+    from collections import defaultdict, OrderedDict
+except ImportError:
+    from collections import defaultdict
+    from oldpymodules import OrderedDict
 
 LINEAR_A_TOL = 1.0E-2  # When sin(a) is below this, we consider the angle to be linear
 DEFAULT_SYM_TOL = 1.0E-8
@@ -940,7 +946,7 @@ class LibmintsMolecule(object):
             for i in range(self.natom()):
                 text += """    %8s\n""" % (self.label(i))
                 for bas in self.atoms[i].basissets().keys():
-                    text += """              %-15s %-20s %s\n""" % (bas, 
+                    text += """              %-15s %-20s %s\n""" % (bas,
                         self.atoms[i].basissets()[bas], self.atoms[i].shells()[bas])
             text += "\n"
         else:

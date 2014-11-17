@@ -37,21 +37,21 @@
 #include "psi4-dec.h"
 namespace psi {
 
-    
 
-    class Molecule;
-    class GaussianShell;
 
-    class Chkpt;
-    class BasisSetParser;
-    class DealiasBasisSet;
-    class SOTransformShell;
-    class SphericalTransform;
-    class SOTransform;
-    class Matrix;
-    class Vector3;
-    class SOBasisSet;
-    class IntegralFactory;
+class Molecule;
+class GaussianShell;
+
+class Chkpt;
+class BasisSetParser;
+class DealiasBasisSet;
+class SOTransformShell;
+class SphericalTransform;
+class SOTransform;
+class Matrix;
+class Vector3;
+class SOBasisSet;
+class IntegralFactory;
 
 /*! \ingroup MINTS */
 
@@ -326,8 +326,8 @@ public:
      * @return A new basis set object constructed from the information passed in.
      */
     static boost::shared_ptr<BasisSet> construct(const boost::shared_ptr<BasisSetParser>& parser,
-        const boost::shared_ptr<Molecule>& mol,
-        const std::string& type);
+                                                 const boost::shared_ptr<Molecule>& mol,
+                                                 const std::string& type);
 
     /** Returns a new BasisSet object with qcdb Python machinery.
      *
@@ -439,13 +439,13 @@ BasisSet operator +(const BasisSet& a, const BasisSet& b) {
     temp.refresh();
 
     // Sort by AM in each center
-//    for (int atom=0; atom < temp.molecule_->natom(); ++atom) {
-//        std::sort(temp.shells_.begin()+temp.center_to_shell_[atom],
-//                  temp.shells_.begin()+temp.center_to_shell_[atom]+temp.center_to_nshell_[atom],
-//                  shell_sorter_am);
-//    }
+    //    for (int atom=0; atom < temp.molecule_->natom(); ++atom) {
+    //        std::sort(temp.shells_.begin()+temp.center_to_shell_[atom],
+    //                  temp.shells_.begin()+temp.center_to_shell_[atom]+temp.center_to_nshell_[atom],
+    //                  shell_sorter_am);
+    //    }
 
-//    temp.refresh();
+    //    temp.refresh();
 #endif
     return temp;
 }

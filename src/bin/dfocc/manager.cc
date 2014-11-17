@@ -45,7 +45,6 @@ void DFOCC::omp2_manager()
         trans_ref();
         outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
         outfile->Printf("\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
-        
         timer_off("DF CC Integrals");
 
         // memalloc for density intermediates
@@ -54,6 +53,55 @@ void DFOCC::omp2_manager()
         g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
         g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
         g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+
+     if (reference_ == "RESTRICTED") {
+        // memory requirements
+        // DF-HF B(Q,mn)
+        cost_ampAA = 0;
+        cost_ampAA = nQ_ref * nso2_;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\n\tMemory requirement for B-HF (Q|mu nu) is     : %9.2lf MB \n", cost_ampAA);
+ 
+        // DF-HF B(Q,ab)
+        cost_ampAA = 0;
+        cost_ampAA = nQ_ref * nvir2AA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for B-HF (Q|ab) is        : %9.2lf MB \n", cost_ampAA);
+
+        // Cost of Integral transform for DF-HF B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ_ref * nso2_;
+        cost_ampAA += nQ_ref * navirA * navirA;
+        cost_ampAA += nQ_ref * nso_ * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for DF-HF int trans is    : %9.2lf MB \n", cost_ampAA);
+
+        // DF-CC B(Q,mn)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * nso2_;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\n\tMemory requirement for B-CC (Q|mu nu) is     : %9.2lf MB \n", cost_ampAA);
+ 
+        // DF-CC B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * navirA * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for B-CC (Q|ab) is        : %9.2lf MB \n", cost_ampAA);
+
+        // Cost of Integral transform for DF-CC B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * nso2_;
+        cost_ampAA += nQ * navirA * navirA;
+        cost_ampAA += nQ * nso_ * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for DF-CC int trans is    : %9.2lf MB \n", cost_ampAA);
+     }  // end if (reference_ == "RESTRICTED")
 
         // Fock 
         fock();
@@ -279,6 +327,57 @@ void DFOCC::mp2_manager()
         
         timer_off("DF CC Integrals");
 
+     if (reference_ == "RESTRICTED") {
+        // memory requirements
+        /*
+        // DF-HF B(Q,mn)
+        cost_ampAA = 0;
+        cost_ampAA = nQ_ref * nso2_;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\n\tMemory requirement for B-HF (Q|mu nu) is     : %9.2lf MB \n", cost_ampAA);
+ 
+        // DF-HF B(Q,ab)
+        cost_ampAA = 0;
+        cost_ampAA = nQ_ref * nvir2AA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for B-HF (Q|ab) is        : %9.2lf MB \n", cost_ampAA);
+
+        // Cost of Integral transform for DF-HF B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ_ref * nso2_;
+        cost_ampAA += nQ_ref * navirA * navirA;
+        cost_ampAA += nQ_ref * nso_ * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for DF-HF int trans is    : %9.2lf MB \n", cost_ampAA);
+        */
+
+        // DF-CC B(Q,mn)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * nso2_;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\n\tMemory requirement for B-CC (Q|mu nu) is     : %9.2lf MB \n", cost_ampAA);
+ 
+        // DF-CC B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * navirA * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for B-CC (Q|ab) is        : %9.2lf MB \n", cost_ampAA);
+
+        // Cost of Integral transform for DF-CC B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * nso2_;
+        cost_ampAA += nQ * navirA * navirA;
+        cost_ampAA += nQ * nso_ * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for DF-CC int trans is    : %9.2lf MB \n", cost_ampAA);
+     }  // end if (reference_ == "RESTRICTED")
+
         // QCHF
         if (qchf_ == "TRUE") qchf();
 
@@ -368,12 +467,15 @@ void DFOCC::ccsd_manager()
         df_corr();
         trans_corr();
         timer_off("DF CC Integrals");
-        timer_on("DF REF Integrals");
-        df_ref();
-        trans_ref();
-        timer_off("DF REF Integrals");
-        outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
-        outfile->Printf("\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
+        outfile->Printf("\n\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
+
+        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE") {
+            timer_on("DF REF Integrals");
+            df_ref();
+            trans_ref();
+            timer_off("DF REF Integrals");
+            outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
+        }
 
         // Memory allocation
         T1c = SharedTensor1d(new Tensor1d("DF_BASIS_CC T1_Q", nQ));
@@ -387,41 +489,57 @@ void DFOCC::ccsd_manager()
         FtabA = SharedTensor2d(new Tensor2d("Ftilde <A|B>", navirA, navirA));
 
         // memory requirements
+        /*
         // DF-HF B(Q,mn)
         cost_ampAA = 0;
-        cost_ampAA = (ULI)nQ_ref * (ULI)nso2_;
-        cost_ampAA /= (ULI)1024 * (ULI)1024;
-        cost_ampAA *= (ULI)sizeof(double);
-        cost_amp = (ULI)3.0 * cost_ampAA;
-        outfile->Printf("\n\tMemory requirement for B-HF (Q|mu nu) is     : %6lu MB \n", cost_ampAA);
-        outfile->Printf("\tMemory requirement for 3*B-HF (Q|mu nu) is   : %6lu MB \n", cost_amp);
+        cost_ampAA = nQ_ref * nso2_;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        cost_amp = 3.0 * cost_ampAA;
+        outfile->Printf("\n\tMemory requirement for B-HF (Q|mu nu) is     : %9.2lf MB \n", cost_ampAA);
+        outfile->Printf("\tMemory requirement for 3*B-HF (Q|mu nu) is   : %9.2lf MB \n", cost_amp);
  
         // DF-HF B(Q,ab)
         cost_ampAA = 0;
-        cost_ampAA = (ULI)nQ_ref * (ULI)nvir2AA;
-        cost_ampAA /= (ULI)1024 * (ULI)1024;
-        cost_ampAA *= (ULI)sizeof(double);
-        cost_amp = (ULI)3.0 * cost_ampAA;
-        outfile->Printf("\tMemory requirement for B-HF (Q|ab) is        : %6lu MB \n", cost_ampAA);
-        outfile->Printf("\tMemory requirement for 3*B-HF (Q|ab) is      : %6lu MB \n", cost_amp);
+        cost_ampAA = nQ_ref * nvir2AA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        cost_amp = 3.0 * cost_ampAA;
+        outfile->Printf("\tMemory requirement for B-HF (Q|ab) is        : %9.2lf MB \n", cost_ampAA);
+        outfile->Printf("\tMemory requirement for 3*B-HF (Q|ab) is      : %9.2lf MB \n", cost_amp);
+        */
 
         // DF-CC B(Q,mn)
-        cost_ampAA = 0;
-        cost_ampAA = (ULI)nQ * (ULI)nso2_;
-        cost_ampAA /= (ULI)1024 * (ULI)1024;
-        cost_ampAA *= (ULI)sizeof(double);
-        cost_amp = (ULI)3.0 * cost_ampAA;
-        outfile->Printf("\n\tMemory requirement for B-CC (Q|mu nu) is     : %6lu MB \n", cost_ampAA);
-        outfile->Printf("\tMemory requirement for 3*B-CC (Q|mu nu) is   : %6lu MB \n", cost_amp);
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * nso2_;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\n\tMemory requirement for B-CC (Q|mu nu) is     : %9.2lf MB \n", cost_ampAA);
  
         // DF-CC B(Q,ab)
-        cost_ampAA = 0;
-        cost_ampAA = (ULI)nQ * (ULI)nvir2AA;
-        cost_ampAA /= (ULI)1024 * (ULI)1024;
-        cost_ampAA *= (ULI)sizeof(double);
-        cost_amp = (ULI)3.0 * cost_ampAA;
-        outfile->Printf("\tMemory requirement for B-CC (Q|ab) is        : %6lu MB \n", cost_ampAA);
-        outfile->Printf("\tMemory requirement for 3*B-CC (Q|ab) is      : %6lu MB \n", cost_amp);
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * navirA * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for B-CC (Q|ab) is        : %9.2lf MB \n", cost_ampAA);
+
+        // Cost of Integral transform for B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * nso2_;
+        cost_ampAA += nQ * navirA * navirA;
+        cost_ampAA += nQ * nso_ * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for DF-CC int trans is    : %9.2lf MB \n", cost_ampAA);
+
+        // W_abef term
+        cost_ampAA = 0.0;
+        cost_ampAA = 1.5 * naoccA * naoccA * navirA * navirA;
+        cost_ampAA += nQ * navirA * navirA;
+        cost_ampAA += 2.0 * navirA * navirA * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for Wabef term is         : %9.2lf MB \n", cost_ampAA);
      }  // end if (reference_ == "RESTRICTED")
 
      else if (reference_ == "UNRESTRICTED") {
@@ -447,7 +565,7 @@ void DFOCC::ccsd_manager()
         if (qchf_ == "TRUE") qchf();
 
         // Fock
-        if (dertype == "FIRST" && oeprop_ == "TRUE" && ekt_ip_ == "TRUE") fock();
+        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") fock();
 
         // Compute MP2 energy
         if (reference == "ROHF") t1_1st_sc();

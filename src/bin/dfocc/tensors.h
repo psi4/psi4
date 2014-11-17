@@ -178,10 +178,12 @@ class Tensor2d
   // axpy: Y <-- a * X + Y
   void axpy(double **a, double alpha);
   void axpy(const SharedTensor2d &a, double alpha);
+  void axpy(ULI length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha);
   double **transpose2();
   SharedTensor2d transpose();
   void copy(const SharedTensor2d &Adum);
   void copy(double **a);
+  void copy(ULI length, const SharedTensor2d &A, int inc_a, int inc_2d);
   // diagonalize: diagonalize via rsp
   void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff);
   // cdsyev: diagonalize via lapack
