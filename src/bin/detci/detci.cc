@@ -1635,12 +1635,12 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
     form_gmat((Parameters.print_lvl>3), "outfile");
     
     // DGAS Debug
-    outfile->Printf("\nDGAS ----------------\n");
-    
-    outfile->Printf("CalcInfo.escf %f \n", CalcInfo.escf);
-    outfile->Printf("CalcInfo.efzc %f \n", CalcInfo.efzc);
+    // outfile->Printf("\nDGAS ----------------\n");
+    // 
+    // outfile->Printf("CalcInfo.escf %f \n", CalcInfo.escf);
+    // outfile->Printf("CalcInfo.efzc %f \n", CalcInfo.efzc);
 
-    outfile->Printf("\nDGAS ----------------\n");
+    // outfile->Printf("\nDGAS ----------------\n");
 
   }
 
