@@ -24,6 +24,10 @@ import os
 import re
 import copy
 import math
+try:
+    from collections import OrderedDict
+except ImportError:
+    from oldpymodules import OrderedDict
 from periodictable import *
 from physconst import *
 from vecutil import *

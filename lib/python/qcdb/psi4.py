@@ -22,6 +22,7 @@
 
 import re
 import math
+from collections import defaultdict
 
 from exceptions import *
 import qcformat
