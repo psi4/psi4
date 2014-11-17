@@ -2,8 +2,9 @@
 # will default to only singles and doubles in the active space
 
 set {
-  MCSCF_MAXITER = 40
+  MCSCF_MAXITER = 80
   MCSCF_DIIS_MAX_VECS = 12
+  MCSCF_DIIS_FREQ = 2
   reference = rhf
   restricted_docc = [1, 0, 0, 0]
   ras1            = [2, 0, 1, 1]
