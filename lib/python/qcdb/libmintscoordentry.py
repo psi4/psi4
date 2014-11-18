@@ -30,6 +30,10 @@ import math
 import copy
 from vecutil import *
 from exceptions import *
+try:
+    from collections import OrderedDict
+except ImportError:
+    from oldpymodules import OrderedDict
 
 
 class CoordValue(object):

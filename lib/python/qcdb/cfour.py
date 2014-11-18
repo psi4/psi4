@@ -22,6 +22,7 @@
 
 import re
 import struct
+from collections import defaultdict
 from decimal import Decimal
 from pdict import PreservingDict
 from periodictable import *

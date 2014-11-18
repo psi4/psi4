@@ -24,6 +24,10 @@ import os
 import re
 import copy
 import math
+try:
+    from collections import OrderedDict
+except ImportError:
+    from oldpymodules import OrderedDict
 from periodictable import *
 from physconst import *
 from vecutil import *
@@ -936,7 +940,7 @@ class LibmintsMolecule(object):
             for i in range(self.natom()):
                 text += """    %8s\n""" % (self.label(i))
                 for bas in self.atoms[i].basissets().keys():
-                    text += """              %-15s %-20s %s\n""" % (bas, 
+                    text += """              %-15s %-20s %s\n""" % (bas,
                         self.atoms[i].basissets()[bas], self.atoms[i].shells()[bas])
             text += "\n"
         else:

@@ -3,6 +3,11 @@ import re
 import string
 import hashlib
 import itertools
+from collections import defaultdict
+try:
+    from collections import OrderedDict
+except ImportError:
+    from oldpymodules import OrderedDict
 from exceptions import *
 from psiutil import search_file
 from molecule import Molecule

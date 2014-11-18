@@ -33,6 +33,7 @@ import subprocess
 import socket
 import shutil
 import random
+from collections import defaultdict
 from libmintsmolecule import *
 
 

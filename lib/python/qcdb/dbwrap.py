@@ -6,6 +6,10 @@ try:
 except ImportError:
     import pickle
 import itertools
+try:
+    from collections import OrderedDict
+except ImportError:
+    from oldpymodules import OrderedDict
 from exceptions import *
 from modelchems import Method, BasisSet, Error, methods, bases, errors
 import psiutil
