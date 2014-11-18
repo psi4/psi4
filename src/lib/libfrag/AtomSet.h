@@ -365,6 +365,7 @@ class CartSet: public Set<T>{
       //@}
 };
 
+#if 0
 /*A set of atoms, knows basic atom-y stuff like carts and masses
 class AtomSet:public Set{
    private:
@@ -437,6 +438,7 @@ class AtomSet:public Set{
       }
 };
 */
+#endif
 }}//End namespaces
 
 

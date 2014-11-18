@@ -27,13 +27,6 @@ databases. Contains Molecule class and physical constants from psi4 suite.
 __version__ = '0.3'
 __author__ = 'Lori A. Burns'
 
-# Load Generic Python Modules
-try:
-    from collections import defaultdict, OrderedDict
-except ImportError:
-    from collections import defaultdict
-    from oldpymodules import OrderedDict
-
 # Load Python modules
 from molecule import Molecule
 from dbproc import *
