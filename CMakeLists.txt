@@ -82,8 +82,9 @@ else()
 endif()
 
 # Python Detection 
-find_package(PythonInterp 2.6 REQUIRED)
-find_package(PythonLibs 2.6 REQUIRED)
+#find_package(PythonInterp 2.6 REQUIRED)
+#find_package(PythonLibs 2.6 REQUIRED)
+find_package(Python REQUIRED)
 link_directories("${PYTHON_LIBRARIES}")
 include_directories(SYSTEM "${PYTHON_INCLUDE_DIRS}")
 
