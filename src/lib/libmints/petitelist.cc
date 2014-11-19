@@ -691,7 +691,6 @@ void PetiteList::init(double tol)
 
 Dimension PetiteList::AO_basisdim()
 {
-    int one = 1;
     int nbf = include_pure_transform_ ? basis_->nao() : basis_->nbf();
     Dimension ret(1, "AO Basis Dimension");
     ret[0] = nbf;
@@ -700,7 +699,7 @@ Dimension PetiteList::AO_basisdim()
 
 Dimension PetiteList::SO_basisdim()
 {
-    int i, j, ii;
+    int i;
 
     // grab reference to the basis set;
     BasisSet& gbs = *basis_.get();

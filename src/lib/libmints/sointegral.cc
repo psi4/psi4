@@ -102,9 +102,6 @@ void OneBodySOInt::compute(SharedMatrix result)
             const SOTransform &t1 = b1_->sotrans(ish);
             const SOTransform &t2 = b2_->sotrans(jsh);
 
-            int nso1 = b1_->nfunction(ish);
-            int nso2 = b2_->nfunction(jsh);
-
             int nao2 = b2_->naofunction(jsh);
 
             // loop through the AO shells that make up this SO shell
@@ -121,8 +118,6 @@ void OneBodySOInt::compute(SharedMatrix result)
                         int iaofunc = ifunc.aofunc;
                         int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
                         int iaooff = iaofunc;
-                        int isooff = isofunc;
-                        int iirrep = ifunc.irrep;
 
                         for (int jtr=0; jtr<s2.nfunc; ++jtr) {
                             const SOTransformFunction &jfunc = s2.func[jtr];
@@ -130,8 +125,6 @@ void OneBodySOInt::compute(SharedMatrix result)
                             int jaofunc = jfunc.aofunc;
                             int jsofunc = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
                             int jaooff = iaooff*nao2 + jaofunc;
-                            int jsooff = isooff*nso2 + jsofunc;
-                            int jirrep = jfunc.irrep;
 
                             // Check the irreps to ensure symmetric quantities.
                             if (ifunc.irrep == jfunc.irrep)
@@ -162,10 +155,6 @@ void OneBodySOInt::compute(std::vector<SharedMatrix > results)
             const SOTransform &t1 = b1_->sotrans(ish);
             const SOTransform &t2 = b2_->sotrans(jsh);
 
-            int nso1 = b1_->nfunction(ish);
-            int nso2 = b2_->nfunction(jsh);
-            int nso = nso1*nso2;
-
             int nao1 = b1_->naofunction(ish);
             int nao2 = b2_->naofunction(jsh);
             int nao = nao1*nao2;
@@ -185,8 +174,6 @@ void OneBodySOInt::compute(std::vector<SharedMatrix > results)
                         int iaofunc = ifunc.aofunc;
                         int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
                         int iaooff = iaofunc;
-                        int isooff = isofunc;
-                        int iirrep = ifunc.irrep;
 
                         for (int jtr=0; jtr<s2.nfunc; ++jtr) {
                             const SOTransformFunction &jfunc = s2.func[jtr];
@@ -194,8 +181,6 @@ void OneBodySOInt::compute(std::vector<SharedMatrix > results)
                             int jaofunc = jfunc.aofunc;
                             int jsofunc = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
                             int jaooff = iaooff*nao2 + jaofunc;
-                            int jsooff = isooff*nso2 + jsofunc;
-                            int jirrep = jfunc.irrep;
 
                             // Handle chunks
                             for (int i=0; i<nchunk; ++i) {
@@ -230,7 +215,6 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix > result,
     if (result.size() != cdsalcs.ncd())
         throw SanityCheckError("OneBodySOInt::compute_deriv1: result vector size does not match SALC size.", __FILE__, __LINE__);
 
-    Molecule& mol = *ob_->basis1()->molecule().get();
     int ns1 = b1_->nshell();
     int ns2 = b2_->nshell();
     const double *aobuf = ob_->buffer();
@@ -238,16 +222,13 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix > result,
     // Loop over unique SO shells.
     for (int ish=0; ish<ns1; ++ish) {
         const SOTransform& t1 = b1_->sotrans(ish);
-        int nso1 = b1_->nfunction(ish);
         int nao1 = b1_->naofunction(ish);
 
         for (int jsh=0; jsh<ns2; ++jsh) {
             const SOTransform& t2= b2_->sotrans(jsh);
-            int nso2 = b2_->nfunction(jsh);
             int nao2 = b2_->naofunction(jsh);
 
             int nao12 = nao1 * nao2;
-            int nso12 = nso1 * nso2;
 
             // loop through the AO shells that make up this SO shell
             // by the end of these 4 for loops we will have our final integral in buffer_
@@ -278,8 +259,6 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix > result,
                         int isofunc  = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
                         // AO function offset in a linear array
                         int iaooff   = iaofunc;
-                        // SO function offset in a lienar array
-                        int isooff   = isofunc;
                         // Relative position of the SO function within its irrep
                         int irel     = b1_->function_within_irrep(ish, isofunc);
                         int iirrep   = ifunc.irrep;
@@ -290,7 +269,6 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix > result,
                             int jaofunc  = jfunc.aofunc;
                             int jsofunc  = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
                             int jaooff   = iaooff*nao2 + jaofunc;
-                            int jsooff   = isooff*nso2 + jsofunc;
                             int jrel     = b2_->function_within_irrep(jsh, jsofunc);
                             int jirrep   = jfunc.irrep;
 
@@ -443,15 +421,6 @@ void TwoBodySOInt::common_init()
 
     for (int i=0; i<nthread_; ++i)
         tb_[i]->set_force_cartesian(b1_->petite_list()->include_pure_transform());
-
-    size_t aQRS = b1_->max_nfunction_in_shell() * b2_->basis()->max_function_per_shell() *
-                  b3_->basis()->max_function_per_shell() * b4_->basis()->max_function_per_shell();
-    size_t abcD = b1_->max_nfunction_in_shell() * b2_->max_nfunction_in_shell() *
-                  b3_->max_nfunction_in_shell() * b4_->basis()->max_function_per_shell();
-    size_t abRS = b1_->max_nfunction_in_shell() * b2_->max_nfunction_in_shell() *
-                  b3_->basis()->max_function_per_shell() * b4_->basis()->max_function_per_shell();
-
-    size_t max_size = std::max(aQRS, abcD);
 
     size_ = b1_->max_nfunction_in_shell() *
             b2_->max_nfunction_in_shell() *
