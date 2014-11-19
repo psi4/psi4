@@ -1,3 +1,7 @@
+[LAB 11-18-2014]
+
+* Text "Ab Initio" changed to "Open-Source"
+
 [LAB 4-20-2012]
 
 * Text "PSI4" is Optima Regular at 66 pt in CMYK = [100, 95, 0, 0]
