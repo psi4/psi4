@@ -4,6 +4,9 @@
 # Written by Roberto Di Remigio November 2014 
 #
 
+message("CTEST_SOURCE_DIRECTORY : ${CTEST_SOURCE_DIRECTORY}")
+message("CTEST_BINARY_DIRECTORY : ${CTEST_BINARY_DIRECTORY}")
+
 find_program(HOSTNAME_COMMAND NAMES hostname)
 execute_process(COMMAND ${HOSTNAME_COMMAND} 
     OUTPUT_VARIABLE CTEST_SITE
