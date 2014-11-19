@@ -1,7 +1,5 @@
 #
 # CTest script for address sanitizer (ASan) memcheck build and submission to dashboard 
-# Warning: the correct flags are to be set through a separate (and prior) call to
-# the setup script!
 #
 # Written by Roberto Di Remigio November 2014 
 #
@@ -24,18 +22,6 @@ if(NOT NCORES EQUAL 0)
 else()
     set(NCORES 1)
 endif()
-
-# Given a string FOO=bar, export it to the environment
-# Written by Jonas Juselius
-function(set_env_from_string str)
-    string(REPLACE "=" " " envlist ${str})
-    separate_arguments(envlist)
-    list(GET envlist 0 envvar)
-    list(GET envlist 1 envval)
-    set(ENV{${envvar}} ${envval})
-    unset(envlist)
-    unset(envvar)
-endfunction()
 
 # Defaults
 set(BRANCH master)
