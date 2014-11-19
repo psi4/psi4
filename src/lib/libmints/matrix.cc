@@ -41,6 +41,7 @@
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <libparallel/parallel.h>
+#include <libmints/matrix.h>
 #include <libmints/integral.h>
 #include <libdpd/dpd.h>
 #include "factory.h"
