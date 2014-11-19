@@ -232,7 +232,7 @@ if(NOT Boost_FOUND)
     # Add the Boost version bundled with Psi4 as a dependency
     message(WARNING "Boost not found. The pre-packaged version will be built.")
     # The version bundled with Psi4
-    set(BOOSTVER boost_1_55_0)
+    set(BOOSTVER boost_1_57_0)
     # Link and include information
 
 	#This is the official cmake boost library macro
