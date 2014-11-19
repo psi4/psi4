@@ -8,7 +8,7 @@ set(PROJECT_NAME "Psi")
 set(PROJECT_REPOSITORY "git@github.com:robertodr/psi4.git") 
 set(CTEST_COMMAND ctest)
 set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
-set(CTEST_BUILD_NAME "RDR-gcc4.9.1-asan")
+set(CTEST_BUILD_NAME "RDR-gcc4.9.1-valgrind")
 set(CTEST_SITE "stallo.uit.no")
 
 find_program(CTEST_GIT_COMMAND NAMES git)
