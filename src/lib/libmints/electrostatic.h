@@ -60,8 +60,11 @@ public:
     /// Computes integrals between two shells.
     void compute_pair(const GaussianShell&, const GaussianShell&, const Vector3&);
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Woverloaded-virtual"
     /// Computes integrals and stores in result.
     void compute(SharedMatrix& result, const Vector3&);
+#pragma clang diagnostic pop
 
     /// Does the method provide first derivatives?
     bool has_deriv1() { return false; }
