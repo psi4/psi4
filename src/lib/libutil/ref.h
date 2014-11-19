@@ -68,7 +68,7 @@ private:
 #ifdef HAVE_PTHREAD
     pthread_mutex_t _lock;
 #else
-    int _lock;
+#define _lock
 #endif
 public:
 	SimpleReferenceCount() {
