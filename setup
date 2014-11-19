@@ -186,6 +186,13 @@ def parse_input():
             choices=('on', 'off'),
             default='on',
             help='Compile with support for plugins [default: %(default)s]')
+    # Suffix for the psi4 executable
+    parser.add_argument('--suffix',
+            type=str,
+            action='store',
+            default='',
+            help="Append the given suffix to the psi4 executable [default: %(default)s]",
+            metavar='STRING')
     group.add_argument('--check',
             action='store_true',
             default=False,
@@ -355,6 +362,7 @@ def gen_cmake_command(args):
     command += ' -DENABLE_DUMMY_PLUGIN=%s'   % translate_cmake(args.dummy_plugin)
     command += ' -DENABLE_CXX11_SUPPORT=%s'  % translate_cmake(args.cxx11)
     command += ' -DLIBINT_OPT_AM={0}'.format(args.max_am_eri)
+    command += ' -DEXECUTABLE_SUFFIX={0}'.format(args.suffix)
 
     if args.blas == 'builtin':
         command += ' -DENABLE_BUILTIN_BLAS=ON'
