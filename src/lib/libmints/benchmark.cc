@@ -115,7 +115,6 @@ void benchmark_blas1(int N, double min_time)
         double* B = init_array(full_dim);
 
         double alpha = 1.0;
-        double beta = 1.0;
         double sina = sqrt(2.0) / 2.0;
         double cosa = sqrt(2.0) / 2.0;
 
@@ -1262,7 +1261,6 @@ void benchmark_blas3(int N, double min_time, int max_threads)
             dim = 1;
             for (int k = 0; k < N; k++) {
                 dim *= 2;
-                unsigned long int full_dim = dim * (unsigned long int) dim;
                 outfile->Printf( "  %9.3E", timings3[ops3[s]][k] / timings3["DGEMM (NN)"][k]);
             }
             outfile->Printf( "\n");
@@ -1285,7 +1283,6 @@ void benchmark_blas3(int N, double min_time, int max_threads)
                 dim = 1;
                 for (int k = 0; k < N; k++) {
                     dim *= 2;
-                    unsigned long int full_dim = dim * (unsigned long int) dim;
                     outfile->Printf( "  %9.3E", timings[1][ops3[s]][k] / timings[thread][ops3[s]][k]);
                 }
                 outfile->Printf( "\n");
@@ -1308,7 +1305,6 @@ void benchmark_blas3(int N, double min_time, int max_threads)
                 dim = 1;
                 for (int k = 0; k < N; k++) {
                     dim *= 2;
-                    unsigned long int full_dim = dim * (unsigned long int) dim;
                     outfile->Printf( "  %9.3E", timings[1][ops3[s]][k] / (timings[thread][ops3[s]][k] * (double) thread));
                 }
                 outfile->Printf( "\n");
@@ -1566,7 +1562,6 @@ void benchmark_math(double min_time)
     double T;
     unsigned long int rounds;
     double t;
-    int dim;
     Timer* qq;
 
     double a, b, c;
@@ -1717,6 +1712,7 @@ void benchmark_math(double min_time)
     qq = new Timer();
     while (T < min_time) {
         c = 1.0;
+        b = 0.000001;
         for (int Q = 0; Q < LOOP_SIZE; Q++) {
             c += b;
             c += b;

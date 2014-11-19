@@ -440,14 +440,6 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
 
     mints_timer_on("TwoBodySOInt::provide_IJKL overall");
 
-    const double *aobuff = tb_[thread]->buffer();
-
-    const SOTransform &t1 = b1_->sotrans(ish);
-    const SOTransform &t2 = b2_->sotrans(jsh);
-    const SOTransform &t3 = b3_->sotrans(ksh);
-    const SOTransform &t4 = b4_->sotrans(lsh);
-
-    int nso1 = b1_->nfunction(ish);
     int nso2 = b2_->nfunction(jsh);
     int nso3 = b3_->nfunction(ksh);
     int nso4 = b4_->nfunction(lsh);
@@ -457,17 +449,12 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
     int n3 = b3_->nfunction(ksh);
     int n4 = b4_->nfunction(lsh);
 
-    const SOTransformShell &s1 = t1.aoshell[0];
-    const SOTransformShell &s2 = t2.aoshell[0];
-    const SOTransformShell &s3 = t3.aoshell[0];
-    const SOTransformShell &s4 = t4.aoshell[0];
+    int itr;
+    int jtr;
+    int ktr;
+    int ltr;
 
-    int itr, itrfunc;
-    int jtr, jtrfunc;
-    int ktr, ktrfunc;
-    int ltr, ltrfunc;
-
-    for (itr=0, itrfunc=0; itr<n1; itr++, itrfunc++) {
+    for (itr=0; itr<n1; itr++) {
 
         int ifunc = b1_->function(ish) + itr;
         int isym = b1_->irrep(ifunc);
@@ -978,14 +965,6 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
 
     mints_timer_on("TwoBodySOInt::provide_IJKL overall");
 
-    const double *aobuff = tb_[thread]->buffer();
-
-    const SOTransform &t1 = b1_->sotrans(ish);
-    const SOTransform &t2 = b2_->sotrans(jsh);
-    const SOTransform &t3 = b3_->sotrans(ksh);
-    const SOTransform &t4 = b4_->sotrans(lsh);
-
-    int nso1 = b1_->nfunction(ish);
     int nso2 = b2_->nfunction(jsh);
     int nso3 = b3_->nfunction(ksh);
     int nso4 = b4_->nfunction(lsh);
@@ -995,17 +974,12 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
     int n3 = b3_->nfunction(ksh);
     int n4 = b4_->nfunction(lsh);
 
-    const SOTransformShell &s1 = t1.aoshell[0];
-    const SOTransformShell &s2 = t2.aoshell[0];
-    const SOTransformShell &s3 = t3.aoshell[0];
-    const SOTransformShell &s4 = t4.aoshell[0];
+    int itr;
+    int jtr;
+    int ktr;
+    int ltr;
 
-    int itr, itrfunc;
-    int jtr, jtrfunc;
-    int ktr, ktrfunc;
-    int ltr, ltrfunc;
-
-    for (itr=0, itrfunc=0; itr<n1; itr++, itrfunc++) {
+    for (itr=0; itr<n1; itr++) {
 
         int ifunc = b1_->function(ish) + itr;
         int isym = b1_->irrep(ifunc);

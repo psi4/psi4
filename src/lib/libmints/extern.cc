@@ -30,7 +30,7 @@ using namespace boost;
 using namespace psi;
 
 ExternalPotential::ExternalPotential() :
-    print_(1), debug_(0)
+    debug_(0), print_(1)
 {
 }
 ExternalPotential::~ExternalPotential()

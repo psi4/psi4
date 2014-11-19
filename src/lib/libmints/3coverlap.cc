@@ -264,11 +264,6 @@ void ThreeCenterOverlapInt::pure_transform(const GaussianShell& s1,
     SphericalTransformIter trans2(st_[s2.am()]);
     SphericalTransformIter trans3(st_[s3.am()]);
 
-    // Get the angular momentum for each shell
-    int am1 = s1.am();
-    int am2 = s2.am();
-    int am3 = s3.am();
-
     // Get number of Cartesian functions for each shell
     int nao1 = s1.ncartesian();
     int nao2 = s2.ncartesian();

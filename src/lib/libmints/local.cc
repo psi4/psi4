@@ -216,10 +216,7 @@ void BoysLocalizer::localize()
     
     // ==> Master Loop <== //
 
-    long int rotations = 0L;
     double Ad, Ao, a, b, c, Hd, Ho, theta, cc, ss;
-
-    double residual = 1.0;
 
     for (int iter = 1; iter <= maxiter_; iter++) {
 
@@ -390,7 +387,6 @@ void PMLocalizer::localize()
 
     // => Pointers <= //
 
-    double** Cp = C_->pointer();
     double** Lp = L_->pointer();
     double** Up = U_->pointer();
 
@@ -436,10 +432,7 @@ void PMLocalizer::localize()
     
     // ==> Master Loop <== //
 
-    long int rotations = 0L;
     double Aii, Ajj, Aij, Ad, Ao, a, b, c, Hd, Ho, theta, cc, ss;
-
-    double residual = 1.0;
 
     for (int iter = 1; iter <= maxiter_; iter++) {
 

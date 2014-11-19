@@ -940,7 +940,7 @@ namespace {
                                       bool sh1eqsh2, bool sh3eqsh4, int deriv_lvl) {
         double zeta, eta, ooze, rho, poz, coef1, PQx, PQy, PQz, PQ2, Wx, Wy, Wz, o12, o34, T, *F;
         double a1, a2, a3, a4;
-        int max_p2, max_p4, p1, p2, p3, p4, i;
+        int p1, p2, p3, p4, i;
         size_t nprim = 0L;
         double restrict *pai = p12->ai;
         double restrict *pgamma12 = p12->gamma[0];
@@ -1480,7 +1480,7 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
     timer_on("reorder");
 #endif
 
-    int s1, s2, s3, s4, c1, c2, c3, c4;
+    int s1, s2, s3, s4;
     int am1, am2, am3, am4, temp;
     shared_ptr<BasisSet> bs_temp;
 
@@ -1685,7 +1685,6 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 #endif
 
     // Prepare all the data needed by libint
-    int max_p2, max_p4, m, n;
     size_t nprim = 0;
     nprim1 = s1.nprimitive();
     nprim2 = s2.nprimitive();

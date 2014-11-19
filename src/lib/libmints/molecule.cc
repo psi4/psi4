@@ -65,9 +65,6 @@ using namespace boost;
 #include <sstream>
 #include <iostream>
 #include "libparallel/ParallelPrinter.h"
-namespace {
-const double dzero = 0.0;
-}
 
 // the third parameter of from_string() should be
 // one of std::hex, std::dec or std::oct
@@ -3276,7 +3273,6 @@ void Molecule::set_full_point_group(double zero_tol) {
     else
       phi = acos(dot);
 
-    int Cn_x, Cn_y;
     bool is_D = false;
     if (fabs(phi) > 1.0e-14) {
       test_mat = geom.matrix_3d_rotation(z_axis, phi, false);

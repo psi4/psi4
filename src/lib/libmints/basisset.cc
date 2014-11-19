@@ -802,8 +802,8 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
 
 BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
                    std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map):
-    molecule_(mol),
-    name_(basistype)
+    name_(basistype),
+    molecule_(mol)
 {
     // Singletons
     initialize_singletons();
@@ -990,9 +990,6 @@ BasisSet::BasisSet(const BasisSet *bs, const int center)
     boost::shared_ptr<Molecule> mol = bs->molecule();
     molecule_ = boost::shared_ptr<Molecule>(new Molecule);
     int Z = mol->Z(center);
-    double x = mol->x(center);
-    double y = mol->y(center);
-    double z = mol->z(center);
     double mass = mol->mass(center);
     double charge = mol->charge(center);
     std::string lab = mol->label(center);
@@ -1198,6 +1195,7 @@ void BasisSet::refresh()
 
 std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test_basis_set(int max_am)
 {
+    throw NotImplementedException();
 #if 0
     int max_centers = 4;
     int max_primitives = 10;
