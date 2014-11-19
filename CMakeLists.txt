@@ -94,6 +94,11 @@ include(ConfigBoost)
 link_directories("${Boost_LIBRARY_DIRS}")
 include_directories(SYSTEM "${Boost_INCLUDE_DIRS}")
 
+# Append the suffix given from input to all generated executables
+if(EXECUTABLE_SUFFIX)
+   set(CMAKE_EXECUTABLE_SUFFIX "${EXECUTABLE_SUFFIX}")
+   message(STATUS "Suffix ${CMAKE_EXECUTABLE_SUFFIX} will be appended to executables")
+endif()
 
 if(UNIX)
    link_libraries(m)
