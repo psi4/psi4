@@ -415,7 +415,6 @@ void OneBodyAOInt::compute_deriv2(std::vector<SharedMatrix > &result)
     int ns1 = bs1_->nshell();
     int ns2 = bs2_->nshell();
     int i_offset = 0;
-    double *location = 0;
 
     // Check the length of result, must be 3*natom_
     if (result.size() != 9*natom_*natom_)

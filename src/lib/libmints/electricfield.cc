@@ -108,6 +108,7 @@ SharedMatrix ElectricFieldInt::nuclear_contribution_to_gradient(const Vector3 &o
 //        result->add(0, 5, -mol->Z(i) * (3*z*z-r2) / (r*r2*r2));
 //    }
 //    return result;
+    throw NotImplementedException();
 }
 
 void ElectricFieldInt::compute_pair(const GaussianShell& s1,

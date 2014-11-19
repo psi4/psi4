@@ -55,7 +55,7 @@ file(APPEND ${BOOST_BUILD_DIR}/user-config.jam "${MPI_SENT}")
 # Unpack Boost and copy boostcpp.jam
 add_custom_command(
     OUTPUT boost.unpacked 
-    COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/boost/boost_${BOOSTVER}.tar.gz 
+    COMMAND ${CMAKE_COMMAND} -E tar xjf ${PROJECT_SOURCE_DIR}/boost/boost_${BOOSTVER}.tar.gz 
     # Copy custom boostcpp.jam (to get versioned format as I want it!)
     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/boost/boostcpp.jam ${BOOST_BUILD_DIR}
     # Append to project-config.jam 

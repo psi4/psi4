@@ -224,12 +224,12 @@ ObaraSaikaTwoCenterEFPRecursion::~ObaraSaikaTwoCenterEFPRecursion()
 
 void ObaraSaikaTwoCenterEFPRecursion::calculate_f(double *F, int n, double t)
 {
-    int i, m, k;
+    int i, m;
     int m2;
     double t2;
     double num;
     double sum;
-    double term1, term2;
+    double term1;
     static double K = 1.0/M_2_SQRTPI;
     double et;
 
@@ -933,12 +933,12 @@ ObaraSaikaTwoCenterVIRecursion::~ObaraSaikaTwoCenterVIRecursion()
 
 void ObaraSaikaTwoCenterVIRecursion::calculate_f(double *F, int n, double t)
 {
-    int i, m, k;
+    int i, m;
     int m2;
     double t2;
     double num;
     double sum;
-    double term1, term2;
+    double term1;
     static double K = 1.0/M_2_SQRTPI;
     double et;
 

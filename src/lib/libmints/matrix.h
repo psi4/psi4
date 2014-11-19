@@ -194,7 +194,7 @@ public:
     Matrix(const Dimension& rows, const Dimension& cols, int symmetry = 0);
 
     /// Destructor, frees memory
-    ~Matrix();
+    virtual ~Matrix();
 
     /**
      * Initializes a matrix

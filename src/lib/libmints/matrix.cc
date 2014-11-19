@@ -41,6 +41,7 @@
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <libparallel/parallel.h>
+#include <libmints/matrix.h>
 #include <libmints/integral.h>
 #include <libdpd/dpd.h>
 #include "factory.h"
@@ -70,16 +71,6 @@ extern double str_to_double(const std::string& s);
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
-
-// anonymous namespace, only visible in this file.
-namespace {
-string to_string(const int val)
-{
-    stringstream strm;
-    strm <<  val;
-    return strm.str();
-}
-}
 
 Matrix::Matrix()
 {
@@ -138,7 +129,7 @@ Matrix::Matrix(int l_nirreps, const int *l_rowspi, const int *l_colspi, int symm
 }
 
 Matrix::Matrix(const string& name, int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry)
-    : name_(name), rowspi_(l_nirreps), colspi_(l_nirreps)
+    : rowspi_(l_nirreps), colspi_(l_nirreps), name_(name)
 {
     matrix_ = NULL;
     nirrep_ = l_nirreps;
@@ -149,7 +140,7 @@ Matrix::Matrix(const string& name, int l_nirreps, const int *l_rowspi, const int
 }
 
 Matrix::Matrix(const string& name, int rows, int cols)
-    : name_(name), rowspi_(1), colspi_(1)
+    : rowspi_(1), colspi_(1), name_(name)
 {
     matrix_ = NULL;
     nirrep_ = 1;
@@ -254,7 +245,7 @@ Matrix::Matrix(const Dimension& rows, const Dimension& cols, int symmetry)
 }
 
 Matrix::Matrix(dpdfile2 *inFile)
-    : name_(inFile->label), rowspi_(inFile->params->nirreps), colspi_(inFile->params->nirreps)
+    : rowspi_(inFile->params->nirreps), colspi_(inFile->params->nirreps), name_(inFile->label)
 {
     global_dpd_->file2_mat_init(inFile);
     global_dpd_->file2_mat_rd(inFile);
@@ -2238,7 +2229,6 @@ std::pair<SharedMatrix, SharedMatrix> Matrix::partial_square_root(double delta)
         double** Vp = V->pointer(h);
         double** Pp = P->pointer(h);
         double** Np = N->pointer(h);
-        double*  dp = d->pointer(h); 
 
         int Pcounter = 0;
         int Ncounter = 0;
@@ -2703,7 +2693,7 @@ void Matrix::apply_symmetry(const SharedMatrix& a, const SharedMatrix& transform
 
     char ta = 'n';
     char tb = 'n';
-    int h, m, n, k, nca, ncb, ncc;
+    int m, n, k, nca, ncb, ncc;
 
     // Solve F = T^ M T
 
@@ -2765,7 +2755,7 @@ void Matrix::remove_symmetry(const SharedMatrix& a, const SharedMatrix& SO2AO)
 
     char ta = 'n';
     char tb = 'n';
-    int h, m, n, k, nca, ncb, ncc;
+    int m, n, k, nca, ncb, ncc;
 
     // Solve F = T^ M T
 

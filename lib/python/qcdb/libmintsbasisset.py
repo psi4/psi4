@@ -43,6 +43,9 @@ class BasisSet(object):
         # Molecule object.
         self.molecule = None
 
+        # Shell information
+        self.atom_basis_shell = None
+
         # <<< Scalars >>>
 
         # Number of atomic orbitals (Cartesian)
@@ -171,6 +174,7 @@ class BasisSet(object):
         self.molecule = mol
         self.name = role
         self.xyz = self.molecule.geometry()  # not used in libmints but this seems to be the intent
+        self.atom_basis_shell = shell_map
         natom = self.molecule.natom()
 
         # Singletons
@@ -188,15 +192,15 @@ class BasisSet(object):
         uoriginal_coefs = []
         uerd_coefs = []
         self.n_uprimitive = 0
-        for basisfirst, basissecond in shell_map.items():
-            basis = basisfirst
-            symbol_map = shell_map[basis]
-            primitive_start[basis] = {}
-            primitive_end[basis] = {}
-            for symbolfirst, symbolsecond in symbol_map.items():
-                label = symbolfirst  # symbol --> label
-                shells = symbol_map[label]  # symbol --> label
-                primitive_start[basis][label] = self.n_uprimitive  # symbol --> label
+        for symbolfirst, symbolsecond in shell_map.items():
+            label = symbolfirst
+            basis_map = symbolsecond
+            primitive_start[label] = {}
+            primitive_end[label] = {}
+            for basisfirst, basissecond in basis_map.items():
+                basis = basisfirst
+                shells = basis_map[basis]  # symbol --> label
+                primitive_start[label][basis] = self.n_uprimitive  # symbol --> label
                 for i in range(len(shells)):
                     shell = shells[i]
                     for prim in range(shell.nprimitive()):
@@ -205,7 +209,7 @@ class BasisSet(object):
                         uoriginal_coefs.append(shell.original_coef(prim))
                         uerd_coefs.append(shell.erd_coef(prim))
                         self.n_uprimitive += 1
-                primitive_end[basis][label] = self.n_uprimitive  # symbol --> label
+                primitive_end[label][basis] = self.n_uprimitive  # symbol --> label
 
         # Count basis functions, shells and primitives
         self.n_shells = 0
@@ -216,7 +220,7 @@ class BasisSet(object):
             atom = self.molecule.atom_entry(n)
             basis = atom.basisset(role)
             label = atom.label()  # symbol --> label
-            shells = shell_map[basis][label]  # symbol --> label
+            shells = shell_map[label][basis]  # symbol --> label
             for i in range(len(shells)):
                 shell = shells[i]
                 nprim = shell.nprimitive()
@@ -260,9 +264,9 @@ class BasisSet(object):
             atom = self.molecule.atom_entry(n)
             basis = atom.basisset(role)
             label = atom.label()  # symbol --> label
-            shells = shell_map[basis][label]  # symbol --> label
-            ustart = primitive_start[basis][label]  # symbol --> label
-            uend = primitive_end[basis][label]  # symbol --> label
+            shells = shell_map[label][basis]  # symbol --> label
+            ustart = primitive_start[label][basis]  # symbol --> label
+            uend = primitive_end[label][basis]  # symbol --> label
             nshells = len(shells)
             self.center_to_nshell[n] = nshells
             self.center_to_shell[n] = shell_count
@@ -445,6 +449,77 @@ class BasisSet(object):
         raise FeatureNotImplemented('BasisSet::build')
 
     @staticmethod
+    def pyconstruct_combined(mol, keys, targets, fitroles, others):
+
+        # make sure the lengths are all the same
+        if len(keys) != len(targets) or len(keys) != len(fitroles):
+            raise ValidationError("""Lengths of keys, targets, and fitroles must be equal""")
+
+        # Create (if necessary) and update qcdb.Molecule
+        if isinstance(mol, basestring):
+            mol = Molecule(mol)
+            returnBasisSet = False
+        elif isinstance(mol, Molecule):
+            returnBasisSet = True
+        else:
+            raise ValidationError("""Argument mol must be psi4string or qcdb.Molecule""")
+        mol.update_geometry()
+
+        # load in the basis sets
+        sets = []
+        name = ""
+        for at in range(len(keys)):
+            bas = BasisSet.pyconstruct(mol, keys[at], targets[at], fitroles[at], others[at])
+            name += targets[at] + " + "
+            sets.append(bas)
+
+        name = name[:-3].strip()
+        # work our way through the sets merging them
+        combined_atom_basis_shell = OrderedDict()
+        for at in range(len(sets)):
+            atom_basis_shell = sets[at].atom_basis_shell
+
+            for label, basis_map in atom_basis_shell.items():
+                if label not in combined_atom_basis_shell:
+                    combined_atom_basis_shell[label] = OrderedDict()
+                    combined_atom_basis_shell[label][name] = []
+                for basis, shells in basis_map.items():
+                    combined_atom_basis_shell[label][name].extend(shells)
+
+        for label, basis_map in combined_atom_basis_shell.items():
+            # sort the shells by angular momentum
+            combined_atom_basis_shell[label][name] = sorted(combined_atom_basis_shell[label][name], key=lambda shell: shell.am())
+
+        # Molecule and parser prepped, call the constructor
+        mol.set_basis_all_atoms(name, "CABS")
+
+        # Construct the grand BasisSet for mol
+        basisset = BasisSet("CABS", mol, combined_atom_basis_shell)
+
+        # Construct all the one-atom BasisSet-s for mol's CoordEntry-s
+        for at in range(mol.natom()):
+            oneatombasis = BasisSet(basisset, at)
+            oneatombasishash = hashlib.sha1(oneatombasis.print_detail(numbersonly=True)).hexdigest()
+            mol.set_shell_by_number(at, oneatombasishash, role="CABS")
+        mol.update_geometry()  # re-evaluate symmetry taking basissets into account
+
+        text = """   => Creating Basis Set <=\n\n"""
+        text += """    Role: %s\n""" % (fitroles)
+        text += """    Keyword: %s\n""" % (keys)
+        text += """    Name: %s\n""" % (name)
+
+        if returnBasisSet:
+            print text
+            return basisset
+        else:
+            bsdict = {}
+            bsdict['message'] = text
+            bsdict['name'] = basisset.name
+            bsdict['puream'] = int(basisset.has_puream())
+            bsdict['shell_map'] = basisset.export_for_libmints("CABS")
+            return bsdict
+
+    @staticmethod
     def pyconstruct(mol, key, target, fitrole='BASIS', other=None):
         """Builds a BasisSet object for *mol* (either a qcdb.Molecule or
         a string that can be instantiated into one) from basis set
@@ -558,13 +633,14 @@ class BasisSet(object):
         # Validate deffit for role
         univdef = {'JFIT': 'def2-qzvpp-jfit',
                    'JKFIT': 'def2-qzvpp-jkfit',
-                   'RIFIT': 'def2-qzvpp-ri'}
+                   'RIFIT': 'def2-qzvpp-ri',
+                   'F12': 'def2-qzvpp-f12'}
         if deffit is not None:
             if deffit not in univdef.keys():
                 raise ValidationError("""BasisSet::construct: deffit argument invalid: %s""" % (deffit))
 
         # Map of GaussianShells
-        basis_atom_shell = OrderedDict()
+        atom_basis_shell = OrderedDict()
         names = {}
         summary = []
 
@@ -572,6 +648,9 @@ class BasisSet(object):
             symbol = mol.atom_entry(at).symbol()  # O, He
             label = mol.atom_entry(at).label()  # O3, C_Drot, He
             basdict = mol.atom_entry(at).basissets()  # {'BASIS': 'sto-3g', 'DF_BASIS_MP2': 'cc-pvtz-ri'}
+
+            if label not in atom_basis_shell:
+                atom_basis_shell[label] = OrderedDict()
 
             # Establish search parameters for what/where basis entries suitable for atom
             seek = {}
@@ -637,9 +716,7 @@ class BasisSet(object):
                         continue
 
                     # Found!
-                    if bas not in basis_atom_shell:
-                        basis_atom_shell[bas] = OrderedDict()
-                    basis_atom_shell[bas][label] = shells
+                    atom_basis_shell[label][bas] = shells
                     mol.set_basis_by_number(at, bas, role=role)
                     summary.append("""entry %-10s %s %s""" % (entry, msg, index))
                     break
@@ -659,7 +736,7 @@ class BasisSet(object):
                     (at + 1, role, text2))
 
         # Construct the grand BasisSet for mol
-        basisset = BasisSet(role, mol, basis_atom_shell)
+        basisset = BasisSet(role, mol, atom_basis_shell)
 
         # Construct all the one-atom BasisSet-s for mol's CoordEntry-s
         for at in range(mol.natom()):
@@ -703,6 +780,9 @@ class BasisSet(object):
     def set_name(self, name):
         """Sets the name of this basis set"""
         self.name = name
+
+    def atom_shell_map(self):
+        return self.atom_shell_map
 
     def nprimitive(self):
         """Number of primitives.

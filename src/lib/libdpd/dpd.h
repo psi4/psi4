@@ -212,10 +212,10 @@ struct dpd_gbl {
     dpd_gbl():
         file2_cache(NULL),
         file4_cache(NULL),
-        file4_cache_least_recent(1),
         file4_cache_most_recent(0),
-        file4_cache_low_del(0),
-        file4_cache_lru_del(0)
+        file4_cache_least_recent(1),
+        file4_cache_lru_del(0),
+        file4_cache_low_del(0)
     {}
     dpd_file2_cache_entry *file2_cache;
     dpd_file4_cache_entry *file4_cache;

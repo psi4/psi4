@@ -127,8 +127,6 @@ class CdSalcList
 
     int ncd_;
     int cdsalcpi_[8];
-    char *atom_irreps_;
-    double **cdsalc2cd_;
     int nirrep_;
 
     /// Vector of all requested SALCs

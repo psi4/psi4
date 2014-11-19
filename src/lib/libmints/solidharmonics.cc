@@ -115,7 +115,6 @@ uint64_t powll(uint64_t n, unsigned long p)
 
 // there ordering here is arbitrary and doesn't have to match the
 // basis set ordering
-static inline int ncart(int l) { return (l>=0)?((((l)+2)*((l)+1))>>1):0; }
 static inline int npure(int l) { return 2*l+1; }
 static inline int icart(int a, int b, int c)
 {

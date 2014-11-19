@@ -464,6 +464,98 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_orbital(const boost::shared_pt
     return basisset;
 }
 
+boost::shared_ptr<BasisSet> BasisSet::pyconstruct_combined(const boost::shared_ptr<Molecule>& mol,
+                                                           const std::vector<std::string>& keys,
+                                                           const std::vector<std::string>& targets,
+                                                           const std::vector<std::string>& fitroles,
+                                                           const std::vector<std::string>& others,
+                                                           const int forced_puream)
+{
+    // Update geometry in molecule, convert to string
+    mol->update_geometry();
+    std::string smol = mol->create_psi4_string_from_molecule();
+
+    // Get a reference to the main module (Pythonized input file) and global dictionary
+    PyObject *main_module, *global_dict;
+    main_module = PyImport_AddModule("__main__");
+    global_dict = PyModule_GetDict(main_module);
+
+    PyObject *k, *t, *f, *o;
+    k = PyList_New(keys.size());
+    t = PyList_New(targets.size());
+    f = PyList_New(fitroles.size());
+    o = PyList_New(others.size());
+
+    for (int i=0; i<keys.size(); ++i) {
+        PyList_SetItem(k, i, PyString_FromString(keys[i].c_str()));
+        PyList_SetItem(t, i, PyString_FromString(targets[i].c_str()));
+        PyList_SetItem(f, i, PyString_FromString(fitroles[i].c_str()));
+        PyList_SetItem(o, i, PyString_FromString(others[i].c_str()));
+    }
+
+    // Grab pyconstruct off of the Python plane, run it, grab result list
+    PyObject *module, *klass, *method, *pargs, *ret;
+    PY_TRY(module, PyImport_ImportModule("qcdb.libmintsbasisset"));
+    PY_TRY(klass, PyObject_GetAttrString(module, "BasisSet"));
+    PY_TRY(method, PyObject_GetAttrString(klass, "pyconstruct_combined"));
+    PY_TRY(pargs, Py_BuildValue("(s O O O O)", smol.c_str(), k, t, f, o));
+    PY_TRY(ret, PyEval_CallObject(method, pargs));
+    boost::python::dict pybs = boost::python::extract<boost::python::dict>(ret);
+
+    // Decref Python env pointers (not main_module, and not global_dict (messes up MintsHelper in proc.py)
+    Py_DECREF(ret);
+    Py_DECREF(pargs);
+    //Py_DECREF(orbfunc);
+    //if (!orbonly) Py_DECREF(auxfunc);
+    Py_DECREF(method);
+    Py_DECREF(klass);
+    Py_DECREF(module);
+
+//    const std::string basisname = orbonly ? boost::to_upper_copy(orb) : boost::to_upper_copy(aux);
+    std::string name = boost::python::extract<std::string>(pybs.get("name"));
+    // TODO still need to reconcile name
+    std::string message = boost::python::extract<std::string>(pybs.get("message"));
+    if (Process::environment.options.get_int("PRINT") > 1)
+        outfile->Printf("%s\n", message.c_str());
+
+    // Handle mixed puream signals and seed parser with the resolution
+    int native_puream = boost::python::extract<int>(pybs.get("puream"));
+    int user_puream = (Process::environment.options.get_global("PUREAM").has_changed()) ?
+    ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian) : -1;
+    int resolved_puream;
+    if (user_puream == -1)
+        resolved_puream = (forced_puream == -1) ? native_puream : forced_puream;
+    else
+        resolved_puream = user_puream;
+
+    // Not like we're ever using a non-G94 format
+    const boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(resolved_puream));
+
+    mol->set_basis_all_atoms(name, "CABS");
+
+    // Map of GaussianShells: basis_atom_shell[basisname][atomlabel] = gaussian_shells
+    typedef map<string, map<string, vector<ShellInfo> > > map_ssv;
+    map_ssv basis_atom_shell;
+    // basisname is uniform; fill map with key/value (gbs entry) pairs of elements from pybs['shell_map']
+    boost::python::list shmp = boost::python::extract<boost::python::list>(pybs.get("shell_map"));
+    for (int ent=0; ent<(len(shmp)); ent+=3) {
+        std::string label = boost::python::extract<std::string>((shmp)[ent]);
+        std::string hash = boost::python::extract<std::string>((shmp)[ent+1]);
+        vector<string> basbit = parser->string_to_vector(boost::python::extract<std::string>((shmp)[ent+2]));
+        mol->set_shell_by_label(label, hash, "CABS");
+        basis_atom_shell[name][label] = parser->parse(label, basbit);
+    }
+    mol->update_geometry();  // update symmetry with basisset info
+
+    boost::shared_ptr<BasisSet> basisset(new BasisSet("CABS", mol, basis_atom_shell));
+    basisset->name_.clear();
+    basisset->name_ = name;
+
+    //printf("puream: basis %d, arg %d, user %d, resolved %d, final %d\n",
+    //    native_puream, forced_puream, user_puream, resolved_puream, basisset->has_puream());
+    return basisset;
+}
+
 boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_ptr<Molecule>& mol,
         const std::string& key, const std::string& target,
         const std::string& fitrole, const std::string& other,
@@ -710,8 +802,8 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
 
 BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
                    std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map):
-    molecule_(mol),
-    name_(basistype)
+    name_(basistype),
+    molecule_(mol)
 {
     // Singletons
     initialize_singletons();
@@ -898,9 +990,6 @@ BasisSet::BasisSet(const BasisSet *bs, const int center)
     boost::shared_ptr<Molecule> mol = bs->molecule();
     molecule_ = boost::shared_ptr<Molecule>(new Molecule);
     int Z = mol->Z(center);
-    double x = mol->x(center);
-    double y = mol->y(center);
-    double z = mol->z(center);
     double mass = mol->mass(center);
     double charge = mol->charge(center);
     std::string lab = mol->label(center);
@@ -1106,6 +1195,7 @@ void BasisSet::refresh()
 
 std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test_basis_set(int max_am)
 {
+    throw NotImplementedException();
 #if 0
     int max_centers = 4;
     int max_primitives = 10;

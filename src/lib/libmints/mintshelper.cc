@@ -252,35 +252,8 @@ void MintsHelper::integrals()
     }
     outfile->Printf( "]\n\n");
 
-    // Compute and dump one-electron SO integrals.
-
-    if (options_.get_str("RELATIVISTIC") == "NO"){
-        // Overlap
-        so_overlap()->save(psio_, PSIF_OEI);
-
-        // Kinetic
-        so_kinetic()->save(psio_, PSIF_OEI);
-
-        // Potential
-        so_potential()->save(psio_, PSIF_OEI);
-    }else if (options_.get_str("RELATIVISTIC") == "X2C"){
-        outfile->Printf( "      Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
-    }
-
-    // Dipoles
-    std::vector<SharedMatrix> dipole_mats = so_dipole();
-    BOOST_FOREACH(SharedMatrix m, dipole_mats) {
-        m->save(psio_, PSIF_OEI);
-    }
-
-    // Quadrupoles
-    std::vector<SharedMatrix> quadrupole_mats = so_quadrupole();
-    BOOST_FOREACH(SharedMatrix m, quadrupole_mats) {
-        m->save(psio_, PSIF_OEI);
-    }
-
-    outfile->Printf( "      Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
-                     "        stored in file %d.\n\n", PSIF_OEI);
+    // Compute one-electron integrals.
+    one_electron_integrals();
 
     // Open the IWL buffer where we will store the integrals.
     IWL ERIOUT(psio_.get(), PSIF_SO_TEI, cutoff_, 0, 0);
@@ -373,22 +346,22 @@ void MintsHelper::integrals_erfc(double w)
 
 void MintsHelper::one_electron_integrals()
 {
-    outfile->Printf( " OEINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
-
-    // Print out some useful information
-    outfile->Printf( "   Calculation information:\n");
-    outfile->Printf( "      Number of atoms:                %4d\n", molecule_->natom());
-    outfile->Printf( "      Number of AO shells:            %4d\n", basisset_->nshell());
-    outfile->Printf( "      Number of SO shells:            %4d\n", sobasis_->nshell());
-    outfile->Printf( "      Number of primitives:           %4d\n", basisset_->nprimitive());
-    outfile->Printf( "      Number of atomic orbitals:      %4d\n", basisset_->nao());
-    outfile->Printf( "      Number of basis functions:      %4d\n\n", basisset_->nbf());
-    outfile->Printf( "      Number of irreps:               %4d\n", sobasis_->nirrep());
-    outfile->Printf( "      Number of functions per irrep: [");
-    for (int i=0; i<sobasis_->nirrep(); ++i) {
-        outfile->Printf( "%4d ", sobasis_->nfunction_in_irrep(i));
-    }
-    outfile->Printf( "]\n\n");
+//    outfile->Printf( " OEINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
+//
+//    // Print out some useful information
+//    outfile->Printf( "   Calculation information:\n");
+//    outfile->Printf( "      Number of atoms:                %4d\n", molecule_->natom());
+//    outfile->Printf( "      Number of AO shells:            %4d\n", basisset_->nshell());
+//    outfile->Printf( "      Number of SO shells:            %4d\n", sobasis_->nshell());
+//    outfile->Printf( "      Number of primitives:           %4d\n", basisset_->nprimitive());
+//    outfile->Printf( "      Number of atomic orbitals:      %4d\n", basisset_->nao());
+//    outfile->Printf( "      Number of basis functions:      %4d\n\n", basisset_->nbf());
+//    outfile->Printf( "      Number of irreps:               %4d\n", sobasis_->nirrep());
+//    outfile->Printf( "      Number of functions per irrep: [");
+//    for (int i=0; i<sobasis_->nirrep(); ++i) {
+//        outfile->Printf( "%4d ", sobasis_->nfunction_in_irrep(i));
+//    }
+//    outfile->Printf( "]\n\n");
 
     // Compute and dump one-electron SO integrals.
 
@@ -402,7 +375,7 @@ void MintsHelper::one_electron_integrals()
         // Potential
         so_potential()->save(psio_, PSIF_OEI);
     }else if (options_.get_str("RELATIVISTIC") == "X2C"){
-        outfile->Printf( "      Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
+        outfile->Printf( " OEINTS: Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
     }
 
     // Dipoles
@@ -417,9 +390,8 @@ void MintsHelper::one_electron_integrals()
         m->save(psio_, PSIF_OEI);
     }
 
-    outfile->Printf( "      Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
-                     "        stored in file %d.\n\n", PSIF_OEI);
-
+    outfile->Printf( " OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
+                     "         stored in file %d.\n\n", PSIF_OEI);
 }
 
 void MintsHelper::integral_gradients()
