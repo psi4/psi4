@@ -1,8 +1,8 @@
 add_custom_command(
-    COMMAND tar -xzf ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.gz 
+    COMMAND tar -xjf ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.bz2
     OUTPUT ${BOOSTVER}
     COMMENT Unpacking Boost
-    DEPENDS ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.gz
+    DEPENDS ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.bz2
 )
 
 #To get boost to compile MPI we need to append "using mpi ;" to the end of the
@@ -61,6 +61,6 @@ add_custom_target(
 
 #include(ExternalProject)
 #ExternalProject_Add(Boost
-#    URL ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.gz
+#    URL ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.bz2
 #    CONFIGURE_COMMAND ./bootstrap.sh --with-libraries=${BOOST_LIBS_2_MAKE}
 #    BUILD_COMMAND b2)

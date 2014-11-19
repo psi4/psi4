@@ -181,9 +181,13 @@ class Tensor2d
   void axpy(ULI length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha);
   double **transpose2();
   SharedTensor2d transpose();
-  void copy(const SharedTensor2d &Adum);
   void copy(double **a);
+  void copy(const SharedTensor2d &Adum);
   void copy(ULI length, const SharedTensor2d &A, int inc_a, int inc_2d);
+  void copy(const SharedTensor2d &A, int start);
+  // partial copy
+  void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip);
+  void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip, int start);
   // diagonalize: diagonalize via rsp
   void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff);
   // cdsyev: diagonalize via lapack

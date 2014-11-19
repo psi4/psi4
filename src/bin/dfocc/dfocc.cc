@@ -242,8 +242,8 @@ if (reference_ == "RESTRICTED") {
         cost_amp = 3.0 * cost_ampAA;
         memory = Process::environment.get_memory();
         memory_mb = (double)memory/(1024.0 * 1024.0);
-        outfile->Printf("\n\tAvailable memory is: %9.2lf MB \n", memory_mb);
-        outfile->Printf("\tMinimum required memory for amplitudes is    : %9.2lf MB \n", cost_amp);
+        outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
+        outfile->Printf("\tMinimum required memory for amplitudes: %9.2lf MB \n", cost_amp);
 
 }  // end if (reference_ == "RESTRICTED")
 
@@ -352,8 +352,8 @@ else if (reference_ == "UNRESTRICTED") {
         cost_amp = 3.0 * cost_amp;
         memory = Process::environment.get_memory();
         memory_mb = (double)memory/(1024.0 * 1024.0);
-        outfile->Printf("\n\tAvailable memory is: %9.2lf MB \n", memory_mb);
-        outfile->Printf("\tMinimum required memory for amplitudes is    : %9.2lf MB \n", cost_amp);
+        outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
+        outfile->Printf("\tMinimum required memory for amplitudes: %9.2lf MB \n", cost_amp);
         
 }// else if (reference_ == "UNRESTRICTED")
 	
@@ -380,7 +380,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") outfile->Printf("                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP2   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision November 16, 2014\n") ;
+   outfile->Printf("              Latest Revision November 18, 2014\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
