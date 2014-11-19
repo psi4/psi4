@@ -89,7 +89,7 @@ public:
     Vector(const std::string& name, const Dimension& dimpi);
 
     /// Destructor, frees memory
-    ~Vector();
+    virtual ~Vector();
 
     /**
      * Convenient creation function return SharedMatrix
@@ -336,7 +336,7 @@ public:
     IntVector(const std::string& name, int dim);
 
     /// Destructor, frees memory
-    ~IntVector();
+    virtual ~IntVector();
 
     void init(int nirrep, int *dimpi);
 
