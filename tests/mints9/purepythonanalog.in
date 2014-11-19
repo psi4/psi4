@@ -127,5 +127,4 @@ mymol2.print_out()
 
 print '    <<<  cc-pVDZ + cc-pVDZ-F12  >>>'
 wert = qcdb.BasisSet.pyconstruct_combined(mymol2, ['BASIS', 'DF_BASIS_MP2'], ['cc-pvdz','cc-pvdz-f12'], ['BASIS', 'F12'], ['cc-pvdz', 'cc-pvdz'])
-print wert.print_detail()
 mymol2.print_out()
