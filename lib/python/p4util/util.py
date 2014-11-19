@@ -81,13 +81,14 @@ def compare_values(expected, computed, digits, label):
     Performs a system exit on failure. Used in input files in the test suite.
 
     """
+    message = ("\t%s: computed value (%.*f) does not match (%.*f) to %d decimal places." % (label, digits+1, computed, digits+1, expected, digits))
     if (abs(expected - computed) > 10 ** (-digits)):
-        print(("\t%s: computed value (%." + str(digits+1) + "f) does not match (%." + str(digits+1) + "f) to %d decimal places.") % (label, computed, expected, digits))
-        raise TestComparisonError('comparison fails')
+        print(message)
+        raise TestComparisonError(message)
     if ( math.isnan(computed) ):
-        print("\t%s: computed value (%f) does not match (%f) to %d decimal places.\n" % (label, computed, expected, digits))
+        print(message)
         print("\tprobably because the computed value is nan.")
-        raise TestComparisonError('comparison fails')
+        raise TestComparisonError(message)
     success(label)
 
 

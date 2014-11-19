@@ -79,13 +79,13 @@ using namespace psi;
 /////////////////////////////////////////////////////////////////////////
 
 IrreducibleRepresentation::IrreducibleRepresentation() :
-    g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(0), rep(0), csymb(0)
+    g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(0), csymb(0), rep(0)
 {
 }
 
 IrreducibleRepresentation::IrreducibleRepresentation(
     int order, int d, const char *lab, const char *clab) :
-    g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(0), rep(0), csymb(0)
+    g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(0), csymb(0), rep(0)
 {
     init(order,d,lab,clab);
 }
@@ -93,7 +93,7 @@ IrreducibleRepresentation::IrreducibleRepresentation(
 
 IrreducibleRepresentation::IrreducibleRepresentation(
     const IrreducibleRepresentation& ir) :
-    g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(0), rep(0), csymb(0)
+    g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(0), csymb(0), rep(0)
 {
     *this = ir;
 }

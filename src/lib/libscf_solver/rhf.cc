@@ -396,8 +396,6 @@ void RHF::save_sapt_info()
     double *sapt_V_ints = V_->to_lower_triangle();
     double *sapt_S_ints = S_->to_lower_triangle();
 
-    int errcod;
-
     sprintf(key_buffer,"%s NSO",body_type);
     psio_->write_entry(fileno,key_buffer,(char *) &sapt_nso, sizeof(int));
     sprintf(key_buffer,"%s NMO",body_type);

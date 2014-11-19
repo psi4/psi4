@@ -40,7 +40,10 @@ public:
 
     const boost::python::object& to_python() const;
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Woverloaded-virtual"
     void assign(const boost::python::object& p);
+#pragma clang diagnostic pop
 };
 
 }

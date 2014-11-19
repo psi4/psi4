@@ -49,7 +49,7 @@ public:
      **/
     Cholesky(double delta, unsigned long int memory);
     /// Destructor, resets L_
-    ~Cholesky();
+    virtual ~Cholesky();
 
     /// Perform the cholesky decomposition (requires 2QN memory)
     virtual void choleskify();
@@ -75,7 +75,7 @@ protected:
     SharedMatrix A_;
 public:
     CholeskyMatrix(SharedMatrix A, double delta, unsigned long int memory);
-    ~CholeskyMatrix();
+    virtual ~CholeskyMatrix();
 
     virtual int N();
     virtual void compute_diagonal(double* target);
@@ -90,7 +90,7 @@ protected:
     boost::shared_ptr<TwoBodyAOInt> integral_;
 public:
     CholeskyERI(boost::shared_ptr<TwoBodyAOInt> integral, double schwarz, double delta, unsigned long int memory);
-    ~CholeskyERI();
+    virtual ~CholeskyERI();
 
     virtual int N();
     virtual void compute_diagonal(double* target);
@@ -108,7 +108,7 @@ public:
     CholeskyMP2(SharedMatrix Qia, boost::shared_ptr<Vector> eps_aocc,
         boost::shared_ptr<Vector> eps_avir, bool symmetric,
         double delta, unsigned long int memory);
-    ~CholeskyMP2();
+    virtual ~CholeskyMP2();
 
     virtual int N();
     virtual void compute_diagonal(double* target);
@@ -124,7 +124,7 @@ public:
     CholeskyDelta(boost::shared_ptr<Vector> eps_aocc,
         boost::shared_ptr<Vector> eps_avir,
         double delta, unsigned long int memory);
-    ~CholeskyDelta();
+    virtual ~CholeskyDelta();
 
     virtual int N();
     virtual void compute_diagonal(double* target);
@@ -138,7 +138,7 @@ protected:
 public:
     CholeskyLocal(SharedMatrix C,
         double delta, unsigned long int memory);
-    ~CholeskyLocal();
+    virtual ~CholeskyLocal();
 
     virtual int N();
     virtual void compute_diagonal(double* target);

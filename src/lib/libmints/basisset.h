@@ -340,6 +340,13 @@ public:
     static boost::shared_ptr<BasisSet> pyconstruct_orbital(const boost::shared_ptr<Molecule>&,
         const std::string&, const std::string&, int = -1);
 
+    static boost::shared_ptr<BasisSet> pyconstruct_combined(const boost::shared_ptr<Molecule>& mol,
+                                                            const std::vector<std::string>& keys,
+                                                            const std::vector<std::string>& targets,
+                                                            const std::vector<std::string>& fitroles,
+                                                            const std::vector<std::string>& others,
+                                                            const int forced_puream = -1);
+
     /** Returns a new BasisSet object with qcdb Python machinery.
      *
      * @param mol    Molecule to construct the basis set for.
