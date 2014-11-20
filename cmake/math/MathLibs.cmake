@@ -100,6 +100,9 @@ if(ENABLE_THREADED_MKL)
     if(MKL_COMPILER_BINDINGS MATCHES GNU)
         set(_thread_lib mkl_gnu_thread)
     endif()
+    if(MKL_COMPILER_BINDINGS MATCHES Clang)
+        set(_thread_lib mkl_gnu_thread)
+    endif()
 else()
     set(_thread_lib mkl_sequential)
 endif()
@@ -111,6 +114,9 @@ if(MKL_COMPILER_BINDINGS MATCHES PGI)
     set(_compiler_mkl_interface mkl_intel)
 endif()
 if(MKL_COMPILER_BINDINGS MATCHES GNU)
+    set(_compiler_mkl_interface mkl_gf)
+endif()
+if(MKL_COMPILER_BINDINGS MATCHES Clang)
     set(_compiler_mkl_interface mkl_gf)
 endif()
 
@@ -139,12 +145,14 @@ else()
     set(_blacs_lib)
 endif()
 
-# first try this MKL BLAS combination with SGI MPT
-set(MKL_BLAS_LIBS  ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_lib}   guide pthread m)
+# miro: for MKL 10.0.1.014
+set(MKL_BLAS_LIBS ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core mkl_def mkl_mc ${_blacs_lib} guide pthread m)
+#  try this MKL BLAS combination with SGI MPT
+set(MKL_BLAS_LIBS2 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_lib}   guide pthread m)
 # newer MKL BLAS versions do not have libguide
-set(MKL_BLAS_LIBS2 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_lib}         pthread m)
+set(MKL_BLAS_LIBS3 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_lib}         pthread m)
 # ancient MKL BLAS
-set(MKL_BLAS_LIBS3 mkl guide m)
+set(MKL_BLAS_LIBS4 mkl guide m)
 
 set(MKL_LAPACK_LIBS mkl_lapack95${_lib_suffix} ${_compiler_mkl_interface}${_lib_suffix})
 
