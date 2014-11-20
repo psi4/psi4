@@ -55,13 +55,24 @@ void DFOCC::omp2_manager()
         g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
 
      if (reference_ == "RESTRICTED") {
+        // mem for amplitudes
+        cost_ampAA = 0.0;
+        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        cost_amp = 3.0 * cost_ampAA;
+        memory = Process::environment.get_memory();
+        memory_mb = (double)memory/(1024.0 * 1024.0);
+        outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
+        outfile->Printf("\tMinimum required memory for amplitudes: %9.2lf MB \n", cost_amp);
+
         // memory requirements
         // DF-HF B(Q,mn)
         cost_ampAA = 0;
         cost_ampAA = nQ_ref * nso2_;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
-        outfile->Printf("\n\tMemory requirement for B-HF (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
+        outfile->Printf("\tMemory requirement for B-HF (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
  
         // DF-HF B(Q,ab)
         cost_ampAA = 0;
@@ -84,7 +95,7 @@ void DFOCC::omp2_manager()
         cost_ampAA = nQ * nso2_;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
-        outfile->Printf("\n\tMemory requirement for B-CC (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
+        outfile->Printf("\tMemory requirement for B-CC (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
  
         // DF-CC B(Q,ab)
         cost_ampAA = 0.0;
@@ -102,6 +113,27 @@ void DFOCC::omp2_manager()
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
      }  // end if (reference_ == "RESTRICTED")
+
+     else if (reference_ == "UNRESTRICTED") {
+        // memory requirements
+        cost_ampAA = 0.0;
+        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        cost_ampBB = nocc2BB * nvir2BB;
+        cost_ampBB /= 1024.0 * 1024.0;
+        cost_ampBB *= sizeof(double);
+        cost_ampAB = nocc2AB * nvir2AB;
+        cost_ampAB /= 1024.0 * 1024.0;
+        cost_ampAB *= sizeof(double);
+        cost_amp = MAX0(cost_ampAA, cost_ampBB);
+        cost_amp = MAX0(cost_amp, cost_ampAB);
+        cost_amp = 3.0 * cost_amp;
+        memory = Process::environment.get_memory();
+        memory_mb = (double)memory/(1024.0 * 1024.0);
+        outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
+        outfile->Printf("\tMinimum required memory for amplitudes: %9.2lf MB \n", cost_amp);
+     }  // end else if (reference_ == "UNRESTRICTED")
 
         // Fock 
         fock();
@@ -328,6 +360,17 @@ void DFOCC::mp2_manager()
         timer_off("DF CC Integrals");
 
      if (reference_ == "RESTRICTED") {
+        // mem for amplitudes
+        cost_ampAA = 0.0;
+        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        cost_amp = 3.0 * cost_ampAA;
+        memory = Process::environment.get_memory();
+        memory_mb = (double)memory/(1024.0 * 1024.0);
+        outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
+        outfile->Printf("\tMinimum required memory for amplitudes: %9.2lf MB \n", cost_amp);
+
         // memory requirements
         /*
         // DF-HF B(Q,mn)
@@ -359,7 +402,7 @@ void DFOCC::mp2_manager()
         cost_ampAA = nQ * nso2_;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
-        outfile->Printf("\n\tMemory requirement for B-CC (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
+        outfile->Printf("\tMemory requirement for B-CC (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
  
         // DF-CC B(Q,ab)
         cost_ampAA = 0.0;
@@ -377,6 +420,27 @@ void DFOCC::mp2_manager()
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
      }  // end if (reference_ == "RESTRICTED")
+
+     else if (reference_ == "UNRESTRICTED") {
+        // memory requirements
+        cost_ampAA = 0.0;
+        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        cost_ampBB = nocc2BB * nvir2BB;
+        cost_ampBB /= 1024.0 * 1024.0;
+        cost_ampBB *= sizeof(double);
+        cost_ampAB = nocc2AB * nvir2AB;
+        cost_ampAB /= 1024.0 * 1024.0;
+        cost_ampAB *= sizeof(double);
+        cost_amp = MAX0(cost_ampAA, cost_ampBB);
+        cost_amp = MAX0(cost_amp, cost_ampAB);
+        cost_amp = 3.0 * cost_amp;
+        memory = Process::environment.get_memory();
+        memory_mb = (double)memory/(1024.0 * 1024.0);
+        outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
+        outfile->Printf("\tMinimum required memory for amplitudes: %9.2lf MB \n", cost_amp);
+     }  // end else if (reference_ == "UNRESTRICTED")
 
         // QCHF
         if (qchf_ == "TRUE") qchf();
@@ -488,6 +552,17 @@ void DFOCC::ccsd_manager()
         FtijA = SharedTensor2d(new Tensor2d("Ftilde <I|J>", naoccA, naoccA));
         FtabA = SharedTensor2d(new Tensor2d("Ftilde <A|B>", navirA, navirA));
 
+        // mem for amplitudes
+        cost_ampAA = 0.0;
+        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        cost_amp = 3.0 * cost_ampAA;
+        memory = Process::environment.get_memory();
+        memory_mb = (double)memory/(1024.0 * 1024.0);
+        outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
+        outfile->Printf("\tMinimum required memory for amplitudes: %9.2lf MB \n", cost_amp);
+
         // memory requirements
         /*
         // DF-HF B(Q,mn)
@@ -514,7 +589,7 @@ void DFOCC::ccsd_manager()
         cost_ampAA = nQ * nso2_;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
-        outfile->Printf("\n\tMemory requirement for B-CC (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
+        outfile->Printf("\tMemory requirement for B-CC (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
  
         // DF-CC B(Q,ab)
         cost_ampAA = 0.0;
@@ -558,6 +633,25 @@ void DFOCC::ccsd_manager()
         FtabA = SharedTensor2d(new Tensor2d("Ftilde <A|B>", navirA, navirA));
         FtijB = SharedTensor2d(new Tensor2d("Ftilde <i|j>", naoccB, naoccB));
         FtabB = SharedTensor2d(new Tensor2d("Ftilde <a|b>", navirB, navirB));
+
+        // memory requirements
+        cost_ampAA = 0.0;
+        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        cost_ampBB = nocc2BB * nvir2BB;
+        cost_ampBB /= 1024.0 * 1024.0;
+        cost_ampBB *= sizeof(double);
+        cost_ampAB = nocc2AB * nvir2AB;
+        cost_ampAB /= 1024.0 * 1024.0;
+        cost_ampAB *= sizeof(double);
+        cost_amp = MAX0(cost_ampAA, cost_ampBB);
+        cost_amp = MAX0(cost_amp, cost_ampAB);
+        cost_amp = 3.0 * cost_amp;
+        memory = Process::environment.get_memory();
+        memory_mb = (double)memory/(1024.0 * 1024.0);
+        outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
+        outfile->Printf("\tMinimum required memory for amplitudes: %9.2lf MB \n", cost_amp);
      }// else if (reference_ == "UNRESTRICTED")
 
         // memalloc for density intermediates

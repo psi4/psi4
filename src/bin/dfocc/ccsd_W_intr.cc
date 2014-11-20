@@ -129,27 +129,6 @@ void DFOCC::ccsd_WmbejT2()
     W->write(psio_, PSIF_DFOCC_AMPS);
     W.reset();
 
-    /*
-    // t_ij^ab <= D(ia,jb) + D(jb,ia)
-    // D_ij^ab = 2\sum_{me} t_im^ae W(me,jb) = 2\sum_{me} T(ia,me) W(me,jb)
-    U = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    U->read_symm(psio_, PSIF_DFOCC_AMPS);
-    X = SharedTensor2d(new Tensor2d("D2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    X->gemm(false, false, U, W, 2.0, 0.0);
-    U.reset();
-    W.reset();
-    X->write_symm(psio_, PSIF_DFOCC_AMPS);
-    X.reset();
-
-    X->symmetrize();
-    Tnew = SharedTensor2d(new Tensor2d("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    Tnew->read_symm(psio_, PSIF_DFOCC_AMPS);
-    Tnew->axpy(X, 2.0);
-    Tnew->write_symm(psio_, PSIF_DFOCC_AMPS);
-    Tnew.reset();
-    */
-    
-
     // W_mbje = W'(me,jb)
     // W'(me,jb) <= <me|jb>
     W = SharedTensor2d(new Tensor2d("Wp (ME|JB)", naoccA, navirA, naoccA, navirA));
@@ -193,14 +172,13 @@ void DFOCC::ccsd_WmbejT2()
 
     // t_ij^ab <= D(ia,jb) + D(jb,ia)
     // D_ij^ab = 1/2 \sum_{me} u_im^ae [2*W(me,jb) - W'(me,jb)]
+    Y = SharedTensor2d(new Tensor2d("2*W-W' (ME|JB)", naoccA, navirA, naoccA, navirA));
+    Y->axpy(W, -1.0);
+    W.reset();
     W2 = SharedTensor2d(new Tensor2d("W (ME|JB)", naoccA, navirA, naoccA, navirA));
     W2->read(psio_, PSIF_DFOCC_AMPS);
-    Y = SharedTensor2d(new Tensor2d("2*W-W' (ME|JB)", naoccA, navirA, naoccA, navirA));
-    Y->copy(W2);
+    Y->axpy(W2, 2.0);
     W2.reset();
-    Y->scale(2.0);
-    Y->subtract(W);
-    W.reset();
     U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     U->read_symm(psio_, PSIF_DFOCC_AMPS);
     X = SharedTensor2d(new Tensor2d("D2 (IA|JB)", naoccA, navirA, naoccA, navirA));
