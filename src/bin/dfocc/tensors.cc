@@ -3337,6 +3337,15 @@ void Tensor2d::symmetrize()
     add(temp);
     scale(0.5);
     temp.reset();
+    /*
+    #pragma omp parallel for
+    for (int i=0; i<dim2_; ++i) {
+	for (int j=0; j<dim1_; ++j) {
+	     A2d_[i][j] = 0.5 * (A2d_[i][j] + A2d_[j][i]);
+	}
+    }
+    */
+
 }//
 
 void Tensor2d::symmetrize3(const SharedTensor2d &A)
