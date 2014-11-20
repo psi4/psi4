@@ -195,10 +195,11 @@ set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2
 #RMR---This is our plugin workaround
 #Here we start a list of plugins
 set(PLUGINS "")
-add_subdirectory(plugins)
-#Add plugins to the libraries Psi depends on
-set(PSILIB ${PSILIB} ${PLUGINS})
-
+if(ENABLE_PLUGINS)
+   add_subdirectory(plugins)
+   #Add plugins to the libraries Psi depends on
+   set(PSILIB ${PSILIB} ${PLUGINS})
+endif()
 
 if(ENABLE_LIBERD)
     set(PSILIB ${PSILIB} erd)
