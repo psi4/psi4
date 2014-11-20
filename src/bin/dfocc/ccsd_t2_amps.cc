@@ -79,9 +79,6 @@ void DFOCC::ccsd_t2_amps()
     // WmbejT2
     ccsd_WmbejT2();
 
-    // WmbjeT2
-    ccsd_WmbjeT2();
-
     // WijamT2
     if (itr_occ > 1) ccsd_WijamT2();
 
