@@ -88,7 +88,7 @@ void DFOCC::ccsd_WmnijT2()
 void DFOCC::ccsd_WmbejT2()
 {
     // defs
-    SharedTensor2d K, T, T1, Tnew, U, Tau, W, X, Y;
+    SharedTensor2d K, T, T1, Tnew, U, Tau, W, W2, X, Y;
 
     timer_on("WmbejT2");
 
@@ -126,36 +126,29 @@ void DFOCC::ccsd_WmbejT2()
     W->gemm(false, false, X, T, -0.5, 1.0);
     T.reset();
     X.reset();
+    W->write(psio_, PSIF_DFOCC_AMPS);
+    W.reset();
 
-    // t_ij^ab <= X(ia,jb) + X(jb,ia)
-    // X(ia,jb) = \sum_{me} u_im^ae W(me,jb) = \sum_{me} U(ia,me) W(me,jb)
-    U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    X = SharedTensor2d(new Tensor2d("X (IA|JB)", naoccA, navirA, naoccA, navirA));
+    /*
+    // t_ij^ab <= D(ia,jb) + D(jb,ia)
+    // D_ij^ab = 2\sum_{me} t_im^ae W(me,jb) = 2\sum_{me} T(ia,me) W(me,jb)
+    U = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     U->read_symm(psio_, PSIF_DFOCC_AMPS);
-    X->gemm(false, false, U, W, 1.0, 0.0);
+    X = SharedTensor2d(new Tensor2d("D2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    X->gemm(false, false, U, W, 2.0, 0.0);
     U.reset();
     W.reset();
+    X->write_symm(psio_, PSIF_DFOCC_AMPS);
+    X.reset();
+
     X->symmetrize();
     Tnew = SharedTensor2d(new Tensor2d("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     Tnew->read_symm(psio_, PSIF_DFOCC_AMPS);
     Tnew->axpy(X, 2.0);
-    X.reset();
     Tnew->write_symm(psio_, PSIF_DFOCC_AMPS);
     Tnew.reset();
+    */
     
-    timer_off("WmbejT2");
-
-}// end ccsd_WmbejT2
-
-//======================================================================
-//    WmbjeT2
-//======================================================================             
-void DFOCC::ccsd_WmbjeT2()
-{
-    // defs
-    SharedTensor2d K, T, T1, Tnew, U, Tau, W, X, Y;
-
-    timer_on("WmbjeT2");
 
     // W_mbje = W'(me,jb)
     // W'(me,jb) <= <me|jb>
@@ -196,22 +189,24 @@ void DFOCC::ccsd_WmbjeT2()
     T->read_symm(psio_, PSIF_DFOCC_AMPS);
     W->gemm(false, false, X, T, -0.5, 1.0);
     X.reset();
+    W->write(psio_, PSIF_DFOCC_AMPS);
 
-    // t_ij^ab <= Y(ib,ja) + Y(ja,ib)
-    // Y(ib,ja) = -\sum_{me} t_mi^be W'(me,ja) = -\sum_{me} T'(ib,me) W'(me,ja)
-    Y = SharedTensor2d(new Tensor2d("Y (IA|JB)", naoccA, navirA, naoccA, navirA));
-    Y->gemm(false, false, T, W, -1.0, 0.0);
-    T.reset();
-    X = SharedTensor2d(new Tensor2d("X (IA|JB)", naoccA, navirA, naoccA, navirA));
-    X->sort(1432, Y, 1.0, 0.0);
-    Y.reset();
-    // t_ij^ab <= X(ia,jb) + X(jb,ia)
-    // X(ia,jb) = -\sum_{me} t_im^ae W'(me,jb) = -\sum_{me} T(ia,me) W'(me,jb)
-    U = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    U->read_symm(psio_, PSIF_DFOCC_AMPS);
-    X->gemm(false, false, U, W, -1.0, 1.0);
-    U.reset();
+    // t_ij^ab <= D(ia,jb) + D(jb,ia)
+    // D_ij^ab = 1/2 \sum_{me} u_im^ae [2*W(me,jb) - W'(me,jb)]
+    W2 = SharedTensor2d(new Tensor2d("W (ME|JB)", naoccA, navirA, naoccA, navirA));
+    W2->read(psio_, PSIF_DFOCC_AMPS);
+    Y = SharedTensor2d(new Tensor2d("2*W-W' (ME|JB)", naoccA, navirA, naoccA, navirA));
+    Y->copy(W2);
+    W2.reset();
+    Y->scale(2.0);
+    Y->subtract(W);
     W.reset();
+    U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    U->read_symm(psio_, PSIF_DFOCC_AMPS);
+    X = SharedTensor2d(new Tensor2d("D2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    X->gemm(false, false, U, Y, 0.5, 0.0);
+    U.reset();
+    Y.reset();
     X->symmetrize();
     Tnew = SharedTensor2d(new Tensor2d("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     Tnew->read_symm(psio_, PSIF_DFOCC_AMPS);
@@ -219,10 +214,33 @@ void DFOCC::ccsd_WmbjeT2()
     X.reset();
     Tnew->write_symm(psio_, PSIF_DFOCC_AMPS);
     Tnew.reset();
-    
-    timer_off("WmbjeT2");
 
-}// end ccsd_WmjeT2
+    // t_ij^ab <= 1/2*C(ia,jb) + 1/2*C(jb,ia) + C(ja,ib) + C(ib,ja)
+    // t_ij^ab <= Ct(ia,jb) + 2*Ct(ib,ja)
+    // C(ia,jb) = -\sum_{me} t_mi^ae W'(me,jb) = -\sum_{me} T'(ia,me) W'(me,jb)
+    W = SharedTensor2d(new Tensor2d("Wp (ME|JB)", naoccA, navirA, naoccA, navirA));
+    W->read(psio_, PSIF_DFOCC_AMPS);
+    U = SharedTensor2d(new Tensor2d("T2p (IA|JB)", naoccA, navirA, naoccA, navirA));
+    U->read_symm(psio_, PSIF_DFOCC_AMPS);
+    X = SharedTensor2d(new Tensor2d("C2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    X->gemm(false, false, U, W, -1.0, 0.0);
+    U.reset();
+    W.reset();
+    Y = SharedTensor2d(new Tensor2d("C2 (IB|JA)", naoccA, navirA, naoccA, navirA));
+    Y->sort(1432, X, 2.0, 0.0);
+    X->add(Y);
+    Y.reset();
+    X->symmetrize();
+    Tnew = SharedTensor2d(new Tensor2d("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    Tnew->read_symm(psio_, PSIF_DFOCC_AMPS);
+    Tnew->axpy(X, 1.0);
+    X.reset();
+    Tnew->write_symm(psio_, PSIF_DFOCC_AMPS);
+    Tnew.reset();
+    
+    timer_off("WmbejT2");
+
+}// end ccsd_WmbejT2
 
 //======================================================================
 //    WijamT2

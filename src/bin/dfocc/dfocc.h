@@ -379,7 +379,6 @@ protected:
     void ccsd_WmnijT2();
     void ccsd_WijamT2();
     void ccsd_WmbejT2();
-    void ccsd_WmbjeT2();
     void ccsd_WabefT2();     
     void ccsd_t1_amps();
     void ccsd_t2_amps();
