@@ -1591,20 +1591,40 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
   // Parameters
   int conv;
 
+  // Output file for MCSCF iters
+  OutFile IterSummaryOut("file14.dat", TRUNCATE);
+
   // Iterate
   for (int i=0; i<MCSCF_Parameters.max_iter; i++){
     outfile->Printf("\nStarting MCSCF iteration %d\n\n", i+1);
     outfile->Printf("\nMCSCF_CalcInfo.iter: %d \n", MCSCF_CalcInfo.iter);
-
+   
     diag_h(alplist, betlist);
+    /*
     chkpt_init(PSIO_OPEN_OLD);
     MCSCF_CalcInfo.energy = chkpt_rd_etot();
     chkpt_close();
+    */
+    if (Parameters.average_num > 1) { // state average
+      MCSCF_CalcInfo.energy = 
+        Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"];
+    }
+    else if (Parameters.root != 0) { // follow some specific root != lowest
+      std::stringstream s;
+      s << "CI ROOT " << (Parameters.root+1) << " TOTAL ENERGY";
+      MCSCF_CalcInfo.energy = Process::environment.globals[s.str()];
+    }
+    else {
+      MCSCF_CalcInfo.energy = Process::environment.globals["CI TOTAL ENERGY"];
+    }
+
+    outfile->Printf("Hi I just got %12.7lf total energy\n", 
+      MCSCF_CalcInfo.energy);
 
     form_opdm();
     form_tpdm();
     close_io();
-    conv = mcscf_update(options);
+    conv = mcscf_update(i, options, IterSummaryOut);
 
     // If converged
     if (conv){

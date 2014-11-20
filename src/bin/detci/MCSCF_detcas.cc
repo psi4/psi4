@@ -52,6 +52,7 @@
 #include <libmints/molecule.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
+#include <libparallel/ParallelPrinter.h>
 #include "psifiles.h"
 #include "psi4-dec.h"
 #include "structs.h"
@@ -99,7 +100,8 @@ extern void calc_orb_step_full(int npairs, double *grad, double **hess,
                           double *theta);
 extern void calc_orb_step_bfgs(int npairs, double *grad, double **hess, 
                           double *theta);
-extern void print_step(int npairs, int steptype);
+extern void print_step(int iter, int npairs, int steptype, 
+                       OutFile& IterSummaryOut);
 extern void postmult_by_U(int irrep, int dim, double **mo_coeffs,
                           int npairs, int *p_arr, int *q_arr, 
                           double *theta_arr);
@@ -128,7 +130,7 @@ double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
 // struct params MCSCF_Parameters;
 // int *ioff;
 IndepPairs IndPairs;
-int mcscf_update(Options &options);
+int mcscf_update(int iter, Options &options, OutFile& IterSummaryOut);
 
 #define MO_HESS_MIN 1.0E-1
 
@@ -138,7 +140,7 @@ int mcscf_update(Options &options);
 namespace psi { namespace detci {
 
 
-int mcscf_update(Options &options)
+int mcscf_update(int iter, Options &options, OutFile& IterSummaryOut)
 {
   int converged = 0;
   int num_pairs = 0;
@@ -201,6 +203,7 @@ int mcscf_update(Options &options)
     steptype = 0;
 
   // print_step(num_pairs, steptype);
+  print_step(iter, num_pairs, steptype, IterSummaryOut);
 
 //  if (MCSCF_Parameters.print_lvl) quote();
   // cleanup();
