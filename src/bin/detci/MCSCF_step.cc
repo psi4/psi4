@@ -33,11 +33,13 @@
 #include <cmath>
 #include <psifiles.h>
 #include <psi4-dec.h>
+#include <libparallel/ParallelPrinter.h>
 #include "globaldefs.h"
 #include "structs.h"
 #define EXTERN
 #include "globals.h"
 #include "libpsio/psio.h"
+//#include "ParallelPrinter.h"
 
 namespace psi { namespace detci {
 
@@ -271,6 +273,30 @@ void calc_orb_step_bfgs(int npairs, double *grad, double **hess, double *theta)
 **
 ** This function prints out the information for a given orbital iteration
 */
+
+void print_step(int iter, int npairs, int steptype, OutFile& IterSummaryOut)
+{
+
+   IterSummaryOut.Printf("%5d %5d %14.9lf %14.9lf %20.12lf", iter+1, 
+     npairs, MCSCF_CalcInfo.scaled_mo_grad_rms, MCSCF_CalcInfo.mo_grad_rms,
+     MCSCF_CalcInfo.energy);
+
+  if (steptype == 0) 
+    IterSummaryOut.Printf(" %9s\n", "CONV");
+  else if (steptype == 1)
+    IterSummaryOut.Printf(" %9s\n", "NR");
+  else if (steptype == 2)
+    IterSummaryOut.Printf(" %9s\n", "DIIS");
+  else {
+    IterSummaryOut.Printf(" ?\n");
+    outfile->Printf("(print_step): Unrecognized steptype %d\n", steptype);
+  }
+
+}
+
+// old version below... safe to delete this as soon as new version
+// is working -CDS 11/20/14
+/*
 void print_step(int npairs, int steptype)
 {
   FILE *sumfile;
@@ -279,10 +305,10 @@ void print_step(int npairs, int steptype)
   double *rmsgrad, *scaled_rmsgrad, *energies, energy;
   char **comments;
 
-  /* open ascii file, get number of entries already in it */
+  // open ascii file, get number of entries already in it 
 
   ffile_noexit(&sumfile,sumfile_name,2);
-  if (sumfile == NULL) { /* the file doesn't exist yet */
+  if (sumfile == NULL) { // the file doesn't exist yet
     entries = 0;
     if (MCSCF_Parameters.print_lvl)
       outfile->Printf("\nPreparing new file %s\n", sumfile_name);
@@ -336,7 +362,7 @@ void print_step(int npairs, int steptype)
 
   if (entries) fclose(sumfile);
 
-  /* now open file for writing, write out old info plus new */
+  // now open file for writing, write out old info plus new 
   ffile_noexit(&sumfile,"file14.dat",0);
   if (sumfile == NULL) {
     outfile->Printf("(print_step): Unable to open file %s\n", sumfile_name);
@@ -360,6 +386,7 @@ void print_step(int npairs, int steptype)
   free(comments);
 
 }
+*/
 
 }} // end namespace psi::detci
 

@@ -3,8 +3,9 @@
 
 set {
   MCSCF_MAXITER = 80
-  MCSCF_DIIS_MAX_VECS = 12
-  MCSCF_DIIS_FREQ = 2
+  # the next 2 lines should be the Psi3 defaults
+  MCSCF_DIIS_MAX_VECS = 8
+  MCSCF_DIIS_FREQ = 1
   reference = rhf
   restricted_docc = [1, 0, 0, 0]
   ras1            = [2, 0, 1, 1]
