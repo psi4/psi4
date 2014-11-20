@@ -380,8 +380,7 @@ protected:
     void ccsd_WijamT2();
     void ccsd_WmbejT2();
     void ccsd_WmbjeT2();
-    void ccsd_WabefT2_high();     
-    void ccsd_WabefT2_low();      
+    void ccsd_WabefT2();     
     void ccsd_t1_amps();
     void ccsd_t2_amps();
     void ccsd_energy();

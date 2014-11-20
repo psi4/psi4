@@ -83,10 +83,10 @@ void DFOCC::ccsd_t2_amps()
     ccsd_WmbjeT2();
 
     // WijamT2
-    ccsd_WijamT2();
+    if (itr_occ > 1) ccsd_WijamT2();
 
     // WabefT2
-    ccsd_WabefT2_high();
+    ccsd_WabefT2();
 
     // Denom
     Tnew = SharedTensor2d(new Tensor2d("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
