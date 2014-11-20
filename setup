@@ -187,7 +187,7 @@ def parse_input():
             default='on',
             help='Compile with support for plugins [default: %(default)s]')
     # Suffix for the psi4 executable
-    parser.add_argument('--suffix',
+    group.add_argument('--suffix',
             type=str,
             action='store',
             default='',
