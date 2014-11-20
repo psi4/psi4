@@ -5,3 +5,4 @@
 * Re-write symmetrize() function
 * Implement CROP for amplitudes
 * T1 Diagnostic
+* It is possible to write a lower mem algorithm for Wijam
