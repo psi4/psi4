@@ -136,11 +136,11 @@ int diis(int veclen, double *vec, double *errvec)
                   sizeof(int));
 
   for (i=offset; i<num_vecs; i++) {
-    sprintf(diis_char, "DIIS vector %3d", i);
+    sprintf(diis_char, "DIIS vector %3d", i-offset);
     psio_write_entry(PSIF_DETCAS, diis_char, (char *) vecs[i],
                     veclen*sizeof(double));
 
-    sprintf(diis_char, "DIIS error vector %3d", i);
+    sprintf(diis_char, "DIIS error vector %3d", i-offset);
     psio_write_entry(PSIF_DETCAS, diis_char, (char *) errvecs[i],
                     veclen*sizeof(double));
 
@@ -182,7 +182,7 @@ int diis(int veclen, double *vec, double *errvec)
   bmat[new_num_vecs][new_num_vecs] = 0.0;
   bvec[new_num_vecs] = -1.0;
 
-  if (MCSCF_Parameters.print_lvl > 2) {
+  if (MCSCF_Parameters.print_lvl > 2) { 
     outfile->Printf("DIIS B Matrix:\n");
     print_mat(bmat, new_num_vecs+1, new_num_vecs+1, "outfile");
   }
@@ -196,7 +196,7 @@ int diis(int veclen, double *vec, double *errvec)
   }
 
   if (MCSCF_Parameters.print_lvl > 2) {
-    outfile->Printf("DIIS B Matrix:\n");
+    outfile->Printf("DIIS B Matrix (scaled):\n");
     print_mat(bmat, new_num_vecs+1, new_num_vecs+1, "outfile");
   }
 
