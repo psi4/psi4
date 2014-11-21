@@ -1,66 +1,109 @@
-add_custom_command(
-    COMMAND tar -xjf ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.bz2
-    OUTPUT ${BOOSTVER}
-    COMMENT Unpacking Boost
-    DEPENDS ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.bz2
-)
+# Based on Ryan M. Richard work in PSI4
+# First of all get BOOSTVER underscore separated
+string(REGEX REPLACE "\\." "_" BOOSTVER ${BOOSTVER})
+# Transform the ;-separated list to a ,-separated list (digested by the Boost build toolchain!)
+string(REPLACE ";" "," b2_needed_components "${needed_components}")
 
-#To get boost to compile MPI we need to append "using mpi ;" to the end of the
-#user-config.jam file.  MPI_SENT will be the command we append
+set(BOOST_BUILD_DIR ${PROJECT_BINARY_DIR}/boost/boost_${BOOSTVER})
+
+# Prepare stuff to be written to user-config.jam and project-config.jam
+# We are going to build only what is necessary. We need to create a custom user-config.jam file
+# To get boost to compile MPI we need to append "using mpi ;" to the end of the
+# user-config.jam file. MPI_SENT will be the command we append
 set(MPI_SENT "")
-if(MPI_FOUND)
-  set(BOOST_LIBS_2_MAKE
-"filesystem,mpi,python,regex,serialization,system,thread")
-  set(MPI_SENT "using mpi : ${CMAKE_CXX_COMPILER} \\;")
-else()
-  set(BOOST_LIBS_2_MAKE "filesystem,python,regex,serialization,system,thread")
+if(ENABLE_MPI)
+   list(APPEND needed_components mpi)
+   set(MPI_SENT "using mpi \n : ${CMAKE_CXX_COMPILER} \n;")
 endif()
+if(ENABLE_UNIT_TESTS)
+   # Replace unit_test_framework (used by CMake's find_package) with test (understood by Boost build toolchain)
+   string(REPLACE "unit_test_framework" "test" b2_needed_components "${b2_needed_components}")
+endif()
+# For a prettier printout...
+string(REPLACE ";" ", " printout "${needed_components}")
+message(STATUS "  Libraries to be built: ${printout}")
 
-#To get boost to be built with our compiler of choice we need these logic
-#statements, then we write the options to user-config.jam
-set(toolset "")
-if(${CMAKE_CXX_COMPILER} MATCHES "icc*")
-  if(UNIX OR APPLE)
-    if (APPLE)
-      set(toolset "intel-darwin")
-    else()
-      set(toolset "intel-linux")
-    endif()
-  else()
-    set(toolset "intel-windows")
-  endif()
+# To get boost to be built with our compiler of choice we need these logic
+# statements, then we write the options to user-config.jam
+set(toolset   "")
+if(HAS_CXX11_SUPPORT)
+   set(cxxflags "${cxxflags} ${CXX11_COMPILER_FLAGS}") 
+endif()	  
+set(linkflags "")
+if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
+	set(toolset "intel-linux")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  set(toolset "clang")
+  if(CMAKE_SYSTEM_NAME MATCHES Darwin) # Read here: http://stackoverflow.com/a/19774902/2528668
+  	set(cxxflags "${cxxflags} -stdlib=libc++")
+	set(linkflags "${linkflags} -stdlib=libc++")
+  endif()	  
 else()
-  if(APPLE)
-    set(toolset "darwin")
+  if(CMAKE_SYSTEM_NAME MATCHES Darwin)
+     set(toolset "darwin")
   else()
-   set(toolset "gcc")
+     set(toolset "gcc")
   endif()
 endif()
+message(STATUS "  Toolset to be used: ${toolset}")
 
+# Write the user-config.jam file
+file(WRITE  ${BOOST_BUILD_DIR}/user-config.jam 
+	    "using ${toolset}\n : \n : ${CMAKE_CXX_COMPILER} \n : <cxxflags>${cxxflags} \n : <linkflags>${linkflags} \n;") 
+file(APPEND ${BOOST_BUILD_DIR}/user-config.jam "${MPI_SENT}") 
+
+# Unpack Boost and copy boostcpp.jam
 add_custom_command(
-    COMMAND ${CMAKE_COMMAND} -E echo "using ${toolset} : : ${CMAKE_CXX_COMPILER} \\;" > user-config.jam
-    COMMAND ${CMAKE_COMMAND} -E echo "${MPI_SENT}" >> user-config.jam
+    OUTPUT boost.unpacked 
+    COMMAND ${CMAKE_COMMAND} -E tar xjf ${PROJECT_SOURCE_DIR}/boost/boost_${BOOSTVER}.tar.bz2 
+    # Copy custom boostcpp.jam (to get versioned format as I want it!)
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/boost/boostcpp.jam ${BOOST_BUILD_DIR}
+    # Append to project-config.jam 
+    # It can't be done with file(APPEND ...) because it will be destroyed when unpacking
+    COMMAND ${CMAKE_COMMAND} -E echo "${MPI_SENT}" >> ${BOOST_BUILD_DIR}/project-config.jam
+    COMMAND touch boost.unpacked
+    DEPENDS ${PROJECT_SOURCE_DIR}/boost/boost_${BOOSTVER}.tar.bz2
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/boost
+    COMMENT "Unpacking Boost")
+
+string(TOLOWER ${CMAKE_BUILD_TYPE} type)
+# Run bootstrap.sh to configure the build. We will install in ${PROJECT_BINARY_DIR}/boost
+add_custom_command(
+    OUTPUT boost.configured
     COMMAND ./bootstrap.sh --with-toolset=${toolset}
-            --with-libraries=${BOOST_LIBS_2_MAKE}
-           --with-python=${PYTHON}
-    COMMAND ${CMAKE_COMMAND} -E echo "${MPI_SENT}" >> project-config.jam
-    COMMAND ./b2
-    COMMAND touch ../boost.compiled
-    WORKING_DIRECTORY ${BOOSTVER}
-    DEPENDS ${BOOSTVER}
-    OUTPUT boost.compiled
-    OUTPUT ${BOOSTLIB}
-    COMMENT Configuring and building Boost 
-)
+            --with-libraries="${b2_needed_components}"
+	    --with-python=${PYTHON_EXECUTABLE}
+	    --prefix=${CUSTOM_BOOST_LOCATION} 1> boost.configured.log 2> boost.configured.err
+    COMMAND ${CMAKE_COMMAND} -E touch ${PROJECT_BINARY_DIR}/boost/boost.configured	    
+    WORKING_DIRECTORY ${BOOST_BUILD_DIR}
+    DEPENDS boost.unpacked
+    COMMENT "Configuring Boost")
 
-# This target is always executed, but checks for the existence of boost.compiled
-add_custom_target(
-    boostlibs ALL
-    DEPENDS boost.compiled
-)
+# Build Boost
+add_custom_command(
+    OUTPUT boost.built
+    COMMAND ./b2 variant=${type} link=static threading=multi 1> boost.built.log 2> boost.built.err
+    COMMAND ${CMAKE_COMMAND} -E touch ${PROJECT_BINARY_DIR}/boost/boost.built
+    WORKING_DIRECTORY ${BOOST_BUILD_DIR}
+    DEPENDS boost.configured 
+    COMMENT "Building Boost")
 
-#include(ExternalProject)
-#ExternalProject_Add(Boost
-#    URL ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.bz2
-#    CONFIGURE_COMMAND ./bootstrap.sh --with-libraries=${BOOST_LIBS_2_MAKE}
-#    BUILD_COMMAND b2)
+# Install Boost
+add_custom_command(
+    OUTPUT boost.installed
+    COMMAND ./b2 install variant=${type} link=static threading=multi 1> boost.installed.log 2> boost.installed.err	   
+    COMMAND ${CMAKE_COMMAND} -E touch ${PROJECT_BINARY_DIR}/boost/boost.installed
+    WORKING_DIRECTORY ${BOOST_BUILD_DIR}
+    DEPENDS boost.built 
+    COMMENT "Installing Boost")
+
+# Clean-up
+add_custom_command(
+    OUTPUT boost.cleanedup
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${BOOST_BUILD_DIR}
+    COMMAND ${CMAKE_COMMAND} -E touch ${PROJECT_BINARY_DIR}/boost/boost.cleanedup
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/boost
+    DEPENDS boost.installed 
+    COMMENT "Clean-up Boost")
+
+add_custom_target(custom_boost DEPENDS boost.cleanedup)
