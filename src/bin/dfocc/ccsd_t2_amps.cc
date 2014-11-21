@@ -101,41 +101,40 @@ void DFOCC::ccsd_t2_amps()
     T = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     T->read_symm(psio_, PSIF_DFOCC_AMPS);
     rms_t2 = Tnew->rms(T); 
-    T->copy(Tnew);
-    Tnew.reset();
-    T->write_symm(psio_, PSIF_DFOCC_AMPS);
-
-    /*
-    // DIIS
+    // Error vector
     Tau = SharedTensor2d(new Tensor2d("RT2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     Tau->copy(Tnew);
     Tau->subtract(T);
-    double** RT2 = Tau->to_block_matrix();
-    Tau.reset();
-    double** T2 = T->to_block_matrix();
-    T.reset();
-    double** RT1 = Rt1A->to_block_matrix();
-    Rt1A.reset();
-    double** T1 = t1A->to_block_matrix();
-    t2DiisManager->add_entry(4, RT2[0], RT1[0], T2[0], T1[0]);
-    free_block(RT2);
-    free_block(RT1);
-    if (t2DiisManager->subspace_size() >= cc_mindiis_) t2DiisManager->extrapolate(2, T2[0], T1[0]);
-    T = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    T->set(T2);
-    free_block(T2);
-    T->write_symm(psio_, PSIF_DFOCC_AMPS);
-    t1A->set(T1);
-    free_block(T1);
-    */
+    T->copy(Tnew);
+    Tnew.reset();
+    //T->write_symm(psio_, PSIF_DFOCC_AMPS);
 
-    /*
-    // print
-    U = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    U->sort(1324, T, 1.0, 0.0);
-    U->print();
-    U.reset();
-    */
+    // DIIS
+    boost::shared_ptr<Matrix> RT2(new Matrix("RT2", naoccA*navirA, naoccA*navirA));
+    Tau->to_matrix(RT2);
+    Tau.reset();
+    boost::shared_ptr<Matrix> T2(new Matrix("T2", naoccA*navirA, naoccA*navirA));
+    T->to_matrix(T2);
+    T.reset();
+    boost::shared_ptr<Matrix> RT1(new Matrix("RT1", naoccA, navirA));
+    Rt1A->to_matrix(RT1);
+    Rt1A.reset();
+    boost::shared_ptr<Matrix> T1(new Matrix("T1", naoccA, navirA));
+    t1A->to_matrix(T1);
+
+    // add entry
+    t2DiisManager->add_entry(4, RT2.get(), RT1.get(), T2.get(), T1.get());
+    RT2.reset();
+    RT1.reset();
+
+    // extrapolate
+    if (t2DiisManager->subspace_size() >= cc_mindiis_) t2DiisManager->extrapolate(2, T2.get(), T1.get());
+    T = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    T->set2(T2);
+    T2.reset();
+    T->write_symm(psio_, PSIF_DFOCC_AMPS);
+    t1A->set2(T1);
+    T1.reset();
 
     // Form T'(ib,ja) = T(ia,jb)
     U = SharedTensor2d(new Tensor2d("T2p (IA|JB)", naoccA, navirA, naoccA, navirA));

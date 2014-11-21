@@ -404,6 +404,7 @@ protected:
     // DIIS
     DIISManager *t1DiisManager;
     DIISManager *t2DiisManager;
+    DIISManager tDiisManager;
 
     // Gradients
     std::map<std::string, SharedMatrix> gradients;
