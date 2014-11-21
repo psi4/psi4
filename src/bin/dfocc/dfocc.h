@@ -375,13 +375,10 @@ protected:
     void ccsd_iterations();
     void ccsd_3index_intr();
     void ccsd_F_intr();
-    void ccsd_W_intr();
     void ccsd_WmnijT2();
     void ccsd_WijamT2();
     void ccsd_WmbejT2();
-    void ccsd_WmbjeT2();
-    void ccsd_WabefT2_high();     
-    void ccsd_WabefT2_low();      
+    void ccsd_WabefT2();     
     void ccsd_t1_amps();
     void ccsd_t2_amps();
     void ccsd_energy();
@@ -404,8 +401,7 @@ protected:
     int get_rotation_block(string rotblock);
 
     // DIIS
-    DIISManager *t1DiisManager;
-    DIISManager *t2DiisManager;
+    boost::shared_ptr<DIISManager> ccsdDiisManager;
 
     // Gradients
     std::map<std::string, SharedMatrix> gradients;

@@ -12,6 +12,7 @@
 #define DEBUG 0
 
 // Name mangling
+#ifndef USE_FCMANGLE_H
 #define FC_SYMBOL 2
 
 #if FC_SYMBOL == 1
@@ -32,6 +33,13 @@
 #define C_ERD__MEMORY_ERI_BATCH ERD__MEMORY_ERI_BATCH_
 #else
 #error FC_SYMBOL is not defined
+#endif
+
+#else // USE_FCMANGLE_H
+#include "FCMangle.h"
+#define C_ERD__GENER_ERI_BATCH  FC_GLOBAL_(erd__gener_eri_batch,  ERD__GENER_ERI_BATCH)
+#define C_ERD__MEMORY_CSGTO     FC_GLOBAL_(erd__memory_csgto,     ERD__MEMORY_CSGTO)
+#define C_ERD__MEMORY_ERI_BATCH FC_GLOBAL_(erd__memory_eri_batch, ERD__MEMORY_ERI_BATCH)
 #endif
 
 extern "C" {
