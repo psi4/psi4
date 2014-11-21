@@ -1449,6 +1449,14 @@ void Tensor2d::axpy(ULI length, int inc_a, const SharedTensor2d &a, int inc_2d, 
     C_DAXPY(length, alpha, a->A2d_[0], inc_a, A2d_[0], inc_2d);
 }//
 
+double Tensor2d::norm()
+{
+    double value = 0.0;
+    ULI length = (ULI)dim1_ * (ULI)dim2_;
+    value = C_DNRM2(length, A2d_[0], 1);
+    return value;
+}//
+
 double **Tensor2d::transpose2()
 {
     double** temp = block_matrix(dim2_, dim1_);
@@ -2757,6 +2765,7 @@ double* Tensor2d::to_vector()
 double Tensor2d::rms()
 {
   double summ = 0.0;
+  #pragma omp parallel for
   for (int i=0; i<dim1_; ++i) {
        for (int j=0; j<dim2_; ++j) {
             summ += A2d_[i][j] * A2d_[i][j];
@@ -2770,13 +2779,13 @@ double Tensor2d::rms()
 double Tensor2d::rms(const SharedTensor2d& a)
 {
   double summ = 0.0;
+  #pragma omp parallel for
   for (int i=0; i<dim1_; ++i) {
        for (int j=0; j<dim2_; ++j) {
             summ += (A2d_[i][j] - a->A2d_[i][j]) * (A2d_[i][j] - a->A2d_[i][j]);
        }
   }
   summ=sqrt(summ/(dim1_*dim2_));
-  //summ=sqrt(summ)/(dim1_*dim2_);
 
   return summ;
 }//
