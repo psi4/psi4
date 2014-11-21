@@ -239,6 +239,7 @@ class Tensor2d
   // identity: A = I
   void identity();
   double trace();
+  double norm();
   // transform: A = L' * B * L
   void transform(const SharedTensor2d& a, const SharedTensor2d& transformer);
   // back_transform: A = L * B * L'

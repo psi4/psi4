@@ -107,7 +107,7 @@ void DFOCC::ccsd_t2_amps()
     Tau->subtract(T);
     T->copy(Tnew);
     Tnew.reset();
-    //T->write_symm(psio_, PSIF_DFOCC_AMPS);
+    if (do_diis_ == 0) T->write_symm(psio_, PSIF_DFOCC_AMPS);
 
     // DIIS
     boost::shared_ptr<Matrix> RT2(new Matrix("RT2", naoccA*navirA, naoccA*navirA));
@@ -123,18 +123,25 @@ void DFOCC::ccsd_t2_amps()
     t1A->to_matrix(T1);
 
     // add entry
-    ccsdDiisManager->add_entry(4, RT2.get(), RT1.get(), T2.get(), T1.get());
+    if (do_diis_ == 1) ccsdDiisManager->add_entry(4, RT2.get(), RT1.get(), T2.get(), T1.get());
     RT2.reset();
     RT1.reset();
 
     // extrapolate
-    if (ccsdDiisManager->subspace_size() >= cc_mindiis_) ccsdDiisManager->extrapolate(2, T2.get(), T1.get());
-    T = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    T->set2(T2);
-    T2.reset();
-    T->write_symm(psio_, PSIF_DFOCC_AMPS);
-    t1A->set2(T1);
+    if (do_diis_ == 1) {
+        if (ccsdDiisManager->subspace_size() >= cc_mindiis_) ccsdDiisManager->extrapolate(2, T2.get(), T1.get());
+        T = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        T->set2(T2);
+        t1A->set2(T1);
+        T->write_symm(psio_, PSIF_DFOCC_AMPS);
+    }
     T1.reset();
+    T2.reset();
+
+    if (do_diis_ == 0) {
+        T = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        T->read_symm(psio_, PSIF_DFOCC_AMPS);
+    }
 
     // Form T'(ib,ja) = T(ia,jb)
     U = SharedTensor2d(new Tensor2d("T2p (IA|JB)", naoccA, navirA, naoccA, navirA));

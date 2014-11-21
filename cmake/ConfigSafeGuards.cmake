@@ -20,6 +20,12 @@ if(    NOT cmake_build_type_tolower STREQUAL "debug"
 endif()
 
 # guard against math-less build
+if(MKL_FLAG_SET)
+   # MKL_FLAG_SET is set to ON by using the --mkl setup flag
+   # also set BLAS_FOUND and LAPACK_FOUND to TRUE
+   set(BLAS_FOUND TRUE)
+   set(LAPACK_FOUND TRUE)
+endif()	
 if(NOT BLAS_FOUND OR NOT LAPACK_FOUND) 
    if(NOT EXPLICIT_LIBS)
       message(FATAL_ERROR "No BLAS/LAPACK implementation found and no explicit libraries specified")

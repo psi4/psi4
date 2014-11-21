@@ -28,7 +28,7 @@ set(to_count "${sources_list}" "${headers_list}")
 write_to_cloc_list("${to_count}")
 
 # Build static library
-add_library(mints STATIC ${sources_list})
+add_library(mints STATIC ${sources_list} ${headers_list})
 # Specify dependencies for the library (if any)
 add_dependencies(mints int deriv)
 set(libs_to_merge mints ${libs_to_merge} PARENT_SCOPE)
