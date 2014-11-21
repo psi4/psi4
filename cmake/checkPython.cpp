@@ -8,7 +8,7 @@ int main()
     // Initiliaze the Python interpreter
     Py_Initialize();
     // Run a simple print('Hello, world!')
-    PyRun_SimpleString("print('Hello, world!'");
+    PyRun_SimpleString("print('Hello, world!')");
     // Free all temporary Python objects.
     Py_XDECREF(args); 
     Py_XDECREF(result);
