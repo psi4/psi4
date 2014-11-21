@@ -675,6 +675,7 @@ void Tensor2d::set(int i, int j, double value)
 void Tensor2d::set(double **A)
 {
       if (A == NULL) return;
+      #pragma omp parallel for
       for (int i=0; i<dim1_; ++i) {
         for (int j=0; j<dim2_; ++j) {
           A2d_[i][j] = A[i][j];
@@ -685,6 +686,7 @@ void Tensor2d::set(double **A)
 void Tensor2d::set(SharedTensor2d &A)
 {
       if (A == NULL) return;
+      #pragma omp parallel for
       for (int i=0; i<dim1_; ++i) {
         for (int j=0; j<dim2_; ++j) {
           A2d_[i][j] = A->A2d_[i][j];
@@ -694,6 +696,7 @@ void Tensor2d::set(SharedTensor2d &A)
 
 void Tensor2d::set(SharedMatrix A)
 {
+      #pragma omp parallel for
       for (int i=0; i<dim1_; ++i) {
         for (int j=0; j<dim2_; ++j) {
           A2d_[i][j] = A->get(0,i,j);
@@ -701,11 +704,34 @@ void Tensor2d::set(SharedMatrix A)
       }
 }//
 
+void Tensor2d::set2(SharedMatrix A)
+{
+      #pragma omp parallel for
+      for (int i=0; i<dim1_; ++i) {
+        for (int j=0; j<dim2_; ++j) {
+          A2d_[i][j] = A->get(i,j);
+        }
+      }
+}//
+
 void Tensor2d::set(SharedTensor1d &A)
 {
-      for (int i=0, ij=0; i<dim1_; i++) {
-        for (int j=0; j<dim2_; j++, ij++) {
+      #pragma omp parallel for
+      for (int i=0; i<dim1_; i++) {
+        for (int j=0; j<dim2_; j++) {
+             int ij = j + (i*dim2_);
              A2d_[i][j] = A->get(ij);
+        }
+      }
+}//
+
+void Tensor2d::set(double *A)
+{
+      #pragma omp parallel for
+      for (int i=0; i<dim1_; i++) {
+        for (int j=0; j<dim2_; j++) {
+             int ij = j + (i*dim2_);
+             A2d_[i][j] = A[ij];
         }
       }
 }//
@@ -2114,6 +2140,27 @@ void Tensor2d::to_shared_matrix(SharedMatrix A)
       for (int i=0; i<dim1_; ++i) {
         for (int j=0; j<dim2_; ++j) {
           A->set(0,i,j,A2d_[i][j]);
+        }
+      }
+}//
+
+void Tensor2d::to_matrix(SharedMatrix A)
+{
+      #pragma omp parallel for
+      for (int i=0; i<dim1_; ++i) {
+        for (int j=0; j<dim2_; ++j) {
+          A->set(i,j,A2d_[i][j]);
+        }
+      }
+}//
+
+void Tensor2d::to_pointer(double *A)
+{
+      #pragma omp parallel for
+      for (int i=0; i<dim1_; ++i) {
+        for (int j=0; j<dim2_; ++j) {
+             int ij = j + (i*dim2_); 
+             A[ij] = A2d_[i][j];
         }
       }
 }//

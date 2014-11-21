@@ -74,6 +74,8 @@ procedures = {
             'df-omp2'       : run_dfomp2,
             'dfomp2'        : run_dfomp2,
             'dfocc'         : run_dfocc,
+            'dfccsd2'       : run_dfccsd2,
+            'df-ccsd2'      : run_dfccsd2,
             'cd-omp2'       : run_cdomp2,
             'cdomp2'        : run_cdomp2,
             'cd-mp2'        : run_cdmp2,
@@ -316,6 +318,10 @@ def energy(name, **kwargs):
     | cd-omp2                 | cholesky decomposed orbital-optimized MP2 :ref:`[manual] <sec:dfocc>`                 |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cd-mp2                  | cholesky decomposed MP2 :ref:`[manual] <sec:dfocc>`                                   |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-ccsd2                | density-fitted CCSD from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | dfccsd2                 | density-fitted CCSD from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cepa(0)                 | coupled electron pair approximation variant 0 :ref:`[manual] <sec:fnocepa>`           |
     +-------------------------+---------------------------------------------------------------------------------------+
