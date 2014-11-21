@@ -545,8 +545,6 @@ def main(argv):
 
     if 'Configuring incomplete' in status:
         # configuration was not successful
-        print 'build_path ', build_path
-        print 'default_path ', default_path
         if (build_path == os.path.join(root_directory, 'obj')):
             # remove build_path iff not set by the user
             # otherwise removal can be dangerous
