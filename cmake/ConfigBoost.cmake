@@ -1,5 +1,6 @@
 # Just change the Boost version number here
 set(BOOSTVER 1.57.0)
+set(BOOSTVERMIN 1.55.0)
 set(BUILD_CUSTOM_BOOST FALSE)
 # List all components needed (except mpi and unit_test_framework) here.
 # mpi and unit_test_framework will be added afterwards, if needed.
@@ -9,9 +10,9 @@ set(Boost_USE_MULTITHREADED  ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 if(ENABLE_UNIT_TESTS)
    list(APPEND needed_components unit_test_framework)
-   find_package(Boost ${BOOSTVER} COMPONENTS "${needed_components}")
+   find_package(Boost ${BOOSTVERMIN} COMPONENTS "${needed_components}")
 else()
-   find_package(Boost ${BOOSTVER} COMPONENTS "${needed_components}")
+   find_package(Boost ${BOOSTVERMIN} COMPONENTS "${needed_components}")
 endif()
 if(NOT Boost_FOUND)
    # Set also variables usually set by find_package
