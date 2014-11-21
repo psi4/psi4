@@ -46,10 +46,16 @@ function(check_Python_compiles pyCompiles)
    set(_bindir  "${PROJECT_BINARY_DIR}/pyCompiles")	
    set(_srcfile "${PROJECT_SOURCE_DIR}/cmake/checkPython.cpp")
    
+   # Get path to Python libraries
+   get_filename_component(_libdir ${PYTHON_LIBRARIES} DIRECTORY)
+   
    try_compile(pyCompiles "${_bindir}" "${_srcfile}" 
              CMAKE_FLAGS 
 	     "-DINCLUDE_DIRECTORIES=${PYTHON_INCLUDE_DIRS}"
-             "-DLINK_LIBRARIES=${PYTHON_LIBRARIES}")
+	     "-DLINK_DIRECTORIES=${_libdir}"
+             "-DLINK_LIBRARIES=${PYTHON_LIBRARIES}"
+	     OUTPUT_VARIABLE pyCompilesTest)
+   file(WRITE "${PROJECT_BINARY_DIR}/pyCompiles/pyCompilesTestOutput" "${pyCompilesTest}")
 
    set(pyCompiles "${pyCompiles}" PARENT_SCOPE)	
 endfunction()
