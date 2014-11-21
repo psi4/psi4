@@ -123,12 +123,12 @@ void DFOCC::ccsd_t2_amps()
     t1A->to_matrix(T1);
 
     // add entry
-    t2DiisManager->add_entry(4, RT2.get(), RT1.get(), T2.get(), T1.get());
+    ccsdDiisManager->add_entry(4, RT2.get(), RT1.get(), T2.get(), T1.get());
     RT2.reset();
     RT1.reset();
 
     // extrapolate
-    if (t2DiisManager->subspace_size() >= cc_mindiis_) t2DiisManager->extrapolate(2, T2.get(), T1.get());
+    if (ccsdDiisManager->subspace_size() >= cc_mindiis_) ccsdDiisManager->extrapolate(2, T2.get(), T1.get());
     T = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     T->set2(T2);
     T2.reset();
