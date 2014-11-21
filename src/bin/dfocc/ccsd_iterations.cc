@@ -49,17 +49,15 @@ outfile->Printf("  ----   -------------    ---------------    ----------   -----
       Eccsd_old = Eccsd;
 
       // DIIS
-      //outfile->Printf("\tBefore DIIS \n");
       boost::shared_ptr<Matrix> T2(new Matrix("T2", naoccA*navirA, naoccA*navirA));
       boost::shared_ptr<Matrix> T1(new Matrix("T1", naoccA, navirA));
       if (reference_ == "RESTRICTED") {
-          t2DiisManager = new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::InCore);
-          t2DiisManager->set_error_vector_size(2, DIISEntry::Matrix, T2.get(), DIISEntry::Matrix, T1.get());
-          t2DiisManager->set_vector_size(2, DIISEntry::Matrix, T2.get(), DIISEntry::Matrix, T1.get());
+          ccsdDiisManager = boost::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::InCore)); 
+          ccsdDiisManager->set_error_vector_size(2, DIISEntry::Matrix, T2.get(), DIISEntry::Matrix, T1.get());
+          ccsdDiisManager->set_vector_size(2, DIISEntry::Matrix, T2.get(), DIISEntry::Matrix, T1.get());
       }
       T2.reset();
       T1.reset();
-      //outfile->Printf("\tAfter DIIS \n");
 
 // head of loop      
 do
@@ -84,6 +82,7 @@ do
    
         // T2 amplitudes
         timer_on("T2 AMPS");
+	//ccsd_t2_amps(ccsdDiisManager);  
 	ccsd_t2_amps();  
         timer_off("T2 AMPS");
 
@@ -114,8 +113,7 @@ do
 while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2); 
 
 //delete
-//t2DiisManager->delete_diis_file();
-delete t2DiisManager;
+ccsdDiisManager->delete_diis_file();
 
 if (conver == 1) {
 outfile->Printf("\n");
