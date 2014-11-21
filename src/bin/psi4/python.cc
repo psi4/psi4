@@ -1194,6 +1194,7 @@ void py_psi_print_variable_map()
     outfile->Printf( "\n\n  Variable Map:");
     outfile->Printf( "\n  ----------------------------------------------------------------------------\n");
     outfile->Printf( "%s\n\n", line.str().c_str());
+}
 
 // Converts a C++ map to a python dict
 // from https://gist.github.com/octavifs/5362297

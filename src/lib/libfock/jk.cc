@@ -88,7 +88,8 @@ boost::shared_ptr<JK> JK::build_JK()
     } else if (options.get_str("SCF_TYPE") == "DF") {
 
         boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(), 
-            "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT", options.get_str("BASIS"));
+            "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT",
+            options.get_str("BASIS"), primary->has_puream());
 
         DFJK* jk = new DFJK(primary,auxiliary);
 
@@ -112,7 +113,8 @@ boost::shared_ptr<JK> JK::build_JK()
     } else if (options.get_str("SCF_TYPE") == "FAST_DF") {
 
         boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(), 
-            "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT", options.get_str("BASIS"));
+            "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT",
+            options.get_str("BASIS"), primary->has_puream());
 
         FastDFJK* jk = new FastDFJK(primary,auxiliary);
 
