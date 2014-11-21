@@ -82,6 +82,9 @@ public:
         /// Map containing current energies
         std::map<std::string, double> globals;
 
+        /// Map containing current arrays
+        std::map<std::string, boost::shared_ptr<Matrix> > arrays;
+
         /// Number of threads per process
         int get_n_threads() const;
         void set_n_threads(int nthread);
