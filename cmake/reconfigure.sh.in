@@ -1,5 +1,0 @@
-#!/usr/bin/env sh
-
-export CXX = @CMAKE_CXX_COMPILER@
-
-@CONFIGURE_CMD@

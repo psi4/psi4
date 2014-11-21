@@ -48,47 +48,7 @@
 #include <limits.h>
 #include <cmath>
 
-#if FC_SYMBOL==2
-#define F_DSWAP dswap_
-#define F_DAXPY daxpy_
-#define F_DCOPY dcopy_
-#define F_DROT drot_
-#define F_DSCAL dscal_
-#define F_DDOT  ddot_
-#define F_DASUM  dasum_ 
-#define F_DNRM2  dnrm2_
-#define F_IDAMAX  idamax_
-#elif FC_SYMBOL==1
-#define F_DSWAP dswap
-#define F_DAXPY daxpy
-#define F_DCOPY dcopy
-#define F_DROT drot
-#define F_DSCAL dscal
-#define F_DDOT  ddot
-#define F_DASUM  dasum 
-#define F_DNRM2  dnrm2
-#define F_IDAMAX  idamax
-#elif FC_SYMBOL==3
-#define F_DSWAP DSWAP
-#define F_DAXPY DAXPY
-#define F_DCOPY DCOPY
-#define F_DROT DROT
-#define F_DSCAL DSCAL
-#define F_DDOT  DDOT
-#define F_DASUM  DASUM
-#define F_DNRM2  DNRM2
-#define F_IDAMAX  IDAMAX
-#elif FC_SYMBOL==4
-#define F_DSWAP DSWAP_
-#define F_DAXPY DAXPY_
-#define F_DCOPY DCOPY_
-#define F_DROT DROT_
-#define F_DSCAL DSCAL_
-#define F_DDOT  DDOT_
-#define F_DASUM  DASUM_
-#define F_DNRM2  DNRM2_
-#define F_IDAMAX  IDAMAX_
-#endif
+#include "blas_intfc_mangle.h"
 
 extern "C" {
 
