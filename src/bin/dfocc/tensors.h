@@ -152,8 +152,10 @@ class Tensor2d
   void release();
   void set(int i, int j, double value);
   void set(double **A);
+  void set(double *A);
   void set(SharedTensor2d &A);
   void set(SharedMatrix A);
+  void set2(SharedMatrix A);
   void set(SharedTensor1d &A);
   // A2d_[n][ij] = A(i,j)
   void set_row(const SharedTensor2d &A, int n);
@@ -253,6 +255,8 @@ class Tensor2d
   double **to_block_matrix();
   double *to_lower_triangle();
   void to_shared_matrix(SharedMatrix A);
+  void to_matrix(SharedMatrix A);
+  void to_pointer(double *A);
   // mgs: orthogonalize with a Modified Gram-Schmid algorithm
   void mgs();
   // gs: orthogonalize with a Classical Gram-Schmid algorithm

@@ -48,20 +48,18 @@ outfile->Printf("  ----   -------------    ---------------    ----------   -----
       conver = 1; // Assuming that the iterations will converge
       Eccsd_old = Eccsd;
 
-      /*
       // DIIS
-      double **T2 = block_matrix(naoccA*navirA, naoccA*navirA);
-      double **T1 = block_matrix(naoccA, navirA);
+      //outfile->Printf("\tBefore DIIS \n");
+      boost::shared_ptr<Matrix> T2(new Matrix("T2", naoccA*navirA, naoccA*navirA));
+      boost::shared_ptr<Matrix> T1(new Matrix("T1", naoccA, navirA));
       if (reference_ == "RESTRICTED") {
-          t2DiisManager = new DIISManager(cc_maxdiis_, "CCSD DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
-          t2DiisManager->set_error_vector_size(2, DIISEntry::Pointer, T2[0], 
-                                                  DIISEntry::Pointer, T1[0]);
-          t2DiisManager->set_vector_size(2, DIISEntry::Pointer, T2[0], 
-                                            DIISEntry::Pointer, T1[0]);
+          t2DiisManager = new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::InCore);
+          t2DiisManager->set_error_vector_size(2, DIISEntry::Matrix, T2.get(), DIISEntry::Matrix, T1.get());
+          t2DiisManager->set_vector_size(2, DIISEntry::Matrix, T2.get(), DIISEntry::Matrix, T1.get());
       }
-      free_block(T2);
-      free_block(T1);
-      */
+      T2.reset();
+      T1.reset();
+      //outfile->Printf("\tAfter DIIS \n");
 
 // head of loop      
 do
@@ -116,7 +114,8 @@ do
 while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2); 
 
 //delete
-//delete t2DiisManager;
+//t2DiisManager->delete_diis_file();
+delete t2DiisManager;
 
 if (conver == 1) {
 outfile->Printf("\n");
