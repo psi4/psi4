@@ -2,7 +2,5 @@
 * DF-OLCCD
 * DF-OCCD
 * Consider perm symmetry in RHF T2(1) in t2_1st_gen.cc
-* Re-write symmetrize() function
 * Implement CROP for amplitudes
-* T1 Diagnostic
 * It is possible to write a lower mem algorithm for Wijam
