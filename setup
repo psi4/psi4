@@ -411,6 +411,7 @@ def gen_cmake_command(args):
             print('you have to choose between --mkl=[{sequential,parallel,cluster}]')
             sys.exit(1)
         command += ' -DMKL_FLAG="-mkl=%s"' % args.mkl
+        command += ' -DMKL_FLAG_SET=ON'
         command += ' -DENABLE_AUTO_BLAS=OFF'
         command += ' -DENABLE_AUTO_LAPACK=OFF'
 
