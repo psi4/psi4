@@ -19,7 +19,6 @@ CMakeLists.txt.user
 
 # Hidden files (swap)
 .*
-*.in
 *.out
 
 # Compiled Python files. Regenerated automatically
@@ -57,6 +56,9 @@ svn_source
 psi4.xcodeproj
 do-configure*
 update_debug_latest.sh
+
+# Auto-generatred matplotlib scripts
+doc/cloc/matplotlib
 
 #Files created by Global Arrays when it is built
 include/armci.h
@@ -98,6 +100,9 @@ bin/adjust.x
 bin/collisions.x
 bin/ga-config
 
+# Ignore cdash.py and cdash.run scripts
+cdash/cdash.py
+cdash/cdash.run
 
 # Ignore Jet's Vagrantfile (might be added later for auto testing)
 Vagrantfile

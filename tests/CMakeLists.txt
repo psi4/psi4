@@ -1,11 +1,19 @@
 #These tests aren't set-up the same way as the others
 set(TestsNotSetUpRight cfour optking testgrendel)
 
-#In order to get CTest to run tests in three seperate categories:
+# In order to get CTest to run tests in separate categories,
+# labels are used. All tests must carry the label "psi".
+# 
+# The following labels are defined:
 #
-#  LongTests=  The (as of right now) 4 really long tests
-#  Tests=      Every test in the test folder less LongTests
-#  QuickTests= Proper subset of tests deemed to run quickly
+#  longtests   = The (as of right now) 4 really long tests
+#  longertests = Every test in the test folder less longtests
+#  quicktests  = Proper subset of tests deemed to run quickly
+#
+# It is possible to specify more than one label per test. CMake
+# expects a ;-separated list, e.g. "psi;quicktests;scf"
+# It is mandatory that any test carries a length label!
+# It is suggested to add at least a second label to specify the method tested.
 #
 #  We use ctest -I [start,end] where start is the test number we start with
 #  and end is the test number we end with.  We will then use math to back out
@@ -15,96 +23,254 @@ set(TestsNotSetUpRight cfour optking testgrendel)
 #  In order to ensure that this works properly, please add your tests to the
 #  appropriate variables given below
 
-
-
-
-set(ADCLong adc1 adc2)
-
-set(CastUpShort castup1)
-set(CastUpLong castup2 castup3)
-set(CCShort cc1 cc2 cc3 cc4 cc8 cc8a cc12 cc15 cc16 cc17 cc18 cc19 cc23 cc24 cc28 cc32 cc49 )
-set(CCLong cc10 cc11 cc13 cc13a cc14 cc21 cc22 cc25 cc26 cc27 cc29 cc30 cc31 cc33 cc34 cc35 cc36 cc37 cc38 cc39 cc40 cc41 cc42 cc43 cc44 cc45 cc46 cc47 cc48 cc4a cc50 cc51 cc52 cc53 cc54 cc55 cc5a cc6 cc8b cc8c cc9 cc9a)
-
-set(CDShort cdomp2-1 cdomp2-2)
-#No long CD jobs
-#No CEPAShort
-set(CEPALong cepa0-grad1 cepa0-grad2 cepa1 cepa2 cepa3)
-set(CISDShort cisd-h2o+-0 cisd-opt-fd)
-set(CISDLong cisd-h2o+-1 cisd-h2o+-2 cisd-h2o-clpse cisd-sp cisd-sp-2)
-
-set(DCFTShort dcft-grad1 dcft1 dcft2 dcft3 dcft4)
-set(DCFTLong dcft5 dcft6 dcft7)
-set(DFShort dfmp2-1 dfomp2-1 dfomp2-2)
-set(DFLong dfmp2-2 dfmp2-3 dfmp2-4 dfomp2-3 dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfscf-bz2)
-set(DFTShort dft1)
-set(DFTLong dft1-alt dft2 dft3 dft-b2plyp dft-dldf dft-freq dft-grad dft-pbe0-2 dft-psivar)
-#No Docs Short
-set(DocsLong docs-bases docs-dft docs-psimod)
-
-set(FCIShort fci-dipole)
-set(FCILong fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2)
-set(FDLong fd-freq-energy fd-freq-energy-large fd-freq-gradient fd-gradient)
-set(FNOCCShort fnocc2 fnocc4)
-set(FNOCCLong fnocc1 fnocc3) 
-
-set(MCSCFShort mcscf1)
-set(MCSCFLong mcscf2 mcscf3)
-set(MintsShort mints1 mints2 mints9)
-set(MintsLong mints3 mints4 mints5 mints6 mints8)
-set(MP2Short mp2_5-grad1 mpn-bh)
-set(MP2Long mp2-1 mp2_5-grad2 mp2-grad1 mp2-grad2 mp3-grad1 mp3-grad2)
-
-set(OCEPAShort ocepa1 ocepa-grad2)
-set(OCEPALong ocepa2 ocepa3 ocepa-freq1 ocepa-grad1)
-set(OMPShort omp2-2 omp3-1 omp2_5-2 omp2-grad1)
-set(OMPLong omp2-1 omp2-3 omp2-4 omp2-5 omp2_5-1 omp2_5-grad1 omp2_5-grad2 omp2-grad2 omp3-2 omp3-3 omp3-4 omp3-5 omp3-grad1 omp3-grad2) 
-set(OPTShort opt1 opt1-fd)
-set(OPTLong opt2 opt2-fd opt3 opt4 opt5 opt6 opt7 opt-lindep-change)
-
-#No props short
-set(PropsLong props1 props2 props3)
-set(PSIMRCCShort psimrcc-sp1)
-set(PSIMRCCLong psimrcc-ccsd_t-1 psimrcc-ccsd_t-2 psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-fd-freq1 psimrcc-fd-freq2 psimrcc-pt2)
-set(PYWrapShort pywrap-db1 pywrap-db2 pywrap-cbs1 pywrap-all pywrap-alias pywrap-molecule pywrap-freq-e-sowreap)
-set(PYWrapLong pywrap-basis pywrap-checkrun-convcrit pywrap-checkrun-rhf pywrap-checkrun-rohf pywrap-checkrun-uhf pywrap-db3 pywrap-opt-sowreap)
-
-set(RASCIShort rasci-h2o)
-set(RASCILong rasci-c2-active rasci-ne)
-
-set(SAPTShort sapt1)
-set(SAPTLong  sapt3 sapt5)
-set(SCFShort scf1 scf2 scf3 scf5 scf-guess-read)
-set(SCFLong scf11-freq-from-energies scf4 scf6 scf-bz2)
-
-set(TutorialShort tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt tu4-h2o-freq tu5-sapt )
-set(TutorialLong tu6-cp-ne2)
-set(MISCShort ci-multi sad1 matrix1 gibbs)
-set(MISCLong frac ghosts large_atoms min_input mom psithon1 psithon2 pubchem1 zaptn-nh2)
-
-set(CASShort casscf-fzc-sp casscf-sp)
-
-set(AutoTestSubjects cc8 cc9 cc11 cc18 cc19 cc28 cc29 cc30 cc31 cc34 cc36 cc37 cc38 cc39 cc40 cc41 cc42 cc43 cc46 cc47 cc48 cc49 cc50 cc51 cc52 cc55)
-
-###### END test definitions ################
-
-#These are the truly long tests
-set(LongTests mp2-def2 sapt2 sapt4 fd-freq-gradient-large)
-
-#These are the tests that will become the quicktest target
-set(QuickTests ${CastUpShort} ${CCShort} ${CDShort} ${CISDShort} ${DCFTShort}
-    ${DFShort} ${DFTShort} ${FCIShort} ${FNOCCShort} ${MCSCFShort}
-${MintsShort} ${MP2Short} ${OCEPAShort} ${OMPShort} ${OPTShort}
-${PSIMRCCShort} ${PYWrapShort} ${RASCIShort} ${SAPTShort} ${SCFShort}
-${TutorialShort} ${MISCShort} ${CASShort}
-)
-
-#And these are the rest of the tests
-set(LongerTests ${ADCLong} ${CastUpLong} ${CCLong} ${CEPALong} ${CISDLong}
-${DCFTLong} ${DFLong} ${DFTLong} ${DocsLong} ${FCILong} ${FDLong} ${FNOCCLong}
-${MCSCFLong} ${MintsLong} ${MP2Long} ${OCEPALong} ${OMPLong}
-${OPTLong} ${PropsLong} ${PSIMRCCLong} ${PYWrapLong} ${RASCILong} ${SAPTLong}
-${SCFLong} ${TutorialLong} ${MISCLong}
-)
+add_subdirectory(adc1)
+add_subdirectory(adc2)
+add_subdirectory(casscf-fzc-sp)
+add_subdirectory(casscf-sp)
+add_subdirectory(castup1)
+add_subdirectory(castup2)
+add_subdirectory(castup3)
+add_subdirectory(cc1)
+add_subdirectory(cc10)
+add_subdirectory(cc11)
+add_subdirectory(cc12)
+add_subdirectory(cc13)
+add_subdirectory(cc13a)
+add_subdirectory(cc14)
+add_subdirectory(cc15)
+add_subdirectory(cc16)
+add_subdirectory(cc17)
+add_subdirectory(cc18)
+add_subdirectory(cc19)
+add_subdirectory(cc2)
+add_subdirectory(cc21)
+add_subdirectory(cc22)
+add_subdirectory(cc23)
+add_subdirectory(cc24)
+add_subdirectory(cc25)
+add_subdirectory(cc26)
+add_subdirectory(cc27)
+add_subdirectory(cc28)
+add_subdirectory(cc29)
+add_subdirectory(cc3)
+add_subdirectory(cc30)
+add_subdirectory(cc31)
+add_subdirectory(cc32)
+add_subdirectory(cc33)
+add_subdirectory(cc34)
+add_subdirectory(cc35)
+add_subdirectory(cc36)
+add_subdirectory(cc37)
+add_subdirectory(cc38)
+add_subdirectory(cc39)
+add_subdirectory(cc4)
+add_subdirectory(cc40)
+add_subdirectory(cc41)
+add_subdirectory(cc42)
+add_subdirectory(cc43)
+add_subdirectory(cc44)
+add_subdirectory(cc45)
+add_subdirectory(cc46)
+add_subdirectory(cc47)
+add_subdirectory(cc48)
+add_subdirectory(cc49)
+add_subdirectory(cc4a)
+#add_subdirectory(cc5)
+add_subdirectory(cc50)
+add_subdirectory(cc51)
+add_subdirectory(cc52)
+add_subdirectory(cc53)
+add_subdirectory(cc54)
+add_subdirectory(cc55)
+add_subdirectory(cc5a)
+add_subdirectory(cc6)
+add_subdirectory(cc8)
+add_subdirectory(cc8a)
+add_subdirectory(cc8b)
+add_subdirectory(cc8c)
+add_subdirectory(cc9)
+add_subdirectory(cc9a)
+add_subdirectory(cdomp2-1)
+add_subdirectory(cdomp2-2)
+add_subdirectory(cepa0-grad1)
+add_subdirectory(cepa0-grad2)
+add_subdirectory(cepa1)
+add_subdirectory(cepa2)
+add_subdirectory(cepa3)
+add_subdirectory(ci-multi)
+add_subdirectory(cisd-h2o+-0)
+add_subdirectory(cisd-h2o+-1)
+add_subdirectory(cisd-h2o+-2)
+add_subdirectory(cisd-h2o-clpse)
+add_subdirectory(cisd-opt-fd)
+add_subdirectory(cisd-sp)
+add_subdirectory(cisd-sp-2)
+add_subdirectory(dcft-grad1)
+add_subdirectory(dcft1)
+add_subdirectory(dcft2)
+add_subdirectory(dcft3)
+add_subdirectory(dcft4)
+add_subdirectory(dcft5)
+add_subdirectory(dcft6)
+add_subdirectory(dcft7)
+add_subdirectory(dcft8)
+add_subdirectory(dfmp2-1)
+add_subdirectory(dfmp2-2)
+add_subdirectory(dfmp2-3)
+add_subdirectory(dfmp2-4)
+add_subdirectory(dfmp2-grad1)
+add_subdirectory(dfmp2-grad2)
+add_subdirectory(dfmp2-grad3)
+add_subdirectory(dfmp2-grad4)
+add_subdirectory(dfomp2-1)
+add_subdirectory(dfomp2-2)
+add_subdirectory(dfomp2-3)
+add_subdirectory(dfomp2-4)
+add_subdirectory(dfomp2-grad1)
+add_subdirectory(dfomp2-grad2)
+add_subdirectory(dfscf-bz2)
+add_subdirectory(dft-b2plyp)
+add_subdirectory(dft-dldf)
+add_subdirectory(dft-freq)
+add_subdirectory(dft-grad)
+add_subdirectory(dft-pbe0-2)
+add_subdirectory(dft-psivar)
+add_subdirectory(dft1)
+add_subdirectory(dft1-alt)
+add_subdirectory(dft2)
+add_subdirectory(dft3)
+add_subdirectory(docs-bases)
+add_subdirectory(docs-dft)
+add_subdirectory(docs-psimod)
+add_subdirectory(fci-dipole)
+add_subdirectory(fci-h2o)
+add_subdirectory(fci-h2o-2)
+add_subdirectory(fci-h2o-fzcv)
+add_subdirectory(fci-tdm)
+add_subdirectory(fci-tdm-2)
+add_subdirectory(fd-freq-energy)
+add_subdirectory(fd-freq-energy-large)
+add_subdirectory(fd-freq-gradient)
+add_subdirectory(fd-freq-gradient-large)
+add_subdirectory(fd-gradient)
+add_subdirectory(fnocc1)
+add_subdirectory(fnocc2)
+add_subdirectory(fnocc3)
+add_subdirectory(fnocc4)
+add_subdirectory(frac)
+add_subdirectory(ghosts)
+add_subdirectory(gibbs)
+add_subdirectory(large_atoms)
+add_subdirectory(matrix1)
+add_subdirectory(mcscf1)
+add_subdirectory(mcscf2)
+add_subdirectory(mcscf3)
+add_subdirectory(min_input)
+add_subdirectory(mints1)
+add_subdirectory(mints2)
+add_subdirectory(mints3)
+add_subdirectory(mints4)
+add_subdirectory(mints5)
+add_subdirectory(mints6)
+add_subdirectory(mints8)
+add_subdirectory(mints9)
+add_subdirectory(mom)
+add_subdirectory(mp2-1)
+add_subdirectory(mp2-def2)
+add_subdirectory(mp2-grad1)
+add_subdirectory(mp2-grad2)
+add_subdirectory(mp2_5-grad1)
+add_subdirectory(mp2_5-grad2)
+add_subdirectory(mp3-grad1)
+add_subdirectory(mp3-grad2)
+add_subdirectory(mpn-bh)
+add_subdirectory(ocepa-freq1)
+add_subdirectory(ocepa-grad1)
+add_subdirectory(ocepa-grad2)
+add_subdirectory(ocepa1)
+add_subdirectory(ocepa2)
+add_subdirectory(ocepa3)
+add_subdirectory(omp2-1)
+add_subdirectory(omp2-2)
+add_subdirectory(omp2-3)
+add_subdirectory(omp2-4)
+add_subdirectory(omp2-5)
+add_subdirectory(omp2-grad1)
+add_subdirectory(omp2-grad2)
+add_subdirectory(omp2_5-1)
+add_subdirectory(omp2_5-2)
+add_subdirectory(omp2_5-grad1)
+add_subdirectory(omp2_5-grad2)
+add_subdirectory(omp3-1)
+add_subdirectory(omp3-2)
+add_subdirectory(omp3-3)
+add_subdirectory(omp3-4)
+add_subdirectory(omp3-5)
+add_subdirectory(omp3-grad1)
+add_subdirectory(omp3-grad2)
+add_subdirectory(opt-lindep-change)
+add_subdirectory(opt1)
+add_subdirectory(opt1-fd)
+add_subdirectory(opt2)
+add_subdirectory(opt2-fd)
+add_subdirectory(opt3)
+add_subdirectory(opt4)
+add_subdirectory(opt5)
+add_subdirectory(opt6)
+add_subdirectory(opt7)
+add_subdirectory(props1)
+add_subdirectory(props2)
+add_subdirectory(props3)
+add_subdirectory(psimrcc-ccsd_t-1)
+add_subdirectory(psimrcc-ccsd_t-2)
+add_subdirectory(psimrcc-ccsd_t-3)
+add_subdirectory(psimrcc-ccsd_t-4)
+add_subdirectory(psimrcc-fd-freq1)
+add_subdirectory(psimrcc-fd-freq2)
+add_subdirectory(psimrcc-pt2)
+add_subdirectory(psimrcc-sp1)
+add_subdirectory(psithon1)
+add_subdirectory(psithon2)
+add_subdirectory(pubchem1)
+add_subdirectory(pywrap-alias)
+add_subdirectory(pywrap-all)
+add_subdirectory(pywrap-basis)
+add_subdirectory(pywrap-cbs1)
+add_subdirectory(pywrap-checkrun-convcrit)
+add_subdirectory(pywrap-checkrun-rhf)
+add_subdirectory(pywrap-checkrun-rohf)
+add_subdirectory(pywrap-checkrun-uhf)
+add_subdirectory(pywrap-db1)
+add_subdirectory(pywrap-db2)
+add_subdirectory(pywrap-db3)
+add_subdirectory(pywrap-freq-e-sowreap)
+add_subdirectory(pywrap-molecule)
+add_subdirectory(pywrap-opt-sowreap)
+add_subdirectory(rasci-c2-active)
+add_subdirectory(rasci-h2o)
+add_subdirectory(rasci-ne)
+add_subdirectory(sad1)
+add_subdirectory(sapt1)
+add_subdirectory(sapt2)
+add_subdirectory(sapt3)
+add_subdirectory(sapt4)
+add_subdirectory(sapt5)
+add_subdirectory(scf-bz2)
+add_subdirectory(scf-guess-read)
+add_subdirectory(scf1)
+add_subdirectory(scf11-freq-from-energies)
+add_subdirectory(scf2)
+add_subdirectory(scf3)
+add_subdirectory(scf4)
+add_subdirectory(scf5)
+add_subdirectory(scf6)
+add_subdirectory(tu1-h2o-energy)
+add_subdirectory(tu2-ch2-energy)
+add_subdirectory(tu3-h2o-opt)
+add_subdirectory(tu4-h2o-freq)
+add_subdirectory(tu5-sapt)
+add_subdirectory(tu6-cp-ne2)
+add_subdirectory(zaptn-nh2)
 
 ###### START external-executable-dependent tests ################
 
@@ -117,132 +283,39 @@ ${SCFLong} ${TutorialLong} ${MISCLong}
 
 # <<<  DFTD3  >>>
 
-set(DFTD3Short dftd3-energy)
-set(DFTD3Long dftd3-grad dftd3-psithon2)
-
-find_program (DFTD3_EXECUTABLE
+find_program(DFTD3_EXECUTABLE
              NAMES dftd3
              DOC "Path to Grimme's dftd3 executable")
 
 if(DFTD3_EXECUTABLE)
-    list(APPEND QuickTests ${DFTD3Short})
-    list(APPEND LongerTests ${DFTD3Long})
-    message("-- dftd3 executable for interfaced DFTD3 found. Test cases added.")
+   add_subdirectory(dftd3)
+   message(STATUS "dftd3 executable for interfaced DFTD3 found. Test cases added.")
 endif()
 
 # <<<  MRCC  >>>
 
-set(MRCCShort mrcc-ccsdt mrcc-ccsd_t_)
-set(MRCCLong mrcc-ccsdt_q_ mrcc-optfreq)
-
-find_program (MRCC_EXECUTABLE
+find_program(MRCC_EXECUTABLE
              NAMES dmrcc
              DOC "Path to Kallay's mrcc executable")
 
 if(MRCC_EXECUTABLE)
-    list(APPEND QuickTests ${MRCCShort})
-    list(APPEND LongerTests ${MRCCLong})
-    message("-- dmrcc executable for interfaced MRCC found. Test cases added.")
+   add_subdirectory(mrcc)
+   message(STATUS "dmrcc executable for interfaced MRCC found. Test cases added.")
 endif()
 
 # <<<  CFOUR  >>>
 
-set(CFOURShort cfour-sp-uhf-mp2 cfour-sp-rohf-scf cfour-sp-rhf-ccsd_t_-ecc cfour-opt-rhf-scf cfour-psi-rhf-scsmp2 cfour-pywrap-cbs1)
-set(CFOURLong cfour-puream cfour-mints5 cfour-mints5-grad cfour-kw-1 cfour-kw-2 cfour-kw-3 cfour-kw-4 cfour-kw-5 cfour-kw-6 cfour-kw-7 cfour-kw-8 cfour-psi-ghost-grad cfour-scf4 cfour-mp2-1 cfour-pywrap-db1 cfour-pywrap-basis cfour-dfmp2-1 cfour-sp-rhf-scf cfour-sp-rhf-mp2 cfour-sp-rhf-ccsd cfour-sp-rhf-ccsd-ao cfour-sp-rhf-ccsd_t_ cfour-sp-rhf-ccsd_t_-ao cfour-sp-rhf-ccsd_t_-ao-ecc cfour-sp-rhf-ccsd_t_-fc cfour-sp-rhf-cc3 cfour-sp-rhf-ccsdt cfour-sp-uhf-scf cfour-sp-uhf-ccsd cfour-sp-uhf-ccsd_t_ cfour-sp-uhf-ccsd_t_-ao cfour-sp-uhf-ccsd_t_-ao-ecc cfour-sp-uhf-ccsd_t_-ecc cfour-sp-uhf-cc3 cfour-sp-uhf-ccsdt cfour-sp-rohf-mp2-sc cfour-sp-rohf-mp4-sc cfour-sp-rohf-ccsd cfour-sp-rohf-ccsd_t_ cfour-sp-rohf-ccsdt cfour-sp-rohf-ccsd-ao cfour-sp-rohf-ccsd_t_-ao cfour-sp-rohf-ccsd_t_-ao-ecc cfour-sp-rohf-ccsd_t_-fc cfour-opt-rhf-mp2 cfour-opt-rhf-ccsd_t_ cfour-opt-rhf-ccsd_t_-ecc cfour-psi-a24-grad cfour-psi-uhf-scsmp2 cfour-psi-rohf-scsmp2 cfour-psi-rhf-mp3 cfour-psi-uhf-mp3 cfour-psi-mp4)
-
-find_program (CFOUR_EXECUTABLE
+find_program(CFOUR_EXECUTABLE
              NAMES xcfour
              DOC "Path to Stanton and Gauss's xcfour executable")
 
 if(CFOUR_EXECUTABLE)
-    list(APPEND QuickTests ${CFOURShort})
-    list(APPEND LongerTests ${CFOURLong})
-    message("-- xcfour executable for interfaced CFOUR found. Test cases added.")
+   add_subdirectory(cfour)
+   message(STATUS "xcfour executable for interfaced CFOUR found. Test cases added.")
 endif()
 
 ###### END external-executable-dependent tests ################
 
-set(TestSet ${LongTests} ${QuickTests} ${LongerTests})
-
-list(LENGTH TestSet NumberOfTests)
-list(LENGTH LongTests NLong)
-list(LENGTH QuickTests NShort)
-MATH(EXPR Start "${NLong} +1")
-MATH(EXPR Stop "${NLong} + ${NShort}")
-
-add_custom_target(longtests ${CMAKE_CTEST_COMMAND} -I 1,${NLong})
-add_custom_target(quicktests ${CMAKE_CTEST_COMMAND} -I ${Start},${Stop})
-add_custom_target(tests ${CMAKE_CTEST_COMMAND} -I ${Start},${NumberOfTests})
-
-
-#The commands below this point are used to set up cmake's test suite with
-#the info given up to this point
-
-#This is the psi command to actually run the tests
-set(PSIEXE ${CMAKE_BINARY_DIR}/bin/psi4)
-#This is where the test directories live
-set(TESTDIR ${CMAKE_CURRENT_SOURCE_DIR})
-#This is the perl script that we call, to call the psi, to run the tests
-set(TESTEXE ${TESTDIR}/runtest.py)
-
-#Finally run these beasts
-set(LOGFILE ${CMAKE_BINARY_DIR}/testresults.log)
-
-find_package(Perl QUIET)
 if(NOT PERL_FOUND)
-   message(WARNING "Perl was not found. Some Coupled Cluster test cases will
-not be thoroughly checked.")
+   message(WARNING "Perl was not found. Some Coupled Cluster test cases will not be thoroughly checked.")
 endif()
-
-# Declare each test as a possible test target even though no one will likely
-#   want to run individual tests. In the end, makes our job easier.
-set(index 1)
-foreach(Tests2Run ${TestSet})
-
-    # Check if a test case from subdirectory (ext-exec-dep)
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c 
-        "pieces = '${Tests2Run}'.partition('-'); print '%s;%s' % (pieces[0], pieces[2]) if pieces[0] in ['dftd3', 'mrcc', 'cfour'] else ''"
-        OUTPUT_VARIABLE TEST_PIECES OUTPUT_STRIP_TRAILING_WHITESPACE)
-    list(LENGTH TEST_PIECES LEN_PIECES)
-
-    # Directory the test will be run from and in
-    if(${LEN_PIECES} EQUAL 2)
-        list(GET TEST_PIECES 0 SubDir)
-        list(GET TEST_PIECES 1 TestName)
-        set(TEST_SRC_DIR ${TESTDIR}/${SubDir}/${TestName})
-        set(TEST_RUN_DIR ${CMAKE_BINARY_DIR}/tests/${SubDir}/${TestName})
-    else() 
-        set(TEST_SRC_DIR ${TESTDIR}/${Tests2Run})
-        set(TEST_RUN_DIR ${CMAKE_BINARY_DIR}/tests/${Tests2Run})
-    endif()
-
-    # Generic setup
-    file(MAKE_DIRECTORY ${TEST_RUN_DIR})
-    set(INPUTFILE ${TEST_SRC_DIR}/input.dat)
-    set(OUTFILE ${TEST_RUN_DIR}/output.dat)
-
-    # Turn on psitest.pl if eligible 
-    set(AUTOTEST false)
-    list(FIND AutoTestSubjects ${Tests2Run} InThrall)
-    if(NOT(${InThrall} EQUAL -1) AND ${PERL_FOUND})
-        set(AUTOTEST true)
-    endif()
-
-    # Add (serial) target for each test case
-    add_test(
-        NAME ${Tests2Run}
-        WORKING_DIRECTORY ${TEST_RUN_DIR}
-        COMMAND ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE})
-    add_custom_target(${Tests2Run} ${CMAKE_CTEST_COMMAND} -I ${index},${index})
-    set_tests_properties(${Tests2Run} PROPERTIES DEPENDS ${PSIEXE})
-
-    #In theory would like to make sure all tests run in parallel as well
-    #but....most do not right now...
-    if( MPI_FOUND AND FALSE)
-        add_test(
-            NAME MPI-${Tests2Run}
-            WORKING_DIRECTORY ${RUNDIR}
-            COMMAND mpirun -n 2 ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE})
-    endif()
-    math(EXPR index "${index}+1")
-endforeach(Tests2Run)

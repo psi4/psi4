@@ -1,118 +1,148 @@
-project(psi4)
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
-enable_language(Fortran)
+# Declare project name and programming languages
+project(psi4 CXX C Fortran)
 
-# cmake modules are relative to this file
-get_filename_component(ROOT_SRC_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
-set(CMAKE_MODULE_PATH "${ROOT_SRC_DIR}/cmake/")
+# Custom CMake modules location
+list(APPEND CMAKE_MODULE_PATH
+     ${CMAKE_SOURCE_DIR}/cmake
+     ${CMAKE_SOURCE_DIR}/cmake/compilers
+     ${CMAKE_SOURCE_DIR}/cmake/math
+     ${CMAKE_SOURCE_DIR}/cmake/testing
+     )
 
-#
-# Command line options
-#
-set(ALL_USEROPTS "")
-set(EMPTY "\"\"")
+#  Options  
+option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                         OFF)
+option(ENABLE_MPI            "Enable MPI parallelization"                  OFF)
+option(ENABLE_OMP            "Enable OpenMP parallelization"               ON)
+option(ENABLE_UNIT_TESTS     "Enable compilation of unit test suite"       OFF)
+option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"             ON)
+option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"           ON)
+option(ENABLE_ACCELERATE     "Enable use of Mac OS X Accelerate Framework" OFF)
+option(ENABLE_CSR            "Enable MKL compressed sparse row"            OFF) 
+option(ENABLE_SCALAPACK      "Enable SCALAPACK"                            OFF)
+option(ENABLE_SCALASCA       "Enable scalasca profiler mode"               OFF)
+option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF)
+option(ENABLE_STATIC_LINKING "Enable static libraries linking"             OFF)
+option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
+option(ENABLE_PLUGINS        "Enable plugins"                              ON)
+option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
+option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
+# Options for dashboard builds
+option(ENABLE_CODE_COVERAGE  "Enable code coverage"                        OFF)
+option(ENABLE_MEMCHECK       "Enable Valgrind memory check"                OFF)
+option(ENABLE_ASAN           "Enable address sanitizer"                    OFF)
+option(ENABLE_MSAN           "Enable memory sanitizer"                     OFF)
+option(ENABLE_TSAN           "Enable thread sanitizer"                     OFF)
+option(ENABLE_UBSAN          "Enable undefined behaviour sanitizer"        OFF)
 
-include(cmake/GetValue.cmake)
-#OPTION CXXFLAGS        Extra C++ compiler flags to be used in compilation (string)
-get_value(useroptCXX_FLAGS CXXFLAGS   ${EMPTY})
-#OPTION F77FLAGS        Extra Fortran compiler flags to be used in compilation (string)
-get_value(useroptF77_FLAGS F77FLAGS   ${EMPTY})
-#OPTION F77SYMBOL       The Fortran compiler name mangling convention, used for linking external Fortran libraries, such as BLAS. Values are lcu (lower case with traling underscore), lc (lower case), ucu (upper case with trailing underscore), uc (upper case). If omitted CMake will detect it automatically if a Fortran compiler is present, if not it will use lcu. (string)
-get_value(useroptF77SYMBOL F77SYMBOL  "detect")
-#OPTION LAPACK Libs          Linker flags to use for Lapack (and BLAS), instead of detecting system library (string)
-get_value(useroptLAPACKLIBS  LAPACKLIBS   ${EMPTY})
-#OPTION LAPACK Incs          Compiler flags to use for Lapack (and BLAS), instead of detecting system library (string)
-get_value(useroptLAPACKINCS  LAPACKINCS   ${EMPTY})
-#OPTION LD_FLAGS         Extra flags to be used in linking (string)
-get_value(useroptLDFLAGS  LDFLAGS ${EMPTY})
+set(EXTERNAL_LIBS)
 
-#OPTION PREFIX           The installation directory for psi4 (string)
-get_value(CMAKE_INSTALL_PREFIX  PREFIX  "/usr/local/psi4")
-#OPTION PYTHON           Full path to python interpreter to use. If omitted Python will be detected. There should be a corresponding python-config script in this location for Psi to work, i.e. Python development version. (string)
-get_value(useroptPYTHON  PYTHON   ${EMPTY})
-#OPTION USE_SYSTEM_BOOST Whether to use system boost, if detected. False forces Psi to build its own Boost. (boolean)
-get_value(useroptUSE_SYSTEM_BOOST  USE_SYSTEM_BOOST   TRUE)
-#OPTION MAX_AM_ERI    The maximum angular momentum to allow for integrals (1=p,2=d,3=f, etc.).  First and second derivatives are supported up to MAX_AM_ERI-1 and MAX_AM_ERI-2, respectively. (int)
-get_value(useroptLIBINT_MAX_AM  MAX_AM_ERI  5)
+# Include CMake modules as needed
+include(ConfigVersion)
+include(ConfigArchitecture)
+include(ConfigCompilerFlags)
+include(PerTargetCompilerFlags) # This module has to be included **after** ConfigCompilerFlags.cmake
+include(ConfigExternal)
+include(ConfigOMP)
 
-#Not setting ldflags was causing a problem
-if(${useroptLDFLAGS})
-   set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${useroptLDFLAGS}")
+# Math: find BLAS and LAPACK
+set(BLAS_LANG   "CXX")
+set(BLAS_FOUND FALSE)
+set(LAPACK_LANG "CXX")
+set(LAPACK_FOUND FALSE)
+set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
+include(ConfigMath)
+
+include(ConfigMPI)
+include(ConfigExplicitLibs)
+include(ConfigSafeGuards)
+include(GenericMacros)
+#include(BinaryInfo)
+#include(mergestaticlibs)
+include(CheckIncludeFiles)
+include(CheckFunctionExists)
+# Here we look for Perl, Sphinx, Doxygen and LaTeX
+include(ConfigDocumentation) 
+
+# Determine Fortran name mangling, used for external linking
+include(FortranCInterface)
+FortranCInterface_VERIFY(CXX)
+init_FCMangle()
+# This is to use the CMake generated macros and not those based on FC_SYMBOL
+add_definitions(-DUSE_FCMANGLE_H)
+
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+   set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
+   set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+   set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
+else()
+   set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+   set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
 endif()
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${useroptCXX_FLAGS}")
-set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${useroptF77_FLAGS}")
 
-#On Ubuntu -lm needs to be last...
+# Python Detection 
+#find_package(PythonInterp 2.6 REQUIRED)
+#find_package(PythonLibs 2.6 REQUIRED)
+find_package(Python REQUIRED)
+link_directories("${PYTHON_LIBRARIES}")
+include_directories(SYSTEM "${PYTHON_INCLUDE_DIRS}")
+
+# Boost Detection 
+# We need Boost.Python, so this has to come _after_ Python detection
+include(ConfigBoost)
+link_directories("${Boost_LIBRARY_DIRS}")
+include_directories(SYSTEM "${Boost_INCLUDE_DIRS}")
+
+# Append the suffix given from input to all generated executables
+if(EXECUTABLE_SUFFIX)
+   set(CMAKE_EXECUTABLE_SUFFIX "${EXECUTABLE_SUFFIX}")
+   message(STATUS "Suffix ${CMAKE_EXECUTABLE_SUFFIX} will be appended to executables")
+endif()
+
 if(UNIX)
    link_libraries(m)
 endif(UNIX)
 
-# This will be echoed at the end of configure, and also output to a file so the build can be replicated
-set(CONFIGURE_CMD "${CMAKE_COMMAND} ${PROJECT_SOURCE_DIR}")
-foreach(opt ${ALL_USEROPTS})
-    set(CONFIGURE_CMD "${CONFIGURE_CMD} -D${opt}")
-endforeach()
-
-#
-# Psi4 configuration
-#
-set(PSI_VERSION \"4.0\")
-set(PACKAGE_VERSION "4.0git")
-set(PACKAGE_NAME "Psi")
-set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
-set(PACKAGE_BUGREPORT "psicode@users.sourceforge.net")
-
-if( CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR AND NOT MSVC_IDE )
-  message(FATAL_ERROR "In-source builds are not allowed.
-Please create a directory and run cmake from there, passing the path
-to this source directory as the last argument.
-This process created the file `CMakeCache.txt' and the directory `CMakeFiles'.
-Please delete them.")
+#Not setting ldflags was causing a problem
+if(LDFLAGS)
+   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LDFLAGS}")
 endif()
 
-#
-# OpenMP
-#
-find_package(OpenMP)
-if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
+if(ENABLE_PLUGINS)
+   message(STATUS "Plugins support ENABLED")
+endif()   
 
-#
-# Find MPI
-#
-if(DEFINED USEMPI)
-   find_package(MPI REQUIRED)
-   add_definitions(-DHAVE_MPI)
-endif()
+# Dynamic linking header
+check_include_files(dlfcn.h HAVE_DLFCN_H)
+# MKL_Free_Buffers NEEDS TO BE TESTED
+check_function_exists(MKL_Free_Buffers HAVE_MKL) 
 
-include(CheckIncludeFiles)
-check_include_files(dlfcn.h HAVE_DLFCN)
-
-include(CheckFunctionExists)
-check_function_exists(MKL_Free_Buffers HAVE_MKL) # NEEDS TO BE TESTED
-
-
-check_function_exists(erf HAVE_FUNC_ERF)
-#GCC thinks it's funny "building in" types
-#including erf....
-if(CMAKE_COMPILER_IS_GNUCC)
-   set(HAVE_FUNC_ERF TRUE)
+# Detection of erf, __builtin_expect, __builtin_prefetch, __builtin_constant_p
+# This step is skipped for GCC and Clang: they are all defined for but for some reasons not detected by CMake
+if(CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
+   set(HAVE_BUILTIN_EXPECT     TRUE)
+   set(HAVE_BUILTIN_PREFETCH   TRUE)
+   set(HAVE_BUILTIN_CONSTANT_P TRUE)
+   set(HAVE_FUNC_ERF           TRUE)
+else()
+   # Check that __builtin_expect is available
+   check_function_exists(__builtin_expect HAVE_BUILTIN_EXPECT)
+   # Check that __builtin_prefetch is available
+   check_function_exists(__builtin_prefetch HAVE_BUILTIN_PREFETCH)
+   # Check that __builtin_constant_p is available
+   check_function_exists(__builtin_constant_p HAVE_BUILTIN_CONSTANT_P)
+   # Error function
+   check_function_exists(erf HAVE_FUNC_ERF)
 endif()
 
 if(NOT HAVE_FUNC_ERF)
-   message(FATAL_ERROR "ERROR: ERF was not found")
+   message(FATAL_ERROR "ERF was not found")
 endif()
-include(cmake/Restrict.cmake)
-test_restrict(restrict)
 
-if(CMAKE_Fortran_COMPILER)
-    if(DEFINED USEERD)
-       message(WARNING "Building/Using LibERD instead of LibInts!!!!")
-       add_definitions(-DHAVE_ERD)
-    endif()
+if(ENABLE_LIBERD)
+   message(WARNING "Building/Using LibERD instead of LibInts!!!!")
+   add_definitions(-DHAVE_ERD)
 endif()
 
 # Is this needed for the script?
@@ -125,7 +155,6 @@ configure_file(src/bin/psi4/gitversion.py.in src/bin/psi4/gitversion.py)
 # Libint configuration
 # Perhaps move to libint's cmakelists.txt file
 
-set(LIBINT_OPT_AM ${useroptLIBINT_MAX_AM})
 math(EXPR LIBDERIV_OPT_AM1 ${LIBINT_OPT_AM}-1) # A.M. level for 1st derivative ERIs
 math(EXPR LIBDERIV_OPT_AM2 ${LIBINT_OPT_AM}-2) # A.M. level for 2nd derivative ERIs
 math(EXPR LIBINT_NEW_AM ${LIBINT_OPT_AM}*2)
@@ -144,127 +173,8 @@ include_directories(
     ${PROJECT_BINARY_DIR}/src/lib
 )
 
-#
-# BLAS and LAPACK
-#
-if(NOT ${useroptLAPACKLIBS} STREQUAL ${EMPTY})
-    #RMR only have a library check at this time
-    # and then set the variables that would be set by find_package
-    set(LAPACK_LIBRARIES ${useroptLAPACKLIBS})
-    set(LAPACK_INCLUDE_DIR ${useroptLAPACKINCS})
-    message(WARNING "Skipping LAPACK detection and using these linker flags: ${useroptLAPACKLIBS}")
-    set(LAPACK_FOUND TRUE)
-else()
-    find_package(LAPACK REQUIRED)
-endif()
-
-#
-# Fortran (yuk!) for external linking
-#
-if(useroptF77SYMBOL STREQUAL "detect")
-    if(CMAKE_Fortran_COMPILER)
-        include(cmake/FortranCInterface.cmake)
-        get_fc_symbol(FC_SYMBOL)
-    else()
-        set(FC_SYMBOL 2)
-    endif()
-else()
-    # The user told us what to do
-    if(useroptF77SYMBOL STREQUAL "ucu")
-        set(FC_SYMBOL 4)
-    elseif(useroptF77SYMBOL STREQUAL "lcu")
-        set(FC_SYMBOL 2)
-    elseif(useroptF77SYMBOL STREQUAL "uc")
-        set(FC_SYMBOL 3)
-    elseif(useroptF77SYMBOL STREQUAL "uc")
-        set(FC_SYMBOL 1)
-    else()
-        message(FATAL_ERROR "Invalid value ${useroptF77SYMBOL} passed in for the F77SYMBOL variable. Use lc, uc, ucu, or lcu.")
-    endif()
-endif()
-add_definitions(-DFC_SYMBOL=${FC_SYMBOL})
-
-#
-# Python Detection 
-#
-if(NOT useroptPYTHON STREQUAL EMPTY)
-    set(PYTHON_EXECUTABLE ${useroptPYTHON})
-    message(WARNING "Skipping Python detection and using this version: ${useroptPYTHON}")
-else()
-    find_package(PythonInterp 2.6 REQUIRED)
-endif()
-set(PYCONFIG ${PYTHON_EXECUTABLE}-config)
-execute_process(COMMAND ${PYCONFIG} --ldflags  OUTPUT_VARIABLE PYTHON_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND ${PYCONFIG} --includes  OUTPUT_VARIABLE PYTHON_INCLUDE_DIRS OUTPUT_STRIP_TRAILING_WHITESPACE)
-if (("${PYTHON_LIBRARIES}" STREQUAL "") OR ("${PYTHON_INCLUDE_DIRS}" STREQUAL ""))
-    message(FATAL_ERROR "Python development libraries not detected. Make sure that the development version is installed and that 'python-config' exists in the same directory as the python executable.")
-endif()
-# Strip leading whitespace & turn the flags into proper lists
-string(STRIP ${PYTHON_INCLUDE_DIRS} PYTHON_INCLUDE_DIRS)
-string(STRIP ${PYTHON_LIBRARIES} PYTHON_LIBRARIES)
-string(REPLACE "-I" "" PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
-string(REPLACE " " ";" PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
-
-##if(PYLIB STREQUAL "" OR PYINC STREQUAL "")
-##   message(FATAL_ERROR "Python development libraries were not detected. Make sure that the development version "
-##                       "is installed and that python-config exists in the same directory as the python executable.")
-##endif()
-#
-#find_package(PythonLibs REQUIRED)
-include_directories(${PYTHON_INCLUDE_DIRS})
-
-#
-# Boost Detection 
-#
-# N.B. Update boost/CMakeLists.txt if this list of components changes
-set(Boost_USE_STATIC_LIBS ON)
-if(MPI_FOUND)
-  set(Boost_COMPONENTS filesystem python mpi regex serialization system thread )
-else()
-  set(Boost_COMPONENTS filesystem python regex serialization system thread )
-endif()
-if(NOT useroptUSE_SYSTEM_BOOST)
-    message(WARNING "Skipping Boost detection, and forcing Psi to build the bundled version.")
-else()
-    find_package(Boost 1.55.0 COMPONENTS ${Boost_COMPONENTS})
-endif()
-if(NOT Boost_FOUND)
-    # Add the Boost version bundled with Psi4 as a dependency
-    message(WARNING "Boost not found. The pre-packaged version will be built.")
-    # The version bundled with Psi4
-    set(BOOSTVER boost_1_57_0)
-    # Link and include information
-
-	#This is the official cmake boost library macro
-    set(BOOST_LIBRARYDIR ${PROJECT_BINARY_DIR}/boost/${BOOSTVER}/stage/lib)
-    #This is the one that was in use in the PSI4 cmake files and is included
-    #to maintain the scripts in some working order, but the former should
-    #be preferred
-    set(BOOSTLIBDIR ${BOOST_LIBRARYDIR})
-    
-    #Same as for the lib dir above,this is the "real" one
-    set(Boost_INCLUDE_DIR ${PROJECT_BINARY_DIR}/boost/${BOOSTVER})
-    set(Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIR})
-    
-    foreach(component ${Boost_COMPONENTS})
-        set(Boost_LIBRARIES ${Boost_LIBRARIES} "${BOOSTLIBDIR}/libboost_${component}.a")
-    endforeach()
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        set(Boost_LIBRARIES ${Boost_LIBRARIES} -lrt)
-    endif()
-    add_subdirectory(boost)
-    set(Boost_FOUND TRUE)
-endif()
-include_directories(${Boost_INCLUDE_DIRS})
-
-#
 # PThreads
-#
 find_package(Threads)
-#get_cmake_property(_variableNames VARIABLES)
-#foreach (_variableName ${_variableNames})
-#    message(STATUS "${_variableName}=${${_variableName}}")
-#endforeach()
 
 #
 # The location of compiled libraries and executables
@@ -285,19 +195,20 @@ set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2
 #RMR---This is our plugin workaround
 #Here we start a list of plugins
 set(PLUGINS "")
-add_subdirectory(plugins)
-#Add plugins to the libraries Psi depends on
-set(PSILIB ${PSILIB} ${PLUGINS})
+if(ENABLE_PLUGINS)
+   add_subdirectory(plugins)
+   #Add plugins to the libraries Psi depends on
+   set(PSILIB ${PSILIB} ${PLUGINS})
+endif()
 
-
-if(DEFINED USEERD)
+if(ENABLE_LIBERD)
     set(PSILIB ${PSILIB} erd)
     set(JK_ERD ${CMAKE_BINARY_DIR}/lib/liberd.a)
 endif()
 
 #If we have MPI also build the JKFactory library for awesome SCF performance
 if(MPI_FOUND)
-   set(BUILD_JK_FACTORY "FALSE")
+   set(BUILD_JK_FACTORY "TRUE")
 endif()
 
 if(BUILD_JK_FACTORY)
@@ -310,39 +221,22 @@ if(BUILD_JK_FACTORY)
     set(PSILIB ${PSILIB} ${CMAKE_BINARY_DIR}/lib/libga.a)
     set(PSILIB ${PSILIB} ${CMAKE_BINARY_DIR}/lib/libarmci.a)
     set(PSILIB ${PSILIB} oed)
-    if(NOT DEFINED USEERD)
+    if(NOT DEFINED ENABLE_LIBERD)
        set(PSILIB ${PSILIB} erd)
     endif()
     set(PSILIB ${PSILIB} -lmkl_scalapack_lp64 -lmkl_blacs_lp64)
 endif()
 
-#Goodbye python warning messages and boost warning messages...
-#all remaining warnings should be addressed as they are actually caused by
-#poor psi4 coding...
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd47 -wd2196 -wd411 -wd279")
-endif()
+#Add the documentation subdirectory
+add_subdirectory(doc)
 
-
-#Add the doxygen documentation
-add_subdirectory(doc/doxygen)
-
-# Add the sphinx documentation
-add_subdirectory(doc/sphinxman)
-
-#
 # Recursively add source directories
-#
 add_subdirectory(src)
 
-#
 # Add the library directory, for install purposes
-#
 add_subdirectory(lib)
 
-#
 # Handle creation of Makefile for plugins
-#
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 get_property(defs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS)
 foreach(dir ${dirs})
@@ -351,30 +245,32 @@ endforeach()
 foreach(def ${defs})
     set(PLUGIN_DEFINES "-D${def} ${PLUGIN_DEFINES}")
 endforeach()
-string(STRIP ${CMAKE_CXX_FLAGS} CMAKE_CXX_FLAGS)
+set(CXX_FLAGS_PLUGIN "")
+include(ConfigPlugins) # This module has to be included **after** ConfigCompilerFlags.cmake
+string(STRIP ${CXX_FLAGS_PLUGIN} CXX_FLAGS_PLUGIN)
 string(STRIP ${PLUGIN_INCLUDE_DIRECTORIES} PLUGIN_INCLUDE_DIRECTORIES)
 string(STRIP ${PLUGIN_DEFINES} PLUGIN_DEFINES)
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
 
-#
-# Echo the directory information back
-#
-set(RECONFIGURE_PSI "${PROJECT_BINARY_DIR}/reconfigure.sh")
-message("The following command can be used to exactly reproduce this build. It can also be found in ${RECONFIGURE_PSI}:\n")
-message("${CONFIGURE_CMD}\n")
-configure_file(cmake/reconfigure.sh.in reconfigure.sh)
+# Make known that the setup command given and the corresponding CMake
+# line are available in the file setup_command in the build directory
+message(STATUS "Use the commands in setup_command to reproduce this build")
 
-#If we are making boost add it as a dependency
-if(NOT Boost_FOUND)
-   add_dependencies(psi4 ${Boost_LIBRARIES})
+#If we are making Boost add it as a dependency
+if(BUILD_CUSTOM_BOOST)
+   add_dependencies(psi4 custom_boost)
 endif()
 
 #FILE(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
-INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION
-${CMAKE_INSTALL_PREFIX}/bin)
+INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
 add_subdirectory(external)
 
-enable_testing()
-add_subdirectory(tests)
-
+# Configure some scripts
+configure_files()
+# Configure testing
+# This must come after ConfigDocumentation, as it needs Perl detection 
+# It also needs Python so it must go _after_ Python detection!
+include(ConfigTesting)
+# This has to be the very last CMake module to be included
+include(ConfigInfo)

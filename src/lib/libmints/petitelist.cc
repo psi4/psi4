@@ -53,6 +53,7 @@
 #include "libparallel/ParallelPrinter.h"
 using namespace boost;
 
+#ifndef USE_FCMANGLE_H
 #if FC_SYMBOL==2
     #define F_DGESVD dgesvd_
 #elif FC_SYMBOL==1
@@ -61,6 +62,10 @@ using namespace boost;
     #define F_DGESVD DGESVD
 #elif FC_SYMBOL==4
     #define F_DGESVD DGESVD_
+#endif
+#else // USE_FCMANGLE_H
+#include "FCMangle.h"
+#define F_DGESVD FC_GLOBAL(dgesvd, DGESVD)
 #endif
 
 extern int sing_(double *q, int *lq, int *iq, double *s, double *p,
