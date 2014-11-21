@@ -38,8 +38,8 @@ outfile->Printf(" ==============================================================
 outfile->Printf(" ================ Performing DF-CCSD iterations... ============================ \n");
 outfile->Printf(" ============================================================================== \n");
 outfile->Printf("\n");
-outfile->Printf("  Iter    E_corr           E_total            DE           T2 RMS        T1 RMS     \n");
-outfile->Printf("  ----   -------------    ---------------    ----------   ----------    ---------   \n");
+outfile->Printf("  Iter       E_corr                  DE                 T2 RMS        T1 RMS     \n");
+outfile->Printf("  ----   ----------------      ----------------       ----------    ----------   \n");
   
 //==========================================================================================
 //========================= CCSD iterations ================================================
@@ -49,15 +49,17 @@ outfile->Printf("  ----   -------------    ---------------    ----------   -----
       Eccsd_old = Eccsd;
 
       // DIIS
-      boost::shared_ptr<Matrix> T2(new Matrix("T2", naoccA*navirA, naoccA*navirA));
-      boost::shared_ptr<Matrix> T1(new Matrix("T1", naoccA, navirA));
-      if (reference_ == "RESTRICTED") {
-          ccsdDiisManager = boost::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::InCore)); 
-          ccsdDiisManager->set_error_vector_size(2, DIISEntry::Matrix, T2.get(), DIISEntry::Matrix, T1.get());
-          ccsdDiisManager->set_vector_size(2, DIISEntry::Matrix, T2.get(), DIISEntry::Matrix, T1.get());
-      }
-      T2.reset();
-      T1.reset();
+      if (do_diis_ == 1) {
+          boost::shared_ptr<Matrix> T2(new Matrix("T2", naoccA*navirA, naoccA*navirA));
+          boost::shared_ptr<Matrix> T1(new Matrix("T1", naoccA, navirA));
+          if (reference_ == "RESTRICTED") {
+              ccsdDiisManager = boost::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::InCore)); 
+              ccsdDiisManager->set_error_vector_size(2, DIISEntry::Matrix, T2.get(), DIISEntry::Matrix, T1.get());
+              ccsdDiisManager->set_vector_size(2, DIISEntry::Matrix, T2.get(), DIISEntry::Matrix, T1.get());
+          }
+          T2.reset();
+          T1.reset();
+      }// if diis true
 
 // head of loop      
 do
@@ -82,7 +84,6 @@ do
    
         // T2 amplitudes
         timer_on("T2 AMPS");
-	//ccsd_t2_amps(ccsdDiisManager);  
 	ccsd_t2_amps();  
         timer_off("T2 AMPS");
 
@@ -97,8 +98,7 @@ do
     }
 	
    // print
-   outfile->Printf(" %3d     %12.10f    %12.10f  %12.2e %12.2e %12.2e \n", itr_occ, Ecorr, Eccsd, DE, rms_t2, rms_t1);
-
+   outfile->Printf(" %3d      %12.10f         %12.10f      %12.2e  %12.2e \n", itr_occ, Ecorr, DE, rms_t2, rms_t1);
 
     if (itr_occ >= cc_maxiter) {
       conver = 0; // means iterations were NOT converged
@@ -113,7 +113,7 @@ do
 while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2); 
 
 //delete
-ccsdDiisManager->delete_diis_file();
+if (do_diis_ == 1) ccsdDiisManager->delete_diis_file();
 
 if (conver == 1) {
 outfile->Printf("\n");
@@ -121,6 +121,13 @@ outfile->Printf(" ==============================================================
 outfile->Printf(" ===================== DF-CCSD ITERATIONS ARE CONVERGED ======================= \n");
 outfile->Printf(" ============================================================================== \n");
 
+    // T1 Diagnostic 
+    double t1diag, t1norm, t1_ref;
+    t1_ref = 0.02;
+    t1norm = t1A->norm();
+    t1diag = t1norm/sqrt(2.0*naoccA);
+    outfile->Printf("\n\tT1 diagnostic reference value      : %20.14f\n", t1_ref);
+    outfile->Printf("\tT1 diagnostic                      : %20.14f\n", t1diag);
 }
 
 else if (conver == 0) {
