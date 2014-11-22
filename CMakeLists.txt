@@ -117,7 +117,9 @@ if(UNIX)
    link_libraries(m)
 endif(UNIX)
 
-#Not setting ldflags was causing a problem
+# This is needed to get static version of Python libraries to link correctly
+# Pointed out by TDC
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,-export-dynamic")
 if(LDFLAGS)
    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LDFLAGS}")
 endif()
