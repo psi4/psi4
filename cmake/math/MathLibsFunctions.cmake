@@ -231,9 +231,9 @@ endmacro()
 
 macro(find_math_library _myservice _mytype)
     set(MATH_INCLUDE_PATH_SUFFIXES ${${_mytype}_${_myservice}_INCLUDE_PATH_SUFFIXES})
-    if(${_myservice}_LANG STREQUAL "C")
-        find_math_header(${_myservice} ${${_mytype}_${_myservice}_HEADERS})
-    endif()
+    #if(${_myservice}_LANG STREQUAL "C")
+    #    find_math_header(${_myservice} ${${_mytype}_${_myservice}_HEADERS})
+    #endif()
     set(MATH_LIBRARY_PATH_SUFFIXES ${${_mytype}_${_myservice}_LIBRARY_PATH_SUFFIXES})
 
     find_math_libs(${_myservice} ${${_mytype}_${_myservice}_LIBS})
