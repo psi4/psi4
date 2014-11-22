@@ -1047,6 +1047,13 @@ double py_psi_get_variable(const std::string & key)
     return Process::environment.globals[uppercase_key];
 }
 
+SharedMatrix py_psi_get_array_variable(const std::string & key)
+{
+    string uppercase_key = key;
+    transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
+    return Process::environment.arrays[uppercase_key];
+}
+
 void py_psi_set_variable(const std::string & key, double val)
 {
     string uppercase_key = key;
@@ -1054,9 +1061,17 @@ void py_psi_set_variable(const std::string & key, double val)
     Process::environment.globals[uppercase_key] = val;
 }
 
+void py_psi_set_array_variable(const std::string & key, SharedMatrix val)
+{
+    string uppercase_key = key;
+    transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
+    Process::environment.arrays[uppercase_key] = val;
+}
+
 void py_psi_clean_variable_map()
 {
     Process::environment.globals.clear();
+    Process::environment.arrays.clear();
 }
 
 void py_psi_set_memory(unsigned long int mem)
@@ -1179,6 +1194,28 @@ void py_psi_print_variable_map()
     outfile->Printf( "\n\n  Variable Map:");
     outfile->Printf( "\n  ----------------------------------------------------------------------------\n");
     outfile->Printf( "%s\n\n", line.str().c_str());
+}
+
+// Converts a C++ map to a python dict
+// from https://gist.github.com/octavifs/5362297
+template <class K, class V>
+boost::python::dict toPythonDict(std::map<K, V> map) {
+    typename std::map<K, V>::iterator iter;
+    boost::python::dict dictionary;
+    for (iter = map.begin(); iter != map.end(); ++iter) {
+        dictionary[iter->first] = iter->second;
+    }
+    return dictionary;
+}
+
+boost::python::dict py_psi_return_variable_map()
+{
+    return toPythonDict(Process::environment.globals);
+}
+
+boost::python::dict py_psi_return_array_variable_map()
+{
+    return toPythonDict(Process::environment.arrays);
 }
 
 std::string py_psi_top_srcdir()
@@ -1382,6 +1419,11 @@ BOOST_PYTHON_MODULE(psi4)
     def("set_variable", py_psi_set_variable, "Sets a PSI variable, by name.");
     def("print_variables", py_psi_print_variable_map, "Prints all PSI variables that have been set internally.");
     def("clean_variables", py_psi_clean_variable_map, "Empties all PSI variables that have set internally.");
+    def("get_variables", py_psi_return_variable_map, "Returns dictionary of the PSI variables set internally by the modules or python driver.");
+    def("get_array_variable", py_psi_get_array_variable, "Returns one of the PSI variables set internally by the modules or python driver (see manual for full listing of variables available).");
+    def("set_array_variable", py_psi_set_array_variable, "Sets a PSI variable, by name.");
+//    def("print_array_variables", py_psi_print_array_variable_map, "Prints all PSI variables that have been set internally.");
+    def("get_array_variables", py_psi_return_array_variable_map, "Returns dictionary of the PSI variables set internally by the modules or python driver.");
 
     // Get the name of the directory where the input file is at
     def("get_input_directory", py_psi_get_input_directory, "Returns the location of the input file.");

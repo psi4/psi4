@@ -551,7 +551,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_combined(const boost::shared_p
     basisset->name_.clear();
     basisset->name_ = name;
 
-    //printf("puream: basis %d, arg %d, user %d, resolved %d, final %d\n",
+    //outfile->Printf("puream: basis %d, arg %d, user %d, resolved %d, final %d\n",
     //    native_puream, forced_puream, user_puream, resolved_puream, basisset->has_puream());
     return basisset;
 }
@@ -669,7 +669,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
     basisset->name_.clear();
     basisset->name_ = basisname;
 
-    //printf("puream: basis %d, arg %d, user %d, resolved %d, final %d\n", 
+    //outfile->Printf("puream: basis %d, arg %d, user %d, resolved %d, final %d\n",
     //    native_puream, forced_puream, user_puream, resolved_puream, basisset->has_puream());
     return basisset;
 }
