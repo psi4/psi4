@@ -42,25 +42,6 @@ function(get_Python_version_string pyVersion)
     unset(_VERSION)
 endfunction()
 
-function(check_Python_compiles pyCompiles)
-   set(_bindir  "${PROJECT_BINARY_DIR}/pyCompiles")	
-   set(_srcfile "${PROJECT_SOURCE_DIR}/cmake/checkPython.cpp")
-   
-   # Get path to Python libraries
-   get_filename_component(_libdir ${PYTHON_LIBRARIES} DIRECTORY)
-   
-   try_compile(pyCompiles "${_bindir}" "${_srcfile}" 
-             CMAKE_FLAGS 
-	     "-DINCLUDE_DIRECTORIES=${PYTHON_INCLUDE_DIRS}"
-	     "-DLINK_DIRECTORIES=${_libdir}"
-             "-DLINK_LIBRARIES=${PYTHON_LIBRARIES}"
-	     OUTPUT_VARIABLE pyCompilesTest)
-   file(WRITE "${PROJECT_BINARY_DIR}/pyCompiles/pyCompilesTestOutput.log" "${pyCompilesTest}")
-
-   set(pyCompiles "${pyCompiles}" PARENT_SCOPE)	
-endfunction()
-
-
 # 1. a Python interpreter of the suitable version exists
 if("${PYTHON_INTERPRETER}" STREQUAL "")
    find_package(PythonInterp 2.6 REQUIRED)
@@ -109,17 +90,17 @@ if(PYTHONINTERP_FOUND)
       message(STATUS "No pyconfig.h header found!!")	   
    endif()	   
    unset(CMAKE_REQUIRED_INCLUDES)
-   # 3. that we can link against those libraries
-  #check_Python_compiles(pyCompiles)
-  #if(NOT pyCompiles)
-  #   message(STATUS "Cannot link against Python!!")
-  #endif()	 
+   # 3. on Linux find also libutil
+   if(UNIX AND NOT APPLE)
+      find_library(LIBUTIL util)
+      link_directories("${LIBUTIL}")
+   endif()	   
 endif()
 
 # Iff the answer is "YES" to all of the above, we set
 # EMBEDDED_PYTHON to TRUE enabling the embedded Python code
 if(PYTHONINTERP_FOUND AND PYTHONLIBS_FOUND 
-   AND HAS_PYTHON_H AND HAS_PYCONFIG_H) # AND pyCompiles)
+   AND HAS_PYTHON_H AND HAS_PYCONFIG_H)
    message(STATUS "Python ${PYTHON_VERSION_STRING} FOUND")
 else()
    # If detection of interpreter or libs goes wrong CMake stops.
