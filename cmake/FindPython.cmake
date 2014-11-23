@@ -90,11 +90,6 @@ if(PYTHONINTERP_FOUND)
       message(STATUS "No pyconfig.h header found!!")	   
    endif()	   
    unset(CMAKE_REQUIRED_INCLUDES)
-   # 3. on Linux find also libutil
-   if(UNIX AND NOT APPLE)
-      find_library(LIBUTIL util)
-      link_directories("${LIBUTIL}")
-   endif()	   
 endif()
 
 # Iff the answer is "YES" to all of the above, we set
