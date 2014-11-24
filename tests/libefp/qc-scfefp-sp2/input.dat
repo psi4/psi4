@@ -4,46 +4,31 @@
 memory 200 mb
 
 molecule qmefp {
-
+symmetry c1
 # QM fragment
 0 1
-O1    0         0     0.118720
-H2   -0.753299, 0.0, -0.474880
-H3    0.753299, 0.0, -0.474880
-
+units bohr
+O1     0.000000000000     0.000000000000     0.224348285559
+H2    -1.423528800232     0.000000000000    -0.897393142237
+H3     1.423528800232     0.000000000000    -0.897393142237
 # EFP as EFP fragments
 --
-efp h2o -2.12417561  1.22597097 -0.95332054 -2.902133 1.734999 -1.953647
-#--
-#efp NH3  1.04358758  1.90477190  2.88279926 -1.105309 2.033306 -1.488582
-#--
-#efp NH3 -4.16795656 -0.98129149 -1.27785935  2.526442 1.658262 -2.742084
-
-
-# EFP as QM fragments
-#--
-#     O  -2.180061   1.208365  -0.976550
-#     H  -1.980913   1.409865  -0.080218
-#     H  -1.380492   1.321499  -1.457761
-#--
-#     N   1.094112   1.930150   2.910988
-#     H   0.271685   2.461657   3.109157
-#     H   0.942096   0.994975   3.227998
-#     H   1.214983   1.905068   1.919566
-#--
-#     N  -4.204276  -1.032690  -1.272341
-#     H  -4.047415  -0.610467  -0.380557
-#     H  -4.636175  -0.353779  -1.864539
-#     H  -3.315648  -1.265474  -1.665164
+efp h2o -4.014110144291     2.316749370493    -1.801514729931 -2.902133 1.734999 -1.953647
+--
+efp NH3  1.972094713645     3.599497221584     5.447701074734 -1.105309 2.033306 -1.488582
+--
+efp NH3 -7.876296399270    -1.854372164887    -2.414804197762  2.526442 1.658262 -2.742084
 }
 
 set basis 6-31g*
 set scf_type pk
 set guess core
+#set debug 1000
+#set print_basis true
+#set s_orthogonalization symmetric
 set df_scf_guess false
 set efp_disp_damping tt
 set mat_num_column_print 6
-
 
 #compare_values(9.1793879214, qmefp.nuclear_repulsion_energy(), 6, 'QM NRE')
 #compare_values(-0.000490133271, get_variable('efp elst energy'), 6, 'EFP-EFP Elst')
@@ -72,9 +57,9 @@ set mat_num_column_print 6
 
 clean()
 
-set diis 0
-#set e_convergence 10  # comment out this and d_conv then frep '@RHF' to see final conv problem
-set d_convergence 5
+#set diis 0
+set e_convergence 12
+set d_convergence 12
 energy('scfefp')
 
 #compare_values(0.203988551760, get_variable('efp elst energy'), 6, 'SCF-EFP Elst')
