@@ -55,7 +55,7 @@ endif()
 list(APPEND LINKLIBS "${LIBDL_LIBRARIES}")
 
 # Executable psi4
-add_executable(psi4 "${sources_list}")
+add_executable(psi4 ${sources_list})
 if(CUSTOM_BOOST_BUILD)
    add_dependencies(psi4 custom_boost)
 endif()
