@@ -113,17 +113,14 @@ if(EXECUTABLE_SUFFIX)
    message(STATUS "Suffix ${CMAKE_EXECUTABLE_SUFFIX} will be appended to executables")
 endif()
 
-# Find libm
+# Find libutil
 if(UNIX)
-   find_library(LIBM m)
-   get_filename_component(_dir_libm ${LIBUTIL} DIRECTORY)
-   link_directories(${_dir_libm})
-   link_libraries("${LIBM}")
+   find_library(LIBUTIL util)
+   get_filename_component(_dir_libutil ${LIBUTIL} DIRECTORY)
+   link_directories(${_dir_libutil})
+   link_libraries("${LIBUTIL}")
 endif(UNIX)
 
-# This is needed to get static version of Python libraries to link correctly
-# Pointed out by TDC
-set(CMAKE_EXE_LINKER_FLAGS "-Wl,-export-dynamic")
 if(LDFLAGS)
    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LDFLAGS}")
 endif()
@@ -139,7 +136,6 @@ if(LIBDL_FOUND)
    include_directories(SYSTEM "${LIBDL_INCLUDE_DIR}")
    link_libraries("${LIBDL_LIBRARIES}")
 endif()
-check_include_files(dlfcn.h HAVE_DLFCN_H)
 # MKL_Free_Buffers NEEDS TO BE TESTED
 check_function_exists(MKL_Free_Buffers HAVE_MKL) 
 
