@@ -12,13 +12,11 @@ else()
     # custom flags are not defined
     if(CMAKE_C_COMPILER_ID MATCHES GNU)
         set(CMAKE_C_FLAGS         "-std=c99 -DRESTRICT=${restrict} -DFUNDERSCORE=1 -fPIC")
-        # Special debug flags are set if ASan, MSan, TSan or UBSan are requested                                                
+        # Special debug flags are set if ASan, TSan or UBSan are requested                                                
         if(ENABLE_ASAN)
            set(CMAKE_C_FLAGS_DEBUG    "-g -O1 -fsanitize=address -fno-omit-frame-pointer")
-        elseif(ENABLE_MSAN)
-           set(CMAKE_C_FLAGS_DEBUG    "-g -O1 -fsanitize=memory -fno-omit-frame-pointer")
         elseif(ENABLE_TSAN)
-           set(CMAKE_C_FLAGS_DEBUG    "-g -O1 -fsanitize=thread -fno-omit-frame-pointer")
+           set(CMAKE_C_FLAGS_DEBUG    "-g -O1 -fsanitize=thread -fno-omit-frame-pointer -pie")
         elseif(ENABLE_UBSAN)
            set(CMAKE_C_FLAGS_DEBUG    "-g -O1 -fsanitize=undefined -fno-omit-frame-pointer")
         else()
