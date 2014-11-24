@@ -51,7 +51,7 @@ class Parallel {
       }
       virtual ~Parallel() {
       }
-      virtual void sync(const std::string& CommName="NONE") const {
+      virtual void sync(const std::string& /*CommName*/="NONE") const {
       }
 
       template <class T>
@@ -75,11 +75,11 @@ class Parallel {
                broadcaster, CommName);
       }
 
-      virtual int me(const std::string& CommName="NONE") const {
+      virtual int me(const std::string& /*CommName*/="NONE") const {
          return 0;
       }
 
-      virtual int nproc(const std::string& CommName="NONE") const {
+      virtual int nproc(const std::string& /*CommName*/="NONE") const {
          return 1;
       }
 
@@ -91,14 +91,14 @@ class Parallel {
          return CurrentComm.back();
       }
 
-      int thread_id(const pthread_t &thread) {
+      int thread_id(const pthread_t&) {
          return 0;
       }
 
-      virtual void MakeComm(const std::string& Name, const int Color,
-            const std::string& Comm2Split="NONE"){}
+      virtual void MakeComm(const std::string& /*Name*/, const int /*Color*/,
+            const std::string& /*Comm2Split*/="NONE"){}
 
-      virtual void FreeComm(const std::string& Name="NONE"){}
+      virtual void FreeComm(const std::string& /*Name*/="NONE"){}
 };// End Parallel base class
 }//End namespace psi
 #endif  /* _psi_src_lib_libparallel_parallel_h_ */
