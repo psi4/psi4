@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(pywrap-all "psi;quicktests")
+add_regression_test(cfour-pywrap-all "psi;quicktests")
