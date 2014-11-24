@@ -6,14 +6,26 @@ analysis, geometry optimization, molecular dynamics simulations in
 microcanonical (NVE), canonical (NVT), and isobaric-isothermal (NPT) ensembles.
 
 Simulations can be accelerated by running in parallel mode on multi-core CPUs.
-To enable parallel computation set `OMP_NUM_THREADS` environmental variable to
-the desired number of parallel threads. For example on 4-core machine do this
-in shell before starting the program:
+To enable parallel computation set `OMP_NUM_THREADS` environment variable to
+the desired number of parallel threads. For example on a 4-core machine you can
+set the `OMP_NUM_THREADS` environment variable to four before starting the
+program:
 
 	export OMP_NUM_THREADS=4
 
 This will enable parallel computation using 4 threads and should give almost 4x
 speedup in all calculations.
+
+If you have compiled _libefp_ with MPI support you can also run parallel
+calculations across multiple nodes using standard _mpirun_ command:
+
+	mpirun -np 8 efpmd input.in
+
+Note that you can achieve better scalability by using OpenMP for
+parallelization within a single node and MPI for inter-node communication.
+
+Additional examples of input files can be found in the _tests_ directory in
+source code archive.
 
 ## Input file format
 
@@ -23,7 +35,7 @@ Lines beginning with the `#` symbol are ignored during input parsing.
 
 ##### Type of the simulation
 
-`run_type [sp|grad|hess|opt|md]`
+`run_type [sp|grad|hess|opt|md|gtest]`
 
 `sp` - single point energy calculation.
 
@@ -34,6 +46,10 @@ Lines beginning with the `#` symbol are ignored during input parsing.
 `opt` - geometry optimization.
 
 `md` - molecular dynamics simulation.
+
+`efield` - compute and print electric field on all atoms.
+
+`gtest` - compute and compare numerical and analytical gradients.
 
 Default value: `sp`
 
@@ -100,7 +116,51 @@ Default value: `overlap`
 
 Default value: `tt`
 
-##### Enable/Disable the cutoff for fragment/fragment interactions
+##### Polarization solver
+
+`pol_driver [iterative|direct]`
+
+`iterative` - Iterative solution of system of linear equations for polarization
+induced dipoles.
+
+`direct` - Direct solution of system of linear equations for polarization
+induced dipoles. This solver does not have convergence issues but is unsuitable
+for large systems (more than 2000 polarizable points). The direct solver is not
+parallelized.
+
+Default value: `iterative`
+
+##### Enable molecular-mechanics force-field for flexible EFP links
+
+`enable_ff [true|false]`
+
+Default value: `false`
+
+##### Geometry of the molecular-mechanics part
+
+`ff_geometry <path>`
+
+Default value: `ff.xyz`
+
+##### Molecular-mechanics force-field parameters file
+
+`ff_parameters <path>`
+
+Default value: `fraglib/params/amber99.prm`
+
+##### Use single EFP parameters file
+
+`single_params_file [true|false]`
+
+Default value: `false`
+
+##### Single EFP parameters file path
+
+`efp_params_file <path>`
+
+Default value: `params.efp`
+
+##### Enable cutoff for fragment/fragment interactions
 
 `enable_cutoff [true|false]`
 
@@ -174,6 +234,26 @@ Unit: Hartree/Bohr
 Optimization will stop when maximum gradient component is less than `opt_tol`
 and RMS gradient is less than one third of `opt_tol`.
 
+### Gradient test related parameters
+
+See also `num_step_dist` and `num_step_angle`.
+
+##### Test tolerance
+
+`gtest_tol <value>`
+
+Default value: `1.0e-6`
+
+Unit: Hartree/Bohr
+
+##### Reference energy value
+
+`ref_energy <value>`
+
+Default value: `0.0`
+
+Unit: Hartree
+
 ### Hessian calculation related parameters
 
 ##### Hessian accuracy
@@ -187,17 +267,17 @@ used for numerical Hessian calculation. Otherwise only forward differences will
 be used. Note that central differences require twice as many gradient
 calculations.
 
-##### Differentiation step length for distances
+##### Numerical differentiation step length for distances
 
-`hess_step_dist <value>`
+`num_step_dist <value>`
 
 Default value: `0.001`
 
 Unit: Angstrom
 
-##### Differentiation step length for angles
+##### Numerical differentiation step length for angles
 
-`hess_step_angle <value>`
+`num_step_angle <value>`
 
 Default value: `0.01`
 
@@ -334,3 +414,10 @@ The numbers are coordinates of three points belonging to a fragment in Angstroms
 
 The numbers are coordinates of the center of mass of a fragment in Angstroms
 and a 3 x 3 rotation matrix.
+
+### Input of point charges
+
+Additionally to fragments a system can contain a set of point charges. They
+can be specified using the following format for each charge:
+
+	charge <q> <x> <y> <z>

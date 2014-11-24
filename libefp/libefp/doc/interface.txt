@@ -1,0 +1,66 @@
+This file contains a step-by-step explanation of how to integrate libefp into
+an existing quantum chemistry package to get a working QM/EFP interface.
+
+1. Initialization
+
+	a. Create a efp object: efp_create
+	b. Setup your efp options: efp_set_opts
+	c. Load efp parameters from .efp files: efp_add_potential
+	d. Add your efp fragments: efp_add_fragment
+	e. Setup a callback function which computes electric field from
+	   ab initio electrons: efp_set_electron_density_field_fn
+
+2. Optimization or molecular dynamics step
+
+	a. Set new fragment coordinates: efp_set_coordinates
+	b. Update ab initio nuclei: efp_set_point_charges
+
+2.1 Ab initio SCF cycle
+
+	a. Start SCF cycle as usual
+	b. Compute one-electron efp contributions
+
+		To compute one-electron contributions to quantum mechanical
+		Hamiltonian you will need multipole moment integrals as well as
+		electrostatics from efp subsystem.
+
+		To get the electrostatics use the following functions:
+
+		atom charges from efp fragments: efp_get_frag_atoms
+		multipoles from efp electrostatics: efp_get_multipoles
+		polarization induced dipoles: efp_get_induced_dipole_values
+		polarization conjugate induced dipoles: efp_get_induced_dipole_conj_values
+		use the average of induced dipoles and conjugate induced dipoles
+
+	c. Compute wavefunction dependent energy
+
+		Because efp polarization induced dipoles depend on the electric
+		field from the wavefunction you have to converge them together.
+		To compute wavefunction dependent terms use efp_get_wf_dependent_energy
+
+	d. Add obtained wavefunction dependent energy to your SCF energy
+	e. Go to step 2.1.a until SCF convergence criteria are met
+
+2.2 Compute efp energy and gradients
+
+	a. Compute all efp energy terms: efp_compute
+
+2.3 Geometry update
+
+	a. Get efp energy: efp_get_energy
+
+		Do not forget to subtract wavefunction dependent energy you have
+		already added to your SCF energy from the total efp energy
+
+	b. Get gradient on efp fragments: efp_get_gradient
+	c. Get efp gradient on ab initio nuclei: efp_get_point_charge_gradient
+	d. Update geometry
+
+		Update all coordinates of your ab initio part and efp fragments
+		according to you optimization or molecular dynamics algorithm
+
+	e. Go to the beginning of step two
+
+3. Cleanup resources
+
+	a. Release all memory used by efp: efp_shutdown

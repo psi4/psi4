@@ -1,8 +1,0 @@
-# water dimer
-
-run_type opt
-
-fragment h2o_l
-   0.000   0.000   0.000   0.000   0.000   0.000
-fragment h2o_l
-   0.000   0.000   3.000   1.000   1.000   0.000

@@ -26,24 +26,19 @@ To build LIBEFP from source you need the following:
 
 - POSIX complaint make (BSD make or GNU make will work)
 
-- BLAS/CBLAS library (required when linking with libefp)
+- BLAS/LAPACK libraries (required when linking with libefp)
 
-If you are going to compile EFPMD program you will need:
+If you are going to compile EFPMD program (required for tests):
 
 - Fortran 77 compiler
 
-- LAPACK library
-
-If you are going to run the test suite you will need:
-
-- Check library (http://check.sourceforge.net/)
-
-First, edit the `config.inc` file according to your needs. All available
-options are explained with comments. Defaults usually work well but you may
-need to change the `LAPACK` variable to link with the implementation installed
-on your system (the default is ATLAS). You might also need to add additional
-include directories to `MYCFLAGS` (using -I flag) or library search path to
-`MYLDFLAGS` (using -L flag).
+First, copy the configuration file which suits you from `config` directory to
+the top source code directory. Rename the file to `config.inc` and edit it
+according to your needs. All available options are explained with comments.
+Defaults usually work well but you may need to change the `MYLIBS` variable to
+link with additional libraries required by your setup. You may also need to add
+additional include directories to `MYCFLAGS` (using -I flag) or library search
+path to `MYLDFLAGS` (using -L flag).
 
 To compile issue:
 
@@ -56,6 +51,8 @@ If you only need the library you can use:
 To run the test suite (optional) issue:
 
 	make check
+	make check-omp    # to test OpenMP parallel code
+	make check-mpi    # to test MPI parallel code
 
 Finally, to install everything issue:
 
@@ -84,14 +81,7 @@ file as a template you can create EFP parameters for arbitrary fragment types.
 
 After you created `.efp` file using GAMESS you should rename the fragment by
 replacing `$FRAGNAME` with your name of choice (e.g. rename `$FRAGNAME` to
-`$MYH2O`). Also note that there is a bug in GAMESS which makes it print
-excessive line continuation mark (which is a '>' sign) at the end of some
-strings. For example if the number of elements in your 'FOCK MATRIX ELEMENTS'
-section is divisible by four then GAMESS will print an unneeded '>' sing at the
-end of last line. If parsing of your newly generated EFP potential fails with
-syntax error then you probably have these extra marks somewhere. Check if
-there are some extra line continuation marks in the last line of sections and
-remove them for the parsing of a potential file to work.
+`$MYH2O`).
 
 For a complete description of EFP data file format consult FRAGNAME section in
 GAMESS manual (see http://www.msg.ameslab.gov/gamess/).

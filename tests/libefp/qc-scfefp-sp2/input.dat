@@ -28,6 +28,7 @@ set guess core
 #set s_orthogonalization symmetric
 set df_scf_guess false
 set efp_disp_damping tt
+set efp_exch false
 set mat_num_column_print 6
 
 #compare_values(9.1793879214, qmefp.nuclear_repulsion_energy(), 6, 'QM NRE')

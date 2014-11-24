@@ -222,7 +222,7 @@ boost::shared_ptr<Vector> EFP::get_electrostatic_gradient() {
 
     // verify natom matches the number of point charges in efp
     enum efp_result res;
-    int n_ptc;
+    size_t n_ptc;
     if ( res = efp_get_point_charge_count(efp_,&n_ptc) ) {
         throw PsiException("EFP::get_electrostatic_gradient(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
     }
@@ -305,7 +305,7 @@ void EFP::set_frag_coordinates(int frag_idx, int type, double * coords) {
     else if(type == 2)
         ctype = EFP_COORD_TYPE_ROTMAT;
 
-    int local;
+    size_t local;
     efp_get_frag_count(efp_, &local);
 
     if ((res = efp_set_frag_coordinates(efp_, frag_idx, ctype, coords)))
@@ -318,7 +318,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock_induced() {
 
 
     // induced dipoles
-    int n_id = 0;
+    size_t n_id = 0;
     if ( efp_get_induced_dipole_count(efp_,&n_id)  != EFP_RESULT_SUCCESS ) {
         throw PsiException("libefp failed to return number of induced dipoles",__FILE__,__LINE__);
     }
@@ -385,7 +385,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock_induced() {
 boost::shared_ptr<Matrix> EFP::modify_Fock_permanent() {
 
     // get number of multipoles (charges, dipoles, quadrupoles, octupoles)
-    int n_multipole = 0;
+    size_t n_multipole = 0;
     if ( efp_get_multipole_count(efp_,&n_multipole) != EFP_RESULT_SUCCESS ) {
         throw PsiException("libefp failed to return number of multipoles",__FILE__,__LINE__);
     }
@@ -430,7 +430,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock_permanent() {
 
     int max_natom = 0;
     for (int frag = 0; frag < nfrag_; frag++) {
-        int natom = 0;
+        size_t natom = 0;
         if ( efp_get_frag_atom_count(efp_,frag,&natom) != EFP_RESULT_SUCCESS ) {
             throw PsiException("libefp failed to return the number of atoms",__FILE__,__LINE__);
         }
@@ -448,7 +448,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock_permanent() {
 
         // add point charges from atoms to multipoles at atom center
         for (int frag = 0; frag < nfrag_; frag++) {
-            int natom = 0;
+            size_t natom = 0;
             if ( efp_get_frag_atom_count(efp_,frag,&natom) != EFP_RESULT_SUCCESS ) {
                 throw PsiException("libefp failed to return the number of atoms",__FILE__,__LINE__);
             }
@@ -489,7 +489,7 @@ double EFP::EFP_QM_nuclear_repulsion_energy() {
     double nu = 0.0;
     boost::shared_ptr<Molecule> mol = Process::environment.molecule();
     for (int frag = 0; frag < nfrag_; frag++) {
-        int natom = 0;
+        size_t natom = 0;
         if ( efp_get_frag_atom_count(efp_,frag,&natom) != EFP_RESULT_SUCCESS ) {
             throw PsiException("libefp failed to return the number of atoms",__FILE__,__LINE__);
         }
@@ -566,7 +566,7 @@ void EFP::Compute() {
     if (do_grad_) {
         SharedMatrix smgrad(new Matrix("EFP Gradient", nfrag_, 6));
         double ** psmgrad = smgrad->pointer();
-        if (res = efp_get_gradient(efp_, nfrag_, psmgrad[0]))
+        if (res = efp_get_gradient(efp_, psmgrad[0]))
             throw PsiException("EFP::Compute():efp_get_gradient(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 
         fprintf(outfile, "  ==> EFP Gradient <==\n\n");
@@ -617,7 +617,7 @@ void EFP::Compute() {
  */
 int EFP::get_frag_count(void) {
     enum efp_result res;
-    int n=0;
+    size_t n=0;
 
     if (res = efp_get_frag_count(efp_, &n))
         throw PsiException("EFP::get_frag_count(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
@@ -631,7 +631,7 @@ int EFP::get_frag_count(void) {
  */
 int EFP::get_frag_atom_count(int frag_idx) {
     enum efp_result res;
-    int n=0;
+    size_t n=0;
 
     if (res = efp_get_frag_atom_count(efp_, frag_idx, &n))
         throw PsiException("EFP::get_frag_atom_count(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
@@ -720,7 +720,7 @@ double *EFP::get_com(int frag_idx) {
     if (frag_idx >= nfrag_) return NULL;
   
     double *xyzabc = new double [6*nfrag_];
-    efp_get_coordinates(efp_, nfrag_, xyzabc);
+    efp_get_coordinates(efp_, xyzabc);
 
     double *com = new double[3];
     com[0] = xyzabc[6*frag_idx+0];
@@ -821,14 +821,14 @@ void EFP::print_out() {
 }
 
 
-efp_result electron_density_field_fn(int n_pt, const double *xyz, double *field, void *user_data) {
+efp_result electron_density_field_fn(size_t n_pt, const double *xyz, double *field, void *user_data) {
     // These should all be members of the SCF class in the final implementation.
     boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     boost::shared_ptr<Molecule> mol = wfn->molecule();
     boost::shared_ptr<BasisSet> basis = wfn->basisset();
     boost::shared_ptr<OneBodyAOInt> field_ints(wfn->integral()->electric_field());
 
-    int nbf = basis->nao();
+    int nao = basis->nao();
     std::vector<SharedMatrix> intmats;
     intmats.push_back(SharedMatrix(new Matrix("Ex integrals", nao, nao)));
     intmats.push_back(SharedMatrix(new Matrix("Ey integrals", nao, nao)));
@@ -1009,7 +1009,7 @@ boost::shared_ptr<Matrix> EFP::EFP_nuclear_potential() {
     boost::shared_ptr<Matrix> V (new Matrix(nbf,nbf));
 
     for (int frag = 0; frag < nfrag_; frag++) {
-        int natom = 0;
+        size_t natom = 0;
         if ( efp_get_frag_atom_count(efp_,frag,&natom) != EFP_RESULT_SUCCESS ) {
             throw PsiException("libefp failed to return the number of atoms",__FILE__,__LINE__);
         }

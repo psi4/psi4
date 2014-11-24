@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012-2013 Ilya Kaliman
+ * Copyright (c) 2012-2014 Ilya Kaliman
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,13 +27,49 @@
 #ifndef LIBEFP_PRIVATE_H
 #define LIBEFP_PRIVATE_H
 
+#include <assert.h>
+
+#include "bvec.h"
 #include "efp.h"
 #include "int.h"
+#include "log.h"
 #include "swf.h"
 #include "terms.h"
+#include "util.h"
 
-#define EFP_EXPORT __attribute__((visibility("default")))
+#define EFP_EXPORT
+
 #define ARRAY_SIZE(arr) (sizeof(arr)/sizeof(arr[0]))
+
+struct multipole_pt {
+	double x, y, z;
+	double monopole;
+	vec_t dipole;
+	double quadrupole[6];
+	double octupole[10];
+};
+
+struct polarizable_pt {
+	double x, y, z;
+	mat_t tensor;
+	vec_t elec_field;
+	vec_t elec_field_wf;
+};
+
+struct dynamic_polarizable_pt {
+	double x, y, z;
+	mat_t tensor[12];
+};
+
+struct ff_atom {
+	char type[32]; /* atom type in force field */
+	size_t idx;    /* index in atoms array */
+};
+
+struct ff_link {
+	size_t idx1;   /* index in ff_atoms array */
+	size_t idx2;   /* index in ff_atoms array */
+};
 
 struct frag {
 	/* fragment name */
@@ -48,29 +84,17 @@ struct frag {
 	/* pointer to the initial fragment state in library */
 	const struct frag *lib;
 
-	/* force on fragment center of mass */
-	vec_t force;
-
-	/* torque on fragment */
-	vec_t torque;
-
 	/* number of atoms in this fragment */
-	int n_atoms;
+	size_t n_atoms;
 
 	/* fragment atoms */
 	struct efp_atom *atoms;
 
 	/* distributed multipoles */
-	struct multipole_pt {
-		double x, y, z;
-		double monopole;
-		vec_t dipole;
-		double quadrupole[6];
-		double octupole[10];
-	} *multipole_pts;
+	struct multipole_pt *multipole_pts;
 
 	/* number of distributed multipole points */
-	int n_multipole_pts;
+	size_t n_multipole_pts;
 
 	/* electrostatic screening parameters */
 	double *screen_params;
@@ -78,32 +102,23 @@ struct frag {
 	/* ab initio electrostatic screening parameters */
 	double *ai_screen_params;
 
+	/* polarization damping parameter */
+	double pol_damp;
+
 	/* distributed polarizability points */
-	struct polarizable_pt {
-		double x, y, z;
-		mat_t tensor;
-		vec_t elec_field;
-		vec_t elec_field_wf;
-		vec_t induced_dipole;
-		vec_t induced_dipole_new;
-		vec_t induced_dipole_conj;
-		vec_t induced_dipole_conj_new;
-	} *polarizable_pts;
+	struct polarizable_pt *polarizable_pts;
 
 	/* number of distributed polarizability points */
-	int n_polarizable_pts;
+	size_t n_polarizable_pts;
 
 	/* dynamic polarizability points */
-	struct dynamic_polarizable_pt {
-		double x, y, z;
-		double trace[12];
-	} *dynamic_polarizable_pts;
+	struct dynamic_polarizable_pt *dynamic_polarizable_pts;
 
 	/* number of dynamic polarizability points */
-	int n_dynamic_polarizable_pts;
+	size_t n_dynamic_polarizable_pts;
 
 	/* number of localized molecular orbitals */
-	int n_lmo;
+	size_t n_lmo;
 
 	/* localized molecular orbital centroids */
 	vec_t *lmo_centroids;
@@ -111,17 +126,17 @@ struct frag {
 	/* spin multiplicity */
 	int multiplicity;
 
-	/* number of exchange repulsion basis shells */
-	int n_xr_shells;
+	/* number of exchange repulsion atoms */
+	size_t n_xr_atoms;
 
-	/* exchange repulsion basis shells */
-	struct shell *xr_shells;
+	/* exchange repulsion atoms */
+	struct xr_atom *xr_atoms;
 
 	/* upper triangle of fock matrix, size = n_lmo * (n_lmo + 1) / 2 */
 	double *xr_fock_mat;
 
 	/* exchange repulsion wavefunction size */
-	int xr_wf_size;
+	size_t xr_wf_size;
 
 	/* exchange repulsion wavefunction, size = n_lmo * xr_wf_size */
 	double *xr_wf;
@@ -129,22 +144,22 @@ struct frag {
 	/* rotational derivatives of MO coefficients */
 	double *xr_wf_deriv[3];
 
-	/* overlap integrals; used for overlap-based dispersion damping */
-	double *overlap_int;
+	/* fitted ai-efp exchange-repulsion parameters */
+	double *xrfit;
 
-	/* derivatives of overlap integrals */
-	six_t *overlap_int_deriv;
+	/* offset of polarizable points for this fragment */
+	size_t polarizable_offset;
 };
 
 struct efp {
 	/* number of fragments */
-	int n_frag;
+	size_t n_frag;
 
 	/* array of fragments */
 	struct frag *frags;
 
 	/* number of fragments in the library */
-	int n_lib;
+	size_t n_lib;
 
 	/* array with the library of fragment initial parameters */
 	struct frag **lib;
@@ -167,29 +182,52 @@ struct efp {
 	/* stress tensor */
 	mat_t stress;
 
-	/* number of point charges */
-	int n_ptc;
+	/* force and torque on fragments */
+	six_t *grad;
 
-	struct point_charge {
-		double x, y, z;
-		double charge;
-		vec_t grad;
-	} *point_charges;
+	/* number of point charges */
+	size_t n_ptc;
+
+	/* coordinates of point charges */
+	vec_t *ptc_xyz;
+
+	/* point charges */
+	double *ptc;
+
+	/* gradient on point charges */
+	vec_t *ptc_grad;
+
+	/* polarization induced dipoles */
+	vec_t *indip;
+
+	/* polarization conjugate induced dipoles */
+	vec_t *indipconj;
+
+	/* total number of polarizable points */
+	size_t n_polarizable_pts;
+
+	/* number of core orbitals in ab initio subsystem */
+	size_t n_ai_core;
+
+	/* number of active orbitals in ab initio subsystem */
+	size_t n_ai_act;
+
+	/* number of virtual orbitals in ab initio subsystem */
+	size_t n_ai_vir;
+
+	/* ab initio orbital energies
+	 * size [n_ai_occ + n_ai_vir] */
+	double *ai_orbital_energies;
+
+	/* ab initio dipole moment integrals on polarizable points
+	 * size [3 * (n_ai_occ + n_ai_vir) ^ 2] */
+	double *ai_dipole_integrals;
 
 	/* EFP energy terms */
 	struct efp_energy energy;
-};
 
-int efp_skip_frag_pair(struct efp *, int, int);
-struct swf efp_make_swf(struct efp *, const struct frag *, const struct frag *);
-const struct frag *efp_find_lib(struct efp *, const char *);
-void efp_add_stress(const vec_t *, const vec_t *, mat_t *);
-void efp_add_force(struct frag *, const vec_t *, const vec_t *, const vec_t *);
-void efp_sub_force(struct frag *, const vec_t *, const vec_t *, const vec_t *);
-void efp_move_pt(const vec_t *, const mat_t *, const vec_t *, vec_t *);
-void efp_rotate_t2(const mat_t *, const double *, double *);
-void efp_rotate_t3(const mat_t *, const double *, double *);
-int efp_strcasecmp(const char *, const char *);
-int efp_strncasecmp(const char *, const char *, size_t);
+	/* skip-list of fragments */
+	struct bvec *skiplist;
+};
 
 #endif /* LIBEFP_PRIVATE_H */

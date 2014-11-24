@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012-2013 Ilya Kaliman
+ * Copyright (c) 2012-2014 Ilya Kaliman
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -57,6 +57,10 @@ static const mat_t mat_zero = { 0.0, 0.0, 0.0,
 				0.0, 0.0, 0.0,
 				0.0, 0.0, 0.0 };
 
+static const mat_t mat_identity = { 1.0, 0.0, 0.0,
+				    0.0, 1.0, 0.0,
+				    0.0, 0.0, 1.0 };
+
 static inline int
 eq(double a, double b)
 {
@@ -64,9 +68,15 @@ eq(double a, double b)
 }
 
 static inline double
-vec_get(const vec_t *vec, int idx)
+vec_get(const vec_t *vec, size_t idx)
 {
 	return ((const double *)vec)[idx];
+}
+
+static inline void
+vec_set(vec_t *vec, size_t idx, double val)
+{
+	((double *)vec)[idx] = val;
 }
 
 static inline void
@@ -134,6 +144,30 @@ vec_atomic_sub(vec_t *a, const vec_t *b)
 	a->z -= b->z;
 }
 
+static inline void
+six_atomic_add_xyz(six_t *six, const vec_t *a)
+{
+	vec_atomic_add((vec_t *)six, a);
+}
+
+static inline void
+six_atomic_add_abc(six_t *six, const vec_t *a)
+{
+	vec_atomic_add(((vec_t *)six) + 1, a);
+}
+
+static inline void
+six_atomic_sub_xyz(six_t *six, const vec_t *a)
+{
+	vec_atomic_sub((vec_t *)six, a);
+}
+
+static inline void
+six_atomic_sub_abc(six_t *six, const vec_t *a)
+{
+	vec_atomic_sub(((vec_t *)six) + 1, a);
+}
+
 static inline vec_t
 vec_add(const vec_t *a, const vec_t *b)
 {
@@ -184,13 +218,22 @@ vec_dist(const vec_t *a, const vec_t *b)
 }
 
 static inline double
-mat_get(const mat_t *mat, int a1, int a2)
+vec_angle(const vec_t *a, const vec_t *b)
+{
+	double dot = vec_dot(a, b);
+	vec_t cross = vec_cross(a, b);
+
+	return atan2(vec_len(&cross), dot);
+}
+
+static inline double
+mat_get(const mat_t *mat, size_t a1, size_t a2)
 {
 	return ((const double *)mat)[3 * a1 + a2];
 }
 
 static inline void
-mat_set(mat_t *mat, int a1, int a2, double val)
+mat_set(mat_t *mat, size_t a1, size_t a2, double val)
 {
 	((double *)mat)[3 * a1 + a2] = val;
 }
@@ -204,6 +247,7 @@ mat_vec(const mat_t *mat, const vec_t *vec)
 	return out;
 }
 
+/* returns mat(t) * vec */
 static inline vec_t
 mat_trans_vec(const mat_t *mat, const vec_t *vec)
 {
@@ -226,6 +270,36 @@ mat_mat(const mat_t *m1, const mat_t *m2)
 		      m1->zx * m2->xy + m1->zy * m2->yy + m1->zz * m2->zy,
 		      m1->zx * m2->xz + m1->zy * m2->yz + m1->zz * m2->zz };
 	return out;
+}
+
+/* returns m1(t) * m2 */
+static inline mat_t
+mat_trans_mat(const mat_t *m1, const mat_t *m2)
+{
+	mat_t out = { m1->xx * m2->xx + m1->yx * m2->yx + m1->zx * m2->zx,
+		      m1->xx * m2->xy + m1->yx * m2->yy + m1->zx * m2->zy,
+		      m1->xx * m2->xz + m1->yx * m2->yz + m1->zx * m2->zz,
+		      m1->xy * m2->xx + m1->yy * m2->yx + m1->zy * m2->zx,
+		      m1->xy * m2->xy + m1->yy * m2->yy + m1->zy * m2->zy,
+		      m1->xy * m2->xz + m1->yy * m2->yz + m1->zy * m2->zz,
+		      m1->xz * m2->xx + m1->yz * m2->yx + m1->zz * m2->zx,
+		      m1->xz * m2->xy + m1->yz * m2->yy + m1->zz * m2->zy,
+		      m1->xz * m2->xz + m1->yz * m2->yz + m1->zz * m2->zz };
+	return out;
+}
+
+static inline void
+mat_negate(mat_t *mat)
+{
+	mat->xx = -mat->xx;
+	mat->xy = -mat->xy;
+	mat->xz = -mat->xz;
+	mat->yx = -mat->yx;
+	mat->yy = -mat->yy;
+	mat->yz = -mat->yz;
+	mat->zx = -mat->zx;
+	mat->zy = -mat->zy;
+	mat->zz = -mat->zz;
 }
 
 static inline double

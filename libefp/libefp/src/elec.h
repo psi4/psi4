@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012-2013 Ilya Kaliman
+ * Copyright (c) 2012-2014 Ilya Kaliman
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -47,26 +47,26 @@ add_3(vec_t *a, const vec_t *aa,
 	c->z += cc->z;
 }
 
-static inline int
-quad_idx(int a, int b)
+static inline size_t
+quad_idx(size_t a, size_t b)
 {
 	/* order in which quadrupoles are stored */
 	enum { xx = 0, yy, zz, xy, xz, yz };
 
-	static const int idx[] = {
+	static const size_t idx[] = {
 		xx, xy, xz, xy, yy, yz, xz, yz, zz
 	};
 
 	return idx[a * 3 + b];
 }
 
-static inline int
-oct_idx(int a, int b, int c)
+static inline size_t
+oct_idx(size_t a, size_t b, size_t c)
 {
 	/* order in which octupoles are stored */
 	enum { xxx = 0, yyy, zzz, xxy, xxz, xyy, yyz, xzz, yzz, xyz };
 
-	static const int idx[] = {
+	static const size_t idx[] = {
 		xxx, xxy, xxz, xxy, xyy, xyz, xxz, xyz, xzz,
 		xxy, xyy, xyz, xyy, yyy, yyz, xyz, yyz, yzz,
 		xxz, xyz, xzz, xyz, yyz, yzz, xzz, yzz, zzz

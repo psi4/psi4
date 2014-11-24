@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012-2013 Ilya Kaliman
+ * Copyright (c) 2012-2014 Ilya Kaliman
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,26 +31,32 @@
 
 struct shell {
 	char type;       /* shell type - S,L,P,D,F */
-	double x, y, z;  /* coordinates of a corresponding atom */
-	int n_funcs;     /* number of functions */
+	size_t n_funcs;  /* number of functions */
 	double *coef;    /* function coefficients */
 };
 
-void efp_st_int(int n_shells_i,
-		const struct shell *shells_i,
-		int n_shells_j,
-		const struct shell *shells_j,
-		int stride,
+struct xr_atom {
+	double x, y, z;
+	double znuc;
+	size_t n_shells;
+	struct shell *shells;
+};
+
+void efp_st_int(size_t n_atoms_i,
+		const struct xr_atom *atoms_i,
+		size_t n_atoms_j,
+		const struct xr_atom *atoms_j,
+		size_t stride,
 		double *s,
 		double *t);
 
-void efp_st_int_deriv(int n_shells_i,
-		      const struct shell *shells_i,
-		      int n_shells_j,
-		      const struct shell *shells_j,
+void efp_st_int_deriv(size_t n_atoms_i,
+		      const struct xr_atom *atoms_i,
+		      size_t n_atoms_j,
+		      const struct xr_atom *atoms_j,
 		      const vec_t *com_i,
-		      int size_i,
-		      int size_j,
+		      size_t size_i,
+		      size_t size_j,
 		      six_t *ds,
 		      six_t *dt);
 

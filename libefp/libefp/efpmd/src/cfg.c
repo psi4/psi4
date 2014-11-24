@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012-2013 Ilya Kaliman
+ * Copyright (c) 2012-2014 Ilya Kaliman
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -295,7 +295,7 @@ void cfg_add_enum(struct cfg *cfg, const char *name, int def,
 		const char *nxt = strchr(keys, '\n');
 		assert(nxt);
 
-		esv->str = xstrndup(keys, nxt - keys);
+		esv->str = xstrndup(keys, (size_t)(nxt - keys));
 		esv->val = *vals++;
 		esv->next = node->esv;
 		node->esv = esv;
