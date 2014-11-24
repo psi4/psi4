@@ -828,11 +828,11 @@ efp_result electron_density_field_fn(int n_pt, const double *xyz, double *field,
     boost::shared_ptr<BasisSet> basis = wfn->basisset();
     boost::shared_ptr<OneBodyAOInt> field_ints(wfn->integral()->electric_field());
 
-    int nbf = basis->nbf();
+    int nbf = basis->nao();
     std::vector<SharedMatrix> intmats;
-    intmats.push_back(SharedMatrix(new Matrix("Ex integrals", nbf, nbf)));
-    intmats.push_back(SharedMatrix(new Matrix("Ey integrals", nbf, nbf)));
-    intmats.push_back(SharedMatrix(new Matrix("Ez integrals", nbf, nbf)));
+    intmats.push_back(SharedMatrix(new Matrix("Ex integrals", nao, nao)));
+    intmats.push_back(SharedMatrix(new Matrix("Ey integrals", nao, nao)));
+    intmats.push_back(SharedMatrix(new Matrix("Ez integrals", nao, nao)));
 
     SharedMatrix Da = wfn->Da_subset("AO");
     SharedMatrix Db;
