@@ -43,10 +43,10 @@ class PsiFileImpl{
       void LoadFOptions();
 
       ///No copying of file streams
-      PsiFileImpl<T>(const PsiFileImpl<T>& other){}
+      PsiFileImpl<T>(const PsiFileImpl<T>& /*other*/){}
 
       ///No assignment of file streams
-      const PsiFileImpl<T>& operator=(const PsiFileImpl<T>& other){
+      const PsiFileImpl<T>& operator=(const PsiFileImpl<T>& /*other*/){
          return *this;
       }
 

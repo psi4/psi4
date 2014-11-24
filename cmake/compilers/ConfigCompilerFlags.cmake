@@ -25,6 +25,15 @@ if(ENABLE_VECTORIZATION)
    set(CMAKE_REQUIRED_QUIET ${tmp})
 endif()	
 
+# This is to pass the right option to the linker using -Xlinker
+# might need to be modified for Windows
+set(_exportdynamic "")
+if(APPLE)
+   set(_exportdynamic "-export_dynamic")
+else()
+   set(_exportdynamic "-export-dynamic")
+endif()
+
 test_restrict(restrict)
 set(RESTRICT ${restrict})
 

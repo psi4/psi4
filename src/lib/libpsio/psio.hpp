@@ -136,10 +136,9 @@ public:
             * Print the current status of PSI4 files
             * \param out, file to print fo
             */
-    void print(std::string OutFileRMR = "outfile");
+    void print(std::string out = "outfile");
     /**
             * Print the current status of PSI4 files
-            * \param out, file to print fo
             */
     void print_out() { print("outfile"); }
     /**
@@ -260,13 +259,12 @@ public:
 
     /** Central function for all reads and writes on a PSIO unit.
        **
-       ** \params unit    = The PSI unit number.
-       ** \params buffer  = The buffer containing the bytes for the read/write event.
-       ** \params address = the PSIO global address for the start of the read/write.
-       ** \params size    = The number of bytes to read/write.
-       ** \params         = Indicates if the call is to read (0) or write (0) the input data.
+       ** \param unit    = The PSI unit number.
+       ** \param buffer  = The buffer containing the bytes for the read/write event.
+       ** \param address = the PSIO global address for the start of the read/write.
+       ** \param size    = The number of bytes to read/write.
+       ** \param wrt      = Indicates if the call is to read (0) or write (0) the input data.
        **
-       ** \ingroup PSIO
        */
     void rw(unsigned int unit, char *buffer, psio_address address, ULI size,
             int wrt);

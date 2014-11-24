@@ -229,7 +229,7 @@ public:
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(std::string OutFileRMR = "outfile", const char *extra=NULL) const;
+    void print(std::string outfile = "outfile", const char *extra=NULL) const;
 
     /// Copies rhs to this
     void copy(const Vector* rhs);
@@ -398,7 +398,7 @@ public:
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(std::string OutFileRMR = "outfile", const char *extra=NULL) const;
+    void print(std::string outfile = "outfile", const char *extra=NULL) const;
     /// Copies rhs to this
     void copy(const IntVector* rhs);
     /// Copies rhs to this
