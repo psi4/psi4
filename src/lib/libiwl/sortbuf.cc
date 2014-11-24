@@ -267,11 +267,7 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
 **    \param ioff2       = offset array for Elbert sorts or for the right 
 **                  indices when no_pq_perm=1 
 **    \param nbfso       = number of basis functions in SO's
-**    \param lastsort    = 1 if this is the last intape, 0 otherwise
 **    \param elbert      = integrals obey rs >= pq.  Use ioff2 to get offset.
-**    \param intermediate= 1 if sorting a intermediate in the transformation
-**                  which is indexed as X[ij][kl] where ij runs from
-**                  fpq to lpq and kl runs from 0 to nbstri
 **    \param no_pq_perm  = don't use permutational symmetry to swap p and q
 **                  (appropriate for MP2 where one is occ and one is virt)
 **    \param qdim        = dimensions for the q index...nvirt for MP2
