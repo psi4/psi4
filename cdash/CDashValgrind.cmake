@@ -14,6 +14,10 @@ set(CTEST_SITE "stallo.uit.no")
 find_program(CTEST_GIT_COMMAND NAMES git)
 set(CTEST_UPDATE_COMMAND ${CTEST_GIT_COMMAND})
 
+find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)
+if(NOT CTEST_MEMORYCHECK_COMMAND)
+   message(FATAL_ERROR "Could not find Valgrind!")
+endif()   
 
 include(ProcessorCount)
 ProcessorCount(NCORES)
