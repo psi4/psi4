@@ -163,7 +163,7 @@ void ShellInfo::print(std::string out) const
     }
 }
 
-double ShellInfo::normalize(int l, int m, int n)
+double ShellInfo::normalize(int /*l*/, int /*m*/, int /*n*/)
 {
     return 1.0;
 }
