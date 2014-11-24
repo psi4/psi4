@@ -6,7 +6,7 @@ macro(add_regression_test _name _labels)
     set(labels)
     string(REPLACE ";" " " _labels "${_labels}")
     foreach(_label "${_labels}")
-       list(APPEND labels ${_label})
+        list(APPEND labels ${_label})
     endforeach()
     unset(_labels)
     # This is where the test directories live
@@ -18,16 +18,16 @@ macro(add_regression_test _name _labels)
 
     # A full report
     set(LOGFILE ${PROJECT_BINARY_DIR}/testresults.log)
-    
+
     # Generic setup
     set(TEST_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
     # Some tests are in subdirectories of subdirectories (cfour, mrcc, dftd3) 
     get_filename_component(dir ${TEST_SRC_DIR} PATH)
     get_filename_component(dir ${dir} NAME)
     if("${dir}" STREQUAL "tests")
-       set(TEST_RUN_DIR ${PROJECT_BINARY_DIR}/tests/${_name})
-    else()	    
-       set(TEST_RUN_DIR ${PROJECT_BINARY_DIR}/tests/${dir}/${_name})
+        set(TEST_RUN_DIR ${PROJECT_BINARY_DIR}/tests/${_name})
+    else()
+        set(TEST_RUN_DIR ${PROJECT_BINARY_DIR}/tests/${dir}/${_name})
     endif()
     file(MAKE_DIRECTORY ${TEST_RUN_DIR})
 
@@ -38,55 +38,56 @@ macro(add_regression_test _name _labels)
     # true/false have to be _lowercase_, CTest will otherwise spit out a BAD COMMAND error
     set(AUTOTEST false)
     if(labels)
-       list(FIND labels "autotest" _index) 
-       # If not found _index == -1; convert to FALSE
-       if(PERL_FOUND AND (${_index} GREATER -1))
-          set(AUTOTEST true)
-       endif()
+        list(FIND labels "autotest" _index) 
+        # If not found _index == -1; convert to FALSE
+        if(PERL_FOUND AND (${_index} GREATER -1))
+            set(AUTOTEST true)
+        endif()
     endif()
 
     # Add the test
     if(MPI_FOUND)
-       # If this was an MPI-build, we test on two processors
-       # RDR: this is really hardcoded, maybe generalize?
-       # In theory would like to make sure all tests run in parallel as well
-       # but... most do not right now...
-       add_test(NAME "${_name}"
-        WORKING_DIRECTORY "${TEST_RUN_DIR}"
-        COMMAND "${MPIEXEC}" -n 2 "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${PROJECT_SOURCE_DIR}" "${OUTFILE}" "${PSIEXE}"
+        # If this was an MPI-build, we test on two processors
+        # RDR: this is really hardcoded, maybe generalize?
+        # In theory would like to make sure all tests run in parallel as well
+        # but... most do not right now...
+        add_test(NAME "${_name}"
+            WORKING_DIRECTORY "${TEST_RUN_DIR}"
+            COMMAND "${MPIEXEC}" -n 2 "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${PROJECT_SOURCE_DIR}" "${OUTFILE}" "${PSIEXE}"
         )
     else()
-       # Serial build
-       add_test(NAME "${_name}"
-        WORKING_DIRECTORY "${TEST_RUN_DIR}"
-        COMMAND "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${PROJECT_SOURCE_DIR}" "${OUTFILE}" "${PSIEXE}"
+        message("${_name} ${PYTHON_EXECUTABLE} ${PSIEXE}")
+        # Serial build
+        add_test(NAME "${_name}"
+            WORKING_DIRECTORY "${TEST_RUN_DIR}"
+            COMMAND "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${PROJECT_SOURCE_DIR}" "${OUTFILE}" "${PSIEXE}"
         )
     endif()
 
     if(labels)
-       set_tests_properties(${_name} PROPERTIES LABELS "${labels}")
+        set_tests_properties(${_name} PROPERTIES LABELS "${labels}")
     endif()
 endmacro()
 
 # This macro is used to add a unit test using Google Unit Testing framework
 macro(add_googletest test_name my_libraries external_libraries)
     get_filename_component(the_name ${test_name} NAME_WE)
-    add_executable(${the_name}.x ${the_name}.cpp)      	
+    add_executable(${the_name}.x ${the_name}.cpp)
     add_dependencies(${the_name}.x googletest)
     target_link_libraries(${the_name}.x
                           ${my_libraries}
                           ${GTEST_LIBS_DIR}/libgtest.a
                           ${GTEST_LIBS_DIR}/libgtest_main.a
-	                  ${CMAKE_THREAD_LIBS_INIT}
+                          ${CMAKE_THREAD_LIBS_INIT}
                           ${external_libraries}
-			  )
+    )
     add_test(NAME ${the_name} COMMAND ${the_name}.x)
 endmacro()
 
 # This macro is used to add a unit test using Boost Unit Testing framework
 macro(add_boosttest test_name)
     get_filename_component(the_name ${test_name} NAME_WE)
-    add_executable(${the_name}.x ${the_name}.cpp)      	
+    add_executable(${the_name}.x ${the_name}.cpp)
 
     set(_my_libraries "${ARGV1}")
     set(_external_libraries "${ARGV2}")
@@ -97,14 +98,14 @@ macro(add_boosttest test_name)
     # since custom Boost can be built only on one processor!
     # We thus add this dependency to not get stuck.
     if(BUILD_CUSTOM_BOOST)
-	    add_dependencies(${the_name}.x custom_boost)
-    endif()	    
+        add_dependencies(${the_name}.x custom_boost)
+    endif()
     target_link_libraries(${the_name}.x
                           ${_my_libraries}
-			  ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-	    	          ${CMAKE_THREAD_LIBS_INIT}
+                          ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+                          ${CMAKE_THREAD_LIBS_INIT}
                           ${_external_libraries}
-			  )
+    )
     add_test(NAME ${the_name} COMMAND ${the_name}.x)
 endmacro()
 
