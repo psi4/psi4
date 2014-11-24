@@ -1478,10 +1478,7 @@ double HF::compute_energy()
 
     if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
         Process::environment.get_efp()->set_qm_atoms();
-        double efp_wfn_dependent_energy =
-		    Process::environment.get_efp()->scf_energy_update();
-        fprintf(outfile, "  Wfn dependent Energy =  %24.16f [H]\n",
-		    efp_wfn_dependent_energy);
+        double efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update();
     }
 
     // SCF iterations
@@ -1494,9 +1491,8 @@ double HF::compute_energy()
         call_preiteration_callbacks();
 
         H_->copy(Horig_);
-        H_->print(outfile);
 
-        // add efp contribuation to Fock matrix
+        // add efp contribution to Fock matrix
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
     	    boost::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock();
     	    H_->add(Vefp);
@@ -1527,8 +1523,8 @@ double HF::compute_energy()
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
             double efp_wfn_dependent_energy =
 		    Process::environment.get_efp()->scf_energy_update();
-            fprintf(outfile, "  Wfn dependent Energy =  %24.16f [H]\n",
-			    efp_wfn_dependent_energy);
+            //fprintf(outfile, "  Wfn dependent Energy =  %24.16f [H]\n",
+			//    efp_wfn_dependent_energy);
 
             E_ += efp_wfn_dependent_energy;
         }   
