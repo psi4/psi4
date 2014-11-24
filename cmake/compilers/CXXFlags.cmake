@@ -76,7 +76,7 @@ else()
        elseif(ENABLE_UBSAN)
           set(CMAKE_CXX_FLAGS_DEBUG    "-g -O1 -fsanitize=undefined -fno-omit-frame-pointer")
        else()
-          set(CMAKE_CXX_FLAGS_DEBUG    "-O0 -g -DDEBUG -Wall -Wextra -Winit-self -Woverloaded-virtual -Wuninitialized -Wmissing-declarations -Wwrite-strings -Weffc++ -Wdocumentation")
+           set(CMAKE_CXX_FLAGS_DEBUG    "-O0 -g -DDEBUG -Wall -Wextra -Winit-self -Woverloaded-virtual -Wuninitialized -Wmissing-declarations -Wwrite-strings -Weffc++ -Wdocumentation -Wno-unknown-pragmas")
        endif()
        set(CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG -Wno-unused")
 
