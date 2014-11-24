@@ -121,6 +121,14 @@ if(UNIX)
    link_libraries("${LIBUTIL}")
 endif(UNIX)
 
+# Find lm: needed on Ubuntu for lib{int,deriv}_compiler
+if(UNIX)
+   find_library(LIBM m)
+   get_filename_component(_dir_libutil ${LIBM} DIRECTORY)
+   link_directories(${_dir_libm})
+   link_libraries("${LIBM}")
+endif(UNIX)
+
 if(LDFLAGS)
    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LDFLAGS}")
 endif()
