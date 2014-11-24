@@ -51,7 +51,7 @@ namespace psi {
 ** \param jb   = if 1, transpose b before multiplication
 ** \param c    = matrix to store the result
 ** \param ic   = if 1, normal multiplication into c
-** \param jb   = if 1, transpose c after multiplication
+** \param jc   = if 1, transpose c after multiplication
 ** \param nrow = number of rows of a
 ** \param nlnk = number of columns of a and rows of b
 ** \param ncol = number of columns of b
