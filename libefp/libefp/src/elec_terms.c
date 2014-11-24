@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012-2013 Ilya Kaliman
+ * Copyright (c) 2012-2014 Ilya Kaliman
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,14 +49,14 @@ octupole_sum(const double *oct, const vec_t *dr)
 }
 
 static double
-octupole_sum_xyz(const double *oct, const vec_t *dr, int axis)
+octupole_sum_xyz(const double *oct, const vec_t *dr, size_t axis)
 {
 	const double *pdr = (const double *)dr;
 	double sum = 0.0;
 
-	for (int a = 0; a < 3; a++)
-		for (int b = 0; b < 3; b++)
-			for (int c = 0; c < 3; c++) {
+	for (size_t a = 0; a < 3; a++)
+		for (size_t b = 0; b < 3; b++)
+			for (size_t c = 0; c < 3; c++) {
 				double o = oct[oct_idx(a, b, c)];
 				if (a == axis) sum += o * pdr[b] * pdr[c];
 				if (b == axis) sum += o * pdr[a] * pdr[c];
@@ -129,9 +129,9 @@ efp_dipole_quadrupole_energy(const vec_t *d1, const double *quad2, const vec_t *
 	double q2dr = quadrupole_sum(quad2, dr);
 	double d1q2dr = 0.0;
 
-	for (int a = 0; a < 3; a++)
-		for (int b = 0; b < 3; b++) {
-			int idx = quad_idx(a, b);
+	for (size_t a = 0; a < 3; a++)
+		for (size_t b = 0; b < 3; b++) {
+			size_t idx = quad_idx(a, b);
 			d1q2dr += quad2[idx] * vec_get(d1, a) * vec_get(dr, b);
 		}
 
@@ -153,12 +153,12 @@ efp_quadrupole_quadrupole_energy(const double *quad1, const double *quad2, const
 	double q1q2 = 0.0;
 	double q1q2dr = 0.0;
 
-	for (int a = 0; a < 3; a++) {
+	for (size_t a = 0; a < 3; a++) {
 		double t1 = 0.0;
 		double t2 = 0.0;
 
-		for (int b = 0; b < 3; b++) {
-			int idx = quad_idx(a, b);
+		for (size_t b = 0; b < 3; b++) {
+			size_t idx = quad_idx(a, b);
 
 			t1 += quad1[idx] * vec_get(dr, b);
 			t2 += quad2[idx] * vec_get(dr, b);
@@ -330,7 +330,7 @@ efp_dipole_quadrupole_grad(const vec_t *d1, const double *quad2,
 	double q2sy = 0.0;
 	double q2sz = 0.0;
 
-	for (int a = 0; a < 3; a++) {
+	for (size_t a = 0; a < 3; a++) {
 		q2sx += quad2[quad_idx(0, a)] * vec_get(dr, a);
 		q2sy += quad2[quad_idx(1, a)] * vec_get(dr, a);
 		q2sz += quad2[quad_idx(2, a)] * vec_get(dr, a);
@@ -407,8 +407,8 @@ efp_quadrupole_quadrupole_grad(const double *quad1, const double *quad2,
 
 	double q1sq2s = 0.0;
 
-	for (int a = 0; a < 3; a++) {
-		for (int b = 0; b < 3; b++) {
+	for (size_t a = 0; a < 3; a++) {
+		for (size_t b = 0; b < 3; b++) {
 			q1s[a] += quad1[quad_idx(a, b)] * vec_get(dr, b);
 			q2s[a] += quad2[quad_idx(a, b)] * vec_get(dr, b);
 		}
@@ -417,8 +417,8 @@ efp_quadrupole_quadrupole_grad(const double *quad1, const double *quad2,
 
 	double q1q2 = 0.0;
 
-	for (int a = 0; a < 3; a++)
-		for (int b = 0; b < 3; b++)
+	for (size_t a = 0; a < 3; a++)
+		for (size_t b = 0; b < 3; b++)
 			q1q2 += quad1[quad_idx(a, b)] * quad2[quad_idx(a, b)];
 
 	double g = 30.0 / r7 * q1q2 - 420.0 / r9 * q1sq2s +
@@ -426,9 +426,9 @@ efp_quadrupole_quadrupole_grad(const double *quad1, const double *quad2,
 
 	double t1x = 0.0, t1y = 0.0, t1z = 0.0;
 
-	for (int a = 0; a < 3; a++)
-		for (int b = 0; b < 3; b++) {
-			int ab = quad_idx(a, b);
+	for (size_t a = 0; a < 3; a++)
+		for (size_t b = 0; b < 3; b++) {
+			size_t ab = quad_idx(a, b);
 			double dra = vec_get(dr, a);
 			t1x += (quad1[quad_idx(0, b)] * quad2[ab] +
 				quad1[ab] * quad2[quad_idx(0, b)]) * dra;
@@ -448,9 +448,9 @@ efp_quadrupole_quadrupole_grad(const double *quad1, const double *quad2,
 	double q1q2tt[3][3];
 	memset(q1q2tt, 0, 9 * sizeof(double));
 
-	for (int a = 0; a < 3; a++)
-	for (int b = 0; b < 3; b++)
-	for (int c = 0; c < 3; c++) {
+	for (size_t a = 0; a < 3; a++)
+	for (size_t b = 0; b < 3; b++)
+	for (size_t c = 0; c < 3; c++) {
 		double dra = vec_get(dr, a);
 		double drc = vec_get(dr, c);
 		q1q2tt[b][c] += quad1[quad_idx(a, b)] *
@@ -466,9 +466,9 @@ efp_quadrupole_quadrupole_grad(const double *quad1, const double *quad2,
 	double q2q1tt[3][3];
 	memset(q2q1tt, 0, 9 * sizeof(double));
 
-	for (int a = 0; a < 3; a++)
-	for (int b = 0; b < 3; b++)
-	for (int c = 0; c < 3; c++) {
+	for (size_t a = 0; a < 3; a++)
+	for (size_t b = 0; b < 3; b++)
+	for (size_t c = 0; c < 3; c++) {
 		double dra = vec_get(dr, a);
 		double drc = vec_get(dr, c);
 		q2q1tt[b][c] += quad2[quad_idx(a, b)] *

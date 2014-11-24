@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012-2013 Ilya Kaliman
+ * Copyright (c) 2012-2014 Ilya Kaliman
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,18 +26,15 @@
 
 #include "common.h"
 
-void sim_sp(struct efp *, const struct cfg *, const struct sys *);
+void sim_sp(struct state *state);
 
-void sim_sp(struct efp *efp, const struct cfg *cfg, const struct sys *sys)
+void sim_sp(struct state *state)
 {
-	(void)cfg;
-	(void)sys;
+	msg("SINGLE POINT ENERGY JOB\n\n\n");
 
-	printf("SINGLE POINT ENERGY JOB\n\n\n");
+	print_geometry(state->efp);
+	compute_energy(state, false);
+	print_energy(state);
 
-	print_geometry(efp);
-	check_fail(efp_compute(efp, 0));
-	print_energy(efp);
-
-	printf("SINGLE POINT ENERGY JOB COMPLETED SUCCESSFULLY\n");
+	msg("SINGLE POINT ENERGY JOB COMPLETED SUCCESSFULLY\n");
 }

@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012-2013 Ilya Kaliman
+ * Copyright (c) 2012-2014 Ilya Kaliman
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,19 +26,16 @@
 
 #include "common.h"
 
-void sim_grad(struct efp *, const struct cfg *, const struct sys *);
+void sim_grad(struct state *state);
 
-void sim_grad(struct efp *efp, const struct cfg *cfg, const struct sys *sys)
+void sim_grad(struct state *state)
 {
-	(void)cfg;
-	(void)sys;
+	msg("ENERGY GRADIENT JOB\n\n\n");
 
-	printf("ENERGY GRADIENT JOB\n\n\n");
+	print_geometry(state->efp);
+	compute_energy(state, true);
+	print_energy(state);
+	print_gradient(state);
 
-	print_geometry(efp);
-	check_fail(efp_compute(efp, 1));
-	print_energy(efp);
-	print_gradient(efp);
-
-	printf("ENERGY GRADIENT JOB COMPLETED SUCCESSFULLY\n");
+	msg("ENERGY GRADIENT JOB COMPLETED SUCCESSFULLY\n");
 }

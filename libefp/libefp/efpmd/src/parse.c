@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012-2013 Ilya Kaliman
+ * Copyright (c) 2012-2014 Ilya Kaliman
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -45,8 +45,8 @@ static void check_cfg(struct cfg *cfg)
 	check_int(cfg, "max_steps");
 	check_int(cfg, "print_step");
 	check_double(cfg, "opt_tol");
-	check_double(cfg, "hess_step_dist");
-	check_double(cfg, "hess_step_angle");
+	check_double(cfg, "num_step_dist");
+	check_double(cfg, "num_step_angle");
 	check_double(cfg, "time_step");
 	check_double(cfg, "temperature");
 	check_double(cfg, "pressure");
@@ -57,6 +57,7 @@ static void check_cfg(struct cfg *cfg)
 static void parse_frag(struct stream *stream, enum efp_coord_type coord_type,
 				struct frag *frag)
 {
+	memset(frag, 0, sizeof(struct frag));
 	efp_stream_skip_space(stream);
 	const char *ptr = efp_stream_get_ptr(stream);
 	efp_stream_skip_nonspace(stream);
@@ -82,7 +83,7 @@ static void parse_frag(struct stream *stream, enum efp_coord_type coord_type,
 	for (int i = 0, idx = 0; i < n_rows; i++) {
 		for (int j = 0; j < n_cols; j++, idx++)
 			if (!efp_stream_parse_double(stream, frag->coord + idx))
-				error("INCORRECT FRAGMENT COORDINATES FORMAT");
+				error("incorrect fragment coordinates format");
 
 		efp_stream_next_line(stream);
 	}
@@ -98,10 +99,15 @@ static void parse_frag(struct stream *stream, enum efp_coord_type coord_type,
 
 		for (int i = 0; i < 6; i++)
 			if (!efp_stream_parse_double(stream, frag->vel + i))
-				error("INCORRECT FRAGMENT VELOCITIES FORMAT");
+				error("incorrect fragment velocities format");
 
 		efp_stream_next_line(stream);
 	}
+}
+
+static bool is_keyword(const char *str, const char *key)
+{
+	return efp_strncasecmp(str, key, strlen(key)) == 0 && isspace(str[strlen(key)]);
 }
 
 struct sys *parse_input(struct cfg *cfg, const char *path)
@@ -110,7 +116,7 @@ struct sys *parse_input(struct cfg *cfg, const char *path)
 	struct sys *sys = xcalloc(1, sizeof(struct sys));
 
 	if ((stream = efp_stream_open(path)) == NULL)
-		error("UNABLE TO OPEN INPUT FILE");
+		error("unable to open input file");
 
 	efp_stream_next_line(stream);
 
@@ -123,18 +129,35 @@ struct sys *parse_input(struct cfg *cfg, const char *path)
 		if (efp_stream_eol(stream))
 			goto next;
 
-		if (efp_strncasecmp(efp_stream_get_ptr(stream), "fragment",
-				strlen("fragment")) == 0) {
+		if (is_keyword(efp_stream_get_ptr(stream), "fragment")) {
+			struct frag frag;
+			enum efp_coord_type coord_type;
+
 			efp_stream_advance(stream, strlen("fragment"));
+			coord_type = cfg_get_enum(cfg, "coord");
+			parse_frag(stream, coord_type, &frag);
 
 			sys->n_frags++;
-			sys->frags = xrealloc(sys->frags, sys->n_frags * sizeof(struct frag));
-
-			struct frag *frag = sys->frags + sys->n_frags - 1;
-			memset(frag, 0, sizeof(struct frag));
-			parse_frag(stream, cfg_get_enum(cfg, "coord"), frag);
-
+			sys->frags = xrealloc(sys->frags,
+					sys->n_frags * sizeof(struct frag));
+			sys->frags[sys->n_frags - 1] = frag;
 			continue;
+		}
+		else if (is_keyword(efp_stream_get_ptr(stream), "charge")) {
+			struct charge charge;
+
+			efp_stream_advance(stream, strlen("charge"));
+
+			if (!efp_stream_parse_double(stream, &charge.q) ||
+			    !efp_stream_parse_double(stream, &charge.pos.x) ||
+			    !efp_stream_parse_double(stream, &charge.pos.y) ||
+			    !efp_stream_parse_double(stream, &charge.pos.z))
+				error("unable to parse a point charge record");
+
+			sys->n_charges++;
+			sys->charges = xrealloc(sys->charges,
+					sys->n_charges * sizeof(struct charge));
+			sys->charges[sys->n_charges - 1] = charge;
 		}
 		else {
 			cfg_parse_line(cfg, efp_stream_get_ptr(stream));
@@ -143,8 +166,11 @@ next:
 		efp_stream_next_line(stream);
 	}
 
-	if (sys->n_frags < 1)
-		error("AT LEAST ONE FRAGMENT MUST BE SPECIFIED");
+	if (sys->n_frags == 0)
+		error("at least one fragment must be specified");
+
+	if (sys->n_charges > 0 && cfg_get_enum(cfg, "run_type") == RUN_TYPE_MD)
+		error("point charges are not supported in molecular dynamics");
 
 	if (cfg_get_enum(cfg, "ensemble") == ENSEMBLE_TYPE_NPT)
 		cfg_set_bool(cfg, "enable_pbc", true);

@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012-2013 Ilya Kaliman
+ * Copyright (c) 2012-2014 Ilya Kaliman
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,10 +34,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef WITH_MPI
+#include <mpi.h>
+#endif
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #include <efp.h>
+#include <ff.h>
 #include <math_util.h>
 
 #include "cfg.h"
+#include "msg.h"
 #include "phys.h"
 
 #define NORETURN __attribute__((noreturn))
@@ -48,7 +57,9 @@ enum run_type {
 	RUN_TYPE_GRAD,
 	RUN_TYPE_HESS,
 	RUN_TYPE_OPT,
-	RUN_TYPE_MD
+	RUN_TYPE_MD,
+	RUN_TYPE_EFIELD,
+	RUN_TYPE_GTEST
 };
 
 enum ensemble_type {
@@ -63,9 +74,25 @@ struct frag {
 	double vel[6];
 };
 
+struct charge {
+	double q;
+	vec_t pos;
+};
+
 struct sys {
-	int n_frags;
+	size_t n_frags;
 	struct frag *frags;
+	size_t n_charges;
+	struct charge *charges;
+};
+
+struct state {
+	struct efp *efp;
+	struct ff *ff;
+	struct cfg *cfg;
+	struct sys *sys;
+	double energy;
+	double *grad;
 };
 
 void NORETURN die(const char *, ...);
@@ -75,14 +102,17 @@ void *xmalloc(size_t);
 void *xcalloc(size_t, size_t);
 void *xrealloc(void *, size_t);
 
+void print_vec(const double *);
 void print_geometry(struct efp *);
-void print_energy(struct efp *);
-void print_gradient(struct efp *);
+void print_energy(struct state *);
+void print_gradient(struct state *);
 void print_fragment(const char *, const double *, const double *);
-void print_vector(int, const double *);
-void print_matrix(int, int, const double *);
+void print_charge(double, double, double, double);
+void print_vector(size_t, const double *);
+void print_matrix(size_t, size_t, const double *);
 
 void check_fail(enum efp_result);
+void compute_energy(struct state *, bool);
 struct sys *parse_input(struct cfg *, const char *);
 vec_t box_from_str(const char *);
 int efp_strcasecmp(const char *, const char *);

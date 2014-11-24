@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012-2013 Ilya Kaliman
+ * Copyright (c) 2012-2014 Ilya Kaliman
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,48 +25,47 @@
  */
 
 #include "common.h"
-#include "optimizer.h"
+#include "opt.h"
 
-void sim_opt(struct efp *, const struct cfg *, const struct sys *);
+void sim_opt(struct state *state);
 
-static double compute_efp(int n, const double *x, double *gx, void *data)
+static double compute_efp(size_t n, const double *x, double *gx, void *data)
 {
-	struct efp *efp = (struct efp *)data;
+	size_t n_frags, n_charge;
+	struct state *state = (struct state *)data;
 
-	int n_frags;
-	check_fail(efp_get_frag_count(efp, &n_frags));
+	check_fail(efp_get_frag_count(state->efp, &n_frags));
+	check_fail(efp_get_point_charge_count(state->efp, &n_charge));
 
-	assert(n == 6 * n_frags);
+	assert(n == (6 * n_frags + 3 * n_charge));
 
-	check_fail(efp_set_coordinates(efp, EFP_COORD_TYPE_XYZABC, x));
-	check_fail(efp_compute(efp, 1));
+	check_fail(efp_set_coordinates(state->efp, EFP_COORD_TYPE_XYZABC, x));
+	check_fail(efp_set_point_charge_coordinates(state->efp, x + 6 * n_frags));
 
-	struct efp_energy energy;
-	check_fail(efp_get_energy(efp, &energy));
+	compute_energy(state, true);
+	memcpy(gx, state->grad, (6 * n_frags + 3 * n_charge) * sizeof(double));
 
-	check_fail(efp_get_gradient(efp, n_frags, gx));
-
-	for (int i = 0; i < n_frags; i++) {
+	for (size_t i = 0; i < n_frags; i++) {
 		const double *euler = x + 6 * i + 3;
 		double *gradptr = gx + 6 * i + 3;
 
 		efp_torque_to_derivative(euler, gradptr, gradptr);
 	}
 
-	return energy.total;
+	return (state->energy);
 }
 
 static void print_restart(struct efp *efp)
 {
-	int n_frags;
+	size_t n_frags;
 	check_fail(efp_get_frag_count(efp, &n_frags));
 
 	double coord[6 * n_frags];
-	check_fail(efp_get_coordinates(efp, n_frags, coord));
+	check_fail(efp_get_coordinates(efp, coord));
 
-	printf("    RESTART DATA\n\n");
+	msg("    RESTART DATA\n\n");
 
-	for (int i = 0; i < n_frags; i++) {
+	for (size_t i = 0; i < n_frags; i++) {
 		char name[64];
 		check_fail(efp_get_frag_name(efp, i, sizeof(name), name));
 
@@ -77,7 +76,26 @@ static void print_restart(struct efp *efp)
 		print_fragment(name, coord + 6 * i, NULL);
 	}
 
-	printf("\n");
+	size_t n_charges;
+	check_fail(efp_get_point_charge_count(efp, &n_charges));
+
+	if (n_charges > 0) {
+		double q[n_charges];
+		check_fail(efp_get_point_charge_values(efp, q));
+
+		double xyz[3 * n_charges];
+		check_fail(efp_get_point_charge_coordinates(efp, xyz));
+
+		for (size_t i = 0; i < n_charges; i++) {
+			double x = xyz[3 * i + 0] * BOHR_RADIUS;
+			double y = xyz[3 * i + 1] * BOHR_RADIUS;
+			double z = xyz[3 * i + 2] * BOHR_RADIUS;
+
+			print_charge(q[i], x, y, z);
+		}
+	}
+
+	msg("\n");
 }
 
 static int check_conv(double rms_grad, double max_grad, double opt_tol)
@@ -85,12 +103,12 @@ static int check_conv(double rms_grad, double max_grad, double opt_tol)
 	return max_grad < opt_tol && rms_grad < opt_tol / 3.0;
 }
 
-static void get_grad_info(int n_coord, const double *grad, double *rms_grad_out,
+static void get_grad_info(size_t n_coord, const double *grad, double *rms_grad_out,
 				double *max_grad_out)
 {
 	double rms_grad = 0.0, max_grad = 0.0;
 
-	for (int i = 0; i < n_coord; i++) {
+	for (size_t i = 0; i < n_coord; i++) {
 		rms_grad += grad[i] * grad[i];
 
 		if (fabs(grad[i]) > max_grad)
@@ -103,75 +121,75 @@ static void get_grad_info(int n_coord, const double *grad, double *rms_grad_out,
 	*max_grad_out = max_grad;
 }
 
-static void print_status(struct efp *efp, double e_diff, double rms_grad,
-				double max_grad)
+static void print_status(struct state *state, double e_diff, double rms_grad, double max_grad)
 {
-	print_geometry(efp);
-	print_restart(efp);
-	print_energy(efp);
+	print_geometry(state->efp);
+	print_restart(state->efp);
+	print_energy(state);
 
-	printf("%30s %16.10lf\n", "ENERGY CHANGE", e_diff);
-	printf("%30s %16.10lf\n", "RMS GRADIENT", rms_grad);
-	printf("%30s %16.10lf\n", "MAXIMUM GRADIENT", max_grad);
-	printf("\n\n");
+	msg("%30s %16.10lf\n", "ENERGY CHANGE", e_diff);
+	msg("%30s %16.10lf\n", "RMS GRADIENT", rms_grad);
+	msg("%30s %16.10lf\n", "MAXIMUM GRADIENT", max_grad);
+	msg("\n\n");
 
 	fflush(stdout);
 }
 
-void sim_opt(struct efp *efp, const struct cfg *cfg, const struct sys *sys)
+void sim_opt(struct state *state)
 {
-	(void)sys;
+	msg("ENERGY MINIMIZATION JOB\n\n\n");
 
-	printf("ENERGY MINIMIZATION JOB\n\n\n");
-
-	int n_frags, n_coord;
+	size_t n_frags, n_charge, n_coord;
 	double rms_grad, max_grad;
 
-	check_fail(efp_get_frag_count(efp, &n_frags));
-	n_coord = 6 * n_frags;
+	check_fail(efp_get_frag_count(state->efp, &n_frags));
+	check_fail(efp_get_point_charge_count(state->efp, &n_charge));
 
-	struct opt_state *state = opt_create(n_coord);
-	if (!state)
-		error("UNABLE TO CREATE AN OPTIMIZER");
+	n_coord = 6 * n_frags + 3 * n_charge;
 
-	opt_set_func(state, compute_efp);
-	opt_set_user_data(state, efp);
+	struct opt_state *opt_state = opt_create(n_coord);
+	if (!opt_state)
+		error("unable to create an optimizer");
+
+	opt_set_func(opt_state, compute_efp);
+	opt_set_user_data(opt_state, state);
 
 	double coord[n_coord], grad[n_coord];
-	check_fail(efp_get_coordinates(efp, n_frags, coord));
+	check_fail(efp_get_coordinates(state->efp, coord));
+	check_fail(efp_get_point_charge_coordinates(state->efp, coord + 6 * n_frags));
 
-	if (opt_init(state, n_coord, coord))
-		error("UNABLE TO INITIALIZE AN OPTIMIZER");
+	if (opt_init(opt_state, n_coord, coord))
+		error("unable to initialize an optimizer");
 
-	double e_old = opt_get_fx(state);
-	opt_get_gx(state, n_coord, grad);
+	double e_old = opt_get_fx(opt_state);
+	opt_get_gx(opt_state, n_coord, grad);
 	get_grad_info(n_coord, grad, &rms_grad, &max_grad);
 
-	printf("    INITIAL STATE\n\n");
-	print_status(efp, 0.0, rms_grad, max_grad);
+	msg("    INITIAL STATE\n\n");
+	print_status(state, 0.0, rms_grad, max_grad);
 
-	for (int step = 1; step <= cfg_get_int(cfg, "max_steps"); step++) {
-		if (opt_step(state))
-			error("UNABLE TO MAKE AN OPTIMIZATION STEP");
+	for (int step = 1; step <= cfg_get_int(state->cfg, "max_steps"); step++) {
+		if (opt_step(opt_state))
+			error("unable to make an optimization step");
 
-		double e_new = opt_get_fx(state);
-		opt_get_gx(state, n_coord, grad);
+		double e_new = opt_get_fx(opt_state);
+		opt_get_gx(opt_state, n_coord, grad);
 		get_grad_info(n_coord, grad, &rms_grad, &max_grad);
 
-		if (check_conv(rms_grad, max_grad, cfg_get_double(cfg, "opt_tol"))) {
-			printf("    FINAL STATE\n\n");
-			print_status(efp, e_new - e_old, rms_grad, max_grad);
-			printf("OPTIMIZATION CONVERGED\n");
+		if (check_conv(rms_grad, max_grad, cfg_get_double(state->cfg, "opt_tol"))) {
+			msg("    FINAL STATE\n\n");
+			print_status(state, e_new - e_old, rms_grad, max_grad);
+			msg("OPTIMIZATION CONVERGED\n");
 			break;
 		}
 
-		printf("    STATE AFTER %d STEPS\n\n", step);
-		print_status(efp, e_new - e_old, rms_grad, max_grad);
+		msg("    STATE AFTER %d STEPS\n\n", step);
+		print_status(state, e_new - e_old, rms_grad, max_grad);
 
 		e_old = e_new;
 	}
 
-	opt_shutdown(state);
+	opt_shutdown(opt_state);
 
-	printf("ENERGY MINIMIZATION JOB COMPLETED SUCCESSFULLY\n");
+	msg("ENERGY MINIMIZATION JOB COMPLETED SUCCESSFULLY\n");
 }

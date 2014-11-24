@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012-2013 Ilya Kaliman
+ * Copyright (c) 2012-2014 Ilya Kaliman
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -57,24 +57,22 @@ struct npt_data {
 };
 
 struct md {
-	int n_bodies;
+	size_t n_bodies;
 	struct body *bodies;
-	int n_freedom;
+	size_t n_freedom;
 	vec_t box;
 	double potential_energy;
 	double (*get_invariant)(const struct md *);
 	void (*update_step)(struct md *);
-	struct efp *efp;
-	const struct cfg *cfg;
-	const struct sys *sys;
+	struct state *state;
 	void *data;
 };
 
-void sim_md(struct efp *, const struct cfg *, const struct sys *);
+void sim_md(struct state *state);
 
 static vec_t wrap(const struct md *md, const vec_t *pos)
 {
-	if (!cfg_get_bool(md->cfg, "enable_pbc"))
+	if (!cfg_get_bool(md->state->cfg, "enable_pbc"))
 		return *pos;
 
 	vec_t sub = {
@@ -90,7 +88,7 @@ static double get_kinetic_energy(const struct md *md)
 {
 	double ke = 0.0;
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		struct body *body = md->bodies + i;
 
 		ke += body->mass * body->vel.x * body->vel.x;
@@ -122,7 +120,7 @@ static double get_pressure(const struct md *md)
 	double volume = get_volume(md);
 	vec_t pressure = vec_zero;
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		const struct body *body = md->bodies + i;
 
 		pressure.x += body->mass * body->vel.x * body->vel.x;
@@ -131,7 +129,7 @@ static double get_pressure(const struct md *md)
 	}
 
 	mat_t stress;
-	check_fail(efp_get_stress_tensor(md->efp, (double *)&stress));
+	check_fail(efp_get_stress_tensor(md->state->efp, (double *)&stress));
 
 	pressure.x = (pressure.x + stress.xx) / volume;
 	pressure.y = (pressure.y + stress.yy) / volume;
@@ -149,8 +147,8 @@ static double get_invariant_nvt(const struct md *md)
 {
 	struct nvt_data *data = (struct nvt_data *)md->data;
 
-	double t_tau = cfg_get_double(md->cfg, "thermostat_tau");
-	double t_target = cfg_get_double(md->cfg, "temperature");
+	double t_tau = cfg_get_double(md->state->cfg, "thermostat_tau");
+	double t_target = cfg_get_double(md->state->cfg, "temperature");
 
 	double kbt = BOLTZMANN * t_target;
 
@@ -164,10 +162,10 @@ static double get_invariant_npt(const struct md *md)
 {
 	struct npt_data *data = (struct npt_data *)md->data;
 
-	double t_tau = cfg_get_double(md->cfg, "thermostat_tau");
-	double t_target = cfg_get_double(md->cfg, "temperature");
-	double p_tau = cfg_get_double(md->cfg, "barostat_tau");
-	double p_target = cfg_get_double(md->cfg, "pressure");
+	double t_tau = cfg_get_double(md->state->cfg, "thermostat_tau");
+	double t_target = cfg_get_double(md->state->cfg, "temperature");
+	double p_tau = cfg_get_double(md->state->cfg, "barostat_tau");
+	double p_target = cfg_get_double(md->state->cfg, "pressure");
 
 	double kbt = BOLTZMANN * t_target;
 	double volume = get_volume(md);
@@ -186,7 +184,7 @@ static vec_t get_system_com(const struct md *md)
 	double mass = 0.0;
 	vec_t com = vec_zero;
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		struct body *body = md->bodies + i;
 		vec_t pos = wrap(md, &body->pos);
 
@@ -209,7 +207,7 @@ static vec_t get_system_com_velocity(const struct md *md)
 	double mass = 0.0;
 	vec_t cv = vec_zero;
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		struct body *body = md->bodies + i;
 
 		cv.x += body->vel.x * body->mass;
@@ -233,7 +231,7 @@ static vec_t get_system_angular_momentum(const struct md *md)
 
 	vec_t am = vec_zero;
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		struct body *body = md->bodies + i;
 
 		vec_t pos = wrap(md, &body->pos);
@@ -253,7 +251,7 @@ static mat_t get_system_inertia_tensor(const struct md *md)
 	mat_t inertia = mat_zero;
 	vec_t com = get_system_com(md);
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		struct body *body = md->bodies + i;
 
 		vec_t pos = wrap(md, &body->pos);
@@ -296,7 +294,7 @@ static void remove_system_drift(struct md *md)
 
 	vec_t av = mat_vec(&inertia_inv, &am);
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		struct body *body = md->bodies + i;
 		vec_t pos = wrap(md, &body->pos);
 
@@ -319,41 +317,36 @@ static void remove_system_drift(struct md *md)
 
 static void compute_forces(struct md *md)
 {
-	struct efp_energy energy;
-	double grad[6 * md->n_bodies];
-
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		double crd[12];
 
 		memcpy(crd, &md->bodies[i].pos, 3 * sizeof(double));
 		memcpy(crd + 3, &md->bodies[i].rotmat, 9 * sizeof(double));
 
-		check_fail(efp_set_frag_coordinates(md->efp, i, EFP_COORD_TYPE_ROTMAT, crd));
+		check_fail(efp_set_frag_coordinates(md->state->efp, i, EFP_COORD_TYPE_ROTMAT, crd));
 	}
 
-	check_fail(efp_compute(md->efp, 1));
-	check_fail(efp_get_energy(md->efp, &energy));
-	check_fail(efp_get_gradient(md->efp, md->n_bodies, grad));
+	compute_energy(md->state, true);
 
-	md->potential_energy = energy.total;
+	md->potential_energy = md->state->energy;
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		struct body *body = md->bodies + i;
 
-		body->force.x = -grad[6 * i + 0];
-		body->force.y = -grad[6 * i + 1];
-		body->force.z = -grad[6 * i + 2];
+		body->force.x = -md->state->grad[6 * i + 0];
+		body->force.y = -md->state->grad[6 * i + 1];
+		body->force.z = -md->state->grad[6 * i + 2];
 
-		body->torque.x = -grad[6 * i + 3];
-		body->torque.y = -grad[6 * i + 4];
-		body->torque.z = -grad[6 * i + 5];
+		body->torque.x = -md->state->grad[6 * i + 3];
+		body->torque.y = -md->state->grad[6 * i + 4];
+		body->torque.z = -md->state->grad[6 * i + 5];
 
 		/* convert torque to body frame */
 		body->torque = mat_trans_vec(&body->rotmat, &body->torque);
 	}
 }
 
-static void set_body_mass_and_inertia(struct efp *efp, int idx, struct body *body)
+static void set_body_mass_and_inertia(struct efp *efp, size_t idx, struct body *body)
 {
 	double mass, inertia[3];
 
@@ -371,7 +364,7 @@ static void set_body_mass_and_inertia(struct efp *efp, int idx, struct body *bod
 	body->inertia_inv.z = body->inertia.z < EPSILON ? 0.0 : 1.0 / body->inertia.z;
 }
 
-static void rotate_step(int a1, int a2, double angle, vec_t *angmom, mat_t *rotmat)
+static void rotate_step(size_t a1, size_t a2, double angle, vec_t *angmom, mat_t *rotmat)
 {
 	mat_t rot = { 1.0, 0.0, 0.0,
 		      0.0, 1.0, 0.0,
@@ -430,9 +423,9 @@ static void rotate_body(struct body *body, double dt)
 
 static void update_step_nve(struct md *md)
 {
-	double dt = cfg_get_double(md->cfg, "time_step");
+	double dt = cfg_get_double(md->state->cfg, "time_step");
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		struct body *body = md->bodies + i;
 
 		body->vel.x += 0.5 * body->force.x * dt / body->mass;
@@ -452,7 +445,7 @@ static void update_step_nve(struct md *md)
 
 	compute_forces(md);
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		struct body *body = md->bodies + i;
 
 		body->vel.x += 0.5 * body->force.x * dt / body->mass;
@@ -478,13 +471,13 @@ static void update_step_nvt(struct md *md)
 {
 	struct nvt_data *data = (struct nvt_data *)md->data;
 
-	double dt = cfg_get_double(md->cfg, "time_step");
-	double target = cfg_get_double(md->cfg, "temperature");
-	double tau = cfg_get_double(md->cfg, "thermostat_tau");
+	double dt = cfg_get_double(md->state->cfg, "time_step");
+	double target = cfg_get_double(md->state->cfg, "temperature");
+	double tau = cfg_get_double(md->state->cfg, "thermostat_tau");
 
 	double t0 = get_temperature(md);
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		struct body *body = md->bodies + i;
 
 		body->vel.x += 0.5 * dt * (body->force.x / body->mass -
@@ -516,18 +509,18 @@ static void update_step_nvt(struct md *md)
 	double chi_init = data->chi;
 	vec_t angmom_init[md->n_bodies], vel_init[md->n_bodies];
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		angmom_init[i] = md->bodies[i].angmom;
 		vel_init[i] = md->bodies[i].vel;
 	}
 
-	for (int iter = 1; iter <= MAX_ITER; iter++) {
+	for (size_t iter = 1; iter <= MAX_ITER; iter++) {
 		double chi_prev = data->chi;
 		double ratio = get_temperature(md) / target;
 
 		data->chi = chi_init + 0.5 * dt * (ratio - 1.0) / tau / tau;
 
-		for (int i = 0; i < md->n_bodies; i++) {
+		for (size_t i = 0; i < md->n_bodies; i++) {
 			struct body *body = md->bodies + i;
 
 			body->vel.x = vel_init[i].x + 0.5 * dt *
@@ -549,7 +542,7 @@ static void update_step_nvt(struct md *md)
 			break;
 
 		if (iter == MAX_ITER)
-			printf("WARNING: NVT UPDATE DID NOT CONVERGE\n\n");
+			msg("WARNING: NVT UPDATE DID NOT CONVERGE\n\n");
 	}
 
 	data->chi_dt += 0.5 * dt * data->chi;
@@ -568,11 +561,11 @@ static void update_step_npt(struct md *md)
 {
 	struct npt_data *data = (struct npt_data *)md->data;
 
-	double dt = cfg_get_double(md->cfg, "time_step");
-	double t_tau = cfg_get_double(md->cfg, "thermostat_tau");
-	double t_target = cfg_get_double(md->cfg, "temperature");
-	double p_tau = cfg_get_double(md->cfg, "barostat_tau");
-	double p_target = cfg_get_double(md->cfg, "pressure");
+	double dt = cfg_get_double(md->state->cfg, "time_step");
+	double t_tau = cfg_get_double(md->state->cfg, "thermostat_tau");
+	double t_target = cfg_get_double(md->state->cfg, "temperature");
+	double p_tau = cfg_get_double(md->state->cfg, "barostat_tau");
+	double p_target = cfg_get_double(md->state->cfg, "pressure");
 
 	double t_tau2 = t_tau * t_tau;
 	double p_tau2 = p_tau * p_tau;
@@ -582,7 +575,7 @@ static void update_step_npt(struct md *md)
 	double p0 = get_pressure(md);
 	double v0 = get_volume(md);
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		struct body *body = md->bodies + i;
 
 		body->vel.x += 0.5 * dt * (body->force.x / body->mass -
@@ -609,13 +602,13 @@ static void update_step_npt(struct md *md)
 	vec_t com = get_system_com(md);
 	vec_t pos_init[md->n_bodies];
 
-	for (int i = 0; i < md->n_bodies; i++)
+	for (size_t i = 0; i < md->n_bodies; i++)
 		pos_init[i] = md->bodies[i].pos;
 
-	for (int iter = 1; iter <= MAX_ITER; iter++) {
+	for (size_t iter = 1; iter <= MAX_ITER; iter++) {
 		bool done = true;
 
-		for (int i = 0; i < md->n_bodies; i++) {
+		for (size_t i = 0; i < md->n_bodies; i++) {
 			struct body *body = md->bodies + i;
 			vec_t pos = wrap(md, &body->pos);
 
@@ -639,23 +632,23 @@ static void update_step_npt(struct md *md)
 			break;
 
 		if (iter == MAX_ITER)
-			printf("WARNING: NPT UPDATE DID NOT CONVERGE\n\n");
+			msg("WARNING: NPT UPDATE DID NOT CONVERGE\n\n");
 	}
 
 	vec_scale(&md->box, exp(dt * data->eta));
-	check_fail(efp_set_periodic_box(md->efp, md->box.x, md->box.y, md->box.z));
+	check_fail(efp_set_periodic_box(md->state->efp, md->box.x, md->box.y, md->box.z));
 
 	compute_forces(md);
 
 	double chi_init = data->chi, eta_init = data->eta;
 	vec_t angmom_init[md->n_bodies], vel_init[md->n_bodies];
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		angmom_init[i] = md->bodies[i].angmom;
 		vel_init[i] = md->bodies[i].vel;
 	}
 
-	for (int iter = 1; iter <= MAX_ITER; iter++) {
+	for (size_t iter = 1; iter <= MAX_ITER; iter++) {
 		double chi_prev = data->chi;
 		double eta_prev = data->eta;
 		double t_cur = get_temperature(md);
@@ -666,7 +659,7 @@ static void update_step_npt(struct md *md)
 		data->eta = eta_init + 0.5 * dt * v_cur * (p_cur - p_target) /
 							md->n_bodies / kbt / p_tau2;
 
-		for (int i = 0; i < md->n_bodies; i++) {
+		for (size_t i = 0; i < md->n_bodies; i++) {
 			struct body *body = md->bodies + i;
 
 			body->vel.x = vel_init[i].x + 0.5 * dt *
@@ -692,7 +685,7 @@ static void update_step_npt(struct md *md)
 			break;
 
 		if (iter == MAX_ITER)
-			printf("WARNING: NPT UPDATE DID NOT CONVERGE\n\n");
+			msg("WARNING: NPT UPDATE DID NOT CONVERGE\n\n");
 	}
 
 	data->chi_dt += 0.5 * dt * data->chi;
@@ -704,36 +697,36 @@ static void print_info(const struct md *md)
 	double invariant = md->get_invariant(md);
 	double temperature = get_temperature(md);
 
-	printf("%30s %16.10lf\n", "POTENTIAL ENERGY", energy);
-	printf("%30s %16.10lf\n", "INVARIANT", invariant);
-	printf("%30s %16.10lf\n", "TEMPERATURE", temperature);
+	msg("%30s %16.10lf\n", "POTENTIAL ENERGY", energy);
+	msg("%30s %16.10lf\n", "INVARIANT", invariant);
+	msg("%30s %16.10lf\n", "TEMPERATURE", temperature);
 
-	if (cfg_get_enum(md->cfg, "ensemble") == ENSEMBLE_TYPE_NPT) {
+	if (cfg_get_enum(md->state->cfg, "ensemble") == ENSEMBLE_TYPE_NPT) {
 		double pressure = get_pressure(md) / BAR_TO_AU;
 
-		printf("%30s %16.10lf\n", "PRESSURE", pressure);
+		msg("%30s %16.10lf\n", "PRESSURE", pressure);
 	}
 
-	if (cfg_get_bool(md->cfg, "enable_pbc")) {
+	if (cfg_get_bool(md->state->cfg, "enable_pbc")) {
 		double x = md->box.x * BOHR_RADIUS;
 		double y = md->box.y * BOHR_RADIUS;
 		double z = md->box.z * BOHR_RADIUS;
 
-		printf("%30s %9.3lf %9.3lf %9.3lf\n", "PERIODIC BOX SIZE", x, y, z);
+		msg("%30s %9.3lf %9.3lf %9.3lf\n", "PERIODIC BOX SIZE", x, y, z);
 	}
 
-	printf("\n\n");
+	msg("\n\n");
 }
 
 static void print_restart(const struct md *md)
 {
-	printf("    RESTART DATA\n\n");
+	msg("    RESTART DATA\n\n");
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		struct body *body = md->bodies + i;
 
 		char name[64];
-		check_fail(efp_get_frag_name(md->efp, i, sizeof(name), name));
+		check_fail(efp_get_frag_name(md->state->efp, i, sizeof(name), name));
 
 		double xyzabc[6] = { body->pos.x * BOHR_RADIUS,
 				     body->pos.y * BOHR_RADIUS,
@@ -751,19 +744,17 @@ static void print_restart(const struct md *md)
 		print_fragment(name, xyzabc, vel);
 	}
 
-	printf("\n");
+	msg("\n");
 }
 
-static struct md *md_create(struct efp *efp, const struct cfg *cfg, const struct sys *sys)
+static struct md *md_create(struct state *state)
 {
 	struct md *md = xcalloc(1, sizeof(struct md));
 
-	md->efp = efp;
-	md->cfg = cfg;
-	md->sys = sys;
-	md->box = box_from_str(cfg_get_string(cfg, "periodic_box"));
+	md->state = state;
+	md->box = box_from_str(cfg_get_string(state->cfg, "periodic_box"));
 
-	switch (cfg_get_enum(cfg, "ensemble")) {
+	switch (cfg_get_enum(state->cfg, "ensemble")) {
 		case ENSEMBLE_TYPE_NVE:
 			md->get_invariant = get_invariant_nve;
 			md->update_step = update_step_nve;
@@ -782,13 +773,13 @@ static struct md *md_create(struct efp *efp, const struct cfg *cfg, const struct
 			assert(0);
 	}
 
-	md->n_bodies = sys->n_frags;
+	md->n_bodies = state->sys->n_frags;
 	md->bodies = xcalloc(md->n_bodies, sizeof(struct body));
 
 	double coord[6 * md->n_bodies];
-	check_fail(efp_get_coordinates(efp, md->n_bodies, coord));
+	check_fail(efp_get_coordinates(state->efp, coord));
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		struct body *body = md->bodies + i;
 
 		body->pos.x = coord[6 * i + 0];
@@ -801,15 +792,15 @@ static struct md *md_create(struct efp *efp, const struct cfg *cfg, const struct
 
 		euler_to_matrix(a, b, c, &body->rotmat);
 
-		body->vel.x = md->sys->frags[i].vel[0];
-		body->vel.y = md->sys->frags[i].vel[1];
-		body->vel.z = md->sys->frags[i].vel[2];
+		body->vel.x = md->state->sys->frags[i].vel[0];
+		body->vel.y = md->state->sys->frags[i].vel[1];
+		body->vel.z = md->state->sys->frags[i].vel[2];
 
-		set_body_mass_and_inertia(efp, i, body);
+		set_body_mass_and_inertia(state->efp, i, body);
 
-		body->angmom.x = md->sys->frags[i].vel[3] * body->inertia.x;
-		body->angmom.y = md->sys->frags[i].vel[4] * body->inertia.y;
-		body->angmom.z = md->sys->frags[i].vel[5] * body->inertia.z;
+		body->angmom.x = md->state->sys->frags[i].vel[3] * body->inertia.x;
+		body->angmom.y = md->state->sys->frags[i].vel[4] * body->inertia.y;
+		body->angmom.z = md->state->sys->frags[i].vel[5] * body->inertia.z;
 
 		md->n_freedom += 3;
 
@@ -821,17 +812,17 @@ static struct md *md_create(struct efp *efp, const struct cfg *cfg, const struct
 			md->n_freedom++;
 	}
 
-	return md;
+	return (md);
 }
 
 static void velocitize(struct md *md)
 {
 	rand_init();
 
-	double temperature = cfg_get_double(md->cfg, "temperature");
+	double temperature = cfg_get_double(md->state->cfg, "temperature");
 	double ke = temperature * BOLTZMANN * md->n_freedom / (2.0 * 6.0 * md->n_bodies);
 
-	for (int i = 0; i < md->n_bodies; i++) {
+	for (size_t i = 0; i < md->n_bodies; i++) {
 		struct body *body = md->bodies + i;
 
 		double vel = sqrt(2.0 * ke / body->mass);
@@ -848,7 +839,7 @@ static void velocitize(struct md *md)
 
 static void print_status(const struct md *md)
 {
-	print_geometry(md->efp);
+	print_geometry(md->state->efp);
 	print_restart(md);
 	print_info(md);
 
@@ -862,31 +853,31 @@ static void md_shutdown(struct md *md)
 	free(md);
 }
 
-void sim_md(struct efp *efp, const struct cfg *cfg, const struct sys *sys)
+void sim_md(struct state *state)
 {
-	printf("MOLECULAR DYNAMICS JOB\n\n\n");
+	msg("MOLECULAR DYNAMICS JOB\n\n\n");
 
-	struct md *md = md_create(efp, cfg, sys);
+	struct md *md = md_create(state);
 
-	if (cfg_get_bool(cfg, "velocitize"))
+	if (cfg_get_bool(state->cfg, "velocitize"))
 		velocitize(md);
 
 	remove_system_drift(md);
 	compute_forces(md);
 
-	printf("    INITIAL STATE\n\n");
+	msg("    INITIAL STATE\n\n");
 	print_status(md);
 
-	for (int i = 1; i <= cfg_get_int(cfg, "max_steps"); i++) {
+	for (int i = 1; i <= cfg_get_int(state->cfg, "max_steps"); i++) {
 		md->update_step(md);
 
-		if (i % cfg_get_int(cfg, "print_step") == 0) {
-			printf("    STATE AFTER %d STEPS\n\n", i);
+		if (i % cfg_get_int(state->cfg, "print_step") == 0) {
+			msg("    STATE AFTER %d STEPS\n\n", i);
 			print_status(md);
 		}
 	}
 
 	md_shutdown(md);
 
-	printf("MOLECULAR DYNAMICS JOB COMPLETED SUCCESSFULLY\n");
+	msg("MOLECULAR DYNAMICS JOB COMPLETED SUCCESSFULLY\n");
 }

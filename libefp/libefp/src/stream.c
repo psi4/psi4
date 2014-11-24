@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012-2013 Ilya Kaliman
+ * Copyright (c) 2012-2014 Ilya Kaliman
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -42,7 +42,7 @@ static char *read_line(FILE *in, char split)
 {
 	size_t size = 128;
 	size_t i = 0;
-	char *buffer = malloc(size);
+	char *buffer = (char *)malloc(size);
 
 	if (!buffer)
 		return NULL;
@@ -73,7 +73,7 @@ static char *read_line(FILE *in, char split)
 
 		case '\n':
 			if (i == size)
-				buffer = realloc(buffer, size + 1);
+				buffer = (char *)realloc(buffer, size + 1);
 
 			buffer[i] = '\0';
 			return buffer;
@@ -83,7 +83,7 @@ static char *read_line(FILE *in, char split)
 
 			if (i == size) {
 				size *= 2;
-				buffer = realloc(buffer, size);
+				buffer = (char *)realloc(buffer, size);
 			}
 		}
 	}
@@ -97,7 +97,7 @@ struct stream *efp_stream_open(const char *path)
 
 	assert(path);
 
-	if ((stream = calloc(1, sizeof(struct stream))) == NULL)
+	if ((stream = (struct stream *)calloc(1, sizeof(struct stream))) == NULL)
 		return NULL;
 
 	stream->in = fopen(path, "r");
