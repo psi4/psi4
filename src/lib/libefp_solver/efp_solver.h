@@ -75,8 +75,10 @@ class EFP {
         /// Returns EFP contribution to SCF energy
         double scf_energy_update();
 
-        /// Returns EFP contribution to V
-        boost::shared_ptr<Matrix> modify_Fock();
+        /// Returns EFP permanent moment contribution to V
+        boost::shared_ptr<Matrix> modify_Fock_permanent();
+        /// Returns EFP induced dipole contribution to V
+        boost::shared_ptr<Matrix> modify_Fock_induced();
 
         /// Add potential files and names for all fragments
 	    void add_fragments(std::vector<std::string> fnames);

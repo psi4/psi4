@@ -1450,9 +1450,13 @@ double HF::compute_energy()
         form_H(); //Core Hamiltonian
         timer_off("Form H");
 
-	int nbf = Process::environment.wavefunction()->basisset()->nbf();
-	Horig_ = SharedMatrix(new Matrix("H orig Matrix", nbf, nbf));
-	Horig_->copy(H_);
+        // EFP: Add in permenent moment contribution and cache
+        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+    	    boost::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_permanent();
+    	    H_->add(Vefp);
+	        Horig_ = SharedMatrix(new Matrix("H orig Matrix", basisset_->nbf(), basisset_->nbf()));
+	        Horig_->copy(H_);
+        }
 
         timer_on("Form S/X");
         form_Shalf(); //S and X Matrix
@@ -1490,15 +1494,15 @@ double HF::compute_energy()
         // Call any preiteration callbacks
         call_preiteration_callbacks();
 
-        H_->copy(Horig_);
 
         // add efp contribution to Fock matrix
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-    	    boost::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock();
+            H_->copy(Horig_);
+    	    boost::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_induced();
     	    H_->add(Vefp);
         }
 
-	E_ = 0.0;
+        E_ = 0.0;
 
         timer_on("Form G");
         form_G();

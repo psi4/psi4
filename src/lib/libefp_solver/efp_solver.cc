@@ -313,29 +313,9 @@ void EFP::set_frag_coordinates(int frag_idx, int type, double * coords) {
 }
 
 // this function returns a shared matrix containing the efp contribution to the potential
-// felt by qm atoms in an scf procedure.
-boost::shared_ptr<Matrix> EFP::modify_Fock() {
+// felt by qm atoms, due to EFP induced dipoles, in an scf procedure.
+boost::shared_ptr<Matrix> EFP::modify_Fock_induced() {
 
-    // get number of multipoles (charges, dipoles, quadrupoles, octupoles)
-    int n_multipole = 0;
-    if ( efp_get_multipole_count(efp_,&n_multipole) != EFP_RESULT_SUCCESS ) {
-        throw PsiException("libefp failed to return number of multipoles",__FILE__,__LINE__);
-    }
-
-    // multipole coordinates are stored array xyz.
-    boost::shared_ptr<Vector> xyz  (new Vector(3*n_multipole));
-    boost::shared_ptr<Vector> mult (new Vector((1+3+6+10)*n_multipole));
-
-    // get multipoles from libefp
-    // dipoles stored as     x,y,z
-    // quadrupoles stored as xx,yy,zz,xy,xz,yz
-    // octupoles stored as   xxx,yyy,zzz,xxy,xxz,xyy,yyz,xzz,yzz,xyz
-    if ( efp_get_multipole_coordinates(efp_,xyz->pointer()) != EFP_RESULT_SUCCESS ) {
-        throw PsiException("libefp failed to return multipole coordinates",__FILE__,__LINE__);
-    }
-    if ( efp_get_multipole_values(efp_,mult->pointer()) != EFP_RESULT_SUCCESS ) {
-        throw PsiException("libefp failed to return multipole values",__FILE__,__LINE__);
-    }
 
     // induced dipoles
     int n_id = 0;
@@ -358,17 +338,74 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     id->add(idt);
     id->scale(0.5);
 
-//    // normal multipole integrals are ordered as follows 
-//    // x, y, z, 
-//    // xx, xy, xz, yy, yz, zz, 
-//    // xxx, xxy, xxz, xyy, xyz, xzz, yyy, yyz, yzz, zzz
-//    // presumably the new integrals will be ordered similarly
-//
-//    // arrays to map libefp to our multipole ordering
-//    int mapq[6]  = { 0, 3, 5, 1, 2, 4 };
-//    int mapo[10] = { 0, 6, 9, 1, 2, 3, 7, 5, 8, 4 };
 
-    // contract/dot/something multipoles with multipole integrals.  the result goes into V
+    // scale field integrals by induced dipole magnitudes.  the result goes into V
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+    boost::shared_ptr<OneBodyAOInt> field_ints(wfn->integral()->electric_field());
+
+    int nbf = wfn->basisset()->nbf();
+    int nao = wfn->basisset()->nao();
+    std::vector<SharedMatrix> mats;
+    for(int i=0; i < 3; ++i) {
+        mats.push_back(SharedMatrix(new Matrix(nao, nao)));
+    }
+    // Cartesian basis one-electron EFP perturbation
+    SharedMatrix V2(new Matrix("EFP induced dipole contribution to the Fock Matrix", nao, nao));
+
+    // induced dipole contributions to Fock matrix
+    // multipole contributions to Fock matrix
+    double *xyz_p  = xyz_id->pointer();
+    double *mult_p = id->pointer();
+    for (int n = 0; n < n_id; n++) {
+        for(int i=0; i < 3; ++i){
+           mats[i]->zero();
+        }
+        Vector3 coords(xyz_p[n*3],xyz_p[n*3+1],xyz_p[n*3+2]);
+        field_ints->set_origin(coords);
+        field_ints->compute(mats);
+        // only dealing with dipoles here:
+        for(int i=0; i < 3; ++i){
+            mats[i]->scale(-mult_p[3*n+i]);
+            V2->add(mats[i]);
+        }
+    }
+
+    boost::shared_ptr<PetiteList> pet(new PetiteList(wfn->basisset(),wfn->integral(),true));
+    boost::shared_ptr<Matrix> U = pet->aotoso();
+
+    boost::shared_ptr<Matrix> V = Matrix::triplet(U,V2,U,true,false,false);  
+    V->set_name("EFP induced dipole contribution to the Fock Matrix");
+
+    return V;
+}
+
+
+// this function returns a shared matrix containing the efp contribution to the potential
+// felt by qm atoms, due to permanent EFP moments, in an scf procedure.
+boost::shared_ptr<Matrix> EFP::modify_Fock_permanent() {
+
+    // get number of multipoles (charges, dipoles, quadrupoles, octupoles)
+    int n_multipole = 0;
+    if ( efp_get_multipole_count(efp_,&n_multipole) != EFP_RESULT_SUCCESS ) {
+        throw PsiException("libefp failed to return number of multipoles",__FILE__,__LINE__);
+    }
+
+    // multipole coordinates are stored array xyz.
+    boost::shared_ptr<Vector> xyz  (new Vector(3*n_multipole));
+    boost::shared_ptr<Vector> mult (new Vector((1+3+6+10)*n_multipole));
+
+    // get multipoles from libefp
+    // dipoles stored as     x,y,z
+    // quadrupoles stored as xx,yy,zz,xy,xz,yz
+    // octupoles stored as   xxx,yyy,zzz,xxy,xxz,xyy,yyz,xzz,yzz,xyz
+    if ( efp_get_multipole_coordinates(efp_,xyz->pointer()) != EFP_RESULT_SUCCESS ) {
+        throw PsiException("libefp failed to return multipole coordinates",__FILE__,__LINE__);
+    }
+    if ( efp_get_multipole_values(efp_,mult->pointer()) != EFP_RESULT_SUCCESS ) {
+        throw PsiException("libefp failed to return multipole values",__FILE__,__LINE__);
+    }
+
+    // Scale multipole integrals by multipole magnitudes.  The result goes into V
     boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     boost::shared_ptr<OneBodyAOInt> efp_ints(wfn->integral()->ao_efp_multipole_potential());
 
@@ -385,7 +422,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     }
 
     // Cartesian basis one-electron EFP perturbation
-    SharedMatrix V2(new Matrix("EFP contribution to the Fock Matrix", nao, nao));
+    SharedMatrix V2(new Matrix("EFP permanent moment contribution to the Fock Matrix", nao, nao));
 
     // multipole contributions to Fock matrix
     double * xyz_p  = xyz->pointer();
@@ -438,31 +475,15 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     }
     free(atoms);
 
-    // induced dipole contributions to Fock matrix
-    xyz_p  = xyz_id->pointer();
-    mult_p = id->pointer();
-    for (int n = 0; n < n_id; n++) {
-        for(int i=0; i < 4; ++i){
-           mats[i]->zero();
-        }
-        Vector3 coords(xyz_p[n*3],xyz_p[n*3+1],xyz_p[n*3+2]);
-        efp_ints->set_origin(coords);
-        efp_ints->compute(mats);
-        // only dealing with dipoles here:
-        for(int i=0; i < 3; ++i){
-            mats[i+1]->scale( -prefacs[i+1] * mult_p[3*n+i] );
-            V2->add(mats[i+1]);
-        }
-    }
-
     boost::shared_ptr<PetiteList> pet(new PetiteList(wfn->basisset(),wfn->integral(),true));
     boost::shared_ptr<Matrix> U = pet->aotoso();
 
     boost::shared_ptr<Matrix> V = Matrix::triplet(U,V2,U,true,false,false);  
-    V->set_name("EFP contribution to the Fock Matrix");
+    V->set_name("EFP permanent moment contribution to the Fock Matrix");
 
     return V;
 }
+
 
 double EFP::EFP_QM_nuclear_repulsion_energy() {
     double nu = 0.0;
