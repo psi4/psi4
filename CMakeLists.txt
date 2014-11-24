@@ -113,12 +113,12 @@ if(EXECUTABLE_SUFFIX)
    message(STATUS "Suffix ${CMAKE_EXECUTABLE_SUFFIX} will be appended to executables")
 endif()
 
-# Find libm
+# Find libutil
 if(UNIX)
-   find_library(LIBM m)
+   find_library(LIBUTIL util)
    get_filename_component(_dir_libm ${LIBUTIL} DIRECTORY)
    link_directories(${_dir_libm})
-   link_libraries("${LIBM}")
+   link_libraries("${LIBUTIL}")
 endif(UNIX)
 
 # This is needed to get static version of Python libraries to link correctly
