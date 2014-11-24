@@ -224,13 +224,14 @@ public:
     int ao_to_shell(int i) const { return ao_to_shell_[i]; }
 
     /** Return the si'th Gaussian shell
-     *  @param i Shell number
+     *  @param si Shell number
      *  @return A shared pointer to the GaussianShell object for the i'th shell.
      */
     const GaussianShell& shell(int si) const;
 
     /** Return the i'th Gaussian shell on center
-     *  @param i Shell number
+     *  @param center atomic center
+     *  @param si Shell number
      *  @return A shared pointer to the GaussianShell object for the i'th shell.
      */
     const GaussianShell& shell(int center, int si) const;
@@ -249,17 +250,17 @@ public:
 
     /** Print basis set information according to the level of detail in print_level
      *  @param out The file stream to use for printing. Defaults to outfile.
-     *  @param print_level: < 1: Nothing
+     *  @param print_level  < 1: Nothing
                               1: Brief summary
                               2: Summary and contraction details
                             > 2: Full details
                             Defaults to 2
      */
-    void print_by_level(std::string OutFileRMR = "outfile", int print_level = 2) const;
+    void print_by_level(std::string out = "outfile", int print_level = 2) const;
     /** Prints a short string summarizing the basis set
      *  @param out The file stream to use for printing. Defaults to outfile.
      */
-    void print_summary(std::string OutFileRMR = "outfile") const;
+    void print_summary(std::string out = "outfile") const;
 
     /** Prints a detailed PSI3-style summary of the basis (per-atom)
      *  @param out The file stream to use for printing. Defaults to outfile.
@@ -322,7 +323,6 @@ public:
      * Returns a new BasisSet object configured with the provided Molecule object.
      * @param parser The basis set parser object that will be used to interpret the basis set file.
      * @param mol Molecule to construct basis set for.
-     * @param basisnames Name of the basis set for each atom in molecule to search for in pbasis.dat
      * @return A new basis set object constructed from the information passed in.
      */
     static boost::shared_ptr<BasisSet> construct(const boost::shared_ptr<BasisSetParser>& parser,
@@ -337,8 +337,8 @@ public:
      * @param puream puream value to force basis set for; -1 for unforced
      * @return A new basis set object constructed from the information passed in.
      */
-    static boost::shared_ptr<BasisSet> pyconstruct_orbital(const boost::shared_ptr<Molecule>&,
-        const std::string&, const std::string&, int = -1);
+    static boost::shared_ptr<BasisSet> pyconstruct_orbital(const boost::shared_ptr<Molecule>& mol,
+        const std::string& key, const std::string& target, int puream = -1);
 
     static boost::shared_ptr<BasisSet> pyconstruct_combined(const boost::shared_ptr<Molecule>& mol,
                                                             const std::vector<std::string>& keys,
@@ -357,9 +357,9 @@ public:
      * @param puream puream value to force basis set for; -1 for unforced
      * @return A new basis set object constructed from the information passed in.
      */
-    static boost::shared_ptr<BasisSet> pyconstruct_auxiliary(const boost::shared_ptr<Molecule>&,
-        const std::string&, const std::string&, 
-        const std::string&, const std::string&, int = -1);
+    static boost::shared_ptr<BasisSet> pyconstruct_auxiliary(const boost::shared_ptr<Molecule>& mol,
+        const std::string& key, const std::string& target,
+        const std::string& role, const std::string& other, int puream = -1);
 
     /** Converts basis set name to a compatible filename.
      * @param basisname Basis name
@@ -409,58 +409,6 @@ public:
     }
 };
 
-inline
-bool shell_sorter_ncenter(const GaussianShell& d1, const GaussianShell& d2)
-{
-    return d1.ncenter() < d2.ncenter();
-}
-
-inline
-bool shell_sorter_am(const GaussianShell& d1, const GaussianShell& d2)
-{
-    return d1.am() < d2.am();
-}
-
-inline
-BasisSet operator +(const BasisSet& a, const BasisSet& b) {
-    if (a.molecule() != b.molecule()) {
-        throw PSIEXCEPTION("BasisSet::operator+ : Unable to add basis sets from different molecules.");
-        return BasisSet();
-    }
-    BasisSet temp;
-
-#if 0 //TODO fixme!
-    temp.name_ = a.name_ + " + " + b.name_;
-    temp.molecule_ = a.molecule();
-
-    // Copy a's shells to temp
-    temp.shells_ = a.shells_;
-
-    // Append b's shells to temp
-    temp.shells_.insert(temp.shells_.end(), b.shells_.begin(), b.shells_.end());
-
-    // Sort by center number
-    std::sort(temp.shells_.begin(), temp.shells_.end(), shell_sorter_ncenter);
-
-    // Call refresh to regenerate center_to_shell and center_to_nshell
-    temp.refresh();
-
-    // Sort by AM in each center
-    //    for (int atom=0; atom < temp.molecule_->natom(); ++atom) {
-    //        std::sort(temp.shells_.begin()+temp.center_to_shell_[atom],
-    //                  temp.shells_.begin()+temp.center_to_shell_[atom]+temp.center_to_nshell_[atom],
-    //                  shell_sorter_am);
-    //    }
-
-    //    temp.refresh();
-#endif
-    return temp;
-}
-
-inline
-boost::shared_ptr<BasisSet> operator +(const boost::shared_ptr<BasisSet>& a, const boost::shared_ptr<BasisSet>& b) {
-    return boost::shared_ptr<BasisSet>(new BasisSet(*a.get() + *b.get()));
-}
 }
 
 #endif
