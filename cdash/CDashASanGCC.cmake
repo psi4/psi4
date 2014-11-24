@@ -1,5 +1,5 @@
 #
-# CTest script for undefined behaviour sanitizer (UBSan) memcheck build and submission to dashboard 
+# CTest script for address sanitizer (ASan) memcheck build and submission to dashboard 
 #
 # Written by Roberto Di Remigio November 2014 
 #
@@ -8,7 +8,7 @@ set(PROJECT_NAME "Psi")
 set(PROJECT_REPOSITORY "git@github.com:psi4/psi4.git") 
 set(CTEST_COMMAND ctest)
 set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
-set(CTEST_BUILD_NAME "RDR-clang3.6.0-ubsan")
+set(CTEST_BUILD_NAME "RDR-gcc4.9.1-asan")
 set(CTEST_SITE "stallo.uit.no")
 
 find_program(CTEST_GIT_COMMAND NAMES git)
@@ -47,7 +47,7 @@ endif()
 
 # Run the setup script
 macro(setup_cmake_env)
-    set(CTEST_CONFIGURE_COMMAND "cmake  -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DENABLE_MPI=OFF -DENABLE_SGI_MPT=OFF -DENABLE_OMP=ON -DENABLE_VECTORIZATION=OFF -DENABLE_CSR=OFF -DENABLE_SCALAPACK=OFF -DENABLE_SCALASCA=OFF -DENABLE_UNIT_TESTS=OFF -DENABLE_STATIC_LINKING=OFF -DENABLE_PLUGINS=ON -DENABLE_LIBERD=OFF -DENABLE_GPU_DFCC=OFF -DENABLE_DUMMY_PLUGIN=OFF -DENABLE_CXX11_SUPPORT=ON -DLIBINT_OPT_AM=5 -DENABLE_UBSAN=ON -DCMAKE_INSTALL_PREFIX=/usr/local/psi4 -DCMAKE_BUILD_TYPE=debug -DPYTHON_EXECUTABLE=/global/apps/python/2.7.3/bin/python ${CTEST_SOURCE_DIRECTORY}")
+    set(CTEST_CONFIGURE_COMMAND "cmake  -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DENABLE_MPI=OFF -DENABLE_SGI_MPT=OFF -DENABLE_OMP=ON -DENABLE_VECTORIZATION=OFF -DENABLE_CSR=OFF -DENABLE_SCALAPACK=OFF -DENABLE_SCALASCA=OFF -DENABLE_UNIT_TESTS=OFF -DENABLE_STATIC_LINKING=OFF -DENABLE_PLUGINS=ON -DENABLE_LIBERD=OFF -DENABLE_GPU_DFCC=OFF -DENABLE_DUMMY_PLUGIN=OFF -DENABLE_CXX11_SUPPORT=ON -DLIBINT_OPT_AM=5 -DENABLE_ASAN=ON -DCMAKE_INSTALL_PREFIX=/usr/local/psi4 -DCMAKE_BUILD_TYPE=debug -DPYTHON_EXECUTABLE=/global/apps/python/2.7.3/bin/python ${CTEST_SOURCE_DIRECTORY}")
 endmacro()    
 
 # Run the dashboard
@@ -62,7 +62,7 @@ endmacro()
 setup_cmake_env()
 ctest_read_custom_files(${CTEST_BINARY_DIRECTORY})
 ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
-set(CTEST_MEMORYCHECK_TYPE "UndefinedBehaviorSanitizer")
+set(CTEST_MEMORYCHECK_TYPE "AddressSanitizer")
 ctest_start(${TEST_MODEL})
 ctest_update()
 run_dashboard()
