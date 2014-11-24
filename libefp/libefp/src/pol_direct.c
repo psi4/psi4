@@ -30,18 +30,8 @@
 #include "compat.h"
 #include "private.h"
 
-//extern double efp_get_pol_damp_tt(double, double, double);
+double efp_get_pol_damp_tt(double, double, double);
 enum efp_result efp_compute_id_direct(struct efp *);
-
-
-double
-efp_get_pol_damp_tt(double r, double pa, double pb)
-{
-    double ab = sqrt(pa * pb);
-    double r2 = r * r;
-
-    return (1.0 - exp(-ab * r2) * (1.0 + ab * r2));
-}
 
 static void
 copy_matrix(double *dst, size_t n, size_t off_i, size_t off_j, const mat_t *m)
