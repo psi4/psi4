@@ -685,11 +685,7 @@ void export_mints()
             def("pyconstruct_orbital", &BasisSet::pyconstruct_orbital, pyconstruct_orb_overloads("Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.")).
             staticmethod("pyconstruct_orbital").
             def("pyconstruct_auxiliary", &BasisSet::pyconstruct_auxiliary, pyconstruct_aux_overloads("Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.")).
-            staticmethod("pyconstruct_auxiliary").
-            def("concatenate", ptrversion(&BasisSet::concatenate), "Concatenates two basis sets together into a new basis without reordering anything. Unless you know what you're doing, you should use the '+' operator instead of this method.").
-            def("add", ptrversion(&BasisSet::add), "Combine two basis sets to make a new one.").
-            //staticmethod("concatinate").
-            def(self + self);
+            staticmethod("pyconstruct_auxiliary");
 
     class_<SOBasisSet, boost::shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", "docstring", no_init).
             def("petite_list", &SOBasisSet::petite_list, "docstring");

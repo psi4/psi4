@@ -393,14 +393,14 @@ class IrreducibleRepresentation {
  character.  Thus symop has 6 elements rather than the 3 you'll find in
  most published character tables. */
 class CharacterTable {
-    int nt;                              //< order of the princ rot axis
-    PointGroups::Groups pg;              //< the class of the point group
-    int nirrep_;                         //< the number of irreps in this pg
-    IrreducibleRepresentation *gamma_;   //< an array of irreps
-    SymmetryOperation *symop;            //< the matrices describing sym ops
-    int *_inv;                           //< index of the inverse symop
-    std::string symb;                    //< the Schoenflies symbol for the pg
-    unsigned char bits_;                 //< Bitwise representation of the symmetry operations
+    int nt;                              ///< order of the princ rot axis
+    PointGroups::Groups pg;              ///< the class of the point group
+    int nirrep_;                         ///< the number of irreps in this pg
+    IrreducibleRepresentation *gamma_;   ///< an array of irreps
+    SymmetryOperation *symop;            ///< the matrices describing sym ops
+    int *_inv;                           ///< index of the inverse symop
+    std::string symb;                    ///< the Schoenflies symbol for the pg
+    unsigned char bits_;                 ///< Bitwise representation of the symmetry operations
 
     /// this fills in the irrep and symop arrays.
     int make_table();

@@ -98,7 +98,7 @@ endif()
 #find_package(PythonInterp 2.6 REQUIRED)
 #find_package(PythonLibs 2.6 REQUIRED)
 find_package(Python REQUIRED)
-link_directories("${PYTHON_LIBRARIES}")
+link_libraries("${PYTHON_LIBRARIES}")
 include_directories(SYSTEM "${PYTHON_INCLUDE_DIRS}")
 
 # Boost Detection 
@@ -113,11 +113,22 @@ if(EXECUTABLE_SUFFIX)
    message(STATUS "Suffix ${CMAKE_EXECUTABLE_SUFFIX} will be appended to executables")
 endif()
 
+# Find libutil
 if(UNIX)
-   link_libraries(m)
+   find_library(LIBUTIL util)
+   get_filename_component(_dir_libutil ${LIBUTIL} DIRECTORY)
+   link_directories(${_dir_libutil})
+   link_libraries("${LIBUTIL}")
 endif(UNIX)
 
-#Not setting ldflags was causing a problem
+# Find lm: needed on Ubuntu for lib{int,deriv}_compiler
+if(UNIX)
+   find_library(LIBM m)
+   get_filename_component(_dir_libutil ${LIBM} DIRECTORY)
+   link_directories(${_dir_libm})
+   link_libraries("${LIBM}")
+endif(UNIX)
+
 if(LDFLAGS)
    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LDFLAGS}")
 endif()
@@ -126,13 +137,18 @@ if(ENABLE_PLUGINS)
    message(STATUS "Plugins support ENABLED")
 endif()   
 
-# Dynamic linking header
-check_include_files(dlfcn.h HAVE_DLFCN_H)
+# Dynamic linking header and libraries
+find_package(DL REQUIRED)
+if(LIBDL_FOUND)
+   set(HAVE_DLFCN_H TRUE)
+   include_directories(SYSTEM "${LIBDL_INCLUDE_DIR}")
+   link_libraries("${LIBDL_LIBRARIES}")
+endif()
 # MKL_Free_Buffers NEEDS TO BE TESTED
 check_function_exists(MKL_Free_Buffers HAVE_MKL) 
 
 # Detection of erf, __builtin_expect, __builtin_prefetch, __builtin_constant_p
-# This step is skipped for GCC and Clang: they are all defined for but for some reasons not detected by CMake
+# This step is skipped for GCC and Clang: they are all defined but for some reasons not detected by CMake
 if(CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
    set(HAVE_BUILTIN_EXPECT     TRUE)
    set(HAVE_BUILTIN_PREFETCH   TRUE)
