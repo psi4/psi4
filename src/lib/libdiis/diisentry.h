@@ -36,7 +36,7 @@ namespace psi{
 class PSIO;
 
   /**
-   * @Brief The DIISManager class is used to manage DIIS quantities and
+   * @brief The DIISManager class is used to manage DIIS quantities and
    * their corresponding error vectors.
    */
 
