@@ -93,7 +93,7 @@ public:
     double compute() { return value_; }
     void set(double val) { if (!fixed_) value_ = val; }
     CoordValueType type() { return NumberType; }
-    boost::shared_ptr<CoordValue> clone(std::map<std::string, double>& map) {
+    boost::shared_ptr<CoordValue> clone(std::map<std::string, double>& /*map*/) {
         return boost::shared_ptr<CoordValue>(new NumberValue(value_, fixed_));
     }
 };
@@ -263,7 +263,7 @@ public:
     void print_in_input_format();
     std::string string_in_input_format();
     void invalidate () { computed_ = false; x_->invalidate(); y_->invalidate(); z_->invalidate(); }
-    boost::shared_ptr<CoordEntry> clone( std::vector<boost::shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map){
+    boost::shared_ptr<CoordEntry> clone( std::vector<boost::shared_ptr<CoordEntry> >& /*atoms*/, std::map<std::string, double>& map){
         boost::shared_ptr<CoordEntry> temp(new CartesianEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, x_->clone(map), y_->clone(map), z_->clone(map), basissets_, shells_));
         return temp;
     }

@@ -486,7 +486,7 @@ public:
      * Given a string (including newlines to separate lines), builds a new molecule
      * and wraps it in a smart pointer
      *
-     * @param text: a string providing the user's input
+     * @param geom a string providing the user's input
      */
     static boost::shared_ptr<Molecule> create_molecule_from_string(const std::string &geom);
 
@@ -510,33 +510,33 @@ public:
 
     /**
      * Sets the specified list of fragments to be real.
-     * @param reals: The list of real fragments.
+     * @param reals The list of real fragments.
      */
     void set_active_fragments(boost::python::list reals);
 
     /**
      * Sets the specified fragment to be real.
-     * @param fragment: The fragment to set.
+     * @param fragment The fragment to set.
      */
     void set_active_fragment(int fragment);
 
     /**
      * Sets the specified list of fragments to be ghosts.
-     * @param ghosts: The list of ghosts fragments.
+     * @param ghosts The list of ghosts fragments.
      */
     void set_ghost_fragments(boost::python::list ghosts);
 
     /**
      * Sets the specified fragment to be a ghost.
-     * @param fragment: The fragment to set.
+     * @param fragment The fragment to set.
      */
     void set_ghost_fragment(int fragment);
 
     /**
      * Makes a copy of the molecule, returning a new ref counted molecule with
      * only certain fragment atoms present as either ghost or real atoms
-     * @param real_list: The list of fragments that should be present in the molecule as real atoms.
-     * @param ghost_list: The list of fragments that should be present in the molecule as ghosts.
+     * @param real_list The list of fragments that should be present in the molecule as real atoms.
+     * @param ghost_list The list of fragments that should be present in the molecule as ghosts.
      * @return The ref counted cloned molecule
      */
     boost::shared_ptr<Molecule> extract_subsets(const std::vector<int> &real_list,
@@ -544,8 +544,8 @@ public:
 
     /**
      * A wrapper to extract_subsets, callable from Boost
-     * @param reals: A list containing the real atoms.
-     * @param ghost: A list containing the ghost atoms.
+     * @param reals A list containing the real atoms.
+     * @param ghost A list containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
     boost::shared_ptr<Molecule> py_extract_subsets_1(boost::python::list reals,
@@ -553,8 +553,8 @@ public:
 
     /**
      * A wrapper to extract_subsets, callable from Boost
-     * @param reals: A list containing the real atoms.
-     * @param ghost: An int containing the ghost atoms.
+     * @param reals A list containing the real atoms.
+     * @param ghost An int containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
     boost::shared_ptr<Molecule> py_extract_subsets_2(boost::python::list reals,
@@ -562,8 +562,8 @@ public:
 
     /**
      * A wrapper to extract_subsets, callable from Boost
-     * @param reals: An int containing the real atoms.
-     * @param ghost: A list containing the ghost atoms.
+     * @param reals An int containing the real atoms.
+     * @param ghost A list containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
     boost::shared_ptr<Molecule> py_extract_subsets_3(int reals,
@@ -571,8 +571,8 @@ public:
 
     /**
      * A wrapper to extract_subsets, callable from Boost
-     * @param reals: An int containing the real atoms.
-     * @param ghost: An int containing the ghost atoms.
+     * @param reals An int containing the real atoms.
+     * @param ghost An int containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
     boost::shared_ptr<Molecule> py_extract_subsets_4(int reals,
@@ -580,14 +580,14 @@ public:
 
     /**
      * A wrapper to extract_subsets, callable from Boost
-     * @param reals: A list containing the real atoms.
+     * @param reals A list containing the real atoms.
      * @return The ref counted cloned molecule.
      */
     boost::shared_ptr<Molecule> py_extract_subsets_5(boost::python::list reals);
 
     /**
      * A wrapper to extract_subsets, callable from Boost
-     * @param reals: An int containing the real atoms.
+     * @param reals An int containing the real atoms.
      * @return The ref counted cloned molecule.
      */
     boost::shared_ptr<Molecule> py_extract_subsets_6(int reals);

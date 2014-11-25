@@ -35,24 +35,31 @@ namespace psi {
 class LocalCommWrapper:public Parallel<LocalCommWrapper> {
    private:
       template <typename type>
-      void bcastImpl(const type* data, const int nelem, const int broadcaster,
-            const std::string& CommName="None") const {
-      }
+      void bcastImpl(const type* /*data*/,
+                     const int /*nelem*/,
+                     const int /*broadcaster*/,
+                     const std::string& /*CommName*/="None") const
+      {}
+
       template <typename T>
-      void bcastImpl(T& data,const int broadcaster,
-            const std::string&Comm="NONE") const {
-      }
+      void bcastImpl(T& /*data*/,
+                     const int /*broadcaster*/,
+                     const std::string& /*Comm*/="NONE") const
+      {}
 
       template <typename type>
-      void all_gatherImpl(const type* localdata, const int nelem, type* target,
-            const std::string& CommName="NONE") const {
+      void all_gatherImpl(const type* localdata,
+                          const int nelem,
+                          type* target,
+                          const std::string& /*CommName*/="NONE") const
+      {
          if (localdata!=target)
             std::memcpy(const_cast<type*>(localdata), target,
                   sizeof(type)*nelem);
       }
       friend class Parallel<LocalCommWrapper> ;
    public:
-      LocalCommWrapper(const int &argc, char **argv) {
+      LocalCommWrapper(const int &/*argc*/, char **/*argv*/) {
          //The next three lines are what the old local comm did
          //the code breaks if I do not include them
          //The way I understand this is that the number of openmp threads

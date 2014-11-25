@@ -388,7 +388,7 @@ public:
      *  AO, SO
      * @param subset the subset of orbitals to return
      *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
-     * @return
+     * @return OrbitalSpace object containing data for the requested space.
      */
     OrbitalSpace alpha_orbital_space(const std::string& id, const std::string& basis = "SO", const std::string& subset = "ALL");
     /**
@@ -398,7 +398,7 @@ public:
      *  AO, SO
      * @param subset the subset of orbitals to return
      *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
-     * @return
+     * @return OrbitalSpace object containing data for the requested space.
      */
     OrbitalSpace beta_orbital_space(const std::string& id, const std::string& basis = "SO", const std::string& subset = "ALL");
 
