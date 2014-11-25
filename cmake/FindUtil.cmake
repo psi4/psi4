@@ -18,7 +18,7 @@
 # - Find libutil
 # Find the native libutil includes and library
 #
-#  LIBUTIL_INCLUDE_DIR - where to find pyt.h and utmp.h
+#  LIBUTIL_INCLUDE_DIR - where to find pty.h and utmp.h (UNIX) or util.h (Mac OS X)
 #  LIBUTIL_LIBRARIES   - List of libraries when using libutil.
 #  LIBUTIL_FOUND       - True if libutil found.
 
@@ -27,11 +27,20 @@ if(LIBUTIL_INCLUDE_DIR)
   set(LIBUTIL_FIND_QUIETLY TRUE)
 endif(LIBUTIL_INCLUDE_DIR)
 
-find_path(LIBUTIL_INCLUDE_DIR pty.h
-	  PATHS
-	  /usr/include
-	  /usr/local/include
-	  )
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+   find_path(LIBUTIL_INCLUDE_DIR util.h
+   	  PATHS
+   	  /usr/include
+   	  /usr/local/include
+   	  )
+else()
+# Should probably be generalized for Windows
+   find_path(LIBUTIL_INCLUDE_DIR pty.h
+   	  PATHS
+   	  /usr/include
+   	  /usr/local/include
+   	  )
+endif()
 
 set(LIBUTIL_NAMES util libutil)
 find_library(LIBUTIL_LIBRARY 

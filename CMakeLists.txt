@@ -95,12 +95,12 @@ else()
 endif()
 
 # This section attempts to find some system libraries:
-#  a. libutil : needed for linking against static libpython (pointed out by TDC)
-#  b. libm    : needed on Ubuntu for lib{int,deriv}_compiler
-#  c. librt   : needed for the timers
-#  d. libdl   : needed for dynamic linking
-#  e. Threads 
-if(UNIX)
+#  a. libutil : needed for linking against static libpython (Linux only)
+#  b. libm    : needed for lib{int,deriv}_compiler (Linux only)
+#  c. librt   : needed for the timers (Linux only)
+#  d. libdl   : needed for dynamic linking (Linux and Mac OS X)
+#  e. Threads   (Linux and Mac OS X)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
    find_package(Util REQUIRED)
    include_directories(SYSTEM "${LIBUTIL_INCLUDE_DIR}")
    link_libraries("${LIBUTIL_LIBRARIES}")
@@ -112,7 +112,7 @@ if(UNIX)
    find_package(RT REQUIRED)
    include_directories(SYSTEM "${LIBRT_INCLUDE_DIR}")
    link_libraries("${LIBRT_LIBRARIES}")
-endif(UNIX)
+endif()
 
 find_package(DL REQUIRED)
 if(LIBDL_FOUND)
