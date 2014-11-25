@@ -125,20 +125,7 @@ find_package(Threads REQUIRED)
 link_libraries("${CMAKE_THREAD_LIBS_INIT}")
 
 # Python Detection 
-# Maybe a custom Python interpreter needs to be used as passed from --python option in the setup script
-if("${PYTHON_INTERPRETER}" STREQUAL "")
-   find_package(PythonInterp 2.6 REQUIRED)
-else()
-   set(PYTHONINTERP_FOUND TRUE)
-   set(PYTHON_EXECUTABLE "${PYTHON_INTERPRETER}")
-   get_Python_version_string(pyVersion)
-   set(PYTHON_VERSION_STRING "${pyVersion}")
-   message(STATUS "Passed PythonInterp: ${PYTHON_INTERPRETER} (found suitable version \"${PYTHON_VERSION_STRING}\", minimum required is \"2.6\")")
-endif()	
-# Set variables to help find Python library with the EXACT SAME VERSION as the interpreter
-set_python_hints(PYTHON_INCLUDE_DIR PYTHON_LIBRARY)
-# Finally, find Python libs using the standard module
-find_package(PythonLibs ${PYTHON_VERSION_STRING} EXACT REQUIRED)
+include(ConfigPython)
 link_libraries("${PYTHON_LIBRARIES}")
 include_directories(SYSTEM "${PYTHON_INCLUDE_DIRS}")
 
