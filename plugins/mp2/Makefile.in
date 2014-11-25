@@ -23,6 +23,12 @@ top_objdir = ../..
 PSITARGET = $(shell basename `pwd`).so
 PSILIBS = -L$(top_objdir)/lib -lPSI_plugin
 
+ifeq ($(MAKE_MADNESS),1)
+  PSILIBS += $(psi_top_objdir)/madness/src/lib/world/libMADworld.a
+  PSILIBS += $(psi_top_objdir)/madness/src/lib/tensor/libMADtensor.a
+  PSIINCLUDE += -I$(psi_top_srcdir)/madness/src/lib/ -I$(psi_top_srcdir)/madness/include/ -I$(psi_top_objdir)/madness/include/
+endif
+
 CXXSRC = $(notdir $(wildcard *.cc))
 DEPENDINCLUDE = $(notdir $(wildcard *.h))
 

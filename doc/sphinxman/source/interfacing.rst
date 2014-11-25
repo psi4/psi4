@@ -19,6 +19,7 @@ platform capabilities, *etc*.
    dftd3
    molden
    cfour
+   libefp
 
 .. comment * MPI4Py
 .. comment * MADNESS

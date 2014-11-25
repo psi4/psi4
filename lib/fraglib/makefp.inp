@@ -1,0 +1,18 @@
+!
+! Sample GAMESS input for EFP generation
+!
+ $contrl units=angs local=boys runtyp=makefp coord=cart icut=11 $end
+ $system timlim=99999 mwords=200 $end
+ $scf soscf=.f. diis=.t. conv=1.0d-06 $end
+ $basis gbasis=n311 ngauss=6 npfunc=2 ndfunc=3 nffunc=1
+   diffs=.t. diffsp=.t. $end
+ $stone
+   bigexp=0.0
+ $end
+ $data
+  h2o
+c1
+ O1          8.0   0.0000000000   0.0000000000   0.0978796835
+ H2          1.0  -0.4928822363  -0.5688163788  -0.4653163417
+ H3          1.0   0.4928822363   0.5688163788  -0.4653163417
+ $end

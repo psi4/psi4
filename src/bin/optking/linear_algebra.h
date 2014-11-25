@@ -62,6 +62,7 @@ double array_max(double *v1, int n);
 double array_rms(double *v1, int n);
 // Compute matrix ^1/2 or ^-1/2 if inverse=true
 void matrix_root(double **A, int dim, bool inverse);
+void rotate_vecs(double *w, double phi, double **v, int num_v);
 
 }
 

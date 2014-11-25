@@ -27,8 +27,6 @@
 #include <vector>
 #include <utility>
 
-#include <psifiles.h>
-#include <physconst.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
@@ -36,6 +34,8 @@
 #include <libqt/qt.h>
 #include <libmints/mints.h>
 #include <libfock/jk.h>
+
+#include <libefp_solver/efp_solver.h>
 
 #include "cuhf.h"
 
@@ -282,6 +282,10 @@ void CUHF::form_F()
     Fb_->copy(H_);
     Fb_->add(Fp_);
     Fb_->subtract(Fm_);
+
+    // add efp contribuation to Fock matrix
+    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+    }
 
     if (debug_) {
         Fa_->print("outfile");

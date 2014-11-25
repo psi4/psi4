@@ -2805,4 +2805,88 @@ def run_detcas(name, **kwargs):
 
     return psi4.get_variable("CURRENT ENERGY")
 
+def run_efp(name, **kwargs):
+    #efp = psi4.efp_init()
+    psi4.print_out('Executing run_efp in proc.py...\n')
+    psi4.set_global_option('QMEFP', False)  # apt to go haywire if set locally to efp
+    efp = psi4.get_active_efp()
+    psi4.efp_set_options()
+    efp.print_out()
+    returnvalue = efp.Compute()
+    return returnvalue
+
+def run_efp_gradient(name, **kwargs):
+    psi4.print_out('Executing run_efp_gradient in proc.py...\n')
+    efp = psi4.get_active_efp()
+    psi4.set_global_option('QMEFP', False)  # apt to go haywire if set locally to efp
+    psi4.set_local_option('EFP', 'DERTYPE', 'FIRST')
+    psi4.efp_set_options()
+    efp.print_out()
+    returnvalue = efp.Compute()
+    return returnvalue
+
+def run_scfefp(name, **kwargs):
+
+    lowername = name.lower()
+    kwargs = p4util.kwargs_lower(kwargs)
+
+    # initialize library
+    efp = psi4.get_active_efp()
+
+    psi4.set_global_option('QMEFP', True)  # apt to go haywire if set locally to efp
+
+    # set options
+    psi4.efp_set_options()
+
+    # set which atoms are qm
+    efp.set_qm_atoms()
+
+    efp.print_out()
+
+    # TODO: provide efp a callback function that computes electron density at arbitrary points
+
+    # process environment molecule needs to contain only qm atoms
+    # or modify class to distinguish between qm and efp atoms
+    returnval = scf_helper(name, **kwargs)
+
+    return returnval
+
+
+def run_efp2(name, **kwargs):
+    r"""Function encoding sequence of PSI module and plugin calls so that
+    efp can be called via :py:func:`~driver.energy`.
+
+    >>> energy('efp')
+
+    """
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
+
+    # Your plugin's psi4 run sequence goes here
+    psi4.set_global_option('BASIS', 'sto-3g')
+    psi4.set_local_option('EFP', 'PRINT', 1)
+    #energy('scf', **kwargs)
+    returnvalue = psi4.plugin('efp.so')
+
+    return returnvalue
+
+
+def run_efp2_gradient(name, **kwargs):
+    r"""Function encoding sequence of PSI module and plugin calls so that
+    efp can be called via :py:func:`~driver.energy`.
+
+    >>> optimize('efp')
+
+    """
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
+
+    # Your plugin's psi4run sequence goes here
+    psi4.set_global_option('BASIS', 'sto-3g')
+    psi4.set_local_option('EFP', 'PRINT', 1)
+    psi4.set_local_option('EFP', 'DERTYPE', 'FIRST')
+    #energy('scf', **kwargs)
+    returnvalue = psi4.plugin('efp.so')
+
+    return returnvalue
 

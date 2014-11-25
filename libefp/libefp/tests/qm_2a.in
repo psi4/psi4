@@ -1,0 +1,33 @@
+run_type gtest
+ref_energy -0.2314262632
+gtest_tol 5.0e-6
+elec_damp screen
+disp_damp overlap
+fraglib_path ../fraglib
+
+charge   7.0   4.0   5.0   5.0
+charge  10.0   8.0   5.0   6.0
+charge   1.0   5.0   8.0   5.0
+charge   2.0   8.0   9.0   8.0
+charge   2.0   5.0   8.0   8.0
+
+fragment ch3oh_l
+   0.0  -1.0   0.0   0.0   1.1   2.0
+
+fragment dmso_l
+  -5.0  12.0   0.0   3.0   0.2   5.0
+
+fragment dmso_l
+   0.0  -3.0   5.0   6.0   2.3   8.0
+
+fragment acetone_l
+  -5.0  -4.0  -5.0   9.0   0.4   1.0
+
+fragment dcm_l
+  -9.0  -5.0   1.0   2.0   1.5   4.0
+
+fragment acetone_l
+   7.0  -2.0  11.0   5.0   0.6   7.0
+
+fragment acetone_l
+  -9.0  -7.0  -9.0   8.0   2.7   0.0

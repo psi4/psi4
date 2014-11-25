@@ -31,14 +31,14 @@
 #include <vector>
 #include <utility>
 
-#include <psifiles.h>
-#include <physconst.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
 #include <libparallel/parallel.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
+#include <psifiles.h>
+#include <physconst.h>
 
 #include <libmints/basisset_parser.h>
 #include <libmints/mints.h>
@@ -46,6 +46,8 @@
 #include "libfock/Psi4JK.h"
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
+
+#include <libefp_solver/efp_solver.h>
 
 #include "rhf.h"
 

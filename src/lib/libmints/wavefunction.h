@@ -130,6 +130,9 @@ protected:
     /// Total alpha and beta electrons
     int nalpha_, nbeta_;
 
+    /// Total frozen core orbitals
+    int nfrzc_;
+
     /// Number of doubly occupied per irrep
     Dimension doccpi_;
     /// Number of singly occupied per irrep
@@ -163,6 +166,7 @@ protected:
 
     /// Core Hamiltonian matrix
     SharedMatrix H_;
+    SharedMatrix Horig_;
 
     /// Alpha MO coefficients
     SharedMatrix Ca_;
@@ -312,6 +316,8 @@ public:
     const Dimension& frzcpi() const { return frzcpi_; }
     /// Returns the frozen virtual orbitals per irrep array.
     const Dimension& frzvpi() const { return frzvpi_; }
+    /// Return the number of frozen core orbitals
+    int nfrzc() const { return nfrzc_; }
     /// Return the number of alpha electrons
     int nalpha() const { return nalpha_; }
     /// Return the number of beta electrons

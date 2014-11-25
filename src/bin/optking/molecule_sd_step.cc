@@ -106,6 +106,7 @@ void MOLECULE::sd_step(void) {
   }
 
   apply_intrafragment_step_limit(dq);
+  apply_efpfragment_step_limit(dq);
 
   // norm of step
   double sd_dqnorm = sqrt( array_dot(dq, dq, dim) );
@@ -150,7 +151,8 @@ void MOLECULE::sd_step(void) {
   for (int I=0; I<fb_fragments.size(); ++I)
     fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
 
-  symmetrize_geom(); // now symmetrize the geometry for next step
+  if (!Opt_params.efp_fragments)
+    symmetrize_geom(); // now symmetrize the geometry for next step
 
   // save values in step data
   p_Opt_data->save_step_info(DE_projected, sd_u, sd_dqnorm, sd_g, sd_h);

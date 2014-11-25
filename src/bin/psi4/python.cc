@@ -37,6 +37,7 @@
 #include <map>
 #include <iomanip>
 
+#include <libefp_solver/efp_solver.h>
 #include <libmints/mints.h>
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
@@ -82,7 +83,7 @@ void export_functional();
 void export_oeprop();
 void export_cubefile();
 void export_libfrag();
-
+void export_efp();
 
 // In export_plugins.cc
 void py_psi_plugin_close_all();
@@ -131,6 +132,8 @@ namespace psi {
     namespace detci      { PsiReturnType detci(Options&);     }
     namespace detcas     { PsiReturnType detcas(Options&);     }
     namespace fnocc      { PsiReturnType fnocc(Options&);     }
+    namespace efp        { PsiReturnType efp_init(Options&);  }
+    namespace efp        { PsiReturnType efp_set_options();   }
     namespace stable     { PsiReturnType stability(Options&); }
     namespace occwave    { PsiReturnType occwave(Options&);   }
     namespace dfoccwave  { PsiReturnType dfoccwave(Options&);   }
@@ -537,6 +540,25 @@ double py_psi_cctriples()
     }
     else
         return 0.0;
+}
+
+boost::shared_ptr<psi::efp::EFP> py_psi_efp_init()
+{
+fprintf(outfile,"in py_psi_efp_init() call prepare_options_for_module efp\n");
+    py_psi_prepare_options_for_module("EFP");
+fprintf(outfile,"DERTYPE %s\n", Process::environment.options.get_str("DERTYPE").c_str());
+
+    if (psi::efp::efp_init(Process::environment.options) == Success) {
+        return Process::environment.get_efp();
+    }
+    else
+        throw PSIEXCEPTION("Unable to initialize EFP library.");
+}
+
+void py_psi_efp_set_options() {
+fprintf(outfile,"py_psi_efp_set_options\n");
+    py_psi_prepare_options_for_module("EFP");
+    Process::environment.get_efp()->set_options();
 }
 
 double py_psi_fnocc()
@@ -1002,6 +1024,11 @@ boost::shared_ptr<Molecule> py_psi_get_active_molecule()
     return Process::environment.molecule();
 }
 
+boost::shared_ptr<psi::efp::EFP> py_psi_get_active_efp()
+{
+    return Process::environment.get_efp();
+}
+
 void py_psi_set_gradient(SharedMatrix grad)
 {
     if (Process::environment.wavefunction()) {
@@ -1018,6 +1045,25 @@ SharedMatrix py_psi_get_gradient()
         return wf->gradient();
     } else {
         return Process::environment.gradient();
+    }
+}
+
+void py_psi_set_efp_torque(SharedMatrix torq)
+{
+    if (Process::environment.get_efp()->get_frag_count() > 0) {
+        Process::environment.get_efp()->set_torque(torq);
+    } else {
+        Process::environment.set_efp_torque(torq);
+    }
+}
+
+SharedMatrix py_psi_get_efp_torque()
+{
+    if (Process::environment.get_efp()->get_frag_count() > 0) {
+        boost::shared_ptr<psi::efp::EFP> efp = Process::environment.get_efp();
+        return efp->torque();
+    } else {
+        return Process::environment.efp_torque();
     }
 }
 
@@ -1358,13 +1404,19 @@ BOOST_PYTHON_MODULE(psi4)
     // CubeFile
     export_cubefile();
 
+    // EFP
+    export_efp();
+
     // Options
     def("prepare_options_for_module", py_psi_prepare_options_for_module, "Sets the options module up to return options pertaining to the named argument (e.g. SCF).");
     def("set_active_molecule", py_psi_set_active_molecule, "Activates a previously defined (in the input) molecule, by name.");
     def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
     def("wavefunction", py_psi_wavefunction, "Returns the current wavefunction object from the most recent computation.");
+    def("get_active_efp", &py_psi_get_active_efp, "Returns the currently active EFP object.");
     def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
     def("set_gradient", py_psi_set_gradient, "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
+    def("get_efp_torque", py_psi_get_efp_torque, "Returns the most recently computed gradient for the EFP portion, as a Nefp by 6 Matrix object.");
+    def("set_efp_torque", py_psi_set_efp_torque, "Assigns the global EFP gradient to the values stored in the Nefp by 6 Matrix argument.");
     def("get_frequencies", py_psi_get_frequencies, "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
     def("set_frequencies", py_psi_set_frequencies, "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
     def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");
@@ -1483,7 +1535,9 @@ BOOST_PYTHON_MODULE(psi4)
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
     def("detcas", py_psi_detcas, "Runs the determinant-based complete active space self consistent field.");
     def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
-    def("cchbar", py_psi_cchbar, "Runs the code to generate the similariry transformed Hamiltonian.");
+    def("efp_init", py_psi_efp_init, "Initializes the EFP library and returns an EFP object.");
+    def("efp_set_options", py_psi_efp_set_options, "Set EFP options from environment options object.");
+    def("cchbar", py_psi_cchbar, "Runs the code to generate the similarity transformed Hamiltonian.");
     def("cclambda", py_psi_cclambda, "Runs the coupled cluster lambda equations code.");
     def("ccdensity", py_psi_ccdensity, "Runs the code to compute coupled cluster density matrices.");
     def("ccresponse", py_psi_ccresponse, "Runs the coupled cluster response theory code.");

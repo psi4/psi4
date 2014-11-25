@@ -2540,8 +2540,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- Set of optimization criteria. Specification of any MAX_*_G_CONVERGENCE
       or RMS_*_G_CONVERGENCE options will append to overwrite the criteria set here
-      unless |optking__flexible_g_convergence| is also on.
-      See Table :ref:`Geometry Convergence <table:optkingconv>` for details. -*/
+      unless |optking__flexible_g_convergence| is also on.      See Table :ref:`Geometry Convergence <table:optkingconv>` for details. -*/
       options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
       /*- Convergence criterion for geometry optmization: maximum force
       (internal coordinates, atomic units). -*/
@@ -2623,7 +2622,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("H_BOND_CONNECT", 4.3);
       /*- Do only generate the internal coordinates and then stop? -*/
       options.add_bool("INTCOS_GENERATE_EXIT", false);
-
       /*- SUBSECTION Misc. -*/
 
       /*- Do save and print the geometry from the last projected step at the end
@@ -4491,6 +4489,42 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("CFOUR_ZFIELD", 0);
 
   }
+    if (name == "EFP"|| options.read_globals()) {
+        /*- The amount of information printed to the output file. -*/
+        options.add_int("PRINT", 1);
+        /*- Type of EFP simulation. One of single point (``SP``), gradient
+        (``GRAD``), conjugate gradient geometry optimization (``CG``),
+        molecular dynamics in microcanonical ensemble (``NVE``), or
+        molecular dynamics in canonical ensemble (``NVT``). This
+        specification will probably be moved to energy(), grad(), opt(),
+        etc. eventually. -*/
+        //        options.add_str("EFP_TYPE", "SP", "SP GRAD CG NVE NVT");
+        /*- Do include electrostatics energy term in EFP computation? -*/
+        options.add_bool("EFP_ELST", true);
+        /*- Do include polarization energy term in EFP computation? -*/
+        options.add_bool("EFP_POL", true);
+        /*- Do include dispersion energy term in EFP computation? -*/
+        options.add_bool("EFP_DISP", true);
+        /*- Do include exchange repulsion energy term in EFP computation? -*/
+        options.add_bool("EFP_EXCH", true);
+        /*- Electrostatic damping type. ``SCREEN`` is a damping formula
+        based on screen group in the EFP potential. ``OVERLAP`` is
+        damping that computes charge penetration energy. -*/
+        options.add_str("EFP_ELST_DAMPING", "SCREEN", "SCREEN OVERLAP OFF");
+        /*- Dispersion damping type. ``TT`` is a damping formula by
+        Tang and Toennies. ``OVERLAP`` is overlap-based dispersion damping. -*/
+        options.add_str("EFP_DISP_DAMPING", "OVERLAP", "TT OVERLAP OFF");
+        /*- Fragment-fragment polarization damping type. -*/
+        options.add_str("EFP_POL_DAMPING", "TT", "TT OFF");
+        /* Do EFP gradient. !expert */
+        options.add_str("DERTYPE", "NONE", "NONE FIRST");
+        /* Do turn on QM/EFP terms? !expert */
+        options.add_bool("QMEFP", false);
+        /*- Do include electrostatics energy term in QM/EFP computation? !expert -*/
+        options.add_bool("QMEFP_ELST", true);
+        /*- Do include polarization energy term in EFP computation? !expert -*/
+        options.add_bool("QMEFP_POL", true);
+    }
   return true;
 }
 

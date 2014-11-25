@@ -46,6 +46,7 @@
 #include <libmints/pointgrp.h>
 #include <libparallel/parallel.h>
 #include <libciomr/libciomr.h>
+#include <libefp_solver/efp_solver.h>
 
 #include "vector3.h"
 #include "coordentry.h"
@@ -97,6 +98,8 @@ boost::regex symmetry_("\\s*symmetry[\\s=]+(\\w+)\\s*", boost::regbase::normal| 
 boost::regex pubchemError_("\\s*PubchemError\\s*", boost::regbase::normal| boost::regbase::icase);
 boost::regex pubchemInput_("\\s*PubchemInput\\s*", boost::regbase::normal| boost::regbase::icase);
 boost::regex ghostAtom_("@(.*)|Gh\\((.*)\\)", boost::regbase::normal| boost::regbase::icase);
+boost::regex efpFileMarker_("\\s*efp\\s*(\\w+)\\s*", boost::regbase::normal | boost::regbase::icase);
+boost::regex efpAtomSymbol_("A\\d*([A-Z]{1,2})\\d*", boost::regbase::normal | boost::regbase::icase);
 boost::smatch reMatches_;
 
 /**
@@ -212,7 +215,6 @@ Molecule& Molecule::operator=(const Molecule& other)
     multiplicity_            = other.multiplicity_;
     units_                   = other.units_;
     input_units_to_au_       = other.input_units_to_au_;
-    all_variables_           = other.all_variables_;
     fragment_types_          = other.fragment_types_;
     geometry_variables_      = other.geometry_variables_;
     charge_specified_        = other.charge_specified_;
@@ -404,6 +406,7 @@ double Molecule::nuclear_repulsion_energy() const
 
     return e;
 }
+
 
 Matrix Molecule::nuclear_repulsion_energy_deriv1() const
 {
@@ -848,6 +851,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
     std::vector<std::string> lines;
     boost::split(lines, text, boost::is_any_of("\n"));
 
+    std::vector<FragmentLevel> fragment_levels;
+
     boost::shared_ptr<Molecule> mol(new Molecule);
     std::string units = Process::environment.options.get_str("UNITS");
 
@@ -937,11 +942,117 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         }
     }
 
-    // Now go through the rest of the lines looking for fragment markers
-    unsigned int firstAtom  = 0;
-    unsigned int atomCount = 0;
-
     mol->input_units_to_au_ = mol->units_ == Bohr ? 1.0 : 1.0 / pc_bohr2angstroms;
+
+    if(!Process::environment.get_efp())
+        throw PSIEXCEPTION("EFP object needed by Molecule is unavailable");
+
+    // Collect EFP fragments in forward order
+    unsigned int efp_nfrag = 0;
+    std::vector<std::string> efp_fnames;
+    for(unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
+        if(regex_search(lines[lineNumber], reMatches, efpFileMarker_)) {
+            efp_fnames.push_back(reMatches[1].str());
+            efp_nfrag++;
+        }
+    }
+
+    // Collect EFP geometries in reverse order and complete initialization of libefp
+    if(efp_nfrag>0) {
+        enum efp_coord_type {XYZABC, POINTS, ROTMAT};
+        efp_coord_type efp_ctype;
+        double *coords = NULL;
+        coords = new double[12];  // room for xyzabc (6), points (9), or rotmat (12)
+        double *pcoords = coords;
+        unsigned int currentFragment = efp_nfrag - 1;
+        std::vector<std::string> splitLine;
+
+        // Force no reorient
+        mol->set_orientation_fixed(true);
+        mol->move_to_com_ = false;
+        mol->symmetry_from_input_ = std::string ("c1");
+
+        // Initialize all fragment names and library paths
+        Process::environment.get_efp()->add_fragments(efp_fnames);
+
+        // Initialize all fragment geometry hints
+        for (int lineNumber = lines.size() - 1 ; lineNumber >= 0; --lineNumber) {
+            if(regex_search(lines[lineNumber], reMatches, efpFileMarker_)) {
+                // Process file name
+                if(efp_fnames[currentFragment] != reMatches[1].str())
+                    throw PSIEXCEPTION("EFP fragment names not in sync (" + efp_fnames[currentFragment] + " vs." + reMatches[1].str());
+
+                if((regex_match(lines[lineNumber+1], reMatches, fragmentMarker_)) || (lineNumber == lines.size() - 1)) {
+                    // Process xyzabc hint
+                    efp_ctype = XYZABC;
+                    boost::algorithm::trim(lines[lineNumber]);
+                    boost::split(splitLine, lines[lineNumber], boost::is_any_of("\t ,"),token_compress_on);
+                    if(splitLine.size() == 8) {
+                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[2]);
+                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[3]);
+                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[4]);
+                        *pcoords++ = str_to_double(splitLine[5]);
+                        *pcoords++ = str_to_double(splitLine[6]);
+                        *pcoords++ = str_to_double(splitLine[7]);
+                    } else
+                        throw PSIEXCEPTION("Illegal EFP xyzbc specification line : " + lines[lineNumber] +
+                               ".  efp fragname com_x com_y com_z euler_a euler_b euler_c expected.");
+                }
+                else if((regex_match(lines[lineNumber+4], reMatches, fragmentMarker_)) || (lineNumber == lines.size() - 4)) {
+                    // Process points hint
+                    efp_ctype = POINTS;
+                    boost::algorithm::trim(lines[lineNumber+1]);
+                    boost::split(splitLine, lines[lineNumber+1], boost::is_any_of("\t ,"),token_compress_on);
+                    if(splitLine.size() == 3) {
+                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[0]);
+                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[1]);
+                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[2]);
+                    } else
+                        throw PSIEXCEPTION("Illegal EFP points specification line : " + lines[lineNumber+1] +
+                               ".  atom1_x atom1_y atom1_z expected.");
+                    boost::algorithm::trim(lines[lineNumber+2]);
+                    boost::split(splitLine, lines[lineNumber+2], boost::is_any_of("\t ,"),token_compress_on);
+                    if(splitLine.size() == 3) {
+                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[0]);
+                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[1]);
+                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[2]);
+                    } else
+                        throw PSIEXCEPTION("Illegal EFP points specification line : " + lines[lineNumber+2] +
+                               ".  atom2_x atom2_y atom2_z expected.");
+                    boost::algorithm::trim(lines[lineNumber+3]);
+                    boost::split(splitLine, lines[lineNumber+3], boost::is_any_of("\t ,"),token_compress_on);
+                    if(splitLine.size() == 3) {
+                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[0]);
+                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[1]);
+                        *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[2]);
+                    } else
+                        throw PSIEXCEPTION("Illegal EFP points specification line : " + lines[lineNumber+3] +
+                               ".  atom3_x atom3_y atom3_z expected.");
+                    // Nuke fragment geometry lines
+                    lines.erase(lines.begin() + lineNumber + 3);
+                    lines.erase(lines.begin() + lineNumber + 2);
+                    lines.erase(lines.begin() + lineNumber + 1);
+                }
+                else {
+                    throw PSIEXCEPTION("Illegal geometry specification line : " + lines[lineNumber] +
+                           ".  You should provide either points or xyzabc EFP input");
+                }
+                // Initializing current fragment in libefp with geometry hint
+                Process::environment.get_efp()->set_frag_coordinates(currentFragment, efp_ctype, coords);
+                pcoords = coords;
+                currentFragment--;
+            }
+        }
+    }
+
+    if(!lines.size())
+        throw PSIEXCEPTION("No geometry specified");
+
+    // Now go through the rest of the lines looking for fragment markers
+    unsigned int firstAtom = 0;
+    unsigned int atomCount = 0;
+    unsigned int efpCount  = 0;
+
     mol->fragment_multiplicities_.push_back(mol->multiplicity_);
     mol->fragment_charges_.push_back(mol->molecular_charge_);
 
@@ -956,6 +1067,18 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             // Now we process the atom markers
             mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
             mol->fragment_types_.push_back(Real);
+            if(regex_search(lines[lineNumber-1], reMatches, efpFileMarker_)) {
+                fragment_levels.push_back(EFPatom);
+                // Overwrite the overall molecule chgmult written before loop
+                if (mol->fragments_.size() == 1) {
+                    mol->fragment_multiplicities_.pop_back();
+                    mol->fragment_charges_.pop_back();
+                    mol->fragment_multiplicities_.push_back(Process::environment.get_efp()->get_frag_multiplicity(efpCount-1));
+                    mol->fragment_charges_.push_back(int (Process::environment.get_efp()->get_frag_charge(efpCount-1)));
+                }
+            }
+            else
+                fragment_levels.push_back(QMatom);
             firstAtom = atomCount;
 
             // Figure out how to handle the multiplicity
@@ -973,7 +1096,11 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             }
         }
         else {
-            ++atomCount;
+            if(regex_search(lines[lineNumber], reMatches, efpFileMarker_)) {
+                atomCount += Process::environment.get_efp()->get_frag_atom_count(efpCount);
+                ++efpCount;
+            } else
+                ++atomCount;
         }
     }
     if(pubchemerror){
@@ -981,153 +1108,218 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
     }
     mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
     mol->fragment_types_.push_back(Real);
+    if(regex_search(lines[lines.size()-1], reMatches, efpFileMarker_)) {
+        fragment_levels.push_back(EFPatom);
+        mol->fragment_multiplicities_.push_back(Process::environment.get_efp()->get_frag_multiplicity(efpCount-1));
+        mol->fragment_charges_.push_back(int (Process::environment.get_efp()->get_frag_charge(efpCount-1)));
+    }
+    else
+        fragment_levels.push_back(QMatom);
 
-    // Clean up the "--" and charge/multiplicity specifiers - they're no longer needed
+    // Clean up the "--", efp, and charge/multiplicity specifiers - they're no longer needed
     for(int lineNumber = lines.size() - 1 ; lineNumber >= 0; --lineNumber){
         if(   regex_match(lines[lineNumber], reMatches, fragmentMarker_)
-              || regex_match(lines[lineNumber], reMatches, chargeAndMultiplicity_))
+              || regex_match(lines[lineNumber], reMatches, chargeAndMultiplicity_)
+              || regex_search(lines[lineNumber], reMatches, efpFileMarker_))
             lines.erase(lines.begin() + lineNumber);
     }
 
-
-    if(!lines.size()) throw PSIEXCEPTION("No geometry specified");
-
+    std::vector<std::string>::iterator line = lines.begin();
     std::vector<std::string> splitLine;
     Element_to_Z zVals;
     zVals.load_values();
-    int currentAtom = 0, rTo, aTo, dTo;
+    int rTo, aTo, dTo;
     string atomSym, atomLabel;
     bool zmatrix = false;
+    double zVal, charge;
+    unsigned int currentFragment = 0;
+    efpCount = 0;
 
-    std::vector<std::string>::iterator line = lines.begin();
-    for(; line != lines.end(); ++line) {
-        // Trim leading and trailing whitespace
-        boost::algorithm::trim(*line);
-        boost::split(splitLine, *line, boost::is_any_of("\t ,"),token_compress_on);
-        int numEntries = splitLine.size();
+    // Store coordinates, atom by atom
+    for(int currentAtom=0; currentAtom < mol->fragments_.back().second; ) {
 
-        // Grab the original label the user used. (H1)
-        atomLabel = boost::to_upper_copy(splitLine[0]);
+        if((currentAtom == mol->fragments_[currentFragment].first) && (fragment_levels[currentFragment] == EFPatom)) {
+        //if((currentAtom == mol->fragments_[currentFragment].first)){// && (mol->fragment_levels_[currentFragment] == EFPatom)) {
+            // currentAtom begins an EFP fragment so read geometry of entire fragment from libefp
 
-        bool ghostAtom = false;
-        // Do a little check for ghost atoms
-        if(regex_match(atomLabel, reMatches, ghostAtom_)) {
-            // We don't know whether the @C or Gh(C) notation matched.  Do a quick check.
-            atomLabel = reMatches[1] == "" ? reMatches[2] : reMatches[1];
-            ghostAtom = true;
-        }
+            unsigned int efp_natom = Process::environment.get_efp()->get_frag_atom_count(efpCount);
 
-        // Check that the atom symbol is valid
-        if(!regex_match(atomLabel, reMatches, atomSymbol_))
-            throw PSIEXCEPTION("Illegal atom symbol in geometry specification: " + atomLabel
-                               + " on line\n" + *(line));
+            double *frag_atom_Z = new double[efp_natom];
+            frag_atom_Z = Process::environment.get_efp()->get_frag_atom_Z(efpCount);
 
-        // Save the actual atom symbol (H1 => H)
-        atomSym = reMatches[2].str();
+            double *frag_atom_mass = new double[efp_natom];
+            frag_atom_mass = Process::environment.get_efp()->get_frag_atom_mass(efpCount);
 
-        double zVal = zVals[atomSym];
-        double charge = zVal;
-        // Not sure how charge is used right now, but let's zero it anyway...
-        if(ghostAtom){
-            charge = 0.0;
-            zVal = 0.0;
-        }
+            std::vector<std::string> frag_atom_label;
+            frag_atom_label = Process::environment.get_efp()->get_frag_atom_label(efpCount);
 
-        if(numEntries == 4){
-            // This is a Cartesian entry
-            boost::shared_ptr<CoordValue> xval(mol->get_coord_value(splitLine[1]));
-            boost::shared_ptr<CoordValue> yval(mol->get_coord_value(splitLine[2]));
-            boost::shared_ptr<CoordValue> zval(mol->get_coord_value(splitLine[3]));
-            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new CartesianEntry(currentAtom, zVal, charge,
-                                                                                        an2masses[(int)zVal], atomSym, atomLabel,
-                                                                                        xval, yval, zval)));
-        }
-        else if(numEntries == 1) {
-            // This is the first line of a Z-Matrix
-            zmatrix = true;
-            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
-                                                                                      an2masses[(int)zVal], atomSym, atomLabel)));
-        }
-        else if(numEntries == 3) {
-            // This is the second line of a Z-Matrix
-            zmatrix = true;
-            rTo = mol->get_anchor_atom(splitLine[1], *line);
-            if(rTo >= currentAtom)
-                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                   + splitLine[1] + " has not been defined yet.");
-            boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
+            double *frag_atom_coord = new double[3*efp_natom];
+            frag_atom_coord = Process::environment.get_efp()->get_frag_atom_coord(efpCount);
 
-            if (mol->full_atoms_[rTo]->symbol() == "X")
-                rval->set_fixed(true);
+            for (int at=0; at < efp_natom; at++) {
+                // NOTE: Currently getting zVal & atomSym from libefp (no consistency check) and 
+                // mass from psi4 through zVal. May want to reshuffle this.
+                zVal = frag_atom_Z[at];
+                atomLabel = boost::to_upper_copy(frag_atom_label[at]);
 
-            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
-                                                                                      an2masses[(int)zVal], atomSym, atomLabel,
-                                                                                      mol->full_atoms_[rTo], rval)));
-        }
-        else if(numEntries == 5) {
-            // This is the third line of a Z-Matrix
-            zmatrix = true;
-            rTo = mol->get_anchor_atom(splitLine[1], *line);
-            if(rTo >= currentAtom)
-                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                   + splitLine[1] + " has not been defined yet.");
-            aTo = mol->get_anchor_atom(splitLine[3], *line);
-            if(aTo >= currentAtom)
-                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                   + splitLine[3] + " has not been defined yet.");
-            if(aTo == rTo)
-                throw PSIEXCEPTION("Atom used multiple times on line " + *line);
-            boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
-            boost::shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
+                // Check that the atom symbol is valid
+                // NOTE: EFP symbols look like A03O2 but unclear how standard this is
+                if(!regex_match(atomLabel, reMatches, efpAtomSymbol_))
+                    throw PSIEXCEPTION("Illegal atom symbol in efp geometry specification: " + atomLabel
+                                       + " on atom" + boost::lexical_cast<std::string>(at) 
+                                       + " in fragment" + boost::lexical_cast<std::string>(efpCount) + "\n");
+ 
+                // Save the actual atom symbol (A03O2 => O)
+                atomSym = reMatches[1].str();
+ 
+                // TODO: need to handle dummies
+                // TODO: warn user that zmat mixed with efp uses total (qm + actual efp) atom counts for reference
 
-            if (mol->full_atoms_[rTo]->symbol() == "X")
-                rval->set_fixed(true);
-            if (mol->full_atoms_[aTo]->symbol() == "X")
-                aval->set_fixed(true);
-
-            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
-                                                                                      an2masses[(int)zVal], atomSym, atomLabel,
-                                                                                      mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo], aval)));
-        }
-        else if(numEntries == 7) {
-            // This is line 4 onwards of a Z-Matrix
-            //zmatrix = true;
-            rTo = mol->get_anchor_atom(splitLine[1], *line);
-            if(rTo >= currentAtom)
-                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                   + splitLine[1] + " has not been defined yet.");
-            aTo = mol->get_anchor_atom(splitLine[3], *line);
-            if(aTo >= currentAtom)
-                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                   + splitLine[3] + " has not been defined yet.");
-            dTo = mol->get_anchor_atom(splitLine[5], *line);
-            if(dTo >= currentAtom)
-                throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
-                                   + splitLine[5] + " has not been defined yet.");
-            if(aTo == rTo || rTo == dTo /* for you star wars fans */ || aTo == dTo)
-                throw PSIEXCEPTION("Atom used multiple times on line " + *line);
-
-            boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
-            boost::shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
-            boost::shared_ptr<CoordValue> dval(mol->get_coord_value(splitLine[6]));
-
-            if (mol->full_atoms_[rTo]->symbol() == "X")
-                rval->set_fixed(true);
-            if (mol->full_atoms_[aTo]->symbol() == "X")
-                aval->set_fixed(true);
-            if (mol->full_atoms_[dTo]->symbol() == "X")
-                dval->set_fixed(true);
-
-            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
-                                                                                      an2masses[(int)zVal], atomSym, atomLabel,
-                                                                                      mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo],
-                                                                                      aval, mol->full_atoms_[dTo], dval)));
-        }
+                // Store as Cartesian entry; libefp works entirely in Bohr
+                boost::shared_ptr<CoordValue> xval(new NumberValue(frag_atom_coord[3*at]  /mol->input_units_to_au_));
+                boost::shared_ptr<CoordValue> yval(new NumberValue(frag_atom_coord[3*at+1]/mol->input_units_to_au_));
+                boost::shared_ptr<CoordValue> zval(new NumberValue(frag_atom_coord[3*at+2]/mol->input_units_to_au_));
+                mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new CartesianEntry(currentAtom+at, zVal, zVal,
+                                                                                            an2masses[(int)zVal], atomSym, atomLabel,
+                                                                                            xval, yval, zval)));
+                ++currentAtom;
+            }
+            ++efpCount;
+            ++currentFragment;
+        }    
         else {
-            throw PSIEXCEPTION("Illegal geometry specification line : " + lines[0] +
-                               ".  You should provide either Z-Matrix or Cartesian input");
+            // currentAtom belongs to QM fragment so read geometry of atom from line
+
+            // Trim leading and trailing whitespace
+            boost::algorithm::trim(*line);
+            boost::split(splitLine, *line, boost::is_any_of("\t ,"),token_compress_on);
+            int numEntries = splitLine.size();
+
+            // Grab the original label the user used. (H1)
+            atomLabel = boost::to_upper_copy(splitLine[0]);
+
+            bool ghostAtom = false;
+            // Do a little check for ghost atoms
+            if(regex_match(atomLabel, reMatches, ghostAtom_)) {
+                // We don't know whether the @C or Gh(C) notation matched.  Do a quick check.
+                atomLabel = reMatches[1] == "" ? reMatches[2] : reMatches[1];
+                ghostAtom = true;
+            }
+
+            // Check that the atom symbol is valid
+            if(!regex_match(atomLabel, reMatches, atomSymbol_))
+                throw PSIEXCEPTION("Illegal atom symbol in geometry specification: " + atomLabel
+                                   + " on line\n" + *(line));
+
+            // Save the actual atom symbol (H1 => H)
+            atomSym = reMatches[1].str();
+
+            zVal = zVals[atomSym];
+            charge = zVal;
+            // Not sure how charge is used right now, but let's zero it anyway...
+            if(ghostAtom){
+                charge = 0.0;
+                zVal = 0.0;
+            }
+
+            if(numEntries == 4){
+                // This is a Cartesian entry
+                boost::shared_ptr<CoordValue> xval(mol->get_coord_value(splitLine[1]));
+                boost::shared_ptr<CoordValue> yval(mol->get_coord_value(splitLine[2]));
+                boost::shared_ptr<CoordValue> zval(mol->get_coord_value(splitLine[3]));
+                mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new CartesianEntry(currentAtom, zVal, charge,
+                                                                                            an2masses[(int)zVal], atomSym, atomLabel,
+                                                                                            xval, yval, zval)));
+            }
+            else if(numEntries == 1) {
+                // This is the first line of a Z-Matrix
+                zmatrix = true;
+                mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
+                                                                                          an2masses[(int)zVal], atomSym, atomLabel)));
+            }
+            else if(numEntries == 3) {
+                // This is the second line of a Z-Matrix
+                zmatrix = true;
+                rTo = mol->get_anchor_atom(splitLine[1], *line);
+                if(rTo >= currentAtom)
+                    throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                       + splitLine[1] + " has not been defined yet.");
+                boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
+
+                if (mol->full_atoms_[rTo]->symbol() == "X")
+                    rval->set_fixed(true);
+
+                mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
+                                                                                          an2masses[(int)zVal], atomSym, atomLabel,
+                                                                                          mol->full_atoms_[rTo], rval)));
+            }
+            else if(numEntries == 5) {
+                // This is the third line of a Z-Matrix
+                zmatrix = true;
+                rTo = mol->get_anchor_atom(splitLine[1], *line);
+                if(rTo >= currentAtom)
+                    throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                       + splitLine[1] + " has not been defined yet.");
+                aTo = mol->get_anchor_atom(splitLine[3], *line);
+                if(aTo >= currentAtom)
+                    throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                       + splitLine[3] + " has not been defined yet.");
+                if(aTo == rTo)
+                    throw PSIEXCEPTION("Atom used multiple times on line " + *line);
+                boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
+                boost::shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
+
+                if (mol->full_atoms_[rTo]->symbol() == "X")
+                    rval->set_fixed(true);
+                if (mol->full_atoms_[aTo]->symbol() == "X")
+                    aval->set_fixed(true);
+
+                mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
+                                                                                          an2masses[(int)zVal], atomSym, atomLabel,
+                                                                                          mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo], aval)));
+            }
+            else if(numEntries == 7) {
+                // This is line 4 onwards of a Z-Matrix
+                rTo = mol->get_anchor_atom(splitLine[1], *line);
+                if(rTo >= currentAtom)
+                    throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                       + splitLine[1] + " has not been defined yet.");
+                aTo = mol->get_anchor_atom(splitLine[3], *line);
+                if(aTo >= currentAtom)
+                    throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                       + splitLine[3] + " has not been defined yet.");
+                dTo = mol->get_anchor_atom(splitLine[5], *line);
+                if(dTo >= currentAtom)
+                    throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
+                                       + splitLine[5] + " has not been defined yet.");
+                if(aTo == rTo || rTo == dTo /* for you star wars fans */ || aTo == dTo)
+                    throw PSIEXCEPTION("Atom used multiple times on line " + *line);
+
+                boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
+                boost::shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
+                boost::shared_ptr<CoordValue> dval(mol->get_coord_value(splitLine[6]));
+
+                if (mol->full_atoms_[rTo]->symbol() == "X")
+                    rval->set_fixed(true);
+                if (mol->full_atoms_[aTo]->symbol() == "X")
+                    aval->set_fixed(true);
+                if (mol->full_atoms_[dTo]->symbol() == "X")
+                    dval->set_fixed(true);
+
+                mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
+                                                                                          an2masses[(int)zVal], atomSym, atomLabel,
+                                                                                          mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo],
+                                                                                          aval, mol->full_atoms_[dTo], dval)));
+            }
+            else {
+                throw PSIEXCEPTION("Illegal geometry specification line : " + lines[0] +
+                                   ".  You should provide either Z-Matrix or Cartesian input");
+            }
+            ++currentAtom;
+            ++line;
+            if(currentAtom == mol->fragments_[currentFragment].second)
+                ++currentFragment;
         }
-        ++currentAtom;
     }
 
     mol->set_has_zmatrix(zmatrix);
@@ -1135,6 +1327,23 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
     if(pubcheminput)
         mol->symmetrize_to_abelian_group(1.0e-3);
 
+    // Filter out EFP from Molecule
+    for (int i=fragment_levels.size()-1; i>=0; --i) {
+        if (fragment_levels[i] == EFPatom) {
+            for (int j=mol->fragments_[i].second-1; j>=mol->fragments_[i].first; --j)
+                mol->full_atoms_.erase(mol->full_atoms_.begin() + j);
+            mol->fragment_charges_.erase(mol->fragment_charges_.begin()+i);
+            mol->fragment_multiplicities_.erase(mol->fragment_multiplicities_.begin()+i);
+            mol->fragments_.erase(mol->fragments_.begin()+i);
+        }
+    }
+    for (int i=0, atom=0; i<mol->fragments_.size(); ++i) {
+        int frlen = mol->fragments_[i].second - mol->fragments_[i].first;
+        mol->fragments_[i].first = atom;
+        mol->fragments_[i].second = atom + frlen;
+        atom += frlen;
+    }
+        
     return mol;
 }
 
@@ -1268,7 +1477,8 @@ void Molecule::reinterpret_coordentries()
 void Molecule::update_geometry()
 {
     if (fragments_.size() == 0)
-        throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
+        fprintf(outfile, "Warning: There are no quantum mechanical atoms in this molecule.\n");
+    //    throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
 
     // Idempotence condition
     if (lock_frame_)
@@ -3419,5 +3629,9 @@ std::string Molecule::full_point_group() const {
   pg_with_n.replace(start_pos, n_integer.str().length(), n_integer.str());
 
   return  pg_with_n;
+}
+
+int Molecule::natom() const{
+    return atoms_.size();
 }
 

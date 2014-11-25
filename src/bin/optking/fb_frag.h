@@ -44,21 +44,30 @@ space-fixed coordinates of the gradient computed by QChem.
 
 #include "frag.h"
 #include "mem.h"
+#include "linear_algebra.h"
 
 namespace opt {
 
 class FB_FRAG : public FRAG {
 
-  // values and forces are provided by QChem, not computed by optking
-  // they will be of dimension 6
+  // Forces provided by libefp.
+  // values will be COM and 0 initially for first 3 and last 3 coordinates
   double *values;
   double *forces;
+  int libmints_grad_index;
+  int libmints_geom_index;
+  double **xyz_geom;
+  double *com;
+  double *mass;
 
   public:
   // we will build a dummy fragment with no atoms
   FB_FRAG() : FRAG(0) {
     values = init_array(6);
     forces = init_array(6);
+    xyz_geom = init_matrix(3,3);
+    com = init_array(3);
+    mass = init_array(6);
   }
 
   ~FB_FRAG() {
@@ -67,9 +76,23 @@ class FB_FRAG : public FRAG {
    }
 
   void set_values(double * values_in);
+//****AVC****//
+  void set_xyz(double ** xyz_in);
+  void set_geom_array(double * geom_array );
+  void set_com(double *com_in);
+  void set_libmints_grad_index(int index) { libmints_grad_index = index; }
+  void set_libmints_geom_index(int index) { libmints_geom_index = index; }
+//****AVC****//
   void set_forces(double * forces_in);
 
   double * get_values_pointer(void) const { return values; }
+//****AVC****//
+  double ** get_xyz_pointer(void) const { return xyz_geom; }
+  double * get_geom_array (void);
+  double * get_com_pointer(void) const { return com; }
+  int get_libmints_grad_index(void) const { return libmints_grad_index; }
+  int get_libmints_geom_index(void) const { return libmints_geom_index; }
+//****AVC****//
   double * get_forces_pointer(void) const { return forces; }
 
   // we don't have a valid B matrix for these

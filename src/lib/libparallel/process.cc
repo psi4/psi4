@@ -25,6 +25,7 @@
 #include <libmints/molecule.h>
 #include <libmints/extern.h>
 #include <boost/algorithm/string.hpp>
+#include <libefp_solver/efp_solver.h>
 
 //MKL Header
 #ifdef HAVE_MKL
@@ -50,6 +51,12 @@ using namespace boost;
 Process::Environment Process::environment;
 Process::Arguments Process::arguments;
 const std::string empty_;
+
+
+/// Set EFP 
+void Process::Environment::set_efp(const boost::shared_ptr<psi::efp::EFP>& efp) { efp_ = efp; }
+/// Get EFP 
+boost::shared_ptr<psi::efp::EFP> Process::Environment::get_efp() const { return efp_; }
 
 // Need to split each entry by the first '=', left side is key, right the value
 void Process::Environment::initialize()

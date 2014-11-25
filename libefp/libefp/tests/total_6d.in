@@ -1,0 +1,23 @@
+run_type gtest
+ref_energy -0.0051253344
+gtest_tol 5.0e-6
+elec_damp overlap
+disp_damp tt
+pol_damp tt
+pol_driver direct
+enable_pbc true
+periodic_box 15.0 15.0 15.0
+enable_cutoff true
+swf_cutoff 5.0
+fraglib_path ../fraglib
+
+fragment h2o_l
+   0.0   0.0   0.0   0.0   0.0   0.0
+fragment ch3oh_l
+  19.0   0.0   0.0   0.0   0.0   0.0
+fragment h2o_l
+   0.0  19.0   0.0   0.0   0.0   0.0
+fragment ch3oh_l
+   0.0   0.0  19.0   0.0   0.0   0.0
+fragment nh3_l
+  18.0  18.0  18.0   0.0   0.0   0.0

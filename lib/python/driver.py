@@ -166,6 +166,9 @@ procedures = {
             'aqcc'          : run_cepa,
             'sdci'          : run_cepa,
             'dci'           : run_cepa,
+            #'efp2'          : run_efp2,
+            'scfefp'        : run_scfefp,
+            'efp'           : run_efp,
             # Upon adding a method to this list, add it to the docstring in energy() below
             # If you must add an alias to this list (e.g., dfmp2/df-mp2), please search the
             #    whole driver to find uses of name in return values and psi variables and
@@ -192,7 +195,9 @@ procedures = {
             'mp2.5'         : run_mp2_5_gradient,
             'omp2.5'        : run_omp2_5_gradient,
             'cepa0'         : run_cepa0_gradient,
-            'ocepa'         : run_ocepa_gradient
+            'ocepa'         : run_ocepa_gradient,
+            #'efp2'          : run_efp2_gradient,
+            'efp'           : run_efp_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
         'hessian' : {
@@ -272,6 +277,8 @@ def energy(name, **kwargs):
     .. comment    | tdhf                    | time-dependent HF (TDHF)                                                              |
     .. comment    +-------------------------+---------------------------------------------------------------------------------------+
     .. comment    | tddft                   | time-dependent DFT (TDDFT)                                                            |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | efp                     | efp-only optimizations under development                                              |
     .. comment    +-------------------------+---------------------------------------------------------------------------------------+
 
     .. _`table:energy_gen`:
@@ -675,15 +682,18 @@ def gradient(name, **kwargs):
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if (dertype == 1):
+        psi4.print_out("gradient() will perform analytic gradient computation.\n");
         # Nothing to it but to do it. Gradient information is saved
         # into the current reference wavefunction
         procedures['gradient'][lowername](lowername, **kwargs)
 
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
             raise ValidationError('Optimize execution mode \'sow\' not valid for analytic gradient calculation.')
-        #psi4.wavefunction().energy()
+        #RAK for EFP psi4.wavefunction().energy()
+        # TODO: add EFP contributions to the gradient
 
         optstash.restore()
+        psi4.print_out('CURRENT ENERGY: %15.10f\n' % psi4.get_variable('CURRENT ENERGY'))
         return psi4.get_variable('CURRENT ENERGY')
 
     else:
@@ -979,6 +989,8 @@ def optimize(name, **kwargs):
     | ccsd(t)                 | CCSD with perturbative triples (CCSD(T)) :ref:`[manual] <sec:cc>`                     |
     +-------------------------+---------------------------------------------------------------------------------------+
     | eom-ccsd                | equation of motion (EOM) CCSD :ref:`[manual] <sec:eomcc>`                             |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | efp                     | efp-only optimizations                                                                |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. include:: autodoc_dft_opt.rst

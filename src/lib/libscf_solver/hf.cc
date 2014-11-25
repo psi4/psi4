@@ -49,6 +49,7 @@
 #include "hf.h"
 
 #include <psi4-dec.h>
+#include <libefp_solver/efp_solver.h>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -947,6 +948,9 @@ void HF::compute_fcpi()
         for (int i=0; i<nfzc; ++i)
             frzcpi_[pairs[i].second]++;
     }
+    // total frozen core
+    nfrzc_ = 0;
+    for (int h = 0; h < epsilon_a_->nirrep(); h++) nfrzc_ += frzcpi_[h];
 }
 
 void HF::compute_fvpi()
@@ -1626,6 +1630,14 @@ double HF::compute_energy()
         form_H(); //Core Hamiltonian
         timer_off("Form H");
 
+        // EFP: Add in permenent moment contribution and cache
+        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+    	    boost::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_permanent();
+    	    H_->add(Vefp);
+	        Horig_ = SharedMatrix(new Matrix("H orig Matrix", basisset_->nbf(), basisset_->nbf()));
+	        Horig_->copy(H_);
+        }
+
         timer_on("Form S/X");
         form_Shalf(); //S and X Matrix
         timer_off("Form S/X");
@@ -1646,6 +1658,11 @@ double HF::compute_energy()
         outfile->Printf( "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", df ? "   " : "");
     
 
+    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+        Process::environment.get_efp()->set_qm_atoms();
+        double efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update();
+    }
+
     // SCF iterations
     do {
         iteration_++;
@@ -1654,6 +1671,16 @@ double HF::compute_energy()
 
         // Call any preiteration callbacks
         call_preiteration_callbacks();
+
+
+        // add efp contribution to Fock matrix
+        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+            H_->copy(Horig_);
+    	    boost::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_induced();
+    	    H_->add(Vefp);
+        }
+
+        E_ = 0.0;
 
         timer_on("Form G");
         form_G();
@@ -1672,24 +1699,17 @@ double HF::compute_energy()
             Fb_->print("outfile");
         }
 
-    //bool has_efp = options.get("HAS_EFP");
+        E_ += compute_E();
 
-    // XXX
-    //if (has_efp) {
-    //efp_get_multipole_count
-    // allocate arrays
-    //efp_get_multipoles
-    // compute 1e contributions
-    //}
+        // add efp contribuation to energy
+        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+            double efp_wfn_dependent_energy =
+		    Process::environment.get_efp()->scf_energy_update();
+            //fprintf(outfile, "  Wfn dependent Energy =  %24.16f [H]\n",
+			//    efp_wfn_dependent_energy);
 
-        E_ = compute_E();
-
-    // XXX
-    //if (has_efp) {
-    //double efp_energy;
-    //efp_scf_update(efp, &efp_energy);
-    //E_ += efp_energy;
-    //}
+            E_ += efp_wfn_dependent_energy;
+        }   
 
         timer_on("DIIS");
         bool add_to_diis_subspace = false;
@@ -1786,7 +1806,28 @@ double HF::compute_energy()
 
     } while (!converged && iteration_ < maxiter_ );
 
+    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+        Process::environment.get_efp()->Compute();
 
+        double efp_elst         = Process::environment.globals["EFP ELST ENERGY"];
+        double efp_exch         = Process::environment.globals["EFP EXCH ENERGY"];
+        double efp_pol          = Process::environment.globals["EFP POL ENERGY"];
+        double efp_disp         = Process::environment.globals["EFP DISP ENERGY"];
+        double efp_total_energy = efp_elst + efp_exch + efp_pol + efp_disp;
+        double efp_wfn_dependent_energy = efp_pol;
+
+	E_ += efp_total_energy - efp_wfn_dependent_energy;
+
+        fprintf(outfile, "  EFP Electrostatics Energy = %24.16f [H]\n", efp_elst);
+        fprintf(outfile, "  EFP Polarization Energy =   %24.16f [H]\n", efp_pol);
+        fprintf(outfile, "  EFP Dispersion Energy =     %24.16f [H]\n", efp_disp);
+        fprintf(outfile, "  EFP Exchange Energy =       %24.16f [H]\n", efp_exch);
+        fprintf(outfile, "  EFP Wfn dependent Energy =  %24.16f [H]\n", efp_wfn_dependent_energy);
+        fprintf(outfile, "  EFP Total Energy =          %24.16f [H]\n", efp_total_energy);
+        fprintf(outfile, "  Total SCF Energy =          %24.16f [H]\n", E_);
+    }
+
+    if (WorldComm->me() == 0)
         outfile->Printf( "\n  ==> Post-Iterations <==\n\n");
 
     check_phases();
