@@ -43,16 +43,13 @@ set(to_count "${sources_list}" "${headers_list}")
 write_to_cloc_list("${to_count}")
 
 # Prepare for linking executable
-list(APPEND LINKLIBS "${PSILIB}" "${Boost_LIBRARIES}" "${LAPACK_LIBRARIES}" "${BLAS_LIBRARIES}" "${PYTHON_LIBRARIES}" "${EXTERNAL_LIBS}")
-# Find libutil
-if(UNIX AND NOT APPLE)
-   find_library(LIBUTIL util)
-   get_filename_component(_dir_libutil ${LIBUTIL} DIRECTORY)
-   link_directories(${_dir_libutil})
-   list(APPEND LINKLIBS "${LIBUTIL}")
-endif()	   
-# Append libdl (found in root CMakeLists.txt
-list(APPEND LINKLIBS "${LIBDL_LIBRARIES}")
+list(APPEND 
+     LINKLIBS "${PSILIB}" "${Boost_LIBRARIES}" 
+     "${LAPACK_LIBRARIES}" "${BLAS_LIBRARIES}" 
+     "${PYTHON_LIBRARIES}" "${EXTERNAL_LIBS}" 
+     "${LIBUTIL_LIBRARIES}" "${LIBDL_LIBRARIES}" 
+     "${LIBRT_LIBRARIES}" "${LIBM_LIBRARIES}"
+     )
 
 # Executable psi4
 add_executable(psi4 ${sources_list})
