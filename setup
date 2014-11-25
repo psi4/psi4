@@ -427,7 +427,7 @@ def gen_cmake_command(args):
         command += ' -DBOOST_LIBRARYDIR={0}'.format(args.boost_libdir)
 
     if args.python:
-        command += ' -DPYTHON_EXECUTABLE={0}'.format(args.python)
+        command += ' -DPYTHON_INTERPRETER={0}'.format(args.python)
 
     if args.extra_cc_flags:
         command += ' -DEXTRA_C_FLAGS="%s"' % args.extra_cc_flags

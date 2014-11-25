@@ -94,10 +94,51 @@ else()
    set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
 endif()
 
+# This section attempts to find some system libraries:
+#  a. libutil : needed for linking against static libpython (pointed out by TDC)
+#  b. libm    : needed on Ubuntu for lib{int,deriv}_compiler
+#  c. librt   : needed for the timers
+#  d. libdl   : needed for dynamic linking
+#  e. Threads 
+if(UNIX)
+   find_package(Util REQUIRED)
+   include_directories(SYSTEM "${LIBUTIL_INCLUDE_DIR}")
+   link_libraries("${LIBUTIL_LIBRARIES}")
+
+   find_package(M REQUIRED)
+   include_directories(SYSTEM "${LIBM_INCLUDE_DIR}")
+   link_libraries("${LIBM_LIBRARIES}")
+
+   find_package(RT REQUIRED)
+   include_directories(SYSTEM "${LIBRT_INCLUDE_DIR}")
+   link_libraries("${LIBRT_LIBRARIES}")
+endif(UNIX)
+
+find_package(DL REQUIRED)
+if(LIBDL_FOUND)
+   set(HAVE_DLFCN_H "1")
+   include_directories(SYSTEM "${LIBDL_INCLUDE_DIR}")
+   link_libraries("${LIBDL_LIBRARIES}")
+endif()
+
+find_package(Threads REQUIRED)
+link_libraries("${CMAKE_THREAD_LIBS_INIT}")
+
 # Python Detection 
-#find_package(PythonInterp 2.6 REQUIRED)
-#find_package(PythonLibs 2.6 REQUIRED)
-find_package(Python REQUIRED)
+# Maybe a custom Python interpreter needs to be used as passed from --python option in the setup script
+if("${PYTHON_INTERPRETER}" STREQUAL "")
+   find_package(PythonInterp 2.6 REQUIRED)
+else()
+   set(PYTHONINTERP_FOUND TRUE)
+   set(PYTHON_EXECUTABLE "${PYTHON_INTERPRETER}")
+   get_Python_version_string(pyVersion)
+   set(PYTHON_VERSION_STRING "${pyVersion}")
+   message(STATUS "Passed PythonInterp: ${PYTHON_INTERPRETER} (found suitable version \"${PYTHON_VERSION_STRING}\", minimum required is \"2.6\")")
+endif()	
+# Set variables to help find Python library with the EXACT SAME VERSION as the interpreter
+set_python_hints(PYTHON_INCLUDE_DIR PYTHON_LIBRARY)
+# Finally, find Python libs using the standard module
+find_package(PythonLibs ${PYTHON_VERSION_STRING} EXACT REQUIRED)
 link_libraries("${PYTHON_LIBRARIES}")
 include_directories(SYSTEM "${PYTHON_INCLUDE_DIRS}")
 
@@ -113,22 +154,6 @@ if(EXECUTABLE_SUFFIX)
    message(STATUS "Suffix ${CMAKE_EXECUTABLE_SUFFIX} will be appended to executables")
 endif()
 
-# Find libutil
-if(UNIX)
-   find_library(LIBUTIL util)
-   get_filename_component(_dir_libutil ${LIBUTIL} DIRECTORY)
-   link_directories(${_dir_libutil})
-   link_libraries("${LIBUTIL}")
-endif(UNIX)
-
-# Find lm: needed on Ubuntu for lib{int,deriv}_compiler
-if(UNIX)
-   find_library(LIBM m)
-   get_filename_component(_dir_libutil ${LIBM} DIRECTORY)
-   link_directories(${_dir_libm})
-   link_libraries("${LIBM}")
-endif(UNIX)
-
 if(LDFLAGS)
    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LDFLAGS}")
 endif()
@@ -137,13 +162,6 @@ if(ENABLE_PLUGINS)
    message(STATUS "Plugins support ENABLED")
 endif()   
 
-# Dynamic linking header and libraries
-find_package(DL REQUIRED)
-if(LIBDL_FOUND)
-   set(HAVE_DLFCN_H TRUE)
-   include_directories(SYSTEM "${LIBDL_INCLUDE_DIR}")
-   link_libraries("${LIBDL_LIBRARIES}")
-endif()
 # MKL_Free_Buffers NEEDS TO BE TESTED
 check_function_exists(MKL_Free_Buffers HAVE_MKL) 
 
@@ -201,9 +219,6 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/lib
     ${PROJECT_BINARY_DIR}/src/lib
 )
-
-# PThreads
-find_package(Threads)
 
 #
 # The location of compiled libraries and executables
