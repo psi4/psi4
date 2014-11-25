@@ -116,9 +116,9 @@ endif()
 # Find libm
 if(UNIX)
    find_library(LIBM m)
-   get_filename_component(_dir_libm ${LIBUTIL} DIRECTORY)
-   link_directories(${_dir_libm})
-   link_libraries("${LIBM}")
+#   get_filename_component(_dir_libm ${LIBUTIL} DIRECTORY)
+#   link_directories(${_dir_libm})
+   link_libraries("${LIBM} util")
 endif(UNIX)
 
 # This is needed to get static version of Python libraries to link correctly
