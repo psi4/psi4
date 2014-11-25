@@ -251,7 +251,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
 try:
     # Attach method to libmints psi4.Molecule class
     psi4.Molecule.run_dftd3 = run_dftd3
-except NameError:
+except (NameError, AttributeError):
     # But don't worry if that doesn't work b/c
     #   it'll get attached to qcdb.Molecule class
     pass
