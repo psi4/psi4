@@ -56,8 +56,7 @@ std::string variable_to_string(boost::shared_ptr<CoordValue>& val, int precision
     return valstr;
 }
 
-double
-VariableValue::compute()
+double VariableValue::compute()
 {
     if(geometryVariables_.count(name_) == 0)
         throw PSIEXCEPTION("Variable " + name_ + " used in geometry specification has not been defined");
@@ -77,12 +76,10 @@ CoordEntry::CoordEntry(int entry_number, double Z, double charge, double mass, c
       charge_(charge), mass_(mass), symbol_(symbol), label_(label), ghosted_(false),
       basissets_(basis), shells_(shells)
 {
-
 }
 
 CoordEntry::~CoordEntry()
 {
-
 }
 
 const double& CoordEntry::Z() const
@@ -148,7 +145,7 @@ const std::string& CoordEntry::shell(const std::string& type) const
 
 
 CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
-                               boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z)
+               boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z)
     : CoordEntry(entry_number, Z, charge, mass, symbol, label), x_(x), y_(y), z_(z)
 {
 }
@@ -194,8 +191,7 @@ const Vector3& CartesianEntry::compute()
     return coordinates_;
 }
 
-void
-CartesianEntry::set_coordinates(double x, double y, double z)
+void CartesianEntry::set_coordinates(double x, double y, double z)
 {
     coordinates_[0] = x;
     coordinates_[1] = y;

@@ -1,0 +1,108 @@
+#! EFP on mixed QM (water) and EFP (water + 2 * ammonia) system.
+#! An EFP-only calc performed first to test vales against q-chem.
+
+memory 200 mb
+
+# Part 1
+molecule qmefp {
+
+# QM fragment
+0 1
+O1    0         0     0.118720
+H2   -0.753299, 0.0, -0.474880
+H3    0.753299, 0.0, -0.474880
+
+# EFP as EFP fragments
+--
+efp h2o -2.12417561  1.22597097 -0.95332054 -2.902133 1.734999 -1.953647
+--
+efp NH3  1.04358758  1.90477190  2.88279926 -1.105309 2.033306 -1.488582
+--
+efp NH3 -4.16795656 -0.98129149 -1.27785935  2.526442 1.658262 -2.742084
+
+}
+
+set basis 6-31g*
+set scf_type cd
+set efp_disp_damping tt
+set diis 0
+set e_convergence 6  # comment out this and d_conv then frep '@RHF' to see final conv problem
+set d_convergence 5
+
+scf = energy('scfefp')
+
+print scf
+compare_values(-76.0128883676, scf, 6, 'EFP SCF')
+clean()
+
+# Part 2
+molecule qmefp2 {
+
+# QM fragment
+0 1
+O1    0         0     0.118720
+H2   -0.753299, 0.0, -0.474880
+H3    0.753299, 0.0, -0.474880
+symmetry c1
+}
+
+set basis cc-pvdz
+
+scf = energy('scf')
+
+print scf
+compare_values(-76.0266518267, scf, 6, 'Plain SCF')
+clean()
+
+# Part 3
+molecule qmefp3 {
+
+0 1
+O1    0         0     0.118720
+H2   -0.753299, 0.0, -0.474880
+H3    0.753299, 0.0, -0.474880
+
+--
+efp h2o -2.12417561  1.22597097 -0.95332054 -2.902133 1.734999 -1.953647
+--
+efp NH3  1.04358758  1.90477190  2.88279926 -1.105309 2.033306 -1.488582
+--
+efp NH3 -4.16795656 -0.98129149 -1.27785935  2.526442 1.658262 -2.742084
+
+}
+
+set basis 6-31g*
+set efp_disp off
+
+scf = energy('scfefp')
+
+print scf
+compare_values(-76.0112896698, scf, 6, 'EFP SCF')
+clean()
+
+# Part 4
+psi4.efp_init()  # Necessary, add to activate() ?
+set basis cc-pvdz
+activate(qmefp2)
+
+scf = energy('scf')
+print scf
+compare_values(-76.0266518267, scf, 6, 'Plain SCF activated')
+clean()
+
+# Part 5
+#molecule efponly {
+#efp cl2 0.0 0.0 0.0 0.0 0.0 0.0
+#--
+#efp cl2 4.0 4.0 4.0 0.0 0.0 0.0
+#--
+#O -1 -1 -1
+#H -2 -1 -1
+#H -1 -2 -1
+#}
+#
+#scf = energy('scfefp')
+#print scf
+#compare_values(-0.000014384511, scf, 5, 'EFP diatom')
+
+print "This passes with scfefp failing at the 3rd decimal. Repair when fixed."

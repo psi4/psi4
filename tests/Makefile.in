@@ -67,6 +67,8 @@ $(mcscf_subdirs) \
 $(psimrcc_subdirs) \
 $(dcft_subdirs)
 
+interface_subdirs = libefp
+
 # Compile the plugins, if we activated them
 HAVE_PLUGINS=@HAVE_PLUGINS@
 ifeq ($(HAVE_PLUGINS),yes)
@@ -139,6 +141,13 @@ freq_tests: $(freq_subdirs)
 
 quicktests: $(quicktestdirs)
 	$(call gatherresults, $(quicktestdirs))
+	for dir in $(interface_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+libefp_tests:
+	(cd libefp && $(MAKE) tests) || exit 1;
 
 cepa_tests: $(cepa_subdirs)
 	$(call gatherresults, $(cepa_subdirs))
@@ -182,6 +191,9 @@ psimrcc_tests: $(psimrcc_subdirs)
 python_tests: $(python_test_subdirs)
 	$(call gatherresults, $(python_test_subdirs))
 
+libefp_tests:
+	(cd libefp && $(MAKE) tests) || exit 1;
+
 longtests: $(longtest_subdirs)
 	$(call gatherresults, $(longtest_subdirs)
 
@@ -197,6 +209,10 @@ clean:
 	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
 	done
 	rm -f ../test-case-results
+	for dir in $(interface_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
+	done
 
 quicktestsclean:
 	for dir in $(quicktestdirs); \

@@ -23,7 +23,8 @@ subdirs = libint \
 		  libdiis \
 		  libsapt_solver \
 		  libplugin \
-		  libmoinfo
+		  libmoinfo \
+          libefp_solver
 
 all: default
 

@@ -73,6 +73,11 @@ void MOLECULE::nr_step(void) {
   opt_matrix_mult(H_inv, 0, &fq, 1, &dq, 1, Nintco, Nintco, 1, 0);
   free_matrix(H_inv);
 
+fprintf(outfile, "\n NR step and forces \n");
+fprintf(outfile, "\n dq         fq        \n");
+for(int i=0; i<6*efp_fragments.size(); i++)
+  fprintf(outfile, " %10.5f %10.5f\n", dq[i], fq[i]);
+
   // Zero steps for frozen fragment
   for (f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
@@ -84,6 +89,9 @@ void MOLECULE::nr_step(void) {
 
   // applies maximum internal coordinate change
   apply_intrafragment_step_limit(dq);
+  apply_efpfragment_step_limit(dq);
+
+fprintf(outfile, "\nin molecule_nr_step.cc line 68, Nintco = %d\n", Nintco); fflush(outfile);
 
   // get norm |q| and unit vector in the step direction
   nr_dqnorm = sqrt( array_dot(dq, dq, Nintco) );
@@ -93,12 +101,16 @@ void MOLECULE::nr_step(void) {
 
   oprintf_out("\tNorm of target step-size %10.5lf\n", nr_dqnorm);
   
+fprintf(outfile, "\nin molecule_nr_step.cc line 76, Nintco = %d\n", Nintco); fflush(outfile);
+
   // get gradient and hessian in step direction
   nr_g = -1 * array_dot(fq, nr_u, Nintco); // gradient, not force
 
   nr_h = 0;
   for (i=0; i<Nintco; ++i)
     nr_h += nr_u[i] * array_dot(H[i], nr_u, Nintco);
+
+fprintf(outfile, "\nin molecule_nr_step.cc line 85, Nintco = %d\n", Nintco); fflush(outfile);
 
   DE_projected = DE_nr_energy(nr_dqnorm, nr_g, nr_h);
   oprintf_out("\tProjected energy change by quadratic approximation: %20.10lf\n", DE_projected);
@@ -126,7 +138,8 @@ void MOLECULE::nr_step(void) {
   for (int I=0; I<fb_fragments.size(); ++I)
     fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
 
-  symmetrize_geom(); // now symmetrize the geometry for next step
+  if (!Opt_params.efp_fragments)
+    symmetrize_geom(); // now symmetrize the geometry for next step
 
   // save values in step data
   p_Opt_data->save_step_info(DE_projected, nr_u, nr_dqnorm, nr_g, nr_h);

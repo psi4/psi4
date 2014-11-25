@@ -53,6 +53,8 @@ class FRAG {
   double **geom;         //< cartesian coordinates
   double **grad;         //< cartesian coordinates
   double *mass;          //< nuclear masses
+  //int libmints_grad_index;
+  //int libmints_geom_index;
   bool   **connectivity; //< connectivity matrix
   bool frozen;           //< whether to optimize
   COMBO_COORDINATES coords; //< simple or linear combinations of simple coordinates
@@ -188,6 +190,14 @@ class FRAG {
   bool present(const SIMPLE_COORDINATE *one) const;
 
   int find(const SIMPLE_COORDINATE *one) const;
+
+//****AVC****//
+  void set_libmints_grad_index(int index) { libmints_grad_index = index; }
+  void set_libmints_geom_index(int index) { libmints_geom_index = index; }
+  int get_libmints_grad_index(void) const { return libmints_grad_index; }
+  int get_libmints_geom_index(void) const { return libmints_geom_index; }
+//****AVC****//
+
 
   // displace fragment by dq ; forces and offset are provided for printing
   void displace(double *dq, double *fq, int atom_offset=0);
