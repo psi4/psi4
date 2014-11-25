@@ -147,7 +147,7 @@ class PsiOutStream:public PsiStreamBase<std::ostream>{
        *   line.  This could of course be remedied by splitting the message
        *   across multiple lines, but I'm lazy.
        */
-      void MakeBanner(const std::string& Message, const char delimiter='*', const
+      void MakeBanner(const std::string& message, const char delimiter='*', const
             int width=80);
 };
 

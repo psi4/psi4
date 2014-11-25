@@ -33,8 +33,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#define DEBUG
-
 namespace psi {
 
 OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyAOInt> & ob,

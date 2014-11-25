@@ -198,7 +198,7 @@ class ContractOverDensityFunctor
         /// The array of charges
         double *charges_;
     public:
-        ContractOverDensityFunctor(size_t ncenters, double *charges, SharedMatrix D):
+        ContractOverDensityFunctor(size_t /*ncenters*/, double *charges, SharedMatrix D):
             pD_(D->pointer()),
             charges_(charges)
         {

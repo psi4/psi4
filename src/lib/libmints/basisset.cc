@@ -138,14 +138,16 @@ BasisSet::BasisSet()
                                uexponents_, GaussianType(0), 0, xyz_, 0);
 }
 
-boost::shared_ptr<BasisSet> BasisSet::build(boost::shared_ptr<Molecule> molecule,
-                                            const std::vector<ShellInfo>& shells)
+boost::shared_ptr<BasisSet> BasisSet::build(boost::shared_ptr<Molecule> /*molecule*/,
+                                            const std::vector<ShellInfo>& /*shells*/)
 {
     //TODO fixme!!!
     boost::shared_ptr<BasisSet> basis(new BasisSet());
     //    basis->molecule_ = molecule;
     //    basis->shells_ = shells;
     //    basis->refresh();
+
+    throw NotImplementedException();
 
     return basis;
 }
@@ -361,7 +363,7 @@ std::string BasisSet::print_detail_cfour() const
         for (int am = 0; am <= max_am_center; am++) {
             // TODO: std::find safe on floats? seems to work
             // Collect unique exponents among all functions
-            for (int Q = 0; Q < shell_per_am[am].size(); Q++) {
+            for (size_t Q = 0; Q < shell_per_am[am].size(); Q++) {
                 for (int K = 0; K < shells_[shell_per_am[am][Q] + first_shell].nprimitive(); K++) {
                     if (!(std::find(exp_per_am[am].begin(), exp_per_am[am].end(),
                                     shells_[shell_per_am[am][Q] + first_shell].exp(K)) != exp_per_am[am].end())) {
@@ -371,8 +373,8 @@ std::string BasisSet::print_detail_cfour() const
             }
 
             // Collect coefficients for each exp among all functions, zero otherwise
-            for (int Q = 0; Q < shell_per_am[am].size(); Q++) {
-                for (int ep = 0, K = 0; ep < exp_per_am[am].size(); ep++) {
+            for (size_t Q = 0; Q < shell_per_am[am].size(); Q++) {
+                for (size_t ep = 0, K = 0; ep < exp_per_am[am].size(); ep++) {
                     if (abs(exp_per_am[am][ep] - shells_[shell_per_am[am][Q] + first_shell].exp(K)) < 1.0e-8) {
                         coef_per_am[am].push_back(shells_[shell_per_am[am][Q] + first_shell].original_coef(K));
                         if ((K+1) != shells_[shell_per_am[am][Q] + first_shell].nprimitive()) {
@@ -397,7 +399,7 @@ std::string BasisSet::print_detail_cfour() const
 
         for (int am = 0; am <= max_am_center; am++) {
             // Write exponents for each shell
-            for (int ep = 0; ep < exp_per_am[am].size(); ep++) {
+            for (size_t ep = 0; ep < exp_per_am[am].size(); ep++) {
                 sprintf(buffer, "%14.7f", exp_per_am[am][ep]);
                 ss << buffer;
                 if (((ep+1) % 5 == 0) || ((ep+1) == exp_per_am[am].size())) {
@@ -409,8 +411,8 @@ std::string BasisSet::print_detail_cfour() const
             ss << buffer;
 
             // Write contraction coefficients for each shell
-            for (int ep = 0; ep < exp_per_am[am].size(); ep++) {
-                for (int bf = 0; bf < shell_per_am[am].size(); bf++) {
+            for (size_t ep = 0; ep < exp_per_am[am].size(); ep++) {
+                for (size_t bf = 0; bf < shell_per_am[am].size(); bf++) {
                     sprintf(buffer, "%10.7f ", coef_per_am[am][bf*exp_per_am[am].size()+ep]);
                     ss << buffer;
                 }
@@ -486,7 +488,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_combined(const boost::shared_p
     f = PyList_New(fitroles.size());
     o = PyList_New(others.size());
 
-    for (int i=0; i<keys.size(); ++i) {
+    for (size_t i=0; i<keys.size(); ++i) {
         PyList_SetItem(k, i, PyString_FromString(keys[i].c_str()));
         PyList_SetItem(t, i, PyString_FromString(targets[i].c_str()));
         PyList_SetItem(f, i, PyString_FromString(fitroles[i].c_str()));
@@ -831,7 +833,7 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
             const std::string &label = symbol_iter->first;  // symbol --> label
             vector<ShellInfo>& shells = symbol_map[label];  // symbol --> label
             primitive_start[basis][label] = n_uprimitive_;  // symbol --> label
-            for (int i=0; i<shells.size(); ++i) {
+            for (size_t i=0; i<shells.size(); ++i) {
                 const ShellInfo &shell = shells[i];
                 for(int prim = 0; prim < shell.nprimitive(); ++prim){
                     uexps.push_back(shell.exp(prim));
@@ -857,7 +859,7 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
         string basis = atom->basisset(basistype);
         string label = atom->label();  // symbol --> label
         vector<ShellInfo>& shells = shell_map[basis][label];  // symbol --> label
-        for (int i=0; i<shells.size(); ++i) {
+        for (size_t i=0; i<shells.size(); ++i) {
             const ShellInfo &shell = shells[i];
             int nprim = shell.nprimitive();
             nprimitive_ += nprim;
@@ -1410,82 +1412,3 @@ void BasisSet::compute_phi(double *phi_ao, double x, double y, double z)
         ao += INT_NCART(am);
     } // nshell
 }
-
-BasisSet BasisSet::concatenate(const BasisSet& b) const {
-
-    BasisSet temp;
-    //TODO fixme!!!
-#if 0
-    temp.name_ = name_ + " + " + b.name_;
-    temp.molecule_ = molecule();
-
-    // Copy a's shells to temp
-    temp.shells_ = shells_;
-
-    // Append b's shells to temp
-    temp.shells_.insert(temp.shells_.end(), b.shells_.begin(), b.shells_.end());
-
-    // Call refresh to regenerate center_to_shell and center_to_nshell
-    temp.refresh();
-#endif
-    return temp;
-}
-
-boost::shared_ptr<BasisSet> BasisSet::concatenate(const boost::shared_ptr<BasisSet>& b) const {
-    return boost::shared_ptr<BasisSet>(new BasisSet(concatenate(*b.get())));
-}
-
-BasisSet BasisSet::add(const BasisSet& b) const {
-
-    BasisSet temp;
-    //TODO fixme!!
-#if 0
-    temp.name_ = name_ + " + " + b.name_;
-    temp.molecule_ = molecule();
-
-    // Copy a's shells to temp
-    //    temp.shells_ = shells_;
-
-    // Append b's shells to temp
-    //    std::vector<GaussianShell>::const_iterator iter = b.shells_.begin();
-    //    for (; iter != b.shells_.end(); iter++)
-    //        temp.shells_.push_back(*iter);
-
-    //    temp.shells_.insert(temp.shells_.end(), b.shells_.begin(), b.shells_.end());
-
-    // Loop over atoms
-    for (int atom=0; atom<molecule()->natom(); ++atom) {
-        for (int shella=0; shella<nshell_on_center(atom); ++shella)
-            temp.shells_.push_back(shell(atom, shella));
-
-        for (int shellb=0; shellb<b.nshell_on_center(atom); ++shellb)
-            temp.shells_.push_back(b.shell(atom, shellb));
-    }
-
-    // Call refresh to regenerate center_to_shell and center_to_nshell
-    temp.refresh();
-
-    // Sort by center number
-    //    std::sort(temp.shells_.begin(), temp.shells_.end(), shell_sorter_ncenter);
-
-    // Call refresh to regenerate center_to_shell and center_to_nshell
-    //    temp.refresh();
-
-    // Sort by AM in each center
-    //    for (int atom=0; atom < temp.molecule_->natom(); ++atom) {
-    //        std::sort(temp.shells_.begin()+temp.center_to_shell_[atom],
-    //                  temp.shells_.begin()+temp.center_to_shell_[atom]+temp.center_to_nshell_[atom],
-    //                  shell_sorter_am);
-    //    }
-#endif
-    return temp;
-}
-
-boost::shared_ptr<BasisSet> BasisSet::add(const boost::shared_ptr<BasisSet>& b) const {
-    return boost::shared_ptr<BasisSet>(new BasisSet(add(*b.get())));
-}
-
-
-//boost::shared_ptr<BasisSet> BasisSet::concatenate(const boost::shared_ptr<BasisSet>& a, const boost::shared_ptr<BasisSet>& b) const {
-//    return a->concatenate(b);
-//}

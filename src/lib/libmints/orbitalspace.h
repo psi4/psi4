@@ -118,7 +118,7 @@ public:
     /** Given two spaces, it projects out one space from the other and returns the new spaces.
      * \param orb_space The space to project out. The returned space will be orthogonal to this.
      * \param ri_space The space being projected on. The returned space will be this space minus orb_space.
-     * \param lindep_tol The tolerance for linear dependencies.
+     * \param linear_tol The tolerance for linear dependencies.
      */
     static OrbitalSpace build_cabs_space(
             const OrbitalSpace& orb_space,
@@ -127,15 +127,14 @@ public:
 
     /** Given two basis sets, it merges the basis sets and then constructs an orthogonalized
      * space with the same span. Linearly dependent orbitals are thrown out.
-     * \param aux_bs The first basis to include in space
-     * \param obs The second basis to include in the new space
+     * \param obs_plus_aux_bs Orbital basis set plus auxilery basis set
      * \param lindep_tol The tolerance for linear dependencies
      */
-    static OrbitalSpace build_ri_space(boost::shared_ptr<BasisSet> aux_bs, boost::shared_ptr<BasisSet> obs, double lindep_tol);
+    static OrbitalSpace build_ri_space(boost::shared_ptr<BasisSet> obs_plus_aux_bs, double lindep_tol);
 
     /** Given a basis set, it orthogonalizes the orbitals and returns a space with the same
      * span but orthogonal orbitals. Also, linear dependent orbitals are projected out.
-     * \param aux_bas The basis to orthogonalize
+     * \param aux_bs The basis to orthogonalize
      * \param lindep_tol The tolerance for linear dependencies
      */
     static OrbitalSpace build_abs_space(boost::shared_ptr<BasisSet> aux_bs, boost::shared_ptr<IntegralFactory> ints, double lindep_tol);

@@ -357,11 +357,9 @@ namespace { // anonymous
         return orthogonal_compliment(orb_space, ri_space, "p''", "CABS", lindep_tol);
     }
 
-    OrbitalSpace OrbitalSpace::build_ri_space(boost::shared_ptr<BasisSet> aux_bs, boost::shared_ptr<BasisSet> obs, double lindep_tol)
+    OrbitalSpace OrbitalSpace::build_ri_space(boost::shared_ptr<BasisSet> obs_plus_aux_bs, double lindep_tol)
     {
-//        boost::shared_ptr<BasisSet> ri_basis = obs + aux_bs;
-        boost::shared_ptr<BasisSet> ri_basis = obs->add(aux_bs);
-        return orthogonalize("p'", "RIBS", ri_basis, lindep_tol);
+        return orthogonalize("p'", "RIBS", obs_plus_aux_bs, lindep_tol);
     }
 
 } // namespace psi

@@ -212,9 +212,9 @@ void ThreeCenterOverlapInt::compute_pair(const GaussianShell& sA,
     pure_transform(sA, sB, sC);
 }
 
-void ThreeCenterOverlapInt::normalize_am(const GaussianShell& sA,
-                                         const GaussianShell& sB,
-                                         const GaussianShell& sC)
+void ThreeCenterOverlapInt::normalize_am(const GaussianShell& /*sA*/,
+                                         const GaussianShell& /*sB*/,
+                                         const GaussianShell& /*sC*/)
 {
     /// ACS commented this out.  The normalize:: function just returns 1.0, so this is not needed.
 //    // Assume integrals are done. Normalize for angular momentum
