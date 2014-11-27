@@ -235,7 +235,6 @@ if(ENABLE_PCMSOLVER)
       endif()
    else()
       message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")	 
-      set(PSILIB ${PSILIB} psipcm)
       link_directories(${PROJECT_BINARY_DIR}/external/lib)
       # PCMSolver needs Fortran libraries 
       if(CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
@@ -243,6 +242,7 @@ if(ENABLE_PCMSOLVER)
       else() # Intel case
       	   set(PCMSOLVER_LIBS pcm getkw ifcore imf ${ZLIB_LIBRARIES})
       endif()
+      set(PSILIB ${PSILIB} psipcm ${PCMSOLVER_LIBS})
    endif()	    
 endif()
 
