@@ -32,6 +32,7 @@
 #include <libdiis/diisentry.h>
 #include <psi4-dec.h>
 #include <libqt/qt.h>
+#include <libpcm/psipcm.h>
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -187,6 +188,11 @@ public:
     /// Returns the occupation vectors
     boost::shared_ptr<Vector> occupation_a() const;
     boost::shared_ptr<Vector> occupation_b() const;
+
+    // PCM interface
+    bool pcm_enabled_;
+    boost::shared_ptr<PCM> hf_pcm_;
+
 protected:
 
     /// Formation of H is the same regardless of RHF, ROHF, UHF
