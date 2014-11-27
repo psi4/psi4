@@ -1,0 +1,3 @@
+[submodule "external/pcmsolver"]
+	path = external/pcmsolver
+	url = https://github.com/PCMSolver/pcmsolver.git
