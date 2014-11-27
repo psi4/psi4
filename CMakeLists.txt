@@ -28,6 +28,7 @@ option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
 option(ENABLE_PLUGINS        "Enable plugins"                              ON)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
+option(ENABLE_PCMSOLVER      "Enable PCMSolver library"                    OFF)
 # Options for dashboard builds
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                        OFF)
 option(ENABLE_MEMCHECK       "Enable Valgrind memory check"                OFF)
@@ -222,6 +223,28 @@ set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2
            findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util
            stable deriv scfgrad int util diis plugin parallel frag)
 
+# PCMSolver
+if(ENABLE_PCMSOLVER)
+   find_package(ZLIB)
+   if(NOT ZLIB_FOUND)
+      set(ENABLE_PCMSOLVER OFF)	   
+      message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")	
+      message(STATUS " PCMSolver dependencies NOT satisfied:")
+      if(NOT ZLIB_FOUND)
+          message(STATUS "  - install Zlib development libraries")
+      endif()
+   else()
+      message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")	 
+      set(PSILIB ${PSILIB} psipcm)
+      link_directories(${PROJECT_BINARY_DIR}/external/lib)
+      # PCMSolver needs Fortran libraries 
+      if(CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
+      	   set(PCMSOLVER_LIBS pcm getkw gfortran quadmath ${ZLIB_LIBRARIES})
+      else() # Intel case
+      	   set(PCMSOLVER_LIBS pcm getkw ifcore imf ${ZLIB_LIBRARIES})
+      endif()
+   endif()	    
+endif()
 
 #RMR---This is our plugin workaround
 #Here we start a list of plugins
