@@ -316,6 +316,11 @@ endif()
 
 ###### END external-executable-dependent tests ################
 
+# External module dependent tests
+if(ENABLE_PCMSOLVER)
+   add_subdirectory(pcm1)
+endif()
+
 if(NOT PERL_FOUND)
    message(WARNING "Perl was not found. Some Coupled Cluster test cases will not be thoroughly checked.")
 endif()
