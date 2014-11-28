@@ -166,7 +166,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   // frozen_uocc.
 
   /*- Relativistic Hamiltonian type !expert -*/
-  options.add_str("RELATIVISTIC", "NO","NO X2C");
+  options.add_str("RELATIVISTIC", "NO","NO X2C DKH");
+  /*- Order of Douglas-Kroll-Hess !export -*/
+  options.add_int("DKH_ORDER", 2);
 
   if (name == "DETCI" || options.read_globals()) {
     /*- MODULEDESCRIPTION Performs configuration interaction (CI)

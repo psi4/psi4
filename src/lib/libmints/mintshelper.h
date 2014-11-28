@@ -164,6 +164,12 @@ public:
     SharedMatrix ao_kinetic();
     /// AO Potential Integrals
     SharedMatrix ao_potential();
+    /// AO pVp Integrals
+    SharedMatrix ao_pvp();
+    /// AO DKH Integrals
+    SharedMatrix ao_dkh(int dkh_order = -1);
+    /// SO DKH Integrals
+    SharedMatrix so_dkh(int dkh_order = -1);
     /// Vector AO Dipole Integrals
     std::vector<SharedMatrix> ao_dipole();
     /// Vector AO Angular Momentum Integrals
