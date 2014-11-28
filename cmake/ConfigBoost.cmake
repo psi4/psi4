@@ -8,7 +8,7 @@ list(APPEND needed_components filesystem python regex serialization system threa
 set(Boost_USE_STATIC_LIBS    ON)
 set(Boost_USE_MULTITHREADED  ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-if(ENABLE_UNIT_TESTS)
+if(ENABLE_UNIT_TESTS OR ENABLE_PCMSOLVER)
    list(APPEND needed_components unit_test_framework)
    find_package(Boost ${BOOSTVERMIN} COMPONENTS "${needed_components}")
 else()

@@ -337,15 +337,13 @@ def process_basis_block(matchobj):
 
 def process_pcm_command(matchobj):
     """Function to process match of ``pcm name? { ... }``."""
-    spaces = str(matchobj.group(1))  # Ignore..
-    name = str(matchobj.group(2))  # Ignore..
+    spacing = str(matchobj.group(1)) # Ignore..
+    name = str(matchobj.group(2)) # Ignore..
     block = str(matchobj.group(3))
-    fp = open('@pcmsolver.inp', 'w')
+    fp = open('pcmsolver.inp', 'w')
     fp.write(block)
     fp.close()
-    from pcmpreprocess import preprocess
-    preprocess()
-    return ""  # The file has been written to disk; nothing needed in Psi4 input
+    return "" # The file has been written to disk; nothing needed in Psi4 input
 
 
 def process_external_command(matchobj):
