@@ -1,0 +1,49 @@
+memory 250 mb
+
+nucenergy = 12.0367196636183458 #TEST
+polenergy = -0.0053059995317373 #TEST
+totalenergy = -55.4559426361763812 #TEST
+
+molecule NH3 {
+symmetry c1
+N     -0.0000000001    -0.1040380466      0.0000000000
+H     -0.9015844116     0.4818470201     -1.5615900098
+H     -0.9015844116     0.4818470201      1.5615900098
+H      1.8031688251     0.4818470204      0.0000000000
+units bohr
+no_reorient
+no_com
+}
+
+set {
+  basis STO-3G 
+  scf_type pk
+  pcm true
+  pcm_scf_type total
+}
+
+pcm = {
+   Units = Angstrom
+   Medium {
+   SolverType = IEFPCM
+   Solvent = Water
+   }     
+        
+   Cavity {
+   RadiiSet = UFF	   
+   Type = GePol
+   Scaling = False
+   Area = 0.3
+   Mode = Implicit
+   }
+}   
+
+energy_scf1 = energy('scf')
+compare_values(NH3.nuclear_repulsion_energy(), nucenergy, 10, "Nuclear repulsion energy (PCM, total algorithm)") #TEST
+compare_values(energy_scf1, totalenergy, 10, "Total energy (PCM, total algorithm)") #TEST
+compare_values(get_variable("PCM POLARIZATION ENERGY"), polenergy, 8, "Polarization energy (PCM, total algorithm)") #TEST
+
+set pcm_scf_type separate
+energy_scf2 = energy('scf')
+compare_values(energy_scf2, totalenergy, 10, "Total energy (PCM, separate algorithm)") #TEST
+compare_values(get_variable("PCM POLARIZATION ENERGY"), polenergy, 8, "Polarization energy (PCM, separate algorithm)")
