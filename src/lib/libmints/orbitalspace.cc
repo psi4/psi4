@@ -298,12 +298,12 @@ namespace { // anonymous
             if (info != 0) {
                 if (info < 0) {
                     outfile->Printf( "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
-                    
+
                     abort();
                 }
                 if (info > 0) {
                     outfile->Printf( "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
-                    
+
                     abort();
                 }
             }
@@ -357,9 +357,18 @@ namespace { // anonymous
         return orthogonal_compliment(orb_space, ri_space, "p''", "CABS", lindep_tol);
     }
 
-    OrbitalSpace OrbitalSpace::build_ri_space(boost::shared_ptr<BasisSet> obs_plus_aux_bs, double lindep_tol)
+    OrbitalSpace OrbitalSpace::build_ri_space(const boost::shared_ptr<Molecule>& molecule, const std::string& obs_key, const std::string& aux_key, double lindep_tol)
     {
-        return orthogonalize("p'", "RIBS", obs_plus_aux_bs, lindep_tol);
+        // Construct a combined basis set.
+        Options& options = Process::environment.options;
+        std::vector<std::string> keys, targets, roles, others;
+        keys.push_back(obs_key); keys.push_back(aux_key);
+        targets.push_back(options.get_str(obs_key)); targets.push_back(options.get_str(aux_key));
+        roles.push_back(obs_key); roles.push_back("F12");
+        others.push_back(options.get_str(obs_key)); others.push_back(options.get_str(obs_key));
+        boost::shared_ptr<BasisSet> combined = BasisSet::pyconstruct_combined(molecule, keys, targets, roles, others);
+
+        return orthogonalize("p'", "RIBS", combined, lindep_tol);
     }
 
 } // namespace psi
