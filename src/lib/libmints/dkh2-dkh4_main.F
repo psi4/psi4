@@ -7,12 +7,12 @@ end module f90_kind
 !
 !
 !
-module dkh_main 
+module dkh_main
 !
 !-----------------------------------------------------------------------
       USE f90_kind,                           ONLY: double
 !-----------------------------------------------------------------------
-      IMPLICIT NONE 
+      IMPLICIT NONE
       PUBLIC                                 :: DKH
 !-----------------------------------------------------------------------
       CONTAINS
@@ -38,7 +38,7 @@ module dkh_main
 !                                                                      *
 !     2nd to 4th order ported to F90 for cp2k by:                      *
 !     Jens Thar, Barbara Kirchner: Uni Bonn (09/2006)                  *
-!     final polishing by:                                              *                                            
+!     final polishing by:                                              *
 !     Markus Reiher: ETH Zurich (03/2012)                              *
 !                                                                      *
 !     REFERENCES:                                                      *
@@ -47,7 +47,7 @@ module dkh_main
 !                                                                      *
 !-----------------------------------------------------------------------
 !
-     SUBROUTINE DKH(s,v,h,pVp,n,dkh_order) 
+     SUBROUTINE DKH(s,v,h,pVp,n,dkh_order)
 !
 !-----------------------------------------------------------------------
 !                                                                      *
@@ -74,7 +74,7 @@ module dkh_main
 !    aa   (:)   kinematical factors f. DKH DSQRT((c^2+e(i))/(2.0*e(i)))*
 !    rr   (:)   kinematical factors f. DKH c/(c^2+e(i))                *
 !    vt   (:,:) non relativistic potential matrix in T-basis           *
-!    pvpt (:,:) pvp integral matrix in T-basis                         * 
+!    pvpt (:,:) pvp integral matrix in T-basis                         *
 !    ev1t (:,:) DKH-even1 matrix in T-basis                            *
 !    evt2 (:,:) DKH-even2 matrix in T-basis                            *
 !    ev1  (:,:) DKH-even1 matrix in position space                     *
@@ -86,16 +86,16 @@ module dkh_main
 !    con2   prefactor, 2/137^2                                         *
 !    con    prefactor, 137^2                                           *
 !-----------------------------------------------------------------------
-!      
+!
       INTEGER,INTENT(IN)                        :: n
-      REAL(KIND=double),DIMENSION(n,n),INTENT(INOUT)::  s,v,pVp,h 
+      REAL(KIND=double),DIMENSION(n,n),INTENT(INOUT)::  s,v,pVp,h
       REAL(KIND=double),DIMENSION(:),ALLOCATABLE    ::  ev0t,e,aa,rr,&
                                                     tt
       Real(KIND=double),DIMENSION(:,:), &
       ALLOCATABLE                               ::  eig,sinv,revt,aux,&
                                                     ove,ev1t,pev1tp,&
                                                     vt,pVpt,ev1,ev2,ev2t,&
-                                                    ev3,ev4,ev3t,ev4t  
+                                                    ev3,ev4,ev3t,ev4t
       REAL(KIND=double)                             ::  velit
 !CAW  pp: p^2-values (in momentum-space), stored as matrix!!
       INTEGER                                   :: i,j,k,dkh_order
@@ -114,7 +114,7 @@ module dkh_main
       ALLOCATE(sinv(n,n))
       ALLOCATE(revt(n,n))
       ALLOCATE(aux(n,n))
-      ALLOCATE(ove(n,n)) 
+      ALLOCATE(ove(n,n))
       ALLOCATE(ev0t(n))
       ALLOCATE(e(n))
       ALLOCATE(aa(n))
@@ -126,7 +126,7 @@ module dkh_main
       ALLOCATE(ev4t(n,n))
       ALLOCATE(vt(n,n))
       ALLOCATE(pVpt(n,n))
-      ALLOCATE(pev1tp(n,n)) 
+      ALLOCATE(pev1tp(n,n))
       ALLOCATE(ev1(n,n))
       ALLOCATE(ev2(n,n))
       ALLOCATE(ev3(n,n))
@@ -136,13 +136,13 @@ module dkh_main
 !     Check (and set) DKH order
 !-----------------------------------------------------------------------
 !
-      if (dkh_order.ge.5.or.dkh_order.lt.2) dkh_order=4  
+      if (dkh_order.ge.5.or.dkh_order.lt.2) dkh_order=4
 !
 !-----------------------------------------------------------------------
 !     Schmidt-orthogonalize overlap matrix
 !-----------------------------------------------------------------------
 !
-      CALL sog (n,s,sinv)      
+      CALL sog (n,s,sinv)
 !
 !-----------------------------------------------------------------------
 !     Calculate matrix representation from nonrelativistic T matrix
@@ -151,7 +151,7 @@ module dkh_main
       CALL diag ( h,n,eig,tt,sinv,aux,0 )
 !
 !-----------------------------------------------------------------------
-!     Calculate kinetic part of Hamiltonian in T-basis 
+!     Calculate kinetic part of Hamiltonian in T-basis
 !-----------------------------------------------------------------------
 !
       CALL kintegral (n,ev0t,tt,e,velit)
@@ -161,10 +161,10 @@ module dkh_main
 !-----------------------------------------------------------------------
 !
       CALL dgemm("N","N",n,n,n,1.0d0,sinv,n,eig,n,0.0d0,aux,n)
-      CALL dgemm("N","N",n,n,n,1.0d0,s,n,aux,n,0.0d0,revt,n)      
+      CALL dgemm("N","N",n,n,n,1.0d0,s,n,aux,n,0.0d0,revt,n)
 !
 !-----------------------------------------------------------------------
-!     Calculate kinetic part of the Hamiltonian  
+!     Calculate kinetic part of the Hamiltonian
 !-----------------------------------------------------------------------
 !
       h = 0.0d0
@@ -182,11 +182,11 @@ module dkh_main
 !-----------------------------------------------------------------------
 !
       DO i=1,n
-        aa(i)=DSQRT((velit*velit+e(i)) / (2.0d0*e(i)))            
-        rr(i)=DSQRT(velit*velit)/(velit*velit+e(i))                        
+        aa(i)=DSQRT((velit*velit+e(i)) / (2.0d0*e(i)))
+        rr(i)=DSQRT(velit*velit)/(velit*velit+e(i))
       END DO
 !
-!----------------------------------------------------------------------- 
+!-----------------------------------------------------------------------
 !     Transform v integrals to T-basis (v -> vt)
 !-----------------------------------------------------------------------
 !
@@ -203,7 +203,7 @@ module dkh_main
 !-----------------------------------------------------------------------
 !     Calculate even1 in T-basis
 !-----------------------------------------------------------------------
-! 
+!
       CALL even1(n,ev1t,vt,pvpt,aa,rr)
 !
 !----------------------------------------------------------------------
@@ -211,7 +211,7 @@ module dkh_main
 !----------------------------------------------------------------------
 !
       CALL dgemm("N","N",n,n,n,1.0d0,revt,n,ev1t,n,0.0d0,aux,n)
-      CALL dgemm("N","T",n,n,n,1.0d0,aux,n,revt,n,0.0d0,ev1,n)  
+      CALL dgemm("N","T",n,n,n,1.0d0,aux,n,revt,n,0.0d0,ev1,n)
 !
 !-----------------------------------------------------------------------
 !     Calculate even2 in T-basis
@@ -230,7 +230,7 @@ module dkh_main
 !     Calculate even3 in T-basis, only if requested
 !-----------------------------------------------------------------------
 !
-      IF (dkh_order.ge.3) THEN       
+      IF (dkh_order.ge.3) THEN
         CALL peven1p(n,pev1tp,vt,pvpt,aa,rr,tt)
         CALL even3b(n,ev3t,ev1t,pev1tp,vt,pvpt,aa,rr,tt,e)
 !
@@ -258,7 +258,7 @@ module dkh_main
           CALL dgemm("N","T",n,n,n,1.0d0,aux,n,revt,n,0.0d0,ev4,n)
         END IF
       END IF
-!          
+!
 !-----------------------------------------------------------------------
 !     Calculate v in position space
 !-----------------------------------------------------------------------
@@ -273,7 +273,7 @@ module dkh_main
 !
 !-----------------------------------------------------------------------
 !
-      DEALLOCATE(eig,sinv,revt,ove,aux,vt,pVpt,ev1,ev2,ev3,ev4,ev1t,ev2t,ev3t,ev4t,pev1tp) 
+      DEALLOCATE(eig,sinv,revt,ove,aux,vt,pVpt,ev1,ev2,ev3,ev4,ev1t,ev2t,ev3t,ev4t,pev1tp)
       DEALLOCATE(ev0t,e,aa,rr,tt)
 !
       RETURN
@@ -346,9 +346,9 @@ module dkh_main
           tv4=-tv3*tt(i)*prea*1.25d0
           ev0t(i)=tv1+tv2+tv3+tv4
         ELSE
-          ev0t(i)=con*(DSQRT(1.0d0+con2*tt(i))-1.0d0)   
+          ev0t(i)=con*(DSQRT(1.0d0+con2*tt(i))-1.0d0)
         END IF
-        e(i)=ev0t(i)+con           
+        e(i)=ev0t(i)+con
       END DO
 !
       RETURN
@@ -458,17 +458,17 @@ module dkh_main
 !                                                                      *
 !***********************************************************************
 !
-      IMPLICIT NONE 
+      IMPLICIT NONE
       INTEGER,INTENT(IN)                       :: n
       INTEGER                                  :: i,j
       REAL(KIND=double),DIMENSION(:),INTENT(IN)    :: aa,rr,tt,e
       REAL(KIND=double),DIMENSION(:,:),INTENT(OUT) :: ev2
-      REAL(KIND=double),DIMENSION(:,:),INTENT(IN)  :: vv,gg 
+      REAL(KIND=double),DIMENSION(:,:),INTENT(IN)  :: vv,gg
       REAL(KIND=double),DIMENSION(:,:),ALLOCATABLE ::v,pvp,vh,pvph,&
                                                  w1o1,o1w1
 !
 !-----------------------------------------------------------------------
-!     1.   General Structures and Patterns for DKH2                      
+!     1.   General Structures and Patterns for DKH2
 !-----------------------------------------------------------------------
 !
       ALLOCATE(v(n,n))
@@ -511,13 +511,13 @@ module dkh_main
      CALL dgemm("N","N",n,n,n,1.0d0,v,n,pvph,n,1.0d0,o1w1,n)
 !  Calculate in symmetric pakets
 !-----------------------------------------------------------------------
-!     2.   1/2 [W1,O1] = 1/2 W1O1 -  1/2 O1W1  
+!     2.   1/2 [W1,O1] = 1/2 W1O1 -  1/2 O1W1
 !-----------------------------------------------------------------------
 !
       CALL mat_add (ev2,0.5d0,w1o1,-0.5d0,o1w1,n)
 !
 !-----------------------------------------------------------------------
-!     3.   Finish up 
+!     3.   Finish up
 !-----------------------------------------------------------------------
 !
       DEALLOCATE(v,vh,pvp,pvph,w1o1,o1w1)
@@ -657,7 +657,7 @@ module dkh_main
 !                                                                      *
 !***********************************************************************
 !
-      IMPLICIT NONE 
+      IMPLICIT NONE
       INTEGER,INTENT(IN)                       :: n
       INTEGER                                  :: i,j
       REAL(KIND=double),DIMENSION(:),INTENT(IN)    :: aa,rr,tt,e
@@ -781,7 +781,7 @@ module dkh_main
       CALL mat_muld(scrh_4,pe1p,pvph,n,1.0d0,0.0d0,tt,rr)
       CALL mat_1_over_h(scrh_4,n,e)
       CALL dgemm("N","N",n,n,n,0.5d0,scr_1,n,scrh_1,n,0.0d0,sum_1,n)
-      CALL mat_muld(sum_1,scr_1,scrh_2,n,-0.5d0,1.0d0,tt,rr) 
+      CALL mat_muld(sum_1,scr_1,scrh_2,n,-0.5d0,1.0d0,tt,rr)
       CALL dgemm("N","N",n,n,n,-0.5d0,scr_2,n,scrh_1,n,1.0d0,sum_1,n)
       CALL mat_muld(sum_1,scr_2,scrh_2,n, 0.5d0,1.0d0,tt,rr)
       CALL mat_muld(sum_1,scr_1,scrh_3,n,-0.5d0,1.0d0,tt,rr)
@@ -862,7 +862,7 @@ module dkh_main
 !                                                                      *
 !   p    in  REAL(:,:):   matrix p                                     *
 !   a    in  REAL(:)  :   A-factors (diagonal)                         *
-!JT n    in  INTEGER  :   dimension of matrix p                        *  
+!JT n    in  INTEGER  :   dimension of matrix p                        *
 !                                                                      *
 !***********************************************************************
 !
@@ -879,7 +879,7 @@ module dkh_main
       ENDDO
 !
       RETURN
-      END SUBROUTINE mat_axa 
+      END SUBROUTINE mat_axa
 !
 !-----------------------------------------------------------------------
 !
@@ -904,12 +904,12 @@ module dkh_main
 !
       DO i=1,n
         DO j=1,n
-           p(i,j)=p(i,j)*a(i)*a(j)*r(i)*r(j)   
+           p(i,j)=p(i,j)*a(i)*a(j)*r(i)*r(j)
         ENDDO
       ENDDO
 !
       RETURN
-      END SUBROUTINE mat_arxra 
+      END SUBROUTINE mat_arxra
 !
 !-----------------------------------------------------------------------
 !
@@ -925,8 +925,8 @@ module dkh_main
 !   q      in   REAL(:,:):   matrix q                                  *
 !   r      in   REAL(:,.):   matrix r                                  *
 !   n      in   INTEGER  :   dimension n of matrices                   *
-!   alpha  in   REAL(double) :                                             *
-!   beta   in   REAL(double) :                                             *
+!   alpha  in   REAL(double) :                                         *
+!   beta   in   REAL(double) :                                         *
 !   t      in   REAL(:)  :   non-rel. kinetic energy  (diagonal)       *
 !   rr     in   REAL(:)  :   R-factors  (diagonal)                     *
 !                                                                      *
@@ -951,7 +951,7 @@ module dkh_main
       DEALLOCATE(qtemp)
 !
       RETURN
-      END SUBROUTINE mat_mulm 
+      END SUBROUTINE mat_mulm
 !
 !-----------------------------------------------------------------------
 !
@@ -983,20 +983,20 @@ module dkh_main
       INTEGER,INTENT(IN)                               :: n
       INTEGER                                          :: i,j
 !
-      ALLOCATE(qtemp(n,n)) 
+      ALLOCATE(qtemp(n,n))
       DO i=1,n
         DO j=1,n
           qtemp(i,j)=q(i,j)*0.5d0/(t(j)*rr(j)*rr(j))
         ENDDO
       ENDDO
       CALL dgemm("N","N",n,n,n,alpha,qtemp,n,r,n,beta,p,n)
-      DEALLOCATE(qtemp) 
-!       
+      DEALLOCATE(qtemp)
+!
       RETURN
-      END SUBROUTINE mat_muld 
-!       
+      END SUBROUTINE mat_muld
+!
 !-----------------------------------------------------------------------
-!       
+!
       SUBROUTINE mat_add (p,alpha,q,beta,r,n)
 !
 !***********************************************************************
@@ -1057,7 +1057,7 @@ module dkh_main
             H(I,L)=B(K,I)*W(K,L)+H(I,L)
           END DO
         END DO
-      END DO 
+      END DO
       IJ=0
       DO I=1,N
         DO J=1,I
@@ -1078,7 +1078,7 @@ module dkh_main
 !
       IMPLICIT NONE
       REAL(KIND=double), DIMENSION(:,:),INTENT(INOUT)    :: matrix_t_pgf,eig,aux
-      REAL(KIND=double), DIMENSION(:,:),INTENT(IN)       :: matrix_sinv_pgf  
+      REAL(KIND=double), DIMENSION(:,:),INTENT(IN)       :: matrix_sinv_pgf
       REAL(KIND=double), DIMENSION(:),INTENT(INOUT)      :: ew
       INTEGER,INTENT(IN)                                 :: n
       INTEGER                                            :: i,j,k,ic
@@ -1099,10 +1099,10 @@ module dkh_main
 !
       IMPLICIT NONE
       INTEGER, INTENT(IN)                              :: n
-      REAL (KIND=double),DIMENSION(n,n),INTENT(OUT)    :: eigv        
-      REAL (KIND=double),DIMENSION(n),INTENT(OUT)      :: eigw       
-      REAL (KIND=double),DIMENSION(n,n),INTENT(INOUT)  :: sogt      
-      REAL (KIND=double)                               :: tol 
+      REAL (KIND=double),DIMENSION(n,n),INTENT(OUT)    :: eigv
+      REAL (KIND=double),DIMENSION(n),INTENT(OUT)      :: eigw
+      REAL (KIND=double),DIMENSION(n,n),INTENT(INOUT)  :: sogt
+      REAL (KIND=double)                               :: tol
       INTEGER, INTENT(IN)                              :: ic
       INTEGER                      :: i,j,ind,m,l,im,mm,il,ll,k
       REAL (KIND=double)           :: ext_norm,thr_min,u1,thr,x,y,xy,&
@@ -1122,33 +1122,33 @@ module dkh_main
           END IF
         END DO
       END DO
-      IF (ext_norm.gt.0.0d0) THEN 
+      IF (ext_norm.gt.0.0d0) THEN
         ext_norm=DSQRT(2.0d0*ext_norm)
-        thr_min=ext_norm*tol/u1                                  
+        thr_min=ext_norm*tol/u1
         ind=0
         thr=ext_norm
         DO
-          thr=thr/u1                                            
+          thr=thr/u1
           DO
-            l=1                       
-            DO                                                 
+            l=1
+            DO
               m=l+1
-              DO                                              
-                IF ((DABS(sogt(m,l))-thr).ge.0.0d0) THEN    
+              DO
+                IF ((DABS(sogt(m,l))-thr).ge.0.0d0) THEN
                   ind=1
-                  x=0.5d0*(eigw(l)-eigw(m))                       
-                  y=-sogt(m,l)/DSQRT(sogt(m,l)*sogt(m,l)+x*x)   
-                  IF (x.lt.0.0d0) y=-y                     
-                                                           
-                  IF (y.gt.1.0d0) y=1.0d0               
-                  IF (y.lt.-1.0d0) y=-1.0d0                      
-                  xy=1.0d0-y*y                                    
+                  x=0.5d0*(eigw(l)-eigw(m))
+                  y=-sogt(m,l)/DSQRT(sogt(m,l)*sogt(m,l)+x*x)
+                  IF (x.lt.0.0d0) y=-y
+
+                  IF (y.gt.1.0d0) y=1.0d0
+                  IF (y.lt.-1.0d0) y=-1.0d0
+                  xy=1.0d0-y*y
                   sint=y/DSQRT(2.0d0*(1.0d0+DSQRT(xy)))
                   sint2=sint*sint
                   cost2=1.0d0-sint2
                   cost=DSQRT(cost2)
                   sincs=sint*cost
-                  DO i=1,n                              
+                  DO i=1,n
                     IF((i-m).ne.0) THEN
                       IF ((i-m).lt.0) THEN
                         im=m
@@ -1165,16 +1165,16 @@ module dkh_main
                           il=i
                           ll=l
                         END IF
-                        x=sogt(il,ll)*cost-sogt(im,mm)*sint  
-                        sogt(im,mm)=sogt(il,ll)*sint+sogt(im,mm)*cost 
-                        sogt(il,ll)=x  
+                        x=sogt(il,ll)*cost-sogt(im,mm)*sint
+                        sogt(im,mm)=sogt(il,ll)*sint+sogt(im,mm)*cost
+                        sogt(il,ll)=x
                       END IF
                     END IF
-                    x=eigv(i,l)*cost-eigv(i,m)*sint                  
+                    x=eigv(i,l)*cost-eigv(i,m)*sint
                     eigv(i,m)=eigv(i,l)*sint+eigv(i,m)*cost
                     eigv(i,l)=x
                   END DO
-                  x=2.0d0*sogt(m,l)*sincs                          
+                  x=2.0d0*sogt(m,l)*sincs
                   y=eigw(l)*cost2+eigw(m)*sint2-x
                   x=eigw(l)*sint2+eigw(m)*cost2+x
                   sogt(m,l)=(eigw(l)-eigw(m))*sincs+sogt(m,l)*(cost2-sint2)
@@ -1207,7 +1207,7 @@ module dkh_main
               END DO
             END IF
           END DO
-        END DO 
+        END DO
 
       END IF
 !
@@ -1228,37 +1228,37 @@ module dkh_main
 !
       ALLOCATE(a(n))
       ALLOCATE(g(n,n))
-      DO jn=1,n                                                    
+      DO jn=1,n
         diag_s = matrix_s_pgf(jn,jn)
         g(jn,jn)=1.0d0
-        IF(jn.ne.1) THEN                                          
-          DO j=1,jn-1                                            
+        IF(jn.ne.1) THEN
+          DO j=1,jn-1
             scalar=0.0d0
-            DO i=1,j                                            
-              scalar=scalar+matrix_s_pgf(i,jn)*g(i,j)          
+            DO i=1,j
+              scalar=scalar+matrix_s_pgf(i,jn)*g(i,j)
             END DO
-            diag_s=diag_s-scalar*scalar                       
+            diag_s=diag_s-scalar*scalar
             a(j) = scalar
           END DO
-          DO j=1,jn-1                                        
+          DO j=1,jn-1
             row_sum=0.0d0
-            DO k=j,jn-1                                     
+            DO k=j,jn-1
               row_sum=row_sum+a(k)*g(j,k)
             END DO
-            g(j,jn)=-row_sum                               
-          END DO   
-        END IF                                            
-        diag_s=1.0d0/DSQRT(diag_s)                      
+            g(j,jn)=-row_sum
+          END DO
+        END IF
+        diag_s=1.0d0/DSQRT(diag_s)
         DO i=1,jn
-          g(i,jn)=g(i,jn)*diag_s                        
+          g(i,jn)=g(i,jn)*diag_s
         END DO
       END DO
       DO j=1,n
         DO i=1,j
-          matrix_sinv_pgf(j,i)=0.0d0 
+          matrix_sinv_pgf(j,i)=0.0d0
           matrix_sinv_pgf(i,j)=g(i,j)
         END DO
-      END DO      
+      END DO
       DEALLOCATE(a,g)
 !
       RETURN
