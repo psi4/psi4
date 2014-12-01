@@ -361,7 +361,7 @@ std::string ZMatrixEntry::string_in_input_format()
 
 /**
  * Computes the coordinates of the current atom's entry
- * @Return The Cartesian Coordinates, in Bohr
+ * @return The Cartesian Coordinates, in Bohr
  */
 const Vector3& ZMatrixEntry::compute()
 {

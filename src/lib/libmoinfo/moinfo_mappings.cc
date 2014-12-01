@@ -79,7 +79,6 @@ void MOInfo::compute_mo_mappings()
   all_to_mo.resize(nall);
 
   int  index      = 0;
-  int  mo_index   = 0;
   int  focc_index = 0;
   int  docc_index = 0;
   int  actv_index = 0;
