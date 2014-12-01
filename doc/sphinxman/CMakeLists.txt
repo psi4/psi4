@@ -126,20 +126,20 @@ if(PERL_FOUND AND SPHINX_FOUND)
 
     # Autodoc psi4 module
     add_custom_command(
-        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} make docs-psimod
+        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} ctest -R docs-psimod
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/tests/docs-psimod/autodoc_psimod.rst ${CCBD}/source
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/tests/docs-psimod/autodoc_man_psi4.txt ${CCBD}/source
         OUTPUT  ${CCBD}/source/autodoc_psimod.rst
                 ${CCBD}/source/autodoc_man_psi4.txt
         DEPENDS ${CMAKE_SOURCE_DIR}/src/*/*/*.cc
                 ${CMAKE_SOURCE_DIR}/tests/docs-psimod/input.dat
-                ${CMAKE_BINARY_DIR}/bin/psi4
+                ${CMAKE_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc psi4 module")
 
 
     # Autodoc functionals
     add_custom_command(
-        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} make docs-dft
+        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} ctest -R docs-dft
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/tests/docs-dft/autodoc_dft_energy.rst ${CCBD}/source
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/tests/docs-dft/autodoc_dft_opt.rst ${CCBD}/source
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/tests/docs-dft/autodoc_dft_all.rst ${CCBD}/source
@@ -162,20 +162,20 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_dft_disp.rst
         DEPENDS ${CMAKE_SOURCE_DIR}/lib/python/functional.py
                 ${CMAKE_SOURCE_DIR}/tests/docs-dft/input.dat
-                ${CMAKE_BINARY_DIR}/bin/psi4
+                ${CMAKE_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc functionals")
 
 
     # Autodoc auxiliary basis sets
     add_custom_command(
-        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} make docs-bases
+        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} ctest -R docs-bases
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/tests/docs-bases/autodoc_basissets_byfamily.rst ${CCBD}/source
         OUTPUT ${CCBD}/source/autodoc_basissets_byfamily.rst
         DEPENDS ${CMAKE_SOURCE_DIR}/lib/python/p4util/basislist.py
                 ${CMAKE_SOURCE_DIR}/lib/python/p4util/basislistdunning.py
                 ${CMAKE_SOURCE_DIR}/lib/python/p4util/basislistother.py
                 ${CMAKE_SOURCE_DIR}/tests/docs-bases/input.dat
-                ${CMAKE_BINARY_DIR}/bin/psi4
+                ${CMAKE_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc auxiliary basis sets")
 
 
