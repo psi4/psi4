@@ -29,7 +29,7 @@ endif()
 # might need to be modified for Windows
 set(_exportdynamic "")
 if(APPLE)
-   set(_exportdynamic "-export_dynamic")
+   set(_exportdynamic "-dynamic")
 else()
    set(_exportdynamic "-export-dynamic")
 endif()
