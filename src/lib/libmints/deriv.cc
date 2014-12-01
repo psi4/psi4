@@ -75,7 +75,7 @@ public:
         buffer_sizes_ = new size_t[num_pairs];
         psio_->read_entry(PSIF_AO_TPDM, "TPDM Buffer Sizes", (char*)buffer_sizes_, num_pairs*sizeof(size_t));
         size_t max_size = 0;
-        for(int i = 0; i < num_pairs; ++i)
+        for(size_t i = 0; i < num_pairs; ++i)
             max_size = max_size > buffer_sizes_[i] ? max_size : buffer_sizes_[i];
         tpdm_buffer_ = new double[max_size];
         tpdm_ptr_ = tpdm_buffer_;
@@ -107,10 +107,10 @@ public:
     }
 
     void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
-                    int pirrep, int pso,
-                    int qirrep, int qso,
-                    int rirrep, int rso,
-                    int sirrep, int sso,
+                    int /*pirrep*/, int /*pso*/,
+                    int /*qirrep*/, int /*qso*/,
+                    int /*rirrep*/, int /*rso*/,
+                    int /*sirrep*/, int /*sso*/,
                     double value)
     {
         int thread = WorldComm->thread_id(pthread_self());
@@ -170,7 +170,7 @@ public:
         result[0]->sum();
     }
 
-    void load_tpdm(size_t id) {}
+    void load_tpdm(size_t /*id*/) {}
     void next_tpdm_element(){}
 
     void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
@@ -244,7 +244,7 @@ public:
     ~ScfAndDfCorrelationRestrictedFunctor() 
     { }
 
-    void load_tpdm(size_t id) {}
+    void load_tpdm(size_t /*id*/) {}
     void next_tpdm_element() {}
 
     void finalize() {
@@ -371,7 +371,7 @@ public:
     ~ScfUnrestrictedFunctor() 
     { }
 
-    void load_tpdm(size_t id) {}
+    void load_tpdm(size_t /*id*/) {}
     void next_tpdm_element() {}
 
     void finalize() {
@@ -527,7 +527,7 @@ SharedMatrix Deriv::compute()
             so_eri.compute_integrals_deriv1(functor);
             functor.finalize();
         }
-        for (int cd=0; cd < cdsalcs_.ncd(); ++cd)
+        for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd)
             TPDMcont[cd] = TPDMcont_vector->get(cd);
         
     } 
@@ -553,13 +553,13 @@ SharedMatrix Deriv::compute()
             SharedMatrix Da_ref = ref_wfn->Da();
             SharedMatrix Db_ref = ref_wfn->Db();
 
-            for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+            for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd) {
                 double temp = Da_ref->vector_dot(h_deriv[cd]);
                 temp += Db_ref->vector_dot(h_deriv[cd]);
                 D_ref_cont[cd] = temp;
             }
 
-            for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+            for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd) {
                 double temp = -X_ref->vector_dot(s_deriv[cd]);
                 X_ref_cont[cd] = temp;
             }
@@ -611,7 +611,7 @@ SharedMatrix Deriv::compute()
             functor.finalize();
             _default_psio_lib_->close(PSIF_AO_TPDM, 1);
 
-            for (int cd=0; cd < cdsalcs_.ncd(); ++cd)
+            for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd)
                 TPDMcont[cd] = TPDMcont_vector->get(cd);
             
         }
@@ -620,14 +620,14 @@ SharedMatrix Deriv::compute()
     }
 
     // Now, compute the one electron terms
-    for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+    for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd) {
         double temp = Dcont[cd]; // In the df case, the HxP2 terms are already in here
         temp += Da->vector_dot(h_deriv[cd]);
         temp += Db->vector_dot(h_deriv[cd]);
         Dcont[cd] = temp;
     }
 
-    for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+    for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd) {
         double temp = X->vector_dot(s_deriv[cd]);
         Xcont[cd] = -temp;
     }

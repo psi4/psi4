@@ -93,7 +93,6 @@ public:
   private:
     double      annihilate(bitdet& bits_det,int so);
     double      create(bitdet& bits_det,int so);
-    int         range;
     bitdet      bits;
     std::string type;
   };
