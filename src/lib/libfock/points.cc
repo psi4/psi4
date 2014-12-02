@@ -87,7 +87,7 @@ void RKSFunctions::set_pointers(SharedMatrix D_AO)
     D_AO_ = D_AO;
     build_temps();
 }
-void RKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Db_AO)
+void RKSFunctions::set_pointers(SharedMatrix /*Da_AO*/, SharedMatrix /*Db_AO*/)
 {
     throw PSIEXCEPTION("RKSFunctions::unrestricted pointers are not appropriate. Read the source.");
 }
@@ -187,7 +187,7 @@ void RKSFunctions::set_Cs(SharedMatrix C_AO)
     orbital_values_["PSI_A"] = boost::shared_ptr<Matrix>(new Matrix("PSI_A", C_AO_->colspi()[0], max_points_));
     orbital_values_["PSI_B"] = orbital_values_["PSI_A"];
 }
-void RKSFunctions::set_Cs(SharedMatrix Ca_AO, SharedMatrix Cb_AO)
+void RKSFunctions::set_Cs(SharedMatrix /*Ca_AO*/, SharedMatrix /*Cb_AO*/)
 {
     throw PSIEXCEPTION("RKSFunctions::unrestricted pointers are not appropriate. Read the source.");
 }
@@ -310,7 +310,7 @@ void UKSFunctions::allocate()
         point_values_["TAU_B"] = boost::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
     }
 }
-void UKSFunctions::set_pointers(SharedMatrix Da_AO)
+void UKSFunctions::set_pointers(SharedMatrix /*Da_AO*/)
 {
     throw PSIEXCEPTION("UKSFunctions::restricted pointers are not appropriate. Read the source.");
 }
@@ -453,7 +453,7 @@ void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
     }
 }
 
-void UKSFunctions::set_Cs(SharedMatrix Ca_AO)
+void UKSFunctions::set_Cs(SharedMatrix /*Ca_AO*/)
 {
     throw PSIEXCEPTION("UKSFunctions::restricted pointers are not appropriate. Read the source.");
 }
@@ -663,7 +663,7 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
         }
 
         int function_offset = 0;
-        for (int Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
+        for (size_t Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
             int Qglobal = shells[Qlocal];
             const GaussianShell& Qshell = primary_->shell(Qglobal);
             Vector3 v     = Qshell.center();
@@ -711,7 +711,7 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
 
             // Spherical transform
             if (puream_) {
-                for (int index = 0; index < transform.size(); index++) {
+                for (size_t index = 0; index < transform.size(); index++) {
                     int pureindex = boost::get<0>(transform[index]);
                     int cartindex = boost::get<1>(transform[index]);
                     double coef   = boost::get<2>(transform[index]);
@@ -744,7 +744,7 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
         }
 
         int function_offset = 0;
-        for (int Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
+        for (size_t Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
             int Qglobal = shells[Qlocal];
             const GaussianShell& Qshell = primary_->shell(Qglobal);
             Vector3 v     = Qshell.center();
@@ -778,7 +778,7 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
                 double R2 = xc * xc + yc * yc + zc * zc;
                 double V1 = 0.0;
                 double V2 = 0.0;
-                double V3 = 0.0;
+//                double V3 = 0.0;
                 double T1,T2;
                 for (int K = 0; K < nprim; K++) {
                     T1 =  norm[K] * exp(-alpha[K] * R2);
@@ -812,7 +812,7 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
 
             // Spherical transform
             if (puream_) {
-                for (int index = 0; index < transform.size(); index++) {
+                for (size_t index = 0; index < transform.size(); index++) {
                     int pureindex = boost::get<0>(transform[index]);
                     int cartindex = boost::get<1>(transform[index]);
                     double coef   = boost::get<2>(transform[index]);
@@ -869,7 +869,7 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
         }
 
         int function_offset = 0;
-        for (int Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
+        for (size_t Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
             int Qglobal = shells[Qlocal];
             const GaussianShell& Qshell = primary_->shell(Qglobal);
             Vector3 v     = Qshell.center();
@@ -964,7 +964,7 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
 
             // Spherical transform
             if (puream_) {
-                for (int index = 0; index < transform.size(); index++) {
+                for (size_t index = 0; index < transform.size(); index++) {
                     int pureindex = boost::get<0>(transform[index]);
                     int cartindex = boost::get<1>(transform[index]);
                     double coef   = boost::get<2>(transform[index]);

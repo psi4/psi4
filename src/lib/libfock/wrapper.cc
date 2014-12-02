@@ -52,7 +52,7 @@ PsiReturnType libfock(Options & options)
 
     if (options.get_str("MODULE") == "RCPHF") {
         RCPHF* cphf(new RCPHF());
-        for (int i = 0; i < options["CPHF_TASKS"].size(); i++) {
+        for (unsigned int i = 0; i < options["CPHF_TASKS"].size(); i++) {
             cphf->add_task(options["CPHF_TASKS"][i].to_string());
         }
         wfn = boost::shared_ptr<RBase>(cphf);
@@ -62,7 +62,7 @@ PsiReturnType libfock(Options & options)
         wfn = boost::shared_ptr<RBase>(new RTDHF());
     } else if (options.get_str("MODULE") == "RCPKS") {
         RCPKS* cphf(new RCPKS());
-        for (int i = 0; i < options["CPHF_TASKS"].size(); i++) {
+        for (unsigned int i = 0; i < options["CPHF_TASKS"].size(); i++) {
             cphf->add_task(options["CPHF_TASKS"][i].to_string());
         }
         wfn = boost::shared_ptr<RBase>(cphf);
