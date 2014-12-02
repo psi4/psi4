@@ -175,8 +175,8 @@ class Gaussian94BasisSetParser(object):
                                 for p in range(nprimitive):
                                     line = lines[lineno]
                                     lineno += 1
-                                    line = line.replace('D', 'e', 1)
-                                    line = line.replace('d', 'e', 1)
+                                    line = line.replace('D', 'e', 2)
+                                    line = line.replace('d', 'e', 2)
 
                                     what = primitives1.match(line)
                                     # Must match primitives1; will work on the others later
@@ -206,8 +206,8 @@ class Gaussian94BasisSetParser(object):
                                 for p in range(nprimitive):
                                     line = lines[lineno]
                                     lineno += 1
-                                    line = line.replace('D', 'e', 1)
-                                    line = line.replace('d', 'e', 1)
+                                    line = line.replace('D', 'e', 2)
+                                    line = line.replace('d', 'e', 2)
 
                                     what = primitives2.match(line)
                                     # Must match primitivies2
