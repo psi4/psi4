@@ -786,7 +786,7 @@ SharedMatrix RV::compute_gradient()
             phi_ij[1][2] = phi_yz;
             phi_ij[2][0] = phi_xz;
             phi_ij[2][1] = phi_yz;
-            phi_ij[2][2] = phi_xz;
+            phi_ij[2][2] = phi_zz;
 
             for (int i = 0; i < 3; i++) {
                 double*** phi_j = phi_ij[i];
@@ -1319,7 +1319,7 @@ SharedMatrix UV::compute_gradient()
             phi_ij[1][2] = phi_yz;
             phi_ij[2][0] = phi_xz;
             phi_ij[2][1] = phi_yz;
-            phi_ij[2][2] = phi_xz;
+            phi_ij[2][2] = phi_zz;
 
             double** Ds[2];
             Ds[0] = Dap;
