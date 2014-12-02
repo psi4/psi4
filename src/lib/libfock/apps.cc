@@ -255,7 +255,7 @@ void RCPHF::add_polarizability()
     boost::shared_ptr<OneBodySOInt> ints(integral_->so_dipole());
     ints->compute(dipole);
 
-    for (int i = 0; i < dipole.size(); i++) {
+    for (size_t i = 0; i < dipole.size(); i++) {
         std::stringstream ss;
         ss << "Dipole Perturbation " << (i == 0 ? "X" : (i == 1 ? "Y" : "Z"));
         SharedMatrix B(new Matrix(ss.str(), Caocc_->colspi(), Cavir_->colspi(), dipole[i]->symmetry()));
@@ -416,10 +416,10 @@ void RCIS::print_header()
 }
 void RCIS::sort_states()
 {
-    for (int n = 0; n < E_singlets_.size(); ++n) {
+    for (size_t n = 0; n < E_singlets_.size(); ++n) {
         states_.push_back(boost::tuple<double,int,int,int>(E_singlets_[n],n,1,singlets_[n]->symmetry()));
     }
-    for (int n = 0; n < E_triplets_.size(); ++n) {
+    for (size_t n = 0; n < E_triplets_.size(); ++n) {
         states_.push_back(boost::tuple<double,int,int,int>(E_triplets_[n],n,3,triplets_[n]->symmetry()));
     }
 
@@ -434,7 +434,7 @@ void RCIS::print_wavefunctions()
         "State", "Description", "dE (H)", "dE (eV)");
     outfile->Printf("  -----------------------------------------------\n");
     char** labels = basisset_->molecule()->irrep_labels();
-    for (int i = 0; i < states_.size(); i++) {
+    for (size_t i = 0; i < states_.size(); i++) {
         double E = get<0>(states_[i]);
         int    j = get<1>(states_[i]);
         int    m = get<2>(states_[i]);
@@ -451,7 +451,7 @@ void RCIS::print_wavefunctions()
     if (debug_ > 1) {
         if (singlets_.size()) {
             outfile->Printf( "  ==> Singlet States <==\n\n");
-            for (int n = 0; n < singlets_.size(); n++) {
+            for (size_t n = 0; n < singlets_.size(); n++) {
                 singlets_[n]->print();
                 Dmo(singlets_[n])->print();
                 Dao(singlets_[n])->print();
@@ -460,7 +460,7 @@ void RCIS::print_wavefunctions()
 
         if (triplets_.size()) {
             outfile->Printf( "  ==> Triplet States <==\n\n");
-            for (int n = 0; n < triplets_.size(); n++) {
+            for (size_t n = 0; n < triplets_.size(); n++) {
                 triplets_[n]->print();
                 Dmo(triplets_[n])->print();
                 Dao(triplets_[n])->print();
@@ -481,8 +481,8 @@ void RCIS::print_amplitudes()
         "State", "Description", "Excitation", "Amplitude");
     outfile->Printf("  --------------------------------------------------\n");
     char** labels = basisset_->molecule()->irrep_labels();
-    for (int i = 0; i < states_.size(); i++) {
-        double E = get<0>(states_[i]);
+    for (size_t i = 0; i < states_.size(); i++) {
+//        double E = get<0>(states_[i]);
         int    j = get<1>(states_[i]);
         int    m = get<2>(states_[i]);
         int    h = get<3>(states_[i]);
@@ -519,7 +519,7 @@ void RCIS::print_amplitudes()
                 get<1>(amps[0]) + 1, labels[get<2>(amps[0])],
                 get<3>(amps[0]) + 1, labels[get<4>(amps[0])],
                 get<0>(amps[0]));
-            for (int index = 1; index < amps.size(); index++) {
+            for (size_t index = 1; index < amps.size(); index++) {
                 outfile->Printf("                    %5d%-3s -> %5d%-3s %11.3E\n",
                     get<1>(amps[index]) + 1, labels[get<2>(amps[index])],
                     get<3>(amps[index]) + 1, labels[get<4>(amps[index])],
@@ -557,7 +557,7 @@ void RCIS::print_transitions()
         "State", "Description", "mu_x", "mu_y", "mu_z", "f");
     outfile->Printf("  --------------------------------------------------------------------\n");
     char** labels = basisset_->molecule()->irrep_labels();
-    for (int i = 0; i < states_.size(); i++) {
+    for (size_t i = 0; i < states_.size(); i++) {
 
         double E = get<0>(states_[i]);
         int    j = get<1>(states_[i]);
@@ -591,7 +591,7 @@ void RCIS::print_transitions()
 }
 void RCIS::print_densities()
 {
-    for (int i = 0; i < options_["CIS_OPDM_STATES"].size(); i++) {
+    for (unsigned int i = 0; i < options_["CIS_OPDM_STATES"].size(); i++) {
         int state = options_["CIS_OPDM_STATES"][i].to_integer();
         bool singlet = (state > 0);
         state = abs(state);
@@ -604,7 +604,7 @@ void RCIS::print_densities()
         fwrite((void*)D->pointer()[0],sizeof(double),nso_ * nso_,fh);
         fclose(fh);
     }
-    for (int i = 0; i < options_["CIS_DOPDM_STATES"].size(); i++) {
+    for (unsigned int i = 0; i < options_["CIS_DOPDM_STATES"].size(); i++) {
         int state = options_["CIS_DOPDM_STATES"][i].to_integer();
         bool singlet = (state > 0);
         state = abs(state);
@@ -617,7 +617,7 @@ void RCIS::print_densities()
         fwrite((void*)D->pointer()[0],sizeof(double),nso_ * nso_,fh);
         fclose(fh);
     }
-    for (int i = 0; i < options_["CIS_TOPDM_STATES"].size(); i++) {
+    for (unsigned int i = 0; i < options_["CIS_TOPDM_STATES"].size(); i++) {
         int state = options_["CIS_TOPDM_STATES"][i].to_integer();
         bool singlet = (state > 0);
         state = abs(state);
@@ -630,7 +630,7 @@ void RCIS::print_densities()
         fwrite((void*)D->pointer()[0],sizeof(double),nso_ * nso_,fh);
         fclose(fh);
     }
-    for (int i = 0; i < options_["CIS_NO_STATES"].size(); i++) {
+    for (unsigned int i = 0; i < options_["CIS_NO_STATES"].size(); i++) {
         int state = options_["CIS_NO_STATES"][i].to_integer();
         bool singlet = (state > 0);
         state = abs(state);
@@ -644,7 +644,7 @@ void RCIS::print_densities()
         fwrite((void*)stuff.second->pointer(),sizeof(double),nmo_,fh);
         fclose(fh);
     }
-    for (int i = 0; i < options_["CIS_AD_STATES"].size(); i++) {
+    for (unsigned int i = 0; i < options_["CIS_AD_STATES"].size(); i++) {
         int state = options_["CIS_AD_STATES"][i].to_integer();
         bool singlet = (state > 0);
         state = abs(state);
@@ -740,7 +740,7 @@ SharedMatrix RCIS::Dmo(SharedMatrix T1, bool diff)
     /// Reference occupation (if not difference density)
     if (!diff) {
         for (int h = 0; h < D->nirrep(); ++h) {
-            int nmo = D->rowspi()[h];
+//            int nmo = D->rowspi()[h];
             for (int i = 0; i < eps_focc_->dimpi()[h] + eps_aocc_->dimpi()[h]; i++) {
                 D->set(h,i,i,1.0);
             }
@@ -1102,11 +1102,11 @@ double RCIS::compute_energy()
         std::vector<boost::shared_ptr<Matrix> > evec_temp;
         std::vector<std::pair<double, int> > eval_temp;
 
-        for (int N = 0, index = 0; N < singlets.size(); ++N) {
+        for (size_t N = 0, index = 0; N < singlets.size(); ++N) {
             std::vector<SharedMatrix > t = H->unpack(singlets[N]);
             for (int h = 0; h < Caocc_->nirrep(); h++) {
                 // Spurious zero eigenvalue due to not enough states
-                if (N >= singlets[N]->dimpi()[h]) continue;
+                if (N >= (size_t)singlets[N]->dimpi()[h]) continue;
                 evec_temp.push_back(t[h]);
                 eval_temp.push_back(make_pair(E_singlets[N][h], index));
                 index++;
@@ -1118,7 +1118,7 @@ double RCIS::compute_energy()
         singlets_.clear();
         E_singlets_.clear();
 
-        for (int i = 0; i < eval_temp.size(); i++) {
+        for (size_t i = 0; i < eval_temp.size(); i++) {
             E_singlets_.push_back(eval_temp[i].first);
             singlets_.push_back(evec_temp[eval_temp[i].second]);
         }
@@ -1142,11 +1142,11 @@ double RCIS::compute_energy()
         std::vector<boost::shared_ptr<Matrix> > evec_temp;
         std::vector<std::pair<double, int> > eval_temp;
 
-        for (int N = 0, index = 0; N < triplets.size(); ++N) {
+        for (size_t N = 0, index = 0; N < triplets.size(); ++N) {
             std::vector<SharedMatrix > t = H->unpack(triplets[N]);
             for (int h = 0; h < Caocc_->nirrep(); h++) {
                 // Spurious zero eigenvalue due to not enough states
-                if (N >= triplets[N]->dimpi()[h]) continue;
+                if (N >= (size_t)triplets[N]->dimpi()[h]) continue;
                 evec_temp.push_back(t[h]);
                 eval_temp.push_back(make_pair(E_triplets[N][h], index));
                 index++;
@@ -1158,7 +1158,7 @@ double RCIS::compute_energy()
         triplets_.clear();
         E_triplets_.clear();
 
-        for (int i = 0; i < eval_temp.size(); i++) {
+        for (size_t i = 0; i < eval_temp.size(); i++) {
             E_triplets_.push_back(eval_temp[i].first);
             triplets_.push_back(evec_temp[eval_temp[i].second]);
         }
@@ -1471,11 +1471,11 @@ double RTDA::compute_energy()
         std::vector<boost::shared_ptr<Matrix> > evec_temp;
         std::vector<std::pair<double, int> > eval_temp;
 
-        for (int N = 0, index = 0; N < singlets.size(); ++N) {
+        for (size_t N = 0, index = 0; N < singlets.size(); ++N) {
             std::vector<SharedMatrix > t = H->unpack(singlets[N]);
             for (int h = 0; h < Caocc_->nirrep(); h++) {
                 // Spurious zero eigenvalue due to not enough states
-                if (N >= singlets[N]->dimpi()[h]) continue;
+                if (N >= (size_t)singlets[N]->dimpi()[h]) continue;
                 evec_temp.push_back(t[h]);
                 eval_temp.push_back(make_pair(E_singlets[N][h], index));
                 index++;
@@ -1487,7 +1487,7 @@ double RTDA::compute_energy()
         singlets_.clear();
         E_singlets_.clear();
 
-        for (int i = 0; i < eval_temp.size(); i++) {
+        for (size_t i = 0; i < eval_temp.size(); i++) {
             E_singlets_.push_back(eval_temp[i].first);
             singlets_.push_back(evec_temp[eval_temp[i].second]);
         }
@@ -1511,11 +1511,11 @@ double RTDA::compute_energy()
         std::vector<boost::shared_ptr<Matrix> > evec_temp;
         std::vector<std::pair<double, int> > eval_temp;
 
-        for (int N = 0, index = 0; N < triplets.size(); ++N) {
+        for (size_t N = 0, index = 0; N < triplets.size(); ++N) {
             std::vector<SharedMatrix > t = H->unpack(triplets[N]);
             for (int h = 0; h < Caocc_->nirrep(); h++) {
                 // Spurious zero eigenvalue due to not enough states
-                if (N >= triplets[N]->dimpi()[h]) continue;
+                if (N >= (size_t)triplets[N]->dimpi()[h]) continue;
                 evec_temp.push_back(t[h]);
                 eval_temp.push_back(make_pair(E_triplets[N][h], index));
                 index++;
@@ -1527,7 +1527,7 @@ double RTDA::compute_energy()
         triplets_.clear();
         E_triplets_.clear();
 
-        for (int i = 0; i < eval_temp.size(); i++) {
+        for (size_t i = 0; i < eval_temp.size(); i++) {
             E_triplets_.push_back(eval_temp[i].first);
             triplets_.push_back(evec_temp[eval_temp[i].second]);
         }
