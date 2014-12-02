@@ -191,7 +191,7 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
 
     vector<ShellInfo> shell_list;
 
-    int lineno = 0;
+    size_t lineno = 0;
     bool found = false;
 
     while (lineno < lines.size()) {
