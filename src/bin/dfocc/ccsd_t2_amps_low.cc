@@ -30,32 +30,40 @@ using namespace std;
 
 namespace psi{ namespace dfoccwave{
   
-void DFOCC::ccsd_t2_amps()
+void DFOCC::ccsd_t2_amps_low()
 {
 
     // defs
     SharedTensor2d K, I, T, Tnew, U, Tau, W, X, Y;
 
+    // Read old amplitudes
+    T = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    T->read_symm(psio_, PSIF_DFOCC_AMPS);
+
     // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
     // X(ia,jb) = \sum_{e} t_ij^ae Ft_be = \sum_{e} T(ia,je) Ft_be
     X = SharedTensor2d(new Tensor2d("X (IA|JB)", naoccA, navirA, naoccA, navirA));
-    X->contract(false, true, naoccA * navirA * naoccA, navirA, navirA, t2, FtabA, 1.0, 0.0);
+    X->contract(false, true, naoccA * navirA * naoccA, navirA, navirA, T, FtabA, 1.0, 0.0);
 
     // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
     // X(ia,jb) = -\sum_{m} t_mj^ab Ft_mi = -\sum_{m} Ft(m,i) T(ma,jb)
-    X->contract(true, false, naoccA, naoccA * navirA * navirA, naoccA, FtijA, t2, -1.0, 1.0);
+    X->contract(true, false, naoccA, naoccA * navirA * navirA, naoccA, FtijA, T, -1.0, 1.0);
+    T.reset();
 
     // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
     // X(ia,jb) = \sum_{Q} T'_ia^Q b_jb^Q
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    K->read(psio_, PSIF_DFOCC_INTS);
     T = SharedTensor2d(new Tensor2d("T1p (Q|IA)", nQ, naoccA, navirA));
     T->read(psio_, PSIF_DFOCC_AMPS);
-    X->gemm(true, false, T, bQiaA, 1.0, 1.0);
+    X->gemm(true, false, T, K, 1.0, 1.0);
+    K.reset();
     T.reset();
     X->symmetrize();
 
     // t_ij^ab <= <ij|ab>
     Tnew = SharedTensor2d(new Tensor2d("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    Tnew->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0); 
+    tei_iajb_chem_directAA(Tnew);
 
     // Contributions of X
     Tnew->axpy(X, 2.0);
@@ -66,17 +74,17 @@ void DFOCC::ccsd_t2_amps()
     Tnew.reset();
 
     // WmnijT2
-    ccsd_WmnijT2();
+    ccsd_WmnijT2_low();
 
     // WmbejT2
-    ccsd_WmbejT2();
+    ccsd_WmbejT2_low();
 
     // WijamT2
-    //if (itr_occ > 1) ccsd_WijamT2();
+    //if (itr_occ > 1) ccsd_WijamT2_low();
 
     // WabefT2
-    //ccsd_WabefT2();
-    ccsd_Wabef2T2();
+    //ccsd_WabefT2_low();
+    ccsd_Wabef2T2_low();
 
     // Denom
     Tnew = SharedTensor2d(new Tensor2d("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
@@ -91,20 +99,24 @@ void DFOCC::ccsd_t2_amps()
     t1A->copy(t1newA);
 
     // Reset T2
-    rms_t2 = Tnew->rms(t2); 
+    T = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    T->read_symm(psio_, PSIF_DFOCC_AMPS);
+    rms_t2 = Tnew->rms(T); 
     // Error vector
     Tau = SharedTensor2d(new Tensor2d("RT2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     Tau->copy(Tnew);
-    Tau->subtract(t2);
-    t2->copy(Tnew);
+    Tau->subtract(T);
+    T->copy(Tnew);
     Tnew.reset();
+    if (do_diis_ == 0) T->write_symm(psio_, PSIF_DFOCC_AMPS);
 
     // DIIS
     boost::shared_ptr<Matrix> RT2(new Matrix("RT2", naoccA*navirA, naoccA*navirA));
     Tau->to_matrix(RT2);
     Tau.reset();
     boost::shared_ptr<Matrix> T2(new Matrix("T2", naoccA*navirA, naoccA*navirA));
-    t2->to_matrix(T2);
+    T->to_matrix(T2);
+    T.reset();
     boost::shared_ptr<Matrix> RT1(new Matrix("RT1", naoccA, navirA));
     Rt1A->to_matrix(RT1);
     Rt1A.reset();
@@ -119,15 +131,39 @@ void DFOCC::ccsd_t2_amps()
     // extrapolate
     if (do_diis_ == 1) {
         if (ccsdDiisManager->subspace_size() >= cc_mindiis_) ccsdDiisManager->extrapolate(2, T2.get(), T1.get());
-        t2->set2(T2);
+        T = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        T->set2(T2);
         t1A->set2(T1);
+        T->write_symm(psio_, PSIF_DFOCC_AMPS);
     }
     T1.reset();
     T2.reset();
 
+    if (do_diis_ == 0) {
+        T = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        T->read_symm(psio_, PSIF_DFOCC_AMPS);
+    }
+
+    // Form T'(ib,ja) = T(ia,jb)
+    U = SharedTensor2d(new Tensor2d("T2p (IA|JB)", naoccA, navirA, naoccA, navirA));
+    U->sort(1432, T, 1.0, 0.0);
+    U->write_symm(psio_, PSIF_DFOCC_AMPS);
+    U.reset();
+
+    // Form U(ia,jb) = 2*T(ia,jb) - T (ib,ja)
+    U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    U->sort(1432, T, 1.0, 0.0);
+    U->scale(-1.0);
+    U->axpy(T, 2.0);
+    U->write_symm(psio_, PSIF_DFOCC_AMPS);
+    U.reset();
+
     // Form Tau(ia,jb) = T(ia,jb) + t(ia) * t(jb)
     Tau = SharedTensor2d(new Tensor2d("Tau (IA|JB)", naoccA, navirA, naoccA, navirA));
-    ccsd_tau_amps(Tau,t2);
+    Tau->dirprd224(t1A, t1A);
+    Tau->add(T);
+    T.reset();
+    Tau->write_symm(psio_, PSIF_DFOCC_AMPS);
  
     // Energy
     U = SharedTensor2d(new Tensor2d("2*Tau(ia,jb) - Tau(ib,ja)", naoccA, navirA, naoccA, navirA));
@@ -136,49 +172,12 @@ void DFOCC::ccsd_t2_amps()
     U->axpy(Tau, 2.0);
     Tau.reset();
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
-    K->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0);
+    tei_iajb_chem_directAA(K);
     Ecorr = U->vector_dot(K);
     U.reset();
     K.reset();
     Eccsd = Escf + Ecorr;
 
-}// end ccsd_t2_amps
-
-//======================================================================
-//    CCSD: u_ij^ab = 2*t_ij^ab - t_ji^ab
-//======================================================================             
-void DFOCC::ccsd_u2_amps(SharedTensor2d &U, SharedTensor2d &T)
-{
-    U->sort(1432, T, 1.0, 0.0);
-    U->scale(-1.0);
-    U->axpy(T, 2.0);
-}// end ccsd_u2_amps
-
-//======================================================================
-//    CCSD: T'(ib,ja) = t_ij^ab
-//======================================================================             
-void DFOCC::ccsd_t2_prime_amps(SharedTensor2d &U, SharedTensor2d &T)
-{
-    U->sort(1432, T, 1.0, 0.0);
-}// end ccsd_t2_prime_amps
-
-//======================================================================
-//    CCSD: Tau_ij^ab = t_ij^ab + t_i^a t_j^b
-//======================================================================             
-void DFOCC::ccsd_tau_amps(SharedTensor2d &U, SharedTensor2d &T)
-{
-    U->dirprd224(t1A, t1A);
-    U->add(T);
-}// end ccsd_tau_amps
-
-//======================================================================
-//    CCSD: \tilde{Tau}_ij^ab = t_ij^ab + 1/2 t_i^a t_j^b
-//======================================================================             
-void DFOCC::ccsd_tau_tilde_amps(SharedTensor2d &U, SharedTensor2d &T)
-{
-    U->dirprd224(t1A, t1A, 0.5, 0.0);
-    U->add(T);
-}// end ccsd_tau_tilde_amps
-
+}// end ccsd_t2_amps_low
 }} // End Namespaces
 
