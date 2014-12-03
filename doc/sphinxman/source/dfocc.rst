@@ -137,7 +137,7 @@ course users can use any DFT functional available in Psi4.
 Methods
 ~~~~~~~
 
-Density-fitted conventional and orbital-optimized MP2 methods currently supported in |Psifour| are outlined in Table :ref:`DF-OMP2 Methods <table:dfomp2_calls>`.
+Density-fitted conventional and orbital-optimized CC methods currently supported in |Psifour| are outlined in Table :ref:`DF-OMP2 Methods <table:dfomp2_calls>`.
 
     .. _`table:dfomp2_calls`:
 
@@ -151,6 +151,10 @@ Density-fitted conventional and orbital-optimized MP2 methods currently supporte
     | df-omp2                 | Density-Fitted Orbital-Optimized MP2                         |    Y    |     Y    | RHF/ROHF/UHF/RKS/UKS   |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
     | cd-omp2                 | Cholesky-Decomposed Orbital-Optimized MP2                    |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | df-ccsd2                | Density-Fitted CCSD                                          |    Y    |     N    | RHF                    |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | df-ccd                  | Density-Fitted CCD                                           |    Y    |     N    | RHF                    |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
 
 .. index:: DF-OMP2; setting keywords
