@@ -30,7 +30,7 @@ using namespace std;
 
 namespace psi{ namespace dfoccwave{
   
-void DFOCC::ccsd_iterations()
+void DFOCC::ccsd_iterations_low()
 {
 
 outfile->Printf("\n");
@@ -69,22 +69,22 @@ do
 
         // 3-index intermediates
         timer_on("CCSD 3-index intr");
-        ccsd_3index_intr();
+        ccsd_3index_intr_low();
         timer_off("CCSD 3-index intr");
 
         // F intermediates
         timer_on("CCSD F intr");
-        ccsd_F_intr();
+        ccsd_F_intr_low();
         timer_off("CCSD F intr");
 
         // T1 amplitudes
         timer_on("T1 AMPS");
-	ccsd_t1_amps();  
+	ccsd_t1_amps_low();  
         timer_off("T1 AMPS");
    
         // T2 amplitudes
         timer_on("T2 AMPS");
-	ccsd_t2_amps();  
+	ccsd_t2_amps_low();  
         timer_off("T2 AMPS");
 
         DE = Eccsd - Eccsd_old;
@@ -112,20 +112,8 @@ do
 }
 while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2); 
 
- //delete
- if (do_diis_ == 1) ccsdDiisManager->delete_diis_file();
-
- // Mem alloc for DF ints
- if (df_ints_incore) {
-     bQijA.reset();
-     bQiaA.reset();
-     bQabA.reset();
- }
-
- // free t2 amps
- if (t2_incore) {
-     t2.reset();
- }
+//delete
+if (do_diis_ == 1) ccsdDiisManager->delete_diis_file();
 
 if (conver == 1) {
 outfile->Printf("\n");
@@ -147,6 +135,6 @@ else if (conver == 0) {
   throw PSIEXCEPTION("DF-CCSD iterations did not converge");
 }
 
-}// end ccsd_iterations
+}// end ccsd_iterations_low
 }} // End Namespaces
 

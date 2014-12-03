@@ -30,35 +30,33 @@ using namespace std;
 
 namespace psi{ namespace dfoccwave{
   
-void DFOCC::ccsd_iterations()
+void DFOCC::ccd_iterations()
 {
 
 outfile->Printf("\n");
 outfile->Printf(" ============================================================================== \n");
-outfile->Printf(" ================ Performing DF-CCSD iterations... ============================ \n");
+outfile->Printf(" ================ Performing DF-CCD iterations... ============================= \n");
 outfile->Printf(" ============================================================================== \n");
 outfile->Printf("\n");
-outfile->Printf("  Iter       E_corr                  DE                 T2 RMS        T1 RMS     \n");
-outfile->Printf("  ----   ----------------      ----------------       ----------    ----------   \n");
+outfile->Printf("  Iter       E_corr                  DE                 T2 RMS      \n");
+outfile->Printf("  ----   ----------------      ----------------       ----------    \n");
   
 //==========================================================================================
-//========================= CCSD iterations ================================================
+//========================= CCD iterations =================================================
 //==========================================================================================
       itr_occ = 0;
       conver = 1; // Assuming that the iterations will converge
-      Eccsd_old = Eccsd;
+      Eccd_old = Eccd;
 
       // DIIS
       if (do_diis_ == 1) {
           boost::shared_ptr<Matrix> T2(new Matrix("T2", naoccA*navirA, naoccA*navirA));
-          boost::shared_ptr<Matrix> T1(new Matrix("T1", naoccA, navirA));
           if (reference_ == "RESTRICTED") {
               ccsdDiisManager = boost::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::InCore)); 
-              ccsdDiisManager->set_error_vector_size(2, DIISEntry::Matrix, T2.get(), DIISEntry::Matrix, T1.get());
-              ccsdDiisManager->set_vector_size(2, DIISEntry::Matrix, T2.get(), DIISEntry::Matrix, T1.get());
+              ccsdDiisManager->set_error_vector_size(1, DIISEntry::Matrix, T2.get());
+              ccsdDiisManager->set_vector_size(1, DIISEntry::Matrix, T2.get());
           }
           T2.reset();
-          T1.reset();
       }// if diis true
 
 // head of loop      
@@ -69,48 +67,42 @@ do
 
         // 3-index intermediates
         timer_on("CCSD 3-index intr");
-        ccsd_3index_intr();
+        ccd_3index_intr();
         timer_off("CCSD 3-index intr");
 
         // F intermediates
         timer_on("CCSD F intr");
-        ccsd_F_intr();
+        ccd_F_intr();
         timer_off("CCSD F intr");
 
-        // T1 amplitudes
-        timer_on("T1 AMPS");
-	ccsd_t1_amps();  
-        timer_off("T1 AMPS");
-   
         // T2 amplitudes
         timer_on("T2 AMPS");
-	ccsd_t2_amps();  
+	ccd_t2_amps();  
         timer_off("T2 AMPS");
 
-        DE = Eccsd - Eccsd_old;
-        Eccsd_old = Eccsd;
+        DE = Eccd - Eccd_old;
+        Eccd_old = Eccd;
 
     // RMS
     if (reference_ == "UNRESTRICTED") {
 	rms_t2=MAX0(rms_t2AA,rms_t2BB);
 	rms_t2=MAX0(rms_t2,rms_t2AB);
-	rms_t1=MAX0(rms_t1A,rms_t1B);
     }
 	
    // print
-   outfile->Printf(" %3d      %12.10f         %12.10f      %12.2e  %12.2e \n", itr_occ, Ecorr, DE, rms_t2, rms_t1);
+   outfile->Printf(" %3d      %12.10f         %12.10f      %12.2e  \n", itr_occ, Ecorr, DE, rms_t2);
 
     if (itr_occ >= cc_maxiter) {
       conver = 0; // means iterations were NOT converged
       break;  
     }
 
-    if (rms_t2 >= DIVERGE || rms_t1 >= DIVERGE) {
-        throw PSIEXCEPTION("CCSD iterations are diverging");
+    if (rms_t2 >= DIVERGE) {
+        throw PSIEXCEPTION("CCD iterations are diverging");
     }
 
 }
-while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2); 
+while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2); 
 
  //delete
  if (do_diis_ == 1) ccsdDiisManager->delete_diis_file();
@@ -130,23 +122,15 @@ while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2);
 if (conver == 1) {
 outfile->Printf("\n");
 outfile->Printf(" ============================================================================== \n");
-outfile->Printf(" ===================== DF-CCSD ITERATIONS ARE CONVERGED ======================= \n");
+outfile->Printf(" ===================== DF-CCD ITERATIONS ARE CONVERGED ======================== \n");
 outfile->Printf(" ============================================================================== \n");
-
-    // T1 Diagnostic 
-    double t1diag, t1norm, t1_ref;
-    t1_ref = 0.02;
-    t1norm = t1A->norm();
-    t1diag = t1norm/sqrt(2.0*naoccA);
-    outfile->Printf("\n\tT1 diagnostic reference value      : %20.14f\n", t1_ref);
-    outfile->Printf("\tT1 diagnostic                      : %20.14f\n", t1diag);
 }
 
 else if (conver == 0) {
-  outfile->Printf("\n ====================== DF-CCSD IS NOT CONVERGED IN %2d ITERATIONS ============ \n", cc_maxiter);
-  throw PSIEXCEPTION("DF-CCSD iterations did not converge");
+  outfile->Printf("\n ====================== DF-CCD IS NOT CONVERGED IN %2d ITERATIONS ============= \n", cc_maxiter);
+  throw PSIEXCEPTION("DF-CCD iterations did not converge");
 }
 
-}// end ccsd_iterations
+}// end ccd_iterations
 }} // End Namespaces
 

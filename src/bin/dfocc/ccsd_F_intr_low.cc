@@ -30,7 +30,7 @@ using namespace std;
 
 namespace psi{ namespace dfoccwave{
   
-void DFOCC::ccsd_F_intr()
+void DFOCC::ccsd_F_intr_low()
 {
 
     // defs
@@ -38,44 +38,64 @@ void DFOCC::ccsd_F_intr()
 
     // OO block
     // F_mi =  \sum_{Q} t_Q b_mi^Q
-    FijA->gemv(true, bQijA, T1c, 1.0, 0.0);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
+    K->read(psio_, PSIF_DFOCC_INTS);
+    FijA->gemv(true, K, T1c, 1.0, 0.0);
+    K.reset();
     
     // F_mi +=  \sum_{Q,e} Tau"_ie^Q b_me^Q
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    K->read(psio_, PSIF_DFOCC_INTS);
     Tau = SharedTensor2d(new Tensor2d("Tau2pp (Q|IA)", nQ, naoccA, navirA));
     Tau->read(psio_, PSIF_DFOCC_AMPS);
-    FijA->contract332(false, true, navirA, bQiaA, Tau, 1.0, 1.0);
+    FijA->contract332(false, true, navirA, K, Tau, 1.0, 1.0);
+    K.reset();
     Tau.reset();
+    //FijA->print();
 
     // VV block
     // F_ae =  \sum_{Q} t_Q b_ae^Q
-    FabA->gemv(true, bQabA, T1c, 1.0, 0.0);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
+    FabA->gemv(true, K, T1c, 1.0, 0.0);
+    K.reset();
 
     // F_ae -=  \sum_{Q,m} Tau'_ma^Q b_me^Q
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    K->read(psio_, PSIF_DFOCC_INTS);
     Tau = SharedTensor2d(new Tensor2d("Tau2p (Q|IA)", nQ, naoccA, navirA));
     Tau->read(psio_, PSIF_DFOCC_AMPS);
-    FabA->contract(true, false, navirA, navirA, nQ * naoccA, Tau, bQiaA, -1.0, 1.0);
+    FabA->contract(true, false, navirA, navirA, nQ * naoccA, Tau, K, -1.0, 1.0);
+    K.reset();
     Tau.reset();
+    //FabA->print();
 
     // OV block
     // F_me +=  \sum_{Q} t_Q b_me^Q
-    FiaA->gemv(true, bQiaA, T1c, 1.0, 0.0);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    K->read(psio_, PSIF_DFOCC_INTS);
+    FiaA->gemv(true, K, T1c, 1.0, 0.0);
  
     // F_me -=  \sum_{Q,n} T_nm^Q b_ne^Q
     T = SharedTensor2d(new Tensor2d("T1 (Q|IJ)", nQ, naoccA, naoccA));
     T->read(psio_, PSIF_DFOCC_AMPS);
-    FiaA->contract(true, false, naoccA, navirA, nQ * naoccA, T, bQiaA, -1.0, 1.0);
+    FiaA->contract(true, false, naoccA, navirA, nQ * naoccA, T, K, -1.0, 1.0);
+    K.reset();
     T.reset();
+    //FiaA->print();
 
     // Ft_mi = F_mi + 1/2 \sum_{e} t_i^e F_me
     FtijA->gemm(false, true, FiaA, t1A, 0.5, 0.0);
     FtijA->add(FijA);
+    //FtijA->print();
 
     // Ft_ae = F_ae - 1/2 \sum_{m} t_m^a F_me
     FtabA->gemm(true, false, t1A, FiaA, -0.5, 0.0);
     FtabA->add(FabA);
+    //FtabA->print();
 
     //outfile->Printf("\tF int done.\n");
 
-}// end ccsd_F_intr
+}// end ccsd_F_intr_low
 }} // End Namespaces
 

@@ -30,52 +30,28 @@ using namespace std;
 
 namespace psi{ namespace dfoccwave{
   
-void DFOCC::ccsd_F_intr()
+void DFOCC::ccd_F_intr()
 {
 
     // defs
     SharedTensor2d K, T, U, Tau;
 
-    // OO block
-    // F_mi =  \sum_{Q} t_Q b_mi^Q
-    FijA->gemv(true, bQijA, T1c, 1.0, 0.0);
-    
-    // F_mi +=  \sum_{Q,e} Tau"_ie^Q b_me^Q
-    Tau = SharedTensor2d(new Tensor2d("Tau2pp (Q|IA)", nQ, naoccA, navirA));
+    // read
+    Tau = SharedTensor2d(new Tensor2d("T2 (Q|IA)", nQ, naoccA, navirA));
     Tau->read(psio_, PSIF_DFOCC_AMPS);
+
+    // OO block
+    // F_mi +=  \sum_{Q,e} Tau"_ie^Q b_me^Q
+    FijA->zero();
     FijA->contract332(false, true, navirA, bQiaA, Tau, 1.0, 1.0);
-    Tau.reset();
 
     // VV block
-    // F_ae =  \sum_{Q} t_Q b_ae^Q
-    FabA->gemv(true, bQabA, T1c, 1.0, 0.0);
-
     // F_ae -=  \sum_{Q,m} Tau'_ma^Q b_me^Q
-    Tau = SharedTensor2d(new Tensor2d("Tau2p (Q|IA)", nQ, naoccA, navirA));
-    Tau->read(psio_, PSIF_DFOCC_AMPS);
-    FabA->contract(true, false, navirA, navirA, nQ * naoccA, Tau, bQiaA, -1.0, 1.0);
+    FabA->contract(true, false, navirA, navirA, nQ * naoccA, Tau, bQiaA, -1.0, 0.0);
     Tau.reset();
-
-    // OV block
-    // F_me +=  \sum_{Q} t_Q b_me^Q
-    FiaA->gemv(true, bQiaA, T1c, 1.0, 0.0);
- 
-    // F_me -=  \sum_{Q,n} T_nm^Q b_ne^Q
-    T = SharedTensor2d(new Tensor2d("T1 (Q|IJ)", nQ, naoccA, naoccA));
-    T->read(psio_, PSIF_DFOCC_AMPS);
-    FiaA->contract(true, false, naoccA, navirA, nQ * naoccA, T, bQiaA, -1.0, 1.0);
-    T.reset();
-
-    // Ft_mi = F_mi + 1/2 \sum_{e} t_i^e F_me
-    FtijA->gemm(false, true, FiaA, t1A, 0.5, 0.0);
-    FtijA->add(FijA);
-
-    // Ft_ae = F_ae - 1/2 \sum_{m} t_m^a F_me
-    FtabA->gemm(true, false, t1A, FiaA, -0.5, 0.0);
-    FtabA->add(FabA);
 
     //outfile->Printf("\tF int done.\n");
 
-}// end ccsd_F_intr
+}// end ccd_F_intr
 }} // End Namespaces
 
