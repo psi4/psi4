@@ -75,13 +75,6 @@ namespace opt {
   EXTERN IRC_DATA *p_irc_data;
 }
 
-//****AVC****//
-#include <libefp_solver/efp_solver.h>
-namespace opt {
-  EXTERN boost::shared_ptr<psi::efp::EFP> p_efp;
-}
-//****AVC****//
-
 #include "opt_except.h"
 
 #endif

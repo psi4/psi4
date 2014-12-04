@@ -82,23 +82,6 @@ void MOLECULE::rfo_step(void) {
   if (Opt_params.print_lvl >= 4) {
     oprintf_out("Original, unscaled RFO mat\n");
     oprint_matrix_out(RFO, dim+1, dim+1);
-  //// Do intermediate normalization.  
-  //// RFO paper says to scale eigenvector to make the last element equal to 1.
-  //// During the course of an optimization some evects may appear that are bogus leads
-  //// - the root following can avoid them. 
-
-  //for (i=0; i<dim+1; ++i) {
-  //  tval = rfo_mat[i][dim];
-  //  if (fabs(tval) > Opt_params.rfo_normalization_min) {
-  //    for (j=0;j<dim+1;++j)
-  //    {
-  //      rfo_mat[i][j] /= rfo_mat[i][dim];
-  //    }
-  //  }
-  //}
-  //if (Opt_params.print_lvl >= 3) {
-  //  fprintf(outfile,"RFO eigenvectors (rows)\n");
-  //  print_matrix(outfile, rfo_mat, dim+1, dim+1);
   }
 
   int rfo_root, f;     // root to follow
@@ -314,9 +297,6 @@ void MOLECULE::rfo_step(void) {
 
   if ((iter > 0) && !Opt_params.simple_step_scaling)
     oprintf_out("\t------------------------------------------------\n");
-  //apply_intrafragment_step_limit(dq);
-  //apply_efpfragment_step_limit(dq);
-  //check_intrafragment_zero_angles(dq);
 
   // Crude/old way to limit step size if restricted step algorithm failed.
   if (!converged)
@@ -391,8 +371,7 @@ void MOLECULE::rfo_step(void) {
   for (int I=0; I<fb_fragments.size(); ++I)
     fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
 
-  if (!Opt_params.efp_fragments)
-    symmetrize_geom(); // now symmetrize the geometry for next step
+  symmetrize_geom(); // now symmetrize the geometry for next step
 
 /* Test step sizes
   double *x_after = g_geom_array();

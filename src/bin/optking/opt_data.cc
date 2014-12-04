@@ -64,10 +64,6 @@ STEP_DATA::~STEP_DATA() {
 // save geometry and energy
 void STEP_DATA::save_geom_energy(double *geom_in, double energy_in, int Ncart) {
   array_copy(geom_in, geom, Ncart);
-fprintf(outfile, "\nSTEP_DATA::save_geom_energy(geom_in, energy_in, Ncart)"); fflush(outfile);
-fprintf(outfile, "\nNcart = %d", Ncart); fflush(outfile);
-fprintf(outfile, "\nenergy_in = %f\n", energy_in); fflush(outfile);
-print_array(outfile, geom, Ncart); fflush(outfile);
   energy = energy_in;
 }
 
@@ -298,10 +294,6 @@ inline int sign_of_double(double d) {
 // do hessian update
 void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
-fprintf(outfile, "\nAttempting H_update"); fflush(outfile);
-fprintf(outfile, "\nNintco is %d", Nintco); fflush(outfile);
-fprintf(outfile, "\nNcart is %d\n", Ncart); fflush(outfile);
-
   if (Opt_params.H_update == OPT_PARAMS::BFGS)
     oprintf_out("\n\tPerforming BFGS update.\n");
   else if (Opt_params.H_update == OPT_PARAMS::MS)
@@ -327,22 +319,6 @@ fprintf(outfile, "\nNcart is %d\n", Ncart); fflush(outfile);
   mol.fix_tors_near_180(); // Fix configurations of torsions.
 
   double *f_old, *x_old, *q_old, *dq, *dg;
-
-  //if (Opt_params.H_update_use_last == 0) { // use all available old gradients
-  //  step_start = 0;
-  //}
-  //else {
-  //  step_start = steps.size() - 1 - Opt_params.H_update_use_last;
-  //  if (step_start < 0) step_start = 0;
-  //}
-
-  //// Check to make sure that the last analytical second derivative isn't newer
-  //if ( (step_this-step_start) > steps_since_last_H)
-  //  step_start = step_this - steps_since_last_H;
-
-  //fprintf(outfile," with previous %d gradient(s).\n", step_this-step_start); fflush(outfile);
-
-  //double *f_old, *x_old, *q_old, *dq, *dg, *tors_through_180;
   double gq, qq, qz, zz, phi;
   dq = init_array(Nintco);
   dg = init_array(Nintco);
@@ -366,36 +342,6 @@ fprintf(outfile, "\nNcart is %d\n", Ncart); fflush(outfile);
     q_old = mol.coord_values();
   
     for (int i=0;i<Nintco;++i) {
-
-///* For normal internal coordinates, we recompute the values from the old
-//  cartesian coordinates, to minimize problems due to redefinition of 
-//  internal coordinates or the corrections for discontinuous changes.  However,
-//  for EFP, we arbitrarily set the initial value of the coordinates to 0, so the
-//  value is just the change since the beginning of the optimization.  We haven't been
-//  storing these in opt_data, so we must compute them from the stored changes. */
-//    mol.set_geom_array(x_old);
-//    q_old = mol.intco_values();
-//
-//    if (Opt_params.efp_fragments) {
-//      int first = mol.g_efp_fragment_intco_offset(0);
-//      for (int i=first; i < Nintco; ++i)
-//        q_old[i] = q[i];
-//
-//      for (int s=i_step; s >= step_start; --s) {  
-//        double *q_old_part = g_dq_pointer(s);
-//
-//fprintf(outfile,"old dq to subtract to calculate old q for EFP\n");
-//print_array(outfile, q_old_part, Nintco);
-//
-//        for (int I=first; I < Nintco; ++I)
-//          q_old[I] -= q_old_part[I];
-//      }
-//    }
-//fprintf(outfile, "\nOld internals including efp:\n");
-//print_array(outfile, q_old, Nintco); fflush(outfile);
-//
-//    for (i=0;i<Nintco;++i) {
-//      // Turns out you don't have to correct for torsional changes through 180 in the forces.
       dq[i] = q[i] - q_old[i];
       dg[i] = (-1.0) * (f[i] - f_old[i]); // gradients -- not forces!
     }

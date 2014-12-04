@@ -57,6 +57,8 @@ using namespace v3d;
 void zmat_point(double *A, double *B, double *C, double R_CD, double theta_BCD,
   double phi_ABCD, double *D);
 
+void rotate_vecs(double *w, double phi, double **v, int num_v);
+
 // arguments specify the bond length and angle in radians desired for interfragment coordinates
 bool INTERFRAG::orient_fragment(double *dq, double *fq) {
 
@@ -327,5 +329,54 @@ void zmat_point(double *A, double *B, double *C, double R_CD, double theta_BCD,
   return;
 }
 
+/*!
+** rotate_vecs(): Rotate a set of vectors around an arbitrary axis
+**
+** \brief Rotate a set of vectors around an arbitrary axis
+** Vectors are rows of input matrix
+**
+** \param  w     double *  : axis to rotate around (wx, wy, wz) - gets normalized here
+** \param  phi   double    : magnitude of rotation
+** \param  v   double ** : points to rotate - column dim is 3; overwritten on exit
+** \param  num_v  int       :
+**
+** Returns: none
+**
+** Rollin King, Feb. 2008
+** \ingroup OPT
+*/
+void rotate_vecs(double *w, double phi, double **v, int num_v) {
+  double **R, **v_new, wx, wy, wz, cp, norm;
+
+  norm = sqrt(w[0]*w[0] + w[1]*w[1] + w[2]*w[2]);
+
+  w[0] /= norm; w[1] /= norm; w[2] /= norm;
+
+  wx = w[0]; wy = w[1]; wz = w[2];
+  cp = 1.0 - cos(phi);
+
+  R = init_matrix(3,3);
+
+  R[0][0] =     cos(phi) + wx*wx*cp;
+  R[0][1] = -wz*sin(phi) + wx*wy*cp;
+  R[0][2] =  wy*sin(phi) + wx*wz*cp;
+  R[1][0] =  wz*sin(phi) + wx*wy*cp;
+  R[1][1] =     cos(phi) + wy*wy*cp;
+  R[1][2] = -wx*sin(phi) + wy*wz*cp;
+  R[2][0] = -wy*sin(phi) + wx*wz*cp;
+  R[2][1] =  wx*sin(phi) + wy*wz*cp;
+  R[2][2] =     cos(phi) + wz*wz*cp;
+
+  v_new = init_matrix(num_v,3);
+  opt_matrix_mult(R, 0, v, 1, v_new, 1, 3, 3, num_v, 0);
+
+  for (int i=0; i<num_v; ++i)
+    for (int j=0; j<3; ++j)
+      v[i][j] = v_new[i][j];
+
+  free_matrix(v_new);
+  free_matrix(R);
 }
+
+} // opt
 

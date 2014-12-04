@@ -63,12 +63,9 @@ using namespace v3d;
 void MOLECULE::fragmentize(void) {
   int i, j, xyz;
 
-  // This function is designed to combine all atoms within 1 fragment, or to separate them,
-  // so if there is not 1 fragment to start, quit.
   if (fragments.size() != 1) return;
+
   int natom = fragments[0]->g_natom();
-  // if no (QM) atoms, then quit.
-  if (natom == 0) return;
   const bool * const * const connectivity = fragments[0]->g_connectivity_pointer();
 
   // each row is (potentially) a fragment

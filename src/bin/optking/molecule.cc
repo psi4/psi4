@@ -55,36 +55,12 @@ using namespace std;
 //   a fragment of that size.  Otherwise, this is an empty constructor.
 
 MOLECULE::MOLECULE(int num_atoms) {
-  int grad_index = 0;
-  int geom_index = 0;
-  using namespace psi;
 
-// For now at least, we'll add efp fragments in "add_efp_fragments" not in this constructor
-/*
-  for(int f=0; f<p_efp->get_frag_count(); f++) {
-    EFP_FRAG *one_frag = new EFP_FRAG();
-    one_frag->add_dummy_intcos(6);
-    efp_fragments.push_back(one_frag);
-    //one_frag->set_libmints_grad_index(grad_index);
-    //one_frag->set_libmints_geom_index(geom_index);
-    //grad_index += 1;
-    //geom_index += 3;
-    //fprintf(outfile, "\nEFP: grad_index = %d", one_frag->get_libmints_grad_index()); fflush(outfile);
-    //fprintf(outfile, "\nEFP: geom_index = %d", one_frag->get_libmints_geom_index()); fflush(outfile);
-  }
-*/
-  
-  // Add fragment with given number of atoms.
-  // If num_atoms == 0, don't add.  This will likely break some things for now.
   if (num_atoms > 0) {
     FRAG *one_frag = new FRAG(num_atoms);
     fragments.push_back(one_frag);
-    //grad_index += mol->fragments_[f].second - mol->fragments_[f].first;
-    //geom_index += mol->fragments_[f].second - mol->fragments_[f].first;
   }
 
-fprintf(outfile, "After molecule constructor: fragments.size()     = %lu\n", fragments.size());
-fprintf(outfile, "After molecule constructor: efp_fragments.size() = %lu\n", efp_fragments.size()); fflush(outfile);
   return;
 }
 
@@ -366,24 +342,6 @@ void MOLECULE::project_dq(double *dq) {
     for (int i=0; i<Nintco; ++i)
       oprintf_out("\t%12.6lf    %12.6lf   %12.6lf\n", dq_orig[i], dq[i], dq[i]-dq_orig[i]);
     free_array(dq_orig);
-//void MOLECULE::print_geom(void) {
-//  if ( !g_qm_natom() ) {
-//    fprintf(outfile,"There are no QM fragments present.\n");
-//  }
-//  else {
-//#if defined(OPTKING_PACKAGE_QCHEM)
-//    fprintf(outfile,"\tCartesian Geometry (au)\n");
-//#elif defined(OPTKING_PACKAGE_PSI)
-//    fprintf(outfile,"\tCartesian Geometry (in Angstrom)\n");
-//#endif
-//    for (int f=0; f<fragments.size(); ++f)
-//      fragments[f]->print_geom(outfile);
-//  }
-//
-//  if ( g_nefp_fragment() ) {
-//    fprintf(outfile,"\tNew coordinates for EFP fragments:\n");
-//    for (int f=0; f<efp_fragments.size(); ++f)
-//      efp_fragments[f]->print_geom(outfile);
   }
 }
 
@@ -407,25 +365,6 @@ void MOLECULE::apply_intrafragment_step_limit(double * & dq) {
         dq[g_coord_offset(f)+i] *= scale;
   }
   
-//}
-
-//void MOLECULE::apply_efpfragment_step_limit(double * & dq) {
-//  int i, f;
-//  double scale = 1.0;
-//  double limit = Opt_params.interfragment_step_limit;
-//  if (!efp_fragments.size()) return;
-//
-//  for (int I=0; I<g_nintco_efp_fragment(); ++I)
-//    if (scale * fabs(dq[g_efp_fragment_intco_offset(0)+I]) > limit)
-//      scale = limit / fabs(dq[g_efp_fragment_intco_offset(0)+I]);
-//
-//  if (scale != 1.0) {
-//    fprintf(outfile,"\tChange in EFP coordinate exceeds step limit of %10.5lf.\n", limit);
-//    fprintf(outfile,"\tScaling EFP displacements by %10.5lf\n", scale);
-//
-//    for (int I=0; I<g_nintco_efp_fragment(); ++I)
-//      dq[g_efp_fragment_intco_offset(0)+I] *= scale;
-//  }
 }
 
 // Identify if some angles are passing through 0 or going to 180.
@@ -773,31 +712,6 @@ double ** MOLECULE::compute_G(bool use_masses) const {
   return G;
 }
 
-//// print internal coordinates to text file
-//void MOLECULE::print_intco_dat(FILE *fp_intco) {
-//  for (int i=0; i<fragments.size(); ++i) {
-//    int first = g_atom_offset(i);
-//    fprintf(fp_intco,"F %d %d\n", first+1, first + fragments[i]->g_natom()); fflush(outfile);
-//    fragments[i]->print_intco_dat(fp_intco, g_atom_offset(i));
-//  }
-//
-//  for (int I=0; I<interfragments.size(); ++I) {
-//    int frag_a = interfragments[I]->g_A_index();
-//    int frag_b = interfragments[I]->g_B_index();
-//    fprintf(fp_intco,"I %d %d\n", frag_a+1, frag_b+1); fflush(outfile);
-//
-//    for (int i=0; i<6; ++i) 
-//      fprintf(fp_intco," %d", (int) interfragments[I]->coordinate_on(i));
-//    fprintf(fp_intco,"\n"); fflush(outfile);
-//
-//    interfragments[I]->print_intco_dat(fp_intco, g_atom_offset(frag_a), g_atom_offset(frag_b));
-//  }
-//
-//  for (int i=0; i<efp_fragments.size(); i++)
-//    fprintf(fp_intco,"E %d\n", i+1);
-//    //fprintf(fp_intco,"E %d %d\n", efp_fragments[i]->get_libmints_geom_index()+1, efp_fragments[i]->get_libmints_grad_index()+1);
-//}
-
 // Apply strings of atoms for frozen and fixed coordinates; 
 bool MOLECULE::apply_input_constraints(void) {
   bool frozen_present = false;
@@ -989,71 +903,8 @@ void MOLECULE::add_fb_fragments(void) {
   int num_fb_frags = ::EFP::GetInstance()->NFragments();
   oprintf_out("\tAdding %d EFP fragments.\n", num_fb_frags);
 
-//// Fetches the string definition of an internal coordinate from global index
-//std::string MOLECULE::get_intco_definition_from_global_index(int index) const{
-//  std::string s;
-//  int f_for_index, f;
-//  int Nintra = g_nintco_intrafragment();
-//  int Ninter = g_nintco_interfragment();
-//  int Nefp = 0;
-//#if defined (OPTKING_PACKAGE_QCHEM)
-//  Nefp = g_nintco_efp_fragment();
-//#endif
-//
-//  if ( index < 0 || index >= (Nintra + Ninter + Nefp) ) {
-//    fprintf(outfile, "get_intco_definition(): index %d out of range", index);
-//    throw(INTCO_EXCEPT("get_intco_definition(): index out of range"));
-//  }
-//
-//  // coordinate is an intrafragment coordinate
-//  if (index < Nintra) {
-//
-//    // go to last fragment or first that isn't past the desired index
-//    for (f=0; f<fragments.size(); ++f)
-//      if (index < g_intco_offset(f))
-//        break;
-//    --f;
-//
-//    s = fragments[f]->get_intco_definition(index - g_intco_offset(f), g_atom_offset(f));
-//    return s;
-//  }
-//
-//  // coordinate is an interfragment coordinate
-//  if (index < Nintra + Ninter) {
-//
-//    for (f=0; f<interfragments.size(); ++f)
-//      if (index < g_interfragment_intco_offset(f))
-//        break;
-//    --f;
-//
-//    s = interfragments[f]->get_intco_definition(index - g_interfragment_intco_offset(f));
-//    return s;
-//  }
-//
-//#if defined (OPTKING_PACKAGE_QCHEM)
-//  for (f=0; f<efp_fragments.size(); ++f)
-//    if (index < g_efp_fragment_intco_offset(f))
-//      break;
-//  --f;
-//
-//  s = efp_fragments[f]->get_intco_definition(index - Nintra - Nefp);
-//#endif
-//  return s;
-//}
-//
-//// Add EFP fragment objects.
-//// Geometry, gradients and energy are read by read_geom_grad()
-//void MOLECULE::add_efp_fragments(void) {
-//
-//  int num_efp_frags;
-//#if defined(OPTKING_PACKAGE_PSI)
-//  num_efp_frags = p_efp->get_frag_count();
-//#elif defined(OPTKING_PACKAGE_QCHEM)
-//  num_efp_frags = ::EFP::GetInstance()->NFragments();
-//#endif
-
-  fprintf(outfile,"\tAdding %d EFP fragments.\n", num_efp_frags);
-  fprintf(outfile,"\tThere are %lu presently.\n", efp_fragments.size());
+  // get energy
+  energy = ::EFP::GetInstance()->GetEnergy();
 
   FB_FRAG *one_frag;
 
@@ -1097,21 +948,6 @@ void MOLECULE::update_fb_values(void) {
     free_array(vals);
   }
 }
-
-//// This function for which the geometry is the current one will return
-//// the values including the EFP coordinates.
-//double * MOLECULE::intco_values(void) const {
-//  GeomType x = g_geom_2D();
-//  double *q = intco_values(x);
-//
-//  for (int f=0; f<efp_fragments.size(); ++f) {
-//    double *v = efp_fragments[f]->get_values_pointer();
-//
-//    for (int i=0; i<6; ++i)
-//      q[ g_efp_fragment_intco_offset(f) + i ] = v[i];
-//  }
-//  return q;
-//}
 
 }
 

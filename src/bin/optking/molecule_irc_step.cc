@@ -439,10 +439,6 @@ free_matrix(G_inv);
     // end RAK 11-14
     free_array(dq_pivot);
 
-    // fix rotation matrix for rotations in QCHEM EFP code
-    for (int I=0; I<efp_fragments.size(); ++I)
-      efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
-
     // Compute norm, unit vector, gradient and Hessian in the step direction
     // Save results to Opt_data.
     dq_n = sqrt( array_dot(dq, dq, Nintco) );

@@ -122,20 +122,11 @@ class MOLECULE {
     return n;
   }
 
-  // Given fragment index, returns the index of the first atom in that fragment.
+  // given fragment index returns first atom in that fragment
   int g_atom_offset(int index) const {
     int n = 0;
     for (int f=1; f<=index; ++f)
       n += fragments[f-1]->g_natom();
-    return n;
-  }
-
-  // Given the EFP index, returns the index of the first atom of that EFP fragment.
-  int g_efp_atom_offset(int index) const {
-    int n = g_atom_offset(fragments.size()-1);  // Get offset for last fragment
-    if (fragments.size())
-      n += fragments.back()->g_natom();  // Add in atoms for last fragment;
-    n += 3*index;
     return n;
   }
 
@@ -197,23 +188,6 @@ class MOLECULE {
 
   void print_coords(std::string psi_fp, FILE *qc_fp) const;
   void print_simples(std::string psi_fp, FILE *qc_fp) const;
-  //void print_intcos(FILE *fout) {
-  //  int a,b;
-  //  for (int i=0; i<fragments.size(); ++i) {
-  //    fprintf(fout,"\t---Fragment %d Intrafragment Coordinates---\n", i+1);
-  //    fragments[i]->print_intcos(fout, g_atom_offset(i));
-  //  }
-  //  for (int i=0; i<interfragments.size(); ++i) {
-  //    a = interfragments[i]->g_A_index();
-  //    b = interfragments[i]->g_B_index();
-  //    interfragments[i]->print_intcos(fout, g_atom_offset(a), g_atom_offset(b));
-  //  }
-
-  //  for (int i=0; i<efp_fragments.size(); ++i) {
-  //    fprintf(fout,"\t---Fragment %d EFP fragment Coordinates---\n", i+1);
-  //    efp_fragments[i]->print_intcos(fout);
-  //  }
-  //}
 
   // print definition of an internal coordinate from global index 
   std::string get_coord_definition_from_global_index(int coord_index) const;
@@ -308,46 +282,29 @@ class MOLECULE {
   double * g_u_vector(void) const; // reciprocal masses in vector
 
   double * g_geom_array(void) {
-    double *g = init_array(3*g_natom());
+    double *g, *g_frag;
 
+    g = init_array(3*g_natom());
     for (int f=0; f<fragments.size(); ++f) {
-      double *g_frag = fragments[f]->g_geom_array();
+      g_frag = fragments[f]->g_geom_array();
       for (int i=0; i<3*fragments[f]->g_natom(); ++i)
         g[3*g_atom_offset(f)+i] = g_frag[i];
       free_array(g_frag);
     }
-
-    for (int f=0; f<efp_fragments.size(); f++) {
-      double *g_frag = efp_fragments[f]->get_geom_array();
-      for (int i=0; i<3*3; i++)
-        g[3*g_efp_atom_offset(f)+i] = g_frag[i];
-      free_array(g_frag);
-    }
-
     return g;
   }
 
-  double **g_geom_2D(void) const {
+  double ** g_geom_2D(void) const {
+    double **g_frag;
     double **g = init_matrix(g_natom(),3);
 
     for (int f=0; f<fragments.size(); ++f) {
-      double **g_frag = fragments[f]->g_geom();
-
+      g_frag = fragments[f]->g_geom();
       for (int i=0; i<fragments[f]->g_natom(); ++i)
         for (int xyz=0; xyz<3; ++xyz)
           g[g_atom_offset(f)+i][xyz] = g_frag[i][xyz];
-
       free_matrix(g_frag);
     }
-
-    for(int f=0; f<efp_fragments.size(); f++) {
-      double **g_efp_frag = efp_fragments[f]->get_xyz_pointer();
-
-      for(int i=0; i<3; i++)
-        for(int xyz=0; xyz<3; xyz++)
-          g[g_efp_atom_offset(f)+i][xyz] = g_efp_frag[i][xyz];
-    }
-
     return g;
   }
 
@@ -385,17 +342,10 @@ class MOLECULE {
 
   void apply_intrafragment_step_limit(double * & dq);
   std::vector<int> validate_angles(double const * const dq);
-  //void apply_efpfragment_step_limit(double * & dq);
-  //void check_intrafragment_zero_angles(double const * const dq);
 
   void set_geom_array(double * array_in) {
-
-    // These functions copy values so it's OK to pass pointers in
     for (int f=0; f<fragments.size(); ++f)
-      fragments[f]->set_geom_array( array_in + 3*g_atom_offset(f) );
-
-    for (int f=0; f<efp_fragments.size(); f++)
-      efp_fragments[f]->set_geom_array( array_in + 3*g_efp_atom_offset(f) );
+      fragments[f]->set_geom_array( &(array_in[3*g_atom_offset(f)]) );
   }
 
   void fix_tors_near_180(void) {

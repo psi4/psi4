@@ -104,6 +104,7 @@ bool myline(ifstream & fin, vector<string> & tokens, int & line_num) {
         return true;
     }
   }
+  //printf("myline returns false\n");
   return false;
 }
 
@@ -113,10 +114,8 @@ bool MOLECULE::read_coords(std::ifstream & fintco) {
   bool D_on[6];     // interfragment coordinates active
   bool D_frozen[6]; // interfragment coordinates frozen
   FRAG * frag1;
-  EFP_FRAG * efp_frag1;
   int first_atom, last_atom;
   int first_frag, second_frag;
-  int geom_index, grad_index;
   vector<string> vline;
   vector<int> A1; vector<int> A2; vector<int> A3;
   vector<int> B1; vector<int> B2; vector<int> B3;
@@ -126,6 +125,8 @@ bool MOLECULE::read_coords(std::ifstream & fintco) {
 
   // read in line and tokenize
   line_present = myline(fintco, vline, line_num);
+
+  int cnt =0;
 
   while (line_present) {
 
@@ -395,25 +396,8 @@ bool MOLECULE::read_coords(std::ifstream & fintco) {
       }
 
       interfragments.push_back(one_IF);
+
     } // end of if vline[0] == 'I'
-
-    else if (vline[0] == "E") {  // EFP fragment definition 
-      fprintf(outfile,"\tAdding EFP fragment.\n");
-      fflush(outfile);
-      if (vline.size() != 2) {
-        error << "Format of EFP line is \"E integer(fragment number)\"\n" ;
-        throw(INTCO_EXCEPT(error.str().c_str()));
-      }
-
-      EFP_FRAG * one_EFP = new EFP_FRAG();
-      one_EFP->add_dummy_intcos(6);
-      geom_index = 0;
-      grad_index = 0; // hoping we don't need these
-      one_EFP->set_libmints_geom_index(geom_index);
-      one_EFP->set_libmints_grad_index(grad_index);
-      efp_fragments.push_back(one_EFP);
-      line_present = myline(fintco, vline, line_num);
-    }
     else {
       error << "Unknown initial character on line " << line_num << ".\n";
       throw(INTCO_EXCEPT(error.str().c_str()));
