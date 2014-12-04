@@ -211,26 +211,52 @@ namespace { // anonymous
                                const boost::shared_ptr<BasisSet>& bs,
                                double lindep_tol)
     {
+        // Marking start of function call
+        outfile->Printf("\nIn orthogonalize():\n");
+
+        // Determines the dimension of each symmetry block (SODIM) and computes overlap matrix (overlap) 
         boost::shared_ptr<IntegralFactory> localfactory(new IntegralFactory(bs));
         OneBodySOInt *o_engine = localfactory->so_overlap();
-
         SOBasisSet *so_bs = new SOBasisSet(bs, localfactory);
         const Dimension& SODIM = so_bs->petite_list()->SO_basisdim();
         delete so_bs;
-
         SharedMatrix overlap(new Matrix("Overlap", SODIM, SODIM));
         o_engine->compute(overlap);
         delete o_engine;
+        outfile->Printf("\n    Printing the overlap matrix before removing linear dependent orbitals:\n");
+        overlap->print();
 
+        // Determine the dimension of each symmetry block for the reduced space  
         outfile->Printf( "    Orthogonalizing basis for space %s.\n", name.c_str());
-        Dimension remaining = overlap->power(-0.5, lindep_tol);
+        SharedMatrix evecs(new Matrix("evecs", SODIM, SODIM));
+        SharedVector evals(new Vector("evals", SODIM));
+        overlap->diagonalize(evecs, evals);
+        Dimension remaining(evecs->nirrep());
+        for(int h=0; h<evecs->nirrep(); h++) {
+            for(int i=0; i<SODIM[h]; i++) {
+                if (fabs(evals->get(h, i)) > lindep_tol)
+                    remaining[h]++;
+            }
+        }
+        outfile->Printf("\n    Printing the Dimension variable 'remaining':\n");
+        remaining.print();
+        outfile->Printf("\n    Printing the eigenvalues of the overlap matrix:\n");
+        evals->print();
+        outfile->Printf("\n    Printing the eigenvectors of the overlap matrix:\n");
+        evecs->print();
 
-        View Cview(overlap, overlap->rowspi(), remaining);
+        // Remove the linear dependent vectors
+        View Cview(evecs, evecs->rowspi(), remaining, Dimension(evecs->nirrep()), evecs->colspi() - remaining);
         SharedMatrix C = Cview();
         C->set_name("Transformation matrix");
+        outfile->Printf("\n    Printing the C matrix created from Cview when removing linear dependent vectors:\n");
+        C->print();
 
+        // Create the SharedMatrix orthog_ao and use it to build the OrbitalSpace to be returned 
         PetiteList petite(bs, localfactory);
         SharedMatrix orthog_ao = petite.evecs_to_AO_basis(C);
+        outfile->Printf("\n    Printing orthog_ao (the matrix used to build the OrbitalsSpace to be returned):\n");
+        orthog_ao->print();
 
         return OrbitalSpace(id, name, orthog_ao, bs, localfactory);
     }
