@@ -1373,7 +1373,7 @@ std::string Molecule::create_psi4_string_from_molecule() const
 
             // append atoms and coordentries and fragment separators with charge and multiplicity
             int Pfr = 0;
-            for(int fr=0; fr<fragments_.size(); ++fr) {
+            for(size_t fr=0; fr<fragments_.size(); ++fr) {
                 if ((fragment_types_[fr] == Absent) && (zmat_ == false)) {
                     continue;
                 }
@@ -1477,7 +1477,7 @@ void Molecule::reinterpret_coordentries()
 void Molecule::update_geometry()
 {
     if (fragments_.size() == 0)
-        fprintf(outfile, "Warning: There are no quantum mechanical atoms in this molecule.\n");
+        outfile->Printf("Warning: There are no quantum mechanical atoms in this molecule.\n");
     //    throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
 
     // Idempotence condition

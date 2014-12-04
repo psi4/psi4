@@ -240,6 +240,7 @@ for ssuper in cfour_list():
 for ssuper in cfour_gradient_list():
     procedures['gradient'][ssuper] = run_cfour
 
+
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
 
@@ -558,10 +559,10 @@ def energy(name, **kwargs):
 
     except KeyError:
         alternatives = ""
-        alt_lowername = p4util.text.find_approximate_string_matches(lowername,procedures['energy'].keys(),2)
+        alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['energy'].keys(), 2)
         if len(alt_lowername) > 0:
             alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
-        raise ValidationError('Energy method %s not available.%s' % (lowername,alternatives))
+        raise ValidationError('Energy method %s not available.%s' % (lowername, alternatives))
 
     optstash.restore()
     return psi4.get_variable('CURRENT ENERGY')
@@ -627,7 +628,7 @@ def gradient(name, **kwargs):
         pass
     else:
         alternatives = ""
-        alt_lowername = p4util.text.find_approximate_string_matches(lowername,procedures['gradient'].keys(),2)
+        alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['gradient'].keys(), 2)
         if len(alt_lowername) > 0:
             alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
         raise ValidationError('Derivative method \'name\' %s and derivative level \'dertype\' %s are not available.%s'
@@ -681,8 +682,8 @@ def gradient(name, **kwargs):
             psi4.set_global_option('E_CONVERGENCE', 8)
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
-    if (dertype == 1):
-        psi4.print_out("gradient() will perform analytic gradient computation.\n");
+    if dertype == 1:
+        psi4.print_out("gradient() will perform analytic gradient computation.\n")
         # Nothing to it but to do it. Gradient information is saved
         # into the current reference wavefunction
         procedures['gradient'][lowername](lowername, **kwargs)
@@ -856,7 +857,7 @@ def property(name, **kwargs):
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | 'fci'              | Full configuration interaction                | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
-     
+
     :type name: string
     :param name: ``'ccsd'`` || etc.
 
@@ -924,10 +925,10 @@ def property(name, **kwargs):
 
     except KeyError:
         alternatives = ""
-        alt_lowername = p4util.text.find_approximate_string_matches(lowername,procedures['property'].keys(),2)
+        alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['property'].keys(), 2)
         if len(alt_lowername) > 0:
             alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
-        raise ValidationError('Property method %s not available.%s' % (lowername,alternatives))
+        raise ValidationError('Property method %s not available.%s' % (lowername, alternatives))
 
     optstash.restore()
     return returnvalue
@@ -1112,7 +1113,7 @@ def optimize(name, **kwargs):
             G = psi4.get_gradient()
             psi4.IOManager.shared_object().set_specific_retention(1, True)
             psi4.IOManager.shared_object().set_specific_path(1, './')
-            psi4.set_global_option('HESSIAN_WRITE',True)
+            psi4.set_global_option('HESSIAN_WRITE', True)
             frequencies(name, **kwargs)
             steps_since_last_hessian = 0
             psi4.set_gradient(G)
@@ -1132,9 +1133,9 @@ def optimize(name, **kwargs):
             psi4.print_out('\n    Final optimized geometry and variables:\n')
             psi4.get_active_molecule().print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
-            if (psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
-              if (psi4.get_option('OPTKING', 'KEEP_INTCOS') == False):
-                psi4.opt_clean()
+            if psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False:
+                if psi4.get_option('OPTKING', 'KEEP_INTCOS') == False:
+                    psi4.opt_clean()
             psi4.clean()
 
             # S/R: Clean up opt input file
@@ -1147,7 +1148,7 @@ def optimize(name, **kwargs):
             optstash.restore()
             return thisenergy
 
-        elif optking_rval == psi4.PsiReturnType.Failure: # new 10-14 RAK
+        elif optking_rval == psi4.PsiReturnType.Failure:  # new 10-14 RAK
             print('Optimizer: Optimization failed!')
             if (psi4.get_option('OPTKING', 'KEEP_INTCOS') == False):
                 psi4.opt_clean()
@@ -1166,9 +1167,9 @@ def optimize(name, **kwargs):
         n += 1
 
     psi4.print_out('\tOptimizer: Did not converge!')
-    if (psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
-      if (psi4.get_option('OPTKING', 'KEEP_INTCOS') == False):
-        psi4.opt_clean()
+    if psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False:
+        if psi4.get_option('OPTKING', 'KEEP_INTCOS') == False:
+            psi4.opt_clean()
 
     optstash.restore()
     return 0.0
@@ -1245,7 +1246,7 @@ def parse_arbitrary_order(name):
                 return namelower, None
             # Let 'mp3' pass through to occ module for rhf/uhf, direct to detci for rohf
             elif (namestump == 'mp') and (namelevel == 3):
-                if psi4.get_option('SCF','REFERENCE') == 'ROHF':
+                if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
                     return 'detci-mp', 3
                 else:
                     return namelower, None
@@ -1335,7 +1336,7 @@ def hessian(name, **kwargs):
         pass
     else:
         alternatives = ""
-        alt_lowername = p4util.text.find_approximate_string_matches(lowername,procedures['energy'].keys(),2)
+        alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['energy'].keys(), 2)
         if len(alt_lowername) > 0:
             alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
 
@@ -1723,8 +1724,8 @@ def parse_cotton_irreps(irrep):
         'ci': {
             'ag': 1,
             'au': 2,
-            '1':  1,
-            '2':  2
+            '1': 1,
+            '2': 2
         },
         'c2': {
             'a': 1,
@@ -1733,58 +1734,58 @@ def parse_cotton_irreps(irrep):
             '2': 2
         },
         'cs': {
-            'ap':  1,
+            'ap': 1,
             'app': 2,
-            '1':   1,
-            '2':   2
+            '1': 1,
+            '2': 2
         },
         'd2': {
-            'a':  1,
+            'a': 1,
             'b1': 2,
             'b2': 3,
             'b3': 4,
-            '1':  1,
-            '2':  2,
-            '3':  3,
-            '4':  4
+            '1': 1,
+            '2': 2,
+            '3': 3,
+            '4': 4
         },
         'c2v': {
             'a1': 1,
             'a2': 2,
             'b1': 3,
             'b2': 4,
-            '1':  1,
-            '2':  2,
-            '3':  3,
-            '4':  4
+            '1': 1,
+            '2': 2,
+            '3': 3,
+            '4': 4
         },
         'c2h': {
             'ag': 1,
             'bg': 2,
             'au': 3,
             'bu': 4,
-            '1':  1,
-            '2':  2,
-            '3':  3,
-            '4':  4,
+            '1': 1,
+            '2': 2,
+            '3': 3,
+            '4': 4,
         },
         'd2h': {
-            'ag':  1,
+            'ag': 1,
             'b1g': 2,
             'b2g': 3,
             'b3g': 4,
-            'au':  5,
+            'au': 5,
             'b1u': 6,
             'b2u': 7,
             'b3u': 8,
-            '1':   1,
-            '2':   2,
-            '3':   3,
-            '4':   4,
-            '5':   5,
-            '6':   6,
-            '7':   7,
-            '8':   8
+            '1': 1,
+            '2': 2,
+            '3': 3,
+            '4': 4,
+            '5': 5,
+            '6': 6,
+            '7': 7,
+            '8': 8
         }
     }
 
