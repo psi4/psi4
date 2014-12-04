@@ -110,9 +110,6 @@ OptReturnType optking(void) {
   // try to open old internal coordinates
   std::ifstream if_intco(FILENAME_INTCO_DAT, ios_base::in);
 
-  if(Opt_params.efp_fragments)
-    p_efp = psi::Process::environment.get_efp();
-
   if (if_intco.is_open()) { // old internal coordinates are present
 
     oprintf_out("\n\tPrevious internal coordinate definitions found.\n"); 
@@ -136,7 +133,6 @@ OptReturnType optking(void) {
 
     // read geometry and gradient into the existing fragments
     mol1->read_geom_grad();
-fprintf(outfile,"done reading geom and grad\n"); fflush(outfile);
     mol1->set_masses();
 
   }
@@ -146,11 +142,7 @@ fprintf(outfile,"done reading geom and grad\n"); fflush(outfile);
     newly_generated_coordinates = true;
 
     // read number of atoms ; make one fragment of that size ;
-    fprintf(outfile,"Creating molecule with %d atoms\n", read_natoms()); fflush(outfile);
     mol1 = new MOLECULE( read_natoms() );
-
-    if (Opt_params.efp_fragments)
-      mol1->add_efp_fragments();
 
     // read geometry and gradient into fragment
     mol1->read_geom_grad();
@@ -323,16 +315,6 @@ fprintf(outfile,"done reading geom and grad\n"); fflush(outfile);
   mol1->apply_constraint_forces();
   // project out constraints for fixed intcos and unphysical displacements
   mol1->project_f_and_H();
-
-// Temporary halt for diatomic EFPs
-  if (Opt_params.efp_fragments) {
-    for (int f=0; f<p_efp->get_frag_count(); ++f)
-      if (p_efp->get_frag_atom_count(f) < 3) {
-        fprintf(outfile,"optking halting optimization b/c diatomic efp fragments unsupported.\n");
-        throw(INTCO_EXCEPT("Halting optimization.  Diatomic EFP fragments unsupported."));
-      }
-  }
-//
 
   // step functions put dq in p_Opt_data->step
   if (Opt_params.opt_type == OPT_PARAMS::IRC)

@@ -42,10 +42,6 @@
  #include <libmints/wavefunction.h>
  #include <libparallel/parallel.h>
  #include <libmints/writer_file_prefix.h>
-//****AVC****//
-#include <libefp_solver/efp_solver.h>
-#include <libmints/vector3.h>
-//****AVC****//
 #elif defined(OPTKING_PACKAGE_QCHEM)
  #include <qchem.h> // typedefs INTEGER
  #include "EFP.h"
@@ -66,7 +62,7 @@ bool is_integer(const char *check) {
   return true;
 }
 
-// Reads in the number of QM atoms.
+// read the number of atoms
 int read_natoms(void) {
   int natom=0;
 
@@ -84,8 +80,8 @@ int read_natoms(void) {
     natom -= n;
     oprintf_out( "\nNumber of atoms besides EFP fragments %d\n", natom);
   }
+
 #endif
-  fprintf(outfile, "\n\tNumber of atoms besides EFP fragments %d\n", natom);
   return natom;
 }
 
@@ -95,97 +91,47 @@ int read_natoms(void) {
 // and with allocated memory.
 void MOLECULE::read_geom_grad(void) {
   int nfrag = fragments.size();
-  int EFPfrag = efp_fragments.size();
-  int nallatom = g_natom() + 3 * EFPfrag;
+  int nallatom = g_natom();
 
 #if defined(OPTKING_PACKAGE_PSI)
 
   using namespace psi;
 
-  fprintf(outfile,"\tReading geometry and gradient...\n");
+  SharedMatrix pgradient;
+  if (psi::Process::environment.wavefunction()) {
+    pgradient = psi::Process::environment.wavefunction()->gradient();
+  } else {
+    pgradient = psi::Process::environment.gradient();
+  }
 
-  // Read geometry from molecule object
+  Matrix& gradient = *pgradient.get();
+
   boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   Matrix geometry = mol->geometry();
 
-  fprintf(outfile,"\n\tQM geometry from molecule object:\n");
-  geometry.print_out(); fflush(outfile);
-
-  // Read CURRENT ENERGY from environment
   energy = psi::Process::environment.globals["CURRENT ENERGY"];
-  fprintf(outfile,"\n\tCurrent energy from environment: %15.10lf\n", energy);
-  fflush(outfile);
 
-  SharedMatrix qm_grad, efp_grad;
-
-  // Read QM gradient from wavefunction or environment
-  if (nfrag > 0) {
-    if (psi::Process::environment.wavefunction())
-      qm_grad = psi::Process::environment.wavefunction()->gradient();
-    else
-      qm_grad = psi::Process::environment.gradient();
-    fprintf(outfile,"\tQM gradient:\n");
-    qm_grad->print_out(); fflush(outfile);
-  }
-
-  // Read EFP gradient from wavefunction or environment
-  if (EFPfrag > 0) {
-    if (psi::Process::environment.get_efp()->get_frag_count() > 0)
-      efp_grad = psi::Process::environment.get_efp()->torque();
-    else
-      efp_grad = psi::Process::environment.efp_torque();
-
-    fprintf(outfile,"\tEFP gradient\n");
-    efp_grad->print_out();
-    efp_grad->print_out(); fflush(outfile);
-  }
-
-  // Get EFP centers-of-mass and put into optking efp fragments
-  for (int f=0; f<EFPfrag; ++f) {
-    double *f_com  = efp_fragments[f]->get_com_pointer();
-    double *tmp_com = p_efp->get_com(f);
-    for (int xyz=0; xyz<3; ++xyz)
-      f_com[xyz] = tmp_com[xyz];
-    delete [] tmp_com;
-  }
-
-  // Put forces into local efp fragments
-  for (int f=0; f<EFPfrag; ++f) {
-    double *f_force = efp_fragments[f]->get_forces_pointer();
-
-    for(int i=0; i<6; i++)
-      f_force[i] = - efp_grad->get(f,i);
-  }
-
-  // Put geometry into each efp fragment
-  int efp_atom_cnt = 0;
-  for (int f=0; f<EFPfrag; ++f) {
-    double **f_geom = efp_fragments[f]->get_xyz_pointer();
-    double *tmp_geom  = p_efp->get_frag_atom_coord(f);
-
-    for(int i=0; i<3; i++) // first 3 atoms wanted
-      for(int xyz=0; xyz<3; ++xyz)
-        f_geom[i][xyz] = tmp_geom[3*i+xyz];
-
-    ++efp_atom_cnt;
-    delete [] tmp_geom;
-  }
-
-  // Put forces and geometry into each regular fragment
+  int atom =0;
   for (int f=0; f<nfrag; ++f) {
-    double *Z = fragments[f]->g_Z_pointer();
-    double **geom = fragments[f]->g_geom_pointer();
-    double **grad = fragments[f]->g_grad_pointer();
+      double *Z = fragments[f]->g_Z_pointer();
+      double **geom = fragments[f]->g_geom_pointer();
+      double **grad = fragments[f]->g_grad_pointer();
 
-    for (int i=0; i<fragments[f]->g_natom(); ++i) {
-      Z[i] = mol->Z(i);
+      for (int i=0; i<fragments[f]->g_natom(); ++i) {
+          Z[i] = mol->Z(atom);
 
-      for(int xyz=0; xyz<3; ++xyz) {
-        geom[i][xyz] = geometry(i, xyz);
-        grad[i][xyz] = qm_grad->get(i, xyz);
+          geom[i][0] = geometry(atom, 0);
+          geom[i][1] = geometry(atom, 1);
+          geom[i][2] = geometry(atom, 2);
+
+          grad[i][0] = gradient(atom, 0);
+          grad[i][1] = gradient(atom, 1);
+          grad[i][2] = gradient(atom, 2);
+
+          atom++;
       }
-    }
   }
+
 
 #if 0
   // for now read from file 11
@@ -347,8 +293,6 @@ void MOLECULE::read_geom_grad(void) {
   return;
 }
 
-
-
 void MOLECULE::symmetrize_geom(void) {
 
 #if defined(OPTKING_PACKAGE_PSI)
@@ -382,58 +326,21 @@ void MOLECULE::write_geom(void) {
 
 #if defined(OPTKING_PACKAGE_PSI)
 
-fprintf(outfile,"Preparing to write geometry\n");
-
   double **geom_2D = g_geom_2D();
-fprintf(outfile,"New coordinates for all atoms:\n");
-print_matrix(outfile, geom_2D, efp_fragments.size()*3, 3); fflush(outfile);
-
-  // Make compact QM geometry matrix
-  int qm_natom = g_qm_natom();
-  if (qm_natom > 0) {
-    double **qm_geom = init_matrix(qm_natom,3);
-
-    for (int a=0; a<qm_natom; ++a)
-      for (int xyz=0; xyz<3; ++xyz)
-        qm_geom[a][xyz] = geom_2D[a][xyz];
-
-    psi::Process::environment.molecule()->set_geometry(qm_geom);
-    psi::Process::environment.molecule()->update_geometry();
-
-    free_matrix(qm_geom);
-  }
-
-  // Make compact EFP geometry array
-  // Put new EFP geometry into environment efp pointer.
-  if (efp_fragments.size()) {
-    double *g = init_array(9*efp_fragments.size()); 
-
-    int cnt = -1;
-    for (int a=0; a<3*efp_fragments.size(); ++a)
-      for (int xyz=0; xyz<3; ++xyz)
-        g[++cnt] = geom_2D[qm_natom+a][xyz];
-
-    fprintf(outfile,"\tNew coordinates for EFP fragments:\n");
-    for (int f=0; f<efp_fragments.size(); ++f)
-      for (int a=0; a<3; ++a)
-        fprintf(outfile,"%15.10lf %15.10lf %15.10lf\n", g[9*f+3*a+0], g[9*f+3*a+1], g[9*f+3*a+2]);
-
-    p_efp->set_coordinates(1,g); // type is POINTS
-    free_array(g);
-  }
+  psi::Process::environment.molecule()->set_geometry(geom_2D);
+  psi::Process::environment.molecule()->update_geometry();
   free_matrix(geom_2D);
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
   // rotation matrix is already updated by displace()
   double *geom = g_geom_array();
-  // TODO debug for EFP ?
-  //if (!Opt_params.efp_fragments_only) {
+  if (!Opt_params.efp_fragments_only) {
     int NoReor = rem_read(REM_NO_REORIENT);  // save state
     rem_write(1, REM_NO_REORIENT); // write cartesians ; do NOT reorient
     ::set_carts(geom, true);
     rem_write(NoReor, REM_NO_REORIENT); // replace to original state
-  //}
+  }
 
 #endif
 }

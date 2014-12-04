@@ -231,7 +231,6 @@ void MOLECULE::prfo_step(void) {
   }
  
   apply_intrafragment_step_limit(dq);
-  apply_efpfragment_step_limit(dq);
 
   // try to get but with a single extrapolated energy change
  
@@ -302,8 +301,7 @@ double rfo_dqnorm_min;
   for (int I=0; I<fb_fragments.size(); ++I)
     fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
 
-  if (!Opt_params.efp_fragments)
-    symmetrize_geom(); // now symmetrize the geometry for next step
+  symmetrize_geom(); // now symmetrize the geometry for next step
 
   // save values in step data
   p_Opt_data->save_step_info(DE_projected, dq, rfo_dqnorm, rfo_g, rfo_h);

@@ -46,33 +46,6 @@ void FB_FRAG::set_forces(double * forces_in) {
     forces[i] = forces_in[i];
 }
 
-void EFP_FRAG::set_xyz(double ** xyz_in) {
-  for(int i=0; i<3; i++)
-    for(int j=0; j<3; j++)
-      xyz_geom[i][j] = xyz_in[i][j];
-}
-
-void EFP_FRAG::set_com(double *com_in) {
-  for(int i=0; i<3; i++)
-    com[i] = com_in[i];
-}
-
-double * EFP_FRAG::get_geom_array(void) {
-    int cnt=0;
-    double * geom_array = init_array(3*3);
-    for (int i=0; i<3; ++i)
-      for (int xyz=0; xyz<3; ++xyz)
-        geom_array[cnt++] = xyz_geom[i][xyz];
-    return geom_array;
-}
-
-void EFP_FRAG::set_geom_array( double * geom_array ) {
-  int cnt = 0;
-  for (int a=0; a<3; a++)
-    for (int xyz=0; xyz<3; ++xyz)
-      xyz_geom[a][xyz] = geom_array[cnt++];
-}
-
 // we don't have a valid B matrix for these
 // add 6 bogus stretches
 void FB_FRAG::add_dummy_coords(int ndummy) {
@@ -111,38 +84,7 @@ void FB_FRAG::displace (int fb_frag_index, double *dq) {
 #if defined (OPTKING_PACKAGE_QCHEM)
   ::EFP::GetInstance()->displace(fb_frag_index, dq);
 #endif
-////****AVC****//
-//  // Tell QChem to update rotation matrix and com for EFP fragment
-//void EFP_FRAG::displace (int efp_frag_index, double *dq)
-//{
-//fprintf(outfile, "\nEFP_FRAG::displace()\n");
-//  double *T = init_array(3);
-//  double *Phi = init_array(3);
-//  array_copy(dq, T, 3);
-//  array_copy(dq+3, Phi, 3);
-//  double phi = array_norm(Phi, 3);
-//
-//  double ** xyz_new = init_matrix(3,3);
-//
-//  for(int i=0; i<3; i++)
-//    for(int j=0; j<3; j++)
-//      xyz_new[i][j] = xyz_geom[i][j] - com[j];
-//
-//  rotate_vecs(Phi, phi, xyz_new, 3);
-//
-//  for(int i=0; i<3; i++)
-//    for(int j=0; j<3; j++)
-//      xyz_geom[i][j] = xyz_new[i][j] + com[j] + T[j];
-//
-//
-//fprintf(outfile, "new geometry: \n");
-//print_matrix(outfile, xyz_geom, 3, 3);
-//
-//fprintf(outfile, "\n         Phi            T\n");
-//for(int i=0; i<3; i++)
-//  fprintf(outfile, "%15.8f%15.8f\n", phi*Phi[i], T[i]);
 }
-//****AVC****//
 
 }
 
