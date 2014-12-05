@@ -209,6 +209,9 @@ protected:
     /// If frequencies are available, they will be here:
     boost::shared_ptr<Vector> frequencies_;
 
+    /// If normal modes are available, they will be here:
+    boost::shared_ptr<Vector> normalmodes_;
+
     /// Flag to tell if this is a CIM calculation
     bool isCIM_;
 
@@ -468,6 +471,10 @@ public:
     /// Set the frequencies for the wavefunction
     void set_frequencies(boost::shared_ptr<Vector>& freqs);
 
+    /// Returns the normalmodes
+    boost::shared_ptr<Vector> normalmodes() const;
+    /// Set the normalmodes for the wavefunction
+    void set_normalmodes(boost::shared_ptr<Vector>& norms);
 
     /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
     void set_name(const std::string& name) { name_ = name; }
