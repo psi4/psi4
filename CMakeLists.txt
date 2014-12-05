@@ -295,7 +295,7 @@ endif()
 #FILE(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
-add_subdirectory(external)
+add_subdirectory(interfaces)
 
 # Configure some scripts
 configure_files()
