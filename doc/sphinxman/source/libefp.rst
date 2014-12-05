@@ -8,15 +8,16 @@
 Interface to LIBEFP by I. Kaliman
 =================================
 
-.. codeauthor:: A. Eugene DePrince, Andrew C. Simmonett, Rollin A. King, and Lori A. Burns
+.. codeauthor:: Andrew C. Simmonett, A. Eugene DePrince III, Rollin A. King, and Lori A. Burns
 .. sectionauthor:: Lori A. Burns
 
 *Module:* :ref:`Keywords <apdx:efp>`, :ref:`PSI Variables <apdx:efp_psivar>`, :source:`LIBEFP <src/lib/libefp_solver>`
 
 |PSIfour| contains code to interface to the LIBEFP library developed
-in L. Slipchenko's group by I. Kaliman.  LIBEFP at version 0.9.9
+in L. Slipchenko's group by I. Kaliman.  LIBEFP at version 1.2.1
 is distributed with |Psifour| and requires no additional licence,
-downloads, or configuration.  More information about the LIBEFP project
+downloads, or configuration. Conversely, |Psifour| cannot build
+*without* LIBEFP. More information about the LIBEFP project
 is available at `http://www.libefp.org/ <http://www.libefp.org/>`_
 and source is hosted at `https://github.com/libefp/libefp
 <https://github.com/libefp/libefp>`_.
@@ -49,10 +50,10 @@ Creating new efp fragments requires the `GAMESS
 Instructions on building new fragments are `here
 <https://github.com/libefp/libefp#how-to-create-custom-efp-fragment-types>`_.
 Once your new fragment is ready, make it assessible to |PSIfour| by
-including the directory in which the ``.efp`` file is located in the colon
+including the directory in which the ``.efp`` file is located to the colon
 separated environment variable :envvar:`PSIPATH`. Fragments are searched
-for first in the library, next in the paths of :envvar:`PSIPATH`, and
-finally in the current directory. If |PSIfour| is unable to find the
+for first in the current directory, next in the paths of :envvar:`PSIPATH`, and
+finally in built-in library. If |PSIfour| is unable to find the
 fragment, an error will be reported.
 
 .. note:: When constructing new fragment files, the name of the name of the
@@ -74,7 +75,7 @@ described :ref:`here <sec:fragments>`. Each EFP fragment has its own
 fragment section that includes the label ``efp``, the name of the file
 *fragname* from which EFP parameters are to be read, and the position
 specification for the fragment in one of two ways, XYZABC or POINTS. For
-XYZABC, the fragment specification is all on one line. ``efp`` and
+XYZABC, the fragment specification is all on one line: ``efp`` and
 *fragname* are followed by two sets of three numbers: the coordinates
 of the center of mass of the fragment and the three Euler angles that
 specify orientation about the center of mass. This format is compact
@@ -166,7 +167,7 @@ fragment is shown below. ::
    
    energy('scf')
 
-Anytime an EFP fragment is present in the active molecule, the SCF energy
+Whenever an EFP fragment is present in the active molecule, the SCF energy
 will include EFP contributions.
 
 .. warning:: Although the EFP geometry is specified alongside the QM
@@ -190,12 +191,21 @@ geometry optimizations and mixed qm/efp SCF single-points.
 
     .. _`table:libefp_methods`:
 
-    +-------------------------+-------------------------------------------------------------+
-    | name                    | calls method                                                |
-    +=========================+=============================================================+
-    | efp                     | EFP-only interaction energy                                 |
-    +-------------------------+-------------------------------------------------------------+
-
+    +-------------------------+----------------------+--------------------------------------------------------------------------+
+    | name                    | molecule composition | calls method                                                             |
+    +=========================+======================+==========================================================================+
+    | efp                     | pure EFP             | EFP interaction energy (IE) on all frags                                 |
+    +                         +----------------------+--------------------------------------------------------------------------+
+    | efp                     | mixed QM/EFP         | EFP IE on EFP frags only                                                 |
+    +                         +----------------------+--------------------------------------------------------------------------+
+    | efp                     | pure QM              | *error*                                                                  |
+    +-------------------------+----------------------+--------------------------------------------------------------------------+
+    | scf                     | pure EFP             | *error*                                                                  |
+    +                         +----------------------+--------------------------------------------------------------------------+
+    | scf                     | mixed QM/EFP         | SCF energy on QM frags w/coupling to EFP frags, plus EFP IE on EFP frags | 
+    +                         +----------------------+--------------------------------------------------------------------------+
+    | scf                     | pure QM              | SCF energy on all frags (normal |Psifour| operation)                     |
+    +-------------------------+----------------------+--------------------------------------------------------------------------+
 
 .. index:: EFP; library fragments
 

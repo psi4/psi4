@@ -2821,6 +2821,9 @@ def run_efp(name, **kwargs):
     # initialize library
     efp = psi4.get_active_efp()
 
+    if efp.nfragments() == 0:
+        raise ValidationError("""Method 'efp' not available without EFP fragments in molecule""")
+
     # set options
     psi4.set_global_option('QMEFP', False)  # apt to go haywire if set locally to efp
     psi4.efp_set_options()
