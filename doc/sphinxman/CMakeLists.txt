@@ -197,10 +197,10 @@ if(PERL_FOUND AND SPHINX_FOUND)
     
     # Autodoc efp fragments
     add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_fraglib.py ${CCSD}
-        OUTPUT  ${CCBD}/source/autodoc_available_fraglib.rst
-        DEPENDS ${CCSD}/document_fraglib.py
-                ${CMAKE_SOURCE_DIR}/lib/fraglib/*.efp
+        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_efpfrag.py ${CCSD}
+        OUTPUT  ${CCBD}/source/autodoc_available_efpfrag.rst
+        DEPENDS ${CCSD}/document_efpfrag.py
+                ${CMAKE_SOURCE_DIR}/lib/efpfrag/*.efp
         COMMENT "Autodoc efp fragments")
 
 
@@ -248,7 +248,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 #${CCBD}/source/autodoc_dft_scsdhybrid.rst  # commented until populated again to appease Sphinx
                 ${CCBD}/source/autodoc_dft_disp.rst
                 ${CCBD}/source/autodoc_basissets_byfamily.rst
-                ${CCBD}/source/autodoc_available_fraglib.rst
+                ${CCBD}/source/autodoc_available_efpfrag.rst
         COMMENT "Preparing Sphinx HTML documentation build")
 
     # * full, proper build with LaTeX
