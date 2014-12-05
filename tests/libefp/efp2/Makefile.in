@@ -1,9 +1,0 @@
-
-SRCDIR = @srcdir@
-
-include ../MakeVars
-include ../MakeRules
-PSIAUTOTEST = false
-
-export PSIPATH:= $(SRCDIR)
-
