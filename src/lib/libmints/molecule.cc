@@ -980,7 +980,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             if(regex_search(lines[lineNumber], reMatches, efpFileMarker_)) {
                 // Process file name
                 if(efp_fnames[currentFragment] != reMatches[1].str())
-                    throw PSIEXCEPTION("EFP fragment names not in sync (" + efp_fnames[currentFragment] + " vs." + reMatches[1].str());
+                    throw PSIEXCEPTION("EFP fragment names not in sync (" + 
+                        efp_fnames[currentFragment] + " vs." + reMatches[1].str());
 
                 if((regex_match(lines[lineNumber+1], reMatches, fragmentMarker_)) || (lineNumber == lines.size() - 1)) {
                     // Process xyzabc hint
@@ -1043,6 +1044,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                 currentFragment--;
             }
         }
+        // Finalize efp fragment composition
+        Process::environment.get_efp()->finalize_fragments();
     }
 
     if(!lines.size())
@@ -1212,7 +1215,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                                    + " on line\n" + *(line));
 
             // Save the actual atom symbol (H1 => H)
-            atomSym = reMatches[1].str();
+            atomSym = reMatches[2].str();
 
             zVal = zVals[atomSym];
             charge = zVal;
