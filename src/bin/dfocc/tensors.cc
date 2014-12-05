@@ -630,9 +630,9 @@ void Tensor2d::memalloc()
 
 void Tensor2d::release()
 {
-   if (!A2d_) return;
-   free_block(A2d_);
-
+   //if (!A2d_) return;
+   //free_block(A2d_);
+   if (A2d_) free_block(A2d_);
    if (row_idx_) free_int_matrix(row_idx_);
    if (col_idx_) free_int_matrix(col_idx_);
    if (row2d1_) delete [] row2d1_;
@@ -2352,10 +2352,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
          for (int q = 0; q < d2; q++) {
               int pq = A->row_idx_[p][q];
               for (int r = 0; r < d3; r++) {
+                   int rq = col_idx_[r][q];
                    for (int s = 0; s < d4; s++) {
                         int rs = A->col_idx_[r][s];
                         int ps = row_idx_[p][s];
-                        int rq = col_idx_[r][q];
                         A2d_[ps][rq] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[ps][rq]);
                    }
               }

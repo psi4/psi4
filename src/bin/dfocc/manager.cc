@@ -617,6 +617,7 @@ void DFOCC::ccsd_manager()
         cost_3amp = 3.0 * cost_ampAA;
         cost_4amp = 4.0 * cost_ampAA;
         cost_5amp = 5.0 * cost_ampAA;
+        /*
         if ((cost_5amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_5amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_5amp+cost_df);
@@ -624,7 +625,8 @@ void DFOCC::ccsd_manager()
              t2_incore = true;
              df_ints_incore = true;
         }
-        else if ((cost_4amp+cost_df) <= memory_mb) { 
+        */
+        if ((cost_4amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_4amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_4amp+cost_df);
              nincore_amp = 4;
@@ -653,19 +655,24 @@ void DFOCC::ccsd_manager()
         }
 
         // W_abef term
-        cost_ampAA = 0.0;
-        cost_ampAA = naoccA * naoccA * navirA * navirA;
-        cost_ampAA += 2.0 * nQ * navirA * navirA;
-        cost_ampAA += navirA * navirA * navirA;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        double cost_ampAA2 = 0.0;
-        cost_ampAA2 = naoccA * naoccA * navirA * navirA;
-        cost_ampAA2 += nQ * navirA * navirA;
-        cost_ampAA2 += 3.0 * navirA * navirA * navirA;
-        cost_ampAA2 /= 1024.0 * 1024.0;
-        cost_ampAA2 *= sizeof(double);
-        cost_amp = MAX0(cost_ampAA, cost_ampAA2);
+        double cost_amp1 = 0.0;
+        cost_amp1 = 2.5 * naoccA * naoccA * navirA * navirA;
+        cost_amp1 += nQ * navirA * navirA;
+        cost_amp1 /= 1024.0 * 1024.0;
+        cost_amp1 *= sizeof(double);
+        double cost_amp2 = 0.0;
+        cost_amp2 = 1.5 * naoccA * naoccA * navirA * navirA;
+        cost_amp2 += 4.0 * nQ * navirA * navirA;
+        cost_amp2 /= 1024.0 * 1024.0;
+        cost_amp2 *= sizeof(double);
+        double cost_amp3 = 0.0;
+        cost_amp3 = 2.0 * naoccA * naoccA * navirA * navirA;
+        cost_amp3 += 3.0 * nQ * navirA * navirA;
+        cost_amp3 += 2.0 * navirA * navirA * navirA;
+        cost_amp3 /= 1024.0 * 1024.0;
+        cost_amp3 *= sizeof(double);
+        cost_amp = MAX0(cost_amp1, cost_amp2);
+        cost_amp = MAX0(cost_amp, cost_amp3);
         outfile->Printf("\tMemory requirement for Wabef term     : %9.2lf MB \n", cost_amp);
         
         // Mem alloc for DF ints
@@ -896,6 +903,7 @@ void DFOCC::ccd_manager()
         cost_3amp = 3.0 * cost_ampAA;
         cost_4amp = 4.0 * cost_ampAA;
         cost_5amp = 5.0 * cost_ampAA;
+        /*
         if ((cost_5amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_5amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_5amp+cost_df);
@@ -903,7 +911,8 @@ void DFOCC::ccd_manager()
              t2_incore = true;
              df_ints_incore = true;
         }
-        else if ((cost_4amp+cost_df) <= memory_mb) { 
+        */
+        if ((cost_4amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_4amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_4amp+cost_df);
              nincore_amp = 4;
