@@ -6,14 +6,13 @@ namespace psi { namespace efp {
 
 PsiReturnType efp_init(Options & options)
 {
-  // new efp object
-  boost::shared_ptr<EFP> myefp(new EFP(options));
+    // new efp object
+    boost::shared_ptr<EFP> myefp(new EFP(options));
 
-  // set efp object in process environment
-  Process::environment.set_efp(myefp);
+    // set efp object in process environment
+    Process::environment.set_efp(myefp);
 
-  return Success;
+    return Success;
 }
 
 }}
-

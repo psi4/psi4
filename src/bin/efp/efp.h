@@ -5,7 +5,7 @@
 
 namespace psi { namespace efp {
 
-PsiReturnType efp_init(Options & options);
+    PsiReturnType efp_init(Options & options);
 
 }}
 
