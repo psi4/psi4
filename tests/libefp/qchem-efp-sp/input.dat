@@ -12,9 +12,10 @@ set EFP_DISP_DAMPING tt  # q-chem and psi4 have different defaults for this opti
 energy('efp')
 
 # values copied from q-chem output file  #TEST
-#compare_values(635.8989676282, bz2.nuclear_repulsion_energy(), 6, 'NRE')  #TEST
+compare_values( 0.0, bz2.nuclear_repulsion_energy(), 6, 'NRE')  #TEST
 compare_values(-0.006945881265, get_variable('efp elst energy'), 6, 'EFP-EFP Elst')  #TEST
-compare_values(-0.021092526180, get_variable('efp disp energy'), 6, 'EFP-EFP Disp')  #TEST
-compare_values(-0.000675030191, get_variable('efp pol energy'), 6, 'EFP-EFP Pol')  #TEST
 compare_values( 0.046915489574, get_variable('efp exch energy'), 6, 'EFP-EFP Exch')  #TEST
+compare_values(-0.000675030191, get_variable('efp ind energy'), 6, 'EFP-EFP Ind')  #TEST
+compare_values(-0.021092526180, get_variable('efp disp energy'), 6, 'EFP-EFP Disp')  #TEST
 compare_values( 0.018202051938, get_variable('current energy'), 6, 'EFP-EFP Total')  #TEST
+
