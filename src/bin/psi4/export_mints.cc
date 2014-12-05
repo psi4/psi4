@@ -719,6 +719,7 @@ void export_mints()
             def("Fb", &Wavefunction::Fb, "docstring").
             def("Da", &Wavefunction::Da, "docstring").
             def("Db", &Wavefunction::Db, "docstring").
+            def("aotoso", &Wavefunction::aotoso, "docstring").
             def("epsilon_a", &Wavefunction::epsilon_a, "docstring").
             def("epsilon_b", &Wavefunction::epsilon_b, "docstring").
             def("add_preiteration_callback", &Wavefunction::add_preiteration_callback, "docstring").
@@ -728,6 +729,7 @@ void export_mints()
             def("energy", &Wavefunction::reference_energy, "docstring").
             def("gradient", &Wavefunction::gradient, "docstring").
             def("frequencies", &Wavefunction::frequencies, "docstring").
+            def("normalmodes", &Wavefunction::normalmodes, "docstring").
             def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring").
             def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring").
             def("molecule", &Wavefunction::molecule, "docstring").

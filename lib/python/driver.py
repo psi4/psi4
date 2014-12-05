@@ -37,6 +37,7 @@ from interface_cfour import *
 #CUfrom p4regex import *
 # never import wrappers or aliases into this file
 
+
 # Procedure lookup tables
 procedures = {
         'energy': {
@@ -555,6 +556,9 @@ def energy(name, **kwargs):
         if len(alt_lowername) > 0:
             alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
         raise ValidationError('Energy method %s not available.%s' % (lowername,alternatives))
+
+    if(psi4.get_global_option('write_csx')):
+        writeCSX(name,**kwargs)
 
     optstash.restore()
     return psi4.get_variable('CURRENT ENERGY')
@@ -1123,6 +1127,8 @@ def optimize(name, **kwargs):
             if (psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
               if (psi4.get_option('OPTKING', 'KEEP_INTCOS') == False):
                 psi4.opt_clean()
+            if(psi4.get_global_option('write_csx')):
+                writeCSX(name,**kwargs)
             psi4.clean()
 
             # S/R: Clean up opt input file
@@ -1680,6 +1686,10 @@ def frequency(name, **kwargs):
         # call thermo module
         psi4.thermo()
 
+    if(psi4.get_global_option('write_csx')):
+        writeCSX(name,**kwargs)
+
+
     #TODO add return current energy once satisfied that's set to energy at eq, not a findif
     return psi4.get_variable('CURRENT ENERGY')
 
@@ -1783,3 +1793,288 @@ def parse_cotton_irreps(irrep):
         return cotton[point_group][irreducible_representation]
     except KeyError:
         raise ValidationError("Irrep \'%s\' not valid for point group \'%s\'." % (str(irrep), point_group))
+
+
+def writeCSX(name, **kwargs):
+    """function to write the CSX file 
+
+    """
+#import csx_api for csx writing
+    import os
+    import csx_api as api
+    import openbabel
+    import qcdb
+    import qcdb.periodictable
+# Make sure the molecule the user provided is the active one
+    if ('molecule' in kwargs):
+        activate(kwargs['molecule'])
+        del kwargs['molecule']
+    molecule = psi4.get_active_molecule()
+    molecule.update_geometry()
+#Start to write the CSX file
+#First grab molecular information and energies from psi4
+    geom = molecule.save_string_xyz()
+    atomLine = geom.split('\n')
+
+#general moleculer information
+    atomNum = molecule.natom()
+    molSym = molecule.schoenflies_symbol()
+    molCharge = molecule.molecular_charge()
+    molMulti = molecule.multiplicity()
+#energy information
+    molBasis = psi4.get_global_option('BASIS')
+    molSpin = psi4.get_global_option('REFERENCE')
+    molMethod = psi4.get_global_option('WFN')
+    mol1E = psi4.get_variable('ONE-ELECTRON ENERGY')
+    mol2E = psi4.get_variable('TWO-ELECTRON ENERGY')
+    molNE = psi4.get_variable('NUCLEAR REPULSION ENERGY')
+    molPE = mol1E + mol2E
+    molEE = psi4.get_variable('CURRENT ENERGY')
+#wavefunction information
+    molOrbE = psi4.wavefunction().epsilon_a()
+    molOrbEb = psi4.wavefunction().epsilon_b()
+    orbNmopi = psi4.wavefunction().nmopi()
+    orbNsopi = psi4.wavefunction().nsopi()
+    orbNum = psi4.wavefunction().nmo()
+    orbSNum = psi4.wavefunction().nso()
+    molOrb = psi4.wavefunction().Ca()
+    orbNirrep = psi4.wavefunction().nirrep()
+    orbAotoso = psi4.wavefunction().aotoso()
+    orbDoccpi = psi4.wavefunction().doccpi()
+    orbSoccpi = psi4.wavefunction().soccpi()
+    basisNbf = psi4.wavefunction().basisset().nbf()
+    basisDim = psi4.Dimension(1,'basisDim')
+    basisDim.__setitem__(0,basisNbf)
+    wfnRestricted = True 
+    orbE = []
+    hlist = []
+    orblist = []
+    orbOcc = []
+    molOrbmo = psi4.Matrix('molOrbmo',basisDim, orbNmopi)
+    molOrbmo.gemm(False,False,1.0,orbAotoso,molOrb,0.0)
+    if molSpin == 'UHF':
+        wfnRestricted = False
+        orbEb = []
+        hlistCb = []
+        orblistCb = []
+        orbOccCb = []
+        molOrbCb = psi4.wavefunction().Cb()
+        molOrbmoCb = psi4.Matrix('molOrbmoCb',basisDim, orbNmopi)
+        molOrbmoCb.gemm(False,False,1.0,orbAotoso,molOrbCb,0.0)
+    count = 0
+    eleExtra = 1 if wfnRestricted else 0
+    for ih in range(orbNirrep):
+        for iorb in range(orbNmopi.__getitem__(ih)):
+            hlist.append(ih)
+            orblist.append(iorb)
+            orbE.append(molOrbE.get(count))
+            eleNum = 1 if iorb < (orbDoccpi.__getitem__(ih)+orbSoccpi.__getitem__(ih)) else 0
+            eleNum += eleExtra if iorb < orbDoccpi.__getitem__(ih) else 0
+            orbOcc.append(eleNum)
+            count += 1
+    orbMos = sorted(zip(orbE, zip(hlist, orblist)))
+    orbOccString = ' '.join(str(x) for x in sorted(orbOcc,reverse=True))
+    orbCaString = []
+    for imos in range(orbNum):
+        (h,s) = orbMos[imos][1]
+        orbCa = []
+        for iso in range(orbSNum):
+            orbEle = molOrbmo.get(h,iso,s)
+            orbCa.append(orbEle)
+        orbCaString.append(' '.join(str(x) for x in orbCa))
+    orbEString = ' '.join(str(x) for x in sorted(orbE))
+# now for beta spin
+    if not wfnRestricted :
+        count = 0
+        for ih in range(orbNirrep):
+            for iorb in range(orbNmopi.__getitem__(ih)):
+                hlistCb.append(ih)
+                orblist.append(iorb)
+                orbEb.append(molOrbEb.get(count))
+                eleNum = 1 if iorb < (orbDoccpi.__getitem__(ih)+orbSoccpi.__getitem__(ih)) else 0
+                eleNum += eleExtra if iorb < orbDoccpi.__getitem__(ih) else 0
+                orbOccCb.append(eleNum)
+                count += 1
+        orbMosCb = sorted(zip(orbEb, zip(hlist,orblist)))
+        orbOccCbString = ' '.join(str(x) for x in sorted(orbOccCb,reverse=True))
+        orbCbString = []
+        for imos in range(orbNum):
+            (h,s) = orbMosCb[imos][1]
+            orbCb = []
+            for iso in range(orbSNum):
+                orbEle = molOrbmoCb.get(h,iso,s)
+                orbCb.append(orbEle)
+            orbCbString.append(' '.join(str(x) for x in orbCb))
+        orbEbString = ' '.join(str(x) for x in sorted(orbEb))
+#   orbColString = ' '.join(str(x) for x in orbCol)
+#frequency information
+    if psi4.get_global_option('DERTYPE') == 'SECOND':
+        molFreq = psi4.get_frequencies()
+        molFreqNum = molFreq.dim(0)
+        frq = []
+        irInt = []
+        for ifrq in range(molFreqNum):
+            frq.append(molFreq.get(ifrq))
+            irInt.append(0.0)
+        frqString = ' '.join(str(x) for x in frq)
+        intString = ' '.join(str(x) for x in irInt)
+        normMod = psi4.get_normalmodes()
+        normMdString=[]
+        count = 0
+        for ifrq in range(molFreqNum):
+            normM=[]
+            for iatm in range(atomNum):
+                for ixyz in range(3):
+                    normM.append(normMod.get(count))
+                    count += 1
+            normMdString.append(' '.join(str(x) for x in normM))
+    molDipoleX = psi4.get_variable('CURRENT DIPOLE X')
+    molDipoleY = psi4.get_variable('CURRENT DIPOLE Y')
+    molDipoleZ = psi4.get_variable('CURRENT DIPOLE Z')
+
+#get the basename for the CSX file
+    psio = psi4.IO.shared_object()
+    namespace = psio.get_default_namespace()
+    pid = str(os.getpid())
+    csxfile = open( namespace + '.' + pid + '.csx', 'w')
+#Start to generate CSX elements
+    cs1 = api.csType()
+
+#molPublication section
+    mp1 = api.mpType(publicationTitle=psi4.get_global_option('publicationTitle'), \
+            publicationAbstract=psi4.get_global_option('publicationAbstract'), \
+            publicationSource='Psi4', \
+            publicationStatus=psi4.get_global_option('publicationStatus'), \
+            publicationCategory=psi4.get_global_option('publicationCategory'), \
+            publicationVisibility=psi4.get_global_option('publicationVisibility'), \
+            publicationKey=psi4.get_global_option('publicationKey'))
+    ath1 = api.authorType(name=psi4.get_global_option('correspondingAuthor'), \
+            organization=psi4.get_global_option('organization'), \
+            email=psi4.get_global_option('email').replace("__","@"))
+    mp1.set_correspondingAuthor(ath1)
+    cs1.set_molecularPublication(mp1)
+
+#molSystem section
+    ms1 = api.msType(systemTemperature=298.0, systemCharge=molCharge, \
+                     systemMultiplicity=molMulti)
+    mol1 = api.moleculeType(id='m1',numberAtoms=atomNum)
+    obmol1 = openbabel.OBMol()
+    for iatm in range(atomNum):
+        atomField = atomLine[iatm+1].split()
+        atmSymbol = atomField[0]
+        xCoord = float(atomField[1])
+        yCoord = float(atomField[2])
+        zCoord = float(atomField[3])
+        obatm = obmol1.NewAtom()
+        obatm.SetAtomicNum(qcdb.periodictable.el2z[atmSymbol.upper()])
+        obatm.SetVector(xCoord, yCoord, zCoord)
+    obmol1.ConnectTheDots()
+    obmol1.PerceiveBondOrders()
+    obmol1.SetTotalSpinMultiplicity(molMulti)
+    obmol1.SetTotalCharge(molCharge)
+    conv1 = openbabel.OBConversion()
+    conv1.SetInAndOutFormats("mol","inchi")
+    conv1.SetOptions("K", conv1.OUTOPTIONS)
+    inchikey = conv1.WriteString(obmol1)
+    mol1.set_inchiKey(inchikey.rstrip())
+    iatm = 0
+    for obatom in openbabel.OBMolAtomIter(obmol1):
+        atmSymbol = qcdb.periodictable.z2el[obatom.GetAtomicNum()]
+        atm = api.atomType(id='a'+str(iatm+1), element=atmSymbol, \
+                           atomMass=obatom.GetAtomicMass(), \
+                           xCoord3D=obatom.GetX(), \
+                           yCoord3D=obatom.GetY(), \
+                           zCoord3D=obatom.GetZ(), \
+                           basisSet='cs:'+molBasis, \
+                           calculatedAtomCharge=0, \
+                           formalAtomCharge=0)
+        iatm += 1
+        coord1 = api.coordinationType()
+        ibond = 0
+        for nb_atom in openbabel.OBAtomAtomIter(obatom):
+            bond = obatom.GetBond(nb_atom)
+            bond1 = api.bondType(id1='a'+str(obatom.GetId()+1), id2='a'+str(nb_atom.GetId()+1))
+            if bond.GetBondOrder() == 1:
+                bond1.set_valueOf_('single')
+            elif bond.GetBondOrder() == 2:
+                bond1.set_valueOf_('double')
+            elif bond.GetBondOrder() == 3:
+                bond1.set_valueOf_('triple')
+            elif bond.GetBondOrder() == 5:
+                bond1.set_valueOf_('aromatic')
+            else:
+                print('wrong bond order')
+            coord1.add_bond(bond1)
+            ibond += 1
+        coord1.set_valueOf_(ibond)
+        atm.set_coordination(coord1)
+        mol1.add_atom(atm)
+
+    ms1.add_molecule(mol1)
+    cs1.set_molecularSystem(ms1)
+
+#molCalculation section
+    mc1 = api.mcType()
+    scf1 = api.scfCalcType(cs_technology='cs:abInitioQM',cs_spinType='cs:'+molSpin, \
+            cs_basisSet='cs:'+molBasis)
+    if procedures['energy'][name] == run_dft :
+        scf1.set_cs_technology('cs:densityFunctionalTheory')
+        scf1.set_cs_dftFunctional(name)
+    ene1 = api.scfElecEnerType(cs_units='cs:hartree',scfElectronicEnergy=molEE,nuclearRepulsionEnergy=molNE, \
+                               totalPotentialEnergy=molPE)
+    scf1.set_scfEnergies(ene1)
+    if wfnRestricted:
+        wfn1 = api.scfWaveFuncType(orbitalCount=orbNum,orbitalOccupancies=orbOccString)
+        orbe1 = api.orbEnerType('cs:hartree',orbEString)
+        orbs1 = api.orbitalsType()
+        for iorb in range(orbNum):
+            orbt = orbCaString[iorb]
+            orb1 = api.orbitalType(id=iorb+1)
+            orb1.set_valueOf_(orbt)
+            orbs1.add_orbital(orb1)
+        wfn1.set_orbitals(orbs1)
+        wfn1.set_orbitalEnergies(orbe1)
+    else:
+#alpha electron
+        wfn1 = api.scfWaveFuncType(orbitalCount=orbNum)
+        orbe1 = api.orbEnerType('cs:hartree',orbEString)
+        wfn1.set_alphaOrbitalEnergies(orbe1)
+        wfn1.set_alphaOrbitalOccupancies(orbOccString)
+        aorbs1 = api.orbitalsType()
+        for iorb in range(orbNum):
+            orbt = orbCaString[iorb]
+            orb1 = api.orbitalType(id=iorb+1)
+            orb1.set_valueOf_(orbt)
+            aorbs1.add_orbital(orb1)
+        wfn1.set_alphaOrbitals(aorbs1)
+#beta electron
+        orbeb1 = api.orbEnerType('cs:hartree',orbEbString)
+        wfn1.set_betaOrbitalEnergies(orbeb1)
+        wfn1.set_betaOrbitalOccupancies(orbOccCbString)
+        borbs1 = api.orbitalsType()
+        for iorb in range(orbNum):
+            orbt = orbCbString[iorb]
+            orb1 = api.orbitalType(id=iorb+1)
+            orb1.set_valueOf_(orbt)
+            borbs1.add_orbital(orb1)
+        wfn1.set_betaOrbitals(borbs1)
+
+    scf1.set_scfWaveFunction(wfn1)
+    if psi4.get_global_option('DERTYPE') == 'SECOND':
+        freq1 = api.scfVibAnalType(vibrationCount=molFreqNum, \
+                vibrationalFrequencies=frqString, irIntensities=intString)
+        norms1 = api.normalModesType()
+        for ifrq in range(molFreqNum):
+            norm1 = api.normalModeType(id=ifrq+1)
+            norm1.set_valueOf_(normMdString[ifrq])
+            norms1.add_normalMode(norm1)
+        freq1.set_normalModes(norms1)
+        scf1.set_scfVibrationalAnalysis(freq1)
+#   dip1 = api.dipoleType(dipoleX=molDipoleX, dipoleY=molDipoleY, dipoleZ=molDipoleZ)
+#   scf1.set_scfDipole(dip1)
+    mc1.set_scfCalculation(scf1)
+    cs1.set_molecularCalculations(mc1)
+    csxfile.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+    cs1.export(csxfile,0)
+    csxfile.close()
+#End to write the CSX file

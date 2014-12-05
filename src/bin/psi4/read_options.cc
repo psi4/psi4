@@ -1099,6 +1099,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Flag to print the basis set. -*/
     options.add_bool("PRINT_BASIS", false);
 
+    /*- SUBSECTION CSX publication -*/
+    options.add_str("publicationTitle", "default title");
+    options.add_str("publicationAbstract", "default abstract");
+    options.add_str("publicationTags", "default tags");
+    options.add_str("correspondingAuthor", "default name");
+    options.add_str("organization", "default org");
+    options.add_str("email", "default email");
+    options.add_int("publicationCategory", 2);
+    options.add_int("publicationVisibility", 0);
+    options.add_int("publicationStatus", 0);
+    options.add_int("publicationKey", 0);
+    /*- Flag to write the CSX file. -*/
+    options.add_bool("WRITE_CSX", false);
+
+
     /*- SUBSECTION Convergence Control/Stabilization -*/
 
     /*- Maximum number of iterations.

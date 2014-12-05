@@ -21,7 +21,7 @@ dclean:
 #  3. Touch the target file so that the above dependencies will be fulfilled.
 boost.compiled:
 ifeq ($(dont_compile_boost),0)
-	if [ ! -d $(BOOSTVER) ]; then tar zxf $(srcdir)/$(BOOSTVER).tar.gz; fi
+	if [ ! -d $(BOOSTVER) ]; then tar jxf $(srcdir)/$(BOOSTVER).tar.bz2; fi
 	(cd $(BOOSTVER) && ./bootstrap.sh --with-libraries=filesystem,python,regex,serialization,system,thread --with-python=$(PYTHON) && ./b2 && cd bin.v2/libs && find . -name '*.a' -exec cp {} . \;)
 	touch boost.compiled
 endif
