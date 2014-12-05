@@ -56,7 +56,6 @@ macro(add_regression_test _name _labels)
             COMMAND "${MPIEXEC}" -n 2 "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${PROJECT_SOURCE_DIR}" "${OUTFILE}" "${PSIEXE}"
         )
     else()
-        message("${_name} ${PYTHON_EXECUTABLE} ${PSIEXE}")
         # Serial build
         add_test(NAME "${_name}"
             WORKING_DIRECTORY "${TEST_RUN_DIR}"

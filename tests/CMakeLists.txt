@@ -272,6 +272,19 @@ add_subdirectory(tu5-sapt)
 add_subdirectory(tu6-cp-ne2)
 add_subdirectory(zaptn-nh2)
 
+###### START internal-executable-dependent tests ################
+
+# For code that is distributed with and required for psi4 to build, 
+#   and thus should always be tested, but is developed and maintained 
+#   externally and dropped into psi4 as version increment, and thus 
+#   should get its own subdirectory:
+#   * Follow directory structure described below for ext-exe-dep
+#   * Follow un-qualified inclusion as above for normal tests
+
+add_subdirectory(libefp)
+
+###### END internal-executable-dependent tests ##################
+
 ###### START external-executable-dependent tests ################
 
 # Set up groups of test cases analogous to dftd3 below
@@ -314,7 +327,7 @@ if(CFOUR_EXECUTABLE)
    message(STATUS "xcfour executable for interfaced CFOUR found. Test cases added.")
 endif()
 
-###### END external-executable-dependent tests ################
+###### END external-executable-dependent tests ##################
 
 if(NOT PERL_FOUND)
    message(WARNING "Perl was not found. Some Coupled Cluster test cases will not be thoroughly checked.")
