@@ -233,6 +233,7 @@ void DFOCC::ccsd_WmbejT2()
     T = SharedTensor2d(new Tensor2d("T1 (Q|IJ)", nQ, naoccA, naoccA));
     T->read(psio_, PSIF_DFOCC_AMPS);
     X->gemm(true, false, T, bQabA, 1.0, 1.0);
+    T.reset();
     // W'(me,jb) <= X(jm,be)
     W->sort(2413, X, 1.0, 1.0);
     X.reset();
