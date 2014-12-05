@@ -598,7 +598,6 @@ class BasisSet(object):
         text += msg
 
         if returnBasisSet:
-            print text
             return bs
         else:
             bsdict = {}
