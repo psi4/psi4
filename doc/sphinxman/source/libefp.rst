@@ -33,16 +33,16 @@ EFP Fragments
 
 LIBEFP comes with a couple dozen ready-to-use fragments (water, benzene,
 common solvents, etc.) listed :ref:`here <sec:availableEFPFragments>`
-with source :source:`lib/libfrag`.  Any of these may be used directly in
+with source :source:`lib/efpfrag`.  Any of these may be used directly in
 a |PSIfour| input file as described :ref:`here <sec:usingEFPFragments>`.
 
 .. note:: The built-in fragment library distributed with Q-Chem (as of version 4.0.1) is *not*
    equivalent to that distributed with LIBEFP. Although many of the same
    molecules are present and should perform similarly in computations,
    exact matches of fragment geometries or efp energies should not be
-   expected. See files in test case directories :source:`qc-efpefp-sp1
-   <tests/libefp/qc-efpefp-sp1>` and :source:`qc-scfefp-sp2
-   <tests/libefp/qc-scfefp-sp2>` for equivalent Q-Chem and |PSIfour|
+   expected. See files in test case directories :source:`qchem-efp-sp
+   <tests/libefp/qchem-efp-sp>` and :source:`qchem-qmefp-sp
+   <tests/libefp/qchem-qmefp-sp>` for equivalent Q-Chem and |PSIfour|
    EFP input files.
 
 Creating new efp fragments requires the `GAMESS
@@ -226,8 +226,8 @@ additional configuration.
 .. toctree::
    :hidden:
 
-   autodoc_available_fraglib
+   autodoc_available_efpfrag
 
-.. include:: autodoc_available_fraglib.rst
+.. include:: autodoc_available_efpfrag.rst
 
 
