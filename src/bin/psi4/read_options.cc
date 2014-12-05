@@ -4490,40 +4490,38 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   }
     if (name == "EFP"|| options.read_globals()) {
+        /*- MODULEDESCRIPTION Performs effective fragment potential
+        computations through calls to Kaliman's libefp library. -*/
+ 
         /*- The amount of information printed to the output file. -*/
         options.add_int("PRINT", 1);
-        /*- Type of EFP simulation. One of single point (``SP``), gradient
-        (``GRAD``), conjugate gradient geometry optimization (``CG``),
-        molecular dynamics in microcanonical ensemble (``NVE``), or
-        molecular dynamics in canonical ensemble (``NVT``). This
-        specification will probably be moved to energy(), grad(), opt(),
-        etc. eventually. -*/
-        //        options.add_str("EFP_TYPE", "SP", "SP GRAD CG NVE NVT");
         /*- Do include electrostatics energy term in EFP computation? -*/
         options.add_bool("EFP_ELST", true);
+        /*- Do include exchange repulsion energy term in EFP computation? -*/
+        options.add_bool("EFP_EXCH", true);
         /*- Do include polarization energy term in EFP computation? -*/
         options.add_bool("EFP_POL", true);
         /*- Do include dispersion energy term in EFP computation? -*/
         options.add_bool("EFP_DISP", true);
-        /*- Do include exchange repulsion energy term in EFP computation? -*/
-        options.add_bool("EFP_EXCH", true);
-        /*- Electrostatic damping type. ``SCREEN`` is a damping formula
-        based on screen group in the EFP potential. ``OVERLAP`` is
-        damping that computes charge penetration energy. -*/
+        /*- Fragment-fragment electrostatic damping type. ``SCREEN``
+        is a damping formula based on screen group in the EFP potential.
+        ``OVERLAP`` is damping that computes charge penetration energy. -*/
         options.add_str("EFP_ELST_DAMPING", "SCREEN", "SCREEN OVERLAP OFF");
-        /*- Dispersion damping type. ``TT`` is a damping formula by
-        Tang and Toennies. ``OVERLAP`` is overlap-based dispersion damping. -*/
-        options.add_str("EFP_DISP_DAMPING", "OVERLAP", "TT OVERLAP OFF");
-        /*- Fragment-fragment polarization damping type. -*/
+        /*- Fragment-fragment polarization damping type. ``TT`` is a 
+        damping formula like Tang and Toennies. -*/
         options.add_str("EFP_POL_DAMPING", "TT", "TT OFF");
-        /* Do EFP gradient. !expert */
+        /*- Fragment-fragment dispersion damping type. ``TT`` is a damping 
+        formula by Tang and Toennies. ``OVERLAP`` is overlap-based 
+        dispersion damping. -*/
+        options.add_str("EFP_DISP_DAMPING", "OVERLAP", "TT OVERLAP OFF");
+        /*- Do include electrostatics energy term in QM/EFP computation? -*/
+        options.add_bool("QMEFP_ELST", true);
+        /*- Do include polarization energy term in EFP computation? -*/
+        options.add_bool("QMEFP_POL", true);
+        /* Do EFP gradient? !expert */
         options.add_str("DERTYPE", "NONE", "NONE FIRST");
         /* Do turn on QM/EFP terms? !expert */
         options.add_bool("QMEFP", false);
-        /*- Do include electrostatics energy term in QM/EFP computation? !expert -*/
-        options.add_bool("QMEFP_ELST", true);
-        /*- Do include polarization energy term in EFP computation? !expert -*/
-        options.add_bool("QMEFP_POL", true);
     }
   return true;
 }

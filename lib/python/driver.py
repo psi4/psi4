@@ -166,8 +166,6 @@ procedures = {
             'aqcc'          : run_cepa,
             'sdci'          : run_cepa,
             'dci'           : run_cepa,
-            #'efp2'          : run_efp2,
-            'scfefp'        : run_scfefp,
             'efp'           : run_efp,
             # Upon adding a method to this list, add it to the docstring in energy() below
             # If you must add an alias to this list (e.g., dfmp2/df-mp2), please search the
@@ -196,8 +194,7 @@ procedures = {
             'omp2.5'        : run_omp2_5_gradient,
             'cepa0'         : run_cepa0_gradient,
             'ocepa'         : run_ocepa_gradient,
-            #'efp2'          : run_efp2_gradient,
-            'efp'           : run_efp_gradient,
+#            'efp'           : run_efp_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
         'hessian' : {
@@ -287,6 +284,8 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
+    | efp                     | effective fragment potential (EFP) :ref:`[manual] <sec:efp>`                          |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :ref:`[manual] <sec:scf>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
     | dcft                    | density cumulant functional theory :ref:`[manual] <sec:dcft>`                         |

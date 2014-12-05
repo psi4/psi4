@@ -38,8 +38,6 @@
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
 
-#include <libefp_solver/efp_solver.h>
-
 #include "uhf.h"
 
 using namespace std;
@@ -180,10 +178,6 @@ void UHF::form_F()
 
     Fb_->copy(H_);
     Fb_->add(Gb_);
-
-    // add efp contribuation to Fock matrix
-    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-    }
 
     if (debug_) {
         Fa_->print("outfile");

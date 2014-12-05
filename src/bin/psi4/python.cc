@@ -544,10 +544,7 @@ double py_psi_cctriples()
 
 boost::shared_ptr<psi::efp::EFP> py_psi_efp_init()
 {
-fprintf(outfile,"in py_psi_efp_init() call prepare_options_for_module efp\n");
     py_psi_prepare_options_for_module("EFP");
-fprintf(outfile,"DERTYPE %s\n", Process::environment.options.get_str("DERTYPE").c_str());
-
     if (psi::efp::efp_init(Process::environment.options) == Success) {
         return Process::environment.get_efp();
     }
@@ -555,8 +552,8 @@ fprintf(outfile,"DERTYPE %s\n", Process::environment.options.get_str("DERTYPE").
         throw PSIEXCEPTION("Unable to initialize EFP library.");
 }
 
-void py_psi_efp_set_options() {
-fprintf(outfile,"py_psi_efp_set_options\n");
+void py_psi_efp_set_options()
+{
     py_psi_prepare_options_for_module("EFP");
     Process::environment.get_efp()->set_options();
 }
@@ -1412,9 +1409,9 @@ BOOST_PYTHON_MODULE(psi4)
     def("set_active_molecule", py_psi_set_active_molecule, "Activates a previously defined (in the input) molecule, by name.");
     def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
     def("wavefunction", py_psi_wavefunction, "Returns the current wavefunction object from the most recent computation.");
-    def("get_active_efp", &py_psi_get_active_efp, "Returns the currently active EFP object.");
     def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
     def("set_gradient", py_psi_set_gradient, "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
+    def("get_active_efp", &py_psi_get_active_efp, "Returns the currently active EFP object.");
     def("get_efp_torque", py_psi_get_efp_torque, "Returns the most recently computed gradient for the EFP portion, as a Nefp by 6 Matrix object.");
     def("set_efp_torque", py_psi_set_efp_torque, "Assigns the global EFP gradient to the values stored in the Nefp by 6 Matrix argument.");
     def("get_frequencies", py_psi_get_frequencies, "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
