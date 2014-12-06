@@ -59,7 +59,7 @@ void ExternalPotential::print(std::string out) const
     if (charges_.size()) {
         printer->Printf( "    > Charges [a.u.] < \n\n");
         printer->Printf( "     %10s %10s %10s %10s\n","Z","x","y","z");
-        for (int i = 0 ; i < charges_.size(); i++) {
+        for (size_t i = 0 ; i < charges_.size(); i++) {
             printer->Printf( "     %10.5f %10.5f %10.5f %10.5f\n",
                 get<0>(charges_[i]), get<1>(charges_[i]), get<2>(charges_[i]), get<3>(charges_[i]));
         }
@@ -69,7 +69,7 @@ void ExternalPotential::print(std::string out) const
     // Bases
     if (bases_.size()) {
         printer->Printf( "    > Diffuse Bases < \n\n");
-        for (int i = 0; i < bases_.size(); i++) {
+        for (size_t i = 0; i < bases_.size(); i++) {
             printer->Printf( "    Molecule %d\n\n", i+1);
             bases_[i].first->molecule()->print();
             printer->Printf( "    Basis %d\n\n", i+1);
@@ -92,7 +92,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(shared_ptr<BasisSet> basi
 
     SharedMatrix Zxyz(new Matrix("Charges (Z,x,y,z)", charges_.size(), 4));
     double** Zxyzp = Zxyz->pointer();
-    for (int i = 0; i < charges_.size(); i++) {
+    for (size_t i = 0; i < charges_.size(); i++) {
         Zxyzp[i][0] = get<0>(charges_[i]);
         Zxyzp[i][1] = get<1>(charges_[i]);
         Zxyzp[i][2] = get<2>(charges_[i]);
@@ -108,7 +108,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(shared_ptr<BasisSet> basi
     pot.reset();
 
     // Diffuse Bases
-    for (int ind = 0; ind < bases_.size(); ind++) {
+    for (size_t ind = 0; ind < bases_.size(); ind++) {
 
         boost::shared_ptr<BasisSet> aux = bases_[ind].first;
         SharedVector d = bases_[ind].second;
@@ -159,7 +159,7 @@ double ExternalPotential::computeNuclearEnergy(boost::shared_ptr<Molecule> mol)
         double zA = mol->z(A);
         double ZA = mol->Z(A);
 
-        for (int B = 0; B < charges_.size(); B++) {
+        for (size_t B = 0; B < charges_.size(); B++) {
 
             double ZB = get<0>(charges_[B]);
             double xB = get<1>(charges_[B]);
@@ -188,7 +188,7 @@ double ExternalPotential::computeNuclearEnergy(boost::shared_ptr<Molecule> mol)
             Zxyzp[A][3] = mol->z(A);
         }
 
-        for (int ind = 0; ind < bases_.size(); ind++) {
+        for (size_t ind = 0; ind < bases_.size(); ind++) {
 
             boost::shared_ptr<BasisSet> aux = bases_[ind].first;
             SharedVector d = bases_[ind].second;

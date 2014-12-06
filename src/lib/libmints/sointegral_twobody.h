@@ -333,7 +333,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 
     const unsigned short *ifuncpi = s1.nfuncpi;
 
-    for (int n=0; n<sj_arr.size(); ++n) {
+    for (size_t n=0; n<sj_arr.size(); ++n) {
         int sj = sj_arr[n];
         int sk = sk_arr[n];
         int sl = sl_arr[n];
@@ -688,7 +688,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
     const CdSalcWRTAtom& c1 = cdsalcs_->atom_salc(siatom);
 
     // Zero out SALC memory
-    for (int i=0; i<cdsalcs_->ncd(); ++i)
+    for (size_t i=0; i<cdsalcs_->ncd(); ++i)
         ::memset(deriv_[thread][i], 0, sizeof(double)*nso);
 
 
@@ -700,7 +700,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
     //    if (uish == uksh && ujsh == ulsh || uish == ulsh && ujsh == uksh)
     //      pfac *= 0.5;
 
-    for (int n=0; n<sj_arr.size(); ++n) {
+    for (size_t n=0; n<sj_arr.size(); ++n) {
         int sj = sj_arr[n];
         int sk = sk_arr[n];
         int sl = sl_arr[n];
@@ -1085,7 +1085,7 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
                     }
 
                     mints_timer_on("TwoBodySOInt::provide_IJKL functor");
-                    for (int i=0; i<cdsalcs_->ncd(); ++i) {
+                    for (size_t i=0; i<cdsalcs_->ncd(); ++i) {
                         if (fabs(deriv_[thread][i][lsooff]) > cutoff_)
                             body(i, iiabs, jjabs, kkabs, llabs,
                                  iiirrep, iirel,

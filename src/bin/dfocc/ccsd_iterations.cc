@@ -112,8 +112,20 @@ do
 }
 while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2); 
 
-//delete
-if (do_diis_ == 1) ccsdDiisManager->delete_diis_file();
+ //delete
+ if (do_diis_ == 1) ccsdDiisManager->delete_diis_file();
+
+ // Mem alloc for DF ints
+ if (df_ints_incore) {
+     bQijA.reset();
+     bQiaA.reset();
+     bQabA.reset();
+ }
+
+ // free t2 amps
+ if (t2_incore) {
+     t2.reset();
+ }
 
 if (conver == 1) {
 outfile->Printf("\n");

@@ -133,7 +133,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_man_psi4.txt
         DEPENDS ${CMAKE_SOURCE_DIR}/src/*/*/*.cc
                 ${CMAKE_SOURCE_DIR}/tests/docs-psimod/input.dat
-                ${CMAKE_BINARY_DIR}/bin/psi4
+                ${CMAKE_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc psi4 module")
 
 
@@ -162,7 +162,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_dft_disp.rst
         DEPENDS ${CMAKE_SOURCE_DIR}/lib/python/functional.py
                 ${CMAKE_SOURCE_DIR}/tests/docs-dft/input.dat
-                ${CMAKE_BINARY_DIR}/bin/psi4
+                ${CMAKE_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc functionals")
 
 
@@ -175,7 +175,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CMAKE_SOURCE_DIR}/lib/python/p4util/basislistdunning.py
                 ${CMAKE_SOURCE_DIR}/lib/python/p4util/basislistother.py
                 ${CMAKE_SOURCE_DIR}/tests/docs-bases/input.dat
-                ${CMAKE_BINARY_DIR}/bin/psi4
+                ${CMAKE_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc auxiliary basis sets")
 
 

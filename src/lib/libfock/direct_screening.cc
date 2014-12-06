@@ -35,7 +35,7 @@ D_(density_in)
   eri_.push_back(boost::shared_ptr<TwoBodyAOInt>(factory_->eri()));
   //}
   
-  for (int N = 0; N < D_.size() && do_J_; ++N) {
+  for (size_t N = 0; N < D_.size() && do_J_; ++N) {
     std::stringstream s;
     s << "J " << N << " (AO)";
     J_.push_back(SharedMatrix(new Matrix(s.str(),D_[N]->nirrep(),
@@ -45,7 +45,7 @@ D_(density_in)
   }
   
   // start K_
-  for (int N = 0; N < D_.size() && do_K_; ++N) {
+  for (size_t N = 0; N < D_.size() && do_K_; ++N) {
     std::stringstream s;
     s << "K " << N << " (AO)";
     K_.push_back(SharedMatrix(new Matrix(s.str(),D_[N]->nirrep(),
@@ -82,7 +82,7 @@ void DirectScreening::Compute()
   // Index the significant MN shell pairs (triangular M,N)
   const std::vector<std::pair<int,int> >& MN = sieve_->shell_pairs();
   
-  for (long int mu_nu_ind = 0L; mu_nu_ind < MN.size(); ++mu_nu_ind) {
+  for (size_t mu_nu_ind = 0L; mu_nu_ind < MN.size(); ++mu_nu_ind) {
   
     int mu_ind = MN[mu_nu_ind].first;
     int nu_ind = MN[mu_nu_ind].second;
@@ -94,7 +94,7 @@ void DirectScreening::Compute()
     int nu_fun_start = basis_->shell(nu_ind).function_index();
 
     
-    for (long int rho_sig_ind = 0L; rho_sig_ind < MN.size(); ++rho_sig_ind) {
+    for (size_t rho_sig_ind = 0L; rho_sig_ind < MN.size(); ++rho_sig_ind) {
       
       int rho_ind = MN[rho_sig_ind].first;
       int sig_ind = MN[rho_sig_ind].second;
@@ -150,7 +150,7 @@ void DirectScreening::Compute()
                   
                   double ref_sym_val = rho_ind == sig_ind ? 1.0 : 2.0;
                   
-                  for (int N = 0; N < J_.size(); N++) {
+                  for (size_t N = 0; N < J_.size(); N++) {
                   
                     double coulomb_val = D_[N]->get(0,r,s) * val * ref_sym_val;
                     
@@ -165,7 +165,7 @@ void DirectScreening::Compute()
                 } // contract to coulomb matrix
                 
                 if (do_K_) {
-                  for (int N = 0; N < K_.size(); N++) {
+                  for (size_t N = 0; N < K_.size(); N++) {
                     
                     K_[N]->add(0,m,r, D_[N]->get(0,n,s)*val);
                     
@@ -222,7 +222,7 @@ void DirectScreening::Update(const std::vector<SharedMatrix>& D_new)
   D_ = D_new;
   
   J_.clear();
-  for (int N = 0; N < D_.size() && do_J_; ++N) {
+  for (size_t N = 0; N < D_.size() && do_J_; ++N) {
     std::stringstream s;
     s << "J " << N << " (AO)";
     J_.push_back(SharedMatrix(new Matrix(s.str(),D_[N]->nirrep(),
@@ -233,7 +233,7 @@ void DirectScreening::Update(const std::vector<SharedMatrix>& D_new)
   }
   
   K_.clear();
-  for (int N = 0; N < D_.size() && do_K_; ++N) {
+  for (size_t N = 0; N < D_.size() && do_K_; ++N) {
     std::stringstream s;
     s << "K " << N << " (AO)";
     K_.push_back(SharedMatrix(new Matrix(s.str(),D_[N]->nirrep(),

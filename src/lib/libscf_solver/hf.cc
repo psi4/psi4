@@ -126,7 +126,7 @@ void HF::common_init()
         boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
         if(old_pg){
             // This is one of a series of displacements;  check the dimension against the parent point group
-            int full_nirreps = old_pg->char_table().nirrep();
+            size_t full_nirreps = old_pg->char_table().nirrep();
             if(options_["DOCC"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
             int *temp_docc = new int[full_nirreps];
@@ -161,7 +161,7 @@ void HF::common_init()
         boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
         if(old_pg){
             // This is one of a series of displacements;  check the dimension against the parent point group
-            int full_nirreps = old_pg->char_table().nirrep();
+            size_t full_nirreps = old_pg->char_table().nirrep();
             if(options_["SOCC"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
             int *temp_socc = new int[full_nirreps];
@@ -205,17 +205,17 @@ void HF::common_init()
             molecule_->set_multiplicity(2);
 
             // There are an odd number of electrons
-                outfile->Printf("\tThere are an odd number of electrons - assuming doublet.\n"
-                            "\tSpecify the multiplicity with the MULTP option in the\n"
-                            "\tinput if this is incorrect\n\n");
+                outfile->Printf("    There are an odd number of electrons - assuming doublet.\n"
+                            "    Specify the multiplicity with the MULTP option in the\n"
+                            "    input if this is incorrect\n\n");
 
         }else{
             multiplicity_ = 1;
             // There are an even number of electrons
 
-                outfile->Printf("\tThere are an even number of electrons - assuming singlet.\n"
-                            "\tSpecify the multiplicity with the MULTP option in the\n"
-                            "\tinput if this is incorrect\n\n");
+                outfile->Printf("    There are an even number of electrons - assuming singlet.\n"
+                            "    Specify the multiplicity with the MULTP option in the\n"
+                            "    input if this is incorrect\n\n");
 
         }
     }
@@ -509,7 +509,7 @@ void HF::find_occupation()
         // If print > 2 (diagnostics), print always
         if((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0){
 
-                outfile->Printf( "\tOccupation by irrep:\n");
+                outfile->Printf( "    Occupation by irrep:\n");
             print_occupation();
         }
         // Start MOM if needed (called here because we need the nocc
@@ -719,44 +719,6 @@ void HF::form_H()
         free(phi_so);
         free_block(V_eff);
       }  // embpot or sphere
-      else {
-          // The following perturbations are handled by MintsHelper.
-#if 0
-        OperatorSymmetry msymm(1, molecule_, integral_, factory_);
-        vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
-        OneBodySOInt *so_dipole = integral_->so_dipole();
-        so_dipole->compute(dipoles);
-
-        if (perturb_ == dipole_x ) {
-            if (msymm.component_symmetry(0) != 0){
-                outfile->Printf( "  WARNING: You requested mu(x) perturbation, but mu(x) is not symmetric.\n");
-            }
-            else {
-                    outfile->Printf( "  Perturbing H by %f mu(x).\n", lambda_);
-                dipoles[0]->scale(lambda_);
-                V_->add(dipoles[0]);
-            }
-        } else if (perturb_ == dipole_y) {
-            if (msymm.component_symmetry(1) != 0){
-                    outfile->Printf( "  WARNING: You requested mu(y) perturbation, but mu(y) is not symmetric.\n");
-            }
-            else {
-                    outfile->Printf( "  Perturbing H by %f mu(y).\n", lambda_);
-                dipoles[1]->scale(lambda_);
-                V_->add(dipoles[1]);
-            }
-        } else if (perturb_ == dipole_z) {
-            if (msymm.component_symmetry(2) != 0){
-                    outfile->Printf( "  WARNING: You requested mu(z) perturbation, but mu(z) is not symmetric.\n");
-            }
-            else {
-                    outfile->Printf( "  Perturbing H by %f mu(z).\n", lambda_);
-                dipoles[2]->scale(lambda_);
-                V_->add(dipoles[2]);
-            }
-        }
-#endif
-      } // end dipole perturbations
     } // end perturb_h_
 
     // If an external field exists, add it to the one-electron Hamiltonian
@@ -982,12 +944,12 @@ void HF::compute_fvpi()
 void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::pair<const char*, int> > > orbs)
 {
 
-        outfile->Printf( "\t%-70s\n\n\t", header);
+        outfile->Printf( "    %-70s\n\n    ", header);
         int count = 0;
         for (int i = 0; i < orbs.size(); i++) {
             outfile->Printf( "%4d%-4s%11.6f  ", orbs[i].second.second, orbs[i].second.first, orbs[i].first);
             if (count++ % 3 == 2 && count != orbs.size())
-                outfile->Printf( "\n\t");
+                outfile->Printf( "\n    ");
         }
         outfile->Printf( "\n\n");
 
@@ -997,7 +959,7 @@ void HF::print_orbitals()
 {
     char **labels = molecule_->irrep_labels();
 
-        outfile->Printf( "\tOrbital Energies (a.u.)\n\t-----------------------\n\n");
+        outfile->Printf( "    Orbital Energies (a.u.)\n    -----------------------\n\n");
 
     std::string reference = options_.get_str("REFERENCE");
     if((reference == "RHF") || (reference == "RKS")){
@@ -1119,7 +1081,7 @@ void HF::print_orbitals()
     free(labels);
 
 
-        outfile->Printf( "\tFinal Occupation by Irrep:\n");
+        outfile->Printf( "    Final Occupation by Irrep:\n");
     print_occupation();
 }
 
@@ -1964,22 +1926,22 @@ void HF::print_occupation()
 
         char **labels = molecule_->irrep_labels();
         std::string reference = options_.get_str("REFERENCE");
-        outfile->Printf( "\t      ");
+        outfile->Printf( "          ");
         for(int h = 0; h < nirrep_; ++h) outfile->Printf( " %4s ", labels[h]); outfile->Printf( "\n");
-        outfile->Printf( "\tDOCC [ ");
+        outfile->Printf( "    DOCC [ ");
         for(int h = 0; h < nirrep_-1; ++h) outfile->Printf( " %4d,", doccpi_[h]);
         outfile->Printf( " %4d ]\n", doccpi_[nirrep_-1]);
         if(reference != "RHF" && reference != "RKS"){
-            outfile->Printf( "\tSOCC [ ");
+            outfile->Printf( "    SOCC [ ");
             for(int h = 0; h < nirrep_-1; ++h) outfile->Printf( " %4d,", soccpi_[h]);
             outfile->Printf( " %4d ]\n", soccpi_[nirrep_-1]);
         }
         if (MOM_excited_) {
             // Also print nalpha and nbeta per irrep, which are more physically meaningful
-            outfile->Printf( "\tNA   [ ");
+            outfile->Printf( "    NA   [ ");
             for(int h = 0; h < nirrep_-1; ++h) outfile->Printf( " %4d,", nalphapi_[h]);
             outfile->Printf( " %4d ]\n", nalphapi_[nirrep_-1]);
-            outfile->Printf( "\tNB   [ ");
+            outfile->Printf( "    NB   [ ");
             for(int h = 0; h < nirrep_-1; ++h) outfile->Printf( " %4d,", nbetapi_[h]);
             outfile->Printf( " %4d ]\n", nbetapi_[nirrep_-1]);
         }
@@ -2111,14 +2073,14 @@ void HF::print_stability_analysis(std::vector<std::pair<double, int> > &vec)
 {
     std::sort(vec.begin(), vec.end());
     std::vector<std::pair<double, int> >::const_iterator iter = vec.begin();
-    outfile->Printf( "\t");
+    outfile->Printf( "    ");
     char** irrep_labels = molecule_->irrep_labels();
     int count = 0;
     for(; iter != vec.end(); ++iter){
         ++count;
         outfile->Printf( "%4s %-10.6f", irrep_labels[iter->second], iter->first);
         if(count == 4){
-            outfile->Printf( "\n\t");
+            outfile->Printf( "\n    ");
             count = 0;
         }else{
             outfile->Printf( "    ");

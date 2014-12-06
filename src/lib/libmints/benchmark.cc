@@ -101,7 +101,7 @@ void benchmark_blas1(int N, double min_time)
     ops1.push_back("DROT (N1)");
     ops1.push_back("DROT (1N)");
     ops1.push_back("DROT (NN)");
-    for (int op = 0; op < ops1.size(); op++)
+    for (size_t op = 0; op < ops1.size(); op++)
         timings1[ops1[op]].resize(N);
 
     // Level 1 routines
@@ -506,7 +506,7 @@ void benchmark_blas1(int N, double min_time)
         outfile->Printf( "  %9d", dim);
     }
     outfile->Printf( "\n");
-    for (int s = 0; s < ops1.size(); s++) {
+    for (size_t s = 0; s < ops1.size(); s++) {
         outfile->Printf( "%-11s", ops1[s].c_str());
         for (int k = 0; k < N; k++) {
             outfile->Printf( "  %9.3E", timings1[ops1[s]][k]);
@@ -523,7 +523,7 @@ void benchmark_blas1(int N, double min_time)
         outfile->Printf( "  %9d", dim);
     }
     outfile->Printf( "\n");
-    for (int s = 0; s < ops1.size(); s++) {
+    for (size_t s = 0; s < ops1.size(); s++) {
         outfile->Printf( "%-11s", ops1[s].c_str());
         dim = 1;
         for (int k = 0; k < N; k++) {
@@ -543,7 +543,7 @@ void benchmark_blas1(int N, double min_time)
         outfile->Printf( "  %9d", dim);
     }
     outfile->Printf( "\n");
-    for (int s = 0; s < ops1.size(); s++) {
+    for (size_t s = 0; s < ops1.size(); s++) {
         outfile->Printf( "%-11s", ops1[s].c_str());
         dim = 1;
         for (int k = 0; k < N; k++) {
@@ -596,7 +596,7 @@ void benchmark_blas2(int N, double min_time)
     ops2.push_back("DGER (NN)");
 
     std::map<std::string, std::vector<double> > timings2;
-    for (int op = 0; op < ops2.size(); op++)
+    for (size_t op = 0; op < ops2.size(); op++)
         timings2[ops2[op]].resize(N);
 
     dim = 1;
@@ -788,7 +788,7 @@ void benchmark_blas2(int N, double min_time)
         outfile->Printf( "  %9d", dim);
     }
     outfile->Printf( "\n");
-    for (int s = 0; s < ops2.size(); s++) {
+    for (size_t s = 0; s < ops2.size(); s++) {
         outfile->Printf( "%-11s", ops2[s].c_str());
         for (int k = 0; k < N; k++) {
             outfile->Printf( "  %9.3E", timings2[ops2[s]][k]);
@@ -805,7 +805,7 @@ void benchmark_blas2(int N, double min_time)
         outfile->Printf( "  %9d", dim);
     }
     outfile->Printf( "\n");
-    for (int s = 0; s < ops2.size(); s++) {
+    for (size_t s = 0; s < ops2.size(); s++) {
         outfile->Printf( "%-11s", ops2[s].c_str());
         dim = 1;
         for (int k = 0; k < N; k++) {
@@ -877,7 +877,7 @@ void benchmark_blas3(int N, double min_time, int max_threads)
         if (thread > 4 && thread % 8 != 0) continue;
 
         std::map<std::string, std::vector<double> > timings3;
-        for (int op = 0; op < ops3.size(); op++)
+        for (size_t op = 0; op < ops3.size(); op++)
             timings3[ops3[op]].resize(N);
 
         #ifdef HAVE_MKL
@@ -1239,7 +1239,7 @@ void benchmark_blas3(int N, double min_time, int max_threads)
             outfile->Printf( "  %9d", dim);
         }
         outfile->Printf( "\n");
-        for (int s = 0; s < ops3.size(); s++) {
+        for (size_t s = 0; s < ops3.size(); s++) {
             outfile->Printf( "%-11s", ops3[s].c_str());
             for (int k = 0; k < N; k++) {
                 outfile->Printf( "  %9.3E", timings3[ops3[s]][k]);
@@ -1256,7 +1256,7 @@ void benchmark_blas3(int N, double min_time, int max_threads)
             outfile->Printf( "  %9d", dim);
         }
         outfile->Printf( "\n");
-        for (int s = 0; s < ops3.size(); s++) {
+        for (size_t s = 0; s < ops3.size(); s++) {
             outfile->Printf( "%-11s", ops3[s].c_str());
             dim = 1;
             for (int k = 0; k < N; k++) {
@@ -1276,7 +1276,7 @@ void benchmark_blas3(int N, double min_time, int max_threads)
             outfile->Printf( "  %9d", dim);
         }
         outfile->Printf( "\n");
-        for (int s = 0; s < ops3.size(); s++) {
+        for (size_t s = 0; s < ops3.size(); s++) {
             for (int thread = 1; thread <= max_threads; thread++) {
                 if (thread > 4 && thread % 8 != 0) continue;
                 outfile->Printf( "%-11s  %-7d", ops3[s].c_str(), thread);
@@ -1298,7 +1298,7 @@ void benchmark_blas3(int N, double min_time, int max_threads)
             outfile->Printf( "  %9d", dim);
         }
         outfile->Printf( "\n");
-        for (int s = 0; s < ops3.size(); s++) {
+        for (size_t s = 0; s < ops3.size(); s++) {
             for (int thread = 1; thread <= max_threads; thread++) {
                 if (thread > 4 && thread % 8 != 0) continue;
                 outfile->Printf( "%-11s  %-7d", ops3[s].c_str(), thread);
@@ -1360,7 +1360,7 @@ void benchmark_disk(int N, double min_time)
     ops.push_back("WRITE (Continuous)");
     ops.push_back("WRITE (Blocked)");
     ops.push_back("WRITE (Transposed)");
-    for (int op = 0; op < ops.size(); op++)
+    for (size_t op = 0; op < ops.size(); op++)
         timings[ops[op]].resize(N);
 
     boost::shared_ptr<PSIO> psio_ = PSIO::shared_object();
@@ -1506,7 +1506,7 @@ void benchmark_disk(int N, double min_time)
         outfile->Printf( "  %9d", dim);
     }
     outfile->Printf( "\n");
-    for (int s = 0; s < ops.size(); s++) {
+    for (size_t s = 0; s < ops.size(); s++) {
         outfile->Printf( "%-20s", ops[s].c_str());
         for (int k = 0; k < N; k++) {
             outfile->Printf( "  %9.3E", timings[ops[s]][k]);
@@ -1523,7 +1523,7 @@ void benchmark_disk(int N, double min_time)
         outfile->Printf( "  %9d", dim);
     }
     outfile->Printf( "\n");
-    for (int s = 0; s < ops.size(); s++) {
+    for (size_t s = 0; s < ops.size(); s++) {
         outfile->Printf( "%-20s", ops[s].c_str());
         dim = 1;
         for (int k = 0; k < N; k++) {
@@ -1543,7 +1543,7 @@ void benchmark_disk(int N, double min_time)
         outfile->Printf( "  %9d", dim);
     }
     outfile->Printf( "\n");
-    for (int s = 0; s < ops.size(); s++) {
+    for (size_t s = 0; s < ops.size(); s++) {
         outfile->Printf( "%-20s", ops[s].c_str());
         dim = 1;
         for (int k = 0; k < N; k++) {
@@ -2250,7 +2250,7 @@ void benchmark_math(double min_time)
 
     double add_time = timings["+"];
 
-    for (int s = 0; s < ops.size(); s++) {
+    for (size_t s = 0; s < ops.size(); s++) {
         t = timings[ops[s]];
         outfile->Printf( "%-11s", ops[s].c_str());
         outfile->Printf( "    %9.3E  %9.3E  %9.3E", t, 1 / t, t / add_time);
@@ -2312,7 +2312,7 @@ void benchmark_integrals(int max_am, double min_time)
     n_per_combination[3].resize(ncombinations[3]);
     n_per_combination[4].resize(ncombinations[4]);
 
-    int index;
+    size_t index;
     for (int P = 0, index = 0; P < max_shell; P++) {
         for (int Q = 0; Q < max_shell; Q++, index++) {
             combinations[2][index] = "(" + shell_names[P] + "|" + shell_names[Q] + ")";
@@ -2340,7 +2340,7 @@ void benchmark_integrals(int max_am, double min_time)
 
 
     std::map<std::string, std::vector<double> > timings;
-    for (int k = 0; k < int_types.size(); k++) {
+    for (size_t k = 0; k < int_types.size(); k++) {
         timings[int_types[k]].resize(ncombinations[centers[k]]);
     }
 
@@ -2582,7 +2582,7 @@ void benchmark_integrals(int max_am, double min_time)
     outfile->Printf( "Test Basis Set:\n");
     basis->print_by_level("outfile", 3);
 
-    for (int op = 0; op < int_types.size(); op++) {
+    for (size_t op = 0; op < int_types.size(); op++) {
         this_type = int_types[op];
         this_ncenter = centers[op];
         outfile->Printf( "  Integral Type: %s\n\n", this_type.c_str());
