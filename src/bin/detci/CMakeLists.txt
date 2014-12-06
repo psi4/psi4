@@ -1,6 +1,6 @@
 set(headers_list "")
 # List of headers
-list(APPEND headers_list tpool.h globals.h civect.h ci_tol.h ciwave.h odometer.h structs.h slaterd.h )
+list(APPEND headers_list MCSCF_indpairs.h tpool.h globals.h civect.h ci_tol.h ciwave.h odometer.h structs.h slaterd.h )
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
@@ -13,7 +13,7 @@ list(SORT headers_list)
 
 set(sources_list "")
 # List of sources
-list(APPEND sources_list graphset.cc sigma.cc tpool.cc mpn.cc check_energy.cc calc_pt_block.cc get_mo_info.cc calc_hd_block.cc s3_block_bz.cc ssq.cc sem.cc vector.cc printing.cc shift.cc opdm.cc olsenupdt.cc b2brepl.cc s2v.cc h0block.cc s1.cc sem_test.cc ints.cc s3v.cc detci.cc params.cc og_addr.cc compute_cc.cc tpdm.cc time.cc s2.cc slaterd.cc slater.cc olsengraph.cc form_ov.cc set_ciblks.cc stringlist.cc import_vector.cc odometer.cc misc.cc s3.cc calc_d.cc civect.cc s1v.cc mitrush_iter.cc )
+list(APPEND sources_list MCSCF_cleanup.cc MCSCF_step.cc graphset.cc params.cc shift.cc MCSCF_detcas.cc MCSCF_thetas.cc h0block.cc printing.cc sigma.cc MCSCF_diis.cc b2brepl.cc import_vector.cc s1.cc slater.cc MCSCF_f_act.cc calc_d.cc ints.cc s1v.cc slaterd.cc MCSCF_get_mo_info.cc calc_hd_block.cc misc.cc s2.cc ssq.cc MCSCF_gradient.cc calc_pt_block.cc mitrush_iter.cc s2v.cc stringlist.cc MCSCF_hessian.cc check_energy.cc mpn.cc s3.cc time.cc MCSCF_indpairs.cc civect.cc odometer.cc s3_block_bz.cc tpdm.cc MCSCF_lagcalc.cc compute_cc.cc og_addr.cc s3v.cc tpool.cc MCSCF_read_dens.cc detci.cc olsengraph.cc sem.cc vector.cc MCSCF_ref_orbs.cc form_ov.cc olsenupdt.cc sem_test.cc MCSCF_rotate_orbs.cc get_mo_info.cc opdm.cc set_ciblks.cc )
 
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
