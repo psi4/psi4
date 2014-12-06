@@ -12,7 +12,7 @@ macro(add_regression_test _name _labels)
     # This is where the test directories live
     set(TESTDIR ${PROJECT_SOURCE_DIR}/tests)
     # This is the psi command to actually run the tests
-    set(PSIEXE ${PROJECT_BINARY_DIR}/bin/psi4)
+    set(PSIEXE ${PROJECT_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX})
     # This is the python script that we call, to call psi4, to run the tests
     set(TESTEXE ${TESTDIR}/runtest.py)
 

@@ -322,13 +322,10 @@ Orbital-optimized coupled electron pair approximation (OCEPA)
 
 Orbital-optimized MP2.5 (OMP2.5)
 
-* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation 
-  Theory and Its Spin-Component and Spin-Opposite Scaled Variants: Application 
-  to Symmetry Breaking Problems," U. Bozkaya,
-  *J. Chem. Phys.* **135**, 224103 (2011).
-  (doi: `10.1063/1.3665134 <http://dx.doi.org/10.1063/1.3665134>`_).
-
-* U. Bozkaya and C. D. Sherrill, (unpublished).
+* "Orbital-optimized MP2.5 and its analytic gradients: Approaching CCSD(T)
+   quality for noncovalent interactions," U. Bozkaya and C. D. Sherrill,
+  *J. Chem. Phys.* **141**, 204105 (2014).
+  (doi: `10.1063/1.4902226 <http://dx.doi.org/10.1063/1.4902226>`_).
 
 Extended Koopmans' Theorem
 
@@ -340,7 +337,15 @@ Extended Koopmans' Theorem
   U. Bozkaya,   *J. Chem. Theory Comput.* **10**, 2041 (2014).
   (doi: `10.1021/ct500186j <http://dx.doi.org/10.1021/ct500186j>`_).
 
+Density-Fitted Orbital-optimized second-order perturbation theory (DF-OMP2)
 
+* "Orbital-Optimized Second-Order Perturbation Theory with Density-Fitting and Cholesky Decomposition Approximations: 
+   An Efficient Implementation," U. Bozkaya,   *J. Chem. Theory Comput.* **10**, 2371 (2014).
+  (doi: `10.1021/ct500231c <http://dx.doi.org/10.1021/ct500231c>`_).
+
+* "Analytic Energy Gradients and Spin Multiplicities for Orbital-Optimized Second-Order Perturbation Theory with Density-Fitting
+   Approximation: An Efficient Implementation," U. Bozkaya,   *J. Chem. Theory Comput.* **10**, 4389 (2014).
+  (doi: `10.1021/ct500634s <http://dx.doi.org/10.1021/ct500634s>`_).
 
 Second-Order Algebraic-Diagrammatic Construction [ADC(2)]
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -433,6 +438,8 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     | CEPA(0)                 | Y         | Y         | RHF/UHF              | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DF-OMP2                 | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | DF-CCD                  | Y         | ---       | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | CEPA(n), n=0,1,3        | Y         | ---       | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+

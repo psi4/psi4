@@ -134,7 +134,7 @@ public:
     void mark_file_for_retention(const std::string & full_path, bool retain);
     /**
             * Print the current status of PSI4 files
-            * \param out, file to print fo
+            * \param out file to print to
             */
     void print(std::string out = "outfile");
     /**

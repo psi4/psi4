@@ -741,7 +741,7 @@ void ROHF::stability_analysis()
             free_block(evecs);
             delete [] evals;
         }
-        outfile->Printf( "\tLowest ROHF->ROHF stability eigenvalues:-\n");
+        outfile->Printf( "    Lowest ROHF->ROHF stability eigenvalues:-\n");
         print_stability_analysis(eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }

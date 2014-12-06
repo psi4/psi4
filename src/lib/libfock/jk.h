@@ -267,7 +267,6 @@ public:
     /**
     * Static instance constructor, used to get prebuilt DFJK/DirectJK objects
     * using knobs in options.
-    * @param options Options reference, with preset parameters
     * @return abstract JK object, tuned in with preset options
     */
     static boost::shared_ptr<JK> build_JK();
@@ -735,7 +734,7 @@ public:
      * Minimum relative eigenvalue to retain in fitting inverse
      * All eigenvectors with \epsilon_i < condition * \epsilon_max
      * will be discarded
-     * @param condition, minimum relative eigenvalue allowed,
+     * @param condition minimum relative eigenvalue allowed,
      *        defaults to 1.0E-12
      */
     void set_condition(double condition) { condition_ = condition; }
@@ -803,7 +802,7 @@ public:
      *        contained in this basis object, so the incoming
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
-     * @param tol tolerance for cholesky decomposition.
+     * @param cholesky_tolerance tolerance for cholesky decomposition.
      */
     CDJK( boost::shared_ptr<BasisSet> primary, double cholesky_tolerance);
 
@@ -922,35 +921,35 @@ public:
      * Minimum relative eigenvalue to retain in fitting inverse
      * All eigenvectors with \epsilon_i < condition * \epsilon_max
      * will be discarded
-     * @param condition, minimum relative eigenvalue allowed,
+     * @param condition minimum relative eigenvalue allowed,
      *        defaults to 1.0E-12
      */
     void set_condition(double condition) { condition_ = condition; }
     /**
      * Metric for FastDF fitting 
-     * @param metric, COULOMB or EWALD,
+     * @param metric COULOMB or EWALD,
      *       defaults to COULOMB
      */
     void set_df_metric(const std::string& metric) { metric_ = metric; }
     /**
      * Fitting domain selection algorithm
-     * @param domain, DIATOMIC, SPHERES
+     * @param domains DIATOMIC, SPHERES
      *       defaults to DIATOMIC
      */
     void set_df_domains(const std::string domains) { domains_ = domains; }
     /**
      * Bump function R0 parameter in a.u. (should be <= R1)
-     * @param R0, defaults to 0.0
+     * @param R0 defaults to 0.0
      */
     void set_df_bump_R0(double R0) { bump_R0_ = R0; }
     /**
      * Bump function R1 parameter in a.u. (should be <= R1)
-     * @param R1, defaults to 0.0
+     * @param R1 defaults to 0.0
      */
     void set_df_bump_R1(double R1) { bump_R1_ = R1; }
     /**
      * Range-Separation parameter for EWALD metric fitting 
-     * @param theta, theta ~ 0 is COULOMB, theta ~ INF is OVERLAP,
+     * @param theta theta ~ 0 is COULOMB, theta ~ INF is OVERLAP,
      *       defaults to 1.0
      */
     void set_df_theta(double theta) { theta_ = theta; }

@@ -45,7 +45,7 @@ else()
         if(has_xHost)
 	   set(xHost "-xHost")
         endif()
-	set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -O3 -ip ${xHost}")
+	set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip ${xHost}")
         
         set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
         if(DEFINED MKL_FLAG)

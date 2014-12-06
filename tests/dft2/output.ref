@@ -1,0 +1,239 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0 Driver
+
+               Git: Rev {master} f0223e80ae28a7ef0b53f3afc82cd494676c842e
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  28139
+    PSI4DATADIR: /Users/jturney/Code/psi4/source/lib
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! DFT Functional Test
+
+E11 =  -75.3081 #TEST
+
+memory 250 mb
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set globals {
+print 6
+#debug 0
+basis sto-3g
+guess core
+scf_type direct
+dft_spherical_points 302
+dft_radial_points 100
+dft_block_max_points 400
+dft_basis_tolerance 1.0E-10
+reference rks
+}
+
+#set dft_functional b97
+V11 = energy('b97-0')
+compare_values(E11,V11, 3, "RKS  0 1   B97 Energy") #TEST
+
+set dft_block_scheme octree
+V11 = energy('b97-0')
+compare_values(E11,V11, 3, "RKS  0 1   B97 Energy") #TEST
+--------------------------------------------------------------------------
+
+*** tstart() called on Justins-MacBook-Pro-2.local
+*** at Tue Dec  2 14:08:04 2014
+
+
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on Justins-MacBook-Pro-2.local
+*** at Tue Dec  2 14:08:04 2014
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: STO-3G
+    atoms 1   entry O          line    80 file /Users/jturney/Code/psi4/source/lib/basis/sto-3g.gbs
+    atoms 2-3 entry H          line    18 file /Users/jturney/Code/psi4/source/lib/basis/sto-3g.gbs
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000    -0.790689573744     0.543701060724
+           H          0.000000000000     0.790689573744     0.543701060724
+
+           O
+              BASIS           STO-3G               ce60a13c765f9614c99c0135c607c24ee59dcfa5
+           H
+              BASIS           STO-3G               64d65a452b6e49c523a36fca03822dbe2f9a1c8d
+           H
+              BASIS           STO-3G               64d65a452b6e49c523a36fca03822dbe2f9a1c8d
+
+  Running in c2v symmetry.
+
+  Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
+  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
+  Nuclear repulsion =    8.801465529972067
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  -AO BASIS SET INFORMATION:
+    Name                   = STO-3G
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  ==> AO Basis Functions <==
+
+    [ STO-3G ]
+    spherical
+    ****
+    O   1
+    S   3 1.00
+                       130.70932000           0.15432897
+                        23.80886100           0.53532814
+                         6.44360830           0.44463454
+    S   3 1.00
+                         5.03315130          -0.09996723
+                         1.16959610           0.39951283
+                         0.38038900           0.70011547
+    P   3 1.00
+                         5.03315130           0.15591627
+                         1.16959610           0.60768372
+                         0.38038900           0.39195739
+    ****
+    H   2
+    S   3 1.00
+                         3.42525091           0.15432897
+                         0.62391373           0.53532814
+                         0.16885540           0.44463454
+    ****
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: STO-3G
+    atoms 1   entry O          line    80 file /Users/jturney/Code/psi4/source/lib/basis/sto-3g.gbs
+    atoms 2-3 entry H          line    18 file /Users/jturney/Code/psi4/source/lib/basis/sto-3g.gbs
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: STO-3G
+    atoms 1   entry O          line    80 file /Users/jturney/Code/psi4/source/lib/basis/sto-3g.gbs
+    atoms 2-3 entry H          line    18 file /Users/jturney/Code/psi4/source/lib/basis/sto-3g.gbs
+
+  ==> DFT Potential <==
+
+   => B97-0 Composite Functional <= 
+
+    B97-0 Hybrid-GGA Exchange-Correlation Functional
+
+    A.D. Becke, J. Chem. Phys., 107(20), 8554-8560, 1997
+
+    Points   =            400
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC        =          FALSE
+    X_Hybrid     =           TRUE
+    X_Alpha      =   1.943000E-01
+    X_Omega      =   0.000000E+00
+    C_LRC        =          FALSE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 B97-0_X
+    0.1943      HF 
+
+   => Correlation Functionals <=
+
+    1.0000 B97-0_C
+
+   => B97-0_X Functional <=
+
+    B97 Parameterized GGA Exchange
+
+    A.D. Becke, J. Chem. Phys., 107(20), 8554-8560, 1997
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.241157E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+         B97_a0 =   8.0940000000000001E-01
+         B97_a1 =   5.0729999999999997E-01
+         B97_a2 =   7.4809999999999999E-01
+      B97_gamma =   4.0000000000000001E-03
+
+   => B97-0_C Functional <=
+

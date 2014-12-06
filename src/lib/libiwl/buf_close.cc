@@ -60,10 +60,10 @@ void IWL::close()
 ** Close a Integrals With Labels Buffer
 ** \ingroup IWL
 */
-void iwl_buf_close(struct iwlbuf *Buf, int k)
+void iwl_buf_close(struct iwlbuf *Buf, int keep)
 {
 
-   psio_close(Buf->itap, k ? 1 : 0);
+   psio_close(Buf->itap, keep ? 1 : 0);
    free(Buf->labels);
    free(Buf->values);
 }

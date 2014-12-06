@@ -58,8 +58,8 @@ protected:
     double const* w_ref_;  
     int const* index_ref_;
 
-    const int tol_max_points_;
-    const int tol_min_points_;
+    const size_t tol_max_points_;
+    const size_t tol_min_points_;
     const double tol_max_radius_;
     boost::shared_ptr<BasisExtents> extents_;
 
