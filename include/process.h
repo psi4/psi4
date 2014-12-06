@@ -34,6 +34,10 @@ class Matrix;
 class Vector;
 typedef boost::shared_ptr<Matrix> SharedMatrix;
 
+namespace efp {
+    class EFP;
+}
+
 class Process
 {
 public:
@@ -45,6 +49,8 @@ public:
 
         boost::shared_ptr<Molecule> molecule_;
         SharedMatrix gradient_;
+        boost::shared_ptr<efp::EFP> efp_;
+        SharedMatrix efp_torque_;
         boost::shared_ptr<Vector> frequencies_;
         boost::shared_ptr<Wavefunction> wavefunction_;
         boost::shared_ptr<PointGroup> parent_symmetry_;
@@ -78,6 +84,16 @@ public:
         void set_frequencies(const boost::shared_ptr<Vector> f) { frequencies_ = f; }
         /// Get frequencies manually
         boost::shared_ptr<Vector> frequencies() const { return frequencies_; }
+
+        /// Set EFP 
+        void set_efp(const boost::shared_ptr<psi::efp::EFP>& efp) { efp_ = efp; }
+        /// Get EFP 
+        boost::shared_ptr<psi::efp::EFP> get_efp() const { return efp_; }
+
+        /// Set EFP gradient manually
+        void set_efp_torque(const SharedMatrix g) { efp_torque_ = g; }
+        /// Get EFP gradient manually
+        SharedMatrix efp_torque() const { return efp_torque_; }
 
         /// Map containing current energies
         std::map<std::string, double> globals;

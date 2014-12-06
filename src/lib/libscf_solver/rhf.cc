@@ -31,14 +31,14 @@
 #include <vector>
 #include <utility>
 
-#include <psifiles.h>
-#include <physconst.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
 #include <libparallel/parallel.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
+#include <psifiles.h>
+#include <physconst.h>
 
 #include <libmints/basisset_parser.h>
 #include <libmints/mints.h>

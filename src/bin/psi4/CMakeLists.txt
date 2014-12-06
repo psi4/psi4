@@ -28,7 +28,7 @@ list(SORT headers_list)
 
 set(sources_list "")
 # List of sources
-list(APPEND sources_list export_psio.cc export_mints.cc psi_stop.cc export_functional.cc export_chkpt.cc export_oeprop.cc python.cc export_plugins.cc version.cc export_libfrag.cc export_blas_lapack.cc psi4.cc export_cubefile.cc export_benchmarks.cc clean.cc create_new_plugin.cc psi_start.cc script.cc set_memory.cc read_options.cc )
+list(APPEND sources_list export_psio.cc export_mints.cc psi_stop.cc export_functional.cc export_chkpt.cc export_oeprop.cc python.cc export_plugins.cc version.cc export_libfrag.cc export_blas_lapack.cc psi4.cc export_cubefile.cc export_benchmarks.cc export_efp.cc clean.cc create_new_plugin.cc psi_start.cc script.cc set_memory.cc read_options.cc )
 
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)

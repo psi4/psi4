@@ -95,6 +95,7 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
     density_threshold_ = other->density_threshold_;
     nalpha_ = other->nalpha_;
     nbeta_ = other->nbeta_;
+    nfrzc_ = other->nfrzc_;
 
     doccpi_ = other->doccpi_;
     soccpi_ = other->soccpi_;

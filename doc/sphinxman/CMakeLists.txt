@@ -12,7 +12,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
     
     
     # Static-doc reST files
-    set(STATICDOC abbr_accents.rst adc.rst appendices.rst basissets.rst basissets_byelement.rst bestpractices_py.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst cp.rst customizing.rst db.rst detci.rst dfmp2.rst diatomic.rst documentation.rst energy.rst external.rst freq.rst glossary_psivariables.rst index.rst intercalls.rst interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst oeprop.rst opt.rst optking.rst plugins.rst programming.rst prop.rst psithonfunc.rst psithoninput.rst quickaddalias.rst basissets_tables.rst quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst fnocc.rst installfile.rst optionshandling.rst basissets_byfamily.rst psipep.rst pep0001.rst dftd3.rst occ.rst dfocc.rst molden.rst dcft.rst proc_py.rst psithonmol.rst cfour.rst mrcc_table_energy.rst cfour_table_energy.rst cfour_table_grad.rst prog_basissets.rst)
+    set(STATICDOC abbr_accents.rst adc.rst appendices.rst basissets.rst basissets_byelement.rst bestpractices_py.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst cp.rst customizing.rst db.rst detci.rst dfmp2.rst diatomic.rst documentation.rst energy.rst external.rst freq.rst glossary_psivariables.rst index.rst intercalls.rst interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst oeprop.rst opt.rst optking.rst plugins.rst programming.rst prop.rst psithonfunc.rst psithoninput.rst quickaddalias.rst basissets_tables.rst quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst fnocc.rst installfile.rst optionshandling.rst basissets_byfamily.rst psipep.rst pep0001.rst dftd3.rst occ.rst dfocc.rst molden.rst dcft.rst proc_py.rst psithonmol.rst cfour.rst mrcc_table_energy.rst cfour_table_energy.rst cfour_table_grad.rst prog_basissets.rst libefp.rst)
     # * compute relative path btwn top_srcdir and objdir/doc/sphinxman
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c 
         "import sys; import os; print '/' + os.path.relpath('${CMAKE_SOURCE_DIR}', '${CCBD}') + '/../'" 
@@ -195,6 +195,15 @@ if(PERL_FOUND AND SPHINX_FOUND)
         COMMENT "Autodoc plugins")
     
     
+    # Autodoc efp fragments
+    add_custom_command(
+        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_efpfrag.py ${CCSD}
+        OUTPUT  ${CCBD}/source/autodoc_available_efpfrag.rst
+        DEPENDS ${CCSD}/document_efpfrag.py
+                ${CMAKE_SOURCE_DIR}/lib/efpfrag/*.efp
+        COMMENT "Autodoc efp fragments")
+
+
     # Establishing dependencies for docs targets
 
     # * announcement
@@ -239,6 +248,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 #${CCBD}/source/autodoc_dft_scsdhybrid.rst  # commented until populated again to appease Sphinx
                 ${CCBD}/source/autodoc_dft_disp.rst
                 ${CCBD}/source/autodoc_basissets_byfamily.rst
+                ${CCBD}/source/autodoc_available_efpfrag.rst
         COMMENT "Preparing Sphinx HTML documentation build")
 
     # * full, proper build with LaTeX

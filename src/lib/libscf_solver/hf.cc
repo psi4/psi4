@@ -49,6 +49,7 @@
 #include "hf.h"
 
 #include <psi4-dec.h>
+#include <libefp_solver/efp_solver.h>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -909,6 +910,9 @@ void HF::compute_fcpi()
         for (int i=0; i<nfzc; ++i)
             frzcpi_[pairs[i].second]++;
     }
+    // total frozen core
+    nfrzc_ = 0;
+    for (int h = 0; h < epsilon_a_->nirrep(); h++) nfrzc_ += frzcpi_[h];
 }
 
 void HF::compute_fvpi()
@@ -1588,6 +1592,14 @@ double HF::compute_energy()
         form_H(); //Core Hamiltonian
         timer_off("Form H");
 
+        // EFP: Add in permenent moment contribution and cache
+        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+            boost::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_permanent();
+            H_->add(Vefp);
+            Horig_ = SharedMatrix(new Matrix("H orig Matrix", basisset_->nbf(), basisset_->nbf()));
+            Horig_->copy(H_);
+        }
+
         timer_on("Form S/X");
         form_Shalf(); //S and X Matrix
         timer_off("Form S/X");
@@ -1608,6 +1620,10 @@ double HF::compute_energy()
         outfile->Printf( "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", df ? "   " : "");
     
 
+    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+        Process::environment.get_efp()->set_qm_atoms();
+    }
+
     // SCF iterations
     do {
         iteration_++;
@@ -1616,6 +1632,16 @@ double HF::compute_energy()
 
         // Call any preiteration callbacks
         call_preiteration_callbacks();
+
+
+        // add efp contribution to Fock matrix
+        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+            H_->copy(Horig_);
+    	    boost::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_induced();
+    	    H_->add(Vefp);
+        }
+
+        E_ = 0.0;
 
         timer_on("Form G");
         form_G();
@@ -1634,24 +1660,13 @@ double HF::compute_energy()
             Fb_->print("outfile");
         }
 
-    //bool has_efp = options.get("HAS_EFP");
+        E_ += compute_E();
 
-    // XXX
-    //if (has_efp) {
-    //efp_get_multipole_count
-    // allocate arrays
-    //efp_get_multipoles
-    // compute 1e contributions
-    //}
-
-        E_ = compute_E();
-
-    // XXX
-    //if (has_efp) {
-    //double efp_energy;
-    //efp_scf_update(efp, &efp_energy);
-    //E_ += efp_energy;
-    //}
+        // add efp contribution to energy
+        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+            double efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update();
+            E_ += efp_wfn_dependent_energy;
+        }   
 
         timer_on("DIIS");
         bool add_to_diis_subspace = false;
@@ -1748,7 +1763,21 @@ double HF::compute_energy()
 
     } while (!converged && iteration_ < maxiter_ );
 
+    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+        Process::environment.get_efp()->compute();
 
+        double efp_wfn_independent_energy = Process::environment.globals["EFP TOTAL ENERGY"] -
+                                            Process::environment.globals["EFP IND ENERGY"];
+
+        outfile->Printf("    EFP excluding EFP Induction   %20.12f [H]\n", efp_wfn_independent_energy);
+        outfile->Printf("    SCF including EFP Induction   %20.12f [H]\n", E_);
+
+        E_ += efp_wfn_independent_energy;
+
+        outfile->Printf("    Total SCF                     %20.12f [H]\n", E_);
+    }
+
+    if (WorldComm->me() == 0)
         outfile->Printf( "\n  ==> Post-Iterations <==\n\n");
 
     check_phases();
