@@ -58,7 +58,7 @@ outfile->Printf( "  ----   -------------    ---------------    ----------   ----
               psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
               global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                                      ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
-              t2DiisManager = new DIISManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
+              t2DiisManager = new DIISManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::OnDisk);
               t2DiisManager->set_error_vector_size(1, DIISEntry::DPDBuf4, &T);
               t2DiisManager->set_vector_size(1, DIISEntry::DPDBuf4, &T);
               global_dpd_->buf4_close(&T);
