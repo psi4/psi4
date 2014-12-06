@@ -631,25 +631,25 @@ void EFP::compute() {
             std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 
     if (do_grad_) {
-        //SharedMatrix smgrad(new Matrix("EFP Gradient", nfrag_, 6));
-        //double ** psmgrad = smgrad->pointer();
-        //if ((res = efp_get_gradient(efp_, psmgrad[0])))
-        //    throw PsiException("EFP::compute():efp_get_gradient(): " +
-        //        std::string (efp_result_to_string(res)),__FILE__,__LINE__);
-        //smgrad->print_out();
+        SharedMatrix smgrad(new Matrix("EFP Gradient", nfrag_, 6));
+        double ** psmgrad = smgrad->pointer();
+        if ((res = efp_get_gradient(efp_, psmgrad[0])))
+            throw PsiException("EFP::compute():efp_get_gradient(): " +
+                std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+        smgrad->print_out();
 
-        //outfile->Printf("  ==> EFP Gradient <==\n\n");
+        outfile->Printf("  ==> EFP Gradient <==\n\n");
 
-        //for (int i=0; i<nfrag_; i++) {
-        //    for (int j=0; j<6; j++) {
-        //        outfile->Printf("%14.6lf", psmgrad[i][j]);
-        //    }
-        //    outfile->Printf("\n");
-        //}
-        //outfile->Printf("\n");
+        for (int i=0; i<nfrag_; i++) {
+            for (int j=0; j<6; j++) {
+                outfile->Printf("%14.6lf", psmgrad[i][j]);
+            }
+            outfile->Printf("\n");
+        }
+        outfile->Printf("\n");
 
-        //torque_ = smgrad;
-        //psi::Process::environment.set_efp_torque(smgrad);
+        torque_ = smgrad;
+        psi::Process::environment.set_efp_torque(smgrad);
     }
 
     Process::environment.globals["EFP ELST ENERGY"] = energy.electrostatic +
