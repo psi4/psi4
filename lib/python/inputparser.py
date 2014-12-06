@@ -197,6 +197,7 @@ def process_molecule_command(matchobj):
     molecule = spaces
 
     molecule += 'psi4.efp_init()\n'  # clear EFP object before Molecule read in
+    molecule += spaces
 
     if name != "":
         molecule += '%s = ' % (name)

@@ -18,13 +18,13 @@ guess core
 scf_type direct
 dft_spherical_points 302
 dft_radial_points 100
-dft_max_points 400
-dft_basis_tol 1.0E-10
+dft_block_max_points 400
+dft_basis_tolerance 1.0E-10
 reference rks
 }
 
-set dft_functional b_x
-V11 = energy('scf')
+#set dft_functional b97
+V11 = energy('b97-0')
 
-set dft_boxing_scheme octree
-V11 = energy('scf')
+set dft_block_scheme octree
+V11 = energy('b97-0')
