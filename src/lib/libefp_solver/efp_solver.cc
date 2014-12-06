@@ -389,26 +389,10 @@ void EFP::set_options()
     outfile->Printf("%s", efp_banner());
     outfile->Printf("\n\n");
 
-//**//    //outfile->Printf("  ==> Calculation Information (This section going away) <==\n\n");
-//**//    //outfile->Printf("  Electrostatics damping: %12s\n", elst_damping_.c_str());
-//**//
-//**//    //if (disp_enabled_)
-//**//    //    outfile->Printf("  Dispersion damping:     %12s\n", disp_damping_.c_str());
-//**//
-//**//    //outfile->Printf("  Electrostatics enabled:  %12d\n", elst_enabled_);
-//**//    //outfile->Printf("  Polarization enabled:    %12d\n", pol_enabled_);
-//**//    //outfile->Printf("  Dispersion enabled:      %12d\n", disp_enabled_);
-//**//    //outfile->Printf("  Exchange enabled:        %12d\n", exch_enabled_);
-//**//    //outfile->Printf("  Gradient enabled:        %12d\n", do_grad_);
-//**//    //outfile->Printf("\n");
-//**//
-//**//    //outfile->Printf("\n");
-
     // sets call-back function to provide electric field from electrons
     if ((efp_set_electron_density_field_fn(efp_, electron_density_field_fn)))
         throw PsiException("EFP::set_options():efp_set_electron_density_field_fn() " +
             std::string (efp_result_to_string(res)),__FILE__,__LINE__);
-
 }
 
 /*
@@ -652,6 +636,7 @@ void EFP::compute() {
         //if ((res = efp_get_gradient(efp_, psmgrad[0])))
         //    throw PsiException("EFP::compute():efp_get_gradient(): " +
         //        std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+        //smgrad->print_out();
 
         //outfile->Printf("  ==> EFP Gradient <==\n\n");
 
@@ -665,28 +650,7 @@ void EFP::compute() {
 
         //torque_ = smgrad;
         //psi::Process::environment.set_efp_torque(smgrad);
-        //smgrad->print();
     }
-
-    outfile->Printf("  ==> Energetics <==\n\n");
-
-    outfile->Printf("  EFP/EFP Electrostatics Energy = %20.12f [H] %s\n",
-        energy.electrostatic + energy.charge_penetration, elst_enabled_ ? "*" : "");
-    if (do_qm_) {
-        outfile->Printf("  QM-Nuc/EFP Electrostatics Energy = %20.12f [H] %s\n",
-            energy.electrostatic_point_charges, qm_elst_enabled_ ? "*" : "");
-        outfile->Printf("  Total Electrostatics Energy = %20.12f [H] %s\n",
-            energy.electrostatic + energy.charge_penetration + energy.electrostatic_point_charges,
-            (elst_enabled_ || qm_elst_enabled_) ? "*" : "");
-    }
-    outfile->Printf("  %7s Polarization Energy =   %20.12f [H] %s\n", do_qm_ ? "" : "EFP/EFP",
-        energy.polarization, pol_enabled_ ? "*" : "");
-    outfile->Printf("  EFP/EFP Dispersion Energy =     %20.12f [H] %s\n",
-        energy.dispersion, disp_enabled_ ? "*" : "");
-    outfile->Printf("  EFP/EFP Exchange Energy =       %20.12f [H] %s\n",
-        energy.exchange_repulsion, exch_enabled_ ? "*" : "");
-    outfile->Printf("  Total Energy =                  %20.12f [H] %s\n",
-        energy.total, "*");
 
     Process::environment.globals["EFP ELST ENERGY"] = energy.electrostatic +
                                                       energy.charge_penetration +
@@ -696,6 +660,41 @@ void EFP::compute() {
     Process::environment.globals["EFP EXCH ENERGY"] = energy.exchange_repulsion;
     Process::environment.globals["EFP TOTAL ENERGY"] = energy.total;
     Process::environment.globals["CURRENT ENERGY"] = energy.total;
+
+    outfile->Printf("\n");
+    outfile->Printf("    EFP Results\n");
+    outfile->Printf("  ------------------------------------------------------------\n");
+    outfile->Printf("    Electrostatics                %20.12f [H] %s\n", energy.electrostatic +
+                                                                          energy.charge_penetration +
+                                                                          energy.electrostatic_point_charges,
+                                                                          (elst_enabled_ || qm_elst_enabled_) ? "*" : "");
+    outfile->Printf("      EFP/EFP                     %20.12f [H] %s\n", energy.electrostatic + energy.charge_penetration,
+                                                                          elst_enabled_ ? "*" : "");
+    outfile->Printf("      QM-Nuc/EFP                  %20.12f [H] %s\n", energy.electrostatic_point_charges,
+                                                                          qm_elst_enabled_ ? "*" : "");
+    outfile->Printf("\n");
+    outfile->Printf("    Exchange                      %20.12f [H] %s\n", energy.exchange_repulsion,
+                                                                          exch_enabled_ ? "*" : "");
+    outfile->Printf("      EFP/EFP                     %20.12f [H] %s\n", energy.exchange_repulsion,
+                                                                          exch_enabled_ ? "*" : "");
+    outfile->Printf("      QM/EFP                      %20.12f [H] %s\n", 0.0,
+                                                                          "");
+    outfile->Printf("\n");
+    outfile->Printf("    Induction                     %20.12f [H] %s\n", energy.polarization,
+                                                                          (pol_enabled_ || qm_pol_enabled_) ? "*" : "");
+    outfile->Printf(   "      %-7s                     %20.12f [H] %s\n", qm_pol_enabled_ ? "QM/EFP" : "EFP/EFP",
+                                                                          energy.polarization,
+                                                                          (pol_enabled_ || qm_pol_enabled_) ? "*" : "");
+    outfile->Printf("\n");
+    outfile->Printf("    Dispersion                    %20.12f [H] %s\n", energy.dispersion,
+                                                                          disp_enabled_ ? "*" : "");
+    outfile->Printf("      EFP/EFP                     %20.12f [H] %s\n", energy.dispersion,
+                                                                          disp_enabled_ ? "*" : "");
+    outfile->Printf("      QM/EFP                      %20.12f [H] %s\n", 0.0,
+                                                                          "");
+    outfile->Printf("\n");
+    outfile->Printf("    Total EFP                     %20.12f [H]\n",    energy.total);
+
 }
 
 /*

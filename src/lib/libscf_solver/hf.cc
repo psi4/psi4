@@ -1766,22 +1766,15 @@ double HF::compute_energy()
     if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
         Process::environment.get_efp()->compute();
 
-        double efp_elst = Process::environment.globals["EFP ELST ENERGY"];
-        double efp_exch = Process::environment.globals["EFP EXCH ENERGY"];
-        double efp_pol  = Process::environment.globals["EFP IND ENERGY"];
-        double efp_disp = Process::environment.globals["EFP DISP ENERGY"];
-        double efp_total_energy = efp_elst + efp_exch + efp_pol + efp_disp;
-        double efp_wfn_dependent_energy = efp_pol;
+        double efp_wfn_independent_energy = Process::environment.globals["EFP TOTAL ENERGY"] -
+                                            Process::environment.globals["EFP IND ENERGY"];
 
-        E_ += efp_total_energy - efp_wfn_dependent_energy;
+        outfile->Printf("    EFP excluding EFP Induction   %20.12f [H]\n", efp_wfn_independent_energy);
+        outfile->Printf("    SCF including EFP Induction   %20.12f [H]\n", E_);
 
-        outfile->Printf("  EFP Electrostatics Energy = %24.16f [H]\n", efp_elst);
-        outfile->Printf("  EFP Polarization Energy =   %24.16f [H]\n", efp_pol);
-        outfile->Printf("  EFP Dispersion Energy =     %24.16f [H]\n", efp_disp);
-        outfile->Printf("  EFP Exchange Energy =       %24.16f [H]\n", efp_exch);
-        outfile->Printf("  EFP Wfn dependent Energy =  %24.16f [H]\n", efp_wfn_dependent_energy);
-        outfile->Printf("  EFP Total Energy =          %24.16f [H]\n", efp_total_energy);
-        outfile->Printf("  Total SCF Energy =          %24.16f [H]\n", E_);
+        E_ += efp_wfn_independent_energy;
+
+        outfile->Printf("    Total SCF                     %20.12f [H]\n", E_);
     }
 
     if (WorldComm->me() == 0)

@@ -5,7 +5,7 @@
  */
 
 #include<libmints/molecule.h>
-#include "../../libefp/libefp/src/efp.h"
+#include "../../interfaces/libefp/libefp/src/efp.h"
 
 struct efp;
 
