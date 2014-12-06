@@ -52,7 +52,7 @@ outfile->Printf("  ----   ----------------      ----------------       ---------
       if (do_diis_ == 1) {
           boost::shared_ptr<Matrix> T2(new Matrix("T2", naoccA*navirA, naoccA*navirA));
           if (reference_ == "RESTRICTED") {
-              ccsdDiisManager = boost::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::InCore)); 
+              ccsdDiisManager = boost::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::OnDisk)); 
               ccsdDiisManager->set_error_vector_size(1, DIISEntry::Matrix, T2.get());
               ccsdDiisManager->set_vector_size(1, DIISEntry::Matrix, T2.get());
           }
