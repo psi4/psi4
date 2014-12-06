@@ -229,7 +229,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Do calculate the value of $\langle S^2\rangle$ for each root?
     Only supported for |detci__icore| = 1. -*/
-    options.add_bool("S_SQUARED",false);
+    options.add_bool("CALC_S_SQUARED",false);
 
     /*- Specifies how to handle buffering of CI vectors.  A value of 0
     makes the program perform I/O one RAS subblock at a time; 1
@@ -718,106 +718,109 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     eventually.  Works only for full CI and I don't remember if I could see
     how their clever scheme might be extended to RAS in general. !expert -*/
     options.add_bool("BENDAZZOLI", false);
-  }
 
-  if (name == "DETCAS" || options.read_globals()) {
-    /*- Wavefunction type.  This should be set automatically from 
-     *     the calling Psithon function.  !expert -*/
-    options.add_str("WFN", "DETCAS", "DETCAS CASSCF RASSCF");
+  /* Start MCSCF options*/
+  // }
+
+  // if (name == "DETCAS" || options.read_globals()) {
+  //   /*- Wavefunction type.  This should be set automatically from 
+  //    *     the calling Psithon function.  !expert -*/
+  //   options.add_str("WFN", "DETCAS", "DETCAS CASSCF RASSCF");
 
     /*- Convergence criterion for CI residual vector in the Davidson
     algorithm (RMS error).
     The default is 1e-4 for energies and 1e-7 for gradients. -*/
-    options.add_double("R_CONVERGENCE", 1e-4);
+    options.add_double("MCSCF_R_CONVERGENCE", 1e-4);
 
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
     different calculation types. -*/
-    options.add_double("E_CONVERGENCE", 1e-7);
+    options.add_double("MCSCF_E_CONVERGENCE", 1e-7);
 
     /*- Maximum number CASSCF of iterations -*/
-    options.add_int("MAXITER", 30);
+    options.add_int("MCSCF_MAXITER", 30);
 
     /*- Print the MOs? -*/
-    options.add_bool("PRINT_MOS", false); 
+    options.add_bool("MCSCF_PRINT_MOS", false); 
  
     /*- Erase the one-electron integrals after DETCAS executes? !expert -*/
-    options.add_bool("OEI_ERASE", false);
+    options.add_bool("MCSCF_OEI_ERASE", false);
 
     /*- Erase the two-electron integrals after DETCAS executes? !expert -*/
-    options.add_bool("TEI_ERASE", false);
+    options.add_bool("MCSCF_TEI_ERASE", false);
 
     /*- Erase the one-particle density matrix after DETCAS executes? !expert -*/
-    options.add_bool("OPDM_ERASE", false);
+    options.add_bool("MCSCF_OPDM_ERASE", false);
 
     /*- Erase the two-particle density matrix after DETCAS executes? !expert -*/
-    options.add_bool("TPDM_ERASE", false);
+    options.add_bool("MCSCF_TPDM_ERASE", false);
 
     /*- Erase the Lagrangian file after DETCAS executes? !expert -*/
-    options.add_bool("LAG_ERASE", false);
+    options.add_bool("MCSCF_LAG_ERASE", false);
   
     /*- Ignore frozen orbitals for independent pairs? !expert -*/
-    options.add_bool("IGNORE_FZ", true);
+    options.add_bool("MCSCF_IGNORE_FZ", true);
 
     /*- Iteration to turn on DIIS -*/
-    options.add_int("DIIS_START", 3);
+    options.add_int("MCSCF_DIIS_START", 3);
 
     /*- How often to do a DIIS extrapolation -*/
-    options.add_int("DIIS_FREQ", 1);
+    options.add_int("MCSCF_DIIS_FREQ", 1);
 
     /*- Maximum number of DIIS vectors -*/
-    options.add_int("DIIS_MAX_VECS", 8);
+    options.add_int("MCSCF_DIIS_MAX_VECS", 8);
 
     /*- Minimum number of DIIS vectors -*/
-    options.add_int("DIIS_MIN_VECS", 2);
+    options.add_int("MCSCF_DIIS_MIN_VECS", 2);
 
     /*- Scale step by this. !expert -*/
-    options.add_double("SCALE_STEP", 1.0);
+    options.add_double("MCSCF_SCALE_STEP", 1.0);
 
     /*- Use frozen-core operator for one-electron ints? !expert  -*/
-    options.add_bool("USE_FZC_H", true);
+    options.add_bool("MCSCF_USE_FZC_H", true);
 
     /*- Level shift in the Hessian?  -*/
-    options.add_bool("DO_LEVEL_SHIFT", true);
+    options.add_bool("MCSCF_DO_LEVEL_SHIFT", true);
 
     /*- Level shift value  -*/
-    options.add_double("SHIFT", 0.01);
+    options.add_double("MCSCF_SHIFT", 0.01);
 
     /*- Lowest allowed MO Hess before levelshift  -*/
-    options.add_double("DETERM_MIN", 0.00001);
+    options.add_double("MCSCF_DETERM_MIN", 0.00001);
 
     /*- Maximum allowed theta step  !expert -*/
-    options.add_double("STEP_MAX", 0.30);
+    options.add_double("MCSCF_STEP_MAX", 0.30);
 
     /*- Use thetas by default  !expert -*/
-    options.add_bool("USE_THETAS", true);
+    options.add_bool("MCSCF_USE_THETAS", true);
 
     /*- directly invert MO Hessian instead of solving system of
     linear equations for orbital step if full Hessian available. !expert -*/
-    options.add_bool("INVERT_HESSIAN", true);
+    options.add_bool("MCSCF_INVERT_HESSIAN", true);
     
     /*- Ignore usual step and force user-given step !expert -*/
-    options.add_bool("FORCE_STEP", false);
+    options.add_bool("MCSCF_FORCE_STEP", false);
 
     /*- Which pair to force a step along !expert -*/
-    options.add_int("FORCE_PAIR", 0);
+    options.add_int("MCSCF_FORCE_PAIR", 0);
 
     /*- How far to step along forced direction !expert -*/
-    options.add_double("FORCE_VALUE", 0.0);
+    options.add_double("MCSCF_FORCE_VALUE", 0.0);
 
     /*- Scale for act/act Hessian elements  -*/
-    options.add_double("SCALE_ACT_ACT", 1.0);
+    options.add_double("MCSCF_SCALE_ACT_ACT", 1.0);
 
     /* string describing type of MO Hessian DIAG, APPROX_DIAG, or FULL*/
-    options.add_str("HESSIAN", "APPROX_DIAG", "DIAG APPROX_DIAG FULL");
+    options.add_str("MCSCF_HESSIAN", "APPROX_DIAG", "DIAG APPROX_DIAG FULL");
 
     /*- Use BFGS to update hessian  !expert -*/
-    options.add_bool("BFGS", false);
+    options.add_bool("MCSCF_BFGS", false);
 
     /*- Use DS Hessian update? !expert -*/
-    options.add_bool("DS_HESSIAN", false);
+    options.add_bool("MCSCF_DS_HESSIAN", false);
  
   }
+
 
   if (name == "SAPT"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs symmetry adapted perturbation theory (SAPT)
