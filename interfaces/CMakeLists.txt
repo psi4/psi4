@@ -15,3 +15,7 @@ if(${USEEXT_DUMMY_PLUGIN})
 endif()
 
 ###### END externally stored, no-dependency projects ############
+
+# send new dependency info up the directory tree
+set(PSILIB ${PSILIB} PARENT_SCOPE)
+

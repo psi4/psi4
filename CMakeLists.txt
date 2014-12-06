@@ -258,8 +258,11 @@ if(BUILD_JK_FACTORY)
     set(PSILIB ${PSILIB} -lmkl_scalapack_lp64 -lmkl_blacs_lp64)
 endif()
 
-#Add the documentation subdirectory
+# Add the documentation subdirectory
 add_subdirectory(doc)
+
+# Recursively add interface directories (some containing dependencies of src)
+add_subdirectory(interfaces)
 
 # Recursively add source directories
 add_subdirectory(src)
@@ -294,8 +297,6 @@ endif()
 
 #FILE(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-
-add_subdirectory(interfaces)
 
 # Configure some scripts
 configure_files()
