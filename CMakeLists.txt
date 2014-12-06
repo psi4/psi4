@@ -66,8 +66,8 @@ include(CheckFunctionExists)
 include(ConfigDocumentation) 
 
 # Determine Fortran name mangling, used for external linking
-if ((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND (CMAKE_SYSTEM_VERSION VERSION_LESS 12.5.1))
-    # 12.5.0 broken (LAB)
+if ((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND (CMAKE_SYSTEM_VERSION VERSION_LESS 13))
+    # 12.5.0 broken (LAB), above should trap pre-Mavericks
     set(CMAKE_C_FLAGS_HOLD ${CMAKE_C_FLAGS})
     set(CMAKE_CXX_FLAGS_HOLD ${CMAKE_CXX_FLAGS})
     message(STATUS "Trying Fortran name mangling appending -m32 flag")
@@ -77,7 +77,7 @@ endif()
 include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)
 init_FCMangle()
-if ((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND (CMAKE_SYSTEM_VERSION VERSION_LESS 12.5.1))
+if ((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND (CMAKE_SYSTEM_VERSION VERSION_LESS 13))
     set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS_HOLD})
     set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_HOLD})
 endif()
@@ -220,7 +220,7 @@ set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2
            cchbar cclambda ccdensity transqt ccresponse detci detcas occ mrcc fnocc
            cceom adc thermo functional disp thce 3index deriv_wrapper optking
            findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util
-           stable deriv scfgrad int util diis plugin parallel frag)
+           stable deriv scfgrad int util diis plugin parallel frag efp_solver efp)
 
 
 #RMR---This is our plugin workaround
@@ -258,8 +258,11 @@ if(BUILD_JK_FACTORY)
     set(PSILIB ${PSILIB} -lmkl_scalapack_lp64 -lmkl_blacs_lp64)
 endif()
 
-#Add the documentation subdirectory
+# Add the documentation subdirectory
 add_subdirectory(doc)
+
+# Recursively add interface directories (some containing dependencies of src)
+add_subdirectory(interfaces)
 
 # Recursively add source directories
 add_subdirectory(src)
@@ -294,8 +297,6 @@ endif()
 
 #FILE(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-
-add_subdirectory(external)
 
 # Configure some scripts
 configure_files()

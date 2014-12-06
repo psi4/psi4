@@ -36,6 +36,8 @@
 
 #include <boost/shared_ptr.hpp>  // something is going on requiring this header
 
+#include "coordentry.h"
+
 // Forward declarations for boost.python used in the extract_subsets
 namespace boost{
 namespace python{
@@ -80,6 +82,12 @@ public:
         Absent,  /*!< Neglect completely */
         Real,    /*!< Include, as normal */
         Ghost    /*!< Include, but with ghost atoms */
+    };
+
+    enum FragmentLevel {
+        QMatom  = 1,    /*!< Quantum mechanical */
+        EFPatom = 2,    /*!< Effective fragment potential */
+        ALLatom = 3     /*!< All atom types */
     };
 
     typedef std::vector<boost::shared_ptr<CoordEntry> > EntryVector;
@@ -154,10 +162,12 @@ protected:
 
     /// A listing of the variables used to define the geometries
     std::map<std::string, double> geometry_variables_;
-    /// The list of atom ranges defining each fragment from parent molecule
-    std::vector<std::pair<int, int> > fragments_;
     /// A list describing how to handle each fragment
     std::vector<FragmentType> fragment_types_;
+//****AVC****//
+// moved fragments_ to public
+// moved fragment_levels_ to public
+//****AVC****//
     /// Symmetry string from geometry specification
     std::string symmetry_from_input_;
     /// Reinterpret the coord entries or not
@@ -169,6 +179,10 @@ protected:
     bool zmat_;
 
 public:
+//****AVC****//
+    /// The list of atom ranges defining each fragment from parent molecule
+    std::vector<std::pair<int, int> > fragments_;
+//****AVC****//
     Molecule();
     /// Copy constructor.
     Molecule(const Molecule& other);
@@ -232,13 +246,16 @@ public:
     int nfragments() const { return fragments_.size();}
     /// The number of active fragments in the molecule
     int nactive_fragments();
-    /// Get molecule name
+    /// Returns the list of atoms belonging to a fragment.
+    // Needed for EFP interface
+    std::pair<int, int> fragment_atom_pair(int f) { return fragments_[f]; }
+
     /// Get molecule name
     const std::string name() const {return name_; }
     /// Set molecule name
     void set_name(const std::string &_name) { name_ = _name; }
     /// Number of atoms
-    int natom() const { return atoms_.size(); }
+    int natom() const; 
     /// Number of all atoms (includes dummies)
     int nallatom() const { return full_atoms_.size(); }
     /// Nuclear charge of atom
@@ -338,6 +355,11 @@ public:
      * Reinterpret the fragments for reals/ghosts and build the atom list
      */
     void reinterpret_coordentries();
+
+    /**
+     * Reinterpret the fragments for QM/EFP and build the atom list
+     */
+    void reinterpret_fragments();
 
     /**
      * Find the nearest point group within the tolerance specified, and adjust

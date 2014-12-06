@@ -1,0 +1,15 @@
+run_type gtest
+ref_energy -0.0000980020
+terms disp
+disp_damp off
+enable_pbc true
+periodic_box 20.0 20.0 20.0
+enable_cutoff true
+swf_cutoff 6.0
+fraglib_path ../fraglib
+
+fragment h2o_l
+   0.0   0.0   0.0   1.0   2.0   3.0
+
+fragment nh3_l
+   5.0   0.0   0.0   5.0   2.0   8.0

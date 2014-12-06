@@ -14,12 +14,12 @@ my $BasisFolder = $DriverPath . "../../lib/basis/";
 open(RST_OUT,">source/autodoc_psi4bases.rst") or die "I can't write to psi4basis.rst\n";
 print_rst_topfile();
 
-@HELEM = (H,HE,
-          LI,BE,B,C,N,O,F,NE,
-          NA,MG,AL,SI,P,S,CL,AR,
-          K,CA,SC,TI,V,CR,MN,FE,CO,NI,CU,ZN,GA,GE,AS,SE,BR,KR,
-          RB,SR,Y,ZR,NB,MO,TC,RU,RH,PD,AG,CD,IN,SN,SB,TE,I,XE,
-          CS,BA,LA,HF,TA,W,RE,OS,IR,PT,AU,HG,TL,PB,BI,PO,AT,RN);
+@HELEM = (H,                                                 HE,
+          LI,BE,                              B, C, N, O, F, NE,
+          NA,MG,                              AL,SI,P, S, CL,AR,
+          K, CA,SC,TI,V, CR,MN,FE,CO,NI,CU,ZN,GA,GE,AS,SE,BR,KR,
+          RB,SR,Y, ZR,NB,MO,TC,RU,RH,PD,AG,CD,IN,SN,SB,TE,I, XE,
+          CS,BA,LA,HF,TA,W, RE,OS,IR,PT,AU,HG,TL,PB,BI,PO,AT,RN);
 
 %DELEM = (
 

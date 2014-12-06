@@ -29,8 +29,6 @@
 #include <string>
 #include <cstring>
 
-#include <psifiles.h>
-#include <physconst.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
@@ -43,6 +41,10 @@
 #include <libfunctional/superfunctional.h>
 #include <libdisp/dispersion.h>
 #include <lib3index/3index.h>
+
+#include <psifiles.h>
+#include <physconst.h>
+
 #include "ks.h"
 
 using namespace std;

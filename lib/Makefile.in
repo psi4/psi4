@@ -49,6 +49,8 @@ install:
 	$(INSTALL_DATA) $(srcdir)/quadratures/1_sqrtx/* $(DESTDIR)$(pkgdatadir)/quadratures/1_sqrtx
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/quadratures/1_x
 	$(INSTALL_DATA) $(srcdir)/quadratures/1_x/* $(DESTDIR)$(pkgdatadir)/quadratures/1_x
+	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/fraglib
+	$(INSTALL_DATA) $(srcdir)/fraglib/* $(DESTDIR)$(pkgdatadir)/fraglib
 	for dir in $(subdirs); \
           do \
             (cd $${dir}; echo Making in $${dir}; $(MAKE) install) || exit 1; \

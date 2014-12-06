@@ -195,6 +195,10 @@ def process_molecule_command(matchobj):
     pubchemre = re.compile(r'^(\s*pubchem\s*:\s*(.*)\n)$', re.MULTILINE | re.IGNORECASE)
     geometry = pubchemre.sub(process_pubchem_command, geometry)
     molecule = spaces
+
+    molecule += 'psi4.efp_init()\n'  # clear EFP object before Molecule read in
+    molecule += spaces
+
     if name != "":
         molecule += '%s = ' % (name)
 
@@ -717,6 +721,7 @@ def process_input(raw_input, print_level=1):
 #CU    imports += 'from functional import *\n'
 #    imports += 'from qmmm import *\n'
     imports += 'psi4_io = psi4.IOManager.shared_object()\n'
+    imports += 'psi4.efp_init()\n'  # initialize EFP object before Molecule read in
 
     # psirc (a baby PSIthon script that might live in ~/.psi4rc)
     psirc = ''
