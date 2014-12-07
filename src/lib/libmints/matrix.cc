@@ -847,7 +847,36 @@ void Matrix::print(std::string out, const char *extra) const
             print_mat(matrix_[h], rowspi_[h], colspi_[h^symmetry_], out);
         printer->Printf("\n");
     }
+}
 
+void Matrix::print_to_mathematica()
+{
+    if (name_.length())
+        outfile->Printf("  ## %s in Mathematica form ##\n", name_.c_str());
+    else
+        outfile->Printf("  ## Request matrix in Mathematica form ##\n");
+
+    outfile->Printf("{");
+    for (int h=0; h<nirrep_; ++h) {
+        outfile->Printf("{");
+
+        for (int r=0; r<rowspi_[h]; ++r) {
+            outfile->Printf("{");
+            for (int c=0; c<colspi_[h^symmetry_]; ++c) {
+                outfile->Printf("%14.12lf", get(h, r, c));
+                if (c < colspi_[h]-1)
+                    outfile->Printf(", ");
+            }
+            outfile->Printf("}");
+            if (r < rowspi_[h]-1)
+                outfile->Printf(",\n");
+        }
+
+        outfile->Printf("}");
+        if (h < nirrep_-1)
+            outfile->Printf(",\n");
+    }
+    outfile->Printf("}\n");
 }
 
 void Matrix::print_atom_vector(std::string out)

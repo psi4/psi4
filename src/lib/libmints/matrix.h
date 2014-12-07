@@ -550,6 +550,11 @@ public:
     void print_atom_vector(std::string OutFileRMR = "outfile");
 
     /**
+     * Prints the matrix so that it can be copied and pasted into Mathematica easily.
+     */
+    void print_to_mathematica();
+
+    /**
      * Print the matrix with corresponding eigenvalues below each column
      *
      * @param values Eigenvalues to print associated with eigenvectors.
