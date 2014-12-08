@@ -43,6 +43,7 @@
 
 using namespace boost;
 
+#ifdef HAVE_FORTRAN
 #ifdef USE_FCMANGLE_H
 #include "FCMangle.h"
 #define F_DKH  FC_MODULE(dkh_main, dkh, DKH_MAIN, DKH)
@@ -51,6 +52,7 @@ using namespace boost;
 extern "C" {
     void F_DKH(double *S, double *V, double *T, double *pVp, int *nbf, int *dkh_order);
 }
+#endif
 
 namespace psi {
 
@@ -450,6 +452,7 @@ SharedMatrix MintsHelper::ao_pvp()
 
 SharedMatrix MintsHelper::ao_dkh(int dkh_order)
 {
+#ifdef HAVE_FROTRAN
     SharedMatrix S = ao_overlap();
     SharedMatrix T = ao_kinetic();
     SharedMatrix Torig = T->clone();
@@ -488,6 +491,10 @@ SharedMatrix MintsHelper::ao_dkh(int dkh_order)
     //H_dk->print();
 
     return H_dk;
+#else
+    outfile->Printf("    Douglas-Kroll-Hess integrals requested but are not available.\n");
+    throw PSIEXCEPTION("Douglas-Kroll-Hess integrals requested but were not compiled in.");
+#endif
 }
 
 SharedMatrix MintsHelper::so_dkh(int dkh_order)
