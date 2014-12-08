@@ -4205,8 +4205,7 @@ void CDJK::initialize_JK_core()
     ULI three_memory = ncholesky_ * ntri;
     ULI nbf = primary_->nbf();
 
-    // This math results in an unsigned data type which will never be less than zero.
-    if ( memory_  < ((ULI)sizeof(double) * three_memory - (ULI)sizeof(double)* ncholesky_ * nbf * nbf))
+    if ( memory_  < ((ULI)sizeof(double) * three_memory + (ULI)sizeof(double)* ncholesky_ * nbf * nbf))
         throw PsiException("Not enough memory for CD.",__FILE__,__LINE__);
 
     Qmn_ = SharedMatrix(new Matrix("Qmn (CD Integrals)", ncholesky_ , ntri));
