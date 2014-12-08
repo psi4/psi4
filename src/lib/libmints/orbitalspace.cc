@@ -201,9 +201,10 @@ void OrbitalSpace::print() const
 {
     outfile->Printf( "    Orbital space %s (%s)\n", name_.c_str(), id_.c_str());
     outfile->Printf( "        Basis: %s\n", basis_->name().c_str());
+    basis_->print_summary();
     outfile->Printf( "        Dimensions: "); dim_.print();
-    outfile->Printf( "        Transformation matrix:\n");
-    C_->print();
+//    outfile->Printf( "        Transformation matrix:\n");
+//    C_->print();
 }
 
 namespace { // anonymous
@@ -212,53 +213,47 @@ namespace { // anonymous
                                double lindep_tol)
     {
         // Marking start of function call
-        outfile->Printf("\nIn orthogonalize():\n");
+//        outfile->Printf("\nIn orthogonalize():\n");
 
-        // Determines the dimension of each symmetry block (SODIM) and computes overlap matrix (overlap) 
-        boost::shared_ptr<IntegralFactory> localfactory(new IntegralFactory(bs));
-        OneBodySOInt *o_engine = localfactory->so_overlap();
-        SOBasisSet *so_bs = new SOBasisSet(bs, localfactory);
-        const Dimension& SODIM = so_bs->petite_list()->SO_basisdim();
-        delete so_bs;
-        SharedMatrix overlap(new Matrix("Overlap", SODIM, SODIM));
-        o_engine->compute(overlap);
-        delete o_engine;
-        outfile->Printf("\n    Printing the overlap matrix before removing linear dependent orbitals:\n");
-        overlap->print();
+        SharedMatrix overlap = OrbitalSpace::overlap(bs, bs);
+//        overlap->print_to_mathematica();
 
-        // Determine the dimension of each symmetry block for the reduced space  
+        Dimension SODIM = overlap->rowspi();
+        
+        // Determine the dimension of each symmetry block for the reduced space
         outfile->Printf( "    Orthogonalizing basis for space %s.\n", name.c_str());
-        SharedMatrix evecs(new Matrix("evecs", SODIM, SODIM));
-        SharedVector evals(new Vector("evals", SODIM));
+        SharedMatrix evecs = Matrix::create("evecs", SODIM, SODIM);
+        SharedVector evals = Vector::create("evals", SODIM);
         overlap->diagonalize(evecs, evals);
-        Dimension remaining(evecs->nirrep());
-        for(int h=0; h<evecs->nirrep(); h++) {
+        Dimension remaining(SODIM.n());
+        for(int h=0; h<SODIM.n(); h++) {
             for(int i=0; i<SODIM[h]; i++) {
                 if (fabs(evals->get(h, i)) > lindep_tol)
                     remaining[h]++;
             }
         }
-        outfile->Printf("\n    Printing the Dimension variable 'remaining':\n");
-        remaining.print();
-        outfile->Printf("\n    Printing the eigenvalues of the overlap matrix:\n");
-        evals->print();
-        outfile->Printf("\n    Printing the eigenvectors of the overlap matrix:\n");
-        evecs->print();
+//        evecs->eivprint(evals);
 
         // Remove the linear dependent vectors
         View Cview(evecs, evecs->rowspi(), remaining, Dimension(evecs->nirrep()), evecs->colspi() - remaining);
         SharedMatrix C = Cview();
         C->set_name("Transformation matrix");
-        outfile->Printf("\n    Printing the C matrix created from Cview when removing linear dependent vectors:\n");
-        C->print();
+//        C->print();
+
+//        C->transpose()->print_to_mathematica();
+
+        // Test it
+        SharedMatrix test = Matrix::create("Test", remaining, remaining);
+        test->gemm(true, false, 1.0, C, C, 0.0);
+//        test->print();
 
         // Create the SharedMatrix orthog_ao and use it to build the OrbitalSpace to be returned 
-        PetiteList petite(bs, localfactory);
-        SharedMatrix orthog_ao = petite.evecs_to_AO_basis(C);
-        outfile->Printf("\n    Printing orthog_ao (the matrix used to build the OrbitalsSpace to be returned):\n");
-        orthog_ao->print();
+//        PetiteList petite(bs, localfactory);
+//        SharedMatrix orthog_ao = petite.evecs_to_AO_basis(C);
 
-        return OrbitalSpace(id, name, orthog_ao, bs, localfactory);
+        boost::shared_ptr<IntegralFactory> localfactory(new IntegralFactory(bs));
+
+        return OrbitalSpace(id, name, C, bs, localfactory);
     }
 
     OrbitalSpace orthogonal_compliment(const OrbitalSpace& space1, const OrbitalSpace& space2, const std::string& id, const std::string& name, const double& lindep_tol)
@@ -267,8 +262,10 @@ namespace { // anonymous
                 space1.name().c_str(), space2.name().c_str(), name.c_str());
 
         // If space1 is empty, return a copy of the original space.
-        if (space1.dim().sum() == 0)
+        if (space1.dim().sum() == 0) {
+            outfile->Printf("    '%s' space is empty. Nothing to project out.\n", space1.name().c_str());
             return OrbitalSpace(id, name, space2.C(), space2.evals(), space2.basisset(), space2.integral());
+        }
 
         // O12 = O12
         SharedMatrix O12 = OrbitalSpace::overlap(space1, space2);
@@ -276,125 +273,64 @@ namespace { // anonymous
 
         // C12 = C1t * S12 * C2
         C12->transform(space1.C(), O12, space2.C());
+//        C12->print();
 
-        // SVD C12 =
-        Dimension smallest(C12->nirrep());
-        const Dimension& rowd = C12->rowspi();
-        const Dimension& cold = C12->colspi();
+        // We're interested in the right side vectors (V) of an SVD solution.
+        // We don't need a full SVD solution just part of it. Do it by hand:
+        SharedMatrix D11 = Matrix::create("D11", C12->colspi(), C12->colspi());
+        D11->gemm(true, false, 1.0, C12, C12, 0.0);
+//        D11->print();
 
-        for (int h=0, nirrep=C12->nirrep(); h<nirrep; ++h)
-            smallest[h] = rowd[h] < cold[h] ? rowd[h] : cold[h];
+        SharedMatrix V11 = Matrix::create("V11", D11->rowspi(), D11->colspi());
+        SharedVector E1  = Vector::create("E1", D11->colspi());
+        D11->diagonalize(V11, E1);
+//        V11->eivprint(E1);
 
-        SharedMatrix U = Matrix::create("U", rowd, rowd);
-        SharedMatrix V = Matrix::create("V", cold, cold);
-        SharedVector Sigma = Vector::create("Sigma", smallest);
-
-        // Something is not right with our SVD call
-        // transpose our C12 to become fortran like
-        SharedMatrix C12fortran = C12->transpose();
-
-        for (int h=0; h<C12fortran->nirrep(); ++h) {
-            if (!C12fortran->rowspi(h) || !C12fortran->colspi(h))
-                continue;
-
-            int m = C12->rowspi(h);
-            int n = C12->colspi(h);
-            int k = (m < n ? m : n);
-
-            double** Ap = block_matrix(m,n);
-            ::memcpy((void*) Ap[0], (void*) C12fortran->pointer(h)[0], sizeof(double) * m * n);
-            double*  Sp = Sigma->pointer(h);
-            double** Up = U->pointer(h);
-            double** Vp = V->pointer(h);
-
-            int* iwork = new int[8L * k];
-
-            // Workspace Query
-            double lwork;
-            int info = C_DGESDD('A',m,n,Ap[0],m,Sp,Up[0],k,Vp[0],n,&lwork,-1,iwork);
-
-            double* work = new double[(int)lwork];
-
-            // SVD
-            info = C_DGESDD('A',m,n,Ap[0],m,Sp,Up[0],k,Vp[0],n,work,(int)lwork,iwork);
-
-            delete[] work;
-            delete[] iwork;
-
-            if (info != 0) {
-                if (info < 0) {
-                    outfile->Printf( "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
-
-                    abort();
-                }
-                if (info > 0) {
-                    outfile->Printf( "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
-
-                    abort();
-                }
+        // Count the number of eigenvalues < lindep_tol
+        Dimension zeros(space1.nirrep());
+        for (int h=0; h<space1.nirrep(); ++h) {
+            for (int i=0; i<E1->dimpi()[h]; ++i) {
+                if (E1->get(h, i) < lindep_tol)
+                    zeros[h]++;
             }
-            free_block(Ap);
         }
 
-        // No need to transpose since we transposed C12
-        SharedMatrix Vao = Matrix::create("Vao", V->rowspi(), space2.C()->rowspi());
-        Vao->gemm(false, true, 1.0, V, space2.C(), 0.0);
+        outfile->Printf("        Orbital space before projecting out: "); space2.dim().print();
+        outfile->Printf("        Orbital space after projecting out:  "); zeros.print();
+        outfile->Printf("\n");
 
-        int nlindep=0;
-        double min_sigma = 1.0;
-        double max_sigma = 0.0;
+        // Pull out the nullspace vectors
+        View nullspace(V11, V11->rowspi(), zeros);
+        SharedMatrix V = nullspace();
+//        V->print();
 
-        Dimension remove(Sigma->nirrep(), "Number of orbitals to remove");
+        // Half-back transform to space2
+        SharedMatrix newC = Matrix::create("Transformation matrix", space2.C()->rowspi(), zeros);
+        newC->gemm(false, false, 1.0, space2.C(), V, 0.0);
+//        newC->print();
 
-        // Walk through S and determine how many to keep
-        for (int h=0, nirrep=Sigma->nirrep(); h<nirrep; ++h) {
-            int nzeros=0;
-            int nsigma=Sigma->dim(h);
-
-            for (int s=0; s<nsigma; ++s) {
-                double sigma = Sigma->get(h, s);
-
-                if (sigma < lindep_tol)
-                    nzeros++;
-                if (sigma < min_sigma)
-                  min_sigma = sigma;
-                if (sigma > max_sigma)
-                  max_sigma = sigma;
-            }
-
-            nlindep += nzeros;
-            remove[h] = nsigma - nzeros;
-        }
-
-        outfile->Printf( "    "); // indents the remove.print output
-        remove.print();
-
-        Dimension zero(Vao->nirrep());
-        View removes(Vao, Vao->rowspi()-remove, Vao->colspi(), remove, zero);
-
-        SharedMatrix C = removes()->transpose();
-        C->set_name("Transformation Matrix");
-        return OrbitalSpace(id, name, C, space2.basisset(), space2.integral());
+        return OrbitalSpace(id, name, newC, space2.basisset(), space2.integral());
     }
 } // namespace anonymous
 
-    OrbitalSpace OrbitalSpace::build_cabs_space(const OrbitalSpace &orb_space, const OrbitalSpace &ri_space, double lindep_tol)
-    {
-        return orthogonal_compliment(orb_space, ri_space, "p''", "CABS", lindep_tol);
-    }
+OrbitalSpace OrbitalSpace::build_cabs_space(const OrbitalSpace &orb_space, const OrbitalSpace &ri_space, double lindep_tol)
+{
+    return orthogonal_compliment(orb_space, ri_space, "p''", "CABS", lindep_tol);
+}
 
-    OrbitalSpace OrbitalSpace::build_ri_space(const boost::shared_ptr<Molecule>& molecule, const std::string& obs_key, const std::string& aux_key, double lindep_tol)
-    {
-        // Construct a combined basis set.
-        Options& options = Process::environment.options;
-        std::vector<std::string> keys, targets, roles, others;
-        keys.push_back(obs_key); keys.push_back(aux_key);
-        targets.push_back(options.get_str(obs_key)); targets.push_back(options.get_str(aux_key));
-        roles.push_back(obs_key); roles.push_back("F12");
-        others.push_back(options.get_str(obs_key)); others.push_back(options.get_str(obs_key));
-        boost::shared_ptr<BasisSet> combined = BasisSet::pyconstruct_combined(molecule, keys, targets, roles, others);
+OrbitalSpace OrbitalSpace::build_ri_space(const boost::shared_ptr<Molecule>& molecule, const std::string& obs_key, const std::string& aux_key, double lindep_tol)
+{
+    // Construct a combined basis set.
+    Options& options = Process::environment.options;
+    std::vector<std::string> keys, targets, roles, others;
+    keys.push_back(obs_key); keys.push_back(aux_key);
+    targets.push_back(options.get_str(obs_key)); targets.push_back(options.get_str(aux_key));
+    roles.push_back(obs_key); roles.push_back("F12");
+    others.push_back(options.get_str(obs_key)); others.push_back(options.get_str(obs_key));
+    boost::shared_ptr<BasisSet> combined = BasisSet::pyconstruct_combined(molecule, keys, targets, roles, others);
 
-        return orthogonalize("p'", "RIBS", combined, lindep_tol);
-    }
+    // orthogonalize the basis set projecting out linear dependencies.
+    return orthogonalize("p'", "RIBS", combined, lindep_tol);
+}
 
 } // namespace psi
