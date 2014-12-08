@@ -14,13 +14,16 @@ macro(set_libint_compiler_flags)
      set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g3 -DDEBUG")
      set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -Wno-unused")
      set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE} -g -pg")
-      
+
+     if(ENABLE_VECTORIZATION)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_ARCHITECTURE_FLAGS} ${DEFINITIONS}")
+     endif()
      if(ENABLE_CODE_COVERAGE)
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
         set (CMAKE_CXX_LINK_FLAGS "-fprofile-arcs -ftest-coverage")
      endif()
   elseif(CMAKE_CXX_COMPILER_ID MATCHES Intel)
-     set(CMAKE_CXX_FLAGS "-restrict -DRESTRICT=${restrict}")                           
+     set(CMAKE_CXX_FLAGS "-restrict -DRESTRICT=${restrict}")
      if(HAS_CXX11_SUPPORT)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC ${CXX11_COMPILER_FLAGS}")
      else()
@@ -40,8 +43,8 @@ macro(set_libint_compiler_flags)
       endif()
      if(ENABLE_VECTORIZATION)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_ARCHITECTURE_FLAGS} ${DEFINITIONS}")
-     endif()	      
-       
+     endif()
+
      set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE} -g -pg")
      set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -shared-intel")
   elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
@@ -56,7 +59,10 @@ macro(set_libint_compiler_flags)
 
      # clang does not use gprof
      set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}")
-      
+
+     if(ENABLE_VECTORIZATION)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_ARCHITECTURE_FLAGS} ${DEFINITIONS}")
+     endif()
      if(ENABLE_CODE_COVERAGE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
         set(CMAKE_CXX_LINK_FLAGS "-fprofile-arcs -ftest-coverage")
@@ -81,13 +87,16 @@ macro(set_libderiv_compiler_flags)
      set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g3 -DDEBUG")
      set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -Wno-unused")
      set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE} -g -pg")
-      
+
+     if(ENABLE_VECTORIZATION)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_ARCHITECTURE_FLAGS} ${DEFINITIONS}")
+     endif()
      if(ENABLE_CODE_COVERAGE)
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
         set (CMAKE_CXX_LINK_FLAGS "-fprofile-arcs -ftest-coverage")
      endif()
   elseif(CMAKE_CXX_COMPILER_ID MATCHES Intel)
-     set(CMAKE_CXX_FLAGS "-restrict -DRESTRICT=${restrict}")                           
+     set(CMAKE_CXX_FLAGS "-restrict -DRESTRICT=${restrict}")
      if(HAS_CXX11_SUPPORT)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC ${CXX11_COMPILER_FLAGS}")
      else()
@@ -107,8 +116,8 @@ macro(set_libderiv_compiler_flags)
       endif()
      if(ENABLE_VECTORIZATION)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_ARCHITECTURE_FLAGS} ${DEFINITIONS}")
-     endif()	      
-       
+     endif()
+
      set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE} -g -pg")
      set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -shared-intel")
   elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
@@ -123,7 +132,10 @@ macro(set_libderiv_compiler_flags)
 
      # clang does not use gprof
      set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}")
-      
+
+     if(ENABLE_VECTORIZATION)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_ARCHITECTURE_FLAGS} ${DEFINITIONS}")
+     endif()
      if(ENABLE_CODE_COVERAGE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
         set(CMAKE_CXX_LINK_FLAGS "-fprofile-arcs -ftest-coverage")
