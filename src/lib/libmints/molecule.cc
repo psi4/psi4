@@ -172,21 +172,21 @@ Molecule::Molecule():
     name_("default"),
     fix_orientation_(false),
     move_to_com_(true),
+    charge_specified_(false),
+    multiplicity_specified_(false),
     molecular_charge_(0),
     multiplicity_(1),
     units_(Angstrom),
     input_units_to_au_(1.0/pc_bohr2angstroms),
+    full_pg_(PG_C1),
+    full_pg_n_(1),
     nunique_(0),
     nequiv_(0),
     equiv_(0),
-    multiplicity_specified_(false),
-    charge_specified_(false),
     atom_to_unique_(0),
     //old_symmetry_frame_(0)
     reinterpret_coordentries_(true),
-    lock_frame_(false),
-    full_pg_(PG_C1),
-    full_pg_n_(1)
+    lock_frame_(false)
 {
 }
 
@@ -269,7 +269,7 @@ void Molecule::set_reinterpret_coordentry(bool rc)
 //}
 
 /// Plus equals
-void Molecule::operator+=(const Molecule& other)
+void Molecule::operator+=(const Molecule& /*other*/)
 {
     throw PSIEXCEPTION("Empty method?");
 }
@@ -282,7 +282,7 @@ void Molecule::clear()
 }
 
 void Molecule::add_atom(int Z, double x, double y, double z,
-                        const char *label, double mass, double charge, int lineno)
+                        const char *label, double mass, double charge, int /*lineno*/)
 {
     lock_frame_ = false;
     Vector3 temp(x, y, z);
@@ -544,7 +544,7 @@ void Molecule::set_geometry(double** geom)
         atoms_.clear();
         int count = 0;
         std::vector<int> fragment_changes;
-        for(int i = 0; i < fragments_.size(); ++i)
+        for(size_t i = 0; i < fragments_.size(); ++i)
             fragment_changes.push_back(0);
         for (int i=0; i<nallatom(); ++i) {
             boost::shared_ptr<CoordEntry> at = full_atoms_[i];
@@ -552,7 +552,7 @@ void Molecule::set_geometry(double** geom)
             if(at->symbol() == "X"){
                 // Find out which fragment this atom is removed from, then bail
                 bool found = false;
-                for(int frag = 0; frag < fragments_.size(); ++frag){
+                for(size_t frag = 0; frag < fragments_.size(); ++frag){
                     if(i >= fragments_[frag].first && i < fragments_[frag].second){
                         found = true;
                         fragment_changes[frag]++;
@@ -596,11 +596,11 @@ void Molecule::set_geometry(double** geom)
             count++;
         }
         full_atoms_.clear();
-        for(int i = 0; i < atoms_.size(); ++i)
+        for(size_t i = 0; i < atoms_.size(); ++i)
             full_atoms_.push_back(atoms_[i]);
         // Now change the bounds of each fragment, to reflect the missing dummy atoms
         int cumulative_count = 0;
-        for(int frag = 0; frag < fragments_.size(); ++frag){
+        for(size_t frag = 0; frag < fragments_.size(); ++frag){
             fragments_[frag].first -= cumulative_count;
             cumulative_count += fragment_changes[frag];
             fragments_[frag].second -= cumulative_count;
@@ -976,7 +976,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         Process::environment.get_efp()->add_fragments(efp_fnames);
 
         // Initialize all fragment geometry hints
-        for (int lineNumber = lines.size() - 1 ; lineNumber >= 0; --lineNumber) {
+        for (size_t lineNumber = lines.size() - 1 ; lineNumber != 0; --lineNumber) {
             if(regex_search(lines[lineNumber], reMatches, efpFileMarker_)) {
                 // Process file name
                 if(efp_fnames[currentFragment] != reMatches[1].str())
@@ -1159,7 +1159,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             double *frag_atom_coord = new double[3*efp_natom];
             frag_atom_coord = Process::environment.get_efp()->get_frag_atom_coord(efpCount);
 
-            for (int at=0; at < efp_natom; at++) {
+            for (unsigned int at=0; at < efp_natom; at++) {
                 // NOTE: Currently getting zVal & atomSym from libefp (no consistency check) and 
                 // mass from psi4 through zVal. May want to reshuffle this.
                 zVal = frag_atom_Z[at];
@@ -1340,7 +1340,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             mol->fragments_.erase(mol->fragments_.begin()+i);
         }
     }
-    for (int i=0, atom=0; i<mol->fragments_.size(); ++i) {
+    for (size_t i=0, atom=0; i<mol->fragments_.size(); ++i) {
         int frlen = mol->fragments_[i].second - mol->fragments_[i].first;
         mol->fragments_[i].first = atom;
         mol->fragments_[i].second = atom + frlen;
@@ -1448,7 +1448,7 @@ void Molecule::reinterpret_coordentries()
     int temp_multiplicity = multiplicity_;
     molecular_charge_ = 0;
     multiplicity_    = 1;
-    for(int fragment = 0; fragment < fragments_.size(); ++fragment){
+    for(size_t fragment = 0; fragment < fragments_.size(); ++fragment){
         if(fragment_types_[fragment] == Absent)
             continue;
         if(fragment_types_[fragment] == Real) {
@@ -1517,14 +1517,14 @@ void Molecule::update_geometry()
 void Molecule::activate_all_fragments()
 {
     lock_frame_ = false;
-    for(int i = 0; i < fragment_types_.size(); ++i){
+    for(size_t i = 0; i < fragment_types_.size(); ++i){
         fragment_types_[i] = Real;
     }
 }
 
 int Molecule::nactive_fragments() {
     int n = 0;
-    for(int i = 0; i < fragment_types_.size(); ++i){
+    for(size_t i = 0; i < fragment_types_.size(); ++i){
         if ( fragment_types_[i] == Real ) n++;
     }
     return n;
@@ -1533,7 +1533,7 @@ int Molecule::nactive_fragments() {
 void Molecule::deactivate_all_fragments()
 {
     lock_frame_ = false;
-    for(int i = 0; i < fragment_types_.size(); ++i){
+    for(size_t i = 0; i < fragment_types_.size(); ++i){
         fragment_types_[i] = Absent;
     }
 }
@@ -1637,10 +1637,10 @@ boost::shared_ptr<Molecule> Molecule::extract_subsets(const std::vector<int> &re
 
     boost::shared_ptr<Molecule> clone(new Molecule(*this));
     clone->deactivate_all_fragments();
-    for(int fragment = 0; fragment < real_list.size(); ++fragment){
+    for(size_t fragment = 0; fragment < real_list.size(); ++fragment){
         clone->set_active_fragment(real_list[fragment]+1); // The active fragment code subtracts 1
     }
-    for(int fragment = 0; fragment < ghost_list.size(); ++fragment){
+    for(size_t fragment = 0; fragment < ghost_list.size(); ++fragment){
         clone->set_ghost_fragment(ghost_list[fragment]+1); // The ghost fragment code subtracts 1
     }
     clone->update_geometry();
@@ -1824,7 +1824,7 @@ void Molecule::print_cluster() const
             outfile->Printf("       Center              X                  Y                   Z       \n");
             outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
-            int cluster_index = 1;
+            size_t cluster_index = 1;
             bool look_for_separators = (fragments_.size() > 1);
 
             for(int i = 0; i < natom(); ++i){
@@ -1861,7 +1861,7 @@ void Molecule::print_full() const
             outfile->Printf("       Center              X                  Y                   Z       \n");
             outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
-            for(int i = 0; i < full_atoms_.size(); ++i){
+            for(size_t i = 0; i < full_atoms_.size(); ++i){
                 Vector3 geom = full_atoms_[i]->compute();
                 outfile->Printf( "    %8s%4s ",fsymbol(i).c_str(),fZ(i) ? "" : "(Gh)"); 
                 for(int j = 0; j < 3; j++)
@@ -3463,7 +3463,7 @@ void Molecule::set_full_point_group(double zero_tol) {
     //outfile->Printf("\t\t sigma_h : %s\n", (op_sigma_h ? "yes" : "no"));
 
     // Rotate one off-axis atom to the yz plane and check for sigma_v's.
-    int pivot_atom_i;
+    int pivot_atom_i=-1;
     for (i=0; i<natom(); ++i) {
       double dist_from_z = sqrt(geom(i,0)*geom(i,0)+geom(i,1)*geom(i,1));
       if (fabs(dist_from_z) > zero_tol) {
