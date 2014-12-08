@@ -165,8 +165,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   // Same goes for restricted_docc, restricted_uocc, ras1, ras2, ras3,
   // frozen_uocc.
 
+#ifdef HAVE_FORTRAN
   /*- Relativistic Hamiltonian type !expert -*/
   options.add_str("RELATIVISTIC", "NO","NO X2C DKH");
+#else
+    /*- Relativistic Hamiltonian type !expert -*/
+    options.add_str("RELATIVISTIC", "NO","NO X2C");
+#endif
+    
   /*- Order of Douglas-Kroll-Hess !export -*/
   options.add_int("DKH_ORDER", 2);
 

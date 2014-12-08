@@ -46,5 +46,6 @@ if(CMAKE_CXX_COMPILER_WORKS)
 endif()
 
 if(CMAKE_Fortran_COMPILER_WORKS)
+    add_definitions(-DHAVE_FORTRAN)
     include(FortranFlags)
 endif()
