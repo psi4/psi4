@@ -51,7 +51,9 @@ void MBEFragSet::Embed(){
 MBEFragSet::MBEFragSet(SharedOptions& Options,
       SharedMol& AMol){
    FragFactory_=Options->FOptions().MakeFactory(AMol);
+
    Properties_=FragFactory_->Fragment(AMol,Frags_);
+   (*outfile)<<"Fragments made"<<std::endl;
    if(this->Severed()){
       CapFactory_=Options->COptions().MakeFactory(AMol);
       CapFactory_->MakeCaps(Frags_);

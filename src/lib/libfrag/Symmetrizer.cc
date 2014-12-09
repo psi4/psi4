@@ -91,7 +91,7 @@ void Symmetrizer::RemoveDuplicates(MBEFragSet& FragSet)const{
                            for(int i=0;i<3;i++){
                               double q2=(*(*Carts[fragj])[atom2])[i];
                               double diff=fabs(q[i]-q2);
-                              if(diff<1e-1)coordssame++;
+                              if(diff<1e-3)coordssame++;
                            }
                            if(coordssame==3)AreSame=true;
                         }
@@ -112,6 +112,10 @@ void Symmetrizer::RemoveDuplicates(MBEFragSet& FragSet)const{
       if(Unique[i])TempFrags.push_back(FragSet.Frags_[i]);
    }
    FragSet.Frags_=TempFrags;
+   int sum=0;
+   for(int i=0;i<FragSet.Frags_.size();i++){
+      sum+=FragSet.Frags_[i]->Mult();
+   }
 }
 
 

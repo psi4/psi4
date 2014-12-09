@@ -92,6 +92,9 @@ class Fragmenter{
       ///Copies unique frags in temp to Monomers, returns true if disjoint
       bool SortUnique(NMerSet& Monomers,GroupType& temp);
 
+      ///Given a set of unique monomers, prints them out
+      void PrintUnique(NMerSet& Monomers);
+
       ///Establishes the universe for the Monomers
       void MakeUniv(const SharedMol& AMol, NMerSet& Monomers)const;
 
