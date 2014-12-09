@@ -28,6 +28,8 @@
 #include <iostream>
 #include "exception.h"
 #include "Grouper.h"
+#include "../libparallel/TableSpecs.h"
+#include <sstream>
 
 namespace psi {
 namespace LibFrag {
@@ -74,6 +76,7 @@ void Fragmenter::MakeNMers(const NMerSet& Monomers, const int N, NMerSet& Frags,
       boost::shared_ptr<MBEFrag> temp(new MBEFrag(*Monomers[indices[0]]));
       temp->SetMBEOrder(N);
       temp->SetParents(&indices[0]);
+      temp->Mult_=1;
       for (int i=1; i<N; i++)
          temp->Atoms_*=Monomers[indices[i]]->Atoms_;
       tempNMers.push_back(temp);
@@ -120,6 +123,35 @@ void Fragmenter::Groups2Frag(GroupType& Groups, std::vector<int>& Groups2Add,
    }
 }
 
+void Fragmenter::PrintUnique(NMerSet& Monomers){
+   psi::outfile->Printf("The unique monomers are:\n\n");
+   TableSpecs<int,std::string> Table(Monomers.size());
+   std::vector<int> labels;
+   std::vector<std::string> atoms;
+   std::vector<std::string> Titles;
+   std::vector<Align> Alignments;
+   Alignments.push_back(CENTER);
+   Alignments.push_back(CENTER);
+   Titles.push_back("Monomer #");
+   Titles.push_back("Atom #");
+   std::vector<int> Widths;
+   Widths.push_back(9);
+   for (int i=0; i<Monomers.size(); i++){
+      labels.push_back(i);
+      std::stringstream tokenizer;
+      for(int j=0;j<Monomers[i]->Atoms_.size()-1;j++){
+         tokenizer<<Monomers[i]->Atoms_[j]<<" ";
+      }
+      tokenizer<<Monomers[i]->Atoms_[Monomers[i]->Atoms_.size()-1];
+      atoms.push_back(tokenizer.str());
+   }
+   Table.SetTitles(Titles);
+   Table.SetWidths(Widths);
+   Table.SetAlignments(Alignments);
+   Table.Init(&labels[0],&atoms[0]);
+   (*outfile)<<Table.Table()<<std::endl<<std::endl;
+}
+
 bool Fragmenter::SortUnique(NMerSet& Monomers, GroupType& temp) {
    int NTemp=temp.size();
    std::vector<bool> Monomers2Erase(NTemp, false);
@@ -141,10 +173,7 @@ bool Fragmenter::SortUnique(NMerSet& Monomers, GroupType& temp) {
          index++;
       }
    }
-   psi::outfile->Printf("The unique monomers are:\n");
-   for (int i=0; i<Monomers.size(); i++)
-      Monomers[i]->Atoms_.print_out();
-
+   PrintUnique(Monomers);
    return disjoint;
 }
 
