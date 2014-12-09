@@ -9,12 +9,13 @@ set {
     e_convergence 1e-10
     d_convergence 1e-10
     r_convergence 1e-10
+    g_convergence gau_verytight
 }
 energy('g2')
-refg2    = -76.332049434647 #TEST
-refgibbs = -76.349646300362 #TEST
+refg2    = -76.332048044135 #TEST
+refgibbs = -76.349644857156 #TEST
 
-compare_values(refg2, get_variable("G2 TOTAL ENERGY"), 9, "G2 energy (0 K)") #TEST 
-compare_values(refgibbs, get_variable("G2 FREE ENERGY"), 9, "G2 free energy (298 K)") #TEST 
+compare_values(refg2, get_variable("G2 TOTAL ENERGY"), 8, "G2 energy (0 K)") #TEST 
+compare_values(refgibbs, get_variable("G2 FREE ENERGY"), 8, "G2 free energy (298 K)") #TEST 
 
 clean()
