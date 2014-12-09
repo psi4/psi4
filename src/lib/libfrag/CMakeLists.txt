@@ -27,6 +27,7 @@ set(libfragsrc Fragmenter.h
                AtomSet.cc
                Symmetrizer.h
                Symmetrizer.cc
+               DirectSum.cc
 )
 add_library(frag STATIC ${libfragsrc})  
 target_link_libraries(frag parallel)             

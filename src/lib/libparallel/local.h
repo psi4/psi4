@@ -24,6 +24,7 @@
 #define	_psi_src_lib_libparallel_local_h_
 
 #include "parallel.h"
+#include "libparallel.h"
 #include <cstring>
 #include <string>
 #ifdef _OPENMP
@@ -42,10 +43,43 @@ class LocalCommWrapper:public Parallel<LocalCommWrapper> {
       void bcastImpl(T& data,const int broadcaster,
             const std::string&Comm="NONE") const {
       }
+      template<typename type>
+      void AllReduceImpl(const type* localdata,const int nelem,
+            type* target,
+            const MPIOperation& operation,
+            const std::string& Name){
+         memcpy(target,localdata,nelem);
+      }
+      template<typename T>
+      void IrecvImpl(const int source, const int tag, T* message,
+            const int length)const{
 
+      }
+      template<typename T>
+      void recvImpl(const int source, const int tag, T* message,
+            const int length)const{
+
+      }
+      template<typename T>
+      void IsendImpl(const int source, const int tag, T* message,
+            const int length)const{
+
+      }
+      template<typename T>
+      void sendImpl(const int source, const int tag, T* message,
+            const int length)const{
+
+      }
       template <typename type>
       void all_gatherImpl(const type* localdata, const int nelem, type* target,
             const std::string& CommName="NONE") const {
+         if (localdata!=target)
+            std::memcpy(const_cast<type*>(localdata), target,
+                  sizeof(type)*nelem);
+      }
+      template <typename type>
+      void gatherImpl(const type* localdata, const int nelem, type* target,
+            const int Root,const std::string& CommName="NONE") const {
          if (localdata!=target)
             std::memcpy(const_cast<type*>(localdata), target,
                   sizeof(type)*nelem);

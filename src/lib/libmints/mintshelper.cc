@@ -233,7 +233,7 @@ void MintsHelper::integrals()
 
     // Get ERI object
     std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
-    for (int i=0; i<WorldComm->nthread(); ++i)
+    for (int i=0; i<Process::environment.get_n_threads(); ++i)
         tb.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri()));
     boost::shared_ptr<TwoBodySOInt> eri(new TwoBodySOInt(tb, integral_));
 
@@ -312,7 +312,7 @@ void MintsHelper::integrals_erf(double w)
 
     // Get ERI object
     std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
-    for (int i=0; i<WorldComm->nthread(); ++i)
+    for (int i=0; i<Process::environment.get_n_threads(); ++i)
         tb.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->erf_eri(omega)));
     boost::shared_ptr<TwoBodySOInt> erf(new TwoBodySOInt(tb, integral_));
 
@@ -344,7 +344,7 @@ void MintsHelper::integrals_erfc(double w)
 
     // Get ERI object
     std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
-    for (int i=0; i<WorldComm->nthread(); ++i)
+    for (int i=0; i<Process::environment.get_n_threads(); ++i)
         tb.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->erf_complement_eri(omega)));
     boost::shared_ptr<TwoBodySOInt> erf(new TwoBodySOInt(tb, integral_));
 

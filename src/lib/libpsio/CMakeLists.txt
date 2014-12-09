@@ -17,6 +17,7 @@ set(SRC aio_handler.cc
         init.cc
         MOFile.h
         MOFile.cc
+        StringArray.h
         open.cc 
         open_check.cc 
         read.cc 
