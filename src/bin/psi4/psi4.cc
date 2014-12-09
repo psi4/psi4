@@ -34,6 +34,8 @@
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
 #include <libparallel/parallel.h>
+#include "libparallel2/ParallelEnvironment.h"
+#include "libparallel2/Communicator.h"
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <libmints/wavefunction.h>
@@ -66,8 +68,11 @@ namespace psi {
 int main(int argc, char **argv)
 {
     using namespace psi;
-    // Initialize the world communicator
-    WorldComm = boost::shared_ptr<worldcomm>(new worldcomm(argc, argv));
+    // Initialize the MPI environment
+    WorldComm = boost::shared_ptr<LibParallel::ParallelEnvironment>(
+          new LibParallel::ParallelEnvironment(argc, argv));
+
+
     // Setup the environment
     Process::arguments.initialize(argc, argv);
     Process::environment.initialize();   // grabs the environment from the global environ variable
@@ -114,14 +119,11 @@ int main(int argc, char **argv)
     if(!messy) PSIOManager::shared_object()->psiclean();
 
     // Shut things down:
-    WorldComm->sync();
     // There is only one timer:
     timer_done();
 
     psi_stop(infile, "outfile", psi_file_prefix);
     Script::language->finalize();
-
-    WorldComm->sync();
 
 
     Process::environment.wavefunction().reset();
