@@ -31,22 +31,18 @@
 
 #include <exception.h>
 #include <libmints/typedefs.h>
-#include "libparallel/local.h"
-#include "libparallel/mpi_wrapper.h"
+
 
 #include "process.h"
 
-
+#include "libparallel/PsiOutStream.h"
 #include <cstdarg>
 namespace psi {
-
+namespace LibParallel{
+class ParallelEnvironment;
+}
+class PsiOutStream;
 enum PsiReturnType {Success, Failure, Balk, EndLoop};
-/*extern int fprintf(FILE* __restrict __stream,
-      const char * __restrict __format, ...);
-extern int vfprintf(FILE* __restrict __stream,
-      const char * __restrict __format,va_list& args);*/
-//
-//  extern PSIO *psio;
 extern char *psi_file_prefix;
 extern std::string outfile_name;
 extern bool verbose;
@@ -55,21 +51,8 @@ extern std::string restart_id;
 // Very useful regex for matching floating point numbers
 #define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
 
-#if HAVE_MPI
-   typedef MPICommunicator worldcomm;
-#else
-   typedef LocalCommWrapper worldcomm;
-#endif
-
-extern boost::shared_ptr<worldcomm> WorldComm;
+extern boost::shared_ptr<LibParallel::ParallelEnvironment> WorldComm;
+extern boost::shared_ptr<PsiOutStream> outfile;
 void die_if_not_converged();
-}
-//I know this is a weird place for an include, but I need WorldComm in
-//StreamBase
-#include "libparallel/PsiOutStream.h"
-namespace psi{
-   extern boost::shared_ptr<PsiOutStream> outfile;
-}
-
-
+}//End namespace psi
 #endif

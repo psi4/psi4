@@ -37,7 +37,7 @@ import subprocess
 
 
 def execute(command, die_on_error=True):
-    #print("\tExecuting %s" % command)
+    print("\tExecuting %s" % command)
     failed = 0
     process = subprocess.Popen(command)
     (stdout, stderr) = process.communicate()
@@ -166,6 +166,18 @@ parser.add_argument('--prefix',
                     type=str,
                     default="/usr/local/psi4",
                     help='Installation directory for Psi4')
+# Open Babel
+parser.add_argument('--with-babel-incdir',
+                    metavar='= BABEL',
+                    type=str,
+                    default=blankstring,
+                    help='The includes directory for opebabel.  If this is left blank cmake will attempt to find one on your system.  Failing that it will build one for you')
+parser.add_argument('--with-babel-libdir',
+                    metavar='= BABELLIB',
+                    type=str,
+                    default=blankstring,
+                    help='The libraries directory for openbabel.  If this is left blank cmake will attempt to find one on your system.  Failing that it will build one for you')
+
 # Boost
 parser.add_argument('--with-boost-incdir',
                     metavar='= BOOST',
@@ -294,6 +306,11 @@ if args.with_cc != blankstring:
 # CXX
 if args.with_cxx != blankstring:
     cmakeflags['CMAKE_CXX_COMPILER'] = args.with_cxx
+#BABEL
+if args.with_babel_incdir != blankstring:
+    cmakeflags['BABEL_INCLUDE_DIR'] = args.with_babel_incdir
+if args.with_babel_libdir != blankstring:
+    cmakeflags['BABEL_LIBRARYDIR'] = args.with_babel_libdir
 #BOOST
 if args.with_boost_incdir != blankstring:
     cmakeflags['Boost_INCLUDE_DIR'] = args.with_boost_incdir

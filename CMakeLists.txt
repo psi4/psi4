@@ -1,7 +1,7 @@
 project(psi4)
 cmake_minimum_required(VERSION 2.8)
 
-enable_language(Fortran)
+#enable_language(Fortran)
 
 # cmake modules are relative to this file
 get_filename_component(ROOT_SRC_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
@@ -109,7 +109,7 @@ include(cmake/Restrict.cmake)
 test_restrict(restrict)
 
 if(CMAKE_Fortran_COMPILER)
-    if(DEFINED USEERD)
+   if(DEFINED USEERD)
        message(WARNING "Building/Using LibERD instead of LibInts!!!!")
        add_definitions(-DHAVE_ERD)
     endif()
@@ -205,10 +205,10 @@ string(STRIP ${PYTHON_LIBRARIES} PYTHON_LIBRARIES)
 string(REPLACE "-I" "" PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
 string(REPLACE " " ";" PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
 
-##if(PYLIB STREQUAL "" OR PYINC STREQUAL "")
-##   message(FATAL_ERROR "Python development libraries were not detected. Make sure that the development version "
-##                       "is installed and that python-config exists in the same directory as the python executable.")
-##endif()
+#if(PYLIB STREQUAL "" OR PYINC STREQUAL "")
+#   message(FATAL_ERROR "Python development libraries were not detected. Make sure that the development version "
+#                       "is installed and that python-config exists in the same directory as the python executable.")
+#endif()
 #
 #find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
@@ -300,7 +300,7 @@ set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2
            cchbar cclambda ccdensity transqt ccresponse detci detcas occ mrcc fnocc
            cceom adc thermo functional disp thce 3index deriv_wrapper optking
            findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util
-           stable deriv scfgrad int util diis plugin parallel frag babel)
+           stable deriv scfgrad int util diis plugin parallel parallel2 frag babel PsiUtil)
 
 
 #RMR---This is our plugin workaround
@@ -342,6 +342,8 @@ endif()
 #poor psi4 coding...
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd47 -wd2196 -wd411 -wd279")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wp,-w")
 endif()
 
 
