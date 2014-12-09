@@ -339,8 +339,7 @@ def auto_fragments(name, **kwargs):
     psi4.print_out("Exiting auto_fragments\n")
     
 
-def mbe(name, n=2, bsse_method="NONE", frag_method="USER_DEFINED",
-        embed_method="NONE", cap_method="NONE", print_underlying=False, **kwargs):
+def mbe(name, **kwargs):
     r"""The driver routine for running calculations with the MBE or the 
     GMBE.    
 
@@ -351,38 +350,6 @@ def mbe(name, n=2, bsse_method="NONE", frag_method="USER_DEFINED",
         to be applied to the molecule. May be any valid argument to
         :py:func:`~driver.energy`; however, SAPT is not appropriate.
 
-    :type n: integer
-    :param n: |dl| ``2`` |dr| || ``3`` || etc.
-
-        Indicates the (generalized)-many-body-expansion truncation order.
-
-    :type bsse_method: string
-    :param bsse_method: 
-
-        Indicates how BSSE corrections are applied.
-
-    :type frag_method: string
-    :param frag_method: 
-
-        Indicates how the fragments are being make.
-
-    :type embed_method: string
-    :param embed_method: 
-
-        Indicates how are higher order MBE effects being accounted for.
-
-    :type cap_method: string
-    :param cap_method: 
-
-        Indicates how are we dealing with severed covalent bonds.
-
-    :type print_underlying: :ref:`boolean <op_py_boolean>`
-    :param print_underlying: ``'on'`` || |dl| ``'off'`` |dr|
-
-        Indicates whether underlying electronic structure outputs will be 
-        printed to file. Setting to true will generate a lot of output, 
-        but is useful for debugging purposes.
-
     """
 
     if 'molecule' in kwargs:
@@ -390,12 +357,25 @@ def mbe(name, n=2, bsse_method="NONE", frag_method="USER_DEFINED",
         del kwargs['molecule']
     molecule = psi4.get_active_molecule()
     molecule.update_geometry()
+    
+    psi4.prepare_options_for_module("LIBFRAG")
+    bsse_method=psi4.get_option("LIBFRAG","BSSE_METHOD")
+    frag_method=psi4.get_option("LIBFRAG","FRAG_METHOD")
+    cap_method=psi4.get_option("LIBFRAG","CAP_METHOD")
+    embed_method=psi4.get_option("LIBFRAG","EMBED_METHOD")
+    n=psi4.get_global_option("TRUNCATION_ORDER")    
+    PrintValue=psi4.get_option("LIBFRAG","PRINT")
+    IsSymm=psi4.get_global_option("USE_SPACE_GROUP")
+    print_underlying=False
+    if(PrintValue>1):
+        print_underlying=True
+    
     VARH=return_energy_components()
     Egys=[[]]
     CEgys={}
     for k,v in VARH[name].iteritems():
         CEgys[v]=[[]]
-    mbe_impl.setup(frag_method,n,embed_method,cap_method,bsse_method)
+    mbe_impl.setup(frag_method,n,embed_method,cap_method,bsse_method,IsSymm)
     mbe_impl.fragment(name,molecule,Egys,CEgys,not print_underlying,**kwargs)
     if(n>=2):
         mbe_impl.nmers(name,molecule,n,Egys,CEgys,not print_underlying,**kwargs)
