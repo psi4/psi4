@@ -452,7 +452,7 @@ SharedMatrix MintsHelper::ao_pvp()
 
 SharedMatrix MintsHelper::ao_dkh(int dkh_order)
 {
-#ifdef HAVE_FROTRAN
+#ifdef HAVE_FORTRAN
     SharedMatrix S = ao_overlap();
     SharedMatrix T = ao_kinetic();
     SharedMatrix Torig = T->clone();

@@ -109,7 +109,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("FREEZE_CORE", "FALSE", "FALSE TRUE");
 
   /*- Do use pure angular momentum basis functions?
-  If not explicitly set, the default comes from the basis set. 
+  If not explicitly set, the default comes from the basis set.
   **Cfour Interface:** Keyword translates into |cfour__cfour_spherical|. -*/
   options.add_bool("PUREAM", true);
   /*- The amount of information to print to the output file.  1 prints
@@ -172,8 +172,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Relativistic Hamiltonian type !expert -*/
     options.add_str("RELATIVISTIC", "NO","NO X2C");
 #endif
-    
-  /*- Order of Douglas-Kroll-Hess !export -*/
+
+  /*- Order of Douglas-Kroll-Hess !expert -*/
   options.add_int("DKH_ORDER", 2);
 
   if (name == "DETCI" || options.read_globals()) {
@@ -731,7 +731,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   // }
 
   // if (name == "DETCAS" || options.read_globals()) {
-  //   /*- Wavefunction type.  This should be set automatically from 
+  //   /*- Wavefunction type.  This should be set automatically from
   //    *     the calling Psithon function.  !expert -*/
   //   options.add_str("WFN", "DETCAS", "DETCAS CASSCF RASSCF");
 
@@ -749,8 +749,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MCSCF_MAXITER", 30);
 
     /*- Print the MOs? -*/
-    options.add_bool("MCSCF_PRINT_MOS", false); 
- 
+    options.add_bool("MCSCF_PRINT_MOS", false);
+
     /*- Erase the one-electron integrals after DETCAS executes? !expert -*/
     options.add_bool("MCSCF_OEI_ERASE", false);
 
@@ -765,7 +765,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Erase the Lagrangian file after DETCAS executes? !expert -*/
     options.add_bool("MCSCF_LAG_ERASE", false);
-  
+
     /*- Ignore frozen orbitals for independent pairs? !expert -*/
     options.add_bool("MCSCF_IGNORE_FZ", true);
 
@@ -805,7 +805,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- directly invert MO Hessian instead of solving system of
     linear equations for orbital step if full Hessian available. !expert -*/
     options.add_bool("MCSCF_INVERT_HESSIAN", true);
-    
+
     /*- Ignore usual step and force user-given step !expert -*/
     options.add_bool("MCSCF_FORCE_STEP", false);
 
@@ -826,7 +826,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Use DS Hessian update? !expert -*/
     options.add_bool("MCSCF_DS_HESSIAN", false);
- 
+
   }
 
 
@@ -1124,7 +1124,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for SCF density, which is defined as the RMS
     value of the orbital gradient.  See Table :ref:`SCF Convergence & Algorithm
     <table:conv_scf>` for default convergence criteria for different
-    calculation types. 
+    calculation types.
     **Cfour Interface:** Keyword translates into |cfour__cfour_scf_conv|. -*/
     options.add_double("D_CONVERGENCE", 1e-6);
     /*- The amount (percentage) of damping to apply to the early density updates.
@@ -1134,7 +1134,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         could help to solve problems with oscillatory convergence. -*/
     options.add_double("DAMPING_PERCENTAGE", 100.0);
     /*- The density convergence threshold after which damping is no longer performed, if it is enabled.
-        It is recommended to leave damping on until convergence, which is the default. 
+        It is recommended to leave damping on until convergence, which is the default.
     **Cfour Interface:** Keyword translates into |cfour__cfour_scf_damping|. -*/
     options.add_double("DAMPING_CONVERGENCE", 1.0E-18);
     /*- Accelerate convergence by performing a preliminary scf with
@@ -2492,7 +2492,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
       /*- Geometry optimization step type, either Newton-Raphson or Rational Function Optimization -*/
       options.add_str("STEP_TYPE", "RFO", "RFO NR SD LINESEARCH_STATIC");
-      /*- Geometry optimization coordinates to use. 
+      /*- Geometry optimization coordinates to use.
           REDUNDANT and INTERNAL are synonyms and the default.
           DELOCALIZED are the coordinates of Baker.
           NATURAL are the coordinates of Pulay.
@@ -3097,9 +3097,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         options.add_int("MAXITER", 50);
     }
   if (name == "CFOUR"|| options.read_globals()) {
-      /*- MODULEDESCRIPTION Interface to CFOUR program written by Stanton and Gauss. 
+      /*- MODULEDESCRIPTION Interface to CFOUR program written by Stanton and Gauss.
       Keyword descriptions taken from the
-      `CFOUR Website <http://slater.chemie.uni-mainz.de/cfour/index.php?n=Main.ListOfKeywordsInAlphabeticalOrder>`_ 
+      `CFOUR Website <http://slater.chemie.uni-mainz.de/cfour/index.php?n=Main.ListOfKeywordsInAlphabeticalOrder>`_
       and extended by interface comments. -*/
 
       /*- SUBSECTION PSI4 Control of CFOUR -*/
@@ -3223,7 +3223,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- Experimental Use!  ON (=1) requests and averaged SCF over two
       states. So far only implemented for degenerate doublet-Pi states and
-      used in conjunction with SOPERT. -*/ 
+      used in conjunction with SOPERT. -*/
       options.add_bool("CFOUR_AV_SCF", false);
 
       /*- Specifies the AO basis used in the calculation. One can either
@@ -3231,7 +3231,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       arbitrary basis (see non-standard basis-set input). However, the
       latter must be available in the supplied GENBAS file. As standard
       basis sets, currently the following are available.
-      **PSI4 Interface:** Recommended to use instead |mints__basis| for 
+      **PSI4 Interface:** Recommended to use instead |mints__basis| for
       larger basis set selection and greater flexibility. When |mints__basis|
       used, |cfour__cfour_spherical| is set appropriately. -*/
       options.add_str("CFOUR_BASIS", "SPECIAL", "STO-3G 3-21G 4-31G 6-31G 6-31G* 6-31G** 6-311G 6-311G* 6-311G** DZ DZP TZ TZP TZ2P PVDZ PVTZ PVQZ PV5Z PV6Z PCVDZ PCVTZ PCVQZ PCV5Z PCV6Z AUG-PVDZ AUG-PVTZ AUG-PVTZ AUG-PVQZ AUG-PV5Z AUG-PV6Z D-AUG-PVDZ D-AUG-PVTZ D-AUG-PVQZ D-AUG-PV5Z D-AUG-PV6Z cc-pVDZ cc-pVTZ cc-pVQZ cc-pV5Z cc-pV6Z cc-pCVDZ cc-pCVTZ cc-pCVQZ cc-pCV5Z cc-pCV6Z PWCVDZ PWCVTZ PWCVQZ PWCV5Z PWCV6Z PwCVDZ PwCVTZ PwCVQZ PwCV5Z PwCV6Z svp dzp tzp tzp2p qz2p pz3d2f 13s9p4d3f WMR ANO0 ANO1 ANO2 EVEN_TEMPERED SPECIAL");
@@ -3253,7 +3253,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       //experimental use
       //BUFFERSIZE
 
-      /*- Defines the level of calculation to be performed.  
+      /*- Defines the level of calculation to be performed.
       **PSI4 Interface:** Keyword set from argument of computation
       command: CCSD if ``energy('c4-ccsd')``, *etc.* See :ref:`Energy
       (CFOUR) <table:energy_cfour>` and :ref:`Gradient (CFOUR)
@@ -3313,7 +3313,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       explicitly. -*/
       options.add_str("CFOUR_CC_PROGRAM", "VCC", "VCC ECC MRCC EXTERNAL");
 
-      /*- Specifies the molecular charge. 
+      /*- Specifies the molecular charge.
       **PSI4 Interface:** Keyword set from active molecule. -*/
       options.add_int("CFOUR_CHARGE", 0);
 
@@ -3350,7 +3350,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       internal coordinates defined implicitly by supplying Cartesian
       coordinates. Note that geometry optimizations are currently only
       possible for INTERNAL and XYZ2INT.
-      **PSI4 Interface:** Keyword set from active molecule, always CARTESIAN. 
+      **PSI4 Interface:** Keyword set from active molecule, always CARTESIAN.
       Above restrictions on geometry optimizations no longer apply. -*/
       options.add_str("CFOUR_COORDINATES", "INTERNAL", "INTERNAL CARTESIAN XYZINT");
 
@@ -3399,7 +3399,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       calculated, SECOND (=2) second derivatives are calculated.  Note
       that this keyword usually needs not be set in any calculation since
       it is automatically set if the appropriate other options in the
-      CFOUR namelist are turned on. 
+      CFOUR namelist are turned on.
       **PSI4 Interface:** Keyword set from type of computation command:
       ZERO if :py:func:`~driver.energy`, FIRST if
       :py:func:`~driver.gradient` or :py:func:`~driver.optimization`,
@@ -3544,7 +3544,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       for, three in the first block, one in the second block, and two in
       the fourth block. It is also important to note that the ``%excite*``
       input, if present, takes precedence over this keyword.
-      Default: All zeros. -*/ 
+      Default: All zeros. -*/
       options.add("CFOUR_ESTATE_SYM", new ArrayType());
 
       /*- Specifies whether just the excitation energies (OFF, =0) or in
@@ -3557,9 +3557,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Tells the program, in the course of a geometry optimization, to
       calculate the Hessian explicitly every N cycles. 0 means never
       calculated explicitly.
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in 
+      **PSI4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
-      Use :ref:`optking <apdx:optking>` keywords instead, 
+      Use :ref:`optking <apdx:optking>` keywords instead,
       particularly |optking__full_hess_every|. -*/
       options.add_int("CFOUR_EVAL_HESS", 0);
 
@@ -3713,7 +3713,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       function. Default: use the unaltered ``GENBAS`` entry. -*/
       options.add_str("CFOUR_GENBAS_1", "");
 
-      /*- This keyword performs the same function as |cfour__cfour_genbas_1| 
+      /*- This keyword performs the same function as |cfour__cfour_genbas_1|
       above, but applies to second-row atoms. -*/
       options.add_str("CFOUR_GENBAS_2", "");
 
@@ -3721,26 +3721,26 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       |cfour__cfour_genbas_2| , but applies to third-row atoms. -*/
       options.add_str("CFOUR_GENBAS_3", "");
 
-      /*- This keyword performs the same function as |cfour__cfour_genbas_1| , 
-      |cfour__cfour_genbas_2| , and |cfour__cfour_genbas_3| , but applies 
+      /*- This keyword performs the same function as |cfour__cfour_genbas_1| ,
+      |cfour__cfour_genbas_2| , and |cfour__cfour_genbas_3| , but applies
       to fourth-row atoms. -*/
       options.add_str("CFOUR_GENBAS_4", "");
 
       /*- Specifies the convergence criterion for geometry optimization.
       The optimization terminates when the RMS gradient is below $10^{-N}$
       Hartree/bohr, where $N$ is the specified value.
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in 
+      **PSI4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
-      Use :ref:`optking <apdx:optking>` keywords instead, 
-      particularly |optking__g_convergence| =CFOUR, which should be equivalent 
+      Use :ref:`optking <apdx:optking>` keywords instead,
+      particularly |optking__g_convergence| =CFOUR, which should be equivalent
       except for different internal coordinate definitions. -*/
       options.add_int("CFOUR_GEO_CONV", 5);
 
       /*- Specifies largest step (in millibohr) which is allowed in
       geometry optimizations.
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in 
+      **PSI4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
-      Use :ref:`optking <apdx:optking>` keywords instead, 
+      Use :ref:`optking <apdx:optking>` keywords instead,
       particularly |optking__intrafrag_step_limit|. -*/
       options.add_int("CFOUR_GEO_MAXSTEP", 300);
 
@@ -3760,14 +3760,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("CFOUR_GEO_METHOD", "SINGLE_POINT", "NR RFA TS MANR SINGLE_POINT ENERONLY");
 
       /*- Specifies the maximum allowed number of geometry optimization cycles.
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in 
+      **PSI4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
-      Use :ref:`optking <apdx:optking>` keywords instead, 
+      Use :ref:`optking <apdx:optking>` keywords instead,
       particularly |optking__geom_maxiter|. -*/
       options.add_int("CFOUR_GEO_MAXCYC", 50);
 
       /*- Specifies whether gauge-including atomic orbitals are used (ON)
-      or not (OFF). Default: ON for |cfour__cfour_props| =NMR  and =MAGNETIC, 
+      or not (OFF). Default: ON for |cfour__cfour_props| =NMR  and =MAGNETIC,
       otherwise OFF -*/
       options.add_str("CFOUR_GIAO", "", "ON OFF");
 
@@ -3875,7 +3875,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       by the keyword |cfour__cfour_occupation| (or the initial guess if
       omitted); OFF (= 0) permits the occupation to change. (Default : 1
       if the occupation is specified with |cfour__cfour_occupation| and for
-      second and later steps of optimizations; 0 if |cfour__cfour_occupation| 
+      second and later steps of optimizations; 0 if |cfour__cfour_occupation|
       omitted.) -*/
       options.add_bool("CFOUR_LOCK_ORBOCC", false);
 
@@ -3907,10 +3907,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       equal to unity); MANR (=3) -- Morse-adjusted Newton-Raphson search
       for minimum (very efficient minimization scheme, particularly if the
       Hessian is available); 4 is currently unavailable;
-      SINGLE_POINT (=5) is a single point calculation. 
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in 
+      SINGLE_POINT (=5) is a single point calculation.
+      **PSI4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
-      Use :ref:`optking <apdx:optking>` keywords instead, 
+      Use :ref:`optking <apdx:optking>` keywords instead,
       particularly |optking__opt_type| and |optking__step_type|. -*/
       options.add_str("CFOUR_METHOD", "SINGLE_POINT", "NR RFA TS MANR SINGLE_POINT");
 
@@ -3918,7 +3918,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       calculation based on Mukherjee's ansatz. -*/
       options.add_bool("CFOUR_MRCC", false);
 
-      /*- Specifies the spin multiplicity. 
+      /*- Specifies the spin multiplicity.
       **PSI4 Interface:** Keyword set from active molecule. -*/
       options.add_int("CFOUR_MULTIPLICITY", 1);
 
@@ -3939,8 +3939,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       will just switch the eigenvalue to its absolute value and keep
       plugging away (this is strongly discouraged!); and if RFA
       (=2), the keyword |cfour__cfour_geo_method| is switched to RFA internally and the
-      optimization is continued. 
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in 
+      optimization is continued.
+      **PSI4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
       Use :ref:`optking <apdx:optking>` keywords instead. -*/
       options.add_str("CFOUR_NEGEVAL", "ABORT", "ABORT SWITCH RFA");
@@ -3987,7 +3987,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       cases, HF-SCF calculations run with the core Hamiltonian guess will
       usually converge to the lowest energy HF-SCF solution, but this
       should not be blindly assumed.  (Default: The occupation is given
-      by the core Hamiltonian initial guess). 
+      by the core Hamiltonian initial guess).
       **PSI4 Interface:** The arrays above are specified in PSI as
       (whitespace-tolerant) [3,1,1,0] and [[3,1,1,0],[3,0,1,0]]. -*/
       options.add("CFOUR_OCCUPATION", new ArrayType());
@@ -4105,7 +4105,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add("CFOUR_QRHF_GENERAL", new ArrayType());
 
       /*- If this keyword is set to ON (=1), then the QRHF orbitals
-      specified by the |cfour__cfour_qrhf_general|, |cfour__cfour_qrhf_orbital| 
+      specified by the |cfour__cfour_qrhf_general|, |cfour__cfour_qrhf_orbital|
       and CFOUR_QRHF_SPIN (nyi?) keywords
       are used as a starting guess for a restarted SCF procedure. This can
       be an extremely useful way to converge "difficult" SCF solutions,
@@ -4169,7 +4169,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       unrestricted Hartree-Fock reference; ROHF (= 2) a restricted
       open-shell Hartree-Fock calculation; TCSCF (=3) a
       two-configurational SCF calculation, and CASSCF (=4) a
-      complete-active space SCF calculations (currently not implemented). 
+      complete-active space SCF calculations (currently not implemented).
       **PSI4 Interface:** Keyword subject to translation from value of
       |scf__reference| unless set explicitly. -*/
       options.add_str("CFOUR_REFERENCE", "RHF", "RHF UHF ROHF TCSCF CASSCF");
@@ -4252,7 +4252,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("CFOUR_SCF_CONV", 7);
 
       /*- Controls the damping (in the first iterations (specified by
-      |cfour__cfour_scf_expstart| via 
+      |cfour__cfour_scf_expstart| via
       :math:`D_{new} = D_{old} + X/1000 * (D_{new} - D_{old})` with $X$
       as the value specified by the keyword. The default value is
       currently 1000 (no damping), but a value of 500 is recommended in
@@ -4275,7 +4275,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       DIIS, ON (=1) means use DIIS. -*/
       options.add_bool("CFOUR_SCF_EXTRAPOLATION", true);
 
-      /*- Specifies the maximum number of SCF iterations. 
+      /*- Specifies the maximum number of SCF iterations.
       **PSI4 Interface:** Keyword subject to translation from value of
       |scf__maxiter| unless set explicitly.-*/
       options.add_int("CFOUR_SCF_MAXCYC", 150);
@@ -4300,7 +4300,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- Specifies whether spherical harmonic (5d, 7f, 9g, etc.) or
       Cartesian (6d, 10f, 15g, etc.) basis functions are to be used. ON (=
-      1) uses spherical harmonics, OFF (= 0) uses Cartesians. 
+      1) uses spherical harmonics, OFF (= 0) uses Cartesians.
       **PSI4 Interface:** Keyword set according to basis design when
       |mints__basis| is used instead of |cfour__cfour_basis|. Keyword
       subject to translation from value of |globals__puream| unless set
@@ -4383,8 +4383,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("CFOUR_SYMMETRY", true);
 
       /*- Specifies how often the largest $t$ amplitudes are to be printed.
-      For =0, amplitudes are printed at the beginning and end of the run. 
-      For =1, amplitudes are printed every iteration. For =2, amplitudes are 
+      For =0, amplitudes are printed at the beginning and end of the run.
+      For =1, amplitudes are printed every iteration. For =2, amplitudes are
       printed every other iteration, etc. -*/
       options.add_int("CFOUR_TAMP_SUM", 5);
 
@@ -4503,7 +4503,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     if (name == "EFP"|| options.read_globals()) {
         /*- MODULEDESCRIPTION Performs effective fragment potential
         computations through calls to Kaliman's libefp library. -*/
- 
+
         /*- The amount of information printed to the output file. -*/
         options.add_int("PRINT", 1);
         /*- Do include electrostatics energy term in EFP computation? -*/
@@ -4518,11 +4518,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         is a damping formula based on screen group in the EFP potential.
         ``OVERLAP`` is damping that computes charge penetration energy. -*/
         options.add_str("EFP_ELST_DAMPING", "SCREEN", "SCREEN OVERLAP OFF");
-        /*- Fragment-fragment polarization damping type. ``TT`` is a 
+        /*- Fragment-fragment polarization damping type. ``TT`` is a
         damping formula like Tang and Toennies. -*/
         options.add_str("EFP_POL_DAMPING", "TT", "TT OFF");
-        /*- Fragment-fragment dispersion damping type. ``TT`` is a damping 
-        formula by Tang and Toennies. ``OVERLAP`` is overlap-based 
+        /*- Fragment-fragment dispersion damping type. ``TT`` is a damping
+        formula by Tang and Toennies. ``OVERLAP`` is overlap-based
         dispersion damping. -*/
         options.add_str("EFP_DISP_DAMPING", "OVERLAP", "TT OVERLAP OFF");
         /*- Do include electrostatics energy term in QM/EFP computation? -*/
