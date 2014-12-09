@@ -73,6 +73,11 @@ procedures = {
             'omp2.5'        : run_omp2_5,
             'df-omp2'       : run_dfomp2,
             'dfomp2'        : run_dfomp2,
+            'dfocc'         : run_dfocc,
+            'dfccsd2'       : run_dfccsd2,
+            'df-ccsd2'      : run_dfccsd2,
+            'dfccd'         : run_dfccd,
+            'df-ccd'        : run_dfccd,
             'cd-omp2'       : run_cdomp2,
             'cdomp2'        : run_cdomp2,
             'cd-mp2'        : run_cdmp2,
@@ -163,6 +168,7 @@ procedures = {
             'aqcc'          : run_cepa,
             'sdci'          : run_cepa,
             'dci'           : run_cepa,
+            'efp'           : run_efp,
             # Upon adding a method to this list, add it to the docstring in energy() below
             # If you must add an alias to this list (e.g., dfmp2/df-mp2), please search the
             #    whole driver to find uses of name in return values and psi variables and
@@ -189,7 +195,8 @@ procedures = {
             'mp2.5'         : run_mp2_5_gradient,
             'omp2.5'        : run_omp2_5_gradient,
             'cepa0'         : run_cepa0_gradient,
-            'ocepa'         : run_ocepa_gradient
+            'ocepa'         : run_ocepa_gradient,
+#            'efp'           : run_efp_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
         'hessian' : {
@@ -209,9 +216,6 @@ procedures = {
             'eom-cc2'  : run_cc_property,
             'eom-ccsd' : run_cc_property,
             'detci'    : run_detci_property,  # full control over detci
-            'mp'       : run_detci_property,  # arbitrary order mp(n)
-            'detci-mp' : run_detci_property,  # arbitrary order mp(n)
-            'zapt'     : run_detci_property,  # arbitrary order zapt(n)
             'cisd'     : run_detci_property,
             'cisdt'    : run_detci_property,
             'cisdtq'   : run_detci_property,
@@ -234,6 +238,7 @@ for ssuper in cfour_list():
 
 for ssuper in cfour_gradient_list():
     procedures['gradient'][ssuper] = run_cfour
+
 
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
@@ -273,12 +278,16 @@ def energy(name, **kwargs):
     .. comment    +-------------------------+---------------------------------------------------------------------------------------+
     .. comment    | tddft                   | time-dependent DFT (TDDFT)                                                            |
     .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | efp                     | efp-only optimizations under development                                              |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
 
     .. _`table:energy_gen`:
 
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
+    | efp                     | effective fragment potential (EFP) :ref:`[manual] <sec:efp>`                          |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :ref:`[manual] <sec:scf>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
     | dcft                    | density cumulant functional theory :ref:`[manual] <sec:dcft>`                         |
@@ -318,6 +327,14 @@ def energy(name, **kwargs):
     | cd-omp2                 | cholesky decomposed orbital-optimized MP2 :ref:`[manual] <sec:dfocc>`                 |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cd-mp2                  | cholesky decomposed MP2 :ref:`[manual] <sec:dfocc>`                                   |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-ccsd2                | density-fitted CCSD from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | dfccsd2                 | density-fitted CCSD from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-ccd                  | density-fitted CCD from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | dfccd                   | density-fitted CCD from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cepa(0)                 | coupled electron pair approximation variant 0 :ref:`[manual] <sec:fnocepa>`           |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -361,9 +378,9 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | detci                   | **expert** full control over detci module                                             |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | casscf                  | complete active space self consistent field (CASSCF)  :ref:`[manual] <sec:cas>`    |
+    | casscf                  | complete active space self consistent field (CASSCF)  :ref:`[manual] <sec:cas>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | rasscf                  | restricted active space self consistent field (RASSCF)  :ref:`[manual] <sec:cas>`    |
+    | rasscf                  | restricted active space self consistent field (RASSCF)  :ref:`[manual] <sec:cas>`     |
     +-------------------------+---------------------------------------------------------------------------------------+
     | gaussian-2 (g2)         | gaussian-2 composite method :ref:`[manual] <sec:fnogn>`                               |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -547,10 +564,10 @@ def energy(name, **kwargs):
 
     except KeyError:
         alternatives = ""
-        alt_lowername = p4util.text.find_approximate_string_matches(lowername,procedures['energy'].keys(),2)
+        alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['energy'].keys(), 2)
         if len(alt_lowername) > 0:
             alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
-        raise ValidationError('Energy method %s not available.%s' % (lowername,alternatives))
+        raise ValidationError('Energy method %s not available.%s' % (lowername, alternatives))
 
     optstash.restore()
     return psi4.get_variable('CURRENT ENERGY')
@@ -616,11 +633,11 @@ def gradient(name, **kwargs):
         pass
     else:
         alternatives = ""
-        alt_lowername = p4util.text.find_approximate_string_matches(lowername,procedures['gradient'].keys(),2)
+        alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['gradient'].keys(), 2)
         if len(alt_lowername) > 0:
             alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
         raise ValidationError('Derivative method \'name\' %s and derivative level \'dertype\' %s are not available.%s'
-            % (lowername, dertype,alternatives))
+            % (lowername, dertype, alternatives))
 
     # no analytic derivatives for scf_type cd
     if psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
@@ -670,16 +687,19 @@ def gradient(name, **kwargs):
             psi4.set_global_option('E_CONVERGENCE', 8)
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
-    if (dertype == 1):
+    if dertype == 1:
+        psi4.print_out("gradient() will perform analytic gradient computation.\n")
         # Nothing to it but to do it. Gradient information is saved
         # into the current reference wavefunction
         procedures['gradient'][lowername](lowername, **kwargs)
 
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
             raise ValidationError('Optimize execution mode \'sow\' not valid for analytic gradient calculation.')
-        #psi4.wavefunction().energy()
+        #RAK for EFP psi4.wavefunction().energy()
+        # TODO: add EFP contributions to the gradient
 
         optstash.restore()
+        psi4.print_out('CURRENT ENERGY: %15.10f\n' % psi4.get_variable('CURRENT ENERGY'))
         return psi4.get_variable('CURRENT ENERGY')
 
     else:
@@ -818,24 +838,30 @@ def property(name, **kwargs):
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
-       - This function at present handles property functions only for CC methods.
-         Consult the keywords sections for other modules for further property capabilities.
+       - This function at present has a limited functionality.
+         Consult the keywords sections of other modules for further property capabilities.
 
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method                                                                          |
-    +=========================+=======================================================================================+
-    | scf                     | Self-consistent field method(s)                                                       |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | cc2                     | 2nd-order approximate CCSD                                                            |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | df-mp2                  | MP2 with density fitting                                                              |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | eom-cc2                 | 2nd-order approximate EOM-CCSD                                                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | eom-ccsd                | equation-of-motion coupled cluster singles and doubles (EOM-CCSD)                     |
-    +-------------------------+---------------------------------------------------------------------------------------+
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | Name               | Calls Method                                  | Reference      | Supported Properties                                          |
+    +====================+===============================================+================+===============================================================+
+    | scf                | Self-consistent field method(s)               | RHF/ROHF/UHF   | Listed :ref:`here <sec:oeprop>`                               |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | cc2                | 2nd-order approximate CCSD                    | RHF            | dipole, quadrupole, polarizability, rotation, roa             |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | ccsd               | Coupled cluster singles and doubles (CCSD)    | RHF            | dipole, quadrupole, polarizability, rotation, roa             |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | df-mp2             | MP2 with density fitting                      | RHF            | dipole, quadrupole, mulliken_charges, no_occupations          |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | eom-cc2            | 2nd-order approximate EOM-CCSD                | RHF            | oscillator_strength, rotational_strength                      |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | eom-ccsd           | Equation-of-motion CCSD (EOM-CCSD)            | RHF            | oscillator_strength, rotational_strength                      |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | 'cisd', 'cisdt',   | Configuration interaction                     | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
+    | 'cisdt', 'cisdtq', |                                               |                |                                                               |
+    | 'ci5', etc...      |                                               |                |                                                               |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | 'fci'              | Full configuration interaction                | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
 
     :type name: string
     :param name: ``'ccsd'`` || etc.
@@ -904,10 +930,10 @@ def property(name, **kwargs):
 
     except KeyError:
         alternatives = ""
-        alt_lowername = p4util.text.find_approximate_string_matches(lowername,procedures['property'].keys(),2)
+        alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['property'].keys(), 2)
         if len(alt_lowername) > 0:
             alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
-        raise ValidationError('Property method %s not available.%s' % (lowername,alternatives))
+        raise ValidationError('Property method %s not available.%s' % (lowername, alternatives))
 
     optstash.restore()
     return returnvalue
@@ -969,6 +995,8 @@ def optimize(name, **kwargs):
     | ccsd(t)                 | CCSD with perturbative triples (CCSD(T)) :ref:`[manual] <sec:cc>`                     |
     +-------------------------+---------------------------------------------------------------------------------------+
     | eom-ccsd                | equation of motion (EOM) CCSD :ref:`[manual] <sec:eomcc>`                             |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | efp                     | efp-only optimizations                                                                |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. include:: autodoc_dft_opt.rst
@@ -1090,7 +1118,7 @@ def optimize(name, **kwargs):
             G = psi4.get_gradient()
             psi4.IOManager.shared_object().set_specific_retention(1, True)
             psi4.IOManager.shared_object().set_specific_path(1, './')
-            psi4.set_global_option('HESSIAN_WRITE',True)
+            psi4.set_global_option('HESSIAN_WRITE', True)
             frequencies(name, **kwargs)
             steps_since_last_hessian = 0
             psi4.set_gradient(G)
@@ -1104,13 +1132,15 @@ def optimize(name, **kwargs):
 
         # print 'cart_hess_read', psi4.get_global_option('CART_HESS_READ')
         # Take step
-        if psi4.optking() == psi4.PsiReturnType.EndLoop:
+        optking_rval = psi4.optking()
+        if optking_rval == psi4.PsiReturnType.EndLoop:
             print('Optimizer: Optimization complete!')
             psi4.print_out('\n    Final optimized geometry and variables:\n')
             psi4.get_active_molecule().print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
-            if (psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
-                psi4.opt_clean()
+            if psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False:
+                if psi4.get_option('OPTKING', 'KEEP_INTCOS') == False:
+                    psi4.opt_clean()
             psi4.clean()
 
             # S/R: Clean up opt input file
@@ -1122,6 +1152,15 @@ def optimize(name, **kwargs):
 
             optstash.restore()
             return thisenergy
+
+        elif optking_rval == psi4.PsiReturnType.Failure:  # new 10-14 RAK
+            print('Optimizer: Optimization failed!')
+            if (psi4.get_option('OPTKING', 'KEEP_INTCOS') == False):
+                psi4.opt_clean()
+            psi4.clean()
+            optstash.restore()
+            return thisenergy
+
         psi4.print_out('\n    Structure for next step:\n')
         psi4.get_active_molecule().print_in_input_format()
 
@@ -1133,6 +1172,9 @@ def optimize(name, **kwargs):
         n += 1
 
     psi4.print_out('\tOptimizer: Did not converge!')
+    if psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False:
+        if psi4.get_option('OPTKING', 'KEEP_INTCOS') == False:
+            psi4.opt_clean()
 
     optstash.restore()
     return 0.0
@@ -1209,7 +1251,7 @@ def parse_arbitrary_order(name):
                 return namelower, None
             # Let 'mp3' pass through to occ module for rhf/uhf, direct to detci for rohf
             elif (namestump == 'mp') and (namelevel == 3):
-                if psi4.get_option('SCF','REFERENCE') == 'ROHF':
+                if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
                     return 'detci-mp', 3
                 else:
                     return namelower, None
@@ -1299,7 +1341,7 @@ def hessian(name, **kwargs):
         pass
     else:
         alternatives = ""
-        alt_lowername = p4util.text.find_approximate_string_matches(lowername,procedures['energy'].keys(),2)
+        alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['energy'].keys(), 2)
         if len(alt_lowername) > 0:
             alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
 
@@ -1687,8 +1729,8 @@ def parse_cotton_irreps(irrep):
         'ci': {
             'ag': 1,
             'au': 2,
-            '1':  1,
-            '2':  2
+            '1': 1,
+            '2': 2
         },
         'c2': {
             'a': 1,
@@ -1697,58 +1739,58 @@ def parse_cotton_irreps(irrep):
             '2': 2
         },
         'cs': {
-            'ap':  1,
+            'ap': 1,
             'app': 2,
-            '1':   1,
-            '2':   2
+            '1': 1,
+            '2': 2
         },
         'd2': {
-            'a':  1,
+            'a': 1,
             'b1': 2,
             'b2': 3,
             'b3': 4,
-            '1':  1,
-            '2':  2,
-            '3':  3,
-            '4':  4
+            '1': 1,
+            '2': 2,
+            '3': 3,
+            '4': 4
         },
         'c2v': {
             'a1': 1,
             'a2': 2,
             'b1': 3,
             'b2': 4,
-            '1':  1,
-            '2':  2,
-            '3':  3,
-            '4':  4
+            '1': 1,
+            '2': 2,
+            '3': 3,
+            '4': 4
         },
         'c2h': {
             'ag': 1,
             'bg': 2,
             'au': 3,
             'bu': 4,
-            '1':  1,
-            '2':  2,
-            '3':  3,
-            '4':  4,
+            '1': 1,
+            '2': 2,
+            '3': 3,
+            '4': 4,
         },
         'd2h': {
-            'ag':  1,
+            'ag': 1,
             'b1g': 2,
             'b2g': 3,
             'b3g': 4,
-            'au':  5,
+            'au': 5,
             'b1u': 6,
             'b2u': 7,
             'b3u': 8,
-            '1':   1,
-            '2':   2,
-            '3':   3,
-            '4':   4,
-            '5':   5,
-            '6':   6,
-            '7':   7,
-            '8':   8
+            '1': 1,
+            '2': 2,
+            '3': 3,
+            '4': 4,
+            '5': 5,
+            '6': 6,
+            '7': 7,
+            '8': 8
         }
     }
 

@@ -28,19 +28,22 @@
 Lindh et. al define a super-redundant set of simple internal coordinates with
 which the potential surface can be expressed in a continuous way with respect
 to nuclear coordinates, and some formulas for the guessed force constants.  They
-use these formulas at every step on an optimization.  However, this results in 
-poorer performance than an initial guess followed by a BFGS update.  The code
-here 'Lindh_guess' uses this super-redundant set of coordinates to generate the
-diagonal Hessian, and transforms it into cartesian coordinates.  The calling
-function transforms the cartesian coordinates back into the (smaller set) of
+use these formulas at every step on an optimization.
+
+The calling function transforms the cartesian coordinates back into the (smaller set) of
 redundant internal coordinates being used by optking for the optimization.  Although
 this does include the gradient terms in the transformations, the second derivative
 values are so uncertain, that the result is not reliably improved from a 
-diagonal Hessian guess.
+diagonal Hessian guess.  The user can choose whether to do this process only once
+at the beginning or at each optimization step.
 
-Therefore, we provide 'LINDH_SIMPLE' which simply uses the Lindh formula for the
-default set of redundant internal coordinates, and 'LINDH' which does a lot of extra
-work for not obvious gain in optimization efficiency.
+Known problems:
+1. For the Baker test set, does not perform great.
+2. The Hessian seems to favor bending linear bonds.  It will result in negative
+diagonal Hessian matrix elements, even when doing so will break the point group
+symmetry.  In high-symmetry cases, optking may not be able to ignore these
+artificial modes (coming out of RFO diagonalization, e.g.).
+
 */
 
 #include "molecule.h"
@@ -211,8 +214,17 @@ in this set of internals. */
       if (close[j][i] && (j != i))
         for (int k=i+1; k<natom; ++k)
           if (close[k][j] && (k != j)) {
-            BEND *one_bend = new BEND(i, j, k);
-            coords.simples.push_back(one_bend);
+            double val=0;
+            if (v3d_angle(geom[i], geom[j], geom[k], val)) {
+              BEND *one_bend = new BEND(i, j, k);
+              coords.simples.push_back(one_bend);
+
+              if (val > Opt_params.linear_bend_threshold) { // ~175 degrees
+                one_bend = new BEND(i,j,k);
+                one_bend->make_linear_bend();
+                coords.simples.push_back(one_bend);
+              }
+            }
           }
 
   for (int i=0; i<natom; ++i)
@@ -222,8 +234,15 @@ in this set of internals. */
           if (close[k][j] && (k!=i) && (k!=j))
             for (int l=i+1; l<natom; ++l)
               if (close[l][k] && l!=j && l!=k) {
-                TORS *one_tors = new TORS(i, j, k, l);
-                coords.simples.push_back(one_tors);
+                double val1=0, val2=0;
+                v3d_angle(geom[i], geom[j], geom[k], val1);
+                v3d_angle(geom[j], geom[k], geom[l], val2);
+                val1 = fabs(val1);
+                val2 = fabs(val2);
+                if (val1 > .02*_pi && val2 > .02*_pi && val1 <(_pi-.02) && val2 <(_pi-.02)) {
+                  TORS *one_tors = new TORS(i, j, k, l);
+                  coords.simples.push_back(one_tors);
+                }
               }
 
   free_bool_matrix(close);

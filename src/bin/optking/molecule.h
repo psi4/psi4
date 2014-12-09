@@ -203,6 +203,13 @@ class MOLECULE {
     return n;
   }
 
+  int add_intrafragment_hbonds(void) {
+    int n=0;
+    for (int i=0; i<fragments.size(); ++i)
+      n += fragments[i]->add_hbonds();
+    return n;
+  }
+
   int add_intrafragment_auxiliary_bonds(void) {
     int n=0;
     for (int i=0; i<fragments.size(); ++i)
@@ -330,11 +337,11 @@ class MOLECULE {
   void prfo_step(void);
   void backstep(void);
   void sd_step(void);
-  void sd_step_cartesians(void);
+  //void sd_step_cartesians(void); now obsolete
   void linesearch_step(void);
 
   void apply_intrafragment_step_limit(double * & dq);
-  void check_intrafragment_zero_angles(double const * const dq);
+  std::vector<int> validate_angles(double const * const dq);
 
   void set_geom_array(double * array_in) {
     for (int f=0; f<fragments.size(); ++f)

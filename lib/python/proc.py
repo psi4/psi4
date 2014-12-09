@@ -42,6 +42,7 @@ from functional import *
 # ATTN NEW ADDITIONS!
 # consult http://sirius.chem.vt.edu/psi4manual/master/proc_py.html
 
+
 def run_lmp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an LMP2 theory calculation.
@@ -103,7 +104,7 @@ def run_dfomp2(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['SCF','DF_INTS_IO'],
+        ['SCF', 'DF_INTS_IO'],
         ['DF_BASIS_SCF'],
         ['GLOBALS', 'DF_BASIS_CC'])
 
@@ -116,29 +117,11 @@ def run_dfomp2(name, **kwargs):
     if user_pg != 'c1':
         psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
-    # if the df_basis_scf basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_SCF') == '':
-        jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
-        if jkbasis:
-            psi4.set_global_option('DF_BASIS_SCF', jkbasis)
-            psi4.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_SCF is required.')
-
     #psi4.set_global_option('SCF_TYPE', 'DF')
-    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
+    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
-
-    # if the df_basis_cc basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_CC') == '':
-        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
-        if ribasis:
-            psi4.set_global_option('DF_BASIS_CC', ribasis)
-            psi4.print_out('  No DF_BASIS_CC auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_CC is required.')
 
     psi4.dfocc()
 
@@ -220,7 +203,7 @@ def run_cdomp2(name, **kwargs):
     """
 
     optstash = p4util.OptionsState(
-        ['SCF','DF_INTS_IO'],
+        ['SCF', 'DF_INTS_IO'],
         ['DFOCC', 'WFN_TYPE'])
 
     # overwrite symmetry
@@ -229,7 +212,7 @@ def run_cdomp2(name, **kwargs):
     molecule.reset_point_group('c1')
 
     #psi4.set_global_option('SCF_TYPE', 'CD')
-    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
+    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
@@ -259,13 +242,122 @@ def run_omp2(name, **kwargs):
     run_dfomp2(name, **kwargs)
 
 
+def run_dfocc(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted orbital-optimized MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF', 'DF_INTS_IO'],
+        ['DF_BASIS_SCF'],
+        ['GLOBALS', 'DF_BASIS_CC'])
+
+    # override symmetry:
+    molecule = psi4.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(1)
+    molecule.update_geometry()
+    if user_pg != 'c1':
+        psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
+
+    #psi4.set_global_option('SCF_TYPE', 'DF')
+    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    psi4.dfocc()
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
+
+    return psi4.get_variable("CURRENT ENERGY")
+
+
+def run_dfccsd2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted orbital-optimized MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF', 'DF_INTS_IO'],
+        ['DF_BASIS_SCF'],
+        ['DFOCC', 'ORB_OPT'],
+        ['DFOCC', 'WFN_TYPE'],
+        ['GLOBALS', 'DF_BASIS_CC'])
+
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
+
+    # override symmetry:
+    molecule = psi4.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(1)
+    molecule.update_geometry()
+    if user_pg != 'c1':
+        psi4.print_out('  DF-CCSD does not make use of molecular symmetry, further calculations in C1 point group.\n')
+
+    #psi4.set_global_option('SCF_TYPE', 'DF')
+    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    psi4.dfocc()
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
+
+    return psi4.get_variable("CURRENT ENERGY")
+
+
+def run_dfccd(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted orbital-optimized MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF','DF_INTS_IO'],
+        ['DF_BASIS_SCF'],
+        ['DFOCC', 'ORB_OPT'],
+        ['DFOCC', 'WFN_TYPE'],
+        ['GLOBALS', 'DF_BASIS_CC'])
+
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
+
+    # override symmetry:
+    molecule = psi4.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(1)
+    molecule.update_geometry()
+    if user_pg != 'c1':
+        psi4.print_out('  DF-CCD does not make use of molecular symmetry, further calculations in C1 point group.\n')
+
+    #psi4.set_global_option('SCF_TYPE', 'DF')
+    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    psi4.dfocc()
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
+
+    return psi4.get_variable("CURRENT ENERGY")
+
+
 def run_conv_omp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an orbital-optimized MP2 computation
 
     """
     optstash = p4util.OptionsState(
-        ['SCF','SCF_TYPE'])
+        ['SCF', 'SCF_TYPE'])
 
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
@@ -438,7 +530,7 @@ def run_omp3(name, **kwargs):
 
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
     # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or
         psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
         psi4.MintsHelper().integrals()
 
@@ -526,7 +618,7 @@ def run_scs_omp3(name, **kwargs):
     psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
     # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or
         psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
         psi4.MintsHelper().integrals()
     psi4.occ()
@@ -559,7 +651,7 @@ def run_sos_omp3(name, **kwargs):
     psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
     # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or
         psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
         psi4.MintsHelper().integrals()
     psi4.occ()
@@ -581,7 +673,7 @@ def run_ocepa(name, **kwargs):
 
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
     # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or
         psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
         psi4.MintsHelper().integrals()
     psi4.occ()
@@ -653,7 +745,7 @@ def run_omp2_5(name, **kwargs):
 
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
     # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or
         psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
         psi4.MintsHelper().integrals()
     psi4.occ()
@@ -776,17 +868,6 @@ def run_scf_gradient(name, **kwargs):
 
     run_scf(name, **kwargs)
 
-    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF'):
-
-        # if the df_basis_scf basis is not set, pick a sensible one.
-        if psi4.get_global_option('DF_BASIS_SCF') == '':
-            jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
-            if jkbasis:
-                psi4.set_global_option('DF_BASIS_SCF', jkbasis)
-                psi4.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
-            else:
-                raise ValidationError('Keyword DF_BASIS_SCF is required.')
-
     psi4.scfgrad()
     optstash.restore()
 
@@ -831,22 +912,13 @@ def scf_helper(name, **kwargs):
     optstash = p4util.OptionsState(
         ['PUREAM'],
         ['BASIS'],
+        ['QMEFP'],
         ['DF_BASIS_SCF'],
         ['SCF', 'SCF_TYPE'],
         ['SCF', 'GUESS'],
         ['SCF', 'DF_INTS_IO'],
-        ['SCF', 'SCF_TYPE'] # Hack: scope gets changed internally with the Andy trick
+        ['SCF', 'SCF_TYPE']  # Hack: scope gets changed internally with the Andy trick
     )
-
-    # if the df_basis_scf basis is not set, pick a sensible one.
-    if psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
-        if psi4.get_global_option('DF_BASIS_SCF') == '':
-            jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
-            if jkbasis:
-                psi4.set_global_option('DF_BASIS_SCF', jkbasis)
-                psi4.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
-            else:
-                raise ValidationError('Keyword DF_BASIS_SCF is required.')
 
     optstash2 = p4util.OptionsState(
         ['BASIS'],
@@ -881,7 +953,7 @@ def scf_helper(name, **kwargs):
         multp = molecule.multiplicity()
         if multp != 1:
             raise ValidationError('Broken symmetry is only for singlets.')
-        if psi4.get_option('SCF','REFERENCE') != 'UHF' and psi4.get_option('SCF','REFERENCE') != 'UKS':
+        if psi4.get_option('SCF', 'REFERENCE') != 'UHF' and psi4.get_option('SCF', 'REFERENCE') != 'UKS':
             raise ValidationError('You must specify "set reference uhf" to use broken symmetry.')
         do_broken = True
     else:
@@ -899,8 +971,8 @@ def scf_helper(name, **kwargs):
     # Note that can't query PUREAM option directly, as it only
     #   reflects user changes to value, so load basis and
     #   read effective PUREAM setting off of it
-    psi4.set_global_option('BASIS', psi4.get_global_option('BASIS'))
-    psi4.set_global_option('PUREAM', psi4.MintsHelper().basisset().has_puream())
+    #psi4.set_global_option('BASIS', psi4.get_global_option('BASIS'))
+    #psi4.set_global_option('PUREAM', psi4.MintsHelper().basisset().has_puream())
 
     # broken set-up
     if do_broken:
@@ -917,11 +989,11 @@ def scf_helper(name, **kwargs):
         else:
             guessbasis = cast
 
-        if (castdf):
-            if yes.match(str(castdf)):
-                guessbasisdf = p4util.corresponding_jkfit(guessbasis)
-            else:
-                guessbasisdf = castdf
+        #if (castdf):
+        #    if yes.match(str(castdf)):
+        #        guessbasisdf = p4util.corresponding_jkfit(guessbasis)
+        #    else:
+        #        guessbasisdf = castdf
 
         # Switch to the guess namespace
         namespace = psi4.IO.get_default_namespace()
@@ -935,7 +1007,9 @@ def scf_helper(name, **kwargs):
         if (castdf):
             psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
             psi4.set_local_option('SCF', 'DF_INTS_IO', 'none')
-            psi4.set_global_option('DF_BASIS_SCF', guessbasisdf)
+            #psi4.set_global_option('DF_BASIS_SCF', guessbasisdf)
+            if not yes.match(str(castdf)):
+                psi4.set_global_option('DF_BASIS_SCF', castdf)
 
         # Print some info about the guess
         psi4.print_out('\n')
@@ -971,6 +1045,13 @@ def scf_helper(name, **kwargs):
         p4util.banner(name.upper())
         psi4.print_out('\n')
 
+    # EFP preparation
+    efp = psi4.get_active_efp()
+    if efp.nfragments() > 0:
+        psi4.set_global_option('QMEFP', True)  # apt to go haywire if set locally to efp
+        psi4.efp_set_options()
+        efp.set_qm_atoms()
+        efp.print_out()
 
     # the SECOND scf call
     e_scf = psi4.scf(precallback, postcallback)
@@ -1004,7 +1085,7 @@ def run_mp2_select_gradient(name, **kwargs):
         if (psi4.get_option("SCF", "REFERENCE") == "UHF") or (psi4.get_option("SCF", "REFERENCE") == "UKS"):
             psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
             return run_dfomp2_gradient(name, **kwargs)
-        else: 
+        else:
             return run_dfmp2_gradient(name, **kwargs)
 
 
@@ -1039,29 +1120,11 @@ def run_dfmp2_gradient(name, **kwargs):
         if(psi4.me() == 0):
             shutil.copy(restartfile, targetfile)
     else:
-        # if the df_basis_scf basis is not set, pick a sensible one.
-        if psi4.get_global_option('DF_BASIS_SCF') == '':
-            jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
-            if jkbasis:
-                psi4.set_global_option('DF_BASIS_SCF', jkbasis)
-                psi4.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
-            else:
-                raise ValidationError('Keyword DF_BASIS_SCF is required.')
-
         scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
     p4util.banner('DFMP2')
     psi4.print_out('\n')
-
-    # if the df_basis_mp2 basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_MP2') == '':
-        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
-        if ribasis:
-            psi4.set_global_option('DF_BASIS_MP2', ribasis)
-            psi4.print_out('  No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
     psi4.dfmp2grad()
     e_dfmp2 = psi4.get_variable('MP2 TOTAL ENERGY')
@@ -1128,9 +1191,9 @@ def run_ccenergy(name, **kwargs):
 
     # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
     # written to disk
-    IsDF= psi4.get_option('SCF', 'SCF_TYPE') == 'DF'
-    IsCD=psi4.get_option('SCF', 'SCF_TYPE') == 'CD'
-    IsDirect=psi4.get_option('SCF','SCF_TYPE') == 'DIRECT'
+    IsDF = psi4.get_option('SCF', 'SCF_TYPE') == 'DF'
+    IsCD = psi4.get_option('SCF', 'SCF_TYPE') == 'CD'
+    IsDirect = psi4.get_option('SCF', 'SCF_TYPE') == 'DIRECT'
     if bypass or IsDF or IsCD or IsDirect:
         mints = psi4.MintsHelper()
         mints.integrals()
@@ -1409,29 +1472,11 @@ def run_dfmp2_property(name, **kwargs):
         if(psi4.me() == 0):
             shutil.copy(restartfile, targetfile)
     else:
-        # if the df_basis_scf basis is not set, pick a sensible one.
-        if psi4.get_global_option('DF_BASIS_SCF') == '':
-            jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
-            if jkbasis:
-                psi4.set_global_option('DF_BASIS_SCF', jkbasis)
-                psi4.print_out('\nNo DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
-            else:
-                raise ValidationError('Keyword DF_BASIS_SCF is required.')
-
         scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
     p4util.banner('DFMP2')
     psi4.print_out('\n')
-
-    # if the df_basis_mp2 basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_MP2') == '':
-        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
-        if ribasis:
-            psi4.set_global_option('DF_BASIS_MP2', ribasis)
-            psi4.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
     psi4.dfmp2grad()
     e_dfmp2 = psi4.get_variable('MP2 TOTAL ENERGY')
@@ -1476,16 +1521,16 @@ def run_detci_property(name, **kwargs):
     n_excited = len(excited)
     n_invalid = len(invalid)
 
-    if (n_invalid > 0):
+    if n_invalid > 0:
         print("The following properties are not currently supported: %s" % invalid)
-    
+
     if ('quadrupole' in one) or ('transition_quadrupole' in excited):
         psi4.set_global_option('PRINT', 2)
 
-    if (n_one > 0):
+    if n_one > 0:
         psi4.set_global_option('OPDM', 'TRUE')
 
-    if (n_excited > 0):
+    if n_excited > 0:
         psi4.set_global_option('TDM', 'TRUE')
 
     optstash = p4util.OptionsState(
@@ -1501,7 +1546,7 @@ def run_detci_property(name, **kwargs):
     if (user_ref != 'RHF') and (user_ref != 'ROHF'):
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
-    if (name.lower() == 'zapt'):
+    if name.lower() == 'zapt':
         psi4.set_local_option('TRANSQT2', 'WFN', 'ZAPTN')
         psi4.set_local_option('DETCI', 'WFN', 'ZAPTN')
         level = kwargs['level']
@@ -1545,7 +1590,7 @@ def run_detci_property(name, **kwargs):
         level = kwargs['level']
         psi4.set_local_option('DETCI', 'EX_LEVEL', level)
     # Call a plain energy('detci') and have full control over options
-    elif(name.lower() == 'detci'):
+    elif name.lower() == 'detci':
         pass
 
     # Bypass routine scf if user did something special to get it to converge
@@ -1696,16 +1741,6 @@ def run_dft(name, **kwargs):
             dfun = ssuper
 
     if dfun.is_c_hybrid():
-
-        # if the df_basis_mp2 basis is not set, pick a sensible one.
-        if psi4.get_global_option('DF_BASIS_MP2') == '':
-            ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
-            if ribasis:
-                psi4.set_global_option('DF_BASIS_MP2', ribasis)
-                psi4.print_out('  No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
-            else:
-                raise ValidationError('Keyword DF_BASIS_MP2 is required.')
-
         if dfun.is_c_scs_hybrid():
             psi4.set_local_option('DFMP2', 'MP2_OS_SCALE', dfun.c_os_alpha())
             psi4.set_local_option('DFMP2', 'MP2_SS_SCALE', dfun.c_ss_alpha())
@@ -1723,7 +1758,7 @@ def run_dft(name, **kwargs):
         psi4.print_out('\n\n')
         psi4.print_out('    %s Energy Summary\n' % (name.upper()))
         psi4.print_out('    -------------------------\n')
-        psi4.print_out('    DFT Reference Energy                  = %22.16lf\n' % (returnvalue-vdh))
+        psi4.print_out('    DFT Reference Energy                  = %22.16lf\n' % (returnvalue - vdh))
         psi4.print_out('    Scaled MP2 Correlation                = %22.16lf\n' % (vdh))
         psi4.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
 
@@ -1873,15 +1908,6 @@ def run_dfmp2(name, **kwargs):
     p4util.banner('DFMP2')
     psi4.print_out('\n')
 
-    # if the df_basis_mp2 basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_MP2') == '':
-        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
-        if ribasis:
-            psi4.set_global_option('DF_BASIS_MP2', ribasis)
-            psi4.print_out('  No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_MP2 is required.')
-
     e_dfmp2 = psi4.dfmp2()
     e_scs_dfmp2 = psi4.get_variable('SCS-MP2 TOTAL ENERGY')
 
@@ -1930,15 +1956,6 @@ def run_mp2c(name, **kwargs):
     monomerA.set_name('monomerA')
     monomerB = molecule.extract_subsets(2, 1)
     monomerB.set_name('monomerB')
-
-    # if the df_basis_mp2 basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_MP2') == '':
-        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
-        if ribasis:
-            psi4.set_global_option('DF_BASIS_MP2', ribasis)
-            psi4.print_out('  No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
     ri = psi4.get_option('SCF', 'SCF_TYPE')
     df_ints_io = psi4.get_option('SCF', 'DF_INTS_IO')
@@ -2024,12 +2041,12 @@ def run_sapt(name, **kwargs):
     user_pg = molecule.schoenflies_symbol()
     molecule.reset_point_group('c1')
     molecule.fix_orientation(True)
-    molecule.fix_com(True) # This should always have been set, very dangerous bug here
+    molecule.fix_com(True)  # This should always have been set, very dangerous bug here
     molecule.update_geometry()
     if user_pg != 'c1':
         psi4.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
-    if (psi4.get_option('SCF','REFERENCE') != 'RHF' ):
+    if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError('SAPT requires requires \"reference rhf\".')
 
     nfrag = molecule.nfragments()
@@ -2124,15 +2141,6 @@ def run_sapt(name, **kwargs):
         psi4.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', True)
 
-    # if the df_basis_sapt basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_SAPT') == '':
-        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
-        if ribasis:
-            psi4.set_global_option('DF_BASIS_SAPT', ribasis)
-            psi4.print_out('  No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_SAPT is required.')
-
     psi4.print_out('\n')
     p4util.banner(name.upper())
     psi4.print_out('\n')
@@ -2143,6 +2151,7 @@ def run_sapt(name, **kwargs):
 
     optstash.restore()
     return e_sapt
+
 
 def run_sapt_ct(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -2164,7 +2173,7 @@ def run_sapt_ct(name, **kwargs):
     if user_pg != 'c1':
         psi4.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
-    if (psi4.get_option('SCF','REFERENCE') != 'RHF' ):
+    if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError('SAPT requires requires \"reference rhf\".')
 
     nfrag = molecule.nfragments()
@@ -2261,15 +2270,6 @@ def run_sapt_ct(name, **kwargs):
     psi4.print_out('\n')
     p4util.banner('SAPT Charge Transfer')
     psi4.print_out('\n')
-
-    # if the df_basis_sapt basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_SAPT') == '':
-        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
-        if ribasis:
-            psi4.set_global_option('DF_BASIS_SAPT', ribasis)
-            psi4.print_out('  No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_SAPT is required.')
 
     psi4.print_out('\n')
     p4util.banner('Dimer Basis SAPT')
@@ -2488,19 +2488,19 @@ def run_fnodfcc(name, **kwargs):
 
     # stash user options
     optstash = p4util.OptionsState(
-        ['FNOCC','COMPUTE_TRIPLES'],
-        ['FNOCC','DFCC'],
-        ['FNOCC','NAT_ORBS'],
-        ['FNOCC','RUN_CEPA'],
-        ['SCF','DF_BASIS_SCF'],
-        ['SCF','DF_INTS_IO'],
-        ['SCF','SCF_TYPE'])
+        ['FNOCC', 'COMPUTE_TRIPLES'],
+        ['FNOCC', 'DFCC'],
+        ['FNOCC', 'NAT_ORBS'],
+        ['FNOCC', 'RUN_CEPA'],
+        ['SCF', 'DF_BASIS_SCF'],
+        ['SCF', 'DF_INTS_IO'],
+        ['SCF', 'SCF_TYPE'])
 
     psi4.set_local_option('FNOCC', 'DFCC', True)
     psi4.set_local_option('FNOCC', 'RUN_CEPA', False)
 
     # throw an exception for open-shells
-    if (psi4.get_option('SCF','REFERENCE') != 'RHF' ):
+    if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
 
     # override symmetry:
@@ -2528,32 +2528,17 @@ def run_fnodfcc(name, **kwargs):
         psi4.set_local_option('FNOCC', 'NAT_ORBS', True)
 
     # set scf-type to df unless the user wants something else
-    if psi4.has_option_changed('SCF','SCF_TYPE') == False:
-       psi4.set_global_option('SCF_TYPE', 'DF')
+    if psi4.has_option_changed('SCF', 'SCF_TYPE') == False:
+        psi4.set_global_option('SCF_TYPE', 'DF')
 
-    scf_type = psi4.get_option('SCF','SCF_TYPE')
-    if ( scf_type != 'CD' and scf_type != 'DF' ):
+    scf_type = psi4.get_option('SCF', 'SCF_TYPE')
+    if scf_type != 'CD' and scf_type != 'DF':
         raise ValidationError("Invalid scf_type for DFCC.")
 
     # save DF or CD ints generated by SCF for use in CC
-    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
+    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
 
-    # the default auxiliary basis
-    if psi4.get_option('FNOCC','DF_BASIS_CC') == '':
-       basis   = psi4.get_global_option('BASIS')
-       dfbasis = p4util.corresponding_rifit(basis)
-       psi4.set_local_option('FNOCC','DF_BASIS_CC',dfbasis)
-
-    # make sure this module knows what df basis was used in the scf
-    if ( psi4.get_option('SCF','SCF_TYPE') == "DF" ):
-        df_basis_scf = psi4.get_option('SCF','DF_BASIS_SCF')
-        if df_basis_scf == '':
-           basis        = psi4.get_global_option('BASIS')
-           df_basis_scf = p4util.corresponding_jkfit(basis)
-
-        psi4.set_global_option('DF_BASIS_SCF',df_basis_scf)
-
-    scf_helper(name,**kwargs)
+    scf_helper(name, **kwargs)
 
     psi4.fnocc()
 
@@ -2582,83 +2567,83 @@ def run_fnocc(name, **kwargs):
 
     # stash user options:
     optstash = p4util.OptionsState(
-        ['TRANSQT2','WFN'],
-        ['FNOCC','RUN_MP2'],
-        ['FNOCC','RUN_MP3'],
-        ['FNOCC','RUN_MP4'],
-        ['FNOCC','RUN_CCSD'],
-        ['FNOCC','COMPUTE_TRIPLES'],
-        ['FNOCC','COMPUTE_MP4_TRIPLES'],
-        ['FNOCC','DFCC'],
-        ['FNOCC','RUN_CEPA'],
-        ['FNOCC','USE_DF_INTS'],
-        ['FNOCC','NAT_ORBS'])
+        ['TRANSQT2', 'WFN'],
+        ['FNOCC', 'RUN_MP2'],
+        ['FNOCC', 'RUN_MP3'],
+        ['FNOCC', 'RUN_MP4'],
+        ['FNOCC', 'RUN_CCSD'],
+        ['FNOCC', 'COMPUTE_TRIPLES'],
+        ['FNOCC', 'COMPUTE_MP4_TRIPLES'],
+        ['FNOCC', 'DFCC'],
+        ['FNOCC', 'RUN_CEPA'],
+        ['FNOCC', 'USE_DF_INTS'],
+        ['FNOCC', 'NAT_ORBS'])
 
-    psi4.set_local_option('FNOCC','DFCC', False)
-    psi4.set_local_option('FNOCC','RUN_CEPA', False)
-    psi4.set_local_option('FNOCC','USE_DF_INTS', False)
+    psi4.set_local_option('FNOCC', 'DFCC', False)
+    psi4.set_local_option('FNOCC', 'RUN_CEPA', False)
+    psi4.set_local_option('FNOCC', 'USE_DF_INTS', False)
 
     # which method?
-    if (lowername == '_ccsd'):
-        psi4.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
-        psi4.set_local_option('FNOCC','RUN_CCSD', True)
-    elif (lowername == '_ccsd(t)'):
-        psi4.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
-        psi4.set_local_option('FNOCC','RUN_CCSD', True)
-    elif (lowername == 'fno-ccsd'):
-        psi4.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
-        psi4.set_local_option('FNOCC','RUN_CCSD', True)
-        psi4.set_local_option('FNOCC','NAT_ORBS', True)
-    elif (lowername == 'fno-ccsd(t)'):
-        psi4.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
-        psi4.set_local_option('FNOCC','RUN_CCSD', True)
-        psi4.set_local_option('FNOCC','NAT_ORBS', True)
-    elif (lowername == 'qcisd'):
-        psi4.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
-        psi4.set_local_option('FNOCC','RUN_CCSD', False)
-    elif (lowername == 'qcisd(t)'):
-        psi4.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
-        psi4.set_local_option('FNOCC','RUN_CCSD', False)
-    elif (lowername == 'fno-qcisd'):
-        psi4.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
-        psi4.set_local_option('FNOCC','RUN_CCSD', False)
-        psi4.set_local_option('FNOCC','NAT_ORBS', True)
-    elif (lowername == 'fno-qcisd(t)'):
-        psi4.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
-        psi4.set_local_option('FNOCC','NAT_ORBS', True)
-        psi4.set_local_option('FNOCC','RUN_CCSD', False)
-    elif (lowername == '_mp2'):
-        psi4.set_local_option('FNOCC','RUN_MP2', True)
-    elif (lowername == 'fno-mp3'):
-        psi4.set_local_option('FNOCC','RUN_MP3', True)
-        psi4.set_local_option('FNOCC','NAT_ORBS', True)
-    elif (lowername == 'fno-mp4'):
-        psi4.set_local_option('FNOCC','RUN_MP4', True)
-        psi4.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', True)
-        psi4.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
-        psi4.set_local_option('FNOCC','NAT_ORBS', True)
-    elif (lowername == 'mp4(sdq)'):
-        psi4.set_local_option('FNOCC','RUN_MP4', True)
-        psi4.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', False)
-        psi4.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
-    elif (lowername == 'fno-mp4(sdq)'):
-        psi4.set_local_option('FNOCC','RUN_MP4', True)
-        psi4.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', False)
-        psi4.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
-        psi4.set_local_option('FNOCC','NAT_ORBS', True)
-    elif (lowername == 'fnocc-mp') and (level == 3):
-        psi4.set_local_option('FNOCC','RUN_MP3', True)
-    elif (lowername == 'fnocc-mp') and (level == 4):
-        psi4.set_local_option('FNOCC','RUN_MP4', True)
-        psi4.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', True)
-        psi4.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
+    if lowername == '_ccsd':
+        psi4.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
+        psi4.set_local_option('FNOCC', 'RUN_CCSD', True)
+    elif lowername == '_ccsd(t)':
+        psi4.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
+        psi4.set_local_option('FNOCC', 'RUN_CCSD', True)
+    elif lowername == 'fno-ccsd':
+        psi4.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
+        psi4.set_local_option('FNOCC', 'RUN_CCSD', True)
+        psi4.set_local_option('FNOCC', 'NAT_ORBS', True)
+    elif lowername == 'fno-ccsd(t)':
+        psi4.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
+        psi4.set_local_option('FNOCC', 'RUN_CCSD', True)
+        psi4.set_local_option('FNOCC', 'NAT_ORBS', True)
+    elif lowername == 'qcisd':
+        psi4.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
+        psi4.set_local_option('FNOCC', 'RUN_CCSD', False)
+    elif lowername == 'qcisd(t)':
+        psi4.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
+        psi4.set_local_option('FNOCC', 'RUN_CCSD', False)
+    elif lowername == 'fno-qcisd':
+        psi4.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
+        psi4.set_local_option('FNOCC', 'RUN_CCSD', False)
+        psi4.set_local_option('FNOCC', 'NAT_ORBS', True)
+    elif lowername == 'fno-qcisd(t)':
+        psi4.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
+        psi4.set_local_option('FNOCC', 'NAT_ORBS', True)
+        psi4.set_local_option('FNOCC', 'RUN_CCSD', False)
+    elif lowername == '_mp2':
+        psi4.set_local_option('FNOCC', 'RUN_MP2', True)
+    elif lowername == 'fno-mp3':
+        psi4.set_local_option('FNOCC', 'RUN_MP3', True)
+        psi4.set_local_option('FNOCC', 'NAT_ORBS', True)
+    elif lowername == 'fno-mp4':
+        psi4.set_local_option('FNOCC', 'RUN_MP4', True)
+        psi4.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', True)
+        psi4.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
+        psi4.set_local_option('FNOCC', 'NAT_ORBS', True)
+    elif lowername == 'mp4(sdq)':
+        psi4.set_local_option('FNOCC', 'RUN_MP4', True)
+        psi4.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', False)
+        psi4.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
+    elif lowername == 'fno-mp4(sdq)':
+        psi4.set_local_option('FNOCC', 'RUN_MP4', True)
+        psi4.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', False)
+        psi4.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
+        psi4.set_local_option('FNOCC', 'NAT_ORBS', True)
+    elif lowername == 'fnocc-mp' and level == 3:
+        psi4.set_local_option('FNOCC', 'RUN_MP3', True)
+    elif lowername == 'fnocc-mp' and level == 4:
+        psi4.set_local_option('FNOCC', 'RUN_MP4', True)
+        psi4.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', True)
+        psi4.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
 
     # throw an exception for open-shells
-    if (psi4.get_option('SCF','REFERENCE') != 'RHF' ):
+    if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
 
     # scf
-    scf_helper(name,**kwargs)
+    scf_helper(name, **kwargs)
 
     # if the scf type is df/cd, then the ao integrals were never written to disk.
     if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
@@ -2668,7 +2653,7 @@ def run_fnocc(name, **kwargs):
             mints.integrals()
 
     # if this is not cim or FNO-CC, run transqt2.  otherwise, libtrans will be used
-    if psi4.get_option('FNOCC','NAT_ORBS') == False and psi4.get_option('FNOCC','RUN_MP2') == False:
+    if psi4.get_option('FNOCC', 'NAT_ORBS') == False and psi4.get_option('FNOCC', 'RUN_MP2') == False:
         if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
             psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD')
             psi4.transqt2()
@@ -2677,36 +2662,36 @@ def run_fnocc(name, **kwargs):
     psi4.fnocc()
 
     # set current correlation energy and total energy.  only need to treat mpn here.
-    if (lowername == 'fnocc-mp') and (level == 3):
-        emp3     = psi4.get_variable("MP3 TOTAL ENERGY")
-        cemp3    = psi4.get_variable("MP3 CORRELATION ENERGY")
-        psi4.set_variable("CURRENT ENERGY",emp3)
-        psi4.set_variable("CURRENT CORRELATION ENERGY",cemp3)
-    elif ( lowername == 'fno-mp3' ):
-        emp3     = psi4.get_variable("MP3 TOTAL ENERGY")
-        cemp3    = psi4.get_variable("MP3 CORRELATION ENERGY")
-        psi4.set_variable("CURRENT ENERGY",emp3)
-        psi4.set_variable("CURRENT CORRELATION ENERGY",cemp3)
-    elif ( lowername == 'mp4(sdq)'):
-        emp4sdq  = psi4.get_variable("MP4(SDQ) TOTAL ENERGY")
+    if lowername == 'fnocc-mp' and level == 3:
+        emp3 = psi4.get_variable("MP3 TOTAL ENERGY")
+        cemp3 = psi4.get_variable("MP3 CORRELATION ENERGY")
+        psi4.set_variable("CURRENT ENERGY", emp3)
+        psi4.set_variable("CURRENT CORRELATION ENERGY", cemp3)
+    elif lowername == 'fno-mp3':
+        emp3 = psi4.get_variable("MP3 TOTAL ENERGY")
+        cemp3 = psi4.get_variable("MP3 CORRELATION ENERGY")
+        psi4.set_variable("CURRENT ENERGY", emp3)
+        psi4.set_variable("CURRENT CORRELATION ENERGY", cemp3)
+    elif lowername == 'mp4(sdq)':
+        emp4sdq = psi4.get_variable("MP4(SDQ) TOTAL ENERGY")
         cemp4sdq = psi4.get_variable("MP4(SDQ) CORRELATION ENERGY")
-        psi4.set_variable("CURRENT ENERGY",emp4sdq)
-        psi4.set_variable("CURRENT CORRELATION ENERGY",cemp4sdq)
-    elif ( lowername == 'fno-mp4(sdq)'):
-        emp4sdq  = psi4.get_variable("MP4(SDQ) TOTAL ENERGY")
+        psi4.set_variable("CURRENT ENERGY", emp4sdq)
+        psi4.set_variable("CURRENT CORRELATION ENERGY", cemp4sdq)
+    elif lowername == 'fno-mp4(sdq)':
+        emp4sdq = psi4.get_variable("MP4(SDQ) TOTAL ENERGY")
         cemp4sdq = psi4.get_variable("MP4(SDQ) CORRELATION ENERGY")
-        psi4.set_variable("CURRENT ENERGY",emp4sdq)
-        psi4.set_variable("CURRENT CORRELATION ENERGY",cemp4sdq)
-    elif ( lowername == 'fno-mp4'):
-        emp4     = psi4.get_variable("MP4 TOTAL ENERGY")
-        cemp4    = psi4.get_variable("MP4 CORRELATION ENERGY")
-        psi4.set_variable("CURRENT ENERGY",emp4)
-        psi4.set_variable("CURRENT CORRELATION ENERGY",cemp4)
-    elif (lowername == 'fnocc-mp') and (level == 4):
-        emp4     = psi4.get_variable("MP4 TOTAL ENERGY")
-        cemp4    = psi4.get_variable("MP4 CORRELATION ENERGY")
-        psi4.set_variable("CURRENT ENERGY",emp4)
-        psi4.set_variable("CURRENT CORRELATION ENERGY",cemp4)
+        psi4.set_variable("CURRENT ENERGY", emp4sdq)
+        psi4.set_variable("CURRENT CORRELATION ENERGY", cemp4sdq)
+    elif lowername == 'fno-mp4':
+        emp4 = psi4.get_variable("MP4 TOTAL ENERGY")
+        cemp4 = psi4.get_variable("MP4 CORRELATION ENERGY")
+        psi4.set_variable("CURRENT ENERGY", emp4)
+        psi4.set_variable("CURRENT CORRELATION ENERGY", cemp4)
+    elif lowername == 'fnocc-mp' and level == 4:
+        emp4 = psi4.get_variable("MP4 TOTAL ENERGY")
+        cemp4 = psi4.get_variable("MP4 CORRELATION ENERGY")
+        psi4.set_variable("CURRENT ENERGY", emp4)
+        psi4.set_variable("CURRENT CORRELATION ENERGY", cemp4)
 
     # restore options
     optstash.restore()
@@ -2733,8 +2718,8 @@ def run_cepa(name, **kwargs):
         ['FNOCC', 'USE_DF_INTS'],
         ['FNOCC', 'CEPA_NO_SINGLES'])
 
-    psi4.set_local_option('FNOCC','RUN_CEPA', True)
-    psi4.set_local_option('FNOCC','USE_DF_INTS', False)
+    psi4.set_local_option('FNOCC', 'RUN_CEPA', True)
+    psi4.set_local_option('FNOCC', 'USE_DF_INTS', False)
 
     # what type of cepa?
     cepa_level = uppername
@@ -2770,7 +2755,7 @@ def run_cepa(name, **kwargs):
     psi4.set_local_option('FNOCC', 'CEPA_LEVEL', cepa_level)
 
     # throw an exception for open-shells
-    if (psi4.get_option('SCF','REFERENCE') != 'RHF' ):
+    if (psi4.get_option('SCF', 'REFERENCE') != 'RHF'):
         raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
 
     psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD')
@@ -2782,7 +2767,7 @@ def run_cepa(name, **kwargs):
             mints = psi4.MintsHelper()
             mints.integrals()
 
-    if psi4.get_option('FNOCC','NAT_ORBS') == False:
+    if psi4.get_option('FNOCC', 'NAT_ORBS') == False:
         if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
             psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD')
             psi4.transqt2()
@@ -2796,12 +2781,12 @@ def run_cepa(name, **kwargs):
             psi4.print_out("\n")
             psi4.print_out("    Error: one-electron properties not implemented for %s\n" % lowername)
             psi4.print_out("\n")
-        elif psi4.get_option('FNOCC','NAT_ORBS'):
+        elif psi4.get_option('FNOCC', 'NAT_ORBS'):
             psi4.print_out("\n")
             psi4.print_out("    Error: one-electron properties not implemented for %s\n" % lowername)
             psi4.print_out("\n")
         else:
-            p4util.oeprop('DIPOLE','QUADRUPOLE','MULLIKEN_CHARGES','NO_OCCUPATIONS',title = cepa_level)
+            p4util.oeprop('DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'NO_OCCUPATIONS', title=cepa_level)
 
     # restore options
     optstash.restore()
@@ -2818,9 +2803,7 @@ def run_detcas(name, **kwargs):
     optstash = p4util.OptionsState(
         ['TRANSQT2', 'WFN'],
         ['DETCI', 'WFN'],
-        ['DETCAS', 'WFN']
     )
-
 
     user_ref = psi4.get_option('DETCI', 'REFERENCE')
     if (user_ref != 'RHF') and (user_ref != 'ROHF'):
@@ -2829,11 +2812,9 @@ def run_detcas(name, **kwargs):
     if (name.lower() == 'rasscf'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'RASSCF')
         psi4.set_local_option('DETCI', 'WFN', 'RASSCF')
-        psi4.set_local_option('DETCAS', 'WFN', 'RASSCF')
     elif (name.lower() == 'casscf'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CASSCF')
         psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
-        psi4.set_local_option('DETCAS', 'WFN', 'CASSCF')
 
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
@@ -2844,28 +2825,47 @@ def run_detcas(name, **kwargs):
             psi4.MintsHelper().integrals()
 
 
-    for iteration in range(1, psi4.get_option('DETCAS', 'MAXITER')+1):
-        psi4.print_out("\nStarting DETCAS iteration %d.\n" % iteration)
-
-        # Run DETCAS
-        psi4.transqt2()
-        psi4.detci()
-        finished = psi4.detcas()
-
-        # Check convergence
-        if finished == psi4.PsiReturnType.EndLoop:
-            print_string =  '\n*******************************************************\n'
-            print_string += '                  ORBITALS CONVERGED\n\n'
-            print_string += '         * %s total energy = %16.12f\n\n' % (name.upper(), psi4.get_variable("CURRENT ENERGY"))
-            print_string += '                    DETCAS Exiting\n'
-            print_string += '*******************************************************'
-                              
-            psi4.print_out(print_string)
-            break
-
+    psi4.transqt2()
+    psi4.detci()
 
     optstash.restore()
 
     return psi4.get_variable("CURRENT ENERGY")
 
 
+def run_efp(name, **kwargs):
+    """Function encoding sequence of module calls for a pure EFP
+    computation (ignore any QM atoms).
+
+    """
+    # initialize library
+    efp = psi4.get_active_efp()
+
+    if efp.nfragments() == 0:
+        raise ValidationError("""Method 'efp' not available without EFP fragments in molecule""")
+
+    # set options
+    psi4.set_global_option('QMEFP', False)  # apt to go haywire if set locally to efp
+    psi4.efp_set_options()
+
+    efp.print_out()
+    returnvalue = efp.compute()
+    return returnvalue
+
+
+#def run_efp_gradient(name, **kwargs):
+#    """Function encoding sequence of module calls for a pure EFP
+#    gradient computation (ignore any QM atoms).
+#
+#    """
+#    # initialize library
+#    efp = psi4.get_active_efp()
+#
+#    # set options
+#    psi4.set_global_option('QMEFP', False)  # apt to go haywire if set locally to efp
+#    psi4.set_local_option('EFP', 'DERTYPE', 'FIRST')
+#    psi4.efp_set_options()
+#
+#    efp.print_out()
+#    returnvalue = efp.compute()
+#    return returnvalue

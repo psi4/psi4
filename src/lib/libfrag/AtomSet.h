@@ -433,6 +433,7 @@ class CartSet:public Set<T>,public CartObject {
       //@}
 };
 
+#if 0
 /*A set of atoms, knows basic atom-y stuff like carts and masses
  class AtomSet:public Set{
  private:
@@ -492,6 +493,18 @@ class CartSet:public Set<T>,public CartObject {
  ///Sets the carts of atom i, {x,y,z}
  void AddCarts(const int i, const double x,const double y,
  const double z);
+ 
+///Returns the mass of atom i
+      double Mass(const int i){return Elem2Atoms[Atoms[i]].mass;}
+
+      ///Returns a vector of the carts
+      std::vector<double> Carts(const int i){
+         return Elem2Atoms[Atoms[i]].carts;
+      }
+};
+*/
+#endif
+}}//End namespaces
 
  ///Sets the mass of atom i to m
  void AddMass(const int i,const double m);

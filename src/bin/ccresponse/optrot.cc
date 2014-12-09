@@ -72,7 +72,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
-#include <physconst.h>
 #include <libmints/molecule.h>
 #include <psi4-dec.h>
 #include "MOInfo.h"
@@ -80,6 +79,7 @@
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
+#include <physconst.h>
 
 namespace psi { namespace ccresponse {
 

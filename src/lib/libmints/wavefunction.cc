@@ -95,6 +95,7 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
     density_threshold_ = other->density_threshold_;
     nalpha_ = other->nalpha_;
     nbeta_ = other->nbeta_;
+    nfrzc_ = other->nfrzc_;
 
     doccpi_ = other->doccpi_;
     soccpi_ = other->soccpi_;
@@ -139,8 +140,7 @@ void Wavefunction::common_init()
     molecule_ = Process::environment.molecule();
 
     // Load in the basis set
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    basisset_ = BasisSet::construct(parser, molecule_, "BASIS");
+    basisset_ = BasisSet::pyconstruct_orbital(molecule_, "BASIS", options_.get_str("BASIS"));
 
     // Check the point group of the molecule. If it is not set, set it.
     if (!molecule_->point_group()) {

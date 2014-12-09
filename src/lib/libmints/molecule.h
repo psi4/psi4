@@ -36,6 +36,8 @@
 
 #include <boost/shared_ptr.hpp>  // something is going on requiring this header
 
+#include "coordentry.h"
+
 // Forward declarations for boost.python used in the extract_subsets
 namespace boost{
 namespace python{
@@ -80,6 +82,12 @@ public:
         Absent,  /*!< Neglect completely */
         Real,    /*!< Include, as normal */
         Ghost    /*!< Include, but with ghost atoms */
+    };
+
+    enum FragmentLevel {
+        QMatom  = 1,    /*!< Quantum mechanical */
+        EFPatom = 2,    /*!< Effective fragment potential */
+        ALLatom = 3     /*!< All atom types */
     };
 
     typedef std::vector<boost::shared_ptr<CoordEntry> > EntryVector;
@@ -154,10 +162,12 @@ protected:
 
     /// A listing of the variables used to define the geometries
     std::map<std::string, double> geometry_variables_;
-    /// The list of atom ranges defining each fragment from parent molecule
-    std::vector<std::pair<int, int> > fragments_;
     /// A list describing how to handle each fragment
     std::vector<FragmentType> fragment_types_;
+//****AVC****//
+// moved fragments_ to public
+// moved fragment_levels_ to public
+//****AVC****//
     /// Symmetry string from geometry specification
     std::string symmetry_from_input_;
     /// Reinterpret the coord entries or not
@@ -169,6 +179,10 @@ protected:
     bool zmat_;
 
 public:
+//****AVC****//
+    /// The list of atom ranges defining each fragment from parent molecule
+    std::vector<std::pair<int, int> > fragments_;
+//****AVC****//
     Molecule();
     /// Copy constructor.
     Molecule(const Molecule& other);
@@ -232,13 +246,16 @@ public:
     int nfragments() const { return fragments_.size();}
     /// The number of active fragments in the molecule
     int nactive_fragments();
-    /// Get molecule name
+    /// Returns the list of atoms belonging to a fragment.
+    // Needed for EFP interface
+    std::pair<int, int> fragment_atom_pair(int f) { return fragments_[f]; }
+
     /// Get molecule name
     const std::string name() const {return name_; }
     /// Set molecule name
     void set_name(const std::string &_name) { name_ = _name; }
     /// Number of atoms
-    int natom() const { return atoms_.size(); }
+    int natom() const; 
     /// Number of all atoms (includes dummies)
     int nallatom() const { return full_atoms_.size(); }
     /// Nuclear charge of atom
@@ -288,6 +305,7 @@ public:
     void set_basis_by_symbol(const std::string& symbol, const std::string& name, const std::string& type="BASIS");
     void set_basis_by_number(int number, const std::string& name, const std::string& type="BASIS");
     void set_basis_by_label(const std::string& label, const std::string& name, const std::string& type="BASIS");
+    void set_shell_by_label(const std::string& label, const std::string& name, const std::string& type="BASIS");
 
     /// Number of frozen core for molecule given freezing state
     int nfrozen_core(const std::string& depth = "");
@@ -337,6 +355,11 @@ public:
      * Reinterpret the fragments for reals/ghosts and build the atom list
      */
     void reinterpret_coordentries();
+
+    /**
+     * Reinterpret the fragments for QM/EFP and build the atom list
+     */
+    void reinterpret_fragments();
 
     /**
      * Find the nearest point group within the tolerance specified, and adjust
@@ -478,14 +501,14 @@ public:
      * Force the molecule to have the symmetry specified in pg_.
      * This is to handle noise coming in from optking.
      */
-    void symmetrize();
+    void symmetrize(double tol=0.05);
     /// @}
 
     /**
      * Given a string (including newlines to separate lines), builds a new molecule
      * and wraps it in a smart pointer
      *
-     * @param text: a string providing the user's input
+     * @param geom a string providing the user's input
      */
     static boost::shared_ptr<Molecule> create_molecule_from_string(const std::string &geom);
 
@@ -509,33 +532,33 @@ public:
 
     /**
      * Sets the specified list of fragments to be real.
-     * @param reals: The list of real fragments.
+     * @param reals The list of real fragments.
      */
     void set_active_fragments(boost::python::list reals);
 
     /**
      * Sets the specified fragment to be real.
-     * @param fragment: The fragment to set.
+     * @param fragment The fragment to set.
      */
     void set_active_fragment(int fragment);
 
     /**
      * Sets the specified list of fragments to be ghosts.
-     * @param ghosts: The list of ghosts fragments.
+     * @param ghosts The list of ghosts fragments.
      */
     void set_ghost_fragments(boost::python::list ghosts);
 
     /**
      * Sets the specified fragment to be a ghost.
-     * @param fragment: The fragment to set.
+     * @param fragment The fragment to set.
      */
     void set_ghost_fragment(int fragment);
 
     /**
      * Makes a copy of the molecule, returning a new ref counted molecule with
      * only certain fragment atoms present as either ghost or real atoms
-     * @param real_list: The list of fragments that should be present in the molecule as real atoms.
-     * @param ghost_list: The list of fragments that should be present in the molecule as ghosts.
+     * @param real_list The list of fragments that should be present in the molecule as real atoms.
+     * @param ghost_list The list of fragments that should be present in the molecule as ghosts.
      * @return The ref counted cloned molecule
      */
     boost::shared_ptr<Molecule> extract_subsets(const std::vector<int> &real_list,
@@ -543,8 +566,8 @@ public:
 
     /**
      * A wrapper to extract_subsets, callable from Boost
-     * @param reals: A list containing the real atoms.
-     * @param ghost: A list containing the ghost atoms.
+     * @param reals A list containing the real atoms.
+     * @param ghost A list containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
     boost::shared_ptr<Molecule> py_extract_subsets_1(boost::python::list reals,
@@ -552,8 +575,8 @@ public:
 
     /**
      * A wrapper to extract_subsets, callable from Boost
-     * @param reals: A list containing the real atoms.
-     * @param ghost: An int containing the ghost atoms.
+     * @param reals A list containing the real atoms.
+     * @param ghost An int containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
     boost::shared_ptr<Molecule> py_extract_subsets_2(boost::python::list reals,
@@ -561,8 +584,8 @@ public:
 
     /**
      * A wrapper to extract_subsets, callable from Boost
-     * @param reals: An int containing the real atoms.
-     * @param ghost: A list containing the ghost atoms.
+     * @param reals An int containing the real atoms.
+     * @param ghost A list containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
     boost::shared_ptr<Molecule> py_extract_subsets_3(int reals,
@@ -570,8 +593,8 @@ public:
 
     /**
      * A wrapper to extract_subsets, callable from Boost
-     * @param reals: An int containing the real atoms.
-     * @param ghost: An int containing the ghost atoms.
+     * @param reals An int containing the real atoms.
+     * @param ghost An int containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
     boost::shared_ptr<Molecule> py_extract_subsets_4(int reals,
@@ -579,14 +602,14 @@ public:
 
     /**
      * A wrapper to extract_subsets, callable from Boost
-     * @param reals: A list containing the real atoms.
+     * @param reals A list containing the real atoms.
      * @return The ref counted cloned molecule.
      */
     boost::shared_ptr<Molecule> py_extract_subsets_5(boost::python::list reals);
 
     /**
      * A wrapper to extract_subsets, callable from Boost
-     * @param reals: An int containing the real atoms.
+     * @param reals An int containing the real atoms.
      * @return The ref counted cloned molecule.
      */
     boost::shared_ptr<Molecule> py_extract_subsets_6(int reals);
@@ -627,7 +650,7 @@ public:
     /// Returns the Schoenflies symbol
     std::string schoenflies_symbol() const;
     /// Check if current geometry fits current point group
-    bool valid_atom_map(double tol = 0.01) const;
+    bool valid_atom_map(double tol = 0.05) const;
     /// Return point group name such as C3v or S8.
     std::string full_point_group() const;
     /// Return point group name such as Cnv or Sn.

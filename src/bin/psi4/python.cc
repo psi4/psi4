@@ -37,6 +37,7 @@
 #include <map>
 #include <iomanip>
 
+#include <libefp_solver/efp_solver.h>
 #include <libmints/mints.h>
 #include <libplugin/plugin.h>
 #include "libparallel/mpi_wrapper.h"
@@ -132,8 +133,10 @@ namespace psi {
     namespace ccresponse { PsiReturnType ccresponse(Options&);}
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
-    namespace detcas     { PsiReturnType detcas(Options&);     }
+//    namespace detcas     { PsiReturnType detcas(Options&);     }
     namespace fnocc      { PsiReturnType fnocc(Options&);     }
+    namespace efp        { PsiReturnType efp_init(Options&);  }
+    namespace efp        { PsiReturnType efp_set_options();   }
     namespace stable     { PsiReturnType stability(Options&); }
     namespace occwave    { PsiReturnType occwave(Options&);   }
     namespace dfoccwave  { PsiReturnType dfoccwave(Options&);   }
@@ -542,6 +545,22 @@ double py_psi_cctriples()
         return 0.0;
 }
 
+boost::shared_ptr<psi::efp::EFP> py_psi_efp_init()
+{
+    py_psi_prepare_options_for_module("EFP");
+    if (psi::efp::efp_init(Process::environment.options) == Success) {
+        return Process::environment.get_efp();
+    }
+    else
+        throw PSIEXCEPTION("Unable to initialize EFP library.");
+}
+
+void py_psi_efp_set_options()
+{
+    py_psi_prepare_options_for_module("EFP");
+    Process::environment.get_efp()->set_options();
+}
+
 double py_psi_fnocc()
 {
     py_psi_prepare_options_for_module("FNOCC");
@@ -562,11 +581,12 @@ double py_psi_detci()
         return 0.0;
 }
 
-double py_psi_detcas()
-{
-    py_psi_prepare_options_for_module("DETCAS");
-    return detcas::detcas(Process::environment.options);
-}
+// DGAS
+// double py_psi_detcas()
+// {
+//     py_psi_prepare_options_for_module("DETCAS");
+//     return detcas::detcas(Process::environment.options);
+// }
 
 double py_psi_cchbar()
 {
@@ -691,22 +711,6 @@ bool specifies_convergence(std::string const & key){
     return ((key.find("CONV") != key.npos) || (key.find("TOL") != key.npos));
 }
 
-bool check_for_basis(std::string const & name, std::string const & type)
-{
-    if (type.find("BASIS") != type.npos) {
-        // check the exceptions
-        if (type == "BASIS_PATH" ||
-            type == "AO_BASIS" ||
-            type == "DUAL_BASIS")
-            return false;
-
-        // else set the basis for all atoms.
-        Process::environment.molecule()->set_basis_all_atoms(name, type);
-        return true;
-    }
-    return false;
-}
-
 bool py_psi_set_local_option_string(std::string const & module, std::string const & key, std::string const & value)
 {
     string nonconst_key = boost::to_upper_copy(key);
@@ -714,7 +718,6 @@ bool py_psi_set_local_option_string(std::string const & module, std::string cons
 
     if (data.type() == "string") {
         Process::environment.options.set_str(module, nonconst_key, value);
-        check_for_basis(value, nonconst_key);
     } else if (data.type() == "boolean") {
         if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
           boost::to_upper_copy(value) == "ON")
@@ -774,7 +777,6 @@ bool py_psi_set_global_option_string(std::string const & key, std::string const 
 
     if (data.type() == "string") {
         Process::environment.options.set_global_str(nonconst_key, value);
-        check_for_basis(value, nonconst_key);
     } else if (data.type() == "boolean") {
         if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
           boost::to_upper_copy(value) == "ON")
@@ -793,7 +795,7 @@ bool py_psi_set_global_option_int(std::string const & key, int value)
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options[nonconst_key];
 
-    if( data.type() == "double" && specifies_convergence(nonconst_key)){
+    if(data.type() == "double" && specifies_convergence(nonconst_key)){
         double val = pow(10.0, -value);
         Process::environment.options.set_global_double(nonconst_key, val);
     }else if (data.type() == "boolean") {
@@ -1023,6 +1025,11 @@ boost::shared_ptr<Molecule> py_psi_get_active_molecule()
     return Process::environment.molecule();
 }
 
+boost::shared_ptr<psi::efp::EFP> py_psi_get_active_efp()
+{
+    return Process::environment.get_efp();
+}
+
 void py_psi_set_gradient(SharedMatrix grad)
 {
     if (Process::environment.wavefunction()) {
@@ -1039,6 +1046,25 @@ SharedMatrix py_psi_get_gradient()
         return wf->gradient();
     } else {
         return Process::environment.gradient();
+    }
+}
+
+void py_psi_set_efp_torque(SharedMatrix torq)
+{
+    if (Process::environment.get_efp()->get_frag_count() > 0) {
+        Process::environment.get_efp()->set_torque(torq);
+    } else {
+        Process::environment.set_efp_torque(torq);
+    }
+}
+
+SharedMatrix py_psi_get_efp_torque()
+{
+    if (Process::environment.get_efp()->get_frag_count() > 0) {
+        boost::shared_ptr<psi::efp::EFP> efp = Process::environment.get_efp();
+        return efp->torque();
+    } else {
+        return Process::environment.efp_torque();
     }
 }
 
@@ -1068,6 +1094,13 @@ double py_psi_get_variable(const std::string & key)
     return Process::environment.globals[uppercase_key];
 }
 
+SharedMatrix py_psi_get_array_variable(const std::string & key)
+{
+    string uppercase_key = key;
+    transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
+    return Process::environment.arrays[uppercase_key];
+}
+
 void py_psi_set_variable(const std::string & key, double val)
 {
     string uppercase_key = key;
@@ -1075,9 +1108,17 @@ void py_psi_set_variable(const std::string & key, double val)
     Process::environment.globals[uppercase_key] = val;
 }
 
+void py_psi_set_array_variable(const std::string & key, SharedMatrix val)
+{
+    string uppercase_key = key;
+    transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
+    Process::environment.arrays[uppercase_key] = val;
+}
+
 void py_psi_clean_variable_map()
 {
     Process::environment.globals.clear();
+    Process::environment.arrays.clear();
 }
 
 void py_psi_set_memory(unsigned long int mem)
@@ -1132,6 +1173,28 @@ void py_psi_print_variable_map()
     outfile->Printf( "\n\n  Variable Map:");
     outfile->Printf( "\n  ----------------------------------------------------------------------------\n");
     outfile->Printf( "%s\n\n", line.str().c_str());
+}
+
+// Converts a C++ map to a python dict
+// from https://gist.github.com/octavifs/5362297
+template <class K, class V>
+boost::python::dict toPythonDict(std::map<K, V> map) {
+    typename std::map<K, V>::iterator iter;
+    boost::python::dict dictionary;
+    for (iter = map.begin(); iter != map.end(); ++iter) {
+        dictionary[iter->first] = iter->second;
+    }
+    return dictionary;
+}
+
+boost::python::dict py_psi_return_variable_map()
+{
+    return toPythonDict(Process::environment.globals);
+}
+
+boost::python::dict py_psi_return_array_variable_map()
+{
+    return toPythonDict(Process::environment.arrays);
 }
 
 std::string py_psi_top_srcdir()
@@ -1272,6 +1335,9 @@ BOOST_PYTHON_MODULE(psi4)
     // CubeFile
     export_cubefile();
 
+    // EFP
+    export_efp();
+
     // Options
     def("prepare_options_for_module", py_psi_prepare_options_for_module, "Sets the options module up to return options pertaining to the named argument (e.g. SCF).");
     def("set_active_molecule", py_psi_set_active_molecule, "Activates a previously defined (in the input) molecule, by name.");
@@ -1279,6 +1345,9 @@ BOOST_PYTHON_MODULE(psi4)
     def("wavefunction", py_psi_wavefunction, "Returns the current wavefunction object from the most recent computation.");
     def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
     def("set_gradient", py_psi_set_gradient, "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
+    def("get_active_efp", &py_psi_get_active_efp, "Returns the currently active EFP object.");
+    def("get_efp_torque", py_psi_get_efp_torque, "Returns the most recently computed gradient for the EFP portion, as a Nefp by 6 Matrix object.");
+    def("set_efp_torque", py_psi_set_efp_torque, "Assigns the global EFP gradient to the values stored in the Nefp by 6 Matrix argument.");
     def("get_frequencies", py_psi_get_frequencies, "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
     def("set_frequencies", py_psi_set_frequencies, "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
     def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");
@@ -1325,6 +1394,11 @@ BOOST_PYTHON_MODULE(psi4)
     def("set_variable", py_psi_set_variable, "Sets a PSI variable, by name.");
     def("print_variables", py_psi_print_variable_map, "Prints all PSI variables that have been set internally.");
     def("clean_variables", py_psi_clean_variable_map, "Empties all PSI variables that have set internally.");
+    def("get_variables", py_psi_return_variable_map, "Returns dictionary of the PSI variables set internally by the modules or python driver.");
+    def("get_array_variable", py_psi_get_array_variable, "Returns one of the PSI variables set internally by the modules or python driver (see manual for full listing of variables available).");
+    def("set_array_variable", py_psi_set_array_variable, "Sets a PSI variable, by name.");
+//    def("print_array_variables", py_psi_print_array_variable_map, "Prints all PSI variables that have been set internally.");
+    def("get_array_variables", py_psi_return_array_variable_map, "Returns dictionary of the PSI variables set internally by the modules or python driver.");
 
     // Get the name of the directory where the input file is at
     def("get_input_directory", py_psi_get_input_directory, "Returns the location of the input file.");
@@ -1382,9 +1456,11 @@ BOOST_PYTHON_MODULE(psi4)
     def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");
     def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
-    def("detcas", py_psi_detcas, "Runs the determinant-based complete active space self consistent field.");
+// DGAS    def("detcas", py_psi_detcas, "Runs the determinant-based complete active space self consistent field.");
     def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
-    def("cchbar", py_psi_cchbar, "Runs the code to generate the similariry transformed Hamiltonian.");
+    def("efp_init", py_psi_efp_init, "Initializes the EFP library and returns an EFP object.");
+    def("efp_set_options", py_psi_efp_set_options, "Set EFP options from environment options object.");
+    def("cchbar", py_psi_cchbar, "Runs the code to generate the similarity transformed Hamiltonian.");
     def("cclambda", py_psi_cclambda, "Runs the coupled cluster lambda equations code.");
     def("ccdensity", py_psi_ccdensity, "Runs the code to compute coupled cluster density matrices.");
     def("ccresponse", py_psi_ccresponse, "Runs the coupled cluster response theory code.");

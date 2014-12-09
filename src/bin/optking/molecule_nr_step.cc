@@ -66,6 +66,8 @@ void MOLECULE::nr_step(void) {
   double nr_h;         // hessian in step direction
   double DE_projected; // projected energy change by quadratic approximation
 
+  oprintf_out("\tTaking NR optimization step.\n");
+
   // Hinv fq = dq
   H_inv = symm_matrix_inv(H, Nintco, 1);
   opt_matrix_mult(H_inv, 0, &fq, 1, &dq, 1, Nintco, Nintco, 1, 0);
@@ -88,6 +90,8 @@ void MOLECULE::nr_step(void) {
   nr_u = init_array(Nintco);
   array_copy(dq, nr_u, Nintco);
   array_normalize(nr_u, Nintco);
+
+  oprintf_out("\tNorm of target step-size %10.5lf\n", nr_dqnorm);
   
   // get gradient and hessian in step direction
   nr_g = -1 * array_dot(fq, nr_u, Nintco); // gradient, not force

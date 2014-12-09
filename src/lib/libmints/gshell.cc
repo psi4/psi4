@@ -40,7 +40,7 @@ ShellInfo::ShellInfo(int am, const std::vector<double> &c,
     : l_(am), puream_(pure), exp_(e), coef_(c),
       nc_(nc), center_(center), start_(start)
 {
-    for(int n = 0; n < c.size(); ++n)
+    for(size_t n = 0; n < c.size(); ++n)
         original_coef_.push_back(c[n]);
 
     ncartesian_ = INT_NCART(l_);
@@ -163,7 +163,7 @@ void ShellInfo::print(std::string out) const
     }
 }
 
-double ShellInfo::normalize(int l, int m, int n)
+double ShellInfo::normalize(int /*l*/, int /*m*/, int /*n*/)
 {
     return 1.0;
 }
@@ -180,8 +180,8 @@ const char *ShellInfo::AMTYPES = "SPDFGHIKLMNOPQRTUVWXYZ";
 GaussianShell::GaussianShell(int am, int nprimitive, const double *oc, const double *c, const double *ec,
                              const double *e, GaussianType pure,
                              int nc, const double *center, int start)
-    : l_(am), nprimitive_(nprimitive), puream_(pure), exp_(e), original_coef_(oc), coef_(c), erd_coef_(ec),
-      nc_(nc), center_(center), start_(start)
+    : l_(am), puream_(pure), exp_(e), original_coef_(oc), coef_(c), erd_coef_(ec),
+      nc_(nc), center_(center), start_(start), nprimitive_(nprimitive)
 {
     ncartesian_ = INT_NCART(l_);
     nfunction_  = INT_NFUNC(puream_, l_);

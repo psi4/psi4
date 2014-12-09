@@ -174,8 +174,9 @@ void DFMP2::common_init()
     sss_ = options_.get_double("MP2_SS_SCALE");
     oss_ = options_.get_double("MP2_OS_SCALE");
 
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    ribasis_ = BasisSet::construct(parser, molecule_, "DF_BASIS_MP2");
+    ribasis_ = BasisSet::pyconstruct_auxiliary(molecule_, 
+        "DF_BASIS_MP2", options_.get_str("DF_BASIS_MP2"), 
+        "RIFIT", options_.get_str("BASIS"));
 }
 double DFMP2::compute_energy()
 {

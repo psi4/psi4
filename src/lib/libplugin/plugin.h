@@ -67,9 +67,9 @@ namespace psi {
       Loads a plugin from disk and calls its initialization routine.
 
       @param plugin_path Absolute or relative path and filename name to the plugin.
-      @returns A plugin_info structure containing function pointers to entry points in the plugin.
+      @return A plugin_info structure containing function pointers to entry points in the plugin.
     */
-    plugin_info plugin_load(std::string& fullpathname);
+    plugin_info plugin_load(std::string& plugin_path);
 
     /**
       Frees the plugin from memory.

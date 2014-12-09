@@ -379,9 +379,10 @@ void DFOCC::ref_grad()
     #endif
 
     // Read in the basis set informations
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::construct(parser, reference_wavefunction_->molecule(), "DF_BASIS_SCF");
-    boost::shared_ptr<BasisSet> primary_ = BasisSet::construct(parser, reference_wavefunction_->molecule(), "BASIS");
+    boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
+        "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"));
+    boost::shared_ptr<BasisSet> primary_ = BasisSet::pyconstruct_orbital(reference_wavefunction_->molecule(),
+        "BASIS", options_.get_str("BASIS"));
     boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
     //auxiliary_->print();
     int nbasis = primary_->nbf();

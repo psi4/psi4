@@ -95,6 +95,8 @@ class Tensor1d
   // gemv: C(m) = \sum_{n} A(m,n) b(n)
   void gemv(bool transa, int m, int n, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
   void gemv(bool transa, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
+  void gemv(bool transa, int m, int n, const SharedTensor2d& a, const SharedTensor2d& b, int start_a, int start_b, double alpha, double beta);
+  void gemv(bool transa, int m, int n, const SharedTensor2d& a, const SharedTensor2d& b, int start_a, int start_b, int start_c, double alpha, double beta);
   // gbmv: This function may NOT working correctly!!!!
   void gbmv(bool transa, const SharedTensor2d& a, const SharedTensor1d& b, double alpha, double beta);
   // xay: return result of A1d_' * A * y
@@ -152,24 +154,44 @@ class Tensor2d
   void release();
   void set(int i, int j, double value);
   void set(double **A);
+  void set(double *A);
   void set(SharedTensor2d &A);
   void set(SharedMatrix A);
+  void set2(SharedMatrix A);
   void set(SharedTensor1d &A);
+  // A2d_[n][ij] = A(i,j)
+  void set_row(const SharedTensor2d &A, int n);
+  // A2d_[ij][n] = A(i,j)
+  void set_column(const SharedTensor2d &A, int n);
   double get(int i, int j);
+  // A2d_[ij] = A(n, ij)
+  void get_row(const SharedTensor2d &A, int n);
+  // A2d_[ij] = A(ij, n)
+  void get_column(const SharedTensor2d &A, int n);
   // A2d = alpha * Adum
   void add(const SharedTensor2d &a);
   void add(double **a);
   void add(double alpha, const SharedTensor2d &a);
   void add(int i, int j, double value);
+  // A2d_[n][ij] += A(i,j)
+  void add2row(const SharedTensor2d &A, int n);
+  // A2d_[ij][n] += A(i,j)
+  void add2col(const SharedTensor2d &A, int n);
   void subtract(const SharedTensor2d &a);
   void subtract(int i, int j, double value);
   // axpy: Y <-- a * X + Y
   void axpy(double **a, double alpha);
   void axpy(const SharedTensor2d &a, double alpha);
+  void axpy(ULI length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha);
   double **transpose2();
   SharedTensor2d transpose();
-  void copy(const SharedTensor2d &Adum);
   void copy(double **a);
+  void copy(const SharedTensor2d &Adum);
+  void copy(ULI length, const SharedTensor2d &A, int inc_a, int inc_2d);
+  void copy(const SharedTensor2d &A, int start);
+  // partial copy
+  void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip);
+  void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip, int start);
   // diagonalize: diagonalize via rsp
   void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff);
   // cdsyev: diagonalize via lapack
@@ -192,7 +214,10 @@ class Tensor2d
   void gemm(bool transa, bool transb, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
   // contract: general contraction C(m,n) = \sum_{k} A(m,k) * B(k,n)
   void contract(bool transa, bool transb, int m, int n, int k, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
-  // contract323: C[Q](m,n) = \sum_{k} A[Q](m,k) * B(k,n)
+  void contract(bool transa, bool transb, int m, int n, int k, const SharedTensor2d& a, const SharedTensor2d& b, int start_a, int start_b, double alpha, double beta);
+  void contract(bool transa, bool transb, int m, int n, int k, const SharedTensor2d& a, const SharedTensor2d& b, 
+                int start_a, int start_b, int start_c, double alpha, double beta);
+  // contract323: C[Q](m,n) = \sum_{k} A[Q](m,k) * B(k,n). Note: contract332 should be called with beta=1.0
   void contract323(bool transa, bool transb, int m, int n, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
   // contract233: C[Q](m,n) = \sum_{k} A(m,k) * B[Q](k,n)
   void contract233(bool transa, bool transb, int m, int n, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
@@ -219,6 +244,7 @@ class Tensor2d
   // identity: A = I
   void identity();
   double trace();
+  double norm();
   // transform: A = L' * B * L
   void transform(const SharedTensor2d& a, const SharedTensor2d& transformer);
   // back_transform: A = L * B * L'
@@ -235,6 +261,8 @@ class Tensor2d
   double **to_block_matrix();
   double *to_lower_triangle();
   void to_shared_matrix(SharedMatrix A);
+  void to_matrix(SharedMatrix A);
+  void to_pointer(double *A);
   // mgs: orthogonalize with a Modified Gram-Schmid algorithm
   void mgs();
   // gs: orthogonalize with a Classical Gram-Schmid algorithm
@@ -290,6 +318,11 @@ class Tensor2d
   void dirprd123(bool transb, const SharedTensor1d &a, const SharedTensor2d &b, double alpha, double beta);
   // dirprd112: A2d_[i][j] = a[i] * b[j]
   void dirprd112(const SharedTensor1d &a, const SharedTensor1d &b);
+  // dirprd112: A2d_[i][j] = alpha *a[i] * b[j] + beta * A2d_[i][j]
+  void dirprd112(const SharedTensor1d &a, const SharedTensor1d &b, double alpha, double beta);
+  // dirprd224: A2d_[ij][kl] = a[i][j] * b[k][l]
+  void dirprd224(const SharedTensor2d &a, const SharedTensor2d &b);
+  void dirprd224(const SharedTensor2d &a, const SharedTensor2d &b, double alpha, double beta);
   double* to_vector(const SharedTensor2i &pair_idx);
   double* to_vector();
   double rms();
@@ -359,6 +392,19 @@ class Tensor2d
   void symm_packed(const SharedTensor2d &A);
   // A(Q, p>=q) = A(Q,pq)
   void ltm(const SharedTensor2d &A);
+
+  // (+)A(p>=q, r>=s) = 1/2 [A(pq,rs) + A(qp,rs)]
+  void symm4(const SharedTensor2d &a);
+  // (-)A(p>=q, r>=s) = 1/2 [A(pq,rs) - A(qp,rs)]
+  void antisymm4(const SharedTensor2d &a);
+  // (+)At(p>=q, r>=s) = 1/2 [A(pq,rs) + A(qp,rs)] * (2 -\delta_{pq})
+  void symm_row_packed4(const SharedTensor2d &a);
+  // (+)At(p>=q, r>=s) = 1/2 [A(pq,rs) + A(qp,rs)] * (2 -\delta_{rs})
+  void symm_col_packed4(const SharedTensor2d &a);
+  // (-)At(p>=q, r>=s) = 1/2 [A(pq,rs) - A(qp,rs)] * (2 -\delta_{pq})
+  void antisymm_row_packed4(const SharedTensor2d &a);
+  // (-)At(p>=q, r>=s) = 1/2 [A(pq,rs) - A(qp,rs)] * (2 -\delta_{rs})
+  void antisymm_col_packed4(const SharedTensor2d &a);
 
   friend class Tensor1d;
   friend class Tensor3d;

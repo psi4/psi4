@@ -139,6 +139,12 @@ supplied, its geometry is written to ``ZMAT`` in Cartesian form and the
 |cfour__cfour_charge|, and |cfour__cfour_multiplicity| keywords are set
 appropriately in the ``*CFOUR(...)`` directive.
 
+.. warning:: There exist molecules (*e.g.*, allene) where the
+   inertial frame is not unique (planes along atoms or between
+   atoms). The orientation reconciling machinery currently does not
+   handle these cases and will fail with "Axis unreconcilable between
+   QC programs". I will get to this soon.
+
 Whenever the molecule is supplied in |PSIfour| format, the job control
 keywords must be too. All :ref:`Cfour keywords <apdx:cfour>` are the usual
 ones, prepended by ``cfour_`` to avoid any possible name conflicts.  As
@@ -661,6 +667,7 @@ Gradient methods available through P4C4 interface
 
 .. _`table:cfour_cc_program`:
 
+.. notes on preferred modules from JFS
 .. comment always abcdtype = aobasis (but sometimes 
 .. comment ncc does rhf ccsdt(q)
 .. comment reccommended code to do with, not only code (b/c mrcc can do much of this)

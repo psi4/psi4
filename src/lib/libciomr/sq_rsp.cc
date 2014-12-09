@@ -57,7 +57,6 @@ extern void tqli(int n, double *d, double **z, double *e, int matz,
 **
 ** \param nm     = rows of matrix
 ** \param n      = columns of matrix
-** \param nv     = number of elements in lower triangle (n*(n+1)/2)
 ** \param array  = matrix to diagonalize
 ** \param e_vals = array to hold eigenvalues
 ** \param matz   = 0 (no eigenvectors, eigenvals in ascending order)
@@ -189,11 +188,11 @@ void sq_rsp(int /*nm*/, int n, double **array, double *e_vals, int matz,
 
     }
   }
-  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   //
   //  DEPRECATED METHOD AND ASSOCIATED CALLS
   //
-  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 /**
   int i, j, ierr;
   int ascend_order;

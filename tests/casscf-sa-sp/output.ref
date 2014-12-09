@@ -1,0 +1,1768 @@
+******************************************************************************
+PSI3 started on augustus.chemistry.gatech.edu at Wed Mar 12 18:14:52 2008
+
+    -----------------------------------------------------------------------    
+            PSI3: An Open-Source Ab Initio Electronic Structure Package 
+                                Version 3.4 Alpha
+
+    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
+    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
+    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+    -----------------------------------------------------------------------    
+
+PSI3 will perform a RHF CASSCF energy computation.
+
+The following programs will be executed:
+
+ input
+ cints
+ cscf
+ detcasman
+ psiclean
+
+******************************************************************************
+tstart called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:14:52 2008
+
+                                --------------
+                                    INPUT
+                                --------------
+
+  LABEL       =	c2
+  SHOWNORM    =	0
+  PUREAM      =	0
+  PRINT_LVL   =	1
+
+  Parsed basis sets from /theoryfs/ds/home/ashley/psi3/lib/pbasis.dat
+Coordinates after reading z-matrices
+
+           1           2           3
+
+    1   0.0000000   0.0000000   0.0000000
+    2   0.0000000   0.0000000   2.2676712
+
+  -Geometry before Center-of-Mass shift (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          CARBON      0.000000000000     0.000000000000     0.000000000000
+          CARBON      0.000000000000     0.000000000000     2.267671186295
+
+
+  -Rotational constants (cm-1) :
+    A = **********  B =    1.95111  C =    1.95111
+    It is a linear molecule.
+
+  -Geometry after Center-of-Mass shift and reorientation (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          CARBON      0.000000000000     0.000000000000    -1.133835593147
+          CARBON      0.000000000000     0.000000000000     1.133835593147
+
+
+  -SYMMETRY INFORMATION:
+    Computational point group is D2h 
+    Number of irr. rep.      = 8
+    Number of atoms          = 2
+    Number of unique atoms   = 1
+
+
+  -BASIS SETS:
+
+   -Basis set on unique center 1:
+      ( (S (  3047.52488000     0.00183474)
+           (   457.36951800     0.01403732)
+           (   103.94868500     0.06884262)
+           (    29.21015530     0.23218444)
+           (     9.28666296     0.46794135)
+           (     3.16392696     0.36231199) )
+        (S (     7.86827235    -0.11933242)
+           (     1.88128854    -0.16085415)
+           (     0.54424926     1.14345644) )
+        (S (     0.16871448     1.00000000) )
+        (P (     7.86827235     0.06899907)
+           (     1.88128854     0.31642396)
+           (     0.54424926     0.74430829) )
+        (P (     0.16871448     1.00000000) )
+        (D (     0.80000000     1.00000000) )
+       )
+
+
+  -BASIS SET INFORMATION:
+    Total number of shells = 12
+    Number of primitives   = 15
+    Number of AO           = 30
+    Number of SO           = 30
+
+    Irrep    Number of SO
+    -----    ------------
+      1            8
+      2            1
+      3            3
+      4            3
+      5            1
+      6            8
+      7            3
+      8            3
+
+
+  -Unique atoms in the canonical coordinate system (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          CARBON      0.000000000000     0.000000000000     1.133835593147
+
+
+  -Geometry in the canonical coordinate system (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          CARBON      0.000000000000     0.000000000000    -1.133835593147
+          CARBON      0.000000000000     0.000000000000     1.133835593147
+
+
+  -Geometry in the canonical coordinate system (Angstrom):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          CARBON      0.000000000000     0.000000000000    -0.600000000000
+          CARBON      0.000000000000     0.000000000000     0.600000000000
+
+
+  -Geometry in the reference coordinate system (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+          CARBON      0.000000000000     0.000000000000    -1.133835593147
+          CARBON      0.000000000000     0.000000000000     1.133835593147
+
+
+  --------------------------------------------------------------------------
+
+    Nuclear Repulsion Energy (a.u.) =      15.875317470000
+
+  -The Interatomic Distances in angstroms:
+
+           1           2
+
+    1   0.0000000
+    2   1.2000000   0.0000000
+
+    Note: To print *all* bond angles, out-of-plane
+          angles, and torsion angles set print = 3
+
+
+******************************************************************************
+tstop called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:14:53 2008
+
+user time   =       0.03 seconds =       0.00 minutes
+system time =       0.01 seconds =       0.00 minutes
+total time  =          1 seconds =       0.02 minutes
+******************************************************************************
+tstart called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:14:53 2008
+
+                  --------------------------------------------
+                    CINTS: An integrals program written in C
+                     Justin T. Fermann and Edward F. Valeev
+                  --------------------------------------------
+
+
+  -OPTIONS:
+    Print level                 = 1
+    Integral tolerance          = 1e-15
+    Max. memory to use          = 3750000 double words
+    Number of threads           = 1
+    LIBINT's real type length   = 64 bit
+
+  -CALCULATION CONSTANTS:
+    Label                       = c2
+    Number of atoms             = 2
+    Number of atomic orbitals   = 30
+    Number of symmetry orbitals = 30
+    Maximum AM in the basis     = 2
+
+  -SYMMETRY INFORMATION;
+    Computational point group        = D2h
+    Number of irreps                 = 8
+
+    Wrote 15467 two-electron integrals to IWL file 33
+
+******************************************************************************
+tstop called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:14:53 2008
+
+user time   =       0.03 seconds =       0.00 minutes
+system time =       0.00 seconds =       0.00 minutes
+total time  =          0 seconds =       0.00 minutes
+******************************************************************************
+tstart called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:14:53 2008
+
+
+             ------------------------------------------
+
+                CSCF3.0: An SCF program written in C
+
+              Written by too many people to mention here
+
+             ------------------------------------------
+  label        = c2
+  wfn          = CASSCF
+  reference    = RHF
+  multiplicity = 1
+  charge       = 0
+  direct       = false
+  dertype      = NONE
+  convergence  = 10
+  maxiter      = 100
+  guess        = AUTO
+
+  nuclear repulsion energy       15.8753174700000
+  first run, so defaulting to core-hamiltonian guess
+
+  level shift                      = 0.100000
+
+  level shifting will stop after 10 cycles
+  diis scale factor                = 1.000000
+  iterations before extrapolation  = 0
+  6 error matrices will be kept
+
+  keeping integrals in 77696 bytes of core
+
+  The lowest eigenvalue of the overlap matrix was 4.949552e-03
+
+
+  Using DOCC and SOCC to 
+  determine occupations
+
+
+  Symmetry block:   Ag    B1g   B2g   B3g   Au    B1u   B2u   B3u  
+  DOCC:              2     0     0     0     0     2     1     1   
+  SOCC:              0     0     0     0     0     0     0     0   
+
+  reading integrals in the IWL format from files 33,35,36,37
+  wrote 4851 integrals to file92
+
+  iter       total energy        delta E         delta P          diiser
+    1       -69.0825111829    8.495783e+01    0.000000e+00    0.000000e+00
+    2       -73.9694659086    4.886955e+00    1.816996e-01    1.083746e+00
+    3       -75.3644497006    1.394984e+00    7.673776e-02    4.738031e-01
+    4       -75.3750721328    1.062243e-02    6.216596e-03    4.241387e-02
+    5       -75.3756499581    5.778253e-04    2.142249e-03    8.486473e-03
+    6       -75.3756624138    1.245561e-05    2.486403e-04    1.401157e-03
+    7       -75.3756624786    6.481267e-08    1.537168e-05    9.908157e-05
+    8       -75.3756624828    4.250310e-09    2.497824e-06    2.262254e-05
+    9       -75.3756624830    1.809042e-10    2.795648e-07    6.307521e-06
+   10       -75.3756624830    3.055334e-12    7.860511e-08    6.058718e-07
+   11       -75.3756624830    1.421085e-14    9.358984e-09    9.374773e-08
+   12       -75.3756624830    2.842171e-14    2.025550e-09    2.123395e-08
+   13       -75.3756624830    0.000000e+00    4.061222e-11    7.001102e-10
+
+Orbital energies (a.u.):
+
+  Doubly occupied orbitals
+   1Ag    -11.345479     1B1u   -11.342482     2Ag     -1.069182  
+   2B1u    -0.499387     1B2u    -0.459767     1B3u    -0.459767  
+
+  Unoccupied orbitals
+   3Ag     -0.096227     1B3g     0.192836     1B2g     0.192836  
+   3B1u     0.482453     4Ag      0.651518     2B2u     0.703331  
+   2B3u     0.703331     5Ag      0.761933     2B2g     0.863149  
+   2B3g     0.863149     4B1u     0.976739     5B1u     1.391894  
+   6Ag      1.764970     1B1g     1.764970     3B2u     1.777341  
+   3B3u     1.777341     1Au      2.207447     6B1u     2.207447  
+   7Ag      2.476083     3B2g     2.815874     3B3g     2.815874  
+   7B1u     3.241596     8Ag      4.308506     8B1u     4.452386  
+
+
+      * SCF total energy   =     -75.375662482998
+        kinetic energy     =      75.523652881174
+        nuc. attr. energy  =    -207.673483057921
+        elec. rep. energy  =      56.774167693749
+        potential energy   =    -150.899315364172
+        virial theorem     =       2.001963371111
+        wavefunction norm  =       1.000000000000
+******************************************************************************
+tstop called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:14:53 2008
+
+user time   =       0.01 seconds =       0.00 minutes
+system time =       0.00 seconds =       0.00 minutes
+total time  =          0 seconds =       0.00 minutes
+******************************************************************************
+tstart called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:14:53 2008
+
+
+*******************************************************
+                   D E T C A S M A N
+
+                   C. David Sherrill
+                    October 7 1998
+*******************************************************
+
+
+
+******************************************************************************
+tstart called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:14:53 2008
+
+
+*******************************************************
+                       D E T C I  
+
+                   C. David Sherrill
+                  Matt L. Leininger
+                     18 June 1999
+*******************************************************
+
+
+
+Note: Calculation requested is a full CI.
+Resetting EX_LVL to 8 and turning on all excitations
+
+
+PARAMETERS: 
+   EX LVL        =        8      H0 BLOCKSIZE =      400
+   VAL EX LVL    =        0      H0 GUESS SIZE=      400
+   H0COUPLINGSIZE=        0      H0 COUPLING  =       no
+   NPRINT        =       20      MAX DET      =    10000
+   MAXITER       =       12      FREEZE CORE  =      yes
+   NUM ROOTS     =        2      ICORE        =        1
+   PRINT         =        1      FCI          =      yes
+   CONV          =      0.001    MIXED        =      yes
+   E CONV        =        8      MIXED4       =      yes
+   OEI FILE      =       35      R4S          =       no
+   OEI ERASE     =       no      REPL OTF     =       no
+   TEI FILE      =       72      DIAG METHOD  =      SEM
+   PRECONDITIONER= DAVIDSON      UPDATE       =   DAVIDSON
+   S             =   0.000000     Ms0          =      yes
+   TEI ERASE     =       no      MAXNVECT     =       26
+   RESTART       =       no      RESTART VECS =        0
+   GUESS VECTOR  =   D FILE      OPENTYPE     =     NONE
+      REF SYM      =     auto
+   COLLAPSE SIZE =        1      HD AVE       = EVANGELISTI
+   LSE           =       no      LSE ITER     =        0
+   HD OTF        =      yes      NO DFILE     =       no
+   MPN           =       no      MPN SCHMIDT  =       no
+ ZAPTN           =       no
+   WIGNER        =       no      ZERO BLOCKS  =       no
+   PERT Z        =   1.0000      ROOT         =        0
+   PTHREADS      =       no      NTHREADS     =        1
+   EXPORT VECTOR =       no      NUM EXPORT   =        0
+   FILTER_GUESS  =      yes      SF_RESTRICT  =       no
+   OPDM          =      yes      TRANS DENSITY=      yes
+
+   FILES         =  50 51 52 53
+
+   EX_TYPE       =  1  1  1  1  1  1  1  1 
+   STATE AVERAGE =  1(0.50)  2(0.50) 
+   STATE AVERAGE =  1(0.50)  2(0.50) 
+
+ORBITALS:
+   NMO          =       30      NUM ALP      =        6
+   ORBS IN CI   =        8      NUM ALP EXPL =        4
+   FROZEN CORE  =        2      NUM BET      =        6
+   RESTR CORE   =        0      NUM BET EXPL =        4
+   IOPEN        =       no
+   RAS1 LVL     =       -1      A RAS3 MAX   =        0
+   RAS1 MIN     =        4      B RAS3 MAX   =        0
+   A RAS1 LVL   =       -1      RAS4 LVL     =        8
+   A RAS1 MIN   =        2      A RAS4 MAX   =        0
+   A RAS1 MAX   =        2      B RAS4 MAX   =        0
+   B RAS1 LVL   =       -1      RAS4 MAX     =        0
+   B RAS1 MIN   =        2      A RAS34 MAX  =        0
+   B RAS1 MAX   =        2      B RAS34 MAX  =        0
+   RAS3 LVL     =        8      RAS34 MAX    =        0
+   RAS3 MAX     =        0
+
+   DOCC         =  2  0  0  0  0  2  1  1 
+   SOCC         =  0  0  0  0  0  0  0  0 
+   FROZEN DOCC  =  1  0  0  0  0  1  0  0 
+   FROZEN UOCC  =  5  1  2  2  1  5  2  2 
+   RAS 1        =  0  0  0  0  0  0  0  0 
+   RAS 2        =  2  0  1  1  0  2  1  1 
+   RAS 3        =  0  0  0  0  0  0  0  0 
+   RAS 4        =  0  0  0  0  0  0  0  0 
+*******************************************************
+
+
+There are 70 alpha strings
+There are 70 beta strings
+CI space contains    8 blocks
+
+CI space requires 660 determinants
+
+Check SCF Energy from 1- and 2-electron integrals
+
+SCF Energy (ref):            -75.3756624830
+Nuclear repulsion energy:     15.8753174700
+One-electron energy:         -30.4593463947
+Two-electron energy:          12.7415698486
+Frozen core energy:          -73.5332034069
+Total electronic energy:     -91.2509799530
+Total SCF energy:            -75.3756624830
+
+ CI vector/subblock length = 660
+
+*** H0 Block Eigenvalue = -75.54698239
+
+Find the roots by the Simultaneous Expansion Method (Block Davidson Method)
+Energy convergence = 0.00316228
+RMS CI vector convergence = 0.001
+
+D file contains 0 not 2 vectors.  Attempting H0block guess.
+Using 2 initial trial vectors
+Computed <S^2> vector 0 =   -0.000000000000066
+
+(sem_iter): Guess vector failed user-specified criterion.
+(sem_iter): H0block.H0b_diag[1][1] - H0block.H0b_diag[2][1] = -0.688485 - 0.688485 = -1.376969 > 1.0E-8
+Computed <S^2> vector 1 =   -0.000000000000005
+
+Iter  0  Root  1 = -75.546982386   Delta_E -1.789E+01   Delta_C  5.710E-02  
+Iter  0  Root  2 = -75.420660882   Delta_E -1.776E+01   Delta_C  4.633E-02  
+
+Iter  1  Root  1 = -75.548343993   Delta_E -1.362E-03   Delta_C  1.616E-02  
+Iter  1  Root  2 = -75.421599485   Delta_E -9.386E-04   Delta_C  1.128E-02  
+
+Iter  2  Root  1 = -75.548461561   Delta_E -1.176E-04   Delta_C  5.285E-03  
+Iter  2  Root  2 = -75.421652909   Delta_E -5.342E-05   Delta_C  4.287E-03  
+
+Iter  3  Root  1 = -75.548475737   Delta_E -1.418E-05   Delta_C  1.749E-03  
+Iter  3  Root  2 = -75.421658067   Delta_E -5.158E-06   Delta_C  2.701E-03  
+
+Iter  4  Root  1 = -75.548477366   Delta_E -1.629E-06   Delta_C  6.490E-04 c
+Iter  4  Root  2 = -75.421662309   Delta_E -4.242E-06   Delta_C  1.283E-03  
+
+Iter  5  Root  1 = -75.548477419   Delta_E -5.300E-08   Delta_C  6.193E-04 c
+Iter  5  Root  2 = -75.421663161   Delta_E -8.517E-07   Delta_C  4.752E-04 c
+
+
+* ROOT 1 CI total energy = -75.5484774189936  (0.0000 eV,      0.00 1/cm)
+
+
+The 20 most important determinants
+
+    1    0.857197  (   12,   12)  2Ag X  2B1uX  1B2uX  1B3uX  
+    2   -0.366133  (   42,   42)  2Ag X  3Ag X  1B2uX  1B3uX  
+    3   -0.097623  (   38,   38)  2Ag X  1B3gX  2B1uX  1B3uX  
+    4   -0.097623  (   34,   34)  2Ag X  1B2gX  2B1uX  1B2uX  
+    5   -0.089324  (   34,   42)  2Ag X  3Ag B  1B2gA  2B1uA  1B2uX  1B3uB  
+    6   -0.089324  (   42,   34)  2Ag X  3Ag A  1B2gB  2B1uB  1B2uX  1B3uA  
+    7    0.089324  (   38,   42)  2Ag X  3Ag B  1B3gA  2B1uA  1B2uB  1B3uX  
+    8    0.089324  (   42,   38)  2Ag X  3Ag A  1B3gB  2B1uB  1B2uA  1B3uX  
+    9   -0.087335  (   56,   60)  2Ag X  3Ag A  1B2gB  2B1uA  1B2uX  1B3uB  
+   10   -0.087335  (   60,   56)  2Ag X  3Ag B  1B2gA  2B1uB  1B2uX  1B3uA  
+   11    0.087335  (   68,   66)  2Ag X  3Ag B  1B3gA  2B1uB  1B2uA  1B3uX  
+   12    0.087335  (   66,   68)  2Ag X  3Ag A  1B3gB  2B1uA  1B2uB  1B3uX  
+   13    0.067857  (   12,   13)  2Ag A  3Ag B  2B1uX  1B2uX  1B3uX  
+   14    0.067857  (   13,   12)  2Ag B  3Ag A  2B1uX  1B2uX  1B3uX  
+   15    0.064521  (    8,    8)  2Ag X  3Ag X  1B2gX  1B2uX  
+   16    0.064521  (   10,   10)  2Ag X  3Ag X  1B3gX  1B3uX  
+   17    0.058685  (   38,   34)  2Ag X  1B2gB  1B3gA  2B1uX  1B2uB  1B3uA  
+   18    0.058685  (   34,   38)  2Ag X  1B2gA  1B3gB  2B1uX  1B2uA  1B3uB  
+   19   -0.049217  (   60,   60)  2Ag X  1B2gX  1B2uX  1B3uX  
+   20   -0.049217  (   68,   68)  2Ag X  1B3gX  1B2uX  1B3uX  
+
+
+
+
+* ROOT 2 CI total energy = -75.4216631610619  (3.4508 eV,  27832.51 1/cm)
+
+
+The 20 most important determinants
+
+    1    0.626186  (   66,   66)  2Ag X  3Ag X  2B1uX  1B3uX  
+    2    0.626186  (   56,   56)  2Ag X  3Ag X  2B1uX  1B2uX  
+    3   -0.340309  (   42,   42)  2Ag X  3Ag X  1B2uX  1B3uX  
+    4   -0.109805  (   12,   12)  2Ag X  2B1uX  1B2uX  1B3uX  
+    5   -0.083144  (   16,   16)  2Ag X  3Ag X  1B2gX  2B1uX  
+    6   -0.083144  (   24,   24)  2Ag X  3Ag X  1B3gX  2B1uX  
+    7    0.078388  (   10,   12)  2Ag X  3Ag A  1B3gA  2B1uB  1B2uB  1B3uX  
+    8    0.078388  (   12,   10)  2Ag X  3Ag B  1B3gB  2B1uA  1B2uA  1B3uX  
+    9   -0.078388  (   12,    8)  2Ag X  3Ag B  1B2gB  2B1uA  1B2uX  1B3uA  
+   10   -0.078388  (    8,   12)  2Ag X  3Ag A  1B2gA  2B1uB  1B2uX  1B3uB  
+   11   -0.068549  (   13,   13)  3Ag X  2B1uX  1B2uX  1B3uX  
+   12   -0.057856  (   42,   38)  2Ag X  3Ag A  1B3gB  2B1uB  1B2uA  1B3uX  
+   13   -0.057856  (   38,   42)  2Ag X  3Ag B  1B3gA  2B1uA  1B2uB  1B3uX  
+   14    0.057856  (   42,   34)  2Ag X  3Ag A  1B2gB  2B1uB  1B2uX  1B3uA  
+   15    0.057856  (   34,   42)  2Ag X  3Ag B  1B2gA  2B1uA  1B2uX  1B3uB  
+   16    0.046620  (   10,   13)  2Ag A  3Ag X  1B3gA  2B1uB  1B2uB  1B3uX  
+   17    0.046620  (   13,   10)  2Ag B  3Ag X  1B3gB  2B1uA  1B2uA  1B3uX  
+   18   -0.046620  (   13,    8)  2Ag B  3Ag X  1B2gB  2B1uA  1B2uX  1B3uA  
+   19   -0.046620  (    8,   13)  2Ag A  3Ag X  1B2gA  2B1uB  1B2uX  1B3uB  
+   20   -0.033727  (   38,   38)  2Ag X  1B3gX  2B1uX  1B3uX  
+
+
+
+Computed <S^2> vector 0 =   -0.000000000000042
+
+Computed <S^2> vector 1 =   -0.000000000000004
+
+   Cartesian Coordinates of Nuclear Centers (a.u.)
+
+   Center           X                   Y                    Z
+   ------   -----------------   -----------------   -----------------
+      C       0.000000000000      0.000000000000     -1.133835593147
+      C       0.000000000000      0.000000000000      1.133835593147
+
+
+Wrote MO-basis TDM 2 to disk
+
+Transition dipole moment root 2 
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+Wrote MO-basis OPDM 1 to disk
+Wrote MO-basis OPDM to disk
+
+Dipole moment root 1 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+Wrote MO-basis OPDM 2 to disk
+
+Dipole moment root 2 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+			 Averaged OPDM's for 2 Roots written to opdm_file 
+
+
+
+        Total Time (s)     %Time 		%Relative
+ -----------------------------------------------------
+ Read      0.003078
+ Write     0.001422
+ Sigma1    0.000000
+ Sigma2    0.001454
+ Sigma3    0.004774
+ S1 Thread 0.000000
+ S2 Thread 0.000000
+ S3 Thread 0.000000
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+
+******************************************************************************
+tstop called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:14:54 2008
+
+user time   =       0.86 seconds =       0.01 minutes
+system time =       0.02 seconds =       0.00 minutes
+total time  =          1 seconds =       0.02 minutes
+CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY
+WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, AND MATT LEININGER
+
+	Trace of one-pdm =  12.000000000000
+	Trace of two-pdm =  66.000000000000
+Calculated CI Energy differs from the CI Energy in checkpoint file
+ECI Calc. = -75.485070
+ECI Chkpt = -75.548477
+
+D E T C A S: C. David Sherrill, April 27 1998
+Forming approximate diagonal orbital Hessian
+
+D E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999
+Attempting to use 2 previous converged vectors
+Iter  0  Root  1 = -75.591191049   Delta_E -1.793E+01   Delta_C  1.160E-01  
+Iter  0  Root  2 = -75.463176676   Delta_E -1.781E+01   Delta_C  1.205E-01  
+
+Iter  1  Root  1 = -75.596936292   Delta_E -5.745E-03   Delta_C  4.679E-02  
+Iter  1  Root  2 = -75.469725711   Delta_E -6.549E-03   Delta_C  2.723E-02  
+
+Iter  2  Root  1 = -75.597760232   Delta_E -8.239E-04   Delta_C  1.859E-02  
+Iter  2  Root  2 = -75.470002460   Delta_E -2.767E-04   Delta_C  9.969E-03  
+
+Iter  3  Root  1 = -75.597917009   Delta_E -1.568E-04   Delta_C  8.588E-03  
+Iter  3  Root  2 = -75.470041175   Delta_E -3.871E-05   Delta_C  3.449E-03  
+
+Iter  4  Root  1 = -75.597962636   Delta_E -4.563E-05   Delta_C  4.588E-03  
+Iter  4  Root  2 = -75.470046780   Delta_E -5.605E-06   Delta_C  1.585E-03 c
+
+Iter  5  Root  1 = -75.597972878   Delta_E -1.024E-05   Delta_C  1.692E-03 c
+Iter  5  Root  2 = -75.470046888   Delta_E -1.079E-07   Delta_C  1.501E-03 c
+
+
+* ROOT 1 CI total energy = -75.5979728783664  (0.0000 eV,      0.00 1/cm)
+
+* ROOT 2 CI total energy = -75.4700468882945  (3.4810 eV,  28076.51 1/cm)
+Computed <S^2> vector 0 =   -0.000000000000054
+
+Computed <S^2> vector 1 =   -0.000000000000004
+
+   Cartesian Coordinates of Nuclear Centers (a.u.)
+
+   Center           X                   Y                    Z
+   ------   -----------------   -----------------   -----------------
+      C       0.000000000000      0.000000000000     -1.133835593147
+      C       0.000000000000      0.000000000000      1.133835593147
+
+
+Transition dipole moment root 2 
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+Dipole moment root 1 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+Dipole moment root 2 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY
+WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, AND MATT LEININGER
+
+	Trace of one-pdm =  12.000000000000
+	Trace of two-pdm =  66.000000000000
+Calculated CI Energy differs from the CI Energy in checkpoint file
+ECI Calc. = -75.534010
+ECI Chkpt = -75.597973
+
+D E T C A S: C. David Sherrill, April 27 1998
+
+	... calculation continuing ...
+Forming approximate diagonal orbital Hessian
+
+D E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999
+Attempting to use 2 previous converged vectors
+Iter  0  Root  1 = -75.603515259   Delta_E -1.795E+01   Delta_C  2.740E-02  
+Iter  0  Root  2 = -75.473861562   Delta_E -1.782E+01   Delta_C  3.323E-02  
+
+Iter  1  Root  1 = -75.603870054   Delta_E -3.548E-04   Delta_C  7.666E-03  
+Iter  1  Root  2 = -75.474302886   Delta_E -4.413E-04   Delta_C  7.682E-03  
+
+Iter  2  Root  1 = -75.603895829   Delta_E -2.577E-05   Delta_C  3.086E-03  
+Iter  2  Root  2 = -75.474324734   Delta_E -2.185E-05   Delta_C  4.250E-03  
+
+Iter  3  Root  1 = -75.603900673   Delta_E -4.845E-06   Delta_C  1.970E-03  
+Iter  3  Root  2 = -75.474334225   Delta_E -9.491E-06   Delta_C  1.646E-03  
+
+Iter  4  Root  1 = -75.603902408   Delta_E -1.735E-06   Delta_C  9.179E-04 c
+Iter  4  Root  2 = -75.474335751   Delta_E -1.526E-06   Delta_C  7.587E-04 c
+
+
+* ROOT 1 CI total energy = -75.6039024081417  (0.0000 eV,      0.00 1/cm)
+
+* ROOT 2 CI total energy = -75.4743357507651  (3.5257 eV,  28436.59 1/cm)
+Computed <S^2> vector 0 =   -0.000000000000052
+
+Computed <S^2> vector 1 =   -0.000000000000004
+
+   Cartesian Coordinates of Nuclear Centers (a.u.)
+
+   Center           X                   Y                    Z
+   ------   -----------------   -----------------   -----------------
+      C       0.000000000000      0.000000000000     -1.133835593147
+      C       0.000000000000      0.000000000000      1.133835593147
+
+
+Transition dipole moment root 2 
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+Dipole moment root 1 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+Dipole moment root 2 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY
+WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, AND MATT LEININGER
+
+	Trace of one-pdm =  12.000000000000
+	Trace of two-pdm =  66.000000000000
+Calculated CI Energy differs from the CI Energy in checkpoint file
+ECI Calc. = -75.539119
+ECI Chkpt = -75.603902
+
+D E T C A S: C. David Sherrill, April 27 1998
+
+	... calculation continuing ...
+Forming approximate diagonal orbital Hessian
+
+D E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999
+Attempting to use 2 previous converged vectors
+Iter  0  Root  1 = -75.604519994   Delta_E -1.795E+01   Delta_C  1.098E-02  
+Iter  0  Root  2 = -75.475481814   Delta_E -1.782E+01   Delta_C  1.105E-02  
+
+Iter  1  Root  1 = -75.604588685   Delta_E -6.869E-05   Delta_C  3.246E-03  
+Iter  1  Root  2 = -75.475534013   Delta_E -5.220E-05   Delta_C  2.711E-03  
+
+Iter  2  Root  1 = -75.604593614   Delta_E -4.929E-06   Delta_C  1.218E-03  
+Iter  2  Root  2 = -75.475536889   Delta_E -2.876E-06   Delta_C  1.795E-03  
+
+Iter  3  Root  1 = -75.604594474   Delta_E -8.600E-07   Delta_C  7.355E-04  
+Iter  3  Root  2 = -75.475538834   Delta_E -1.945E-06   Delta_C  8.029E-04  
+
+Iter  4  Root  1 = -75.604594698   Delta_E -2.246E-07   Delta_C  3.723E-04  
+Iter  4  Root  2 = -75.475539281   Delta_E -4.464E-07   Delta_C  4.640E-04  
+
+Iter  5  Root  1 = -75.604594750   Delta_E -5.158E-08   Delta_C  1.083E-04 c
+Iter  5  Root  2 = -75.475539442   Delta_E -1.617E-07   Delta_C  2.876E-04 c
+
+
+* ROOT 1 CI total energy = -75.6045947497174  (0.0000 eV,      0.00 1/cm)
+
+* ROOT 2 CI total energy = -75.4755394422888  (3.5118 eV,  28324.37 1/cm)
+Computed <S^2> vector 0 =   -0.000000000000047
+
+Computed <S^2> vector 1 =    0.000000000000002
+
+   Cartesian Coordinates of Nuclear Centers (a.u.)
+
+   Center           X                   Y                    Z
+   ------   -----------------   -----------------   -----------------
+      C       0.000000000000      0.000000000000     -1.133835593147
+      C       0.000000000000      0.000000000000      1.133835593147
+
+
+Transition dipole moment root 2 
+Electronic:   0.00000 x,   0.00000 y,  -0.00000 z au
+              0.00000 x,   0.00000 y,  -0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+Dipole moment root 1 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+Dipole moment root 2 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY
+WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, AND MATT LEININGER
+
+	Trace of one-pdm =  12.000000000000
+	Trace of two-pdm =  66.000000000000
+Calculated CI Energy differs from the CI Energy in checkpoint file
+ECI Calc. = -75.540067
+ECI Chkpt = -75.604595
+
+D E T C A S: C. David Sherrill, April 27 1998
+
+	... calculation continuing ...
+Forming approximate diagonal orbital Hessian
+
+D E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999
+Attempting to use 2 previous converged vectors
+Iter  0  Root  1 = -75.604589619   Delta_E -1.795E+01   Delta_C  6.272E-03  
+Iter  0  Root  2 = -75.476076358   Delta_E -1.782E+01   Delta_C  5.338E-03  
+
+Iter  1  Root  1 = -75.604614486   Delta_E -2.487E-05   Delta_C  2.059E-03  
+Iter  1  Root  2 = -75.476091966   Delta_E -1.561E-05   Delta_C  1.528E-03  
+
+Iter  2  Root  1 = -75.604616257   Delta_E -1.771E-06   Delta_C  7.001E-04  
+Iter  2  Root  2 = -75.476092858   Delta_E -8.921E-07   Delta_C  9.658E-04  
+
+Iter  3  Root  1 = -75.604616454   Delta_E -1.964E-07   Delta_C  3.457E-04  
+Iter  3  Root  2 = -75.476093305   Delta_E -4.472E-07   Delta_C  3.509E-04  
+
+Iter  4  Root  1 = -75.604616504   Delta_E -5.008E-08   Delta_C  1.810E-04 c
+Iter  4  Root  2 = -75.476093393   Delta_E -8.832E-08   Delta_C  2.374E-04  
+
+Iter  5  Root  1 = -75.604616504   Delta_E -1.213E-10   Delta_C  1.804E-04 c
+Iter  5  Root  2 = -75.476093438   Delta_E -4.492E-08   Delta_C  1.520E-04 c
+
+
+* ROOT 1 CI total energy = -75.6046165037286  (0.0000 eV,      0.00 1/cm)
+
+* ROOT 2 CI total energy = -75.4760934380983  (3.4973 eV,  28207.55 1/cm)
+Computed <S^2> vector 0 =   -0.000000000000048
+
+Computed <S^2> vector 1 =    0.000000000000000
+
+   Cartesian Coordinates of Nuclear Centers (a.u.)
+
+   Center           X                   Y                    Z
+   ------   -----------------   -----------------   -----------------
+      C       0.000000000000      0.000000000000     -1.133835593147
+      C       0.000000000000      0.000000000000      1.133835593147
+
+
+Transition dipole moment root 2 
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+Dipole moment root 1 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+Dipole moment root 2 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY
+WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, AND MATT LEININGER
+
+	Trace of one-pdm =  12.000000000000
+	Trace of two-pdm =  66.000000000000
+Calculated CI Energy differs from the CI Energy in checkpoint file
+ECI Calc. = -75.540355
+ECI Chkpt = -75.604617
+
+D E T C A S: C. David Sherrill, April 27 1998
+
+	... calculation continuing ...
+Forming approximate diagonal orbital Hessian
+
+D E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999
+Attempting to use 2 previous converged vectors
+Iter  0  Root  1 = -75.604265888   Delta_E -1.795E+01   Delta_C  1.129E-02  
+Iter  0  Root  2 = -75.476702909   Delta_E -1.782E+01   Delta_C  9.237E-03  
+
+Iter  1  Root  1 = -75.604349731   Delta_E -8.384E-05   Delta_C  3.953E-03  
+Iter  1  Root  2 = -75.476762270   Delta_E -5.936E-05   Delta_C  2.434E-03  
+
+Iter  2  Root  1 = -75.604355556   Delta_E -5.825E-06   Delta_C  1.550E-03  
+Iter  2  Root  2 = -75.476764442   Delta_E -2.172E-06   Delta_C  1.152E-03  
+
+Iter  3  Root  1 = -75.604356338   Delta_E -7.822E-07   Delta_C  6.041E-04  
+Iter  3  Root  2 = -75.476765018   Delta_E -5.764E-07   Delta_C  4.041E-04  
+
+Iter  4  Root  1 = -75.604356476   Delta_E -1.383E-07   Delta_C  2.441E-04  
+Iter  4  Root  2 = -75.476765122   Delta_E -1.037E-07   Delta_C  2.385E-04  
+
+Iter  5  Root  1 = -75.604356509   Delta_E -3.281E-08   Delta_C  1.175E-04 c
+Iter  5  Root  2 = -75.476765164   Delta_E -4.217E-08   Delta_C  1.557E-04  
+
+Iter  6  Root  1 = -75.604356509   Delta_E -9.866E-11   Delta_C  1.157E-04 c
+Iter  6  Root  2 = -75.476765176   Delta_E -1.193E-08   Delta_C  6.925E-05 c
+
+
+* ROOT 1 CI total energy = -75.6043565091935  (0.0000 eV,      0.00 1/cm)
+
+* ROOT 2 CI total energy = -75.4767651759609  (3.4719 eV,  28003.06 1/cm)
+Computed <S^2> vector 0 =   -0.000000000000049
+
+Computed <S^2> vector 1 =    0.000000000000003
+
+   Cartesian Coordinates of Nuclear Centers (a.u.)
+
+   Center           X                   Y                    Z
+   ------   -----------------   -----------------   -----------------
+      C       0.000000000000      0.000000000000     -1.133835593147
+      C       0.000000000000      0.000000000000      1.133835593147
+
+
+Transition dipole moment root 2 
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+Dipole moment root 1 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+Dipole moment root 2 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY
+WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, AND MATT LEININGER
+
+	Trace of one-pdm =  12.000000000000
+	Trace of two-pdm =  66.000000000000
+Calculated CI Energy differs from the CI Energy in checkpoint file
+ECI Calc. = -75.540561
+ECI Chkpt = -75.604357
+
+D E T C A S: C. David Sherrill, April 27 1998
+
+	... calculation continuing ...
+Forming approximate diagonal orbital Hessian
+
+D E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999
+Attempting to use 2 previous converged vectors
+Iter  0  Root  1 = -75.604296120   Delta_E -1.795E+01   Delta_C  4.257E-03  
+Iter  0  Root  2 = -75.476842062   Delta_E -1.782E+01   Delta_C  4.479E-03  
+
+Iter  1  Root  1 = -75.604308252   Delta_E -1.213E-05   Delta_C  1.750E-03  
+Iter  1  Root  2 = -75.476857516   Delta_E -1.545E-05   Delta_C  1.195E-03  
+
+Iter  2  Root  1 = -75.604309269   Delta_E -1.017E-06   Delta_C  7.309E-04  
+Iter  2  Root  2 = -75.476858025   Delta_E -5.099E-07   Delta_C  5.658E-04  
+
+Iter  3  Root  1 = -75.604309446   Delta_E -1.773E-07   Delta_C  2.334E-04  
+Iter  3  Root  2 = -75.476858177   Delta_E -1.519E-07   Delta_C  2.194E-04  
+
+Iter  4  Root  1 = -75.604309466   Delta_E -2.015E-08   Delta_C  7.699E-05  
+Iter  4  Root  2 = -75.476858203   Delta_E -2.545E-08   Delta_C  1.067E-04  
+
+Iter  5  Root  1 = -75.604309470   Delta_E -3.133E-09   Delta_C  3.962E-05 c
+Iter  5  Root  2 = -75.476858211   Delta_E -8.206E-09   Delta_C  6.380E-05  
+
+Iter  6  Root  1 = -75.604309470   Delta_E -4.157E-13   Delta_C  3.969E-05 c
+Iter  6  Root  2 = -75.476858213   Delta_E -2.285E-09   Delta_C  2.770E-05 c
+
+
+* ROOT 1 CI total energy = -75.6043094695563  (0.0000 eV,      0.00 1/cm)
+
+* ROOT 2 CI total energy = -75.4768582133405  (3.4681 eV,  27972.32 1/cm)
+Computed <S^2> vector 0 =   -0.000000000000051
+
+Computed <S^2> vector 1 =    0.000000000000001
+
+   Cartesian Coordinates of Nuclear Centers (a.u.)
+
+   Center           X                   Y                    Z
+   ------   -----------------   -----------------   -----------------
+      C       0.000000000000      0.000000000000     -1.133835593147
+      C       0.000000000000      0.000000000000      1.133835593147
+
+
+Transition dipole moment root 2 
+Electronic:   0.00000 x,   0.00000 y,  -0.00000 z au
+              0.00000 x,   0.00000 y,  -0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+Dipole moment root 1 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+Dipole moment root 2 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY
+WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, AND MATT LEININGER
+
+	Trace of one-pdm =  12.000000000000
+	Trace of two-pdm =  66.000000000000
+Calculated CI Energy differs from the CI Energy in checkpoint file
+ECI Calc. = -75.540584
+ECI Chkpt = -75.604309
+
+D E T C A S: C. David Sherrill, April 27 1998
+
+	... calculation continuing ...
+Forming approximate diagonal orbital Hessian
+
+D E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999
+Attempting to use 2 previous converged vectors
+Iter  0  Root  1 = -75.604301478   Delta_E -1.795E+01   Delta_C  1.781E-03  
+Iter  0  Root  2 = -75.476875410   Delta_E -1.782E+01   Delta_C  1.806E-03  
+
+Iter  1  Root  1 = -75.604303566   Delta_E -2.089E-06   Delta_C  6.974E-04  
+Iter  1  Root  2 = -75.476877823   Delta_E -2.413E-06   Delta_C  5.203E-04  
+
+Iter  2  Root  1 = -75.604303725   Delta_E -1.591E-07   Delta_C  2.906E-04  
+Iter  2  Root  2 = -75.476877920   Delta_E -9.722E-08   Delta_C  2.263E-04  
+
+Iter  3  Root  1 = -75.604303753   Delta_E -2.793E-08   Delta_C  8.750E-05  
+Iter  3  Root  2 = -75.476877943   Delta_E -2.265E-08   Delta_C  8.893E-05  
+
+Iter  4  Root  1 = -75.604303756   Delta_E -2.552E-09   Delta_C  2.255E-05  
+Iter  4  Root  2 = -75.476877946   Delta_E -3.860E-09   Delta_C  3.682E-05  
+
+Iter  5  Root  1 = -75.604303756   Delta_E -2.017E-10   Delta_C  9.102E-06 c
+Iter  5  Root  2 = -75.476877948   Delta_E -1.068E-09   Delta_C  2.401E-05  
+
+Iter  6  Root  1 = -75.604303756   Delta_E -6.548E-12   Delta_C  8.526E-06 c
+Iter  6  Root  2 = -75.476877948   Delta_E -3.381E-10   Delta_C  1.112E-05 c
+
+
+* ROOT 1 CI total energy = -75.6043037560700  (0.0000 eV,      0.00 1/cm)
+
+* ROOT 2 CI total energy = -75.4768779479034  (3.4674 eV,  27966.73 1/cm)
+Computed <S^2> vector 0 =   -0.000000000000052
+
+Computed <S^2> vector 1 =   -0.000000000000003
+
+   Cartesian Coordinates of Nuclear Centers (a.u.)
+
+   Center           X                   Y                    Z
+   ------   -----------------   -----------------   -----------------
+      C       0.000000000000      0.000000000000     -1.133835593147
+      C       0.000000000000      0.000000000000      1.133835593147
+
+
+Transition dipole moment root 2 
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+Dipole moment root 1 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+Dipole moment root 2 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY
+WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, AND MATT LEININGER
+
+	Trace of one-pdm =  12.000000000000
+	Trace of two-pdm =  66.000000000000
+Calculated CI Energy differs from the CI Energy in checkpoint file
+ECI Calc. = -75.540591
+ECI Chkpt = -75.604304
+
+D E T C A S: C. David Sherrill, April 27 1998
+
+	... calculation continuing ...
+Forming approximate diagonal orbital Hessian
+
+D E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999
+Attempting to use 2 previous converged vectors
+Iter  0  Root  1 = -75.604238110   Delta_E -1.795E+01   Delta_C  7.101E-03  
+Iter  0  Root  2 = -75.476906280   Delta_E -1.782E+01   Delta_C  7.058E-03  
+
+Iter  1  Root  1 = -75.604271177   Delta_E -3.307E-05   Delta_C  2.764E-03  
+Iter  1  Root  2 = -75.476942674   Delta_E -3.639E-05   Delta_C  2.076E-03  
+
+Iter  2  Root  1 = -75.604273680   Delta_E -2.503E-06   Delta_C  1.160E-03  
+Iter  2  Root  2 = -75.476944233   Delta_E -1.559E-06   Delta_C  8.694E-04  
+
+Iter  3  Root  1 = -75.604274130   Delta_E -4.505E-07   Delta_C  3.486E-04  
+Iter  3  Root  2 = -75.476944561   Delta_E -3.283E-07   Delta_C  3.466E-04  
+
+Iter  4  Root  1 = -75.604274170   Delta_E -3.932E-08   Delta_C  8.705E-05  
+Iter  4  Root  2 = -75.476944615   Delta_E -5.426E-08   Delta_C  1.302E-04  
+
+Iter  5  Root  1 = -75.604274172   Delta_E -2.546E-09   Delta_C  3.034E-05  
+Iter  5  Root  2 = -75.476944627   Delta_E -1.176E-08   Delta_C  7.602E-05  
+
+Iter  6  Root  1 = -75.604274172   Delta_E -3.820E-10   Delta_C  1.169E-05  
+Iter  6  Root  2 = -75.476944631   Delta_E -3.530E-09   Delta_C  3.728E-05  
+
+Iter  7  Root  1 = -75.604274173   Delta_E -5.720E-11   Delta_C  4.094E-06 c
+Iter  7  Root  2 = -75.476944631   Delta_E -7.279E-10   Delta_C  1.868E-05  
+
+Iter  8  Root  1 = -75.604274173   Delta_E -4.366E-12   Delta_C  3.149E-06 c
+Iter  8  Root  2 = -75.476944631   Delta_E -1.868E-10   Delta_C  8.893E-06 c
+
+
+* ROOT 1 CI total energy = -75.6042741725186  (0.0000 eV,      0.00 1/cm)
+
+* ROOT 2 CI total energy = -75.4769446314353  (3.4648 eV,  27945.60 1/cm)
+Computed <S^2> vector 0 =   -0.000000000000045
+
+Computed <S^2> vector 1 =    0.000000000000000
+
+   Cartesian Coordinates of Nuclear Centers (a.u.)
+
+   Center           X                   Y                    Z
+   ------   -----------------   -----------------   -----------------
+      C       0.000000000000      0.000000000000     -1.133835593147
+      C       0.000000000000      0.000000000000      1.133835593147
+
+
+Transition dipole moment root 2 
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+Dipole moment root 1 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+Dipole moment root 2 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY
+WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, AND MATT LEININGER
+
+	Trace of one-pdm =  12.000000000000
+	Trace of two-pdm =  66.000000000000
+Calculated CI Energy differs from the CI Energy in checkpoint file
+ECI Calc. = -75.540609
+ECI Chkpt = -75.604274
+
+D E T C A S: C. David Sherrill, April 27 1998
+
+	... calculation continuing ...
+Forming approximate diagonal orbital Hessian
+
+D E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999
+Attempting to use 2 previous converged vectors
+Iter  0  Root  1 = -75.604244899   Delta_E -1.795E+01   Delta_C  3.084E-03  
+Iter  0  Root  2 = -75.476969030   Delta_E -1.782E+01   Delta_C  3.019E-03  
+
+Iter  1  Root  1 = -75.604251134   Delta_E -6.235E-06   Delta_C  1.207E-03  
+Iter  1  Root  2 = -75.476975653   Delta_E -6.623E-06   Delta_C  8.987E-04  
+
+Iter  2  Root  1 = -75.604251615   Delta_E -4.812E-07   Delta_C  5.081E-04  
+Iter  2  Root  2 = -75.476975945   Delta_E -2.915E-07   Delta_C  3.799E-04  
+
+Iter  3  Root  1 = -75.604251702   Delta_E -8.648E-08   Delta_C  1.532E-04  
+Iter  3  Root  2 = -75.476976007   Delta_E -6.252E-08   Delta_C  1.479E-04  
+
+Iter  4  Root  1 = -75.604251709   Delta_E -7.566E-09   Delta_C  3.901E-05  
+Iter  4  Root  2 = -75.476976017   Delta_E -9.680E-09   Delta_C  5.358E-05  
+
+Iter  5  Root  1 = -75.604251710   Delta_E -5.218E-10   Delta_C  1.427E-05  
+Iter  5  Root  2 = -75.476976019   Delta_E -1.933E-09   Delta_C  3.060E-05  
+
+Iter  6  Root  1 = -75.604251710   Delta_E -8.937E-11   Delta_C  6.058E-06 c
+Iter  6  Root  2 = -75.476976019   Delta_E -5.783E-10   Delta_C  1.546E-05  
+
+Iter  7  Root  1 = -75.604251710   Delta_E -1.047E-11   Delta_C  4.511E-06 c
+Iter  7  Root  2 = -75.476976019   Delta_E -1.259E-10   Delta_C  7.690E-06 c
+
+
+* ROOT 1 CI total energy = -75.6042517097967  (0.0000 eV,      0.00 1/cm)
+
+* ROOT 2 CI total energy = -75.4769760193993  (3.4633 eV,  27933.79 1/cm)
+Computed <S^2> vector 0 =   -0.000000000000049
+
+Computed <S^2> vector 1 =    0.000000000000000
+
+   Cartesian Coordinates of Nuclear Centers (a.u.)
+
+   Center           X                   Y                    Z
+   ------   -----------------   -----------------   -----------------
+      C       0.000000000000      0.000000000000     -1.133835593147
+      C       0.000000000000      0.000000000000      1.133835593147
+
+
+Transition dipole moment root 2 
+Electronic:   0.00000 x,   0.00000 y,  -0.00000 z au
+              0.00000 x,   0.00000 y,  -0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+Dipole moment root 1 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+Dipole moment root 2 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY
+WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, AND MATT LEININGER
+
+	Trace of one-pdm =  12.000000000000
+	Trace of two-pdm =  66.000000000000
+Calculated CI Energy differs from the CI Energy in checkpoint file
+ECI Calc. = -75.540614
+ECI Chkpt = -75.604252
+
+D E T C A S: C. David Sherrill, April 27 1998
+
+	... calculation continuing ...
+Forming approximate diagonal orbital Hessian
+Warning: diis matrix near-singular
+Determinant is -1.555E-19
+
+D E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999
+Attempting to use 2 previous converged vectors
+Iter  0  Root  1 = -75.604201797   Delta_E -1.795E+01   Delta_C  3.527E-03  
+Iter  0  Root  2 = -75.477014014   Delta_E -1.782E+01   Delta_C  3.305E-03  
+
+Iter  1  Root  1 = -75.604209983   Delta_E -8.186E-06   Delta_C  1.379E-03  
+Iter  1  Root  2 = -75.477021862   Delta_E -7.848E-06   Delta_C  1.001E-03  
+
+Iter  2  Root  1 = -75.604210612   Delta_E -6.295E-07   Delta_C  5.860E-04  
+Iter  2  Root  2 = -75.477022223   Delta_E -3.615E-07   Delta_C  4.157E-04  
+
+Iter  3  Root  1 = -75.604210728   Delta_E -1.158E-07   Delta_C  1.790E-04  
+Iter  3  Root  2 = -75.477022297   Delta_E -7.420E-08   Delta_C  1.617E-04  
+
+Iter  4  Root  1 = -75.604210738   Delta_E -1.038E-08   Delta_C  4.658E-05  
+Iter  4  Root  2 = -75.477022308   Delta_E -1.112E-08   Delta_C  5.542E-05  
+
+Iter  5  Root  1 = -75.604210739   Delta_E -7.476E-10   Delta_C  1.734E-05  
+Iter  5  Root  2 = -75.477022310   Delta_E -1.920E-09   Delta_C  2.956E-05  
+
+Iter  6  Root  1 = -75.604210739   Delta_E -1.376E-10   Delta_C  7.854E-06 c
+Iter  6  Root  2 = -75.477022311   Delta_E -5.295E-10   Delta_C  1.478E-05  
+
+Iter  7  Root  1 = -75.604210739   Delta_E -1.457E-11   Delta_C  6.484E-06 c
+Iter  7  Root  2 = -75.477022311   Delta_E -1.142E-10   Delta_C  7.253E-06 c
+
+
+* ROOT 1 CI total energy = -75.6042107392140  (0.0000 eV,      0.00 1/cm)
+
+* ROOT 2 CI total energy = -75.4770223109865  (3.4610 eV,  27914.63 1/cm)
+Computed <S^2> vector 0 =   -0.000000000000048
+
+Computed <S^2> vector 1 =   -0.000000000000002
+
+   Cartesian Coordinates of Nuclear Centers (a.u.)
+
+   Center           X                   Y                    Z
+   ------   -----------------   -----------------   -----------------
+      C       0.000000000000      0.000000000000     -1.133835593147
+      C       0.000000000000      0.000000000000      1.133835593147
+
+
+Transition dipole moment root 2 
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+Dipole moment root 1 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+Dipole moment root 2 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY
+WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, AND MATT LEININGER
+
+	Trace of one-pdm =  12.000000000000
+	Trace of two-pdm =  66.000000000000
+Calculated CI Energy differs from the CI Energy in checkpoint file
+ECI Calc. = -75.540617
+ECI Chkpt = -75.604211
+
+D E T C A S: C. David Sherrill, April 27 1998
+
+	... calculation continuing ...
+Forming approximate diagonal orbital Hessian
+Warning: diis matrix near-singular
+Determinant is -5.996E-25
+
+D E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999
+Attempting to use 2 previous converged vectors
+Iter  0  Root  1 = -75.604186061   Delta_E -1.795E+01   Delta_C  1.783E-03  
+Iter  0  Root  2 = -75.477043220   Delta_E -1.782E+01   Delta_C  1.678E-03  
+
+Iter  1  Root  1 = -75.604188133   Delta_E -2.072E-06   Delta_C  6.994E-04  
+Iter  1  Root  2 = -75.477045211   Delta_E -1.992E-06   Delta_C  5.207E-04  
+
+Iter  2  Root  1 = -75.604188296   Delta_E -1.632E-07   Delta_C  2.953E-04  
+Iter  2  Root  2 = -75.477045309   Delta_E -9.825E-08   Delta_C  2.210E-04  
+
+Iter  3  Root  1 = -75.604188326   Delta_E -2.943E-08   Delta_C  9.015E-05  
+Iter  3  Root  2 = -75.477045330   Delta_E -2.094E-08   Delta_C  8.361E-05  
+
+Iter  4  Root  1 = -75.604188328   Delta_E -2.704E-09   Delta_C  2.482E-05  
+Iter  4  Root  2 = -75.477045333   Delta_E -3.008E-09   Delta_C  2.844E-05  
+
+Iter  5  Root  1 = -75.604188329   Delta_E -2.479E-10   Delta_C  1.071E-05  
+Iter  5  Root  2 = -75.477045334   Delta_E -5.178E-10   Delta_C  1.588E-05  
+
+Iter  6  Root  1 = -75.604188329   Delta_E -5.756E-11   Delta_C  5.161E-06  
+Iter  6  Root  2 = -75.477045334   Delta_E -1.572E-10   Delta_C  8.506E-06  
+
+Iter  7  Root  1 = -75.604188329   Delta_E -1.263E-11   Delta_C  2.079E-06 c
+Iter  7  Root  2 = -75.477045334   Delta_E -3.638E-11   Delta_C  3.808E-06 c
+
+
+* ROOT 1 CI total energy = -75.6041883286934  (0.0000 eV,      0.00 1/cm)
+
+* ROOT 2 CI total energy = -75.4770453340578  (3.4597 eV,  27904.66 1/cm)
+Computed <S^2> vector 0 =   -0.000000000000048
+
+Computed <S^2> vector 1 =   -0.000000000000002
+
+   Cartesian Coordinates of Nuclear Centers (a.u.)
+
+   Center           X                   Y                    Z
+   ------   -----------------   -----------------   -----------------
+      C       0.000000000000      0.000000000000     -1.133835593147
+      C       0.000000000000      0.000000000000      1.133835593147
+
+
+Transition dipole moment root 2 
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+Dipole moment root 1 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+Dipole moment root 2 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY
+WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, AND MATT LEININGER
+
+	Trace of one-pdm =  12.000000000000
+	Trace of two-pdm =  66.000000000000
+Calculated CI Energy differs from the CI Energy in checkpoint file
+ECI Calc. = -75.540617
+ECI Chkpt = -75.604188
+
+D E T C A S: C. David Sherrill, April 27 1998
+
+	... calculation continuing ...
+Forming approximate diagonal orbital Hessian
+Warning: diis matrix near-singular
+Determinant is -2.525E-24
+
+D E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999
+Attempting to use 2 previous converged vectors
+Iter  0  Root  1 = -75.604189709   Delta_E -1.795E+01   Delta_C  1.328E-04  
+Iter  0  Root  2 = -75.477043933   Delta_E -1.782E+01   Delta_C  1.293E-04  
+
+Iter  1  Root  1 = -75.604189720   Delta_E -1.141E-08   Delta_C  5.207E-05  
+Iter  1  Root  2 = -75.477043945   Delta_E -1.178E-08   Delta_C  4.031E-05  
+
+Iter  2  Root  1 = -75.604189721   Delta_E -9.062E-10   Delta_C  2.184E-05  
+Iter  2  Root  2 = -75.477043945   Delta_E -5.899E-10   Delta_C  1.700E-05  
+
+Iter  3  Root  1 = -75.604189721   Delta_E -1.613E-10   Delta_C  6.688E-06  
+Iter  3  Root  2 = -75.477043945   Delta_E -1.254E-10   Delta_C  6.565E-06  
+
+Iter  4  Root  1 = -75.604189721   Delta_E -1.517E-11   Delta_C  1.925E-06  
+Iter  4  Root  2 = -75.477043945   Delta_E -1.788E-11   Delta_C  2.149E-06  
+
+Iter  5  Root  1 = -75.604189721   Delta_E -1.567E-12   Delta_C  8.690E-07 c
+Iter  5  Root  2 = -75.477043945   Delta_E -2.430E-12   Delta_C  9.682E-07 c
+
+
+* ROOT 1 CI total energy = -75.6041897212317  (0.0000 eV,      0.00 1/cm)
+
+* ROOT 2 CI total energy = -75.4770439453974  (3.4598 eV,  27905.27 1/cm)
+Computed <S^2> vector 0 =   -0.000000000000044
+
+Computed <S^2> vector 1 =   -0.000000000000005
+
+   Cartesian Coordinates of Nuclear Centers (a.u.)
+
+   Center           X                   Y                    Z
+   ------   -----------------   -----------------   -----------------
+      C       0.000000000000      0.000000000000     -1.133835593147
+      C       0.000000000000      0.000000000000      1.133835593147
+
+
+Transition dipole moment root 2 
+Electronic:   0.00000 x,   0.00000 y,  -0.00000 z au
+              0.00000 x,   0.00000 y,  -0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+Dipole moment root 1 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+Dipole moment root 2 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY
+WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, AND MATT LEININGER
+
+	Trace of one-pdm =  12.000000000000
+	Trace of two-pdm =  66.000000000000
+Calculated CI Energy differs from the CI Energy in checkpoint file
+ECI Calc. = -75.540617
+ECI Chkpt = -75.604190
+
+D E T C A S: C. David Sherrill, April 27 1998
+
+	... calculation continuing ...
+Forming approximate diagonal orbital Hessian
+Warning: diis matrix near-singular
+Determinant is -1.913E-17
+
+D E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999
+Attempting to use 2 previous converged vectors
+Iter  0  Root  1 = -75.604189133   Delta_E -1.795E+01   Delta_C  3.466E-05  
+Iter  0  Root  2 = -75.477044532   Delta_E -1.782E+01   Delta_C  2.949E-05  
+
+Iter  1  Root  1 = -75.604189134   Delta_E -8.007E-10   Delta_C  1.375E-05  
+Iter  1  Root  2 = -75.477044533   Delta_E -6.224E-10   Delta_C  8.967E-06  
+
+Iter  2  Root  1 = -75.604189134   Delta_E -6.274E-11   Delta_C  5.984E-06  
+Iter  2  Root  2 = -75.477044533   Delta_E -2.849E-11   Delta_C  3.731E-06  
+
+Iter  3  Root  1 = -75.604189134   Delta_E -1.213E-11   Delta_C  1.860E-06  
+Iter  3  Root  2 = -75.477044533   Delta_E -5.976E-12   Delta_C  1.380E-06  
+
+Iter  4  Root  1 = -75.604189134   Delta_E -1.108E-12   Delta_C  4.663E-07  
+Iter  4  Root  2 = -75.477044533   Delta_E -7.141E-13   Delta_C  4.121E-07  
+
+Iter  5  Root  1 = -75.604189134   Delta_E -6.395E-14   Delta_C  1.478E-07 c
+Iter  5  Root  2 = -75.477044533   Delta_E -8.882E-14   Delta_C  1.642E-07 c
+
+
+* ROOT 1 CI total energy = -75.6041891340378  (0.0000 eV,      0.00 1/cm)
+
+* ROOT 2 CI total energy = -75.4770445330648  (3.4598 eV,  27905.01 1/cm)
+Computed <S^2> vector 0 =   -0.000000000000045
+
+Computed <S^2> vector 1 =   -0.000000000000001
+
+   Cartesian Coordinates of Nuclear Centers (a.u.)
+
+   Center           X                   Y                    Z
+   ------   -----------------   -----------------   -----------------
+      C       0.000000000000      0.000000000000     -1.133835593147
+      C       0.000000000000      0.000000000000      1.133835593147
+
+
+Transition dipole moment root 2 
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+Dipole moment root 1 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+Dipole moment root 2 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY
+WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, AND MATT LEININGER
+
+	Trace of one-pdm =  12.000000000000
+	Trace of two-pdm =  66.000000000000
+Calculated CI Energy differs from the CI Energy in checkpoint file
+ECI Calc. = -75.540617
+ECI Chkpt = -75.604189
+
+D E T C A S: C. David Sherrill, April 27 1998
+
+	... calculation continuing ...
+Forming approximate diagonal orbital Hessian
+
+D E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999
+Attempting to use 2 previous converged vectors
+Iter  0  Root  1 = -75.604189247   Delta_E -1.795E+01   Delta_C  6.744E-06  
+Iter  0  Root  2 = -75.477044420   Delta_E -1.782E+01   Delta_C  5.695E-06  
+
+Iter  1  Root  1 = -75.604189247   Delta_E -2.978E-11   Delta_C  2.608E-06  
+Iter  1  Root  2 = -75.477044420   Delta_E -2.152E-11   Delta_C  1.857E-06  
+
+Iter  2  Root  1 = -75.604189247   Delta_E -2.277E-12   Delta_C  1.132E-06  
+Iter  2  Root  2 = -75.477044420   Delta_E -1.286E-12   Delta_C  7.473E-07  
+
+Iter  3  Root  1 = -75.604189247   Delta_E -4.370E-13   Delta_C  3.554E-07  
+Iter  3  Root  2 = -75.477044420   Delta_E -2.096E-13   Delta_C  2.821E-07  
+
+Iter  4  Root  1 = -75.604189247   Delta_E -4.974E-14   Delta_C  1.048E-07  
+Iter  4  Root  2 = -75.477044420   Delta_E -3.553E-14   Delta_C  7.676E-08 c
+
+Iter  5  Root  1 = -75.604189247   Delta_E  3.553E-15   Delta_C  5.007E-08 c
+Iter  5  Root  2 = -75.477044420   Delta_E  1.066E-14   Delta_C  7.532E-08 c
+
+
+* ROOT 1 CI total energy = -75.6041892471815  (0.0000 eV,      0.00 1/cm)
+
+* ROOT 2 CI total energy = -75.4770444199309  (3.4598 eV,  27905.06 1/cm)
+Computed <S^2> vector 0 =   -0.000000000000048
+
+Computed <S^2> vector 1 =   -0.000000000000002
+
+   Cartesian Coordinates of Nuclear Centers (a.u.)
+
+   Center           X                   Y                    Z
+   ------   -----------------   -----------------   -----------------
+      C       0.000000000000      0.000000000000     -1.133835593147
+      C       0.000000000000      0.000000000000      1.133835593147
+
+
+Transition dipole moment root 2 
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+Dipole moment root 1 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+Dipole moment root 2 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY
+WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, AND MATT LEININGER
+
+	Trace of one-pdm =  12.000000000000
+	Trace of two-pdm =  66.000000000000
+Calculated CI Energy differs from the CI Energy in checkpoint file
+ECI Calc. = -75.540617
+ECI Chkpt = -75.604189
+
+D E T C A S: C. David Sherrill, April 27 1998
+
+	... calculation continuing ...
+Forming approximate diagonal orbital Hessian
+Warning: diis matrix near-singular
+Determinant is -1.409E-17
+
+D E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999
+Attempting to use 2 previous converged vectors
+Iter  0  Root  1 = -75.604189219   Delta_E -1.795E+01   Delta_C  1.642E-06  
+Iter  0  Root  2 = -75.477044448   Delta_E -1.782E+01   Delta_C  1.362E-06  
+
+Iter  1  Root  1 = -75.604189219   Delta_E -1.783E-12   Delta_C  6.484E-07  
+Iter  1  Root  2 = -75.477044448   Delta_E -1.293E-12   Delta_C  4.273E-07  
+
+Iter  2  Root  1 = -75.604189219   Delta_E -1.386E-13   Delta_C  2.823E-07  
+Iter  2  Root  2 = -75.477044448   Delta_E -7.105E-14   Delta_C  1.738E-07  
+
+Iter  3  Root  1 = -75.604189219   Delta_E -2.842E-14   Delta_C  8.865E-08 c
+Iter  3  Root  2 = -75.477044448   Delta_E -7.105E-15   Delta_C  6.670E-08 c
+
+
+* ROOT 1 CI total energy = -75.6041892191729  (0.0000 eV,      0.00 1/cm)
+
+* ROOT 2 CI total energy = -75.4770444479410  (3.4598 eV,  27905.05 1/cm)
+Computed <S^2> vector 0 =   -0.000000000000044
+
+Computed <S^2> vector 1 =    0.000000000000000
+
+   Cartesian Coordinates of Nuclear Centers (a.u.)
+
+   Center           X                   Y                    Z
+   ------   -----------------   -----------------   -----------------
+      C       0.000000000000      0.000000000000     -1.133835593147
+      C       0.000000000000      0.000000000000      1.133835593147
+
+
+Transition dipole moment root 2 
+Electronic:   0.00000 x,   0.00000 y,  -0.00000 z au
+              0.00000 x,   0.00000 y,  -0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+Dipole moment root 1 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+Dipole moment root 2 
+Nuclear:      0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Electronic:   0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+Total:        0.00000 x,   0.00000 y,   0.00000 z au
+              0.00000 x,   0.00000 y,   0.00000 z D
+|mu|  =       0.00000 au   0.00000 D
+
+
+CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY
+WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, AND MATT LEININGER
+
+	Trace of one-pdm =  12.000000000000
+	Trace of two-pdm =  66.000000000000
+Calculated CI Energy differs from the CI Energy in checkpoint file
+ECI Calc. = -75.540617
+ECI Chkpt = -75.604189
+
+D E T C A S: C. David Sherrill, April 27 1998
+
+	*** Calculation Converged ***
+Forming approximate diagonal orbital Hessian
+
+*******************************************************
+                  ORBITALS CONVERGED
+
+  * CASSCF total energy =  -75.604189247182
+
+                DETCAS MANAGER EXITING
+*******************************************************
+
+
+
+******************************************************************************
+tstop called on augustus.chemistry.gatech.edu
+Wed Mar 12 18:15:28 2008
+
+user time   =       0.00 seconds =       0.00 minutes
+system time =       0.00 seconds =       0.00 minutes
+total time  =         35 seconds =       0.58 minutes
+
+                          --------------------------
+                          PSI3 Computation Completed
+                          --------------------------
+
+PSI3 stopped on augustus.chemistry.gatech.edu at Wed Mar 12 18:15:28 2008
+
+Total PSI3 wall time         36 seconds =       0.60 minutes
+******************************************************************************

@@ -134,8 +134,8 @@ boost::shared_ptr<DFTSAPT> DFTSAPT::build(boost::shared_ptr<Wavefunction> d,
     sapt->eps_avir_B_ = mB->epsilon_a_subset("AO","ACTIVE_VIR");
     sapt->eps_fvir_B_ = mB->epsilon_a_subset("AO","FROZEN_VIR");
 
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    sapt->mp2fit_ = BasisSet::construct(parser, sapt->dimer_, "DF_BASIS_SAPT");
+    sapt->mp2fit_ = BasisSet::pyconstruct_auxiliary(sapt->dimer_,
+            "DF_BASIS_SAPT", options.get_str("DF_BASIS_SAPT"), "RIFIT", options.get_str("BASIS"));
 
     return boost::shared_ptr<DFTSAPT>(sapt);
 }

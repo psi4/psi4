@@ -335,7 +335,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 
     const unsigned short *ifuncpi = s1.nfuncpi;
 
-    for (int n=0; n<sj_arr.size(); ++n) {
+    for (size_t n=0; n<sj_arr.size(); ++n) {
         int sj = sj_arr[n];
         int sk = sk_arr[n];
         int sl = sl_arr[n];
@@ -443,14 +443,6 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
 
     mints_timer_on("TwoBodySOInt::provide_IJKL overall");
 
-    const double *aobuff = tb_[thread]->buffer();
-
-    const SOTransform &t1 = b1_->sotrans(ish);
-    const SOTransform &t2 = b2_->sotrans(jsh);
-    const SOTransform &t3 = b3_->sotrans(ksh);
-    const SOTransform &t4 = b4_->sotrans(lsh);
-
-    int nso1 = b1_->nfunction(ish);
     int nso2 = b2_->nfunction(jsh);
     int nso3 = b3_->nfunction(ksh);
     int nso4 = b4_->nfunction(lsh);
@@ -460,17 +452,12 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
     int n3 = b3_->nfunction(ksh);
     int n4 = b4_->nfunction(lsh);
 
-    const SOTransformShell &s1 = t1.aoshell[0];
-    const SOTransformShell &s2 = t2.aoshell[0];
-    const SOTransformShell &s3 = t3.aoshell[0];
-    const SOTransformShell &s4 = t4.aoshell[0];
+    int itr;
+    int jtr;
+    int ktr;
+    int ltr;
 
-    int itr, itrfunc;
-    int jtr, jtrfunc;
-    int ktr, ktrfunc;
-    int ltr, ltrfunc;
-
-    for (itr=0, itrfunc=0; itr<n1; itr++, itrfunc++) {
+    for (itr=0; itr<n1; itr++) {
 
         int ifunc = b1_->function(ish) + itr;
         int isym = b1_->irrep(ifunc);
@@ -705,7 +692,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
     const CdSalcWRTAtom& c1 = cdsalcs_->atom_salc(siatom);
 
     // Zero out SALC memory
-    for (int i=0; i<cdsalcs_->ncd(); ++i)
+    for (size_t i=0; i<cdsalcs_->ncd(); ++i)
         ::memset(deriv_[thread][i], 0, sizeof(double)*nso);
 
 
@@ -717,7 +704,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
     //    if (uish == uksh && ujsh == ulsh || uish == ulsh && ujsh == uksh)
     //      pfac *= 0.5;
 
-    for (int n=0; n<sj_arr.size(); ++n) {
+    for (size_t n=0; n<sj_arr.size(); ++n) {
         int sj = sj_arr[n];
         int sk = sk_arr[n];
         int sl = sl_arr[n];
@@ -983,14 +970,6 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
 
     mints_timer_on("TwoBodySOInt::provide_IJKL overall");
 
-    const double *aobuff = tb_[thread]->buffer();
-
-    const SOTransform &t1 = b1_->sotrans(ish);
-    const SOTransform &t2 = b2_->sotrans(jsh);
-    const SOTransform &t3 = b3_->sotrans(ksh);
-    const SOTransform &t4 = b4_->sotrans(lsh);
-
-    int nso1 = b1_->nfunction(ish);
     int nso2 = b2_->nfunction(jsh);
     int nso3 = b3_->nfunction(ksh);
     int nso4 = b4_->nfunction(lsh);
@@ -1000,17 +979,12 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
     int n3 = b3_->nfunction(ksh);
     int n4 = b4_->nfunction(lsh);
 
-    const SOTransformShell &s1 = t1.aoshell[0];
-    const SOTransformShell &s2 = t2.aoshell[0];
-    const SOTransformShell &s3 = t3.aoshell[0];
-    const SOTransformShell &s4 = t4.aoshell[0];
+    int itr;
+    int jtr;
+    int ktr;
+    int ltr;
 
-    int itr, itrfunc;
-    int jtr, jtrfunc;
-    int ktr, ktrfunc;
-    int ltr, ltrfunc;
-
-    for (itr=0, itrfunc=0; itr<n1; itr++, itrfunc++) {
+    for (itr=0; itr<n1; itr++) {
 
         int ifunc = b1_->function(ish) + itr;
         int isym = b1_->irrep(ifunc);
@@ -1116,7 +1090,7 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
                     }
 
                     mints_timer_on("TwoBodySOInt::provide_IJKL functor");
-                    for (int i=0; i<cdsalcs_->ncd(); ++i) {
+                    for (size_t i=0; i<cdsalcs_->ncd(); ++i) {
                         if (fabs(deriv_[thread][i][lsooff]) > cutoff_)
                             body(i, iiabs, jjabs, kkabs, llabs,
                                  iiirrep, iirel,

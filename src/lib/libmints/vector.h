@@ -89,7 +89,7 @@ public:
     Vector(const std::string& name, const Dimension& dimpi);
 
     /// Destructor, frees memory
-    ~Vector();
+    virtual ~Vector();
 
     /**
      * Convenient creation function return SharedMatrix
@@ -229,7 +229,7 @@ public:
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(std::string OutFileRMR = "outfile", const char *extra=NULL) const;
+    void print(std::string outfile = "outfile", const char *extra=NULL) const;
 
     /// Copies rhs to this
     void copy(const Vector* rhs);
@@ -336,7 +336,7 @@ public:
     IntVector(const std::string& name, int dim);
 
     /// Destructor, frees memory
-    ~IntVector();
+    virtual ~IntVector();
 
     void init(int nirrep, int *dimpi);
 
@@ -398,7 +398,7 @@ public:
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(std::string OutFileRMR = "outfile", const char *extra=NULL) const;
+    void print(std::string outfile = "outfile", const char *extra=NULL) const;
     /// Copies rhs to this
     void copy(const IntVector* rhs);
     /// Copies rhs to this
