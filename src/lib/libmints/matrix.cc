@@ -58,6 +58,8 @@
 #include <sstream>
 #include <string>
 #include "libparallel/ParallelPrinter.h"
+#include "../libparallel/mpi_wrapper.h"
+#include "../libparallel/local.h"
 using namespace boost;
 using namespace psi;
 using namespace std;
@@ -3373,10 +3375,10 @@ void Matrix::bcast(int broadcaster)
 {
     std::cout<<"Someone is calling the Matrix bcast routine..."<<std::endl;
    // Assume the user allocated the matrix to the correct size first.
-    for (int h=0; h<nirrep_; ++h) {
+    /*for (int h=0; h<nirrep_; ++h) {
         if (rowspi_[h] > 0 && colspi_[h] > 0)
             WorldComm->bcast(matrix_[h][0], rowspi_[h] * colspi_[h^symmetry_], broadcaster);
-    }
+    }*/
 }
 
 void Matrix::sum()

@@ -32,7 +32,8 @@
 #include "molecule.h"
 
 #include <boost/shared_ptr.hpp>
-
+#include "../libparallel2/Communicator.h"
+#include "../libparallel2/ParallelEnvironment.h"
 #define DEBUG
 
 namespace psi {
@@ -361,67 +362,53 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix > result,
 
 TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
                            const boost::shared_ptr<IntegralFactory>& integral) :
-#if HAVE_MADNESS
-    madness::WorldObject<TwoBodySOInt>(*WorldComm->get_madworld()),
-#endif
+
     integral_(integral), only_totally_symmetric_(false), cdsalcs_(0)
 {
     tb_.push_back(tb);
     common_init();
-#if HAVE_MADNESS
-    process_pending();
-#endif
+
 }
 
 TwoBodySOInt::TwoBodySOInt(const std::vector<boost::shared_ptr<TwoBodyAOInt> > &tb,
                            const boost::shared_ptr<IntegralFactory>& integral) :
-#if HAVE_MADNESS
-    madness::WorldObject<TwoBodySOInt>(*WorldComm->get_madworld()),
-#endif
+
     tb_(tb), integral_(integral), only_totally_symmetric_(false), cdsalcs_(0)
 {
     common_init();
-#if HAVE_MADNESS
-    process_pending();
-#endif
+
 }
 
 TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt>& tb,
                            const boost::shared_ptr<IntegralFactory>& integral,
                            const CdSalcList& cdsalcs) :
-#if HAVE_MADNESS
-    madness::WorldObject<TwoBodySOInt>(*WorldComm->get_madworld()),
-#endif
+
     integral_(integral), only_totally_symmetric_(false), cdsalcs_(&cdsalcs)
 {
     tb_.push_back(tb);
     common_init();
-#if HAVE_MADNESS
-    process_pending();
-#endif
+
 }
 
 TwoBodySOInt::TwoBodySOInt(const std::vector<boost::shared_ptr<TwoBodyAOInt> >& tb,
                            const boost::shared_ptr<IntegralFactory>& integral,
                            const CdSalcList& cdsalcs) :
-#if HAVE_MADNESS
-    madness::WorldObject<TwoBodySOInt>(*WorldComm->get_madworld()),
-#endif
+
     tb_(tb), integral_(integral), only_totally_symmetric_(false), cdsalcs_(&cdsalcs)
 {
     common_init();
-#if HAVE_MADNESS
-    process_pending();
-#endif
+
+
 }
 
 void TwoBodySOInt::common_init()
 {
     // MPI runtime settings (defaults provided for all communicators)
-    nthread_ = WorldComm->nthread();
-    comm_    = WorldComm->communicator();
-    nproc_   = WorldComm->nproc();
-    me_      = WorldComm->me();
+    nthread_ = Process::environment.get_n_threads();
+    //comm_    = WorldComm->communicator();
+    boost::shared_ptr<const LibParallel::Communicator> Comm=WorldComm->GetComm();
+    nproc_   = Comm->NProc();
+    me_      = Comm->Me();
 
     // Try to reduce some work:
     b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb_[0]->basis1(), integral_));

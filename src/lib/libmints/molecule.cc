@@ -44,7 +44,6 @@
 #include <libmints/matrix.h>
 #include <libmints/vector.h>
 #include <libmints/pointgrp.h>
-#include <libparallel/parallel.h>
 #include <libciomr/libciomr.h>
 
 #include "vector3.h"
@@ -55,8 +54,8 @@
 #include <masses.h>
 #include <physconst.h>
 #include <element_to_Z.h>
-#include <psi4-dec.h>
-
+#include "../libparallel2/Communicator.h"
+#include "../libparallel2/ParallelEnvironment.h"
 using namespace std;
 using namespace psi;
 using namespace boost;
@@ -1773,7 +1772,8 @@ void Molecule::save_xyz_file(const std::string& filename, bool save_ghosts) cons
 {
     double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
 
-    if (WorldComm->me() == 0) {
+    boost::shared_ptr<const LibParallel::Communicator> Comm=WorldComm->GetComm();
+    if (Comm->Me() == 0) {
         boost::shared_ptr<OutFile> printer(new OutFile(filename,TRUNCATE));
 
         int N = natom();

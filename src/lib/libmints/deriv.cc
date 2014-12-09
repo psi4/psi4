@@ -40,7 +40,8 @@
 #include "mints.h"
 #include "sointegral_twobody.h"
 #include "deriv.h"
-
+#include "../libparallel/mpi_wrapper.h"
+#include "../libparallel/local.h"
 using namespace std;
 
 namespace psi {
@@ -66,7 +67,7 @@ public:
     }
     CorrelatedFunctor(SharedVector results) : psio_(_default_psio_lib_)
     {
-        nthread = WorldComm->nthread();
+        nthread = Process::environment.get_n_threads();
         result.push_back(results);
         for (int i=1; i<nthread; ++i)
             result.push_back(SharedVector(result[0]->clone()));
@@ -113,7 +114,9 @@ public:
                     int sirrep, int sso,
                     double value)
     {
-        int thread = WorldComm->thread_id(pthread_self());
+        int thread =0;
+        //This was the old line, but it always returned 0 anyways...
+        //WorldComm->thread_id(pthread_self());
 
         double prefactor = 8.0;
         if (pabs == qabs)
@@ -152,7 +155,7 @@ public:
         : D_(D)
     {
         counter=0;
-        nthread = WorldComm->nthread();
+        nthread = Process::environment.get_n_threads();
         result.push_back(results);
 
         for (int i=1; i<nthread; ++i)
@@ -180,7 +183,8 @@ public:
                     int sirrep, int sso,
                     double value)
     {
-        int thread = WorldComm->thread_id(pthread_self());
+        int thread = 0;
+        //Old call::WorldComm->thread_id(pthread_self());
 
         // Previously, we applied a factor of 4 after the fact...apply it from the beginning now.
         double prefactor = 4.0;
@@ -230,7 +234,7 @@ public:
         : D_ref_(D_ref), D_(D), scf_functor_(scf_functor), results_(results)
     {
         counter=0;
-        nthread = WorldComm->nthread();
+        nthread = Process::environment.get_n_threads();
         result_vec_.push_back(results);
 
         for (int i=1; i<nthread; ++i)
@@ -265,7 +269,8 @@ public:
                     int sirrep, int sso,
                     double value)
     {
-        int thread = WorldComm->thread_id(pthread_self());
+        int thread = 0;
+        //Old call WorldComm->thread_id(pthread_self());
 
         bool braket = pabs!=rabs || qabs!=sabs;
         bool bra    = pabs!=qabs;
@@ -363,7 +368,7 @@ public:
         : Da_(Da),
           Db_(Db)
     {
-        nthread = WorldComm->nthread();
+        nthread = Process::environment.get_n_threads();
         result.push_back(results);
         for (int i=1; i<nthread; ++i)
             result.push_back(SharedVector(result[0]->clone()));
@@ -389,7 +394,8 @@ public:
                     int sirrep, int sso,
                     double value)
     {
-        int thread = WorldComm->thread_id(pthread_self());
+        int thread = 0;
+        //Old call: WorldComm->thread_id(pthread_self());
         double prefactor = 1.0;
 
         if (pabs == qabs)
@@ -460,7 +466,7 @@ SharedMatrix Deriv::compute()
 
     // Initialize an ERI object requesting derivatives.
     std::vector<boost::shared_ptr<TwoBodyAOInt> > ao_eri;
-    for (int i=0; i<WorldComm->nthread(); ++i)
+    for (int i=0; i<Process::environment.get_n_threads(); ++i)
         ao_eri.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri(1)));
     TwoBodySOInt so_eri(ao_eri, integral_, cdsalcs_);
 
