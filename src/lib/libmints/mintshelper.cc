@@ -43,6 +43,17 @@
 
 using namespace boost;
 
+#ifdef HAVE_FORTRAN
+#ifdef USE_FCMANGLE_H
+#include "FCMangle.h"
+#define F_DKH  FC_MODULE(dkh_main, dkh, DKH_MAIN, DKH)
+#endif
+
+extern "C" {
+    void F_DKH(double *S, double *V, double *T, double *pVp, int *nbf, int *dkh_order);
+}
+#endif
+
 namespace psi {
 
 /**
@@ -144,8 +155,7 @@ void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
     if (wavefunction && !basisset_)
         basisset_ = wavefunction->basisset();
     else if (!basisset_){
-        boost::shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
-        basisset_ = boost::shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, "BASIS"));
+        basisset_ = boost::shared_ptr<BasisSet>(BasisSet::pyconstruct_orbital(molecule_, "BASIS", options_.get_str("BASIS")));
     }
 
     common_init();
@@ -253,38 +263,15 @@ void MintsHelper::integrals()
     }
     outfile->Printf( "]\n\n");
 
-    // Compute and dump one-electron SO integrals.
-
-    // Overlap
-    so_overlap()->save(psio_, PSIF_OEI);
-
-    // Kinetic
-    so_kinetic()->save(psio_, PSIF_OEI);
-
-    // Potential
-    so_potential()->save(psio_, PSIF_OEI);
-
-    // Dipoles
-    std::vector<SharedMatrix> dipole_mats = so_dipole();
-    BOOST_FOREACH(SharedMatrix m, dipole_mats) {
-        m->save(psio_, PSIF_OEI);
-    }
-
-    // Quadrupoles
-    std::vector<SharedMatrix> quadrupole_mats = so_quadrupole();
-    BOOST_FOREACH(SharedMatrix m, quadrupole_mats) {
-        m->save(psio_, PSIF_OEI);
-    }
-
-    outfile->Printf( "      Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
-                     "        stored in file %d.\n\n", PSIF_OEI);
+    // Compute one-electron integrals.
+    one_electron_integrals();
 
     // Open the IWL buffer where we will store the integrals.
     IWL ERIOUT(psio_.get(), PSIF_SO_TEI, cutoff_, 0, 0);
     IWLWriter writer(ERIOUT);
 
     // Let the user know what we're doing.
-    outfile->Printf( "      Computing two-electron integrals..."); 
+    outfile->Printf( "      Computing two-electron integrals...");
 
     SOShellCombinationsIterator shellIter(sobasis_, sobasis_, sobasis_, sobasis_);
     for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
@@ -317,7 +304,7 @@ void MintsHelper::integrals_erf(double w)
     boost::shared_ptr<TwoBodySOInt> erf(new TwoBodySOInt(tb, integral_));
 
     // Let the user know what we're doing.
-    outfile->Printf( "      Computing non-zero ERF integrals (omega = %.3f)...", omega); 
+    outfile->Printf( "      Computing non-zero ERF integrals (omega = %.3f)...", omega);
 
     SOShellCombinationsIterator shellIter(sobasis_, sobasis_, sobasis_, sobasis_);
     for (shellIter.first(); shellIter.is_done() == false; shellIter.next())
@@ -349,7 +336,7 @@ void MintsHelper::integrals_erfc(double w)
     boost::shared_ptr<TwoBodySOInt> erf(new TwoBodySOInt(tb, integral_));
 
     // Let the user know what we're doing.
-    outfile->Printf( "      Computing non-zero ERFComplement integrals..."); 
+    outfile->Printf( "      Computing non-zero ERFComplement integrals...");
 
     SOShellCombinationsIterator shellIter(sobasis_, sobasis_, sobasis_, sobasis_);
     for (shellIter.first(); shellIter.is_done() == false; shellIter.next())
@@ -370,35 +357,37 @@ void MintsHelper::integrals_erfc(double w)
 
 void MintsHelper::one_electron_integrals()
 {
-    outfile->Printf( " OEINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
-
-    // Print out some useful information
-    outfile->Printf( "   Calculation information:\n");
-    outfile->Printf( "      Number of atoms:                %4d\n", molecule_->natom());
-    outfile->Printf( "      Number of AO shells:            %4d\n", basisset_->nshell());
-    outfile->Printf( "      Number of SO shells:            %4d\n", sobasis_->nshell());
-    outfile->Printf( "      Number of primitives:           %4d\n", basisset_->nprimitive());
-    outfile->Printf( "      Number of atomic orbitals:      %4d\n", basisset_->nao());
-    outfile->Printf( "      Number of basis functions:      %4d\n\n", basisset_->nbf());
-    outfile->Printf( "      Number of irreps:               %4d\n", sobasis_->nirrep());
-    outfile->Printf( "      Number of functions per irrep: [");
-    for (int i=0; i<sobasis_->nirrep(); ++i) {
-        outfile->Printf( "%4d ", sobasis_->nfunction_in_irrep(i));
-    }
-    outfile->Printf( "]\n\n");
+//    outfile->Printf( " OEINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
+//
+//    // Print out some useful information
+//    outfile->Printf( "   Calculation information:\n");
+//    outfile->Printf( "      Number of atoms:                %4d\n", molecule_->natom());
+//    outfile->Printf( "      Number of AO shells:            %4d\n", basisset_->nshell());
+//    outfile->Printf( "      Number of SO shells:            %4d\n", sobasis_->nshell());
+//    outfile->Printf( "      Number of primitives:           %4d\n", basisset_->nprimitive());
+//    outfile->Printf( "      Number of atomic orbitals:      %4d\n", basisset_->nao());
+//    outfile->Printf( "      Number of basis functions:      %4d\n\n", basisset_->nbf());
+//    outfile->Printf( "      Number of irreps:               %4d\n", sobasis_->nirrep());
+//    outfile->Printf( "      Number of functions per irrep: [");
+//    for (int i=0; i<sobasis_->nirrep(); ++i) {
+//        outfile->Printf( "%4d ", sobasis_->nfunction_in_irrep(i));
+//    }
+//    outfile->Printf( "]\n\n");
 
     // Compute and dump one-electron SO integrals.
 
-    // Overlap
-    so_overlap()->save(psio_, PSIF_OEI);
-    if (options_.get_str("RELATIVISTIC") == "NO"){
+    if (options_.get_str("RELATIVISTIC") == "NO" || options_.get_str("RELATIVISTIC") == "DKH"){
+        // Overlap
+        so_overlap()->save(psio_, PSIF_OEI);
+
         // Kinetic
         so_kinetic()->save(psio_, PSIF_OEI);
 
-        // Potential
+        // Potential -- DKH perturbation added to potential integrals if needed.
         so_potential()->save(psio_, PSIF_OEI);
-    }else if (options_.get_str("RELATIVISTIC") == "X2C"){
-        outfile->Printf( "      Using modified relativistic integrals from X2C\n");
+    }
+    else if (options_.get_str("RELATIVISTIC") == "X2C"){
+        outfile->Printf( " OEINTS: Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
     }
 
     // Dipoles
@@ -413,9 +402,8 @@ void MintsHelper::one_electron_integrals()
         m->save(psio_, PSIF_OEI);
     }
 
-    outfile->Printf( "      Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
-                     "        stored in file %d.\n\n", PSIF_OEI);
-
+    outfile->Printf( " OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
+                     "         stored in file %d.\n\n", PSIF_OEI);
 }
 
 void MintsHelper::integral_gradients()
@@ -452,6 +440,68 @@ SharedMatrix MintsHelper::ao_potential()
     SharedMatrix       potential_mat(new Matrix("AO-basis Potential Ints", basisset_->nbf (), basisset_->nbf ()));
     V->compute(potential_mat);
     return potential_mat;
+}
+
+SharedMatrix MintsHelper::ao_pvp()
+{
+    boost::shared_ptr<OneBodyAOInt> pVp(integral_->ao_rel_potential());
+    SharedMatrix       pVp_mat(new Matrix("AO-basis pVp Ints", basisset_->nbf (), basisset_->nbf ()));
+    pVp->compute(pVp_mat);
+    return pVp_mat;
+}
+
+SharedMatrix MintsHelper::ao_dkh(int dkh_order)
+{
+#ifdef HAVE_FORTRAN
+    SharedMatrix S = ao_overlap();
+    SharedMatrix T = ao_kinetic();
+    SharedMatrix Torig = T->clone();
+    SharedMatrix V = ao_potential();
+    SharedMatrix Vorig = V->clone();
+    SharedMatrix pVp = ao_pvp();
+    SharedMatrix H_dk = T->clone();
+    H_dk->zero();
+
+    double *Sp   = S->pointer()[0];
+    double *Tp   = T->pointer()[0];
+    double *Vp   = V->pointer()[0];
+    double *pVpp = pVp->pointer()[0];
+
+    if (dkh_order < 1)
+        dkh_order = 2;
+    if (dkh_order > 4)
+        dkh_order = 4;
+
+    outfile->Printf("    Computing %d-order Douglas-Kroll-Hess integrals.\n", dkh_order);
+
+    int nbf = basisset_->nbf();
+
+//    V->print();
+//    T->print();
+
+    // Call DKH code from Markus Reiher
+    F_DKH(Sp, Vp, Tp, pVpp, &nbf, &dkh_order);
+
+    H_dk->add(V);
+    H_dk->add(T);
+    H_dk->subtract(Vorig);
+    H_dk->subtract(Torig);
+
+    H_dk->set_name("AO-basis DKH Ints");
+    //H_dk->print();
+
+    return H_dk;
+#else
+    outfile->Printf("    Douglas-Kroll-Hess integrals requested but are not available.\n");
+    throw PSIEXCEPTION("Douglas-Kroll-Hess integrals requested but were not compiled in.");
+#endif
+}
+
+SharedMatrix MintsHelper::so_dkh(int dkh_order)
+{
+    SharedMatrix dkh = factory_->create_shared_matrix("SO Douglas-Kroll-Hess Integrals");
+    dkh->apply_symmetry(ao_dkh(dkh_order), petite_list()->aotoso());
+    return dkh;
 }
 
 SharedMatrix MintsHelper::ao_helper(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints)
@@ -823,7 +873,17 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations)
                 outfile->Printf( "  MintsHelper doesn't understand the requested perturbation, might be done in SCF.");
             }
         }
+
+        if (options_.get_str("RELATIVISTIC") == "DKH") {
+            int dkh_order = options_.get_int("DKH_ORDER");
+            SharedMatrix dkh = so_dkh(dkh_order);
+
+            outfile->Printf("    Adding Douglas-Kroll-Hess corrections to the potential integrals.\n");
+
+            potential_mat->add(dkh);
+        }
     }
+
     return potential_mat;
 }
 
@@ -839,6 +899,7 @@ std::vector<SharedMatrix > MintsHelper::so_dipole()
 
     return dipole;
 }
+
 std::vector<SharedMatrix > MintsHelper::so_quadrupole()
 {
     // The matrix factory can create matrices of the correct dimensions...
@@ -851,6 +912,7 @@ std::vector<SharedMatrix > MintsHelper::so_quadrupole()
 
     return quadrupole;
 }
+
 std::vector<SharedMatrix > MintsHelper::so_traceless_quadrupole()
 {
     // The matrix factory can create matrices of the correct dimensions...

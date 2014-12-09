@@ -57,8 +57,8 @@ void trim_spaces(std::string& str);
 
 /**
  * @brief Compute the Levenshtein distance between two strings
- * @param s1
- * @param s2
+ * @param s1 string to compute against
+ * @param s2 string to compute against
  * @return the distance as an unsigned integer
  */
 unsigned int edit_distance(const std::string& s1, const std::string& s2);

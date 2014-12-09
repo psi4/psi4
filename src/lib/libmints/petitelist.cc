@@ -53,6 +53,7 @@
 #include "libparallel/ParallelPrinter.h"
 using namespace boost;
 
+#ifndef USE_FCMANGLE_H
 #if FC_SYMBOL==2
     #define F_DGESVD dgesvd_
 #elif FC_SYMBOL==1
@@ -61,6 +62,10 @@ using namespace boost;
     #define F_DGESVD DGESVD
 #elif FC_SYMBOL==4
     #define F_DGESVD DGESVD_
+#endif
+#else // USE_FCMANGLE_H
+#include "FCMangle.h"
+#define F_DGESVD FC_GLOBAL(dgesvd, DGESVD)
 #endif
 
 extern int sing_(double *q, int *lq, int *iq, double *s, double *p,
@@ -299,7 +304,7 @@ struct lin_comb {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int **compute_atom_map(const Molecule* molecule)
+int **compute_atom_map(const Molecule* molecule, double tol)
 {
     // grab references to the Molecule
     const Molecule& mol = *molecule;
@@ -332,14 +337,15 @@ int **compute_atom_map(const Molecule* molecule)
                     np[ii] += so(ii,jj) * ac[jj];
             }
 
-            atom_map[i][g] = mol.atom_at_position1(np, 0.05);
+            atom_map[i][g] = mol.atom_at_position1(np, tol);
             if (atom_map[i][g] < 0) {
                 outfile->Printf( "ERROR: Symmetry operation %d did not map atom %d to another atom:\n", g, i+1);
                 outfile->Printf( "  Molecule:\n");
                 mol.print();
                 outfile->Printf( "  attempted to find atom at\n");
                 outfile->Printf( "    %lf %lf %lf\n", np[0], np[1], np[2]);
-                abort();
+                outfile->Printf( "  atom_map() throwing PsiException\n");
+                throw PsiException("Broken Symmetry", __FILE__, __LINE__);
             }
         }
     }
@@ -347,9 +353,9 @@ int **compute_atom_map(const Molecule* molecule)
     return atom_map;
 }
 
-int **compute_atom_map(const boost::shared_ptr<Molecule> &molecule)
+int **compute_atom_map(const boost::shared_ptr<Molecule> &molecule, double tol)
 {
-    return compute_atom_map(molecule.get());
+    return compute_atom_map(molecule.get(), tol);
 }
 
 void delete_atom_map(int **atom_map, const Molecule* molecule)
@@ -478,7 +484,7 @@ int PetiteList::nfunction(int i) const
     return (c1_) ? basis_->nbf() : nbf_in_ir_[i];
 }
 
-void PetiteList::init()
+void PetiteList::init(double tol)
 {
     int i;
 
@@ -560,7 +566,7 @@ void PetiteList::init()
                     np[ii] += so(ii,jj) * ac[jj];
             }
 
-            atom_map_[i][g] = mol.atom_at_position1(np, 0.05);
+            atom_map_[i][g] = mol.atom_at_position1(np, tol);
 
             // We want the list of operations that keeps the atom the same that is not E.
             if (atom_map_[i][g] == i)
@@ -690,7 +696,6 @@ void PetiteList::init()
 
 Dimension PetiteList::AO_basisdim()
 {
-    int one = 1;
     int nbf = include_pure_transform_ ? basis_->nao() : basis_->nbf();
     Dimension ret(1, "AO Basis Dimension");
     ret[0] = nbf;
@@ -699,7 +704,7 @@ Dimension PetiteList::AO_basisdim()
 
 Dimension PetiteList::SO_basisdim()
 {
-    int i, j, ii;
+    int i;
 
     // grab reference to the basis set;
     BasisSet& gbs = *basis_.get();
@@ -776,9 +781,6 @@ void PetiteList::print(std::string out)
 /**
  * This function forms the mapping info from Cartesian AOs, to symmetry adapted pure (or Cartesian if the
  * basis requires this) functions, storing the result in a sparse buffer.
- * @param include_cart_to_pure whether to fold the spherical transform coefficients in or not.  IF true, a
- *        pure/Cartesian AOs to pure/Cartesian (depending on the basis) SOs transformation is returned.
- *        If false, a Cartesian AOs to Cartesian SOs is returned.
  * @return A pointer to the newly-created sparse SO_Block (remember to delete it!).
  */
 SO_block*

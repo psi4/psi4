@@ -56,7 +56,7 @@ TORS::TORS(int A_in, int B_in, int C_in, int D_in, bool freeze_in) : SIMPLE_COOR
   //  A_in, B_in, C_in, D_in, freeze_in);
 
   if ( A_in==B_in || A_in==C_in || A_in==D_in || B_in==C_in || B_in==D_in || C_in==D_in)
-    throw(INTCO_EXCEPT((char *)"TORS::TORS() Atoms defining tors are not unique."));
+    throw(INTCO_EXCEPT((char *)"TORS::TORS() Atoms defining tors are not unique.", true)); // bad error; quit
 
   if (A_in < D_in) {
     s_atom[0] = A_in;
@@ -89,7 +89,7 @@ double TORS::value(GeomType geom) const {
   double tau;
 
   if (! v3d_tors(geom[s_atom[0]], geom[s_atom[1]], geom[s_atom[2]], geom[s_atom[3]], tau) )
-    throw(INTCO_EXCEPT((char *)"TORS::compute_val: unable to compute torsion value",true));
+    throw(INTCO_EXCEPT((char *)"TORS::compute_val: unable to compute torsion value"));
 
   // Extend domain of torsion angles by checking past
   // extend domain of torsions so delta(vals) can be calculated

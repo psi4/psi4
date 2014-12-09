@@ -31,7 +31,6 @@
 // Forward declare boost boost::shared_ptr
 namespace boost {
 template<class T> class shared_ptr;
-
 }
 
 namespace psi {
@@ -103,8 +102,7 @@ public:
 
     /**
      * Given a string, parse for the basis set needed for atom.
-     * @param basisset object to add to
-     * @param atom atom index to look for in basisset->molecule()
+     * @param symbol atom index to look for in basisset->molecule()
      * @param dataset data set to look through
      */
     virtual std::vector<ShellInfo> parse(const std::string& symbol, const std::string& dataset) {
@@ -113,8 +111,7 @@ public:
 
     /**
      * Given a string, parse for the basis set needed for atom.
-     * @param basisset object to add to
-     * @param atom atom index to look for in basisset->molecule()
+     * @param symbol atom index to look for in basisset->molecule()
      * @param dataset data set to look through
      */
     virtual std::vector<ShellInfo> parse(const std::string& symbol, const std::vector<std::string>& dataset) = 0;

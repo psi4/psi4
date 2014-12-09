@@ -87,9 +87,9 @@ double ** init_matrix(unsigned long int n, unsigned long int m)
     }
 
     return(A);
-//<<<<<<<<<<<<<<<<<<<<<
+// <<<<<<<<<<<<<<<<<<<<<
 // BEGIN DEPRECATED CODE
-//<<<<<<<<<<<<<<<<<<<<<<
+// <<<<<<<<<<<<<<<<<<<<<
 
   /**
   double **array=NULL;
@@ -130,7 +130,6 @@ double ** init_matrix(unsigned long int n, unsigned long int m)
 ** free_matrix(): Free a 2D matrix allocated with init_matrix().
 **
 ** \param array = matrix to free
-** \param size = number of rows (unsigned long to allow large matrices)
 **
 ** Returns: none
 **
@@ -141,9 +140,9 @@ void free_matrix(double **array, unsigned long int /*size*/)
     if(array == NULL) return;
     delete [] array[0];
     delete [] array;
-//<<<<<<<<<<<<<<<<<<<<<
+// <<<<<<<<<<<<<<<<<<<<<
 // BEGIN DEPRECATED CODE
-//<<<<<<<<<<<<<<<<<<<<<<
+// <<<<<<<<<<<<<<<<<<<<<
 
   /**
   unsigned long int i;

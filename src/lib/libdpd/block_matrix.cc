@@ -71,7 +71,8 @@ DPD::dpd_block_matrix(size_t n, size_t m)
 
     size_t size = m * n;
 
-    while((dpd_main.memory - dpd_main.memused - size) < 0) {
+//    while((dpd_main.memory - dpd_main.memused - size) < 0) {
+    while((dpd_main.memory - dpd_main.memused) < size) {
         /* Delete cache entries until there's enough memory or no more cache */
 
         /* Priority-based cache */

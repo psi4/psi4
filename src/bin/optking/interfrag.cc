@@ -165,7 +165,7 @@ void INTERFRAG::add_coordinates_of_reference_pts(void) {
             if (weightB[0][y] != 0.0 && is_XB[y]) { // electronegative Y atom is part of B[0]
               if (v3d_angle(A->geom[x], A->geom[h], B->geom[y], ang)) { //check angle
                 if (ang < _pi/2)
-                  one_stre->make_hbond();
+                  one_stre->set_hbond(true);
               }
             }
           }
@@ -183,7 +183,7 @@ void INTERFRAG::add_coordinates_of_reference_pts(void) {
             if (weightA[0][y] != 0.0 && is_XA[y]) { // electronegative Y atom is part of A[0]
               if (v3d_angle(B->geom[x], B->geom[h], A->geom[y], ang)) { //check angle
                 if (ang < _pi/2)
-                  one_stre->make_hbond();
+                  one_stre->set_hbond(true);
               }
             }
           }
@@ -749,7 +749,7 @@ double ** INTERFRAG::H_guess(void) {
     H = inter_frag->H_guess();
     Opt_params.intrafragment_H = i;
   }
-  else { // DEFAULT
+  else { // Assumes these are simple; not combinations
     H = init_matrix(inter_frag->Ncoord(), inter_frag->Ncoord());
     int cnt=0;
     double rAB;
@@ -800,6 +800,20 @@ double ** INTERFRAG::compute_constraints(void) const {
   }
   return C;
 }
+
+int INTERFRAG::form_trivial_coord_combinations(void) {
+  inter_frag->coords.clear_combos();
+  for (int s=0; s<inter_frag->coords.simples.size(); ++s) {
+    std::vector<int> i1;
+    i1.push_back(s);
+    inter_frag->coords.index.push_back(i1);
+    std::vector<double> c1;
+    c1.push_back(1.0);
+    inter_frag->coords.coeff.push_back(c1);
+  }
+  return inter_frag->coords.index.size();
+}
+
 
 } // opt
 

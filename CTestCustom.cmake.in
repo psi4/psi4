@@ -1,0 +1,22 @@
+# vim:ft=cmake
+
+set(CTEST_MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full")
+set(CTEST_MEMORYCHECK_SUPPRESSIONS_FILE 
+    @CMAKE_BINARY_DIR@/valgrind-suppressions.txt)
+
+set(CTEST_CUSTOM_WARNING_EXCEPTION
+    ${CTEST_CUSTOM_WARNING_EXCEPTION}
+    "unused parameter"
+    "warning: feupdateenv is not implemented"
+    )
+
+# Ignore the following tests
+#set(CTEST_CUSTOM_MEMCHECK_IGNORE
+#      ${CTEST_CUSTOM_MEMCHECK_IGNORE}
+#      TestFoo
+#      )
+
+#set (CTEST_CUSTOM_COVERAGE_EXCLUDE 
+#    ${CTEST_CUSTOM_COVERAGE_EXCLUDE} 
+#    Rabof.cpp
+#    )

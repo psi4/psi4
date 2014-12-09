@@ -113,6 +113,24 @@ void oprint_matrix_out(double **A, const int nrow, const int ncol) {
   return;
 }
 
+void oprint_matrix_out_precise(double **A, const int nrow, const int ncol) {
+  int col=0;
+  const int max_col = 4;
+
+  for (int i=0; i<nrow; ++i) {
+    for (int j=0; j<ncol; ++j) {
+      oprintf_out("%20.15f", A[i][j]);
+      ++col;
+      if ((col == max_col) && (j != ncol-1)) {
+        oprintf_out("\n");
+        col = 0;
+      }
+    }
+    oprintf_out("\n");
+    col = 0;
+  }
+  return;
+}
 
 void oprint_array(const std::string psi_fp, const FILE *qc_fp, double *A, const int ncol) {
   int col=0;
@@ -136,6 +154,22 @@ void oprint_array_out(double *A, const int ncol) {
 
   for (int j=0; j<ncol; ++j) {
     oprintf_out("%10.6f", A[j]);
+    ++col;
+    if ((col == max_col) && (j != ncol-1)) {
+      oprintf_out("\n");
+      col = 0;
+    }
+  }
+  oprintf_out("\n");
+  return;
+}
+
+void oprint_array_out_precise(double *A, const int ncol) {
+  int col=0;
+  const int max_col = 4;
+
+  for (int j=0; j<ncol; ++j) {
+    oprintf_out("%20.15f", A[j]);
     ++col;
     if ((col == max_col) && (j != ncol-1)) {
       oprintf_out("\n");

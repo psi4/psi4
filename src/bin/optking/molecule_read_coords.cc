@@ -435,7 +435,7 @@ bool FRAG::read_coord(vector<string> & s, int offset) {
     --a; --b;
 
     STRE *one_stre = new STRE(a-offset, b-offset, frozen);
-    if (s[0] == "H") one_stre->make_hbond();
+    if (s[0] == "H") one_stre->set_hbond(true);
     if (has_eq_val) one_stre->set_fixed_eq_val(eq_val);
 
     if ( !present(one_stre) )

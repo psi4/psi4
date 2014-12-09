@@ -1,0 +1,331 @@
+                  Welcome to Q-Chem
+     A Quantum Leap Into The Future Of Chemistry
+
+ Y. Shao, L. Fusti-Molnar, Y. Jung, J. Kussmann, C. Ochsenfeld, S. T. Brown, 
+ A. T. B. Gilbert, L. V. Slipchenko, S. V. Levchenko, D. P. O'Neill, 
+ R. A. DiStasio Jr., R. C. Lochan, T. Wang, G. J. O. Beran, N. A. Besley, 
+ J. M. Herbert, C. Y. Lin, T. Van Voorhis, S. H. Chien, A. Sodt, R. P. Steele, 
+ V. A. Rassolov, P. E. Maslen, P. P. Korambath, R. D. Adamson, B. Austin, 
+ J. Baker, E. F. C. Byrd, H. Dachsel, R. J. Doerksen, A. Dreuw, B. D. Dunietz, 
+ A. D. Dutoi, T. R. Furlani, S. R. Gwaltney, A. Heyden, S. Hirata, C.-P. Hsu, 
+ G. Kedziora, R. Z. Khaliullin, P. Klunzinger, A. M. Lee, M. S. Lee, W. Liang, 
+ I. Lotan, N. Nair, B. Peters, E. I. Proynov, P. A. Pieniazek, Y. M. Rhee, 
+ J. Ritchie, E. Rosta, C. D. Sherrill, A. C. Simmonett, J. E. Subotnik, 
+ H. L. Woodcock III, W. Zhang, A. T. Bell, A. K. Chakraborty, D. M. Chipman, 
+ F. J. Keil, A. Warshel, W. J. Hehre, H. F. Schaefer III, J. Kong, 
+ A. I. Krylov, P. M. W. Gill, M. Head-Gordon
+
+ Additional authors for Version 3.1: 
+ Z. Gan, Y. Zhao, N. E. Schultz, D. Truhlar, E. Epifanovsky, M. Oana
+
+ Additional authors for Version 3.2: 
+ R. Baer, B. R. Brooks, D. Casanova, J.-D. Chai, C.-L. Cheng, C. Cramer, 
+ D. Crittenden, A. Ghysels, G. Hawkins, E. G. Hohenstein, C. Kelley, 
+ W. Kurlancheek, D. Liotard, E. Livshits, P. Manohar, A. Marenich, 
+ D. Neuhauser, R. Olson, M. A. Rohrdanz, K. S. Thanthiriwatte, A. J. W. Thom, 
+ V. Vanovschi, C. F. Williams, Q. Wu, Z.-Q. You
+
+ Additional authors for Version 4.0: 
+ A. Aspuru-Guzik, Y. Bernard, C. Chang, J. Deng, A. Dreuw, M. Diedenhofen, 
+ R. G. Edgar, D. Ghosh, W. A. Goddard III, M. Goldey, L. D. Jacobson, 
+ M. Gordon, B. Kaduk, I. Kaliman, K. Khistyaev, R. King, A. Klamt, 
+ D. Kosenkov, T. Kus, D. Lambrecht, A. Landau, A. W. Lange, K. Lawler, F. Liu, 
+ J. Liu, R. Olivares-Amaya, S. P. Mao, J. Parkhill, N. Russ, M. Schmidt, 
+ N. Shenvi, D. Small, Y. C. Su, E. Sundstrom, L. Vogt, O. Vydrov, M. Watson, 
+ M. Wormit, X. Xu, S. Yeganeh, I. Y. Zhang, D. Zuev
+
+ Additional authors for Version 4.1: 
+ X. Feng, M. W. D. Hanson-Heine, P. Horn, H. Ji, A. Laurent, R. Peverati, 
+ N. Mardirossian, N. Sergueev, S. Sharada, P. Zimmerman
+
+
+ Q-Chem, Version 4.1, Q-Chem, Inc., Pittsburgh, PA (2013).
+
+ MAC (Intel) OSX Version 4.1.1
+
+ Q-chem begins on Mon Nov 24 13:30:17 2014  
+
+quicksilver.uguest.utah.edu
+Host: 0
+
+     Scratch files written to /tmp1/andysim/qchem79339//
+ Nov1814 |Users|andysim|programming -1
+
+
+LIBEFP ver. 1.2.0-git
+Copyright (c) 2012-2013 Ilya Kaliman
+
+Journal Reference:
+    Kaliman and Slipchenko, JCC 2013.
+    DOI: http://dx.doi.org/10.1002/jcc.23375
+
+Project web site: http://www.libefp.org/
+
+
+EFP electrostatic damping is screen-based damping
+EFP dispersion damping is overlap-based damping
+EFP polarization damping is Tang-Toennies type damping
+
+
+GEOMETRY OF EFP SUBSYSTEM
+
+     A01O1   -2.18006    1.20836   -0.97655
+     A02H2   -1.98091    1.40987   -0.08022
+     A03H3   -1.38049    1.32150   -1.45776
+     A01N1    1.09411    1.93015    2.91099
+     A02H2    0.27168    2.46166    3.10916
+     A03H3    0.94210    0.99498    3.22800
+     A04H4    1.21498    1.90507    1.91957
+     A01N1   -4.20428   -1.03269   -1.27234
+     A02H2   -4.04741   -0.61047   -0.38056
+     A03H3   -4.63618   -0.35378   -1.86454
+     A04H4   -3.31565   -1.26547   -1.66516
+
+
+Finally everything over in PARseQInput
+
+--------------------------------------------------------------
+User input:
+--------------------------------------------------------------
+$comment
+QM/MM computation of one water molecule in QM part and
+one water + two ammonia molecules in EFP part.
+$end
+
+$molecule
+0 1
+O1   0 0 0.118720
+H2   -0.753299, 0.0, -0.474880
+H3   0.753299, 0.0, -0.474880
+$end
+
+$rem
+exchange hf
+basis 6-31G(d)
+jobtype sp
+purecart 2222
+efp_use_efpman2 1
+scf_guess core
+print_general_basis true
+symmetry off
+maxdiis 0
+mem_total 1024
+THRESH             14
+SCF_CONVERGENCE    12
+$end
+
+$efp_fragments
+h2o -2.12417561  1.22597097 -0.95332054 -2.902133 1.734999 -1.953647
+NH3  1.04358758  1.90477190  2.88279926 -1.105309 2.033306 -1.488582
+NH3 -4.16795656 -0.98129149 -1.27785935  2.526442 1.658262 -2.742084
+$end
+--------------------------------------------------------------
+ ----------------------------------------------------
+       Standard Nuclear Orientation (Angstroms)
+    I     Atom         X            Y            Z
+ ----------------------------------------------------
+    1      O      -0.000000    -0.000000     0.118720
+    2      H      -0.753299    -0.000000    -0.474880
+    3      H       0.753299     0.000000    -0.474880
+ ----------------------------------------------------
+ Molecular Point Group                 C2v   NOp =  1
+ Largest Abelian Subgroup              C2v   NOp =  1
+ Nuclear Repulsion Energy =     9.1793879214 hartrees
+ There are        5 alpha and        5 beta electrons
+
+ Q-Chem warning in module /Users/andysim/programming/qchem/forms1/BasisType.C, line 1147:
+
+ You are not using the predefined 5D/6D in this basis set.
+
+ Requested basis set is 6-31G(d)
+Basis set in general basis input format:
+-----------------------------------------------------------------------
+$basis
+O    0
+S    6    1.000000
+   5.48467170E+03    1.83110000E-03 
+   8.25234950E+02    1.39501000E-02 
+   1.88046960E+02    6.84451000E-02 
+   5.29645000E+01    2.32714300E-01 
+   1.68975700E+01    4.70193000E-01 
+   5.79963530E+00    3.58520900E-01 
+SP   3    1.000000
+   1.55396160E+01   -1.10777500E-01   7.08743000E-02 
+   3.59993360E+00   -1.48026300E-01   3.39752800E-01 
+   1.01376180E+00    1.13076700E+00   7.27158600E-01 
+SP   1    1.000000
+   2.70005800E-01    1.00000000E+00   1.00000000E+00 
+D    1    1.000000
+   8.00000000E-01    1.00000000E+00 
+****
+H    0
+S    3    1.000000
+   1.87311370E+01    3.34946000E-02 
+   2.82539370E+00    2.34726950E-01 
+   6.40121700E-01    8.13757330E-01 
+S    1    1.000000
+   1.61277800E-01    1.00000000E+00 
+****
+H    0
+S    3    1.000000
+   1.87311370E+01    3.34946000E-02 
+   2.82539370E+00    2.34726950E-01 
+   6.40121700E-01    8.13757330E-01 
+S    1    1.000000
+   1.61277800E-01    1.00000000E+00 
+****
+$end
+-----------------------------------------------------------------------
+ There are 8 shells and 19 basis functions
+
+Total QAlloc Memory Limit   1024 MB
+Mega-Array Size        61 MB
+MEM_STATIC part        62 MB
+
+                       Distance Matrix (Angstroms)
+             O (  1)   H (  2)
+   H (  2)  0.959073
+   H (  3)  0.959073  1.506598
+
+ A cutoff of  1.0D-14 yielded     36 shell pairs
+ There are       217 function pairs
+ Smallest overlap matrix eigenvalue = 2.23E-02
+
+  Scale SEOQF with 1.000000e+00/1.000000e+00/1.000000e+00
+
+ Standard Electronic Orientation quadrupole field applied
+ Nucleus-field energy     =    -0.0000000002 hartrees
+ Guess MOs from core Hamiltonian diagonalization
+ A restricted Hartree-Fock SCF calculation will be
+ performed using Pulay DIIS extrapolation
+ SCF converges when DIIS error is below 1.0E-12
+
+
+REORIENTED EFP GEOMETRY
+
+     A01O1   -2.18006    1.20836   -0.97655
+     A02H2   -1.98091    1.40987   -0.08022
+     A03H3   -1.38049    1.32150   -1.45776
+     A01N1    1.09411    1.93015    2.91099
+     A02H2    0.27168    2.46166    3.10916
+     A03H3    0.94210    0.99498    3.22800
+     A04H4    1.21498    1.90507    1.91957
+     A01N1   -4.20428   -1.03269   -1.27234
+     A02H2   -4.04741   -0.61047   -0.38056
+     A03H3   -4.63618   -0.35378   -1.86454
+     A04H4   -3.31565   -1.26547   -1.66516
+
+
+ ---------------------------------------
+  Cycle       Energy         DIIS Error
+ ---------------------------------------
+    1     -69.1993963338      3.48E-01
+    2     -71.9057978644      2.52E-01
+    3     -76.1642220777      6.79E-02
+    4     -76.2645424899      1.47E-02
+    5     -76.2769072133      2.03E-03
+    6     -76.2762429832      7.74E-04
+    7     -76.2763497738      1.17E-04
+    8     -76.2762388548      5.40E-05
+    9     -76.2762047584      5.74E-06
+   10     -76.2761967358      1.42E-06
+   11     -76.2761962232      3.81E-07
+   12     -76.2761961537      7.60E-08
+   13     -76.2761961670      3.84E-08
+   14     -76.2761961637      1.68E-08
+   15     -76.2761961635      2.07E-09
+   16     -76.2761961594      9.73E-10
+   17     -76.2761961592      4.93E-10
+   18     -76.2761961592      2.62E-10
+   19     -76.2761961591      1.39E-10
+   20     -76.2761961591      7.54E-11
+   21     -76.2761961591      4.07E-11
+   22     -76.2761961591      2.26E-11
+   23     -76.2761961591      1.24E-11
+   24     -76.2761961591      7.00E-12
+   25     -76.2761961591      3.93E-12
+   26     -76.2761961591      2.24E-12
+   27     -76.2761961591      1.28E-12
+   28     -76.0139362744      7.38E-13 Convergence criterion met
+ ---------------------------------------
+ SCF time:  CPU 1.47 s  wall 1.49 s
+
+
+    EFP ENERGY COMPONENTS (ATOMIC UNITS)
+
+               ELECTROSTATIC ENERGY    -0.0004901368
+                POLARIZATION ENERGY    -0.0117694790
+                  DISPERSION ENERGY    -0.0021985285
+          EXCHANGE-REPULSION ENERGY     0.0056859871
+   OVERLAP-BASED CHARGE PENETRATION     0.0000000000
+
+    QM-NUC/EFP ELECTROSTATIC ENERGY     0.2592625628
+           QM/EFP DISPERSION ENERGY     0.0000000000
+   QM/EFP EXCHANGE-REPULSION ENERGY     0.0000000000
+
+                   TOTAL EFP ENERGY     0.2504904057
+       EFP CORRECTION TO SCF ENERGY     0.2622598847
+
+
+ SCF   energy in the final basis set = -76.0139362744
+ Total energy in the final basis set = -76.0139362744
+ Analysis of SCF Wavefunction
+
+ --------------------------------------------------------------
+                    Orbital Energies (a.u.)
+ --------------------------------------------------------------
+
+ Alpha MOs
+ -- Occupied --
+-20.584  -1.365  -0.726  -0.596  -0.522
+ -- Virtual --
+  0.194   0.296   0.996   1.109   1.141   1.152   1.359   1.415
+  1.994   2.011   2.042   2.596   2.920   3.945
+ --------------------------------------------------------------
+
+          Ground-State Mulliken Net Atomic Charges
+
+     Atom                 Charge (a.u.)
+  ----------------------------------------
+      1 O                    -0.891076
+      2 H                     0.456297
+      3 H                     0.434779
+  ----------------------------------------
+  Sum of atomic charges =    -0.000000
+
+ -----------------------------------------------------------------
+                    Cartesian Multipole Moments
+ -----------------------------------------------------------------
+    Charge (ESU x 10^10)
+                -0.0000
+    Dipole Moment (Debye)
+         X      -0.0557      Y      -0.0603      Z      -2.2988
+       Tot       2.3002
+    Quadrupole Moments (Debye-Ang)
+        XX      -4.1145     XY       0.0056     YY      -7.2388
+        XZ       0.0309     YZ      -0.0014     ZZ      -5.9334
+    Octopole Moments (Debye-Ang^2)
+       XXX      -0.0906    XXY      -0.0197    XYY      -0.0144
+       YYY      -0.0554    XXZ      -1.4360    XYZ       0.0001
+       YYZ      -0.4027    XZZ      -0.0354    YZZ      -0.0187
+       ZZZ      -1.5285
+    Hexadecapole Moments (Debye-Ang^3)
+      XXXX      -5.3707   XXXY       0.0052   XXYY      -2.0279
+      XYYY       0.0051   YYYY      -5.2205   XXXZ       0.0464
+      XXYZ       0.0001   XYYZ       0.0084   YYYZ       0.0000
+      XXZZ      -1.5468   XYZZ       0.0017   YYZZ      -1.9327
+      XZZZ       0.0329   YZZZ       0.0000   ZZZZ      -6.0517
+ -----------------------------------------------------------------
+Archival summary:
+1\1\quicksilver.uguest.utah.edu\SP\HF\6-31G*\12\MonNov2413:30:182014MonNov2413:30:182014\0\\#,HF,6-31G*,\\0,1\O\H,1,0.959073\H,1,0.959073,2,103.524\\HF=-76.0139363\\@
+
+ Total job time:  1.83s(wall), 1.78s(cpu) 
+ Mon Nov 24 13:30:18 2014
+
+        *************************************************************
+        *                                                           *
+        *  Thank you very much for using Q-Chem.  Have a nice day.  *
+        *                                                           *
+        *************************************************************
+
+

@@ -1,0 +1,8 @@
+run_type hess
+hess_central true
+fraglib_path ../fraglib
+
+fragment h2o_l
+   0.000   0.000   0.000   0.000   0.000   0.000
+fragment ch3oh_l
+   0.000   0.000   4.000   0.000   0.000   0.000

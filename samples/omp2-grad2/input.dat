@@ -15,6 +15,6 @@ set {
   reference uhf
   guess gwh
 }
-gradient('omp2')
+gradient('conv-omp2')
 
 

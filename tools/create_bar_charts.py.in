@@ -1,0 +1,19 @@
+#!@PYTHON_EXECUTABLE@
+# -*- python -*-
+# -*- coding: utf-8 -*-
+# vim:filetype=python:
+# Create bar charts from matplotlib scripts
+# (c) Roberto Di Remigio  <roberto.d.remigio@uit.no>
+# licensed under the GNU Lesser General Public License
+
+import os
+import shutil
+
+build  = '@CMAKE_BINARY_DIR@'
+scripts = build+'/doc/cloc/matplotlib'
+
+for root, dirs, filenames in os.walk(scripts):
+    for f in filenames:
+        execfile(scripts + '/' + f)
+
+# vim:et:ts=4:sw=4

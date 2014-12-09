@@ -42,7 +42,7 @@ namespace psi {
 */
 double dot_mat(double **a, double **b, int n)
 {
-  register int i,j;
+  int i,j;
   double *ta, *tb, tval;
 
   tval = 0.0;
@@ -72,7 +72,7 @@ double dot_mat(double **a, double **b, int n)
 */
 void dot_arr(double *a, double *b, int n, double *value)
 {
-  register int i;
+  int i;
   double tval;
 
   tval = 0.0;

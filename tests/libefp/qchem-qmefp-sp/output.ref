@@ -1,0 +1,457 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0 Driver
+
+               Git: Rev {master} de989839fb929e2e4fdd301f65e06e14ff2626c9
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  27699
+    PSI4DATADIR: /Users/loriab/linux/psihub/master/psi4/obj-efp3/../lib
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! EFP on mixed QM (water) and EFP (water + 2 * ammonia) system.
+#! An EFP-only calc performed first to test vales against q-chem.
+
+memory 200 mb
+
+molecule qmefp {
+# QM fragment
+0 1
+units bohr
+O1     0.000000000000     0.000000000000     0.224348285559
+H2    -1.423528800232     0.000000000000    -0.897393142237
+H3     1.423528800232     0.000000000000    -0.897393142237
+# EFP as EFP fragments
+--
+efp h2o -4.014110144291     2.316749370493    -1.801514729931 -2.902133 1.734999 -1.953647
+--
+efp NH3  1.972094713645     3.599497221584     5.447701074734 -1.105309 2.033306 -1.488582
+--
+efp NH3 -7.876296399270    -1.854372164887    -2.414804197762  2.526442 1.658262 -2.742084
+}
+
+#  <<<  EFP calc  >>>
+set basis 6-31g*
+set scf_type pk
+set guess core
+set df_scf_guess false
+
+energy('efp')
+compare_values( 9.1793879214, qmefp.nuclear_repulsion_energy(), 6, 'QM NRE')  #TEST
+compare_values(-0.0004901368, get_variable('efp elst energy'), 6, 'EFP-EFP Elst')  #TEST  # from q-chem
+compare_values(-0.0003168768, get_variable('efp ind energy'), 6, 'EFP-EFP Indc')  #TEST
+compare_values(-0.0021985285, get_variable('efp disp energy'), 6, 'EFP-EFP Disp')  #TEST  # from q-chem
+compare_values( 0.0056859871, get_variable('efp exch energy'), 6, 'EFP-EFP Exch')  #TEST  # from q-chem
+compare_values( 0.0026804450, get_variable('efp total energy'), 6, 'EFP-EFP Totl')  #TEST
+compare_values( 0.0026804450, get_variable('current energy'), 6, 'Current')  #TEST
+print_variables()
+
+clean()
+clean_variables()
+
+#  <<<  QM + EFP calc  >>>
+set e_convergence 12
+set d_convergence 12
+energy('scf')
+
+compare_values( 9.1793879214, qmefp.nuclear_repulsion_energy(), 6, 'QM NRE')  #TEST
+#compare_values(-0.0004901368, get_variable('efp elst energy'), 6, 'EFP-EFP Elst')  #TEST  # from q-chem
+compare_values(-0.0117694790, get_variable('efp ind energy'), 6, 'Indc')  #TEST  # from q-chem
+compare_values(-0.0021985285, get_variable('efp disp energy'), 6, 'EFP-EFP Disp')  #TEST  # from q-chem
+compare_values( 0.0056859871, get_variable('efp exch energy'), 6, 'EFP-EFP Exch')  #TEST  # from q-chem
+compare_values( 0.2504904057, get_variable('efp total energy'), 6, 'EFP-EFP Totl')  #TEST  # from q-chem
+compare_values(-76.0139362744, get_variable('scf total energy'), 6, 'SCF')  #TEST  # from q-chem
+print_variables()
+
+#               ELECTROSTATIC ENERGY    -0.0004901368  #TEST
+#    QM-NUC/EFP ELECTROSTATIC ENERGY     0.2592625628  #TEST
+#       EFP CORRECTION TO SCF ENERGY     0.2622598847  #TEST
+
+--------------------------------------------------------------------------
+
+*** tstart() called on Macintosh-132.local
+*** at Fri Dec  5 03:28:23 2014
+
+
+  Memory set to 200.000 MiB by Python script.
+  EFP fragment h2o read from /Users/loriab/linux/psihub/master/psi4/obj-efp3/../lib/fraglib/h2o.efp
+  EFP fragment nh3 read from /Users/loriab/linux/psihub/master/psi4/obj-efp3/../lib/fraglib/nh3.efp
+
+
+LIBEFP ver. 1.2.1
+Copyright (c) 2012-2014 Ilya Kaliman
+
+Journal Reference:
+    Kaliman and Slipchenko, JCC 2013.
+    DOI: http://dx.doi.org/10.1002/jcc.23375
+
+Project web site: http://www.libefp.org/
+
+
+  ==> EFP/EFP Setup <==
+
+  Number of EFP fragments:            3
+  Electrostatics enabled?:         true
+  Polarization enabled?:           true
+  Dispersion enabled?:             true
+  Exchange enabled?:               true
+  Electrostatics damping:        SCREEN
+  Polarization damping:              TT
+  Dispersion damping:           OVERLAP
+  Gradient enabled?:              false
+
+  ==> EFP Geometry <==
+
+    Geometry (in Bohr):
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -4.119718822744     2.283478546584    -1.845411508632 (EFP   1)
+           H         -3.743383267384     2.664259297719    -0.151588355493 (EFP   1)
+           H         -2.608751087097     2.497271426871    -2.754767550535 (EFP   1)
+           N          2.067571405225     3.647455332485     5.500971507689 (EFP   2)
+           H          0.513410043058     4.651857202056     5.875457160587 (EFP   2)
+           H          1.780302987005     1.880230684891     6.100032489703 (EFP   2)
+           H          2.295984774077     3.600057126084     3.627455876386 (EFP   2)
+           N         -7.944929699862    -1.951502093370    -2.404375146696 (EFP   3)
+           H         -7.648505636106    -1.153615065377    -0.719148389117 (EFP   3)
+           H         -8.761101512929    -0.668545790819    -3.523467125331 (EFP   3)
+           H         -6.265667313505    -2.391398627296    -3.146701863840 (EFP   3)
+
+  ==> Energetics <==
+
+  EFP/EFP Electrostatics Energy =      -0.000490136752 [H] *
+  EFP/EFP Polarization Energy =        -0.000316876830 [H] *
+  EFP/EFP Dispersion Energy =          -0.002198528483 [H] *
+  EFP/EFP Exchange Energy =             0.005685987110 [H] *
+  Total Energy =                        0.002680445044 [H] *
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CURRENT ENERGY"   =>       0.002680445044
+  "EFP DISP ENERGY"  =>      -0.002198528483
+  "EFP ELST ENERGY"  =>      -0.000490136752
+  "EFP EXCH ENERGY"  =>       0.005685987110
+  "EFP IND ENERGY"   =>      -0.000316876830
+  "EFP TOTAL ENERGY" =>       0.002680445044
+
+
+
+
+LIBEFP ver. 1.2.1
+Copyright (c) 2012-2014 Ilya Kaliman
+
+Journal Reference:
+    Kaliman and Slipchenko, JCC 2013.
+    DOI: http://dx.doi.org/10.1002/jcc.23375
+
+Project web site: http://www.libefp.org/
+
+
+  ==> EFP/EFP Setup <==
+
+  Number of EFP fragments:            3
+  Electrostatics enabled?:         true
+  Polarization enabled?:           true
+  Dispersion enabled?:             true
+  Exchange enabled?:               true
+  Electrostatics damping:        SCREEN
+  Polarization damping:              TT
+  Dispersion damping:           OVERLAP
+  Gradient enabled?:              false
+
+  ==> QM/EFP Setup <==
+
+  Number of QM fragments:             1
+  Electrostatics enabled?:         true
+  Polarization enabled?:           true
+  Dispersion enabled?:        undefined
+  Exchange enabled?:          undefined
+
+  ==> EFP Geometry <==
+
+    Geometry (in Bohr):
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -4.119718822744     2.283478546584    -1.845411508632 (EFP   1)
+           H         -3.743383267384     2.664259297719    -0.151588355493 (EFP   1)
+           H         -2.608751087097     2.497271426871    -2.754767550535 (EFP   1)
+           N          2.067571405225     3.647455332485     5.500971507689 (EFP   2)
+           H          0.513410043058     4.651857202056     5.875457160587 (EFP   2)
+           H          1.780302987005     1.880230684891     6.100032489703 (EFP   2)
+           H          2.295984774077     3.600057126084     3.627455876386 (EFP   2)
+           N         -7.944929699862    -1.951502093370    -2.404375146696 (EFP   3)
+           H         -7.648505636106    -1.153615065377    -0.719148389117 (EFP   3)
+           H         -8.761101512929    -0.668545790819    -3.523467125331 (EFP   3)
+           H         -6.265667313505    -2.391398627296    -3.146701863840 (EFP   3)
+
+  ==> QM Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000     0.224348285559
+           H         -1.423528800232     0.000000000000    -0.897393142237
+           H          1.423528800232     0.000000000000    -0.897393142237
+
+
+*** tstart() called on Macintosh-132.local
+*** at Fri Dec  5 03:28:23 2014
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    200 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000     0.224348285559
+           H         -1.423528800232     0.000000000000    -0.897393142237
+           H          1.423528800232     0.000000000000    -0.897393142237
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     24.79097  B =     14.73827  C =      9.24318 [cm^-1]
+  Rotational constants: A = 743214.66697  B = 441842.29003  C = 277103.70248 [MHz]
+  Nuclear repulsion =    9.179387921358071
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-12
+  Density threshold  = 1.00e-12
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31G*
+    Number of shells: 10
+    Number of basis function: 19
+    Number of Cartesian functions: 19
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         19      19       0       0       0       0
+   -------------------------------------------------------
+    Total      19      19       5       5       5       0
+   -------------------------------------------------------
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              10
+      Number of SO shells:              10
+      Number of primitives:             23
+      Number of atomic orbitals:        19
+      Number of basis functions:        19
+
+      Number of irreps:                  1
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  19 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 7573 non-zero two-electron integrals.
+        Stored in file 33.
+
+	Batch   1 pq = [       0,     190] index = [             0,18145]
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               143
+    Schwarz Cutoff:          1E-12
+
+  Minimum eigenvalue in the overlap matrix is 2.2347036135E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   1:   -69.20025909724203   -6.92003e+01   1.74012e-01 
+   @RHF iter   2:   -71.90452703707746   -2.70427e+00   1.25882e-01 DIIS
+   @RHF iter   3:   -76.16423715505540   -4.25971e+00   3.39581e-02 DIIS
+   @RHF iter   4:   -76.26453097271924   -1.00294e-01   7.36376e-03 DIIS
+   @RHF iter   5:   -76.27689589220272   -1.23649e-02   1.01626e-03 DIIS
+   @RHF iter   6:   -76.27623921615793    6.56676e-04   3.87068e-04 DIIS
+   @RHF iter   7:   -76.27634785195843   -1.08636e-04   5.84323e-05 DIIS
+   @RHF iter   8:   -76.27623843650692    1.09415e-04   2.69614e-05 DIIS
+   @RHF iter   9:   -76.27620470581105    3.37307e-05   2.86513e-06 DIIS
+   @RHF iter  10:   -76.27619672973573    7.97608e-06   7.02330e-07 DIIS
+   @RHF iter  11:   -76.27619622313706    5.06599e-07   1.88160e-07 DIIS
+   @RHF iter  12:   -76.27619615512921    6.80079e-08   2.92274e-08 DIIS
+   @RHF iter  13:   -76.27619617190894   -1.67797e-08   4.58134e-09 DIIS
+   @RHF iter  14:   -76.27619616474621    7.16273e-09   7.20001e-10 DIIS
+   @RHF iter  15:   -76.27619616142501    3.32120e-09   1.71296e-10 DIIS
+   @RHF iter  16:   -76.27619616070717    7.17833e-10   3.15746e-11 DIIS
+   @RHF iter  17:   -76.27619616045141    2.55767e-10   6.58709e-12 DIIS
+   @RHF iter  18:   -76.27619616043489    1.65130e-11   1.15742e-12 DIIS
+   @RHF iter  19:   -76.27619616043272    2.17426e-12   2.80708e-13 DIIS
+   @RHF iter  20:   -76.27619616043337   -6.53699e-13   8.82256e-14 DIIS
+  ==> Energetics <==
+
+  EFP/EFP Electrostatics Energy =      -0.000490136752 [H] *
+  QM-Nuc/EFP Electrostatics Energy =       0.259262562824 [H] *
+  Total Electrostatics Energy =       0.258772426072 [H] *
+          Polarization Energy =        -0.011769493486 [H] *
+  EFP/EFP Dispersion Energy =          -0.002198528483 [H] *
+  EFP/EFP Exchange Energy =             0.005685987110 [H] *
+  Total Energy =                        0.250490391213 [H] *
+  EFP Electrostatics Energy =       0.2587724260719589 [H]
+  EFP Polarization Energy =        -0.0117694934860228 [H]
+  EFP Dispersion Energy =          -0.0021985284828195 [H]
+  EFP Exchange Energy =             0.0056859871095468 [H]
+  EFP Wfn dependent Energy =       -0.0117694934860228 [H]
+  EFP Total Energy =                0.2504903912126634 [H]
+  Total SCF Energy =              -76.0139362757346788 [H]
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A    -20.583744     2A     -1.365142     3A     -0.726327  
+	   4A     -0.596371     5A     -0.522473  
+
+	Virtual:                                                              
+
+	   6A      0.194242     7A      0.295651     8A      0.995644  
+	   9A      1.109263    10A      1.140518    11A      1.152481  
+	  12A      1.359192    13A      1.415415    14A      1.993617  
+	  15A      2.010513    16A      2.042099    17A      2.596493  
+	  18A      2.919825    19A      3.944888  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.01393627573468
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1793879213580709
+    One-Electron Energy =                -123.2995149829609574
+    Two-Electron Energy =                  37.8557003946555852
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    Total Energy =                        -76.2644266669473012
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0219      Y:    -0.0237      Z:    -0.9044
+
+  Dipole Moment: (a.u.)
+     X:    -0.0219      Y:    -0.0237      Z:    -0.9044     Total:     0.9050
+
+  Dipole Moment: (Debye)
+     X:    -0.0557      Y:    -0.0603      Z:    -2.2988     Total:     2.3002
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on Macintosh-132.local at Fri Dec  5 03:28:25 2014
+Module time:
+	user time   =       1.61 seconds =       0.03 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       1.71 seconds =       0.03 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CURRENT DIPOLE X"         =>      -0.055742634307
+  "CURRENT DIPOLE Y"         =>      -0.060337636208
+  "CURRENT DIPOLE Z"         =>      -2.298772865050
+  "CURRENT ENERGY"           =>     -76.013936275735
+  "CURRENT REFERENCE ENERGY" =>     -76.013936275735
+  "EFP DISP ENERGY"          =>      -0.002198528483
+  "EFP ELST ENERGY"          =>       0.258772426072
+  "EFP EXCH ENERGY"          =>       0.005685987110
+  "EFP IND ENERGY"           =>      -0.011769493486
+  "EFP TOTAL ENERGY"         =>       0.250490391213
+  "HF TOTAL ENERGY"          =>     -76.264426666947
+  "NUCLEAR REPULSION ENERGY" =>       9.179387921358
+  "ONE-ELECTRON ENERGY"      =>    -123.299514982961
+  "SCF DIPOLE X"             =>      -0.055742634307
+  "SCF DIPOLE Y"             =>      -0.060337636208
+  "SCF DIPOLE Z"             =>      -2.298772865050
+  "SCF ITERATION ENERGY"     =>     -76.276196160433
+  "SCF TOTAL ENERGY"         =>     -76.013936275735
+  "TWO-ELECTRON ENERGY"      =>      37.855700394656
+
+
+
+*** PSI4 exiting successfully. Buy a developer a beer!

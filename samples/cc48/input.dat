@@ -11,12 +11,11 @@ molecule h2o {
 
 set {
   roots_per_irrep [2, 2, 2, 2]
-  basis Sadlej-pVTZ
   freeze_core true
 }
 
-basis {
-[Sadlej-pVTZ]
+basis sadssejpvtz {
+# sl
 spherical
 ****
 H 0

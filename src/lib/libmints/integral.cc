@@ -24,6 +24,7 @@
 #include "psi4-dec.h"
 #include "mints.h"
 #include "liboptions/liboptions.h"
+#include "potentialint.h"
 #include <libint/libint.h>
 
 using namespace boost;
@@ -120,6 +121,17 @@ OneBodySOInt* IntegralFactory::so_potential(int deriv)
 {
     boost::shared_ptr<OneBodyAOInt> ao_int(ao_potential(deriv));
     return new PotentialSOInt(ao_int, this);
+}
+
+OneBodyAOInt* IntegralFactory::ao_rel_potential(int deriv)
+{
+    return new RelPotentialInt(spherical_transforms_, bs1_, bs2_, deriv);
+}
+
+OneBodySOInt* IntegralFactory::so_rel_potential(int deriv)
+{
+    boost::shared_ptr<OneBodyAOInt> ao_int(ao_rel_potential(deriv));
+    return new RelPotentialSOInt(ao_int, this);
 }
 
 OneBodyAOInt* IntegralFactory::ao_pseudospectral(int deriv)

@@ -107,34 +107,10 @@ do
     if (do_cd == "FALSE") { 
         timer_on("DF CC Integrals");
         trans_corr();
-        if (conv_tei_type == "DISK") { 
-            tei_iajb_chem();
-            //tei_ijab_chem();// for Hessian
-            if (reference_ == "UNRESTRICTED") {
-                tei_ijab_phys();
-                tei_ijab_anti_symm();
-            }
-        }// if (conv_tei_type == "DISK")  
         timer_off("DF CC Integrals");
 
         timer_on("DF REF Integrals");
         trans_ref();
-        if (conv_tei_type == "DISK") { 
-            tei_oooo_chem_ref();
-            tei_ooov_chem_ref();
-            tei_oovv_chem_ref();
-            tei_ovov_chem_ref();
-            if (reference_ == "UNRESTRICTED") {
-                tei_oooo_phys_ref();
-                tei_ooov_phys_ref();
-                tei_oovv_phys_ref();
-                tei_ovov_phys_ref();
-                tei_oooo_anti_symm_ref();
-                tei_ooov_anti_symm_ref();
-                tei_oovv_anti_symm_ref();
-                tei_ovov_anti_symm_ref();
-            }
-        }// if (conv_tei_type == "DISK")  
         timer_off("DF REF Integrals");
     }// end if (do_cd == "FALSE")  
 
@@ -142,30 +118,7 @@ do
     else if (do_cd == "TRUE") { 
         timer_on("CD Trans");
         trans_cd();
-        if (conv_tei_type == "DISK") { 
-            tei_iajb_chem();
-            if (reference_ == "UNRESTRICTED") {
-                tei_ijab_phys();
-                tei_ijab_anti_symm();
-            }
-        }// if (conv_tei_type == "DISK")  
         timer_off("CD Trans");
-        if (conv_tei_type == "DISK") { 
-            tei_oooo_chem_ref();
-            tei_ooov_chem_ref();
-            tei_oovv_chem_ref();
-            tei_ovov_chem_ref();
-            if (reference_ == "UNRESTRICTED") {
-                tei_oooo_phys_ref();
-                tei_ooov_phys_ref();
-                tei_oovv_phys_ref();
-                tei_ovov_phys_ref();
-                tei_oooo_anti_symm_ref();
-                tei_ooov_anti_symm_ref();
-                tei_oovv_anti_symm_ref();
-                tei_ovov_anti_symm_ref();
-            }
-        }// if (conv_tei_type == "DISK")  
     }// end if (do_cd == "TRUE")  
 
         // Fock

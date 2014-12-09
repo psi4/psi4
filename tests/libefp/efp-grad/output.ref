@@ -1,0 +1,203 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0 Driver
+
+               Git: Rev {master} de989839fb929e2e4fdd301f65e06e14ff2626c9
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  34799
+    PSI4DATADIR: /Users/loriab/linux/psihub/master/psi4/obj-efp3/../lib
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! EFP gradient many-EFP-fragment system (geom and E from libefp pol_3a test).
+#! Tests passing of efp torques.
+
+# If EFP potential was updated ref data needs updating too
+# Note: previous gradient that was here can't be matched,
+#   but Ilya had commented out the compare_matrices for it
+#   upon updating EFP potentials a couple years ago, so
+#   assuming ok, and copying in a new ref. --LAB
+
+ref_efp = [
+    [-0.0014557485,    -0.0024650113,    -0.0007420245,     0.0018487317,    -0.0065430367,    -0.0003612802],  #TEST
+    [-0.0024798509,    -0.0002766252,     0.0029343456,    -0.0033124877,    -0.0048014449,    -0.0046442270],  #TEST
+    [ 0.0021341431,     0.0023700691,     0.0015655930,    -0.0005188401,    -0.0004406075,    -0.0016388193],  #TEST
+    [-0.0020017801,     0.0045394287,     0.0001140076,    -0.0011159049,     0.0021766586,    -0.0035556589],  #TEST
+    [-0.0004997047,     0.0037416773,    -0.0017226579,     0.0108138324,     0.0056465424,    -0.0031926302],  #TEST
+    [-0.0004161161,    -0.0046891120,    -0.0017098053,    -0.0023800599,     0.0042322597,     0.0105675357],  #TEST
+    [ 0.0007828963,     0.0001744122,    -0.0006861146,     0.0003752826,    -0.0032331154,    -0.0011471607],  #TEST
+    [ 0.0038830634,    -0.0039883720,    -0.0001194227,     0.0012427711,    -0.0026362462,    -0.0005023332],  #TEST
+    [ 0.0000530976,     0.0005935332,     0.0003660789,    -0.0015382262,    -0.0048146666,     0.0026841256]]  #TEST
+
+refEFP = psi4.Matrix(9, 6)  #TEST
+refEFP.set(ref_efp)  #TEST
+
+molecule efp_spec {
+efp h2o
+   -3.394    -1.900    -3.700
+   -3.524    -1.089    -3.147
+   -2.544    -2.340    -3.445
+--
+efp nh3
+   -5.515     1.083     0.968
+   -5.161     0.130     0.813
+   -4.833     1.766     0.609
+--
+efp nh3
+    1.848     0.114     0.130
+    1.966     0.674    -0.726
+    0.909     0.273     0.517
+--
+efp nh3
+   -1.111    -0.084    -4.017
+   -1.941     0.488    -3.813
+   -0.292     0.525    -4.138
+--
+efp ch3oh
+   -2.056     0.767    -0.301
+   -2.999    -0.274    -0.551
+   -1.201     0.360     0.258
+--
+efp h2o
+   -0.126    -2.228    -0.815
+    0.310    -2.476     0.037
+    0.053    -1.277    -1.011
+--
+efp h2o
+   -1.850     1.697     3.172
+   -1.050     1.592     2.599
+   -2.666     1.643     2.614
+--
+efp ch3oh
+    1.275    -2.447    -4.673
+    0.709    -3.191    -3.592
+    2.213    -1.978    -4.343
+--
+efp h2o
+   -5.773    -1.738    -0.926
+   -5.017    -1.960    -1.522
+   -5.469    -1.766     0.014
+}
+
+set efp_disp no
+set efp_exch no
+set efp_elst_damping screen
+set efp_pol_damping off
+set efp dertype first
+
+energy('efp')
+compare_values(0.0, efp_spec.nuclear_repulsion_energy(), 6, "NRE")  #TEST
+compare_values(-0.0066095987170644, get_variable('CURRENT ENERGY'), 5, 'EFP Total')  #TEST
+
+torq = get_efp_torque()
+compare_matrices(refEFP, torq, 6, "libefp printed gradients, vs. psi4 read-from-libefp gradients") #TEST
+
+--------------------------------------------------------------------------
+
+*** tstart() called on Macintosh-132.local
+*** at Fri Dec  5 13:46:16 2014
+
+  EFP fragment ch3oh read from /Users/loriab/linux/psihub/master/psi4/obj-efp3/../lib/efpfrag/ch3oh.efp
+  EFP fragment h2o read from /Users/loriab/linux/psihub/master/psi4/obj-efp3/../lib/efpfrag/h2o.efp
+  EFP fragment nh3 read from /Users/loriab/linux/psihub/master/psi4/obj-efp3/../lib/efpfrag/nh3.efp
+Warning: There are no quantum mechanical atoms in this molecule.
+
+
+LIBEFP ver. 1.2.1
+Copyright (c) 2012-2014 Ilya Kaliman
+
+Journal Reference:
+    Kaliman and Slipchenko, JCC 2013.
+    DOI: http://dx.doi.org/10.1002/jcc.23375
+
+Project web site: http://www.libefp.org/
+
+
+  ==> EFP/EFP Setup <==
+
+  Number of EFP fragments:            9
+  Electrostatics enabled?:         true
+  Polarization enabled?:           true
+  Dispersion enabled?:            false
+  Exchange enabled?:              false
+  Electrostatics damping:        SCREEN
+  Polarization damping:             OFF
+  Gradient enabled?:               true
+
+  ==> EFP Geometry <==
+
+    Geometry (in Angstrom):
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -3.394000000000    -1.900000000000    -3.700000000000 (EFP   1)
+           H         -3.517418778028    -1.130056700148    -3.174995505773 (EFP   1)
+           H         -2.580283902534    -2.281410602612    -3.424198144211 (EFP   1)
+           N         -5.515000000000     1.083000000000     0.968000000000 (EFP   2)
+           H         -5.171084270688     0.157147768265     0.817415429256 (EFP   2)
+           H         -4.838165357220     1.726199507626     0.612549080030 (EFP   2)
+           H         -6.354117562525     1.191678915798     0.436749886147 (EFP   2)
+           N          1.848000000000     0.114000000000     0.130000000000 (EFP   3)
+           H          1.962491975928     0.657351750165    -0.700551960966 (EFP   3)
+           H          0.930650464000     0.284298422320     0.487245535928 (EFP   3)
+           H          1.908197775547    -0.851198369290    -0.120847383255 (EFP   3)
+           N         -1.111000000000    -0.084000000000    -4.017000000000 (EFP   4)
+           H         -1.917298908911     0.471666236021    -3.818825328412 (EFP   4)
+           H         -0.331561144476     0.530751096942    -4.129748641204 (EFP   4)
+           H         -0.933937700297    -0.666145331052    -3.224591122271 (EFP   4)
+           C         -2.056000000000     0.767000000000    -0.301000000000 (EFP   5)
+           O         -2.979939586772    -0.252958759099    -0.545946868179 (EFP   5)
+           H         -1.192965030446     0.406624321465     0.250842050726 (EFP   5)
+           H         -2.554556614589     1.516350250253     0.296433314481 (EFP   5)
+           H         -1.714729800841     1.232706452463    -1.220716135897 (EFP   5)
+           H         -2.587629713022    -0.929368819750    -1.064806708470 (EFP   5)
+           O         -0.126000000000    -2.228000000000    -0.815000000000 (EFP   6)
+           H          0.288546643718    -2.463797173491    -0.004922613652 (EFP   6)
+           H          0.070751310806    -1.320157650890    -0.959172776816 (EFP   6)
+           O         -1.850000000000     1.697000000000     3.172000000000 (EFP   7)
+           H         -1.090082716933     1.597260856597     2.627709246003 (EFP   7)
+           H         -2.594571894218     1.639020357606     2.601101012328 (EFP   7)
+           C          1.275000000000    -2.447000000000    -4.673000000000 (EFP   8)
+           O          0.721394541673    -3.174707528260    -3.615672260686 (EFP   8)
+           H          2.206087840006    -1.965868836036    -4.388715152432 (EFP   8)
+           H          0.563480535789    -1.680500500091    -4.943609736417 (EFP   8)
+           H          1.454294320520    -3.071335831769    -5.543220624398 (EFP   8)
+           H          1.308836138839    -3.855272557763    -3.346605816112 (EFP   8)
+           O         -5.773000000000    -1.738000000000    -0.926000000000 (EFP   9)
+           H         -5.053658588165    -1.949235176491    -1.493099843192 (EFP   9)
+           H         -5.438927127770    -1.776829258179    -0.048183274558 (EFP   9)
+
+  ==> EFP Gradient <==
+
+     -0.001456     -0.002465     -0.000742      0.001849     -0.006543     -0.000361
+     -0.002480     -0.000277      0.002934     -0.003312     -0.004801     -0.004644
+      0.002134      0.002370      0.001566     -0.000519     -0.000441     -0.001639
+     -0.002002      0.004539      0.000114     -0.001116      0.002177     -0.003556
+     -0.000500      0.003742     -0.001723      0.010814      0.005647     -0.003193
+     -0.000416     -0.004689     -0.001710     -0.002380      0.004232      0.010568
+      0.000783      0.000174     -0.000686      0.000375     -0.003233     -0.001147
+      0.003883     -0.003988     -0.000119      0.001243     -0.002636     -0.000502
+      0.000053      0.000594      0.000366     -0.001538     -0.004815      0.002684
+
+  ==> Energetics <==
+
+  EFP/EFP Electrostatics Energy =      -0.003953150098 [H] *
+  EFP/EFP Polarization Energy =        -0.002655646859 [H] *
+  EFP/EFP Dispersion Energy =           0.000000000000 [H] 
+  EFP/EFP Exchange Energy =             0.000000000000 [H] 
+  Total Energy =                       -0.006608796957 [H] *
+
+*** PSI4 exiting successfully. Buy a developer a beer!
