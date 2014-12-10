@@ -536,6 +536,13 @@ SharedMatrix MintsHelper::ao_helper(const std::string& label, boost::shared_ptr<
         }
     }
 
+    // Set Numpy shape
+    int* shape = new int[4];
+    shape[0] = shape[1] = nbf;
+    shape[2] = shape[3] = nbf;
+    I->set_numpy_dims(4);
+    I->set_numpy_shape(shape);
+
     return I;
 }
 
@@ -741,6 +748,13 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix C1, Share
         }
     }
 
+    // Set Numpy shape
+    int* shape = new int[4];
+    shape[0] = n1; shape[1] = n2;
+    shape[2] = n3; shape[3] = n4;
+    Imo->set_numpy_dims(4);
+    Imo->set_numpy_shape(shape);
+
     return Imo;
 }
 SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, SharedMatrix Cv)
@@ -803,6 +817,13 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, Share
             }
         }
     }
+
+    // Set Numpy shape
+    int* shape = new int[4];
+    shape[0] = shape[2] = nocc;
+    shape[1] = shape[3] = nvir;
+    Imo->set_numpy_dims(4);
+    Imo->set_numpy_shape(shape);
 
     return Imo;
 }
