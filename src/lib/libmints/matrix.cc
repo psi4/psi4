@@ -354,7 +354,7 @@ void Matrix::copy(const Matrix* cp)
     #pragma omp parallel for
     for (int h=0; h<nirrep_; ++h) {
         if (rowspi_[h] != 0 && colspi_[h^symmetry_] != 0)
-            memcpy(&(matrix_[h][0][0]), &(cp->matrix_[h][0][0]), rowspi_[h] * colspi_[h^symmetry_] * sizeof(double));
+            memcpy(&(matrix_[h][0][0]), &(cp->matrix_[h][0][0]), rowspi_[h] * (size_t) colspi_[h^symmetry_] * sizeof(double));
     }
 }
 
