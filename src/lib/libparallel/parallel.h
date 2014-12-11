@@ -137,7 +137,6 @@ class Parallel {
                broadcaster, CommName);
       }
 
-<<<<<<< HEAD
       /** \brief Sees if a message is available
        *
        *  \param[in] Sender The value of the MPI process who we want a message
@@ -239,13 +238,6 @@ class Parallel {
 
       ///Returns the current number of MPI processes
       virtual int nproc(const std::string& CommName="NONE") const {
-=======
-      virtual int me(const std::string& /*CommName*/="NONE") const {
-         return 0;
-      }
-
-      virtual int nproc(const std::string& /*CommName*/="NONE") const {
->>>>>>> ed6759389992b49432a0e637a5d68a0ec7a78ef9
          return 1;
       }
 
@@ -259,19 +251,6 @@ class Parallel {
          return CurrentComm.back();
       }
 
-<<<<<<< HEAD
-      ///Legacy compatibility.  Don't use.
-      int thread_id(const pthread_t &thread) {
-         return 0;
-      }
-
-      ///Splits the current communicator
-      virtual void MakeComm(const std::string& Name, const int Color,
-            const std::string& Comm2Split="NONE"){}
-
-      ///Adds communicator resources back into the pool
-      virtual void FreeComm(const std::string& Name="NONE"){}
-=======
       int thread_id(const pthread_t&) {
          return 0;
       }
@@ -280,7 +259,6 @@ class Parallel {
             const std::string& /*Comm2Split*/="NONE"){}
 
       virtual void FreeComm(const std::string& /*Name*/="NONE"){}
->>>>>>> ed6759389992b49432a0e637a5d68a0ec7a78ef9
 };// End Parallel base class
 }//End namespace psi
 #endif  /* _psi_src_lib_libparallel_parallel_h_ */

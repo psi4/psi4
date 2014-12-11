@@ -86,7 +86,7 @@ void export_oeprop();
 void export_cubefile();
 void export_libfrag();
 void export_libparallel();
-
+void export_efp();
 
 // In export_plugins.cc
 void py_psi_plugin_close_all();

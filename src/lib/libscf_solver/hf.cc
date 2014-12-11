@@ -1777,7 +1777,7 @@ double HF::compute_energy()
         outfile->Printf("    Total SCF                     %20.12f [H]\n", E_);
     }
 
-    if (WorldComm->me() == 0)
+
         outfile->Printf( "\n  ==> Post-Iterations <==\n\n");
 
     check_phases();

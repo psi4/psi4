@@ -28,7 +28,7 @@ typedef boost::shared_ptr<LocalComm> SharedThis;
 
 LocalComm::LocalComm():BaseType_(this){}
 
-SharedThis LocalComm::MakeComm(const int Color) const{
+SharedThis LocalComm::MakeComm(const int /*Color*/) const{
    SharedThis temp (new LocalComm());
    return temp;
 }

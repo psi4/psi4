@@ -1,10 +1,9 @@
 # Based on Ryan M. Richard work in PSI4
 # First of all get BOOSTVER underscore separated
 string(REGEX REPLACE "\\." "_" BOOSTVER ${BOOSTVER})
+set(BOOST_BUILD_DIR ${PROJECT_BINARY_DIR}/boost/boost_${BOOSTVER})
 # Transform the ;-separated list to a ,-separated list (digested by the Boost build toolchain!)
 string(REPLACE ";" "," b2_needed_components "${needed_components}")
-
-set(BOOST_BUILD_DIR ${PROJECT_BINARY_DIR}/boost/boost_${BOOSTVER})
 
 # Prepare stuff to be written to user-config.jam and project-config.jam
 # We are going to build only what is necessary. We need to create a custom user-config.jam file
@@ -12,8 +11,9 @@ set(BOOST_BUILD_DIR ${PROJECT_BINARY_DIR}/boost/boost_${BOOSTVER})
 # user-config.jam file. MPI_SENT will be the command we append
 set(MPI_SENT "")
 if(ENABLE_MPI)
-   list(APPEND needed_components mpi)
-   set(MPI_SENT "using mpi \n : ${CMAKE_CXX_COMPILER} \n;")
+#RMR this is now done in cmake/ConfigBoost
+#   list(APPEND needed_components mpi)
+   set(MPI_SENT "using mpi ;")
 endif()
 if(ENABLE_UNIT_TESTS)
    # Replace unit_test_framework (used by CMake's find_package) with test (understood by Boost build toolchain)
@@ -47,9 +47,10 @@ else()
 endif()
 message(STATUS "  Toolset to be used: ${toolset}")
 
+
 # Write the user-config.jam file
 file(WRITE  ${BOOST_BUILD_DIR}/user-config.jam 
-	    "using ${toolset}\n : \n : ${CMAKE_CXX_COMPILER} \n : <cxxflags>${cxxflags} \n : <linkflags>${linkflags} \n;") 
+	    "using ${toolset} :  : ${CMAKE_CXX_COMPILER}  : <cxxflags>${cxxflags}  : <linkflags>${linkflags} ;\n") 
 file(APPEND ${BOOST_BUILD_DIR}/user-config.jam "${MPI_SENT}") 
 
 # Unpack Boost and copy boostcpp.jam
@@ -67,6 +68,7 @@ add_custom_command(
     COMMENT "Unpacking Boost")
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} type)
+message(STATUS "Boost is being told to build ${b2_needed_components}")
 # Run bootstrap.sh to configure the build. We will install in ${PROJECT_BINARY_DIR}/boost
 add_custom_command(
     OUTPUT boost.configured
@@ -82,6 +84,7 @@ add_custom_command(
 # Build Boost
 add_custom_command(
     OUTPUT boost.built
+    COMMAND ${CMAKE_COMMAND} -E echo "${MPI_SENT}" >> ${BOOST_BUILD_DIR}/project-config.jam
     COMMAND ./b2 variant=${type} link=static threading=multi 1> boost.built.log 2> boost.built.err
     COMMAND ${CMAKE_COMMAND} -E touch ${PROJECT_BINARY_DIR}/boost/boost.built
     WORKING_DIRECTORY ${BOOST_BUILD_DIR}
@@ -100,7 +103,7 @@ add_custom_command(
 # Clean-up
 add_custom_command(
     OUTPUT boost.cleanedup
-    COMMAND ${CMAKE_COMMAND} -E remove_directory ${BOOST_BUILD_DIR}
+#    COMMAND ${CMAKE_COMMAND} -E remove_directory ${BOOST_BUILD_DIR}
     COMMAND ${CMAKE_COMMAND} -E touch ${PROJECT_BINARY_DIR}/boost/boost.cleanedup
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/boost
     DEPENDS boost.installed 

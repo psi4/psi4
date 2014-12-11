@@ -48,7 +48,9 @@
 #define MAIN
 #include "psi4.h"
 #include "script.h"
-
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 namespace psi {
     int psi_start(int argc, char *argv[]);
     int psi_stop(FILE* infile, std::string, char* psi_file_prefix);
@@ -77,7 +79,12 @@ int main(int argc, char **argv)
     Process::arguments.initialize(argc, argv);
     Process::environment.initialize();   // grabs the environment from the global environ variable
 
-
+    //The next five lines used to live in WorldComm, they are here now
+#ifdef _OPENMP
+         omp_set_nested(0);
+#endif
+         if (Process::environment("OMP_NUM_THREADS")=="")
+            Process::environment.set_n_threads(1);
 
     // There is only one timer:
     timer_init();
