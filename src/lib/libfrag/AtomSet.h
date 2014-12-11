@@ -24,6 +24,7 @@
 #include "Set.h"
 #include "LibFragTypes.h"
 #include "libmints/vector3.h"
+#include <libmints/matrix.h>
 #include <boost/shared_ptr.hpp>
 #include "masses.h"
 namespace psi {
@@ -493,7 +494,7 @@ class CartSet:public Set<T>,public CartObject {
  ///Sets the carts of atom i, {x,y,z}
  void AddCarts(const int i, const double x,const double y,
  const double z);
- 
+
 ///Returns the mass of atom i
       double Mass(const int i){return Elem2Atoms[Atoms[i]].mass;}
 

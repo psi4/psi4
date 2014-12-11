@@ -85,7 +85,7 @@ template <typename T>
 std::vector<T> UpCastWrapper::Reduce(
       const std::vector<T>& Local,
       const int size,
-      const MPIOperation& op) const{
+      const MPIOperation& Op) const{
    std::vector<T> Return;
    switch (Alg_) {
       case (SIMPLE): {
