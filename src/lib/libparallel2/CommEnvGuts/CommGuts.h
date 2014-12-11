@@ -23,17 +23,20 @@
 #define SRC_LIB_LIBPARALLEL2_COMMENVGUTS_COMMGUTS_H_
 #include "../LibParallelBase.h"
 #include "../Algorithms.h"
-#include "LocalComm.h"
-#include "ParallelComm.h"
 #include <boost/shared_ptr.hpp>
 #include <string>
+#if HAVE_MPI
+  #include "ParallelComm.h"
+#else
+  #include "LocalComm.h"
+#endif
 namespace psi{
 namespace LibParallel{
 namespace Comm{
 #if HAVE_MPI
-   typedef ParallelComm CommType_;
+    typedef ParallelComm CommType_;
 #else
-   typedef LocalComm CommType_;
+    typedef LocalComm CommType_;
 #endif
 }
 class ParallelEnvironmentGuts;
