@@ -20,7 +20,6 @@
  *@END LICENSE
  */
 
-#include "LibBabel.h"
 #include "openbabel/obconversion.h"
 #include "openbabel/obiter.h"
 #include "openbabel/mol.h"
@@ -30,6 +29,7 @@
 #include "masses.h"
 #include <iostream>
 #include <sstream>
+#include "LibBabel.h"
 namespace psi {
 namespace LibBabel {
 

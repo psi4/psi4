@@ -410,7 +410,7 @@ class MPIJobAdvanced:public MPIJob<T> {
       MPIJobAdvanced<T>(const std::vector<TaskType>& Tasks, const int MaxProcs=
             -1, const bool ForceDynamic=false) :
             MPIJob<T>(Tasks, MaxProcs, ForceDynamic) {
-         Enough_=LibParallel::MPIJobGuts::EnoughProcs();
+                LibParallel::MPIJobGuts::Enough_=LibParallel::MPIJobGuts::EnoughProcs();
       }
 
       ///Returns true if there are enough processes for your MaxProc request

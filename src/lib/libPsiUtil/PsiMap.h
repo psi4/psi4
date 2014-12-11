@@ -86,7 +86,7 @@ int PsiMap<T1,T2>::size()const{
 }
 
 template<typename T1,typename T2>
-PsiMap<T1,T2>::PsiMap<T1,T2>(const PsiMap<T1,T2>& other):
+PsiMap<T1,T2>::PsiMap(const PsiMap<T1,T2>& other):
    std::map<T1,T2>(other){
 }
 
