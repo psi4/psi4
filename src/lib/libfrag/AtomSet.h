@@ -504,21 +504,7 @@ class CartSet:public Set<T>,public CartObject {
 };
 */
 #endif
-}}//End namespaces
 
- ///Sets the mass of atom i to m
- void AddMass(const int i,const double m);
-
- ///Returns the mass of atom i
- double Mass(const int i){return Elem2Atoms[Atoms[i]].mass;}
-
- ///Returns a vector of the carts
- std::vector<double> Carts(const int i){
- return Elem2Atoms[Atoms[i]].carts;
- }
- };
- */
-}
-}      //End namespaces
+}}      //End namespaces
 
 #endif /* ATOMSET_H_ */

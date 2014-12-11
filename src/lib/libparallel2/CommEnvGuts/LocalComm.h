@@ -47,24 +47,24 @@ class LocalComm:public CommBase<LocalComm>{
          if(Target!=LocalData)memcpy(Target,LocalData,NElem*sizeof(T));
       }
       template<typename T>
-      void BcastImpl(T* Data, const int NElem, const int Broadcaster)const{
+      void BcastImpl(T* /*Data*/, const int /*NElem*/, const int /*Broadcaster*/)const{
       }
 
       template<typename T>
-      void SendImpl(const int Receiver,const int MessageTag,T* Message=NULL,
-                  const int Length=0,bool Block=true)const{
+      void SendImpl(const int /*Receiver*/,const int /*MessageTag*/,T* /*Message*/,
+                  const int /*Length*/,bool /*Block*/)const{
       }
 
       template<typename T>
-      void ReceiveImpl(const int Sender, const int MessageTag,T* Message=NULL,
-            const int Length=0,bool Block=true)const{
+      void ReceiveImpl(const int /*Sender*/, const int /*MessageTag*/,T* /*Message*/,
+            const int /*Length*/,bool /*Block*/)const{
       }
    public:
       LocalComm();
       boost::shared_ptr<LocalComm> MakeComm(const int Color)const;
       void Barrier()const{}
-      int Probe(const int Sender,const int MessageTag,
-            const bool Block)const{return 0;}
+      int Probe(const int /*Sender*/,const int /*MessageTag*/,
+            const bool /*Block*/)const{return 0;}
       int Me()const{return 0;}
       int NProc()const{return 1;}
 

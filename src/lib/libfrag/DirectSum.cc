@@ -40,9 +40,9 @@ typedef std::map<int, int> IntMap;
 
 inline void DimsPerAtom(IntVec& Atoms, IntMap& AtomRowStart,
       IntMap& AtomColStart, IntMap& ElecPAtom) {
-   boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-   boost::shared_ptr<BasisSet> primary=BasisSet::construct(parser,
-         Process::environment.molecule(), "BASIS");
+   boost::shared_ptr<BasisSet> primary=BasisSet::pyconstruct_orbital(
+         Process::environment.molecule(),
+         "BASIS", Process::environment.options.get_str("BASIS"));
    boost::shared_ptr<Molecule> Mol=primary->molecule();
    int NAtoms=Atoms.size();
    for (int i=0,RowCount=0,ColCount=0; i<NAtoms; i++) {
@@ -60,9 +60,9 @@ inline void DimsPerAtom(IntVec& Atoms, IntMap& AtomRowStart,
 
 inline MOFile WriteFile(double energy, int NBf, SpinDims& ColDims,
       SpinMats& Cs) {
-   boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-   boost::shared_ptr<BasisSet> primary=BasisSet::construct(parser,
-         Process::environment.molecule(), "BASIS");
+   boost::shared_ptr<BasisSet> primary=BasisSet::pyconstruct_orbital(
+         Process::environment.molecule(),
+         "BASIS", Process::environment.options.get_str("BASIS"));
    MOFile NewFile;
    int length=primary->name().length()+1;
    NewFile.FillFile(length, primary->name().c_str(), primary->has_puream(),

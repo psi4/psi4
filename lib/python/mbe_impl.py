@@ -123,7 +123,6 @@ def BaseCall(name,molecule,Egys,CEgys,NStart,NEnd,SuppressPrint,itr,**kwargs):
     for k,v in tempCEgys.iteritems():
         R2[k]=PMan.Synch(tempCEgys[k],1)
     total=0
-    print sizes
     for N in range(NStart,NEnd):
         offset=sizes[N-NStart]
         lfrag.Sync("COMM_WORLD",N,itr)
