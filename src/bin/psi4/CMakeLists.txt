@@ -13,13 +13,9 @@ add_custom_command(
     DEPENDS gitversion.h
 )
 
-set(SRC clean.cc create_new_plugin.cc export_benchmarks.cc
-        export_blas_lapack.cc 
-        export_libfrag.cc export_chkpt.cc 
-        export_cubefile.cc export_functional.cc export_libparallel.cc 
-        export_mints.cc export_oeprop.cc export_plugins.cc 
-        export_psio.cc psi4.cc psi_start.cc psi_stop.cc 
-        python.cc read_options.cc script.cc set_memory.cc version.cc)
+set(headers_list "")
+# List of headers
+list(APPEND headers_list script.h psi4.h )
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
@@ -32,7 +28,7 @@ list(SORT headers_list)
 
 set(sources_list "")
 # List of sources
-list(APPEND sources_list export_psio.cc export_mints.cc psi_stop.cc export_functional.cc export_chkpt.cc export_oeprop.cc python.cc export_plugins.cc version.cc export_libfrag.cc export_blas_lapack.cc psi4.cc export_cubefile.cc export_benchmarks.cc export_efp.cc clean.cc create_new_plugin.cc psi_start.cc script.cc set_memory.cc read_options.cc )
+list(APPEND sources_list export_psio.cc export_mints.cc psi_stop.cc export_functional.cc export_chkpt.cc export_oeprop.cc python.cc export_plugins.cc version.cc export_libfrag.cc export_blas_lapack.cc psi4.cc export_cubefile.cc export_benchmarks.cc export_efp.cc clean.cc create_new_plugin.cc psi_start.cc script.cc set_memory.cc read_options.cc export_libparallel.cc)
 
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
