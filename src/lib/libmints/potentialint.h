@@ -151,12 +151,20 @@ void PCMPotentialInt::compute(PCMPotentialIntFunctor &functor)
                 ao12 = 0;
                 int ao1 = 0;
                 for(int ii = 0; ii <= am1; ii++) {
+                    int l1 = am1 - ii;
                     for(int jj = 0; jj <= ii; jj++) {
+                        int m1 = ii - jj;
+                        int n1 = jj;
+                        int iind = l1 * ixm + m1 * iym + n1 * izm;
                         /*--- create all am components of sj ---*/
                         int ao2 = 0;
                         for(int kk = 0; kk <= am2; kk++) {
+                            int l2 = am2 - kk;
                             for(int ll = 0; ll <= kk; ll++) {
+                                int m2 = kk - ll;
+                                int n2 = ll;
                                 // Compute location in the recursion
+                                int jind = l2 * jxm + m2 * jym + n2 * jzm;
                                 double val = buffer_[ao12++];
                                 // Hand the work off to the functor
                                 functor(ao1+bf1_offset, ao2+bf2_offset, atom, val);
@@ -205,7 +213,7 @@ class ContractOverDensityFunctor
         }
         void operator()(int bf1, int bf2, int center, double integral)
         {
-            charges_[center] += 2.0 * pD_[bf1][bf2] * integral;
+            charges_[center] += pD_[bf1][bf2] * integral;
         }
 };
 
