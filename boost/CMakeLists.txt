@@ -11,8 +11,6 @@ string(REPLACE ";" "," b2_needed_components "${needed_components}")
 # user-config.jam file. MPI_SENT will be the command we append
 set(MPI_SENT "")
 if(ENABLE_MPI)
-#RMR this is now done in cmake/ConfigBoost
-#   list(APPEND needed_components mpi)
    set(MPI_SENT "using mpi ;")
 endif()
 if(ENABLE_UNIT_TESTS)
@@ -51,14 +49,10 @@ message(STATUS "  Toolset to be used: ${toolset}")
 # Write the user-config.jam file
 if(cxxflags STREQUAL "")
    file(WRITE ${BOOST_BUILD_DIR}/user-config.jam "${MPI_SENT}") 
-   set(toolset-custom ${toolset})
 else()
    file(WRITE  ${BOOST_BUILD_DIR}/user-config.jam "using ${toolset} : cxx11 : ${CMAKE_CXX_COMPILER} : <cxxflags>${cxxflags} <linkflags>${linkflags} ;\n")
    file(APPEND ${BOOST_BUILD_DIR}/user-config.jam "${MPI_SENT}") 
-   set(toolset-custom "${toolset}-cxx11")
 endif()
-set(_userconfigjam "${BOOST_BUILD_DIR}/user-config.jam")
-message("_userconfigjam : ${_userconfigjam}")
 
 # Unpack Boost and copy boostcpp.jam
 add_custom_command(
@@ -68,7 +62,7 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/boost/boostcpp.jam ${BOOST_BUILD_DIR}
     # Append to project-config.jam 
     # It can't be done with file(APPEND ...) because it will be destroyed when unpacking
-    #COMMAND ${CMAKE_COMMAND} -E echo "${MPI_SENT}" >> ${BOOST_BUILD_DIR}/project-config.jam
+    COMMAND ${CMAKE_COMMAND} -E echo "${MPI_SENT}" > "${BOOST_BUILD_DIR}/project-config.jam"
     COMMAND touch boost.unpacked
     DEPENDS ${CMAKE_SOURCE_DIR}/boost/boost_${BOOSTVER}.tar.bz2
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/boost
@@ -90,10 +84,8 @@ add_custom_command(
 # Build Boost
 add_custom_command(
     OUTPUT boost.built
-    #COMMAND ./b2 toolset=${toolset-custom} variant=${type} link=static threading=multi --user-config=${_userconfigjam} 1> boost.built.log 2> boost.built.err
-    COMMAND ./b2 toolset=${toolset} variant=${type} link=static
-            threading=multi cxxflags=${cxxflags} linkflags=${linkflags} 
-            --user-config=${_userconfigjam} 1> boost.built.log 2> boost.built.err
+    COMMAND ./b2 toolset=${toolset} variant=${type} link=static threading=multi 
+            --user-config=user-config.jam 1> boost.built.log 2> boost.built.err
     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/boost/boost.built
     WORKING_DIRECTORY ${BOOST_BUILD_DIR}
     DEPENDS boost.configured 
@@ -102,7 +94,8 @@ add_custom_command(
 # Install Boost
 add_custom_command(
     OUTPUT boost.installed
-    COMMAND ./b2 install toolset=${toolset-custom} variant=${type} link=static threading=multi --user-config=user-config.jam 1> boost.installed.log 2> boost.installed.err
+    COMMAND ./b2 install toolset=${toolset} variant=${type} link=static threading=multi 
+            --user-config=user-config.jam 1> boost.installed.log 2> boost.installed.err
     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/boost/boost.installed
     WORKING_DIRECTORY ${BOOST_BUILD_DIR}
     DEPENDS boost.built 
@@ -111,7 +104,7 @@ add_custom_command(
 # Clean-up
 add_custom_command(
     OUTPUT boost.cleanedup
-    #COMMAND ${CMAKE_COMMAND} -E remove_directory ${BOOST_BUILD_DIR}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${BOOST_BUILD_DIR}
     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/boost/boost.cleanedup
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/boost
     DEPENDS boost.installed 
