@@ -2,11 +2,10 @@
 set(BOOSTVER 1.57.0)
 set(BOOSTVERMIN 1.55.0)
 set(BUILD_CUSTOM_BOOST FALSE)
-# List all components needed (except mpi and unit_test_framework) here.
-# mpi and unit_test_framework will be added afterwards, if needed.
-#RMR mpi has to be added here or else it's not added to the linking stage
+# List all components needed (unit_test_framework) here.
+# unit_test_framework will be added afterwards, if needed.
+# RMR mpi has to be added here or else it's not added to the linking stage
 list(APPEND needed_components filesystem python regex serialization system thread)
-message(STATUS "The value of ENABLE_MPI: ${ENABLE_MPI}")
 if(ENABLE_MPI)
    list(APPEND needed_components mpi)
 endif()
@@ -21,7 +20,7 @@ else()
 endif()
 if(NOT Boost_FOUND)
    # Set also variables usually set by find_package
-   message(STATUS "Boost ${BOOSTVER} not found. The pre-packaged version will be built.")
+   message(STATUS "Boost ${BOOSTVERMIN} not found. The pre-packaged version will be built.")
    set(BUILD_CUSTOM_BOOST TRUE)
    set(CUSTOM_BOOST_LOCATION ${PROJECT_BINARY_DIR}/boost)
    string(REGEX REPLACE "\\." "0" Boost_VERSION ${BOOSTVER})
