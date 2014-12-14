@@ -364,7 +364,7 @@ DiskBuffer::~DiskBuffer()
     ::remove(filename_.c_str());
 }
 
-uli
+size_t
 DiskBuffer::size() const
 {
     return size_;
@@ -418,7 +418,7 @@ DiskBuffer::allocate_region(size_t size)
 
     ::lseek(fileno_, size - 1, SEEK_END);
     char dummy[] = { 0 };
-    ::write(fileno_, dummy, 1);
+    uli amt = ::write(fileno_, dummy, 1);
     size_ += size;
 
     return offset;

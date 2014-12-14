@@ -42,8 +42,11 @@ namespace psi {
 
    boost::mpi::communicator MPICommunicator::GetComm(const std::string& CommName)
    const {
+      std::string Comm2Check=(CommName=="NONE"?CurrentComm.back():CommName);
+      if(Communicators.count(Comm2Check)!=1)
+         throw PSIEXCEPTION("Comm: "+Comm2Check+" doesn't exist!!!");
       return (const_cast<MPICommunicator*>(this))->
-      Communicators[(CommName!="NONE" ? CommName : CurrentComm.back())];
+      Communicators[Comm2Check];
    }
 
    MPICommunicator::MPICommunicator(int &argc,char **argv):
@@ -62,6 +65,10 @@ namespace psi {
 
    void MPICommunicator::MakeComm(const std::string& Name,const int Color,const std::string& Comm2Split) {
       boost::mpi::communicator comm=GetComm(Comm2Split);
+      if(Communicators.count(Name)==1)
+         throw PSIEXCEPTION("Communicator already exists.  Be more original with"
+               " your name.  If you are using an MPIJob object, then boy are you"
+               " unlucky (lucky?) you choose the same random number twice.");
       Communicators[Name]=comm.split(Color);
       CurrentComm.push_back(Name);
    }
@@ -70,9 +77,26 @@ namespace psi {
       //Refuse to free mpi_comm_world
       if(CurrentComm.size()>1&&Name!="COMM_WORLD") {
          Communicators.erase(Name);
-         CurrentComm.erase(CurrentComm.end()-1);
       }
    }
+
+   int MPICommunicator::Iprobe(const int Sender,const int MessageTag,
+               const std::string& Comm)const{
+            int Sendcopy=(Sender<0?boost::mpi::any_source:Sender);
+            int Messagecopy=(MessageTag<0?boost::mpi::any_tag:MessageTag);
+            boost::optional<boost::mpi::status> status=
+                  GetComm(Comm).iprobe(Sendcopy,Messagecopy);
+            return (status?status.get().source():-1);
+         }
+
+   int MPICommunicator::probe(const int Sender,const int MessageTag,
+               const std::string& Comm)const{
+            int Sendcopy=(Sender<0?boost::mpi::any_source:Sender);
+            int Messagecopy=(MessageTag<0?boost::mpi::any_tag:MessageTag);
+            boost::optional<boost::mpi::status> status=
+                  GetComm(Comm).probe(Sendcopy,Messagecopy);
+            return (status?status.get().source():-1);
+         }
 
 }        //End namespace psi
 

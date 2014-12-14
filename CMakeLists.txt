@@ -67,8 +67,8 @@ include(CheckFunctionExists)
 include(ConfigDocumentation) 
 
 # Determine Fortran name mangling, used for external linking
-if ((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND (CMAKE_SYSTEM_VERSION VERSION_LESS 12.5.1))
-    # 12.5.0 broken (LAB)
+if ((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND (CMAKE_SYSTEM_VERSION VERSION_LESS 13))
+    # 12.5.0 broken (LAB), above should trap pre-Mavericks
     set(CMAKE_C_FLAGS_HOLD ${CMAKE_C_FLAGS})
     set(CMAKE_CXX_FLAGS_HOLD ${CMAKE_CXX_FLAGS})
     message(STATUS "Trying Fortran name mangling appending -m32 flag")
@@ -78,7 +78,7 @@ endif()
 include(FortranCInterface)
 FortranCInterface_VERIFY(CXX)
 init_FCMangle()
-if ((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND (CMAKE_SYSTEM_VERSION VERSION_LESS 12.5.1))
+if ((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND (CMAKE_SYSTEM_VERSION VERSION_LESS 13))
     set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS_HOLD})
     set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_HOLD})
 endif()
@@ -135,6 +135,12 @@ include_directories(SYSTEM "${PYTHON_INCLUDE_DIRS}")
 include(ConfigBoost)
 link_directories("${Boost_LIBRARY_DIRS}")
 include_directories(SYSTEM "${Boost_INCLUDE_DIRS}")
+
+
+#OpenBabel Detection
+add_subdirectory(openbabel)
+set(BABEL_LIBRARY_DIR ${CMAKE_BINARY_DIR}/lib)
+set(BABEL_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include/openbabel-2.0)
 
 # Append the suffix given from input to all generated executables
 if(EXECUTABLE_SUFFIX)
@@ -218,10 +224,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2 
            cctriples scf_solver fock dcft lmp2 mcscf sapt dftsapt sapt_solver
-           cchbar cclambda ccdensity transqt ccresponse detci detcas occ mrcc fnocc
+           cchbar cclambda ccdensity transqt ccresponse detci occ mrcc fnocc
            cceom adc thermo functional disp thce 3index deriv_wrapper optking
            findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util
-           stable deriv scfgrad int util diis plugin parallel frag)
+           stable deriv scfgrad int util diis plugin parallel parallel2 babel frag efp_solver efp)
 
 # PCMSolver
 if(ENABLE_PCMSOLVER)
@@ -262,7 +268,7 @@ endif()
 
 #If we have MPI also build the JKFactory library for awesome SCF performance
 if(MPI_FOUND)
-   set(BUILD_JK_FACTORY "TRUE")
+   set(BUILD_JK_FACTORY "FALSE")
 endif()
 
 if(BUILD_JK_FACTORY)
@@ -281,8 +287,11 @@ if(BUILD_JK_FACTORY)
     set(PSILIB ${PSILIB} -lmkl_scalapack_lp64 -lmkl_blacs_lp64)
 endif()
 
-#Add the documentation subdirectory
+# Add the documentation subdirectory
 add_subdirectory(doc)
+
+# Recursively add interface directories (some containing dependencies of src)
+add_subdirectory(interfaces)
 
 # Recursively add source directories
 add_subdirectory(src)
@@ -317,8 +326,6 @@ endif()
 
 #FILE(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-
-add_subdirectory(external)
 
 # Configure some scripts
 configure_files()

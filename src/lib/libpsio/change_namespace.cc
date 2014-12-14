@@ -31,7 +31,10 @@
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include "psi4-dec.h"
-
+#include <boost/shared_ptr.hpp>
+#include "../libparallel2/Communicator.h"
+#include "../libparallel2/ParallelEnvironment.h"
+//#include "../libparallel2/ParallelEnvironment.h"
 namespace psi {
 
 void PSIO::change_file_namespace(unsigned int unit, const std::string & ns1, const std::string & ns2) {
@@ -59,8 +62,9 @@ void PSIO::change_file_namespace(unsigned int unit, const std::string & ns1, con
     //printf("%s\n",new_fullpath);
 
     PSIOManager::shared_object()->move_file(std::string(old_fullpath), std::string(new_fullpath)); 
-
-    if (WorldComm->me() == 0)
+    boost::shared_ptr<const LibParallel::Communicator> Comm=
+          WorldComm->GetComm();
+    if (Comm->Me() == 0)
         ::rename(old_fullpath,new_fullpath);
 }
 

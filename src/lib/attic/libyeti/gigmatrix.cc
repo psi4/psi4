@@ -474,7 +474,7 @@ Matrix::Matrix(const XMLArchivePtr& arch)
 {
     SetRuntime(Matrix);
 
-    uli size;
+    size_t size;
     arch->getBinary<double>(data_, size, "data");
     serial_load(nrow);
     serial_load(ncol);
@@ -774,7 +774,7 @@ Vector::Vector(const XMLArchivePtr& arch)
 {
     SetRuntime(Vector);
 
-    uli size;
+    size_t size;
     arch->getBinary(data_, size, "data");
     serial_load(n);
 

@@ -31,14 +31,14 @@
 #include <vector>
 #include <utility>
 
-#include <psifiles.h>
-#include <physconst.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
 #include <libparallel/parallel.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
+#include <psifiles.h>
+#include <physconst.h>
 
 #include <libmints/basisset_parser.h>
 #include <libmints/mints.h>
@@ -542,9 +542,9 @@ void RHF::stability_analysis()
             delete [] evals;
         }
 
-        outfile->Printf( "\tLowest singlet (RHF->RHF) stability eigenvalues:-\n");
+        outfile->Printf( "    Lowest singlet (RHF->RHF) stability eigenvalues:-\n");
         print_stability_analysis(singlet_eval_sym);
-        outfile->Printf( "\tLowest triplet (RHF->UHF) stability eigenvalues:-\n");
+        outfile->Printf( "    Lowest triplet (RHF->UHF) stability eigenvalues:-\n");
         print_stability_analysis(triplet_eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }

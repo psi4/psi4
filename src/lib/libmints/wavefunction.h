@@ -130,6 +130,9 @@ protected:
     /// Total alpha and beta electrons
     int nalpha_, nbeta_;
 
+    /// Total frozen core orbitals
+    int nfrzc_;
+
     /// Number of doubly occupied per irrep
     Dimension doccpi_;
     /// Number of singly occupied per irrep
@@ -163,6 +166,7 @@ protected:
 
     /// Core Hamiltonian matrix
     SharedMatrix H_;
+    SharedMatrix Horig_;
 
     /// Alpha MO coefficients
     SharedMatrix Ca_;
@@ -208,6 +212,9 @@ protected:
 
     /// If frequencies are available, they will be here:
     boost::shared_ptr<Vector> frequencies_;
+
+    /// If normal modes are available, they will be here:
+    boost::shared_ptr<Vector> normalmodes_;
 
     /// Flag to tell if this is a CIM calculation
     bool isCIM_;
@@ -312,6 +319,8 @@ public:
     const Dimension& frzcpi() const { return frzcpi_; }
     /// Returns the frozen virtual orbitals per irrep array.
     const Dimension& frzvpi() const { return frzvpi_; }
+    /// Return the number of frozen core orbitals
+    int nfrzc() const { return nfrzc_; }
     /// Return the number of alpha electrons
     int nalpha() const { return nalpha_; }
     /// Return the number of beta electrons
@@ -468,6 +477,10 @@ public:
     /// Set the frequencies for the wavefunction
     void set_frequencies(boost::shared_ptr<Vector>& freqs);
 
+    /// Returns the normalmodes
+    boost::shared_ptr<Vector> normalmodes() const;
+    /// Set the normalmodes for the wavefunction
+    void set_normalmodes(boost::shared_ptr<Vector>& norms);
 
     /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
     void set_name(const std::string& name) { name_ = name; }

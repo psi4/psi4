@@ -148,6 +148,19 @@ def process_set_commands(matchobj):
     return result
 
 
+def process_from_file_command(matchobj):
+    """Function that process a match of ``from_file`` in molecule block."""
+    string = matchobj.group(2)
+    mol=psi4.mol_from_file(string,1)
+    tempmol=[line for line in mol.split('\n') if line.strip() != '']
+    mol2=set(tempmol)
+    mol=""
+    for i in mol2:
+           mol+=i
+           mol+="\n"
+    return mol
+    
+
 def process_pubchem_command(matchobj):
     """Function to process match of ``pubchem`` in molecule block."""
     string = matchobj.group(2)
@@ -194,7 +207,13 @@ def process_molecule_command(matchobj):
     geometry = matchobj.group(3)
     pubchemre = re.compile(r'^(\s*pubchem\s*:\s*(.*)\n)$', re.MULTILINE | re.IGNORECASE)
     geometry = pubchemre.sub(process_pubchem_command, geometry)
+    from_filere = re.compile(r'^(\s*from_file\s*:\s*(.*)\n)$', re.MULTILINE | re.IGNORECASE)
+    geometry = from_filere.sub(process_from_file_command,geometry)
     molecule = spaces
+
+    molecule += 'psi4.efp_init()\n'  # clear EFP object before Molecule read in
+    molecule += spaces
+
     if name != "":
         molecule += '%s = ' % (name)
 
@@ -715,6 +734,7 @@ def process_input(raw_input, print_level=1):
 #CU    imports += 'from functional import *\n'
 #    imports += 'from qmmm import *\n'
     imports += 'psi4_io = psi4.IOManager.shared_object()\n'
+    imports += 'psi4.efp_init()\n'  # initialize EFP object before Molecule read in
 
     # psirc (a baby PSIthon script that might live in ~/.psi4rc)
     psirc = ''

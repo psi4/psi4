@@ -30,7 +30,6 @@
 #include <boost/shared_ptr.hpp>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
-
 namespace psi {
 
 void PSIO::tocclean(unsigned int unit, const char *key) {

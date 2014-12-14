@@ -44,8 +44,8 @@ protected:
 public:
     /*!
      * Constructor, does not build decomposition.
-     * \param delta: maximum Chebyshev error allowed in the decomposition
-     * \param memory: maximum memory allowed, in doubles
+     * \param delta maximum Chebyshev error allowed in the decomposition
+     * \param memory maximum memory allowed, in doubles
      **/
     Cholesky(double delta, unsigned long int memory);
     /// Destructor, resets L_

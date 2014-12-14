@@ -81,7 +81,7 @@ namespace psi {
    Psi4JK::Psi4JK(SharedPsiBasis &PsiBasis):
    JKFactory::Interface(
          Process::environment.options["INTS_TOLERANCE"].to_double(),
-         WorldComm->GetMPIComm()) {
+         MPI_COMM_WORLD) {
       MakeMolecule(PsiBasis,System);
       MakeBasis(PsiBasis,Basis);
       Unitary=SharedMatrix(
