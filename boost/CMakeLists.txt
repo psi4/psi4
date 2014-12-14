@@ -24,19 +24,10 @@ message(STATUS "  Libraries to be built: ${printout}")
 # To get boost to be built with our compiler of choice we need these logic
 # statements, then we write the options to user-config.jam
 set(toolset   "")
-set(cxxflags "")
-set(linkflags "")
-if(HAS_CXX11_SUPPORT)
-   set(cxxflags "${cxxflags} ${CXX11_COMPILER_FLAGS}") 
-endif()	  
 if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
 	set(toolset "intel-linux")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set(toolset "clang")
-  if(CMAKE_SYSTEM_NAME MATCHES Darwin) # Read here: http://stackoverflow.com/a/19774902/2528668
-  	set(cxxflags  "${cxxflags} -stdlib=libc++")
-	set(linkflags "${linkflags} -stdlib=libc++")
-  endif()	  
 else()
   if(CMAKE_SYSTEM_NAME MATCHES Darwin)
      set(toolset "darwin")
@@ -46,12 +37,24 @@ else()
 endif()
 message(STATUS "  Toolset to be used: ${toolset}")
 
+# Prepare options for call to b2
+string(TOLOWER ${CMAKE_BUILD_TYPE} type)
+if(HAS_CXX11_SUPPORT)
+   if(CMAKE_SYSTEM_NAME MATCHES Darwin) # Read here: http://stackoverflow.com/a/19774902/2528668
+      set(cxxflags  "\"${CXX11_COMPILER_FLAGS} -stdlib=libc++\"")
+      set(linkflags "\"${CXX11_COMPILER_FLAGS} -stdlib=libc++\"")
+      set(_b2_cxx11_options "cxxflags=${cxxflags} linkflags=${linkflags}")
+   else()
+      set(cxxflags "\"${CXX11_COMPILER_FLAGS}\"") 
+      set(_b2_cxx11_options "cxxflags=${cxxflags}")
+   endif()	  
+   set(_b2_extra_options "${_b2_cxx11_options}")
+endif()	  
 # Write the user-config.jam file
-if(cxxflags STREQUAL "")
-   file(WRITE ${BOOST_BUILD_DIR}/user-config.jam "${MPI_SENT}") 
-else()
-   file(WRITE  ${BOOST_BUILD_DIR}/user-config.jam "using ${toolset} : cxx11 : ${CMAKE_CXX_COMPILER} : <cxxflags>${cxxflags} <linkflags>${linkflags} ;\n")
-   file(APPEND ${BOOST_BUILD_DIR}/user-config.jam "${MPI_SENT}") 
+if(ENABLE_MPI)
+   file(WRITE ${BOOST_BUILD_DIR}/user-config.jam "${MPI_SENT}")  
+   set(_b2_user-config "--user-config=user-config.jam")
+   set(_b2_extra_options "${_b2_extra_options} ${_b2_user-config}")
 endif()
 
 # Unpack Boost and copy boostcpp.jam
@@ -68,14 +71,13 @@ add_custom_command(
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/boost
     COMMENT "Unpacking Boost")
 
-string(TOLOWER ${CMAKE_BUILD_TYPE} type)
 # Run bootstrap.sh to configure the build. We will install in ${PROJECT_BINARY_DIR}/boost
 add_custom_command(
     OUTPUT boost.configured
     COMMAND ./bootstrap.sh --with-toolset=${toolset}
             --with-libraries="${b2_needed_components}"
 	    --with-python=${PYTHON_EXECUTABLE}
-	    --prefix=${CUSTOM_BOOST_LOCATION} 1> boost.configured.log 2> boost.configured.err
+	    --prefix=${CUSTOM_BOOST_LOCATION} 1> ${CMAKE_BINARY_DIR}/boost.configured.log 2> ${CMAKE_BINARY_DIR}/boost.configured.err
     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/boost/boost.configured	    
     WORKING_DIRECTORY ${BOOST_BUILD_DIR}
     DEPENDS boost.unpacked
@@ -84,8 +86,7 @@ add_custom_command(
 # Build Boost
 add_custom_command(
     OUTPUT boost.built
-    COMMAND ./b2 toolset=${toolset} variant=${type} link=static threading=multi 
-            --user-config=user-config.jam 1> boost.built.log 2> boost.built.err
+    COMMAND ./b2 toolset=${toolset} variant=${type} link=static threading=multi "${_b2_extra_options}" 1> ${CMAKE_BINARY_DIR}/boost.built.log 2> ${CMAKE_BINARY_DIR}/boost.built.err
     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/boost/boost.built
     WORKING_DIRECTORY ${BOOST_BUILD_DIR}
     DEPENDS boost.configured 
@@ -94,8 +95,7 @@ add_custom_command(
 # Install Boost
 add_custom_command(
     OUTPUT boost.installed
-    COMMAND ./b2 install toolset=${toolset} variant=${type} link=static threading=multi 
-            --user-config=user-config.jam 1> boost.installed.log 2> boost.installed.err
+    COMMAND ./b2 install ${_b2_options} 1> ${CMAKE_BINARY_DIR}/boost.installed.log 2> ${CMAKE_BINARY_DIR}/boost.installed.err
     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/boost/boost.installed
     WORKING_DIRECTORY ${BOOST_BUILD_DIR}
     DEPENDS boost.built 
