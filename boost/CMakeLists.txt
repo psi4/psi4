@@ -48,14 +48,9 @@ if(HAS_CXX11_SUPPORT)
       set(cxxflags "\"${CXX11_COMPILER_FLAGS}\"") 
       set(_b2_cxx11_options "cxxflags=${cxxflags}")
    endif()	  
-   set(_b2_extra_options "${_b2_cxx11_options}")
 endif()	  
 # Write the user-config.jam file
-if(ENABLE_MPI)
-   file(WRITE ${BOOST_BUILD_DIR}/user-config.jam "${MPI_SENT}")  
-   set(_b2_user-config "--user-config=user-config.jam")
-   set(_b2_extra_options "${_b2_extra_options} ${_b2_user-config}")
-endif()
+file(WRITE ${BOOST_BUILD_DIR}/user-config.jam "${MPI_SENT}")  
 
 # Unpack Boost and copy boostcpp.jam
 add_custom_command(
@@ -77,7 +72,7 @@ add_custom_command(
     COMMAND ./bootstrap.sh --with-toolset=${toolset}
             --with-libraries="${b2_needed_components}"
 	    --with-python=${PYTHON_EXECUTABLE}
-	    --prefix=${CUSTOM_BOOST_LOCATION} 1> ${CMAKE_BINARY_DIR}/boost.configured.log 2> ${CMAKE_BINARY_DIR}/boost.configured.err
+	    --prefix=${CUSTOM_BOOST_LOCATION} 1> boost.configured.log 2> boost.configured.err
     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/boost/boost.configured	    
     WORKING_DIRECTORY ${BOOST_BUILD_DIR}
     DEPENDS boost.unpacked
@@ -86,7 +81,8 @@ add_custom_command(
 # Build Boost
 add_custom_command(
     OUTPUT boost.built
-    COMMAND ./b2 toolset=${toolset} variant=${type} link=static threading=multi "${_b2_extra_options}" 1> ${CMAKE_BINARY_DIR}/boost.built.log 2> ${CMAKE_BINARY_DIR}/boost.built.err
+    COMMAND ./b2 toolset=${toolset} variant=${type} link=static
+    threading=multi "${_b2_cxx11_options}" --user-config=user-config.jam 1> boost.built.log 2> boost.built.err
     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/boost/boost.built
     WORKING_DIRECTORY ${BOOST_BUILD_DIR}
     DEPENDS boost.configured 
@@ -95,7 +91,8 @@ add_custom_command(
 # Install Boost
 add_custom_command(
     OUTPUT boost.installed
-    COMMAND ./b2 install ${_b2_options} 1> ${CMAKE_BINARY_DIR}/boost.installed.log 2> ${CMAKE_BINARY_DIR}/boost.installed.err
+    COMMAND ./b2 install toolset=${toolset} variant=${type} link=static
+    threading=multi "${_b2_cxx11_options}" --user-config=user-config.jam 1> boost.installed.log 2> boost.installed.err
     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/boost/boost.installed
     WORKING_DIRECTORY ${BOOST_BUILD_DIR}
     DEPENDS boost.built 
@@ -104,7 +101,7 @@ add_custom_command(
 # Clean-up
 add_custom_command(
     OUTPUT boost.cleanedup
-    COMMAND ${CMAKE_COMMAND} -E remove_directory ${BOOST_BUILD_DIR}
+    #COMMAND ${CMAKE_COMMAND} -E remove_directory ${BOOST_BUILD_DIR}
     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/boost/boost.cleanedup
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/boost
     DEPENDS boost.installed 
