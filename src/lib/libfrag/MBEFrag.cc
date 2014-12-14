@@ -27,6 +27,29 @@
 namespace psi {
 namespace LibFrag {
 
+MBEFrag& MBEFrag::operator++(){
+   ++Mult_;
+   return *this;
+}
+
+MBEFrag& MBEFrag::operator--(){
+   --Mult_;
+   return *this;
+}
+
+MBEFrag MBEFrag::operator++(int){
+   MBEFrag ACopy(*this);
+   ++(*this);
+   return ACopy;
+}
+
+MBEFrag MBEFrag::operator--(int){
+   MBEFrag ACopy(*this);
+   --(*this);
+   return ACopy;
+}
+
+
 void MBEFrag::Copy(const MBEFrag& other) {
    this->Parents_=other.Parents_;
    this->MBEOrder_=other.MBEOrder_;

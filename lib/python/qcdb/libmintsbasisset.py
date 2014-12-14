@@ -486,9 +486,9 @@ class BasisSet(object):
                 for basis, shells in basis_map.items():
                     combined_atom_basis_shell[label][name].extend(shells)
 
-        for label, basis_map in combined_atom_basis_shell.items():
-            # sort the shells by angular momentum
-            combined_atom_basis_shell[label][name] = sorted(combined_atom_basis_shell[label][name], key=lambda shell: shell.am())
+        #for label, basis_map in combined_atom_basis_shell.items():
+        #    # sort the shells by angular momentum
+        #    combined_atom_basis_shell[label][name] = sorted(combined_atom_basis_shell[label][name], key=lambda shell: shell.am())
 
         # Molecule and parser prepped, call the constructor
         mol.set_basis_all_atoms(name, "CABS")
@@ -598,7 +598,6 @@ class BasisSet(object):
         text += msg
 
         if returnBasisSet:
-            print text
             return bs
         else:
             bsdict = {}

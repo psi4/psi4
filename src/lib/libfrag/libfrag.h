@@ -100,7 +100,8 @@ class LibFragHelper {
 
       ///Sets up the class and makes the fragments
       void Fragment_Helper(PyStr& FragMethod, const int N,
-            PyStr& EmbedMethod,PyStr& CapMethod,PyStr& BSSEMethod);
+            PyStr& EmbedMethod,PyStr& CapMethod,PyStr& BSSEMethod,
+            const int IsSymm);
 
       ///Makes "N"-mers (N>1)
       void NMer_Helper(const int N);
@@ -146,7 +147,7 @@ class LibFragHelper {
 
       ///Constructs a MOFile that is the direct sum of the N fragments in
       ///the "x"-th "N"-mer
-      void WriteMOs(const int N, const int x);
+      int WriteMOs(const int N, const int x);
 
       int IsGMBE();
 

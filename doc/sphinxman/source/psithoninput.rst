@@ -94,6 +94,8 @@ Molecule and Geometry Specification
 
 .. comment To add EFP fragments to a molecule, see :ref:`sec:usingEFPFragments`.
 
+To add EFP fragments to a molecule, see :ref:`sec:usingEFPFragments`.
+
 .. index::
    triple: setting; keywords; general
 .. _`sec:jobControl`:

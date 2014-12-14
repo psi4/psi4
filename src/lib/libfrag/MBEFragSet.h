@@ -37,9 +37,17 @@ class LibFragOptions;
 /** \brief The MBEFragSet Class is intended to be the fundamental object
  *         of the LibFrag library.
  *
+ *         This class is essentially a container class aimed at simplifying
+ *         fragment manipulations.  One thing to note at this point is that
+ *         it is friends with a couple classes, similar to how the Frag class
+ *         is, and for essentially the same reason.  Basically, we have
+ *         "factories", like the symmetrizer that are responsible for setting
+ *         up the Frag Set.
+ *
  */
 class MBEFragSet{
    private:
+      friend class Symmetrizer;
       typedef boost::shared_ptr<Fragmenter> SharedFragFac;
       typedef boost::shared_ptr<Capper> SharedCapFac;
       typedef boost::shared_ptr<BSSEer> SharedBSSEFac;
@@ -51,12 +59,15 @@ class MBEFragSet{
       SharedCapFac CapFactory_;
       SharedFragFac FragFactory_;
 
+      void Copy(const MBEFragSet& other);
    protected:
       std::vector<boost::shared_ptr<MBEFrag> > Frags_;
       FragProps Properties_;
 
 
    public:
+
+
       //Hackzzz!!!
       boost::shared_ptr<Embedder> EmbedFactory();
 
@@ -71,10 +82,19 @@ class MBEFragSet{
       ///Constructor for making fragments
       MBEFragSet(SharedOptions& Options,SharedMol& AMol);
 
-      ///Constructor for making n-mers
+      ///Constructor for making n-mers (note don't call with N=1)
       MBEFragSet(const MBEFragSet& Monomers,const int N);
 
-      boost::shared_ptr<const MBEFrag> operator[](const int i){
+      ///Copy constructor
+      MBEFragSet(const MBEFragSet& other){this->Copy(other);}
+
+      ///Assignment operator
+      const MBEFragSet& operator=(const MBEFragSet& other){
+         if(this!=&other)this->Copy(other);
+         return *this;
+      }
+
+      boost::shared_ptr<const MBEFrag> operator[](const int i)const{
          return Frags_[i];
       }
 };

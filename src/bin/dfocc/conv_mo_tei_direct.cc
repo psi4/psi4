@@ -372,7 +372,7 @@ void DFOCC::tei_vvoo_chem_directAB(SharedTensor2d &K)
 void DFOCC::tei_iajb_chem_directAA(SharedTensor2d &K)
 {   
     timer_on("Build (IA|JB)");
-    bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA * navirA));
+    bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
     bQiaA->read(psio_, PSIF_DFOCC_INTS);
     K->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0);
     bQiaA.reset();
@@ -845,7 +845,7 @@ void DFOCC::tei_pqrs2_anti_symm_direct(SharedTensor2d &K, SharedTensor2d &L)
 }
 
 //=======================================================
-//          <PQ||RS> : <IA||JB>
+//          <PQ||RS> 
 //=======================================================          
 void DFOCC::tei_pqrs3_anti_symm_direct(SharedTensor2d &K, SharedTensor2d &L, SharedTensor2d &M)
 {   
@@ -858,6 +858,29 @@ void DFOCC::tei_pqrs3_anti_symm_direct(SharedTensor2d &K, SharedTensor2d &L, Sha
     K->add(L);
     L.reset();
     timer_off("Build <PQ||RS>");
+}
+
+//=======================================================
+//          (PQ|RS) : General
+//=======================================================          
+void DFOCC::tei_chem_direct(SharedTensor2d &K, SharedTensor2d &L, SharedTensor2d &M)
+{   
+    timer_on("Build (PQ|RS)");
+    // K = (pq|rs); L = B_pq^Q, M = B_rs^Q
+    K->gemm(true, false, L, M, 1.0, 0.0);
+    timer_off("Build (PQ|RS)");
+}
+
+//=======================================================
+//          <PQ|RS> : General
+//=======================================================          
+void DFOCC::tei_phys_direct(SharedTensor2d &I, SharedTensor2d &K, SharedTensor2d &L, SharedTensor2d &M)
+{   
+    timer_on("Build <PQ|RS>");
+    // K = (pr|qs); L = B_pr^Q, M = B_qs^Q
+    K->gemm(true, false, L, M, 1.0, 0.0);
+    I->sort(1324, K, 1.0, 0.0);
+    timer_off("Build <PQ|RS>");
 }
 
 

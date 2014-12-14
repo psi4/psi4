@@ -46,7 +46,7 @@ total_num_integrals_(0)
   //}
 
   // start K_
-  for (int N = 0; N < D_.size() && do_K_; ++N) {
+  for (size_t N = 0; N < D_.size() && do_K_; ++N) {
     std::stringstream s;
     s << "K " << N << " (AO)";
     K_.push_back(SharedMatrix(new Matrix(s.str(),D_[N]->nirrep(),
@@ -124,7 +124,7 @@ void LinK::Update(const std::vector<SharedMatrix>& D_new)
   D_ = D_new;
   
   K_.clear();
-  for (int N = 0; N < D_.size() && do_K_; ++N) {
+  for (size_t N = 0; N < D_.size() && do_K_; ++N) {
     std::stringstream s;
     s << "K " << N << " (AO)";
     K_.push_back(SharedMatrix(new Matrix(s.str(),D_[N]->nirrep(),
@@ -207,7 +207,7 @@ void LinK::FormSignificantShellPairList_()
   
   //const std::vector<long int>& shell_pairs_reverse = sieve_->shell_pairs_reverse();
   
-  for (int i = 0; i < shell_pairs.size(); i++) {
+  for (size_t i = 0; i < shell_pairs.size(); i++) {
     
     int mu_ind = shell_pairs[i].first;
     int lambda_ind = shell_pairs[i].second;
@@ -371,7 +371,7 @@ void LinK::ContractIntegrals_(int mu_ind, int lambda_ind,
                     int n = nu_fun_ind + nu_fun_start;
                     int s = sigma_fun_ind + sigma_fun_start;
                     
-                    for (int N = 0; N < K_.size(); N++) {
+                    for (size_t N = 0; N < K_.size(); N++) {
                       
                       K_[N]->add(0,l,s, D_[N]->get(0,m,n)*val);
                       

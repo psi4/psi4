@@ -99,6 +99,10 @@ protected:
 
     void print_mat(const double *const *const a, int m, int n, std::string out) const;
 
+    /// Numpy Shape
+    int  numpy_dims_;
+    int* numpy_shape_;
+
 public:
 
     /// Default constructor, zeros everything out
@@ -548,6 +552,11 @@ public:
 
     /// Prints the matrix with atom and xyz styling.
     void print_atom_vector(std::string OutFileRMR = "outfile");
+
+    /**
+     * Prints the matrix so that it can be copied and pasted into Mathematica easily.
+     */
+    void print_to_mathematica();
 
     /**
      * Print the matrix with corresponding eigenvalues below each column
@@ -1103,6 +1112,14 @@ public:
      * sets the matrix to that.
      */
     void set_by_python_list(const boost::python::list& data);
+
+     /**
+     * Adds accessability to the matrix shape for numpy
+     */
+    void set_numpy_dims(int dims) { numpy_dims_ = dims; }
+    void set_numpy_shape(int* shape) { numpy_shape_ = shape; }
+    int numpy_dims() { return numpy_dims_; }
+    int* numpy_shape() { return numpy_shape_; }
 
     /**
      * Rotates columns i and j in irrep h, by an angle theta

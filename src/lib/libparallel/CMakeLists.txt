@@ -16,7 +16,7 @@ list(SORT headers_list)
 
 set(sources_list "")
 # List of sources
-list(APPEND sources_list ParallelScanner.cc p_fprintf.cc PsiOutStream.cc BasesBase.cc process.cc ParallelPrinter.cc parallel.cc mpi_wrapper.cc fprintf.cc PsiInStream.cc )
+list(APPEND sources_list ParallelScanner.cc p_fprintf.cc PsiOutStream.cc BasesBase.cc process.cc ParallelPrinter.cc parallel.cc mpi_wrapper.cc PsiInStream.cc )
 
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)

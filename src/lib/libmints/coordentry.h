@@ -33,6 +33,9 @@
 
 namespace psi {
 
+/// masks for classes of fragments to be acted upon by molecule functions
+/// The next fragment type should be 4, and ALL should be 7.
+
 class Vector3;
 
 

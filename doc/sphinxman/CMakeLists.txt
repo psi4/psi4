@@ -12,7 +12,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
     
     
     # Static-doc reST files
-    set(STATICDOC abbr_accents.rst adc.rst appendices.rst basissets.rst basissets_byelement.rst bestpractices_py.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst cp.rst customizing.rst db.rst detci.rst dfmp2.rst diatomic.rst documentation.rst energy.rst external.rst freq.rst glossary_psivariables.rst index.rst intercalls.rst interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst oeprop.rst opt.rst optking.rst plugins.rst programming.rst prop.rst psithonfunc.rst psithoninput.rst quickaddalias.rst basissets_tables.rst quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst fnocc.rst installfile.rst optionshandling.rst basissets_byfamily.rst psipep.rst pep0001.rst dftd3.rst occ.rst dfocc.rst molden.rst dcft.rst proc_py.rst psithonmol.rst cfour.rst mrcc_table_energy.rst cfour_table_energy.rst cfour_table_grad.rst prog_basissets.rst)
+    set(STATICDOC abbr_accents.rst adc.rst appendices.rst basissets.rst basissets_byelement.rst bestpractices_py.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst cp.rst customizing.rst db.rst detci.rst dfmp2.rst diatomic.rst documentation.rst energy.rst external.rst freq.rst glossary_psivariables.rst index.rst intercalls.rst interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst oeprop.rst opt.rst optking.rst plugins.rst programming.rst prop.rst psithonfunc.rst psithoninput.rst quickaddalias.rst basissets_tables.rst quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst fnocc.rst installfile.rst optionshandling.rst basissets_byfamily.rst psipep.rst pep0001.rst dftd3.rst occ.rst dfocc.rst molden.rst dcft.rst dkh.rst proc_py.rst psithonmol.rst cfour.rst mrcc_table_energy.rst cfour_table_energy.rst cfour_table_grad.rst prog_basissets.rst libefp.rst)
     # * compute relative path btwn top_srcdir and objdir/doc/sphinxman
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c 
         "import sys; import os; print '/' + os.path.relpath('${CMAKE_SOURCE_DIR}', '${CCBD}') + '/../'" 
@@ -126,20 +126,20 @@ if(PERL_FOUND AND SPHINX_FOUND)
 
     # Autodoc psi4 module
     add_custom_command(
-        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} make docs-psimod
+        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} ctest -R docs-psimod
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/tests/docs-psimod/autodoc_psimod.rst ${CCBD}/source
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/tests/docs-psimod/autodoc_man_psi4.txt ${CCBD}/source
         OUTPUT  ${CCBD}/source/autodoc_psimod.rst
                 ${CCBD}/source/autodoc_man_psi4.txt
         DEPENDS ${CMAKE_SOURCE_DIR}/src/*/*/*.cc
                 ${CMAKE_SOURCE_DIR}/tests/docs-psimod/input.dat
-                ${CMAKE_BINARY_DIR}/bin/psi4
+                ${CMAKE_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc psi4 module")
 
 
     # Autodoc functionals
     add_custom_command(
-        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} make docs-dft
+        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} ctest -R docs-dft
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/tests/docs-dft/autodoc_dft_energy.rst ${CCBD}/source
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/tests/docs-dft/autodoc_dft_opt.rst ${CCBD}/source
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/tests/docs-dft/autodoc_dft_all.rst ${CCBD}/source
@@ -162,20 +162,20 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_dft_disp.rst
         DEPENDS ${CMAKE_SOURCE_DIR}/lib/python/functional.py
                 ${CMAKE_SOURCE_DIR}/tests/docs-dft/input.dat
-                ${CMAKE_BINARY_DIR}/bin/psi4
+                ${CMAKE_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc functionals")
 
 
     # Autodoc auxiliary basis sets
     add_custom_command(
-        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} make docs-bases
+        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} ctest -R docs-bases
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/tests/docs-bases/autodoc_basissets_byfamily.rst ${CCBD}/source
         OUTPUT ${CCBD}/source/autodoc_basissets_byfamily.rst
         DEPENDS ${CMAKE_SOURCE_DIR}/lib/python/p4util/basislist.py
                 ${CMAKE_SOURCE_DIR}/lib/python/p4util/basislistdunning.py
                 ${CMAKE_SOURCE_DIR}/lib/python/p4util/basislistother.py
                 ${CMAKE_SOURCE_DIR}/tests/docs-bases/input.dat
-                ${CMAKE_BINARY_DIR}/bin/psi4
+                ${CMAKE_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc auxiliary basis sets")
 
 
@@ -195,6 +195,15 @@ if(PERL_FOUND AND SPHINX_FOUND)
         COMMENT "Autodoc plugins")
     
     
+    # Autodoc efp fragments
+    add_custom_command(
+        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_efpfrag.py ${CCSD}
+        OUTPUT  ${CCBD}/source/autodoc_available_efpfrag.rst
+        DEPENDS ${CCSD}/document_efpfrag.py
+                ${CMAKE_SOURCE_DIR}/lib/efpfrag/*.efp
+        COMMENT "Autodoc efp fragments")
+
+
     # Establishing dependencies for docs targets
 
     # * announcement
@@ -226,8 +235,8 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_testsuite_corepsi4.rst
                 ${CCBD}/source/autodoc_testsuite_dftd3.rst
                 ${CCBD}/source/autodoc_driver.rst
-                ${CCBD}/source/autodoc_psimod.rst
-                ${CCBD}/source/autodoc_man_psi4.txt
+                #${CCBD}/source/autodoc_psimod.rst
+                #${CCBD}/source/autodoc_man_psi4.txt
                 ${CCBD}/source/autodoc_dft_energy.rst
                 ${CCBD}/source/autodoc_dft_opt.rst
                 ${CCBD}/source/autodoc_dft_all.rst
@@ -239,6 +248,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 #${CCBD}/source/autodoc_dft_scsdhybrid.rst  # commented until populated again to appease Sphinx
                 ${CCBD}/source/autodoc_dft_disp.rst
                 ${CCBD}/source/autodoc_basissets_byfamily.rst
+                ${CCBD}/source/autodoc_available_efpfrag.rst
         COMMENT "Preparing Sphinx HTML documentation build")
 
     # * full, proper build with LaTeX

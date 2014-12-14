@@ -33,9 +33,9 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
-#include <physconst.h>
 #define EXTERN
 #include "globals.h"
+#include <physconst.h>
 
 namespace psi{ namespace mp2{
 

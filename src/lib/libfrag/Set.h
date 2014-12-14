@@ -273,7 +273,6 @@ class Set{
         ///Adds a set to Universe
         virtual void AddSet(int identity,const T& other);
 
-
 };
 
 template <typename T>

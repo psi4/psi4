@@ -95,6 +95,8 @@ class Tensor1d
   // gemv: C(m) = \sum_{n} A(m,n) b(n)
   void gemv(bool transa, int m, int n, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
   void gemv(bool transa, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
+  void gemv(bool transa, int m, int n, const SharedTensor2d& a, const SharedTensor2d& b, int start_a, int start_b, double alpha, double beta);
+  void gemv(bool transa, int m, int n, const SharedTensor2d& a, const SharedTensor2d& b, int start_a, int start_b, int start_c, double alpha, double beta);
   // gbmv: This function may NOT working correctly!!!!
   void gbmv(bool transa, const SharedTensor2d& a, const SharedTensor1d& b, double alpha, double beta);
   // xay: return result of A1d_' * A * y
@@ -212,7 +214,10 @@ class Tensor2d
   void gemm(bool transa, bool transb, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
   // contract: general contraction C(m,n) = \sum_{k} A(m,k) * B(k,n)
   void contract(bool transa, bool transb, int m, int n, int k, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
-  // contract323: C[Q](m,n) = \sum_{k} A[Q](m,k) * B(k,n)
+  void contract(bool transa, bool transb, int m, int n, int k, const SharedTensor2d& a, const SharedTensor2d& b, int start_a, int start_b, double alpha, double beta);
+  void contract(bool transa, bool transb, int m, int n, int k, const SharedTensor2d& a, const SharedTensor2d& b, 
+                int start_a, int start_b, int start_c, double alpha, double beta);
+  // contract323: C[Q](m,n) = \sum_{k} A[Q](m,k) * B(k,n). Note: contract332 should be called with beta=1.0
   void contract323(bool transa, bool transb, int m, int n, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
   // contract233: C[Q](m,n) = \sum_{k} A(m,k) * B[Q](k,n)
   void contract233(bool transa, bool transb, int m, int n, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
@@ -387,6 +392,19 @@ class Tensor2d
   void symm_packed(const SharedTensor2d &A);
   // A(Q, p>=q) = A(Q,pq)
   void ltm(const SharedTensor2d &A);
+
+  // (+)A(p>=q, r>=s) = 1/2 [A(pq,rs) + A(qp,rs)]
+  void symm4(const SharedTensor2d &a);
+  // (-)A(p>=q, r>=s) = 1/2 [A(pq,rs) - A(qp,rs)]
+  void antisymm4(const SharedTensor2d &a);
+  // (+)At(p>=q, r>=s) = 1/2 [A(pq,rs) + A(qp,rs)] * (2 -\delta_{pq})
+  void symm_row_packed4(const SharedTensor2d &a);
+  // (+)At(p>=q, r>=s) = 1/2 [A(pq,rs) + A(qp,rs)] * (2 -\delta_{rs})
+  void symm_col_packed4(const SharedTensor2d &a);
+  // (-)At(p>=q, r>=s) = 1/2 [A(pq,rs) - A(qp,rs)] * (2 -\delta_{pq})
+  void antisymm_row_packed4(const SharedTensor2d &a);
+  // (-)At(p>=q, r>=s) = 1/2 [A(pq,rs) - A(qp,rs)] * (2 -\delta_{rs})
+  void antisymm_col_packed4(const SharedTensor2d &a);
 
   friend class Tensor1d;
   friend class Tensor3d;

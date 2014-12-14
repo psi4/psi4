@@ -700,16 +700,16 @@ void ObaraSaikaTwoCenterEFPRecursion::compute(double PA[3], double PB[3], double
                                         yz_[aind][bind][m] += ooz*by*(yz_[aind-aym][bind-bym][m] - yz_[aind-aym][bind-bym][m+1]);
                                     }
                                     for(m=0;m<=mmax-a-b-3;m++) {
-                                        xxx_[aind][bind][m] += ooz*bz*(xxx_[aind-aym][bind-bym][m] - xxx_[aind-aym][bind-bym][m+1]);
-                                        yyy_[aind][bind][m] += ooz*bz*(yyy_[aind-aym][bind-bym][m] - yyy_[aind-aym][bind-bym][m+1]);
-                                        zzz_[aind][bind][m] += ooz*bz*(zzz_[aind-aym][bind-bym][m] - zzz_[aind-aym][bind-bym][m+1]);
-                                        xxy_[aind][bind][m] += ooz*bz*(xxy_[aind-aym][bind-bym][m] - xxy_[aind-aym][bind-bym][m+1]);
-                                        xxz_[aind][bind][m] += ooz*bz*(xxz_[aind-aym][bind-bym][m] - xxz_[aind-aym][bind-bym][m+1]);
-                                        xyy_[aind][bind][m] += ooz*bz*(xyy_[aind-aym][bind-bym][m] - xyy_[aind-aym][bind-bym][m+1]);
-                                        yyz_[aind][bind][m] += ooz*bz*(yyz_[aind-aym][bind-bym][m] - yyz_[aind-aym][bind-bym][m+1]);
-                                        xzz_[aind][bind][m] += ooz*bz*(xzz_[aind-aym][bind-bym][m] - xzz_[aind-aym][bind-bym][m+1]);
-                                        yzz_[aind][bind][m] += ooz*bz*(yzz_[aind-aym][bind-bym][m] - yzz_[aind-aym][bind-bym][m+1]);
-                                        xyz_[aind][bind][m] += ooz*bz*(xyz_[aind-aym][bind-bym][m] - xyz_[aind-aym][bind-bym][m+1]);
+                                        xxx_[aind][bind][m] += ooz*by*(xxx_[aind-aym][bind-bym][m] - xxx_[aind-aym][bind-bym][m+1]);
+                                        yyy_[aind][bind][m] += ooz*by*(yyy_[aind-aym][bind-bym][m] - yyy_[aind-aym][bind-bym][m+1]);
+                                        zzz_[aind][bind][m] += ooz*by*(zzz_[aind-aym][bind-bym][m] - zzz_[aind-aym][bind-bym][m+1]);
+                                        xxy_[aind][bind][m] += ooz*by*(xxy_[aind-aym][bind-bym][m] - xxy_[aind-aym][bind-bym][m+1]);
+                                        xxz_[aind][bind][m] += ooz*by*(xxz_[aind-aym][bind-bym][m] - xxz_[aind-aym][bind-bym][m+1]);
+                                        xyy_[aind][bind][m] += ooz*by*(xyy_[aind-aym][bind-bym][m] - xyy_[aind-aym][bind-bym][m+1]);
+                                        yyz_[aind][bind][m] += ooz*by*(yyz_[aind-aym][bind-bym][m] - yyz_[aind-aym][bind-bym][m+1]);
+                                        xzz_[aind][bind][m] += ooz*by*(xzz_[aind-aym][bind-bym][m] - xzz_[aind-aym][bind-bym][m+1]);
+                                        yzz_[aind][bind][m] += ooz*by*(yzz_[aind-aym][bind-bym][m] - yzz_[aind-aym][bind-bym][m+1]);
+                                        xyz_[aind][bind][m] += ooz*by*(xyz_[aind-aym][bind-bym][m] - xyz_[aind-aym][bind-bym][m+1]);
                                     }
                                 }
                             }
@@ -791,16 +791,16 @@ void ObaraSaikaTwoCenterEFPRecursion::compute(double PA[3], double PB[3], double
                                         yz_[aind][bind][m] += ooz*bx*(yz_[aind-axm][bind-bxm][m] - yz_[aind-axm][bind-bxm][m+1]);
                                     }
                                     for(m=0;m<=mmax-a-b-3;m++) {
-                                        xxx_[aind][bind][m] += ooz*bz*(xxx_[aind-axm][bind-bxm][m] - xxx_[aind-axm][bind-bxm][m+1]);
-                                        yyy_[aind][bind][m] += ooz*bz*(yyy_[aind-axm][bind-bxm][m] - yyy_[aind-axm][bind-bxm][m+1]);
-                                        zzz_[aind][bind][m] += ooz*bz*(zzz_[aind-axm][bind-bxm][m] - zzz_[aind-axm][bind-bxm][m+1]);
-                                        xxy_[aind][bind][m] += ooz*bz*(xxy_[aind-axm][bind-bxm][m] - xxy_[aind-axm][bind-bxm][m+1]);
-                                        xxz_[aind][bind][m] += ooz*bz*(xxz_[aind-axm][bind-bxm][m] - xxz_[aind-axm][bind-bxm][m+1]);
-                                        xyy_[aind][bind][m] += ooz*bz*(xyy_[aind-axm][bind-bxm][m] - xyy_[aind-axm][bind-bxm][m+1]);
-                                        yyz_[aind][bind][m] += ooz*bz*(yyz_[aind-axm][bind-bxm][m] - yyz_[aind-axm][bind-bxm][m+1]);
-                                        xzz_[aind][bind][m] += ooz*bz*(xzz_[aind-axm][bind-bxm][m] - xzz_[aind-axm][bind-bxm][m+1]);
-                                        yzz_[aind][bind][m] += ooz*bz*(yzz_[aind-axm][bind-bxm][m] - yzz_[aind-axm][bind-bxm][m+1]);
-                                        xyz_[aind][bind][m] += ooz*bz*(xyz_[aind-axm][bind-bxm][m] - xyz_[aind-axm][bind-bxm][m+1]);
+                                        xxx_[aind][bind][m] += ooz*bx*(xxx_[aind-axm][bind-bxm][m] - xxx_[aind-axm][bind-bxm][m+1]);
+                                        yyy_[aind][bind][m] += ooz*bx*(yyy_[aind-axm][bind-bxm][m] - yyy_[aind-axm][bind-bxm][m+1]);
+                                        zzz_[aind][bind][m] += ooz*bx*(zzz_[aind-axm][bind-bxm][m] - zzz_[aind-axm][bind-bxm][m+1]);
+                                        xxy_[aind][bind][m] += ooz*bx*(xxy_[aind-axm][bind-bxm][m] - xxy_[aind-axm][bind-bxm][m+1]);
+                                        xxz_[aind][bind][m] += ooz*bx*(xxz_[aind-axm][bind-bxm][m] - xxz_[aind-axm][bind-bxm][m+1]);
+                                        xyy_[aind][bind][m] += ooz*bx*(xyy_[aind-axm][bind-bxm][m] - xyy_[aind-axm][bind-bxm][m+1]);
+                                        yyz_[aind][bind][m] += ooz*bx*(yyz_[aind-axm][bind-bxm][m] - yyz_[aind-axm][bind-bxm][m+1]);
+                                        xzz_[aind][bind][m] += ooz*bx*(xzz_[aind-axm][bind-bxm][m] - xzz_[aind-axm][bind-bxm][m+1]);
+                                        yzz_[aind][bind][m] += ooz*bx*(yzz_[aind-axm][bind-bxm][m] - yzz_[aind-axm][bind-bxm][m+1]);
+                                        xyz_[aind][bind][m] += ooz*bx*(xyz_[aind-axm][bind-bxm][m] - xyz_[aind-axm][bind-bxm][m+1]);
                                     }
                                 }
                             }

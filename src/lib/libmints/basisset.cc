@@ -377,7 +377,7 @@ std::string BasisSet::print_detail_cfour() const
                 for (size_t ep = 0, K = 0; ep < exp_per_am[am].size(); ep++) {
                     if (abs(exp_per_am[am][ep] - shells_[shell_per_am[am][Q] + first_shell].exp(K)) < 1.0e-8) {
                         coef_per_am[am].push_back(shells_[shell_per_am[am][Q] + first_shell].original_coef(K));
-                        if ((K+1) != shells_[shell_per_am[am][Q] + first_shell].nprimitive()) {
+                        if ((K+1) != (size_t)(shells_[shell_per_am[am][Q] + first_shell].nprimitive())) {
                             K++;
                         }
                     }
@@ -1195,7 +1195,7 @@ void BasisSet::refresh()
     //    }
 }
 
-std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test_basis_set(int max_am)
+std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test_basis_set(int /*max_am*/)
 {
     throw NotImplementedException();
 #if 0

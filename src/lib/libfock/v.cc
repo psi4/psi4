@@ -38,7 +38,7 @@ namespace psi {
 VBase::VBase(boost::shared_ptr<SuperFunctional> functional,
     boost::shared_ptr<BasisSet> primary,
     Options& options):
-    functional_(functional), primary_(primary), options_(options)
+    options_(options), primary_(primary), functional_(functional)
 {
     common_init();
 }
@@ -82,14 +82,14 @@ void VBase::compute_D()
     // Allocate D if needed
     if (D_.size() != C_.size()) {
         D_.clear();
-        for (int A = 0; A < C_.size(); A++) {
+        for (size_t A = 0; A < C_.size(); A++) {
             std::stringstream ss;
             ss << "D (SO) " << A;
             D_.push_back(SharedMatrix(new Matrix(ss.str(), C_[A]->rowspi(), C_[A]->rowspi())));
         }
     }
     
-    for (int A = 0; A < C_.size(); A++) {
+    for (size_t A = 0; A < C_.size(); A++) {
         SharedMatrix C = C_[A];    
         SharedMatrix D = D_[A];    
         D->zero();
@@ -109,7 +109,7 @@ void VBase::compute_D()
         if (P_SO_.size() != P_.size()) {
             same = false;   
         } else {
-            for (int A = 0; A < P_.size(); A++) {
+            for (size_t A = 0; A < P_.size(); A++) {
                 if (P_[A]->symmetry() != P_SO_[A]->symmetry())
                     same = false;
             }
@@ -117,7 +117,7 @@ void VBase::compute_D()
 
         if (!same) {
             P_SO_.clear();
-            for (int A = 0; A < P_.size(); A++) {
+            for (size_t A = 0; A < P_.size(); A++) {
                 std::stringstream ss;
                 ss << "P (SO) " << A;
                 P_SO_.push_back(SharedMatrix(new Matrix(ss.str(),C_[0]->rowspi(),C_[0]->rowspi(),P_[A]->symmetry())));
@@ -128,7 +128,7 @@ void VBase::compute_D()
         if (Caocc_.size() > 1) 
             maxi = (Caocc_[1]->max_ncol() > maxi ? Caocc_[1]->max_ncol() : maxi);
         double* temp = new double[maxi * (ULI) Caocc_[0]->max_nrow()];
-        for (int A = 0; A < P_.size(); A++) {
+        for (size_t A = 0; A < P_.size(); A++) {
             SharedMatrix Cl = Caocc_[A % Caocc_.size()];
             SharedMatrix Cr = Cavir_[A % Cavir_.size()];
             SharedMatrix P = P_[A];
@@ -167,14 +167,14 @@ void VBase::USO2AO()
         if (V_.size() != P_.size()) {
             same = false;   
         } else {
-            for (int A = 0; A < P_.size(); A++) {
+            for (size_t A = 0; A < P_.size(); A++) {
                 if (P_[A]->symmetry() != V_[A]->symmetry())
                     same = false;
             }
         } 
         if (!same) {
             V_.clear();
-            for (int A = 0; A < P_.size(); A++) {
+            for (size_t A = 0; A < P_.size(); A++) {
                 std::stringstream ss1;
                 ss1 << "V (SO) " << A;
                 V_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->rowspi(), C_[0]->rowspi(),P_[A]->symmetry())));
@@ -183,7 +183,7 @@ void VBase::USO2AO()
     } else {
         if (V_.size() != C_.size()) {
             V_.clear();
-            for (int A = 0; A < C_.size(); A++) {
+            for (size_t A = 0; A < C_.size(); A++) {
                 std::stringstream ss1;
                 ss1 << "V (SO) " << A;
                 V_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->rowspi(), C_[0]->rowspi())));
@@ -198,11 +198,11 @@ void VBase::USO2AO()
         D_AO_ = D_;
         V_AO_ = V_;
         // Clear V_AO_ out
-        for (int A = 0; A < V_AO_.size(); A++) {
+        for (size_t A = 0; A < V_AO_.size(); A++) {
             V_AO_[A]->zero();
         }
         P_AO_ = P_SO_;
-        for (int A = 0; A < P_AO_.size(); A++) {
+        for (size_t A = 0; A < P_AO_.size(); A++) {
             P_AO_[A]->hermitivitize();
         }
         return;    
@@ -212,7 +212,7 @@ void VBase::USO2AO()
         if (V_.size() != P_.size()) {
             V_AO_.clear();
             P_AO_.clear();
-            for (int A = 0; A < P_.size(); A++) {
+            for (size_t A = 0; A < P_.size(); A++) {
                 std::stringstream ss2;
                 ss2 << "V (AO) " << A;
                 V_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
@@ -225,7 +225,7 @@ void VBase::USO2AO()
         if (V_AO_.size() != C_.size()) {
             V_AO_.clear();
             P_AO_.clear();
-            for (int A = 0; A < C_.size(); A++) {
+            for (size_t A = 0; A < C_.size(); A++) {
                 std::stringstream ss2;
                 ss2 << "V (AO) " << A;
                 V_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
@@ -238,7 +238,7 @@ void VBase::USO2AO()
     }
 
     // Clear V_AO_ out
-    for (int A = 0; A < V_AO_.size(); A++) {
+    for (size_t A = 0; A < V_AO_.size(); A++) {
         V_AO_[A]->zero();
     }
 
@@ -247,7 +247,7 @@ void VBase::USO2AO()
     if (C_AO_.size() != C_.size()) {
         allocate_C_AO_D_AO = true;
     }else{
-        for (int A = 0; A < C_.size(); A++) {
+        for (size_t A = 0; A < C_.size(); A++) {
             if (C_AO_[A]->nrow() != C_[0]->nrow()) allocate_C_AO_D_AO = true;
             if (C_AO_[A]->ncol() != C_[0]->ncol()) allocate_C_AO_D_AO = true;
         }
@@ -255,7 +255,7 @@ void VBase::USO2AO()
     if (allocate_C_AO_D_AO) {
         C_AO_.clear();
         D_AO_.clear();
-        for (int A = 0; A < C_.size(); A++) {
+        for (size_t A = 0; A < C_.size(); A++) {
             std::stringstream ss1;
             ss1 << "C (AO) " << A;
             C_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->nrow(), C_[0]->ncol())));
@@ -266,7 +266,7 @@ void VBase::USO2AO()
     }
 
     // C_AO (Order is not important, just KE Density)
-    for (int A = 0; A < C_.size(); A++) {
+    for (size_t A = 0; A < C_.size(); A++) {
         SharedMatrix C = C_[A];
         SharedMatrix C_AO = C_AO_[A];
         int offset = 0;
@@ -286,7 +286,7 @@ void VBase::USO2AO()
     
     // D_AO
     double* temp = new double[AO2USO_->max_nrow() * (ULI) AO2USO_->max_ncol()];
-    for (int A = 0; A < D_AO_.size(); A++) {
+    for (size_t A = 0; A < D_AO_.size(); A++) {
         SharedMatrix D = D_[A];
         SharedMatrix D_AO = D_AO_[A];
         D_AO->zero();
@@ -306,7 +306,7 @@ void VBase::USO2AO()
     }    
 
     // P_AO
-    for (int A = 0; A < P_SO_.size(); A++) {
+    for (size_t A = 0; A < P_SO_.size(); A++) {
         SharedMatrix D = P_SO_[A];
         SharedMatrix D_AO = P_AO_[A];
         D_AO->zero();
@@ -335,7 +335,7 @@ void VBase::AO2USO()
     }
 
     double* temp = new double[AO2USO_->max_nrow() * (ULI) AO2USO_->max_ncol()];
-    for (int A = 0; A < V_AO_.size(); A++) {
+    for (size_t A = 0; A < V_AO_.size(); A++) {
         SharedMatrix V = V_[A];
         SharedMatrix V_AO = V_AO_[A];
         for (int h = 0; h < V->nirrep(); h++) {
@@ -456,7 +456,7 @@ void RV::compute_V()
     double *restrict QTp = QT->pointer();
     const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
 
-    for (int Q = 0; Q < blocks.size(); Q++) {
+    for (size_t Q = 0; Q < blocks.size(); Q++) {
 
         boost::shared_ptr<BlockOPoints> block = blocks[Q];
         int npoints = block->npoints();
@@ -613,7 +613,7 @@ SharedMatrix RV::compute_gradient()
     properties_->set_pointers(D_AO);
 
     // What local XC ansatz are we in?
-    int ansatz = functional_->ansatz();
+//    int ansatz = functional_->ansatz();
 
     // How many functions are there (for lda in Vtemp, T)
     int max_functions = grid_->max_functions(); 
@@ -640,7 +640,7 @@ SharedMatrix RV::compute_gradient()
     double* QTp = QT->pointer();
     const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
 
-    for (int Q = 0; Q < blocks.size(); Q++) {
+    for (size_t Q = 0; Q < blocks.size(); Q++) {
 
         boost::shared_ptr<BlockOPoints> block = blocks[Q];
         int npoints = block->npoints();
@@ -786,7 +786,7 @@ SharedMatrix RV::compute_gradient()
             phi_ij[1][2] = phi_yz;
             phi_ij[2][0] = phi_xz;
             phi_ij[2][1] = phi_yz;
-            phi_ij[2][2] = phi_xz;
+            phi_ij[2][2] = phi_zz;
 
             for (int i = 0; i < 3; i++) {
                 double*** phi_j = phi_ij[i];
@@ -906,7 +906,7 @@ void UV::compute_V()
     boost::shared_ptr<Vector> QTb(new Vector("Quadrature Temp", max_points));
     double* QTbp = QTb->pointer();
     const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
-    for (int Q = 0; Q < blocks.size(); Q++) {
+    for (size_t Q = 0; Q < blocks.size(); Q++) {
 
         boost::shared_ptr<BlockOPoints> block = blocks[Q];
         int npoints = block->npoints();
@@ -1099,7 +1099,7 @@ SharedMatrix UV::compute_gradient()
     properties_->set_pointers(Da_AO, Db_AO);
 
     // What local XC ansatz are we in?
-    int ansatz = functional_->ansatz();
+//    int ansatz = functional_->ansatz();
 
     // How many functions are there (for lda in Vtemp, T)
     int max_functions = grid_->max_functions(); 
@@ -1130,7 +1130,7 @@ SharedMatrix UV::compute_gradient()
         quad_values_[(*it).first] = 0.0;
     }
 
-    for (int Q = 0; Q < blocks.size(); Q++) {
+    for (size_t Q = 0; Q < blocks.size(); Q++) {
 
         boost::shared_ptr<BlockOPoints> block = blocks[Q];
         int npoints = block->npoints();
@@ -1319,7 +1319,7 @@ SharedMatrix UV::compute_gradient()
             phi_ij[1][2] = phi_yz;
             phi_ij[2][0] = phi_xz;
             phi_ij[2][1] = phi_yz;
-            phi_ij[2][2] = phi_xz;
+            phi_ij[2][2] = phi_zz;
 
             double** Ds[2];
             Ds[0] = Dap;
@@ -1330,7 +1330,7 @@ SharedMatrix UV::compute_gradient()
             v_tau_s[1] = v_tau_b;
 
             for (int s = 0; s < 2; s++) {
-                double** Dp = Ds[s]; 
+//                double** Dp = Ds[s]; 
                 double* v_tau = v_tau_s[s];
                 for (int i = 0; i < 3; i++) {
                     double*** phi_j = phi_ij[i];

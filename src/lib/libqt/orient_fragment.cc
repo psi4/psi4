@@ -36,10 +36,11 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <math.h>
-#include <physconst.h>
 #include <psifiles.h>
 #include <psi4-dec.h>
 #include "libparallel/ParallelPrinter.h"
+#include <physconst.h>
+
 namespace psi {
 
 void orient_fragment(int natom_A, int natom_B, int P_A, int P_B, double **geom_A, double **geom_B,

@@ -59,6 +59,8 @@
 #include <sstream>
 #include <string>
 #include "libparallel/ParallelPrinter.h"
+#include "../libparallel/mpi_wrapper.h"
+#include "../libparallel/local.h"
 using namespace boost;
 using namespace psi;
 using namespace std;
@@ -79,12 +81,14 @@ Matrix::Matrix()
     colspi_ = NULL;
     nirrep_ = 0;
     symmetry_ = 0;
+    numpy_dims_ = 0;
 }
 
 Matrix::Matrix(const string& name, int symmetry)
     : matrix_(0), nirrep_(0),
       name_(name), symmetry_(symmetry)
 {
+    numpy_dims_ = 0;
 }
 
 Matrix::Matrix(const Matrix& c)
@@ -93,6 +97,7 @@ Matrix::Matrix(const Matrix& c)
     matrix_ = NULL;
     nirrep_ = c.nirrep_;
     symmetry_ = c.symmetry_;
+    numpy_dims_ = 0;
     alloc();
     copy_from(c.matrix_);
 }
@@ -103,6 +108,7 @@ Matrix::Matrix(const SharedMatrix& c)
     matrix_ = NULL;
     nirrep_ = c->nirrep_;
     symmetry_ = c->symmetry_;
+    numpy_dims_ = 0;
     alloc();
     copy_from(c->matrix_);
 }
@@ -113,6 +119,7 @@ Matrix::Matrix(const Matrix* c)
     matrix_ = NULL;
     nirrep_ = c->nirrep_;
     symmetry_ = c->symmetry_;
+    numpy_dims_ = 0;
     alloc();
     copy_from(c->matrix_);
 }
@@ -123,6 +130,7 @@ Matrix::Matrix(int l_nirreps, const int *l_rowspi, const int *l_colspi, int symm
     matrix_ = NULL;
     nirrep_ = l_nirreps;
     symmetry_ = symmetry;
+    numpy_dims_ = 0;
     rowspi_ = l_rowspi;
     colspi_ = l_colspi;
     alloc();
@@ -134,6 +142,7 @@ Matrix::Matrix(const string& name, int l_nirreps, const int *l_rowspi, const int
     matrix_ = NULL;
     nirrep_ = l_nirreps;
     symmetry_ = symmetry;
+    numpy_dims_ = 0;
     rowspi_ = l_rowspi;
     colspi_ = l_colspi;
     alloc();
@@ -145,6 +154,7 @@ Matrix::Matrix(const string& name, int rows, int cols)
     matrix_ = NULL;
     nirrep_ = 1;
     symmetry_ = 0;
+    numpy_dims_ = 0;
     rowspi_[0] = rows;
     colspi_[0] = cols;
     alloc();
@@ -156,6 +166,7 @@ Matrix::Matrix(int rows, int cols)
     matrix_ = NULL;
     nirrep_ = 1;
     symmetry_ = 0;
+    numpy_dims_ = 0;
     rowspi_[0] = rows;
     colspi_[0] = cols;
     alloc();
@@ -166,6 +177,7 @@ Matrix::Matrix(int nirrep, int rows, const int *colspi)
 {
     matrix_ = NULL;
     symmetry_ = 0;
+    numpy_dims_ = 0;
     nirrep_ = nirrep;
     for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = rows;
@@ -179,6 +191,7 @@ Matrix::Matrix(int nirrep, const int *rowspi, int cols)
 {
     matrix_ = NULL;
     symmetry_ = 0;
+    numpy_dims_ = 0;
     nirrep_ = nirrep;
     for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = rowspi[i];
@@ -192,6 +205,7 @@ Matrix::Matrix(const string& name, const Dimension& rows, const Dimension& cols,
     name_ = name;
     matrix_ = NULL;
     symmetry_ = symmetry;
+    numpy_dims_ = 0;
 
     // This will happen in PetiteList::aotoso()
     if (rows.n() == 1) {
@@ -220,6 +234,7 @@ Matrix::Matrix(const Dimension& rows, const Dimension& cols, int symmetry)
 {
     matrix_ = NULL;
     symmetry_ = symmetry;
+    numpy_dims_ = 0;
 
     // This will happen in PetiteList::aotoso()
     if (rows.n() == 1) {
@@ -251,6 +266,7 @@ Matrix::Matrix(dpdfile2 *inFile)
     global_dpd_->file2_mat_rd(inFile);
     matrix_ = NULL;
     symmetry_ = inFile->my_irrep;
+    numpy_dims_ = 0;
     nirrep_ = inFile->params->nirreps;
     for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = inFile->params->rowtot[i];
@@ -352,20 +368,20 @@ void Matrix::copy(const Matrix* cp)
     #pragma omp parallel for
     for (int h=0; h<nirrep_; ++h) {
         if (rowspi_[h] != 0 && colspi_[h^symmetry_] != 0)
-            memcpy(&(matrix_[h][0][0]), &(cp->matrix_[h][0][0]), rowspi_[h] * colspi_[h^symmetry_] * sizeof(double));
+            memcpy(&(matrix_[h][0][0]), &(cp->matrix_[h][0][0]), rowspi_[h] * (size_t) colspi_[h^symmetry_] * sizeof(double));
     }
 }
 
 SharedMatrix Matrix::horzcat(const std::vector<SharedMatrix >& mats)
 {
     int nirrep = mats[0]->nirrep();
-    for (int a = 0; a < mats.size(); ++a) {
+    for (size_t a = 0; a < mats.size(); ++a) {
         if (nirrep != mats[a]->nirrep()) {
             throw PSIEXCEPTION("Horzcat: Matrices not of same nirrep");
         }
     }
 
-    for (int a = 1; a < mats.size(); ++a) {
+    for (size_t a = 1; a < mats.size(); ++a) {
         for (int h = 0; h < nirrep; ++h) {
             if (mats[a]->rowspi()[h] != mats[0]->rowspi()[h]) {
                 throw PSIEXCEPTION("Horzcat: Matrices must all have same row dimension");
@@ -375,7 +391,7 @@ SharedMatrix Matrix::horzcat(const std::vector<SharedMatrix >& mats)
 
     Dimension colspi(nirrep);
 
-    for (int a = 0; a < mats.size(); ++a) {
+    for (size_t a = 0; a < mats.size(); ++a) {
         colspi += mats[a]->colspi();
     }
 
@@ -386,7 +402,7 @@ SharedMatrix Matrix::horzcat(const std::vector<SharedMatrix >& mats)
         double** catp = cat->pointer(h);
         int offset = 0;
         int rows = mats[0]->rowspi()[h];
-        for (int a = 0; a < mats.size(); ++a) {
+        for (size_t a = 0; a < mats.size(); ++a) {
             int cols = mats[a]->colspi()[h];
             if (cols == 0) continue;
 
@@ -406,13 +422,13 @@ SharedMatrix Matrix::horzcat(const std::vector<SharedMatrix >& mats)
 SharedMatrix Matrix::vertcat(const std::vector<SharedMatrix >& mats)
 {
     int nirrep = mats[0]->nirrep();
-    for (int a = 0; a < mats.size(); ++a) {
+    for (size_t a = 0; a < mats.size(); ++a) {
         if (nirrep != mats[a]->nirrep()) {
             throw PSIEXCEPTION("Vertcat: Matrices not of same nirrep");
         }
     }
 
-    for (int a = 1; a < mats.size(); ++a) {
+    for (size_t a = 1; a < mats.size(); ++a) {
         for (int h = 0; h < nirrep; ++h) {
             if (mats[a]->colspi()[h] != mats[0]->colspi()[h]) {
                 throw PSIEXCEPTION("Vertcat: Matrices must all have same col dimension");
@@ -422,7 +438,7 @@ SharedMatrix Matrix::vertcat(const std::vector<SharedMatrix >& mats)
 
     Dimension rowspi(nirrep);
 
-    for (int a = 0; a < mats.size(); ++a) {
+    for (size_t a = 0; a < mats.size(); ++a) {
         rowspi += mats[a]->rowspi();
     }
 
@@ -433,7 +449,7 @@ SharedMatrix Matrix::vertcat(const std::vector<SharedMatrix >& mats)
         double** catp = cat->pointer(h);
         int offset = 0;
         int cols = mats[0]->colspi()[h];
-        for (int a = 0; a < mats.size(); ++a) {
+        for (size_t a = 0; a < mats.size(); ++a) {
             int rows = mats[a]->rowspi()[h];
             if (rows == 0) continue;
 
@@ -847,7 +863,36 @@ void Matrix::print(std::string out, const char *extra) const
             print_mat(matrix_[h], rowspi_[h], colspi_[h^symmetry_], out);
         printer->Printf("\n");
     }
+}
 
+void Matrix::print_to_mathematica()
+{
+    if (name_.length())
+        outfile->Printf("  ## %s in Mathematica form ##\n", name_.c_str());
+    else
+        outfile->Printf("  ## Request matrix in Mathematica form ##\n");
+
+    outfile->Printf("{");
+    for (int h=0; h<nirrep_; ++h) {
+        outfile->Printf("{");
+
+        for (int r=0; r<rowspi_[h]; ++r) {
+            outfile->Printf("{");
+            for (int c=0; c<colspi_[h^symmetry_]; ++c) {
+                outfile->Printf("%14.12lf", get(h, r, c));
+                if (c < colspi_[h]-1)
+                    outfile->Printf(", ");
+            }
+            outfile->Printf("}");
+            if (r < rowspi_[h]-1)
+                outfile->Printf(",\n");
+        }
+
+        outfile->Printf("}");
+        if (h < nirrep_-1)
+            outfile->Printf(",\n");
+    }
+    outfile->Printf("}\n");
 }
 
 void Matrix::print_atom_vector(std::string out)
@@ -1565,7 +1610,7 @@ void Matrix::schmidt()
         psi::schmidt(matrix_[h], rowspi(h), colspi(h), NULL);
 }
 
-Dimension Matrix::schmidt_orthog_columns(SharedMatrix S, double tol, double *res)
+Dimension Matrix::schmidt_orthog_columns(SharedMatrix S, double tol, double * /*res*/)
 {
     Dimension northog(nirrep());
     std::vector<double> resid(nirrep());
@@ -1735,7 +1780,7 @@ double Matrix::vector_dot(const Matrix* const rhs)
     for (h=0; h<nirrep_; ++h) {
         size = rowspi_[h] * colspi_[h^symmetry_];
         // Check the size of the other
-        if (size != rhs->rowdim(h) * rhs->coldim(h^symmetry_))
+        if (size != (size_t)(rhs->rowdim(h) * rhs->coldim(h^symmetry_)))
             throw PSIEXCEPTION("Matrix::vector_dot: Dimensions do not match!\n");
 
         if (size)
@@ -1773,7 +1818,7 @@ void Matrix::diagonalize(SharedMatrix& eigvectors, Vector& eigvalues, diagonaliz
     diagonalize(eigvectors.get(), &eigvalues, nMatz);
 }
 
-void Matrix::diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, diagonalize_order nMatz)
+void Matrix::diagonalize(SharedMatrix& metric, SharedMatrix& /*eigvectors*/, boost::shared_ptr<Vector>& eigvalues, diagonalize_order /*nMatz*/)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::diagonalize: Matrix non-totally symmetric.");
@@ -2156,7 +2201,7 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
 
             // Explicitly zero out elements of the vector
             // Which are psychologically upper triangular
-            for (int i = 0; i < order.size(); i++)
+            for (size_t i = 0; i < order.size(); i++)
                 Kp[order[i]][Q] = 0.0;
 
             // Place the diagonal
@@ -3363,10 +3408,10 @@ void Matrix::bcast(int broadcaster)
 {
     std::cout<<"Someone is calling the Matrix bcast routine..."<<std::endl;
    // Assume the user allocated the matrix to the correct size first.
-    for (int h=0; h<nirrep_; ++h) {
+    /*for (int h=0; h<nirrep_; ++h) {
         if (rowspi_[h] > 0 && colspi_[h] > 0)
             WorldComm->bcast(matrix_[h][0], rowspi_[h] * colspi_[h^symmetry_], broadcaster);
-    }
+    }*/
 }
 
 void Matrix::sum()
@@ -3476,12 +3521,12 @@ void Matrix::set_by_python_list(const boost::python::list& data)
     size_t rows = boost::python::len(data);
 
     // Make sure nrows < rows
-    if (nrow() > rows)
+    if ((size_t)nrow() > rows)
         throw PSIEXCEPTION("Uh, moron!");
 
     for (size_t i=0; i<rows; ++i) {
         size_t cols = boost::python::len(data[i]);
-        if (ncol() > cols)
+        if ((size_t)ncol() > cols)
             throw PSIEXCEPTION("Uh, moron!");
         for (size_t j=0; j<cols; ++j) {
             set(i, j, boost::python::extract<double>(data[i][j]));

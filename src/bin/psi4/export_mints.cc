@@ -46,9 +46,24 @@ using namespace psi;
 
 dict matrix_array_interface(SharedMatrix mat, int irrep){
     dict rv;
-    int rows = mat->rowspi(irrep);
-    int cols = mat->colspi(irrep);
-    rv["shape"] = boost::python::make_tuple(rows, cols);
+
+    // Shape
+    int numpy_dim = mat->numpy_dims();
+    if (numpy_dim){
+        int* numpy_shape = mat->numpy_shape();
+        boost::python::list shape;
+        for (int i=0; i<numpy_dim; i++){
+            shape.append(numpy_shape[i]);
+        }
+        rv["shape"] = boost::python::tuple(shape);
+    }
+    else{
+        int rows = mat->rowspi(irrep);
+        int cols = mat->colspi(irrep);
+        rv["shape"] = boost::python::make_tuple(rows, cols);
+    }
+
+    // Data and type
     rv["data"] = boost::python::make_tuple((long)mat->get_pointer(irrep), true);
     std::string typestr = is_big_endian() ? ">" : "<";
     {
@@ -69,8 +84,24 @@ dict matrix_array_interface_c1(SharedMatrix mat){
 
 dict vector_array_interface(SharedVector vec, int irrep){
     dict rv;
-    int elements = vec->dim(irrep);
-    rv["shape"] = boost::python::make_tuple(elements);
+
+    // Shape
+    int numpy_dim = vec->numpy_dims();
+
+    if (numpy_dim){
+        int* numpy_shape = vec->numpy_shape();
+        boost::python::list shape;
+        for (int i=0; i<numpy_dim; i++){
+            shape.append(numpy_shape[i]);
+        }
+        rv["shape"] = boost::python::make_tuple(shape);
+    }
+    else {
+        const int elements = vec->dim(irrep);
+        rv["shape"] = boost::python::make_tuple(elements);
+    }
+
+    // Data and type
     rv["data"] = boost::python::make_tuple((long)vec->pointer(irrep), true);
     std::string typestr = is_big_endian() ? ">" : "<";
     {
@@ -706,6 +737,9 @@ void export_mints()
             def("fit", &DFChargeFitter::fit, "docstring");
 
     class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>("Wavefunction", "docstring", no_init).
+            def("nfrzc", &Wavefunction::nfrzc, "docstring").
+            def("nalpha", &Wavefunction::nalpha, "docstring").
+            def("nbeta", &Wavefunction::nbeta, "docstring").
             def("nso", &Wavefunction::nso, "docstring").
             def("nmo", &Wavefunction::nmo, "docstring").
             def("nirrep", &Wavefunction::nirrep, "docstring").
@@ -719,6 +753,7 @@ void export_mints()
             def("Fb", &Wavefunction::Fb, "docstring").
             def("Da", &Wavefunction::Da, "docstring").
             def("Db", &Wavefunction::Db, "docstring").
+            def("aotoso", &Wavefunction::aotoso, "docstring").
             def("epsilon_a", &Wavefunction::epsilon_a, "docstring").
             def("epsilon_b", &Wavefunction::epsilon_b, "docstring").
             def("add_preiteration_callback", &Wavefunction::add_preiteration_callback, "docstring").
@@ -728,6 +763,7 @@ void export_mints()
             def("energy", &Wavefunction::reference_energy, "docstring").
             def("gradient", &Wavefunction::gradient, "docstring").
             def("frequencies", &Wavefunction::frequencies, "docstring").
+            def("normalmodes", &Wavefunction::normalmodes, "docstring").
             def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring").
             def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring").
             def("molecule", &Wavefunction::molecule, "docstring").

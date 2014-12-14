@@ -54,15 +54,15 @@ void ModelSpace::print()
 {
   outfile->Printf("\n\n  Model space:");
   outfile->Printf("\n  ------------------------------------------------------------------------------");
-  for(int mu = 0; mu < determinants.size(); ++mu){
+  for(size_t mu = 0; mu < determinants.size(); ++mu){
     outfile->Printf("\n  %2d %s",mu,determinants[mu].get_label().c_str());
   }
   outfile->Printf("\n\n  Closed-shell to model space mapping");
-  for(int mu = 0; mu < closed_to_all.size(); ++mu){
+  for(size_t mu = 0; mu < closed_to_all.size(); ++mu){
     outfile->Printf("\n  %d -> %d",mu,closed_to_all[mu]);
   }
   outfile->Printf("\n\n  Open-shell to model space mapping");
-  for(int mu = 0; mu < opensh_to_all.size(); ++mu){
+  for(size_t mu = 0; mu < opensh_to_all.size(); ++mu){
     outfile->Printf("\n  %d -> %d",mu,opensh_to_all[mu]);
   }
 

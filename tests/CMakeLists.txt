@@ -26,6 +26,7 @@ set(TestsNotSetUpRight cfour optking testgrendel)
 add_subdirectory(adc1)
 add_subdirectory(adc2)
 add_subdirectory(casscf-fzc-sp)
+add_subdirectory(casscf-sa-sp)
 add_subdirectory(casscf-sp)
 add_subdirectory(castup1)
 add_subdirectory(castup2)
@@ -249,6 +250,7 @@ add_subdirectory(pywrap-opt-sowreap)
 add_subdirectory(rasci-c2-active)
 add_subdirectory(rasci-h2o)
 add_subdirectory(rasci-ne)
+add_subdirectory(rasscf-sp)
 add_subdirectory(sad1)
 add_subdirectory(sapt1)
 add_subdirectory(sapt2)
@@ -271,6 +273,19 @@ add_subdirectory(tu4-h2o-freq)
 add_subdirectory(tu5-sapt)
 add_subdirectory(tu6-cp-ne2)
 add_subdirectory(zaptn-nh2)
+
+###### START internal-executable-dependent tests ################
+
+# For code that is distributed with and required for psi4 to build, 
+#   and thus should always be tested, but is developed and maintained 
+#   externally and dropped into psi4 as version increment, and thus 
+#   should get its own subdirectory:
+#   * Follow directory structure described below for ext-exe-dep
+#   * Follow un-qualified inclusion as above for normal tests
+
+add_subdirectory(libefp)
+
+###### END internal-executable-dependent tests ##################
 
 ###### START external-executable-dependent tests ################
 
@@ -314,7 +329,7 @@ if(CFOUR_EXECUTABLE)
    message(STATUS "xcfour executable for interfaced CFOUR found. Test cases added.")
 endif()
 
-###### END external-executable-dependent tests ################
+###### END external-executable-dependent tests ##################
 
 # External module dependent tests
 if(ENABLE_PCMSOLVER)
