@@ -39,18 +39,14 @@ message(STATUS "  Toolset to be used: ${toolset}")
 
 # Prepare options for call to b2
 string(TOLOWER ${CMAKE_BUILD_TYPE} type)
+
 #Boost has a bug in the MPI part if you try to compile with c++11
 #See: https://www.mail-archive.com/boost-mpi@lists.boost.org/msg00100.html
 if(HAS_CXX11_SUPPORT AND NOT ENABLE_MPI)
-   if(CMAKE_SYSTEM_NAME MATCHES Darwin) # Read here: http://stackoverflow.com/a/19774902/2528668
-      set(cxxflags  "\"${CXX11_COMPILER_FLAGS} -stdlib=libc++\"")
-      set(linkflags "\"${CXX11_COMPILER_FLAGS} -stdlib=libc++\"")
-      set(_b2_cxx11_options "cxxflags=${cxxflags} linkflags=${linkflags}")
-   else()
-      set(cxxflags "\"${CXX11_COMPILER_FLAGS}\"") 
-      set(_b2_cxx11_options "cxxflags=${cxxflags}")
-   endif()	  
+  set(cxxflags "\"${CXX11_COMPILER_FLAGS}\"") 
+  set(_b2_cxx11_options "cxxflags=${cxxflags}")
 endif()	  
+
 # Write the user-config.jam file
 file(WRITE ${BOOST_BUILD_DIR}/user-config.jam "${MPI_SENT}")  
 
