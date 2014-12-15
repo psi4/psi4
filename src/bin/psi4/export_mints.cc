@@ -471,6 +471,7 @@ void export_mints()
 
     typedef SharedMatrix (MintsHelper::*erf)(double, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
     typedef SharedMatrix (MintsHelper::*eri)(SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
+    typedef SharedMatrix (MintsHelper::*eri_2)(SharedMatrix, SharedMatrix);
 
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
             def(init<boost::shared_ptr<BasisSet> >()).
@@ -509,6 +510,7 @@ void export_mints()
             def("mo_f12_squared", &MintsHelper::mo_f12_squared, "docstring").
             def("mo_f12g12", &MintsHelper::mo_f12g12, "docstring").
             def("mo_f12_double_commutator", &MintsHelper::mo_f12_double_commutator, "docstring").
+            def("mo_spin_eri", eri_2(&MintsHelper::mo_spin_eri), "docstring").
             def("cdsalcs", &MintsHelper::cdsalcs, "docstring").
             def("petite_list", petite_list_0(&MintsHelper::petite_list), "docstring").
             def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring").

@@ -827,6 +827,51 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, Share
 
     return Imo;
 }
+
+SharedMatrix MintsHelper::mo_spin_eri(SharedMatrix Co, SharedMatrix Cv)
+{
+    int n1 = Co->colspi()[0];
+    int n2 = Cv->colspi()[0];
+    SharedMatrix mo_ints = mo_eri_helper(ao_eri(), Co, Cv);
+    SharedMatrix mo_spin_ints = mo_spin_eri_helper(mo_ints, n1, n2);
+    mo_ints.reset();
+    mo_spin_ints->set_name("MO Spin ERI Tensor");
+    return mo_spin_ints;
+}
+SharedMatrix MintsHelper::mo_spin_eri_helper(SharedMatrix Iso, int n1, int n2)
+{
+    int n12 = n1 * 2;
+    int n22 = n2 * 2;
+    
+    double** Isop = Iso->pointer();
+    SharedMatrix Ispin(new Matrix("MO ERI Tensor", 4 * n1 * n1, 4 * n2 * n2));
+    double** Ispinp = Ispin->pointer();
+
+    double first, second;
+    int mask1, mask2;
+    for (int i = 0; i < n12; i++) {
+        for (int j = 0; j < n12; j++) {
+            for (int k = 0; k < n22; k++) {
+                for (int l = 0; l < n22; l++) {
+                    mask1 = (i%2 == k%2) * (j%2 == l%2);
+                    mask2 = (i%2 == l%2) * (j%2 == k%2);
+                    
+                    first =  Isop[i/2 * n2 + k/2][j/2 * n2 + l/2];
+                    second = Isop[i/2 * n2 + l/2][j/2 * n2 + k/2];
+                    Ispinp[i * n12 + j][k * n22 + l] = first * mask1 - second * mask2; 
+                }
+            }
+        }
+    }
+    // Set Numpy shape
+    int* shape = new int[4];
+    shape[0] = shape[1] = n12;
+    shape[2] = shape[3] = n22;
+    Ispin->set_numpy_dims(4);
+    Ispin->set_numpy_shape(shape);
+
+    return Ispin;
+}
 SharedMatrix MintsHelper::so_overlap()
 {
     boost::shared_ptr<OneBodySOInt> S(integral_->so_overlap());
