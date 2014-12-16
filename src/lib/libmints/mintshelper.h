@@ -58,10 +58,12 @@ private:
     // In-core O(N^5) transqt
     SharedMatrix mo_eri_helper(SharedMatrix Iso, SharedMatrix C1, SharedMatrix C2,
                                                  SharedMatrix C3, SharedMatrix C4);
+    /// In-core builds spin eri's
+    SharedMatrix mo_spin_eri_helper(SharedMatrix Iso, int n1, int n2);
+
 
     SharedMatrix ao_helper(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints);
     SharedMatrix ao_shell_getter(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P, int Q);
-
 
     void common_init();
 
@@ -167,6 +169,11 @@ public:
     /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
     SharedMatrix mo_erf_eri(double omega, SharedMatrix Cocc, SharedMatrix Cvir);
 
+    /// Symmetric MO Spin ERI Integrals, <oo|vv> type (Full matrix (16x larger than MO ERI), N^5,
+    /// most definitely not recommended for large systems)
+    /// Pass C_ C_ for <aa|aa> type, Cocc_, Cocc_ for <oo|oo> type, or Cvir_, Cvir_ for <vv|vv> type
+    SharedMatrix mo_spin_eri(SharedMatrix Co, SharedMatrix Cv);
+
     /// AO Overlap Integrals
     SharedMatrix ao_overlap();
     /// AO Kinetic Integrals
@@ -209,6 +216,9 @@ public:
                                           bool project_out_translations=true,
                                           bool project_out_rotations=true);
 
+    /// N^5 ao->mo transform, in memory, smart indexing
+    SharedMatrix mo_transform(SharedMatrix Iso, SharedMatrix C1, SharedMatrix C2,
+                                                SharedMatrix C3, SharedMatrix C4);
     /// Play function
     void play();
 };
