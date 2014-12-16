@@ -566,8 +566,8 @@ SharedMatrix MintsHelper::ao_helper(const std::string& label, boost::shared_ptr<
 
     // Set Numpy shape
     int* shape = new int[4];
-    shape[0] = shape[1] = nbf;
-    shape[2] = shape[3] = nbf;
+    shape[0] = nbf1; shape[1] = nbf2;
+    shape[2] = nbf3; shape[3] = nbf4;
     I->set_numpy_dims(4);
     I->set_numpy_shape(shape);
 
