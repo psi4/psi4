@@ -440,6 +440,14 @@ void export_mints()
 
     typedef SharedMatrix (MintsHelper::*erf)(double, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
     typedef SharedMatrix (MintsHelper::*eri)(SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
+    typedef SharedMatrix (MintsHelper::*normal_eri)();
+    typedef SharedMatrix (MintsHelper::*normal_eri2)(boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>);
+
+    typedef SharedMatrix (MintsHelper::*normal_f12)(boost::shared_ptr<CorrelationFactor>);
+    typedef SharedMatrix (MintsHelper::*normal_f122)(boost::shared_ptr<CorrelationFactor>, boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>);
+
+    typedef SharedMatrix (MintsHelper::*oneelectron)();
+    typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis)(boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
 
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
             def(init<boost::shared_ptr<BasisSet> >()).
@@ -452,8 +460,10 @@ void export_mints()
             def("sobasisset", &MintsHelper::sobasisset, "docstring").
             def("factory", &MintsHelper::factory, "docstring").
             def("ao_overlap", &MintsHelper::ao_overlap, "docstring").
-            def("ao_kinetic", &MintsHelper::ao_kinetic, "docstring").
-            def("ao_potential", &MintsHelper::ao_potential, "docstring").
+            def("ao_kinetic", oneelectron(&MintsHelper::ao_kinetic), "docstring").
+            def("ao_kinetic", oneelectron_mixed_basis(&MintsHelper::ao_kinetic), "docstring").
+            def("ao_potential", oneelectron(&MintsHelper::ao_potential), "docstring").
+            def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "docstring").
             def("one_electron_integrals", &MintsHelper::one_electron_integrals, "docstring").
             def("so_overlap", &MintsHelper::so_overlap, "docstring").
             def("so_kinetic", &MintsHelper::so_kinetic, "docstring").
@@ -465,10 +475,12 @@ void export_mints()
             def("so_nabla", &MintsHelper::so_nabla, "docstring").
             def("so_angular_momentum", &MintsHelper::so_angular_momentum, "docstring").
             def("ao_angular_momentum", &MintsHelper::ao_angular_momentum, "docstring").
-            def("ao_eri", &MintsHelper::ao_eri, "docstring").
+            def("ao_eri", normal_eri(&MintsHelper::ao_eri), "docstring").
+            def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "docstring").
             def("ao_eri_shell", &MintsHelper::ao_eri_shell, "docstring").
             def("ao_erf_eri", &MintsHelper::ao_erf_eri, "docstring").
-            def("ao_f12", &MintsHelper::ao_f12, "docstring").
+            def("ao_f12", normal_f12(&MintsHelper::ao_f12), "docstring").
+            def("ao_f12", normal_f122(&MintsHelper::ao_f12), "docstring").
             def("ao_f12_squared", &MintsHelper::ao_f12_squared, "docstring").
             def("ao_f12g12", &MintsHelper::ao_f12g12, "docstring").
             def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "docstring").
