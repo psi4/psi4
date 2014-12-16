@@ -65,7 +65,6 @@ private:
     SharedMatrix ao_helper(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints);
     SharedMatrix ao_shell_getter(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P, int Q);
 
-
     void common_init();
 
 public:
@@ -206,6 +205,9 @@ public:
                                           bool project_out_translations=true,
                                           bool project_out_rotations=true);
 
+    /// N^5 ao->mo transform, in memory, smart indexing
+    SharedMatrix mo_transform(SharedMatrix Iso, SharedMatrix C1, SharedMatrix C2,
+                                                SharedMatrix C3, SharedMatrix C4);
     /// Play function
     void play();
 };

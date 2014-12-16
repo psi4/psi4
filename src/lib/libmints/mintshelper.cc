@@ -1072,6 +1072,163 @@ boost::shared_ptr<CdSalcList> MintsHelper::cdsalcs(int needed_irreps,
                                                         project_out_translations,
                                                         project_out_rotations));
 }
+SharedMatrix MintsHelper::mo_transform(SharedMatrix Iso, SharedMatrix C1, SharedMatrix C2,
+                                       SharedMatrix C3, SharedMatrix C4)
+{
+    // Attempts to transform integrals in the most efficient manner. Will transpose left, right
+    // and left_right where left and right are (left|right) indices. Does not consider the fimal
+    // perturbation eg (12|34) -> (13|24), therefore integrals of type (oo|vv) will not be computed
+    // in the optimal order. However, the first transformed index is guaranteed to be the smallest.
+
+    int nso = C1->rowspi()[0];
+
+    // Check C dimensions
+    int dim_check = 0;
+    dim_check += (C2->rowspi()[0] != nso);
+    dim_check += (C3->rowspi()[0] != nso);
+    dim_check += (C4->rowspi()[0] != nso);
+
+    if (dim_check){
+        throw PSIEXCEPTION("MO Transform: Eigenvector lengths of the C matrices are not identical.");
+    }
+
+    if ((Iso->nirrep())>1){
+        throw PSIEXCEPTION("MO Transform: The ERI has more than one irrep.");
+    }
+
+    // Make sure I is square and of correction dimesion
+    int Irows = Iso->rowspi()[0];
+    int Icols = Iso->colspi()[0];
+
+    if ( ((nso*nso)!=Irows) || ((nso*nso)!=Icols) ){
+        throw PSIEXCEPTION("MO Transform: ERI shape does match that of the C matrices.");
+    }
+
+    int n1 = C1->colspi()[0];
+    int n2 = C2->colspi()[0];
+    int n3 = C3->colspi()[0];
+    int n4 = C4->colspi()[0];
+
+    double** C1p = C1->pointer();
+    double** C2p = C2->pointer();
+    double** C3p = C3->pointer();
+    double** C4p = C4->pointer();
+
+    // Build numpy and final matrix shape
+    int* shape = new int[4];
+    shape[0] = n1; shape[1] = n2;
+    shape[2] = n3; shape[3] = n4;
+
+    int shape_left = n1 * n2;
+    int shape_right = n3 * n4;
+
+    // Transform smallest indices first
+    bool transpose_left = (n1 > n2);
+    bool transpose_right = (n3 > n4);
+    bool transpose_left_right = ((transpose_left ? n2 : n1) > (transpose_right ? n4 : n3));
+
+    int tmp_n;
+    double** tmp_p;
+    if (transpose_left){
+        tmp_n = n1; n1 = n2; n2 = tmp_n;
+        tmp_p = C1p; C1p = C2p; C2p = tmp_p;
+    }
+    if (transpose_right){
+        tmp_n = n3; n3 = n4; n4 = tmp_n;
+        tmp_p = C3p; C3p = C4p; C4p = tmp_p;
+    }
+    if (transpose_left_right){
+        tmp_n = n1; n1 = n3; n3 = tmp_n;
+        tmp_n = n2; n2 = n4; n4 = tmp_n;
+        tmp_p = C1p; C1p = C3p; C3p = tmp_p;
+        tmp_p = C2p; C2p = C4p; C4p = tmp_p;
+    }
+
+    double** Isop = Iso->pointer();
+    SharedMatrix I2(new Matrix("MO ERI Tensor", n1 * nso, nso * nso));
+    double** I2p = I2->pointer();
+
+    C_DGEMM('T','N',n1,nso * (ULI) nso * nso,nso,1.0,C1p[0],n1,Isop[0],nso * (ULI) nso * nso,0.0,I2p[0],nso * (ULI) nso * nso);
+
+    Iso.reset();
+    SharedMatrix I3(new Matrix("MO ERI Tensor", n1 * nso, nso * n3));
+    double** I3p = I3->pointer();
+
+    C_DGEMM('N','N',n1 * (ULI) nso * nso,n3,nso,1.0,I2p[0],nso,C3p[0],n3,0.0,I3p[0],n3);
+
+    I2.reset();
+    SharedMatrix I4(new Matrix("MO ERI Tensor", nso * n1, n3 * nso));
+    double** I4p = I4->pointer();
+
+    for (int i = 0; i < n1; i++) {
+        for (int j = 0; j < n3; j++) {
+            for (int m = 0; m < nso; m++) {
+                for (int n = 0; n < nso; n++) {
+                    I4p[m * n1 + i][j * nso + n] = I3p[i * nso + m][n * n3 + j];
+                }
+            }
+        }
+    }
+
+    I3.reset();
+    SharedMatrix I5(new Matrix("MO ERI Tensor", n2 * n1, n3 * nso));
+    double** I5p = I5->pointer();
+
+    C_DGEMM('T','N',n2,n1 * (ULI) n3 * nso, nso,1.0,C2p[0],n2,I4p[0],n1*(ULI)n3*nso,0.0,I5p[0],n1*(ULI)n3*nso);
+
+    I4.reset();
+    SharedMatrix I6(new Matrix("MO ERI Tensor", n2 * n1, n3 * n4));
+    double** I6p = I6->pointer();
+
+    C_DGEMM('N','N',n2 * (ULI) n1 * n3, n4, nso,1.0,I5p[0],nso,C4p[0],n4,0.0,I6p[0],n4);
+
+    I5.reset();
+    SharedMatrix Imo(new Matrix("MO ERI Tensor", shape_left, shape_right));
+    double** Imop = Imo->pointer();
+
+    // Currently 2143, need to transform back
+    int left, right, tmp;
+    for (int i = 0; i < n1; i++) {
+        for (int j = 0; j < n3; j++) {
+            for (int a = 0; a < n2; a++) {
+
+                // Tranpose left
+                if (transpose_left){
+                    left = a * n1 + i;
+                }
+                else{
+                    left = i * n2 + a;
+                }
+
+                for (int b = 0; b < n4; b++) {
+                    right = j * n4 + b;
+
+                    // Transpose right
+                    if (transpose_right){
+                        right = b * n3 + j;
+                    }
+                    else{
+                        right = j * n4 + b;
+                    }
+
+                    // Transpose left_right
+                    if (transpose_left_right){
+                        Imop[right][left] = I6p[a * n1 + i][j * n4 + b];
+                    }
+                    else{
+                        Imop[left][right] = I6p[a * n1 + i][j * n4 + b];
+                    }
+                }
+            }
+        }
+    }
+
+    // Set Numpy shape
+    Imo->set_numpy_dims(4);
+    Imo->set_numpy_shape(shape);
+
+    return Imo;
+}
 
 void MintsHelper::play()
 {
