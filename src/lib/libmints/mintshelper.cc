@@ -434,10 +434,28 @@ SharedMatrix MintsHelper::ao_kinetic()
     return kinetic_mat;
 }
 
+SharedMatrix MintsHelper::ao_kinetic(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2)
+{
+    IntegralFactory factory(bs1, bs2);
+    boost::shared_ptr<OneBodyAOInt> T(factory.ao_kinetic());
+    SharedMatrix kinetic_mat(new Matrix("AO-basis Kinetic Ints", bs1->nbf (), bs2->nbf ()));
+    T->compute(kinetic_mat);
+    return kinetic_mat;
+}
+
 SharedMatrix MintsHelper::ao_potential()
 {
     boost::shared_ptr<OneBodyAOInt> V(integral_->ao_potential());
     SharedMatrix       potential_mat(new Matrix("AO-basis Potential Ints", basisset_->nbf (), basisset_->nbf ()));
+    V->compute(potential_mat);
+    return potential_mat;
+}      
+
+SharedMatrix MintsHelper::ao_potential(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2)
+{
+    IntegralFactory factory(bs1, bs2);
+    boost::shared_ptr<OneBodyAOInt> V(factory.ao_kinetic());
+    SharedMatrix potential_mat(new Matrix("AO-basis Potential Ints", bs1->nbf (), bs2->nbf ()));
     V->compute(potential_mat);
     return potential_mat;
 }
@@ -506,25 +524,35 @@ SharedMatrix MintsHelper::so_dkh(int dkh_order)
 
 SharedMatrix MintsHelper::ao_helper(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints)
 {
-    int nbf = basisset_->nbf();
-    SharedMatrix I(new Matrix(label, nbf*nbf, nbf*nbf));
+    boost::shared_ptr<BasisSet> bs1 = ints->basis1();
+    boost::shared_ptr<BasisSet> bs2 = ints->basis2();
+    boost::shared_ptr<BasisSet> bs3 = ints->basis3();
+    boost::shared_ptr<BasisSet> bs4 = ints->basis4();
+
+    int nbf1 = bs1->nbf();
+    int nbf2 = bs2->nbf();
+    int nbf3 = bs3->nbf();
+    int nbf4 = bs4->nbf();
+
+    SharedMatrix I(new Matrix(label, nbf1*nbf2, nbf3*nbf4));
     double** Ip = I->pointer();
     const double* buffer = ints->buffer();
 
-    for (int M = 0; M < basisset_->nshell(); M++) {
-        for (int N = 0; N < basisset_->nshell(); N++) {
-            for (int P = 0; P < basisset_->nshell(); P++) {
-                for (int Q = 0; Q < basisset_->nshell(); Q++) {
+
+    for (int M = 0; M < bs1->nshell(); M++) {
+        for (int N = 0; N < bs2->nshell(); N++) {
+            for (int P = 0; P < bs3->nshell(); P++) {
+                for (int Q = 0; Q < bs4->nshell(); Q++) {
 
                     ints->compute_shell(M,N,P,Q);
 
-                    for (int m = 0, index = 0; m < basisset_->shell(M).nfunction(); m++) {
-                        for (int n = 0; n < basisset_->shell(N).nfunction(); n++) {
-                            for (int p = 0; p < basisset_->shell(P).nfunction(); p++) {
-                                for (int q = 0; q < basisset_->shell(Q).nfunction(); q++, index++) {
+                    for (int m = 0, index = 0; m < bs1->shell(M).nfunction(); m++) {
+                        for (int n = 0; n < bs2->shell(N).nfunction(); n++) {
+                            for (int p = 0; p < bs3->shell(P).nfunction(); p++) {
+                                for (int q = 0; q < bs4->shell(Q).nfunction(); q++, index++) {
 
-                                    Ip[(basisset_->shell(M).function_index() + m)*nbf + basisset_->shell(N).function_index() + n]
-                                            [(basisset_->shell(P).function_index() + p)*nbf + basisset_->shell(Q).function_index() + q]
+                                    Ip[(bs1->shell(M).function_index() + m)*nbf2 + bs2->shell(N).function_index() + n]
+                                            [(bs3->shell(P).function_index() + p)*nbf4 + bs4->shell(Q).function_index() + q]
                                             = buffer[index];
 
                                 }
@@ -575,6 +603,16 @@ SharedMatrix MintsHelper::ao_eri()
     return ao_helper("AO ERI Tensor", ints);
 }
 
+SharedMatrix MintsHelper::ao_eri(boost::shared_ptr<BasisSet> bs1,
+                                 boost::shared_ptr<BasisSet> bs2,
+                                 boost::shared_ptr<BasisSet> bs3,
+                                 boost::shared_ptr<BasisSet> bs4)
+{
+    IntegralFactory intf(bs1, bs2, bs3, bs4);
+    boost::shared_ptr<TwoBodyAOInt> ints(intf.eri());
+    return ao_helper("AO ERI Tensor", ints);
+}
+
 SharedMatrix MintsHelper::ao_eri_shell(int M, int N, int P, int Q)
 {
     if(eriInts_ == 0){
@@ -592,6 +630,17 @@ SharedMatrix MintsHelper::ao_erfc_eri(double omega)
 SharedMatrix MintsHelper::ao_f12(boost::shared_ptr<CorrelationFactor> corr)
 {
     boost::shared_ptr<TwoBodyAOInt> ints(integral_->f12(corr));
+    return ao_helper("AO F12 Tensor", ints);
+}
+
+SharedMatrix MintsHelper::ao_f12(boost::shared_ptr<CorrelationFactor> corr,
+                                 boost::shared_ptr<BasisSet> bs1,
+                                 boost::shared_ptr<BasisSet> bs2,
+                                 boost::shared_ptr<BasisSet> bs3,
+                                 boost::shared_ptr<BasisSet> bs4)
+{
+    IntegralFactory intf(bs1, bs2, bs3, bs4);
+    boost::shared_ptr<TwoBodyAOInt> ints(intf.f12(corr));
     return ao_helper("AO F12 Tensor", ints);
 }
 

@@ -122,6 +122,10 @@ public:
 
     /// AO ERI Integrals (Full matrix, not recommended for large systems)
     SharedMatrix ao_eri();
+    SharedMatrix ao_eri(boost::shared_ptr<BasisSet> bs1,
+                        boost::shared_ptr<BasisSet> bs2,
+                        boost::shared_ptr<BasisSet> bs3,
+                        boost::shared_ptr<BasisSet> bs4);
     /// AO ERI Shell
     SharedMatrix ao_eri_shell(int M, int N, int P, int Q);
     /// AO ERF Integrals
@@ -130,6 +134,11 @@ public:
     SharedMatrix ao_erfc_eri(double omega);
     /// MO F12 Integrals
     SharedMatrix ao_f12(boost::shared_ptr<CorrelationFactor> corr);
+    SharedMatrix ao_f12(boost::shared_ptr<CorrelationFactor> corr,
+                        boost::shared_ptr<BasisSet> bs1,
+                        boost::shared_ptr<BasisSet> bs2,
+                        boost::shared_ptr<BasisSet> bs3,
+                        boost::shared_ptr<BasisSet> bs4);
     /// MO F12 squared Integrals
     SharedMatrix ao_f12_squared(boost::shared_ptr<CorrelationFactor> corr);
     /// MO F12G12 Integrals
@@ -162,8 +171,10 @@ public:
     SharedMatrix ao_overlap();
     /// AO Kinetic Integrals
     SharedMatrix ao_kinetic();
+    SharedMatrix ao_kinetic(boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
     /// AO Potential Integrals
     SharedMatrix ao_potential();
+    SharedMatrix ao_potential(boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
     /// AO pVp Integrals
     SharedMatrix ao_pvp();
     /// AO DKH Integrals
