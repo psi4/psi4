@@ -459,8 +459,8 @@ OptReturnType optking(void) {
   catch (BAD_STEP_EXCEPT exc) {
     oprintf_out("\tThe BAD_STEP_EXCEPTion handler:\n\t%s\n", exc.g_message());
 
-    if (!Opt_params.dynamic || (p_Opt_data->g_consecutive_backsteps() < Opt_params.consecutive_backsteps_allowed) &&
-         p_Opt_data->g_iteration() > 1) {
+    if ( (!Opt_params.dynamic || (p_Opt_data->g_consecutive_backsteps() < Opt_params.consecutive_backsteps_allowed))
+        && (p_Opt_data->g_iteration() > 1) ) {
       // Do backward step.  backstep() function increments counter in opt_data.
       p_Opt_data->decrease_trust_radius();
       mol1->backstep();
