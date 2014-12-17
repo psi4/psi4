@@ -1335,7 +1335,7 @@ void OEProp::compute_mo_extents()
         std::sort(metric.begin(),metric.end());
 
         outfile->Printf( "\n  Orbital extents (a.u.):\n");
-        outfile->Printf( "\t%10s%15s%15s%15s%15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
+        outfile->Printf( "    %10s%15s%15s%15s%15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
 
         for (int i = 0; i < nmo; i++) {
             int n = boost::get<1>(metric[i]);
@@ -1344,7 +1344,7 @@ void OEProp::compute_mo_extents()
             double xx = quadrupole[0]->get(0, i),
                    yy = quadrupole[1]->get(0, i),
                    zz = quadrupole[2]->get(0, i);
-            outfile->Printf( "\t%4d%3s%3d%15.10f%15.10f%15.10f%15.10f\n",
+            outfile->Printf( "    %4d%3s%3d%15.10f%15.10f%15.10f%15.10f\n",
                     i,
                     labels[h],
                     n,

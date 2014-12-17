@@ -166,8 +166,7 @@ void HF::frac()
         bool is_alpha = (i > 0);
         i = abs(i) - 1; // Back to C ordering
 
-        int i2  = ((is_alpha) ? get<2>(pairs_a[i]) : get<2>(pairs_b[i])); 
-        int h   = ((is_alpha) ? get<1>(pairs_a[i]) : get<1>(pairs_b[i])); 
+        int h   = ((is_alpha) ? get<1>(pairs_a[i]) : get<1>(pairs_b[i]));
 
         int nso = Ca_->rowspi()[h];
         int nmo = Ca_->colspi()[h];
@@ -206,8 +205,7 @@ void HF::frac_renormalize()
         bool is_alpha = (i > 0);
         i = abs(i) - 1; // Back to C ordering
 
-        int i2  = ((is_alpha) ? get<2>(pairs_a[i]) : get<2>(pairs_b[i])); 
-        int h   = ((is_alpha) ? get<1>(pairs_a[i]) : get<1>(pairs_b[i])); 
+        int h   = ((is_alpha) ? get<1>(pairs_a[i]) : get<1>(pairs_b[i]));
 
         int nso = Ca_->rowspi()[h];
         int nmo = Ca_->colspi()[h];

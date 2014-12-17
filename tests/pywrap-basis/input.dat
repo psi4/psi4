@@ -24,12 +24,16 @@ auto_fragments('')
 
 # Effectively "set basis heavy-aug-cc-pvdz"
 basis {
-   assign   aug-cc-pvdz                        # All atoms use this orbital basis now
-   assign   aug-cc-pvdz-jkfit df_basis_scf     # All atoms use this RI basis for SCF now, too
-   assign   aug-cc-pvdz-ri    df_basis_sapt    # All atoms use this RI basis for SAPT now, too
-   assign H cc-pvdz                            # H uses this orbital basis set, the other atoms retain their defaults
-   assign H cc-pvdz-jkfit     df_basis_scf     # H uses this fitting basis for SCF, other atoms still use the aDZ-JKFIT
-   assign H cc-pvdz-ri        df_basis_sapt    # H uses this fitting basis for SCF, other atoms still use the aDZ-RI
+   assign   aug-cc-pvdz       # All atoms use this orbital basis now
+   assign H cc-pvdz           # H uses this orbital basis set, the other atoms retain their defaults
+}               
+df_basis_scf {
+   assign   aug-cc-pvdz-jkfit # All atoms use this RI basis for SCF now, too
+   assign H cc-pvdz-jkfit     # H uses this fitting basis for SCF, other atoms still use the aDZ-JKFIT
+}               
+df_basis_sapt {
+   assign   aug-cc-pvdz-ri    # All atoms use this RI basis for SAPT now, too
+   assign H cc-pvdz-ri        # H uses this fitting basis for SCF, other atoms still use the aDZ-RI
 }               
 
 set scf_type df

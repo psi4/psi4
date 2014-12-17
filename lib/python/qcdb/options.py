@@ -90,6 +90,31 @@ def prepare_options_for_cfour(options):
     return text
 
 
+def prepare_options_for_psi4(options):
+    """Function to take the full snapshot of the liboptions object
+    encoded in dictionary *options*, find the options directable toward
+    Cfour (options['CFOUR']['CFOUR_**']) that aren't default, then write
+    a CFOUR deck with those options.
+    Note that unlike the cfour version, this uses complete options deck.
+
+    """
+    text = ''
+
+    for mod, moddict in options.items():
+        for opt, val in moddict.items():
+            #print mod, opt, val['value']
+            if not text:
+                text += """\n"""
+            if mod == 'GLOBALS':
+                text += """set %s %s\n""" % (opt.lower(), val['value'])
+            else:
+                text += """set %s %s %s\n""" % (mod.lower(), opt.lower(), val['value'])
+    if text:
+        text += '\n'
+
+    return text
+
+
 def reconcile_options(full, partial):
     """Function to take the full snapshot of the liboptions object
     encoded in dictionary *full* and reconcile it with proposed options
@@ -125,6 +150,56 @@ def reconcile_options(full, partial):
                         pass
                 else:
                     # If kw in full is untouched, overwrite it with value in partial
+                    full[module][kw]['value'] = kwprop['value']
+                    full[module][kw]['has_changed'] = True
+                    #print '@P4C4 Overwriting %s with %s' % (kw, kwprop['value'])
+
+    except KeyError as e:  # not expected but want to trap
+        raise ValidationError("""Unexpected KeyError reconciling keywords: %s.""" % (repr(e)))
+
+    return full
+
+
+def reconcile_options2(full, partial):
+    """Function to take the full snapshot of the liboptions object
+    encoded in dictionary *full* and reconcile it with proposed options
+    value changes in *partial*. Overwrites *full* with *partial* if
+    option untouched, touches *full* if *full* and *partial* are in
+    agreement, balks if *full* and *partial* conflict. Returns *full*.
+    Note: this is surprisingly similar to reconcile_options except
+    that full is essentially empty and lacking in has_changed keys
+    so presence is enough to satisfy has_changed. consider merging
+    once mature.
+
+    """
+    try:
+        for module, modopts in partial.items():
+            for kw, kwprop in modopts.items():
+                #if full[module][kw]['has_changed']:
+                if full[module][kw]:
+                    if full[module][kw]['value'] != kwprop['value']:
+                        if 'clobber' in kwprop and kwprop['clobber']:
+                            if 'superclobber' in kwprop and kwprop['superclobber']:
+                                # kw in full is touched, conflicts with value in partial,
+                                #   but value in partial is paramount, overwrite full with
+                                #   value in partial
+                                full[module][kw]['value'] = kwprop['value']
+                                full[module][kw]['has_changed'] = True
+                                #print '@P4C4 Overwriting %s with %s' % (kw, kwprop['value'])
+                            else:
+                                raise ValidationError("""
+    Option %s value `%s` set by options block incompatible with
+    value `%s` in memory/molecule/command/psi4options block.""" %
+                                (kw, full[module][kw]['value'], kwprop['value']))
+                        else:
+                            # kw in full is touched, conflicts with value in partial,
+                            #   but value in partial is recommended, not required, no change
+                            pass
+                    else:
+                        # kw in full is touched, but in agreement with value in partial, no change
+                        pass
+                else:
+                    # If kw in full is absent, overwrite it with value in partial
                     full[module][kw]['value'] = kwprop['value']
                     full[module][kw]['has_changed'] = True
                     #print '@P4C4 Overwriting %s with %s' % (kw, kwprop['value'])

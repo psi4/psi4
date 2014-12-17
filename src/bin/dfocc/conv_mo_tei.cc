@@ -203,10 +203,10 @@ void DFOCC::tei_ijab_chem()
     timer_on("Build (oo|vv)");
     // AA spin case
     JijabAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IJ|AB)", naoccA, naoccA, navirA, navirA));
-    bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA * naoccA));
-    bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA * navirA));
+    bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
+    bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
     bQijA->read(psio_, PSIF_DFOCC_INTS);
-    bQabA->read(psio_, PSIF_DFOCC_INTS);
+    bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
     JijabAA->gemm(true, false, bQijA, bQabA, 1.0, 0.0);
     if (reference_ == "RESTRICTED") bQijA.reset();
     if (reference_ == "RESTRICTED") bQabA.reset();
@@ -216,10 +216,10 @@ void DFOCC::tei_ijab_chem()
  if (reference_ == "UNRESTRICTED") {
     // BB spin case
     JijabBB = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (ij|ab)", naoccB, naoccB, navirB, navirB));
-    bQijB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ij)", nQ, naoccB * naoccB));
-    bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB * navirB));
+    bQijB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ij)", nQ, naoccB, naoccB));
+    bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB, navirB));
     bQijB->read(psio_, PSIF_DFOCC_INTS);
-    bQabB->read(psio_, PSIF_DFOCC_INTS);
+    bQabB->read(psio_, PSIF_DFOCC_INTS, true, true);
     JijabBB->gemm(true, false, bQijB, bQabB, 1.0, 0.0);
     JijabBB->write(psio_, PSIF_DFOCC_INTS);
     JijabBB.reset();

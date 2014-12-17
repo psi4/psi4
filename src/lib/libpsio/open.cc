@@ -38,7 +38,8 @@
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include "psi4-dec.h"
-
+#include "../libparallel2/Communicator.h"
+#include "../libparallel2/ParallelEnvironment.h"
 namespace psi {
 
 void PSIO::open(unsigned int unit, int status) {
@@ -46,7 +47,6 @@ void PSIO::open(unsigned int unit, int status) {
   char *name, *path;
   psio_ud *this_unit;
   
-  //std::cout << "proc " << WorldComm->me() << "    status = " << status << std::endl;
   /* check for too large unit */
   if (unit > PSIO_MAXUNIT)
     psio_error(unit, PSIO_ERROR_MAXUNIT);
@@ -106,20 +106,21 @@ void PSIO::open(unsigned int unit, int status) {
     PSIOManager::shared_object()->open_file(std::string(this_unit->vol[i].path), unit);
 
     /* Now open the volume */
+    boost::shared_ptr<const LibParallel::Communicator> Comm=
+          WorldComm->GetComm();
     if (status == PSIO_OPEN_OLD) {
-      if (WorldComm->me() == 0) {
+      if (Comm->Me() == 0) {
         this_unit->vol[i].stream = ::open(this_unit->vol[i].path,O_CREAT|O_RDWR,0644);
       }
     }
     else if(status == PSIO_OPEN_NEW) {
-      if (WorldComm->me() == 0) {
+      if (Comm->Me() == 0) {
         this_unit->vol[i].stream = ::open(this_unit->vol[i].path,O_CREAT|O_RDWR|O_TRUNC,0644);
       }
     }
     else psio_error(unit,PSIO_ERROR_OSTAT);
 
-    WorldComm->bcast(&(this_unit->vol[i].stream), 1, 0);
-    //WorldComm->raw_bcast(&(this_unit->vol[i].stream), sizeof(int), 0);
+    Comm->Bcast(&(this_unit->vol[i].stream), 1, 0);
     if(this_unit->vol[i].stream == -1)
       psio_error(unit,PSIO_ERROR_OPEN);
 
@@ -203,14 +204,16 @@ bool PSIO::exists(unsigned int unit) {
     sprintf(fullpath, "%s%s.%u", path2, name, unit);
     
     /* Now open the volume */
-    if (WorldComm->me() == 0) {
+    boost::shared_ptr<const LibParallel::Communicator> Comm=
+          WorldComm->GetComm();
+    if (Comm->Me() == 0) {
       stream = ::open(fullpath,O_RDWR);
       /* and close it again, if opening worked */
       if (stream != -1) {
         ::close(stream);
       }
     }
-    WorldComm->bcast(&stream, 1, 0);
+    Comm->Bcast(&stream, 1, 0);
     if (stream == -1) {
       file_exists = false;
     }

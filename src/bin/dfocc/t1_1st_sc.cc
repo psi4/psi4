@@ -36,7 +36,7 @@ void DFOCC::t1_1st_sc()
 {   
 
     timer_on("1st-order T1");
-    // T2AA
+    // T1A
     for(int i = 0 ; i < naoccA; ++i){
         for(int a = 0 ; a < navirA; ++a){
             double value = FockA->get(i + nfrzc, i + nfrzc) - FockA->get(a + noccA, a + noccA);
@@ -45,7 +45,7 @@ void DFOCC::t1_1st_sc()
     }
     if (print_ > 2) t1A->print();
 
-    // T2BB
+    // T1B
     for(int i = 0 ; i < naoccB; ++i){
         for(int a = 0 ; a < navirB; ++a){
             double value = FockB->get(i + nfrzc, i + nfrzc) - FockB->get(a + noccB, a + noccB);

@@ -61,9 +61,8 @@ namespace psi{ namespace dfoccwave{
   
 void DFOCC::df()
 {   
-  boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-  //boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, reference_wavefunction_->molecule(), "DF_BASIS_SCF");
-  boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, reference_wavefunction_->molecule(), "DF_BASIS_CC");
+  boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
+            "DF_BASIS_CC", options_.get_str("DF_BASIS_CC"), "RIFIT", options_.get_str("BASIS"));
 
   boost::shared_ptr<DFTensor> DF (new DFTensor(reference_wavefunction_->basisset(), auxiliary, Ca_, noccA, nvirA, naoccA, navirA, options_));
   nQ = auxiliary->nbf(); // reads number of aux-basis functions

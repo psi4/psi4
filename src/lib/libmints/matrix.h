@@ -99,6 +99,10 @@ protected:
 
     void print_mat(const double *const *const a, int m, int n, std::string out) const;
 
+    /// Numpy Shape
+    int  numpy_dims_;
+    int* numpy_shape_;
+
 public:
 
     /// Default constructor, zeros everything out
@@ -118,7 +122,7 @@ public:
     /**
      * Constructor, sets up the matrix
      *
-     * @param nirreps Number of blocks.
+     * @param nirrep Number of blocks.
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
@@ -127,14 +131,14 @@ public:
      * Constructor, sets name_, and sets up the matrix
      *
      * @param name Name of the matrix.
-     * @param nirreps Number of blocks.
+     * @param nirrep Number of blocks.
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
     Matrix(const std::string& name, int nirrep, const int *rowspi, const int *colspi, int symmetry = 0);
     /**
      * Constructor, forms non-standard matrix.
-     * @param nirreps Number of blocks.
+     * @param nirrep Number of blocks.
      * @param rows Singular value. All blocks have same number of rows.
      * @param colspi Array of length nirreps. Defines blocking scheme for columns.
      */
@@ -142,7 +146,7 @@ public:
 
     /**
      * Constructor, forms non-standard matrix.
-     * @param nirreps Number of blocks.
+     * @param nirrep Number of blocks.
      * @param rowspi Array of length nirreps. Defines blocking scheme for rows.
      * @param cols Singular value. All blocks have same number of columns.
      */
@@ -166,7 +170,7 @@ public:
      * @param rows Row dimensionality.
      * @param cols Column dimensionality.
      */
-    Matrix(const std::string&, int rows, int cols);
+    Matrix(const std::string& name, int rows, int cols);
 
     /**
      * Contructs a Matrix from a dpdfile2
@@ -181,27 +185,30 @@ public:
      * @param name Name of the matrix.
      * @param rows Dimension object providing row information.
      * @param cols Dimension object providing column information.
+     * @param symmetry overall symmetry of the data.
      */
     Matrix(const std::string& name, const Dimension& rows, const Dimension& cols, int symmetry = 0);
 
     /**
      * Constructor using Dimension objects to define order and dimensionality.
      *
-     * @param name Name of the matrix.
      * @param rows Dimension object providing row information.
      * @param cols Dimension object providing column information.
+     * @param symmetry overall symmetry of the data.
      */
     Matrix(const Dimension& rows, const Dimension& cols, int symmetry = 0);
 
     /// Destructor, frees memory
-    ~Matrix();
+    virtual ~Matrix();
 
     /**
      * Initializes a matrix
      *
-     * @param nirreps Number of blocks in this matrix.
+     * @param nirrep Number of blocks in this matrix.
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
+     * @param name Name of the matrix.
+     * @param symmetry Overall symmetry of the data.
      */
     void init(int nirrep, const int *rowspi, const int *colspi, const std::string& name = "", int symmetry = 0);
 
@@ -281,7 +288,7 @@ public:
      *
      * @param psio PSIO object to read with.
      * @param fileno File to read from.
-     * @param saveSubBlocks Save information suffixing point group label.
+     * @param savetype Save information suffixing point group label.
      */
     void load(psi::PSIO* const psio, unsigned int fileno, SaveType savetype=LowerTriangle);
     void load(boost::shared_ptr<psi::PSIO>& psio, unsigned int fileno, SaveType savetype=LowerTriangle);
@@ -320,7 +327,7 @@ public:
      *
      * @param psio PSIO object to write with.
      * @param fileno File to write to.
-     * @param saveSubBlocks Save information suffixing point group label.
+     * @param savetype Save information suffixing point group label.
      */
     void save(psi::PSIO* const psio, unsigned int fileno, SaveType savetype=LowerTriangle);
     void save(boost::shared_ptr<psi::PSIO>& psio, unsigned int fileno, SaveType savetype=LowerTriangle);
@@ -395,17 +402,16 @@ public:
      * @param h Subblock
      * @param m Row
      * @param n Column
-     * @returns value at position (h, m, n)
+     * @return value at position (h, m, n)
      */
     double get(const int& h, const int& m, const int& n) const { return matrix_[h][m][n]; }
 
     /**
      * Returns a single element of matrix_
      *
-     * @param h Subblock
      * @param m Row
      * @param n Column
-     * @returns value at position (h, m, n)
+     * @return value at position (m, n)
      */
     double get(const int& m, const int& n) const { return matrix_[0][m][n]; }
 
@@ -414,7 +420,7 @@ public:
      *
      * @param h Subblock
      * @param m Row
-     * @returns SharedVector object
+     * @return SharedVector object
      */
     SharedVector get_row(int h, int m);
 
@@ -423,7 +429,7 @@ public:
      *
      * @param h Subblock
      * @param m Column
-     * @returns SharedVector object
+     * @return SharedVector object
      */
     SharedVector get_column(int h, int m);
 
@@ -432,7 +438,7 @@ public:
      *
      * @param h Subblock
      * @param m Row
-     * @returns SharedVector object
+     * @param vec SharedVector object to set the row to
      */
     void set_row(int h, int m, SharedVector vec);
 
@@ -441,7 +447,7 @@ public:
      *
      * @param h Subblock
      * @param m Column
-     * @returns SharedVector object
+     * @param vec SharedVector object to set the column to
      */
     void set_column(int h, int m, SharedVector vec);
 
@@ -464,7 +470,7 @@ public:
      * should NEVER be resized, moved, or freed.
      *
      * @param h Subblock
-     * @returns pointer to h-th subblock in block-matrix form
+     * @return pointer to h-th subblock in block-matrix form
      */
     double** pointer(const int& h = 0) const { return matrix_[h]; }
     const double** const_pointer(const int& h=0) const { return const_cast<const double**>(matrix_[h]); }
@@ -479,7 +485,7 @@ public:
      * should NEVER be resized, moved, or freed.
      *
      * @param h Subblock
-     * @returns pointer to h-th subblock in block-matrix form
+     * @return pointer to h-th subblock in block-matrix form
      */
     double* get_pointer(const int& h = 0) const {
         if(rowspi_[h]*colspi_[h] > 0)
@@ -542,10 +548,15 @@ public:
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(std::string OutFileRMR = "outfile", const char *extra=NULL) const;
+    void print(std::string outfile = "outfile", const char *extra=NULL) const;
 
     /// Prints the matrix with atom and xyz styling.
     void print_atom_vector(std::string OutFileRMR = "outfile");
+
+    /**
+     * Prints the matrix so that it can be copied and pasted into Mathematica easily.
+     */
+    void print_to_mathematica();
 
     /**
      * Print the matrix with corresponding eigenvalues below each column
@@ -553,11 +564,11 @@ public:
      * @param values Eigenvalues to print associated with eigenvectors.
      * @param out Where to print to, defaults to Psi4's outfile.
      */
-    void eivprint(const Vector * const values, std::string OutFileRMR = "outfile");
+    void eivprint(const Vector * const values, std::string out = "outfile");
     /// Print the matrix with corresponding eigenvalues below each column
-    void eivprint(const Vector& values, std::string OutFileRMR = "outfile");
+    void eivprint(const Vector& values, std::string out = "outfile");
     /// Print the matrix with corresponding eigenvalues below each column
-    void eivprint(const boost::shared_ptr<Vector>& values, std::string OutFileRMR = "outfile");
+    void eivprint(const boost::shared_ptr<Vector>& values, std::string out = "outfile");
 
     /// Returns the rows in irrep h
     int rowdim(const int& h = 0) const { return rowspi_[h]; }
@@ -723,7 +734,7 @@ public:
      *  \param a SimpleMatrix to transform
      *  \param transformer The matrix returned by PetiteList::sotoao() that acts as the transformer
      */
-    void remove_symmetry(const SharedMatrix& a, const SharedMatrix& SO2AO);
+    void remove_symmetry(const SharedMatrix& a, const SharedMatrix& transformer);
     /** Performs a the transformation L^ F R. Result goes to this.
      *
      * \param L left transformation matrix (will be transposed)
@@ -780,9 +791,6 @@ public:
 
     /// @{
     /** Raw access to the underlying dgemm call. Saves result to this.
-     * \param transa Transpose the left matrix
-     * \param transb Transpose the right matrix
-     * \param
      */
     void gemm(const char& transa, const char& transb,
               const std::vector<int>& m,
@@ -876,7 +884,7 @@ public:
 
     /*! Extract a conditioned orthonormal basis from this SPD matrix
      *  via canonical orthogonalization.
-     *  @param delta, the relative condition to maintain
+     *  @param delta the relative condition to maintain
      *  @return X, a SharedMatrix with m x m' dimension (m' < m if conditioning occurred)
      */
     SharedMatrix canonical_orthogonalization(double delta = 0.0, SharedMatrix eigvec = SharedMatrix());
@@ -900,10 +908,10 @@ public:
      * This algorithm requires up to 3 total core matrices of the size of the original
      * These are 1) the original, 2) The resultant, and 3) a temporary matrix
      *
-     * \param delta, double,  maximum allowed error in the error matrix D, which always
+     * \param delta maximum allowed error in the error matrix D, which always
      * occurs on the diagonal. Defaults to 0.0, in which case the numerically
      * exact factor is returned.
-     * \param throw_if_negative, bool, throw if pivot <= 0.0 is detected?
+     * \param throw_if_negative bool, throw if pivot <= 0.0 is detected?
      * \return L, SharedMatrix, with rows of dimension dimpi and columns of
      * dimension sigpi
      */
@@ -917,7 +925,7 @@ public:
      * This algorithm requires memory equivalent to this matrix plus the equivalent eigendecompositon
      * call via DSYEV
      *
-     * \param delta, double,  maximum allowed 2-norm of the error matrix D,
+     * \param delta maximum allowed 2-norm of the error matrix D,
      * Defaults to 0.0, in which case the numerically
      * exact square root is returned.
      * \return P positive part of square root, with only significant columns included
@@ -1104,6 +1112,14 @@ public:
      * sets the matrix to that.
      */
     void set_by_python_list(const boost::python::list& data);
+
+     /**
+     * Adds accessability to the matrix shape for numpy
+     */
+    void set_numpy_dims(int dims) { numpy_dims_ = dims; }
+    void set_numpy_shape(int* shape) { numpy_shape_ = shape; }
+    int numpy_dims() { return numpy_dims_; }
+    int* numpy_shape() { return numpy_shape_; }
 
     /**
      * Rotates columns i and j in irrep h, by an angle theta

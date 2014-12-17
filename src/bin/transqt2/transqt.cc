@@ -102,6 +102,7 @@ PsiReturnType transqt2(Options & options)
 
     init_io();
     title();
+    //options.print(); //debug
     get_params(options);
     get_moinfo(options);
 

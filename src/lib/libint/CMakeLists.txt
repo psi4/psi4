@@ -1,14 +1,16 @@
 #
 # Figure out which files libint will produce, and compile them
 #
-include(../CMakeLists.libint.txt)
+include(SetupLibint)
 build_libint_files(LI_SRC ${LIBINT_OPT_AM})
 set(LI_SRC ${LI_SRC} init_libint.cc vrr_build.c)
 
 #foreach (f ${LI_SRC})
 #    message(STATUS "LIBINT CONTAINS ${f}")
 #endforeach()
+set_libint_compiler_flags()
 add_library(int STATIC ${LI_SRC})
+
 #
 # Build the compiler
 #
@@ -25,9 +27,7 @@ add_executable(libint_compiler ${COMPILER_SRC})
 #)
 
 
-#
 # Generate the libint files, after building the compiler, only if libint.compiled doesn't exist
-#
 add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/src/lib/libint/vrr_build.c ${PROJECT_BINARY_DIR}/src/lib/libint
     COMMAND libint_compiler
@@ -35,13 +35,8 @@ add_custom_command(
     DEPENDS libint_compiler
     OUTPUT libint.compiled
     OUTPUT ${LI_SRC}
+    COMMENT "Generating libint files"
 )
 
-
-#
 # This target is always executed
-#
-add_custom_target(
-    libint ALL
-    DEPENDS libint.compiled
-)
+add_custom_target(libint ALL DEPENDS libint.compiled)

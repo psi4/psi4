@@ -47,7 +47,7 @@ void DFOCC::trans_corr()
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     trans_ab = 1;
-    if (orb_opt_ == "TRUE" || dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
+    if (orb_opt_ == "TRUE" || dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
         // Form B(Q,ij)
         timer_on("Form B(Q,ij)");
         b_oo();
@@ -113,9 +113,10 @@ void DFOCC::df_corr()
     //outfile->Printf("\tComputing DF-BASIS-CC integrals... \n"); 
 
     // Read in the basis set informations
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::construct(parser, reference_wavefunction_->molecule(), "DF_BASIS_CC");
-    boost::shared_ptr<BasisSet> primary_ = BasisSet::construct(parser, reference_wavefunction_->molecule(), "BASIS");
+    boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
+        "DF_BASIS_CC", options_.get_str("DF_BASIS_CC"), "RIFIT", options_.get_str("BASIS"));
+    boost::shared_ptr<BasisSet> primary_ = BasisSet::pyconstruct_orbital(reference_wavefunction_->molecule(),
+        "BASIS", options_.get_str("BASIS"));
     boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
     //auxiliary_->print();
 
@@ -545,21 +546,21 @@ void DFOCC::b_ov()
 //=======================================================          
 void DFOCC::b_ab()
 {
-    bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA * navirA));
+    bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
     bQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mA)", nQ, nso_ * navirA));
     bQnvA->read(psio_, PSIF_DFOCC_INTS);
     bQabA->contract233(true, false, navirA, navirA, CavirA, bQnvA, 1.0, 0.0);
     bQnvA.reset();
-    bQabA->write(psio_, PSIF_DFOCC_INTS);
+    bQabA->write(psio_, PSIF_DFOCC_INTS, true, true);
     bQabA.reset();
 
  if (reference_ == "UNRESTRICTED") {
-    bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB * navirB));
+    bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB, navirB));
     bQnvB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ma)", nQ, nso_ * navirB));
     bQnvB->read(psio_, PSIF_DFOCC_INTS);
     bQabB->contract233(true, false, navirB, navirB, CavirB, bQnvB, 1.0, 0.0);
     bQnvB.reset();
-    bQabB->write(psio_, PSIF_DFOCC_INTS);
+    bQabB->write(psio_, PSIF_DFOCC_INTS, true, true);
     bQabB.reset();
  }
 
@@ -581,7 +582,7 @@ void DFOCC::b_vv()
     bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
     bQabA->form_b_ab(bQvvA);
     bQvvA.reset();
-    bQabA->write(psio_, PSIF_DFOCC_INTS);
+    bQabA->write(psio_, PSIF_DFOCC_INTS, true, true);
     bQabA.reset();
 
  if (reference_ == "UNRESTRICTED") {
@@ -596,7 +597,7 @@ void DFOCC::b_vv()
     bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB, navirB));
     bQabB->form_b_ab(bQvvB);
     bQvvB.reset();
-    bQabB->write(psio_, PSIF_DFOCC_INTS);
+    bQabB->write(psio_, PSIF_DFOCC_INTS, true, true);
     bQabB.reset();
  }
 

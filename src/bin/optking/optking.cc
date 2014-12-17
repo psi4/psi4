@@ -158,7 +158,8 @@ OptReturnType optking(void) {
 
     // use covalent radii to define connectivity
     mol1->update_connectivity_by_distances();
-    mol1->add_intrafragment_hbonds();
+    if ( Opt_params.coordinates != OPT_PARAMS::CARTESIAN )
+      mol1->add_intrafragment_hbonds();
 
     // Critical function here.
     // If fragment_mode == SINGLE, it connects all separated groups of atoms with additional connections.
@@ -374,6 +375,7 @@ OptReturnType optking(void) {
 
         p_Opt_data->reset_trust_radius();
         delete p_Opt_data;
+        INTCO_EXCEPT::dynamic_level = options.get_int("DYNAMIC_LEVEL"); // reset for future optimizations
         mol1->write_geom();  // write geometry -> chkpt file (also output for QChem)
         print_end_out();
 
@@ -389,6 +391,7 @@ OptReturnType optking(void) {
 //      p_Opt_data->H_update(*mol1);
 //      p_Opt_data->erase_step(0);
 
+      INTCO_EXCEPT::dynamic_level = options.get_int("DYNAMIC_LEVEL"); // reset for future optimizations
       p_irc_data->point_converged(*mol1);
     }
     else
@@ -416,6 +419,9 @@ OptReturnType optking(void) {
 
       p_Opt_data->reset_trust_radius();
       delete p_Opt_data;
+      INTCO_EXCEPT::dynamic_level = options.get_int("DYNAMIC_LEVEL"); // reset for future optimizations
+      opt_intco_dat_remove(); // rm intco definitions
+      opt_io_remove();        // rm optimization data
       mol1->write_geom();  // write geometry -> chkpt file (also output for QChem)
       print_end_out();
 
@@ -439,6 +445,7 @@ OptReturnType optking(void) {
 
       p_Opt_data->reset_trust_radius();
       delete p_Opt_data;
+      INTCO_EXCEPT::dynamic_level = options.get_int("DYNAMIC_LEVEL"); // reset for future optimizations
       mol1->write_geom();  // write geometry -> chkpt file (also output for QChem)
       print_end_out();
       close_output_dat();
@@ -516,12 +523,17 @@ OptReturnType optking(void) {
       else 
         oprintf_out("\tRestarting with new internal coordinates at same level.");
 
-      // put previous geometry into place
-      if (p_Opt_data->nsteps()>1) {
-        double *x = p_Opt_data->g_geom_const_pointer(p_Opt_data->nsteps()-1);
-        mol1->set_geom_array(x);
-        mol1->write_geom();
-      }
+      int use_geom = 0;
+      if (p_Opt_data->nsteps()>2)
+        use_geom = p_Opt_data->nsteps()-2;
+      else if (p_Opt_data->nsteps()>1)
+        use_geom = p_Opt_data->nsteps()-1;
+      else 
+        use_geom = 0; // probably need to check this
+
+      double *x = p_Opt_data->g_geom_const_pointer(use_geom);
+      mol1->set_geom_array(x);
+      mol1->write_geom();
 
       delete p_Opt_data;
       opt_intco_dat_remove(); // rm intco definitions

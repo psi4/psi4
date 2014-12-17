@@ -314,6 +314,8 @@ void MOLECULE::rfo_step(void) {
   array_copy(dq, rfo_u, dim);
   array_normalize(rfo_u, dim);
 
+  oprintf_out("\tNorm of target step-size %10.5lf\n", rfo_dqnorm);
+
  // get gradient and hessian in step direction
   rfo_g = -1 * array_dot(fq, rfo_u, dim);
   rfo_h = 0;
@@ -371,10 +373,6 @@ void MOLECULE::rfo_step(void) {
 
   symmetrize_geom(); // now symmetrize the geometry for next step
 
-  // Before quitting, make sure step is reasonable.  It should only be screwball if we are using the
-  // "First Guess" after the back-transformation failed.
-  double norm = sqrt(array_dot(dq, dq, dim));
-  
 /* Test step sizes
   double *x_after = g_geom_array();
   double *masses = g_masses();
@@ -396,6 +394,10 @@ void MOLECULE::rfo_step(void) {
   p_Opt_data->save_step_info(DE_projected, rfo_u, rfo_dqnorm, rfo_g, rfo_h);
 
   free_array(rfo_u);
+
+  // Before quitting, make sure step is reasonable.  It should only be screwball if we are using the
+  // "First Guess" after the back-transformation failed.
+  double norm = sqrt(array_dot(dq, dq, dim));
 
   if (norm > 10 * trust) {
     throw(BAD_STEP_EXCEPT("Step is far too large.\n"));

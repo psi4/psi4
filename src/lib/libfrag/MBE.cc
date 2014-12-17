@@ -22,6 +22,7 @@
 
 #include "MBE.h"
 #include "MBEFragSet.h"
+#include "MBEFrag.h"
 #include "../../bin/psi4/psi4.h"
 #include "../../../include/psi4-dec.h"
 #include "libparallel/TableSpecs.h"
@@ -59,13 +60,19 @@ double MBE::Energy(const std::vector<MBEFragSet>& Systems,
 	if(Systems.size()!=N&&N!=1)
 	   throw psi::PSIEXCEPTION("The number of systems is not consistent with"
 	         " the MBE truncation order....\n");
+	//If there was symmetry, then the size of Systems[0] is not
+	//actually the number of monomers
+	int TrueNumMono=0;
+	for(int i=0;i<Systems[0].size();i++){
+	   TrueNumMono+=Systems[0][i]->Mult();
+	}
 	for(int i=0;i<N;i++){
 		En.push_back(0);//Initialize our vector
 		int nfrags=Systems[i].size();
 		for(int j=0;j<nfrags;j++){
-			En[i]+=Energies[i][j];
+			En[i]+=Systems[i][j]->Mult()*Energies[i][j];
 		}
-		energy=NBodyE(i+1,Systems[0].size(),&En[0]);
+		energy=NBodyE(i+1,TrueNumMono,&En[0]);
 		Egys.push_back(energy);
 	}
 	std::vector<double> Corrs;

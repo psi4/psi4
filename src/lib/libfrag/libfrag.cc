@@ -27,7 +27,7 @@
 #include <iomanip>
 
 #include "Fragmenter.h"
-#include "../libparallel/parallel.h"
+#include "../libparallel2/Communicator.h"
 #include "../../bin/psi4/script.h"
 #include "../libmints/molecule.h"
 #include "libmints/wavefunction.h"
@@ -40,6 +40,8 @@
 #include "MBEFrag.h"
 #include "libparallel/TableSpecs.h"
 #include "libparallel/ParallelScanner.h"
+#include "Symmetrizer.h"
+
 
 typedef std::vector<int> SVec;
 typedef std::string str;
@@ -48,9 +50,12 @@ typedef std::vector<boost::shared_ptr<double[]> > GMatrix; //Ghetto matrix
 
 
 namespace psi{
+using namespace LibParallel;
 typedef std::vector<MOFile> MOtype;
 namespace LibFrag {
-
+extern MOFile DirectSum(const int N, const int x,
+      const std::vector<MOFile>& MOFiles,
+      const std::vector<MBEFragSet>& Systems);
 typedef MBEFrag* pSet;
 typedef std::vector<pSet> FragSet;
 typedef boost::shared_ptr<Embedder> ShareEmbed;
@@ -60,6 +65,17 @@ template <typename T, typename S>
 void ToC(T& cvalue, S& pyvalue) {
    cvalue=boost::python::extract<T>(pyvalue);
 }
+/*
+void StartParallel(int N){
+   MPIScheduler Scheduler();
+   shared_ptr<MPIQueue> MyQueue=Scheduler.Schedule(GetNNMers(N));
+
+}
+
+PyStr GetNextNMer(){
+
+}
+*/
 
 LibFragHelper::LibFragHelper(){
    tstart();
@@ -104,33 +120,36 @@ int LibFragHelper::Iterate(cint itr) {
    return Systems_[0].EmbedFactory()->Iterate(itr);
 }
 
-void LibFragHelper::WriteMOs(cint N, cint x) {
-   if (!this->IsGMBE()) {
-      if (N>0) {
-         boost::shared_ptr<const MBEFrag> nmer=Systems_[N][x];
-         psi::MOFile File2Write(MOFiles_[nmer->ParentI(0)]);
-         for (int i=1; i<=N; i++) {
-            int frag=nmer->ParentI(i);
-            psi::MOFile temp=File2Write.DirectSum(MOFiles_[frag]);
-            File2Write=temp;
-         }
-         //File2Write.print_out();
-         File2Write.Write();
-      }
-      else MOFiles_[x].Write();
-   }
 
+
+int LibFragHelper::WriteMOs(cint N, cint x) {
+   int returnvalue=0;
+   bool NotGMBE=(!this->IsGMBE());
+   bool NotMonos=(N!=0);
+   bool NoSymm=(!DaOptions_->DoSymm_);
+   bool HaveCharges=(Systems_[N].EmbedFactory()?
+         Systems_[N].EmbedFactory()->HaveCharges():false);
+   if (NoSymm&&((NotGMBE && NotMonos)||HaveCharges)) {
+         returnvalue=1;
+         if (N>0) {
+            psi::MOFile File2Write=DirectSum(N,x,MOFiles_,Systems_);
+            //File2Write.print_out();
+            File2Write.Write();
+         }
+         else MOFiles_[x].Write();
+   }
+   return returnvalue;
 }
 
 void LibFragHelper::Fragment_Helper(PyStr& FragMethod, cint N,
-      PyStr& EmbedMethod, PyStr& CapMethod, PyStr& BSSEMethod) {
+      PyStr& EmbedMethod, PyStr& CapMethod, PyStr& BSSEMethod, cint IsSymm) {
    str fname,bname,ename,cname;
    ToC(bname, BSSEMethod);
    ToC(fname, FragMethod);
    ToC(ename, EmbedMethod);
    ToC(cname, CapMethod);
    DaOptions_=boost::shared_ptr<LibFragOptions>(
-         new LibFragOptions(N,fname,ename,cname,bname));
+         new LibFragOptions(N,fname,ename,cname,bname,IsSymm));
    DaOptions_->PrintOptions();
    SharedMol AMol=psi::Process::environment.molecule();
    Systems_.push_back(MBEFragSet(DaOptions_,AMol));
@@ -146,7 +165,19 @@ void LibFragHelper::Fragment_Helper(PyStr& FragMethod, cint N,
                 <<" tested it yet, like at all.  You probably shouldn't use it."
                 <<std::endl;
    }
-
+   //In order to exploit symmetry we need to generate all n-mers now
+   DaOptions_->MBEOrder_=N;
+   Expansion_->SetN(N);
+   if (Expansion_->IsGMBE())
+      Systems_.push_back(MBEFragSet(Systems_[0],N));
+   else{
+      for(int i=2;i<=N;i++)
+         Systems_.push_back(MBEFragSet(Systems_[0],i));
+      }
+   if(DaOptions_->DoSymm_){
+      Symmetrizer Symm;
+      for(int i=0;i<Systems_.size();i++)Symm.RemoveDuplicates(Systems_[i]);
+   }
 }
 
 PyList LibFragHelper::Embed_Helper(cint N, cint x) {
@@ -217,14 +248,7 @@ double LibFragHelper::CalcEnergy(PyList& Energies,PyStr& Name) {
 }
 
 void LibFragHelper::NMer_Helper(cint N) {
-   DaOptions_->MBEOrder_=N;
-   Expansion_->SetN(N);
-   if (Expansion_->IsGMBE())
-      Systems_.push_back(MBEFragSet(Systems_[0],N));
-   else{
-      for(int i=2;i<=N;i++)
-         Systems_.push_back(MBEFragSet(Systems_[0],i));
-   }
+
 }
 
 int LibFragHelper::IsGMBE() {return Expansion_->IsGMBE();}
@@ -241,22 +265,25 @@ void LibFragHelper::BroadCastWrapper(cint i, cint j, str& comm,
    }
    if (DaOptions_->EOptions().Method()!=NO_EMBED) {
       int natoms=Systems_[0][tempfiles.size()]->Atoms().size();
+      boost::shared_ptr<const Communicator> Comm=WorldComm->GetComm();
       if (bcast) {
-         psi::WorldComm->bcast(&(ChargeSets_[j][0]), natoms, i, comm);
+         Comm->Bcast(&(ChargeSets_[j][0]), natoms, i);
          tempChargeSets.push_back(ChargeSets_[j]);
       }
       else {
-         boost::shared_ptr<double[]>(new double[natoms]);
-         psi::WorldComm->bcast(&(tempChargeSets.back()[0]), natoms, i, comm);
+         boost::shared_ptr<double[]> charges(new double[natoms]);
+         Comm->Bcast(&(charges[0]), natoms, i);
+         tempChargeSets.push_back(charges);
       }
    }
 }
 
-void LibFragHelper::Synchronize(boost::python::str& Comm, cint N, cint itr) {
-   std::string comm;
-   ToC(comm, Comm);
+void LibFragHelper::Synchronize(boost::python::str& comm, cint N, cint itr) {
+   boost::shared_ptr<const Communicator> Comm=WorldComm->GetComm();
+   std::string CommName;
+   ToC(CommName,comm);
    bool UpdateCharges=this->Iterate(itr);
-   bool Parallel=(psi::WorldComm->nproc(comm)>1);
+   bool Parallel=(Comm->NProc()>1);
    if (N==0) {
       if (UpdateCharges) {
          boost::shared_ptr<Embedder> EmbedFactory=Systems_[0].EmbedFactory();
@@ -266,7 +293,6 @@ void LibFragHelper::Synchronize(boost::python::str& Comm, cint N, cint itr) {
                EmbedFactory->SetCharge(atomI, ChargeSets_[frag][atom]);
             }
          }
-         EmbedFactory->print_out();
          Systems_[0].Embed();
       }
       if (itr>=1) {
@@ -280,16 +306,16 @@ void LibFragHelper::Synchronize(boost::python::str& Comm, cint N, cint itr) {
          //Synchronize MO coefficients
          GMatrix tempChargeSets;
          std::vector<psi::MOFile> tempfiles;
-         int NProc=psi::WorldComm->nproc(comm);
+         int NProc=Comm->NProc();
          int remainder=Systems_[0].size()%NProc;
          int batchsize=(Systems_[0].size()-remainder)/NProc;
-         int me=psi::WorldComm->me(comm);
+         int me=Comm->Me();
          for (int i=0; i<NProc; i++) {
             for (int j=0; j<batchsize; j++)
-               BroadCastWrapper(i, j, comm, tempfiles, tempChargeSets, (me==i));
+               BroadCastWrapper(i, j, CommName, tempfiles, tempChargeSets, (me==i));
          }
          for (int i=0; i<remainder; i++)
-            BroadCastWrapper(i, batchsize, comm, tempfiles, tempChargeSets,
+            BroadCastWrapper(i, batchsize, CommName, tempfiles, tempChargeSets,
                   (me==i));
          MOFiles_=tempfiles;
       }

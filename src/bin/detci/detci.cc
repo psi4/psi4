@@ -68,6 +68,12 @@
 #include "slaterd.h"
 #include "civect.h"
 #include "ciwave.h"
+#include "MCSCF_detcas.cc"
+
+namespace psi {
+  extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
+  namespace transqt2 { extern PsiReturnType transqt2(Options &); }
+}
 
 namespace psi { namespace detci {
 
@@ -149,8 +155,15 @@ extern void tpdm(struct stringwr **alplist, struct stringwr **betlist,
    int Inroots, int Inunits, int Ifirstunit,
    int Jnroots, int Jnunits, int Jfirstunit,
    int targetfile, int writeflag, int printflag);
+extern void mcscf_cleanup();
 extern void compute_cc(void);
 extern void calc_mrpt(void);
+
+// MCSCF
+extern int mcscf_update(Options &options);
+extern void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist);
+extern void mcscf_get_mo_info(Options& options);
+extern void mcscf_cleanup(void);
 
 PsiReturnType detci(Options &options);
 
@@ -246,7 +259,6 @@ PsiReturnType detci(Options &options)
    if (Parameters.istop) {      /* Print size of space, other stuff, only   */
      close_io();
      cleanup();
-     outfile->Printf("DS: DETCI complete \n");
      Process::environment.globals["CURRENT ENERGY"] = 0.0;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = 0.0;
      Process::environment.globals["CI TOTAL ENERGY"] = 0.0;
@@ -276,6 +288,9 @@ PsiReturnType detci(Options &options)
      mpn(alplist, betlist);
    else if (Parameters.cc)
      compute_cc();
+   else if (Parameters.mcscf){
+     compute_mcscf(options, alplist, betlist);
+     }
    else
      diag_h(alplist, betlist);
 
@@ -1531,6 +1546,127 @@ BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx) {
    addr += alp_idx * CIblks.Ib_size[blknum] + bet_idx;
 
    return(addr);
+
+}
+
+/*
+** compute_mcscf(); Optimizes MO and CI coefficients
+**
+** Parameters:
+**    options = options object
+**    alplist = list of alpha strings
+**    betlist = list of beta strings
+**
+** Returns: none
+*/
+void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist)
+{
+
+  MCSCF_Parameters.print_lvl = 1;
+  MCSCF_CalcInfo.mo_hess = NULL;
+  MCSCF_CalcInfo.mo_hess_diag = NULL;
+  MCSCF_CalcInfo.energy_old = 0;
+
+  if (MCSCF_Parameters.print_lvl) tstart();
+  set_mcscf_parameters(options);     /* get running params (convergence, etc)    */
+  mcscf_title();                     /* print program identification             */
+  if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
+
+  mcscf_get_mo_info(options);
+
+  // Make sure a few things are working
+  outfile->Printf("Starting MCSCF\n");
+  outfile->Printf("MCSCF MAXITER %d \n", MCSCF_Parameters.max_iter);
+
+
+  // Need a TRANSQT2 Options object to be able to call that module correctly
+  // Can delete this when we replace TRANSQT2 with libtrans
+  Options transqt_options = options;
+  transqt_options.set_current_module("TRANSQT2");
+  psi::read_options("TRANSQT2", transqt_options, false);
+  transqt_options.set_str("TRANSQT2", "WFN", Parameters.wfn);
+  transqt_options.validate_options();
+  // transqt_options.print(); // debug
+
+  // Parameters
+  int conv;
+
+  // Output file for MCSCF iters
+  OutFile IterSummaryOut("file14.dat", TRUNCATE);
+
+  // Iterate
+  for (int i=0; i<MCSCF_Parameters.max_iter; i++){
+    outfile->Printf("\nStarting MCSCF iteration %d\n\n", i+1);
+    outfile->Printf("\nMCSCF_CalcInfo.iter: %d \n", MCSCF_CalcInfo.iter);
+   
+    diag_h(alplist, betlist);
+    /*
+    chkpt_init(PSIO_OPEN_OLD);
+    MCSCF_CalcInfo.energy = chkpt_rd_etot();
+    chkpt_close();
+    */
+    if (Parameters.average_num > 1) { // state average
+      MCSCF_CalcInfo.energy = 
+        Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"];
+    }
+    else if (Parameters.root != 0) { // follow some specific root != lowest
+      std::stringstream s;
+      s << "CI ROOT " << (Parameters.root+1) << " TOTAL ENERGY";
+      MCSCF_CalcInfo.energy = Process::environment.globals[s.str()];
+    }
+    else {
+      MCSCF_CalcInfo.energy = Process::environment.globals["CI TOTAL ENERGY"];
+    }
+
+    outfile->Printf("Hi I just got %12.7lf total energy\n", 
+      MCSCF_CalcInfo.energy);
+
+    form_opdm();
+    form_tpdm();
+    close_io();
+    conv = mcscf_update(i, options, IterSummaryOut);
+
+    // If converged
+    if (conv){
+      outfile->Printf("\nMCSCF converged\n");
+      break;
+    }
+
+    // If max iter
+    if (i == (MCSCF_Parameters.max_iter - 1)){
+      outfile->Printf("\nMCSCF did not converge\n");
+      break;
+    }
+
+    MCSCF_CalcInfo.iter++;
+    MCSCF_CalcInfo.energy_old = MCSCF_CalcInfo.energy;
+    outfile->Printf("\nFinished MCSCF iteration %d\n\n", i+1);
+
+    psi::transqt2::transqt2(transqt_options);    
+
+    // Need to grab the new efzc energy after transqt2 computations
+    chkpt_init(PSIO_OPEN_OLD);
+    CalcInfo.efzc = chkpt_rd_efzc();
+    CalcInfo.escf = chkpt_rd_escf();
+    chkpt_close();
+
+    read_integrals();
+    tf_onel_ints((Parameters.print_lvl>3), "outfile");
+    form_gmat((Parameters.print_lvl>3), "outfile");
+    
+    // DGAS Debug
+    // outfile->Printf("\nDGAS ----------------\n");
+    // 
+    // outfile->Printf("CalcInfo.escf %f \n", CalcInfo.escf);
+    // outfile->Printf("CalcInfo.efzc %f \n", CalcInfo.efzc);
+
+    // outfile->Printf("\nDGAS ----------------\n");
+
+  }
+
+  
+  outfile->Printf("\nFinishing MCSCF\n");
+  mcscf_cleanup();
 
 }
 

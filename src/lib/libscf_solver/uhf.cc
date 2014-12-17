@@ -27,8 +27,6 @@
 #include <vector>
 #include <utility>
 
-#include <psifiles.h>
-#include <physconst.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
@@ -36,6 +34,7 @@
 #include <libqt/qt.h>
 #include <libmints/mints.h>
 #include <libfock/jk.h>
+#include <physconst.h>
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
 
@@ -468,7 +467,7 @@ void UHF::stability_analysis()
             if(h == 0 && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW"){
                 if(evals[0] < 0.0){
                     redo = true;
-                    status = "\tNegative hessian eigenvalue detected: rotating orbitals.\n";
+                    status = "    Negative hessian eigenvalue detected: rotating orbitals.\n";
                     double scale = pc_pi*options_.get_double("FOLLOW_STEP_SCALE")/2.0;
                     // Rotate the alpha orbitals
 //                    outfile->Printf( "OLD ORBS");
@@ -498,7 +497,7 @@ void UHF::stability_analysis()
                         Cb_->rotate_columns(isym, irel, arel, scale*evecs[0][ia+aDim]);
                     }
                 }else{
-                    status =  "\tNo totally symmetric instabilities detected: "
+                    status =  "    No totally symmetric instabilities detected: "
                               "no rotation will be performed.\n";
                 }
             }
@@ -508,7 +507,7 @@ void UHF::stability_analysis()
             delete [] evals;
         }
 
-        outfile->Printf( "\tLowest UHF->UHF stability eigenvalues:-\n");
+        outfile->Printf( "    Lowest UHF->UHF stability eigenvalues:-\n");
         print_stability_analysis(eval_sym);
 
         psio_->close(PSIF_LIBTRANS_DPD, 1);
@@ -519,11 +518,11 @@ void UHF::stability_analysis()
         if(redo){
             if(attempt_number_ > 1){
                 // Make sure we don't get stuck in an infinite loop
-                outfile->Printf( "\tThere's still a negative eigenvalue.  Try increasing FOLLOW_STEP_SCALE");
+                outfile->Printf( "    There's still a negative eigenvalue.  Try increasing FOLLOW_STEP_SCALE");
                 return;
             }
             attempt_number_++;
-            outfile->Printf( "\tRe-running the SCF, using the rotated orbitals\n");
+            outfile->Printf( "    Re-running the SCF, using the rotated orbitals\n");
             diis_manager_->reset_subspace();
             compute_energy();
         }

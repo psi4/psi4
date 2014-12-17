@@ -38,7 +38,7 @@ class DIISEntry;
 class PSIO;
 
   /**
-     @Brief The DIISManager class handles DIIS extrapolations.
+     @brief The DIISManager class handles DIIS extrapolations.
    */
 
 class DIISManager{

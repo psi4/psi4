@@ -69,7 +69,7 @@ public:
 
   /**
    * Builds a DCD object, to perform double coset decompositions
-   * @param group the point group of the molecule, in bitwise representation
+   * @param pg the point group of the molecule, in bitwise representation
    */
   DCD(int pg)
   {

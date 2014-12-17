@@ -67,10 +67,13 @@ FittingMetric::FittingMetric()
     molecule->update_geometry();
 
     // Grab the auxiliary bases (use the SCF tags for now)
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    aux_ = BasisSet::construct(parser, molecule, "DF_BASIS_SCF");
+    aux_ = BasisSet::pyconstruct_auxiliary(molecule,
+        "DF_BASIS_SCF", opt.get_str("DF_BASIS_SCF"), "JKFIT", opt.get_str("BASIS"));
+
     if (opt.get_str("POISSON_BASIS_SCF") != "") {
-        pois_ =  BasisSet::construct(parser, molecule, "POISSON_BASIS_SCF");
+        // basis access translated but code defunct
+        pois_ = BasisSet::pyconstruct_auxiliary(molecule,
+            "POISSON_BASIS_SCF", opt.get_str("POISSON_BASIS_SCF"), "JKFIT", opt.get_str("BASIS"));
         is_poisson_ = true;
     } else {
         is_poisson_ = false;

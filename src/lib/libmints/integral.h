@@ -431,6 +431,10 @@ public:
     virtual OneBodyAOInt* ao_potential(int deriv=0);
     virtual OneBodySOInt* so_potential(int deriv=0);
 
+    /// Returns an OneBodyInt that computes the relativistic nuclear attraction integral.
+    virtual OneBodyAOInt* ao_rel_potential(int deriv=0);
+    virtual OneBodySOInt* so_rel_potential(int deriv=0);
+
     /// Returns the OneBodyInt that computes the pseudospectral grid integrals
     virtual OneBodyAOInt* ao_pseudospectral(int deriv = 0);
     virtual OneBodySOInt* so_pseudospectral(int deriv = 0);

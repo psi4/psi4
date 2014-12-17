@@ -109,10 +109,18 @@ void get_parameters(Options &options)
 
   Parameters.hd_ave = EVANGELISTI;
 
-  if (Parameters.wfn == "CASSCF")
+  if (Parameters.wfn == "CASSCF") {
     Parameters.fci = 1;
-  else
+    Parameters.mcscf = 1;
+  }
+  else if (Parameters.wfn == "RASSCF"){
     Parameters.fci = 0;
+    Parameters.mcscf = 1;
+  }
+  else {
+    Parameters.fci = 0;
+    Parameters.mcscf = 0;
+  }
 
   if (Parameters.wfn == "ZAPTN") {
     Parameters.mpn = 1;
@@ -257,7 +265,7 @@ void get_parameters(Options &options)
   Parameters.mixed4 = options["MIXED4"].to_integer();
   Parameters.r4s = options["R4S"].to_integer();
   Parameters.repl_otf = options["REPL_OTF"].to_integer();
-  Parameters.calc_ssq = options["S_SQUARED"].to_integer();
+  Parameters.calc_ssq = options["CALC_S_SQUARED"].to_integer();
 
   if (options["MPN"].has_changed())
     Parameters.mpn = options["MPN"].to_integer();
@@ -537,12 +545,12 @@ void get_parameters(Options &options)
   if (Parameters.opdm) Parameters.dipmom = 1;
   else Parameters.dipmom = 0;
 
+  if (Parameters.transdens) Parameters.dipmom = 1;
+
   if (Parameters.wfn == "RASSCF" ||
       Parameters.wfn == "CASSCF" ||
       Parameters.wfn == "DETCAS")
     Parameters.dipmom = 0;
-
-  if (Parameters.transdens) Parameters.dipmom = 1;
 
   if (options["DIPMOM"].has_changed())
     Parameters.dipmom = options["DIPMOM"].to_integer();
@@ -1563,5 +1571,114 @@ void print_ras_parms(void)
      "*******************************************************\n\n");
 }
 
-}} // namespace psi::detci
+void set_mcscf_parameters(Options &options)
+{
+  int i, errcod;
+  char line1[133];
+   
+  MCSCF_Parameters.wfn = options.get_str("WFN");
+  MCSCF_Parameters.dertype = options.get_str("DERTYPE");
+  if (MCSCF_Parameters.dertype == "NONE") {
+    MCSCF_Parameters.rms_grad_convergence = 1e-4;
+    MCSCF_Parameters.energy_convergence = 1e-7;
+  }
+  else {
+    MCSCF_Parameters.rms_grad_convergence = 1e-7;
+    MCSCF_Parameters.energy_convergence = 1e-10;
+  }
 
+  if (options["MCSCF_R_CONVERGENCE"].has_changed()) {
+    MCSCF_Parameters.rms_grad_convergence = options.get_double("MCSCF_R_CONVERGENCE");
+  }
+  if (options["MCSCF_E_CONVERGENCE"].has_changed()) {
+    MCSCF_Parameters.energy_convergence = options.get_double("MCSCF_E_CONVERGENCE");
+  }
+
+  MCSCF_Parameters.max_iter = options.get_int("MCSCF_MAXITER"); 
+
+  MCSCF_Parameters.filter_ints = 0;  /* assume we need all for MCSCF */
+  MCSCF_Parameters.oei_file = PSIF_OEI;  /* contains frozen core operator */
+  MCSCF_Parameters.tei_file = PSIF_MO_TEI;
+  MCSCF_Parameters.opdm_file = PSIF_MO_OPDM;
+  MCSCF_Parameters.tpdm_file = PSIF_MO_TPDM;
+  MCSCF_Parameters.lag_file = PSIF_MO_LAG;
+
+  MCSCF_Parameters.ignore_fz = true;     /* ignore frozen orbitals for ind pairs? */
+  
+  if ((MCSCF_Parameters.wfn == "CASSCF") || (MCSCF_Parameters.wfn == "DETCAS"))
+    MCSCF_Parameters.ignore_ras_ras = true;   /* ignore RAS/RAS independent pairs? */
+  else
+    MCSCF_Parameters.ignore_ras_ras = false;
+
+  MCSCF_Parameters.print_lvl = options.get_int("PRINT");
+  MCSCF_Parameters.print_mos = options.get_bool("MCSCF_PRINT_MOS");
+
+  MCSCF_Parameters.oei_erase = options.get_bool("MCSCF_OEI_ERASE");
+  MCSCF_Parameters.tei_erase = options.get_bool("MCSCF_TEI_ERASE");
+  MCSCF_Parameters.ignore_fz = options.get_bool("MCSCF_IGNORE_FZ");
+  MCSCF_Parameters.scale_grad = true; /* scale orb grad by inverse Hessian? */
+
+  MCSCF_Parameters.diis_start = options.get_int("MCSCF_DIIS_START");
+  MCSCF_Parameters.diis_freq = options.get_int("MCSCF_DIIS_FREQ");
+  MCSCF_Parameters.diis_min_vecs = options.get_int("MCSCF_DIIS_MIN_VECS");
+  MCSCF_Parameters.diis_max_vecs = options.get_int("MCSCF_DIIS_MAX_VECS");
+
+  MCSCF_Parameters.scale_step = options.get_double("MCSCF_SCALE_STEP");
+  MCSCF_Parameters.use_fzc_h = options.get_bool("MCSCF_USE_FZC_H");
+  MCSCF_Parameters.invert_hessian = options.get_bool("MCSCF_INVERT_HESSIAN");
+  MCSCF_Parameters.hessian = options.get_str("MCSCF_HESSIAN");
+
+  MCSCF_Parameters.level_shift = options.get_bool("MCSCF_DO_LEVEL_SHIFT");
+  MCSCF_Parameters.shift = options.get_double("MCSCF_SHIFT");
+  MCSCF_Parameters.determ_min = options.get_double("MCSCF_DETERM_MIN");
+  MCSCF_Parameters.step_max = options.get_double("MCSCF_STEP_MAX");
+  MCSCF_Parameters.use_thetas = options.get_bool("MCSCF_USE_THETAS");
+  MCSCF_Parameters.force_step = options.get_bool("MCSCF_FORCE_STEP");
+  MCSCF_Parameters.force_pair = options.get_int("MCSCF_FORCE_PAIR");
+  MCSCF_Parameters.force_value = options.get_double("MCSCF_FORCE_VALUE");
+  MCSCF_Parameters.scale_act_act = options.get_double("MCSCF_SCALE_ACT_ACT");
+  MCSCF_Parameters.bfgs = options.get_bool("MCSCF_BFGS");
+  MCSCF_Parameters.ds_hessian = options.get_bool("MCSCF_DS_HESSIAN");
+}
+
+/*
+** mcscf_print_parameters(): Function prints the program's running parameters
+**   found in the Parameters structure.
+*/
+void mcscf_print_parameters(void)
+{
+  outfile->Printf("\n") ;
+  outfile->Printf("PARAMETERS: \n") ;
+  outfile->Printf("   PRINT          =   %6d      PRINT_MOS     =   %6s\n",
+      MCSCF_Parameters.print_lvl, MCSCF_Parameters.print_mos ? "yes" : "no");
+  outfile->Printf("   R_CONVERGENCE  =   %6.2e    E CONVERG     =   %6.2e\n",
+      MCSCF_Parameters.rms_grad_convergence, MCSCF_Parameters.energy_convergence);
+  outfile->Printf("   IGNORE_RAS_RAS =   %6s      IGNORE_FZ     =   %6s\n",
+      MCSCF_Parameters.ignore_ras_ras ? "yes" : "no", MCSCF_Parameters.ignore_fz ? "yes" : "no") ;
+  outfile->Printf("   OEI FILE       =   %6d      OEI ERASE     =   %6s\n",
+      MCSCF_Parameters.oei_file, MCSCF_Parameters.oei_erase ? "yes" : "no");
+  outfile->Printf("   TEI FILE       =   %6d      TEI ERASE     =   %6s\n",
+      MCSCF_Parameters.tei_file, MCSCF_Parameters.tei_erase ? "yes" : "no");
+  outfile->Printf("   OPDM FILE      =   %6d      OPDM ERASE    =   %6s\n",
+      MCSCF_Parameters.lag_file, MCSCF_Parameters.opdm_erase ? "yes" : "no");
+  outfile->Printf("   TPDM FILE      =   %6d      TPDM ERASE    =   %6s\n",
+      MCSCF_Parameters.tpdm_file, MCSCF_Parameters.tpdm_erase ? "yes" : "no");
+  outfile->Printf("   LAG FILE       =   %6d      LAG ERASE     =   %6s\n",
+      MCSCF_Parameters.lag_file, MCSCF_Parameters.lag_erase ? "yes" : "no");
+  outfile->Printf("   DIIS START     =   %6d      DIIS FREQ     =   %6d\n",
+      MCSCF_Parameters.diis_start, MCSCF_Parameters.diis_freq);
+  outfile->Printf("   DIIS MIN VECS  =   %6d      DIIS MAX VECS =   %6d\n",
+      MCSCF_Parameters.diis_min_vecs, MCSCF_Parameters.diis_max_vecs);
+  outfile->Printf("   SCALE STEP     =   %6.2E    MAX STEP      =   %6.2lf\n",
+      MCSCF_Parameters.scale_step, MCSCF_Parameters.step_max);
+  outfile->Printf("   DO_LEVEL SHIFT =   %6s      SHIFT         =   %6.2lf\n",
+      MCSCF_Parameters.level_shift ? "yes" : "no", MCSCF_Parameters.shift);
+  outfile->Printf("   USE FZC H      =   %6s      HESSIAN       = %-12s\n",
+      MCSCF_Parameters.use_fzc_h ? "yes" : "no", MCSCF_Parameters.hessian.c_str());
+  outfile->Printf("\n") ;
+  //fflush(outfile);
+}
+
+
+}} // namespace psi::detci
+ 

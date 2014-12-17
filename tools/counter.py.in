@@ -1,0 +1,223 @@
+#!@PYTHON_EXECUTABLE@
+# -*- python -*-
+# -*- coding: utf-8 -*-
+# vim:filetype=python:
+# Execute cloc.pl Perl script and wrap results in a nicer format.
+# cloc script by Al Danial, available at http://cloc.sourceforge.net/
+# licensed under the GNU General Public License v2
+# (c) Roberto Di Remigio  <roberto.d.remigio@uit.no>
+# licensed under the GNU Lesser General Public License
+
+from __future__ import print_function
+import os
+import distutils.core
+import shutil
+import subprocess
+import time
+
+source = '@CMAKE_SOURCE_DIR@'
+build  = '@CMAKE_BINARY_DIR@'
+cloc_lists = build+'/doc/cloc'
+cloc_script = source+'/tools/cloc.pl'
+plots = build+'/doc/cloc/matplotlib'
+
+if not os.path.exists(plots):
+    os.makedirs(plots)
+
+now = time.strftime('%c')
+
+def cloc_command(*args):
+    return subprocess.check_output(['perl', cloc_script] + list(args), shell=False)
+
+def count():
+    for root, dirs, filenames in os.walk(cloc_lists):
+        for f in filenames:
+            if 'list' in f:
+                lib_name = f[10:]
+                file = os.path.join(root, f)
+                out = cloc_command('--list-file='+file, '--csv', '--csv-delimiter=  ')
+                outfile = open(cloc_lists+'/scratch-'+lib_name, 'w')
+                outfile.write(out)
+                outfile.close()
+
+def post_process():
+    for root, dirs, filenames in os.walk(cloc_lists):
+        for f in filenames:
+            if 'scratch' in f:
+                lib_name = f[8:]
+                lines = open(cloc_lists+'/scratch-'+lib_name).readlines()
+                lines = [l.replace('Fortran 90', 'Fortran90') for l in lines]
+                lines = [l.replace('Fortran 77', 'Fortran77') for l in lines]
+                lines = [l.replace('C/C++ Header', 'Header') for l in lines]
+                outfile = open(cloc_lists+'/cloc_output-'+lib_name, 'w')
+                outfile.writelines(lines[5:])
+                outfile.close()
+                os.remove(cloc_lists+'/scratch-'+lib_name)
+
+def print_header(plot):
+    print('#!@PYTHON_EXECUTABLE@', file = plot)
+    print('# Automatically generated on ' + now, file = plot)
+    print('# Data obtained from the cloc.pl Perl script.', file = plot)
+    print('# cloc script by Al Danial, available at http://cloc.sourceforge.net/', file = plot)
+    print('# licensed under the GNU General Public License v2', file = plot)
+    print('# (c) Roberto Di Remigio  <roberto.d.remigio@uit.no>', file = plot)
+    print('# licensed under the GNU Lesser General Public License\n', file = plot)
+    print('from pylab import *', file = plot)
+    print('from matplotlib.font_manager import FontProperties\n', file = plot)
+
+fortran_lines = 0
+cpp_lines     = 0
+c_lines       = 0
+blank_lines   = 0
+comment_lines = 0
+
+def print_data(data, plot):
+    global fortran_lines, cpp_lines, c_lines, blank_lines, comment_lines
+    if 'Fortran' in data[1]:
+        print('nr_files    = '   + data[0],        file = plot)
+        print('language    = \'' + data[1] + '\'', file = plot)
+        print('nr_blanks   = '   + data[2],        file = plot)
+        print('nr_comments = '   + data[3],        file = plot)
+        print('nr_code     = '   + data[4],        file = plot)
+        blank_lines   += int(data[2])
+        comment_lines += int(data[3])
+        fortran_lines += int(data[4])
+    if 'C++' in data:
+        print('language         = \'C++\'', file = plot)
+        i = data.index('C++')
+        if i != 1:
+            print('nr_files_hpp    = '   + data[0],        file = plot)
+            print('nr_blanks_hpp   = '   + data[2],        file = plot)
+            print('nr_comments_hpp = '   + data[3],        file = plot)
+            print('nr_code_hpp     = '   + data[4] + '\n', file = plot)
+            print('nr_files_cpp    = '   + data[5],        file = plot)
+            print('nr_blanks_cpp   = '   + data[7],        file = plot)
+            print('nr_comments_cpp = '   + data[8],        file = plot)
+            print('nr_code_cpp     = '   + data[9] + '\n', file = plot)
+        else:
+            if len(data) > 6: # This means we had headers in the directory
+                print('nr_files_cpp    = '   + data[0],        file = plot)
+                print('nr_blanks_cpp   = '   + data[2],        file = plot) 
+                print('nr_comments_cpp = '   + data[3],        file = plot)
+                print('nr_code_cpp     = '   + data[4] + '\n', file = plot)
+                print('nr_files_hpp    = '   + data[5],        file = plot)
+                print('nr_blanks_hpp   = '   + data[7],        file = plot)
+                print('nr_comments_hpp = '   + data[8],        file = plot)
+                print('nr_code_hpp     = '   + data[9] + '\n', file = plot)
+            else:
+                print('nr_files_cpp    = '   + data[0],        file = plot)
+                print('nr_blanks_cpp   = '   + data[2],        file = plot) 
+                print('nr_comments_cpp = '   + data[3],        file = plot)
+                print('nr_code_cpp     = '   + data[4] + '\n', file = plot)
+        # Sum stuff
+        print('nr_files    = nr_files_hpp + nr_files_cpp',       file = plot)
+        print('nr_blanks   = nr_blanks_hpp + nr_blanks_cpp',     file = plot)
+        print('nr_comments = nr_comments_hpp + nr_comments_cpp', file = plot)
+        print('nr_code     = nr_code_hpp + nr_code_cpp',         file = plot)
+        cpp = 0
+        blank = 0
+        comment = 0
+        if len(data) > 6: # This means we had headers in the directory
+            cpp = int(data[4]) + int(data[9])
+            blank = int(data[2]) + int(data[7])
+            comment = int(data[3]) + int(data[8])
+        else:
+            cpp = int(data[4])
+            blank = int(data[2])
+            comment = int(data[3])
+        cpp_lines    += cpp
+        blank_lines   += blank
+        comment_lines += comment
+    if ('C' in data and not 'C++' in data):
+        print('language       = \'C\'', file = plot)
+        i = data.index('C')
+        if i != 1:
+            print('nr_files_h    = '   + data[0],        file = plot)
+            print('nr_blanks_h   = '   + data[2],        file = plot)
+            print('nr_comments_h = '   + data[3],        file = plot)
+            print('nr_code_h     = '   + data[4] + '\n', file = plot)
+            print('nr_files_c    = '   + data[5],        file = plot)
+            print('nr_blanks_c   = '   + data[7],        file = plot)
+            print('nr_comments_c = '   + data[8],        file = plot)
+            print('nr_code_c     = '   + data[9] + '\n', file = plot)
+        else:
+            print('nr_files_c    = '   + data[0],        file = plot)
+            print('nr_blanks_c   = '   + data[2],        file = plot)
+            print('nr_comments_c = '   + data[3],        file = plot)
+            print('nr_code_c     = '   + data[4] + '\n', file = plot)
+            print('nr_files_h    = '   + data[5],        file = plot)
+            print('nr_blanks_h   = '   + data[7],        file = plot)
+            print('nr_comments_h = '   + data[8],        file = plot)
+            print('nr_code_h     = '   + data[9] + '\n', file = plot)
+        # Sum stuff
+        print('nr_files    = nr_files_h + nr_files_c',       file = plot)
+        print('nr_blanks   = nr_blanks_h + nr_blanks_c',     file = plot)
+        print('nr_comments = nr_comments_h + nr_comments_c', file = plot)
+        print('nr_code     = nr_code_h + nr_code_c',         file = plot)
+        c = int(data[4]) + int(data[9])
+        c_lines    += c
+        blank = int(data[2]) + int(data[7])
+        blank_lines   += blank
+        comment = int(data[3]) + int(data[8])
+        comment_lines += comment
+    print('annotation  = \'Library: \' + lib_name + \'\\nLanguage: \' + language + \'\\nFiles: \' + str(nr_files)',        file = plot)
+
+def print_script(plot):
+    # Read from file
+    with open('@CMAKE_SOURCE_DIR@/tools/bar_chart.txt', 'r') as myfile:
+        lines = myfile.readlines()
+    script = '\n'
+    for l in lines:
+        script += l
+    print(script, file = plot)
+
+def print_total_script(plot):
+    # Read from file
+    with open('@CMAKE_SOURCE_DIR@/tools/total_bar_chart.txt', 'r') as myfile:
+        lines = myfile.readlines()
+    script = '\n'
+    for l in lines:
+        script += l
+    print(script, file = plot)
+
+count()
+
+post_process()
+
+for root, dirs, filenames in os.walk(cloc_lists):
+    for f in filenames:
+        if 'output' in f:
+            lib_name = f[12:]
+            # Read files line by line
+            file_lines = open(cloc_lists + '/' + f).readlines()
+            # Generate matplotlib scripts
+            bar_plot = open(plots + '/' + lib_name + '.py', 'w')
+            print_header(bar_plot)
+            # Separate imported lines into lists of strings
+            words = [word for line in file_lines for word in line.split()]
+            print('lib_name = \'' + lib_name + '\'\n', file = bar_plot)
+            print_data(words, bar_plot)
+            print_script(bar_plot)
+            bar_plot.close()
+
+page = open(source + '/doc/doxygen/CodeStats.dox', 'w')
+total_code_lines = fortran_lines + c_lines + cpp_lines
+print('/** \\page CodeStats Code statistics\n', file = page)
+print('Blank lines: {}, Comment lines: {}\\n'.format(blank_lines, comment_lines), file = page)
+print('C++ code lines: {}, C code lines: {}, Fortran code lines: {}'.format(cpp_lines, c_lines, fortran_lines), file = page)
+print('Total code lines: {}\n'.format(total_code_lines), file = page)
+print('\\image html total.png\n', file = page)
+print('*/', file = page)
+page.close()
+
+total_plot = open(plots + '/total.py', 'w')
+print_header(total_plot)
+print('nr_blanks       = ' + str(blank_lines),   file = total_plot)
+print('nr_comments     = ' + str(comment_lines), file = total_plot)
+print('nr_fortran_code = ' + str(fortran_lines), file = total_plot)
+print('nr_c_code       = ' + str(c_lines),       file = total_plot)
+print('nr_cpp_code     = ' + str(cpp_lines),     file = total_plot)
+print_total_script(total_plot)
+total_plot.close()
+
+# vim:et:ts=4:sw=4

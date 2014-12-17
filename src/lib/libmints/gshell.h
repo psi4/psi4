@@ -83,7 +83,6 @@ private:
      */
     double primitive_normalization(int p);
     /** Normalizes an entire contraction set. Applies the normalization to the coefficients
-     *  @param gs The contraction set to normalize.
      */
     void contraction_normalization();
 
@@ -213,7 +212,6 @@ private:
      */
     double primitive_normalization(int p);
     /** Normalizes an entire contraction set. Applies the normalization to the coefficients
-     *  @param gs The contraction set to normalize.
      */
     void contraction_normalization();
 
@@ -230,11 +228,9 @@ public:
      *  @param c An array of normalized contraction coefficients.
      *  @param ec An array of ERD normalized contraction coefficients.
      *  @param e An array of exponent values.
-     *  @param pure an enum describing whether this shell uses pure or Cartesian functions.
      *  @param nc The atomic center that this shell is located on. Must map back to the correct atom in the owning BasisSet molecule_. Used in integral derivatives for indexing.
      *  @param center The x, y, z position of the shell. This is passed to reduce the number of calls to the molecule.
      *  @param start The starting index of the first function this shell provides. Used to provide starting positions in matrices.
-     *  @param pt Is the shell already normalized?
      */
     GaussianShell(int am,
                   int nprimitive,

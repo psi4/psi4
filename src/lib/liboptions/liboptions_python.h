@@ -39,8 +39,14 @@ public:
     virtual std::string type() const;
 
     const boost::python::object& to_python() const;
-
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Woverloaded-virtual"
+#endif
     void assign(const boost::python::object& p);
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 };
 
 }

@@ -56,8 +56,7 @@ if (reference_ == "RESTRICTED") {
 
     // A_ai += 2 G_ii \sum_{m} (ma|ma)   
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_ovov_chem_ref_directAA(K);
+    tei_ovov_chem_ref_directAA(K);
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
               int ia = ov_idxAA->get(i,a);
@@ -173,8 +172,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     // A_AI += 2 G_II \sum_{M} (MA|MA)   
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_ovov_chem_ref_directAA(K);
+    tei_ovov_chem_ref_directAA(K);
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
               int ia = ov_idxAA->get(i,a);
@@ -192,8 +190,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     // A_ai += -2 G_ii \sum_{m} (ma|ma)   
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_ovov_chem_ref_directBB(K);
+    tei_ovov_chem_ref_directBB(K);
     for (int a = 0; a < nvirB; a++) {
          for (int i = 0; i < noccB; i++) {
               int ia = ov_idxBB->get(i,a);

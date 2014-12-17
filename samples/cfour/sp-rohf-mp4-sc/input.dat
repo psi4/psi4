@@ -50,6 +50,35 @@ cfour_SCF_CONV=12
 energy('cfour')
 
 
+clean()
+clean_variables()
+cfour {}
+
+print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+
+banner('ROHF-MP4 energy calculation')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level=MP4
+cfour_BASIS=qz2p
+cfour_REFerence=ROHF
+cfour_occupation [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+}
+
+energy('cfour')
+
+
 # New run in cfour
 #        S-MBPT(2)       -0.002983751785   -55.587721011671
 #        D-MBPT(2)       -0.197555775958   -55.785276787630

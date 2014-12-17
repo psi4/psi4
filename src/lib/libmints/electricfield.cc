@@ -88,7 +88,7 @@ Vector3 ElectricFieldInt::nuclear_contribution(const Vector3 &origin, boost::sha
     return result;
 }
 
-SharedMatrix ElectricFieldInt::nuclear_contribution_to_gradient(const Vector3 &origin, boost::shared_ptr<Molecule> mol)
+SharedMatrix ElectricFieldInt::nuclear_contribution_to_gradient(const Vector3& /*origin*/, boost::shared_ptr<Molecule> /*mol*/)
 {
 //    int natom = mol->natom();
 //    SharedMatrix result(new Matrix("Nuclear contribution to electric field gradient", 1, 6));
@@ -108,6 +108,7 @@ SharedMatrix ElectricFieldInt::nuclear_contribution_to_gradient(const Vector3 &o
 //        result->add(0, 5, -mol->Z(i) * (3*z*z-r2) / (r*r2*r2));
 //    }
 //    return result;
+    throw NotImplementedException();
 }
 
 void ElectricFieldInt::compute_pair(const GaussianShell& s1,
@@ -216,9 +217,10 @@ void ElectricFieldInt::compute_pair(const GaussianShell& s1,
     }
 }
 
-void ElectricFieldInt::compute_pair_deriv1(const GaussianShell& s1,
-                                           const GaussianShell& s2)
+void ElectricFieldInt::compute_pair_deriv1(const GaussianShell& /*s1*/,
+                                           const GaussianShell& /*s2*/)
 {
+    throw NotImplementedException();
     //NOT IMPLEMENTED!!!!!!
 //    int ao12;
 //    int am1 = s1.am();

@@ -29,8 +29,6 @@
 #include <string>
 #include <cstring>
 
-#include <psifiles.h>
-#include <physconst.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
@@ -43,6 +41,10 @@
 #include <libfunctional/superfunctional.h>
 #include <libdisp/dispersion.h>
 #include <lib3index/3index.h>
+
+#include <psifiles.h>
+#include <physconst.h>
+
 #include "ks.h"
 
 using namespace std;
@@ -65,8 +67,8 @@ void KS::common_init()
     molecule_ = Process::environment.molecule();
 
     // Load in the basis set
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    basisset_ = BasisSet::construct(parser, molecule_, "BASIS");
+    basisset_ = BasisSet::pyconstruct_orbital(molecule_,
+        "BASIS", options_.get_str("BASIS"));
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
     sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, fact));
 

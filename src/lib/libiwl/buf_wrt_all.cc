@@ -84,12 +84,12 @@ void IWL::write_all(int nbfso, double *ints,
 ** Write out two electron ints to IWL file.  Assume that the integrals
 ** are in ijkl canonical order (no spatial symmetry).
 **
-**    \param itap     = unit to write to
-**    \param nbfso    = number of basis functions in symmetry orbitals
-**    \param ints     = two electron integrals 
-**    \param ioff     = the old ioff array for lexical ordering
-**    \param printflg = print flag (1 or 0)
-**    \param out  =  output file
+**    \param Buf      unit to write to
+**    \param nbfso    number of basis functions in symmetry orbitals
+**    \param ints     two electron integrals
+**    \param ioff     the old ioff array for lexical ordering
+**    \param printflg print flag (1 or 0)
+**    \param out      output file
 **
 ** David Sherrill, 6/27/96
 **
