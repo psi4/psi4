@@ -29,7 +29,7 @@
 #include "frag.h"
 
 //#include "mem.h"
-//#include "v3d.h"
+#include "v3d.h"
 //#include "atom_data.h"
 //#include "cov_radii.h"
 //#include "opt_data.h"
@@ -56,7 +56,7 @@ namespace opt {
 
 bool int_compare(int i, int j) {return i<j;}
 
-//using namespace v3d;
+using namespace v3d;
 
 // Determine Pulay simple coordinate combinations.
 int FRAG::form_natural_coord_combinations(void) {
@@ -275,7 +275,7 @@ int FRAG::form_natural_coord_combinations(void) {
       cc_index.clear(); cc_coeff.clear();
 
       // This code mimics FRAG::add_bend_by_connectivity to check for need for linear bend complement
-      ok = v3d_angle(geom[bond_to_T[i][0]], geom[i], geom[bond_to_T[i][1]], &val);
+      ok = v3d_angle(geom[bond_to_T[i][0]], geom[i], geom[bond_to_T[i][1]], val);
       if (ok && val > Opt_params.linear_bend_threshold) { // ~175 degrees
         BEND *pB = new BEND(bond_to_T[i][0], i, bond_to_T[i][1]);
         pB->make_linear_bend();
@@ -286,7 +286,7 @@ int FRAG::form_natural_coord_combinations(void) {
       }
     }
     // *** Coordination == 3 cases ***
-    else if (num_T == 3 && num_noT == 0) { // like NH3 or BF3
+    else if (num_T == 3 && num_nonT == 0) { // like NH3 or BF3
       // There are 3 simple bends for T-C-T.
       BEND *pX1 = new BEND( bond_to_T[i][0], i, bond_to_T[i][1]); // H-C-H, external ones
       int X1 = find(pX1);
@@ -296,8 +296,8 @@ int FRAG::form_natural_coord_combinations(void) {
       int X3 = find(pX3);
 
       // if planar, add oofp angle
-      ok = v3d_oofp(geom[bond_to_T[i][0]], i, bond_to_T[i][1], bond_to_T[i][2], &angle);
-      if (ok && fabs(angle) < _pi/9) {  // less than 20 degrees?
+      ok = v3d_oofp(geom[bond_to_T[i][0]], geom[i], geom[bond_to_T[i][1]], geom[bond_to_T[i][2]], val);
+      if (ok && fabs(val) < _pi/9) {  // less than 20 degrees?
         OOFP *pA = new OOFP(bond_to_T[i][0], i, bond_to_T[i][1], bond_to_T[i][2]);
         int A = find(pA);
         cc_index.push_back(A); cc_coeff.push_back(1.0);
@@ -323,7 +323,7 @@ int FRAG::form_natural_coord_combinations(void) {
       coords.index.push_back(cc_index); coords.coeff.push_back(cc_coeff);
       cc_index.clear(); cc_coeff.clear();
     }
-    else if (num_T == 2 && num_noT == 1) { // =CH2; very similar to previous case but with a non-terminal atom
+    else if (num_T == 2 && num_nonT == 1) { // =CH2; very similar to previous case but with a non-terminal atom
       // There is one external angle; and 2 internal angles
       // There are 3 simple bends for T-C-T.
       BEND *pX1 = new BEND( bond_no_T[i][0], i, bond_to_T[i][1]); // external angle H-C-H
@@ -334,7 +334,7 @@ int FRAG::form_natural_coord_combinations(void) {
       int X3 = find(pX3);
 
       // if planar, add oofp angle for one of the terminal atoms
-      ok = v3d_oofp(geom[bond_to_T[i][0]], i, bond_to_T[i][1], bond_no_T[i][0], &val);
+      ok = v3d_oofp(geom[bond_to_T[i][0]], geom[i], geom[bond_to_T[i][1]], geom[bond_no_T[i][0]], val);
       if (ok && fabs(val) < _pi/9) {  // less than 20 degrees?
         OOFP *pA = new OOFP(bond_to_T[i][0], i, bond_to_T[i][1], bond_no_T[i][2]);
         int A = find(pA);
@@ -361,7 +361,7 @@ int FRAG::form_natural_coord_combinations(void) {
       coords.index.push_back(cc_index); coords.coeff.push_back(cc_coeff);
       cc_index.clear(); cc_coeff.clear();
     }
-    else if (num_T == 1 && num_noT == 2) { // Rare?  very similar to previous case but with one terminal atom
+    else if (num_T == 1 && num_nonT == 2) { // Rare?  very similar to previous case but with one terminal atom
       // There are two external angles; and 1 internal angles
       BEND *pX1 = new BEND( bond_to_T[i][0], i, bond_no_T[i][0]); // external
       int X1 = find(pX1);
@@ -371,7 +371,7 @@ int FRAG::form_natural_coord_combinations(void) {
       int X3 = find(pX3);
 
       // if planar, add oofp angle for one of the terminal atoms
-      ok = v3d_oofp(geom[bond_to_T[i][0]], i, bond_to_T[i][1], bond_no_T[i][0], &val);
+      ok = v3d_oofp(geom[bond_to_T[i][0]], geom[i], geom[bond_to_T[i][1]], geom[bond_no_T[i][0]], val);
       if (ok && fabs(val) < _pi/9) {  // less than 20 degrees?
         OOFP *pA = new OOFP(bond_to_T[i][0], i, bond_to_T[i][1], bond_no_T[i][2]);
         int A = find(pA);
@@ -400,7 +400,7 @@ int FRAG::form_natural_coord_combinations(void) {
     }   
 
       
-    else if (num_T == 3 && num_noT > 0) { // like - CH3
+    else if (num_T == 3 && num_nonT > 0) { // like - CH3
       // There are 6 simple bends; 3 external T-C-T and 3 internal.
       BEND *pX1 = new BEND( bond_to_T[i][0], i, bond_to_T[i][1]); // H-C-H, external ones
       int X1 = find(pX1);
@@ -417,8 +417,8 @@ int FRAG::form_natural_coord_combinations(void) {
       int I3 = find(pI3);
 
       // if planar, add oofp angle
-      ok = v3d_oofp(geom[bond_to_T[i][0]], i, bond_to_T[i][1], bond_to_T[i][2], &angle);
-      if (ok && fabs(angle) < _pi/9) {  // less than 20 degrees?
+      ok = v3d_oofp(geom[bond_to_T[i][0]], geom[i], geom[bond_to_T[i][1]], geom[bond_to_T[i][2]], val);
+      if (ok && fabs(val) < _pi/9) {  // less than 20 degrees?
         OOFP *pA = new OOFP(bond_to_T[i][0], i, bond_to_T[i][1], bond_to_T[i][2]);
         int A = find(pA);
         cc_index.push_back(A); cc_coeff.push_back(1.0);
@@ -447,7 +447,7 @@ int FRAG::form_natural_coord_combinations(void) {
 
 
       // choose one other atom to 'anchor' -CH3 group
-      if (num_noT > 0) {
+      if (num_nonT > 0) {
     
 
 
