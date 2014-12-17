@@ -129,8 +129,6 @@ int IWL::read_all_mp2r12a(double *ints, int *ioff_lt, int *ioff_rt,
 **
 **    WARNING - if bra_ket_symm = 0 - ints must be zeroed out!
 **
-**    \param ioff          =  the ioff array to figure the total index pqrs 
-**                            from the pair indices pq and rs
 **    \param printflg      =  if 1, print integrals as they are read
 **    \param out       =  pointer to output file for printing
 **

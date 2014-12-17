@@ -47,8 +47,8 @@ namespace psi{
  *  than that, this class takes care of copying the Buffer_ and synching it
  *  across MPI processes.
  *
- *  \param[in] T Either std::istream or std::ostream for input/output streams
- *               respectively
+ *  template parameter T Either std::istream or std::ostream for input/output streams
+ *                       respectively
  */
 template <typename T>
 class PsiStreamBase:public BasesBase{

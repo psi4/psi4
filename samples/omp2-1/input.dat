@@ -14,6 +14,6 @@ set {
   basis cc-pvdz
 }
 
-energy('omp2')
+energy('conv-omp2')
 
 

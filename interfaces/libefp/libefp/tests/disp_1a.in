@@ -1,0 +1,11 @@
+run_type gtest
+ref_energy -0.0000989033
+terms disp
+disp_damp tt
+fraglib_path ../fraglib
+
+fragment h2o_l
+   0.0   0.0   0.0   1.0   2.0   3.0
+
+fragment nh3_l
+   5.0   0.0   0.0   5.0   2.0   8.0

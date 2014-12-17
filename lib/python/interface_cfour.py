@@ -368,6 +368,12 @@ def run_cfour(name, **kwargs):
     if c4grad:
         psi4.get_gradient().print_out()
 
+    psi4.print_out('\n')
+    p4util.banner(' Cfour %s %s Results ' % (name.lower(), calledby.capitalize()))
+    psi4.print_variables()
+    if c4grad:
+        psi4.get_gradient().print_out()
+
     # Quit if Cfour threw error
     if psi4.get_variable('CFOUR ERROR CODE'):
         raise ValidationError("""Cfour exited abnormally.""")
@@ -435,6 +441,9 @@ def write_zmat(name, dertype):
         psicmd, psikw = qcdb.cfour.muster_psi4options(p4util.prepare_options_for_modules(changedOnly=True))
     else:
         psicmd, psikw = '', {}
+
+    # Handle calc type and quantum chemical method
+    mdccmd, mdckw = qcdb.cfour.muster_modelchem(name, dertype)
 
     # Handle calc type and quantum chemical method
     mdccmd, mdckw = qcdb.cfour.muster_modelchem(name, dertype)

@@ -14,5 +14,5 @@ set global {
   reference uhf
   guess gwh
 }
-energy('omp2')
+energy('conv-omp2')
 

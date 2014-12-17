@@ -89,8 +89,7 @@ using namespace psi;
 
 int CharacterTable::make_table()
 {
-    int i,j,ei,gi;
-    char label[4];
+    int gi;
 
     switch (bits_) {
     case PointGroups::C1:
@@ -143,9 +142,6 @@ int CharacterTable::make_table()
     // this array forms a reducible representation for translations along x,y,z
     double *trans = new double[nirrep_];
     memset(trans,0,sizeof(double)*nirrep_);
-
-    // the angle to rotate about the principal axis
-    double theta = (nt) ? 2.0*M_PI/nt : 2.0*M_PI;
 
     // Handle irreducible representations:
     switch (bits_) {

@@ -237,6 +237,8 @@ void MOLECULE::prfo_step(void) {
   double rfo_dqnorm = sqrt( array_dot(dq, dq, Nintco) );
   double rfo_g = -1 * array_dot(fq, dq, Nintco);
 
+  oprintf_out("\tNorm of target step-size %10.5lf\n", rfo_dqnorm);
+
   double rfo_h = 0;
   for (int i=0; i<Nintco; ++i)
     rfo_h += dq[i] * array_dot(Horig[i], dq, Nintco); 

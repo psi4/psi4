@@ -72,7 +72,7 @@ boost::shared_ptr<Fragmenter> FragOptions::MakeFactory(SharedMol& AMol)const{
 void EmbedOptions::SetDefaults(){
    Methods_[NO_EMBED]="None Specified";
    Methods_[POINT_CHARGE]="Atomic-Centered Point Charges";
-   Methods_[ITR_POINT_CHARGE]="Iterative Atomic-Centered Poitn Charges";
+   Methods_[ITR_POINT_CHARGE]="Iterative Atomic-Centered Point Charges";
    Methods_[DENSITY]="Frozen Density";
    Methods_[ITR_DENSITY]="Iterative Density";
    Converter_["none"]=NO_EMBED;

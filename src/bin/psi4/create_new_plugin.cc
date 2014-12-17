@@ -91,8 +91,6 @@ class PluginFileManager{
     PluginFileManager(const std::string &plugin_name):
        plugin_name_(plugin_name)
     {
-
-
     }
 
     /*
@@ -228,7 +226,6 @@ void create_new_plugin(std::string name, const std::string& template_name)
     // Process the files
     PluginFileManager file_manager(plugin_name);
     file_manager.add_file("Makefile.template", "Makefile");
-    //file_manager.add_file("CMakeLists.txt.template","CMakeLists.txt");
     file_manager.add_file("input.dat.template", "input.dat");
     file_manager.add_file("pymodule.py.template", "pymodule.py");
     file_manager.add_file("__init__.py.template", "__init__.py");
@@ -243,7 +240,15 @@ void create_new_plugin(std::string name, const std::string& template_name)
         file_manager.add_file("scf.pymodule.py.template", "pymodule.py");
     }
     file_manager.process();
+}
 
+void create_new_plugin_makefile()
+{
+    printf("Creating new plugin Makefile in the current directory.\n");
+
+    PluginFileManager file_manager(".");
+    file_manager.add_file("Makefile.template", "Makefile");
+    file_manager.process();
 }
 
 }

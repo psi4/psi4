@@ -18,7 +18,7 @@
 
 #define PLUGIN_CXX "@CMAKE_CXX_COMPILER@"
 #define PLUGIN_DEFINES "@PLUGIN_DEFINES@"
-#define PLUGIN_FLAGS "@CMAKE_CXX_FLAGS@"
+#define PLUGIN_FLAGS "@CXX_FLAGS_PLUGIN@"
 #define PLUGIN_INCLUDES "@PLUGIN_INCLUDE_DIRECTORIES@"
 #define PLUGIN_OBJDIR "@PROJECT_BINARY_DIR@"
 
@@ -38,11 +38,10 @@
 #cmakedefine HAVE_SCALAPACK
 
 /* Defined if we are using MKL */
-#cmakedefine HAVE_MKL
+#cmakedefine HAVE_MKL @HAVE_MKL@
 
 /* Defined if we are using an MKL with mkl_malloc (MKL version 10+ supposedly) */
 #cmakedefine HAVE_MKL_MALLOC
-#cmakedefine HAVE_FUNC_ERF
 #cmakedefine HAVE_CMATH
 #cmakedefine HAVE_CSTDIO
 #cmakedefine HAVE_CSTDLIB
@@ -56,9 +55,9 @@
 #cmakedefine HAVE_FUNC_ERF
 
 /* Have dlfcn.h for dlopen and friends */
-#cmakedefine HAVE_DLFCN_H
+#cmakedefine HAVE_DLFCN_H @HAVE_DLFCN_H@
 
-/* Compiler supports __builtin_expected */
+/* Compiler supports __builtin_expect */
 #cmakedefine HAVE_BUILTIN_EXPECT
 
 /* Compiler supports __builtin_prefetch */

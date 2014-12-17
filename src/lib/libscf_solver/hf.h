@@ -318,7 +318,7 @@ protected:
     virtual void save_information() {}
 
     /** Compute the orbital gradient */
-    virtual void compute_orbital_gradient(bool save_diis) {}
+    virtual void compute_orbital_gradient(bool) {}
 
     /** Performs DIIS extrapolation */
     virtual bool diis() { return false; }

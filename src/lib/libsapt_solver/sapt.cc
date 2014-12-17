@@ -74,17 +74,18 @@ void SAPT::initialize()
   vAAB_ = NULL;
   vBAB_ = NULL;
 
-  boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-  ribasis_ = boost::shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, 
-    "DF_BASIS_SAPT"));
+  ribasis_ = boost::shared_ptr<BasisSet>(BasisSet::pyconstruct_auxiliary(molecule_, 
+    "DF_BASIS_SAPT", options_.get_str("DF_BASIS_SAPT"),
+    "RIFIT", options_.get_str("BASIS")));
   elst_basis_ = 0;
   if (options_.get_str("DF_BASIS_ELST") != "") {
-    elstbasis_ = boost::shared_ptr<BasisSet>(BasisSet::construct(parser, 
-      molecule_,"DF_BASIS_ELST"));
+    elstbasis_ = boost::shared_ptr<BasisSet>(BasisSet::pyconstruct_auxiliary(molecule_,
+    "DF_BASIS_ELST", options_.get_str("DF_BASIS_ELST"),
+    "RIFIT", options_.get_str("BASIS")));
+    // TODO: never dealt with an optional basis set before. right default role?
     elst_basis_ = 1;
   }
   zero_ = boost::shared_ptr<BasisSet>(BasisSet::zero_ao_basis_set());
-  parser.reset();
 
   print_ = options_.get_int("PRINT");
   debug_ = options_.get_int("DEBUG");

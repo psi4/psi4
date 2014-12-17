@@ -31,6 +31,15 @@
 namespace psi{
 namespace LibFrag{
 
+void MBEFragSet::Copy(const MBEFragSet& other){
+   this->EmbedFactory_=other.EmbedFactory_;
+   this->BSSEFactory_=other.BSSEFactory_;
+   this->CapFactory_=other.CapFactory_;
+   this->FragFactory_=other.FragFactory_;
+   this->Frags_=other.Frags_;
+   this->Properties_=other.Properties_;
+}
+
 boost::shared_ptr<Embedder> MBEFragSet::EmbedFactory(){
    return EmbedFactory_;
 }
@@ -42,7 +51,9 @@ void MBEFragSet::Embed(){
 MBEFragSet::MBEFragSet(SharedOptions& Options,
       SharedMol& AMol){
    FragFactory_=Options->FOptions().MakeFactory(AMol);
+
    Properties_=FragFactory_->Fragment(AMol,Frags_);
+   (*outfile)<<"Fragments made"<<std::endl;
    if(this->Severed()){
       CapFactory_=Options->COptions().MakeFactory(AMol);
       CapFactory_->MakeCaps(Frags_);

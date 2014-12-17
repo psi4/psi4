@@ -78,7 +78,6 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
 
     // Get the molecule for ease
     BasisSet& basisset = *wavefunction_->basisset().get();
-    SOBasisSet& sobasisset = *wavefunction_->sobasisset().get();
     Molecule& mol = *basisset.molecule().get();
 
     //    basisset.print_detail();
@@ -640,7 +639,6 @@ void MOWriter::write()
 
     // Get the molecule for ease
     BasisSet& basisset = *wavefunction_->basisset().get();
-    SOBasisSet& sobasisset = *wavefunction_->sobasisset().get();
     Molecule & mol = *basisset.molecule().get();
 
     // Convert Ca & Cb

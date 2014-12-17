@@ -26,7 +26,7 @@ my %ExeFolder = (
    "dftd3/"     => "dftd3",
    "mrcc/"      => "mrcc",
    "cfour/"     => "cfour",
-   #"libefp/"    => "efp",
+   "libefp/"    => "libefp",
 );
 
 foreach my $exe (keys %ExeFolder) {
@@ -43,7 +43,7 @@ foreach my $File(readdir SAMPLES){
     next if $File =~ /^dftd3$/;  # Keep the interface subdirectories
     next if $File =~ /^mrcc$/;
     next if $File =~ /^cfour$/;
-    #next if $File =~ /^libefp$/;
+    next if $File =~ /^libefp$/;
     next if (-d $File);  # Don't remove subdirectories
     remove_tree("$SamplesFolder/$File");
 }

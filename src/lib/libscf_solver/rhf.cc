@@ -31,14 +31,14 @@
 #include <vector>
 #include <utility>
 
-#include <psifiles.h>
-#include <physconst.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
 #include <libparallel/parallel.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
+#include <psifiles.h>
+#include <physconst.h>
 
 #include <libmints/basisset_parser.h>
 #include <libmints/mints.h>
@@ -149,10 +149,8 @@ void forPermutation(int depth, vector<int>& array,
 void RHF::form_G()
 {
     if(!JKFactory){
-       boost::shared_ptr<BasisSetParser>parser
-       (new Gaussian94BasisSetParser());
        boost::shared_ptr<BasisSet> primary =
-        BasisSet::construct(parser,Process::environment.molecule(),"BASIS");
+        BasisSet::pyconstruct_orbital(Process::environment.molecule(), "BASIS", options_.get_str("BASIS"));
        JKFactory=boost::shared_ptr<Psi4JK>(new Psi4JK(primary));
     }
     //SharedMatrix corrJ_(new Matrix(*J_));
@@ -398,8 +396,6 @@ void RHF::save_sapt_info()
     double *sapt_V_ints = V_->to_lower_triangle();
     double *sapt_S_ints = S_->to_lower_triangle();
 
-    int errcod;
-
     sprintf(key_buffer,"%s NSO",body_type);
     psio_->write_entry(fileno,key_buffer,(char *) &sapt_nso, sizeof(int));
     sprintf(key_buffer,"%s NMO",body_type);
@@ -546,9 +542,9 @@ void RHF::stability_analysis()
             delete [] evals;
         }
 
-        outfile->Printf( "\tLowest singlet (RHF->RHF) stability eigenvalues:-\n");
+        outfile->Printf( "    Lowest singlet (RHF->RHF) stability eigenvalues:-\n");
         print_stability_analysis(singlet_eval_sym);
-        outfile->Printf( "\tLowest triplet (RHF->UHF) stability eigenvalues:-\n");
+        outfile->Printf( "    Lowest triplet (RHF->UHF) stability eigenvalues:-\n");
         print_stability_analysis(triplet_eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }

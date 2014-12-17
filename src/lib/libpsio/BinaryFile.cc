@@ -21,18 +21,96 @@
  */
 
 #include "BinaryFile.h"
-
+#include "psi4-dec.h"
 
 namespace psi {
+
 void BinaryFile::Copy(const BinaryFile& other) {
-   this->FileNumber=other.FileNumber;
-   this->psio=other.psio;
+   this->FileNumber_=other.FileNumber_;
+   this->psio_=other.psio_;
+   this->VariableNames_=other.VariableNames_;
+   this->VariableTypes_=other.VariableTypes_;
+   this->Members_=other.Members_;
 }
 
 BinaryFile::BinaryFile(const int FileN) :
-      FileNumber(FileN), psio(psi::_default_psio_lib_) {
+      FileNumber_(FileN), psio_(psi::_default_psio_lib_) {
+      Members_[INT]=boost::shared_ptr<PsiIOSAImpl<int> >
+                        (new PsiIOSAImpl<int>());
+      Members_[DOUBLE]=boost::shared_ptr<PsiIOSAImpl<double> >
+                        (new PsiIOSAImpl<double>());
+      Members_[CHAR]=boost::shared_ptr<PsiIOSAImpl<char> >
+                         (new PsiIOSAImpl<char>());
+}
+typedef std::map<CTypes,boost::shared_ptr<PsiIOStringArray> > MemBase;
+
+boost::shared_ptr<double[]> BinaryFile::GetDouble(const std::string& Name)const{
+   return boost::dynamic_pointer_cast<PsiIOSAImpl<double> >
+               (MapDeRef(Members_,DOUBLE))->GetValue(Name);
 }
 
+boost::shared_ptr<int[]> BinaryFile::GetInt(const std::string& Name)const{
+   return boost::dynamic_pointer_cast<PsiIOSAImpl<int> >
+           (MapDeRef(Members_,INT))->GetValue(Name);
+}
+
+boost::shared_ptr<char[]> BinaryFile::GetChar(const std::string& Name)const{
+      return boost::dynamic_pointer_cast<PsiIOSAImpl<char> >
+               (MapDeRef(Members_,CHAR))->GetValue(Name);
+}
+
+void BinaryFile::Read(){
+   psio_->open(FileNumber_,PSIO_OPEN_OLD);
+   for(int Var=0;Var<VariableNames_.size();Var++){
+      std::string Name=VariableNames_[Var];
+      Members_[VariableTypes_[Name]]->Read(psio_,Name,FileNumber_);
+   }
+}
+
+void BinaryFile::Write(){
+   psio_->open(FileNumber_,PSIO_OPEN_NEW);
+   for(int Var=0;Var<VariableNames_.size();Var++){
+      std::string Name=VariableNames_[Var];
+      MapDeRef(Members_,MapDeRef(VariableTypes_,Name))->Write(psio_,Name,FileNumber_);
+   }
+}
+
+BinaryFile::~BinaryFile(){}
+
+void BinaryFile::Broadcast(const std::string& CommIn, const int proc)const{
+   for(int i=0;i<VariableNames_.size();i++){
+      std::string Name=VariableNames_[i];
+      MapDeRef(Members_,MapDeRef(VariableTypes_,Name))->Broadcast(CommIn,proc,Name);
+   }
+}
+
+void BinaryFile::Receive(const std::string& Comm, const int proc){
+   for(int i=0;i<VariableNames_.size();i++){
+      std::string Name=VariableNames_[i];
+      Members_[VariableTypes_[Name]]->Receive(Comm,proc,Name);
+   }
+}
+
+
+void BinaryFile::AddVariable(const std::string& Name,const CTypes& Type){
+   VariableNames_.push_back(Name);
+   VariableTypes_[Name]=Type;
+   boost::shared_ptr<int[]> temp(new int[1]);
+   temp[0]=1;
+   Members_[Type]->SetLength(Name,temp);
+   ///This is just a b.s. set, so the memory is allocated incase we need
+   ///to couple it
+   if(Type==INT)boost::dynamic_pointer_cast<PsiIOSAImpl<int> >(
+         Members_[Type])->SetValue(Name,temp.get());
+}
+
+void BinaryFile::AddCoupledVariable(const std::string& Name,
+      const CTypes& Type,const std::string& Coupled){
+   VariableNames_.push_back(Name);
+   VariableTypes_[Name]=Type;
+   boost::shared_ptr<int[]> temp=GetInt(Coupled);
+   Members_[Type]->SetLength(Name,temp);
+}
 
 } //End namespace psi
 

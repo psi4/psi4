@@ -146,25 +146,26 @@ class LibFragOptions{
 		const CapOptions& COptions(){return COptions_;}
 		const BSSEOptions& BOptions(){return BOptions_;}
 		const EmbedOptions& EOptions(){return EOptions_;}
-        int MBEOrder_;
+
+		///The MBE truncation order
+		int MBEOrder_;
+
+		///Are we exploiting symmetry
+		bool DoSymm_;
 
         ///Nice, pretty printing of all the desired options
         void PrintOptions();
 
         LibFragOptions(const int MBEOrder,const std::string& FMethod,
               const std::string& EMethod,const std::string& CMethod,
-              const std::string& BMethod):MBEOrder_(MBEOrder){
+              const std::string& BMethod,bool DoSymm=false):MBEOrder_(MBEOrder),
+                    DoSymm_(DoSymm){
            FOptions_.SetMethod(FMethod);
            EOptions_.SetMethod(EMethod);
            BOptions_.SetMethod(BMethod);
            COptions_.SetMethod(CMethod);
         }
 		~LibFragOptions(){}
-
-		//LibFragOptions(const LibFragOptions& other){this->copy(other);}
-		//FragOptions operator=(const FragOptions& other){
-		//   if(this!=&other)this->copy(other);return *this;
-		//}
 };
 
 }}// End namespaces

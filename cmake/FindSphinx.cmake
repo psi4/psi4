@@ -1,22 +1,37 @@
-# CMake find_package() Module for Sphinx documentation generator
-# http://sphinx-doc.org/
+# - This module looks for Sphinx
+# Find the Sphinx documentation generator
 #
-# Example usage:
-#
-# find_package(Sphinx)
-#
-# If successful the following variables will be defined
-# SPHINX_FOUND
-# SPHINX_EXECUTABLE
+# This modules defines
+#  SPHINX_EXECUTABLE
+#  SPHINX_FOUND
 
-find_program(SPHINX_EXECUTABLE
-             NAMES sphinx-build sphinx-build2
-             DOC "Path to sphinx-build executable")
+#=============================================================================
+# Copyright 2002-2009 Kitware, Inc.
+# Copyright 2009-2011 Peter Colberg
+#
+# Distributed under the OSI-approved BSD License (the "License");
+# see accompanying file COPYING-CMAKE-SCRIPTS for details.
+#
+# This software is distributed WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the License for more information.
+#=============================================================================
+# (To distribute this file outside of CMake, substitute the full
+#  License text for the above reference.)
 
-# Handle REQUIRED and QUIET arguments
-# this will also set SPHINX_FOUND to true if SPHINX_EXECUTABLE exists
+find_program(SPHINX_EXECUTABLE NAMES sphinx-build
+  HINTS
+  $ENV{SPHINX_DIR}
+  PATH_SUFFIXES bin
+  DOC "Sphinx documentation generator"
+)
+
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Sphinx
-                                  "Failed to locate sphinx-build executable"
-                                  SPHINX_EXECUTABLE)
 
+find_package_handle_standard_args(Sphinx DEFAULT_MSG
+  SPHINX_EXECUTABLE
+)
+
+mark_as_advanced(
+  SPHINX_EXECUTABLE
+)
