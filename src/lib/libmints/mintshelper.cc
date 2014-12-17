@@ -454,7 +454,7 @@ SharedMatrix MintsHelper::ao_potential()
 SharedMatrix MintsHelper::ao_potential(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2)
 {
     IntegralFactory factory(bs1, bs2);
-    boost::shared_ptr<OneBodyAOInt> V(factory.ao_kinetic());
+    boost::shared_ptr<OneBodyAOInt> V(factory.ao_potential());
     SharedMatrix potential_mat(new Matrix("AO-basis Potential Ints", bs1->nbf (), bs2->nbf ()));
     V->compute(potential_mat);
     return potential_mat;
