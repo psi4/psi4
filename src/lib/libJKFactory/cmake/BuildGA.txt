@@ -1,0 +1,24 @@
+if (NOT ${JK_GA_INC} MATCHES "NONE")
+   message(STATUS "Using Global Arrays with includes path: ${JK_GA_INC}" )
+   message(STATUS "Using Global Arrays with libraries path: ${JK_GA_LIB}" )
+else()
+   include(ExternalProject)
+   message(STATUS "Building Global Arrays in ${JK_GA_ROOT}")
+   ExternalProject_Add(GlobalArrays
+      URL   ${JKROOT}/ga-5-3b.tgz 
+      LOG_CONFIGURE 0
+      LOG_BUILD 0
+      CONFIGURE_COMMAND <SOURCE_DIR>/configure 
+         F77=${CMAKE_FORTRAN_COMP} 
+         CC=${CMAKE_C_COMPILER} 
+         CXX=${CMAKE_CXX_COMPILER} 
+         --prefix=${CMAKE_BINARY_DIR}
+      BUILD_COMMAND $(MAKE)     
+      INSTALL_COMMAND $(MAKE) install
+  )
+  set(JK_GA_INC ${CMAKE_BINARY_DIR}/include)
+  set(JK_GA_LIB ${CMAKE_BINARY_DIR}/lib )
+  set(JK_GA_INC ${JK_GA_INC} PARENT_SCOPE)
+  set(JK_GA_LIB ${JK_GA_LIB} PARENT_SCOPE)
+  message(STATUS "GA installed in: ${JK_GA_LIB}")
+endif()
