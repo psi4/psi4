@@ -6,3 +6,6 @@ set(SRC PsiMap.h
         Implementations/BaseUnitConverter.cc
 )
 add_library(PsiUtil ${SRC})
+if(BUILD_CUSTOM_BOOST)
+   add_dependencies(PsiUtil custom_boost)
+endif()
