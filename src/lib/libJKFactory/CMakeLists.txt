@@ -24,5 +24,11 @@ add_subdirectory(gtfock)
 
 set(JK_LIBS ${CMAKE_BINARY_DIR}/libGTFock.a)
 set(JK_LIBS ${JK_LIBS} ${JK_GA_LIBS} )
+add_library(GTFockInt STATIC MinimalInterface.h
+                          MinimalInterface.cpp )
+add_library(GTFockCInt STATIC CifiedFxns.h
+                             CifiedFxns.cc)
+add_dependencies(GTFockInt GTFock mints)
+add_dependencies(GTFockCInt qt mints)
 
 

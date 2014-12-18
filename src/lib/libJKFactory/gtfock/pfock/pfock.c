@@ -6,7 +6,11 @@
 #include <string.h>
 #include <sys/time.h>
 #include <omp.h>
+#if __INTEL_COMPILER
 #include <mkl.h>
+#else
+#include <cblas.h>
+#endif
 #include <assert.h>
 #include <math.h>
 
@@ -35,7 +39,7 @@ static PFockStatus_t init_fock(PFock_t pfock)
     int nbp_col;
     int nbp_p;
     int nshells_p;
-        
+
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
     nbp_p = pfock->nbp_p;
@@ -62,7 +66,7 @@ static PFockStatus_t init_fock(PFock_t pfock)
     // for row partition
     n0 = nshells/nprow;
     t = nshells%nprow;
-    n1 = (nshells + nprow - 1)/nprow;    
+    n1 = (nshells + nprow - 1)/nprow;
     n2 = n1 * t;
     for (i = 0; i < nprow; i++)
     {
@@ -76,17 +80,17 @@ static PFockStatus_t init_fock(PFock_t pfock)
     // set own
     pfock->sblk_row = pfock->rowptr_blk[myrank/npcol];
     pfock->eblk_row = pfock->rowptr_blk[myrank/npcol + 1] - 1;
-    pfock->nblks_row = pfock->eblk_row - pfock->sblk_row + 1;    
+    pfock->nblks_row = pfock->eblk_row - pfock->sblk_row + 1;
     pfock->sshell_row = pfock->rowptr_sh[myrank/npcol];
     pfock->eshell_row = pfock->rowptr_sh[myrank/npcol + 1] - 1;
-    pfock->nshells_row = pfock->eshell_row - pfock->sshell_row + 1;    
+    pfock->nshells_row = pfock->eshell_row - pfock->sshell_row + 1;
     pfock->sfunc_row = pfock->rowptr_f[myrank/npcol];
     pfock->efunc_row = pfock->rowptr_f[myrank/npcol + 1] - 1;
-    pfock->nfuncs_row = pfock->efunc_row - pfock->sfunc_row + 1;   
+    pfock->nfuncs_row = pfock->efunc_row - pfock->sfunc_row + 1;
     // for col partition
     n0 = nshells/npcol;
     t = nshells%npcol;
-    n1 = (nshells + npcol - 1)/npcol;    
+    n1 = (nshells + npcol - 1)/npcol;
     n2 = n1 * t;
     for (i = 0; i < npcol; i++)
     {
@@ -96,18 +100,18 @@ static PFockStatus_t init_fock(PFock_t pfock)
     }
     pfock->colptr_blk[i] = nbp_col;
     pfock->colptr_sh[i] = nshells;
-    pfock->colptr_f[i] = pfock->nbf;    
+    pfock->colptr_f[i] = pfock->nbf;
     // set own
     pfock->sblk_col = pfock->colptr_blk[myrank%npcol];
     pfock->eblk_col = pfock->colptr_blk[myrank%npcol + 1] - 1;
-    pfock->nblks_col = pfock->eblk_col - pfock->sblk_col + 1;    
+    pfock->nblks_col = pfock->eblk_col - pfock->sblk_col + 1;
     pfock->sshell_col = pfock->colptr_sh[myrank%npcol];
     pfock->eshell_col = pfock->colptr_sh[myrank%npcol + 1] - 1;
-    pfock->nshells_col = pfock->eshell_col - pfock->sshell_col + 1;    
+    pfock->nshells_col = pfock->eshell_col - pfock->sshell_col + 1;
     pfock->sfunc_col = pfock->colptr_f[myrank%npcol];
     pfock->efunc_col = pfock->colptr_f[myrank%npcol + 1] - 1;
     pfock->nfuncs_col = pfock->efunc_col - pfock->sfunc_col + 1;
-     
+
     pfock->ntasks = nbp_p * nbp_p;
     pfock->blkrowptr_sh = (int *)PFOCK_MALLOC(sizeof(int) * (nbp_row + 1));
     pfock->blkcolptr_sh = (int *)PFOCK_MALLOC(sizeof(int) * (nbp_col + 1));
@@ -125,7 +129,7 @@ static PFockStatus_t init_fock(PFock_t pfock)
         nshells_p = pfock->rowptr_sh[i + 1] - pfock->rowptr_sh[i];
         n0 = nshells_p/nbp_p;
         t = nshells_p%nbp_p;
-        n1 = (nshells_p + nbp_p - 1)/nbp_p;    
+        n1 = (nshells_p + nbp_p - 1)/nbp_p;
         n2 = n1 * t;
         for (j = 0; j < nbp_p; j++)
         {
@@ -140,7 +144,7 @@ static PFockStatus_t init_fock(PFock_t pfock)
         nshells_p = pfock->colptr_sh[i + 1] - pfock->colptr_sh[i];
         n0 = nshells_p/nbp_p;
         t = nshells_p%nbp_p;
-        n1 = (nshells_p + nbp_p - 1)/nbp_p;    
+        n1 = (nshells_p + nbp_p - 1)/nbp_p;
         n2 = n1 * t;
         for (j = 0; j < nbp_p; j++)
         {
@@ -149,7 +153,7 @@ static PFockStatus_t init_fock(PFock_t pfock)
         }
     }
     pfock->blkcolptr_sh[i * nbp_p] = nshells;
- 
+
     return PFOCK_STATUS_SUCCESS;
 }
 
@@ -208,7 +212,7 @@ static int nnz_partition (int m, int nnz, int min_nrows,
 			return -1;
 		}
 	}
-    
+
 	return 0;
 }
 
@@ -223,13 +227,13 @@ static PFockStatus_t repartition_fock (PFock_t pfock)
     int *shellptr = pfock->shellptr;
     int myrank;
     int ret;
-    
+
     MPI_Comm_rank (MPI_COMM_WORLD, &myrank);
 
     // for row partition
     int *newrowptr = (int *)malloc (sizeof(int) * (nprow + 1));
     int *newcolptr = (int *)malloc (sizeof(int) * (npcol + 1));
-    ret = nnz_partition (nshells, nnz, nbp_p, shellptr, nprow, newrowptr);    
+    ret = nnz_partition (nshells, nnz, nbp_p, shellptr, nprow, newrowptr);
     if (ret != 0)
     {
         PFOCK_PRINTF (1, "nbp_p is too large\n");
@@ -241,38 +245,38 @@ static PFockStatus_t repartition_fock (PFock_t pfock)
         PFOCK_PRINTF (1, "nbp_p is too large\n");
         return PFOCK_STATUS_EXECUTION_FAILED;
     }
-    memcpy (pfock->rowptr_sh, newrowptr, sizeof(int) * (nprow + 1));    
+    memcpy (pfock->rowptr_sh, newrowptr, sizeof(int) * (nprow + 1));
     memcpy (pfock->colptr_sh, newcolptr, sizeof(int) * (npcol + 1));
     free (newrowptr);
     free (newcolptr);
-    
+
     for (int i = 0; i < nprow; i++)
     {
         pfock->rowptr_f[i] = pfock->f_startind[pfock->rowptr_sh[i]];
     }
     pfock->rowptr_f[nprow] = pfock->nbf;
-    // set own  
+    // set own
     pfock->sshell_row = pfock->rowptr_sh[myrank/npcol];
     pfock->eshell_row = pfock->rowptr_sh[myrank/npcol + 1] - 1;
-    pfock->nshells_row = pfock->eshell_row - pfock->sshell_row + 1;    
+    pfock->nshells_row = pfock->eshell_row - pfock->sshell_row + 1;
     pfock->sfunc_row = pfock->rowptr_f[myrank/npcol];
     pfock->efunc_row = pfock->rowptr_f[myrank/npcol + 1] - 1;
-    pfock->nfuncs_row = pfock->efunc_row - pfock->sfunc_row + 1;  
-    
+    pfock->nfuncs_row = pfock->efunc_row - pfock->sfunc_row + 1;
+
     // for col partition
     for (int i = 0; i < npcol; i++)
     {
         pfock->colptr_f[i] = pfock->f_startind[pfock->colptr_sh[i]];
     }
-    pfock->colptr_f[npcol] = pfock->nbf;    
-    // set own   
+    pfock->colptr_f[npcol] = pfock->nbf;
+    // set own
     pfock->sshell_col = pfock->colptr_sh[myrank%npcol];
     pfock->eshell_col = pfock->colptr_sh[myrank%npcol + 1] - 1;
-    pfock->nshells_col = pfock->eshell_col - pfock->sshell_col + 1;    
+    pfock->nshells_col = pfock->eshell_col - pfock->sshell_col + 1;
     pfock->sfunc_col = pfock->colptr_f[myrank%npcol];
     pfock->efunc_col = pfock->colptr_f[myrank%npcol + 1] - 1;
     pfock->nfuncs_col = pfock->efunc_col - pfock->sfunc_col + 1;
-     
+
     // tasks 2D partitioning
     // row
     int nshells_p;
@@ -285,7 +289,7 @@ static PFockStatus_t repartition_fock (PFock_t pfock)
         nshells_p = pfock->rowptr_sh[i + 1] - pfock->rowptr_sh[i];
         n0 = nshells_p/nbp_p;
         t = nshells_p%nbp_p;
-        n1 = (nshells_p + nbp_p - 1)/nbp_p;    
+        n1 = (nshells_p + nbp_p - 1)/nbp_p;
         n2 = n1 * t;
         for (int j = 0; j < nbp_p; j++)
         {
@@ -300,7 +304,7 @@ static PFockStatus_t repartition_fock (PFock_t pfock)
         nshells_p = pfock->colptr_sh[i + 1] - pfock->colptr_sh[i];
         n0 = nshells_p/nbp_p;
         t = nshells_p%nbp_p;
-        n1 = (nshells_p + nbp_p - 1)/nbp_p;    
+        n1 = (nshells_p + nbp_p - 1)/nbp_p;
         n2 = n1 * t;
         for (int j = 0; j < nbp_p; j++)
         {
@@ -319,7 +323,7 @@ static PFockStatus_t repartition_fock (PFock_t pfock)
         PFOCK_PRINTF (1, "memory allocation failed\n");
         return PFOCK_STATUS_ALLOC_FAILED;
     }
-    
+
     return PFOCK_STATUS_SUCCESS;
 }
 
@@ -345,15 +349,15 @@ static PFockStatus_t create_GA (PFock_t pfock)
         PFOCK_PRINTF (1, "memory allocation failed\n");
         return PFOCK_STATUS_ALLOC_FAILED;
     }
-    
+
     for (i = 0; i < nprow; i++)
-    {       
+    {
         map[i] = pfock->rowptr_f[i];
-    }   
+    }
     for (i = 0; i < npcol; i++)
     {
         map[i + nprow] = pfock->colptr_f[i];
-    } 
+    }
     dims[0] = nbf;
     dims[1] = nbf;
     block[0] = nprow;
@@ -366,18 +370,20 @@ static PFockStatus_t create_GA (PFock_t pfock)
         pfock->ga_F == NULL ||
         pfock->ga_K == NULL) {
         PFOCK_PRINTF(1, "memory allocation failed\n");
-        return PFOCK_STATUS_ALLOC_FAILED;        
+        return PFOCK_STATUS_ALLOC_FAILED;
     }
 
     sprintf(str, "D_0");
+
     pfock->ga_D[0] = NGA_Create_irreg(C_DBL, 2, dims, str, block, map);
+
     if (0 == pfock->ga_D[0]) {
         PFOCK_PRINTF(1, "GA allocation failed\n");
         return PFOCK_STATUS_ALLOC_FAILED;
     }
-    
+
     for (int i = 0; i < pfock->max_numdmat2; i++) {
-        if (i != 0) {                
+        if (i != 0) {
             sprintf(str, "D_%d", i);
             pfock->ga_D[i] = GA_Duplicate(pfock->ga_D[0], str);
             if (0 == pfock->ga_D[i]) {
@@ -385,16 +391,16 @@ static PFockStatus_t create_GA (PFock_t pfock)
                 return PFOCK_STATUS_ALLOC_FAILED;
             }
         }
-    
+
         sprintf(str, "F_%d", i);
-        pfock->ga_F[i] = GA_Duplicate(pfock->ga_D[0], str);    
+        pfock->ga_F[i] = GA_Duplicate(pfock->ga_D[0], str);
         if (0 == pfock->ga_F[i]) {
             PFOCK_PRINTF(1, "GA allocation failed\n");
             return PFOCK_STATUS_ALLOC_FAILED;
         }
 
         sprintf (str, "K_%d", i);
-        pfock->ga_K[i] = GA_Duplicate(pfock->ga_D[0], str);    
+        pfock->ga_K[i] = GA_Duplicate(pfock->ga_D[0], str);
         if (0 == pfock->ga_K[i]) {
             PFOCK_PRINTF(1, "GA allocation failed\n");
             return PFOCK_STATUS_ALLOC_FAILED;
@@ -406,7 +412,7 @@ static PFockStatus_t create_GA (PFock_t pfock)
     pfock->gatable[PFOCK_MAT_TYPE_K] = pfock->ga_K;
 
     PFOCK_FREE(map);
-    
+
     return PFOCK_STATUS_SUCCESS;
 }
 
@@ -414,14 +420,14 @@ static PFockStatus_t create_GA (PFock_t pfock)
 static void destroy_GA(PFock_t pfock)
 {
     for (int i = 0; i < pfock->max_numdmat2; i++) {
-        GA_Destroy(pfock->ga_D[i]);        
+        GA_Destroy(pfock->ga_D[i]);
         GA_Destroy(pfock->ga_F[i]);
         GA_Destroy(pfock->ga_K[i]);
     }
     PFOCK_FREE(pfock->ga_D);
     PFOCK_FREE(pfock->ga_F);
     PFOCK_FREE(pfock->ga_K);
-    
+
 }
 
 
@@ -430,10 +436,10 @@ static PFockStatus_t create_FD_GArrays (PFock_t pfock)
     int dims[2];
     int block[2];
     char str[8];
-    
+
     int sizeD1 = pfock->sizeX1;
     int sizeD2 = pfock->sizeX2;
-    int sizeD3 = pfock->sizeX3;  
+    int sizeD3 = pfock->sizeX3;
     int *map = (int *)PFOCK_MALLOC(sizeof(int) * (1 + pfock->nprocs));
     if (NULL == map) {
         PFOCK_PRINTF(1, "memory allocation failed\n");
@@ -466,7 +472,7 @@ static PFockStatus_t create_FD_GArrays (PFock_t pfock)
             return PFOCK_STATUS_ALLOC_FAILED;
         }
     }
-        
+
     // for D2
     for (int i = 0; i < pfock->nprocs; i++)
     {
@@ -492,7 +498,7 @@ static PFockStatus_t create_FD_GArrays (PFock_t pfock)
             return PFOCK_STATUS_ALLOC_FAILED;
         }
     }
-    
+
     // for D3
     for (int i = 0; i < pfock->nprocs; i++)
     {
@@ -543,10 +549,10 @@ static PFockStatus_t create_FD_GArrays (PFock_t pfock)
             return PFOCK_STATUS_ALLOC_FAILED;
         }
     }
-    
+
     PFOCK_FREE(map);
 
-    return PFOCK_STATUS_SUCCESS; 
+    return PFOCK_STATUS_SUCCESS;
 }
 
 
@@ -555,14 +561,14 @@ static PFockStatus_t create_buffers (PFock_t pfock)
     int myrank;
     MPI_Comm_rank (MPI_COMM_WORLD, &myrank);
     int myrow = myrank/pfock->npcol;
-    int mycol = myrank%pfock->npcol;   
+    int mycol = myrank%pfock->npcol;
     int *ptrrow = (int *)PFOCK_MALLOC(sizeof(int) * pfock->nshells);
     int *ptrcol = (int *)PFOCK_MALLOC(sizeof(int) * pfock->nshells);
     if (NULL == ptrrow ||
         NULL == ptrcol) {
         PFOCK_PRINTF(1, "memory allocation failed\n");
-        return PFOCK_STATUS_ALLOC_FAILED;    
-    }    
+        return PFOCK_STATUS_ALLOC_FAILED;
+    }
 
     // compute rowptr/pos and colptr/pos
     pfock->rowpos = (int *)PFOCK_MALLOC(sizeof(int) * pfock->nshells);
@@ -576,13 +582,13 @@ static PFockStatus_t create_buffers (PFock_t pfock)
          pfock->nprow + pfock->npcol);
     if (NULL == pfock->rowpos  ||
         NULL == pfock->colpos  ||
-        NULL == pfock->rowptr  || 
+        NULL == pfock->rowptr  ||
         NULL == pfock->colptr  ||
         NULL == pfock->rowsize ||
         NULL == pfock->colsize) {
         PFOCK_PRINTF(1, "memory allocation failed\n");
-        return PFOCK_STATUS_ALLOC_FAILED;    
-    }   
+        return PFOCK_STATUS_ALLOC_FAILED;
+    }
     int count = 0;
     int maxrowsize = 0;
     int maxrowfuncs = 0;
@@ -597,7 +603,7 @@ static PFockStatus_t create_buffers (PFock_t pfock)
         if (i == myrow) {
             pfock->sizemyrow = pfock->rowsize[i];
             init_FD_load(pfock, ptrrow,
-                         &(pfock->loadrow), &(pfock->sizeloadrow));  
+                         &(pfock->loadrow), &(pfock->sizeloadrow));
         }
         for (int j = pfock->rowptr_sh[i]; j < pfock->rowptr_sh[i+1]; j++) {
             pfock->rowpos[j] = ptrrow[j];
@@ -623,7 +629,7 @@ static PFockStatus_t create_buffers (PFock_t pfock)
         if (i == mycol) {
             pfock->sizemycol = pfock->colsize[i];
             init_FD_load (pfock, ptrcol,
-                          &(pfock->loadcol), &(pfock->sizeloadcol));  
+                          &(pfock->loadcol), &(pfock->sizeloadcol));
         }
         for (int j = pfock->colptr_sh[i]; j < pfock->colptr_sh[i+1]; j++) {
             pfock->colpos[j] = ptrcol[j];
@@ -646,14 +652,14 @@ static PFockStatus_t create_buffers (PFock_t pfock)
     pfock->sizeX1 = sizeX1;
     pfock->sizeX2 = sizeX2;
     pfock->sizeX3 = sizeX3;
-    if (myrank == 0) {
+    if (myrank == 0&& 0==1) {
         printf("  FD size (%d %d %d %d)\n",
             maxrowfuncs, maxcolfuncs, maxrowsize, maxcolsize);
     }
-    
+
     // D buf
     pfock->D1 = (double **)PFOCK_MALLOC(sizeof(double *) * pfock->max_numdmat2);
-    pfock->D2 = (double **)PFOCK_MALLOC(sizeof(double *) * pfock->max_numdmat2); 
+    pfock->D2 = (double **)PFOCK_MALLOC(sizeof(double *) * pfock->max_numdmat2);
     pfock->D3 = (double **)PFOCK_MALLOC(sizeof(double *) * pfock->max_numdmat2);
     if (NULL == pfock->D1 ||
         NULL == pfock->D2 ||
@@ -663,7 +669,7 @@ static PFockStatus_t create_buffers (PFock_t pfock)
     }
     for (int i = 0; i < pfock->max_numdmat2; i++) {
         pfock->D1[i] = (double *)PFOCK_MALLOC(sizeof(double) * sizeX1);
-        pfock->D2[i] = (double *)PFOCK_MALLOC(sizeof(double) * sizeX2); 
+        pfock->D2[i] = (double *)PFOCK_MALLOC(sizeof(double) * sizeX2);
         pfock->D3[i] = (double *)PFOCK_MALLOC(sizeof(double) * sizeX3);
         pfock->mem_cpu += 1.0 * sizeof(double) * (sizeX1 + sizeX2 + sizeX3);
         if (NULL == pfock->D1[i] ||
@@ -674,7 +680,7 @@ static PFockStatus_t create_buffers (PFock_t pfock)
         }
     }
 
-    
+
     // F buf
     int nthreads = pfock->nthreads;
     char *ncpu_str = getenv("nCPU_F");
@@ -687,7 +693,7 @@ static PFockStatus_t create_buffers (PFock_t pfock)
             ncpu_f = 1;
         }
     }
-    
+
     int sizeX4 = maxrowfuncs * maxcolfuncs;
     int sizeX6 = maxrowsize * maxcolfuncs;
     int sizeX5 = maxrowfuncs * maxcolsize;
@@ -701,17 +707,17 @@ static PFockStatus_t create_buffers (PFock_t pfock)
     pfock->F1 = (double *)PFOCK_MALLOC(sizeof(double) * sizeX1 *
         numF * pfock->max_numdmat2);
     pfock->F2 = (double *)PFOCK_MALLOC(sizeof(double) * sizeX2 *
-        numF * pfock->max_numdmat2); 
+        numF * pfock->max_numdmat2);
     pfock->F3 = (double *)PFOCK_MALLOC(sizeof(double) * sizeX3 *
         pfock->max_numdmat2);
     pfock->F4 = (double *)PFOCK_MALLOC(sizeof(double) * sizeX4 *
         numF * pfock->max_numdmat2);
     pfock->F5 = (double *)PFOCK_MALLOC(sizeof(double) * sizeX5 *
-        numF * pfock->max_numdmat2); 
+        numF * pfock->max_numdmat2);
     pfock->F6 = (double *)PFOCK_MALLOC(sizeof(double) * sizeX6 *
         numF * pfock->max_numdmat2);
     pfock->mem_cpu += 1.0 * sizeof(double) *
-        (((double)sizeX1 + sizeX2 + sizeX4 + sizeX5 + sizeX6) * 
+        (((double)sizeX1 + sizeX2 + sizeX4 + sizeX5 + sizeX6) *
         numF + sizeX3) * pfock->max_numdmat2;
     if (NULL == pfock->F1 ||
         NULL == pfock->F2 ||
@@ -721,14 +727,14 @@ static PFockStatus_t create_buffers (PFock_t pfock)
         NULL == pfock->F6) {
         PFOCK_PRINTF (1, "memory allocation failed\n");
         return PFOCK_STATUS_ALLOC_FAILED;
-    } 
+    }
 
     pfock->ldX1 = maxrowsize;
     pfock->ldX2 = maxcolsize;
     pfock->ldX3 = maxcolsize;
     pfock->ldX4 = maxcolfuncs;
     pfock->ldX5 = maxcolsize;
-    pfock->ldX6 = maxcolfuncs;        
+    pfock->ldX6 = maxcolfuncs;
     return PFOCK_STATUS_SUCCESS;
 }
 
@@ -749,7 +755,7 @@ static void destroy_buffers (PFock_t pfock)
     PFOCK_FREE(pfock->ga_F1);
     PFOCK_FREE(pfock->ga_F2);
     PFOCK_FREE(pfock->ga_F3);
-        
+
     PFOCK_FREE(pfock->rowpos);
     PFOCK_FREE(pfock->colpos);
     PFOCK_FREE(pfock->rowptr);
@@ -772,7 +778,7 @@ static void destroy_buffers (PFock_t pfock)
     PFOCK_FREE(pfock->F3);
     PFOCK_FREE(pfock->F4);
     PFOCK_FREE(pfock->F5);
-    PFOCK_FREE(pfock->F6);    
+    PFOCK_FREE(pfock->F6);
 }
 
 
@@ -790,13 +796,13 @@ PFockStatus_t init_GA(int nbf, int nprow, int npcol,
     if (!MA_init(C_DBL, heap, stack)) {
         return PFOCK_STATUS_INIT_FAILED;
     }
-    
+
     return PFOCK_STATUS_SUCCESS;
 }
 
 
 void finalize_GA(void)
-{    
+{
     GA_Terminate();
 }
 
@@ -806,7 +812,7 @@ PFockStatus_t PFock_create(BasisSet_t basis, int nprow, int npcol, int ntasks,
                            PFock_t *_pfock)
 {
     // allocate pfock
-    PFock_t pfock = (PFock_t)PFOCK_MALLOC(sizeof(struct PFock));    
+    PFock_t pfock = (PFock_t)PFOCK_MALLOC(sizeof(struct PFock));
     if (NULL == pfock) {
         PFOCK_PRINTF(1, "Failed to allocate memory: %lld\n",
             sizeof(struct PFock));
@@ -815,16 +821,16 @@ PFockStatus_t PFock_create(BasisSet_t basis, int nprow, int npcol, int ntasks,
     memset(pfock, 0, sizeof(PFock_t));
 
     // check if MPI is initialized
-    int flag;    
+    int flag;
     MPI_Initialized(&flag);
     if (!flag) {
         PFOCK_PRINTF(1, "MPI_Init() or MPI_Init_thread()"
                      " has not been called\n");
-        return PFOCK_STATUS_INIT_FAILED;        
+        return PFOCK_STATUS_INIT_FAILED;
     }
     int nprocs;
-    int myrank;   
-    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);         
+    int myrank;
+    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
     // initialization
@@ -836,7 +842,7 @@ PFockStatus_t PFock_create(BasisSet_t basis, int nprow, int npcol, int ntasks,
     pfock->nthreads = omp_get_max_threads ();
     pfock->mem_cpu = 0.0;
     omp_set_num_threads (pfock->nthreads);
-    
+
     // check inputs
     if (nprow <= 0 || nprow > pfock->nshells ||
         npcol <= 0 || npcol > pfock->nshells ||
@@ -862,10 +868,10 @@ PFockStatus_t PFock_create(BasisSet_t basis, int nprow, int npcol, int ntasks,
         pfock->max_numdmat = max_numdmat;
         pfock->max_numdmat2 = (pfock->nosymm + 1) * max_numdmat;
     }
-          
+
     // init global arrays
     init_GA(pfock->nbf, nprow, npcol, pfock->max_numdmat2, 0, 0);
-        
+
     // set tasks
     int minnshells = (nprow > npcol ? nprow : npcol);
     minnshells = pfock->nshells/minnshells;
@@ -878,15 +884,15 @@ PFockStatus_t PFock_create(BasisSet_t basis, int nprow, int npcol, int ntasks,
         pfock->nbp_p = ntasks;
     }
     pfock->nbp_row = pfock->nbp_col = pfock->nbp_p;
-       
+
     // functions starting positions of shells
     pfock->f_startind =
         (int *)PFOCK_MALLOC(sizeof(int) * (pfock->nshells + 1));
-    pfock->mem_cpu += sizeof(int) * (pfock->nshells + 1);   
+    pfock->mem_cpu += sizeof(int) * (pfock->nshells + 1);
     if (NULL == pfock->f_startind) {
         PFOCK_PRINTF(1, "memory allocation failed\n");
         return PFOCK_STATUS_ALLOC_FAILED;
-    }  
+    }
     for (int i = 0; i < pfock->nshells; i++) {
         pfock->f_startind[i] = CInt_getFuncStartInd(basis, i);
     }
@@ -895,7 +901,7 @@ PFockStatus_t PFock_create(BasisSet_t basis, int nprow, int npcol, int ntasks,
     // shells starting positions of atoms
     pfock->s_startind =
         (int *)PFOCK_MALLOC(sizeof(int) * (pfock->natoms + 1));
-    pfock->mem_cpu += sizeof(int) * (pfock->natoms + 1); 
+    pfock->mem_cpu += sizeof(int) * (pfock->natoms + 1);
     if (NULL == pfock->s_startind) {
         PFOCK_PRINTF(1, "memory allocation failed\n");
         return PFOCK_STATUS_ALLOC_FAILED;
@@ -910,15 +916,15 @@ PFockStatus_t PFock_create(BasisSet_t basis, int nprow, int npcol, int ntasks,
     if ((ret = init_fock(pfock)) != PFOCK_STATUS_SUCCESS) {
         return ret;
     }
-    
+
     // init scheduler
     if (init_taskq(pfock) != 0) {
         PFOCK_PRINTF(1, "task queue initialization failed\n");
         return PFOCK_STATUS_INIT_FAILED;
     }
 
-    // schwartz screening    
-    if (myrank == 0) {
+    // schwartz screening
+    if (myrank == 0&&0==1) {
         PFOCK_INFO("screening ...\n");
     }
     double t1 = MPI_Wtime();
@@ -927,7 +933,7 @@ PFockStatus_t PFock_create(BasisSet_t basis, int nprow, int npcol, int ntasks,
         return PFOCK_STATUS_INIT_FAILED;
     }
     double t2 = MPI_Wtime();
-    if (myrank == 0) {
+    if (myrank == 0&&0==1) {
         PFOCK_INFO("takes %.3lf secs\n", t2 - t1);
     }
 
@@ -980,7 +986,7 @@ PFockStatus_t PFock_create(BasisSet_t basis, int nprow, int npcol, int ntasks,
     if (pfock->mpi_timepass == NULL ||
         pfock->mpi_timereduce == NULL ||
         pfock->mpi_timeinit == NULL ||
-        pfock->mpi_timecomp == NULL ||        
+        pfock->mpi_timecomp == NULL ||
         pfock->mpi_usq == NULL ||
         pfock->mpi_uitl == NULL ||
         pfock->mpi_steals == NULL ||
@@ -992,10 +998,10 @@ PFockStatus_t PFock_create(BasisSet_t basis, int nprow, int npcol, int ntasks,
         PFOCK_PRINTF(1, "memory allocation failed\n");
         return PFOCK_STATUS_ALLOC_FAILED;
     }
-    
+
     pfock->committed = 0;
     *_pfock = pfock;
-    
+
     return PFOCK_STATUS_SUCCESS;
 }
 
@@ -1032,9 +1038,9 @@ PFockStatus_t PFock_destroy(PFock_t pfock)
     PFOCK_FREE(pfock->mpi_stealfrom);
     PFOCK_FREE(pfock->mpi_ngacalls);
     PFOCK_FREE(pfock->mpi_volumega);
-    
+
     PFOCK_FREE(pfock);
-  
+
     return PFOCK_STATUS_SUCCESS;
 }
 
@@ -1053,7 +1059,7 @@ PFockStatus_t PFock_setNumDenMat(int numdmat, PFock_t pfock)
     int numdmat2 = numdmat * (pfock->nosymm + 1);
     pfock->num_dmat = numdmat;
     pfock->num_dmat2 = numdmat2;
-    
+
     return PFOCK_STATUS_EXECUTION_FAILED;
 }
 
@@ -1076,13 +1082,13 @@ PFockStatus_t PFock_putDenMat(int rowstart, int rowend,
         PFOCK_PRINTF (1, "Invalid index\n");
         return PFOCK_STATUS_INVALID_VALUE;
     }
-    
+
     lo[0] = rowstart;
-    hi[0] = rowend;    
+    hi[0] = rowend;
     lo[1] = colstart;
     hi[1] = colend;
     ld[0] = stride;
-    
+    printf("pfock.c:1091 GA handle %d\n",pfock->ga_D[index]);
     NGA_Put(pfock->ga_D[index], lo, hi, (void *)dmat, ld);
     return PFOCK_STATUS_SUCCESS;
 }
@@ -1100,7 +1106,7 @@ PFockStatus_t PFock_fillDenMat(double value, int index,
         PFOCK_PRINTF (1, "Invalid index\n");
         return PFOCK_STATUS_INVALID_VALUE;
     }
-    
+
     GA_Fill(pfock->ga_D[index], &value);
     return PFOCK_STATUS_SUCCESS;
 }
@@ -1145,14 +1151,14 @@ PFockStatus_t PFock_getMat(PFock_t pfock, PFockMatType_t type, int index,
         PFOCK_PRINTF (1, "Invalid matrix type\n");
         return PFOCK_STATUS_INVALID_VALUE;
     }
-#endif    
+#endif
 
     lo[0] = rowstart;
-    hi[0] = rowend;    
+    hi[0] = rowend;
     lo[1] = colstart;
     hi[1] = colend;
     ld[0] = stride;
-    
+
     ga = pfock->gatable[type];
     NGA_Get(ga[index], lo, hi, mat, ld);
 
@@ -1176,10 +1182,10 @@ PFockStatus_t PFock_getMat(PFock_t pfock, PFockMatType_t type, int index,
             }
         }
         PFOCK_FREE(K);
-    }    
+    }
 #endif
 
-    return PFOCK_STATUS_SUCCESS;    
+    return PFOCK_STATUS_SUCCESS;
 }
 
 
@@ -1189,7 +1195,7 @@ PFockStatus_t PFock_getLocalMatInds(PFock_t pfock,
 {
     int lo[2];
     int hi[2];
-    int myrank;  
+    int myrank;
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
     NGA_Distribution(pfock->ga_D[0], myrank, lo, hi);
     *rowstart = lo[0];
@@ -1217,7 +1223,7 @@ PFockStatus_t PFock_getLocalMatPtr(PFock_t pfock,
         PFOCK_PRINTF (1, "Invalid index\n");
         return PFOCK_STATUS_INVALID_VALUE;
     }
-    
+
     ga = pfock->gatable[type];
     MPI_Comm_rank (MPI_COMM_WORLD, &myrank);
     NGA_Distribution (ga[index], myrank, lo, hi);
@@ -1226,8 +1232,8 @@ PFockStatus_t PFock_getLocalMatPtr(PFock_t pfock,
     *rowend = hi[0];
     *colstart = lo[1];
     *colend = hi[1];
-    
-    return PFOCK_STATUS_SUCCESS;  
+
+    return PFOCK_STATUS_SUCCESS;
 }
 
 
@@ -1240,7 +1246,7 @@ PFockStatus_t PFock_getMatGAHandle(PFock_t pfock,
         PFOCK_PRINTF (1, "Invalid index\n");
         return PFOCK_STATUS_INVALID_VALUE;
     }
-    
+
     int *g = pfock->gatable[type];
     *ga = g[index];
     return PFOCK_STATUS_SUCCESS;
@@ -1258,10 +1264,10 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
     struct timeval tv1;
     struct timeval tv2;
     struct timeval tv3;
-    struct timeval tv4; 
+    struct timeval tv4;
     int myrank;
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-    pfock->committed = 0;      
+    pfock->committed = 0;
     pfock->timepass = 0.0;
     pfock->timereduce = 0.0;
     pfock->timeinit = 0.0;
@@ -1281,7 +1287,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
     int sizeX1 = pfock->sizeX1;
     int sizeX2 = pfock->sizeX2;
     int sizeX3 = pfock->sizeX3;
-    int sizeX4 = pfock->sizeX4;    
+    int sizeX4 = pfock->sizeX4;
     int sizeX5 = pfock->sizeX5;
     int sizeX6 = pfock->sizeX6;
     double *D1[pfock->num_dmat2];
@@ -1307,7 +1313,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
     int lo[2];
     int hi[2];
 
-    gettimeofday (&tv1, NULL);    
+    gettimeofday (&tv1, NULL);
     gettimeofday (&tv3, NULL);
     for (int i = 0; i < pfock->num_dmat2; i++) {
         GA_Fill(pfock->ga_F[i], &dzero);
@@ -1337,14 +1343,14 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
         (tv4.tv_usec - tv3.tv_usec) / 1000.0 / 1000.0;
     pfock->ngacalls += 3;
     pfock->volumega += (sizeX1 + sizeX2 + sizeX3) * sizeof(double);
-    
-    gettimeofday (&tv3, NULL);   
+
+    gettimeofday (&tv3, NULL);
     reset_F(pfock->numF, pfock->num_dmat2, F1, F2, F3, F4, F5, F6,
             sizeX1, sizeX2, sizeX3, sizeX4, sizeX5, sizeX6);
     gettimeofday (&tv4, NULL);
     pfock->timeinit += (tv4.tv_sec - tv3.tv_sec) +
         (tv4.tv_usec - tv3.tv_usec) / 1000.0 / 1000.0;
-    
+
     /* own part */
     reset_taskq(pfock);
     int task;
@@ -1355,7 +1361,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
         int endM = pfock->blkrowptr_sh[pfock->sblk_row + rowid + 1] - 1;
         int startP = pfock->blkcolptr_sh[pfock->sblk_col + colid];
         int endP = pfock->blkcolptr_sh[pfock->sblk_col + colid + 1] - 1;
-        gettimeofday (&tv3, NULL);       
+        gettimeofday (&tv3, NULL);
         //fock_task(basis, pfock->erd, pfock->ncpu_f, pfock->num_dmat2,
         fock_task(basis, pfock->ncpu_f, pfock->num_dmat2,
                   pfock->shellptr, pfock->shellvalue,
@@ -1376,7 +1382,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
                     (tv4.tv_usec - tv3.tv_usec) / 1000.0 / 1000.0;
     } /* own part */
 
-    gettimeofday (&tv3, NULL);        
+    gettimeofday (&tv3, NULL);
     // reduction on CPU
     reduce_F(pfock->numF, pfock->num_dmat2, F1, F2, F3, F4, F5, F6,
              sizeX1, sizeX2, sizeX3,
@@ -1385,10 +1391,10 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
              pfock->nfuncs_row, pfock->nfuncs_col,
              pfock->rowpos[my_sshellrow],
              pfock->colpos[my_sshellcol],
-             ldX3, ldX4, ldX5, ldX6);   
+             ldX3, ldX4, ldX5, ldX6);
     lo[0] = myrank;
     hi[0] = myrank;
-    lo[1] = 0;    
+    lo[1] = 0;
     for (int i = 0; i < pfock->num_dmat2; i++) {
         hi[1] = sizeX1 - 1;
 #ifdef GA_NB
@@ -1397,15 +1403,15 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
                   &sizeX1, &done, &nbhdlF1);
         hi[1] = sizeX2 - 1;
         NGA_NbAcc(pfock->ga_F2[i], lo, hi, &F2[i * sizeX2],
-                  &sizeX2, &done, &nbhdlF2); 
+                  &sizeX2, &done, &nbhdlF2);
         hi[1] = sizeX3 - 1;
         NGA_NbAcc(pfock->ga_F3[i], lo, hi, &F3[i * sizeX3],
-                  &sizeX3, &done, &nbhdlF3); 
+                  &sizeX3, &done, &nbhdlF3);
 #else
         // save results for local intergrals
         NGA_Acc(pfock->ga_F1[i], lo, hi, &F1[i * sizeX1], &sizeX1, &done);
         hi[1] = sizeX2 - 1;
-        NGA_Acc(pfock->ga_F2[i], lo, hi, &F2[i * sizeX2], &sizeX2, &done); 
+        NGA_Acc(pfock->ga_F2[i], lo, hi, &F2[i * sizeX2], &sizeX2, &done);
         hi[1] = sizeX3 - 1;
         NGA_Acc(pfock->ga_F3[i], lo, hi, &F3[i * sizeX3], &sizeX3, &done);
 #endif
@@ -1431,7 +1437,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
     double **VD2 = pfock->D2;
     double **VD3 = pfock->D3;
     int prevrow = myrow;
-    int prevcol = mycol;   
+    int prevcol = mycol;
     /* steal tasks */
     for (int idx = 0; idx < pfock->nprocs - 1; idx++) {
         int vpid = (myrank + idx + 1)%pfock->nprocs;
@@ -1439,10 +1445,10 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
         int vcol = vpid%pfock->npcol;
         int vsblk_row = pfock->rowptr_blk[vrow];
         int vsblk_col = pfock->colptr_blk[vcol];
-        int vnblks_col = pfock->colptr_blk[vcol + 1] - vsblk_col;       
+        int vnblks_col = pfock->colptr_blk[vcol + 1] - vsblk_col;
         int vnfuncs_row = pfock->rowptr_f[vrow + 1] - pfock->rowptr_f[vrow];
         int vnfuncs_col = pfock->colptr_f[vcol + 1] - pfock->colptr_f[vcol];
-        int vsshellrow = pfock->rowptr_sh[vrow];   
+        int vsshellrow = pfock->rowptr_sh[vrow];
         int vsshellcol = pfock->colptr_sh[vcol];
         int stealed = 0;
         int task;
@@ -1456,7 +1462,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
                     lo[1] = 0;
                     hi[1] = sizeX1 - 1;
                     for (int i = 0; i < pfock->num_dmat2; i++) {
-                    #ifdef GA_NB    
+                    #ifdef GA_NB
                         NGA_NbGet(pfock->ga_D1[i], lo, hi,
                                   VD1[i], &sizeX1, &nbhdlD1);
                     #else
@@ -1464,10 +1470,10 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
                     #endif
                         pfock->ngacalls += 1;
                         pfock->volumega += sizeX1 * sizeof(double);
-                    }                 
+                    }
                 } else if (vrow == myrow) {
                     D1_task = D1;
-                }  
+                }
                 if (vcol != prevcol && vcol != mycol) {
                     D2_task =  VD2;
                     lo[0] = vpid;
@@ -1479,11 +1485,11 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
                         NGA_NbGet(pfock->ga_D2[i], lo, hi,
                                   VD2[i], &sizeX2, &nbhdlD2);
                     #else
-                        NGA_Get(pfock->ga_D2[i], lo, hi, VD2[i], &sizeX2);               
+                        NGA_Get(pfock->ga_D2[i], lo, hi, VD2[i], &sizeX2);
                     #endif
                         pfock->ngacalls += 1;
                         pfock->volumega += sizeX2 * sizeof(double);
-                    }                  
+                    }
                 } else if (vcol == mycol) {
                     D2_task = D2;
                 }
@@ -1493,7 +1499,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
                 hi[1] = sizeX3 - 1;
                 for (int i = 0; i < pfock->num_dmat2; i++) {
                 #ifdef GA_NB
-                    NGA_NbGet(pfock->ga_D3[i], lo, hi, 
+                    NGA_NbGet(pfock->ga_D3[i], lo, hi,
                               VD3[i], &sizeX3, &nbhdlD3);
                 #else
                     NGA_Get(pfock->ga_D3[i], lo, hi,  VD3[i], &sizeX3);
@@ -1501,16 +1507,16 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
                     pfock->ngacalls += 1;
                     pfock->volumega += sizeX3 * sizeof(double);
                 }
-            #ifdef GA_NB    
+            #ifdef GA_NB
                 // wait for last NbAcc F
                 NGA_NbWait(&nbhdlF1);
                 NGA_NbWait(&nbhdlF2);
                 NGA_NbWait(&nbhdlF3);
-            #endif    
+            #endif
                 // init F bufs
                 reset_F(pfock->numF, pfock->num_dmat2, F1, F2, F3, F4, F5, F6,
                         sizeX1, sizeX2, sizeX3, sizeX4, sizeX5, sizeX6);
-            #ifdef GA_NB    
+            #ifdef GA_NB
                 // wait for NbGet
                 if (vrow != prevrow && vrow != myrow) {
                     NGA_NbWait(&nbhdlD1);
@@ -1519,7 +1525,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
                     NGA_NbWait(&nbhdlD2);
                 }
                 NGA_NbWait(&nbhdlD3);
-            #endif    
+            #endif
                 pfock->stealfrom++;
             }
             gettimeofday (&tv4, NULL);
@@ -1584,13 +1590,13 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
                 lo[0] = myrank;
                 hi[0] = myrank;
                 for (int i = 0; i < pfock->num_dmat2; i++) {
-                #ifdef GA_NB    
+                #ifdef GA_NB
                     NGA_NbAcc(pfock->ga_F1[i], lo, hi,
                               &F1[i * sizeX1], &sizeX1, &done, &nbhdlF1);
                 #else
                     NGA_Acc(pfock->ga_F1[i], lo, hi,
                             &F1[i * sizeX1], &sizeX1, &done);
-                #endif             
+                #endif
                 }
             }
             lo[1] = 0;
@@ -1599,7 +1605,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
                 lo[0] = vpid;
                 hi[0] = vpid;
                 for (int i = 0; i < pfock->num_dmat2; i++) {
-                #ifdef GA_NB    
+                #ifdef GA_NB
                     NGA_NbAcc(pfock->ga_F2[i], lo, hi,
                               &F2[i * sizeX2], &sizeX2, &done, &nbhdlF2);
                 #else
@@ -1643,7 +1649,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
         gettimeofday (&tv4, NULL);
         pfock->timereduce += (tv4.tv_sec - tv3.tv_sec) +
                         (tv4.tv_usec - tv3.tv_usec) / 1000.0 / 1000.0;
-    } /* steal tasks */    
+    } /* steal tasks */
 #endif /* #ifdef __DYNAMIC__ */
 
 #ifdef GA_NB
@@ -1663,12 +1669,12 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
         hi[1] = sizeX3 - 1;
         NGA_Release(pfock->ga_D3[i], lo, hi);
     }
-    
+
     gettimeofday (&tv2, NULL);
     pfock->timepass = (tv2.tv_sec - tv1.tv_sec) +
-               (tv2.tv_usec - tv1.tv_usec) / 1000.0 / 1000.0;    
+               (tv2.tv_usec - tv1.tv_usec) / 1000.0 / 1000.0;
     GA_Sync();
-    
+
     gettimeofday (&tv3, NULL);
     store_local_bufF (pfock);
     gettimeofday (&tv4, NULL);
@@ -1678,7 +1684,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
     if (myrank == 0) {
         PFOCK_INFO ("correct F ...\n");
     }
-  
+
     if (pfock->nosymm) {
         double dhalf = 0.5;
         for (int i = 0; i < pfock->num_dmat; i++) {
@@ -1702,21 +1708,21 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
         #endif
         }
     }
-    
+
     return PFOCK_STATUS_SUCCESS;
 }
 
 
 PFockStatus_t PFock_createCoreHMat(PFock_t pfock, BasisSet_t basis)
 {
-    int lo[2];
-    int hi[2];    
+    /*int lo[2];
+    int hi[2];
     double *mat;
     int stride;
     double dzero = 0.0;
 
     int myrank;
-    MPI_Comm_rank (MPI_COMM_WORLD, &myrank);    
+    MPI_Comm_rank (MPI_COMM_WORLD, &myrank);
     pfock->ga_H = GA_Duplicate(pfock->ga_D[0], "core hamilton mat");
     if (0 == pfock->ga_H) {
         PFOCK_PRINTF (1, "GA allocation failed\n");
@@ -1724,12 +1730,12 @@ PFockStatus_t PFock_createCoreHMat(PFock_t pfock, BasisSet_t basis)
     }
     GA_Fill(pfock->ga_H, &dzero);
     NGA_Distribution(pfock->ga_H, myrank, lo, hi);
-    NGA_Access(pfock->ga_H, lo, hi, &mat, &stride);    
+    NGA_Access(pfock->ga_H, lo, hi, &mat, &stride);
     compute_H(pfock, basis, pfock->sshell_row, pfock->eshell_row,
               pfock->sshell_col, pfock->eshell_col, stride, mat);
     NGA_Release_update(pfock->ga_H, lo, hi);
-    GA_Sync();
-    
+    GA_Sync();*/
+
     return PFOCK_STATUS_SUCCESS;
 }
 
@@ -1737,7 +1743,7 @@ PFockStatus_t PFock_createCoreHMat(PFock_t pfock, BasisSet_t basis)
 PFockStatus_t PFock_destroyCoreHMat(PFock_t pfock)
 {
     GA_Destroy(pfock->ga_H);
-    return PFOCK_STATUS_SUCCESS;    
+    return PFOCK_STATUS_SUCCESS;
 }
 
 
@@ -1746,27 +1752,27 @@ PFockStatus_t PFock_getCoreHMat(PFock_t pfock, int rowstart, int rowend,
                                 int stride, double *mat)
 {
     int lo[2];
-    int hi[2];    
+    int hi[2];
     lo[0] = rowstart;
-    hi[0] = rowend;    
+    hi[0] = rowend;
     lo[1] = colstart;
-    hi[1] = colend;    
+    hi[1] = colend;
     NGA_Get(pfock->ga_H, lo, hi, mat, &stride);
 
-    return PFOCK_STATUS_SUCCESS;    
+    return PFOCK_STATUS_SUCCESS;
 }
 
 
 PFockStatus_t PFock_createOvlMat(PFock_t pfock, BasisSet_t basis)
-{    
-    int lo[2];
+{
+    /*int lo[2];
     int hi[2];
     double *mat;
     int stride;
     double dzero = 0.0;
 
     int myrank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);    
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
     pfock->ga_S = GA_Duplicate(pfock->ga_D[0], "overlap mat");
     if (0 == pfock->ga_S) {
         PFOCK_PRINTF (1, "GA allocation failed\n");
@@ -1775,18 +1781,18 @@ PFockStatus_t PFock_createOvlMat(PFock_t pfock, BasisSet_t basis)
     // compute S
     GA_Fill(pfock->ga_S, &dzero);
     NGA_Distribution(pfock->ga_S, myrank, lo, hi);
-    NGA_Access(pfock->ga_S, lo, hi, &mat, &stride);    
+    NGA_Access(pfock->ga_S, lo, hi, &mat, &stride);
     compute_S(pfock, basis, pfock->sshell_row, pfock->eshell_row,
               pfock->sshell_col, pfock->eshell_col, stride, mat);
     NGA_Release_update(pfock->ga_S, lo, hi);
     GA_Sync();
-    
-    // compute X         
+
+    // compute X
     int nbf = CInt_getNumFuncs(basis);
     double *eval = (double *)malloc(nbf * sizeof (double));
     if (NULL == eval) {
         PFOCK_PRINTF (1, "Memory allocation failed\n");
-        return PFOCK_STATUS_ALLOC_FAILED;        
+        return PFOCK_STATUS_ALLOC_FAILED;
     }
     int ga_tmp = GA_Duplicate(pfock->ga_D[0], "tmp mat");
     if (0 == ga_tmp) {
@@ -1810,7 +1816,7 @@ PFockStatus_t PFock_createOvlMat(PFock_t pfock, BasisSet_t basis)
 
     int lo1tmp = lo[1];
     double *lambda_vector = (double *)malloc(nfuncs_col * sizeof (double));
-    assert (lambda_vector != NULL);   
+    assert (lambda_vector != NULL);
     #pragma omp parallel for
     #pragma simd
     #pragma ivdep
@@ -1839,7 +1845,7 @@ PFockStatus_t PFock_createOvlMat(PFock_t pfock, BasisSet_t basis)
              1.0, ga_tmp2, ga_tmp, 0.0, pfock->ga_X);
 
     GA_Destroy(ga_tmp);
-    GA_Destroy(ga_tmp2);
+    GA_Destroy(ga_tmp2);*/
 
     return PFOCK_STATUS_SUCCESS;
 }
@@ -1850,7 +1856,7 @@ PFockStatus_t PFock_destroyOvlMat(PFock_t pfock)
     GA_Destroy(pfock->ga_X);
     GA_Destroy(pfock->ga_S);
 
-    return PFOCK_STATUS_SUCCESS;    
+    return PFOCK_STATUS_SUCCESS;
 }
 
 
@@ -1859,14 +1865,14 @@ PFockStatus_t PFock_getOvlMat(PFock_t pfock, int rowstart, int rowend,
                               int stride, double *mat)
 {
     int lo[2];
-    int hi[2];    
+    int hi[2];
     lo[0] = rowstart;
-    hi[0] = rowend;    
+    hi[0] = rowend;
     lo[1] = colstart;
-    hi[1] = colend;    
+    hi[1] = colend;
     NGA_Get(pfock->ga_S, lo, hi, mat, &stride);
 
-    return PFOCK_STATUS_SUCCESS;    
+    return PFOCK_STATUS_SUCCESS;
 }
 
 
@@ -1875,20 +1881,20 @@ PFockStatus_t PFock_getOvlMat2(PFock_t pfock, int rowstart, int rowend,
                                int stride, double *mat)
 {
     int lo[2];
-    int hi[2];    
+    int hi[2];
     lo[0] = rowstart;
-    hi[0] = rowend;    
+    hi[0] = rowend;
     lo[1] = colstart;
-    hi[1] = colend;    
+    hi[1] = colend;
     NGA_Get(pfock->ga_X, lo, hi, mat, &stride);
 
-    return PFOCK_STATUS_SUCCESS;    
+    return PFOCK_STATUS_SUCCESS;
 }
 
 
 PFockStatus_t PFock_getMemorySize(PFock_t pfock, double *mem_cpu)
 {
-    *mem_cpu = pfock->mem_cpu;  
+    *mem_cpu = pfock->mem_cpu;
     return PFOCK_STATUS_SUCCESS;
 }
 
@@ -1897,31 +1903,31 @@ PFockStatus_t PFock_getStatistics(PFock_t pfock)
 {
     int myrank;
     MPI_Comm_rank (MPI_COMM_WORLD, &myrank);
-    
+
     // statistics
     MPI_Gather (&pfock->steals, 1, MPI_DOUBLE,
         pfock->mpi_steals, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gather (&pfock->stealfrom, 1, MPI_DOUBLE,
         pfock->mpi_stealfrom, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gather (&pfock->usq, 1, MPI_DOUBLE, 
+    MPI_Gather (&pfock->usq, 1, MPI_DOUBLE,
         pfock->mpi_usq, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gather (&pfock->uitl, 1, MPI_DOUBLE, 
+    MPI_Gather (&pfock->uitl, 1, MPI_DOUBLE,
         pfock->mpi_uitl, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gather (&pfock->timepass, 1, MPI_DOUBLE, 
+    MPI_Gather (&pfock->timepass, 1, MPI_DOUBLE,
         pfock->mpi_timepass, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gather (&pfock->timecomp, 1, MPI_DOUBLE, 
+    MPI_Gather (&pfock->timecomp, 1, MPI_DOUBLE,
         pfock->mpi_timecomp, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gather (&pfock->timeinit, 1, MPI_DOUBLE, 
+    MPI_Gather (&pfock->timeinit, 1, MPI_DOUBLE,
         pfock->mpi_timeinit, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gather (&pfock->timereduce, 1, MPI_DOUBLE, 
+    MPI_Gather (&pfock->timereduce, 1, MPI_DOUBLE,
         pfock->mpi_timereduce, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gather (&pfock->timegather, 1, MPI_DOUBLE, 
+    MPI_Gather (&pfock->timegather, 1, MPI_DOUBLE,
         pfock->mpi_timegather, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gather (&pfock->timescatter, 1, MPI_DOUBLE, 
+    MPI_Gather (&pfock->timescatter, 1, MPI_DOUBLE,
         pfock->mpi_timescatter, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gather (&pfock->volumega, 1, MPI_DOUBLE, 
+    MPI_Gather (&pfock->volumega, 1, MPI_DOUBLE,
         pfock->mpi_volumega, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gather (&pfock->ngacalls, 1, MPI_DOUBLE, 
+    MPI_Gather (&pfock->ngacalls, 1, MPI_DOUBLE,
         pfock->mpi_ngacalls, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     if (myrank == 0) {
         double total_timepass;
@@ -1943,13 +1949,13 @@ PFockStatus_t PFock_getStatistics(PFock_t pfock)
             total_timepass += pfock->mpi_timepass[i];
             max_timepass =
                 max_timepass < pfock->mpi_timepass[i] ?
-                    pfock->mpi_timepass[i] : max_timepass;            
+                    pfock->mpi_timepass[i] : max_timepass;
             total_usq += pfock->mpi_usq[i];
-            max_usq = 
-                max_usq < pfock->mpi_usq[i] ? pfock->mpi_usq[i] : max_usq;          
+            max_usq =
+                max_usq < pfock->mpi_usq[i] ? pfock->mpi_usq[i] : max_usq;
             total_uitl += pfock->mpi_uitl[i];
-            max_uitl = 
-                max_uitl < pfock->mpi_uitl[i] ? pfock->mpi_uitl[i] : max_uitl;           
+            max_uitl =
+                max_uitl < pfock->mpi_uitl[i] ? pfock->mpi_uitl[i] : max_uitl;
             total_steals += pfock->mpi_steals[i];
             total_stealfrom += pfock->mpi_stealfrom[i];
             total_timecomp += pfock->mpi_timecomp[i];
@@ -1994,6 +2000,6 @@ PFockStatus_t PFock_getStatistics(PFock_t pfock)
                total_ngacalls/pfock->nprocs,
                total_volumega/pfock->nprocs/1024.0/1024.0);
     }
-    
+
     return PFOCK_STATUS_SUCCESS;
 }
