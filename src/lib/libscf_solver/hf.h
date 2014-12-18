@@ -33,6 +33,7 @@
 #include <psi4-dec.h>
 #include <libqt/qt.h>
 
+
 namespace boost {
 template<class T> class shared_ptr;
 }
@@ -43,7 +44,7 @@ class Vector;
 class SimpleVector;
 class TwoBodySOInt;
 class JK;
-class Psi4JK;
+class MinimalInterface;
 namespace scf {
 
 class HF : public Wavefunction {
@@ -123,8 +124,8 @@ protected:
     double integral_threshold_;
 
     /// The soon to be ubiquitous JK object
+    boost::shared_ptr<MinimalInterface> JKFactory_;
     boost::shared_ptr<JK> jk_;
-    boost::shared_ptr<Psi4JK> JKFactory;
 
     /// Are we to do MOM?
     bool MOM_enabled_;

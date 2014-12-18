@@ -43,12 +43,10 @@
 #include <libmints/basisset_parser.h>
 #include <libmints/mints.h>
 #include <libfock/jk.h>
-#include "libfock/Psi4JK.h"
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
-
 #include "rhf.h"
-
+#include "../libJKFactory/MinimalInterface.h"
 using namespace boost;
 using namespace psi;
 using namespace std;
@@ -148,51 +146,36 @@ void forPermutation(int depth, vector<int>& array,
 }
 void RHF::form_G()
 {
-    if(!JKFactory){
-       boost::shared_ptr<BasisSet> primary =
-        BasisSet::pyconstruct_orbital(Process::environment.molecule(), "BASIS", options_.get_str("BASIS"));
-       JKFactory=boost::shared_ptr<Psi4JK>(new Psi4JK(primary));
-    }
-    //SharedMatrix corrJ_(new Matrix(*J_));
-    //SharedMatrix corrK_(new Matrix(*K_));
-    if(JKFactory->Shared()){
-       // Push the C matrix on
-       std::vector<SharedMatrix> & C = jk_->C_left();
-       C.clear();
-       C.push_back(Ca_subset("SO", "OCC"));
+  if(!JKFactory_){
+     JKFactory_=boost::shared_ptr<MinimalInterface>(
+           new MinimalInterface(1,true)
+     );
+  }
+  // Push the C matrix on
+  std::vector<SharedMatrix> & C = jk_->C_left();
+  C.clear();
+  C.push_back(Ca_subset("SO", "OCC"));
 
-       // Run the JK object
-       jk_->compute();
+  // Run the JK object
+  jk_->compute();
 
-       // Pull the J and K matrices off
-       const std::vector<SharedMatrix> & J = jk_->J();
-       const std::vector<SharedMatrix> & K = jk_->K();
-       J_ = J[0];
-       K_ = K[0];
-    }
-    else{
+  // Pull the J and K matrices off
+  const std::vector<SharedMatrix> & J = jk_->J();
+  const std::vector<SharedMatrix> & K = jk_->K();
+  J_ = J[0];
+  K_ = K[0];
+  J_->scale(2.0);
 
-       JKFactory->UpdateDensity(D_,J_,K_);
-    }
-    J_->scale(2.0);
-    //corrJ_->scale(2.0);
-    //corrJ_->print_out();
-    //corrJ_->subtract(J_);
-    //J_->print_out();
-    //corrJ_->print_out();
-    /*double sum=0.0;
-    for(int i=0;i<corrJ_->rowspi(0);i++){
-       for(int j=0;j<corrJ_->colspi(0);j++)
-          sum+=sqrt((*corrJ_)(i,j)*(*corrJ_)(i,j));
-    }
-    outfile->Printf("Sum is : %16.12f\n",sum);
-    exit(1);*/
-    //SharedMatrix corrG(corrJ_);
-    G_->copy(J_);
-    //corrG->subtract(corrK_);
-    G_->subtract(K_);
-    //corrG->subtract(G_);
-    //corrG->print_out();
+  SharedMatrix corrJ_,corrK_;
+  JKFactory_->SetP(D_);
+  JKFactory_->GetJ(corrJ_);
+  JKFactory_->GetK(corrK_);
+  corrJ_->scale(2.0);
+  corrJ_->subtract(J_);
+  corrJ_->print_out();
+  exit(1);
+  G_->copy(J_);
+  G_->subtract(K_);
 }
 
 void RHF::save_information()
@@ -232,11 +215,6 @@ bool RHF::test_convergency()
 
     // Drms was computed earlier
     if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_){
-       //Need to shut-down JKFactory before worldcomm goes out of scope
-       //because destructor calls MPI.  May as well do it now
-       if(JKFactory){
-          JKFactory.reset();
-       }
        return true;
     }
     else
