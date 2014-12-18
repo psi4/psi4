@@ -39,9 +39,6 @@ typedef boost::shared_ptr<psi::BasisSetParser> SharedParser;
 typedef boost::shared_ptr<psi::BasisSet> SharedBasis;
 typedef boost::shared_ptr<psi::Matrix> SharedMatrix;
 
-std::vector<boost::shared_ptr<psi::TwoBodyAOInt> >
-   psi::Interface::Ints(omp_get_max_threads());
-
 //Helper fxns
 void MakeBasis(BasisSet** GTBasis,SharedBasis PsiBasis);
 void MyBlock(double** Block,SharedMatrix Matrix, int NPRow, int NPCol);
@@ -63,34 +60,35 @@ psi::MinimalInterface::~MinimalInterface(){
 
 psi::MinimalInterface::MinimalInterface(const int NMats,
       const bool AreSymm):NPRow_(1),NPCol_(1){
-   SharedParser parser(new psi::Gaussian94BasisSetParser());
-   SharedBasis  primary=psi::BasisSet::construct(
-         parser,psi::Process::environment.molecule(),"BASIS");
-   boost::shared_ptr<IntegralFactory>
-   factory(new IntegralFactory(primary,primary,primary,primary));
-   for(int i=0;i<omp_get_max_threads();i++){
-      Interface::Ints[i]=
-         boost::shared_ptr<psi::TwoBodyAOInt>(factory->erd_eri());
-   }
+    psi::Options& options = psi::Process::environment.options;
+    boost::shared_ptr<psi::BasisSet> primary =
+    		psi::BasisSet::pyconstruct_orbital(psi::Process::environment.molecule(),
+        "BASIS", options.get_str("BASIS"));
    MakeBasis(&GTBasis_,primary);
    double IntThresh=
          psi::Process::environment.options["INTS_TOLERANCE"].to_double();
    int NBlkFock=5;//No idea what this does, but I was told it equals 5
    PFock_create(GTBasis_,NPRow_,NPCol_,NBlkFock,IntThresh,
          NMats,AreSymm,&PFock_);
+   std::cout<<"GTFock Made\n";
 
 }
 
 void psi::MinimalInterface::SetP(std::vector<SharedMatrix>& Ps){
    PFock_setNumDenMat(Ps.size(),PFock_);
+   std::cout<<"Number of density matrices set to: "<<Ps.size()<<std::endl;
    int startr,endr,startc,endc,stride;
    BlockDims(Ps[0]->nrow(),startr,endr,startc,endc,stride);
    for(int i=0;i<Ps.size();i++){
       double* Buffer;
+      Ps[0]->print_out();
       MyBlock(&Buffer,Ps[i],NPRow_,NPCol_);
+      std::cout<<"("<<startr<<","<<startc<<") to  ("
+    		   <<endr<<","<<endc<<")\n";
       PFock_putDenMat(startr,endr,startc,endc,stride,Buffer,i,PFock_);
    }
    PFock_commitDenMats(PFock_);
+   std::cout<<"Density matrix committed\n";
    PFock_computeFock(GTBasis_,PFock_);
 }
 
@@ -123,8 +121,8 @@ void MyBlock(double **Buffer,SharedMatrix Matrix, int NPRow, int NPCol){
 
 void Gather(SharedMatrix Result,double *Block,int startr, int endr,
       int startc,int endc, int stride){
-   int nrows=endr-startr;
-   int ncols=endc-startc;
+   int nrows=endr-startr+1;
+   int ncols=endc-startc+1;
    if(!Result){
       Result=SharedMatrix(new psi::Matrix(nrows,ncols));
    }
@@ -136,9 +134,9 @@ void BlockDims(int NBasis,int& StartRow,int& EndRow,
                int& StartCol,int& EndCol,int& Stride){
    StartRow=0;
    StartCol=0;
-   EndRow=NBasis;
-   EndCol=NBasis;
-   Stride=NBasis;
+   EndRow=NBasis-1;
+   EndCol=NBasis-1;
+   Stride=EndCol-StartCol+1;
 }
 
 void MakeBasis(BasisSet** GTBasis,SharedBasis PsiBasis){

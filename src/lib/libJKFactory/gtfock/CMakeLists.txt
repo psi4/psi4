@@ -23,13 +23,6 @@ endif()
 
 add_subdirectory(pfock)
 add_subdirectory(libcint)
-include_directories(${JK_GA_INC} ../libmints ../libqt)
-add_library(GTFock STATIC $<TARGET_OBJECTS:PFock> 
-                          $<TARGET_OBJECTS:CINT>
-                          ../MinimalInterface.h
-                          ../MinimalInterface.cpp
-                          ../CifiedFxns.h
-                          ../CifiedFxns.cc  
-)
-
-add_dependencies(GTFock GlobalArrays qt mints)
+include_directories(${JK_GA_INC} ../libmints ../libqt pfock libcint)
+add_library(GTFock STATIC ${PFOCKSRC} ${CINTSRC})
+add_dependencies(GTFock GlobalArrays GTFockCInt)
