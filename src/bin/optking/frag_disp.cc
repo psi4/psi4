@@ -51,6 +51,7 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
   bool ensure_convergence = Opt_params.ensure_bt_convergence;
 
   fix_tors_near_180(); // subsequent computes will modify torsional values for phase
+  fix_oofp_near_180(); // subsequent computes will modify torsional values for phase
   double * q_orig = coord_values();
 
   // Do your best to backtransform all internal coordinate displacments.
@@ -168,12 +169,19 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
   for (int i=0; i<Nints; ++i)
     dq[i] = q_final[i] - q_orig[i]; // calculate dq from _target_
 
+  const double check_range = 0.5; // distance from pi in radians
   for (int i=0; i<Nints; ++i) {
-    if (coords.simples[i]->g_type() == tors_type) { // passed through 180, but don't think this code is necessary
-      if (dq[i] > _pi)
+    // passed through pi, but don't think this code is necessary; given the way values are computed
+    if (coords.simples[i]->g_type() == tors_type ||
+        coords.simples[i]->g_type() == oofp_type) {
+      if (dq[i] > _pi) {
         dq[i] = dq[i] - (2 * _pi);
-      else if (dq[i] < (-2 * _pi))
+        oprintf_out("\tTorsion changed more than pi.  Fixing in displace().\n");
+      }
+      else if (dq[i] < (-2 * _pi)) {
         dq[i] = dq[i] + (2 * _pi);
+        oprintf_out("\tTorsion changed more than pi.  Fixing in displace().\n");
+      }
     }
   }
 

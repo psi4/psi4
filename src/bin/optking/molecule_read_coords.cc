@@ -521,17 +521,32 @@ bool FRAG::read_coord(vector<string> & s, int offset) {
 
     return true;
   }
+  else if (s[0] == "O") {
+    if (s.size() != 5 && s.size() != 6)
+      throw(INTCO_EXCEPT("Format of out-of-plane entry is \"O atom_1 atom_2 atom_3 atom_4\""));
+    if ( s.size() == 6 ) {
+      if (stof(s[5], &eq_val))
+        has_eq_val = true;
+      else
+        throw(INTCO_EXCEPT("Format of out_of_plane entry is \"O atom_1 atom_2 atom_3 atom_4 (eq_val)\""));
+    }
+    if ( !stoi(s[1], &a) || !stoi(s[2], &b) || !stoi(s[3], &c) || !stoi(s[4], &d) )
+      throw(INTCO_EXCEPT("Format of out_of_plane entry is \"O atom_1 atom_2 atom_3 atom_4\""));
+    --a; --b; --c; --d;
+
+    OOFP *one_oofp = new OOFP(a-offset, b-offset, c-offset, d-offset, frozen);
+    if (has_eq_val) one_oofp->set_fixed_eq_val(eq_val);
+   
+    if ( !present(one_oofp) )
+      coords.simples.push_back(one_oofp);
+    else
+      delete one_oofp;
+
+    return true;
+  }
+
   //printf("read_coord returning false\n");
   return false;
-}
-
-// this function belongs to the FRAG class - not MOLECULE but the reading of the intco
-// definitions is so linked with that above, I'll put the function here
-// reads the lines in a combination coordinate.
-void FRAG::add_combination_coord(vector<int> ids, vector<double> coeffs) {
-  coords.index.push_back(ids);
-  coords.coeff.push_back(coeffs);;
-  return;
 }
 
 // convert string to integer

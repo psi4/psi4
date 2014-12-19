@@ -102,6 +102,7 @@ class FRAG {
   int add_cartesians(void);
 
   int form_trivial_coord_combinations(void);
+  void add_trivial_coord_combination(int simple_id);
   int form_delocalized_coord_combinations(void);
   int form_natural_coord_combinations(void);
 
@@ -145,6 +146,9 @@ class FRAG {
 
   // check nearness to 180 and save value
   void fix_tors_near_180(void);
+
+  // check nearness to 180 and save value
+  void fix_oofp_near_180(void);
 
   // check if interior angles of torsion are near 0 or linear
   //bool check_tors_for_bad_angles(void) const;

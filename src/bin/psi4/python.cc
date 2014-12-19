@@ -1087,6 +1087,15 @@ boost::shared_ptr<Vector> py_psi_get_frequencies()
     }
 }
 
+boost::shared_ptr<Vector> py_psi_get_atomic_point_charges()
+{
+    if (Process::environment.wavefunction()) {
+        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
+        return wf->get_atomic_point_charges();
+    }
+    else return NULL; // charges not added to process.h for environment - yet(?)
+}
+
 double py_psi_get_variable(const std::string & key)
 {
     string uppercase_key = key;
@@ -1349,6 +1358,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("get_efp_torque", py_psi_get_efp_torque, "Returns the most recently computed gradient for the EFP portion, as a Nefp by 6 Matrix object.");
     def("set_efp_torque", py_psi_set_efp_torque, "Assigns the global EFP gradient to the values stored in the Nefp by 6 Matrix argument.");
     def("get_frequencies", py_psi_get_frequencies, "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
+    def("get_atomic_point_charges", py_psi_get_atomic_point_charges, "Returns the most recently computed atomic point charges, as a double * object.");
     def("set_frequencies", py_psi_set_frequencies, "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
     def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");
     def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");

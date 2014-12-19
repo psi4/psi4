@@ -489,10 +489,17 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_combined(const boost::shared_p
     o = PyList_New(others.size());
 
     for (size_t i=0; i<keys.size(); ++i) {
+#if PY_MAJOR_VERSION == 2
         PyList_SetItem(k, i, PyString_FromString(keys[i].c_str()));
         PyList_SetItem(t, i, PyString_FromString(targets[i].c_str()));
         PyList_SetItem(f, i, PyString_FromString(fitroles[i].c_str()));
         PyList_SetItem(o, i, PyString_FromString(others[i].c_str()));
+#else
+        PyList_SetItem(k, i, PyBytes_FromString(keys[i].c_str()));
+        PyList_SetItem(t, i, PyBytes_FromString(targets[i].c_str()));
+        PyList_SetItem(f, i, PyBytes_FromString(fitroles[i].c_str()));
+        PyList_SetItem(o, i, PyBytes_FromString(others[i].c_str()));
+#endif
     }
 
     // Grab pyconstruct off of the Python plane, run it, grab result list
@@ -574,7 +581,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
         aux = target;
     }
 
-    //printf("BasisSet::pyconstruct: key = %s aux = %s fitrole = %s orb = %s orbonly = %d\n", 
+    //printf("BasisSet::pyconstruct: key = %s aux = %s fitrole = %s orb = %s orbonly = %d\n",
     //    key.c_str(), aux.c_str(), fitrole.c_str(), orb.c_str(), orbonly);
 
     // Update geometry in molecule, convert to string
@@ -586,7 +593,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
     main_module = PyImport_AddModule("__main__");
     global_dict = PyModule_GetDict(main_module);
 
-    // Extract reference(s) to the function(s) defined in the Pythonized 
+    // Extract reference(s) to the function(s) defined in the Pythonized
     //  input file that apply basis sets to a Molecule. Failing that,
     //  form reference to the keyword string for application to all atoms
     xpressive::sregex match_format = xpressive::as_xpr("-");
@@ -596,16 +603,26 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
     orbfuncname = regex_replace(orbfuncname, match_format, format_empty);  // purge dashes
     orbfuncname = "basisspec_psi4_yo__" + orbfuncname;  // prepend with camouflage
     orbfunc = PyDict_GetItemString(global_dict, orbfuncname.c_str());
-    if (orbfunc == NULL)
+    if (orbfunc == NULL) {
+#if PY_MAJOR_VERSION == 2
         orbfunc = PyString_FromString(orb.c_str());
+#else
+        orbfunc = PyBytes_FromString(orb.c_str());
+#endif
+    }
     if (!orbonly) {
         std::string auxfuncname = BasisSet::make_filename(aux);
         auxfuncname = auxfuncname.substr(0, auxfuncname.length()-4);
         auxfuncname = regex_replace(auxfuncname, match_format, format_empty);
         auxfuncname = "basisspec_psi4_yo__" + auxfuncname;
         auxfunc = PyDict_GetItemString(global_dict, auxfuncname.c_str());
-        if (auxfunc == NULL)
+        if (auxfunc == NULL) {
+#if PY_MAJOR_VERSION == 2
             auxfunc = PyString_FromString(aux.c_str());
+#else
+            auxfunc = PyBytes_FromString(aux.c_str());
+#endif
+        }
     }
 
     // Grab pyconstruct off of the Python plane, run it, grab result list
@@ -616,7 +633,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
     if (orbonly) {
         PY_TRY(pargs, Py_BuildValue("(s s O)", smol.c_str(), key.c_str(), orbfunc));
     } else {
-        PY_TRY(pargs, Py_BuildValue("(s s O s O)", smol.c_str(), key.c_str(), auxfunc, 
+        PY_TRY(pargs, Py_BuildValue("(s s O s O)", smol.c_str(), key.c_str(), auxfunc,
             fitrole.c_str(), orbfunc));
     }
     PY_TRY(ret, PyEval_CallObject(method, pargs));

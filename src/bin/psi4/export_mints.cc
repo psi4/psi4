@@ -471,6 +471,14 @@ void export_mints()
 
     typedef SharedMatrix (MintsHelper::*erf)(double, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
     typedef SharedMatrix (MintsHelper::*eri)(SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
+    typedef SharedMatrix (MintsHelper::*normal_eri)();
+    typedef SharedMatrix (MintsHelper::*normal_eri2)(boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>);
+
+    typedef SharedMatrix (MintsHelper::*normal_f12)(boost::shared_ptr<CorrelationFactor>);
+    typedef SharedMatrix (MintsHelper::*normal_f122)(boost::shared_ptr<CorrelationFactor>, boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>);
+
+    typedef SharedMatrix (MintsHelper::*oneelectron)();
+    typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis)(boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
 
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
             def(init<boost::shared_ptr<BasisSet> >()).
@@ -483,8 +491,10 @@ void export_mints()
             def("sobasisset", &MintsHelper::sobasisset, "docstring").
             def("factory", &MintsHelper::factory, "docstring").
             def("ao_overlap", &MintsHelper::ao_overlap, "docstring").
-            def("ao_kinetic", &MintsHelper::ao_kinetic, "docstring").
-            def("ao_potential", &MintsHelper::ao_potential, "docstring").
+            def("ao_kinetic", oneelectron(&MintsHelper::ao_kinetic), "docstring").
+            def("ao_kinetic", oneelectron_mixed_basis(&MintsHelper::ao_kinetic), "docstring").
+            def("ao_potential", oneelectron(&MintsHelper::ao_potential), "docstring").
+            def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "docstring").
             def("one_electron_integrals", &MintsHelper::one_electron_integrals, "docstring").
             def("so_overlap", &MintsHelper::so_overlap, "docstring").
             def("so_kinetic", &MintsHelper::so_kinetic, "docstring").
@@ -496,10 +506,12 @@ void export_mints()
             def("so_nabla", &MintsHelper::so_nabla, "docstring").
             def("so_angular_momentum", &MintsHelper::so_angular_momentum, "docstring").
             def("ao_angular_momentum", &MintsHelper::ao_angular_momentum, "docstring").
-            def("ao_eri", &MintsHelper::ao_eri, "docstring").
+            def("ao_eri", normal_eri(&MintsHelper::ao_eri), "docstring").
+            def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "docstring").
             def("ao_eri_shell", &MintsHelper::ao_eri_shell, "docstring").
             def("ao_erf_eri", &MintsHelper::ao_erf_eri, "docstring").
-            def("ao_f12", &MintsHelper::ao_f12, "docstring").
+            def("ao_f12", normal_f12(&MintsHelper::ao_f12), "docstring").
+            def("ao_f12", normal_f122(&MintsHelper::ao_f12), "docstring").
             def("ao_f12_squared", &MintsHelper::ao_f12_squared, "docstring").
             def("ao_f12g12", &MintsHelper::ao_f12g12, "docstring").
             def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "docstring").
@@ -509,6 +521,8 @@ void export_mints()
             def("mo_f12_squared", &MintsHelper::mo_f12_squared, "docstring").
             def("mo_f12g12", &MintsHelper::mo_f12g12, "docstring").
             def("mo_f12_double_commutator", &MintsHelper::mo_f12_double_commutator, "docstring").
+            def("mo_spin_eri", &MintsHelper::mo_spin_eri, "docstring").
+            def("mo_transform", &MintsHelper::mo_transform, "docstring").
             def("cdsalcs", &MintsHelper::cdsalcs, "docstring").
             def("petite_list", petite_list_0(&MintsHelper::petite_list), "docstring").
             def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring").
@@ -763,6 +777,7 @@ void export_mints()
             def("energy", &Wavefunction::reference_energy, "docstring").
             def("gradient", &Wavefunction::gradient, "docstring").
             def("frequencies", &Wavefunction::frequencies, "docstring").
+            def("atomic_point_charges", &Wavefunction::atomic_point_charges, "docstring").
             def("normalmodes", &Wavefunction::normalmodes, "docstring").
             def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring").
             def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring").
