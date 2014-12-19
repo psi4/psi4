@@ -82,8 +82,13 @@ if ((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND (CMAKE_SYSTEM_VERSION VERSION_LE
     set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_HOLD})
 endif()
 
-# This is to use the CMake generated macros and not those based on FC_SYMBOL
-add_definitions(-DUSE_FCMANGLE_H)
+# For linking to math subroutines always use the FC_SYMBOL strategy
+if(CMAKE_Fortran_COMPILER)
+   get_fc_symbol(FC_SYMBOL)
+else()
+   set(FC_SYMBOL 2)
+endif()
+add_definitions(-DFC_SYMBOL=${FC_SYMBOL})
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
    set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
