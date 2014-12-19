@@ -23,6 +23,7 @@
 #include "structs.h"
 #define EXTERN
 #include "globals.h"
+#include "MCSCF.h"
 
 namespace psi { namespace detci {
 
@@ -36,7 +37,7 @@ namespace psi { namespace detci {
 // Gordon, Theor. Chem. Acc. 97, 88-95 (1997), but the computational cost
 // of this step is pretty negligible anyway] 
 //
-double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
+double** MCSCF::lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
                  int nmo, int npop, int print_lvl, int lag_file)
 {
   int i,j;                      /* indecies of lagrangian element          */

@@ -47,6 +47,7 @@
 #include "structs.h"
 #define EXTERN
 #include "globals.h"
+#include "MCSCF.h"
 
 namespace psi { namespace detci {
 
@@ -65,7 +66,7 @@ namespace psi { namespace detci {
 ** Returns:
 **   1 if DIIS step taken, otherwise 0
 */
-int diis(int veclen, double *vec, double *errvec)
+int MCSCF::diis(int veclen, double *vec, double *errvec)
 {
   int i, j, k;
   int num_vecs, new_num_vecs, offset, diis_iter, do_diis;

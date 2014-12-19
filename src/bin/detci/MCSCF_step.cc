@@ -39,6 +39,7 @@
 #define EXTERN
 #include "globals.h"
 #include "libpsio/psio.h"
+#include "MCSCF.h"
 //#include "ParallelPrinter.h"
 
 namespace psi { namespace detci {
@@ -55,7 +56,7 @@ namespace psi { namespace detci {
 ** C. David Sherrill
 ** April 1998
 */
-void calc_orb_step(int npairs, double *grad, double *hess_diag, double *theta)
+void MCSCF::calc_orb_step(int npairs, double *grad, double *hess_diag, double *theta)
 {
 
   int pair;
@@ -87,7 +88,7 @@ void calc_orb_step(int npairs, double *grad, double *hess_diag, double *theta)
 ** C. David Sherrill
 ** September 2003
 */
-void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
+void MCSCF::calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
 {
   double **hess_inv;
   double **hess_copy; /* for testing! */
@@ -236,7 +237,7 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
 ** C. David Sherrill
 ** March 2004
 */
-void calc_orb_step_bfgs(int npairs, double *grad, double **hess, double *theta)
+void MCSCF::calc_orb_step_bfgs(int npairs, double *grad, double **hess, double *theta)
 {
 
   int i, j;
@@ -274,7 +275,7 @@ void calc_orb_step_bfgs(int npairs, double *grad, double **hess, double *theta)
 ** This function prints out the information for a given orbital iteration
 */
 
-void print_step(int iter, int npairs, int steptype, OutFile& IterSummaryOut)
+void MCSCF::print_step(int iter, int npairs, int steptype, OutFile& IterSummaryOut)
 {
 
    IterSummaryOut.Printf("%5d %5d %14.9lf %14.9lf %20.12lf", iter+1, 
@@ -297,7 +298,7 @@ void print_step(int iter, int npairs, int steptype, OutFile& IterSummaryOut)
 // old version below... safe to delete this as soon as new version
 // is working -CDS 11/20/14
 /*
-void print_step(int npairs, int steptype)
+void MCSCF::print_step(int npairs, int steptype)
 {
   FILE *sumfile;
   char sumfile_name[] = "file14.dat";

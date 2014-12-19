@@ -32,6 +32,7 @@
 #include "structs.h"
 #define EXTERN
 #include "globals.h"
+#include "MCSCF.h"
 
 namespace psi { namespace detci {
 
@@ -41,7 +42,7 @@ namespace psi { namespace detci {
 ** This function frees any allocated global variables
 **
 */
-void mcscf_cleanup(void)
+void MCSCF::mcscf_cleanup(void)
 {
   int i;
   
