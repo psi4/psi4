@@ -1,6 +1,9 @@
 #
 # Figure out which files libint will produce, and compile them
 #
+math(EXPR LIBINT_NEW_AM ${LIBINT_OPT_AM}*2)
+configure_file(${CMAKE_SOURCE_DIR}/src/lib/libint/libint_config.h.in ${CMAKE_BINARY_DIR}/src/lib/libint/libint_config.h)
+
 include(SetupLibint)
 build_libint_files(LI_SRC ${LIBINT_OPT_AM})
 set(LI_SRC ${LI_SRC} init_libint.cc vrr_build.c)

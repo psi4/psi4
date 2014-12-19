@@ -199,15 +199,10 @@ configure_file(src/bin/psi4/gitversion.py.in src/bin/psi4/gitversion.py)
 #
 # Libint configuration
 # Perhaps move to libint's cmakelists.txt file
-
-math(EXPR LIBDERIV_OPT_AM1 ${LIBINT_OPT_AM}-1) # A.M. level for 1st derivative ERIs
-math(EXPR LIBDERIV_OPT_AM2 ${LIBINT_OPT_AM}-2) # A.M. level for 2nd derivative ERIs
-math(EXPR LIBINT_NEW_AM ${LIBINT_OPT_AM}*2)
-math(EXPR LIBDERIV_NEW_AM1 ${LIBDERIV_OPT_AM1}*2)
-math(EXPR LIBDERIV_NEW_AM2 ${LIBDERIV_OPT_AM2}*2)
-math(EXPR LIBDERIV_NEW_AM12 ${LIBDERIV_OPT_AM2}*2)
-configure_file(src/lib/libint/libint_config.h.in src/lib/libint/libint_config.h)
-configure_file(src/lib/libderiv/libderiv_config.h.in src/lib/libderiv/libderiv_config.h)
+# Set default here if not set by setup script.
+if(NOT LIBINT_OPT_AM)
+   set(LIBINT_OPT_AM 5)
+endif()
 
 # Psi4-specific includes and libraries
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
