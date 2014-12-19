@@ -68,7 +68,8 @@
 #include "slaterd.h"
 #include "civect.h"
 #include "ciwave.h"
-#include "MCSCF_detcas.cc"
+#include "MCSCF.cc"
+#include "MCSCF.h"
 
 namespace psi {
   extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
@@ -160,10 +161,10 @@ extern void compute_cc(void);
 extern void calc_mrpt(void);
 
 // MCSCF
-extern int mcscf_update(Options &options);
+// extern int mcscf_update(Options &options);
 extern void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist);
-extern void mcscf_get_mo_info(Options& options);
-extern void mcscf_cleanup(void);
+// extern void mcscf_get_mo_info(Options& options);
+// extern void mcscf_cleanup(void);
 
 PsiReturnType detci(Options &options);
 
@@ -1567,12 +1568,14 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
   MCSCF_CalcInfo.mo_hess_diag = NULL;
   MCSCF_CalcInfo.energy_old = 0;
 
+  MCSCF* mcscf = new MCSCF;
+
   if (MCSCF_Parameters.print_lvl) tstart();
   set_mcscf_parameters(options);     /* get running params (convergence, etc)    */
-  mcscf_title();                     /* print program identification             */
+  mcscf->mcscf_title();                     /* print program identification             */
   if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
 
-  mcscf_get_mo_info(options);
+  mcscf->mcscf_get_mo_info(options);
 
   // Make sure a few things are working
   outfile->Printf("Starting MCSCF\n");
@@ -1624,7 +1627,7 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
     form_opdm();
     form_tpdm();
     close_io();
-    conv = mcscf_update(i, options, IterSummaryOut);
+    conv = mcscf->mcscf_update(i, options, IterSummaryOut);
 
     // If converged
     if (conv){
@@ -1666,7 +1669,7 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
 
   
   outfile->Printf("\nFinishing MCSCF\n");
-  mcscf_cleanup();
+  mcscf->mcscf_cleanup();
 
 }
 

@@ -34,6 +34,7 @@
 #define EXTERN
 #include "globals.h"
 #include "psi4-dec.h"
+#include "MCSCF.h"
 
 namespace psi { namespace detci {
 
