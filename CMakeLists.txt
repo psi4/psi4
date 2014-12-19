@@ -22,12 +22,14 @@ option(ENABLE_ACCELERATE     "Enable use of Mac OS X Accelerate Framework" OFF)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"            OFF) 
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                            OFF)
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"               OFF)
-option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"             OFF)
 option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
 option(ENABLE_PLUGINS        "Enable plugins"                              ON)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
+# Modules requiring Fortran
+option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF)
+option(ENABLE_DKH            "Enable use of Douglas-Kroll-Hess integrals"  OFF)
 # Options for dashboard builds
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                        OFF)
 option(ENABLE_MEMCHECK       "Enable Valgrind memory check"                OFF)
@@ -37,6 +39,17 @@ option(ENABLE_TSAN           "Enable thread sanitizer"                     OFF)
 option(ENABLE_UBSAN          "Enable undefined behaviour sanitizer"        OFF)
 
 set(EXTERNAL_LIBS)
+
+# Decide if Fortran is needed
+if(ENABLE_LIBERD OR ENABLE_DKH)
+   if(CMAKE_Fortran_COMPILER)
+      enable_language(Fortran)
+      add_definitions(-DHAVE_FORTRAN)
+      set(FORTRAN_ENABLED TRUE)
+   else()
+      message(FATAL_ERROR "The Fortran compiler has to be explicitly specified!")
+   endif()
+endif()
 
 # Include CMake modules as needed
 include(ConfigVersion)
@@ -64,14 +77,14 @@ include(CheckIncludeFiles)
 include(CheckFunctionExists)
 # Here we look for Perl, Sphinx, Doxygen and LaTeX
 include(ConfigDocumentation) 
+# Access to the fortran_enabler macro
+include(FortranEnabler)
 
-# For linking to math subroutines always use the FC_SYMBOL strategy
-if(CMAKE_Fortran_COMPILER)
-   get_fc_symbol(FC_SYMBOL)
-else()
+if(NOT FORTRAN_ENABLED)
+   # For linking to math subroutines use the FC_SYMBOL strategy, if Fortran was not enabled
    set(FC_SYMBOL 2)
+   add_definitions(-DFC_SYMBOL=${FC_SYMBOL})
 endif()
-add_definitions(-DFC_SYMBOL=${FC_SYMBOL})
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
    set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
