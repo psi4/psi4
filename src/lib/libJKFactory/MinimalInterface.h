@@ -40,6 +40,14 @@ class MinimalInterface{
       PFock* PFock_;
       int NPRow_;
       int NPCol_;
+      int StartRow_;
+      int StartCol_;
+      int EndRow_;
+      int EndCol_;
+      int Stride_;
+      void BlockDims(const int NBasis);
+      void MyBlock(double **Buffer,boost::shared_ptr<Matrix> Matrix);
+      void Gather(boost::shared_ptr<Matrix>,double*);
       void GenGetCall(std::vector<boost::shared_ptr<Matrix> >& Mat,
             int Value);
       void Vectorize(boost::shared_ptr<Matrix> Mat,
