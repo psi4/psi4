@@ -467,6 +467,9 @@ public:
     boost::shared_ptr<double[]> atomic_point_charges()const{
        return atomic_point_charges_;
     }
+    /// Returns the atomic point charges in Vector form for python output.
+    boost::shared_ptr<Vector> get_atomic_point_charges() const;
+
     /// Sets the atomic point charges
     void set_atomic_point_charges(const boost::shared_ptr<double[]>& apcs){
        atomic_point_charges_=apcs;

@@ -739,6 +739,16 @@ bool Wavefunction::isCIM()
     return isCIM_;
 }
 
+boost::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const { 
+    boost::shared_ptr<double[]> q = atomic_point_charges();
+
+    int n = molecule_->natom();
+    boost::shared_ptr<Vector> q_vector(new Vector(n));
+    for (int i=0; i<n; ++i)
+      q_vector->set(i, q[i]);
+    return q_vector;
+}
+
 void Wavefunction::load_values_from_chkpt() 
 {
 /*
