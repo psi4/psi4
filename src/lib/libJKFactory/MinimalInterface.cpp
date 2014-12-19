@@ -29,6 +29,8 @@
 #include "libmints/twobody.h"
 #include "libmints/integral.h"
 #include "psi4-dec.h"
+#include "../libparallel2/Communicator.h"
+#include "../libparallel2/ParallelEnvironment.h"
 extern "C" {
    #include "gtfock/libcint/CInt.h"
    #include "gtfock/pfock/pfock.h"
@@ -38,18 +40,20 @@ extern "C" {
 typedef boost::shared_ptr<psi::BasisSetParser> SharedParser;
 typedef boost::shared_ptr<psi::BasisSet> SharedBasis;
 typedef boost::shared_ptr<psi::Matrix> SharedMatrix;
-
+typedef boost::shared_ptr<const psi::LibParallel::Communicator>
+        ConstSharedComm;
+typedef boost::shared_ptr<psi::LibParallel::Communicator>
+        SharedComm;
 //Helper fxns
 void MakeBasis(BasisSet** GTBasis,SharedBasis PsiBasis);
-void MyBlock(double** Block,SharedMatrix Matrix, int NPRow, int NPCol);
-void BlockDims(int,int&,int&,int&,int&,int&);
-void Gather(SharedMatrix,double*,int,int,int,int,int);
+void SplitProcs(int&,int&);
+
+typedef void (psi::MinimalInterface::*GetPutFxn)(
+                         std::vector<SharedMatrix>& );
 
 void psi::MinimalInterface::Vectorize(
-      SharedMatrix Mat,
-      void (psi::MinimalInterface::*fxn)(std::vector<SharedMatrix>&)){
-   std::vector<SharedMatrix>temp(1);
-   temp[0]=Mat;
+      SharedMatrix Mat,GetPutFxn fxn){
+   std::vector<SharedMatrix>temp(1,Mat);
    (this->*(fxn))(temp);
 }
 
@@ -59,11 +63,15 @@ psi::MinimalInterface::~MinimalInterface(){
 }
 
 psi::MinimalInterface::MinimalInterface(const int NMats,
-      const bool AreSymm):NPRow_(1),NPCol_(1){
+      const bool AreSymm):NPRow_(1),NPCol_(1),
+                          StartRow_(0),StartCol_(0),
+                          EndRow_(0),EndCol_(0){
+    SplitProcs(NPRow_,NPCol_);
     psi::Options& options = psi::Process::environment.options;
-    boost::shared_ptr<psi::BasisSet> primary =
-    		psi::BasisSet::pyconstruct_orbital(psi::Process::environment.molecule(),
-        "BASIS", options.get_str("BASIS"));
+    SharedBasis primary = psi::BasisSet::pyconstruct_orbital(
+    		                  psi::Process::environment.molecule(),
+                              "BASIS", options.get_str("BASIS"));
+   BlockDims(primary->nbf());
    MakeBasis(&GTBasis_,primary);
    double IntThresh=
          psi::Process::environment.options["INTS_TOLERANCE"].to_double();
@@ -71,21 +79,18 @@ psi::MinimalInterface::MinimalInterface(const int NMats,
    PFock_create(GTBasis_,NPRow_,NPCol_,NBlkFock,IntThresh,
          NMats,AreSymm,&PFock_);
    std::cout<<"GTFock Made\n";
-
 }
 
 void psi::MinimalInterface::SetP(std::vector<SharedMatrix>& Ps){
    PFock_setNumDenMat(Ps.size(),PFock_);
    std::cout<<"Number of density matrices set to: "<<Ps.size()<<std::endl;
-   int startr,endr,startc,endc,stride;
-   BlockDims(Ps[0]->nrow(),startr,endr,startc,endc,stride);
    for(int i=0;i<Ps.size();i++){
       double* Buffer;
-      Ps[0]->print_out();
-      MyBlock(&Buffer,Ps[i],NPRow_,NPCol_);
-      std::cout<<"("<<startr<<","<<startc<<") to  ("
-    		   <<endr<<","<<endc<<")\n";
-      PFock_putDenMat(startr,endr,startc,endc,stride,Buffer,i,PFock_);
+      MyBlock(&Buffer,Ps[i]);
+      std::cout<<"("<<StartRow_<<","<<StartCol_<<") to  ("
+    		   <<EndRow_<<","<<EndCol_<<")\n";
+      PFock_putDenMat(StartRow_,EndRow_,
+                      StartCol_,EndCol_,Stride_,Buffer,i,PFock_);
    }
    PFock_commitDenMats(PFock_);
    std::cout<<"Density matrix committed\n";
@@ -95,13 +100,12 @@ void psi::MinimalInterface::SetP(std::vector<SharedMatrix>& Ps){
 void psi::MinimalInterface::GenGetCall(
       std::vector<SharedMatrix>& JorK,
       int value){
-   int startr,endr,startc,endc,stride;
-   BlockDims(JorK[0]->nrow(),startr,endr,startc,endc,stride);
-   double* Block=new double[(endr-startr)*(endc-startc)];
+   double* Block=
+         new double[(EndRow_-StartRow_+1)*(EndCol_-StartCol_+1)];
    for(int i=0;i<JorK.size();i++){
-      PFock_getMat(PFock_,(PFockMatType_t)value,i,startr,
-                  endr,startc,endc,stride,Block);
-      Gather(JorK[i],Block,startr,endr,startc,endc,stride);
+      PFock_getMat(PFock_,(PFockMatType_t)value,i,StartRow_,
+                  EndRow_,StartCol_,EndCol_,Stride_,Block);
+      Gather(JorK[i],Block);
    }
    delete [] Block;
 }
@@ -115,28 +119,50 @@ void psi::MinimalInterface::GetK(std::vector<SharedMatrix>& Ks){
    GenGetCall(Ks,(int)PFOCK_MAT_TYPE_K);
 }
 
-void MyBlock(double **Buffer,SharedMatrix Matrix, int NPRow, int NPCol){
-   Buffer[0]=&((*Matrix)(0,0));
+void psi::MinimalInterface::MyBlock(double **Buffer,
+                                    SharedMatrix Matrix){
+   (*Buffer)=&((*Matrix)(0,0));
 }
 
-void Gather(SharedMatrix Result,double *Block,int startr, int endr,
-      int startc,int endc, int stride){
-   int nrows=endr-startr+1;
-   int ncols=endc-startc+1;
+void psi::MinimalInterface::Gather(SharedMatrix Result,
+                                   double *Block){
+   int nrows=EndRow_-StartRow_+1;
+   int ncols=EndCol_-StartCol_+1;
    if(!Result){
       Result=SharedMatrix(new psi::Matrix(nrows,ncols));
    }
    memcpy(&((*Result)(0,0)),Block,sizeof(double)*nrows*ncols);
 }
 
+void psi::MinimalInterface::BlockDims(const int NBasis){
+   ConstSharedComm Comm=psi::WorldComm->GetComm();
+   int MyRank=Comm->Me();
+   int RowID=MyRank/NPCol_;
+   int ColID=MyRank%NPCol_;
+   SharedComm RowComm=Comm->MakeComm(RowID);
+   SharedComm ColComm=Comm->MakeComm(ColID);
+   int MyRow=RowComm->Me();
+   int MyCol=ColComm->Me();
+   StartCol_=0;
+   StartRow_=0;
+   EndRow_=NBasis-1;
+   EndCol_=NBasis-1;
+   Stride_=EndCol_-StartCol_+1;
+}
 
-void BlockDims(int NBasis,int& StartRow,int& EndRow,
-               int& StartCol,int& EndCol,int& Stride){
-   StartRow=0;
-   StartCol=0;
-   EndRow=NBasis-1;
-   EndCol=NBasis-1;
-   Stride=EndCol-StartCol+1;
+
+void SplitProcs(int& NPRow, int& NPCol){
+   ConstSharedComm Comm=psi::WorldComm->GetComm();
+   int NProc=Comm->NProc();
+   NPRow=(int)floor(std::sqrt((double)NProc));
+   bool done=false;
+   while (!done) {
+      if (NProc%NPRow==0) {
+         NPCol=NProc/NPRow;
+         done=true;
+      }
+      else NPRow--;
+   }
 }
 
 void MakeBasis(BasisSet** GTBasis,SharedBasis PsiBasis){
@@ -145,7 +171,7 @@ void MakeBasis(BasisSet** GTBasis,SharedBasis PsiBasis){
    int NAtoms=PsiMol->natom();
    int NPrims=PsiBasis->nprimitive();
    int NShells=PsiBasis->nshell();
-   int IsPure=(PsiBasis->has_puream()?0:1);
+   int IsPure=(PsiBasis->has_puream()?1:0);
    //Carts,then atomic numbers
    std::vector<double> X(NAtoms),Y(NAtoms),Z(NAtoms),
                        Alpha(NPrims),CC(NPrims);
