@@ -1,7 +1,15 @@
-set(GTFockHeaders config.h fock_buf.h fock_task.h pfock.h
-                  screening.h taskq.h)
-set(GTFockSRCs fock_buf.c fock_task.c screening.c taskq.c pfock.c)
+set(GTFockHeaders ${CMAKE_CURRENT_SOURCE_DIR}/config.h 
+                  ${CMAKE_CURRENT_SOURCE_DIR}/fock_buf.h 
+                  ${CMAKE_CURRENT_SOURCE_DIR}/fock_task.h 
+                  ${CMAKE_CURRENT_SOURCE_DIR}/pfock.h
+                  ${CMAKE_CURRENT_SOURCE_DIR}/screening.h 
+                  ${CMAKE_CURRENT_SOURCE_DIR}/taskq.h)
+set(GTFockSRCs ${CMAKE_CURRENT_SOURCE_DIR}/fock_buf.c 
+               ${CMAKE_CURRENT_SOURCE_DIR}/fock_task.c 
+               ${CMAKE_CURRENT_SOURCE_DIR}/screening.c 
+               ${CMAKE_CURRENT_SOURCE_DIR}/taskq.c 
+               ${CMAKE_CURRENT_SOURCE_DIR}/pfock.c)
 
 
-include_directories(../libcint)
-add_library(PFock OBJECT ${GTFockHeaders} ${GTFockSRCs} )
+
+set(PFOCKSRC ${GTFockHeaders} ${GTFockSRCs} PARENT_SCOPE)
