@@ -251,7 +251,7 @@ if(BUILD_JK_FACTORY)
     add_definitions(-DHAVE_JK_FACTORY)
     set(JKROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/libJKFactory)
     set(JK_BLAS_INC ${LAPACK_INCLUDE_DIR})
-    set(PSILIB ${PSILIB} GTFock 
+    set(PSILIB ${PSILIB} GTFockInt GTFock GTFockCInt
        ${PROJECT_BINARY_DIR}/lib/libga.a 
        ${PROJECT_BINARY_DIR}/lib/libarmci.a)     
 endif()
