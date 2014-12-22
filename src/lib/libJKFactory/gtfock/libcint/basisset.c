@@ -46,7 +46,7 @@ static char mtable[SLEN] =
 
 static void normalization (BasisSet_t basis)
 {
-    double sum;
+    /*double sum;
     double temp;
     double temp2;
     double temp3;
@@ -95,7 +95,7 @@ static void normalization (BasisSet_t basis)
                 basis->bs_norm[i][j] = pow (basis->bs_exp[i][j], power);
             }
         }              
-    }    
+    }    */
 }
 
 

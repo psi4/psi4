@@ -51,7 +51,6 @@ int ComputeShellQuartet(struct BasisSet*,int ThreadID,
    );
    SharedFac factory(new IntFac(primary,primary,primary,primary));
    Ints=SharedInts(factory->erd_eri());
-   std::cout<<"Computing shell: "<<M<<" "<<N<<" "<<P<<" "<<Q<<std::endl;
    int NInts=Ints->compute_shell(M,N,P,Q);
    const double* Intergrals;
    if(NInts!=0)Intergrals=Ints->buffer();

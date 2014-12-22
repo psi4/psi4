@@ -148,10 +148,9 @@ void RHF::form_G()
 {
   if(!JKFactory_){
      JKFactory_=boost::shared_ptr<MinimalInterface>(
-           new MinimalInterface(1,true)
-     );
+           new MinimalInterface());
   }
-  // Push the C matrix on
+  /*// Push the C matrix on
   std::vector<SharedMatrix> & C = jk_->C_left();
   C.clear();
   C.push_back(Ca_subset("SO", "OCC"));
@@ -166,15 +165,12 @@ void RHF::form_G()
   K_ = K[0];
   J_->scale(2.0);
   J_->print_out();
-  SharedMatrix corrJ_(new Matrix(*J_)),corrK_(new Matrix(*K_));
+  SharedMatrix corrJ_(new Matrix(*J_)),corrK_(new Matrix(*K_));*/
   JKFactory_->SetP(D_);
-  JKFactory_->GetJ(corrJ_);
-  JKFactory_->GetK(corrK_);
-  corrJ_->scale(2.0);
-  corrJ_->print_out();
-  corrJ_->subtract(J_);
-  corrJ_->print_out();
-  exit(1);
+  JKFactory_->GetJ(J_);
+  JKFactory_->GetK(K_);
+  J_->scale(2.0);
+  //exit(1);
   G_->copy(J_);
   G_->subtract(K_);
 }
