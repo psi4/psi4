@@ -1088,7 +1088,6 @@ PFockStatus_t PFock_putDenMat(int rowstart, int rowend,
     lo[1] = colstart;
     hi[1] = colend;
     ld[0] = stride;
-    printf("pfock.c:1091 GA handle %d\n",pfock->ga_D[index]);
     NGA_Put(pfock->ga_D[index], lo, hi, (void *)dmat, ld);
     return PFOCK_STATUS_SUCCESS;
 }
@@ -1158,7 +1157,7 @@ PFockStatus_t PFock_getMat(PFock_t pfock, PFockMatType_t type, int index,
     lo[1] = colstart;
     hi[1] = colend;
     ld[0] = stride;
-
+    printf("Gettting matrix: %d\n",type);
     ga = pfock->gatable[type];
     NGA_Get(ga[index], lo, hi, mat, ld);
 

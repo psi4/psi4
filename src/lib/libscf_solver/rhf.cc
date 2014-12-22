@@ -165,12 +165,13 @@ void RHF::form_G()
   J_ = J[0];
   K_ = K[0];
   J_->scale(2.0);
-
-  SharedMatrix corrJ_,corrK_;
+  J_->print_out();
+  SharedMatrix corrJ_(new Matrix(*J_)),corrK_(new Matrix(*K_));
   JKFactory_->SetP(D_);
   JKFactory_->GetJ(corrJ_);
   JKFactory_->GetK(corrK_);
   corrJ_->scale(2.0);
+  corrJ_->print_out();
   corrJ_->subtract(J_);
   corrJ_->print_out();
   exit(1);

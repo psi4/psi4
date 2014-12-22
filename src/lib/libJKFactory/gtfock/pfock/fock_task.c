@@ -85,13 +85,8 @@ static void update_F(int num_dmat, double *integrals, int dimM, int dimN,
                         // F(n, m) += D(p, q) * 2 * I(n, m, p, q)
                         // F(m, n) += D(q, p) * 2 * I(m, n, q, p)
                         // F(n, m) += D(q, p) * 2 * I(n, m, q, p)
-                        int Ltemp=2;
-                        /*printf("%12.17f %12.16f %12.16f\n",
-                               integrals[convert(Ltemp,iN)+
-                                dimN*(convert(Ltemp,iQ)+
-                                dimQ*(convert(Ltemp,iM)+dimM*convert(Ltemp,iP)))],
-                              D_MN[convert(Ltemp,iN)*ldNQ+convert(Ltemp,iQ)],
-                              D_PQ[convert(Ltemp,iM)*ldMP+convert(Ltemp,iP)]);*/
+                        printf("%12.17f %12.16f %12.16f\n",
+                           I,D_MN[iM*ldMN+iN],D_PQ[iP*ldPQ+iQ]);
                         double vMN = 1.0 * (1 + flag1 + flag2 + flag4) *
                             D_PQ[iP * ldPQ + iQ] * I;
                         j_MN += vMN;
