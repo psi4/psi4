@@ -1157,9 +1157,10 @@ PFockStatus_t PFock_getMat(PFock_t pfock, PFockMatType_t type, int index,
     lo[1] = colstart;
     hi[1] = colend;
     ld[0] = stride;
-    printf("Gettting matrix: %d\n",type);
+
     ga = pfock->gatable[type];
     NGA_Get(ga[index], lo, hi, mat, ld);
+
 
 #ifndef _SCF_
     if (PFOCK_MAT_TYPE_F == type) {
@@ -1383,6 +1384,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
 
     gettimeofday (&tv3, NULL);
     // reduction on CPU
+    //printf("%12.12f %12.12f %12.12f %12.12f %12.12f\n",F1,F2,F3,F4,F5);
     reduce_F(pfock->numF, pfock->num_dmat2, F1, F2, F3, F4, F5, F6,
              sizeX1, sizeX2, sizeX3,
              sizeX4, sizeX5, sizeX6,
@@ -1680,7 +1682,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
     pfock->timescatter = (tv4.tv_sec - tv3.tv_sec) +
                (tv4.tv_usec - tv3.tv_usec) / 1000.0 / 1000.0;
 
-    if (myrank == 0) {
+    if (myrank == 0&&1==0) {
         PFOCK_INFO ("correct F ...\n");
     }
 
@@ -1700,6 +1702,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
         }
     } else {
         // correct F
+       GA_Print(pfock->ga_F[0]);
         for (int i = 0; i < pfock->num_dmat; i++) {
             GA_Symmetrize(pfock->ga_F[i]);
         #ifndef __SCF__

@@ -16,13 +16,16 @@
 
 static inline void atomic_add_f64(volatile double* global_value, double addend)
 {
-    uint64_t expected_value, new_value;
+    #pragma omp atomic
+    *global_value+=addend;
+    //RMR this doesn't work with my gcc version
+    /*uint64_t expected_value, new_value;
     do {
         double old_value = *global_value;
         expected_value = (uint64_t)(old_value);
         new_value = (uint64_t)(old_value + addend);
     } while (!__sync_bool_compare_and_swap((volatile uint64_t*)global_value,
-                                           expected_value, new_value));
+                                           expected_value, new_value));*/
 }
 
 int convert(int L,int i){
@@ -85,8 +88,8 @@ static void update_F(int num_dmat, double *integrals, int dimM, int dimN,
                         // F(n, m) += D(p, q) * 2 * I(n, m, p, q)
                         // F(m, n) += D(q, p) * 2 * I(m, n, q, p)
                         // F(n, m) += D(q, p) * 2 * I(n, m, q, p)
-                        printf("%12.17f %12.16f %12.16f\n",
-                           I,D_MN[iM*ldMN+iN],D_PQ[iP*ldPQ+iQ]);
+                        //printf("%12.17f %12.16f %12.16f\n",
+                        //   I,D_MN[iM*ldMN+iN],D_PQ[iP*ldPQ+iQ]);
                         double vMN = 1.0 * (1 + flag1 + flag2 + flag4) *
                             D_PQ[iP * ldPQ + iQ] * I;
                         j_MN += vMN;
@@ -96,6 +99,7 @@ static void update_F(int num_dmat, double *integrals, int dimM, int dimN,
                         // F(q, p) += D(n, m) * 2 * I(q, p, n, m)
                         double vPQ = 1.0 * (flag3 + flag5 + flag6 + flag7) *
                             D_MN[iM * ldMN + iN] * I;
+
                         atomic_add_f64(&J_PQ[ipq], vPQ);
                         // F(m, p) -= D(n, q) * I(m, n, p, q)
                         // F(p, m) -= D(q, n) * I(p, q, m, n)

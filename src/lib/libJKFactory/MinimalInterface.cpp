@@ -75,7 +75,9 @@ psi::MinimalInterface::MinimalInterface(const int NMats,
    MakeBasis(&GTBasis_,primary);
    double IntThresh=
          psi::Process::environment.options["INTS_TOLERANCE"].to_double();
-   int NBlkFock=5;//No idea what this does, but I was told it equals 5
+   //It appears I can have GTFock figure this value out if I hand it
+   //a negative value.
+   int NBlkFock=-1;
    PFock_create(GTBasis_,NPRow_,NPCol_,NBlkFock,IntThresh,
          NMats,AreSymm,&PFock_);
 }
@@ -98,11 +100,9 @@ void psi::MinimalInterface::GenGetCall(
    int nrows=(EndRow_-StartRow_+1);
    int ncols=(EndCol_-StartCol_+1);
    double* Block=new double[nrows*ncols];
-   std::cout<<nrows<<" "<<ncols<<" "<<Stride_<<std::endl;
    for(int i=0;i<JorK.size();i++){
       PFock_getMat(PFock_,(PFockMatType_t)value,i,StartRow_,
                   EndRow_,StartCol_,EndCol_,Stride_,Block);
-      for(int j=0;j<nrows*ncols;j++)std::cout<<Block[j]<<std::endl;
       Gather(JorK[i],Block);
    }
    delete [] Block;
