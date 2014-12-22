@@ -31,7 +31,7 @@ extern "C"{
    void timer_interface_off(char *);
    int ComputeShellQuartet(struct BasisSet*,int ThreadID,
          int M,int N,int P,int Q,
-         double **Ints);
+         double ** Ints);
 #ifdef _cplusplus
    }
 #endif

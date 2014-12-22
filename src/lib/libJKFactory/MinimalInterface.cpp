@@ -65,7 +65,7 @@ psi::MinimalInterface::~MinimalInterface(){
 psi::MinimalInterface::MinimalInterface(const int NMats,
       const bool AreSymm):NPRow_(1),NPCol_(1),
                           StartRow_(0),StartCol_(0),
-                          EndRow_(0),EndCol_(0){
+                          EndRow_(0),EndCol_(0),Stride_(0){
     SplitProcs(NPRow_,NPCol_);
     psi::Options& options = psi::Process::environment.options;
     SharedBasis primary = psi::BasisSet::pyconstruct_orbital(
@@ -78,33 +78,31 @@ psi::MinimalInterface::MinimalInterface(const int NMats,
    int NBlkFock=5;//No idea what this does, but I was told it equals 5
    PFock_create(GTBasis_,NPRow_,NPCol_,NBlkFock,IntThresh,
          NMats,AreSymm,&PFock_);
-   std::cout<<"GTFock Made\n";
 }
 
 void psi::MinimalInterface::SetP(std::vector<SharedMatrix>& Ps){
    PFock_setNumDenMat(Ps.size(),PFock_);
-   std::cout<<"Number of density matrices set to: "<<Ps.size()<<std::endl;
    for(int i=0;i<Ps.size();i++){
       double* Buffer;
       MyBlock(&Buffer,Ps[i]);
-      std::cout<<"("<<StartRow_<<","<<StartCol_<<") to  ("
-    		   <<EndRow_<<","<<EndCol_<<")\n";
       PFock_putDenMat(StartRow_,EndRow_,
                       StartCol_,EndCol_,Stride_,Buffer,i,PFock_);
    }
    PFock_commitDenMats(PFock_);
-   std::cout<<"Density matrix committed\n";
    PFock_computeFock(GTBasis_,PFock_);
 }
 
 void psi::MinimalInterface::GenGetCall(
       std::vector<SharedMatrix>& JorK,
       int value){
-   double* Block=
-         new double[(EndRow_-StartRow_+1)*(EndCol_-StartCol_+1)];
+   int nrows=(EndRow_-StartRow_+1);
+   int ncols=(EndCol_-StartCol_+1);
+   double* Block=new double[nrows*ncols];
+   std::cout<<nrows<<" "<<ncols<<" "<<Stride_<<std::endl;
    for(int i=0;i<JorK.size();i++){
       PFock_getMat(PFock_,(PFockMatType_t)value,i,StartRow_,
                   EndRow_,StartCol_,EndCol_,Stride_,Block);
+      for(int j=0;j<nrows*ncols;j++)std::cout<<Block[j]<<std::endl;
       Gather(JorK[i],Block);
    }
    delete [] Block;
