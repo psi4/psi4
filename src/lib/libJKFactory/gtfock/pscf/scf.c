@@ -15,10 +15,10 @@
 #include "purif.h"
 
 
-#define MAX_NUM_D    5
-#define NUM_D        3
-#define USE_D_ID     2
-#define IS_SYMM      0
+#define MAX_NUM_D    1
+#define NUM_D        1
+#define USE_D_ID     0
+#define IS_SYMM      1
 
 static void usage(char *call)
 {
@@ -42,23 +42,36 @@ static void initial_guess(PFock_t pfock, BasisSet_t basis, int ispurif,
     PFock_fillDenMat(0.0, USE_D_ID, pfock);
     
     // load initial guess, only process 0
+    double R = 1.0;
     if (myrank == 0) {
         int num_atoms = CInt_getNumAtoms(basis);
+        int N_neutral = CInt_getNneutral(basis); 
+        int Q = CInt_getTotalCharge(basis);
+        if (Q != 0 && N_neutral != 0) {
+            R = (N_neutral - Q)/(double)N_neutral;
+        }
         for (int i = 0; i < num_atoms; i++) {
             double *guess;
             int spos;
             int epos;
             CInt_getInitialGuess(basis, i, &guess, &spos, &epos);
             int ld = epos - spos + 1;
-            PFock_putDenMat(spos, epos, spos, epos, ld, guess, USE_D_ID, pfock);
+            PFock_putDenMat(spos, epos, spos, epos, ld,
+                            guess, USE_D_ID, pfock);
         }
     }
     PFock_sync(pfock);
+    MPI_Bcast(&R, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     if (1 == ispurif) {
         PFock_getMat(pfock, PFOCK_MAT_TYPE_D, USE_D_ID,
                      rowstart, rowend, colstart, colend,
                      ldD, D_block);
+        for (int x = rowstart; x <= rowend; x++) {
+            for (int y = colstart; y <= colend; y++) {
+                D_block[(x - rowstart) * ldD + (y - colstart)] *= R/2.0;
+            }
+        }
     }
 }
 
@@ -149,7 +162,7 @@ static void init_oedmat(BasisSet_t basis, PFock_t pfock,
     PFock_destroyOvlMat(pfock);
     t2 = MPI_Wtime();
     if (myrank == 0) {
-        printf("  takes %.3lf secs\n", t2 - t1);
+        printf("  takes %.3f secs\n", t2 - t1);
         printf("  Done\n");
     }
     
@@ -166,7 +179,7 @@ static void init_oedmat(BasisSet_t basis, PFock_t pfock,
     PFock_destroyCoreHMat(pfock);
     t2 = MPI_Wtime();
     if (myrank == 0) {
-        printf("  takes %.3lf secs\n", t2 - t1);
+        printf("  takes %.3f secs\n", t2 - t1);
         printf("  Done\n");
     }
 }
@@ -231,6 +244,7 @@ int main (int argc, char **argv)
         printf("  molecule:  %s\n", fname);
         fname = basename(argv[1]);
         printf("  basisset:  %s\n", fname);
+        printf("  charge     = %d\n", CInt_getTotalCharge(basis));
         printf("  #atoms     = %d\n", natoms);
         printf("  #shells    = %d\n", nshells);
         printf("  #functions = %d\n", nfunctions);
@@ -286,12 +300,12 @@ int main (int argc, char **argv)
         printf("Initializing pfock ...\n");
     }
     PFock_t pfock;
-    PFock_create(basis, nprow_fock, npcol_fock, nblks_fock, 1e-10,
+    PFock_create(basis, nprow_fock, npcol_fock, nblks_fock, 1e-11,
                  MAX_NUM_D, IS_SYMM, &pfock);
     if (myrank == 0) {
         double mem_cpu;
         PFock_getMemorySize(pfock, &mem_cpu);
-        printf("  CPU uses %.3lf MB\n", mem_cpu / 1024.0 / 1024.0);
+        printf("  CPU uses %.3f MB\n", mem_cpu / 1024.0 / 1024.0);
         printf("  Done\n");
     }
 
@@ -324,7 +338,7 @@ int main (int argc, char **argv)
     // compute nuc energy
     double ene_nuc = CInt_getNucEnergy(basis);
     if (myrank == 0) {
-        printf("  nuc energy = %.8lf\n", ene_nuc);
+        printf("  nuc energy = %.10f\n", ene_nuc);
 
     }
 
@@ -346,17 +360,17 @@ int main (int argc, char **argv)
         double energy = compute_energy(purif, purif->F_block, purif->D_block);
         t2 = MPI_Wtime();
         if (myrank == 0) {
-            printf("    fock build takes %.3lf secs\n", t2 - t1);
+            printf("    fock build takes %.3f secs\n", t2 - t1);
             if (iter > 0) {
-                printf("    energy %.8lf (%.8lf), %le\n",
+                printf("    energy %.10f (%.10f), %le\n",
                        energy + ene_nuc, energy, fabs (energy - energy0));
             }
             else {
-                printf("    energy %.8lf (%.8lf)\n", energy + ene_nuc,
+                printf("    energy %.10f (%.10f)\n", energy + ene_nuc,
                        energy);
             }
         }
-        if (iter > 0 && fabs (energy - energy0) < 1e-8) {
+        if (iter > 0 && fabs (energy - energy0) < 1e-11) {
             niters = iter + 1;
             break;
         }
@@ -373,7 +387,7 @@ int main (int argc, char **argv)
             } else {
                 diis_flops = purif_flops * 2.0;
             }
-            printf("    diis takes %.3lf secs, %.3lf Gflops\n",
+            printf("    diis takes %.3f secs, %.3lf Gflops\n",
                    t2 - t1, diis_flops / (t2 - t1) / 1e9);
         }
         
@@ -389,7 +403,7 @@ int main (int argc, char **argv)
                              i, i, USE_D_ID, nfunctions - 1,
                              outbuf, nfunctions);
                 for (int j = 0; j < nfunctions; j++) {
-                    fprintf(fp, "%le\n", outbuf[j]);
+                    fprintf(fp, "%.10e\n", outbuf[j]);
                 }
             }
             fclose(fp);
@@ -403,8 +417,8 @@ int main (int argc, char **argv)
         t2 = MPI_Wtime();
         MPI_Barrier(MPI_COMM_WORLD);
         if (myrank == 0) {
-            printf("    purification takes %.3lf secs,"
-                   " %d iterations, %.3lf Gflops\n",
+            printf("    purification takes %.3f secs,"
+                   " %d iterations, %.3f Gflops\n",
                    t2 - t1, it,
                    (it * 2.0 + 4.0) * purif_flops / (t2 - t1) / 1e9);
         }
@@ -415,9 +429,12 @@ int main (int argc, char **argv)
 #ifdef __SCF_TIMING__
         PFock_getStatistics(pfock);
         double purif_timedgemm;
+        double purif_timepdgemm;
         double purif_timepass;
         double purif_timetr;
         MPI_Reduce(&purif->timedgemm, &purif_timedgemm,
+                   1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&purif->timepdgemm, &purif_timepdgemm,
                    1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(&purif->timepass, &purif_timepass,
                    1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
@@ -425,20 +442,24 @@ int main (int argc, char **argv)
                    1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         if (myrank == 0) {
             printf("    Purification Statistics:\n");
-            printf("      average totaltime = %.3lf\n"
-                   "      average timetr    = %.3lf\n"
-                   "      average timedgemm = %.3lf, %.3lf Gflops\n",
+            printf("      average totaltime  = %.3f\n"
+                   "      average timetr     = %.3f\n"
+                   "      average timedgemm  = %.3f, %.3f Gflops\n"
+                   "      average timepdgemm = %.3f, %.3f Gflops\n",
                    purif_timepass / purif->np_purif,
                    purif_timetr / purif->np_purif,
                    purif_timedgemm / purif->np_purif,
                    (it * 2.0 + 4.0) *
-                   purif_flops / (purif_timedgemm / purif->np_purif) / 1e9);
+                   purif_flops / (purif_timedgemm / purif->np_purif) / 1e9,
+                   purif_timepdgemm / purif->np_purif,
+                   (it * 2.0 + 4.0) *
+                   purif_flops / (purif_timepdgemm / purif->np_purif) / 1e9);
         }
 #endif
     } /* for (iter = 0; iter < NITERATIONS; iter++) */
 
     if (myrank == 0) {
-        printf("  totally takes %.3lf secs: %.3lf secs/iters\n",
+        printf("  totally takes %.3f secs: %.3f secs/iters\n",
                totaltime, totaltime / niters);
         printf("  Done\n");
     }

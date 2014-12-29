@@ -16,27 +16,20 @@
 
 static inline void atomic_add_f64(volatile double* global_value, double addend)
 {
-    #pragma omp atomic
-    *global_value+=addend;
-    //RMR this doesn't work with my gcc version
-    /*uint64_t expected_value, new_value;
+#ifdef __INTEL_COMPILER
+   uint64_t expected_value, new_value;
     do {
         double old_value = *global_value;
-        expected_value = (uint64_t)(old_value);
-        new_value = (uint64_t)(old_value + addend);
+        expected_value = _castf64_u64(old_value);
+        new_value = _castf64_u64(old_value + addend);
     } while (!__sync_bool_compare_and_swap((volatile uint64_t*)global_value,
-                                           expected_value, new_value));*/
+                                           expected_value, new_value));
+#else
+   #pragma omp atomic
+   *global_value+=addend;
+#endif
 }
 
-int convert(int L,int i){
-   int returnvalue=(i%2==1?L-(i+1)/2:L+i/2);
-   //if(i==0)returnvalue=L;
-   //if(i==1)returnvalue=L-1;
-   //if(i==2)returnvalue=L+1;
-   //if(i==3)returnvalue=L-2;
-   //if(i==4)returnvalue=L+2;
-   return i;
-}
 
 static void update_F(int num_dmat, double *integrals, int dimM, int dimN,
                     int dimP, int dimQ,
@@ -68,7 +61,7 @@ static void update_F(int num_dmat, double *integrals, int dimM, int dimN,
         double *K_MP = &F_MP[i * sizeX4] + iMP;
         double *K_MQ = &F_MQ[i * sizeX5] + iMQ;
         double *K_NP = &F_NP[i * sizeX6] + iNP;
-
+    
         for (int iN = 0; iN < dimN; iN++) {
             for (int iQ = 0; iQ < dimQ; iQ++) {
                 int inq = iN * ldNQ + iQ;
@@ -83,44 +76,41 @@ static void update_F(int num_dmat, double *integrals, int dimM, int dimN,
                         int imp = iM * ldMP + iP;
                         int inp = iN * ldNP + iP;
                         double I = 
-                             integrals[iM+dimM*(iN+dimN*(iP+dimP*iQ))];
+                            integrals[iM + dimM*(iN + dimN * (iP + dimP * iQ))];
                         // F(m, n) += D(p, q) * 2 * I(m, n, p, q)
                         // F(n, m) += D(p, q) * 2 * I(n, m, p, q)
                         // F(m, n) += D(q, p) * 2 * I(m, n, q, p)
                         // F(n, m) += D(q, p) * 2 * I(n, m, q, p)
-                        //printf("%12.17f %12.16f %12.16f\n",
-                        //   I,D_MN[iM*ldMN+iN],D_PQ[iP*ldPQ+iQ]);
-                        double vMN = 1.0 * (1 + flag1 + flag2 + flag4) *
+                        double vMN = 2.0 * (1 + flag1 + flag2 + flag4) *
                             D_PQ[iP * ldPQ + iQ] * I;
                         j_MN += vMN;
                         // F(p, q) += D(m, n) * 2 * I(p, q, m, n)
                         // F(p, q) += D(n, m) * 2 * I(p, q, n, m)
                         // F(q, p) += D(m, n) * 2 * I(q, p, m, n)
                         // F(q, p) += D(n, m) * 2 * I(q, p, n, m)
-                        double vPQ = 1.0 * (flag3 + flag5 + flag6 + flag7) *
+                        double vPQ = 2.0 * (flag3 + flag5 + flag6 + flag7) *
                             D_MN[iM * ldMN + iN] * I;
-
                         atomic_add_f64(&J_PQ[ipq], vPQ);
                         // F(m, p) -= D(n, q) * I(m, n, p, q)
                         // F(p, m) -= D(q, n) * I(p, q, m, n)
                         double vMP = (1 + flag3) *
                             1.0 * D_NQ[iN * ldNQ + iQ] * I;
-                        atomic_add_f64(&K_MP[imp], vMP);
+                        atomic_add_f64(&K_MP[imp], -vMP);
                         // F(n, p) -= D(m, q) * I(n, m, p, q)
                         // F(p, n) -= D(q, m) * I(p, q, n, m)
                         double vNP = (flag1 + flag5) *
                             1.0 * D_MQ[iM * ldNQ + iQ] * I;
-                        atomic_add_f64(&K_NP[inp], vNP);
+                        atomic_add_f64(&K_NP[inp], -vNP);
                         // F(m, q) -= D(n, p) * I(m, n, q, p)
                         // F(q, m) -= D(p, n) * I(q, p, m, n)
                         double vMQ = (flag2 + flag6) *
                             1.0 * D_NP[iN * ldNQ + iP] * I;
-                        k_MQ += vMQ;
+                        k_MQ -= vMQ;
                         // F(n, q) -= D(m, p) * I(n, m, q, p)
                         // F(q, n) -= D(p, m) * I(q, p, n, m)
                         double vNQ = (flag4 + flag7) *
                             1.0 * D_MP[iM * ldNQ + iP] * I;
-                        k_NQ += vNQ;
+                        k_NQ -= vNQ;
                     }
                     atomic_add_f64(&J_MN[imn], j_MN);
                     atomic_add_f64(&K_MQ[imq], k_MQ);
@@ -134,8 +124,7 @@ static void update_F(int num_dmat, double *integrals, int dimM, int dimN,
 
 // for SCF, J = K
 //void fock_task(BasisSet_t basis, ERD_t erd, int ncpu_f, int num_dmat,
-void fock_task(BasisSet_t basis, int ncpu_f, int num_dmat,
-               int *shellptr, double *shellvalue,
+void fock_task(BasisSet_t basis, int ncpu_f, int num_dmat,               int *shellptr, double *shellvalue,
                int *shellid, int *shellrid, int *f_startind,
                int *rowpos, int *colpos, int *rowptr, int *colptr,
                double tolscr2, int startrow, int startcol,
@@ -206,15 +195,14 @@ void fock_task(BasisSet_t basis, int ncpu_f, int num_dmat,
                 int flag3 = (M == P && Q == N) ? 0 : 1;                    
                 int flag2 = (value2 < 0.0) ? 1 : 0;
                 if (fabs(value1 * value2) >= tolscr2) {
+                    int nints;
                     double *integrals;
                     mynsq += 1.0;
                     mynitl += dimM*dimN*dimP*dimQ;                       
-                    int nints=
-                       ComputeShellQuartet(basis,nt,M,N,P,Q,&integrals);
+                    nints=ComputeShellQuartet(basis,nt,M,N,P,Q,&integrals);
                     //CInt_computeShellQuartet(basis, erd, nt,
                     //                         M, N, P, Q, &integrals, &nints);
                     if (nints != 0) {
-                        //printf("%d %d %d %d\n",M,N,P,Q);
                         update_F(num_dmat, integrals, dimM, dimN, dimP, dimQ,
                                  flag1, flag2, flag3,
                                  iMN, iPQ, iMP, iNP, iMQ, iNQ,

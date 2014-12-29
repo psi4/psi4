@@ -15,8 +15,8 @@
    #define PFOCK_MALLOC(size)    _mm_malloc(size, alignsize)
    #define PFOCK_FREE(addr)      _mm_free(addr)
 #else
-   #define PFOCK_MALLOC(size)    malloc(size)
-   #define PFOCK_FREE(addr)      free(addr)
+   #define PFOCK_MALLOC(size) malloc(size)
+   #define PFOCK_FREE(addr) free(addr)
 #endif
 
 #if ( _DEBUG_LEVEL_ == -1 )

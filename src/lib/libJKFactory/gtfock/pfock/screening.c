@@ -10,21 +10,20 @@
 #include "config.h"
 #include "screening.h"
 #include "taskq.h"
-
 #include "../../CifiedFxns.h"
 
 int schwartz_screening(PFock_t pfock, BasisSet_t basis)
 {
     int myrank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank); 
 
-    // create shell pairs values
+    // create shell pairs values    
     //ERD_t erd;
     int nthreads = omp_get_max_threads();
     //CInt_createERD(basis, &erd, nthreads);
     int nshells = pfock->nshells;
-
-    // create global arrays for screening
+    
+    // create global arrays for screening 
     int nprow = pfock->nprow;
     int npcol = pfock->npcol;
     int dims[2];
@@ -32,14 +31,14 @@ int schwartz_screening(PFock_t pfock, BasisSet_t basis)
     int map[nprow + npcol];
     for (int i = 0; i < nprow; i++) {
         map[i] = pfock->rowptr_sh[i];
-    }
+    }   
     for (int i = 0; i < npcol; i++) {
         map[i + nprow] = pfock->colptr_sh[i];
     }
     dims[0] = nshells;
     dims[1] = nshells;
     block[0] = nprow;
-    block[1] = npcol;
+    block[1] = npcol;             
     pfock->ga_screening =
         NGA_Create_irreg(C_DBL, 2, dims, "array Screening", block, map);
     if (0 == pfock->ga_screening) {
@@ -47,7 +46,7 @@ int schwartz_screening(PFock_t pfock, BasisSet_t basis)
     }
 
     // compute the max shell value
-    double *sq_values = (double *)PFOCK_MALLOC(sizeof(double) *
+    double *sq_values = (double *)PFOCK_MALLOC(sizeof(double) * 
         pfock->nshells_row * pfock->nshells_col);
     if (NULL == sq_values) {
         return -1;
@@ -65,24 +64,24 @@ int schwartz_screening(PFock_t pfock, BasisSet_t basis)
             int dimM = CInt_getShellDim(basis, M);
             for (int N = startN; N <= endN; N++) {
                 int dimN = CInt_getShellDim(basis, N);
+                int nints;
                 double *integrals;
-                int nints=
-                ComputeShellQuartet(basis,tid,M,N,M,N,&integrals);
+                nints=ComputeShellQuartet(basis,tid,M,N,M,N,&integrals);
                 //CInt_computeShellQuartet(basis, erd, tid, M, N, M, N,
                 //                         &integrals, &nints);
                 double maxvalue = 0.0;
                 if (nints != 0) {
                     for (int iM = 0; iM < dimM; iM++) {
                         for (int iN = 0; iN < dimN; iN++) {
-                            int index =
+                            int index = 
                                 iM * (dimN*dimM*dimN+dimN) + iN * (dimM*dimN+1);
                             if (maxvalue < fabs(integrals[index])) {
-                                maxvalue = fabs(integrals[index]);
+                                maxvalue = fabs(integrals[index]);                    
                             }
                         }
                     }
                 }
-                sq_values[(M - startM) * (endN - startN + 1)  + (N - startN)]
+                sq_values[(M - startM) * (endN - startN + 1)  + (N - startN)] 
                     = maxvalue;
                 if (maxvalue > maxtmp) {
                     maxtmp = maxvalue;
@@ -138,8 +137,8 @@ int schwartz_screening(PFock_t pfock, BasisSet_t basis)
         pfock->shellptr[M + 1] = nnz;
     }
     pfock->nnz = nnz;
-
-    double maxvalue;
+    
+    double maxvalue;  
     pfock->shellvalue  = (double *)PFOCK_MALLOC(sizeof(double) * nnz);
     pfock->shellid  = (int *)PFOCK_MALLOC(sizeof(int) * nnz);
     pfock->shellrid  = (int *)PFOCK_MALLOC(sizeof(int) * nnz);
@@ -149,7 +148,7 @@ int schwartz_screening(PFock_t pfock, BasisSet_t basis)
         pfock->shellid == NULL ||
         pfock->shellrid == NULL) {
         return -1;
-    }
+    }    
     nnz = 0;
     for (int A = 0; A < nshells; A++) {
         pfock->shellptr[A] = nnz;
@@ -165,7 +164,7 @@ int schwartz_screening(PFock_t pfock, BasisSet_t basis)
                 if (A > B && (A + B) % 2 == 1 || A < B && (A + B) % 2 == 0)
                     continue;
                 if (A == B) {
-                    pfock->shellvalue[nnz] = maxvalue;
+                    pfock->shellvalue[nnz] = maxvalue;                       
                 } else {
                     pfock->shellvalue[nnz] = -maxvalue;
                 }
