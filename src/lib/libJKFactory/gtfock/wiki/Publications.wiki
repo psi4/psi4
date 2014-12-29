@@ -1,0 +1,1 @@
+1. Xing Liu, Aftab Patel and Edmond Chow, '' A New Scalable Parallel Algorithm for Fock Matrix Construction,'' In 28th IEEE International Parallel & Distributed Processing Symposium (IPDPS), Phoenix, AZ, May 19-23, 2014.

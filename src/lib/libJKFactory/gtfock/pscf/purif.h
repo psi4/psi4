@@ -69,6 +69,7 @@ typedef struct _purif_t
 
     // statistics
     double timedgemm;
+    double timepdgemm;
     double timetr;
     double timepass;
 } purif_t;

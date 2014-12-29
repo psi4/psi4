@@ -6,6 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include <mpi.h>
+#include <sys/time.h>
 
 #include "pdgemm.h"
 
@@ -55,8 +56,12 @@ int pdgemm3D(int myrow, int mycol, int mygrd,
              int *nr, int *nc,
              int nrows, int ncols,
              double *D_, double *D2_, double *D3_,
-             tmpbuf_t *tmpbuf)
+             tmpbuf_t *tmpbuf, double *dgemm_time)
 {
+    struct timeval tv1, tv2;
+    if (dgemm_time != NULL) {
+        *dgemm_time = 0.0;
+    }
     assert(nrows == nr[myrow]);
     assert(ncols == nc[mycol]);
     int ncols0 = nc[0], nrows0 = nr[0];
@@ -93,8 +98,14 @@ int pdgemm3D(int myrow, int mycol, int mygrd,
         MPI_Bcast(&A_i[0], nrows * ncols, MPI_DOUBLE, mygrd, comm_col);
 
         // 2.2. Do local dgemm
+        gettimeofday(&tv1, NULL);
         cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans, ncols, ncols,
                     ncols, 1.0, A, ncols, &A_i[0], ncols, 0.0, &S_i[0], ncols);
+        gettimeofday(&tv2, NULL);
+        if (dgemm_time != NULL) {
+            *dgemm_time += (tv2.tv_sec - tv1.tv_sec) +
+                           (tv2.tv_usec - tv1.tv_usec) / 1000.0 / 1000.0;
+        }
 
         // 2.3. reduce S_i into a column i on plane i
         MPI_Reduce(&S_i[0], S, nrows * ncols, MPI_DOUBLE, MPI_SUM, mygrd,
@@ -126,9 +137,15 @@ int pdgemm3D(int myrow, int mycol, int mygrd,
         MPI_Bcast(&S_i[0], nrows * ncols, MPI_DOUBLE, mygrd, comm_col);
 
         // 3.3. C_i=A*S_i
+        gettimeofday(&tv1, NULL);
         cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, ncols, ncols,
                     ncols, 1.0, A, ncols, &S_i[0], ncols, 0.0, &C_i[0], ncols);
-
+        gettimeofday(&tv2, NULL);
+        if (dgemm_time != NULL) {
+            *dgemm_time += (tv2.tv_sec - tv1.tv_sec) +
+                           (tv2.tv_usec - tv1.tv_usec) / 1000.0 / 1000.0;
+        }
+        
         // 3.4. Reduce C_i into a column on plane i
         MPI_Reduce(&C_i[0], C, nrows * ncols, MPI_DOUBLE, MPI_SUM, mygrd,
                    comm_row);
@@ -149,8 +166,12 @@ void pdgemm3D_2(int myrow, int mycol, int mygrd,
                 MPI_Comm comm_grd, MPI_Comm comm_3D,
                 int *nr, int *nc, int nrows, int ncols,
                 double *A_block_, double *B_block_,
-                double *C_block_, tmpbuf_t *tmpbuf)
+                double *C_block_, tmpbuf_t *tmpbuf, double *dgemm_time)
 {
+    struct timeval tv1, tv2;
+    if (dgemm_time != NULL) {
+        *dgemm_time = 0.0;
+    }
     assert (nrows == nr[myrow]);
     assert (ncols == nc[mycol]);
     int ncols0 = nc[0], nrows0 = nr[0];
@@ -197,9 +218,15 @@ void pdgemm3D_2(int myrow, int mycol, int mygrd,
                   comm_col);
 
         // do local dgemm
+        gettimeofday(&tv1, NULL);
         cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans, ncols, ncols,
                     ncols, 1.0, A_block, ncols, &B_block_copy[0], ncols, 0.0,
                     &C_i[0], ncols);
+        gettimeofday(&tv2, NULL);
+        if (dgemm_time != NULL) {
+            *dgemm_time += (tv2.tv_sec - tv1.tv_sec) +
+                           (tv2.tv_usec - tv1.tv_usec) / 1000.0 / 1000.0;
+        }
 
         MPI_Reduce(&C_i[0], C_block, nrows * ncols, MPI_DOUBLE, MPI_SUM,
                    mygrd, comm_row);

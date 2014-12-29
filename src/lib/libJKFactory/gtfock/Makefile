@@ -1,7 +1,6 @@
 all:
 	make -C pfock
-
-#	make -C pscf
+	make -C pscf
 
 clean:
 	make -C pfock clean

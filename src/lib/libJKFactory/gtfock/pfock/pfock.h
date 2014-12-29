@@ -12,6 +12,7 @@
 struct PFock {
     BasisSet_t basis;
 
+    int input_type;
     int nthreads;
     int max_numdmat;
     int num_dmat;
@@ -261,16 +262,16 @@ PFockStatus_t PFock_destroy(PFock_t pfock);
 PFockStatus_t PFock_setNumDenMat(int numdmat, PFock_t pfock);
 
 /**
- * @brief  Put the data into a specific global densitry matrix.
+ * @brief  Put the data into a specific global density matrix.
  *
  * @param[in] rowstart  the starting row index of the
- *                      global densitry matrix section
+ *                      global density matrix section
  * @param[in] rowend    the ending row index of the
- *                      global densitry matrix section
+ *                      global density matrix section
  * @param[in] colstart  the starting column index of the
- *                      global densitry matrix section
+ *                      global density matrix section
  * @param[in] colend    the ending column index of the
- *                      global densitry matrix section
+ *                      global density matrix section
  * @param[in] dmat      the pointer to the local data
  * @param[in] stride    the leading dimension of the local data
  * @param[in] index     the index of the density matrix
@@ -284,7 +285,18 @@ PFockStatus_t PFock_putDenMat(int rowstart, int rowend,
                               int index, PFock_t pfock);
 
 /**
- * @brief  Fill the speficied global densitry matrix a specific value.
+ * @brief  Put the data into a specific global density matrix.
+ *
+ * @param[in] ga     the global array contains the density matrix
+ * @param[in] index  the index of the density matrix
+ * @param[in] pfock  the pointer to the PFock_t compute engine
+ *
+ * @return    the function return status
+ */
+PFockStatus_t PFock_putDenMatGA(int ga, int index, PFock_t pfock);
+
+/**
+ * @brief  Fill the speficied global density matrix a specific value.
  *
  * @param[in] value  the value to be filled 
  * @param[in] index  the index of the density matrix
@@ -317,19 +329,19 @@ PFockStatus_t PFock_commitDenMats(PFock_t pfock);
 PFockStatus_t PFock_sync(PFock_t pfock);
 
 /**
- * @brief  Get the data from a specific global densitry matrix.
+ * @brief  Get the data from a specific global density matrix.
  *
  * @param[in] pfock     the pointer to the PFock_t compute engine
  * @param[in] type      the type of the matrix
  * @param[in] index     the index of the density matrix
  * @param[in] rowstart  the starting row index of the
- *                      global densitry matrix section
+ *                      global density matrix section
  * @param[in] rowend    the ending row index of the
- *                      global densitry matrix section
+ *                      global density matrix section
  * @param[in] colstart  the starting column index of the
- *                      global densitry matrix section
+ *                      global density matrix section
  * @param[in] colend    the ending column index of the
- *                      global densitry matrix section
+ *                      global density matrix section
  * @param[in] stride    the leading dimension of the local data
  * @param[out] mat      the pointer to the local data
  *
@@ -344,6 +356,19 @@ PFockStatus_t PFock_getMat(PFock_t pfock,
                            int colend,
                            int stride,
                            double *mat);
+
+/**
+ * @brief  Get the data from a specific global density matrix.
+ *
+ * @param[in] pfock  the pointer to the PFock_t compute engine
+ * @param[in] type   the type of the matrix
+ * @param[in] index  the index of the density matrix
+ * @param[in] ga     the global array returns the global density matrix
+ *
+ * @return    the function return status  
+ */
+PFockStatus_t PFock_getMatGA(PFock_t pfock, PFockMatType_t type,
+                             int index, int ga);
 
 /**
  * @brief  Return the local data range on a specified process.

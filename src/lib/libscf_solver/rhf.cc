@@ -47,6 +47,7 @@
 #include "libdpd/dpd.h"
 #include "rhf.h"
 #include "../libJKFactory/MinimalInterface.h"
+#include "JKFactory.h"
 using namespace boost;
 using namespace psi;
 using namespace std;
@@ -146,29 +147,39 @@ void forPermutation(int depth, vector<int>& array,
 }
 void RHF::form_G()
 {
-  if(!JKFactory_){
-     JKFactory_=boost::shared_ptr<MinimalInterface>(
-           new MinimalInterface());
+  int alg=0;
+  if(alg==1){
+     /// Push the C matrix on
+     std::vector<SharedMatrix> & C = jk_->C_left();
+     C.clear();
+     C.push_back(Ca_subset("SO", "OCC"));
+
+     // Run the JK object
+     jk_->compute();
+
+     // Pull the J and K matrices off
+     const std::vector<SharedMatrix> & J = jk_->J();
+     const std::vector<SharedMatrix> & K = jk_->K();
+     J_ = J[0];
+     K_ = K[0];
   }
-  /*// Push the C matrix on
-  std::vector<SharedMatrix> & C = jk_->C_left();
-  C.clear();
-  C.push_back(Ca_subset("SO", "OCC"));
-
-  // Run the JK object
-  jk_->compute();
-
-  // Pull the J and K matrices off
-  const std::vector<SharedMatrix> & J = jk_->J();
-  const std::vector<SharedMatrix> & K = jk_->K();
-  J_ = J[0];
-  K_ = K[0];
-  J_->scale(2.0);
-  J_->print_out();
-  SharedMatrix corrJ_(new Matrix(*J_)),corrK_(new Matrix(*K_));*/
-  JKFactory_->SetP(D_);
-  JKFactory_->GetJ(J_);
-  JKFactory_->GetK(K_);
+  else if(alg==0){
+     typedef boost::shared_ptr<MinimalInterface> ShareInt;
+     if(!JKFactory_)
+        JKFactory_=ShareInt(new MinimalInterface());
+     JKFactory_->SetP(D_);
+     JKFactory_->GetJ(J_);
+     J_->scale(0.5);
+     JKFactory_->GetK(K_);
+     K_->scale(-1.0);
+  }
+  else{
+     timer_on("New Interface");
+     psi::JKFactory Fac;
+     Fac.BuildJandK(D_);
+     J_=Fac.GetJ();K_=Fac.GetK();
+     timer_off("New Interface");
+  }
   J_->scale(2.0);
   //exit(1);
   G_->copy(J_);
