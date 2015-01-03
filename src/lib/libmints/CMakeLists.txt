@@ -17,6 +17,7 @@ list(APPEND sources_list local.cc onebody.cc orbitalspace.cc osrecur.cc maketab.
 
 if(ENABLE_DKH)
    fortran_enabler()
+   add_definitions(-DHAVE_DKH)
    list(APPEND sources_list dkh2-dkh4_main.F)
 endif()
 
