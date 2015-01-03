@@ -34,8 +34,6 @@ macro(fortran_enabler)
               set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_HOLD})
           endif()
           
-          # This is to use the CMake generated macros and not those based on FC_SYMBOL
-          add_definitions(-DUSE_FCMANGLE_H)
 	  # Set FORTRAN_ENABLER_CALLED to TRUE
 	  set(FORTRAN_ENABLER_CALLED TRUE CACHE BOOL "Fortran enabler called") 
        else(CMAKE_Fortran_COMPILER)
