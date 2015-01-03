@@ -45,6 +45,8 @@ if(ENABLE_LIBERD OR ENABLE_DKH)
    if(CMAKE_Fortran_COMPILER)
       enable_language(Fortran)
       add_definitions(-DHAVE_FORTRAN)
+      # This is to use the CMake generated macros and not those based on FC_SYMBOL
+      add_definitions(-DUSE_FCMANGLE_H)
       set(FORTRAN_ENABLED TRUE)
    else()
       message(FATAL_ERROR "The Fortran compiler has to be explicitly specified!")
