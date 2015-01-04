@@ -23,7 +23,7 @@ macro(add_external _project)
 
     add_custom_target(
         check_external_timestamp_${_project}
-        COMMAND python ${PROJECT_SOURCE_DIR}/cmake/check_external_timestamp.py
+	COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/cmake/check_external_timestamp.py
                        ${PROJECT_BINARY_DIR}/external/${_project}-stamp/${_project}-configure
                        ${PROJECT_BINARY_DIR}/external/${_project}-stamp
                        ${PROJECT_SOURCE_DIR}/external/${_project}
