@@ -28,6 +28,8 @@ if(ENABLE_PCMSOLVER)
        add_external(pcmsolver)
     endif()
 
+    link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
+                     ${EXTERNAL_PROJECT_INSTALL_PREFIX})
 
     include_directories(${PROJECT_BINARY_DIR}/external/include
 	                ${PROJECT_BINARY_DIR}/external/include/eigen3/include/eigen3)
