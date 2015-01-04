@@ -23,9 +23,9 @@ if(ENABLE_PCMSOLVER)
 	)
     
     if(PCMSOLVER_TESTS)
-	    add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
+       add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
     else()
-	    add_external(pcmsolver)
+       add_external(pcmsolver)
     endif()
 
 

@@ -276,6 +276,11 @@ def parse_input():
             action='store_true',
             default=False,
             help='Enable dummy plugin external project [default: %(default)s]')
+    # PCMSolver package
+    group.add_argument('--pcmsolver',
+            action='store_true',
+            default=False,
+            help='Enable PCMSolver [default: %(default)s]')
 
     group = parser.add_argument_group('Pass extra flags to the compiler')
     group.add_argument('--extra-cc-flags',
@@ -362,6 +367,7 @@ def gen_cmake_command(args):
     command += ' -DENABLE_LIBERD=%s'         % translate_cmake(args.erd)
     command += ' -DENABLE_GPU_DFCC=%s'       % translate_cmake(args.gpu_dfcc)
     command += ' -DENABLE_DUMMY_PLUGIN=%s'   % translate_cmake(args.dummy_plugin)
+    command += ' -DENABLE_PCMSOLVER=%s'      % translate_cmake(args.pcmsolver)
     command += ' -DENABLE_CXX11_SUPPORT=%s'  % translate_cmake(args.cxx11)
     command += ' -DLIBINT_OPT_AM={0}'.format(args.max_am_eri)
     command += ' -DEXECUTABLE_SUFFIX={0}'.format(args.suffix)
