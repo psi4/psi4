@@ -266,11 +266,6 @@ def parse_input():
             action='store_true',
             default=False,
             help='Add support for the ERD integral package [default: %(default)s]')
-    # DKH package
-    group.add_argument('--dkh',
-            action='store_true',
-            default=False,
-            help='Add support for the Douglas-Kroll-Hess integral package [default: %(default)s]')
     # GPU_DFCC package
     group.add_argument('--gpu-dfcc',
             action='store_true',
@@ -365,7 +360,6 @@ def gen_cmake_command(args):
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
     command += ' -DENABLE_PLUGINS=%s'        % translate_cmake(args.plugins)
     command += ' -DENABLE_LIBERD=%s'         % translate_cmake(args.erd)
-    command += ' -DENABLE_DKH=%s'            % translate_cmake(args.dkh)
     command += ' -DENABLE_GPU_DFCC=%s'       % translate_cmake(args.gpu_dfcc)
     command += ' -DENABLE_DUMMY_PLUGIN=%s'   % translate_cmake(args.dummy_plugin)
     command += ' -DENABLE_CXX11_SUPPORT=%s'  % translate_cmake(args.cxx11)
@@ -591,10 +585,9 @@ def configure_host(args):
 
 def configure_default_compilers(args):
 
-    if args.mpi and not args.fc and not args.cc and not args.cxx:
+    if args.mpi and not args.cc and not args.cxx:
         # only --mpi flag but no --fc, --cc, --cxx
-        # set --fc, --cc, --cxx to mpif90, mpicc, mpicxx
-        args.fc  = 'mpif90'
+        # set --cc, --cxx to mpicc, mpicxx
         args.cc  = 'mpicc'
         args.cxx = 'mpicxx'
 
@@ -612,8 +605,6 @@ def configure_default_compilers(args):
             args.fc  and os.path.basename(args.fc).lower().startswith('openmpi'):
             args.mpi = 'on'
 
-    if not args.fc:
-        args.fc = 'gfortran'
     if not args.cc:
         args.cc = 'gcc'
     if not args.cxx:

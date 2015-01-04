@@ -29,7 +29,6 @@ option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
 # Modules requiring Fortran
 option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF)
-option(ENABLE_DKH            "Enable use of Douglas-Kroll-Hess integrals"  OFF)
 # Options for dashboard builds
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                        OFF)
 option(ENABLE_MEMCHECK       "Enable Valgrind memory check"                OFF)
@@ -41,7 +40,7 @@ option(ENABLE_UBSAN          "Enable undefined behaviour sanitizer"        OFF)
 set(EXTERNAL_LIBS)
 
 # Decide if Fortran is needed
-if(ENABLE_LIBERD OR ENABLE_DKH)
+if(ENABLE_LIBERD)
    if(CMAKE_Fortran_COMPILER)
       enable_language(Fortran)
       add_definitions(-DHAVE_FORTRAN)
@@ -138,7 +137,6 @@ include(ConfigBoost)
 link_directories("${Boost_LIBRARY_DIRS}")
 include_directories(SYSTEM "${Boost_INCLUDE_DIRS}")
 
-
 #OpenBabel Detection
 add_subdirectory(openbabel)
 set(BABEL_LIBRARY_DIR ${CMAKE_BINARY_DIR}/lib)
@@ -194,10 +192,8 @@ endif()
 set(top_srcdir ${PROJECT_SOURCE_DIR}) # The quotes are added in the source, in this case
 configure_file(src/bin/psi4/gitversion.py.in src/bin/psi4/gitversion.py)
 
-#
 # Libint configuration
-# Perhaps move to libint's cmakelists.txt file
-# Set default here if not set by setup script.
+# Set default for LIBINT_OPT_AM if not set by setup script.
 if(NOT LIBINT_OPT_AM)
    set(LIBINT_OPT_AM 5)
 endif()
@@ -225,7 +221,6 @@ set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2
            cceom adc thermo functional disp thce 3index deriv_wrapper optking
            findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util
            stable deriv scfgrad int util diis plugin parallel parallel2 babel frag efp_solver efp)
-
 
 #RMR---This is our plugin workaround
 #Here we start a list of plugins
