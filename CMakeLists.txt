@@ -41,7 +41,7 @@ option(ENABLE_UBSAN          "Enable undefined behaviour sanitizer"        OFF)
 set(EXTERNAL_LIBS)
 
 # Decide if Fortran is needed
-if(ENABLE_LIBERD)
+if(ENABLE_LIBERD OR ENABLE_PCMSOLVER)
    if(CMAKE_Fortran_COMPILER)
       enable_language(Fortran)
       add_definitions(-DHAVE_FORTRAN)
@@ -234,6 +234,8 @@ if(ENABLE_PCMSOLVER)
           message(STATUS "  - install Zlib development libraries")
       endif()
    else()
+      fortran_enabler()
+      add_definitions(-DHAVE_PCMSOLVER)
       message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")	 
       link_directories(${PROJECT_BINARY_DIR}/external/lib)
       # PCMSolver needs Fortran libraries 
