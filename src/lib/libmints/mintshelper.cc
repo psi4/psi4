@@ -44,10 +44,8 @@
 using namespace boost;
 
 #ifdef HAVE_FORTRAN
-#ifdef USE_FCMANGLE_H
 #include "FCMangle.h"
 #define F_DKH  FC_MODULE(dkh_main, dkh, DKH_MAIN, DKH)
-#endif
 
 extern "C" {
     void F_DKH(double *S, double *V, double *T, double *pVp, int *nbf, int *dkh_order);
@@ -434,10 +432,28 @@ SharedMatrix MintsHelper::ao_kinetic()
     return kinetic_mat;
 }
 
+SharedMatrix MintsHelper::ao_kinetic(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2)
+{
+    IntegralFactory factory(bs1, bs2);
+    boost::shared_ptr<OneBodyAOInt> T(factory.ao_kinetic());
+    SharedMatrix kinetic_mat(new Matrix("AO-basis Kinetic Ints", bs1->nbf (), bs2->nbf ()));
+    T->compute(kinetic_mat);
+    return kinetic_mat;
+}
+
 SharedMatrix MintsHelper::ao_potential()
 {
     boost::shared_ptr<OneBodyAOInt> V(integral_->ao_potential());
     SharedMatrix       potential_mat(new Matrix("AO-basis Potential Ints", basisset_->nbf (), basisset_->nbf ()));
+    V->compute(potential_mat);
+    return potential_mat;
+}      
+
+SharedMatrix MintsHelper::ao_potential(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2)
+{
+    IntegralFactory factory(bs1, bs2);
+    boost::shared_ptr<OneBodyAOInt> V(factory.ao_potential());
+    SharedMatrix potential_mat(new Matrix("AO-basis Potential Ints", bs1->nbf (), bs2->nbf ()));
     V->compute(potential_mat);
     return potential_mat;
 }
@@ -506,25 +522,35 @@ SharedMatrix MintsHelper::so_dkh(int dkh_order)
 
 SharedMatrix MintsHelper::ao_helper(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints)
 {
-    int nbf = basisset_->nbf();
-    SharedMatrix I(new Matrix(label, nbf*nbf, nbf*nbf));
+    boost::shared_ptr<BasisSet> bs1 = ints->basis1();
+    boost::shared_ptr<BasisSet> bs2 = ints->basis2();
+    boost::shared_ptr<BasisSet> bs3 = ints->basis3();
+    boost::shared_ptr<BasisSet> bs4 = ints->basis4();
+
+    int nbf1 = bs1->nbf();
+    int nbf2 = bs2->nbf();
+    int nbf3 = bs3->nbf();
+    int nbf4 = bs4->nbf();
+
+    SharedMatrix I(new Matrix(label, nbf1*nbf2, nbf3*nbf4));
     double** Ip = I->pointer();
     const double* buffer = ints->buffer();
 
-    for (int M = 0; M < basisset_->nshell(); M++) {
-        for (int N = 0; N < basisset_->nshell(); N++) {
-            for (int P = 0; P < basisset_->nshell(); P++) {
-                for (int Q = 0; Q < basisset_->nshell(); Q++) {
+
+    for (int M = 0; M < bs1->nshell(); M++) {
+        for (int N = 0; N < bs2->nshell(); N++) {
+            for (int P = 0; P < bs3->nshell(); P++) {
+                for (int Q = 0; Q < bs4->nshell(); Q++) {
 
                     ints->compute_shell(M,N,P,Q);
 
-                    for (int m = 0, index = 0; m < basisset_->shell(M).nfunction(); m++) {
-                        for (int n = 0; n < basisset_->shell(N).nfunction(); n++) {
-                            for (int p = 0; p < basisset_->shell(P).nfunction(); p++) {
-                                for (int q = 0; q < basisset_->shell(Q).nfunction(); q++, index++) {
+                    for (int m = 0, index = 0; m < bs1->shell(M).nfunction(); m++) {
+                        for (int n = 0; n < bs2->shell(N).nfunction(); n++) {
+                            for (int p = 0; p < bs3->shell(P).nfunction(); p++) {
+                                for (int q = 0; q < bs4->shell(Q).nfunction(); q++, index++) {
 
-                                    Ip[(basisset_->shell(M).function_index() + m)*nbf + basisset_->shell(N).function_index() + n]
-                                            [(basisset_->shell(P).function_index() + p)*nbf + basisset_->shell(Q).function_index() + q]
+                                    Ip[(bs1->shell(M).function_index() + m)*nbf2 + bs2->shell(N).function_index() + n]
+                                            [(bs3->shell(P).function_index() + p)*nbf4 + bs4->shell(Q).function_index() + q]
                                             = buffer[index];
 
                                 }
@@ -538,8 +564,8 @@ SharedMatrix MintsHelper::ao_helper(const std::string& label, boost::shared_ptr<
 
     // Set Numpy shape
     int* shape = new int[4];
-    shape[0] = shape[1] = nbf;
-    shape[2] = shape[3] = nbf;
+    shape[0] = nbf1; shape[1] = nbf2;
+    shape[2] = nbf3; shape[3] = nbf4;
     I->set_numpy_dims(4);
     I->set_numpy_shape(shape);
 
@@ -582,6 +608,16 @@ SharedMatrix MintsHelper::ao_eri()
     return ao_helper("AO ERI Tensor", ints);
 }
 
+SharedMatrix MintsHelper::ao_eri(boost::shared_ptr<BasisSet> bs1,
+                                 boost::shared_ptr<BasisSet> bs2,
+                                 boost::shared_ptr<BasisSet> bs3,
+                                 boost::shared_ptr<BasisSet> bs4)
+{
+    IntegralFactory intf(bs1, bs2, bs3, bs4);
+    boost::shared_ptr<TwoBodyAOInt> ints(intf.eri());
+    return ao_helper("AO ERI Tensor", ints);
+}
+
 SharedMatrix MintsHelper::ao_eri_shell(int M, int N, int P, int Q)
 {
     if(eriInts_ == 0){
@@ -599,6 +635,17 @@ SharedMatrix MintsHelper::ao_erfc_eri(double omega)
 SharedMatrix MintsHelper::ao_f12(boost::shared_ptr<CorrelationFactor> corr)
 {
     boost::shared_ptr<TwoBodyAOInt> ints(integral_->f12(corr));
+    return ao_helper("AO F12 Tensor", ints);
+}
+
+SharedMatrix MintsHelper::ao_f12(boost::shared_ptr<CorrelationFactor> corr,
+                                 boost::shared_ptr<BasisSet> bs1,
+                                 boost::shared_ptr<BasisSet> bs2,
+                                 boost::shared_ptr<BasisSet> bs3,
+                                 boost::shared_ptr<BasisSet> bs4)
+{
+    IntegralFactory intf(bs1, bs2, bs3, bs4);
+    boost::shared_ptr<TwoBodyAOInt> ints(intf.f12(corr));
     return ao_helper("AO F12 Tensor", ints);
 }
 
@@ -827,6 +874,51 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, Share
 
     return Imo;
 }
+
+SharedMatrix MintsHelper::mo_spin_eri(SharedMatrix Co, SharedMatrix Cv)
+{
+    int n1 = Co->colspi()[0];
+    int n2 = Cv->colspi()[0];
+    SharedMatrix mo_ints = mo_eri_helper(ao_eri(), Co, Cv);
+    SharedMatrix mo_spin_ints = mo_spin_eri_helper(mo_ints, n1, n2);
+    mo_ints.reset();
+    mo_spin_ints->set_name("MO Spin ERI Tensor");
+    return mo_spin_ints;
+}
+SharedMatrix MintsHelper::mo_spin_eri_helper(SharedMatrix Iso, int n1, int n2)
+{
+    int n12 = n1 * 2;
+    int n22 = n2 * 2;
+    
+    double** Isop = Iso->pointer();
+    SharedMatrix Ispin(new Matrix("MO ERI Tensor", 4 * n1 * n1, 4 * n2 * n2));
+    double** Ispinp = Ispin->pointer();
+
+    double first, second;
+    int mask1, mask2;
+    for (int i = 0; i < n12; i++) {
+        for (int j = 0; j < n12; j++) {
+            for (int k = 0; k < n22; k++) {
+                for (int l = 0; l < n22; l++) {
+                    mask1 = (i%2 == k%2) * (j%2 == l%2);
+                    mask2 = (i%2 == l%2) * (j%2 == k%2);
+                    
+                    first =  Isop[i/2 * n2 + k/2][j/2 * n2 + l/2];
+                    second = Isop[i/2 * n2 + l/2][j/2 * n2 + k/2];
+                    Ispinp[i * n12 + j][k * n22 + l] = first * mask1 - second * mask2; 
+                }
+            }
+        }
+    }
+    // Set Numpy shape
+    int* shape = new int[4];
+    shape[0] = shape[1] = n12;
+    shape[2] = shape[3] = n22;
+    Ispin->set_numpy_dims(4);
+    Ispin->set_numpy_shape(shape);
+
+    return Ispin;
+}
 SharedMatrix MintsHelper::so_overlap()
 {
     boost::shared_ptr<OneBodySOInt> S(integral_->so_overlap());
@@ -1026,6 +1118,163 @@ boost::shared_ptr<CdSalcList> MintsHelper::cdsalcs(int needed_irreps,
                                                         needed_irreps,
                                                         project_out_translations,
                                                         project_out_rotations));
+}
+SharedMatrix MintsHelper::mo_transform(SharedMatrix Iso, SharedMatrix C1, SharedMatrix C2,
+                                       SharedMatrix C3, SharedMatrix C4)
+{
+    // Attempts to transform integrals in the most efficient manner. Will transpose left, right
+    // and left_right where left and right are (left|right) indices. Does not consider the fimal
+    // perturbation eg (12|34) -> (13|24), therefore integrals of type (oo|vv) will not be computed
+    // in the optimal order. However, the first transformed index is guaranteed to be the smallest.
+
+    int nso = C1->rowspi()[0];
+
+    // Check C dimensions
+    int dim_check = 0;
+    dim_check += (C2->rowspi()[0] != nso);
+    dim_check += (C3->rowspi()[0] != nso);
+    dim_check += (C4->rowspi()[0] != nso);
+
+    if (dim_check){
+        throw PSIEXCEPTION("MO Transform: Eigenvector lengths of the C matrices are not identical.");
+    }
+
+    if ((Iso->nirrep())>1){
+        throw PSIEXCEPTION("MO Transform: The ERI has more than one irrep.");
+    }
+
+    // Make sure I is square and of correction dimesion
+    int Irows = Iso->rowspi()[0];
+    int Icols = Iso->colspi()[0];
+
+    if ( ((nso*nso)!=Irows) || ((nso*nso)!=Icols) ){
+        throw PSIEXCEPTION("MO Transform: ERI shape does match that of the C matrices.");
+    }
+
+    int n1 = C1->colspi()[0];
+    int n2 = C2->colspi()[0];
+    int n3 = C3->colspi()[0];
+    int n4 = C4->colspi()[0];
+
+    double** C1p = C1->pointer();
+    double** C2p = C2->pointer();
+    double** C3p = C3->pointer();
+    double** C4p = C4->pointer();
+
+    // Build numpy and final matrix shape
+    int* shape = new int[4];
+    shape[0] = n1; shape[1] = n2;
+    shape[2] = n3; shape[3] = n4;
+
+    int shape_left = n1 * n2;
+    int shape_right = n3 * n4;
+
+    // Transform smallest indices first
+    bool transpose_left = (n1 > n2);
+    bool transpose_right = (n3 > n4);
+    bool transpose_left_right = ((transpose_left ? n2 : n1) > (transpose_right ? n4 : n3));
+
+    int tmp_n;
+    double** tmp_p;
+    if (transpose_left){
+        tmp_n = n1; n1 = n2; n2 = tmp_n;
+        tmp_p = C1p; C1p = C2p; C2p = tmp_p;
+    }
+    if (transpose_right){
+        tmp_n = n3; n3 = n4; n4 = tmp_n;
+        tmp_p = C3p; C3p = C4p; C4p = tmp_p;
+    }
+    if (transpose_left_right){
+        tmp_n = n1; n1 = n3; n3 = tmp_n;
+        tmp_n = n2; n2 = n4; n4 = tmp_n;
+        tmp_p = C1p; C1p = C3p; C3p = tmp_p;
+        tmp_p = C2p; C2p = C4p; C4p = tmp_p;
+    }
+
+    double** Isop = Iso->pointer();
+    SharedMatrix I2(new Matrix("MO ERI Tensor", n1 * nso, nso * nso));
+    double** I2p = I2->pointer();
+
+    C_DGEMM('T','N',n1,nso * (ULI) nso * nso,nso,1.0,C1p[0],n1,Isop[0],nso * (ULI) nso * nso,0.0,I2p[0],nso * (ULI) nso * nso);
+
+    Iso.reset();
+    SharedMatrix I3(new Matrix("MO ERI Tensor", n1 * nso, nso * n3));
+    double** I3p = I3->pointer();
+
+    C_DGEMM('N','N',n1 * (ULI) nso * nso,n3,nso,1.0,I2p[0],nso,C3p[0],n3,0.0,I3p[0],n3);
+
+    I2.reset();
+    SharedMatrix I4(new Matrix("MO ERI Tensor", nso * n1, n3 * nso));
+    double** I4p = I4->pointer();
+
+    for (int i = 0; i < n1; i++) {
+        for (int j = 0; j < n3; j++) {
+            for (int m = 0; m < nso; m++) {
+                for (int n = 0; n < nso; n++) {
+                    I4p[m * n1 + i][j * nso + n] = I3p[i * nso + m][n * n3 + j];
+                }
+            }
+        }
+    }
+
+    I3.reset();
+    SharedMatrix I5(new Matrix("MO ERI Tensor", n2 * n1, n3 * nso));
+    double** I5p = I5->pointer();
+
+    C_DGEMM('T','N',n2,n1 * (ULI) n3 * nso, nso,1.0,C2p[0],n2,I4p[0],n1*(ULI)n3*nso,0.0,I5p[0],n1*(ULI)n3*nso);
+
+    I4.reset();
+    SharedMatrix I6(new Matrix("MO ERI Tensor", n2 * n1, n3 * n4));
+    double** I6p = I6->pointer();
+
+    C_DGEMM('N','N',n2 * (ULI) n1 * n3, n4, nso,1.0,I5p[0],nso,C4p[0],n4,0.0,I6p[0],n4);
+
+    I5.reset();
+    SharedMatrix Imo(new Matrix("MO ERI Tensor", shape_left, shape_right));
+    double** Imop = Imo->pointer();
+
+    // Currently 2143, need to transform back
+    int left, right, tmp;
+    for (int i = 0; i < n1; i++) {
+        for (int j = 0; j < n3; j++) {
+            for (int a = 0; a < n2; a++) {
+
+                // Tranpose left
+                if (transpose_left){
+                    left = a * n1 + i;
+                }
+                else{
+                    left = i * n2 + a;
+                }
+
+                for (int b = 0; b < n4; b++) {
+                    right = j * n4 + b;
+
+                    // Transpose right
+                    if (transpose_right){
+                        right = b * n3 + j;
+                    }
+                    else{
+                        right = j * n4 + b;
+                    }
+
+                    // Transpose left_right
+                    if (transpose_left_right){
+                        Imop[right][left] = I6p[a * n1 + i][j * n4 + b];
+                    }
+                    else{
+                        Imop[left][right] = I6p[a * n1 + i][j * n4 + b];
+                    }
+                }
+            }
+        }
+    }
+
+    // Set Numpy shape
+    Imo->set_numpy_dims(4);
+    Imo->set_numpy_shape(shape);
+
+    return Imo;
 }
 
 void MintsHelper::play()
