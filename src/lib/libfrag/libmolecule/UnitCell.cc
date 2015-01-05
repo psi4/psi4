@@ -46,8 +46,11 @@ void UnitCell::SetSides(const double a, const double b, const double c,
    GenericConverter(IsBohr?1.0:Conv(ANGSTROM,BOHR),sides_,a,b,c);
 }
 
+UnitCell::UnitCell(boost::shared_ptr<Molecule> Mol,const bool IsFrac=true){
 
+}
 //-----The def below is just the two transformation matrices hard-coded----
+//It's stolen from Wikipedia
 void UnitCell::SetTrans(){
    double cos[3],sin[3],cos2=0.0,cosprod=1.0;
    for(int i=0;i<3;i++){
@@ -58,15 +61,14 @@ void UnitCell::SetTrans(){
    }
    double volume=sqrt(1-cos2+2*cosprod);
    //Easy elements
-   Frac2Cart_[0]=sides_[0];Cart2Frac_[0]=1.0/sides_[0];
+   Frac2Cart_[0]=sides_[0];
+   Cart2Frac_[0]=1.0/sides_[0];
    Frac2Cart_[3]=Cart2Frac_[3]=0.0;
-   Frac2Cart_[6]=Cart2Frac_[0]=0.0;
-   Frac2Cart_[7]=Cart2Frac_[0]=0.0;
+   Frac2Cart_[6]=Cart2Frac_[6]=0.0;
+   Frac2Cart_[7]=Cart2Frac_[7]=0.0;
 
    //More difficult elements
-   double cosbg=cos[1]*cos[2],
-           ctimesvol=sides_[2]*volume,
-           invsin2=1/sin[2];
+   double cosbg=cos[1]*cos[2],invsin2=1/sin[2];
    Frac2Cart_[1]=sides_[1]*cos[2];//b*cos(gamma)
    //-cos(gamma)/a*sin(gamma)
    Cart2Frac_[1]=-cos[2]*Cart2Frac_[0]*invsin2;
@@ -74,13 +76,13 @@ void UnitCell::SetTrans(){
    //cos(alpha)*cos(gamma)-cos(beta)/av*sin(gamma)
    Cart2Frac_[2]=Cart2Frac_[0]*invsin2*(cos[0]*cos[2]-cos[1])/volume;
    Frac2Cart_[4]=sides_[1]*sin[2];// b*sin(gamma)
-   Cart2Frac_[4]=invsin2/sides_[1];//1/b*sin(gamma)
+   Cart2Frac_[4]=1/Frac2Cart_[4];//1/b*sin(gamma)
    //c*(cos(alpha)-cos(beta)*cos(gamma))/sin(gamma)
    Frac2Cart_[5]=sides_[2]*invsin2*(cos[0]-cosbg);
    //cos(beta)cos(gamma)-cos(alpha)/bv*sin(gamma)
-   Cart2Frac_[6]=invsin2*(cosbg-cos[0])/(sides_[1]*volume);
-   Frac2Cart_[8]=ctimesvol*invsin2;// cv/sin(gamma)
-   Cart2Frac_[8]=sin[2]/ctimesvol;//sin(gamm)/cv
+   Cart2Frac_[5]=invsin2*(cosbg-cos[0])/(sides_[1]*volume);
+   Frac2Cart_[8]=sides_[2]*volume*invsin2;// cv/sin(gamma)
+   Cart2Frac_[8]=1/Frac2Cart_[8];//sin(gamm)/cv
 }
 
 
