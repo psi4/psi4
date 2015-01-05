@@ -44,10 +44,8 @@
 using namespace boost;
 
 #ifdef HAVE_FORTRAN
-#ifdef USE_FCMANGLE_H
 #include "FCMangle.h"
 #define F_DKH  FC_MODULE(dkh_main, dkh, DKH_MAIN, DKH)
-#endif
 
 extern "C" {
     void F_DKH(double *S, double *V, double *T, double *pVp, int *nbf, int *dkh_order);

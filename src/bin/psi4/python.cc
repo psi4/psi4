@@ -1093,7 +1093,10 @@ boost::shared_ptr<Vector> py_psi_get_atomic_point_charges()
         boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
         return wf->get_atomic_point_charges();
     }
-    else return NULL; // charges not added to process.h for environment - yet(?)
+    else {
+      boost::shared_ptr<psi::Vector> empty(new psi::Vector());
+      return empty; // charges not added to process.h for environment - yet(?)
+    }
 }
 
 double py_psi_get_variable(const std::string & key)
