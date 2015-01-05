@@ -85,14 +85,14 @@ int CInt_getFuncEndInd( BasisSet_t basis,
 int CInt_getAtomStartInd( BasisSet_t basis,
                           int atomid );
 
-// one electron integrals
+/* one electron integrals
 
-//CIntStatus_t CInt_createOED( BasisSet_t basis,
-//                             OED_t *oed );
+CIntStatus_t CInt_createOED( BasisSet_t basis,
+                             OED_t *oed );
 
-//CIntStatus_t CInt_destroyOED( OED_t oed );
+CIntStatus_t CInt_destroyOED( OED_t oed );
     
-/*CIntStatus_t CInt_computePairKin( BasisSet_t basis,
+CIntStatus_t CInt_computePairKin( BasisSet_t basis,
                                   OED_t oed,
                                   int A,
                                   int B,

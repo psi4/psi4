@@ -33,9 +33,13 @@ namespace psi {
  *
  *  Optionally, you many also specify the priority of your tasks.
  *  By default all tasks are assumed to possess the same priority.
- *  Lower numbers mean it needs to be scheduled first, i.e. it is a more
+ *  Higher numbers mean it needs to be scheduled first, i.e. it is a more
  *  complex task, with complexity being measured relative to other tasks
- *  in your task pool.  If you need to, you may use negative priorities
+ *  in your task pool.  It's also worth noting, that currently I only assume
+ *  that a task of priority 10 is more complicated than a task of priority 1,
+ *  not that it is 10x harder.
+ *
+ *  If you need to, you may use negative priorities
  *  for tasks that are of an unknown complexity.  For negative priorities
  *  the magnitude is irrelevant, i.e. I do not assume a task of priority -1
  *  is more or less complex than one of priority -2, I simply assume they

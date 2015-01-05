@@ -2,16 +2,21 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <ga.h>
-#include <mkl.h>
+
 #include <omp.h>
 #include <mpi.h>
+
+#ifdef __INTEL_COMPILER
 #include <mkl_scalapack.h>
+#include <mkl.h>
+#endif
+
 
 #include "config.h"
 #include "one_electron.h"
 
 
-inline void matrix_block_write(double *matrix, int startrow,
+static inline void matrix_block_write(double *matrix, int startrow,
                                int startcol, int ldm,
                                double *block, int nrows, int ncols)
 {
@@ -118,7 +123,7 @@ void compute_H(PFock_t pfock, BasisSet_t basis,
     free(oed);
 }
 
-
+/*
 void my_peig(int ga_A, int ga_B, int n, int nprow, int npcol, double *eval)
 {
     int myrank;
@@ -175,12 +180,12 @@ void my_peig(int ga_A, int ga_B, int n, int nprow, int npcol, double *eval)
             NGA_Get(ga_A, lo, hi, &(Z[(i - 1) * ncols + j - 1]), &ld);
 #endif
         }
-        /* Jeff: Location of NGA_NbWait for flow-control. */
+        /* Jeff: Location of NGA_NbWait for flow-control. /
     }
 #ifdef GA_NB
     /* Jeff: If one sees flow-control problems with too many
      *       outstanding NbGet operations, then move this call
-     *       to the location noted above. */
+     *       to the location noted above. /
     NGA_NbWait(&nbnb);
 #endif
     for (int i = 0; i < nrows; i++) {
@@ -249,12 +254,12 @@ void my_peig(int ga_A, int ga_B, int n, int nprow, int npcol, double *eval)
             NGA_Put(ga_B, lo, hi, &(A[(i - 1) * ncols + j - 1]), &ld);
 #endif
         }
-        /* Jeff: Location of NGA_NbWait for flow-control. */
+        /* Jeff: Location of NGA_NbWait for flow-control. /
     }
 #ifdef GA_NB
     /* Jeff: If one sees flow-control problems with too many
      *       outstanding NbPut operations, then move this call
-     *       to the location noted above. */
+     *       to the location noted above. /
     NGA_NbWait(&nbnb);
 #endif
     GA_Sync();
@@ -264,4 +269,4 @@ void my_peig(int ga_A, int ga_B, int n, int nprow, int npcol, double *eval)
     mkl_free(work);
 
     Cblacs_gridexit(ictxt);
-}
+}*/

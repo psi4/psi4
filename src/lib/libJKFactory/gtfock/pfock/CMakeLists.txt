@@ -8,7 +8,8 @@ set(GTFockSRCs ${CMAKE_CURRENT_SOURCE_DIR}/fock_buf.c
                ${CMAKE_CURRENT_SOURCE_DIR}/fock_task.c 
                ${CMAKE_CURRENT_SOURCE_DIR}/screening.c 
                ${CMAKE_CURRENT_SOURCE_DIR}/taskq.c 
-               ${CMAKE_CURRENT_SOURCE_DIR}/pfock.c)
+               ${CMAKE_CURRENT_SOURCE_DIR}/pfock.c
+)
 
 
 

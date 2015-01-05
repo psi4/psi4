@@ -147,8 +147,10 @@ void forPermutation(int depth, vector<int>& array,
 }
 void RHF::form_G()
 {
-  int alg=0;
-  if(alg==1){
+   typedef boost::shared_ptr<MinimalInterface> ShareInt;
+   if(!JKFactory_)
+      JKFactory_=ShareInt(new MinimalInterface());
+   if(!JKFactory_->UseJKFactory()){
      /// Push the C matrix on
      std::vector<SharedMatrix> & C = jk_->C_left();
      C.clear();
@@ -163,25 +165,14 @@ void RHF::form_G()
      J_ = J[0];
      K_ = K[0];
   }
-  else if(alg==0){
-     typedef boost::shared_ptr<MinimalInterface> ShareInt;
-     if(!JKFactory_)
-        JKFactory_=ShareInt(new MinimalInterface());
+  else{
      JKFactory_->SetP(D_);
      JKFactory_->GetJ(J_);
      J_->scale(0.5);
      JKFactory_->GetK(K_);
      K_->scale(-1.0);
   }
-  else{
-     timer_on("New Interface");
-     psi::JKFactory Fac;
-     Fac.BuildJandK(D_);
-     J_=Fac.GetJ();K_=Fac.GetK();
-     timer_off("New Interface");
-  }
   J_->scale(2.0);
-  //exit(1);
   G_->copy(J_);
   G_->subtract(K_);
 }

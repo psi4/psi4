@@ -75,8 +75,10 @@ static void update_F(int num_dmat, double *integrals, int dimM, int dimN,
                         int ipq = iP * ldPQ + iQ;
                         int imp = iM * ldMP + iP;
                         int inp = iN * ldNP + iP;
-                        double I = 
-                            integrals[iM + dimM*(iN + dimN * (iP + dimP * iQ))];
+                        double I =integrals[iM*dimN*dimP*dimQ
+                                           +iN*dimP*dimQ+iP*dimQ+iQ];
+                        //double I =
+                        //    integrals[iM + dimM*(iN + dimN * (iP + dimP * iQ))];
                         // F(m, n) += D(p, q) * 2 * I(m, n, p, q)
                         // F(n, m) += D(p, q) * 2 * I(n, m, p, q)
                         // F(m, n) += D(q, p) * 2 * I(m, n, q, p)

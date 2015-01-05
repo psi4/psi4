@@ -30,6 +30,8 @@ namespace psi{
 class Matrix;
 class TwoBodyAOInt;
 
+
+#ifdef HAVE_JK_FACTORY
 namespace Interface{
 extern std::vector<boost::shared_ptr<TwoBodyAOInt> > Ints;
 }
@@ -45,6 +47,7 @@ class MinimalInterface{
       int EndRow_;
       int EndCol_;
       int Stride_;
+      int NBasis_;
       void BlockDims(const int NBasis);
       void MyBlock(double **Buffer,boost::shared_ptr<Matrix> Matrix);
       void Gather(boost::shared_ptr<Matrix>,double*);
@@ -65,13 +68,26 @@ class MinimalInterface{
       void GetK(boost::shared_ptr<Matrix> K){
          Vectorize(K,&MinimalInterface::GetK);
       }
-      void GetH(boost::shared_ptr<Matrix> H);
       void SetP(std::vector<boost::shared_ptr<Matrix> >& Ps);
       void SetP(boost::shared_ptr<Matrix> P){
          Vectorize(P,&MinimalInterface::SetP);
       }
+      bool UseJKFactory()const{return true;}
 };
-
-}
+#else
+class MinimalInterface{
+   public:
+      MinimalInterface(const int NMats=1,const bool AreSymm=true){}
+      ~MinimalInterface(){}
+      void GetJ(std::vector<boost::shared_ptr<Matrix> >& Js){}
+      void GetJ(boost::shared_ptr<Matrix> J){}
+      void GetK(std::vector<boost::shared_ptr<Matrix> >& Ks){}
+      void GetK(boost::shared_ptr<Matrix> K){}
+      void SetP(std::vector<boost::shared_ptr<Matrix> >& Ps){}
+      void SetP(boost::shared_ptr<Matrix> P){}
+      bool UseJKFactory()const{return false;}
+};
+#endif
+}//End psi namespace
 
 #endif /* SRC_LIB_LIBJKFACTORY_SRC_MINIMALINTERFACE_H_ */

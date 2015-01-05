@@ -37,6 +37,7 @@ option(ENABLE_ASAN           "Enable address sanitizer"                    OFF)
 option(ENABLE_MSAN           "Enable memory sanitizer"                     OFF)
 option(ENABLE_TSAN           "Enable thread sanitizer"                     OFF)
 option(ENABLE_UBSAN          "Enable undefined behaviour sanitizer"        OFF)
+option(ENABLE_JKFACTORY      "Enable the distributed JKFactory (requires MPI)"            OFF)
 
 set(EXTERNAL_LIBS)
 
@@ -238,8 +239,9 @@ if(ENABLE_LIBERD)
     set(PSILIB ${PSILIB} erd)
 endif()
 
-#If we have MPI also build the JKFactory library for awesome SCF performance
-if(MPI_FOUND)
+#If we have MPI we may want to also build JKFactory which makes J and K's
+#in distributed parallel
+if(MPI_FOUND AND ENABLE_JKFACTORY)
    set(BUILD_JK_FACTORY "TRUE")
 endif()
 if(BUILD_JK_FACTORY)
@@ -254,6 +256,7 @@ if(BUILD_JK_FACTORY)
     add_definitions(-DHAVE_JK_FACTORY)
     set(JKROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/libJKFactory)
     set(PSILIB ${PSILIB} GTFockInt GTFock GTFockCInt
+       ${PROJECT_BINARY_DIR}/lib/liboed.a
        ${PROJECT_BINARY_DIR}/lib/libga.a 
        ${PROJECT_BINARY_DIR}/lib/libarmci.a)     
 endif()
