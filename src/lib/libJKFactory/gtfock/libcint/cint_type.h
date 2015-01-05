@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-/*struct OED
+struct OED
 {
     int nalpha;
     int ncoeff;
@@ -44,7 +44,7 @@
 };
 
 
-struct ERD
+/*struct ERD
 {
     /* The number of threads used for computation /
     uint32_t nthreads;

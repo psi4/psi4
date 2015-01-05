@@ -31,6 +31,7 @@
 #include "psi4-dec.h"
 #include "../libparallel2/Communicator.h"
 #include "../libparallel2/ParallelEnvironment.h"
+#include "../libparallel2/Algorithms.h"
 extern "C" {
    #include "gtfock/libcint/CInt.h"
    #include "gtfock/pfock/pfock.h"
@@ -51,6 +52,7 @@ void SplitProcs(int&,int&);
 typedef void (psi::MinimalInterface::*GetPutFxn)(
                          std::vector<SharedMatrix>& );
 
+
 void psi::MinimalInterface::Vectorize(
       SharedMatrix Mat,GetPutFxn fxn){
    std::vector<SharedMatrix>temp(1,Mat);
@@ -65,13 +67,14 @@ psi::MinimalInterface::~MinimalInterface(){
 psi::MinimalInterface::MinimalInterface(const int NMats,
       const bool AreSymm):NPRow_(1),NPCol_(1),
                           StartRow_(0),StartCol_(0),
-                          EndRow_(0),EndCol_(0),Stride_(0){
+                          EndRow_(0),EndCol_(0),Stride_(0),NBasis_(0){
     SplitProcs(NPRow_,NPCol_);
     psi::Options& options = psi::Process::environment.options;
     SharedBasis primary = psi::BasisSet::pyconstruct_orbital(
     		                  psi::Process::environment.molecule(),
                               "BASIS", options.get_str("BASIS"));
-   BlockDims(primary->nbf());
+   NBasis_=primary->nbf();
+   BlockDims(NBasis_);
    MakeBasis(&GTBasis_,primary);
    double IntThresh=
          psi::Process::environment.options["INTS_TOLERANCE"].to_double();
@@ -84,14 +87,15 @@ psi::MinimalInterface::MinimalInterface(const int NMats,
 
 void psi::MinimalInterface::SetP(std::vector<SharedMatrix>& Ps){
    PFock_setNumDenMat(Ps.size(),PFock_);
+   double* Buffer;
    for(int i=0;i<Ps.size();i++){
-      double* Buffer;
       MyBlock(&Buffer,Ps[i]);
       PFock_putDenMat(StartRow_,EndRow_,
                       StartCol_,EndCol_,Stride_,Buffer,i,PFock_);
    }
    PFock_commitDenMats(PFock_);
    PFock_computeFock(GTBasis_,PFock_);
+   delete [] Buffer;
 }
 
 void psi::MinimalInterface::GenGetCall(
@@ -101,6 +105,7 @@ void psi::MinimalInterface::GenGetCall(
    int ncols=(EndCol_-StartCol_+1);
    double* Block=new double[nrows*ncols];
    for(int i=0;i<JorK.size();i++){
+      memset(Block,0.0,sizeof(double)*nrows*ncols);
       PFock_getMat(PFock_,(PFockMatType_t)value,i,StartRow_,
                   EndRow_,StartCol_,EndCol_,Stride_,Block);
       Gather(JorK[i],Block);
@@ -119,35 +124,60 @@ void psi::MinimalInterface::GetK(std::vector<SharedMatrix>& Ks){
 
 void psi::MinimalInterface::MyBlock(double **Buffer,
                                     SharedMatrix Matrix){
-   (*Buffer)=&((*Matrix)(0,0));
+   int nrows=EndRow_-StartRow_+1;
+   (*Buffer)=new double[nrows*Stride_];
+   for(int row=StartRow_;row<=EndRow_;++row){
+      for(int col=StartCol_;col<=EndCol_;++col){
+         (*Buffer)[(row-StartRow_)*Stride_+(col-StartCol_)]=
+               (*Matrix)(row,col);
+      }
+   }
 }
+
+void FillMat(SharedMatrix Result, int RowStart, int RowEnd,
+      int ColStart, int ColEnd, double* Buffer){
+   int nrows=RowEnd-RowStart+1;
+   int ncols=ColEnd-ColStart+1;
+   for(int row=RowStart;row<=RowEnd;row++){
+      for(int col=ColStart;col<=ColEnd;col++){
+         (*Result)(row,col)=
+               Buffer[(row-RowStart)*ncols+(col-ColStart)];
+      }
+   }
+}
+
 
 void psi::MinimalInterface::Gather(SharedMatrix Result,
                                    double *Block){
-   int nrows=EndRow_-StartRow_+1;
-   int ncols=EndCol_-StartCol_+1;
-   if(!Result){
-      Result=SharedMatrix(new psi::Matrix(nrows,ncols));
-   }
-   memcpy(&((*Result)(0,0)),Block,sizeof(double)*nrows*ncols);
+   if(!Result)Result=SharedMatrix(new psi::Matrix(NBasis_,NBasis_));
+   SharedMatrix temp(new psi::Matrix(NBasis_,NBasis_));
+   FillMat(temp,StartRow_,EndRow_,StartCol_,EndCol_,Block);
+   ConstSharedComm Comm=psi::WorldComm->GetComm();
+   Comm->AllReduce(&(*temp)(0,0),NBasis_*NBasis_,&(*Result)(0,0),LibParallel::ADD);
 }
 
 void psi::MinimalInterface::BlockDims(const int NBasis){
    ConstSharedComm Comm=psi::WorldComm->GetComm();
    int MyRank=Comm->Me();
-   int RowID=MyRank/NPCol_;
-   int ColID=MyRank%NPCol_;
-   SharedComm RowComm=Comm->MakeComm(RowID);
-   SharedComm ColComm=Comm->MakeComm(ColID);
-   int MyRow=RowComm->Me();
-   int MyCol=ColComm->Me();
-   StartCol_=0;
-   StartRow_=0;
-   EndRow_=NBasis-1;
-   EndCol_=NBasis-1;
+   int IDs[2];
+   //Divide the mat into NPRow_ by NPCol_ blocks
+   //Note the following works because I know NPRow_*NPCol_=NProc
+   IDs[0]=MyRank/NPCol_;//Row of my block
+   IDs[1]=MyRank%NPCol_;//Col of my block
+   for(int i=0;i<2;i++){
+      SharedComm TempComm=Comm->MakeComm(IDs[i]);
+      int MyDim=TempComm->Me();
+      int & DimStart=(i==0?StartRow_:StartCol_);
+      int & DimEnd=(i==0?EndRow_:EndCol_);
+      int & NP=(i==0?NPRow_:NPCol_);
+      int BFsPerDimPerBlock=NBasis/NP;
+      DimStart=IDs[i]*BFsPerDimPerBlock;
+      //This needs to be the last actually usable value
+      DimEnd=(IDs[i]==(NP-1)?NBasis:DimStart+BFsPerDimPerBlock)-1;
+      TempComm->FreeComm();
+   }
    Stride_=EndCol_-StartCol_+1;
 }
-
 
 void SplitProcs(int& NPRow, int& NPCol){
    ConstSharedComm Comm=psi::WorldComm->GetComm();

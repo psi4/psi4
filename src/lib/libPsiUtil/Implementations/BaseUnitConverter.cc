@@ -38,7 +38,8 @@ BaseUnitConverter::BaseUnitConverter(){
 }
 
 /************May want to stop reading here**************/
-/* Again a bash script:
+/* A bash script to generate this, will need to add the angles at the bottom
+ * by hand:
 #!/bin/sh
 #units=( "BOHR" "ANGSTROM" "METER" )
 #conv=( "pc_bohr2angstroms" "pc_bohr2m" )
@@ -152,6 +153,10 @@ void FillMap(SharedConversion& Map){
    Conversions_[KCALMOL][HZ]=1/Conversions_[HZ][KCALMOL];
    Conversions_[KCALMOL][CALMOL]=1/Conversions_[CALMOL][KCALMOL];
    Conversions_[KCALMOL][KCALMOL]=1.0;
+   Conversions_[DEGREE][DEGREE]=1.0;
+   Conversions_[DEGREE][RADIAN]=pc_pi/180.0;
+   Conversions_[RADIAN][RADIAN]=1.0;
+   Conversions_[RADIAN][DEGREE]=1/Conversions_[DEGREE][RADIAN];
 
 }
 

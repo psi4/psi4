@@ -644,8 +644,8 @@ static PFockStatus_t create_buffers (PFock_t pfock)
     pfock->sizeX2 = sizeX2;
     pfock->sizeX3 = sizeX3;
     if (myrank == 0) {
-        printf("  FD size (%d %d %d %d)\n",
-            maxrowfuncs, maxcolfuncs, maxrowsize, maxcolsize);
+        //printf("  FD size (%d %d %d %d)\n",
+        //    maxrowfuncs, maxcolfuncs, maxrowsize, maxcolsize);
     }
     
     // D buf
@@ -916,7 +916,7 @@ PFockStatus_t PFock_create(BasisSet_t basis, int nprow, int npcol, int ntasks,
 
     // schwartz screening    
     if (myrank == 0) {
-        PFOCK_INFO("screening ...\n");
+        //PFOCK_INFO("screening ...\n");
     }
     double t1 = MPI_Wtime();
     if (schwartz_screening(pfock, basis) != 0) {
@@ -925,7 +925,7 @@ PFockStatus_t PFock_create(BasisSet_t basis, int nprow, int npcol, int ntasks,
     }
     double t2 = MPI_Wtime();
     if (myrank == 0) {
-        PFOCK_INFO("takes %.3lf secs\n", t2 - t1);
+        //PFOCK_INFO("takes %.3lf secs\n", t2 - t1);
     }
 
     // repartition
@@ -1699,7 +1699,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
                (tv4.tv_usec - tv3.tv_usec) / 1000.0 / 1000.0;
 
     if (myrank == 0) {
-        PFOCK_INFO ("correct F ...\n");
+        //PFOCK_INFO ("correct F ...\n");
     }
   
     if (pfock->nosymm) {
@@ -1730,7 +1730,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
 }
 
 
-PFockStatus_t PFock_createCoreHMat(PFock_t pfock, BasisSet_t basis)
+/*PFockStatus_t PFock_createCoreHMat(PFock_t pfock, BasisSet_t basis)
 {
     int lo[2];
     int hi[2];    
@@ -1748,8 +1748,8 @@ PFockStatus_t PFock_createCoreHMat(PFock_t pfock, BasisSet_t basis)
     GA_Fill(pfock->ga_H, &dzero);
     NGA_Distribution(pfock->ga_H, myrank, lo, hi);
     NGA_Access(pfock->ga_H, lo, hi, &mat, &stride);    
-    //compute_H(pfock, basis, pfock->sshell_row, pfock->eshell_row,
-    //          pfock->sshell_col, pfock->eshell_col, stride, mat);
+    compute_H(pfock, basis, pfock->sshell_row, pfock->eshell_row,
+              pfock->sshell_col, pfock->eshell_col, stride, mat);
     NGA_Release_update(pfock->ga_H, lo, hi);
     GA_Sync();
     
@@ -1906,7 +1906,7 @@ PFockStatus_t PFock_getOvlMat2(PFock_t pfock, int rowstart, int rowend,
     NGA_Get(pfock->ga_X, lo, hi, mat, &stride);
 
     return PFOCK_STATUS_SUCCESS;    
-}
+}*/
 
 
 PFockStatus_t PFock_getMemorySize(PFock_t pfock, double *mem_cpu)
