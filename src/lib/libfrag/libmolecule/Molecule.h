@@ -23,7 +23,7 @@
 #define SRC_LIB_LIBFRAG_LIBMOLECULE_MOLECULE_H_
 #include<vector>
 #include<boost/shared_ptr.hpp>
-#include "LibMoleculeBase.h"
+
 #include "MolItr.h"
 namespace psi{
 namespace LibMolecule{

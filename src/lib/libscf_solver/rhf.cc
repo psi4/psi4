@@ -168,9 +168,7 @@ void RHF::form_G()
   else{
      JKFactory_->SetP(D_);
      JKFactory_->GetJ(J_);
-     J_->scale(0.5);
      JKFactory_->GetK(K_);
-     K_->scale(-1.0);
   }
   J_->scale(2.0);
   G_->copy(J_);

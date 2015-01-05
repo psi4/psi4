@@ -116,10 +116,12 @@ void psi::MinimalInterface::GenGetCall(
 
 void psi::MinimalInterface::GetJ(std::vector<SharedMatrix>& Js){
    GenGetCall(Js,(int)PFOCK_MAT_TYPE_J);
+   for(int i=0;i<Js.size();i++)Js[i]->scale(0.5);
 }
 
 void psi::MinimalInterface::GetK(std::vector<SharedMatrix>& Ks){
    GenGetCall(Ks,(int)PFOCK_MAT_TYPE_K);
+   for(int i=0;i<Ks.size();i++)Ks[i]->scale(-1.0);
 }
 
 void psi::MinimalInterface::MyBlock(double **Buffer,

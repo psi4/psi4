@@ -43,6 +43,7 @@ class UnitCell: public Molecule{
                      const double gamma,const bool IsDegree=true);
       void SetSides(const double a, const double b, const double c,
                     const bool IsBohr=false);
+      UnitCell(boost::shared_ptr<Molecule> Mol,const bool IsFrac=true);
 };
 
 }}
