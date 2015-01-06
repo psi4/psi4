@@ -5,11 +5,11 @@ if(ENABLE_PCMSOLVER)
     get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
     set(ExternalProjectCMakeArgs
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-	-DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+	-DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/external
         -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
+	-DPARENT_INCLUDE_DIR=${CMAKE_BINARY_DIR}/external/include
         -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
         -DEIGEN3_ROOT=${EIGEN3_ROOT}
 	-DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
@@ -31,8 +31,10 @@ if(ENABLE_PCMSOLVER)
     link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
                      ${EXTERNAL_PROJECT_INSTALL_PREFIX})
 
-    include_directories(${PROJECT_BINARY_DIR}/external/include
-	                ${PROJECT_BINARY_DIR}/external/include/eigen3/include/eigen3)
+    include_directories(${CMAKE_BINARY_DIR}/external/include
+		     ${CMAKE_BINARY_DIR}/external/include/eigen3/include/eigen3)
+    file(COPY ${CMAKE_BINARY_DIR}/external/bin/pcmsolver.py 
+         DESTINATION ${CMAKE_SOURCE_DIR}/lib/python)
 endif()
 
 set(headers_list "")
