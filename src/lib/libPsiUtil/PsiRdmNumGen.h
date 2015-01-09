@@ -32,12 +32,13 @@ namespace psi{
 template<typename T>
 class PsiRdmNumEngine{
    protected:
-      ///The actual engine
-      static T Engine_;
       ///protected to prevent instantiations of this class
       PsiRdmNumEngine<T>(){}
       ///protected to prevent copying
       PsiRdmNumEngine<T>(const PsiRdmNumEngine<T>& other){}
+   public:
+      ///The actual engine (G++ seems to think that this needs to be public);
+      static T Engine_;
 
 };
 

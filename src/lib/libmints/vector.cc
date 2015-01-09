@@ -43,6 +43,7 @@ Vector::Vector()
     dimpi_ = NULL;
     nirrep_ = 0;
     name_ = "";
+    numpy_dims_ = 0;
 }
 
 Vector::Vector(const Vector& c)
@@ -52,6 +53,7 @@ Vector::Vector(const Vector& c)
     alloc();
     copy_from(c);
     name_ = c.name_;
+    numpy_dims_ = 0;
 }
 
 Vector::Vector(int nirreps, int *dimpi)
@@ -60,6 +62,7 @@ Vector::Vector(int nirreps, int *dimpi)
     nirrep_ = nirreps;
     dimpi_ = dimpi;
     alloc();
+    numpy_dims_ = 0;
 }
 
 Vector::Vector(int dim)
@@ -68,6 +71,7 @@ Vector::Vector(int dim)
     nirrep_ = 1;
     dimpi_[0] = dim;
     alloc();
+    numpy_dims_ = 0;
 }
 
 Vector::Vector(const std::string& name, int nirreps, int *dimpi)
@@ -79,6 +83,7 @@ Vector::Vector(const std::string& name, int nirreps, int *dimpi)
         dimpi_[h] = dimpi[h];
     alloc();
     name_ = name;
+    numpy_dims_ = 0;
 }
 
 Vector::Vector(const std::string& name, int dim)
@@ -88,6 +93,7 @@ Vector::Vector(const std::string& name, int dim)
     dimpi_[0] = dim;
     alloc();
     name_ = name;
+    numpy_dims_ = 0;
 }
 
 Vector::Vector(const Dimension& v)
@@ -96,6 +102,7 @@ Vector::Vector(const Dimension& v)
     dimpi_ = v;
     alloc();
     name_ = v.name();
+    numpy_dims_ = 0;
 }
 
 Vector::Vector(const std::string& name, const Dimension& v)
@@ -104,6 +111,7 @@ Vector::Vector(const std::string& name, const Dimension& v)
     dimpi_ = v;
     alloc();
     name_ = name;
+    numpy_dims_ = 0;
 }
 
 Vector::~Vector()

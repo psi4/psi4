@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 # Declare project name and programming languages
-project(psi4 CXX C Fortran)
+project(psi4 CXX C)
 
 # Custom CMake modules location
 list(APPEND CMAKE_MODULE_PATH
@@ -22,12 +22,13 @@ option(ENABLE_ACCELERATE     "Enable use of Mac OS X Accelerate Framework" OFF)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"            OFF) 
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                            OFF)
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"               OFF)
-option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"             OFF)
 option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
 option(ENABLE_PLUGINS        "Enable plugins"                              ON)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
+# Modules requiring Fortran
+option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF)
 # Options for dashboard builds
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                        OFF)
 option(ENABLE_MEMCHECK       "Enable Valgrind memory check"                OFF)
@@ -35,8 +36,22 @@ option(ENABLE_ASAN           "Enable address sanitizer"                    OFF)
 option(ENABLE_MSAN           "Enable memory sanitizer"                     OFF)
 option(ENABLE_TSAN           "Enable thread sanitizer"                     OFF)
 option(ENABLE_UBSAN          "Enable undefined behaviour sanitizer"        OFF)
+option(ENABLE_JKFACTORY      "Enable the distributed JKFactory (requires MPI)"            OFF)
 
 set(EXTERNAL_LIBS)
+
+# Decide if Fortran is needed
+if(ENABLE_LIBERD)
+   if(CMAKE_Fortran_COMPILER)
+      enable_language(Fortran)
+      add_definitions(-DHAVE_FORTRAN)
+      # This is to use the CMake generated macros and not those based on FC_SYMBOL
+      add_definitions(-DUSE_FCMANGLE_H)
+      set(FORTRAN_ENABLED TRUE)
+   else()
+      message(FATAL_ERROR "The Fortran compiler has to be explicitly specified!")
+   endif()
+endif()
 
 # Include CMake modules as needed
 include(ConfigVersion)
@@ -64,26 +79,14 @@ include(CheckIncludeFiles)
 include(CheckFunctionExists)
 # Here we look for Perl, Sphinx, Doxygen and LaTeX
 include(ConfigDocumentation) 
+# Access to the fortran_enabler macro
+include(FortranEnabler)
 
-# Determine Fortran name mangling, used for external linking
-if ((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND (CMAKE_SYSTEM_VERSION VERSION_LESS 13))
-    # 12.5.0 broken (LAB), above should trap pre-Mavericks
-    set(CMAKE_C_FLAGS_HOLD ${CMAKE_C_FLAGS})
-    set(CMAKE_CXX_FLAGS_HOLD ${CMAKE_CXX_FLAGS})
-    message(STATUS "Trying Fortran name mangling appending -m32 flag")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
+if(NOT FORTRAN_ENABLED)
+   # For linking to math subroutines use the FC_SYMBOL strategy, if Fortran was not enabled
+   set(FC_SYMBOL 2)
+   add_definitions(-DFC_SYMBOL=${FC_SYMBOL})
 endif()
-include(FortranCInterface)
-FortranCInterface_VERIFY(CXX)
-init_FCMangle()
-if ((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND (CMAKE_SYSTEM_VERSION VERSION_LESS 13))
-    set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS_HOLD})
-    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_HOLD})
-endif()
-
-# This is to use the CMake generated macros and not those based on FC_SYMBOL
-add_definitions(-DUSE_FCMANGLE_H)
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
    set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
@@ -134,7 +137,6 @@ include_directories(SYSTEM "${PYTHON_INCLUDE_DIRS}")
 include(ConfigBoost)
 link_directories("${Boost_LIBRARY_DIRS}")
 include_directories(SYSTEM "${Boost_INCLUDE_DIRS}")
-
 
 #OpenBabel Detection
 add_subdirectory(openbabel)
@@ -191,18 +193,11 @@ endif()
 set(top_srcdir ${PROJECT_SOURCE_DIR}) # The quotes are added in the source, in this case
 configure_file(src/bin/psi4/gitversion.py.in src/bin/psi4/gitversion.py)
 
-#
 # Libint configuration
-# Perhaps move to libint's cmakelists.txt file
-
-math(EXPR LIBDERIV_OPT_AM1 ${LIBINT_OPT_AM}-1) # A.M. level for 1st derivative ERIs
-math(EXPR LIBDERIV_OPT_AM2 ${LIBINT_OPT_AM}-2) # A.M. level for 2nd derivative ERIs
-math(EXPR LIBINT_NEW_AM ${LIBINT_OPT_AM}*2)
-math(EXPR LIBDERIV_NEW_AM1 ${LIBDERIV_OPT_AM1}*2)
-math(EXPR LIBDERIV_NEW_AM2 ${LIBDERIV_OPT_AM2}*2)
-math(EXPR LIBDERIV_NEW_AM12 ${LIBDERIV_OPT_AM2}*2)
-configure_file(src/lib/libint/libint_config.h.in src/lib/libint/libint_config.h)
-configure_file(src/lib/libderiv/libderiv_config.h.in src/lib/libderiv/libderiv_config.h)
+# Set default for LIBINT_OPT_AM if not set by setup script.
+if(NOT LIBINT_OPT_AM)
+   set(LIBINT_OPT_AM 5)
+endif()
 
 # Psi4-specific includes and libraries
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -228,7 +223,6 @@ set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2
            findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util
            stable deriv scfgrad int util diis plugin parallel parallel2 babel frag efp_solver efp)
 
-
 #RMR---This is our plugin workaround
 #Here we start a list of plugins
 set(PLUGINS "")
@@ -240,28 +234,27 @@ endif()
 
 if(ENABLE_LIBERD)
     set(PSILIB ${PSILIB} erd)
-    set(JK_ERD ${CMAKE_BINARY_DIR}/lib/liberd.a)
 endif()
 
-#If we have MPI also build the JKFactory library for awesome SCF performance
-if(MPI_FOUND)
-   set(BUILD_JK_FACTORY "FALSE")
+#If we have MPI we may want to also build JKFactory which makes J and K's
+#in distributed parallel
+if(MPI_FOUND AND ENABLE_JKFACTORY)
+   set(BUILD_JK_FACTORY "TRUE")
 endif()
-
 if(BUILD_JK_FACTORY)
+    set(JK_BLAS_LIB "")
+    set(JK_BLAS_INC "")
+    if(EXPLICIT_BLAS_LIB)
+      set(JK_BLAS_LIB ${EXPLICIT_BLAS_LIB})
+      set(JK_BLAS_INC ${CMAKE_CXX_FLAGS})
+    endif()
+    message(STATUS "LibJK BLAS Paths: ${JK_BLAS_INC} ${JK_BLAS_LIB}")
+    set(HAVE_GLOBAL_ARRAYS "FALSE")
     add_definitions(-DHAVE_JK_FACTORY)
     set(JKROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/libJKFactory)
-    set(JK_BLAS_INC ${LAPACK_INCLUDE_DIR})
-    set(PSILIB ${PSILIB} JKFactory)
-    set(PSILIB ${PSILIB} pfock)
-    set(PSILIB ${PSILIB} cint)
-    set(PSILIB ${PSILIB} ${CMAKE_BINARY_DIR}/lib/libga.a)
-    set(PSILIB ${PSILIB} ${CMAKE_BINARY_DIR}/lib/libarmci.a)
-    set(PSILIB ${PSILIB} oed)
-    if(NOT DEFINED ENABLE_LIBERD)
-       set(PSILIB ${PSILIB} erd)
-    endif()
-    set(PSILIB ${PSILIB} -lmkl_scalapack_lp64 -lmkl_blacs_lp64)
+    set(PSILIB ${PSILIB} GTFockInt GTFock GTFockCInt
+       ${PROJECT_BINARY_DIR}/lib/libga.a 
+       ${PROJECT_BINARY_DIR}/lib/libarmci.a)     
 endif()
 
 # Add the documentation subdirectory

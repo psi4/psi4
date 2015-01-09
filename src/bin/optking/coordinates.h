@@ -34,6 +34,7 @@
 #include "stre.h"
 #include "bend.h"
 #include "tors.h"
+#include "oofp.h"
 #include "cart.h"
 
 // Any combination of simple coordinates may be contained in COMBO_COORDINATE class.

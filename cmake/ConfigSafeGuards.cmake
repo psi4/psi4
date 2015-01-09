@@ -27,6 +27,11 @@ if(MKL_FLAG_SET)
    set(LAPACK_FOUND TRUE)
 endif()	
 if(NOT BLAS_FOUND OR NOT LAPACK_FOUND) 
+   #RMR--It appears that setting explicit LAPACK and BLAS libraries does not 
+   #always make it into ${EXPLICIT_LIBS}, so I added a hacky work-around
+   if(EXPLICIT_LAPACK_LIB AND EXPLICIT_BLAS_LIB)
+     set(EXPLICIT_LIBS "${EXPLICIT_LIBS} ${EXPLICIT_LAPACK_LIB} ${EXPLICIT_BLAS_LIB}")
+   endif()
    if(NOT EXPLICIT_LIBS)
       message(FATAL_ERROR "No BLAS/LAPACK implementation found and no explicit libraries specified")
    else()
