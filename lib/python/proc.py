@@ -1089,6 +1089,21 @@ def run_mp2_select_gradient(name, **kwargs):
             return run_dfmp2_gradient(name, **kwargs)
 
 
+def run_dfmp2_select_gradient(name, **kwargs):
+    """Function selecting the algorithm for a MP2 gradient call
+    and directing toward the OCC (conv MP2) or the DFMP2 modules.
+
+    """
+    optstash = p4util.OptionsState(
+        ['DFOCC', 'ORB_OPT'])
+
+    if (psi4.get_option("SCF", "REFERENCE") == "UHF") or (psi4.get_option("SCF", "REFERENCE") == "UKS"):
+        psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+        return run_dfomp2_gradient(name, **kwargs)
+    else: 
+        return run_dfmp2_gradient(name, **kwargs)
+
+
 def run_dfmp2_gradient(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a DFMP2 gradient calculation.

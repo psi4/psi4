@@ -70,6 +70,10 @@ protected:
     /// Assign pointer offsets in vector_ from v_.
     void assign_pointer_offsets();
 
+    /// Numpy Shape
+    int  numpy_dims_;
+    int* numpy_shape_;
+
 public:
     /// Default constructor, zeros everything out
     Vector();
@@ -297,6 +301,15 @@ public:
     //const_iterator end_irrep(int h) const
     //    { return const_iterator(vector_[h]) + dimpi_[h]; }
     /// @}
+
+     /**
+     * Adds accessability to the matrix shape for numpy
+     */
+    void set_numpy_dims(int dims) { numpy_dims_ = dims; }
+    void set_numpy_shape(int* shape) { numpy_shape_ = shape; }
+    int numpy_dims() { return numpy_dims_; }
+    int* numpy_shape() { return numpy_shape_; }
+
 
     friend class Matrix;
 };

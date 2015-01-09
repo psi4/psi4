@@ -43,7 +43,9 @@ typedef boost::shared_ptr<const Communicator> ConstComm;
 StaticScheduler::StaticScheduler(ConstComm State):
    MPIScheduler(State),
    FState_(State->MakeComm(State->Me())),
-   Tasks_(new MPITaskQueue()){WorldComm->PrintOut();}
+   Tasks_(new MPITaskQueue()){
+   //WorldComm->PrintOut();
+}
 
 }}//End namespaces
 
