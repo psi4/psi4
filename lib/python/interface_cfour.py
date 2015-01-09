@@ -430,7 +430,7 @@ def write_zmat(name, dertype):
             user_pg = molecule.schoenflies_symbol()
             molecule.reset_point_group('c1')  # need basis printed for *every* atom
             with open('GENBAS', 'w') as cfour_basfile:
-                cfour_basfile.write(psi4.BasisSet.construct(psi4.Gaussian94BasisSetParser(), molecule, "BASIS").genbas())
+                cfour_basfile.write(psi4.BasisSet.pyconstruct_orbital(molecule, "BASIS", psi4.get_global_option('BASIS')).genbas())
             psi4.print_out('  GENBAS loaded from PSI4 LibMints for basis %s\n' % (psi4.get_global_option('BASIS')))
             molecule.reset_point_group(user_pg)
             molecule.update_geometry()

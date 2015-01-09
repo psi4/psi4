@@ -433,6 +433,9 @@ def getrec(reclabelarray, verbose=False):
         "PRININTO": 'CHARACTER', #?
         "NEXTGEOF": 'CHARACTER', #?
         "ZPE_HARM": 'DOUBLE', #?
+        "NDROPPED": 'INTEGER',
+        "REFCPTGP": 'INTEGER', #?
+        "REFFPTGP": 'INTEGER', #?
         }
 
     with open('JAINDX', mode='rb') as file:  # b is important -> binary
