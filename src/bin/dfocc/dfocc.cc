@@ -97,6 +97,7 @@ void DFOCC::common_init()
     comput_s2_=options_.get_str("COMPUT_S2");
     mp2_amp_type_=options_.get_str("MP2_AMP_TYPE");
     qchf_=options_.get_str("QCHF");
+    cc_lambda_=options_.get_str("CC_LAMBDA");
 
     //title
     title();
@@ -203,7 +204,7 @@ if (reference_ == "RESTRICTED") {
         HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
 
     // if we need PDMs
-    if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE") {
+    if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE"|| cc_lambda_ == "TRUE") {
         GijA = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
         GabA = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
         G1c_oo = SharedTensor2d(new Tensor2d("Correlation OPDM <O|O>", noccA, noccA));
@@ -238,7 +239,7 @@ if (reference_ == "RESTRICTED") {
 
 else if (reference_ == "UNRESTRICTED") {
 
-    if (wfn_type_ == "DF-CCSD") {
+    if (wfn_type_ == "DF-CCSD" || wfn_type_ == "DF-CCD") {
         throw PSIEXCEPTION("UHF DF-CCSD has NOT been implemented yet!");
     }
 	// Memory allocation
@@ -350,7 +351,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") outfile->Printf("                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP2   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision December 6, 2014\n") ;
+   outfile->Printf("              Latest Revision January 11, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");

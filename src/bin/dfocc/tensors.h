@@ -406,6 +406,16 @@ class Tensor2d
   // (-)At(p>=q, r>=s) = 1/2 [A(pq,rs) - A(qp,rs)] * (2 -\delta_{rs})
   void antisymm_col_packed4(const SharedTensor2d &a);
 
+  // A2d_(pq,rs) = 2 <pq|rs> - <pq|sr>
+  void tei_cs1_anti_symm(const SharedTensor2d &J, const SharedTensor2d &K);
+  // A2d_(pq,rs) = 2 <pq|rs> - <qp|rs>
+  void tei_cs2_anti_symm(const SharedTensor2d &J, const SharedTensor2d &K);
+  // A2d_(pq,rs) = 2 (pq|rs) - (ps|rq)
+  void tei_cs3_anti_symm(const SharedTensor2d &J, const SharedTensor2d &K);
+  // A2d_(pq,rs) = 2 (pq|rs) - (rq|ps)
+  void tei_cs4_anti_symm(const SharedTensor2d &J, const SharedTensor2d &K);
+
+
   friend class Tensor1d;
   friend class Tensor3d;
   friend class Tensor1i;

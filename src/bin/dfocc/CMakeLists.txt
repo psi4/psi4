@@ -42,7 +42,9 @@ ccd_F_intr.cc             ccd_W_intr.cc             ccd_t2_amps.cc
 ccsd_iterations_low.cc    ccsd_3index_intr_low.cc   ccsd_F_intr_low.cc
 ccsd_W_intr_low.cc        ccsd_t1_amps_low.cc       ccsd_t2_amps_low.cc
 ccd_iterations_low.cc     ccd_3index_intr_low.cc    ccd_F_intr_low.cc
-ccd_W_intr_low.cc         ccd_t2_amps_low.cc
+ccd_W_intr_low.cc         ccd_t2_amps_low.cc        ccsdl_iterations.cc
+ccsdl_3index_intr.cc      ccsdl_W_intr.cc           ccsdl_l1_amps.cc
+ccsdl_l2_amps.cc
 )
 
 # If you want to remove some sources specify them explictly here
