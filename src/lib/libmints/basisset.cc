@@ -1396,6 +1396,61 @@ boost::shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
     return boost::shared_ptr<BasisSet>(new BasisSet(this, center));
 }
 
+boost::shared_ptr<BasisSet> BasisSet::decontract()
+{
+    // This maps the atom_label to a vector of uncontracted shells
+    std::map<std::string,std::vector<ShellInfo>> u_shells;
+
+    // This maps the pair (atom_label,am) to a vector of exponents
+    // and it is used to check for duplicate basis functions
+    std::map<std::pair<std::string,int>,std::vector<double> > exp_map;
+
+    int nshell = this->nshell();
+    for(int shelln = 0; shelln < nshell; ++shelln){
+        const GaussianShell &shell = this->shell(shelln);
+
+        int am = shell.am();
+        bool pure = shell.is_pure();
+        int nc = shell.ncenter();
+        double x = shell.center()[0];
+        double y = shell.center()[1];
+        double z = shell.center()[2];
+        Vector3 center(x,y,z);
+        int start = shell.start();
+        int nprim = shell.nprimitive();
+
+        std::string label = molecule_->label(nc);
+        std::pair<std::string,int> label_am(label,am);
+        std::vector<double>& exp_vec = exp_map[label_am];
+
+        for(int prim = 0; prim < nprim; ++prim){
+            double exp = shell.exp(prim);
+            // Do I have this exponent already?
+            bool unique = true;
+            for (size_t i = 0; i < exp_map[label_am].size(); ++i){
+                if (std::fabs(exp - exp_vec[i]) < 1.0e-6){
+                    unique = false;
+                }
+            }
+            if (unique){
+                std::vector<double> c(1,1.0);
+                std::vector<double> e(1,exp);
+                ShellInfo us(am,c,e,pure ? Pure : Cartesian,nc,center,start,Unnormalized);
+                u_shells[label].push_back(us);
+                exp_vec.push_back(exp);
+            }
+        }
+    }
+
+    // Create a shell map to create a new BasisSet object
+    std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > shell_map;
+    shell_map["DECONTRACTED_BASIS"] = u_shells;
+
+    molecule_->set_basis_all_atoms("DECONTRACTED_BASIS",name_ + "-DECONTRACTED");
+
+    return boost::shared_ptr<BasisSet>(new BasisSet(name_ + "-DECONTRACTED",molecule_,shell_map));
+}
+
 void BasisSet::compute_phi(double *phi_ao, double x, double y, double z)
 {
     zero_arr(phi_ao, nao());
