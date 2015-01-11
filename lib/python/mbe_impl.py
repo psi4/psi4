@@ -106,7 +106,7 @@ def BaseCall(name,molecule,Egys,CEgys,NStart,NEnd,SuppressPrint,itr,**kwargs):
     for N in range(NStart,NEnd):
         sizes.append(lfrag.GetNNMers(N))
         for frag in range(0,sizes[N-NStart]):
-            PMan.AddTask(str(N)+' '+str(frag),(NEnd-1)-N)
+            PMan.AddTask(str(N)+' '+str(frag),N)
     PMan.MakeJob()
     task=PMan.Begin()
     tempEgys=[]
@@ -115,6 +115,7 @@ def BaseCall(name,molecule,Egys,CEgys,NStart,NEnd,SuppressPrint,itr,**kwargs):
     while(not PMan.Done()):
         frag=int(task.split(' ')[1])
         order=int(task.split(' ')[0])
+        print "Running ",order,frag
         RunCalc(frag,name,molecule,tempEgys,tempCEgys,order,**kwargs)
         task=PMan.Next()
     R1=PMan.Synch(tempEgys,1)
