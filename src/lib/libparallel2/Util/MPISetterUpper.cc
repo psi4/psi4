@@ -31,8 +31,12 @@ namespace psi {
 namespace LibParallel {
 typedef boost::shared_ptr<MPIScheduler> SharedSched;
 
+bool Sorter(const MPITaskGuts& left,const MPITaskGuts& right){
+   return left>right;
+}
+
 void MPISetterUpper::SortTasks() {
-   std::sort(Tasks_->begin(), Tasks_->end());
+   std::sort(Tasks_->begin(), Tasks_->end(),Sorter);
 }
 
 void MPISetterUpper::ChooseAlgorithm(bool ForceDynamic) {

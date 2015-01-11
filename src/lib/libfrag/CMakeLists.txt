@@ -1,4 +1,14 @@
-set(libfragsrc Fragmenter.h
+set(libfragsrc 
+#               libmolecule/Atom.h
+#               libmolecule/AtomTypes.h
+#               libmolecule/LibMoleculeBase.h
+#               libmolecule/Fragment.h
+#               libmolecule/Molecule.h            
+#               libmolecule/Atom.cc
+#               libmolecule/AtomTypes.cc
+#               libmolecule/Fragment.cc
+#               libmolecule/Molecule.cc
+               Fragmenter.h
                FragOptions.h
                BSSEer.h
                Embedder.h
@@ -30,4 +40,8 @@ set(libfragsrc Fragmenter.h
                DirectSum.cc
 )
 add_library(frag STATIC ${libfragsrc})  
-target_link_libraries(frag parallel)             
+include_directories(../libPsiUtil)
+target_link_libraries(frag parallel PsiUtil) 
+if(BUILD_CUSTOM_BOOST)
+   add_dependencies(frag custom_boost)
+endif()            

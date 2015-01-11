@@ -37,7 +37,7 @@
 #include <libfock/jk.h>
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
-
+#include "libJKFactory/MinimalInterface.h"
 #include <libmints/view.h>
 #include "rohf.h"
 #include <psi4-dec.h>
@@ -482,24 +482,43 @@ double ROHF::compute_E()
     return Etotal;
 }
 
+
 void ROHF::form_G()
 {
-    std::vector<SharedMatrix> & C = jk_->C_left();
-    C.clear();
-    C.push_back(Ca_subset("SO", "OCC"));
-    C.push_back(Cb_subset("SO", "OCC"));
+   typedef boost::shared_ptr<MinimalInterface> ShareInt;
+   if(!JKFactory_)
+      JKFactory_=ShareInt(new MinimalInterface(2));
+   if(!JKFactory_->UseJKFactory()){
+      std::vector<SharedMatrix> & C = jk_->C_left();
+      C.clear();
+      C.push_back(Ca_subset("SO", "OCC"));
+      C.push_back(Cb_subset("SO", "OCC"));
     
-    // Run the JK object
-    jk_->compute();
+      // Run the JK object
+      jk_->compute();
 
-    // Pull the J and K matrices off
-    const std::vector<SharedMatrix> & J = jk_->J();
-    const std::vector<SharedMatrix> & K = jk_->K();
-    Ga_->copy(J[0]);
-    Ga_->add(J[1]);
-    Ka_ = K[0];
-    Kb_ = K[1];
-
+      // Pull the J and K matrices off
+      const std::vector<SharedMatrix> & J = jk_->J();
+      const std::vector<SharedMatrix> & K = jk_->K();
+      Ga_->copy(J[0]);
+      Ga_->add(J[1]);
+      Ka_ = K[0];
+      Kb_ = K[1];
+      }
+   else{
+      std::vector<SharedMatrix>Ds,Js,Ks;
+      Ds.push_back(Da_);Ds.push_back(Db_);
+      for(int i=0;i<2;i++)
+          Js.push_back(
+                   SharedMatrix(new Matrix(Db_->nrow(),Db_->ncol()))
+                   );
+       Ks.push_back(Ka_);Ks.push_back(Kb_);
+       JKFactory_->SetP(Ds);
+       JKFactory_->GetJ(Js);
+       Ga_->copy(Js[0]);
+       Ga_->add(Js[1]);
+       JKFactory_->GetK(Ks);
+    }
     Gb_->copy(Ga_);
     Ga_->subtract(Ka_);
     Gb_->subtract(Kb_);

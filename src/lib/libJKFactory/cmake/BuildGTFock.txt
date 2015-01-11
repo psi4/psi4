@@ -1,0 +1,58 @@
+set(GTFockTop ${CMAKE_BINARY_DIR}/gtfock)
+set(GTFockSRCs 
+
+
+set(GTFockMake ${GTFockTop}/make.in)
+set(PFOCK_LIB_LOC ${CMAKE_BINARY_DIR}/gtfock/pfock/libpfock.a)
+
+set(ERD_TOP ${JK_ERD})
+file(WRITE   ${GTFockMake} "CC=${CMAKE_C_COMPILER}\n")
+file(APPEND  ${GTFockMake} "CXX=${CMAKE_CXX_COMPILER}\n")
+file(APPEND  ${GTFockMake} "FC=${CMAKE_Fortran_COMPILER}\n")
+file(APPEND  ${GTFockMake} "MPICC=${CMAKE_C_COMPILER}\n")
+file(APPEND  ${GTFockMake} "MPICXX=${CMAKE_CXX_COMPILER}\n")
+file(APPEND  ${GTFockMake} "AR=${CMAKE_AR} rcs\n")
+file(APPEND  ${GTFockMake} "DYNAMIC=1\n")
+file(APPEND  ${GTFockMake} "DO_SCF=0\n")
+file(APPEND  ${GTFockMake} "SCF_TIMMING=0\n")
+file(APPEND  ${GTFockMake} "SCF_OUT=0\n")
+file(APPEND  ${GTFockMake} "OPTFLAGS  = -qno-offload\n")
+file(APPEND  ${GTFockMake} "OPTFLAGS += -m64 -xHost\n")
+file(APPEND  ${GTFockMake} "CFLAGS    = -O3 -Wall -openmp -std=gnu99 -fasm-blocks\n")
+file(APPEND  ${GTFockMake} "CFLAGS   += -Wunknown-pragmas -Wunused-variable\n")
+file(APPEND  ${GTFockMake} "CFLAGS   += \${OPTFLAGS}\n")
+file(APPEND  ${GTFockMake} "BLAS_INCDIR=./ ${JK_BLAS_INC}\n")
+file(APPEND ${GTFockMake}  "BLAS_LIBDIR=${JK_BLAS_LIB}\n")
+file(APPEND ${GTFockMake}  "BLAS_LIBS=-lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -lpthread -lm\n")
+file(APPEND ${GTFockMake} "SCALAPACK_INCDIR=${JK_BLAS_INC}\n")
+file(APPEND ${GTFockMake} "SCALAPACK_LIBDIR=${JK_BLAS_LIB}\n")
+file(APPEND ${GTFockMake} "SCALAPACK_LIBS=-lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64\n")
+file(APPEND ${GTFockMake} "MPI_LIBDIR=./\n")
+file(APPEND ${GTFockMake} "MPI_LIBS=./\n")
+file(APPEND ${GTFockMake} "MPI_INCDIR=./\n")
+file(APPEND ${GTFockMake} "GA_INCDIR = ${JK_GA_INC}\n")
+file(APPEND ${GTFockMake} "GA_LIBDIR = ${JK_GA_LIB}\n")
+file(APPEND ${GTFockMake} "GA_LIBS = -lga\n")
+file(APPEND ${GTFockMake} "ARMCI_INCDIR = ${JK_GA_INC}\n")
+file(APPEND ${GTFockMake} "ARMCI_LIBDIR = ${JK_GA_LIB}\n")
+file(APPEND ${GTFockMake} "ARMCI_LIBS = -larmci\n")
+#file(APPEND ${GTFockMake} "ERD_INCDIR = ${ERD_TOP}/include\n")
+#file(APPEND ${GTFockMake} "ERD_LIBDIR = ${ERD_TOP}/lib\n")
+#file(APPEND ${GTFockMake} "ERD_LIBS = ${ERD_TOP}/lib/libcint.a ${ERD_TOP}/lib/liberd.a ${ERD_TOP}/lib/liboed.a\n")
+include(ExternalProject)
+set(ENV{WORK_TOP} ${GTFockTop})
+include_directories(${GTFockTop}/pfock ${CMAKE_BINARY_DIR}/OptErd/libcint)
+ExternalProject_Add(GTFock
+    PREFIX "${GTFockTop}"
+    DOWNLOAD_DIR "${GTFockTop}"
+    UPDATE_COMMAND ""
+    SOURCE_DIR "${GTFockTop}"
+    BUILD_IN_SOURCE 1
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND $(MAKE)
+    INSTALL_COMMAND $(MAKE) install
+        COMMAND ${CMAKE_COMMAND} -E copy ${PFOCK_LIB_LOC}
+${CMAKE_BINARY_DIR}/lib
+)
+ADD_DEPENDENCIES(GTFock OptErd GlobalArrays)
+    
