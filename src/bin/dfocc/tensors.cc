@@ -2297,23 +2297,7 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
   int d3 = A->d3_;
   int d4 = A->d4_;
 
- if (sort_type == 2134) {
-    #pragma omp parallel for
-    for (int p = 0; p < d1; p++) {
-         for (int q = 0; q < d2; q++) {
-              int pq = A->row_idx_[p][q];
-              for (int r = 0; r < d3; r++) {
-                   for (int s = 0; s < d4; s++) {
-                        int rs = A->col_idx_[r][s];
-                        int qp = row_idx_[q][p];
-                        A2d_[qp][rs] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[qp][rs]);
-                   }
-              }
-         }
-    }
- }
-
- else if (sort_type == 1243) {
+ if (sort_type == 1243) {
     #pragma omp parallel for
     for (int p = 0; p < d1; p++) {
          for (int q = 0; q < d2; q++) {
@@ -2323,91 +2307,6 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
                         int rs = A->col_idx_[r][s];
                         int sr = col_idx_[s][r];
                         A2d_[pq][sr] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[pq][sr]);
-                   }
-              }
-         }
-    }
- }
-
- else if (sort_type == 2143) {
-    #pragma omp parallel for
-    for (int p = 0; p < d1; p++) {
-         for (int q = 0; q < d2; q++) {
-              int pq = A->row_idx_[p][q];
-              for (int r = 0; r < d3; r++) {
-                   for (int s = 0; s < d4; s++) {
-                        int rs = A->col_idx_[r][s];
-                        int qp = row_idx_[q][p];
-                        int sr = col_idx_[s][r];
-                        A2d_[qp][sr] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[qp][sr]);
-                   }
-              }
-         }
-    }
- }
-
- else if (sort_type == 1432) {
-    #pragma omp parallel for
-    for (int p = 0; p < d1; p++) {
-         for (int q = 0; q < d2; q++) {
-              int pq = A->row_idx_[p][q];
-              for (int r = 0; r < d3; r++) {
-                   int rq = col_idx_[r][q];
-                   for (int s = 0; s < d4; s++) {
-                        int rs = A->col_idx_[r][s];
-                        int ps = row_idx_[p][s];
-                        A2d_[ps][rq] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[ps][rq]);
-                   }
-              }
-         }
-    }
- }
-
- else if (sort_type == 2413) {
-    #pragma omp parallel for
-    for (int p = 0; p < d1; p++) {
-         for (int q = 0; q < d2; q++) {
-              int pq = A->row_idx_[p][q];
-              for (int r = 0; r < d3; r++) {
-                   for (int s = 0; s < d4; s++) {
-                        int rs = A->col_idx_[r][s];
-                        int qs = row_idx_[q][s];
-                        int pr = col_idx_[p][r];
-                        A2d_[qs][pr] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[qs][pr]);
-                   }
-              }
-         }
-    }
- }
-
- else if (sort_type == 4231) {
-    #pragma omp parallel for
-    for (int p = 0; p < d1; p++) {
-         for (int q = 0; q < d2; q++) {
-              int pq = A->row_idx_[p][q];
-              for (int r = 0; r < d3; r++) {
-                   for (int s = 0; s < d4; s++) {
-                        int rs = A->col_idx_[r][s];
-                        int sq = row_idx_[s][q];
-                        int rp = col_idx_[r][p];
-                        A2d_[sq][rp] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[sq][rp]);
-                   }
-              }
-         }
-    }
- }
-
- else if (sort_type == 3142) {
-    #pragma omp parallel for
-    for (int p = 0; p < d1; p++) {
-         for (int q = 0; q < d2; q++) {
-              int pq = A->row_idx_[p][q];
-              for (int r = 0; r < d3; r++) {
-                   for (int s = 0; s < d4; s++) {
-                        int rs = A->col_idx_[r][s];
-                        int rp = row_idx_[r][p];
-                        int sq = col_idx_[s][q];
-                        A2d_[rp][sq] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[rp][sq]);
                    }
               }
          }
@@ -2431,6 +2330,158 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
  }
 
+ else if (sort_type == 1342) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = A->row_idx_[p][q];
+              for (int r = 0; r < d3; r++) {
+                   for (int s = 0; s < d4; s++) {
+                        int rs = A->col_idx_[r][s];
+                        int pr = row_idx_[p][r];
+                        int sq = col_idx_[s][q];
+                        A2d_[pr][sq] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[pr][sq]);
+                   }
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 1423) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = A->row_idx_[p][q];
+              for (int r = 0; r < d3; r++) {
+                   for (int s = 0; s < d4; s++) {
+                        int rs = A->col_idx_[r][s];
+                        int ps = row_idx_[p][s];
+                        int qr = col_idx_[q][r];
+                        A2d_[ps][qr] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[ps][qr]);
+                   }
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 1432) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = A->row_idx_[p][q];
+              for (int r = 0; r < d3; r++) {
+                   int rq = col_idx_[r][q];
+                   for (int s = 0; s < d4; s++) {
+                        int rs = A->col_idx_[r][s];
+                        int ps = row_idx_[p][s];
+                        A2d_[ps][rq] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[ps][rq]);
+                   }
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 2134) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = A->row_idx_[p][q];
+              for (int r = 0; r < d3; r++) {
+                   for (int s = 0; s < d4; s++) {
+                        int rs = A->col_idx_[r][s];
+                        int qp = row_idx_[q][p];
+                        A2d_[qp][rs] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[qp][rs]);
+                   }
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 2143) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = A->row_idx_[p][q];
+              for (int r = 0; r < d3; r++) {
+                   for (int s = 0; s < d4; s++) {
+                        int rs = A->col_idx_[r][s];
+                        int qp = row_idx_[q][p];
+                        int sr = col_idx_[s][r];
+                        A2d_[qp][sr] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[qp][sr]);
+                   }
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 2314) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = A->row_idx_[p][q];
+              for (int r = 0; r < d3; r++) {
+                   for (int s = 0; s < d4; s++) {
+                        int rs = A->col_idx_[r][s];
+                        int qr = row_idx_[q][r];
+                        int ps = col_idx_[p][s];
+                        A2d_[qr][ps] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[qr][ps]);
+                   }
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 2341) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = A->row_idx_[p][q];
+              for (int r = 0; r < d3; r++) {
+                   for (int s = 0; s < d4; s++) {
+                        int rs = A->col_idx_[r][s];
+                        int qr = row_idx_[q][r];
+                        int sp = col_idx_[s][p];
+                        A2d_[qr][sp] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[qr][sp]);
+                   }
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 2413) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = A->row_idx_[p][q];
+              for (int r = 0; r < d3; r++) {
+                   for (int s = 0; s < d4; s++) {
+                        int rs = A->col_idx_[r][s];
+                        int qs = row_idx_[q][s];
+                        int pr = col_idx_[p][r];
+                        A2d_[qs][pr] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[qs][pr]);
+                   }
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 2431) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = A->row_idx_[p][q];
+              for (int r = 0; r < d3; r++) {
+                   for (int s = 0; s < d4; s++) {
+                        int rs = A->col_idx_[r][s];
+                        int qs = row_idx_[q][s];
+                        int rp = col_idx_[r][p];
+                        A2d_[qs][rp] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[qs][rp]);
+                   }
+              }
+         }
+    }
+ }
+
  else if (sort_type == 3124) {
     #pragma omp parallel for
     for (int p = 0; p < d1; p++) {
@@ -2442,6 +2493,88 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
                         int rp = row_idx_[r][p];
                         int qs = col_idx_[q][s];
                         A2d_[rp][qs] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[rp][qs]);
+                   }
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 3142) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = A->row_idx_[p][q];
+              for (int r = 0; r < d3; r++) {
+                   for (int s = 0; s < d4; s++) {
+                        int rs = A->col_idx_[r][s];
+                        int rp = row_idx_[r][p];
+                        int sq = col_idx_[s][q];
+                        A2d_[rp][sq] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[rp][sq]);
+                   }
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 3214) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = A->row_idx_[p][q];
+              for (int r = 0; r < d3; r++) {
+                   int rq = row_idx_[r][q];
+                   for (int s = 0; s < d4; s++) {
+                        int rs = A->col_idx_[r][s];
+                        int ps = col_idx_[p][s];
+                        A2d_[rq][ps] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[rq][ps]);
+                   }
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 3241) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = A->row_idx_[p][q];
+              for (int r = 0; r < d3; r++) {
+                   for (int s = 0; s < d4; s++) {
+                        int rs = A->col_idx_[r][s];
+                        int rq = row_idx_[r][q];
+                        int sp = col_idx_[s][p];
+                        A2d_[rq][sp] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[rq][sp]);
+                   }
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 3412) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = A->row_idx_[p][q];
+              for (int r = 0; r < d3; r++) {
+                   for (int s = 0; s < d4; s++) {
+                        int rs = A->col_idx_[r][s];
+                        A2d_[rs][pq] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[rs][pq]);
+                   }
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 3421) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = A->row_idx_[p][q];
+              for (int r = 0; r < d3; r++) {
+                   for (int s = 0; s < d4; s++) {
+                        int rs = A->col_idx_[r][s];
+                        int qp = col_idx_[q][p];
+                        A2d_[rs][qp] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[rs][qp]);
                    }
               }
          }
@@ -2482,9 +2615,7 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
  }
 
-
-
- else if (sort_type == 1342) {
+ else if (sort_type == 4213) {
     #pragma omp parallel for
     for (int p = 0; p < d1; p++) {
          for (int q = 0; q < d2; q++) {
@@ -2492,16 +2623,16 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
               for (int r = 0; r < d3; r++) {
                    for (int s = 0; s < d4; s++) {
                         int rs = A->col_idx_[r][s];
-                        int pr = row_idx_[p][r];
-                        int sq = col_idx_[s][q];
-                        A2d_[pr][sq] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[pr][sq]);
+                        int sq = row_idx_[s][q];
+                        int pr = col_idx_[p][r];
+                        A2d_[sq][pr] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[sq][pr]);
                    }
               }
          }
     }
  }
 
- else if (sort_type == 1423) {
+ else if (sort_type == 4231) {
     #pragma omp parallel for
     for (int p = 0; p < d1; p++) {
          for (int q = 0; q < d2; q++) {
@@ -2509,16 +2640,16 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
               for (int r = 0; r < d3; r++) {
                    for (int s = 0; s < d4; s++) {
                         int rs = A->col_idx_[r][s];
-                        int ps = row_idx_[p][s];
-                        int qr = col_idx_[q][r];
-                        A2d_[ps][qr] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[ps][qr]);
+                        int sq = row_idx_[s][q];
+                        int rp = col_idx_[r][p];
+                        A2d_[sq][rp] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[sq][rp]);
                    }
               }
          }
     }
  }
 
- else if (sort_type == 3421) {
+ else if (sort_type == 4312) {
     #pragma omp parallel for
     for (int p = 0; p < d1; p++) {
          for (int q = 0; q < d2; q++) {
@@ -2526,17 +2657,34 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
               for (int r = 0; r < d3; r++) {
                    for (int s = 0; s < d4; s++) {
                         int rs = A->col_idx_[r][s];
+                        int sr = row_idx_[s][r];
+                        A2d_[sr][pq] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[sr][pq]);
+                   }
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 4321) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = A->row_idx_[p][q];
+              for (int r = 0; r < d3; r++) {
+                   for (int s = 0; s < d4; s++) {
+                        int rs = A->col_idx_[r][s];
+                        int sr = row_idx_[s][r];
                         int qp = col_idx_[q][p];
-                        A2d_[rs][qp] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[rs][qp]);
+                        A2d_[sr][qp] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[sr][qp]);
                    }
               }
          }
     }
  }
-
 
  else {
     outfile->Printf("\tUnrecognized sort type!\n");
+    throw PSIEXCEPTION("Unrecognized sort type!");
     
  }
 
@@ -3703,6 +3851,29 @@ void Tensor2d::antisymm_col_packed4(const SharedTensor2d &a)
      }
 }//
 
+void Tensor2d::tei_cs1_anti_symm(const SharedTensor2d &J, const SharedTensor2d &K) 
+{
+    sort(1243, K, -1.0, 0.0);
+    axpy(J, 2.0);
+}//
+
+void Tensor2d::tei_cs2_anti_symm(const SharedTensor2d &J, const SharedTensor2d &K) 
+{
+    sort(2134, K, -1.0, 0.0);
+    axpy(J, 2.0);
+}//
+
+void Tensor2d::tei_cs3_anti_symm(const SharedTensor2d &J, const SharedTensor2d &K) 
+{
+    sort(1432, K, -1.0, 0.0);
+    axpy(J, 2.0);
+}//
+
+void Tensor2d::tei_cs4_anti_symm(const SharedTensor2d &J, const SharedTensor2d &K) 
+{
+    sort(3214, K, -1.0, 0.0);
+    axpy(J, 2.0);
+}//
 
 /********************************************************************************************/
 /************************** 3d array ********************************************************/

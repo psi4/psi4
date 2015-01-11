@@ -2948,6 +2948,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("COMPUT_S2",false);
     /*- Do perform a QCHF computation?  -*/
     options.add_bool("QCHF",false);
+    /*- Do solve lambda amplitute equations?  -*/
+    options.add_bool("CC_LAMBDA",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

@@ -245,6 +245,10 @@ protected:
     void tei_pqrs_anti_symm_direct(SharedTensor2d &K, SharedTensor2d &L);
     void tei_pqrs2_anti_symm_direct(SharedTensor2d &K, SharedTensor2d &L);
     void tei_pqrs3_anti_symm_direct(SharedTensor2d &K, SharedTensor2d &L, SharedTensor2d &M);
+    void tei_cs1_anti_symm_direct(SharedTensor2d &I, SharedTensor2d &J, SharedTensor2d &K);
+    void tei_cs2_anti_symm_direct(SharedTensor2d &I, SharedTensor2d &J, SharedTensor2d &K);
+    void tei_cs3_anti_symm_direct(SharedTensor2d &I, SharedTensor2d &J, SharedTensor2d &K);
+    void tei_cs4_anti_symm_direct(SharedTensor2d &I, SharedTensor2d &J, SharedTensor2d &K);
 
     // Conventional integrals for DF-BASIS-SCF
     void tei_oooo_chem_ref();
@@ -402,8 +406,19 @@ protected:
     void ccsd_t2_amps_low();
 
     // CCSDL
-    void ccsd_l1_amps();
-    void ccsd_l2_amps();
+    void ccsdl_l1_amps();
+    void ccsdl_l2_amps();
+    void ccsdl_iterations();
+    void ccsdl_3index_intr();
+    void ccsdl_Wmbej();         // OVVO
+    void ccsdl_Wmbje();         // OVOV
+    void ccsdl_Wmnie();         // OOOV
+    void ccsdl_Wmbij();         // OVOO
+    void ccsdl_WmbejL2();
+    void ccsdl_WmnijL2();
+    void ccsdl_WijmnL2();
+    void ccsdl_WabefL2();     
+    void ccsdl_WijmbL2();       // OOOV 
 
     // CCD
     void ccd_manager();
@@ -439,6 +454,7 @@ protected:
 
     // DIIS
     boost::shared_ptr<DIISManager> ccsdDiisManager;
+    boost::shared_ptr<DIISManager> ccsdlDiisManager;
 
     // Gradients
     std::map<std::string, SharedMatrix> gradients;
@@ -641,6 +657,11 @@ protected:
      double rms_t1;
      double rms_t1A;
      double rms_t1B;
+     double EccsdL_old;
+     double EccsdL;
+     double EccsdLAA;
+     double EccsdLBB;
+     double EccsdLAB;
 
      // CCD
      double Eccd;
@@ -683,6 +704,7 @@ protected:
      string mp2_amp_type_; 
      string guess_type_; 
      string qchf_; 
+     string cc_lambda_; 
 
      bool df_ints_incore;
      bool t2_incore;
@@ -989,9 +1011,15 @@ protected:
 
      SharedTensor2d t1A;               // T_i^a(1)
      SharedTensor2d t1B;               // T_i^a(1)
-     SharedTensor2d t1newA;               // T_i^a(1)
-     SharedTensor2d t1newB;               // T_i^a(1)
+     SharedTensor2d t1newA;            // T_i^a(1)
+     SharedTensor2d t1newB;            // T_i^a(1)
      SharedTensor1d T1c;               // T1_Q
+     SharedTensor2d l1A;               // T_i^a(1)
+     SharedTensor2d l1B;               // T_i^a(1)
+     SharedTensor2d l1newA;            // T_i^a(1)
+     SharedTensor2d l1newB;            // T_i^a(1)
+     SharedTensor1d gQ;                // G_Q
+     SharedTensor1d gQp;               // G_Q'
 
      SharedTensor2d FijA;               
      SharedTensor2d FijB;               

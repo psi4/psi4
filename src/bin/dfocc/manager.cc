@@ -558,39 +558,6 @@ void DFOCC::ccsd_manager()
         outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
 
         // memory requirements
-        /*
-        // DF-HF B(Q,mn)
-        cost_ampAA = 0;
-        cost_ampAA = nQ_ref * nso2_;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        cost_amp = 3.0 * cost_ampAA;
-        outfile->Printf("\n\tMemory requirement for B-HF (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
-        outfile->Printf("\tMemory requirement for 3*B-HF (Q|mu nu) %9.2lf MB \n", cost_amp);
- 
-        // DF-HF B(Q,ab)
-        cost_ampAA = 0;
-        cost_ampAA = nQ_ref * nvir2AA;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        cost_amp = 3.0 * cost_ampAA;
-        outfile->Printf("\tMemory requirement for B-HF (Q|ab)    : %9.2lf MB \n", cost_ampAA);
-        outfile->Printf("\tMemory requirement for 3*B-HF (Q|ab)  : %9.2lf MB \n", cost_amp);
-
-        // DF-CC B(Q,mn)
-        cost_ampAA = 0.0;
-        cost_ampAA = nQ * nso2_;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        outfile->Printf("\tMemory requirement for B-CC (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
- 
-        // DF-CC B(Q,ab)
-        cost_ampAA = 0.0;
-        cost_ampAA = nQ * navirA * navirA;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        outfile->Printf("\tMemory requirement for B-CC (Q|ab)    : %9.2lf MB \n", cost_ampAA);
-        */
 
         // DF-CC B(Q,ab) + B(Q,ia) + B(Q,ij)
         cost_df = 0.0;
@@ -795,16 +762,20 @@ void DFOCC::ccsd_manager()
 	Process::environment.globals["DF-CCSD TOTAL ENERGY"] = Eccsd;
         Process::environment.globals["DF-CCSD CORRELATION ENERGY"] = Eccsd - Escf;
 
+        // CCSDL 
+        if (dertype == "FIRST" || cc_lambda_ == "TRUE") {
+            if (t2_incore) ccsdl_iterations();
+            else throw PSIEXCEPTION("There is NOT enough memory for Lambda equations!");
+        }
 
         // Compute Analytic Gradients
         if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
-            outfile->Printf("\n\tComputing unrelaxed response density matrices...\n");
-            
- 	    omp2_opdm();
-	    omp2_tpdm();
-            prepare4grad();
-            if (oeprop_ == "TRUE") oeprop();
-            if (dertype == "FIRST") dfgrad();
+            //outfile->Printf("\n\tComputing unrelaxed response density matrices...\n");
+ 	    //omp2_opdm();
+	    //omp2_tpdm();
+            //prepare4grad();
+            //if (oeprop_ == "TRUE") oeprop();
+            //if (dertype == "FIRST") dfgrad();
             //if (ekt_ip_ == "TRUE") ekt_ip(); 
         }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 

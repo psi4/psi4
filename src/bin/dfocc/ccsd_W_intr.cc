@@ -564,7 +564,7 @@ void DFOCC::ccsd_Wabef2T2()
 
     timer_on("WabefT2");
 
-    // t_ij^ab <= \sum_{ef} Tau_ij^ef <ab|ef>
+    // t_ij^ab <= \sum_{ef} Tau_ij^ef W_abef
     Tau = SharedTensor2d(new Tensor2d("Tau (IA|JB)", naoccA, navirA, naoccA, navirA));
     ccsd_tau_amps(Tau,t2);
     // (+)Tau(ij, ab) = 1/2 (Tau_ij^ab + Tau_ji^ab) * (2 - \delta_{ab})
