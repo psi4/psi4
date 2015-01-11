@@ -1399,7 +1399,7 @@ boost::shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
 boost::shared_ptr<BasisSet> BasisSet::decontract()
 {
     // This maps the atom_label to a vector of uncontracted shells
-    std::map<std::string,std::vector<ShellInfo>> u_shells;
+    std::map<std::string,std::vector<ShellInfo> > u_shells;
 
     // This maps the pair (atom_label,am) to a vector of exponents
     // and it is used to check for duplicate basis functions
