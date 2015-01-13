@@ -2690,6 +2690,54 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
 
 }//
 
+void Tensor2d::sort3a(int sort_type, int d1, int d2, int d3, const SharedTensor2d &A, double alpha, double beta)
+{
+
+ if (sort_type == 132) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              for (int r = 0; r < d3; r++) {
+                   int rq = q + (r*d2);
+                   int qr = r + (q*d3);
+                   A2d_[p][rq] = (alpha*A->A2d_[p][qr]) + (beta*A2d_[p][rq]);
+              }
+         }
+    }
+ }
+
+ else {
+    outfile->Printf("\tUnrecognized sort type!\n");
+    throw PSIEXCEPTION("Unrecognized sort type!");
+    
+ }
+
+}//
+
+void Tensor2d::sort3b(int sort_type, int d1, int d2, int d3, const SharedTensor2d &A, double alpha, double beta)
+{
+
+ if (sort_type == 132) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = q + (p*d2);
+              for (int r = 0; r < d3; r++) {
+                   int pr = r + (p*d3);
+                   A2d_[pr][q] = (alpha*A->A2d_[pq][r]) + (beta*A2d_[pr][q]);
+              }
+         }
+    }
+ }
+
+ else {
+    outfile->Printf("\tUnrecognized sort type!\n");
+    throw PSIEXCEPTION("Unrecognized sort type!");
+    
+ }
+
+}//
+
 void Tensor2d::apply_denom(int frzc, int occ, const SharedTensor2d &fock)
 {
     int aocc = d1_;

@@ -640,7 +640,13 @@ void DFOCC::ccsd_manager()
         cost_amp3 *= sizeof(double);
         cost_amp = MAX0(cost_amp1, cost_amp2);
         cost_amp = MAX0(cost_amp, cost_amp3);
-        outfile->Printf("\tMemory requirement for Wabef term     : %9.2lf MB \n", cost_amp);
+        outfile->Printf("\tMemory requirement for Wabef term (T2): %9.2lf MB \n", cost_amp);
+        if (cc_lambda_ == "TRUE") {
+            cost_amp1 = navirA * navirA * navirA;
+            cost_amp1 /= 1024.0 * 1024.0;
+            cost_amp += cost_amp1;
+            outfile->Printf("\tMemory requirement for Wefab term (L2): %9.2lf MB \n", cost_amp);
+        }
         
         // Mem alloc for DF ints
         if (df_ints_incore) {
