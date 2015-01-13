@@ -109,15 +109,22 @@ while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2);
 
  // Mem alloc for DF ints
  if (df_ints_incore) {
-     bQijA.reset();
-     bQiaA.reset();
-     bQabA.reset();
+     if (cc_lambda_ == "FALSE") {
+         bQijA.reset();
+         bQiaA.reset();
+         bQabA.reset();
+     }
  }
 
  // free t2 amps
  if (t2_incore) {
-     t2.reset();
+     if (cc_lambda_ == "TRUE") {
+        t2->write_symm(psio_, PSIF_DFOCC_AMPS);
+     }
+     else t2.reset();
  }
+
+
 
 if (conver == 1) {
 outfile->Printf("\n");
