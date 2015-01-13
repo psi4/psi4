@@ -741,8 +741,10 @@ void DFOCC::ccsd_manager()
         Process::environment.globals["DF-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         // Perform CCSD iterations
+        timer_on("CCSD");
         if (t2_incore) ccsd_iterations();
         else ccsd_iterations_low();
+        timer_off("CCSD");
 
 	outfile->Printf("\n");
 	outfile->Printf("\t======================================================================= \n");
@@ -764,8 +766,10 @@ void DFOCC::ccsd_manager()
 
         // CCSDL 
         if (dertype == "FIRST" || cc_lambda_ == "TRUE") {
+            timer_on("CCSDL");
             if (t2_incore) ccsdl_iterations();
             else throw PSIEXCEPTION("There is NOT enough memory for Lambda equations!");
+            timer_off("CCSDL");
         }
 
         // Compute Analytic Gradients
@@ -1017,8 +1021,10 @@ void DFOCC::ccd_manager()
         Process::environment.globals["DF-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         // Perform CCD iterations
+        timer_on("CCD");
         if (t2_incore) ccd_iterations();
         else ccd_iterations_low();
+        timer_off("CCD");
 
 	outfile->Printf("\n");
 	outfile->Printf("\t======================================================================= \n");
@@ -1038,6 +1044,13 @@ void DFOCC::ccd_manager()
 	Process::environment.globals["DF-CCD TOTAL ENERGY"] = Eccd;
         Process::environment.globals["DF-CCD CORRELATION ENERGY"] = Eccd - Escf;
 
+        // CCDL 
+        if (dertype == "FIRST" || cc_lambda_ == "TRUE") {
+            timer_on("CCDL");
+            if (t2_incore) ccdl_iterations();
+            else throw PSIEXCEPTION("There is NOT enough memory for Lambda equations!");
+            timer_off("CCDL");
+        }
 
         // Compute Analytic Gradients
         if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {

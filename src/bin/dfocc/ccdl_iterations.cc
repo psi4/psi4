@@ -30,40 +30,32 @@ using namespace std;
 
 namespace psi{ namespace dfoccwave{
   
-void DFOCC::ccsdl_iterations()
+void DFOCC::ccdl_iterations()
 {
 
 //==========================================================================================
 //========================= Before iterations ==============================================
 //==========================================================================================
         // 3-index intermediates
-        timer_on("CCSD 3-index intr");
-        ccsd_3index_intr();
-        timer_off("CCSD 3-index intr");
+        timer_on("CCD 3-index intr");
+        ccd_3index_intr();
+        timer_off("CCD 3-index intr");
 
         // F intermediates
-        timer_on("CCSD F intr");
-        ccsd_F_intr();
-        timer_off("CCSD F intr");
+        timer_on("CCD F intr");
+        ccd_F_intr();
+        timer_off("CCD F intr");
 
         // W intermediates
-        ccsdl_Wmnij();
-        ccsdl_Wmbej();
-        ccsdl_Wmbje();
-        ccsdl_Wmbij();
-        //ccsdl_Wmnie();
-        //outfile->Printf("\tWmbij is done.\n");
+        ccdl_Wmnij();
+        ccdl_Wmbej();
+        ccdl_Wmbje();
 
         // Write
         // Form U_ij^ab
         SharedTensor2d U, T;
         U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
         ccsd_u2_amps(U,t2);
-        U->write_symm(psio_, PSIF_DFOCC_AMPS);
-        U.reset();
-        // Form Tau_ij^ab
-        U = SharedTensor2d(new Tensor2d("Tau (IA|JB)", naoccA, navirA, naoccA, navirA));
-        ccsd_tau_amps(U,t2);
         U->write_symm(psio_, PSIF_DFOCC_AMPS);
         U.reset();
         // Form T'(ib,ja) = t_ij^ab
@@ -78,44 +70,38 @@ void DFOCC::ccsdl_iterations()
         //T.reset();
               
         // Malloc and Free
-        gQ = SharedTensor1d(new Tensor1d("CCSDL G_Q", nQ));
-        gQp = SharedTensor1d(new Tensor1d("CCSDL G_Qp", nQ));
-	l1A = SharedTensor2d(new Tensor2d("L1 <I|A>", naoccA, navirA));
-	l1newA = SharedTensor2d(new Tensor2d("New L1 <I|A>", naoccA, navirA));
+        gQ = SharedTensor1d(new Tensor1d("CCDL G_Q", nQ));
         l2 = SharedTensor2d(new Tensor2d("L2 (IA|JB)", naoccA, navirA, naoccA, navirA));
         l2->copy(t2);
         t2.reset();
-        l1A->copy(t1A);
 
 //==========================================================================================
 //========================= Title ==========================================================
 //==========================================================================================
 outfile->Printf("\n");
 outfile->Printf(" ============================================================================== \n");
-outfile->Printf(" ================ Performing DF-CCSDL iterations... =========================== \n");
+outfile->Printf(" ================ Performing DF-CCDL iterations... ============================ \n");
 outfile->Printf(" ============================================================================== \n");
 outfile->Printf("\n");
-outfile->Printf("  Iter       E_corr                  DE                 L2 RMS        L1 RMS     \n");
-outfile->Printf("  ----   ----------------      ----------------       ----------    ----------   \n");
+outfile->Printf("  Iter       E_corr                  DE                 L2 RMS      \n");
+outfile->Printf("  ----   ----------------      ----------------       ----------    \n");
 
 //==========================================================================================
-//========================= CCSDL iterations ===============================================
+//========================= CCDL iterations ================================================
 //==========================================================================================
       itr_occ = 0;
       conver = 1; // Assuming that the iterations will converge
-      EccsdL_old = Eccsd;
+      EccdL_old = Eccd;
 
       // DIIS
       if (do_diis_ == 1) {
           boost::shared_ptr<Matrix> L2(new Matrix("L2", naoccA*navirA, naoccA*navirA));
-          boost::shared_ptr<Matrix> L1(new Matrix("L1", naoccA, navirA));
           if (reference_ == "RESTRICTED") {
-              ccsdlDiisManager = boost::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCSDL DIIS L Amps", DIISManager::LargestError, DIISManager::OnDisk)); 
-              ccsdlDiisManager->set_error_vector_size(2, DIISEntry::Matrix, L2.get(), DIISEntry::Matrix, L1.get());
-              ccsdlDiisManager->set_vector_size(2, DIISEntry::Matrix, L2.get(), DIISEntry::Matrix, L1.get());
+              ccsdlDiisManager = boost::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCDL DIIS L2 Amps", DIISManager::LargestError, DIISManager::OnDisk)); 
+              ccsdlDiisManager->set_error_vector_size(1, DIISEntry::Matrix, L2.get());
+              ccsdlDiisManager->set_vector_size(1, DIISEntry::Matrix, L2.get());
           }
           L2.reset();
-          L1.reset();
       }// if diis true
 
 // head of loop      
@@ -125,44 +111,38 @@ do
         itr_occ++;
 
         // 3-index intermediates
-        timer_on("CCSDL 3-index intr");
-        ccsdl_3index_intr();
-        timer_off("CCSDL 3-index intr");
-
-        // L1 amplitudes
-        timer_on("L1 AMPS");
-	ccsdl_l1_amps();  
-        timer_off("L1 AMPS");
+        timer_on("CCDL 3-index intr");
+        ccdl_3index_intr();
+        timer_off("CCDL 3-index intr");
    
         // L2 amplitudes
         timer_on("L2 AMPS");
-	ccsdl_l2_amps();  
+	ccdl_l2_amps();  
         timer_off("L2 AMPS");
 
-        DE = EccsdL - EccsdL_old;
-        EccsdL_old = EccsdL;
+        DE = EccdL - EccdL_old;
+        EccdL_old = EccdL;
 
     // RMS
     if (reference_ == "UNRESTRICTED") {
 	rms_t2=MAX0(rms_t2AA,rms_t2BB);
 	rms_t2=MAX0(rms_t2,rms_t2AB);
-	rms_t1=MAX0(rms_t1A,rms_t1B);
     }
 	
    // print
-   outfile->Printf(" %3d      %12.10f         %12.10f      %12.2e  %12.2e \n", itr_occ, EcorrL, DE, rms_t2, rms_t1);
+   outfile->Printf(" %3d      %12.10f         %12.10f      %12.2e  \n", itr_occ, EcorrL, DE, rms_t2);
 
     if (itr_occ >= cc_maxiter) {
       conver = 0; // means iterations were NOT converged
       break;  
     }
 
-    if (rms_t2 >= DIVERGE || rms_t1 >= DIVERGE) {
-        throw PSIEXCEPTION("CCSD iterations are diverging");
+    if (rms_t2 >= DIVERGE) {
+        throw PSIEXCEPTION("CCD iterations are diverging");
     }
 
 }
-while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2); 
+while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2); 
 
  //delete
  if (do_diis_ == 1) ccsdlDiisManager->delete_diis_file();
@@ -182,23 +162,16 @@ while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2);
 if (conver == 1) {
 outfile->Printf("\n");
 outfile->Printf(" ============================================================================== \n");
-outfile->Printf(" ===================== DF-CCSDL ITERATIONS ARE CONVERGED ====================== \n");
+outfile->Printf(" ===================== DF-CCDL ITERATIONS ARE CONVERGED ======================= \n");
 outfile->Printf(" ============================================================================== \n");
 
-    // T1 Diagnostic 
-    double t1diag, t1norm, t1_ref;
-    t1_ref = 0.02;
-    t1norm = l1A->norm();
-    t1diag = t1norm/sqrt(2.0*naoccA);
-    outfile->Printf("\n\tL1 diagnostic reference value: %20.14f\n", t1_ref);
-    outfile->Printf("\tL1 diagnostic                : %20.14f\n", t1diag);
 }
 
 else if (conver == 0) {
-  outfile->Printf("\n ====================== DF-CCSDL IS NOT CONVERGED IN %2d ITERATIONS =========== \n", cc_maxiter);
-  throw PSIEXCEPTION("DF-CCSDL iterations did not converge");
+  outfile->Printf("\n ====================== DF-CCDL IS NOT CONVERGED IN %2d ITERATIONS ============ \n", cc_maxiter);
+  throw PSIEXCEPTION("DF-CCDL iterations did not converge");
 }
 
-}// end ccsdl_iterations
+}// end ccdl_iterations
 }} // End Namespaces
 

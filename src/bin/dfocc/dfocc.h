@@ -414,11 +414,12 @@ protected:
     void ccsdl_Wmbje();         // OVOV
     void ccsdl_Wmnie();         // OOOV
     void ccsdl_Wmbij();         // OVOO
+    void ccsdl_Wmnij();         // OOOO
     void ccsdl_WmbejL2();
     void ccsdl_WmnijL2();
     void ccsdl_WijmnL2();
     void ccsdl_WabefL2();     
-    void ccsdl_WijmbL2();       // OOOV 
+    void ccsdl_Wmnie_direct(SharedTensor2d &W);
 
     // CCD
     void ccd_manager();
@@ -438,6 +439,18 @@ protected:
     void ccd_WmbejT2_low();
     void ccd_WabefT2_low();     
     void ccd_t2_amps_low();
+
+    // CCDL
+    void ccdl_l2_amps();
+    void ccdl_iterations();
+    void ccdl_3index_intr();
+    void ccdl_Wmbej();         // OVVO
+    void ccdl_Wmbje();         // OVOV
+    void ccdl_Wmnij();         // OOOO
+    void ccdl_WmbejL2();
+    void ccdl_WmnijL2();
+    void ccdl_WijmnL2();
+    void ccdl_WabefL2();     
 
     // orbital pairs
     int so_pair_idx(int i, int j);
@@ -669,6 +682,11 @@ protected:
      double EccdAA;
      double EccdBB;
      double EccdAB;
+     double EccdL_old;
+     double EccdL;
+     double EccdLAA;
+     double EccdLBB;
+     double EccdLAB;
      
      string wfn;
      string reference;

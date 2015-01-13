@@ -64,7 +64,8 @@ void DFOCC::ccsdl_l1_amps()
 
     // l_i^a <= -\sum_{mn} G_mn (2*W_mina - W_imna) 
     W = SharedTensor2d(new Tensor2d("WL (MN|IE)", naoccA, naoccA, naoccA, navirA));
-    W->read(psio_, PSIF_DFOCC_AMPS);
+    //W->read(psio_, PSIF_DFOCC_AMPS);
+    ccsdl_Wmnie_direct(W);
     X = SharedTensor2d(new Tensor2d("X (MN|IE)", naoccA, naoccA, naoccA, navirA));
     X->tei_cs2_anti_symm(W,W);
     W.reset();
