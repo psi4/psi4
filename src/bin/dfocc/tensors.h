@@ -302,6 +302,10 @@ class Tensor2d
   // sort (for example 1432 sort): A2d_(ps,rq) = A(pq,rs)
   // A2d_ = alpha*A + beta*A2d_
   void sort(int sort_type, const SharedTensor2d &A, double alpha, double beta);
+  // A2d_[p][qr] = sort(A[p][qr])
+  void sort3a(int sort_type, int d1, int d2, int d3, const SharedTensor2d &A, double alpha, double beta);
+  // A2d_[pq][r] = sort(A[pq][r])
+  void sort3b(int sort_type, int d1, int d2, int d3, const SharedTensor2d &A, double alpha, double beta);
   // apply_denom: T(ij,ab) /= D(ij,ab)
   void apply_denom(int frzc, int occ, const SharedTensor2d &fock);
   // apply_denom_os: T(Ij,Ab) /= D(Ij,Ab)

@@ -869,8 +869,8 @@ void DFOCC::ccsdl_WmbejL2()
 void DFOCC::ccsdl_WabefL2()
 {
     // defs
-    SharedTensor2d K, M, L, I, T, Lnew, U, Tau, W, X, Y, Z, S, A;
-    SharedTensor2d V, Vs, Ts, Va, Ta, J, T1;
+    SharedTensor2d K, M, L, I, I2, T, Lnew, U, Tau, W, X, Y, Z, S, A;
+    SharedTensor2d V, Vs, Ts, Va, Ta, J, J2, T1;
 
     timer_on("WabefL2");
 
@@ -923,13 +923,12 @@ void DFOCC::ccsdl_WabefL2()
     L = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (AI|Q)", naoccA * navirA, nQ));
     L = M->transpose();
     M.reset();
-    // T(a,i)
-    //T1 = SharedTensor2d(new Tensor2d("T1 (A|I)", navirA, naoccA));
-    //T1 = t1A->transpose();
 
     // malloc
     I = SharedTensor2d(new Tensor2d("I[A] <BF|E>", navirA * navirA, navirA));
+    I2 = SharedTensor2d(new Tensor2d("I[A] <BE|F>", navirA * navirA, navirA));
     J = SharedTensor2d(new Tensor2d("J[A] <BM|E>", navirA * naoccA, navirA));
+    J2 = SharedTensor2d(new Tensor2d("J[A] <BE|M>", navirA * navirA, naoccA));
     Vs = SharedTensor2d(new Tensor2d("(+)V[A] (B, E>=F)", navirA, ntri_abAA));
     Va = SharedTensor2d(new Tensor2d("(-)V[A] (B, E>=F)", navirA, ntri_abAA));
     Ts = SharedTensor2d(new Tensor2d("(+)T[A] (B, I>=J)", navirA, ntri_ijAA));
@@ -948,22 +947,14 @@ void DFOCC::ccsdl_WabefL2()
         // Form J[a](bm,e) = \sum_{Q} B(bmQ)*B(aeQ) cost = OV^3N
         J->contract(false, true, nb*naoccA, navirA, nQ, L, K, 0, a*navirA*nQ, 1.0, 0.0);
 
-        // J[a](bfe) -= \sum_{m} J[a](bme) * t(m,f)
-        //I->contract(false, false, navirA*nb, navirA, naoccA, J, t1A, -1.0, 1.0);
-        #pragma omp parallel for
-        for(int b = 0 ; b <= a; ++b){
-            for(int e = 0 ; e < navirA; ++e){
-                for(int f = 0 ; f < navirA; ++f){
-                    int bf = f + (b * navirA);
-                    double value = 0.0;
-                    for(int m = 0 ; m < naoccA; ++m){
-                        int bm = m + (b * naoccA);
-                        value -= J->get(bm,e) * t1A->get(m,f);
-                    }
-                    I->add(bf, e, value);
-                }
-            }
-        }
+        // J[a](be,m) = J[a](bm,e)
+        J2->sort3b(132, navirA, naoccA, navirA, J, 1.0, 0.0);
+
+        // J[a](bef) -= \sum_{m} J[a](be,m) * t(m,f)
+        I2->contract(false, false, navirA*nb, navirA, naoccA, J2, t1A, -1.0, 0.0);
+
+        // J[a](bf,e) += J[a](be,f)
+        I->sort3b(132, navirA, navirA, navirA, I2, 1.0, 1.0);
 
         // Form (+)V[a](b, e>=f) 
         #pragma omp parallel for
@@ -1001,6 +992,7 @@ void DFOCC::ccsdl_WabefL2()
     }
     K.reset();
     I.reset();
+    I2.reset();
     X.reset();
     Vs.reset();
     Va.reset();
@@ -1009,8 +1001,8 @@ void DFOCC::ccsdl_WabefL2()
     U.reset();
     T.reset();
     J.reset();
+    J2.reset();
     L.reset();
-    //T1.reset();
 
     // L(ia,jb) <-- S(a>=b,i>=j) + A(a>=b,i>=j)
     Lnew = SharedTensor2d(new Tensor2d("New L2 (IA|JB)", naoccA, navirA, naoccA, navirA));
