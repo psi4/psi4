@@ -20,10 +20,10 @@
  *@END LICENSE
  */
 
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 #include <cstdio>
 
-#include <libutil/memory_manager.h>
+#include <libpsiutil/memory_manager.h>
 #include "block_matrix.h"
 #include "matrix_base.h"
 

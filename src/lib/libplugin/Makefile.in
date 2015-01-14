@@ -16,8 +16,8 @@ LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 include ../MakeRules
 
 install_inc:: $(INC)
-	$(MKDIRS) $(DESTDIR)$(incdir)/libutil
-	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libutil
+	$(MKDIRS) $(DESTDIR)$(incdir)/libpsiutil
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libpsiutil
 
 ifneq "$(MAKECMDGOALS)" "clean"
 include $(LIBOBJ:%.o=%.d)

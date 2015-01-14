@@ -27,7 +27,7 @@
 #include "sblock_matrix.h"
 #include <libmoinfo/libmoinfo.h>
 #include <libmints/wavefunction.h>
-#include <libutil/memory_manager.h>
+#include <libpsiutil/memory_manager.h>
 
 #define STORE_TEI 0
 

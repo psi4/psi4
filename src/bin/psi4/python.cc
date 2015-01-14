@@ -44,7 +44,7 @@
 #include "libparallel/local.h"
 #include <liboptions/liboptions.h>
 #include <liboptions/liboptions_python.h>
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 #include <psiconfig.h>
 
 #include <psi4-dec.h>

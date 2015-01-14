@@ -25,7 +25,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <libmoinfo/libmoinfo.h>
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 
 #define CCTRANSFORM_USE_BLAS
 

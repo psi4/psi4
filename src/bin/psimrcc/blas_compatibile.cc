@@ -23,7 +23,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include "psi4-dec.h"
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 
 #include "blas.h"
 #include "index.h"

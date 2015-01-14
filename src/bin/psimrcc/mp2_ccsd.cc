@@ -23,7 +23,7 @@
 #include <cstdlib>
 
 #include <libmoinfo/libmoinfo.h>
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 #include <liboptions/liboptions.h>
 #include <libchkpt/chkpt.hpp>
 

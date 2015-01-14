@@ -10,15 +10,15 @@ TRUECSRC =
 
 TRUECXXSRC = stl_string.cc combinations.cc exception.cc memory_manager.cc quad.cc
 
-INC = libutil.h ref.h class_macros.h memory_manager.h quad.h
+INC = libpsiutil.h ref.h class_macros.h memory_manager.h quad.h
 
 LIBOBJ = $(TRUECSRC:%.c=%.o) $(TRUECXXSRC:%.cc=%.o)
 
 include ../MakeRules
 
 install_inc:: $(INC)
-	$(MKDIRS) $(DESTDIR)$(incdir)/libutil
-	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libutil
+	$(MKDIRS) $(DESTDIR)$(incdir)/libpsiutil
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libpsiutil
 
 ifneq "$(MAKECMDGOALS)" "clean"
 include $(LIBOBJ:%.o=%.d)

@@ -26,7 +26,7 @@
  *  A multireference coupled cluster code
  ***************************************************************************/
 #include <libmoinfo/libmoinfo.h>
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 
 #include "blas.h"
 #include "debugging.h"

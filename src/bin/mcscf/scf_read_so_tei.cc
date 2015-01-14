@@ -27,7 +27,7 @@
 #include <libiwl/iwl.hpp>
 #include <libciomr/libciomr.h>
 #include <libmoinfo/libmoinfo.h>
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 
 #include "scf.h"
 

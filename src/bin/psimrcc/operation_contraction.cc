@@ -23,7 +23,7 @@
 #include <iostream>
 #include <cmath>
 
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 #include <libmoinfo/libmoinfo.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>

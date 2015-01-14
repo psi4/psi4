@@ -24,7 +24,7 @@
 
 #include <psi4-dec.h>
 #include <libmoinfo/libmoinfo.h>
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 #include <liboptions/liboptions.h>
 #include <libchkpt/chkpt.h>
 

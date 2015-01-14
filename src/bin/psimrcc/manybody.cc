@@ -34,7 +34,7 @@
 #include <vector>
 
 #include <liboptions/liboptions.h>
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 #include <libmoinfo/libmoinfo.h>
 
 #include "algebra_interface.h"

@@ -26,7 +26,7 @@
 #include "matrix.h"
 #include "blas.h"
 #include "debugging.h"
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 #include <psi4-dec.h>
 
 #include <boost/shared_ptr.hpp>

@@ -220,8 +220,8 @@ set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2
            cctriples scf_solver fock dcft lmp2 mcscf sapt dftsapt sapt_solver
            cchbar cclambda ccdensity transqt ccresponse detci occ mrcc fnocc
            cceom adc thermo functional disp thce 3index deriv_wrapper optking
-           findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util
-           stable deriv scfgrad int util diis plugin parallel parallel2 babel frag efp_solver efp)
+           findif mints trans dpd chkpt iwl psio qt ciomr options moinfo psiutil
+           stable deriv scfgrad int diis plugin parallel parallel2 babel frag efp_solver efp)
 
 #RMR---This is our plugin workaround
 #Here we start a list of plugins

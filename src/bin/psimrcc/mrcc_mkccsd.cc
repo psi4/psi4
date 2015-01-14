@@ -30,7 +30,7 @@
 //#include <libmoinfo/libmoinfo.h>
 //#include <liboptions/liboptions.h>
 //#include <libpsio/psio.hpp>
-//#include <libutil/libutil.h>
+//#include <libpsiutil/libpsiutil.h>
 //
 //#include "blas.h"
 //#include "debugging.h"

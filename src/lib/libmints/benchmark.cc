@@ -22,7 +22,7 @@
 
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 #include <libpsio/psio.hpp>
 #include <libpsio/psio.h>
 #include "mints.h"
