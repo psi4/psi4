@@ -45,7 +45,7 @@
 
 *********************************************************/
 
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 #include <vector>
 
 namespace psi{

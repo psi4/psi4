@@ -35,7 +35,7 @@
 #define IOFF 5000000
 
 #include <string>
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 
 typedef std::vector<int>                    intvec;
 typedef std::vector<bool>                   boolvec;

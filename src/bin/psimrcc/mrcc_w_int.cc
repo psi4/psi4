@@ -30,7 +30,7 @@
 #include "matrix.h"
 #include "blas.h"
 #include "debugging.h"
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 
 extern FILE* outfile;
 

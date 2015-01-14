@@ -24,7 +24,7 @@
 #include <algorithm>
 
 #include <libmoinfo/libmoinfo.h>
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 
 #include "algebra_interface.h"
 #include "blas.h"

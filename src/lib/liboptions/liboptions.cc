@@ -36,8 +36,8 @@
 #include "liboptions_python.h"
 
 #include <exception.h>
-#include <libutil/libutil.h> // Needed for Ref counting, string splitting, and conversions
-#include <libutil/ref.h> // Needed for Ref counting, string splitting, and conversions
+#include <libpsiutil/libpsiutil.h> // Needed for Ref counting, string splitting, and conversions
+#include <libpsiutil/ref.h> // Needed for Ref counting, string splitting, and conversions
 #include <boost/shared_ptr.hpp>
 #include <boost/python.hpp>
 #include <boost/python/object.hpp>

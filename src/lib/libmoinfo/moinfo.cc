@@ -33,7 +33,7 @@
 // PSI Libraries
 #include <liboptions/liboptions.h>
 #include <libciomr/libciomr.h>
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 #include <psi4-dec.h>
 #include <libmints/corrtab.h>
 #include <libmints/matrix.h>

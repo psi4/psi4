@@ -27,8 +27,8 @@
 #include <vector>
 #include <map>
 #include <exception.h>
-#include <libutil/libutil.h> // Needed for Ref counting, string splitting, and conversions
-#include <libutil/ref.h> // Needed for Ref counting, string splitting, and conversions
+#include <libpsiutil/libpsiutil.h> // Needed for Ref counting, string splitting, and conversions
+#include <libpsiutil/ref.h> // Needed for Ref counting, string splitting, and conversions
 
 // Forward boost python object
 #include <boost/python/object_fwd.hpp>

@@ -26,8 +26,8 @@
 #include <libciomr/libciomr.h>
 #include <libmoinfo/libmoinfo.h>
 #include <libqt/qt.h>
-#include <libutil/libutil.h>
-#include <libutil/memory_manager.h>
+#include <libpsiutil/libpsiutil.h>
+#include <libpsiutil/memory_manager.h>
 
 #include "special_matrices.h"
 

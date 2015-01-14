@@ -31,7 +31,7 @@
 #include <libmoinfo/libmoinfo.h>
 #include <liboptions/liboptions.h>
 #include <libiwl/iwl.hpp>
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 
 #include "scf.h"
 

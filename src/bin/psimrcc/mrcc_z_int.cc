@@ -28,7 +28,7 @@
 #include "mrcc.h"
 #include "matrix.h"
 #include "blas.h"
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 
 extern FILE* outfile;
 

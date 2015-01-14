@@ -27,7 +27,7 @@
 #include <cstdio>
 #include <sstream>
 
-#include "libutil.h"
+#include "libpsiutil.h"
 
 namespace psi {
 

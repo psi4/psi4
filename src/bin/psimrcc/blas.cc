@@ -24,7 +24,7 @@
 
 #include <liboptions/liboptions.h>
 #include <libmoinfo/libmoinfo.h>
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 #include <libciomr/libciomr.h>
 #include "debugging.h"
 #include <libqt/qt.h>

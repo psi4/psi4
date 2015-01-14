@@ -21,7 +21,7 @@
  */
 
 #include <libmoinfo/libmoinfo.h>
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 #include <cstdio>
 
 #include "blas.h"

@@ -27,7 +27,7 @@
 */
 
 #include <libmoinfo/libmoinfo.h>
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 #include <liboptions/liboptions.h>
 #include <boost/shared_ptr.hpp>
 #include <libchkpt/chkpt.hpp>

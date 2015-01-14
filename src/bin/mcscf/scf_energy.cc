@@ -26,7 +26,7 @@
 #include <libchkpt/chkpt.hpp>
 #include <libmoinfo/libmoinfo.h>
 #include <libciomr/libciomr.h>
-#include <libutil/libutil.h>
+#include <libpsiutil/libpsiutil.h>
 
 #include "scf.h"
 #include "sblock_matrix.h"

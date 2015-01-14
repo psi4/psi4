@@ -24,7 +24,7 @@
 //#include "mrcc.h"
 //#include "matrix.h"
 //#include "debugging.h"
-//#include <libutil/libutil.h>
+//#include <libpsiutil/libpsiutil.h>
 
 #include "blas.h"
 #include "heff.h"
