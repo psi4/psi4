@@ -20,7 +20,7 @@
  *@END LICENSE
  */
 
-#include <libpsiutil/libpsiutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include <cstdio>
 
 #include "blas.h"

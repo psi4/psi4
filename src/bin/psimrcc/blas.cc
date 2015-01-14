@@ -24,7 +24,7 @@
 
 #include <liboptions/liboptions.h>
 #include <libmoinfo/libmoinfo.h>
-#include <libpsiutil/libpsiutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include <libciomr/libciomr.h>
 #include "debugging.h"
 #include <libqt/qt.h>

@@ -26,7 +26,7 @@
 #include <libmoinfo/libmoinfo.h>
 #include "transform.h"
 #include "matrix.h"
-#include <libpsiutil/libpsiutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include "algebra_interface.h"
 #include "blas.h"
 

@@ -33,8 +33,8 @@
 #include <assert.h>
 
 #include <exception.h>
-#include <libpsiutil/libpsiutil.h> // Needed for Ref counting, string splitting, and conversions
-#include <libpsiutil/ref.h> // Needed for Ref counting, string splitting, and conversions
+#include <libpsi4util/libpsi4util.h> // Needed for Ref counting, string splitting, and conversions
+#include <libpsi4util/ref.h> // Needed for Ref counting, string splitting, and conversions
 #include <boost/shared_ptr.hpp>
 
 #include "liboptions.h"

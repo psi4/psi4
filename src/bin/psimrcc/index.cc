@@ -30,8 +30,8 @@
 #include <cstdio>
 
 #include <libmoinfo/libmoinfo.h>
-#include <libpsiutil/libpsiutil.h>
-#include <libpsiutil/memory_manager.h>
+#include <libpsi4util/libpsi4util.h>
+#include <libpsi4util/memory_manager.h>
 
 #include "index.h"
 

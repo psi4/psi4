@@ -45,7 +45,7 @@
 
 *********************************************************/
 
-#include <libpsiutil/libpsiutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include <vector>
 
 namespace psi{

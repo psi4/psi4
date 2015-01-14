@@ -20,10 +20,10 @@
  *@END LICENSE
  */
 
-#include <libpsiutil/libpsiutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include <cstdio>
 
-#include <libpsiutil/memory_manager.h>
+#include <libpsi4util/memory_manager.h>
 #include "block_matrix.h"
 #include "matrix_base.h"
 

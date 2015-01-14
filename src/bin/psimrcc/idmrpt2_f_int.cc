@@ -25,7 +25,7 @@
  *  frank@ccc.uga.edu   andysim@ccc.uga.edu
  *  A multireference coupled cluster code
  ***************************************************************************/
-#include <libpsiutil/libpsiutil.h>
+#include <libpsi4util/libpsi4util.h>
 
 #include "blas.h"
 #include "debugging.h"

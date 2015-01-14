@@ -27,7 +27,7 @@
 #include <psifiles.h>
 #include <liboptions/liboptions.h>
 #include <libmoinfo/libmoinfo.h>
-#include <libpsiutil/libpsiutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include <libpsio/psio.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
