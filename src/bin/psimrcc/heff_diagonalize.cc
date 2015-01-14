@@ -23,7 +23,7 @@
 #include <cmath>
 #include <cstdio>
 #include <libmoinfo/libmoinfo.h>
-#include <libpsiutil/memory_manager.h>
+#include <libpsi4util/memory_manager.h>
 
 #include "algebra_interface.h"
 #include "heff.h"

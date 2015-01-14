@@ -31,7 +31,7 @@
 #include <algorithm>
 
 #include <liboptions/liboptions.h>
-#include <libpsiutil/libpsiutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include <libmoinfo/libmoinfo.h>
 
 #include "algebra_interface.h"

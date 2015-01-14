@@ -27,7 +27,7 @@
 #include <cstdio>
 #include <sstream>
 
-#include "libpsiutil.h"
+#include "libpsi4util.h"
 
 namespace psi {
 

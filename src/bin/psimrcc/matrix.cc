@@ -26,7 +26,7 @@
 
 #include <libciomr/libciomr.h>
 #include <libmoinfo/libmoinfo.h>
-#include <libpsiutil/libpsiutil.h>
+#include <libpsi4util/libpsi4util.h>
 
 #include "index.h"
 #include "matrix.h"

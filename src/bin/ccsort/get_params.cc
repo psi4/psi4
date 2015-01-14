@@ -30,7 +30,7 @@
 #include <cmath>
 #include <string>
 #include <libciomr/libciomr.h>
-#include <libpsiutil/libpsiutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include <liboptions/liboptions.h>
 #include <psi4-dec.h>
 #include <psifiles.h>

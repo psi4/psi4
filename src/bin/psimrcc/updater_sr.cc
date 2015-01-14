@@ -31,7 +31,7 @@
 //  //#include <libmoinfo/libmoinfo.h>
 //  //#include <liboptions/liboptions.h>
 //  //#include <libpsio/psio.hpp>
-//  //#include <libpsiutil/libpsiutil.h>
+//  //#include <libpsi4util/libpsi4util.h>
 //  //
 //
 //  //#include "debugging.h"

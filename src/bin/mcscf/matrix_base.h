@@ -25,7 +25,7 @@
 
 #include <cstring> // for size_t
 
-#include <libpsiutil/memory_manager.h>
+#include <libpsi4util/memory_manager.h>
 #include "vector_base.h"
 
 namespace psi{ namespace mcscf{

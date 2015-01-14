@@ -20,8 +20,8 @@
  *@END LICENSE
  */
 
-#ifndef _psi_src_lib_libpsiutil_libpsiutil_h_
-#define _psi_src_lib_libpsiutil_libpsiutil_h_
+#ifndef _psi_src_lib_libpsi4util_libpsi4util_h_
+#define _psi_src_lib_libpsi4util_libpsi4util_h_
 
 #include <string>
 #include <vector>
@@ -87,4 +87,4 @@ void generate_combinations(int n, int k, std::vector<std::vector<int> >& combina
 
 }
 
-#endif // _psi_src_lib_libpsiutil_libpsiutil_h_
+#endif // _psi_src_lib_libpsi4util_libpsi4util_h_

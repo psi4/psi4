@@ -42,7 +42,7 @@
 #include <libciomr/libciomr.h>
 #include <libmoinfo/libmoinfo.h>
 #include <liboptions/liboptions.h>
-#include <libpsiutil/libpsiutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include <libmints/mints.h>
 
 #include "mcscf.h"

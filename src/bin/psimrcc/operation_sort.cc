@@ -24,7 +24,7 @@
 #include <cmath>
 
 #include <libmoinfo/libmoinfo.h>
-#include <libpsiutil/libpsiutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include <libciomr/libciomr.h>
 
 #include "blas.h"

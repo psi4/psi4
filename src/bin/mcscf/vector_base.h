@@ -23,7 +23,7 @@
 #ifndef _psi_src_lib_libmemtrix_vector_base_h_
 #define _psi_src_lib_libmemtrix_vector_base_h_
 
-#include <libpsiutil/memory_manager.h>
+#include <libpsi4util/memory_manager.h>
 #include <cstring> // for size_t
 
 namespace psi{ namespace mcscf{

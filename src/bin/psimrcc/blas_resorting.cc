@@ -29,7 +29,7 @@
 
 #include <libmoinfo/libmoinfo.h>
 #include "blas.h"
-#include <libpsiutil/libpsiutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include <pthread.h>
 
 namespace psi{ namespace psimrcc{
