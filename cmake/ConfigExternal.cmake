@@ -14,7 +14,7 @@ endif()
 
 include(ExternalProject)
 
-macro(add_external _project)
+macro(add_external _project _external_project_cmake_args _testing_command)
     if(DEVELOPMENT_CODE AND GIT_FOUND)
        set(UPDATE_COMMAND ${GIT_EXECUTABLE} submodule update)
     else()
@@ -29,9 +29,7 @@ macro(add_external _project)
                        ${PROJECT_SOURCE_DIR}/external/${_project}
     )
 
-    set(_testing_command "${ARGV1}")
-   
-    if("${_testing_command}" STREQUAL "")
+    if(_testing_command)
        ExternalProject_Add(${_project}                                 
            DOWNLOAD_COMMAND ${UPDATE_COMMAND}
            DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
@@ -40,23 +38,21 @@ macro(add_external _project)
            STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
            TMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-tmp
            INSTALL_DIR ${PROJECT_BINARY_DIR}/external
-           CMAKE_ARGS ${ExternalProjectCMakeArgs}
-           )
-    else()
-       # For unfathomable reasons, CMake expects the TEST_COMMAND to be ;-separated list...
-       separate_arguments(_testing_command)
-       ExternalProject_Add(${_project}                                 
-           DOWNLOAD_COMMAND ${UPDATE_COMMAND}
-           DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
-           SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/${_project}
-           BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
-           STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
-           TMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-tmp
-           INSTALL_DIR ${PROJECT_BINARY_DIR}/external
-           CMAKE_ARGS ${ExternalProjectCMakeArgs}
+           CMAKE_ARGS ${_external_project_cmake_args}
 	   TEST_BEFORE_INSTALL 1
 	   TEST_COMMAND "${_testing_command}"
 	   LOG_TEST 1
+           )
+    else()
+       ExternalProject_Add(${_project}                                 
+           DOWNLOAD_COMMAND ${UPDATE_COMMAND}
+           DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
+           SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/${_project}
+           BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
+           STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
+           TMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-tmp
+           INSTALL_DIR ${PROJECT_BINARY_DIR}/external
+           CMAKE_ARGS ${_external_project_cmake_args}
            )
     endif()	    
 

@@ -59,7 +59,6 @@ include(ConfigVersion)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(PerTargetCompilerFlags) # This module has to be included **after** ConfigCompilerFlags.cmake
-include(ConfigExternal)
 include(ConfigOMP)
 
 # Math: find BLAS and LAPACK
