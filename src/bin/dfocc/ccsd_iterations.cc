@@ -117,14 +117,19 @@ while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2);
 
  // Mem alloc for DF ints
  if (df_ints_incore) {
-     bQijA.reset();
-     bQiaA.reset();
-     bQabA.reset();
+     if (cc_lambda_ == "FALSE") {
+         bQijA.reset();
+         bQiaA.reset();
+         bQabA.reset();
+     }
  }
 
  // free t2 amps
  if (t2_incore) {
-     t2.reset();
+     if (cc_lambda_ == "TRUE") {
+        t2->write_symm(psio_, PSIF_DFOCC_AMPS);
+     }
+     else t2.reset();
  }
 
 if (conver == 1) {
@@ -138,8 +143,8 @@ outfile->Printf(" ==============================================================
     t1_ref = 0.02;
     t1norm = t1A->norm();
     t1diag = t1norm/sqrt(2.0*naoccA);
-    outfile->Printf("\n\tT1 diagnostic reference value      : %20.14f\n", t1_ref);
-    outfile->Printf("\tT1 diagnostic                      : %20.14f\n", t1diag);
+    outfile->Printf("\n\tT1 diagnostic reference value: %20.14f\n", t1_ref);
+    outfile->Printf("\tT1 diagnostic                : %20.14f\n", t1diag);
 }
 
 else if (conver == 0) {

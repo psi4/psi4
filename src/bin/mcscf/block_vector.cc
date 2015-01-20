@@ -22,7 +22,7 @@
 
 #include <cstdio>
 
-#include <libutil/libutil.h>
+#include <libpsi4util/libpsi4util.h>
 
 #include "block_vector.h"
 #include "vector_base.h"

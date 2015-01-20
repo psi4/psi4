@@ -1,0 +1,42 @@
+CC  = icc
+CXX = icpc
+FC  = ifort
+AR  = xiar rcs
+MPICC  = mpiicc
+MPICXX = mpiicpc
+
+DYNAMIC     = 1
+DO_SCF      = 0
+SCF_TIMMING = 0
+SCF_OUT     = 0
+
+#OPTFLAGS = -offload-option,mic,compiler,"-z defs -no-opt-prefetch"
+OPTFLAGS  = -qno-offload
+OPTFLAGS += -m64 -xHost
+CFLAGS    = -O3 -Wall -openmp -std=gnu99 -fasm-blocks
+CFLAGS   += -Wunknown-pragmas -Wunused-variable
+CFLAGS   += ${OPTFLAGS}
+
+BLAS_INCDIR      = /opt/intel/mkl/include/
+BLAS_LIBDIR      = /opt/intel/mkl/lib/intel64/
+BLAS_LIBS        = -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -lpthread -lm 
+
+SCALAPACK_INCDIR = /opt/intel/mkl/include/
+SCALAPACK_LIBDIR = /opt/intel/mkl/lib/intel64/ 
+SCALAPACK_LIBS   = -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64
+
+MPI_INCDIR = /opt/intel/impi_latest/include64/
+MPI_LIBDIR = /opt/intel/impi_latest/lib64/
+MPI_LIBS =
+
+GA_INCDIR = ${GA_TOP}/include
+GA_LIBDIR = ${GA_TOP}/lib
+GA_LIBS = -lga
+
+ARMCI_INCDIR = ${ARMCI_TOP}/include
+ARMCI_LIBDIR = ${ARMCI_TOP}/lib
+ARMCI_LIBS = -larmci
+
+ERD_INCDIR = ${ERD_TOP}/include
+ERD_LIBDIR = ${ERD_TOP}/lib
+ERD_LIBS = ${ERD_TOP}/lib/libcint.a ${ERD_TOP}/lib/liberd.a ${ERD_TOP}/lib/liboed.a

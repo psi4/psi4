@@ -24,7 +24,7 @@
 #include <iostream>
 
 #include <libqt/qt.h>
-#include <libutil/libutil.h>
+#include <libpsi4util/libpsi4util.h>
 
 #include "vector_base.h"
 

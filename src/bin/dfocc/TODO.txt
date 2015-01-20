@@ -2,4 +2,5 @@
 * DF-OLCCD
 * DF-OCCD
 * Consider perm symmetry in RHF T2(1) in t2_1st_gen.cc
-* Implement CROP for amplitudes
+* Re-build Gij and Gab for DF-OMP2
+* Build Wmnie on the fly at each iteration

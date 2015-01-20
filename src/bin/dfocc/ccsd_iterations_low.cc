@@ -126,8 +126,8 @@ outfile->Printf(" ==============================================================
     t1_ref = 0.02;
     t1norm = t1A->norm();
     t1diag = t1norm/sqrt(2.0*naoccA);
-    outfile->Printf("\n\tT1 diagnostic reference value      : %20.14f\n", t1_ref);
-    outfile->Printf("\tT1 diagnostic                      : %20.14f\n", t1diag);
+    outfile->Printf("\n\tT1 diagnostic reference value: %20.14f\n", t1_ref);
+    outfile->Printf("\tT1 diagnostic                : %20.14f\n", t1diag);
 }
 
 else if (conver == 0) {

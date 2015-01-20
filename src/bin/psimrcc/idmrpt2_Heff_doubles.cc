@@ -27,7 +27,7 @@
  *  A multireference coupled cluster code
  ***************************************************************************/
 
-#include <libutil/libutil.h>
+#include <libpsi4util/libpsi4util.h>
 
 #include "idmrpt2.h"
 #include "blas.h"

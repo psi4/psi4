@@ -361,6 +361,9 @@ public:
         const std::string& key, const std::string& target,
         const std::string& role, const std::string& other, int puream = -1);
 
+    /// Return a decontracted basis set
+    boost::shared_ptr<BasisSet> decontract();
+
     /** Converts basis set name to a compatible filename.
      * @param basisname Basis name
      * @return Compatible file name.

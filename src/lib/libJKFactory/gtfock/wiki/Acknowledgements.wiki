@@ -1,0 +1,2 @@
+Work on GTFock is supported by the National Science Foundation under grant ACI-
+1147843. The authors gratefully acknowledge the help of Prof. D. Sherrill of the School of Chemistry and Biochemistry at the Georgia Institute of Technology.

@@ -150,11 +150,13 @@ void ParallelComm::AllReduceImpl(const T* LocalData, const int NElem, T* Target,
                std::minus<T>());
          break;
       }
-      case (MODULUS): {
+      /*Can't do modulus for doubles, don't know why no other compiler
+       * complained till now...
+       case (MODULUS): {
          boost::mpi::all_reduce((*Comm_), LocalData, NElem, Target,
                std::modulus<T>());
          break;
-      }
+      }*/
       default:{
          throw PSIEXCEPTION("Unrecognized operation in mpiwrapper.h");
          break;

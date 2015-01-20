@@ -1,0 +1,31 @@
+set(ERD_TOP ${CMAKE_BINARY_DIR}/OptErd)
+set(ERD_LIB_LOC ${ERD_TOP}/external/erd/liberd.a)
+set(OED_LIB_LOC ${ERD_TOP}/external/oed/liboed.a)
+set(CINT_LIB_LOC ${ERD_TOP}/libcint/libcint.a)
+message(STATUS "Building the optimized version of ERD: OptErd")
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/OptErd/libcint/genheader.sh
+     DESTINATION ${ERD_TOP}/libcint
+     FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+  GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+)
+ExternalProject_Add(OptErd
+    PREFIX "${ERD_TOP}"
+    DOWNLOAD_DIR "${ERD_TOP}"
+    UPDATE_COMMAND ""
+    SOURCE_DIR "${ERD_TOP}"
+    BUILD_IN_SOURCE 1
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND $(MAKE)
+    INSTALL_COMMAND 
+            ${CMAKE_COMMAND} -E copy ${ERD_LIB_LOC} ${CMAKE_BINARY_DIR}/lib
+        COMMAND
+            ${CMAKE_COMMAND} -E copy ${OED_LIB_LOC} ${CMAKE_BINARY_DIR}/lib
+        COMMAND
+            ${CMAKE_COMMAND} -E copy ${CINT_LIB_LOC} ${CMAKE_BINARY_DIR}/lib
+)
+ExternalProject_Add_Step(OptErd MakeHeaders
+  COMMAND ./genheader.sh
+  DEPENDEES build
+  DEPENDERS install
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/OptErd/libcint
+)

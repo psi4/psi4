@@ -37,6 +37,7 @@ option(ENABLE_ASAN           "Enable address sanitizer"                    OFF)
 option(ENABLE_MSAN           "Enable memory sanitizer"                     OFF)
 option(ENABLE_TSAN           "Enable thread sanitizer"                     OFF)
 option(ENABLE_UBSAN          "Enable undefined behaviour sanitizer"        OFF)
+option(ENABLE_JKFACTORY      "Enable the distributed JKFactory (requires MPI)"            OFF)
 
 set(EXTERNAL_LIBS)
 
@@ -224,8 +225,8 @@ set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2
            cctriples scf_solver fock dcft lmp2 mcscf sapt dftsapt sapt_solver
            cchbar cclambda ccdensity transqt ccresponse detci occ mrcc fnocc
            cceom adc thermo functional disp thce 3index deriv_wrapper optking
-           findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util
-           stable deriv scfgrad int util diis plugin parallel parallel2 babel frag efp_solver efp)
+           findif mints trans dpd chkpt iwl psio qt ciomr options moinfo psi4util
+           stable deriv scfgrad int diis plugin parallel parallel2 babel frag efp_solver efp)
 
 # PCMSolver
 if(ENABLE_PCMSOLVER)
@@ -264,28 +265,27 @@ endif()
 
 if(ENABLE_LIBERD)
     set(PSILIB ${PSILIB} erd)
-    set(JK_ERD ${CMAKE_BINARY_DIR}/lib/liberd.a)
 endif()
 
-#If we have MPI also build the JKFactory library for awesome SCF performance
-if(MPI_FOUND)
-   set(BUILD_JK_FACTORY "FALSE")
+#If we have MPI we may want to also build JKFactory which makes J and K's
+#in distributed parallel
+if(MPI_FOUND AND ENABLE_JKFACTORY)
+   set(BUILD_JK_FACTORY "TRUE")
 endif()
-
 if(BUILD_JK_FACTORY)
+    set(JK_BLAS_LIB "")
+    set(JK_BLAS_INC "")
+    if(EXPLICIT_BLAS_LIB)
+      set(JK_BLAS_LIB ${EXPLICIT_BLAS_LIB})
+      set(JK_BLAS_INC ${CMAKE_CXX_FLAGS})
+    endif()
+    message(STATUS "LibJK BLAS Paths: ${JK_BLAS_INC} ${JK_BLAS_LIB}")
+    set(HAVE_GLOBAL_ARRAYS "FALSE")
     add_definitions(-DHAVE_JK_FACTORY)
     set(JKROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/libJKFactory)
-    set(JK_BLAS_INC ${LAPACK_INCLUDE_DIR})
-    set(PSILIB ${PSILIB} JKFactory)
-    set(PSILIB ${PSILIB} pfock)
-    set(PSILIB ${PSILIB} cint)
-    set(PSILIB ${PSILIB} ${CMAKE_BINARY_DIR}/lib/libga.a)
-    set(PSILIB ${PSILIB} ${CMAKE_BINARY_DIR}/lib/libarmci.a)
-    set(PSILIB ${PSILIB} oed)
-    if(NOT DEFINED ENABLE_LIBERD)
-       set(PSILIB ${PSILIB} erd)
-    endif()
-    set(PSILIB ${PSILIB} -lmkl_scalapack_lp64 -lmkl_blacs_lp64)
+    set(PSILIB ${PSILIB} GTFockInt GTFock GTFockCInt
+       ${PROJECT_BINARY_DIR}/lib/libga.a 
+       ${PROJECT_BINARY_DIR}/lib/libarmci.a)     
 endif()
 
 # Add the documentation subdirectory
