@@ -266,6 +266,11 @@ def parse_input():
             action='store_true',
             default=False,
             help='Add support for the ERD integral package [default: %(default)s]')
+    #JK_Factory
+    group.add_argument('--jkfactory',
+            action='store_true',
+            default=False,
+            help='enable distributed J and K builds [default: %(default)s]')
     # GPU_DFCC package
     group.add_argument('--gpu-dfcc',
             action='store_true',
@@ -365,6 +370,7 @@ def gen_cmake_command(args):
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
     command += ' -DENABLE_PLUGINS=%s'        % translate_cmake(args.plugins)
     command += ' -DENABLE_LIBERD=%s'         % translate_cmake(args.erd)
+    command += ' -DENABLE_JKFACTORY=%s'      % translate_cmake(args.jkfactory)
     command += ' -DENABLE_GPU_DFCC=%s'       % translate_cmake(args.gpu_dfcc)
     command += ' -DENABLE_DUMMY_PLUGIN=%s'   % translate_cmake(args.dummy_plugin)
     command += ' -DENABLE_PCMSOLVER=%s'      % translate_cmake(args.pcmsolver)

@@ -558,39 +558,6 @@ void DFOCC::ccsd_manager()
         outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
 
         // memory requirements
-        /*
-        // DF-HF B(Q,mn)
-        cost_ampAA = 0;
-        cost_ampAA = nQ_ref * nso2_;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        cost_amp = 3.0 * cost_ampAA;
-        outfile->Printf("\n\tMemory requirement for B-HF (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
-        outfile->Printf("\tMemory requirement for 3*B-HF (Q|mu nu) %9.2lf MB \n", cost_amp);
- 
-        // DF-HF B(Q,ab)
-        cost_ampAA = 0;
-        cost_ampAA = nQ_ref * nvir2AA;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        cost_amp = 3.0 * cost_ampAA;
-        outfile->Printf("\tMemory requirement for B-HF (Q|ab)    : %9.2lf MB \n", cost_ampAA);
-        outfile->Printf("\tMemory requirement for 3*B-HF (Q|ab)  : %9.2lf MB \n", cost_amp);
-
-        // DF-CC B(Q,mn)
-        cost_ampAA = 0.0;
-        cost_ampAA = nQ * nso2_;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        outfile->Printf("\tMemory requirement for B-CC (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
- 
-        // DF-CC B(Q,ab)
-        cost_ampAA = 0.0;
-        cost_ampAA = nQ * navirA * navirA;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        outfile->Printf("\tMemory requirement for B-CC (Q|ab)    : %9.2lf MB \n", cost_ampAA);
-        */
 
         // DF-CC B(Q,ab) + B(Q,ia) + B(Q,ij)
         cost_df = 0.0;
@@ -673,7 +640,13 @@ void DFOCC::ccsd_manager()
         cost_amp3 *= sizeof(double);
         cost_amp = MAX0(cost_amp1, cost_amp2);
         cost_amp = MAX0(cost_amp, cost_amp3);
-        outfile->Printf("\tMemory requirement for Wabef term     : %9.2lf MB \n", cost_amp);
+        outfile->Printf("\tMemory requirement for Wabef term (T2): %9.2lf MB \n", cost_amp);
+        if (cc_lambda_ == "TRUE") {
+            cost_amp1 = navirA * navirA * navirA;
+            cost_amp1 /= 1024.0 * 1024.0;
+            cost_amp += cost_amp1;
+            outfile->Printf("\tMemory requirement for Wefab term (L2): %9.2lf MB \n", cost_amp);
+        }
         
         // Mem alloc for DF ints
         if (df_ints_incore) {
@@ -774,8 +747,10 @@ void DFOCC::ccsd_manager()
         Process::environment.globals["DF-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         // Perform CCSD iterations
+        timer_on("CCSD");
         if (t2_incore) ccsd_iterations();
         else ccsd_iterations_low();
+        timer_off("CCSD");
 
 	outfile->Printf("\n");
 	outfile->Printf("\t======================================================================= \n");
@@ -795,16 +770,22 @@ void DFOCC::ccsd_manager()
 	Process::environment.globals["DF-CCSD TOTAL ENERGY"] = Eccsd;
         Process::environment.globals["DF-CCSD CORRELATION ENERGY"] = Eccsd - Escf;
 
+        // CCSDL 
+        if (dertype == "FIRST" || cc_lambda_ == "TRUE") {
+            timer_on("CCSDL");
+            if (t2_incore) ccsdl_iterations();
+            else throw PSIEXCEPTION("There is NOT enough memory for Lambda equations!");
+            timer_off("CCSDL");
+        }
 
         // Compute Analytic Gradients
         if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
-            outfile->Printf("\n\tComputing unrelaxed response density matrices...\n");
-            
- 	    omp2_opdm();
-	    omp2_tpdm();
-            prepare4grad();
-            if (oeprop_ == "TRUE") oeprop();
-            if (dertype == "FIRST") dfgrad();
+            //outfile->Printf("\n\tComputing unrelaxed response density matrices...\n");
+ 	    //omp2_opdm();
+	    //omp2_tpdm();
+            //prepare4grad();
+            //if (oeprop_ == "TRUE") oeprop();
+            //if (dertype == "FIRST") dfgrad();
             //if (ekt_ip_ == "TRUE") ekt_ip(); 
         }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
@@ -1046,8 +1027,10 @@ void DFOCC::ccd_manager()
         Process::environment.globals["DF-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         // Perform CCD iterations
+        timer_on("CCD");
         if (t2_incore) ccd_iterations();
         else ccd_iterations_low();
+        timer_off("CCD");
 
 	outfile->Printf("\n");
 	outfile->Printf("\t======================================================================= \n");
@@ -1067,6 +1050,13 @@ void DFOCC::ccd_manager()
 	Process::environment.globals["DF-CCD TOTAL ENERGY"] = Eccd;
         Process::environment.globals["DF-CCD CORRELATION ENERGY"] = Eccd - Escf;
 
+        // CCDL 
+        if (dertype == "FIRST" || cc_lambda_ == "TRUE") {
+            timer_on("CCDL");
+            if (t2_incore) ccdl_iterations();
+            else throw PSIEXCEPTION("There is NOT enough memory for Lambda equations!");
+            timer_off("CCDL");
+        }
 
         // Compute Analytic Gradients
         if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {

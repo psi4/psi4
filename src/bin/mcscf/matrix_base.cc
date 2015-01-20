@@ -25,7 +25,7 @@
 
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
-#include <libutil/libutil.h>
+#include <libpsi4util/libpsi4util.h>
 
 #include "matrix_base.h"
 

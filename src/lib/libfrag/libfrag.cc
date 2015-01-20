@@ -41,7 +41,7 @@
 #include "libparallel/TableSpecs.h"
 #include "libparallel/ParallelScanner.h"
 #include "Symmetrizer.h"
-
+//#include "libmolecule/LibMolecule.h"
 
 typedef std::vector<int> SVec;
 typedef std::string str;
@@ -152,6 +152,34 @@ void LibFragHelper::Fragment_Helper(PyStr& FragMethod, cint N,
          new LibFragOptions(N,fname,ename,cname,bname,IsSymm));
    DaOptions_->PrintOptions();
    SharedMol AMol=psi::Process::environment.molecule();
+   /*
+   LibMolecule::Molecule MyMol;
+   for(int i=0;i<AMol->natom();++i){
+      std::vector<double> Carts(3,0.0);
+      Carts[0]=AMol->x(i);Carts[1]=AMol->y(i);Carts[2]=AMol->z(i);
+      MyMol<<boost::shared_ptr<LibMolecule::Atom>(
+            new LibMolecule::Atom(Carts,AMol->Z(i)));
+   }
+   //std::cout<<MyMol.PrintOut(10)<<std::endl;
+
+   LibMolecule::Fragment Frag(
+         boost::shared_ptr<LibMolecule::Molecule>(
+                           new LibMolecule::Molecule(MyMol)
+                           )
+         );
+   LibMolecule::Fragment Frag2(Frag);
+   Frag<<0<<1<<2;
+   std::vector<double> Ghost(3,0.0);
+   Frag<<boost::shared_ptr<LibMolecule::Atom>(
+         new LibMolecule::GhostAtom(Ghost,1));
+   Frag2<<3<<4<<5;
+   std::cout<<Frag.PrintOut();
+   std::cout<<Frag2.PrintOut();
+   Frag+=Frag2;
+   std::cout<<Frag.PrintOut();
+   exit(1);*/
+
+
    Systems_.push_back(MBEFragSet(DaOptions_,AMol));
 
    ///Set-up either a MBE or a GMBE based on whether frags are disjoint

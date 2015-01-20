@@ -883,6 +883,45 @@ void DFOCC::tei_phys_direct(SharedTensor2d &I, SharedTensor2d &K, SharedTensor2d
     timer_off("Build <PQ|RS>");
 }
 
+//=======================================================
+//      Closed-Shell Anti-Symmetrized Integrals
+//      L(pq,rs) = 2 <pq|rs> - <pq|sr>
+//=======================================================          
+void DFOCC::tei_cs1_anti_symm_direct(SharedTensor2d &I, SharedTensor2d &J, SharedTensor2d &K)
+{   
+    I->sort(1243, K, -1.0, 0.0);
+    I->axpy(J, 2.0);
+}
+
+//=======================================================
+//      Closed-Shell Anti-Symmetrized Integrals
+//      L(pq,rs) = 2 <pq|rs> - <qp|rs>
+//=======================================================          
+void DFOCC::tei_cs2_anti_symm_direct(SharedTensor2d &I, SharedTensor2d &J, SharedTensor2d &K)
+{   
+    I->sort(2134, K, -1.0, 0.0);
+    I->axpy(J, 2.0);
+}
+
+//=======================================================
+//      Closed-Shell Anti-Symmetrized Integrals
+//      L(pq,rs) = 2 (pq|rs) - (ps|rq)
+//=======================================================          
+void DFOCC::tei_cs3_anti_symm_direct(SharedTensor2d &I, SharedTensor2d &J, SharedTensor2d &K)
+{   
+    I->sort(1432, K, -1.0, 0.0);
+    I->axpy(J, 2.0);
+}
+
+//=======================================================
+//      Closed-Shell Anti-Symmetrized Integrals
+//      L(pq,rs) = 2 (pq|rs) - (rq|ps)
+//=======================================================          
+void DFOCC::tei_cs4_anti_symm_direct(SharedTensor2d &I, SharedTensor2d &J, SharedTensor2d &K)
+{   
+    I->sort(3214, K, -1.0, 0.0);
+    I->axpy(J, 2.0);
+}
 
 }} // End Namespaces
 

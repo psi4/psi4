@@ -60,7 +60,7 @@ void DFOCC::ccsd_F_intr()
     // F_me +=  \sum_{Q} t_Q b_me^Q
     FiaA->gemv(true, bQiaA, T1c, 1.0, 0.0);
  
-    // F_me -=  \sum_{Q,n} T_nm^Q b_ne^Q
+    // F_me -=  \sum_{Q,n} t_nm^Q b_ne^Q
     T = SharedTensor2d(new Tensor2d("T1 (Q|IJ)", nQ, naoccA, naoccA));
     T->read(psio_, PSIF_DFOCC_AMPS);
     FiaA->contract(true, false, naoccA, navirA, nQ * naoccA, T, bQiaA, -1.0, 1.0);

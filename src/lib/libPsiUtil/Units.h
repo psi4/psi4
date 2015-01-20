@@ -23,12 +23,20 @@
 #define SRC_LIB_LIBPSIUTIL_UNITS_H_
 #include "Implementations/UnitsGuts.hh"
 
+/** \brief This header file contains functions that handle unit conversions
+ *         the implementations of these functions are in UnitGuts.hh
+ *
+ *  These are just nice object-oriented wrappers to Psi's default data.
+ *
+ */
+
 namespace psi{
 enum Units{NOUNIT,
            SECOND,//Time
            KELVIN,//Temperature
            MOLE,//Quantity
            COULOMB,//Charge
+           DEGREE,RADIAN,//Angles
            BOHR,ANGSTROM,METER,CENTIMETER,//Distance
            DALTON,GRAM,KILOGRAM,ELECTRONMASS,//Mass
            //Note wavenumbers=cm^-1 not m^-1

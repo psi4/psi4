@@ -56,7 +56,7 @@ class MPISetterUpper{
       ///The scheduler
       boost::shared_ptr<MPIScheduler> Sched_;
 
-      ///Sorts the Tasks
+      ///Sorts the Tasks in descending order or priority
       void SortTasks();
 
       ///Chooses the algorithm

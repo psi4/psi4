@@ -34,7 +34,7 @@
 #include <psifiles.h>
 #include <boost/shared_ptr.hpp>
 #include <libmoinfo/libmoinfo.h>
-#include <libutil/libutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include <libpsio/psio.hpp>
 
 #include "debugging.h"

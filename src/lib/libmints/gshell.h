@@ -266,6 +266,8 @@ public:
     const double* center() const;
     /// Returns the atom number this shell is on. Used by integral derivatives for indexing.
     int ncenter() const             { return nc_; }
+    /// Returns the first basis function in this shell
+    int start() const { return start_; }
 
     /// Returns the exponent of the given primitive
     double exp(int prim) const      { return exp_[prim]; }
