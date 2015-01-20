@@ -1,31 +1,43 @@
 # <<<  PCMSolver Roberto Di Remigio  >>>
 # PCMSolver uses the git submodules + CMake ExternalProject_Add combo
 if(ENABLE_PCMSOLVER)
+    include(ConfigExternal)
     set(PCMSOLVER_TESTS ON)
     get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
-    set(ExternalProjectCMakeArgs
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-	-DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/external
+    # PCMSolver does not know profile
+    if(CMAKE_BUILD_TYPE MATCHES "profile")
+        set(PCM_BUILD_TYPE "release")
+    else()
+        set(PCM_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+    endif()
+    list(APPEND PCMSolverCMakeArgs
+        -DCMAKE_BUILD_TYPE=${PCM_BUILD_TYPE}
+        -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
         -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+        -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-	-DPARENT_INCLUDE_DIR=${CMAKE_BINARY_DIR}/external/include
+        -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
+	-DENABLE_CXX11_SUPPORT=${ENABLE_CXX11_SUPPORT}
+        -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
         -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
         -DEIGEN3_ROOT=${EIGEN3_ROOT}
-	-DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
-	-DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
+        -DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
+        -DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
         -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
-	-DBOOST_INCLUDEDIR=${Boost_INCLUDE_DIRS}
-	-DBOOST_LIBRARYDIR=${Boost_LIBRARIES}
-	-DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
-	-DENABLE_TESTS=${PCMSOLVER_TESTS}
-	-DZLIB_ROOT=${ZLIB_ROOT}
-	)
+	-DBOOST_INCLUDEDIR=${BOOST_INCLUDE_DIRS}
+	-DBOOST_LIBRARYDIR=${BOOST_LIBRARIES}
+        -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+        -DENABLE_TESTS=${PCMSOLVER_TESTS}
+        -DZLIB_ROOT=${ZLIB_ROOT}
+        -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
+     )
     
     if(PCMSOLVER_TESTS)
-       add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
+       add_external(pcmsolver "${PCMSolverCMakeArgs}" ${CMAKE_CTEST_COMMAND})
     else()
-       add_external(pcmsolver)
+       add_external(pcmsolver "${PCMSolverCMakeArgs}")
     endif()
 
     link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
@@ -33,8 +45,9 @@ if(ENABLE_PCMSOLVER)
 
     include_directories(${CMAKE_BINARY_DIR}/external/include
 		     ${CMAKE_BINARY_DIR}/external/include/eigen3/include/eigen3)
-    file(COPY ${CMAKE_BINARY_DIR}/external/bin/pcmsolver.py 
-         DESTINATION ${CMAKE_SOURCE_DIR}/lib/python)
+    set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
+    configure_file(${CMAKE_SOURCE_DIR}/lib/python/pcm_placeholder.py.in 
+	           ${CMAKE_SOURCE_DIR}/lib/python/pcm_placeholder.py)	     
 endif()
 
 set(headers_list "")
