@@ -268,23 +268,24 @@ endif()
 
 #If we have MPI we may want to also build JKFactory which makes J and K's
 #in distributed parallel
+set(BUILD_JK_FACTORY FALSE)
 if(MPI_FOUND AND ENABLE_JKFACTORY)
-   set(BUILD_JK_FACTORY "TRUE")
+   set(BUILD_JK_FACTORY TRUE)
 endif()
 if(BUILD_JK_FACTORY)
-    set(JK_BLAS_LIB "")
-    set(JK_BLAS_INC "")
-    if(EXPLICIT_BLAS_LIB)
-      set(JK_BLAS_LIB ${EXPLICIT_BLAS_LIB})
-      set(JK_BLAS_INC ${CMAKE_CXX_FLAGS})
-    endif()
-    message(STATUS "LibJK BLAS Paths: ${JK_BLAS_INC} ${JK_BLAS_LIB}")
-    set(HAVE_GLOBAL_ARRAYS "FALSE")
-    add_definitions(-DHAVE_JK_FACTORY)
-    set(JKROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/libJKFactory)
-    set(PSILIB ${PSILIB} GTFockInt GTFock GTFockCInt
-       ${PROJECT_BINARY_DIR}/lib/libga.a 
-       ${PROJECT_BINARY_DIR}/lib/libarmci.a)     
+   set(JK_BLAS_LIB "")
+   set(JK_BLAS_INC "")
+   if(EXPLICIT_BLAS_LIB)
+     set(JK_BLAS_LIB ${EXPLICIT_BLAS_LIB})
+     set(JK_BLAS_INC ${CMAKE_CXX_FLAGS})
+   endif()
+   message(STATUS "LibJK BLAS Paths: ${JK_BLAS_INC} ${JK_BLAS_LIB}")
+   set(HAVE_GLOBAL_ARRAYS FALSE)
+   add_definitions(-DHAVE_JK_FACTORY)
+   set(JKROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/libJKFactory)
+   set(PSILIB ${PSILIB} GTFockInt GTFock GTFockCInt
+      ${PROJECT_BINARY_DIR}/lib/libga.a 
+      ${PROJECT_BINARY_DIR}/lib/libarmci.a)     
 endif()
 
 # Add the documentation subdirectory
