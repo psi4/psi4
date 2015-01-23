@@ -1575,6 +1575,11 @@ void set_mcscf_parameters(Options &options)
 {
   int i, errcod;
   char line1[133];
+
+  MCSCF_Parameters.print_lvl = 1;
+  MCSCF_CalcInfo.mo_hess = NULL;
+  MCSCF_CalcInfo.mo_hess_diag = NULL;
+  MCSCF_CalcInfo.energy_old = 0;
    
   MCSCF_Parameters.wfn = options.get_str("WFN");
   MCSCF_Parameters.dertype = options.get_str("DERTYPE");

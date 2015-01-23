@@ -68,7 +68,7 @@
 #include "slaterd.h"
 #include "civect.h"
 #include "ciwave.h"
-#include "MCSCF.cc"
+//#include "MCSCF.cc"
 #include "MCSCF.h"
 
 namespace psi {
@@ -163,6 +163,8 @@ extern void calc_mrpt(void);
 // MCSCF
 // extern int mcscf_update(Options &options);
 extern void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist);
+extern void set_mcscf_parameters(Options &options);
+extern void mcscf_print_parameters(void);
 // extern void mcscf_get_mo_info(Options& options);
 // extern void mcscf_cleanup(void);
 
@@ -1563,19 +1565,15 @@ BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx) {
 void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist)
 {
 
-  MCSCF_Parameters.print_lvl = 1;
-  MCSCF_CalcInfo.mo_hess = NULL;
-  MCSCF_CalcInfo.mo_hess_diag = NULL;
-  MCSCF_CalcInfo.energy_old = 0;
 
-  MCSCF* mcscf = new MCSCF;
+  set_mcscf_parameters(options);     /* get running params (convergence, etc)    */
+  MCSCF* mcscf = new MCSCF(options);
 
   if (MCSCF_Parameters.print_lvl) tstart();
-  set_mcscf_parameters(options);     /* get running params (convergence, etc)    */
-  mcscf->mcscf_title();                     /* print program identification             */
+  //mcscf->mcscf_title();                     /* print program identification             */
   if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
 
-  mcscf->mcscf_get_mo_info(options);
+  //mcscf->mcscf_get_mo_info(options);
 
   // Make sure a few things are working
   outfile->Printf("Starting MCSCF\n");
