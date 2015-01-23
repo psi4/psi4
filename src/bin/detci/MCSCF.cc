@@ -50,6 +50,7 @@
 #include <libchkpt/chkpt.h>
 #include <libmints/wavefunction.h>
 #include <libmints/molecule.h>
+#include <libmints/vector.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <libparallel/ParallelPrinter.h>
@@ -58,80 +59,16 @@
 #include "structs.h"
 #define EXTERN
 #include "globals.h"
-#include "MCSCF_indpairs.h"
+//#include "MCSCF_indpairs.h"
 #include "MCSCF.h"
 
 namespace psi { namespace detci {
 
-// extern void mcscf_get_mo_info(Options& options);
-extern void set_mcscf_parameters(Options &options);
-extern void mcscf_print_parameters(void);
 extern void mcscf_read_integrals(void);
 extern void read_density_matrices(Options& options);
-// extern void read_lagrangian(void);
-extern void form_independent_pairs(void);
-// extern void read_thetas(int npairs);
-// extern void write_thetas(int npairs);
-//extern int  read_ref_orbs(void);
-//extern int  write_ref_orbs(void);
-// extern void read_cur_orbs(void);
-// extern void form_F_act(void);
-// extern int  diis(int veclen, double *vec, double *errvec);
+// extern void form_independent_pairs(void);
 extern void mcscf_get_mat_block(double **src, double **dst, int dst_dim,
                           int dst_offset, int *dst2src);
-// extern void calc_dE_dT(int n, double **dEU, int npairs, int *ppair, 
-//                        int *qpair, double *theta, double *dET);
-// extern void form_appx_diag_mo_hess(int npairs, int *ppair, int *qpair, 
-//                               double *F_core, double *tei, double **opdm, 
-//                               double *tpdm, double *F_act, int firstact, 
-//                               int lastact, double *hess);
-// extern void form_diag_mo_hess(int npairs, int *ppair, int *qpair, 
-//                               double *F_core, double *tei, double **opdm, 
-//                               double *tpdm, double *F_act, int firstact, 
-//                               int lastact, double *hess);
-// extern void form_full_mo_hess(int npairs, int *ppair, int *qpair, 
-//                          double *oei, double *tei, double **opdm, 
-//                          double *tpdm, double **lag, double **hess);
-// extern void form_diag_mo_hess_yy(int npairs, int *ppair, int *qpair, 
-//                          double *oei, double *tei, double **opdm, 
-//                          double *tpdm, double **lag, double *hess);
-// extern void calc_orb_step(int npairs, double *grad, double *hess_diag, 
-//                           double *theta);
-// extern void calc_orb_step_full(int npairs, double *grad, double **hess, 
-//                           double *theta);
-// extern void calc_orb_step_bfgs(int npairs, double *grad, double **hess, 
-//                           double *theta);
-// extern void print_step(int iter, int npairs, int steptype, 
-//                        OutFile& IterSummaryOut);
-// extern void postmult_by_U(int irrep, int dim, double **mo_coeffs,
-//                           int npairs, int *p_arr, int *q_arr, 
-//                           double *theta_arr);
-// extern void premult_by_U(int irrep, int dim, double **mo_coeffs,
-//                          int npairs, int *p_arr, int *q_arr, 
-//                          double *theta_arr);
-// extern void postmult_by_exp_R(int irrep, int dim, double **mat,
-//                               int npairs, int *p_arr, int *q_arr, 
-//                               double *theta_arr);
-// extern void cleanup(void);
-
-
-// void mcscf_title(void);
-// void calc_gradient(void);
-// void bfgs_hessian(void);
-// void ds_hessian(void);
-// void calc_hessian(void);
-// void scale_gradient(void);
-// int check_conv(void);
-// int take_step(void);
-// void rotate_orbs(void);
-// double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
-//                int nmo, int npop, int print_lvl, int lag_file);
-
-// struct calcinfo MCSCF_CalcInfo;
-// struct params MCSCF_Parameters;
-// int *ioff;
-IndepPairs IndPairs;
-// int mcscf_update(int iter, Options &options, OutFile& IterSummaryOut);
 
 #define MO_HESS_MIN 1.0E-1
 
@@ -140,6 +77,22 @@ IndepPairs IndPairs;
 
 namespace psi { namespace detci {
 
+MCSCF::MCSCF(Options& options)
+    : options_(options)
+{
+    mcscf_title();
+    mcscf_get_mo_info(options_);
+
+  diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(MCSCF_Parameters.diis_max_vecs, "MCSCF DIIS vector", DIISManager::OldestAdded, DIISManager::OnDisk));
+  // diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, gradient.get());
+  // diis_manager_->set_vector_size(1, DIISEntry::Matrix, Fa_.get());
+  // diis_manager_->add_entry(2, gradient.get(), Fa_.get());
+}
+
+MCSCF::~MCSCF()
+{
+}
+
 
 int MCSCF::mcscf_update(int iter, Options &options, OutFile& IterSummaryOut)
 {
@@ -147,17 +100,6 @@ int MCSCF::mcscf_update(int iter, Options &options, OutFile& IterSummaryOut)
   int num_pairs = 0;
   int steptype = 0;
 
-  // MCSCF_Parameters.print_lvl = 1;
-  // MCSCF_CalcInfo.mo_hess = NULL;
-  // MCSCF_CalcInfo.mo_hess_diag = NULL;
-
-  // if (MCSCF_Parameters.print_lvl) tstart();
-  // set_mcscf_parameters(options);     /* get running params (convergence, etc)    */
-  // mcscf_title();                     /* print program identification             */
-
-  // if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
-
-//  mcscf_get_mo_info(options);               /* read DOCC, SOCC, frozen, nbfso, etc      */
   mcscf_read_integrals();            /* get the 1 and 2 elec MO integrals        */
   read_density_matrices(options);
 
@@ -219,9 +161,6 @@ int MCSCF::mcscf_update(int iter, Options &options, OutFile& IterSummaryOut)
   // }
   return converged;
 }
-
-
-
 
 
 /*
@@ -904,6 +843,7 @@ int MCSCF::take_step(void)
     return(1);
   }
 
+  SharedVector vec_theta(new Vector(npairs));
   for (pair=0; pair<npairs; pair++) 
     MCSCF_CalcInfo.theta_cur[pair] += MCSCF_CalcInfo.theta_step[pair];
     //MCSCF_CalcInfo.theta_cur[pair] = MCSCF_CalcInfo.theta_step[pair];

@@ -26,6 +26,13 @@
 #include <libmints/wavefunction.h>
 #include "psi4-dec.h"
 #include "libparallel/ParallelPrinter.h"
+#include <libdiis/diismanager.h>
+#include <libdiis/diisentry.h>
+#include "MCSCF_indpairs.h"
+
+namespace boost {
+template<class T> class shared_ptr;
+}
 
 namespace psi {
 
@@ -34,6 +41,10 @@ namespace detci {
 class MCSCF 
 {
 private:
+    // Core functions
+    Options& options_;
+    IndepPairs IndPairs;
+
     // MCSCF.cc
     void calc_gradient(void);
     void bfgs_hessian(void);
@@ -98,15 +109,18 @@ private:
     void calc_dE_dT(int n, double **dEU, int npairs, int *ppair,
                     int *qpair, double *theta, double *dET);
 
+    boost::shared_ptr<DIISManager> diis_manager_;
+
 public:
 
-    
+    /// Constructor
+    MCSCF(Options& options);
+    ~MCSCF();   
+ 
     void mcscf_cleanup(void);
     int mcscf_update(int iter, Options &options, OutFile& IterSummaryOut);
     void mcscf_title(void);
     void mcscf_get_mo_info(Options &options);
-
-
 
 
 };
