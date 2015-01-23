@@ -40,6 +40,12 @@ output.dat
 *.clean
 *.dat
 *.timer.dat
+tests/*/@pcmsolver.inp
+tests/*/PCM_matrix
+tests/*/PEDRA.OUT
+tests/*/cavity.npz
+tests/*/cavity.off
+tests/*/pcmsolver.inp
 
 # Compilation directories that people use
 objdir
