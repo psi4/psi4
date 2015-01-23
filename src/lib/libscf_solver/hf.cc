@@ -368,8 +368,10 @@ void HF::common_init()
     print_header();
 
     // Initialize PCM object, if requested
+#ifdef HAS_PCMSOLVER
     if(pcm_enabled_ = (options_.get_bool("PCM")))
       hf_pcm_ = static_cast<SharedPCM>(new PCM(options_, psio_, nirrep_, basisset_));
+#endif
 }
 
 void HF::damp_update()
@@ -1674,6 +1676,7 @@ double HF::compute_energy()
             E_ += efp_wfn_dependent_energy;
         }   
 
+#ifdef HAS_PCMSOLVER
         // The PCM potential must be added to the Fock operator *after* the
         // energy computation, not in form_F()
         if(pcm_enabled_) {
@@ -1711,6 +1714,7 @@ double HF::compute_energy()
             Fb_->add(V_pcm);
           }
         }
+#endif	
 
         timer_on("DIIS");
         bool add_to_diis_subspace = false;
@@ -1832,6 +1836,7 @@ double HF::compute_energy()
         // Need to recompute the Fock matrices, as they are modified during the SCF interation
         // and might need to be dumped to checkpoint later
         form_F();
+#ifdef HAS_PCMSOLVER	
         if(pcm_enabled_) {
             // Prepare the density
             SharedMatrix D_pcm;
@@ -1852,7 +1857,8 @@ double HF::compute_energy()
               Fa_->add(V_pcm);
               Fb_->add(V_pcm);
             }
-          }
+        }
+#endif	
 
         // Print the orbitals
         if(print_)

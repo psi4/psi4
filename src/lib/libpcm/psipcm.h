@@ -45,42 +45,42 @@ class PCM {
     SharedMatrix compute_V_electronic(); // This is needed by the CC code (and maybe the LR-SCF code)
 
   protected:
-    // The number of tesserae in PCMSolver.
+    /// The number of tesserae in PCMSolver.
     int ntess_;
-    // The number of irreducible tesserae in PCMSolver.
+    /// The number of irreducible tesserae in PCMSolver.
     int ntessirr_;
     /// A matrix to hold the charges and {x,y,z} coordinates of the tesserae
     SharedMatrix tess_Zxyz_;
-    // A scratch array to hold the electronic potential values at the tesserae
+    /// A scratch array to hold the electronic potential values at the tesserae
     double * tess_pot_e_;
-    // A scratch array to hold the nuclear potential values at the tesserae (unchanging)
+    /// A scratch array to hold the nuclear potential values at the tesserae (unchanging)
     double * tess_pot_n_;
-    // A scratch array to hold the total potential values at the tesserae
+    /// A scratch array to hold the total potential values at the tesserae
     double * tess_pot_;
-    // A scratch array to hold the electronic charges at the tesserae
+    /// A scratch array to hold the electronic charges at the tesserae
     double * tess_charges_e_;
-    // A scratch array to hold the nuclear charges at the tesserae
+    /// A scratch array to hold the nuclear charges at the tesserae
     double * tess_charges_n_;
-    // A scratch array to hold the charges at the tesserae
+    /// A scratch array to hold the charges at the tesserae
     double * tess_charges_;
-    // Calculate energy using total charges and potentials
+    /// Calculate energy using total charges and potentials
     double compute_E_total(SharedMatrix &D);
-    // Calculate energy separating between charges and potentials
+    /// Calculate energy separating between charges and potentials
     double compute_E_separate(SharedMatrix &D);
-    // Calculate electronic polarization energy (U_ee) only (for CC step)
+    /// Calculate electronic polarization energy (U_ee) only (for CC step)
     double compute_E_electronic(SharedMatrix &D);
 
-    // Current basis set (for puream and nao/nso info)
+    /// Current basis set (for puream and nao/nso info)
     boost::shared_ptr<BasisSet> basisset_;
 
-    // The AO->SO transformation matrix, which is used for transforming
-    // matrices between pure and Cartesian representations.
+    /// The AO->SO transformation matrix, which is used for transforming
+    /// matrices between pure and Cartesian representations.
     SharedMatrix my_aotoso_;
 
-    // Factory for the electrostatic integrals
+    /// Factory for the electrostatic integrals
     PCMPotentialInt* potential_int_;
 
-    // print level
+    /// print level
     int pcm_print_;
 
 };
