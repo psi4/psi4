@@ -45,6 +45,8 @@
 #include <liboptions/liboptions_python.h>
 #include <psifiles.h>
 #include <libfock/jk.h>
+#include <libpcm/psipcm.h>
+
 
 #include "hf.h"
 
@@ -364,6 +366,12 @@ void HF::common_init()
     frac_performed_ = false;
 
     print_header();
+
+    // Initialize PCM object, if requested
+#ifdef HAS_PCMSOLVER
+    if(pcm_enabled_ = (options_.get_bool("PCM")))
+      hf_pcm_ = static_cast<SharedPCM>(new PCM(options_, psio_, nirrep_, basisset_));
+#endif
 }
 
 void HF::damp_update()
@@ -1668,6 +1676,46 @@ double HF::compute_energy()
             E_ += efp_wfn_dependent_energy;
         }   
 
+#ifdef HAS_PCMSOLVER
+        // The PCM potential must be added to the Fock operator *after* the
+        // energy computation, not in form_F()
+        if(pcm_enabled_) {
+          // Prepare the density
+          SharedMatrix D_pcm;
+          if(same_a_b_orbs()) {
+            D_pcm = Da_;
+            D_pcm->scale(2.0); // PSI4's density doesn't include the occupation
+          }
+          else {
+            D_pcm = Da_;
+            D_pcm->add(Db_);
+          }
+
+          // Compute the PCM charges and polarization energy
+          double Epcm = 0.0;
+	  if (options_.get_str("PCM_SCF_TYPE") == "TOTAL")
+	  {
+          	Epcm = hf_pcm_->compute_E(D_pcm, PCM::Total);
+	  }
+	  else
+	  {
+          	Epcm = hf_pcm_->compute_E(D_pcm, PCM::NucAndEle);
+	  }
+          energies_["PCM Polarization"] = Epcm;
+	  Process::environment.globals["PCM POLARIZATION ENERGY"] = Epcm;
+          E_ += Epcm;
+          
+          // Add the PCM potential to the Fock matrix
+          SharedMatrix V_pcm;
+          V_pcm = hf_pcm_->compute_V();
+          if(same_a_b_orbs()) Fa_->add(V_pcm);
+          else {
+            Fa_->add(V_pcm);
+            Fb_->add(V_pcm);
+          }
+        }
+#endif	
+
         timer_on("DIIS");
         bool add_to_diis_subspace = false;
         if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
@@ -1788,6 +1836,29 @@ double HF::compute_energy()
         // Need to recompute the Fock matrices, as they are modified during the SCF interation
         // and might need to be dumped to checkpoint later
         form_F();
+#ifdef HAS_PCMSOLVER	
+        if(pcm_enabled_) {
+            // Prepare the density
+            SharedMatrix D_pcm;
+            if(same_a_b_orbs()) {
+              D_pcm = Da_;
+              D_pcm->scale(2.0); // PSI4's density doesn't include the occupation
+            }
+            else {
+              D_pcm = Da_;
+              D_pcm->add(Db_);
+            }
+
+            // Add the PCM potential to the Fock matrix
+            SharedMatrix V_pcm;
+            V_pcm = hf_pcm_->compute_V();
+            if(same_a_b_orbs()) Fa_->add(V_pcm);
+            else {
+              Fa_->add(V_pcm);
+              Fb_->add(V_pcm);
+            }
+        }
+#endif	
 
         // Print the orbitals
         if(print_)
@@ -1883,13 +1954,18 @@ double HF::compute_energy()
 
 void HF::print_energies()
 {
-    outfile->Printf( "   => Energetics <=\n\n");
-    outfile->Printf( "    Nuclear Repulsion Energy =        %24.16f\n", energies_["Nuclear"]);
-    outfile->Printf( "    One-Electron Energy =             %24.16f\n", energies_["One-Electron"]);
-    outfile->Printf( "    Two-Electron Energy =             %24.16f\n", energies_["Two-Electron"]);
-    outfile->Printf( "    DFT Exchange-Correlation Energy = %24.16f\n", energies_["XC"]);
-    outfile->Printf( "    Empirical Dispersion Energy =     %24.16f\n", energies_["-D"]);
-    outfile->Printf( "    Total Energy =                    %24.16f\n", energies_["Nuclear"] +
+    outfile->Printf("   => Energetics <=\n\n");
+    outfile->Printf("    Nuclear Repulsion Energy =        %24.16f\n", energies_["Nuclear"]);
+    outfile->Printf("    One-Electron Energy =             %24.16f\n", energies_["One-Electron"]);
+    outfile->Printf("    Two-Electron Energy =             %24.16f\n", energies_["Two-Electron"]);
+    outfile->Printf("    DFT Exchange-Correlation Energy = %24.16f\n", energies_["XC"]);
+    outfile->Printf("    Empirical Dispersion Energy =     %24.16f\n", energies_["-D"]);
+    if(pcm_enabled_) {
+      outfile->Printf("    PCM Polarization Energy =         %24.16f\n", energies_["PCM Polarization"]);
+      outfile->Printf("    Total Energy =                    %24.16f\n", energies_["Nuclear"] + energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"] + energies_["PCM Polarization"]);
+    }
+    else
+      outfile->Printf("    Total Energy =                    %24.16f\n", energies_["Nuclear"] +
         energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"]);
     outfile->Printf( "\n");
 
