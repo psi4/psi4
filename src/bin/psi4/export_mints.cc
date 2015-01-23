@@ -44,6 +44,12 @@ using namespace boost;
 using namespace boost::python;
 using namespace psi;
 
+class Numpy_Interface {
+// Dummy class to hold __array_interface__ for numpy
+public:
+    dict interface;
+};
+
 dict matrix_array_interface(SharedMatrix mat, int irrep){
     dict rv;
 
@@ -77,9 +83,21 @@ dict matrix_array_interface(SharedMatrix mat, int irrep){
 
 dict matrix_array_interface_c1(SharedMatrix mat){
     if(mat->nirrep() != 1){
-        throw PSIEXCEPTION("Pointer export of multiple irrep matrices not yet implemented.");
+        throw PSIEXCEPTION("Cannot directly export multiple irrep matrices,\
+                            use Matrix.array_interfaces() instead.");
     }
     return matrix_array_interface(mat, 0);
+}
+
+boost::python::list make_matix_array_interfaces(SharedMatrix mat){
+    boost::python::list interfaces;
+    Numpy_Interface tmp_interface = Numpy_Interface();
+    for(int h=0; h < mat->nirrep(); h++){
+        dict array_interface = matrix_array_interface(mat, h);
+        tmp_interface.interface = array_interface;
+        interfaces.append(tmp_interface);
+    }
+    return interfaces;
 }
 
 dict vector_array_interface(SharedVector vec, int irrep){
@@ -115,9 +133,21 @@ dict vector_array_interface(SharedVector vec, int irrep){
 
 dict vector_array_interface_c1(SharedVector vec){
     if(vec->nirrep() != 1){
-        throw PSIEXCEPTION("Pointer export of multiple irrep vectorss not yet implemented.");
+        throw PSIEXCEPTION("Cannot directly export multiple irrep vectors,\
+                            use Vector.array_interfaces() instead.");
     }
     return vector_array_interface(vec, 0);
+}
+
+boost::python::list make_vector_array_interfaces(SharedVector vec){
+    boost::python::list interfaces;
+    Numpy_Interface tmp_interface = Numpy_Interface();
+    for(int h=0; h < vec->nirrep(); h++){
+        dict array_interface = vector_array_interface(vec, h);
+        tmp_interface.interface = array_interface;
+        interfaces.append(tmp_interface);
+    }
+    return interfaces;
 }
 
 boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
@@ -208,6 +238,9 @@ void export_mints()
     typedef void (Vector::*vector_setitem_n)(const boost::python::tuple&, double);
     typedef double (Vector::*vector_getitem_n)(const boost::python::tuple&);
 
+    class_<Numpy_Interface>("Psi_Numpy_Interface", "docstring", no_init).
+            add_property("__array_interface__", &Numpy_Interface::interface, "docstring");
+
     class_<Dimension>("Dimension", "docstring").
             def(init<int>()).
             def(init<int, const std::string&>()).
@@ -241,6 +274,7 @@ void export_mints()
             def("__getitem__", vector_getitem_n(&Vector::pyget), "docstring").
             def("__setitem__", vector_setitem_n(&Vector::pyset), "docstring").
             def("nirrep", &Vector::nirrep, "docstring").
+            def("array_interfaces", make_vector_array_interfaces, "docstring").
             add_property("__array_interface__", vector_array_interface_c1, "docstring");
 
     typedef void  (IntVector::*int_vector_set)(int, int, int);
@@ -335,6 +369,7 @@ void export_mints()
             def("load", matrix_load(&Matrix::load), "docstring").
             def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring").
             def("remove_symmetry", &Matrix::remove_symmetry, "docstring").
+            def("array_interfaces", make_matix_array_interfaces, "docstring").
             add_property("__array_interface__", matrix_array_interface_c1, "docstring");
 
     class_<View, boost::noncopyable>("View", no_init).
