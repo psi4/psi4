@@ -1103,6 +1103,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("publicationTitle", "default title");
     options.add_str("publicationAbstract", "default abstract");
     options.add_str("publicationTags", "default tags");
+    options.add_str("publicationPublisher", "default publisher");
     options.add_str("correspondingAuthor", "default name");
     options.add_str("organization", "default org");
     options.add_str("email", "default email");
@@ -1110,6 +1111,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("publicationVisibility", 0);
     options.add_int("publicationStatus", 0);
     options.add_int("publicationKey", 0);
+    options.add_int("csx_version", 1);
     /*- Flag to write the CSX file. -*/
     options.add_bool("WRITE_CSX", false);
 
