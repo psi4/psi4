@@ -83,21 +83,30 @@ MCSCF::MCSCF(Options& options)
     mcscf_title();
     mcscf_get_mo_info(options_);
 
-  diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(MCSCF_Parameters.diis_max_vecs, "MCSCF DIIS vector", DIISManager::OldestAdded, DIISManager::OnDisk));
-  // diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, gradient.get());
-  // diis_manager_->set_vector_size(1, DIISEntry::Matrix, Fa_.get());
-  // diis_manager_->add_entry(2, gradient.get(), Fa_.get());
+    // Form independent pairs
+    form_independent_pairs();
+    num_indep_pairs_ = IndPairs.get_num_pairs();
+
+    // Setup the DIIS manager
+    diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(MCSCF_Parameters.diis_max_vecs,
+                        "MCSCF DIIS", DIISManager::OldestAdded, DIISManager::InCore));
+
+    diis_iter_ = 0; ndiis_vec_ = 0;
+
+    diis_manager_->set_error_vector_size(1, DIISEntry::Pointer, num_indep_pairs_);
+    diis_manager_->set_vector_size(1, DIISEntry::Pointer, num_indep_pairs_);
+
 }
 
 MCSCF::~MCSCF()
 {
+  diis_manager_->delete_diis_file();
 }
 
 
 int MCSCF::mcscf_update(int iter, Options &options, OutFile& IterSummaryOut)
 {
   int converged = 0;
-  int num_pairs = 0;
   int steptype = 0;
 
   mcscf_read_integrals();            /* get the 1 and 2 elec MO integrals        */
@@ -107,21 +116,18 @@ int MCSCF::mcscf_update(int iter, Options &options, OutFile& IterSummaryOut)
                      MCSCF_CalcInfo.twoel_ints, CalcInfo.nmo,
                      MCSCF_CalcInfo.npop, MCSCF_Parameters.print_lvl, PSIF_MO_LAG); 
 
-
   // read_lagrangian();
 
-  form_independent_pairs();
-  num_pairs = IndPairs.get_num_pairs();
 
-  read_thetas(num_pairs);
+  read_thetas(num_indep_pairs_);
   if (MCSCF_Parameters.print_lvl > 2)
     IndPairs.print_vec(MCSCF_CalcInfo.theta_cur, "\n\tRotation Angles:");
 
   if (!read_ref_orbs()) {
     read_cur_orbs();
     write_ref_orbs();
-    zero_arr(MCSCF_CalcInfo.theta_cur, num_pairs);
-    write_thetas(num_pairs);
+    zero_arr(MCSCF_CalcInfo.theta_cur, num_indep_pairs_);
+    write_thetas(num_indep_pairs_);
   }
 
   form_F_act();
@@ -140,13 +146,13 @@ int MCSCF::mcscf_update(int iter, Options &options, OutFile& IterSummaryOut)
   if (!converged) {
     steptype = take_step();
     rotate_orbs();
-    write_thetas(num_pairs);
+    write_thetas(num_indep_pairs_);
   }
   else
     steptype = 0;
 
-  // print_step(num_pairs, steptype);
-  print_step(iter, num_pairs, steptype, IterSummaryOut);
+  // print_step(num_indep_pairs_, steptype);
+  print_step(iter, num_indep_pairs_, steptype, IterSummaryOut);
 
 //  if (MCSCF_Parameters.print_lvl) quote();
   // cleanup();
@@ -831,10 +837,8 @@ void MCSCF::scale_gradient(void)
 */
 int MCSCF::take_step(void)
 {
-  int npairs, pair, took_diis;
+  int pair, took_diis;
   
-  npairs = IndPairs.get_num_pairs();
-
   /* for debugging purposes */
   if (MCSCF_Parameters.force_step) {
     MCSCF_CalcInfo.theta_cur[MCSCF_Parameters.force_pair] = MCSCF_Parameters.force_value;
@@ -843,17 +847,30 @@ int MCSCF::take_step(void)
     return(1);
   }
 
-  SharedVector vec_theta(new Vector(npairs));
-  for (pair=0; pair<npairs; pair++) 
+  for (pair=0; pair<num_indep_pairs_; pair++) 
     MCSCF_CalcInfo.theta_cur[pair] += MCSCF_CalcInfo.theta_step[pair];
-    //MCSCF_CalcInfo.theta_cur[pair] = MCSCF_CalcInfo.theta_step[pair];
 
-  if (MCSCF_CalcInfo.iter >= MCSCF_Parameters.diis_start) 
-    took_diis = diis(npairs, MCSCF_CalcInfo.theta_cur, MCSCF_CalcInfo.theta_step);
-    //took_diis = diis(npairs, MCSCF_CalcInfo.theta_cur, MCSCF_CalcInfo.mo_grad);
-  else 
+  if (MCSCF_CalcInfo.iter >= MCSCF_Parameters.diis_start){ 
+    // Add DIIS vector
+    diis_manager_->add_entry(2, MCSCF_CalcInfo.theta_step, MCSCF_CalcInfo.theta_cur);
+    ndiis_vec_++;
+
+    // Check if we should skip DIIS
+    if ((diis_iter_ % MCSCF_Parameters.diis_freq) || (ndiis_vec_ < MCSCF_Parameters.diis_min_vecs)){
+        took_diis = 0;
+    }
+    else {
+        // Extrapolate new thetas
+        zero_arr(MCSCF_CalcInfo.theta_cur, num_indep_pairs_);
+        diis_manager_->extrapolate(1, MCSCF_CalcInfo.theta_cur);
+        diis_iter_++;
+        took_diis = 1;
+    }
+
+  }
+  else { 
     took_diis = 0;
-
+  }
   if (!took_diis) {
     if (MCSCF_Parameters.print_lvl) 
       outfile->Printf( "Taking regular step\n");

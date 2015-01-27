@@ -578,6 +578,8 @@ struct params {
 */
 struct mcscf_calcinfo {
   int iter;              /* iteration number */
+  int diis_iter;         /* DIIS iteration number */
+  int ndiis_vec;         /* Number of diis vectors*/
   // int nmo;               /* number of molecular orbitals... the code often
   //                          uses nbfso instead but it shouldn't in case
   //                          of linear dependencies */
