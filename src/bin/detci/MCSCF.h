@@ -43,7 +43,10 @@ class MCSCF
 private:
     // Core functions
     Options& options_;
+
+    // Independent pairs
     IndepPairs IndPairs;
+    int num_indep_pairs_;
 
     // MCSCF.cc
     void calc_gradient(void);
@@ -57,9 +60,6 @@ private:
     double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
                    int nmo, int npop, int print_lvl, int lag_file);
     void form_independent_pairs(void);
-
-    // MCSCF_diis
-    int diis(int veclen, double *vec, double *errvec);
 
     // MCSCF_f_act
     void form_F_act(void);
@@ -109,7 +109,11 @@ private:
     void calc_dE_dT(int n, double **dEU, int npairs, int *ppair,
                     int *qpair, double *theta, double *dET);
 
+    // DIIS information
     boost::shared_ptr<DIISManager> diis_manager_;
+    int diis_iter_;
+    int ndiis_vec_;
+
 
 public:
 
