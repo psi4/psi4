@@ -24,23 +24,15 @@
     \ingroup DETCAS
     \brief Enter brief description of file here 
 */
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#include <libciomr/libciomr.h>
+
 #include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
 #include <cmath>
 #include <psifiles.h>
-#include <psi4-dec.h>
-#include <libparallel/ParallelPrinter.h>
-#include "globaldefs.h"
-#include "structs.h"
-#define EXTERN
-#include "globals.h"
+#include <libpsio/psio.h>
 #include "libpsio/psio.h"
+#define EXTERN
 #include "MCSCF.h"
-//#include "ParallelPrinter.h"
 
 namespace psi { namespace detci {
 

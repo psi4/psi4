@@ -36,6 +36,32 @@
 
 namespace psi { namespace detci {
 
+
+/*
+** cleanup()
+**
+** Clean up any intermediate quantities
+**
+*/
+void MCSCF::iteration_clean(void)
+{
+  int i;
+
+  free(MCSCF_CalcInfo.onel_ints);
+  free(MCSCF_CalcInfo.onel_ints_bare);
+  free(MCSCF_CalcInfo.twoel_ints);
+  free_block(MCSCF_CalcInfo.opdm);
+  free(MCSCF_CalcInfo.tpdm);
+  free_block(MCSCF_CalcInfo.lag);
+  free(MCSCF_CalcInfo.F_act);
+  free(MCSCF_CalcInfo.mo_grad);
+  if (MCSCF_CalcInfo.mo_hess_diag != NULL) free(MCSCF_CalcInfo.mo_hess_diag);
+  if (MCSCF_CalcInfo.mo_hess != NULL) free_block(MCSCF_CalcInfo.mo_hess);
+  free(MCSCF_CalcInfo.theta_cur);
+  free(MCSCF_CalcInfo.theta_step);
+  // free(CalcInfo.orbs_per_irr);
+
+}
 /*
 ** cleanup()
 **
@@ -67,7 +93,6 @@ void MCSCF::mcscf_cleanup(void)
   for (i=0; i<MAX_RAS_SPACES; i++) 
     free_int_matrix(MCSCF_CalcInfo.ras_orbs[i]);
   free(MCSCF_CalcInfo.ras_orbs);
-
   // for (i=0; i<CalcInfo.nirreps; i++) 
   //   free(CalcInfo.labels[i]);
 
@@ -77,19 +102,6 @@ void MCSCF::mcscf_cleanup(void)
   }
   free(MCSCF_CalcInfo.mo_coeffs);
 
-  free(MCSCF_CalcInfo.onel_ints);
-  free(MCSCF_CalcInfo.onel_ints_bare);
-  free(MCSCF_CalcInfo.twoel_ints);
-  free_block(MCSCF_CalcInfo.opdm);
-  free(MCSCF_CalcInfo.tpdm);
-  free_block(MCSCF_CalcInfo.lag);
-  free(MCSCF_CalcInfo.F_act);
-  free(MCSCF_CalcInfo.mo_grad);
-  if (MCSCF_CalcInfo.mo_hess_diag != NULL) free(MCSCF_CalcInfo.mo_hess_diag);
-  if (MCSCF_CalcInfo.mo_hess != NULL) free_block(MCSCF_CalcInfo.mo_hess);
-  free(MCSCF_CalcInfo.theta_cur);
-  free(MCSCF_CalcInfo.theta_step);
-  // free(CalcInfo.orbs_per_irr);
 }
 
 }} // end namespace psi::detci

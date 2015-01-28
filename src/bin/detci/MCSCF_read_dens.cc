@@ -36,15 +36,9 @@
 ** April 1998
 */
 
-#include <cstdlib>
-#include <cstdio>
 #include <libiwl/iwl.h>
-#include <libciomr/libciomr.h>
-#include "globaldefs.h"
-#include "structs.h"
 #define EXTERN
-#include "globals.h"
-#include "psi4-dec.h"
+#include "MCSCF.h"
 
 namespace psi { namespace detci {
 
@@ -52,7 +46,7 @@ double **rdopdm(int nbf, int print_lvl, int opdm_file, bool erase, Options& opti
 double *rdtpdm(int nbf, int print_lvl, int tpdm_file, bool erase);
 
 
-void read_density_matrices(Options& options)
+void MCSCF::read_density_matrices(Options& options)
 {
 
   /* read the one-particle density matrix */

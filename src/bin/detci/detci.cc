@@ -68,7 +68,6 @@
 #include "slaterd.h"
 #include "civect.h"
 #include "ciwave.h"
-//#include "MCSCF.cc"
 #include "MCSCF.h"
 
 namespace psi {
@@ -156,17 +155,14 @@ extern void tpdm(struct stringwr **alplist, struct stringwr **betlist,
    int Inroots, int Inunits, int Ifirstunit,
    int Jnroots, int Jnunits, int Jfirstunit,
    int targetfile, int writeflag, int printflag);
-extern void mcscf_cleanup();
 extern void compute_cc(void);
 extern void calc_mrpt(void);
 
 // MCSCF
-// extern int mcscf_update(Options &options);
 extern void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist);
 extern void set_mcscf_parameters(Options &options);
 extern void mcscf_print_parameters(void);
-// extern void mcscf_get_mo_info(Options& options);
-// extern void mcscf_cleanup(void);
+extern void detci_iteration_clean();
 
 PsiReturnType detci(Options &options);
 
@@ -1553,6 +1549,21 @@ BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx) {
 }
 
 /*
+** detci_iteration_clean(); Removes DETCI's two electron integrals.
+** Prevents duplication of twoel in memory.
+**
+** Returns: none
+*/
+void detci_iteration_clean()
+{
+  free(CalcInfo.onel_ints);
+  free(CalcInfo.twoel_ints);
+  free(CalcInfo.maxK);
+  free(CalcInfo.tf_onel_ints);
+  free(CalcInfo.gmat[0]);
+}
+
+/*
 ** compute_mcscf(); Optimizes MO and CI coefficients
 **
 ** Parameters:
@@ -1573,13 +1584,6 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
   //mcscf->mcscf_title();                     /* print program identification             */
   if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
 
-  //mcscf->mcscf_get_mo_info(options);
-
-  // Make sure a few things are working
-  outfile->Printf("Starting MCSCF\n");
-  outfile->Printf("MCSCF MAXITER %d \n", MCSCF_Parameters.max_iter);
-
-
   // Need a TRANSQT2 Options object to be able to call that module correctly
   // Can delete this when we replace TRANSQT2 with libtrans
   Options transqt_options = options;
@@ -1587,7 +1591,6 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
   psi::read_options("TRANSQT2", transqt_options, false);
   transqt_options.set_str("TRANSQT2", "WFN", Parameters.wfn);
   transqt_options.validate_options();
-  // transqt_options.print(); // debug
 
   // Parameters
   int conv;
@@ -1598,14 +1601,9 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
   // Iterate
   for (int i=0; i<MCSCF_Parameters.max_iter; i++){
     outfile->Printf("\nStarting MCSCF iteration %d\n\n", i+1);
-    outfile->Printf("\nMCSCF_CalcInfo.iter: %d \n", MCSCF_CalcInfo.iter);
    
     diag_h(alplist, betlist);
-    /*
-    chkpt_init(PSIO_OPEN_OLD);
-    MCSCF_CalcInfo.energy = chkpt_rd_etot();
-    chkpt_close();
-    */
+
     if (Parameters.average_num > 1) { // state average
       MCSCF_CalcInfo.energy = 
         Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"];
@@ -1625,7 +1623,9 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
     form_opdm();
     form_tpdm();
     close_io();
-    conv = mcscf->mcscf_update(i, options, IterSummaryOut);
+    detci_iteration_clean();
+
+    conv = mcscf->update(i, IterSummaryOut);
 
     // If converged
     if (conv){
@@ -1655,19 +1655,11 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
     tf_onel_ints((Parameters.print_lvl>3), "outfile");
     form_gmat((Parameters.print_lvl>3), "outfile");
     
-    // DGAS Debug
-    // outfile->Printf("\nDGAS ----------------\n");
-    // 
-    // outfile->Printf("CalcInfo.escf %f \n", CalcInfo.escf);
-    // outfile->Printf("CalcInfo.efzc %f \n", CalcInfo.efzc);
-
-    // outfile->Printf("\nDGAS ----------------\n");
 
   }
 
-  
   outfile->Printf("\nFinishing MCSCF\n");
-  mcscf->mcscf_cleanup();
+  mcscf->finalize();
 
 }
 
