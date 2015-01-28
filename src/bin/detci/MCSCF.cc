@@ -37,36 +37,18 @@
 **
 */
 
-#include "globaldefs.h"
-#include <iostream>
-#include <cmath>
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#include <string>
-// #include <libipv1/ip_lib.h>
 #include <libqt/qt.h>
-#include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
-#include <libmints/wavefunction.h>
-#include <libmints/molecule.h>
-#include <libmints/vector.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
-#include <libparallel/ParallelPrinter.h>
-#include "psifiles.h"
-#include "psi4-dec.h"
-#include "structs.h"
+#include <psifiles.h>
 #define EXTERN
-#include "globals.h"
-//#include "MCSCF_indpairs.h"
 #include "MCSCF.h"
+
 
 namespace psi { namespace detci {
 
 extern void mcscf_read_integrals(void);
-extern void read_density_matrices(Options& options);
-// extern void form_independent_pairs(void);
 extern void mcscf_get_mat_block(double **src, double **dst, int dst_dim,
                           int dst_offset, int *dst2src);
 
@@ -80,19 +62,24 @@ namespace psi { namespace detci {
 MCSCF::MCSCF(Options& options)
     : options_(options)
 {
-    mcscf_title();
-    mcscf_get_mo_info(options_);
+    title();
+    get_mo_info(options_);
 
     // Form independent pairs
-    form_independent_pairs();
+    IndPairs.set(CalcInfo.nirreps, MAX_RAS_SPACES, CalcInfo.ras_opi,
+                 MCSCF_CalcInfo.ras_orbs, MCSCF_CalcInfo.frozen_docc, MCSCF_CalcInfo.fzc_orbs,
+                 MCSCF_CalcInfo.rstr_docc, MCSCF_CalcInfo.cor_orbs,
+                 MCSCF_CalcInfo.rstr_uocc, MCSCF_CalcInfo.vir_orbs,
+                 MCSCF_CalcInfo.frozen_uocc, MCSCF_CalcInfo.fzv_orbs,
+                 MCSCF_CalcInfo.ci2relpitz, MCSCF_Parameters.ignore_ras_ras, MCSCF_Parameters.ignore_fz);
+
+    if (MCSCF_Parameters.print_lvl > 3) IndPairs.print();
     num_indep_pairs_ = IndPairs.get_num_pairs();
 
     // Setup the DIIS manager
     diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(MCSCF_Parameters.diis_max_vecs,
                         "MCSCF DIIS", DIISManager::OldestAdded, DIISManager::InCore));
-
     diis_iter_ = 0; ndiis_vec_ = 0;
-
     diis_manager_->set_error_vector_size(1, DIISEntry::Pointer, num_indep_pairs_);
     diis_manager_->set_vector_size(1, DIISEntry::Pointer, num_indep_pairs_);
 
@@ -100,24 +87,21 @@ MCSCF::MCSCF(Options& options)
 
 MCSCF::~MCSCF()
 {
-  diis_manager_->delete_diis_file();
 }
 
 
-int MCSCF::mcscf_update(int iter, Options &options, OutFile& IterSummaryOut)
+int MCSCF::update(int iter, OutFile& IterSummaryOut)
 {
   int converged = 0;
   int steptype = 0;
 
   mcscf_read_integrals();            /* get the 1 and 2 elec MO integrals        */
-  read_density_matrices(options);
+  read_density_matrices(options_);
 
+  // Compute lagrangian
   MCSCF_CalcInfo.lag = lagcalc(MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm, MCSCF_CalcInfo.onel_ints_bare,
                      MCSCF_CalcInfo.twoel_ints, CalcInfo.nmo,
                      MCSCF_CalcInfo.npop, MCSCF_Parameters.print_lvl, PSIF_MO_LAG); 
-
-  // read_lagrangian();
-
 
   read_thetas(num_indep_pairs_);
   if (MCSCF_Parameters.print_lvl > 2)
@@ -151,28 +135,21 @@ int MCSCF::mcscf_update(int iter, Options &options, OutFile& IterSummaryOut)
   else
     steptype = 0;
 
-  // print_step(num_indep_pairs_, steptype);
   print_step(iter, num_indep_pairs_, steptype, IterSummaryOut);
 
-//  if (MCSCF_Parameters.print_lvl) quote();
-  // cleanup();
-  //close_io();
+  // Cleanup the iteration
+  iteration_clean();
+
   if (MCSCF_Parameters.print_lvl) tstop();
 
-  // if (converged){
-  //   return EndLoop; 
-  // }
-  // else{
-  //   return Success;
-  // }
   return converged;
 }
 
 
 /*
-** mcscf_title(): Function prints a program identification
+** title(): Function prints a program identification
 */
-void MCSCF::mcscf_title(void)
+void MCSCF::title(void)
 {
   if (MCSCF_Parameters.print_lvl) {
    outfile->Printf("\n");
@@ -188,24 +165,6 @@ void MCSCF::mcscf_title(void)
    outfile->Printf( 
      "\nD E T C A S: C. David Sherrill, April 27 1998\n");
    }
-  //fflush(outfile);
-}
-
-
-
-
-void MCSCF::form_independent_pairs(void)
-{
-
-  IndPairs.set(CalcInfo.nirreps, MAX_RAS_SPACES, CalcInfo.ras_opi,
-               MCSCF_CalcInfo.ras_orbs, MCSCF_CalcInfo.frozen_docc, MCSCF_CalcInfo.fzc_orbs, 
-               MCSCF_CalcInfo.rstr_docc, MCSCF_CalcInfo.cor_orbs,
-               MCSCF_CalcInfo.rstr_uocc, MCSCF_CalcInfo.vir_orbs,
-               MCSCF_CalcInfo.frozen_uocc, MCSCF_CalcInfo.fzv_orbs,
-               MCSCF_CalcInfo.ci2relpitz, MCSCF_Parameters.ignore_ras_ras, MCSCF_Parameters.ignore_fz);
-
-  if (MCSCF_Parameters.print_lvl > 3) IndPairs.print();
-
 }
 
 
@@ -228,14 +187,6 @@ void MCSCF::calc_gradient(void)
   qarr  = IndPairs.get_q_ptr();
 
   MCSCF_CalcInfo.mo_grad = init_array(npair);
-
-  /*
-  calc_grad_1(npair, parr, qarr, MCSCF_CalcInfo.lag, MCSCF_CalcInfo.mo_grad);
-  calc_grad_2(npair, parr, qarr, MCSCF_CalcInfo.onel_ints, MCSCF_CalcInfo.twoel_ints, 
-              MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm, MCSCF_CalcInfo.F_act, 
-              (MCSCF_CalcInfo.num_cor_orbs + MCSCF_CalcInfo.num_fzc_orbs), 
-              MCSCF_CalcInfo.npop, MCSCF_CalcInfo.mo_grad); 
-  */
 
   // scratch array for dEdTheta, big enough for any irrep
   ir_mo_grad = init_array(npair);
@@ -837,7 +788,7 @@ void MCSCF::scale_gradient(void)
 */
 int MCSCF::take_step(void)
 {
-  int pair, took_diis;
+  int took_diis;
   
   /* for debugging purposes */
   if (MCSCF_Parameters.force_step) {
@@ -847,7 +798,8 @@ int MCSCF::take_step(void)
     return(1);
   }
 
-  for (pair=0; pair<num_indep_pairs_; pair++) 
+  // Add new step to theta (Newton-Raphson)
+  for (int pair=0; pair<num_indep_pairs_; pair++) 
     MCSCF_CalcInfo.theta_cur[pair] += MCSCF_CalcInfo.theta_step[pair];
 
   if (MCSCF_CalcInfo.iter >= MCSCF_Parameters.diis_start){ 
@@ -861,6 +813,7 @@ int MCSCF::take_step(void)
     }
     else {
         // Extrapolate new thetas
+        outfile->Printf("Taking a DIIS step\n");
         zero_arr(MCSCF_CalcInfo.theta_cur, num_indep_pairs_);
         diis_manager_->extrapolate(1, MCSCF_CalcInfo.theta_cur);
         diis_iter_++;
@@ -873,7 +826,7 @@ int MCSCF::take_step(void)
   }
   if (!took_diis) {
     if (MCSCF_Parameters.print_lvl) 
-      outfile->Printf( "Taking regular step\n");
+      outfile->Printf("Taking regular step\n");
   }
 
   return(took_diis+1);
@@ -959,48 +912,15 @@ void MCSCF::rotate_orbs(void)
 */
 int MCSCF::check_conv(void)
 {
-  // FILE *sumfile;
-  // char sumfile_name[] = "file14.dat";
-  // char comment[MAX_COMMENT];
-  // int i, entries, iter, nind;
-  // double rmsgrad, scaled_rmsgrad, energy, energy_last;
   int converged_energy=0, converged_grad=0, last_converged=0;
 
-  // ffile_noexit(&sumfile,sumfile_name,2);
-
-  // if (sumfile == NULL) {
-  //   MCSCF_CalcInfo.iter = 0;
-  //   return(0);
-  // }
-
-  // if (fscanf(sumfile, "%d", &entries) != 1) {
-  //   outfile->Printf("(print_step): Trouble reading num entries in file %s\n",
-  //           sumfile_name);
-  //   fclose(sumfile);
-  //   MCSCF_CalcInfo.iter = 0;
-  //   return(0);
-  // } 
-
-  // MCSCF_CalcInfo.iter = entries;
-  // for (i=0; i<entries; i++) {
-  //   fscanf(sumfile, "%d %d %lf %lf %lf %s", &iter, &nind, &scaled_rmsgrad,
-  //          &rmsgrad, &energy_last, comment);
-  // }
-  // fclose(sumfile);
-
-  // chkpt_init(PSIO_OPEN_OLD);
-  // energy = chkpt_rd_etot();
-  // chkpt_close();
 
   /* check for convergence */
   if (MCSCF_CalcInfo.mo_grad_rms < MCSCF_Parameters.rms_grad_convergence)
     converged_grad = 1;
   if (fabs(MCSCF_CalcInfo.energy_old - MCSCF_CalcInfo.energy) < MCSCF_Parameters.energy_convergence)
     converged_energy = 1;
-  // if (strstr(comment, "CONV") != NULL)
-  //   last_converged = 1;
 
-  // if (converged_grad && converged_energy && !last_converged) {
   if (converged_grad && converged_energy) {
     outfile->Printf( "\n\t*** Calculation Converged ***\n");
     return(1);
@@ -1010,6 +930,57 @@ int MCSCF::check_conv(void)
     return(0);
   }
 }
+/*
+** finalize()
+**
+** This function frees any allocated global variables
+**
+*/
+void MCSCF::finalize(void)
+{
+  int i;
+  free(MCSCF_CalcInfo.frozen_docc);
+  free(MCSCF_CalcInfo.frozen_uocc);
+  free(MCSCF_CalcInfo.rstr_docc);
+  free(MCSCF_CalcInfo.rstr_uocc);
+  free(MCSCF_CalcInfo.ci2relpitz);
+  free_int_matrix(MCSCF_CalcInfo.fzc_orbs);
+  free_int_matrix(MCSCF_CalcInfo.fzv_orbs);
+  for (i=0; i<MAX_RAS_SPACES; i++)
+    free_int_matrix(MCSCF_CalcInfo.ras_orbs[i]);
+  free(MCSCF_CalcInfo.ras_orbs);
+
+  for (i=0; i<CalcInfo.nirreps; i++) {
+    if (CalcInfo.orbs_per_irr[i])
+      free_block(MCSCF_CalcInfo.mo_coeffs[i]);
+  }
+  free(MCSCF_CalcInfo.mo_coeffs);
+
+  diis_manager_->delete_diis_file();
+}
+
+/*
+** iteration_clean()
+**
+** Clean up intermediate quantities
+**
+*/
+void MCSCF::iteration_clean(void)
+{
+  free(MCSCF_CalcInfo.onel_ints);
+  free(MCSCF_CalcInfo.onel_ints_bare);
+  free(MCSCF_CalcInfo.twoel_ints);
+  free_block(MCSCF_CalcInfo.opdm);
+  free(MCSCF_CalcInfo.tpdm);
+  free_block(MCSCF_CalcInfo.lag);
+  free(MCSCF_CalcInfo.F_act);
+  free(MCSCF_CalcInfo.mo_grad);
+  if (MCSCF_CalcInfo.mo_hess_diag != NULL) free(MCSCF_CalcInfo.mo_hess_diag);
+  if (MCSCF_CalcInfo.mo_hess != NULL) free_block(MCSCF_CalcInfo.mo_hess);
+  free(MCSCF_CalcInfo.theta_cur);
+  free(MCSCF_CalcInfo.theta_step);
+}
+
 
 }} // end namespace psi::detci
 

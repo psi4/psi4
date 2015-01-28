@@ -23,12 +23,15 @@
 #ifndef _psi_src_bin_detci_mcscf_h_
 #define _psi_src_bin_detci_mcscf_h_
 
-#include <libmints/wavefunction.h>
-#include "psi4-dec.h"
-#include "libparallel/ParallelPrinter.h"
 #include <libdiis/diismanager.h>
 #include <libdiis/diisentry.h>
+#include <libparallel/ParallelPrinter.h>
+#include <libciomr/libciomr.h>
+#include <psi4-dec.h>
 #include "MCSCF_indpairs.h"
+#include "globaldefs.h"
+#include "structs.h"
+#include "globals.h"
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -41,12 +44,23 @@ namespace detci {
 class MCSCF 
 {
 private:
-    // Core functions
+    /// Initialization block
     Options& options_;
+    void title(void);
+    void get_mo_info(Options &options);
 
-    // Independent pairs
+    /// Independent pairs
     IndepPairs IndPairs;
     int num_indep_pairs_;
+
+    /// DIIS
+    boost::shared_ptr<DIISManager> diis_manager_;
+    int diis_iter_;
+    int ndiis_vec_;
+
+    /// Cleaners
+    void iteration_clean(void);
+
 
     // MCSCF.cc
     void calc_gradient(void);
@@ -59,7 +73,6 @@ private:
     void rotate_orbs(void);
     double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
                    int nmo, int npop, int print_lvl, int lag_file);
-    void form_independent_pairs(void);
 
     // MCSCF_f_act
     void form_F_act(void);
@@ -82,6 +95,7 @@ private:
     void form_diag_mo_hess_yy(int npairs, int *ppair, int *qpair,
                       double *oei, double *tei, double **opdm,
                       double *tpdm, double **lag, double *hess);
+    void read_density_matrices(Options& options);
 
     // Rotate
     void calc_orb_step(int npairs, double *grad, double *hess_diag,
@@ -109,22 +123,18 @@ private:
     void calc_dE_dT(int n, double **dEU, int npairs, int *ppair,
                     int *qpair, double *theta, double *dET);
 
-    // DIIS information
-    boost::shared_ptr<DIISManager> diis_manager_;
-    int diis_iter_;
-    int ndiis_vec_;
-
 
 public:
 
     /// Constructor
     MCSCF(Options& options);
     ~MCSCF();   
- 
-    void mcscf_cleanup(void);
-    int mcscf_update(int iter, Options &options, OutFile& IterSummaryOut);
-    void mcscf_title(void);
-    void mcscf_get_mo_info(Options &options);
+
+    // MCSCF update, orbital rotation
+    int update(int iter, OutFile& IterSummaryOut);
+
+    // Cleanup MCSCF
+    void finalize(void);
 
 
 };
