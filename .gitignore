@@ -38,7 +38,7 @@ _coverage_html
 output.dat
 *.32
 *.clean
-*.dat
+#*.dat
 *.timer.dat
 tests/*/@pcmsolver.inp
 tests/*/PCM_matrix
