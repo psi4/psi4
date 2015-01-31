@@ -27,6 +27,7 @@ write_to_cloc_list("${to_count}")
 
 # Build static library
 add_library(interface_libefp STATIC ${sources_list})
+set_property(TARGET interface_libefp PROPERTY COMPILE_FLAGS "-O1")
 
 # Specify dependencies for the library (if any)
 set(libs_to_merge interface_libefp ${libs_to_merge} PARENT_SCOPE)
