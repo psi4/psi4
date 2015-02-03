@@ -29,6 +29,7 @@ extern "C"{
    struct BasisSet;
    void timer_interface_on(char *);
    void timer_interface_off(char *);
+   void SetUp();
    int ComputeShellQuartet(struct BasisSet*,int ThreadID,
          int M,int N,int P,int Q,
          double ** Ints);

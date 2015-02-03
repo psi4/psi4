@@ -68,6 +68,7 @@ psi::MinimalInterface::MinimalInterface(const int NMats,
       const bool AreSymm):NPRow_(1),NPCol_(1),
                           StartRow_(0),StartCol_(0),
                           EndRow_(0),EndCol_(0),Stride_(0),NBasis_(0){
+    SetUp();
     SplitProcs(NPRow_,NPCol_);
     psi::Options& options = psi::Process::environment.options;
     SharedBasis primary = psi::BasisSet::pyconstruct_orbital(
