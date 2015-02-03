@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0 Driver
 
-               Git: Rev {master} de989839fb929e2e4fdd301f65e06e14ff2626c9
+               Git: Rev {master} fdb9578f5cb0074d552ae8944aabc354df928483
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -15,8 +15,8 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  36904
-    PSI4DATADIR: /Users/loriab/linux/psihub/master/psi4/obj-efp3/../lib
+    Process ID:   7424
+    PSI4DATADIR: /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -25,7 +25,7 @@
 #! EFP on mixed QM and EFP systems, testing that right parts
 #! of molecule get activated.
 
-memory 200 mb
+#memory 500 mb
 
 ref_qmefp_scf = -76.0139362744  #TEST
 ref_disp = -0.002198528427  #TEST
@@ -67,9 +67,11 @@ molecule qmefp2 {
 
 set basis cc-pvdz
 set scf_type cd
+#set scf_type df
 
 scf = energy('scf')
 compare_values(ref_qmonly_scf, scf, 6, 'Plain SCF')
+#compare_values(ref_qmonly_scf, scf, 4, 'Plain SCF')
 clean()
 
 # Part 3
@@ -101,10 +103,12 @@ clean()
 psi4.efp_init()  # Necessary. add to activate() ?
 set basis cc-pvdz
 set scf_type cd
+#set scf_type df
 activate(qmefp2)
 
 scf = energy('scf')
 compare_values(ref_qmonly_scf, scf, 6, 'Plain SCF, re-activated')
+#compare_values(ref_qmonly_scf, scf, 4, 'Plain SCF, re-activated')
 clean()
 
 # Part 5
@@ -129,114 +133,11 @@ compare_values(-76.01726247192, scf, 5, 'EFP SCF, diatom')
 
 --------------------------------------------------------------------------
 
- Input file to run:
-from psi4 import *
-from p4const import *
-from p4util import *
-from molutil import *
-from aliases import *
-psi4_io = psi4.IOManager.shared_object()
-psi4.efp_init()
-geometry("""
-0 1
-H
-H 1 0.74
-""","blank_molecule_psi4_yo")
-#! EFP on mixed QM and EFP systems, testing that right parts
-psi4.set_memory(200000000)
+*** tstart() called on ds4
+*** at Tue Feb  3 12:30:12 2015
 
-ref_qmefp_scf = -76.0139362744 
-ref_disp = -0.002198528427 
-ref_qmonly_scf = -76.0266518267 
-psi4.efp_init()
-qmefp = geometry("""
-    
-    0 1
-    O1    0         0     0.118720
-    H2   -0.753299, 0.0, -0.474880
-    H3    0.753299, 0.0, -0.474880
-    
-    --
-    efp h2o -2.12417561  1.22597097 -0.95332054 -2.902133 1.734999 -1.953647
-    --
-    efp NH3  1.04358758  1.90477190  2.88279926 -1.105309 2.033306 -1.488582
-    --
-    efp NH3 -4.16795656 -0.98129149 -1.27785935  2.526442 1.658262 -2.742084
-    
-""","qmefp")
-psi4.IO.set_default_namespace("qmefp")
-psi4.set_global_option("BASIS", "6-31g*")
-psi4.set_global_option("SCF_TYPE", "pk")
-scf = energy('scf')
-compare_values(ref_qmefp_scf, scf, 6, 'EFP SCF')
-clean()
-psi4.efp_init()
-qmefp2 = geometry("""
-    0 1
-    O1    0         0     0.118720
-    H2   -0.753299, 0.0, -0.474880
-    H3    0.753299, 0.0, -0.474880
-    symmetry c1
-""","qmefp2")
-psi4.IO.set_default_namespace("qmefp2")
-psi4.set_global_option("BASIS", "cc-pvdz")
-psi4.set_global_option("SCF_TYPE", "cd")
-scf = energy('scf')
-compare_values(ref_qmonly_scf, scf, 6, 'Plain SCF')
-clean()
-psi4.efp_init()
-qmefp3 = geometry("""
-0 1
-O1    0         0     0.118720
-H2   -0.753299, 0.0, -0.474880
-H3    0.753299, 0.0, -0.474880
---
-efp h2o -2.12417561  1.22597097 -0.95332054 -2.902133 1.734999 -1.953647
---
-efp NH3  1.04358758  1.90477190  2.88279926 -1.105309 2.033306 -1.488582
---
-efp NH3 -4.16795656 -0.98129149 -1.27785935  2.526442 1.658262 -2.742084
-""","qmefp3")
-psi4.IO.set_default_namespace("qmefp3")
-psi4.set_global_option("BASIS", "6-31g*")
-psi4.set_global_option("SCF_TYPE", "pk")
-psi4.set_global_option("EFP_DISP", "off")
-scf = energy('scf')
-compare_values(ref_qmefp_scf - ref_disp, scf, 6, 'EFP SCF, diff opts')
-clean()
-psi4.efp_init() 
-psi4.set_global_option("BASIS", "cc-pvdz")
-psi4.set_global_option("SCF_TYPE", "cd")
-activate(qmefp2)
-scf = energy('scf')
-compare_values(ref_qmonly_scf, scf, 6, 'Plain SCF, re-activated')
-clean()
-psi4.efp_init()
-qmefp5 = geometry("""
-efp cl2 0.0 0.0 0.0 0.0 0.0 0.0
---
-efp cl2 4.0 4.0 4.0 0.0 0.0 0.0
---
-O -1 -1 -6
-H -2 -1 -6
-H -1 -2 -6
-""","qmefp5")
-psi4.IO.set_default_namespace("qmefp5")
-psi4.set_global_option("BASIS", "cc-pvdz")
-psi4.set_global_option("PUREAM", "false")
-psi4.set_global_option("SCF_TYPE", "df")
-psi4.set_global_option("GUESS", "sad")
-psi4.set_global_option("EFP_DISP", "true")
-scf = energy('scf')
-compare_values(-76.01726247192, scf, 5, 'EFP SCF, diatom')
-
-*** tstart() called on lawn-128-61-42-42.lawn.gatech.edu
-*** at Fri Dec  5 16:09:13 2014
-
-
-  Memory set to 200.000 MiB by Python script.
-  EFP fragment h2o read from /Users/loriab/linux/psihub/master/psi4/obj-efp3/../lib/efpfrag/h2o.efp
-  EFP fragment nh3 read from /Users/loriab/linux/psihub/master/psi4/obj-efp3/../lib/efpfrag/nh3.efp
+  EFP fragment h2o read from /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib/efpfrag/h2o.efp
+  EFP fragment nh3 read from /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib/efpfrag/nh3.efp
 
 
 LIBEFP ver. 1.2.1
@@ -301,15 +202,15 @@ Project web site: http://www.libefp.org/
            H          0.753299000000     0.000000000000    -0.474880000000
 
 
-*** tstart() called on lawn-128-61-42-42.lawn.gatech.edu
-*** at Fri Dec  5 16:09:13 2014
+*** tstart() called on ds4
+*** at Tue Feb  3 12:30:12 2015
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -381,7 +282,7 @@ Project web site: http://www.libefp.org/
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               143
+    Memory (MB):               183
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -396,6 +297,7 @@ Project web site: http://www.libefp.org/
     Spherical Harmonics?: false
     Max angular momentum: 3
 
+  QM/EFP: iterating Total Energy including QM/EFP Induction
   Minimum eigenvalue in the overlap matrix is 2.2347036283E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
@@ -404,17 +306,17 @@ Project web site: http://www.libefp.org/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   1:   -69.19936122818761   -6.91994e+01   1.74013e-01 
-   @DF-RHF iter   2:   -71.90570844645660   -2.70635e+00   1.25884e-01 DIIS
-   @DF-RHF iter   3:   -76.16414813894298   -4.25844e+00   3.39497e-02 DIIS
-   @DF-RHF iter   4:   -76.26451683045249   -1.00369e-01   7.36025e-03 DIIS
-   @DF-RHF iter   5:   -76.27688076716915   -1.23639e-02   1.01547e-03 DIIS
-   @DF-RHF iter   6:   -76.27621638574519    6.64381e-04   3.87007e-04 DIIS
-   @DF-RHF iter   7:   -76.27632308875255   -1.06703e-04   5.84861e-05 DIIS
-   @DF-RHF iter   8:   -76.27621214507214    1.10944e-04   2.69945e-05 DIIS
-   @DF-RHF iter   9:   -76.27617804149351    3.41036e-05   2.87271e-06 DIIS
-   @DF-RHF iter  10:   -76.27617001176546    8.02973e-06   7.08612e-07 DIIS
-   @DF-RHF iter  11:   -76.27616949942806    5.12337e-07   1.90469e-07 DIIS
+   @DF-RHF iter   1:   -69.19936122819934   -6.91994e+01   1.74013e-01 
+   @DF-RHF iter   2:   -71.90570844648033   -2.70635e+00   1.25884e-01 DIIS
+   @DF-RHF iter   3:   -76.16414813894663   -4.25844e+00   3.39497e-02 DIIS
+   @DF-RHF iter   4:   -76.26451683045634   -1.00369e-01   7.36025e-03 DIIS
+   @DF-RHF iter   5:   -76.27688076717276   -1.23639e-02   1.01547e-03 DIIS
+   @DF-RHF iter   6:   -76.27621638574881    6.64381e-04   3.87007e-04 DIIS
+   @DF-RHF iter   7:   -76.27632308875617   -1.06703e-04   5.84861e-05 DIIS
+   @DF-RHF iter   8:   -76.27621214507577    1.10944e-04   2.69945e-05 DIIS
+   @DF-RHF iter   9:   -76.27617804149710    3.41036e-05   2.87271e-06 DIIS
+   @DF-RHF iter  10:   -76.27617001176917    8.02973e-06   7.08612e-07 DIIS
+   @DF-RHF iter  11:   -76.27616949943163    5.12338e-07   1.90469e-07 DIIS
 
   DF guess converged.
 
@@ -439,7 +341,7 @@ Project web site: http://www.libefp.org/
          stored in file 35.
 
       Computing two-electron integrals...done
-      Computed 7581 non-zero two-electron integrals.
+      Computed 7579 non-zero two-electron integrals.
         Stored in file 33.
 
 	Batch   1 pq = [       0,     190] index = [             0,18145]
@@ -448,64 +350,72 @@ Project web site: http://www.libefp.org/
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               143
+    Memory (MB):               183
     Schwarz Cutoff:          1E-12
 
-   @RHF iter  12:   -76.27619614815328   -2.66487e-05   6.31071e-06 DIIS
-   @RHF iter  13:   -76.27619592331372    2.24840e-07   8.27590e-07 DIIS
-  ==> Energetics <==
+   @RHF iter  12:   -76.27619614815330   -2.66487e-05   6.31071e-06 DIIS
+   @RHF iter  13:   -76.27619592331371    2.24840e-07   8.27590e-07 DIIS
 
-  EFP/EFP Electrostatics Energy =      -0.000490136721 [H] *
-  QM-Nuc/EFP Electrostatics Energy =       0.259262561419 [H] *
-  Total Electrostatics Energy =       0.258772424698 [H] *
-          Polarization Energy =        -0.011769485095 [H] *
-  EFP/EFP Dispersion Energy =          -0.002198528427 [H] *
-  EFP/EFP Exchange Energy =             0.005685986876 [H] *
-  Total Energy =                        0.250490398052 [H] *
-  EFP Electrostatics Energy =       0.2587724246982094 [H]
-  EFP Polarization Energy =        -0.0117694850952868 [H]
-  EFP Dispersion Energy =          -0.0021985284270737 [H]
-  EFP Exchange Energy =             0.0056859868760316 [H]
-  EFP Wfn dependent Energy =       -0.0117694850952868 [H]
-  EFP Total Energy =                0.2504903980518804 [H]
-  Total SCF Energy =              -76.0139360401665556 [H]
+    EFP Results
+  ------------------------------------------------------------
+    Electrostatics                      0.258772424698 [H] *
+      EFP/EFP                          -0.000490136721 [H] *
+      QM-Nuc/EFP                        0.259262561419 [H] *
+
+    Exchange                            0.005685986876 [H] *
+      EFP/EFP                           0.005685986876 [H] *
+      QM/EFP                            0.000000000000 [H] 
+
+    Induction                          -0.011769485095 [H] *
+      QM/EFP                           -0.011769485095 [H] *
+
+    Dispersion                         -0.002198528427 [H] *
+      EFP/EFP                          -0.002198528427 [H] *
+      QM/EFP                            0.000000000000 [H] 
+
+    Total EFP                           0.250490398052 [H]
+    EFP excluding EFP Induction         0.262259883147 [H]
+    SCF including EFP Induction       -76.276195923314 [H]
+    Total SCF including Total EFP     -76.013936040167 [H]
 
   ==> Post-Iterations <==
 
-	Orbital Energies (a.u.)
-	-----------------------
+    Orbital Energies (a.u.)
+    -----------------------
 
-	Doubly Occupied:                                                      
+    Doubly Occupied:                                                      
 
-	   1A    -20.583751     2A     -1.365144     3A     -0.726329  
-	   4A     -0.596373     5A     -0.522476  
+       1A    -20.583751     2A     -1.365144     3A     -0.726329  
+       4A     -0.596373     5A     -0.522476  
 
-	Virtual:                                                              
+    Virtual:                                                              
 
-	   6A      0.194242     7A      0.295651     8A      0.995644  
-	   9A      1.109261    10A      1.140516    11A      1.152479  
-	  12A      1.359190    13A      1.415414    14A      1.993615  
-	  15A      2.010510    16A      2.042096    17A      2.596491  
-	  18A      2.919823    19A      3.944885  
+       6A      0.194242     7A      0.295651     8A      0.995644  
+       9A      1.109261    10A      1.140516    11A      1.152479  
+      12A      1.359190    13A      1.415414    14A      1.993615  
+      15A      2.010510    16A      2.042096    17A      2.596491  
+      18A      2.919823    19A      3.944885  
 
-	Final Occupation by Irrep:
-	          A 
-	DOCC [     5 ]
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
 
   Energy converged.
 
-  @RHF Final Energy:   -76.01393604016656
+  @RHF Final Energy:   -76.01393604016654
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1793878830234998
-    One-Electron Energy =                -123.2994818054239232
-    Two-Electron Energy =                  37.8556673327085349
+    One-Electron Energy =                -123.2994818054184236
+    Two-Electron Energy =                  37.8556673327030495
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.2644265896918938
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.2504903980518738
+    Total Energy =                        -76.0139361916399992
 
-
+  Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
@@ -528,25 +438,25 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on lawn-128-61-42-42.lawn.gatech.edu at Fri Dec  5 16:09:16 2014
+*** tstop() called on ds4 at Tue Feb  3 12:30:13 2015
 Module time:
-	user time   =       1.68 seconds =       0.03 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.66 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.76 seconds =       0.03 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.68 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on lawn-128-61-42-42.lawn.gatech.edu
-*** at Fri Dec  5 16:09:16 2014
+*** tstart() called on ds4
+*** at Tue Feb  3 12:30:13 2015
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -616,7 +526,7 @@ Total time:
     wK tasked:                     No
     OpenMP threads:                 1
     Integrals threads:              1
-    Memory (MB):                  143
+    Memory (MB):                  183
     Algorithm:                   Core
     Integral Cache:              NONE
     Schwarz Cutoff:             1E-12
@@ -632,54 +542,56 @@ Total time:
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter   1:   -68.87317288584958   -6.88732e+01   1.29277e-01 
-   @RHF iter   2:   -69.93198700633810   -1.05881e+00   1.05793e-01 DIIS
-   @RHF iter   3:   -75.73717006277295   -5.80518e+00   3.63197e-02 DIIS
-   @RHF iter   4:   -76.00155601361934   -2.64386e-01   9.84603e-03 DIIS
+   @RHF iter   2:   -69.93198700633828   -1.05881e+00   1.05793e-01 DIIS
+   @RHF iter   3:   -75.73717006277303   -5.80518e+00   3.63197e-02 DIIS
+   @RHF iter   4:   -76.00155601361935   -2.64386e-01   9.84603e-03 DIIS
    @RHF iter   5:   -76.02636335180286   -2.48073e-02   8.85208e-04 DIIS
-   @RHF iter   6:   -76.02660920763188   -2.45856e-04   3.93684e-04 DIIS
-   @RHF iter   7:   -76.02665013856976   -4.09309e-05   5.50158e-05 DIIS
-   @RHF iter   8:   -76.02665174963489   -1.61107e-06   1.85444e-05 DIIS
-   @RHF iter   9:   -76.02665183947401   -8.98391e-08   1.04389e-06 DIIS
-   @RHF iter  10:   -76.02665184017415   -7.00140e-10   3.74441e-07 DIIS
+   @RHF iter   6:   -76.02660920763198   -2.45856e-04   3.93684e-04 DIIS
+   @RHF iter   7:   -76.02665013856983   -4.09309e-05   5.50158e-05 DIIS
+   @RHF iter   8:   -76.02665174963492   -1.61107e-06   1.85444e-05 DIIS
+   @RHF iter   9:   -76.02665183947398   -8.98391e-08   1.04389e-06 DIIS
+   @RHF iter  10:   -76.02665184017424   -7.00254e-10   3.74441e-07 DIIS
 
   ==> Post-Iterations <==
 
-	Orbital Energies (a.u.)
-	-----------------------
+    Orbital Energies (a.u.)
+    -----------------------
 
-	Doubly Occupied:                                                      
+    Doubly Occupied:                                                      
 
-	   1A    -20.551254     2A     -1.336543     3A     -0.696430  
-	   4A     -0.568278     5A     -0.493365  
+       1A    -20.551254     2A     -1.336543     3A     -0.696430  
+       4A     -0.568278     5A     -0.493365  
 
-	Virtual:                                                              
+    Virtual:                                                              
 
-	   6A      0.185097     7A      0.256118     8A      0.784742  
-	   9A      0.857137    10A      1.164652    11A      1.200117  
-	  12A      1.254529    13A      1.435758    14A      1.479084  
-	  15A      1.668782    16A      1.865921    17A      1.938781  
-	  18A      2.446049    19A      2.487803    20A      3.289236  
-	  21A      3.333380    22A      3.512241    23A      3.856723  
-	  24A      4.151382  
+       6A      0.185097     7A      0.256118     8A      0.784742  
+       9A      0.857137    10A      1.164652    11A      1.200117  
+      12A      1.254529    13A      1.435758    14A      1.479084  
+      15A      1.668782    16A      1.865921    17A      1.938781  
+      18A      2.446049    19A      2.487803    20A      3.289236  
+      21A      3.333380    22A      3.512241    23A      3.856723  
+      24A      4.151382  
 
-	Final Occupation by Irrep:
-	          A 
-	DOCC [     5 ]
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02665184017415
+  @RHF Final Energy:   -76.02665184017424
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1793878830234998
-    One-Electron Energy =                -123.1203127593788764
-    Two-Electron Energy =                  37.9142730361812283
+    One-Electron Energy =                -123.1203127593790896
+    Two-Electron Energy =                  37.9142730361813278
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.0266518401741536
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -76.0266518401742672
 
-
+  Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
@@ -691,28 +603,28 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -0.9881
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.1725
+     X:    -0.0000      Y:    -0.0000      Z:     0.1725
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.8156     Total:     0.8156
+     X:    -0.0000      Y:    -0.0000      Z:    -0.8156     Total:     0.8156
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:    -2.0731     Total:     2.0731
+     X:    -0.0000      Y:    -0.0000      Z:    -2.0731     Total:     2.0731
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on lawn-128-61-42-42.lawn.gatech.edu at Fri Dec  5 16:09:18 2014
+*** tstop() called on ds4 at Tue Feb  3 12:30:14 2015
 Module time:
-	user time   =       1.10 seconds =       0.02 minutes
+	user time   =       0.47 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.93 seconds =       0.05 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
-  EFP fragment h2o read from /Users/loriab/linux/psihub/master/psi4/obj-efp3/../lib/efpfrag/h2o.efp
-  EFP fragment nh3 read from /Users/loriab/linux/psihub/master/psi4/obj-efp3/../lib/efpfrag/nh3.efp
+	user time   =       1.16 seconds =       0.02 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+  EFP fragment h2o read from /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib/efpfrag/h2o.efp
+  EFP fragment nh3 read from /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib/efpfrag/nh3.efp
 
 
 LIBEFP ver. 1.2.1
@@ -776,15 +688,15 @@ Project web site: http://www.libefp.org/
            H          0.753299000000     0.000000000000    -0.474880000000
 
 
-*** tstart() called on lawn-128-61-42-42.lawn.gatech.edu
-*** at Fri Dec  5 16:09:18 2014
+*** tstart() called on ds4
+*** at Tue Feb  3 12:30:14 2015
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -856,7 +768,7 @@ Project web site: http://www.libefp.org/
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               143
+    Memory (MB):               183
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -871,6 +783,7 @@ Project web site: http://www.libefp.org/
     Spherical Harmonics?: false
     Max angular momentum: 3
 
+  QM/EFP: iterating Total Energy including QM/EFP Induction
   Minimum eigenvalue in the overlap matrix is 2.2347036283E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
@@ -879,17 +792,17 @@ Project web site: http://www.libefp.org/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   1:   -69.19936122818761   -6.91994e+01   1.74013e-01 
-   @DF-RHF iter   2:   -71.90570844645660   -2.70635e+00   1.25884e-01 DIIS
-   @DF-RHF iter   3:   -76.16414813894298   -4.25844e+00   3.39497e-02 DIIS
-   @DF-RHF iter   4:   -76.26451683045249   -1.00369e-01   7.36025e-03 DIIS
-   @DF-RHF iter   5:   -76.27688076716915   -1.23639e-02   1.01547e-03 DIIS
-   @DF-RHF iter   6:   -76.27621638574519    6.64381e-04   3.87007e-04 DIIS
-   @DF-RHF iter   7:   -76.27632308875255   -1.06703e-04   5.84861e-05 DIIS
-   @DF-RHF iter   8:   -76.27621214507214    1.10944e-04   2.69945e-05 DIIS
-   @DF-RHF iter   9:   -76.27617804149351    3.41036e-05   2.87271e-06 DIIS
-   @DF-RHF iter  10:   -76.27617001176546    8.02973e-06   7.08612e-07 DIIS
-   @DF-RHF iter  11:   -76.27616949942806    5.12337e-07   1.90469e-07 DIIS
+   @DF-RHF iter   1:   -69.19936122819934   -6.91994e+01   1.74013e-01 
+   @DF-RHF iter   2:   -71.90570844648033   -2.70635e+00   1.25884e-01 DIIS
+   @DF-RHF iter   3:   -76.16414813894663   -4.25844e+00   3.39497e-02 DIIS
+   @DF-RHF iter   4:   -76.26451683045634   -1.00369e-01   7.36025e-03 DIIS
+   @DF-RHF iter   5:   -76.27688076717276   -1.23639e-02   1.01547e-03 DIIS
+   @DF-RHF iter   6:   -76.27621638574881    6.64381e-04   3.87007e-04 DIIS
+   @DF-RHF iter   7:   -76.27632308875617   -1.06703e-04   5.84861e-05 DIIS
+   @DF-RHF iter   8:   -76.27621214507577    1.10944e-04   2.69945e-05 DIIS
+   @DF-RHF iter   9:   -76.27617804149710    3.41036e-05   2.87271e-06 DIIS
+   @DF-RHF iter  10:   -76.27617001176917    8.02973e-06   7.08612e-07 DIIS
+   @DF-RHF iter  11:   -76.27616949943163    5.12338e-07   1.90469e-07 DIIS
 
   DF guess converged.
 
@@ -914,7 +827,7 @@ Project web site: http://www.libefp.org/
          stored in file 35.
 
       Computing two-electron integrals...done
-      Computed 7581 non-zero two-electron integrals.
+      Computed 7579 non-zero two-electron integrals.
         Stored in file 33.
 
 	Batch   1 pq = [       0,     190] index = [             0,18145]
@@ -923,64 +836,72 @@ Project web site: http://www.libefp.org/
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               143
+    Memory (MB):               183
     Schwarz Cutoff:          1E-12
 
-   @RHF iter  12:   -76.27619614815328   -2.66487e-05   6.31071e-06 DIIS
-   @RHF iter  13:   -76.27619592331372    2.24840e-07   8.27590e-07 DIIS
-  ==> Energetics <==
+   @RHF iter  12:   -76.27619614815330   -2.66487e-05   6.31071e-06 DIIS
+   @RHF iter  13:   -76.27619592331371    2.24840e-07   8.27590e-07 DIIS
 
-  EFP/EFP Electrostatics Energy =      -0.000490136721 [H] *
-  QM-Nuc/EFP Electrostatics Energy =       0.259262561419 [H] *
-  Total Electrostatics Energy =       0.258772424698 [H] *
-          Polarization Energy =        -0.011769485095 [H] *
-  EFP/EFP Dispersion Energy =           0.000000000000 [H] 
-  EFP/EFP Exchange Energy =             0.005685986876 [H] *
-  Total Energy =                        0.252688926479 [H] *
-  EFP Electrostatics Energy =       0.2587724246982094 [H]
-  EFP Polarization Energy =        -0.0117694850952868 [H]
-  EFP Dispersion Energy =           0.0000000000000000 [H]
-  EFP Exchange Energy =             0.0056859868760316 [H]
-  EFP Wfn dependent Energy =       -0.0117694850952868 [H]
-  EFP Total Energy =                0.2526889264789541 [H]
-  Total SCF Energy =              -76.0117375117394829 [H]
+    EFP Results
+  ------------------------------------------------------------
+    Electrostatics                      0.258772424698 [H] *
+      EFP/EFP                          -0.000490136721 [H] *
+      QM-Nuc/EFP                        0.259262561419 [H] *
+
+    Exchange                            0.005685986876 [H] *
+      EFP/EFP                           0.005685986876 [H] *
+      QM/EFP                            0.000000000000 [H] 
+
+    Induction                          -0.011769485095 [H] *
+      QM/EFP                           -0.011769485095 [H] *
+
+    Dispersion                          0.000000000000 [H] 
+      EFP/EFP                           0.000000000000 [H] 
+      QM/EFP                            0.000000000000 [H] 
+
+    Total EFP                           0.252688926479 [H]
+    EFP excluding EFP Induction         0.264458411574 [H]
+    SCF including EFP Induction       -76.276195923314 [H]
+    Total SCF including Total EFP     -76.011737511739 [H]
 
   ==> Post-Iterations <==
 
-	Orbital Energies (a.u.)
-	-----------------------
+    Orbital Energies (a.u.)
+    -----------------------
 
-	Doubly Occupied:                                                      
+    Doubly Occupied:                                                      
 
-	   1A    -20.583751     2A     -1.365144     3A     -0.726329  
-	   4A     -0.596373     5A     -0.522476  
+       1A    -20.583751     2A     -1.365144     3A     -0.726329  
+       4A     -0.596373     5A     -0.522476  
 
-	Virtual:                                                              
+    Virtual:                                                              
 
-	   6A      0.194242     7A      0.295651     8A      0.995644  
-	   9A      1.109261    10A      1.140516    11A      1.152479  
-	  12A      1.359190    13A      1.415414    14A      1.993615  
-	  15A      2.010510    16A      2.042096    17A      2.596491  
-	  18A      2.919823    19A      3.944885  
+       6A      0.194242     7A      0.295651     8A      0.995644  
+       9A      1.109261    10A      1.140516    11A      1.152479  
+      12A      1.359190    13A      1.415414    14A      1.993615  
+      15A      2.010510    16A      2.042096    17A      2.596491  
+      18A      2.919823    19A      3.944885  
 
-	Final Occupation by Irrep:
-	          A 
-	DOCC [     5 ]
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
 
   Energy converged.
 
-  @RHF Final Energy:   -76.01173751173948
+  @RHF Final Energy:   -76.01173751173947
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1793878830234998
-    One-Electron Energy =                -123.2994818054239232
-    Two-Electron Energy =                  37.8556673327085349
+    One-Electron Energy =                -123.2994818054184236
+    Two-Electron Energy =                  37.8556673327030495
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.2644265896918938
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.2526889264789475
+    Total Energy =                        -76.0117376632129265
 
-
+  Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
@@ -1003,25 +924,25 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on lawn-128-61-42-42.lawn.gatech.edu at Fri Dec  5 16:09:20 2014
+*** tstop() called on ds4 at Tue Feb  3 12:30:15 2015
 Module time:
-	user time   =       1.60 seconds =       0.03 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.64 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.62 seconds =       0.08 minutes
-	system time =       0.19 seconds =       0.00 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       1.82 seconds =       0.03 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 
-*** tstart() called on lawn-128-61-42-42.lawn.gatech.edu
-*** at Fri Dec  5 16:09:20 2014
+*** tstart() called on ds4
+*** at Tue Feb  3 12:30:15 2015
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1091,7 +1012,7 @@ Total time:
     wK tasked:                     No
     OpenMP threads:                 1
     Integrals threads:              1
-    Memory (MB):                  143
+    Memory (MB):                  183
     Algorithm:                   Core
     Integral Cache:              NONE
     Schwarz Cutoff:             1E-12
@@ -1107,54 +1028,56 @@ Total time:
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter   1:   -68.87317288584958   -6.88732e+01   1.29277e-01 
-   @RHF iter   2:   -69.93198700633810   -1.05881e+00   1.05793e-01 DIIS
-   @RHF iter   3:   -75.73717006277295   -5.80518e+00   3.63197e-02 DIIS
-   @RHF iter   4:   -76.00155601361934   -2.64386e-01   9.84603e-03 DIIS
+   @RHF iter   2:   -69.93198700633828   -1.05881e+00   1.05793e-01 DIIS
+   @RHF iter   3:   -75.73717006277303   -5.80518e+00   3.63197e-02 DIIS
+   @RHF iter   4:   -76.00155601361935   -2.64386e-01   9.84603e-03 DIIS
    @RHF iter   5:   -76.02636335180286   -2.48073e-02   8.85208e-04 DIIS
-   @RHF iter   6:   -76.02660920763188   -2.45856e-04   3.93684e-04 DIIS
-   @RHF iter   7:   -76.02665013856976   -4.09309e-05   5.50158e-05 DIIS
-   @RHF iter   8:   -76.02665174963489   -1.61107e-06   1.85444e-05 DIIS
-   @RHF iter   9:   -76.02665183947401   -8.98391e-08   1.04389e-06 DIIS
-   @RHF iter  10:   -76.02665184017415   -7.00140e-10   3.74441e-07 DIIS
+   @RHF iter   6:   -76.02660920763198   -2.45856e-04   3.93684e-04 DIIS
+   @RHF iter   7:   -76.02665013856983   -4.09309e-05   5.50158e-05 DIIS
+   @RHF iter   8:   -76.02665174963492   -1.61107e-06   1.85444e-05 DIIS
+   @RHF iter   9:   -76.02665183947398   -8.98391e-08   1.04389e-06 DIIS
+   @RHF iter  10:   -76.02665184017424   -7.00254e-10   3.74441e-07 DIIS
 
   ==> Post-Iterations <==
 
-	Orbital Energies (a.u.)
-	-----------------------
+    Orbital Energies (a.u.)
+    -----------------------
 
-	Doubly Occupied:                                                      
+    Doubly Occupied:                                                      
 
-	   1A    -20.551254     2A     -1.336543     3A     -0.696430  
-	   4A     -0.568278     5A     -0.493365  
+       1A    -20.551254     2A     -1.336543     3A     -0.696430  
+       4A     -0.568278     5A     -0.493365  
 
-	Virtual:                                                              
+    Virtual:                                                              
 
-	   6A      0.185097     7A      0.256118     8A      0.784742  
-	   9A      0.857137    10A      1.164652    11A      1.200117  
-	  12A      1.254529    13A      1.435758    14A      1.479084  
-	  15A      1.668782    16A      1.865921    17A      1.938781  
-	  18A      2.446049    19A      2.487803    20A      3.289236  
-	  21A      3.333380    22A      3.512241    23A      3.856723  
-	  24A      4.151382  
+       6A      0.185097     7A      0.256118     8A      0.784742  
+       9A      0.857137    10A      1.164652    11A      1.200117  
+      12A      1.254529    13A      1.435758    14A      1.479084  
+      15A      1.668782    16A      1.865921    17A      1.938781  
+      18A      2.446049    19A      2.487803    20A      3.289236  
+      21A      3.333380    22A      3.512241    23A      3.856723  
+      24A      4.151382  
 
-	Final Occupation by Irrep:
-	          A 
-	DOCC [     5 ]
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02665184017415
+  @RHF Final Energy:   -76.02665184017424
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1793878830234998
-    One-Electron Energy =                -123.1203127593788764
-    Two-Electron Energy =                  37.9142730361812283
+    One-Electron Energy =                -123.1203127593790896
+    Two-Electron Energy =                  37.9142730361813278
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.0266518401741536
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -76.0266518401742672
 
-
+  Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
@@ -1166,27 +1089,27 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -0.9881
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.1725
+     X:    -0.0000      Y:    -0.0000      Z:     0.1725
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.8156     Total:     0.8156
+     X:    -0.0000      Y:    -0.0000      Z:    -0.8156     Total:     0.8156
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:    -2.0731     Total:     2.0731
+     X:    -0.0000      Y:    -0.0000      Z:    -2.0731     Total:     2.0731
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on lawn-128-61-42-42.lawn.gatech.edu at Fri Dec  5 16:09:21 2014
+*** tstop() called on ds4 at Tue Feb  3 12:30:15 2015
 Module time:
-	user time   =       1.11 seconds =       0.02 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.46 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.80 seconds =       0.10 minutes
-	system time =       0.21 seconds =       0.00 minutes
-	total time  =          8 seconds =       0.13 minutes
-  EFP fragment cl2 read from /Users/loriab/linux/psihub/master/psi4/obj-efp3/../lib/efpfrag/cl2.efp
+	user time   =       2.29 seconds =       0.04 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+  EFP fragment cl2 read from /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib/efpfrag/cl2.efp
 
 
 LIBEFP ver. 1.2.1
@@ -1244,19 +1167,19 @@ Project web site: http://www.libefp.org/
            H         -1.000000000000    -2.000000000000    -6.000000000000
 
 
-*** tstart() called on lawn-128-61-42-42.lawn.gatech.edu
-*** at Fri Dec  5 16:09:21 2014
+*** tstart() called on ds4
+*** at Tue Feb  3 12:30:16 2015
 
-	There are an even number of electrons - assuming singlet.
-	Specify the multiplicity with the MULTP option in the
-	input if this is incorrect
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity with the MULTP option in the
+    input if this is incorrect
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1326,7 +1249,7 @@ Project web site: http://www.libefp.org/
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               143
+    Memory (MB):               183
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -1341,6 +1264,7 @@ Project web site: http://www.libefp.org/
     Spherical Harmonics?: false
     Max angular momentum: 3
 
+  QM/EFP: iterating Total Energy including QM/EFP Induction
   Minimum eigenvalue in the overlap matrix is 3.2119263340E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -1349,70 +1273,78 @@ Project web site: http://www.libefp.org/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.92754720606089   -7.59275e+01   6.36751e-02 
-   @DF-RHF iter   1:   -75.97263515988186   -4.50880e-02   1.10806e-02 
-   @DF-RHF iter   2:   -76.00240498007392   -2.97698e-02   5.87305e-03 DIIS
-   @DF-RHF iter   3:   -76.00984704568401   -7.44207e-03   1.12035e-03 DIIS
-   @DF-RHF iter   4:   -76.01070666549161   -8.59620e-04   3.97347e-04 DIIS
-   @DF-RHF iter   5:   -76.01085642573683   -1.49760e-04   9.50883e-05 DIIS
-   @DF-RHF iter   6:   -76.01086104517789   -4.61944e-06   1.85618e-05 DIIS
-   @DF-RHF iter   7:   -76.01085855768753    2.48749e-06   3.54972e-06 DIIS
-   @DF-RHF iter   8:   -76.01085783518937    7.22498e-07   6.26451e-07 DIIS
-  ==> Energetics <==
+   @DF-RHF iter   0:   -75.98288169477901   -7.59829e+01   6.39585e-02 
+   @DF-RHF iter   1:   -75.95358173971216    2.93000e-02   1.30962e-02 
+   @DF-RHF iter   2:   -75.99812822929763   -4.45465e-02   7.29713e-03 DIIS
+   @DF-RHF iter   3:   -76.00940801763558   -1.12798e-02   1.38645e-03 DIIS
+   @DF-RHF iter   4:   -76.01071041200461   -1.30239e-03   4.44616e-04 DIIS
+   @DF-RHF iter   5:   -76.01085548123801   -1.45069e-04   8.18529e-05 DIIS
+   @DF-RHF iter   6:   -76.01085722938355   -1.74815e-06   1.79885e-05 DIIS
+   @DF-RHF iter   7:   -76.01085747094248   -2.41559e-07   3.12670e-06 DIIS
+   @DF-RHF iter   8:   -76.01085766868383   -1.97741e-07   5.69072e-07 DIIS
 
-  EFP/EFP Electrostatics Energy =      -0.000014063993 [H] *
-  QM-Nuc/EFP Electrostatics Energy =      -0.006267900833 [H] *
-  Total Electrostatics Energy =      -0.006281964826 [H] *
-          Polarization Energy =         0.000700818145 [H] *
-  EFP/EFP Dispersion Energy =          -0.000122835533 [H] *
-  EFP/EFP Exchange Energy =             0.000000163622 [H] *
-  Total Energy =                       -0.005703818593 [H] *
-  EFP Electrostatics Energy =      -0.0062819648262964 [H]
-  EFP Polarization Energy =         0.0007008181448965 [H]
-  EFP Dispersion Energy =          -0.0001228355332352 [H]
-  EFP Exchange Energy =             0.0000001636215894 [H]
-  EFP Wfn dependent Energy =        0.0007008181448965 [H]
-  EFP Total Energy =               -0.0057038185930456 [H]
-  Total SCF Energy =              -76.0172624719273102 [H]
+    EFP Results
+  ------------------------------------------------------------
+    Electrostatics                     -0.006281964826 [H] *
+      EFP/EFP                          -0.000014063993 [H] *
+      QM-Nuc/EFP                       -0.006267900833 [H] *
+
+    Exchange                            0.000000163622 [H] *
+      EFP/EFP                           0.000000163622 [H] *
+      QM/EFP                            0.000000000000 [H] 
+
+    Induction                           0.000700815972 [H] *
+      QM/EFP                            0.000700815972 [H] *
+
+    Dispersion                         -0.000122835533 [H] *
+      EFP/EFP                          -0.000122835533 [H] *
+      QM/EFP                            0.000000000000 [H] 
+
+    Total EFP                          -0.005703820766 [H]
+    EFP excluding EFP Induction        -0.006404636738 [H]
+    SCF including EFP Induction       -76.010857668684 [H]
+    Total SCF including Total EFP     -76.017262305422 [H]
 
   ==> Post-Iterations <==
 
-	Orbital Energies (a.u.)
-	-----------------------
+    Orbital Energies (a.u.)
+    -----------------------
 
-	Doubly Occupied:                                                      
+    Doubly Occupied:                                                      
 
-	   1A    -20.565996     2A     -1.327264     3A     -0.649112  
-	   4A     -0.588083     5A     -0.495501  
+       1A    -20.565997     2A     -1.327264     3A     -0.649113  
+       4A     -0.588083     5A     -0.495501  
 
-	Virtual:                                                              
+    Virtual:                                                              
 
-	   6A      0.172905     7A      0.250294     8A      0.723304  
-	   9A      0.866392    10A      1.180223    11A      1.194420  
-	  12A      1.272744    13A      1.303577    14A      1.520929  
-	  15A      1.584823    16A      1.709479    17A      1.970401  
-	  18A      2.355869    19A      2.403551    20A      3.249217  
-	  21A      3.307901    22A      3.412300    23A      3.794839  
-	  24A      4.148190    25A      5.892171  
+       6A      0.172905     7A      0.250295     8A      0.723304  
+       9A      0.866392    10A      1.180224    11A      1.194420  
+      12A      1.272745    13A      1.303577    14A      1.520929  
+      15A      1.584823    16A      1.709480    17A      1.970401  
+      18A      2.355869    19A      2.403551    20A      3.249218  
+      21A      3.307901    22A      3.412301    23A      3.794839  
+      24A      4.148191    25A      5.892171  
 
-	Final Occupation by Irrep:
-	          A 
-	DOCC [     5 ]
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01726247192731
+  @DF-RHF Final Energy:   -76.01726230542177
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201300833560
-    One-Electron Energy =                -122.4532397601932558
-    Two-Electron Energy =                  37.6006609605257012
+    One-Electron Energy =                -122.4532380727487464
+    Two-Electron Energy =                  37.6006594572352668
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.0115586695842040
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                           -0.0057038207659808
+    Total Energy =                        -76.0172623061961161
 
-
+  Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
@@ -1435,14 +1367,14 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on lawn-128-61-42-42.lawn.gatech.edu at Fri Dec  5 16:09:23 2014
+*** tstop() called on ds4 at Tue Feb  3 12:30:16 2015
 Module time:
-	user time   =       2.08 seconds =       0.03 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.76 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       7.97 seconds =       0.13 minutes
-	system time =       0.25 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =       3.07 seconds =       0.05 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

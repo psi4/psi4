@@ -1606,6 +1606,7 @@ double HF::compute_energy()
             H_->add(Vefp);
             Horig_ = SharedMatrix(new Matrix("H orig Matrix", basisset_->nbf(), basisset_->nbf()));
             Horig_->copy(H_);
+            outfile->Printf( "  QM/EFP: iterating Total Energy including QM/EFP Induction\n");
         }
 
         timer_on("Form S/X");
@@ -1816,13 +1817,14 @@ double HF::compute_energy()
 
         double efp_wfn_independent_energy = Process::environment.globals["EFP TOTAL ENERGY"] -
                                             Process::environment.globals["EFP IND ENERGY"];
+        energies_["EFP"] = Process::environment.globals["EFP TOTAL ENERGY"];
 
         outfile->Printf("    EFP excluding EFP Induction   %20.12f [H]\n", efp_wfn_independent_energy);
         outfile->Printf("    SCF including EFP Induction   %20.12f [H]\n", E_);
 
         E_ += efp_wfn_independent_energy;
 
-        outfile->Printf("    Total SCF                     %20.12f [H]\n", E_);
+        outfile->Printf("    Total SCF including Total EFP %20.12f [H]\n", E_);
     }
 
 
@@ -1960,13 +1962,13 @@ void HF::print_energies()
     outfile->Printf("    Two-Electron Energy =             %24.16f\n", energies_["Two-Electron"]);
     outfile->Printf("    DFT Exchange-Correlation Energy = %24.16f\n", energies_["XC"]);
     outfile->Printf("    Empirical Dispersion Energy =     %24.16f\n", energies_["-D"]);
-    if(pcm_enabled_) {
-      outfile->Printf("    PCM Polarization Energy =         %24.16f\n", energies_["PCM Polarization"]);
-      outfile->Printf("    Total Energy =                    %24.16f\n", energies_["Nuclear"] + energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"] + energies_["PCM Polarization"]);
-    }
-    else
-      outfile->Printf("    Total Energy =                    %24.16f\n", energies_["Nuclear"] +
-        energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"]);
+    if (!pcm_enabled_)
+        energies_["PCM Polarization"] = 0.0;
+    outfile->Printf("    PCM Polarization Energy =         %24.16f\n", energies_["PCM Polarization"]);
+    outfile->Printf("    EFP Energy =                      %24.16f\n", energies_["EFP"]);
+    outfile->Printf("    Total Energy =                    %24.16f\n", energies_["Nuclear"] +
+        energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] +
+        energies_["-D"] + energies_["EFP"] + energies_["PCM Polarization"]);
     outfile->Printf( "\n");
 
     Process::environment.globals["NUCLEAR REPULSION ENERGY"] = energies_["Nuclear"];
@@ -1985,6 +1987,7 @@ void HF::print_energies()
     if (fabs(energies_["-D"]) > 1.0e-14) {
         Process::environment.globals["DISPERSION CORRECTION ENERGY"] = energies_["-D"];
     }
+    outfile->Printf("    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.");
 //  Comment so that autodoc utility will find this PSI variable
 //     It doesn't really belong here but needs to be linked somewhere
 //  Process::environment.globals["DOUBLE-HYBRID CORRECTION ENERGY"]
