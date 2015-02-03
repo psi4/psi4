@@ -42,12 +42,10 @@ molecule qmefp2 {
 }
 
 set basis cc-pvdz
-#set scf_type cd
-set scf_type df
+set scf_type cd
 
 scf = energy('scf')
-#compare_values(ref_qmonly_scf, scf, 6, 'Plain SCF')
-compare_values(ref_qmonly_scf, scf, 4, 'Plain SCF')
+compare_values(ref_qmonly_scf, scf, 6, 'Plain SCF')
 clean()
 
 # Part 3
@@ -78,13 +76,11 @@ clean()
 # Part 4
 psi4.efp_init()  # Necessary. add to activate() ?
 set basis cc-pvdz
-#set scf_type cd
-set scf_type df
+set scf_type cd
 activate(qmefp2)
 
 scf = energy('scf')
-#compare_values(ref_qmonly_scf, scf, 6, 'Plain SCF, re-activated')
-compare_values(ref_qmonly_scf, scf, 4, 'Plain SCF, re-activated')
+compare_values(ref_qmonly_scf, scf, 6, 'Plain SCF, re-activated')
 clean()
 
 # Part 5
