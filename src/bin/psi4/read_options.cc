@@ -1045,7 +1045,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       (if set), or else by the name of the output file plus the name of
       the current molecule. -*/
       options.add_bool("MOLDEN_WRITE", false);
-
+      /*- Level shift applied to the diagonal of the density-weighted Fock operator. While this shift can improve convergence, it does change the DCFT energy. !expert-*/
+      options.add_double("ENERGY_LEVEL_SHIFT", 0.0);
   }
   if (name == "MINTS"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Called at the beginning of SCF computations,
