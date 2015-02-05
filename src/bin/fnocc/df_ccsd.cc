@@ -708,7 +708,7 @@ void DFCoupledCluster::T1Fock(){
         // full Qmo
         psio->write(PSIF_DCC_QSO,"Qmo SCF",(char*)&tempv[0],rowdims[row]*full*full*sizeof(double),addr2,&addr2);
     }
-    delete rowdims;
+    delete[] rowdims;
 
     // build Fock matrix
 
@@ -770,7 +770,7 @@ void DFCoupledCluster::T1Fock(){
             F_DAXPY(full*full,2.0 * dum,integrals+q*full*full,1,temp3,1);
         }
     }
-    delete rowdims;
+    delete[] rowdims;
     psio->close(PSIF_DCC_QSO,1);
 
     // Fij
@@ -921,7 +921,7 @@ void DFCoupledCluster::T1Integrals(){
             }
         }
     }
-    delete rowdims;
+    delete[] rowdims;
     psio->close(PSIF_DCC_QSO,1);
 }
 
