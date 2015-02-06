@@ -260,10 +260,36 @@ class Element_to_Z {
     element_to_Z["NOBELIUM"]     = 102.0;
     element_to_Z["LR"]           =
     element_to_Z["LAWRENCIUM"]   = 103.0;
-    element_to_Z["UNQ"]          = 104.0;
-    element_to_Z["UNP"]          = 105.0;
-    element_to_Z["UNH"]          = 106.0;
-    element_to_Z["UNS"]          = 107.0;
+    element_to_Z["RF"]           =
+    element_to_Z["RUTHERFORDIUM"]= 104.0;
+    element_to_Z["DB"]           =
+    element_to_Z["DUBNIUM"]      = 105.0;
+    element_to_Z["SG"]           =
+    element_to_Z["SEABORGIUM"]   = 106.0;
+    element_to_Z["BH"]           =
+    element_to_Z["BOHRIUM"]      = 107.0;
+    element_to_Z["HS"]           =
+    element_to_Z["HASSIUM"]      = 108.0;
+    element_to_Z["MT"]           =
+    element_to_Z["MEITNERIUM"]   = 109.0;
+    element_to_Z["DS"]           =
+    element_to_Z["DARMSTADTIUM"] = 110.0;
+    element_to_Z["RG"]           =
+    element_to_Z["ROENTGENIUM"]  = 111.0;
+    element_to_Z["CN"]           =
+    element_to_Z["COPERNICIUM"]  = 112.0;
+    element_to_Z["UUT"]          =
+    element_to_Z["UNUNTRIUM"]    = 113.0;
+    element_to_Z["FL"]           =
+    element_to_Z["FLEROVIUM"]    = 114.0;
+    element_to_Z["UUP"]          =
+    element_to_Z["UNUNPENTIUM"]  = 115.0;
+    element_to_Z["LV"]           =
+    element_to_Z["LIVERMORIUM"]  = 116.0;
+    element_to_Z["UUS"]          =
+    element_to_Z["UNUNSEPTIUM"]  = 117.0;
+    element_to_Z["UUO"]          =
+    element_to_Z["UNUNOCTIUM"]   = 118.0;
   }
 
 };
