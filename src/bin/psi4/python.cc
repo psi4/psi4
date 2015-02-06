@@ -1077,6 +1077,15 @@ void py_psi_set_frequencies(boost::shared_ptr<Vector> freq)
     }
 }
 
+void py_psi_set_normalmodes(boost::shared_ptr<Vector> norm)
+{
+    if (Process::environment.wavefunction()) {
+        Process::environment.wavefunction()->set_normalmodes(norm);
+    } else {
+//      Process::environment.set_normalmodes(norm);
+    }
+}
+
 boost::shared_ptr<Vector> py_psi_get_frequencies()
 {
     if (Process::environment.wavefunction()) {
@@ -1096,6 +1105,14 @@ boost::shared_ptr<Vector> py_psi_get_atomic_point_charges()
     else {
       boost::shared_ptr<psi::Vector> empty(new psi::Vector());
       return empty; // charges not added to process.h for environment - yet(?)
+
+boost::shared_ptr<Vector> py_psi_get_normalmodes()
+{
+    if (Process::environment.wavefunction()) {
+        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
+        return wf->normalmodes();
+    } else {
+//      return Process::environment.normalmodes();
     }
 }
 
@@ -1362,7 +1379,9 @@ BOOST_PYTHON_MODULE(psi4)
     def("set_efp_torque", py_psi_set_efp_torque, "Assigns the global EFP gradient to the values stored in the Nefp by 6 Matrix argument.");
     def("get_frequencies", py_psi_get_frequencies, "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
     def("get_atomic_point_charges", py_psi_get_atomic_point_charges, "Returns the most recently computed atomic point charges, as a double * object.");
+    def("get_normalmodes", py_psi_get_normalmodes, "Returns the most recently computed normal modes Vector object.");
     def("set_frequencies", py_psi_set_frequencies, "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
+    def("set_normalmodes", py_psi_set_normalmodes, "Assigns the global normalmodes to the values stored in a Vector argument.");
     def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");
     def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
     def("set_nthread", &py_psi_set_n_threads, "Sets the number of threads to use in SMP parallel computations.");
