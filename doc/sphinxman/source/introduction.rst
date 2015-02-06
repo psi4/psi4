@@ -411,6 +411,8 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DF-SCF (HF and DFT)     | Y         | Y [#f4]_  | RHF/ROHF/UHF/RKS/UKS | threaded                    |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | EFP [#f5]_              | Y         | ---       | RHF                  |                             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DCFT                    | Y         | Y         | UHF                  | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | MP2                     | Y         | Y         | RHF/ROHF/UHF         | threaded [#f3]_             |
@@ -530,6 +532,7 @@ GitHub account <https://github.com/signup/free>`_.
 .. [#f2] RHF and UHF reference are available, however the latter one should be requsted from DFOCC module.  DF-MP2 is recommended as a faster alternative.
 .. [#f3] threading through BLAS routines only
 .. [#f4] DFT gradients only implemented for SCF type DF. LRC-DFT gradients not implemented yet. 
+.. [#f5] Both EFP/EFP and QM/EFP energies are available.
 
 .. toctree::
    :hidden:
