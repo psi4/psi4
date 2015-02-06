@@ -20,8 +20,8 @@
  *@END LICENSE
  */
 
-#ifndef _psi_src_lib_libutil_class_macros_h_
-#define _psi_src_lib_libutil_class_macros_h_
+#ifndef _psi_src_lib_libpsi4util_class_macros_h_
+#define _psi_src_lib_libpsi4util_class_macros_h_
 
 // This macro may be used in a class to declare
 // a private variable with a set and get function
@@ -40,4 +40,4 @@ type get_name() const {return name;} \
 private: \
 type name;
 
-#endif // _psi_src_lib_libutil_class_macros_h_
+#endif // _psi_src_lib_libpsi4util_class_macros_h_

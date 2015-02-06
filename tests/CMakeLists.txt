@@ -115,6 +115,10 @@ add_subdirectory(dcft5)
 add_subdirectory(dcft6)
 add_subdirectory(dcft7)
 add_subdirectory(dcft8)
+add_subdirectory(dfccd1)
+add_subdirectory(dfccdl1)
+add_subdirectory(dfccsd1)
+add_subdirectory(dfccsdl1)
 add_subdirectory(dfmp2-1)
 add_subdirectory(dfmp2-2)
 add_subdirectory(dfmp2-3)
@@ -330,6 +334,11 @@ if(CFOUR_EXECUTABLE)
 endif()
 
 ###### END external-executable-dependent tests ##################
+
+# External module dependent tests
+if(ENABLE_PCMSOLVER)
+   add_subdirectory(pcm1)
+endif()
 
 if(NOT PERL_FOUND)
    message(WARNING "Perl was not found. Some Coupled Cluster test cases will not be thoroughly checked.")

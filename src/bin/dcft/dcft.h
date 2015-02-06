@@ -324,6 +324,8 @@ protected:
     double orbital_level_shift_;
     /// The threshold for the norm of the residual part of the subspace (|b'> = |b'> - |b><b|b'>) that is used to augment the subspace
     double vec_add_tol_;
+    /// Level shift applied to the diagonal of the density-weighted Fock operator
+    double energy_level_shift_;
 
     /// The alpha occupied eigenvectors, per irrep
     SharedMatrix aocc_c_;

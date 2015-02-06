@@ -29,6 +29,7 @@ option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
 # Modules requiring Fortran
 option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF)
+option(ENABLE_PCMSOLVER      "Enable PCMSolver library"                    OFF)
 # Options for dashboard builds
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                        OFF)
 option(ENABLE_MEMCHECK       "Enable Valgrind memory check"                OFF)
@@ -41,7 +42,7 @@ option(ENABLE_JKFACTORY      "Enable the distributed JKFactory (requires MPI)"  
 set(EXTERNAL_LIBS)
 
 # Decide if Fortran is needed
-if(ENABLE_LIBERD)
+if(ENABLE_LIBERD OR ENABLE_PCMSOLVER)
    if(CMAKE_Fortran_COMPILER)
       enable_language(Fortran)
       add_definitions(-DHAVE_FORTRAN)
@@ -58,7 +59,6 @@ include(ConfigVersion)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(PerTargetCompilerFlags) # This module has to be included **after** ConfigCompilerFlags.cmake
-include(ConfigExternal)
 include(ConfigOMP)
 
 # Math: find BLAS and LAPACK
@@ -88,12 +88,16 @@ if(NOT FORTRAN_ENABLED)
    add_definitions(-DFC_SYMBOL=${FC_SYMBOL})
 endif()
 
+if(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local/psi4")
+   set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT TRUE CACHE INTERNAL "")
+endif()
+
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
    set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
    set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
    set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
 else()
-   set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+   set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/external)
    set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
 endif()
 
@@ -220,8 +224,34 @@ set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2
            cctriples scf_solver fock dcft lmp2 mcscf sapt dftsapt sapt_solver
            cchbar cclambda ccdensity transqt ccresponse detci occ mrcc fnocc
            cceom adc thermo functional disp thce 3index deriv_wrapper optking
-           findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util
-           stable deriv scfgrad int util diis plugin parallel parallel2 babel frag efp_solver efp)
+           findif mints trans dpd chkpt iwl psio qt ciomr options moinfo psi4util
+           stable deriv scfgrad int diis plugin parallel parallel2 babel frag efp_solver efp)
+
+# PCMSolver
+if(ENABLE_PCMSOLVER)
+   find_package(ZLIB)
+   if(NOT ZLIB_FOUND)
+      set(ENABLE_PCMSOLVER OFF)	   
+      message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")	
+      message(STATUS " PCMSolver dependencies NOT satisfied:")
+      if(NOT ZLIB_FOUND)
+          message(STATUS "  - install Zlib development libraries")
+      endif()
+   else()
+      fortran_enabler()
+      add_definitions(-DHAVE_PCMSOLVER)
+      message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")	 
+      link_directories(${PROJECT_BINARY_DIR}/external/lib)
+      # PCMSolver needs Fortran libraries 
+      if(CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
+      	   set(PCMSOLVER_LIBS pcm getkw gfortran quadmath ${ZLIB_LIBRARIES})
+      else() # Intel case
+      	   set(PCMSOLVER_LIBS pcm getkw ifcore imf ${ZLIB_LIBRARIES})
+      endif()
+      set(PSILIB ${PSILIB} psipcm ${PCMSOLVER_LIBS})
+   endif()	    
+   set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
+endif()
 
 #RMR---This is our plugin workaround
 #Here we start a list of plugins
@@ -238,23 +268,24 @@ endif()
 
 #If we have MPI we may want to also build JKFactory which makes J and K's
 #in distributed parallel
+set(BUILD_JK_FACTORY FALSE)
 if(MPI_FOUND AND ENABLE_JKFACTORY)
-   set(BUILD_JK_FACTORY "TRUE")
+   set(BUILD_JK_FACTORY TRUE)
 endif()
 if(BUILD_JK_FACTORY)
-    set(JK_BLAS_LIB "")
-    set(JK_BLAS_INC "")
-    if(EXPLICIT_BLAS_LIB)
-      set(JK_BLAS_LIB ${EXPLICIT_BLAS_LIB})
-      set(JK_BLAS_INC ${CMAKE_CXX_FLAGS})
-    endif()
-    message(STATUS "LibJK BLAS Paths: ${JK_BLAS_INC} ${JK_BLAS_LIB}")
-    set(HAVE_GLOBAL_ARRAYS "FALSE")
-    add_definitions(-DHAVE_JK_FACTORY)
-    set(JKROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/libJKFactory)
-    set(PSILIB ${PSILIB} GTFockInt GTFock GTFockCInt
-       ${PROJECT_BINARY_DIR}/lib/libga.a 
-       ${PROJECT_BINARY_DIR}/lib/libarmci.a)     
+   set(JK_BLAS_LIB "")
+   set(JK_BLAS_INC "")
+   if(EXPLICIT_BLAS_LIB)
+     set(JK_BLAS_LIB ${EXPLICIT_BLAS_LIB})
+     set(JK_BLAS_INC ${CMAKE_CXX_FLAGS})
+   endif()
+   message(STATUS "LibJK BLAS Paths: ${JK_BLAS_INC} ${JK_BLAS_LIB}")
+   set(HAVE_GLOBAL_ARRAYS FALSE)
+   add_definitions(-DHAVE_JK_FACTORY)
+   set(JKROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/libJKFactory)
+   set(PSILIB ${PSILIB} GTFockInt GTFock GTFockCInt
+      ${PROJECT_BINARY_DIR}/lib/libga.a 
+      ${PROJECT_BINARY_DIR}/lib/libarmci.a)     
 endif()
 
 # Add the documentation subdirectory

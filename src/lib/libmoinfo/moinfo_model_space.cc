@@ -28,7 +28,7 @@
 #include <psifiles.h>
 #include <exception.h>
 #include <liboptions/liboptions.h>
-#include <libutil/libutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include "psi4-dec.h"
 #include "moinfo.h"
 

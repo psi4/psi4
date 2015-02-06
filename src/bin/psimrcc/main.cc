@@ -45,8 +45,8 @@
 #include <libchkpt/chkpt.hpp>
 #include <libmoinfo/libmoinfo.h>
 #include <liboptions/liboptions.h>
-#include <libutil/libutil.h>
-#include <libutil/memory_manager.h>
+#include <libpsi4util/libpsi4util.h>
+#include <libpsi4util/memory_manager.h>
 #include <libqt/qt.h>
 
 // PSI C++

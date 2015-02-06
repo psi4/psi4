@@ -43,17 +43,19 @@ typedef boost::shared_ptr<psi::BasisSet> SharedBasis;
 SharedInts Ints;
 static SharedBasis primary_;
 static SharedFac factory_;
+
+void SetUp(){
+    psi::Options& options = psi::Process::environment.options;
+    primary_=psi::BasisSet::pyconstruct_orbital(
+        psi::Process::environment.molecule(),
+        "BASIS", options.get_str("BASIS")
+    );
+   factory_=SharedFac(new IntFac(primary_,primary_,primary_,primary_));
+   Ints=SharedInts(factory_->erd_eri());
+}
+
 int ComputeShellQuartet(struct BasisSet*,int ThreadID,
       int M,int N,int P,int Q,double ** IntOut){
-   if(!primary_){
-      psi::Options& options = psi::Process::environment.options;
-      primary_=psi::BasisSet::pyconstruct_orbital(
-         psi::Process::environment.molecule(),
-         "BASIS", options.get_str("BASIS")
-       );
-      factory_=SharedFac(new IntFac(primary_,primary_,primary_,primary_));
-   }
-   Ints=SharedInts(factory_->erd_eri());
    int NInts=Ints->compute_shell(M,N,P,Q);
    const double* Intergrals;
    if(NInts!=0)Intergrals=Ints->buffer();
