@@ -81,11 +81,31 @@ void print_vibrations(std::vector<VIBRATION *> modes) {
   for (int i=0; i<modes.size(); ++i)
     freq_vector->set(i, modes[i]->cm);
 
+  // Reture list of normal modes to wavefunction object.
+  boost::shared_ptr<Vector> nm_vector(new Vector(3*Natom*modes.size()));
+  int count = 0;
+  for (int i=0; i<modes.size(); ++i) {
+    freq_vector->set(i, modes[i]->cm);
+    for (int a=0; a<Natom; ++a) {
+        for (int xyz=0; xyz<3; xyz++) {
+            nm_vector->set(count, modes[i]->lx[3*a+xyz]);
+            count++;
+        }
+    }
+  }
+
   //freq_vector->print_out();
   if (psi::Process::environment.wavefunction()) {
     Process::environment.wavefunction()->set_frequencies(freq_vector);
   }
   Process::environment.set_frequencies(freq_vector);
+
+  //nm_vector->print_out();
+  if (psi::Process::environment.wavefunction()) {
+    Process::environment.wavefunction()->set_normalmodes(nm_vector);
+  }
+  // Process::environment.set_normalmodes(nm_vector);
+
 
   double sum = 0.0;
   for (int a=0; a<Natom; ++a)
