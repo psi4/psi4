@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0 Driver
 
-               Git: Rev {master} de989839fb929e2e4fdd301f65e06e14ff2626c9
+               Git: Rev {master} fdb9578f5cb0074d552ae8944aabc354df928483
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -15,8 +15,8 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  27618
-    PSI4DATADIR: /Users/loriab/linux/psihub/master/psi4/obj-efp3/../lib
+    Process ID:   6402
+    PSI4DATADIR: /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -45,12 +45,12 @@ compare_values( 0.018202051938, get_variable('current energy'), 6, 'EFP-EFP Tota
 
 --------------------------------------------------------------------------
 
-*** tstart() called on Macintosh-132.local
-*** at Fri Dec  5 03:15:17 2014
+*** tstart() called on ds4
+*** at Tue Feb  3 12:24:33 2015
 
 
   Memory set to 200.000 MiB by Python script.
-  EFP fragment c6h6 read from /Users/loriab/linux/psihub/master/psi4/obj-efp3/../lib/fraglib/c6h6.efp
+  EFP fragment c6h6 read from /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib/efpfrag/c6h6.efp
 Warning: There are no quantum mechanical atoms in this molecule.
 
 
@@ -107,12 +107,24 @@ Project web site: http://www.libefp.org/
            H         -0.826968316260     1.314517535152     3.231872096198 (EFP   2)
            H          1.404076482250     1.345354611483     2.205568807036 (EFP   2)
 
-  ==> Energetics <==
 
-  EFP/EFP Electrostatics Energy =      -0.006945896401 [H] *
-  EFP/EFP Polarization Energy =        -0.000674988983 [H] *
-  EFP/EFP Dispersion Energy =          -0.021092525874 [H] *
-  EFP/EFP Exchange Energy =             0.046915604831 [H] *
-  Total Energy =                        0.018202193573 [H] *
+    EFP Results
+  ------------------------------------------------------------
+    Electrostatics                     -0.006945896401 [H] *
+      EFP/EFP                          -0.006945896401 [H] *
+      QM-Nuc/EFP                        0.000000000000 [H] 
+
+    Exchange                            0.046915604831 [H] *
+      EFP/EFP                           0.046915604831 [H] *
+      QM/EFP                            0.000000000000 [H] 
+
+    Induction                          -0.000674988983 [H] *
+      EFP/EFP                          -0.000674988983 [H] *
+
+    Dispersion                         -0.021092525874 [H] *
+      EFP/EFP                          -0.021092525874 [H] *
+      QM/EFP                            0.000000000000 [H] 
+
+    Total EFP                           0.018202193573 [H]
 
 *** PSI4 exiting successfully. Buy a developer a beer!

@@ -20,7 +20,7 @@
  *@END LICENSE
  */
 
-#include <libutil/libutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include <libmoinfo/libmoinfo.h>
 
 #include "blas.h"

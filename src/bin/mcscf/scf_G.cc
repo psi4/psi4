@@ -25,7 +25,7 @@
 #include <psifiles.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
-#include <libutil/libutil.h>
+#include <libpsi4util/libpsi4util.h>
 
 #include "scf.h"
 

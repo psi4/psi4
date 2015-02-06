@@ -23,7 +23,7 @@
 #include <cstdlib>
 #include <algorithm>
 
-#include "libutil.h"
+#include "libpsi4util.h"
 
 namespace psi {
 

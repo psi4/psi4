@@ -1,6 +1,7 @@
 set(headers_list "")
 # List of headers
-list(APPEND headers_list quad.h memory_manager.h class_macros.h ref.h libutil.h )
+list(APPEND headers_list quad.h memory_manager.h class_macros.h ref.h
+libpsi4util.h )
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
@@ -28,14 +29,14 @@ set(to_count "${sources_list}" "${headers_list}")
 write_to_cloc_list("${to_count}")
 
 # Build static library
-add_library(util STATIC ${sources_list})
+add_library(psi4util STATIC ${sources_list})
 # Specify dependencies for the library (if any)
-#add_dependencies(util )
-set(libs_to_merge util ${libs_to_merge} PARENT_SCOPE)
+#add_dependencies(psi4util )
+set(libs_to_merge psi4util ${libs_to_merge} PARENT_SCOPE)
 if(BUILD_CUSTOM_BOOST)
-   add_dependencies(util custom_boost)
+   add_dependencies(psi4util custom_boost)
 endif()
-install(TARGETS util ARCHIVE DESTINATION lib)
+install(TARGETS psi4util ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
-install_list_FILES("${headers_list}" include/libutil)
+install_list_FILES("${headers_list}" include/libpsi4util)

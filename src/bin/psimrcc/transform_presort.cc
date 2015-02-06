@@ -32,7 +32,7 @@
 #include <libpsio/psio.hpp>
 #include <libiwl/iwl.h>
 #include <libmoinfo/libmoinfo.h>
-#include <libutil/libutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include "psifiles.h"
 
 #define MAX(i,j) ((i>j) ? i : j)

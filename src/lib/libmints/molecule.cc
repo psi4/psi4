@@ -975,7 +975,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         Process::environment.get_efp()->add_fragments(efp_fnames);
 
         // Initialize all fragment geometry hints
-        for (size_t lineNumber = lines.size() - 1 ; lineNumber != 0; --lineNumber) {
+        for (int lineNumber = lines.size() - 1 ; lineNumber >= 0; --lineNumber) {
             if(regex_search(lines[lineNumber], reMatches, efpFileMarker_)) {
                 // Process file name
                 if(efp_fnames[currentFragment] != reMatches[1].str())

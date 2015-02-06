@@ -79,6 +79,10 @@ procedures = {
             'df-ccsd2'      : run_dfccsd2,
             'dfccd'         : run_dfccd,
             'df-ccd'        : run_dfccd,
+            'dfccsdl'       : run_dfccsdl,
+            'df-ccsdl'      : run_dfccsdl,
+            'dfccdl'        : run_dfccdl,
+            'df-ccdl'       : run_dfccdl,
             'cd-omp2'       : run_cdomp2,
             'cdomp2'        : run_cdomp2,
             'cd-mp2'        : run_cdmp2,
@@ -336,6 +340,14 @@ def energy(name, **kwargs):
     | df-ccd                  | density-fitted CCD from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
     | dfccd                   | density-fitted CCD from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-ccsdl                | density-fitted CCSDL from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | dfccsdl                 | density-fitted CCSDL from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-ccdl                 | density-fitted CCDL from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | dfccdl                  | density-fitted CCDL from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cepa(0)                 | coupled electron pair approximation variant 0 :ref:`[manual] <sec:fnocepa>`           |
     +-------------------------+---------------------------------------------------------------------------------------+

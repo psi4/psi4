@@ -145,6 +145,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   etc. Use the add_str_i function to make this string case sensitive. -*/
   options.add_str_i("WRITER_FILE_LABEL", "");
 
+  /*- PCM boolean for pcmsolver module -*/
+  options.add_bool("PCM", false);
+  /*- Use total or separate potentials and charges in the PCM-SCF step. !expert -*/
+  options.add_str("PCM_SCF_TYPE", "TOTAL", "TOTAL SEPARATE");
   /*- The type of integrals to use in coupled cluster computations. DF activates density fitting for the largest integral files,
       while CONVENTIONAL results in no approximations being made. -*/
   options.add_str("CC_TYPE", "CONVENTIONAL", "CONVENTIONAL DF");
@@ -1041,7 +1045,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       (if set), or else by the name of the output file plus the name of
       the current molecule. -*/
       options.add_bool("MOLDEN_WRITE", false);
-
+      /*- Level shift applied to the diagonal of the density-weighted Fock operator. While this shift can improve convergence, it does change the DCFT energy. !expert-*/
+      options.add_double("ENERGY_LEVEL_SHIFT", 0.0);
   }
   if (name == "MINTS"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Called at the beginning of SCF computations,
@@ -2948,6 +2953,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("COMPUT_S2",false);
     /*- Do perform a QCHF computation?  -*/
     options.add_bool("QCHF",false);
+    /*- Do solve lambda amplitute equations?  -*/
+    options.add_bool("CC_LAMBDA",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
