@@ -1105,6 +1105,8 @@ boost::shared_ptr<Vector> py_psi_get_atomic_point_charges()
     else {
       boost::shared_ptr<psi::Vector> empty(new psi::Vector());
       return empty; // charges not added to process.h for environment - yet(?)
+    }
+}
 
 boost::shared_ptr<Vector> py_psi_get_normalmodes()
 {
