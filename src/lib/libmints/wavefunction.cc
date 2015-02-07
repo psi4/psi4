@@ -660,7 +660,7 @@ boost::shared_ptr<Vector> Wavefunction::frequencies() const
 
 boost::shared_ptr<Vector> Wavefunction::normalmodes() const
 {
-        return normalmodes_;
+    return normalmodes_;
 }
 
 void Wavefunction::set_frequencies(boost::shared_ptr<Vector>& freqs)
@@ -670,7 +670,7 @@ void Wavefunction::set_frequencies(boost::shared_ptr<Vector>& freqs)
 
 void Wavefunction::set_normalmodes(boost::shared_ptr<Vector>& norms)
 {
-        normalmodes_ = norms;
+    normalmodes_ = norms;
 }
 
 void Wavefunction::save() const
