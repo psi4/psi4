@@ -59,8 +59,8 @@ extern void mcscf_get_mat_block(double **src, double **dst, int dst_dim,
 
 namespace psi { namespace detci {
 
-MCSCF::MCSCF(Options& options)
-    : options_(options)
+MCSCF::MCSCF(Options& options, OutFile& IterSummaryOut)
+    : options_(options), IterSummaryOut_(IterSummaryOut)
 {
     title();
     get_mo_info(options_);
@@ -83,6 +83,7 @@ MCSCF::MCSCF(Options& options)
     diis_manager_->set_error_vector_size(1, DIISEntry::Pointer, num_indep_pairs_);
     diis_manager_->set_vector_size(1, DIISEntry::Pointer, num_indep_pairs_);
 
+//    IterSummaryOut_ = OutFile("file14.dat", TRUNCATE);
 }
 
 MCSCF::~MCSCF()
@@ -90,7 +91,7 @@ MCSCF::~MCSCF()
 }
 
 
-int MCSCF::update(int iter, OutFile& IterSummaryOut)
+int MCSCF::update(void)
 {
   int converged = 0;
   int steptype = 0;
@@ -135,7 +136,7 @@ int MCSCF::update(int iter, OutFile& IterSummaryOut)
   else
     steptype = 0;
 
-  print_step(iter, num_indep_pairs_, steptype, IterSummaryOut);
+  print_step(MCSCF_CalcInfo.iter, num_indep_pairs_, steptype, IterSummaryOut_);
 
   // Cleanup the iteration
   iteration_clean();
