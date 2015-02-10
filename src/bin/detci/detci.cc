@@ -1577,8 +1577,11 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
 {
 
 
+  // Output file for MCSCF iters
+  OutFile IterSummaryOut("file14.dat", TRUNCATE);
+
   set_mcscf_parameters(options);     /* get running params (convergence, etc)    */
-  MCSCF* mcscf = new MCSCF(options);
+  MCSCF* mcscf = new MCSCF(options, IterSummaryOut);
 
   if (MCSCF_Parameters.print_lvl) tstart();
   //mcscf->mcscf_title();                     /* print program identification             */
@@ -1594,9 +1597,6 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
 
   // Parameters
   int conv;
-
-  // Output file for MCSCF iters
-  OutFile IterSummaryOut("file14.dat", TRUNCATE);
 
   // Iterate
   for (int i=0; i<MCSCF_Parameters.max_iter; i++){
@@ -1625,7 +1625,7 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
     close_io();
     detci_iteration_clean();
 
-    conv = mcscf->update(i, IterSummaryOut);
+    conv = mcscf->update();
 
     // If converged
     if (conv){

@@ -48,6 +48,7 @@ private:
     Options& options_;
     void title(void);
     void get_mo_info(Options &options);
+    OutFile& IterSummaryOut_;
 
     /// Independent pairs
     IndepPairs IndPairs;
@@ -127,11 +128,11 @@ private:
 public:
 
     /// Constructor
-    MCSCF(Options& options);
+    MCSCF(Options& options, OutFile& IterSummaryOut);
     ~MCSCF();   
 
     // MCSCF update, orbital rotation
-    int update(int iter, OutFile& IterSummaryOut);
+    int update();
 
     // Cleanup MCSCF
     void finalize(void);
