@@ -23,32 +23,19 @@
 #define SRC_LIB_LIBFRAG_LIBMOLECULE_MOLECULE_H_
 #include<vector>
 #include<boost/shared_ptr.hpp>
+#include "Implementations/MoleculeGuts.h"
 
-#include "MolItr.h"
 namespace psi{
 namespace LibMolecule{
-class Atom;
-class Molecule:protected LibMoleculeBase{
-   private:
-      int Spin_;
-      int Charge_;
-   protected:
-      std::vector<boost::shared_ptr<const Atom> > Atoms_;
-
-      /** \brief Derived classes will use this function to
-       *         enforce a particular looping order
-       *
-       *   What the brief means is best explained by example.
-       *   Consider the Fragment derived class, it needs
-       *   to loop over its own Members array before it loops
-       *   over the Atoms array.  This is the function it
-       *   redefines to accomplish that.
-       */
-      virtual boost::shared_ptr<const Atom> LookUp(const int i)const{
-         return Atoms_[i];
-      }
+/** \brief The public interface to the Molecule class
+ *
+ *   A typical user should only need things from this class
+ */
+class Molecule:protected MoleculeGuts{
    public:
-      int Spin()const{return Spin_;}
+      ///Returns the Multiplicity of the Molecule
+      int Mult()const{return Mult_;}
+      ///Returns the charge of the Molecule
       int Charge()const{return Charge_;}
 
       /** \name Iterator accessors
@@ -82,14 +69,33 @@ class Molecule:protected LibMoleculeBase{
       ///@}
 
       ///Adds an atom to this molecule
-      virtual Molecule& operator<<(boost::shared_ptr<const Atom> NewAtom){
-         Atoms_.push_back(NewAtom);
+      virtual Molecule& operator<<(const Atom& NewAtom){
+         Atoms_.push_back(
+               boost::shared_ptr<const Atom>(new Atom(NewAtom)));
          return *this;
       }
 
       ///Prints out the molecule
       std::string PrintOut(const int DebugLevel=1)const;
+
+      ///Makes this molecule the union of this and other
+      virtual const Molecule& operator+=(const Molecule& other);
+      ///Returns the union of this molecule and other
+      Molecule operator+(const Molecule& other);
+
+      Molecule():MoleculeGuts(){}
+      Molecule(const Molecule& other):MoleculeGuts(other){}
+      virtual const Molecule& operator=(const Molecule& other){
+         MoleculeGuts::operator=(other);
+         return *this;
+      }
       virtual ~Molecule(){}
+      ///True if Atom::operator==() is true for all atoms in the molecule
+      virtual bool operator==(const Molecule& other)const;
+      ///Returns the opposite of operator==
+      bool operator!=(const Molecule& other)const{
+         return !((*this)==other);
+      }
 };
 
 
