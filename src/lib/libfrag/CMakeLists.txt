@@ -1,47 +1,14 @@
-set(libfragsrc 
-#               libmolecule/Atom.h
-#               libmolecule/AtomTypes.h
-#               libmolecule/LibMoleculeBase.h
-#               libmolecule/Fragment.h
-#               libmolecule/Molecule.h            
-#               libmolecule/Atom.cc
-#               libmolecule/AtomTypes.cc
-#               libmolecule/Fragment.cc
-#               libmolecule/Molecule.cc
-               Fragmenter.h
-               FragOptions.h
-               BSSEer.h
-               Embedder.h
-               Capper.h
-               GMBE.h
-               Connections.h
-               libfrag.h
-               MBE.h
-               Grouper.h
-               Grouper.cc
-               MBEFrag.h
-               MBEFrag.cc
-               MBEFragSet.h
-               MBEFragSet.cc
-               Set.h
-               AtomSet.h
-               Fragmenter.cc
-               Embedder.cc
-               GMBE.cc
-               Connections.cc
-               BSSEer.cc
-               libfrag.cc
-               FragOptions.cc
-               MBE.cc
-               Capper.cc
-               AtomSet.cc
-               Symmetrizer.h
-               Symmetrizer.cc
-               DirectSum.cc
+set(libfragsrc GMBE.h
+               LibFragDriver.h
+			   LibFragDriver.cc
+			   MBE.h
+			   MBEProp.h
 )
-add_library(frag STATIC ${libfragsrc})  
-include_directories(../libPsiUtil)
-target_link_libraries(frag parallel PsiUtil) 
+add_subdirectory(libmolecule)
+add_library(frag STATIC ${libfragsrc} ${MOLSRC})  
+include_directories(../libPsiUtil ../libqt libmolecule)
+add_dependencies(frag parallel2 PsiUtil)
+target_link_libraries(frag parallel parallel2 PsiUtil) 
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(frag custom_boost)
 endif()            
