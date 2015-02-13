@@ -1,4 +1,5 @@
-set(SRC PsiMap.h
+set(SRC ProgressBar.h
+        PsiMap.h
         PsiRdmNumGen.h
         PythonFxn.h
         Timer.h
@@ -10,6 +11,7 @@ set(SRC PsiMap.h
         Implementations/BaseUnitConverter.cc
         Implementations/PythonFxnGuts.cc
         Implementations/AtomicData.cc
+        Implementations/ProgressBar.cc
 )
 add_library(PsiUtil ${SRC})
 add_dependencies(PsiUtil parallel2)

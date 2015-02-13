@@ -98,7 +98,6 @@ MBEProp<T> MBE::NBodyProp(const int N, const int nfrags,
    if (N!=nfrags){
       for (int i=0; i<N; i++){
          Result.Change(0, 0, DeltaEs(i, 0)*MBE::Coef(nfrags, N, i+1));
-         std::cout<<DeltaEs(i,0)<<" "<<MBE::Coef(nfrags,N,i+1)<<std::endl;
       }
    }
    else Result.Change(0,0,DeltaEs(N-1,0));

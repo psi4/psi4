@@ -80,22 +80,22 @@ class PsiMap:public std::map<T1,T2>{
 
 /*******************Implementations are below*********************/
 template<typename T1,typename T2>
-PsiMap<T1,T2>::const_iterator PsiMap<T1,T2>::begin()const{
+typename PsiMap<T1,T2>::const_iterator PsiMap<T1,T2>::begin()const{
    return std::map<T1,T2>::begin();
 }
 
 template<typename T1,typename T2>
-PsiMap<T1,T2>::iterator PsiMap<T1,T2>::begin(){
+typename PsiMap<T1,T2>::iterator PsiMap<T1,T2>::begin(){
    return std::map<T1,T2>::begin();
 }
 
 template<typename T1,typename T2>
-PsiMap<T1,T2>::const_iterator PsiMap<T1,T2>::end()const{
+typename PsiMap<T1,T2>::const_iterator PsiMap<T1,T2>::end()const{
    return std::map<T1,T2>::end();
 }
 
 template<typename T1,typename T2>
-PsiMap<T1,T2>::iterator PsiMap<T1,T2>::end(){
+typename PsiMap<T1,T2>::iterator PsiMap<T1,T2>::end(){
    return std::map<T1,T2>::end();
 }
 
