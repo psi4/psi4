@@ -65,7 +65,7 @@ PsiOutStream::PsiOutStream(SharedOutStream Stream){
 
 
 void PsiOutStream::Printf(const char* format,...){
-   int HardLimit=10000;
+   const int HardLimit=10000;
    char* buffer=new char[HardLimit];
    va_list args;
    va_start (args, format);

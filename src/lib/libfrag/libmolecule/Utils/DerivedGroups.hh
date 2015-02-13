@@ -47,9 +47,9 @@ class GenDerGrp:public DerivedFxnalGrp{
       typedef GenDerGrp<MyType,i,order,G1,G2,G3,G4,G5,G6> ThisType;
       GenDerGrp<MyType,i,order,G1,G2,G3,G4,G5,G6>():
             DerivedFxnalGrp(MyType,i,order){}
-      FxnGroup_t GetPrimI(const int i)const{
+      FxnGroup_t GetPrimI(const int j)const{
          FxnGroup_t RValue=NO_GROUP;
-         switch(i){
+         switch(j){
             case(0):{RValue=G1;break;}
             case(1):{RValue=G2;break;}
             case(2):{RValue=G3;break;}

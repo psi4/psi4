@@ -29,6 +29,7 @@
 #include "libparallel2/LibParallel2.h"
 #include "libPsiUtil/PythonFxn.h"
 #include "libPsiUtil/Timer.h"
+#include "libPsiUtil/ProgressBar.h"
 #include "MBEProp.h"
 #include "MBE.h"
 typedef boost::python::str PyStr;
@@ -78,6 +79,7 @@ SharedFrags MakeMolecule(const int N, SharedMol AMol) {
 }
 
 LibFragDriver::LibFragDriver(){
+   outfile->MakeBanner("Many-Body Expansion Module");
    Options options=psi::Process::environment.options;
    int N=options["TRUNCATION_ORDER"].to_integer();
    SharedMol AMol=psi::Process::environment.molecule();
@@ -115,6 +117,9 @@ void LibFragDriver::RunCalc(int Start, int Stop) {
          Tasks.push_back(Task_t(temp, i+1));
       }
    }
+   boost::shared_ptr<const LibParallel::Communicator> Comm=
+         WorldComm->GetComm();
+   long unsigned int Increment=floor(Tasks.size()/Comm->NProc());
    SmartTimer CommTimer("Communications");
    MPIJob<Pair_t> PMan(Tasks);
    PythonFxn<> RunCalc("wrappers", "new_run_calc", "s i");
@@ -122,6 +127,7 @@ void LibFragDriver::RunCalc(int Start, int Stop) {
    Overhead.Stop();
    (*outfile)<<Overhead.PrintOut()<<std::endl;
    CommTimer.Start();
+   ProgressBar MyBar(Increment);
    for(Pair_t NMer=PMan.Begin();!PMan.Done();NMer=PMan.Next()) {
       CommTimer.Stop();
       std::string Frag=MakeMol(NMer.second);
@@ -129,9 +135,10 @@ void LibFragDriver::RunCalc(int Start, int Stop) {
       double Egy=Process::environment.globals["CURRENT ENERGY"];
       TempEngy.push_back(Egy);
       CommTimer.Resume();
+      ++MyBar;
    }
    CommTimer.Stop();
-   (*outfile)<<CommTimer.PrintOut()<<std::endl;
+   (*outfile)<<std::endl<<CommTimer.PrintOut()<<std::endl;
    SmartTimer SynchTimer("Sychronization time");
    std::vector<double> TempEgys2=PMan.Synch(TempEngy, 1);
    SynchTimer.Stop();
