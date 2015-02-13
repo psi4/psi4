@@ -46,7 +46,7 @@ class Parameter: public GeometricQuantity {
    public:
       int size()const{return T;}
       int operator[](const int i)const{return Members_[i];}
-      Parameter(int Members[], double Value) :
+      Parameter<T>(int Members[], double Value) :
             Value_(Value) {
          memcpy(Members_, Members, sizeof(int)*T);
       }
@@ -66,7 +66,7 @@ class Parameter: public GeometricQuantity {
 class Pair:public Parameter<2> {
    public:
       Pair(int Members[], double Value) :
-            Parameter(Members, Value) {
+            Parameter<2>(Members, Value) {
          Name_="Pair";
          Unit_="a.u.";
       }
@@ -75,7 +75,7 @@ class Pair:public Parameter<2> {
 class Bond:public Parameter<2> {
    public:
       Bond(int Members[], double Value) :
-            Parameter(Members, Value) {
+            Parameter<2>(Members, Value) {
          Name_="Bond";
          Unit_="a.u.";
       }
@@ -84,7 +84,7 @@ class Bond:public Parameter<2> {
 class Angle:public Parameter<3> {
    public:
       Angle(int Members[], double Value) :
-            Parameter(Members, Value) {
+            Parameter<3>(Members, Value) {
          Name_="Angle";
          Unit_="radians";
       }
@@ -93,7 +93,7 @@ class Angle:public Parameter<3> {
 class Torsion:public Parameter<4> {
    public:
       Torsion(int Members[], double Value) :
-            Parameter(Members, Value) {
+            Parameter<4>(Members, Value) {
          Name_="Torsion";
          Unit_="radians";
       }
