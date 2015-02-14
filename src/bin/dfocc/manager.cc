@@ -141,6 +141,9 @@ void DFOCC::omp2_manager()
         // QCHF
         if (qchf_ == "TRUE") qchf();
 
+        // QCHF
+        if (qchf_ == "TRUE") qchf();
+
         // ROHF REF
         if (reference == "ROHF") t1_1st_sc();
 	t2_1st_sc();
