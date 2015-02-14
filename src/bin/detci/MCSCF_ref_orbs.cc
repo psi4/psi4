@@ -37,17 +37,12 @@
 
 #include <cstdlib>
 #include <cstdio>
-#include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libpsio/psio.hpp>
 #include <libpsio/psio.h>
 #include <psifiles.h>
-#include "globaldefs.h"
-#include "structs.h"
 #define EXTERN
-#include "globals.h"
-#include "psi4-dec.h"
-
+#include "MCSCF.h"
 
 namespace psi { namespace detci {
 
@@ -61,7 +56,7 @@ namespace psi { namespace detci {
 **
 ** Returns: 1 if read is successful, otherwise 0
 */
-int read_ref_orbs(void)
+int MCSCF::read_ref_orbs(void)
 {
   int h, ir_orbs;
   char orb_key[80];
@@ -94,7 +89,7 @@ int read_ref_orbs(void)
 **
 ** Returns: 1 if successful, otherwise 0
 */
-int write_ref_orbs(void)
+int MCSCF::write_ref_orbs(void)
 {
   int h, ir_orbs;
   char orb_key[80];

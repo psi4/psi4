@@ -38,10 +38,10 @@ class ParallelEnvironment;
 class ParallelEnvironmentGuts: public LibParallelBase{
    private:
       ///No copying
-      ParallelEnvironmentGuts(const ParallelEnvironment& other){}
+      ParallelEnvironmentGuts(const ParallelEnvironment&){}
 
       ///No assignment
-      const ParallelEnvironmentGuts& operator=(const ParallelEnvironmentGuts& other)
+      const ParallelEnvironmentGuts& operator=(const ParallelEnvironmentGuts&)
             {return *this;}
       friend class ParallelEnvironment;
    protected:

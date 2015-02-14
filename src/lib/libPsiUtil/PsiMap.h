@@ -65,11 +65,40 @@ class PsiMap:public std::map<T1,T2>{
       ///Wrapper to the size of the container
       int size()const;
 
+      ///Mirror STL iterator tyepdefs
+      typedef typename std::map<T1,T2>::iterator iterator;
+      typedef typename std::map<T1,T2>::const_iterator const_iterator;
 
+      ///Wrapper to the begin iterator
+      const_iterator begin()const;
+      iterator begin();
 
+      ///Wrapper to the end iterator
+      const_iterator end()const;
+      iterator end();
 };
 
 /*******************Implementations are below*********************/
+template<typename T1,typename T2>
+typename PsiMap<T1,T2>::const_iterator PsiMap<T1,T2>::begin()const{
+   return std::map<T1,T2>::begin();
+}
+
+template<typename T1,typename T2>
+typename PsiMap<T1,T2>::iterator PsiMap<T1,T2>::begin(){
+   return std::map<T1,T2>::begin();
+}
+
+template<typename T1,typename T2>
+typename PsiMap<T1,T2>::const_iterator PsiMap<T1,T2>::end()const{
+   return std::map<T1,T2>::end();
+}
+
+template<typename T1,typename T2>
+typename PsiMap<T1,T2>::iterator PsiMap<T1,T2>::end(){
+   return std::map<T1,T2>::end();
+}
+
 template<typename T1,typename T2>
 T2& PsiMap<T1,T2>::operator[](const T1& key){
    return std::map<T1,T2>::operator[](key);

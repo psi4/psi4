@@ -24,15 +24,9 @@
     \ingroup DETCAS
     \brief Enter brief description of file here 
 */
-#include <cstdlib>
-#include <cstdio>
-#include <libciomr/libciomr.h>
 #include <libqt/qt.h>
-#include "globaldefs.h"
-#include "structs.h"
 #define EXTERN
-#include "globals.h"
-#include "psi4-dec.h"
+#include "MCSCF.h"
 
 namespace psi { namespace detci {
 
@@ -53,7 +47,7 @@ namespace psi { namespace detci {
 ** 
 ** Updated with active-active parts, March 2004
 */
-void form_appx_diag_mo_hess(int npairs, int *ppair, int *qpair, 
+void MCSCF::form_appx_diag_mo_hess(int npairs, int *ppair, int *qpair, 
   double *F_core, double *tei, double **opdm, double *tpdm, double *F_act,
   int firstact, int lastact, double *hess)
 {
@@ -229,7 +223,7 @@ void form_appx_diag_mo_hess(int npairs, int *ppair, int *qpair,
 **
 ** Active-active parts added by C. D. Sherrill, March 2004
 */
-void form_diag_mo_hess(int npairs, int *ppair, int *qpair, 
+void MCSCF::form_diag_mo_hess(int npairs, int *ppair, int *qpair, 
   double *F_core, double *tei, double **opdm, double *tpdm, double *F_act,
   int firstact, int lastact, double *hess)
 {
@@ -471,7 +465,7 @@ void form_diag_mo_hess(int npairs, int *ppair, int *qpair,
 ** C. David Sherrill
 ** September 2003
 */
-void form_full_mo_hess(int npairs, int *ppair, int *qpair, double *oei,
+void MCSCF::form_full_mo_hess(int npairs, int *ppair, int *qpair, double *oei,
   double *tei, double **opdm, double *tpdm, double **lag,
   double **hess)
 {
@@ -625,7 +619,7 @@ void form_full_mo_hess(int npairs, int *ppair, int *qpair, double *oei,
 ** C. David Sherrill
 ** September 2003
 */
-void form_diag_mo_hess_yy(int npairs, int *ppair, int *qpair, double *oei,
+void MCSCF::form_diag_mo_hess_yy(int npairs, int *ppair, int *qpair, double *oei,
   double *tei, double **opdm, double *tpdm, double **lag,
   double *hess)
 {
