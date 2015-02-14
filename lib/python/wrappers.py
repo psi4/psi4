@@ -42,7 +42,7 @@ from driver import *
 # never import aliases into this file
 
 #Where the implementation for running MBEs is held
-import mbe_impl
+#import mbe_impl
 # Function to make calls among wrappers(), energy(), optimize(), etc.
 def call_function_in_1st_argument(funcarg, **largs):
     r"""Function to make primary function call to energy(), opt(), etc.
@@ -337,7 +337,22 @@ def auto_fragments(name, **kwargs):
     new_mol = geometry(new_geom)
     new_mol.print_out()
     psi4.print_out("Exiting auto_fragments\n")
-    
+   
+   
+def new_run_calc(molecule,BeQuiet,**kwargs):
+    oldmolecule = psi4.get_active_molecule()
+    frag=geometry(molecule)
+    activate(frag)
+    frag.update_geometry()
+    if(BeQuiet==1):
+        psi4.be_quiet()
+    energy('scf',**kwargs)
+    if(BeQuiet==1):
+        psi4.reopen_outfile()
+    activate(oldmolecule)  
+    oldmolecule.update_geometry()
+    psi4.clean()
+      
 
 def mbe(name, **kwargs):
     r"""The driver routine for running calculations with the MBE or the 
@@ -357,34 +372,8 @@ def mbe(name, **kwargs):
         del kwargs['molecule']
     molecule = psi4.get_active_molecule()
     molecule.update_geometry()
-    
     psi4.prepare_options_for_module("LIBFRAG")
-    bsse_method=psi4.get_option("LIBFRAG","BSSE_METHOD")
-    frag_method=psi4.get_option("LIBFRAG","FRAG_METHOD")
-    cap_method=psi4.get_option("LIBFRAG","CAP_METHOD")
-    embed_method=psi4.get_option("LIBFRAG","EMBED_METHOD")
-    n=psi4.get_global_option("TRUNCATION_ORDER")    
-    PrintValue=psi4.get_option("LIBFRAG","PRINT")
-    IsSymm=psi4.get_global_option("USE_SPACE_GROUP")
-    print_underlying=False
-    if(PrintValue>1):
-        print_underlying=True
-    
-    VARH=return_energy_components()
-    Egys=[[]]
-    CEgys={}
-    for k,v in VARH[name].iteritems():
-        CEgys[v]=[[]]
-    mbe_impl.setup(frag_method,n,embed_method,cap_method,bsse_method,IsSymm)
-    mbe_impl.fragment(name,molecule,Egys,CEgys,not print_underlying,**kwargs)
-    if(n>=2):
-        mbe_impl.nmers(name,molecule,n,Egys,CEgys,not print_underlying,**kwargs)
-    if(len(CEgys)>1):
-        for k,v in CEgys.iteritems():
-            mbe_impl.SystemEnergy(CEgys[k],k)
-    Best_Approx_Egy=mbe_impl.SystemEnergy(Egys,'Total Energy')
-    mbe_impl.Done()
-    return Best_Approx_Egy
+    Driver=psi4.LibFragDriver();
 
 #######################
 ##  Start of n_body  ##

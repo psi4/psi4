@@ -47,7 +47,6 @@
 #include "libdpd/dpd.h"
 #include "rhf.h"
 #include "../libJKFactory/MinimalInterface.h"
-#include "JKFactory.h"
 using namespace boost;
 using namespace psi;
 using namespace std;

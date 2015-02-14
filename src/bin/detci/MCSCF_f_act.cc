@@ -24,29 +24,23 @@
     \ingroup DETCAS
     \brief Enter brief description of file here 
 */
-#include <cstdlib>
-#include <cstdio>
-#include <libciomr/libciomr.h>
 #include <libqt/qt.h>
-#include <psi4-dec.h>
-#include "globaldefs.h"
-#include "structs.h"
 #define EXTERN
-#include "globals.h"
+#include "MCSCF.h"
 
 namespace psi { namespace detci {
 
 void calc_F_act(double *F_act, int nmo, int firstact, int lastact, 
-                double **onepdm, double *tei);
+         double **onepdm, double *tei);
 void check_F_act(double *F_act, int nmo, int firstact, int lastact, 
-                double **onepdm, double *tei);
+         double **onepdm, double *tei);
 void test_lag(int nbf, int ncore, int npop, double *onei,
-           double *tei, double **opdm, double *tpdm);
+     double *tei, double **opdm, double *tpdm);
 void test_fzc(int nbf, int ncore, double *onei, double *tei);
 void test_lag2(int nbf, int ncore, int npop, double *onei,
            double *tei, double **opdm, double *tpdm);
 
-void form_F_act(void)
+void MCSCF::form_F_act(void)
 {
   int ncore;
 

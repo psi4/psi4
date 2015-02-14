@@ -29,19 +29,19 @@ namespace LibMolecule{
 
 class DummyAtom: public Atom{
    public:
-      DummyAtom(const Carts_t& Carts, const bool IsBohr=true);
+      DummyAtom(const double* Carts, const bool IsBohr=true);
 };
 
 class PointCharge: public Atom{
    public:
-      PointCharge(const Carts_t& Carts,const double Charge=0.0,
+      PointCharge(const double* Carts,const double Charge=0.0,
          const bool IsBohr=true);
 };
 
 class GhostAtom: public Atom{
    public:
       ///Don't give Z's <=0!!!
-      GhostAtom(const Carts_t& Carts,const int Z=0,
+      GhostAtom(const double* Carts,const int Z=0,
             const bool IsBohr=true);
 };
 

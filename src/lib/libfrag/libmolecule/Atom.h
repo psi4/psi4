@@ -23,38 +23,49 @@
 #define SRC_LIB_LIBFRAG_LIBMOLECULE_ATOM_H_
 
 #include <vector>
-#include "LibMoleculeBase.h"
+#include "Implementations/AtomGuts.h"
 namespace psi{
 namespace LibMolecule{
 
-///Allows easy editing of the type
-typedef std::vector<double> Carts_t;
-
-class Atom: protected LibMoleculeBase{
-   private:
-      Carts_t Carts_;
-      double Mass_;
-      double Charge_;
-      int Z_;
-      int NElec_;
-      std::string Label_;
+/** \brief The public interface to the atom
+ *
+ *  Users of LibMolecule should have no need of any atomic
+ *  functionality beyond what is contained in this class
+ */
+class Atom: private AtomGuts{
    public:
-      ///Accessors for the Cartesian coordinates
-      const Carts_t& Carts()const{return Carts_;}
+      ///Accessors for the Cartesian coordinates (in a.u.)
+      ///@{
       double operator[](const int i)const{return Carts_[i];}
       double& operator[](const int i){return Carts_[i];}
+      ///@}
 
       ///Accessors for other properties
+      ///@{
+      ///Returns the mass of the atom in Daltons
       double Mass()const{return Mass_;}
+      ///Returns the charge of the atom
       double Charge()const{return Charge_;}
+      ///Returns the atomic number of the atom
       int Z()const{return Z_;}
+      ///Returns the number of electrons in the atom
       int NElec()const{return NElec_;}
+      ///Returns the chemical symbol of the atom
       std::string Label()const{return Label_;}
+      ///@}
 
-      ///What type of atom is this?
-      bool IsPointCharge()const{return (NElec()==0&&Mass()==0.0);}
+      ///Tells you what kind of atom this is
+      ///@{
+      ///Is this atom "real"
+      bool IsReal()const{return NElec()!=0;}
+      ///Is this atom a point charge
+      bool IsPointCharge()const{return (!IsReal()&&Mass()==0.0);}
+      ///Is this atom a ghost atom
       bool IsGhost()const{return (IsPointCharge()&&Charge()==0.0);}
+      ///Is this atom a dummy atom
       bool IsDummy()const{return (IsGhost()&&Z_==0);}
+
+      ///@}
 
       /** \brief Prints out the atom, useful for debugging
        *
@@ -93,9 +104,25 @@ class Atom: protected LibMoleculeBase{
        *
        *
        */
-      Atom(const Carts_t& Carts, const int Z=0,const bool IsBohr=true,
+      Atom(const double* Carts, const int Z=0,const bool IsBohr=true,
             const std::string Label="",const double Charge=0.0,
            const int NElec=0,const double Mass=0.0);
+      Atom(const Atom& other):AtomGuts(other){}
+      const Atom& operator=(const Atom& other){
+         AtomGuts::operator=(other);
+         return *this;
+      }
+      /** \brief Returns true if two atoms are equal
+       *
+       *   Two atoms are equal iff they are the same element,
+       *   type (ghost, cap, etc.), and have the same carts to within
+       *   10^-6 a.u.
+       */
+      bool operator==(const Atom& other)const;
+      ///Returns the opposite of operator==
+      bool operator!=(const Atom& other)const{
+         return !((*this)==other);
+      }
 };
 
 }}//End namespaces

@@ -67,6 +67,9 @@ class ParallelEnvironment{
       ///Returns a pointer to the current communicator (you can't change it)
       boost::shared_ptr<const Communicator> GetComm()const;
 
+      ///Expert!!!Returns the original rank of the current MPI process
+      int Original()const{return Guts_.Original();}
+
 };
 }}//End namespaces
 
