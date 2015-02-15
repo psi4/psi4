@@ -23,7 +23,7 @@
 #include <sstream>
 #include "FragmentedSys.h"
 #include "Utils/Fragmenter.h"
-#include "Fragment.h"
+#include "LibFragFragment.h"
 #include "PsiMap.h"
 #include "MoleculeTypes.h"
 #include "Utils/GeomManipulator.h"

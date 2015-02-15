@@ -23,7 +23,7 @@
 
 #include "../Utils/GeomManipulator.h"
 #include "MolItr.h"
-#include "Molecule.h"
+#include "LibFragMolecule.h"
 namespace psi{
 namespace LibMolecule{
 typedef boost::shared_ptr<double[]> SharedDouble;

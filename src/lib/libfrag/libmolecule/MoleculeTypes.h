@@ -22,7 +22,7 @@
 #ifndef SRC_LIB_LIBFRAG_LIBMOLECULE_MOLECULETYPES_H_
 #define SRC_LIB_LIBFRAG_LIBMOLECULE_MOLECULETYPES_H_
 
-#include "Molecule.h"
+#include "LibFragMolecule.h"
 namespace psi{
 namespace LibMolecule{
 

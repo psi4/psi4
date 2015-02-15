@@ -21,7 +21,7 @@
  */
 #ifndef SRC_LIB_LIBFRAG_LIBMOLECULE_IMPLEMENTATIONS_UNITCELLGUTS_H_
 #define SRC_LIB_LIBFRAG_LIBMOLECULE_IMPLEMENTATIONS_UNITCELLGUTS_H_
-#include "Molecule.h"
+#include "LibFragMolecule.h"
 namespace psi{
 namespace LibMolecule{
 class UnitCellGuts: public Molecule{

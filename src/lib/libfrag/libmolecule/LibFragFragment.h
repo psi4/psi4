@@ -24,7 +24,7 @@
 #include <vector>
 #include <set>
 #include <boost/shared_ptr.hpp>
-#include "Molecule.h"
+#include "LibFragMolecule.h"
 
 namespace psi{
 namespace LibMolecule{

@@ -20,7 +20,7 @@
  *@END LICENSE
  */
 
-#include "Fragment.h"
+#include "LibFragFragment.h"
 #include "Implementations/FragItrGuts.h"
 namespace psi{
 namespace LibMolecule{

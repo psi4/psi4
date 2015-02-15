@@ -21,8 +21,8 @@
  */
 #ifndef SRC_LIB_LIBFRAG_LIBFRAGDRIVER_H_
 #define SRC_LIB_LIBFRAG_LIBFRAGDRIVER_H_
-#include <boost/shared_ptr.hpp>
 #include <boost/python.hpp>
+#include <boost/shared_ptr.hpp>
 #include <sstream>
 namespace psi{
 namespace LibMolecule{

@@ -24,7 +24,7 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include "../MBEProp.h"
-#include "../Molecule.h"
+#include "../LibFragMolecule.h"
 #include "../SuperCell.h"
 namespace psi{
 namespace LibMolecule{
