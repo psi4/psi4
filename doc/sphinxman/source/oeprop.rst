@@ -34,6 +34,10 @@ summarized in the table below.
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Electrostatic potential, at nuclei | ESP_AT_NUCLEI         | Sets global variables "ESP AT CENTER n", n = 1 to natoms                          |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
+   | Electrostatic potential, on grid   | GRID_ESP              | Generates V at each point in grid_esp.dat. See :ref:`sec:oeprop_grid`             |
+   +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
+   | Electric field, on grid            | GRID_FIELD            | Generates {Ex,Ey,Ez} at each point grid_field.dat. See :ref:`sec:oeprop_grid`     |
+   +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Molecular orbital extents          | MO_EXTENTS            |                                                                                   |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Mulliken atomic charges            | MULLIKEN_CHARGES      |                                                                                   |
@@ -93,3 +97,26 @@ the following possible values:
    +-------------------------------+-------------------------------------------------------------------------------+
    | ["NUCLEAR_CHARGE"]            | Origin is at the center of nuclear charge                                     |
    +-------------------------------+-------------------------------------------------------------------------------+
+
+
+.. _`sec:oeprop_grid`:
+
+
+Properties evaluated on a grid
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Certain properties may be evaluated a user-specified grid points.  The grid
+points are completely arbitrary and are specified by providing a file called
+grid.dat containing the x,y,z values for each point in order::
+
+    x1, y1, z1
+    x2, y2, z2
+    ..........
+    xn, yn, zn
+
+The grid.dat file is completely free form; any number of spaces and/or newlines
+between entries is permitted.  The units of the coordinates in grid.dat are the
+same as those used to specify the molecule's geometry, and the output
+quantities are always in atomic units.  The requested properties will be
+written out in the same order as the grid point specification in grid.dat; see
+the above table for the format and file name of the output.

@@ -896,9 +896,9 @@ void OEProp::compute()
         compute_wiberg_lowdin_indices();
     if (tasks_.count("NO_OCCUPATIONS"))
         compute_no_occupations();
-    if (tasks_.count("GRIDFIELD"))
+    if (tasks_.count("GRID_FIELD"))
         compute_field_over_grid();
-    if (tasks_.count("GRIDESP"))
+    if (tasks_.count("GRID_ESP"))
         compute_esp_over_grid();
 }
 
