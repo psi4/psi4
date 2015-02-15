@@ -21,7 +21,7 @@
  */
 #include "OrganicGeom.h"
 #include "MolItr.h"
-#include "Molecule.h"
+#include "LibFragMolecule.h"
 #include "FxnalGroup.h"
 #include "AddGroupFunctor.h"
 #include "AddDerivedGrpFunctor.h"

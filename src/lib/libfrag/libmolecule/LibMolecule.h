@@ -24,9 +24,9 @@
 
 #include "Atom.h"
 #include "AtomTypes.h"
-#include "Molecule.h"
+#include "LibFragMolecule.h"
 #include "MolItr.h"
-#include "Fragment.h"
+#include "LibFragFragment.h"
 #include "FragmentedSys.h"
 #include "UnitCell.h"
 #include "SuperCell.h"

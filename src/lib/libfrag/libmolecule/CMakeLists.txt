@@ -4,11 +4,11 @@ set(Impl ${CWD}/Implementations)
 set(Utils ${CWD}/Utils)
 set(MoleculeHeaders ${CWD}/Atom.h
                  ${CWD}/AtomTypes.h
-                 ${CWD}/Fragment.h
+                 ${CWD}/LibFragFragment.h
                  ${CWD}/FragmentedSys.h
                  ${CWD}/LibMolecule.h
                  ${CWD}/LibMoleculeBase.h
-                 ${CWD}/Molecule.h
+                 ${CWD}/LibFragMolecule.h
                  ${CWD}/MoleculeTypes.h
                  ${CWD}/MolItr.h
                  ${CWD}/SuperCell.h

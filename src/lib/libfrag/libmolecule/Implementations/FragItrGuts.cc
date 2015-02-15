@@ -21,7 +21,7 @@
  */
 
 #include "FragItrGuts.h"
-#include "Fragment.h"
+#include "LibFragFragment.h"
 
 namespace psi{
 namespace LibMolecule{

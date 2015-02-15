@@ -21,7 +21,7 @@
  */
 
 #include <sstream>
-#include "Molecule.h"
+#include "LibFragMolecule.h"
 #include "Atom.h"
 namespace psi{
 namespace LibMolecule{

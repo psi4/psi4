@@ -21,8 +21,8 @@
  */
 
 #include "Fragmenter.h"
-#include "Fragment.h"
-#include "Molecule.h"
+#include "LibFragFragment.h"
+#include "LibFragMolecule.h"
 #include "FxnalGroup.h"
 namespace psi{
 namespace LibMolecule{

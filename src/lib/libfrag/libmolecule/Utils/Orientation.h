@@ -23,7 +23,7 @@
 #define SRC_LIB_LIBFRAG_LIBMOLECULE_UTILS_ORIENTATION_H_
 
 #include "LibMoleculeBase.h"
-#include "Molecule.h"
+#include "LibFragMolecule.h"
 #include "GeomManipulator.h"
 namespace psi{
 namespace LibMolecule{

@@ -21,7 +21,7 @@
  */
 #include <sstream>
 #include "Geometry.h"
-#include "Molecule.h"
+#include "LibFragMolecule.h"
 #include "AtomicData.h"
 namespace psi {
 namespace LibMolecule {
