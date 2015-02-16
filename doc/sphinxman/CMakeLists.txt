@@ -31,6 +31,9 @@ if(PERL_FOUND AND SPHINX_FOUND)
     # * copy logo image file (configure_file corrupts file)
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/psi4banner.png ${CCBD}/source)
     
+    # * copy favicon image file (configure_file corrupts file)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/favicon-psi4.png ${CCBD}/source)
+    
 
     # Autodoc basis sets
     add_custom_command(
