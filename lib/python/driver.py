@@ -1831,6 +1831,7 @@ def writeCSX(name, **kwargs):
     """
 #import csx_api for csx writing
     import os
+    import math
     import inspect
     import openbabel
     import qcdb
@@ -1964,7 +1965,7 @@ def writeCSX(name, **kwargs):
     molDipoleX = psi4.get_variable('CURRENT DIPOLE X')
     molDipoleY = psi4.get_variable('CURRENT DIPOLE Y')
     molDipoleZ = psi4.get_variable('CURRENT DIPOLE Z')
-    molDipoleTot = psi4.get_variable('CURRENT DIPOLE TOTAL')
+    molDipoleTot = math.sqrt(molDipoleX*molDipoleX+molDipoleY*molDipoleY+molDipoleZ*molDipoleZ)
 
 #get the basename for the CSX file
     psio = psi4.IO.shared_object()
@@ -2122,8 +2123,9 @@ def writeCSX(name, **kwargs):
                 status=psi4.get_global_option('publicationStatus'), \
                 category=psi4.get_global_option('publicationCategory'), \
                 visibility=psi4.get_global_option('publicationVisibility'), \
+                tags=psi4.get_global_option('publicationTags'), \
                 key=psi4.get_global_option('publicationKey'))
-        source1 = api.sourcePackageType(name='Psi', version='4.0')
+        source1 = api.sourcePackageType(name='Psi4', version='beta5')
         mp1.set_sourcePackage(source1)
         ath1 = api.authorType(creator=psi4.get_global_option('correspondingAuthor'), \
                 type_='cs:corresponding',\
@@ -2200,12 +2202,14 @@ def writeCSX(name, **kwargs):
         cs1.set_molecularSystem(ms1)
 
 #molCalculation section
+        avalMethods = False
         mc1 = api.mcType()
         qm1 = api.qmCalcType()
         srs1 = api.srsMethodType()
         sdm1 = api.srssdMethodType()
 #SCF
         if procedures['energy'][name] == run_scf :
+            avalMethods = True
             scf1 = api.resultType(methodology='cs:normal',spinType='cs:'+molSpin, \
                    basisSet='bse:'+molBasis)
             ene1 = api.energiesType(unit='cs:hartree')
@@ -2221,6 +2225,7 @@ def writeCSX(name, **kwargs):
             scf1.set_energies(ene1)
 #DFT
         elif procedures['energy'][name] == run_dft :
+            avalMethods = True
             scf1 = api.resultType(methodology='cs:normal',spinType='cs:'+molSpin, \
                    basisSet='bse:'+molBasis, dftFunctional=name)
             ene1 = api.energiesType(unit='cs:hartree')
@@ -2241,7 +2246,8 @@ def writeCSX(name, **kwargs):
             ene1.add_energy(pe_ene1)
             scf1.set_energies(ene1)
 #MP2
-        elif procedures['energy'][name] == run_mp2 :
+        elif procedures['energy'][name] == run_mp2_select :
+            avalMethods = True
             scf1 = api.resultType(methodology='cs:normal',spinType='cs:'+molSpin, \
                    basisSet='bse:'+molBasis)
             ene1 = api.energiesType(unit='cs:hartree')
@@ -2262,83 +2268,83 @@ def writeCSX(name, **kwargs):
         else :
             print('The current CSX file does not support your method')
 #wavefunction
-        if wfnRestricted:
-            wfn1 = api.waveFunctionType(orbitalCount=orbNum,orbitalOccupancies=orbOccString)
-            orbe1 = api.stringArrayType(unit='cs:hartree')
-            orbe1.set_valueOf_(orbEString)
-            orbs1 = api.orbitalsType()
-            for iorb in range(orbNum):
-                orbt = orbCaString[iorb]
-                orb1 = api.stringArrayType(id=iorb+1)
-                orb1.set_valueOf_(orbt)
-                orbs1.add_orbital(orb1)
-            wfn1.set_orbitals(orbs1)
-            wfn1.set_orbitalEnergies(orbe1)
-        else:
-#alpha electron
-            wfn1 = api.waveFunctionType(orbitalCount=orbNum)
-            orbe1 = api.stringArrayType(unit='cs:hartree')
-            orbe1.set_valueOf_(orbEString)
-            wfn1.set_alphaOrbitalEnergies(orbe1)
-            wfn1.set_alphaOrbitalOccupancies(orbOccString)
-            aorbs1 = api.orbitalsType()
-            for iorb in range(orbNum):
-                orbt = orbCaString[iorb]
-                orb1 = api.stringArrayType(id=iorb+1)
-                orb1.set_valueOf_(orbt)
-                aorbs1.add_orbital(orb1)
-            wfn1.set_alphaOrbitals(aorbs1)
-#beta electron
-            orbeb1 = api.stringArrayType(unit='cs:hartree')
-            orbeb1.set_valueOf_(orbEbString)
-            wfn1.set_betaOrbitalEnergies(orbeb1)
-            wfn1.set_betaOrbitalOccupancies(orbOccCbString)
-            borbs1 = api.orbitalsType()
-            for iorb in range(orbNum):
-                orbt = orbCbString[iorb]
-                orb1 = api.stringArrayType(id=iorb+1)
-                orb1.set_valueOf_(orbt)
-                borbs1.add_orbital(orb1)
-            wfn1.set_betaOrbitals(borbs1)
+        if avalMethods :
+            if wfnRestricted :
+                wfn1 = api.waveFunctionType(orbitalCount=orbNum,orbitalOccupancies=orbOccString)
+                orbe1 = api.stringArrayType(unit='cs:hartree')
+                orbe1.set_valueOf_(orbEString)
+                orbs1 = api.orbitalsType()
+                for iorb in range(orbNum):
+                    orbt = orbCaString[iorb]
+                    orb1 = api.stringArrayType(id=iorb+1)
+                    orb1.set_valueOf_(orbt)
+                    orbs1.add_orbital(orb1)
+                wfn1.set_orbitals(orbs1)
+                wfn1.set_orbitalEnergies(orbe1)
+            else:
+    #alpha electron
+                wfn1 = api.waveFunctionType(orbitalCount=orbNum)
+                orbe1 = api.stringArrayType(unit='cs:hartree')
+                orbe1.set_valueOf_(orbEString)
+                wfn1.set_alphaOrbitalEnergies(orbe1)
+                wfn1.set_alphaOrbitalOccupancies(orbOccString)
+                aorbs1 = api.orbitalsType()
+                for iorb in range(orbNum):
+                    orbt = orbCaString[iorb]
+                    orb1 = api.stringArrayType(id=iorb+1)
+                    orb1.set_valueOf_(orbt)
+                    aorbs1.add_orbital(orb1)
+                wfn1.set_alphaOrbitals(aorbs1)
+    #beta electron
+                orbeb1 = api.stringArrayType(unit='cs:hartree')
+                orbeb1.set_valueOf_(orbEbString)
+                wfn1.set_betaOrbitalEnergies(orbeb1)
+                wfn1.set_betaOrbitalOccupancies(orbOccCbString)
+                borbs1 = api.orbitalsType()
+                for iorb in range(orbNum):
+                    orbt = orbCbString[iorb]
+                    orb1 = api.stringArrayType(id=iorb+1)
+                    orb1.set_valueOf_(orbt)
+                    borbs1.add_orbital(orb1)
+                wfn1.set_betaOrbitals(borbs1)
 
-        scf1.set_waveFunction(wfn1)
-        if dertype == 2:
-            vib1 = api.vibAnalysisType(vibrationCount=molFreqNum)
-            freq1 = api.stringArrayType(unit="cs:cm-1")
-            freq1.set_valueOf_(frqString)
-            vib1.set_frequencies(freq1)
-            irint1 = api.stringArrayType()
-            irint1.set_valueOf_(intString)
-            vib1.set_irIntensities(irint1)
-            norms1 = api.normalModesType()
-            for ifrq in range(molFreqNum):
-                norm1 = api.normalModeType(id=ifrq+1)
-                norm1.set_valueOf_(normMdString[ifrq])
-                norms1.add_normalMode(norm1)
-            vib1.set_normalModes(norms1)
-            scf1.set_vibrationalAnalysis(vib1)
-#   dip1 = api.dipoleType(dipoleX=molDipoleX, dipoleY=molDipoleY, dipoleZ=molDipoleZ)
-#   scf1.set_scfDipole(dip1)
-        prop1 = api.propertiesType()
-        sprop1 = api.propertyType(name='dipoleMomentX',unit='cs:derby')
-        sprop1.set_valueOf_(molDipoleX)
-        sprop2 = api.propertyType(name='dipoleMomentY',unit='cs:derby')
-        sprop2.set_valueOf_(molDipoleY)
-        sprop3 = api.propertyType(name='dipoleMomentZ',unit='cs:derby')
-        sprop3.set_valueOf_(molDipoleZ)
-        sprop4 = api.propertyType(name='dipoleMomentAverage',unit='cs:derby')
-        sprop4.set_valueOf_(molDipoleTot)
-        prop1.add_systemProperty(sprop1)
-        prop1.add_systemProperty(sprop2)
-        prop1.add_systemProperty(sprop3)
-        prop1.add_systemProperty(sprop4)
-        scf1.set_properties(prop1)
+            scf1.set_waveFunction(wfn1)
+            if dertype == 2:
+                vib1 = api.vibAnalysisType(vibrationCount=molFreqNum)
+                freq1 = api.stringArrayType(unit="cs:cm-1")
+                freq1.set_valueOf_(frqString)
+                vib1.set_frequencies(freq1)
+                irint1 = api.stringArrayType()
+                irint1.set_valueOf_(intString)
+                vib1.set_irIntensities(irint1)
+                norms1 = api.normalModesType()
+                for ifrq in range(molFreqNum):
+                    norm1 = api.normalModeType(id=ifrq+1)
+                    norm1.set_valueOf_(normMdString[ifrq])
+                    norms1.add_normalMode(norm1)
+                vib1.set_normalModes(norms1)
+                scf1.set_vibrationalAnalysis(vib1)
+#Properties
+            prop1 = api.propertiesType()
+            sprop1 = api.propertyType(name='dipoleMomentX',unit='cs:debye')
+            sprop1.set_valueOf_(molDipoleX)
+            sprop2 = api.propertyType(name='dipoleMomentY',unit='cs:debye')
+            sprop2.set_valueOf_(molDipoleY)
+            sprop3 = api.propertyType(name='dipoleMomentZ',unit='cs:debye')
+            sprop3.set_valueOf_(molDipoleZ)
+            sprop4 = api.propertyType(name='dipoleMomentAverage',unit='cs:debye')
+            sprop4.set_valueOf_(molDipoleTot)
+            prop1.add_systemProperty(sprop1)
+            prop1.add_systemProperty(sprop2)
+            prop1.add_systemProperty(sprop3)
+            prop1.add_systemProperty(sprop4)
+            scf1.set_properties(prop1)
 
         if procedures['energy'][name] == run_scf :
             sdm1.set_abinitioScf(scf1)
         elif procedures['energy'][name] == run_dft :
             sdm1.set_dft(scf1)
-        elif procedures['energy'][name] == run_mp2 :
+        elif procedures['energy'][name] == run_mp2_select :
             sdm1.set_mp2(scf1)
         else :
             print('The current CSX file does not support your method')
