@@ -1074,8 +1074,7 @@ void OEProp::compute_esp_over_grid()
         int natom = mol->natom();
         for(int i=0; i < natom; i++) {
             Vector3 dR = origin - mol->xyz(i);
-            double r2 = dR.norm();
-            double r = std::sqrt(r2);
+            double r = dR.norm();
             if(r > 1.0E-8)
                 Vnuc += mol->Z(i)/r;
         }
@@ -1090,9 +1089,6 @@ void OEProp::compute_field_over_grid()
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
 
     boost::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
-
-    int nbf = basisset_->nbf();
-    int natoms = mol->natom();
 
     outfile->Printf( "\n Field computed on the grid and written to grid_field.dat\n");
 
