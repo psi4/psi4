@@ -33,7 +33,7 @@ if(ENABLE_PCMSOLVER)
         -DZLIB_ROOT=${ZLIB_ROOT}
         -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
      )
-    
+
     if(PCMSOLVER_TESTS)
        add_external(pcmsolver "${PCMSolverCMakeArgs}" ${CMAKE_CTEST_COMMAND})
     else()
@@ -46,13 +46,13 @@ if(ENABLE_PCMSOLVER)
     include_directories(${CMAKE_BINARY_DIR}/external/include
 		     ${CMAKE_BINARY_DIR}/external/include/eigen3/include/eigen3)
     set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
-    configure_file(${CMAKE_SOURCE_DIR}/lib/python/pcm_placeholder.py.in 
-	           ${CMAKE_SOURCE_DIR}/lib/python/pcm_placeholder.py)	     
+    configure_file(${CMAKE_SOURCE_DIR}/lib/python/pcm_placeholder.py.in
+	           ${CMAKE_SOURCE_DIR}/lib/python/pcm_placeholder.py)
 endif()
 
 set(headers_list "")
 # List of headers
-list(APPEND headers_list psipcm.h)
+list(APPEND headers_list psipcm.h )
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
@@ -65,7 +65,7 @@ list(SORT headers_list)
 
 set(sources_list "")
 # List of sources
-list(APPEND sources_list psipcm.cc)
+list(APPEND sources_list psipcm.cc )
 
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
@@ -80,10 +80,16 @@ set(to_count "${sources_list}" "${headers_list}")
 write_to_cloc_list("${to_count}")
 
 # Build static library
-add_library(psipcm STATIC ${sources_list} ${headers_list})
+add_library(psipcm STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 add_dependencies(psipcm pcmsolver)
-set(libs_to_merge psipcm ${libs_to_merge} PARENT_SCOPE)
+# PCMSolver needs Fortran libraries
+if(CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  list(APPEND PCMSOLVER_LIBS pcm getkw gfortran quadmath ${ZLIB_LIBRARIES})
+else() # Intel case
+  list(APPEND PCMSOLVER_LIBS pcm getkw ifcore imf ${ZLIB_LIBRARIES})
+endif()
+set_property(GLOBAL APPEND PROPERTY LIBLIST psipcm ${PCMSOLVER_LIBS})
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(pcmsolver custom_boost)
    add_dependencies(psipcm custom_boost)
@@ -91,4 +97,4 @@ endif()
 install(TARGETS psipcm ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
-install_list_FILES("${headers_list}" include/libpcm)
+install_list_FILES("${headers_list}" include/libpsipcm)

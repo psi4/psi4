@@ -45,7 +45,7 @@
 #include <liboptions/liboptions_python.h>
 #include <psifiles.h>
 #include <libfock/jk.h>
-#include <libpcm/psipcm.h>
+#include <libpsipcm/psipcm.h>
 
 
 #include "hf.h"

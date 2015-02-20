@@ -32,7 +32,7 @@
 #include <libdiis/diisentry.h>
 #include <psi4-dec.h>
 #include <libqt/qt.h>
-#include <libpcm/psipcm.h>
+#include <libpsipcm/psipcm.h>
 
 
 namespace boost {
