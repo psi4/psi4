@@ -192,7 +192,7 @@ if(ENABLE_LIBERD)
 endif()
 
 # Is this needed for the script?
-# TODO: Fix gitversion.py to work without setting top_srcdir...maybe use
+# TODO: Fix gitversion.py to work without setting top_srcdir...maybe use 
 # PROJECT_SOURCE_DIR?
 set(top_srcdir ${PROJECT_SOURCE_DIR}) # The quotes are added in the source, in this case
 configure_file(src/bin/psi4/gitversion.py.in src/bin/psi4/gitversion.py)
