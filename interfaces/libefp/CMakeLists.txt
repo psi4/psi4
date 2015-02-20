@@ -30,12 +30,10 @@ add_library(interface_libefp STATIC ${sources_list})
 set_property(TARGET interface_libefp PROPERTY COMPILE_FLAGS "-O1")
 
 # Specify dependencies for the library (if any)
-set(libs_to_merge interface_libefp ${libs_to_merge} PARENT_SCOPE)
+# Make sure psi4 links in
+set_property(GLOBAL APPEND PROPERTY INTERFACES interface_libefp)
 install(TARGETS interface_libefp ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/interface_libefp)
-
-# Make sure psi4 links in
-set(PSILIB ${PSILIB} ${CMAKE_BINARY_DIR}/lib/libinterface_libefp.a PARENT_SCOPE)
 

@@ -42,12 +42,17 @@ endif()
 set(to_count "${sources_list}" "${headers_list}")
 write_to_cloc_list("${to_count}")
 
+get_property(from_src_bin GLOBAL PROPERTY PSILIB)
+get_property(from_src_lib GLOBAL PROPERTY LIBLIST)
+get_property(from_interfaces GLOBAL PROPERTY INTERFACES)
+list(APPEND psi_libraries "${from_src_bin}" "${from_src_lib}" "${from_interfaces}")
+
 # Prepare for linking executable
-list(APPEND 
-     LINKLIBS "${PSILIB}" "${Boost_LIBRARIES}" 
-     "${LAPACK_LIBRARIES}" "${BLAS_LIBRARIES}" 
-     "${PYTHON_LIBRARIES}" "${EXTERNAL_LIBS}" 
-     "${LIBUTIL_LIBRARIES}" "${LIBDL_LIBRARIES}" 
+list(APPEND
+     LINKLIBS "${psi_libraries}" "${Boost_LIBRARIES}"
+     "${LAPACK_LIBRARIES}" "${BLAS_LIBRARIES}"
+     "${PYTHON_LIBRARIES}" "${EXTERNAL_LIBS}"
+     "${LIBUTIL_LIBRARIES}" "${LIBDL_LIBRARIES}"
      "${LIBRT_LIBRARIES}" "${LIBM_LIBRARIES}"
      )
 

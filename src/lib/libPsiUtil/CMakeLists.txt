@@ -16,6 +16,7 @@ set(SRC ProgressBar.h
 add_library(PsiUtil ${SRC})
 add_dependencies(PsiUtil parallel2)
 include_directories(libparallel2)
+set_property(GLOBAL APPEND PROPERTY LIBLIST PsiUtil)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(PsiUtil custom_boost)
 endif()

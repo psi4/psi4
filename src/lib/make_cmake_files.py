@@ -2,7 +2,7 @@
 # -*- python -*-
 # -*- coding: utf-8 -*-
 # vim:filetype=python:
-# Create CMakeLists.txt template for leaf directories 
+# Create CMakeLists.txt template for leaf directories
 # (c) Roberto Di Remigio  <roberto.d.remigio@uit.no>
 # licensed under the GNU Lesser General Public License
 
@@ -26,7 +26,7 @@ parser.add_argument('--lang',
         const='CXX',
         help='Source file language')
 
-args = parser.parse_args() 
+args = parser.parse_args()
 libname = args.libname
 lang    = args.lang
 
@@ -60,8 +60,8 @@ def glob_sources_cxx():
     + '   list(REMOVE_ITEM sources_list "")\n'                             \
     + 'else()\n'                                                           \
     + '   list(REMOVE_ITEM sources_list "")\n'                             \
-    + 'endif()\n\n'                                                                 
-    return message            
+    + 'endif()\n\n'
+    return message
 
 def glob_sources_c():
     """Create a list of C headers and sources to be used in a CMakeLists.txt file."""
@@ -93,8 +93,8 @@ def glob_sources_c():
     + '   list(REMOVE_ITEM sources_list "")\n'                             \
     + 'else()\n'                                                           \
     + '   list(REMOVE_ITEM sources_list "")\n'                             \
-    + 'endif()\n\n'                                                                 
-    return message            
+    + 'endif()\n\n'
+    return message
 
 def glob_sources_fortran():
     """Create a list of Fortran sources to be used in a CMakeLists.txt file."""
@@ -119,8 +119,8 @@ def glob_sources_fortran():
     + '   list(REMOVE_ITEM sources_list "")\n'                             \
     + 'else()\n'                                                           \
     + '   list(REMOVE_ITEM sources_list "")\n'                             \
-    + 'endif()\n\n'                                                                 
-    return message            
+    + 'endif()\n\n'
+    return message
 
 f = open('CMakeLists.txt.try', 'w')
 if (lang == 'CXX'):
@@ -139,7 +139,7 @@ f.write('# Build static library\n')
 f.write('add_library('+ libname + ' STATIC ${sources_list})\n')
 f.write('# Specify dependencies for the library (if any)\n')
 f.write('#add_dependencies('+ libname + ' )\n')
-f.write('set(libs_to_merge '+ libname + ' ${libs_to_merge} PARENT_SCOPE)\n')
+f.write('set_property(GLOBAL APPEND PROPERTY LIBLIST {0})\n'.format(libname))
 if (not (lang == 'C' or lang == 'F')):
     f.write('if(BUILD_CUSTOM_BOOST)\n')
     f.write('   add_dependencies('+ libname + ' custom_boost)\n')
