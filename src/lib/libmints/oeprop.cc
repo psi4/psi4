@@ -1002,7 +1002,7 @@ public:
     const Vector3& gridpoints() const {return gridpoints_;}
     GridIterator(const std::string &filename)
     {
-        gridfile_.open(filename);
+        gridfile_.open(filename.c_str());
         if(!gridfile_)
             throw PSIEXCEPTION("Unable to open the grid.dat file.");
     }
