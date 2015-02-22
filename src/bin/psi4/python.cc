@@ -718,6 +718,10 @@ bool py_psi_set_local_option_string(std::string const & module, std::string cons
 
     if (data.type() == "string") {
         Process::environment.options.set_str(module, nonconst_key, value);
+        check_for_basis(value, nonconst_key);
+    } else if (data.type() == "istring") {
+        Process::environment.options.set_str_i(module, nonconst_key, value);
+        check_for_basis(value, nonconst_key);
     } else if (data.type() == "boolean") {
         if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
           boost::to_upper_copy(value) == "ON")
@@ -741,7 +745,7 @@ bool py_psi_set_local_option_int(std::string const & module, std::string const &
         Process::environment.options.set_double(module, nonconst_key, val);
     }else if (data.type() == "boolean") {
         Process::environment.options.set_bool(module, nonconst_key, value ? true : false);
-    }else if (data.type() == "string") {
+    }else if (data.type() == "string" || data.type() == "istring") {
         Process::environment.options.set_str(module, nonconst_key, boost::lexical_cast<std::string>(value));
     }else{
         Process::environment.options.set_int(module, nonconst_key, value);
@@ -775,7 +779,7 @@ bool py_psi_set_global_option_string(std::string const & key, std::string const 
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options[nonconst_key];
 
-    if (data.type() == "string") {
+    if (data.type() == "string" || data.type() == "istring") {
         Process::environment.options.set_global_str(nonconst_key, value);
     } else if (data.type() == "boolean") {
         if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
@@ -800,7 +804,7 @@ bool py_psi_set_global_option_int(std::string const & key, int value)
         Process::environment.options.set_global_double(nonconst_key, val);
     }else if (data.type() == "boolean") {
         Process::environment.options.set_global_bool(nonconst_key, value ? true : false);
-    }else if (data.type() == "string") {
+    }else if (data.type() == "string" || data.type() == "istring") {
         Process::environment.options.set_global_str(nonconst_key, boost::lexical_cast<std::string>(value));
     }else{
         Process::environment.options.set_global_int(nonconst_key, value);
@@ -957,7 +961,7 @@ object py_psi_get_local_option(std::string const & module, std::string const & k
     py_psi_prepare_options_for_module(module);
     Data& data = Process::environment.options.get_local(nonconst_key);
 
-    if (data.type() == "string")
+    if (data.type() == "string" || data.type() == "istring")
         return str(data.to_string());
     else if (data.type() == "boolean" || data.type() == "int")
         return object(data.to_integer());
@@ -974,7 +978,7 @@ object py_psi_get_global_option(std::string const & key)
     string nonconst_key = key;
     Data& data = Process::environment.options.get_global(nonconst_key);
 
-    if (data.type() == "string")
+    if (data.type() == "string" || data.type() == "istring")
         return str(data.to_string());
     else if (data.type() == "boolean" || data.type() == "int")
         return object(data.to_integer());
@@ -993,7 +997,7 @@ object py_psi_get_option(std::string const & module, std::string const & key)
     py_psi_prepare_options_for_module(module);
     Data& data = Process::environment.options.use_local(nonconst_key);
 
-    if (data.type() == "string")
+    if (data.type() == "string" || data.type() == "istring")
         return str(data.to_string());
     else if (data.type() == "boolean" || data.type() == "int")
         return object(data.to_integer());
