@@ -31,15 +31,9 @@ namespace psi{
 ///Wrapper class that ensures that a particular engine is only made once
 template<typename T>
 class PsiRdmNumEngine{
-   protected:
-      ///protected to prevent instantiations of this class
-      PsiRdmNumEngine<T>(){}
-      ///protected to prevent copying
-      PsiRdmNumEngine<T>(const PsiRdmNumEngine<T>& other){}
    public:
       ///The actual engine (G++ seems to think that this needs to be public);
       static T Engine_;
-
 };
 
 template<typename T>
@@ -99,14 +93,15 @@ T PsiRdmNumEngine<T>::Engine_(std::time(0));
 template<typename T0=int,
          typename T1=boost::random::mt19937,
          typename T2=boost::random::uniform_int_distribution<> >
-class PsiRdmNumGen: public PsiRdmNumEngine<T1>{
+class PsiRdmNumGen{
    private:
+      PsiRdmNumEngine<T1> Engine_;
 
       ///Convenient typedef of the current type
       typedef PsiRdmNumGen<T0,T1,T2> ThisType_;
 
       ///... of the generator
-      typedef boost::variate_generator<T1,T2> GenType_;
+      typedef boost::variate_generator<T1&,T2> GenType_;
 
       ///.... of a shared pointer to the generator
       typedef boost::shared_ptr<GenType_> SharedGen_;
@@ -122,7 +117,7 @@ class PsiRdmNumGen: public PsiRdmNumEngine<T1>{
       ///Abstraction of initialization, by type of returned number
       SharedGen_ Init(const T0& Max, const T0& Min){
          T2 dist(Min,Max);
-        SharedGen_ temp(new GenType_(PsiRdmNumGen<T1>::Engine_,dist));
+        SharedGen_ temp(new GenType_(Engine_.Engine_,dist));
         return temp;
       }
 

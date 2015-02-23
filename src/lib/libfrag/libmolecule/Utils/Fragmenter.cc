@@ -103,10 +103,10 @@ std::vector<SharedFrag> BondFragmenter::MakeFrags(){
    const ConnGroups& FxnGroups=Geom_->GetGroups();
    GroupIt FxnGroupI=FxnGroups.begin(),EndGroup=FxnGroups.end();
    const Connections& Conns=Geom_->GetConns();
+   long int value=0;
    for (; FxnGroupI!=EndGroup; ++FxnGroupI){
       vSharedGroup Groups;
       Groups.push_back(*FxnGroupI);
-      long int value=0;
       Recurse(Groups,Conns,FxnGroups,value);
    }
    return FoundFrags_;

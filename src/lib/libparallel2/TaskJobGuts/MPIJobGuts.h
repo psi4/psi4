@@ -129,6 +129,8 @@ MPIJobGuts::MPIJobGuts(const std::vector<MPITask<T> >& Tasks, int MaxProcs,
       bool ForceDynamic) :
       Active_(true), Enough_(false),
             IState_(Env_->GetComm()) {
+   if(MaxProcs>Tasks.size()||IState_->NProc()>Tasks.size())
+      MaxProcs=Tasks.size();
    Enough_=MPIJobGuts::EnoughProcs(MaxProcs);
    if(Enough_)FState_=InitialState(MaxProcs);
    if (Active_) { ///Only set-up if the MPI process is participating

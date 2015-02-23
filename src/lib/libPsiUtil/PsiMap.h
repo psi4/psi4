@@ -133,7 +133,7 @@ const T2& PsiMap<T1,T2>::MapDeRef(const T1& Key)const{
       returnvalue=&(const_cast<std::map<T1,T2>* >(temp))->operator[](Key);
    }
    else //We are changing it, that's a no-no...
-      throw PSIEXCEPTION("This Map doesn't contain an element:"+Key);
+      throw PSIEXCEPTION("This Map doesn't contain this element");
    return *returnvalue;
 }
 }//End psi namespace

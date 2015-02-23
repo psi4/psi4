@@ -2,6 +2,7 @@ set(libfragsrc GMBE.h
                LibFragDriver.h
 			   LibFragDriver.cc
 			   MBE.h
+			   MBE.cc
 			   MBEProp.h
 )
 add_subdirectory(libmolecule)
