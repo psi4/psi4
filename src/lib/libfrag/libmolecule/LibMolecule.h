@@ -24,10 +24,13 @@
 
 #include "Atom.h"
 #include "AtomTypes.h"
-#include "Molecule.h"
+#include "LibFragMolecule.h"
 #include "MolItr.h"
-#include "Fragment.h"
-
+#include "LibFragFragment.h"
+#include "FragmentedSys.h"
+#include "UnitCell.h"
+#include "SuperCell.h"
+#include "MoleculeTypes.h"
 
 
 #endif /* SRC_LIB_LIBFRAG_LIBMOLECULE_LIBMOLECULE_H_ */

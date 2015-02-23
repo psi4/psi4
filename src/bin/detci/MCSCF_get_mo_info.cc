@@ -24,20 +24,13 @@
     \ingroup DETCAS
     \brief Enter brief description of file here 
 */
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <libqt/qt.h>
-#include <psi4-dec.h>
 #include <libmints/wavefunction.h>
-#include "globaldefs.h"
-#include "structs.h"
 #define EXTERN
-#include "globals.h"
+#include "MCSCF.h"
 
 namespace psi { namespace detci {
 
@@ -59,7 +52,7 @@ namespace psi { namespace detci {
 ** based on the version in DETCI
 **
 */
-void mcscf_get_mo_info(Options &options)
+void MCSCF::get_mo_info(Options &options)
 {
    int h, i, j, k, tmp, cnt, irrep, errcod, errbad;
    int size;
@@ -386,7 +379,7 @@ void mcscf_get_mo_info(Options &options)
 **
 ** Read in the molecular orbital matrix from PSIF_CHKPT and put them in MCSCF_CalcInfo
 */
-void read_cur_orbs(void)
+void MCSCF::read_cur_orbs(void)
 {
   int i, j, h, dim, nirreps;
   double **tmat;

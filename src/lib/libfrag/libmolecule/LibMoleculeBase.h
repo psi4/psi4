@@ -26,6 +26,7 @@
 #include "exception.h"
 #include "Units.h"
 #include "AtomicData.h"
+#include "qt.h"
 namespace psi{
 namespace LibMolecule{
 
@@ -50,6 +51,41 @@ class LibMoleculeBase{
       double Mass(const int i)const{
          AtomicData CRC;
          return CRC[i].Mass();
+      }
+      /** \brief C=a*A*B+b*C
+       *
+       *  \param[in/out] C The result
+       *  \param[in] A The matrix A
+       *  \param[in] B The matrix B
+       *  \param[in] RowA The rows of the resulting matrix
+       *  \param[in] ConDim The contracting dimension,after any transposes
+       *  \param[in] ColB The columns of the resulting matrix
+       *  \param[in] TransA True if we are transposing A
+       *  \param[in] TransB True if we are transposing B
+       *  \param[in] a The value A.B is being scaled by
+       *  \param[in] b The value C is being scaled by before being added
+       *               to A.B
+       */
+      void DGEMM_Int(double* C,const double* A, const double* B,
+                     int RowA,int ConDim,int ColB,
+                     bool TransA=false,bool TransB=false,
+                     double a=1.0,double b=0.0){
+         char transA=(TransA?'T':'N');
+         char transB=(TransB?'T':'N');
+         C_DGEMM(transA,transB,
+                 RowA,ColB,ConDim,
+                 a,const_cast<double*>(A),(TransA?RowA:ConDim),
+                 const_cast<double*>(B),(TransB?ConDim:ColB),
+                 b,C,ColB);
+      }
+      ///Diagonalizes the matrix C, that is N by N
+      void Diagonalize(double* C, const int N,double* EVals,bool EVec=true){
+         int NewN=N;
+         double NWork;
+         C_DSYEV((EVec?'V':'N'),'U',NewN,C,N,EVals,&NWork, -1);
+         double *Work=new double[(int)NWork];
+         C_DSYEV((EVec?'V':'N'),'U',NewN,C,N,EVals,Work,NWork);
+         delete [] Work;
       }
 };
 

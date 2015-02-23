@@ -24,19 +24,12 @@
     \ingroup DETCAS
     \brief Enter brief description of file here 
 */
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
-#include "globaldefs.h"
-#include "structs.h"
 #define EXTERN
-#include "globals.h"
-#include "psi4-dec.h"
+#include "MCSCF.h"
 
 namespace psi { namespace detci {
 
