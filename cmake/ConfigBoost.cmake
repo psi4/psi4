@@ -39,19 +39,19 @@ if(NOT Boost_FOUND)
    set(Boost_LIBRARIES "")
    # Read documentation in FindBoost.cmake for the difference between the singular and plural forms
    set(Boost_INCLUDE_DIR  ${CUSTOM_BOOST_LOCATION}/include)
-   set(Boost_INCLUDE_DIRS ${CUSTOM_BOOST_LOCATION}/include) 
+   set(Boost_INCLUDE_DIRS ${CUSTOM_BOOST_LOCATION}/include)
    set(Boost_LIBRARY_DIR  ${CUSTOM_BOOST_LOCATION}/lib)
    set(Boost_LIBRARY_DIRS ${CUSTOM_BOOST_LOCATION}/lib)
    # This is the one that was in use in the PSI4 cmake files and is included
    # to maintain the scripts in some working order, but the former should
    # be preferred
    set(BOOSTLIBDIR ${Boost_LIBRARY_DIR})
-   # We will link statically, so just set the Boost_<C>_LIBRARY for the static library 
+   # We will link statically, so just set the Boost_<C>_LIBRARY for the static library
    foreach(_component ${needed_components})
-   	string(TOUPPER ${_component} _COMP)
-   	set(Boost_${_COMP}_FOUND TRUE)
-        set(Boost_${_COMP}_LIBRARY libboost_${_component}-${Boost_LIB_VERSION}.a)
-   	list(APPEND Boost_LIBRARIES ${Boost_${_COMP}_LIBRARY})
+   string(TOUPPER ${_component} _COMP)
+   set(Boost_${_COMP}_FOUND TRUE)
+   set(Boost_${_COMP}_LIBRARY libboost_${_component}-${Boost_LIB_VERSION}.a)
+   list(APPEND Boost_LIBRARIES ${Boost_${_COMP}_LIBRARY})
    endforeach()
    if(CMAKE_SYSTEM_NAME MATCHES "Linux")
       list(APPEND Boost_LIBRARIES rt)
