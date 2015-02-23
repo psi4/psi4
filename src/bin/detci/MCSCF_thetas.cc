@@ -24,19 +24,14 @@
     \ingroup DETCAS
     \brief Enter brief description of file here 
 */
-#include <cstdlib>
-#include <cstdio>
+
 #include <cmath>
-#include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libpsio/psio.hpp>
 #include <libpsio/psio.h>
 #include <psifiles.h>
-#include "globaldefs.h"
-#include "structs.h"
 #define EXTERN
-#include "globals.h"
-#include "psi4-dec.h"
+#include "MCSCF.h"
 
 namespace psi { namespace detci { 
 
@@ -51,7 +46,7 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
 **  unitary matrix U parameterized as a series of Givens rotations
 **
 */
-void postmult_by_U(int irrep, int dim, double **mat,
+void MCSCF::postmult_by_U(int irrep, int dim, double **mat,
                    int npairs, int *p_arr, int *q_arr, double *theta_arr)
 {
 
@@ -81,7 +76,7 @@ void postmult_by_U(int irrep, int dim, double **mat,
 **  matrix (based on formalism of notes by Yukio Yamaguchi)
 **
 */
-void postmult_by_exp_R(int irrep, int dim, double **mat,
+void MCSCF::postmult_by_exp_R(int irrep, int dim, double **mat,
   int npairs, int *p_arr, int *q_arr, double *theta_arr)
 {
 
@@ -139,7 +134,7 @@ void postmult_by_exp_R(int irrep, int dim, double **mat,
 **  unitary matrix U parameterized as a series of Givens rotations
 **
 */
-void premult_by_U(int irrep, int dim, double **mat,
+void MCSCF::premult_by_U(int irrep, int dim, double **mat,
                   int npairs, int *ppair, int *qpair, double *theta_arr)
 {
 
@@ -220,7 +215,7 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
 ** Read in the theta array from disk.  If there is none, assume they're
 **  all set to 0.
 */
-void read_thetas(int npairs)
+void MCSCF::read_thetas(int npairs)
 {
 
 
@@ -247,7 +242,7 @@ void read_thetas(int npairs)
 **
 ** Write the theta array to disk. 
 */
-void write_thetas(int npairs)
+void MCSCF::write_thetas(int npairs)
 {
 
 
@@ -278,7 +273,7 @@ void write_thetas(int npairs)
 ** May 1998
 **
 */
-void calc_dE_dT(int n, double **dEU, int npairs, int *ppair, int *qpair,
+void MCSCF::calc_dE_dT(int n, double **dEU, int npairs, int *ppair, int *qpair,
                 double *theta, double *dET)
 {
   int i,a,m,l,pair;

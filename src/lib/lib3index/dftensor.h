@@ -180,6 +180,23 @@ public:
              int naocc,
              int navir,
              Options& options);
+
+    /**
+    * Assumes all orbitals are active and pull options from enviroment
+    **/
+    DFTensor(boost::shared_ptr<BasisSet> primary,
+             boost::shared_ptr<BasisSet> auxiliary,
+             SharedMatrix C,
+             int nocc,
+             int nvir);
+    /**
+    * Pulls required quantites from passed wavefunction and options from environment
+    * DF basis is set by keyword i.e.
+    *
+    * set {dfbas aug-cc-pVDZ-jkfit}
+    * DFTensor("dfbas")
+    */
+    DFTensor(boost::shared_ptr<Wavefunction> wfn, const std::string& type);
     ~DFTensor();
 
     SharedMatrix Qso();

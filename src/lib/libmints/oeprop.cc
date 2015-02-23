@@ -28,6 +28,7 @@
 #include <cmath>
 #include <sstream>
 #include <utility>
+#include <fstream>
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
 #include <libiwl/iwl.hpp>
@@ -895,6 +896,10 @@ void OEProp::compute()
         compute_wiberg_lowdin_indices();
     if (tasks_.count("NO_OCCUPATIONS"))
         compute_no_occupations();
+    if (tasks_.count("GRID_FIELD"))
+        compute_field_over_grid();
+    if (tasks_.count("GRID_ESP"))
+        compute_esp_over_grid();
 }
 
 
@@ -984,6 +989,145 @@ void OEProp::compute_multipoles(int order, bool transition)
 
     
 }
+
+
+/**
+ * @brief The GridIterator class:  A class to iterate over a user-provided grid for
+ *                                 computing electrostatic properties.
+ */
+class GridIterator{
+    ifstream gridfile_;
+    Vector3 gridpoints_;
+public:
+    const Vector3& gridpoints() const {return gridpoints_;}
+    GridIterator(const std::string &filename)
+    {
+        gridfile_.open(filename.c_str());
+        if(!gridfile_)
+            throw PSIEXCEPTION("Unable to open the grid.dat file.");
+    }
+    void first()
+    {
+        if(!gridfile_)
+            throw PSIEXCEPTION("File not initialized in Griditer::first.");
+        gridfile_.clear();
+        gridfile_.seekg(0, std::ios::beg);
+        next();
+    }
+    void next()
+    {
+        if(!gridfile_)
+            throw PSIEXCEPTION("Griditer::next called before file stream was initialized.");
+        if(!(gridfile_ >> gridpoints_[0])){
+            if(gridfile_.eof()){
+                // Hitting the end of file is OK in this situation.
+                return;
+            }else{
+                throw PSIEXCEPTION("Problem reading x gridpoint from the grid file.");
+            }
+        }
+        if(!(gridfile_ >> gridpoints_[1]))
+            throw PSIEXCEPTION("Problem reading y gridpoint from the grid file.");
+        if(!(gridfile_ >> gridpoints_[2]))
+            throw PSIEXCEPTION("Problem reading z gridpoint from the grid file.");
+    }
+    bool last() const
+    {
+        return gridfile_.eof();
+    }
+    ~GridIterator()
+    {
+        gridfile_.close();
+    }
+};
+
+void OEProp::compute_esp_over_grid()
+{
+    boost::shared_ptr<Molecule> mol = basisset_->molecule();
+
+    boost::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
+
+    outfile->Printf( "\n Electrostatic potential computed on the grid and written to grid_esp.dat\n");
+
+    SharedMatrix Dtot = Da_ao();
+    if (same_dens_) {
+        Dtot->scale(2.0);
+    }else{
+        Dtot->add(Db_ao());
+    }
+
+    int nao = basisset_->nao();
+    SharedMatrix ints(new Matrix("Ex integrals", nao, nao));
+
+    FILE *gridout = fopen("grid_esp.dat", "w");
+    if(!gridout)
+        throw PSIEXCEPTION("Unable to write to grid_esp.dat");
+    GridIterator griditer("grid.dat");
+    for(griditer.first(); !griditer.last(); griditer.next()){
+        Vector3 origin(griditer.gridpoints());
+        if(mol->units() == Molecule::Angstrom)
+            origin /= pc_bohr2angstroms;
+        ints->zero();
+        epot->compute(ints, origin);
+        double Velec = Dtot->vector_dot(ints);
+        double Vnuc = 0.0;
+        int natom = mol->natom();
+        for(int i=0; i < natom; i++) {
+            Vector3 dR = origin - mol->xyz(i);
+            double r = dR.norm();
+            if(r > 1.0E-8)
+                Vnuc += mol->Z(i)/r;
+        }
+        fprintf(gridout, "%16.10f\n", Velec+Vnuc);
+    }
+    fclose(gridout);
+}
+
+
+void OEProp::compute_field_over_grid()
+{
+    boost::shared_ptr<Molecule> mol = basisset_->molecule();
+
+    boost::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
+
+    outfile->Printf( "\n Field computed on the grid and written to grid_field.dat\n");
+
+    SharedMatrix Dtot = Da_ao();
+    if (same_dens_) {
+        Dtot->scale(2.0);
+    }else{
+        Dtot->add(Db_ao());
+    }
+
+    boost::shared_ptr<ElectricFieldInt> field_ints(dynamic_cast<ElectricFieldInt*>(wfn_->integral()->electric_field()));
+
+    int nao = basisset_->nao();
+    std::vector<SharedMatrix> intmats;
+    intmats.push_back(SharedMatrix(new Matrix("Ex integrals", nao, nao)));
+    intmats.push_back(SharedMatrix(new Matrix("Ey integrals", nao, nao)));
+    intmats.push_back(SharedMatrix(new Matrix("Ez integrals", nao, nao)));
+
+    FILE *gridout = fopen("grid_field.dat", "w");
+    if(!gridout)
+        throw PSIEXCEPTION("Unable to write to grid_field.dat");
+    GridIterator griditer("grid.dat");
+    for(griditer.first(); !griditer.last(); griditer.next()){
+        Vector3 origin(griditer.gridpoints());
+        if(mol->units() == Molecule::Angstrom)
+            origin /= pc_bohr2angstroms;
+        field_ints->set_origin(origin);
+        for (int m=0; m<3; ++m)
+            intmats[m]->zero();
+        field_ints->compute(intmats);
+        double Ex = Dtot->vector_dot(intmats[0]);
+        double Ey = Dtot->vector_dot(intmats[1]);
+        double Ez = Dtot->vector_dot(intmats[2]);
+        Vector3 nuc = field_ints->nuclear_contribution(origin, mol);
+        fprintf(gridout, "%16.10f %16.10f %16.10f\n", Ex+nuc[0], Ey+nuc[1], Ez+nuc[2]);
+    }
+    fclose(gridout);
+}
+
 
 void OEProp::compute_esp_at_nuclei()
 {

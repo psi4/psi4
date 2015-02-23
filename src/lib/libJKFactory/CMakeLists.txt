@@ -15,7 +15,7 @@
 
 #Build Global Arrays (if needed)
 include(cmake/BuildGA.txt)
-set(JK_GA_LIBS ${JK_GA_LIB}/libga.a 
+set(JK_GA_LIBS ${JK_GA_LIB}/libga.a
                ${JK_GA_LIB}/libarmci.a
 )
 #I'm going to assume the user doesn't have GTFock
@@ -30,5 +30,3 @@ add_library(GTFockCInt STATIC CifiedFxns.h
                              CifiedFxns.cc)
 add_dependencies(GTFockInt GTFock mints)
 add_dependencies(GTFockCInt qt mints)
-
-

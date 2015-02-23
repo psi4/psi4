@@ -13,7 +13,7 @@ list(SORT headers_list)
 
 set(sources_list "")
 # List of sources
-list(APPEND sources_list frozen_natural_orbitals.cc triples.cc ccsd.cc lowmemory_triples.cc sortintegrals.cc coupled_pair.cc mp2.cc blas.cc df_ccsd.cc opdm.cc quadratic.cc diis.cc local_triples.cc fnocc.cc linear.cc )
+list(APPEND sources_list frozen_natural_orbitals.cc triples.cc ccsd.cc lowmemory_triples.cc sortintegrals.cc coupled_pair.cc mp2.cc blas.cc df_cc_residual.cc df_t1_transformation.cc df_ccsd.cc opdm.cc quadratic.cc diis.cc df_scs.cc local_triples.cc fnocc.cc linear.cc )
 
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
@@ -31,7 +31,7 @@ write_to_cloc_list("${to_count}")
 add_library(fnocc STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 add_dependencies(fnocc mints)
-set(libs_to_merge fnocc ${libs_to_merge} PARENT_SCOPE)
+set_property(GLOBAL APPEND PROPERTY PSILIB fnocc)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(fnocc custom_boost)
 endif()

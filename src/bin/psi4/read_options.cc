@@ -4555,6 +4555,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("FRAG_METHOD", "USER_DEFINED",
             "USER_DEFINED BOND_BASED DISTANCE_BASED");
       options.add_int("TRUNCATION_ORDER", 2);
+      options.add("SUPER_CELL_SIDES",new ArrayType());
+      options.add("UNIT_CELL_ANGLES", new ArrayType());
+      options.add("UNIT_CELL_SIDES", new ArrayType());
 
       /*- How are the fragments being formed?
        *  For the purpose of this keyword a group is a collection of

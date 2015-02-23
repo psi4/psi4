@@ -25,34 +25,85 @@
 
 #include "GMBE.h"
 #include <boost/math/special_functions/binomial.hpp>
-namespace psi{
-namespace LibFrag{
+namespace psi {
+namespace LibFrag {
 
-///Specialization of the GMBE to non-intersecting fragments
-class MBE:public GMBE{
-	private:
-		///Returns N choose M
-		double Binomial(const int N,const int M){return boost::math::binomial_coefficient<double>(N,M);}
-		/** \brief Computes the total energy for an N-body expansion of nfrags
-		 *
-		 * \param[in] N Truncation order of the MBE
-		 * \param[in] nfrags Number of fragments
-		 * \param[in] Ens Array of summed energies, such that Ens[0]=sum of monomer energies, Ens[1]=sum of dimer energies, etc.
-		 */
-		double NBodyE(const int N,const int nfrags, const double *Ens);
-		///Returns the coefficient for the m-th term of an N-body expansion of nfrags.  m=1 for Ens[0], m=N for Ens[N-1]
-		double Coef(const int nfrags,const int N,const int m){return Phase(N-m)*Binomial(nfrags-m-1,N-m);}
-	public:
-		///Sets MBE truncation order to N, default is 1
-		MBE(int N=1):GMBE(N){}
-		///Computes and returns the energy
-		double Energy(const std::vector<MBEFragSet>& Systems,
-		      const std::vector<boost::shared_ptr<double[]> >& Energies,
-		      std::string& RealName);
-		bool RunFrags()const{return true;}
-		bool IsGMBE()const{return false;}
+/** \brief Specialization of the GMBE to non-intersecting fragments
+ *
+ *  For the case of the MBE an \f$n\f$-body property \f$P\f$ of an
+ *  \f$N\f$ fragment system can be written:
+ *  \f[
+ *  P\approx\sum_{i=1}^n(-1)^{n-i}{_{N-i-1}}C_{n-i}P^{(i)},
+ *  \f]
+ *  where \f${_{\alpha}}C_{\beta}\f$ is \f$\alpha\f$ choose \f$\beta\f$
+ *  and \f$P^{(i)}\f$ is the sum of the property over all $i$-mers.
+ *
+ */
+class MBE:public ExpanImplBase {
+   private:
+      ///Returns N choose M
+      double Binomial(const int N, const int M)const {
+         return boost::math::binomial_coefficient<double>(N, M);
+      }
+      ///Returns the total N-body property, assuming nfrags and m<N
+      template <typename T>
+      MBEProp<T> NBodyProp(const int N, const int nfrags,
+            const MBEProp<T>& DeltaEs)const;
+      ///Returns the coefficient for the m-th term of an N-body expansion of nfrags.  m=1 for Ens[0], m=N for Ens[N-1]
+      double Coef(const int nfrags, const int N, const int m) const{
+         return Phase(N-m)*Binomial(nfrags-m-1, N-m);
+      }
+   public:
+      ///Sets MBE truncation order to N, default is 1
+      MBE(int N=1) :ExpanImplBase(N) {
+      }
+      ///Computes and returns the energy
+      template <typename T>
+      MBEProp<T> PropertyImpl(const LibMolecule::FragmentedSystem& Systems,
+            const MBEProp<T>& MonoProperties)const;
+      bool IsGMBE() const {return false;}
 };
-}}
 
+template <typename T>
+MBEProp<T> MBE::PropertyImpl(const LibMolecule::FragmentedSystem& Systems,
+      const MBEProp<T>& MonoProperties)const {
+   typedef typename MBEProp<T>::const_iterator Itr_t;
+   //This is the value of the property at all levels up to including N
+   MBEProp<T> Value(N);
+   //These will be the corrections to the property
+   MBEProp<T> Corrs(N);
+   int TrueNumMono=0;
+   LibMolecule::FragmentedSystem::iterator MonoI=Systems.begin(0),
+                                           MonoEnd=Systems.end(0);
+   for(int counter=0;MonoI!=MonoEnd;++MonoI)
+      TrueNumMono+=Systems.Coef(0,counter++);
+   //Total property of each set of n-mers
+   MBEProp<T> En(N);
+   for (int i=0; i<N; i++) {
+      Itr_t PropI=MonoProperties.begin(i),PropEnd=MonoProperties.end(i);
+      for (int counter=0; PropI!=PropEnd; ++PropI, ++counter)
+         En.Change(i, 0, (*PropI)*Systems.Coef(i, counter));
+      Value.Change(i, 0, NBodyProp(i+1, TrueNumMono, En)(0, 0));
+      if (i==0) continue;
+      Corrs.Change(i, 0, Value(i,0));
+      Corrs.Change(i, 0, Value(i-1,0)*-1.0);
+   }
+   return Value;
+}
+
+template <typename T>
+MBEProp<T> MBE::NBodyProp(const int N, const int nfrags,
+      const MBEProp<T>& DeltaEs)const {
+   MBEProp<T> Result(1,"Total Energy");
+   if (N!=nfrags){
+      for (int i=0; i<N; i++){
+         Result.Change(0, 0, DeltaEs(i, 0)*MBE::Coef(nfrags, N, i+1));
+      }
+   }
+   else Result.Change(0,0,DeltaEs(N-1,0));
+   return Result;
+}
+
+}}//End namespaces
 
 #endif /* MBE_H_ */

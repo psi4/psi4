@@ -45,7 +45,7 @@
 #include <liboptions/liboptions_python.h>
 #include <psifiles.h>
 #include <libfock/jk.h>
-#include <libpcm/psipcm.h>
+#include <libpsipcm/psipcm.h>
 
 
 #include "hf.h"
@@ -368,7 +368,7 @@ void HF::common_init()
     print_header();
 
     // Initialize PCM object, if requested
-#ifdef HAS_PCMSOLVER
+#ifdef HAVE_PCMSOLVER
     if(pcm_enabled_ = (options_.get_bool("PCM")))
       hf_pcm_ = static_cast<SharedPCM>(new PCM(options_, psio_, nirrep_, basisset_));
 #endif
@@ -1677,7 +1677,7 @@ double HF::compute_energy()
             E_ += efp_wfn_dependent_energy;
         }   
 
-#ifdef HAS_PCMSOLVER
+#ifdef HAVE_PCMSOLVER
         // The PCM potential must be added to the Fock operator *after* the
         // energy computation, not in form_F()
         if(pcm_enabled_) {
@@ -1838,7 +1838,7 @@ double HF::compute_energy()
         // Need to recompute the Fock matrices, as they are modified during the SCF interation
         // and might need to be dumped to checkpoint later
         form_F();
-#ifdef HAS_PCMSOLVER	
+#ifdef HAVE_PCMSOLVER	
         if(pcm_enabled_) {
             // Prepare the density
             SharedMatrix D_pcm;

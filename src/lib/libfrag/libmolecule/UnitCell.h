@@ -21,29 +21,40 @@
  */
 #ifndef SRC_LIB_LIBFRAG_LIBMOLECULE_UNITCELL_H_
 #define SRC_LIB_LIBFRAG_LIBMOLECULE_UNITCELL_H_
-
-#include "Molecule.h"
+#include <vector>
+#include "Implementations/UnitCellGuts.h"
 namespace psi{
 namespace LibMolecule{
-
-class UnitCell: public Molecule{
-   private:
-      ///The angles of the unit cell, in Radians
-      double angles_[3];
-      ///The lengths of the sides of the unit cell, in a.u.
-      double sides_[3];
-      ///The fractional coordinate to cart transformation matrix
-      double Frac2Cart_[9];
-      ///The cart w fractional transform
-      double Cart2Frac_[9];
+class Molecule;
+class UnitCell: public UnitCellGuts{
    protected:
-      void SetTrans();
+      ///This is only to be called by SuperCell, which will do it's own setup
+      UnitCell(){}
    public:
-      void SetAngles(const double alpha,const double beta,
-                     const double gamma,const bool IsDegree=true);
-      void SetSides(const double a, const double b, const double c,
-                    const bool IsBohr=false);
-      UnitCell(boost::shared_ptr<Molecule> Mol,const bool IsFrac=true);
+      ///Returns an array containing the three angles (in Radians)
+      const double* Angles()const{return UnitCellGuts::Angles();}
+      ///Returns an array containing the three sides (in a.u.)
+      const double* Sides()const{return UnitCellGuts::Sides();}
+      /** \brief Creates a unit cell with the atoms in Mol
+       *
+       *  \param[in] The molecule that forms the unit cell
+       *  \param[in] Sides The lattice vectors in the order a,b,c
+       *  \param[in] Angles The lattice angles in the order alpha,beta,gamma
+       *  \param[in] IsFrac True if the coordinates contained in the molecule
+       *             are fractional coordinates
+       *  \param[in] IsBhor True if the sides given are in atomic units
+       *  \param[in] IsDegree True if the angles given are in degrees
+       */
+      UnitCell(const Molecule& Mol,const double* Sides,
+            const double* Angles, const bool IsFrac=true,
+            const bool IsBohr=false,const bool IsDegree=true):
+               UnitCellGuts(Mol,Sides,Angles,IsFrac,IsBohr,IsDegree){}
+     UnitCell(const UnitCell& other):UnitCellGuts(other){}
+     void FixUnitCell();
+     const UnitCell& operator=(const UnitCell& other){
+        UnitCellGuts::operator=(other);
+        return *this;
+     }
 };
 
 }}

@@ -929,6 +929,23 @@ void export_mints()
             .def("K", &JK::K, return_internal_reference<>())
             .def("wK", &JK::wK, return_internal_reference<>())
             .def("D", &JK::D, return_internal_reference<>())
-            .def("print_header", &JK::print_header, "docstring")
-            ;
+            .def("print_header", &JK::print_header, "docstring");
+
+    class_<LaplaceDenominator, boost::shared_ptr<LaplaceDenominator> >("LaplaceDenominator", "docstring", no_init)
+            .def(init<boost::shared_ptr<Vector>, boost::shared_ptr<Vector>, double>())
+            .def("denominator_occ", &LaplaceDenominator::denominator_occ, "docstring")
+            .def("denominator_vir", &LaplaceDenominator::denominator_vir, "docstring");
+
+
+    class_<DFTensor, boost::shared_ptr<DFTensor> >("DFTensor", "docstring", no_init)
+            .def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<Matrix>, int, int>())
+            .def(init<boost::shared_ptr<Wavefunction>, const std::string&>())
+            .def("Qso", &DFTensor::Qso, "doctsring")
+            .def("Qmo", &DFTensor::Qmo, "doctsring")
+            .def("Qoo", &DFTensor::Qoo, "doctsring")
+            .def("Qov", &DFTensor::Qov, "doctsring")
+            .def("Qvv", &DFTensor::Qvv, "doctsring")
+            .def("Imo", &DFTensor::Imo, "doctsring")
+            .def("Idfmo", &DFTensor::Idfmo, "doctsring");
+
 }

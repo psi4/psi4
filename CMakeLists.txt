@@ -11,7 +11,7 @@ list(APPEND CMAKE_MODULE_PATH
      ${CMAKE_SOURCE_DIR}/cmake/testing
      )
 
-#  Options  
+#  Options
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                         OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"                  OFF)
 option(ENABLE_OMP            "Enable OpenMP parallelization"               ON)
@@ -19,7 +19,7 @@ option(ENABLE_UNIT_TESTS     "Enable compilation of unit test suite"       OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"             ON)
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"           ON)
 option(ENABLE_ACCELERATE     "Enable use of Mac OS X Accelerate Framework" OFF)
-option(ENABLE_CSR            "Enable MKL compressed sparse row"            OFF) 
+option(ENABLE_CSR            "Enable MKL compressed sparse row"            OFF)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                            OFF)
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"               OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"             OFF)
@@ -78,7 +78,7 @@ include(GenericMacros)
 include(CheckIncludeFiles)
 include(CheckFunctionExists)
 # Here we look for Perl, Sphinx, Doxygen and LaTeX
-include(ConfigDocumentation) 
+include(ConfigDocumentation)
 # Access to the fortran_enabler macro
 include(FortranEnabler)
 
@@ -131,12 +131,12 @@ endif()
 find_package(Threads REQUIRED)
 link_libraries("${CMAKE_THREAD_LIBS_INIT}")
 
-# Python Detection 
+# Python Detection
 include(ConfigPython)
 link_libraries("${PYTHON_LIBRARIES}")
 include_directories(SYSTEM "${PYTHON_INCLUDE_DIRS}")
 
-# Boost Detection 
+# Boost Detection
 # We need Boost.Python, so this has to come _after_ Python detection
 include(ConfigBoost)
 link_directories("${Boost_LIBRARY_DIRS}")
@@ -159,10 +159,10 @@ endif()
 
 if(ENABLE_PLUGINS)
    message(STATUS "Plugins support ENABLED")
-endif()   
+endif()
 
 # MKL_Free_Buffers NEEDS TO BE TESTED
-check_function_exists(MKL_Free_Buffers HAVE_MKL) 
+check_function_exists(MKL_Free_Buffers HAVE_MKL)
 
 # Detection of erf, __builtin_expect, __builtin_prefetch, __builtin_constant_p
 # This step is skipped for GCC and Clang: they are all defined but for some reasons not detected by CMake
@@ -206,7 +206,7 @@ endif()
 # Psi4-specific includes and libraries
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(
-    ${PROJECT_BINARY_DIR}/include 
+    ${PROJECT_BINARY_DIR}/include
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src/lib
     ${PROJECT_BINARY_DIR}/src/lib
@@ -220,19 +220,14 @@ file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
-set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2 
-           cctriples scf_solver fock dcft lmp2 mcscf sapt dftsapt sapt_solver
-           cchbar cclambda ccdensity transqt ccresponse detci occ mrcc fnocc
-           cceom adc thermo functional disp thce 3index deriv_wrapper optking
-           findif mints trans dpd chkpt iwl psio qt ciomr options moinfo psi4util
-           stable deriv scfgrad int diis plugin parallel parallel2 babel frag efp_solver efp)
+set_property(GLOBAL PROPERTY PSILIB)
 
 # PCMSolver
 if(ENABLE_PCMSOLVER)
    find_package(ZLIB)
    if(NOT ZLIB_FOUND)
-      set(ENABLE_PCMSOLVER OFF)	   
-      message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")	
+      set(ENABLE_PCMSOLVER OFF)
+      message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
       message(STATUS " PCMSolver dependencies NOT satisfied:")
       if(NOT ZLIB_FOUND)
           message(STATUS "  - install Zlib development libraries")
@@ -240,16 +235,9 @@ if(ENABLE_PCMSOLVER)
    else()
       fortran_enabler()
       add_definitions(-DHAVE_PCMSOLVER)
-      message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")	 
+      message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
       link_directories(${PROJECT_BINARY_DIR}/external/lib)
-      # PCMSolver needs Fortran libraries 
-      if(CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
-      	   set(PCMSOLVER_LIBS pcm getkw gfortran quadmath ${ZLIB_LIBRARIES})
-      else() # Intel case
-      	   set(PCMSOLVER_LIBS pcm getkw ifcore imf ${ZLIB_LIBRARIES})
-      endif()
-      set(PSILIB ${PSILIB} psipcm ${PCMSOLVER_LIBS})
-   endif()	    
+   endif()
    set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
 endif()
 
@@ -259,11 +247,7 @@ set(PLUGINS "")
 if(ENABLE_PLUGINS)
    add_subdirectory(plugins)
    #Add plugins to the libraries Psi depends on
-   set(PSILIB ${PSILIB} ${PLUGINS})
-endif()
-
-if(ENABLE_LIBERD)
-    set(PSILIB ${PSILIB} erd)
+   set_property(GLOBAL APPEND PROPERTY PSILIB ${PLUGINS})
 endif()
 
 #If we have MPI we may want to also build JKFactory which makes J and K's
@@ -283,9 +267,9 @@ if(BUILD_JK_FACTORY)
    set(HAVE_GLOBAL_ARRAYS FALSE)
    add_definitions(-DHAVE_JK_FACTORY)
    set(JKROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/libJKFactory)
-   set(PSILIB ${PSILIB} GTFockInt GTFock GTFockCInt
-      ${PROJECT_BINARY_DIR}/lib/libga.a 
-      ${PROJECT_BINARY_DIR}/lib/libarmci.a)     
+   set_property(GLOBAL APPEND PROPERTY PSILIB GTFockInt GTFock GTFockCInt
+      ${PROJECT_BINARY_DIR}/lib/libga.a
+      ${PROJECT_BINARY_DIR}/lib/libarmci.a)
 endif()
 
 # Add the documentation subdirectory
@@ -331,7 +315,7 @@ INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION ${CMAKE_INSTAL
 # Configure some scripts
 configure_files()
 # Configure testing
-# This must come after ConfigDocumentation, as it needs Perl detection 
+# This must come after ConfigDocumentation, as it needs Perl detection
 # It also needs Python so it must go _after_ Python detection!
 include(ConfigTesting)
 # This has to be the very last CMake module to be included

@@ -86,31 +86,31 @@ class IteratorGuts;
  *
  */
 class MolItr{
+   private:
+      ///Performs a deep copy
+      void Copy(const MolItr& other);
    protected:
       ///This is the object that actually implements the iterator
       boost::shared_ptr<IteratorGuts> Impl_;
    public:
       MolItr(boost::shared_ptr<IteratorGuts> Impl);
-
+      MolItr(const MolItr& other){this->Copy(other);}
+      const MolItr& operator=(const MolItr& other){
+         if(this!=&other)this->Copy(other);
+         return *this;
+      }
       ///Base operators
       ///@{
       bool operator==(const MolItr& other)const;
-      bool operator<(const MolItr& other)const;
       const MolItr& operator++();
       const MolItr& operator--();
       boost::shared_ptr<const Atom> operator*()const;
       ///@}
 
-      ///Derived operators (only use base operators)
+      ///Derived operators (they only use base operators)
       ///@{
-      bool operator<=(const MolItr& other)const{
-         return !((*this)<other || (*this)==other);
-      }
-      bool operator>=(const MolItr& other)const{
-         return !((*this)<other);
-      }
-      bool operator>(const MolItr& other)const{
-         return !((*this)<=other);
+      bool operator!=(const MolItr& other)const{
+         return !((*this)==other);
       }
       /** \brief Allows access to the current atom's members
        *

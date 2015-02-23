@@ -33,8 +33,7 @@ int BasesBase::WhoIsSpecial()const{
 
 ///Returns true if this is the lucky MPI process that gets to read/write
 BasesBase::BasesBase(){
-   boost::shared_ptr<const LibParallel::Communicator> Comm=WorldComm->GetComm();
-   ImSpecial_=(Comm->Me()==WhoIsSpecial());
+   ImSpecial_=(WorldComm->Original()==WhoIsSpecial());
 }
 
 bool BasesBase::ImSpecial()const{return ImSpecial_;}
