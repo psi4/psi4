@@ -1065,7 +1065,7 @@ void OEProp::compute_esp_over_grid()
     GridIterator griditer("grid.dat");
     for(griditer.first(); !griditer.last(); griditer.next()){
         Vector3 origin(griditer.gridpoints());
-        if(mol->units() == Molecule::GeometryUnits::Angstrom)
+        if(mol->units() == Molecule::Angstrom)
             origin /= pc_bohr2angstroms;
         ints->zero();
         epot->compute(ints, origin);
@@ -1113,7 +1113,7 @@ void OEProp::compute_field_over_grid()
     GridIterator griditer("grid.dat");
     for(griditer.first(); !griditer.last(); griditer.next()){
         Vector3 origin(griditer.gridpoints());
-        if(mol->units() == Molecule::GeometryUnits::Angstrom)
+        if(mol->units() == Molecule::Angstrom)
             origin /= pc_bohr2angstroms;
         field_ints->set_origin(origin);
         for (int m=0; m<3; ++m)
