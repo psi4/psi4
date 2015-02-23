@@ -160,8 +160,7 @@ class Table:protected Table<Args...> {
 
 /************ Implementations **********/
 template<typename T>
-TableColumn<T>::
-   TableColumn<T>(const std::string& ColName, const T* Data,
+TableColumn<T>::TableColumn(const std::string& ColName, const T* Data,
             const unsigned Offset, const char VertDelim,
             const char HorDelim, const char TitleDelim) :
             ColName_(ColName), Data_(Data), Offset_(Offset),
@@ -205,7 +204,7 @@ class TableData {
 };
 
 template<typename T,typename...Args>
-Table<T,Args...>::Table<T, Args...>(const int NRows, const int NCols,
+Table<T,Args...>::Table(const int NRows, const int NCols,
       const int MyCol,const T& Data, Args&... args) :
    Table<Args...>(NRows, NCols, MyCol+1, args...),
     MyData_(Data, NRows, NCols, MyCol) {}
@@ -220,8 +219,7 @@ std::string Table<T,Args...>::PrintOut(const int row) const {
 
 
 template<typename T, typename...Args>
-Table<T,Args...>::
-Table<T, Args...>(const int NRows,const T& Data,Args&... args) :
+Table<T,Args...>::Table(const int NRows,const T& Data,Args&... args) :
             Table<Args...>(2*NRows+3, (int)sizeof...(Args)+1,1, args...),
                   MyData_(Data, 2*NRows+3, (int)sizeof...(Args)+1, 0) {}
 
@@ -266,12 +264,12 @@ class Table<T> {
 
 
 template <typename T>
-TableData<T>::TableData<T>(const T&Data,
+TableData<T>::TableData(const T&Data,
       const int NRows, const int NCols,
       const int MyCol, const char TopBorder,
       const char BottomBorder, const char LeftBorder,
       const char RightBorder) :
-      Data_(Data), NRows_(NRows), NCols_(NCols), MyCol_(MyCol){
+      Data_(Data), NRows_(NRows), NCols_(NCols), MyCol_(MyCol),MySize_(0){
    BorderDelims_[TOP]=TopBorder;BorderDelims_[BOTTOM]=BottomBorder;
    BorderDelims_[LEFT]=LeftBorder;BorderDelims_[RIGHT]=RightBorder;
 }
