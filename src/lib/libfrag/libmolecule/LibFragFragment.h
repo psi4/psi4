@@ -30,6 +30,25 @@ namespace psi{
 namespace LibMolecule{
 class FragItrGuts;
 
+/** \brief A unique identifier for each n-mer
+ *
+ *  As you manipulate your fragment set you'll quickly want to start playing
+ *  tricks with them.  This will inevitably disturb the ordering.  To get
+ *  around this we assign to each fragment a "serial number" that is
+ *  comprised of an arbitrarily assigned number for a monomer, and the
+ *  union of the serial numbers of the n monomers for an n-mer.  This
+ *  quantity is actually an std::set so there is no ambiguity between
+ *  trimer: "1 2 3" and dimer: "1 23" for example.  When looking things up
+ *  it is always done by serial number.
+ */
+class SerialNumber:public std::set<unsigned int>{
+   public:
+      SerialNumber(){}
+      ///Prints out the serial number
+      std::string PrintOut()const;
+};
+
+
 /** \brief Part of a molecule, usable as if it was it's own molecule
  *
  *  A fragment is associated with a molecule, and the data of the molecule
@@ -70,6 +89,7 @@ class FragItrGuts;
  *  and caps.  Hence you are responsible for recalculating the other
  *  arrays after an operation.
  *
+ *
  */
 class Fragment: public Molecule{
    private:
@@ -90,8 +110,8 @@ class Fragment: public Molecule{
       ///The atoms in Mol_ that belong to this fragment
       std::set<int> Members_;
 
-      ///The SN of the fragment
-      std::set<long int> SN_;
+      ///The SN of the fragment, a unique identification of this fragment
+      SerialNumber SN_;
 
       /** For the caps, point charges, etc. it is often useful to know which
        *  atom they replaced, that info goes here
@@ -162,7 +182,7 @@ class Fragment: public Molecule{
          return ((*this)>other||(*this)==other);
       }
 
-      const std::set<long int>& SerialNumber()const{return SN_;}
+      const SerialNumber& GetSN()const{return SN_;}
 
       ///No memory to free, so does nothing
       virtual ~Fragment(){}

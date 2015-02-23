@@ -2,6 +2,7 @@ set(SRC ProgressBar.h
         PsiMap.h
         PsiRdmNumGen.h
         PythonFxn.h
+        Table.h
         Timer.h
         Units.h
         AtomicData.h

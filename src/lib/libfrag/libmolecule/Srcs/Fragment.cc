@@ -29,6 +29,15 @@ typedef std::vector<int> SVec;
 typedef SVec::iterator VecIt;
 typedef boost::shared_ptr<FragItrGuts> SharedItr;
 
+std::string SerialNumber::PrintOut()const{
+   std::stringstream Result;
+   std::set<unsigned int>::iterator EI=begin(),EEnd=end();
+   for(;EI!=EEnd;++EI)
+      Result<<(*EI)<<" ";
+   return Result.str();
+}
+
+
 void Fragment::Copy(const Fragment& other){
    this->Mol_=other.Mol_;
    this->Members_=other.Members_;

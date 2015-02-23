@@ -79,7 +79,9 @@ namespace psi {
  * MyPythonFxn(Param1,Param2,Param3,etc....)
  *
  * As currently coded the maximum number of parameters a python function
- * may take is 10.
+ * may take is 10.  If this isn't good enough it should just be rewritten
+ * using variadic templates to remove any limit (and also make the code far
+ * cleaner).
  *
  */
 
@@ -135,7 +137,7 @@ class PythonFxn:public PythonFxnGuts{
          SetArgs(Args_,Syntax_,ParamTypes_.size(),Param1,Param2,Param3,Param4,Param5,
                                   Param6,Param7,Param8,Param9,Param10);
            PyObject* ret=PyEval_CallObject(Fxn_, Args_);
-           return boost::python::extract<T>(ret);
+           return T(boost::python::handle<>(ret));
       }
 };
 

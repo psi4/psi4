@@ -29,9 +29,7 @@ namespace LibParallel{
 MPIJobGuts::~MPIJobGuts(){
    //Let the scheduler clean-up int's communicators first
    Scheduler_.reset();
-   if(FState_){
-      if(FState_->Active())FState_->FreeComm();
-   }
+   if(FState_)FState_->FreeComm();
 }
 
 bool MPIJobGuts::EnoughProcs(const int Procs)const{
