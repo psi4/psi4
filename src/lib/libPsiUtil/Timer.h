@@ -74,8 +74,17 @@ class TimeValue{
  *     - My default this timer times all MPI processes individually
        - Percent load imbalance, L (T's are times, assume N processes) is:
  *       \f[
- *        L=\left(\frac{T_{Max}}{\frac{1}{N}\sum_{i}^{N}T_i}-1\right)\times\ 100\%\f$
+ *        L=\left(\frac{T_{Max}}{\frac{1}{N}\sum_{i}^{N}T_i}-1\right)\times\ 100\%
  *       \f]
+ *     - Although common usage is likely to do something like:
+ *       \code
+ *       Timer.stop();
+ *       std::cout<<Timer.PrintOut()<<std::endl;
+ *       \endcode
+ *       and it would hence make sense to combine them, the print out
+ *       necessarily requires some MPI functionality involving the
+ *       synching of timers
+ *
  */
 class SmartTimer{
    private:

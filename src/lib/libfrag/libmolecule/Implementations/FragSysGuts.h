@@ -39,6 +39,8 @@ class NMers:public std::vector<std::vector<boost::shared_ptr<Fragment> > >{
    private:
       typedef std::vector<std::vector<boost::shared_ptr<Fragment> > > Base_t;
    public:
+      ///This is a handy map for associating a given n-mer w/another
+      PsiMap<SerialNumber,SerialNumber> SNLookUp_;
       ScaleFactors ScaleFacts_;
       typedef std::vector<boost::shared_ptr<Fragment> >::iterator NMerItr_t;
       typedef std::vector<boost::shared_ptr<Fragment> >::const_iterator cNMerItr_t;

@@ -19,32 +19,31 @@
  *
  *@END LICENSE
  */
-#ifndef SRC_LIB_LIBFRAG_LIBFRAGDRIVER_H_
-#define SRC_LIB_LIBFRAG_LIBFRAGDRIVER_H_
-#include <boost/shared_ptr.hpp>
+#ifndef SRC_LIB_LIBFRAG_LIBFRAGOPTIONS_H_
+#define SRC_LIB_LIBFRAG_LIBFRAGOPTIONS_H_
+#include<sstream>
 namespace psi{
-namespace LibMolecule{
-   class FragmentedSystem;
-   class Molecule;
-}
 namespace LibFrag{
-template<typename T> class MBEProp;
 
-class LibFragDriver{
+template<typename T>
+class Option{
    private:
-      boost::shared_ptr<LibMolecule::FragmentedSystem> Frags_;
-      void RunCalc(const std::string& MethodName,int Start,int Stop);
-      std::string MakeMol(boost::shared_ptr<LibMolecule::Molecule>)const;
-      std::vector<boost::shared_ptr<MBEProp<double> > > Energies_;
+      T Value_;
+      std::string Name_;
    public:
-      LibFragDriver(const std::string& MethodName);
-      void RunMonomers(const std::string& MethodName);
-      void RunNMers(const std::string& MethodName);
+      const T& Value()const{return Value_;}
+      std::string PrintOut()const{
+         std::stringstream Result;
+         Result<<Name_<<" "<<Value_;
+         return Result.str();
+      }
 };
+
 
 
 }}//End namespaces
 
 
 
-#endif /* SRC_LIB_LIBFRAG_LIBFRAGDRIVER_H_ */
+
+#endif /* SRC_LIB_LIBFRAG_LIBFRAGOPTIONS_H_ */

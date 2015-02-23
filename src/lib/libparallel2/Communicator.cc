@@ -54,7 +54,9 @@ SharedThis Communicator::MakeComm(const int Color,
 }
 int Communicator::Me()const{return CommGuts::Me();}
 int Communicator::NProc()const{return CommGuts::NProc();}
-void Communicator::FreeComm(){return CommGuts::FreeComm();}
+void Communicator::FreeComm(){
+      CommGuts::FreeComm();
+}
 void Communicator::Barrier()const{CommGuts::Barrier();}
 int Communicator::Probe(const int Sender,const int MessageTag,
                         bool Block)const{

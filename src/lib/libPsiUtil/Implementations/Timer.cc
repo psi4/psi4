@@ -21,6 +21,7 @@
  */
 #include<iomanip>
 #include "../Timer.h"
+#include "../Table.h"
 #include "../../libparallel2/LibParallel2.h"
 #include "psi4-dec.h"
 using std::cout;
@@ -83,7 +84,7 @@ TimeValue::TimeValue(TimeTypes Type):
 
 std::string TimeValue::PrintOut(const int i)const{
    std::stringstream Result;
-   Result<<std::setprecision(Time_.second)<<Time_.first;
+   Result<<std::setprecision(Time_.second)<<Time_.first<<std::fixed;
    if(i>0)Result<<" +/- "<<Resolution_.first;
    return Result.str();
 }
@@ -123,38 +124,51 @@ void FillArray(std::vector<double>& MyTimes,
 }
 std::string SmartTimer::PrintOut() const {
    std::stringstream Result;
-   boost::shared_ptr<const LibParallel::Communicator> Comm=Comm_;
-   const int NProc=Comm->NProc(), DataPieces=9;
+   const int NProc=Comm_->NProc(), DataPieces=9;
    std::vector<double> AllTimes(DataPieces*NProc), MyTimes(DataPieces);
    for(int i=0;i<3;i++)
       FillArray(MyTimes,*this,(TimeTypes)i);
-   if(IsParallel_)Comm->AllGather(&MyTimes[0],DataPieces,&AllTimes[0]);
+   if(IsParallel_)Comm_->AllGather(&MyTimes[0],DataPieces,&AllTimes[0]);
    else AllTimes=MyTimes;
    Result<<Name_.str()<<std::endl;
-   for(int i=0;i<AllTimes.size()/DataPieces;i++){
-      if(IsParallel_)Result<<"   Processor "<<i<<" : ";
+   std::vector<std::string> ProcessNames;
+   std::vector<std::string> FinalTimes;
+   for(int i=0;i<NProc;i++){
+      if(IsParallel_){
+         std::stringstream tempstr;
+         tempstr<<"Processor "<<i;
+         ProcessNames.push_back(tempstr.str());
+      }
+      else ProcessNames.push_back("Total:");
       for(int j=0;j<3;j++){
-         TimeValue temp((TimeTypes)i);
          int offset=i*DataPieces+j*3;
+         TimeValue temp((TimeTypes)j);
          temp.Time_.first=AllTimes[offset];
          temp.Time_.second=
-            temp.Resolution_.second=(int)AllTimes[offset+1];
+               temp.Resolution_.second=(int)AllTimes[offset+1];
          temp.Resolution_.first=AllTimes[offset+2];
-         if(j==0)Result<<"Wall(s): ";
-         else if(j==1)Result<<"                 CPU (s): ";
-         else Result<<"                 Sys (s): ";
-         Result<<temp.PrintOut(1)<<std::endl;
+         FinalTimes.push_back(temp.PrintOut(j==0?0:1));
       }
-      Result<<std::endl;
    }
    if(IsParallel_){
-      Result<<"Wall time % Load Imbalance: "<<
-            ComputeLoadImbalance(WALL,AllTimes)<<std::endl;
-      Result<<"CPU time % Load Imbalance: "<<
-            ComputeLoadImbalance(CPU,AllTimes)<<std::endl;
-      Result<<"System time % Load Imbalance: "<<
-            ComputeLoadImbalance(SYSTEM,AllTimes);
+      ProcessNames.push_back("% Imbalance :");
+      for(int i=0;i<3;i++){
+         double Imbalance=ComputeLoadImbalance((TimeTypes)i,AllTimes);
+         std::stringstream ToString;
+         ToString<<std::setprecision(2)<<std::fixed<<Imbalance;
+         FinalTimes.push_back(ToString.str());
+      }
    }
+   typedef TableColumn<std::string> StrCol;
+   StrCol RowTitles("",&ProcessNames[0],1,'\0','|');
+   StrCol WallTimes("Wall (s)",&FinalTimes[0],3);
+   StrCol CPUTimes("CPU (s)",&FinalTimes[1],3);
+   StrCol SysTimes("System (s)",&FinalTimes[2],3);
+   Table<StrCol,StrCol,StrCol,StrCol>
+   MyTable(NProc+(IsParallel_?1:0),RowTitles,WallTimes,CPUTimes,SysTimes);
+   MyTable.SetBorder(TOP,'*');
+   MyTable.SetBorder(BOTTOM,'*');
+   Result<<MyTable.GetTable()<<std::endl;
    return Result.str();
 }
 
@@ -162,11 +176,11 @@ double SmartTimer::ComputeLoadImbalance(TimeTypes Type,std::vector<double>& Time
    double Average=0.0,Max=-1.0;
    int NProcs=Times.size()/9;
    for(int i=0;i<NProcs;i++){
-      double time=Times[i*9+(int)Type];
+      double time=Times[i*9+(int)Type*3];
       Average+=time;
       if(Max<time)Max=time;
    }
-   return (Max*NProcs/Average-1.0)*100;
+   return (Average>0.0?(Max*NProcs/Average-1.0)*100:0.0);
 }
 
 } //End namespace
