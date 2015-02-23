@@ -2114,24 +2114,24 @@ def writeCSX(name, **kwargs):
         cs1 = api.csType(version='1.0')
 
 #molPublication section
-        mp1 = api.mpType(title=psi4.get_global_option('publicationTitle'), \
-                abstract=psi4.get_global_option('publicationAbstract'), \
-                publisher=psi4.get_global_option('publicationPublisher'), \
-                status=psi4.get_global_option('publicationStatus'), \
-                category=psi4.get_global_option('publicationCategory'), \
-                visibility=psi4.get_global_option('publicationVisibility'), \
-                key=psi4.get_global_option('publicationKey'))
+        mp1 = api.mpType(title=psi4.get_global_option('PUBLICATIONTITLE'),
+                abstract=psi4.get_global_option('PUBLICATIONABSTRACT'),
+                publisher=psi4.get_global_option('PUBLICATIONPUBLISHER'),
+                status=['PRELIMINARY', 'DRAFT', 'FINAL'].index(psi4.get_global_option('PUBLICATIONSTATUS')),
+                category=psi4.get_global_option('PUBLICATIONCATEGORY'),
+                visibility=['PRIVATE', 'PROTECTED', 'PUBLIC'].index(psi4.get_global_option('PUBLICATIONVISIBILITY')),
+                key=psi4.get_global_option('PUBLICATIONKEY'))
         source1 = api.sourcePackageType(name='Psi', version='4.0')
         mp1.set_sourcePackage(source1)
-        ath1 = api.authorType(creator=psi4.get_global_option('correspondingAuthor'), \
-                type_='cs:corresponding',\
-                organization=psi4.get_global_option('organization'), \
-                email=psi4.get_global_option('email').replace('__', '@'))
+        ath1 = api.authorType(creator=psi4.get_global_option('CORRESPONDINGAUTHOR'),
+                type_='cs:corresponding',
+                organization=psi4.get_global_option('ORGANIZATION'),
+                email=psi4.get_global_option('EMAIL').replace('__', '@'))
         mp1.add_author(ath1)
         cs1.set_molecularPublication(mp1)
 
 #molSystem section
-        ms1 = api.msType(systemCharge=molCharge, \
+        ms1 = api.msType(systemCharge=molCharge,
                          systemMultiplicity=molMulti)
         temp1 = api.dataWithUnitsType(unit='cs:kelvin')
         temp1.set_valueOf_(298.0)
@@ -2239,7 +2239,7 @@ def writeCSX(name, **kwargs):
             ene1.add_energy(pe_ene1)
             scf1.set_energies(ene1)
 #MP2
-        elif procedures['energy'][name] == run_mp2:
+        elif procedures['energy'][name] == run_mp2_select:
             scf1 = api.resultType(methodology='cs:normal', spinType='cs:' + molSpin, \
                    basisSet='bse:' + molBasis)
             ene1 = api.energiesType(unit='cs:hartree')
@@ -2336,7 +2336,7 @@ def writeCSX(name, **kwargs):
             sdm1.set_abinitioScf(scf1)
         elif procedures['energy'][name] == run_dft:
             sdm1.set_dft(scf1)
-        elif procedures['energy'][name] == run_mp2:
+        elif procedures['energy'][name] == run_mp2_select:
             sdm1.set_mp2(scf1)
         else:
             print('The current CSX file does not support your method')
