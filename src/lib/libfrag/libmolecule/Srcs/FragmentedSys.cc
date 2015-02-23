@@ -19,6 +19,7 @@
  *
  *@END LICENSE
  */
+#include <set>
 #include <sstream>
 #include "FragmentedSys.h"
 #include "Utils/Fragmenter.h"
@@ -33,7 +34,7 @@ typedef boost::shared_ptr<Fragment> SharedFrag;
 typedef std::vector<SharedFrag> vSharedFrag;
 
 int FragmentedSystem::N()const{return NMers_.N();}
-double FragmentedSystem::Coef(const int N, const int i)const{
+double FragmentedSystem::Coef(const int N, const SerialNumber& i)const{
    return NMers_.ScaleFacts_(N,i);
 }
 FragmentedSystem::FragmentedSystem(const Molecule& System2Frag,
@@ -41,6 +42,9 @@ FragmentedSystem::FragmentedSystem(const Molecule& System2Frag,
 FragmentedSystem::FragmentedSystem(const SuperCell& System2Frag,
       const int N):FragSysGuts(System2Frag,N){}
 
+const SerialNumber& FragmentedSystem::SNLookUp(const SerialNumber& SN)const{
+      return NMers_.SNLookUp_[SN];
+}
 std::string FragmentedSystem::PrintOut(const int Value)const{
    std::stringstream Result;
    Result<<NMers_.PrintOut(Value);

@@ -320,7 +320,7 @@ class MPIJob:protected LibParallel::MPIJobGuts {
  * this task this Job may use.  A negative value says you want all
  * processes available to you, 0 will prevent the job from getting any
  * MPI processes (don't know why you'd want to do this, but the code
- * will allow it, maybe as a quick way of turning of parallel regions?),
+ * will allow it, maybe as a quick way of turning off parallel regions?),
  * and a positive, non-zero, value sets the maximum upper-bound your job
  * will use (MaxProcs=2 gives you at most 2 processes).  It is
  * important to note that you may get less processes
@@ -339,9 +339,9 @@ class MPIJob:protected LibParallel::MPIJobGuts {
  *  Comm1:     0-5
  *              |
  *             / \
-       *            /   \
-       *           /     \
-       * Comm2:  0-2     3-5
+ *            /   \
+ *           /     \
+ * Comm2:  0-2     3-5
  * \endcode{}
  *
  * Processes 3-5 will "fall through" your loop by setting their
