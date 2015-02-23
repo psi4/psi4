@@ -31,6 +31,7 @@ foreach(abcval ${ABC})
 endforeach()
 set_libderiv_compiler_flags()
 add_library(deriv STATIC ${LD_SRC})
+set_property(GLOBAL APPEND PROPERTY LIBLIST deriv)
 
 # Build the compiler
 set(COMPILER_SRC build_libderiv.c emit_d1hrr_build_macro.c emit_deriv1_managers.c emit_deriv_build_macro.c
