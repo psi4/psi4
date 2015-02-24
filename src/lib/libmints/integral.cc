@@ -266,6 +266,11 @@ TwoBodyAOInt* IntegralFactory::f12(boost::shared_ptr<CorrelationFactor> cf, int 
     return new F12(cf, this, deriv, use_shell_pairs);
 }
 
+TwoBodyAOInt* IntegralFactory::f12_scaled(boost::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
+{
+    return new F12Scaled(cf, this, deriv, use_shell_pairs);
+}
+
 TwoBodyAOInt* IntegralFactory::f12_squared(boost::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
 {
     return new F12Squared(cf, this, deriv, use_shell_pairs);
