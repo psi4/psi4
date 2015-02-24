@@ -1,21 +1,21 @@
-# Setup and build Sphinx documentation 
+# Setup and build Sphinx documentation
 if(PERL_FOUND AND SPHINX_FOUND)
     set(CCSD "${CMAKE_CURRENT_SOURCE_DIR}")
     set(CCBD "${CMAKE_CURRENT_BINARY_DIR}")
-    
+
 
     # Configure Sphinx build
     configure_file(
         "${CCSD}/source/conf.py.in"
         "${CCBD}/source/conf.py"
         @ONLY)
-    
-    
+
+
     # Static-doc reST files
     set(STATICDOC abbr_accents.rst adc.rst appendices.rst basissets.rst basissets_byelement.rst bestpractices_py.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst cp.rst customizing.rst db.rst detci.rst dfmp2.rst diatomic.rst documentation.rst energy.rst external.rst freq.rst glossary_psivariables.rst index.rst intercalls.rst interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst oeprop.rst opt.rst optking.rst plugins.rst programming.rst prop.rst psithonfunc.rst psithoninput.rst quickaddalias.rst basissets_tables.rst quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst fnocc.rst installfile.rst optionshandling.rst basissets_byfamily.rst psipep.rst pep0001.rst dftd3.rst occ.rst dfocc.rst molden.rst dcft.rst dkh.rst proc_py.rst psithonmol.rst cfour.rst mrcc_table_energy.rst cfour_table_energy.rst cfour_table_grad.rst prog_basissets.rst libefp.rst)
     # * compute relative path btwn top_srcdir and objdir/doc/sphinxman
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c 
-        "import sys; import os; print '/' + os.path.relpath('${CMAKE_SOURCE_DIR}', '${CCBD}') + '/../'" 
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
+        "import sys; import os; print '/' + os.path.relpath('${CMAKE_SOURCE_DIR}', '${CCBD}') + '/../'"
         OUTPUT_VARIABLE SFNX_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
     # * copy all over to objdir, substituting literalinclude along the way
     foreach(rst ${STATICDOC})
@@ -30,10 +30,10 @@ if(PERL_FOUND AND SPHINX_FOUND)
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/psi4.py ${CCBD}/source)
     # * copy logo image file (configure_file corrupts file)
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/psi4banner.png ${CCBD}/source)
-    
+
     # * copy favicon image file (configure_file corrupts file)
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/favicon-psi4.ico ${CCBD}/source)
-    
+
 
     # Autodoc basis sets
     add_custom_command(
@@ -42,7 +42,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
         DEPENDS ${CCSD}/document_bases.pl
                 ${CMAKE_SOURCE_DIR}/lib/basis/*.gbs
         COMMENT "Autodoc basis sets")
-    
+
 
     # Autodoc binary scratch files
     add_custom_command(
@@ -196,8 +196,8 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CMAKE_SOURCE_DIR}/plugins/*/*.py
                 ${CMAKE_SOURCE_DIR}/plugins/*/doc.rst
         COMMENT "Autodoc plugins")
-    
-    
+
+
     # Autodoc efp fragments
     add_custom_command(
         COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_efpfrag.py ${CCSD}
@@ -267,9 +267,9 @@ if(PERL_FOUND AND SPHINX_FOUND)
     # * full, proper build with html builder
     add_custom_command(
         TARGET sphinxman POST_BUILD
-        COMMAND ${SPHINX_EXECUTABLE} 
+        COMMAND ${SPHINX_EXECUTABLE}
             # -v  # Repeat for greater verbosity
-            # -q  # Enable for quiet mode 
+            # -q  # Enable for quiet mode
             # -Q  # Enable for even more quiet mode
             # -E  # don't use a saved environment, always read all file
             # -a  # write all files; default is to only write new and changed files
@@ -285,7 +285,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
     #   * thar will be warnings galore for unresolved links
     add_custom_command(
         TARGET sphinxmini
-        COMMAND ${CMAKE_COMMAND} -E remove ${CCBD}/source/autodoc*  
+        COMMAND ${CMAKE_COMMAND} -E remove ${CCBD}/source/autodoc*
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CCBD}/source/autodir_options_c
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CCBD}/source/autodir_psivariables
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CCBD}/source/autodir_psivariables
@@ -301,7 +301,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
     # * full, proper build with latex builder
     add_custom_command(
         TARGET sphinxpdf POST_BUILD
-        COMMAND ${SPHINX_EXECUTABLE} 
+        COMMAND ${SPHINX_EXECUTABLE}
             -b latex              # builder
             -d ${CCBD}/_doctrees  # cache w/ pickled reST
             -c ${CCBD}/source     # whereabouts of conf.py
@@ -311,7 +311,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
     add_custom_command(
         TARGET sphinxpdf POST_BUILD
         COMMAND ${PDFLATEX_COMPILER}
-            -interaction=nonstopmode 
+            -interaction=nonstopmode
             "Psi4.tex" > /dev/null 2>&1
         WORKING_DIRECTORY ${CCBD}/latex
         COMMENT "Building remarkably ugly PDF documentation from LaTeX ... (ignore the make exit error)")
