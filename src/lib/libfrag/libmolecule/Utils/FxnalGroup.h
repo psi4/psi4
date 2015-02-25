@@ -26,7 +26,6 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include "PsiMap.h"
-#include "Parameter.h"
 #include "FxnalGroupTypes.hh"
 namespace psi{
 namespace LibMolecule{
@@ -58,7 +57,8 @@ namespace LibMolecule{
  *
  *
  */
-class FxnalGroup:public GeometricQuantity{
+//class FxnalGroup:public GeometricQuantity{
+class FxnalGroup{
    private:
       ///The type of this group
       FxnGroup_t Type_;
@@ -75,7 +75,7 @@ class FxnalGroup:public GeometricQuantity{
    public:
       ///Returns the order (primary, secondary, etc.)
       int Order()const{return Order_;}
-      ///Returns the identity of atom iG
+      ///Returns the identity of atom i
       int operator[](const int i)const{return Members_[i];}
       ///Returns the identity of the atom R groups attach to
       virtual int AttachPoint(const int i=0)const{return (*this)[i];}
@@ -90,10 +90,8 @@ class FxnalGroup:public GeometricQuantity{
                  const int NMems,const int* Members);
       ///No memory to free
       virtual ~FxnalGroup(){}
-      ///Prints out the final group
-      virtual std::string PrintOut()const{return PrintOut("");}
       ///Allows for nesting of groups
-      virtual std::string PrintOut(const std::string& spaces)const;
+      virtual std::string PrintOut(const std::string& spaces="")const;
 };
 
 /* \brief A base class for groups that can be thought of as the union of
@@ -129,6 +127,41 @@ class AromaticRing:public DerivedFxnalGrp{
       int NAttachPoint()const{return Attachment_.size();}
       int AttachPoint(const int i)const{return Attachment_[i];}
       std::string PrintOut(const std::string& Spaces="")const;
+};
+
+
+template<typename MyType, typename T, typename...Args>
+class FindDerGroup;
+
+template<int Valency, typename GroupName,typename...Args>
+class FindPrimGroup;
+
+/** \brief Helper class to reduce copy/paste code
+ *
+ *  \param[in] MyType the type of the resulting group
+ *  \param[in] i The number of groups comprising the resulting group
+ *
+ *  The rest of the parameters are the groups that comprise the new
+ *  group, in the order they should be looked for
+ *
+ */
+template<FxnGroup_t MyName, typename MyType,int order,typename...Args>
+class GenDerGrp:public DerivedFxnalGrp{
+private:
+	typedef DerivedFxnalGrp Base_t;
+public:
+      GenDerGrp<MyName,MyType,order,Args...>():
+    		  Base_t(MyName,(sizeof...(Args)),order){}
+      typedef FindDerGroup<MyType,Args...> FindMe;
+};
+
+template<int NBonds,FxnGroup_t MyName, typename MyType,
+          int order,typename...Args>
+class GenPrimGrp:public GenDerGrp<MyName,MyType,order,Args...>{
+private:
+	typedef GenDerGrp<MyName,MyType,order,Args...> Base_t;
+public:
+	typedef FindPrimGroup<NBonds,MyType,Args...> FindMe;
 };
 
 }}//End namespaces

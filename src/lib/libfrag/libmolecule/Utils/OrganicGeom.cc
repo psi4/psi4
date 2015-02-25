@@ -64,10 +64,19 @@ typedef PrimRunner<HydrogenFluoride,Fluorine1> FlourinePrims;
 typedef PrimRunner<HydrogenChloride,Chlorine1> ChlorinePrims;
 typedef PrimRunner<HydrogenBromide,Bromine1> BrominePrims;
 typedef PrimRunner<HydrogenIodide,Iodine1> IodinePrims;
+
+typedef PrimRunner<HydrogenCyanide,Ethyne> Alkynyl1Groups;
+typedef PrimRunner<Nitrile,cctb,Ethynyl>Alkynyl2Groups;
+typedef PrimRunner<Formaldehyde,Ethene,Methanimine> Alkenyl1Groups;
+typedef PrimRunner<Aldehyde,ccdb3,ccdb2,Ethenyl1,Aldimine1,Aldimine2> Alkenyl2Groups;
+typedef PrimRunner<Carbonyl,ccdb4,Ethenyl2,Ketimine1,Ketimine2> Alkenyl3Groups;
+typedef PrimRunner<Carboxyl> CarbonylGroups;
+typedef PrimRunner<Methoxy,HydroPeroxy> Oxygen2Groups;
+typedef PrimRunner<Peroxide,Methanol> HydroxylGroups;
+
 ConnGroups  OrganicGeom::MakeFxnGroups()const {
    MolItr AtomI=Mol_->Begin(),AtomEnd=Mol_->End();
    std::vector<bool> IsAssigned(Mol_->NAtoms(), false);
-   std::cout<<Connections_.PrintOut();
    ConnGroups FoundGroups;
    PeriodicTable PTable;
    for(int counter=0;AtomI!=AtomEnd;++AtomI)
@@ -90,10 +99,14 @@ ConnGroups  OrganicGeom::MakeFxnGroups()const {
          IodinePrims::Run(GroupI,Connections_,FoundGroups);
    }
    for(GroupI=FoundGroups.begin();GroupI!=FoundGroups.end();++GroupI){
-      if(Carbonyl::FindMe::FindGroup((*GroupI),Connections_,FoundGroups))
-         GroupI=FoundGroups.begin();
-      else if(Carboxyl::FindMe::FindGroup((*GroupI),Connections_,FoundGroups))
-         GroupI=FoundGroups.begin();
+	   Alkynyl1Groups::Run(GroupI,Connections_,FoundGroups);
+	   Alkynyl2Groups::Run(GroupI,Connections_,FoundGroups);
+	   Alkenyl1Groups::Run(GroupI,Connections_,FoundGroups);
+	   Alkenyl2Groups::Run(GroupI,Connections_,FoundGroups);
+	   Alkenyl3Groups::Run(GroupI,Connections_,FoundGroups);
+	   CarbonylGroups::Run(GroupI,Connections_,FoundGroups);
+	   Oxygen2Groups::Run(GroupI,Connections_,FoundGroups);
+	   HydroxylGroups::Run(GroupI,Connections_,FoundGroups);
    }
    std::cout<<FoundGroups.PrintOut();
    exit(1);

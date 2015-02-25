@@ -21,7 +21,6 @@
  */
 #ifndef SRC_LIB_LIBFRAG_LIBMOLECULE_UTILS_FINDDERGROUP_H_
 #define SRC_LIB_LIBFRAG_LIBMOLECULE_UTILS_FINDDERGROUP_H_
-#include<set>
 #include<vector>
 #include "OrganicGeom.h"
 namespace psi{
@@ -33,21 +32,25 @@ class FindDerGroupHelp{
    protected:
       ///Returns true if we found a group with type T bonded to atom "index"
       static bool CheckGroup(int& index,
-            std::set<int>& Groups,const Connections& Conns,
+            std::vector<int>& Groups,const Connections& Conns,
             ConnGroups& FoundGroups,bool Prim=false){
          bool IsGood=false;
          for(int i=0;i<Conns[index].size();i++){
             int Conn=Conns[index][i];
             //Various checks for:
             //Already found
-            if(Groups.count(Conn)==1)continue;
+            bool found=false;
+            for(int j=0;j<Groups.size()&&!found;j++){
+            	if(Groups[j]==Conn)found=true;
+            }
+            if(found)continue;
             //Already part of a functional group
             if(FoundGroups.count(Conn)==0)continue;
             //Is literally the same group as our index
             if(&(*FoundGroups[Conn])==&(*FoundGroups[index]))continue;
             //Is the group we want
             if(FoundGroups[Conn]->Type()==T().Type()){
-               Groups.insert(Conn);
+               Groups.push_back(Conn);
                IsGood=true;
                if(!Prim)index=Conn;
                break;
@@ -56,10 +59,10 @@ class FindDerGroupHelp{
          return IsGood;
       }
       ///Takes Groups, makes a "GroupName", and updates "FoundGroups"
-      static void UpdateGroups(std::set<int>& Groups,ConnGroups& FoundGroups){
+      static void UpdateGroups(std::vector<int>& Groups,ConnGroups& FoundGroups){
          std::vector<boost::shared_ptr<const FxnalGroup> >
             ActualGroups(Groups.size());
-         std::set<int>::const_iterator GroupI=Groups.begin(),
+         std::vector<int>::const_iterator GroupI=Groups.begin(),
                                      GroupEnd=Groups.end();
          for(int i=0;GroupI!=GroupEnd;++GroupI,i++){
             ActualGroups[i]=FoundGroups[(*GroupI)];
@@ -161,7 +164,7 @@ class FindDerGroup:
       typedef FindDerGroup<GroupName,Args...> Base1_t;
       typedef FindDerGroupHelp<GroupName,ActiveGroup> Base2_t;
    protected:
-      static bool FindGroup(int index,std::set<int>& Groups,
+      static bool FindGroup(int index,std::vector<int>& Groups,
                       const Connections& Conns,ConnGroups& FoundGroups,
                       bool Prim=false){
          if(!Base2_t::CheckGroup(index,Groups,Conns,FoundGroups,Prim))
@@ -177,9 +180,9 @@ class FindDerGroup:
          bool found=false;
          for(int i=0;i<NAttach;i++){
             int Index=Group->AttachPoint(i);
-            std::set<int> Groups;
+            std::vector<int> Groups;
             if(Prim&&Conns[Index].size()<sizeof...(Args))continue;
-            Groups.insert(Index);
+            Groups.push_back(Index);
             found=Base1_t::FindGroup(Index,Groups,Conns,FoundGroups,Prim);
             if(found)break;
          }
@@ -194,7 +197,7 @@ class FindDerGroup<GroupName,ActiveGroup>:
    private:
       typedef FindDerGroupHelp<GroupName,ActiveGroup> Base_t;
    protected:
-      static bool FindGroup(int index,std::set<int>& Groups,
+      static bool FindGroup(int index,std::vector<int>& Groups,
             const Connections& Conns,ConnGroups& FoundGroups,bool Prim=false){
          if(!Base_t::CheckGroup(index,Groups,Conns,FoundGroups,Prim))return false;
          Base_t::UpdateGroups(Groups,FoundGroups);
@@ -226,8 +229,8 @@ class FindPrimGroup<Valency,GroupName,T>:
             const Connections& Conns,ConnGroups& FoundGroups){
          if(Conns[Group->AttachPoint()].size()!=Valency)return false;
          if(Group->Type()!=T().Type())return false;
-         std::set<int> temp;
-         temp.insert(Group->AttachPoint());
+         std::vector<int> temp;
+         temp.push_back(Group->AttachPoint());
          Base2::UpdateGroups(temp,FoundGroups);
          return true;
       }
