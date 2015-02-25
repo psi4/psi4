@@ -34,7 +34,7 @@ void MolRecurse(const Connections& Conns, std::set<int>& Atoms2Move,
    int NConns=Conns[index].size();
    for(int i=0;i<NConns;i++){
       int AtomJ=Conns[index][i];
-      if(AtomJ==Last)continue;
+      if(AtomJ==Last||Atoms2Move.count(AtomJ)==1)continue;
       Atoms2Move.insert(AtomJ);
       MolRecurse(Conns,Atoms2Move,index,AtomJ);
   }

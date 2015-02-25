@@ -25,255 +25,223 @@
  *   FxnalGroup.h
  */
 #include "FxnalGroup.h"
+#include "FindDerGroup.h"
 namespace psi{
 namespace LibMolecule{
 /*********** Primitive Groups ***************************************/
 
-class Carbon:public FxnalGroup{
-   public:
-     Carbon(const int* Members):FxnalGroup(CARBON,0){
-        Members_.push_back(-1);
-     }
-};
-
-class Oxygen:public FxnalGroup{
-   public:
-     Oxygen(const int* Members):FxnalGroup(OXYGEN,0){
-        Members_.push_back(-1);
-     }
-};
-
-class Nitrogen:public FxnalGroup{
-   public:
-     Nitrogen(const int* Members):FxnalGroup(NITROGEN,0){
-        Members_.push_back(-1);
-     }
-};
-
-class Hydrogen:public FxnalGroup{
-   public:
-     Hydrogen(const int* Members):FxnalGroup(HYDROGEN,0){
-        Members_.push_back(-1);
-     }
-};
-
-class Fluorine:public FxnalGroup{
-   public:
-     Fluorine(const int* Members):FxnalGroup(FLUORINE,0){
-        Members_.push_back(-1);
-     }
-};
-
-class Chlorine:public FxnalGroup{
-   public:
-     Chlorine(const int* Members):FxnalGroup(CHLORINE,0){
-        Members_.push_back(-1);
-     }
-};
-
-class Bromine:public FxnalGroup{
-   public:
-     Bromine(const int* Members):FxnalGroup(BROMINE,0){
-        Members_.push_back(-1);
-     }
-};
-
-class Iodine:public FxnalGroup{
-   public:
-     Iodine(const int* Members):FxnalGroup(IODINE,0){
-        Members_.push_back(-1);
-     }
-};
-
-
-class Methane:public FxnalGroup{
+class Methane:public DerivedFxnalGrp{
    public:
       //C first
-      Methane(const int* Members):FxnalGroup(METHANE,0,5,Members){}
+      Methane():DerivedFxnalGrp(METHANE,5,0){}
       int NAttachPoint()const{return 0;}
-
+      typedef FindPrimGroup<4,Methane,Carbon,Hydrogen,Hydrogen,
+                                             Hydrogen,Hydrogen> FindMe;
 };
 
-class Methyl:public FxnalGroup{
+class Methyl:public DerivedFxnalGrp{
    public:
       //C first
-      Methyl(const int* Members):FxnalGroup(METHYL,1,4,Members){}
+      Methyl():DerivedFxnalGrp(METHYL,4,1){}
+      typedef FindPrimGroup<4,Methyl,Carbon,Hydrogen,Hydrogen,
+                                             Hydrogen> FindMe;
 };
 
-class Methene:public FxnalGroup{
+class Methene:public DerivedFxnalGrp{
    public:
       //C first
-      Methene(const int* Members):FxnalGroup(METHENE,2,3,Members){}
+      Methene():DerivedFxnalGrp(METHENE,3,2){}
+      typedef FindPrimGroup<4,Methene,Carbon,Hydrogen,Hydrogen> FindMe;
 };
 
-class Methyne:public FxnalGroup{
+class Methyne:public DerivedFxnalGrp{
    public:
       //C first
-      Methyne(const int* Members):FxnalGroup(METHYNE,3,2,Members){}
+      Methyne():DerivedFxnalGrp(METHYNE,3,3){}
+      typedef FindPrimGroup<4,Methane,Carbon,Hydrogen> FindMe;
 };
 
-class Carbon4:public FxnalGroup{
+class Carbon4:public DerivedFxnalGrp{
    public:
       //Only has a C
-      Carbon4(const int* Members):FxnalGroup(CARBON4,4,1,Members){}
+      Carbon4():DerivedFxnalGrp(CARBON4,1,4){}
+      typedef FindPrimGroup<4,Carbon4,Carbon> FindMe;
 };
 
-class Alkenyl1:public FxnalGroup{
+class Alkenyl1:public DerivedFxnalGrp{
    public:
       //C first
-      Alkenyl1(const int* Members):FxnalGroup(ALKENYL1,1,3,Members){}
+      Alkenyl1():DerivedFxnalGrp(ALKENYL1,3,1){}
+      typedef FindPrimGroup<3,Alkenyl1,Carbon,Hydrogen,Hydrogen> FindMe;
 };
 
-class Alkenyl2:public FxnalGroup{
+class Alkenyl2:public DerivedFxnalGrp{
    public:
       //C first
-      Alkenyl2(const int* Members):FxnalGroup(ALKENYL2,2,2,Members){}
+      Alkenyl2():DerivedFxnalGrp(ALKENYL2,2,2){}
+      typedef FindPrimGroup<3,Alkenyl2,Carbon,Hydrogen> FindMe;
 };
 
-class Alkenyl3:public FxnalGroup{
+class Alkenyl3:public DerivedFxnalGrp{
    public:
       //C first
-      Alkenyl3(const int* Members):FxnalGroup(ALKENYL3,3,1,Members){}
+      Alkenyl3():DerivedFxnalGrp(ALKENYL3,1,3){}
+      typedef FindPrimGroup<3,Alkenyl3,Carbon> FindMe;
 };
 
-class Alkynyl1:public FxnalGroup{
+class Alkynyl1:public DerivedFxnalGrp{
    public:
       //C first
-      Alkynyl1(const int* Members):FxnalGroup(ALKYNYL1,1,2,Members){}
+      Alkynyl1():DerivedFxnalGrp(ALKYNYL1,2,1){}
+      typedef FindPrimGroup<2,Alkynyl1,Carbon,Hydrogen> FindMe;
 };
 
-class Alkynyl2:public FxnalGroup{
+class Alkynyl2:public DerivedFxnalGrp{
    public:
       //C first
-      Alkynyl2(const int* Members):FxnalGroup(ALKYNYL2,2,1,Members){}
+      Alkynyl2():DerivedFxnalGrp(ALKYNYL2,1,2){}
+      typedef FindPrimGroup<2,Alkynyl2,Carbon> FindMe;
 };
 
-class Water:public FxnalGroup{
+class Water:public DerivedFxnalGrp{
+   public:
+      int NAttachPoint()const{return 0;}
+      Water():DerivedFxnalGrp(WATER,3,0){}
+      typedef FindPrimGroup<2,Water,Oxygen,Hydrogen,Hydrogen> FindMe;
+};
+
+class Hydroxyl:public DerivedFxnalGrp{
    public:
       //O first
-      Water(const int* Members):FxnalGroup(WATER,0,3,Members){}
-      int NAttachPoint()const{return 0;}
+      Hydroxyl():DerivedFxnalGrp(HYDROXYL,2,1){}
+      typedef FindPrimGroup<2,Hydroxyl,Oxygen,Hydrogen> FindMe;
 
 };
 
-class Hydroxyl:public FxnalGroup{
+class Oxygen2:public DerivedFxnalGrp{
    public:
       //O first
-      Hydroxyl(const int * Members):FxnalGroup(HYDROXYL,1,2,Members){}
+      Oxygen2():DerivedFxnalGrp(OXYGEN2,1,2){}
+      typedef FindPrimGroup<2,Oxygen2,Oxygen> FindMe;
+
 };
 
-class Oxygen2:public FxnalGroup{
+class OxyDB:public DerivedFxnalGrp{
    public:
-      //The O
-      Oxygen2(const int *Members):FxnalGroup(OXYGEN2,2,1,Members){}
+      //O first
+      OxyDB():DerivedFxnalGrp(OXYDB,1,1){}
+      typedef FindPrimGroup<1,OxyDB,Oxygen> FindMe;
 };
 
-class OxyDB:public FxnalGroup{
+class Ammonia:public DerivedFxnalGrp{
    public:
-      OxyDB(const int* Members):FxnalGroup(OXYDB,1,1,Members){}
-};
 
-class Ammonia:public FxnalGroup{
-   public:
-      //The N first
-      Ammonia(const int* Members):FxnalGroup(AMMONIA,0,4,Members){}
       int NAttachPoint()const{return 0;}
+      //The N first
+      Ammonia():DerivedFxnalGrp(AMMONIA,4,0){}
+      typedef FindPrimGroup<3,Ammonia,Nitrogen,Hydrogen,Hydrogen,
+                                                        Hydrogen> FindMe;
 };
 
-class Amine1:public FxnalGroup{
+class Amine1:public DerivedFxnalGrp{
    public:
       //The N first
-      Amine1(const int *Members):FxnalGroup(AMINE1,1,3,Members){}
+      Amine1():DerivedFxnalGrp(AMINE1,3,1){}
+      typedef FindPrimGroup<3,Amine1,Nitrogen,Hydrogen,Hydrogen> FindMe;
 };
 
-class Amine2:public FxnalGroup{
+class Amine2:public DerivedFxnalGrp{
    public:
       //The N first
-      Amine2(const int *Members):FxnalGroup(AMINE2,2,2,Members){}
+      Amine2():DerivedFxnalGrp(AMINE2,2,2){}
+      typedef FindPrimGroup<3,Amine2,Nitrogen,Hydrogen> FindMe;
 };
 
-class Amine3:public FxnalGroup{
+class Amine3:public DerivedFxnalGrp{
    public:
       //The N first
-      Amine3(const int *Members):FxnalGroup(AMINE3,3,1,Members){}
+      Amine3():DerivedFxnalGrp(AMINE3,1,3){}
+      typedef FindPrimGroup<3,Amine3,Nitrogen> FindMe;
 };
 
-class NitroDB1:public FxnalGroup{
+class NitroDB1:public DerivedFxnalGrp{
    public:
       //The N first
-      NitroDB1(const int* Members):FxnalGroup(NITRODB1,1,2,Members){}
+      NitroDB1():DerivedFxnalGrp(NITRODB1,2,1){}
+      typedef FindPrimGroup<2,NitroDB1,Nitrogen,Hydrogen> FindMe;
 };
 
-class NitroDB2:public FxnalGroup{
+class NitroDB2:public DerivedFxnalGrp{
    public:
       //The N first
-      NitroDB2(const int* Members):FxnalGroup(NITRODB2,2,1,Members){}
+      NitroDB2():DerivedFxnalGrp(NITRODB2,1,2){}
+      typedef FindPrimGroup<2,Amine1,Nitrogen> FindMe;
 };
 
-class NitroTB:public FxnalGroup{
+class NitroTB:public DerivedFxnalGrp{
    public:
       //The N first
-      NitroTB(const int* Members):FxnalGroup(NITROTB,1,1,Members){}
+      NitroTB():DerivedFxnalGrp(NITROTB,1,1){}
+      typedef FindPrimGroup<1,NitroTB,Nitrogen> FindMe;
 };
 
-class HydrogenFluoride: public FxnalGroup{
+class HydrogenFluoride: public DerivedFxnalGrp{
+   public:
+      int NAttachPoint()const{return 0;}
+      HydrogenFluoride():DerivedFxnalGrp(HYDROGENFLUORIDE,2,0){}
+      typedef FindPrimGroup<1,HydrogenFluoride,Fluorine,Hydrogen> FindMe;
+};
+
+class Fluorine1: public DerivedFxnalGrp{
    public:
       //The F first
-      HydrogenFluoride(const int *Members):
-         FxnalGroup(HYDROGENFLUORIDE,0,2,Members){}
-      int NAttachPoint()const{return 0;}
+      Fluorine1():DerivedFxnalGrp(FLUORINE,1,1){}
+      typedef FindPrimGroup<1,Fluorine1,Fluorine> FindMe;
 };
 
-class Fluorine1: public FxnalGroup{
-   public:
-      //The F first
-      Fluorine1(const int *Members):
-         FxnalGroup(FLUORINE1,1,1,Members){}
-};
-
-class HydrogenChloride: public FxnalGroup{
+class HydrogenChloride: public DerivedFxnalGrp{
    public:
       //The Cl first
-      HydrogenChloride(const int *Members):
-         FxnalGroup(HYDROGENCHLORIDE,0,2,Members){}
+      HydrogenChloride():DerivedFxnalGrp(HYDROGENCHLORIDE,2,0){}
       int NAttachPoint()const{return 0;}
+      typedef FindPrimGroup<1,HydrogenChloride,Chlorine,Hydrogen> FindMe;
 };
 
-class Chlorine1: public FxnalGroup{
+class Chlorine1: public DerivedFxnalGrp{
    public:
       //The Cl first
-      Chlorine1(const int *Members):
-         FxnalGroup(CHLORINE1,1,1,Members){}
+      Chlorine1():DerivedFxnalGrp(CHLORINE1,1,1){}
+      typedef FindPrimGroup<1,Chlorine1,Chlorine,Hydrogen> FindMe;
 };
 
-class HydrogenBromide: public FxnalGroup{
+class HydrogenBromide: public DerivedFxnalGrp{
    public:
       //The Br first
-      HydrogenBromide(const int *Members):
-         FxnalGroup(HYDROGENBROMIDE,0,2,Members){}
+      HydrogenBromide():DerivedFxnalGrp(HYDROGENBROMIDE,2,0){}
       int NAttachPoint()const{return 0;}
+      typedef FindPrimGroup<1,HydrogenBromide,Bromine,Hydrogen> FindMe;
 };
 
-class Bromine1: public FxnalGroup{
+class Bromine1: public DerivedFxnalGrp{
    public:
       //The Br first
-      Bromine1(const int *Members):
-         FxnalGroup(BROMINE1,1,1,Members){}
+      Bromine1():DerivedFxnalGrp(BROMINE1,1,1){}
+      typedef FindPrimGroup<1,Bromine1,Bromine> FindMe;
 };
 
-class HydrogenIodide: public FxnalGroup{
+class HydrogenIodide: public DerivedFxnalGrp{
    public:
       //The I first
-      HydrogenIodide(const int *Members):
-         FxnalGroup(HYDROGENIODIDE,0,2,Members){}
+      HydrogenIodide():DerivedFxnalGrp(HYDROGENIODIDE,2,0){}
       int NAttachPoint()const{return 0;}
+      typedef FindPrimGroup<1,HydrogenIodide,Iodine,Hydrogen> FindMe;
 };
 
-class Iodine1: public FxnalGroup{
+class Iodine1: public DerivedFxnalGrp{
    public:
       //The I first
-      Iodine1(const int *Members):
-      FxnalGroup(IODINE1,1,1,Members){}
+      Iodine1():DerivedFxnalGrp(IODINE1,1,1){}
+      typedef FindPrimGroup<1,Iodine1,Iodine> FindMe;
 };
 
 
