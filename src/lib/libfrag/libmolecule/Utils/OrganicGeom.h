@@ -43,8 +43,14 @@ class GroupIt{
                      const_iterator& End):It_(It),ItEnd_(End){}
 };
 
+/** \brief A wrapper class to an array of functional groups
+ *
+ *  The groups are indexed by attachment points.  For example,
+ *  if
+ */
 class ConnGroups:public PsiMap<int,boost::shared_ptr<const FxnalGroup> >{
    private:
+      ///The type of the base class
       typedef PsiMap<int,boost::shared_ptr<const FxnalGroup> > Base_t;
    public:
       ///Returns the group that has atom i as an attachment point
@@ -53,12 +59,15 @@ class ConnGroups:public PsiMap<int,boost::shared_ptr<const FxnalGroup> >{
       }
       GroupIt begin()const{return GroupIt(Base_t::begin(),Base_t::end());}
       GroupIt end()const{return GroupIt(Base_t::end(),Base_t::end());}
+      std::string PrintOut()const;
 };
 
 class OrganicGeom:public Geometry{
    private:
+      ///The actual groups we found
       ConnGroups FxnalGroups_;
    protected:
+      ///The fxn that assigns the functional groups
       virtual ConnGroups MakeFxnGroups()const;
    public:
       /** \brief Returns a reference to the Fxnal Groups this class found
@@ -73,6 +82,7 @@ class OrganicGeom:public Geometry{
       ///Given a presumably organic molecule, figures out functional groups
       OrganicGeom(const Molecule* Mol,const double BondDef=1.8,
             const int MaxBonds=4);
+      ///Groups to a pretty (fyi:beauty is in the eye of the beholder) string
       std::string PrintOut()const;
 };
 

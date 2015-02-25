@@ -23,61 +23,81 @@
 #include "MolItr.h"
 #include "LibFragMolecule.h"
 #include "FxnalGroup.h"
+#include "AssignAtomFunctor.h"
+#include "FindDerGroup.h"
 #include "AddGroupFunctor.h"
 #include "AddDerivedGrpFunctor.h"
 #include "AromaRingFinder.h"
+
 namespace psi{
 namespace LibMolecule{
-typedef AddGroupFunctor<4,Carbon,Carbon4,Alkenyl3,Alkynyl2,
-                        Methyne,Alkenyl2,Alkynyl1,
-                        Methene,Alkenyl1,
-                        Methyl,
-                        Methane> CFunctor;
-typedef AddGroupFunctor<2,Oxygen,Oxygen2,OxyDB,NullGroup,
-                       Hydroxyl,NullGroup,NullGroup,
-                       Water> OFunctor;
-typedef AddGroupFunctor<3,Nitrogen,Amine3,NitroDB2,NitroTB,
-                        Amine2,NitroDB1,NullGroup,
-                        Amine1,NullGroup,
-                        Ammonia> NFunctor;
-typedef AddGroupFunctor<1,Fluorine,Fluorine1,NullGroup,NullGroup,
-                        HydrogenFluoride> FFunctor;
-typedef AddGroupFunctor<1,Chlorine,Chlorine1,NullGroup,NullGroup,
-                        HydrogenChloride> ClFunctor;
-typedef AddGroupFunctor<1,Bromine,Bromine1,NullGroup,NullGroup,
-                        HydrogenBromide>   BrFunctor;
-typedef AddGroupFunctor<1,Iodine,Iodine1,NullGroup,NullGroup,
-                        HydrogenIodide>     IFunctor;
 
-template<typename T1,typename T2=NullGroup,
-         typename T3=NullGroup,typename T4=NullGroup>
-class DerGrpFunctor{
+template<typename T,typename...Args>
+class PrimRunner: public PrimRunner<Args...>{
    public:
-      static bool AddGroup(
-            std::stack<boost::shared_ptr<const FxnalGroup> >& DaGroups,
-            const std::vector<std::vector<int> >& Connections,
-            PsiMap_t& FoundGroups){
-         bool LoopRestart=AddDerivedGrp<T1>::AddGroup(
-               DaGroups,Connections,FoundGroups);
-         if(!LoopRestart)
-            LoopRestart=AddDerivedGrp<T2>::AddGroup(
-                  DaGroups,Connections,FoundGroups);
-         if(!LoopRestart)
-            LoopRestart=AddDerivedGrp<T3>::AddGroup(
-                  DaGroups,Connections,FoundGroups);
-         if(!LoopRestart)
-            LoopRestart=AddDerivedGrp<T4>::AddGroup(
-                  DaGroups,Connections,FoundGroups);
-         return LoopRestart;
+      static void Run(GroupIt& Group,const Connections& Conns,
+                      ConnGroups& FoundGroups){
+         if(T::FindMe::FindGroup((*Group),Conns,FoundGroups))
+            Group=FoundGroups.begin();
+         else
+            PrimRunner<Args...>::Run(Group,Conns,FoundGroups);
       }
 };
 
+template<typename T>
+class PrimRunner<T>{
+   public:
+      static void Run(GroupIt& Group,const Connections& Conns,
+            ConnGroups& FoundGroups){
+         if(T::FindMe::FindGroup((*Group),Conns,FoundGroups))
+            Group=FoundGroups.begin();
+      }
+};
 
+typedef PrimRunner<Water,Hydroxyl,Oxygen2,OxyDB> OxygenPrims;
+typedef PrimRunner<Methane,Methyl,Methene,Methyne,Carbon4,
+                   Alkenyl1,Alkenyl2,Alkenyl3,
+                   Alkynyl1,Alkynyl2> CarbonPrims;
+typedef PrimRunner<Ammonia,Amine1,Amine2,Amine3,
+                   NitroDB1,NitroDB2,NitroTB> NitrogenPrims;
+typedef PrimRunner<HydrogenFluoride,Fluorine1> FlourinePrims;
+typedef PrimRunner<HydrogenChloride,Chlorine1> ChlorinePrims;
+typedef PrimRunner<HydrogenBromide,Bromine1> BrominePrims;
+typedef PrimRunner<HydrogenIodide,Iodine1> IodinePrims;
 ConnGroups  OrganicGeom::MakeFxnGroups()const {
-   MolItr AtomI=Mol_->Begin();
+   MolItr AtomI=Mol_->Begin(),AtomEnd=Mol_->End();
    std::vector<bool> IsAssigned(Mol_->NAtoms(), false);
+   std::cout<<Connections_.PrintOut();
    ConnGroups FoundGroups;
-   //Step 1: Find basic groups
+   PeriodicTable PTable;
+   for(int counter=0;AtomI!=AtomEnd;++AtomI)
+      PTable(counter++,(*AtomI),FoundGroups);
+   GroupIt GroupI=FoundGroups.begin();
+   for(;GroupI!=FoundGroups.end();++GroupI){
+      if((*GroupI)->Type()==CARBON)
+               CarbonPrims::Run(GroupI,Connections_,FoundGroups);
+      else if((*GroupI)->Type()==NITROGEN)
+         NitrogenPrims::Run(GroupI,Connections_,FoundGroups);
+      else if((*GroupI)->Type()==OXYGEN)
+         OxygenPrims::Run(GroupI,Connections_,FoundGroups);
+      else if((*GroupI)->Type()==FLUORINE)
+         FlourinePrims::Run(GroupI,Connections_,FoundGroups);
+      else if((*GroupI)->Type()==CHLORINE)
+         ChlorinePrims::Run(GroupI,Connections_,FoundGroups);
+      else if((*GroupI)->Type()==BROMINE)
+         BrominePrims::Run(GroupI,Connections_,FoundGroups);
+      else if((*GroupI)->Type()==IODINE)
+         IodinePrims::Run(GroupI,Connections_,FoundGroups);
+   }
+   for(GroupI=FoundGroups.begin();GroupI!=FoundGroups.end();++GroupI){
+      if(Carbonyl::FindMe::FindGroup((*GroupI),Connections_,FoundGroups))
+         GroupI=FoundGroups.begin();
+      else if(Carboxyl::FindMe::FindGroup((*GroupI),Connections_,FoundGroups))
+         GroupI=FoundGroups.begin();
+   }
+   std::cout<<FoundGroups.PrintOut();
+   exit(1);
+   /*/Step 1: Find basic groups
    for (int index=0; AtomI!=Mol_->End(); ++AtomI, ++index) {
       if (IsAssigned[index]) continue;
       switch (AtomI->Z()) {
@@ -111,7 +131,6 @@ ConnGroups  OrganicGeom::MakeFxnGroups()const {
          }
 
       }
-
    }
    //Step 2: Find derived groups
    bool AllFound=false;
@@ -186,7 +205,7 @@ ConnGroups  OrganicGeom::MakeFxnGroups()const {
    AromaticRingFinder Finder;
    bool found=true;
    while(found)
-      found=Finder.FindRing(FoundGroups,Connections_);
+      found=Finder.FindRing(FoundGroups,Connections_);*/
    return FoundGroups;
 }
 
@@ -205,11 +224,15 @@ GroupIt& GroupIt::operator++(){
    return *this;
 }
 
-std::string OrganicGeom::PrintOut()const{
-   GroupIt GroupI=FxnalGroups_.begin(),GroupEnd=FxnalGroups_.end();
+std::string ConnGroups::PrintOut()const{
+   GroupIt GroupI=begin(),GroupEnd=end();
    std::stringstream Result;
    for(;GroupI!=GroupEnd;++GroupI)
-      Result<<(*GroupI)->PrintOut();
+      Result<<(*GroupI)->PrintOut("");
    return Result.str();
+}
+
+std::string OrganicGeom::PrintOut()const{
+   return  FxnalGroups_.PrintOut();
 }
 }}//End namespaces

@@ -81,7 +81,8 @@ SharedFrags MakeMolecule(const int N, SharedMol AMol) {
 LibFragDriver::LibFragDriver(const std::string& MethodName){
    outfile->MakeBanner("Many-Body Expansion Module");
    Options options=psi::Process::environment.options;
-   int N=options["TRUNCATION_ORDER"].to_integer();
+   int NStart=options["MBE_STARTING_ORDER"].to_integer();
+   int N=options["MBE_TRUNCATION_ORDER"].to_integer();
    SharedMol AMol=psi::Process::environment.molecule();
    Frags_=MakeMolecule(N,AMol);
    RunMonomers(MethodName);

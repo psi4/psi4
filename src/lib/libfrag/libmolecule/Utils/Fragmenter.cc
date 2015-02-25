@@ -65,7 +65,7 @@ void BondFragmenter::Recurse(vSharedGroup& FoundGroups,
             const Connections& Conns,
             const ConnGroups& FxnGroups,
             long int& value){
-   if(FoundGroups.size()==NBonds_+1||
+   if((int)FoundGroups.size()==NBonds_+1||
       FoundGroups.back()->NAttachPoint()==0){
       AddFragment(FoundGroups,value++);
       return;
@@ -75,13 +75,13 @@ void BondFragmenter::Recurse(vSharedGroup& FoundGroups,
    for(int i=0;i<FoundGroups.back()->NAttachPoint();i++){
       int NAttachI=FoundGroups.back()->AttachPoint(i);
       if(NAttachI==-1)continue;
-      for(int j=0;j<Conns[NAttachI].size();j++){
+      for(int j=0;j<(int)Conns[NAttachI].size();j++){
          bool good=true;
          int ConnJ=Conns[NAttachI][j];
          //Make sure atom is an attachment point for some group
          if(FxnGroups.count(ConnJ)!=1)continue;
          //Make sure we don't have this group already
-         for(int k=0;k<FoundGroups.size()-1&&good;k++){
+         for(int k=0;k<(int)FoundGroups.size()-1&&good;k++){
             int NAttachK=FoundGroups[k]->NAttachPoint();
             for(int l=0;l<NAttachK&&good;l++)
                if(FoundGroups[k]->AttachPoint(l)==ConnJ)good=false;

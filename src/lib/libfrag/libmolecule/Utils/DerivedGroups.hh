@@ -91,12 +91,15 @@ class Carbonyl:public GenDerGrp<CARBONYL,2,2,OXYDB,ALKENYL3>{
    public:
       Carbonyl(){}
       Carbonyl(const Group_t& Groups){SetGroups(Groups);}
+      typedef FindDerGroup<Carbonyl,Alkenyl3,OxyDB> FindMe;
+
 };
 
 class Carboxyl:public GenDerGrp<CARBOXYL,2,1,HYDROXYL,CARBONYL>{
    public:
       Carboxyl(){}
       Carboxyl(const Group_t& Groups){SetGroups(Groups);}
+      typedef FindDerGroup<Carboxyl,Carbonyl,Hydroxyl> FindMe;
 };
 
 class HydroPeroxy:public GenDerGrp<HYDROPEROXY,2,1,HYDROXYL,OXYGEN2>{
