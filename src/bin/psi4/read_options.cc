@@ -1116,21 +1116,36 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("PRINT_BASIS", false);
 
     /*- SUBSECTION CSX publication -*/
-    options.add_str("publicationTitle", "default title");
-    options.add_str("publicationAbstract", "default abstract");
-    options.add_str("publicationTags", "default tags");
-    options.add_str("publicationPublisher", "default publisher");
-    options.add_str("correspondingAuthor", "default name");
-    options.add_str("organization", "default org");
-    options.add_str("email", "default email");
-    options.add_int("publicationCategory", 2);
-    options.add_int("publicationVisibility", 0);
-    options.add_int("publicationStatus", 0);
-    options.add_int("publicationKey", 0);
-    options.add_int("csx_version", 1);
-    /*- Flag to write the CSX file. -*/
-    options.add_bool("WRITE_CSX", false);
 
+    /*- Do write a CSX output file? -*/
+    options.add_bool("WRITE_CSX", false);
+    /*- Version of CSX. -*/
+    options.add_int("CSX_VERSION", 1);
+    /*- Brief title for CSX publication. -*/
+    options.add_str("PUBLICATIONTITLE", "");
+    /*- Abstract for CSX publication. -*/
+    options.add_str("PUBLICATIONABSTRACT", "");
+    /*- Additional tags to aid publication searches. -*/
+    options.add_str("PUBLICATIONTAGS", "");
+    /*- Submitting author for CSX publication. -*/
+    options.add_str("publicationPublisher", "");
+    /*- Corresponding author for CSX publication. -*/
+    options.add_str("CORRESPONDINGAUTHOR", "");
+    /*- Organization to which corresponding or submitting author belongs. -*/
+    options.add_str("ORGANIZATION", "");
+    /*- E-mail address of record for CSX publication -*/
+    options.add_str("EMAIL", "");
+    /*- Area of chemistry. -*/
+    options.add_int("PUBLICATIONCATEGORY", 2);
+    /*- Visibility of CSX publication. ``PRIVATE`` accessible only by
+    submitting author with password. ``PROTECTED`` accessible with key
+    provided by submitting author. ``PUBLIC`` freely accessible. -*/
+    options.add_str("PUBLICATIONVISIBILITY", "PRIVATE", "PRIVATE PROTECTED PUBLIC");
+    /*- Status of CSX publication. ``PRELIMINARY`` is unreviewed.
+    ``DRAFT`` is not fully reviewed. ``FINAL`` is final. -*/
+    options.add_str("PUBLICATIONSTATUS", "PRELIMINARY", "PRELIMINARY DRAFT FINAL");
+    /*-  -*/
+    options.add_int("PUBLICATIONKEY", 0);
 
     /*- SUBSECTION Convergence Control/Stabilization -*/
 

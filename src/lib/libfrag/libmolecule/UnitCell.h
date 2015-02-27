@@ -42,7 +42,7 @@ class UnitCell: public UnitCellGuts{
        *  \param[in] Angles The lattice angles in the order alpha,beta,gamma
        *  \param[in] IsFrac True if the coordinates contained in the molecule
        *             are fractional coordinates
-       *  \param[in] IsBhor True if the sides given are in atomic units
+       *  \param[in] IsBohr True if the sides given are in atomic units
        *  \param[in] IsDegree True if the angles given are in degrees
        */
       UnitCell(const Molecule& Mol,const double* Sides,

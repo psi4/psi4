@@ -447,7 +447,7 @@ SharedMatrix MintsHelper::ao_potential()
     SharedMatrix       potential_mat(new Matrix("AO-basis Potential Ints", basisset_->nbf (), basisset_->nbf ()));
     V->compute(potential_mat);
     return potential_mat;
-}      
+}
 
 SharedMatrix MintsHelper::ao_potential(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2)
 {
@@ -647,6 +647,23 @@ SharedMatrix MintsHelper::ao_f12(boost::shared_ptr<CorrelationFactor> corr,
     IntegralFactory intf(bs1, bs2, bs3, bs4);
     boost::shared_ptr<TwoBodyAOInt> ints(intf.f12(corr));
     return ao_helper("AO F12 Tensor", ints);
+}
+
+SharedMatrix MintsHelper::ao_f12_scaled(boost::shared_ptr<CorrelationFactor> corr)
+{
+    boost::shared_ptr<TwoBodyAOInt> ints(integral_->f12_scaled(corr));
+    return ao_helper("AO F12 Scaled Tensor", ints);
+}
+
+SharedMatrix MintsHelper::ao_f12_scaled(boost::shared_ptr<CorrelationFactor> corr,
+                                 boost::shared_ptr<BasisSet> bs1,
+                                 boost::shared_ptr<BasisSet> bs2,
+                                 boost::shared_ptr<BasisSet> bs3,
+                                 boost::shared_ptr<BasisSet> bs4)
+{
+    IntegralFactory intf(bs1, bs2, bs3, bs4);
+    boost::shared_ptr<TwoBodyAOInt> ints(intf.f12_scaled(corr));
+    return ao_helper("AO F12 Scaled Tensor", ints);
 }
 
 SharedMatrix MintsHelper::ao_f12_squared(boost::shared_ptr<CorrelationFactor> corr)
@@ -889,7 +906,7 @@ SharedMatrix MintsHelper::mo_spin_eri_helper(SharedMatrix Iso, int n1, int n2)
 {
     int n12 = n1 * 2;
     int n22 = n2 * 2;
-    
+
     double** Isop = Iso->pointer();
     SharedMatrix Ispin(new Matrix("MO ERI Tensor", 4 * n1 * n1, 4 * n2 * n2));
     double** Ispinp = Ispin->pointer();
@@ -902,10 +919,10 @@ SharedMatrix MintsHelper::mo_spin_eri_helper(SharedMatrix Iso, int n1, int n2)
                 for (int l = 0; l < n22; l++) {
                     mask1 = (i%2 == k%2) * (j%2 == l%2);
                     mask2 = (i%2 == l%2) * (j%2 == k%2);
-                    
+
                     first =  Isop[i/2 * n2 + k/2][j/2 * n2 + l/2];
                     second = Isop[i/2 * n2 + l/2][j/2 * n2 + k/2];
-                    Ispinp[i * n12 + j][k * n22 + l] = first * mask1 - second * mask2; 
+                    Ispinp[i * n12 + j][k * n22 + l] = first * mask1 - second * mask2;
                 }
             }
         }

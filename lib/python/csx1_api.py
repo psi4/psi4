@@ -821,12 +821,7 @@ class mpType(GeneratedsSuper):
             self.abstract is not None or
             self.publisher is not None or
             self.author or
-            self.sourcePackage is not None or
-            self.tags is not None or
-            self.status is not None or
-            self.visibility is not None or
-            self.category is not None or
-            self.key is not None
+            self.sourcePackage is not None 
         ):
             return True
         else:
@@ -878,10 +873,10 @@ class mpType(GeneratedsSuper):
             outfile.write('<%stags>%s</%stags>%s' % (namespace_, self.gds_format_string(quote_xml(self.tags).encode(ExternalEncoding), input_name='tags'), namespace_, eol_))
         if self.status is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstatus>%s</%sstatus>%s' % (namespace_, self.gds_format_string(quote_xml(self.status).encode(ExternalEncoding), input_name='status'), namespace_, eol_))
+            outfile.write('<%sstatus>%s</%sstatus>%s' % (namespace_, self.gds_format_integer(self.status, input_name='status'), namespace_, eol_))
         if self.visibility is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%svisibility>%s</%svisibility>%s' % (namespace_, self.gds_format_string(quote_xml(self.visibility).encode(ExternalEncoding), input_name='visibility'), namespace_, eol_))
+            outfile.write('<%svisibility>%s</%svisibility>%s' % (namespace_, self.gds_format_integer(self.visibility, input_name='visibility'), namespace_, eol_))
         if self.category is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%scategory>%s</%scategory>%s' % (namespace_, self.gds_format_string(quote_xml(self.category).encode(ExternalEncoding), input_name='category'), namespace_, eol_))
