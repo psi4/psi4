@@ -718,10 +718,8 @@ bool py_psi_set_local_option_string(std::string const & module, std::string cons
 
     if (data.type() == "string") {
         Process::environment.options.set_str(module, nonconst_key, value);
-        check_for_basis(value, nonconst_key);
     } else if (data.type() == "istring") {
         Process::environment.options.set_str_i(module, nonconst_key, value);
-        check_for_basis(value, nonconst_key);
     } else if (data.type() == "boolean") {
         if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
           boost::to_upper_copy(value) == "ON")
