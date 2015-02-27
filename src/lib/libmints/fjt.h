@@ -136,10 +136,23 @@ public:
     void set_rho(double rho);
 };
 
+    /**
+     *  Solves \scp -\gamma r_{12}
+     */
 class F12Fundamental : public GaussianFundamental {
 public:
     F12Fundamental(boost::shared_ptr<CorrelationFactor> cf, int max);
     virtual ~F12Fundamental();
+    double* values(int J, double T);
+};
+
+/**
+ *  Solves \frac{\exp -\gamma r_{12}}{\gamma}.
+ */
+class F12ScaledFundamental : public GaussianFundamental {
+public:
+    F12ScaledFundamental(boost::shared_ptr<CorrelationFactor> cf, int max);
+    virtual ~F12ScaledFundamental();
     double* values(int J, double T);
 };
 

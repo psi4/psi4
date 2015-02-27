@@ -592,6 +592,51 @@ double *F12Fundamental::values(int J, double T)
 }
 
 ////////
+// F12ScaledFundamental
+////////
+
+F12ScaledFundamental::F12ScaledFundamental(boost::shared_ptr<CorrelationFactor> cf, int max)
+: GaussianFundamental(cf, max)
+{
+
+}
+
+F12ScaledFundamental::~F12ScaledFundamental()
+{
+
+}
+
+double *F12ScaledFundamental::values(int J, double T)
+{
+    // because the current implementation is just a hack of the eri
+    // routines, we have to undo the eri prefactor of 2pi/rho that
+    // will be added later
+    double* exps = cf_->exponent();
+    double* coeffs = cf_->coeff();
+    int nparam = cf_->nparam();
+
+    // zero the values array
+    for (int n=0; n<=J; ++n)
+        value_[n] = 0.0;
+
+    double pfac, expterm, rhotilde, omega;
+    double eri_correct = rho_ / 2 / M_PI;
+    eri_correct /= cf_->slater_exponent();
+    for (int i=0; i<nparam; ++i) {
+        omega = exps[i];
+        rhotilde = omega / (rho_ + omega);
+        pfac = coeffs[i] * pow(M_PI/(rho_ + omega), 1.5) * eri_correct;
+        expterm = exp(-rhotilde*T)*pfac;
+        for (int n=0; n<=J; ++n) {
+            value_[n] += expterm;
+            expterm *= rhotilde;
+        }
+    }
+
+    return value_;
+}
+
+////////
 // F12SquaredFundamental
 ////////
 
