@@ -21,6 +21,14 @@ psi-a24-grad
 infra_subdirs = puream mints5 mints5-grad pywrap-cbs1 kw-1 kw-2 kw-3 kw-4 \
 kw-5 kw-6 kw-7 kw-8 psi-ghost-grad scf4 mp2-1 pywrap-db1 pywrap-basis dfmp2-1
 
+psi_subdirs = psi-mints5 psi-rhf-scsmp2 psi-uhf-scsmp2 psi-rohf-scsmp2 psi-mp3 psi-mp4
+
+opt_subdirs = opt-rhf-scf opt-rhf-mp2 opt-rhf-ccsd_t_ opt-rhf-ccsd_t_-ecc \
+psi-a24-grad
+
+infra_subdirs = puream mints5 mints5-grad pywrap-cbs1 kw-1 kw-2 kw-3 kw-4 \
+kw-5 kw-6 kw-7 kw-8 psi-ghost-grad scf4 mp2-1 pywrap-db1 pywrap-basis dfmp2-1
+
 subdirs = \
 $(infra_subdirs) \
 $(sp_rhf_subdirs) \
@@ -106,6 +114,12 @@ psi_tests: $(psi_subdirs)
 
 infra_tests: $(infra_subdirs)
 	$(call gatherresults, $(infra_subdirs))
+
+sp_rhf_tests: $(sp_rhf_subdirs)
+	$(call gatherresults, $(sp_rhf_subdirs))
+
+sp_uhf_tests: $(sp_uhf_subdirs)
+	$(call gatherresults, $(sp_uhf_subdirs))
 
 plugins:
 	for dir in $(plugin_subdirs); \

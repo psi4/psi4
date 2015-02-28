@@ -45,12 +45,13 @@
 #include <liboptions/liboptions_python.h>
 #include <psifiles.h>
 #include <libfock/jk.h>
+#include <libpsipcm/psipcm.h>
 
-#include <libmints/gridprop.h>
 
 #include "hf.h"
 
 #include <psi4-dec.h>
+#include <libefp_solver/efp_solver.h>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -127,7 +128,7 @@ void HF::common_init()
         boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
         if(old_pg){
             // This is one of a series of displacements;  check the dimension against the parent point group
-            int full_nirreps = old_pg->char_table().nirrep();
+            size_t full_nirreps = old_pg->char_table().nirrep();
             if(options_["DOCC"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
             int *temp_docc = new int[full_nirreps];
@@ -162,7 +163,7 @@ void HF::common_init()
         boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
         if(old_pg){
             // This is one of a series of displacements;  check the dimension against the parent point group
-            int full_nirreps = old_pg->char_table().nirrep();
+            size_t full_nirreps = old_pg->char_table().nirrep();
             if(options_["SOCC"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
             int *temp_socc = new int[full_nirreps];
@@ -206,17 +207,17 @@ void HF::common_init()
             molecule_->set_multiplicity(2);
 
             // There are an odd number of electrons
-                outfile->Printf("\tThere are an odd number of electrons - assuming doublet.\n"
-                            "\tSpecify the multiplicity with the MULTP option in the\n"
-                            "\tinput if this is incorrect\n\n");
+                outfile->Printf("    There are an odd number of electrons - assuming doublet.\n"
+                            "    Specify the multiplicity with the MULTP option in the\n"
+                            "    input if this is incorrect\n\n");
 
         }else{
             multiplicity_ = 1;
             // There are an even number of electrons
 
-                outfile->Printf("\tThere are an even number of electrons - assuming singlet.\n"
-                            "\tSpecify the multiplicity with the MULTP option in the\n"
-                            "\tinput if this is incorrect\n\n");
+                outfile->Printf("    There are an even number of electrons - assuming singlet.\n"
+                            "    Specify the multiplicity with the MULTP option in the\n"
+                            "    input if this is incorrect\n\n");
 
         }
     }
@@ -365,6 +366,12 @@ void HF::common_init()
     frac_performed_ = false;
 
     print_header();
+
+    // Initialize PCM object, if requested
+#ifdef HAVE_PCMSOLVER
+    if(pcm_enabled_ = (options_.get_bool("PCM")))
+      hf_pcm_ = static_cast<SharedPCM>(new PCM(options_, psio_, nirrep_, basisset_));
+#endif
 }
 
 void HF::damp_update()
@@ -510,7 +517,7 @@ void HF::find_occupation()
         // If print > 2 (diagnostics), print always
         if((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0){
 
-                outfile->Printf( "\tOccupation by irrep:\n");
+                outfile->Printf( "    Occupation by irrep:\n");
             print_occupation();
         }
         // Start MOM if needed (called here because we need the nocc
@@ -720,44 +727,6 @@ void HF::form_H()
         free(phi_so);
         free_block(V_eff);
       }  // embpot or sphere
-      else {
-          // The following perturbations are handled by MintsHelper.
-#if 0
-        OperatorSymmetry msymm(1, molecule_, integral_, factory_);
-        vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
-        OneBodySOInt *so_dipole = integral_->so_dipole();
-        so_dipole->compute(dipoles);
-
-        if (perturb_ == dipole_x ) {
-            if (msymm.component_symmetry(0) != 0){
-                outfile->Printf( "  WARNING: You requested mu(x) perturbation, but mu(x) is not symmetric.\n");
-            }
-            else {
-                    outfile->Printf( "  Perturbing H by %f mu(x).\n", lambda_);
-                dipoles[0]->scale(lambda_);
-                V_->add(dipoles[0]);
-            }
-        } else if (perturb_ == dipole_y) {
-            if (msymm.component_symmetry(1) != 0){
-                    outfile->Printf( "  WARNING: You requested mu(y) perturbation, but mu(y) is not symmetric.\n");
-            }
-            else {
-                    outfile->Printf( "  Perturbing H by %f mu(y).\n", lambda_);
-                dipoles[1]->scale(lambda_);
-                V_->add(dipoles[1]);
-            }
-        } else if (perturb_ == dipole_z) {
-            if (msymm.component_symmetry(2) != 0){
-                    outfile->Printf( "  WARNING: You requested mu(z) perturbation, but mu(z) is not symmetric.\n");
-            }
-            else {
-                    outfile->Printf( "  Perturbing H by %f mu(z).\n", lambda_);
-                dipoles[2]->scale(lambda_);
-                V_->add(dipoles[2]);
-            }
-        }
-#endif
-      } // end dipole perturbations
     } // end perturb_h_
 
     // If an external field exists, add it to the one-electron Hamiltonian
@@ -949,6 +918,9 @@ void HF::compute_fcpi()
         for (int i=0; i<nfzc; ++i)
             frzcpi_[pairs[i].second]++;
     }
+    // total frozen core
+    nfrzc_ = 0;
+    for (int h = 0; h < epsilon_a_->nirrep(); h++) nfrzc_ += frzcpi_[h];
 }
 
 void HF::compute_fvpi()
@@ -980,12 +952,12 @@ void HF::compute_fvpi()
 void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::pair<const char*, int> > > orbs)
 {
 
-        outfile->Printf( "\t%-70s\n\n\t", header);
+        outfile->Printf( "    %-70s\n\n    ", header);
         int count = 0;
         for (int i = 0; i < orbs.size(); i++) {
             outfile->Printf( "%4d%-4s%11.6f  ", orbs[i].second.second, orbs[i].second.first, orbs[i].first);
             if (count++ % 3 == 2 && count != orbs.size())
-                outfile->Printf( "\n\t");
+                outfile->Printf( "\n    ");
         }
         outfile->Printf( "\n\n");
 
@@ -995,7 +967,7 @@ void HF::print_orbitals()
 {
     char **labels = molecule_->irrep_labels();
 
-        outfile->Printf( "\tOrbital Energies (a.u.)\n\t-----------------------\n\n");
+        outfile->Printf( "    Orbital Energies (a.u.)\n    -----------------------\n\n");
 
     std::string reference = options_.get_str("REFERENCE");
     if((reference == "RHF") || (reference == "RKS")){
@@ -1117,7 +1089,7 @@ void HF::print_orbitals()
     free(labels);
 
 
-        outfile->Printf( "\tFinal Occupation by Irrep:\n");
+        outfile->Printf( "    Final Occupation by Irrep:\n");
     print_occupation();
 }
 
@@ -1338,6 +1310,12 @@ void HF::load_orbitals()
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(old_forced_puream));
     molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
     boost::shared_ptr<BasisSet> dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
+    // TODO: oh my, forced_puream!
+    // TODO: oh my, a basis for which a fn hasn't been set in the input translation
+    // TODO: oh my, a non-fitting basis to be looked up (in Mol) not under BASIS
+    //boost::shared_ptr<BasisSet> dual_basis = BasisSet::pyconstruct(molecule_, basisname,
+    //            "DUAL_BASIS_SCF");
+    // TODO: I think Rob was planning to rework this projection bit anyways
 
     psio_->read_entry(PSIF_SCF_MOS,"SCF ENERGY",(char *) &(E_),sizeof(double));
 
@@ -1622,6 +1600,15 @@ double HF::compute_energy()
         form_H(); //Core Hamiltonian
         timer_off("Form H");
 
+        // EFP: Add in permenent moment contribution and cache
+        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+            boost::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_permanent();
+            H_->add(Vefp);
+            Horig_ = SharedMatrix(new Matrix("H orig Matrix", basisset_->nbf(), basisset_->nbf()));
+            Horig_->copy(H_);
+            outfile->Printf( "  QM/EFP: iterating Total Energy including QM/EFP Induction\n");
+        }
+
         timer_on("Form S/X");
         form_Shalf(); //S and X Matrix
         timer_off("Form S/X");
@@ -1642,6 +1629,10 @@ double HF::compute_energy()
         outfile->Printf( "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", df ? "   " : "");
     
 
+    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+        Process::environment.get_efp()->set_qm_atoms();
+    }
+
     // SCF iterations
     do {
         iteration_++;
@@ -1650,6 +1641,16 @@ double HF::compute_energy()
 
         // Call any preiteration callbacks
         call_preiteration_callbacks();
+
+
+        // add efp contribution to Fock matrix
+        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+            H_->copy(Horig_);
+    	    boost::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_induced();
+    	    H_->add(Vefp);
+        }
+
+        E_ = 0.0;
 
         timer_on("Form G");
         form_G();
@@ -1668,24 +1669,53 @@ double HF::compute_energy()
             Fb_->print("outfile");
         }
 
-    //bool has_efp = options.get("HAS_EFP");
+        E_ += compute_E();
 
-    // XXX
-    //if (has_efp) {
-    //efp_get_multipole_count
-    // allocate arrays
-    //efp_get_multipoles
-    // compute 1e contributions
-    //}
+        // add efp contribution to energy
+        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+            double efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update();
+            E_ += efp_wfn_dependent_energy;
+        }   
 
-        E_ = compute_E();
+#ifdef HAVE_PCMSOLVER
+        // The PCM potential must be added to the Fock operator *after* the
+        // energy computation, not in form_F()
+        if(pcm_enabled_) {
+          // Prepare the density
+          SharedMatrix D_pcm;
+          if(same_a_b_orbs()) {
+            D_pcm = Da_;
+            D_pcm->scale(2.0); // PSI4's density doesn't include the occupation
+          }
+          else {
+            D_pcm = Da_;
+            D_pcm->add(Db_);
+          }
 
-    // XXX
-    //if (has_efp) {
-    //double efp_energy;
-    //efp_scf_update(efp, &efp_energy);
-    //E_ += efp_energy;
-    //}
+          // Compute the PCM charges and polarization energy
+          double Epcm = 0.0;
+	  if (options_.get_str("PCM_SCF_TYPE") == "TOTAL")
+	  {
+          	Epcm = hf_pcm_->compute_E(D_pcm, PCM::Total);
+	  }
+	  else
+	  {
+          	Epcm = hf_pcm_->compute_E(D_pcm, PCM::NucAndEle);
+	  }
+          energies_["PCM Polarization"] = Epcm;
+	  Process::environment.globals["PCM POLARIZATION ENERGY"] = Epcm;
+          E_ += Epcm;
+          
+          // Add the PCM potential to the Fock matrix
+          SharedMatrix V_pcm;
+          V_pcm = hf_pcm_->compute_V();
+          if(same_a_b_orbs()) Fa_->add(V_pcm);
+          else {
+            Fa_->add(V_pcm);
+            Fb_->add(V_pcm);
+          }
+        }
+#endif	
 
         timer_on("DIIS");
         bool add_to_diis_subspace = false;
@@ -1782,6 +1812,21 @@ double HF::compute_energy()
 
     } while (!converged && iteration_ < maxiter_ );
 
+    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+        Process::environment.get_efp()->compute();
+
+        double efp_wfn_independent_energy = Process::environment.globals["EFP TOTAL ENERGY"] -
+                                            Process::environment.globals["EFP IND ENERGY"];
+        energies_["EFP"] = Process::environment.globals["EFP TOTAL ENERGY"];
+
+        outfile->Printf("    EFP excluding EFP Induction   %20.12f [H]\n", efp_wfn_independent_energy);
+        outfile->Printf("    SCF including EFP Induction   %20.12f [H]\n", E_);
+
+        E_ += efp_wfn_independent_energy;
+
+        outfile->Printf("    Total SCF including Total EFP %20.12f [H]\n", E_);
+    }
+
 
         outfile->Printf( "\n  ==> Post-Iterations <==\n\n");
 
@@ -1793,6 +1838,29 @@ double HF::compute_energy()
         // Need to recompute the Fock matrices, as they are modified during the SCF interation
         // and might need to be dumped to checkpoint later
         form_F();
+#ifdef HAVE_PCMSOLVER	
+        if(pcm_enabled_) {
+            // Prepare the density
+            SharedMatrix D_pcm;
+            if(same_a_b_orbs()) {
+              D_pcm = Da_;
+              D_pcm->scale(2.0); // PSI4's density doesn't include the occupation
+            }
+            else {
+              D_pcm = Da_;
+              D_pcm->add(Db_);
+            }
+
+            // Add the PCM potential to the Fock matrix
+            SharedMatrix V_pcm;
+            V_pcm = hf_pcm_->compute_V();
+            if(same_a_b_orbs()) Fa_->add(V_pcm);
+            else {
+              Fa_->add(V_pcm);
+              Fb_->add(V_pcm);
+            }
+        }
+#endif	
 
         // Print the orbitals
         if(print_)
@@ -1831,6 +1899,13 @@ double HF::compute_energy()
 
                 outfile->Printf( "  ==> Properties <==\n\n");
             oe->compute();
+
+            // TODO: Hack to test CubicScalarGrid
+            /*
+            boost::shared_ptr<CubicScalarGrid> grid(new CubicScalarGrid(basisset_));
+            grid->print_header();
+            grid->compute_density_cube(Da_, "Da");
+            */
 
 //  Comments so that autodoc utility will find these PSI variables
 //
@@ -1881,14 +1956,19 @@ double HF::compute_energy()
 
 void HF::print_energies()
 {
-    outfile->Printf( "   => Energetics <=\n\n");
-    outfile->Printf( "    Nuclear Repulsion Energy =        %24.16f\n", energies_["Nuclear"]);
-    outfile->Printf( "    One-Electron Energy =             %24.16f\n", energies_["One-Electron"]);
-    outfile->Printf( "    Two-Electron Energy =             %24.16f\n", energies_["Two-Electron"]);
-    outfile->Printf( "    DFT Exchange-Correlation Energy = %24.16f\n", energies_["XC"]);
-    outfile->Printf( "    Empirical Dispersion Energy =     %24.16f\n", energies_["-D"]);
-    outfile->Printf( "    Total Energy =                    %24.16f\n", energies_["Nuclear"] +
-        energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"]);
+    outfile->Printf("   => Energetics <=\n\n");
+    outfile->Printf("    Nuclear Repulsion Energy =        %24.16f\n", energies_["Nuclear"]);
+    outfile->Printf("    One-Electron Energy =             %24.16f\n", energies_["One-Electron"]);
+    outfile->Printf("    Two-Electron Energy =             %24.16f\n", energies_["Two-Electron"]);
+    outfile->Printf("    DFT Exchange-Correlation Energy = %24.16f\n", energies_["XC"]);
+    outfile->Printf("    Empirical Dispersion Energy =     %24.16f\n", energies_["-D"]);
+    if (!pcm_enabled_)
+        energies_["PCM Polarization"] = 0.0;
+    outfile->Printf("    PCM Polarization Energy =         %24.16f\n", energies_["PCM Polarization"]);
+    outfile->Printf("    EFP Energy =                      %24.16f\n", energies_["EFP"]);
+    outfile->Printf("    Total Energy =                    %24.16f\n", energies_["Nuclear"] +
+        energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] +
+        energies_["-D"] + energies_["EFP"] + energies_["PCM Polarization"]);
     outfile->Printf( "\n");
 
     Process::environment.globals["NUCLEAR REPULSION ENERGY"] = energies_["Nuclear"];
@@ -1907,6 +1987,7 @@ void HF::print_energies()
     if (fabs(energies_["-D"]) > 1.0e-14) {
         Process::environment.globals["DISPERSION CORRECTION ENERGY"] = energies_["-D"];
     }
+    outfile->Printf("    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.");
 //  Comment so that autodoc utility will find this PSI variable
 //     It doesn't really belong here but needs to be linked somewhere
 //  Process::environment.globals["DOUBLE-HYBRID CORRECTION ENERGY"]
@@ -1917,22 +1998,22 @@ void HF::print_occupation()
 
         char **labels = molecule_->irrep_labels();
         std::string reference = options_.get_str("REFERENCE");
-        outfile->Printf( "\t      ");
+        outfile->Printf( "          ");
         for(int h = 0; h < nirrep_; ++h) outfile->Printf( " %4s ", labels[h]); outfile->Printf( "\n");
-        outfile->Printf( "\tDOCC [ ");
+        outfile->Printf( "    DOCC [ ");
         for(int h = 0; h < nirrep_-1; ++h) outfile->Printf( " %4d,", doccpi_[h]);
         outfile->Printf( " %4d ]\n", doccpi_[nirrep_-1]);
         if(reference != "RHF" && reference != "RKS"){
-            outfile->Printf( "\tSOCC [ ");
+            outfile->Printf( "    SOCC [ ");
             for(int h = 0; h < nirrep_-1; ++h) outfile->Printf( " %4d,", soccpi_[h]);
             outfile->Printf( " %4d ]\n", soccpi_[nirrep_-1]);
         }
         if (MOM_excited_) {
             // Also print nalpha and nbeta per irrep, which are more physically meaningful
-            outfile->Printf( "\tNA   [ ");
+            outfile->Printf( "    NA   [ ");
             for(int h = 0; h < nirrep_-1; ++h) outfile->Printf( " %4d,", nalphapi_[h]);
             outfile->Printf( " %4d ]\n", nalphapi_[nirrep_-1]);
-            outfile->Printf( "\tNB   [ ");
+            outfile->Printf( "    NB   [ ");
             for(int h = 0; h < nirrep_-1; ++h) outfile->Printf( " %4d,", nbetapi_[h]);
             outfile->Printf( " %4d ]\n", nbetapi_[nirrep_-1]);
         }
@@ -2064,14 +2145,14 @@ void HF::print_stability_analysis(std::vector<std::pair<double, int> > &vec)
 {
     std::sort(vec.begin(), vec.end());
     std::vector<std::pair<double, int> >::const_iterator iter = vec.begin();
-    outfile->Printf( "\t");
+    outfile->Printf( "    ");
     char** irrep_labels = molecule_->irrep_labels();
     int count = 0;
     for(; iter != vec.end(); ++iter){
         ++count;
         outfile->Printf( "%4s %-10.6f", irrep_labels[iter->second], iter->first);
         if(count == 4){
-            outfile->Printf( "\n\t");
+            outfile->Printf( "\n    ");
             count = 0;
         }else{
             outfile->Printf( "    ");

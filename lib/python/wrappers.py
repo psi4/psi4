@@ -42,7 +42,7 @@ from driver import *
 # never import aliases into this file
 
 #Where the implementation for running MBEs is held
-import mbe_impl
+#import mbe_impl
 # Function to make calls among wrappers(), energy(), optimize(), etc.
 def call_function_in_1st_argument(funcarg, **largs):
     r"""Function to make primary function call to energy(), opt(), etc.
@@ -53,7 +53,7 @@ def call_function_in_1st_argument(funcarg, **largs):
     return funcarg(**largs)
 
 def return_energy_components():
-    VARH={}
+    VARH = {}
     VARH['scf'] = {
                             'scftot': 'SCF TOTAL ENERGY'}
     VARH['oldmp2'] = {
@@ -154,23 +154,11 @@ def return_energy_components():
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                    'fno-df-ccsdcorl': 'CCSD CORRELATION ENERGY'}
-    
-    VARH['df-ccsd'] = {
-                            'scftot': 'SCF TOTAL ENERGY',
-                           'mp2corl': 'MP2 CORRELATION ENERGY',
-                          'ccsdcorl': 'CCSD CORRELATION ENERGY'}
-    
     VARH['fno-df-ccsd(t)'] = {
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                           'ccsdcorl': 'CCSD CORRELATION ENERGY',
                 'fno-df-ccsd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
-    
-    VARH['df-ccsd(t)'] = {
-                            'scftot': 'SCF TOTAL ENERGY',
-                           'mp2corl': 'MP2 CORRELATION ENERGY',
-                          'ccsdcorl': 'CCSD CORRELATION ENERGY',
-                       'ccsd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
     VARH['qcisd(t)'] = {
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
@@ -219,7 +207,25 @@ def return_energy_components():
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                        'mrccsdtcorl': 'CCSDT CORRELATION ENERGY',
                     'mrccsdt(q)corl': 'CCSDT(Q) CORRELATION ENERGY'}
+
+    for cilevel in range(2, 99):
+        VARH['ci%s' % (str(cilevel))] = {
+                            'scftot': 'SCF TOTAL ENERGY',
+         'ci%scorl' % (str(cilevel)): 'CI CORRELATION ENERGY'}
+
+    for mplevel in range(5, 99):
+        VARH['mp%s' % (str(mplevel))] = {
+                            'scftot': 'SCF TOTAL ENERGY',
+         'mp%scorl' % (str(mplevel)): 'MP%s CORRELATION ENERGY' % (str(mplevel))}
+        for mplevel2 in range(2, mplevel):
+            VARH['mp%s' % (str(mplevel))]['mp%scorl' % (str(mplevel2))] = \
+                                      'MP%s CORRELATION ENERGY' % (str(mplevel2))
+
+    # Integrate CFOUR methods
+    VARH.update(cfour_psivar_list())
     return VARH
+
+VARH=return_energy_components() 
 
 def convert(p, symbol):
     if symbol[p] == 'H':
@@ -337,10 +343,28 @@ def auto_fragments(name, **kwargs):
     new_mol = geometry(new_geom)
     new_mol.print_out()
     psi4.print_out("Exiting auto_fragments\n")
-    
+   
+   
+def new_run_calc(methodname, molecule,BeQuiet,**kwargs):
+    oldmolecule = psi4.get_active_molecule()
+    frag=geometry(molecule)
+    activate(frag)
+    frag.update_geometry()
+    if(BeQuiet==1):
+        psi4.be_quiet()
+    energy(methodname,**kwargs)
+    energylist={}
+    for k, v in VARH[methodname].iteritems():
+        energylist[v]=psi4.get_variable(v)
+    if(BeQuiet==1):
+        psi4.reopen_outfile()
+    activate(oldmolecule)  
+    oldmolecule.update_geometry()
+    psi4.clean()
+    return energylist
+      
 
-def mbe(name, n=2, bsse_method="NONE", frag_method="USER_DEFINED",
-        embed_method="NONE", cap_method="NONE", print_underlying=False, **kwargs):
+def mbe(name, **kwargs):
     r"""The driver routine for running calculations with the MBE or the 
     GMBE.    
 
@@ -351,38 +375,6 @@ def mbe(name, n=2, bsse_method="NONE", frag_method="USER_DEFINED",
         to be applied to the molecule. May be any valid argument to
         :py:func:`~driver.energy`; however, SAPT is not appropriate.
 
-    :type n: integer
-    :param n: |dl| ``2`` |dr| || ``3`` || etc.
-
-        Indicates the (generalized)-many-body-expansion truncation order.
-
-    :type bsse_method: string
-    :param bsse_method: 
-
-        Indicates how BSSE corrections are applied.
-
-    :type frag_method: string
-    :param frag_method: 
-
-        Indicates how the fragments are being make.
-
-    :type embed_method: string
-    :param embed_method: 
-
-        Indicates how are higher order MBE effects being accounted for.
-
-    :type cap_method: string
-    :param cap_method: 
-
-        Indicates how are we dealing with severed covalent bonds.
-
-    :type print_underlying: :ref:`boolean <op_py_boolean>`
-    :param print_underlying: ``'on'`` || |dl| ``'off'`` |dr|
-
-        Indicates whether underlying electronic structure outputs will be 
-        printed to file. Setting to true will generate a lot of output, 
-        but is useful for debugging purposes.
-
     """
 
     if 'molecule' in kwargs:
@@ -390,21 +382,8 @@ def mbe(name, n=2, bsse_method="NONE", frag_method="USER_DEFINED",
         del kwargs['molecule']
     molecule = psi4.get_active_molecule()
     molecule.update_geometry()
-    VARH=return_energy_components()
-    Egys=[[]]
-    CEgys={}
-    for k,v in VARH[name].iteritems():
-        CEgys[v]=[[]]
-    mbe_impl.setup(frag_method,n,embed_method,cap_method,bsse_method)
-    mbe_impl.fragment(name,molecule,Egys,CEgys,not print_underlying,**kwargs)
-    if(n>=2):
-        mbe_impl.nmers(name,molecule,n,Egys,CEgys,not print_underlying,**kwargs)
-    if(len(CEgys)>1):
-        for k,v in CEgys.iteritems():
-            mbe_impl.SystemEnergy(CEgys[k],k)
-    Best_Approx_Egy=mbe_impl.SystemEnergy(Egys,'Total Energy')
-    mbe_impl.Done()
-    return Best_Approx_Egy
+    psi4.prepare_options_for_module("LIBFRAG")
+    Driver=psi4.LibFragDriver(name);
 
 #######################
 ##  Start of n_body  ##
@@ -2108,23 +2087,7 @@ def complete_basis_set(name, **kwargs):
         raise ValidationError('Wrapper complete_basis_set is unhappy to be calling function \'%s\' instead of \'energy\'.' % (func.__name__))
 
     # Define some quantum chemical knowledge, namely what methods are subsumed in others
-    VARH =return_energy_components()
 
-    for cilevel in range(2, 99):
-        VARH['ci%s' % (str(cilevel))] = {
-                            'scftot': 'SCF TOTAL ENERGY',
-         'ci%scorl' % (str(cilevel)): 'CI CORRELATION ENERGY'}
-
-    for mplevel in range(5, 99):
-        VARH['mp%s' % (str(mplevel))] = {
-                            'scftot': 'SCF TOTAL ENERGY',
-         'mp%scorl' % (str(mplevel)): 'MP%s CORRELATION ENERGY' % (str(mplevel))}
-        for mplevel2 in range(2, mplevel):
-            VARH['mp%s' % (str(mplevel))]['mp%scorl' % (str(mplevel2))] = \
-                                      'MP%s CORRELATION ENERGY' % (str(mplevel2))
-
-    # Integrate CFOUR methods
-    VARH.update(cfour_psivar_list())
 
     finalenergy = 0.0
     do_scf = True

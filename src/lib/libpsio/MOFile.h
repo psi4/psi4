@@ -23,32 +23,31 @@
 #define MOFILE_H_
 #include <boost/shared_ptr.hpp>
 #include "BinaryFile.h"
+#include "psi4-dec.h"
 namespace psi{
 class Matrix;
 typedef boost::shared_ptr<Matrix> SharedMatrix;
 class MOFile:public BinaryFile{
    private:
-      int BasisNameLength;
-      char* BasisName;
-      int puream;
-      double energy;
-      int NIrrep;
-      int* NSOPI;
-      int* NAlpha;
-      int* NBeta;
-      SharedMatrix Ca;
-      SharedMatrix Cb;
+      ///The alpha coefficients
+      SharedMatrix Ca_;
+      ///The beta coefficients
+      SharedMatrix Cb_;
       void Copy(const MOFile& other);
    public:
       MOFile();
       MOFile(const MOFile& other):BinaryFile(other){this->Copy(other);}
 
+      void FillFile(const int BasisNameLength,const char *BasisName,
+                            const int PureAm,const double Energy,
+                            const int NIrrep,const int NBf,
+                            const int* NSOPI,const int* NAlphaI,
+                            const int* NBetaI,SharedMatrix Ca,SharedMatrix Cb);
       void Read();
 
       ///Note Broadcast and Receive are written lazily and do not check if
       ///the destination is the same as source, so don't call them in
       ///non-MPI runs
-
 
       ///Wrapper fxn that broadcasts this file
       void Broadcast(std::string& Comm,const int proc);
@@ -61,10 +60,26 @@ class MOFile:public BinaryFile{
          if(this!=&other)this->Copy(other);return *this;
       }
 
+      ///Return the alpha or beta coefficient matrices
+      SharedMatrix GetCa()const{return Ca_;}
+      SharedMatrix GetCb()const{return Cb_;}
+
+      ///Return the energy
+      double GetEnergy()const;
+
+      ///Returns the number of Irreps
+      int GetNIrreps()const;
+
+      ///Returns the number of Spin Orbitals per Irrep
+      boost::shared_ptr<int[]> GetNSOPI()const;
+
+      ///Returns the number of occupied alpha spin orbitals per Irrep
+      boost::shared_ptr<int[]> GetNAlpha()const;
+
+      ///Returns the number of occupied beta spin orbitals per Irrep
+      boost::shared_ptr<int[]> GetNBeta()const;
       ~MOFile();
       void print_out();
-      ///Returns an MOFile that is the direct sum of the current file and other
-      MOFile DirectSum(const MOFile& other)const;
       void Write();
 
 };

@@ -56,6 +56,9 @@ DCFTSolver::compute_energy()
         outfile->Printf( "\n\tQC type:            \t\t %s", options_.get_str("QC_TYPE").c_str());
         outfile->Printf( "\n\tQC coupling:        \t\t %s", options_.get_bool("QC_COUPLING") ? "TRUE" : "FALSE");
     }
+    if (energy_level_shift_ > 1E-6) {
+        outfile->Printf( "\n\tUsing level shift of %5.3f a.u.            ", energy_level_shift_);
+    }
 
     // Things that are not implemented yet...
     if (options_.get_str("DERTYPE") == "FIRST" && (options_.get_str("DCFT_FUNCTIONAL") == "DC-12"))

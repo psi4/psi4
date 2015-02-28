@@ -29,8 +29,8 @@
 
 #include <libmoinfo/libmoinfo.h>
 #include <libtrans/integraltransform.h>
-#include <libutil/libutil.h>
-#include <libutil/memory_manager.h>
+#include <libpsi4util/libpsi4util.h>
+#include <libpsi4util/memory_manager.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>

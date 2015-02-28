@@ -24,7 +24,7 @@
 #include <cstdio>
 #include "blas.h"
 #include "debugging.h"
-#include <libutil/libutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include <algorithm>
 
 namespace psi{

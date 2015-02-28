@@ -44,12 +44,79 @@ using namespace boost;
 using namespace boost::python;
 using namespace psi;
 
+/* Start Numpy __array_interface__
+
+Adding __array_interface__ to Psi4's Matrix and Vector classes allows all Numpy
+functions to act on this data. For example we can sum all elements of the
+overlap matrix:
+
+import numpy as np
+...
+mints = MintsHelper()
+overlap = mints.ao_overlap()
+np.sum(wavefunction().Ca())
+
+// Works, returns a numpy array.
+new = np.add(overlap, overlap)
+
+// Does not work as the + operator is not defined for Matrix objects.
+new = overlap + overlap
+
+Note: The AO orbtials are used instead of SO so that the Matrix object has
+only one irreducible representation.
+
+The Vector or Matrix classes can also be wrapped as Numpy array objects:
+
+// Copies the data in the Psi4 Matrix or Vector
+np_S = np.array(overlap)
+
+// Does not copy the data in the Psi4 Matrix or Vector
+// Both Numpy and Psi4 objects share the same data
+np_S = np.array(overlap, copy=False)
+np_S = np.asanyarray(overlap)
+
+Using np.asanyarray is the preferred way of converting Psi4 objects to Numpy
+arrays.  If the data is not copied it is mutable by default and in-place
+operations on the Numpy array will modify the shared data.
+
+As individual irreducible representations are often not of the same size they
+cannot be contained inside a single Numpy array. A python list of Numpy arrays
+can be built to provide irrep functionality to Numpy:
+
+so_overlap = mints.so_overlap()
+np_S = [np.asanyarray(irrep) for irrep in so_overlap.array_interfaces()]
+
+Additional details, tutorials, and examples can be found here:
+https://github.com/dgasmith/psi4numpy
+*/
+
+class Numpy_Interface {
+// Dummy class to hold __array_interface__ for numpy
+public:
+    dict interface;
+};
+
 dict matrix_array_interface(SharedMatrix mat, int irrep){
     dict rv;
-    int rows = mat->rowspi(irrep);
-    int cols = mat->colspi(irrep);
-    rv["shape"] = boost::python::make_tuple(rows, cols);
-    rv["data"] = boost::python::make_tuple((long)mat->get_pointer(irrep), true);
+
+    // Shape
+    int numpy_dim = mat->numpy_dims();
+    if (numpy_dim){
+        int* numpy_shape = mat->numpy_shape();
+        boost::python::list shape;
+        for (int i=0; i<numpy_dim; i++){
+            shape.append(numpy_shape[i]);
+        }
+        rv["shape"] = boost::python::tuple(shape);
+    }
+    else{
+        int rows = mat->rowspi(irrep);
+        int cols = mat->colspi(irrep);
+        rv["shape"] = boost::python::make_tuple(rows, cols);
+    }
+
+    // Data and type
+    rv["data"] = boost::python::make_tuple((long)mat->get_pointer(irrep), false);
     std::string typestr = is_big_endian() ? ">" : "<";
     {
         std::stringstream sstr;
@@ -62,10 +129,74 @@ dict matrix_array_interface(SharedMatrix mat, int irrep){
 
 dict matrix_array_interface_c1(SharedMatrix mat){
     if(mat->nirrep() != 1){
-        throw PSIEXCEPTION("Pointer export of multiple irrep matrices not yet implemented.");
+        throw PSIEXCEPTION("Cannot directly export multiple irrep matrices,\
+                            use Matrix.array_interfaces() instead.");
     }
     return matrix_array_interface(mat, 0);
 }
+
+boost::python::list make_matix_array_interfaces(SharedMatrix mat){
+    boost::python::list interfaces;
+    Numpy_Interface tmp_interface = Numpy_Interface();
+    for(int h=0; h < mat->nirrep(); h++){
+        dict array_interface = matrix_array_interface(mat, h);
+        tmp_interface.interface = array_interface;
+        interfaces.append(tmp_interface);
+    }
+    return interfaces;
+}
+
+dict vector_array_interface(SharedVector vec, int irrep){
+    dict rv;
+
+    // Shape
+    int numpy_dim = vec->numpy_dims();
+
+    if (numpy_dim){
+        int* numpy_shape = vec->numpy_shape();
+        boost::python::list shape;
+        for (int i=0; i<numpy_dim; i++){
+            shape.append(numpy_shape[i]);
+        }
+        rv["shape"] = boost::python::make_tuple(shape);
+    }
+    else {
+        const int elements = vec->dim(irrep);
+        rv["shape"] = boost::python::make_tuple(elements);
+    }
+
+    // Data and type
+    rv["data"] = boost::python::make_tuple((long)vec->pointer(irrep), false);
+    std::string typestr = is_big_endian() ? ">" : "<";
+    {
+        std::stringstream sstr;
+        sstr << (int)sizeof(double);
+        typestr += "f" + sstr.str();
+    }
+    rv["typestr"] = typestr;
+    return rv;
+}
+
+dict vector_array_interface_c1(SharedVector vec){
+    if(vec->nirrep() != 1){
+        throw PSIEXCEPTION("Cannot directly export multiple irrep vectors,\
+                            use Vector.array_interfaces() instead.");
+    }
+    return vector_array_interface(vec, 0);
+}
+
+boost::python::list make_vector_array_interfaces(SharedVector vec){
+    boost::python::list interfaces;
+    Numpy_Interface tmp_interface = Numpy_Interface();
+    for(int h=0; h < vec->nirrep(); h++){
+        dict array_interface = vector_array_interface(vec, h);
+        tmp_interface.interface = array_interface;
+        interfaces.append(tmp_interface);
+    }
+    return interfaces;
+}
+
+/* End numpy __array_interface__ */
 
 boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
 {
@@ -87,8 +218,8 @@ boost::shared_ptr<MatrixFactory> get_matrix_factory()
     }
 
     // Read in the basis set
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser);
-    boost::shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
+    boost::shared_ptr<BasisSet> basis = BasisSet::pyconstruct_orbital(molecule,
+        "BASIS", Process::environment.options.get_str("BASIS"));
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
     boost::shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
     const Dimension& dim = sobasis->dimension();
@@ -124,6 +255,9 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(erf_complement_eri_overloads, IntegralFac
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Ca_subset_overloads, Wavefunction::Ca_subset, 0, 2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Cb_subset_overloads, Wavefunction::Cb_subset, 0, 2);
 
+BOOST_PYTHON_FUNCTION_OVERLOADS(pyconstruct_orb_overloads, BasisSet::pyconstruct_orbital, 3, 4);
+BOOST_PYTHON_FUNCTION_OVERLOADS(pyconstruct_aux_overloads, BasisSet::pyconstruct_auxiliary, 5, 6);
+
 void export_mints()
 {
     def("nuclear_dipole", py_nuclear_dipole, "docstring");
@@ -151,6 +285,9 @@ void export_mints()
     typedef double (Vector::*vector_getitem_2)(int, int);
     typedef void (Vector::*vector_setitem_n)(const boost::python::tuple&, double);
     typedef double (Vector::*vector_getitem_n)(const boost::python::tuple&);
+
+    class_<Numpy_Interface>("Psi_Numpy_Interface", "docstring", no_init).
+            add_property("__array_interface__", &Numpy_Interface::interface, "docstring");
 
     class_<Dimension>("Dimension", "docstring").
             def(init<int>()).
@@ -184,7 +321,9 @@ void export_mints()
             def("__setitem__", vector_setitem_1(&Vector::pyset), "docstring").
             def("__getitem__", vector_getitem_n(&Vector::pyget), "docstring").
             def("__setitem__", vector_setitem_n(&Vector::pyset), "docstring").
-            def("nirrep", &Vector::nirrep, "docstring");
+            def("nirrep", &Vector::nirrep, "docstring").
+            def("array_interfaces", make_vector_array_interfaces, "docstring").
+            add_property("__array_interface__", vector_array_interface_c1, "docstring");
 
     typedef void  (IntVector::*int_vector_set)(int, int, int);
     class_<IntVector, boost::shared_ptr<IntVector> >( "IntVector", "docstring").
@@ -278,6 +417,7 @@ void export_mints()
             def("load", matrix_load(&Matrix::load), "docstring").
             def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring").
             def("remove_symmetry", &Matrix::remove_symmetry, "docstring").
+            def("array_interfaces", make_matix_array_interfaces, "docstring").
             add_property("__array_interface__", matrix_array_interface_c1, "docstring");
 
     class_<View, boost::noncopyable>("View", no_init).
@@ -414,6 +554,14 @@ void export_mints()
 
     typedef SharedMatrix (MintsHelper::*erf)(double, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
     typedef SharedMatrix (MintsHelper::*eri)(SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
+    typedef SharedMatrix (MintsHelper::*normal_eri)();
+    typedef SharedMatrix (MintsHelper::*normal_eri2)(boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>);
+
+    typedef SharedMatrix (MintsHelper::*normal_f12)(boost::shared_ptr<CorrelationFactor>);
+    typedef SharedMatrix (MintsHelper::*normal_f122)(boost::shared_ptr<CorrelationFactor>, boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>);
+
+    typedef SharedMatrix (MintsHelper::*oneelectron)();
+    typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis)(boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
 
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
             def(init<boost::shared_ptr<BasisSet> >()).
@@ -426,8 +574,10 @@ void export_mints()
             def("sobasisset", &MintsHelper::sobasisset, "docstring").
             def("factory", &MintsHelper::factory, "docstring").
             def("ao_overlap", &MintsHelper::ao_overlap, "docstring").
-            def("ao_kinetic", &MintsHelper::ao_kinetic, "docstring").
-            def("ao_potential", &MintsHelper::ao_potential, "docstring").
+            def("ao_kinetic", oneelectron(&MintsHelper::ao_kinetic), "docstring").
+            def("ao_kinetic", oneelectron_mixed_basis(&MintsHelper::ao_kinetic), "docstring").
+            def("ao_potential", oneelectron(&MintsHelper::ao_potential), "docstring").
+            def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "docstring").
             def("one_electron_integrals", &MintsHelper::one_electron_integrals, "docstring").
             def("so_overlap", &MintsHelper::so_overlap, "docstring").
             def("so_kinetic", &MintsHelper::so_kinetic, "docstring").
@@ -439,10 +589,14 @@ void export_mints()
             def("so_nabla", &MintsHelper::so_nabla, "docstring").
             def("so_angular_momentum", &MintsHelper::so_angular_momentum, "docstring").
             def("ao_angular_momentum", &MintsHelper::ao_angular_momentum, "docstring").
-            def("ao_eri", &MintsHelper::ao_eri, "docstring").
+            def("ao_eri", normal_eri(&MintsHelper::ao_eri), "docstring").
+            def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "docstring").
             def("ao_eri_shell", &MintsHelper::ao_eri_shell, "docstring").
             def("ao_erf_eri", &MintsHelper::ao_erf_eri, "docstring").
-            def("ao_f12", &MintsHelper::ao_f12, "docstring").
+            def("ao_f12", normal_f12(&MintsHelper::ao_f12), "docstring").
+            def("ao_f12", normal_f122(&MintsHelper::ao_f12), "docstring").
+            def("ao_f12_scaled", normal_f12(&MintsHelper::ao_f12_scaled), "docstring").
+            def("ao_f12_scaled", normal_f122(&MintsHelper::ao_f12_scaled), "docstring").
             def("ao_f12_squared", &MintsHelper::ao_f12_squared, "docstring").
             def("ao_f12g12", &MintsHelper::ao_f12g12, "docstring").
             def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "docstring").
@@ -452,6 +606,8 @@ void export_mints()
             def("mo_f12_squared", &MintsHelper::mo_f12_squared, "docstring").
             def("mo_f12g12", &MintsHelper::mo_f12g12, "docstring").
             def("mo_f12_double_commutator", &MintsHelper::mo_f12_double_commutator, "docstring").
+            def("mo_spin_eri", &MintsHelper::mo_spin_eri, "docstring").
+            def("mo_transform", &MintsHelper::mo_transform, "docstring").
             def("cdsalcs", &MintsHelper::cdsalcs, "docstring").
             def("petite_list", petite_list_0(&MintsHelper::petite_list), "docstring").
             def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring").
@@ -499,24 +655,25 @@ void export_mints()
     typedef void (SymmetryOperation::*intFunction)(int);
     typedef void (SymmetryOperation::*doubleFunction)(double);
 
-    class_<SymmetryOperation>("SymmetryOperation", "docstring").
+    class_<SymmetryOperation>("SymmetryOperation", "Class to provide a 3 by 3 matrix representation of a symmetry operation, such as a rotation or reflection.").
             def(init<const SymmetryOperation& >()).
-            def("trace", &SymmetryOperation::trace, "docstring").
-            def("zero", &SymmetryOperation::zero, "docstring").
-            def("operate", &SymmetryOperation::operate, "docstring").
-            def("transform", &SymmetryOperation::transform, "docstring").
-            def("unit", &SymmetryOperation::unit, "docstring").
-            def("E", &SymmetryOperation::E, "docstring").
-            def("i", &SymmetryOperation::i, "docstring").
-            def("sigma_xy", &SymmetryOperation::sigma_xy, "docstring").
-            def("sigma_yz", &SymmetryOperation::sigma_yz, "docstring").
-            def("sigma_xz", &SymmetryOperation::sigma_xz, "docstring").
+            def("trace", &SymmetryOperation::trace, "Returns trace of transformation matrix").
+            def("zero", &SymmetryOperation::zero, "Zero out the symmetry operation").
+            def("operate", &SymmetryOperation::operate, "Performs the operation arg2 * arg1").
+            def("transform", &SymmetryOperation::transform, "Performs the transform arg2 * arg1 * arg2~").
+            def("unit", &SymmetryOperation::unit, "Set equal to a unit matrix").
+            def("E", &SymmetryOperation::E, "Set equal to E").
+            def("i", &SymmetryOperation::i, "Set equal to an inversion").
+            def("sigma_xy", &SymmetryOperation::sigma_xy, "Set equal to reflection in xy plane").
+            def("sigma_yz", &SymmetryOperation::sigma_yz, "Set equal to reflection in yz plane").
+            def("sigma_xz", &SymmetryOperation::sigma_xz, "Set equal to reflection in xz plane").
             //        def("sigma_yz", &SymmetryOperation::sigma_yz).
-            def("rotate_n", intFunction(&SymmetryOperation::rotation), "docstring").
-            def("rotate_theta", doubleFunction(&SymmetryOperation::rotation), "docstring").
-            def("c2_x", &SymmetryOperation::c2_x, "docstring").
-            def("c2_y", &SymmetryOperation::c2_y, "docstring").
-            def("transpose", &SymmetryOperation::transpose, "docstring");
+            def("rotate_n", intFunction(&SymmetryOperation::rotation), "Set equal to a clockwise rotation by 2pi/n").
+            def("rotate_theta", doubleFunction(&SymmetryOperation::rotation), "Set equal to a clockwise rotation by theta").
+            def("c2_x", &SymmetryOperation::c2_x, "Set equal to C2 about the x axis").
+            def("c2_y", &SymmetryOperation::c2_y, "Set equal to C2 about the y axis").
+            def("c2_z", &SymmetryOperation::c2_z, "Set equal to C2 about the z axis").
+            def("transpose", &SymmetryOperation::transpose, "Performs transposition of matrix operation");
 
     class_<OrbitalSpace>("OrbitalSpace", "docstring", no_init).
             def(init<const std::string&, const std::string&, const SharedMatrix&, const SharedVector&, const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>& >()).
@@ -538,7 +695,7 @@ void export_mints()
 
     class_<PointGroup, boost::shared_ptr<PointGroup> >("PointGroup", "docstring").
             def(init<const std::string&>()).
-            def("symbol", &PointGroup::symbol, "docstring");
+            def("symbol", &PointGroup::symbol, "Returns Schoenflies symbol for point group");
             //def("origin", &PointGroup::origin).
 //            def("set_symbol", &PointGroup::set_symbol);
 
@@ -613,7 +770,7 @@ void export_mints()
             def("set_basis_all_atoms", &Molecule::set_basis_all_atoms, "Sets basis set arg2 to all atoms").
             def("set_basis_by_symbol", &Molecule::set_basis_by_symbol, "Sets basis set arg3 to all atoms with symbol (e.g., H) arg2").
             def("set_basis_by_label", &Molecule::set_basis_by_label, "Sets basis set arg3 to all atoms with label (e.g., H4) arg2").
-            def("set_basis_by_number", &Molecule::set_basis_by_number, "Sets basis set arg3 to atom number (1-indexed, incl. dummies) arg2").
+            //def("set_basis_by_number", &Molecule::set_basis_by_number, "Sets basis set arg3 to atom number (1-indexed, incl. dummies) arg2").  // dangerous for user use
             add_property("units", &Molecule::units, &Molecule::set_units, "Units (Angstrom or Bohr) used to define the geometry").
             def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1").
             def("geometry", &Molecule::geometry, "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)");
@@ -655,10 +812,10 @@ void export_mints()
             def("function_to_center", &BasisSet::function_to_center, "Given a function number, return the number of the center it is on.").
             def("nshell_on_center", &BasisSet::nshell_on_center, "docstring").
             def("ao_to_shell", &BasisSet::ao_to_shell, "docstring").
-            def("concatenate", ptrversion(&BasisSet::concatenate), "Concatenates two basis sets together into a new basis without reordering anything. Unless you know what you're doing, you should use the '+' operator instead of this method.").
-            def("add", ptrversion(&BasisSet::add), "Combine two basis sets to make a new one.").
-            //staticmethod("concatinate").
-            def(self + self);
+            def("pyconstruct_orbital", &BasisSet::pyconstruct_orbital, pyconstruct_orb_overloads("Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.")).
+            staticmethod("pyconstruct_orbital").
+            def("pyconstruct_auxiliary", &BasisSet::pyconstruct_auxiliary, pyconstruct_aux_overloads("Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.")).
+            staticmethod("pyconstruct_auxiliary");
 
     class_<SOBasisSet, boost::shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", "docstring", no_init).
             def("petite_list", &SOBasisSet::petite_list, "docstring");
@@ -679,6 +836,9 @@ void export_mints()
             def("fit", &DFChargeFitter::fit, "docstring");
 
     class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>("Wavefunction", "docstring", no_init).
+            def("nfrzc", &Wavefunction::nfrzc, "docstring").
+            def("nalpha", &Wavefunction::nalpha, "docstring").
+            def("nbeta", &Wavefunction::nbeta, "docstring").
             def("nso", &Wavefunction::nso, "docstring").
             def("nmo", &Wavefunction::nmo, "docstring").
             def("nirrep", &Wavefunction::nirrep, "docstring").
@@ -692,6 +852,7 @@ void export_mints()
             def("Fb", &Wavefunction::Fb, "docstring").
             def("Da", &Wavefunction::Da, "docstring").
             def("Db", &Wavefunction::Db, "docstring").
+            def("aotoso", &Wavefunction::aotoso, "docstring").
             def("epsilon_a", &Wavefunction::epsilon_a, "docstring").
             def("epsilon_b", &Wavefunction::epsilon_b, "docstring").
             def("add_preiteration_callback", &Wavefunction::add_preiteration_callback, "docstring").
@@ -701,6 +862,8 @@ void export_mints()
             def("energy", &Wavefunction::reference_energy, "docstring").
             def("gradient", &Wavefunction::gradient, "docstring").
             def("frequencies", &Wavefunction::frequencies, "docstring").
+            def("atomic_point_charges", &Wavefunction::get_atomic_point_charges, "docstring").
+            def("normalmodes", &Wavefunction::normalmodes, "docstring").
             def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring").
             def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring").
             def("molecule", &Wavefunction::molecule, "docstring").
@@ -768,6 +931,23 @@ void export_mints()
             .def("K", &JK::K, return_internal_reference<>())
             .def("wK", &JK::wK, return_internal_reference<>())
             .def("D", &JK::D, return_internal_reference<>())
-            .def("print_header", &JK::print_header, "docstring")
-            ;
+            .def("print_header", &JK::print_header, "docstring");
+
+    class_<LaplaceDenominator, boost::shared_ptr<LaplaceDenominator> >("LaplaceDenominator", "docstring", no_init)
+            .def(init<boost::shared_ptr<Vector>, boost::shared_ptr<Vector>, double>())
+            .def("denominator_occ", &LaplaceDenominator::denominator_occ, "docstring")
+            .def("denominator_vir", &LaplaceDenominator::denominator_vir, "docstring");
+
+
+    class_<DFTensor, boost::shared_ptr<DFTensor> >("DFTensor", "docstring", no_init)
+            .def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<Matrix>, int, int>())
+            .def(init<boost::shared_ptr<Wavefunction>, const std::string&>())
+            .def("Qso", &DFTensor::Qso, "doctsring")
+            .def("Qmo", &DFTensor::Qmo, "doctsring")
+            .def("Qoo", &DFTensor::Qoo, "doctsring")
+            .def("Qov", &DFTensor::Qov, "doctsring")
+            .def("Qvv", &DFTensor::Qvv, "doctsring")
+            .def("Imo", &DFTensor::Imo, "doctsring")
+            .def("Idfmo", &DFTensor::Idfmo, "doctsring");
+
 }

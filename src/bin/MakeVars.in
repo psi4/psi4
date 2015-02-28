@@ -29,6 +29,8 @@ elemlibs = @elemlibs@
 madlibs = @madlibs@
 madinc = @madinc@
 scalapacklibs = @scalapacklibs@
+efplibs = @efplibs@
+efpinc = @efpinc@
 # this file is used by the subdirectories, so top_objdir is relative to those
 top_objdir = ../../..
 objincdir = @objincdir@

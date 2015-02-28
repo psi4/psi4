@@ -50,8 +50,6 @@ double user_stop, sys_stop;
 /*!
 ** tstart(): Starts a timer
 **
-** \param outfile = output file pointer
-**
 ** \ingroup CIOMR
 */
 void tstart()
@@ -91,8 +89,6 @@ void tstart()
 
 /*!
 ** tstop(): Stop timer
-**
-** \param outfile = output file pointer.
 **
 ** \ingroup CIOMR
 */

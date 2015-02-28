@@ -127,8 +127,8 @@ boost::shared_ptr<ASAPT> ASAPT::build(boost::shared_ptr<Wavefunction> d,
     sapt->eps_avir_B_ = mB->epsilon_a_subset("AO","ACTIVE_VIR");
     sapt->eps_fvir_B_ = mB->epsilon_a_subset("AO","FROZEN_VIR");
 
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    sapt->mp2fit_ = BasisSet::construct(parser, sapt->dimer_, "DF_BASIS_SAPT");
+    sapt->mp2fit_ = BasisSet::pyconstruct_auxiliary(sapt->dimer_,
+            "DF_BASIS_SAPT", options.get_str("DF_BASIS_SAPT"), "RIFIT", options.get_str("BASIS"));
 
     return boost::shared_ptr<ASAPT>(sapt);
 }
@@ -563,8 +563,8 @@ void ASAPT::elst()
 
     // ==> DF ERI Setup (JKFIT Type, in Full Basis) <== //
 
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    boost::shared_ptr<BasisSet> jkfit = BasisSet::construct(parser, primary_->molecule(), "DF_BASIS_SCF");
+    boost::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+            "DF_BASIS_SCF", Process::environment.options.get_str("DF_BASIS_SCF"), "JKFIT", Process::environment.options.get_str("BASIS"));
     int nQ = jkfit->nbf();
 
     boost::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,Process::environment.options);
@@ -959,8 +959,8 @@ void ASAPT::exch()
 
     // ==> DF ERI Setup (JKFIT Type, in Full Basis) <== //
 
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    boost::shared_ptr<BasisSet> jkfit = BasisSet::construct(parser, primary_->molecule(), "DF_BASIS_SCF");
+    boost::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+            "DF_BASIS_SCF", Process::environment.options.get_str("DF_BASIS_SCF"), "JKFIT", Process::environment.options.get_str("BASIS"));
     int nQ = jkfit->nbf();
 
     boost::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,Process::environment.options);

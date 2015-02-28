@@ -68,6 +68,12 @@ Density Cumulant Functional Theory (DCFT)
 
 .. _`intro:dcftcitations`:
 
+|PSIfour| features several formulations of newly-developed density cumulant
+functional theory (DCFT). The theory and benchmark of this theory are
+discussed in the following papers:
+
+DC-06 (also known as DCFT-06):  
+
 * "Density Cumulant Functional Theory: First Implementation and
   Benchmark Results for the DCFT-06 Model," A. C. Simmonett,
   J. J. Wilke, H. F. Schaefer, and W. Kutzelnigg, *J. Chem. Phys.*
@@ -79,11 +85,19 @@ Density Cumulant Functional Theory (DCFT)
   and H. F. Schaefer, *J. Chem. Phys.* **137**, 054105 (2012).
   (doi: `10.1063/1.4739423 <http://dx.doi.org/10.1063/1.4739423>`_).
 
+DC-12:  
+
 * "Density cumulant functional theory: The DC-12 method, an improved 
   description of the one-particle density matrix," A. Yu. Sokolov, 
   A. C. Simmonett, and H. F. Schaefer, *J. Chem. Phys.*  **138**, 024107 
   (2013).
   (doi: `10.1063/1.4773580 <http://dx.doi.org/10.1063/1.4773580>`_).
+
+ODC-06 and ODC-12:  
+
+* "Orbital-optimized density cumulant functional theory," A. Yu. Sokolov, and
+  H. F. Schaefer, *J. Chem. Phys.*  **139**, 204110 (2013). 
+  (doi: `10.1063/1.4833138 <http://dx.doi.org/10.1063/1.4833138>`_).
 
 Configuration Interaction (CI)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -308,13 +322,10 @@ Orbital-optimized coupled electron pair approximation (OCEPA)
 
 Orbital-optimized MP2.5 (OMP2.5)
 
-* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation 
-  Theory and Its Spin-Component and Spin-Opposite Scaled Variants: Application 
-  to Symmetry Breaking Problems," U. Bozkaya,
-  *J. Chem. Phys.* **135**, 224103 (2011).
-  (doi: `10.1063/1.3665134 <http://dx.doi.org/10.1063/1.3665134>`_).
-
-* U. Bozkaya and C. D. Sherrill, (unpublished).
+* "Orbital-optimized MP2.5 and its analytic gradients: Approaching CCSD(T)
+   quality for noncovalent interactions," U. Bozkaya and C. D. Sherrill,
+  *J. Chem. Phys.* **141**, 204105 (2014).
+  (doi: `10.1063/1.4902226 <http://dx.doi.org/10.1063/1.4902226>`_).
 
 Extended Koopmans' Theorem
 
@@ -326,7 +337,15 @@ Extended Koopmans' Theorem
   U. Bozkaya,   *J. Chem. Theory Comput.* **10**, 2041 (2014).
   (doi: `10.1021/ct500186j <http://dx.doi.org/10.1021/ct500186j>`_).
 
+Density-Fitted Orbital-optimized second-order perturbation theory (DF-OMP2)
 
+* "Orbital-Optimized Second-Order Perturbation Theory with Density-Fitting and Cholesky Decomposition Approximations: 
+   An Efficient Implementation," U. Bozkaya,   *J. Chem. Theory Comput.* **10**, 2371 (2014).
+  (doi: `10.1021/ct500231c <http://dx.doi.org/10.1021/ct500231c>`_).
+
+* "Analytic Energy Gradients and Spin Multiplicities for Orbital-Optimized Second-Order Perturbation Theory with Density-Fitting
+   Approximation: An Efficient Implementation," U. Bozkaya,   *J. Chem. Theory Comput.* **10**, 4389 (2014).
+  (doi: `10.1021/ct500634s <http://dx.doi.org/10.1021/ct500634s>`_).
 
 Second-Order Algebraic-Diagrammatic Construction [ADC(2)]
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -392,6 +411,8 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DF-SCF (HF and DFT)     | Y         | Y [#f4]_  | RHF/ROHF/UHF/RKS/UKS | threaded                    |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | EFP [#f5]_              | Y         | ---       | RHF                  |                             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DCFT                    | Y         | Y         | UHF                  | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | MP2                     | Y         | Y         | RHF/ROHF/UHF         | threaded [#f3]_             |
@@ -419,6 +440,8 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     | CEPA(0)                 | Y         | Y         | RHF/UHF              | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DF-OMP2                 | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | DF-CCD                  | Y         | ---       | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | CEPA(n), n=0,1,3        | Y         | ---       | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
@@ -509,6 +532,7 @@ GitHub account <https://github.com/signup/free>`_.
 .. [#f2] RHF and UHF reference are available, however the latter one should be requsted from DFOCC module.  DF-MP2 is recommended as a faster alternative.
 .. [#f3] threading through BLAS routines only
 .. [#f4] DFT gradients only implemented for SCF type DF. LRC-DFT gradients not implemented yet. 
+.. [#f5] Both EFP/EFP and QM/EFP energies are available.
 
 .. toctree::
    :hidden:

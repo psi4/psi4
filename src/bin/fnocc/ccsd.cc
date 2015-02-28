@@ -118,6 +118,9 @@ void CoupledCluster::common_init() {
      nvirt    = nmo - ndoccact;
   }
 
+    if (ndoccact <= 0) {
+        throw PSIEXCEPTION("Number of active orbitals is zero.");
+    }
   // for triples, we use nvirt_no in case we've truncated the virtual space:
   nvirt_no = nvirt;
 

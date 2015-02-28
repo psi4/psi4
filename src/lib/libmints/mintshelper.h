@@ -58,10 +58,12 @@ private:
     // In-core O(N^5) transqt
     SharedMatrix mo_eri_helper(SharedMatrix Iso, SharedMatrix C1, SharedMatrix C2,
                                                  SharedMatrix C3, SharedMatrix C4);
+    /// In-core builds spin eri's
+    SharedMatrix mo_spin_eri_helper(SharedMatrix Iso, int n1, int n2);
+
 
     SharedMatrix ao_helper(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints);
     SharedMatrix ao_shell_getter(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P, int Q);
-
 
     void common_init();
 
@@ -122,6 +124,10 @@ public:
 
     /// AO ERI Integrals (Full matrix, not recommended for large systems)
     SharedMatrix ao_eri();
+    SharedMatrix ao_eri(boost::shared_ptr<BasisSet> bs1,
+                        boost::shared_ptr<BasisSet> bs2,
+                        boost::shared_ptr<BasisSet> bs3,
+                        boost::shared_ptr<BasisSet> bs4);
     /// AO ERI Shell
     SharedMatrix ao_eri_shell(int M, int N, int P, int Q);
     /// AO ERF Integrals
@@ -130,6 +136,18 @@ public:
     SharedMatrix ao_erfc_eri(double omega);
     /// MO F12 Integrals
     SharedMatrix ao_f12(boost::shared_ptr<CorrelationFactor> corr);
+    SharedMatrix ao_f12(boost::shared_ptr<CorrelationFactor> corr,
+                        boost::shared_ptr<BasisSet> bs1,
+                        boost::shared_ptr<BasisSet> bs2,
+                        boost::shared_ptr<BasisSet> bs3,
+                        boost::shared_ptr<BasisSet> bs4);
+    /// MO F12 Integrals
+    SharedMatrix ao_f12_scaled(boost::shared_ptr<CorrelationFactor> corr);
+    SharedMatrix ao_f12_scaled(boost::shared_ptr<CorrelationFactor> corr,
+                        boost::shared_ptr<BasisSet> bs1,
+                        boost::shared_ptr<BasisSet> bs2,
+                        boost::shared_ptr<BasisSet> bs3,
+                        boost::shared_ptr<BasisSet> bs4);
     /// MO F12 squared Integrals
     SharedMatrix ao_f12_squared(boost::shared_ptr<CorrelationFactor> corr);
     /// MO F12G12 Integrals
@@ -158,12 +176,25 @@ public:
     /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
     SharedMatrix mo_erf_eri(double omega, SharedMatrix Cocc, SharedMatrix Cvir);
 
+    /// Symmetric MO Spin ERI Integrals, <oo|vv> type (Full matrix (16x larger than MO ERI), N^5,
+    /// most definitely not recommended for large systems)
+    /// Pass C_ C_ for <aa|aa> type, Cocc_, Cocc_ for <oo|oo> type, or Cvir_, Cvir_ for <vv|vv> type
+    SharedMatrix mo_spin_eri(SharedMatrix Co, SharedMatrix Cv);
+
     /// AO Overlap Integrals
     SharedMatrix ao_overlap();
     /// AO Kinetic Integrals
     SharedMatrix ao_kinetic();
+    SharedMatrix ao_kinetic(boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
     /// AO Potential Integrals
     SharedMatrix ao_potential();
+    SharedMatrix ao_potential(boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
+    /// AO pVp Integrals
+    SharedMatrix ao_pvp();
+    /// AO DKH Integrals
+    SharedMatrix ao_dkh(int dkh_order = -1);
+    /// SO DKH Integrals
+    SharedMatrix so_dkh(int dkh_order = -1);
     /// Vector AO Dipole Integrals
     std::vector<SharedMatrix> ao_dipole();
     /// Vector AO Angular Momentum Integrals
@@ -192,6 +223,9 @@ public:
                                           bool project_out_translations=true,
                                           bool project_out_rotations=true);
 
+    /// N^5 ao->mo transform, in memory, smart indexing
+    SharedMatrix mo_transform(SharedMatrix Iso, SharedMatrix C1, SharedMatrix C2,
+                                                SharedMatrix C3, SharedMatrix C4);
     /// Play function
     void play();
 };

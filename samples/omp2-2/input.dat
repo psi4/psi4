@@ -14,5 +14,5 @@ set global {
   reference rohf
   guess gwh
 }
-energy('omp2')
+energy('conv-omp2')
 

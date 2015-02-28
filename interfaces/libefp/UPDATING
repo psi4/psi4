@@ -1,0 +1,4 @@
+Remove old libefp
+Download a new version of libefp from www.libefp.org and extract it in libefp dir
+Update potential data files in lib/efpfrag with the ones from new archive
+Remove "_L" in lib/efpfrag files

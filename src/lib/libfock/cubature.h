@@ -279,7 +279,7 @@ protected:
     double* y_; 
     /// Spherical nodes, on the unit sphere
     double* z_; 
-    /// Spherical weights, normalized to 4\pi
+    /// Spherical weights, normalized to 4pi
     double* w_; 
 
     /// Spherical nodes, in spherical coordinates (azimuth)
@@ -337,7 +337,7 @@ public:
     double* y() const { return y_; }
     /// Spherical nodes, on the unit sphere
     double* z() const { return z_; }
-    /// Spherical weights, normalized to 4\pi
+    /// Spherical weights, normalized to 4pi
     double* w() const { return w_; }
 
     /// Spherical nodes, in spherical coordinates (azimuth)

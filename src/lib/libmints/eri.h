@@ -153,6 +153,13 @@ public:
     virtual ~F12();
 };
 
+class F12Scaled : public TwoElectronInt
+{
+public:
+    F12Scaled(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
+    virtual ~F12Scaled();
+};
+
 class F12Squared : public TwoElectronInt
 {
 public:

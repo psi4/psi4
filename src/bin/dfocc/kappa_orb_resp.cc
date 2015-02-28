@@ -84,8 +84,7 @@ if (reference_ == "RESTRICTED") {
 
     // A(ai,bj) += -2(ij|ab)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_oovv_chem_ref_directAA(K);
+    tei_oovv_chem_ref_directAA(K);
     Aorb->sort(3142, K, -2.0, 1.0);
     K.reset();
     if (print_ > 3) Aorb->print();
@@ -249,8 +248,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     // A(ai,bj) += -2(ij|ab)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_oovv_chem_ref_directAA(K);
+    tei_oovv_chem_ref_directAA(K);
     AorbAA->sort(3142, K, -2.0, 1.0);
     K.reset();
     if (print_ > 3) AorbAA->print();
@@ -304,8 +302,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     // A(ai,bj) += -2(ij|ab)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_oovv_chem_ref_directBB(K);
+    tei_oovv_chem_ref_directBB(K);
     AorbBB->sort(3142, K, -2.0, 1.0);
     K.reset();
     if (print_ > 3) AorbBB->print();

@@ -29,9 +29,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <libqt/qt.h>
-#include <physconst.h>
 #include <psifiles.h>
 #include <psi4-dec.h>
+#include <physconst.h>
 
 #define ZMAT_LINEAR_CUTOFF (1.0e-14)
 

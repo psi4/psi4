@@ -50,6 +50,7 @@ DCFTSolver::DCFTSolver(boost::shared_ptr<Wavefunction> reference_wavefunction, O
     orbitals_threshold_ = options.get_double("R_CONVERGENCE");
     cumulant_threshold_ = options.get_double("R_CONVERGENCE");
     int_tolerance_      = options.get_double("INTS_TOLERANCE");
+    energy_level_shift_ = options.get_double("ENERGY_LEVEL_SHIFT");
 
     psio_->open(PSIF_DCFT_DPD, PSIO_OPEN_OLD);
 

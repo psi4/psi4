@@ -25,7 +25,11 @@
 namespace psi{
 ///I needed to syphon off the calls that involve Worldcomm, hence this class
 class BasesBase{
+private:
+      bool ImSpecial_;
+
 protected:
+      BasesBase();
       ///Returns the integer of the Lucky MPI process
       int WhoIsSpecial()const;
 

@@ -41,7 +41,7 @@ namespace psi {
 */
 void add_mat(double **a, double **b, double **c, int n, int m)
 {
-  register int i,j;
+  int i,j;
 
   if (n != m) {
     for (i=0; i < n ; i++) {

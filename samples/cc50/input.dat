@@ -11,13 +11,12 @@ molecule ch {
 set {
   roots_per_irrep [3, 0, 0, 0]
   reference rohf
-  basis Sadlej-pVTZ
   freeze_core true
   prop_root 2
 }
 
 basis {
-[Sadlej-pVTZ]
+# [Sadlej-pVDZ]
 spherical
 ****
 H 0

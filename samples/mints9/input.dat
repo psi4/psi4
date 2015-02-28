@@ -1,0 +1,143 @@
+#! A test of the basis specification.  Various basis sets are specified outright and in blocks, both
+#! orbital and auxiliary. Constructs libmints BasisSet objects through the constructor that calls
+#! qcdb.BasisSet infrastructure. Checks that the resulting bases are of the right size and checks
+#! that symmetry of the Molecule observes the basis assignment to atoms.
+
+#           cc-pvdz                 aug-cc-pvdz
+# BASIS     H  5/ 5   C  14/15      H +4/ 4   C  +9/10
+# RIFIT     H 14/15   C  56/66      H +9/10   C +16/20
+# JKFIT     H 23/25   C  70/81      H +9/10   C +16/20
+
+
+molecule mymol {
+C    0.0  0.0 0.0
+O    1.4  0.0 0.0
+H_r -0.5 -0.7 0.0
+H_l -0.5  0.7 0.0
+}
+
+set print 3
+set basis cc-pvdz
+
+print '    <<<  uniform cc-pVDZ  >>>'
+wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
+compare_strings('CC-PVDZ', get_global_option('BASIS'), 'name')
+compare_integers(38, wert.nbf(), 'nbf()')
+compare_integers(40, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '        <<<  RIFIT (default)  >>>'
+wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_MP2', '', 'RIFIT', get_global_option('BASIS'))
+compare_integers(140, wert.nbf(), 'nbf()')
+compare_integers(162, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '    <<<  cc-pVDZ w/ aug-cc-pVDZ on C  >>>'
+basis dz_PLUS {  # basis block resets BASIS to DZ_PLUS
+    assign cc-pvdz
+    assign c aug-cc-pvdz
+}
+wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
+compare_integers(47, wert.nbf(), 'nbf()')
+compare_integers(50, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '        <<<  RIFIT (default)  >>>'
+wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_MP2', '', 'RIFIT', get_global_option('BASIS'))
+compare_integers(156, wert.nbf(), 'nbf()')
+compare_integers(182, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H_R  >>>'
+basis dz_PLUSplus {
+    assign cc-pvdz
+    assign c aug-cc-pvdz
+    assign h_r aug-cc-pvdz
+}
+wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
+compare_strings('DZ_PLUSPLUS', get_global_option('BASIS'), 'name')
+compare_integers(51, wert.nbf(), 'nbf()')
+compare_integers(54, wert.nao(), 'nao()')
+compare_strings('cs', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '    <<<  RIFIT (custom: force cc-pVDZ on H, default on C, O)  >>>'
+df_basis_mp2 dz_PLUSplusRI {
+    #assign aug-cc-pvdz-ri
+    assign h cc-pvdz-ri
+}
+#wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_MP2', 'dz_plusplusri', 'RIFIT', 'dz_plusplus')
+wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_MP2', get_global_option('DF_BASIS_MP2'), 'RIFIT', get_global_option('BASIS'))
+compare_integers(156, wert.nbf(), 'nbf()')
+compare_integers(182, wert.nao(), 'nao()')
+compare_strings('cs', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>'
+basis dz_PLUSplusplus {
+    assign cc-pvdz
+    assign c aug-cc-pvdz
+    assign h aug-cc-pvdz
+}
+#wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', 'dz_plusplusplus')
+wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
+compare_integers(55, wert.nbf(), 'nbf()')
+compare_integers(58, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '        <<<  JKFIT (default)  >>>'
+#wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_SCF', '', 'JKFIT', 'dz_plusplusplus')
+wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_SCF', '', 'JKFIT', get_global_option('BASIS'))
+compare_integers(220, wert.nbf(), 'nbf()')
+compare_integers(252, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+set basis aug-cc-pvdz
+
+print '    <<<  aug-cc-pVDZ  >>>'
+wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
+compare_integers(64, wert.nbf(), 'nbf()')
+compare_integers(68, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+print '        <<<  JKFIT (default)  >>>'
+wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_SCF', '', 'JKFIT', get_global_option('BASIS'))
+compare_integers(236, wert.nbf(), 'nbf()')
+compare_integers(272, wert.nao(), 'nao()')
+compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')
+mymol.print_out()
+
+
+molecule mymol2 {
+C    0.0  0.0 0.0
+O    1.4  0.0 0.0
+H_r -0.5 -0.6 0.3
+H_l -0.5  0.6 0.3
+H_c -0.5  0.0 0.7
+}
+
+set basis dz_plusplusplus
+
+print '    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>'
+wert = psi4.BasisSet.pyconstruct_orbital(mymol2, 'BASIS', get_global_option('BASIS'))
+compare_integers(64, wert.nbf(), 'nbf()')
+compare_integers(67, wert.nao(), 'nao()')
+compare_strings('cs', mymol2.schoenflies_symbol(), 'symm')
+mymol2.print_out()
+
+

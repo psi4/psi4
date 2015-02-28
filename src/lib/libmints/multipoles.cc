@@ -25,8 +25,7 @@
 using namespace psi;
 
 MultipoleInt::MultipoleInt(std::vector<SphericalTransform>& spherical_transforms, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int order, int nderiv) :
-    order_(order),
-    OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), mi_recur_(bs1->max_am()+2, bs2->max_am()+2, order)
+OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), mi_recur_(bs1->max_am()+2, bs2->max_am()+2, order), order_(order)
 {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
@@ -138,7 +137,7 @@ void MultipoleInt::compute_pair(const GaussianShell& s1, const GaussianShell& s2
             double gamma = a1 + a2;
             double oog = 1.0/gamma;
 
-            double PA[3], PB[3], PC[3];
+            double PA[3], PB[3];
             double P[3];
 
             P[0] = (a1*A[0] + a2*B[0])*oog;

@@ -456,7 +456,6 @@ void DFOCC::orb_resp_pcg_rhf()
  do
  {
 
-
     //outfile->Printf( "pcg iter: %3d \n", itr_pcg); 
     // Set 
     //SvoA->set(sigma_pcgA);

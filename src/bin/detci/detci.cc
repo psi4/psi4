@@ -68,6 +68,12 @@
 #include "slaterd.h"
 #include "civect.h"
 #include "ciwave.h"
+#include "MCSCF.h"
+
+namespace psi {
+  extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
+  namespace transqt2 { extern PsiReturnType transqt2(Options &); }
+}
 
 namespace psi { namespace detci {
 
@@ -151,6 +157,12 @@ extern void tpdm(struct stringwr **alplist, struct stringwr **betlist,
    int targetfile, int writeflag, int printflag);
 extern void compute_cc(void);
 extern void calc_mrpt(void);
+
+// MCSCF
+extern void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist);
+extern void set_mcscf_parameters(Options &options);
+extern void mcscf_print_parameters(void);
+extern void detci_iteration_clean();
 
 PsiReturnType detci(Options &options);
 
@@ -246,7 +258,6 @@ PsiReturnType detci(Options &options)
    if (Parameters.istop) {      /* Print size of space, other stuff, only   */
      close_io();
      cleanup();
-     outfile->Printf("DS: DETCI complete \n");
      Process::environment.globals["CURRENT ENERGY"] = 0.0;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = 0.0;
      Process::environment.globals["CI TOTAL ENERGY"] = 0.0;
@@ -276,6 +287,9 @@ PsiReturnType detci(Options &options)
      mpn(alplist, betlist);
    else if (Parameters.cc)
      compute_cc();
+   else if (Parameters.mcscf){
+     compute_mcscf(options, alplist, betlist);
+     }
    else
      diag_h(alplist, betlist);
 
@@ -1531,6 +1545,121 @@ BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx) {
    addr += alp_idx * CIblks.Ib_size[blknum] + bet_idx;
 
    return(addr);
+
+}
+
+/*
+** detci_iteration_clean(); Removes DETCI's two electron integrals.
+** Prevents duplication of twoel in memory.
+**
+** Returns: none
+*/
+void detci_iteration_clean()
+{
+  free(CalcInfo.onel_ints);
+  free(CalcInfo.twoel_ints);
+  free(CalcInfo.maxK);
+  free(CalcInfo.tf_onel_ints);
+  free(CalcInfo.gmat[0]);
+}
+
+/*
+** compute_mcscf(); Optimizes MO and CI coefficients
+**
+** Parameters:
+**    options = options object
+**    alplist = list of alpha strings
+**    betlist = list of beta strings
+**
+** Returns: none
+*/
+void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist)
+{
+
+
+  // Output file for MCSCF iters
+  OutFile IterSummaryOut("file14.dat", TRUNCATE);
+
+  set_mcscf_parameters(options);     /* get running params (convergence, etc)    */
+  MCSCF* mcscf = new MCSCF(options, IterSummaryOut);
+
+  if (MCSCF_Parameters.print_lvl) tstart();
+  //mcscf->mcscf_title();                     /* print program identification             */
+  if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
+
+  // Need a TRANSQT2 Options object to be able to call that module correctly
+  // Can delete this when we replace TRANSQT2 with libtrans
+  Options transqt_options = options;
+  transqt_options.set_current_module("TRANSQT2");
+  psi::read_options("TRANSQT2", transqt_options, false);
+  transqt_options.set_str("TRANSQT2", "WFN", Parameters.wfn);
+  transqt_options.validate_options();
+
+  // Parameters
+  int conv;
+
+  // Iterate
+  for (int i=0; i<MCSCF_Parameters.max_iter; i++){
+    outfile->Printf("\nStarting MCSCF iteration %d\n\n", i+1);
+   
+    diag_h(alplist, betlist);
+
+    if (Parameters.average_num > 1) { // state average
+      MCSCF_CalcInfo.energy = 
+        Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"];
+    }
+    else if (Parameters.root != 0) { // follow some specific root != lowest
+      std::stringstream s;
+      s << "CI ROOT " << (Parameters.root+1) << " TOTAL ENERGY";
+      MCSCF_CalcInfo.energy = Process::environment.globals[s.str()];
+    }
+    else {
+      MCSCF_CalcInfo.energy = Process::environment.globals["CI TOTAL ENERGY"];
+    }
+
+    outfile->Printf("Hi I just got %12.7lf total energy\n", 
+      MCSCF_CalcInfo.energy);
+
+    form_opdm();
+    form_tpdm();
+    close_io();
+    detci_iteration_clean();
+
+    conv = mcscf->update();
+
+    // If converged
+    if (conv){
+      outfile->Printf("\nMCSCF converged\n");
+      break;
+    }
+
+    // If max iter
+    if (i == (MCSCF_Parameters.max_iter - 1)){
+      outfile->Printf("\nMCSCF did not converge\n");
+      break;
+    }
+
+    MCSCF_CalcInfo.iter++;
+    MCSCF_CalcInfo.energy_old = MCSCF_CalcInfo.energy;
+    outfile->Printf("\nFinished MCSCF iteration %d\n\n", i+1);
+
+    psi::transqt2::transqt2(transqt_options);    
+
+    // Need to grab the new efzc energy after transqt2 computations
+    chkpt_init(PSIO_OPEN_OLD);
+    CalcInfo.efzc = chkpt_rd_efzc();
+    CalcInfo.escf = chkpt_rd_escf();
+    chkpt_close();
+
+    read_integrals();
+    tf_onel_ints((Parameters.print_lvl>3), "outfile");
+    form_gmat((Parameters.print_lvl>3), "outfile");
+    
+
+  }
+
+  outfile->Printf("\nFinishing MCSCF\n");
+  mcscf->finalize();
 
 }
 
