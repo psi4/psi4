@@ -1,0 +1,15 @@
+run_type md
+ensemble nve
+time_step 0.5
+max_steps 10
+fraglib_path ../fraglib
+
+fragment h2o_l
+   0.0   0.0   0.0     0.0   0.0   0.0
+velocity
+   0.0   0.0   5.0e-4  0.0   0.0   0.0
+
+fragment nh3_l
+   0.0   0.0   5.0     0.0   0.0   0.0
+velocity
+   0.0   0.0  -7.0e-4  0.0   0.0   0.0

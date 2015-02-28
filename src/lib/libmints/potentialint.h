@@ -206,14 +206,14 @@ class ContractOverDensityFunctor
         /// The array of charges
         double *charges_;
     public:
-        ContractOverDensityFunctor(size_t ncenters, double *charges, SharedMatrix D):
+        ContractOverDensityFunctor(size_t /*ncenters*/, double *charges, SharedMatrix D):
             pD_(D->pointer()),
             charges_(charges)
         {
         }
         void operator()(int bf1, int bf2, int center, double integral)
         {
-            charges_[center] += 2.0 * pD_[bf1][bf2] * integral;
+            charges_[center] += pD_[bf1][bf2] * integral;
         }
 };
 
@@ -231,8 +231,8 @@ class ContractOverChargesFunctor
         const double *charges_;
     public:
         ContractOverChargesFunctor(const double* charges, SharedMatrix F):
-            charges_(charges),
-            pF_(F->pointer())
+            pF_(F->pointer()),
+            charges_(charges)
         {
             if(F->rowdim() != F->coldim())
                 throw PSIEXCEPTION("Invalid Fock matrix in ContractOverCharges");

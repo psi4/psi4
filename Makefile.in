@@ -1,10 +1,12 @@
 SHELL = /bin/sh
 
+MAKE_LIBEFP=@BUILD_LIBEFP@
+
 .PHONY:	default all install install_inc install-doc depend clean dclean targetclean tests testsclean doc plugins pluginsclean pluginstests quicktests
 
 default: all
 
-subdirs = boost lib include src
+subdirs = boost libefp lib include src
 
 top_srcdir = @top_srcdir@
 srcdir = @srcdir@

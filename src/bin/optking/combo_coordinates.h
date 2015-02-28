@@ -40,7 +40,7 @@ class COMBO_COORDINATES {
 
   private:
 
-    vector<SIMPLE_COORDINATE *>      simples;  // collection of simple and/or cartesian coordinates
+    vector<SIMPLE_COORDINATE *>  simples;  // collection of simple and/or cartesian coordinates
     vector<vector<int> >     index;  // collection of coordinate index for linear combination
     vector<vector<double> >  coeff;  // collection of coefficients for linear combination
 
@@ -90,6 +90,8 @@ class COMBO_COORDINATES {
 
   // Transform vector from simples to combination via linear combination
   double ** transform_simples_to_combo(double **mat_simples) const;
+
+  int Nsimples(void) const { return simples.size(); }
 
 };
 

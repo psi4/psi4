@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -65,29 +65,29 @@ void dipole(void)
     SharedMatrix Pa(new Matrix("P alpha", Ca->colspi(), Ca->colspi()));
     int mo_offset = 0;
     for (int h = 0; h < Ca->nirrep(); h++) {
-      int nmo = nmopi[h]; 
-      int nfv = frzvpi[h]; 
+      int nmo = nmopi[h];
+      int nfv = frzvpi[h];
       int nmor = nmo - nfv;
       if (!nmo || !nmor) continue;
       double** Pap = Pa->pointer(h);
-        
+
       // Loop over QT, convert to Pitzer
       for (int i=0; i<nmor; i++) {
         for (int j=0; j<nmor; j++) {
           int I = moinfo.pitzer2qt[i+mo_offset];
           int J = moinfo.pitzer2qt[j+mo_offset];
           Pap[i][j] = moinfo.opdm[I][J];
-        } 
+        }
       }
-      mo_offset += nmor; 
+      mo_offset += nmor;
     }
 
     Pa->scale(0.5);
     //Pa->print();
 
     oe->set_Da_mo(Pa);
-    if (!params.ref == 0) {
-    	oe->set_Db_mo(Pa);
+    if ((!params.ref) == 0) {
+        oe->set_Db_mo(Pa);
     }
 
     oe->add("DIPOLE");

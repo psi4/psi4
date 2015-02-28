@@ -38,11 +38,11 @@
 #include <libpsio/psio.hpp>
 #include <libqt/qt.h>
 #include <libiwl/iwl.h>
-#include <physconst.h>
 #include <psifiles.h>
 #include <libmints/wavefunction.h>
 #include "mp2wave.h"
 #include "globals.h"
+#include <physconst.h>
 
 namespace psi{ namespace mp2{
 

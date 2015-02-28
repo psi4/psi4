@@ -261,7 +261,7 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name)
 
     std::stringstream ss;
     ss << filepath_ << "/" << name << ".cube";
-    printer=boost::shared_ptr<OutFile>(new OutFile(ss.str()));
+    boost::shared_ptr<psi::PsiOutStream> printer=boost::shared_ptr<OutFile>(new OutFile(ss.str()));
 
     // Two comment lines
     printer->Printf("PSI4 Gaussian Cube File.\n");
@@ -283,10 +283,9 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name)
     // Data, striped (x, y, z)
     for (size_t ind = 0; ind < npoints_; ind++) {
         printer->Printf("%12.5E ", v2[ind]);
-        if (ind % 6 == 5) outfile->Printf(fh,"\n");
+        if (ind % 6 == 5) outfile->Printf("\n");
     }
 
-    fclose(fh);   
 }
 void CubicScalarGrid::add_density(double* v, boost::shared_ptr<Matrix> D)
 {
@@ -306,8 +305,8 @@ void CubicScalarGrid::add_esp(double* v, boost::shared_ptr<Matrix> D)
 {
     // => Auxiliary Basis Set (TODO: Get appropriate default) <= //
 
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, primary_->molecule(), "DF_BASIS_SCF");
+    boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+            "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"));
     
     // => DF Options (TODO: Should these be in here?) <= //
 

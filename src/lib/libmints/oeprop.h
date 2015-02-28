@@ -261,6 +261,10 @@ protected:
     void compute_electric_field_and_gradients();
     /// Compute electrostatic potentials at the nuclei
     void compute_esp_at_nuclei();
+    /// Compute electrostatic potential at specified grid points
+    void compute_esp_over_grid();
+    /// Compute field at specified grid points
+    void compute_field_over_grid();
 
 
     /// The center about which properties are computed

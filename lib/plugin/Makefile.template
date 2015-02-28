@@ -76,4 +76,3 @@ $(PSITARGET): $(BINOBJ)
 clean:
 	rm -f $(BINOBJ) $(PSITARGET) *.d *.pyc *.test output.dat psi.timer.dat
 
-

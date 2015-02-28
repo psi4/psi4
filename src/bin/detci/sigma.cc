@@ -781,7 +781,7 @@ void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
    #ifdef DEBUG
    outfile->Printf( "s2: Contribution to sblock=%d from cblock=%d\n",
       sblock, cblock);
-   print_mat(smat, nas, nbs, outfile);
+   print_mat(smat, nas, nbs, "outfile");
    #endif
 
    /* SIGMA1 CONTRIBUTION */
@@ -839,7 +839,7 @@ void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
    #ifdef DEBUG
    outfile->Printf( "s1: Contribution to sblock=%d from cblock=%d\n",
       sblock, cblock);
-   print_mat(smat, nas, nbs, outfile);
+   print_mat(smat, nas, nbs, "outfile");
    #endif
 
    /* SIGMA3 CONTRIBUTION */
@@ -908,7 +908,7 @@ void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
       #ifdef DEBUG
       outfile->Printf( "s3: Contribution to sblock=%d from cblock=%d\n",
          sblock, cblock);
-      print_mat(smat, nas, nbs, outfile);
+      print_mat(smat, nas, nbs, "outfile");
       #endif
       
       detci_time.s3_after_time = wall_time_new();

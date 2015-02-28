@@ -46,6 +46,7 @@ class IRC_POINT {
 
   int coord_step;
   double *q_pivot;//pivot point for step
+  double *x_pivot;//pivot point for step; we save so that q_pivot can be recomputed if necessary
   double *q;           // internal coordinate values
   double *x;           // cartesian coordinate values
   double *f_q;         // internal coordinate forces
@@ -57,11 +58,12 @@ class IRC_POINT {
 
   public:
 
-    IRC_POINT(int coord_in, double *q_p_in, double *q_in, double *x_in, double *f_q_in,
+    IRC_POINT(int coord_in, double *q_p_in, double *x_p_in, double *q_in, double *x_in, double *f_q_in,
               double *f_x_in, double E_in, double step, double arc, double line)
     {
       coord_step = coord_in;
       q_pivot = q_p_in;
+      x_pivot = x_p_in;
       q = q_in;
       x = x_in;
       f_q = f_q_in;
@@ -72,10 +74,11 @@ class IRC_POINT {
       line_dist = line;
     }
 
-    ~IRC_POINT() {free_array(q_pivot); free_array(q); free_array(x); free_array(f_q); free_array(f_x);} // free memory
+    ~IRC_POINT() {free_array(q_pivot); free_array(x_pivot); free_array(q); free_array(x); free_array(f_q); free_array(f_x);}
 
     int g_coord_step(void) const { return coord_step; }
     double *g_q_pivot(void) const { return q_pivot; }
+    double *g_x_pivot(void) const { return x_pivot; }
     double *g_q(void) const { return q; }
     double g_q(int i) const { return q[i]; }
     double *g_x(void) const { return x; }
@@ -139,6 +142,10 @@ class IRC_DATA {
     {
       return steps[steps.size()-1]->g_q_pivot();
     }
+    double *g_x_pivot(void) const
+    {
+      return steps[steps.size()-1]->g_x_pivot();
+    }
     double *g_q(void) const
     {
       return steps[steps.size()-1]->g_q();
@@ -174,13 +181,13 @@ class IRC_DATA {
     // summarize optimization up til now
 //    void summary(void) const;
 
-    void add_irc_point(int coord_in, double *q_p_in, double *q_in, double *x_in, double *f_q_in,
+    void add_irc_point(int coord_in, double *q_p_in, double *x_p_in, double *q_in, double *x_in, double *f_q_in,
                        double *f_x_in, double E_in, double step, double arc, double line)
     {
       step_dist = coord_in * step_length;
       arc_dist += arc_length;
       line_dist += line_length;
-      IRC_POINT *onepoint = new IRC_POINT(coord_in, q_p_in, q_in, x_in, f_q_in, f_x_in, E_in,
+      IRC_POINT *onepoint = new IRC_POINT(coord_in, q_p_in, x_p_in, q_in, x_in, f_q_in, f_x_in, E_in,
                                           step_dist, arc_dist, line_dist);
       steps.push_back(onepoint);
     }

@@ -19,80 +19,41 @@
  *
  *@END LICENSE
  */
-
 #include "MBE.h"
-#include "MBEFragSet.h"
-#include "../../bin/psi4/psi4.h"
-#include "../../../include/psi4-dec.h"
-#include "libparallel/TableSpecs.h"
-#include <iomanip>
 namespace psi{
 namespace LibFrag{
-/*void MBE::MakeIntersections(std::vector<NMerSet>& Systems){
-	int oldN=N;
-	for(int i=2;i<oldN;i++){
-		this->SetN(i);
-		Systems.push_back(NMerSet());
-		MakeNmers(Systems[0],Systems[Systems.size()-1]);
-	}
-	this->SetN(oldN);
-}*/
-double MBE::Energy(const std::vector<MBEFragSet>& Systems,
-      const std::vector<boost::shared_ptr<double[]> >& Energies,
-      std::string& RealName){
-	double energy=0;
-	std::string energyname=RealName;
-	//Total energy of each set of n-mers
-	std::vector<double> En;
-	std::vector<double> Egys;
-	std::vector<int> Widths(1,9);
-	psi::outfile->MakeBanner("MBE "+energyname+" Analysis");
-	(*psi::outfile)<<std::endl;
-	std::vector<std::string> Titles;
-    Titles.push_back("");
-    Titles.push_back("");
-	Titles.push_back("n-body correction (a.u.)");
-    Titles.push_back("MBE Order");
-    Titles.push_back(energyname+" (a.u.)");
-	Titles.push_back("[E(n)-E(n-1)]");
-	std::vector<int> orders;
-	if(Systems.size()!=N&&N!=1)
-	   throw psi::PSIEXCEPTION("The number of systems is not consistent with"
-	         " the MBE truncation order....\n");
-	for(int i=0;i<N;i++){
-		En.push_back(0);//Initialize our vector
-		int nfrags=Systems[i].size();
-		for(int j=0;j<nfrags;j++){
-			En[i]+=Energies[i][j];
-		}
-		energy=NBodyE(i+1,Systems[0].size(),&En[0]);
-		Egys.push_back(energy);
-	}
-	std::vector<double> Corrs;
-	for(int i=0;i<N;i++){
-	   Corrs.push_back((i==0?0:Egys[i]-Egys[i-1]));
-	   orders.push_back(i+1);
-	}
-	TableSpecs<int,double,double> Table(N);
-	Table.SetTitles(Titles);
-	Table.Init(&orders[0],&Egys[0],&Corrs[0]);
-	Table.SetWidths(Widths);
-	(*outfile)<<Table.Table();
-	(*outfile)<<std::endl;
-	return energy;
+
+typedef LibMolecule::SerialNumber Set_t;
+typedef Set_t::const_iterator cSetIt_t;
+
+std::vector<cSetIt_t> CanonicalMBE::FillIndices(const int m,const Set_t& CurrSerial)const{
+   std::vector<cSetIt_t> ReturnVector(m+1);
+   for(int l=0;l<=m;l++){
+      ReturnVector[l]=CurrSerial.begin();
+      for(int k=0;k<l;k++)++ReturnVector[l];
+   }
+   return ReturnVector;
 }
 
-double MBE::NBodyE(const int N,const int nfrags,const double *DeltaEs){
-	double energy=0;
-	if(N!=nfrags){
-		for(int i=0;i<N;i++)
-		energy+=Coef(nfrags,N,i+1)*DeltaEs[i];
-	}
-	else energy=DeltaEs[N-1];
-	return energy;
+bool CanonicalMBE::UpdateIndices(const cSetIt_t& LastIndex, const int m,
+       std::vector<Set_t::iterator>& Indices)const{
+   bool goodindex=false;
+   cSetIt_t tempLastIndex=LastIndex;
+   for(int l=m;l>=0;l--){
+      ++Indices[l];
+      if(Indices[l]!=tempLastIndex){//Can increment
+         goodindex=true;
+         for(int k=l+1;k<=m;k++){
+            Indices[k]=Indices[l];
+            for(int j=0;j<k-l;j++)++Indices[k];
+         }
+         break;
+      }
+      --tempLastIndex;
+   }
+   return goodindex;
 }
 
 }}//End namespaces
-
 
 

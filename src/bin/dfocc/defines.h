@@ -26,6 +26,9 @@
 #define ID(x) ints->DPD_ID(x)
 #define index2(i,j) ((i>j) ? ((i*(i+1)/2)+j) : ((j*(j+1)/2)+i))
 #define index4(i,j,k,l) index2(index2(i,j),index2(k,l))
+#define idx2(i,j,Nj) j + (i*Nj)
+#define idx3(i,j,k,Nj,Nk) k + (j*Nk) + (i*Nj*Nk)
+#define idx4(i,j,k,l,Nj,Nk,Nl) l + (k*Nl) + (j*Nk*Nl) + (i*Nj*Nk*Nl)
 
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))

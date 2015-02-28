@@ -31,24 +31,22 @@
 #include <vector>
 #include <utility>
 
-#include <psifiles.h>
-#include <physconst.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
 #include <libparallel/parallel.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
+#include <psifiles.h>
+#include <physconst.h>
 
 #include <libmints/basisset_parser.h>
 #include <libmints/mints.h>
 #include <libfock/jk.h>
-#include "libfock/Psi4JK.h"
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
-
 #include "rhf.h"
-
+#include "../libJKFactory/MinimalInterface.h"
 using namespace boost;
 using namespace psi;
 using namespace std;
@@ -148,53 +146,32 @@ void forPermutation(int depth, vector<int>& array,
 }
 void RHF::form_G()
 {
-    if(!JKFactory){
-       boost::shared_ptr<BasisSetParser>parser
-       (new Gaussian94BasisSetParser());
-       boost::shared_ptr<BasisSet> primary =
-        BasisSet::construct(parser,Process::environment.molecule(),"BASIS");
-       JKFactory=boost::shared_ptr<Psi4JK>(new Psi4JK(primary));
-    }
-    //SharedMatrix corrJ_(new Matrix(*J_));
-    //SharedMatrix corrK_(new Matrix(*K_));
-    if(JKFactory->Shared()){
-       // Push the C matrix on
-       std::vector<SharedMatrix> & C = jk_->C_left();
-       C.clear();
-       C.push_back(Ca_subset("SO", "OCC"));
+   typedef boost::shared_ptr<MinimalInterface> ShareInt;
+   if(!JKFactory_)
+      JKFactory_=ShareInt(new MinimalInterface());
+   if(!JKFactory_->UseJKFactory()){
+     /// Push the C matrix on
+     std::vector<SharedMatrix> & C = jk_->C_left();
+     C.clear();
+     C.push_back(Ca_subset("SO", "OCC"));
 
-       // Run the JK object
-       jk_->compute();
+     // Run the JK object
+     jk_->compute();
 
-       // Pull the J and K matrices off
-       const std::vector<SharedMatrix> & J = jk_->J();
-       const std::vector<SharedMatrix> & K = jk_->K();
-       J_ = J[0];
-       K_ = K[0];
-    }
-    else{
-
-       JKFactory->UpdateDensity(D_,J_,K_);
-    }
-    J_->scale(2.0);
-    //corrJ_->scale(2.0);
-    //corrJ_->print_out();
-    //corrJ_->subtract(J_);
-    //J_->print_out();
-    //corrJ_->print_out();
-    /*double sum=0.0;
-    for(int i=0;i<corrJ_->rowspi(0);i++){
-       for(int j=0;j<corrJ_->colspi(0);j++)
-          sum+=sqrt((*corrJ_)(i,j)*(*corrJ_)(i,j));
-    }
-    outfile->Printf("Sum is : %16.12f\n",sum);
-    exit(1);*/
-    //SharedMatrix corrG(corrJ_);
-    G_->copy(J_);
-    //corrG->subtract(corrK_);
-    G_->subtract(K_);
-    //corrG->subtract(G_);
-    //corrG->print_out();
+     // Pull the J and K matrices off
+     const std::vector<SharedMatrix> & J = jk_->J();
+     const std::vector<SharedMatrix> & K = jk_->K();
+     J_ = J[0];
+     K_ = K[0];
+  }
+  else{
+     JKFactory_->SetP(D_);
+     JKFactory_->GetJ(J_);
+     JKFactory_->GetK(K_);
+  }
+  J_->scale(2.0);
+  G_->copy(J_);
+  G_->subtract(K_);
 }
 
 void RHF::save_information()
@@ -234,11 +211,6 @@ bool RHF::test_convergency()
 
     // Drms was computed earlier
     if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_){
-       //Need to shut-down JKFactory before worldcomm goes out of scope
-       //because destructor calls MPI.  May as well do it now
-       if(JKFactory){
-          JKFactory.reset();
-       }
        return true;
     }
     else
@@ -398,8 +370,6 @@ void RHF::save_sapt_info()
     double *sapt_V_ints = V_->to_lower_triangle();
     double *sapt_S_ints = S_->to_lower_triangle();
 
-    int errcod;
-
     sprintf(key_buffer,"%s NSO",body_type);
     psio_->write_entry(fileno,key_buffer,(char *) &sapt_nso, sizeof(int));
     sprintf(key_buffer,"%s NMO",body_type);
@@ -546,9 +516,9 @@ void RHF::stability_analysis()
             delete [] evals;
         }
 
-        outfile->Printf( "\tLowest singlet (RHF->RHF) stability eigenvalues:-\n");
+        outfile->Printf( "    Lowest singlet (RHF->RHF) stability eigenvalues:-\n");
         print_stability_analysis(singlet_eval_sym);
-        outfile->Printf( "\tLowest triplet (RHF->UHF) stability eigenvalues:-\n");
+        outfile->Printf( "    Lowest triplet (RHF->UHF) stability eigenvalues:-\n");
         print_stability_analysis(triplet_eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }

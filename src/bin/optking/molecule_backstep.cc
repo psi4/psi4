@@ -105,6 +105,8 @@ void MOLECULE::backstep(void) {
     dq[i] /= 2;
   double dq_norm = sqrt(array_dot(dq, dq, Nintco));
 
+  oprintf_out("\tNorm of target step-size %10.5lf\n", dq_norm);
+
   double *rfo_u  = p_Opt_data->g_rfo_eigenvector_pointer();
   double dq_grad = p_Opt_data->g_dq_gradient(Nsteps-1);
   double dq_hess = p_Opt_data->g_dq_hessian(Nsteps-1);

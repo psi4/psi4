@@ -105,7 +105,7 @@ extern "C" PsiReturnType
                 int srel = s - K.params->soff[ssym];
                 // Print out the absolute orbital numbers, the relative (within irrep)
                 // numbers, the symmetries, and the integral itself
-                psi::fprintf(outfile, "(%2d %2d | %2d %2d) = %16.10f, "
+                psi::outfile->Printf("(%2d %2d | %2d %2d) = %16.10f, "
                                  "symmetries = (%1d %1d | %1d %1d), "
                                  "relative indices = (%2d %2d | %2d %2d)\n",
                                  p, q, r, s, K.matrix[h][pq][rs], 

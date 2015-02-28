@@ -37,7 +37,7 @@ set globals {
 
 set sapt {
     freeze_core   true
-    nat_orbs      true
+    nat_orbs_t3   true
 }
 
 energy('sapt2+(3)')

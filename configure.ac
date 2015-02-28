@@ -227,6 +227,7 @@ AC_SUBST(FC_SYMBOL)
 
 #ACX_MPI()
 
+AC_PROG_CC_STDC
 AC_PROG_RANLIB
 AC_PROG_CPP
 AC_PROG_CXXCPP
@@ -534,6 +535,15 @@ ACX_MPI()
 # Make sure we're back in C++
 AC_LANG([C++])
 
+BUILD_LIBEFP=1
+HAVE_LIBEFP=1
+AC_DEFINE_UNQUOTED(HAVE_LIBEFP,1)
+efplibs='$(top_objdir)/libefp'
+efpinc='-I$(top_objdir)/libefp/libefp/src'
+AC_SUBST(BUILD_LIBEFP)
+AC_SUBST(efplibs)
+AC_SUBST(efpinc)
+
 ########
 ## Check for types
 ########
@@ -644,7 +654,7 @@ if test "x${have_boost}" == "x0"; then
     HAVE_BOOST=0
     AC_SUBST(HAVE_BOOST)
 
-    BOOSTVER='boost_1_55_0'
+    BOOSTVER='boost_1_57_0'
     AC_SUBST(BOOSTVER)
 
     BOOST_CPPFLAGS='-I$(top_objdir)/boost/$(BOOSTVER)'
@@ -923,6 +933,7 @@ AC_CONFIG_FILES([
           src/lib/Makefile src/lib/MakeRules src/lib/MakeVars
           src/util/Makefile src/util/MakeRules src/util/MakeVars
           src/bin/Makefile src/bin/MakeRules src/bin/MakeVars
+	      libefp/Makefile
 
           doc/MakeVars doc/MakeRules doc/Makefile
           doc/macros.tex
@@ -959,6 +970,7 @@ AC_CONFIG_FILES([
           src/lib/libdisp/Makefile
           src/lib/libplugin/Makefile
           src/lib/lib3index/Makefile
+          src/lib/libefp_solver/Makefile
           src/util/tocprint/Makefile
 
           src/bin/psi4/Makefile
@@ -973,6 +985,7 @@ AC_CONFIG_FILES([
           src/bin/fnocc/Makefile
           src/bin/occ/Makefile
           src/bin/dfocc/Makefile
+          src/bin/efp/Makefile
           src/bin/ccsort/Makefile
           src/bin/ccenergy/Makefile
           src/bin/cctriples/Makefile
@@ -1058,6 +1071,15 @@ AC_CONFIG_FILES([
           tests/pywrap-cbs1/Makefile
           tests/pywrap-all/Makefile
           tests/pywrap-alias/Makefile
+          tests/libefp/Makefile
+          tests/libefp/MakeRules
+          tests/libefp/MakeVars
+          tests/libefp/efp1/Makefile
+          tests/libefp/efp2/Makefile
+          tests/libefp/efp3/Makefile
+          tests/libefp/efp6/Makefile
+          tests/libefp/qc-efpefp-sp1/Makefile
+          tests/libefp/qc-scfefp-sp1/Makefile
           tests/pywrap-opt-sowreap/Makefile
           tests/pywrap-freq-e-sowreap/Makefile
           tests/pywrap-basis/Makefile
@@ -1216,6 +1238,10 @@ AC_CONFIG_FILES([
           tests/dfmp2-grad2/Makefile
           tests/dfmp2-grad3/Makefile
           tests/dfmp2-grad4/Makefile
+          tests/dfccd1/Makefile
+          tests/dfccdl1/Makefile
+          tests/dfccsd1/Makefile
+          tests/dfccsdl1/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile
           tests/props1/Makefile
@@ -1331,5 +1357,13 @@ AC_CONFIG_FILES([
 ])
 
 AC_CONFIG_COMMANDS([psi4-config], [chmod +x bin/psi4-config])
+
+# If we are using libefp, and we are linking the internal libefp
+# library then set up the internal libefp to be built
+#if test "$HAVE_LIBEFP" = "1"; then
+#  if test "$BUILD_LIBEFP" = "1"; then
+#    AC_CONFIG_SUBDIRS([libefp])
+#  fi
+#fi
 
 AC_OUTPUT

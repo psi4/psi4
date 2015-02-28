@@ -56,7 +56,7 @@ void zero_arr(double *a, int size)
 */
 void zero_mat(double **a, int n, int m)
 {
-  register int i;
+  int i;
 
   for (i=0; i < n; i++) {
     bzero(a[i],sizeof(double)*m);

@@ -70,6 +70,10 @@ protected:
     /// Assign pointer offsets in vector_ from v_.
     void assign_pointer_offsets();
 
+    /// Numpy Shape
+    int  numpy_dims_;
+    int* numpy_shape_;
+
 public:
     /// Default constructor, zeros everything out
     Vector();
@@ -89,7 +93,7 @@ public:
     Vector(const std::string& name, const Dimension& dimpi);
 
     /// Destructor, frees memory
-    ~Vector();
+    virtual ~Vector();
 
     /**
      * Convenient creation function return SharedMatrix
@@ -229,7 +233,7 @@ public:
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(std::string OutFileRMR = "outfile", const char *extra=NULL) const;
+    void print(std::string outfile = "outfile", const char *extra=NULL) const;
 
     /// Copies rhs to this
     void copy(const Vector* rhs);
@@ -298,6 +302,15 @@ public:
     //    { return const_iterator(vector_[h]) + dimpi_[h]; }
     /// @}
 
+     /**
+     * Adds accessability to the matrix shape for numpy
+     */
+    void set_numpy_dims(int dims) { numpy_dims_ = dims; }
+    void set_numpy_shape(int* shape) { numpy_shape_ = shape; }
+    int numpy_dims() { return numpy_dims_; }
+    int* numpy_shape() { return numpy_shape_; }
+
+
     friend class Matrix;
 };
 
@@ -336,7 +349,7 @@ public:
     IntVector(const std::string& name, int dim);
 
     /// Destructor, frees memory
-    ~IntVector();
+    virtual ~IntVector();
 
     void init(int nirrep, int *dimpi);
 
@@ -398,7 +411,7 @@ public:
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(std::string OutFileRMR = "outfile", const char *extra=NULL) const;
+    void print(std::string outfile = "outfile", const char *extra=NULL) const;
     /// Copies rhs to this
     void copy(const IntVector* rhs);
     /// Copies rhs to this

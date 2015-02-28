@@ -53,6 +53,7 @@
 #include "libparallel/ParallelPrinter.h"
 using namespace boost;
 
+#ifndef USE_FCMANGLE_H
 #if FC_SYMBOL==2
     #define F_DGESVD dgesvd_
 #elif FC_SYMBOL==1
@@ -61,6 +62,10 @@ using namespace boost;
     #define F_DGESVD DGESVD
 #elif FC_SYMBOL==4
     #define F_DGESVD DGESVD_
+#endif
+#else // USE_FCMANGLE_H
+#include "FCMangle.h"
+#define F_DGESVD FC_GLOBAL(dgesvd, DGESVD)
 #endif
 
 extern int sing_(double *q, int *lq, int *iq, double *s, double *p,
@@ -691,7 +696,6 @@ void PetiteList::init(double tol)
 
 Dimension PetiteList::AO_basisdim()
 {
-    int one = 1;
     int nbf = include_pure_transform_ ? basis_->nao() : basis_->nbf();
     Dimension ret(1, "AO Basis Dimension");
     ret[0] = nbf;
@@ -700,7 +704,7 @@ Dimension PetiteList::AO_basisdim()
 
 Dimension PetiteList::SO_basisdim()
 {
-    int i, j, ii;
+    int i;
 
     // grab reference to the basis set;
     BasisSet& gbs = *basis_.get();
@@ -777,9 +781,6 @@ void PetiteList::print(std::string out)
 /**
  * This function forms the mapping info from Cartesian AOs, to symmetry adapted pure (or Cartesian if the
  * basis requires this) functions, storing the result in a sparse buffer.
- * @param include_cart_to_pure whether to fold the spherical transform coefficients in or not.  IF true, a
- *        pure/Cartesian AOs to pure/Cartesian (depending on the basis) SOs transformation is returned.
- *        If false, a Cartesian AOs to Cartesian SOs is returned.
  * @return A pointer to the newly-created sparse SO_Block (remember to delete it!).
  */
 SO_block*

@@ -201,7 +201,6 @@ int FRAG::add_hbonds(void) {
                       double cov_Y = cov_radii[ (int) Z[y] ]/_bohr2angstroms;
                       if (dist > cov_scale * (cov_H + cov_Y)) {
                         coords.simples[index]->set_hbond(true);
-oprintf_out("Recognized frag stretch %d as a H bond.\n", index+1);
                       }
                       delete one_stre;
                     }
@@ -437,17 +436,26 @@ bool FRAG::present(const SIMPLE_COORDINATE *one) const {
   return false;
 }
 
+void FRAG::add_combination_coord(vector<int> ids, vector<double> coeffs) {
+  coords.index.push_back(ids);
+  coords.coeff.push_back(coeffs);;
+}
+
+void FRAG::add_trivial_coord_combination(int simple_id) {
+  std::vector<int> i1;
+  i1.push_back(simple_id); 
+  coords.index.push_back(i1);
+
+  std::vector<double> c1;
+  c1.push_back(1.0); 
+  coords.coeff.push_back(c1);
+}
+
 int FRAG::form_trivial_coord_combinations(void) {
   coords.clear_combos();
-  for (int s=0; s<coords.simples.size(); ++s) {
-    std::vector<int> i1;
-    i1.push_back(s); 
-    coords.index.push_back(i1);
-    std::vector<double> c1;
-    c1.push_back(1.0); 
-    coords.coeff.push_back(c1);
-  }
-  return coords.index.size();
+  for (int s=0; s<coords.simples.size(); ++s)
+    add_trivial_coord_combination(s);
+  return coords.simples.size();
 }
 
 // Determine initial delocalized coordinate coefficients.
@@ -516,15 +524,6 @@ int FRAG::form_delocalized_coord_combinations(void) {
 
   oprintf_out("\tInitially, formed %d delocalized coordinates for fragment.\n", coords.index.size());
   return coords.index.size();
-}
-
-// Determine Pulay simple coordinate combinations.
-int FRAG::form_natural_coord_combinations(void) {
-  coords.clear_combos();
-
-  throw("natural internals not yet implemented");
-
-  return 0;
 }
 
 int FRAG::add_cartesians(void) {
@@ -660,10 +659,15 @@ void FRAG::compute_G(double **G, bool use_masses) const {
 }
 
 void FRAG::fix_tors_near_180(void) {
-  for (int i=0; i<coords.simples.size(); ++i) {
+  for (int i=0; i<coords.simples.size(); ++i)
     if (coords.simples[i]->g_type() == tors_type)
       coords.simples[i]->fix_tors_near_180(geom);
-  }
+}
+
+void FRAG::fix_oofp_near_180(void) {
+  for (int i=0; i<coords.simples.size(); ++i)
+    if (coords.simples[i]->g_type() == oofp_type)
+      coords.simples[i]->fix_oofp_near_180(geom);
 }
 
 void FRAG::set_geom_array(double * geom_array_in) {
