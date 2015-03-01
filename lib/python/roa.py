@@ -28,6 +28,8 @@ def run_roa(name, **kwargs):
     if not db['inputs_generated']:
         generate_inputs(name, db)
         db['inputs_generated'] = True
+
+    ### If 'serial' calculation, proceed with subdir execution
     
     ### Check job status
     if db['inputs_generated'] and not db['jobs_complete']:
