@@ -51,6 +51,8 @@
 #include <libmints/mints.h>
 #include <physconst.h>
 #include <liboptions/liboptions.h>
+#include "libparallel/ParallelPrinter.h"
+
 //#include "oldphysconst.h"
 //#include "mass.h"
 
@@ -73,7 +75,7 @@ void rs(int nm, int n, double **array, double *e_vals, int matz,
 
 namespace psi { namespace ccresponse {
 
-void print_tensor_der(FILE *myfile, std::vector<SharedMatrix> my_tensor_list);
+void print_tensor_der(boost::shared_ptr<OutFile> myfile, std::vector<SharedMatrix> my_tensor_list);
 
 //void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMatrix> rot, std::vector <SharedMatrix> quad)
 void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std::vector <SharedMatrix> rot, std::vector <SharedMatrix> quad)
@@ -130,7 +132,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
       throw PsiException("ROA Scattering only working for one wavelength at a time", __FILE__,__LINE__);
     }
     // Print the Wavelength
-    outfile->Printf(outfile, "\t Wavelength (in au): = %20.12f\n\n", omega);
+    outfile->Printf("\t Wavelength (in au): = %20.12f\n\n", omega);
 
     // COMPUTE TENSOR DERIVATIVES
     // Replicate the part of the roa.pl code that does this here in C++
@@ -180,22 +182,22 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
     }
    
     // Write Out the Tensor Derivatives to File tender.dat //
-    Outfile derivs("tender.dat", "w");
-    derivs->Printf(derivs, "******************************************************\n");
-    derivs->Printf(derivs, "**********                                  **********\n");
-    derivs->Printf(derivs, "**********        TENSOR DERIVATIVES        **********\n");
-    derivs->Printf(derivs, "**********   FOR COMPUTING ROA SCATTERING   **********\n");
-    derivs->Printf(derivs, "**********                                  **********\n");
-    derivs->Printf(derivs, "******************************************************\n\n\n");
-    derivs->Printf(derivs, "\t*** Dipole Polarizability Derivative Tensors ***\n\n");
+    // Outfile derivs("tender.dat", "w");
+    boost::shared_ptr<OutFile> derivs(new OutFile("tender.dat", TRUNCATE));
+    derivs->Printf( "******************************************************\n");
+    derivs->Printf( "**********                                  **********\n");
+    derivs->Printf( "**********        TENSOR DERIVATIVES        **********\n");
+    derivs->Printf( "**********   FOR COMPUTING ROA SCATTERING   **********\n");
+    derivs->Printf( "**********                                  **********\n");
+    derivs->Printf( "******************************************************\n\n\n");
+    derivs->Printf( "\t*** Dipole Polarizability Derivative Tensors ***\n\n");
     print_tensor_der(derivs, pol_grad);
-    derivs->Printf(derivs, "*********************************************************\n\n");
-    derivs->Printf(derivs, "\t*** Optical Rotation Derivative Tensors ***\n\n");
+    derivs->Printf( "*********************************************************\n\n");
+    derivs->Printf( "\t*** Optical Rotation Derivative Tensors ***\n\n");
     print_tensor_der(derivs, rot_grad);
-    derivs->Printf(derivs, "*********************************************************\n\n");
-    derivs->Printf(derivs, "\t*** Dipole/Quadrupole Derivative Tensors ***\n\n");
+    derivs->Printf( "*********************************************************\n\n");
+    derivs->Printf( "\t*** Dipole/Quadrupole Derivative Tensors ***\n\n");
     print_tensor_der(derivs, quad_grad);
-    fclose(derivs);
 
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
     int natom = molecule->natom();
@@ -827,18 +829,18 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
 
 }
 
-    // Handy Tensor Derivative Array Printer
-	void print_tensor_der(FILE *myfile, std::vector<SharedMatrix> my_tensor_list)
-	{
-        for(int i=0; i < my_tensor_list.size(); ++i)  {
-            int atom_num  = i/3;
-            int xyz       = i%3;
-            if(xyz==0) fprintf(myfile, "\tAtom #%d, X-coord.:\n", atom_num);
-            if(xyz==1) fprintf(myfile, "\tAtom #%d, Y-coord.:\n", atom_num);
-            if(xyz==2) fprintf(myfile, "\tAtom #%d, Z-coord.:\n", atom_num);
-            my_tensor_list[i]->print(myfile);
-        }
-	}
+// Handy Tensor Derivative Array Printer
+void print_tensor_der(boost::shared_ptr<OutFile> myfile, std::vector<SharedMatrix> my_tensor_list)
+{
+  for(int i=0; i < my_tensor_list.size(); ++i)  {
+    int atom_num  = i/3;
+    int xyz       = i%3;
+    if(xyz==0) myfile->Printf( "\tAtom #%d, X-coord.:\n", atom_num);
+    if(xyz==1) myfile->Printf( "\tAtom #%d, Y-coord.:\n", atom_num);
+    if(xyz==2) myfile->Printf( "\tAtom #%d, Z-coord.:\n", atom_num);
+    my_tensor_list[i]->print("myfile");
+  }
+}
 
 }} // namespace psi::ccresponse
 
