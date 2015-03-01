@@ -256,6 +256,24 @@ if(PERL_FOUND AND SPHINX_FOUND)
         add_custom_target(sphinxpdf
             DEPENDS sphinxman
             COMMENT "Preparing Sphinx HTML and PDF documentation build")
+
+        # * full, proper build with latex builder
+        add_custom_command(
+            TARGET sphinxpdf POST_BUILD
+            COMMAND ${SPHINX_EXECUTABLE} 
+                -b latex              # builder
+                -d ${CCBD}/_doctrees  # cache w/ pickled reST
+                -c ${CCBD}/source     # whereabouts of conf.py
+                ${CCBD}/source        # build from
+                ${CCBD}/latex         # build to
+            COMMENT "Building latex documentation ...")
+        add_custom_command(
+            TARGET sphinxpdf POST_BUILD
+            COMMAND ${PDFLATEX_COMPILER}
+                -interaction=nonstopmode 
+                "Psi4.tex" > /dev/null 2>&1
+            WORKING_DIRECTORY ${CCBD}/latex
+            COMMENT "Building remarkably ugly PDF documentation from LaTeX ... (ignore the make exit error)")
     endif()
 
 
@@ -294,25 +312,6 @@ if(PERL_FOUND AND SPHINX_FOUND)
             ${CCBD}/source
             ${CCBD}/html
         COMMENT "Building abridged html documentation ...")
-
-    # * full, proper build with latex builder
-    add_custom_command(
-        TARGET sphinxpdf POST_BUILD
-        COMMAND ${SPHINX_EXECUTABLE} 
-            -b latex              # builder
-            -d ${CCBD}/_doctrees  # cache w/ pickled reST
-            -c ${CCBD}/source     # whereabouts of conf.py
-            ${CCBD}/source        # build from
-            ${CCBD}/latex         # build to
-        COMMENT "Building latex documentation ...")
-    add_custom_command(
-        TARGET sphinxpdf POST_BUILD
-        COMMAND ${PDFLATEX_COMPILER}
-            -interaction=nonstopmode 
-            "Psi4.tex" > /dev/null 2>&1
-        WORKING_DIRECTORY ${CCBD}/latex
-        COMMENT "Building remarkably ugly PDF documentation from LaTeX ... (ignore the make exit error)")
-
 
 endif(PERL_FOUND AND SPHINX_FOUND)
 
