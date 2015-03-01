@@ -529,7 +529,13 @@ double py_psi_ccenergy()
                                                Process::environment.wavefunction(),
                                                Process::environment.options)
                                            );
-    Process::environment.set_wavefunction(ccwave);
+
+    std::string name = Process::environment.wavefunction()->name();
+    std::string wfn = Process::environment.options.get_str("WFN");
+    if(wfn != name) {
+      ccwave->set_name(wfn);
+      Process::environment.set_wavefunction(ccwave);
+    }
 
     double energy = ccwave->compute_energy();
     return energy;
