@@ -171,60 +171,6 @@ PsiReturnType detci(Options &options);
 
 namespace psi { namespace detci {
 
-CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
-    : Wavefunction(options, _default_psio_lib_)
-{
-    set_reference_wavefunction(reference_wavefunction);
-    init();
-}
-
-CIWavefunction::~CIWavefunction()
-{
-
-}
-
-void CIWavefunction::init()
-{
-    // TODO-CDS:
-    // The CC codes destroy the checkpoint object created by Wavefunction.
-    // We'd like to be able to do the same here.  Need to convert everything
-    // such that we don't explicitly need checkpoint
-    // Destroy it. Otherwise we will see a "file already open" error.
-    chkpt_.reset();
-
-    // We're copying this stuff over like it's done in ccenergy, but
-    // these Wavefunction member data are not actually used by the code
-    // yet (Sept 2011 CDS).  Copying these only in case they're needed
-    // by someone else who uses the CIWavefunction and expects them to
-    // be available.
-
-    // CDS-TODO: Note, some of these data should be updated to reflect what
-    // the CI wavefunction is doing, not what the reference wavefunction
-    // is doing, in case these are actually used elsewhere.
-    nso_        = reference_wavefunction_->nso();
-    nirrep_     = reference_wavefunction_->nirrep();
-    nmo_        = reference_wavefunction_->nmo();
-    for(int h = 0; h < nirrep_; ++h){
-        soccpi_[h] = reference_wavefunction_->soccpi()[h];
-        doccpi_[h] = reference_wavefunction_->doccpi()[h];
-        frzcpi_[h] = reference_wavefunction_->frzcpi()[h];
-        frzvpi_[h] = reference_wavefunction_->frzvpi()[h];
-        nmopi_[h]  = reference_wavefunction_->nmopi()[h];
-        nsopi_[h]  = reference_wavefunction_->nsopi()[h];
-    }
-}
-
-double CIWavefunction::compute_energy()
-{
-    energy_ = 0.0;
-    PsiReturnType ci_return;
-    if ((ci_return = psi::detci::detci(options_)) == Success) {
-        // Get the total energy
-        energy_ = Process::environment.globals["CURRENT ENERGY"];
-    }
-
-    return energy_;
-}
 
 PsiReturnType detci(Options &options)
 {
@@ -294,10 +240,13 @@ PsiReturnType detci(Options &options)
      diag_h(alplist, betlist);
 
    if (Parameters.opdm || Parameters.transdens) form_opdm();
+
    if (Parameters.tpdm) form_tpdm();
    if (Parameters.print_lvl) print_time_new(detci_time);
    if (Parameters.nthreads > 1) tpool_destroy(thread_pool, 1);
    if (Parameters.print_lvl > 0) quote();
+
+
    close_io();
    cleanup();
    return Success;
@@ -312,46 +261,6 @@ PsiReturnType detci(Options &options)
 //void init_io(int argc, char *argv[])
 void init_io(void)
 {
-   /*
-   int i, num_unparsed;
-   char *argv_unparsed[100];
-   */
-
-   /*
-   Parameters.write_energy = 0;
-
-   for (i=1,num_unparsed=0; i<argc; i++) {
-      if (strcmp(argv[i], "--quiet") == 0) {
-         Parameters.print_lvl = 0;
-      }
-      else if (strcmp(argv[i], "-e") == 0) {
-         Parameters.write_energy = 1;
-      }
-      else if (strcmp(argv[i], "-c") == 0) {
-         Parameters.have_special_conv = 1;
-         if (i+1 >= argc) {
-            outfile->Printf( "detci: -c flag requires an argument\n");
-            exit(1);
-         }
-         if (sscanf(argv[i+1], "%lf", &(Parameters.special_conv)) != 1) {
-            outfile->Printf( "detci: trouble reading argument to -c flag\n");
-            exit(1);
-         }
-      i++;
-      }
-      else {
-        argv_unparsed[num_unparsed++] = argv[i];
-      }
-   }
-   */
-
-   /* initialize input and output files.  We want to pass the list
-    * of arguments starting after the last one we have parsed, so
-    * we do pointer arithmetic on argv
-    */
-   /* init_in_out(argc-parsed,argv+parsed); */
-
-    // errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed,argv_unparsed,0);
 
    if (Parameters.print_lvl) tstart();
 
@@ -1239,33 +1148,7 @@ void form_opdm(void)
   int i, j, natom;
   double *zvals, **geom;
 
-  Process::environment.molecule()->print();
-
-  //if (Parameters.dipmom) {
-  //  chkpt_init(PSIO_OPEN_OLD);
-  //  natom = chkpt_rd_natom();
-  //  zvals = chkpt_rd_zvals();
-  //  geom = chkpt_rd_geom();
-  //  chkpt_close();
-
-  //  outfile->Printf( "   Cartesian Coordinates of Nuclear Centers (a.u.)\n\n");
-  //  outfile->Printf(
-  //     "   Center           X                   Y                    Z\n");
-  //  outfile->Printf(
-  //     "   ------   -----------------   -----------------   -----------------\n");
-
-  //  for(i=0;i<natom;i++){
-  //    outfile->Printf("   %4s ",atomic_labels[(int) zvals[i]]);
-  //    for(j=0;j<3;j++)
-  //      outfile->Printf("   %17.12lf",geom[i][j]);
-  //    outfile->Printf("\n");
-  //  }
-  //  outfile->Printf("\n");
-  //  
-
-  //  free(zvals);
-  //  free_block(geom);
-  //}
+  // Process::environment.molecule()->print();
 
   /* don't need Parameters.root since it writes all opdm's */
   if (Parameters.transdens) {
@@ -1617,9 +1500,6 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
       MCSCF_CalcInfo.energy = Process::environment.globals["CI TOTAL ENERGY"];
     }
 
-    outfile->Printf("Hi I just got %12.7lf total energy\n", 
-      MCSCF_CalcInfo.energy);
-
     form_opdm();
     form_tpdm();
     close_io();
@@ -1657,6 +1537,10 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
     
 
   }
+
+  /// DGAS bad place for this, set wavefunction here
+  //boost::shared_ptr<Wavefunction> ciwfn(new CIWavefunction(Process::environment.wavefunction(), options));
+  //Process::environment.set_wavefunction(ciwfn);
 
   outfile->Printf("\nFinishing MCSCF\n");
   mcscf->finalize();

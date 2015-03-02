@@ -125,6 +125,9 @@ private:
                     int *qpair, double *theta, double *dET);
 
 
+    /// Variables
+    double **theta_cur_;
+
 public:
 
     /// Constructor
