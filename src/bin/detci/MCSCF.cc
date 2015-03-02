@@ -82,6 +82,10 @@ MCSCF::MCSCF(Options& options, OutFile& IterSummaryOut)
     diis_iter_ = 0; ndiis_vec_ = 0;
     diis_manager_->set_error_vector_size(1, DIISEntry::Pointer, num_indep_pairs_);
     diis_manager_->set_vector_size(1, DIISEntry::Pointer, num_indep_pairs_);
+
+    // Setup general parameters
+    theta_cur_ = init_array(num_indep_pairs_);
+    zero_arr(theta_cur_, num_indep_pairs_);
 }
 
 MCSCF::~MCSCF()
@@ -102,15 +106,12 @@ int MCSCF::update(void)
                      MCSCF_CalcInfo.twoel_ints, CalcInfo.nmo,
                      MCSCF_CalcInfo.npop, MCSCF_Parameters.print_lvl, PSIF_MO_LAG); 
 
-  read_thetas(num_indep_pairs_);
   if (MCSCF_Parameters.print_lvl > 2)
-    IndPairs.print_vec(MCSCF_CalcInfo.theta_cur, "\n\tRotation Angles:");
+    IndPairs.print_vec(theta_cur_, "\n\tRotation Angles:");
 
   if (!read_ref_orbs()) {
     read_cur_orbs();
     write_ref_orbs();
-    zero_arr(MCSCF_CalcInfo.theta_cur, num_indep_pairs_);
-    write_thetas(num_indep_pairs_);
   }
 
   form_F_act();
@@ -129,7 +130,6 @@ int MCSCF::update(void)
   if (!converged) {
     steptype = take_step();
     rotate_orbs();
-    write_thetas(num_indep_pairs_);
   }
   else
     steptype = 0;
@@ -208,7 +208,7 @@ void MCSCF::calc_gradient(void)
       print_mat(ir_lag, ir_norbs, ir_norbs, "outfile");
     }
 
-    ir_theta_cur = IndPairs.get_irrep_vec(h, MCSCF_CalcInfo.theta_cur); 
+    ir_theta_cur = IndPairs.get_irrep_vec(h, theta_cur_); 
 
     // Need to mult the Lagrangian by 2 to get dEdU
     C_DSCAL(ir_norbs*ir_norbs, 2.0, ir_lag[0], 1);
@@ -346,7 +346,7 @@ void MCSCF::bfgs_hessian(void)
     psio_write_entry(PSIF_DETCAS, "Hessian Inverse", 
       (char *) MCSCF_CalcInfo.mo_hess[0], npairs*npairs*sizeof(double));
     /* write thetas */
-    psio_write_entry(PSIF_DETCAS, "Thetas", (char *) MCSCF_CalcInfo.theta_cur,
+    psio_write_entry(PSIF_DETCAS, "Thetas", (char *) theta_cur_,
       npairs*sizeof(double));
     /* write gradient */  
     psio_write_entry(PSIF_DETCAS, "MO Gradient", (char *) MCSCF_CalcInfo.mo_grad,
@@ -377,7 +377,7 @@ void MCSCF::bfgs_hessian(void)
   
   /* get difference in thetas and gradient */
   for (i=0; i<npairs; i++) {
-    dx[i] = MCSCF_CalcInfo.theta_cur[i] - dx[i];
+    dx[i] = theta_cur_[i] - dx[i];
     dg[i] = MCSCF_CalcInfo.mo_grad[i] - dg[i];
   }
 
@@ -503,7 +503,7 @@ void MCSCF::bfgs_hessian(void)
   free_block(hess_copy);
 
   /* write thetas */
-  psio_write_entry(PSIF_DETCAS, "Thetas", (char *) MCSCF_CalcInfo.theta_cur,
+  psio_write_entry(PSIF_DETCAS, "Thetas", (char *) theta_cur_,
     npairs*sizeof(double));
   /* write gradient */  
   psio_write_entry(PSIF_DETCAS, "MO Gradient", (char *) MCSCF_CalcInfo.mo_grad,
@@ -568,7 +568,7 @@ void MCSCF::ds_hessian(void)
     psio_write_entry(PSIF_DETCAS, "Hessian", 
       (char *) MCSCF_CalcInfo.mo_hess_diag, npairs*sizeof(double));
     /* write thetas */
-    psio_write_entry(PSIF_DETCAS, "Thetas", (char *) MCSCF_CalcInfo.theta_cur,
+    psio_write_entry(PSIF_DETCAS, "Thetas", (char *) theta_cur_,
       npairs*sizeof(double));
     /* write gradient */  
     psio_write_entry(PSIF_DETCAS, "MO Gradient", (char *) MCSCF_CalcInfo.mo_grad,
@@ -596,7 +596,7 @@ void MCSCF::ds_hessian(void)
   
   /* get difference in thetas and gradient */
   for (i=0; i<npairs; i++) {
-    dx[i] = MCSCF_CalcInfo.theta_cur[i] - dx[i];
+    dx[i] = theta_cur_[i] - dx[i];
     dg[i] = MCSCF_CalcInfo.mo_grad[i] - dg[i];
   }
 
@@ -625,7 +625,7 @@ void MCSCF::ds_hessian(void)
   }
 
   /* write thetas */
-  psio_write_entry(PSIF_DETCAS, "Thetas", (char *) MCSCF_CalcInfo.theta_cur,
+  psio_write_entry(PSIF_DETCAS, "Thetas", (char *) theta_cur_,
     npairs*sizeof(double));
   /* write gradient */  
   psio_write_entry(PSIF_DETCAS, "MO Gradient", (char *) MCSCF_CalcInfo.mo_grad,
@@ -791,7 +791,7 @@ int MCSCF::take_step(void)
   
   /* for debugging purposes */
   if (MCSCF_Parameters.force_step) {
-    MCSCF_CalcInfo.theta_cur[MCSCF_Parameters.force_pair] = MCSCF_Parameters.force_value;
+    theta_cur_[MCSCF_Parameters.force_pair] = MCSCF_Parameters.force_value;
     outfile->Printf( "Forcing step for pair %d of size %8.3E\n",
       MCSCF_Parameters.force_pair, MCSCF_Parameters.force_value);
     return(1);
@@ -799,11 +799,11 @@ int MCSCF::take_step(void)
 
   // Add new step to theta (Newton-Raphson)
   for (int pair=0; pair<num_indep_pairs_; pair++) 
-    MCSCF_CalcInfo.theta_cur[pair] += MCSCF_CalcInfo.theta_step[pair];
+    theta_cur_[pair] += MCSCF_CalcInfo.theta_step[pair];
 
   if (MCSCF_CalcInfo.iter >= MCSCF_Parameters.diis_start){ 
     // Add DIIS vector
-    diis_manager_->add_entry(2, MCSCF_CalcInfo.theta_step, MCSCF_CalcInfo.theta_cur);
+    diis_manager_->add_entry(2, MCSCF_CalcInfo.theta_step, theta_cur_);
     ndiis_vec_++;
 
     // Check if we should skip DIIS
@@ -813,8 +813,8 @@ int MCSCF::take_step(void)
     else {
         // Extrapolate new thetas
         outfile->Printf("Taking a DIIS step\n");
-        zero_arr(MCSCF_CalcInfo.theta_cur, num_indep_pairs_);
-        diis_manager_->extrapolate(1, MCSCF_CalcInfo.theta_cur);
+        zero_arr(theta_cur_, num_indep_pairs_);
+        diis_manager_->extrapolate(1, theta_cur_);
         diis_iter_++;
         took_diis = 1;
     }
@@ -852,7 +852,7 @@ void MCSCF::rotate_orbs(void)
     ir_npairs = IndPairs.get_ir_num_pairs(h);
     if (ir_npairs) {
       ir_norbs = CalcInfo.orbs_per_irr[h];
-      ir_theta = IndPairs.get_irrep_vec(h, MCSCF_CalcInfo.theta_cur);
+      ir_theta = IndPairs.get_irrep_vec(h, theta_cur_);
       ir_ppair  = IndPairs.get_ir_prel_ptr(h);
       ir_qpair  = IndPairs.get_ir_qrel_ptr(h);
       
@@ -955,7 +955,9 @@ void MCSCF::finalize(void)
   }
   free(MCSCF_CalcInfo.mo_coeffs);
 
+  // DGAS updated
   diis_manager_->delete_diis_file();
+  free(theta_cur_);
 }
 
 /*
@@ -976,7 +978,6 @@ void MCSCF::iteration_clean(void)
   free(MCSCF_CalcInfo.mo_grad);
   if (MCSCF_CalcInfo.mo_hess_diag != NULL) free(MCSCF_CalcInfo.mo_hess_diag);
   if (MCSCF_CalcInfo.mo_hess != NULL) free_block(MCSCF_CalcInfo.mo_hess);
-  free(MCSCF_CalcInfo.theta_cur);
   free(MCSCF_CalcInfo.theta_step);
 }
 

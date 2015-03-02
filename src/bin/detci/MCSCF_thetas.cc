@@ -210,54 +210,6 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
 
 
 /*
-** read_thetas()
-**
-** Read in the theta array from disk.  If there is none, assume they're
-**  all set to 0.
-*/
-void MCSCF::read_thetas(int npairs)
-{
-
-
-  MCSCF_CalcInfo.theta_cur = init_array(npairs);
-  if (MCSCF_Parameters.print_lvl > 2)
-    outfile->Printf("\nReading orbital rotation angles\n");
- 
-  if (psio_tocentry_exists(PSIF_DETCAS, "Thetas")){ 
-    psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
-    psio_read_entry(PSIF_DETCAS, "Thetas", (char *) MCSCF_CalcInfo.theta_cur,
-                    npairs*sizeof(double));
-    psio_close(PSIF_DETCAS, 1);
-
-  }
-  else {
-    zero_arr(MCSCF_CalcInfo.theta_cur, npairs);
-  }
-}
-
-
-
-/*
-** write_thetas()
-**
-** Write the theta array to disk. 
-*/
-void MCSCF::write_thetas(int npairs)
-{
-
-
-  if (MCSCF_Parameters.print_lvl > 2)
-    outfile->Printf("\nWriting orbital rotation angles\n");
-  
-  psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
-  psio_write_entry(PSIF_DETCAS, "Thetas", (char *) MCSCF_CalcInfo.theta_cur,
-                  npairs*sizeof(double));
-
-  psio_close(PSIF_DETCAS, 1);
-}
-
-
-/*
 ** calc_de_dtheta()
 **
 ** This function calculates dE / dTheta = dE/dU * dU/dTheta
