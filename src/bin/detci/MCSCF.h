@@ -124,9 +124,8 @@ private:
     void calc_dE_dT(int n, double **dEU, int npairs, int *ppair,
                     int *qpair, double *theta, double *dET);
 
-
     /// Variables
-    double **theta_cur_;
+    double *theta_cur_;
 
 public:
 
