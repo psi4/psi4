@@ -82,8 +82,6 @@ MCSCF::MCSCF(Options& options, OutFile& IterSummaryOut)
     diis_iter_ = 0; ndiis_vec_ = 0;
     diis_manager_->set_error_vector_size(1, DIISEntry::Pointer, num_indep_pairs_);
     diis_manager_->set_vector_size(1, DIISEntry::Pointer, num_indep_pairs_);
-
-//    IterSummaryOut_ = OutFile("file14.dat", TRUNCATE);
 }
 
 MCSCF::~MCSCF()

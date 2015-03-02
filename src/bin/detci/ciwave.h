@@ -31,6 +31,7 @@ template<class T> class shared_ptr;
 namespace psi {
 class Wavefunction;
 class Options;
+typedef boost::shared_ptr<Matrix> SharedMatrix;
 }
 
 namespace psi { namespace detci {
@@ -45,7 +46,10 @@ public:
     PsiReturnType cas_update();
 
 private:
-    void init();
+    void common_init();
+    void set_opdm(bool print, bool erase);
+    void set_orbitals(bool print, bool erase);
+
 };
 
 }}
