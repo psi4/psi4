@@ -23,15 +23,7 @@
 #ifndef _psi_src_bin_detci_mcscf_h_
 #define _psi_src_bin_detci_mcscf_h_
 
-#include <libdiis/diismanager.h>
-#include <libdiis/diisentry.h>
-#include <libparallel/ParallelPrinter.h>
-#include <libciomr/libciomr.h>
-#include <psi4-dec.h>
 #include "MCSCF_indpairs.h"
-#include "globaldefs.h"
-#include "structs.h"
-#include "globals.h"
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -39,7 +31,13 @@ template<class T> class shared_ptr;
 
 namespace psi {
 
+class DIISManager;
+class Options;
+class OutFile;
+
 namespace detci {
+
+class IndepPairs;
 
 class MCSCF 
 {

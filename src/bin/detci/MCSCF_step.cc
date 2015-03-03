@@ -25,14 +25,17 @@
     \brief Enter brief description of file here 
 */
 
-#include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
 #include <cmath>
 #include <psifiles.h>
 #include <libpsio/psio.h>
-#include "libpsio/psio.h"
-#define EXTERN
+#include <libciomr/libciomr.h>
+#include <libparallel/ParallelPrinter.h>
 #include "MCSCF.h"
+#define EXTERN
+#include "globaldefs.h"
+#include "structs.h"
+#include "globals.h"
 
 namespace psi { namespace detci {
 

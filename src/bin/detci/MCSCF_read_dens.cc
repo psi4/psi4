@@ -37,8 +37,12 @@
 */
 
 #include <libiwl/iwl.h>
-#define EXTERN
+#include <libciomr/libciomr.h>
 #include "MCSCF.h"
+#define EXTERN
+#include "globaldefs.h"
+#include "structs.h"
+#include "globals.h"
 
 namespace psi { namespace detci {
 
