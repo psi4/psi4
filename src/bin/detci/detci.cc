@@ -1467,7 +1467,6 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
   MCSCF* mcscf = new MCSCF(options, IterSummaryOut);
 
   if (MCSCF_Parameters.print_lvl) tstart();
-  //mcscf->mcscf_title();                     /* print program identification             */
   if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
 
   // Need a TRANSQT2 Options object to be able to call that module correctly
@@ -1542,7 +1541,7 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
   //boost::shared_ptr<Wavefunction> ciwfn(new CIWavefunction(Process::environment.wavefunction(), options));
   //Process::environment.set_wavefunction(ciwfn);
 
-  outfile->Printf("\nFinishing MCSCF\n");
+  outfile->Printf("\nCleaning up MCSCF.\n");
   mcscf->finalize();
 
 }

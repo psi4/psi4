@@ -107,7 +107,6 @@ void MCSCF::calc_orb_step_full(int npairs, double *grad, double **hess, double *
     hess_det *= hess_copy[j][j];
   }
   outfile->Printf("The determinant of the hessian is %8.3E\n",hess_det);
-  //fflush(outfile);
 
   /* 
      if the orbital Hessian is not positive definite, we may have some
@@ -122,7 +121,7 @@ void MCSCF::calc_orb_step_full(int npairs, double *grad, double **hess, double *
       }
       for (i=0;i<npairs;i++) {
         for (j=0;j<npairs;j++) {
-          hess_copy[i][j]=hess[i][j];
+          hess_copy[i][j] = hess[i][j];
         }
       }
       ludcmp(hess_copy,npairs,indx,&hess_det);
@@ -139,7 +138,7 @@ void MCSCF::calc_orb_step_full(int npairs, double *grad, double **hess, double *
   /* let's re-copy hess into hess_copy because we ludcmp'd hess_copy */
   for (i=0;i<npairs;i++) {
     for (j=0;j<npairs;j++) {
-      hess_copy[i][j]=hess[i][j];
+      hess_copy[i][j] = hess[i][j];
     }
   }
  
@@ -151,8 +150,7 @@ void MCSCF::calc_orb_step_full(int npairs, double *grad, double **hess, double *
       BVector[i] = -grad[i];
       theta[i] = 0.0;
     }
-    solved = C_DGESV(npairs,1,&(hess_copy[0][0]),npairs,pivots,
-      BVector,npairs);
+    solved = C_DGESV(npairs,1,&(hess_copy[0][0]),npairs,pivots,BVector,npairs);
     if (solved == 0) {
       outfile->Printf("equations solved!\n");
       for(i=0;i<npairs;i++) {
@@ -160,10 +158,7 @@ void MCSCF::calc_orb_step_full(int npairs, double *grad, double **hess, double *
       }
     }
     else {
-      //outfile->Printf("FAILED TO SOLVE FOR THETA VALUES\n");
-      //outfile->Printf("DGESV returned error %5d \n",solved);
       throw PsiException("FAILED TO SOLVE FOR THETA VALUES\n", __FILE__, __LINE__) ;
-      //exit(0);
     }
     free(BVector);
     free(pivots);
@@ -287,99 +282,6 @@ void MCSCF::print_step(int iter, int npairs, int steptype, OutFile& IterSummaryO
 
 }
 
-// old version below... safe to delete this as soon as new version
-// is working -CDS 11/20/14
-/*
-void MCSCF::print_step(int npairs, int steptype)
-{
-  FILE *sumfile;
-  char sumfile_name[] = "file14.dat";
-  int i, entries, iter, *nind;
-  double *rmsgrad, *scaled_rmsgrad, *energies, energy;
-  char **comments;
-
-  // open ascii file, get number of entries already in it 
-
-  ffile_noexit(&sumfile,sumfile_name,2);
-  if (sumfile == NULL) { // the file doesn't exist yet
-    entries = 0;
-    if (MCSCF_Parameters.print_lvl)
-      outfile->Printf("\nPreparing new file %s\n", sumfile_name);
-  }
-  else {
-    if (fscanf(sumfile, "%d", &entries) != 1) {
-      outfile->Printf("(print_step): Trouble reading num entries in file %s\n",
-        sumfile_name);
-      fclose(sumfile);
-      return;
-    }
-  }
-
-  rmsgrad = init_array(entries+1);
-  scaled_rmsgrad = init_array(entries+1);
-  energies= init_array(entries+1);
-  nind = init_int_array(entries+1);
-  comments = (char **) malloc ((entries+1) * sizeof (char *));
-  for (i=0; i<entries+1; i++) {
-    comments[i] = (char *) malloc (MAX_COMMENT * sizeof(char));
-  }
-
-  for (i=0; i<entries; i++) {
-    fscanf(sumfile, "%d %d %lf %lf %lf %s", &iter, &(nind[i]), 
-           &(scaled_rmsgrad[i]), &(rmsgrad[i]), &(energies[i]), comments[i]);
-  }
-
-  chkpt_init(PSIO_OPEN_OLD);
-  if (chkpt_exist("State averaged energy")) {
-    energy = chkpt_rd_e_labeled("State averaged energy");
-  }
-  else
-    energy = chkpt_rd_etot();
-  chkpt_close();
-
-  scaled_rmsgrad[entries] = MCSCF_CalcInfo.scaled_mo_grad_rms;
-  rmsgrad[entries] = MCSCF_CalcInfo.mo_grad_rms;
-  energies[entries] = energy;
-  nind[entries] = npairs;
-
-  if (steptype == 0) 
-    strcpy(comments[entries], "CONV");
-  else if (steptype == 1)
-    strcpy(comments[entries], "NR");
-  else if (steptype == 2)
-    strcpy(comments[entries], "DIIS"); 
-  else {
-    outfile->Printf("(print_step): Unrecognized steptype %d\n", steptype);
-    strcpy(comments[entries], "?");
-  }
-
-  if (entries) fclose(sumfile);
-
-  // now open file for writing, write out old info plus new 
-  ffile_noexit(&sumfile,"file14.dat",0);
-  if (sumfile == NULL) {
-    outfile->Printf("(print_step): Unable to open file %s\n", sumfile_name);
-  }
-  else {
-    entries++;
-    fprintf(sumfile, "%5d\n", entries);
-    for (i=0; i<entries; i++) {
-      fprintf(sumfile, "%5d %5d %14.9lf %14.9lf %20.12lf %9s\n", i+1, nind[i], 
-              scaled_rmsgrad[i], rmsgrad[i], energies[i], comments[i]);
-    }
-    fclose(sumfile);
-  }
-
-  free(scaled_rmsgrad);
-  free(rmsgrad);
-  free(energies);
-  free(nind);
-  for (i=0; i<entries; i++)
-    free(comments[i]);
-  free(comments);
-
-}
-*/
 
 }} // end namespace psi::detci
 

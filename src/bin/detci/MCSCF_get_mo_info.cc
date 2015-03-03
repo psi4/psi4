@@ -62,19 +62,6 @@ void MCSCF::get_mo_info(Options &options)
    MCSCF_CalcInfo.mo_hess = NULL;
    MCSCF_CalcInfo.mo_hess_diag = NULL;
 
-   // /* information from checkpoint file */
-   // chkpt_init(PSIO_OPEN_OLD);
-   // CalcInfo.nirreps = chkpt_rd_nirreps();
-   // CalcInfo.nmo = chkpt_rd_nmo();
-   // MCSCF_CalcInfo.nso = chkpt_rd_nmo(); /* change to nbfso after conversion */
-   // CalcInfo.labels = chkpt_rd_irr_labs();
-   // CalcInfo.orbs_per_irr = chkpt_rd_orbspi();
-   // MCSCF_CalcInfo.enuc = chkpt_rd_enuc();
-   // MCSCF_CalcInfo.efzc = chkpt_rd_efzc();
-   // CalcInfo.docc = chkpt_rd_clsdpi();
-   // CalcInfo.socc = chkpt_rd_openpi();
-   // chkpt_close();
- 
    MCSCF_CalcInfo.frozen_docc = init_int_array(CalcInfo.nirreps);
    MCSCF_CalcInfo.frozen_uocc = init_int_array(CalcInfo.nirreps);
 
@@ -100,7 +87,7 @@ void MCSCF::get_mo_info(Options &options)
    MCSCF_CalcInfo.rstr_uocc = init_int_array(CalcInfo.nirreps);
    CalcInfo.reorder = init_int_array(CalcInfo.nmo);
    CalcInfo.ras_opi = init_int_matrix(MAX_RAS_SPACES,CalcInfo.nirreps);
-      
+
    if (!ras_set2(CalcInfo.nirreps, CalcInfo.nmo, 1, 1,
                 CalcInfo.orbs_per_irr, CalcInfo.docc, CalcInfo.socc, 
                 MCSCF_CalcInfo.frozen_docc, MCSCF_CalcInfo.frozen_uocc, 
@@ -110,21 +97,6 @@ void MCSCF::get_mo_info(Options &options)
      throw PsiException("Error in ras_set().  Aborting.", __FILE__, __LINE__) ;
    }
    
-
-  // /* Compute maximum number of orbitals per irrep including
-  // ** and not including fzv
-  // */
-  // MCSCF_CalcInfo.max_orbs_per_irrep = 0;
-  // MCSCF_CalcInfo.max_pop_per_irrep = 0;
-  // for (i=0; i<CalcInfo.nirreps; i++) {
-  //   if (MCSCF_CalcInfo.max_orbs_per_irrep < CalcInfo.orbs_per_irr[i])
-  //     MCSCF_CalcInfo.max_orbs_per_irrep = CalcInfo.orbs_per_irr[i];
-  //   if (MCSCF_CalcInfo.max_pop_per_irrep < (CalcInfo.orbs_per_irr[i] - 
-  //                                  MCSCF_CalcInfo.frozen_uocc[i]))
-  //     MCSCF_CalcInfo.max_pop_per_irrep = CalcInfo.orbs_per_irr[i] -
-  //                                  MCSCF_CalcInfo.frozen_uocc[i];      
-  // }
-
 
   // /* construct the "ordering" array, which maps the other direction */
   // /* i.e. from a CI orbital to a Pitzer orbital                     */
@@ -151,14 +123,6 @@ void MCSCF::get_mo_info(Options &options)
     }
     outfile->Printf("\n");
   }
-
-
-  // CalcInfo.nmotri = (CalcInfo.nmo * (CalcInfo.nmo + 1)) / 2 ;
-
-  // if (CalcInfo.nmotri >= IOFF_MAX){
-  //   throw PsiException("(get_mo_info): IOFF_MAX may not large enough!",
-  //                             __FILE__, __LINE__);
-  // }
 
   // /* transform orbsym vector to new MO order */
   // MCSCF_CalcInfo.orbsym = init_int_array(CalcInfo.nmo);

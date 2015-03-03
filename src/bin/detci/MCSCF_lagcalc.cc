@@ -84,16 +84,9 @@ double** MCSCF::lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
                     **  need two terms, unlike in Dr. Yamaguchi's book.
                     ** We use two terms below.
                     */
-                    // Tjm = j * npop + m;
-                    // Tmj = m * npop + j;
-                    // Tkl = k * npop + l;
-                    // Tjmkl = INDEX(Tjm,Tkl);
-                    // Tmjkl = INDEX(Tmj,Tkl);
-                    // TEsum += (TPDM[Tmjkl] + TPDM[Tjmkl]) * TwoElec[imkl]; 
                     mj = INDEX(m,j);
                     mjkl = INDEX(mj,kl);
                     TEsum += TPDM[mjkl] * TwoElec[imkl]; 
-                    // TEsum += (2.0 * TPDM[mjkl]) * TwoElec[imkl]; 
                   } /* end l loop */
             } /* end m loop */
 
