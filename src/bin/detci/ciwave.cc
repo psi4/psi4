@@ -23,8 +23,6 @@ CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> reference_wavefun
     // such that we don't explicitly need checkpoint
     // Destroy it. Otherwise we will see a "file already open" error.
     chkpt_.reset();
-    set_opdm(false, true);
-    set_orbitals(false, true);
 
 }
 

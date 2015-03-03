@@ -157,7 +157,6 @@ void MCSCF::premult_by_U(int irrep, int dim, double **mat,
 
 
 
-
 /*
 ** rotate_test
 **
