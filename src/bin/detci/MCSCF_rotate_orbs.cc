@@ -28,8 +28,12 @@
 #include <libqt/qt.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
-#define EXTERN
+#include <libciomr/libciomr.h>
 #include "MCSCF.h"
+#include "globaldefs.h"
+#include "structs.h"
+#define EXTERN
+#include "globals.h"
 
 namespace psi { namespace detci {
 

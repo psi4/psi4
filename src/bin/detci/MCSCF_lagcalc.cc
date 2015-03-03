@@ -14,8 +14,11 @@
 
 #include <libqt/qt.h>         
 #include <libpsio/psio.h>
-#define EXTERN
+#include <libciomr/libciomr.h>
 #include "MCSCF.h"
+#include "globaldefs.h"
+#define EXTERN
+#include "globals.h"
 
 namespace psi { namespace detci {
 
@@ -46,7 +49,7 @@ double** MCSCF::lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
 
 
 
-  psio_open(lag_file, PSIO_OPEN_OLD);
+  //psio_open(lag_file, PSIO_OPEN_OLD);
 
   lag = block_matrix(nmo, nmo);
   oe_lag = block_matrix(nmo, nmo);
@@ -99,8 +102,8 @@ double** MCSCF::lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
   /*
   ** check the trace of the Lagrangian (supposedly = energy)
   */
-  psio_write_entry(lag_file, "MO-basis Lagrangian", (char *) lag[0],
-    nmo*nmo*sizeof(double));
+  //psio_write_entry(lag_file, "MO-basis Lagrangian", (char *) lag[0],
+  //  nmo*nmo*sizeof(double));
 
   if (print_lvl > 1) {
     outfile->Printf("\n\n One-electron part of the Lagrangian");
@@ -116,7 +119,7 @@ double** MCSCF::lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
 
   outfile->Printf("Lagrangian Trace is %6.10f\n", lagtrace);
 
-  psio_close(lag_file, 1);
+  //psio_close(lag_file, 1);
 
   free_block(oe_lag);
   free_block(te_lag);

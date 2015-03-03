@@ -114,29 +114,29 @@ void CIWavefunction::set_opdm(bool print, bool erase)
     Db_ = opdm_b;
 }
 
-void CIWavefunction::set_orbitals(bool print, bool erase)
-{
-    int h, ir_orbs;
-    char orb_key[80];
-
-    SharedMatrix orbitals(new Matrix("Orbitals", CalcInfo.nirreps, 
-                          CalcInfo.orbs_per_irr, CalcInfo.orbs_per_irr));
-    double *orbp;
-    
-  
-    psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
-    for (h=0; h<CalcInfo.nirreps; h++) {
-      ir_orbs = CalcInfo.orbs_per_irr[h];
-      sprintf(orb_key, "Orbs Irrep %2d", h);
-      psio_read_entry(PSIF_DETCAS, orb_key, (char *) orbitals->pointer(h)[0],
-                      ir_orbs*ir_orbs*sizeof(double));
-    }
-    psio_close(PSIF_DETCAS, erase ? 0 : 1);
-
-    if (print) orbitals->print();
-    Ca_ = orbitals;
-     
-}
+//void CIWavefunction::set_orbitals(bool print, bool erase)
+//{
+//    int h, ir_orbs;
+//    char orb_key[80];
+//
+//    SharedMatrix orbitals(new Matrix("Orbitals", CalcInfo.nirreps, 
+//                          CalcInfo.orbs_per_irr, CalcInfo.orbs_per_irr));
+//    double *orbp;
+//    
+//  
+//    psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
+//    for (h=0; h<CalcInfo.nirreps; h++) {
+//      ir_orbs = CalcInfo.orbs_per_irr[h];
+//      sprintf(orb_key, "Orbs Irrep %2d", h);
+//      psio_read_entry(PSIF_DETCAS, orb_key, (char *) orbitals->pointer(h)[0],
+//                      ir_orbs*ir_orbs*sizeof(double));
+//    }
+//    psio_close(PSIF_DETCAS, erase ? 0 : 1);
+//
+//    if (print) orbitals->print();
+//    Ca_ = orbitals;
+//     
+//}
 // void CIWavefunction::finalize()
 // {
 // 

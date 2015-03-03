@@ -29,8 +29,12 @@
 #include <libpsio/psio.hpp>
 #include <libqt/qt.h>
 #include <libmints/wavefunction.h>
-#define EXTERN
+#include <libciomr/libciomr.h>
 #include "MCSCF.h"
+#include "globaldefs.h"
+#include "structs.h"
+#define EXTERN
+#include "globals.h"
 
 namespace psi { namespace detci {
 

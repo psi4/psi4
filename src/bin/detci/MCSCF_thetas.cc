@@ -27,11 +27,14 @@
 
 #include <cmath>
 #include <libqt/qt.h>
-#include <libpsio/psio.hpp>
-#include <libpsio/psio.h>
 #include <psifiles.h>
-#define EXTERN
+#include <libparallel/ParallelPrinter.h>
+#include <libciomr/libciomr.h>
 #include "MCSCF.h"
+#include "globaldefs.h"
+#include "structs.h"
+#define EXTERN
+#include "globals.h"
 
 namespace psi { namespace detci { 
 

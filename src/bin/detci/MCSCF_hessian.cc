@@ -25,8 +25,11 @@
     \brief Enter brief description of file here 
 */
 #include <libqt/qt.h>
-#define EXTERN
 #include "MCSCF.h"
+#define EXTERN
+#include "globaldefs.h"
+#include "structs.h"
+#include "globals.h"
 
 namespace psi { namespace detci {
 

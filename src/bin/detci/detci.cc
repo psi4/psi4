@@ -58,6 +58,7 @@
 #include <libpsio/psio.hpp>
 #include <libqt/slaterdset.h>
 #include <masses.h>
+#include <libparallel/ParallelPrinter.h>
 #include "structs.h"
 #include "globals.h"
 #include "ci_tol.h"
