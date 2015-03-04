@@ -93,6 +93,9 @@ MCSCF::MCSCF(Options& options, OutFile& IterSummaryOut)
     // Setup general parameters
     theta_cur_ = init_array(num_indep_pairs_);
     zero_arr(theta_cur_, num_indep_pairs_);
+
+    // Grab reference orbs
+    read_cur_orbs();
 }
 
 MCSCF::~MCSCF()
@@ -115,11 +118,6 @@ int MCSCF::update(void)
 
   if (MCSCF_Parameters.print_lvl > 2)
     IndPairs.print_vec(theta_cur_, "\n\tRotation Angles:");
-
-  if (!read_ref_orbs()) {
-    read_cur_orbs();
-    write_ref_orbs();
-  }
 
   form_F_act();
   calc_gradient();
@@ -845,6 +843,7 @@ int MCSCF::take_step(void)
 ** rotate_orbs()
 **
 ** Rotate the orbitals, irrep by irrep
+** Orbitals are rotated relative to reference orbitals
 **
 ** \ingroup DETCAS
 */
@@ -880,25 +879,34 @@ void MCSCF::rotate_orbs(void)
         print_mat(MCSCF_CalcInfo.mo_coeffs[h], ir_norbs, ir_norbs, "outfile");
       }
 
+      // We want to save the orbtials
+      double **new_mo_coeffs = block_matrix(ir_norbs, ir_norbs);
+      for (int i=0; i<ir_norbs; i++){
+          for (int j=0; j<ir_norbs; j++){
+              new_mo_coeffs[i][j] = MCSCF_CalcInfo.mo_coeffs[h][i][j];
+          }
+      }
+
       if (MCSCF_Parameters.use_thetas)
-        postmult_by_U(h, ir_norbs, MCSCF_CalcInfo.mo_coeffs[h], ir_npairs, 
+        postmult_by_U(h, ir_norbs, new_mo_coeffs, ir_npairs, 
           ir_ppair, ir_qpair, ir_theta);
       else
-        postmult_by_exp_R(h, ir_norbs, MCSCF_CalcInfo.mo_coeffs[h], ir_npairs,
+        postmult_by_exp_R(h, ir_norbs, new_mo_coeffs, ir_npairs,
           ir_ppair, ir_qpair, ir_theta);
 
       /* print new coefficients */
       if (MCSCF_Parameters.print_mos) {
         outfile->Printf( "\n\tNew molecular orbitals for irrep %s\n", 
           CalcInfo.labels[h]);
-        print_mat(MCSCF_CalcInfo.mo_coeffs[h], ir_norbs, ir_norbs, "outfile");
+        print_mat(new_mo_coeffs, ir_norbs, ir_norbs, "outfile");
       }
-
 
       /* write the new block of MO coefficients to file30 */
       chkpt_init(PSIO_OPEN_OLD);
-      chkpt_wt_scf_irrep(MCSCF_CalcInfo.mo_coeffs[h], h);
+      chkpt_wt_scf_irrep(new_mo_coeffs, h);
       chkpt_close();
+
+      free(new_mo_coeffs);
       delete [] ir_theta;
     }
   }

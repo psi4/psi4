@@ -114,8 +114,6 @@ private:
     void postmult_by_exp_R(int irrep, int dim, double **mat,
                            int npairs, int *p_arr, int *q_arr,
                            double *theta_arr);
-    int  read_ref_orbs(void);
-    int  write_ref_orbs(void);
     void read_thetas(int npairs);
     void write_thetas(int npairs);
 
