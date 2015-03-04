@@ -45,7 +45,10 @@
 #include <libciomr/libciomr.h>
 #include <libdiis/diismanager.h>
 #include <libdiis/diisentry.h>
+#include <libmints/wavefunction.h>
+#include <libmints/matrix.h>
 #include "MCSCF.h"
+#include "ciwave.h"
 #include "MCSCF_indpairs.h"
 #include "globaldefs.h"
 #include "structs.h"
@@ -66,11 +69,12 @@ extern void mcscf_get_mat_block(double **src, double **dst, int dst_dim,
 
 namespace psi { namespace detci {
 
-MCSCF::MCSCF(Options& options, OutFile& IterSummaryOut)
-    : options_(options), IterSummaryOut_(IterSummaryOut)
+MCSCF::MCSCF(boost::shared_ptr<CIWavefunction> ciwave, OutFile& IterSummaryOut)
+    : options_(ciwave->options()), IterSummaryOut_(IterSummaryOut)
 {
     title();
     get_mo_info(options_);
+    ciwfn_ = ciwave;
 
     // Form independent pairs
     IndPairs.set(CalcInfo.nirreps, MAX_RAS_SPACES, CalcInfo.ras_opi,
@@ -95,7 +99,7 @@ MCSCF::MCSCF(Options& options, OutFile& IterSummaryOut)
     zero_arr(theta_cur_, num_indep_pairs_);
 
     // Grab reference orbs
-    read_cur_orbs();
+    ref_orbs_ = SharedMatrix(ciwfn_->Ca()->clone());
 }
 
 MCSCF::~MCSCF()
@@ -135,6 +139,7 @@ int MCSCF::update(void)
   if (!converged) {
     steptype = take_step();
     rotate_orbs();
+    //transform_ints();
   }
   else
     steptype = 0;
@@ -869,44 +874,29 @@ void MCSCF::rotate_orbs(void)
                   ir_ppair[pair], ir_qpair[pair], ir_theta[pair]);
         }
         outfile->Printf( "\n");
-        //fflush(outfile);
       }
 
       /* print old coefficients */
-      if (MCSCF_Parameters.print_mos) {
-        outfile->Printf( "\n\tOld molecular orbitals for irrep %s\n", 
-          CalcInfo.labels[h]);
-        print_mat(MCSCF_CalcInfo.mo_coeffs[h], ir_norbs, ir_norbs, "outfile");
-      }
+      if (MCSCF_Parameters.print_mos) ref_orbs_->print();
 
-      // We want to save the orbtials
-      double **new_mo_coeffs = block_matrix(ir_norbs, ir_norbs);
-      for (int i=0; i<ir_norbs; i++){
-          for (int j=0; j<ir_norbs; j++){
-              new_mo_coeffs[i][j] = MCSCF_CalcInfo.mo_coeffs[h][i][j];
-          }
-      }
+      /* Orbital rotations are related to reference orbitals */
+      ciwfn_->Ca_->copy(ref_orbs_);
 
       if (MCSCF_Parameters.use_thetas)
-        postmult_by_U(h, ir_norbs, new_mo_coeffs, ir_npairs, 
+        postmult_by_U(h, ir_norbs, ciwfn_->Ca()->pointer(h), ir_npairs, 
           ir_ppair, ir_qpair, ir_theta);
       else
-        postmult_by_exp_R(h, ir_norbs, new_mo_coeffs, ir_npairs,
+        postmult_by_exp_R(h, ir_norbs, ciwfn_->Ca()->pointer(h), ir_npairs,
           ir_ppair, ir_qpair, ir_theta);
 
       /* print new coefficients */
-      if (MCSCF_Parameters.print_mos) {
-        outfile->Printf( "\n\tNew molecular orbitals for irrep %s\n", 
-          CalcInfo.labels[h]);
-        print_mat(new_mo_coeffs, ir_norbs, ir_norbs, "outfile");
-      }
+      if (MCSCF_Parameters.print_mos) ciwfn_->Ca()->print();
 
       /* write the new block of MO coefficients to file30 */
       chkpt_init(PSIO_OPEN_OLD);
-      chkpt_wt_scf_irrep(new_mo_coeffs, h);
+      chkpt_wt_scf_irrep(ciwfn_->Ca()->pointer(h), h);
       chkpt_close();
 
-      free(new_mo_coeffs);
       delete [] ir_theta;
     }
   }
@@ -964,13 +954,8 @@ void MCSCF::finalize(void)
     free_int_matrix(MCSCF_CalcInfo.ras_orbs[i]);
   free(MCSCF_CalcInfo.ras_orbs);
 
-  for (i=0; i<CalcInfo.nirreps; i++) {
-    if (CalcInfo.orbs_per_irr[i])
-      free_block(MCSCF_CalcInfo.mo_coeffs[i]);
-  }
-  free(MCSCF_CalcInfo.mo_coeffs);
-
   // DGAS updated
+  ref_orbs_.reset();
   diis_manager_->delete_diis_file();
   free(theta_cur_);
 }

@@ -24,6 +24,7 @@ CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> reference_wavefun
     // Destroy it. Otherwise we will see a "file already open" error.
     chkpt_.reset();
 
+    common_init();
 }
 
 CIWavefunction::~CIWavefunction()
@@ -43,21 +44,23 @@ void CIWavefunction::common_init()
     // CDS-TODO: Note, some of these data should be updated to reflect what
     // the CI wavefunction is doing, not what the reference wavefunction
     // is doing, in case these are actually used elsewhere.
-    nso_        = reference_wavefunction_->nso();
     nirrep_     = reference_wavefunction_->nirrep();
+    nso_        = reference_wavefunction_->nso();
     nmo_        = reference_wavefunction_->nmo();
-
     nalpha_     = CalcInfo.num_alp;
     nbeta_      = CalcInfo.num_bet;
 
     // Per irrep data
     for(int h = 0; h < nirrep_; ++h){
-        soccpi_[h] = CalcInfo.socc[h];
         doccpi_[h] = CalcInfo.docc[h];
-        frzcpi_[h] = reference_wavefunction_->frzcpi()[h];
-        frzvpi_[h] = reference_wavefunction_->frzvpi()[h];
+        soccpi_[h] = CalcInfo.socc[h];
+        frzcpi_[h] = CalcInfo.frozen_docc[h];
+        frzvpi_[h] = CalcInfo.frozen_uocc[h];
         nmopi_[h]  = CalcInfo.orbs_per_irr[h];
         nsopi_[h]  = CalcInfo.so_per_irr[h];
+
+    Ca_ = reference_wavefunction_->Ca();
+
     }
 }
 
