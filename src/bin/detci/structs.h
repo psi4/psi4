@@ -620,7 +620,8 @@ struct mcscf_calcinfo {
   // int *active;           /* num active orbs per irrep                    */
   // double enuc;           /* nuclear repulsion energy */
   // double efzc;           /* frozen-core energy */
-  double ***mo_coeffs;   /* matrix of molecular orbitals in Pitzer order */
+  // double ***ref_mo_coeffs;   /* Reference matrix of molecular orbitals in Pitzer order */
+  // double ***cur_mo_coeffs;   /* Current matrix of molecular orbitals in Pitzer order */
   double *onel_ints;     /* one-electron integrals */
   double *onel_ints_bare;/* one-electron integrals, bare h only */
   double *twoel_ints;    /* two-electron integrals */

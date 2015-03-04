@@ -70,6 +70,8 @@
 #include "civect.h"
 #include "ciwave.h"
 #include "MCSCF.h"
+#include<libtrans/integraltransform.h>
+#include<libtrans/mospace.h>
 
 namespace psi {
   extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
@@ -160,7 +162,7 @@ extern void compute_cc(void);
 extern void calc_mrpt(void);
 
 // MCSCF
-extern void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist);
+extern void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **alplist, struct stringwr **betlist);
 extern void set_mcscf_parameters(Options &options);
 extern void mcscf_print_parameters(void);
 extern void detci_iteration_clean();
@@ -180,7 +182,7 @@ PsiReturnType detci(Options &options)
    int fci_norb_check = 0;
    int i = 0;
 
-   boost::shared_ptr<PSIO> psio = PSIO::shared_object();
+   //boost::shared_ptr<PSIO> psio = PSIO::shared_object();
 
    init_io();                   /* parse cmd line and open input and output */
    get_parameters(options);     /* get running params (convergence, etc)    */
@@ -188,6 +190,9 @@ PsiReturnType detci(Options &options)
    title();                     /* print program identification             */
    get_mo_info(options);        /* read DOCC, SOCC, frozen, nmo, etc        */
    set_ras_parms();             /* set fermi levels and the like            */
+
+   boost::shared_ptr<Wavefunction> refwfn = Process::environment.wavefunction();
+   boost::shared_ptr<CIWavefunction> ciwfn(new CIWavefunction(refwfn, options));
 
    if (Parameters.print_lvl) {
      print_parameters();       /* print running parameters                 */
@@ -235,7 +240,7 @@ PsiReturnType detci(Options &options)
    else if (Parameters.cc)
      compute_cc();
    else if (Parameters.mcscf){
-     compute_mcscf(options, alplist, betlist);
+     compute_mcscf(ciwfn, alplist, betlist);
      }
    else
      diag_h(alplist, betlist);
@@ -250,6 +255,7 @@ PsiReturnType detci(Options &options)
 
    close_io();
    cleanup();
+   Process::environment.set_wavefunction((static_cast<boost::shared_ptr<Wavefunction> > (ciwfn)));
    return Success;
 }
 
@@ -1457,22 +1463,22 @@ void detci_iteration_clean()
 **
 ** Returns: none
 */
-void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist)
+void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **alplist, struct stringwr **betlist)
 {
 
 
   // Output file for MCSCF iters
   OutFile IterSummaryOut("file14.dat", TRUNCATE);
 
-  set_mcscf_parameters(options);     /* get running params (convergence, etc)    */
-  MCSCF* mcscf = new MCSCF(options, IterSummaryOut);
+  set_mcscf_parameters(ciwfn->options());     /* get running params (convergence, etc)    */
+  MCSCF* mcscf = new MCSCF(ciwfn, IterSummaryOut);
 
   if (MCSCF_Parameters.print_lvl) tstart();
   if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
 
   // Need a TRANSQT2 Options object to be able to call that module correctly
   // Can delete this when we replace TRANSQT2 with libtrans
-  Options transqt_options = options;
+  Options transqt_options = ciwfn->options();
   transqt_options.set_current_module("TRANSQT2");
   psi::read_options("TRANSQT2", transqt_options, false);
   transqt_options.set_str("TRANSQT2", "WFN", Parameters.wfn);
@@ -1528,7 +1534,6 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
     // Need to grab the new efzc energy after transqt2 computations
     chkpt_init(PSIO_OPEN_OLD);
     CalcInfo.efzc = chkpt_rd_efzc();
-    CalcInfo.escf = chkpt_rd_escf();
     chkpt_close();
 
     read_integrals();

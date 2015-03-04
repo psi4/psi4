@@ -36,8 +36,12 @@ typedef boost::shared_ptr<Matrix> SharedMatrix;
 
 namespace psi { namespace detci {
 
+class MCSCF;
+
 class CIWavefunction : public Wavefunction
 {
+friend class MCSCF;
+
 public:
     CIWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
     virtual ~CIWavefunction();
