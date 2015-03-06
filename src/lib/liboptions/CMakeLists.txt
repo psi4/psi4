@@ -35,7 +35,6 @@ set_property(GLOBAL APPEND PROPERTY LIBLIST options)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(options custom_boost)
 endif()
-install(TARGETS options ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/liboptions)

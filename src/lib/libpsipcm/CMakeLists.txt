@@ -94,7 +94,6 @@ if(BUILD_CUSTOM_BOOST)
    add_dependencies(pcmsolver custom_boost)
    add_dependencies(psipcm custom_boost)
 endif()
-install(TARGETS psipcm ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/libpsipcm)
