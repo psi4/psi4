@@ -313,6 +313,14 @@ endif()
 #FILE(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
+# Install samples directory
+INSTALL(
+  DIRECTORY "samples"
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/psi
+  USE_SOURCE_PERMISSIONS
+  PATTERN "example_psi4rc_file" EXCLUDE
+)
+
 # Configure some scripts
 configure_files()
 # Configure testing
