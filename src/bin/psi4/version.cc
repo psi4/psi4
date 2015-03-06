@@ -32,10 +32,9 @@
 namespace psi {
 
 /*! Print PSI version information that was set in configure.ac */
-void print_version(std::string OutFileRMR)
+void print_version(std::string)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
-      boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
+   boost::shared_ptr<psi::PsiOutStream> printer=outfile;
   printer->Printf( "    -----------------------------------------------------------------------\n");
   printer->Printf( "          PSI4: An Open-Source Ab Initio Electronic Structure Package\n");
   printer->Printf( "                              PSI %s Driver\n", PSI_VERSION);

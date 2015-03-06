@@ -120,7 +120,7 @@ void roa(void)
         for(beta=0; beta < 3; beta++) {
           sprintf(pert_x, "P_%1s", cartcomp[alpha]);
           sprintf(pert_y, "L_%1s", cartcomp[beta]);
-          linresp(&tensor0[alpha][beta], +1.0, 0.0,
+          linresp(&tensor0[alpha][beta], -1.0, 0.0,
                   pert_x, moinfo.mu_irreps[alpha], 0.0,
                   pert_y, moinfo.l_irreps[beta], 0.0);
         }
@@ -248,7 +248,7 @@ void roa(void)
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
             sprintf(pert_y, "L_%1s", cartcomp[beta]);
-            linresp(&tensor_rl0[alpha][beta], -0.5, 0.0, 
+            linresp(&tensor_rl0[alpha][beta], +0.5, 0.0, 
                     pert_x, moinfo.mu_irreps[alpha], -params.omega[i],
 		    pert_y, moinfo.l_irreps[beta], params.omega[i]);
           }
@@ -261,7 +261,7 @@ void roa(void)
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "P_%1s", cartcomp[alpha]);
             sprintf(pert_y, "L_%1s", cartcomp[beta]);
-	    linresp(&tensor_pl0[alpha][beta], +0.5, 0.0, 
+	    linresp(&tensor_pl0[alpha][beta], -0.5, 0.0, 
                     pert_x, moinfo.mu_irreps[alpha], -params.omega[i],
 		    pert_y, moinfo.l_irreps[beta], params.omega[i]);
           }
@@ -363,7 +363,7 @@ void roa(void)
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
             sprintf(pert_y, "L*_%1s", cartcomp[beta]);
-	    linresp(&tensor_rl1[alpha][beta], -0.5, 0.0, 
+	    linresp(&tensor_rl1[alpha][beta], +0.5, 0.0, 
                     pert_x, moinfo.mu_irreps[alpha], params.omega[i],
 		    pert_y, moinfo.l_irreps[beta], -params.omega[i]);
           }
@@ -376,7 +376,7 @@ void roa(void)
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "P*_%1s", cartcomp[alpha]);
             sprintf(pert_y, "L*_%1s", cartcomp[beta]);
-	    linresp(&tensor_pl1[alpha][beta], +0.5, 0.0, 
+	    linresp(&tensor_pl1[alpha][beta], -0.5, 0.0, 
                     pert_x, moinfo.mu_irreps[alpha], params.omega[i],
 		    pert_y, moinfo.l_irreps[beta], -params.omega[i]);
           }
