@@ -1,8 +1,0 @@
-$(PASSFILE):
-	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) $(PERL) ../../runtest.pl $(SRCDIR)/input.dat $(TARGET) $(PSIAUTOTEST) output.dat ../../../bin/psi4
-	mv $(TARGET) $(PASSFILE)
-
-clean:
-	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) 
-	/bin/rm -f $(TARGET) $(PASSFILE) $(GARBAGE)
-
