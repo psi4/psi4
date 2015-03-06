@@ -23,8 +23,6 @@
 #ifndef _psi_src_bin_detci_mcscf_h_
 #define _psi_src_bin_detci_mcscf_h_
 
-#include "MCSCF_indpairs.h"
-
 namespace boost {
 template<class T> class shared_ptr;
 }
@@ -53,7 +51,7 @@ private:
     boost::shared_ptr<CIWavefunction> ciwfn_;
 
     /// Independent pairs
-    IndepPairs IndPairs;
+    boost::shared_ptr<IndepPairs> IndPairs_;
     int num_indep_pairs_;
 
     /// DIIS

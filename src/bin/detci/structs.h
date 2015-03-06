@@ -606,12 +606,12 @@ struct mcscf_calcinfo {
   int *ci2relpitz;       /* map CI ordering to _relative_ pitzer ordering */
   // char **labels;         /* labels for irreps */
   // int **ras_opi;         /* num orbs per irr per ras space ras_opi[ras][irr] */
-  int **fzc_orbs;        /* frozen core orbitals numbers [irrep][orbnum] */
-  int **cor_orbs;        /* restricted core orbitals numbers [irrep][orbnum] */
-  int **vir_orbs;        /* restr virtual orbitals numbers [irrep][orbnum] */
-  int **fzv_orbs;        /* frozen virtual orbitals numbers [irrep][orbnum] */
+  // int **fzc_orbs;        /* frozen core orbitals numbers [irrep][orbnum] */
+  // int **cor_orbs;        /* restricted core orbitals numbers [irrep][orbnum] */
+  // int **vir_orbs;        /* restr virtual orbitals numbers [irrep][orbnum] */
+  // int **fzv_orbs;        /* frozen virtual orbitals numbers [irrep][orbnum] */
 
-  int ***ras_orbs;       /* ras_orbs[ras][irr][cnt] gives an orbital number */
+  // int ***ras_orbs;       /* ras_orbs[ras][irr][cnt] gives an orbital number */
 
   // int *first;            /* first orbital per irrep (in Pitzer order)    */
   // int *last;             /* last  orbital per irrep (in Pitzer order)    */

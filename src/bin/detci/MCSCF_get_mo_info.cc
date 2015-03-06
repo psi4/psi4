@@ -156,44 +156,44 @@ void MCSCF::get_mo_info(Options &options)
     MCSCF_CalcInfo.num_cor_orbs += MCSCF_CalcInfo.rstr_docc[i];
   }
 
-  /* construct the MCSCF_CalcInfo.ras_orbs array (may not be of any use now) */
-  cnt = 0;
-  MCSCF_CalcInfo.fzc_orbs = init_int_matrix(CalcInfo.nirreps,CalcInfo.nmo);
-  MCSCF_CalcInfo.cor_orbs = init_int_matrix(CalcInfo.nirreps,CalcInfo.nmo);
-  MCSCF_CalcInfo.vir_orbs = init_int_matrix(CalcInfo.nirreps,CalcInfo.nmo);
-  MCSCF_CalcInfo.fzv_orbs = init_int_matrix(CalcInfo.nirreps,CalcInfo.nmo);
+  ///* construct the MCSCF_CalcInfo.ras_orbs array (may not be of any use now) */
+  //cnt = 0;
+  //MCSCF_CalcInfo.fzc_orbs = init_int_matrix(CalcInfo.nirreps,CalcInfo.nmo);
+  //MCSCF_CalcInfo.cor_orbs = init_int_matrix(CalcInfo.nirreps,CalcInfo.nmo);
+  //MCSCF_CalcInfo.vir_orbs = init_int_matrix(CalcInfo.nirreps,CalcInfo.nmo);
+  //MCSCF_CalcInfo.fzv_orbs = init_int_matrix(CalcInfo.nirreps,CalcInfo.nmo);
 
-  /* FZC */
-  for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
-    for (j=0; j<MCSCF_CalcInfo.frozen_docc[irrep]; j++)
-      MCSCF_CalcInfo.fzc_orbs[irrep][j] = cnt++;
+  ///* FZC */
+  //for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
+  //  for (j=0; j<MCSCF_CalcInfo.frozen_docc[irrep]; j++)
+  //    MCSCF_CalcInfo.fzc_orbs[irrep][j] = cnt++;
 
-  /* COR */
-  for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
-    for (j=0; j<MCSCF_CalcInfo.rstr_docc[irrep]; j++)
-      MCSCF_CalcInfo.cor_orbs[irrep][j] = cnt++;
+  ///* COR */
+  //for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
+  //  for (j=0; j<MCSCF_CalcInfo.rstr_docc[irrep]; j++)
+  //    MCSCF_CalcInfo.cor_orbs[irrep][j] = cnt++;
 
-  /* RAS */
-  MCSCF_CalcInfo.ras_orbs = (int ***) malloc (MAX_RAS_SPACES * sizeof(int **));
-  for (i=0; i<MAX_RAS_SPACES; i++) {
-    MCSCF_CalcInfo.ras_orbs[i] = init_int_matrix(CalcInfo.nirreps,
-      CalcInfo.nmo);
-    for (irrep=0; irrep<CalcInfo.nirreps; irrep++) {
-      for (j=0; j<CalcInfo.ras_opi[i][irrep]; j++) {
-        MCSCF_CalcInfo.ras_orbs[i][irrep][j] = cnt++;
-      }
-    }
-  }
+  ///* RAS */
+  //MCSCF_CalcInfo.ras_orbs = (int ***) malloc (MAX_RAS_SPACES * sizeof(int **));
+  //for (i=0; i<MAX_RAS_SPACES; i++) {
+  //  MCSCF_CalcInfo.ras_orbs[i] = init_int_matrix(CalcInfo.nirreps,
+  //    CalcInfo.nmo);
+  //  for (irrep=0; irrep<CalcInfo.nirreps; irrep++) {
+  //    for (j=0; j<CalcInfo.ras_opi[i][irrep]; j++) {
+  //      MCSCF_CalcInfo.ras_orbs[i][irrep][j] = cnt++;
+  //    }
+  //  }
+  //}
 
-  /* VIR */
-  for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
-    for (j=0; j<MCSCF_CalcInfo.rstr_uocc[irrep]; j++)
-      MCSCF_CalcInfo.vir_orbs[irrep][j] = cnt++;
+  ///* VIR */
+  //for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
+  //  for (j=0; j<MCSCF_CalcInfo.rstr_uocc[irrep]; j++)
+  //    MCSCF_CalcInfo.vir_orbs[irrep][j] = cnt++;
 
-  /* FZV */
-  for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
-    for (j=0; j<MCSCF_CalcInfo.frozen_uocc[irrep]; j++)
-      MCSCF_CalcInfo.fzv_orbs[irrep][j] = cnt++;
+  ///* FZV */
+  //for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
+  //  for (j=0; j<MCSCF_CalcInfo.frozen_uocc[irrep]; j++)
+  //    MCSCF_CalcInfo.fzv_orbs[irrep][j] = cnt++;
 
 
 
