@@ -36,9 +36,7 @@
 ** May 1998
 */
 
-#include <cstdio>
-#include <cstdlib>
-#include <string>
+#include <libciomr/libciomr.h>
 #include "MCSCF_indpairs.h"
 #include "psi4-dec.h"
 
@@ -62,14 +60,13 @@ IndepPairs::IndepPairs() // Default constructor
 
 
 // Regular constructor
-IndepPairs::IndepPairs(int nirr, int num_ras, int **ras_opi, int ***ras_orbs,
-  int *fzc, int **fzc_orbs, int *cor, int **cor_orbs,
-  int *vir, int **vir_orbs, int *fzv, int **fzv_orbs,
-  int *ci2relpitz, int ignore_ras_ras, int ignore_fz) 
+IndepPairs::IndepPairs(int nmo, int nirr, int num_ras, int **ras_opi, int *fzc,
+                       int *cor, int *vir, int *fzv, int *ci2relpitz,
+                       int ignore_ras_ras, int ignore_fz) 
 {
 
-  set(nirr, num_ras, ras_opi, ras_orbs, fzc, fzc_orbs, cor, cor_orbs,
-      vir, vir_orbs, fzv, fzv_orbs, ci2relpitz, ignore_ras_ras, ignore_fz);
+  set(nmo, nirr, num_ras, ras_opi, fzc, cor,
+      vir, fzv, ci2relpitz, ignore_ras_ras, ignore_fz);
 
 }
 
@@ -81,31 +78,63 @@ IndepPairs::IndepPairs(int nirr, int num_ras, int **ras_opi, int ***ras_orbs,
 ** \param nirr           = number of irreps in point group
 ** \param num_ras        = number of RAS spaces
 ** \param ras_opi        = number of orbitals per irrep per RAS space
-** \param ras_orbs       = ras_orbs[ras][irr][cnt] gives an orbital number
 ** \param fzc            = number of frozen core orbs per irrep
-** \param fzc_orbs       = fzc_orbs[irr][cnt] gives an orbital number
 ** \param cor            = number of restricted core orbs per irrep
-** \param cor_orbs       = cor_orbs[irr][cnt] gives an orbital number
 ** \param vir            = number of restricted virtual orbitals per irrep
-** \param vir_orbs       = vir_orbs[irr][cnt] gives an orbital number
 ** \param fzv            = number of frozen virtual orbitals per irrep 
-** \param fzv_orbs       = fzv_orbs[irr][cnt] gives an orbital number
 ** \param ci2relpitz     = maps CI orbitals to relative Pitzer indices
 ** \param ignore_ras_ras = ignore RAS/RAS independent pairs
 ** \param ignore_fz      = ignore FZC and FZV from all independent pairs
 ** 
 */
 
-void IndepPairs::set(int nirr, int num_ras, int **ras_opi, int ***ras_orbs,
-                     int *fzc, int **fzc_orbs,
-                     int *cor, int **cor_orbs,
-                     int *vir, int **vir_orbs,
-                     int *fzv, int **fzv_orbs,
-                     int *ci2relpitz, int ignore_ras_ras, int ignore_fz) 
+void IndepPairs::set(int nmo, int nirr, int num_ras, int **ras_opi, int *fzc,
+                     int *cor, int *vir, int *fzv, int *ci2relpitz,
+                     int ignore_ras_ras, int ignore_fz) 
 {
   int count, ir_count, *ir_cnt;
   int rasi, rasj, irrep;
   int i, j;
+
+  /* construct the MCSCF_CalcInfo.ras_orbs array */
+  int cnt = 0;
+  int **fzc_orbs = init_int_matrix(nirr,nmo);
+  int **cor_orbs = init_int_matrix(nirr,nmo);
+  int **vir_orbs = init_int_matrix(nirr,nmo);
+  int **fzv_orbs = init_int_matrix(nirr,nmo);
+
+  /* FZC */
+  for (irrep=0; irrep<nirr; irrep++)
+    for (j=0; j<fzc[irrep]; j++)
+      fzc_orbs[irrep][j] = cnt++;
+
+  /* COR */
+  for (irrep=0; irrep<nirr; irrep++)
+    for (j=0; j<cor[irrep]; j++)
+      cor_orbs[irrep][j] = cnt++;
+
+  /* RAS */
+  int ***ras_orbs = (int ***) malloc (num_ras * sizeof(int **));
+  for (i=0; i<num_ras; i++) {
+    ras_orbs[i] = init_int_matrix(nirr, nmo);
+    for (irrep=0; irrep<nirr; irrep++) {
+      for (j=0; j<ras_opi[i][irrep]; j++) {
+        ras_orbs[i][irrep][j] = cnt++;
+      }
+    }
+  }
+
+  /* VIR */
+  for (irrep=0; irrep<nirr; irrep++)
+    for (j=0; j<vir[irrep]; j++)
+      vir_orbs[irrep][j] = cnt++;
+
+  /* FZV */
+  for (irrep=0; irrep<nirr; irrep++)
+    for (j=0; j<fzv[irrep]; j++)
+      fzv_orbs[irrep][j] = cnt++;
+
+
 
   nirreps = nirr;
   ir_npairs = new int[nirreps];
@@ -273,6 +302,14 @@ void IndepPairs::set(int nirr, int num_ras, int **ras_opi, int ***ras_orbs,
     outfile->Printf("(IndepPairs::set): mismatch in counted pairs!\n");
   }
 
+  // Free temporary matrices
+  free_int_matrix(fzc_orbs);
+  free_int_matrix(cor_orbs);
+  free_int_matrix(vir_orbs);
+  free_int_matrix(fzv_orbs);
+  for (i=0; i<num_ras; i++)
+    free_int_matrix(ras_orbs[i]);
+  free(ras_orbs);
 
 }
 
@@ -352,7 +389,6 @@ IndepPairs::~IndepPairs() // Destructor
     delete [] ir_q_rel;
     delete [] ir_map_pair;
   }
-
 }
 
 
