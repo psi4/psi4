@@ -19,7 +19,7 @@ X2.cc          compute_X.cc       local.cc             \
 amp_write.cc   converged.cc       optrot.cc            update_X.cc \
 cache.cc       denom.cc           pertbar.cc           analyze.cc \
 cc2_LHX1Y1.cc  diis.cc            polar.cc             roa.cc \
-preppert.cc \
+preppert.cc    scatter.cc \
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 

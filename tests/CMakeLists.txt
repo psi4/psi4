@@ -337,7 +337,7 @@ endif()
 
 # External module dependent tests
 if(ENABLE_PCMSOLVER)
-   add_subdirectory(pcm1)
+   add_subdirectory(pcm_scf)
 endif()
 
 if(NOT PERL_FOUND)

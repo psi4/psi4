@@ -25,257 +25,99 @@
  *   FxnalGroup.h
  */
 #include "FxnalGroup.h"
+#include "FindDerGroup.h"
 namespace psi{
 namespace LibMolecule{
 /*********** Primitive Groups ***************************************/
 
-class Carbon:public FxnalGroup{
+class Methane:public GenPrimGrp<4,METHANE,Methane,0,Carbon,
+	Hydrogen,Hydrogen,Hydrogen,Hydrogen>{
    public:
-     Carbon(const int* Members):FxnalGroup(CARBON,0){
-        Members_.push_back(-1);
-     }
-};
-
-class Oxygen:public FxnalGroup{
-   public:
-     Oxygen(const int* Members):FxnalGroup(OXYGEN,0){
-        Members_.push_back(-1);
-     }
-};
-
-class Nitrogen:public FxnalGroup{
-   public:
-     Nitrogen(const int* Members):FxnalGroup(NITROGEN,0){
-        Members_.push_back(-1);
-     }
-};
-
-class Hydrogen:public FxnalGroup{
-   public:
-     Hydrogen(const int* Members):FxnalGroup(HYDROGEN,0){
-        Members_.push_back(-1);
-     }
-};
-
-class Fluorine:public FxnalGroup{
-   public:
-     Fluorine(const int* Members):FxnalGroup(FLUORINE,0){
-        Members_.push_back(-1);
-     }
-};
-
-class Chlorine:public FxnalGroup{
-   public:
-     Chlorine(const int* Members):FxnalGroup(CHLORINE,0){
-        Members_.push_back(-1);
-     }
-};
-
-class Bromine:public FxnalGroup{
-   public:
-     Bromine(const int* Members):FxnalGroup(BROMINE,0){
-        Members_.push_back(-1);
-     }
-};
-
-class Iodine:public FxnalGroup{
-   public:
-     Iodine(const int* Members):FxnalGroup(IODINE,0){
-        Members_.push_back(-1);
-     }
-};
-
-
-class Methane:public FxnalGroup{
-   public:
-      //C first
-      Methane(const int* Members):FxnalGroup(METHANE,0,5,Members){}
-      int NAttachPoint()const{return 0;}
-
-};
-
-class Methyl:public FxnalGroup{
-   public:
-      //C first
-      Methyl(const int* Members):FxnalGroup(METHYL,1,4,Members){}
-};
-
-class Methene:public FxnalGroup{
-   public:
-      //C first
-      Methene(const int* Members):FxnalGroup(METHENE,2,3,Members){}
-};
-
-class Methyne:public FxnalGroup{
-   public:
-      //C first
-      Methyne(const int* Members):FxnalGroup(METHYNE,3,2,Members){}
-};
-
-class Carbon4:public FxnalGroup{
-   public:
-      //Only has a C
-      Carbon4(const int* Members):FxnalGroup(CARBON4,4,1,Members){}
-};
-
-class Alkenyl1:public FxnalGroup{
-   public:
-      //C first
-      Alkenyl1(const int* Members):FxnalGroup(ALKENYL1,1,3,Members){}
-};
-
-class Alkenyl2:public FxnalGroup{
-   public:
-      //C first
-      Alkenyl2(const int* Members):FxnalGroup(ALKENYL2,2,2,Members){}
-};
-
-class Alkenyl3:public FxnalGroup{
-   public:
-      //C first
-      Alkenyl3(const int* Members):FxnalGroup(ALKENYL3,3,1,Members){}
-};
-
-class Alkynyl1:public FxnalGroup{
-   public:
-      //C first
-      Alkynyl1(const int* Members):FxnalGroup(ALKYNYL1,1,2,Members){}
-};
-
-class Alkynyl2:public FxnalGroup{
-   public:
-      //C first
-      Alkynyl2(const int* Members):FxnalGroup(ALKYNYL2,2,1,Members){}
-};
-
-class Water:public FxnalGroup{
-   public:
-      //O first
-      Water(const int* Members):FxnalGroup(WATER,0,3,Members){}
-      int NAttachPoint()const{return 0;}
-
-};
-
-class Hydroxyl:public FxnalGroup{
-   public:
-      //O first
-      Hydroxyl(const int * Members):FxnalGroup(HYDROXYL,1,2,Members){}
-};
-
-class Oxygen2:public FxnalGroup{
-   public:
-      //The O
-      Oxygen2(const int *Members):FxnalGroup(OXYGEN2,2,1,Members){}
-};
-
-class OxyDB:public FxnalGroup{
-   public:
-      OxyDB(const int* Members):FxnalGroup(OXYDB,1,1,Members){}
-};
-
-class Ammonia:public FxnalGroup{
-   public:
-      //The N first
-      Ammonia(const int* Members):FxnalGroup(AMMONIA,0,4,Members){}
       int NAttachPoint()const{return 0;}
 };
 
-class Amine1:public FxnalGroup{
-   public:
-      //The N first
-      Amine1(const int *Members):FxnalGroup(AMINE1,1,3,Members){}
-};
+class Methyl:public GenPrimGrp<4,METHYL,Methyl,1,Carbon,
+	Hydrogen,Hydrogen,Hydrogen>{};
 
-class Amine2:public FxnalGroup{
-   public:
-      //The N first
-      Amine2(const int *Members):FxnalGroup(AMINE2,2,2,Members){}
-};
+class Methene:public GenPrimGrp<4,METHENE,Methene,2,Carbon,
+	Hydrogen,Hydrogen>{};
 
-class Amine3:public FxnalGroup{
-   public:
-      //The N first
-      Amine3(const int *Members):FxnalGroup(AMINE3,3,1,Members){}
-};
+class Methyne:public GenPrimGrp<4,METHYNE,Methyne,3,Carbon,Hydrogen>{};
 
-class NitroDB1:public FxnalGroup{
-   public:
-      //The N first
-      NitroDB1(const int* Members):FxnalGroup(NITRODB1,1,2,Members){}
-};
+class Carbon4:public GenPrimGrp<4,CARBON4,Carbon4,4,Carbon>{};
 
-class NitroDB2:public FxnalGroup{
-   public:
-      //The N first
-      NitroDB2(const int* Members):FxnalGroup(NITRODB2,2,1,Members){}
-};
+class Alkenyl1:public GenPrimGrp<3,ALKENYL1,Alkenyl1,1,Carbon,Hydrogen,
+		Hydrogen> {};
 
-class NitroTB:public FxnalGroup{
-   public:
-      //The N first
-      NitroTB(const int* Members):FxnalGroup(NITROTB,1,1,Members){}
-};
+class Alkenyl2:public GenPrimGrp<3,ALKENYL2,Alkenyl2,2,Carbon,Hydrogen>{};
 
-class HydrogenFluoride: public FxnalGroup{
+class Alkenyl3:public GenPrimGrp<3,ALKENYL3,Alkenyl3,3,Carbon>{};
+
+class Alkynyl1:public GenPrimGrp<2,ALKYNYL1,Alkynyl1,1,Carbon,Hydrogen>{};
+
+class Alkynyl2:public GenPrimGrp<2,ALKYNYL2,Alkynyl2,2,Carbon>{};
+
+class Water:public GenPrimGrp<2,WATER,Water,0,Oxygen,Hydrogen,Hydrogen>{
    public:
-      //The F first
-      HydrogenFluoride(const int *Members):
-         FxnalGroup(HYDROGENFLUORIDE,0,2,Members){}
       int NAttachPoint()const{return 0;}
 };
 
-class Fluorine1: public FxnalGroup{
-   public:
-      //The F first
-      Fluorine1(const int *Members):
-         FxnalGroup(FLUORINE1,1,1,Members){}
-};
+class Hydroxyl:public GenPrimGrp<2,HYDROXYL,Hydroxyl,1,Oxygen,Hydrogen>{};
 
-class HydrogenChloride: public FxnalGroup{
+class Oxygen2:public GenPrimGrp<2,OXYGEN2,Oxygen2,2,Oxygen>{};
+
+class OxyDB:public GenPrimGrp<1,OXYDB,OxyDB,1,Oxygen> {};
+
+class Ammonia:public GenPrimGrp<3,AMMONIA,Ammonia,0,Nitrogen,Hydrogen,Hydrogen,
+Hydrogen>{
    public:
-      //The Cl first
-      HydrogenChloride(const int *Members):
-         FxnalGroup(HYDROGENCHLORIDE,0,2,Members){}
       int NAttachPoint()const{return 0;}
 };
 
-class Chlorine1: public FxnalGroup{
-   public:
-      //The Cl first
-      Chlorine1(const int *Members):
-         FxnalGroup(CHLORINE1,1,1,Members){}
-};
+class Amine1:public GenPrimGrp<3,AMINE1,Amine1,1,Nitrogen,Hydrogen,
+	Hydrogen>{};
 
-class HydrogenBromide: public FxnalGroup{
+class Amine2:public GenPrimGrp<3,AMINE2,Amine2,2,Nitrogen,Hydrogen> {};
+
+class Amine3:public GenPrimGrp<3,AMINE3,Amine3,3,Nitrogen> {};
+
+class NitroDB1:public GenPrimGrp<2,NITRODB1,NitroDB1,1,Nitrogen,Hydrogen>{};
+
+class NitroDB2:public GenPrimGrp<2,NITRODB2,Amine1,2,Nitrogen>{};
+
+class NitroTB:public GenPrimGrp<1,NITROTB,NitroTB,1,Nitrogen>{};
+
+class HydrogenFluoride: public GenPrimGrp<1,HYDROGENFLUORIDE,HydrogenFluoride,
+0,Fluorine,Hydrogen>{
    public:
-      //The Br first
-      HydrogenBromide(const int *Members):
-         FxnalGroup(HYDROGENBROMIDE,0,2,Members){}
       int NAttachPoint()const{return 0;}
 };
 
-class Bromine1: public FxnalGroup{
-   public:
-      //The Br first
-      Bromine1(const int *Members):
-         FxnalGroup(BROMINE1,1,1,Members){}
-};
+class Fluorine1: public GenPrimGrp<1,FLUORINE,Fluorine1,1,Fluorine>{};
 
-class HydrogenIodide: public FxnalGroup{
+class HydrogenChloride: public GenPrimGrp<1,HYDROGENCHLORIDE,
+	HydrogenChloride,0,Chlorine,Hydrogen>{
    public:
-      //The I first
-      HydrogenIodide(const int *Members):
-         FxnalGroup(HYDROGENIODIDE,0,2,Members){}
       int NAttachPoint()const{return 0;}
 };
 
-class Iodine1: public FxnalGroup{
+class Chlorine1: public GenPrimGrp<1,CHLORINE1,Chlorine1,1,Chlorine> {};
+
+class HydrogenBromide: public GenPrimGrp<1,HYDROGENBROMIDE,
+HydrogenBromide,0,Bromine,Hydrogen>{
    public:
-      //The I first
-      Iodine1(const int *Members):
-      FxnalGroup(IODINE1,1,1,Members){}
+      int NAttachPoint()const{return 0;}
 };
 
+class Bromine1: public GenPrimGrp<1,BROMINE1,Bromine1,1,Bromine> {};
+
+class HydrogenIodide: public GenPrimGrp<1,HYDROGENIODIDE,
+HydrogenIodide,0,Iodine,Hydrogen>{
+public:
+	int NAttachPoint()const{return 0;}
+};
+
+class Iodine1: public GenPrimGrp<1,IODINE1,Iodine1,1,Iodine>{};
 
 }}//End namespaces
 

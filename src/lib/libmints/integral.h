@@ -492,6 +492,9 @@ public:
     /// Returns an F12 integral object
     virtual TwoBodyAOInt* f12(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
 
+    /// Returns an F12Scaled integral object
+    virtual TwoBodyAOInt* f12_scaled(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
+
     /// Returns an F12 squared integral object
     virtual TwoBodyAOInt* f12_squared(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
 
