@@ -130,7 +130,10 @@ namespace psi {
     namespace cchbar     { PsiReturnType cchbar(Options&);    }
     namespace cclambda   { PsiReturnType cclambda(Options&);  }
     namespace ccdensity  { PsiReturnType ccdensity(Options&); }
-    namespace ccresponse { PsiReturnType ccresponse(Options&);}
+    namespace ccresponse { 
+        PsiReturnType ccresponse(Options&);
+        void scatter(Options&, double step, std::vector<SharedMatrix> dip, std::vector<SharedMatrix> rot, std::vector<SharedMatrix> quad);
+    }
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
 //    namespace detcas     { PsiReturnType detcas(Options&);     }
@@ -152,12 +155,16 @@ namespace psi {
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &, int irrep=-1);
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_1(Options &, int irrep=-1);
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_hessian_0(Options &);
+      std::vector< boost::shared_ptr<Matrix> > atomic_displacements(Options &);
 
       PsiReturnType fd_1_0(Options &, const boost::python::list&);
       //PsiReturnType fd_2_0(Options &, const boost::python::list&);
       PsiReturnType fd_freq_0(Options &, const boost::python::list&, int irrep=-1);
       PsiReturnType fd_freq_1(Options &, const boost::python::list&, int irrep=-1);
       PsiReturnType fd_hessian_0(Options &, const boost::python::list&);
+      SharedMatrix displace_atom(SharedMatrix geom, const int atom,
+		                 const int coord, const int sign,
+				 const double disp_size);
     }
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
@@ -335,6 +342,7 @@ std::vector< SharedMatrix > py_psi_fd_geoms_1_0()
     return findif::fd_geoms_1_0(Process::environment.options);
 }
 
+
 //std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_2_0()
 //{
     //py_psi_prepare_options_for_module("FINDIF");
@@ -387,6 +395,19 @@ PsiReturnType py_psi_fd_freq_1(const boost::python::list& grads, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_freq_1(Process::environment.options, grads, irrep);
+}
+
+std::vector< SharedMatrix > py_psi_atomic_displacements()
+{
+    py_psi_prepare_options_for_module("FINDIF");
+    return findif::atomic_displacements(Process::environment.options);
+}
+
+SharedMatrix py_psi_displace_atom(SharedMatrix geom, const int atom,
+                                  const int coord, const int sign,
+				  const double disp_size)
+{
+    return findif::displace_atom(geom, atom, coord, sign, disp_size);
 }
 
 double py_psi_scf()
@@ -508,7 +529,13 @@ double py_psi_ccenergy()
                                                Process::environment.wavefunction(),
                                                Process::environment.options)
                                            );
-    Process::environment.set_wavefunction(ccwave);
+
+    std::string name = Process::environment.wavefunction()->name();
+    std::string wfn = Process::environment.options.get_str("WFN");
+    if(wfn != name) {
+      ccwave->set_name(wfn);
+      Process::environment.set_wavefunction(ccwave);
+    }
 
     double energy = ccwave->compute_energy();
     return energy;
@@ -628,6 +655,54 @@ double py_psi_ccresponse()
     py_psi_prepare_options_for_module("CCRESPONSE");
     ccresponse::ccresponse(Process::environment.options);
     return 0.0;
+}
+
+void py_psi_print_list(python::list py_list)
+{
+	return;
+}
+
+void py_psi_scatter(double step, python::list dip_polar_list, python::list opt_rot_list, python::list dip_quad_polar_list)
+{
+    py_psi_prepare_options_for_module("CCRESPONSE");
+
+    // Convert python tensor lists into vectors of sharedmatrices
+    std::vector <SharedMatrix> dip_polar_tensors;
+    std::vector <SharedMatrix> opt_rot_tensors;
+    std::vector <SharedMatrix> dip_quad_polar_tensors;
+
+    int list_len = len(dip_polar_list);
+    for(int i=0; i < list_len; ++i) {
+        python::list dip_list  = extract<python::list>(dip_polar_list[i]);
+        python::list rot_list  = extract<python::list>(opt_rot_list[i]);
+        python::list quad_list = extract<python::list>(dip_quad_polar_list[i]);
+        SharedMatrix dip_mat(new Matrix(3, 3));
+        SharedMatrix rot_mat(new Matrix(3, 3));
+        SharedMatrix quad_mat(new Matrix(9, 3));
+        for(int row=0,j=0; row < 3; ++row) {
+            for(int col=0; col < 3; ++col,++j) {
+              dip_mat->set(row, col, extract<double>(dip_list[j]));
+              rot_mat->set(row, col, extract<double>(rot_list[j]));
+            }
+        }
+        for(int row=0,j=0; row < 9; ++row) {
+            for(int col=0; col < 3; ++col,++j) {
+                quad_mat->set(row, col, extract<double>(quad_list[j]));
+            }
+        }
+    dip_polar_tensors.push_back(dip_mat);
+    opt_rot_tensors.push_back(rot_mat);
+    dip_quad_polar_tensors.push_back(quad_mat);
+    }
+  
+//    for(std::vector<SharedMatrix>::iterator i=dip_polar_tensors.begin(); i != dip_polar_tensors.end(); ++i)
+//        (*i)->print(stdout);
+//    for(std::vector<SharedMatrix>::iterator i=opt_rot_tensors.begin(); i != opt_rot_tensors.end(); ++i)
+//        (*i)->print(stdout);
+//    for(std::vector<SharedMatrix>::iterator i=dip_quad_polar_tensors.begin(); i != dip_quad_polar_tensors.end(); ++i)
+//        (*i)->print(stdout);
+    
+    ccresponse::scatter(Process::environment.options, step, dip_polar_tensors, opt_rot_tensors, dip_quad_polar_tensors);
 }
 
 double py_psi_cceom()
@@ -857,6 +932,7 @@ bool py_psi_set_local_option_array(std::string const & module, std::string const
     }
     return true;
 }
+
 
 bool py_psi_set_global_option_array(std::string const & key, python::list values, DataType *entry=NULL)
 {
@@ -1370,6 +1446,8 @@ BOOST_PYTHON_MODULE(psi4)
     export_efp();
 
     // Options
+// The following line was conflct between master and roa branch (TDC, 10/29/2014)
+//    def("print_list", py_psi_print_list, "Prints a python list using a C function.");
     def("prepare_options_for_module", py_psi_prepare_options_for_module, "Sets the options module up to return options pertaining to the named argument (e.g. SCF).");
     def("set_active_molecule", py_psi_set_active_molecule, "Activates a previously defined (in the input) molecule, by name.");
     def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
@@ -1477,6 +1555,8 @@ BOOST_PYTHON_MODULE(psi4)
     def("fd_freq_0", py_psi_fd_freq_0, "Performs a finite difference frequency computation, from energy points, for a given irrep.");
     def("fd_freq_1", py_psi_fd_freq_1, "Performs a finite difference frequency computation, from gradients, for a given irrep.");
     def("fd_hessian_0", py_psi_fd_hessian_0, "Performs a finite difference frequency computation, from energy points.");
+    def("atomic_displacements", py_psi_atomic_displacements, "Returns list of displacements generated by displacing each atom in the +/- x, y, z directions");
+    def("displace_atom", py_psi_displace_atom, "Displaces one coordinate of single atom.");
     def("sapt", py_psi_sapt, "Runs the symmetry adapted perturbation theory code.");
     def("dftsapt", py_psi_dftsapt, "Runs the DFT variant of the symmetry adapted perturbation theory code.");
     def("asapt", py_psi_asapt, "Runs the atomic variant of the symmetry adapted perturbation theory code.");
@@ -1498,6 +1578,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("cclambda", py_psi_cclambda, "Runs the coupled cluster lambda equations code.");
     def("ccdensity", py_psi_ccdensity, "Runs the code to compute coupled cluster density matrices.");
     def("ccresponse", py_psi_ccresponse, "Runs the coupled cluster response theory code.");
+    def("scatter", py_psi_scatter, "New Scatter function.");
     def("cceom", py_psi_cceom, "Runs the equation of motion coupled cluster code, for excited states.");
     def("occ", py_psi_occ, "Runs the orbital optimized CC codes.");
     def("dfocc", py_psi_dfocc, "Runs the density-fitted orbital optimized CC codes.");
