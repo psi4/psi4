@@ -1,0 +1,33 @@
+package:
+  name: psi4
+  version: 0.0.10
+
+source:
+  path: ../../
+#  git_url: ../../
+#  git_url: git@github.com:psi4/psi4public.git
+
+build:
+  number: 2                                  [linux]
+  binary_relocation: true
+  binary_has_prefix_files:
+    - bin/psi4
+  has_prefix_files:
+    - share/psi/scripts/setenv.py
+
+requirements:
+  build:
+    - cmake                                  [linux]
+    - python
+  run:
+    - python
+
+test:
+  commands:
+    - psi4 --help
+
+about:
+  home: http://www.psicode.org
+  license: GNU General Public License v2 or later (GPLv2+)
+  summary: "open-source quantum chemistry"
+
