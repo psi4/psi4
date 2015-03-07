@@ -44,7 +44,7 @@ namespace psi { namespace ccresponse {
 
 void sort_pert(const char *pert, double **pertints, int irrep);
 
-/* preppert(): Prepare DPD structures for all currently known one-electron 
+/* preppert(): Prepare DPD structures for all currently needed one-electron 
 ** property integrals in the MO basis.
 **
 ** -TDC, 6/11
@@ -111,8 +111,8 @@ void preppert()
     double **TMP1 = angmom[i]->to_block_matrix();
     double **TMP3 = block_matrix(nmo, nmo);
     sprintf(lbl, "L_%1s", cartcomp[i]);
-  //  outfile->Printf( "%s Angular Momentum Integrals (SO)\n",lbl);
-//    mat_print(TMP1,nmo, nmo, outfile);
+//    outfile->Printf( "%s Angular Momentum Integrals (SO)\n",lbl);
+//    mat_print(TMP1,nmo, nmo, "outfile");
     C_DGEMM('n','n',nso,nmo,nso,1,TMP1[0],nso,moinfo.scf[0],nmo,0,TMP2[0],nso);
     C_DGEMM('t','n',nmo,nmo,nso,1,moinfo.scf[0],nmo,TMP2[0],nso,0,TMP3[0],nmo);
     moinfo.L[i] = TMP3;
