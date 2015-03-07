@@ -163,7 +163,7 @@ void read_integrals()
       }
 
    CalcInfo.eref = check_energy(CalcInfo.onel_ints, CalcInfo.twoel_ints, 
-      CalcInfo.docc, CalcInfo.frozen_docc, Parameters.fzc, CalcInfo.escf, 
+      CalcInfo.docc, CalcInfo.closed_docc, Parameters.fzc, CalcInfo.escf, 
       CalcInfo.enuc, CalcInfo.efzc, CalcInfo.nirreps, CalcInfo.reorder, 
       CalcInfo.orbs_per_irr, Parameters.print_lvl, "outfile");
 

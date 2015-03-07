@@ -77,7 +77,7 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
    betsocc = 0; cnt = 0; cnt2 = 0;
    for (i=0; i<CalcInfo.nirreps; i++) {
       j = CalcInfo.docc[i];
-      if (Parameters.fzc) j = j - CalcInfo.frozen_docc[i];
+      if (Parameters.fzc) j = j - CalcInfo.closed_docc[i];
       k = CalcInfo.ras_opi[0][i];
       l = (j<k) ? j : k;
       for (m=0; m<l; m++) /* RAS I part */
@@ -125,7 +125,7 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
       zero_int_array(occs, CalcInfo.num_alp_expl);
       for (i=0; i<CalcInfo.nirreps; i++) {
          j = CalcInfo.docc[i];
-         if (Parameters.fzc) j = j - CalcInfo.frozen_docc[i];
+         if (Parameters.fzc) j = j - CalcInfo.closed_docc[i];
          k = CalcInfo.ras_opi[0][i];
          l = (j<k) ? j : k;
          for (m=0; m<l; m++) /* RAS I part */
