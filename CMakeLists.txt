@@ -144,9 +144,9 @@ link_directories("${Boost_LIBRARY_DIRS}")
 include_directories(SYSTEM "${Boost_INCLUDE_DIRS}")
 
 #OpenBabel Detection
-add_subdirectory(openbabel)
-set(BABEL_LIBRARY_DIR ${CMAKE_BINARY_DIR}/lib)
-set(BABEL_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include/openbabel-2.0)
+#add_subdirectory(openbabel)
+#set(BABEL_LIBRARY_DIR ${CMAKE_BINARY_DIR}/lib)
+#set(BABEL_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include/openbabel-2.0)
 
 # Append the suffix given from input to all generated executables
 if(EXECUTABLE_SUFFIX)

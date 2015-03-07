@@ -54,7 +54,7 @@
 #include "libparallel/ParallelPrinter.h"
 #include "../ccenergy/ccwave.h"
 #include "../cclambda/cclambda.h"
-#include "../../lib/libbabel/LibBabel.h"
+//#include "../../lib/libbabel/LibBabel.h"
 //#include "../mp2/mp2wave.h"
 
 #if defined(MAKE_PYTHON_MODULE)
@@ -1388,7 +1388,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
     def("set_nthread", &py_psi_set_n_threads, "Sets the number of threads to use in SMP parallel computations.");
     def("nthread", &py_psi_get_n_threads, "Returns the number of threads to use in SMP parallel computations.");
-    def("mol_from_file",&LibBabel::ParseFile,"Reads a molecule from another input file");
+//    def("mol_from_file",&LibBabel::ParseFile,"Reads a molecule from another input file");
     def("set_parent_symmetry", py_psi_set_parent_symmetry, "Sets the symmetry of the 'parent' (undisplaced) geometry, by Schoenflies symbol, at the beginning of a finite difference computation.");
     def("print_options", py_psi_print_options, "Prints the currently set options (to the output file) for the current module.");
     def("print_global_options", py_psi_print_global_options, "Prints the currently set global (all modules) options to the output file.");
