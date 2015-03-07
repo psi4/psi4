@@ -271,15 +271,17 @@ struct calcinfo {
    int *docc;            /* doubly occupied orbitals per irrep */
    int *socc;            /* singly occupied orbitals per irrep */
    int *frozen_docc;     /* frozen doubly occupied orbs per irrep */
-   int *explicit_core;   /* explicit core orbitals per irrep: integrals
+   int *rstr_docc;       /* explicit core orbitals per irrep: integrals
                             involving these orbs are read, but excitations
                             from these orbs are not allowed (maybe in +PT2) */
-   int *explicit_vir;    /* explicit virtual orbitals per irrep: these orbs
+   int *closed_docc;     /* rstr_docc + closed_docc */
+   int *rstr_uocc;       /* explicit virtual orbitals per irrep: these orbs
                             are beyond the last RAS space and not accessible
                             in normal CI computations, but their integrals
                             and indices are available for possible +PT2 
                             corrections, etc */
    int *frozen_uocc;     /* frozen virtual orbs per irrep */
+   int *closed_uocc;     /* str_uocc + closed_uocc */ 
    int iopen;            /* flag for whether open shell or not */
    double enuc;          /* nuclear repulsion energy */
    double escf;          /* scf energy */
@@ -309,13 +311,14 @@ struct calcinfo {
    double *twoel_ints;   /* two-electron integrals */
    double **fock;        /* fock matrix */
    int num_fzc_orbs;     /* number of FZC orbitals (i.e. frozen core) */
-   int num_cor_orbs;     /* number of COR orbitals (see explicit_core) */
+   int num_cor_orbs;     /* number of COR orbitals (see rstr_docc) */
+   int num_ci_cor_orbs;  /* DGAS number of COR orbitals for CI, always set to zero? */
    int num_alp_str;      /* number of alpha strings */
    int num_bet_str;      /* number of beta strings */
    int num_ci_orbs;      /* nmo - num orbs frozen */
    int num_fzv_orbs;     /* number of frozen/deleted virtual orbitals */
    int num_vir_orbs;     /* number of explicit virtual orbitals beyond
-                            the last RAS space (see explicit_vir) */
+                            the last RAS space (see rstr_uocc) */
    int ref_alp;          /* address of reference alpha string */
    int ref_bet;          /* address of reference beta string */
    int ref_alp_list;     /* string list containing reference alpha string */

@@ -1142,7 +1142,7 @@ void set_ras_parms(void)
    /* figure out how many electrons are in RAS II */
    /* alpha electrons */
    for (i=0,nras2alp=0,betsocc=0; i<CalcInfo.nirreps; i++) {
-      j = CalcInfo.docc[i] - CalcInfo.frozen_docc[i] - CalcInfo.ras_opi[0][i];
+      j = CalcInfo.docc[i] - CalcInfo.closed_docc[i] - CalcInfo.ras_opi[0][i];
       if (Parameters.opentype == PARM_OPENTYPE_HIGHSPIN) {
          j += CalcInfo.socc[i];
          }
@@ -1164,7 +1164,7 @@ void set_ras_parms(void)
       }
    /* beta electrons */
    for (i=0,nras2bet=0,betsocc=0; i<CalcInfo.nirreps; i++) {
-      j = CalcInfo.docc[i] - CalcInfo.frozen_docc[i] - CalcInfo.ras_opi[0][i];
+      j = CalcInfo.docc[i] - CalcInfo.closed_docc[i] - CalcInfo.ras_opi[0][i];
       if (Parameters.opentype == PARM_OPENTYPE_SINGLET && CalcInfo.socc[i]) {
          if (betsocc + CalcInfo.socc[i] <= CalcInfo.spab)
             j += CalcInfo.socc[i];
@@ -1367,7 +1367,7 @@ void set_ras_parms(void)
       Parameters.val_ex_lvl;
    if (Parameters.a_ras1_min < 0) Parameters.a_ras1_min = 0;
    Parameters.a_ras1_min += CalcInfo.num_fzc_orbs;
-   Parameters.a_ras1_min += CalcInfo.num_cor_orbs;
+   Parameters.a_ras1_min += CalcInfo.num_ci_cor_orbs;
 
    i = (CalcInfo.num_bet_expl <= Parameters.b_ras1_lvl + 1) ?
       CalcInfo.num_bet_expl : Parameters.b_ras1_lvl + 1;
@@ -1375,7 +1375,7 @@ void set_ras_parms(void)
       Parameters.val_ex_lvl;
    if (Parameters.b_ras1_min < 0) Parameters.b_ras1_min = 0;
    Parameters.b_ras1_min += CalcInfo.num_fzc_orbs;
-   Parameters.b_ras1_min += CalcInfo.num_cor_orbs;
+   Parameters.b_ras1_min += CalcInfo.num_ci_cor_orbs;
 
    tot_expl_el = CalcInfo.num_alp_expl + CalcInfo.num_bet_expl;
    if (Parameters.cc) {
@@ -1501,7 +1501,7 @@ void print_ras_parms(void)
   outfile->Printf( "   FROZEN CORE  =   %6d      NUM BET      =   %6d\n",
     CalcInfo.num_fzc_orbs, CalcInfo.num_bet);
   outfile->Printf( "   RESTR CORE   =   %6d      NUM BET EXPL =   %6d\n",
-    CalcInfo.num_cor_orbs, CalcInfo.num_bet_expl);
+    CalcInfo.num_ci_cor_orbs, CalcInfo.num_bet_expl);
   outfile->Printf( "   IOPEN        =   %6s\n", CalcInfo.iopen ? "yes" :
     "no");
   outfile->Printf( "   RAS1 LVL     =   %6d      A RAS3 MAX   =   %6d\n",
@@ -1552,11 +1552,11 @@ void print_ras_parms(void)
   }
   outfile->Printf( "\n   FROZEN DOCC  = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.frozen_docc[i]) ;
+    outfile->Printf( "%2d ", CalcInfo.closed_docc[i]) ;
   }
   outfile->Printf( "\n   FROZEN UOCC  = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.frozen_uocc[i]) ;
+    outfile->Printf( "%2d ", CalcInfo.closed_uocc[i]) ;
   }
   outfile->Printf( "\n");
   for (i=0; i<4; i++) {

@@ -102,7 +102,7 @@ void formstrings(void)
       CalcInfo.nirreps, CalcInfo.orbsym,
       Parameters.a_ras1_lvl, Parameters.a_ras1_min, Parameters.a_ras1_max,
       Parameters.ras3_lvl, Parameters.a_ras3_max,
-      CalcInfo.num_fzc_orbs, CalcInfo.num_cor_orbs,
+      CalcInfo.num_fzc_orbs, CalcInfo.num_ci_cor_orbs,
       Parameters.ras4_lvl, Parameters.a_ras4_max, Parameters.a_ras34_max);
 
    if (Parameters.print_lvl > 3)
@@ -135,7 +135,7 @@ void formstrings(void)
           CalcInfo.nirreps, CalcInfo.orbsym,
           Parameters.b_ras1_lvl,  Parameters.b_ras1_min, Parameters.b_ras1_max,
           Parameters.ras3_lvl, Parameters.b_ras3_max,
-          CalcInfo.num_fzc_orbs, CalcInfo.num_cor_orbs,
+          CalcInfo.num_fzc_orbs, CalcInfo.num_ci_cor_orbs,
           Parameters.ras4_lvl, Parameters.b_ras4_max, Parameters.b_ras3_max);
 
       if (Parameters.print_lvl > 1)
@@ -1027,7 +1027,7 @@ int s2bgen1(struct fastgraph *graph, int *occs, int *I_n, int ijsym, int nel,
       for (hole=0; hole<ecnt[ras]; hole++,abshole++) { 
  
          j = ras_occs[ras][hole];
-         if (j < CalcInfo.num_cor_orbs) continue;
+         if (j < CalcInfo.num_ci_cor_orbs) continue;
          jsym = orbsym[j];
          isym = ijsym ^ jsym;
 
@@ -1130,7 +1130,7 @@ int s2bgen2(struct fastgraph *graph, int *occs, int *I_n, int ijsym, int nel,
    for (hole=0; hole<ecnt[down]; hole++,abshole++) {
 
       j = ras_occs_excite[hole];
-      if (j < CalcInfo.num_cor_orbs) continue;
+      if (j < CalcInfo.num_ci_cor_orbs) continue;
       jsym = orbsym[j];
       isym = ijsym ^ jsym;
       for (part=0; part<ras_opi[isym]; part++) {

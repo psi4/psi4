@@ -224,7 +224,7 @@ PsiReturnType detci(Options &options)
    if(Parameters.zaptn)         /* Shift SCF eigenvalues for ZAPTn          */
       zapt_shift(CalcInfo.twoel_ints, CalcInfo.nirreps, CalcInfo.nmo,
          CalcInfo.docc, CalcInfo.socc, CalcInfo.orbs_per_irr,
-         CalcInfo.frozen_docc, CalcInfo.reorder);
+         CalcInfo.closed_docc, CalcInfo.reorder);
 
    if (Parameters.bendazzoli) /* form the Bendazzoli OV arrays            */
       form_ov(alplist);
@@ -1378,7 +1378,7 @@ void mpn(struct stringwr **alplist, struct stringwr **betlist)
   fzc_orbs = init_int_matrix(CalcInfo.nirreps, CalcInfo.num_fzc_orbs);
   cnt = 0;
   for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
-     for (i=0; i<CalcInfo.frozen_docc[irrep]; i++)
+     for (i=0; i<CalcInfo.closed_docc[irrep]; i++)
         fzc_orbs[irrep][i] = cnt++;
 
   /* Loop over alp occs */

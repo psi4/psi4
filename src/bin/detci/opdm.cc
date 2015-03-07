@@ -118,8 +118,8 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
 
   populated_orbs = CalcInfo.num_ci_orbs + CalcInfo.num_fzc_orbs;
   for (irrep=0; irrep<CalcInfo.nirreps; irrep++) {
-     opdm_length += (CalcInfo.orbs_per_irr[irrep] - CalcInfo.frozen_uocc[irrep])
-                 * (CalcInfo.orbs_per_irr[irrep] - CalcInfo.frozen_uocc[irrep]);
+     opdm_length += (CalcInfo.orbs_per_irr[irrep] - CalcInfo.closed_uocc[irrep])
+                 * (CalcInfo.orbs_per_irr[irrep] - CalcInfo.closed_uocc[irrep]);
      orb_length += (CalcInfo.so_per_irr[irrep]*CalcInfo.orbs_per_irr[irrep]);
      }
 
@@ -151,8 +151,8 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
           *sizeof(double);  
         Parameters.opdm_idxmat[l][irrep] =
           Parameters.opdm_idxmat[l][irrep-1] +
-          (CalcInfo.orbs_per_irr[irrep-1]-CalcInfo.frozen_uocc[irrep]) *
-          (CalcInfo.orbs_per_irr[irrep-1]-CalcInfo.frozen_uocc[irrep]) *
+          (CalcInfo.orbs_per_irr[irrep-1]-CalcInfo.closed_uocc[irrep]) *
+          (CalcInfo.orbs_per_irr[irrep-1]-CalcInfo.closed_uocc[irrep]) *
           sizeof(double);
         } 
      } 
@@ -588,16 +588,16 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
       int mo_offset = 0;
       for (int h = 0; h < Ca->nirrep(); h++) {
         int nmo = CalcInfo.orbs_per_irr[h];
-        int nfv = CalcInfo.frozen_uocc[h];
+        int nfv = CalcInfo.closed_uocc[h];
         int nmor = nmo - nfv;
         //int nmo = Ca->colspi()[h];
         //int nmor = nmo - ref->frzvpi()[h];
         if (!nmo || !nmor) continue;
         double** opdmap = opdm_a->pointer(h);
           
-        for (int i=0; i<CalcInfo.orbs_per_irr[h]- CalcInfo.frozen_uocc[h]; i++) {
+        for (int i=0; i<CalcInfo.orbs_per_irr[h]- CalcInfo.closed_uocc[h]; i++) {
           for (int j=0; j<CalcInfo.orbs_per_irr[h]-
-            CalcInfo.frozen_uocc[h]; j++) {
+            CalcInfo.closed_uocc[h]; j++) {
             int i_ci = CalcInfo.reorder[i+mo_offset];
             int j_ci = CalcInfo.reorder[j+mo_offset]; 
             opdmap[i][j] = onepdm_a[i_ci][j_ci];
@@ -614,16 +614,16 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
         mo_offset = 0;
         for (int h = 0; h < Ca->nirrep(); h++) {
           int nmo = CalcInfo.orbs_per_irr[h];
-          int nfv = CalcInfo.frozen_uocc[h];
+          int nfv = CalcInfo.closed_uocc[h];
           int nmor = nmo - nfv;
           //int nmo = Ca->colspi()[h];
           //int nmor = nmo - ref->frzvpi()[h];
           if (!nmo || !nmor) continue;
           double** opdmbp = opdm_b->pointer(h);
               
-          for (int i=0; i<CalcInfo.orbs_per_irr[h]-CalcInfo.frozen_uocc[h]; i++) {
+          for (int i=0; i<CalcInfo.orbs_per_irr[h]-CalcInfo.closed_uocc[h]; i++) {
             for (int j=0; j<CalcInfo.orbs_per_irr[h]-
-              CalcInfo.frozen_uocc[h]; j++) {
+              CalcInfo.closed_uocc[h]; j++) {
               int i_ci = CalcInfo.reorder[i+mo_offset];
               int j_ci = CalcInfo.reorder[j+mo_offset]; 
               opdmbp[i][j] = onepdm_b[i_ci][j_ci];
@@ -812,9 +812,9 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
       for (irrep=0; irrep<CalcInfo.nirreps; irrep++) {
         if (CalcInfo.orbs_per_irr[irrep] == 0) continue; 
         for (i=0; i<CalcInfo.orbs_per_irr[irrep]-
-                    CalcInfo.frozen_uocc[irrep]; i++) {
+                    CalcInfo.closed_uocc[irrep]; i++) {
           for (j=0; j<CalcInfo.orbs_per_irr[irrep]-
-                    CalcInfo.frozen_uocc[irrep]; j++) {
+                    CalcInfo.closed_uocc[irrep]; j++) {
             i_ci = CalcInfo.reorder[i+mo_offset];
             j_ci = CalcInfo.reorder[j+mo_offset]; 
             opdm_blk[i][j] = onepdm[i_ci][j_ci];
@@ -845,12 +845,12 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
 
         zero_mat(opdm_eigvec, max_orb_per_irrep, max_orb_per_irrep);
 
-        if (CalcInfo.orbs_per_irr[irrep]-CalcInfo.frozen_uocc[irrep] > 0) {
-          sq_rsp(CalcInfo.orbs_per_irr[irrep]-CalcInfo.frozen_uocc[irrep],
-                 CalcInfo.orbs_per_irr[irrep]-CalcInfo.frozen_uocc[irrep],
+        if (CalcInfo.orbs_per_irr[irrep]-CalcInfo.closed_uocc[irrep] > 0) {
+          sq_rsp(CalcInfo.orbs_per_irr[irrep]-CalcInfo.closed_uocc[irrep],
+                 CalcInfo.orbs_per_irr[irrep]-CalcInfo.closed_uocc[irrep],
                  opdm_blk, opdm_eigval, 1, opdm_eigvec, TOL); 
           }
-        for (i=CalcInfo.orbs_per_irr[irrep]-CalcInfo.frozen_uocc[irrep]; 
+        for (i=CalcInfo.orbs_per_irr[irrep]-CalcInfo.closed_uocc[irrep]; 
              i<CalcInfo.orbs_per_irr[irrep]; i++) {
            opdm_eigvec[i][i] = 1.0;
            opdm_eigval[i] = 0.0;
@@ -865,10 +865,10 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
 // change the final result
 
 //Loop over "populated"
-  for (i=0;i<CalcInfo.orbs_per_irr[irrep]-CalcInfo.frozen_uocc[irrep];i++){
+  for (i=0;i<CalcInfo.orbs_per_irr[irrep]-CalcInfo.closed_uocc[irrep];i++){
     max_overlap = 0;
     int m       = 0;
-     for (j=i;j<CalcInfo.orbs_per_irr[irrep]-CalcInfo.frozen_uocc[irrep];j++){
+     for (j=i;j<CalcInfo.orbs_per_irr[irrep]-CalcInfo.closed_uocc[irrep];j++){
        overlap = opdm_eigvec[i][j] * opdm_eigvec[i][j];
        if(overlap > max_overlap){
          m = j;
