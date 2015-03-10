@@ -64,7 +64,7 @@ extern void str_abs2rel(int absidx, int *relidx, int *listnum,
 /* FUNCTION PROTOTYPES for this module */
 void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el, 
    int nirreps, int *orbsym, int ras1_lvl, int ras1_min, int ras1_max, 
-   int ras3_lvl, int ras3_max, int num_fzc_orbs, int num_cor_orbs,
+   int ras3_lvl, int ras3_max, int num_fzc_orbs, int num_expl_cor_orbs,
    int ras4_lvl, int ras4_max, int ras34_max);
 void og_add_walk(int ras1_idx, int ras3_num, int ras4_num, int *occs, 
    int nel_expl, int norb, int nirreps, int num_fzc_orbs,
@@ -96,7 +96,7 @@ void form_strings(void)
       CalcInfo.nirreps, CalcInfo.orbsym,
       Parameters.a_ras1_lvl, Parameters.a_ras1_min, Parameters.a_ras1_max,
       Parameters.ras3_lvl, Parameters.a_ras3_max,
-      CalcInfo.num_fzc_orbs, CalcInfo.num_cor_orbs,
+      CalcInfo.num_fzc_orbs, CalcInfo.num_expl_cor_orbs,
       Parameters.ras4_lvl, Parameters.a_ras4_max, Parameters.a_ras34_max);
 
    if (Parameters.print_lvl > 3)
@@ -132,7 +132,7 @@ void form_strings(void)
           CalcInfo.nirreps, CalcInfo.orbsym,
           Parameters.b_ras1_lvl,  Parameters.b_ras1_min, Parameters.b_ras1_max,
           Parameters.ras3_lvl, Parameters.b_ras3_max,
-          CalcInfo.num_fzc_orbs, CalcInfo.num_cor_orbs,
+          CalcInfo.num_fzc_orbs, CalcInfo.num_expl_cor_orbs,
           Parameters.ras4_lvl, Parameters.b_ras4_max, Parameters.b_ras3_max);
 
       if (Parameters.print_lvl > 3)
@@ -236,7 +236,7 @@ void form_strings(void)
 **    ras3_lvl     =  first level in RAS III
 **    ras3_max     =  max number of electrons in RAS III _for the string_
 **    num_fzc_orbs = number of frozen core orbitals
-**    num_cor_orbs = number of restricted core orbitals
+**    num_expl_cor_orbs = number of explicit core orbitals in CI calc
 **    ras4_lvl     =  first level of the new RAS IV 
 **    ras4_max     =  max number of electrons in RAS IV for the string
 **    ras34_max    =  max number of electrons in RAS III and IV
@@ -245,7 +245,7 @@ void form_strings(void)
 */
 void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el, 
       int nirreps, int *orbsym, int ras1_lvl, int ras1_min, int ras1_max, 
-      int ras3_lvl, int ras3_max, int num_fzc_orbs, int num_cor_orbs,
+      int ras3_lvl, int ras3_max, int num_fzc_orbs, int num_expl_cor_orbs,
       int ras4_lvl, int ras4_max, int ras34_max)
 {
    Odometer Ras1, Ras2, Ras3, Ras4 ;
@@ -266,9 +266,9 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
 
    // Go ahead and set the occupations of the frozen orbs 
    occs = init_int_array(num_el) ;
-   for (i=0; i<num_cor_orbs; i++) occs[i] = i ;
+   for (i=0; i<num_expl_cor_orbs; i++) occs[i] = i ;
  
-   orbs_frozen = num_fzc_orbs + num_cor_orbs;
+   orbs_frozen = num_fzc_orbs + num_expl_cor_orbs;
 
    for (i=0; i<num_fzc_orbs; i++) fzc_sym ^= orbsym[i];
 
@@ -285,7 +285,7 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
    Graph->num_el_expl = num_el - num_fzc_orbs;
    Graph->num_orb = ci_orbs ;
    Graph->num_fzc_orbs = num_fzc_orbs;
-   Graph->num_cor_orbs = num_cor_orbs;
+   Graph->num_expl_cor_orbs = num_expl_cor_orbs;
    Graph->fzc_sym = fzc_sym;
    Graph->orbsym = orbsym;
    Graph->ras1_lvl = ras1_lvl ;
@@ -388,7 +388,7 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
 
    for (n1 = n1max; n1 >= n1min; n1--) {
       Ras1.resize(n1) ;
-      Ras1.set_min_lex(num_cor_orbs) ;
+      Ras1.set_min_lex(num_expl_cor_orbs) ;
       Ras1.set_max_lex(ras1_lvl) ;
 
       for (n3 = 0; n3 <= ras3_max; n3++) {
@@ -430,7 +430,7 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
                      Ras3.get_value(array3) ;
                      do {
                         Ras4.get_value(array4) ;
-                        for (i=n1-1, j = num_cor_orbs; i>=0; i--)
+                        for (i=n1-1, j = num_expl_cor_orbs; i>=0; i--)
                            occs[j++] = array1[i] ;
                         for (i=n2-1; i>=0; i--)
                            occs[j++] = array2[i] ;
@@ -806,7 +806,7 @@ void og_print(struct olsen_graph *Graph, std::string out)
    outfile->Printf("\nOlsen Graph:\n");
    outfile->Printf("%3c%2d Electrons\n",' ',Graph->num_el);
    outfile->Printf("%3c%2d Frozen core orbitals\n",' ',Graph->num_fzc_orbs);
-   outfile->Printf("%3c%2d Restricted core orbs\n",' ',Graph->num_cor_orbs);
+   outfile->Printf("%3c%2d Explicit core orbs\n",' ',Graph->num_expl_cor_orbs);
    outfile->Printf("%3c%2d Explicit electrons\n",' ',Graph->num_el_expl);
    outfile->Printf("%3c%2d Explicit Orbitals\n",' ',Graph->num_orb);
    outfile->Printf("%3c%2d RAS I level\n",' ',Graph->ras1_lvl);

@@ -273,12 +273,11 @@ void get_mo_info(Options &options)
    CalcInfo.num_fzv_orbs = 0;
    CalcInfo.num_vir_orbs = 0;
    CalcInfo.num_fzc_orbs = 0;
-   CalcInfo.num_cor_orbs = 0;
+   CalcInfo.num_expl_cor_orbs = 0;
    for (i=0; i<CalcInfo.nirreps; i++) {
       CalcInfo.num_fzv_orbs += CalcInfo.frozen_uocc[i];
       CalcInfo.num_vir_orbs += CalcInfo.explicit_vir[i];
       CalcInfo.num_fzc_orbs += CalcInfo.frozen_docc[i];
-      CalcInfo.num_cor_orbs += CalcInfo.explicit_core[i];
    }
 
    /* calculate number of orbitals active in CI */

@@ -223,7 +223,7 @@ void b2bgen1(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
             for (k=0; k<ras; k++) abshole += ecnt[k];
  
             j = ras_occs[ras][hole];
-            if (j < CalcInfo.num_cor_orbs) continue;
+            if (j < CalcInfo.num_expl_cor_orbs) continue;
             jsym = CalcInfo.orbsym[j + CalcInfo.num_fzc_orbs];
             isym = ijsym ^ jsym;
             for (part=0; part<ras_opi[ras][isym]; part++) {
@@ -335,7 +335,7 @@ void b2bgen2(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
          for (k=0; k<down; k++) abshole += ecnt[k];
 
          j = ras_occs_excite[hole];
-         if (j < CalcInfo.num_cor_orbs) continue;
+         if (j < CalcInfo.num_expl_cor_orbs) continue;
          jsym = CalcInfo.orbsym[j + CalcInfo.num_fzc_orbs];
          isym = ijsym ^ jsym;
          for (part=0; part<ras_opi[isym]; part++) {

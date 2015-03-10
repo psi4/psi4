@@ -141,7 +141,7 @@ void stringlist(struct olsen_graph *Graph, struct stringwr **slist)
 
             form_stringwr(slist[irrep * ncodes + code], occs, 
                nel_expl, Graph->num_orb, subgraph, Graph, 
-               Graph->num_cor_orbs);
+               Graph->num_expl_cor_orbs);
             }
          } /* end loop over subgraph codes */
       } /* end loop over irreps */
