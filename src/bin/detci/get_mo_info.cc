@@ -116,10 +116,10 @@ void get_mo_info(Options &options)
             CalcInfo.frozen_uocc[h] = options["FROZEN_UOCC"][h].to_integer();
     }
 
-   CalcInfo.closed_docc = init_int_array(CalcInfo.nirreps);
-   CalcInfo.closed_uocc  = init_int_array(CalcInfo.nirreps);
-   CalcInfo.rstr_docc = init_int_array(CalcInfo.nirreps);
-   CalcInfo.rstr_uocc  = init_int_array(CalcInfo.nirreps);
+   rstr_docc = init_int_array(CalcInfo.nirreps);
+   rstr_uocc = init_int_array(CalcInfo.nirreps);
+   CalcInfo.explicit_core = init_int_array(CalcInfo.nirreps);
+   CalcInfo.explicit_vir  = init_int_array(CalcInfo.nirreps);
    CalcInfo.reorder = init_int_array(CalcInfo.nmo);
    CalcInfo.ras_opi = init_int_matrix(4,CalcInfo.nirreps);
 
@@ -127,7 +127,7 @@ void get_mo_info(Options &options)
    if (!ras_set2(CalcInfo.nirreps, CalcInfo.nmo, 1, (Parameters.fzc) ?  1:0,
                 CalcInfo.orbs_per_irr, CalcInfo.docc, CalcInfo.socc,
                 CalcInfo.frozen_docc, CalcInfo.frozen_uocc,
-                CalcInfo.rstr_docc, CalcInfo.rstr_uocc,
+                rstr_docc, rstr_uocc,
                 CalcInfo.ras_opi, CalcInfo.reorder, 1, 0, options))
    {
      throw PsiException("Error in ras_set(). Aborting.",__FILE__,__LINE__);
@@ -140,11 +140,21 @@ void get_mo_info(Options &options)
 
    Parameters.filter_ints = 0;
 
-   for (i=0; i<CalcInfo.nirreps; i++) {
-     CalcInfo.closed_docc[i] += CalcInfo.rstr_docc[i] + CalcInfo.frozen_docc[i];
-     CalcInfo.closed_uocc[i] += CalcInfo.rstr_uocc[i] + CalcInfo.frozen_uocc[i];
-     if (CalcInfo.rstr_docc[i] > 0 || CalcInfo.rstr_uocc[i] > 0) Parameters.filter_ints = 1;
+   if (1) { /* for now, always treat restricted as frozen */
+     for (i=0; i<CalcInfo.nirreps; i++) {
+       CalcInfo.frozen_docc[i] += rstr_docc[i];
+       CalcInfo.frozen_uocc[i] += rstr_uocc[i];
+       if (rstr_docc[i] > 0 || rstr_uocc[i] > 0) Parameters.filter_ints = 1;
+     }
    }
+   else { /* for future use */
+     for (i=0; i<CalcInfo.nirreps; i++) {
+       CalcInfo.explicit_core[i] = rstr_docc[i];
+       CalcInfo.explicit_vir[i]  = rstr_uocc[i];
+     }
+   }
+
+   free(rstr_docc);  free(rstr_uocc);
 
    if (Parameters.dertype != "NONE" || Parameters.wfn == "DETCAS" ||
        Parameters.wfn == "CASSCF"   || Parameters.wfn == "RASSCF") {
@@ -161,40 +171,10 @@ void get_mo_info(Options &options)
      if (CalcInfo.max_orbs_per_irrep < CalcInfo.orbs_per_irr[i])
        CalcInfo.max_orbs_per_irrep = CalcInfo.orbs_per_irr[i];
      if (CalcInfo.max_pop_per_irrep < (CalcInfo.orbs_per_irr[i] -
-                                   CalcInfo.closed_uocc[i]))
+                                   CalcInfo.frozen_uocc[i]))
        CalcInfo.max_pop_per_irrep = CalcInfo.orbs_per_irr[i] -
-                                    CalcInfo.closed_uocc[i];
+                                    CalcInfo.frozen_uocc[i];
      }
-
-   /* at this stage I've already overwritten CalcInfo.closed_docc,
-      CalcInfo.rstr_docc, etc, to be their internal DETCI meaning
-      and not necessarily the user input.  Internally frozen_docc
-      and closed_uocc refer to dropped core/virt that are never
-      allowed to change occupation
-   */
-   CalcInfo.num_fzv_orbs = 0;
-   CalcInfo.num_vir_orbs = 0;
-   CalcInfo.num_fzc_orbs = 0;
-   CalcInfo.num_cor_orbs = 0;
-   for (i=0; i<CalcInfo.nirreps; i++) {
-      CalcInfo.num_fzv_orbs += CalcInfo.closed_uocc[i];
-      CalcInfo.num_vir_orbs += CalcInfo.rstr_uocc[i];
-      CalcInfo.num_fzc_orbs += CalcInfo.closed_docc[i];
-      CalcInfo.num_cor_orbs += CalcInfo.rstr_docc[i];
-   }
-
-   // DGAS this parameter was always set to zero, but used freqeuntly?
-   // rstr_docc is now a useful quantity that can be nonzero.
-   CalcInfo.num_ci_cor_orbs = 0;
-
-   /* calculate number of orbitals active in CI */
-   /* maybe this changes later for cor orbs, depends on where we go w/ it */
-   CalcInfo.num_ci_orbs = CalcInfo.nmo - CalcInfo.num_fzc_orbs -
-     CalcInfo.num_fzv_orbs;
-
-   if ((CalcInfo.num_ci_orbs * (CalcInfo.num_ci_orbs + 1)) / 2 > IOFF_MAX) {
-      throw PsiException("error: IOFF_MAX not large enough!",__FILE__,__LINE__);
-   }
 
 
    /* construct the "ordering" array, which maps the other direction */
@@ -283,6 +263,32 @@ void get_mo_info(Options &options)
       str += boost::lexical_cast<std::string>( Parameters.opentype) ;
       throw PsiException(str,__FILE__,__LINE__);
       }
+
+   /* at this stage I've already overwritten CalcInfo.frozen_docc,
+      CalcInfo.rstr_docc, etc, to be their internal DETCI meaning
+      and not necessarily the user input.  Internally frozen_docc
+      and frozen_uocc refer to dropped core/virt that are never
+      allowed to change occupation
+   */
+   CalcInfo.num_fzv_orbs = 0;
+   CalcInfo.num_vir_orbs = 0;
+   CalcInfo.num_fzc_orbs = 0;
+   CalcInfo.num_cor_orbs = 0;
+   for (i=0; i<CalcInfo.nirreps; i++) {
+      CalcInfo.num_fzv_orbs += CalcInfo.frozen_uocc[i];
+      CalcInfo.num_vir_orbs += CalcInfo.explicit_vir[i];
+      CalcInfo.num_fzc_orbs += CalcInfo.frozen_docc[i];
+      CalcInfo.num_cor_orbs += CalcInfo.explicit_core[i];
+   }
+
+   /* calculate number of orbitals active in CI */
+   /* maybe this changes later for cor orbs, depends on where we go w/ it */
+   CalcInfo.num_ci_orbs = CalcInfo.nmo - CalcInfo.num_fzc_orbs -
+     CalcInfo.num_fzv_orbs;
+
+   if ((CalcInfo.num_ci_orbs * (CalcInfo.num_ci_orbs + 1)) / 2 > IOFF_MAX) {
+      throw PsiException("error: IOFF_MAX not large enough!",__FILE__,__LINE__);
+   }
 
    CalcInfo.num_alp_expl = CalcInfo.num_alp - CalcInfo.num_fzc_orbs;
    CalcInfo.num_bet_expl = CalcInfo.num_bet - CalcInfo.num_fzc_orbs;
