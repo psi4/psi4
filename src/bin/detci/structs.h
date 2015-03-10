@@ -128,7 +128,7 @@ struct stringgraph {
 struct olsen_graph {
    int num_str;             /* total number of strings */
    int num_fzc_orbs;        /* number of frozen core orbitals */
-   int num_cor_orbs;        /* number of restricted core orbitals */
+   int num_expl_cor_orbs;   /* number of explicit core orbitals */
    int fzc_sym;             /* symmetry (irrep) for the frozen core */
    int num_el;              /* number of electrons (total) in graph */
    int num_el_expl;         /* number of electrons (explicit) in graph */
@@ -136,10 +136,10 @@ struct olsen_graph {
    int ras1_lvl;            /* orbital number where RAS I ends (less fzc),
                                or the last level in RAS I */
    int ras1_min;            /* minimum number of electrons in RAS I (for
-                               the _strings_), incl. frozen core */
+                               the _strings_), incl. core */
    int ras1_max;            /* max number of RAS I electrons (useful when
                                the RAS I level may extend beyond the last
-                               occupied orbital), incl. frozen core */
+                               occupied orbital), incl. core */
    int ras3_lvl ;           /* orbital num where RAS III begins (less fzc) */
    int ras3_max ;           /* maximum number of electrons in RAS III */
    int ras4_lvl ;           /* orbital number where RAS IV begins (less fzc) */
@@ -183,7 +183,7 @@ struct graph_set {
    int num_str;             /* total number of strings */
    int num_graphs;          /* total number of valid subgraphs */
    int num_fzc_orbs;        /* number of frozen core orbitals */
-   int num_cor_orbs;        /* number of restricted core orbitals */
+   int num_expl_cor_orbs;   /* number of explicit core orbitals */
    int fzc_sym;             /* symmetry (irrep) for the frozen core */
    int num_el;              /* number of electrons (total) in graph */
    int num_el_expl;         /* number of electrons (explicit) in graph */
@@ -191,10 +191,10 @@ struct graph_set {
    int ras1_lvl;            /* orbital number where RAS I ends (less fzc),
                                or the last level in RAS I */
    int ras1_min;            /* minimum number of electrons in RAS I (for
-                               the _strings_), incl. frozen core */
+                               the _strings_), incl. core */
    int ras1_max;            /* max number of RAS I electrons (useful when
                                the RAS I level may extend beyond the last
-                               occupied orbital), incl. frozen core */
+                               occupied orbital), incl. core */
    int ras3_lvl;            /* orbital num where RAS III begins (less fzc) */
    int ras3_max;            /* maximum number of electrons in RAS III */
    int ras4_lvl;            /* orbital number where RAS IV begins (less fzc) */
@@ -309,7 +309,11 @@ struct calcinfo {
    double *twoel_ints;   /* two-electron integrals */
    double **fock;        /* fock matrix */
    int num_fzc_orbs;     /* number of FZC orbitals (i.e. frozen core) */
-   int num_cor_orbs;     /* number of COR orbitals (see explicit_core) */
+   int num_expl_cor_orbs;/* number of explicit core orbitals, i.e., 
+                            orbitals that are constrained to be doubly
+                            occupied in the CI and but are nevertheless 
+                            explicitly included in the CI computation (not
+                            currently used for anything) */
    int num_alp_str;      /* number of alpha strings */
    int num_bet_str;      /* number of beta strings */
    int num_ci_orbs;      /* nmo - num orbs frozen */

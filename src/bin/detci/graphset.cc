@@ -69,7 +69,7 @@ signed char **Tsgn;
 /* FUNCTION PROTOTYPES for this module */
 void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el, 
       int nirreps, int *orbsym, int ras1_lvl, int ras1_min, int ras1_max, 
-      int ras3_lvl, int ras3_max, int num_fzc_orbs, int num_cor_orbs,
+      int ras3_lvl, int ras3_max, int num_fzc_orbs, int num_expl_cor_orbs,
       int ras4_lvl, int ras4_max, int ras34_max);
 void gs_add_walk(int ras1_idx, int ras3_num, int ras4_num, int *occs, 
       int nel_expl, int norb, int nirreps, int num_fzc_orbs,
@@ -102,7 +102,7 @@ void formstrings(void)
       CalcInfo.nirreps, CalcInfo.orbsym,
       Parameters.a_ras1_lvl, Parameters.a_ras1_min, Parameters.a_ras1_max,
       Parameters.ras3_lvl, Parameters.a_ras3_max,
-      CalcInfo.num_fzc_orbs, CalcInfo.num_cor_orbs,
+      CalcInfo.num_fzc_orbs, CalcInfo.num_expl_cor_orbs,
       Parameters.ras4_lvl, Parameters.a_ras4_max, Parameters.a_ras34_max);
 
    if (Parameters.print_lvl > 3)
@@ -135,7 +135,7 @@ void formstrings(void)
           CalcInfo.nirreps, CalcInfo.orbsym,
           Parameters.b_ras1_lvl,  Parameters.b_ras1_min, Parameters.b_ras1_max,
           Parameters.ras3_lvl, Parameters.b_ras3_max,
-          CalcInfo.num_fzc_orbs, CalcInfo.num_cor_orbs,
+          CalcInfo.num_fzc_orbs, CalcInfo.num_expl_cor_orbs,
           Parameters.ras4_lvl, Parameters.b_ras4_max, Parameters.b_ras3_max);
 
       if (Parameters.print_lvl > 1)
@@ -209,7 +209,7 @@ void formstrings(void)
 **    ras3_lvl     =  first level in RAS III
 **    ras3_max     =  max number of electrons in RAS III _for the string_
 **    num_fzc_orbs = number of frozen core orbitals
-**    num_cor_orbs = number of restricted core orbitals
+**    num_expl_cor_orbs = number of restricted core orbitals
 **    ras4_lvl     =  first level of the new RAS IV 
 **    ras4_max     =  max number of electrons in RAS IV for the string
 **    ras34_max    =  max number of electrons in RAS III and IV
@@ -218,7 +218,7 @@ void formstrings(void)
 */
 void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el, 
       int nirreps, int *orbsym, int ras1_lvl, int ras1_min, int ras1_max, 
-      int ras3_lvl, int ras3_max, int num_fzc_orbs, int num_cor_orbs,
+      int ras3_lvl, int ras3_max, int num_fzc_orbs, int num_expl_cor_orbs,
       int ras4_lvl, int ras4_max, int ras34_max)
 {
    Odometer Ras1, Ras2, Ras3, Ras4;
@@ -238,9 +238,9 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
 
    // Go ahead and set the occupations of the frozen orbs 
    occs = init_int_array(num_el) ;
-   for (i=0; i<num_cor_orbs; i++) occs[i] = i ;
+   for (i=0; i<num_expl_cor_orbs; i++) occs[i] = i ;
  
-   orbs_frozen = num_fzc_orbs + num_cor_orbs;
+   orbs_frozen = num_fzc_orbs + num_expl_cor_orbs;
 
    for (i=0; i<num_fzc_orbs; i++) fzc_sym ^= orbsym[i];
 
@@ -256,7 +256,7 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
    GraphSet->num_el_expl = num_el_expl;
    GraphSet->num_orb = ci_orbs ;
    GraphSet->num_fzc_orbs = num_fzc_orbs;
-   GraphSet->num_cor_orbs = num_cor_orbs;
+   GraphSet->num_expl_cor_orbs = num_expl_cor_orbs;
    GraphSet->fzc_sym = fzc_sym;
    GraphSet->orbsym = init_int_array(ci_orbs);
    for (i=0; i<ci_orbs; i++) {
@@ -347,7 +347,7 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
 
    for (n1 = n1max; n1 >= n1min; n1--) {
       Ras1.resize(n1) ;
-      Ras1.set_min_lex(num_cor_orbs) ;
+      Ras1.set_min_lex(num_expl_cor_orbs) ;
       Ras1.set_max_lex(ras1_lvl) ;
 
       for (n3 = 0; n3 <= ras3_max; n3++) {
@@ -389,7 +389,7 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
                      Ras3.get_value(array3) ;
                      do {
                         Ras4.get_value(array4) ;
-                        for (i=n1-1, j = num_cor_orbs; i>=0; i--)
+                        for (i=n1-1, j = num_expl_cor_orbs; i>=0; i--)
                            occs[j++] = array1[i] ;
                         for (i=n2-1; i>=0; i--)
                            occs[j++] = array2[i] ;
@@ -619,7 +619,7 @@ void gs_print(struct graphset *GraphSet, std::string OutFileRMR)
    outfile->Printf("\nGraphSet:\n");
    outfile->Printf("%3c%2d Electrons\n",' ',GraphSet->num_el);
    outfile->Printf("%3c%2d Frozen core orbitals\n",' ',GraphSet->num_fzc_orbs);
-   outfile->Printf("%3c%2d Restricted core orbs\n",' ',GraphSet->num_cor_orbs);
+   outfile->Printf("%3c%2d Explicit core orbs\n",' ',GraphSet->num_expl_cor_orbs);
    outfile->Printf("%3c%2d Explicit electrons\n",' ',GraphSet->num_el_expl);
    outfile->Printf("%3c%2d Explicit Orbitals\n",' ',GraphSet->num_orb);
    outfile->Printf("%3c%2d RAS I level\n",' ',GraphSet->ras1_lvl);
@@ -690,9 +690,9 @@ void gs_stringlist(struct graph_set *GraphSet, struct stringwr **slist)
 
    ncodes = GraphSet->num_codes;
    occs = init_int_array(num_el_expl) ;
-   for (i=0; i<num_cor_orbs; i++) occs[i] = i;
+   for (i=0; i<num_expl_cor_orbs; i++) occs[i] = i;
 
-   orbs_frozen = num_fzc_orbs + num_cor_orbs;
+   orbs_frozen = num_fzc_orbs + num_expl_cor_orbs;
    ci_orbs = GraphSet->num_orb;
 
    array1 = init_int_array(num_el);
@@ -719,7 +719,7 @@ void gs_stringlist(struct graph_set *GraphSet, struct stringwr **slist)
 
    for (n1 = n1max; n1 >= n1min; n1--) {
       Ras1.resize(n1) ;
-      Ras1.set_min_lex(num_cor_orbs) ;
+      Ras1.set_min_lex(num_expl_cor_orbs) ;
       Ras1.set_max_lex(ras1_lvl) ;
 
       for (n3 = 0; n3 <= ras3_max; n3++) {
@@ -761,7 +761,7 @@ void gs_stringlist(struct graph_set *GraphSet, struct stringwr **slist)
                      Ras3.get_value(array3) ;
                      do {
                         Ras4.get_value(array4) ;
-                        for (i=n1-1, j = num_cor_orbs; i>=0; i--)
+                        for (i=n1-1, j = num_expl_cor_orbs; i>=0; i--)
                            occs[j++] = array1[i] ;
                         for (i=n2-1; i>=0; i--)
                            occs[j++] = array2[i] ;
@@ -792,7 +792,7 @@ void gs_stringlist(struct graph_set *GraphSet, struct stringwr **slist)
 
                         gs_form_stringwr(slist[gnum], occs, num_el_expl,
                            GraphSet->num_orb, GraphSet->Graph[gnum],
-                           GraphSet, GraphSet->num_cor_orbs);
+                           GraphSet, GraphSet->num_expl_cor_orbs);
 
                         Ras4.increment_lex() ;
                      } while (!Ras4.at_min()) ;
@@ -1027,7 +1027,7 @@ int s2bgen1(struct fastgraph *graph, int *occs, int *I_n, int ijsym, int nel,
       for (hole=0; hole<ecnt[ras]; hole++,abshole++) { 
  
          j = ras_occs[ras][hole];
-         if (j < CalcInfo.num_cor_orbs) continue;
+         if (j < CalcInfo.num_expl_cor_orbs) continue;
          jsym = orbsym[j];
          isym = ijsym ^ jsym;
 
@@ -1130,7 +1130,7 @@ int s2bgen2(struct fastgraph *graph, int *occs, int *I_n, int ijsym, int nel,
    for (hole=0; hole<ecnt[down]; hole++,abshole++) {
 
       j = ras_occs_excite[hole];
-      if (j < CalcInfo.num_cor_orbs) continue;
+      if (j < CalcInfo.num_expl_cor_orbs) continue;
       jsym = orbsym[j];
       isym = ijsym ^ jsym;
       for (part=0; part<ras_opi[isym]; part++) {

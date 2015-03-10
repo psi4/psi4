@@ -1367,7 +1367,7 @@ void set_ras_parms(void)
       Parameters.val_ex_lvl;
    if (Parameters.a_ras1_min < 0) Parameters.a_ras1_min = 0;
    Parameters.a_ras1_min += CalcInfo.num_fzc_orbs;
-   Parameters.a_ras1_min += CalcInfo.num_cor_orbs;
+   Parameters.a_ras1_min += CalcInfo.num_expl_cor_orbs;
 
    i = (CalcInfo.num_bet_expl <= Parameters.b_ras1_lvl + 1) ?
       CalcInfo.num_bet_expl : Parameters.b_ras1_lvl + 1;
@@ -1375,7 +1375,7 @@ void set_ras_parms(void)
       Parameters.val_ex_lvl;
    if (Parameters.b_ras1_min < 0) Parameters.b_ras1_min = 0;
    Parameters.b_ras1_min += CalcInfo.num_fzc_orbs;
-   Parameters.b_ras1_min += CalcInfo.num_cor_orbs;
+   Parameters.b_ras1_min += CalcInfo.num_expl_cor_orbs;
 
    tot_expl_el = CalcInfo.num_alp_expl + CalcInfo.num_bet_expl;
    if (Parameters.cc) {
@@ -1500,8 +1500,8 @@ void print_ras_parms(void)
     CalcInfo.num_ci_orbs, CalcInfo.num_alp_expl);
   outfile->Printf( "   FROZEN CORE  =   %6d      NUM BET      =   %6d\n",
     CalcInfo.num_fzc_orbs, CalcInfo.num_bet);
-  outfile->Printf( "   RESTR CORE   =   %6d      NUM BET EXPL =   %6d\n",
-    CalcInfo.num_cor_orbs, CalcInfo.num_bet_expl);
+  outfile->Printf( "   EXPLICIT CORE=   %6d      NUM BET EXPL =   %6d\n",
+    CalcInfo.num_expl_cor_orbs, CalcInfo.num_bet_expl);
   outfile->Printf( "   IOPEN        =   %6s\n", CalcInfo.iopen ? "yes" :
     "no");
   outfile->Printf( "   RAS1 LVL     =   %6d      A RAS3 MAX   =   %6d\n",
