@@ -108,123 +108,15 @@ ConnGroups  OrganicGeom::MakeFxnGroups()const {
 	   Oxygen2Groups::Run(GroupI,Connections_,FoundGroups);
 	   HydroxylGroups::Run(GroupI,Connections_,FoundGroups);
    }
-   std::cout<<FoundGroups.PrintOut();
-   exit(1);
-   /*/Step 1: Find basic groups
-   for (int index=0; AtomI!=Mol_->End(); ++AtomI, ++index) {
-      if (IsAssigned[index]) continue;
-      switch (AtomI->Z()) {
-         case (6): {
-            CFunctor::AddGroup(index,IsAssigned,Connections_,Mol_,FoundGroups);
-            break;
-         }
-         case (7): {
-            NFunctor::AddGroup(index,IsAssigned,Connections_,Mol_,FoundGroups);
-            break;
-         }
-         case (8): {
-            OFunctor::AddGroup(index,IsAssigned,Connections_,Mol_,FoundGroups);
-            break;
-         }
-         case(9):{
-            FFunctor::AddGroup(index,IsAssigned,Connections_,Mol_,FoundGroups);
-            break;
-         }
-         case(17):{
-            ClFunctor::AddGroup(index,IsAssigned,Connections_,Mol_,FoundGroups);
-            break;
-         }
-         case(35):{
-            BrFunctor::AddGroup(index,IsAssigned,Connections_,Mol_,FoundGroups);
-            break;
-         }
-         case(53):{
-            IFunctor::AddGroup(index,IsAssigned,Connections_,Mol_,FoundGroups);
-            break;
-         }
-
-      }
-   }
-   //Step 2: Find derived groups
-   bool AllFound=false;
-   while (!AllFound) {
-      bool LoopRestart=false;
-      GroupIt FGrpI=FoundGroups.begin();
-      for (; FGrpI!=FoundGroups.end(); ++FGrpI) {
-         std::stack<boost::shared_ptr<const FxnalGroup> > DaGroups;
-         DaGroups.push((*FGrpI));
-         switch ((*FGrpI)->Type()) {
-            case (NITROTB): {
-               LoopRestart=
-                 DerGrpFunctor<Nitrile,HydrogenCyanide>::
-                    AddGroup(DaGroups,Connections_,FoundGroups);
-               break;
-            }
-            case (OXYDB):{
-               //These groups all assume O is double bonded to something
-               LoopRestart=
-                 DerGrpFunctor<Aldehyde,Carbonyl,Formaldehyde>::
-                    AddGroup(DaGroups,Connections_,FoundGroups);
-               break;
-            }
-            case (HYDROXYL):{
-               LoopRestart=
-                 DerGrpFunctor<Carboxyl,HydroPeroxy,Methanol,Peroxide>::
-                    AddGroup(DaGroups,Connections_,FoundGroups);
-               break;
-            }
-            case (ALKENYL1):{
-               LoopRestart=
-                     DerGrpFunctor<Ethenyl2,Ethenyl1,Ethene>::
-                     AddGroup(DaGroups,Connections_,FoundGroups);
-               break;
-            }
-            case(ALKENYL2):{
-               LoopRestart=DerGrpFunctor<ccdb3,ccdb2>::
-                     AddGroup(DaGroups,Connections_,FoundGroups);
-               break;
-            }
-            case(ALKENYL3):{
-               LoopRestart=DerGrpFunctor<ccdb4>::
-                     AddGroup(DaGroups,Connections_,FoundGroups);
-               break;
-            }
-            case (ALKYNYL1):{
-               LoopRestart=
-                     DerGrpFunctor<Ethynyl,Ethyne>::
-                     AddGroup(DaGroups,Connections_,FoundGroups);
-               break;
-            }
-            case(ALKYNYL2):{
-               LoopRestart=DerGrpFunctor<cctb>::
-                     AddGroup(DaGroups,Connections_,FoundGroups);
-               break;
-            }
-            case(NITRODB1):{
-               LoopRestart=DerGrpFunctor<Aldimine1,Ketimine1,Methanimine>::
-                     AddGroup(DaGroups,Connections_,FoundGroups);
-               break;
-            }
-            case(NITRODB2):{
-               LoopRestart=DerGrpFunctor<Aldimine2,Ketimine2>::
-                     AddGroup(DaGroups,Connections_,FoundGroups);
-               break;
-            }
-         }
-         if(LoopRestart)break;
-      }
-      if (!LoopRestart) AllFound=true;
-   }
    AromaticRingFinder Finder;
    bool found=true;
    while(found)
-      found=Finder.FindRing(FoundGroups,Connections_);*/
+      found=Finder.FindRing(FoundGroups,Connections_);
    return FoundGroups;
 }
 
-OrganicGeom::OrganicGeom(const Molecule* Mol,const double BondDef,
-      const int MaxBonds):
-   Geometry(Mol,BondDef,MaxBonds){
+OrganicGeom::OrganicGeom(const Molecule* Mol):
+   Geometry(Mol){
    FxnalGroups_=MakeFxnGroups();
 }
 

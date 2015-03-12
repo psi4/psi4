@@ -116,6 +116,7 @@ bool Recurse(PsiMap_t& FoundGroups, Conn_t& Conns,
    //Stop looking after 5 groups
    if (Groups.size()==5) return Found;
    int AttachPoint=AttachPoints.back().second;
+   std::cout<<"Found AttachPoint: "<<AttachPoint<<std::endl;
    SharedGroup GI=Groups.back();
    typedef std::vector<int>::const_iterator cIntIt;
    cIntIt ConnI=Conns[AttachPoint].begin(),ConnEnd=Conns[AttachPoint].end();
@@ -172,6 +173,7 @@ class FindRingFunctor {
                AttachPoints.push_back(
                      std::pair<int, int>(AttachPoint, AttachPoint));
                for (int i=1; i<GI->NAttachPoint()&&!Found; i++) {
+                  if(GI->AttachPoint(i)==-1)continue;
                   AttachPoints.back().second=GI->AttachPoint(i);
                   Found=Recurse(FoundGroups, Conns, Groups, AttachPoints);
                }

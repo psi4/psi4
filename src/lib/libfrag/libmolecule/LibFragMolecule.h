@@ -79,19 +79,19 @@ class Molecule:protected MoleculeGuts{
       std::string PrintOut(const int DebugLevel=1)const;
 
       ///Makes this molecule the union of this and other
-      virtual const Molecule& operator+=(const Molecule& other);
+      const Molecule& operator+=(const Molecule& other);
       ///Returns the union of this molecule and other
       Molecule operator+(const Molecule& other);
 
       Molecule():MoleculeGuts(){}
       Molecule(const Molecule& other):MoleculeGuts(other){}
-      virtual const Molecule& operator=(const Molecule& other){
+      const Molecule& operator=(const Molecule& other){
          MoleculeGuts::operator=(other);
          return *this;
       }
       virtual ~Molecule(){}
       ///True if Atom::operator==() is true for all atoms in the molecule
-      virtual bool operator==(const Molecule& other)const;
+      bool operator==(const Molecule& other)const;
       ///Returns the opposite of operator==
       bool operator!=(const Molecule& other)const{
          return !((*this)==other);

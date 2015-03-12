@@ -57,6 +57,7 @@ std::vector<T> UpCastWrapper::Synch(
       const int size) const{
    std::vector<T> Return;
    switch (Alg_) {
+      case (NONE):{break;}
       case (SIMPLE): {
          Return=
                boost::dynamic_pointer_cast<SimpleScheduler>(Obj_)->

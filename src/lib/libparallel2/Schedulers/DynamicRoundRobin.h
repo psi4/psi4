@@ -111,7 +111,6 @@ std::vector<T> DynamicRoundRobin::SynchImpl(const std::vector<T>& Local,
                  int Task=i;
                  int slave=TaskMap_.Slave(Task);
                  int index=TaskMap_.Index(Task);
-                 int offset=TaskMap_.Offset(slave);
                  for(int j=0;j<N;j++){
                     int OverallI=i*N+j;
                     int TempI=N*index+j;

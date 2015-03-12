@@ -41,9 +41,10 @@ class FragItrGuts;
  *  trimer: "1 2 3" and dimer: "1 23" for example.  When looking things up
  *  it is always done by serial number.
  */
-class SerialNumber:public std::set<unsigned int>{
+class SerialNumber:public std::set<long int>{
    public:
       SerialNumber(){}
+      SerialNumber(const SerialNumber& other);
       ///Prints out the serial number
       std::string PrintOut()const;
 };
@@ -90,6 +91,13 @@ class SerialNumber:public std::set<unsigned int>{
  *  arrays after an operation.
  *
  *
+ *  Big Ass Note:  I'm well aware that GCC bitches about me not invoking the
+ *  base class's copy/assignment operators, but as this class is coded doing
+ *  so would duplicate atoms.  The fxn copy, for this class ensures each atom
+ *  is only added once.  In the future this should be modified so that it's
+ *  more GCC friendly, but I'm not worrying about it right this second.
+ *
+ *
  */
 class Fragment: public Molecule{
    private:
@@ -119,13 +127,17 @@ class Fragment: public Molecule{
       std::vector<int> OtherMembers_;
 
    public:
+      ///Returns a pointer to the supersystem
+      boost::shared_ptr<const Molecule> Mol()const{return Mol_;}
       ///Constructor for making a monomer that is number N
-      Fragment(boost::shared_ptr<const Molecule> Mol,const long int N);
+      Fragment(boost::shared_ptr<const Molecule> Mol,const SerialNumber& SN);
       ///Constructor for making an N-Mer (use union to fill it)
       Fragment(boost::shared_ptr<const Molecule> Mol);
+      ///We on purpose don't call the Molecule's constructor
       Fragment(const Fragment& other){
          this->Copy(other);
       }
+      ///We on purpose don't call Molecule's operator=
       const Fragment& operator=(const Fragment& other){
          if(this!=&other)this->Copy(other);
          return *this;
@@ -162,6 +174,11 @@ class Fragment: public Molecule{
       const Fragment& operator-=(const Fragment& other);
       ///Returns the intersection of this fragment with other
       Fragment operator-(const Fragment& other)const;
+
+      ///Makes this fragment the set difference of itself with other
+      const Fragment& operator/=(const Fragment& other);
+      ///Returns the set difference of this fragment with other
+      Fragment operator/(const Fragment& other)const;
 
       ///Returns true if the two fragments are equal
       bool operator==(const Fragment& other)const;

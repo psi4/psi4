@@ -80,8 +80,7 @@ class OrganicGeom:public Geometry{
       ///Nothing to be done clean-up wise
       virtual ~OrganicGeom(){}
       ///Given a presumably organic molecule, figures out functional groups
-      OrganicGeom(const Molecule* Mol,const double BondDef=1.8,
-            const int MaxBonds=4);
+      OrganicGeom(const Molecule* Mol);
       ///Groups to a pretty (fyi:beauty is in the eye of the beholder) string
       std::string PrintOut()const;
 };

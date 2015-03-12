@@ -25,7 +25,7 @@
 namespace psi {
 namespace LibMolecule {
 
-RealMolecule::RealMolecule(const Molecule& other) {
+RealProjMolecule::RealProjMolecule(const Molecule& other) {
    MolItr AtomI=other.Begin();
    for (; AtomI!=other.End(); ++AtomI)
       if (AtomI->IsReal()) (*this)<<(*(*AtomI));

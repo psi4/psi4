@@ -4549,9 +4549,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- SUBSECTION Basic Options -*/
 
-      /*- What order the MBE or GMBE is truncated at (GMBE will
-       *  be used if needed) -*/
-
       options.add_str("FRAG_METHOD", "USER_DEFINED",
             "USER_DEFINED BOND_BASED MONOMER_BASED DISTANCE_BASED");
       options.add_int("MBE_STARTING_ORDER", 1);

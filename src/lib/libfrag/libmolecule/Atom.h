@@ -32,12 +32,13 @@ namespace LibMolecule{
  *  Users of LibMolecule should have no need of any atomic
  *  functionality beyond what is contained in this class
  */
-class Atom: private AtomGuts{
+class Atom: protected AtomGuts{
    public:
       ///Accessors for the Cartesian coordinates (in a.u.)
       ///@{
       double operator[](const int i)const{return Carts_[i];}
       double& operator[](const int i){return Carts_[i];}
+      const Carts_t& GetCarts()const{return Carts_;}
       ///@}
 
       ///Accessors for other properties

@@ -43,6 +43,8 @@ class GhostAtom: public Atom{
       ///Don't give Z's <=0!!!
       GhostAtom(const double* Carts,const int Z=0,
             const bool IsBohr=true);
+      ///Makes a new ghost, that is other as a ghost
+      GhostAtom(const Atom& Other);
 };
 
 

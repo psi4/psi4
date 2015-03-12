@@ -343,7 +343,14 @@ def auto_fragments(name, **kwargs):
     new_mol = geometry(new_geom)
     new_mol.print_out()
     psi4.print_out("Exiting auto_fragments\n")
-   
+
+def GetCalcDetails(methodname):
+    energylist=[]
+    for k, v in VARH[methodname].iteritems():
+        energylist.append(v)
+    energylist.append("CURRENT ENERGY")
+    return energylist
+    
    
 def new_run_calc(methodname, molecule,BeQuiet,**kwargs):
     oldmolecule = psi4.get_active_molecule()
@@ -354,7 +361,8 @@ def new_run_calc(methodname, molecule,BeQuiet,**kwargs):
         psi4.be_quiet()
     energy(methodname,**kwargs)
     energylist={}
-    for k, v in VARH[methodname].iteritems():
+    energynames=GetCalcDetails(methodname)
+    for v in energynames:
         energylist[v]=psi4.get_variable(v)
     if(BeQuiet==1):
         psi4.reopen_outfile()

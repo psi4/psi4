@@ -35,16 +35,16 @@ class AtomGuts:public LibMoleculeBase{
       void Copy(const AtomGuts& other);
       ///The three Cartesian coordinates (a.u.) in the order: x,y,z
       Carts_t Carts_;
+      ///The atomic number
+      int Z_;
+      ///The chemical symbol
+      std::string Label_;
+      ///The number of electrons
+      int NElec_;
       ///The mass in Daltons
       double Mass_;
       ///The Charge in multiples of the electron's charge
       double Charge_;
-      ///The atomic number
-      int Z_;
-      ///The number of electrons
-      int NElec_;
-      ///The chemical symbol
-      std::string Label_;
    public:
       AtomGuts(const double* Carts, const int Z=0,const bool IsBohr=true,
             const std::string Label="",const double Charge=0.0,

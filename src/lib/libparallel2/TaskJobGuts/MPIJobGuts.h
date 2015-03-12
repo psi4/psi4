@@ -35,6 +35,19 @@ namespace LibParallel {
  */
 class MPIJobGuts:public LibParallelBase {
    protected:
+      /** \brief True if this MPI process is actually participating in
+       the Job
+       *
+       *  An MPI process may not be participating in a job if the
+       *  advanced interface was used.  In this case Enough_ will
+       *  be true, and Active_ will be true for all MPI processes
+       *  that will participate, and false for the remainder.
+       */
+      bool Active_;
+
+      ///Did we split the comm
+      bool Enough_;
+
       ///The MPI state when we started
       boost::shared_ptr<const Communicator> IState_;
 
@@ -53,19 +66,6 @@ class MPIJobGuts:public LibParallelBase {
 
       ///The current MPI process's job queue
       boost::shared_ptr<MPITaskQueue> Queue_;
-
-      ///Did we split the comm
-      bool Enough_;
-
-      /** \brief True if this MPI process is actually participating in
-       the Job
-       *
-       *  An MPI process may not be participating in a job if the
-       *  advanced interface was used.  In this case Enough_ will
-       *  be true, and Active_ will be true for all MPI processes
-       *  that will participate, and false for the remainder.
-       */
-      bool Active_;
 
       /** \brief Determines the initial MPI state
        *
