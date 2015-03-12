@@ -1,6 +1,6 @@
 set_property(GLOBAL PROPERTY LIBLIST)
 add_subdirectory(lib3index)
-add_subdirectory(libbabel)
+#add_subdirectory(libbabel)
 add_subdirectory(libciomr)
 add_subdirectory(libdiis)
 add_subdirectory(libdisp)

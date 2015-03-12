@@ -22,7 +22,8 @@ option(ENABLE_ACCELERATE     "Enable use of Mac OS X Accelerate Framework" OFF)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"            OFF)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                            OFF)
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"               OFF)
-option(ENABLE_STATIC_LINKING "Enable static libraries linking"             OFF)
+option(ENABLE_STATIC_LINKING "Enable mostly static libraries linking"      OFF)
+option(ENABLE_XHOST          "Enable processor-specific optimizations"     ON)
 option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
 option(ENABLE_PLUGINS        "Enable plugins"                              ON)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
@@ -93,11 +94,11 @@ if(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local/psi4")
 endif()
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-   set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
+   set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/interfaces)
    set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
    set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
 else()
-   set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/external)
+   set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/interfaces)
    set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
 endif()
 
@@ -143,9 +144,9 @@ link_directories("${Boost_LIBRARY_DIRS}")
 include_directories(SYSTEM "${Boost_INCLUDE_DIRS}")
 
 #OpenBabel Detection
-add_subdirectory(openbabel)
-set(BABEL_LIBRARY_DIR ${CMAKE_BINARY_DIR}/lib)
-set(BABEL_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include/openbabel-2.0)
+#add_subdirectory(openbabel)
+#set(BABEL_LIBRARY_DIR ${CMAKE_BINARY_DIR}/lib)
+#set(BABEL_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include/openbabel-2.0)
 
 # Append the suffix given from input to all generated executables
 if(EXECUTABLE_SUFFIX)
@@ -236,7 +237,8 @@ if(ENABLE_PCMSOLVER)
       fortran_enabler()
       add_definitions(-DHAVE_PCMSOLVER)
       message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
-      link_directories(${PROJECT_BINARY_DIR}/external/lib)
+      link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
+                       ${EXTERNAL_PROJECT_INSTALL_PREFIX})
    endif()
    set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
 endif()
@@ -311,6 +313,14 @@ endif()
 
 #FILE(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+
+# Install samples directory
+INSTALL(
+  DIRECTORY "samples"
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/psi
+  USE_SOURCE_PERMISSIONS
+  PATTERN "example_psi4rc_file" EXCLUDE
+)
 
 # Configure some scripts
 configure_files()
