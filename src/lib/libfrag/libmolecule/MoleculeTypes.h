@@ -26,12 +26,17 @@
 namespace psi{
 namespace LibMolecule{
 
-///A specialization of Molecule that removes all ghosts, point charges, etc.
-class RealMolecule:public Molecule{
+/** \brief A specialization of Molecule that removes all ghosts,
+ *          point charges, etc.
+ *
+ *   This is the "real" projection of a molecule
+ */
+
+class RealProjMolecule:public Molecule{
    public:
-      RealMolecule(const Molecule& other);
-      RealMolecule(const RealMolecule& other):Molecule(other){}
-      const RealMolecule& operator=(const RealMolecule& other){
+      RealProjMolecule(const Molecule& other);
+      RealProjMolecule(const RealProjMolecule& other):Molecule(other){}
+      const RealProjMolecule& operator=(const RealProjMolecule& other){
          Molecule::operator=(other);
          return *this;
       }
@@ -99,7 +104,7 @@ class SNOMolecule:public Molecule{
       ///Orients a molecule to SNO subject to the tolerance given
       SNOMolecule(const Molecule& other,const double Tolerance=1e-4);
       SNOMolecule(const SNOMolecule& other):Molecule(other){}
-      const SNOMolecule& operator=(const RealMolecule& other){
+      const SNOMolecule& operator=(const SNOMolecule& other){
          Molecule::operator=(other);
          return *this;
       }

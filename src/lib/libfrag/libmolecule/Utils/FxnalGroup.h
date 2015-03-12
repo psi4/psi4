@@ -109,7 +109,7 @@ class DerivedFxnalGrp:public FxnalGroup{
       int GetNPrims()const{return NPrims_;}
       ///Returns -1 if the group isn't attached to i points
       int AttachPoint(const int i=0)const{
-         return (i<Groups_[i]->size()?Groups_[i]->AttachPoint():-1);
+         return (i<Groups_.size()?Groups_[i]->AttachPoint():-1);
       }
       virtual FxnGroup_t GetPrimI(int i)const{return Groups_[i]->Type();}
       DerivedFxnalGrp(const FxnGroup_t Type,int NPrims,int Order):

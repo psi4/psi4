@@ -30,14 +30,16 @@ typedef boost::shared_ptr<const Molecule> SharedMol;
 typedef boost::shared_ptr<Fragment> SharedFrag;
 typedef boost::shared_ptr<const FxnalGroup> SharedGroup;
 typedef std::vector<SharedGroup> vSharedGroup;
-BondFragmenter::BondFragmenter(SharedMol Mol, const int NBonds):
+BondFragmenter::BondFragmenter(SharedMol Mol, const unsigned int NBonds):
       Fragmenter(Mol),Geom_(new OrganicGeom(Mol.get())),
             NBonds_(NBonds){
 }
 
 void BondFragmenter::AddFragment(const vSharedGroup& FoundGroups,
       const long int value){
-   SharedFrag temp(new Fragment(Mol_,value));
+   SerialNumber TempSN;
+   TempSN.insert(value+1);
+   SharedFrag temp(new Fragment(Mol_,TempSN));
    vSharedGroup::const_iterator GroupI=FoundGroups.begin(),
                                 GroupEnd=FoundGroups.end();
    for(;GroupI!=GroupEnd;++GroupI){
@@ -65,7 +67,7 @@ void BondFragmenter::Recurse(vSharedGroup& FoundGroups,
             const Connections& Conns,
             const ConnGroups& FxnGroups,
             long int& value){
-   if((int)FoundGroups.size()==NBonds_+1||
+   if(FoundGroups.size()==NBonds_+1||
       FoundGroups.back()->NAttachPoint()==0){
       AddFragment(FoundGroups,value++);
       return;

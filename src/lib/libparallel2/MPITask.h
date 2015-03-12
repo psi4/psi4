@@ -49,11 +49,11 @@ namespace psi {
 template <typename T>
 class MPITask{
    private:
-      ///The label the user gave us
-      T Label_;
-
       ///The Priority
       int Priority_;
+
+      ///The label the user gave us
+      T Label_;
 
       ///Deep Copy
       void Copy(const MPITask<T>& other) {

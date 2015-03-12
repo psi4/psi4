@@ -22,7 +22,7 @@
 
 #include <boost/python.hpp>
 #include "../lib/libparallel2/LibParallelHelper.h"
-
+void export_libparallel();
 void export_libparallel(){
    using namespace psi::LibParallel;
    using namespace boost::python;

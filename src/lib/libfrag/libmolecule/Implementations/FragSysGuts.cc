@@ -40,15 +40,33 @@ typedef boost::shared_ptr<NMers> SharedNMers;
 typedef boost::shared_ptr<SNOMolecule> SharedSNO;
 typedef PsiMap<int, SharedSNO> SNO_t;
 
-void UpdateNMerI(NMers& NMers_,const SerialNumber& SN1,
+static void UpdateNMerI(NMers& NMers_,const SerialNumber& SN1,
                  const SerialNumber& SN2,const int N){
    NMers_.ScaleFacts_.Change(N, SN1, 1.0);
    NMers_.SNLookUp_[SN2]=SN1;
 }
+
+static boost::shared_ptr<Fragmenter> PickFragmenter(boost::shared_ptr<const Molecule> Mol){
+   boost::shared_ptr<Fragmenter> DaPointer;
+   std::string FragType=
+         psi::Process::environment.options["FRAG_METHOD"].to_string();
+   if(FragType=="BOND_BASED"){
+      DaPointer=boost::shared_ptr<BondFragmenter>(
+            new BondFragmenter(Mol));
+   }
+   else if(FragType=="MONOMER_BASED"){
+      DaPointer=boost::shared_ptr<MonomerFragmenter>(
+            new MonomerFragmenter(Mol));
+   }
+   return DaPointer;
+}
+
+
 FragSysGuts::FragSysGuts(const Molecule& System2Frag, const int N) :
       NMers_(N) {
-   BondFragmenter FragMaker(SharedMol(new Molecule(System2Frag)));
-   vSharedFrag Fragments=FragMaker.MakeFrags();
+   boost::shared_ptr<Fragmenter> FragMaker=
+         PickFragmenter(SharedMol(new Molecule(System2Frag)));
+   vSharedFrag Fragments=FragMaker->MakeFrags();
    if (N>1)MakeNMers(Fragments);
    NMers_[0]=Fragments;
    for (int i=0; i<N; i++) {
@@ -62,7 +80,7 @@ FragSysGuts::FragSysGuts(const Molecule& System2Frag, const int N) :
 const double Mirror[]={-1.0, 0.0, 0.0,0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, //MirrorY
       0.0, -1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0,0.0, 1.0, 0.0, 0.0, 0.0, -1.0};
 
-void CheckNMer(NMers& NMers_,const int N) {
+static void CheckNMer(NMers& NMers_,const int N) {
    NMers::NMerItr_t NMerI=NMers_.NMerBegin(N+1),
                          NMerEnd=NMers_.NMerEnd(N+1);
    PsiMap<int, SerialNumber> Val2SN;
@@ -108,8 +126,11 @@ void CheckNMer(NMers& NMers_,const int N) {
 FragSysGuts::FragSysGuts(const SuperCell& System2Frag, const int N) :
       NMers_(N) {
    SharedMol FullSys(new Molecule(System2Frag));
-   BondFragmenter FragMaker(System2Frag.GetUnitCell()),FragMaker2(FullSys);
-   vSharedFrag UnitFrags=FragMaker.MakeFrags(),AllFrags=FragMaker2.MakeFrags();
+   boost::shared_ptr<Fragmenter> FragMaker=
+         PickFragmenter(System2Frag.GetUnitCell()),
+         FragMaker2=PickFragmenter(FullSys);
+   vSharedFrag UnitFrags=FragMaker->MakeFrags(),
+               AllFrags=FragMaker2->MakeFrags();
    vSFragItr FragI=UnitFrags.begin(),FragEnd=UnitFrags.end();
    //Here we exploit the fact that the atoms in the unitcell are the first
    //atoms in the supercell (i.e. the numbering didn't change)
@@ -182,23 +203,79 @@ FragSysGuts::FragSysGuts(const SuperCell& System2Frag, const int N) :
    return NMers2;
 }*/
 
-void Recurse(vSFragcItr FragJ, vSFragcItr& FragEnd2, const Fragment& FragI,
+static void Recurse(const std::vector<double>& Distances,
+              vSFragcItr FragJ, vSFragcItr& FragEnd2, const Fragment& FragI,
       int n, NMers& NMers) {
    if (n>NMers.N()) return;
    for (; FragJ!=FragEnd2; ++FragJ) {
       boost::shared_ptr<Fragment> temp(new Fragment(FragI));
       (*temp)+=(*(*FragJ));
+      if((int)psi::Process::environment.options["MBE_DISTANCE_THRESHOLDS"].size()>=(n-1)){
+         double DistanceThresh=
+            psi::Process::environment.options["MBE_DISTANCE_THRESHOLDS"]
+                        [n-2].to_double()*LibMoleculeBase().AngToBohr();
+         const SerialNumber& SN=temp->GetSN();
+         SerialNumber::const_iterator FragK=SN.begin(),FragL,
+                                       FragEndK=SN.end();
+         bool IsGood=true;
+         for(;FragK!=FragEndK&&IsGood;++FragK){
+            FragL=FragK;
+            ++FragL;
+            for(;FragL!=FragEndK&&IsGood;++FragL){
+               if(Distances[(*FragK)*NMers[0].size()+(*FragL)]>DistanceThresh)IsGood=false;
+            }
+         }
+         if(!IsGood)continue;
+      }
       NMers.AddNMer(n, temp);
-      Recurse(FragJ+1, FragEnd2, (*temp), n+1, NMers);
+      Recurse(Distances,FragJ+1, FragEnd2, (*temp), n+1, NMers);
    }
 }
 
+typedef std::vector<std::vector<double> > CoM_t;
+
+static void CalcCoM(int i,vSharedFrag::const_iterator FragI, CoM_t& CoMs){
+   MolItr AtomI=(*FragI)->Begin(),AtomEnd=(*FragI)->End();
+   double Total=0.0;
+   for(;AtomI!=AtomEnd;++AtomI){
+      Total+=(*AtomI)->Mass();
+      for(int j=0;j<3;j++)CoMs[i][j]+=(*AtomI)->Mass()*(*(*AtomI))[j];
+   }
+   for(int j=0;j<3;j++)CoMs[i][j]/=Total;
+}
+
+static std::vector<double> GetFragDistances(const vSharedFrag& Set){
+   int NFrags=Set.size();
+   std::vector<double> Distances(NFrags*NFrags,0.0);
+   vSharedFrag::const_iterator FragI=Set.begin(),FragEnd=Set.end(),FragJ;
+   CoM_t CoMs(NFrags,std::vector<double>(3,0.0));
+      for(int i=0;FragI!=FragEnd;++FragI,++i){
+         if(i==0)CalcCoM(i,FragI,CoMs);
+         int j=i+1;
+         FragJ=FragI;
+         ++FragJ;
+         for(;FragJ!=FragEnd;++FragJ,++j){
+            if(i==0)CalcCoM(j,FragJ,CoMs);
+            for(int k=0;k<3;k++){
+               double quant=CoMs[i][k]-CoMs[j][k];
+               Distances[i*NFrags+j]+=quant*quant;
+            }
+            Distances[j*NFrags+i]=sqrt(Distances[i*NFrags+j]);
+            Distances[i*NFrags+j]=Distances[j*NFrags+i];
+         }
+      }
+      return Distances;
+}
+
+
 void FragSysGuts::MakeNMers(const vSharedFrag& Set1, const vSharedFrag& Set2) {
-   vSharedFrag::const_iterator FragI=Set1.begin(),FragEnd=Set1.end();
-   for (int offset=1; FragI!=FragEnd; ++FragI, ++offset) {
-      vSFragcItr FragJ=Set2.begin(),FragEnd2=Set2.end();
+   std::vector<double> Distances= GetFragDistances(Set2);
+   vSharedFrag::const_iterator FragI=Set1.begin(),FragEnd=Set1.end(),
+         FragJ,FragEnd2=Set2.end();
+   for(int offset=1; FragI!=FragEnd; ++FragI, ++offset) {
+      FragJ=Set2.begin();
       FragJ+=offset;
-      Recurse(FragJ, FragEnd2, (*(*FragI)), 2, NMers_);
+      Recurse(Distances,FragJ, FragEnd2, (*(*FragI)), 2, NMers_);
    }
    //If the frags are non-disjoint we need to call this
    //NMers_=boost::shared_ptr<NMers>(new NMers(CleanUp(*NMers_)));

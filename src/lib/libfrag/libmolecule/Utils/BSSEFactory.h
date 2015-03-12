@@ -19,27 +19,23 @@
  *
  *@END LICENSE
  */
-#ifndef SRC_LIB_LIBFRAG_LIBMOLECULE_IMPLEMENTATIONS_ITERATORGUTS_H_
-#define SRC_LIB_LIBFRAG_LIBMOLECULE_IMPLEMENTATIONS_ITERATORGUTS_H_
-#include <vector>
+#ifndef SRC_LIB_LIBFRAG_LIBMOLECULE_UTILS_BSSEFACTORY_H_
+#define SRC_LIB_LIBFRAG_LIBMOLECULE_UTILS_BSSEFACTORY_H_
+
 namespace psi{
 namespace LibMolecule{
-class Atom;
-class IteratorGuts{
+class Molecule;
+class FragmentedSystem;
+class BSSEFactory{
    public:
-      ///Returns a pointer to a copy of the current object
-      virtual boost::shared_ptr<IteratorGuts> Clone()const=0;
-      IteratorGuts(){}
-      IteratorGuts(const IteratorGuts&){}
-      virtual ~IteratorGuts(){}
-      virtual bool IsEqual(const IteratorGuts& other)const=0;
-      virtual boost::shared_ptr<const Atom> GetAtom()const=0;
-      virtual void Next()=0;
-      virtual void Previous()=0;
+      ///Applies BSSE corrections up to order "Stop" (0=all n)
+      BSSEFactory(FragmentedSystem& Sys,unsigned int Stop=0);
+      BSSEFactory(Molecule&){}
 };
 
-}}//End namespaces
+
+}}//End namespace
 
 
 
-#endif /* SRC_LIB_LIBFRAG_LIBMOLECULE_IMPLEMENTATIONS_ITERATORGUTS_H_ */
+#endif /* SRC_LIB_LIBFRAG_LIBMOLECULE_UTILS_BSSEFACTORY_H_ */

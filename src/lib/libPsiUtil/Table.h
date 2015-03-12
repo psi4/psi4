@@ -58,10 +58,10 @@ enum TableSide{TOP=0,RIGHT=1,BOTTOM=2,LEFT=3};
 template <typename T>
 class TableColumn {
    private:
-      ///A pointer to the first element of data we are printing
-      const T* Data_;
       ///A descriptive name of the data we are printing
       std::string ColName_;
+      ///A pointer to the first element of data we are printing
+      const T* Data_;
       ///The number of elements to pass over before printing one
       unsigned Offset_;
       ///The character that should appear below every element
@@ -70,6 +70,8 @@ class TableColumn {
       char HorDelim_;
       ///The character that will appear under the title
       char TitleDelim_;
+      ///The Width of the current column
+      unsigned Width_;
    public:
       /** \brief Constructor for making a TableColumn
        *
@@ -92,7 +94,8 @@ class TableColumn {
        *
        */
       TableColumn<T>(const std::string& ColName, const T* Data,
-            const unsigned Offset=1, const char VertDelim='\0',
+            const unsigned Offset=1, const unsigned Width=0,
+            const char VertDelim='\0',
             const char HorDelim=' ', const char TitleDelim='-');
       ///Returns the i-th element of the data set
       T operator[](const int i) const {return Data_[i*Offset_];}
@@ -102,6 +105,10 @@ class TableColumn {
       char HorDelim() const {return HorDelim_;}
       ///Returns the vertical delimiter (between rows)
       char VertDelim() const {return VertDelim_;}
+      ///Returns the width of the column
+      unsigned Width()const{return Width_;}
+      ///Allows setting of the width from outside the constructor
+      void SetWidth(const unsigned Width){Width_=Width;}
       ///Returns the title
       std::string Name() const {return ColName_;}
 };
@@ -161,11 +168,11 @@ class Table:protected Table<Args...> {
 /************ Implementations **********/
 template<typename T>
 TableColumn<T>::TableColumn(const std::string& ColName, const T* Data,
-            const unsigned Offset, const char VertDelim,
+            const unsigned Offset, const unsigned Width, const char VertDelim,
             const char HorDelim, const char TitleDelim) :
             ColName_(ColName), Data_(Data), Offset_(Offset),
                   VertDelim_(VertDelim), HorDelim_(HorDelim),
-                  TitleDelim_(TitleDelim) {}
+                  TitleDelim_(TitleDelim),Width_(Width) {}
 
 /** \brief Class to hold the stuff common to each Table class
  *   to minimize copy/paste
@@ -178,16 +185,16 @@ class TableData {
    private:
       ///The actual data
       const T& Data_;
-      ///The column I'm responsible for
-      int MyCol_;
       ///The number of rows in the table
       int NRows_;
       ///The number of columns in the table
       int NCols_;
-      ///The character used for the top,right,bottom,left borders
-      char BorderDelims_[4];
+      ///The column I'm responsible for
+      int MyCol_;
       ///The number of characters I get to print
       int MySize_;
+      ///The character used for the top,right,bottom,left borders
+      char BorderDelims_[4];
       void CalcMySize();
    public:
       TableData<T>(const T& Data, const int NRows,
@@ -276,17 +283,20 @@ TableData<T>::TableData(const T&Data,
 
 template<typename T>
 void TableData<T>::CalcMySize(){
-   int BorderChars=(GetBorder(LEFT)=='\0' ? 0 : 1);
+   if(Data_.Width()!=0)MySize_=Data_.Width();
+   else{
+      int BorderChars=(GetBorder(LEFT)=='\0' ? 0 : 1);
           BorderChars+=(GetBorder(RIGHT)=='\0' ? 0 : 1);
       //There are NCols-1
       BorderChars+=NCols_-1;
       const int UsableChars=80-BorderChars;
       const int Remainder=(UsableChars)%NCols_;
       MySize_=(UsableChars-Remainder)/NCols_+(MyCol_==0?Remainder:0);
+   }
 }
 
 namespace TablePrint{
-   std::string Repeat(const int N,const char c){
+   static std::string Repeat(const int N,const char c){
       std::stringstream Result;
       for(int i=0;i<N;i++)Result<<c;
       return Result.str();

@@ -242,6 +242,12 @@ std::string DerivedFxnalGrp::PrintOut(const std::string& spaces)const{
    for(MyIt Grp=Groups_.begin();Grp!=Groups_.end();++Grp){
       Result<<(*Grp)->PrintOut(newspaces);
    }
+   if(NAttachPoint()>0){
+      Result<<spaces<<"Attachment Points: ";
+      for(int i=0;i<NAttachPoint();i++)
+         Result<<AttachPoint(i)<<" ";
+   }
+   Result<<std::endl;
    return Result.str();
 }
 

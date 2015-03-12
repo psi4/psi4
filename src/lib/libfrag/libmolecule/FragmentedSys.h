@@ -25,8 +25,14 @@
 #include "Implementations/FragSysGuts.h"
 namespace psi{
 namespace LibMolecule{
+class BSSEFactory;
 
 class FragmentedSystem:private FragSysGuts{
+   protected:
+      ///Allows the BSSEFactory to apply BSSE corrections
+      friend class BSSEFactory;
+      ///Function used by friends to modify the internal NMers
+      NMers& GetNMers(){return NMers_;}
    public:
       ///Fragments a molecule
       FragmentedSystem(const Molecule& System2Frag,const int N=1);
