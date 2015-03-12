@@ -256,6 +256,8 @@ PsiReturnType transqt2(Options & options)
     chkpt_init(PSIO_OPEN_OLD);
     chkpt_wt_efzc(efzc);
     chkpt_close();
+    // Add frozen-core energy to wfn, too
+    Process::environment.wavefunction()->set_efzc(efzc);
 
     /*** One-electron forward transforms.  Note that all orbitals are
        transformed, including those in the inactive space. ***/

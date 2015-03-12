@@ -49,7 +49,8 @@ list(APPEND psi_libraries "${from_src_bin}" "${from_src_lib}" "${from_interfaces
 
 # Prepare for linking executable
 list(APPEND
-     LINKLIBS "${psi_libraries}" "${Boost_LIBRARIES}"
+     LINKLIBS "${LIBC_INTERJECT}"
+     "${psi_libraries}" "${Boost_LIBRARIES}"
      "${LAPACK_LIBRARIES}" "${BLAS_LIBRARIES}"
      "${PYTHON_LIBRARIES}" "${EXTERNAL_LIBS}"
      "${LIBUTIL_LIBRARIES}" "${LIBDL_LIBRARIES}"
