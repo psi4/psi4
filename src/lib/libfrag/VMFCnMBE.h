@@ -195,6 +195,13 @@ void VMFCnMBE::ApproxVMFCnEgy(const int N,
 }
 */
 
+
+static std::string PrintDouble(double x){
+   std::stringstream Temp1;
+   Temp1<<std::setw(14)<<std::setprecision(14)<<std::fixed<<x;
+   return Temp1.str();
+}
+
 template <typename T>
 std::string PrintOut(const std::string& PropName,
               const MBEProp<T>& CanEgys,
@@ -202,11 +209,6 @@ std::string PrintOut(const std::string& PropName,
    std::vector<std::string> Values;
    LibMolecule::SerialNumber  FakeSN;FakeSN.insert(0);
    const int NValues=4;
-   auto PrintDouble=[](double x){
-      std::stringstream Temp1;
-      Temp1<<std::setw(14)<<std::setprecision(14)<<std::fixed<<x;
-      return Temp1.str();
-   };
    for(int i=0;i<CanEgys.N();i++){
       std::stringstream Temp,Temp1,Temp2,Temp3;
       Temp<<i+1<<"-body";
