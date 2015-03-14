@@ -49,7 +49,8 @@ class UnitCellGuts: public Molecule{
       UnitCellGuts(const UnitCellGuts& other):Molecule(other){
          this->Copy(other);
       }
-      virtual const UnitCellGuts& operator=(const UnitCellGuts& other){
+      ///RMR removed the virtual to rid warning
+      const UnitCellGuts& operator=(const UnitCellGuts& other){
          Molecule::operator=(other);
          if(this!=&other)this->Copy(other);
          return *this;

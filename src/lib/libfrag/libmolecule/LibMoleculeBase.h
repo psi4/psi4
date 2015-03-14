@@ -46,7 +46,14 @@ class LibMoleculeBase{
       }
       std::string Sym(const int i)const{
          AtomicData CRC;
-         return (0<i?CRC[i].AtSym():"GH");
+         std::stringstream Prefix;
+         int sign=1;
+         if(i<0){
+            Prefix<<"@";
+            sign=-1;
+         }
+         Prefix<<CRC[i*sign].AtSym();
+         return Prefix.str();
       }
       double Mass(const int i)const{
          AtomicData CRC;

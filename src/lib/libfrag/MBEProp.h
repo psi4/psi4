@@ -108,9 +108,11 @@ std::string MBEProp<T>::PrintOut()const{
    for(int i=0;i<N();i++){
       Result<<i+1<<"-body "<<Name_<<":"<<std::endl;
       It_t NMerI=begin(i),NMerEnd=end(i);
-      for(;NMerI!=NMerEnd;++NMerI)
+      for(;NMerI!=NMerEnd;++NMerI){
+         Result<<NMerI->first.PrintOut()<<" ";
          Result<<std::setw(16)<<std::setiosflags(std::ios::fixed)
                <<std::setprecision(16)<<NMerI->second<<std::endl;
+      }
    }
    return Result.str();
 }

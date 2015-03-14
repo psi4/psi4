@@ -22,6 +22,7 @@
 
 #include "LibFragFragment.h"
 #include "Implementations/FragItrGuts.h"
+#include "MoleculeTypes.h"
 namespace psi{
 namespace LibMolecule{
 
@@ -31,12 +32,14 @@ typedef boost::shared_ptr<FragItrGuts> SharedItr;
 
 std::string SerialNumber::PrintOut()const{
    std::stringstream Result;
-   std::set<unsigned int>::iterator EI=begin(),EEnd=end();
+   std::set<long int>::iterator EI=begin(),EEnd=end();
    for(;EI!=EEnd;++EI)
       Result<<(*EI)<<" ";
    return Result.str();
 }
 
+SerialNumber::SerialNumber(const SerialNumber& other):
+      std::set<long int>(other){}
 
 void Fragment::Copy(const Fragment& other){
    this->Mol_=other.Mol_;
@@ -50,10 +53,8 @@ void Fragment::Copy(const Fragment& other){
 
 Fragment::Fragment(boost::shared_ptr<const Molecule> Mol):Mol_(Mol){}
 
-Fragment::Fragment(boost::shared_ptr<const Molecule> Mol,const long int ID):
-      Mol_(Mol){
-   SN_.insert(ID);
-}
+Fragment::Fragment(boost::shared_ptr<const Molecule> Mol,const SerialNumber& ID):
+      Mol_(Mol),SN_(ID){}
 
 MolItr Fragment::Begin()const{
    return MolItr(SharedItr(new FragItrGuts(false,this)));
@@ -114,6 +115,30 @@ const Fragment& Fragment::operator+=(const Fragment& other){
       return *this;
 }
 
+
+template<typename T>
+void SetDifference(std::set<T>& lhs,const std::set<T>&rhs){
+   std::set<T> Diff;
+   std::set_difference(lhs.begin(),lhs.end(),
+         rhs.begin(),rhs.end(),
+         std::inserter(Diff,Diff.begin()));
+   lhs=Diff;
+}
+
+const Fragment& Fragment::operator/=(const Fragment& other){
+   if(other.Members_.empty())return *this;
+   SetDifference(this->Members_,other.Members_);
+   SetDifference(this->SN_,other.SN_);
+   return *this;
+}
+
+Fragment Fragment::operator/(const Fragment& other)const{
+   Fragment Temp(*this);
+   Temp/=other;
+   return Temp;
+}
+
+
 Fragment Fragment::operator+(const Fragment& other)const{
    Fragment temp(*this);
    temp+=other;
@@ -121,7 +146,10 @@ Fragment Fragment::operator+(const Fragment& other)const{
 }
 
 const Fragment& Fragment::operator-=(const Fragment& other){
-   if(other.Members_.empty())return *this;
+   if(other.Members_.empty()){
+      (*this)=other;
+      return *this;
+   }
    std::set<int> Intersec;
    std::set_intersection(this->Members_.begin(),this->Members_.end(),
          other.Members_.begin(),other.Members_.end(),

@@ -31,7 +31,7 @@ namespace psi {
 namespace LibParallel {
 typedef boost::shared_ptr<MPIScheduler> SharedSched;
 
-bool Sorter(const MPITaskGuts& left,const MPITaskGuts& right){
+static bool Sorter(const MPITaskGuts& left,const MPITaskGuts& right){
    return left>right;
 }
 

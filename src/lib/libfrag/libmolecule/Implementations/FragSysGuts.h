@@ -69,7 +69,15 @@ class FragSysGuts{
       NMers NMers_;
       ///Ultimately calls the next fxn with Set passed as Set1 and Set2
       void MakeNMers(const std::vector<boost::shared_ptr<Fragment> >& Set);
-      ///Fills NMers_ such that one monomer comes from Set1 and rest from Set2
+      /** \brief Fills NMers_ such that one monomer comes from Set1 and
+       *         rest from Set2
+       *
+       *   We assume that Set1 is a subset of Set2.  Moreover we assume that
+       *   Set2 is {Set1,Possible Other Frags}.  This is also the call that
+       *   performs our distance screening, which is why the prior statement
+       *   is important, as otherwise there is no telling which fragments
+       *   will get thrown out.
+       */
       void MakeNMers(const std::vector<boost::shared_ptr<Fragment> >& Set1,
                      const std::vector<boost::shared_ptr<Fragment> >& Set2);
       FragSysGuts(const Molecule& System2Frag,const int N);

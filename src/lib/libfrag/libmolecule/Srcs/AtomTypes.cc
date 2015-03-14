@@ -19,7 +19,6 @@
  *
  *@END LICENSE
  */
-
 #include "AtomTypes.h"
 
 namespace psi{
@@ -34,6 +33,9 @@ PointCharge::PointCharge(const double* Carts,
 
 GhostAtom::GhostAtom(const double* Carts,const int Z,
       const bool IsBohr):Atom(Carts,-Z,IsBohr){}
+
+GhostAtom::GhostAtom(const Atom& other):
+      Atom(&((other.GetCarts())[0]),(other.Z()>0?-other.Z():other.Z()),true){}
 
 
 }}//End namespaces

@@ -46,6 +46,7 @@ tests/*/PEDRA.OUT
 tests/*/cavity.npz
 tests/*/cavity.off
 tests/*/pcmsolver.inp
+lib/python/pcm_placeholder.py
 
 # Compilation directories that people use
 objdir
