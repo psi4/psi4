@@ -154,6 +154,9 @@ protected:
     /// The energy associated with this wavefunction
     double energy_;
 
+    /// Frozen-core energy associated with this wavefunction
+    double efzc_;
+
     /// Total number of SOs
     int nso_;
     /// Total number of MOs
@@ -333,6 +336,10 @@ public:
     int nirrep() const { return nirrep_; }
     /// Returns the reference energy
     double reference_energy () const { return energy_; }
+    /// Returns the frozen-core energy
+    double efzc() const { return efzc_; }
+    /// Sets the frozen-core energy
+    void set_efzc(double efzc) { efzc_ = efzc; }
 
     /// Returns the overlap matrix
     SharedMatrix S() const { return S_; }

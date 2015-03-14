@@ -23,6 +23,8 @@ set(MoleculeHeaders ${CWD}/Atom.h
                  ${Utils}/AddDerivedGrpFunctor.h
                  ${Utils}/AddGroupFunctor.h
                  ${Utils}/AromaRingFinder.h
+                 ${Utils}/BSSEer.h
+                 ${Utils}/BSSEFactory.h
                  ${Utils}/Fragmenter.h
                  ${Utils}/FxnalGroup.h
                  ${Utils}/GeomManipulator.h
@@ -46,7 +48,9 @@ set(MoleculeSrcs ${CWDSRCs}/Atom.cc
                  ${Impl}/MolItrGuts.cc
                  ${Impl}/UnitCellGuts.cc
                  ${Utils}/AromaRingFinder.cc
-                 ${Utils}/Fragmenter.cc
+                 ${Utils}/BSSEer.cc
+                 ${Utils}/BSSEFactory.cc
+                 ${Utils}/Fragmenter.cc 
                  ${Utils}/FxnalGroup.cc
                  ${Utils}/GeomManipulator.cc
                  ${Utils}/Geometry.cc

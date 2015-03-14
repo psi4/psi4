@@ -68,7 +68,7 @@ std::vector<T> SlaveTools::ReduceImpl(
 }
 
 template<typename T>
-std::vector<T> SlaveTools::SynchImpl(const std::vector<T>& Local, const int N,
+std::vector<T> SlaveTools::SynchImpl(const std::vector<T>& Local, const int,
       boost::shared_ptr<const Communicator> Comm3_){
    int size=Local.size();
    Comm3_->Send(0,1,&size,1);

@@ -160,7 +160,7 @@ std::string SmartTimer::PrintOut() const {
       }
    }
    typedef TableColumn<std::string> StrCol;
-   StrCol RowTitles("",&ProcessNames[0],1,'\0','|');
+   StrCol RowTitles("",&ProcessNames[0],1,0,'\0','|');
    StrCol WallTimes("Wall (s)",&FinalTimes[0],3);
    StrCol CPUTimes("CPU (s)",&FinalTimes[1],3);
    StrCol SysTimes("System (s)",&FinalTimes[2],3);

@@ -22,6 +22,7 @@
 #ifndef SRC_LIB_LIBFRAG_LIBMOLECULE_UTILS_FRAGMENTER_H_
 #define SRC_LIB_LIBFRAG_LIBMOLECULE_UTILS_FRAGMENTER_H_
 #include <vector>
+#include <limits>
 #include <boost/shared_ptr.hpp>
 #include "Geometry.h"
 #include "OrganicGeom.h"
@@ -41,8 +42,8 @@ class Fragmenter{
 
 class BondFragmenter:public Fragmenter{
    private:
-      int NBonds_;
       boost::shared_ptr<OrganicGeom> Geom_;
+      unsigned int NBonds_;
       void Recurse(
         std::vector<boost::shared_ptr<const FxnalGroup> >& FoundGroups,
           const Connections& Conns,const ConnGroups& FxnGroups,
@@ -53,7 +54,13 @@ class BondFragmenter:public Fragmenter{
                             FoundGroups,const long int value);
    public:
       std::vector<boost::shared_ptr<Fragment> > MakeFrags();
-      BondFragmenter(boost::shared_ptr<const Molecule> Mol, const int NBonds=3);
+      BondFragmenter(boost::shared_ptr<const Molecule> Mol, const unsigned int NBonds=3);
+};
+
+class MonomerFragmenter:public BondFragmenter{
+   public:
+      MonomerFragmenter(boost::shared_ptr<const Molecule> Mol):
+       BondFragmenter(Mol,std::numeric_limits<unsigned int>::max()){}
 };
 
 }}//End namespaces

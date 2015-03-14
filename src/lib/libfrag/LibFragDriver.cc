@@ -33,6 +33,10 @@
 #include "libPsiUtil/ProgressBar.h"
 #include "MBEProp.h"
 #include "MBE.h"
+#include "CanonicalMBE.h"
+#include "VMFCnMBE.h"
+#include "libmolecule/Utils/BSSEFactory.h"
+
 typedef boost::python::str PyStr;
 namespace psi {
 namespace LibFrag {
@@ -40,8 +44,35 @@ typedef boost::shared_ptr<Molecule> SharedMol;
 typedef boost::shared_ptr<LibMolecule::FragmentedSystem> SharedFrags;
 typedef boost::shared_ptr<LibMolecule::Fragment> SharedFrag;
 typedef LibMolecule::FragmentedSystem::iterator FragItr;
+static boost::shared_ptr<LibMolecule::UnitCell>
+   MakeUC(boost::shared_ptr<LibMolecule::Molecule> MyMol){
+   std::vector<double> Sides(3,0.0),Angles(3,0.0);
+   Options options=psi::Process::environment.options;
+   for (int i=0; i<3; i++) {
+      Sides[i]=options["UNIT_CELL_SIDES"][i].to_double();
+      Angles[i]=options["UNIT_CELL_ANGLES"][i].to_double();
+   }
+   boost::shared_ptr<LibMolecule::UnitCell> UC(
+         new LibMolecule::UnitCell(*MyMol, &Sides[0], &Angles[0],
+               options["FRACTIONAL_UNIT_CELL"].to_integer()));
+   UC->FixUnitCell();
+   return UC;
+}
 
-SharedFrags MakeMolecule(const int N, SharedMol AMol) {
+static boost::shared_ptr<LibMolecule::SuperCell> MakeSC(
+      boost::shared_ptr<LibMolecule::UnitCell> UC){
+   std::vector<int> SCellSides(3,0);
+   Options options=psi::Process::environment.options;
+   int SCSides=options["SUPER_CELL_SIDES"].size();
+   for(int i=0;i<3;i++)
+      SCellSides[i]=options["SUPER_CELL_SIDES"][(SCSides==3 ? i : 0)]
+      .to_integer();
+   boost::shared_ptr<LibMolecule::SuperCell> temp(
+         new LibMolecule::SuperCell((*UC),SCellSides));
+   return temp;
+}
+
+static SharedFrags MakeMolecule(const int N, SharedMol AMol) {
    boost::shared_ptr<LibMolecule::Molecule> MyMol(new LibMolecule::Molecule);
    for (int i=0; i<AMol->natom(); ++i) {
       std::vector<double> Carts(3, 0.0);
@@ -50,28 +81,18 @@ SharedFrags MakeMolecule(const int N, SharedMol AMol) {
       Carts[2]=AMol->z(i);
       (*MyMol)<<LibMolecule::Atom(&Carts[0], (int)AMol->Z(i));
    }
-   std::vector<double> Angles(3, 0.0),Sides(3, 0.0);
    Options options=psi::Process::environment.options;
-   int SCSides=options["SUPER_CELL_SIDES"].size();
    SharedFrags MySys;
-   if (SCSides>=1) {
-      std::vector<int> SCellSides(3, 0);
-      for (int i=0; i<3; i++) {
-         Sides[i]=options["UNIT_CELL_SIDES"][i].to_double();
-         Angles[i]=options["UNIT_CELL_ANGLES"][i].to_double();
-         SCellSides[i]=options["SUPER_CELL_SIDES"][(SCSides==3 ? i : 0)]
-               .to_integer();
-      }
-      boost::shared_ptr<LibMolecule::UnitCell> UC(
-            new LibMolecule::UnitCell(*MyMol, &Sides[0], &Angles[0]));
-      UC->FixUnitCell();
-      if (SCellSides[0]+SCellSides[1]+SCellSides[2]>=1) {
-         boost::shared_ptr<LibMolecule::SuperCell> temp(
-               new LibMolecule::SuperCell((*UC),SCellSides));
+   if(options["UNIT_CELL_SIDES"].size()>1){
+      boost::shared_ptr<LibMolecule::UnitCell> temp=MakeUC(MyMol);
+      int SCSides=options["SUPER_CELL_SIDES"].size();
+      if (SCSides>=1){
+         boost::shared_ptr<LibMolecule::SuperCell> temp2=MakeSC(temp);
          MySys=SharedFrags(
-               new LibMolecule::FragmentedSystem(*temp, N));
+               new LibMolecule::FragmentedSystem(*temp2, N));
       }
-      else MyMol=UC;
+      else  MySys=SharedFrags(
+            new LibMolecule::FragmentedSystem(*temp, N));
    }
    if (!MySys)
       MySys=SharedFrags(new LibMolecule::FragmentedSystem(*MyMol, N));
@@ -85,29 +106,27 @@ LibFragDriver::LibFragDriver(const std::string& MethodName){
    int N=options["MBE_TRUNCATION_ORDER"].to_integer();
    SharedMol AMol=psi::Process::environment.molecule();
    Frags_=MakeMolecule(N,AMol);
-   RunMonomers(MethodName);
-   if(N>1)
-      RunNMers(MethodName);
+   LibMolecule::BSSEFactory tempFactory(*Frags_);
+   //std::cout<<Frags_->PrintOut(0);
+   if(NStart==1)RunMonomers(MethodName);
+   if(N>1)RunNMers(NStart,MethodName);
    //Expansion<MBE> Expansion_(N);
-   Expansion<CanonicalMBE> Expansion_(N);
-   for(int i=0;i<Energies_.size();i++){
+   Expansion<VMFCnMBE> Expansion_(N);
+   for(unsigned int i=0;i<Energies_.size();i++){
       MBEProp<double> FinalEs=Expansion_.Property(*Frags_,*(Energies_[i]));
-      (*outfile)<<FinalEs.PrintOut()<<std::endl;
+      (*outfile)<<Expansion_.PrintOut()<<std::endl;
    }
 }
 
 typedef MPITask<SharedFrag> Task_t;
-std::vector<Task_t> MakeTasks(const int Start, const int Stop,const SharedFrags& Frags_){
+static std::vector<Task_t> MakeTasks(const int Start, const int Stop,const SharedFrags& Frags_){
    std::vector<Task_t> Tasks;
    FragItr MonoI,MonoEnd;
-   //SmartTimer Overhead("Time to Make MPITasks");
    for (int i=Start; i<Stop; i++) {
       MonoEnd=Frags_->end(i);
       for (MonoI=Frags_->begin(i); MonoI!=MonoEnd; ++MonoI)
          Tasks.push_back(Task_t((*MonoI), i+1));
    }
-   //Overhead.Stop();
-   //(*outfile)<<Overhead.PrintOut()<<std::endl;
    return Tasks;
 }
 
@@ -122,12 +141,12 @@ void LibFragDriver::RunCalc(const std::string& MethodName,int Start, int Stop) {
    ProgressBar MyBar((Increment==0?1:Increment));
 
    PythonFxn<boost::python::dict> RunCalc("wrappers", "new_run_calc", "s s i");
+   PythonFxn<boost::python::list> GetEgyComps("wrappers","GetCalcDetails","s");
+   boost::python::list Keys=GetEgyComps(MethodName.c_str());
 
    //Array for collecting energies, the number of energy types, and their names
    std::vector<double> TempEngy;
-   int NEgys=0;
-   boost::python::list* Keys=NULL;
-
+   int NEgys=boost::python::len(Keys);
    //Start Comm timer here since there are some comms in the MPIJob creation
    SmartTimer CommTimer("Communications"),WorkTimer("NMer Energy Computation");
    MPIJob<SharedFrag> PMan(Tasks);
@@ -135,14 +154,9 @@ void LibFragDriver::RunCalc(const std::string& MethodName,int Start, int Stop) {
       CommTimer.Stop();
       boost::python::dict Egys=
             RunCalc(MethodName.c_str(),MakeMol(NMer).c_str(),1);
-      ++MyBar;
-      if(NEgys==0){
-         Keys=new boost::python::list(Egys.keys());
-         NEgys=boost::python::len((*Keys));
-      }
       for(int i=0;i<NEgys;i++)
-         TempEngy.push_back(boost::python::extract<double>(Egys[(*Keys)[i]]));
-      //TempEngy.push_back(Process::environment.globals["CURRENT ENERGY"]);
+         TempEngy.push_back(boost::python::extract<double>(Egys[Keys[i]]));
+      ++MyBar;
       CommTimer.Resume();
    }
    CommTimer.Stop();
@@ -152,21 +166,13 @@ void LibFragDriver::RunCalc(const std::string& MethodName,int Start, int Stop) {
    if(Energies_.size()==0){
       for(int i=0;i<NEgys;i++){
          const std::string EgyName=
-               boost::python::extract<std::string>((*Keys)[i]);
+               boost::python::extract<std::string>(Keys[i]);
          Energies_.push_back(
                boost::shared_ptr<MBEProp<double> >(
                      new MBEProp<double>(Frags_->N(),EgyName)));
       }
-      //Energies_.push_back(
-      //      boost::shared_ptr<MBEProp<double> >(
-      //            new MBEProp<double>(Frags_->N(),"CURRENT ENERGY")));
    }
-   delete Keys;
-   //SmartTimer SynchTimer("Sychronization time");
    std::vector<double> TempEgys2=PMan.Synch(TempEngy, NEgys);
-   //SynchTimer.Stop();
-   //(*outfile)<<SynchTimer.PrintOut()<<std::endl;
-
    std::vector<Task_t>::iterator TaskI=Tasks.begin(),TaskIEnd=Tasks.end();
    for(int counter=0;TaskI!=TaskIEnd;++TaskI){
       const LibMolecule::SerialNumber& SN=TaskI->GetLabel()->GetSN();
@@ -175,8 +181,8 @@ void LibFragDriver::RunCalc(const std::string& MethodName,int Start, int Stop) {
    }
 }
 
-void LibFragDriver::RunNMers(const std::string& MethodName) {
-   RunCalc(MethodName,1, Frags_->N());
+void LibFragDriver::RunNMers(int Start,const std::string& MethodName) {
+   RunCalc(MethodName,Start, Frags_->N());
 }
 
 void LibFragDriver::RunMonomers(const std::string& MethodName){

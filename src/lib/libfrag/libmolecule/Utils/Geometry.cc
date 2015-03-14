@@ -48,7 +48,7 @@ void Geometry::FormDistance() {
             d2+=dist*dist;
          }
          double d=sqrt(d2);
-         if (d<=1.1*(radius1+radius2)) {
+         if (d<=1.2*(radius1+radius2)) {
             Bonds_.push_back(SharedBond(new Bond(pair, d)));
             Connections_[pair[0]].push_back(pair[1]);
             Connections_[pair[1]].push_back(pair[0]);
@@ -68,12 +68,9 @@ std::string Connections::PrintOut()const{
    return Result.str();
 }
 
-Geometry::Geometry(const Molecule* Mol, const double BondDef,
-      const int MaxBonds) :
+Geometry::Geometry(const Molecule* Mol) :
       Distance_(new double[Mol->NAtoms()*Mol->NAtoms()]),
-            Connections_(Mol->NAtoms()), Mol_(new Molecule(*Mol)),
-            MaxBonds_(MaxBonds) {
-   BondDef_=BondDef*AngToBohr();
+            Connections_(Mol->NAtoms()), Mol_(new Molecule(*Mol)){
    FormDistance();
 }
 

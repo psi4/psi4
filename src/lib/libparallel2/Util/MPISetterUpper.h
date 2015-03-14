@@ -41,17 +41,17 @@ class Communicator;
 class MPISetterUpper{
    private:
 
-      ///The algorithm this job will be using
-      SchedAlgorithm ChoosenAlg_;
-
-      ///The state this SetterUpper is working on
-      boost::shared_ptr<const Communicator> State_;
-
       /** \brief The tasks the user wants done, stripped down to
        * std::pairs<int,int> of the form (priority,original task number)
        *
        */
       boost::shared_ptr<std::vector<MPITaskGuts> > Tasks_;
+
+      ///The state this SetterUpper is working on
+      boost::shared_ptr<const Communicator> State_;
+
+      ///The algorithm this job will be using
+      SchedAlgorithm ChoosenAlg_;
 
       ///The scheduler
       boost::shared_ptr<MPIScheduler> Sched_;
@@ -84,7 +84,7 @@ template<typename T>
 MPISetterUpper::MPISetterUpper(const std::vector<MPITask<T> >& Tasks,
       boost::shared_ptr<const Communicator> IState,
       bool ForceDynamic):Tasks_(new std::vector<MPITaskGuts>),
-      State_(IState){
+      State_(IState),ChoosenAlg_(NONE){
       for(int i=0;i<Tasks.size();i++)
          Tasks_->push_back(MPITaskGuts(Tasks[i].Priority(),i));
       this->ChooseAlgorithm(ForceDynamic);

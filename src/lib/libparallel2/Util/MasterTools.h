@@ -33,13 +33,13 @@ namespace LibParallel{
 class MasterTools:public ToolSet{
    private:
       ///The task we just gave out
-      int CurrentTask_;
+      unsigned int CurrentTask_;
+
+      ///The number of tasks we are giving away at a time
+      unsigned int TaskChunk_;
 
       ///Our Task queue
       boost::shared_ptr<std::vector<MPITaskGuts> > Tasks_;
-
-      ///The number of tasks we are giving away at a time
-      int TaskChunk_;
 
       ///A map of who I gave, what task to (0 is Tasks_[0].Number())
       TaskMap TaskMap_;
@@ -86,13 +86,12 @@ std::vector<T> MasterTools::ReduceImpl(
 
 template<typename T>
 std::vector<T> MasterTools::SynchImpl(
-      const std::vector<T>& Local,
+      const std::vector<T>&,
       const int N,
       boost::shared_ptr<const Communicator> Comm3_){
    int NTasks=N*Tasks_->size();
-   int NSlaves=Comm3_->NProc()-1;
    std::vector<T> Temp;
-   for(int i=1,index=0;i<Comm3_->NProc();i++){
+   for(int i=1;i<Comm3_->NProc();i++){
       int size=0;
       Comm3_->Receive(i,1,&size,1);
       std::vector<T> temp2(size);

@@ -34,10 +34,10 @@ class MoleculeGuts:public LibMoleculeBase{
       ///Performs a deep copy
       void Copy(const MoleculeGuts& other);
    protected:
-      ///The multiplicity
-      int Mult_;
       ///The charge
       int Charge_;
+      ///The multiplicity
+      int Mult_;
 
       ///The actual atoms contained in this Molecule
       std::vector<boost::shared_ptr<const Atom> > Atoms_;

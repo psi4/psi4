@@ -42,12 +42,6 @@ class Connections:public std::vector<std::vector<int> >{
 class Geometry:public LibMoleculeBase{
    private:
       void FormDistance();
-
-      ///The definition of a bond in A.U.
-      double BondDef_;
-
-      ///The maximum number of bonds an atom can make
-      int MaxBonds_;
       std::vector<boost::shared_ptr<const Pair> > Pairs_;
       std::vector<boost::shared_ptr<const Bond> > Bonds_;
 
@@ -64,9 +58,7 @@ class Geometry:public LibMoleculeBase{
       Pair_t& GetPairs()const{return Pairs_;}
       const Connections& GetConns()const{return Connections_;}
       virtual ~Geometry(){}
-      Geometry(const Molecule* Mol,
-               const double BondDef=1.8,
-               const int MaxBonds=4);
+      Geometry(const Molecule* Mol);
 };
 
 
