@@ -32,12 +32,20 @@ the file :source:`INSTALL` distributed with the package).
 .. index:: prerequisites, compiling, installing
 .. _`sec:installFile`:
 
-Compiling and Installing
-========================
+Compiling and Installing from Source
+====================================
 
 .. toctree::
 
    installfile
+
+Installing from Binary
+======================
+
+.. toctree::
+   :maxdepth: 2
+
+   conda
 
 .. index:: scratch files, psirc, psi4rc
 .. _`sec:psirc`:
