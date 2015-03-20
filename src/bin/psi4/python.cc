@@ -62,7 +62,7 @@
 #include <libpsio/psio.h>
 #include <libmints/wavefunction.h>
 #include <psifiles.h>
-#include <libparallel/parallel.h>
+#include "libparallel2/ParallelEnvironment.h"
 namespace psi {
     int psi_start(int argc, char *argv[]);
     int psi_stop(FILE* infile, std::string, char* psi_file_prefix);
