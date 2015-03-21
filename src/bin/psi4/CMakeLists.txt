@@ -66,6 +66,9 @@ target_link_libraries(psi4 ${LINKLIBS})
 
 # standalone python module psi4.so
 add_executable(psi4so EXCLUDE_FROM_ALL ${sources_list})
+if(CUSTOM_BOOST_BUILD)
+   add_dependencies(psi4so custom_boost)
+endif()
 set_property(TARGET psi4so PROPERTY COMPILE_DEFINITIONS MAKE_PYTHON_MODULE)
 set_property(TARGET psi4so PROPERTY LINK_FLAGS "-shared")
 set_property(TARGET psi4so PROPERTY OUTPUT_NAME "psi4.so")
