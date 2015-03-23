@@ -8,7 +8,7 @@ set(CTEST_PROJECT_NAME "Psi")
 set(CTEST_NIGHTLY_START_TIME "00:00:00 CEST")
 
 set(CTEST_DROP_METHOD "http")
-set(CTEST_DROP_SITE "repo.theochem.kth.se")
+set(CTEST_DROP_SITE "testboard.org")
 set(CTEST_DROP_LOCATION "/cdash/submit.php?project=Psi")
 set(CTEST_DROP_SITE_CDASH TRUE)
 
