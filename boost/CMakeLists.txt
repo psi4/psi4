@@ -68,7 +68,7 @@ add_custom_command(
 # Build Boost
 add_custom_command(
     OUTPUT boost.built
-    COMMAND ./b2 toolset=${toolset} variant=${type} link=static
+    COMMAND ./b2 toolset=${toolset} variant=${type} link=static cxxflags=-fPIC
     threading=multi --user-config=user-config.jam 1> boost.built.log 2> boost.built.err
     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/boost/boost.built
     WORKING_DIRECTORY ${BOOST_BUILD_DIR}
