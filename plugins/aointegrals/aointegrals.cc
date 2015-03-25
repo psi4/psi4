@@ -34,10 +34,7 @@ aointegrals(Options &options)
     shared_ptr<Molecule> molecule = Process::environment.molecule();
 
     // Form basis object:
-    // Create a basis set parser object.
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    // Construct a new basis set.
-    shared_ptr<BasisSet> aoBasis = BasisSet::construct(parser, molecule, "BASIS");
+    shared_ptr<BasisSet> aoBasis = BasisSet::pyconstruct_orbital(molecule, "BASIS", options.get_str("BASIS"));
 
     // The integral factory oversees the creation of integral objects
     shared_ptr<IntegralFactory> integral(new IntegralFactory
