@@ -243,15 +243,6 @@ if(ENABLE_PCMSOLVER)
    set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
 endif()
 
-#RMR---This is our plugin workaround
-#Here we start a list of plugins
-set(PLUGINS "")
-if(ENABLE_PLUGINS)
-   add_subdirectory(plugins)
-   #Add plugins to the libraries Psi depends on
-   set_property(GLOBAL APPEND PROPERTY PSILIB ${PLUGINS})
-endif()
-
 #If we have MPI we may want to also build JKFactory which makes J and K's
 #in distributed parallel
 set(BUILD_JK_FACTORY FALSE)
@@ -328,5 +319,8 @@ configure_files()
 # This must come after ConfigDocumentation, as it needs Perl detection
 # It also needs Python so it must go _after_ Python detection!
 include(ConfigTesting)
+if(ENABLE_PLUGINS)
+   add_subdirectory(plugins)
+endif()
 # This has to be the very last CMake module to be included
 include(ConfigInfo)

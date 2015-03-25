@@ -9,12 +9,10 @@ macro(add_regression_test _name _labels)
         list(APPEND labels ${_label})
     endforeach()
     unset(_labels)
-    # This is where the test directories live
-    set(TESTDIR ${PROJECT_SOURCE_DIR}/tests)
     # This is the psi command to actually run the tests
     set(PSIEXE ${PROJECT_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX})
     # This is the python script that we call, to call psi4, to run the tests
-    set(TESTEXE ${TESTDIR}/runtest.py)
+    set(TESTEXE ${PROJECT_SOURCE_DIR}/tests/runtest.py)
 
     # A full report
     set(LOGFILE ${PROJECT_BINARY_DIR}/testresults.log)
@@ -26,6 +24,11 @@ macro(add_regression_test _name _labels)
     get_filename_component(dir ${dir} NAME)
     if("${dir}" STREQUAL "tests")
         set(TEST_RUN_DIR ${PROJECT_BINARY_DIR}/tests/${_name})
+    elseif("${dir}" STREQUAL "plugins")
+        set(TEST_RUN_DIR ${PROJECT_BINARY_DIR}/${dir}/${_name})
+    elseif(("${dir}" STREQUAL "psi4") AND ("${_name}" STREQUAL "skeleton"))
+        set(TEST_RUN_DIR ${PROJECT_BINARY_DIR}/plugins/${_name})
+        set(TEST_SRC_DIR ${TEST_RUN_DIR})
     else()
         set(TEST_RUN_DIR ${PROJECT_BINARY_DIR}/tests/${dir}/${_name})
     endif()
