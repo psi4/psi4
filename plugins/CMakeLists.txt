@@ -10,8 +10,12 @@ set(PLUG "skeleton")
 add_custom_target(plugin_${PLUG}
     ALL
     DEPENDS ${PSIEXE}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/${PLUG}
     COMMAND ${PSIEXE} --new-plugin ${PLUG}
-    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/${PLUG} make
+    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/${PLUG} $(MAKE)
     COMMENT "Build ${PLUG} example plugin"
     VERBATIM)
+
+include(TestingMacros)
+add_regression_test(${PLUG} "psi;plug")
 
