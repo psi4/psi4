@@ -48,7 +48,7 @@ aointegrals(Options &options)
     molecule->print();
     int nbf[] = { aoBasis->nbf() };
     double nucrep = molecule->nuclear_repulsion_energy();
-    fprintf(outfile, "\n    Nuclear repulsion energy: %16.8f\n\n", nucrep);
+    outfile->Printf("\n    Nuclear repulsion energy: %16.8f\n\n", nucrep);
 
     // The matrix factory can create matrices of the correct dimensions...
     shared_ptr<MatrixFactory> factory(new MatrixFactory);
@@ -78,7 +78,7 @@ aointegrals(Options &options)
     hMat->print();
 
     if(doTei){
-         fprintf(outfile, "\n  Two-electron Integrals\n\n");
+         outfile->Printf("\n  Two-electron Integrals\n\n");
 
         // Now, the two-electron integrals
         shared_ptr<TwoBodyAOInt> eri(integral->eri());
@@ -97,12 +97,12 @@ aointegrals(Options &options)
                 int q = intIter.j();
                 int r = intIter.k();
                 int s = intIter.l();
-                fprintf(outfile, "\t(%2d %2d | %2d %2d) = %20.15f\n",
+                outfile->Printf("\t(%2d %2d | %2d %2d) = %20.15f\n",
                     p, q, r, s, buffer[intIter.index()]);
                 ++count;
             }
         }
-        fprintf(outfile, "\n\tThere are %d unique integrals\n\n", count);
+        outfile->Printf("\n\tThere are %d unique integrals\n\n", count);
     }
 
     return Success;

@@ -8,11 +8,11 @@
 
 INIT_PLUGIN
 
-namespace psi{ namespace plugin_mp2{
+namespace psi{ namespace mollerplesset2{
 
 extern "C" int
 read_options(std::string name, Options &options){
-    if(name == "PLUGIN_MP2") {
+    if(name == "MOLLERPLESSET2") {
         /*- The amount of information printed
             to the output file -*/
         options.add_int("PRINT", 1);
@@ -27,7 +27,7 @@ read_options(std::string name, Options &options){
 
 
 extern "C" PsiReturnType
-mp2(Options &options)
+mollerplesset2(Options &options)
 {
     int print = options.get_int("PRINT");
     // This will print out all of the user-provided options for this module
@@ -72,14 +72,14 @@ mp2(Options &options)
     aVirEvals = new double[numAVir];
     bVirEvals = new double[numBVir];
 
-    fprintf(outfile, "\n\n\tIrrep  Core  Docc  Socc  aOcc  aVir  bOcc  bVir\n");
-    fprintf(outfile,     "\t===============================================\n");
+    outfile->Printf("\n\n\tIrrep  Core  Docc  Socc  aOcc  aVir  bOcc  bVir\n");
+    outfile->Printf("\t===============================================\n");
     for(int h = 0; h < nirreps; ++h){
-       fprintf(outfile, "\t %3s   %3d   %3d   %3d   %3d   %3d   %3d   %3d\n",
+       outfile->Printf("\t %3s   %3d   %3d   %3d   %3d   %3d   %3d   %3d\n",
                              labels[h], frzcpi[h], clsdpi[h], openpi[h], 
                              aOccOrbsPI[h], aVirOrbsPI[h], bOccOrbsPI[h], bVirOrbsPI[h]);
     }
-    fprintf(outfile,     "\t===============================================\n\n");
+    outfile->Printf("\t===============================================\n\n");
 
     aOccCount = 0; bOccCount = 0; aVirCount = 0; bVirCount = 0;
     for(int h = 0; h < nirreps; ++h){
@@ -91,17 +91,17 @@ mp2(Options &options)
 
     if(print > 2){
         for(int i = 0; i < numAOcc; ++i)
-            fprintf(outfile, "\taOccEvals[%2d] = %10.6f\n", i, aOccEvals[i]);
-        fprintf(outfile, "\n");
+            outfile->Printf("\taOccEvals[%2d] = %10.6f\n", i, aOccEvals[i]);
+        outfile->Printf("\n");
         for(int i = 0; i < numBOcc; ++i)
-            fprintf(outfile, "\tbOccEvals[%2d] = %10.6f\n", i, bOccEvals[i]);
-        fprintf(outfile, "\n");
+            outfile->Printf("\tbOccEvals[%2d] = %10.6f\n", i, bOccEvals[i]);
+        outfile->Printf("\n");
         for(int i = 0; i < numAVir; ++i)
-            fprintf(outfile, "\taVirEvals[%2d] = %10.6f\n", i, aVirEvals[i]);
-        fprintf(outfile, "\n");
+            outfile->Printf("\taVirEvals[%2d] = %10.6f\n", i, aVirEvals[i]);
+        outfile->Printf("\n");
         for(int i = 0; i < numBVir; ++i)
-            fprintf(outfile, "\tbVirEvals[%2d] = %10.6f\n", i, bVirEvals[i]);
-        fprintf(outfile, "\n");
+            outfile->Printf("\tbVirEvals[%2d] = %10.6f\n", i, bVirEvals[i]);
+        outfile->Printf("\n");
     }
 
     double eMP2;
@@ -113,14 +113,14 @@ mp2(Options &options)
         eMP2 = plugin_mp2_restricted(options, chkpt);
     }else{
          std::string str1 = options.get_str("REFERENCE");
-         std::string str2 = "reference in plugin_mp2";
+         std::string str2 = "reference in mollerplesset2";
          throw FeatureNotImplemented(str1, str2, __FILE__, __LINE__);
     }
 
     Process::environment.globals["MP2 ENERGY"] = eMP2 + eSCF; 
     Process::environment.globals["CURRENT ENERGY"] = eMP2 + eSCF; 
-    fprintf(outfile, "\n\t\tSCF Reference energy  = %20.16f\n", eSCF);
-    fprintf(outfile,   "\t\tMP2 Total Energy      = %20.16f\n\n", eMP2 + eSCF);
+    outfile->Printf("\n\t\tSCF Reference energy  = %20.16f\n", eSCF);
+    outfile->Printf("\t\tMP2 Total Energy      = %20.16f\n\n", eMP2 + eSCF);
 
     return Success;   
 }
