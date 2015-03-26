@@ -226,7 +226,7 @@ def parse_input():
             help="""forward directly to cmake (example: -D ENABLE_THIS=1 -D ENABLE_THAT=1);
                     you can also forward CPP defintions all the way to the program
                     (example: -D CPP="-DDEBUG")""",
-                    metavar='STRING')
+            metavar='STRING')
     group.add_argument('--host',
             action='store',
             default=None,
@@ -486,7 +486,14 @@ def gen_cmake_command(args):
 
     if args.define:
         for definition in args.define:
-            command += ' -D%s' % definition
+            if ' ' in definition:
+                # allow correct quoting of string values
+                # e.g., -D MORELIBS="-L/path/to/lib /path/to/lib2"
+                _tmp = definition.split('=', 1)
+                command += ' -D%s="%s"' % (_tmp[0], _tmp[1])
+            else:
+                print definition
+                command += ' -D%s' % definition
 
     if args.generator:
         command += ' -G "%s"' % args.generator
