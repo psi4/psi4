@@ -287,10 +287,12 @@ foreach(def ${defs})
     set(PLUGIN_DEFINES "-D${def} ${PLUGIN_DEFINES}")
 endforeach()
 set(CXX_FLAGS_PLUGIN "")
+set(PLUGIN_LDFLAGS "${CMAKE_CXX_LINK_FLAGS} ${LIBC_INTERJECT}")
 include(ConfigPlugins) # This module has to be included **after** ConfigCompilerFlags.cmake
 string(STRIP ${CXX_FLAGS_PLUGIN} CXX_FLAGS_PLUGIN)
 string(STRIP ${PLUGIN_INCLUDE_DIRECTORIES} PLUGIN_INCLUDE_DIRECTORIES)
 string(STRIP ${PLUGIN_DEFINES} PLUGIN_DEFINES)
+string(STRIP ${PLUGIN_LDFLAGS} PLUGIN_LDFLAGS)
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
 
 # Make known that the setup command given and the corresponding CMake
@@ -319,6 +321,7 @@ configure_files()
 # This must come after ConfigDocumentation, as it needs Perl detection
 # It also needs Python so it must go _after_ Python detection!
 include(ConfigTesting)
+# This must come after ConfigTesting to register plugins tests
 if(ENABLE_PLUGINS)
    add_subdirectory(plugins)
 endif()
