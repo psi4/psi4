@@ -106,12 +106,14 @@ class PubChemObj(object):
                         </PCT-QueryUids>
                       </PCT-Download_uids>
                       <PCT-Download_format value="sdf"/>
+                      <PCT-Download_use-3d value="true"/>
+                      <PCT-Download_n-3d-conformers>%d</PCT-Download_n-3d-conformers>
                     </PCT-Download>
                   </PCT-InputData_download>
                 </PCT-InputData>
               </PCT-Data_input>
             </PCT-Data>
-            """ % self.cid
+            """ % (self.cid, 1)
 
             print("\tPosting PubChem request for CID %d" % self.cid)
             server_response = urlopen(url, initial_request).read()
@@ -164,6 +166,7 @@ class PubChemObj(object):
                     # ...and ask for an update on the progress
                     server_response = urlopen(url, statusrequest).read()
                     xml = ET.fromstring(server_response)
+                    #print(server_response)
                 else:
                     # We can't find a ticket number, or a download location. Bail.
                     raise PubChemDownloadError
@@ -291,8 +294,9 @@ def getPubChemResults(name):
 
 if __name__ == "__main__":
     try:
-        obj = getPubChemResults("1-methoxy-4-[(E)-prop-1-enyl]benzene")
+        #obj = getPubChemResults("1-methoxy-4-[(E)-prop-1-enyl]benzene")
         #obj = getPubChemResults("sodium benzenesulfonate")
+        obj = getPubChemResults("4-[bis(4-hydroxyphenyl)methyl]phenol")
     except Exception as e:
         print(e.message)
 

@@ -1,0 +1,72 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0 Driver
+
+               Git: Rev {master} d4441b4809b7047d6534f4b70e1a3b16a14fb961
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  10170
+    PSI4DATADIR: /Users/loriab/linux/psihub/master/psi4/objdir/../lib
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Superficial test of PubChem interface
+
+molecule pubchem {
+O  -4.720500  -1.566200   0.094500
+O   4.688100  -1.614600   0.224900
+C   0.005700   1.491600  -0.284400
+C  -1.243200   0.683300  -0.184200
+C   1.278800   0.647300  -0.145800
+C   0.056000   2.731900   0.643800
+C  -1.779400   0.083900  -1.323700
+C   2.156000   0.607200  -1.202300
+C  -1.875400   0.526700   1.049400
+C   1.488100  -0.033600   1.029300
+C  -2.947900  -0.672000  -1.229900
+C   3.313600  -0.160800  -1.076300
+C  -3.043900  -0.229300   1.143300
+C   2.645700  -0.801500   1.155400
+C  -3.580200  -0.828700   0.003600
+C   3.558600  -0.865200   0.102600
+H   0.006100   1.926600  -1.295800
+H   0.921200   3.356900   0.393100
+H   0.152500   2.466500   1.701800
+H  -0.845100   3.344100   0.526600
+H  -1.296900   0.195100  -2.291200
+H   1.975200   1.151400  -2.123800
+H  -1.484200   0.972800   1.958300
+H   0.798700   0.011300   1.864900
+H  -3.355300  -1.134100  -2.125100
+H   4.020900  -0.206500  -1.900000
+H  -3.531300  -0.349300   2.107000
+H   2.826200  -1.343400   2.079900
+H  -4.947600  -1.905400  -0.788400
+H   4.695300  -2.032200   1.103200
+}
+
+pubchem.update_geometry()
+nre = pubchem.nuclear_repulsion_energy()  # 1014.92706758355
+
+molecule pubchem2 {
+    #pubchem:4-[bis(4-hydroxyphenyl)methyl]phenol
+    pubchem:608116
+}
+pubchem2.update_geometry()
+compare_values(nre, pubchem2.nuclear_repulsion_energy(), 4, 'nre')
+
+--------------------------------------------------------------------------
+
+*** PSI4 exiting successfully. Buy a developer a beer!
