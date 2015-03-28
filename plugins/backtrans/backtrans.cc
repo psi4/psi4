@@ -80,9 +80,9 @@ backtrans(Options &options)
     double eOne   = 0.0;
     double eTwo   = 0.0;
 
-    fprintf(outfile, "\n\n\t Irrep  frzcpi doccpi frzvpi  sopi\n");
+    outfile->Printf("\n\n\t Irrep  frzcpi doccpi frzvpi  sopi\n");
     for(int h = 0; h < nIrreps; ++h){
-        fprintf(outfile, "\t  %3s    %3d    %3d    %3d    %3d\n",
+        outfile->Printf("\t  %3s    %3d    %3d    %3d    %3d\n",
                 labels[h], frzcpi[h], clsdpi[h], frzvpi[h], orbspi[h]);
     }
     int nTriMo = nmo * (nmo + 1) / 2;
@@ -94,9 +94,9 @@ backtrans(Options &options)
      */
     Matrix soT(nIrreps, orbspi, orbspi);
     Matrix soV(nIrreps, orbspi, orbspi);
-    IWL::read_one(psio.get(), PSIF_OEI, PSIF_SO_T, temp, nTriSo, 0, 0, outfile);
+    IWL::read_one(psio.get(), PSIF_OEI, PSIF_SO_T, temp, nTriSo, 0, 0, "outfile");
     soT.set(temp);
-    IWL::read_one(psio.get(), PSIF_OEI, PSIF_SO_V, temp, nTriSo, 0, 0, outfile);
+    IWL::read_one(psio.get(), PSIF_OEI, PSIF_SO_V, temp, nTriSo, 0, 0, "outfile");
     soV.set(temp);
     Matrix soOei("SO OEI", nIrreps, orbspi, orbspi);
     soOei.add(soT);
@@ -120,10 +120,10 @@ backtrans(Options &options)
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&G);
 
-    fprintf(outfile, "\n\tSO basis results\n");
-    fprintf(outfile, "\tOne electron energy = %16.10f\n", eOne);
-    fprintf(outfile, "\tTwo electron energy = %16.10f\n", eTwo);
-    fprintf(outfile, "\tTotal energy        = %16.10f\n", eOne + eTwo);
+    outfile->Printf("\n\tSO basis results\n");
+    outfile->Printf("\tOne electron energy = %16.10f\n", eOne);
+    outfile->Printf("\tTwo electron energy = %16.10f\n", eTwo);
+    outfile->Printf("\tTotal energy        = %16.10f\n", eOne + eTwo);
 
     /*
      * MO basis results; these depend on spin case
@@ -132,10 +132,10 @@ backtrans(Options &options)
     const int *bPitzer = ints.beta_corr_to_pitzer(); // This is the same as the alpha array for RHF references
     if(print > 4)
         for(int n = 0; n < nmo; ++n)
-            fprintf(outfile, "\tAlpha: %3d -> %3d   Beta: %3d -> %3d\n", n, aPitzer[n], n, bPitzer[n]);
+            outfile->Printf("\tAlpha: %3d -> %3d   Beta: %3d -> %3d\n", n, aPitzer[n], n, bPitzer[n]);
     if(reference == "RHF"){
         Matrix moOei("MO OEI", nIrreps, orbspi, orbspi);
-        IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_OEI, temp, nTriMo, 0, 0, outfile);
+        IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_OEI, temp, nTriMo, 0, 0, "outfile");
         moOei.set(temp);
         Matrix moOpdm("MO OPDM", nIrreps, orbspi, orbspi);
       
@@ -156,8 +156,8 @@ backtrans(Options &options)
         psio->close(PSIF_MO_OPDM, 1);
         moOpdm.set(tempMo);
         if(print > 4){
-            fprintf(outfile, "The MO basis OPDM, in Pitzer order\n");
-            print_array(tempMo, nmo, outfile);
+            outfile->Printf("The MO basis OPDM, in Pitzer order\n");
+            print_array(tempMo, nmo, "outfile");
             moOei.print();
         }
         delete[] tempMo;
@@ -173,10 +173,10 @@ backtrans(Options &options)
         global_dpd_->buf4_close(&G);
    }else{
         Matrix aMoOei("Alpha MO OEI", nIrreps, orbspi, orbspi);
-        IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_A_OEI, temp, nTriMo, 0, 0, outfile);
+        IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_A_OEI, temp, nTriMo, 0, 0, "outfile");
         aMoOei.set(temp);
         Matrix bMoOei("Alpha MO OEI", nIrreps, orbspi, orbspi);
-        IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_B_OEI, temp, nTriMo, 0, 0, outfile);
+        IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_B_OEI, temp, nTriMo, 0, 0, "outfile");
         bMoOei.set(temp);
       
         psio->open(PSIF_MO_OPDM, PSIO_OPEN_OLD);
@@ -194,8 +194,8 @@ backtrans(Options &options)
         }
         aMoOpdm.set(tempMo);
         if(print > 4){
-            fprintf(outfile, "The Alpha MO basis OPDM, in Pitzer order\n");
-            print_array(tempMo, nmo, outfile);
+            outfile->Printf("The Alpha MO basis OPDM, in Pitzer order\n");
+            print_array(tempMo, nmo, "outfile");
             aMoOei.print();
         }
         Matrix bMoOpdm("Beta MO OPDM", nIrreps, orbspi, orbspi);
@@ -212,8 +212,8 @@ backtrans(Options &options)
         free_block(tempOPDM);
         psio->close(PSIF_MO_OPDM, 1);
         if(print > 4){
-            fprintf(outfile, "The Beta MO basis OPDM, in Pitzer order\n");
-            print_array(tempMo, nmo, outfile);
+            outfile->Printf("The Beta MO basis OPDM, in Pitzer order\n");
+            print_array(tempMo, nmo, "outfile");
             bMoOei.print();
         }
         delete[] tempMo;
@@ -246,17 +246,16 @@ backtrans(Options &options)
         global_dpd_->buf4_close(&G);
    }
 
-    fprintf(outfile, "\n\tMO basis results\n");
-    fprintf(outfile, "\tOne electron energy = %16.10f\n", eOne);
-    fprintf(outfile, "\tTwo electron energy = %16.10f\n", eTwo);
-    fprintf(outfile, "\tTotal energy        = %16.10f\n", eOne + eTwo);
+    outfile->Printf("\n\tMO basis results\n");
+    outfile->Printf("\tOne electron energy = %16.10f\n", eOne);
+    outfile->Printf("\tTwo electron energy = %16.10f\n", eTwo);
+    outfile->Printf("\tTotal energy        = %16.10f\n", eOne + eTwo);
 
     psio->close(PSIF_TPDM_PRESORT, 1);
     psio->close(PSIF_LIBTRANS_DPD, 1);
     psio->close(PSIF_AO_TPDM, 1);
     psio->close(PSIF_SO_PRESORT, 1);
 
-    fflush(outfile);
     delete [] temp;
 
     return Success;   

@@ -14,7 +14,7 @@
 
 using namespace boost;
 
-namespace psi{ namespace plugin_mp2{
+namespace psi{ namespace mollerplesset2{
     // Nasty, nasty global variables.
     EXTERN int nirreps, nmo;
     EXTERN shared_ptr<PSIO> psio;

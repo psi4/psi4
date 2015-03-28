@@ -9,7 +9,7 @@
 #include "globals.h"
 #include "libdpd/dpd.gbl"
 
-namespace psi{ namespace plugin_mp2{
+namespace psi{ namespace mollerplesset2{
 
 double plugin_mp2_restricted(Options &options, shared_ptr<Chkpt> chkpt)
 {
@@ -78,9 +78,9 @@ double plugin_mp2_restricted(Options &options, shared_ptr<Chkpt> chkpt)
     global_dpd_->buf4_close(&K);
 
     e2 = aaE2 + abE2 + bbE2;
-    fprintf(outfile, "\n\n\t\tAA correlation energy = %20.16f\n", aaE2);
-    fprintf(outfile,     "\t\tAB correlation energy = %20.16f\n", abE2);
-    fprintf(outfile,     "\t\tBB correlation energy = %20.16f\n", bbE2);
+    outfile->Printf("\n\n\t\tAA correlation energy = %20.16f\n", aaE2);
+    outfile->Printf("\t\tAB correlation energy = %20.16f\n", abE2);
+    outfile->Printf("\t\tBB correlation energy = %20.16f\n", bbE2);
   
     psio->close(PSIF_LIBTRANS_DPD, 1);
 

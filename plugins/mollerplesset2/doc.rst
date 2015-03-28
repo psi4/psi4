@@ -12,7 +12,7 @@ Casual documentation for this plugin goes here.
 Uncomment the ``.. comment`` for some examples.
 
 .. comment * this plugin solves :math:`H=F_A+W_A+F_B+W_B+V`
-.. comment * reference to keyword |globals__docc| and |plugin_mp2__print|
+.. comment * reference to keyword |globals__docc| and |mollerplesset2__print|
 .. comment * returns :psivar:`CURRENT ENERGY <CURRENTENERGY>` in |kcalpermol|
 .. comment * operation depends on :envvar:`OMP_NUM_THREADS`.
 .. comment * operation requires external software described in :ref:`sec:interfacing`

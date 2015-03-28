@@ -107,6 +107,7 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
     nmopi_ = other->nmopi_;
 
     energy_ = other->energy_;
+    efzc_ = other->efzc_;
 
     nso_ = other->nso_;
     nmo_ = other->nmo_;

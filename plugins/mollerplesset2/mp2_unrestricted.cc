@@ -11,7 +11,7 @@
 #include "globals.h"
 #include "libdpd/dpd.gbl"
 
-namespace psi{ namespace plugin_mp2{
+namespace psi{ namespace mollerplesset2{
 
 double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
 {
@@ -39,7 +39,7 @@ double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
         int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;
         double *F = init_array(nTriMo);
         // The alpha energy
-        IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_A_FOCK, F, nTriMo, 0, 0, outfile);
+        IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_A_FOCK, F, nTriMo, 0, 0, "outfile");
         for(int h = 0, offset = 0; h < nirreps; ++h){
             for(int i = 0; i < aOccOrbsPI[h]; ++i){
                 int ii = i + offset + frzcpi[h];
@@ -56,7 +56,7 @@ double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
             offset += mopi[h];
         }
         // The beta energy
-        IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_B_FOCK, F, nTriMo, 0, 0, outfile);
+        IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_B_FOCK, F, nTriMo, 0, 0, "outfile");
         for(int h = 0, offset = 0; h < nirreps; ++h){
             for(int i = 0; i < bOccOrbsPI[h]; ++i){
                 int ii = i + offset + frzcpi[h];
@@ -74,13 +74,13 @@ double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
         }
         free(F);
 
-        fprintf(outfile, "\n");
-        fprintf(outfile, "\n\t\t--------------------------------------------\n");
-        fprintf(outfile, "\t\tThe singles contributions\n");
-        fprintf(outfile, "\t\tA correlation energy  = %20.16f\n", aE2);
-        fprintf(outfile, "\t\tB correlation energy  = %20.16f\n", bE2);
-        fprintf(outfile, "\t\tTotal contribution    = %20.16f\n", aE2 + bE2);
-        fprintf(outfile, "\t\t--------------------------------------------\n");
+        outfile->Printf("\n");
+        outfile->Printf("\n\t\t--------------------------------------------\n");
+        outfile->Printf("\t\tThe singles contributions\n");
+        outfile->Printf("\t\tA correlation energy  = %20.16f\n", aE2);
+        outfile->Printf("\t\tB correlation energy  = %20.16f\n", bE2);
+        outfile->Printf("\t\tTotal contribution    = %20.16f\n", aE2 + bE2);
+        outfile->Printf("\t\t--------------------------------------------\n");
     }
 
     // The alpha-alpha spin case
@@ -157,9 +157,9 @@ double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
     global_dpd_->buf4_close(&K);
     
     e2 = aE2 + bE2 + aaE2 + abE2 + bbE2;
-    fprintf(outfile, "\n\n\t\tAA correlation energy = %20.16f\n", aaE2);
-    fprintf(outfile,     "\t\tAB correlation energy = %20.16f\n", abE2);
-    fprintf(outfile,     "\t\tBB correlation energy = %20.16f\n", bbE2);
+    outfile->Printf("\n\n\t\tAA correlation energy = %20.16f\n", aaE2);
+    outfile->Printf(    "\t\tAB correlation energy = %20.16f\n", abE2);
+    outfile->Printf(    "\t\tBB correlation energy = %20.16f\n", bbE2);
   
     psio->close(PSIF_LIBTRANS_DPD, 1);
 
