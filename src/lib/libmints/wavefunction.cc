@@ -532,7 +532,7 @@ SharedMatrix Wavefunction::F_subset_helper(SharedMatrix F, SharedMatrix C, const
     } else if (basis == "SO") {
         return SharedMatrix(F->clone());
     } else if (basis == "MO") {
-        SharedMatrix D2(new Matrix("Fock (MO Basis)", C->colspi(), C->colspi()));
+        SharedMatrix F2(new Matrix("Fock (MO Basis)", C->colspi(), C->colspi()));
 
         int symm = F->symmetry();
         int nirrep = F->nirrep();
@@ -549,17 +549,17 @@ SharedMatrix Wavefunction::F_subset_helper(SharedMatrix F, SharedMatrix C, const
             double** Srp = S_->pointer(h^symm);
             double** Clp = C->pointer(h);
             double** Crp = C->pointer(h^symm);
-            double** Dmop = D2->pointer(h);
-            double** Dsop = F->pointer(h);
+            double** Fmop = F2->pointer(h);
+            double** Fsop = F->pointer(h);
 
             C_DGEMM('N','N',nsor,nmor,nsor,1.0,Srp[0],nsor,Crp[0],nmor,0.0,SC,nmor);
-            C_DGEMM('N','N',nsol,nmor,nsor,1.0,Dsop[0],nsor,SC,nmor,0.0,temp,nmor);
+            C_DGEMM('N','N',nsol,nmor,nsor,1.0,Fsop[0],nsor,SC,nmor,0.0,temp,nmor);
             C_DGEMM('N','N',nsol,nmol,nsol,1.0,Slp[0],nsol,Clp[0],nmol,0.0,SC,nmol);
-            C_DGEMM('T','N',nmol,nmor,nsol,1.0,SC,nmol,temp,nmor,0.0,Dmop[0],nmor);
+            C_DGEMM('T','N',nmol,nmor,nsol,1.0,SC,nmol,temp,nmor,0.0,Fmop[0],nmor);
         }
         delete[] temp;
         delete[] SC;
-        return F;
+        return F2;
     } else {
         throw PSIEXCEPTION("Invalid basis requested, use AO, SO, or MO");
     }
