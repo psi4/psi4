@@ -116,7 +116,7 @@ bool Recurse(PsiMap_t& FoundGroups, Conn_t& Conns,
    //Stop looking after 5 groups
    if (Groups.size()==5) return Found;
    int AttachPoint=AttachPoints.back().second;
-   std::cout<<"Found AttachPoint: "<<AttachPoint<<std::endl;
+   //std::cout<<"Found AttachPoint: "<<AttachPoint<<std::endl;
    SharedGroup GI=Groups.back();
    typedef std::vector<int>::const_iterator cIntIt;
    cIntIt ConnI=Conns[AttachPoint].begin(),ConnEnd=Conns[AttachPoint].end();
@@ -130,7 +130,8 @@ bool Recurse(PsiMap_t& FoundGroups, Conn_t& Conns,
       //For fused rings these keep our aromaticity going...
       bool SpecialTypes=(GJ->Type()==ALKENYL3||GJ->Type()==ALKENYL2);
       bool DoubleBonds=(GJ->Type()==CCDB4||GJ->Type()==CCDB3||GJ->Type()==CCDB2);
-      bool NBonds=(GJ->Type()==ALDIMINE2||GJ->Type()==KETIMINE2);
+      bool NBonds=(GJ->Type()==ALDIMINE2||GJ->Type()==KETIMINE2
+                   ||GJ->Type()==AMINE2);
       if (DoubleBonds||SpecialTypes||NBonds||GJ->Type()==AROMATICRING) {
          //An aromatic ring must have at least two open sites
          if (GJ->Type()==AROMATICRING&&GJ->NAttachPoint()<2) continue;

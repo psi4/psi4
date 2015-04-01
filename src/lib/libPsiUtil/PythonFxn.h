@@ -78,10 +78,6 @@ namespace psi {
  *
  * MyPythonFxn(Param1,Param2,Param3,etc....)
  *
- * As currently coded the maximum number of parameters a python function
- * may take is 10.  If this isn't good enough it should just be rewritten
- * using variadic templates to remove any limit (and also make the code far
- * cleaner).
  *
  */
 
@@ -108,13 +104,28 @@ class PythonFxnGuts {
 ///Stupid class to flag that our function "returns" void
 class VoidReturn{};
 
-///Forward declaration of the call that makes args
-template <typename T1,typename T2,typename T3,typename T4,
-          typename T5,typename T6,typename T7,typename T8,
-          typename T9,typename T10>
-void SetArgs(PyObject* &Args_,std::string& Syntax_,int NParams,T1 Param1,T2 Param2,
-      T3 Param3,T4 Param4,T5 Param5,T6 Param6,
-      T7 Param7,T8 Param8,T9 Param9,T10 Param10);
+///Fxn that crashes our program if we couldn't bind a python object
+void Try(PyObject* &Obj,PyObject* Command);
+
+static std::string HandleError(){
+   using namespace boost::python;
+      using namespace boost;
+
+      PyObject *exc,*val,*tb;
+      object formatted_list, formatted;
+      PyErr_Fetch(&exc,&val,&tb);
+      handle<> hexc(exc),hval(allow_null(val)),htb(allow_null(tb));
+      object traceback(import("traceback"));
+      if (!tb) {
+          object format_exception_only(traceback.attr("format_exception_only"));
+          formatted_list = format_exception_only(hexc,hval);
+      } else {
+          object format_exception(traceback.attr("format_exception"));
+          formatted_list = format_exception(hexc,hval,htb);
+      }
+      formatted = str("\n").join(formatted_list);
+      return extract<std::string>(formatted);
+}
 
 ///Actual defintion of our fxn (if it returns a value)
 template <typename T=VoidReturn>
@@ -123,20 +134,16 @@ class PythonFxn:public PythonFxnGuts{
       ///Wrapper to the base class's constructor
       PythonFxn(const char* Module,const char* FxnName,
                 const char* Syntax):PythonFxnGuts(Module,FxnName,Syntax){}
-      ///Calls our function and returns a value.  Can have up to 10 params
-      template<typename T1=int,typename T2=int,
-               typename T3=int,typename T4=int,
-               typename T5=int,typename T6=int,
-               typename T7=int,typename T8=int,
-               typename T9=int,typename T10=int>
-      T operator()(T1 Param1=0,T2 Param2=0,
-                      T3 Param3=0,T4 Param4=0,
-                      T5 Param5=0,T6 Param6=0,
-                      T7 Param7=0,T8 Param8=0,
-                      T9 Param9=0,T10 Param10=0){
-         SetArgs(Args_,Syntax_,ParamTypes_.size(),Param1,Param2,Param3,Param4,Param5,
-                                  Param6,Param7,Param8,Param9,Param10);
-           PyObject* ret=PyEval_CallObject(Fxn_, Args_);
+      ///Calls our function and returns a value.
+      template<typename...Args>
+      T operator()(Args...args){
+         Try(Args_, Py_BuildValue(Syntax_.c_str(), args...));
+
+           PyObject* ret;
+           try{ret=PyEval_CallObject(Fxn_, Args_);}
+           catch(boost::python::error_already_set &){
+              if(PyErr_Occurred())std::cout<<HandleError();
+           }
            return T(boost::python::handle<>(ret));
       }
 };
@@ -149,96 +156,15 @@ class PythonFxn<VoidReturn>:public PythonFxnGuts{
       PythonFxn(const char* Module,const char* FxnName,
                 const char* Syntax):PythonFxnGuts(Module,FxnName,Syntax){}
       ///Calls our function and returns a value.  Can have up to 10 params
-      template<typename T1=int,typename T2=int,
-               typename T3=int,typename T4=int,
-               typename T5=int,typename T6=int,
-               typename T7=int,typename T8=int,
-               typename T9=int,typename T10=int>
-      void operator()(T1 Param1=0,T2 Param2=0,
-                      T3 Param3=0,T4 Param4=0,
-                      T5 Param5=0,T6 Param6=0,
-                      T7 Param7=0,T8 Param8=0,
-                      T9 Param9=0,T10 Param10=0){
-         SetArgs(Args_,Syntax_,ParamTypes_.size(),Param1,Param2,Param3,Param4,Param5,
-                                Param6,Param7,Param8,Param9,Param10);
-         PyEval_CallObject(Fxn_, Args_);
+      template<typename...Args>
+      void operator()(Args...args){
+         Try(Args_, Py_BuildValue(Syntax_.c_str(), args...));
+         try{ PyEval_CallObject(Fxn_, Args_);}
+         catch(boost::python::error_already_set &){
+            if(PyErr_Occurred())std::cout<<HandleError();
+         }
       }
 };
 
-
-/* Implementation for SetArgs is below this point.
- * It's nasty, just stop reading now....
- */
-///Fxn that crashes our program if we couldn't bind a python object
-void Try(PyObject* &Obj,PyObject* Command);
-
-template <typename T1,typename T2,typename T3,typename T4,
-          typename T5,typename T6,typename T7,typename T8,
-          typename T9,typename T10>
-void SetArgs(PyObject* &Args_,std::string& Syntax_,int NParams,T1 Param1,T2 Param2,
-      T3 Param3,T4 Param4,T5 Param5,T6 Param6,
-      T7 Param7,T8 Param8,T9 Param9,T10 Param10) {
-   switch (NParams) {
-      case (1): {
-         Try(Args_, Py_BuildValue(Syntax_.c_str(), Param1));
-         break;
-      }
-      case (2): {
-         Try(Args_, Py_BuildValue(Syntax_.c_str(), Param1, Param2));
-         break;
-      }
-      case (3): {
-         Try(Args_,
-               Py_BuildValue(Syntax_.c_str(), Param1, Param2, Param3));
-         break;
-      }
-      case (4): {
-         Try(Args_,
-               Py_BuildValue(Syntax_.c_str(), Param1, Param2, Param3,
-                     Param4));
-         break;
-      }
-      case (5): {
-         Try(Args_,
-               Py_BuildValue(Syntax_.c_str(), Param1, Param2, Param3,
-                     Param4, Param5));
-         break;
-      }
-      case (6): {
-         Try(Args_,
-               Py_BuildValue(Syntax_.c_str(), Param1, Param2, Param3,
-                     Param4, Param5, Param6));
-         break;
-      }
-      case (7): {
-         Try(Args_,
-               Py_BuildValue(Syntax_.c_str(), Param1, Param2, Param3,
-                     Param4, Param5, Param6, Param7));
-         break;
-      }
-      case (8): {
-         Try(Args_,
-               Py_BuildValue(Syntax_.c_str(), Param1, Param2, Param3,
-                     Param4, Param5, Param6, Param7, Param8));
-         break;
-      }
-      case (9): {
-         Try(Args_,
-               Py_BuildValue(Syntax_.c_str(), Param1, Param2, Param3,
-                     Param4, Param5, Param6, Param7, Param8, Param9));
-         break;
-      }
-      case (10): {
-         Try(Args_,
-               Py_BuildValue(Syntax_.c_str(), Param1, Param2, Param3,
-                 Param4, Param5, Param6, Param7, Param8, Param9,Param10));
-         break;
-      }
-      default: {
-         //throw PSI_EXCEPTION("Seriously? You need more than 10 arguments?");
-         break;
-      }
-   }
-}
 } //End namespace
 #endif /* SRC_LIB_LIBPSIUTIL_PYTHONFXN_H_ */
