@@ -19,19 +19,25 @@
  *
  *@END LICENSE
  */
-#include "BSSEFactory.h"
-#include "../FragmentedSys.h"
-#include "BSSEer.h"
+#include<sstream>
+#include "Graph.h"
 
 namespace psi{
 namespace LibMolecule{
+typedef boost::shared_ptr<Node> SharedNode;
 
-BSSEFactory::BSSEFactory(FragmentedSystem& Sys,uint Stop){
-   NMers& DaNMers =Sys.GetNMers();
-   //FullBSSEer BSSEWizard;
-   VMFCn BSSEWizard;
-   BSSEWizard.CalcBSSE(DaNMers,Stop,1);
+std::string Graph::PrintOut()const{
+   std::stringstream Message;
+   Graph::const_iterator It=this->begin(),ItEnd=this->end();
+   for(;It!=ItEnd;++It)Message<<(*It)->PrintOut();
+   return Message.str();
 }
 
+void Graph::AddNode(SharedNode NewNode){
+   std::vector<SharedNode>::iterator
+      It=NewNode->SubNodes_.begin(),ItEnd=NewNode->SubNodes_.end();
+   this->push_back(NewNode);
+   if(It==ItEnd)return;
+   for(;It!=ItEnd;++It)this->remove(*It);
+}
 }}//End namespaces
-

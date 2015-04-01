@@ -20,18 +20,30 @@
  *@END LICENSE
  */
 
-#include <boost/python.hpp>
-#include "../lib/libparallel2/LibParallelHelper.h"
-//void export_libparallel();
-void export_libparallel(){
-   using namespace psi::LibParallel;
-   using namespace boost::python;
-   class_<LibParallelHelper>("LibParallelHelper")
-         .def("AddTask",&LibParallelHelper::AddTask)
-         .def("MakeJob",&LibParallelHelper::MakeJob)
-         .def("Begin",&LibParallelHelper::Begin)
-         .def("Next",&LibParallelHelper::Next)
-         .def("Done",&LibParallelHelper::Done)
-         .def("Synch",&LibParallelHelper::Synch);
+#include "LibFragMolecule.h"
+#include "BioGeom.h"
+#include "AutoFxnalGroup.h"
+#include "AutoFxnalGroup/PrimRunner.h"
+namespace psi {
+namespace LibMolecule {
+
+typedef PrimRunner<Amide1C, Amide1N,Amide2, Amide2G, Amide3> FindAmide;
+typedef PrimRunner<PNTerminus, NCTerminus, AABackBone,
+                   PNTermGly,NCTermGly,Glycine> FindAAPieces;
+typedef PrimRunner<ValineR, LeucineR, IsoleucineR, MethionineR, TyrosineR,
+      TryptophanR,SerineR,AlanineR> FindAARs;
+
+BioGeom::BioGeom(const Molecule& Mol) :
+      OrganicGeom(&Mol,true) {
+      Graph Nodes=OrganicGeom::GetGroups();
+      Graph::iterator It;
+      SetRunner<FindAAPieces>::Run(Nodes);
+      SetRunner<FindAmide>::Run(Nodes);
+      SetRunner<FindAARs>::Run(Nodes);
+      std::cout<<Nodes.PrintOut()<<std::endl;
+      exit(1);
 }
+
+
+}} //End namespaces
 

@@ -23,52 +23,16 @@
 #define SRC_LIB_LIBFRAG_LIBMOLECULE_UTILS_ORGANICGEOM_H_
 #include "Geometry.h"
 #include "PsiMap.h"
+#include "AutoFxnalGroup/Graph.h"
 namespace psi{
 namespace LibMolecule{
-class FxnalGroup;
-class ConnGroups;
-class GroupIt{
-   private:
-      typedef PsiMap<int,boost::shared_ptr<const FxnalGroup> > PsiMap_t;
-      PsiMap_t::const_iterator It_;
-      PsiMap_t::const_iterator ItEnd_;
-   public:
-      boost::shared_ptr<const FxnalGroup> operator*()const{return (It_->second);}
-      GroupIt& operator++();
-      bool operator!=(const GroupIt& other)const{return It_!=other.It_;}
-      bool operator==(const GroupIt& other)const{return !((*this)!=other);}
-      GroupIt(const PsiMap<int,boost::shared_ptr<const FxnalGroup> >::
-                     const_iterator& It,
-              const PsiMap<int,boost::shared_ptr<const FxnalGroup> >::
-                     const_iterator& End):It_(It),ItEnd_(End){}
-};
-
-/** \brief A wrapper class to an array of functional groups
- *
- *  The groups are indexed by attachment points.  For example,
- *  if
- */
-class ConnGroups:public PsiMap<int,boost::shared_ptr<const FxnalGroup> >{
-   private:
-      ///The type of the base class
-      typedef PsiMap<int,boost::shared_ptr<const FxnalGroup> > Base_t;
-   public:
-      ///Returns the group that has atom i as an attachment point
-      boost::shared_ptr<const FxnalGroup> AttachedGroup(const int i)const{
-         return Base_t::operator[](i);
-      }
-      GroupIt begin()const{return GroupIt(Base_t::begin(),Base_t::end());}
-      GroupIt end()const{return GroupIt(Base_t::end(),Base_t::end());}
-      std::string PrintOut()const;
-};
 
 class OrganicGeom:public Geometry{
-   private:
-      ///The actual groups we found
-      ConnGroups FxnalGroups_;
    protected:
       ///The fxn that assigns the functional groups
-      virtual ConnGroups MakeFxnGroups()const;
+      virtual Graph MakeFxnGroups(bool FindAAs=false)const;
+      ///The actual groups we found
+      Graph FxnalGroups_;
    public:
       /** \brief Returns a reference to the Fxnal Groups this class found
        *
@@ -76,11 +40,11 @@ class OrganicGeom:public Geometry{
        *  their connectivity.  This is handy b/c you will often want to
        *  know what group is bonded to what group
        */
-      const ConnGroups& GetGroups()const{return FxnalGroups_;}
+      const Graph& GetGroups()const{return FxnalGroups_;}
       ///Nothing to be done clean-up wise
       virtual ~OrganicGeom(){}
       ///Given a presumably organic molecule, figures out functional groups
-      OrganicGeom(const Molecule* Mol);
+      OrganicGeom(const Molecule* Mol,bool FindAAs=false);
       ///Groups to a pretty (fyi:beauty is in the eye of the beholder) string
       std::string PrintOut()const;
 };

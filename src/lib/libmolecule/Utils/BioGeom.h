@@ -19,19 +19,24 @@
  *
  *@END LICENSE
  */
+#ifndef SRC_LIB_LIBFRAG_LIBMOLECULE_UTILS_BIOGEOM_H_
+#define SRC_LIB_LIBFRAG_LIBMOLECULE_UTILS_BIOGEOM_H_
 
-#include <boost/python.hpp>
-#include "../lib/libparallel2/LibParallelHelper.h"
-//void export_libparallel();
-void export_libparallel(){
-   using namespace psi::LibParallel;
-   using namespace boost::python;
-   class_<LibParallelHelper>("LibParallelHelper")
-         .def("AddTask",&LibParallelHelper::AddTask)
-         .def("MakeJob",&LibParallelHelper::MakeJob)
-         .def("Begin",&LibParallelHelper::Begin)
-         .def("Next",&LibParallelHelper::Next)
-         .def("Done",&LibParallelHelper::Done)
-         .def("Synch",&LibParallelHelper::Synch);
-}
+#include "OrganicGeom.h"
 
+namespace psi{
+namespace LibMolecule{
+
+class Molecule;
+
+class BioGeom:public OrganicGeom{
+   public:
+      BioGeom(const Molecule& Mol);
+};
+
+
+}}//End namespaces
+
+
+
+#endif /* SRC_LIB_LIBFRAG_LIBMOLECULE_UTILS_BIOGEOM_H_ */

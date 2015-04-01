@@ -23,16 +23,19 @@
 #include "Fragmenter.h"
 #include "LibFragFragment.h"
 #include "LibFragMolecule.h"
-#include "FxnalGroup.h"
+#include "OrganicGeom.h"
+#include "BioGeom.h"
+#include "AutoFxnalGroup.h"
 namespace psi{
 namespace LibMolecule{
 typedef boost::shared_ptr<const Molecule> SharedMol;
 typedef boost::shared_ptr<Fragment> SharedFrag;
-typedef boost::shared_ptr<const FxnalGroup> SharedGroup;
+typedef boost::shared_ptr<const Node> SharedGroup;
 typedef std::vector<SharedGroup> vSharedGroup;
 BondFragmenter::BondFragmenter(SharedMol Mol, const unsigned int NBonds):
       Fragmenter(Mol),Geom_(new OrganicGeom(Mol.get())),
             NBonds_(NBonds){
+   //BioGeom BChem(*Mol);
 }
 
 void BondFragmenter::AddFragment(const vSharedGroup& FoundGroups,
@@ -65,45 +68,37 @@ void BondFragmenter::AddFragment(const vSharedGroup& FoundGroups,
 
 void BondFragmenter::Recurse(vSharedGroup& FoundGroups,
             const Connections& Conns,
-            const ConnGroups& FxnGroups,
+            const Graph& FxnGroups,
             long int& value){
-   if(FoundGroups.size()==NBonds_+1||
-      FoundGroups.back()->NAttachPoint()==0){
+   if(FoundGroups.size()==NBonds_+1
+      //FoundGroups.back()->NAttachPoint()==0
+         ){
       AddFragment(FoundGroups,value++);
       return;
    }
    //Will be true if we find a good group to follow
    bool FoundGroup=false;
-   for(int i=0;i<FoundGroups.back()->NAttachPoint();i++){
-      int NAttachI=FoundGroups.back()->AttachPoint(i);
-      if(NAttachI==-1)continue;
-      for(int j=0;j<(int)Conns[NAttachI].size();j++){
-         bool good=true;
-         int ConnJ=Conns[NAttachI][j];
-         //Make sure atom is an attachment point for some group
-         if(FxnGroups.count(ConnJ)!=1)continue;
-         //Make sure we don't have this group already
-         for(int k=0;k<(int)FoundGroups.size()-1&&good;k++){
-            int NAttachK=FoundGroups[k]->NAttachPoint();
-            for(int l=0;l<NAttachK&&good;l++)
-               if(FoundGroups[k]->AttachPoint(l)==ConnJ)good=false;
-         }
-         if(good){
-            FoundGroup=true;
-            FoundGroups.push_back(FxnGroups.AttachedGroup(ConnJ));
-            Recurse(FoundGroups,Conns,FxnGroups,value);
-            FoundGroups.erase(FoundGroups.end()-1,FoundGroups.end());
-         }
+   for(int i=0;i<FoundGroups.back()->ConnNodes_.size();i++){
+      SharedGroup NodeI=FoundGroups.back()->ConnNodes_[i];
+      bool good=true;
+      //Make sure we don't have this group already
+      for(unsigned k=0;k<FoundGroups.size()-1&&good;k++)
+         if(FoundGroups[k].get()==NodeI.get())break;
+      if(good){
+         FoundGroup=true;
+         FoundGroups.push_back(NodeI);
+         Recurse(FoundGroups,Conns,FxnGroups,value);
+         FoundGroups.erase(FoundGroups.end()-1,FoundGroups.end());
       }
    }
    if(!FoundGroup)//We hit a dead end
       AddFragment(FoundGroups,value++);
-
 }
 
 std::vector<SharedFrag> BondFragmenter::MakeFrags(){
-   const ConnGroups& FxnGroups=Geom_->GetGroups();
-   GroupIt FxnGroupI=FxnGroups.begin(),EndGroup=FxnGroups.end();
+   const Graph& FxnGroups=Geom_->GetGroups();
+   std::cout<<FxnGroups.PrintOut();
+   Graph::const_iterator FxnGroupI=FxnGroups.begin(),EndGroup=FxnGroups.end();
    const Connections& Conns=Geom_->GetConns();
    long int value=0;
    for (; FxnGroupI!=EndGroup; ++FxnGroupI){

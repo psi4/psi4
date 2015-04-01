@@ -19,19 +19,26 @@
  *
  *@END LICENSE
  */
+#ifndef SRC_LIB_LIBMOLECULE_AUTOFXNALGROUP_GRAPH_H_
+#define SRC_LIB_LIBMOLECULE_AUTOFXNALGROUP_GRAPH_H_
 
-#include <boost/python.hpp>
-#include "../lib/libparallel2/LibParallelHelper.h"
-//void export_libparallel();
-void export_libparallel(){
-   using namespace psi::LibParallel;
-   using namespace boost::python;
-   class_<LibParallelHelper>("LibParallelHelper")
-         .def("AddTask",&LibParallelHelper::AddTask)
-         .def("MakeJob",&LibParallelHelper::MakeJob)
-         .def("Begin",&LibParallelHelper::Begin)
-         .def("Next",&LibParallelHelper::Next)
-         .def("Done",&LibParallelHelper::Done)
-         .def("Synch",&LibParallelHelper::Synch);
-}
+#include<list>
+#include "Node.h"
+namespace psi{
+namespace LibMolecule{
 
+class Graph: public std::list<boost::shared_ptr<Node> >{
+   public:
+      ///Prints the graph out
+      std::string PrintOut()const;
+      ///Convenience function for adding a node and removing its subnodes
+      void AddNode(boost::shared_ptr<Node> NewNode);
+
+};
+
+}}
+
+
+
+
+#endif /* SRC_LIB_LIBMOLECULE_AUTOFXNALGROUP_GRAPH_H_ */

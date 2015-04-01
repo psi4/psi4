@@ -106,6 +106,8 @@ void VMFCn::CalcBSSE(NMers& Sys, uint Stop, uint Start) const {
    uint N=(Stop==0 ? Sys.N() : Stop);
    //This will be the result
    NMers TempNMers(Sys);
+
+   //Create a mapping between a Monomer's SN and it's actual self for ease
    PsiMap <long int,boost::shared_ptr<Fragment> > Monomers;
    NMers::NMerItr_t NMerI=Sys.NMerBegin(1),NMerIEnd=Sys.NMerEnd(1);
    for(;NMerI!=NMerIEnd;++NMerI){
@@ -113,13 +115,16 @@ void VMFCn::CalcBSSE(NMers& Sys, uint Stop, uint Start) const {
       Monomers[(*SN.begin())]=(*NMerI);
    }
 
+   //There are no VMFC(n) corrections for n==1
    for (uint n=Start+1; n<=N; n++) {
-      NMerI=Sys.NMerBegin(n);NMerIEnd=Sys.NMerEnd(n);
+      NMerI=Sys.NMerBegin(n);
+      NMerIEnd=Sys.NMerEnd(n);
       for (; NMerI!=NMerIEnd; ++NMerI) {
          SerialNumber SN=(*NMerI)->GetSN();
          VMFCnItr SNI(SN,false);
          for (; !SNI.Done(); ++SNI) {
-            SerialNumber::const_iterator SNJ=SNI->begin(),SNJEnd=SNI->end();
+            SerialNumber::const_iterator SNJ=SNI->begin(),
+                                        SNJEnd=SNI->end();
             --SNJEnd;
             boost::shared_ptr<Fragment> Temp(
                   new Fragment(Monomers[(*SNJEnd)]->Mol(),(*SNI))
@@ -135,6 +140,7 @@ void VMFCn::CalcBSSE(NMers& Sys, uint Stop, uint Start) const {
                      (*Temp)<<GhostAtom(*(*AtomI));
                }
             }
+            Temp->GetSN().PrintOut();
             TempNMers.AddNMer(n,Temp);
          }
       }

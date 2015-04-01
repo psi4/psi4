@@ -19,19 +19,25 @@
  *
  *@END LICENSE
  */
+#include "BSSEFactory.h"
+#include "../FragmentedSys.h"
+#include "BSSEer.h"
 
-#include <boost/python.hpp>
-#include "../lib/libparallel2/LibParallelHelper.h"
-//void export_libparallel();
-void export_libparallel(){
-   using namespace psi::LibParallel;
-   using namespace boost::python;
-   class_<LibParallelHelper>("LibParallelHelper")
-         .def("AddTask",&LibParallelHelper::AddTask)
-         .def("MakeJob",&LibParallelHelper::MakeJob)
-         .def("Begin",&LibParallelHelper::Begin)
-         .def("Next",&LibParallelHelper::Next)
-         .def("Done",&LibParallelHelper::Done)
-         .def("Synch",&LibParallelHelper::Synch);
+namespace psi{
+namespace LibMolecule{
+
+BSSEFactory::BSSEFactory(FragmentedSystem& Sys,uint Stop){
+   NMers& DaNMers =Sys.GetNMers();
+   std::string Method=
+         psi::Process::environment.options["BSSE_METHOD"].to_string();
+   if(Method!="NONE"){
+      boost::shared_ptr<BSSEer> BSSEWizard;
+      if(Method=="FULL")
+         BSSEWizard=boost::shared_ptr<FullBSSEer>(new FullBSSEer());
+      else BSSEWizard=boost::shared_ptr<VMFCn>(new VMFCn());
+      BSSEWizard->CalcBSSE(DaNMers,Stop,1);
+   }
 }
+
+}}//End namespaces
 
