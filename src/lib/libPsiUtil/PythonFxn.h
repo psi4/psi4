@@ -22,6 +22,7 @@
 #ifndef SRC_LIB_LIBPSIUTIL_PYTHONFXN_H_
 #define SRC_LIB_LIBPSIUTIL_PYTHONFXN_H_
 #include <vector>
+#include <iostream>
 #include <boost/python.hpp>
 #include <boost/python/object.hpp>
 namespace psi {
@@ -161,7 +162,7 @@ class PythonFxn<VoidReturn>:public PythonFxnGuts{
          Try(Args_, Py_BuildValue(Syntax_.c_str(), args...));
          try{ PyEval_CallObject(Fxn_, Args_);}
          catch(boost::python::error_already_set &){
-            if(PyErr_Occurred())std::cout<<HandleError();
+            if(PyErr_Occurred())std::cerr<<HandleError();
          }
       }
 };
