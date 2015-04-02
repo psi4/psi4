@@ -115,7 +115,7 @@ Reorder(boost::shared_ptr<Node> NodeIn){
    boost::shared_ptr<CurrentType> Temp(new CurrentType());
    if(Temp.FindMe(NodeIn))
       return Temp;
-   else return boost::shared_ptr<CurrentType>;
+   else return boost::shared_ptr<CurrentType>();
 }
 
 template<typename CurrentType>
@@ -124,7 +124,7 @@ Reorder(boost::shared_ptr<Node> NodeIn){
    boost::shared_ptr<CurrentType> Temp(new CurrentType());
    if(Temp.FindMe(NodeIn))
       return Temp;
-   else return boost::shared_ptr<CurrentType>;
+   else return boost::shared_ptr<CurrentType>();
 }
 
 template<typename CurrentType,typename...LinearTypes>
