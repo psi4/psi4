@@ -36,7 +36,7 @@
 #include "CanonicalMBE.h"
 #include "VMFCnMBE.h"
 #include "libmolecule/Utils/BSSEFactory.h"
-#include "libmm/MMParamAssigner.h"
+//#include "libmm/MMParamAssigner.h"
 
 typedef boost::python::str PyStr;
 namespace psi {
