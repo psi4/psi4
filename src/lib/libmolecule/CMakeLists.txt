@@ -16,6 +16,7 @@ set(MoleculeHeaders ${CWD}/Atom.h
                  ${CWD}/UnitCell.h
                  ${AutoParam}/Node.h
                  ${AutoParam}/MMAtomTypes.h
+                 ${AutoParam}/ParameterType.h
                  ${Impl}/AtomGuts.h
                  ${Impl}/FragItrGuts.h
                  ${Impl}/FragSysGuts.h
@@ -44,6 +45,7 @@ set(MoleculeSrcs ${CWDSRCs}/Atom.cc
                  ${AutoParam}/Graph.cc
                  ${AutoParam}/MMAtomTypes.cc
                  ${AutoParam}/Node.cc
+                 ${AutoParam}/ParameterType.cc
                  ${Impl}/AtomGuts.cc
                  ${Impl}/FragItrGuts.cc
                  ${Impl}/FragSysGuts.cc

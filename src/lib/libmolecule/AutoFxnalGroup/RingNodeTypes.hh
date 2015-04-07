@@ -25,7 +25,7 @@
 
 namespace psi{
 namespace LibMolecule{
-
+/*
 class Benzene: public RingFinder<DBCC2,DBCC2,DBCC2>{
    private:
       typedef RingFinder<DBCC2,DBCC2,DBCC2> Base_t;
@@ -93,6 +93,7 @@ class Benzene6: public RingFinder<DBCC4,DBCC4,DBCC4,DBCC4,DBCC4,DBCC4>{
 
 //This header file is all 256 possible substitutions of an Indole ring
 #include "Indole.hh"
+*/
 }}//End namespaces
 
 #endif /* SRC_LIB_LIBMOLECULE_AUTOFXNALGROUP_RINGNODETYPES_HH_ */

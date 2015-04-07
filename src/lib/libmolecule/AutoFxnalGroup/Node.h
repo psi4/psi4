@@ -23,8 +23,9 @@
 #define SRC_LIB_LIBMOLECULE_AUTOFXNALGROUP_NODE_H_
 #include<queue>
 #include<vector>
+#include<set>
 #include<boost/shared_ptr.hpp>
-#include "MMAtomTypes.h"
+#include "ParameterType.h"
 namespace psi{
 namespace LibMolecule{
 
@@ -149,24 +150,52 @@ namespace LibMolecule{
  */
 class Node{
    private:
-      ///An array of the atoms comprising this Node
+      ///An array of the atom indices comprising this Node
       std::vector<int> MyMember_;
-      ///As a node picks up names, they are deposited here
-      std::vector<FxnGrpType> MyTypes_;
+      ///An array of the primitive Nodes in this Node
+      std::vector<boost::shared_ptr<Node> > PrimNodes_;
+      ///These are the sub-nodes of the current node
+      std::vector<boost::shared_ptr<Node> > SubNodes_;
+      ///These are the nodes connected to the current node
+      std::vector<boost::shared_ptr<Node> > ConnNodes_;
    protected:
+      ///As a node picks up names, they are deposited here
+      std::vector<ParamT> MyTypes_;
       ///Assigns the types to a subnode
-      void AddTypes(std::queue<FxnGrpType>& Types);
-      ///The list of types; as subnodes are added we drain this
-      std::queue<FxnGrpType> AllTypes_;
+      void AddTypes(const ParamT& Parent,
+                    const size_t Order,
+                    const size_t Priority);
       /** \brief Adds a subnode to the current node
        *
        *  In addition to adding the sub node, this fxn
        *  also updates the current node's connections so that they
        *  are the union of the connected nodes less the subnodes.
        */
-      void AddSubNode(boost::shared_ptr<Node> NewNode);
-
+      void AddSubNode(boost::shared_ptr<Node> NewNode,
+                      const size_t Order,
+                      const size_t Prior);
+      ///This is the set of active subnodes (ones still with edges)
+      std::set<size_t> ActiveSubNodes_;
    public:
+      typedef std::vector<boost::shared_ptr<Node> >::iterator iterator;
+      typedef std::vector<boost::shared_ptr<Node> >::const_iterator
+            const_iterator;
+      /** \defgroup Iterators @{*/
+      iterator PrimBegin(){return PrimNodes_.begin();}
+      iterator SubBegin(){return SubNodes_.begin();}
+      iterator ConnBegin(){return ConnNodes_.begin();}
+      iterator PrimEnd(){return PrimNodes_.end();}
+      iterator SubEnd(){return SubNodes_.end();}
+      iterator ConnEnd(){return ConnNodes_.end();}
+      const_iterator PrimBegin()const{return PrimNodes_.begin();}
+      const_iterator SubBegin()const{return SubNodes_.begin();}
+      const_iterator ConnBegin()const{return ConnNodes_.begin();}
+      const_iterator PrimEnd()const{return PrimNodes_.end();}
+      const_iterator SubEnd()const{return SubNodes_.end();}
+      const_iterator ConnEnd()const{return ConnNodes_.end();}
+      /** @}*/
+
+
       /** \brief Returns the subnode of this connected to other
        *
        *   This function is intended for use when trying to figure out
@@ -178,22 +207,13 @@ class Node{
        *   are active edges of the nodes they are part of.
        */
       boost::shared_ptr<Node> GetConnSubNode(boost::shared_ptr<Node> Other);
-      ///These are the sub-nodes of the current node
-      std::vector<boost::shared_ptr<Node> > SubNodes_;
-      ///These are the nodes connected to the current node
-      std::vector<boost::shared_ptr<Node> > ConnNodes_;
-      ///First type is type of this node, remaining are the types of atoms
-      template<typename...TheTypes>
-      Node(int i,TheTypes...MyTypes):MyMember_{i},AllTypes_({MyTypes...}){
-         MyTypes_.push_back(AllTypes_.front());
-         AllTypes_.pop();
-      }
-      ///First type is type of this node, remaining are the types of atoms
-      template<typename...TheTypes>
-      Node(TheTypes...MyTypes):AllTypes_({MyTypes...}){
-         MyTypes_.push_back(AllTypes_.front());
-         AllTypes_.pop();
-      }
+
+      ///Prim Node constructor takes index of the atom, its Sym and Name
+      Node(int i,const std::string& BaseAbbrv,const std::string& BaseName):
+         MyMember_{i},MyTypes_{ParamT(BaseAbbrv,BaseName)}{}
+      ///The sym of this group, and its Name
+      Node(const std::string&BaseAbbrv,const std::string& BaseName):
+         MyTypes_{ParamT(BaseAbbrv,BaseName)}{}
 
       ///The number of atoms in this node
       unsigned size()const;
@@ -204,9 +224,12 @@ class Node{
 
       ///Given a boost shared pointer to the current object modifies conns
       void UpdateConns(boost::shared_ptr<Node> NewMe);
-
-      ///Returns the type of the node
-      FxnGrpType Type()const{return MyTypes_.back();}
+      ///Returns the number of types this node has
+      size_t NTypes()const{return MyTypes_.size();}
+      ///Returns the i-th type of the node (i<0 for main type)
+      ParamT Type(const int i=-1)const{
+         return (i>=0?MyTypes_[i]:MyTypes_.back());
+      }
       ///Returns the number of edges for the node
       unsigned NEdges()const{return ConnNodes_.size();}
       ///Adds NewNode, optionally in place of OldNode (if OldNode!=Null)

@@ -26,7 +26,7 @@
 
 namespace psi{
 namespace LibMolecule{
-
+/*
 class PNTerminus: public LinearSearch<Ammonium1,Methyne,Carbonyl>{
    private:
       typedef LinearSearch<Ammonium1,Methyne,Carbonyl> Base_t;
@@ -175,7 +175,7 @@ class SerineR: public LinearSearch<Hydroxyl,Methene>{
             ){}
 };
 
-
+*/
 }}//End namespaces
 
 #endif /* SRC_LIB_LIBMOLECULE_AUTOFXNALGROUP_AMINOACIDNODETYPES_HH_ */

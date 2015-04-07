@@ -27,14 +27,41 @@
 namespace psi{
 namespace LibMolecule{
 
+class GraphItr{
+   private:
+      typedef std::list<boost::shared_ptr<Node> > List_t;
+      List_t& List_;
+      List_t::iterator It_;
+      List_t::iterator ItEnd_;
+      Node::iterator NodeIt_;
+      Node::iterator NodeItEnd_;
+   public:
+      GraphItr(std::list<boost::shared_ptr<Node> >& List):List_(List){}
+      GraphItr& begin();
+      GraphItr& end();
+      boost::shared_ptr<Node> operator*(){return (*NodeIt_);}
+      const GraphItr& operator++();
+      bool operator==(const GraphItr& other)const{
+         return (NodeIt_==other.NodeIt_&&It_==other.It_);
+      }
+      bool operator!=(const GraphItr& other)const{return !((*this)==other);}
+};
+
+
 class Graph: public std::list<boost::shared_ptr<Node> >{
    public:
       ///Prints the graph out
       std::string PrintOut()const;
+      GraphItr PrimBegin(){return GraphItr(*this).begin();}
+      GraphItr PrimEnd(){return GraphItr(*this).end();}
       ///Convenience function for adding a node and removing its subnodes
       void AddNode(boost::shared_ptr<Node> NewNode);
 
 };
+
+
+
+
 
 }}
 

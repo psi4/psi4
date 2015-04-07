@@ -26,6 +26,37 @@ namespace psi{
 namespace LibMolecule{
 typedef boost::shared_ptr<Node> SharedNode;
 
+GraphItr& GraphItr::begin(){
+   It_=List_.begin();
+   ItEnd_=List_.end();
+   NodeIt_=(*It_)->PrimBegin();
+   NodeItEnd_=(*It_)->PrimEnd();
+   return *this;
+}
+
+GraphItr& GraphItr::end(){
+   It_=List_.end();
+   ItEnd_=List_.end();
+   --It_;
+   NodeIt_=(*It_)->PrimEnd();
+   NodeItEnd_=(*It_)->PrimEnd();
+   ++It_;
+   return *this;
+}
+
+const GraphItr& GraphItr::operator++(){
+        if(NodeIt_!=NodeItEnd_)++NodeIt_;
+        if(NodeIt_==NodeItEnd_){
+           ++It_;
+           if(It_!=ItEnd_){
+              NodeIt_=(*It_)->PrimBegin();
+              NodeItEnd_=(*It_)->PrimEnd();
+           }
+        }
+        return (*this);
+     }
+
+
 std::string Graph::PrintOut()const{
    std::stringstream Message;
    Graph::const_iterator It=this->begin(),ItEnd=this->end();
@@ -35,7 +66,7 @@ std::string Graph::PrintOut()const{
 
 void Graph::AddNode(SharedNode NewNode){
    std::vector<SharedNode>::iterator
-      It=NewNode->SubNodes_.begin(),ItEnd=NewNode->SubNodes_.end();
+      It=NewNode->SubBegin(),ItEnd=NewNode->SubEnd();
    this->push_back(NewNode);
    if(It==ItEnd)return;
    for(;It!=ItEnd;++It)this->remove(*It);

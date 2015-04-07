@@ -33,7 +33,7 @@ typedef std::vector<SharedNode> vSN_t;
 typedef vSN_t::iterator vSN_Itr;
 
 //Function to compare two nodes (just compares the addresses)
-bool Compare(const SharedNode LHS,const SharedNode RHS){
+static bool Compare(const SharedNode LHS,const SharedNode RHS){
    return LHS.get()<RHS.get();
 }
 
@@ -71,31 +71,52 @@ void Node::AddConn(SharedNode NewNode, SharedNode OldNode){
    std::sort(ConnNodes_.begin(),ConnNodes_.end(),Compare);
 }
 
-void Node::AddTypes(std::queue<FxnGrpType>& Types){
+void Node::AddTypes(const ParamT& Parent,
+                    const size_t Order,
+                    const size_t Priority){
    if(SubNodes_.size()==0){
-      MyTypes_.push_back(Types.front());
-      Types.pop();
+      MyTypes_.push_back(ParamT(MyTypes_.front(),
+                               Parent.Base()[0],
+                               Parent.Base()[1],
+                               Order,Priority));
    }
    else{
       vSN_Itr SubNodeI=SubNodes_.begin(),SubNodeIEnd=SubNodes_.end();
-      for(;SubNodeI!=SubNodeIEnd;++SubNodeI)(*SubNodeI)->AddTypes(Types);
+      for(;SubNodeI!=SubNodeIEnd;++SubNodeI)
+         (*SubNodeI)->AddTypes(Parent,Order,Priority);
    }
 }
 
-void Node::AddSubNode(boost::shared_ptr<Node> NewNode){
+static void Union(vSN_t& LHS, vSN_t&RHS, vSN_t& Result){
+   vSN_Itr It=std::set_union(LHS.begin(),LHS.end(),
+         RHS.begin(),RHS.end(),Result.begin(),Compare);
+   Result.resize(It-Result.begin());
+}
+
+void Node::AddSubNode(boost::shared_ptr<Node> NewNode,
+                      const size_t Order,
+                      const size_t Prior){
    SubNodes_.push_back(NewNode);
-   SubNodes_.back()->AddTypes(AllTypes_);
-   for(int i=0;i<SubNodes_.back()->size();i++)
+   if(NewNode->PrimNodes_.size()>0){
+      vSN_t TempPrims(PrimNodes_.size()+NewNode->PrimNodes_.size());
+      Union(PrimNodes_,NewNode->PrimNodes_,TempPrims);
+      PrimNodes_=TempPrims;
+   }
+   else PrimNodes_.push_back(NewNode);
+   SubNodes_.back()->AddTypes(MyTypes_.back(),Order,Prior);
+   //Add the members of our new subnode to the array
+   for(size_t i=0;i<SubNodes_.back()->size();i++)
       MyMember_.push_back((*SubNodes_.back())[i]);
+   //Get a list of the nodes we are now connected to
    vSN_t& OtherNodes=NewNode->ConnNodes_;
    vSN_t Result(ConnNodes_.size()+OtherNodes.size());
-   vSN_Itr It=std::set_union(ConnNodes_.begin(),ConnNodes_.end(),
-         OtherNodes.begin(),OtherNodes.end(),Result.begin(),Compare);
-   Result.resize(It-Result.begin());
+   Union(ConnNodes_,OtherNodes,Result);
+   //Remove the connections that are part of this
+
    //Don't want to sort actual SubNodes array as it destroys the order
    vSN_t Temp=SubNodes_,Result2(Result.size());
    std::sort(Temp.begin(),Temp.end(),Compare);
-   It=std::set_difference(Result.begin(),Result.end(),
+   vSN_Itr It=std::set_difference(Result.begin(),Result.end(),
          Temp.begin(),Temp.end(),Result2.begin(),Compare);
    Result2.resize(It-Result2.begin());
    ConnNodes_=Result2;
@@ -103,29 +124,36 @@ void Node::AddSubNode(boost::shared_ptr<Node> NewNode){
 
 std::string Node::PrintOut(const std::string spaces)const{
    std::stringstream Message;
-   std::string MyStrType=FxnGrpType2String(MyTypes_.back());
+   std::string MyStrType=MyTypes_.back().PrintOut();
    std::string NewSpaces="    ";
    //Print my atoms
    if(spaces==""||SubNodes_.size()==0){
-      Message<<spaces<<MyStrType<<" Atom(s):";
+      Message<<spaces;
+      if(ActiveSubNodes_.size()>1){
+         std::set<size_t>::const_iterator It=ActiveSubNodes_.begin(),
+               ItEnd=ActiveSubNodes_.end();
+         --ItEnd;
+         for(;It!=ItEnd;++It)
+            Message<<(*It)<<",";
+         Message<<(*It)<<"-";
+      }
+      Message<<MyStrType<<" Atom(s):";
       for(unsigned MemberI=0;MemberI<size();MemberI++)
          Message<<(*this)[MemberI]<<" ";
       Message<<std::endl;
    }
-
    //Print my subnodes
    vSN_t::const_iterator It=SubNodes_.begin(),ItEnd=SubNodes_.end();
    for(;It!=ItEnd;++It) Message<<(*It)->PrintOut(NewSpaces);
-
    //Print my type hierarchy
    if(SubNodes_.size()==0){
       int NTypes=MyTypes_.size();
       if(NTypes>1)
-         Message<<NewSpaces<<FxnGrpType2String(MyTypes_[0])<<" --> ";
+         Message<<NewSpaces<<MyTypes_[0].PrintOut()<<" --> ";
       for(int TypeI=1;TypeI<NTypes-1;TypeI++)
-         Message<<FxnGrpType2String(MyTypes_[TypeI])<<" --> ";
+         Message<<MyTypes_[TypeI].PrintOut()<<" --> ";
       if(NTypes>1)
-         Message<<FxnGrpType2String(MyTypes_[NTypes-1])
+         Message<<MyTypes_[NTypes-1].PrintOut()
                  <<std::endl;
    }
    //If I'm the top-level node print my connections
@@ -134,7 +162,7 @@ std::string Node::PrintOut(const std::string spaces)const{
 
       It=ConnNodes_.begin();ItEnd=ConnNodes_.end();
       for(;It!=ItEnd;++It){
-         Message<<NewSpaces<<FxnGrpType2String((*It)->Type())<<" Atom(s):";
+         Message<<NewSpaces<<(*It)->Type().PrintOut()<<" Atom(s):";
          for(unsigned MemberI=0;MemberI<(*It)->size();MemberI++)
             Message<<(*(*It))[MemberI]<<" ";
          Message<<std::endl;
