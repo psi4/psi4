@@ -1307,15 +1307,23 @@ void HF::load_orbitals()
         }
     }
 
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(old_forced_puream));
-    molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
-    boost::shared_ptr<BasisSet> dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
-    // TODO: oh my, forced_puream!
-    // TODO: oh my, a basis for which a fn hasn't been set in the input translation
-    // TODO: oh my, a non-fitting basis to be looked up (in Mol) not under BASIS
-    //boost::shared_ptr<BasisSet> dual_basis = BasisSet::pyconstruct(molecule_, basisname,
-    //            "DUAL_BASIS_SCF");
-    // TODO: I think Rob was planning to rework this projection bit anyways
+    boost::shared_ptr<BasisSet> dual_basis;
+    if (basisname != options_.get_str("BASIS")) {
+        boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(old_forced_puream));
+        molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
+        dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
+    } else {
+        dual_basis = BasisSet::pyconstruct_orbital(molecule_,
+        "BASIS", options_.get_str("BASIS"));
+        // TODO: oh my, forced_puream!
+        // TODO: oh my, a basis for which a fn hasn't been set in the input translation
+        // TODO: oh my, a non-fitting basis to be looked up (in Mol) not under BASIS
+        //boost::shared_ptr<BasisSet> dual_basis = BasisSet::pyconstruct(molecule_, basisname,
+        //            "DUAL_BASIS_SCF");
+        // TODO: I think Rob was planning to rework this projection bit anyways
+        // 2 Apr 2015: I (LAB) was hoping to avoid detangling this, but the need to 
+        //  optimize w/custom basis sets has arrived before the new scf code, hence this hack
+    }
 
     psio_->read_entry(PSIF_SCF_MOS,"SCF ENERGY",(char *) &(E_),sizeof(double));
 
