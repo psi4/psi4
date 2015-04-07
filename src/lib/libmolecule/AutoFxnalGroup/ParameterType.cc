@@ -30,20 +30,28 @@ ParamT::ParamT(const std::string& BaseAbbrv,
                const std::string& BaseName,
                const int Order,
                const int Priority):
-  Base_{BaseAbbrv,BaseName},
-  Atom_{BaseAbbrv,BaseName},
-  Order_(Order),Priority_(Priority),
-  Full_{Name(0),Name(1)}{}
+    Order_(Order),Priority_(Priority){
+  Base_[0]=BaseAbbrv;
+  Base_[1]=BaseName;
+  Atom_[0]=BaseAbbrv;
+  Atom_[1]=BaseName;
+  Full_[0]=Name(0);
+  Full_[1]=Name(1);
+}
 
 ParamT::ParamT(const ParamT& Other,
        const std::string& BaseAbbrv,
        const std::string& BaseName,
        const int Order,
        const int Priority):
-      Base_{BaseAbbrv,BaseName},
-      Atom_{Other.Atom()[0],Other.Atom()[1]},
-      Order_(Order),Priority_(Priority),
-      Full_{Name(0),Name(1)}{}
+      Order_(Order),Priority_(Priority){
+      Base_[0]=BaseAbbrv;
+      Base_[1]=BaseName;
+      Atom_[0]=Other.Atom()[0];
+      Atom_[1]=Other.Atom()[1];
+      Full_[0]=Name(0);
+      Full_[1]=Name(1);
+}
 
 static std::string OrderLookUp(const size_t Prior);
 

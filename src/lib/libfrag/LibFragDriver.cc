@@ -104,7 +104,7 @@ static SharedFrags MakeMolecule(const int N, SharedMol AMol) {
 template<typename T>
 void CalcEnergy(Expansion<T>& Expansion_,
       boost::shared_ptr<LibMolecule::FragmentedSystem> Frags_,
-      std::vector<boost::shared_ptr<MBEProp<double> >>& Energies_){
+      std::vector<boost::shared_ptr<MBEProp<double> > >& Energies_){
    for(unsigned int i=0;i<Energies_.size();i++){
          //std::cout<<Energies_[i]->PrintOut();
          MBEProp<double> FinalEs=Expansion_.Property(*Frags_,*(Energies_[i]));

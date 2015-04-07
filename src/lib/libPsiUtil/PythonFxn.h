@@ -124,7 +124,7 @@ static std::string HandleError(){
           object format_exception(traceback.attr("format_exception"));
           formatted_list = format_exception(hexc,hval,htb);
       }
-      formatted = str("\n").join(formatted_list);
+      formatted = boost::python::str("\n").join(formatted_list);
       return extract<std::string>(formatted);
 }
 

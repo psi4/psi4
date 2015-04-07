@@ -144,7 +144,8 @@ bool LinearSearch<CurrentType,LinearTypes...>::FindMe(boost::shared_ptr<Node> No
    if(!IsGood(Nodes,Nodes,Temp,EmptyQueue,
          LHSType(EmptyQueue.size()),
          RHSType(EmptyQueue.size())))return false;
-   std::deque<SharedNode> NodeQueue({Nodes});
+   std::deque<SharedNode> NodeQueue;
+   NodeQueue.push_front(Nodes);
    if(Base_t::FindMe(NodeQueue)){
       return true;
    }

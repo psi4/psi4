@@ -210,10 +210,10 @@ class Node{
 
       ///Prim Node constructor takes index of the atom, its Sym and Name
       Node(int i,const std::string& BaseAbbrv,const std::string& BaseName):
-         MyMember_{i},MyTypes_{ParamT(BaseAbbrv,BaseName)}{}
+         MyMember_(i),MyTypes_(1,ParamT(BaseAbbrv,BaseName)){}
       ///The sym of this group, and its Name
       Node(const std::string&BaseAbbrv,const std::string& BaseName):
-         MyTypes_{ParamT(BaseAbbrv,BaseName)}{}
+         MyTypes_(1,ParamT(BaseAbbrv,BaseName)){}
 
       ///The number of atoms in this node
       unsigned size()const;
