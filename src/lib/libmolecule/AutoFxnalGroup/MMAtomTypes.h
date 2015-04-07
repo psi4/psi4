@@ -68,7 +68,6 @@ namespace LibMolecule{
  *  Particularly for derived groups containing oxygen I had to get a bit
  *  creative in the names hopefully it's not too hard to figure out.
  *
- */
 enum class FxnGrpType{
       NONE,TEMP,
       H,He,Li,Be,B,C,N,O,F,Ne,Na,Mg,Al,Si,P,S,Cl,Ar,K,Ca,Sc,Ti,V,Cr,Mn,Fe,
@@ -297,7 +296,7 @@ enum class FxnGrpType{
 
 ///A handy function for printing out the FxnGrpType
 std::string FxnGrpType2String(const FxnGrpType& Ty);
-
+*/
 }}
 
 

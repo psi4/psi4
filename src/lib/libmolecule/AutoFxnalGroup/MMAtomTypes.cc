@@ -25,6 +25,7 @@
 #include "MMAtomTypes.h"
 namespace psi{
 namespace LibMolecule{
+/*
 #define CASE(sym,str)case(FxnGrpType::sym):{out=str;break;}
 std::string FxnGrpType2String(const FxnGrpType& Ty){
    std::string out;
@@ -600,7 +601,7 @@ std::string FxnGrpType2String(const FxnGrpType& Ty){
    }
    return out;
 }
-
+*/
 }}//end namespaces
 
 

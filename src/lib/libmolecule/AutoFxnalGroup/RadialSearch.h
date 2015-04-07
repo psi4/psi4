@@ -90,10 +90,9 @@ class RadialSearch : public LinearSearch<RadialTypes...>{
       bool IsLinear()const{return false;}
    public:
       ///Same arguments as Node's constructor
-      template<typename...MyTypes>
       RadialSearch<NBonds,RadialTypes...>
-         (MyTypes...Types):Base_t(Types...){
-      }
+         (const std::string& BaseAbbrv,const std::string& BaseName):
+         Base_t(BaseAbbrv,BaseName){}
 
       ///Given a starting node, tries to find the desired group
       bool FindMe(boost::shared_ptr<Node> Nodes);
@@ -103,7 +102,7 @@ class RadialSearch : public LinearSearch<RadialTypes...>{
 template<unsigned NBonds,typename... RadialTypes>
 bool RadialSearch<NBonds,RadialTypes...>::
    FindMe(boost::shared_ptr<Node> NodeI){
-   if(NodeI->ConnNodes_.size()!=NBonds)return false;
+   if(NodeI->NEdges()!=NBonds)return false;
    return Base_t::FindMe(NodeI);
 }
 

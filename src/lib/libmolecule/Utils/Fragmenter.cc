@@ -78,8 +78,10 @@ void BondFragmenter::Recurse(vSharedGroup& FoundGroups,
    }
    //Will be true if we find a good group to follow
    bool FoundGroup=false;
-   for(int i=0;i<FoundGroups.back()->ConnNodes_.size();i++){
-      SharedGroup NodeI=FoundGroups.back()->ConnNodes_[i];
+   Node::const_iterator It=FoundGroups.back()->ConnBegin(),
+               ItEnd=FoundGroups.back()->ConnEnd();
+   for(;It!=ItEnd;++It){
+      SharedGroup NodeI=(*It);
       bool good=true;
       //Make sure we don't have this group already
       for(unsigned k=0;k<FoundGroups.size()-1&&good;k++)
@@ -97,7 +99,6 @@ void BondFragmenter::Recurse(vSharedGroup& FoundGroups,
 
 std::vector<SharedFrag> BondFragmenter::MakeFrags(){
    const Graph& FxnGroups=Geom_->GetGroups();
-   std::cout<<FxnGroups.PrintOut();
    Graph::const_iterator FxnGroupI=FxnGroups.begin(),EndGroup=FxnGroups.end();
    const Connections& Conns=Geom_->GetConns();
    long int value=0;

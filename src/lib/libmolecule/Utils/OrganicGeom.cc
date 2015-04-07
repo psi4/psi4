@@ -51,15 +51,22 @@ class AssignAtomFunctor<Z, T> {
       }
 };
 
-typedef AssignAtomFunctor<1, H, He, Li, Be, B, C, N, O, F, Ne, Na, Mg, Al, Si,
-      P, S, Cl, Ar, K, Ca, Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, Zn, Ga, Ge, As,
-      Se, Br, Kr, Rb, Sr, Y, Zr, Nb, Mo, Tc, Ru, Rh, Pd, Ag, Cd, In, Sn, Sb, Te,
-      I, Xe, Cs, Ba, La, Ce, Pr, Nd, Pm, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu,
-      Hf, Ta, W, Re, Os, Ir, Pt, Au, Hg, Tl, Pb, Bi, Po, At, Rn, Fr, Ra, Ac, Th,
-      Pa, U, Np, Pu, Am, Cm, Bk, Cf, Es, Fm, Md, No, Lr, Rf, Db, Sg, Bh, Hs, Mt,
-      Ds, Rg, Cn, Uut, Fl, Uup, Lv, Uus, Uuo> PeriodicTable;
-
-boost::shared_ptr<Methyl> Temp(new Methyl);
+typedef AssignAtomFunctor<1,Hydrogen,Helium,Lithium,Beryllium,
+   Boron,Carbon,Nitrogen,Oxygen,Fluorine,Neon,Sodium,Magnesium,Aluminum,
+   Silicon,Phosphorus,Sulfur,Chlorine,Argon,Potassium,Calcium,Scandium,
+   Titanium,Vanadium,Chromium,Manganese,Iron,Cobalt,Nickel,Copper,Zinc,
+   Gallium,Germanium,Arsenic,Selenium,Bromine,Krypton,Rubidium,Strontium,
+   Yttrium,Zirconium,Niobium,Molybdenum,Technetium,Ruthenium,Rhodium,
+   Palladium,Silver,Cadmium,Indium,Tin,Antimony,Tellurium,Iodine,Xenon,
+   Cesium,Barium,Lanthanum,Cerium,Praseodymium,Neodymium,Promethium,
+   Samarium,Europium,Gadolinium,Terbium,Dysprosium,Holmium,Erbium,Thulium,
+   Ytterbium,Lutetium,Hafnium,Tantalum,Tungsten,Rhenium,Osmium,Iridium,
+   Platinum,Gold,Mercury,Thallium,Lead,Bismuth,Polonium,Astatine,Radon,
+   Francium,Radium,Actinium,Thorium,Protactinium,Uranium,Neptunium,
+   Plutonium,Americium,Curium,Berkelium,Californium,Einsteinium,Fermium,
+   Mendelevium,Nobelium,Lawrencium,Rutherfordium,Dubnium,Seaborgium,Bohrium,
+   Hassium,Meitnerium,Darmstadtium,Roentgenium,Copernicium,Ununtrium,
+   Flerovium,Ununpentium,Livermorium,Ununseptium,Ununoctium> PeriodicTable;
 
 typedef PrimRunner<Methane, Methyl, Methene, Methyne, C4, Alkenyl1, Alkenyl2,
       Alkenyl3, Alkynyl1, Alkynyl2> FindCarbon;
@@ -67,7 +74,10 @@ typedef PrimRunner<Ammonia, Amine1, Amine2, Amine3, Azo1, Azo2, NTB, Ammonium,
       Ammonium1, Ammonium2, Ammonium3, Ammonium4> FindNitrogen;
 typedef PrimRunner<Water, Hydroxyl, Ether, ODB> FindOxygen;
 typedef PrimRunner<HydrogenSulfide, Thiol, Sulfide, SDB> FindSulfur;
+typedef SetRunner<FindCarbon,FindOxygen,
+               FindNitrogen,FindSulfur> FindPrimitiveNodes;
 
+/*
 typedef PrimRunner<Ethene, DBCC1, DBCC2, DBCC2G, DBCC3, DBCC4> FindCC2XBond;
 typedef PrimRunner<Acetylene, Ethynyl, CCTB2> FindCC3XBond;
 typedef PrimRunner<Formaldimine, DBCN1, Aldimine1, Aldimine2, Ketimine1,
@@ -111,11 +121,10 @@ typedef PrimRunner<Indolyl0, Indolyl1_1, Indolyl1_2, Indolyl1_3, Indolyl1_5,
       Indolyl5_23578, Indolyl5_23678, Indolyl5_25678, Indolyl5_35678,
       Indolyl6_123567, Indolyl6_123568, Indolyl6_123578, Indolyl6_123678,
       Indolyl6_125678, Indolyl6_135678, Indolyl6_235678, Indolyl7> FindIndole;
-typedef SetRunner<FindCarbon,FindOxygen,
-               FindNitrogen,FindSulfur> FindPrimitiveNodes;
+
 typedef SetRunner<FindIndole,FindComplexRing,FindMiscCGroups,FindCN2XBond,
       FindCN3XBond,FindCO2XBond,FindEtherGroups,FindCOGroups,FindNGroups,
-      FindCC2XBond,FindCC3XBond> FindDerivedNodes;
+      FindCC2XBond,FindCC3XBond> FindDerivedNodes;*/
 
 Graph OrganicGeom::MakeFxnGroups(bool FindAAs) const {
    MolItr AtomI=Mol_->Begin(),AtomEnd=Mol_->End();
@@ -135,10 +144,11 @@ Graph OrganicGeom::MakeFxnGroups(bool FindAAs) const {
          (*It)->AddConn(Temp[Connections_[counter][ConnI]]);
    }
    FindPrimitiveNodes::Run(Nodes);
-   FindDerivedNodes::Run(Nodes);
+   SetRunner<PrimRunner<DBCC,TBCC> >::Run(Nodes);
+   /*FindDerivedNodes::Run(Nodes);
    //If this is true we will find the peptide bond as an amide
    if(!FindAAs)SetRunner<FindAmide>::Run(Nodes);
-   SetRunner<Find6Ring>::Run(Nodes);
+   SetRunner<Find6Ring>::Run(Nodes);*/
 
    return Nodes;
 }
@@ -151,5 +161,4 @@ OrganicGeom::OrganicGeom(const Molecule* Mol,bool FindAAs) :
 std::string OrganicGeom::PrintOut() const {
    return FxnalGroups_.PrintOut();
 }
-}
-} //End namespaces
+}} //End namespaces
