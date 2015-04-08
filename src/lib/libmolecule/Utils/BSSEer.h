@@ -22,7 +22,7 @@
 #ifndef SRC_LIB_LIBFRAG_LIBMOLECULE_UTILS_BSSEER_H_
 #define SRC_LIB_LIBFRAG_LIBMOLECULE_UTILS_BSSEER_H_
 #include "../LibFragFragment.h"
-
+#include "PowerSetItr.h"
 namespace psi{
 namespace LibMolecule{
 class Molecule;
@@ -41,91 +41,45 @@ class FullBSSEer:public BSSEer{
 };
 /** \brief Little wrapper class to return the next SN for a VMFC(n) calculation
  *
- *   We assume we are given some serial number with m real
- *   fragments, and n-m ghosts (the top-level initialization should
- *   contain 0 ghosts; this description is for an arbitrary nested
- *   iterator within that top-level version).  This SN looks like:
- *   \verbatim
- *         (m+1)...n
- *   IJ...m
- *   \endverbatim
- *   where ghosts are on the superscript.  Internally ghosts
- *   are flagged as being negative fragments.  Upon creation
- *   we promote the m-th index to a ghost, reducing the number of
- *   real fragments by one:
- *   \verbatim
- *             m...n
- *   IJ...(m-1)
- *   \endverbatim
- *   This particular iterator then passes the resulting SN into
- *   a subiterator, where the entire process recurses until:
- *   \verbatim
- *    J...n
- *   I
- *   \endverbatim
- *   This gives us our initial state upon instance creation.
+ *   Assume we have some serial number, whose indices form the set:
+ *   \f$S=\lbrace i\ j\ k\ l\rbrace\f$.  What we want is then to
+ *   iterate over every element \f$p_i\f$ of the power set of \f$S\F$
+ *   except for\f$S\$ itself and \f$\emptyset\f$.  The resulting serial
+ *   number is then the union of \f$p_i\f$ and -1 times the complement of
+ *   \f$p_i\f$ in \f$S\f$.  This generates all the unique calculations
+ *   for a VMFC(n) job.
  *
- *   When the user calls operator()++ each iterator returns it's value of
- *   Current_, if it hasn't done so already, or increments it's iterator
- *   and returns that iterators value.  Hence we are always be given the
- *   shallowest iterator's value that hasn't been returned yet.  Once our
- *   sub iterator has finished iterating we implement our value, and
- *   re-initialize our sub-iterator; the process then repeats until all
- *   iterators return done.  As with most iterators attempting to
- *   increment this class once it has finished leads to undefined behavior.
+ *   To put the BSSE corrected properties back together requires more
+ *   finesse.  What we want to do here is start with some serial number
+ *   that is all real monomers.  Then we generate it's power set using
+ *   this iterator.  Each resulting set is an interaction that contributes
+ *   to the all real SN's interaction.  Within each of thes subinteractions
+ *   we need to repeat the process except that now our SN is not all
+ *   real.
+ *
+ *   To generalize this iterator to these other interactions it is just a
+ *   matter of keeping any ghost monomer that enters into this iterator
+ *   constant.
  *
  *
- *   Ultimately this produces a sequence analogous to (assuming a trimer
- *   IJK):
- *   \verbatim
- *   I J -K
- *   I -J -K
- *   J -I -K
- *   I K -J
- *   I -J -K
- *   K -I -J
- *   J K -I
- *   J -I -K
- *   K -I -J
- *   \endverbatim
- *   note that some terms are repeated, if this is not the desired
- *   operation set the flag in the constructor to false.
+ *
  */
 class VMFCnItr{
    private:
-      ///The SN currently stored in this generator
-      SerialNumber Mine_;
-      ///The current SN, what will be returned
-      SerialNumber Current_;
-      ///The real fragments in the intialized SN
-      SerialNumber Real_;
-      ///The ghost fragments in the initialized SN
-      SerialNumber Ghost_;
-      ///An iterator to Current_ w/one additional ghost monomer
-      boost::shared_ptr<VMFCnItr> MyItr_;
-      ///A flag to symbolize when this iterator has completed
-      bool IsDone_;
-      ///A flag to symbolize whether the value in Current_ has been used
-      bool UsedMyValue_;
-      ///A flag symbolizing whether the user wants the entire list
-      bool AllowDuplicates_;
-      ///A map to keep track of the SNs we have found
-      std::set<SerialNumber> FoundSNs_;
-      ///The index we are updating
-      unsigned int l_;
-      ///Function that sets Current_ to it's next value
-      void Next();
-      ///Updates Current, so that index l of the original SN is now a ghost
-      void UpdateMe(unsigned int l);
+      SerialNumber SN_;
+      SerialNumber InitialGhosts_;
+      SerialNumber Value_;
+     boost::shared_ptr<PowerSetItr<SerialNumber> > It_;
+     void Next();
    public:
       ///Returns the current serial number
-      const SerialNumber& operator*()const{return Current_;}
+      const SerialNumber& operator*()const{return Value_;}
       ///Allows access to the current serial number's members
-      const SerialNumber* operator->()const{return &Current_;}
+      const SerialNumber* operator->()const{return &Value_;}
       ///SN must contain no ghosts for the top-level iterator
-      VMFCnItr(const SerialNumber& SN,const bool AllowDuplicates_=true);
+      VMFCnItr(const SerialNumber& SN);
       ///Returns true if this iterator has completed
-      bool Done()const{return IsDone_;}
+      bool Done()const{return It_->Done();}
       ///Increments this iterator
       const VMFCnItr& operator++(){Next();return *this;}
 
