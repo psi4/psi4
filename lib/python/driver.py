@@ -1838,9 +1838,17 @@ def writeCSX(name, **kwargs):
     molecule.update_geometry()
     # Determine the derivative type
     calledby = inspect.stack()[1][3]
-    dertype = ['energy', 'gradient', 'frequency'].index(calledby)
-#Start to write the CSX file
-#First grab molecular information and energies from psi4
+    derdict = {
+        'energy': 0,
+        'property': 0,
+        'gradient': 1,
+        'optimize': 1,
+        'frequency': 2,
+        'hessian': 2,
+        }
+    dertype = derdict[calledby]
+    # Start to write the CSX file
+    # First grab molecular information and energies from psi4
     geom = molecule.save_string_xyz()
     atomLine = geom.split('\n')
 
@@ -1968,8 +1976,9 @@ def writeCSX(name, **kwargs):
     # get the basename for the CSX file
     psio = psi4.IO.shared_object()
     namespace = psio.get_default_namespace()
-    pid = str(os.getpid())
-    csxfile = open(namespace + '.' + pid + '.csx', 'w')
+    #csxfilename = '.'.join([namespace, str(os.getpid()), 'csx'])
+    csxfilename = os.path.splitext(psi4.outfile_name())[0] + '.csx'
+    csxfile = open(csxfilename, 'w')
     csxVer = psi4.get_global_option('CSX_VERSION')
     # Start to generate CSX elements
     if csxVer == 0:
@@ -2125,10 +2134,12 @@ def writeCSX(name, **kwargs):
                 key=psi4.get_global_option('PUBLICATIONKEY'))
         source1 = api.sourcePackageType(name='Psi4', version='beta5+')
         mp1.set_sourcePackage(source1)
-        ath1 = api.authorType(creator=psi4.get_global_option('CORRESPONDINGAUTHOR'),
-                type_='cs:corresponding',
-                organization=psi4.get_global_option('ORGANIZATION'),
-                email=psi4.get_global_option('EMAIL').replace('__', '@'))
+        email = psi4.get_global_option('EMAIL').replace('__', '@')
+        ath1 = api.authorType(
+            creator=psi4.get_global_option('CORRESPONDINGAUTHOR'),
+            type_='cs:corresponding',
+            organization=psi4.get_global_option('ORGANIZATION'),
+            email=None if email == '' else email)
         mp1.add_author(ath1)
         cs1.set_molecularPublication(mp1)
 
