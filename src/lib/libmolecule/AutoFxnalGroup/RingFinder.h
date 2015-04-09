@@ -48,7 +48,7 @@ class RingFinder: public LinearSearch<Groups...>{
          //Check if NodeI is connected to NodeJ
          SharedNode NodeI=this->SubNodes_[0],NodeJ=this->SubNodes_.back();
          std::vector<SharedNode>::iterator
-           It=NodeI->ConnNodes_.begin(),ItEnd=NodeI->ConnNodes_.end();
+           It=NodeI->ConnBegin(),ItEnd=NodeI->ConnEnd();
          for(;It!=ItEnd;++It)if(It->get()==NodeJ.get())return true;
          return false;
       }
