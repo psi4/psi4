@@ -49,6 +49,11 @@ locations.
     >>> conda install --yes psi4
     >>> psi4 "$(dirname $(which psi4))"/../share/psi/samples/scf1/input.dat -o stdout  # works b/c PSI_SCRATCH defaults to /tmp
 
+.. code-block:: bash
+
+    >>> echo "export PSI_SCRATCH=/path/to/existing/writable/local-not-network/disk/for/scratch/files" >> ~/.bashrc
+    # log out, log back in so variable takes effect
+
 .. comment# works b/c scratch defaults to /tmp    
     >>> conda create --yes --name p4env psi4
     >>> source activate p4env
@@ -198,7 +203,7 @@ Troubleshooting
     * libpython linked against conda python not system python
     * libm is linked against conda *or* system
 
-    ::
+.. code-block:: bash
 
     >>> conda install conda-build  # needed for next command
     >>> conda inspect linkages psi4
