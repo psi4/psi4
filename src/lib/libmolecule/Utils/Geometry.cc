@@ -28,7 +28,7 @@ namespace LibMolecule {
 typedef boost::shared_ptr<Bond> SharedBond;
 typedef boost::shared_ptr<Pair> SharedPair;
 void Geometry::FormDistance() {
-   MolItr Start=Mol_->Begin(),Done=Mol_->End();
+   MolItr Start=Mol_.Begin(),Done=Mol_.End();
    int pair[2];
    AtomicData CRC;
    for (int i=0; Start!=Done; ++Start, ++i) {
@@ -68,9 +68,9 @@ std::string Connections::PrintOut()const{
    return Result.str();
 }
 
-Geometry::Geometry(const Molecule* Mol) :
-      Distance_(new double[Mol->NAtoms()*Mol->NAtoms()]),
-            Connections_(Mol->NAtoms()), Mol_(new Molecule(*Mol)){
+Geometry::Geometry(const Molecule& Mol) :
+      Distance_(new double[Mol.NAtoms()*Mol.NAtoms()]),
+            Connections_(Mol.NAtoms()), Mol_(Mol){
    FormDistance();
 }
 
