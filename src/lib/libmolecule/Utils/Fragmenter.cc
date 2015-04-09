@@ -33,8 +33,9 @@ typedef boost::shared_ptr<Fragment> SharedFrag;
 typedef boost::shared_ptr<const Node> SharedGroup;
 typedef std::vector<SharedGroup> vSharedGroup;
 BondFragmenter::BondFragmenter(SharedMol Mol, const unsigned int NBonds):
-      Fragmenter(Mol),Geom_(new OrganicGeom(Mol.get())),
+      Fragmenter(Mol),Geom_(new OrganicGeom(*Mol)),
             NBonds_(NBonds){
+   //std::cout<<Geom_->PrintOut();
    //BioGeom BChem(*Mol);
 }
 

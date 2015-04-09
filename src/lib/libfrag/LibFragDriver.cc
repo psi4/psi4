@@ -73,15 +73,8 @@ static boost::shared_ptr<LibMolecule::SuperCell> MakeSC(
    return temp;
 }
 
-static SharedFrags MakeMolecule(const int N, SharedMol AMol) {
-   boost::shared_ptr<LibMolecule::Molecule> MyMol(new LibMolecule::Molecule);
-   for (int i=0; i<AMol->natom(); ++i) {
-      std::vector<double> Carts(3, 0.0);
-      Carts[0]=AMol->x(i);
-      Carts[1]=AMol->y(i);
-      Carts[2]=AMol->z(i);
-      (*MyMol)<<LibMolecule::Atom(&Carts[0], (int)AMol->Z(i));
-   }
+static SharedFrags MakeMolecule(const int N,
+      boost::shared_ptr<LibMolecule::Molecule>& MyMol) {
    //LibMM::MMParamAssigner Assign(*MyMol);
    Options options=psi::Process::environment.options;
    SharedFrags MySys;
@@ -91,13 +84,17 @@ static SharedFrags MakeMolecule(const int N, SharedMol AMol) {
       if (SCSides>=1){
          boost::shared_ptr<LibMolecule::SuperCell> temp2=MakeSC(temp);
          MySys=SharedFrags(
-               new LibMolecule::FragmentedSystem(*temp2, N));
+               new LibMolecule::FragmentedSystem(temp2, N));
+         MyMol=temp2;
       }
-      else  MySys=SharedFrags(
-            new LibMolecule::FragmentedSystem(*temp, N));
+      else{
+         MySys=SharedFrags(
+            new LibMolecule::FragmentedSystem(temp, N));
+         MyMol=temp;
+      }
    }
    if (!MySys)
-      MySys=SharedFrags(new LibMolecule::FragmentedSystem(*MyMol, N));
+      MySys=SharedFrags(new LibMolecule::FragmentedSystem(MyMol, N));
    return MySys;
 }
 
@@ -118,9 +115,17 @@ LibFragDriver::LibFragDriver(const std::string& MethodName){
    int NStart=options["MBE_STARTING_ORDER"].to_integer();
    int N=options["MBE_TRUNCATION_ORDER"].to_integer();
    SharedMol AMol=psi::Process::environment.molecule();
-   Frags_=MakeMolecule(N,AMol);
-   LibMolecule::BSSEFactory tempFactory(*Frags_);
-   //std::cout<<Frags_->PrintOut(0);
+   boost::shared_ptr<LibMolecule::Molecule> MyMol(new LibMolecule::Molecule);
+   for (int i=0; i<AMol->natom(); ++i) {
+      std::vector<double> Carts(3, 0.0);
+      Carts[0]=AMol->x(i);
+      Carts[1]=AMol->y(i);
+      Carts[2]=AMol->z(i);
+      (*MyMol)<<LibMolecule::Atom(&Carts[0], (int)AMol->Z(i));
+   }
+
+   Frags_=MakeMolecule(N,MyMol);
+   LibMolecule::BSSEFactory tempFactory(*MyMol,*Frags_);
    if(NStart==1)RunMonomers(MethodName);
    if(N>1)RunNMers(NStart,MethodName);
    if(options["BSSE_METHOD"].to_string()!="VMFCN"){

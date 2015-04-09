@@ -34,7 +34,7 @@ typedef PrimRunner<ValineR, LeucineR, IsoleucineR, MethionineR, TyrosineR,
       TryptophanR,SerineR,AlanineR> FindAARs;
 */
 BioGeom::BioGeom(const Molecule& Mol) :
-      OrganicGeom(&Mol,true) {
+      OrganicGeom(Mol,true) {
       Graph Nodes=OrganicGeom::GetGroups();
       Graph::iterator It;
      /* SetRunner<FindAAPieces>::Run(Nodes);

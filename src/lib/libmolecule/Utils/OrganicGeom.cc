@@ -127,8 +127,8 @@ typedef SetRunner<FindIndole,FindComplexRing,FindMiscCGroups,FindCN2XBond,
       FindCC2XBond,FindCC3XBond> FindDerivedNodes;*/
 
 Graph OrganicGeom::MakeFxnGroups(bool FindAAs) const {
-   MolItr AtomI=Mol_->Begin(),AtomEnd=Mol_->End();
-   std::vector<bool> IsAssigned(Mol_->NAtoms(), false);
+   MolItr AtomI=Mol_.Begin(),AtomEnd=Mol_.End();
+   std::vector<bool> IsAssigned(Mol_.NAtoms(), false);
    Graph Nodes;
    PeriodicTable PTable;
    std::vector<boost::shared_ptr<Node> > Temp;
@@ -153,7 +153,7 @@ Graph OrganicGeom::MakeFxnGroups(bool FindAAs) const {
    return Nodes;
 }
 
-OrganicGeom::OrganicGeom(const Molecule* Mol,bool FindAAs) :
+OrganicGeom::OrganicGeom(const Molecule& Mol,bool FindAAs) :
       Geometry(Mol) {
    FxnalGroups_=MakeFxnGroups(FindAAs);
 }

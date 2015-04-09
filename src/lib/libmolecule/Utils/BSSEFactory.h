@@ -29,7 +29,7 @@ class FragmentedSystem;
 class BSSEFactory{
    public:
       ///Applies BSSE corrections up to order "Stop" (0=all n)
-      BSSEFactory(FragmentedSystem& Sys,unsigned int Stop=0);
+      BSSEFactory(Molecule& Mol,FragmentedSystem& Sys,unsigned int Stop=0);
       BSSEFactory(Molecule&){}
 };
 

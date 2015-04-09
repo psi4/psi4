@@ -62,10 +62,10 @@ static boost::shared_ptr<Fragmenter> PickFragmenter(boost::shared_ptr<const Mole
 }
 
 
-FragSysGuts::FragSysGuts(const Molecule& System2Frag, const int N) :
+FragSysGuts::FragSysGuts(boost::shared_ptr<Molecule> System2Frag, const int N) :
       NMers_(N) {
    boost::shared_ptr<Fragmenter> FragMaker=
-         PickFragmenter(SharedMol(new Molecule(System2Frag)));
+         PickFragmenter(System2Frag);
    vSharedFrag Fragments=FragMaker->MakeFrags();
    if (N>1)MakeNMers(Fragments);
    NMers_[0]=Fragments;
@@ -123,11 +123,11 @@ static void CheckNMer(NMers& NMers_,const int N) {
    NMers_[N]=ReturnFrags;
 }
 
-FragSysGuts::FragSysGuts(const SuperCell& System2Frag, const int N) :
+FragSysGuts::FragSysGuts(const boost::shared_ptr<SuperCell> System2Frag, const int N) :
       NMers_(N) {
-   SharedMol FullSys(new Molecule(System2Frag));
+   SharedMol FullSys=System2Frag;
    boost::shared_ptr<Fragmenter> FragMaker=
-         PickFragmenter(System2Frag.GetUnitCell()),
+         PickFragmenter(System2Frag->GetUnitCell()),
          FragMaker2=PickFragmenter(FullSys);
    vSharedFrag UnitFrags=FragMaker->MakeFrags(),
                AllFrags=FragMaker2->MakeFrags();

@@ -64,7 +64,7 @@ void UnitCell::FixUnitCell(){
    std::vector<int> CellVecs(3,1);
    UnitCell TempUC(*this);
    SuperCell TempSC(TempUC,CellVecs);
-   Geometry Geom(&TempSC);
+   Geometry Geom(TempSC);
    MolItr AtomI=this->Begin(),AtomIEnd=this->End();
    std::set<int> Atoms;
    for(int index=0;AtomI!=AtomIEnd;++AtomI,++index){
@@ -98,7 +98,7 @@ void UnitCell::FixUnitCell(){
                dz+=dq*dq;
             }
             if(sqrt(dz)<1e-6){
-               Geometry Geom2(&TempMol);
+               Geometry Geom2(TempMol);
                MolRecurse(Geom2.GetConns(),Atoms2Remove,-1,indexi);
                break;
             }

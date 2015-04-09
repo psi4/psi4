@@ -47,7 +47,7 @@ class Geometry:public LibMoleculeBase{
 
    protected:
       Connections Connections_;
-      boost::shared_ptr<const Molecule> Mol_;
+      const Molecule& Mol_;
       boost::shared_ptr<double[]> Distance_;
    public:
       ///Returns the number of bonds atom i makes
@@ -58,7 +58,7 @@ class Geometry:public LibMoleculeBase{
       Pair_t& GetPairs()const{return Pairs_;}
       const Connections& GetConns()const{return Connections_;}
       virtual ~Geometry(){}
-      Geometry(const Molecule* Mol);
+      Geometry(const Molecule& Mol);
 };
 
 

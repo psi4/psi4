@@ -80,8 +80,8 @@ class FragSysGuts{
        */
       void MakeNMers(const std::vector<boost::shared_ptr<Fragment> >& Set1,
                      const std::vector<boost::shared_ptr<Fragment> >& Set2);
-      FragSysGuts(const Molecule& System2Frag,const int N);
-      FragSysGuts(const SuperCell& System2Frag,const int N);
+      FragSysGuts(boost::shared_ptr<Molecule> System2Frag,const int N);
+      FragSysGuts(boost::shared_ptr<SuperCell> System2Frag,const int N);
 };
 
 }}//End namespaces
