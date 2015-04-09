@@ -110,18 +110,13 @@ void Interaction(const LibMolecule::SerialNumber& SN,
       const MBEProp<T>& Props,MBEProp<T>& Int){
    typedef LibMolecule::SerialNumber SN_t;
    SN_t FakeSN,Real;FakeSN.insert(0);
+   //Add the SN-th energy to the interaction
    Int.Change(0,FakeSN,Props(SN.size()-1,SN));
    SN_t::const_iterator SNJ=SN.begin(),SNJEnd=SN.end();
-   for(;SNJ!=SNJEnd;++SNJ)
-      if((*SNJ)>0)Real.insert(*SNJ);
+   for(;SNJ!=SNJEnd;++SNJ)if((*SNJ)>0)Real.insert(*SNJ);
    if(Real.size()>1){
-      LibMolecule::VMFCnItr SNI(SN,false);
+      LibMolecule::VMFCnItr SNI(SN);
       for(;!SNI.Done();++SNI){
-         /*SN_t Real2;
-         SNJ=SNI->begin(),SNJEnd=SNI->end();
-         for(;SNJ!=SNJEnd;++SNJ)
-            if((*SNJ)>0)Real2.insert((*SNJ));
-         double sign=((Real.size()+Real2.size())%2==1?-1.0:1.0);*/
          MBEProp<T> Result(1);
          Interaction((*SNI),Props,Result);
          Int.Change(0,FakeSN,Result(0,FakeSN)*-1.0);

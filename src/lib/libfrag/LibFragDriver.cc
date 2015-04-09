@@ -36,6 +36,7 @@
 #include "CanonicalMBE.h"
 #include "VMFCnMBE.h"
 #include "libmolecule/Utils/BSSEFactory.h"
+//#include "libmm/MMParamAssigner.h"
 
 typedef boost::python::str PyStr;
 namespace psi {
@@ -81,6 +82,7 @@ static SharedFrags MakeMolecule(const int N, SharedMol AMol) {
       Carts[2]=AMol->z(i);
       (*MyMol)<<LibMolecule::Atom(&Carts[0], (int)AMol->Z(i));
    }
+   //LibMM::MMParamAssigner Assign(*MyMol);
    Options options=psi::Process::environment.options;
    SharedFrags MySys;
    if(options["UNIT_CELL_SIDES"].size()>1){
@@ -99,6 +101,17 @@ static SharedFrags MakeMolecule(const int N, SharedMol AMol) {
    return MySys;
 }
 
+template<typename T>
+void CalcEnergy(Expansion<T>& Expansion_,
+      boost::shared_ptr<LibMolecule::FragmentedSystem> Frags_,
+      std::vector<boost::shared_ptr<MBEProp<double> > >& Energies_){
+   for(unsigned int i=0;i<Energies_.size();i++){
+         //std::cout<<Energies_[i]->PrintOut();
+         MBEProp<double> FinalEs=Expansion_.Property(*Frags_,*(Energies_[i]));
+         (*outfile)<<Expansion_.PrintOut()<<std::endl;
+      }
+}
+
 LibFragDriver::LibFragDriver(const std::string& MethodName){
    outfile->MakeBanner("Many-Body Expansion Module");
    Options options=psi::Process::environment.options;
@@ -110,12 +123,16 @@ LibFragDriver::LibFragDriver(const std::string& MethodName){
    //std::cout<<Frags_->PrintOut(0);
    if(NStart==1)RunMonomers(MethodName);
    if(N>1)RunNMers(NStart,MethodName);
-   //Expansion<MBE> Expansion_(N);
-   Expansion<VMFCnMBE> Expansion_(N);
-   for(unsigned int i=0;i<Energies_.size();i++){
-      MBEProp<double> FinalEs=Expansion_.Property(*Frags_,*(Energies_[i]));
-      (*outfile)<<Expansion_.PrintOut()<<std::endl;
+   if(options["BSSE_METHOD"].to_string()!="VMFCN"){
+      //Expansion<MBE> Expansion_(N);
+      Expansion<CanonicalMBE> Expansion_(N);
+      CalcEnergy(Expansion_,Frags_,Energies_);
    }
+   else{
+      Expansion<VMFCnMBE> Expansion_(N);
+      CalcEnergy(Expansion_,Frags_,Energies_);
+   }
+
 }
 
 typedef MPITask<SharedFrag> Task_t;
@@ -131,7 +148,50 @@ static std::vector<Task_t> MakeTasks(const int Start, const int Stop,const Share
 }
 
 
+/*static void PyRun(const std::string& MethodName,
+      int Start, int Stop,
+      boost::shared_ptr<LibMolecule::FragmentedSystem> Frags_,
+      std::vector<boost::shared_ptr<MBEProp<double> > >& Energies_){
+   FragItr MonoI,MonoEnd;
+      std::stringstream Mols;
+      for (int i=Start; i<Stop; i++) {
+         MonoEnd=Frags_->end(i);
+         for (MonoI=Frags_->begin(i); MonoI!=MonoEnd; ++MonoI)
+            Mols<<(*MonoI)->PrintOut(0)<<"***";
+      }
+      PythonFxn<boost::python::list> RunCalc("wrappers","new_new_run_calc", "s s");
+      SmartTimer WorkTimer("NMer Energy Computation");
+      boost::python::list TempEgys2=
+            RunCalc(MethodName.c_str(),Mols.str().c_str());
+      WorkTimer.Stop();
+      (*outfile)<<WorkTimer.PrintOut();
+      PythonFxn<boost::python::list> GetEgyComps("wrappers","GetCalcDetails","s");
+      boost::python::list Keys=GetEgyComps(MethodName.c_str());
+      int NEgys=boost::python::len(Keys);
+      if(Energies_.size()==0){
+         for(int i=0;i<NEgys;i++){
+            const std::string EgyName=
+                  boost::python::extract<std::string>(Keys[i]);
+            Energies_.push_back(
+                  boost::shared_ptr<MBEProp<double> >(
+                        new MBEProp<double>(Frags_->N(),EgyName)));
+         }
+      }
+      for (int i=Start; i<Stop; i++) {
+               MonoEnd=Frags_->end(i);
+               int counter=0;
+               for (MonoI=Frags_->begin(i); MonoI!=MonoEnd; ++MonoI){
+                  const LibMolecule::SerialNumber& SN=(*MonoI)->GetSN();
+                  for(int i=0;i<NEgys;i++)
+               Energies_[i]->Change(SN.size()-1,SN,
+                     boost::python::extract<double>(TempEgys2[counter++]));
+               }
+         }
+}*/
+
+
 void LibFragDriver::RunCalc(const std::string& MethodName,int Start, int Stop) {
+   //PyRun(MethodName,Start, Stop,Frags_,Energies_);
    std::vector<Task_t> Tasks=MakeTasks(Start,Stop,Frags_);
 
    //Make a progress bar, by guessing each processor gets same num of tasks
@@ -143,10 +203,11 @@ void LibFragDriver::RunCalc(const std::string& MethodName,int Start, int Stop) {
    PythonFxn<boost::python::dict> RunCalc("wrappers", "new_run_calc", "s s i");
    PythonFxn<boost::python::list> GetEgyComps("wrappers","GetCalcDetails","s");
    boost::python::list Keys=GetEgyComps(MethodName.c_str());
+   int NEgys=boost::python::len(Keys);
 
    //Array for collecting energies, the number of energy types, and their names
    std::vector<double> TempEngy;
-   int NEgys=boost::python::len(Keys);
+
    //Start Comm timer here since there are some comms in the MPIJob creation
    SmartTimer CommTimer("Communications"),WorkTimer("NMer Energy Computation");
    MPIJob<SharedFrag> PMan(Tasks);

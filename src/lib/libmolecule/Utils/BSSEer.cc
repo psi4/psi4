@@ -20,11 +20,13 @@
  *@END LICENSE
  */
 #include <vector>
+#include <algorithm>
 #include "BSSEer.h"
 #include "../LibFragMolecule.h"
 #include "../AtomTypes.h"
 #include "../FragmentedSys.h"
 #include "../MoleculeTypes.h"
+
 typedef unsigned int uint;
 namespace psi {
 namespace LibMolecule {
@@ -52,52 +54,35 @@ void FullBSSEer::CalcBSSE(NMers& Sys, uint Stop, uint Start) const {
    }
 }
 
-void VMFCnItr::UpdateMe(uint NewGhost) {
-   Mine_=Ghost_;
-   //std::cout<<"Calling UpdateMe"<<std::endl;
-   SerialNumber::const_iterator SNI=Real_.begin();
-   for (uint counter=1; counter<=Real_.size(); counter++,++SNI)
-      Mine_.insert((*SNI)*(counter==NewGhost?-1.0:1.0));
-   Current_=Mine_;
-   if(Real_.size()>2)
-      MyItr_=boost::shared_ptr<VMFCnItr>(
-         new VMFCnItr(Mine_,AllowDuplicates_));
-}
-
-VMFCnItr::VMFCnItr(const SerialNumber& SN,const bool AllowDuplicates) :
-      IsDone_(false),AllowDuplicates_(AllowDuplicates), l_(0) {
-   SerialNumber::const_iterator SNI=SN.begin(),SNIEnd=SN.end();
-   for (; SNI!=SNIEnd; ++SNI) {
-      if ((*SNI)>0) Real_.insert(*SNI);
-      else Ghost_.insert(*SNI);
+VMFCnItr::VMFCnItr(const SerialNumber& SN){
+   SerialNumber::const_iterator It=SN.begin(),ItEnd=SN.end();
+   for(;It!=ItEnd;++It){
+      if((*It)<0)InitialGhosts_.insert(*It);
+      else SN_.insert(*It);
    }
-   l_=Real_.size();
-   UpdateMe(l_--);
+   It_=boost::shared_ptr<PowerSetItr<SerialNumber> >(
+         new PowerSetItr<SerialNumber>(SN_));
+   //Power set iterator starts on empty set
+   Next();
 }
 
 void VMFCnItr::Next() {
-   do{
-     // std::cout<<"In Mine="<<Mine_.PrintOut()<<std::endl;
-      if(Current_==Mine_){
-         if(MyItr_){//(m=/=1)-mers in n-mer basis
-            Current_=(*(*MyItr_));
-            ++(*MyItr_);
-            //std::cout<<"Current set off initalized iterator"<<std::endl;
-         }
-         else if(l_!=0)UpdateMe(l_--);//Monomers in n-mer basis
-         else IsDone_=true;
-      }
-      else{//I have a subiterator and it's been running
-         if(!MyItr_->Done()){//Is that iterator done?
-            //std::cout<<"Current set off iterator"<<std::endl;
-            Current_=(*(*MyItr_));
-            ++(*MyItr_);
-         }
-         else if(l_!=0)UpdateMe(l_--);//Can I be updated
-         else IsDone_=true;//I'm done
-      }
-   }while(!IsDone_&&!AllowDuplicates_&&FoundSNs_.count(Current_)==1);
-   FoundSNs_.insert(Current_);
+   ++(*It_);
+   if(!It_->Done()){
+      SerialNumber Temp;
+      std::set_difference(SN_.begin(),SN_.end(),
+            (*It_)->begin(),(*It_)->end(),
+            std::inserter(Temp,Temp.begin()));
+      Value_=(*(*It_));
+      SerialNumber::const_iterator It1=Temp.begin(),It1End=Temp.end();
+      for(;It1!=It1End;++It1)
+         Value_.insert(-1*(*It1));
+      //Don't want the original SN
+      if((*Value_.begin())>=0)++(*It_);
+      //Need to add the ghosts now or else they mess w/ the last check
+      Value_.insert(InitialGhosts_.begin(),InitialGhosts_.end());
+   }
+
 }
 
 void VMFCn::CalcBSSE(NMers& Sys, uint Stop, uint Start) const {
@@ -106,6 +91,8 @@ void VMFCn::CalcBSSE(NMers& Sys, uint Stop, uint Start) const {
    uint N=(Stop==0 ? Sys.N() : Stop);
    //This will be the result
    NMers TempNMers(Sys);
+
+   //Create a mapping between a Monomer's SN and it's actual self for ease
    PsiMap <long int,boost::shared_ptr<Fragment> > Monomers;
    NMers::NMerItr_t NMerI=Sys.NMerBegin(1),NMerIEnd=Sys.NMerEnd(1);
    for(;NMerI!=NMerIEnd;++NMerI){
@@ -113,13 +100,16 @@ void VMFCn::CalcBSSE(NMers& Sys, uint Stop, uint Start) const {
       Monomers[(*SN.begin())]=(*NMerI);
    }
 
+   //There are no VMFC(n) corrections for n==1
    for (uint n=Start+1; n<=N; n++) {
-      NMerI=Sys.NMerBegin(n);NMerIEnd=Sys.NMerEnd(n);
+      NMerI=Sys.NMerBegin(n);
+      NMerIEnd=Sys.NMerEnd(n);
       for (; NMerI!=NMerIEnd; ++NMerI) {
          SerialNumber SN=(*NMerI)->GetSN();
-         VMFCnItr SNI(SN,false);
+         VMFCnItr SNI(SN);
          for (; !SNI.Done(); ++SNI) {
-            SerialNumber::const_iterator SNJ=SNI->begin(),SNJEnd=SNI->end();
+            SerialNumber::const_iterator SNJ=SNI->begin(),
+                                        SNJEnd=SNI->end();
             --SNJEnd;
             boost::shared_ptr<Fragment> Temp(
                   new Fragment(Monomers[(*SNJEnd)]->Mol(),(*SNI))

@@ -23,7 +23,7 @@
 #define SRC_LIB_LIBFRAG_LIBMOLECULE_IMPLEMENTATIONS_FRAGSYSGUTS_H_
 #include <vector>
 #include <boost/shared_ptr.hpp>
-#include "../MBEProp.h"
+#include "MBEProp.h"
 #include "../LibFragMolecule.h"
 #include "../SuperCell.h"
 namespace psi{
