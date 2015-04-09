@@ -85,6 +85,8 @@ void VMFCnItr::Next() {
 
 }
 
+VMFCn::VMFCn(Molecule& Mol):Mol_(Mol){}
+
 void VMFCn::CalcBSSE(NMers& Sys, uint Stop, uint Start) const {
    if (Start!=1&&Stop!=0)
       throw PSIEXCEPTION("VMFCn Must be performed on the full set of n-mers");
@@ -99,7 +101,7 @@ void VMFCn::CalcBSSE(NMers& Sys, uint Stop, uint Start) const {
       SerialNumber SN=(*NMerI)->GetSN();
       Monomers[(*SN.begin())]=(*NMerI);
    }
-
+   PsiMap<boost::shared_ptr<const Atom>,size_t> AtomMap;
    //There are no VMFC(n) corrections for n==1
    for (uint n=Start+1; n<=N; n++) {
       NMerI=Sys.NMerBegin(n);
@@ -121,8 +123,13 @@ void VMFCn::CalcBSSE(NMers& Sys, uint Stop, uint Start) const {
                else{
                   MolItr AtomI=Monomers[FragN]->Begin(),
                       AtomIEnd=Monomers[FragN]->End();
-                  for(;AtomI!=AtomIEnd;++AtomI)
-                     (*Temp)<<GhostAtom(*(*AtomI));
+                  for(;AtomI!=AtomIEnd;++AtomI){
+                     if(AtomMap.count(*AtomI)!=1){
+                        Mol_<<GhostAtom(*(*AtomI));
+                        AtomMap[(*AtomI)]=Mol_.NAtoms()-1;
+                     }
+                     (*Temp)<<AtomMap[(*AtomI)];
+                  }
                }
             }
             TempNMers.AddNMer(n,Temp);

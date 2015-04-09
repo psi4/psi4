@@ -35,9 +35,9 @@ class FragmentedSystem:private FragSysGuts{
       NMers& GetNMers(){return NMers_;}
    public:
       ///Fragments a molecule
-      FragmentedSystem(const Molecule& System2Frag,const int N=1);
+      FragmentedSystem(boost::shared_ptr<Molecule> System2Frag,const int N=1);
       ///Special constructor for supercells,
-      FragmentedSystem(const SuperCell& System2Frag, const int N=1);
+      FragmentedSystem(boost::shared_ptr<SuperCell> System2Frag, const int N=1);
       ///Prints out the fragments in a pretty format
       std::string PrintOut(const int Value=1)const;
       ///A typedef of an iterator over fragments
