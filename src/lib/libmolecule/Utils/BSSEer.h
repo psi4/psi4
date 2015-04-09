@@ -86,8 +86,11 @@ class VMFCnItr{
 };
 
 class VMFCn:public BSSEer{
+   private:
+      Molecule& Mol_;
    public:
       void CalcBSSE(NMers& Sys,unsigned int Stop,unsigned int Start)const;
+      VMFCn(Molecule& Mol);
 };
 
 }}//End namespace

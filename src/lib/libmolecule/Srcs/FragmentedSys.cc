@@ -37,9 +37,9 @@ int FragmentedSystem::N()const{return NMers_.N();}
 double FragmentedSystem::Coef(const int N, const SerialNumber& i)const{
    return NMers_.ScaleFacts_(N,i);
 }
-FragmentedSystem::FragmentedSystem(const Molecule& System2Frag,
+FragmentedSystem::FragmentedSystem(boost::shared_ptr<Molecule> System2Frag,
       const int N):FragSysGuts(System2Frag,N){}
-FragmentedSystem::FragmentedSystem(const SuperCell& System2Frag,
+FragmentedSystem::FragmentedSystem(boost::shared_ptr<SuperCell> System2Frag,
       const int N):FragSysGuts(System2Frag,N){}
 
 const SerialNumber& FragmentedSystem::SNLookUp(const SerialNumber& SN)const{

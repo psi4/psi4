@@ -26,7 +26,7 @@
 namespace psi{
 namespace LibMolecule{
 
-BSSEFactory::BSSEFactory(FragmentedSystem& Sys,uint Stop){
+BSSEFactory::BSSEFactory(Molecule& Mol, FragmentedSystem& Sys,uint Stop){
    NMers& DaNMers =Sys.GetNMers();
    std::string Method=
          psi::Process::environment.options["BSSE_METHOD"].to_string();
@@ -34,7 +34,7 @@ BSSEFactory::BSSEFactory(FragmentedSystem& Sys,uint Stop){
       boost::shared_ptr<BSSEer> BSSEWizard;
       if(Method=="FULL")
          BSSEWizard=boost::shared_ptr<FullBSSEer>(new FullBSSEer());
-      else BSSEWizard=boost::shared_ptr<VMFCn>(new VMFCn());
+      else BSSEWizard=boost::shared_ptr<VMFCn>(new VMFCn(Mol));
       BSSEWizard->CalcBSSE(DaNMers,Stop,1);
    }
 }

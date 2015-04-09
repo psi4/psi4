@@ -44,7 +44,7 @@ class OrganicGeom:public Geometry{
       ///Nothing to be done clean-up wise
       virtual ~OrganicGeom(){}
       ///Given a presumably organic molecule, figures out functional groups
-      OrganicGeom(const Molecule* Mol,bool FindAAs=false);
+      OrganicGeom(const Molecule& Mol,bool FindAAs=false);
       ///Groups to a pretty (fyi:beauty is in the eye of the beholder) string
       std::string PrintOut()const;
 };

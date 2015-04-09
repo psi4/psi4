@@ -84,6 +84,7 @@ class PsiException2: public std::exception{
             Error<<strings[i]<<std::endl;
          Error_=Error.str();
       }
+      virtual ~PsiException2()throw(){}
 };
 
 
