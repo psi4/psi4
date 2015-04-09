@@ -45,12 +45,12 @@ class BondFragmenter:public Fragmenter{
       boost::shared_ptr<OrganicGeom> Geom_;
       unsigned int NBonds_;
       void Recurse(
-        std::vector<boost::shared_ptr<const FxnalGroup> >& FoundGroups,
-          const Connections& Conns,const ConnGroups& FxnGroups,
+        std::vector<boost::shared_ptr<const Node> >& FoundGroups,
+          const Connections& Conns,const Graph& FxnGroups,
           long int& value);
       ///Makes fragment number "value" comprised of FoundGroups
       void AddFragment(const std::vector<
-                              boost::shared_ptr<const FxnalGroup> >&
+                              boost::shared_ptr<const Node> >&
                             FoundGroups,const long int value);
    public:
       std::vector<boost::shared_ptr<Fragment> > MakeFrags();
@@ -61,6 +61,10 @@ class MonomerFragmenter:public BondFragmenter{
    public:
       MonomerFragmenter(boost::shared_ptr<const Molecule> Mol):
        BondFragmenter(Mol,std::numeric_limits<unsigned int>::max()){}
+};
+
+class AAFragmenter:public Fragmenter{
+
 };
 
 }}//End namespaces

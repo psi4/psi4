@@ -19,19 +19,18 @@
  *
  *@END LICENSE
  */
+#ifndef SRC_LIB_LIBMOLECULE_AUTOFXNALGROUP_H_
+#define SRC_LIB_LIBMOLECULE_AUTOFXNALGROUP_H_
 
-#include <boost/python.hpp>
-#include "../lib/libparallel2/LibParallelHelper.h"
-//void export_libparallel();
-void export_libparallel(){
-   using namespace psi::LibParallel;
-   using namespace boost::python;
-   class_<LibParallelHelper>("LibParallelHelper")
-         .def("AddTask",&LibParallelHelper::AddTask)
-         .def("MakeJob",&LibParallelHelper::MakeJob)
-         .def("Begin",&LibParallelHelper::Begin)
-         .def("Next",&LibParallelHelper::Next)
-         .def("Done",&LibParallelHelper::Done)
-         .def("Synch",&LibParallelHelper::Synch);
-}
+#include "AutoFxnalGroup/MMAtomTypes.h"
+#include "AutoFxnalGroup/Node.h"
+#include "AutoFxnalGroup/Graph.h"
+#include "AutoFxnalGroup/TrivialNodes.hh"
+#include "AutoFxnalGroup/PrimitiveNodes.hh"
+#include "AutoFxnalGroup/DerivedNodes.hh"
+#include "AutoFxnalGroup/RingNodeTypes.hh"
+#include "AutoFxnalGroup/AminoAcidNodeTypes.hh"
 
+
+
+#endif /* SRC_LIB_LIBMOLECULE_AUTOFXNALGROUP_H_ */

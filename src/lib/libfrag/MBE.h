@@ -61,7 +61,7 @@ class MBE:public ExpanImplBase {
       ///Computes and returns the energy
       template <typename T>
       MBEProp<T> PropertyImpl(const LibMolecule::FragmentedSystem& Systems,
-            const MBEProp<T>& MonoProperties)const;
+            const MBEProp<T>& MonoProperties);
       bool IsGMBE() const {return false;}
 };
 
@@ -70,7 +70,7 @@ class MBE:public ExpanImplBase {
 
 template <typename T>
 MBEProp<T> MBE::PropertyImpl(const LibMolecule::FragmentedSystem& Systems,
-      const MBEProp<T>& MonoProperties)const {
+      const MBEProp<T>& MonoProperties) {
    typedef typename MBEProp<T>::const_iterator Itr_t;
    //This is the value of the property at all levels up to including N
    MBEProp<T> Value(N);
@@ -89,11 +89,11 @@ MBEProp<T> MBE::PropertyImpl(const LibMolecule::FragmentedSystem& Systems,
       Itr_t PropI=MonoProperties.begin(i),PropEnd=MonoProperties.end(i);
       MonoI=Systems.begin(i);
       for (; PropI!=PropEnd; ++PropI)
-         En.Change(i, Dummy, (*PropI)->second*Systems.Coef(i,(*MonoI)->GetSN()));
-      Value.Change(i, Dummy, NBodyProp(i+1, TrueNumMono, En)(0, 0));
+         En.Change(i, Dummy, PropI->second*Systems.Coef(i,(*MonoI)->GetSN()));
+      Value.Change(i, Dummy, NBodyProp(i+1, TrueNumMono, En)(0, Dummy));
       if (i==0) continue;
-      Corrs.Change(i, Dummy, Value(i,0));
-      Corrs.Change(i, Dummy, Value(i-1,0)*-1.0);
+      Corrs.Change(i, Dummy, Value(i,Dummy));
+      Corrs.Change(i, Dummy, Value(i-1,Dummy)*-1.0);
    }
    LastResult_=Value.PrintOut();
    return Value;

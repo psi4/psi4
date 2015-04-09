@@ -28,9 +28,15 @@ namespace LibMolecule{
 
 BSSEFactory::BSSEFactory(FragmentedSystem& Sys,uint Stop){
    NMers& DaNMers =Sys.GetNMers();
-   //FullBSSEer BSSEWizard;
-   VMFCn BSSEWizard;
-   BSSEWizard.CalcBSSE(DaNMers,Stop,1);
+   std::string Method=
+         psi::Process::environment.options["BSSE_METHOD"].to_string();
+   if(Method!="NONE"){
+      boost::shared_ptr<BSSEer> BSSEWizard;
+      if(Method=="FULL")
+         BSSEWizard=boost::shared_ptr<FullBSSEer>(new FullBSSEer());
+      else BSSEWizard=boost::shared_ptr<VMFCn>(new VMFCn());
+      BSSEWizard->CalcBSSE(DaNMers,Stop,1);
+   }
 }
 
 }}//End namespaces

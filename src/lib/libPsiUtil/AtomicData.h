@@ -31,7 +31,7 @@ namespace psi{
  *
  *  1)Declare an AtomicData object:
  *  \code
- *  Atomic Data CRC;
+ *  AtomicData CRC;
  *  \endcode
  *  2)Pick the element you want data for by Z not Z-1:
  *  \code
