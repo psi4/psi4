@@ -324,6 +324,10 @@ PsiReturnType ccdensity(Options& options)
 
       /*    add_core_UHF(&OutBuf_AA, &OutBuf_BB, &OutBuf_AB); */
       add_ref_UHF(&OutBuf_AA, &OutBuf_BB, &OutBuf_AB);
+
+      outfile->Printf( "  ==> Properties: Root %d <==\n\n", i);
+      dipole();
+
       dump_UHF(&OutBuf_AA, &OutBuf_BB, &OutBuf_AB, rho_params[i]);
 
       iwl_buf_flush(&OutBuf_AA, 1);
