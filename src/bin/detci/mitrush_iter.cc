@@ -37,7 +37,6 @@
 */
 
 #define EXTERN 
-/* #define DEBUG */
 
 #include <cstdlib>
 #include <cstdio>
@@ -62,7 +61,6 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
    std::string out);
 
 
-/* #define DEBUG */
 #define MITRUSH_E_DIFF_MIN 5.0E-6
 
 
