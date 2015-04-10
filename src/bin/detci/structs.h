@@ -377,10 +377,12 @@ struct params {
    int Ms0;          /* 1 if Ms=0, 0 otherwise */
    int ref_sym;      /* irrep for CI vectors;  -1 = find automatically */
    int opentype;     /* none, highspin, or open-shell singlet; see #define */
-   int a_ras1_lvl;   /* orbital number defining RAS I for alpha electrons */
+   int a_ras1_lvl;   /* orbital number defining RAS I for alpha electrons:
+                        any electrons at this level or lower are in RAS I */
    int a_ras1_min;   /* minimum number of alpha electrons in RAS I */
    int a_ras1_max;   /* maximum number of alpha electrons in RAS I */
-   int b_ras1_lvl;   /* orbital number defining RAS I for beta electrons */
+   int b_ras1_lvl;   /* orbital number defining RAS I for beta electrons:
+                        any electrons at this level or lower are in RAS I */
    int b_ras1_min;   /* minimum number of beta electrons in RAS I */
    int b_ras1_max;   /* maximum number of beta electrons in RAS I */
    int a_ras3_max;   /* maximum number of alpha electrons in RAS III */
@@ -391,7 +393,7 @@ struct params {
    int b_ras4_max;   /* maximum number of beta electrons in RAS IV */
    int cc_a_ras4_max;/* as above but for CC */
    int cc_b_ras4_max;/* as above but for CC */
-   int ras1_lvl;     /* orbital number defining RAS I overall */
+   int ras1_lvl;     /* Orbital number of the highest orbital in RAS I */
    int ras1_min;     /* currently min #e AT THE RAS I LEVEL (incl fzc) */
    int ras3_lvl;     /* orbital number defining RAS III overall */
    int ras4_lvl;     /* orbital number defining RAS IV overall */

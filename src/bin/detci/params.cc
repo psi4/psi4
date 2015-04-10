@@ -889,13 +889,13 @@ void print_parameters(void)
       Parameters.print_lvl, Parameters.fci ? "yes" : "no");
    if (Parameters.have_special_conv)
       outfile->Printf(
-         "   R CONV        =   %8.2g    MIXED        =   %6s\n",
+         "   R CONV         = %8.2g    MIXED        =   %6s\n",
          Parameters.special_conv, Parameters.mixed ? "yes" : "no");
    else
-      outfile->Printf( "   R CONV        =   %6.2e      MIXED        =   %6s\n",
+      outfile->Printf( "   R CONV        = %6.2e      MIXED        =   %6s\n",
          Parameters.convergence, Parameters.mixed ? "yes" : "no");
 
-   outfile->Printf( "   E CONV        =   %6.2e      MIXED4       =   %6s\n",
+   outfile->Printf( "   E CONV        = %6.2e      MIXED4       =   %6s\n",
       Parameters.energy_convergence, Parameters.mixed4 ? "yes" : "no");
    outfile->Printf( "   OEI FILE      =   %6d      R4S          =   %6s\n",
       Parameters.oei_file, Parameters.r4s ? "yes" : "no");
@@ -953,16 +953,16 @@ void print_parameters(void)
          break;
       }
 
-   outfile->Printf( "  UPDATE       =   ");
+   outfile->Printf( "  UPDATE       = ");
    switch (Parameters.update) {
      case 1:
-       outfile->Printf( "%6s\n", "DAVIDSON");
+       outfile->Printf("DAVIDSON\n");
        break;
      case 2:
-       outfile->Printf( "%6s\n", "OLSEN");
+       outfile->Printf("OLSEN\n");
        break;
      default:
-       outfile->Printf( "%6s\n", "???");
+       outfile->Printf("???\n");
        break;
       }
 
@@ -1010,25 +1010,25 @@ void print_parameters(void)
       outfile->Printf( "   REF SYM       =   %6d\n", Parameters.ref_sym);
 
    outfile->Printf( "   COLLAPSE SIZE =   %6d", Parameters.collapse_size);
-   outfile->Printf( "      HD AVG       =");
+   outfile->Printf( "      HD AVG       = ");
    switch (Parameters.hd_ave) {
      case HD_EXACT:
-       outfile->Printf(" %11s\n", "HD_EXACT");
+       outfile->Printf("HD_EXACT\n");
        break;
      case HD_KAVE:
-       outfile->Printf(" %11s\n", "HD_KAVE");
+       outfile->Printf("HD_KAVE\n");
        break;
      case ORB_ENER:
-       outfile->Printf(" %11s\n", "ORB_ENER");
+       outfile->Printf("ORB_ENER\n");
        break;
      case EVANGELISTI:
-       outfile->Printf(" %11s\n", "EVANGELISTI");
+       outfile->Printf("EVANGELISTI\n");
        break;
      case LEININGER:
-       outfile->Printf(" %11s\n", "LEININGER");
+       outfile->Printf("LEININGER\n");
        break;
      default:
-       outfile->Printf(" %11s\n", "???");
+       outfile->Printf("???\n");
        break;
      }
 
@@ -1040,11 +1040,11 @@ void print_parameters(void)
            Parameters.mpn ? "yes":"no", Parameters.mpn_schmidt ? "yes":"no");
    outfile->Printf( "   ZAPTN         =   %6s      MPN WIGNER   =   %6s\n",
            Parameters.zaptn ? "yes":"no", Parameters.wigner ? "yes":"no");
-   outfile->Printf( "   PERT Z        =   %1.4f    FOLLOW ROOT  =   %6d\n",
+   outfile->Printf( "   PERT Z        =   %1.4f      FOLLOW ROOT  =   %6d\n",
            Parameters.perturbation_parameter, Parameters.root);
    outfile->Printf( "   NUM THREADS   =   %6d\n",
            Parameters.nthreads);
-   outfile->Printf( "   VECS WRITE    =   %6s      NUM VECS WRITE =   %6d\n",
+   outfile->Printf( "   VECS WRITE    =   %6s      NUM VECS WRITE = %6d\n",
            Parameters.export_ci_vector ? "yes":"no", Parameters.num_export);
    outfile->Printf( "   FILTER GUESS  =   %6s      SF RESTRICT  =   %6s\n",
            Parameters.filter_guess ?  "yes":"no",
@@ -1542,30 +1542,45 @@ void print_ras_parms(void)
   }
 
   outfile->Printf( "\n");
-  outfile->Printf( "   DOCC         = ") ;
+  outfile->Printf( "   DOCC            = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
     outfile->Printf( "%2d ", CalcInfo.docc[i]) ;
   }
-  outfile->Printf( "\n   SOCC         = ") ;
+  outfile->Printf( "\n   SOCC            = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
     outfile->Printf( "%2d ", CalcInfo.socc[i]) ;
   }
-  outfile->Printf( "\n   FROZEN DOCC  = ") ;
+  outfile->Printf("\n");
+  outfile->Printf( "\n   FROZEN DOCC     = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
     outfile->Printf( "%2d ", CalcInfo.frozen_docc[i]) ;
   }
-  outfile->Printf( "\n   FROZEN UOCC  = ") ;
+  /*
+  outfile->Printf( "\n");
+  outfile->Printf( "\n   RESTRICTED DOCC = ");
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.frozen_uocc[i]) ;
+    outfile->Printf( "%2d ", CalcInfo.restricted_docc[i]) ;
   }
+  */
   outfile->Printf( "\n");
   for (i=0; i<4; i++) {
-    outfile->Printf( "   RAS %d        = ",i+1);
+    outfile->Printf( "   RAS %d           = ",i+1);
     for (j=0; j<CalcInfo.nirreps; j++) {
       outfile->Printf("%2d ",CalcInfo.ras_opi[i][j]);
     }
     outfile->Printf( "\n");
   }
+  /*
+  outfile->Printf( "\n   RESTRICTED UOCC = ") ;
+  for (i=0; i<CalcInfo.nirreps; i++) {
+    outfile->Printf( "%2d ", CalcInfo.restricted_uocc[i]) ;
+  }
+  */
+  outfile->Printf( "   FROZEN UOCC     = ") ;
+  for (i=0; i<CalcInfo.nirreps; i++) {
+    outfile->Printf( "%2d ", CalcInfo.frozen_uocc[i]) ;
+  }
+  outfile->Printf("\n");
 
   outfile->Printf(
      "*******************************************************\n\n");

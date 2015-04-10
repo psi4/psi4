@@ -59,8 +59,6 @@ extern void print_ci_space(struct stringwr *strlist, int num_strings,
 extern void str_abs2rel(int absidx, int *relidx, int *listnum,
    struct olsen_graph *Graph);
 
-//#define DEBUG  
-
 /* FUNCTION PROTOTYPES for this module */
 void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el, 
    int nirreps, int *orbsym, int ras1_lvl, int ras1_min, int ras1_max, 
@@ -258,11 +256,11 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
    struct stringgraph *sgptr;
 
 
-   #ifdef DEBUG
-   outfile->Printf( "ras1_lvl = %d   ras1_min = %d  ras1_max = %d\n",
-      ras1_lvl, ras1_min, ras1_max) ;
-   outfile->Printf( "ras3_lvl = %d   ras3_max = %d\n", ras3_lvl, ras3_max) ;
-   #endif
+   if (Parameters.print_lvl > 3) {
+     outfile->Printf( "ras1_lvl = %d   ras1_min = %d  ras1_max = %d\n",
+        ras1_lvl, ras1_min, ras1_max) ;
+     outfile->Printf( "ras3_lvl = %d   ras3_max = %d\n", ras3_lvl, ras3_max) ;
+   }
 
    // Go ahead and set the occupations of the frozen orbs 
    occs = init_int_array(num_el) ;
@@ -407,11 +405,11 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
             if (Parameters.r4s && n4 >= 2 && n1max - n1 > Parameters.ex_lvl) 
                continue;
 
-            #ifdef DEBUG
-            outfile->Printf( "n1 = %d, n2 = %d, n3 = %d, n4 = %d\n", 
-               n1, n2, n3, n4) ;
-            if (n2 < 0) printf("Error: n2 < 0 in form_strings()\n") ;
-            #endif
+            if (Parameters.print_lvl > 4) {
+              outfile->Printf( "n1 = %d, n2 = %d, n3 = %d, n4 = %d\n", 
+                 n1, n2, n3, n4) ;
+              if (n2 < 0) printf("Error: n2 < 0 in form_strings()\n") ;
+            }
 
             Ras2.resize(n2) ;
             Ras4.resize(n4) ; 
@@ -440,11 +438,11 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
                            occs[j++] = array4[i] ;
                         
                         // print out occupations for debugging
-                        #ifdef DEBUG
-                        for (i=0; i<num_el - num_fzc_orbs; i++) 
-                           outfile->Printf( "%2d ", occs[i]) ;
-                        outfile->Printf( "\n") ;
-                        #endif
+                        if (Parameters.print_lvl > 4) {
+                          for (i=0; i<num_el - num_fzc_orbs; i++) 
+                             outfile->Printf( "%2d ", occs[i]) ;
+                          outfile->Printf( "\n") ;
+                        }
                   
                         // add this walk to the graph
                         og_add_walk(n1-n1min, n3, n4, occs, 

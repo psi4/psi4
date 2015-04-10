@@ -33,7 +33,6 @@
 ** Last modified by MLL on 25 November 1997
 */
 
-/* #define DEBUG */
 
 #include <cstdio>
 #include <cstdlib>
@@ -609,10 +608,10 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
       Lvec[iter2] = L;
 
-      #ifdef DEBUG
-      outfile->Printf( "L[cur] = %3d, L[last] = %3d\n", L,
-        iter2 > 0 ? Lvec[iter2-1] : 999);
-      #endif
+      if (Parameters.print_lvl > 2) {
+        outfile->Printf( "L[cur] = %3d, L[last] = %3d\n", L,
+          iter2 > 0 ? Lvec[iter2-1] : 999);
+      }
 
       /* form contributions to the G matrix */
       Cvec.buf_lock(buffer1);
@@ -867,10 +866,10 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        Dvec2.buf_unlock();
        L2 = L3 = nroots;
 
-       #ifdef DEBUG
-       outfile->Printf( "Gathered vectors 0 to %d and wrote to positions \
-          %d to %d\n", L-1, maxnvect-nroots, maxnvect-1);
-       #endif
+       if (Parameters.print_lvl > 2) {
+         outfile->Printf( "Gathered vectors 0 to %d and wrote to positions \
+            %d to %d\n", L-1, maxnvect-nroots, maxnvect-1);
+       }
 
        for (i=1; i<Parameters.collapse_size; i++) {
 
@@ -941,9 +940,9 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         L = L2;
         Llast = L;
         iter2 = 0;  Lvec[0] = L;
-        #ifdef DEBUG
-        outfile->Printf( "L = %d, L2 = %d, L3 = %d\n",L, L2, L3);
-        #endif
+        if (Parameters.print_lvl > 2) {
+          outfile->Printf( "L = %d, L2 = %d, L3 = %d\n",L, L2, L3);
+        }
 
         /* write file_offset and file_number array out to detci.dat */
     /*

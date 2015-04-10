@@ -25,8 +25,6 @@
     \brief Enter brief description of file here 
 */
 
-/* #define DEBUG */
-
 #define EXTERN
 
 #include <cstdio>
@@ -829,12 +827,12 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
 
           scfvec = chkpt_rd_scf_irrep(irrep);
 
-            #ifdef DEBUG
-            outfile->Printf("Cvec for k==0, read in from chkpt original\n");
-            outfile->Printf(" %s Block \n", CalcInfo.labels[irrep]);
-            print_mat(scfvec, CalcInfo.orbs_per_irr[irrep],
-                      CalcInfo.orbs_per_irr[irrep], "outfile");
-            #endif
+            if (Parameters.print_lvl > 3) {
+              outfile->Printf("Cvec for k==0, read in from chkpt original\n");
+              outfile->Printf(" %s Block \n", CalcInfo.labels[irrep]);
+              print_mat(scfvec, CalcInfo.orbs_per_irr[irrep],
+                        CalcInfo.orbs_per_irr[irrep], "outfile");
+            }
 
           sprintf(opdm_key, "Old SCF Matrix Irrep %d", irrep);
           psio_write_entry(targetfile, opdm_key, (char *) scfvec[0],
@@ -921,16 +919,16 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
             CalcInfo.orbs_per_irr[irrep] * CalcInfo.orbs_per_irr[irrep] *
             sizeof(double));
 
-          #ifdef DEBUG
-          outfile->Printf("\nCvec read for MO to SO trans\n\n");
-          outfile->Printf(" %s Block \n", CalcInfo.labels[irrep]);
-          print_mat(scfvec, CalcInfo.orbs_per_irr[irrep],
+          if (Parameters.print_lvl > 3) {
+            outfile->Printf("\nCvec read for MO to SO trans\n\n");
+            outfile->Printf(" %s Block \n", CalcInfo.labels[irrep]);
+            print_mat(scfvec, CalcInfo.orbs_per_irr[irrep],
+                      CalcInfo.orbs_per_irr[irrep], "outfile");
+            outfile->Printf("\nOpdm_eigvec before MO to SO trans\n\n");
+            outfile->Printf(" %s Block \n", CalcInfo.labels[irrep]);
+            print_mat(opdm_eigvec, CalcInfo.orbs_per_irr[irrep],
                     CalcInfo.orbs_per_irr[irrep], "outfile");
-          outfile->Printf("\nOpdm_eigvec before MO to SO trans\n\n");
-          outfile->Printf(" %s Block \n", CalcInfo.labels[irrep]);
-          print_mat(opdm_eigvec, CalcInfo.orbs_per_irr[irrep],
-                    CalcInfo.orbs_per_irr[irrep], "outfile");
-          #endif
+          }
           mmult(scfvec, 0, opdm_eigvec, 0, opdm_blk, 0,
                 CalcInfo.so_per_irr[irrep], CalcInfo.orbs_per_irr[irrep],
                 CalcInfo.orbs_per_irr[irrep], 0); 

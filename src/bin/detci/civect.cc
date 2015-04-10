@@ -2995,34 +2995,34 @@ void sigma_get_contrib(struct stringwr **alplist, struct stringwr **betlist,
          } /* end loop over c blocks */
       } /* end loop over sigma blocks */
 
-   #ifdef DEBUG
-   printf("\nSigma 1:\n");
-   for (i=0; i<S.num_blocks; i++) {
-     outfile->Printf( "Contributions to sigma block %d\n", i);
-     for (j=0; j<C.num_blocks; j++) {
-       if (s1_contrib[i][j]) outfile->Printf( "%3d ", j);
+   if (Parameters.print_lvl > 4) {
+     printf("\nSigma 1:\n");
+     for (i=0; i<S.num_blocks; i++) {
+       outfile->Printf( "Contributions to sigma block %d\n", i);
+       for (j=0; j<C.num_blocks; j++) {
+         if (s1_contrib[i][j]) outfile->Printf( "%3d ", j);
+       }
+       outfile->Printf( "\n");
      }
-     outfile->Printf( "\n");
-   }
 
-   printf("\n\nSigma 2:\n");
-   for (i=0; i<S.num_blocks; i++) {
-     outfile->Printf( "Contributions to sigma block %d\n", i);
-     for (j=0; j<C.num_blocks; j++) {
-       if (s2_contrib[i][j]) outfile->Printf( "%3d ", j);
+     printf("\n\nSigma 2:\n");
+     for (i=0; i<S.num_blocks; i++) {
+       outfile->Printf( "Contributions to sigma block %d\n", i);
+       for (j=0; j<C.num_blocks; j++) {
+         if (s2_contrib[i][j]) outfile->Printf( "%3d ", j);
+       }
+       outfile->Printf( "\n");
      }
-     outfile->Printf( "\n");
-   }
 
-   printf("\n\nSigma 3:\n");
-   for (i=0; i<S.num_blocks; i++) {
-     outfile->Printf( "Contributions to sigma block %d\n", i);
-     for (j=0; j<C.num_blocks; j++) {
-       if (s3_contrib[i][j]) outfile->Printf( "%3d ", j);
+     printf("\n\nSigma 3:\n");
+     for (i=0; i<S.num_blocks; i++) {
+       outfile->Printf( "Contributions to sigma block %d\n", i);
+       for (j=0; j<C.num_blocks; j++) {
+         if (s3_contrib[i][j]) outfile->Printf( "%3d ", j);
+       }
+       outfile->Printf( "\n");
      }
-     outfile->Printf( "\n");
    }
-   #endif
 
 }
 
@@ -3567,34 +3567,34 @@ void sigma_get_contrib_rotf(CIvect &C, CIvect &S,
          } /* end loop over c blocks */
       } /* end loop over sigma blocks */
 
-   #ifdef DEBUG
-   printf("\nSigma 1:\n");
-   for (i=0; i<S.num_blocks; i++) {
-     outfile->Printf( "Contributions to sigma block %d\n", i);
-     for (j=0; j<C.num_blocks; j++) {
-       if (s1_contrib[i][j]) outfile->Printf( "%3d ", j);
+   if (Parameters.print_lvl > 3) {
+     printf("\nSigma 1:\n");
+     for (i=0; i<S.num_blocks; i++) {
+       outfile->Printf( "Contributions to sigma block %d\n", i);
+       for (j=0; j<C.num_blocks; j++) {
+         if (s1_contrib[i][j]) outfile->Printf( "%3d ", j);
+       }
+       outfile->Printf( "\n");
      }
-     outfile->Printf( "\n");
-   }
 
-   printf("\n\nSigma 2:\n");
-   for (i=0; i<S.num_blocks; i++) {
-     outfile->Printf( "Contributions to sigma block %d\n", i);
-     for (j=0; j<C.num_blocks; j++) {
-       if (s2_contrib[i][j]) outfile->Printf( "%3d ", j);
+     printf("\n\nSigma 2:\n");
+     for (i=0; i<S.num_blocks; i++) {
+       outfile->Printf( "Contributions to sigma block %d\n", i);
+       for (j=0; j<C.num_blocks; j++) {
+         if (s2_contrib[i][j]) outfile->Printf( "%3d ", j);
+       }
+       outfile->Printf( "\n");
      }
-     outfile->Printf( "\n");
-   }
 
-   printf("\n\nSigma 3:\n");
-   for (i=0; i<S.num_blocks; i++) {
-     outfile->Printf( "Contributions to sigma block %d\n", i);
-     for (j=0; j<C.num_blocks; j++) {
-       if (s3_contrib[i][j]) outfile->Printf( "%3d ", j);
+     printf("\n\nSigma 3:\n");
+     for (i=0; i<S.num_blocks; i++) {
+       outfile->Printf( "Contributions to sigma block %d\n", i);
+       for (j=0; j<C.num_blocks; j++) {
+         if (s3_contrib[i][j]) outfile->Printf( "%3d ", j);
+       }
+       outfile->Printf( "\n");
      }
-     outfile->Printf( "\n");
    }
-   #endif
 
 }
 
@@ -3620,14 +3620,14 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2,
    buf_lock(buffer1);
    read(vec_num, 0);
 
-   #ifdef DEBUG
-   for (i=0; i<num_blocks; i++) {
-      ket_nas = Ia_size[i];
-      ket_nbs = Ib_size[i];
-      if (ket_nas==0 || ket_nbs==0) continue;
-      print_mat(blocks[i], ket_nas, ket_nbs, "outfile");
-      }
-   #endif
+   if (Parameters.print_lvl > 4) {
+     for (i=0; i<num_blocks; i++) {
+        ket_nas = Ia_size[i];
+        ket_nbs = Ib_size[i];
+        if (ket_nas==0 || ket_nbs==0) continue;
+        print_mat(blocks[i], ket_nas, ket_nbs, "outfile");
+     }
+   }
 
    /* loop over ket blocks of c */
    for (ket_block=0; ket_block<num_blocks; ket_block++) {
@@ -3648,21 +3648,21 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2,
          tval2 = ssq(alplist[ket_ac], betlist[ket_bc], blocks[bra_block],
                    blocks[ket_block], ket_nas, ket_nbs, bra_ac, bra_bc);
          tval += tval2;
-         #ifdef DEBUG
-         outfile->Printf("\nbra_block = %d\n",bra_block);
-         outfile->Printf("ket_block = %d\n",ket_block);
-         outfile->Printf("Contribution to <S_S+> = %lf\n",tval2);
-         #endif
-         } /* end loop over bra_blocks */
+         if (Parameters.print_lvl > 4) {
+           outfile->Printf("\nbra_block = %d\n",bra_block);
+           outfile->Printf("ket_block = %d\n",ket_block);
+           outfile->Printf("Contribution to <S_S+> = %lf\n",tval2);
+         }
+       } /* end loop over bra_blocks */
 
     } /* end loop over ket_block */
 
     Ms = 0.5 * (CalcInfo.num_alp_expl - CalcInfo.num_bet_expl);
-    #ifdef DEBUG
-    outfile->Printf("\n\n<S_z> = %lf\n", Ms);
-    outfile->Printf("<S_z>^2 = %lf\n", Ms*Ms);
-    outfile->Printf("<S_S+> = %lf\n", tval);
-    #endif
+    if (Parameters.print_lvl > 1) {
+      outfile->Printf("\n\n<S_z> = %lf\n", Ms);
+      outfile->Printf("<S_z>^2 = %lf\n", Ms*Ms);
+      outfile->Printf("<S_S+> = %lf\n", tval);
+    }
     S2 = CalcInfo.num_bet_expl + tval + Ms + Ms*Ms;
 
     outfile->Printf("Computed <S^2> vector %d = %20.15f\n\n", vec_num, S2);
