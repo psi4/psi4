@@ -108,10 +108,10 @@ procedures = {
             'ccsd'          : run_ccenergy,
             'ccsd(t)'       : run_ccenergy,
             'ccsd(at)'      : run_ccenergy,
-            'a-ccsd(t)'      : run_ccenergy,
+            'a-ccsd(t)'     : run_ccenergy,
             'cc2'           : run_ccenergy,
             'cc3'           : run_ccenergy,
-            'mrcc'          : run_mrcc,      # interface to Kallay's MRCC program
+            'mrcc'          : run_mrcc,  # interface to Kallay's MRCC program
             'bccd'          : run_bccd,
             'bccd(t)'       : run_bccd_t,
             'eom-ccsd'      : run_eom_cc,
@@ -648,7 +648,7 @@ def gradient(name, **kwargs):
     elif (dertype == 0) and not(func is energy):
         pass
     else:
-        alternatives = ""
+        alternatives = ''
         alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['gradient'].keys(), 2)
         if len(alt_lowername) > 0:
             alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
@@ -658,7 +658,7 @@ def gradient(name, **kwargs):
     # no analytic derivatives for scf_type cd
     if psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
         if (dertype == 1):
-            raise ValidationError('No analytic derivatives for SCF_TYPE CD.')
+            raise ValidationError("""No analytic derivatives for SCF_TYPE CD.""")
 
     # Make sure the molecule the user provided is the active one
     if ('molecule' in kwargs):
@@ -955,7 +955,7 @@ def property(name, **kwargs):
     return returnvalue
 
 
-##  Aliases  ##
+# Aliases
 prop = property
 
 
@@ -1101,10 +1101,10 @@ def optimize(name, **kwargs):
         mol.update_geometry()
         current_sym = mol.schoenflies_symbol()
         if initial_sym != current_sym:
-            raise Exception("Point group changed!  You should restart using " +\
-                            "the last geometry in the output, after carefully " +\
-                            "making sure all symmetry-dependent information in " +\
-                            "the input, such as DOCC, is correct.")
+            raise Exception("""Point group changed!  You should restart using """
+                            """the last geometry in the output, after carefully """
+                            """making sure all symmetry-dependent information in """
+                            """the input, such as DOCC, is correct.""")
         kwargs['opt_iter'] = n
 
         # Use orbitals from previous iteration as a guess
@@ -1197,7 +1197,7 @@ def optimize(name, **kwargs):
     optstash.restore()
     return 0.0
 
-##  Aliases  ##
+# Aliases
 opt = optimize
 
 
@@ -1220,36 +1220,36 @@ def parse_arbitrary_order(name):
 
         # A negative order indicates perturbative method
         methods = {
-            'sd'          : { 'method' : 1, 'order' :  2, 'fullname' : 'CCSD'         },
-            'sdt'         : { 'method' : 1, 'order' :  3, 'fullname' : 'CCSDT'        },
-            'sdtq'        : { 'method' : 1, 'order' :  4, 'fullname' : 'CCSDTQ'       },
-            'sdtqp'       : { 'method' : 1, 'order' :  5, 'fullname' : 'CCSDTQP'      },
-            'sdtqph'      : { 'method' : 1, 'order' :  6, 'fullname' : 'CCSDTQPH'     },
-            'sd(t)'       : { 'method' : 3, 'order' : -3, 'fullname' : 'CCSD(T)'      },
-            'sdt(q)'      : { 'method' : 3, 'order' : -4, 'fullname' : 'CCSDT(Q)'     },
-            'sdtq(p)'     : { 'method' : 3, 'order' : -5, 'fullname' : 'CCSDTQ(P)'    },
-            'sdtqp(h)'    : { 'method' : 3, 'order' : -6, 'fullname' : 'CCSDTQP(H)'   },
-            'sd(t)_l'     : { 'method' : 4, 'order' : -3, 'fullname' : 'CCSD(T)_L'    },
-            'sdt(q)_l'    : { 'method' : 4, 'order' : -4, 'fullname' : 'CCSDT(Q)_L'   },
-            'sdtq(p)_l'   : { 'method' : 4, 'order' : -5, 'fullname' : 'CCSDTQ(P)_L'  },
-            'sdtqp(h)_l'  : { 'method' : 4, 'order' : -6, 'fullname' : 'CCSDTQP(H)_L' },
-            'sdt-1a'      : { 'method' : 5, 'order' :  3, 'fullname' : 'CCSDT-1a'     },
-            'sdtq-1a'     : { 'method' : 5, 'order' :  4, 'fullname' : 'CCSDTQ-1a'    },
-            'sdtqp-1a'    : { 'method' : 5, 'order' :  5, 'fullname' : 'CCSDTQP-1a'   },
-            'sdtqph-1a'   : { 'method' : 5, 'order' :  6, 'fullname' : 'CCSDTQPH-1a'  },
-            'sdt-1b'      : { 'method' : 6, 'order' :  3, 'fullname' : 'CCSDT-1b'     },
-            'sdtq-1b'     : { 'method' : 6, 'order' :  4, 'fullname' : 'CCSDTQ-1b'    },
-            'sdtqp-1b'    : { 'method' : 6, 'order' :  5, 'fullname' : 'CCSDTQP-1b'   },
-            'sdtqph-1b'   : { 'method' : 6, 'order' :  6, 'fullname' : 'CCSDTQPH-1b'  },
-            '2'           : { 'method' : 7, 'order' :  2, 'fullname' : 'CC2'          },
-            '3'           : { 'method' : 7, 'order' :  3, 'fullname' : 'CC3'          },
-            '4'           : { 'method' : 7, 'order' :  4, 'fullname' : 'CC4'          },
-            '5'           : { 'method' : 7, 'order' :  5, 'fullname' : 'CC5'          },
-            '6'           : { 'method' : 7, 'order' :  6, 'fullname' : 'CC6'          },
-            'sdt-3'       : { 'method' : 8, 'order' :  3, 'fullname' : 'CCSDT-3'      },
-            'sdtq-3'      : { 'method' : 8, 'order' :  4, 'fullname' : 'CCSDTQ-3'     },
-            'sdtqp-3'     : { 'method' : 8, 'order' :  5, 'fullname' : 'CCSDTQP-3'    },
-            'sdtqph-3'    : { 'method' : 8, 'order' :  6, 'fullname' : 'CCSDTQPH-3'   }
+            'sd'          : { 'method': 1, 'order':  2, 'fullname': 'CCSD'         },
+            'sdt'         : { 'method': 1, 'order':  3, 'fullname': 'CCSDT'        },
+            'sdtq'        : { 'method': 1, 'order':  4, 'fullname': 'CCSDTQ'       },
+            'sdtqp'       : { 'method': 1, 'order':  5, 'fullname': 'CCSDTQP'      },
+            'sdtqph'      : { 'method': 1, 'order':  6, 'fullname': 'CCSDTQPH'     },
+            'sd(t)'       : { 'method': 3, 'order': -3, 'fullname': 'CCSD(T)'      },
+            'sdt(q)'      : { 'method': 3, 'order': -4, 'fullname': 'CCSDT(Q)'     },
+            'sdtq(p)'     : { 'method': 3, 'order': -5, 'fullname': 'CCSDTQ(P)'    },
+            'sdtqp(h)'    : { 'method': 3, 'order': -6, 'fullname': 'CCSDTQP(H)'   },
+            'sd(t)_l'     : { 'method': 4, 'order': -3, 'fullname': 'CCSD(T)_L'    },
+            'sdt(q)_l'    : { 'method': 4, 'order': -4, 'fullname': 'CCSDT(Q)_L'   },
+            'sdtq(p)_l'   : { 'method': 4, 'order': -5, 'fullname': 'CCSDTQ(P)_L'  },
+            'sdtqp(h)_l'  : { 'method': 4, 'order': -6, 'fullname': 'CCSDTQP(H)_L' },
+            'sdt-1a'      : { 'method': 5, 'order':  3, 'fullname': 'CCSDT-1a'     },
+            'sdtq-1a'     : { 'method': 5, 'order':  4, 'fullname': 'CCSDTQ-1a'    },
+            'sdtqp-1a'    : { 'method': 5, 'order':  5, 'fullname': 'CCSDTQP-1a'   },
+            'sdtqph-1a'   : { 'method': 5, 'order':  6, 'fullname': 'CCSDTQPH-1a'  },
+            'sdt-1b'      : { 'method': 6, 'order':  3, 'fullname': 'CCSDT-1b'     },
+            'sdtq-1b'     : { 'method': 6, 'order':  4, 'fullname': 'CCSDTQ-1b'    },
+            'sdtqp-1b'    : { 'method': 6, 'order':  5, 'fullname': 'CCSDTQP-1b'   },
+            'sdtqph-1b'   : { 'method': 6, 'order':  6, 'fullname': 'CCSDTQPH-1b'  },
+            '2'           : { 'method': 7, 'order':  2, 'fullname': 'CC2'          },
+            '3'           : { 'method': 7, 'order':  3, 'fullname': 'CC3'          },
+            '4'           : { 'method': 7, 'order':  4, 'fullname': 'CC4'          },
+            '5'           : { 'method': 7, 'order':  5, 'fullname': 'CC5'          },
+            '6'           : { 'method': 7, 'order':  6, 'fullname': 'CC6'          },
+            'sdt-3'       : { 'method': 8, 'order':  3, 'fullname': 'CCSDT-3'      },
+            'sdtq-3'      : { 'method': 8, 'order':  4, 'fullname': 'CCSDTQ-3'     },
+            'sdtqp-3'     : { 'method': 8, 'order':  5, 'fullname': 'CCSDTQP-3'    },
+            'sdtqph-3'    : { 'method': 8, 'order':  6, 'fullname': 'CCSDTQPH-3'   }
         }
 
         # looks for 'sdt(q)' in dictionary
@@ -1447,10 +1447,6 @@ def hessian(name, **kwargs):
 
         ndisp = len(displacements)
         print(' %d displacements needed.' % ndisp)
-
-        #print displacements to output.dat
-        #for n, displacement in enumerate(displacements):
-        #  displacement.print_out();
 
         gradients = []
         for n, displacement in enumerate(displacements):
@@ -1722,7 +1718,7 @@ def frequency(name, **kwargs):
     #TODO add return current energy once satisfied that's set to energy at eq, not a findif
     return psi4.get_variable('CURRENT ENERGY')
 
-##  Aliases  ##
+# Aliases
 frequencies = frequency
 freq = frequency
 
@@ -1827,33 +1823,41 @@ def writeCSX(name, **kwargs):
     """function to write the CSX file
 
     """
-#import csx_api for csx writing
+    # import csx_api for csx writing
     import os
     import math
     import inspect
     import openbabel
     import qcdb
     import qcdb.periodictable
-# Make sure the molecule the user provided is the active one
+    # Make sure the molecule the user provided is the active one
     if ('molecule' in kwargs):
         activate(kwargs['molecule'])
         del kwargs['molecule']
     molecule = psi4.get_active_molecule()
     molecule.update_geometry()
-# Determine the derivative type
+    # Determine the derivative type
     calledby = inspect.stack()[1][3]
-    dertype = ['energy', 'gradient', 'frequency'].index(calledby)
-#Start to write the CSX file
-#First grab molecular information and energies from psi4
+    derdict = {
+        'energy': 0,
+        'property': 0,
+        'gradient': 1,
+        'optimize': 1,
+        'frequency': 2,
+        'hessian': 2,
+        }
+    dertype = derdict[calledby]
+    # Start to write the CSX file
+    # First grab molecular information and energies from psi4
     geom = molecule.save_string_xyz()
     atomLine = geom.split('\n')
 
-#general moleculer information
+    # general molecular information
     atomNum = molecule.natom()
     molSym = molecule.schoenflies_symbol()
     molCharge = molecule.molecular_charge()
     molMulti = molecule.multiplicity()
-#energy information
+    # energy information
     molBasis = psi4.get_global_option('BASIS')
     molSpin = psi4.get_global_option('REFERENCE')
     molMethod = psi4.get_global_option('WFN')
@@ -1862,7 +1866,7 @@ def writeCSX(name, **kwargs):
     molNE = psi4.get_variable('NUCLEAR REPULSION ENERGY')
     molPE = mol1E + mol2E
     molEE = psi4.get_variable('CURRENT ENERGY')
-#wavefunction information
+    # wavefunction information
     molOrbE = psi4.wavefunction().epsilon_a()
     molOrbEb = psi4.wavefunction().epsilon_b()
     orbNmopi = psi4.wavefunction().nmopi()
@@ -1915,7 +1919,7 @@ def writeCSX(name, **kwargs):
             orbCa.append(orbEle)
         orbCaString.append(' '.join(str(x) for x in orbCa))
     orbEString = ' '.join(str(x) for x in sorted(orbE))
-# now for beta spin
+    # now for beta spin
     if not wfnRestricted:
         count = 0
         for ih in range(orbNirrep):
@@ -1924,7 +1928,8 @@ def writeCSX(name, **kwargs):
                 orblist.append(iorb)
                 orbEb.append(molOrbEb.get(count))
                 eleNum = 1 if iorb < (orbDoccpi.__getitem__(ih) + orbSoccpi.__getitem__(ih)) else 0
-                eleNum += eleExtra if iorb < orbDoccpi.__getitem__(ih) else 0
+                if iorb < orbDoccpi.__getitem__(ih):
+                    eleNum += eleExtra
                 orbOccCb.append(eleNum)
                 count += 1
         orbMosCb = sorted(zip(orbEb, zip(hlist, orblist)))
@@ -1938,8 +1943,8 @@ def writeCSX(name, **kwargs):
                 orbCb.append(orbEle)
             orbCbString.append(' '.join(str(x) for x in orbCb))
         orbEbString = ' '.join(str(x) for x in sorted(orbEb))
-#   orbColString = ' '.join(str(x) for x in orbCol)
-#frequency information
+    #   orbColString = ' '.join(str(x) for x in orbCol)
+    # frequency information
     if dertype == 2:
         molFreq = psi4.get_frequencies()
         molFreqNum = molFreq.dim(0)
@@ -1963,36 +1968,44 @@ def writeCSX(name, **kwargs):
     molDipoleX = psi4.get_variable('CURRENT DIPOLE X')
     molDipoleY = psi4.get_variable('CURRENT DIPOLE Y')
     molDipoleZ = psi4.get_variable('CURRENT DIPOLE Z')
-    molDipoleTot = math.sqrt(molDipoleX*molDipoleX+molDipoleY*molDipoleY+molDipoleZ*molDipoleZ)
+    molDipoleTot = math.sqrt(
+        molDipoleX * molDipoleX +
+        molDipoleY * molDipoleY +
+        molDipoleZ * molDipoleZ)
 
-#get the basename for the CSX file
+    # get the basename for the CSX file
     psio = psi4.IO.shared_object()
     namespace = psio.get_default_namespace()
-    pid = str(os.getpid())
-    csxfile = open(namespace + '.' + pid + '.csx', 'w')
+    #csxfilename = '.'.join([namespace, str(os.getpid()), 'csx'])
+    csxfilename = os.path.splitext(psi4.outfile_name())[0] + '.csx'
+    csxfile = open(csxfilename, 'w')
     csxVer = psi4.get_global_option('CSX_VERSION')
-#Start to generate CSX elements
+    # Start to generate CSX elements
     if csxVer == 0:
         import csx0_api.py as api
         cs1 = api.csType()
 
-#molPublication section
-        mp1 = api.mpType(publicationTitle=psi4.get_global_option('publicationTitle'), \
-                publicationAbstract=psi4.get_global_option('publicationAbstract'), \
-                publicationSource='Psi4', \
-                publicationStatus=psi4.get_global_option('publicationStatus'), \
-                publicationCategory=psi4.get_global_option('publicationCategory'), \
-                publicationVisibility=psi4.get_global_option('publicationVisibility'), \
-                publicationKey=psi4.get_global_option('publicationKey'))
-        ath1 = api.authorType(name=psi4.get_global_option('correspondingAuthor'), \
-                organization=psi4.get_global_option('organization'), \
-                email=psi4.get_global_option('email').replace('__', '@'))
+        # molPublication section: 0
+        mp1 = api.mpType(
+            publicationTitle=psi4.get_global_option('PUBLICATIONTITLE'),
+            publicationAbstract=psi4.get_global_option('PUBLICATIONABSTRACT'),
+            publicationSource='Psi4',
+            publicationStatus=psi4.get_global_option('PUBLICATIONSTATUS'),
+            publicationCategory=psi4.get_global_option('PUBLICATIONCATEGORY'),
+            publicationVisibility=psi4.get_global_option('PUBLICATIONVISIBILITY'),
+            publicationKey=psi4.get_global_option('PUBLICATIONKEY'))
+        ath1 = api.authorType(
+            name=psi4.get_global_option('CORRESPONDINGAUTHOR'),
+            organization=psi4.get_global_option('ORGANIZATION'),
+            email=psi4.get_global_option('EMAIL').replace('__', '@'))
         mp1.set_correspondingAuthor(ath1)
         cs1.set_molecularPublication(mp1)
 
-#molSystem section
-        ms1 = api.msType(systemTemperature=298.0, systemCharge=molCharge, \
-                         systemMultiplicity=molMulti)
+        # molSystem section: 0
+        ms1 = api.msType(
+            systemTemperature=298.0,
+            systemCharge=molCharge,
+            systemMultiplicity=molMulti)
         mol1 = api.moleculeType(id='m1', numberAtoms=atomNum)
         obmol1 = openbabel.OBMol()
         for iatm in range(atomNum):
@@ -2016,20 +2029,24 @@ def writeCSX(name, **kwargs):
         iatm = 0
         for obatom in openbabel.OBMolAtomIter(obmol1):
             atmSymbol = qcdb.periodictable.z2el[obatom.GetAtomicNum()]
-            atm = api.atomType(id='a' + str(iatm + 1), element=atmSymbol, \
-                               atomMass=obatom.GetAtomicMass(), \
-                               xCoord3D=obatom.GetX(), \
-                               yCoord3D=obatom.GetY(), \
-                               zCoord3D=obatom.GetZ(), \
-                               basisSet='cs:' + molBasis, \
-                               calculatedAtomCharge=0, \
-                               formalAtomCharge=0)
+            atm = api.atomType(
+                id='a' + str(iatm + 1),
+                element=atmSymbol,
+                atomMass=obatom.GetAtomicMass(),
+                xCoord3D=obatom.GetX(),
+                yCoord3D=obatom.GetY(),
+                zCoord3D=obatom.GetZ(),
+                basisSet='cs:' + molBasis,
+                calculatedAtomCharge=0,
+                formalAtomCharge=0)
             iatm += 1
             coord1 = api.coordinationType()
             ibond = 0
             for nb_atom in openbabel.OBAtomAtomIter(obatom):
                 bond = obatom.GetBond(nb_atom)
-                bond1 = api.bondType(id1='a' + str(obatom.GetId() + 1), id2='a' + str(nb_atom.GetId() + 1))
+                bond1 = api.bondType(
+                    id1='a' + str(obatom.GetId() + 1),
+                    id2='a' + str(nb_atom.GetId() + 1))
                 if bond.GetBondOrder() == 1:
                     bond1.set_valueOf_('single')
                 elif bond.GetBondOrder() == 2:
@@ -2048,18 +2065,25 @@ def writeCSX(name, **kwargs):
         ms1.add_molecule(mol1)
         cs1.set_molecularSystem(ms1)
 
-#molCalculation section
+        # molCalculation section: 0
         mc1 = api.mcType()
-        scf1 = api.scfCalcType(cs_technology='cs:abInitioQM', cs_spinType='cs:' + molSpin, \
-                cs_basisSet='cs:' + molBasis)
+        scf1 = api.scfCalcType(
+            cs_technology='cs:abInitioQM',
+            cs_spinType='cs:' + molSpin,
+            cs_basisSet='cs:' + molBasis)
         if procedures['energy'][name] == run_dft:
             scf1.set_cs_technology('cs:densityFunctionalTheory')
             scf1.set_cs_dftFunctional(name)
-        ene1 = api.scfElecEnerType(cs_units='cs:hartree', scfElectronicEnergy=molEE, nuclearRepulsionEnergy=molNE, \
-                                   totalPotentialEnergy=molPE)
+        ene1 = api.scfElecEnerType(
+            cs_units='cs:hartree',
+            scfElectronicEnergy=molEE,
+            nuclearRepulsionEnergy=molNE,
+            totalPotentialEnergy=molPE)
         scf1.set_scfEnergies(ene1)
         if wfnRestricted:
-            wfn1 = api.scfWaveFuncType(orbitalCount=orbNum, orbitalOccupancies=orbOccString)
+            wfn1 = api.scfWaveFuncType(
+                orbitalCount=orbNum,
+                orbitalOccupancies=orbOccString)
             orbe1 = api.orbEnerType('cs:hartree', orbEString)
             orbs1 = api.orbitalsType()
             for iorb in range(orbNum):
@@ -2070,8 +2094,8 @@ def writeCSX(name, **kwargs):
             wfn1.set_orbitals(orbs1)
             wfn1.set_orbitalEnergies(orbe1)
         else:
-#alpha electron
             wfn1 = api.scfWaveFuncType(orbitalCount=orbNum)
+            # alpha electron: 0
             orbe1 = api.orbEnerType('cs:hartree', orbEString)
             wfn1.set_alphaOrbitalEnergies(orbe1)
             wfn1.set_alphaOrbitalOccupancies(orbOccString)
@@ -2082,7 +2106,7 @@ def writeCSX(name, **kwargs):
                 orb1.set_valueOf_(orbt)
                 aorbs1.add_orbital(orb1)
             wfn1.set_alphaOrbitals(aorbs1)
-#beta electron
+            # beta electron: 0
             orbeb1 = api.orbEnerType('cs:hartree', orbEbString)
             wfn1.set_betaOrbitalEnergies(orbeb1)
             wfn1.set_betaOrbitalOccupancies(orbOccCbString)
@@ -2096,8 +2120,10 @@ def writeCSX(name, **kwargs):
 
         scf1.set_scfWaveFunction(wfn1)
         if dertype == 2:
-            freq1 = api.scfVibAnalType(vibrationCount=molFreqNum, \
-                    vibrationalFrequencies=frqString, irIntensities=intString)
+            freq1 = api.scfVibAnalType(
+                vibrationCount=molFreqNum,
+                vibrationalFrequencies=frqString,
+                irIntensities=intString)
             norms1 = api.normalModesType()
             for ifrq in range(molFreqNum):
                 norm1 = api.normalModeType(id=ifrq + 1)
@@ -2105,36 +2131,40 @@ def writeCSX(name, **kwargs):
                 norms1.add_normalMode(norm1)
             freq1.set_normalModes(norms1)
             scf1.set_scfVibrationalAnalysis(freq1)
-#   dip1 = api.dipoleType(dipoleX=molDipoleX, dipoleY=molDipoleY, dipoleZ=molDipoleZ)
-#   scf1.set_scfDipole(dip1)
+        # dip1 = api.dipoleType(dipoleX=molDipoleX, dipoleY=molDipoleY, dipoleZ=molDipoleZ)
+        # scf1.set_scfDipole(dip1)
         mc1.set_scfCalculation(scf1)
         cs1.set_molecularCalculations(mc1)
-#CSX version 1
+    # CSX version 1
     elif csxVer == 1:
         import csx1_api as api
         cs1 = api.csType(version='1.0')
 
-#molPublication section
-        mp1 = api.mpType(title=psi4.get_global_option('PUBLICATIONTITLE'),
-                abstract=psi4.get_global_option('PUBLICATIONABSTRACT'),
-                publisher=psi4.get_global_option('PUBLICATIONPUBLISHER'),
-                status=['PRELIMINARY', 'DRAFT', 'FINAL'].index(psi4.get_global_option('PUBLICATIONSTATUS')),
-                category=psi4.get_global_option('PUBLICATIONCATEGORY'),
-                visibility=['PRIVATE', 'PROTECTED', 'PUBLIC'].index(psi4.get_global_option('PUBLICATIONVISIBILITY')),
-                tags=psi4.get_global_option('PUBLICATIONTAGS'),
-                key=psi4.get_global_option('PUBLICATIONKEY'))
+        # molPublication section: 1
+        mp1 = api.mpType(
+            title=psi4.get_global_option('PUBLICATIONTITLE'),
+            abstract=psi4.get_global_option('PUBLICATIONABSTRACT'),
+            publisher=psi4.get_global_option('PUBLICATIONPUBLISHER'),
+            status=['PRELIMINARY', 'DRAFT', 'FINAL'].index(psi4.get_global_option('PUBLICATIONSTATUS')),
+            category=psi4.get_global_option('PUBLICATIONCATEGORY'),
+            visibility=['PRIVATE', 'PROTECTED', 'PUBLIC'].index(psi4.get_global_option('PUBLICATIONVISIBILITY')),
+            tags=psi4.get_global_option('PUBLICATIONTAGS'),
+            key=psi4.get_global_option('PUBLICATIONKEY'))
         source1 = api.sourcePackageType(name='Psi4', version='beta5+')
         mp1.set_sourcePackage(source1)
-        ath1 = api.authorType(creator=psi4.get_global_option('CORRESPONDINGAUTHOR'),
-                type_='cs:corresponding',
-                organization=psi4.get_global_option('ORGANIZATION'),
-                email=psi4.get_global_option('EMAIL').replace('__', '@'))
+        email = psi4.get_global_option('EMAIL').replace('__', '@')
+        ath1 = api.authorType(
+            creator=psi4.get_global_option('CORRESPONDINGAUTHOR'),
+            type_='cs:corresponding',
+            organization=psi4.get_global_option('ORGANIZATION'),
+            email=None if email == '' else email)
         mp1.add_author(ath1)
         cs1.set_molecularPublication(mp1)
 
-#molSystem section
-        ms1 = api.msType(systemCharge=molCharge,
-                         systemMultiplicity=molMulti)
+        # molSystem section: 1
+        ms1 = api.msType(
+            systemCharge=molCharge,
+            systemMultiplicity=molMulti)
         temp1 = api.dataWithUnitsType(unit='cs:kelvin')
         temp1.set_valueOf_(298.0)
         ms1.set_systemTemperature(temp1)
@@ -2167,20 +2197,24 @@ def writeCSX(name, **kwargs):
             yCoord1.set_valueOf_(obatom.GetY())
             zCoord1 = api.dataWithUnitsType(unit='cs:angstrom')
             zCoord1.set_valueOf_(obatom.GetZ())
-            atm = api.atomType(id='a' + str(iatm + 1), elementSymbol=atmSymbol, \
-                               atomMass=obatom.GetAtomicMass(), \
-                               xCoord3D=xCoord1, \
-                               yCoord3D=yCoord1, \
-                               zCoord3D=zCoord1, \
-                               basisSet='cs:' + molBasis, \
-                               calculatedAtomCharge=0, \
-                               formalAtomCharge=0)
+            atm = api.atomType(
+                id='a' + str(iatm + 1),
+                elementSymbol=atmSymbol,
+                atomMass=obatom.GetAtomicMass(),
+                xCoord3D=xCoord1,
+                yCoord3D=yCoord1,
+                zCoord3D=zCoord1,
+                basisSet='cs:' + molBasis,
+                calculatedAtomCharge=0,
+                formalAtomCharge=0)
             iatm += 1
             coord1 = api.coordinationType()
             ibond = 0
             for nb_atom in openbabel.OBAtomAtomIter(obatom):
                 bond = obatom.GetBond(nb_atom)
-                bond1 = api.bondType(id1='a' + str(obatom.GetId() + 1), id2='a' + str(nb_atom.GetId() + 1))
+                bond1 = api.bondType(
+                    id1='a' + str(obatom.GetId() + 1),
+                    id2='a' + str(nb_atom.GetId() + 1))
                 if bond.GetBondOrder() == 1:
                     bond1.set_valueOf_('single')
                 elif bond.GetBondOrder() == 2:
@@ -2199,17 +2233,19 @@ def writeCSX(name, **kwargs):
         ms1.add_molecule(mol1)
         cs1.set_molecularSystem(ms1)
 
-#molCalculation section
+        # molCalculation section: 1
         avalMethods = False
         mc1 = api.mcType()
         qm1 = api.qmCalcType()
         srs1 = api.srsMethodType()
         sdm1 = api.srssdMethodType()
-#SCF
+        # SCF: 1
         if procedures['energy'][name] == run_scf:
             avalMethods = True
-            scf1 = api.resultType(methodology='cs:normal', spinType='cs:' + molSpin, \
-                   basisSet='bse:' + molBasis)
+            scf1 = api.resultType(
+                methodology='cs:normal',
+                spinType='cs:' + molSpin,
+                basisSet='bse:' + molBasis)
             ene1 = api.energiesType(unit='cs:hartree')
             pe_ene1 = api.energyType(type_='cs:electronic')
             pe_ene1.set_valueOf_(molPE)
@@ -2221,11 +2257,14 @@ def writeCSX(name, **kwargs):
             ene1.add_energy(ne_ene1)
             ene1.add_energy(pe_ene1)
             scf1.set_energies(ene1)
-#DFT
+        # DFT: 1
         elif procedures['energy'][name] == run_dft:
             avalMethods = True
-            scf1 = api.resultType(methodology='cs:normal', spinType='cs:' + molSpin, \
-                   basisSet='bse:' + molBasis, dftFunctional=name)
+            scf1 = api.resultType(
+                methodology='cs:normal',
+                spinType='cs:' + molSpin,
+                basisSet='bse:' + molBasis,
+                dftFunctional=name)
             ene1 = api.energiesType(unit='cs:hartree')
             pe_ene1 = api.energyType(type_='cs:electronic')
             pe_ene1.set_valueOf_(molPE)
@@ -2243,11 +2282,13 @@ def writeCSX(name, **kwargs):
             ene1.add_energy(dp_ene1)
             ene1.add_energy(pe_ene1)
             scf1.set_energies(ene1)
-#MP2
+        # MP2: 1
         elif procedures['energy'][name] == run_mp2_select:
             avalMethods = True
-            scf1 = api.resultType(methodology='cs:normal', spinType='cs:' + molSpin, \
-                   basisSet='bse:' + molBasis)
+            scf1 = api.resultType(
+                methodology='cs:normal',
+                spinType='cs:' + molSpin,
+                basisSet='bse:' + molBasis)
             ene1 = api.energiesType(unit='cs:hartree')
             pe_ene1 = api.energyType(type_='cs:electronic')
             pe_ene1.set_valueOf_(molPE)
@@ -2265,10 +2306,12 @@ def writeCSX(name, **kwargs):
 
         else:
             print('The current CSX file does not support your method')
-#wavefunction
-        if avalMethods :
-            if wfnRestricted :
-                wfn1 = api.waveFunctionType(orbitalCount=orbNum,orbitalOccupancies=orbOccString)
+        # wavefunction: 1
+        if avalMethods:
+            if wfnRestricted:
+                wfn1 = api.waveFunctionType(
+                    orbitalCount=orbNum,
+                    orbitalOccupancies=orbOccString)
                 orbe1 = api.stringArrayType(unit='cs:hartree')
                 orbe1.set_valueOf_(orbEString)
                 orbs1 = api.orbitalsType()
@@ -2280,8 +2323,8 @@ def writeCSX(name, **kwargs):
                 wfn1.set_orbitals(orbs1)
                 wfn1.set_orbitalEnergies(orbe1)
             else:
-    #alpha electron
                 wfn1 = api.waveFunctionType(orbitalCount=orbNum)
+                # alpha electron: 1
                 orbe1 = api.stringArrayType(unit='cs:hartree')
                 orbe1.set_valueOf_(orbEString)
                 wfn1.set_alphaOrbitalEnergies(orbe1)
@@ -2293,7 +2336,7 @@ def writeCSX(name, **kwargs):
                     orb1.set_valueOf_(orbt)
                     aorbs1.add_orbital(orb1)
                 wfn1.set_alphaOrbitals(aorbs1)
-    #beta electron
+                # beta electron: 1
                 orbeb1 = api.stringArrayType(unit='cs:hartree')
                 orbeb1.set_valueOf_(orbEbString)
                 wfn1.set_betaOrbitalEnergies(orbeb1)
@@ -2322,15 +2365,23 @@ def writeCSX(name, **kwargs):
                     norms1.add_normalMode(norm1)
                 vib1.set_normalModes(norms1)
                 scf1.set_vibrationalAnalysis(vib1)
-#Properties
+            # Properties: 1
             prop1 = api.propertiesType()
-            sprop1 = api.propertyType(name='dipoleMomentX',unit='cs:debye')
+            sprop1 = api.propertyType(
+                name='dipoleMomentX',
+                unit='cs:debye')
             sprop1.set_valueOf_(molDipoleX)
-            sprop2 = api.propertyType(name='dipoleMomentY',unit='cs:debye')
+            sprop2 = api.propertyType(
+                name='dipoleMomentY',
+                unit='cs:debye')
             sprop2.set_valueOf_(molDipoleY)
-            sprop3 = api.propertyType(name='dipoleMomentZ',unit='cs:debye')
+            sprop3 = api.propertyType(
+                name='dipoleMomentZ',
+                unit='cs:debye')
             sprop3.set_valueOf_(molDipoleZ)
-            sprop4 = api.propertyType(name='dipoleMomentAverage',unit='cs:debye')
+            sprop4 = api.propertyType(
+                name='dipoleMomentAverage',
+                unit='cs:debye')
             sprop4.set_valueOf_(molDipoleTot)
             prop1.add_systemProperty(sprop1)
             prop1.add_systemProperty(sprop2)
@@ -2358,4 +2409,4 @@ def writeCSX(name, **kwargs):
     csxfile.write('<?xml version="1.0" encoding="UTF-8"?>\n')
     cs1.export(csxfile, 0)
     csxfile.close()
-#End to write the CSX file
+    # End to write the CSX file
