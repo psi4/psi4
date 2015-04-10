@@ -1830,6 +1830,7 @@ def writeCSX(name, **kwargs):
     import openbabel
     import qcdb
     import qcdb.periodictable
+    lowername = name.lower()
     # Make sure the molecule the user provided is the active one
     if ('molecule' in kwargs):
         activate(kwargs['molecule'])
@@ -1867,83 +1868,88 @@ def writeCSX(name, **kwargs):
     molPE = mol1E + mol2E
     molEE = psi4.get_variable('CURRENT ENERGY')
     # wavefunction information
-    molOrbE = psi4.wavefunction().epsilon_a()
-    molOrbEb = psi4.wavefunction().epsilon_b()
-    orbNmopi = psi4.wavefunction().nmopi()
-    orbNsopi = psi4.wavefunction().nsopi()
-    orbNum = psi4.wavefunction().nmo()
-    orbSNum = psi4.wavefunction().nso()
-    molOrb = psi4.wavefunction().Ca()
-    orbNirrep = psi4.wavefunction().nirrep()
-    orbAotoso = psi4.wavefunction().aotoso()
-    orbDoccpi = psi4.wavefunction().doccpi()
-    orbSoccpi = psi4.wavefunction().soccpi()
-    basisNbf = psi4.wavefunction().basisset().nbf()
-    basisDim = psi4.Dimension(1, 'basisDim')
-    basisDim.__setitem__(0, basisNbf)
-    wfnRestricted = True
-    orbE = []
-    hlist = []
-    orblist = []
-    orbOcc = []
-    molOrbmo = psi4.Matrix('molOrbmo', basisDim, orbNmopi)
-    molOrbmo.gemm(False, False, 1.0, orbAotoso, molOrb, 0.0)
-    if molSpin == 'UHF':
-        wfnRestricted = False
-        orbEb = []
-        hlistCb = []
-        orblistCb = []
-        orbOccCb = []
-        molOrbCb = psi4.wavefunction().Cb()
-        molOrbmoCb = psi4.Matrix('molOrbmoCb', basisDim, orbNmopi)
-        molOrbmoCb.gemm(False, False, 1.0, orbAotoso, molOrbCb, 0.0)
-    count = 0
-    eleExtra = 1 if wfnRestricted else 0
-    for ih in range(orbNirrep):
-        for iorb in range(orbNmopi.__getitem__(ih)):
-            hlist.append(ih)
-            orblist.append(iorb)
-            orbE.append(molOrbE.get(count))
-            eleNum = 1 if iorb < (orbDoccpi.__getitem__(ih) + orbSoccpi.__getitem__(ih)) else 0
-            eleNum += eleExtra if iorb < orbDoccpi.__getitem__(ih) else 0
-            orbOcc.append(eleNum)
-            count += 1
-    orbMos = sorted(zip(orbE, zip(hlist, orblist)))
-    orbOccString = ' '.join(str(x) for x in sorted(orbOcc, reverse=True))
-    orbCaString = []
-    for imos in range(orbNum):
-        (h, s) = orbMos[imos][1]
-        orbCa = []
-        for iso in range(orbSNum):
-            orbEle = molOrbmo.get(h, iso, s)
-            orbCa.append(orbEle)
-        orbCaString.append(' '.join(str(x) for x in orbCa))
-    orbEString = ' '.join(str(x) for x in sorted(orbE))
-    # now for beta spin
-    if not wfnRestricted:
+    try:
+        wfn = psi4.wavefunction()
+    except AttributeError:
+        pass
+    if wfn:
+        molOrbE = psi4.wavefunction().epsilon_a()
+        molOrbEb = psi4.wavefunction().epsilon_b()
+        orbNmopi = psi4.wavefunction().nmopi()
+        orbNsopi = psi4.wavefunction().nsopi()
+        orbNum = psi4.wavefunction().nmo()
+        orbSNum = psi4.wavefunction().nso()
+        molOrb = psi4.wavefunction().Ca()
+        orbNirrep = psi4.wavefunction().nirrep()
+        orbAotoso = psi4.wavefunction().aotoso()
+        orbDoccpi = psi4.wavefunction().doccpi()
+        orbSoccpi = psi4.wavefunction().soccpi()
+        basisNbf = psi4.wavefunction().basisset().nbf()
+        basisDim = psi4.Dimension(1, 'basisDim')
+        basisDim.__setitem__(0, basisNbf)
+        wfnRestricted = True
+        orbE = []
+        hlist = []
+        orblist = []
+        orbOcc = []
+        molOrbmo = psi4.Matrix('molOrbmo', basisDim, orbNmopi)
+        molOrbmo.gemm(False, False, 1.0, orbAotoso, molOrb, 0.0)
+        if molSpin == 'UHF':
+            wfnRestricted = False
+            orbEb = []
+            hlistCb = []
+            orblistCb = []
+            orbOccCb = []
+            molOrbCb = psi4.wavefunction().Cb()
+            molOrbmoCb = psi4.Matrix('molOrbmoCb', basisDim, orbNmopi)
+            molOrbmoCb.gemm(False, False, 1.0, orbAotoso, molOrbCb, 0.0)
         count = 0
+        eleExtra = 1 if wfnRestricted else 0
         for ih in range(orbNirrep):
             for iorb in range(orbNmopi.__getitem__(ih)):
-                hlistCb.append(ih)
+                hlist.append(ih)
                 orblist.append(iorb)
-                orbEb.append(molOrbEb.get(count))
+                orbE.append(molOrbE.get(count))
                 eleNum = 1 if iorb < (orbDoccpi.__getitem__(ih) + orbSoccpi.__getitem__(ih)) else 0
-                if iorb < orbDoccpi.__getitem__(ih):
-                    eleNum += eleExtra
-                orbOccCb.append(eleNum)
+                eleNum += eleExtra if iorb < orbDoccpi.__getitem__(ih) else 0
+                orbOcc.append(eleNum)
                 count += 1
-        orbMosCb = sorted(zip(orbEb, zip(hlist, orblist)))
-        orbOccCbString = ' '.join(str(x) for x in sorted(orbOccCb, reverse=True))
-        orbCbString = []
+        orbMos = sorted(zip(orbE, zip(hlist, orblist)))
+        orbOccString = ' '.join(str(x) for x in sorted(orbOcc, reverse=True))
+        orbCaString = []
         for imos in range(orbNum):
-            (h, s) = orbMosCb[imos][1]
-            orbCb = []
+            (h, s) = orbMos[imos][1]
+            orbCa = []
             for iso in range(orbSNum):
-                orbEle = molOrbmoCb.get(h, iso, s)
-                orbCb.append(orbEle)
-            orbCbString.append(' '.join(str(x) for x in orbCb))
-        orbEbString = ' '.join(str(x) for x in sorted(orbEb))
-    #   orbColString = ' '.join(str(x) for x in orbCol)
+                orbEle = molOrbmo.get(h, iso, s)
+                orbCa.append(orbEle)
+            orbCaString.append(' '.join(str(x) for x in orbCa))
+        orbEString = ' '.join(str(x) for x in sorted(orbE))
+        # now for beta spin
+        if not wfnRestricted:
+            count = 0
+            for ih in range(orbNirrep):
+                for iorb in range(orbNmopi.__getitem__(ih)):
+                    hlistCb.append(ih)
+                    orblist.append(iorb)
+                    orbEb.append(molOrbEb.get(count))
+                    eleNum = 1 if iorb < (orbDoccpi.__getitem__(ih) + orbSoccpi.__getitem__(ih)) else 0
+                    if iorb < orbDoccpi.__getitem__(ih):
+                        eleNum += eleExtra
+                    orbOccCb.append(eleNum)
+                    count += 1
+            orbMosCb = sorted(zip(orbEb, zip(hlist, orblist)))
+            orbOccCbString = ' '.join(str(x) for x in sorted(orbOccCb, reverse=True))
+            orbCbString = []
+            for imos in range(orbNum):
+                (h, s) = orbMosCb[imos][1]
+                orbCb = []
+                for iso in range(orbSNum):
+                    orbEle = molOrbmoCb.get(h, iso, s)
+                    orbCb.append(orbEle)
+                orbCbString.append(' '.join(str(x) for x in orbCb))
+            orbEbString = ' '.join(str(x) for x in sorted(orbEb))
+        #   orbColString = ' '.join(str(x) for x in orbCol)
     # frequency information
     if dertype == 2:
         molFreq = psi4.get_frequencies()
@@ -2239,8 +2245,13 @@ def writeCSX(name, **kwargs):
         qm1 = api.qmCalcType()
         srs1 = api.srsMethodType()
         sdm1 = api.srssdMethodType()
+        try:
+            runproc = procedures['energy'][lowername]
+        except KeyError:
+            # hack since CSX could support method but can't check here
+            runproc = None
         # SCF: 1
-        if procedures['energy'][name] == run_scf:
+        if runproc == run_scf:
             avalMethods = True
             scf1 = api.resultType(
                 methodology='cs:normal',
@@ -2258,7 +2269,7 @@ def writeCSX(name, **kwargs):
             ene1.add_energy(pe_ene1)
             scf1.set_energies(ene1)
         # DFT: 1
-        elif procedures['energy'][name] == run_dft:
+        elif runproc == run_dft:
             avalMethods = True
             scf1 = api.resultType(
                 methodology='cs:normal',
@@ -2283,7 +2294,7 @@ def writeCSX(name, **kwargs):
             ene1.add_energy(pe_ene1)
             scf1.set_energies(ene1)
         # MP2: 1
-        elif procedures['energy'][name] == run_mp2_select:
+        elif runproc == run_mp2_select:
             avalMethods = True
             scf1 = api.resultType(
                 methodology='cs:normal',
@@ -2305,7 +2316,9 @@ def writeCSX(name, **kwargs):
             scf1.set_energies(ene1)
 
         else:
-            print('The current CSX file does not support your method')
+            psi4.print_out("""\nCSX version {0} does not support """
+                           """method {1} for {2}\n""".format(
+                           csxVer, lowername, 'energies'))
         # wavefunction: 1
         if avalMethods:
             if wfnRestricted:
@@ -2389,14 +2402,20 @@ def writeCSX(name, **kwargs):
             prop1.add_systemProperty(sprop4)
             scf1.set_properties(prop1)
 
-        if procedures['energy'][name] == run_scf:
+        try:
+            runproc = procedures['energy'][lowername]
+        except KeyError:
+            runproc = None
+        if runproc == run_scf:
             sdm1.set_abinitioScf(scf1)
-        elif procedures['energy'][name] == run_dft:
+        elif runproc == run_dft:
             sdm1.set_dft(scf1)
-        elif procedures['energy'][name] == run_mp2_select:
+        elif runproc == run_mp2_select:
             sdm1.set_mp2(scf1)
         else:
-            print('The current CSX file does not support your method')
+            psi4.print_out("""CSX version {0} does not support """
+                           """method {1} for {2}\n""".format(
+                           csxVer, lowername, 'properties'))
 
         srs1.set_singleDeterminant(sdm1)
         qm1.set_singleReferenceState(srs1)
