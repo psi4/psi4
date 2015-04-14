@@ -238,8 +238,8 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_testsuite_corepsi4.rst
                 ${CCBD}/source/autodoc_testsuite_dftd3.rst
                 ${CCBD}/source/autodoc_driver.rst
-                #${CCBD}/source/autodoc_psimod.rst
-                #${CCBD}/source/autodoc_man_psi4.txt
+                ${CCBD}/source/autodoc_psimod.rst
+                ${CCBD}/source/autodoc_man_psi4.txt
                 ${CCBD}/source/autodoc_dft_energy.rst
                 ${CCBD}/source/autodoc_dft_opt.rst
                 ${CCBD}/source/autodoc_dft_all.rst
