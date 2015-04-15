@@ -2056,7 +2056,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DIIS",1);
     /*- The response property desired.  Acceptable values are ``POLARIZABILITY``
     (default) for dipole-polarizabilities, ``ROTATION`` for specific rotations,
-    ``ROA`` for Raman Optical Activity (``ROA_TENSOR`` for each displacement), 
+    ``ROA`` for Raman Optical Activity (``ROA_TENSOR`` for each displacement),
     and ``ALL`` for all of the above. -*/
     options.add_str("PROPERTY","POLARIZABILITY","POLARIZABILITY ROTATION ROA ROA_TENSOR ALL");
     /*- Type of ABCD algorithm will be used -*/
@@ -4678,6 +4678,91 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         /* Do turn on QM/EFP terms? !expert */
         options.add_bool("QMEFP", false);
     }
+    if (name == "DMRG"|| options.read_globals()) {
+
+        /*- The DMRG wavefunction multiplicity in the form (2S+1) -*/
+        options.add_int("DMRG_WFN_MULTP", -1);
+
+        /*- The DMRG wavefunction irrep uses the same conventions as PSI4. How convenient :-).
+            Just to avoid confusion, it's copied here. It can also be found on
+            http://sebwouters.github.io/CheMPS2/classCheMPS2_1_1Irreps.html .
+
+            Symmetry Conventions        Irrep Number & Name
+            Group Number & Name         0 	1 	2 	3 	4 	5 	6 	7
+            0: c1                       A
+            1: ci                       Ag 	Au
+            2: c2                       A 	B
+            3: cs                       A' 	A''
+            4: d2                       A 	B1 	B2 	B3
+            5: c2v                      A1 	A2 	B1 	B2
+            6: c2h                      Ag 	Bg 	Au 	Bu
+            7: d2h                      Ag 	B1g 	B2g 	B3g 	Au 	B1u 	B2u 	B3u
+        -*/
+        options.add_int("DMRG_WFN_IRREP", -1);
+
+        /*- The number of reduced renormalized basis states to be
+            retained during successive DMRG instructions -*/
+        options.add_array("DMRG_STATES");
+
+        /*- The energy convergence to stop an instruction
+            during successive DMRG instructions -*/
+        options.add_array("DMRG_E_CONVERGENCE");
+
+        /*- The maximum number of sweeps to stop an instruction
+            during successive DMRG instructions -*/
+        options.add_array("DMRG_MAXSWEEPS");
+
+        /*- The noiseprefactors for successive DMRG instructions -*/
+        options.add_array("DMRG_NOISEPREFACTORS");
+
+        /*- Whether or not to print the correlation functions after the DMRG calculation -*/
+        options.add_bool("DMRG_PRINT_CORR", true);
+
+        /*- Whether or not to create intermediary MPS checkpoints -*/
+        options.add_bool("DMRG_CHKPT", false);
+
+        /*- Doubly occupied frozen orbitals for DMRGSCF, per irrep. Same
+            conventions as for other MR methods -*/
+        options.add_array("FROZEN_DOCC");
+
+        /*- Active space orbitals for DMRGSCF, per irrep. Same conventions as for other MR methods. -*/
+        options.add_array("ACTIVE");
+
+        /*- Convergence threshold for the gradient norm. -*/
+        options.add_double("D_CONVERGENCE", 1e-6);
+
+        /*- Whether or not to store the unitary on disk (convenient for restarting). -*/
+        options.add_bool("DMRG_STORE_UNIT", true);
+
+        /*- Whether or not to use DIIS for DMRGSCF. -*/
+        options.add_bool("DMRG_DO_DIIS", false);
+
+        /*- When the update norm is smaller than this value DIIS starts. -*/
+        options.add_double("DMRG_DIIS_BRANCH", 1e-2);
+
+        /*- Whether or not to store the DIIS checkpoint on disk (convenient for restarting). -*/
+        options.add_bool("DMRG_STORE_DIIS", true);
+
+        /*- Maximum number of DMRGSCF iterations -*/
+        options.add_int("DMRG_MAXITER", 100);
+
+        /*- Which root is targeted: 1 means ground state, 2 first excited state, etc. -*/
+        options.add_int("DMRG_WHICH_ROOT", 1);
+
+        /*- Whether or not to use state-averaging for roots >=2 with DMRG-SCF. -*/
+        options.add_bool("DMRG_AVG_STATES", true);
+
+        /*- Which active space to use for DMRGSCF calculations:
+               --> input with SCF rotations (INPUT);
+               --> natural orbitals (NO);
+               --> localized and ordered orbitals (LOC) -*/
+        options.add_str("DMRG_ACTIVE_SPACE", "INPUT", "INPUT NO LOC");
+
+        /*- Whether to start the active space localization process from a random unitary or the unit matrix. -*/
+        options.add_bool("DMRG_LOC_RANDOM", true);
+
+    }
+
   return true;
 }
 
