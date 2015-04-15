@@ -192,12 +192,6 @@ if(ENABLE_LIBERD)
    add_definitions(-DHAVE_ERD)
 endif()
 
-# Is this needed for the script?
-# TODO: Fix gitversion.py to work without setting top_srcdir...maybe use 
-# PROJECT_SOURCE_DIR?
-set(top_srcdir ${PROJECT_SOURCE_DIR}) # The quotes are added in the source, in this case
-configure_file(src/bin/psi4/gitversion.py.in src/bin/psi4/gitversion.py)
-
 # Libint configuration
 # Set default for LIBINT_OPT_AM if not set by setup script.
 if(NOT LIBINT_OPT_AM)
