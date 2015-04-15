@@ -1,0 +1,14 @@
+include(ExternalProject)
+
+set(PLUG "chemps2")
+set(PLUG_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/${PLUG}")
+
+ExternalProject_Add(${PLUG}
+    PREFIX ${PLUG_PREFIX}
+    GIT_REPOSITORY https://github.com/SebWouters/CheMPS2
+    GIT_TAG v1.5
+    CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DSTATIC_ONLY=ON -DCMAKE_INSTALL_PREFIX=${PLUG_PREFIX}/install
+    BUILD_COMMAND ${MAKE}
+)
+
+set_property(GLOBAL APPEND PROPERTY INTERFACES ${CMAKE_CURRENT_BINARY_DIR}/chemps2/install/lib/libchemps2.a)
