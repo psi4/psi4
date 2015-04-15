@@ -1,9 +1,10 @@
 # Run the git version script, and update gitversion.h, if it's changed
 add_custom_command(
     COMMAND ${PYTHON_EXECUTABLE} gitversion.py
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different gitversion.h.tmp gitversion.h
+    COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_BINARY_DIR}/src/bin/psi4/gitversion.py
     OUTPUT gitversion.h
     COMMENT "Generating Git info"
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/src/bin/psi4
 )
 
 add_custom_command(
@@ -15,7 +16,7 @@ add_custom_command(
 
 set(headers_list "")
 # List of headers
-list(APPEND headers_list script.h psi4.h )
+list(APPEND headers_list script.h psi4.h gitversion.h)
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
