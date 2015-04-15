@@ -1,7 +1,9 @@
-import os
+import sys
 import subprocess
 
-top_srcdir = "@top_srcdir@"
+top_srcdir = './'
+if len(sys.argv) == 2:
+    top_srcdir = sys.argv[1] + '/'
 
 
 def write_version(branch, mmp, ghash, status):
@@ -15,12 +17,6 @@ def write_version(branch, mmp, ghash, status):
         mmp_str = "#define PSI_VERSION \"%s\"\n" % (mmp)
     else:
         mmp_str = "#undef PSI_VERSION"
-
-    print 'branch', branch
-    print 'mmp', mmp
-    print 'ghash', ghash
-    print 'status', status
-    print 'pwd', os.getcwd()
 
     with open('gitversion.h', 'w') as handle:
         handle.write(version_str)

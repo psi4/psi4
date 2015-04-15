@@ -1,22 +1,23 @@
 # Run the git version script, and update gitversion.h, if it's changed
 add_custom_command(
-    COMMAND ${PYTHON_EXECUTABLE} gitversion.py
-    COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_BINARY_DIR}/src/bin/psi4/gitversion.py
-    OUTPUT gitversion.h
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/gitversion.py ${PROJECT_SOURCE_DIR}
+    OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h
+            dummy.txt
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/gitversion.py
     COMMENT "Generating Git info"
-    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/src/bin/psi4
 )
 
-add_custom_command(
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECT_SOURCE_DIR}/src/bin/psi4/version.cc
-                                                  ${PROJECT_BINARY_DIR}/src/bin/psi4/version.cc
-    OUTPUT version.cc
-    DEPENDS gitversion.h
-)
+set_source_files_properties(
+    dummy.txt
+    PROPERTIES SYMBOLIC "on")
+set_source_files_properties(
+    python.cc version.cc
+    PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h)
+
 
 set(headers_list "")
 # List of headers
-list(APPEND headers_list script.h psi4.h gitversion.h)
+list(APPEND headers_list script.h psi4.h)
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
