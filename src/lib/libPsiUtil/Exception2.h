@@ -23,13 +23,8 @@
 #define SRC_LIB_LIBPSIUTIL_EXCEPTION2_H_
 
 #include<sstream>
-#include<vector>
-#include<execinfo.h>
 #include<exception>
-
 namespace psi{
-
-
 /** \brief A basic exception class that tells you helpful info about the
  *         error.
  *
@@ -42,13 +37,13 @@ namespace psi{
  *  Fatal Error: <Error Message>
  *  Error occurred in file: <File Error Occurred In> on line: <da line number>
  *  The most recent 3 function calls were:
- *  ../objdir/bin/psi4(<Current Fxn>) [0x1f16ae5]
- *  ../objdir/bin/psi4(<Fxn That Called Current Fxn>) [0x1f15a1c]
- *  ../objdir/bin/psi4(<Fxn That Called The Fxn That Called Current Fxn>) [0x1f15fc2]
+ *  <Current Fxn>
+ *  <Fxn That Called Current Fxn>
+ *  <Fxn That Called The Fxn That Called Current Fxn>
  *  \endverbatim
  *
  *  That is your exception will automatically add the current file, line
- *  number, and three most recent function calls to the error message.
+ *  number, and three (now 5) most recent function calls to the error message.
  *
  *  The code you now use looks like:
  *  \code
@@ -63,31 +58,35 @@ namespace psi{
  */
 class PsiException2: public std::exception{
    private:
+      ///Our actual error message
       std::string Error_;
-      virtual const char* what() const throw(){
-         return Error_.c_str();
-      }
+      ///The function called when this exception is tipped
+      virtual const char* what() const throw(){return Error_.c_str();}
    public:
+      /** \brief Makes our exception
+       *
+       *   The usage of this class should be pretty straightforward
+       *   from the class documentation so here I just specify what the
+       *   arguments are:
+       *
+       *  \param[in] arg The message we want printed
+       *  \param[in] file A string containing the full path to the source
+       *                  file.  Added automatically by the macro.
+       *  \param[in] line The line number our error occurred on.  Added
+       *                  automatically by the macro.
+       *  \param[in] NCalls The number of functions to print in the call
+       *                    back tree.  Defaults to 5.
+       *
+       */
       PsiException2(const std::string& arg,
                     const char* file,
                     const int line,
-                    const size_t NCalls=5){
-         std::stringstream Error;
-         Error<<std::endl<<"Fatal Error: "<<arg<<std::endl
-             <<"Error occurred in file: "<<file<<" on line: "<<line<<std::endl;
-         std::vector<void *> Stack(NCalls);
-         char **strings;
-         int size=backtrace(&Stack[0],NCalls);
-         Error<<"The most recent "<<(size<NCalls?size:NCalls)<<" function calls were:"<<std::endl;
-         strings=backtrace_symbols(&Stack[0],size);
-         for(int i=0;i<size;i++)
-            Error<<strings[i]<<std::endl;
-         Error_=Error.str();
-      }
+                    const size_t NCalls=5);
+      ///Compiler can now STFU
       virtual ~PsiException2()throw(){}
 };
 
-
+///The macro mentioned in the PsiException2 documentation
 #define PSIERROR(arg) throw PsiException2(arg,__FILE__,__LINE__);
 
 }

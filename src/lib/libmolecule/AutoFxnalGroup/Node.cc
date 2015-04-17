@@ -23,161 +23,247 @@
 #include <iostream>
 #include <algorithm>
 #include "Node.h"
-#include "exception.h"
+#include "NodeUtils.h"
+#include "Exception2.h"
 
-
-namespace psi{
-namespace LibMolecule{
+namespace psi {
+namespace LibMolecule {
 typedef boost::shared_ptr<Node> SharedNode;
 typedef std::vector<SharedNode> vSN_t;
 typedef vSN_t::iterator vSN_Itr;
 
 //Function to compare two nodes (just compares the addresses)
-static bool Compare(const SharedNode LHS,const SharedNode RHS){
+static bool Compare(const SharedNode LHS, const SharedNode RHS) {
    return LHS.get()<RHS.get();
 }
 
-SharedNode Node::GetConnSubNode(SharedNode Other){
-   vSN_Itr It=SubNodes_.begin(),ItEnd=SubNodes_.end();
-   for(;It!=ItEnd;++It){
-      vSN_Itr It2=(*It)->ConnNodes_.begin(),It2End=(*It)->ConnNodes_.end();
-      for(;It2!=It2End;++It2)
-         if(It2->get()==Other.get())return *It;
-   }
+SharedNode Node::GetConnSubNode(SharedNode Other) {
+   ConnItr It2=ConnBegin(),It2End=ConnEnd();
+   for (;It2!=It2End; ++It2)
+      if(It2->second.get()==Other.get()) return It2->first;
    return Other;
 }
 
-unsigned Node::Z()const{
-   unsigned max=0;
-   vSN_t::const_iterator It=SubNodes_.begin(),ItEnd=SubNodes_.end();
-   for(;It!=ItEnd;++It)max=((*It)->Z()>max?(*It)->Z():max);
-   return max;
+unsigned Node::Z() const {
+   unsigned Max=0;
+   Node::const_iterator It=SubBegin(),ItEnd=SubEnd();
+   for (; It!=ItEnd; ++It)Max=std::max((*It)->Z(),Max);
+   return Max;
 }
 
-unsigned Node::size()const{return MyMember_.size();}
+unsigned Node::size() const {
+   return MyMember_.size();
+}
 
-int Node::operator[](const unsigned i)const{return MyMember_[i];}
+int Node::operator[](const unsigned i) const {
+   return MyMember_[i];
+}
 
-void Node::AddConn(SharedNode NewNode, SharedNode OldNode){
-   if(!OldNode)ConnNodes_.push_back(NewNode);
-   else{
-      vSN_Itr It=ConnNodes_.begin(),ItEnd=ConnNodes_.end();
-      for(;It!=ItEnd;++It)
-         if(It->get()==OldNode.get()){
-            (*It)=NewNode;
+void Node::AddConn(SharedNode NewNode, SharedNode OldNode) {
+   if (OldNode.get()==this)
+      ConnNodes_.push_back(Pair_t(OldNode,NewNode));
+   else {
+      ConnItr It=ConnBegin(),ItEnd=ConnEnd();
+      for (;It!=ItEnd; ++It)
+         if (It->second.get()==OldNode.get()) {
+            It->second=NewNode;
             break;
          }
    }
-   std::sort(ConnNodes_.begin(),ConnNodes_.end(),Compare);
 }
 
 void Node::AddTypes(const ParamT& Parent,
-                    const size_t Order,
-                    const size_t Priority){
-   if(SubNodes_.size()==0){
-      MyTypes_.push_back(ParamT(MyTypes_.front(),
-                               Parent.Base()[0],
-                               Parent.Base()[1],
-                               Order,Priority));
+     const PsiMap<size_t, size_t>& Order,
+     size_t& Priority,
+     bool Symm,
+     SharedNode_t Left) {
+   size_t TempPrior=Priority;
+   std::vector<SharedNode>::iterator It=PrimNodes_.begin(),
+                                 ItEnd=PrimNodes_.end();
+   if (It==ItEnd){//I am a primitive node...
+      MyTypes_.push_back(
+            ParamT(MyTypes_.back(), Parent.Base()[0], Parent.Base()[1], Order,
+                  0+Priority));
    }
-   else{
-      vSN_Itr SubNodeI=SubNodes_.begin(),SubNodeIEnd=SubNodes_.end();
-      for(;SubNodeI!=SubNodeIEnd;++SubNodeI)
-         (*SubNodeI)->AddTypes(Parent,Order,Priority);
+   if(IsSymm_&&Symm){
+
+      while (It!=ItEnd) {
+         TempPrior=Priority+(*It)->MyTypes_.back().Priority();
+         (*It)->MyTypes_.push_back(
+               ParamT((*It)->MyTypes_.back(), Parent.Base()[0], Parent.Base()[1],
+                     Order, TempPrior));
+         ++It;
+      }
+   }
+
+
+   Priority=TempPrior;
+}
+
+std::vector<size_t> Node::DeterminePrior(
+      std::deque<SharedNode>& FN,
+      bool& Symm) const {
+   size_t size=FN.size();
+   std::vector<size_t> Priors(size, 0);
+   typedef std::deque<SharedNode> FN_t;
+   FN_t::const_iterator It=FN.begin(),ItEnd=FN.end();
+   FN_t::const_reverse_iterator rIt=FN.rbegin(),rItEnd=FN.rend();
+   size_t NComp=(size-size%2)/2;
+   size_t CurrPrior=0;
+   bool Reorder=false,LLessR=false;
+   Symm=true;
+   //Compare them pairwise
+   for (size_t i=0; i<NComp; ++i, ++It, ++rIt) {
+      size_t Lidx=i,Ridx=size-1-i;
+      //As soon as orderchecked is true we have broken the symmetry
+      if ((*It)->Type()==(*rIt)->Type())
+         Priors[Lidx]=Priors[Ridx]=CurrPrior++;
+      else {
+         Symm=false;
+         const Node* Result=Priority(It->get(),rIt->get());
+         if(Result==NULL)PSIERROR("Couldn't resolve priority");
+         LLessR=(Result==It->get());
+         if(!LLessR) Reorder=true;
+         for(size_t j=0;j<Priors.size();j++)Priors[j]=j;
+         break;
+      }
+   }
+   if(size%2==1&&Symm) Priors[NComp]=CurrPrior;
+   if(Reorder){
+      std::vector<size_t> TempPriors(Priors.rbegin(),Priors.rend());
+      Priors=TempPriors;
+      FN_t temp(FN.rbegin(),FN.rend());
+      FN=temp;
+   }
+   return Priors;
+}
+
+void Node::FillNode(std::deque<SharedNode>& FoundNodes) {
+   typedef std::deque<SharedNode> FN_t;
+   typedef FN_t::const_iterator FN_tItr;
+   IsSymm_=true;
+   Priors_=DeterminePrior(FoundNodes,IsSymm_);
+   ConnNodes_=DetermineConns(FoundNodes.begin(),FoundNodes.end());
+   for(FN_tItr It=FoundNodes.begin(); It!=FoundNodes.end(); ++It)AddSubNode(*It);
+   ParamT orig=MyTypes_.back();
+   MyTypes_.pop_back();
+   Node::ConnItr It1=ConnBegin(),It1End=ConnEnd();
+   PsiMap<size_t, size_t> Orders;
+   for (; It1!=It1End; ++It1) {
+      Node::iterator It2=SubBegin(),It2End=SubEnd();
+      for (size_t Counter=0; It2!=It2End; ++It2,++Counter)
+         if(It1->first.get()==It2->get()){
+               ActiveSubNodes_.push_back(Counter);
+               Orders[Counter]++;
+         }
+   }
+   MyTypes_.push_back(ParamT(orig.Base()[0], orig.Base()[1], Orders));
+   std::vector<size_t>::iterator Pi,PiEnd=Priors_.end();
+   if(Orders.size()>1&&IsSymm_){
+      //If we have more than one connection point and the priorities are
+      //symmetric we have an orientation ambiguity
+      size_t NComps=(Priors_.size()-Priors_.size()%2)/2;
+      bool reorder=false;
+      ConnItr ConnI=ConnNodes_.begin();
+      std::vector<Pair_t>::reverse_iterator rConnI=ConnNodes_.rbegin();
+      NComps=(ConnNodes_.size()-ConnNodes_.size()%2)/2;
+      for(counter=0;counter<NComps&&!reorder;++counter,++ConnI,++rConnI){
+         const Node* Result=Priority(ConnI->second.get(),
+                                    rConnI->second.get());
+         if(Result==NULL)continue;
+         else if(Result==ConnI->second.get())break;
+         else reorder=true;
+      }
+      if(reorder)PSIERROR("Your group needs reordered");
+   }
+   Pi=Priors_.begin();PiEnd=Priors_.end();
+   size_t TempPrior=*Pi;
+   Node::iterator It2=SubBegin(),It2End=SubEnd();
+   SharedNode_t LastNode;
+   for (; It2!=It2End; ++It2) {
+      size_t OrigPrior=*Pi,LastPrior=TempPrior;
+      (*It2)->AddTypes(MyTypes_.back(), Orders, TempPrior,IsSymm_,LastNode);
+      ++Pi;
+      if (Pi==PiEnd) continue;
+      if (*Pi>OrigPrior) TempPrior++;
+      else TempPrior=LastPrior;
+      LastNode=*It2;
    }
 }
 
-static void Union(vSN_t& LHS, vSN_t&RHS, vSN_t& Result){
-   vSN_Itr It=std::set_union(LHS.begin(),LHS.end(),
-         RHS.begin(),RHS.end(),Result.begin(),Compare);
-   Result.resize(It-Result.begin());
+Node::Node(const std::string& BaseAbbrv, const std::string& BaseName) :
+      MyTypes_(1, ParamT(BaseAbbrv, BaseName)),Prior_(1,0) {
 }
 
-void Node::AddSubNode(boost::shared_ptr<Node> NewNode,
-                      const size_t Order,
-                      const size_t Prior){
+void Node::AddSubNode(boost::shared_ptr<Node> NewNode) {
    SubNodes_.push_back(NewNode);
-   if(NewNode->PrimNodes_.size()>0){
-      vSN_t TempPrims(PrimNodes_.size()+NewNode->PrimNodes_.size());
-      Union(PrimNodes_,NewNode->PrimNodes_,TempPrims);
-      PrimNodes_=TempPrims;
-   }
-   else PrimNodes_.push_back(NewNode);
-   SubNodes_.back()->AddTypes(MyTypes_.back(),Order,Prior);
-   //Add the members of our new subnode to the array
-   for(size_t i=0;i<SubNodes_.back()->size();i++)
-      MyMember_.push_back((*SubNodes_.back())[i]);
-   //Get a list of the nodes we are now connected to
-   vSN_t& OtherNodes=NewNode->ConnNodes_;
-   vSN_t Result(ConnNodes_.size()+OtherNodes.size());
-   Union(ConnNodes_,OtherNodes,Result);
-   //Remove the connections that are part of this
+   if (NewNode->PrimNodes_.size()>0)
+      PrimNodes_.insert(PrimNodes_.end(),NewNode->PrimBegin(), NewNode->PrimEnd());
+   else
+      PrimNodes_.push_back(NewNode);
 
-   //Don't want to sort actual SubNodes array as it destroys the order
-   vSN_t Temp=SubNodes_,Result2(Result.size());
-   std::sort(Temp.begin(),Temp.end(),Compare);
-   vSN_Itr It=std::set_difference(Result.begin(),Result.end(),
-         Temp.begin(),Temp.end(),Result2.begin(),Compare);
-   Result2.resize(It-Result2.begin());
-   ConnNodes_=Result2;
+   //Add the members of our new subnode to the array
+   for (size_t i=0; i<SubNodes_.back()->size(); i++)
+      MyMember_.push_back((*SubNodes_.back())[i]);
 }
 
-std::string Node::PrintOut(const std::string spaces)const{
+
+std::string Node::PrintOut(const std::string spaces, const size_t Level) const {
    std::stringstream Message;
    std::string MyStrType=MyTypes_.back().PrintOut();
    std::string NewSpaces="    ";
    //Print my atoms
-   if(spaces==""||SubNodes_.size()==0){
+   if (spaces==""||SubNodes_.size()==0) {
       Message<<spaces;
-      if(ActiveSubNodes_.size()>1){
-         std::set<size_t>::const_iterator It=ActiveSubNodes_.begin(),
-               ItEnd=ActiveSubNodes_.end();
+      if (ActiveSubNodes_.size()>1) {
+         std::vector<size_t>::const_iterator
+         It=ActiveSubNodes_.begin(),ItEnd=ActiveSubNodes_.end();
          --ItEnd;
-         for(;It!=ItEnd;++It)
+         for (; It!=ItEnd; ++It)
             Message<<(*It)<<",";
          Message<<(*It)<<"-";
       }
       Message<<MyStrType<<" Atom(s):";
-      for(unsigned MemberI=0;MemberI<size();MemberI++)
+      for (unsigned MemberI=0; MemberI<size(); MemberI++)
          Message<<(*this)[MemberI]<<" ";
       Message<<std::endl;
    }
+   if (Level==0) return Message.str();
    //Print my subnodes
    vSN_t::const_iterator It=SubNodes_.begin(),ItEnd=SubNodes_.end();
-   for(;It!=ItEnd;++It) Message<<(*It)->PrintOut(NewSpaces);
+   for (; It!=ItEnd; ++It)
+      Message<<(*It)->PrintOut(NewSpaces);
    //Print my type hierarchy
-   if(SubNodes_.size()==0){
+   if (SubNodes_.size()==0) {
       int NTypes=MyTypes_.size();
-      if(NTypes>1)
-         Message<<NewSpaces<<MyTypes_[0].PrintOut()<<" --> ";
-      for(int TypeI=1;TypeI<NTypes-1;TypeI++)
+      if (NTypes>1) Message<<NewSpaces<<MyTypes_[0].PrintOut()<<" --> ";
+      for (int TypeI=1; TypeI<NTypes-1; TypeI++)
          Message<<MyTypes_[TypeI].PrintOut()<<" --> ";
-      if(NTypes>1)
-         Message<<MyTypes_[NTypes-1].PrintOut()
-                 <<std::endl;
+      if (NTypes>1) Message<<MyTypes_[NTypes-1].PrintOut()<<std::endl;
    }
    //If I'm the top-level node print my connections
-   if(spaces==""){
+   if (spaces=="") {
       Message<<"My Connections: "<<std::endl;
 
-      It=ConnNodes_.begin();ItEnd=ConnNodes_.end();
-      for(;It!=ItEnd;++It){
-         Message<<NewSpaces<<(*It)->Type().PrintOut()<<" Atom(s):";
-         for(unsigned MemberI=0;MemberI<(*It)->size();MemberI++)
-            Message<<(*(*It))[MemberI]<<" ";
+      const_ConnItr It1=ConnBegin(),It1End=ConnEnd();
+      for (; It1!=It1End; ++It1) {
+         Message<<NewSpaces<<It1->second->Type().PrintOut()<<" Atom(s):";
+         for (unsigned MemberI=0; MemberI<It1->second->size(); MemberI++)
+            Message<<(*(It1->second))[MemberI]<<" ";
          Message<<std::endl;
       }
    }
    return Message.str();
 }
 
-void Node::UpdateConns(SharedNode NewMe){
-   vSN_Itr It=ConnNodes_.begin(),ItEnd=ConnNodes_.end(),It2,
-         It2End=SubNodes_.end();
-   for(;It!=ItEnd;++It){
-      for(It2=SubNodes_.begin();It2!=It2End;++It2)
-         (*It)->AddConn(NewMe,(*It2));
-   }
+
+void Node::UpdateConns(SharedNode NewMe) {
+   ConnItr It=ConnBegin(),ItEnd=ConnEnd();
+   Node::iterator It2,It2End=SubEnd();
+   for (; It!=ItEnd; ++It)
+      for (It2=SubNodes_.begin(); It2!=It2End; ++It2)
+         It->second->AddConn(NewMe, (*It2));
 }
 
-}}//End namespaces
+}
+} //End namespaces

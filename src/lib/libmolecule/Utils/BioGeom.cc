@@ -26,21 +26,20 @@
 #include "AutoFxnalGroup/PrimRunner.h"
 namespace psi {
 namespace LibMolecule {
-/*
-typedef PrimRunner<Amide1C, Amide1N,Amide2, Amide2G, Amide3> FindAmide;
-typedef PrimRunner<PNTerminus, NCTerminus, AABackBone,
-                   PNTermGly,NCTermGly,Glycine> FindAAPieces;
-typedef PrimRunner<ValineR, LeucineR, IsoleucineR, MethionineR, TyrosineR,
-      TryptophanR,SerineR,AlanineR> FindAARs;
-*/
+typedef PrimRunner<Isopropyl,Butyl,Hydroxyethyl,ArgThing> FindAARs;
+typedef PrimRunner<CTerminus,NTerminus,AABB,AnAA,
+    CTermGly,NTermGly,Gly,AAGly,CTermPro,NTermPro,
+    NPTermPro,Pro> FindBB;
+typedef PrimRunner<Ala,Val,Ile,Leu,Met,Phe,Tyr,Trp,Ser,
+      Thr,Asn,Gln,Cys,CysSB,Arg,His,Hip,Lys,Asp,Glu> FindAAs;
 BioGeom::BioGeom(const Molecule& Mol) :
       OrganicGeom(Mol,true) {
       Graph Nodes=OrganicGeom::GetGroups();
       Graph::iterator It;
-     /* SetRunner<FindAAPieces>::Run(Nodes);
-      SetRunner<FindAmide>::Run(Nodes);
-      SetRunner<FindAARs>::Run(Nodes);*/
-      std::cout<<Nodes.PrintOut()<<std::endl;
+      SetRunner<FindBB>::Run(Nodes);
+      SetRunner<FindAARs>::Run(Nodes);
+      SetRunner<FindAAs>::Run(Nodes);
+      std::cout<<Nodes.PrintOut(1)<<std::endl;
       GraphItr It1=Nodes.PrimBegin(),It1End=Nodes.PrimEnd();
       for(;It1!=It1End;++It1)
          std::cout<<"Atom "<<(*(*It1))[0]<<" "<<
