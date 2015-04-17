@@ -25,7 +25,7 @@ option(ENABLE_SCALASCA       "Enable scalasca profiler mode"               OFF)
 option(ENABLE_STATIC_LINKING "Enable mostly static libraries linking"      OFF)
 option(ENABLE_XHOST          "Enable processor-specific optimizations"     ON)
 option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
-option(ENABLE_PLUGINS        "Enable plugins"                              ON)
+option(ENABLE_PLUGINS        "Enable compilation of example plugins"       OFF)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
 # Modules requiring Fortran
