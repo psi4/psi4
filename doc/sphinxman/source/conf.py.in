@@ -52,7 +52,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'PSI4'
+project = u'Psi4'
 copyright = u'2015, The Psi4 Project'
 
 def get_gitversion():
@@ -64,9 +64,13 @@ def get_gitversion():
         return ''
 
     try:
-        vers = f.readline().split()[3]
+        #define GIT_VERSION "{master} 1ea0a14 dirty"
+        #define PSI_VERSION "0.1.76"
+        gith = f.readline().split()[3]
+        vers = f.readline().split()[2]
+        vers = vers[1:-1]
         f.close()
-        return vers[0:7]
+        return "%s %s" % (vers, gith)
     except IndexError:
         return ''
 
@@ -308,7 +312,7 @@ rst_epilog = """
 rst_prolog = """
 .. image:: /psi4banner.png
    :width: 100 %
-   :alt: PSI4 Project Logo
+   :alt: Psi4 Project Logo
 """
 
 # This option, from sphinx.ext.extlinks, allows linking to source on trac with :source:`lib/python/driver/py`
