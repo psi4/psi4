@@ -1,19 +1,12 @@
 # Run the git version script, and update gitversion.h, if it's changed
-add_custom_command(
+add_custom_target(update_version
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/gitversion.py ${PROJECT_SOURCE_DIR}
-    OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h
-            dummy.txt
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/gitversion.py
-    COMMENT "Generating Git info"
-)
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h.tmp ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h
+    COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h.tmp
+    COMMENT "Generating Git info")
 
-set_source_files_properties(
-    dummy.txt
-    PROPERTIES SYMBOLIC "on")
-set_source_files_properties(
-    python.cc version.cc
-    PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h)
-
+add_library(versioned_code OBJECT version.cc python.cc psi_start.cc)
+add_dependencies(versioned_code update_version)
 
 set(headers_list "")
 # List of headers
@@ -30,7 +23,8 @@ list(SORT headers_list)
 
 set(sources_list "")
 # List of sources
-list(APPEND sources_list export_psio.cc export_mints.cc psi_stop.cc export_functional.cc export_chkpt.cc export_oeprop.cc python.cc export_plugins.cc version.cc export_libfrag.cc export_blas_lapack.cc psi4.cc export_cubefile.cc export_benchmarks.cc export_efp.cc clean.cc create_new_plugin.cc psi_start.cc script.cc set_memory.cc read_options.cc export_libparallel.cc)
+list(APPEND sources_list export_psio.cc export_mints.cc psi_stop.cc export_functional.cc export_chkpt.cc export_oeprop.cc export_plugins.cc export_libfrag.cc export_blas_lapack.cc psi4.cc export_cubefile.cc export_benchmarks.cc export_efp.cc clean.cc create_new_plugin.cc script.cc set_memory.cc read_options.cc export_libparallel.cc)
+list(APPEND sources_list $<TARGET_OBJECTS:versioned_code>)
 
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
@@ -61,6 +55,7 @@ list(APPEND
 
 # Executable psi4
 add_executable(psi4 ${sources_list})
+add_dependencies(psi4 update_version)
 if(CUSTOM_BOOST_BUILD)
    add_dependencies(psi4 custom_boost)
 endif()

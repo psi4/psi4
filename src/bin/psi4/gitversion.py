@@ -18,7 +18,7 @@ def write_version(branch, mmp, ghash, status):
     else:
         mmp_str = "#undef PSI_VERSION"
 
-    with open('gitversion.h', 'w') as handle:
+    with open('gitversion.h.tmp', 'w') as handle:
         handle.write(version_str)
         handle.write(mmp_str)
 
