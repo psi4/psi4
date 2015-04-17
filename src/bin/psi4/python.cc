@@ -130,12 +130,15 @@ namespace psi {
     namespace cchbar     { PsiReturnType cchbar(Options&);    }
     namespace cclambda   { PsiReturnType cclambda(Options&);  }
     namespace ccdensity  { PsiReturnType ccdensity(Options&); }
-    namespace ccresponse { 
+    namespace ccresponse {
         PsiReturnType ccresponse(Options&);
         void scatter(Options&, double step, std::vector<SharedMatrix> dip, std::vector<SharedMatrix> rot, std::vector<SharedMatrix> quad);
     }
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
+#ifdef ENABLE_CHEMPS2
+    namespace dmrg       { PsiReturnType dmrg(Options&);     }
+#endif
 //    namespace detcas     { PsiReturnType detcas(Options&);     }
     namespace fnocc      { PsiReturnType fnocc(Options&);     }
     namespace efp        { PsiReturnType efp_init(Options&);  }
@@ -169,12 +172,12 @@ namespace psi {
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
     extern void print_version(std::string);
-    
+
 }
 
 void py_flush_outfile()
 {
-    
+
 }
 
 void py_close_outfile()
@@ -608,6 +611,23 @@ double py_psi_detci()
         return 0.0;
 }
 
+#ifdef ENABLE_CHEMPS2
+double py_psi_dmrg()
+{
+    py_psi_prepare_options_for_module("DMRG");
+    if (dmrg::dmrg(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
+}
+#else
+double py_psi_dmrg()
+{
+    throw PSIEXCEPTION("DMRG not enabled.");
+}
+#endif
+
 // DGAS
 // double py_psi_detcas()
 // {
@@ -694,14 +714,14 @@ void py_psi_scatter(double step, python::list dip_polar_list, python::list opt_r
     opt_rot_tensors.push_back(rot_mat);
     dip_quad_polar_tensors.push_back(quad_mat);
     }
-  
+
 //    for(std::vector<SharedMatrix>::iterator i=dip_polar_tensors.begin(); i != dip_polar_tensors.end(); ++i)
 //        (*i)->print(stdout);
 //    for(std::vector<SharedMatrix>::iterator i=opt_rot_tensors.begin(); i != opt_rot_tensors.end(); ++i)
 //        (*i)->print(stdout);
 //    for(std::vector<SharedMatrix>::iterator i=dip_quad_polar_tensors.begin(); i != dip_quad_polar_tensors.end(); ++i)
 //        (*i)->print(stdout);
-    
+
     ccresponse::scatter(Process::environment.options, step, dip_polar_tensors, opt_rot_tensors, dip_quad_polar_tensors);
 }
 
@@ -1326,7 +1346,7 @@ bool psi4_python_module_initialize()
     std::string psiDataDirWithPython = psiDataDirName + "/psi4";
     boost::filesystem::path bf_path;
     bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
-    // printf("Python dir is at %s\n", psiDataDirName.c_str()); 
+    // printf("Python dir is at %s\n", psiDataDirName.c_str());
     if(!boost::filesystem::is_directory(bf_path)) {
         printf("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
                 "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
@@ -1570,6 +1590,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");
     def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
+    def("dmrg", py_psi_dmrg, "Runs the DMRG code.");
 // DGAS    def("detcas", py_psi_detcas, "Runs the determinant-based complete active space self consistent field.");
     def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
     def("efp_init", py_psi_efp_init, "Initializes the EFP library and returns an EFP object.");
@@ -1654,7 +1675,7 @@ void Python::run(FILE *input)
         #else
         Py_SetProgramName(s);
         #endif
-        
+
         // Track down the location of PSI4's auxiliary directories path
         std::string psiPath = Process::environment("PSIPATH") + ":./";
         boost::char_separator<char> sep(":");
@@ -1753,7 +1774,7 @@ void Python::run(FILE *input)
 
                 if (verbose) {
                     outfile->Printf( "\n Input file to run:\n%s", inputfile.c_str());
-                    
+
                 }
 
                 str strStartScript(inputfile);

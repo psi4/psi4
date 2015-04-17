@@ -174,6 +174,8 @@ procedures = {
             'sdci'          : run_cepa,
             'dci'           : run_cepa,
             'efp'           : run_efp,
+            'dmrgscf'       : run_dmrgscf,
+            'dmrgci'        : run_dmrgci,
             # Upon adding a method to this list, add it to the docstring in energy() below
             # If you must add an alias to this list (e.g., dfmp2/df-mp2), please search the
             #    whole driver to find uses of name in return values and psi variables and
