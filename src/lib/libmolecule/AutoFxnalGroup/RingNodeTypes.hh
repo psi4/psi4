@@ -25,75 +25,55 @@
 
 namespace psi{
 namespace LibMolecule{
-/*
-class Benzene: public RingFinder<DBCC2,DBCC2,DBCC2>{
-   private:
-      typedef RingFinder<DBCC2,DBCC2,DBCC2> Base_t;
-   public:
-      Benzene():Base_t(F_t::Bz0,F_t::CBz0,F_t::HBz0,F_t::CBz0,F_t::HBz0,
-                      F_t::CBz0,F_t::HBz0,F_t::CBz0,F_t::HBz0,F_t::CBz0,
-                      F_t::HBz0,F_t::CBz0,F_t::HBz0){}
-};
+#define RING(Name,Abbv,Full,Centers...)\
+template<size_t...args>\
+class base_##Name:public RingFinder<Centers>{\
+   private:\
+      typedef RingFinder<Centers> Base_t;\
+   public:\
+      base_##Name():Base_t(Abbv,Full){\
+         if(sizeof...(args)!=0){\
+            std::vector<size_t> Temp{args...};\
+            PsiMap<size_t,size_t> Temp1;\
+            for(size_t i=0;i<sizeof...(args);){\
+               size_t temp3=Temp[i++];\
+               Temp1[temp3]=Temp[i++];\
+            }\
+            MyTypes_[0]=ParamT(Abbv,Full,Temp1);\
+         }\
+      }\
+};\
+typedef base_##Name <> Name;
 
-class Phenyl: public RingFinder<Alkenyl3,Alkenyl2,Alkenyl2,
-                                Alkenyl2,Alkenyl2,Alkenyl2>{
-   private:
-      typedef RingFinder<Alkenyl3,Alkenyl2,Alkenyl2,
-                         Alkenyl2,Alkenyl2,Alkenyl2> Base_t;
-   public:
-      Phenyl():Base_t(F_t::Bz1,
-                F_t::C1Bz1,F_t::C2Bz1,F_t::H1Bz1,
-                F_t::C3Bz1,F_t::H2Bz1,F_t::C4Bz1,F_t::H3Bz1,
-                F_t::C3Bz1,F_t::H2Bz1,F_t::C2Bz1,F_t::H1Bz1){}
-};
+/******Fused 5 and 6 Membered Rings**********************/
+RING(Benzofuran,"Ar9O","Benzofuran",Ether_t,Alkenyl3_t,Alkenyl,Alkenyl,Alkenyl,Alkenyl,Alkenyl3_t,Alkenyl,Alkenyl)
+RING(Isobenzofuran,"Ar9IO","Isobenzofuran",Ether_t,Alkenyl,Alkenyl3_t,Alkenyl,Alkenyl,Alkenyl,Alkenyl,Alkenyl3_t,Alkenyl)
+RING(Indole,"Ar9N","Indole",Amine,Alkenyl3_t,Alkenyl,Alkenyl,Alkenyl,Alkenyl,Alkenyl3_t,Alkenyl,Alkenyl)
+RING(Isoindole,"Ar9IN","Isoindole",Amine,Alkenyl,Alkenyl3_t,Alkenyl,Alkenyl,Alkenyl,Alkenyl,Alkenyl3_t,Alkenyl)
+RING(Purine,"Ar9N4","Purine",Amine,Alkenyl3_t,Azo,Alkenyl,Azo,Alkenyl,Alkenyl3_t,Azo,Alkenyl)
+RING(Indazole,"Ar9N2","Indazole",Azo,Amine,Alkenyl3_t,Alkenyl,Alkenyl,Alkenyl,Alkenyl,Alkenyl3_t,Alkenyl)
+RING(Benzoxazole,"Ar9ON","Benzoxazole",Ether_t,Alkenyl3_t,Alkenyl,Alkenyl,Alkenyl,Alkenyl,Alkenyl3_t,Azo,Alkenyl)
+RING(Benzisoxazole,"Ar9ION","Benzisoxazole",Ether_t,Alkenyl3_t,Alkenyl,Alkenyl,Alkenyl,Alkenyl,Alkenyl3_t,Alkenyl,Azo)
 
-class OrthoBenzene: public RingFinder<Alkenyl3,Alkenyl3,Alkenyl2,
-                                      Alkenyl2,Alkenyl2,Alkenyl2>{
-      private:
-      typedef RingFinder<Alkenyl3,Alkenyl3,Alkenyl2,
-                         Alkenyl2,Alkenyl2,Alkenyl2> Base_t;
-      public:
-      OrthoBenzene():Base_t(F_t::Bz2o,
-            F_t::C1Bz2o,F_t::C1Bz2o,
-            F_t::C2Bz2o,F_t::H1Bz2o,F_t::C3Bz2o,F_t::H2Bz2o,
-            F_t::C2Bz2o,F_t::H1Bz2o,F_t::C3Bz2o,F_t::H2Bz2o){}
-};
 
-class MetaBenzene: public RingFinder<Alkenyl3,Alkenyl2,Alkenyl3,
-                                      Alkenyl2,Alkenyl2,Alkenyl2>{
-      private:
-      typedef RingFinder<Alkenyl3,Alkenyl2,Alkenyl3,
-                         Alkenyl2,Alkenyl2,Alkenyl2> Base_t;
-      public:
-      MetaBenzene():Base_t(F_t::Bz2m,
-            F_t::C1Bz2m,F_t::C2Bz2m,F_t::H1Bz2m,
-            F_t::C1Bz2m,F_t::C3Bz2m,F_t::H2Bz2m,
-            F_t::C4Bz2m,F_t::H3Bz2m,F_t::C3Bz2m,F_t::H2Bz2m){}
-};
+/***********5 Membered Rings****************************/
+RING(Furan,"Ar5O","Furan",Ether_t,Alkenyl,Alkenyl,Alkenyl,Alkenyl)
+RING(Pyrrole,"Ar5N","Pyrrole",Amine,Alkenyl,Alkenyl,Alkenyl,Alkenyl)
+RING(Thiophene,"Ar5S","Thiophene",Sulfide_t,Alkenyl,Alkenyl,Alkenyl,Alkenyl)
+RING(Imidazole,"Ar5NCN","Imidazole",Amine,Alkenyl,Azo2_t,Alkenyl,Alkenyl)
+RING(Pyrazole,"Ar5NN","Pyrazole",Amine,Azo2_t,Alkenyl,Alkenyl,Alkenyl)
+RING(Oxazole,"Ar5OCN","Oxazole",Ether_t,Alkenyl,Azo2_t,Alkenyl,Alkenyl)
+RING(Isoxazole,"Ar5ON","Isooxazole",Ether_t,Azo2_t,Alkenyl,Alkenyl,Alkenyl)
 
-class ParaBenzene: public RingFinder<Alkenyl3,Alkenyl2,Alkenyl2,
-                                      Alkenyl3,Alkenyl2,Alkenyl2>{
-      private:
-      typedef RingFinder<Alkenyl3,Alkenyl2,Alkenyl2,
-                         Alkenyl3,Alkenyl2,Alkenyl2> Base_t;
-      public:
-      ParaBenzene():Base_t(F_t::Bz2p,
-            F_t::C1Bz2p,F_t::C2Bz2p,F_t::HBz2p,
-            F_t::C2Bz2p,F_t::HBz2p,F_t::C1Bz2p,
-            F_t::C2Bz2p,F_t::HBz2p,F_t::C2Bz2p,F_t::HBz2p){}
-};
+/*************************6 Membered Rings*****************/
+RING(Benzene,"Ph","Benzene",Alkenyl,Alkenyl,Alkenyl,Alkenyl,Alkenyl,Alkenyl)
+RING(Pyridine,"Ar6N","Pyridine",Azo,Alkenyl,Alkenyl,Alkenyl,Alkenyl,Alkenyl)
+RING(Pyrazine,"Ar6pN2","Pyrazine",Azo,Alkenyl,Alkenyl,Azo,Alkenyl,Alkenyl)
+RING(Pyrimidine,"Ar6mN2","Pyrimidine",Azo,Alkenyl,Azo,Alkenyl,Alkenyl,Alkenyl)
+RING(Pyridazine,"Ar6oN2","Pyridazine",Azo,Azo,Alkenyl,Alkenyl,Alkenyl,Alkenyl)
 
-class Benzene6: public RingFinder<DBCC4,DBCC4,DBCC4,DBCC4,DBCC4,DBCC4>{
-   private:
-      typedef RingFinder<DBCC4,DBCC4,DBCC4,DBCC4,DBCC4,DBCC4> Base_t;
-   public:
-      Benzene6():Base_t(F_t::Bz6,F_t::CBz6,F_t::CBz6,F_t::CBz6,
-                        F_t::CBz6,F_t::CBz6,F_t::CBz6){}
-};
+#undef RING
 
-//This header file is all 256 possible substitutions of an Indole ring
-#include "Indole.hh"
-*/
 }}//End namespaces
 
 #endif /* SRC_LIB_LIBMOLECULE_AUTOFXNALGROUP_RINGNODETYPES_HH_ */
