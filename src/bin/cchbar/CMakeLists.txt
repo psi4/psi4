@@ -35,7 +35,6 @@ set_property(GLOBAL APPEND PROPERTY PSILIB cchbar)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(cchbar custom_boost)
 endif()
-install(TARGETS cchbar ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/libcchbar)

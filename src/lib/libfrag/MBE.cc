@@ -20,6 +20,7 @@
  *@END LICENSE
  */
 #include "MBE.h"
+#include "CanonicalMBE.h"
 namespace psi{
 namespace LibFrag{
 
@@ -53,6 +54,18 @@ bool CanonicalMBE::UpdateIndices(const cSetIt_t& LastIndex, const int m,
    }
    return goodindex;
 }
+
+
+bool CanonicalMBE::IsReal(
+      const LibMolecule::FragmentedSystem::iterator& NMerI)const{
+   const LibMolecule::SerialNumber& CurrSerial=(*NMerI)->GetSN();
+   if(*CurrSerial.begin()<0)return false;
+   if(*CurrSerial.begin()==0){
+      std::cout<<"Shouldn't be possible"<<std::endl;
+   }
+   return true;
+}
+
 
 }}//End namespaces
 

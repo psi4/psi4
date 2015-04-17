@@ -237,6 +237,7 @@ add_subdirectory(psimrcc-sp1)
 add_subdirectory(psithon1)
 add_subdirectory(psithon2)
 add_subdirectory(pubchem1)
+add_subdirectory(pubchem2)
 add_subdirectory(pywrap-alias)
 add_subdirectory(pywrap-all)
 add_subdirectory(pywrap-basis)
@@ -296,7 +297,7 @@ add_subdirectory(libefp)
 # Set up groups of test cases analogous to dftd3 below
 #   In particular, new ext-exe-dep tests should 
 #   * get their own directory in tests (e.g., tests/dftd3)
-#   * have a name that doesn't repeat the exe (e.g., test/dftd3/energy)
+#   * have a name that doesn't repeat the exe (e.g., tests/dftd3/energy)
 #   * be listed in the exeShort and exeLong variable name as exe-name (e.g., dftd3-energy)
 #   * be sure the exe is listed in the python code below (search 'partition')
 
@@ -343,3 +344,8 @@ endif()
 if(NOT PERL_FOUND)
    message(WARNING "Perl was not found. Some Coupled Cluster test cases will not be thoroughly checked.")
 endif()
+
+if(ENABLE_CHEMPS2)
+    add_subdirectory(dmrg)
+endif()
+

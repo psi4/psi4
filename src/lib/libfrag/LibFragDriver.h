@@ -40,7 +40,7 @@ class LibFragDriver{
    public:
       LibFragDriver(const std::string& MethodName);
       void RunMonomers(const std::string& MethodName);
-      void RunNMers(const std::string& MethodName);
+      void RunNMers(int Start,const std::string& MethodName);
 };
 
 

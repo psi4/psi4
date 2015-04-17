@@ -22,5 +22,4 @@ add_library(erd STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 #add_dependencies(erd )
 set_property(GLOBAL APPEND PROPERTY LIBLIST erd)
-install(TARGETS erd ARCHIVE DESTINATION lib)
 

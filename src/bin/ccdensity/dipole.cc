@@ -50,9 +50,11 @@ void dipole(void)
 {
     /* Call OEProp here for each root opdm */
     boost::shared_ptr<OEProp> oe(new OEProp());
-    boost::shared_ptr<Wavefunction> wfn =
-      Process::environment.wavefunction();
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     boost::shared_ptr<Matrix> Ca = wfn->Ca();
+    boost::shared_ptr<Matrix> Cb = wfn->Cb();
+
+//    Ca->print();
 
     Dimension nmopi = wfn->nmopi();
     Dimension frzvpi = wfn->frzvpi();
@@ -61,34 +63,49 @@ void dipole(void)
     wfn->nbetapi().print();
     wfn->doccpi().print();
     wfn->soccpi().print();
+    outfile->Printf("Wfn name = %s\n", wfn->name().c_str());
+    outfile->Printf("Same alpha/beta density? %d\n", wfn->same_a_b_dens());
+
+//    outfile->Printf("Alpha OPDM:\n");
+//    mat_print(moinfo.opdm_a, moinfo.nmo, moinfo.nmo, "outfile");
+//    outfile->Printf("Beta OPDM:\n");
+//    mat_print(moinfo.opdm_b, moinfo.nmo, moinfo.nmo, "outfile");
 
     SharedMatrix Pa(new Matrix("P alpha", Ca->colspi(), Ca->colspi()));
+    SharedMatrix Pb(new Matrix("P beta", Cb->colspi(), Cb->colspi()));
     int mo_offset = 0;
     for (int h = 0; h < Ca->nirrep(); h++) {
       int nmo = nmopi[h];
       int nfv = frzvpi[h];
       int nmor = nmo - nfv;
       if (!nmo || !nmor) continue;
-      double** Pap = Pa->pointer(h);
 
       // Loop over QT, convert to Pitzer
+      double **Pap = Pa->pointer(h);
+      double **Pbp = Pb->pointer(h);
       for (int i=0; i<nmor; i++) {
         for (int j=0; j<nmor; j++) {
           int I = moinfo.pitzer2qt[i+mo_offset];
           int J = moinfo.pitzer2qt[j+mo_offset];
-          Pap[i][j] = moinfo.opdm[I][J];
+          if(wfn->same_a_b_dens())
+            Pap[i][j] = moinfo.opdm[I][J];
+          else {
+            Pap[i][j] = moinfo.opdm_a[I][J];
+            Pbp[i][j] = moinfo.opdm_b[I][J];
+          }
         }
       }
-      mo_offset += nmor;
+      mo_offset += nmo;
     }
 
-    Pa->scale(0.5);
+//    Pa->print();
+//    Pb->print();
+
+    if(wfn->same_a_b_dens()) Pa->scale(0.5);
     //Pa->print();
 
     oe->set_Da_mo(Pa);
-    if ((!params.ref) == 0) {
-        oe->set_Db_mo(Pa);
-    }
+    if(!wfn->same_a_b_dens()) oe->set_Db_mo(Pb);
 
     oe->add("DIPOLE");
     oe->add("QUADRUPOLE");
@@ -97,7 +114,7 @@ void dipole(void)
 
     // TODO: This section needs work to duplicate the generic CC DIPOLE X, etc.
     //  into the exact method and/or root, like in DETCI
-    outfile->Printf( "\nCC Density OPDM (Spin densities are not correct)\n\n");
+    outfile->Printf( "\nCC Density OPDM\n\n");
     oe->set_title("CC");
 
     oe->compute();

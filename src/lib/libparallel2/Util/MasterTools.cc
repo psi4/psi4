@@ -26,7 +26,7 @@ namespace psi{
 namespace LibParallel{
 
 void MasterTools::PrintOut()const{
-   for(int i=0;i<Tasks_->size();i++){
+   for(unsigned int i=0;i<Tasks_->size();i++){
       this->LibParallelBase::operator<<((*Tasks_)[i].Number())<<" ";
    }
    this->LibParallelBase::operator<<("\n");
@@ -53,11 +53,11 @@ void MasterTools::GiveTasks(){
       //Actually get the message...
       State_->Receive(sender,NEXT,(int*)NULL,0);
       if(!AllTasksComplete()){
-         int TasksLeft=Tasks_->size()-CurrentTask_;
-         int size=(TasksLeft>=TaskChunk_?TaskChunk_:TasksLeft);
+         unsigned int TasksLeft=Tasks_->size()-CurrentTask_;
+         unsigned int size=(TasksLeft>=TaskChunk_?TaskChunk_:TasksLeft);
          State_->Send(sender,TASKSIZE,&size,1);
          std::vector<int> buffer(size);
-         for(int i=0;i<size;i++){
+         for(unsigned int i=0;i<size;i++){
             int AbsTask=(*Tasks_)[CurrentTask_].Number();
             ///Minus one because the first slave is MPI process 1
             TaskMap_.AddTask(CurrentTask_++,AbsTask,sender-1);

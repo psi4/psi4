@@ -154,6 +154,9 @@ protected:
     /// The energy associated with this wavefunction
     double energy_;
 
+    /// Frozen-core energy associated with this wavefunction
+    double efzc_;
+
     /// Total number of SOs
     int nso_;
     /// Total number of MOs
@@ -204,6 +207,7 @@ protected:
     /// Helpers for C/D/epsilon transformers
     SharedMatrix C_subset_helper(SharedMatrix C, const Dimension& noccpi, SharedVector epsilon, const std::string& basis, const std::string& subset);
     SharedMatrix D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string& basis);
+    SharedMatrix F_subset_helper(SharedMatrix F, SharedMatrix C, const std::string& basis);
     SharedVector epsilon_subset_helper(SharedVector epsilon, const Dimension& noccpi, const std::string& basis, const std::string& subset);
     std::vector<std::vector<int> > subset_occupation(const Dimension& noccpi, const std::string& subset);
 
@@ -333,6 +337,10 @@ public:
     int nirrep() const { return nirrep_; }
     /// Returns the reference energy
     double reference_energy () const { return energy_; }
+    /// Returns the frozen-core energy
+    double efzc() const { return efzc_; }
+    /// Sets the frozen-core energy
+    void set_efzc(double efzc) { efzc_ = efzc; }
 
     /// Returns the overlap matrix
     SharedMatrix S() const { return S_; }

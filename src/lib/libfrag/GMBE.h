@@ -38,6 +38,7 @@ class Expansion{
             const MBEProp<T2>& MonoProperties){
          return Impl.PropertyImpl(Systems,MonoProperties);
       }
+      std::string PrintOut()const{return Impl.PrintOutImpl();}
 
 };
 
@@ -45,11 +46,15 @@ class ExpanImplBase{
    protected:
       int N;
       double Phase(const int i)const{return (i%2==0?1:-1);}
+      ///Once calculated this will be the result in a pretty format
+      std::string LastResult_;
    public:
       ExpanImplBase(const int NewN):N(NewN){}
       ///Returns True, useful if for some reason you want to know this
       virtual bool IsGMBE()const{return true;}
       virtual ~ExpanImplBase(){}
+      ///Returns the result in a pretty format
+      std::string PrintOutImpl()const{return LastResult_;}
 };
 
 class GMBE:public ExpanImplBase{
@@ -61,12 +66,12 @@ class GMBE:public ExpanImplBase{
 		template<typename T>
 		MBEProp<T> PropertyImpl(
 		      const LibMolecule::FragmentedSystem& Systems,
-		      const MBEProp<T>& MonoProperties)const;
+		      const MBEProp<T>& MonoProperties);
 };
 
 template<typename T>
 MBEProp<T> GMBE::PropertyImpl(const LibMolecule::FragmentedSystem& Systems,
-      const MBEProp<T>& MonoProperties)const{
+      const MBEProp<T>& MonoProperties){
    MBEProp<T> Prop(1);
    /*If N==1 special case and energies are only in Energies[0],but
    //we get sizes from Systems[1] and Systems[2]
