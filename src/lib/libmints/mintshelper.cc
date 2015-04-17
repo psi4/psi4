@@ -424,6 +424,17 @@ SharedMatrix MintsHelper::ao_overlap()
     return overlap_mat;
 }
 
+// JWM 4/3/2015
+SharedMatrix MintsHelper::ao_overlap(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2)
+{
+    // Overlap
+    IntegralFactory factory(bs1, bs2);
+    boost::shared_ptr<OneBodyAOInt> overlap(factory.ao_overlap());
+    SharedMatrix overlap_mat(new Matrix(PSIF_AO_S, bs1->nbf (), bs2->nbf ()));
+    overlap->compute(overlap_mat);
+    return overlap_mat;
+}
+
 SharedMatrix MintsHelper::ao_kinetic()
 {
     boost::shared_ptr<OneBodyAOInt> T(integral_->ao_kinetic());
