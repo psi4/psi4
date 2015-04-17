@@ -113,7 +113,7 @@ void ObaraSaikaTwoCenterMIRecursion::compute(double PA[3], double PB[3], double 
     }
 
     // Upward recursion in j for i=0
-    for (j=0; j<am1; ++j) {
+    for (j=0; j<am2; ++j) {
         for (k=0; k<=max_m_; ++k) {
             x_[0][j+1][k] = PB[0] * x_[0][j][k];
             y_[0][j+1][k] = PB[1] * y_[0][j][k];

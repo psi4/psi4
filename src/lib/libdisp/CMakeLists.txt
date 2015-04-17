@@ -35,7 +35,6 @@ set_property(GLOBAL APPEND PROPERTY LIBLIST disp)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(disp custom_boost)
 endif()
-install(TARGETS disp ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/libdisp)

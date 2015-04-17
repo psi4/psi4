@@ -22,10 +22,12 @@ option(ENABLE_ACCELERATE     "Enable use of Mac OS X Accelerate Framework" OFF)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"            OFF)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                            OFF)
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"               OFF)
-option(ENABLE_STATIC_LINKING "Enable static libraries linking"             OFF)
+option(ENABLE_STATIC_LINKING "Enable mostly static libraries linking"      OFF)
+option(ENABLE_XHOST          "Enable processor-specific optimizations"     ON)
 option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
 option(ENABLE_PLUGINS        "Enable plugins"                              ON)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
+option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     ON)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
 # Modules requiring Fortran
 option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF)
@@ -93,11 +95,11 @@ if(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local/psi4")
 endif()
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-   set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
+   set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/interfaces)
    set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
    set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
 else()
-   set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/external)
+   set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/interfaces)
    set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
 endif()
 
@@ -143,9 +145,9 @@ link_directories("${Boost_LIBRARY_DIRS}")
 include_directories(SYSTEM "${Boost_INCLUDE_DIRS}")
 
 #OpenBabel Detection
-add_subdirectory(openbabel)
-set(BABEL_LIBRARY_DIR ${CMAKE_BINARY_DIR}/lib)
-set(BABEL_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include/openbabel-2.0)
+#add_subdirectory(openbabel)
+#set(BABEL_LIBRARY_DIR ${CMAKE_BINARY_DIR}/lib)
+#set(BABEL_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include/openbabel-2.0)
 
 # Append the suffix given from input to all generated executables
 if(EXECUTABLE_SUFFIX)
@@ -236,18 +238,14 @@ if(ENABLE_PCMSOLVER)
       fortran_enabler()
       add_definitions(-DHAVE_PCMSOLVER)
       message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
-      link_directories(${PROJECT_BINARY_DIR}/external/lib)
+      link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
+                       ${EXTERNAL_PROJECT_INSTALL_PREFIX})
    endif()
    set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
 endif()
 
-#RMR---This is our plugin workaround
-#Here we start a list of plugins
-set(PLUGINS "")
-if(ENABLE_PLUGINS)
-   add_subdirectory(plugins)
-   #Add plugins to the libraries Psi depends on
-   set_property(GLOBAL APPEND PROPERTY PSILIB ${PLUGINS})
+if(ENABLE_CHEMPS2)
+    add_definitions(-DENABLE_CHEMPS2=1)
 endif()
 
 #If we have MPI we may want to also build JKFactory which makes J and K's
@@ -294,10 +292,12 @@ foreach(def ${defs})
     set(PLUGIN_DEFINES "-D${def} ${PLUGIN_DEFINES}")
 endforeach()
 set(CXX_FLAGS_PLUGIN "")
+set(PLUGIN_LDFLAGS "${CMAKE_CXX_LINK_FLAGS} ${LIBC_INTERJECT}")
 include(ConfigPlugins) # This module has to be included **after** ConfigCompilerFlags.cmake
 string(STRIP ${CXX_FLAGS_PLUGIN} CXX_FLAGS_PLUGIN)
 string(STRIP ${PLUGIN_INCLUDE_DIRECTORIES} PLUGIN_INCLUDE_DIRECTORIES)
 string(STRIP ${PLUGIN_DEFINES} PLUGIN_DEFINES)
+string(STRIP ${PLUGIN_LDFLAGS} PLUGIN_LDFLAGS)
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
 
 # Make known that the setup command given and the corresponding CMake
@@ -312,11 +312,23 @@ endif()
 #FILE(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
+# Install samples directory
+INSTALL(
+  DIRECTORY "samples"
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/psi
+  USE_SOURCE_PERMISSIONS
+  PATTERN "example_psi4rc_file" EXCLUDE
+)
+
 # Configure some scripts
 configure_files()
 # Configure testing
 # This must come after ConfigDocumentation, as it needs Perl detection
 # It also needs Python so it must go _after_ Python detection!
 include(ConfigTesting)
+# This must come after ConfigTesting to register plugins tests
+if(ENABLE_PLUGINS)
+   add_subdirectory(plugins)
+endif()
 # This has to be the very last CMake module to be included
 include(ConfigInfo)

@@ -27,7 +27,7 @@ extern "C"
 PsiReturnType efpfd(Options& options)
 {
     int print = options.get_int("PRINT");
-    fprintf(outfile, "Starting efpfd()\n");
+    outfile->Printf("Starting efpfd()\n");
     options.print();
 
     // 3-pt or 5-pt formula?
@@ -43,7 +43,7 @@ PsiReturnType efpfd(Options& options)
     efp_.SetGeometry();
 
     int nfrag = efp_.get_frag_count();
-    fprintf(outfile,"\tNumber of fragments = %d\n", nfrag);
+    outfile->Printf("\tNumber of fragments = %d\n", nfrag);
 
 // The code below shows how to access the information for the full (>3) atoms
 // in a fragment is the solvent is e.g., methanol.
@@ -53,41 +53,41 @@ PsiReturnType efpfd(Options& options)
     for (int i=0; i<nfrag; ++i)
       atoms_per_frag[i]= efp_.get_frag_atom_count(i);
 
-    fprintf(outfile,"\n\tAtoms in fragment:\n");
+    outfile->Printf("\n\tAtoms in fragment:\n");
     for (int i=0; i<nfrag; ++i)
-      fprintf(outfile, "\t %d : %d\n", i+1, atoms_per_frag[i]);
+      outfile->Printf("\t %d : %d\n", i+1, atoms_per_frag[i]);
 
     // Masses of all fragment atoms
-    fprintf(outfile,"\tMasses in fragment:");
+    outfile->Printf("\tMasses in fragment:");
     for (int i=0; i<nfrag; ++i) {
       double *tmp_mass = efp_.get_frag_atom_mass(i);
-      fprintf(outfile, "\n\t %d : ", i+1);
+      outfile->Printf("\n\t %d : ", i+1);
       for (int a=0; a<atoms_per_frag[i]; ++a)
-        fprintf(outfile, "%8.5f ", tmp_mass[a]);
-      fprintf(outfile,"\n");
+        outfile->Printf("%8.5f ", tmp_mass[a]);
+      outfile->Printf("\n");
       delete [] tmp_mass;
     }
 
     // Atomic numbers of all fragment atoms
-    fprintf(outfile,"\n\tAtomic Numbers in Fragment:");
+    outfile->Printf("\n\tAtomic Numbers in Fragment:");
     for (int i=0; i<nfrag; ++i) {
       double *tmp_Zs = efp_.get_frag_atom_Z(i);
-      fprintf(outfile, "\n\t %d :", i+1);
+      outfile->Printf("\n\t %d :", i+1);
       for (int a=0; a<atoms_per_frag[i]; ++a)
-        fprintf(outfile," %3.1f", tmp_Zs[a]);
+        outfile->Printf(" %3.1f", tmp_Zs[a]);
       delete [] tmp_Zs;
     }
     delete [] atoms_per_frag;
 
     // How to access COM of full fragments
-    fprintf(outfile,"\n\tCenters of mass of fragment:");
+    outfile->Printf("\n\tCenters of mass of fragment:");
     for (int i=0; i<nfrag; ++i) {
       double *tmp_com = efp_.get_com(i);
-      fprintf(outfile, "\n\t %d :", i+1);
-      fprintf(outfile, "%15.10lf %15.10lf %15.10lf", tmp_com[0], tmp_com[1], tmp_com[2]);
+      outfile->Printf("\n\t %d :", i+1);
+      outfile->Printf("%15.10lf %15.10lf %15.10lf", tmp_com[0], tmp_com[1], tmp_com[2]);
       delete [] tmp_com;
     }
-    fprintf(outfile,"\n");
+    outfile->Printf("\n");
 */
 
     // Compute and store analytic gradient
@@ -222,9 +222,9 @@ PsiReturnType efpfd(Options& options)
       E[cnt++] = psi::Process::environment.globals["CURRENT ENERGY"];
     }
 
-    fprintf(outfile,"Displaced energies\n");
+    outfile->Printf("Displaced energies\n");
     for (int i=0; i<Ndisp; ++i)
-      fprintf(outfile,"%15.10lf\n", E[i]);
+      outfile->Printf("%15.10lf\n", E[i]);
 
     int Ncoord;
     if (pts == 3)
@@ -245,15 +245,15 @@ PsiReturnType efpfd(Options& options)
       }
     }
 
-    fprintf(outfile,"Finite-difference gradient\n");
+    outfile->Printf("Finite-difference gradient\n");
     for (int f=0; f<nfrag; ++f) {
-      fprintf(outfile,"\t %d: ", f+1);
+      outfile->Printf("\t %d: ", f+1);
       for (int i=0; i<6; ++i)
-        fprintf(outfile,"%15.10lf", fd_grad[6*f+i]);
-      fprintf(outfile,"\n");
+        outfile->Printf("%15.10lf", fd_grad[6*f+i]);
+      outfile->Printf("\n");
     }
 
-    fprintf(outfile,"Analytic gradient");
+    outfile->Printf("Analytic gradient");
     grad_->print();
 
     return Success;

@@ -23,7 +23,7 @@
 #define SRC_LIB_LIBPSIUTIL_PSIMAP_H_
 
 #include<map>
-#include "exception.h"//For PSIEXCEPTION
+#include "Exception2.h"
 namespace psi{
 
 /** \brief The purpose of the PsiMap class is to provide an associative
@@ -133,7 +133,7 @@ const T2& PsiMap<T1,T2>::MapDeRef(const T1& Key)const{
       returnvalue=&(const_cast<std::map<T1,T2>* >(temp))->operator[](Key);
    }
    else //We are changing it, that's a no-no...
-      throw PSIEXCEPTION("This Map doesn't contain this element");
+      PSIERROR("This Map doesn't contain this element");
    return *returnvalue;
 }
 }//End psi namespace

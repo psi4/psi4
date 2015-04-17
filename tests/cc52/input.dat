@@ -12,11 +12,9 @@ noreorient
 }
 
 set {
-  property roa
   freeze_core false
   omega [589, nm]
-  gauge length
   basis cc-pVDZ
 }
 
-property('ccsd',properties=['roa'])
+property('ccsd',properties=['roa_tensor'])

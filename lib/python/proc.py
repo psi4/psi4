@@ -37,6 +37,7 @@ import p4util
 #from extend_Molecule import *
 from molutil import *
 from functional import *
+from roa import *
 # never import driver, wrappers, or aliases into this file
 
 # ATTN NEW ADDITIONS!
@@ -1180,7 +1181,7 @@ def run_dfmp2_select_gradient(name, **kwargs):
     if (psi4.get_option("SCF", "REFERENCE") == "UHF") or (psi4.get_option("SCF", "REFERENCE") == "UKS"):
         psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
         return run_dfomp2_gradient(name, **kwargs)
-    else: 
+    else:
         return run_dfmp2_gradient(name, **kwargs)
 
 
@@ -1423,7 +1424,7 @@ def run_cc_property(name, **kwargs):
     """
     oneel_properties = ['dipole', 'quadrupole']
     twoel_properties = []
-    response_properties = ['polarizability', 'rotation', 'roa']
+    response_properties = ['polarizability', 'rotation', 'roa', 'roa_tensor']
     excited_properties = ['oscillator_strength', 'rotational_strength']
 
     one = []
@@ -1433,7 +1434,7 @@ def run_cc_property(name, **kwargs):
     invalid = []
 
     if 'properties' in kwargs:
-        properties = kwargs.pop('properties')
+        properties = kwargs['properties']
         properties = p4util.drop_duplicates(properties)
 
         for prop in properties:
@@ -1464,6 +1465,11 @@ def run_cc_property(name, **kwargs):
 
     if ((name.lower() == 'eom-ccsd' or name.lower() == 'eom-cc2') and n_response > 0):
         raise ValidationError("Cannot (yet) compute response properties for excited states.")
+
+    if ('roa' in response):
+        # Perform distributed roa job
+        run_roa(name.lower(), **kwargs)
+        return #Don't do anything further
 
     if (n_one > 0 or n_two > 0) and (n_response > 0):
         print("Computing both density- and response-based properties.")
@@ -2013,6 +2019,63 @@ def run_dfmp2(name, **kwargs):
     elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2') or (name.upper() == 'MP2'):
         return e_dfmp2
 
+
+def run_dmrgscf(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an DMRG calculation.
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF', 'SCF_TYPE'])
+
+    # Bypass routine scf if user did something special to get it to converge
+    bypass = ('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))
+    if not bypass:
+        scf_helper(name, **kwargs)
+
+    # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
+    # written to disk
+    IsDF = psi4.get_option('SCF', 'SCF_TYPE') == 'DF'
+    IsCD = psi4.get_option('SCF', 'SCF_TYPE') == 'CD'
+    IsDirect = psi4.get_option('SCF', 'SCF_TYPE') == 'DIRECT'
+    if bypass or IsDF or IsCD or IsDirect:
+        mints = psi4.MintsHelper()
+        mints.integrals()
+
+    e_dmrg = psi4.dmrg()
+    optstash.restore()
+
+    return e_dmrg
+
+def run_dmrgci(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an DMRG calculation.
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF', 'SCF_TYPE'],
+        ['DMRG', 'DMRG_MAXITER'])
+
+    # Bypass routine scf if user did something special to get it to converge
+    bypass = ('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))
+    if not bypass:
+        scf_helper(name, **kwargs)
+
+    # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
+    # written to disk
+    IsDF = psi4.get_option('SCF', 'SCF_TYPE') == 'DF'
+    IsCD = psi4.get_option('SCF', 'SCF_TYPE') == 'CD'
+    IsDirect = psi4.get_option('SCF', 'SCF_TYPE') == 'DIRECT'
+    if bypass or IsDF or IsCD or IsDirect:
+        mints = psi4.MintsHelper()
+        mints.integrals()
+
+    psi4.set_local_option('DMRG', 'DMRG_MAXITER', 1)
+
+    e_dmrg = psi4.dmrg()
+    optstash.restore()
+
+    return e_dmrg
 
 def run_psimrcc(name, **kwargs):
     """Function encoding sequence of PSI module calls for a PSIMRCC computation

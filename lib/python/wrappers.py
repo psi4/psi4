@@ -42,7 +42,7 @@ from driver import *
 # never import aliases into this file
 
 #Where the implementation for running MBEs is held
-#import mbe_impl
+from parallel import *
 # Function to make calls among wrappers(), energy(), optimize(), etc.
 def call_function_in_1st_argument(funcarg, **largs):
     r"""Function to make primary function call to energy(), opt(), etc.
@@ -343,6 +343,13 @@ def auto_fragments(name, **kwargs):
     new_mol = geometry(new_geom)
     new_mol.print_out()
     psi4.print_out("Exiting auto_fragments\n")
+
+def GetCalcDetails(methodname):
+    energylist=[]
+    for k, v in VARH[methodname].iteritems():
+        energylist.append(v)
+    energylist.append("CURRENT ENERGY")
+    return energylist
    
    
 def new_run_calc(methodname, molecule,BeQuiet,**kwargs):
@@ -354,7 +361,8 @@ def new_run_calc(methodname, molecule,BeQuiet,**kwargs):
         psi4.be_quiet()
     energy(methodname,**kwargs)
     energylist={}
-    for k, v in VARH[methodname].iteritems():
+    energynames=GetCalcDetails(methodname)
+    for v in energynames:
         energylist[v]=psi4.get_variable(v)
     if(BeQuiet==1):
         psi4.reopen_outfile()
@@ -362,7 +370,26 @@ def new_run_calc(methodname, molecule,BeQuiet,**kwargs):
     oldmolecule.update_geometry()
     psi4.clean()
     return energylist
-      
+
+def new_new_run_calc(methodname, moleculelist,**kwargs):
+    MolList=moleculelist.split("***")
+    PMan=Parallel()
+    for i in MolList:
+        Prior=i.splitlines()
+        txt=os.linesep.join([s for s in i.splitlines() if s])
+        if(len(Prior) > 0):
+            PMan.AddTask(txt,len(Prior))
+    PMan.MakeJob()
+    MyGeom=PMan.Begin()
+    energylist=GetCalcDetails(methodname)
+    Energies=[]
+    while not PMan.Done():
+        new_run_calc(methodname,MyGeom,1)
+        for k in energylist:
+            Energies.append(psi4.get_variable(k))
+        MyGeom=PMan.Next()
+    return PMan.Synch(Energies,len(energylist))
+              
 
 def mbe(name, **kwargs):
     r"""The driver routine for running calculations with the MBE or the 
