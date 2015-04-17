@@ -68,6 +68,8 @@ all the libraries it needs. Now you need only specify a scratch directory
 
 All done!
 
+.. note:: Above commands use bash for installation and set up your environment for bash at runtime. To use csh at runtime, follow the on-screen directions at the end of the installation or consult step 7 below.
+
 .. _`sec:slowconda`:
 
 Detailed Installation of Miniconda
