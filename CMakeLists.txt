@@ -27,6 +27,7 @@ option(ENABLE_XHOST          "Enable processor-specific optimizations"     ON)
 option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
 option(ENABLE_PLUGINS        "Enable compilation of example plugins"       OFF)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
+option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     ON)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
 # Modules requiring Fortran
 option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF)
@@ -235,6 +236,10 @@ if(ENABLE_PCMSOLVER)
                        ${EXTERNAL_PROJECT_INSTALL_PREFIX})
    endif()
    set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
+endif()
+
+if(ENABLE_CHEMPS2)
+    add_definitions(-DENABLE_CHEMPS2=1)
 endif()
 
 #If we have MPI we may want to also build JKFactory which makes J and K's
