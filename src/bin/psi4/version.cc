@@ -36,12 +36,12 @@ void print_version(std::string)
 {
   boost::shared_ptr<psi::PsiOutStream> printer=outfile;
   printer->Printf( "    -----------------------------------------------------------------------\n");
-  printer->Printf( "          PSI4: An Open-Source Ab Initio Electronic Structure Package\n");
-  printer->Printf( "                              PSI %s Driver\n", PSI_VERSION);
+  printer->Printf( "          Psi4: An Open-Source Ab Initio Electronic Structure Package\n");
+  printer->Printf( "                              Psi4 %s Driver\n", PSI_VERSION);
 
   // Are we using git? If so,what version string
 #ifdef GIT_VERSION
-  printer->Printf( "\n               Git: Rev " GIT_VERSION "\n");
+  printer->Printf( "\n                          Git: Rev " GIT_VERSION "\n");
 #endif
 
   printer->Printf( "\n");

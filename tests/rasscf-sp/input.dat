@@ -1,5 +1,5 @@
-# 6-31G** H2O Test RASSCF Energy Point
-# will default to only singles and doubles in the active space
+#! 6-31G** H2O Test RASSCF Energy Point
+#! will default to only singles and doubles in the active space
 
 set {
   MCSCF_MAXITER = 80
@@ -27,4 +27,4 @@ molecule mol {
 rasscf_energy = energy('RASSCF')
 
 
-compare_values(-76.073064779671, rasscf_energy, 6, 'RASSCF Energy')
+compare_values(-76.073064779671, rasscf_energy, 6, 'RASSCF Energy')  #TEST
