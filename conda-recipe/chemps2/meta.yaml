@@ -23,6 +23,8 @@ requirements:
     - hdf5
     - gsl
   run:
+    - hdf5
+    - gsl
 
 about:
   home: https://github.com/SebWouters/CheMPS2#chemps2-a-spin-adapted-implementation-of-dmrg-for-ab-initio-quantum-chemistry
