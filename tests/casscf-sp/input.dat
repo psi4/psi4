@@ -1,4 +1,4 @@
-
+#! CASSCF/6-31G** energy point
 
 molecule {
 O
@@ -17,4 +17,4 @@ set {
 
 casscf_energy = energy('casscf')
 
-compare_values(-76.073865006902, casscf_energy, 6, 'CASSCF Energy')
+compare_values(-76.073865006902, casscf_energy, 6, 'CASSCF Energy')  #TEST

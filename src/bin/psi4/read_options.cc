@@ -4702,18 +4702,18 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
         /*- The number of reduced renormalized basis states to be
             retained during successive DMRG instructions -*/
-        options.add_array("DMRG_STATES");
+        options.add("DMRG_STATES", new ArrayType());
 
         /*- The energy convergence to stop an instruction
             during successive DMRG instructions -*/
-        options.add_array("DMRG_E_CONVERGENCE");
+        options.add("DMRG_E_CONVERGENCE", new ArrayType());
 
         /*- The maximum number of sweeps to stop an instruction
             during successive DMRG instructions -*/
-        options.add_array("DMRG_MAXSWEEPS");
+        options.add("DMRG_MAXSWEEPS", new ArrayType());
 
         /*- The noiseprefactors for successive DMRG instructions -*/
-        options.add_array("DMRG_NOISEPREFACTORS");
+        options.add("DMRG_NOISEPREFACTORS", new ArrayType());
 
         /*- Whether or not to print the correlation functions after the DMRG calculation -*/
         options.add_bool("DMRG_PRINT_CORR", true);
@@ -4723,10 +4723,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
         /*- Doubly occupied frozen orbitals for DMRGSCF, per irrep. Same
             conventions as for other MR methods -*/
-        options.add_array("FROZEN_DOCC");
+        options.add("FROZEN_DOCC", new ArrayType());
 
         /*- Active space orbitals for DMRGSCF, per irrep. Same conventions as for other MR methods. -*/
-        options.add_array("ACTIVE");
+        options.add("ACTIVE", new ArrayType());
 
         /*- Convergence threshold for the gradient norm. -*/
         options.add_double("D_CONVERGENCE", 1e-6);
