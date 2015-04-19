@@ -7,6 +7,7 @@ add_custom_target(update_version
 
 add_library(versioned_code OBJECT version.cc python.cc psi_start.cc)
 add_dependencies(versioned_code update_version)
+add_dependencies(versioned_code mints)
 
 set(headers_list "")
 # List of headers
