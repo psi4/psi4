@@ -94,6 +94,7 @@ def parse_input():
             action='store',
             default=None,
             help="""The includes directory for boost.
+            'boost/version.hpp' should be in this directory.
             If this is left blank cmake will attempt to find one on your system.
             Failing that it will build one for you""",
             metavar='PATH')
