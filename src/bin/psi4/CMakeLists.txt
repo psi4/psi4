@@ -61,6 +61,9 @@ if(CUSTOM_BOOST_BUILD)
    add_dependencies(psi4 custom_boost)
 endif()
 target_link_libraries(psi4 ${LINKLIBS})
+if(ENABLE_CHEMPS2)
+    target_link_libraries(psi4 CHEMPS2::CHEMPS2)
+endif()
 
 # standalone python module psi4.so
 add_executable(psi4so EXCLUDE_FROM_ALL ${sources_list})
