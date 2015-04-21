@@ -144,6 +144,11 @@ include(ConfigBoost)
 link_directories("${Boost_LIBRARY_DIRS}")
 include_directories(SYSTEM "${Boost_INCLUDE_DIRS}")
 
+# CheMPS2 Detection
+if(ENABLE_CHEMPS2)
+   include(ConfigChemps2)
+endif()
+
 #OpenBabel Detection
 #add_subdirectory(openbabel)
 #set(BABEL_LIBRARY_DIR ${CMAKE_BINARY_DIR}/lib)
@@ -236,10 +241,6 @@ if(ENABLE_PCMSOLVER)
                        ${EXTERNAL_PROJECT_INSTALL_PREFIX})
    endif()
    set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
-endif()
-
-if(ENABLE_CHEMPS2)
-    add_definitions(-DENABLE_CHEMPS2=1)
 endif()
 
 #If we have MPI we may want to also build JKFactory which makes J and K's

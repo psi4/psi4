@@ -15,8 +15,7 @@ if(${USEEXT_DUMMY_PLUGIN})
     add_subdirectory(dummyplugin)
 endif()
 
-if(${ENABLE_CHEMPS2})
-    add_subdirectory(chemps2)
-endif()
+# <<<  CheMPS2  >>>
+# handled by ConfigChemps2
 
 ###### END externally stored, no-dependency projects ############
