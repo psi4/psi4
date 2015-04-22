@@ -246,7 +246,7 @@ void og_form_repinfo(struct stringwr *string, int num_ci_orbs,
 {
 
    int nel, p, q, i, j, k, l, ij, oij;
-   int nlists, listnum, strlistnum, nsym, jused, nfzc;
+   int nlists, listnum, strlistnum, nsym, jused, ndrc;
    int diagcnt=0; 
    static int *diagij = NULL;
    static int *diagoij = NULL; 
@@ -255,7 +255,7 @@ void og_form_repinfo(struct stringwr *string, int num_ci_orbs,
    signed char sgn;
   
    nel = Graph->num_el_expl;
-   nfzc = Graph->num_fzc_orbs;
+   ndrc = Graph->num_drc_orbs;
    nsym = Graph->nirreps;
    nlists = Graph->subgr_per_irrep * nsym;
 

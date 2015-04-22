@@ -1,5 +1,11 @@
 DETCI TO-DO LIST
 ===============================================================
+
+* olsengraph.cc and grapset.cc: make main calls to olsengraph() and graphset()
+switch to CalcInfo.num_drc_orbs instead once available (catch both calls, one
+for Alpha and one for Beta)
+* Swap num_fzc_orbs in printing.cc line 326 for num_drc_orbs
+
 Buffers bigger than 2E9 still don't work.  Known issues:
    o Calls to wreadw can't handle size > 2E9
    o vector.c contains lots of calls to be done on a per-buffer basis

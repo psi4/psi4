@@ -67,12 +67,12 @@ signed char **Tsgn;
 /* FUNCTION PROTOTYPES for this module */
 void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el, 
       int nirreps, int *orbsym, int ras1_lvl, int ras1_min, int ras1_max, 
-      int ras3_lvl, int ras3_max, int num_fzc_orbs, int num_expl_cor_orbs,
+      int ras3_lvl, int ras3_max, int num_drc_orbs, int num_expl_cor_orbs,
       int ras4_lvl, int ras4_max, int ras34_max);
 void gs_add_walk(int ras1_idx, int ras3_num, int ras4_num, int *occs, 
-      int nel_expl, int norb, int nirreps, int num_fzc_orbs,
+      int nel_expl, int norb, int nirreps, int num_drc_orbs,
       struct graph_set *GraphSet);
-void gs_fill(int num_el, int norb, int nirreps, int num_fzc_orbs,
+void gs_fill(int num_el, int norb, int nirreps, int num_drc_orbs,
       struct graph_set *GraphSet);
 int gs_glex_addr(struct fastgraph *Graph, int *occs, int nel);
 void gs_print(struct graph_set *GraphSet, std::string OutFileRMR);
@@ -201,13 +201,14 @@ void formstrings(void)
 **    nirreps      =  number of irreducible representations
 **    orbsym       =  orbital symmetry array
 **    ras1_lvl     =  last level in RAS I
-**    ras1_min     =  min number of electrons at RAS I level for the string 
-**                    (nb this definition includes core electrons!)
-**    ras1_max     =  maximum number of electrons at RAS I level 
+**    ras1_min     =  min number of electrons in RAS I for the string
+**                    (formerly included core, no longer as of CDS 4/15)
+**    ras1_max     =  maximum number of electrons in RAS I for the string
+                      (formerly included core, no longer as of CDS 4/15)
 **    ras3_lvl     =  first level in RAS III
 **    ras3_max     =  max number of electrons in RAS III _for the string_
-**    num_fzc_orbs = number of frozen core orbitals
-**    num_expl_cor_orbs = number of restricted core orbitals
+**    num_drc_orbs =  number of dropped core orbitals (CDS 4/15)
+**    num_expl_cor_orbs = number of explicit core orbitals (CDS 4/15)
 **    ras4_lvl     =  first level of the new RAS IV 
 **    ras4_max     =  max number of electrons in RAS IV for the string
 **    ras34_max    =  max number of electrons in RAS III and IV
@@ -216,7 +217,7 @@ void formstrings(void)
 */
 void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el, 
       int nirreps, int *orbsym, int ras1_lvl, int ras1_min, int ras1_max, 
-      int ras3_lvl, int ras3_max, int num_fzc_orbs, int num_expl_cor_orbs,
+      int ras3_lvl, int ras3_max, int num_drc_orbs, int num_expl_cor_orbs,
       int ras4_lvl, int ras4_max, int ras34_max)
 {
    Odometer Ras1, Ras2, Ras3, Ras4;
@@ -225,7 +226,7 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
    int max_el_ras1;
    int *occs, *array1, *array2, *array3, *array4, **encode_tmp;
    int i, j, ij, k, l;
-   int orbs_frozen, fzc_sym=0, code=0, num_el_expl;
+   int drc_sym=0, code=0, num_el_expl;
 
 
    if (Parameters.print_lvl > 1) {
@@ -234,13 +235,13 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
      outfile->Printf( "ras3_lvl = %d   ras3_max = %d\n", ras3_lvl, ras3_max) ;
    }
 
-   // Go ahead and set the occupations of the frozen orbs 
-   occs = init_int_array(num_el) ;
-   for (i=0; i<num_expl_cor_orbs; i++) occs[i] = i ;
+   // Go ahead and set the occupations of the explicit core
+   occs = init_int_array(num_el);
+   for (i=0; i<num_expl_cor_orbs; i++) occs[i] = i;
  
-   orbs_frozen = num_fzc_orbs + num_expl_cor_orbs;
+   //orbs_frozen = num_fzc_orbs + num_expl_cor_orbs; CDS 4/15
 
-   for (i=0; i<num_fzc_orbs; i++) fzc_sym ^= orbsym[i];
+   for (i=0; i<num_drc_orbs; i++) drc_sym ^= orbsym[i];
 
    // go ahead and make room for the occupations of RAS I, II, and III
    array1 = init_int_array(num_el) ;
@@ -250,15 +251,15 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
 
    // Initialize the Graph data structure
    GraphSet->num_el = num_el;
-   num_el_expl = num_el - num_fzc_orbs;
+   num_el_expl = num_el - num_drc_orbs;
    GraphSet->num_el_expl = num_el_expl;
    GraphSet->num_orb = ci_orbs ;
-   GraphSet->num_fzc_orbs = num_fzc_orbs;
+   GraphSet->num_drc_orbs = num_drc_orbs;
    GraphSet->num_expl_cor_orbs = num_expl_cor_orbs;
-   GraphSet->fzc_sym = fzc_sym;
+   GraphSet->drc_sym = drc_sym;
    GraphSet->orbsym = init_int_array(ci_orbs);
    for (i=0; i<ci_orbs; i++) {
-      GraphSet->orbsym[i] = orbsym[i+num_fzc_orbs];
+      GraphSet->orbsym[i] = orbsym[i+num_drc_orbs];
       }
    GraphSet->ras1_lvl = ras1_lvl;
    GraphSet->ras1_min = ras1_min;
@@ -270,14 +271,16 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
    GraphSet->ras34_max = ras34_max;
    GraphSet->nirreps = nirreps;
    GraphSet->str_per_irrep = init_int_array(nirreps);
-   n1max = ras1_max - orbs_frozen; 
-   n1min = ras1_min - orbs_frozen;
+   // n1max = ras1_max - orbs_frozen;  CDS 4/15
+   // n1min = ras1_min - orbs_frozen;  CDS 4/15
+   n1max = ras1_max;
+   n1min = ras1_min;
 
    GraphSet->decode = (int ***) malloc ((ras1_max - ras1_min + 1) *
       sizeof(int **));
    for (i=0; i<(ras1_max - ras1_min + 1); i++) {
       GraphSet->decode[i] = init_int_matrix(ras3_max + 1, ras4_max + 1);
-      }
+   }
 
    encode_tmp = init_int_matrix(3, (ras1_max - ras1_min + 1) * (ras3_max + 1)
                    * (ras4_max + 1));
@@ -287,11 +290,16 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
       for (i=ras1_max; i>=ras1_min; i--) {
          for (j=0; j<=ras3_max; j++) {
             for (k=0; k<=ras4_max; k++) {
-               if ((i+j+k<=num_el) && (num_el-i-j-k<=ras3_lvl-ras1_lvl-1)
+               //if ((i+j+k<=num_el) && (num_el-i-j-k<=ras3_lvl-ras1_lvl-1)
+               //    && (j+k <= ras34_max) && (!(Parameters.r4s && k>=2 &&
+               //    ras1_max - i > Parameters.ex_lvl))) {
+               if ((i+j+k<=num_el_expl) && 
+                   (num_el_expl-i-j-k<=ras3_lvl-ras1_lvl-1)
                    && (j+k <= ras34_max) && (!(Parameters.r4s && k>=2 &&
                    ras1_max - i > Parameters.ex_lvl))) {
                   GraphSet->decode[i-ras1_min][j][k] = code;
-                  encode_tmp[0][code] = i - num_fzc_orbs; 
+                  // encode_tmp[0][code] = i - num_fzc_orbs;  CDS 4/15
+                  encode_tmp[0][code] = i;
                   encode_tmp[1][code] = j;
                   encode_tmp[2][code] = k;
                   code++;
@@ -305,7 +313,10 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
       for (i=ras1_max; i>=ras1_min; i--) {
          for (j=0; j<=ras3_max; j++) {
             for (k=0; k<=ras4_max; k++) {
-               if ((i+j+k<=num_el) && (num_el-i-j-k<=ras3_lvl-ras1_lvl-1)
+               // if ((i+j+k<=num_el) && (num_el-i-j-k<=ras3_lvl-ras1_lvl-1)
+               //    && (j+k <= ras34_max)) { // CDS 4/15
+               if ((i+j+k<=num_el_expl) && 
+                   (num_el_expl-i-j-k<=ras3_lvl-ras1_lvl-1)
                    && (j+k <= ras34_max)) {
                   GraphSet->decode[i-ras1_min][j][k] = 0;
                   }
@@ -314,14 +325,14 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
             }
          }
       code = 1;
-      }
+   }
 
    GraphSet->encode = init_int_matrix(3,code);
    for (i=0; i<code; i++) {
-      GraphSet->encode[0][i] = encode_tmp[0][i];
-      GraphSet->encode[1][i] = encode_tmp[1][i];
-      GraphSet->encode[2][i] = encode_tmp[2][i];
-      } 
+     GraphSet->encode[0][i] = encode_tmp[0][i];
+     GraphSet->encode[1][i] = encode_tmp[1][i];
+     GraphSet->encode[2][i] = encode_tmp[2][i];
+   } 
    free_int_matrix(encode_tmp);
  
  
@@ -333,7 +344,7 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
          fastgraph);
       GraphSet->AllGraph[i]->data = NULL;
       GraphSet->AllGraph[i]->num_strings = 0;
-      }
+   }
 
    // loop over the possible number of e- in RAS I (n1) and III (n3).
    // and now IV (n4)
@@ -357,7 +368,8 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
 
          for (n4 = 0; n4 <= ras4_max && n4 <= ras34_max - n3; n4++) {
 
-            n2 = num_el - orbs_frozen - n1 - n3 - n4;
+            // n2 = num_el - orbs_frozen - n1 - n3 - n4; CDS 4/15
+            n2 = num_el_expl - num_expl_cor_orbs - n1 - n3 - n4;
             if (n2 < 0 || n2 > ras3_lvl - ras1_lvl - 1) continue ; 
 
             /* CDS 8/24/95 */
@@ -398,14 +410,14 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
                         
                         // print out occupations for debugging
                         if (Parameters.print_lvl > 4) {
-                          for (i=0; i<num_el - num_fzc_orbs; i++) 
+                          for (i=0; i<num_el_expl; i++) 
                              outfile->Printf( "%2d ", occs[i]) ;
                           outfile->Printf( "\n") ;
                         }
                   
                         // add this walk to the graph
                         og_add_walk(n1-n1min, n3, n4, occs, num_el_expl,
-                           ci_orbs, nirreps, num_fzc_orbs, GraphSet) ;
+                           ci_orbs, nirreps, num_drc_orbs, GraphSet) ;
 
                         Ras4.increment_lex() ;
                      } while (!Ras4.at_min()) ;
@@ -429,7 +441,7 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
    free(occs);
 
    /* fill up the graphs from the ki's */
-   gs_fill(num_el_expl, ci_orbs, nirreps, num_fzc_orbs, GraphSet);
+   gs_fill(num_el_expl, ci_orbs, nirreps, num_drc_orbs, GraphSet);
 
    /* compact the graphs (go from AllGraph to Graph array) */
    GraphSet->num_str = 0;
@@ -467,7 +479,7 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
 **                   all implicitly treated frozen core electrons)
 **    norb         = number of orbitals _explicitly_ included 
 **    nirreps      = number of irreps
-**    num_fzc_orbs = number of frozen core orbitals
+**    num_drc_orbs = number of dropped core orbitals
 **    Graph        = Olsen Graph structure containing all subgraphs for a 
 **                   given electron spin (alpha or beta)
 **
@@ -477,7 +489,7 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
 **       factor
 */
 void gs_add_walk(int ras1_idx, int ras3_num, int ras4_num, int *occs, 
-      int nel_expl, int norb, int nirreps, int num_fzc_orbs,
+      int nel_expl, int norb, int nirreps, int num_drc_orbs,
       struct olsen_graph *GraphSet)
 {
    int i;
@@ -488,7 +500,7 @@ void gs_add_walk(int ras1_idx, int ras3_num, int ras4_num, int *occs,
    int *orbsym;
 
    orbsym = GraphSet->orbsym;
-   irrep = GraphSet->fzc_sym;
+   irrep = GraphSet->drc_sym;
 
    /* figure out the irrep for this walk */
    for (i=0; i<nel_expl; i++) {
@@ -616,7 +628,7 @@ void gs_print(struct graphset *GraphSet, std::string OutFileRMR)
 
    outfile->Printf("\nGraphSet:\n");
    outfile->Printf("%3c%2d Electrons\n",' ',GraphSet->num_el);
-   outfile->Printf("%3c%2d Frozen core orbitals\n",' ',GraphSet->num_fzc_orbs);
+   outfile->Printf("%3c%2d Dropped core orbitals\n",' ',GraphSet->num_drc_orbs);
    outfile->Printf("%3c%2d Explicit core orbs\n",' ',GraphSet->num_expl_cor_orbs);
    outfile->Printf("%3c%2d Explicit electrons\n",' ',GraphSet->num_el_expl);
    outfile->Printf("%3c%2d Explicit Orbitals\n",' ',GraphSet->num_orb);
@@ -668,7 +680,7 @@ void gs_stringlist(struct graph_set *GraphSet, struct stringwr **slist)
 {
    Odometer Ras1, Ras2, Ras3, Ras4;
    int n1, n2, n3, n4;
-   int n1max, n1min, orbs_frozen, ci_orbs;
+   int n1max, n1min, ci_orbs;
    int *occs, *array1, *array2, *array3, *array4;
    int ras1_lvl, ras3_lvl, ras4_lvl, ras3_max, ras4_max, ras34_max;
    int i, num_el_expl, irrep, code, ncodes, gnum, snum;
@@ -690,7 +702,7 @@ void gs_stringlist(struct graph_set *GraphSet, struct stringwr **slist)
    occs = init_int_array(num_el_expl) ;
    for (i=0; i<num_expl_cor_orbs; i++) occs[i] = i;
 
-   orbs_frozen = num_fzc_orbs + num_expl_cor_orbs;
+   //orbs_frozen = num_fzc_orbs + num_expl_cor_orbs;
    ci_orbs = GraphSet->num_orb;
 
    array1 = init_int_array(num_el);
@@ -698,8 +710,10 @@ void gs_stringlist(struct graph_set *GraphSet, struct stringwr **slist)
    array3 = init_int_array(num_el);
    array4 = init_int_array(num_el);
 
-   n1max = GraphSet->ras1_max - orbs_frozen; 
-   n1min = GraphSet->ras1_min - orbs_frozen;
+   //n1max = GraphSet->ras1_max - orbs_frozen;  CDS 4/15
+   //n1min = GraphSet->ras1_min - orbs_frozen;  CDS 4/15
+   n1max = GraphSet->ras1_max;
+   n1min = GraphSet->ras1_min;
    ras1_lvl = GraphSet->ras1_lvl;
    ras3_lvl = GraphSet->ras3_lvl;
    ras4_lvl = GraphSet->ras4_lvl;
@@ -729,7 +743,8 @@ void gs_stringlist(struct graph_set *GraphSet, struct stringwr **slist)
 
          for (n4 = 0; n4 <= ras4_max && n4 <= ras34_max - n3; n4++) {
 
-            n2 = num_el - orbs_frozen - n1 - n3 - n4;
+            // n2 = num_el - orbs_frozen - n1 - n3 - n4; CDS 4/15
+            n2 = num_el_expl - num_expl_cor_orbs - n1 - n3 - n4;
             if (n2 < 0 || n2 > ras3_lvl - ras1_lvl - 1) continue ; 
 
             /* CDS 8/24/95 */
@@ -770,14 +785,14 @@ void gs_stringlist(struct graph_set *GraphSet, struct stringwr **slist)
                         
                         // print out occupations for debugging
                         if (Parameters.print_lvl > 4) {
-                          for (i=0; i<num_el - num_fzc_orbs; i++) 
+                          for (i=0; i<num_el_expl i++) 
                              outfile->Printf( "%2d ", occs[i]) ;
                           outfile->Printf( "\n") ;
                         }
                   
                         // add this walk to the Occs array
 
-                        irrep = GraphSet->fzc_sym;
+                        irrep = GraphSet->drc_sym;
                         for (i=0; i<num_el_expl; i++) irrep ^= orbsym[i]; 
                         code = GraphSet->decode[n1-n1min][n3][n4];
                         gnum = GraphSet->AllGraph2Graph[irrep * ncodes + code];
@@ -825,9 +840,9 @@ int gs_glex_addr(struct fastgraph *graph, int *occs, int nel)
    yptr = graph->data;
 
    for (i=0; i<nel; i++, yptr++) {
-      j = occs[i];
-      addr += yptr[j];
-      }
+     j = occs[i];
+     addr += yptr[j];
+   }
 }
 
 
@@ -856,11 +871,11 @@ void form_stringwr(struct stringwr *strlist, int *occs, int N,
    occlist = (unsigned char *) malloc (N * sizeof(unsigned char));
    if (occlist == NULL) {
       throw PsiException("(gs_form_stringwr): Malloc error",__FILE__,__LINE__);
-      }
+   }
 
    for (i=0; i<N; i++) {
-      occlist[i] = occs[i] ;
-      }
+      occlist[i] = occs[i];
+   }
 
    addr = gs_glex_addr(graph, occs, N);
  
@@ -871,7 +886,7 @@ void form_stringwr(struct stringwr *strlist, int *occs, int N,
       gs_init_repinfo_temps(GraphSet->num_el_expl, GraphSet->num_orbs);
       gs_form_repinfo(node, GraphSet, occs, gnum, first_orb_active);
       gs_free_repinfo_temps();
-      }
+   }
 }
 
 
