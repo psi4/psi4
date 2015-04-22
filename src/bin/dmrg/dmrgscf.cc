@@ -749,7 +749,8 @@ PsiReturnType dmrg(Options &options)
             cout_buffer = cout.rdbuf( capturing.rdbuf() );
 
             for (int cnt = 0; cnt < nOrbDMRG_pow4; cnt++){ DMRG2DM[ cnt ] = 0.0; } //Clear the 2-RDM (to allow for state-averaged calculations)
-            CheMPS2::DMRG * theDMRG = new CheMPS2::DMRG(Prob, OptScheme, mps_chkpt);
+            const string psi4TMPpath = PSIOManager::shared_object()->get_default_path();
+            CheMPS2::DMRG * theDMRG = new CheMPS2::DMRG(Prob, OptScheme, mps_chkpt, psi4TMPpath);
             for (int state = 0; state < dmrgscf_which_root; state++){
                 if (state > 0){ theDMRG->newExcitation( fabs( Energy ) ); }
                 Energy = theDMRG->Solve();
@@ -795,8 +796,8 @@ PsiReturnType dmrg(Options &options)
             (*outfile) << "Rotated the active space to natural orbitals, sorted according to the NOON." << endl;
         }
 
-        if (theSCFoptions->getMaxIterations() == 1) {
-            if ((theSCFoptions->getStoreUnitary()) && (gradNorm!=1.0)){ unitary->saveU( theSCFoptions->getUnitaryStorageName() ); }
+        if (theSCFoptions->getMaxIterations() == nIterations){
+            if (theSCFoptions->getStoreUnitary()){ unitary->saveU( theSCFoptions->getUnitaryStorageName() ); }
             break;
         }
 
