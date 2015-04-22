@@ -1185,12 +1185,14 @@ void set_ras_parms(void)
    Parameters.a_ras1_max = (CalcInfo.num_alp_expl >
          Parameters.a_ras1_lvl + 1) ? Parameters.a_ras1_lvl + 1 :
          (CalcInfo.num_alp_expl) ;
-   if (Parameters.fzc) Parameters.a_ras1_max += CalcInfo.num_fzc_orbs;
+   // CDS 4/15
+   // if (Parameters.fzc) Parameters.a_ras1_max += CalcInfo.num_fzc_orbs; 
 
    Parameters.b_ras1_max = (CalcInfo.num_bet_expl >
          Parameters.b_ras1_lvl + 1) ? Parameters.b_ras1_lvl + 1:
          (CalcInfo.num_bet_expl) ;
-   if (Parameters.fzc) Parameters.b_ras1_max += CalcInfo.num_fzc_orbs;
+   // CDS 4/15
+   // if (Parameters.fzc) Parameters.b_ras1_max += CalcInfo.num_fzc_orbs;
 
    for (i=0,j=0; i<CalcInfo.nirreps; i++) j += CalcInfo.ras_opi[1][i];
    Parameters.ras3_lvl = Parameters.ras1_lvl + j + 1;
@@ -1366,7 +1368,8 @@ void set_ras_parms(void)
    Parameters.a_ras1_min = i - Parameters.ex_lvl -
       Parameters.val_ex_lvl;
    if (Parameters.a_ras1_min < 0) Parameters.a_ras1_min = 0;
-   Parameters.a_ras1_min += CalcInfo.num_fzc_orbs;
+   // CDS 4/15 no longer include dropped core in ras1_min
+   // Parameters.a_ras1_min += CalcInfo.num_fzc_orbs;
    Parameters.a_ras1_min += CalcInfo.num_expl_cor_orbs;
 
    i = (CalcInfo.num_bet_expl <= Parameters.b_ras1_lvl + 1) ?
@@ -1374,7 +1377,8 @@ void set_ras_parms(void)
    Parameters.b_ras1_min = i - Parameters.ex_lvl -
       Parameters.val_ex_lvl;
    if (Parameters.b_ras1_min < 0) Parameters.b_ras1_min = 0;
-   Parameters.b_ras1_min += CalcInfo.num_fzc_orbs;
+   // CDS 4/15 no longer include dropped core in ras1_min
+   // Parameters.b_ras1_min += CalcInfo.num_fzc_orbs;
    Parameters.b_ras1_min += CalcInfo.num_expl_cor_orbs;
 
    tot_expl_el = CalcInfo.num_alp_expl + CalcInfo.num_bet_expl;
@@ -1410,8 +1414,10 @@ void set_ras_parms(void)
    i = (tot_expl_el < 2*(Parameters.ras1_lvl + 1)) ? tot_expl_el :
       2*(Parameters.ras1_lvl + 1) ;
 
-   Parameters.ras1_min = i - Parameters.ex_lvl -
-      Parameters.val_ex_lvl + 2 * CalcInfo.num_fzc_orbs;
+   // CDS 4/15 no longer include dropped core in ras1_min
+   //Parameters.ras1_min = i - Parameters.ex_lvl -
+   //   Parameters.val_ex_lvl + 2 * CalcInfo.num_fzc_orbs;
+   Parameters.ras1_min = i - Parameters.ex_lvl - Parameters.val_ex_lvl;
 
    if (Parameters.a_ras1_min + Parameters.b_ras1_min > Parameters.ras1_min)
       Parameters.ras1_min = Parameters.a_ras1_min + Parameters.b_ras1_min;

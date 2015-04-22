@@ -127,32 +127,32 @@ struct stringgraph {
 */
 struct olsen_graph {
    int num_str;             /* total number of strings */
-   int num_fzc_orbs;        /* number of frozen core orbitals */
+   int num_drc_orbs;        /* number of dropped core orbitals */
    int num_expl_cor_orbs;   /* number of explicit core orbitals */
-   int fzc_sym;             /* symmetry (irrep) for the frozen core */
+   int drc_sym;             /* symmetry (irrep) for the dropped core */
    int num_el;              /* number of electrons (total) in graph */
    int num_el_expl;         /* number of electrons (explicit) in graph */
    int num_orb;             /* number of orbitals explicitly treated */
-   int ras1_lvl;            /* orbital number where RAS I ends (less fzc),
+   int ras1_lvl;            /* orbital number where RAS I ends (less drc),
                                or the last level in RAS I */
    int ras1_min;            /* minimum number of electrons in RAS I (for
                                the _strings_), incl. core */
    int ras1_max;            /* max number of RAS I electrons (useful when
                                the RAS I level may extend beyond the last
                                occupied orbital), incl. core */
-   int ras3_lvl ;           /* orbital num where RAS III begins (less fzc) */
+   int ras3_lvl ;           /* orbital num where RAS III begins (less drc) */
    int ras3_max ;           /* maximum number of electrons in RAS III */
-   int ras4_lvl ;           /* orbital number where RAS IV begins (less fzc) */
+   int ras4_lvl ;           /* orbital number where RAS IV begins (less drc) */
    int ras4_max ;           /* maximum number of electrons in RAS IV */
    int nirreps;             /* number of irreps */
    int subgr_per_irrep;     /* possible number of Olsen subgraphs per irrep */
    int max_str_per_irrep;   /* largest number of strings found in an irrep */
    int *str_per_irrep;      /* array containing num strings per irrep */
    int ***decode;           /* decode[ras1_holes][ras3_e][ras4_e] */
-   int **encode;            /* encode[0,1,2][code] gives ras1 e- (excl fzc) and
+   int **encode;            /* encode[0,1,2][code] gives ras1 e- (excl drc) and
                                ras3 e- and ras4 e- */ 
    struct stringgraph **sg; /* sg[irrep][code] */ 
-   int *orbsym;             /* array for orbital irreps (incl. fzc) */
+   int *orbsym;             /* array for orbital irreps (incl. drc) */
    int *list_offset;        /* absolute offset for each list */
    };
 
@@ -182,28 +182,31 @@ struct fastgraph {
 struct graph_set {
    int num_str;             /* total number of strings */
    int num_graphs;          /* total number of valid subgraphs */
-   int num_fzc_orbs;        /* number of frozen core orbitals */
+   int num_drc_orbs;        /* number of dropped core orbitals */
    int num_expl_cor_orbs;   /* number of explicit core orbitals */
-   int fzc_sym;             /* symmetry (irrep) for the frozen core */
+   int drc_sym;             /* symmetry (irrep) for the dropped core */
    int num_el;              /* number of electrons (total) in graph */
    int num_el_expl;         /* number of electrons (explicit) in graph */
    int num_orb;             /* number of orbitals explicitly treated */
-   int ras1_lvl;            /* orbital number where RAS I ends (less fzc),
+   int ras1_lvl;            /* orbital number where RAS I ends (not including
+                               dropped core orbitals in the numbering), 
                                or the last level in RAS I */
    int ras1_min;            /* minimum number of electrons in RAS I (for
-                               the _strings_), incl. core */
+                               the _strings_), no longer incl. core
+                               (either explicit core or dropped core) */
    int ras1_max;            /* max number of RAS I electrons (useful when
                                the RAS I level may extend beyond the last
-                               occupied orbital), incl. core */
-   int ras3_lvl;            /* orbital num where RAS III begins (less fzc) */
+                               occupied orbital), no longer incl. core 
+                               (either explicit core or dropped core) */
+   int ras3_lvl;            /* orbital num where RAS III begins (less drc) */
    int ras3_max;            /* maximum number of electrons in RAS III */
-   int ras4_lvl;            /* orbital number where RAS IV begins (less fzc) */
+   int ras4_lvl;            /* orbital number where RAS IV begins (less drc) */
    int ras4_max;            /* maximum number of electrons in RAS IV */
    int ras34_max;           /* max number of electrons in RAS III AND IV */
    int nirreps;             /* number of irreps */
    int num_codes;           /* possible number of subgraphs per irrep */
    int ***decode;           /* decode[ras1_holes][ras3_e][ras4_e] */
-   int **encode;            /* encode[0,1,2][code] gives ras1 e- (excl fzc) and
+   int **encode;            /* encode[0,1,2][code] gives ras1 e- (excl drc) and
                                ras3 e- and ras4 e- */ 
    struct fastgraph **AllGraph;
                             /* Pointers to all subgraphs */
@@ -211,7 +214,7 @@ struct graph_set {
    int *graph_irrep;        /* irrep of each non-null graph */
    int *graph_code;         /* code for each non-null graph */
    int *graph_offset;       /* absolute offset for each list */
-   int *orbsym;             /* array for orbital irreps (incl. fzc) */
+   int *orbsym;             /* array for orbital irreps (incl. drc) */
    unsigned char ***Occs;   /* Orbital occupancies for each string */
    };
 
@@ -394,7 +397,7 @@ struct params {
    int cc_a_ras4_max;/* as above but for CC */
    int cc_b_ras4_max;/* as above but for CC */
    int ras1_lvl;     /* Orbital number of the highest orbital in RAS I */
-   int ras1_min;     /* currently min #e AT THE RAS I LEVEL (incl fzc) */
+   int ras1_min;     /* currently min #e AT THE RAS I LEVEL (excluding drc) */
    int ras3_lvl;     /* orbital number defining RAS III overall */
    int ras4_lvl;     /* orbital number defining RAS IV overall */
                      /* make larger than num_ci_orbs if there is no RAS IV */
