@@ -49,7 +49,7 @@ void scf_energy(double *H, double *TE, double *energy_1, double *energy_2,
 **                      exclude frozen core
 ** \param   escf     =  scf energy to compare to
 ** \param   enuc     =  nuclear repulsion energy
-** \param   efzc     =  frozen core energy
+** \param   edrc     =  energy of dropped core orbitals
 ** \param   nirreps  =  number of irreps 
 ** \param   reorder  =  reordering array for Pitzer->CI ordering
 ** \param   opi      =  orbs per irrep in Pitzer ordering
@@ -59,7 +59,7 @@ void scf_energy(double *H, double *TE, double *energy_1, double *energy_2,
 ** \ingroup DETCI
 */
 double check_energy(double *H, double *twoel_ints, int *docc, int *frozen_docc,
-      int fzc_flag, double escf, double enuc, double efzc, 
+      int fzc_flag, double escf, double enuc, double edrc, 
       int nirreps, int *reorder, int *opi, int print_lvl, std::string out)
 {
    double energy_1 ;     /* one-electron energy */
@@ -76,18 +76,18 @@ double check_energy(double *H, double *twoel_ints, int *docc, int *frozen_docc,
      printer->Printf("Nuclear repulsion energy:  %16.10lf\n", enuc) ;
      printer->Printf("One-electron energy:       %16.10lf\n", energy_1) ;
      printer->Printf("Two-electron energy:       %16.10lf\n", energy_2) ;
-     printer->Printf("Frozen core energy:        %16.10lf\n", efzc) ;
-     printer->Printf("Total electronic energy:   %16.10lf\n", energy_e+efzc) ;
+     printer->Printf("Dropped core energy:       %16.10lf\n", edrc) ;
+     printer->Printf("Total electronic energy:   %16.10lf\n", energy_e+edrc) ;
      printer->Printf("Total SCF energy:          %16.10lf\n", enuc +
-        energy_e + efzc) ;
+        energy_e + edrc) ;
     
-     if (fabs(enuc + efzc + energy_e - escf) > 0.00000001) {
+     if (fabs(enuc + edrc + energy_e - escf) > 0.00000001) {
         printer->Printf(
            "\n*** Calculated Energy Differs from SCF Energy in CHKPT ! ***\n") ;
         }
    }
 
-   return(enuc+efzc+energy_e); 
+   return(enuc+edrc+energy_e); 
 }   
 
 

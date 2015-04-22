@@ -68,7 +68,7 @@ extern void H0block_coupling_calc(double E, struct stringwr **alplist,
 
 void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       **betlist, double *evals, double conv_e,
-      double conv_rms, double enuc, double efzc,
+      double conv_rms, double enuc, double edrc,
       int nroots, int maxiter, int maxnvect, std::string out, int print_lvl)
 {
    int i, j, k, l, ij, I, L, L2=0, L3=0, tmpi, detH0;
@@ -760,7 +760,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
        for (i=0; i<L; i++) {
          outfile->Printf( "\nGuess energy #%d = %15.9lf\n", i,
-           -1.0 * sqrt(sigma_overlap[i][i]) + CalcInfo.enuc + CalcInfo.efzc);
+           -1.0 * sqrt(sigma_overlap[i][i]) + CalcInfo.enuc + CalcInfo.edrc);
          }
 
        /* diagonalize sigma_overlap to see what that does
@@ -781,7 +781,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        sq_rsp(L, L, M[0], m_lambda[0][0], 1, m_alpha[0][0], 1.0E-14);
        for (i=0; i<L; i++) {
          m_lambda[0][0][i] = -1.0 * sqrt(m_lambda[0][0][i]) +
-           CalcInfo.enuc + CalcInfo.efzc;
+           CalcInfo.enuc + CalcInfo.edrc;
        }
        outfile->Printf( "\n Guess energy from H^2 = %15.9lf\n",
          m_lambda[0][0][L]);
@@ -1058,11 +1058,11 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
           Cvec.buf_unlock();
           for (i=0; i<nroots; i++) {
              olsen_iter_xy(Dvec,Sigma,Hd,&tmpx,&tmpy,buffer1,buffer2,
-               lambda[iter2][i]+efzc,i,L,alpha[iter2], alplist, betlist);
+               lambda[iter2][i]+edrc,i,L,alpha[iter2], alplist, betlist);
              x[i] = tmpx;
              y[i] = tmpy;
              /* outfile->Printf("x[%d] = %lf    y[%d] = %lf\n",i,x[i],i,y[i]);
-               E_est[i] += efzc; */
+               E_est[i] += edrc; */
              errcod = H0block_calc(lambda[iter2][i]);
              if (!errcod)
                outfile->Printf("Determinant of H0block is too small.\n");
@@ -1075,7 +1075,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
              E_est[i] = y[i]/x[i];
              /*
                outfile->Printf("E_est[%d] = %20.12f lambda[%d] = %20.12f\n",i,
-                    E_est[i]+efzc+enuc,i,lambda[iter2][i]+efzc+enuc);
+                    E_est[i]+edrc+enuc,i,lambda[iter2][i]+edrc+enuc);
              */
              }
          Dvec.dcalc(nroots,L,alpha[iter2],lambda[iter2],dvecnorm,Cvec,Sigma,
@@ -1099,7 +1099,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
             converged = 0;
             }
          outfile->Printf( "Iter %2d  Root %2d = %13.9lf",
-            iter, i+1, (lambda[iter2][i] + enuc + efzc));
+            iter, i+1, (lambda[iter2][i] + enuc + edrc));
          outfile->Printf( "   Delta_E %10.3E   Delta_C %10.3E %c\n",
             lambda[iter2][i] - lastroot[i], dvecnorm[i],
             root_converged[i] ? 'c' : ' ');
@@ -1128,7 +1128,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
                }
 
             outfile->Printf( "\n* ROOT %d CI total energy = %17.13lf", i+1,
-               evals[i] + enuc + efzc);
+               evals[i] + enuc + edrc);
 
             if (nroots > 1) {
                outfile->Printf( "  (%6.4lf eV, %9.2lf 1/cm)\n",
@@ -1185,14 +1185,14 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          if (root_converged[k]) continue;
          Hd.buf_lock(buffer2);
          if (Parameters.precon == PRECON_EVANGELISTI)
-           tval = Dvec.dcalc_evangelisti(k, L, lambda[iter2][k]+efzc, Hd, Cvec,
+           tval = Dvec.dcalc_evangelisti(k, L, lambda[iter2][k]+edrc, Hd, Cvec,
                 buffer1, buffer2, Parameters.precon, L, alplist,
                 betlist, alpha[iter2]);
-         else tval = Dvec.dcalc2(k, lambda[iter2][k]+efzc, Hd,
+         else tval = Dvec.dcalc2(k, lambda[iter2][k]+edrc, Hd,
                 Parameters.precon, alplist, betlist);
          if (Parameters.precon >= PRECON_GEN_DAVIDSON && (iter >= 1)) {
            if (Parameters.h0block_coupling && (iter >= 2))
-             H0block_coupling_calc(lambda[iter2][k]+efzc, alplist, betlist);
+             H0block_coupling_calc(lambda[iter2][k]+edrc, alplist, betlist);
            Dvec.h0block_buf_precon(&tval, k);
            }
          if (tval < 1.0E-13 && print_lvl > 0) {

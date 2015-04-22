@@ -58,25 +58,25 @@ namespace psi { namespace detci {
 
 extern void calc_hd_block(struct stringwr *alplist,
    struct stringwr *betlist,
-   double **H0, double *oei, double *tei, double efzc,
+   double **H0, double *oei, double *tei, double edrc,
    int nas, int nbs, int na, int nb, int nbf);
 extern void calc_hd_block_ave(struct stringwr *alplist,
    struct stringwr *betlist, double **H0, double *tf_oei,
-   double *tei, double efzc, int nas, int nbs, int na, int nb, int nbf);
+   double *tei, double edrc, int nas, int nbs, int na, int nb, int nbf);
 extern void calc_hd_block_z_ave(struct stringwr *alplist,
    struct stringwr *betlist, double **H0, double pert_param,
-   double *tei, double efzc, int nas, int nbs, int na, int nb, int nbf);
+   double *tei, double edrc, int nas, int nbs, int na, int nb, int nbf);
 extern void calc_hd_block_orbenergy(struct stringwr *alplist,
    struct stringwr *betlist, double **H0, double *oei,
-   double *tei, double efzc, int nas, int nbs, int na,
+   double *tei, double edrc, int nas, int nbs, int na,
    int nb, int nbf);
 extern void calc_hd_block_mll(struct stringwr *alplist,
    struct stringwr *betlist, double **H0, double *oei,
-   double *tei, double efzc, int nas, int nbs, int na,
+   double *tei, double edrc, int nas, int nbs, int na,
    int nb, int nbf);
 extern void calc_hd_block_evangelisti(struct stringwr *alplist,
    struct stringwr *betlist, double **H0, double *tf_oei,
-   double *tei, double efzc, int nas, int nbs, int na,
+   double *tei, double edrc, int nas, int nbs, int na,
    int nb, int nbf);
 extern void s1_block_fci(struct stringwr **alplist,
    struct stringwr **betlist,
@@ -800,7 +800,7 @@ BIGINT CIvect::strings2det(int alp_code, int alp_idx,
 
 
 void CIvect::diag_mat_els(struct stringwr **alplist, struct stringwr
-      **betlist, double *oei, double *tei, double efzc, int na, int nb,
+      **betlist, double *oei, double *tei, double edrc, int na, int nb,
       int nbf, int method)
 {
 
@@ -815,22 +815,22 @@ void CIvect::diag_mat_els(struct stringwr **alplist, struct stringwr
          ibs = Ib_size[block];
          if (method == HD_KAVE)
            calc_hd_block_ave(alplist[iac], betlist[ibc], blocks[block],
-              oei, tei, efzc, ias, ibs, na, nb, nbf);
+              oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == ORB_ENER)
            calc_hd_block_orbenergy(alplist[iac], betlist[ibc], blocks[block],
-              oei, tei, efzc, ias, ibs, na, nb, nbf);
+              oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == EVANGELISTI)
            calc_hd_block_evangelisti(alplist[iac], betlist[ibc], blocks[block],
-              oei, tei, efzc, ias, ibs, na, nb, nbf);
+              oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == LEININGER)
            calc_hd_block_mll(alplist[iac], betlist[ibc], blocks[block],
-              oei, tei, efzc, ias, ibs, na, nb, nbf);
+              oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == HD_EXACT)
            calc_hd_block(alplist[iac], betlist[ibc], blocks[block],
-               oei, tei, efzc, ias, ibs, na, nb, nbf);
+               oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == Z_HD_KAVE)
            calc_hd_block_z_ave(alplist[iac], betlist[ibc], blocks[block],
-              Parameters.perturbation_parameter, tei, efzc, ias, ibs, na,
+              Parameters.perturbation_parameter, tei, edrc, ias, ibs, na,
               nb, nbf);
          else {
            throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
@@ -862,22 +862,22 @@ void CIvect::diag_mat_els(struct stringwr **alplist, struct stringwr
             ibs = Ib_size[block];
             if (method == HD_KAVE)
               calc_hd_block_ave(alplist[iac], betlist[ibc], blocks[block],
-                 oei, tei, efzc, ias, ibs, na, nb, nbf);
+                 oei, tei, edrc, ias, ibs, na, nb, nbf);
             else if (method == ORB_ENER)
               calc_hd_block_orbenergy(alplist[iac], betlist[ibc],
-                 blocks[block], oei, tei, efzc, ias, ibs, na, nb, nbf);
+                 blocks[block], oei, tei, edrc, ias, ibs, na, nb, nbf);
             else if (method == EVANGELISTI)
               calc_hd_block_evangelisti(alplist[iac], betlist[ibc],
-                 blocks[block], oei, tei, efzc, ias, ibs, na, nb, nbf);
+                 blocks[block], oei, tei, edrc, ias, ibs, na, nb, nbf);
             else if (method == LEININGER)
               calc_hd_block_mll(alplist[iac], betlist[ibc],
-                 blocks[block], oei, tei, efzc, ias, ibs, na, nb, nbf);
+                 blocks[block], oei, tei, edrc, ias, ibs, na, nb, nbf);
             else if (method == HD_EXACT)
               calc_hd_block(alplist[iac], betlist[ibc], blocks[block],
-                 oei, tei, efzc, ias, ibs, na, nb, nbf);
+                 oei, tei, edrc, ias, ibs, na, nb, nbf);
             else if (method == Z_HD_KAVE)
               calc_hd_block_z_ave(alplist[iac], betlist[ibc], blocks[block],
-              Parameters.perturbation_parameter, tei, efzc, ias, ibs, na,
+              Parameters.perturbation_parameter, tei, edrc, ias, ibs, na,
               nb, nbf);
             else {
               throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
@@ -906,22 +906,22 @@ void CIvect::diag_mat_els(struct stringwr **alplist, struct stringwr
          ibs = Ib_size[block];
         if (method == HD_KAVE)
           calc_hd_block_ave(alplist[iac], betlist[ibc], blocks[block],
-             oei, tei, efzc, ias, ibs, na, nb, nbf);
+             oei, tei, edrc, ias, ibs, na, nb, nbf);
         else if (method == ORB_ENER)
           calc_hd_block_orbenergy(alplist[iac], betlist[ibc], blocks[block],
-             oei, tei, efzc, ias, ibs, na, nb, nbf);
+             oei, tei, edrc, ias, ibs, na, nb, nbf);
         else if (method == EVANGELISTI)
           calc_hd_block_evangelisti(alplist[iac], betlist[ibc], blocks[block],
-             oei, tei, efzc, ias, ibs, na, nb, nbf);
+             oei, tei, edrc, ias, ibs, na, nb, nbf);
         else if (method == LEININGER)
           calc_hd_block_mll(alplist[iac], betlist[ibc], blocks[block],
-             oei, tei, efzc, ias, ibs, na, nb, nbf);
+             oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == HD_EXACT)
            calc_hd_block(alplist[iac], betlist[ibc], blocks[block],
-              oei, tei, efzc, ias, ibs, na, nb, nbf);
+              oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == Z_HD_KAVE)
            calc_hd_block_z_ave(alplist[iac], betlist[ibc], blocks[block],
-              Parameters.perturbation_parameter, tei, efzc, ias, ibs, na,
+              Parameters.perturbation_parameter, tei, edrc, ias, ibs, na,
               nb, nbf);
          else {
            throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
@@ -943,7 +943,7 @@ void CIvect::diag_mat_els(struct stringwr **alplist, struct stringwr
 
 
 void CIvect::diag_mat_els_otf(struct stringwr **alplist, struct stringwr
-      **betlist, double *oei, double *tei, double efzc, int na, int nb,
+      **betlist, double *oei, double *tei, double edrc, int na, int nb,
       int nbf, int buf, int method)
 {
 
@@ -957,22 +957,22 @@ void CIvect::diag_mat_els_otf(struct stringwr **alplist, struct stringwr
          ibs = Ib_size[block];
          if (method == HD_KAVE)
            calc_hd_block_ave(alplist[iac], betlist[ibc], blocks[block],
-              oei, tei, efzc, ias, ibs, na, nb, nbf);
+              oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == ORB_ENER)
            calc_hd_block_orbenergy(alplist[iac], betlist[ibc], blocks[block],
-              oei, tei, efzc, ias, ibs, na, nb, nbf);
+              oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == EVANGELISTI)
            calc_hd_block_evangelisti(alplist[iac], betlist[ibc], blocks[block],
-              oei, tei, efzc, ias, ibs, na, nb, nbf);
+              oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == LEININGER)
            calc_hd_block_mll(alplist[iac], betlist[ibc], blocks[block],
-              oei, tei, efzc, ias, ibs, na, nb, nbf);
+              oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == HD_EXACT)
            calc_hd_block(alplist[iac], betlist[ibc], blocks[block],
-               oei, tei, efzc, ias, ibs, na, nb, nbf);
+               oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == Z_HD_KAVE)
            calc_hd_block_z_ave(alplist[iac], betlist[ibc], blocks[block],
-              Parameters.perturbation_parameter, tei, efzc, ias, ibs, na,
+              Parameters.perturbation_parameter, tei, edrc, ias, ibs, na,
               nb, nbf);
          else {
            throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
@@ -989,22 +989,22 @@ void CIvect::diag_mat_els_otf(struct stringwr **alplist, struct stringwr
             ibs = Ib_size[block];
             if (method == HD_KAVE)
               calc_hd_block_ave(alplist[iac], betlist[ibc], blocks[block],
-                 oei, tei, efzc, ias, ibs, na, nb, nbf);
+                 oei, tei, edrc, ias, ibs, na, nb, nbf);
             else if (method == ORB_ENER)
               calc_hd_block_orbenergy(alplist[iac], betlist[ibc],
-                 blocks[block], oei, tei, efzc, ias, ibs, na, nb, nbf);
+                 blocks[block], oei, tei, edrc, ias, ibs, na, nb, nbf);
             else if (method == EVANGELISTI)
               calc_hd_block_evangelisti(alplist[iac], betlist[ibc],
-                 blocks[block], oei, tei, efzc, ias, ibs, na, nb, nbf);
+                 blocks[block], oei, tei, edrc, ias, ibs, na, nb, nbf);
             else if (method == LEININGER)
               calc_hd_block_mll(alplist[iac], betlist[ibc],
-                 blocks[block], oei, tei, efzc, ias, ibs, na, nb, nbf);
+                 blocks[block], oei, tei, edrc, ias, ibs, na, nb, nbf);
             else if (method == HD_EXACT)
               calc_hd_block(alplist[iac], betlist[ibc], blocks[block],
-                 oei, tei, efzc, ias, ibs, na, nb, nbf);
+                 oei, tei, edrc, ias, ibs, na, nb, nbf);
             else if (method == Z_HD_KAVE)
               calc_hd_block_z_ave(alplist[iac], betlist[ibc], blocks[block],
-              Parameters.perturbation_parameter, tei, efzc, ias, ibs, na,
+              Parameters.perturbation_parameter, tei, edrc, ias, ibs, na,
               nb, nbf);
             else {
               throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
@@ -1020,22 +1020,22 @@ void CIvect::diag_mat_els_otf(struct stringwr **alplist, struct stringwr
          ibs = Ib_size[block];
         if (method == HD_KAVE)
           calc_hd_block_ave(alplist[iac], betlist[ibc], blocks[block],
-             oei, tei, efzc, ias, ibs, na, nb, nbf);
+             oei, tei, edrc, ias, ibs, na, nb, nbf);
         else if (method == ORB_ENER)
           calc_hd_block_orbenergy(alplist[iac], betlist[ibc], blocks[block],
-             oei, tei, efzc, ias, ibs, na, nb, nbf);
+             oei, tei, edrc, ias, ibs, na, nb, nbf);
         else if (method == EVANGELISTI)
           calc_hd_block_evangelisti(alplist[iac], betlist[ibc], blocks[block],
-             oei, tei, efzc, ias, ibs, na, nb, nbf);
+             oei, tei, edrc, ias, ibs, na, nb, nbf);
         else if (method == LEININGER)
           calc_hd_block_mll(alplist[iac], betlist[ibc], blocks[block],
-             oei, tei, efzc, ias, ibs, na, nb, nbf);
+             oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == HD_EXACT)
            calc_hd_block(alplist[iac], betlist[ibc], blocks[block],
-              oei, tei, efzc, ias, ibs, na, nb, nbf);
+              oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == Z_HD_KAVE)
            calc_hd_block_z_ave(alplist[iac], betlist[ibc], blocks[block],
-              Parameters.perturbation_parameter, tei, efzc, ias, ibs, na,
+              Parameters.perturbation_parameter, tei, edrc, ias, ibs, na,
               nb, nbf);
          else {
            throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
@@ -2243,11 +2243,11 @@ double CIvect::dcalc2(int rootnum, double lambda, CIvect &Hd,
       else if (Parameters.hd_otf == TRUE) {
         if (Parameters.mpn)
           Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-             CalcInfo.twoel_ints, CalcInfo.e0_fzc, CalcInfo.num_alp_expl,
+             CalcInfo.twoel_ints, CalcInfo.e0_drc, CalcInfo.num_alp_expl,
              CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
         else
           Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-             CalcInfo.twoel_ints, CalcInfo.efzc, CalcInfo.num_alp_expl,
+             CalcInfo.twoel_ints, CalcInfo.edrc, CalcInfo.num_alp_expl,
              CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
         }
 
@@ -2303,10 +2303,10 @@ void CIvect::construct_kth_order_wf(CIvect &Hd, CIvect &S, CIvect &C,
      for (buf=0; buf<buf_per_vect; buf++) {
         Hd.buf_lock(buf2);
         Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-             CalcInfo.twoel_ints, CalcInfo.e0_fzc, CalcInfo.num_alp_expl,
+             CalcInfo.twoel_ints, CalcInfo.e0_drc, CalcInfo.num_alp_expl,
              CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
         read(k-1, buf);
-        norm = calc_mpn_vec(buffer, (mp_energy[1]-CalcInfo.efzc),
+        norm = calc_mpn_vec(buffer, (mp_energy[1]-CalcInfo.edrc),
                 Hd.buffer, buf_size[buf], 1.0, 1.0, MULT);
         Hd.buf_unlock();
 
@@ -2338,7 +2338,7 @@ void CIvect::construct_kth_order_wf(CIvect &Hd, CIvect &S, CIvect &C,
 
         Hd.buf_lock(buf2);
         Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-             CalcInfo.twoel_ints, CalcInfo.e0_fzc, CalcInfo.num_alp_expl,
+             CalcInfo.twoel_ints, CalcInfo.e0_drc, CalcInfo.num_alp_expl,
              CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
         norm = calc_mpn_vec(buffer, CalcInfo.e0, Hd.buffer, buf_size[buf],
                 -1.0, 1.0, DIV);
@@ -2453,7 +2453,7 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
       S.buf_unlock();
       Hd.buf_lock(buf2);
       Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-           CalcInfo.twoel_ints, CalcInfo.e0_fzc, CalcInfo.num_alp_expl,
+           CalcInfo.twoel_ints, CalcInfo.e0_drc, CalcInfo.num_alp_expl,
            CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
       xexy(Hd.buffer, buffer, buf_size[buf]);
       dot_arr(buffer, Hd.buffer, buf_size[buf], &tval);
@@ -2532,10 +2532,10 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
                 tval*2.0*mp2k_energy[k+1-i]);
         */
         }
-     E2kp1 += (CalcInfo.efzc-mp2k_energy[1])*wfn_overlap[k][k];
+     E2kp1 += (CalcInfo.edrc-mp2k_energy[1])*wfn_overlap[k][k];
      E2kp1 -= 2.0*mp2k_energy[2]*wfn_overlap[k-1][k];
      E2kp1 -= mp2k_energy[3]*wfn_overlap[k-1][k-1];
-     E2k += (CalcInfo.efzc-mp2k_energy[1])*wfn_overlap[k][k-1];
+     E2k += (CalcInfo.edrc-mp2k_energy[1])*wfn_overlap[k][k-1];
      E2k -= mp2k_energy[2]*wfn_overlap[k-1][k-1];
      }
 
@@ -2563,9 +2563,9 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
         for (j=1; j<=k-2; j++)
            E2k -= mp2k_energy[2*k-i-j] * wfn_overlap[i][j];
         }
-     E2k += (CalcInfo.efzc-mp2k_energy[1]) * wfn_overlap[k][k-1];
+     E2k += (CalcInfo.edrc-mp2k_energy[1]) * wfn_overlap[k][k-1];
      E2k -= mp2k_energy[2] * wfn_overlap[k-1][k-1];
-     E2kp1 += (CalcInfo.efzc-mp2k_energy[1])*wfn_overlap[k][k];
+     E2kp1 += (CalcInfo.edrc-mp2k_energy[1])*wfn_overlap[k][k];
      E2kp1 -= mp2k_energy[3]*wfn_overlap[k-1][k-1];
      E2kp1 -= 2.0 * mp2k_energy[2] * wfn_overlap[k-1][k];
      }
@@ -2575,13 +2575,13 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
      for (i=1; i<=k; i++)
         for (j=1; j<=k; j++) {
            E2kp1 -= mp2k_energy[2*k+1-i-j] * wfn_overlap[i][j];
-           if ((i==k) && (j==k)) E2kp1 += CalcInfo.efzc * wfn_overlap[k][k];
+           if ((i==k) && (j==k)) E2kp1 += CalcInfo.edrc * wfn_overlap[k][k];
            }
 
      for (i=1; i<=k; i++)
         for (j=1; j<k; j++) {
            E2k -= mp2k_energy[2*k-i-j] * wfn_overlap[i][j];
-           if ((i==k) && (j==k-1)) E2k += CalcInfo.efzc * wfn_overlap[k][k-1];
+           if ((i==k) && (j==k-1)) E2k += CalcInfo.edrc * wfn_overlap[k][k-1];
            }
      }
 
@@ -3077,7 +3077,7 @@ void olsen_iter_xy(CIvect &C, CIvect &S, CIvect &Hd, double *x, double *y,
         C.h0block_gather_vec(CI_VEC);
       if (Parameters.hd_otf == FALSE) Hd.read(0,buf);
       else Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-           CalcInfo.twoel_ints, CalcInfo.efzc, CalcInfo.num_alp_expl,
+           CalcInfo.twoel_ints, CalcInfo.edrc, CalcInfo.num_alp_expl,
            CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
       tx = buf_xy1(buffer1, buffer2, E, Hd.buf_size[buf]);
       /* buffer2 = Hd * Ci */
@@ -3159,7 +3159,7 @@ void olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, double E_est,
       Hd.buf_lock(buffer2);
       if (Parameters.hd_otf == FALSE) Hd.read(0,buf);
       else Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-           CalcInfo.twoel_ints, CalcInfo.efzc, CalcInfo.num_alp_expl,
+           CalcInfo.twoel_ints, CalcInfo.edrc, CalcInfo.num_alp_expl,
            CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
       /* Check norm of residual vector i.e. before preconditioning */
       dot_arr(buffer1, buffer1, C.buf_size[buf], &rnormtmp);
@@ -3754,7 +3754,7 @@ void CIvect::scale_sigma(CIvect &Hd, CIvect &C,
       outfile->Printf("In scale_sigma\n"); */
       Hd.buf_lock(buf1);
       Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-         CalcInfo.twoel_ints, CalcInfo.e0_fzc, CalcInfo.num_alp_expl,
+         CalcInfo.twoel_ints, CalcInfo.e0_drc, CalcInfo.num_alp_expl,
          CalcInfo.num_bet_expl, CalcInfo.nmo, buf, ORB_ENER);
       C.buf_lock(buf2);
       C.read(i, buf);
@@ -3818,7 +3818,7 @@ double CIvect::dcalc_evangelisti(int rootnum, int num_vecs, double lambda,
       if (Parameters.hd_otf == FALSE) Hd.read(0, buf);
       else if (Parameters.hd_otf == TRUE) {
           Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-             CalcInfo.twoel_ints, CalcInfo.efzc, CalcInfo.num_alp_expl,
+             CalcInfo.twoel_ints, CalcInfo.edrc, CalcInfo.num_alp_expl,
              CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
         }
       xpey(buf2, buf1, buf_size[buf]); /* Hd -2*r_I*c_I + c_I*c_I */

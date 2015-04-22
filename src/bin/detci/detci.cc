@@ -141,11 +141,11 @@ extern void form_strings(void);
 extern void mitrush_iter(CIvect &Hd,
    struct stringwr **alplist, struct stringwr **betlist,
    int nroots, double *evals, double conv_rms, double conv_e, double enuc,
-   double efzc, int maxiter, int maxnvect, std::string OutFileRMR,
+   double edrc, int maxiter, int maxnvect, std::string OutFileRMR,
    int print_lvl);
 extern void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    **betlist, double *evals, double conv_e,
-   double conv_rms, double enuc, double efzc,
+   double conv_rms, double enuc, double edrc,
    int nroots, int maxiter, int maxnvect, std::string OutFileRMR, int print_lvl);
 extern void mpn_generator(CIvect &Hd, struct stringwr **alplist,
    struct stringwr **betlist);
@@ -364,7 +364,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 {
    BIGINT size;
    int nroots, i, j;
-   double conv_rms, conv_e, *evals, **evecs, nucrep, efzc, tval;
+   double conv_rms, conv_e, *evals, **evecs, nucrep, edrc, tval;
    int *tptr;
    double *cbuf;
    char e_label[PSIO_KEYLEN]; /* 80... */
@@ -383,7 +383,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
    size = CIblks.vectlen;
    if ((BIGINT) Parameters.nprint > size) Parameters.nprint = (int) size;
    nucrep = CalcInfo.enuc;
-   efzc = CalcInfo.efzc;
+   edrc = CalcInfo.edrc;
    tmp_ras_array = init_array(1024);
 
    H0block.size = 0;
@@ -471,7 +471,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          J.set(CalcInfo.num_alp_expl,
             alplist[Ialist][Iarel].occs, CalcInfo.num_bet_expl,
             betlist[Iblist][Ibrel].occs);
-         H[jj][jj] = matrix_element(&J, &J) + CalcInfo.efzc;
+         H[jj][jj] = matrix_element(&J, &J) + CalcInfo.edrc;
          }
 
       if (Parameters.print_lvl > 4 && size < 200) {
@@ -644,7 +644,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
       /* get the diagonal elements of H into an array Hd */
 
       Hd.diag_mat_els(alplist, betlist, CalcInfo.onel_ints,
-         CalcInfo.twoel_ints, efzc, CalcInfo.num_alp_expl,
+         CalcInfo.twoel_ints, edrc, CalcInfo.num_alp_expl,
          CalcInfo.num_bet_expl, CalcInfo.num_ci_orbs, Parameters.hd_ave);
 
       /* get the biggest elements and put in H0block */
@@ -715,7 +715,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          J.set(CalcInfo.num_alp_expl,
             alplist[Ialist][Iarel].occs, CalcInfo.num_bet_expl,
             betlist[Iblist][Ibrel].occs);
-         H[jj][jj] = matrix_element(&J, &J) + CalcInfo.efzc;
+         H[jj][jj] = matrix_element(&J, &J) + CalcInfo.edrc;
          }
 
       /* obtain a set of L orthonormal trial vectors, L > nroots */
@@ -782,7 +782,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          throw PsiException("(diag_h sem_test): Ooops! L < num_roots!",__FILE__,__LINE__);
          }
       sem_test(H, size, Parameters.num_roots, L, evecs, evals, b, conv_e,
-         conv_rms, Parameters.maxiter, (nucrep+CalcInfo.efzc), &i,
+         conv_rms, Parameters.maxiter, (nucrep+CalcInfo.edrc), &i,
          Parameters.maxnvect, "outfile");
 
       outfile->Printf( "SEM used %d expansion vectors\n", i);
@@ -849,7 +849,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
             
            }
          Hd.diag_mat_els(alplist, betlist, CalcInfo.onel_ints,
-            CalcInfo.twoel_ints, efzc, CalcInfo.num_alp_expl,
+            CalcInfo.twoel_ints, edrc, CalcInfo.num_alp_expl,
             CalcInfo.num_bet_expl, CalcInfo.num_ci_orbs, Parameters.hd_ave);
          }
       else {
@@ -957,7 +957,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          evals = init_array(nroots);
 
          sem_iter(Hd, alplist, betlist, evals, conv_e, conv_rms,
-            nucrep, efzc, nroots, Parameters.maxiter,
+            nucrep, edrc, nroots, Parameters.maxiter,
             Parameters.maxnvect, "outfile", Parameters.print_lvl);
          }
 
@@ -979,19 +979,19 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          evals = init_array(nroots);
 
          mitrush_iter(Hd, alplist, betlist, nroots, evals, conv_rms, conv_e,
-            nucrep, efzc, Parameters.maxiter, Parameters.maxnvect, "outfile",
+            nucrep, edrc, Parameters.maxiter, Parameters.maxnvect, "outfile",
             Parameters.print_lvl);
 
          H0block_free();
          }
 
-      if (Parameters.write_energy) write_energy(nroots, evals, nucrep+efzc);
+      if (Parameters.write_energy) write_energy(nroots, evals, nucrep+edrc);
 
       } /* end the Davidson-Liu/Mitrushenkov-Olsen-Davidson section */
 
    /* write the CI energy to PSIF_CHKPT: later fix this to loop over roots */
    chkpt_init(PSIO_OPEN_OLD);
-   tval = evals[Parameters.root]+efzc+nucrep;
+   tval = evals[Parameters.root]+edrc+nucrep;
    chkpt_wt_etot(tval);
 
    Process::environment.globals["CURRENT ENERGY"] = tval;
@@ -1033,7 +1033,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 
    for (i=0; i<nroots; i++) {
      sprintf(e_label,"Root %2d energy",i);
-     tval = evals[i]+efzc+nucrep;
+     tval = evals[i]+edrc+nucrep;
      chkpt_wt_e_labeled(e_label, tval);
 
      /*- Process::environment.globals["CI ROOT n TOTAL ENERGY"] -*/
@@ -1052,7 +1052,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
      tval = 0.0;
      for (i=0; i<Parameters.average_num; i++)
        tval += Parameters.average_weights[i] *
-               (efzc+nucrep+evals[Parameters.average_states[i]]);
+               (edrc+nucrep+evals[Parameters.average_states[i]]);
      chkpt_wt_e_labeled("State averaged energy",tval);
      Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"] = tval;
      // eref seems wrong for open shells so replace it with escf below
@@ -1096,7 +1096,7 @@ void H0block_fill(struct stringwr **alplist, struct stringwr **betlist)
 
          /* pointers in next line avoids copying structures I and J */
          H0block.H0b[i][j] = matrix_element(&I, &J);
-         if (i==j) H0block.H0b[i][i] += CalcInfo.efzc;
+         if (i==j) H0block.H0b[i][i] += CalcInfo.edrc;
          /* outfile->Printf(" i = %d   j = %d\n",i,j); */
          }
 
@@ -1382,14 +1382,14 @@ void mpn(struct stringwr **alplist, struct stringwr **betlist)
         fzc_orbs[irrep][i] = cnt++;
 
   /* Loop over alp occs */
-  //CalcInfo.e0 = CalcInfo.efzc;
+  //CalcInfo.e0 = CalcInfo.edrc;
   CalcInfo.e0 = 0.0;
-  CalcInfo.e0_fzc = 0.0;
+  CalcInfo.e0_drc = 0.0;
   for (i=0; i<CalcInfo.num_fzc_orbs; i++) {
      outfile->Printf(" orb_energy[%d] = %lf\n", i, CalcInfo.scfeigval[i]);
      tval = 2.0 * CalcInfo.scfeigval[i];
      CalcInfo.e0 += tval;
-     CalcInfo.e0_fzc += tval;
+     CalcInfo.e0_drc += tval;
      }
 
   if(Parameters.zaptn) {
@@ -1417,7 +1417,7 @@ void mpn(struct stringwr **alplist, struct stringwr **betlist)
    /* prepare the H0 block */
 
    Hd.diag_mat_els(alplist, betlist, CalcInfo.onel_ints,
-          CalcInfo.twoel_ints, CalcInfo.e0_fzc, CalcInfo.num_alp_expl,
+          CalcInfo.twoel_ints, CalcInfo.e0_drc, CalcInfo.num_alp_expl,
           CalcInfo.num_bet_expl, CalcInfo.num_ci_orbs, Parameters.hd_ave);
 
    H0block_setup(CIblks.num_blocks, CIblks.Ia_code, CIblks.Ib_code);
@@ -1531,9 +1531,9 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
 
     psi::transqt2::transqt2(transqt_options);    
 
-    // Need to grab the new efzc energy after transqt2 computations
+    // Need to grab the new edrc energy after transqt2 computations
     chkpt_init(PSIO_OPEN_OLD);
-    CalcInfo.efzc = chkpt_rd_efzc();
+    CalcInfo.edrc = chkpt_rd_efzc();
     chkpt_close();
 
     read_integrals();
