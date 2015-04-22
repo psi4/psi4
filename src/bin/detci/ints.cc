@@ -62,7 +62,7 @@ void read_integrals()
    int nmotri, nmotri_full;
    double value;
    extern double check_energy(double *H, double *twoel_ints, int *docc, 
-      int *frozen_docc, int fzc_flag, double escf, double enuc, double efzc, 
+      int *frozen_docc, int fzc_flag, double escf, double enuc, double edrc, 
       int nirreps, int *reorder, int *opi, int print_lvl, std::string out);
    int junk;
    double *tmp_onel_ints;
@@ -164,7 +164,7 @@ void read_integrals()
 
    CalcInfo.eref = check_energy(CalcInfo.onel_ints, CalcInfo.twoel_ints, 
       CalcInfo.docc, CalcInfo.frozen_docc, Parameters.fzc, CalcInfo.escf, 
-      CalcInfo.enuc, CalcInfo.efzc, CalcInfo.nirreps, CalcInfo.reorder, 
+      CalcInfo.enuc, CalcInfo.edrc, CalcInfo.nirreps, CalcInfo.reorder, 
       CalcInfo.orbs_per_irr, Parameters.print_lvl, "outfile");
 
 } 
