@@ -8,7 +8,7 @@
 #cmakedefine HAVE_STDINT_H
 
 /* PSI version information */
-#define PSI_VERSION @PSI_VERSION@
+//#define PSI_VERSION @PSI_VERSION@
 //#define @PSI_BUILDID@
 //#define @PSI_BUGREPORT@
 

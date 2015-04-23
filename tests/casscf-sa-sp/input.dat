@@ -1,8 +1,5 @@
-# 
-# Example of state-averaged CASSCF for the C2 molecule
-# see C. D. Sherrill and P. Piecuch, J. Chem. Phys. 122, 124104 (2005)
-#
-
+#! Example of state-averaged CASSCF for the C2 molecule
+#! see C. D. Sherrill and P. Piecuch, J. Chem. Phys. 122, 124104 (2005)
 
 molecule {
 C
@@ -55,5 +52,5 @@ set detci {
 
 casscf_energy = energy('casscf')
 
-compare_values(-75.604189247182, casscf_energy, 6, 'CASSCF Energy')
+compare_values(-75.604189247182, casscf_energy, 6, 'CASSCF Energy')  #TEST
 
