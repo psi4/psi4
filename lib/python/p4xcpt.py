@@ -39,9 +39,10 @@ class ValidationError(PsiException):
         self.msg = msg
         psi4.print_out('\nPsiException: %s\n\n' % (msg))
 
+
 class TestComparisonError(PsiException):
     """Error called when a test case fails due to a failed
-    compare_values() call.  Prints error message *msg* to standard 
+    compare_values() call. Prints error message *msg* to standard
     output stream and output file.
 
     """
@@ -49,4 +50,3 @@ class TestComparisonError(PsiException):
         PsiException.__init__(self, msg)
         self.msg = msg
         psi4.print_out('\nPsiException: %s\n\n' % (msg))
-

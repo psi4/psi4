@@ -252,7 +252,7 @@ void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
   /* alpha unoccupied orbitals */
   for(irrep=0; irrep<nirreps; irrep++) {
     this_offset = offset[irrep] + nalphapi[irrep];
-    for(p=0; p < orbspi[irrep] - nalphapi[irrep]; p++) {
+    for(p=0; p < orbspi[irrep] - nalphapi[irrep] - frozen_uocc[irrep]; p++) {
       order_alpha[this_offset + p] = cnt_alpha++;
     }
   }
@@ -260,7 +260,7 @@ void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
   /* beta unoccupied orbitals */
   for(irrep=0; irrep<nirreps; irrep++) {
     this_offset = offset[irrep] + nbetapi[irrep];
-    for(p=0; p < orbspi[irrep] - nbetapi[irrep]; p++) {
+    for(p=0; p < orbspi[irrep] - nbetapi[irrep] - frozen_uocc[irrep]; p++) {
       order_beta[this_offset + p] = cnt_beta++;
     }
   }

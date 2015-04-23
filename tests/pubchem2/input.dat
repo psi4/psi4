@@ -41,5 +41,5 @@ molecule pubchem2 {
     pubchem:608116
 }
 pubchem2.update_geometry()
-compare_values(nre, pubchem2.nuclear_repulsion_energy(), 4, 'nre')
+compare_values(nre, pubchem2.nuclear_repulsion_energy(), 4, 'nre')  #TEST
 
