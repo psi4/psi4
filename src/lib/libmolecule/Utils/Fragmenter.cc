@@ -35,7 +35,6 @@ typedef std::vector<SharedGroup> vSharedGroup;
 BondFragmenter::BondFragmenter(SharedMol Mol, const unsigned int NBonds):
       Fragmenter(Mol),Geom_(new OrganicGeom(*Mol)),
             NBonds_(NBonds){
-   BioGeom BChem(*Mol);
 }
 
 void BondFragmenter::AddFragment(const vSharedGroup& FoundGroups,

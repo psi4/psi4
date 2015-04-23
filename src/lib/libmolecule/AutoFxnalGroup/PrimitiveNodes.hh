@@ -33,10 +33,12 @@ namespace LibMolecule{
    class base_##Name:public RadialSearch<Bonds,Centers>{\
       private:\
          typedef RadialSearch<Bonds,Centers> Base_t;\
+      protected:\
+         bool IsPrim()const{return true;}\
       public:\
          base_##Name():Base_t(Abbv,Full){\
             if(sizeof...(args)!=0){\
-               std::vector<size_t> Temp{args...};\
+               size_t Temp[sizeof...(args)]={args...};\
                PsiMap<size_t,size_t> Temp1;\
                for(size_t i=0;i<sizeof...(args);){\
                   size_t temp3=Temp[i++];\

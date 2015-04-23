@@ -78,26 +78,24 @@ void Node::AddTypes(const ParamT& Parent,
      bool Symm,
      SharedNode_t Left) {
    size_t TempPrior=Priority;
-   std::vector<SharedNode>::iterator It=PrimNodes_.begin(),
-                                 ItEnd=PrimNodes_.end();
+   Node::iterator It=SubBegin(),ItEnd=SubEnd();
    if (It==ItEnd){//I am a primitive node...
       MyTypes_.push_back(
-            ParamT(MyTypes_.back(), Parent.Base()[0], Parent.Base()[1], Order,
-                  0+Priority));
+            ParamT(MyTypes_.back(),
+                  Parent.Base()[0],
+                  Parent.Base()[1],
+                  Order,Priority));
    }
-   if(IsSymm_&&Symm){
-
-      while (It!=ItEnd) {
-         TempPrior=Priority+(*It)->MyTypes_.back().Priority();
-         (*It)->MyTypes_.push_back(
-               ParamT((*It)->MyTypes_.back(), Parent.Base()[0], Parent.Base()[1],
-                     Order, TempPrior));
-         ++It;
-      }
+   size_t TempPriority=Priority,MaxPriority=0,Offset=0;
+   for(size_t counter=0;It!=ItEnd;++It,++counter){
+      Offset=Prior_[counter]+(IsSymm_&&!Symm&&!IsPrim()?counter:0);
+      TempPriority+=Offset;
+      (*It)->AddTypes(Parent,Order,TempPriority,Symm,Left);
+      MaxPriority=(TempPriority>MaxPriority?TempPriority:MaxPriority);
+      TempPriority-=Offset;
    }
-
-
-   Priority=TempPrior;
+   TempPrior+=Offset;
+   Priority=(IsSymm_&&!IsPrim()?TempPrior:MaxPriority);
 }
 
 std::vector<size_t> Node::DeterminePrior(
@@ -130,19 +128,25 @@ std::vector<size_t> Node::DeterminePrior(
    }
    if(size%2==1&&Symm) Priors[NComp]=CurrPrior;
    if(Reorder){
-      std::vector<size_t> TempPriors(Priors.rbegin(),Priors.rend());
-      Priors=TempPriors;
+      //std::vector<size_t> TempPriors(Priors.rbegin(),Priors.rend());
+      //Priors=TempPriors;
       FN_t temp(FN.rbegin(),FN.rend());
       FN=temp;
    }
    return Priors;
 }
 
+template<typename T>
+static void Flip(T& In){
+   T Temp(In.rbegin(),In.rend());
+   In=Temp;
+}
+
 void Node::FillNode(std::deque<SharedNode>& FoundNodes) {
    typedef std::deque<SharedNode> FN_t;
    typedef FN_t::const_iterator FN_tItr;
    IsSymm_=true;
-   Priors_=DeterminePrior(FoundNodes,IsSymm_);
+   Prior_=DeterminePrior(FoundNodes,IsSymm_);
    ConnNodes_=DetermineConns(FoundNodes.begin(),FoundNodes.end());
    for(FN_tItr It=FoundNodes.begin(); It!=FoundNodes.end(); ++It)AddSubNode(*It);
    ParamT orig=MyTypes_.back();
@@ -157,42 +161,60 @@ void Node::FillNode(std::deque<SharedNode>& FoundNodes) {
                Orders[Counter]++;
          }
    }
-   MyTypes_.push_back(ParamT(orig.Base()[0], orig.Base()[1], Orders));
-   std::vector<size_t>::iterator Pi,PiEnd=Priors_.end();
+   std::string Prefix="",LongPrefix="";
+   if((*SubNodes_.begin())->Type().Base()[0]=="CT"){
+      Prefix="CT";
+      LongPrefix="C-Terminal ";
+   }
+   else if((*SubNodes_.begin())->Type().Base()[0]=="NT"){
+      Prefix="NT";
+      LongPrefix="N-Terminal ";
+   }
+   MyTypes_.push_back(ParamT(
+         Prefix+orig.Base()[0],
+         LongPrefix+orig.Base()[1], Orders));
+   std::vector<size_t>::iterator Pi,PiEnd=Prior_.end();
    if(Orders.size()>1&&IsSymm_){
       //If we have more than one connection point and the priorities are
       //symmetric we have an orientation ambiguity
-      size_t NComps=(Priors_.size()-Priors_.size()%2)/2;
+      size_t NComps=(Prior_.size()-Prior_.size()%2)/2;
       bool reorder=false;
       ConnItr ConnI=ConnNodes_.begin();
       std::vector<Pair_t>::reverse_iterator rConnI=ConnNodes_.rbegin();
       NComps=(ConnNodes_.size()-ConnNodes_.size()%2)/2;
-      for(counter=0;counter<NComps&&!reorder;++counter,++ConnI,++rConnI){
+      for(size_t counter=0;counter<NComps&&!reorder;
+            ++counter,++ConnI,++rConnI){
          const Node* Result=Priority(ConnI->second.get(),
                                     rConnI->second.get());
          if(Result==NULL)continue;
          else if(Result==ConnI->second.get())break;
          else reorder=true;
       }
-      if(reorder)PSIERROR("Your group needs reordered");
+      if(reorder){
+         //For good measure flip (almost) everything
+         Flip(Prior_);
+         //We don't flip this or else a 0,1 double bond shows up as 1,0
+         //which due to symmetry, is just a bad numbering...
+         //Flip(ActiveSubNodes_);
+         Flip(ConnNodes_);
+         Flip(SubNodes_);
+         Flip(PrimNodes_);
+      }
    }
-   Pi=Priors_.begin();PiEnd=Priors_.end();
+   Pi=Prior_.begin();PiEnd=Prior_.end();
    size_t TempPrior=*Pi;
    Node::iterator It2=SubBegin(),It2End=SubEnd();
    SharedNode_t LastNode;
-   for (; It2!=It2End; ++It2) {
-      size_t OrigPrior=*Pi,LastPrior=TempPrior;
-      (*It2)->AddTypes(MyTypes_.back(), Orders, TempPrior,IsSymm_,LastNode);
-      ++Pi;
-      if (Pi==PiEnd) continue;
-      if (*Pi>OrigPrior) TempPrior++;
-      else TempPrior=LastPrior;
+   for (; It2!=It2End; ++It2,++Pi) {
+      TempPrior=(IsSymm_?*Pi:TempPrior);
+      (*It2)->AddTypes(MyTypes_.back(), Orders,TempPrior,IsSymm_,LastNode);
+      TempPrior+=1;
       LastNode=*It2;
    }
 }
 
 Node::Node(const std::string& BaseAbbrv, const std::string& BaseName) :
-      MyTypes_(1, ParamT(BaseAbbrv, BaseName)),Prior_(1,0) {
+      MyTypes_(1, ParamT(BaseAbbrv, BaseName)),Prior_(1,0),IsSymm_(true) {
 }
 
 void Node::AddSubNode(boost::shared_ptr<Node> NewNode) {
@@ -215,14 +237,15 @@ std::string Node::PrintOut(const std::string spaces, const size_t Level) const {
    //Print my atoms
    if (spaces==""||SubNodes_.size()==0) {
       Message<<spaces;
-      if (ActiveSubNodes_.size()>1) {
+      /* This is taken care of in ParameterType.cc
+        if (ActiveSubNodes_.size()>1) {
          std::vector<size_t>::const_iterator
          It=ActiveSubNodes_.begin(),ItEnd=ActiveSubNodes_.end();
          --ItEnd;
          for (; It!=ItEnd; ++It)
             Message<<(*It)<<",";
          Message<<(*It)<<"-";
-      }
+      }*/
       Message<<MyStrType<<" Atom(s):";
       for (unsigned MemberI=0; MemberI<size(); MemberI++)
          Message<<(*this)[MemberI]<<" ";
