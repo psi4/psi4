@@ -20,20 +20,20 @@ if(NOT CHEMPS2_FOUND)
         PREFIX ${CUSTOM_CHEMPS2_LOCATION}
         GIT_REPOSITORY https://github.com/SebWouters/CheMPS2
         GIT_TAG v1.5
-        CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} 
-                   -DSTATIC_ONLY=ON 
+        CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                   -DSTATIC_ONLY=ON
                    -DENABLE_TESTS=OFF
                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                    -DCMAKE_INSTALL_LIBDIR=lib
         INSTALL_DIR "${CUSTOM_CHEMPS2_LOCATION}/install")
-    
+
     # Set also variables usually set by find_package
     ExternalProject_Get_Property(interface_chemps2 INSTALL_DIR)
     set(CHEMPS2_LIBRARY "${INSTALL_DIR}/lib/libchemps2.a")
     file(MAKE_DIRECTORY ${INSTALL_DIR}/include/chemps2)  # note [1] below
     set(CHEMPS2_INCLUDE_DIRS "${INSTALL_DIR}/include" ${GSL_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
     set(CHEMPS2_LIBRARIES ${CHEMPS2_LIBRARY} ${GSL_LIBRARIES} ${HDF5_LIBRARIES})
-    
+
     # Set target for dmrg and psi4 to depend upon as set by find_package
     add_library(CHEMPS2::CHEMPS2 STATIC IMPORTED GLOBAL)
     add_dependencies(CHEMPS2::CHEMPS2 interface_chemps2)
