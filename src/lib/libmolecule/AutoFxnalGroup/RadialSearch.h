@@ -88,7 +88,7 @@ class RadialSearch : public LinearSearch<RadialTypes...>{
       ///The internal call that continues the recursion
       bool FindMe(std::deque<boost::shared_ptr<Node> >& FoundNodes);
       bool IsLinear()const{return false;}
-      virtual std::vector<size_t> DeteriminePrior(
+      std::vector<size_t> DeterminePrior(
             std::deque<boost::shared_ptr<Node> >& FoundNodes,
             bool& Symm)const{
          Symm=true;

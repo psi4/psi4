@@ -30,10 +30,12 @@ template<size_t...args>\
 class base_##Name:public RingFinder<Centers>{\
    private:\
       typedef RingFinder<Centers> Base_t;\
+   protected:\
+      bool IsPrim()const{return true;}\
    public:\
       base_##Name():Base_t(Abbv,Full){\
          if(sizeof...(args)!=0){\
-            std::vector<size_t> Temp{args...};\
+            size_t Temp[sizeof...(args)]={args...};\
             PsiMap<size_t,size_t> Temp1;\
             for(size_t i=0;i<sizeof...(args);){\
                size_t temp3=Temp[i++];\
@@ -66,7 +68,7 @@ RING(Oxazole,"Ar5OCN","Oxazole",Ether_t,Alkenyl,Azo2_t,Alkenyl,Alkenyl)
 RING(Isoxazole,"Ar5ON","Isooxazole",Ether_t,Azo2_t,Alkenyl,Alkenyl,Alkenyl)
 
 /*************************6 Membered Rings*****************/
-RING(Benzene,"Ph","Benzene",Alkenyl,Alkenyl,Alkenyl,Alkenyl,Alkenyl,Alkenyl)
+RING(Benzene,"Ar6","Benzene",Alkenyl,Alkenyl,Alkenyl,Alkenyl,Alkenyl,Alkenyl)
 RING(Pyridine,"Ar6N","Pyridine",Azo,Alkenyl,Alkenyl,Alkenyl,Alkenyl,Alkenyl)
 RING(Pyrazine,"Ar6pN2","Pyrazine",Azo,Alkenyl,Alkenyl,Azo,Alkenyl,Alkenyl)
 RING(Pyrimidine,"Ar6mN2","Pyrimidine",Azo,Alkenyl,Azo,Alkenyl,Alkenyl,Alkenyl)

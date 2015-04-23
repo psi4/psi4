@@ -295,7 +295,7 @@ class Node{
       ///Whether the pattern is symmetric
       bool IsSymm_;
    protected:
-
+      virtual bool IsPrim()const{return false;}
       ///As a node picks up names, they are deposited here
       std::vector<ParamT> MyTypes_;
       /** \brief Function that updates the types of a node
@@ -415,7 +415,8 @@ class Node{
 
       ///Prim Node constructor takes index of the atom, its Sym and Name
       Node(const int i,const std::string& BaseAbbrv,const std::string& BaseName):
-         MyMember_(1,i),MyTypes_(1,ParamT(BaseAbbrv,BaseName)),Prior_(1,0){}
+         MyMember_(1,i),MyTypes_(1,ParamT(BaseAbbrv,BaseName)),
+         Prior_(1,0),IsSymm_(true){}
       ///Takes a list of the subnodes
       void FillNode(std::deque<boost::shared_ptr<Node> >& NewNode);
       ///Takes the abbreviated and full names of this node

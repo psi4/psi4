@@ -26,7 +26,27 @@
 #include "LinearSearch.h"
 namespace psi {
 namespace LibMolecule {
-
+#define PRIM(Name,Abbv,Full,Centers...) \
+   template<size_t...args>\
+   class base_##Name:public LinearSearch<Centers>{\
+      private:\
+         typedef LinearSearch<Centers> Base_t;\
+      protected:\
+         bool IsPrim()const{return true;}\
+      public:\
+         base_##Name():Base_t(Abbv,Full){\
+            if(sizeof...(args)!=0){\
+               size_t Temp[sizeof...(args)]={args...};\
+               PsiMap<size_t,size_t> Temp1;\
+               for(size_t i=0;i<sizeof...(args);){\
+                  size_t temp3=Temp[i++];\
+                  Temp1[temp3]=Temp[i++];\
+               }\
+               MyTypes_[0]=ParamT(Abbv,Full,Temp1);\
+            }\
+         }\
+};\
+typedef base_##Name <> Name;
 #define DERIV(Name,Abbv,Full,Centers...) \
    template<size_t...args>\
    class base_##Name:public LinearSearch<Centers>{\
@@ -35,7 +55,7 @@ namespace LibMolecule {
       public:\
          base_##Name():Base_t(Abbv,Full){\
             if(sizeof...(args)!=0){\
-               std::vector<size_t> Temp{args...};\
+               size_t Temp[sizeof...(args)]={args...};\
                PsiMap<size_t,size_t> Temp1;\
                for(size_t i=0;i<sizeof...(args);){\
                   size_t temp3=Temp[i++];\
@@ -70,6 +90,35 @@ DERIV(Nitrile, "TBCN", "Nitrile", Alkynyl2_t, NTB_t)
 typedef base_Nitrile<0,1> Nitrile_t;
 
 /**************C-O 2X Bonds*****************/
+template<size_t...args>
+class base_Carboxylate:public RadialSearch<3,Alkenyl3_t,ODB_t,ODB_t>{
+   private:
+      typedef RadialSearch<3,Alkenyl3_t,ODB_t,ODB_t> Base_t;
+   protected:
+      std::vector<size_t> DeterminePrior(
+            std::deque<boost::shared_ptr<Node> >&,
+            bool&)const{
+         std::vector<size_t> Priors(3,0);
+         Priors[1]=1;
+         Priors[2]=1;
+         return Priors;
+      }
+      bool IsPrim()const{return true;}
+   public:
+      base_Carboxylate():Base_t("CO2-","Carboxylate"){
+         if(sizeof...(args)!=0){
+            size_t Temp[sizeof...(args)]={args...};
+            PsiMap<size_t,size_t> Temp1;
+            for(size_t i=0;i<sizeof...(args);){
+               size_t temp3=Temp[i++];
+               Temp1[temp3]=Temp[i++];
+            }
+            MyTypes_[0]=ParamT("CO2-","Carboxylate",Temp1);
+         }
+      }
+   };
+typedef base_Carboxylate <> Carboxylate;
+typedef base_Carboxylate<0,1> Carboxylate_t;
 DERIV(Formaldehyde, "DBCO", "Formaldehyde", Alkenyl1_t, ODB_t)
 DERIV(Aldehyde, "DBCO", "Aldehyde", Alkenyl2_t, ODB_t)
 typedef base_Aldehyde<0,1> Aldehyde_t;
@@ -78,8 +127,7 @@ typedef base_Carbonyl<0,2> Carbonyl_t;
 
 
 /**************Carbonyl Groups********************/
-DERIV(Carboxylate, "CO2-", "Carboxylate", Carbonyl_t, ODB_t)
-typedef base_Carboxylate<0,1> Carboxylate_t;
+
 DERIV(Carboxyl, "CO2H", "Carboxyl", Carbonyl_t, Hydroxyl_t)
 typedef base_Carboxyl<0,1> Carboxyl_t;
 DERIV(Ester, "OCO", "Ester", Carbonyl_t, Ether_t)
@@ -123,29 +171,55 @@ class base_OrthoEster:
 typedef base_OrthoEster <> OrthoEster;
 
 /**************Miscellaneous Nitrogen Groups**********/
-DERIV(Azide, "NNN", "Azide", Azo1_t, Azo2_t, Azo2_t)
 DERIV(Diazene, "DBNN", "Diazene", Azo1_t, Azo1_t)
 DERIV(DBNN, "DBNN", "N=N 2x Bond", Azo, Azo)
+DERIV(Azide, "NNN", "Azide", NTB_t, base_DBNN<0,1,1,1>)
 DERIV(Cyanate, "OCN", "Cyanate", Nitrile_t, Ether_t)
 DERIV(Isocyanate, "NCO", "Isocyanate", Azo2_t, Alkynyl2_t, ODB_t)
 DERIV(Nitro, "NOO", "Nitro", ODB_t, Amine3_t, ODB_t)
 typedef base_Nitro<0,1> Nitro_t;
-DERIV(Nitrate, "NO3", "Nitrate", Nitro_t, Ether_t)
+template<size_t...args>
+class base_Nitrate:public LinearSearch<Nitro_t,Ether_t>{
+   private:
+      typedef LinearSearch<Nitro_t,Ether_t> Base_t;
+   protected:
+      std::vector<size_t> DeterminePrior(
+            std::deque<boost::shared_ptr<Node> >& FN,
+            bool& Symm)const{
+         std::vector<size_t> Priors=Base_t::DeterminePrior(FN,Symm);
+         Symm=true;
+         return Priors;
+      }
+   public:
+      base_Nitrate():Base_t("NO3","Nitrate"){
+         if(sizeof...(args)!=0){
+            size_t Temp[sizeof...(args)]={args...};
+            PsiMap<size_t,size_t> Temp1;
+            for(size_t i=0;i<sizeof...(args);){
+               size_t temp3=Temp[i++];
+               Temp1[temp3]=Temp[i++];
+            }
+            MyTypes_[0]=ParamT("NO3","Nitrate",Temp1);
+         }
+      }
+   };
+typedef base_Nitrate <> Nitrate;
 DERIV(Nitroso, "NO", "Nitroso", Azo2_t, ODB_t)
 typedef base_Nitroso<0,1> Nitroso_t;
 DERIV(Nitrite, "NO2", "Nitrite", Nitroso_t, Ether_t)
 
 /**********Miscalaneous Carbon Groups***********/
-DERIV(Isopropyl, "IPR", "Isopropyl", Methyl_t, Methyne_t, Methyl_t)
+PRIM(Isopropyl,"IPR","Isopropyl",Methyl_t, Methyne_t, Methyl_t)
 typedef base_Isopropyl<1,1> Isopropyl_t;
 DERIV(Butyl,"BT","2-Butyl",Methyl_t,Methyne_t,Methene_t,Methyl_t)
 typedef base_Butyl<1,1> Butyl_t;
 DERIV(Hydroxyethyl,"HEt","2-Hydroxyethyl",Hydroxyl_t,Methyne_t,Methyl_t)
 typedef base_Hydroxyethyl<1,1> Hydroxyethyl_t;
-DERIV(ArgThing,"ARGR","Argine End",Amine1_t,Alkenyl3_t,Amine1_t)
+PRIM(ArgThing,"ARGR","Argine End",Amine1_t,Alkenyl3_t,Amine1_t)
 typedef base_ArgThing<1,1> ArgThing_t;
 
 #undef DERIV
+#undef PRIM
 }
 }
 

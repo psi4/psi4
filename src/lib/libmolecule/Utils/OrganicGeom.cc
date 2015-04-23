@@ -85,9 +85,9 @@ typedef PrimRunner<Acetylene, TBCC> FindCC3XBond;
 typedef PrimRunner<Formaldimine, DBCN1, Aldimine1, Aldimine2, Ketimine1,
       Ketimine2> FindCN2XBond;
 typedef PrimRunner<HydrogenCyanide, Nitrile> FindCN3XBond;
-typedef PrimRunner<Formaldehyde, Aldehyde, Carbonyl> FindCO2XBond;
+typedef PrimRunner<Formaldehyde, Aldehyde,Carboxylate, Carbonyl> FindCO2XBond;
 typedef PrimRunner<Imide,Amide> FindAmide;
-typedef PrimRunner<Carboxylate, Carboxyl, Carbonate, Ester> FindCOGroups;
+typedef PrimRunner<Carboxyl, Carbonate, Ester> FindCOGroups;
 typedef PrimRunner<Methanol, Methoxy, HydrogenPeroxide, Hydroperoxide, Peroxide,
        OrthoEster> FindEtherGroups;
 typedef PrimRunner<Azide, Diazene, DBNN, Cyanate, Isocyanate, Nitro,

@@ -32,6 +32,7 @@ typedef PrimRunner<CTerminus,NTerminus,AABB,AnAA,
     NPTermPro,Pro> FindBB;
 typedef PrimRunner<Ala,Val,Ile,Leu,Met,Phe,Tyr,Trp,Ser,
       Thr,Asn,Gln,Cys,CysSB,Arg,His,Hip,Lys,Asp,Glu> FindAAs;
+typedef PrimRunner<Imide,Amide> FindAmide;
 BioGeom::BioGeom(const Molecule& Mol) :
       OrganicGeom(Mol,true) {
       Graph Nodes=OrganicGeom::GetGroups();
@@ -39,12 +40,7 @@ BioGeom::BioGeom(const Molecule& Mol) :
       SetRunner<FindBB>::Run(Nodes);
       SetRunner<FindAARs>::Run(Nodes);
       SetRunner<FindAAs>::Run(Nodes);
-      std::cout<<Nodes.PrintOut(1)<<std::endl;
-      GraphItr It1=Nodes.PrimBegin(),It1End=Nodes.PrimEnd();
-      for(;It1!=It1End;++It1)
-         std::cout<<"Atom "<<(*(*It1))[0]<<" "<<
-                 (*It1)->Type().GenMMType()<<std::endl;
-      exit(1);
+      SetRunner<FindAmide>::Run(Nodes);
 }
 
 

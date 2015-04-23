@@ -22,7 +22,7 @@
 #ifndef SRC_LIB_LIBMOLECULE_AUTOFXNALGROUP_RINGFINDER_H_
 #define SRC_LIB_LIBMOLECULE_AUTOFXNALGROUP_RINGFINDER_H_
 #include "LinearSearch.h"
-
+#include "NodeUtils.h"
 namespace psi{
 namespace LibMolecule{
 
@@ -84,7 +84,7 @@ std::vector<size_t> RingFinder<Groups...>::DeterminePrior(
       for(;It1!=ItEnd;++It1)TrialLayout.push_back(*It1);
       for(It1=FN.begin();It1!=It;++It1)TrialLayout.push_back(*It1);
       Pri_t TempPrior;
-      TempPrior=Node::DeterminePrior(TrialLayout);
+      TempPrior=Node::DeterminePrior(TrialLayout,Symm);
       It1=TrialLayout.begin();
       Pri_t TempSubs;
       cFN_Itr It1End=TrialLayout.end();
@@ -136,19 +136,28 @@ std::vector<size_t> RingFinder<Groups...>::DeterminePrior(
    FN=Order;
    //Finally we need to renumber the priorities if the ring doesn't have
    //symmetry
-   Pri_t::iterator Pi=Priors.begin();
-   Pri_t::reverse_iterator rPi=Priors.rbegin();
-   ++Pi;//Need to move to the two position
-   size_t NComps=(Priors.size()-Priors.size()%2)/2,counter=0;
-   for(;counter<NComps;++counter,++Pi,++rPi)
-      if(*Pi!=*rPi)break;
-   Symm=true;
+   FN_t::iterator Si=Order.begin();
+   FN_t::reverse_iterator rSi=Order.rbegin();
+   ++Si;//Need to move to the two position
+   size_t NComps=(Order.size()-Order.size()%2)/2,counter=0;
+   for(;counter<NComps;++counter,++Si,++rSi){
+      const Node* result=Priority(Si->get(),rSi->get());
+      if(result!=NULL)break;
+   }
    if(counter<NComps){
       Symm=false;
       Pri_t Temp;
+      Pri_t::iterator Pi;
       for(counter=0,Pi=Priors.begin();Pi!=Priors.end();++Pi,++counter)
          Temp.push_back(counter);
       Priors=Temp;
+   }
+   else{
+      Symm=true;
+      NComps=(Priors.size()+2-Priors.size()%2)/2;
+      for(size_t i=0;i<Priors.size();i++){
+         if(i>=NComps)Priors[i]=Priors.size()-i;
+      }
    }
    return Priors;
 }

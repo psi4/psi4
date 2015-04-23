@@ -73,15 +73,16 @@ std::string ParamT::Name(const size_t i)const{
         HasOrder=Order>0,
         HasPrior=(Priority_>0);
 
-   if(i==1){
+   if(i==1)
       Base<<OrderLookUp(Order)<<(HasOrder?" ":"");
-      if(Order_.size()>1){
-         PsiMap<size_t,size_t>::const_iterator
-         It=Order_.begin(),ItEnd=Order_.end();
-         for(size_t counter=0;It!=ItEnd;++It,++counter)
-            Base<<It->first<<(counter<Order_.size()-1?",":" ");
+   if(Order_.size()>1){
+      PsiMap<size_t,size_t>::const_iterator
+      It=Order_.begin(),ItEnd=Order_.end();
+      for(size_t counter=0;It!=ItEnd;++It){
+         for(size_t counter2=0;counter2<It->second;++counter,++counter2)
+            Base<<It->first<<(counter<Order-1&&i==1?",":"");
       }
-
+      if(i==1)Base<<" ";
    }
    Base<<Base_[i];
    if (i==0&&HasOrder)
