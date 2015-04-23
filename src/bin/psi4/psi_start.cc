@@ -37,6 +37,7 @@
 #include <getopt.h>
 #include <psifiles.h>
 #include <psiconfig.h>
+#include "gitversion.h"
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
 #include "libparallel/ParallelPrinter.h"
@@ -46,7 +47,7 @@ namespace psi {
 
 void create_new_plugin(std::string plugin_name, const std::string& template_name);
 void create_new_plugin_makefile();
-void print_version(std::string);
+void print_version();
 void print_usage();
 
 /*!
@@ -184,7 +185,7 @@ int psi_start(int argc, char *argv[])
                 break;
 
             case 'V': // -V or --version
-                print_version("stdout");
+                print_version();
                 exit(EXIT_SUCCESS);
                 break;
 
@@ -323,6 +324,11 @@ int psi_start(int argc, char *argv[])
     outfile_name = ofname;
 
     return(PSI_RETURN_SUCCESS);
+}
+
+void print_version(void)
+{
+    printf("%s\n", PSI_VERSION);
 }
 
 /*! Print command-line usage information. */

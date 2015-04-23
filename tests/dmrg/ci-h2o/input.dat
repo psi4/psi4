@@ -1,0 +1,29 @@
+molecule H2O {
+ 0 1
+   O   0.000000000   0.00   0.000000000
+   H   0.790689766   0.00   0.612217330
+   H  -0.790689766   0.00   0.612217330
+ units angstrom
+}
+
+set basis          cc-pVDZ
+set reference      rhf
+set e_convergence  1e-13
+set d_convergence  1e-13
+set ints_tolerance 0.0
+
+set dmrg dmrg_wfn_irrep            0
+set dmrg dmrg_wfn_multp            1
+set dmrg frozen_docc          [ 1 , 0 , 0 , 0 ]
+set dmrg active               [ 5 , 0 , 4 , 2 ]
+set dmrg dmrg_states          [  200,  500, 1000, 1000 ]
+set dmrg dmrg_e_convergence           [ 1e-8, 1e-8, 1e-8, 1e-8 ]
+set dmrg dmrg_maxsweeps       [    5,    5,    5,  100 ]
+set dmrg dmrg_noiseprefactors [ 0.03, 0.03, 0.03,  0.0 ]
+set dmrg dmrg_print_corr      false
+set dmrg dmrg_chkpt            false
+
+energy("dmrgci")
+
+ref_energy = -76.1261102339
+compare_values(ref_energy, get_variable("CURRENT ENERGY"), 6, "DMRG CI Energy")

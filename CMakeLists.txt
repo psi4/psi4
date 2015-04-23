@@ -25,8 +25,9 @@ option(ENABLE_SCALASCA       "Enable scalasca profiler mode"               OFF)
 option(ENABLE_STATIC_LINKING "Enable mostly static libraries linking"      OFF)
 option(ENABLE_XHOST          "Enable processor-specific optimizations"     ON)
 option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
-option(ENABLE_PLUGINS        "Enable plugins"                              ON)
+option(ENABLE_PLUGINS        "Enable compilation of example plugins"       OFF)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
+option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     ON)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
 # Modules requiring Fortran
 option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF)
@@ -143,6 +144,11 @@ include(ConfigBoost)
 link_directories("${Boost_LIBRARY_DIRS}")
 include_directories(SYSTEM "${Boost_INCLUDE_DIRS}")
 
+# CheMPS2 Detection
+if(ENABLE_CHEMPS2)
+   include(ConfigChemps2)
+endif()
+
 #OpenBabel Detection
 #add_subdirectory(openbabel)
 #set(BABEL_LIBRARY_DIR ${CMAKE_BINARY_DIR}/lib)
@@ -191,12 +197,6 @@ if(ENABLE_LIBERD)
    message(WARNING "Building/Using LibERD instead of LibInts!!!!")
    add_definitions(-DHAVE_ERD)
 endif()
-
-# Is this needed for the script?
-# TODO: Fix gitversion.py to work without setting top_srcdir...maybe use 
-# PROJECT_SOURCE_DIR?
-set(top_srcdir ${PROJECT_SOURCE_DIR}) # The quotes are added in the source, in this case
-configure_file(src/bin/psi4/gitversion.py.in src/bin/psi4/gitversion.py)
 
 # Libint configuration
 # Set default for LIBINT_OPT_AM if not set by setup script.

@@ -30,4 +30,9 @@ add_subdirectory(stable)
 add_subdirectory(thermo)
 add_subdirectory(transqt)
 add_subdirectory(transqt2)
+
+if(ENABLE_CHEMPS2)
+    add_subdirectory(dmrg)
+endif()
+
 add_subdirectory(psi4)
