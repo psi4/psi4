@@ -6,6 +6,7 @@ set(SRC ProgressBar.h
         Timer.h
         Units.h
         AtomicData.h
+        Exception2.h
         Implementations/UnitsGuts.hh
         Implementations/PrefixConverter.cc
         Implementations/Timer.cc
@@ -13,6 +14,7 @@ set(SRC ProgressBar.h
         Implementations/PythonFxnGuts.cc
         Implementations/AtomicData.cc
         Implementations/ProgressBar.cc
+        Implementations/Exception2.cc
 )
 add_library(PsiUtil ${SRC})
 add_dependencies(PsiUtil parallel2)

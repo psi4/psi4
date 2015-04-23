@@ -20,6 +20,7 @@
  *@END LICENSE
  */
 #include<sstream>
+#include<iostream>
 #include "ParameterType.h"
 #include "exception.h"
 
@@ -28,13 +29,13 @@ namespace LibMolecule{
 
 ParamT::ParamT(const std::string& BaseAbbrv,
                const std::string& BaseName,
-               const int Order,
-               const int Priority):
-    Order_(Order),Priority_(Priority){
-  Base_[0]=BaseAbbrv;
-  Base_[1]=BaseName;
+               const PsiMap<size_t,size_t>& Order,
+               const size_t Priority):
+    Order_(Order),Priority_(Priority),IsBase_(true){
   Atom_[0]=BaseAbbrv;
   Atom_[1]=BaseName;
+  Base_[0]=BaseAbbrv;
+  Base_[1]=BaseName;
   Full_[0]=Name(0);
   Full_[1]=Name(1);
 }
@@ -42,9 +43,9 @@ ParamT::ParamT(const std::string& BaseAbbrv,
 ParamT::ParamT(const ParamT& Other,
        const std::string& BaseAbbrv,
        const std::string& BaseName,
-       const int Order,
-       const int Priority):
-      Order_(Order),Priority_(Priority){
+       const PsiMap<size_t,size_t>& Order,
+       const size_t Priority):
+      Order_(Order),Priority_(Priority),IsBase_(false){
       Base_[0]=BaseAbbrv;
       Base_[1]=BaseName;
       Atom_[0]=Other.Atom()[0];
@@ -53,18 +54,39 @@ ParamT::ParamT(const ParamT& Other,
       Full_[1]=Name(1);
 }
 
+bool ParamT::operator==(const ParamT& other)const{
+   //std::cout<<Full_[0]<<" "<<other.Full_[0]<<std::endl;
+   return (Full_[0]==other.Full_[0]);
+}
+
 static std::string OrderLookUp(const size_t Prior);
 
 std::string ParamT::Name(const size_t i)const{
    std::stringstream Mess,Base,Atom;
-   bool HasAtom=(Atom_[i]!=Base_[i]),
-        HasOrder=Order_>=0,
-        HasPrior(Priority_>0);
+   PsiMap<size_t,size_t>::const_iterator It=Order_.begin(),
+         ItEnd=Order_.end();
+   size_t Order=0;
+   for(;It!=ItEnd;++It)
+      Order+=It->second;
+
+   bool HasAtom=(!IsBase_),
+        HasOrder=Order>0,
+        HasPrior=(Priority_>0);
+
    if(i==1)
-      Base<<OrderLookUp(HasOrder?Order_:0)<<(HasOrder?" ":"");
+      Base<<OrderLookUp(Order)<<(HasOrder?" ":"");
+   if(Order_.size()>1){
+      PsiMap<size_t,size_t>::const_iterator
+      It=Order_.begin(),ItEnd=Order_.end();
+      for(size_t counter=0;It!=ItEnd;++It){
+         for(size_t counter2=0;counter2<It->second;++counter,++counter2)
+            Base<<It->first<<(counter<Order-1&&i==1?",":"");
+      }
+      if(i==1)Base<<" ";
+   }
    Base<<Base_[i];
    if (i==0&&HasOrder)
-      Base<<Order_;
+      Base<<Order;
    if(HasAtom){
       Atom<<Atom_[i];
       if(HasPrior)Atom<<Priority_;

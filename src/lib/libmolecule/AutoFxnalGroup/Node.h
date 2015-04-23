@@ -29,6 +29,8 @@
 namespace psi{
 namespace LibMolecule{
 
+
+
 /** \brief The class that serves as the basis for determining a molecule's
  *         identity
  *
@@ -60,139 +62,342 @@ namespace LibMolecule{
  *  where the quantity (CO) is interpreted as the new node.
  *
  *  In general as we progress through this algorithm we will amass a large
- *  number of composite nodes (a single node that has taken the place of
- *  many nodes).  With each new composite node we make, the search space
- *  becomes smaller.  The number of edges our new composite node possesses is
- *  equal to the number of edges of each node in the new node, less the number
- *  they have in common.
+ *  number of composite nodes (a node that has taken the place of
+ *  other nodes).  In general, with each new composite node we make,
+ *  the search space becomes smaller.  Ultimately, the entire algorithm
+ *  hinges on the connectivity, which is assumed to have been given to us.
  *
- *  From a chemistry perspective, each node may only possess a certain number
- *  of edges (equal to its valency).
+ *  Our algorithm is designed to automatically determine as much as it
+ *  can.  Inside the header files: TrivialNodes.hh, PrimitiveNodes.hh,
+ *  DerivedNodes.hh,etc. we take care of all of the definitions of what
+ *  each chemically meaningful node is.  If you want a new node to be
+ *  found those are the places to add it.
  *
- *  Ultimately, the entire algorithm hinges on the connectivity and determining
- *  if two or more nodes are connected.  Within a node we thus keep pointers
- *  to the nodes connected to it.  In this way we can update the local
- *  environment of our graph from any node.
- *
- *  The algorithm starts with each atom being assigned to a trivial node
- *  type that is just it's atomic symbol and ensures each atom is on the
- *  graph.  We then go back over the atoms and create primitive nodes, which
- *  are the heavy atom and its hydrogens.  It is at this stage we account
- *  for bond order, e.g. a carbon connected to three nodes, has double-bond
- *  character, whereas a carbon connected to two nodes has triple-bond
- *  character.  I specify "character" because it is conceivable that the
- *  carbon does not actually make a double or triple bond, but is rather a
- *  radical.  The presence of what I will call an alkenyl carbon (carbon w/ 3
- *  bonds), but no double bond indicates that either your structure is f'ed
- *  up or it contains a radical/anionic carbon (and I would still call
- *  it f'ed up).
- *
- *  As a systematic way of naming things, a node that makes \f$n\f$ bonds
- *  maximally, and is bonded to \f$n-1\$ hydrogens is said to be a primary
- *  node.  If it is bonded to \f$n-2\f$ then it is a secondary node, etc.
- *  For example:
+ *  Ultimately our class structure looks something like:
  *  \verbatim
- *  H     R
- *   \   /
- *    C=C      ---->  (Alkenyl1)-(Alkenyl2)-R ----> (CCDB1)-R
- *   /   \
- *  H     H
- *  \endverbatim
- *  , this functional group is decomposed into a primary and secondary
- *  alkenyl carbon, which are then joined to form a primary carbon-carbon
- *  double bond.
+ *          Node
+ *            |
+ *            |
+ *            |
+ *           \ /
+ *       LinearSearch
+ *         |        |
+ *         |        |
+ *         |        |
+ *        \ /      \ /
+ * RadialSearch    RingSearch
+ * \endverbatim
  *
- *  Every time a series of nodes are combined to form a new node each atom
- *  must be assigned a new name.  In the above example we have:
- *  \verbatim
- *  H--->HAlkenyl1--->HCCDB1
- *  C--->CAlkenyl1--->CCCDB1  C--->CAlkenyl2--->CCCDB1
- *  H--->HAlkenyl1--->HCCDB1  H--->HAlkenyl2--->HCCDB1
- *  \endverbatim
- *  where the placement of the atom in the diagram is meant to correspond
- *  to which atom it is.
+ * off of each of these classes we derive our search patterns.  First up
+ * are the groups of nodes that can be found by a linear search.  These
+ * are node patterns that look like:
+ * \verbatim
+ * A---B---C---D
+ * \endverbatim
+ * i.e. the nodes lie along a continuous path that doesn't double-back
+ * or loop on itself.
  *
- *  In order to facilitate naming atoms, the atom order must be fixed for
- *  each fxnal group.  This is trivial for the lone atoms and is enforced
- *  for all other groups by making the atoms appear in the search order
- *  requested.  For example, when we look for the Alkenyl1 group above we
- *  will look for Carbon,Hydrogen,Hydrogen, and when we look for Alkenyl2 we
- *  will look for Carbon,Hydrogen.  Thus for Alkenyl1 we would specify types
- *  of CAlkenyl1, HAlkenyl1, HAlkenyl1 and for Alkenyl2 we would specify
- *  types of CAlkenyl2, HAlkenyl2.  When we look for the double bond we
- *  will search for Alkenyl2, Alkenyl1, and our types would thus then be:
- *  CCCDB1,HCCDB1,CCCDB1,HCCDB1,HCCDB1.  In general the search string should
- *  always start with a node that will contribute an edge to resulting
- *  node, this facilitates the next part.
+ * Radial searches are stuff like:
+ * \verbatim
+ *      A
+ *      |
+ *   D--B--C
+ *      |
+ *      E
+ * \endverbatim
+ * where we are explicitly looking for a B node surrounded by exactly four
+ * nodes, and those nodes are of types A, C, E, and D, the relative
+ * ordering of which is irrelevant.  This is a linear search where instead
+ * of checking if the node is connected to the last found node we always
+ * check if it's connected to the central node (i.e. the above is four,
+ * two-node linear searches (it may be worth considering in future
+ * developments implementing such a search as two linear searches: A-B-E,
+ * then D-(A-B-E)-C)).
  *
- *  Some nodes will have multiple edges that originate from different
- *  subnodes, e.g. double bonds, or disubstitued benzenes.  This leads to
- *  two problems: an ambiguity in the order of the subnodes and an
- *  ambiguity in how they connect.  Because all nodes that have edges start
- *  with one of the subnodes that have edges we can enforce some order
- *  by reordering the subnodes so that the first one is the one that
- *  attaches to our group.  For something like a double bond this resolves
- *  the ambiguity because if we ask for
+ * Finally we have ring search which is a linear search that additionally
+ * requires that the last node found shares an edge with the first node
+ * found.  There exists a degeneracy between certain search patterns, i.e.
+ * a radial search for two nodes can be done with a linear search for three
+ * nodes, but this should not prove to be any complication.
  *
- *  All of the above examples suggest that there are two ways to search
- *  for nodes
- *  in order to make a new node: 1) Grab nodes around the current node,
- *  we term this a radial search or 2) Grab nodes along a consecutive path,
- *  which we term a linear search.
+ * After finding a node many of the details are directly calculable from
+ * it's connectivity and identity, e.g. we know it's order, can deduce
+ * the priorities of the atoms, etc.  We use this as the basis for
+ * automatically defining our parameter set (more details of which
+ * can be found in ParameterType.h).  This attempt at auto defining
+ * parameters brings us to an important point: the distinction between
+ * a search pattern and an instance of the pattern.  Consider
+ * the search pattern for a methene unit:
+ * \code
+ * class methene: public
+ * RadialSearch<4,Carbon,Hydrogen,Hydrogen>{};
+ * \endcode
  *
- *  Operationally, the node class has two constructors.  They both take a
- *  series of types, the first of which is always the type of the current
- *  node, the remainder are the types of the atoms in the node in the
- *  predefined order (see above).  One of the constructors also takes
- *  an integer argument.  This constructor is the one that should be
- *  used initially when atoms are being turned into nodes and the integer
- *  corresponds to the index of that atom in the molecule.
+ * To find a methene we look for an instance of a carbon,
+ * that makes four bonds, two and only two of which are to hydrogen instances.
+ * This is the search pattern.  The class methene
+ * defines the search pattern.  When we instantiate a methene class from
+ * three particular atoms, we have an instance.  This instance has more
+ * information available to it then the search pattern because it's actually
+ * in the molecule.  For example our instance knows where the non-hydrogen
+ * edges go, and can establish a direction (which way is a higher priority
+ * group).  Our instance also knows it's order.  Although all methenes
+ * have an order of two, we won't be so blessed for more complicated
+ * groups like carbon-carbon double bonds which can have an order ranging
+ * from 0 (i.e. ethene) to 4 (a quadruply substituted double bond).
+ *
+ * Conceptually, the compiler writes out a series of logical if statements
+ * that compare instances to a search patterns.  This means that
+ * the last point in the previous paragraph is very important, when we
+ * specify a more complicated search pattern, such as that of a carbonyl
+ * \verbatim
+ * class carbonyl: LinearSearch<Alkenyl3,ODB>{};
+ * \endverbatim
+ * The two classes on the right, (Alkenyl3 and ODB) are also search
+ * patterns, but they are going to be compared to actual instances.
+ * This means that the equality will fail because the equality check
+ * of a ParameterType uses more information than is available to
+ * just the search pattern.  For the vast majority of search patterns
+ * it is possible to infer the missing information (a carbonyl is always
+ * a secondary group, a methyne group is always tertiary etc.), but in
+ * general it is not always possible.
+ *
+ * To circumvent this problem we define our search patterns as variadic
+ * templates.  The parameter pack is to be of size 2n, where n is the
+ * number of subnodes that contribute edges.  If n==0 than we have the
+ * search pattern, for all other values of n we have an instance to be
+ * compared against.  The
+ * parameters in the pack are pairs of integers such that the first
+ * value is the subnode number and the second is its order, for example
+ * a tertiary carbon-carbon double bond would be:
+ * \code
+ * class CCDB<0,2,1,1>:LinearSearch<Alkenyl,Alkenyl>{};
+ * \endcode
+ *
+ * The above example illustrates two important ideas: wildcards and
+ * priorities.  The former is easier to explain and we do so first.
+ * In general there are 6 types of carbon-carbon double bonds (we don't
+ * distinguish between cis or trans):
+ * \verbatim
+ *
+ * H        H      H        R
+ *  \      /        \      /
+ *   C====C          C====C
+ *  /      \        /      \
+ * H        H      H        H
+ *
+ * R        H      R        R
+ *  \      /        \      /
+ *   C====C          C====C
+ *  /      \        /      \
+ * R        H      H        H
+ *
+ * R        H      R        R
+ *  \      /        \      /
+ *   C====C          C====C
+ *  /      \        /      \
+ * R        R      R        R
+ * \endverbatim
+ * It's possible to code up the search pattern for each of these six
+ * types, but rather redundant.  Instead we realize that any time we have
+ * two Alkenyl like carbons next to each other, we have a carbon-carbon
+ * double bond.  We thus create a wildcard called Alkenyl that is a stand
+ * in for Alkenyl1, Alkenyl2, or Alkenyl3 (internally the search loops
+ * over all the possible types, but that's irrelevant).  Now all six
+ * double bonds have the same search pattern (for aesthic reasons we
+ * siphon ethene off, but in principle it could be found this way as
+ * well):
+ * \code
+ * LinearSearch<Alkenyl,Alkenyl>
+ * \endcode
+ * Although it wouldn't be too bad to code up all of the double bond
+ * search patterns, coding up all of the substitutions of say indole,
+ * would require much more work (for indole there are 256 possible
+ * substitutions (in general there are \f$2^{N}\f$ possible substitutions
+ * where \f$N\f$ is the number of edges leading from the fully
+ * "R-substituted" functional group (some of them may be equivalent through
+ * symmetry))).  Wildcards allow us to specify a set of functional groups
+ * quite concisely.  It's also worth mentioning that wildcards automatically
+ * substitute the correct instances.
+ *
+ * When a search pattern is being used as an instance, we need to be
+ * able to specify, at compile time, what the order of each subnode is
+ * in order to ensure we have the instance we truly want.  Above we wanted
+ * the tertiary instance of a carbon-carbon double bond, which we requested
+ * by:
+ * \code
+ * CCDB<0,2,1,1>::LinearSearch<Alkenyl,Alkenyl>{};
+ * \endcode
+ * Because of the use of wildcards, both:
+ * \verbatim
+ * Alkenyl3-Alkenyl2
+ *
+ * Alkenyl2-Alkenyl3
+ * \endverabtim
+ * match the search pattern.  This in theory means we could have two
+ * CCDB types: CCDB<0,2,1,1> and CCDB<0,1,1,2>; however, this doesn't
+ * actually happen.  The reason is because of priorities.  Basically,
+ * similar to the same concept in organic chemistry we assign different
+ * groups different priorities.  We use these priorities to always store
+ * the subnodes in the same order.  For a radial search no priorities
+ * are needed and we store the subnodes in the order requested by the
+ * search pattern.  For linear searches, the subnodes are either stored
+ * in the requested order, or the reverse requested order, whichever places
+ * the first unique, highest priority group at a lower index.  Because
+ * the first criteria for priority is order, that is how we knew the geminal
+ * carbon was stored first.
+ *
+ * Rings are a bit more complicated.  Let the maximum number of edges coming
+ * from any one node, and leading outside the ring, be \f$N\f$.  First
+ * the ring is rotated such that one of the subnodes with \f$N\f$ edges
+ * leading outside the ring is in the first spot.  The priorities are
+ * then calculated using the linear criteria.  Next the substitution
+ * pattern of the result returned by the linear criteria is evaluated,
+ * i.e. is it 1,2-benzene, 3,4,5-benzene, etc.
+ * Next, this process is repeated for each subnode with \f$N\f$ such
+ * edges.  This ensures that our substitution pattern is always 1,... and
+ * the reliance on the linear priority criteria ensures we always traverse
+ * the ring in a direction that leads to the next substituted node fastest.
+ * If one of the resulting patterns is the lowest, e.g. 1,2,4 is lower
+ * than 1,2,5, we use it, otherwise we traverse the ring until one of the
+ * patterns hits a group with higher priority than the other patterns. If
+ * the latter doesn't occur the patterns are assumed equal and one is
+ * chosen arbitrarily.
+ *
+ *
+ * In general priority works such that for two groups, A and B, A is
+ * higher priority than group B if:
+ * - A has a higher order
+ * - A has an atom of higher atomic number than those in B
+ * - A contains more subnodes than B
+ * The highest criteria in this list, that is not a tie, is used to
+ * establish priority.
+ *
  */
 class Node{
    private:
+      ///Convenient internal typedef of a shared_ptr to this class
+      typedef boost::shared_ptr<Node> SharedNode_t;
+      ///Convenient internal typedef of a pair of SharedNodes
+      typedef std::pair<SharedNode_t,SharedNode_t> Pair_t;
       ///An array of the atom indices comprising this Node
       std::vector<int> MyMember_;
       ///An array of the primitive Nodes in this Node
-      std::vector<boost::shared_ptr<Node> > PrimNodes_;
+      std::vector<SharedNode_t> PrimNodes_;
       ///These are the sub-nodes of the current node
-      std::vector<boost::shared_ptr<Node> > SubNodes_;
+      std::vector<SharedNode_t> SubNodes_;
       ///These are the nodes connected to the current node
-      std::vector<boost::shared_ptr<Node> > ConnNodes_;
+      std::vector<Pair_t> ConnNodes_;
+      ///A numeric mapping from ConnNodes_ to SubNodes_
+      std::vector<size_t> ActiveSubNodes_;
+      ///The priority pattern of node
+      std::vector<size_t> Prior_;
+      ///Whether the pattern is symmetric
+      bool IsSymm_;
    protected:
+      virtual bool IsPrim()const{return false;}
       ///As a node picks up names, they are deposited here
       std::vector<ParamT> MyTypes_;
-      ///Assigns the types to a subnode
+      /** \brief Function that updates the types of a node
+       *
+       *  In order to update the information we need several things,
+       *  first we need to know the full name and abbreviation of
+       *  the new type.  This is obtained from:
+       *
+       *  \param[in] Parent The parameterization of the super node
+       *
+       *  Next are the orders, which are a map of the subnodes that
+       *  still have edges, and the number of such edges.
+       *
+       *  \param[in] Order The nodes that still have edges and how many
+       *                   in the supernode
+       *
+       *  Finally, the hard part, determining the priority of the new node.
+       *  For the supernode we know its priority pattern and whether or
+       *  not it is symmetric.  If the supernode is not symmetric than
+       *  the subnodes may loose their symmetry were before, e.g.
+       *  a 1,2 carbon-carbon double bond is symmetric
+       *  before the R's are known, once the R's are resolved to two different
+       *  groups this symmetry is gone.
+       *
+       *  The case when the symmetry breaks is the hardest.  Going back
+       *  to the C-C double bond. Initially, both carbons have a priority
+       *  of 0, because they are symmetric.  Once the R's are known the
+       *  symmetry is lost, hence when numbering the C's we need to establish
+       *  a direction.  To do this, we pass in the highest priority node
+       *  attached to the subnode (i.e. the node left of this one in the
+       *  array).  The side of the current subnode closest to it is the
+       *  highest priority and numbering continues from there.
+       *
+       *  An additional complication comes from
+       *
+       *  If the symmetry is maintained, then we assign priority starting
+       *  from 0, and following the symmetry pattern.  Once we are done
+       *  with the first subnode we pass the final priority into the next
+       *  subnode and continue until our symmetry reveals itself, at which
+       *  point we undo the previous steps sequentially..
+       *
+       *  \param[in,out] Priority In, the starting priority of the current
+       *                          subnode.  Out, the last priority used in the
+       *                          current subnode.
+       *  \param[in] Symm Whether the current subnode maintains its current
+       *                  symmetry or not
+       *  \param[in] Left The group I'm attached to with higher priority
+       *
+       */
       void AddTypes(const ParamT& Parent,
-                    const size_t Order,
-                    const size_t Priority);
+                    const PsiMap<size_t,size_t>& Order,
+                    size_t& Priority,
+                    bool Symm,
+                    boost::shared_ptr<Node> Left);
       /** \brief Adds a subnode to the current node
        *
        *  In addition to adding the sub node, this fxn
        *  also updates the current node's connections so that they
        *  are the union of the connected nodes less the subnodes.
        */
-      void AddSubNode(boost::shared_ptr<Node> NewNode,
-                      const size_t Order,
-                      const size_t Prior);
-      ///This is the set of active subnodes (ones still with edges)
-      std::set<size_t> ActiveSubNodes_;
+      void AddSubNode(boost::shared_ptr<Node> NewNode);
+      /** \brief Returns a vector of the priorities of the current node.
+       *
+       * This function is overridden by the various searches
+       * (and if need be by the actual functional groups) so that it
+       * returns a vector of length \f$N\f$ such that element \f$i\f$
+       * is the priority of SubNode \f$i\f$.  Note 0 is the highest
+       * priority and if two nodes possess the same priority they
+       * should be symmetric in the actual group.
+       *
+       * The returned priorities should be in an ascending order and in
+       * the order of the nodes of the deque.   This means this function
+       * may change the order of the deque if need be.
+       *
+       * \param[in] FoundNodes The nodes we want the priority of
+       * \param[out] Symm True if the nodes possess symmetry
+       *
+       * \return An array of the priorities
+       *
+       *
+       */
+      virtual std::vector<size_t> DeterminePrior(
+            std::deque<boost::shared_ptr<Node> >& FoundNodes,
+            bool& Symm)const;
    public:
-      typedef std::vector<boost::shared_ptr<Node> >::iterator iterator;
-      typedef std::vector<boost::shared_ptr<Node> >::const_iterator
-            const_iterator;
+      typedef std::vector<SharedNode_t>::iterator iterator;
+      typedef std::vector<SharedNode_t>::const_iterator const_iterator;
+      typedef std::vector<Pair_t>::iterator ConnItr;
+      typedef std::vector<Pair_t>::const_iterator const_ConnItr;
       /** \defgroup Iterators @{*/
       iterator PrimBegin(){return PrimNodes_.begin();}
       iterator SubBegin(){return SubNodes_.begin();}
-      iterator ConnBegin(){return ConnNodes_.begin();}
+      ConnItr ConnBegin(){return ConnNodes_.begin();}
       iterator PrimEnd(){return PrimNodes_.end();}
       iterator SubEnd(){return SubNodes_.end();}
-      iterator ConnEnd(){return ConnNodes_.end();}
+      ConnItr ConnEnd(){return ConnNodes_.end();}
       const_iterator PrimBegin()const{return PrimNodes_.begin();}
       const_iterator SubBegin()const{return SubNodes_.begin();}
-      const_iterator ConnBegin()const{return ConnNodes_.begin();}
+      const_ConnItr ConnBegin()const{return ConnNodes_.begin();}
       const_iterator PrimEnd()const{return PrimNodes_.end();}
       const_iterator SubEnd()const{return SubNodes_.end();}
-      const_iterator ConnEnd()const{return ConnNodes_.end();}
+      const_ConnItr ConnEnd()const{return ConnNodes_.end();}
       /** @}*/
 
 
@@ -209,11 +414,14 @@ class Node{
       boost::shared_ptr<Node> GetConnSubNode(boost::shared_ptr<Node> Other);
 
       ///Prim Node constructor takes index of the atom, its Sym and Name
-      Node(int i,const std::string& BaseAbbrv,const std::string& BaseName):
-         MyMember_(1,i),MyTypes_(1,ParamT(BaseAbbrv,BaseName)){}
-      ///The sym of this group, and its Name
-      Node(const std::string&BaseAbbrv,const std::string& BaseName):
-         MyTypes_(1,ParamT(BaseAbbrv,BaseName)){}
+      Node(const int i,const std::string& BaseAbbrv,const std::string& BaseName):
+         MyMember_(1,i),MyTypes_(1,ParamT(BaseAbbrv,BaseName)),
+         Prior_(1,0),IsSymm_(true){}
+      ///Takes a list of the subnodes
+      void FillNode(std::deque<boost::shared_ptr<Node> >& NewNode);
+      ///Takes the abbreviated and full names of this node
+      Node(const std::string&BaseAbbrv,
+           const std::string& BaseName);
 
       ///The number of atoms in this node
       unsigned size()const;
@@ -222,7 +430,7 @@ class Node{
       ///Returns the i-th atom in the node
       int operator[](const unsigned i)const;
 
-      ///Given a boost shared pointer to the current object modifies conns
+      ///Tells nodes connected to this about this's new shared pointer
       void UpdateConns(boost::shared_ptr<Node> NewMe);
       ///Returns the number of types this node has
       size_t NTypes()const{return MyTypes_.size();}
@@ -232,12 +440,19 @@ class Node{
       }
       ///Returns the number of edges for the node
       unsigned NEdges()const{return ConnNodes_.size();}
-      ///Adds NewNode, optionally in place of OldNode (if OldNode!=Null)
+      /** \brief Adds NewNode to this node
+       *
+       *   This function performs two seemingly different functions
+       *   depending on the identity of OldNode.  First when initializing
+       *   the trivial set of nodes, if OldNode.get()==this AddConn adds
+       *   NewNode as a connected node to the current node.  Otherwise,
+       *   NewNode replaces oldnode.  This latter function is what is used
+       *   the majority of the time as we update our graph.
+       */
       void AddConn(boost::shared_ptr<Node> NewNode,
-                   boost::shared_ptr<Node> OldNode=
-                         boost::shared_ptr<Node>());
+                   boost::shared_ptr<Node> OldNode);
       ///Prints out the node
-      std::string PrintOut(const std::string spaces="")const;
+      std::string PrintOut(const std::string spaces="",const size_t Level=1)const;
       ///STFU compiler
       virtual ~Node(){}
 };

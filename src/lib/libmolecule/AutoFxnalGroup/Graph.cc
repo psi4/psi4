@@ -57,10 +57,10 @@ const GraphItr& GraphItr::operator++(){
      }
 
 
-std::string Graph::PrintOut()const{
+std::string Graph::PrintOut(const size_t Level)const{
    std::stringstream Message;
    Graph::const_iterator It=this->begin(),ItEnd=this->end();
-   for(;It!=ItEnd;++It)Message<<(*It)->PrintOut();
+   for(;It!=ItEnd;++It)Message<<(*It)->PrintOut("",Level);
    return Message.str();
 }
 

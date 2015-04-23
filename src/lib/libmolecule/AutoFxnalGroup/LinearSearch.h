@@ -77,7 +77,8 @@ class LinearSearch<LastType> : public Node{
       virtual bool IsLinear()const{return true;}
       ///Same arguments as Node's constructor
       LinearSearch<LastType>
-         (const std::string& Abbv,const std::string& Name):Node(Abbv,Name){
+         (const std::string& Abbv,
+          const std::string& Name):Node(Abbv,Name){
       }
       ///STFU compiler...
       virtual ~LinearSearch<LastType>(){}
@@ -161,12 +162,12 @@ bool LinearSearch<CurrentType,LinearTypes...>::
    typedef std::vector<SharedNode> Conn_t;
    SharedNode NodeI=(IsLinear()?FoundNodes.back():FoundNodes.front());
    CurrentType Temp;
-   Node::iterator It=NodeI->ConnBegin(),ItEnd=NodeI->ConnEnd();
+   Node::ConnItr It=NodeI->ConnBegin(),ItEnd=NodeI->ConnEnd();
    for(;It!=ItEnd;++It){
-      if(!IsGood(NodeI,*It,Temp,FoundNodes,
+      if(!IsGood(NodeI,It->second,Temp,FoundNodes,
                  LHSType(FoundNodes.size()),
                  RHSType(FoundNodes.size())))continue;
-      FoundNodes.push_back(*It);
+      FoundNodes.push_back(It->second);
       if(!Base_t::FindMe(FoundNodes))FoundNodes.pop_back();
       else return true;
    }
@@ -177,36 +178,15 @@ bool LinearSearch<LastType>::
    FindMe(boost::shared_ptr<Node> FoundNodes){
    LastType Temp;
    if(Temp.Type()==FoundNodes->Type()){
-      size_t Order=FoundNodes->NEdges();
-      this->AddSubNode(FoundNodes,Order,0);
+      std::deque<boost::shared_ptr<Node> > FoundNodes1(1,FoundNodes);
+      this->FillNode(FoundNodes1);
       ParamT Orig=MyTypes_[0];
-      this->MyTypes_[0]=ParamT(Orig.Base()[0],Orig.Base()[1],Order,0);
+      PsiMap<size_t,size_t> Temp;
+      Temp[0]=FoundNodes->NEdges();
+      this->MyTypes_[0]=ParamT(Orig.Base()[0],Orig.Base()[1],Temp,0);
    }
    else return false;
    return true;
-}
-
-static void PriorOrder(
-      const std::deque<boost::shared_ptr<Node> >& FoundNodes,
-      int& Prior, size_t& Order,
-      std::set<size_t>& ActiveSubNodes){
-   std::deque<boost::shared_ptr<Node> >::const_iterator
-         It1=FoundNodes.begin(),It2,
-         It1End=FoundNodes.end();
-   std::set<size_t> AllNodes;
-   for(size_t counter=0;It1!=It1End;++It1,++counter){
-      Node::iterator ItEnd=(*It1)->ConnEnd();
-      Node::iterator It=(*It1)->ConnBegin();
-      for(;It!=ItEnd;++It){
-        It2=FoundNodes.begin();
-        for(;It2!=It1End;++It2)
-           if(It2->get()==It->get())break;
-        if(It2!=It1End)continue;
-        AllNodes.insert(counter);
-        Order++;
-     }
-   }
-   ActiveSubNodes=AllNodes;
 }
 
 template<typename LastType>
@@ -215,22 +195,13 @@ bool LinearSearch<LastType>::
    typedef boost::shared_ptr<Node> SharedNode;
    SharedNode NodeI=(IsLinear()?FoundNodes.back():FoundNodes.front());
    LastType Temp;
-   Node::iterator It=NodeI->ConnBegin(),ItEnd=NodeI->ConnEnd();
+   Node::ConnItr It=NodeI->ConnBegin(),ItEnd=NodeI->ConnEnd();
    for(;It!=ItEnd;++It){
-      if(!IsGood(NodeI,*It,Temp,FoundNodes,
+      if(!IsGood(NodeI,It->second,Temp,FoundNodes,
             LHSType(FoundNodes.size()),
             RHSType(FoundNodes.size())))continue;
-      FoundNodes.push_back(*It);
-      int Prior=-1;
-      size_t Order=0;
-      PriorOrder(FoundNodes,Prior,Order,this->ActiveSubNodes_);
-      ParamT Front=this->Type();
-      this->MyTypes_[MyTypes_.size()-1]=
-            ParamT(Front,Front.Base()[0],Front.Base()[1],Order,-1);
-      while(!FoundNodes.empty()){
-         this->AddSubNode(FoundNodes.front(),Order,Prior);
-         FoundNodes.pop_front();
-      }
+      FoundNodes.push_back(It->second);
+      FillNode(FoundNodes);
       return true;
    }
    return false;
