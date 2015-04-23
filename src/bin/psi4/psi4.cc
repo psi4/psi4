@@ -54,7 +54,7 @@
 namespace psi {
     int psi_start(int argc, char *argv[]);
     int psi_stop(FILE* infile, std::string, char* psi_file_prefix);
-    void print_version(std::string);
+    void print_version(std::string OutFileRMR);
     void set_memory(std::string OutFileRMR);
     int psi4_driver();
     void psiclean(void);

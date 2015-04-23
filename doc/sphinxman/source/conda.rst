@@ -13,11 +13,14 @@ Binary Distribution
 full-fledged scientific python environment with package manager `conda
 <http://conda.pydata.org/index.html>`_) and, more particularly, `Miniconda
 <http://conda.pydata.org/miniconda.html>`_ (a lightweight python
-distribution with package manger ``conda``).
+distribution with same package manger `conda
+<http://conda.pydata.org/index.html>`_). Some nice features for us:
+
+* cross-platform (Linux only at present)
 
 * no root, administrator, or sudo access required
 
-* built with high-performance math (Intel MKL) libraries
+* built with high-performance math libraries
 
 * lightweight software stack (<100 MB w/o |PSIfour|; <500 MB including |PSIfour|)
 
@@ -25,17 +28,22 @@ distribution with package manger ``conda``).
 
 * standardizes python distribution so no need to find/install libpython packages
 
-.. comment* easy to install programs interfaced to |PSIfour|
+* add-ons (plugins, extra features requiring Fortran compiler, etc.) can be made available as conda packages
 
 The |PSIfour| binary repository is at `Binstar <https://binstar.org/psi4>`_.
+
+For commands to get a default installation, go to :ref:`sec:quickconda`.
+For more flexibility and a detailed explanation, go to
+:ref:`sec:slowconda` and :ref:`sec:slowpsi4`.
+
+.. _`sec:quickconda`:
 
 Quick Installation
 ^^^^^^^^^^^^^^^^^^
 
-Sequence of commands to get you to a working psi4 on Linux. Installs
-Miniconda into ``$HOME/miniconda`` and |PSIfour| into a conda environment
-named "p4env" at ``$HOME/miniconda/envs/p4env``; feel free to change these
-locations.
+Sequence of commands to get you to a working |PSIfour| on Linux. Installs
+Miniconda into ``$HOME/miniconda`` and the |PSIfour| executable into the
+main conda environment at ``$HOME/miniconda/bin/psi4``.
 
 .. code-block:: bash
 
@@ -47,36 +55,29 @@ locations.
     >>> conda update --yes --all
     >>> conda config --add channels http://conda.binstar.org/psi4
     >>> conda install --yes psi4
-    >>> psi4 "$(dirname $(which psi4))"/../share/psi/samples/scf1/input.dat -o stdout  # works b/c PSI_SCRATCH defaults to /tmp
+    >>> psi4 "$(dirname $(which psi4))"/../share/psi/samples/scf1/input.dat -o stdout  # test installation. works b/c PSI_SCRATCH defaults to /tmp
+
+That last command tested that ``psi4`` is in your path, and it's finding
+all the libraries it needs. Now you need only specify a scratch directory
+(see :ref:`sec:psirc`) by replacing the placeholder in the following:
 
 .. code-block:: bash
 
-    >>> echo "export PSI_SCRATCH=/path/to/existing/writable/local-not-network/disk/for/scratch/files" >> ~/.bashrc
+    >>> echo "export PSI_SCRATCH=/path/to/existing/writable/local-not-network/directory/for/scratch/files" >> ~/.bashrc
     # log out, log back in so variable takes effect
 
-.. comment# works b/c scratch defaults to /tmp    
-    >>> conda create --yes --name p4env psi4
-    >>> source activate p4env
-    >>> export PSI_SCRATCH=/path/to/existing/writable/local-not-network/disk/for/scratch/files
+All done!
 
-All done! For general psi4 use, you must enable the ``psi4`` executable to be found through any of:
+.. note:: Above commands use bash for installation and set up your environment for bash at runtime. To use csh at runtime, follow the on-screen directions at the end of the installation or consult step 7 below.
 
-  #. prepending to :envvar:`PATH` in shell, ``~/.bashrc``, ``~/.tcshrc``, or PBS ``cmd`` file
-  #. activating the conda environment (p4env above) in shell, ``~/.bashrc``, or PBS ``cmd`` file
-  #. supplying full path to executable (shell or PBC ``cmd`` file)
-
-You must also specify a scratch directory.
-
-.. comment  #. adding to :envvar:`PATH` in shell, (b) adding to :envvar:`PATH` in ``~/.bashrc`` or ``~/.tcshrc``, (c) always giving full path to executable, (d) activating conda environment in shell or rc-file, (e)
-
-
+.. _`sec:slowconda`:
 
 Detailed Installation of Miniconda
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0. If you alreay have Miniconda or Anaconda, skip to step 5. The whole installation takes ~5 min; reading this page takes far longer.
+0. Sanity check. If you already have Miniconda or Anaconda, skip to step 5. The whole installation takes ~5 min; reading this page takes far longer.
 
-1. You'll need the slightly exotic command ``bzip2`` available to run the below. Run ``which`` to test for availability, and install from ``yum``, source, etc. if unavailable. You'll also need an internet connection for downloading; computers behind a firewall or with restricted login domains are eligible. So long as you can ssh *into* the computer to an account with write permissions and can connect to the internet *from* the computer, all is well.
+1. Get ``bzip2``. You'll need this slightly exotic command so run ``which`` to test for availability, and install from ``yum``, source, *etc.* if unavailable. You'll also need an internet connection for downloading; computers behind a firewall or with restricted login domains are eligible. So long as you can ssh *into* the computer to an account with write permissions and can connect to the internet *from* the computer, all is well.
 
 .. code-block:: bash
 
@@ -87,7 +88,7 @@ Detailed Installation of Miniconda
     >>> ls -1
     introduction.html
 
-2. Get the Miniconda installer script. Either issue the command below or download from http://conda.pydata.org/miniconda.html by clicking on the appropriate link for your OS. If you already have or would prefer to use Anaconda rather than Miniconda, that's fine. Locate or install Anaconda and skip the next step.
+2. Get Miniconda installer script. Either issue the command below or download from http://conda.pydata.org/miniconda.html by clicking on the appropriate link for your OS. If you already have or would prefer to use Anaconda rather than Miniconda, that's fine. Locate or install Anaconda, check that ``conda`` is in your path, and skip to step 4.
 
 .. code-block:: bash
 
@@ -96,21 +97,29 @@ Detailed Installation of Miniconda
     >>> ls -1
     Miniconda-latest-Linux-x86_64.sh
 
-3. Install Miniconda by executing the script and answering its questions, particularly your choice of installation location. You may need to replace the filename below with the correct filename for the OS/version of installer you downloaded. If you're a ``bash`` user, it's convenient to agree to its offer to prepend ``conda`` commands to your :envvar:`PATH` in ``~/.bashrc``. If you're a ``csh``/``tcsh`` user, it's convenient to do the same by hand to your ``~/.tcshrc``: ``setenv PATH /path/to/miniconda/bin:${PATH}``. Further directions assume that the ``conda`` command is in your path; you may have to log out and log back in for ``which conda`` to return correctly. ::
+3. Install Miniconda. Execute the script and answer its questions, particularly your choice of installation location. You may need to replace the filename below with the correct filename for the OS/version of installer you downloaded. Execute with ``bash`` regardless of ``csh``/``bash`` shell. If you're a ``bash`` user, it's convenient to agree to its offer to prepend ``conda`` commands to your :envvar:`PATH` in ``~/.bashrc``. If you're a ``csh``/``tcsh`` user, it's convenient to do the same by hand to your ``~/.tcshrc``: ``setenv PATH /path/to/miniconda/bin:${PATH}``. Further directions assume that the ``conda`` command is in your path; you may have to log out and log back in for ``which conda`` to return correctly.
+
+.. code-block:: bash
 
     >>> bash Miniconda-latest-Linux-x86_64.sh
     # check
     >>> which conda
     /path/to/miniconda/bin/conda
 
-4. Update the package manager itself. ::
+4. Update conda. This updates the package manager itself.
+
+.. code-block:: bash
 
     >>> conda update conda
+
+.. _`sec:slowpsi4`:
 
 Detailed Installation of |PSIfour|
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-5. Subscribe to the |PSIfour| channel at http://binstar.org/psi4. Make sure this shows up in your ``~/.condarc`` file. ::
+5. Subscribe to |PSIfour|. Subscribe to our channel at http://binstar.org/psi4 that contains the |PSIfour| package and several dependency packages. Make sure this shows up in your ``~/.condarc`` file.
+
+.. code-block:: bash
 
     >>> conda config --add channels http://conda.binstar.org/psi4
     # check
@@ -119,7 +128,26 @@ Detailed Installation of |PSIfour|
       - http://conda.binstar.org/psi4
       - defaults
 
-6. Make a |PSIfour| sandbox (here, called ``p4env``) with just |PSIfour| and python (loaded as dependency).
+6. Install |PSIfour|. You can install into the main conda environment so that whenever commands ``conda`` or (Ana/Miniconda's) ``python`` are available, then ``psi4`` is available, too. 
+
+.. code-block:: bash
+
+    >>> conda install psi4
+    # check
+    >>> which psi4
+    /path/to/miniconda/bin/psi4
+
+Or, you can install into a `conda environment <http://conda.pydata.org/docs/faq.html#environments>`_ that places |PSIfour| and its dependencies (including python) into a sandbox unaffected by any other software installed in Ana/Miniconda. This is recommended for developers to avoid interference between multiple versions (including github/conda versions) or to test python versions, *etc.*. If your main conda is not python=2.7, then |PSIfour| *must* be installed into a conda environment. In practical terms, installing into a conda environment means you can turn |PSIfours| availability on/off by switching conda environments without turning on/off the whole Ana/Miniconda installation. Below, |PSIfour| is installed into an environment called ``p4env``. Then the environment is activated, removing the main Ana/Miniconda ``bin`` and adding ``envs/p4env/bin`` to :envvar:`PATH`. The activate command only works in ``bash``, so ``csh``/``tcsh`` will need corresponding adjustments.
+
+.. code-block:: bash
+
+    >>> conda create -n p4env psi4
+    >>> source activate p4env
+    # check
+    >>> which psi4
+    /path/to/miniconda/envs/p4env/bin/psi4
+
+The output for either of the installation commands above looks like the following. It checks what packages are needed, gets your approval for downloading them, fetches and installs them, prints out some useful information, and runs a |PSIfour| test case to check that all's well.
 
 .. code-block:: bash
 
@@ -165,8 +193,17 @@ Detailed Installation of |PSIfour|
     
     [      COMPLETE      ] |##################################################################################################| 100%
 
+7. Configure environment. Preceeding steps have placed ``conda`` and ``psi4`` in your :envvar:`PATH`, either permanently through rc-files or temporarily in this terminal session. You can keep or undo these changes. For general psi4 use, you must enable the ``psi4`` executable to be found through any of:
 
+  #. prepending to :envvar:`PATH` in shell, ``~/.bashrc``, ``~/.tcshrc``, or PBS ``cmd`` file
+  #. activating the conda environment (p4env above) in shell, ``~/.bashrc``, or PBS ``cmd`` file
+  #. supplying full path to executable (shell or PBS ``cmd`` file)
 
+Similarly, the scratch directory (see :ref:`sec:psirc`) must be specified through:
+
+  #. defining :envvar:`PSI_SCRATCH` in shell, ``~/.bashrc``, ``~/.tcshrc``, or PBS ``cmd`` file
+
+Suitable values for these variables have been printed to screen during installation (see last codeblock in step 6).
 
 Useful Commands
 ^^^^^^^^^^^^^^^
@@ -177,12 +214,16 @@ Useful Commands
 
 * Install into a conda environment "p4env" instead of "root". Second command only works on bash; for csh/tsch, ``setenv PATH /path/to/miniconda/envs/p4env/bin:$PATH`` instead. This creates a sandbox with just |PSIfour| and python (loaded as dependency). ::
 
-    >>> conda create -n p4env psi4
+    >>> conda create -y -n p4env psi4
     >>> source activate p4env
 
 * Install a particular |PSIfour| version ::
 
     >>> conda install psi4=0.1.12
+
+* Uninstall |PSIfour| from current environment ::
+
+    >>> conda remove psi4
 
 Troubleshooting
 ^^^^^^^^^^^^^^^
@@ -196,14 +237,12 @@ Troubleshooting
     >>> ldd --version
     ldd (GNU libc) 2.17
 
-* It is of greatest importance that the |PSIfour| executable be linked against conda libpython.so *not* against any system libpython.so. This is arranged by setting ``RPATH`` to seek libraries relative to executable (thanks, conda binary relocation routine!). The conda |PSIfour| executable should not be vulnerable to interference from your ``LD_LIBRARY_PATH`` settings. Below shows a well-linked executable.
+* It is of greatest importance that the |PSIfour| executable be linked against conda libpython.so *not* against any system libpython.so. This is arranged by setting ``RPATH`` to seek libraries relative to executable (thanks, conda binary relocation routine!). The conda |PSIfour| executable is not vulnerable to interference from your ``LD_LIBRARY_PATH`` settings. Below shows a well-linked executable.
 
     * no libraries "not found"
     * fundamental libraries like libc, ld-linux, pthreads found system libraries to link against
-    * libpython linked against conda python not system python
-    * libm is linked against conda *or* system
-
-.. code-block:: bash
+    * libpython linked against conda python *not* system python
+    * libm is linked against conda *or* system ::
 
     >>> conda install conda-build  # needed for next command
     >>> conda inspect linkages psi4

@@ -406,6 +406,9 @@ PsiReturnType dmrg(Options &options)
     const bool dmrgscf_state_avg      = options.get_bool("DMRG_AVG_STATES");
     const string dmrgscf_active_space = options.get_str("DMRG_ACTIVE_SPACE");
     const bool dmrgscf_loc_random     = options.get_bool("DMRG_LOC_RANDOM");
+    const int dmrgscf_num_vec_diis    = CheMPS2::DMRGSCF_numDIISvecs;
+    const std::string unitaryname     = psi::get_writer_file_prefix() + ".unitary.h5";
+    const std::string diisname        = psi::get_writer_file_prefix() + ".DIIS.h5";
 
     /****************************************
      *   Check if the input is consistent   *
@@ -446,31 +449,6 @@ PsiReturnType dmrg(Options &options)
     CheMPS2::ConvergenceScheme * OptScheme = new CheMPS2::ConvergenceScheme( ndmrg_states );
     for (int cnt=0; cnt<ndmrg_states; cnt++){
        OptScheme->setInstruction( cnt, dmrg_states[cnt], dmrg_econv[cnt], dmrg_maxsweeps[cnt], dmrg_noiseprefactors[cnt] );
-    }
-
-    /****************************************
-     *   Create a CheMPS2::DMRGSCFoptions   *
-     ****************************************/
-
-    CheMPS2::DMRGSCFoptions * theSCFoptions = new CheMPS2::DMRGSCFoptions();
-    {
-        theSCFoptions->setGradientThreshold( dmrgscf_convergence );
-        theSCFoptions->setStoreUnitary( dmrgscf_store_unit );
-        std::string unitaryname = psi::get_writer_file_prefix() + ".unitary.h5";
-        theSCFoptions->setUnitaryStorageName( unitaryname );
-        theSCFoptions->setMaxIterations( dmrgscf_max_iter );
-        theSCFoptions->setDoDIIS( dmrgscf_do_diis );
-        theSCFoptions->setDIISGradientBranch( dmrgscf_diis_branch );
-        theSCFoptions->setStoreDIIS( dmrgscf_store_diis );
-        std::string diisname = psi::get_writer_file_prefix() + ".DIIS.h5";
-        theSCFoptions->setDIISStorageName( diisname );
-        theSCFoptions->setStateAveraging( dmrgscf_state_avg );
-        int whichActiveSpace = 0;
-        if ( dmrgscf_active_space.compare("NO")==0  ){ whichActiveSpace = 1; }
-        if ( dmrgscf_active_space.compare("LOC")==0 ){ whichActiveSpace = 2; }
-        theSCFoptions->setWhichActiveSpace( whichActiveSpace );
-        theSCFoptions->setDumpCorrelations( dmrg_print_corr );
-        theSCFoptions->setStartLocRandom( dmrgscf_loc_random );
     }
 
     /******************************************************************************
@@ -626,25 +604,25 @@ PsiReturnType dmrg(Options &options)
     double * mem2 = new double[sizeWorkMem];
 
     CheMPS2::EdmistonRuedenberg * theLocalizer = NULL;
-    if ( theSCFoptions->getWhichActiveSpace()==2 ){ theLocalizer = new CheMPS2::EdmistonRuedenberg(HamDMRG); }
+    if ( dmrgscf_active_space.compare("LOC")==0 ){ theLocalizer = new CheMPS2::EdmistonRuedenberg(HamDMRG); }
 
     //Load unitary from disk
-    if (theSCFoptions->getStoreUnitary()){
+    if ( dmrgscf_store_unit ){
         struct stat stFileInfo;
-        int intStat = stat((theSCFoptions->getUnitaryStorageName()).c_str(), &stFileInfo);
-        if (intStat==0){ unitary->loadU(theSCFoptions->getUnitaryStorageName()); }
+        int intStat = stat( unitaryname.c_str(), &stFileInfo );
+        if (intStat==0){ unitary->loadU( unitaryname ); }
     }
 
     //Load DIIS from disk
-    if ((theSCFoptions->getDoDIIS()) && (theSCFoptions->getStoreDIIS())){
+    if (( dmrgscf_do_diis ) && ( dmrgscf_store_diis )){
         struct stat stFileInfo;
-        int intStat = stat((theSCFoptions->getDIISStorageName()).c_str(), &stFileInfo);
+        int intStat = stat( diisname.c_str(), &stFileInfo );
         if (intStat==0){
             if (theDIIS == NULL){
-                theDIIS = new CheMPS2::DIIS(theDIISvectorParamSize, unitary->getNumVariablesX(), theSCFoptions->getNumDIISVecs());
+                theDIIS = new CheMPS2::DIIS( theDIISvectorParamSize, unitary->getNumVariablesX(), dmrgscf_num_vec_diis );
                 theDIISparameterVector = new double[ theDIISvectorParamSize ];
             }
-            theDIIS->loadDIIS(theSCFoptions->getDIISStorageName());
+            theDIIS->loadDIIS( diisname );
         }
     }
 
@@ -653,7 +631,7 @@ PsiReturnType dmrg(Options &options)
     /********************************
      ***   Actual DMRGSCF loops   ***
      ********************************/
-    while ((gradNorm > theSCFoptions->getGradientThreshold()) && (nIterations < theSCFoptions->getMaxIterations())){
+    while ((gradNorm > dmrgscf_convergence) && (nIterations < dmrgscf_max_iter)){
 
         nIterations++;
 
@@ -668,15 +646,15 @@ PsiReturnType dmrg(Options &options)
             cout_buffer = cout.rdbuf( capturing.rdbuf() );
 
             unitary->updateUnitary(mem1, mem2, theupdate, true, true); //multiply = compact = true
-            if ((theSCFoptions->getDoDIIS()) && (updateNorm <= theSCFoptions->getDIISGradientBranch())){
-                if (theSCFoptions->getWhichActiveSpace()==1){
+            if (( dmrgscf_do_diis ) && ( updateNorm <= dmrgscf_diis_branch )){
+                if ( dmrgscf_active_space.compare("NO")==0 ){
                     cout << "DIIS has started. Active space not rotated to NOs anymore!" << endl;
                 }
-                if (theSCFoptions->getWhichActiveSpace()==2){
+                if ( dmrgscf_active_space.compare("LOC")==0 ){
                     cout << "DIIS has started. Active space not rotated to localized orbitals anymore!" << endl;
                 }
                 if (theDIIS == NULL){
-                    theDIIS = new CheMPS2::DIIS(theDIISvectorParamSize, unitary->getNumVariablesX(), theSCFoptions->getNumDIISVecs());
+                    theDIIS = new CheMPS2::DIIS( theDIISvectorParamSize, unitary->getNumVariablesX(), dmrgscf_num_vec_diis );
                     theDIISparameterVector = new double[ theDIISvectorParamSize ];
                     unitary->makeSureAllBlocksDetOne(mem1, mem2);
                 }
@@ -698,8 +676,8 @@ PsiReturnType dmrg(Options &options)
             system(("rm " + chemps2filename).c_str());
 
         }
-        if ((theSCFoptions->getStoreUnitary()) && (gradNorm!=1.0)){ unitary->saveU( theSCFoptions->getUnitaryStorageName() ); }
-        if ((theSCFoptions->getStoreDIIS()) && (updateNorm!=1.0) && (theDIIS!=NULL)){ theDIIS->saveDIIS( theSCFoptions->getDIISStorageName() ); }
+        if (( dmrgscf_store_unit ) && (gradNorm!=1.0)){ unitary->saveU( unitaryname ); }
+        if (( dmrgscf_store_diis ) && (updateNorm!=1.0) && (theDIIS!=NULL)){ theDIIS->saveDIIS( diisname ); }
 
         //Fill HamDMRG
         update_WFNco( Coeff_orig, iHandler, unitary, wfn, work1, work2 );
@@ -707,7 +685,7 @@ PsiReturnType dmrg(Options &options)
         buildHamDMRG( ints, Aorbs_ptr, theQmatOCC, iHandler, HamDMRG, psio, wfn );
 
         //Localize the active space and reorder the orbitals within each irrep based on the exchange matrix
-        if ((theSCFoptions->getWhichActiveSpace()==2) && (theDIIS==NULL)){ //When the DIIS has started: stop
+        if (( dmrgscf_active_space.compare("LOC")==0 ) && (theDIIS==NULL)){ //When the DIIS has started: stop
 
             std::ofstream capturing;
             std::streambuf * cout_buffer;
@@ -716,7 +694,7 @@ PsiReturnType dmrg(Options &options)
             capturing.open( chemps2filename.c_str() , ios::trunc ); // truncate
             cout_buffer = cout.rdbuf( capturing.rdbuf() );
 
-            theLocalizer->Optimize(mem1, mem2, theSCFoptions->getStartLocRandom());
+            theLocalizer->Optimize( mem1, mem2, dmrgscf_loc_random );
             theLocalizer->FiedlerExchange(maxlinsize, mem1, mem2);
             CheMPS2::CASSCF::fillLocalizedOrbitalRotations(theLocalizer->getUnitary(), iHandler, mem1);
             unitary->rotateActiveSpaceVectors(mem1, mem2);
@@ -749,24 +727,25 @@ PsiReturnType dmrg(Options &options)
             cout_buffer = cout.rdbuf( capturing.rdbuf() );
 
             for (int cnt = 0; cnt < nOrbDMRG_pow4; cnt++){ DMRG2DM[ cnt ] = 0.0; } //Clear the 2-RDM (to allow for state-averaged calculations)
-            CheMPS2::DMRG * theDMRG = new CheMPS2::DMRG(Prob, OptScheme, mps_chkpt);
+            const string psi4TMPpath = PSIOManager::shared_object()->get_default_path();
+            CheMPS2::DMRG * theDMRG = new CheMPS2::DMRG(Prob, OptScheme, mps_chkpt, psi4TMPpath);
             for (int state = 0; state < dmrgscf_which_root; state++){
                 if (state > 0){ theDMRG->newExcitation( fabs( Energy ) ); }
                 Energy = theDMRG->Solve();
-                if ( theSCFoptions->getStateAveraging() ){ // When SA-DMRGSCF: 2DM += current 2DM
+                if ( dmrgscf_state_avg ){ // When SA-DMRGSCF: 2DM += current 2DM
                     theDMRG->calc2DMandCorrelations();
                     CheMPS2::CASSCF::copy2DMover( theDMRG->get2DM(), nOrbDMRG, DMRG2DM );
                 }
                 if ((state == 0) && (dmrgscf_which_root > 1)){ theDMRG->activateExcitations( dmrgscf_which_root-1 ); }
             }
-            if ( !(theSCFoptions->getStateAveraging()) ){ // When SS-DMRGSCF: 2DM += last 2DM
+            if ( !(dmrgscf_state_avg) ){ // When SS-DMRGSCF: 2DM += last 2DM
                 theDMRG->calc2DMandCorrelations();
                 CheMPS2::CASSCF::copy2DMover( theDMRG->get2DM(), nOrbDMRG, DMRG2DM );
             }
-            if (theSCFoptions->getDumpCorrelations()){ theDMRG->getCorrelations()->Print(); }
+            if ( dmrg_print_corr ){ theDMRG->getCorrelations()->Print(); }
             if ( CheMPS2::DMRG_storeRenormOptrOnDisk ){ theDMRG->deleteStoredOperators(); }
             delete theDMRG;
-            if ((theSCFoptions->getStateAveraging()) && (dmrgscf_which_root > 1)){
+            if ((dmrgscf_state_avg) && (dmrgscf_which_root > 1)){
                 const double averagingfactor = 1.0 / dmrgscf_which_root;
                 for (int cnt = 0; cnt < nOrbDMRG_pow4; cnt++){ DMRG2DM[ cnt ] *= averagingfactor; }
             }
@@ -786,7 +765,7 @@ PsiReturnType dmrg(Options &options)
         }
 
         bool wfn_co_updated = false;
-        if ((theSCFoptions->getWhichActiveSpace()==1) && (theDIIS==NULL)){ //When the DIIS has started: stop
+        if (( dmrgscf_active_space.compare("NO")==0 ) && (theDIIS==NULL)){ //When the DIIS has started: stop
             CheMPS2::CASSCF::rotate2DMand1DM( nDMRGelectrons, nOrbDMRG, mem1, mem2, DMRG1DM, DMRG2DM );
             unitary->rotateActiveSpaceVectors(mem1, mem2); //This rotation can change the determinant from +1 to -1 !!!!
             update_WFNco( Coeff_orig, iHandler, unitary, wfn, work1, work2 );
@@ -795,8 +774,8 @@ PsiReturnType dmrg(Options &options)
             (*outfile) << "Rotated the active space to natural orbitals, sorted according to the NOON." << endl;
         }
 
-        if (theSCFoptions->getMaxIterations() == 1) {
-            if ((theSCFoptions->getStoreUnitary()) && (gradNorm!=1.0)){ unitary->saveU( theSCFoptions->getUnitaryStorageName() ); }
+        if (dmrgscf_max_iter == nIterations){
+            if ( dmrgscf_store_unit ){ unitary->saveU( unitaryname ); }
             break;
         }
 
@@ -849,7 +828,6 @@ PsiReturnType dmrg(Options &options)
     delete unitary;
     delete iHandler;
 
-    delete theSCFoptions;
     delete OptScheme;
     delete Prob;
     delete HamDMRG;

@@ -94,6 +94,7 @@ def parse_input():
             action='store',
             default=None,
             help="""The includes directory for boost.
+            'boost/version.hpp' should be in this directory.
             If this is left blank cmake will attempt to find one on your system.
             Failing that it will build one for you""",
             metavar='PATH')
@@ -186,7 +187,7 @@ def parse_input():
             nargs='?',
             action='store',
             choices=('on', 'off'),
-            default='on',
+            default='off',
             help='Compile with support for plugins [default: %(default)s]')
     # Suffix for the psi4 executable
     group.add_argument('--suffix',
@@ -340,7 +341,11 @@ def check_cmake_exists(cmake_command):
         sys.exit()
 
 def translate_cmake(s):
-    if s:
+    if s == 'on':
+        return 'ON'
+    elif s == 'off':
+        return 'OFF'
+    elif s:
         return 'ON'
     else:
         return 'OFF'

@@ -1,3 +1,5 @@
+#! pcm
+
 memory 250 mb
 
 nucenergy = 12.0367196636183458 #TEST
@@ -46,4 +48,4 @@ compare_values(get_variable("PCM POLARIZATION ENERGY"), polenergy, 8, "Polarizat
 set pcm_scf_type separate
 energy_scf2 = energy('scf')
 compare_values(energy_scf2, totalenergy, 10, "Total energy (PCM, separate algorithm)") #TEST
-compare_values(get_variable("PCM POLARIZATION ENERGY"), polenergy, 8, "Polarization energy (PCM, separate algorithm)")
+compare_values(get_variable("PCM POLARIZATION ENERGY"), polenergy, 8, "Polarization energy (PCM, separate algorithm)")  #TEST

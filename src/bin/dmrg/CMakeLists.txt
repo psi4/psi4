@@ -27,18 +27,12 @@ endif()
 set(to_count "${sources_list}" "${headers_list}")
 write_to_cloc_list("${to_count}")
 
-find_package(GSL REQUIRED)
-find_package(HDF5 REQUIRED)
-
 # Build static library
 add_library(dmrg STATIC ${sources_list})
-include_directories(${CMAKE_BINARY_DIR}/interfaces/chemps2/chemps2/install/include)
-target_link_libraries(dmrg ${GSL_LIBRARIES} ${HDF5_LIBRARIES})
-
 # Specify dependencies for the library (if any)
 add_dependencies(dmrg mints)
+target_link_libraries(dmrg CHEMPS2::CHEMPS2)
 set_property(GLOBAL APPEND PROPERTY PSILIB dmrg)
-add_dependencies(dmrg chemps2)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(dmrg custom_boost)
 endif()
