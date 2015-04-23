@@ -51,7 +51,7 @@ class GraphItr{
 class Graph: public std::list<boost::shared_ptr<Node> >{
    public:
       ///Prints the graph out
-      std::string PrintOut()const;
+      std::string PrintOut(const size_t Level=1)const;
       GraphItr PrimBegin(){return GraphItr(*this).begin();}
       GraphItr PrimEnd(){return GraphItr(*this).end();}
       ///Convenience function for adding a node and removing its subnodes

@@ -35,8 +35,6 @@ typedef std::vector<SharedGroup> vSharedGroup;
 BondFragmenter::BondFragmenter(SharedMol Mol, const unsigned int NBonds):
       Fragmenter(Mol),Geom_(new OrganicGeom(*Mol)),
             NBonds_(NBonds){
-   //std::cout<<Geom_->PrintOut();
-   //BioGeom BChem(*Mol);
 }
 
 void BondFragmenter::AddFragment(const vSharedGroup& FoundGroups,
@@ -79,10 +77,10 @@ void BondFragmenter::Recurse(vSharedGroup& FoundGroups,
    }
    //Will be true if we find a good group to follow
    bool FoundGroup=false;
-   Node::const_iterator It=FoundGroups.back()->ConnBegin(),
+   Node::const_ConnItr It=FoundGroups.back()->ConnBegin(),
                ItEnd=FoundGroups.back()->ConnEnd();
    for(;It!=ItEnd;++It){
-      SharedGroup NodeI=(*It);
+      SharedGroup NodeI=It->second;
       bool good=true;
       //Make sure we don't have this group already
       for(unsigned k=0;k<FoundGroups.size()-1&&good;k++)

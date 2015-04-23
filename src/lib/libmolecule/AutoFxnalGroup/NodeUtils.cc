@@ -20,29 +20,27 @@
  *@END LICENSE
  */
 
-#include "LibFragMolecule.h"
-#include "BioGeom.h"
-#include "AutoFxnalGroup.h"
-#include "AutoFxnalGroup/PrimRunner.h"
-namespace psi {
-namespace LibMolecule {
-typedef PrimRunner<Isopropyl,Butyl,Hydroxyethyl,ArgThing> FindAARs;
-typedef PrimRunner<CTerminus,NTerminus,AABB,AnAA,
-    CTermGly,NTermGly,Gly,AAGly,CTermPro,NTermPro,
-    NPTermPro,Pro> FindBB;
-typedef PrimRunner<Ala,Val,Ile,Leu,Met,Phe,Tyr,Trp,Ser,
-      Thr,Asn,Gln,Cys,CysSB,Arg,His,Hip,Lys,Asp,Glu> FindAAs;
-typedef PrimRunner<Imide,Amide> FindAmide;
-BioGeom::BioGeom(const Molecule& Mol) :
-      OrganicGeom(Mol,true) {
-      Graph Nodes=OrganicGeom::GetGroups();
-      Graph::iterator It;
-      SetRunner<FindBB>::Run(Nodes);
-      SetRunner<FindAARs>::Run(Nodes);
-      SetRunner<FindAAs>::Run(Nodes);
-      SetRunner<FindAmide>::Run(Nodes);
+#include "NodeUtils.h"
+
+#define COMPARE(i,j,k)\
+   if(i->k>j->k)return i;\
+   else if(i->k<j->k)return j;
+
+namespace psi{
+namespace LibMolecule{
+
+const Node* Priority(const Node* Ni,const Node* Nj){
+   COMPARE(Ni,Nj,NEdges())
+   else{
+     COMPARE(Ni,Nj,Z())
+     else{
+         COMPARE(Ni,Nj,size())
+     }
+   }
+   return NULL;
 }
 
+#undef COMPARE
 
-}} //End namespaces
+}}
 

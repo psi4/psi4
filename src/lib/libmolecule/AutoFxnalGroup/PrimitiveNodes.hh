@@ -28,81 +28,106 @@
 
 namespace psi{
 namespace LibMolecule{
-#define PRIM(Name,Bonds,Abbv,Full,Centers...) \
-   class Name:public RadialSearch<Bonds,Centers>{\
+#define PRIM(Name,Order,Bonds,Abbv,Full,Centers...) \
+   template<size_t...args>\
+   class base_##Name:public RadialSearch<Bonds,Centers>{\
       private:\
          typedef RadialSearch<Bonds,Centers> Base_t;\
+      protected:\
+         bool IsPrim()const{return true;}\
       public:\
-         Name():Base_t(Abbv,Full){}\
-};
+         base_##Name():Base_t(Abbv,Full){\
+            if(sizeof...(args)!=0){\
+               size_t Temp[sizeof...(args)]={args...};\
+               PsiMap<size_t,size_t> Temp1;\
+               for(size_t i=0;i<sizeof...(args);){\
+                  size_t temp3=Temp[i++];\
+                  Temp1[temp3]=Temp[i++];\
+               }\
+               MyTypes_[0]=ParamT(Abbv,Full,Temp1);\
+            }\
+         }\
+};\
+typedef base_##Name <> Name;\
+typedef base_##Name <0,Order> Name##_t;
+
+#define WILDCARD(Name,N,Abbv,Full)\
+      class Name:public Node{\
+         public:\
+            Name():Node(0,Abbv,Full){\
+               PsiMap<size_t,size_t> Temp;\
+               Temp[0]=1;\
+               this->MyTypes_[0]=ParamT(Abbv,Full,Temp,0);\
+               for(int i=1;i<N;i++){\
+                  ++Temp[0];\
+                  this->MyTypes_.push_back(ParamT(Abbv,Full,Temp,0));\
+               }\
+            }\
+      };
+
 
 /*********Carbon Primitives********************/
-PRIM(Methane,4,"C","Methane",Carbon,Hydrogen,Hydrogen,Hydrogen,Hydrogen)
-PRIM(Methyl,4,"C","Methyl",Carbon,Hydrogen,Hydrogen,Hydrogen)
-PRIM(Methene,4,"C","Methene",Carbon,Hydrogen,Hydrogen)
-PRIM(Methyne,4,"C","Methyne",Carbon,Hydrogen)
-PRIM(C4,4,"C","Carbon",Carbon)
-PRIM(Alkenyl1,3,"CDB","Alkenyl",Carbon,Hydrogen,Hydrogen)
-PRIM(Alkenyl2,3,"CDB","Alkenyl",Carbon,Hydrogen)
-PRIM(Alkenyl3,3,"CDB","Alkenyl",Carbon)
-PRIM(Alkynyl1,2,"CTB","Alkynyl",Carbon,Hydrogen)
-PRIM(Alkynyl2,2,"CTB","Alkynyl",Carbon)
+PRIM(Methane,0,4,"C","Methane",Carbon,Hydrogen,Hydrogen,Hydrogen,Hydrogen)
+PRIM(Methyl,1,4,"C","Methyl",Carbon,Hydrogen,Hydrogen,Hydrogen)
+PRIM(Methene,2,4,"C","Methene",Carbon,Hydrogen,Hydrogen)
+PRIM(Methyne,3,4,"C","Methyne",Carbon,Hydrogen)
+PRIM(C4,4,4,"C","Carbon",Carbon)
+PRIM(Alkenyl1,1,3,"CDB","Alkenyl",Carbon,Hydrogen,Hydrogen)
+PRIM(Alkenyl2,2,3,"CDB","Alkenyl",Carbon,Hydrogen)
+PRIM(Alkenyl3,3,3,"CDB","Alkenyl",Carbon)
+PRIM(Alkynyl1,1,2,"CTB","Alkynyl",Carbon,Hydrogen)
+PRIM(Alkynyl2,2,2,"CTB","Alkynyl",Carbon)
 
-class Alkenyl:public Node{
-   public:
-      Alkenyl():Node("CDB*","Alkenyl WildCard"){
-         this->MyTypes_[0]=ParamT("CDB1","Alkenyl",1,0);
-         this->MyTypes_.push_back(ParamT("CDB2","Alkenyl",2,0));
-         this->MyTypes_.push_back(ParamT("CDB3","Alkenyl",3,0));
-      }
-};
-
-class Alkynyl:public Node{
-   public:
-      Alkynyl():Node("CTB*","Alkynyl WildCard"){
-         this->MyTypes_[0]=ParamT("CTB1","Alkynyl",1,0);
-         this->MyTypes_.push_back(ParamT("CTB2","Alkenyl",2,0));
-      }
-};
+WILDCARD(Alkenyl,3,"CDB","Alkenyl")
+WILDCARD(Alkynyl,2,"CTB","Alkynyl")
 
 /**********************Nitrogen Primitives*******************/
-PRIM(Ammonium,4,"NP","Ammonium",Nitrogen,Hydrogen,Hydrogen,Hydrogen,Hydrogen)
-PRIM(Ammonium1,4,"NP","Ammonium",Nitrogen,Hydrogen,Hydrogen,Hydrogen)
-PRIM(Ammonium2,4,"NP","Ammonium",Nitrogen,Hydrogen,Hydrogen)
-PRIM(Ammonium3,4,"NP","Ammonium",Nitrogen,Hydrogen)
-PRIM(Ammonium4,4,"NP","Ammonium",Nitrogen)
-PRIM(Ammonia,3,"N","Ammonia",Nitrogen,Hydrogen,Hydrogen,Hydrogen)
-PRIM(Amine1,3,"N","Amine",Nitrogen,Hydrogen,Hydrogen)
-PRIM(Amine2,3,"N","Amine",Nitrogen,Hydrogen)
-PRIM(Amine3,3,"N","Amine",Nitrogen)
-PRIM(Azo1,2,"NDB","Azo",Nitrogen,Hydrogen)
-PRIM(Azo2,2,"NDB","Azo",Nitrogen)
-PRIM(NTB,1,"NTB","Triple-Bonded Nitrogen",Nitrogen)
+PRIM(Ammonium,0,4,"N+","Ammonium",Nitrogen,Hydrogen,Hydrogen,Hydrogen,Hydrogen)
+PRIM(Ammonium1,1,4,"N+","Ammonium",Nitrogen,Hydrogen,Hydrogen,Hydrogen)
+PRIM(Ammonium2,2,4,"N+","Ammonium",Nitrogen,Hydrogen,Hydrogen)
+PRIM(Ammonium3,3,4,"N+","Ammonium",Nitrogen,Hydrogen)
+PRIM(Ammonium4,4,4,"N+","Ammonium",Nitrogen)
+PRIM(Ammonia,0,3,"N","Ammonia",Nitrogen,Hydrogen,Hydrogen,Hydrogen)
+PRIM(Amine1,1,3,"N","Amine",Nitrogen,Hydrogen,Hydrogen)
+PRIM(Amine2,2,3,"N","Amine",Nitrogen,Hydrogen)
+PRIM(Amine3,3,3,"N","Amine",Nitrogen)
+PRIM(Azo1,1,2,"NDB","Azo",Nitrogen,Hydrogen)
+PRIM(Azo2,2,2,"NDB","Azo",Nitrogen)
+PRIM(NTB,1,1,"NTB","Triple-Bonded Nitrogen",Nitrogen)
 
-class Amine:public Node{
-   public:
-      Amine():Node("N*","Amine WildCard"){
-         this->MyTypes_[0]=ParamT("N1","Amine",1,0);
-         this->MyTypes_.push_back(ParamT("N2","Amine",2,0));
-         this->MyTypes_.push_back(ParamT("N3","Amine",3,0));
-      }
-};
-
+WILDCARD(Azo,2,"NDB","Azo")
+WILDCARD(Amine,3,"N","Amine")
 
 /**********************Oxygen Primitives**********************/
 
-PRIM(Water,2,"O","Water",Oxygen,Hydrogen,Hydrogen)
-PRIM(Hydroxyl,2,"O","Hydroxyl",Oxygen,Hydrogen)
-PRIM(Ether,2,"O","Ether",Oxygen)
-PRIM(ODB,1,"ODB","Double-Bonded Oxygen",Oxygen)
+PRIM(Water,0,2,"O","Water",Oxygen,Hydrogen,Hydrogen)
+PRIM(Hydroxyl,1,2,"O","Hydroxyl",Oxygen,Hydrogen)
+PRIM(Ether,2,2,"O","Ether",Oxygen)
+PRIM(ODB,1,1,"ODB","Double-Bonded Oxygen",Oxygen)
 
 /*********************Sulfur primitives**************************/
 
-PRIM(HydrogenSulfide,2,"S","Hydrogen Sulfide",Sulfur,Hydrogen,Hydrogen)
-PRIM(Thiol,2,"S","Thiol",Sulfur,Hydrogen)
-PRIM(Sulfide,2,"S","Sulfide",Sulfur)
-PRIM(SDB,1,"SDB","Double-Bonded Sulfur",Sulfur)
-#undef PRIM
+PRIM(HydrogenSulfide,0,2,"S","Hydrogen Sulfide",Sulfur,Hydrogen,Hydrogen)
+PRIM(Thiol,1,2,"S","Thiol",Sulfur,Hydrogen)
+PRIM(Sulfide,2,2,"S","Sulfide",Sulfur)
+PRIM(SDB,1,1,"SDB","Double-Bonded Sulfur",Sulfur)
 
+
+/*********************Conjugated-Pi Primitives*************************
+
+class ConPiPrims:public Node{
+         public:
+            ConPiPrims():Node(0,"Pi*","Conjugated Pi Atom"){
+               PsiMap<size_t,size_t> Temp;
+               this->MyTypes_[0]=ParamT("CDB","Alkenyl",2,0);
+               this->MyTypes_.push_back(ParamT("CDB","Alkenyl",3,0));
+               this->MyTypes_.push_back(ParamT("NDB","Azo",2,0));
+               this->MyTypes_.push_back(ParamT("N","Amine",2,0));
+               this->MyTypes_.push_back(ParamT("O","Ether",2,0));
+            }
+      };*/
+
+#undef PRIM
+#undef WILDCARD
 }}//End namespaces
 #endif /* SRC_LIB_LIBMOLECULE_AUTOFXNALGROUP_PRIMITIVENODES_HH_ */
