@@ -729,6 +729,7 @@ void export_mints()
             def("translate", &Molecule::translate, "Translates molecule by arg2").
             def("move_to_com", &Molecule::move_to_com, "Moves molecule to center of mass").
             def("mass", &Molecule::mass, "Gets mass of atom arg2").
+            def("set_mass", &Molecule::set_mass, "Gets mass of atom arg2").
             def("symbol", &Molecule::symbol, "Gets the cleaned up label of atom arg2 (C2 => C, H4 = H)").
             def("label", &Molecule::label, "Gets the original label of the atom as given in the input file (C2, H4)").
             def("charge", &Molecule::charge, "Gets charge of atom").

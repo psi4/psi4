@@ -44,13 +44,17 @@ void add_ref_ROHF(struct iwlbuf *OutBuf)
   nopen = moinfo.nopen;
 
   /*** One-electron component ***/
-
-  for(i=0; i < (nfzc + nclsd); i++)
+  // NB: We're also storing alpha and beta densities for examining NOs
+  for(i=0; i < (nfzc + nclsd); i++) {
       moinfo.opdm[i][i] += 2.0;
+      moinfo.opdm_a[i][i] += 1.0;
+      moinfo.opdm_b[i][i] += 1.0;
+  }
 
-  for(i=nfzc + nclsd; i < (nfzc + nclsd + nopen); i++)
+  for(i=nfzc + nclsd; i < (nfzc + nclsd + nopen); i++) {
       moinfo.opdm[i][i] += 1.0;
-
+      moinfo.opdm_a[i][i] += 1.0;
+  }
 
   /*** Two-electron component ***/
 

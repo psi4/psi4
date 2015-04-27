@@ -59,7 +59,7 @@ void sortone_ROHF(struct RHO_Params rho_params)
   int *occpi, *virtpi, *occ_off, *vir_off; 
   int *occ_sym, *vir_sym, *openpi;
   int *qt_occ, *qt_vir;
-  double **O, chksum, value;
+  double chksum, value;
   dpdfile2 D;
   psio_address next;
 
@@ -76,7 +76,8 @@ void sortone_ROHF(struct RHO_Params rho_params)
   qt_occ = moinfo.qt_occ; qt_vir = moinfo.qt_vir;
 
   /* O = block_matrix(nmo-nfzc,nmo-nfzc); */
-  O = block_matrix(nmo-nfzv, nmo-nfzv);
+  double **O_a = block_matrix(nmo, nmo);
+  double **O_b = block_matrix(nmo, nmo);
 
   /* Sort A components first */
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
@@ -87,7 +88,7 @@ void sortone_ROHF(struct RHO_Params rho_params)
           I = qt_occ[occ_off[h] + i];
           for(j=0; j < occpi[h]; j++) {
               J = qt_occ[occ_off[h] + j];
-              O[I][J] += D.matrix[h][i][j];
+              O_a[I][J] += D.matrix[h][i][j];
             }
         }
     }
@@ -103,7 +104,7 @@ void sortone_ROHF(struct RHO_Params rho_params)
           for(b=0; b < (virtpi[h] - openpi[h]); b++) {
               B = qt_vir[vir_off[h] + b];
 
-              O[A][B] += D.matrix[h][a][b];
+              O_a[A][B] += D.matrix[h][a][b];
             }
         }
     }
@@ -120,7 +121,7 @@ void sortone_ROHF(struct RHO_Params rho_params)
           for(a=0; a < (virtpi[h] - openpi[h]); a++) {
               A = qt_vir[vir_off[h] + a];
 
-              O[A][I] += D.matrix[h][i][a];
+              O_a[A][I] += D.matrix[h][i][a];
             }
         }
     }
@@ -136,7 +137,7 @@ void sortone_ROHF(struct RHO_Params rho_params)
           for(a=0; a < (virtpi[h] - openpi[h]); a++) {
               A = qt_vir[vir_off[h] + a];
 
-              O[I][A] += D.matrix[h][i][a];
+              O_a[I][A] += D.matrix[h][i][a];
             }
         }
     }
@@ -152,7 +153,7 @@ void sortone_ROHF(struct RHO_Params rho_params)
           I = qt_occ[occ_off[h] + i];
           for(j=0; j < (occpi[h] - openpi[h]); j++) {
               J = qt_occ[occ_off[h] + j];
-              O[I][J] += D.matrix[h][i][j];
+              O_b[I][J] += D.matrix[h][i][j];
             }
         }
     }
@@ -168,7 +169,7 @@ void sortone_ROHF(struct RHO_Params rho_params)
           for(b=0; b < virtpi[h]; b++) {
               B = qt_vir[vir_off[h] + b];
 
-              O[A][B] += D.matrix[h][a][b];
+              O_b[A][B] += D.matrix[h][a][b];
             }
         }
     }
@@ -185,7 +186,7 @@ void sortone_ROHF(struct RHO_Params rho_params)
           for(a=0; a < virtpi[h]; a++) {
               A = qt_vir[vir_off[h] + a];
 
-              O[A][I] += D.matrix[h][i][a];
+              O_b[A][I] += D.matrix[h][i][a];
             }
         }
     }
@@ -201,7 +202,7 @@ void sortone_ROHF(struct RHO_Params rho_params)
           for(a=0; a < virtpi[h]; a++) {
               A = qt_vir[vir_off[h] + a];
 
-              O[I][A] += D.matrix[h][i][a];
+              O_b[I][A] += D.matrix[h][i][a];
             }
         }
     }
@@ -210,12 +211,17 @@ void sortone_ROHF(struct RHO_Params rho_params)
 
   /* Symmetrize the onepdm */
 
-  for(p=0; p < (nmo-nfzv); p++) {
+  for(p=0; p < nmo; p++) {
       for(q=0; q < p; q++) {
-          value = 0.5 * (O[p][q] + O[q][p]);
-          O[p][q] = O[q][p] = value;
+          value = 0.5 * (O_a[p][q] + O_a[q][p]);
+          O_a[p][q] = O_a[q][p] = value;
+
+          value = 0.5 * (O_b[p][q] + O_b[q][p]);
+          O_b[p][q] = O_b[q][p] = value;
         }
     }
+  moinfo.opdm_a = O_a;
+  moinfo.opdm_b = O_b;
 
   /*
   for (i=0;i<(nmo-nfzv);++i) {
@@ -235,8 +241,11 @@ void sortone_ROHF(struct RHO_Params rho_params)
   print_mat(O,nmo-nfzv,nmo-nfzv,outfile);
   */
 
+  double **O = block_matrix(nmo, nmo);
+  for(p=0; p < nmo; p++)
+    for(q=0; q < nmo; q++)
+      O[p][q] = O_a[p][q] + O_b[p][q];
   moinfo.opdm = O;
-
 }
 
 }} // namespace psi::ccdensity
