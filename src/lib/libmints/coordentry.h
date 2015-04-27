@@ -248,6 +248,8 @@ public:
     const std::string& shell(const std::string& type="BASIS") const;
     const std::map<std::string, std::string>& shells() const { return shells_;}
 
+    // Assign the mass of the atom (useful for isotopic substitutions)
+    void set_mass(double mass) { mass_ = mass; }
 };
 
 class CartesianEntry : public CoordEntry{

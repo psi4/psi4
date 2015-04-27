@@ -281,6 +281,10 @@ public:
     double xyz(int atom, int _xyz) const;
     /// Returns mass atom atom
     double mass(int atom) const;
+
+    /// Set the mass of a particular atom (good for isotopic substitutions)
+    void set_mass(int atom, double mass) { full_atoms_[atom]->set_mass(mass); }
+
     /// Returns the cleaned up label of the atom (C2 => C, H4 = H)
     std::string symbol(int atom) const;
     /// Returns the cleaned up label of the atom (C2 => C, H4 = H)

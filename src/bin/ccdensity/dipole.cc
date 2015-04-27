@@ -101,6 +101,17 @@ void dipole(void)
 //    Pa->print();
 //    Pb->print();
 
+    if(!wfn->same_a_b_dens()) {
+      SharedMatrix Pa_V(new Matrix("Alpha Density Eigenvectors", Ca->colspi(), Ca->colspi()));
+      SharedVector Pa_v(new Vector("Alpha Density Eigenvalues", Ca->colspi()));
+      Pa->diagonalize(Pa_V, Pa_v, descending);
+      Pa_v->print();
+      SharedMatrix Pb_V(new Matrix("Beta Density Eigenvectors", Cb->colspi(), Cb->colspi()));
+      SharedVector Pb_v(new Vector("Beta Density Eigenvalues", Cb->colspi()));
+      Pb->diagonalize(Pb_V, Pb_v, descending);
+      Pb_v->print();
+    }
+
     if(wfn->same_a_b_dens()) Pa->scale(0.5);
     //Pa->print();
 
