@@ -403,6 +403,7 @@ void export_mints()
             def("cholesky_factorize", &Matrix::cholesky_factorize, "docstring").
             def("partial_cholesky_factorize", &Matrix::partial_cholesky_factorize, "docstring").
             def("canonical_orthogonalization", &Matrix::canonical_orthogonalization, CanonicalOrthog()).
+            def("schmidt", &Matrix::schmidt).
             def("invert", &Matrix::invert, "docstring").
             def("power", &Matrix::power, "docstring").
             def("get", matrix_get3(&Matrix::get), "docstring").
@@ -573,7 +574,9 @@ void export_mints()
             def("basisset", &MintsHelper::basisset, "docstring").
             def("sobasisset", &MintsHelper::sobasisset, "docstring").
             def("factory", &MintsHelper::factory, "docstring").
-            def("ao_overlap", &MintsHelper::ao_overlap, "docstring").
+            //def("ao_overlap", &MintsHelper::ao_overlap, "docstring").
+            def("ao_overlap", oneelectron(&MintsHelper::ao_overlap), "docstring").
+            def("ao_overlap", oneelectron_mixed_basis(&MintsHelper::ao_overlap), "docstring").
             def("ao_kinetic", oneelectron(&MintsHelper::ao_kinetic), "docstring").
             def("ao_kinetic", oneelectron_mixed_basis(&MintsHelper::ao_kinetic), "docstring").
             def("ao_potential", oneelectron(&MintsHelper::ao_potential), "docstring").

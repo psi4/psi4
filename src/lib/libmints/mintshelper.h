@@ -183,6 +183,8 @@ public:
 
     /// AO Overlap Integrals
     SharedMatrix ao_overlap();
+    // JWM 4/3/2015
+    SharedMatrix ao_overlap(boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
     /// AO Kinetic Integrals
     SharedMatrix ao_kinetic();
     SharedMatrix ao_kinetic(boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
