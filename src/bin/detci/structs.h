@@ -271,18 +271,32 @@ struct calcinfo {
    int nmo;              /* number of molecular orbitals */
    int nmotri;           /* num elements in lwr diag matrix nmo big */
    int nirreps;          /* number of irreducible representations in pt grp */
-   int *docc;            /* doubly occupied orbitals per irrep */
-   int *socc;            /* singly occupied orbitals per irrep */
-   int *frozen_docc;     /* frozen doubly occupied orbs per irrep */
-   int *explicit_core;   /* explicit core orbitals per irrep: integrals
-                            involving these orbs are read, but excitations
-                            from these orbs are not allowed (maybe in +PT2) */
-   int *explicit_vir;    /* explicit virtual orbitals per irrep: these orbs
-                            are beyond the last RAS space and not accessible
-                            in normal CI computations, but their integrals
-                            and indices are available for possible +PT2 
-                            corrections, etc */
-   int *frozen_uocc;     /* frozen virtual orbs per irrep */
+   int *docc;            /* number of doubly occupied orbitals per irrep */
+   int *socc;            /* number of singly occupied orbitals per irrep */
+   int *dropped_docc;    /* number of core orbitals per irrep constrained to 
+                            be doubly occupied and dropped from explicit
+                            consideration in the CI computation; 
+                            sum of frozen_docc and rstr_docc - CDS 4/15 */
+   int *frozen_docc;     /* number of frozen doubly occupied orbs per irrep;
+                            these are not explicitly present in the CI
+                            and these orbitals are not allowed to optimize
+                            in an MCSCF - CDS 4/15 */
+   int *rstr_docc;       /* number of restricted doubly occupied orbs per 
+                            irrep; these are not explicitly present in the
+                            CI and these orbitals are allowed to optimize
+                            in an MCSCF - CDS 4/15 */
+   int *dropped_uocc;     /* number of unoccupied orbitals per irrep 
+                            constrained to be unoccupied and dropped from 
+                            explicit consideratin in the CI computation; 
+                            sum of frozen_uocc and rstr_uocc - CDS 4/15 */
+   int *frozen_uocc;     /* number of frozen unoccupied orbitals per irrep;
+                            these are not explicitly present in the CI
+                            and these orbitals are not allowed to optimize
+                            in an MCSCF */
+   int *rstr_uocc;       /* number of restricted unoccpied orbitals per irrep;
+                            these are not explicitly present in the CI 
+                            and these orbitals are allowed to optimize in
+                            an MCSCF */
    int iopen;            /* flag for whether open shell or not */
    double enuc;          /* nuclear repulsion energy */
    double escf;          /* scf energy */
@@ -311,18 +325,23 @@ struct calcinfo {
    double **gmat;        /* onel ints in RAS g matrix form */
    double *twoel_ints;   /* two-electron integrals */
    double **fock;        /* fock matrix */
-   int num_fzc_orbs;     /* number of FZC orbitals (i.e. frozen core) */
+   int num_fzc_orbs;     /* number of frozen core orbitals */
+   int num_rsc_orbs;     /* number of restricted core orbitals */
+   int num_drc_orbs;     /* number of dropped core orbitals 
+                            (frozen + restricted) */
+   int num_fzv_orbs;     /* number of frozen/deleted virtual orbitals */
+   int num_rsv_orbs;     /* number of restricted virtual orbitals */
+   int num_drv_orbs;     /* number of dropped virtual orbitals 
+                            (frozen + restricted) */
    int num_expl_cor_orbs;/* number of explicit core orbitals, i.e., 
                             orbitals that are constrained to be doubly
                             occupied in the CI and but are nevertheless 
                             explicitly included in the CI computation (not
-                            currently used for anything) */
+                            currently used for anything but kept because
+                            lower-level routines allow it; it is set to 0) */
    int num_alp_str;      /* number of alpha strings */
    int num_bet_str;      /* number of beta strings */
    int num_ci_orbs;      /* nmo - num orbs frozen */
-   int num_fzv_orbs;     /* number of frozen/deleted virtual orbitals */
-   int num_vir_orbs;     /* number of explicit virtual orbitals beyond
-                            the last RAS space (see explicit_vir) */
    int ref_alp;          /* address of reference alpha string */
    int ref_bet;          /* address of reference beta string */
    int ref_alp_list;     /* string list containing reference alpha string */
@@ -337,8 +356,6 @@ struct calcinfo {
    unsigned int *bsymnum;/* number of beta strings per irrep */
    int **ras_opi;        /* num orbs per irr per ras space ras_opi[ras][irr] */
    int **ras_orbs[4];    /* ras_orbs[ras][irr][cnt] gives an orbital number */
-   int max_orbs_per_irrep; /* maximum orbials per irrep fzv not included */
-   int max_pop_per_irrep;/* maximum populated orbitals per irrep fzv included */
    int sigma_initialized; /* has sigma_init been called yet? */
 
 };

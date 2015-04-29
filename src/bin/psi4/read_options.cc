@@ -1614,6 +1614,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("NO_TEI", false);
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
+
+    /*- An array giving the number of active orbitals (occupied plus
+    unoccupied) per irrep (shorthand to make MCSCF easier to specify than
+    using RAS keywords) -*/
+    options.add("ACTIVE", new ArrayType());
   }
   // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT"|| options.read_globals()) {
@@ -1726,6 +1731,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("IVO", false);
     /*- Numbering of MOs for reordering requests?  -*/
     options.add("MOORDER", new ArrayType());
+
+    /*- An array giving the number of active orbitals (occupied plus
+    unoccupied) per irrep (shorthand to make MCSCF easier to specify than
+    using RAS keywords) -*/
+    options.add("ACTIVE", new ArrayType());
 
     /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
     options.add("RAS1", new ArrayType());

@@ -5,6 +5,10 @@ DETCI TO-DO LIST
 switch to CalcInfo.num_drc_orbs instead once available (catch both calls, one
 for Alpha and one for Beta)
 * Swap num_fzc_orbs in printing.cc line 326 for num_drc_orbs
+* Switching ras_set2() such that the user must provide a guess for rstrdocc
+and rstruocc (from process environment) and frozen_docc and frozen_uocc
+will just be read from input (swaps the role of these two); means I'll
+need to change transqt2 (probably nothing else)
 
 Buffers bigger than 2E9 still don't work.  Known issues:
    o Calls to wreadw can't handle size > 2E9

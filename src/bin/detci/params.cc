@@ -70,11 +70,6 @@ void get_parameters(Options &options)
   /* Parameters.print_lvl is set in detci.cc */
   /* Parameters.have_special_conv is set in detci.cc */
 
-/* symbol * = put in read_options
- *        I = was internal parameter, not in read_options
- *        X = now it's an internal parameter, not in read_options
- */
-
   Parameters.ex_lvl = options.get_int("EX_LEVEL");
   Parameters.cc_ex_lvl = options.get_int("CC_EX_LEVEL");
   Parameters.val_ex_lvl = options.get_int("VAL_EX_LEVEL");
@@ -1547,8 +1542,7 @@ void print_ras_parms(void)
       Parameters.cc_variational ? "yes" : "no");
   }
 
-  outfile->Printf( "\n");
-  outfile->Printf( "   DOCC            = ") ;
+  outfile->Printf( "\n   DOCC            = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
     outfile->Printf( "%2d ", CalcInfo.docc[i]) ;
   }
@@ -1561,28 +1555,21 @@ void print_ras_parms(void)
   for (i=0; i<CalcInfo.nirreps; i++) {
     outfile->Printf( "%2d ", CalcInfo.frozen_docc[i]) ;
   }
-  /*
-  outfile->Printf( "\n");
   outfile->Printf( "\n   RESTRICTED DOCC = ");
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.restricted_docc[i]) ;
+    outfile->Printf( "%2d ", CalcInfo.rstr_docc[i]) ;
   }
-  */
-  outfile->Printf( "\n");
   for (i=0; i<4; i++) {
-    outfile->Printf( "   RAS %d           = ",i+1);
+    outfile->Printf( "\n   RAS %d           = ",i+1);
     for (j=0; j<CalcInfo.nirreps; j++) {
       outfile->Printf("%2d ",CalcInfo.ras_opi[i][j]);
     }
-    outfile->Printf( "\n");
   }
-  /*
   outfile->Printf( "\n   RESTRICTED UOCC = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.restricted_uocc[i]) ;
+    outfile->Printf( "%2d ", CalcInfo.rstr_uocc[i]) ;
   }
-  */
-  outfile->Printf( "   FROZEN UOCC     = ") ;
+  outfile->Printf( "\n   FROZEN UOCC     = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
     outfile->Printf( "%2d ", CalcInfo.frozen_uocc[i]) ;
   }
