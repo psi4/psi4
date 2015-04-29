@@ -197,20 +197,34 @@ void get_moinfo(Options& options)
         rstr_docc = init_int_array(moinfo.nirreps);
         rstr_uocc = init_int_array(moinfo.nirreps);
         ras_opi = init_int_matrix(4,moinfo.nirreps);
+        int *core_guess = init_int_array(moinfo.nirreps);
+        for (h=0; h<moinfo.nirreps; h++) {
+          core_guess[h] = Process::environment.wavefunction()->frzcpi()[h];
+        }
+        bool is_mcscf;
+
+
+        if((params.wfn == "MCSCF") || (params.wfn == "CASSCF") ||
+                (params.wfn == "RASSCF") || (params.wfn == "DETCAS"))
+            is_mcscf = true;
+        else
+            is_mcscf = false;
 
         // below, we need frdocc and fruocc as they appear in input, i.e., they
         // should not be zeroed out even if the frozen orbitals are to be
         // transformed
         moinfo.pitz2corr_one = init_int_array(moinfo.nmo);
 
-        if (!ras_set2(moinfo.nirreps, moinfo.nmo, 1, 1,
+        if (!ras_set3(moinfo.nirreps, moinfo.nmo, 
                       moinfo.mopi, moinfo.clsdpi, moinfo.openpi,
                       moinfo.frdocc, moinfo.fruocc,
                       rstr_docc, rstr_uocc,
-                      ras_opi, moinfo.pitz2corr_one, 1, 0, options))
+                      ras_opi, core_guess, moinfo.pitz2corr_one, 1, 
+                      is_mcscf, options))
         {
             throw PsiException("Error in ras_set(). Aborting.", __FILE__, __LINE__);
         }
+        free(core_guess);
 
         /* "core" array needed for frozen-core operator */
         /* core for CI wfns is frozen-docc plus restricted-docc */
@@ -466,23 +480,24 @@ void get_moinfo(Options& options)
             outfile->Printf("\n\tSOCC         = ");
             for (i=0; i<moinfo.nirreps; i++)
                 outfile->Printf("%2d ", moinfo.openpi[i]);
+            outfile->Printf("\n");
             outfile->Printf("\n\tFROZEN DOCC  = ");
             for (i=0; i<moinfo.nirreps; i++)
                 outfile->Printf("%2d ", moinfo.frdocc[i]);
-            outfile->Printf("\n\tFROZEN UOCC  = ");
-            for (i=0; i<moinfo.nirreps; i++)
-                outfile->Printf("%2d ", moinfo.fruocc[i]);
             outfile->Printf("\n\tRESTR DOCC   = ");
             for (i=0; i<moinfo.nirreps; i++)
                 outfile->Printf("%2d ", rstr_docc[i]);
-            outfile->Printf("\n\tRESTR UOCC   = ");
-            for (i=0; i<moinfo.nirreps; i++)
-                outfile->Printf("%2d ", rstr_uocc[i]);
             for (i=0; i<4; i++) {
                 outfile->Printf("\n\tRAS %d        = ",i+1);
                 for (int j=0; j<moinfo.nirreps; j++)
                     outfile->Printf("%2d ", ras_opi[i][j]);
             }
+            outfile->Printf("\n\tRESTR UOCC   = ");
+            for (i=0; i<moinfo.nirreps; i++)
+                outfile->Printf("%2d ", rstr_uocc[i]);
+            outfile->Printf("\n\tFROZEN UOCC  = ");
+            for (i=0; i<moinfo.nirreps; i++)
+                outfile->Printf("%2d ", moinfo.fruocc[i]);
             outfile->Printf("\n");
 
             free_int_matrix(ras_opi);

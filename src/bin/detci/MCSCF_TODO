@@ -1,3 +1,22 @@
+########## CDS Notes 4/15
+o Obsoleted CalcInfo.max_orbs_per_irrep and CalcInfo.max_pop_per_irrep;
+  never was used in main code.  Probably don't need in MCSCF either
+
+o Updated some orbital numbering variables
+  
+  - CalcInfo.num_fzc_orbs  : number of truly frozen core
+  - CalcInfo.num_rsc_orbs  : number of restricted core
+  - CalcInfo.num_drc_orbs  : number of dropped core (sum of fzc and rsc)
+  - CalcInfo.num_fzv_orbs  : number of truly frozen virtuals
+  - CalcInfo.num_rsv_orbs  : number of restricted virtuals
+  - CalcInfo.num_drv_orbs  : number of dropped virtuals (sum of fzv and rsv)
+
+
+
+o Obsoleted CalcInfo.num_vir_orbs --- should go away in MCSCF also.
+This is replaced with num_restr_uocc
+(if needed there can be a num_restr_uocc or some such)
+
 
 ########## TODO
 
