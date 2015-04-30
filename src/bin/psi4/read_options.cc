@@ -70,33 +70,33 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- The number of virtual orbitals to freeze in later correlated computations. -*/
   options.add_int("NUM_FROZEN_UOCC", 0);
 
-  // DS EDIT!
-  // /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
-  // options.add("RAS1", new ArrayType());
+  /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
+  options.add("RAS1", new ArrayType());
 
-  // /*- An array giving the number of orbitals per irrep for RAS2 !expert -*/
-  // options.add("RAS2", new ArrayType());
+  /*- An array giving the number of orbitals per irrep for RAS2 !expert -*/
+  options.add("RAS2", new ArrayType());
 
-  // /*- An array giving the number of orbitals per irrep for RAS3 !expert -*/
-  // options.add("RAS3", new ArrayType());
+  /*- An array giving the number of orbitals per irrep for RAS3 !expert -*/
+  options.add("RAS3", new ArrayType());
 
-  // /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
-  // options.add("RAS4", new ArrayType());
+  /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
+  options.add("RAS4", new ArrayType());
 
-  // /*- An array giving the number of restricted doubly-occupied orbitals per
-  // irrep (not excited in CI wavefunctions, but orbitals can be optimized
-  // in MCSCF) -*/
-  // options.add("RESTRICTED_DOCC", new ArrayType());
+  /*- An array giving the number of restricted doubly-occupied orbitals per
+  irrep (not excited in CI wavefunctions, but orbitals can be optimized
+  in MCSCF) -*/
+  options.add("RESTRICTED_DOCC", new ArrayType());
 
-  // /*- An array giving the number of restricted unoccupied orbitals per
-  // irrep (not occupied in CI wavefunctions, but orbitals can be optimized
-  // in MCSCF) -*/
-  // options.add("RESTRICTED_UOCC", new ArrayType());
+  /*- An array giving the number of restricted unoccupied orbitals per
+  irrep (not occupied in CI wavefunctions, but orbitals can be optimized
+  in MCSCF) -*/
+  options.add("RESTRICTED_UOCC", new ArrayType());
 
-  // /*- An array giving the number of active orbitals (occupied plus
-  // unoccupied) per irrep (shorthand to make MCSCF easier to specify than
-  // using RAS keywords) -*/
-  // options.add("ACTIVE", new ArrayType());
+  /*- An array giving the number of active orbitals (occupied plus
+  unoccupied) per irrep (shorthand to make MCSCF easier to specify than
+  using RAS keywords) -*/
+  options.add("ACTIVE", new ArrayType());
+
   /*- Specifies how many core orbitals to freeze in correlated computations.
   ``TRUE`` will default to freezing the standard default number of core
   orbitals.  For PSI, the standard number of core orbitals is the
@@ -271,32 +271,32 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- SUBSECTION Specifying the CI Space -*/
 
-    /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
-    options.add("RAS1", new ArrayType());
+    // /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
+    // options.add("RAS1", new ArrayType());
 
-    /*- An array giving the number of orbitals per irrep for RAS2 !expert -*/
-    options.add("RAS2", new ArrayType());
+    // /*- An array giving the number of orbitals per irrep for RAS2 !expert -*/
+    // options.add("RAS2", new ArrayType());
 
-    /*- An array giving the number of orbitals per irrep for RAS3 !expert -*/
-    options.add("RAS3", new ArrayType());
+    // /*- An array giving the number of orbitals per irrep for RAS3 !expert -*/
+    // options.add("RAS3", new ArrayType());
 
-    /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
-    options.add("RAS4", new ArrayType());
+    // /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
+    // options.add("RAS4", new ArrayType());
 
-    /*- An array giving the number of restricted doubly-occupied orbitals per
-    irrep (not excited in CI wavefunctions, but orbitals can be optimized
-    in MCSCF) -*/
-    options.add("RESTRICTED_DOCC", new ArrayType());
+    // /*- An array giving the number of restricted doubly-occupied orbitals per
+    // irrep (not excited in CI wavefunctions, but orbitals can be optimized
+    // in MCSCF) -*/
+    // options.add("RESTRICTED_DOCC", new ArrayType());
 
-    /*- An array giving the number of restricted unoccupied orbitals per
-    irrep (not occupied in CI wavefunctions, but orbitals can be optimized
-    in MCSCF) -*/
-    options.add("RESTRICTED_UOCC", new ArrayType());
+    // /*- An array giving the number of restricted unoccupied orbitals per
+    // irrep (not occupied in CI wavefunctions, but orbitals can be optimized
+    // in MCSCF) -*/
+    // options.add("RESTRICTED_UOCC", new ArrayType());
 
-    /*- An array giving the number of active orbitals (occupied plus
-    unoccupied) per irrep (shorthand to make MCSCF easier to specify than
-    using RAS keywords) -*/
-    options.add("ACTIVE", new ArrayType());
+    // /*- An array giving the number of active orbitals (occupied plus
+    // unoccupied) per irrep (shorthand to make MCSCF easier to specify than
+    // using RAS keywords) -*/
+    // options.add("ACTIVE", new ArrayType());
 
     /*- The value of the spin quantum number $S$ is given by this option.
     The default is determined by the value of the multiplicity.  This is used
@@ -1615,10 +1615,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
 
-    /*- An array giving the number of active orbitals (occupied plus
-    unoccupied) per irrep (shorthand to make MCSCF easier to specify than
-    using RAS keywords) -*/
-    options.add("ACTIVE", new ArrayType());
+    // /*- An array giving the number of active orbitals (occupied plus
+    // unoccupied) per irrep (shorthand to make MCSCF easier to specify than
+    // using RAS keywords) -*/
+    // options.add("ACTIVE", new ArrayType());
   }
   // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT"|| options.read_globals()) {
@@ -1732,32 +1732,32 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Numbering of MOs for reordering requests?  -*/
     options.add("MOORDER", new ArrayType());
 
-    /*- An array giving the number of active orbitals (occupied plus
-    unoccupied) per irrep (shorthand to make MCSCF easier to specify than
-    using RAS keywords) -*/
-    options.add("ACTIVE", new ArrayType());
+    // /*- An array giving the number of active orbitals (occupied plus
+    // unoccupied) per irrep (shorthand to make MCSCF easier to specify than
+    // using RAS keywords) -*/
+    // options.add("ACTIVE", new ArrayType());
 
-    /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
-    options.add("RAS1", new ArrayType());
+    // /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
+    // options.add("RAS1", new ArrayType());
 
-    /*- An array giving the number of orbitals per irrep for RAS2 !expert -*/
-    options.add("RAS2", new ArrayType());
+    // /*- An array giving the number of orbitals per irrep for RAS2 !expert -*/
+    // options.add("RAS2", new ArrayType());
 
-    /*- An array giving the number of orbitals per irrep for RAS3 !expert -*/
-    options.add("RAS3", new ArrayType());
+    // /*- An array giving the number of orbitals per irrep for RAS3 !expert -*/
+    // options.add("RAS3", new ArrayType());
 
-    /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
-    options.add("RAS4", new ArrayType());
+    // /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
+    // options.add("RAS4", new ArrayType());
 
-    /*- An array giving the number of restricted doubly-occupied orbitals per
-    irrep (not excited in CI wavefunctions, but orbitals can be optimized
-    in MCSCF) -*/
-    options.add("RESTRICTED_DOCC", new ArrayType());
+    // /*- An array giving the number of restricted doubly-occupied orbitals per
+    // irrep (not excited in CI wavefunctions, but orbitals can be optimized
+    // in MCSCF) -*/
+    // options.add("RESTRICTED_DOCC", new ArrayType());
 
-    /*- An array giving the number of restricted unoccupied orbitals per
-    irrep (not occupied in CI wavefunctions, but orbitals can be optimized
-    in MCSCF) -*/
-    options.add("RESTRICTED_UOCC", new ArrayType());
+    // /*- An array giving the number of restricted unoccupied orbitals per
+    // irrep (not occupied in CI wavefunctions, but orbitals can be optimized
+    // in MCSCF) -*/
+    // options.add("RESTRICTED_UOCC", new ArrayType());
 
   }
   if(name == "CCSORT"|| options.read_globals()) {
@@ -2598,14 +2598,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
     /*- Whether to use spin symmetry to map equivalent configurations onto each other, for efficiency !expert -*/
     options.add_bool("USE_SPIN_SYMMETRY", true);
-    /*- The number of frozen occupied orbitals per irrep -*/
-    options.add("FROZEN_DOCC", new ArrayType());
-    /*- The number of doubly occupied orbitals per irrep -*/
-    options.add("RESTRICTED_DOCC", new ArrayType());
-    /*- The number of active orbitals per irrep -*/
-    options.add("ACTIVE", new ArrayType());
-    /*- The number of frozen virtual orbitals per irrep -*/
-    options.add("FROZEN_UOCC", new ArrayType());
+    // /*- The number of frozen occupied orbitals per irrep -*/
+    // options.add("FROZEN_DOCC", new ArrayType());
+    // /*- The number of doubly occupied orbitals per irrep -*/
+    // options.add("RESTRICTED_DOCC", new ArrayType());
+    // /*- The number of active orbitals per irrep -*/
+    // options.add("ACTIVE", new ArrayType());
+    // /*- The number of frozen virtual orbitals per irrep -*/
+    // options.add("FROZEN_UOCC", new ArrayType());
     /*- -*/
     options.add_int("SMALL_CUTOFF", 0);
     /*- Do disregard updating single excitation amplitudes? -*/
