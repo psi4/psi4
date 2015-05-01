@@ -78,7 +78,7 @@ def quotify(string):
     """
     # This wraps anything that looks like a string in quotes, and removes leading
     # dollar signs from python variables
-    wordre = re.compile(r'(([$]?)([-+()*.\w\"\']+))')
+    wordre = re.compile(r'(([$]?)([-+()*.\w\"\'/\\]+))')
     string = wordre.sub(process_word_quotes, string)
     return string
 
