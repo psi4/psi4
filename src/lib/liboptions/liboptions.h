@@ -400,6 +400,7 @@ public:
     void set_int(const std::string &module, const std::string &key, int i);
     void set_double(const std::string & module, const std::string &key, double d);
     void set_str(const std::string & module, const std::string &key, std::string s);
+    void set_str_i(const std::string & module, const std::string &key, std::string s);
     void set_python(const std::string &module, const std::string& key, const boost::python::object &p);
     void set_array(const std::string &module, const std::string& key);
 
