@@ -36,6 +36,9 @@
 #include "CanonicalMBE.h"
 #include "VMFCnMBE.h"
 #include "libmolecule/Utils/BSSEFactory.h"
+#include "../../PsiAPI/Molecule.h"
+#include "../../PsiAPI/GaussianBasis.h"
+#include "../libmints/basisset.h"
 //#include "libmm/MMParamAssigner.h"
 
 typedef boost::python::str PyStr;
@@ -111,18 +114,54 @@ void CalcEnergy(Expansion<T>& Expansion_,
 
 LibFragDriver::LibFragDriver(const std::string& MethodName){
    outfile->MakeBanner("Many-Body Expansion Module");
+
+
    Options options=psi::Process::environment.options;
-   int NStart=options["MBE_STARTING_ORDER"].to_integer();
-   int N=options["MBE_TRUNCATION_ORDER"].to_integer();
    SharedMol AMol=psi::Process::environment.molecule();
    boost::shared_ptr<LibMolecule::Molecule> MyMol(new LibMolecule::Molecule);
+   PsiAPI::Molecule MyNewMol(AMol->molecular_charge(),AMol->multiplicity());
    for (int i=0; i<AMol->natom(); ++i) {
       std::vector<double> Carts(3, 0.0);
       Carts[0]=AMol->x(i);
       Carts[1]=AMol->y(i);
       Carts[2]=AMol->z(i);
-      (*MyMol)<<LibMolecule::Atom(&Carts[0], (int)AMol->Z(i));
+      MyNewMol.AddAtom((size_t)AMol->Z(i),&Carts[0]);
    }
+   std::cout<<MyNewMol;
+
+   boost::shared_ptr<BasisSet> aoBasis =
+     BasisSet::pyconstruct_orbital(AMol,"BASIS",options.get_str("BASIS"));
+   PsiAPI::GaussianBasis MyBasis;
+   for(int AtomI=0;AtomI<AMol->natom();++AtomI){
+      PsiAPI::GaussianAtomicBasis
+         Temp(AMol->x(AtomI),AMol->y(AtomI),AMol->z(AtomI));
+      MyBasis.insert(Temp);
+      for(int ShellI=0;ShellI<aoBasis->nshell_on_center(AtomI);++ShellI){
+         const GaussianShell& Shell=aoBasis->shell(AtomI,ShellI);
+         int L=Shell.am();
+         bool IsPure=Shell.is_pure();
+         int NPrims=Shell.nprimitive();
+         PsiAPI::GaussianShell tmp2((size_t)L,IsPure);
+         MyBasis[AtomI].insert(tmp2);
+         for(int PrimI=0;PrimI<NPrims;++PrimI){
+            double alpha=Shell.exp(PrimI);
+            double coef=Shell.coef(PrimI);
+            PsiAPI::GaussianPrim Temp1(alpha,coef);
+            MyBasis[AtomI][ShellI].insert(Temp1);
+         }
+      }
+   }
+   std::cout<<MyBasis;
+
+
+   exit(1);
+
+
+
+   int NStart=options["MBE_STARTING_ORDER"].to_integer();
+   int N=options["MBE_TRUNCATION_ORDER"].to_integer();
+
+
 
    Frags_=MakeMolecule(N,MyMol);
    LibMolecule::BSSEFactory tempFactory(*MyMol,*Frags_);
