@@ -293,6 +293,10 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
     
     // Mass-weighting the co-ordinates //
     //double massi[natom];
+    outfile->Printf("\tAtomic Masses for Raman Computation:\n");
+    for(i=0; i < natom; i++) outfile->Printf("\t%d %12.8f\n", i, molecule->mass(i));
+    outfile->Printf("\n");
+
     for(i=0; i<natom; i++)
     {
         //massi[i] = molecule->mass(i);
@@ -606,117 +610,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
      depol_circular->set(i,depolar_circular(alpha->get(i), betaalpha2->get(i)));
    }
 
-  /* compute the frequencies and spit them out in a nice table */
-  printf("\n\t     Harmonic Freq.  IR Intensity   Red. Mass       Alpha^2        Beta^2    Raman Int.  Depol. Ratio\n");
-  printf(  "\t        (cm-1)         (km/mol)       (amu) \n");
-  printf("\t---------------------------------------------------------------------------------------------------\n");
-  for(i=natom*3-1; i >= 0; i--)
-  {
-    if(Fevals->get(i) < 0.0)
-      printf("\t  %3d  %9.3fi    %9.4f       %7.4f      %9.4f     %9.4f    %9.4f    %9.4f\n",
-       (natom*3-i), cm_convert*sqrt(-km_convert*Fevals->get(i)), IRint->get(i),
-       redmass->get(i), alpha->get(i)*alpha->get(i)*raman_conv, betaalpha2->get(i)*raman_conv,
-       ramint_linear->get(i)*raman_conv, depol_linear->get(i));
-    else
-      printf("\t  %3d  %9.3f     %9.4f       %7.4f      %9.4f     %9.4f    %9.4f    %9.4f\n",
-       (natom*3-i), cm_convert*sqrt(km_convert*Fevals->get(i)), IRint->get(i),
-       redmass->get(i), alpha->get(i)*alpha->get(i)*raman_conv, betaalpha2->get(i)*raman_conv,
-       ramint_linear->get(i)*raman_conv, depol_linear->get(i));
-  }
-  printf("\t---------------------------------------------------------------------------------------------------\n");
-
-  /* compute the frequencies and spit them out in a nice table */
-  printf("----------------------------------------------------------------------------------------------\n");
-  printf("                                Raman Scattering Parameters\n");
-  printf("----------------------------------------------------------------------------------------------\n");
-  printf("     Harmonic Freq.  Alpha^2   Beta^2    Raman Act.   Dep. Ratio  Raman Act.  Dep. Ratio\n");
-  printf("        (cm-1)                           (linear)      (linear)   (natural)   (natural)\n");
-  printf("----------------------------------------------------------------------------------------------\n");
-  for(i=natom*3-1; i >= 0; i--)
-  {
-    if(Fevals->get(i) < 0.0)
-      printf("  %3d  %9.3fi %9.4f   %9.4f  %9.4f  %9.4f    %9.4f  %9.4f\n",
-       (natom*3-i), cm_convert*sqrt(-km_convert*Fevals->get(i)),
-       alpha->get(i)*alpha->get(i)*raman_conv, betaalpha2->get(i)*raman_conv,
-       ramint_linear->get(i)*raman_conv, depol_linear->get(i),
-       ramint_circular->get(i)*raman_conv, depol_circular->get(i));
-    else
-      printf("  %3d  %9.3f  %9.4f   %9.4f  %9.4f  %9.4f    %9.4f  %9.4f\n",
-       (natom*3-i), cm_convert*sqrt(km_convert*Fevals->get(i)),
-       alpha->get(i)*alpha->get(i)*raman_conv, betaalpha2->get(i)*raman_conv,
-       ramint_linear->get(i)*raman_conv, depol_linear->get(i),
-       ramint_circular->get(i)*raman_conv, depol_circular->get(i));
-  }
-  printf("----------------------------------------------------------------------------------------------\n");
-
-  SharedVector G(new Vector("G",3*natom));
-  SharedVector betaG2(new Vector("betaG2",3*natom));
-  SharedVector betaA2(new Vector("betaA2",3*natom));
-  
-  for(i=0; i < natom*3; i++) {
-    G->set(i,tensor_mean(G_der[i]));
-    betaG2->set(i,beta_G2(alpha_der[i], G_der[i]));
-    betaA2->set(i,beta_A2(alpha_der[i], Q_der[i], omega));
-  }
-
-  double cvel;
-  double roa_conv;
-
-  cvel = pc_c * pc_me * pc_bohr2angstroms * 1e-10 / (pc_h/(2.0*pc_pi));
-  printf("cvel = %20.14f\n", cvel);
-  roa_conv = raman_conv * 1e6 / cvel;
-//  roa_conv /= _c * _me * _bohr2angstroms * 1e-10;
-//  roa_conv *= _h /(2.0 * _pi);
-  printf("-----------------------------------------------------\n");
-  printf("               ROA Scattering Invariants\n");
-  printf("-----------------------------------------------------\n");
-  printf("     Harmonic Freq.  AlphaG   Beta(G)^2  Beta(A)^2\n");
-  printf("        (cm-1)\n");
-  printf("-----------------------------------------------------\n");
-  for(i=natom*3-1; i >= 0; i--) {
-    if(Fevals->get(i) < 0.0)
-      printf("  %3d  %9.3fi %9.4f   %10.4f  %10.4f\n",
-       (natom*3-i), cm_convert*sqrt(-km_convert*Fevals->get(i)),
-       alpha->get(i)*G->get(i)*roa_conv, betaG2->get(i)*roa_conv, betaA2->get(i)*roa_conv);
-    else
-      printf("  %3d  %9.3f  %9.4f   %10.4f  %10.4f\n",
-       (natom*3-i), cm_convert*sqrt(km_convert*Fevals->get(i)),
-       alpha->get(i)*G->get(i)*roa_conv, betaG2->get(i)*roa_conv, betaA2->get(i)*roa_conv);
-  }
-  printf("-----------------------------------------------------\n");
-
-  printf("\n----------------------------------------------------------------------\n");
-  printf("         ROA Difference Parameter R-L (Angstrom^4/amu * 1000) \n");
-  printf("----------------------------------------------------------------------\n");
-  printf("     Harmonic Freq. Delta_z(90) Delta_x(90)   Delta(0)  Delta(180)\n");
-  printf("        (cm-1)\n");
-  printf("----------------------------------------------------------------------\n");
-  
-  double delta_0,delta_180,delta_x,delta_z;
-  for(i=natom*3-1; i >= 0; i--)
-  {
-
-    delta_0 = 4.0 * (180.0*alpha->get(i)*G->get(i) + 4.0*betaG2->get(i) - 4.0*betaA2->get(i));
-    delta_0 *= 1.0 / cvel;
-    delta_180 = 4.0 * (24.0 * betaG2->get(i) + 8.0 * betaA2->get(i));
-    delta_180 *= 1.0 / cvel;
-    delta_x = 4.0 * (45.0 * alpha->get(i) * G->get(i) + 7.0 * betaG2->get(i) + betaA2->get(i));
-    delta_x *= 1.0 / cvel;
-    delta_z = 4.0 * (6.0 * betaG2->get(i) - 2.0 * betaA2->get(i));
-    delta_z *= 1.0 / cvel;
-    if(Fevals->get(i) < 0.0)
-      printf("  %3d  %9.3fi %10.4f   %10.4f   %10.4f   %10.4f\n",
-       (natom*3-i), cm_convert*sqrt(-km_convert*Fevals->get(i)),
-       delta_z*raman_conv*1e3, delta_x*raman_conv*1e3, delta_0*raman_conv*1e3, delta_180*raman_conv*1e3);
-    else
-      printf("  %3d  %9.3f  %10.4f   %10.4f   %10.4f   %10.4f\n",
-       (natom*3-i), cm_convert*sqrt(km_convert*Fevals->get(i)),
-       delta_z*raman_conv*1e3, delta_x*raman_conv*1e3, delta_0*raman_conv*1e3, delta_180*raman_conv*1e3);
-  }
-
-
   /* compute the frequencies and spit them out in a nice table in the output file*/
-  /* I know, very inefficient, recalculating everything. But it's only temporary.*/
   outfile->Printf("\n\t     Harmonic Freq.  IR Intensity   Red. Mass       Alpha^2        Beta^2    Raman Int.  Depol. Ratio\n");
   outfile->Printf("\t        (cm-1)         (km/mol)       (amu) \n");
   outfile->Printf("\t---------------------------------------------------------------------------------------------------\n");
@@ -759,9 +653,9 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
   }
   outfile->Printf("----------------------------------------------------------------------------------------------\n");
 
-  //SharedVector G(new Vector("G",3*natom));
-  //SharedVector betaG2(new Vector("betaG2",3*natom));
-  //SharedVector betaA2(new Vector("betaA2",3*natom));
+  SharedVector G(new Vector("G",3*natom));
+  SharedVector betaG2(new Vector("betaG2",3*natom));
+  SharedVector betaA2(new Vector("betaA2",3*natom));
   G->zero();
   betaG2->zero();
   betaA2->zero();
@@ -772,12 +666,9 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
     betaA2->set(i,beta_A2(alpha_der[i], Q_der[i], omega));
   }
 
-  //double cvel;
-  //double roa_conv;
 
-  cvel = pc_c * pc_me * pc_bohr2angstroms * 1e-10 / (pc_h/(2.0*pc_pi));
-  outfile->Printf("cvel = %20.14f\n", cvel);
-  roa_conv = raman_conv * 1e6 / cvel;
+  double cvel = pc_c * pc_me * pc_bohr2angstroms * 1e-10 / (pc_h/(2.0*pc_pi));
+  double roa_conv = raman_conv * 1e6 / cvel;
 //  roa_conv /= _c * _me * _bohr2angstroms * 1e-10;
 //  roa_conv *= _h /(2.0 * _pi);
   outfile->Printf("-----------------------------------------------------\n");
@@ -805,7 +696,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
   outfile->Printf("        (cm-1)\n");
   outfile->Printf("----------------------------------------------------------------------\n");
   
-  //double delta_0,delta_180,delta_x,delta_z;
+  double delta_0,delta_180,delta_x,delta_z;
   for(i=natom*3-1; i >= 0; i--)
   {
 
