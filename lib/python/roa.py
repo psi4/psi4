@@ -70,13 +70,13 @@ def run_roa(name, **kwargs):
         synthesize_dip_quad_polar(db,dip_quad_polar_list)
         # Compute Scattering
 	    # Run new function (src/bin/ccresponse/scatter.cc)
-        print('Running scatter function')
+        psi4.print_out('Running scatter function')
         step = psi4.get_local_option('FINDIF','DISP_SIZE')
         for gauge in opt_rot_list:
             g_idx = opt_rot_list.index(gauge)
-            print('\n\n----------------------------------------------------------------------')
-            print('\t%%%%%%%%%% {} %%%%%%%%%%'.format(gauge_list[g_idx]))
-            print('----------------------------------------------------------------------\n\n')
+#            print('\n\n----------------------------------------------------------------------')
+#            print('\t%%%%%%%%%% {} %%%%%%%%%%'.format(gauge_list[g_idx]))
+#            print('----------------------------------------------------------------------\n\n')
             psi4.print_out('\n\n----------------------------------------------------------------------\n')
             psi4.print_out('\t%%%%%%%%%% {} %%%%%%%%%%\n'.format(gauge_list[g_idx]))
             psi4.print_out('----------------------------------------------------------------------\n\n')

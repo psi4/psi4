@@ -311,6 +311,8 @@ PsiReturnType ccdensity(Options& options)
 
       add_core_ROHF(&OutBuf);
       add_ref_ROHF(&OutBuf);
+      dipole();
+
       dump_ROHF(&OutBuf, rho_params[i]);
 
       iwl_buf_flush(&OutBuf, 1);
