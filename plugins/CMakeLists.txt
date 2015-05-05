@@ -11,7 +11,7 @@ add_custom_target(plugin_${PLUG}
     ALL
     DEPENDS ${PSIEXE}
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/${PLUG}
-    COMMAND ${PSIEXE} --new-plugin ${PLUG}
+    COMMAND ${PSIEXE} --psidatadir ${CMAKE_SOURCE_DIR}/lib --new-plugin ${PLUG}
     COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/${PLUG} $(MAKE)
     COMMENT "Build ${PLUG} example plugin"
     VERBATIM)

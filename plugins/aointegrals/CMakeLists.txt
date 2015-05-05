@@ -12,7 +12,7 @@ endforeach(src)
 add_custom_target(plugin_${PLUG}
     ALL
     DEPENDS ${PSIEXE}
-    COMMAND ${PSIEXE} --new-plugin-makefile
+    COMMAND ${PSIEXE} --psidatadir ${CMAKE_SOURCE_DIR}/lib --new-plugin-makefile
     COMMAND $(MAKE)
     COMMENT "Build ${PLUG} example plugin"
     VERBATIM)
