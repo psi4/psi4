@@ -204,6 +204,9 @@ void Wavefunction::common_init()
 
     // not a CIM computation by default
     isCIM_ = false;
+
+    // not a DCFT computation by default
+    isDCFT_ = false;
 }
 
 void Wavefunction::map_irreps(std::vector<int*> &arrays)
@@ -726,6 +729,16 @@ void Wavefunction::CIMSet(bool value,int nactive_occupied)
 bool Wavefunction::isCIM()
 {
     return isCIM_;
+}
+
+void Wavefunction::set_DCFT(bool val)
+{
+    isDCFT_ = val;
+}
+
+bool Wavefunction::isDCFT()
+{
+    return isDCFT_;
 }
 
 void Wavefunction::load_values_from_chkpt() 
