@@ -44,12 +44,79 @@ using namespace boost;
 using namespace boost::python;
 using namespace psi;
 
+/* Start Numpy __array_interface__
+
+Adding __array_interface__ to Psi4's Matrix and Vector classes allows all Numpy
+functions to act on this data. For example we can sum all elements of the
+overlap matrix:
+
+import numpy as np
+...
+mints = MintsHelper()
+overlap = mints.ao_overlap()
+np.sum(wavefunction().Ca())
+
+// Works, returns a numpy array.
+new = np.add(overlap, overlap)
+
+// Does not work as the + operator is not defined for Matrix objects.
+new = overlap + overlap
+
+Note: The AO orbtials are used instead of SO so that the Matrix object has
+only one irreducible representation.
+
+The Vector or Matrix classes can also be wrapped as Numpy array objects:
+
+// Copies the data in the Psi4 Matrix or Vector
+np_S = np.array(overlap)
+
+// Does not copy the data in the Psi4 Matrix or Vector
+// Both Numpy and Psi4 objects share the same data
+np_S = np.array(overlap, copy=False)
+np_S = np.asanyarray(overlap)
+
+Using np.asanyarray is the preferred way of converting Psi4 objects to Numpy
+arrays.  If the data is not copied it is mutable by default and in-place
+operations on the Numpy array will modify the shared data.
+
+As individual irreducible representations are often not of the same size they
+cannot be contained inside a single Numpy array. A python list of Numpy arrays
+can be built to provide irrep functionality to Numpy:
+
+so_overlap = mints.so_overlap()
+np_S = [np.asanyarray(irrep) for irrep in so_overlap.array_interfaces()]
+
+Additional details, tutorials, and examples can be found here:
+https://github.com/dgasmith/psi4numpy
+*/
+
+class Numpy_Interface {
+// Dummy class to hold __array_interface__ for numpy
+public:
+    dict interface;
+};
+
 dict matrix_array_interface(SharedMatrix mat, int irrep){
     dict rv;
-    int rows = mat->rowspi(irrep);
-    int cols = mat->colspi(irrep);
-    rv["shape"] = boost::python::make_tuple(rows, cols);
-    rv["data"] = boost::python::make_tuple((long)mat->get_pointer(irrep), true);
+
+    // Shape
+    int numpy_dim = mat->numpy_dims();
+    if (numpy_dim){
+        int* numpy_shape = mat->numpy_shape();
+        boost::python::list shape;
+        for (int i=0; i<numpy_dim; i++){
+            shape.append(numpy_shape[i]);
+        }
+        rv["shape"] = boost::python::tuple(shape);
+    }
+    else{
+        int rows = mat->rowspi(irrep);
+        int cols = mat->colspi(irrep);
+        rv["shape"] = boost::python::make_tuple(rows, cols);
+    }
+
+    // Data and type
+    rv["data"] = boost::python::make_tuple((long)mat->get_pointer(irrep), false);
     std::string typestr = is_big_endian() ? ">" : "<";
     {
         std::stringstream sstr;
@@ -62,16 +129,44 @@ dict matrix_array_interface(SharedMatrix mat, int irrep){
 
 dict matrix_array_interface_c1(SharedMatrix mat){
     if(mat->nirrep() != 1){
-        throw PSIEXCEPTION("Pointer export of multiple irrep matrices not yet implemented.");
+        throw PSIEXCEPTION("Cannot directly export multiple irrep matrices,\
+                            use Matrix.array_interfaces() instead.");
     }
     return matrix_array_interface(mat, 0);
 }
 
+boost::python::list make_matix_array_interfaces(SharedMatrix mat){
+    boost::python::list interfaces;
+    Numpy_Interface tmp_interface = Numpy_Interface();
+    for(int h=0; h < mat->nirrep(); h++){
+        dict array_interface = matrix_array_interface(mat, h);
+        tmp_interface.interface = array_interface;
+        interfaces.append(tmp_interface);
+    }
+    return interfaces;
+}
+
 dict vector_array_interface(SharedVector vec, int irrep){
     dict rv;
-    int elements = vec->dim(irrep);
-    rv["shape"] = boost::python::make_tuple(elements);
-    rv["data"] = boost::python::make_tuple((long)vec->pointer(irrep), true);
+
+    // Shape
+    int numpy_dim = vec->numpy_dims();
+
+    if (numpy_dim){
+        int* numpy_shape = vec->numpy_shape();
+        boost::python::list shape;
+        for (int i=0; i<numpy_dim; i++){
+            shape.append(numpy_shape[i]);
+        }
+        rv["shape"] = boost::python::make_tuple(shape);
+    }
+    else {
+        const int elements = vec->dim(irrep);
+        rv["shape"] = boost::python::make_tuple(elements);
+    }
+
+    // Data and type
+    rv["data"] = boost::python::make_tuple((long)vec->pointer(irrep), false);
     std::string typestr = is_big_endian() ? ">" : "<";
     {
         std::stringstream sstr;
@@ -84,10 +179,24 @@ dict vector_array_interface(SharedVector vec, int irrep){
 
 dict vector_array_interface_c1(SharedVector vec){
     if(vec->nirrep() != 1){
-        throw PSIEXCEPTION("Pointer export of multiple irrep vectorss not yet implemented.");
+        throw PSIEXCEPTION("Cannot directly export multiple irrep vectors,\
+                            use Vector.array_interfaces() instead.");
     }
     return vector_array_interface(vec, 0);
 }
+
+boost::python::list make_vector_array_interfaces(SharedVector vec){
+    boost::python::list interfaces;
+    Numpy_Interface tmp_interface = Numpy_Interface();
+    for(int h=0; h < vec->nirrep(); h++){
+        dict array_interface = vector_array_interface(vec, h);
+        tmp_interface.interface = array_interface;
+        interfaces.append(tmp_interface);
+    }
+    return interfaces;
+}
+
+/* End numpy __array_interface__ */
 
 boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
 {
@@ -177,6 +286,9 @@ void export_mints()
     typedef void (Vector::*vector_setitem_n)(const boost::python::tuple&, double);
     typedef double (Vector::*vector_getitem_n)(const boost::python::tuple&);
 
+    class_<Numpy_Interface>("Psi_Numpy_Interface", "docstring", no_init).
+            add_property("__array_interface__", &Numpy_Interface::interface, "docstring");
+
     class_<Dimension>("Dimension", "docstring").
             def(init<int>()).
             def(init<int, const std::string&>()).
@@ -210,6 +322,7 @@ void export_mints()
             def("__getitem__", vector_getitem_n(&Vector::pyget), "docstring").
             def("__setitem__", vector_setitem_n(&Vector::pyset), "docstring").
             def("nirrep", &Vector::nirrep, "docstring").
+            def("array_interfaces", make_vector_array_interfaces, "docstring").
             add_property("__array_interface__", vector_array_interface_c1, "docstring");
 
     typedef void  (IntVector::*int_vector_set)(int, int, int);
@@ -290,6 +403,7 @@ void export_mints()
             def("cholesky_factorize", &Matrix::cholesky_factorize, "docstring").
             def("partial_cholesky_factorize", &Matrix::partial_cholesky_factorize, "docstring").
             def("canonical_orthogonalization", &Matrix::canonical_orthogonalization, CanonicalOrthog()).
+            def("schmidt", &Matrix::schmidt).
             def("invert", &Matrix::invert, "docstring").
             def("power", &Matrix::power, "docstring").
             def("get", matrix_get3(&Matrix::get), "docstring").
@@ -304,6 +418,7 @@ void export_mints()
             def("load", matrix_load(&Matrix::load), "docstring").
             def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring").
             def("remove_symmetry", &Matrix::remove_symmetry, "docstring").
+            def("array_interfaces", make_matix_array_interfaces, "docstring").
             add_property("__array_interface__", matrix_array_interface_c1, "docstring");
 
     class_<View, boost::noncopyable>("View", no_init).
@@ -440,6 +555,14 @@ void export_mints()
 
     typedef SharedMatrix (MintsHelper::*erf)(double, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
     typedef SharedMatrix (MintsHelper::*eri)(SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
+    typedef SharedMatrix (MintsHelper::*normal_eri)();
+    typedef SharedMatrix (MintsHelper::*normal_eri2)(boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>);
+
+    typedef SharedMatrix (MintsHelper::*normal_f12)(boost::shared_ptr<CorrelationFactor>);
+    typedef SharedMatrix (MintsHelper::*normal_f122)(boost::shared_ptr<CorrelationFactor>, boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>);
+
+    typedef SharedMatrix (MintsHelper::*oneelectron)();
+    typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis)(boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
 
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
             def(init<boost::shared_ptr<BasisSet> >()).
@@ -451,9 +574,13 @@ void export_mints()
             def("basisset", &MintsHelper::basisset, "docstring").
             def("sobasisset", &MintsHelper::sobasisset, "docstring").
             def("factory", &MintsHelper::factory, "docstring").
-            def("ao_overlap", &MintsHelper::ao_overlap, "docstring").
-            def("ao_kinetic", &MintsHelper::ao_kinetic, "docstring").
-            def("ao_potential", &MintsHelper::ao_potential, "docstring").
+            //def("ao_overlap", &MintsHelper::ao_overlap, "docstring").
+            def("ao_overlap", oneelectron(&MintsHelper::ao_overlap), "docstring").
+            def("ao_overlap", oneelectron_mixed_basis(&MintsHelper::ao_overlap), "docstring").
+            def("ao_kinetic", oneelectron(&MintsHelper::ao_kinetic), "docstring").
+            def("ao_kinetic", oneelectron_mixed_basis(&MintsHelper::ao_kinetic), "docstring").
+            def("ao_potential", oneelectron(&MintsHelper::ao_potential), "docstring").
+            def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "docstring").
             def("one_electron_integrals", &MintsHelper::one_electron_integrals, "docstring").
             def("so_overlap", &MintsHelper::so_overlap, "docstring").
             def("so_kinetic", &MintsHelper::so_kinetic, "docstring").
@@ -465,10 +592,14 @@ void export_mints()
             def("so_nabla", &MintsHelper::so_nabla, "docstring").
             def("so_angular_momentum", &MintsHelper::so_angular_momentum, "docstring").
             def("ao_angular_momentum", &MintsHelper::ao_angular_momentum, "docstring").
-            def("ao_eri", &MintsHelper::ao_eri, "docstring").
+            def("ao_eri", normal_eri(&MintsHelper::ao_eri), "docstring").
+            def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "docstring").
             def("ao_eri_shell", &MintsHelper::ao_eri_shell, "docstring").
             def("ao_erf_eri", &MintsHelper::ao_erf_eri, "docstring").
-            def("ao_f12", &MintsHelper::ao_f12, "docstring").
+            def("ao_f12", normal_f12(&MintsHelper::ao_f12), "docstring").
+            def("ao_f12", normal_f122(&MintsHelper::ao_f12), "docstring").
+            def("ao_f12_scaled", normal_f12(&MintsHelper::ao_f12_scaled), "docstring").
+            def("ao_f12_scaled", normal_f122(&MintsHelper::ao_f12_scaled), "docstring").
             def("ao_f12_squared", &MintsHelper::ao_f12_squared, "docstring").
             def("ao_f12g12", &MintsHelper::ao_f12g12, "docstring").
             def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "docstring").
@@ -478,6 +609,8 @@ void export_mints()
             def("mo_f12_squared", &MintsHelper::mo_f12_squared, "docstring").
             def("mo_f12g12", &MintsHelper::mo_f12g12, "docstring").
             def("mo_f12_double_commutator", &MintsHelper::mo_f12_double_commutator, "docstring").
+            def("mo_spin_eri", &MintsHelper::mo_spin_eri, "docstring").
+            def("mo_transform", &MintsHelper::mo_transform, "docstring").
             def("cdsalcs", &MintsHelper::cdsalcs, "docstring").
             def("petite_list", petite_list_0(&MintsHelper::petite_list), "docstring").
             def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring").
@@ -599,6 +732,7 @@ void export_mints()
             def("translate", &Molecule::translate, "Translates molecule by arg2").
             def("move_to_com", &Molecule::move_to_com, "Moves molecule to center of mass").
             def("mass", &Molecule::mass, "Gets mass of atom arg2").
+            def("set_mass", &Molecule::set_mass, "Gets mass of atom arg2").
             def("symbol", &Molecule::symbol, "Gets the cleaned up label of atom arg2 (C2 => C, H4 = H)").
             def("label", &Molecule::label, "Gets the original label of the atom as given in the input file (C2, H4)").
             def("charge", &Molecule::charge, "Gets charge of atom").
@@ -706,6 +840,9 @@ void export_mints()
             def("fit", &DFChargeFitter::fit, "docstring");
 
     class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>("Wavefunction", "docstring", no_init).
+            def("nfrzc", &Wavefunction::nfrzc, "docstring").
+            def("nalpha", &Wavefunction::nalpha, "docstring").
+            def("nbeta", &Wavefunction::nbeta, "docstring").
             def("nso", &Wavefunction::nso, "docstring").
             def("nmo", &Wavefunction::nmo, "docstring").
             def("nirrep", &Wavefunction::nirrep, "docstring").
@@ -719,6 +856,7 @@ void export_mints()
             def("Fb", &Wavefunction::Fb, "docstring").
             def("Da", &Wavefunction::Da, "docstring").
             def("Db", &Wavefunction::Db, "docstring").
+            def("aotoso", &Wavefunction::aotoso, "docstring").
             def("epsilon_a", &Wavefunction::epsilon_a, "docstring").
             def("epsilon_b", &Wavefunction::epsilon_b, "docstring").
             def("add_preiteration_callback", &Wavefunction::add_preiteration_callback, "docstring").
@@ -728,6 +866,8 @@ void export_mints()
             def("energy", &Wavefunction::reference_energy, "docstring").
             def("gradient", &Wavefunction::gradient, "docstring").
             def("frequencies", &Wavefunction::frequencies, "docstring").
+            def("atomic_point_charges", &Wavefunction::get_atomic_point_charges, "docstring").
+            def("normalmodes", &Wavefunction::normalmodes, "docstring").
             def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring").
             def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring").
             def("molecule", &Wavefunction::molecule, "docstring").
@@ -795,6 +935,23 @@ void export_mints()
             .def("K", &JK::K, return_internal_reference<>())
             .def("wK", &JK::wK, return_internal_reference<>())
             .def("D", &JK::D, return_internal_reference<>())
-            .def("print_header", &JK::print_header, "docstring")
-            ;
+            .def("print_header", &JK::print_header, "docstring");
+
+    class_<LaplaceDenominator, boost::shared_ptr<LaplaceDenominator> >("LaplaceDenominator", "docstring", no_init)
+            .def(init<boost::shared_ptr<Vector>, boost::shared_ptr<Vector>, double>())
+            .def("denominator_occ", &LaplaceDenominator::denominator_occ, "docstring")
+            .def("denominator_vir", &LaplaceDenominator::denominator_vir, "docstring");
+
+
+    class_<DFTensor, boost::shared_ptr<DFTensor> >("DFTensor", "docstring", no_init)
+            .def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<Matrix>, int, int>())
+            .def(init<boost::shared_ptr<Wavefunction>, const std::string&>())
+            .def("Qso", &DFTensor::Qso, "doctsring")
+            .def("Qmo", &DFTensor::Qmo, "doctsring")
+            .def("Qoo", &DFTensor::Qoo, "doctsring")
+            .def("Qov", &DFTensor::Qov, "doctsring")
+            .def("Qvv", &DFTensor::Qvv, "doctsring")
+            .def("Imo", &DFTensor::Imo, "doctsring")
+            .def("Idfmo", &DFTensor::Idfmo, "doctsring");
+
 }

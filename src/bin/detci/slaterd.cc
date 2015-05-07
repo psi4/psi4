@@ -228,30 +228,30 @@ double matrix_element(SlaterDeterminant* I, SlaterDeterminant* J)
    nbet_same = nbet - beta_diff ;
 
    #ifdef DEBUG
-   printf(" alpha_diff = %d\n", alpha_diff) ;
-   printf(" beta_diff = %d\n", beta_diff) ;
-   printf(" total_diff = %d\n", total_diff) ;
-   printf(" sign = %d\n", sign) ;
-
-   for (i=0; i<alpha_diff; i++)
-      printf(" I_diff[0][%d] = %d ", i, I_diff[0][i]+1) ;
-      printf("\n") ;
-   for (i=0; i<alpha_diff; i++)
-      printf(" J_diff[0][%d] = %d ", i, J_diff[0][i]+1) ;
-      printf("\n\n") ;
-
-   for (i=0; i<beta_diff; i++)
-      printf(" I_diff[1][%d] = %d ", i, I_diff[1][i]+1) ;
-      printf("\n") ;
-   for (i=0; i<beta_diff; i++)
-      printf(" J_diff[1][%d] = %d ", i, J_diff[1][i]+1) ;
-      printf("\n\n") ;
-   for (i=0; i<nalp_same; i++)
-      printf(" same_alpha[%d] = %d", i, same_alpha[i]+1) ;
-      printf("\n\n") ;
-   for (i=0; i<nbet_same; i++)
-      printf(" same_beta[%d] = %d", i, same_beta[i]+1) ;
-      printf("\n\n") ;
+//   printf(" alpha_diff = %d\n", alpha_diff) ;
+//   printf(" beta_diff = %d\n", beta_diff) ;
+//   printf(" total_diff = %d\n", total_diff) ;
+//   printf(" sign = %d\n", sign) ;
+//
+//   for (i=0; i<alpha_diff; i++)
+//      printf(" I_diff[0][%d] = %d ", i, I_diff[0][i]+1) ;
+//      printf("\n") ;
+//   for (i=0; i<alpha_diff; i++)
+//      printf(" J_diff[0][%d] = %d ", i, J_diff[0][i]+1) ;
+//      printf("\n\n") ;
+//
+//   for (i=0; i<beta_diff; i++)
+//      printf(" I_diff[1][%d] = %d ", i, I_diff[1][i]+1) ;
+//      printf("\n") ;
+//   for (i=0; i<beta_diff; i++)
+//      printf(" J_diff[1][%d] = %d ", i, J_diff[1][i]+1) ;
+//      printf("\n\n") ;
+//   for (i=0; i<nalp_same; i++)
+//      printf(" same_alpha[%d] = %d", i, same_alpha[i]+1) ;
+//      printf("\n\n") ;
+//   for (i=0; i<nbet_same; i++)
+//      printf(" same_beta[%d] = %d", i, same_beta[i]+1) ;
+//      printf("\n\n") ;
    #endif
 
    if ((alpha_diff == -2) || (beta_diff == -2)) {
@@ -326,19 +326,19 @@ double matrix_element(SlaterDeterminant* I, SlaterDeterminant* J)
          &cnt_bet_socc); 
  
       #ifdef DEBUG
-      printf("cnt_docc = %d\n", cnt_docc); 
-      printf("cnt_alp_socc = %d\n", cnt_alp_socc); 
-      printf("cnt_bet_socc = %d\n", cnt_bet_socc); 
-
-      for (i=0; i<cnt_docc; i++)
-         printf("common_docc[%d] = %d\n", i, common_docc[i]+1) ; 
-         printf("\n") ; 
-      for (i=0; i<cnt_alp_socc; i++)
-         printf("common_alp_socc[%d] = %d\n", i, common_alp_socc[i]+1) ; 
-         printf("\n") ; 
-      for (i=0; i<cnt_bet_socc; i++)
-         printf("common_bet_socc[%d] = %d\n", i, common_bet_socc[i]+1) ;
-         printf("\n") ; 
+//      printf("cnt_docc = %d\n", cnt_docc); 
+//      printf("cnt_alp_socc = %d\n", cnt_alp_socc); 
+//      printf("cnt_bet_socc = %d\n", cnt_bet_socc); 
+//
+//      for (i=0; i<cnt_docc; i++)
+//         printf("common_docc[%d] = %d\n", i, common_docc[i]+1) ; 
+//         printf("\n") ; 
+//      for (i=0; i<cnt_alp_socc; i++)
+//         printf("common_alp_socc[%d] = %d\n", i, common_alp_socc[i]+1) ; 
+//         printf("\n") ; 
+//      for (i=0; i<cnt_bet_socc; i++)
+//         printf("common_bet_socc[%d] = %d\n", i, common_bet_socc[i]+1) ;
+//         printf("\n") ; 
       #endif
 
       if (alpha_diff == 1) { /* Case 1: 1 in alpha */   

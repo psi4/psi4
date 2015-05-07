@@ -26,7 +26,7 @@
 #include <cstdio>
 
 #include <liboptions/liboptions.h>
-#include <libutil/libutil.h>
+#include <libpsi4util/libpsi4util.h>
 
 #include "scf.h"
 

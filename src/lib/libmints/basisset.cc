@@ -377,7 +377,7 @@ std::string BasisSet::print_detail_cfour() const
                 for (size_t ep = 0, K = 0; ep < exp_per_am[am].size(); ep++) {
                     if (abs(exp_per_am[am][ep] - shells_[shell_per_am[am][Q] + first_shell].exp(K)) < 1.0e-8) {
                         coef_per_am[am].push_back(shells_[shell_per_am[am][Q] + first_shell].original_coef(K));
-                        if ((K+1) != shells_[shell_per_am[am][Q] + first_shell].nprimitive()) {
+                        if ((K+1) != (size_t)(shells_[shell_per_am[am][Q] + first_shell].nprimitive())) {
                             K++;
                         }
                     }
@@ -489,10 +489,17 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_combined(const boost::shared_p
     o = PyList_New(others.size());
 
     for (size_t i=0; i<keys.size(); ++i) {
+#if PY_MAJOR_VERSION == 2
         PyList_SetItem(k, i, PyString_FromString(keys[i].c_str()));
         PyList_SetItem(t, i, PyString_FromString(targets[i].c_str()));
         PyList_SetItem(f, i, PyString_FromString(fitroles[i].c_str()));
         PyList_SetItem(o, i, PyString_FromString(others[i].c_str()));
+#else
+        PyList_SetItem(k, i, PyBytes_FromString(keys[i].c_str()));
+        PyList_SetItem(t, i, PyBytes_FromString(targets[i].c_str()));
+        PyList_SetItem(f, i, PyBytes_FromString(fitroles[i].c_str()));
+        PyList_SetItem(o, i, PyBytes_FromString(others[i].c_str()));
+#endif
     }
 
     // Grab pyconstruct off of the Python plane, run it, grab result list
@@ -574,7 +581,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
         aux = target;
     }
 
-    //printf("BasisSet::pyconstruct: key = %s aux = %s fitrole = %s orb = %s orbonly = %d\n", 
+    //printf("BasisSet::pyconstruct: key = %s aux = %s fitrole = %s orb = %s orbonly = %d\n",
     //    key.c_str(), aux.c_str(), fitrole.c_str(), orb.c_str(), orbonly);
 
     // Update geometry in molecule, convert to string
@@ -586,7 +593,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
     main_module = PyImport_AddModule("__main__");
     global_dict = PyModule_GetDict(main_module);
 
-    // Extract reference(s) to the function(s) defined in the Pythonized 
+    // Extract reference(s) to the function(s) defined in the Pythonized
     //  input file that apply basis sets to a Molecule. Failing that,
     //  form reference to the keyword string for application to all atoms
     xpressive::sregex match_format = xpressive::as_xpr("-");
@@ -596,16 +603,26 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
     orbfuncname = regex_replace(orbfuncname, match_format, format_empty);  // purge dashes
     orbfuncname = "basisspec_psi4_yo__" + orbfuncname;  // prepend with camouflage
     orbfunc = PyDict_GetItemString(global_dict, orbfuncname.c_str());
-    if (orbfunc == NULL)
+    if (orbfunc == NULL) {
+#if PY_MAJOR_VERSION == 2
         orbfunc = PyString_FromString(orb.c_str());
+#else
+        orbfunc = PyBytes_FromString(orb.c_str());
+#endif
+    }
     if (!orbonly) {
         std::string auxfuncname = BasisSet::make_filename(aux);
         auxfuncname = auxfuncname.substr(0, auxfuncname.length()-4);
         auxfuncname = regex_replace(auxfuncname, match_format, format_empty);
         auxfuncname = "basisspec_psi4_yo__" + auxfuncname;
         auxfunc = PyDict_GetItemString(global_dict, auxfuncname.c_str());
-        if (auxfunc == NULL)
+        if (auxfunc == NULL) {
+#if PY_MAJOR_VERSION == 2
             auxfunc = PyString_FromString(aux.c_str());
+#else
+            auxfunc = PyBytes_FromString(aux.c_str());
+#endif
+        }
     }
 
     // Grab pyconstruct off of the Python plane, run it, grab result list
@@ -616,7 +633,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
     if (orbonly) {
         PY_TRY(pargs, Py_BuildValue("(s s O)", smol.c_str(), key.c_str(), orbfunc));
     } else {
-        PY_TRY(pargs, Py_BuildValue("(s s O s O)", smol.c_str(), key.c_str(), auxfunc, 
+        PY_TRY(pargs, Py_BuildValue("(s s O s O)", smol.c_str(), key.c_str(), auxfunc,
             fitrole.c_str(), orbfunc));
     }
     PY_TRY(ret, PyEval_CallObject(method, pargs));
@@ -1195,7 +1212,7 @@ void BasisSet::refresh()
     //    }
 }
 
-std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test_basis_set(int max_am)
+std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test_basis_set(int /*max_am*/)
 {
     throw NotImplementedException();
 #if 0
@@ -1377,6 +1394,61 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
 boost::shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
 {
     return boost::shared_ptr<BasisSet>(new BasisSet(this, center));
+}
+
+boost::shared_ptr<BasisSet> BasisSet::decontract()
+{
+    // This maps the atom_label to a vector of uncontracted shells
+    std::map<std::string,std::vector<ShellInfo> > u_shells;
+
+    // This maps the pair (atom_label,am) to a vector of exponents
+    // and it is used to check for duplicate basis functions
+    std::map<std::pair<std::string,int>,std::vector<double> > exp_map;
+
+    int nshell = this->nshell();
+    for(int shelln = 0; shelln < nshell; ++shelln){
+        const GaussianShell &shell = this->shell(shelln);
+
+        int am = shell.am();
+        bool pure = shell.is_pure();
+        int nc = shell.ncenter();
+        double x = shell.center()[0];
+        double y = shell.center()[1];
+        double z = shell.center()[2];
+        Vector3 center(x,y,z);
+        int start = shell.start();
+        int nprim = shell.nprimitive();
+
+        std::string label = molecule_->label(nc);
+        std::pair<std::string,int> label_am(label,am);
+        std::vector<double>& exp_vec = exp_map[label_am];
+
+        for(int prim = 0; prim < nprim; ++prim){
+            double exp = shell.exp(prim);
+            // Do I have this exponent already?
+            bool unique = true;
+            for (size_t i = 0; i < exp_map[label_am].size(); ++i){
+                if (std::fabs(exp - exp_vec[i]) < 1.0e-6){
+                    unique = false;
+                }
+            }
+            if (unique){
+                std::vector<double> c(1,1.0);
+                std::vector<double> e(1,exp);
+                ShellInfo us(am,c,e,pure ? Pure : Cartesian,nc,center,start,Unnormalized);
+                u_shells[label].push_back(us);
+                exp_vec.push_back(exp);
+            }
+        }
+    }
+
+    // Create a shell map to create a new BasisSet object
+    std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > shell_map;
+    shell_map["DECONTRACTED_BASIS"] = u_shells;
+
+    molecule_->set_basis_all_atoms("DECONTRACTED_BASIS",name_ + "-DECONTRACTED");
+
+    return boost::shared_ptr<BasisSet>(new BasisSet(name_ + "-DECONTRACTED",molecule_,shell_map));
 }
 
 void BasisSet::compute_phi(double *phi_ao, double x, double y, double z)

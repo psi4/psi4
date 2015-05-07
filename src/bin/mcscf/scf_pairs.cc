@@ -25,7 +25,7 @@
 
 #include <libchkpt/chkpt.hpp>
 #include <libmoinfo/libmoinfo.h>
-#include <libutil/libutil.h>
+#include <libpsi4util/libpsi4util.h>
 
 #include "scf.h"
 

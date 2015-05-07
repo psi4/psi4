@@ -57,7 +57,7 @@ namespace psi {
 void CdSalc::print() const
 {
     outfile->Printf( "\tirrep = %d, ncomponent = %ld\n", irrep_, ncomponent());
-    for (int i=0; i<ncomponent(); ++i) {
+    for (size_t i=0; i<ncomponent(); ++i) {
         outfile->Printf( "\t\t%d: atom %d, direction %c, coef %lf\n",
                 i,
                 components_[i].atom,
@@ -69,7 +69,7 @@ void CdSalc::print() const
 void CdSalcWRTAtom::print() const
 {
     outfile->Printf( "\tx component, size = %ld\n", x_.size());
-    for (int i=0; i<x_.size(); ++i) {
+    for (size_t i=0; i<x_.size(); ++i) {
         outfile->Printf( "\t\t%d: salc %d, irrep %d, coef %lf\n",
                 i,
                 x_[i].salc,
@@ -78,7 +78,7 @@ void CdSalcWRTAtom::print() const
     }
 
     outfile->Printf( "\ty component, size = %ld\n", y_.size());
-    for (int i=0; i<y_.size(); ++i) {
+    for (size_t i=0; i<y_.size(); ++i) {
         outfile->Printf( "\t\t%d: salc %d, irrep %d, coef %lf\n",
                 i,
                 y_[i].salc,
@@ -87,7 +87,7 @@ void CdSalcWRTAtom::print() const
     }
 
     outfile->Printf( "\tz component, size = %ld\n", z_.size());
-    for (int i=0; i<z_.size(); ++i) {
+    for (size_t i=0; i<z_.size(); ++i) {
         outfile->Printf( "\t\t%d: salc %d, irrep %d, coef %lf\n",
                 i,
                 z_[i].salc,
@@ -319,7 +319,7 @@ std::vector<SharedMatrix > CdSalcList::create_matrices(const std::string &basena
     std::vector<SharedMatrix > matrices;
     std::string name;
 
-    for (int i=0; i<salcs_.size(); ++i) {
+    for (size_t i=0; i<salcs_.size(); ++i) {
         name = basename + " " + name_of_component(i);
         matrices.push_back(factory_->create_shared_matrix(name, salcs_[i].irrep()));
     }
@@ -332,7 +332,7 @@ std::string CdSalcList::name_of_component(int component)
     std::string name;
     CdSalc& salc = salcs_[component];
 
-    for (int i=0; i<salc.ncomponent(); ++i) {
+    for (size_t i=0; i<salc.ncomponent(); ++i) {
         const CdSalc::Component& com = salc.component(i);
 
         name += com.coef > 0.0 ? "+" : "-";
@@ -354,7 +354,7 @@ SharedMatrix CdSalcList::matrix()
 {
     SharedMatrix temp(new Matrix("Cartesian/SALC transformation", ncd(), 3*molecule_->natom()));
 
-    for (int i=0; i<ncd(); ++i) {
+    for (size_t i=0; i<ncd(); ++i) {
         int nc = salcs_[i].ncomponent();
         for (int c=0; c<nc; ++c) {
             int a       = salcs_[i].component(c).atom;
@@ -374,13 +374,13 @@ SharedMatrix CdSalcList::matrix_irrep(int h)
     //SharedMatrix temp(new Matrix("Cartesian/SALC transformation", cdsalcpi_[h], 3*molecule_->natom()));
 
     int cnt = 0;
-    for (int i=0; i<ncd(); ++i)
+    for (size_t i=0; i<ncd(); ++i)
         if (salcs_[i].irrep() == h) ++cnt;
 
     SharedMatrix temp(new Matrix("Cartesian/SALC transformation", cnt, 3*molecule_->natom()));
 
     cnt = 0;
-    for (int i=0; i<ncd(); ++i) {
+    for (size_t i=0; i<ncd(); ++i) {
         if (salcs_[i].irrep() == h) {
             int nc = salcs_[i].ncomponent();
             for (int c=0; c<nc; ++c) {
@@ -406,12 +406,12 @@ void CdSalcList::print() const
             project_out_translations_ ? "True" : "False",
             project_out_rotations_ ? "True" : "False");
 
-    for (int i=0; i<salcs_.size(); ++i)
+    for (size_t i=0; i<salcs_.size(); ++i)
         salcs_[i].print();
 
     outfile->Printf( "\n  By Atomic Center:\n");
     outfile->Printf( "  Number of atomic centers: %ld\n", atom_salcs_.size());
-    for (int i=0; i<atom_salcs_.size(); ++i) {
+    for (size_t i=0; i<atom_salcs_.size(); ++i) {
         outfile->Printf( "   Atomic Center %d:\n", i);
         atom_salcs_[i].print();
     }

@@ -1,3 +1,8 @@
-set(Folders2Copy "basis" "databases" "grids" "plugin" "python"  "quadratures")
-INSTALL(DIRECTORY ${Folders2Copy} DESTINATION
-${CMAKE_INSTALL_PREFIX}/share/psi)
+set(Folders2Copy "basis" "databases" "grids" "plugin" "python" "quadratures" "efpfrag" "scripts")
+INSTALL(
+  DIRECTORY ${Folders2Copy} 
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/psi
+  USE_SOURCE_PERMISSIONS
+  PATTERN ".pyc" EXCLUDE
+)
+

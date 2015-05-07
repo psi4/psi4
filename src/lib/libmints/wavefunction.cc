@@ -95,6 +95,7 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
     density_threshold_ = other->density_threshold_;
     nalpha_ = other->nalpha_;
     nbeta_ = other->nbeta_;
+    nfrzc_ = other->nfrzc_;
 
     doccpi_ = other->doccpi_;
     soccpi_ = other->soccpi_;
@@ -106,6 +107,7 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
     nmopi_ = other->nmopi_;
 
     energy_ = other->energy_;
+    efzc_ = other->efzc_;
 
     nso_ = other->nso_;
     nmo_ = other->nmo_;
@@ -509,6 +511,64 @@ SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dim
 
     return C2;
 }
+
+SharedMatrix Wavefunction::F_subset_helper(SharedMatrix F, SharedMatrix C, const std::string& basis)
+{
+    if (basis == "AO") {
+        double* temp = new double[AO2SO_->max_ncol() * AO2SO_->max_nrow()];
+        SharedMatrix F2 = SharedMatrix(new Matrix("Fock (AO basis)", basisset_->nbf(), basisset_->nbf()));
+        int symm = F->symmetry();
+        for (int h = 0; h < AO2SO_->nirrep(); ++h) {
+            int nao = AO2SO_->rowspi()[0];
+            int nsol = AO2SO_->colspi()[h];
+            int nsor = AO2SO_->colspi()[h^symm];
+            if (!nsol || !nsor) continue;
+            double** Ulp = AO2SO_->pointer(h);
+            double** Urp = AO2SO_->pointer(h^symm);
+            double** FSOp = F->pointer(h^symm);
+            double** FAOp = F2->pointer();
+            C_DGEMM('N','T',nsol,nao,nsor,1.0,FSOp[0],nsor,Urp[0],nsor,0.0,temp,nao);
+            C_DGEMM('N','N',nao,nao,nsol,1.0,Ulp[0],nsol,temp,nao,1.0,FAOp[0],nao);
+        }
+        delete[] temp;
+        return F2;
+    } else if (basis == "SO") {
+        return SharedMatrix(F->clone());
+    } else if (basis == "MO") {
+        SharedMatrix F2(new Matrix("Fock (MO Basis)", C->colspi(), C->colspi()));
+
+        int symm = F->symmetry();
+        int nirrep = F->nirrep();
+
+        double* SC = new double[C->max_ncol() * C->max_nrow()];
+        double* temp = new double[C->max_ncol() * C->max_nrow()];
+        for (int h = 0; h < nirrep; h++) {
+            int nmol = C->colspi()[h];
+            int nmor = C->colspi()[h^symm];
+            int nsol = C->rowspi()[h];
+            int nsor = C->rowspi()[h^symm];
+            if (!nmol || !nmor || !nsol || !nsor) continue;
+            double** Slp = S_->pointer(h);
+            double** Srp = S_->pointer(h^symm);
+            double** Clp = C->pointer(h);
+            double** Crp = C->pointer(h^symm);
+            double** Fmop = F2->pointer(h);
+            double** Fsop = F->pointer(h);
+
+            C_DGEMM('N','N',nsor,nmor,nsor,1.0,Srp[0],nsor,Crp[0],nmor,0.0,SC,nmor);
+            C_DGEMM('N','N',nsol,nmor,nsor,1.0,Fsop[0],nsor,SC,nmor,0.0,temp,nmor);
+            C_DGEMM('N','N',nsol,nmol,nsol,1.0,Slp[0],nsol,Clp[0],nmol,0.0,SC,nmol);
+            C_DGEMM('T','N',nmol,nmor,nsol,1.0,SC,nmol,temp,nmor,0.0,Fmop[0],nmor);
+        }
+        delete[] temp;
+        delete[] SC;
+        return F2;
+    } else {
+        throw PSIEXCEPTION("Invalid basis requested, use AO, SO, or MO");
+    }
+}
+
+
 SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string& basis)
 {
     if (basis == "AO") {
@@ -660,9 +720,19 @@ boost::shared_ptr<Vector> Wavefunction::frequencies() const
     return frequencies_;
 }
 
+boost::shared_ptr<Vector> Wavefunction::normalmodes() const
+{
+    return normalmodes_;
+}
+
 void Wavefunction::set_frequencies(boost::shared_ptr<Vector>& freqs)
 {
     frequencies_ = freqs;
+}
+
+void Wavefunction::set_normalmodes(boost::shared_ptr<Vector>& norms)
+{
+    normalmodes_ = norms;
 }
 
 void Wavefunction::save() const
@@ -731,6 +801,7 @@ bool Wavefunction::isCIM()
     return isCIM_;
 }
 
+<<<<<<< HEAD
 void Wavefunction::set_DCFT(bool val)
 {
     isDCFT_ = val;
@@ -739,6 +810,16 @@ void Wavefunction::set_DCFT(bool val)
 bool Wavefunction::isDCFT()
 {
     return isDCFT_;
+=======
+boost::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const { 
+    boost::shared_ptr<double[]> q = atomic_point_charges();
+
+    int n = molecule_->natom();
+    boost::shared_ptr<Vector> q_vector(new Vector(n));
+    for (int i=0; i<n; ++i)
+      q_vector->set(i, q[i]);
+    return q_vector;
+>>>>>>> 2f894d36400bd189c752a8c84e148e852b368284
 }
 
 void Wavefunction::load_values_from_chkpt() 

@@ -24,28 +24,25 @@
   \ingroup ccresponse
   \brief Compute optical rotations using the CC linear response formalism.
 
-  Optical rotation is determined from negative of the the mixed electric-
-  dipole/magnetic-dipole polarizability, - << mu ; m >>, where mu is the
+  Optical rotation is determined from imaginary part of the mixed electric-
+  dipole/magnetic-dipole polarizability, Im<<mu;m>>, where mu is the
   electric-dipole vector operator and m is the magnetic-dipole vector
   operator.  We may choose between two representations of mu: length where mu
-  = -r, and velocity, where mu = -p.  The velocity representation tensors are
-  origin independent, but length representation tensors are not.  The
-  "modified" velocity gauge involves subtraction of the zero-frequency <<
-  mu(p); m>> tensor from the non-zer-frequency tensor.  Furthermore, if one
+  = -r, and velocity, where mu = -p = i Del.  The trace of the velocity representation 
+  tensor is origin independent, but the length representation tensor is not.  The
+  "modified" velocity gauge involves subtraction of the zero-frequency 
+  <<mu(p);m>> tensor from the non-zero-frequency tensor.  Furthermore, if one
   chooses both representations (gauge = both), then the code also computes the
   origin-depenedence vector of the length-representation optical rotation,
-  which requires the - << mu(r) ; m >> tensor.
-
-  NB: The optical rotation expression requires the negative of all these
-  tensors (much like dipole polarizabilities).
+  which requires the Im <<mu(r);p>>_0 tensor.
 
   The CC linear response tensors are computed as:
 
   << A ; B >>_w = 1/2 C(+/-w) P[A(-w), B(w)] *
-      [<0|(1+L) [ABAR,X(B,w)]|0> + 1/2 <0|(1+L) [[HBAR,X(A,-w)],X(B,w)]|0>]
+      [<0|(1+L) { [ABAR,X(B,w)] + 1/2 [[HBAR,X(A,-w)],X(B,w)] } |0>]
 
- = 1/2 [<0|(1+L) [ABAR,X(B,w)]|0> + 1/2 <0|(1+L) [[HBAR,X(A,-w)],X(B,w)]|0>]
- + 1/2 [<0|(1+L) [B*BAR,X(A*,w)]|0> + 1/2 <0|(1+L) [[HBAR,X(B*,-w)],X(A*,w)]|0>]
+ = 1/2 [ <0|(1+L) { [ABAR,X(B,w)]    + [BBAR, X(A,-w)]  + [[HBAR,X(A,-w)],X(B,w)]
+               +    [A*BAR,X(B*,-w)] + [B*BAR, X(A*,w)] + [[HBAR,X(A*,w)],X(B*,-w)] } |0>]
 
   If w=0, this becomes:
 
@@ -59,12 +56,10 @@
   factor of i is included implicitly in the corresponding integrals. In the
   computation of the << mu(p); m >> tensor, where both operators carry i, an
   extra factor of -1 must appear in the computation of the tensors.  (This
-  happens in both tersm of << A ; B >>_w above because complex conjugation of
+  happens in both terms of << A ; B >>_w above because complex conjugation of
   both opertors simultaneously doesn't change the overall sign of the tensor.
-  Since we require the negative of the response tensor, the linresp() calls
-  below for <<P;L>> have +1/2 prefactors rather than the usual -1/2.
 
-  -TDC, 4/09
+  -TDC, 4/09, revised 3/15
 */
 #include <cstdio>
 #include <cstring>
@@ -72,7 +67,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
-#include <physconst.h>
 #include <libmints/molecule.h>
 #include <psi4-dec.h>
 #include "MOInfo.h"
@@ -80,6 +74,7 @@
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
+#include <physconst.h>
 
 namespace psi { namespace ccresponse {
 
@@ -159,7 +154,7 @@ void optrot(void)
         for(beta=0; beta < 3; beta++) {
           sprintf(pert_x, "P_%1s", cartcomp[alpha]);
           sprintf(pert_y, "L_%1s", cartcomp[beta]);
-          linresp(&tensor0[alpha][beta], +1.0, 0.0,
+          linresp(&tensor0[alpha][beta], -1.0, 0.0,
                   pert_x, moinfo.mu_irreps[alpha], 0.0,
                   pert_y, moinfo.l_irreps[beta], 0.0);
         }
@@ -245,7 +240,7 @@ void optrot(void)
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
             sprintf(pert_y, "L_%1s", cartcomp[beta]);
-            linresp(&tensor_rl0[alpha][beta], -0.5, 0.0,
+            linresp(&tensor_rl0[alpha][beta], +0.5, 0.0,
                     pert_x, moinfo.mu_irreps[alpha], -params.omega[i],
                     pert_y, moinfo.l_irreps[beta], params.omega[i]);
           }
@@ -258,7 +253,7 @@ void optrot(void)
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "P_%1s", cartcomp[alpha]);
             sprintf(pert_y, "L_%1s", cartcomp[beta]);
-            linresp(&tensor_pl0[alpha][beta], +0.5, 0.0,
+            linresp(&tensor_pl0[alpha][beta], -0.5, 0.0,
                     pert_x, moinfo.mu_irreps[alpha], -params.omega[i],
                     pert_y, moinfo.l_irreps[beta], params.omega[i]);
           }
@@ -337,7 +332,7 @@ void optrot(void)
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
             sprintf(pert_y, "L*_%1s", cartcomp[beta]);
-            linresp(&tensor_rl1[alpha][beta], -0.5, 0.0,
+            linresp(&tensor_rl1[alpha][beta], +0.5, 0.0,
                     pert_x, moinfo.mu_irreps[alpha], params.omega[i],
                     pert_y, moinfo.l_irreps[beta], -params.omega[i]);
           }
@@ -350,7 +345,7 @@ void optrot(void)
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "P*_%1s", cartcomp[alpha]);
             sprintf(pert_y, "L*_%1s", cartcomp[beta]);
-            linresp(&tensor_pl1[alpha][beta], +0.5, 0.0,
+            linresp(&tensor_pl1[alpha][beta], -0.5, 0.0,
                     pert_x, moinfo.mu_irreps[alpha], params.omega[i],
                     pert_y, moinfo.l_irreps[beta], -params.omega[i]);
           }
@@ -437,7 +432,7 @@ void optrot(void)
       outfile->Printf( "  -------------------------------------------------------------------------\n");
       mat_print(tensor_rl[i], 3, 3, "outfile");
 
-      TrG_rl = (tensor_rl[i][0][0] + tensor_rl[i][1][1] + tensor_rl[i][2][2])/(3.0 * params.omega[i]);
+      TrG_rl = -(tensor_rl[i][0][0] + tensor_rl[i][1][1] + tensor_rl[i][2][2])/(3.0 * params.omega[i]);
 
       rotation_rl[i] = prefactor * TrG_rl * nu * nu / M;
       outfile->Printf( "\n   Specific rotation using length-gauge electric-dipole Rosenfeld tensor.\n");
@@ -458,7 +453,7 @@ void optrot(void)
       outfile->Printf( "  -------------------------------------------------------------------------\n");
       mat_print(tensor_pl[i], 3, 3, "outfile");
 
-      TrG_pl = (tensor_pl[i][0][0] + tensor_pl[i][1][1] + tensor_pl[i][2][2])/(3.0 * params.omega[i]);
+      TrG_pl = -(tensor_pl[i][0][0] + tensor_pl[i][1][1] + tensor_pl[i][2][2])/(3.0 * params.omega[i]);
       TrG_pl /= params.omega[i];
 
       rotation_pl[i] = prefactor * TrG_pl * nu * nu / M;
@@ -483,7 +478,7 @@ void optrot(void)
       mat_print(tensor_pl[i], 3, 3, "outfile");
 
       /* compute the specific rotation */
-      TrG_pl = (tensor_pl[i][0][0] + tensor_pl[i][1][1] + tensor_pl[i][2][2])/(3.0 * params.omega[i]);
+      TrG_pl = -(tensor_pl[i][0][0] + tensor_pl[i][1][1] + tensor_pl[i][2][2])/(3.0 * params.omega[i]);
       TrG_pl /= params.omega[i];
 
       rotation_mod[i] = prefactor * TrG_pl * nu * nu / M;

@@ -20,7 +20,7 @@ sys.path.append('cmake')
 import argparse
 
 root_directory = os.path.dirname(os.path.realpath(__file__))
-default_path = os.path.join(root_directory, 'obj')
+default_path = os.path.join(root_directory, 'objdir')
 if root_directory != os.getcwd():
     default_path = os.getcwd()
 
@@ -94,6 +94,7 @@ def parse_input():
             action='store',
             default=None,
             help="""The includes directory for boost.
+            'boost/version.hpp' should be in this directory.
             If this is left blank cmake will attempt to find one on your system.
             Failing that it will build one for you""",
             metavar='PATH')
@@ -186,7 +187,7 @@ def parse_input():
             nargs='?',
             action='store',
             choices=('on', 'off'),
-            default='on',
+            default='off',
             help='Compile with support for plugins [default: %(default)s]')
     # Suffix for the psi4 executable
     group.add_argument('--suffix',
@@ -226,7 +227,7 @@ def parse_input():
             help="""forward directly to cmake (example: -D ENABLE_THIS=1 -D ENABLE_THAT=1);
                     you can also forward CPP defintions all the way to the program
                     (example: -D CPP="-DDEBUG")""",
-                    metavar='STRING')
+            metavar='STRING')
     group.add_argument('--host',
             action='store',
             default=None,
@@ -266,6 +267,11 @@ def parse_input():
             action='store_true',
             default=False,
             help='Add support for the ERD integral package [default: %(default)s]')
+    #JK_Factory
+    group.add_argument('--jkfactory',
+            action='store_true',
+            default=False,
+            help='enable distributed J and K builds [default: %(default)s]')
     # GPU_DFCC package
     group.add_argument('--gpu-dfcc',
             action='store_true',
@@ -276,6 +282,11 @@ def parse_input():
             action='store_true',
             default=False,
             help='Enable dummy plugin external project [default: %(default)s]')
+    # PCMSolver package
+    group.add_argument('--pcmsolver',
+            action='store_true',
+            default=False,
+            help='Enable PCMSolver [default: %(default)s]')
 
     group = parser.add_argument_group('Pass extra flags to the compiler')
     group.add_argument('--extra-cc-flags',
@@ -330,7 +341,11 @@ def check_cmake_exists(cmake_command):
         sys.exit()
 
 def translate_cmake(s):
-    if s:
+    if s == 'on':
+        return 'ON'
+    elif s == 'off':
+        return 'OFF'
+    elif s:
         return 'ON'
     else:
         return 'OFF'
@@ -360,8 +375,10 @@ def gen_cmake_command(args):
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
     command += ' -DENABLE_PLUGINS=%s'        % translate_cmake(args.plugins)
     command += ' -DENABLE_LIBERD=%s'         % translate_cmake(args.erd)
+    command += ' -DENABLE_JKFACTORY=%s'      % translate_cmake(args.jkfactory)
     command += ' -DENABLE_GPU_DFCC=%s'       % translate_cmake(args.gpu_dfcc)
     command += ' -DENABLE_DUMMY_PLUGIN=%s'   % translate_cmake(args.dummy_plugin)
+    command += ' -DENABLE_PCMSOLVER=%s'      % translate_cmake(args.pcmsolver)
     command += ' -DENABLE_CXX11_SUPPORT=%s'  % translate_cmake(args.cxx11)
     command += ' -DLIBINT_OPT_AM={0}'.format(args.max_am_eri)
     command += ' -DEXECUTABLE_SUFFIX={0}'.format(args.suffix)
@@ -474,7 +491,14 @@ def gen_cmake_command(args):
 
     if args.define:
         for definition in args.define:
-            command += ' -D%s' % definition
+            if ' ' in definition:
+                # allow correct quoting of string values
+                # e.g., -D MORELIBS="-L/path/to/lib /path/to/lib2"
+                _tmp = definition.split('=', 1)
+                command += ' -D%s="%s"' % (_tmp[0], _tmp[1])
+            else:
+                print definition
+                command += ' -D%s' % definition
 
     if args.generator:
         command += ' -G "%s"' % args.generator
@@ -490,7 +514,7 @@ def print_build_help(build_path):
     print('   configure step is done')
     print('   now you need to compile the sources:')
     if (build_path == default_path):
-        print('   $ cd obj')
+        print('   $ cd objdir')
     else:
         print('   $ cd ' + build_path)
     print('   $ make')
@@ -546,7 +570,7 @@ def main(argv):
 
     if 'Configuring incomplete' in status:
         # configuration was not successful
-        if (build_path == os.path.join(root_directory, 'obj')):
+        if (build_path == os.path.join(root_directory, 'objdir')):
             # remove build_path iff not set by the user
             # otherwise removal can be dangerous
             shutil.rmtree(default_path)
@@ -585,10 +609,9 @@ def configure_host(args):
 
 def configure_default_compilers(args):
 
-    if args.mpi and not args.fc and not args.cc and not args.cxx:
+    if args.mpi and not args.cc and not args.cxx:
         # only --mpi flag but no --fc, --cc, --cxx
-        # set --fc, --cc, --cxx to mpif90, mpicc, mpicxx
-        args.fc  = 'mpif90'
+        # set --cc, --cxx to mpicc, mpicxx
         args.cc  = 'mpicc'
         args.cxx = 'mpicxx'
 
@@ -606,8 +629,6 @@ def configure_default_compilers(args):
             args.fc  and os.path.basename(args.fc).lower().startswith('openmpi'):
             args.mpi = 'on'
 
-    if not args.fc:
-        args.fc = 'gfortran'
     if not args.cc:
         args.cc = 'gcc'
     if not args.cxx:

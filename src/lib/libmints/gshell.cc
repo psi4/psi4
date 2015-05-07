@@ -40,7 +40,7 @@ ShellInfo::ShellInfo(int am, const std::vector<double> &c,
     : l_(am), puream_(pure), exp_(e), coef_(c),
       nc_(nc), center_(center), start_(start)
 {
-    for(int n = 0; n < c.size(); ++n)
+    for(size_t n = 0; n < c.size(); ++n)
         original_coef_.push_back(c[n]);
 
     ncartesian_ = INT_NCART(l_);

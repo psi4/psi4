@@ -31,11 +31,10 @@ write_to_cloc_list("${to_count}")
 add_library(dpd STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 #add_dependencies(dpd )
-set(libs_to_merge dpd ${libs_to_merge} PARENT_SCOPE)
+set_property(GLOBAL APPEND PROPERTY LIBLIST dpd)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(dpd custom_boost)
 endif()
-install(TARGETS dpd ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/libdpd)

@@ -5,6 +5,7 @@
 memory 250 mb
 
 molecule benz{
+    symmetry c1  # shouldn't be needed; makes UHF energy match
     pubchem:benzene
 }
 

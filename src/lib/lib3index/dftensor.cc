@@ -52,6 +52,38 @@ DFTensor::DFTensor(boost::shared_ptr<BasisSet> primary,
 {
     common_init();
 }
+DFTensor::DFTensor(boost::shared_ptr<BasisSet> primary,
+                   boost::shared_ptr<BasisSet> auxiliary,
+                   SharedMatrix C,
+                   int nocc,
+                   int nvir) :
+    primary_(primary), auxiliary_(auxiliary), C_(C), nocc_(nocc), nvir_(nvir),
+    naocc_(nocc), navir_(nvir), options_(Process::environment.options)
+{
+    common_init();
+}
+DFTensor::DFTensor(boost::shared_ptr<Wavefunction> wfn, const std::string& type)
+ : options_(Process::environment.options)
+{
+    if (!wfn){
+        throw PSIEXCEPTION("DFTensor: Must have constructed a wavefunction!");
+    }
+    if (wfn->nirrep() > 1){
+        throw PSIEXCEPTION("DFTensor: Only C1 symmetry is supported.");
+    }
+
+    primary_ = wfn->basisset();
+
+    boost::shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
+    auxiliary_ = BasisSet::construct(parser, primary_->molecule(), type);
+
+    C_ = wfn->Ca();
+    nocc_ = wfn->doccpi()[0];
+    nvir_ = wfn->nsopi()[0] - wfn->doccpi()[0];
+    naocc_ = nocc_;
+    navir_ = nvir_;
+    common_init();
+}
 DFTensor::~DFTensor()
 {
 }
@@ -159,6 +191,11 @@ SharedMatrix DFTensor::Qso()
         B->print();
         A->print();
     }
+    // Build numpy and final matrix shape
+    int* shape = new int[3];
+    shape[0] = naux_; shape[1] = nso_; shape[2] = nso_;
+    A->set_numpy_dims(3);
+    A->set_numpy_shape(shape);
 
     return A;
 }
@@ -188,6 +225,11 @@ SharedMatrix DFTensor::Qoo()
         Ami->print();
         Aia->print();
     }
+    // Build numpy and final matrix shape
+    int* shape = new int[3];
+    shape[0] = naux_; shape[1] = naocc_; shape[2] = naocc_;
+    Aia->set_numpy_dims(3);
+    Aia->set_numpy_shape(shape);
 
     return Aia;
 }
@@ -220,6 +262,10 @@ SharedMatrix DFTensor::Qov()
         Ami->print();
         Aia->print();
     }
+    int* shape = new int[3];
+    shape[0] = naux_; shape[1] = naocc_; shape[2] = navir_;
+    Aia->set_numpy_dims(3);
+    Aia->set_numpy_shape(shape);
 
     return Aia;
 }
@@ -249,6 +295,10 @@ SharedMatrix DFTensor::Qvv()
         Ami->print();
         Aia->print();
     }
+    int* shape = new int[3];
+    shape[0] = naux_; shape[1] = navir_; shape[2] = navir_;
+    Aia->set_numpy_dims(3);
+    Aia->set_numpy_shape(shape);
 
     return Aia;
 }
@@ -278,6 +328,10 @@ SharedMatrix DFTensor::Qmo()
         Ami->print();
         Aia->print();
     }
+    int* shape = new int[3];
+    shape[0] = naux_; shape[1] = nmo_; shape[2] = nmo_;
+    Aia->set_numpy_dims(3);
+    Aia->set_numpy_shape(shape);
 
     return Aia;
 }
@@ -296,6 +350,12 @@ SharedMatrix DFTensor::Idfmo()
 
     C_DGEMM('T','N',nmo_ * nmo_, nmo_ * nmo_, naux_, 1.0, Amop[0], nmo_ * nmo_,
         Amop[0], nmo_ * nmo_, 0.0, Imop[0], nmo_ * nmo_);
+
+    int* shape = new int[4];
+    shape[0] = nmo_; shape[1] = nmo_;
+    shape[2] = nmo_; shape[3] = nmo_;
+    Imo->set_numpy_dims(4);
+    Imo->set_numpy_shape(shape);
 
     return Imo;
 }

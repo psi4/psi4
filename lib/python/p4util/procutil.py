@@ -117,6 +117,11 @@ def format_options_for_input():
             chgdoptval = psi4.get_global_option(chgdopt)
             if isinstance(chgdoptval, basestring):
                 commands += """psi4.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
+# Next four lines were conflict between master and roa branches (TDC, 10/29/2014)
+            elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
+                commands += """psi4.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
+            elif isinstance(chgdoptval, list):
+                commands += """psi4.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
             else:
                 commands += """psi4.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
     return commands

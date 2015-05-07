@@ -1,6 +1,13 @@
 #
 # Figure out which files libint will produce, and compile them
 #
+math(EXPR LIBDERIV_OPT_AM1 ${LIBINT_OPT_AM}-1) # A.M. level for 1st derivative ERIs
+math(EXPR LIBDERIV_OPT_AM2 ${LIBINT_OPT_AM}-2) # A.M. level for 2nd derivative ERIs
+math(EXPR LIBDERIV_NEW_AM1 ${LIBDERIV_OPT_AM1}*2)
+math(EXPR LIBDERIV_NEW_AM2 ${LIBDERIV_OPT_AM2}*2)
+math(EXPR LIBDERIV_NEW_AM12 ${LIBDERIV_OPT_AM2}*2)
+configure_file(${CMAKE_SOURCE_DIR}/src/lib/libderiv/libderiv_config.h.in ${CMAKE_BINARY_DIR}/src/lib/libderiv/libderiv_config.h)
+
 include(SetupLibint)
 set(LD_SRC "init_libderiv.cc" "d1hrr_order_0000.cc" "d1vrr_order_0000.cc" "d12hrr_order_0000.cc" "d12vrr_order_0000.cc")
 build_libderiv_files(LD_SRC1 ${LIBDERIV_OPT_AM1} TRUE)
@@ -24,6 +31,7 @@ foreach(abcval ${ABC})
 endforeach()
 set_libderiv_compiler_flags()
 add_library(deriv STATIC ${LD_SRC})
+set_property(GLOBAL APPEND PROPERTY LIBLIST deriv)
 
 # Build the compiler
 set(COMPILER_SRC build_libderiv.c emit_d1hrr_build_macro.c emit_deriv1_managers.c emit_deriv_build_macro.c

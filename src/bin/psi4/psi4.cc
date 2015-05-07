@@ -34,6 +34,8 @@
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
 #include <libparallel/parallel.h>
+#include "libparallel2/ParallelEnvironment.h"
+#include "libparallel2/Communicator.h"
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <libmints/wavefunction.h>
@@ -46,11 +48,13 @@
 #define MAIN
 #include "psi4.h"
 #include "script.h"
-
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 namespace psi {
     int psi_start(int argc, char *argv[]);
     int psi_stop(FILE* infile, std::string, char* psi_file_prefix);
-    void print_version(std::string);
+    void print_version(std::string OutFileRMR);
     void set_memory(std::string OutFileRMR);
     int psi4_driver();
     void psiclean(void);
@@ -66,13 +70,21 @@ namespace psi {
 int main(int argc, char **argv)
 {
     using namespace psi;
-    // Initialize the world communicator
-    WorldComm = boost::shared_ptr<worldcomm>(new worldcomm(argc, argv));
+    // Initialize the MPI environment
+    WorldComm = boost::shared_ptr<LibParallel::ParallelEnvironment>(
+          new LibParallel::ParallelEnvironment(argc, argv));
+
+
     // Setup the environment
     Process::arguments.initialize(argc, argv);
     Process::environment.initialize();   // grabs the environment from the global environ variable
 
-
+    //The next five lines used to live in WorldComm, they are here now
+#ifdef _OPENMP
+         omp_set_nested(0);
+#endif
+         if (Process::environment("OMP_NUM_THREADS")=="")
+            Process::environment.set_n_threads(1);
 
     // There is only one timer:
     timer_init();
@@ -114,14 +126,11 @@ int main(int argc, char **argv)
     if(!messy) PSIOManager::shared_object()->psiclean();
 
     // Shut things down:
-    WorldComm->sync();
     // There is only one timer:
     timer_done();
 
     psi_stop(infile, "outfile", psi_file_prefix);
     Script::language->finalize();
-
-    WorldComm->sync();
 
 
     Process::environment.wavefunction().reset();

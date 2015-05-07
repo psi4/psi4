@@ -22,48 +22,72 @@
 
 #ifndef GMBE_H_
 #define GMBE_H_
-#include "LibFragTypes.h"
-
+#include "FragmentedSys.h"
+#include "MBEProp.h"
 namespace psi{
 namespace LibFrag{
-class MBEFragSet;
 
-class GMBE{
+template<typename T>
+class Expansion{
+   private:
+      T Impl;
+   public:
+      Expansion(const int N):Impl(N){}
+      template<typename T2>
+      MBEProp<T2> Property(const LibMolecule::FragmentedSystem& Systems,
+            const MBEProp<T2>& MonoProperties){
+         return Impl.PropertyImpl(Systems,MonoProperties);
+      }
+      std::string PrintOut()const{return Impl.PrintOutImpl();}
+
+};
+
+class ExpanImplBase{
    protected:
-		///The order of the GMBE (e.g. N=1, is a one-body expansion etc.)
-		int N;
+      int N;
+      double Phase(const int i)const{return (i%2==0?1:-1);}
+      ///Once calculated this will be the result in a pretty format
+      std::string LastResult_;
+   public:
+      ExpanImplBase(const int NewN):N(NewN){}
+      ///Returns True, useful if for some reason you want to know this
+      virtual bool IsGMBE()const{return true;}
+      virtual ~ExpanImplBase(){}
+      ///Returns the result in a pretty format
+      std::string PrintOutImpl()const{return LastResult_;}
+};
 
-		///Returns -1^i, the phase of many terms in the GMBE
-		double Phase(const int i){return (i%2==0?1:-1);}
-
+class GMBE:public ExpanImplBase{
 	public:
 		///Makes an N-body GMBE, N defaults to 1
-		GMBE(int newN=1):N(newN){}
-
-		///Allows you to change N
-		void SetN(const int newN){N=newN;}
+		GMBE(int newN=1):ExpanImplBase(newN){}
 
 		///Returns the total energy of this GMBE expansion
-		virtual double Energy(const std::vector<MBEFragSet>& Systems,
-		      const std::vector<boost::shared_ptr<double[]> >& Energies,
-		      std::string& Name);
-
-		///No memory allocated
-		virtual ~GMBE(){}
-		/** \brief Returns true if we need to run the fragments
-		 *
-		 *  For the GMBE there is currently no known form that allows us
-		 *  to recover the one-body energy for a n=2 or higher expansion.
-		 *  Consequentially there is no reason to run the fragments, unless
-		 *  we are performing electrostatic embedding.  When the MBE derives
-		 *  from this class it will overwrite this behavior because it can
-		 *  recover the one-body energy for arbitrary truncations.
-		 *
-		 */
-		virtual bool RunFrags()const{return (N==1);}
-
-		virtual bool IsGMBE()const{return true;}
+		template<typename T>
+		MBEProp<T> PropertyImpl(
+		      const LibMolecule::FragmentedSystem& Systems,
+		      const MBEProp<T>& MonoProperties);
 };
+
+template<typename T>
+MBEProp<T> GMBE::PropertyImpl(const LibMolecule::FragmentedSystem& Systems,
+      const MBEProp<T>& MonoProperties){
+   MBEProp<T> Prop(1);
+   /*If N==1 special case and energies are only in Energies[0],but
+   //we get sizes from Systems[1] and Systems[2]
+   int index1=(N==1?0:1);
+   for (int i=0; i<Systems[1].size(); i++)
+      TEnergy+=Systemsts[i]*Energies[index1][i];
+
+   for (int j=0; j<Systems[2].size(); j++) {
+      int index2=(N==1?Systems[1].size()+j:j);
+      TEnergy-=NMults[j]*Energies[index1][index2];
+   }
+   psi::outfile->Printf( "The total %d-body GMBE %s is: %16.12f (a.u.)", N,
+         RealName.c_str(),TEnergy);*/
+   return Prop;
+}
+
 
 }}//End namespaces
 

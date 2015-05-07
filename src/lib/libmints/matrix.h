@@ -99,6 +99,10 @@ protected:
 
     void print_mat(const double *const *const a, int m, int n, std::string out) const;
 
+    /// Numpy Shape
+    int  numpy_dims_;
+    int* numpy_shape_;
+
 public:
 
     /// Default constructor, zeros everything out
@@ -484,17 +488,17 @@ public:
      * @return pointer to h-th subblock in block-matrix form
      */
     double* get_pointer(const int& h = 0) const {
-        if(rowspi_[h]*colspi_[h] > 0)
+        if(rowspi_[h]*(size_t)colspi_[h] > 0)
            return &(matrix_[h][0][0]);
         else
            return 0;}
     const double* get_const_pointer(const int& h=0) const {
-        if(rowspi_[h]*colspi_[h] > 0)
+        if(rowspi_[h]*(size_t)colspi_[h] > 0)
            return const_cast<const double*>(&(matrix_[h][0][0]));
         else
            return 0;}
 
-    size_t size(const int &h=0) const { return colspi_[h] * rowspi_[h]; }
+    size_t size(const int &h=0) const { return colspi_[h] * (size_t)rowspi_[h]; }
 
     /// apply_denominators a matrix to this
     void apply_denominator(const Matrix* const);
@@ -548,6 +552,11 @@ public:
 
     /// Prints the matrix with atom and xyz styling.
     void print_atom_vector(std::string OutFileRMR = "outfile");
+
+    /**
+     * Prints the matrix so that it can be copied and pasted into Mathematica easily.
+     */
+    void print_to_mathematica();
 
     /**
      * Print the matrix with corresponding eigenvalues below each column
@@ -677,7 +686,7 @@ public:
         if (m > rowspi_[h] || n > colspi_[h^symmetry_]) {
             outfile->Printf( "out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n",
                     symmetry_, h, m, n);
-            
+
             throw PSIEXCEPTION("What are you doing, Rob?");
         }
         #endif
@@ -689,7 +698,7 @@ public:
         if (m > rowspi_[0] || n > colspi_[0^symmetry_]) {
             outfile->Printf( "out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n",
                     symmetry_, 0, m, n);
-            
+
             return;
         }
         #endif
@@ -829,7 +838,7 @@ public:
 
     /** Summation collapse along either rows (0) or columns (1), always producing a column matrix
     * \param dim 0 (row sum) or 1 (col sum)
-    * \return \sum_{i} M_{ij} => T_j if dim = 0 or 
+    * \return \sum_{i} M_{ij} => T_j if dim = 0 or
     *         \sum_{j} M_{ij} => T_i if dim = 1
     */
     SharedMatrix collapse(int dim = 0);
@@ -907,10 +916,10 @@ public:
      * dimension sigpi
      */
      SharedMatrix partial_cholesky_factorize(double delta = 0.0, bool throw_if_negative = false);
-    
+
      /*! Computes a low-rank factorization <P,N> such that PP'-NN' \approx A in an optimal sense in the 2-norm.
      * Columns of P,N are truncated after the singular values fall below delta
-     * P contains columns corresponding to positive eigenvalues, N to columns corresponding to negative eigenvalues/ 
+     * P contains columns corresponding to positive eigenvalues, N to columns corresponding to negative eigenvalues/
      * This is the real Hermitian-indefinite analog of partial Cholesky factorization.
      *
      * This algorithm requires memory equivalent to this matrix plus the equivalent eigendecompositon
@@ -967,8 +976,8 @@ public:
     Dimension power(double alpha, double cutoff = 1.0E-12);
 
     /*!
-    * Computes the approximate 
-    * exponential of a general real square matrix via Pade 
+    * Computes the approximate
+    * exponential of a general real square matrix via Pade
     * symmetric Pade approximation (orthonormality guaranteed)
     * (defaults to a 2 x 2 Pade table, with no
     * scaling or balancing)
@@ -1103,6 +1112,14 @@ public:
      * sets the matrix to that.
      */
     void set_by_python_list(const boost::python::list& data);
+
+     /**
+     * Adds accessability to the matrix shape for numpy
+     */
+    void set_numpy_dims(int dims) { numpy_dims_ = dims; }
+    void set_numpy_shape(int* shape) { numpy_shape_ = shape; }
+    int numpy_dims() { return numpy_dims_; }
+    int* numpy_shape() { return numpy_shape_; }
 
     /**
      * Rotates columns i and j in irrep h, by an angle theta

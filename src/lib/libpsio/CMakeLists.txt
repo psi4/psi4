@@ -1,6 +1,6 @@
 set(headers_list "")
 # List of headers
-list(APPEND headers_list aiohandler.h MOFile.h BinaryFile.h psio.h config.h )
+list(APPEND headers_list StringArray.h aiohandler.h MOFile.h BinaryFile.h psio.h config.h )
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
@@ -17,9 +17,9 @@ list(APPEND sources_list rw.cc getpid.cc filemanager.cc tocwrite.cc write_entry.
 
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
-   list(REMOVE_ITEM sources_list "")
+   list(REMOVE_ITEM sources_list "tocdel.cc")
 else()
-   list(REMOVE_ITEM sources_list "")
+   list(REMOVE_ITEM sources_list "tocdel.cc")
 endif()
 
 # Write list of files to be passed to cloc for counting lines of code.
@@ -31,11 +31,10 @@ write_to_cloc_list("${to_count}")
 add_library(psio STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 #add_dependencies(psio )
-set(libs_to_merge psio ${libs_to_merge} PARENT_SCOPE)
+set_property(GLOBAL APPEND PROPERTY LIBLIST psio)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(psio custom_boost)
 endif()
-install(TARGETS psio ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/libpsio)

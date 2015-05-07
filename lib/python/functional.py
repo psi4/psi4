@@ -723,10 +723,10 @@ functionals = {
         'ft97_c'      : build_primitive_functional,
         'b_c'         : build_primitive_functional,
         'm_c'         : build_primitive_functional,
-        'pbea_c'      : build_primitive_functional, 
-        'pw92a_c'     : build_primitive_functional, 
+        'pbea_c'      : build_primitive_functional,
+        'pw92a_c'     : build_primitive_functional,
         'wpbe_c'      : build_primitive_functional,
-        'wpw92_c'     : build_primitive_functional, 
+        'wpw92_c'     : build_primitive_functional,
     }
 
 

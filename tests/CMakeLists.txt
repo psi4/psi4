@@ -26,6 +26,7 @@ set(TestsNotSetUpRight cfour optking testgrendel)
 add_subdirectory(adc1)
 add_subdirectory(adc2)
 add_subdirectory(casscf-fzc-sp)
+add_subdirectory(casscf-sa-sp)
 add_subdirectory(casscf-sp)
 add_subdirectory(castup1)
 add_subdirectory(castup2)
@@ -114,6 +115,10 @@ add_subdirectory(dcft5)
 add_subdirectory(dcft6)
 add_subdirectory(dcft7)
 add_subdirectory(dcft8)
+add_subdirectory(dfccd1)
+add_subdirectory(dfccdl1)
+add_subdirectory(dfccsd1)
+add_subdirectory(dfccsdl1)
 add_subdirectory(dfmp2-1)
 add_subdirectory(dfmp2-2)
 add_subdirectory(dfmp2-3)
@@ -232,6 +237,7 @@ add_subdirectory(psimrcc-sp1)
 add_subdirectory(psithon1)
 add_subdirectory(psithon2)
 add_subdirectory(pubchem1)
+add_subdirectory(pubchem2)
 add_subdirectory(pywrap-alias)
 add_subdirectory(pywrap-all)
 add_subdirectory(pywrap-basis)
@@ -249,6 +255,7 @@ add_subdirectory(pywrap-opt-sowreap)
 add_subdirectory(rasci-c2-active)
 add_subdirectory(rasci-h2o)
 add_subdirectory(rasci-ne)
+add_subdirectory(rasscf-sp)
 add_subdirectory(sad1)
 add_subdirectory(sapt1)
 add_subdirectory(sapt2)
@@ -272,12 +279,25 @@ add_subdirectory(tu5-sapt)
 add_subdirectory(tu6-cp-ne2)
 add_subdirectory(zaptn-nh2)
 
+###### START internal-executable-dependent tests ################
+
+# For code that is distributed with and required for psi4 to build, 
+#   and thus should always be tested, but is developed and maintained 
+#   externally and dropped into psi4 as version increment, and thus 
+#   should get its own subdirectory:
+#   * Follow directory structure described below for ext-exe-dep
+#   * Follow un-qualified inclusion as above for normal tests
+
+add_subdirectory(libefp)
+
+###### END internal-executable-dependent tests ##################
+
 ###### START external-executable-dependent tests ################
 
 # Set up groups of test cases analogous to dftd3 below
 #   In particular, new ext-exe-dep tests should 
 #   * get their own directory in tests (e.g., tests/dftd3)
-#   * have a name that doesn't repeat the exe (e.g., test/dftd3/energy)
+#   * have a name that doesn't repeat the exe (e.g., tests/dftd3/energy)
 #   * be listed in the exeShort and exeLong variable name as exe-name (e.g., dftd3-energy)
 #   * be sure the exe is listed in the python code below (search 'partition')
 
@@ -314,8 +334,18 @@ if(CFOUR_EXECUTABLE)
    message(STATUS "xcfour executable for interfaced CFOUR found. Test cases added.")
 endif()
 
-###### END external-executable-dependent tests ################
+###### END external-executable-dependent tests ##################
+
+# External module dependent tests
+if(ENABLE_PCMSOLVER)
+   add_subdirectory(pcm_scf)
+endif()
 
 if(NOT PERL_FOUND)
    message(WARNING "Perl was not found. Some Coupled Cluster test cases will not be thoroughly checked.")
 endif()
+
+if(ENABLE_CHEMPS2)
+    add_subdirectory(dmrg)
+endif()
+

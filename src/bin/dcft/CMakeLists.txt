@@ -31,11 +31,10 @@ write_to_cloc_list("${to_count}")
 add_library(dcft STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 add_dependencies(dcft mints)
-set(libs_to_merge dcft ${libs_to_merge} PARENT_SCOPE)
+set_property(GLOBAL APPEND PROPERTY PSILIB dcft)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(dcft custom_boost)
 endif()
-install(TARGETS dcft ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/libdcft)

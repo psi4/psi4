@@ -15,10 +15,12 @@ platform capabilities, *etc*.
 .. toctree::
    :maxdepth: 2
 
-   mrcc
-   dftd3
-   molden
    cfour
+   dftd3
+   dkh
+   libefp
+   molden
+   mrcc
 
 .. comment * MPI4Py
 .. comment * MADNESS

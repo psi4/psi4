@@ -53,7 +53,7 @@ outfile->Printf("  ----   ----------------      ----------------       ---------
           boost::shared_ptr<Matrix> T2(new Matrix("T2", naoccA*navirA, naoccA*navirA));
           boost::shared_ptr<Matrix> T1(new Matrix("T1", naoccA, navirA));
           if (reference_ == "RESTRICTED") {
-              ccsdDiisManager = boost::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::InCore)); 
+              ccsdDiisManager = boost::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::OnDisk)); 
               ccsdDiisManager->set_error_vector_size(2, DIISEntry::Matrix, T2.get(), DIISEntry::Matrix, T1.get());
               ccsdDiisManager->set_vector_size(2, DIISEntry::Matrix, T2.get(), DIISEntry::Matrix, T1.get());
           }
@@ -112,8 +112,25 @@ do
 }
 while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2); 
 
-//delete
-if (do_diis_ == 1) ccsdDiisManager->delete_diis_file();
+ //delete
+ if (do_diis_ == 1) ccsdDiisManager->delete_diis_file();
+
+ // Mem alloc for DF ints
+ if (df_ints_incore) {
+     if (cc_lambda_ == "FALSE") {
+         bQijA.reset();
+         bQiaA.reset();
+         bQabA.reset();
+     }
+ }
+
+ // free t2 amps
+ if (t2_incore) {
+     if (cc_lambda_ == "TRUE") {
+        t2->write_symm(psio_, PSIF_DFOCC_AMPS);
+     }
+     else t2.reset();
+ }
 
 if (conver == 1) {
 outfile->Printf("\n");
@@ -126,8 +143,8 @@ outfile->Printf(" ==============================================================
     t1_ref = 0.02;
     t1norm = t1A->norm();
     t1diag = t1norm/sqrt(2.0*naoccA);
-    outfile->Printf("\n\tT1 diagnostic reference value      : %20.14f\n", t1_ref);
-    outfile->Printf("\tT1 diagnostic                      : %20.14f\n", t1diag);
+    outfile->Printf("\n\tT1 diagnostic reference value: %20.14f\n", t1_ref);
+    outfile->Printf("\tT1 diagnostic                : %20.14f\n", t1diag);
 }
 
 else if (conver == 0) {

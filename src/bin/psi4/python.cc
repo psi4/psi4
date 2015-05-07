@@ -37,12 +37,14 @@
 #include <map>
 #include <iomanip>
 
+#include <libefp_solver/efp_solver.h>
 #include <libmints/mints.h>
 #include <libplugin/plugin.h>
-#include <libparallel/parallel.h>
+#include "libparallel/mpi_wrapper.h"
+#include "libparallel/local.h"
 #include <liboptions/liboptions.h>
 #include <liboptions/liboptions_python.h>
-#include <libutil/libutil.h>
+#include <libpsi4util/libpsi4util.h>
 #include <psiconfig.h>
 
 #include <psi4-dec.h>
@@ -52,6 +54,7 @@
 #include "libparallel/ParallelPrinter.h"
 #include "../ccenergy/ccwave.h"
 #include "../cclambda/cclambda.h"
+//#include "../../lib/libbabel/LibBabel.h"
 //#include "../mp2/mp2wave.h"
 
 #if defined(MAKE_PYTHON_MODULE)
@@ -59,7 +62,7 @@
 #include <libpsio/psio.h>
 #include <libmints/wavefunction.h>
 #include <psifiles.h>
-#include <libparallel/parallel.h>
+#include "libparallel2/ParallelEnvironment.h"
 namespace psi {
     int psi_start(int argc, char *argv[]);
     int psi_stop(FILE* infile, std::string, char* psi_file_prefix);
@@ -82,7 +85,8 @@ void export_functional();
 void export_oeprop();
 void export_cubefile();
 void export_libfrag();
-
+void export_libparallel();
+void export_efp();
 
 // In export_plugins.cc
 void py_psi_plugin_close_all();
@@ -126,11 +130,19 @@ namespace psi {
     namespace cchbar     { PsiReturnType cchbar(Options&);    }
     namespace cclambda   { PsiReturnType cclambda(Options&);  }
     namespace ccdensity  { PsiReturnType ccdensity(Options&); }
-    namespace ccresponse { PsiReturnType ccresponse(Options&);}
+    namespace ccresponse {
+        PsiReturnType ccresponse(Options&);
+        void scatter(Options&, double step, std::vector<SharedMatrix> dip, std::vector<SharedMatrix> rot, std::vector<SharedMatrix> quad);
+    }
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
-    namespace detcas     { PsiReturnType detcas(Options&);     }
+#ifdef ENABLE_CHEMPS2
+    namespace dmrg       { PsiReturnType dmrg(Options&);     }
+#endif
+//    namespace detcas     { PsiReturnType detcas(Options&);     }
     namespace fnocc      { PsiReturnType fnocc(Options&);     }
+    namespace efp        { PsiReturnType efp_init(Options&);  }
+    namespace efp        { PsiReturnType efp_set_options();   }
     namespace stable     { PsiReturnType stability(Options&); }
     namespace occwave    { PsiReturnType occwave(Options&);   }
     namespace dfoccwave  { PsiReturnType dfoccwave(Options&);   }
@@ -146,22 +158,26 @@ namespace psi {
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &, int irrep=-1);
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_1(Options &, int irrep=-1);
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_hessian_0(Options &);
+      std::vector< boost::shared_ptr<Matrix> > atomic_displacements(Options &);
 
       PsiReturnType fd_1_0(Options &, const boost::python::list&);
       //PsiReturnType fd_2_0(Options &, const boost::python::list&);
       PsiReturnType fd_freq_0(Options &, const boost::python::list&, int irrep=-1);
       PsiReturnType fd_freq_1(Options &, const boost::python::list&, int irrep=-1);
       PsiReturnType fd_hessian_0(Options &, const boost::python::list&);
+      SharedMatrix displace_atom(SharedMatrix geom, const int atom,
+		                 const int coord, const int sign,
+				 const double disp_size);
     }
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
     extern void print_version(std::string);
-    
+
 }
 
 void py_flush_outfile()
 {
-    
+
 }
 
 void py_close_outfile()
@@ -329,6 +345,7 @@ std::vector< SharedMatrix > py_psi_fd_geoms_1_0()
     return findif::fd_geoms_1_0(Process::environment.options);
 }
 
+
 //std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_2_0()
 //{
     //py_psi_prepare_options_for_module("FINDIF");
@@ -381,6 +398,19 @@ PsiReturnType py_psi_fd_freq_1(const boost::python::list& grads, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_freq_1(Process::environment.options, grads, irrep);
+}
+
+std::vector< SharedMatrix > py_psi_atomic_displacements()
+{
+    py_psi_prepare_options_for_module("FINDIF");
+    return findif::atomic_displacements(Process::environment.options);
+}
+
+SharedMatrix py_psi_displace_atom(SharedMatrix geom, const int atom,
+                                  const int coord, const int sign,
+				  const double disp_size)
+{
+    return findif::displace_atom(geom, atom, coord, sign, disp_size);
 }
 
 double py_psi_scf()
@@ -502,7 +532,13 @@ double py_psi_ccenergy()
                                                Process::environment.wavefunction(),
                                                Process::environment.options)
                                            );
-    Process::environment.set_wavefunction(ccwave);
+
+    std::string name = Process::environment.wavefunction()->name();
+    std::string wfn = Process::environment.options.get_str("WFN");
+    if(wfn != name) {
+      ccwave->set_name(wfn);
+      Process::environment.set_wavefunction(ccwave);
+    }
 
     double energy = ccwave->compute_energy();
     return energy;
@@ -539,6 +575,22 @@ double py_psi_cctriples()
         return 0.0;
 }
 
+boost::shared_ptr<psi::efp::EFP> py_psi_efp_init()
+{
+    py_psi_prepare_options_for_module("EFP");
+    if (psi::efp::efp_init(Process::environment.options) == Success) {
+        return Process::environment.get_efp();
+    }
+    else
+        throw PSIEXCEPTION("Unable to initialize EFP library.");
+}
+
+void py_psi_efp_set_options()
+{
+    py_psi_prepare_options_for_module("EFP");
+    Process::environment.get_efp()->set_options();
+}
+
 double py_psi_fnocc()
 {
     py_psi_prepare_options_for_module("FNOCC");
@@ -559,11 +611,29 @@ double py_psi_detci()
         return 0.0;
 }
 
-double py_psi_detcas()
+#ifdef ENABLE_CHEMPS2
+double py_psi_dmrg()
 {
-    py_psi_prepare_options_for_module("DETCAS");
-    return detcas::detcas(Process::environment.options);
+    py_psi_prepare_options_for_module("DMRG");
+    if (dmrg::dmrg(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
 }
+#else
+double py_psi_dmrg()
+{
+    throw PSIEXCEPTION("DMRG not enabled.");
+}
+#endif
+
+// DGAS
+// double py_psi_detcas()
+// {
+//     py_psi_prepare_options_for_module("DETCAS");
+//     return detcas::detcas(Process::environment.options);
+// }
 
 double py_psi_cchbar()
 {
@@ -605,6 +675,54 @@ double py_psi_ccresponse()
     py_psi_prepare_options_for_module("CCRESPONSE");
     ccresponse::ccresponse(Process::environment.options);
     return 0.0;
+}
+
+void py_psi_print_list(python::list py_list)
+{
+	return;
+}
+
+void py_psi_scatter(double step, python::list dip_polar_list, python::list opt_rot_list, python::list dip_quad_polar_list)
+{
+    py_psi_prepare_options_for_module("CCRESPONSE");
+
+    // Convert python tensor lists into vectors of sharedmatrices
+    std::vector <SharedMatrix> dip_polar_tensors;
+    std::vector <SharedMatrix> opt_rot_tensors;
+    std::vector <SharedMatrix> dip_quad_polar_tensors;
+
+    int list_len = len(dip_polar_list);
+    for(int i=0; i < list_len; ++i) {
+        python::list dip_list  = extract<python::list>(dip_polar_list[i]);
+        python::list rot_list  = extract<python::list>(opt_rot_list[i]);
+        python::list quad_list = extract<python::list>(dip_quad_polar_list[i]);
+        SharedMatrix dip_mat(new Matrix(3, 3));
+        SharedMatrix rot_mat(new Matrix(3, 3));
+        SharedMatrix quad_mat(new Matrix(9, 3));
+        for(int row=0,j=0; row < 3; ++row) {
+            for(int col=0; col < 3; ++col,++j) {
+              dip_mat->set(row, col, extract<double>(dip_list[j]));
+              rot_mat->set(row, col, extract<double>(rot_list[j]));
+            }
+        }
+        for(int row=0,j=0; row < 9; ++row) {
+            for(int col=0; col < 3; ++col,++j) {
+                quad_mat->set(row, col, extract<double>(quad_list[j]));
+            }
+        }
+    dip_polar_tensors.push_back(dip_mat);
+    opt_rot_tensors.push_back(rot_mat);
+    dip_quad_polar_tensors.push_back(quad_mat);
+    }
+
+//    for(std::vector<SharedMatrix>::iterator i=dip_polar_tensors.begin(); i != dip_polar_tensors.end(); ++i)
+//        (*i)->print(stdout);
+//    for(std::vector<SharedMatrix>::iterator i=opt_rot_tensors.begin(); i != opt_rot_tensors.end(); ++i)
+//        (*i)->print(stdout);
+//    for(std::vector<SharedMatrix>::iterator i=dip_quad_polar_tensors.begin(); i != dip_quad_polar_tensors.end(); ++i)
+//        (*i)->print(stdout);
+
+    ccresponse::scatter(Process::environment.options, step, dip_polar_tensors, opt_rot_tensors, dip_quad_polar_tensors);
 }
 
 double py_psi_cceom()
@@ -835,6 +953,7 @@ bool py_psi_set_local_option_array(std::string const & module, std::string const
     return true;
 }
 
+
 bool py_psi_set_global_option_array(std::string const & key, python::list values, DataType *entry=NULL)
 {
     string nonconst_key = boost::to_upper_copy(key);
@@ -1002,6 +1121,11 @@ boost::shared_ptr<Molecule> py_psi_get_active_molecule()
     return Process::environment.molecule();
 }
 
+boost::shared_ptr<psi::efp::EFP> py_psi_get_active_efp()
+{
+    return Process::environment.get_efp();
+}
+
 void py_psi_set_gradient(SharedMatrix grad)
 {
     if (Process::environment.wavefunction()) {
@@ -1021,12 +1145,40 @@ SharedMatrix py_psi_get_gradient()
     }
 }
 
+void py_psi_set_efp_torque(SharedMatrix torq)
+{
+    if (Process::environment.get_efp()->get_frag_count() > 0) {
+        Process::environment.get_efp()->set_torque(torq);
+    } else {
+        Process::environment.set_efp_torque(torq);
+    }
+}
+
+SharedMatrix py_psi_get_efp_torque()
+{
+    if (Process::environment.get_efp()->get_frag_count() > 0) {
+        boost::shared_ptr<psi::efp::EFP> efp = Process::environment.get_efp();
+        return efp->torque();
+    } else {
+        return Process::environment.efp_torque();
+    }
+}
+
 void py_psi_set_frequencies(boost::shared_ptr<Vector> freq)
 {
     if (Process::environment.wavefunction()) {
         Process::environment.wavefunction()->set_frequencies(freq);
     } else {
         Process::environment.set_frequencies(freq);
+    }
+}
+
+void py_psi_set_normalmodes(boost::shared_ptr<Vector> norm)
+{
+    if (Process::environment.wavefunction()) {
+        Process::environment.wavefunction()->set_normalmodes(norm);
+    } else {
+//      Process::environment.set_normalmodes(norm);
     }
 }
 
@@ -1037,6 +1189,28 @@ boost::shared_ptr<Vector> py_psi_get_frequencies()
         return wf->frequencies();
     } else {
         return Process::environment.frequencies();
+    }
+}
+
+boost::shared_ptr<Vector> py_psi_get_atomic_point_charges()
+{
+    if (Process::environment.wavefunction()) {
+        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
+        return wf->get_atomic_point_charges();
+    }
+    else {
+      boost::shared_ptr<psi::Vector> empty(new psi::Vector());
+      return empty; // charges not added to process.h for environment - yet(?)
+    }
+}
+
+boost::shared_ptr<Vector> py_psi_get_normalmodes()
+{
+    if (Process::environment.wavefunction()) {
+        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
+        return wf->normalmodes();
+    } else {
+//      return Process::environment.normalmodes();
     }
 }
 
@@ -1094,74 +1268,6 @@ void py_psi_set_n_threads(int nthread)
 int py_psi_get_n_threads()
 {
     return Process::environment.get_n_threads();
-}
-
-int py_psi_get_nproc(const std::string& CommName)
-{
-    return WorldComm->nproc(CommName);
-}
-
-int py_psi_get_me(const std::string& CommName)
-{
-    return WorldComm->me(CommName);
-}
-
-void py_make_comm(const std::string& CommName,const int Color,const std::string& Comm2Split){
-	WorldComm->MakeComm(CommName,Color,Comm2Split);
-}
-
-void py_free_comm(const std::string& CommName){
-	WorldComm->FreeComm(CommName);
-}
-
-std::string py_get_comm(){
-	std::string the_comm=WorldComm->communicator();
-	return the_comm;
-}
-
-
-template <typename T>
-boost::python::list bcast_wrapper(T* data,int nelem, int broadcaster,const std::string& CommName){
-	int me=WorldComm->me(CommName);
-	T* datatarget;
-	if(me!=broadcaster)datatarget=new T[nelem];
-	else datatarget=data;
-	WorldComm->bcast(datatarget,nelem,broadcaster,CommName);
-	boost::python::list data2return;
-	for(int i=0;i<nelem;i++)data2return.append(datatarget[i]);
-	if(me!=broadcaster)delete [] datatarget;
-	return data2return;
-}
-
-boost::python::list py_bcast_double(boost::python::list& data,int broadcaster,const std::string& CommName){
-	std::vector<double>data2bcast;
-	int nelem=boost::python::len(data);
-	for(int i=0;i<nelem;i++)data2bcast.push_back(boost::python::extract<double>(data[i]));
-	return bcast_wrapper(&data2bcast[0],nelem,broadcaster,CommName);
-}
-
-template <typename T>
-boost::python::list all_gather_wrapper(const T* data, int nelem,const std::string& CommName){
-	int nproc=WorldComm->nproc(CommName);
-	int TotalElem=nproc*nelem;
-	T *datatarget=new T[TotalElem];
-	WorldComm->all_gather(data,nelem,datatarget,CommName);
-	boost::python::list data2return;
-	for(int i=0;i<TotalElem;i++)data2return.append(datatarget[i]);
-	delete [] datatarget;
-	return data2return;
-}
-
-
-boost::python::list py_all_gather_double(const boost::python::list& data,const std::string& CommName){
-	std::vector<double>data2gather;
-	int nelem=boost::python::len(data);
-	for(int i=0;i<nelem;i++)data2gather.push_back(boost::python::extract<double>(data[i]));
-	return all_gather_wrapper(&data2gather[0],nelem,CommName);
-}
-
-void py_sync(const std::string& CommName){
-	WorldComm->sync(CommName);
 }
 
 boost::shared_ptr<Wavefunction> py_psi_wavefunction()
@@ -1240,7 +1346,7 @@ bool psi4_python_module_initialize()
     std::string psiDataDirWithPython = psiDataDirName + "/psi4";
     boost::filesystem::path bf_path;
     bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
-    // printf("Python dir is at %s\n", psiDataDirName.c_str()); 
+    // printf("Python dir is at %s\n", psiDataDirName.c_str());
     if(!boost::filesystem::is_directory(bf_path)) {
         printf("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
                 "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
@@ -1272,15 +1378,12 @@ void psi4_python_module_finalize()
     py_psi_plugin_close_all();
 
     // Shut things down:
-    WorldComm->sync();
     // There is only one timer:
     timer_done();
 
     psi_stop(infile, "outfile", psi_file_prefix);
     Script::language->finalize();
 
-    WorldComm->sync();
-    //WorldComm->finalize();
 }
 #endif
 
@@ -1297,7 +1400,8 @@ BOOST_PYTHON_MODULE(psi4)
 {
 #if defined(MAKE_PYTHON_MODULE)
     // Initialize the world communicator
-    WorldComm = boost::shared_ptr<worldcomm>(new worldcomm(0, 0));
+    WorldComm = boost::shared_ptr<LibParallel::ParallelEnvironment>(
+          new LibParallel::ParallelEnvironment(0, 0));
 
     // Setup the environment
     Process::arguments.initialize(0, 0);
@@ -1358,28 +1462,31 @@ BOOST_PYTHON_MODULE(psi4)
     // CubeFile
     export_cubefile();
 
+    // EFP
+    export_efp();
+
     // Options
+// The following line was conflct between master and roa branch (TDC, 10/29/2014)
+//    def("print_list", py_psi_print_list, "Prints a python list using a C function.");
     def("prepare_options_for_module", py_psi_prepare_options_for_module, "Sets the options module up to return options pertaining to the named argument (e.g. SCF).");
     def("set_active_molecule", py_psi_set_active_molecule, "Activates a previously defined (in the input) molecule, by name.");
     def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
     def("wavefunction", py_psi_wavefunction, "Returns the current wavefunction object from the most recent computation.");
     def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
     def("set_gradient", py_psi_set_gradient, "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
+    def("get_active_efp", &py_psi_get_active_efp, "Returns the currently active EFP object.");
+    def("get_efp_torque", py_psi_get_efp_torque, "Returns the most recently computed gradient for the EFP portion, as a Nefp by 6 Matrix object.");
+    def("set_efp_torque", py_psi_set_efp_torque, "Assigns the global EFP gradient to the values stored in the Nefp by 6 Matrix argument.");
     def("get_frequencies", py_psi_get_frequencies, "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
+    def("get_atomic_point_charges", py_psi_get_atomic_point_charges, "Returns the most recently computed atomic point charges, as a double * object.");
+    def("get_normalmodes", py_psi_get_normalmodes, "Returns the most recently computed normal modes Vector object.");
     def("set_frequencies", py_psi_set_frequencies, "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
+    def("set_normalmodes", py_psi_set_normalmodes, "Assigns the global normalmodes to the values stored in a Vector argument.");
     def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");
     def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
     def("set_nthread", &py_psi_set_n_threads, "Sets the number of threads to use in SMP parallel computations.");
     def("nthread", &py_psi_get_n_threads, "Returns the number of threads to use in SMP parallel computations.");
-    def("nproc", &py_psi_get_nproc, "Returns the number of processes.");
-    def("me", &py_psi_get_me, "Returns the current process ID.");
-    def("make_comm",&py_make_comm, "Makes a communicator");
-    def("free_comm",&py_free_comm, "Frees a communicator");
-    def("get_comm",&py_get_comm, "Returns the current communicator");
-    def("sync",&py_sync,"Waits for all MPI processes to ketchup");
-    def("bcast_double",&py_bcast_double,"broadcasts a list of doubles");
-    def("all_gather_double",&py_all_gather_double,"all_gathers a list of doubles");
-
+//    def("mol_from_file",&LibBabel::ParseFile,"Reads a molecule from another input file");
     def("set_parent_symmetry", py_psi_set_parent_symmetry, "Sets the symmetry of the 'parent' (undisplaced) geometry, by Schoenflies symbol, at the beginning of a finite difference computation.");
     def("print_options", py_psi_print_options, "Prints the currently set options (to the output file) for the current module.");
     def("print_global_options", py_psi_print_global_options, "Prints the currently set global (all modules) options to the output file.");
@@ -1468,6 +1575,8 @@ BOOST_PYTHON_MODULE(psi4)
     def("fd_freq_0", py_psi_fd_freq_0, "Performs a finite difference frequency computation, from energy points, for a given irrep.");
     def("fd_freq_1", py_psi_fd_freq_1, "Performs a finite difference frequency computation, from gradients, for a given irrep.");
     def("fd_hessian_0", py_psi_fd_hessian_0, "Performs a finite difference frequency computation, from energy points.");
+    def("atomic_displacements", py_psi_atomic_displacements, "Returns list of displacements generated by displacing each atom in the +/- x, y, z directions");
+    def("displace_atom", py_psi_displace_atom, "Displaces one coordinate of single atom.");
     def("sapt", py_psi_sapt, "Runs the symmetry adapted perturbation theory code.");
     def("dftsapt", py_psi_dftsapt, "Runs the DFT variant of the symmetry adapted perturbation theory code.");
     def("asapt", py_psi_asapt, "Runs the atomic variant of the symmetry adapted perturbation theory code.");
@@ -1481,12 +1590,16 @@ BOOST_PYTHON_MODULE(psi4)
     def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");
     def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
-    def("detcas", py_psi_detcas, "Runs the determinant-based complete active space self consistent field.");
+    def("dmrg", py_psi_dmrg, "Runs the DMRG code.");
+// DGAS    def("detcas", py_psi_detcas, "Runs the determinant-based complete active space self consistent field.");
     def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
-    def("cchbar", py_psi_cchbar, "Runs the code to generate the similariry transformed Hamiltonian.");
+    def("efp_init", py_psi_efp_init, "Initializes the EFP library and returns an EFP object.");
+    def("efp_set_options", py_psi_efp_set_options, "Set EFP options from environment options object.");
+    def("cchbar", py_psi_cchbar, "Runs the code to generate the similarity transformed Hamiltonian.");
     def("cclambda", py_psi_cclambda, "Runs the coupled cluster lambda equations code.");
     def("ccdensity", py_psi_ccdensity, "Runs the code to compute coupled cluster density matrices.");
     def("ccresponse", py_psi_ccresponse, "Runs the coupled cluster response theory code.");
+    def("scatter", py_psi_scatter, "New Scatter function.");
     def("cceom", py_psi_cceom, "Runs the equation of motion coupled cluster code, for excited states.");
     def("occ", py_psi_occ, "Runs the orbital optimized CC codes.");
     def("dfocc", py_psi_dfocc, "Runs the density-fitted orbital optimized CC codes.");
@@ -1500,7 +1613,7 @@ BOOST_PYTHON_MODULE(psi4)
     export_mints();
     export_functional();
     export_libfrag();
-
+    export_libparallel();
 
     typedef string (Process::Environment::*environmentStringFunction)(const string&);
 
@@ -1562,7 +1675,7 @@ void Python::run(FILE *input)
         #else
         Py_SetProgramName(s);
         #endif
-        
+
         // Track down the location of PSI4's auxiliary directories path
         std::string psiPath = Process::environment("PSIPATH") + ":./";
         boost::char_separator<char> sep(":");
@@ -1661,7 +1774,7 @@ void Python::run(FILE *input)
 
                 if (verbose) {
                     outfile->Printf( "\n Input file to run:\n%s", inputfile.c_str());
-                    
+
                 }
 
                 str strStartScript(inputfile);

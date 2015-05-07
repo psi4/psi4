@@ -55,6 +55,7 @@ public:
                       boost::shared_ptr<Vector> exponent);
     virtual ~CorrelationFactor();
 
+    virtual double slater_exponent() const { return 1.0; }
     void set_params(boost::shared_ptr<Vector> coeff,
                     boost::shared_ptr<Vector> exponent);
     double *exponent() const { return exponent_; }
@@ -67,6 +68,9 @@ private:
     double slater_exponent_;
 
 public:
+
+    virtual double slater_exponent() const { return slater_exponent_; }
+    
     FittedSlaterCorrelationFactor(double exponent);
     double exponent(){return slater_exponent_;}
 };

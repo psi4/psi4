@@ -28,7 +28,7 @@
  *  A multireference coupled cluster code
  ***************************************************************************/
 
-#include <libutil/memory_manager.h>
+#include <libpsi4util/memory_manager.h>
 #include <vector>
 #include <string>
 

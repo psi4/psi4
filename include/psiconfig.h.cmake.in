@@ -8,7 +8,7 @@
 #cmakedefine HAVE_STDINT_H
 
 /* PSI version information */
-#define PSI_VERSION @PSI_VERSION@
+//#define PSI_VERSION @PSI_VERSION@
 //#define @PSI_BUILDID@
 //#define @PSI_BUGREPORT@
 
@@ -21,6 +21,7 @@
 #define PLUGIN_FLAGS "@CXX_FLAGS_PLUGIN@"
 #define PLUGIN_INCLUDES "@PLUGIN_INCLUDE_DIRECTORIES@"
 #define PLUGIN_OBJDIR "@PROJECT_BINARY_DIR@"
+#define PLUGIN_LDFLAGS "@PLUGIN_LDFLAGS@"
 
 /* The PSI4 Datadir */
 #define INSTALLEDPSIDATADIR "@CMAKE_INSTALL_PREFIX@/share/psi"

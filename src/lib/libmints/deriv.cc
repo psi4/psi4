@@ -40,7 +40,8 @@
 #include "mints.h"
 #include "sointegral_twobody.h"
 #include "deriv.h"
-
+#include "../libparallel/mpi_wrapper.h"
+#include "../libparallel/local.h"
 using namespace std;
 
 namespace psi {
@@ -66,7 +67,7 @@ public:
     }
     CorrelatedFunctor(SharedVector results) : psio_(_default_psio_lib_)
     {
-        nthread = WorldComm->nthread();
+        nthread = Process::environment.get_n_threads();
         result.push_back(results);
         for (int i=1; i<nthread; ++i)
             result.push_back(SharedVector(result[0]->clone()));
@@ -75,7 +76,7 @@ public:
         buffer_sizes_ = new size_t[num_pairs];
         psio_->read_entry(PSIF_AO_TPDM, "TPDM Buffer Sizes", (char*)buffer_sizes_, num_pairs*sizeof(size_t));
         size_t max_size = 0;
-        for(int i = 0; i < num_pairs; ++i)
+        for(size_t i = 0; i < num_pairs; ++i)
             max_size = max_size > buffer_sizes_[i] ? max_size : buffer_sizes_[i];
         tpdm_buffer_ = new double[max_size];
         tpdm_ptr_ = tpdm_buffer_;
@@ -107,13 +108,15 @@ public:
     }
 
     void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
-                    int pirrep, int pso,
-                    int qirrep, int qso,
-                    int rirrep, int rso,
-                    int sirrep, int sso,
+                    int /*pirrep*/, int /*pso*/,
+                    int /*qirrep*/, int /*qso*/,
+                    int /*rirrep*/, int /*rso*/,
+                    int /*sirrep*/, int /*sso*/,
                     double value)
     {
-        int thread = WorldComm->thread_id(pthread_self());
+        int thread =0;
+        //This was the old line, but it always returned 0 anyways...
+        //WorldComm->thread_id(pthread_self());
 
         double prefactor = 8.0;
         if (pabs == qabs)
@@ -152,7 +155,7 @@ public:
         : D_(D)
     {
         counter=0;
-        nthread = WorldComm->nthread();
+        nthread = Process::environment.get_n_threads();
         result.push_back(results);
 
         for (int i=1; i<nthread; ++i)
@@ -170,7 +173,7 @@ public:
         result[0]->sum();
     }
 
-    void load_tpdm(size_t id) {}
+    void load_tpdm(size_t /*id*/) {}
     void next_tpdm_element(){}
 
     void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
@@ -180,7 +183,8 @@ public:
                     int sirrep, int sso,
                     double value)
     {
-        int thread = WorldComm->thread_id(pthread_self());
+        int thread = 0;
+        //Old call::WorldComm->thread_id(pthread_self());
 
         // Previously, we applied a factor of 4 after the fact...apply it from the beginning now.
         double prefactor = 4.0;
@@ -230,7 +234,7 @@ public:
         : D_ref_(D_ref), D_(D), scf_functor_(scf_functor), results_(results)
     {
         counter=0;
-        nthread = WorldComm->nthread();
+        nthread = Process::environment.get_n_threads();
         result_vec_.push_back(results);
 
         for (int i=1; i<nthread; ++i)
@@ -244,7 +248,7 @@ public:
     ~ScfAndDfCorrelationRestrictedFunctor() 
     { }
 
-    void load_tpdm(size_t id) {}
+    void load_tpdm(size_t /*id*/) {}
     void next_tpdm_element() {}
 
     void finalize() {
@@ -265,7 +269,8 @@ public:
                     int sirrep, int sso,
                     double value)
     {
-        int thread = WorldComm->thread_id(pthread_self());
+        int thread = 0;
+        //Old call WorldComm->thread_id(pthread_self());
 
         bool braket = pabs!=rabs || qabs!=sabs;
         bool bra    = pabs!=qabs;
@@ -363,7 +368,7 @@ public:
         : Da_(Da),
           Db_(Db)
     {
-        nthread = WorldComm->nthread();
+        nthread = Process::environment.get_n_threads();
         result.push_back(results);
         for (int i=1; i<nthread; ++i)
             result.push_back(SharedVector(result[0]->clone()));
@@ -371,7 +376,7 @@ public:
     ~ScfUnrestrictedFunctor() 
     { }
 
-    void load_tpdm(size_t id) {}
+    void load_tpdm(size_t /*id*/) {}
     void next_tpdm_element() {}
 
     void finalize() {
@@ -389,7 +394,8 @@ public:
                     int sirrep, int sso,
                     double value)
     {
-        int thread = WorldComm->thread_id(pthread_self());
+        int thread = 0;
+        //Old call: WorldComm->thread_id(pthread_self());
         double prefactor = 1.0;
 
         if (pabs == qabs)
@@ -460,7 +466,7 @@ SharedMatrix Deriv::compute()
 
     // Initialize an ERI object requesting derivatives.
     std::vector<boost::shared_ptr<TwoBodyAOInt> > ao_eri;
-    for (int i=0; i<WorldComm->nthread(); ++i)
+    for (int i=0; i<Process::environment.get_n_threads(); ++i)
         ao_eri.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri(1)));
     TwoBodySOInt so_eri(ao_eri, integral_, cdsalcs_);
 
@@ -527,7 +533,7 @@ SharedMatrix Deriv::compute()
             so_eri.compute_integrals_deriv1(functor);
             functor.finalize();
         }
-        for (int cd=0; cd < cdsalcs_.ncd(); ++cd)
+        for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd)
             TPDMcont[cd] = TPDMcont_vector->get(cd);
         
     } 
@@ -553,13 +559,13 @@ SharedMatrix Deriv::compute()
             SharedMatrix Da_ref = ref_wfn->Da();
             SharedMatrix Db_ref = ref_wfn->Db();
 
-            for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+            for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd) {
                 double temp = Da_ref->vector_dot(h_deriv[cd]);
                 temp += Db_ref->vector_dot(h_deriv[cd]);
                 D_ref_cont[cd] = temp;
             }
 
-            for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+            for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd) {
                 double temp = -X_ref->vector_dot(s_deriv[cd]);
                 X_ref_cont[cd] = temp;
             }
@@ -612,7 +618,7 @@ SharedMatrix Deriv::compute()
             functor.finalize();
             _default_psio_lib_->close(PSIF_AO_TPDM, 1);
 
-            for (int cd=0; cd < cdsalcs_.ncd(); ++cd)
+            for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd)
                 TPDMcont[cd] = TPDMcont_vector->get(cd);
             
         }
@@ -621,14 +627,14 @@ SharedMatrix Deriv::compute()
     }
 
     // Now, compute the one electron terms
-    for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+    for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd) {
         double temp = Dcont[cd]; // In the df case, the HxP2 terms are already in here
         temp += Da->vector_dot(h_deriv[cd]);
         temp += Db->vector_dot(h_deriv[cd]);
         Dcont[cd] = temp;
     }
 
-    for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+    for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd) {
         double temp = X->vector_dot(s_deriv[cd]);
         Xcont[cd] = -temp;
     }

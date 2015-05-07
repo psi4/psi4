@@ -56,15 +56,21 @@ macro(find_math_libs _service)
     set(_lib)
     set(_libs)
     foreach(l ${ARGN})
+        set(_stat "")
+        if(ENABLE_STATIC_LINKING)
+            IF(NOT ${l} MATCHES "pthread")
+                set(_stat "lib${l}.a")
+            endif()
+        endif()
         find_library(_lib
-            NAMES ${l}
+            NAMES ${_stat} ${l}
             PATHS ${${_SERVICE}_ROOT}
             HINTS ${${_SERVICE}_ROOT}/lib64 ${${_SERVICE}_ROOT}/lib
             PATH_SUFFIXES ${MATH_LIBRARY_PATH_SUFFIXES}
             NO_DEFAULT_PATH
             )
         find_library(_lib
-            NAMES ${l}
+            NAMES ${_stat} ${l}
             PATH_SUFFIXES ${MATH_LIBRARY_PATH_SUFFIXES}
             )
         if(_lib)
@@ -206,7 +212,11 @@ macro(config_math_service _SERVICE)
                 endif()
             endif()
             if(HAVE_MKL_${_SERVICE})
-                set(${_SERVICE}_LIBRARIES -Wl,--start-group ${${_SERVICE}_LIBRARIES} ${_omp_flag} -Wl,--end-group)
+                if(APPLE)
+                    set(${_SERVICE}_LIBRARIES ${${_SERVICE}_LIBRARIES} ${_omp_flag})
+                else()
+                    set(${_SERVICE}_LIBRARIES -Wl,--start-group ${${_SERVICE}_LIBRARIES} ${_omp_flag} -Wl,--end-group)
+                endif()
             endif()
             unset(_omp_flag)
         endif()
