@@ -143,3 +143,8 @@ compare_values(conv_mp2tot, get_variable('CURRENT ENERGY'), 5, 'mp2 tot')       
 compare_values(conv_mp2tot, val, 5, 'mp2 return')                                            #TEST
 clean()
 
+if get_global_option('WRITE_CSX'):  #TEST
+    enedict = csx2endict()  #TEST
+    compare_integers(len(enedict) >= 2, True, 'CSX harvested')  #TEST
+    for pv, en in enedict.iteritems():  #TEST
+        compare_values(get_variable(pv), en, 6, 'CSX ' + pv)  #TEST

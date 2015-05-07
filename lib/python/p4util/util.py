@@ -292,5 +292,61 @@ def copy_file_from_scratch(filename, prefix, namespace, unit, move = False):
     command = ('%s %s/%s %s' % (cp, scratch, target, filename))
 
     os.system(command)
-    #print command
 
+
+def xml2dict(filename=None):
+    """Read XML *filename* into nested OrderedDict-s. *filename* defaults to
+    active CSX file.
+
+    """
+    import xmltodict as xd
+    if filename is None:
+        csx = os.path.splitext(psi4.outfile_name())[0] + '.csx'
+    else:
+        csx = filename
+    with open(csx, 'r') as handle:
+        csxdict = xd.parse(handle)
+
+    return csxdict
+
+
+def getFromDict(dataDict, mapList):
+    return reduce(lambda d, k: d[k], mapList, dataDict)
+
+
+def csx2endict():
+    """Grabs the CSX file as a dictionary, encodes translation of PSI variables
+    to XML blocks, gathers all available energies from CSX file into returned
+    dictionary.
+
+    """
+    blockprefix = ['chemicalSemantics', 'molecularCalculation', 'quantumMechanics', 'singleReferenceState', 'singleDeterminant']
+    blockmidfix = ['energies', 'energy']
+    prefix = 'cs:'
+
+    pv2xml = {
+        'MP2 CORRELATION ENERGY': [['mp2'], 'correlation'],
+        'MP2 SAME-SPIN CORRELATION ENERGY': [['mp2'], 'sameSpin correlation'],
+        'HF TOTAL ENERGY': [['abinitioScf'], 'electronic'],
+        'NUCLEAR REPULSION ENERGY': [['abinitioScf'], 'nuclearRepulsion'],
+        'DFT FUNCTIONAL TOTAL ENERGY': [['dft'], 'dftFunctional'],
+        'DFT TOTAL ENERGY': [['dft'], 'electronic'],
+        'DOUBLE-HYBRID CORRECTION ENERGY': [['dft'], 'doubleHybrid correction'],
+        'DISPERSION CORRECTION ENERGY': [['dft'], 'dispersion correction'],
+    }
+
+    csxdict = xml2dict()
+    enedict = {}
+    for pv, lpv in pv2xml.iteritems():
+        address = blockprefix + lpv[0] + blockmidfix
+        indices = [prefix + bit for bit in address]
+        try:
+            qwer = getFromDict(csxdict, indices)
+        except KeyError:
+            continue
+        for v in qwer:
+            vv = v.values()
+            if vv[0] == prefix + lpv[1]:
+                enedict[pv] = float(vv[1])
+
+    return enedict
