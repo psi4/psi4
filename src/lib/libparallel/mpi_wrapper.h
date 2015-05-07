@@ -23,9 +23,10 @@
 #define _psi_src_lib_libparallel_mpi_wrapper_h_
 
 #include <string>
-
+#include <functional>
 #include <boost/shared_ptr.hpp>
 #include "parallel.h"
+#include "libparallel.h"
 #include <map>
 
 #if HAVE_MPI
@@ -33,8 +34,8 @@
 #include <boost/mpi/communicator.hpp>
 #include <mpi.h>
 namespace psi {
-class MPICommunicator:public Parallel<MPICommunicator> {
-   public:
+   class MPICommunicator:public Parallel<MPICommunicator> {
+      public:
       //Convenient typedef of base type
       typedef Parallel<MPICommunicator> Base;
 
@@ -71,13 +72,21 @@ class MPICommunicator:public Parallel<MPICommunicator> {
       void MakeComm(const std::string& Name, const int Color,
             const std::string& Comm2Split="NONE");
 
+      int Iprobe(const int Sender,const int MessageTag,
+            const std::string& Comm)const;
+
+      int probe(const int Sender,const int MessageTag,
+            const std::string& Comm)const;
+
+
+
       ///Frees the processes in the communicator
       void FreeComm(const std::string& Name="NONE");
 
       ///Returns the MPI_Comm associated with the current communicator
-      MPI_Comm GetMPIComm()const{return (MPI_Comm)GetComm("NONE");}
+      MPI_Comm GetMPIComm()const {return (MPI_Comm)GetComm("NONE");}
 
-   private:
+      private:
       /**\brief This is Boost's MPI environment object.
        *
        * In its creation Boost calls MPI_Initialize and in its destruction
@@ -101,7 +110,7 @@ class MPICommunicator:public Parallel<MPICommunicator> {
       boost::mpi::communicator GetComm(const std::string& CommName) const;
 
       ///So that the base class can access the implementation
-      friend class Parallel<MPICommunicator> ;
+      friend class Parallel<MPICommunicator>;
 
       /* \brief Wrapper to MPI's Allgatherv
        *
@@ -128,6 +137,12 @@ class MPICommunicator:public Parallel<MPICommunicator> {
       }
 
       template <typename T>
+      void gatherImpl(const T* data, int nelem, T* target, const int Root,
+            const std::string& Comm="NONE") const {
+         boost::mpi::gather(GetComm(Comm), data, nelem, target,Root);
+      }
+
+      template <typename T>
       void bcastImpl(T* data, int nelem,const int broadcaster,
             const std::string& Comm="NONE") const {
          boost::mpi::broadcast(GetComm(Comm), data, nelem, broadcaster);
@@ -135,14 +150,103 @@ class MPICommunicator:public Parallel<MPICommunicator> {
 
       template <typename T>
       void bcastImpl(T& data,const int broadcaster,
-            const std::string&Comm="NONE")const{
+            const std::string&Comm="NONE")const {
          boost::mpi::broadcast(GetComm(Comm), data, broadcaster);
       }
 
-};
-}//End namespace psi
+      template<typename T>
+      void IrecvImpl(const int source, const int tag, T* message,
+            const int length,const std::string& Comm)const{
+         int SCopy=(source<0?boost::mpi::any_source:source);
+         int TCopy=(tag<0?boost::mpi::any_tag:tag);
+         int LCopy=length;
+         if(message!=NULL&&length!=0){
+            if(length!=1)GetComm(Comm).irecv(SCopy,TCopy,message,LCopy);
+            else GetComm(Comm).irecv(SCopy,TCopy,message[0]);
+         }
+         else
+            GetComm(Comm).irecv(SCopy,TCopy);
+      }
+
+      template<typename T>
+      void recvImpl(const int source, const int tag, T* message,
+            const int length,const std::string& Comm)const{
+         int SCopy=(source<0?boost::mpi::any_source:source);
+         int TCopy=(tag<0?boost::mpi::any_tag:tag);
+         int LCopy=length;
+         if(message!=NULL&&length!=0){
+            if(length!=1)GetComm(Comm).recv(SCopy,TCopy,message,LCopy);
+            else GetComm(Comm).recv(SCopy,TCopy,message[0]);
+         }
+         else
+            GetComm(Comm).recv(SCopy,TCopy);
+      }
+
+      template<typename T>
+      void IsendImpl(const int source, const int tag,const T* message,
+            const int length,const std::string& Comm)const{
+         int SCopy=(source<0?boost::mpi::any_source:source);
+         int TCopy=(tag<0?boost::mpi::any_tag:tag);
+         int LCopy=length;
+         if(message!=NULL&&length!=0){
+            if(length!=1)GetComm(Comm).isend(SCopy,TCopy,message,LCopy);
+            else GetComm(Comm).isend(SCopy,TCopy,message[0]);
+         }
+         else
+            GetComm(Comm).isend(SCopy,TCopy);
+      }
+
+      template<typename T>
+      void sendImpl(const int source, const int tag,const T* message,
+            const int length,const std::string& Comm)const{
+         int SCopy=(source<0?boost::mpi::any_source:source);
+         int TCopy=(tag<0?boost::mpi::any_tag:tag);
+         int LCopy=length;
+         if(message!=NULL&&length!=0){
+            if(length!=1)GetComm(Comm).send(SCopy,TCopy,message,LCopy);
+            else GetComm(Comm).send(SCopy,TCopy,message[0]);
+         }
+         else GetComm(Comm).send(SCopy,TCopy);
+      }
+
+      template<typename T>
+      void AllReduceImpl(const T* localdata,const int nelem,T* target,
+            const MPIOperation& op,
+            const std::string& Name)const {
+         switch(op) {
+            case(MULTIPLY): {
+               boost::mpi::all_reduce(GetComm(Name),localdata,
+                     nelem, target,std::multiplies<T>());
+               break;
+            }
+            case(DIVIDE): {
+               boost::mpi::all_reduce(GetComm(Name),localdata,
+                     nelem, target,std::divides<T>());
+               break;
+            }
+            case(ADD): {
+               boost::mpi::all_reduce(GetComm(Name),localdata,
+                     nelem, target,std::plus<T>());
+               break;
+            }
+            case(SUBTRACT): {
+               boost::mpi::all_reduce(GetComm(Name),localdata,
+                     nelem, target,std::minus<T>());
+               break;
+            }
+            case(MODULUS): {
+               boost::mpi::all_reduce(GetComm(Name),localdata,
+                     nelem, target,std::modulus<T>());
+               break;
+            }
+            default:
+            throw PSIEXCEPTION("Unrecognized operation in mpiwrapper.h");
+            break;
+         }
+      }
+   };
+} //End namespace psi
 //End mpiwrapper class
 #endif //End on HAVE_MPI
-
 
 #endif //End on header guard

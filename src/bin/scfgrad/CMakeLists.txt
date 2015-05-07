@@ -31,11 +31,10 @@ write_to_cloc_list("${to_count}")
 add_library(scfgrad STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 add_dependencies(scfgrad mints)
-set(libs_to_merge scfgrad ${libs_to_merge} PARENT_SCOPE)
+set_property(GLOBAL APPEND PROPERTY PSILIB scfgrad)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(scfgrad custom_boost)
 endif()
-install(TARGETS scfgrad ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/libscfgrad)

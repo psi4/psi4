@@ -31,11 +31,10 @@ write_to_cloc_list("${to_count}")
 add_library(3index STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 add_dependencies(3index mints)
-set(libs_to_merge 3index ${libs_to_merge} PARENT_SCOPE)
+set_property(GLOBAL APPEND PROPERTY LIBLIST 3index)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(3index custom_boost)
 endif()
-install(TARGETS 3index ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/lib3index)

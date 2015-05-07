@@ -317,6 +317,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
   mol.set_geom_array(x);
   q = mol.coord_values();
   mol.fix_tors_near_180(); // Fix configurations of torsions.
+  mol.fix_oofp_near_180();
 
   double *f_old, *x_old, *q_old, *dq, *dg;
   double gq, qq, qz, zz, phi;

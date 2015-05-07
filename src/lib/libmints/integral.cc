@@ -24,6 +24,7 @@
 #include "psi4-dec.h"
 #include "mints.h"
 #include "liboptions/liboptions.h"
+#include "potentialint.h"
 #include <libint/libint.h>
 
 using namespace boost;
@@ -263,6 +264,11 @@ TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, bool 
 TwoBodyAOInt* IntegralFactory::f12(boost::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
 {
     return new F12(cf, this, deriv, use_shell_pairs);
+}
+
+TwoBodyAOInt* IntegralFactory::f12_scaled(boost::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
+{
+    return new F12Scaled(cf, this, deriv, use_shell_pairs);
 }
 
 TwoBodyAOInt* IntegralFactory::f12_squared(boost::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)

@@ -127,10 +127,12 @@ public:
 
     /** Given two basis sets, it merges the basis sets and then constructs an orthogonalized
      * space with the same span. Linearly dependent orbitals are thrown out.
-     * \param obs_plus_aux_bs Orbital basis set plus auxilery basis set
+     * \param molecule molecule to construct the basis for
+     * \param obs_key option keyword for orbital basis set "BASIS"
+     * \param aux_key option keyword for auxiliery basis set "DF_BASIS_MP2"
      * \param lindep_tol The tolerance for linear dependencies
      */
-    static OrbitalSpace build_ri_space(boost::shared_ptr<BasisSet> obs_plus_aux_bs, double lindep_tol);
+    static OrbitalSpace build_ri_space(const boost::shared_ptr<Molecule>& molecule, const std::string& obs_key, const std::string& aux_key, double lindep_tol);
 
     /** Given a basis set, it orthogonalizes the orbitals and returns a space with the same
      * span but orthogonal orbitals. Also, linear dependent orbitals are projected out.

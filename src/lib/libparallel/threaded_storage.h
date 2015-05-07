@@ -35,18 +35,18 @@ class threaded_storage
 public:
 
     threaded_storage(const T& value = T())
-        : storage_(WorldComm->nthread(), value)
+        : storage_(Process::environment.get_n_threads(), value)
     { }
 
     void initialize(const T& value) {
         storage_.clear();
-        for (int i=0; i<WorldComm->nthread(); ++i) {
+        for (int i=0; i<Process::environment.get_n_threads(); ++i) {
             storage_.push_back(value);
         }
     }
 
     T& operator*() {
-        return storage_[WorldComm->thread_id(pthread_self())];
+        return storage_[0];
     }
 
     const T& operator[](size_t ind) const {

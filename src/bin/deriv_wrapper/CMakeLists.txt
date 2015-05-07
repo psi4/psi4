@@ -20,11 +20,10 @@ write_to_cloc_list("${to_count}")
 add_library(deriv_wrapper STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 add_dependencies(deriv_wrapper mints)
-set(libs_to_merge deriv_wrapper ${libs_to_merge} PARENT_SCOPE)
+set_property(GLOBAL APPEND PROPERTY PSILIB deriv_wrapper)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(deriv_wrapper custom_boost)
 endif()
-install(TARGETS deriv_wrapper ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/libderiv_wrapper)

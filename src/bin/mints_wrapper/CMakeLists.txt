@@ -31,11 +31,10 @@ write_to_cloc_list("${to_count}")
 add_library(mints_wrapper STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 add_dependencies(mints_wrapper mints)
-set(libs_to_merge mints_wrapper ${libs_to_merge} PARENT_SCOPE)
+set_property(GLOBAL APPEND PROPERTY PSILIB mints_wrapper)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(mints_wrapper custom_boost)
 endif()
-install(TARGETS mints_wrapper ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/libmints_wrapper)

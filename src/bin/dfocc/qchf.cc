@@ -32,7 +32,6 @@ namespace psi{ namespace dfoccwave{
   
 void DFOCC::qchf()
 {
-   
 outfile->Printf("\n");
 outfile->Printf(" ============================================================================== \n");
 outfile->Printf(" ================ Performing QCHF iterations... =============================== \n");
@@ -43,7 +42,6 @@ outfile->Printf( "\t   ------------------------------ \n");
 //outfile->Printf( " ----    ---------------    ----------     ----------- \n");
 outfile->Printf( " Iter       E_total           DE           RMS MO Grad      MAX MO Grad  \n");
 outfile->Printf( " ----    ---------------    ----------     -----------      -----------  \n");
-
 
 //==========================================================================================
 //========================= NR iterations ==================================================
@@ -236,7 +234,7 @@ do
 	nidp=MAX0(nidpA,nidpB);
 	biggest_mograd=MAX0(biggest_mogradA,biggest_mogradB);
     }
-	
+
 outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e \n",itr_occ,Eref,DE,rms_wog,biggest_mograd);
 
 //==========================================================================================

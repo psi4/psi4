@@ -66,6 +66,26 @@ F12::~F12()
 }
 
 /////////
+// F12Scaled
+/////////
+
+F12Scaled::F12Scaled(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
+    : TwoElectronInt(integral, deriv, use_shell_pairs)
+{
+    fjt_ = new F12ScaledFundamental(cf,
+                              basis1()->max_am() +
+                              basis2()->max_am() +
+                              basis3()->max_am() +
+                              basis4()->max_am() +
+                              deriv_+1);
+}
+
+F12Scaled::~F12Scaled()
+{
+    delete fjt_;
+}
+
+/////////
 // F12 squared
 /////////
 

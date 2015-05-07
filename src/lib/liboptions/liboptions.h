@@ -27,8 +27,8 @@
 #include <vector>
 #include <map>
 #include <exception.h>
-#include <libutil/libutil.h> // Needed for Ref counting, string splitting, and conversions
-#include <libutil/ref.h> // Needed for Ref counting, string splitting, and conversions
+#include <libpsi4util/libpsi4util.h> // Needed for Ref counting, string splitting, and conversions
+#include <libpsi4util/ref.h> // Needed for Ref counting, string splitting, and conversions
 
 // Forward boost python object
 #include <boost/python/object_fwd.hpp>
@@ -119,7 +119,9 @@ public:
     virtual Data& operator[](unsigned int);
 };
 
+#ifdef __INTEL_COMPILER
 #pragma warning disable 654
+#endif
 class BooleanDataType : public DataType
 {
     bool boolean_;
@@ -140,8 +142,9 @@ public:
     virtual void assign(std::string s);
 };
 
-
+#ifdef __INTEL_COMPILER
 #pragma warning disable 654
+#endif
 class IntDataType : public DataType
 {
     int integer_;
@@ -162,8 +165,9 @@ public:
     virtual void assign(std::string s);
 };
 
-
+#ifdef __INTEL_COMPILER
 #pragma warning disable 654
+#endif
 class DoubleDataType : public DataType
 {
     double double_;
@@ -184,8 +188,9 @@ public:
     virtual void assign(std::string s);
 };
 
-
+#ifdef __INTEL_COMPILER
 #pragma warning disable 654
+#endif
 class StringDataType : public DataType
 {
     std::string str_;
@@ -211,8 +216,9 @@ public:
     virtual void assign(std::string s);
 };
 
-
+#ifdef __INTEL_COMPILER
 #pragma warning disable 654
+#endif
 class IStringDataType : public DataType
 {
     std::string str_;
@@ -287,7 +293,9 @@ public:
     Data& operator[](std::string s);
 };
 
+#ifdef __INTEL_COMPILER
 #pragma warning disable 654
+#endif
 class ArrayType : public DataType
 {
     std::vector<Data> array_;
@@ -315,7 +323,9 @@ public:
     virtual void reset();
 };
 
+#ifdef __INTEL_COMPILER
 #pragma warning disable 654
+#endif
 class MapType : public DataType
 {
     std::map<std::string, Data> keyvals_;

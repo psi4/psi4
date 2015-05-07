@@ -19,7 +19,7 @@
  *
  *@END LICENSE
  */
-
+#include <ctime>
 #include <libparallel/parallel.h>
 #include <cstdio>
 #include <cstring>
@@ -30,19 +30,20 @@
 #include "gitversion.h"
 
 namespace psi {
-
+void print_version(std::string);
 /*! Print PSI version information that was set in configure.ac */
-void print_version(std::string OutFileRMR)
+void print_version(std::string)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
-      boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
+  boost::shared_ptr<psi::PsiOutStream> printer=outfile;
   printer->Printf( "    -----------------------------------------------------------------------\n");
-  printer->Printf( "          PSI4: An Open-Source Ab Initio Electronic Structure Package\n");
-  printer->Printf( "                              PSI %s Driver\n", PSI_VERSION);
+  printer->Printf( "          Psi4: An Open-Source Ab Initio Electronic Structure Package\n");
+#ifdef PSI_VERSION
+  printer->Printf( "                              Psi4 %s Driver\n", PSI_VERSION);
+#endif
 
   // Are we using git? If so,what version string
 #ifdef GIT_VERSION
-  printer->Printf( "\n               Git: Rev " GIT_VERSION "\n");
+  printer->Printf( "\n                          Git: Rev " GIT_VERSION "\n");
 #endif
 
   printer->Printf( "\n");
@@ -57,6 +58,14 @@ void print_version(std::string OutFileRMR)
   printer->Printf( "                         Additional Contributions by\n");
   printer->Printf( "    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov\n");
   printer->Printf( "    -----------------------------------------------------------------------\n\n");
+  printer->Printf("\n");
+  printer->Printf( "    Psi4 started on: ");
+  std::time_t     now = time(0);
+  struct tm  tstruct;
+  char       buf[80];
+  tstruct = *localtime(&now);
+  strftime(buf, sizeof(buf), "%m-%d-%Y  %I:%M:%S %p %Z", &tstruct);
+  (*printer) << buf<< std::endl<<std::endl;
   pid_t pid = getpid();
   printer->Printf( "    Process ID: %6d\n",pid);
   printer->Printf( "    PSI4DATADIR: %s\n", Process::environment("PSIDATADIR").c_str());

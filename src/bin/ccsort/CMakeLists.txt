@@ -31,11 +31,10 @@ write_to_cloc_list("${to_count}")
 add_library(ccsort STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 add_dependencies(ccsort mints)
-set(libs_to_merge ccsort ${libs_to_merge} PARENT_SCOPE)
+set_property(GLOBAL APPEND PROPERTY PSILIB ccsort)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(ccsort custom_boost)
 endif()
-install(TARGETS ccsort ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/libccsort)

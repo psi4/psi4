@@ -21,6 +21,5 @@ write_to_cloc_list("${to_count}")
 add_library(erd STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 #add_dependencies(erd )
-set(libs_to_merge erd ${libs_to_merge} PARENT_SCOPE)
-install(TARGETS erd ARCHIVE DESTINATION lib)
+set_property(GLOBAL APPEND PROPERTY LIBLIST erd)
 

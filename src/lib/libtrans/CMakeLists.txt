@@ -31,11 +31,10 @@ write_to_cloc_list("${to_count}")
 add_library(trans STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 add_dependencies(trans mints)
-set(libs_to_merge trans ${libs_to_merge} PARENT_SCOPE)
+set_property(GLOBAL APPEND PROPERTY LIBLIST trans)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(trans custom_boost)
 endif()
-install(TARGETS trans ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/libtrans)

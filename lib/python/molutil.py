@@ -21,18 +21,12 @@
 #
 
 """Module with utility functions that act on molecule objects."""
-import os
-import re
-import subprocess
-import socket
-import shutil
-import random
 import math
 import psi4
 import p4const
-#CUimport p4util
+# CUimport p4util
 from p4regex import *
-#CUfrom dashparam import *
+# CUfrom dashparam import *
 
 
 def extract_clusters(mol, ghost=True, cluster_size=0):
@@ -81,10 +75,8 @@ def extract_clusters(mol, ghost=True, cluster_size=0):
                 for g in range(nfrag, 0, -1):
                     if (g not in reals):
                         ghosts.append(g)
-                #print "Cluster #%d: %s reals, %s ghosts" % (counter,str(reals), str(ghosts))
                 clusters.append(mol.extract_subsets(reals, ghosts))
             else:
-                #print "Cluster #%d: %s reals" % (counter,str(reals))
                 clusters.append(mol.extract_subsets(reals))
 
             # reset rank
@@ -197,6 +189,7 @@ def new_set_attr(self, name, value):
 
     object.__setattr__(self, name, value)
 
+
 def new_get_attr(self, name):
     """Function to redefine __getattr__ method of molecule class."""
     fxn = object.__getattribute__(self, "is_variable")
@@ -249,23 +242,26 @@ def BFS(self):
     # Simply start with the first atom, do a BFS when done, go to any
     #   untouched atom and start again iterate until all atoms belong
     #   to a fragment group
-    while len(White) > 0 or len(Queue) > 0:  # Iterates to the next fragment
+    while White or Queue:                # Iterates to the next fragment
         Fragment.append([])
 
-        while len(Queue) > 0:                # BFS within a fragment
-            for u in Queue:                  # find all (still white) nearest neighbors to vertex u
+        while Queue:                     # BFS within a fragment
+            for u in Queue:              # find all white neighbors to vertex u
                 for i in White:
-                    dist = p4const.psi_bohr2angstroms * math.sqrt((self.x(i) - self.x(u)) ** 2 + \
-                        (self.y(i) - self.y(u)) ** 2 + (self.z(i) - self.z(u)) ** 2)
-                    if dist < vdW_diameter[self.symbol(u)] + vdW_diameter[self.symbol(i)]:
-                        Queue.append(i)      # if you find you, put in the queue
-                        White.remove(i)      # and remove it from the untouched list
-            Queue.remove(u)                  # remove focus from Queue
+                    dist = p4const.psi_bohr2angstroms * math.sqrt(
+                           (self.x(i) - self.x(u)) ** 2 +
+                           (self.y(i) - self.y(u)) ** 2 +
+                           (self.z(i) - self.z(u)) ** 2)
+                    if dist < vdW_diameter[self.symbol(u)] + \
+                       vdW_diameter[self.symbol(i)]:
+                        Queue.append(i)  # if you find you, put in the queue
+                        White.remove(i)  # & remove it from the untouched list
+            Queue.remove(u)              # remove focus from Queue
             Black.append(u)
-            Fragment[-1].append(int(u))      # add to group (0-indexed)
-            Fragment[-1].sort()              # preserve original atom ordering
+            Fragment[-1].append(int(u))  # add to group (0-indexed)
+            Fragment[-1].sort()          # preserve original atom ordering
 
-        if len(White) != 0:                  # can't move White -> Queue if no more exist
+        if White:                        # can't move White -> Queue if empty
             Queue.append(White[0])
             White.remove(White[0])
 
@@ -310,4 +306,3 @@ def geometry(geom, name="default"):
 def activate(mol):
     """Function to set molecule object *mol* as the current active molecule."""
     psi4.set_active_molecule(mol)
-    #psi4.IO.set_default_namespace(mol.get_name())

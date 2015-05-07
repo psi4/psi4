@@ -74,6 +74,7 @@ void MOLECULE::test_B(void) {
 
   // account for changes in sign of dihedral
   fix_tors_near_180();
+  fix_oofp_near_180();
 
   try {
 

@@ -103,7 +103,6 @@ IntegralTransform::transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<
         IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_B_OEI, nTriMo_, moInts);
     }
     free(order);
-    free(order);
     free(moInts);
     free(soInts);
 }

@@ -31,11 +31,10 @@ write_to_cloc_list("${to_count}")
 add_library(sapt STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 add_dependencies(sapt mints)
-set(libs_to_merge sapt ${libs_to_merge} PARENT_SCOPE)
+set_property(GLOBAL APPEND PROPERTY PSILIB sapt)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(sapt custom_boost)
 endif()
-install(TARGETS sapt ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/libsapt)

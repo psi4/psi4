@@ -28,7 +28,7 @@
 #include <libmints/molecule.h>
 #include <libmints/wavefunction.h>
 #include <liboptions/liboptions.h>
-#include <libutil/libutil.h>
+#include <libpsi4util/libpsi4util.h>
 
 #include "moinfo_base.h"
 

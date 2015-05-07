@@ -31,11 +31,10 @@ write_to_cloc_list("${to_count}")
 add_library(transqt STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 add_dependencies(transqt mints)
-set(libs_to_merge transqt ${libs_to_merge} PARENT_SCOPE)
+set_property(GLOBAL APPEND PROPERTY PSILIB transqt)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(transqt custom_boost)
 endif()
-install(TARGETS transqt ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/libtransqt)

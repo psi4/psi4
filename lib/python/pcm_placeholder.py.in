@@ -1,0 +1,18 @@
+# -*- python -*-
+# -*- coding: utf-8 -*-
+# vim:filetype=python:
+#
+# Roberto Di Remigio <roberto.d.remigio@uit.no>
+# University of Tromso 2015
+#
+
+"""
+This is a placeholder for the real pcmsolver.py script.
+The location of the real pcmsolver.py is configured by CMake
+to point to the proper install prefix.
+In this way we avoid to transform inputparser.py into a file
+that has to be configured by CMake
+
+"""
+
+PCMSOLVER_PARSE_DIR='@PCMSOLVER_PARSE_DIR@'

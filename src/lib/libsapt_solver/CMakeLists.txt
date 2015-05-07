@@ -31,11 +31,10 @@ write_to_cloc_list("${to_count}")
 add_library(sapt_solver STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 add_dependencies(sapt_solver mints)
-set(libs_to_merge sapt_solver ${libs_to_merge} PARENT_SCOPE)
+set_property(GLOBAL APPEND PROPERTY LIBLIST sapt_solver)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(sapt_solver custom_boost)
 endif()
-install(TARGETS sapt_solver ARCHIVE DESTINATION lib)
 
 # Sets install directory for all the headers in the list
 install_list_FILES("${headers_list}" include/libsapt_solver)
