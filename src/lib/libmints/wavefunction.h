@@ -229,6 +229,8 @@ protected:
     int CIM_nactive_virtual_;
     int * CIM_nactive_virtual_pointer_;
 
+    /// Flag to tell if this is a DCFT computation
+    bool isDCFT_;
 private:
     // Wavefunction() {}
     void common_init();
@@ -505,6 +507,11 @@ public:
 
     /// Set if this is a CIM computation
     void CIMSet(bool value,int nactive_occupied);
+
+    /// Returns true if this is a DCFT computation
+    bool isDCFT();
+    /// Set if this is a DCFT computation
+    void set_DCFT(bool val);
 };
 
 }
