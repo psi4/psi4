@@ -71,9 +71,9 @@ MyTime_t DetermineRes(TimeTypes Type){
 
 Res_t InitRes(){
    Res_t ReturnValue;
-   ReturnValue[WALL]=DetermineRes<3>(WALL);
-   ReturnValue[CPU]=DetermineRes<100>(CPU);
-   ReturnValue[SYSTEM]=DetermineRes<100>(SYSTEM);
+   ReturnValue[WALL]=DetermineRes<1>(WALL);
+   ReturnValue[CPU]=DetermineRes<1>(CPU);
+   ReturnValue[SYSTEM]=DetermineRes<1>(SYSTEM);
    return ReturnValue;
 }
 

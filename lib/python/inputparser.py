@@ -78,7 +78,7 @@ def quotify(string):
     """
     # This wraps anything that looks like a string in quotes, and removes leading
     # dollar signs from python variables
-    wordre = re.compile(r'(([$]?)([-+()*.\w\"\']+))')
+    wordre = re.compile(r'(([$]?)([-+()*.\w\"\'/\\]+))')
     string = wordre.sub(process_word_quotes, string)
     return string
 
@@ -159,7 +159,7 @@ def process_from_file_command(matchobj):
            mol+=i
            mol+="\n"
     return mol
-    
+
 
 def process_pubchem_command(matchobj):
     """Function to process match of ``pubchem`` in molecule block."""
@@ -648,7 +648,7 @@ def process_input(raw_input, print_level=1):
     # Return from handling literal blocks to normal processing
 
     # Nuke all comments
-    comment = re.compile(r'[^\\]#.*')
+    comment = re.compile(r'(^|[^\\])#.*')
     temp = re.sub(comment, '', temp)
     # Now, nuke any escapes from comment lines
     comment = re.compile(r'\\#')
