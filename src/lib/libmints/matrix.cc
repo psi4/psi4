@@ -566,7 +566,7 @@ void Matrix::release()
 }
 
 void Matrix::copy_from(double ***c) {
-    int size;
+    size_t size;
 
     for (int h=0; h<nirrep_; ++h) {
         size = rowspi_[h] * colspi_[h^symmetry_] * sizeof(double);
