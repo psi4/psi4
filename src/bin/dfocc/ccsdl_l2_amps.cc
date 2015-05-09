@@ -72,15 +72,15 @@ void DFOCC::ccsdl_l2_amps()
     U.reset();
     U = SharedTensor2d(new Tensor2d("G (Q|IA)", nQ, naoccA, navirA));
     U->read(psio_, PSIF_DFOCC_AMPS);
-    T->axpy(U, -1.0);;
+    T->axpy(U, -1.0);
     U.reset();
     U = SharedTensor2d(new Tensor2d("L1 (Q|IA)", nQ, naoccA, navirA));
     U->read(psio_, PSIF_DFOCC_AMPS);
-    T->axpy(U, 1.0);;
+    T->axpy(U, 1.0);
     U.reset();
     U = SharedTensor2d(new Tensor2d("L1t (Q|IA)", nQ, naoccA, navirA));
     U->read(psio_, PSIF_DFOCC_AMPS);
-    T->axpy(U, -1.0);;
+    T->axpy(U, -1.0);
     U.reset();
     X->gemm(true, false, T, bQiaA, 1.0, 1.0);
     T.reset();

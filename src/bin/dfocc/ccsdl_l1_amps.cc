@@ -157,11 +157,11 @@ void DFOCC::ccsdl_l1_amps()
     U.reset();
     U = SharedTensor2d(new Tensor2d("Vp (Q|IJ)", nQ, naoccA, naoccA));
     U->read(psio_, PSIF_DFOCC_AMPS);
-    T->axpy(U, -2.0);;
+    T->axpy(U, -2.0);
     U.reset();
     U = SharedTensor2d(new Tensor2d("Zeta (Q|IJ)", nQ, naoccA, naoccA));
     U->read(psio_, PSIF_DFOCC_AMPS);
-    T->axpy(U, -1.0);;
+    T->axpy(U, -1.0);
     U.reset();
     l1newA->contract(true, false, naoccA, navirA, nQ * naoccA, T, bQiaA, 1.0, 1.0);
     T.reset();

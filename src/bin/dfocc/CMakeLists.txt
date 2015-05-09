@@ -45,7 +45,8 @@ ccd_iterations_low.cc     ccd_3index_intr_low.cc    ccd_F_intr_low.cc
 ccd_W_intr_low.cc         ccd_t2_amps_low.cc        ccsdl_iterations.cc
 ccsdl_3index_intr.cc      ccsdl_W_intr.cc           ccsdl_l1_amps.cc
 ccsdl_l2_amps.cc          ccdl_iterations.cc        ccdl_3index_intr.cc
-ccdl_W_intr.cc            ccdl_l2_amps.cc
+ccdl_W_intr.cc            ccdl_l2_amps.cc           ccsd_pdm_3index_intr.cc
+ccsd_opdm.cc              ccsd_tpdm.cc
 )
 
 # If you want to remove some sources specify them explictly here
