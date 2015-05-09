@@ -3244,6 +3244,25 @@ void Tensor2d::set3_oo(const SharedTensor2d &A)
     }
 }//
 
+void Tensor2d::set3_act_oo(int frzc, const SharedTensor2d &A)
+{
+    int naux = A->d1_;
+    int aoccA = A->d2_;
+    int aoccB = A->d3_;
+    int occA = d2_;
+    int occB = d3_;
+    #pragma omp parallel for
+    for (int Q = 0; Q < naux; Q++) {
+         for (int i = 0; i < aoccA; i++) {
+              for (int j = 0; j < aoccB; j++) {
+                   int ij = A->col_idx_[i][j];
+                   int oo = ( (i + frzc) * occB) + j + frzc;
+                   A2d_[Q][oo] = A->get(Q,ij);
+              }
+         }
+    }
+}//
+
 void Tensor2d::add3_oo(const SharedTensor2d &A, double alpha, double beta)
 {
     int naux = A->d1_;
@@ -3320,6 +3339,21 @@ void Tensor2d::set3_vv(const SharedTensor2d &A, int occ)
                    int ab = A->col_idx_[a][b];
                    int vv = col_idx_[a + occ][b + occ];
                    A2d_[Q][vv] = A->get(Q,ab);
+              }
+         }
+    }
+}//
+
+void Tensor2d::set3_act_vv(const SharedTensor2d &A)
+{
+    int naux = dim1_;
+    int vir = A->d2_;
+    #pragma omp parallel for
+    for (int Q = 0; Q < naux; Q++) {
+         for (int a = 0; a < vir; a++) {
+              for (int b = 0; b < vir; b++) {
+                   int ab = A->col_idx_[a][b];
+                   A2d_[Q][ab] = A->get(Q,ab);
               }
          }
     }
@@ -3658,6 +3692,17 @@ void Tensor2d::symmetrize()
 	}
     }
     */
+
+}//
+
+void Tensor2d::symmetrize(const SharedTensor2d &A)
+{
+    #pragma omp parallel for
+    for (int i=0; i<dim1_; ++i) {
+	for (int j=0; j<dim2_; ++j) {
+	     A2d_[i][j] = 0.5 * (A->A2d_[i][j] + A->A2d_[j][i]);
+	}
+    }
 
 }//
 

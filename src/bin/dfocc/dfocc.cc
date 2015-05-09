@@ -204,7 +204,7 @@ if (reference_ == "RESTRICTED") {
         HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
 
     // if we need PDMs
-    if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE"|| cc_lambda_ == "TRUE") {
+    if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE" || cc_lambda_ == "TRUE") {
         GijA = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
         GabA = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
         G1c_oo = SharedTensor2d(new Tensor2d("Correlation OPDM <O|O>", noccA, noccA));
@@ -351,7 +351,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") outfile->Printf("                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP2   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision January 13, 2015\n") ;
+   outfile->Printf("              Latest Revision May 9, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
@@ -377,7 +377,6 @@ void DFOCC::title_grad()
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf("\n");
-   
 
 }//
 

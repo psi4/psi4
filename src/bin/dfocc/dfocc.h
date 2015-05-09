@@ -421,6 +421,13 @@ protected:
     void ccsdl_WabefL2();     
     void ccsdl_Wmnie_direct(SharedTensor2d &W);
 
+    // CCSD Density
+    void ccsd_pdm_3index_intr();
+    void ccsd_pdm_yQia();
+    void ccsd_opdm();
+    void ccsd_tpdm();
+    void ccsdl_energy();
+
     // CCD
     void ccd_manager();
     void ccd_mp2();
@@ -815,6 +822,8 @@ protected:
      SharedTensor2d G1c_ij;             
      SharedTensor2d G1c_ab;             
      SharedTensor2d G1c_oo;             
+     SharedTensor2d G1c_ov;             
+     SharedTensor2d G1c_vo;             
      SharedTensor2d G1c_vv;             
      SharedTensor2d G1c;               // Correlation part of OPDM
      SharedTensor2d G1;                // Full OPDM (MO)
@@ -843,6 +852,10 @@ protected:
      SharedTensor2d GiaB;              
      SharedTensor2d GaiA;              
      SharedTensor2d GaiB;              
+     SharedTensor2d GtijA;              
+     SharedTensor2d GtijB;              
+     SharedTensor2d GtabA;              
+     SharedTensor2d GtabB;              
 
      // DF TPDM
      SharedTensor2d G2c_ij;                                    
@@ -1032,12 +1045,14 @@ protected:
      SharedTensor2d t1newA;            // T_i^a(1)
      SharedTensor2d t1newB;            // T_i^a(1)
      SharedTensor1d T1c;               // T1_Q
+     SharedTensor1d L1c;               // L1_Q
      SharedTensor2d l1A;               // T_i^a(1)
      SharedTensor2d l1B;               // T_i^a(1)
      SharedTensor2d l1newA;            // T_i^a(1)
      SharedTensor2d l1newB;            // T_i^a(1)
      SharedTensor1d gQ;                // G_Q
      SharedTensor1d gQp;               // G_Q'
+     SharedTensor1d gQt;               // Gt_Q
 
      SharedTensor2d FijA;               
      SharedTensor2d FijB;               
