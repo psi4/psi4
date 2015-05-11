@@ -2148,8 +2148,7 @@ def writeCSX(name, **kwargs):
         mc1.set_scfCalculation(scf1)
         cs1.set_molecularCalculations(mc1)
     # CSX version 1
-    elif False:
-    #elif csxVer == 1:
+    elif csxVer == 1:
         import csx1_api as api
         cs1 = api.csType(version='1.0')
 
@@ -2430,7 +2429,7 @@ def writeCSX(name, **kwargs):
         cs1.set_molecularCalculation(mc1)
 
     # CSX version 1.5
-    elif csxVer == 1:
+    elif csxVer == 1.5:
         import csx1_api as api
         cs1 = api.csType(version='1.0') #5')
 
