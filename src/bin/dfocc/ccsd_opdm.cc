@@ -68,7 +68,6 @@ void DFOCC::ccsd_opdm()
                 int ia = ia_idxAA->get(i,a);
                 for(int b = 0 ; b < navirA; ++b){
                     int jb = ia_idxAA->get(j,b);
-                    int bj = ai_idxAA->get(b,j);
                     U->subtract(ia, jb, t1A->get(i,b) * t1A->get(j,a) );
                 }
             }
