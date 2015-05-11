@@ -66,9 +66,12 @@ protected:
     void Fint_zero();
     void fock();
     void separable_tpdm();
+    void sep_tpdm_cc();
     void combine_ref_sep_tpdm();
     void tpdm_tilde();
     void back_trans();
+    void tpdm_tilde_cc();
+    void back_trans_cc();
     void dfgrad();
     void oei_grad();
     void tei_grad_ref();
@@ -78,6 +81,10 @@ protected:
     void gfock_ov();
     void gfock_vv();
     void gftilde_vv();
+    void gfock_cc_oo();
+    void gfock_cc_vo();
+    void gfock_cc_ov();
+    void gfock_cc_vv();
     void idp();
     void idp2();
     void idp_hf();

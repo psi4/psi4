@@ -699,6 +699,7 @@ void DFOCC::ccsd_manager()
         if (qchf_ == "TRUE" || dertype == "FIRST") { 
             g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
             g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
+            g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
             g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
             g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
         }
@@ -796,9 +797,9 @@ void DFOCC::ccsd_manager()
  	    ccsd_opdm();
 	    ccsd_tpdm();
 	    ccsdl_energy();
-            //prepare4grad();
-            //if (oeprop_ == "TRUE") oeprop();
-            //if (dertype == "FIRST") dfgrad();
+            prepare4grad();
+            if (oeprop_ == "TRUE") oeprop();
+            if (dertype == "FIRST") dfgrad();
             //if (ekt_ip_ == "TRUE") ekt_ip(); 
         }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 

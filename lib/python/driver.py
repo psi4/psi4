@@ -203,6 +203,10 @@ procedures = {
             'omp2.5'        : run_omp2_5_gradient,
             'cepa0'         : run_cepa0_gradient,
             'ocepa'         : run_ocepa_gradient,
+            'df-ccsd'       : run_dfccsd_gradient,
+            'dfccsd'        : run_dfccsd_gradient,
+            'df-ccsd2'      : run_dfccsd_gradient,
+            'dfccsd2'       : run_dfccsd_gradient,
 #            'efp'           : run_efp_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },

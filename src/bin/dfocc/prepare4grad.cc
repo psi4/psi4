@@ -34,26 +34,30 @@ namespace psi{ namespace dfoccwave{
   
 void DFOCC::prepare4grad()
 {      
-    separable_tpdm();
+    if (wfn_type_ == "DF-OMP2") separable_tpdm();
+    else sep_tpdm_cc();
     idp2();
+
     outfile->Printf("\tComputing the generalized Fock matrix (GFM)...\n");
-    
-    gfock_vo();
-    gfock_ov();
-    gfock_oo();
-    gfock_vv();
+    if (wfn_type_ == "DF-OMP2") { 
+        gfock_vo();
+        gfock_ov();
+        gfock_oo();
+        gfock_vv();
+    }
+    else { 
+        gfock_cc_vo();
+        gfock_cc_ov();
+        gfock_cc_oo();
+        gfock_cc_vv();
+    }
+
     outfile->Printf("\tComputing the orbital gradient...\n");
-    
     mograd();
     effective_mograd();
     timer_on("Z-vector");
-    //z_vector_cg();
-    //z_vector();
-    //z_vector_solver();
     z_vector_pcg();
     timer_off("Z-vector");
-    //effective_pdms();
-    //effective_gfm();
     effective_pdm_gfm();
 
 }// end prepare4grad 
