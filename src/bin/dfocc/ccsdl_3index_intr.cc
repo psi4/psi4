@@ -138,14 +138,17 @@ void DFOCC::ccsdl_3index_intr()
     T->gemm(false, false, bQijA, Y, 1.0, 0.0); 
     T->write(psio_, PSIF_DFOCC_AMPS);
     T.reset();
-    // V_ij^Q = \sum_{mn} (2*V_imjn - V_imnj) t_mn^Q
+    // V_ij^Q = \sum_{mn} (2*V_imjn - V_imnj) t_nm^Q
     T = SharedTensor2d(new Tensor2d("Vt (Q|IJ)", nQ, naoccA, naoccA));
     U = SharedTensor2d(new Tensor2d("T1 (Q|IJ)", nQ, naoccA, naoccA));
     U->read(psio_, PSIF_DFOCC_AMPS);
-    T->gemm(false, false, U, Y, 1.0, 0.0); 
+    L = SharedTensor2d(new Tensor2d("T1 (Q|JI)", nQ, naoccA, naoccA));
+    L->swap_3index_col(U);
+    U.reset();
+    T->gemm(false, false, L, Y, 1.0, 0.0); 
     T->write(psio_, PSIF_DFOCC_AMPS);
     T.reset();
-    U.reset();
+    L.reset();
     Y.reset();
 
     // Build V_iajb

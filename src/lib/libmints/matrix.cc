@@ -566,10 +566,8 @@ void Matrix::release()
 }
 
 void Matrix::copy_from(double ***c) {
-    int size;
-
     for (int h=0; h<nirrep_; ++h) {
-        size = rowspi_[h] * colspi_[h^symmetry_] * sizeof(double);
+        size_t size = rowspi_[h] * colspi_[h^symmetry_] * sizeof(double);
         if (size)
             memcpy(&(matrix_[h][0][0]), &(c[h][0][0]), size);
     }
@@ -703,8 +701,8 @@ SharedVector Matrix::get_row(int h, int m)
     }
     SharedVector vec = SharedVector(new Vector("Row",colspi_));
     vec->zero();
-    int size = colspi_[h];
-    for (int i = 0; i < size; ++i){
+    size_t size = colspi_[h];
+    for (size_t i = 0; i < size; ++i){
         vec->vector_[h][i] = matrix_[h][m][i];
     }
     return vec;
@@ -717,8 +715,8 @@ SharedVector Matrix::get_column(int h, int m)
     }
     SharedVector vec = SharedVector(new Vector("Column",rowspi_));
     vec->zero();
-    int size = rowspi_[h];
-    for (int i = 0; i < size; ++i){
+    size_t size = rowspi_[h];
+    for (size_t i = 0; i < size; ++i){
         vec->vector_[h][i] = matrix_[h][i][m];
     }
     return vec;
@@ -729,8 +727,8 @@ void Matrix::set_row(int h, int m, SharedVector vec)
     if (m >= rowspi_[h]) {
         throw PSIEXCEPTION("Matrix::set_row: index is out of bounds.");
     }
-    int size = colspi_[h];
-    for (int i = 0; i < size; ++i){
+    size_t size = colspi_[h];
+    for (size_t i = 0; i < size; ++i){
         matrix_[h][m][i] = vec->vector_[h][i];
     }
 }
@@ -740,8 +738,8 @@ void Matrix::set_column(int h, int m, SharedVector vec)
     if (m >= colspi_[h]) {
         throw PSIEXCEPTION("Matrix::set_column: index is out of bounds.");
     }
-    int size = rowspi_[h];
-    for (int i = 0; i < size; ++i){
+    size_t size = rowspi_[h];
+    for (size_t i = 0; i < size; ++i){
         matrix_[h][i][m] = vec->vector_[h][i];
     }
 }

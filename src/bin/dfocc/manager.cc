@@ -699,6 +699,7 @@ void DFOCC::ccsd_manager()
         if (qchf_ == "TRUE" || dertype == "FIRST") { 
             g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
             g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
+            g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
             g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
             g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
         }
@@ -772,6 +773,14 @@ void DFOCC::ccsd_manager()
 
         // CCSDL 
         if (dertype == "FIRST" || cc_lambda_ == "TRUE") {
+	    // memalloc
+            if (dertype == "FIRST") {
+                GtijA = SharedTensor2d(new Tensor2d("Gtilde Intermediate <I|J>", naoccA, naoccA));
+                GtabA = SharedTensor2d(new Tensor2d("Gtilde Intermediate <A|B>", navirA, navirA));
+                L1c = SharedTensor1d(new Tensor1d("DF_BASIS_CC L1_Q", nQ));
+	        gQt = SharedTensor1d(new Tensor1d("CCSD PDM G_Qt", nQ));
+            }
+
             timer_on("CCSDL");
             if (t2_incore) ccsdl_iterations();
             else throw PSIEXCEPTION("There is NOT enough memory for Lambda equations!");
@@ -780,12 +789,17 @@ void DFOCC::ccsd_manager()
 
         // Compute Analytic Gradients
         if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
-            //outfile->Printf("\n\tComputing unrelaxed response density matrices...\n");
- 	    //omp2_opdm();
-	    //omp2_tpdm();
-            //prepare4grad();
-            //if (oeprop_ == "TRUE") oeprop();
-            //if (dertype == "FIRST") dfgrad();
+	    // memalloc
+	    G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
+	    G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+
+            outfile->Printf("\tComputing unrelaxed response density matrices...\n");
+ 	    ccsd_opdm();
+	    ccsd_tpdm();
+	    ccsdl_energy();
+            prepare4grad();
+            if (oeprop_ == "TRUE") oeprop();
+            if (dertype == "FIRST") dfgrad();
             //if (ekt_ip_ == "TRUE") ekt_ip(); 
         }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 

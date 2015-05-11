@@ -47,8 +47,14 @@ void DFOCC::dfgrad()
     title_grad();
     outfile->Printf("\tAnalytic gradients computation is starting...\n");
     
-    tpdm_tilde();
-    back_trans();
+    if (wfn_type_ == "DF-OMP2") { 
+        tpdm_tilde();
+        back_trans();
+    }
+    else { 
+        tpdm_tilde_cc();
+        back_trans_cc();
+    }
 
 //===========================================================================================
 //============================ Gradient =====================================================
