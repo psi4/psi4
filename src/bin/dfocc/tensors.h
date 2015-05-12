@@ -185,6 +185,8 @@ class Tensor2d
   void axpy(ULI length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha);
   double **transpose2();
   SharedTensor2d transpose();
+  void trans(const SharedTensor2d &A);
+  void trans(double **A);
   void copy(double **a);
   void copy(const SharedTensor2d &Adum);
   void copy(ULI length, const SharedTensor2d &A, int inc_a, int inc_2d);

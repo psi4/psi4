@@ -121,6 +121,33 @@ if (reference_ == "RESTRICTED") {
     EcorrL += G1c->vector_dot(FockA);
     Eoei = EcorrL;
 
+    /*
+    // OEI energies
+    double Eoei2 = 0.0;
+    Eoei2 = G1c_oo->vector_dot(FooA);
+    outfile->Printf("\tDF-CCSDL OEI OO Block Energy (a.u.): %20.14f\n", Eoei2);
+    Eoei2 = G1c_ov->vector_dot(FovA);
+    outfile->Printf("\tDF-CCSDL OEI OV Block Energy (a.u.): %20.14f\n", Eoei2);
+    Eoei2 = G1c_vo->vector_dot(FvoA);
+    outfile->Printf("\tDF-CCSDL OEI VO Block Energy (a.u.): %20.14f\n", Eoei2);
+    Eoei2 = G1c_vv->vector_dot(FvvA);
+    outfile->Printf("\tDF-CCSDL OEI VV Block Energy (a.u.): %20.14f\n", Eoei2);
+    Eoei2 = G1c->vector_dot(FockA);
+    outfile->Printf("\tDF-CCSDL One-Electron Energy (a.u.): %20.14f\n", Eoei2);
+
+    // OEI2 energies
+    Eoei2 = G1c_oo->vector_dot(HooA);
+    outfile->Printf("\tDF-CCSDL OEI OO Block Energy (a.u.): %20.14f\n", Eoei2);
+    Eoei2 = G1c_ov->vector_dot(HovA);
+    outfile->Printf("\tDF-CCSDL OEI OV Block Energy (a.u.): %20.14f\n", Eoei2);
+    Eoei2 = G1c_vo->vector_dot(HvoA);
+    outfile->Printf("\tDF-CCSDL OEI VO Block Energy (a.u.): %20.14f\n", Eoei2);
+    Eoei2 = G1c_vv->vector_dot(HvvA);
+    outfile->Printf("\tDF-CCSDL OEI VV Block Energy (a.u.): %20.14f\n", Eoei2);
+    Eoei2 = G1c->vector_dot(HmoA);
+    outfile->Printf("\tDF-CCSDL One-Electron Energy (a.u.): %20.14f\n", Eoei2);
+    */
+
     // DE += 1/2 \sum_{Q} \sum_{i,j} G_ij^Q b_ij^Q
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
     G->read(psio_, PSIF_DFOCC_DENS);

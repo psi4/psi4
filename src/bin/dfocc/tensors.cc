@@ -1545,6 +1545,28 @@ SharedTensor2d Tensor2d::transpose()
     return temp;
 }//
 
+void Tensor2d::trans(const SharedTensor2d &A)
+{
+      #pragma omp parallel for
+      for (int i=0; i<dim1_; ++i) {
+	for (int j=0; j<dim2_; ++j) {
+	     A2d_[i][j] = A->A2d_[j][i];
+	}
+      }
+
+}//
+
+void Tensor2d::trans(double **A)
+{
+      #pragma omp parallel for
+      for (int i=0; i<dim1_; ++i) {
+	for (int j=0; j<dim2_; ++j) {
+	     A2d_[i][j] = A[j][i];
+	}
+      }
+
+}//
+
 void Tensor2d::copy(double **a)
 {
     //size_t size = dim1_ * dim2_ * sizeof(double);
