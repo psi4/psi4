@@ -35,7 +35,7 @@ namespace psi{ namespace dfoccwave{
 void DFOCC::ccsd_opdm()
 {   
 
-    SharedTensor2d T, U;
+    SharedTensor2d T, U, X;
     timer_on("opdm");
 //if (reference_ == "RESTRICTED") {
 
@@ -55,43 +55,40 @@ void DFOCC::ccsd_opdm()
 
     // G1_ia = t_i^a + l_i^a
     T = SharedTensor2d(new Tensor2d("Corr OPDM <I|A>", naoccA, navirA));
-    T->copy(t1A);
-    T->add(l1A);
+    T->axpy(t1A, 1.0);
+    T->axpy(l1A, 1.0);
 
-    // G1_ia += \sum(me) [U(ia,me) - t_m^a * t_i^e] l_m^e
+    // G1_ia += \sum(me) U(ia,me) l_m^e
     U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     U->read_symm(psio_, PSIF_DFOCC_AMPS);
-    #pragma omp parallel for
-    for(int i = 0 ; i < naoccA; ++i){
-        for(int j = 0 ; j < naoccA; ++j){
-            for(int a = 0 ; a < navirA; ++a){
-                int ia = ia_idxAA->get(i,a);
-                for(int b = 0 ; b < navirA; ++b){
-                    int jb = ia_idxAA->get(j,b);
-                    U->subtract(ia, jb, t1A->get(i,b) * t1A->get(j,a) );
-                }
-            }
-        }
-    }
     T->gemv(false, U, l1A, 1.0, 1.0);
     U.reset();
+
+    // G1_ia -= \sum(me) t_m^a t_i^e l_m^e
+    X = SharedTensor2d(new Tensor2d("X <I|M>", naoccA, naoccA));
+    X->gemm(false, true, t1A, l1A, 1.0, 0.0);
+    T->gemm(false, false, X, t1A, -1.0, 1.0);
+    X.reset();
 
     // G1_ia -= \sum(m) t_m^a G_im
     T->gemm(false, false, GijA, t1A, -1.0, 1.0);
 
     // G1_ia += \sum(e) t_i^e G_ea
     T->gemm(false, false, t1A, GabA, 1.0, 1.0);
+
+    // set OV block
     G1c_ov->set_act_ov(nfrzc, T);
     T.reset();
 
     // Build G1_ai
-    G1c_vo = G1c_ov->transpose();
+    G1c_vo->trans(G1c_ov);
 
     // Build G1c
     G1c->set_oo(G1c_oo);
     G1c->set_ov(G1c_ov);
     G1c->set_vo(G1c_vo);
     G1c->set_vv(noccA, G1c_vv);
+    //G1c->print();
 
     // Build G1
     G1->copy(G1c);
