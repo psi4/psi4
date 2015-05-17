@@ -103,7 +103,7 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
 
             const GaussianShell& gs = basisset.shell(overall_shell);
 
-           printer->Printf(" %c%5d  1.00\n", gs.AMCHAR(), gs.nprimitive());
+           printer->Printf(" %c%5d  1.00\n", gs.amchar(), gs.nprimitive());
 
             for (int prim=0; prim<gs.nprimitive(); ++prim) {
                printer->Printf("%20.10f %20.10f\n", gs.exp(prim), gs.coef(prim));
@@ -189,7 +189,7 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
 
     if (basisset.has_puream()) {
         // Tell Molden to use spherical.  5d implies 5d and 7f.
-       printer->Printf("[5d]\n[9g]\n\n");
+       printer->Printf("[5D]\n[9G]\n\n");
     }
     CharacterTable ct = mol.point_group()->char_table();
 
