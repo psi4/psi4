@@ -28,6 +28,7 @@ properties, and vibrational frequency calculations.
 
 """
 import sys
+import re
 #CUimport psi4
 #CUimport p4util
 #CUimport p4const
@@ -578,6 +579,32 @@ def energy(name, **kwargs):
         if not psi4.has_global_option_changed('E_CONVERGENCE'):
             if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
                 psi4.set_global_option('E_CONVERGENCE', 6)
+
+# Before invoking the procedure, we rename any file that should be read.
+# This is a workaround to do restarts with the current PSI4 capabilities
+# before actual, clean restarts are put in there
+# Restartfile is always converted to a single-element list if 
+# it contains a single string
+        if 'restart_file' in kwargs:
+            restartfile = kwargs['restart_file'] # Option still available for procedure-specific action
+            if restartfile != list(restartfile):
+                restartfile = [restartfile]
+            # Rename the files to be read to be consistent with psi4's file system
+            for item in restartfile:
+                name_split=re.split(r'\.',item)
+                filenum=name_split[len(name_split)-1]
+                try:
+                    filenum=int(filenum)
+                except ValueError:
+                    filenum=32  # Default file number is the checkpoint one
+                psioh = psi4.IOManager.shared_object()
+                psio = psi4.IO.shared_object()
+                filepath = psioh.get_file_path(filenum)
+                namespace = psio.get_default_namespace()
+                pid = str(os.getpid())
+                prefix = 'psi'
+                targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.' + str(filenum)
+                shutil.copy(item, targetfile)
 
         procedures['energy'][lowername](lowername, **kwargs)
 

@@ -1220,19 +1220,7 @@ def run_dfmp2_gradient(name, **kwargs):
     if not psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
         raise ValidationError('DF-MP2 gradients need DF-SCF reference, for now.')
 
-    if 'restart_file' in kwargs:
-        restartfile = kwargs.pop('restart_file')
-        # Rename the checkpoint file to be consistent with psi4's file system
-        psioh = psi4.IOManager.shared_object()
-        psio = psi4.IO.shared_object()
-        filepath = psioh.get_file_path(32)
-        namespace = psio.get_default_namespace()
-        pid = str(os.getpid())
-        prefix = 'psi'
-        targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.32'
-        if(psi4.me() == 0):
-            shutil.copy(restartfile, targetfile)
-    else:
+    if not 'restart_file' in kwargs:
         scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
@@ -1577,19 +1565,7 @@ def run_dfmp2_property(name, **kwargs):
     if not psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
         raise ValidationError('DF-MP2 properties need DF-SCF reference, for now.')
 
-    if 'restart_file' in kwargs:
-        restartfile = kwargs.pop('restart_file')
-        # Rename the checkpoint file to be consistent with psi4's file system
-        psioh = psi4.IOManager.shared_object()
-        psio = psi4.IO.shared_object()
-        filepath = psioh.get_file_path(32)
-        namespace = psio.get_default_namespace()
-        pid = str(os.getpid())
-        prefix = 'psi'
-        targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.32'
-        if(psi4.me() == 0):
-            shutil.copy(restartfile, targetfile)
-    else:
+    if not 'restart_file' in kwargs:
         scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
@@ -2007,19 +1983,7 @@ def run_dfmp2(name, **kwargs):
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    if 'restart_file' in kwargs:
-        restartfile = kwargs.pop('restart_file')
-        # Rename the checkpoint file to be consistent with psi4's file system
-        psioh = psi4.IOManager.shared_object()
-        psio = psi4.IO.shared_object()
-        filepath = psioh.get_file_path(32)
-        namespace = psio.get_default_namespace()
-        pid = str(os.getpid())
-        prefix = 'psi'
-        targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.32'
-        if(psi4.me() == 0):
-            shutil.copy(restartfile, targetfile)
-    else:
+    if not 'restart_file' in kwargs:
         scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
