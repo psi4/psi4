@@ -454,6 +454,8 @@ void export_mints()
             def("is_pure", &GaussianShell::is_pure, "docstring").
 //            def("normalize_shell", &GaussianShell::normalize_shell, "docstring").
             def("exp", &GaussianShell::exp, "Returns the exponent of the given primitive").
+            def("original_coef", &GaussianShell::original_coef, "docstring").
+            def("erd_coef", &GaussianShell::erd_coef, "docstring").
             def("coef", &GaussianShell::coef, "docstring");
 
 
@@ -811,7 +813,10 @@ void export_mints()
             def("function_to_shell", &BasisSet::function_to_shell, "docstring").
             def("function_to_center", &BasisSet::function_to_center, "Given a function number, return the number of the center it is on.").
             def("nshell_on_center", &BasisSet::nshell_on_center, "docstring").
+            def("decontract", &BasisSet::decontract, "docstring").
             def("ao_to_shell", &BasisSet::ao_to_shell, "docstring").
+            def("max_function_per_shell", &BasisSet::max_function_per_shell, "docstring").
+            def("max_nprimitive", &BasisSet::max_nprimitive, "docstring").
             def("pyconstruct_orbital", &BasisSet::pyconstruct_orbital, pyconstruct_orb_overloads("Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.")).
             staticmethod("pyconstruct_orbital").
             def("pyconstruct_auxiliary", &BasisSet::pyconstruct_auxiliary, pyconstruct_aux_overloads("Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.")).
