@@ -76,11 +76,10 @@ Totals:
   CalcInfo.num_drv_orbs; // dropped virts = num_fzv_orbs + num_rsv_orbs
 
 
-In progress: 
+  o New orbital space setup routine, ras_set3(), replaces ras_set2().
+Now called from DETCI and TRANSQT2.
 
-  o Made updates to orbital space setup routine, ras_set3(), which replaces
-ras_set2() and has a different signature.   Need to also put this in
-transqt2() (2, right?) so that numbering is consistent.
+In progress: 
 
   o Once above is checked, do a global replace of num_fzc_orbs with
 num_drc_orbs and num_fzv_orbs with num_drv_orbs.
@@ -97,17 +96,12 @@ info?  See what the SCF does.
   o transqt2 is not currently allowing mixed frozen/restricted, it's either
 or (see get_moinfo.cc)
 
-  o 2 test cases fail right now for straight ci.  no tests of mcscf lately.
-	228 - rasci-c2-active (Failed)
-	229 - rasci-h2o (Failed)
-Maybe these are the only ones with restricted so far, need to hardwire
-the ci to handle restricted for now (rig back into fzc).  Yeah I suspect
-this is the problem.
+  o test case rasci-c2-active was failing because we redefined active in a 
+two-part input.  This is really more of an input parsing issue than a
+detci issue.  At the moment I fixed this by adding 
+revoke_global_option_changed("ACTIVE") in between runs.  Wonder if there
+is a better shortcut for this command.  
 
-Hm, that fixes rasci-ne and rasci-h2o but not rasci-c2-active.. .maybe
-the active keyword is off... no, it works.  TRANSQT2 dies in part2 of
-this input ... ah, exactly because CI set the current wavefunction so
-we can no longer get the frozen orbs because they weren't set properly
-when the CI wavefunction became active?  (although we re-did the scf...)
-Yeah, something like this... run part 2 by itself and it passes
+  o At the moment, the ZAPT2 test case zaptn-nh2 is not running with the CI 
+tests.  Need to add it.
 
