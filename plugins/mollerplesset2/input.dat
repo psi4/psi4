@@ -2,7 +2,7 @@
 # PYTHONPATH must include directory above plugin directory.
 #     Define either externally or here, then import plugin.
 sys.path.insert(0, './..')
-import plugin_mp2
+import mollerplesset2
 
 molecule n2 {
   N
@@ -19,11 +19,11 @@ set {
   e_convergence 10
 }
 
-set plugin_mp2 {
+set mollerplesset2 {
   print 1
 }
 
-energy('plugin_mp2')
+energy('mollerplesset2')
 eRHFDimer = get_variable("SCF TOTAL ENERGY")
 eMP2Dimer = get_variable("MP2 ENERGY")
 clean()
@@ -37,14 +37,14 @@ molecule n {
 set reference uhf
 set basis cc-pvdz
 
-energy('plugin_mp2')
+energy('mollerplesset2')
 eUHFMonomer = get_variable("SCF TOTAL ENERGY")
 eUMP2Monomer = get_variable("MP2 ENERGY")
 clean()
 
 set reference rohf
 
-energy('plugin_mp2')
+energy('mollerplesset2')
 eROHFMonomer = get_variable("SCF TOTAL ENERGY")
 eROMP2Monomer = get_variable("MP2 ENERGY")
 clean()
@@ -56,10 +56,17 @@ print "E ROMP2 = %16.10f\n" % eROMP2Monomer
 print "E UHF   = %16.10f\n" % eUHFMonomer
 print "E UMP2  = %16.10f\n" % eUMP2Monomer
 
+compare_values(-108.951981482, eRHFDimer    , 5, 'RHF')
+compare_values(-109.262019962, eMP2Dimer    , 5, 'RMP2')
+compare_values( -54.388414237, eROHFMonomer , 5, 'ROHF')
+compare_values( -54.461468526, eROMP2Monomer, 5, 'ROMP2')
+compare_values( -54.391114562, eUHFMonomer  , 5, 'UHF')
+compare_values( -54.461855085, eUMP2Monomer , 5, 'UMP2')
+
 print "ROHF Binding energy  = %7.2f kcal/mol\n" % (627.51*(eRHFDimer - 2.0*eROHFMonomer))
 print "UHF Binding energy   = %7.2f kcal/mol\n" % (627.51*(eRHFDimer - 2.0*eUHFMonomer))
 print "ROMP2 Binding energy = %7.2f kcal/mol\n" % (627.51*(eMP2Dimer - 2.0*eROMP2Monomer))
 print "UMP2 Binding energy  = %7.2f kcal/mol\n" % (627.51*(eMP2Dimer - 2.0*eUMP2Monomer))
 
-plugin_mp2.exampleFN()
+mollerplesset2.exampleFN()
 

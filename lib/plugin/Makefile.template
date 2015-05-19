@@ -38,6 +38,7 @@ CXXSRC = $(notdir $(wildcard *.cc))
 CXX = @PLUGIN_CXX@
 CXXDEFS = @PLUGIN_DEFINES@
 CXXFLAGS = @PLUGIN_FLAGS@
+LDFLAGS = @PLUGIN_LDFLAGS@
 INCLUDES = @PLUGIN_INCLUDES@
 OBJDIR = @PLUGIN_OBJDIR@
 
@@ -56,10 +57,10 @@ default:: $(PSITARGET)
 
 # Add the flags needed for shared library creation
 ifeq ($(UNAME), Linux)
-    LDFLAGS = -shared
+    LDFLAGS += -shared
 endif
 ifeq ($(UNAME), Darwin)
-    LDFLAGS = -shared -undefined dynamic_lookup
+    LDFLAGS += -shared -undefined dynamic_lookup
     CXXFLAGS += -fno-common
 endif
 
