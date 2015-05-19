@@ -51,11 +51,11 @@ typedef struct {
   String *strings;
   int size;
   int nelec;
-  int nfzc;
-  short int *fzc_occ;
+  int ndrc;
+  short int *drc_occ;
 } StringSet;
 
-void stringset_init(StringSet *stringset, int size, int nelec, int nfzc,
+void stringset_init(StringSet *stringset, int size, int nelec, int ndrc,
   short int *frozen_occ);
 void stringset_delete(StringSet *stringset);
 void stringset_add(StringSet *stringset, int index, unsigned char *Occ);
@@ -113,8 +113,8 @@ void slaterdetset_read_vect(ULI unit, const char *prefix, double *coeffs,
  
 #define STRINGSET_KEY_SIZE "StringSet Size"
 #define STRINGSET_KEY_NELEC "StringSet Num. of Electrons"
-#define STRINGSET_KEY_NFZC "StringSet Num. of Frozen DOCCs"
-#define STRINGSET_KEY_FZC_OCC "StringSet Frz Core Occs"
+#define STRINGSET_KEY_NDRC "StringSet Num. of Dropped DOCCs"
+#define STRINGSET_KEY_DRC_OCC "StringSet Dropped Core Occs"
 #define STRINGSET_KEY_STRINGS "StringSet Strings"
 #define SDSET_KEY_SIZE "SlaterDetSet Size"
 #define SDSET_KEY_DETERMINANTS "SlaterDetSet Determinants"

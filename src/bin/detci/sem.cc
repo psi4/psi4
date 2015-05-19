@@ -1284,14 +1284,14 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
      StringSet alphastrings, betastrings;
      SlaterDetSet dets;
      //SlaterDetVector vec;
-     short int *fzc_occ;
+     short int *drc_occ;
      unsigned char *newocc;
      int irrep, gr, l, n;
 
-     if (CalcInfo.num_fzc_orbs > 0) {
-       fzc_occ = (short int *) malloc(CalcInfo.num_fzc_orbs*sizeof(short int));
-       for (int l=0; l<CalcInfo.num_fzc_orbs; l++) {
-         fzc_occ[l] = CalcInfo.order[l]; /* put it in Pitzer order */
+     if (CalcInfo.num_drc_orbs > 0) {
+       drc_occ = (short int *) malloc(CalcInfo.num_drc_orbs*sizeof(short int));
+       for (int l=0; l<CalcInfo.num_drc_orbs; l++) {
+         drc_occ[l] = CalcInfo.order[l]; /* put it in Pitzer order */
        }
      }
 
@@ -1299,7 +1299,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        AlphaG->num_el : BetaG->num_el)*sizeof(unsigned char));
 
      stringset_init(&alphastrings,AlphaG->num_str,AlphaG->num_el,
-                    CalcInfo.num_fzc_orbs, fzc_occ);
+                    CalcInfo.num_drc_orbs, drc_occ);
      int list_gr = 0;
      int offset = 0;
      for(irrep=0; irrep<AlphaG->nirreps; irrep++) {
@@ -1310,7 +1310,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
            for (n=0; n<AlphaG->num_el; n++) {
              newocc[n] = (unsigned char)
                CalcInfo.order[alplist[list_gr][l].occs[n] +
-               CalcInfo.num_fzc_orbs];
+               CalcInfo.num_drc_orbs];
            }
        stringset_add(&alphastrings,l+offset,newocc);
          }
@@ -1319,7 +1319,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
      }
 
      stringset_init(&betastrings,BetaG->num_str,BetaG->num_el,
-                    CalcInfo.num_fzc_orbs, fzc_occ);
+                    CalcInfo.num_drc_orbs, drc_occ);
      list_gr = 0;
      offset = 0;
      for(irrep=0; irrep<BetaG->nirreps; irrep++) {
@@ -1330,7 +1330,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
            for (n=0; n<BetaG->num_el; n++) {
              newocc[n] = (unsigned char)
                CalcInfo.order[betlist[list_gr][l].occs[n] +
-               CalcInfo.num_fzc_orbs];
+               CalcInfo.num_drc_orbs];
            }
        stringset_add(&betastrings,l+offset,newocc);
          }
@@ -1338,8 +1338,8 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        }
      }
      free(newocc);
-     if (CalcInfo.num_fzc_orbs > 0)
-       free(fzc_occ);
+     if (CalcInfo.num_drc_orbs > 0)
+       free(drc_occ);
 
      int ii;
      int size = CIblks.vectlen;

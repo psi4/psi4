@@ -391,8 +391,6 @@ struct params {
    int ras;          /* do a RAS calculation?  Set true if "RAS1" keyword */
    int fci;          /* do a FULL ci calc?  (affects sigma1-2 subroutines) */
    int fci_strings;  /* do a FULL ci calc?  (affects string storage) */
-   int fzc;          /* do implicit frozen core (remove those orbs)? */
-                     /* the alternative is a "restricted core" calc  */
    double S;         /* the value of quantum number S */
    int Ms0;          /* 1 if Ms=0, 0 otherwise */
    int ref_sym;      /* irrep for CI vectors;  -1 = find automatically */

@@ -321,9 +321,7 @@ int lbl2orb(char *orbstring)
 
    /* get correlated ordering */
    corr_orb = CalcInfo.reorder[pitzer_orb];
-
-   /* probably need to subtract dropped core here */
-   corr_orb -= CalcInfo.num_fzc_orbs;
+   corr_orb -= CalcInfo.num_drc_orbs;
 
    if (corr_orb < 0 || corr_orb > CalcInfo.num_ci_orbs) {
      outfile->Printf( "lbl2orb: error corr_orb out of bounds, %d\n", 

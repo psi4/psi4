@@ -68,7 +68,7 @@ void s3_block_bz1(int Ialist, int Iblist, int Jalist, int Jblist,
    double *CprimeI0, *CprimeI1, *CprimeI2, *CprimeI3;
    double *CprimeI4, *CprimeI5, *CprimeI6, *CprimeI7;
 
-   orbsym = CalcInfo.orbsym + CalcInfo.num_fzc_orbs;
+   orbsym = CalcInfo.orbsym + CalcInfo.num_drc_orbs;
    Iasym = Ialist;
    Jasym = Jalist;
    Ibsym = Iblist;
@@ -206,7 +206,7 @@ void s3_block_bz(int Ialist, int Iblist, int Jalist, int Jblist,
    double *SprimeI4,*SprimeI5,*SprimeI6,*SprimeI7;
    double *SI0, *SI1, *SI2, *SI3, *SI4, *SI5, *SI6, *SI7;
 
-   orbsym = CalcInfo.orbsym + CalcInfo.num_fzc_orbs;
+   orbsym = CalcInfo.orbsym + CalcInfo.num_drc_orbs;
    Iasym = Ialist;
    Jasym = Jalist;
    Ibsym = Iblist;

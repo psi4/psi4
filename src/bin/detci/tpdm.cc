@@ -65,7 +65,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
    struct iwlbuf TBuff_bb;
    struct iwlbuf TBuff_ab;
    int i, j, k, l, lmax, ij, kl, ijkl, ijksym;
-   int i2, j2, k2, l2, nfzc, populated_orbs;
+   int i2, j2, k2, l2, ndrc, populated_orbs;
    int *orbsym;
    int maxrows, maxcols, ntri, ntri2;
    unsigned long bufsz;
@@ -82,10 +82,10 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
    int root_idx;   /* what root we're on */
    double weight;  /* the weight of that root */
 
-   nfzc = CalcInfo.num_fzc_orbs;
-   populated_orbs = CalcInfo.nmo - CalcInfo.num_fzv_orbs;
+   ndrc = CalcInfo.num_drc_orbs;
+   populated_orbs = CalcInfo.nmo - CalcInfo.num_drv_orbs;
 
-   if (nfzc) {
+   if (ndrc) { // dropped core parts computed from OPDM
      psio_open(Parameters.opdm_file, PSIO_OPEN_OLD);
      onepdm_a = block_matrix(populated_orbs, populated_orbs);
      onepdm_b = block_matrix(populated_orbs, populated_orbs);
@@ -386,10 +386,10 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
      iwl_buf_init(&TBuff_aa, PSIF_MO_AA_TPDM, 0.0, 0, 0);
      iwl_buf_init(&TBuff_bb, PSIF_MO_BB_TPDM, 0.0, 0, 0);
      iwl_buf_init(&TBuff_ab, PSIF_MO_AB_TPDM, 0.0, 0, 0);
-     orbsym = CalcInfo.orbsym + nfzc;
+     orbsym = CalcInfo.orbsym + ndrc;
 
      /* do the core-core and core-active part here */
-     if (nfzc) {
+     if (ndrc) {
          if (Parameters.average_num == 1) 
            sprintf(opdm_key, "MO-basis Alpha OPDM Root %d",
              Parameters.average_states[0]);
@@ -409,7 +409,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
            populated_orbs * populated_orbs * sizeof(double));
 
        /* core-core part */
-       for (i=0; i<nfzc; i++) {
+       for (i=0; i<ndrc; i++) {
          for (j=0; j<i; j++) {
            iwl_buf_wrt_val(&TBuff,i,i,j,j, 2.00,printflag,"outfile",0);
            iwl_buf_wrt_val(&TBuff_aa,i,i,j,j, 1.00,0,"outfile",0);
@@ -426,11 +426,11 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
        }
 
        /* core-active part */
-       for (i=nfzc; i<populated_orbs; i++) {
-         for (j=nfzc; j<populated_orbs; j++) {
+       for (i=ndrc; i<populated_orbs; i++) {
+         for (j=ndrc; j<populated_orbs; j++) {
            const double value_a = onepdm_a[i][j];
            const double value_b = onepdm_b[i][j];
-           for (k=0; k<nfzc; k++) {
+           for (k=0; k<ndrc; k++) {
              iwl_buf_wrt_val(&TBuff,i,j,k,k,value_a + value_b,printflag,"outfile",0);
              iwl_buf_wrt_val(&TBuff_aa,i,j,k,k,value_a,0,"outfile",0);
              iwl_buf_wrt_val(&TBuff_bb,i,j,k,k,value_b,0,"outfile",0);
@@ -446,16 +446,16 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
      }
  
      for (i=0; i<CalcInfo.num_ci_orbs; i++) {
-       i2 = i+ nfzc;
+       i2 = i+ ndrc;
        for (j=0; j<CalcInfo.num_ci_orbs; j++) {
-         j2 = j + nfzc;
+         j2 = j + ndrc;
 	 for (k=0; k<=i; k++) {
-           k2 = k + nfzc;
+           k2 = k + ndrc;
 	   if (k==i) lmax = j+1;
 	   else lmax = CalcInfo.num_ci_orbs;
 	   ijksym = orbsym[i] ^ orbsym[j] ^ orbsym[k];
 	   for (l=0; l<lmax; l++) {
-             l2 = l + nfzc;
+             l2 = l + ndrc;
 	     if ((orbsym[l] ^ ijksym) != 0) continue;
 	     ij = i * CalcInfo.num_ci_orbs + j;
 	     kl = k * CalcInfo.num_ci_orbs + l;
@@ -492,7 +492,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
    }
 
 
-   if (nfzc) {
+   if (ndrc) {
      psio_close(Parameters.opdm_file, 1);
      free_block(onepdm_a);
      free_block(onepdm_b);

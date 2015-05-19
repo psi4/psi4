@@ -246,7 +246,6 @@ void get_parameters(Options &options)
 
   Parameters.nprint = options.get_int("NUM_DETS_PRINT");
   Parameters.cc_nprint = options.get_int("NUM_AMPS_PRINT");
-  Parameters.fzc = options["DETCI_FREEZE_CORE"].to_integer();
 
   if (options["FCI"].has_changed())
     Parameters.fci = options["FCI"].to_integer();
@@ -875,9 +874,8 @@ void print_parameters(void)
       Parameters.val_ex_lvl, Parameters.h0guess_size);
    outfile->Printf( "   H0COUPLINGSIZE=   %6d      H0 COUPLING  =   %6s\n",
       Parameters.h0block_coupling_size, Parameters.h0block_coupling ? "yes" : "no");
-   outfile->Printf( "   NUM PRINT     =   %6d\n", Parameters.nprint);
-   outfile->Printf( "   MAXITER       =   %6d      FREEZE CORE  =   %6s\n",
-      Parameters.maxiter, Parameters.fzc ? "yes" : "no");
+   outfile->Printf( "   MAXITER       =   %6d      NUM PRINT    =   %6d\n",
+      Parameters.maxiter, Parameters.nprint);
    outfile->Printf( "   NUM ROOTS     =   %6d      ICORE        =   %6d\n",
       Parameters.num_roots, Parameters.icore);
    outfile->Printf( "   PRINT         =   %6d      FCI          =   %6s\n",
@@ -1137,7 +1135,7 @@ void set_ras_parms(void)
    /* figure out how many electrons are in RAS II */
    /* alpha electrons */
    for (i=0,nras2alp=0,betsocc=0; i<CalcInfo.nirreps; i++) {
-      j = CalcInfo.docc[i] - CalcInfo.frozen_docc[i] - CalcInfo.ras_opi[0][i];
+      j = CalcInfo.docc[i] - CalcInfo.dropped_docc[i] - CalcInfo.ras_opi[0][i];
       if (Parameters.opentype == PARM_OPENTYPE_HIGHSPIN) {
          j += CalcInfo.socc[i];
          }
@@ -1159,7 +1157,7 @@ void set_ras_parms(void)
       }
    /* beta electrons */
    for (i=0,nras2bet=0,betsocc=0; i<CalcInfo.nirreps; i++) {
-      j = CalcInfo.docc[i] - CalcInfo.frozen_docc[i] - CalcInfo.ras_opi[0][i];
+      j = CalcInfo.docc[i] - CalcInfo.dropped_docc[i] - CalcInfo.ras_opi[0][i];
       if (Parameters.opentype == PARM_OPENTYPE_SINGLET && CalcInfo.socc[i]) {
          if (betsocc + CalcInfo.socc[i] <= CalcInfo.spab)
             j += CalcInfo.socc[i];
@@ -1495,14 +1493,19 @@ void print_ras_parms(void)
   int i, j;
 
   outfile->Printf( "ORBITALS:\n") ;
-  outfile->Printf( "   NMO          =   %6d      NUM ALP      =   %6d\n",
-    CalcInfo.nmo, CalcInfo.num_alp);
-  outfile->Printf( "   ORBS IN CI   =   %6d      NUM ALP EXPL =   %6d\n",
-    CalcInfo.num_ci_orbs, CalcInfo.num_alp_expl);
-  outfile->Printf( "   FROZEN CORE  =   %6d      NUM BET      =   %6d\n",
-    CalcInfo.num_fzc_orbs, CalcInfo.num_bet);
-  outfile->Printf( "   EXPLICIT CORE=   %6d      NUM BET EXPL =   %6d\n",
-    CalcInfo.num_expl_cor_orbs, CalcInfo.num_bet_expl);
+  outfile->Printf( "   NMO          =   %6d\n", CalcInfo.nmo);
+  outfile->Printf( "   FROZEN CORE  =   %6d      RESTR CORE   =   %6d\n",
+    CalcInfo.num_fzc_orbs, CalcInfo.num_rsc_orbs);
+  outfile->Printf( "   FROZEN VIRT  =   %6d      RESTR VIRT   =   %6d\n",
+    CalcInfo.num_fzv_orbs, CalcInfo.num_rsv_orbs);
+  outfile->Printf( "   DROPPED CORE =   %6d      DROPPED VIRT =   %6d\n",
+    CalcInfo.num_drc_orbs, CalcInfo.num_drv_orbs);
+  outfile->Printf( "   EXPLICIT CORE=   %6d      ORBS IN CI   =   %6d\n",
+    CalcInfo.num_expl_cor_orbs, CalcInfo.num_ci_orbs);
+  outfile->Printf( "   NUM ALP      =   %6d      NUM BET      =   %6d\n",
+    CalcInfo.num_alp, CalcInfo.num_bet);
+  outfile->Printf( "   NUM ALP EXPL =   %6d      NUM BET EXPL =   %6d\n",
+    CalcInfo.num_alp_expl, CalcInfo.num_bet_expl);
   outfile->Printf( "   IOPEN        =   %6s\n", CalcInfo.iopen ? "yes" :
     "no");
   outfile->Printf( "   RAS1 LVL     =   %6d      A RAS3 MAX   =   %6d\n",

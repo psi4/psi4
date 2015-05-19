@@ -54,8 +54,8 @@ void CIWavefunction::common_init()
     for(int h = 0; h < nirrep_; ++h){
         doccpi_[h] = CalcInfo.docc[h];
         soccpi_[h] = CalcInfo.socc[h];
-        frzcpi_[h] = CalcInfo.frozen_docc[h];
-        frzvpi_[h] = CalcInfo.frozen_uocc[h];
+        frzcpi_[h] = CalcInfo.frozen_docc[h]; // CDS make more general
+        frzvpi_[h] = CalcInfo.frozen_uocc[h]; // CDS make more general
         nmopi_[h]  = CalcInfo.orbs_per_irr[h];
         nsopi_[h]  = CalcInfo.so_per_irr[h];
 
@@ -78,7 +78,7 @@ double CIWavefunction::compute_energy()
 
 void CIWavefunction::set_opdm(bool print, bool erase)
 {
-    int npop = CalcInfo.num_ci_orbs + CalcInfo.num_fzc_orbs;
+    int npop = CalcInfo.num_ci_orbs + CalcInfo.num_drc_orbs;
     SharedMatrix opdm_a(new Matrix("One-Particle Alpha Density Matrix", npop, npop));
     double *opdm_ap = opdm_a->pointer()[0];
   

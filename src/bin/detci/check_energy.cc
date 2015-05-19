@@ -36,30 +36,32 @@ namespace psi { namespace detci {
 extern int *ioff ;
 
 void scf_energy(double *H, double *TE, double *energy_1, double *energy_2, 
-      double *energy_e, int *docc, int *frozen_docc, int fzc_flag, 
+      double *energy_e, int *docc, int *dropped_docc, int drc_flag, 
       int nirreps, int *reorder, int *opi);
 
 /*!
 ** check_energy(): check the SCF energy by calculating it from the two-electr.
 **    integrals in the MO basis
 ** 
-** \param  H         =  lwr tri of one-electron integrals matrix (MO basis)
-** \param twoel_ints =  two electron integrals (lexically indexed, MO basis)
-** \param   nocc     =  num occupied orbitals (assume closed shell case) and
-**                      exclude frozen core
-** \param   escf     =  scf energy to compare to
-** \param   enuc     =  nuclear repulsion energy
-** \param   edrc     =  energy of dropped core orbitals
-** \param   nirreps  =  number of irreps 
-** \param   reorder  =  reordering array for Pitzer->CI ordering
-** \param   opi      =  orbs per irrep in Pitzer ordering
-** \param   outfile  =  file to write output to
+** \param H            =  lwr tri of one-electron integrals matrix (MO basis)
+** \param twoel_ints   =  two electron integrals (lexically indexed, MO basis)
+** \param docc         =  doubly occupied orbitals per irrep
+** \param dropped_docc =  dropped occupied orbitals per irrep 
+** \param drc_flag     =  1 if we drop core orbitals, 0 otherwise
+** \param escf         =  scf energy to compare to
+** \param enuc         =  nuclear repulsion energy
+** \param edrc         =  energy of dropped core orbitals
+** \param nirreps      =  number of irreps 
+** \param eorder       =  reordering array for Pitzer->CI ordering
+** \param opi          =  orbs per irrep in Pitzer ordering
+** \param print_lvl    =  integer describing how much to print
+** \param outfile      =  file to write output to
 **
 ** Returns: the computed SCF energy
 ** \ingroup DETCI
 */
-double check_energy(double *H, double *twoel_ints, int *docc, int *frozen_docc,
-      int fzc_flag, double escf, double enuc, double edrc, 
+double check_energy(double *H, double *twoel_ints, int *docc, 
+  int *dropped_docc, int drc_flag, double escf, double enuc, double edrc, 
       int nirreps, int *reorder, int *opi, int print_lvl, std::string out)
 {
    double energy_1 ;     /* one-electron energy */
@@ -68,7 +70,7 @@ double check_energy(double *H, double *twoel_ints, int *docc, int *frozen_docc,
    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
          boost::shared_ptr<OutFile>(new OutFile(out)));
    scf_energy(H, twoel_ints, &energy_1, &energy_2, &energy_e, docc,
-      frozen_docc, fzc_flag, nirreps, reorder, opi);
+      dropped_docc, drc_flag, nirreps, reorder, opi);
 
    if (print_lvl) {
      printer->Printf("\nCheck SCF Energy from 1- and 2-electron integrals\n\n");
@@ -97,19 +99,20 @@ double check_energy(double *H, double *twoel_ints, int *docc, int *frozen_docc,
 **
 ** David Sherrill, Sept 1993
 **
-** \param H        = Matrix of one-electron integrals in MO basis (lwr triangle)
-** \param TE       = Two-electron integrals in MO basis, stored in 
-**                   ijkl-indexed array
-** \param energy_1 = pointer to hold one-electron energy
-** \param energy_2 = pointer to hold two-electron energy
-** \param energy_e = pointer to hold total electronic energy (sum of two 
-**                   terms above)
-** \param docc     = array of doubly-occupied orbitals per irrep
-** \param frozen_docc = array of frozen doubly-occupied orbitals per irrep
-** \param fzc_flag = remove explicit consideration of frozen core orbitals ?
-** \param nirreps  = number of irreps 
-** \param reorder  = reordering array Pitzer->CI order
-** \param opi      = orbitals per irrep
+** \param H            = Matrix of one-electron integrals in MO basis 
+**                       (lower triangle)
+** \param TE           = Two-electron integrals in MO basis, stored in 
+**                       ijkl-indexed array
+** \param energy_1     = pointer to hold one-electron energy
+** \param energy_2     = pointer to hold two-electron energy
+** \param energy_e     = pointer to hold total electronic energy (sum of two 
+**                       terms above)
+** \param docc         = array of doubly-occupied orbitals per irrep
+** \param dropped_docc = dropped occupied orbitals per irrep 
+** \param drc_flag     = 1 if we drop core orbitals, 0 otherwise
+** \param nirreps      = number of irreps 
+** \param reorder      = reordering array Pitzer->CI order
+** \param opi          = orbitals per irrep
 **
 ** Returns: none
 **
@@ -117,32 +120,32 @@ double check_energy(double *H, double *twoel_ints, int *docc, int *frozen_docc,
 */
 
 void scf_energy(double *H, double *TE, double *energy_1, double *energy_2, 
-      double *energy_e, int *docc, int *frozen_docc, int fzc_flag, 
+      double *energy_e, int *docc, int *dropped_docc, int drc_flag, 
       int nirreps, int *reorder, int *opi)
 {
-   int irrep, irrep2, d, d2, offset, offset2, ndoc, ndoc2, nfzc, nfzc2, totfzc;
+   int irrep, irrep2, d, d2, offset, offset2, ndoc, ndoc2, ndrc, ndrc2, totdrc;
    int i, j;
    int ii, jj, iijj, ij, ijij, iiii;
 
    *energy_1 = *energy_2 = *energy_e = 0.0;
 
-   totfzc=0;
-   if (fzc_flag) {
+   totdrc=0;
+   if (drc_flag) {
      for (irrep=0; irrep<nirreps; irrep++) {
-       totfzc += frozen_docc[irrep];
+       totdrc += dropped_docc[irrep];
      }
    }
 
    for (irrep=0,offset=0; irrep<nirreps; irrep++) {
      if (irrep>0) offset += opi[irrep-1];
      ndoc = docc[irrep];
-     if (fzc_flag) {
-       nfzc = frozen_docc[irrep];
-       ndoc -= nfzc;
+     if (drc_flag) {
+       ndrc = dropped_docc[irrep];
+       ndoc -= ndrc;
      }
-     else nfzc=0;
-     for (d=offset+nfzc; d<ndoc+offset+nfzc; d++) {
-       i = reorder[d]-totfzc;
+     else ndrc=0;
+     for (d=offset+ndrc; d<ndoc+offset+ndrc; d++) {
+       i = reorder[d]-totdrc;
        ii = ioff[i] + i;
        iiii = ioff[ii] + ii;
        *energy_1 += 2.0 * H[ii];
@@ -151,14 +154,14 @@ void scf_energy(double *H, double *TE, double *energy_1, double *energy_2,
        for (irrep2=0,offset2=0; irrep2<=irrep; irrep2++) {
 	 if (irrep2>0) offset2 += opi[irrep2-1];
 	 ndoc2 = docc[irrep2];
-	 if (fzc_flag) {
-	   nfzc2 = frozen_docc[irrep2];
-	   ndoc2 -= nfzc2;
+	 if (drc_flag) {
+	   ndrc2 = dropped_docc[irrep2];
+	   ndoc2 -= ndrc2;
 	 }
-	 else nfzc2=0;
+	 else ndrc2=0;
 	 
-	 for (d2=offset2+nfzc2; d2<ndoc2+offset2+nfzc2 && d2<d; d2++) {
-	   j = reorder[d2]-totfzc;
+	 for (d2=offset2+ndrc2; d2<ndoc2+offset2+ndrc2 && d2<d; d2++) {
+	   j = reorder[d2]-totdrc;
 	   jj = ioff[j] + j;
 	   iijj = INDEX(ii,jj);
 	   ij = INDEX(i,j);

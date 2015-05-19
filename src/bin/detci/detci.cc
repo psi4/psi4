@@ -102,7 +102,7 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
    std::string OutFileRMR);
 extern void print_config(int nbf, int num_alp_el, int num_bet_el,
    struct stringwr *stralp, struct stringwr *strbet,
-   int num_fzc_orbs, char *outstring);
+   int num_drc_orbs, char *outstring);
 extern void init_stringwr_temps(int nel, int num_ci_orbs, int nsym);
 extern void free_stringwr_temps(int nsym);
 extern void str_abs2rel(int absidx, int *relidx, int *listnum,
@@ -224,7 +224,7 @@ PsiReturnType detci(Options &options)
    if(Parameters.zaptn)         /* Shift SCF eigenvalues for ZAPTn          */
       zapt_shift(CalcInfo.twoel_ints, CalcInfo.nirreps, CalcInfo.nmo,
          CalcInfo.docc, CalcInfo.socc, CalcInfo.orbs_per_irr,
-         CalcInfo.frozen_docc, CalcInfo.reorder);
+         CalcInfo.dropped_docc, CalcInfo.reorder);
 
    if (Parameters.bendazzoli) /* form the Bendazzoli OV arrays            */
       form_ov(alplist);
@@ -524,14 +524,14 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
         StringSet alphastrings, betastrings;
         SlaterDetSet dets;
         SlaterDetVector vec;
-        short int *fzc_occ;
+        short int *drc_occ;
         unsigned char *newocc;
 
-        if (CalcInfo.num_fzc_orbs > 0) {
-          fzc_occ = (short int *)
-            malloc(CalcInfo.num_fzc_orbs*sizeof(short int));
-          for (int l=0; l<CalcInfo.num_fzc_orbs; l++) {
-            fzc_occ[l] = CalcInfo.order[l]; /* put it in Pitzer order */
+        if (CalcInfo.num_drc_orbs > 0) {
+          drc_occ = (short int *)
+            malloc(CalcInfo.num_drc_orbs*sizeof(short int));
+          for (int l=0; l<CalcInfo.num_drc_orbs; l++) {
+            drc_occ[l] = CalcInfo.order[l]; /* put it in Pitzer order */
           }
         }
 
@@ -540,7 +540,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
             AlphaG->num_el : BetaG->num_el)*sizeof(unsigned char));
 
         stringset_init(&alphastrings,AlphaG->num_str,AlphaG->num_el,
-                       CalcInfo.num_fzc_orbs, fzc_occ);
+                       CalcInfo.num_drc_orbs, drc_occ);
         int list_gr = 0;
         int offset = 0;
         for(int irrep=0; irrep<AlphaG->nirreps; irrep++) {
@@ -551,7 +551,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
               for (int n=0; n<AlphaG->num_el; n++) {
                 newocc[n] = (unsigned char)
                   CalcInfo.order[alplist[list_gr][l].occs[n] +
-                                CalcInfo.num_fzc_orbs];
+                                CalcInfo.num_drc_orbs];
               }
               stringset_add(&alphastrings,l+offset,newocc);
             }
@@ -560,7 +560,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
         }
 
         stringset_init(&betastrings,BetaG->num_str,BetaG->num_el,
-                       CalcInfo.num_fzc_orbs, fzc_occ);
+                       CalcInfo.num_drc_orbs, drc_occ);
         list_gr = 0;
         offset = 0;
         for(int irrep=0; irrep<BetaG->nirreps; irrep++) {
@@ -571,7 +571,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
               for (int n=0; n<BetaG->num_el; n++) {
                 newocc[n] = (unsigned char)
                   CalcInfo.order[betlist[list_gr][l].occs[n] +
-                                CalcInfo.num_fzc_orbs];
+                                CalcInfo.num_drc_orbs];
               }
               stringset_add(&betastrings,l+offset,newocc);
             }
@@ -579,8 +579,8 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
           }
         }
         free(newocc);
-        if (CalcInfo.num_fzc_orbs > 0)
-          free(fzc_occ);
+        if (CalcInfo.num_drc_orbs > 0)
+          free(drc_occ);
 
         int Iarel, Ialist, Ibrel, Iblist;
         // the slaterdetset code below will fail if size > int
@@ -1357,7 +1357,7 @@ void mpn(struct stringwr **alplist, struct stringwr **betlist)
 {
   int i, j, irrep, cnt;
   struct stringwr *stralp, *strbet;
-  int **fzc_orbs;
+  int **drc_orbs;
   double tval;
 
   H0block_init(CIblks.vectlen);
@@ -1375,17 +1375,17 @@ void mpn(struct stringwr **alplist, struct stringwr **betlist)
   stralp = alplist[CalcInfo.ref_alp_list] + CalcInfo.ref_alp_rel;
   strbet = betlist[CalcInfo.ref_bet_list] + CalcInfo.ref_bet_rel;
 
-  fzc_orbs = init_int_matrix(CalcInfo.nirreps, CalcInfo.num_fzc_orbs);
+  drc_orbs = init_int_matrix(CalcInfo.nirreps, CalcInfo.num_drc_orbs);
   cnt = 0;
   for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
-     for (i=0; i<CalcInfo.frozen_docc[irrep]; i++)
-        fzc_orbs[irrep][i] = cnt++;
+     for (i=0; i<CalcInfo.dropped_docc[irrep]; i++)
+        drc_orbs[irrep][i] = cnt++;
 
   /* Loop over alp occs */
   //CalcInfo.e0 = CalcInfo.edrc;
   CalcInfo.e0 = 0.0;
   CalcInfo.e0_drc = 0.0;
-  for (i=0; i<CalcInfo.num_fzc_orbs; i++) {
+  for (i=0; i<CalcInfo.num_drc_orbs; i++) {
      outfile->Printf(" orb_energy[%d] = %lf\n", i, CalcInfo.scfeigval[i]);
      tval = 2.0 * CalcInfo.scfeigval[i];
      CalcInfo.e0 += tval;
@@ -1394,22 +1394,22 @@ void mpn(struct stringwr **alplist, struct stringwr **betlist)
 
   if(Parameters.zaptn) {
     for (i=0; i<CalcInfo.num_alp_expl; i++) {
-       j = (stralp->occs)[i] + CalcInfo.num_fzc_orbs;
+       j = (stralp->occs)[i] + CalcInfo.num_drc_orbs;
        CalcInfo.e0 += CalcInfo.scfeigvala[j];
        }
 
     for (i=0; i<CalcInfo.num_bet_expl; i++) {
-       j = (strbet->occs)[i] + CalcInfo.num_fzc_orbs;
+       j = (strbet->occs)[i] + CalcInfo.num_drc_orbs;
        CalcInfo.e0 += CalcInfo.scfeigvalb[j];
        }
     } else {
     for (i=0; i<CalcInfo.num_alp_expl; i++) {
-       j = (stralp->occs)[i] + CalcInfo.num_fzc_orbs;
+       j = (stralp->occs)[i] + CalcInfo.num_drc_orbs;
        CalcInfo.e0 += CalcInfo.scfeigval[j];
        }
 
     for (i=0; i<CalcInfo.num_bet_expl; i++) {
-       j = (strbet->occs)[i] + CalcInfo.num_fzc_orbs;
+       j = (strbet->occs)[i] + CalcInfo.num_drc_orbs;
        CalcInfo.e0 += CalcInfo.scfeigval[j];
        }
     }
