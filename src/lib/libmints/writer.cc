@@ -70,11 +70,11 @@ MoldenWriter::MoldenWriter(boost::shared_ptr<Wavefunction> wavefunction)
 
 void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> Ca, boost::shared_ptr<Matrix> Cb, boost::shared_ptr<Vector> Ea, boost::shared_ptr<Vector> Eb, boost::shared_ptr<Vector> OccA, boost::shared_ptr<Vector> OccB)
 {
-   boost::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
+    boost::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
 
     int atom;
 
-   printer->Printf("[Molden Format]\n");
+    printer->Printf("[Molden Format]\n");
 
     // Get the molecule for ease
     BasisSet& basisset = *wavefunction_->basisset().get();
@@ -83,19 +83,19 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
     //    basisset.print_detail();
 
     // Print the molecule to molden
-   printer->Printf("[Atoms] (AU)\n");
+    printer->Printf("[Atoms] (AU)\n");
     for (atom=0; atom<mol.natom(); ++atom) {
         Vector3 coord = mol.xyz(atom);
-       printer->Printf("%-2s  %2d  %3d   %20.12f %20.12f %20.12f\n",
+        printer->Printf("%-2s  %2d  %3d   %20.12f %20.12f %20.12f\n",
                 mol.symbol(atom).c_str(), atom+1, static_cast<int>(mol.Z(atom)), coord[0], coord[1], coord[2]);
     }
 
     // Dump the basis set using code adapted from psi2molden
-   printer->Printf("[GTO]\n");
+    printer->Printf("[GTO]\n");
 
     // For each atom
     for (atom=0; atom<mol.natom(); ++atom) {
-       printer->Printf("  %d 0\n", atom+1);
+        printer->Printf("  %d 0\n", atom+1);
 
         // Go through all the shells on this center
         for (int shell=0; shell < basisset.nshell_on_center(atom); ++shell) {
@@ -103,15 +103,15 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
 
             const GaussianShell& gs = basisset.shell(overall_shell);
 
-           printer->Printf(" %c%5d  1.00\n", gs.amchar(), gs.nprimitive());
+            printer->Printf(" %c%5d  1.00\n", gs.amchar(), gs.nprimitive());
 
             for (int prim=0; prim<gs.nprimitive(); ++prim) {
-               printer->Printf("%20.10f %20.10f\n", gs.exp(prim), gs.coef(prim));
+                printer->Printf("%20.10f %20.10f\n", gs.exp(prim), gs.original_coef(prim));
             }
         }
 
         // An empty line separates atoms
-       printer->Printf("\n");
+        printer->Printf("\n");
     }
 
     // Convert Ca & Cb
@@ -189,12 +189,12 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
 
     if (basisset.has_puream()) {
         // Tell Molden to use spherical.  5d implies 5d and 7f.
-       printer->Printf("[5D]\n[9G]\n\n");
+        printer->Printf("[5D]\n[9G]\n\n");
     }
     CharacterTable ct = mol.point_group()->char_table();
 
     // Dump MO's to the molden file
-   printer->Printf("[MO]\n");
+    printer->Printf("[MO]\n");
 
     std::vector<std::pair<double, std::pair<int, int> > > mos;
 
@@ -213,15 +213,15 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
         int h = mos[i].second.first;
         int n = mos[i].second.second;
 
-       printer->Printf(" Sym= %s\n", ct.gamma(h).symbol());
-       printer->Printf(" Ene= %20.10f\n", Ea->get(h, n));
-       printer->Printf(" Spin= Alpha\n");
+        printer->Printf(" Sym= %s\n", ct.gamma(h).symbol());
+        printer->Printf(" Ene= %20.10f\n", Ea->get(h, n));
+        printer->Printf(" Spin= Alpha\n");
         if(Ca == Cb && Ea == Eb && SameOcc)
-           printer->Printf(" Occup= %7.4lf\n", OccA->get(h,n)+OccB->get(h,n));
+            printer->Printf(" Occup= %7.4lf\n", OccA->get(h,n)+OccB->get(h,n));
         else
-           printer->Printf(" Occup= %7.4lf\n", OccA->get(h,n));
+            printer->Printf(" Occup= %7.4lf\n", OccA->get(h,n));
         for (int so=0; so<wavefunction_->nso(); ++so)
-           printer->Printf("%3d %20.12lf\n", so+1, Ca_ao_mo->get(h, so, n));
+            printer->Printf("%3d %20.12lf\n", so+1, Ca_ao_mo->get(h, so, n));
     }
 
     // do beta's
@@ -238,12 +238,12 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
             int h = mos[i].second.first;
             int n = mos[i].second.second;
 
-           printer->Printf(" Sym= %s\n", ct.gamma(h).symbol());
-           printer->Printf(" Ene= %20.10lf\n", Eb->get(h, n));
-           printer->Printf(" Spin= Beta\n");
-           printer->Printf(" Occup= %7.4lf\n", OccB->get(h,n));
+            printer->Printf(" Sym= %s\n", ct.gamma(h).symbol());
+            printer->Printf(" Ene= %20.10lf\n", Eb->get(h, n));
+            printer->Printf(" Spin= Beta\n");
+            printer->Printf(" Occup= %7.4lf\n", OccB->get(h,n));
             for (int so=0; so<wavefunction_->nso(); ++so)
-               printer->Printf("%3d %20.12lf\n", so+1, Cb_ao_mo->get(h, so, n));
+                printer->Printf("%3d %20.12lf\n", so+1, Cb_ao_mo->get(h, so, n));
         }
     }
 
