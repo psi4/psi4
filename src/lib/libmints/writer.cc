@@ -103,7 +103,7 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
 
             const GaussianShell& gs = basisset.shell(overall_shell);
 
-           printer->Printf(" %c%5d  1.00\n", gs.amchar(), gs.nprimitive());
+           printer->Printf(" %c%5d  1.00\n", gs.AMCHAR(), gs.nprimitive());
 
             for (int prim=0; prim<gs.nprimitive(); ++prim) {
                printer->Printf("%20.10f %20.10f\n", gs.exp(prim), gs.coef(prim));

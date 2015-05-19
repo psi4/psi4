@@ -5,7 +5,7 @@ molecule n2 {
   R = 1.11
 }
 
-plugin_load("./mp2.so")
+plugin_load("./mollerplesset2.so")
 
 set {
   basis cc-pVDZ
@@ -16,7 +16,7 @@ set {
 }
 
 eRHFDimer = scf()
-plugin("mp2.so")
+plugin("mollerplesset2.so")
 eMP2Dimer = get_variable("MP2 ENERGY")
 clean()
 
@@ -29,14 +29,14 @@ set reference uhf
 set basis cc-pvdz
 
 eUHFMonomer = scf()
-plugin("mp2.so")
+plugin("mollerplesset2.so")
 eUMP2Monomer = get_variable("MP2 ENERGY")
 clean()
 
 set reference rohf 
 
 eROHFMonomer = scf()
-plugin("mp2.so")
+plugin("mollerplesset2.so")
 eROMP2Monomer = get_variable("MP2 ENERGY")
 clean()
 
@@ -46,6 +46,13 @@ print "E ROHF  = %16.10f\n" % eROHFMonomer
 print "E ROMP2 = %16.10f\n" % eROMP2Monomer
 print "E UHF   = %16.10f\n" % eUHFMonomer
 print "E UMP2  = %16.10f\n" % eUMP2Monomer
+
+compare_values(-108.951981482, eRHFDimer    , 5, 'RHF')
+compare_values(-109.262019962, eMP2Dimer    , 5, 'RMP2')
+compare_values( -54.388414237, eROHFMonomer , 5, 'ROHF')
+compare_values( -54.461468526, eROMP2Monomer, 5, 'ROMP2')
+compare_values( -54.391114562, eUHFMonomer  , 5, 'UHF')
+compare_values( -54.461855085, eUMP2Monomer , 5, 'UMP2')
 
 print "ROHF Binding energy  = %7.2f kcal/mol\n" % (627.51*(eRHFDimer - 2.0*eROHFMonomer))
 print "UHF Binding energy   = %7.2f kcal/mol\n" % (627.51*(eRHFDimer - 2.0*eUHFMonomer))

@@ -82,7 +82,7 @@ bool from_string(T& t,
 
 namespace psi {
 
-boost::regex realNumber_("(-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+)", boost::regbase::normal | boost::regbase::icase);
+boost::regex realNumber_("(?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+(?:[DdEe][-+]?\\d+)?)", boost::regbase::normal | boost::regbase::icase);
 boost::regex integerNumber_("(-?\\d+)", boost::regbase::normal | boost::regbase::icase);
 boost::regex atomSymbol_("(([A-Z]{1,3})(?:(_\\w+)|(\\d+))?)", boost::regbase::normal | boost::regbase::icase);
 boost::regex variableDefinition_("\\s*(\\w+)\\s*=\\s*((-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+)|(tda))\\s*", boost::regbase::normal | boost::regbase::icase);

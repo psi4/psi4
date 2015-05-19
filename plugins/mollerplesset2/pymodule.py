@@ -1,36 +1,36 @@
 import psi4
 import re
 import os
-import input
+import inputparser
 import math
 import warnings
 from driver import *
 from wrappers import *
 from molutil import *
-from text import *
-from procutil import *
+import p4util
+from p4xcpt import *
 
 
 def run_plugin_mp2(name, **kwargs):
     r"""Function encoding sequence of PSI module and plugin calls so that
-    plugin_mp2 can be called via :py:func:`~driver.energy`.
+    mollerplesset2 can be called via :py:func:`~driver.energy`.
 
-    >>> energy('plugin_mp2')
+    >>> energy('mollerplesset2')
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
     # Your plugin's psi4 run sequence goes here
-    psi4.set_local_option('PLUGIN_MP2', 'PRINT', 1)
-    energy('scf', **kwargs)
-    returnvalue = psi4.plugin('plugin_mp2.so')
+    psi4.set_local_option('MOLLERPLESSET2', 'PRINT', 1)
+    psi4.scf()
+    returnvalue = psi4.plugin('mollerplesset2.so')
 
     return returnvalue
 
 
 # Integration with driver routines
-procedures['energy']['plugin_mp2'] = run_plugin_mp2
+procedures['energy']['mollerplesset2'] = run_plugin_mp2
 
 
 def exampleFN():

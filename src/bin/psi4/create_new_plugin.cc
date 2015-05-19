@@ -135,6 +135,7 @@ class PluginFileManager{
         std::string format_objdir(PLUGIN_OBJDIR);
         std::string format_plugin(plugin_name_);
         std::string format_PLUGIN = boost::algorithm::to_upper_copy(plugin_name_);
+        std::string format_ldflags(PLUGIN_LDFLAGS);
 
         std::vector<std::pair<std::string, std::string> >::const_iterator iter;
         for(iter = files_.begin(); iter != files_.end(); ++iter){
@@ -177,6 +178,8 @@ class PluginFileManager{
             filestring = xpressive::regex_replace(filestring, match_format, format_includes);
             match_format = boost::xpressive::as_xpr("@PLUGIN_OBJDIR@");
             filestring = xpressive::regex_replace(filestring, match_format, format_objdir);
+            match_format = boost::xpressive::as_xpr("@PLUGIN_LDFLAGS@");
+            filestring = xpressive::regex_replace(filestring, match_format, format_ldflags);
 
             // Write the new file out
             fp = fopen(target_name.c_str(), "w");

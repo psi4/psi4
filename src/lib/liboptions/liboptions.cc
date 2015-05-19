@@ -494,7 +494,7 @@ void IStringDataType::add_choices(std::string str)
 
 std::string IStringDataType::type() const
 {
-    return std::string("string");
+    return std::string("istring");
 }
 
 std::string IStringDataType::to_string() const
@@ -1026,6 +1026,12 @@ void Options::set_double(const std::string & module, const std::string &key, dou
 void Options::set_str(const std::string & module, const std::string &key, std::string s)
 {
     locals_[module][key] = new StringDataType(s);
+    locals_[module][key].changed();
+}
+
+void Options::set_str_i(const std::string & module, const std::string &key, std::string s)
+{
+    locals_[module][key] = new IStringDataType(s);
     locals_[module][key].changed();
 }
 

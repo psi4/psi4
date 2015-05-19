@@ -1,23 +1,21 @@
-#This fxn just generates a list of directories in the current directory
-MACRO(SUBDIRLIST result curdir)
-  FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
-  SET(dirlist "")
-  FOREACH(child ${children})
-    IF(IS_DIRECTORY ${curdir}/${child})
-        LIST(APPEND dirlist "${child}")
-    ENDIF()
-  ENDFOREACH()
-  SET(${result} ${dirlist})
-ENDMACRO()
+add_subdirectory(aointegrals)
+add_subdirectory(backtrans)
+add_subdirectory(mointegrals)
+add_subdirectory(mollerplesset2)
+add_subdirectory(sointegrals)
 
-SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})
- 
-#RMR---It's important that only real plugins have CMakeLists.txt because that
-# is how this next function determines what plugins to link against t
-FOREACH(subdir ${SUBDIRS})
-  set(file2look4 "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/CMakeLists.txt")
-  if(EXISTS ${file2look4})
-    set(PLUGINS ${PLUGINS} ${subdir} PARENT_SCOPE)
-    add_subdirectory(${subdir})
-  endif()
-ENDFOREACH()
+# check out and build fresh plugin
+set(PSIEXE ${PROJECT_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX})
+set(PLUG "skeleton")
+add_custom_target(plugin_${PLUG}
+    ALL
+    DEPENDS ${PSIEXE}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/${PLUG}
+    COMMAND ${PSIEXE} --new-plugin ${PLUG}
+    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/${PLUG} $(MAKE)
+    COMMENT "Build ${PLUG} example plugin"
+    VERBATIM)
+
+include(TestingMacros)
+add_regression_test(${PLUG} "psi;plug")
+
