@@ -343,7 +343,7 @@ void calc_hd_block_orbenergy(struct stringwr *alplist_local,
       orb_e_diff_alp[acnt] = 0.0;
       for (a1=0; a1<na; a1++) {
          i = (int) alplist_local->occs[a1];
-         i += CalcInfo.num_fzc_orbs;
+         i += CalcInfo.num_drc_orbs;
          if(Parameters.zaptn) 
            orb_e_diff_alp[acnt] += CalcInfo.scfeigvala[i];
          else
@@ -356,7 +356,7 @@ void calc_hd_block_orbenergy(struct stringwr *alplist_local,
       orb_e_diff_bet[bcnt] = 0.0;
       for (b1=0; b1<nb; b1++) {
          j = (int) betlist_local->occs[b1];
-         j += CalcInfo.num_fzc_orbs;
+         j += CalcInfo.num_drc_orbs;
          if(Parameters.zaptn) 
            orb_e_diff_bet[bcnt] += CalcInfo.scfeigvalb[j];
          else
@@ -437,8 +437,8 @@ void calc_hd_block_evangelisti(struct stringwr *alplist_local, struct stringwr *
       for (a1=0; a1<num_alp_diff; a1++) {
          i = orb_diff[0][a1]; 
          j = orb_diff[1][a1]; 
-         i += CalcInfo.num_fzc_orbs;
-         j += CalcInfo.num_fzc_orbs;
+         i += CalcInfo.num_drc_orbs;
+         j += CalcInfo.num_drc_orbs;
          orb_e_diff_alp[acnt] += CalcInfo.scfeigval[j] 
                                  - CalcInfo.scfeigval[i]; 
          }
@@ -454,8 +454,8 @@ void calc_hd_block_evangelisti(struct stringwr *alplist_local, struct stringwr *
       for (b1=0; b1<num_bet_diff; b1++) {
          i = orb_diff[0][b1];
          j = orb_diff[1][b1];  
-         i += CalcInfo.num_fzc_orbs;
-         j += CalcInfo.num_fzc_orbs;
+         i += CalcInfo.num_drc_orbs;
+         j += CalcInfo.num_drc_orbs;
          orb_e_diff_bet[bcnt] += CalcInfo.scfeigval[j]
                                  - CalcInfo.scfeigval[i];
          }
@@ -536,7 +536,7 @@ void calc_hd_block_mll(struct stringwr *alplist_local,
       for (a1=0; a1<na; a1++) {
          i = (int) alplist_local->occs[a1];
          ii = ioff[i] + i;
-         i_offset = i + CalcInfo.num_fzc_orbs;
+         i_offset = i + CalcInfo.num_drc_orbs;
          oei_alp[acnt] += oei[ii]; 
          orb_e_diff_alp[acnt] += CalcInfo.scfeigval[i_offset] - oei[ii];
          }
@@ -548,7 +548,7 @@ void calc_hd_block_mll(struct stringwr *alplist_local,
       for (b1=0; b1<nb; b1++) {
          j = (int) betlist_local->occs[b1];
          jj = ioff[j] + j;
-         j_offset = j + CalcInfo.num_fzc_orbs;
+         j_offset = j + CalcInfo.num_drc_orbs;
          oei_bet[bcnt] += oei[jj];
          orb_e_diff_bet[bcnt] += CalcInfo.scfeigval[j_offset] - oei[jj];
          }
@@ -624,7 +624,7 @@ void calc_hd_block_z_ave(struct stringwr *alplist_local,
          /* loop over alpha occs */
          for (a1=0; a1<na; a1++) {
             i = (int) alplist_local->occs[a1];
-            value += CalcInfo.scfeigval[i+CalcInfo.num_fzc_orbs];
+            value += CalcInfo.scfeigval[i+CalcInfo.num_drc_orbs];
             ii = ioff[i] + i;
             /* h_ii bar alpha alpha */
             iii = ioff[ii];
@@ -650,7 +650,7 @@ void calc_hd_block_z_ave(struct stringwr *alplist_local,
          /* loop over beta occs */
          for (b1=0; b1<nb; b1++) {
             i = (int) betlist_local->occs[b1];
-            value += CalcInfo.scfeigval[i+CalcInfo.num_fzc_orbs];
+            value += CalcInfo.scfeigval[i+CalcInfo.num_drc_orbs];
             ii = ioff[i] + i;
             iii = ioff[ii];
 

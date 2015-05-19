@@ -79,13 +79,16 @@ Totals:
   o New orbital space setup routine, ras_set3(), replaces ras_set2().
 Now called from DETCI and TRANSQT2.
 
-In progress: 
-
-  o Once above is checked, do a global replace of num_fzc_orbs with
+  o Did a global replace of num_fzc_orbs with
 num_drc_orbs and num_fzv_orbs with num_drv_orbs.
 
-  o Likewise global replace of frozen_docc -> dropped_docc, 
-frozen_uocc -> dropped_uocc
+  o Likewise did global replace of frozen_docc -> dropped_docc, 
+frozen_uocc -> dropped_uocc. 
+
+In progress: 
+
+  o With the above few changes in place, should go through MCSCF_ files
+and make similar changes.
 
   o We should not be getting the guess frozen_per_irrep out of the 
 current Process::environment.wavefunction()->frzcpi()[h].  Who knows where
@@ -104,4 +107,9 @@ is a better shortcut for this command.
 
   o At the moment, the ZAPT2 test case zaptn-nh2 is not running with the CI 
 tests.  Need to add it.
+ 
+  o CI wavefunction currently has fzcpi and fzvpi arrays that copy over
+the stuff from CalcInfo, but this is kind of meaningless because we normally
+work with the dropped core arrays not just frozen parts.  Need to reformulate 
+what goes in a CI wavefunction anyways
 

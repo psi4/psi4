@@ -94,7 +94,7 @@ void form_strings(void)
       CalcInfo.nirreps, CalcInfo.orbsym,
       Parameters.a_ras1_lvl, Parameters.a_ras1_min, Parameters.a_ras1_max,
       Parameters.ras3_lvl, Parameters.a_ras3_max,
-      CalcInfo.num_fzc_orbs, CalcInfo.num_expl_cor_orbs,
+      CalcInfo.num_drc_orbs, CalcInfo.num_expl_cor_orbs,
       Parameters.ras4_lvl, Parameters.a_ras4_max, Parameters.a_ras34_max);
 
    if (Parameters.print_lvl > 3)
@@ -130,7 +130,7 @@ void form_strings(void)
           CalcInfo.nirreps, CalcInfo.orbsym,
           Parameters.b_ras1_lvl,  Parameters.b_ras1_min, Parameters.b_ras1_max,
           Parameters.ras3_lvl, Parameters.b_ras3_max,
-          CalcInfo.num_fzc_orbs, CalcInfo.num_expl_cor_orbs,
+          CalcInfo.num_drc_orbs, CalcInfo.num_expl_cor_orbs,
           Parameters.ras4_lvl, Parameters.b_ras4_max, Parameters.b_ras3_max);
 
       if (Parameters.print_lvl > 3)

@@ -306,12 +306,12 @@ void get_mo_info(Options &options)
 
   // temporarily go back to old variables until entire switchover is done
   // X CDS 4/15
-  CalcInfo.num_fzc_orbs = CalcInfo.num_drc_orbs;
-  CalcInfo.num_fzv_orbs = CalcInfo.num_drv_orbs;
-  for (int h=0; h<CalcInfo.nirreps; h++) {
-    CalcInfo.frozen_docc[h] = CalcInfo.dropped_docc[h];
-    CalcInfo.frozen_uocc[h] = CalcInfo.dropped_uocc[h];
-  }
+  // CalcInfo.num_fzc_orbs = CalcInfo.num_drc_orbs;
+  // CalcInfo.num_fzv_orbs = CalcInfo.num_drv_orbs;
+  // for (int h=0; h<CalcInfo.nirreps; h++) {
+  //   CalcInfo.frozen_docc[h] = CalcInfo.dropped_docc[h];
+  //   CalcInfo.frozen_uocc[h] = CalcInfo.dropped_uocc[h];
+  // }
 
 } // end get_mo_info()
 
