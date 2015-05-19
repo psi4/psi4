@@ -46,7 +46,8 @@
 
 namespace psi { namespace detci {
 
-double **rdopdm(int nbf, int print_lvl, int opdm_file, bool erase, Options& options);
+double **rdopdm(int nbf, int print_lvl, int opdm_file, bool erase, 
+  Options& options);
 double *rdtpdm(int nbf, int print_lvl, int tpdm_file, bool erase);
 
 
@@ -54,12 +55,12 @@ void MCSCF::read_density_matrices(Options& options)
 {
 
   /* read the one-particle density matrix */
-  MCSCF_CalcInfo.opdm = rdopdm(MCSCF_CalcInfo.npop, MCSCF_Parameters.print_lvl, MCSCF_Parameters.opdm_file,
-                         MCSCF_Parameters.opdm_erase, options);
+  MCSCF_CalcInfo.opdm = rdopdm(MCSCF_CalcInfo.npop, MCSCF_Parameters.print_lvl,
+    MCSCF_Parameters.opdm_file, MCSCF_Parameters.opdm_erase, options);
 
   /* read the two-particle density matrix */
-  MCSCF_CalcInfo.tpdm = rdtpdm(MCSCF_CalcInfo.npop, MCSCF_Parameters.print_lvl, MCSCF_Parameters.tpdm_file,
-                         MCSCF_Parameters.tpdm_erase);
+  MCSCF_CalcInfo.tpdm = rdtpdm(MCSCF_CalcInfo.npop, MCSCF_Parameters.print_lvl,
+    MCSCF_Parameters.tpdm_file, MCSCF_Parameters.tpdm_erase);
 
 }
 
@@ -74,7 +75,8 @@ void MCSCF::read_density_matrices(Options& options)
 ** Taken from CLAG, April 1998
 ** upgraded to libpsio 6/03 by CDS
 */
-double **rdopdm(int nbf, int print_lvl, int opdm_file, bool erase, Options& options)
+double **rdopdm(int nbf, int print_lvl, int opdm_file, bool erase, 
+  Options& options)
 {
 
   int i, root, errcod;

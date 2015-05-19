@@ -245,7 +245,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    if (Parameters.nodfile == FALSE && 
      Parameters.guess_vector == PARM_GUESS_VEC_DFILE) {
      if ((i = Dvec.read_num_vecs()) != nroots) {
-       outfile->Printf( "D file contains %d not %d vectors.  Trying another guess.", i, nroots);
+       outfile->Printf( "D file contains %d not %d vectors.  Trying another guess.\n", i, nroots);
        dvec_read_fail = true;
        /*
        if (Parameters.h0blocksize == 0) {

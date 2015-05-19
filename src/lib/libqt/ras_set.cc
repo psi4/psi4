@@ -128,6 +128,7 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
   int *tmp_frdocc, *tmp_fruocc;
   bool parsed_ras1=false, parsed_ras2=false;
   bool parsed_ras3=false, parsed_ras4=false;
+  bool parsed_frozen_docc=false, parsed_restr_docc=false;
   bool parsed_frozen_uocc=false, parsed_restr_uocc=false;
 
   used = init_int_array(nirreps);
@@ -161,37 +162,42 @@ int ras_set3(int nirreps, int nmo, int *orbspi,
     options.fill_int_array("SOCC", socc);
   }
 
-  // Determine FROZEN_DOCC.  Take from user input if there.  If not,
-  // then default to core_guess if is_mcscf == false.  Otherwize zero array.
+  // Take FROZEN_DOCC from user input if it is there
   if (options["FROZEN_DOCC"].has_changed()) {
     if (options["FROZEN_DOCC"].size() != nirreps) {
       throw InputException("ras_set3(): Wrong size of array",
         "FROZEN_DOCC", __FILE__, __LINE__);
     }
     options.fill_int_array("FROZEN_DOCC", frdocc);
+    parsed_frozen_docc = true;
   }
-  else if (!is_mcscf) {
-    for (i=0; i<nirreps; i++) {
-      frdocc[i] = core_guess[i];
-    }
-  }
-  // at this point, we have FROZEN_DOCC
 
-  // Determine RESTRICTED_DOCC.  Take from user input if there.  If not,
-  // then default to core_guess if is_mcscf == true.  Otherwize zero array.
+  // Take RESTRICTED_DOCC from user input if it is there
   if (options["RESTRICTED_DOCC"].has_changed()) {
     if (options["RESTRICTED_DOCC"].size() != nirreps) {
       throw InputException("ras_set3(): Wrong size of array",
         "RESTRICTED_DOCC", __FILE__, __LINE__);
     }
     options.fill_int_array("RESTRICTED_DOCC", restrdocc);
+    parsed_restr_docc = true;
   }
-  else if (is_mcscf) {
-    for (i=0; i<nirreps; i++) {
-      restrdocc[i] = core_guess[i];
+
+  // If we weren't given either FROZEN_DOCC *or* RESTRICTED_DOCC, then
+  // we'd better guess something.  Take default from core_guess[], and 
+  // put that in either in frdocc (if not an MCSCF) or restrdocc (if an MCSCF)
+  if (!parsed_frozen_docc && !parsed_restr_docc) {
+    if (!is_mcscf) {
+      for (i=0; i<nirreps; i++) {
+        frdocc[i] = core_guess[i];
+      }
+    }
+    else {
+      for (i=0; i<nirreps; i++) {
+        restrdocc[i] = core_guess[i];
+      }
     }
   }
-  // at this point, we have RESTRICTED_DOCC
+  // at this point, we have FROZEN_DOCC and RESTRICTED_DOCC
 
   // Change FROZEN_UOCC from zero array if user has it in input.
   // If no user input detected, we might deduce a 

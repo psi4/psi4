@@ -225,42 +225,42 @@ void MCSCF::get_mo_info(Options &options)
 
   if (MCSCF_Parameters.print_lvl > 0) {
     outfile->Printf("ORBITALS:");
-    outfile->Printf("\n   FROZEN_DOCC   = ");
-    for (i=0; i<CalcInfo.nirreps; i++) {
-      outfile->Printf("%2d ", MCSCF_CalcInfo.frozen_docc[i]);
-    }
-    outfile->Printf("\n   RESTR_DOCC    = ");
-    for (i=0; i<CalcInfo.nirreps; i++) {
-      outfile->Printf("%2d ", MCSCF_CalcInfo.rstr_docc[i]);
-    }
-    outfile->Printf("\n   DOCC          = ");
+    outfile->Printf("\n   DOCC           = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
       outfile->Printf("%2d ", CalcInfo.docc[i]);
     }
-    outfile->Printf("\n   SOCC          = ");
+    outfile->Printf("\n   SOCC           = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
       outfile->Printf("%2d ", CalcInfo.socc[i]);
     }
-    outfile->Printf("\n   RESTR_UOCC    = ");
+    outfile->Printf("\n");
+    outfile->Printf("\n   FROZEN_DOCC    = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      outfile->Printf("%2d ", MCSCF_CalcInfo.rstr_uocc[i]);
+      outfile->Printf("%2d ", MCSCF_CalcInfo.frozen_docc[i]);
     }
-    outfile->Printf("\n   FROZEN_UOCC   = ");
+    outfile->Printf("\n   RESTR_DOCC     = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      outfile->Printf("%2d ", MCSCF_CalcInfo.frozen_uocc[i]);
+      outfile->Printf("%2d ", MCSCF_CalcInfo.rstr_docc[i]);
     }
-
     for (i=0; i<MAX_RAS_SPACES; i++) {
-      outfile->Printf("\n   RAS %d         = ",i+1);
+      outfile->Printf("\n   RAS %d          = ",i+1);
       for (j=0; j<CalcInfo.nirreps; j++) {
         outfile->Printf("%2d ", CalcInfo.ras_opi[i][j]);
       }
     }
+    outfile->Printf("\n   RESTR_UOCC     = ");
+    for (i=0; i<CalcInfo.nirreps; i++) {
+      outfile->Printf("%2d ", MCSCF_CalcInfo.rstr_uocc[i]);
+    }
+    outfile->Printf("\n   FROZEN_UOCC    = ");
+    for (i=0; i<CalcInfo.nirreps; i++) {
+      outfile->Printf("%2d ", MCSCF_CalcInfo.frozen_uocc[i]);
+    }
     outfile->Printf("\n");
 
-    outfile->Printf("   MOL ORBS      =   %6d\n", CalcInfo.nmo);
-    outfile->Printf("   FROZEN CORE   =   %6d      RESTR CORE   =   %6d\n",
-        MCSCF_CalcInfo.num_fzc_orbs, MCSCF_CalcInfo.num_cor_orbs);
+    outfile->Printf("   MOL ORBS       = %5d\n", CalcInfo.nmo);
+    outfile->Printf("   FROZEN CORE    = %5d\n", MCSCF_CalcInfo.num_fzc_orbs);
+    outfile->Printf("   RESTR CORE     = %5d\n", MCSCF_CalcInfo.num_cor_orbs);
     outfile->Printf("\n");
   }
 }
