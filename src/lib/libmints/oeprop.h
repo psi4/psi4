@@ -175,8 +175,6 @@ public:
     SharedMatrix Db_mo();
 
     /// The total/spin density matrix in the ao basis, depending on if true or false
-    SharedMatrix Dt_ao(bool total = true);
-    /// The total/spin density matrix in the ao basis, depending on if true or false
     SharedMatrix Dt_so(bool total = true);
     /// The total/spin density matrix in the ao basis, depending on if true or false
     SharedMatrix Dt_mo(bool total = true);

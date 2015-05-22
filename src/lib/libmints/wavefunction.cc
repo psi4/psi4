@@ -586,6 +586,33 @@ SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const
         }
         delete[] temp;
         return D2;
+    } else if (basis == "CartAO") {
+        /*
+         * Added by ACS. Rob's definition of AO is simply a desymmetrized SO (i.e. using spherical basis
+         * functions).  In cases like EFP and PCM where many OE integral evaluations are needed, we want
+         * to avoid the spherical transformation, so we need to back transform the density matrix all the
+         * way back to Cartesian AOs.
+         */
+
+        PetiteList petite(basisset_, integral_, true);
+        SharedMatrix my_aotoso = petite.aotoso();
+        double* temp = new double[my_aotoso->max_ncol() * my_aotoso->max_nrow()];
+        SharedMatrix D2 = SharedMatrix(new Matrix("D (ao basis)", basisset_->nao(), basisset_->nao()));
+        int symm = D->symmetry();
+        for (int h = 0; h < my_aotoso->nirrep(); ++h) {
+            int nao = my_aotoso->rowspi()[0];
+            int nsol = my_aotoso->colspi()[h];
+            int nsor = my_aotoso->colspi()[h^symm];
+            if (!nsol || !nsor) continue;
+            double** Ulp = my_aotoso->pointer(h);
+            double** Urp = my_aotoso->pointer(h^symm);
+            double** DSOp = D->pointer(h^symm);
+            double** DAOp = D2->pointer();
+            C_DGEMM('N','T',nsol,nao,nsor,1.0,DSOp[0],nsor,Urp[0],nsor,0.0,temp,nao);
+            C_DGEMM('N','N',nao,nao,nsol,1.0,Ulp[0],nsol,temp,nao,1.0,DAOp[0],nao);
+        }
+        delete[] temp;
+        return D2;
     } else if (basis == "SO") {
         return SharedMatrix(D->clone());
     } else if (basis == "MO") {
@@ -618,7 +645,7 @@ SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const
         delete[] SC;
         return D;
     } else {
-        throw PSIEXCEPTION("Invalid basis requested, use AO, SO, or MO");
+        throw PSIEXCEPTION("Invalid basis requested, use AO, CartAO, SO, or MO");
     }
 }
 
