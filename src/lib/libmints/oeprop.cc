@@ -422,20 +422,6 @@ SharedMatrix Prop::Db_mo()
     delete[] SC;
     return D;
 }
-SharedMatrix Prop::Dt_ao(bool total)
-{
-    SharedMatrix Da = Da_ao();
-    if (same_dens_) {
-        Da->set_name((total ? "Dt_ao" : "Ds_ao"));
-        Da->scale((total ? 2.0 : 0.0));
-    } else {
-        Da->set_name((total ? "Dt_ao" : "Ds_ao"));
-        SharedMatrix Db = Db_ao();
-        if (total) Da->add(Db);
-        else Da->subtract(Db);
-    }
-    return Da;
-}
 SharedMatrix Prop::Dt_so(bool total)
 {
     SharedMatrix Da = Da_so();
@@ -935,11 +921,11 @@ void OEProp::compute_multipoles(int order, bool transition)
         aompOBI->compute(mp_ints);
 
         if (same_dens_) {
-            Da = Da_ao();
+            Da = wfn_->Da_subset("CartAO");
             Db = Da;
         } else {
-            Da = Da_ao();
-            Db = Db_ao();
+            Da = wfn_->Da_subset("CartAO");
+            Db = wfn_->Db_subset("CartAO");
         }
     }
 
@@ -1049,11 +1035,11 @@ void OEProp::compute_esp_over_grid()
 
     outfile->Printf( "\n Electrostatic potential computed on the grid and written to grid_esp.dat\n");
 
-    SharedMatrix Dtot = Da_ao();
+    SharedMatrix Dtot = wfn_->Da_subset("CartAO");
     if (same_dens_) {
         Dtot->scale(2.0);
     }else{
-        Dtot->add(Db_ao());
+        Dtot->add(wfn_->Db_subset("CartAO"));
     }
 
     int nao = basisset_->nao();
@@ -1092,11 +1078,11 @@ void OEProp::compute_field_over_grid()
 
     outfile->Printf( "\n Field computed on the grid and written to grid_field.dat\n");
 
-    SharedMatrix Dtot = Da_ao();
+    SharedMatrix Dtot = wfn_->Da_subset("CartAO");
     if (same_dens_) {
         Dtot->scale(2.0);
     }else{
-        Dtot->add(Db_ao());
+        Dtot->add(wfn_->Db_subset("CartAO"));
     }
 
     boost::shared_ptr<ElectricFieldInt> field_ints(dynamic_cast<ElectricFieldInt*>(wfn_->integral()->electric_field()));
@@ -1138,11 +1124,11 @@ void OEProp::compute_esp_at_nuclei()
     int nbf = basisset_->nbf();
     int natoms = mol->natom();
 
-    SharedMatrix Dtot = Da_ao();
+    SharedMatrix Dtot = wfn_->Da_subset("AO");
     if (same_dens_) {
         Dtot->scale(2.0);
     }else{
-        Dtot->add(Db_ao());
+        Dtot->add(wfn_->Db_subset("AO"));
     }
 
     Matrix dist = mol->distance_matrix();
@@ -1202,11 +1188,11 @@ void OEProp::compute_dipole(bool transition)
         aodOBI->set_origin(origin_);
         aodOBI->compute(dipole_ints);
         if (same_dens_) {
-            Da = Da_ao();
+            Da = wfn_->Da_subset("AO");
             Db = Da;
         } else {
-            Da = Da_ao();
-            Db = Db_ao();
+            Da = wfn_->Da_subset("AO");
+            Db = wfn_->Db_subset("AO");
         }
     }
 
@@ -1294,11 +1280,11 @@ void OEProp::compute_quadrupole(bool transition)
         aoqOBI->set_origin(origin_);
         aoqOBI->compute(qpole_ints);
         if (same_dens_) {
-            Da = Da_ao();
+            Da = wfn_->Da_subset("AO");
             Db = Da;
         } else {
-            Da = Da_ao();
-            Db = Db_ao();
+            Da = wfn_->Da_subset("AO");
+            Db = wfn_->Db_subset("AO");
         }
     }
 
@@ -1532,11 +1518,11 @@ void OEProp::compute_mulliken_charges()
 //    Get the Density Matrices for alpha and beta spins
 
     if (same_dens_) {
-        Da = Da_ao();
+        Da = wfn_->Da_subset("AO");
         Db = Da;
     } else {
-        Da = Da_ao();
-        Db = Db_ao();
+        Da = wfn_->Da_subset("AO");
+        Db = wfn_->Db_subset("AO");
     }
 
 //    Compute the overlap matrix
@@ -1619,11 +1605,11 @@ void OEProp::compute_lowdin_charges()
 //    Get the Density Matrices for alpha and beta spins
 
     if (same_dens_) {
-        Da = Da_ao();
+        Da = wfn_->Da_subset("AO");
         Db = Da;
     } else {
-        Da = Da_ao();
-        Db = Db_ao();
+        Da = wfn_->Da_subset("AO");
+        Db = wfn_->Db_subset("AO");
     }
 
 //    Compute the overlap matrix
@@ -1694,11 +1680,11 @@ void OEProp::compute_mayer_indices()
 //    Get the Density Matrices for alpha and beta spins
 
     if (same_dens_) {
-        Da = Da_ao();
+        Da = wfn_->Da_subset("AO");
         Db = Da;
     } else {
-        Da = Da_ao();
-        Db = Db_ao();
+        Da = wfn_->Da_subset("AO");
+        Db = wfn_->Db_subset("AO");
     }
 
 //    Compute the overlap matrix
@@ -1808,11 +1794,11 @@ void OEProp::compute_wiberg_lowdin_indices()
 //    Get the Density Matrices for alpha and beta spins
 
     if (same_dens_) {
-        Da = Da_ao();
+        Da = wfn_->Da_subset("AO");
         Db = Da;
     } else {
-        Da = Da_ao();
-        Db = Db_ao();
+        Da = wfn_->Da_subset("AO");
+        Db = wfn_->Db_subset("AO");
     }
 
 //    Compute the overlap matrix

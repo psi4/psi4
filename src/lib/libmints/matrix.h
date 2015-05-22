@@ -728,10 +728,10 @@ public:
      */
     void apply_symmetry(const SharedMatrix& a, const SharedMatrix& transformer);
 
-    /** Special function to transform a SimpleMatrix (no symmetry) into
-     *  a symmetry matrix.
+    /** Special function to transform a symmetry matrix into 
+     *  a SimpleMatrix (no symmetry).
      *
-     *  \param a SimpleMatrix to transform
+     *  \param a symmetry matrix to transform
      *  \param transformer The matrix returned by PetiteList::sotoao() that acts as the transformer
      */
     void remove_symmetry(const SharedMatrix& a, const SharedMatrix& transformer);
