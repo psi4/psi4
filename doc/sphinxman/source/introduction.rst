@@ -375,14 +375,16 @@ and their implementation in |PSIfour|
 Supported Architectures
 =======================
 
-The majority of |PSIfour| was developed on Mac and Linux machines.  In
+The majority of |PSIfour| was developed on Mac and Linux machines. In
 principle, it should work on any Unix system; however, we have not tested
-extensively on systems other than Mac and Linux.  There is not a Windows
+extensively on systems other than Mac and Linux. There is not a Windows
 version of |PSIfour|.
 
 |PSIfour| has been successfully compiled using Intel, GCC, and Clang
-compilers.  For the Intel compilers, use versions 11 or 12.1 (we have had
-trouble with version 12.0). See Sec. :ref:`Compiling and Installing
+compilers. For the Intel compilers, we recommend at least 12.1 (we have
+had trouble with version 12.0 and 13.0.1). GCC version 4.6 or above is
+recommended. For some architectures, a :ref:`precompiled binary
+sec:conda>` is available. See :ref:`Compiling and Installing
 <sec:installFile>` for details.
 
 
