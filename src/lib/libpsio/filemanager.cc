@@ -26,18 +26,32 @@
 #include "psio.h"
 #include <unistd.h>
 #include <cstdio>
+#include <cstdlib>
 #include "exception.h"
 #include "psi4-dec.h"
 #include "libparallel/ParallelPrinter.h"
 namespace psi{
 
-PSIOManager::PSIOManager() : default_path_("/tmp/")
+PSIOManager::PSIOManager()
 {
     pid_ = psio_getpid();
+
+    // set the default to /tmp unless one of the
+    // TMP environment variables is set
+    if(std::getenv("TMPDIR"))
+        set_default_path(std::getenv("TMPDIR"));
+    else if(std::getenv("TEMP"))
+        set_default_path(std::getenv("TEMP"));
+    else if(std::getenv("TMP"))
+        set_default_path(std::getenv("TMP"));
+    else
+        set_default_path("/tmp");
 }
+
 PSIOManager::~PSIOManager()
 {
 }
+
 boost::shared_ptr<PSIOManager> PSIOManager::shared_object()
 {
     return _default_psio_manager_;
