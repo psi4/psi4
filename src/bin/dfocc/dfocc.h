@@ -384,6 +384,7 @@ protected:
 
     // CCSD
     void ccsd_manager();
+    void ccsd_manager_cd();
     void ccsd_mp2();
     void ccsd_iterations();
     void ccsd_3index_intr();
@@ -437,6 +438,7 @@ protected:
 
     // CCD
     void ccd_manager();
+    void ccd_manager_cd();
     void ccd_mp2();
     void ccd_iterations();
     void ccd_3index_intr();

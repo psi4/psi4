@@ -102,6 +102,7 @@ void DFOCC::ccsd_pdm_3index_intr()
     T = SharedTensor2d(new Tensor2d("G (Q|AI)", nQ, navirA, naoccA));
     T->contract233(false, true, navirA, naoccA, GabA, bQiaA, 1.0, 0.0);
     T->write(psio_, PSIF_DFOCC_AMPS);
+    T.reset();
 
     // Gt(Q,ia) = \sum_{m} Gt_mi b_ma^Q 
     T = SharedTensor2d(new Tensor2d("Gt (Q|IA)", nQ, naoccA, navirA));
@@ -113,6 +114,7 @@ void DFOCC::ccsd_pdm_3index_intr()
     T = SharedTensor2d(new Tensor2d("Gt (Q|AI)", nQ, navirA, naoccA));
     T->contract233(false, true, navirA, naoccA, GtabA, bQiaA, 1.0, 0.0);
     T->write(psio_, PSIF_DFOCC_AMPS);
+    T.reset();
 
     // Build V_ijkl
     // V_ijkl = \sum_{ef} Tau_ij^ef L_kl^ef
@@ -150,7 +152,7 @@ void DFOCC::ccsd_pdm_3index_intr()
     T->gemm(false, false, bQijA, Y, 1.0, 0.0); 
     T->write(psio_, PSIF_DFOCC_AMPS);
     T.reset();
-    // V_ij^Q = \sum_{mn} (2*V_imjn - V_imnj) t_nm^Q
+    // Vt_ij^Q = \sum_{mn} (2*V_imjn - V_imnj) t_nm^Q
     T = SharedTensor2d(new Tensor2d("Vt (Q|IJ)", nQ, naoccA, naoccA));
     U = SharedTensor2d(new Tensor2d("T1 (Q|IJ)", nQ, naoccA, naoccA));
     U->read(psio_, PSIF_DFOCC_AMPS);
@@ -158,10 +160,10 @@ void DFOCC::ccsd_pdm_3index_intr()
     L->swap_3index_col(U);
     U.reset();
     T->gemm(false, false, L, Y, 1.0, 0.0);
-    T->write(psio_, PSIF_DFOCC_AMPS);
-    T.reset();
     L.reset();
     Y.reset();
+    T->write(psio_, PSIF_DFOCC_AMPS);
+    T.reset();
 
     // Build V_iajb
     // V_iajb = 1/2 \sum_{me} T'(ib,me) L'(me,ja)
@@ -191,14 +193,14 @@ void DFOCC::ccsd_pdm_3index_intr()
     Vijka->sort(2134, Y, 1.0, 0.0);
     Y.reset();
 
-    // V_ij^Q' = 2\sum_{ef} V_iejf b_ef^Q
+    // V_ij^Q' <= 2\sum_{ef} V_iejf b_ef^Q
     Vij = SharedTensor2d(new Tensor2d("Vp (Q|IJ)", nQ, naoccA, naoccA));
     X = SharedTensor2d(new Tensor2d("X (AB|IJ)", navirA, navirA, naoccA, naoccA));
     X->sort(2413, V, 1.0, 0.0);
     Vij->gemm(false, false, bQabA, X, 2.0, 0.0); 
     X.reset();
 
-    // V_ai^Q = \sum_{me} V_maie b_me^Q
+    // V_ai^Q <= \sum_{me} V_maie b_me^Q
     Vai = SharedTensor2d(new Tensor2d("V (Q|AI)", nQ, navirA, naoccA));
     X = SharedTensor2d(new Tensor2d("X (IB|AJ)", naoccA, navirA, navirA, naoccA));
     X->sort(1423, V, 1.0, 0.0);
@@ -317,6 +319,37 @@ void DFOCC::ccsd_pdm_3index_intr()
     X.reset();
     //L->write(psio_, PSIF_DFOCC_AMPS);
 
+
+    /*
+    // Build tEta_ia^Q = \sum(ef) L'_ieaf b_ef^Q
+    // Build L'_ieaf = 2*Lt_ieaf - Lt_iefa 
+    // Build L'_ieaf = \sum(m,n) (2*Tau_mn^af - Tau_mn^fa)  L_mnie 
+    Tau = SharedTensor2d(new Tensor2d("2*Tau(ia,jb) - Tau(ib,ja)", naoccA, navirA, naoccA, navirA));
+    Tau->read_symm(psio_, PSIF_DFOCC_AMPS);
+    U = SharedTensor2d(new Tensor2d("2*Tau(ij,ab) - Tau(ji,ab)", naoccA, naoccA, navirA, navirA));
+    U->sort(1324, Tau, 1.0, 0.0);
+    Tau.reset();
+    X = SharedTensor2d(new Tensor2d("Lambda <IE|AF>", naoccA, navirA, navirA, navirA));
+    X->gemm(true, false, L, U, 1.0, 0.0);
+    U.reset();
+    Y = SharedTensor2d(new Tensor2d("Temp <EF|IA>", navirA, navirA, naoccA, navirA));
+    Y->sort(2413, X, 1.0, 0.0);
+    Z = SharedTensor2d(new Tensor2d("Eta2 (Q|IA)", nQ, naoccA, navirA));
+    Z->gemm(false, false, bQabA, Y, 1.0, 0.0);
+    Y.reset();
+    Z->write(psio_, PSIF_DFOCC_AMPS);
+    Z.reset();
+
+    // Build tEta_ab^Q = \sum(me) L'_maeb b_me^Q
+    Y = SharedTensor2d(new Tensor2d("Temp <ME|AB>", naoccA, navirA, navirA, navirA));
+    Y->sort(1324, X, 1.0, 0.0);
+    X.reset();
+    Z = SharedTensor2d(new Tensor2d("Eta2 (Q|AB)", nQ, navirA, navirA));
+    Z->gemm(false, false, bQiaA, Y, 1.0, 0.0);
+    Y.reset();
+    Z->write(psio_, PSIF_DFOCC_AMPS);
+    Z.reset();
+    */
 
     // Build tEta_ia^Q = \sum(ef) L'_ieaf b_ef^Q
     // Build L'_ieaf = 2*Lt_ieaf - Lt_iefa 
@@ -530,7 +563,7 @@ void DFOCC::ccsd_pdm_yQia()
     SharedTensor2d K, L, T, U, Tau, V, V2, X, Y, Y2, Z;
     SharedTensor2d Yt, Yp;
 
-    // Read Viajb and Viabj
+    // Read Viajb 
     V = SharedTensor2d(new Tensor2d("V (IA|JB)", naoccA, navirA, naoccA, navirA));
     V->read(psio_, PSIF_DFOCC_AMPS);
     

@@ -3,3 +3,6 @@
 * DF-OCCD
 * Consider perm symmetry in RHF T2(1) in t2_1st_gen.cc
 * Re-build Gij and Gab for DF-OMP2
+* Check all TPDMs, there is a minor bug!
+* TPDM codes appears to be correct, check the 3-index intermediates
+* 3-index intermediates appears to be okay

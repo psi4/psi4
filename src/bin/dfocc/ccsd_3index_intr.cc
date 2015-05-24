@@ -108,7 +108,7 @@ void DFOCC::ccsd_3index_intr()
     Tau->add(T);
     Tau->write(psio_, PSIF_DFOCC_AMPS);
     Tau.reset();
-    // Tau'(Q,ia) = t(Q,ia) + Tau(Q,ai) 
+    // Tau'(Q,ia) = t(Q,ia) + Tau(Q,ia) 
     K = SharedTensor2d(new Tensor2d("Tau2 (Q|IA)", nQ, naoccA, navirA));
     K->read(psio_, PSIF_DFOCC_AMPS);
     Tau = SharedTensor2d(new Tensor2d("Tau2p (Q|IA)", nQ, naoccA, navirA));
@@ -117,7 +117,7 @@ void DFOCC::ccsd_3index_intr()
     T.reset();
     Tau->write(psio_, PSIF_DFOCC_AMPS);
     Tau.reset();
-    // Tau''(Q,ia) = -t(Q,ai) + Tau(Q,ai) 
+    // Tau''(Q,ia) = -t(Q,ai) + Tau(Q,ia) 
     Tau = SharedTensor2d(new Tensor2d("Tau2pp (Q|IA)", nQ, naoccA, navirA));
     Tau->swap_3index_col(U);
     U.reset();
