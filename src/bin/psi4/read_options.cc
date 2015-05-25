@@ -945,6 +945,79 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     printed. -*/
     options.add_int("PRINT", 1);
   }
+
+  if (name == "FISAPT"|| options.read_globals()) {
+
+      // ==> FISAPT Options <== //
+
+      // => Overall Options <= //
+
+      /*- Memory safety factor for heavy FISAPT operations -*/
+      options.add_double("FISAPT_MEM_SAFETY_FACTOR", 0.9);
+
+      // => ISAPT Zero-th Order Wavefunction Options <= //
+
+      /*- Specification algorithm for link bonds in ISAPT -*/
+      options.add_str("FISAPT_LINK_SELECTION", "AUTOMATIC", "AUTOMATIC MANUAL");
+      /*- Amount of fragment charge completeness to distinguish link bonds -*/
+      options.add_double("FISAPT_CHARGE_COMPLETENESS", 0.8);
+      /*- Manual link bond specification [[Atom1, Atom2], ...] -*/
+      options.add("FISAPT_MANUAL_LINKS", new ArrayType());
+      /*- Where do sigma links go (to C or to AB)? -*/
+      options.add_str("FISAPT_LINK_ASSIGNMENT", "C", "C AB");
+
+      // => F-SAPT Options <= //
+
+      /*- Do an F-SAPT analysis? -*/
+      options.add_bool("FISAPT_DO_FSAPT", true);
+      /*- Filepath to drop F-SAPT data -*/
+      options.add_str_i("FISAPT_FSAPT_FILEPATH", "fsapt/");
+      /*- Do F-SAPT exchange scaling? (ratio of S^\infty to S^2) -*/
+      options.add_bool("FISAPT_FSAPT_EXCH_SCALE", true);
+      /*- Do F-SAPT induction scaling? (ratio of HF induction to F-SAPT induction) -*/
+      options.add_bool("FISAPT_FSAPT_IND_SCALE", true);
+      /*- Do F-SAPT coupled response? (not recommended) -*/
+      options.add_bool("FISAPT_FSAPT_IND_RESPONSE", false);
+
+      // => CubicScalarGrid options <= //
+
+      /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/ 
+      options.add("CUBIC_GRID_SPACING", new ArrayType());
+      /*- CubicScalarGrid basis cutoff. !expert -*/
+      options.add_double("CUBIC_BASIS_TOLERANCE", 1.0E-12);
+      /*- CubicScalarGrid maximum number of grid points per evaluation block. !expert -*/
+      options.add_int("CUBIC_BLOCK_MAX_POINTS",1000);
+      /*- CubicScalarGrid overages in bohr [O_X, O_Y, O_Z]. Defaults to 2.0 bohr each. -*/ 
+      options.add("CUBIC_GRID_OVERAGE", new ArrayType());
+  
+      // => Scalar Field Plotting Options <= //
+
+      /*- Plot a scalar-field analysis -*/
+      options.add_bool("FISAPT_DO_PLOT", false);
+      /*- Filepath to drop scalar data -*/
+      options.add_str_i("FISAPT_PLOT_FILEPATH", "plot/");
+
+      // => Localization Tech <= //
+
+      /*- Relative convergence in orbital localization -*/
+      options.add_double("LOCAL_CONVERGENCE",1.0E-12);
+      /*- Maximum iterations in localization -*/
+      options.add_int("LOCAL_MAXITER", 1000);
+      /*- Use ghost atoms in Pipek-Mezey or IBO metric -*/
+      options.add_bool("LOCAL_USE_GHOSTS", false);
+      /*- Condition number to use in IBO metric inversions -*/
+      options.add_double("LOCAL_IBO_CONDITION", 1.0E-7);
+      /*- IBO localization metric power -*/
+      options.add_int("LOCAL_IBO_POWER", 4);
+      /*- MinAO Basis for IBO -*/ 
+      options.add_str("MINAO_BASIS", "");
+      /*- IBO Stars procedure -*/
+      options.add_bool("LOCAL_IBO_USE_STARS", false);
+      /*- IBO Charge metric for classification as Pi -*/
+      options.add_double("LOCAL_IBO_STARS_COMPLETENESS", 0.90);
+      /*- IBO Centers for Pi Degeneracy -*/
+      options.add("LOCAL_IBO_STARS", new ArrayType());   
+  }
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory
       computations -*/

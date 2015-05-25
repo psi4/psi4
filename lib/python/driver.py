@@ -108,6 +108,7 @@ procedures = {
             'sapt2+(ccd)-ct'     : run_sapt_ct,
             'sapt2+(3)(ccd)-ct'  : run_sapt_ct,
             'sapt2+3(ccd)-ct'    : run_sapt_ct,
+            'fisapt0'       : run_fisapt,
             'mp2c'          : run_mp2c,
             'ccenergy'      : run_ccenergy,  # full control over ccenergy
             'ccsd'          : run_ccenergy,
