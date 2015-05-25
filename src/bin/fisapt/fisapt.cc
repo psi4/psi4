@@ -111,7 +111,7 @@ void FISAPT::compute_energy()
 void FISAPT::print_header()
 {
     outfile->Printf("\t --------------------------------------------\n");
-    outfile->Printf("\t                     FISAPT                   \n");
+    outfile->Printf("\t                    FISAPT0                  \n");
     outfile->Printf("\t                  Rob Parrish                \n");
     outfile->Printf("\t --------------------------------------------\n");
     outfile->Printf("\n");
@@ -756,8 +756,18 @@ void FISAPT::freeze_core()
     // => Frozen Core (for Disp) <= //
 
     boost::shared_ptr<Molecule> mol = primary_->molecule();
-    boost::shared_ptr<Molecule> molA = mol->extract_subsets({0},{});
-    boost::shared_ptr<Molecule> molB = mol->extract_subsets({1},{});
+
+    std::vector<int> none;
+    std::vector<int> zero;
+    zero.push_back(0);
+    std::vector<int> one;
+    one.push_back(1);
+    boost::shared_ptr<Molecule> molA = mol->extract_subsets(zero,none);
+    boost::shared_ptr<Molecule> molB = mol->extract_subsets(one,none);
+
+    //boost::shared_ptr<Molecule> molA = mol->extract_subsets({0},{});
+    //boost::shared_ptr<Molecule> molB = mol->extract_subsets({1},{});
+
     int nfocc0A = molA->nfrozen_core(options_.get_str("FREEZE_CORE"));
     int nfocc0B = molB->nfrozen_core(options_.get_str("FREEZE_CORE"));
 
