@@ -954,6 +954,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- Memory safety factor for heavy FISAPT operations -*/
       options.add_double("FISAPT_MEM_SAFETY_FACTOR", 0.9);
+      /*- Convergence criterion for residual of the CPHF coefficients in the SAPT
+      $E@@{ind,resp}^{(20)}$ term. -*/
+      options.add_double("D_CONVERGENCE",1E-8);
+      /*- Maximum number of iterations for CPHF -*/
+      options.add_int("MAXITER", 50);
 
       // => ISAPT Zero-th Order Wavefunction Options <= //
 
