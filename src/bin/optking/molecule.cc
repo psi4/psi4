@@ -719,10 +719,11 @@ bool MOLECULE::apply_input_constraints(void) {
 
   if (   !Opt_params.frozen_distance_str.empty()
       || !Opt_params.frozen_bend_str.empty() 
-      || !Opt_params.frozen_dihedral_str.empty() ) {
+      || !Opt_params.frozen_dihedral_str.empty()
+      || !Opt_params.frozen_cartesian_str.empty() ) {
     oprintf_out("\tAssuming in current code that numbering for constraints corresponds to unified fragment.\n");
     frozen_present = fragments[0]->apply_frozen_constraints(Opt_params.frozen_distance_str,
-      Opt_params.frozen_bend_str, Opt_params.frozen_dihedral_str);
+      Opt_params.frozen_bend_str, Opt_params.frozen_dihedral_str, Opt_params.frozen_cartesian_str);
   }
 
   if (   !Opt_params.fixed_distance_str.empty()
