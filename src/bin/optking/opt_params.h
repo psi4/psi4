@@ -131,6 +131,7 @@ struct OPT_PARAMS {
   std::string frozen_distance_str;
   std::string frozen_bend_str;  
   std::string frozen_dihedral_str;
+  std::string frozen_cartesian_str;
 
   // string of atoms for fixed [user-specified equilibrium] bonds, angles, dihedrals provided by user in input
   std::string fixed_distance_str;

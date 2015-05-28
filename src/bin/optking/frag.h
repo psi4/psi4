@@ -287,9 +287,10 @@ class FRAG {
    * @param R_list string of atom pairs for frozen distances
    * @param B_list string of atom triples for frozen bends
    * @param D_list string of atom quartets for frozen dihedrals
+   * @param C_list string with lists of atom and xyz specification for frozen cartesians
    * @returns True if any constraints are present.
   */
-  bool apply_frozen_constraints(std::string R_list, std::string B_list, std::string D_list);
+  bool apply_frozen_constraints(std::string R_list, std::string B_list, std::string D_list, std::string C_list);
 
   /**
    * @param R_list string of atom pairs + equilibrium value for fixed distances

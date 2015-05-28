@@ -41,9 +41,9 @@
 // Define the return types for optking.
 #if defined(OPTKING_PACKAGE_PSI)
   typedef psi::PsiReturnType OptReturnType;
-  #define OptReturnEndloop (psi::EndLoop)
   #define OptReturnSuccess (psi::Success)
   #define OptReturnFailure (psi::Failure)
+  #define OptReturnEndloop (psi::EndLoop)
 #elif defined(OPTKING_PACKAGE_QCHEM)
   typedef int OptReturnType;
   #define OptReturnFailure 2
@@ -216,11 +216,8 @@ OptReturnType optking(void) {
 
     // only generate coordinates and print them out
     if (Opt_params.generate_intcos_only) {
-      oprintf_out("\tUpon request, generating intcos and halting.");
+      oprintf_out("\tUpon request, generating intcos and halting.\n");
       close_output_dat();
-#if defined(OPTKING_PACKAGE_PSI)
-      psi::psiclean();
-#endif
       return OptReturnEndloop;
     }
 

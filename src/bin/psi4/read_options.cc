@@ -2649,6 +2649,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("FROZEN_BEND", "");
       /*- Specify dihedral angles between atoms to be frozen (unchanged) -*/
       options.add_str("FROZEN_DIHEDRAL", "");
+      /*- Specify atom and X, XY, XYZ, ... to be frozen (unchanged) -*/
+      options.add_str("FROZEN_CARTESIAN", "");
       /*- Specify distances between atoms to be fixed (eq. value specified) -*/
       options.add_str("FIXED_DISTANCE", "");
       /*- Specify angles between atoms to be fixed (eq. value specified) -*/
