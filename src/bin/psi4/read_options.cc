@@ -2759,14 +2759,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("TEST_DERIVATIVE_B", false);
       /*- Keep internal coordinate definition file. -*/
       options.add_bool("KEEP_INTCOS", false);
-      /*In constrained optimizations, for internal coordinates with user-specified
+      /*In constrained optimizations, for coordinates with user-specified
       equilibrium values, this is the force constant (in au) used to apply an additional
-      force to each coordinate.  If the user is only concerned to satify the desired constraint,
-      then the user need only ensure that this value is sufficiently large.  Alternatively,
-      the user may specify this value to apply a force of a particular magnitude, in which case the
-      given equilibrium value may or may not be reached by the optimization.
-      Currently, we specify the value of eq. not the force applied, so this keyword may go away.
-      options.add_double("INTCO_FIXED_EQ_FORCE_CONSTANT", 2.0); */
+      force to each coordinate.  If the user is only concerned to satisfy the desired constraint,
+      then the user need only ensure that this value is sufficiently large. */
+      //options.add_double("FIXED_COORD_FORCE_CONSTANT", 2.0);
       /*- If doing a static line search, scan this many points. -*/
       options.add_int("LINESEARCH_STATIC_N", 8);
       /*- If doing a static line search, this fixes the shortest step, whose largest

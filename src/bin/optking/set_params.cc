@@ -384,8 +384,8 @@ void set_params(void)
   if (Opt_params.generate_intcos_only && !options["KEEP_INTCOS"].has_changed())
     Opt_params.keep_intcos = true;
 
-  // for intcos with user-specified equilibrium values - this is the force constant
-  //Opt_params.fixed_eq_val_force_constant = options.get_double("INTCO_FIXED_EQ_FORCE_CONSTANT");
+  // for coordinates with user-specified equilibrium values - this is the force constant
+  //Opt_params.fixed_coord_force_constant = options.get_double("FIXED_COORD_FORCE_CONSTANT");
 
   // Currently, a static line search merely displaces along the gradient in internal
   // coordinates generating LINESEARCH_STATIC_N geometries.  The other two keywords
@@ -581,9 +581,9 @@ void set_params(void)
     Opt_params.fb_fragments_only = false;
   }
 
-  // for intcos with user-specified equilibrium values - this is the force constant
-  //i = rem_read(REM_INTCO_FIXED_EQ_FORCE_CONSTANT);
-  //Opt_params.fixed_eq_val_force_constant = i / 10; // default (20 -> 2 au)
+  // for coordinates with user-specified equilibrium values - this is the force constant
+  //i = rem_read(REM_FIXED_COORD_FORCE_CONSTANT);
+  //Opt_params.fixed_coord_force_constant = i / 10; // default (20 -> 2 au)
 
   Opt_params.consecutive_backsteps_allowed = rem_read(REM_GEOM_OPT2_CONSECUTIVE_BACKSTEPS);
 
@@ -851,6 +851,7 @@ void print_params_out(void) {
   oprintf_out( "scale_connectivity     = %18.2e\n", Opt_params.scale_connectivity);
   oprintf_out( "interfragment_scale_connectivity = %18.2e\n",
     Opt_params.interfragment_scale_connectivity);
+  //oprintf_out( "fixed_coord_force_constant = %14.2e\n", Opt_params.fixed_coord_force_constant);
 
   if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE)
   oprintf_out( "fragment_mode          = %18s\n", "single");

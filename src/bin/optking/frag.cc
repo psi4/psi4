@@ -845,5 +845,9 @@ int FRAG::principal_axes(GeomType in_geom, double **axes, double *evals) {
   return cnt;
 }
 
+INTCO_TYPE FRAG::get_simple_type(int simple_index) {
+  return coords.simples.at(simple_index)->g_type();
+}
+
 }
 
