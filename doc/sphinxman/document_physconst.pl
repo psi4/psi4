@@ -3,7 +3,6 @@
 use strict;
 use warnings;
 use File::Path qw(remove_tree);
-use File::Slurp;
 
 my $DriverPath = "";
 if ($#ARGV == 0) { $DriverPath = $ARGV[0] . "/"; }
@@ -14,6 +13,17 @@ if ($#ARGV == 0) { $DriverPath = $ARGV[0] . "/"; }
 
 my $LicenseFile = $DriverPath . "../../lib/python/source.template";
 my $license = read_file($LicenseFile);
+
+sub read_file {
+    my ($filename) = @_;
+ 
+    open my $in, '<:encoding(UTF-8)', $filename or die "Could not open '$filename' for reading $!";
+    local $/ = undef;
+    my $all = <$in>;
+    close $in;
+ 
+    return $all;
+}
 
 #
 # Now, grab the physical constants
