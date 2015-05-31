@@ -291,6 +291,7 @@ void get_mo_info(Options &options)
 
   CalcInfo.num_alp_expl = CalcInfo.num_alp - CalcInfo.num_drc_orbs;
   CalcInfo.num_bet_expl = CalcInfo.num_bet - CalcInfo.num_drc_orbs;
+  CalcInfo.npop = CalcInfo.nmo - CalcInfo.num_drv_orbs;
 
   // construct the CalcInfo.ras_orbs array 
   cnt = 0;

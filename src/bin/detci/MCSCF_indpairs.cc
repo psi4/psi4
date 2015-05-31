@@ -22,11 +22,11 @@
 
 /*! \file
     \ingroup DETCAS
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
 ** INDPAIRS.C
-** 
+**
 ** Contains code pertaining to the "independent pairs" of orbitals for which
 ** the energy is not invariant.  Only these pairs need to be considered in
 ** the MCSCF orbital rotation procedure.
@@ -62,7 +62,7 @@ IndepPairs::IndepPairs() // Default constructor
 // Regular constructor
 IndepPairs::IndepPairs(int nmo, int nirr, int num_ras, int **ras_opi, int *fzc,
                        int *cor, int *vir, int *fzv, int *ci2relpitz,
-                       int ignore_ras_ras, int ignore_fz) 
+                       int ignore_ras_ras, int ignore_fz)
 {
 
   set(nmo, nirr, num_ras, ras_opi, fzc, cor,
@@ -81,16 +81,16 @@ IndepPairs::IndepPairs(int nmo, int nirr, int num_ras, int **ras_opi, int *fzc,
 ** \param fzc            = number of frozen core orbs per irrep
 ** \param cor            = number of restricted core orbs per irrep
 ** \param vir            = number of restricted virtual orbitals per irrep
-** \param fzv            = number of frozen virtual orbitals per irrep 
+** \param fzv            = number of frozen virtual orbitals per irrep
 ** \param ci2relpitz     = maps CI orbitals to relative Pitzer indices
 ** \param ignore_ras_ras = ignore RAS/RAS independent pairs
 ** \param ignore_fz      = ignore FZC and FZV from all independent pairs
-** 
+**
 */
 
 void IndepPairs::set(int nmo, int nirr, int num_ras, int **ras_opi, int *fzc,
                      int *cor, int *vir, int *fzv, int *ci2relpitz,
-                     int ignore_ras_ras, int ignore_fz) 
+                     int ignore_ras_ras, int ignore_fz)
 {
   int count, ir_count, *ir_cnt;
   int rasi, rasj, irrep;
@@ -150,7 +150,7 @@ void IndepPairs::set(int nmo, int nirr, int num_ras, int **ras_opi, int *fzc,
 
     // FZC / RAS
     for (rasj=0; rasj<num_ras; rasj++)
-      for (irrep=0; irrep<nirreps; irrep++) 
+      for (irrep=0; irrep<nirreps; irrep++)
         ir_npairs[irrep] += ras_opi[rasj][irrep] * fzc[irrep];
 
     // FZC / VIR
@@ -165,7 +165,7 @@ void IndepPairs::set(int nmo, int nirr, int num_ras, int **ras_opi, int *fzc,
 
   // COR / RAS
   for (rasj=0; rasj<num_ras; rasj++)
-    for (irrep=0; irrep<nirreps; irrep++) 
+    for (irrep=0; irrep<nirreps; irrep++)
       ir_npairs[irrep] += ras_opi[rasj][irrep] * cor[irrep];
 
   // COR / VIR
@@ -189,7 +189,7 @@ void IndepPairs::set(int nmo, int nirr, int num_ras, int **ras_opi, int *fzc,
     // FZV / COR
     for (irrep=0; irrep<nirreps; irrep++)
       ir_npairs[irrep] += fzv[irrep] * cor[irrep];
-    
+
     // FZV / RAS
     for (rasj=0; rasj<num_ras; rasj++)
       for (irrep=0; irrep<nirreps; irrep++)
@@ -201,7 +201,7 @@ void IndepPairs::set(int nmo, int nirr, int num_ras, int **ras_opi, int *fzc,
   }
 
   npairs = 0;
-  for (irrep=0; irrep<nirreps; irrep++) 
+  for (irrep=0; irrep<nirreps; irrep++)
     npairs += ir_npairs[irrep];
 
   if (npairs==0)  {
@@ -213,7 +213,7 @@ void IndepPairs::set(int nmo, int nirr, int num_ras, int **ras_opi, int *fzc,
   p = new int[npairs];
   q = new int[npairs];
   map_pair_ir  = new int[npairs];
-  map_pair_rel = new int[npairs]; 
+  map_pair_rel = new int[npairs];
 
   ir_p = new int*[nirreps];
   ir_q = new int*[nirreps];
@@ -232,7 +232,7 @@ void IndepPairs::set(int nmo, int nirr, int num_ras, int **ras_opi, int *fzc,
   }
 
   ir_cnt = new int[nirreps];
-  for (irrep=0; irrep<nirreps; irrep++) ir_cnt[irrep] = 0; 
+  for (irrep=0; irrep<nirreps; irrep++) ir_cnt[irrep] = 0;
   count = 0;
 
   // Now put everything in the proper arrays
@@ -245,7 +245,7 @@ void IndepPairs::set(int nmo, int nirr, int num_ras, int **ras_opi, int *fzc,
     // FZC / RAS
     for (rasj=0; rasj<num_ras; rasj++) {
       set_part(count, ir_cnt, ras_opi[rasj], fzc, ras_orbs[rasj], fzc_orbs,
-               ci2relpitz); 
+               ci2relpitz);
     }
 
     // FZC / VIR
@@ -259,16 +259,16 @@ void IndepPairs::set(int nmo, int nirr, int num_ras, int **ras_opi, int *fzc,
   // COR / RAS
   for (rasj=0; rasj<num_ras; rasj++) {
     set_part(count, ir_cnt, ras_opi[rasj], cor, ras_orbs[rasj], cor_orbs,
-             ci2relpitz); 
+             ci2relpitz);
   }
 
   // COR / VIR
-  set_part(count, ir_cnt, vir, cor, vir_orbs, cor_orbs, ci2relpitz); 
+  set_part(count, ir_cnt, vir, cor, vir_orbs, cor_orbs, ci2relpitz);
 
   // COR / FZV
   if (!ignore_fz)
     set_part(count, ir_cnt, fzv, cor, fzv_orbs, cor_orbs, ci2relpitz);
- 
+
   // RAS / RAS
   if (!ignore_ras_ras) {
     for (rasj=0; rasj<num_ras; rasj++) {
@@ -281,15 +281,15 @@ void IndepPairs::set(int nmo, int nirr, int num_ras, int **ras_opi, int *fzc,
 
   // RAS / VIR
   for (rasj=0; rasj<num_ras; rasj++) {
-    set_part(count, ir_cnt, vir, ras_opi[rasj], vir_orbs, ras_orbs[rasj], 
-             ci2relpitz); 
+    set_part(count, ir_cnt, vir, ras_opi[rasj], vir_orbs, ras_orbs[rasj],
+             ci2relpitz);
   }
 
   // RAS / FZV
   if (!ignore_fz) {
     for (rasj=0; rasj<num_ras; rasj++) {
-      set_part(count, ir_cnt, fzv, ras_opi[rasj], fzv_orbs, ras_orbs[rasj], 
-               ci2relpitz); 
+      set_part(count, ir_cnt, fzv, ras_opi[rasj], fzv_orbs, ras_orbs[rasj],
+               ci2relpitz);
     }
   }
 
@@ -328,8 +328,8 @@ void IndepPairs::set(int nmo, int nirr, int num_ras, int **ras_opi, int *fzc,
 ** \param orbs_j     = orbital number for [irrep][cnt], pair j
 ** \param ci2relpitz = map CI orbital to relative Pitzer numbering
 */
-void IndepPairs::set_part(int &count, int *ir_cnt, 
-  int *num_orbs_i, int *num_orbs_j, int **orbs_i, int **orbs_j, 
+void IndepPairs::set_part(int &count, int *ir_cnt,
+  int *num_orbs_i, int *num_orbs_j, int **orbs_i, int **orbs_j,
   int *ci2relpitz)
 {
   int i, j, irrep;
@@ -377,7 +377,7 @@ IndepPairs::~IndepPairs() // Destructor
         delete [] ir_p_rel[h];
         delete [] ir_q_rel[h];
         delete [] ir_map_pair[h];
-      }  
+      }
     }
   }
 
@@ -399,11 +399,11 @@ void IndepPairs::print(void)
   outfile->Printf("\nList of all independent pairs:\n");
   print_selected(npairs, p, q);
   outfile->Printf("\nLists of independent pairs by irrep:\n");
-  
+
   for (h=0; h<nirreps; h++) {
     if (!ir_npairs[h]) continue;
     outfile->Printf("\n\t Irrep %d:\n", h);
-    print_selected(ir_npairs[h], ir_p[h], ir_q[h], 
+    print_selected(ir_npairs[h], ir_p[h], ir_q[h],
                    ir_p_rel[h], ir_q_rel[h]);
   }
 
@@ -426,7 +426,7 @@ void IndepPairs::print_selected(int num, int *parr, int *qarr)
 
 }
 
-void IndepPairs::print_selected(int num, int *parr, int *qarr, 
+void IndepPairs::print_selected(int num, int *parr, int *qarr,
                                 int *prel, int *qrel)
 {
   int ii;
@@ -444,7 +444,7 @@ void IndepPairs::print_selected(int num, int *parr, int *qarr,
 }
 
 
-void IndepPairs::print_vec(double *arr, const char *label) 
+void IndepPairs::print_vec(double *arr, const char *label)
 {
   int pair;
 
@@ -500,7 +500,7 @@ void IndepPairs::put_irrep_vec(int irrep, double *ir_vec, double *tot_vec)
     tot_vec[ir_map_pair[irrep][pair]] = ir_vec[pair];
   }
 
-} 
+}
 
 
 }} // end namespace psi::detci

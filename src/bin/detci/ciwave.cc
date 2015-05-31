@@ -93,7 +93,6 @@ void CIWavefunction::set_opdm(bool use_old_d)
     Db_ = reference_wavefunction_->Db();
     return;
   }
-  outfile->Printf("Past the zapt part\n");
 
   int npop = CalcInfo.num_ci_orbs + CalcInfo.num_drc_orbs;
   SharedMatrix opdm_a(new Matrix("MO-basis Alpha OPDM", npop, npop));

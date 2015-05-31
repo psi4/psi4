@@ -195,10 +195,9 @@ PsiReturnType detci(Options &options)
    boost::shared_ptr<CIWavefunction> ciwfn(new CIWavefunction(refwfn, options));
 
    if (Parameters.print_lvl) {
-     print_parameters();       /* print running parameters                 */
-     print_ras_parms();
+   print_parameters();       /* print running parameters                 */
+   print_ras_parms();
    }
-
 
    form_strings();              /* form the alpha/beta strings              */
    if (Parameters.nthreads > 1)
@@ -1480,7 +1479,6 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
   set_mcscf_parameters(ciwfn->options());     /* get running params (convergence, etc)    */
   MCSCF* mcscf = new MCSCF(ciwfn, IterSummaryOut);
 
-  if (MCSCF_Parameters.print_lvl) tstart();
   if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
 
   // Need a TRANSQT2 Options object to be able to call that module correctly
@@ -1493,6 +1491,7 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
 
   // Parameters
   int conv;
+  if (MCSCF_Parameters.print_lvl) tstart();
 
   // Iterate
   for (int i=0; i<MCSCF_Parameters.max_iter; i++){
@@ -1555,6 +1554,7 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
   mcscf->finalize();
 
   ciwfn->set_lag();
+  ciwfn->set_tpdm();
 }
 
 

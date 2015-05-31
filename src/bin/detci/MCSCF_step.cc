@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup DETCAS
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 #include <libqt/qt.h>
@@ -67,7 +67,7 @@ void MCSCF::calc_orb_step(int npairs, double *grad, double *hess_diag, double *t
     if (denom < MO_HESS_MIN) {
       outfile->Printf("Warning: MO Hessian denominator too small\n");
       denom = MO_HESS_MIN;
-    } 
+    }
     theta[pair] =  - numer / denom;
   }
 
@@ -98,7 +98,7 @@ void MCSCF::calc_orb_step_full(int npairs, double *grad, double **hess, double *
 
   hess_copy = block_matrix(npairs, npairs);
   indx = init_int_array(npairs);
- 
+
   for (i=0; i<npairs; i++) {
     for (j=0; j<npairs; j++) {
       hess_copy[i][j] = hess[i][j];
@@ -111,7 +111,7 @@ void MCSCF::calc_orb_step_full(int npairs, double *grad, double **hess, double *
   }
   outfile->Printf("The determinant of the hessian is %8.3E\n",hess_det);
 
-  /* 
+  /*
      if the orbital Hessian is not positive definite, we may have some
      trouble converging the orbitals.  Guarantee it's positive definite
      by levelshifting
@@ -144,7 +144,7 @@ void MCSCF::calc_orb_step_full(int npairs, double *grad, double **hess, double *
       hess_copy[i][j] = hess[i][j];
     }
   }
- 
+
   if (!MCSCF_Parameters.invert_hessian) { /* solve H delta = - g */
     outfile->Printf("Solving system of linear equations for orbital step...");
     BVector = init_array(npairs);
@@ -177,9 +177,9 @@ void MCSCF::calc_orb_step_full(int npairs, double *grad, double **hess, double *
     /* debug check */
     mmult(hess_inv,0,hess,0,hess_copy,0,npairs,npairs,npairs,0);
     outfile->Printf("Hessian * Hessian inverse = \n");
-    print_mat(hess_copy,npairs,npairs,"outfile"); 
+    print_mat(hess_copy,npairs,npairs,"outfile");
     outfile->Printf("\n");
-  
+
     /* step = - B^{-1} * g */
     zero_arr(theta,npairs);
     /* the line below seems to have trouble unless I take out the -1
@@ -268,11 +268,11 @@ void MCSCF::calc_orb_step_bfgs(int npairs, double *grad, double **hess, double *
 void MCSCF::print_step(int iter, int npairs, int steptype, OutFile& IterSummaryOut)
 {
 
-   IterSummaryOut.Printf("%5d %5d %14.9lf %14.9lf %20.12lf", iter+1, 
+   IterSummaryOut.Printf("%5d %5d %14.9lf %14.9lf %20.12lf", iter+1,
      npairs, MCSCF_CalcInfo.scaled_mo_grad_rms, MCSCF_CalcInfo.mo_grad_rms,
      MCSCF_CalcInfo.energy);
 
-  if (steptype == 0) 
+  if (steptype == 0)
     IterSummaryOut.Printf(" %9s\n", "CONV");
   else if (steptype == 1)
     IterSummaryOut.Printf(" %9s\n", "NR");

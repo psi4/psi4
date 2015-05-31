@@ -85,12 +85,14 @@ void get_parameters(Options &options)
 
   // CDS-TODO: We might override the default for PRINT by command line
   // (or similar mechanism) in CASSCF, etc.
-  if (Parameters.wfn == "DETCAS" ||
-      Parameters.wfn == "CASSCF"   || Parameters.wfn == "RASSCF") {
-    Parameters.print_lvl = 0;
-  }
-  else
-    Parameters.print_lvl = 1;
+  // DGAS: A lot of MCSCF parameters have been removed, we need to print this for now.
+  // CASSCF printing needs to be reworked
+  //if (Parameters.wfn == "DETCAS" ||
+  //    Parameters.wfn == "CASSCF"   || Parameters.wfn == "RASSCF") {
+  //  Parameters.print_lvl = 0;
+  //}
+  //else
+  Parameters.print_lvl = 1;
   if (options["PRINT"].has_changed()) {
     Parameters.print_lvl = options.get_int("PRINT");
   }
@@ -867,7 +869,7 @@ void print_parameters(void)
    int i;
 
    outfile->Printf( "\n");
-   outfile->Printf( "PARAMETERS: \n");
+   outfile->Printf( "DETCI PARAMETERS: \n");
    outfile->Printf( "   EX LEVEL      =   %6d      H0 BLOCKSIZE =   %6d\n",
       Parameters.ex_lvl, Parameters.h0blocksize);
    outfile->Printf( "   VAL EX LEVEL  =   %6d      H0 GUESS SIZE=   %6d\n",
@@ -1664,7 +1666,7 @@ void set_mcscf_parameters(Options &options)
 void mcscf_print_parameters(void)
 {
   outfile->Printf("\n") ;
-  outfile->Printf("PARAMETERS: \n") ;
+  outfile->Printf("DETCAS PARAMETERS: \n") ;
   outfile->Printf("   PRINT          =   %6d      PRINT_MOS     =   %6s\n",
       MCSCF_Parameters.print_lvl, MCSCF_Parameters.print_mos ? "yes" : "no");
   outfile->Printf("   R_CONVERGENCE  =   %6.2e    E CONVERG     =   %6.2e\n",
@@ -1692,7 +1694,6 @@ void mcscf_print_parameters(void)
   outfile->Printf("   USE FZC H      =   %6s      HESSIAN       = %-12s\n",
       MCSCF_Parameters.use_fzc_h ? "yes" : "no", MCSCF_Parameters.hessian.c_str());
   outfile->Printf("\n") ;
-  //fflush(outfile);
 }
 
 

@@ -381,8 +381,8 @@ void mcscf_read_integrals()
     outfile->Printf("\n\tTwo-electron integrals:\n");
 
   iwl_rdtwo(MCSCF_Parameters.tei_file, MCSCF_CalcInfo.twoel_ints, ioff, 
-     CalcInfo.nmo, MCSCF_Parameters.filter_ints ? MCSCF_CalcInfo.num_fzc_orbs : 0, 
-     MCSCF_Parameters.filter_ints ? MCSCF_CalcInfo.num_fzv_orbs : 0, 
+     CalcInfo.nmo, MCSCF_Parameters.filter_ints ? CalcInfo.num_fzc_orbs : 0, 
+     MCSCF_Parameters.filter_ints ? CalcInfo.num_fzv_orbs : 0, 
      (MCSCF_Parameters.print_lvl>6), "outfile");
 
 } 
