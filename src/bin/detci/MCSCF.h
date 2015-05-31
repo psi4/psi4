@@ -93,7 +93,6 @@ private:
     void form_diag_mo_hess_yy(int npairs, int *ppair, int *qpair,
                       double *oei, double *tei, double **opdm,
                       double *tpdm, double **lag, double *hess);
-    void read_density_matrices(Options& options);
 
     // Rotate
     void calc_orb_step(int npairs, double *grad, double *hess_diag,

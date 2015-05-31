@@ -47,6 +47,7 @@
 #include <libdiis/diisentry.h>
 #include <libmints/wavefunction.h>
 #include <libmints/matrix.h>
+#include <libmints/vector.h>
 #include "MCSCF.h"
 #include "ciwave.h"
 #include "MCSCF_indpairs.h"
@@ -112,8 +113,16 @@ int MCSCF::update(void)
   int converged = 0;
   int steptype = 0;
 
+  // Grab integrals
   mcscf_read_integrals();            /* get the 1 and 2 elec MO integrals        */
-  read_density_matrices(options_);
+
+  // Grab the opdm and tpdm
+  SharedMatrix opdm(ciwfn_->Da()->clone());
+  opdm->add(ciwfn_->Db());
+  MCSCF_CalcInfo.opdm = opdm->pointer();
+
+  SharedVector tpdm = ciwfn_->get_tpdm();
+  MCSCF_CalcInfo.tpdm = tpdm->pointer(); 
 
   // Compute lagrangian
   MCSCF_CalcInfo.lag = lagcalc(MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm, MCSCF_CalcInfo.onel_ints_bare,
@@ -148,6 +157,8 @@ int MCSCF::update(void)
 
   // Cleanup the iteration
   iteration_clean();
+  opdm.reset();
+  tpdm.reset();
 
   if (MCSCF_Parameters.print_lvl) tstop();
 
@@ -965,9 +976,6 @@ void MCSCF::iteration_clean(void)
   free(MCSCF_CalcInfo.onel_ints);
   free(MCSCF_CalcInfo.onel_ints_bare);
   free(MCSCF_CalcInfo.twoel_ints);
-  free_block(MCSCF_CalcInfo.opdm);
-  free(MCSCF_CalcInfo.tpdm);
-  free_block(MCSCF_CalcInfo.lag);
   free(MCSCF_CalcInfo.F_act);
   free(MCSCF_CalcInfo.mo_grad);
   if (MCSCF_CalcInfo.mo_hess_diag != NULL) free(MCSCF_CalcInfo.mo_hess_diag);

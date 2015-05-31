@@ -198,14 +198,14 @@ PsiReturnType detci(Options &options)
      print_parameters();       /* print running parameters                 */
      print_ras_parms();
    }
-   
+
 
    form_strings();              /* form the alpha/beta strings              */
    if (Parameters.nthreads > 1)
      tpool_init(&thread_pool, Parameters.nthreads, CalcInfo.num_alp_str, 0);
                                 /* initialize thread pool */
    init_time_new(detci_time);             /* initialize timing routines */
-   
+
 
    if (Parameters.istop) {      /* Print size of space, other stuff, only   */
      close_io();
@@ -233,7 +233,7 @@ PsiReturnType detci(Options &options)
 
                                 /* form the RAS g matrix (eq 28-29)         */
    form_gmat((Parameters.print_lvl>3), "outfile");
-   
+
 
    if (Parameters.mpn)
      mpn(alplist, betlist);
@@ -245,7 +245,14 @@ PsiReturnType detci(Options &options)
    else
      diag_h(alplist, betlist);
 
-   if (Parameters.opdm || Parameters.transdens) form_opdm();
+   // Finished CI, setting wavefunction parameters
+   if(!Parameters.zaptn & Parameters.opdm){
+     form_opdm();
+     ciwfn->set_opdm();
+   }
+   else{
+     ciwfn->set_opdm(true);
+   }
 
    if (Parameters.tpdm) form_tpdm();
    if (Parameters.print_lvl) print_time_new(detci_time);
@@ -322,7 +329,7 @@ void close_io(void)
 */
 void cleanup(void)
 {
- 
+
 }
 
 /*
@@ -345,7 +352,7 @@ void title(void)
    outfile->Printf(
    "\nD E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999\n");
    }
-  
+
 }
 
 
@@ -400,7 +407,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
          CalcInfo.nirreps, AlphaG->subgr_per_irrep, 1, 0, 0,
          CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-      // shouldn't need to open I/O files for this fake CIvec, unit=0 
+      // shouldn't need to open I/O files for this fake CIvec, unit=0
 
       double **H, **rsp_evecs;
       int Iarel, Ialist, Ibrel, Iblist;
@@ -665,7 +672,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
             outfile->Printf("H0block size reduced by %d to %d to ensure"
              "completion of spin-coupling sets\n",
              (H0block.osize - H0block.size), H0block.size);
-            
+
             }
         }
       if (Parameters.Ms0) {
@@ -673,7 +680,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          if (H0block.osize - H0block.size) {
             outfile->Printf("H0block size reduced by %d to ensure pairing.\n",
                (H0block.osize - H0block.size));
-            
+
             }
          }
 
@@ -846,7 +853,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
       if (!Parameters.restart || (Parameters.restart && Parameters.hd_otf)) {
          if (Parameters.print_lvl > 1) {
             outfile->Printf( "\nForming diagonal elements of H\n");
-            
+
            }
          Hd.diag_mat_els(alplist, betlist, CalcInfo.onel_ints,
             CalcInfo.twoel_ints, edrc, CalcInfo.num_alp_expl,
@@ -861,7 +868,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 
          if (Parameters.print_lvl > 1) {
             outfile->Printf( "\nForming H0 block\n");
-            
+
            }
 
          if (!Parameters.hd_otf)
@@ -897,7 +904,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
              (H0block.ocoupling_size - H0block.coupling_size));
             H0block.ocoupling_size = H0block.coupling_size;
            }
-        
+
         }
       if (Parameters.Ms0) {
          /* if (H0block.guess_size < H0block.size) */
@@ -920,7 +927,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
                "ensure pairing and spin-coupling.\n",
                (H0block.ocoupling_size - H0block.coupling_size));
             }
-         
+
          }
 
       Parameters.neg_only = 0; /* MLL 7-2-97 */
@@ -951,7 +958,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
             outfile->Printf( "(Block Davidson Method)\n");
             outfile->Printf( "Energy convergence = %3g\n", conv_e);
             outfile->Printf( "RMS CI vector convergence = %3g\n\n", conv_rms);
-            
+
             }
 
          evals = init_array(nroots);
@@ -973,7 +980,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
                 "\nFind the roots with Olsen's single vector algorithm\n");
             outfile->Printf( "Energy convergence = %3g\n", conv_e);
             outfile->Printf( "RMS CI vector convergence = %3g\n", conv_rms);
-            
+
             }
 
          evals = init_array(nroots);
@@ -1112,7 +1119,7 @@ void H0block_fill(struct stringwr **alplist, struct stringwr **betlist)
    */
    evals = init_array(H0block.guess_size);
    evecs = init_matrix(H0block.guess_size, H0block.guess_size);
-   
+
    if (Parameters.precon == PRECON_GEN_DAVIDSON)
      size = H0block.size;
    else
@@ -1127,7 +1134,7 @@ void H0block_fill(struct stringwr **alplist, struct stringwr **betlist)
              H0block.coupling_size);
      outfile->Printf("Diagonalizing H0block.H0b size %d in h0block_fill in"
                      " detci.cc ... ", size);
-     
+
    }
 
    sq_rsp(size, size, H0block.H0b, H0block.H0b_eigvals, 1,
@@ -1136,7 +1143,7 @@ void H0block_fill(struct stringwr **alplist, struct stringwr **betlist)
    if (Parameters.print_lvl) {
       outfile->Printf( "\n*** H0 Block Eigenvalue = %12.8lf\n",
              H0block.H0b_eigvals[0] + CalcInfo.enuc);
-      
+
       }
 
    if (Parameters.print_lvl > 5 && size < 1000) {
@@ -1164,7 +1171,7 @@ void form_opdm(void)
       Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
       Parameters.num_roots, 0,
       Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
-      Parameters.opdm_file, Parameters.tdm_write, Parameters.tdm_print);
+      Parameters.opdm_file, 1, Parameters.tdm_print);
   }
   if (Parameters.opdm) {
     opdm(alplist, betlist, 0, Parameters.dipmom,
@@ -1172,7 +1179,7 @@ void form_opdm(void)
       Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
       Parameters.num_roots, 0,
       Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
-      Parameters.opdm_file, Parameters.opdm_write, Parameters.opdm_print);
+      Parameters.opdm_file, 1, Parameters.opdm_print);
   }
 
 }
@@ -1194,7 +1201,7 @@ void quote(void)
    outfile->Printf("\t\t\t - Starship Troopers\n\n");
    outfile->Printf("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
    outfile->Printf("\t\t\t - Edward Valeev\n\n");
-   
+
 }
 
 void H0block_coupling_calc(double E, struct stringwr **alplist, struct
@@ -1490,11 +1497,11 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
   // Iterate
   for (int i=0; i<MCSCF_Parameters.max_iter; i++){
     outfile->Printf("\nStarting MCSCF iteration %d\n\n", i+1);
-   
+
     diag_h(alplist, betlist);
 
     if (Parameters.average_num > 1) { // state average
-      MCSCF_CalcInfo.energy = 
+      MCSCF_CalcInfo.energy =
         Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"];
     }
     else if (Parameters.root != 0) { // follow some specific root != lowest
@@ -1507,6 +1514,7 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
     }
 
     form_opdm();
+    ciwfn->set_opdm();
     form_tpdm();
     close_io();
     detci_iteration_clean();
@@ -1529,7 +1537,7 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
     MCSCF_CalcInfo.energy_old = MCSCF_CalcInfo.energy;
     outfile->Printf("\nFinished MCSCF iteration %d\n\n", i+1);
 
-    psi::transqt2::transqt2(transqt_options);    
+    psi::transqt2::transqt2(transqt_options);
 
     // Need to grab the new edrc energy after transqt2 computations
     chkpt_init(PSIO_OPEN_OLD);
@@ -1539,17 +1547,14 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
     read_integrals();
     tf_onel_ints((Parameters.print_lvl>3), "outfile");
     form_gmat((Parameters.print_lvl>3), "outfile");
-    
+
 
   }
-
-  /// DGAS bad place for this, set wavefunction here
-  //boost::shared_ptr<Wavefunction> ciwfn(new CIWavefunction(Process::environment.wavefunction(), options));
-  //Process::environment.set_wavefunction(ciwfn);
 
   outfile->Printf("\nCleaning up MCSCF.\n");
   mcscf->finalize();
 
+  ciwfn->set_lag();
 }
 
 
