@@ -1,7 +1,7 @@
 ****************************************************************************
 22 January 2008: CDS
 
-I took out 
+I took out
 #include <unistd.h>
 #include <sys/time.h>
 
@@ -59,7 +59,7 @@ dropped_docc   : frozen_docc + rstr_docc , replaces old frozen_docc
 ----- orbitals active in the CI
 ras_opi[ras]   : orbitals per irrep for RAS space "ras", ras=[0,1,2,3]
                  corresponding to RAS1, RAS2, RAS3, RAS4.  Same thing
-                 it always meant. 
+                 it always meant.
 
 ----- orbitals dropped from the CI, kept unoccupied
 frozen_uocc    : absolutely frozen unoccupied orbitals
@@ -82,15 +82,15 @@ Now called from DETCI and TRANSQT2.
   o Did a global replace of num_fzc_orbs with
 num_drc_orbs and num_fzv_orbs with num_drv_orbs.
 
-  o Likewise did global replace of frozen_docc -> dropped_docc, 
-frozen_uocc -> dropped_uocc. 
+  o Likewise did global replace of frozen_docc -> dropped_docc,
+frozen_uocc -> dropped_uocc.
 
-In progress: 
+In progress:
 
   o With the above few changes in place, should go through MCSCF_ files
 and make similar changes.
 
-  o We should not be getting the guess frozen_per_irrep out of the 
+  o We should not be getting the guess frozen_per_irrep out of the
 current Process::environment.wavefunction()->frzcpi()[h].  Who knows where
 that came from?  Need another mechanism to pass this information.  Maybe
 generate it from the molecule itself... is SCF really necessary to get this
@@ -99,17 +99,17 @@ info?  See what the SCF does.
   o transqt2 is not currently allowing mixed frozen/restricted, it's either
 or (see get_moinfo.cc)
 
-  o test case rasci-c2-active was failing because we redefined active in a 
+  o test case rasci-c2-active was failing because we redefined active in a
 two-part input.  This is really more of an input parsing issue than a
-detci issue.  At the moment I fixed this by adding 
+detci issue.  At the moment I fixed this by adding
 revoke_global_option_changed("ACTIVE") in between runs.  Wonder if there
-is a better shortcut for this command.  
+is a better shortcut for this command.
 
-  o At the moment, the ZAPT2 test case zaptn-nh2 is not running with the CI 
+  o At the moment, the ZAPT2 test case zaptn-nh2 is not running with the CI
 tests.  Need to add it.
- 
+
   o CI wavefunction currently has fzcpi and fzvpi arrays that copy over
 the stuff from CalcInfo, but this is kind of meaningless because we normally
-work with the dropped core arrays not just frozen parts.  Need to reformulate 
+work with the dropped core arrays not just frozen parts.  Need to reformulate
 what goes in a CI wavefunction anyways
 

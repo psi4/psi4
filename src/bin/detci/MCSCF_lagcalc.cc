@@ -7,12 +7,12 @@
 /*         or MCSCF wavefunction given the one- and two-particle density     */
 /*         matrix, the one-electron MO integrals Him, and the two-electron   */
 /*         MO integrals (im, kl)                                             */
-/*                                                                           */ 
+/*                                                                           */
 /* Brian Hoffman                                                             */
 /* Matt Leininger                                                            */
 /*****************************************************************************/
 
-#include <libqt/qt.h>         
+#include <libqt/qt.h>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include "MCSCF.h"
@@ -27,21 +27,21 @@ namespace psi { namespace detci {
 // Compute the Lagrangian matrix
 //
 // this code assumes h is the bare one-electron ints, not the frozen
-// core operator [if desired, it is possible to write one that would take the 
+// core operator [if desired, it is possible to write one that would take the
 // fzc operator, along the lines of equations 4.3 in Chaban, Schmidt, and
 // Gordon, Theor. Chem. Acc. 97, 88-95 (1997), but the computational cost
-// of this step is pretty negligible anyway] 
+// of this step is pretty negligible anyway]
 //
 double** MCSCF::lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
                  int nmo, int npop, int print_lvl, int lag_file)
 {
   int i,j;                      /* indecies of lagrangian element          */
-  int m,k,l;                    /* indecies of integrals needed            */ 
+  int m,k,l;                    /* indecies of integrals needed            */
   int im,kl,imkl;               /* integral indecies combined              */
   int Tjm,Tmj,Tkl,Tjmkl,Tmjkl;  /* TPDM indices combined                   */
   int mj, mjkl;                 /* revised TPDM indices                    */
   double **oe_lag;              /* One-electron part of lagrangian         */
-  double **te_lag;              /* Two-electron part of lagrangian         */ 
+  double **te_lag;              /* Two-electron part of lagrangian         */
   double OEsum;                 /* QjmHim sumed over MO index m            */
   double TEsum;                 /* Gjmkl(im,kl) summed over m,k,l          */
   double lagtrace;              /* Trace of the Lagrangian (as a check)    */
@@ -57,7 +57,7 @@ double** MCSCF::lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
     for (j=0; j<npop; j++)
        {
           /*
-          ** zero locations of intermediate sums 
+          ** zero locations of intermediate sums
           */
           OEsum = 0.0;
           TEsum = 0.0;
@@ -67,18 +67,18 @@ double** MCSCF::lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
               /*
               ** calculate the one-electron contribution
               */
-              OEsum += (OPDM[j][m] * h[INDEX(i,m)]);             
+              OEsum += (OPDM[j][m] * h[INDEX(i,m)]);
               for (k=0; k<npop; k++)
-                for (l=0; l<npop; l++) 
+                for (l=0; l<npop; l++)
                   {
                     /*
                     ** calculate two-elec. contribution and
                     ** calculate integral composite index
-                    */ 
+                    */
                     im = INDEX(i,m);
                     kl = INDEX(k,l);
                     imkl = INDEX(im,kl);
-              
+
                     /*
                     ** Calculate TPDM composite index and
                     **  total sum.  If TPDM[ijkl] != TPDM[jikl] we
@@ -87,15 +87,15 @@ double** MCSCF::lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
                     */
                     mj = INDEX(m,j);
                     mjkl = INDEX(mj,kl);
-                    TEsum += TPDM[mjkl] * TwoElec[imkl]; 
+                    TEsum += TPDM[mjkl] * TwoElec[imkl];
                   } /* end l loop */
             } /* end m loop */
 
           oe_lag[i][j] = OEsum;
           te_lag[i][j] = TEsum;
           lag[i][j] = OEsum + TEsum;
-      
-        } /* end j loop */ 
+
+        } /* end j loop */
 
   /*
   ** check the trace of the Lagrangian (supposedly = energy)

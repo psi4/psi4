@@ -40,13 +40,12 @@ namespace detci {
 class IndepPairs;
 class CIWavefunction;
 
-class MCSCF 
+class MCSCF
 {
 private:
     /// Initialization block
     Options& options_;
     void title(void);
-    void get_mo_info(Options &options);
     OutFile& IterSummaryOut_;
     boost::shared_ptr<CIWavefunction> ciwfn_;
 
@@ -125,7 +124,7 @@ public:
 
     /// Constructor
     MCSCF(boost::shared_ptr<CIWavefunction> ciwfn, OutFile& IterSummaryOut);
-    ~MCSCF();   
+    ~MCSCF();
 
     // MCSCF update, orbital rotation
     int update();
