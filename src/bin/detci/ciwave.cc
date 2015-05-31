@@ -1,6 +1,10 @@
 #include <libmints/wavefunction.h>
 #include <libmints/matrix.h>
+#include <libmints/vector.h>
+#include <psi4-dec.h>
+#include "globaldefs.h"
 #include <libiwl/iwl.h>
+#include <libciomr/libciomr.h>
 #include <psifiles.h>
 #include "ciwave.h"
 #include "structs.h"
@@ -41,26 +45,30 @@ void CIWavefunction::common_init()
     // by someone else who uses the CIWavefunction and expects them to
     // be available.
 
-    // CDS-TODO: Note, some of these data should be updated to reflect what
-    // the CI wavefunction is doing, not what the reference wavefunction
-    // is doing, in case these are actually used elsewhere.
+    // Wavefunction frozen nomenclature is equivalent to dropped in detci.
+    // In detci frozen means doubly occupied, but no orbital rotations.
     nirrep_     = reference_wavefunction_->nirrep();
     nso_        = reference_wavefunction_->nso();
     nmo_        = reference_wavefunction_->nmo();
-    nalpha_     = CalcInfo.num_alp;
+    nalpha_     = CalcInfo.num_alp; // Total number of alpha electrons, including core
     nbeta_      = CalcInfo.num_bet;
+    nfrzc_      = CalcInfo.num_drc_orbs;
 
     // Per irrep data
     for(int h = 0; h < nirrep_; ++h){
         doccpi_[h] = CalcInfo.docc[h];
         soccpi_[h] = CalcInfo.socc[h];
-        frzcpi_[h] = CalcInfo.frozen_docc[h]; // CDS make more general
-        frzvpi_[h] = CalcInfo.frozen_uocc[h]; // CDS make more general
+        frzcpi_[h] = CalcInfo.dropped_docc[h];
+        frzvpi_[h] = CalcInfo.dropped_uocc[h];
         nmopi_[h]  = CalcInfo.orbs_per_irr[h];
         nsopi_[h]  = CalcInfo.so_per_irr[h];
 
     Ca_ = reference_wavefunction_->Ca();
+    psio_ = reference_wavefunction_->psio();
+    AO2SO_ = reference_wavefunction_->aotoso();
+    molecule_ = reference_wavefunction_->molecule();
 
+    name_ = "CIWavefunction";
     }
 }
 
@@ -76,7 +84,49 @@ double CIWavefunction::compute_energy()
     return energy_;
 }
 
-void CIWavefunction::set_opdm(bool print, bool erase)
+void CIWavefunction::set_opdm(bool use_old_d)
+{
+
+  // No new opdm
+  if(use_old_d){
+    Da_ = reference_wavefunction_->Da(); 
+    Db_ = reference_wavefunction_->Db();
+    return;
+  }
+  outfile->Printf("Past the zapt part\n");
+
+  int npop = CalcInfo.num_ci_orbs + CalcInfo.num_drc_orbs;
+  SharedMatrix opdm_a(new Matrix("MO-basis Alpha OPDM", npop, npop));
+  double *opdm_ap = opdm_a->pointer()[0];
+
+  SharedMatrix opdm_b(new Matrix("MO-basis Beta OPDM", npop, npop));
+  double *opdm_bp = opdm_b->pointer()[0];
+
+  char opdm_key[80];
+  psio_open(Parameters.opdm_file, PSIO_OPEN_OLD);
+  if (!options_["FOLLOW_ROOT"].has_changed()) {
+    psio_read_entry(Parameters.opdm_file, "MO-basis Alpha OPDM", (char *) opdm_ap,
+                    npop*npop*sizeof(double));
+    psio_read_entry(Parameters.opdm_file, "MO-basis Beta OPDM", (char *) opdm_bp,
+                    npop*npop*sizeof(double));
+  }
+  else {
+    int root = options_.get_int("FOLLOW_ROOT");
+    sprintf(opdm_key, "MO-basis OPDM Alpha Root %d", root);
+    psio_read_entry(Parameters.opdm_file, opdm_key, (char *) opdm_ap,
+                    npop*npop*sizeof(double));
+    sprintf(opdm_key, "MO-basis OPDM Beta Root %d", root);
+    psio_read_entry(Parameters.opdm_file, opdm_key, (char *) opdm_bp,
+                    npop*npop*sizeof(double));
+  }
+  psio_close(Parameters.opdm_file, 1);
+
+  Da_ = opdm_a;
+  Db_ = opdm_b;
+
+}
+
+SharedMatrix CIWavefunction::get_opdm(int root, int spin, bool transden)
 {
     int npop = CalcInfo.num_ci_orbs + CalcInfo.num_drc_orbs;
     SharedMatrix opdm_a(new Matrix("One-Particle Alpha Density Matrix", npop, npop));
@@ -86,60 +136,143 @@ void CIWavefunction::set_opdm(bool print, bool erase)
     double *opdm_bp = opdm_b->pointer()[0];
   
     char opdm_key[80];
-    int root = 1;
-  
     psio_open(Parameters.opdm_file, PSIO_OPEN_OLD);
-    /* if the user hasn't specified a root, just get "the" onepdm */
-    if (!options_["FOLLOW_ROOT"].has_changed()) {
-        psio_read_entry(Parameters.opdm_file, "MO-basis Alpha OPDM", (char *) opdm_ap,
+    sprintf(opdm_key, "MO-basis Alpha OPDM %s Root %d", transden ? "TDM" : "OPDM", root);
+    psio_read_entry(Parameters.opdm_file, opdm_key, (char *) opdm_ap,
+                    npop*npop*sizeof(double));
+    sprintf(opdm_key, "MO-basis Beta OPDM %s Root %d", transden ? "TDM" : "OPDM", root);
+    psio_read_entry(Parameters.opdm_file, opdm_key, (char *) opdm_bp,
                         npop*npop*sizeof(double));
-        psio_read_entry(Parameters.opdm_file, "MO-basis Beta OPDM", (char *) opdm_bp,
-                        npop*npop*sizeof(double));
+    psio_close(Parameters.opdm_file, 1);
+
+    if (spin == 2){
+        opdm_a->add(opdm_b);
+        return opdm_a;
+    }
+    else if (spin == 1){
+        return opdm_b;
+    }
+    else if (spin == 0){
+        return opdm_a;
     }
     else {
-        root = options_.get_int("FOLLOW_ROOT");
-        sprintf(opdm_key, "MO-basis Alpha OPDM Root %d", root);
-        psio_read_entry(Parameters.opdm_file, opdm_key, (char *) opdm_ap,
-                        npop*npop*sizeof(double));
-        sprintf(opdm_key, "MO-basis Beta OPDM Root %d", root);
-        psio_read_entry(Parameters.opdm_file, opdm_key, (char *) opdm_bp,
-                        npop*npop*sizeof(double));
+       throw PSIEXCEPTION("DETCI: option spin is not recognizable value."); 
     }
-  
-    psio_close(Parameters.opdm_file, erase ? 0 : 1);
-  
-    if (print){
-        opdm_a->print();
-        opdm_b->print();
-    }
-
-    Da_ = opdm_a;
-    Db_ = opdm_b;
 }
 
-//void CIWavefunction::set_orbitals(bool print, bool erase)
-//{
-//    int h, ir_orbs;
-//    char orb_key[80];
-//
-//    SharedMatrix orbitals(new Matrix("Orbitals", CalcInfo.nirreps, 
-//                          CalcInfo.orbs_per_irr, CalcInfo.orbs_per_irr));
-//    double *orbp;
-//    
-//  
-//    psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
-//    for (h=0; h<CalcInfo.nirreps; h++) {
-//      ir_orbs = CalcInfo.orbs_per_irr[h];
-//      sprintf(orb_key, "Orbs Irrep %2d", h);
-//      psio_read_entry(PSIF_DETCAS, orb_key, (char *) orbitals->pointer(h)[0],
-//                      ir_orbs*ir_orbs*sizeof(double));
-//    }
-//    psio_close(PSIF_DETCAS, erase ? 0 : 1);
-//
-//    if (print) orbitals->print();
-//    Ca_ = orbitals;
-//     
-//}
+void CIWavefunction::set_lag()
+{
+    SharedMatrix lag(new Matrix("MCSCF Lagrangian", nmo_, nmo_));
+    double **lagp = lag->pointer();
+    for (size_t i=0; i<nmo_; i++){
+        for (size_t j=0; j<nmo_; j++){
+            lagp[i][j] = MCSCF_CalcInfo.lag[i][j];
+        }
+    }    
+    Lagrangian_ = lag;
+}
+
+
+SharedVector CIWavefunction::get_tpdm(bool symmetrize)
+{
+
+  int sqnbf, ntri;
+  int *ioff_lt, i;                    /* offsets for left (or right) indices */
+  int p,q,r,s,smax,pq,qp,rs,sr,pqrs,qprs,pqsr,qpsr,target;
+  struct iwlbuf TBuff;
+
+  iwl_buf_init(&TBuff, Parameters.tpdm_file, 0.0, 1, 1);
+  int npop = CalcInfo.num_ci_orbs + CalcInfo.num_drc_orbs;
+
+  sqnbf = npop * npop;
+  SharedVector tpdm(new Vector("TPDM", (sqnbf*(sqnbf+1))/2));
+  double* tpdmp = tpdm->pointer();
+
+  /* Construct the ioff_lt array (same here as ioff_rt) : different than
+   * regular ioff because there is no perm symmetry between left indices
+   * or right indices.
+   */
+  ioff_lt = init_int_array(nmo_);
+  for (i=0; i<npop; i++) {
+    ioff_lt[i] = i * npop;
+  }
+
+ iwl_buf_rd_all(&TBuff, tpdmp, ioff_lt, ioff_lt, 1, ioff,
+                false, "outfile");
+
+  iwl_buf_close(&TBuff, 1);
+  free(ioff_lt);
+
+  if(!symmetrize){
+    return tpdm;
+  }
+
+  ntri = (npop * (npop + 1))/2;
+  SharedVector symm_tpdm(new Vector("Symm TPDM", (ntri * (ntri + 1))/2));
+  double* symm_tpdmp = symm_tpdm->pointer();
+
+  for (p=0,target=0; p<npop; p++) {
+    for (q=0; q<=p; q++) {
+      for (r=0; r<=p; r++) {
+        smax = (r==p) ? q+1 : r+1;
+        for (s=0; s<smax; s++,target++) {
+
+          pq = p * npop + q;
+          qp = q * npop + p;
+          rs = r * npop + s;
+          sr = s * npop + r;
+          pqrs = INDEX(pq,rs);
+          qprs = INDEX(qp,rs);
+          pqsr = INDEX(pq,sr);
+          qpsr = INDEX(qp,sr);
+          /* would be 0.25 but the formulae I used for the diag hessian 
+           * seem to define the TPDM with the 1/2 back outside */
+          symm_tpdmp[target] = 0.5 * (tpdmp[pqrs] + tpdmp[qprs] +
+                         tpdmp[pqsr] + tpdmp[qpsr]);
+
+        }
+      }
+    }
+  }
+  tpdm.reset();
+  return symm_tpdm;
+
+}
+
+void CIWavefunction::set_tpdm()
+{
+  int npop = CalcInfo.num_ci_orbs + CalcInfo.num_drc_orbs;
+  
+  SharedVector symm_tpdm = get_tpdm(true);
+  double* symm_tpdmp = symm_tpdm->pointer();
+
+  SharedMatrix sm_tpdm(new Matrix("TPDM", npop * npop, npop * npop));
+  double* sm_tpdmp = sm_tpdm->pointer()[0];
+
+  int npop2 = npop * npop;
+  int npop3 = npop * npop * npop;
+  int ij, kl, ijkl;
+  for (int i=0; i<npop; i++){
+  for (int j=0; j<npop; j++){
+  for (int k=0; k<npop; k++){
+  for (int l=0; l<npop; l++){
+      ij = INDEX(i,j);
+      kl = INDEX(k,l);
+      ijkl = INDEX(ij, kl);
+      sm_tpdmp[i * npop3 + j * npop2 + k * npop + l] = symm_tpdmp[ijkl];
+  }}}}
+  symm_tpdm.reset();
+
+  // Set numpy shape
+  sm_tpdm->set_numpy_dims(4);
+  int* shape = new int[4];
+  shape[0] = npop; shape[1] = npop;
+  shape[2] = npop; shape[3] = npop;
+  sm_tpdm->set_numpy_shape(shape);
+
+  TPDM_ = sm_tpdm;
+}
+
 // void CIWavefunction::finalize()
 // {
 // 

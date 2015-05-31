@@ -739,6 +739,11 @@ void Wavefunction::set_gradient(SharedMatrix& grad)
     gradient_ = grad;
 }
 
+SharedMatrix Wavefunction::TPDM() const
+{
+    return TPDM_;
+}
+
 boost::shared_ptr<Vector> Wavefunction::frequencies() const
 {
     return frequencies_;
