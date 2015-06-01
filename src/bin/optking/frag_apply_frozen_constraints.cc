@@ -56,18 +56,28 @@ struct fixed_coord {
   double eq_val;
 };
 
+struct frozen_cart {
+  int atom;
+  bool freeze_x = false;
+  bool freeze_y = false;
+  bool freeze_z = false;
+};
+
 std::vector<int> split_to_ints(string &s);
 std::vector<fixed_coord> split_to_fixed_coord(string &str, int N);
+std::vector<frozen_cart> split_to_frozen_cart(string &str);
 
 // R_string = integer list of atoms, each 2 of which are frozen
 // B_string = integer list of atoms, each 3 of which are frozen
 // D_string = integer list of atoms, each 4 of which are frozen
+// C_string = (integer string) pair list for frozen cartesians, e.g., "4 z" 
 
-bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_string)
+bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_string, string C_string)
 {
   std::vector<int> R_atoms = split_to_ints(R_string);
   std::vector<int> B_atoms = split_to_ints(B_string);
   std::vector<int> D_atoms = split_to_ints(D_string);
+  std::vector<frozen_cart> Carts = split_to_frozen_cart(C_string);
 
   if (R_atoms.size() % 2 != 0)
     throw(INTCO_EXCEPT("Frozen distance string should contain even number of atoms."));
@@ -93,7 +103,7 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
         D_atoms[i+2]+1, D_atoms[i+3]+1);
   }
 
-  if (!R_atoms.size() && !B_atoms.size() && !D_atoms.size())
+  if (!R_atoms.size() && !B_atoms.size() && !D_atoms.size() && !Carts.size())
     return false;
 
   // do frozen distances
@@ -157,6 +167,40 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
     else { 
       coords.simples[index]->freeze();   // it's there already; make sure it's frozen
       delete one_tors;
+    }
+  }
+  // Do cartesian coordinates .
+  if (Carts.size()) {
+    if (Opt_params.print_lvl > 1) {
+      for (int i=0; i<Carts.size(); ++i) {
+        oprintf_out("\n\tFreeze for atom %d (starting at 1): ", Carts[i].atom+1);
+        if (Carts[i].freeze_x) oprintf_out("X");
+        if (Carts[i].freeze_y) oprintf_out("Y");
+        if (Carts[i].freeze_z) oprintf_out("Z");
+      }
+      oprintf_out("\n\n");
+    }
+  }
+  for (int i=0; i<Carts.size(); ++i) {
+    int atom = Carts[i].atom;
+    vector<int> xyz_list;
+    if (Carts[i].freeze_x) xyz_list.push_back(0);
+    if (Carts[i].freeze_y) xyz_list.push_back(1);
+    if (Carts[i].freeze_z) xyz_list.push_back(2);
+
+    if (atom >= natom)
+      throw(INTCO_EXCEPT("Impossibly large index for atom in frozen cartesian string."));
+
+    for (int x=0; x<xyz_list.size(); ++x) {
+      CART *one_cart = new CART(atom, xyz_list[x], true); // create frozen coordinate: x=0, y=1, z=2
+
+      int index = find(one_cart);
+      if (index == coords.simples.size())
+        coords.simples.push_back(one_cart);// add it
+      else { 
+        coords.simples[index]->freeze();   // it's there already; make sure it's frozen
+        delete one_cart;
+      }
     }
   }
   return true;
@@ -333,6 +377,56 @@ std::vector<fixed_coord> split_to_fixed_coord(string &str, int N) {
 
     }
   }
+  return C;
+}
+
+std::vector<frozen_cart> split_to_frozen_cart(string &str) {
+
+  // Replace commas and ( and ) with spaces so that commas don't break it
+  for (int i=0; i<str.size(); ++i)
+    if ( str[i] == ',' || str[i] == '(' || str[i] == ')' || str[i] == '"' || str[i] == '\n' )
+      str[i] = ' ';
+
+  std::vector<frozen_cart> C;
+  frozen_cart one_cart;
+
+  char delim = ' ';
+  std::stringstream ss(str);
+  string item;
+  bool new_entry = true;
+
+  while (std::getline(ss, item, delim)) {
+    if (item.find_first_not_of(" ") != string::npos) {  // Ignore empty entries.
+
+      if (new_entry) {
+        int a = StringToNumber<int>(item);
+        if (a == -1) // change to int failed
+          throw(INTCO_EXCEPT("Frozen atom cannot be translated into a whole number."));
+        one_cart.atom = a-1; // start internal numbering at 0
+        new_entry = false;
+      }
+      else { // read xyz specification
+        int len = item.size();
+        if (len > 3)
+          throw(INTCO_EXCEPT("Frozen cartesian specification (X, XY, ...) should have no more than 3 letters."));
+
+        for (int i=0; i<len; ++i) {
+          if (item[i] == 'X')
+            one_cart.freeze_x = true;
+          else if (item[i] == 'Y')
+            one_cart.freeze_y = true;
+          else if (item[i] == 'Z')
+            one_cart.freeze_z = true;
+          else
+            throw(INTCO_EXCEPT("Each character in frozen cartesian specification should be X, Y, or Z."));
+        }
+        C.push_back(one_cart);
+        new_entry = true;
+      }
+    }
+  }
+  if (!new_entry)
+    throw(INTCO_EXCEPT("In frozen cartesian specification did not find pairs of valid entries."));
   return C;
 }
 
