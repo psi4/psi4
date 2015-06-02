@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys, os
 
-sys.path.append('%s/lib/fsapt' % os.environ['PSIDATADIR'])
+sys.path.append('%s/fsapt' % os.environ['PSIDATADIR'])
 from fsapt import *
 
 # => Driver Code <= #
