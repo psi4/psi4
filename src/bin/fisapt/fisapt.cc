@@ -1117,7 +1117,8 @@ void FISAPT::exch()
     //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf H\n",k+1,Exch10_2M_terms[k]);
     //}
     //scalars_["Exch10(S^2)"] = Exch10_2;
-    outfile->Printf("    Exch10(S^2) [MCBS]  = %18.12lf H\n",Exch10_2M);
+    //outfile->Printf("    Exch10(S^2) [MCBS]  = %18.12lf H\n",Exch10_2M);
+    //outfile->Printf("    Exch10(S^2)         = %18.12lf H\n",Exch10_2M);
     //fflush(outfile);
 
     // ==> Exchange Terms (S^2, DCBS only) <== //
@@ -1149,7 +1150,8 @@ void FISAPT::exch()
     //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf H\n",k+1,Exch10_2_terms[k]);
     //}
     scalars_["Exch10(S^2)"] = Exch10_2;
-    outfile->Printf("    Exch10(S^2) [DCBS]  = %18.12lf H\n",Exch10_2);
+    //outfile->Printf("    Exch10(S^2) [DCBS]  = %18.12lf H\n",Exch10_2);
+    outfile->Printf("    Exch10(S^2)         = %18.12lf H\n",Exch10_2);
     //fflush(outfile);
 
     // ==> Exchange Terms (S^\infty, MCBS or DCBS) <== //
@@ -1242,7 +1244,8 @@ void FISAPT::exch()
     //    outfile->Printf("    Exch10 (%1d)          = %18.12lf H\n",k+1,Exch10_n_terms[k]);
     //}
     scalars_["Exch10"] = Exch10_n;
-    outfile->Printf("    Exch10      [MCBS]  = %18.12lf H\n",Exch10_n);
+    //outfile->Printf("    Exch10      [MCBS]  = %18.12lf H\n",Exch10_n);
+    outfile->Printf("    Exch10              = %18.12lf H\n",Exch10_n);
     outfile->Printf("\n");
     //fflush(outfile);
 
