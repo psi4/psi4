@@ -1629,8 +1629,9 @@ void FISAPT::disp()
 
     // => Auxiliary Basis Set <= //
 
-    boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_orbital(primary_->molecule(),
-        "RIFIT", options_.get_str("DF_BASIS_SAPT"));
+    boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+        "DF_BASIS_SAPT", options_.get_str("DF_BASIS_SAPT"), "RIFIT",
+        options_.get_str("BASIS"), primary_->has_puream());
 
     // => Pointers <= //
    
@@ -2411,8 +2412,9 @@ void FISAPT::felst()
 
     // => a <-> b <= //
 
-    boost::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_orbital(primary_->molecule(),
-        "JKFIT", options_.get_str("DF_BASIS_SCF"));
+    boost::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+        "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
+        options_.get_str("BASIS"), primary_->has_puream());
     size_t nQ = jkfit->nbf();
 
     boost::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,Process::environment.options);
@@ -2575,8 +2577,9 @@ void FISAPT::fexch()
 
     // ==> DF ERI Setup (JKFIT Type, in Full Basis) <== //
 
-    boost::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_orbital(primary_->molecule(),
-        "JKFIT", options_.get_str("DF_BASIS_SCF"));
+    boost::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+        "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
+        options_.get_str("BASIS"), primary_->has_puream());
     int nQ = jkfit->nbf();
 
     boost::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,Process::environment.options);
@@ -2825,8 +2828,9 @@ void FISAPT::find()
     
     // ==> DF ERI Setup (JKFIT Type, in Full Basis) <== //
 
-    boost::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_orbital(primary_->molecule(),
-        "JKFIT", options_.get_str("DF_BASIS_SCF"));
+    boost::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+        "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
+        options_.get_str("BASIS"), primary_->has_puream());
     size_t nQ = jkfit->nbf();
 
     boost::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,Process::environment.options);
@@ -3287,8 +3291,9 @@ void FISAPT::fdisp()
 
     // => Auxiliary Basis Set <= //
 
-    boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_orbital(primary_->molecule(),
-        "RIFIT", options_.get_str("DF_BASIS_SAPT"));
+    boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+        "DF_BASIS_SAPT", options_.get_str("DF_BASIS_SAPT"), "RIFIT",
+        options_.get_str("BASIS"), primary_->has_puream());
     
     // => Sizing <= //
 

@@ -952,13 +952,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       // => Overall Options <= //
 
-      /*- Memory safety factor for heavy FISAPT operations -*/
+      /*- Memory safety factor for heavy FISAPT operations !expert -*/
       options.add_double("FISAPT_MEM_SAFETY_FACTOR", 0.9);
       /*- Convergence criterion for residual of the CPHF coefficients in the SAPT
       $E@@{ind,resp}^{(20)}$ term. -*/
       options.add_double("D_CONVERGENCE",1E-8);
       /*- Maximum number of iterations for CPHF -*/
       options.add_int("MAXITER", 50);
+      /*- Minimum absolute value below which integrals are neglected.
+      For ISAPT, a variational collapse problem seems to occur for even rather
+      modest values of this cutoff, when DF is used and when very close
+      contacts occur. Therefore, we will be safe and turn it off (this does not
+      affect performance overtly) -*/
+      options.add_double("INTS_TOLERANCE",0.0);
 
       // => ISAPT Zero-th Order Wavefunction Options <= //
 
@@ -988,12 +994,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/ 
       options.add("CUBIC_GRID_SPACING", new ArrayType());
+      /*- CubicScalarGrid overages in bohr [O_X, O_Y, O_Z]. Defaults to 2.0 bohr each. -*/ 
+      options.add("CUBIC_GRID_OVERAGE", new ArrayType());
       /*- CubicScalarGrid basis cutoff. !expert -*/
       options.add_double("CUBIC_BASIS_TOLERANCE", 1.0E-12);
       /*- CubicScalarGrid maximum number of grid points per evaluation block. !expert -*/
       options.add_int("CUBIC_BLOCK_MAX_POINTS",1000);
-      /*- CubicScalarGrid overages in bohr [O_X, O_Y, O_Z]. Defaults to 2.0 bohr each. -*/ 
-      options.add("CUBIC_GRID_OVERAGE", new ArrayType());
   
       // => Scalar Field Plotting Options <= //
 
@@ -1008,14 +1014,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("LOCAL_CONVERGENCE",1.0E-12);
       /*- Maximum iterations in localization -*/
       options.add_int("LOCAL_MAXITER", 1000);
-      /*- Use ghost atoms in Pipek-Mezey or IBO metric -*/
+      /*- Use ghost atoms in Pipek-Mezey or IBO metric !expert -*/
       options.add_bool("LOCAL_USE_GHOSTS", false);
-      /*- Condition number to use in IBO metric inversions -*/
+      /*- Condition number to use in IBO metric inversions !expert -*/
       options.add_double("LOCAL_IBO_CONDITION", 1.0E-7);
       /*- IBO localization metric power -*/
       options.add_int("LOCAL_IBO_POWER", 4);
-      /*- MinAO Basis for IBO -*/ 
-      options.add_str("MINAO_BASIS", "");
+      /*- MinAO Basis for IBO !expert -*/ 
+      options.add_str("MINAO_BASIS", "CC-PVTZ-MINAO");
       /*- IBO Stars procedure -*/
       options.add_bool("LOCAL_IBO_USE_STARS", false);
       /*- IBO Charge metric for classification as Pi -*/
