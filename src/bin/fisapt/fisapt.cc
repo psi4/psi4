@@ -117,7 +117,7 @@ void FISAPT::print_header()
     outfile->Printf("\n");
 
     outfile->Printf("    Do F-SAPT = %11s\n", options_.get_bool("FISAPT_DO_FSAPT") ? "Yes" : "No");
-    outfile->Printf("    Do Plot   = %11s\n", options_.get_bool("FISAPT_DO_FSAPT") ? "Yes" : "No");
+    outfile->Printf("    Do Plot   = %11s\n", options_.get_bool("FISAPT_DO_PLOT") ? "Yes" : "No");
     outfile->Printf("    Memory    = %11.3f [GD]\n", doubles_ / (1024. * 1024. * 1024.));
     outfile->Printf("\n");
 }
