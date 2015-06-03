@@ -261,7 +261,7 @@ def parse_input():
             default=False,
             help='enable undefined behaviour sanitizer (UBSan) build [default: %(default)s]')
 
-    group = parser.add_argument_group('External libraries')
+    group = parser.add_argument_group('External quantum chemistry libraries')
     # ERD package
     group.add_argument('--erd',
             action='store_true',
@@ -287,6 +287,16 @@ def parse_input():
             action='store_true',
             default=False,
             help='Enable PCMSolver [default: %(default)s]')
+
+    group = parser.add_argument_group('External libraries')
+    # ZLIB
+    group.add_argument('--zlib-dir',
+            action='store',
+            default=None,
+            help="""The root directory for zlib.
+            'include/zlib.h' and 'lib/libz.so' (or similar) should be in this directory.
+            If this is left blank cmake will attempt to find one on your system.""",
+            metavar='PATH')
 
     group = parser.add_argument_group('Pass extra flags to the compiler')
     group.add_argument('--extra-cc-flags',
@@ -445,6 +455,9 @@ def gen_cmake_command(args):
 
     if args.python:
         command += ' -DPYTHON_INTERPRETER={0}'.format(args.python)
+
+    if args.zlib_dir:
+        command += ' -DZLIB_ROOT={0}'.format(args.zlib_dir)
 
     if args.extra_cc_flags:
         command += ' -DEXTRA_C_FLAGS="%s"' % args.extra_cc_flags
