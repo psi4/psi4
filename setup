@@ -287,6 +287,21 @@ def parse_input():
             action='store_true',
             default=False,
             help='Enable PCMSolver [default: %(default)s]')
+    # CheMPS2 package
+    group.add_argument('--chemps2',
+            action='store_false',
+            default=True,
+            #action='store',
+            #choices=('on', 'off'),
+            #default='on',
+            help='Enable CheMPS2 external project [default: %(default)s]')
+    group.add_argument('--chemps2-dir',
+            action='store',
+            default=None,
+            help="""The install directory for a pre-built CheMPS2.
+            'lib/chemps2.so' and 'include/chemps2/DMRG.h' should be in this directory.
+            If this is left blank cmake will build one for you.""",
+            metavar='PATH')
 
     group = parser.add_argument_group('External libraries')
     # ZLIB
@@ -295,6 +310,23 @@ def parse_input():
             default=None,
             help="""The root directory for zlib.
             'include/zlib.h' and 'lib/libz.so' (or similar) should be in this directory.
+            If this is left blank cmake will attempt to find one on your system.""",
+            metavar='PATH')
+
+    # GSL
+    group.add_argument('--gsl-dir',
+            action='store',
+            default=None,
+            help="""The root directory for gsl.
+            'include/gsl/gsl_sf.h' and 'lib/libgsl.so' should be in this directory.
+            If this is left blank cmake will attempt to find one on your system.""",
+            metavar='PATH')
+    # HDF5
+    group.add_argument('--hdf5-dir',
+            action='store',
+            default=None,
+            help="""The root directory for hdf5.
+            'include/hdf5.h' and 'lib/libhdf5.so' (or similar) should be in this directory.
             If this is left blank cmake will attempt to find one on your system.""",
             metavar='PATH')
 
@@ -389,6 +421,7 @@ def gen_cmake_command(args):
     command += ' -DENABLE_GPU_DFCC=%s'       % translate_cmake(args.gpu_dfcc)
     command += ' -DENABLE_DUMMY_PLUGIN=%s'   % translate_cmake(args.dummy_plugin)
     command += ' -DENABLE_PCMSOLVER=%s'      % translate_cmake(args.pcmsolver)
+    command += ' -DENABLE_CHEMPS2=%s'        % translate_cmake(args.chemps2)
     command += ' -DENABLE_CXX11_SUPPORT=%s'  % translate_cmake(args.cxx11)
     command += ' -DLIBINT_OPT_AM={0}'.format(args.max_am_eri)
     command += ' -DEXECUTABLE_SUFFIX={0}'.format(args.suffix)
@@ -458,6 +491,15 @@ def gen_cmake_command(args):
 
     if args.zlib_dir:
         command += ' -DZLIB_ROOT={0}'.format(args.zlib_dir)
+
+    if args.gsl_dir:
+        command += ' -DGSL_ROOT={0}'.format(args.gsl_dir)
+
+    if args.hdf5_dir:
+        command += ' -DHDF5_ROOT={0}'.format(args.hdf5_dir)
+
+    if args.chemps2_dir:
+        command += ' -DCHEMPS2_ROOT={0}'.format(args.chemps2_dir)
 
     if args.extra_cc_flags:
         command += ' -DEXTRA_C_FLAGS="%s"' % args.extra_cc_flags
