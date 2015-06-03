@@ -675,7 +675,7 @@ void FISAPT::coulomb()
 
     int nn = primary_->nbf();
     matrices_["JC"] = boost::shared_ptr<Matrix>(new Matrix("JC", nn, nn));
-    matrices_["KC"] = boost::shared_ptr<Matrix>(new Matrix("JC", nn, nn));
+    matrices_["KC"] = boost::shared_ptr<Matrix>(new Matrix("KC", nn, nn));
     if (matrices_["LoccC"]->colspi()[0] > 0) {
         matrices_["JC"]->copy(J[0]);
         matrices_["KC"]->copy(K[0]);
@@ -993,7 +993,45 @@ void FISAPT::dHF()
     H_BC.reset();
     F_BC.reset();
     D_BC.reset();
-   
+
+    // We also compute the energies of the isolated A and B
+    // fragments, so that the orbital deformation energy is available
+
+    // => Monomer A Energy <= //
+
+    double EA = 0.0;
+    EA += Enuc2p[0][0];
+
+    boost::shared_ptr<Matrix> H_A(D_A->clone());
+    H_A->copy(T);
+    H_A->add(V_A);
+
+    boost::shared_ptr<Matrix> F_A(D_A->clone());
+    F_A->copy(H_A);
+    F_A->add(J_A);
+    F_A->add(J_A);
+    F_A->subtract(K_A);
+
+    EA += D_A->vector_dot(H_A) + D_A->vector_dot(F_A);
+
+    // => Monomer B Energy <= //
+
+    double EB = 0.0;
+    EB += Enuc2p[1][1];
+
+    boost::shared_ptr<Matrix> H_B(D_B->clone());
+    H_B->copy(T);
+    H_B->add(V_B);
+
+    boost::shared_ptr<Matrix> F_B(D_B->clone());
+    F_B->copy(H_B);
+    F_B->add(J_B);
+    F_B->add(J_B);
+    F_B->subtract(K_B);
+
+    EB += D_B->vector_dot(H_B) + D_B->vector_dot(F_B);
+
+
     // => Monomer C Energy <= //
 
     double EC = 0.0;
@@ -1020,11 +1058,15 @@ void FISAPT::dHF()
     outfile->Printf("    E ABC = %24.16E [H]\n", EABC);
     outfile->Printf("    E AC  = %24.16E [H]\n", EAC);
     outfile->Printf("    E BC  = %24.16E [H]\n", EBC);
+    outfile->Printf("    E A   = %24.16E [H]\n", EA);
+    outfile->Printf("    E B   = %24.16E [H]\n", EB);
     outfile->Printf("    E C   = %24.16E [H]\n", EC);
     outfile->Printf("    E HF  = %24.16E [H]\n", EHF);
     outfile->Printf("\n");
 
     scalars_["HF"] = EHF;
+    scalars_["E_A"] = EA;
+    scalars_["E_B"] = EB;
 }
 void FISAPT::elst()
 {
