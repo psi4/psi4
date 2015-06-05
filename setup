@@ -33,7 +33,7 @@ def parse_input():
             action='store',
             default=default_path,
             help='build directory [default: %(default)s]',
-            metavar='build path')
+            metavar='OBJDIR')
 
     group = parser.add_argument_group('Basic options')
     # The C compiler
@@ -56,7 +56,7 @@ def parse_input():
             metavar='STRING')
     # Libint maximum angular momentum.
     parser.add_argument('--max-am-eri',
-            metavar="= MAX_ANGULAR_MOMENTUM",
+            metavar="MAX_ANGULAR_MOMENTUM",
             type=int,
             default=5,
             help="""The maximum angular momentum level (1=p, 2=d, 3=f, etc.) for the libint and libderiv packages.
@@ -106,7 +106,7 @@ def parse_input():
             Failing that it will build one for you""",
             metavar='PATH')
     group.add_argument('--python',
-            metavar='= PYTHON',
+            metavar='PYTHON',
             action='store',
             default=None,
             help="""The Python interpreter (development version) to use.  CMake will detect one automatically, if omitted.""")
@@ -142,10 +142,10 @@ def parse_input():
             default='auto',
             help='specify LAPACK library; possible choices are "auto", "builtin", "none", or full path [default: %(default)s]',
             metavar='[{auto,builtin,none,/full/path/lib.a}]')
-    group.add_argument('--explicit-libs',
+    group.add_argument('--extra-math-flags',
             action='store',
             default=None,
-            help='explicit linker specification for extra libraries; passed directly to the linker',
+            help='extra linker flags (usually -Llibdir -llibname type arguments) [default: %(default)s]',
             metavar='STRING')
     group.add_argument('--accelerate',
             action='store_true',
@@ -170,11 +170,6 @@ def parse_input():
 
     # Advanced options
     group = parser.add_argument_group('Advanced options')
-    group.add_argument('--ldflags',
-            action='store',
-            default=None,
-            help="Any extra flags to pass to the linker (usually -Llibdir -llibname type arguments). You shouldn't need this.",
-            metavar='STRING')
     # C++11 support (CMake will detect what's available)
     group.add_argument('--cxx11',
             nargs='?',
@@ -188,7 +183,7 @@ def parse_input():
             action='store',
             choices=('on', 'off'),
             default='off',
-            help='Compile with support for plugins [default: %(default)s]')
+            help='Build the example plugins [default: %(default)s]')
     # Suffix for the psi4 executable
     group.add_argument('--suffix',
             type=str,
@@ -225,8 +220,9 @@ def parse_input():
             dest='define',
             default=[],
             help="""forward directly to cmake (example: -D ENABLE_THIS=1 -D ENABLE_THAT=1);
-                    you can also forward CPP defintions all the way to the program
-                    (example: -D CPP="-DDEBUG")""",
+                    you can also forward CPP definitions all the way to the program
+                    (example: -D CPP="-DDEBUG"); also handle multi-word arguments
+                    (example: -D MORELIBS="-L/path/to/lib /path/to/lib2")""",
             metavar='STRING')
     group.add_argument('--host',
             action='store',
@@ -379,7 +375,7 @@ def check_cmake_exists(cmake_command):
         print('   get CMake at http://www.cmake.org/')
         print('   on many clusters CMake is installed')
         print('   but you have to load it first:')
-        print('   $ module load cmake')
+        print('   >>> module load cmake')
         sys.exit()
 
 def translate_cmake(s):
@@ -475,10 +471,10 @@ def gen_cmake_command(args):
         command += ' -DENABLE_AUTO_BLAS=OFF'
         command += ' -DENABLE_AUTO_LAPACK=OFF'
 
-    if args.explicit_libs:
+    if args.extra_math_flags:
         # remove leading and trailing whitespace
         # otherwise CMake complains
-        command += ' -DEXPLICIT_LIBS="%s"' % args.explicit_libs.strip()
+        command += ' -DEXPLICIT_LIBS="%s"' % args.extra_math_flags.strip()
 
     if args.boost_incdir:
         command += ' -DBOOST_INCLUDEDIR={0}'.format(args.boost_incdir)
@@ -552,7 +548,6 @@ def gen_cmake_command(args):
                 _tmp = definition.split('=', 1)
                 command += ' -D%s="%s"' % (_tmp[0], _tmp[1])
             else:
-                print definition
                 command += ' -D%s' % definition
 
     if args.generator:
@@ -569,10 +564,10 @@ def print_build_help(build_path):
     print('   configure step is done')
     print('   now you need to compile the sources:')
     if (build_path == default_path):
-        print('   $ cd objdir')
+        print('   >>> cd objdir')
     else:
-        print('   $ cd ' + build_path)
-    print('   $ make')
+        print('   >>> cd ' + build_path)
+    print('   >>> make')
 
 def save_setup_command(argv, command, build_path):
     file_name = os.path.join(build_path, 'setup_command')
