@@ -310,8 +310,9 @@ void CubicScalarGrid::add_esp(double* v, boost::shared_ptr<Matrix> D, const std:
 {
     // => Auxiliary Basis Set <= //
 
-    boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_orbital(primary_->molecule(),
-        "JKFIT", options_.get_str("DF_BASIS_SCF"));
+    boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+        "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
+        options_.get_str("BASIS"), primary_->has_puream());
     double cutoff    = options_.get_double("INTS_TOLERANCE");
     double condition = options_.get_double("DF_FITTING_CONDITION");
 

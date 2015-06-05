@@ -90,6 +90,8 @@ class FRAG {
   std::string get_coord_definition(int coord_index, int atom_offset=0);
   std::string get_simple_definition(int simple_index, int atom_offset=0);
 
+  INTCO_TYPE get_simple_type(int simple_index);
+
   void update_connectivity_by_distances(void);
   void update_connectivity_by_bonds(void);
 

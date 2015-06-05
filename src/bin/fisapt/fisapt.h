@@ -31,7 +31,7 @@ protected:
 
     /// Map of scalars 
     std::map<std::string, double> scalars_;
-    /// Map of matrices
+    /// Map of vectors
     std::map<std::string, boost::shared_ptr<Vector> > vectors_;
     /// Map of matrices
     std::map<std::string, boost::shared_ptr<Matrix> > matrices_;
@@ -130,7 +130,7 @@ protected:
 
     /// Map of scalars 
     std::map<std::string, double> scalars_;
-    /// Map of matrices
+    /// Map of vectors
     std::map<std::string, boost::shared_ptr<Vector> > vectors_;
     /// Map of matrices
     std::map<std::string, boost::shared_ptr<Matrix> > matrices_;

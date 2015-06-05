@@ -22,19 +22,23 @@
 
 /*! \file
     \ingroup DETCAS
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <libchkpt/chkpt.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <libqt/qt.h>
 #include <libmints/wavefunction.h>
-#define EXTERN
+#include <libciomr/libciomr.h>
 #include "MCSCF.h"
+#include "globaldefs.h"
+#include "structs.h"
+#define EXTERN
+#include "globals.h"
 
 namespace psi { namespace detci {
 
-// void pitzer_arrays(int nirreps, int *frdocc, int *fruocc, int *orbspi, 
+// void pitzer_arrays(int nirreps, int *frdocc, int *fruocc, int *orbspi,
 //                    int *first, int *last, int *fstact, int *lstact,
 //                    int *active);
 // double *** construct_evects(int nirreps, int *active, int *orbspi,
@@ -43,8 +47,8 @@ namespace psi { namespace detci {
 
 /*
 ** GET_MO_INFO
-** 
-** Reads PSIF_CHKPT & input.dat and gets all sorts of useful information about 
+**
+** Reads PSIF_CHKPT & input.dat and gets all sorts of useful information about
 ** the molecular orbitals (such as their reordering array, the docc
 ** array, frozen orbitals, etc.)
 **
@@ -62,19 +66,6 @@ void MCSCF::get_mo_info(Options &options)
    MCSCF_CalcInfo.mo_hess = NULL;
    MCSCF_CalcInfo.mo_hess_diag = NULL;
 
-   // /* information from checkpoint file */
-   // chkpt_init(PSIO_OPEN_OLD);
-   // CalcInfo.nirreps = chkpt_rd_nirreps();
-   // CalcInfo.nmo = chkpt_rd_nmo();
-   // MCSCF_CalcInfo.nso = chkpt_rd_nmo(); /* change to nbfso after conversion */
-   // CalcInfo.labels = chkpt_rd_irr_labs();
-   // CalcInfo.orbs_per_irr = chkpt_rd_orbspi();
-   // MCSCF_CalcInfo.enuc = chkpt_rd_enuc();
-   // MCSCF_CalcInfo.efzc = chkpt_rd_efzc();
-   // CalcInfo.docc = chkpt_rd_clsdpi();
-   // CalcInfo.socc = chkpt_rd_openpi();
-   // chkpt_close();
- 
    MCSCF_CalcInfo.frozen_docc = init_int_array(CalcInfo.nirreps);
    MCSCF_CalcInfo.frozen_uocc = init_int_array(CalcInfo.nirreps);
 
@@ -100,30 +91,15 @@ void MCSCF::get_mo_info(Options &options)
    MCSCF_CalcInfo.rstr_uocc = init_int_array(CalcInfo.nirreps);
    CalcInfo.reorder = init_int_array(CalcInfo.nmo);
    CalcInfo.ras_opi = init_int_matrix(MAX_RAS_SPACES,CalcInfo.nirreps);
-      
+
    if (!ras_set2(CalcInfo.nirreps, CalcInfo.nmo, 1, 1,
-                CalcInfo.orbs_per_irr, CalcInfo.docc, CalcInfo.socc, 
-                MCSCF_CalcInfo.frozen_docc, MCSCF_CalcInfo.frozen_uocc, 
+                CalcInfo.orbs_per_irr, CalcInfo.docc, CalcInfo.socc,
+                MCSCF_CalcInfo.frozen_docc, MCSCF_CalcInfo.frozen_uocc,
                 MCSCF_CalcInfo.rstr_docc, MCSCF_CalcInfo.rstr_uocc,
-                CalcInfo.ras_opi, CalcInfo.reorder, 1, 0, options)) 
-   { 
+                CalcInfo.ras_opi, CalcInfo.reorder, 1, 0, options))
+   {
      throw PsiException("Error in ras_set().  Aborting.", __FILE__, __LINE__) ;
    }
-   
-
-  // /* Compute maximum number of orbitals per irrep including
-  // ** and not including fzv
-  // */
-  // MCSCF_CalcInfo.max_orbs_per_irrep = 0;
-  // MCSCF_CalcInfo.max_pop_per_irrep = 0;
-  // for (i=0; i<CalcInfo.nirreps; i++) {
-  //   if (MCSCF_CalcInfo.max_orbs_per_irrep < CalcInfo.orbs_per_irr[i])
-  //     MCSCF_CalcInfo.max_orbs_per_irrep = CalcInfo.orbs_per_irr[i];
-  //   if (MCSCF_CalcInfo.max_pop_per_irrep < (CalcInfo.orbs_per_irr[i] - 
-  //                                  MCSCF_CalcInfo.frozen_uocc[i]))
-  //     MCSCF_CalcInfo.max_pop_per_irrep = CalcInfo.orbs_per_irr[i] -
-  //                                  MCSCF_CalcInfo.frozen_uocc[i];      
-  // }
 
 
   // /* construct the "ordering" array, which maps the other direction */
@@ -142,7 +118,7 @@ void MCSCF::get_mo_info(Options &options)
       j = CalcInfo.reorder[cnt];
       MCSCF_CalcInfo.ci2relpitz[j] = i;
     }
-  } 
+  }
 
   if (MCSCF_Parameters.print_lvl > 4) {
     outfile->Printf("\nPitzer to CI order array = \n");
@@ -151,14 +127,6 @@ void MCSCF::get_mo_info(Options &options)
     }
     outfile->Printf("\n");
   }
-
-
-  // CalcInfo.nmotri = (CalcInfo.nmo * (CalcInfo.nmo + 1)) / 2 ;
-
-  // if (CalcInfo.nmotri >= IOFF_MAX){
-  //   throw PsiException("(get_mo_info): IOFF_MAX may not large enough!",
-  //                             __FILE__, __LINE__);
-  // }
 
   // /* transform orbsym vector to new MO order */
   // MCSCF_CalcInfo.orbsym = init_int_array(CalcInfo.nmo);
@@ -172,7 +140,7 @@ void MCSCF::get_mo_info(Options &options)
 
   MCSCF_CalcInfo.num_fzv_orbs = 0;  MCSCF_CalcInfo.num_vir_orbs = 0;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    MCSCF_CalcInfo.num_fzv_orbs += MCSCF_CalcInfo.frozen_uocc[i];  
+    MCSCF_CalcInfo.num_fzv_orbs += MCSCF_CalcInfo.frozen_uocc[i];
     MCSCF_CalcInfo.num_vir_orbs += MCSCF_CalcInfo.rstr_uocc[i];
   }
 
@@ -183,49 +151,49 @@ void MCSCF::get_mo_info(Options &options)
   MCSCF_CalcInfo.num_cor_orbs = 0;
   for (i=0; i<CalcInfo.nirreps; i++) {
     MCSCF_CalcInfo.num_fzc_orbs += MCSCF_CalcInfo.frozen_docc[i];
-  } 
+  }
   for (i=0; i<CalcInfo.nirreps; i++) {
     MCSCF_CalcInfo.num_cor_orbs += MCSCF_CalcInfo.rstr_docc[i];
   }
 
-  /* construct the MCSCF_CalcInfo.ras_orbs array (may not be of any use now) */
-  cnt = 0;
-  MCSCF_CalcInfo.fzc_orbs = init_int_matrix(CalcInfo.nirreps,CalcInfo.nmo);
-  MCSCF_CalcInfo.cor_orbs = init_int_matrix(CalcInfo.nirreps,CalcInfo.nmo);
-  MCSCF_CalcInfo.vir_orbs = init_int_matrix(CalcInfo.nirreps,CalcInfo.nmo);
-  MCSCF_CalcInfo.fzv_orbs = init_int_matrix(CalcInfo.nirreps,CalcInfo.nmo);
+  ///* construct the MCSCF_CalcInfo.ras_orbs array (may not be of any use now) */
+  //cnt = 0;
+  //MCSCF_CalcInfo.fzc_orbs = init_int_matrix(CalcInfo.nirreps,CalcInfo.nmo);
+  //MCSCF_CalcInfo.cor_orbs = init_int_matrix(CalcInfo.nirreps,CalcInfo.nmo);
+  //MCSCF_CalcInfo.vir_orbs = init_int_matrix(CalcInfo.nirreps,CalcInfo.nmo);
+  //MCSCF_CalcInfo.fzv_orbs = init_int_matrix(CalcInfo.nirreps,CalcInfo.nmo);
 
-  /* FZC */
-  for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
-    for (j=0; j<MCSCF_CalcInfo.frozen_docc[irrep]; j++)
-      MCSCF_CalcInfo.fzc_orbs[irrep][j] = cnt++;
+  ///* FZC */
+  //for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
+  //  for (j=0; j<MCSCF_CalcInfo.frozen_docc[irrep]; j++)
+  //    MCSCF_CalcInfo.fzc_orbs[irrep][j] = cnt++;
 
-  /* COR */
-  for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
-    for (j=0; j<MCSCF_CalcInfo.rstr_docc[irrep]; j++)
-      MCSCF_CalcInfo.cor_orbs[irrep][j] = cnt++;
+  ///* COR */
+  //for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
+  //  for (j=0; j<MCSCF_CalcInfo.rstr_docc[irrep]; j++)
+  //    MCSCF_CalcInfo.cor_orbs[irrep][j] = cnt++;
 
-  /* RAS */
-  MCSCF_CalcInfo.ras_orbs = (int ***) malloc (MAX_RAS_SPACES * sizeof(int **));
-  for (i=0; i<MAX_RAS_SPACES; i++) {
-    MCSCF_CalcInfo.ras_orbs[i] = init_int_matrix(CalcInfo.nirreps,
-      CalcInfo.nmo);
-    for (irrep=0; irrep<CalcInfo.nirreps; irrep++) {
-      for (j=0; j<CalcInfo.ras_opi[i][irrep]; j++) {
-        MCSCF_CalcInfo.ras_orbs[i][irrep][j] = cnt++;
-      }
-    }
-  }
+  ///* RAS */
+  //MCSCF_CalcInfo.ras_orbs = (int ***) malloc (MAX_RAS_SPACES * sizeof(int **));
+  //for (i=0; i<MAX_RAS_SPACES; i++) {
+  //  MCSCF_CalcInfo.ras_orbs[i] = init_int_matrix(CalcInfo.nirreps,
+  //    CalcInfo.nmo);
+  //  for (irrep=0; irrep<CalcInfo.nirreps; irrep++) {
+  //    for (j=0; j<CalcInfo.ras_opi[i][irrep]; j++) {
+  //      MCSCF_CalcInfo.ras_orbs[i][irrep][j] = cnt++;
+  //    }
+  //  }
+  //}
 
-  /* VIR */
-  for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
-    for (j=0; j<MCSCF_CalcInfo.rstr_uocc[irrep]; j++)
-      MCSCF_CalcInfo.vir_orbs[irrep][j] = cnt++;
+  ///* VIR */
+  //for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
+  //  for (j=0; j<MCSCF_CalcInfo.rstr_uocc[irrep]; j++)
+  //    MCSCF_CalcInfo.vir_orbs[irrep][j] = cnt++;
 
-  /* FZV */
-  for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
-    for (j=0; j<MCSCF_CalcInfo.frozen_uocc[irrep]; j++)
-      MCSCF_CalcInfo.fzv_orbs[irrep][j] = cnt++;
+  ///* FZV */
+  //for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
+  //  for (j=0; j<MCSCF_CalcInfo.frozen_uocc[irrep]; j++)
+  //    MCSCF_CalcInfo.fzv_orbs[irrep][j] = cnt++;
 
 
 
@@ -244,52 +212,55 @@ void MCSCF::get_mo_info(Options &options)
 
   /* allocate memory to store the MO coefficient matrix symm blocked */
 
-  MCSCF_CalcInfo.mo_coeffs = (double ***) malloc(CalcInfo.nirreps * 
-                                           sizeof(double **));
-  for (irrep=0; irrep<CalcInfo.nirreps; irrep++) {
-    i = CalcInfo.orbs_per_irr[irrep];
-    if (i==0) continue;
-    MCSCF_CalcInfo.mo_coeffs[irrep] = block_matrix(i,i);   
-  }
-  
+  // MCSCF_CalcInfo.ref_mo_coeffs = (double ***) malloc(CalcInfo.nirreps *
+  //                                          sizeof(double **));
+  // MCSCF_CalcInfo.cur_mo_coeffs = (double ***) malloc(CalcInfo.nirreps *
+  //                                          sizeof(double **));
+  // for (irrep=0; irrep<CalcInfo.nirreps; irrep++) {
+  //   i = CalcInfo.orbs_per_irr[irrep];
+  //   if (i==0) continue;
+  //   MCSCF_CalcInfo.ref_mo_coeffs[irrep] = block_matrix(i,i);
+  //   MCSCF_CalcInfo.cur_mo_coeffs[irrep] = block_matrix(i,i);
+  // }
+
   if (MCSCF_Parameters.print_lvl > 0) {
     outfile->Printf("ORBITALS:");
-    outfile->Printf("\n   FROZEN_DOCC   = ");
-    for (i=0; i<CalcInfo.nirreps; i++) {
-      outfile->Printf("%2d ", MCSCF_CalcInfo.frozen_docc[i]);
-    }
-    outfile->Printf("\n   RESTR_DOCC    = ");
-    for (i=0; i<CalcInfo.nirreps; i++) {
-      outfile->Printf("%2d ", MCSCF_CalcInfo.rstr_docc[i]);
-    }
-    outfile->Printf("\n   DOCC          = ");
+    outfile->Printf("\n   DOCC           = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
       outfile->Printf("%2d ", CalcInfo.docc[i]);
     }
-    outfile->Printf("\n   SOCC          = ");
+    outfile->Printf("\n   SOCC           = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
       outfile->Printf("%2d ", CalcInfo.socc[i]);
     }
-    outfile->Printf("\n   RESTR_UOCC    = ");
+    outfile->Printf("\n");
+    outfile->Printf("\n   FROZEN_DOCC    = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      outfile->Printf("%2d ", MCSCF_CalcInfo.rstr_uocc[i]);
+      outfile->Printf("%2d ", MCSCF_CalcInfo.frozen_docc[i]);
     }
-    outfile->Printf("\n   FROZEN_UOCC   = ");
+    outfile->Printf("\n   RESTR_DOCC     = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      outfile->Printf("%2d ", MCSCF_CalcInfo.frozen_uocc[i]);
+      outfile->Printf("%2d ", MCSCF_CalcInfo.rstr_docc[i]);
     }
-
     for (i=0; i<MAX_RAS_SPACES; i++) {
-      outfile->Printf("\n   RAS %d         = ",i+1);
+      outfile->Printf("\n   RAS %d          = ",i+1);
       for (j=0; j<CalcInfo.nirreps; j++) {
         outfile->Printf("%2d ", CalcInfo.ras_opi[i][j]);
       }
     }
+    outfile->Printf("\n   RESTR_UOCC     = ");
+    for (i=0; i<CalcInfo.nirreps; i++) {
+      outfile->Printf("%2d ", MCSCF_CalcInfo.rstr_uocc[i]);
+    }
+    outfile->Printf("\n   FROZEN_UOCC    = ");
+    for (i=0; i<CalcInfo.nirreps; i++) {
+      outfile->Printf("%2d ", MCSCF_CalcInfo.frozen_uocc[i]);
+    }
     outfile->Printf("\n");
 
-    outfile->Printf("   MOL ORBS      =   %6d\n", CalcInfo.nmo);
-    outfile->Printf("   FROZEN CORE   =   %6d      RESTR CORE   =   %6d\n",
-        MCSCF_CalcInfo.num_fzc_orbs, MCSCF_CalcInfo.num_cor_orbs);
+    outfile->Printf("   MOL ORBS       = %5d\n", CalcInfo.nmo);
+    outfile->Printf("   FROZEN CORE    = %5d\n", MCSCF_CalcInfo.num_fzc_orbs);
+    outfile->Printf("   RESTR CORE     = %5d\n", MCSCF_CalcInfo.num_cor_orbs);
     outfile->Printf("\n");
   }
 }
@@ -305,13 +276,13 @@ void MCSCF::get_mo_info(Options &options)
 ** C. David Sherrill
 ** April 1998
 */
-// void pitzer_arrays(int nirreps, int *frdocc, int *fruocc, int *orbspi, 
+// void pitzer_arrays(int nirreps, int *frdocc, int *fruocc, int *orbspi,
 //                    int *first, int *last, int *fstact, int *lstact,int *active)
 // {
-// 
+//
 //   int h;
 //   int first_offset, last_offset;
-// 
+//
 //   /*
 //    * Construct first and last index arrays: this defines the first
 //    * absolute orbital index (Pitzer ordering) and last absolute orbital
@@ -323,12 +294,12 @@ void MCSCF::get_mo_info(Options &options)
 //     first[h] = -1;
 //     last[h] = -2;
 //   }
-// 
+//
 //   first_offset = 0;
-//   last_offset = orbspi[0] - 1; 
+//   last_offset = orbspi[0] - 1;
 //   first[0] = first_offset;
 //   last[0] = last_offset;
-// 
+//
 //   for(h=1; h < nirreps; h++) {
 //     first_offset += orbspi[h-1];
 //     last_offset += orbspi[h];
@@ -337,25 +308,25 @@ void MCSCF::get_mo_info(Options &options)
 //       last[h] = last_offset;
 //     }
 //   }
-// 
+//
 //   /*
 //    * Construct first and last active index arrays: this defines the first
 //    * absolute orbital index (Pitzer ordering) and last absolute orbital
 //    * index for each irrep, excluding frozen orbitals.  When there are no
 //    * orbitals for an irrep, the value is -1 for first[] and -2 for last[].
 //    * Note that there must be orbitals in the first irrep (i.e. totally
-//    * symmetric) for this to work.  
+//    * symmetric) for this to work.
 //    */
 //   for(h=0; h < nirreps; h++) {
 //     fstact[h] = -1;
 //     lstact[h] = -2;
 //   }
-// 
+//
 //   first_offset = frdocc[0];
-//   last_offset = orbspi[0] - fruocc[0] - 1; 
+//   last_offset = orbspi[0] - fruocc[0] - 1;
 //   fstact[0] = first_offset;
 //   lstact[0] = last_offset;
-// 
+//
 //   for(h=1; h < nirreps; h++) {
 //     first_offset += orbspi[h-1]+frdocc[h]-frdocc[h-1];
 //     last_offset += orbspi[h] - fruocc[h] + fruocc[h-1];
@@ -364,12 +335,12 @@ void MCSCF::get_mo_info(Options &options)
 //       lstact[h] = last_offset;
 //     }
 //   }
-// 
+//
 //   /* Now define active[] such that frozen orbitals are taken into account */
 //   for(h=0; h < nirreps; h++) {
 //     active[h] = orbspi[h]-frdocc[h]-fruocc[h];
 //   }
-// 
+//
 // }
 
 
@@ -379,6 +350,7 @@ void MCSCF::get_mo_info(Options &options)
 **
 ** Read in the molecular orbital matrix from PSIF_CHKPT and put them in MCSCF_CalcInfo
 */
+/*
 void MCSCF::read_cur_orbs(void)
 {
   int i, j, h, dim, nirreps;
@@ -390,16 +362,16 @@ void MCSCF::read_cur_orbs(void)
   for (h=0; h<nirreps; h++) {
     dim = CalcInfo.orbs_per_irr[h];
     if (dim==0) continue;
-    tmat = chkpt_rd_scf_irrep(h); 
-    for (i=0; i<dim; i++) 
-      for (j=0; j<dim; j++) 
-        MCSCF_CalcInfo.mo_coeffs[h][i][j] = tmat[i][j];
+    tmat = chkpt_rd_scf_irrep(h);
+    for (i=0; i<dim; i++)
+      for (j=0; j<dim; j++)
+        MCSCF_CalcInfo.ref_mo_coeffs[h][i][j] = tmat[i][j];
     free_block(tmat);
   }
   chkpt_close();
 
 }
-
+*/
 
 
 /*
