@@ -24,6 +24,7 @@
 #include "view.h"
 #include <libmints/mints.h>
 #include <psi4-dec.h>
+#include <physconst.h>
 
 #include <cstdio>
 #include <utility>
@@ -283,9 +284,9 @@ void NBOWriter::write(const std::string &filename)
         throw PSIEXCEPTION("NBO cannot handle angular momentum above f functions. \n");
     }
     //print $GENNBO section of file
-    //BOHR indicates atomic units for the coordinates
+    //BOHR indicates atomic units for the coordinates; now ANG but not sure about keyword
     //OPEN indicates that we'll provide separate alpha and beta matrices
-    printer->Printf( "$GENNBO NATOMS = %d NBAS = %d BOHR BODM ", mol.natom(), basisset.nbf());
+    printer->Printf( "$GENNBO NATOMS = %d NBAS = %d ANG BODM ", mol.natom(), basisset.nbf());
 
     //To make this more user-friendly in the case of RHF wavefunctions...
     bool open_shell = (wavefunction_->nalpha() != wavefunction_->nbeta());
@@ -305,7 +306,8 @@ void NBOWriter::write(const std::string &filename)
         //the second mol.Z() should be modified when pseudopotentials are implemented
         printer->Printf( "%2d  %2d  %20.12f %20.12f %20.12f\n",
                 static_cast<int>(mol.Z(i)), static_cast<int>(mol.Z(i)),
-                mol.x(i), mol.y(i), mol.z(i));
+                mol.x(i)*pc_bohr2angstroms, mol.y(i)*pc_bohr2angstroms, 
+                mol.z(i)*pc_bohr2angstroms);
     }
     printer->Printf( "$END\n");
 
@@ -419,7 +421,7 @@ void NBOWriter::write(const std::string &filename)
     printer->Printf( "\nCS = \n");
     for( int i =0; i < nprim; i++)
     {
-        printer->Printf( "%20.10f ", coefficient.get (0, 0, i));
+        printer->Printf( "%20.9E ", coefficient.get (0, 0, i));
         if((i+1)%4 == 0)
             printer->Printf( "\n");
     }
@@ -427,7 +429,7 @@ void NBOWriter::write(const std::string &filename)
     printer->Printf( "\nCP = \n");
     for( int i =0; i < nprim; i++)
     {
-        printer->Printf( "%20.10f ", coefficient.get (0, 1, i));
+        printer->Printf( "%20.9E ", coefficient.get (0, 1, i));
         if((i+1)%4 == 0)
             printer->Printf( "\n");
     }
@@ -435,7 +437,7 @@ void NBOWriter::write(const std::string &filename)
     printer->Printf( "\nCD = \n");
     for( int i =0; i < nprim; i++)
     {
-        printer->Printf( "%20.10f ", coefficient.get (0, 2, i));
+        printer->Printf( "%20.9E ", coefficient.get (0, 2, i));
         if((i+1)%4 == 0)
             printer->Printf( "\n");
     }
@@ -443,7 +445,7 @@ void NBOWriter::write(const std::string &filename)
     printer->Printf( "\nCF = \n");
     for( int i =0; i < nprim; i++)
     {
-        printer->Printf( "%20.10f ", coefficient.get (0, 3, i));
+        printer->Printf( "%20.9E ", coefficient.get (0, 3, i));
         if((i+1)%4 == 0)
             printer->Printf( "\n");
     }
