@@ -41,8 +41,11 @@
 #include <libpsio/psio.hpp>
 #include <libpsio/psio.h>
 #include <psifiles.h>
-#define EXTERN
 #include "MCSCF.h"
+#define EXTERN
+#include "globaldefs.h"
+#include "structs.h"
+#include "globals.h"
 
 namespace psi { namespace detci {
 

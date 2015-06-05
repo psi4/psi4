@@ -1,0 +1,17 @@
+# Zero everything out
+reinitialize
+
+# Load Monomer A
+load Elst.pdb
+show sticks, all
+
+spectrum b, red_white_blue, Elst, minimum = -25.00, maximum = 25.00
+
+# Visualization
+@vis.pymol
+
+# Orientation
+@orient.pymol
+
+# Raytraced png
+png Elst.png, width=1200, height=1200, dpi=300, ray=1

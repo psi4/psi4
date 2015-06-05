@@ -70,11 +70,6 @@ void get_parameters(Options &options)
   /* Parameters.print_lvl is set in detci.cc */
   /* Parameters.have_special_conv is set in detci.cc */
 
-/* symbol * = put in read_options
- *        I = was internal parameter, not in read_options
- *        X = now it's an internal parameter, not in read_options
- */
-
   Parameters.ex_lvl = options.get_int("EX_LEVEL");
   Parameters.cc_ex_lvl = options.get_int("CC_EX_LEVEL");
   Parameters.val_ex_lvl = options.get_int("VAL_EX_LEVEL");
@@ -90,12 +85,14 @@ void get_parameters(Options &options)
 
   // CDS-TODO: We might override the default for PRINT by command line
   // (or similar mechanism) in CASSCF, etc.
-  if (Parameters.wfn == "DETCAS" ||
-      Parameters.wfn == "CASSCF"   || Parameters.wfn == "RASSCF") {
-    Parameters.print_lvl = 0;
-  }
-  else
-    Parameters.print_lvl = 1;
+  // DGAS: A lot of MCSCF parameters have been removed, we need to print this for now.
+  // CASSCF printing needs to be reworked
+  //if (Parameters.wfn == "DETCAS" ||
+  //    Parameters.wfn == "CASSCF"   || Parameters.wfn == "RASSCF") {
+  //  Parameters.print_lvl = 0;
+  //}
+  //else
+  Parameters.print_lvl = 1;
   if (options["PRINT"].has_changed()) {
     Parameters.print_lvl = options.get_int("PRINT");
   }
@@ -251,7 +248,6 @@ void get_parameters(Options &options)
 
   Parameters.nprint = options.get_int("NUM_DETS_PRINT");
   Parameters.cc_nprint = options.get_int("NUM_AMPS_PRINT");
-  Parameters.fzc = options["DETCI_FREEZE_CORE"].to_integer();
 
   if (options["FCI"].has_changed())
     Parameters.fci = options["FCI"].to_integer();
@@ -873,29 +869,28 @@ void print_parameters(void)
    int i;
 
    outfile->Printf( "\n");
-   outfile->Printf( "PARAMETERS: \n");
+   outfile->Printf( "DETCI PARAMETERS: \n");
    outfile->Printf( "   EX LEVEL      =   %6d      H0 BLOCKSIZE =   %6d\n",
       Parameters.ex_lvl, Parameters.h0blocksize);
    outfile->Printf( "   VAL EX LEVEL  =   %6d      H0 GUESS SIZE=   %6d\n",
       Parameters.val_ex_lvl, Parameters.h0guess_size);
    outfile->Printf( "   H0COUPLINGSIZE=   %6d      H0 COUPLING  =   %6s\n",
       Parameters.h0block_coupling_size, Parameters.h0block_coupling ? "yes" : "no");
-   outfile->Printf( "   NUM PRINT     =   %6d\n", Parameters.nprint);
-   outfile->Printf( "   MAXITER       =   %6d      FREEZE CORE  =   %6s\n",
-      Parameters.maxiter, Parameters.fzc ? "yes" : "no");
+   outfile->Printf( "   MAXITER       =   %6d      NUM PRINT    =   %6d\n",
+      Parameters.maxiter, Parameters.nprint);
    outfile->Printf( "   NUM ROOTS     =   %6d      ICORE        =   %6d\n",
       Parameters.num_roots, Parameters.icore);
    outfile->Printf( "   PRINT         =   %6d      FCI          =   %6s\n",
       Parameters.print_lvl, Parameters.fci ? "yes" : "no");
    if (Parameters.have_special_conv)
       outfile->Printf(
-         "   R CONV        =   %8.2g    MIXED        =   %6s\n",
+         "   R CONV         = %8.2g    MIXED        =   %6s\n",
          Parameters.special_conv, Parameters.mixed ? "yes" : "no");
    else
-      outfile->Printf( "   R CONV        =   %6.2e      MIXED        =   %6s\n",
+      outfile->Printf( "   R CONV        = %6.2e      MIXED        =   %6s\n",
          Parameters.convergence, Parameters.mixed ? "yes" : "no");
 
-   outfile->Printf( "   E CONV        =   %6.2e      MIXED4       =   %6s\n",
+   outfile->Printf( "   E CONV        = %6.2e      MIXED4       =   %6s\n",
       Parameters.energy_convergence, Parameters.mixed4 ? "yes" : "no");
    outfile->Printf( "   OEI FILE      =   %6d      R4S          =   %6s\n",
       Parameters.oei_file, Parameters.r4s ? "yes" : "no");
@@ -953,16 +948,16 @@ void print_parameters(void)
          break;
       }
 
-   outfile->Printf( "  UPDATE       =   ");
+   outfile->Printf( "  UPDATE       = ");
    switch (Parameters.update) {
      case 1:
-       outfile->Printf( "%6s\n", "DAVIDSON");
+       outfile->Printf("DAVIDSON\n");
        break;
      case 2:
-       outfile->Printf( "%6s\n", "OLSEN");
+       outfile->Printf("OLSEN\n");
        break;
      default:
-       outfile->Printf( "%6s\n", "???");
+       outfile->Printf("???\n");
        break;
       }
 
@@ -1010,25 +1005,25 @@ void print_parameters(void)
       outfile->Printf( "   REF SYM       =   %6d\n", Parameters.ref_sym);
 
    outfile->Printf( "   COLLAPSE SIZE =   %6d", Parameters.collapse_size);
-   outfile->Printf( "      HD AVG       =");
+   outfile->Printf( "      HD AVG       = ");
    switch (Parameters.hd_ave) {
      case HD_EXACT:
-       outfile->Printf(" %11s\n", "HD_EXACT");
+       outfile->Printf("HD_EXACT\n");
        break;
      case HD_KAVE:
-       outfile->Printf(" %11s\n", "HD_KAVE");
+       outfile->Printf("HD_KAVE\n");
        break;
      case ORB_ENER:
-       outfile->Printf(" %11s\n", "ORB_ENER");
+       outfile->Printf("ORB_ENER\n");
        break;
      case EVANGELISTI:
-       outfile->Printf(" %11s\n", "EVANGELISTI");
+       outfile->Printf("EVANGELISTI\n");
        break;
      case LEININGER:
-       outfile->Printf(" %11s\n", "LEININGER");
+       outfile->Printf("LEININGER\n");
        break;
      default:
-       outfile->Printf(" %11s\n", "???");
+       outfile->Printf("???\n");
        break;
      }
 
@@ -1040,11 +1035,11 @@ void print_parameters(void)
            Parameters.mpn ? "yes":"no", Parameters.mpn_schmidt ? "yes":"no");
    outfile->Printf( "   ZAPTN         =   %6s      MPN WIGNER   =   %6s\n",
            Parameters.zaptn ? "yes":"no", Parameters.wigner ? "yes":"no");
-   outfile->Printf( "   PERT Z        =   %1.4f    FOLLOW ROOT  =   %6d\n",
+   outfile->Printf( "   PERT Z        =   %1.4f      FOLLOW ROOT  =   %6d\n",
            Parameters.perturbation_parameter, Parameters.root);
    outfile->Printf( "   NUM THREADS   =   %6d\n",
            Parameters.nthreads);
-   outfile->Printf( "   VECS WRITE    =   %6s      NUM VECS WRITE =   %6d\n",
+   outfile->Printf( "   VECS WRITE    =   %6s      NUM VECS WRITE = %6d\n",
            Parameters.export_ci_vector ? "yes":"no", Parameters.num_export);
    outfile->Printf( "   FILTER GUESS  =   %6s      SF RESTRICT  =   %6s\n",
            Parameters.filter_guess ?  "yes":"no",
@@ -1142,7 +1137,7 @@ void set_ras_parms(void)
    /* figure out how many electrons are in RAS II */
    /* alpha electrons */
    for (i=0,nras2alp=0,betsocc=0; i<CalcInfo.nirreps; i++) {
-      j = CalcInfo.docc[i] - CalcInfo.frozen_docc[i] - CalcInfo.ras_opi[0][i];
+      j = CalcInfo.docc[i] - CalcInfo.dropped_docc[i] - CalcInfo.ras_opi[0][i];
       if (Parameters.opentype == PARM_OPENTYPE_HIGHSPIN) {
          j += CalcInfo.socc[i];
          }
@@ -1164,7 +1159,7 @@ void set_ras_parms(void)
       }
    /* beta electrons */
    for (i=0,nras2bet=0,betsocc=0; i<CalcInfo.nirreps; i++) {
-      j = CalcInfo.docc[i] - CalcInfo.frozen_docc[i] - CalcInfo.ras_opi[0][i];
+      j = CalcInfo.docc[i] - CalcInfo.dropped_docc[i] - CalcInfo.ras_opi[0][i];
       if (Parameters.opentype == PARM_OPENTYPE_SINGLET && CalcInfo.socc[i]) {
          if (betsocc + CalcInfo.socc[i] <= CalcInfo.spab)
             j += CalcInfo.socc[i];
@@ -1185,12 +1180,14 @@ void set_ras_parms(void)
    Parameters.a_ras1_max = (CalcInfo.num_alp_expl >
          Parameters.a_ras1_lvl + 1) ? Parameters.a_ras1_lvl + 1 :
          (CalcInfo.num_alp_expl) ;
-   if (Parameters.fzc) Parameters.a_ras1_max += CalcInfo.num_fzc_orbs;
+   // CDS 4/15
+   // if (Parameters.fzc) Parameters.a_ras1_max += CalcInfo.num_fzc_orbs; 
 
    Parameters.b_ras1_max = (CalcInfo.num_bet_expl >
          Parameters.b_ras1_lvl + 1) ? Parameters.b_ras1_lvl + 1:
          (CalcInfo.num_bet_expl) ;
-   if (Parameters.fzc) Parameters.b_ras1_max += CalcInfo.num_fzc_orbs;
+   // CDS 4/15
+   // if (Parameters.fzc) Parameters.b_ras1_max += CalcInfo.num_fzc_orbs;
 
    for (i=0,j=0; i<CalcInfo.nirreps; i++) j += CalcInfo.ras_opi[1][i];
    Parameters.ras3_lvl = Parameters.ras1_lvl + j + 1;
@@ -1366,16 +1363,18 @@ void set_ras_parms(void)
    Parameters.a_ras1_min = i - Parameters.ex_lvl -
       Parameters.val_ex_lvl;
    if (Parameters.a_ras1_min < 0) Parameters.a_ras1_min = 0;
-   Parameters.a_ras1_min += CalcInfo.num_fzc_orbs;
-   Parameters.a_ras1_min += CalcInfo.num_cor_orbs;
+   // CDS 4/15 no longer include dropped core in ras1_min
+   // Parameters.a_ras1_min += CalcInfo.num_fzc_orbs;
+   Parameters.a_ras1_min += CalcInfo.num_expl_cor_orbs;
 
    i = (CalcInfo.num_bet_expl <= Parameters.b_ras1_lvl + 1) ?
       CalcInfo.num_bet_expl : Parameters.b_ras1_lvl + 1;
    Parameters.b_ras1_min = i - Parameters.ex_lvl -
       Parameters.val_ex_lvl;
    if (Parameters.b_ras1_min < 0) Parameters.b_ras1_min = 0;
-   Parameters.b_ras1_min += CalcInfo.num_fzc_orbs;
-   Parameters.b_ras1_min += CalcInfo.num_cor_orbs;
+   // CDS 4/15 no longer include dropped core in ras1_min
+   // Parameters.b_ras1_min += CalcInfo.num_fzc_orbs;
+   Parameters.b_ras1_min += CalcInfo.num_expl_cor_orbs;
 
    tot_expl_el = CalcInfo.num_alp_expl + CalcInfo.num_bet_expl;
    if (Parameters.cc) {
@@ -1410,8 +1409,10 @@ void set_ras_parms(void)
    i = (tot_expl_el < 2*(Parameters.ras1_lvl + 1)) ? tot_expl_el :
       2*(Parameters.ras1_lvl + 1) ;
 
-   Parameters.ras1_min = i - Parameters.ex_lvl -
-      Parameters.val_ex_lvl + 2 * CalcInfo.num_fzc_orbs;
+   // CDS 4/15 no longer include dropped core in ras1_min
+   //Parameters.ras1_min = i - Parameters.ex_lvl -
+   //   Parameters.val_ex_lvl + 2 * CalcInfo.num_fzc_orbs;
+   Parameters.ras1_min = i - Parameters.ex_lvl - Parameters.val_ex_lvl;
 
    if (Parameters.a_ras1_min + Parameters.b_ras1_min > Parameters.ras1_min)
       Parameters.ras1_min = Parameters.a_ras1_min + Parameters.b_ras1_min;
@@ -1494,14 +1495,19 @@ void print_ras_parms(void)
   int i, j;
 
   outfile->Printf( "ORBITALS:\n") ;
-  outfile->Printf( "   NMO          =   %6d      NUM ALP      =   %6d\n",
-    CalcInfo.nmo, CalcInfo.num_alp);
-  outfile->Printf( "   ORBS IN CI   =   %6d      NUM ALP EXPL =   %6d\n",
-    CalcInfo.num_ci_orbs, CalcInfo.num_alp_expl);
-  outfile->Printf( "   FROZEN CORE  =   %6d      NUM BET      =   %6d\n",
-    CalcInfo.num_fzc_orbs, CalcInfo.num_bet);
-  outfile->Printf( "   RESTR CORE   =   %6d      NUM BET EXPL =   %6d\n",
-    CalcInfo.num_cor_orbs, CalcInfo.num_bet_expl);
+  outfile->Printf( "   NMO          =   %6d\n", CalcInfo.nmo);
+  outfile->Printf( "   FROZEN CORE  =   %6d      RESTR CORE   =   %6d\n",
+    CalcInfo.num_fzc_orbs, CalcInfo.num_rsc_orbs);
+  outfile->Printf( "   FROZEN VIRT  =   %6d      RESTR VIRT   =   %6d\n",
+    CalcInfo.num_fzv_orbs, CalcInfo.num_rsv_orbs);
+  outfile->Printf( "   DROPPED CORE =   %6d      DROPPED VIRT =   %6d\n",
+    CalcInfo.num_drc_orbs, CalcInfo.num_drv_orbs);
+  outfile->Printf( "   EXPLICIT CORE=   %6d      ORBS IN CI   =   %6d\n",
+    CalcInfo.num_expl_cor_orbs, CalcInfo.num_ci_orbs);
+  outfile->Printf( "   NUM ALP      =   %6d      NUM BET      =   %6d\n",
+    CalcInfo.num_alp, CalcInfo.num_bet);
+  outfile->Printf( "   NUM ALP EXPL =   %6d      NUM BET EXPL =   %6d\n",
+    CalcInfo.num_alp_expl, CalcInfo.num_bet_expl);
   outfile->Printf( "   IOPEN        =   %6s\n", CalcInfo.iopen ? "yes" :
     "no");
   outfile->Printf( "   RAS1 LVL     =   %6d      A RAS3 MAX   =   %6d\n",
@@ -1541,31 +1547,38 @@ void print_ras_parms(void)
       Parameters.cc_variational ? "yes" : "no");
   }
 
-  outfile->Printf( "\n");
-  outfile->Printf( "   DOCC         = ") ;
+  outfile->Printf( "\n   DOCC            = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
     outfile->Printf( "%2d ", CalcInfo.docc[i]) ;
   }
-  outfile->Printf( "\n   SOCC         = ") ;
+  outfile->Printf( "\n   SOCC            = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
     outfile->Printf( "%2d ", CalcInfo.socc[i]) ;
   }
-  outfile->Printf( "\n   FROZEN DOCC  = ") ;
+  outfile->Printf("\n");
+  outfile->Printf( "\n   FROZEN DOCC     = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
     outfile->Printf( "%2d ", CalcInfo.frozen_docc[i]) ;
   }
-  outfile->Printf( "\n   FROZEN UOCC  = ") ;
+  outfile->Printf( "\n   RESTRICTED DOCC = ");
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.frozen_uocc[i]) ;
+    outfile->Printf( "%2d ", CalcInfo.rstr_docc[i]) ;
   }
-  outfile->Printf( "\n");
   for (i=0; i<4; i++) {
-    outfile->Printf( "   RAS %d        = ",i+1);
+    outfile->Printf( "\n   RAS %d           = ",i+1);
     for (j=0; j<CalcInfo.nirreps; j++) {
       outfile->Printf("%2d ",CalcInfo.ras_opi[i][j]);
     }
-    outfile->Printf( "\n");
   }
+  outfile->Printf( "\n   RESTRICTED UOCC = ") ;
+  for (i=0; i<CalcInfo.nirreps; i++) {
+    outfile->Printf( "%2d ", CalcInfo.rstr_uocc[i]) ;
+  }
+  outfile->Printf( "\n   FROZEN UOCC     = ") ;
+  for (i=0; i<CalcInfo.nirreps; i++) {
+    outfile->Printf( "%2d ", CalcInfo.frozen_uocc[i]) ;
+  }
+  outfile->Printf("\n");
 
   outfile->Printf(
      "*******************************************************\n\n");
@@ -1653,7 +1666,7 @@ void set_mcscf_parameters(Options &options)
 void mcscf_print_parameters(void)
 {
   outfile->Printf("\n") ;
-  outfile->Printf("PARAMETERS: \n") ;
+  outfile->Printf("DETCAS PARAMETERS: \n") ;
   outfile->Printf("   PRINT          =   %6d      PRINT_MOS     =   %6s\n",
       MCSCF_Parameters.print_lvl, MCSCF_Parameters.print_mos ? "yes" : "no");
   outfile->Printf("   R_CONVERGENCE  =   %6.2e    E CONVERG     =   %6.2e\n",
@@ -1681,7 +1694,6 @@ void mcscf_print_parameters(void)
   outfile->Printf("   USE FZC H      =   %6s      HESSIAN       = %-12s\n",
       MCSCF_Parameters.use_fzc_h ? "yes" : "no", MCSCF_Parameters.hessian.c_str());
   outfile->Printf("\n") ;
-  //fflush(outfile);
 }
 
 

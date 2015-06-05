@@ -62,26 +62,26 @@ namespace psi {
 ** \param sset       = pointer to StringSet (contains occs in Pitzer order)
 ** \param size       = number of strings
 ** \param nelec      = number of electrons
-** \param nfzc       = number of frozen core orbitals
-** \param frozen_occ = array of frozen occupied orbitals (Pitzer numbering!)
+** \param ndrc       = number of dropped core orbitals
+** \param drc_occ    = array of dropped occupied orbitals (Pitzer numbering!)
 **
 ** Returns: none
 ** \ingroup QT
 */
-void stringset_init(StringSet *sset, int size, int nelec, int nfzc,
-  short int *frozen_occ)
+void stringset_init(StringSet *sset, int size, int nelec, int ndrc,
+  short int *drc_occ)
 {
   int i;
 
   sset->size = size;
   sset->nelec = nelec;
-  sset->nfzc = nfzc;
+  sset->ndrc = ndrc;
   sset->strings = (String *) malloc(size*sizeof(String));
   memset(sset->strings,0,size*sizeof(String));
-  if (nfzc > 0) {
-    sset->fzc_occ = (short int *) malloc(nfzc * sizeof(short int));
-    for (i=0; i<nfzc; i++) {
-      sset->fzc_occ[i] = frozen_occ[i];
+  if (ndrc > 0) {
+    sset->drc_occ = (short int *) malloc(ndrc * sizeof(short int));
+    for (i=0; i<ndrc; i++) {
+      sset->drc_occ[i] = drc_occ[i];
     }
   }
 }
@@ -98,10 +98,10 @@ void stringset_init(StringSet *sset, int size, int nelec, int nfzc,
 */
 void stringset_delete(StringSet *sset)
 {
-  if (sset->nfzc > 0) free(sset->fzc_occ);
+  if (sset->ndrc > 0) free(sset->drc_occ);
   sset->size = 0;
   sset->nelec = 0;
-  sset->nfzc = 0;
+  sset->ndrc = 0;
   if (sset->strings) free(sset->strings);
   sset->strings = NULL;
 }
@@ -120,7 +120,7 @@ void stringset_delete(StringSet *sset)
 void stringset_add(StringSet *sset, int index, unsigned char *Occ)
 {
   int i;
-  int nact = sset->nelec - sset->nfzc;
+  int nact = sset->nelec - sset->ndrc;
   String *s;
 
   if (index < sset->size && index >= 0) {
@@ -147,10 +147,10 @@ void stringset_reindex(StringSet* sset, short int* mo_map)
   int s, mo, core;
   short int* occ;
   int nstrings = sset->size;
-  int nact = sset->nelec - sset->nfzc;
+  int nact = sset->nelec - sset->ndrc;
 
-  for (core=0; core<sset->nfzc; core++) {
-    sset->fzc_occ[core] = mo_map[sset->fzc_occ[core]];
+  for (core=0; core<sset->ndrc; core++) {
+    sset->drc_occ[core] = mo_map[sset->drc_occ[core]];
   }
 
   for(s=0; s<nstrings; s++) {
@@ -175,7 +175,7 @@ void stringset_write(ULI unit, const char *prefix, StringSet *sset)
   int i, size, nact;
   int need_to_init_psio = 0;
   int unit_opened = 1;
-  char *size_key, *nelec_key, *nfzc_key, *strings_key, *fzc_occ_key;
+  char *size_key, *nelec_key, *ndrc_key, *strings_key, *drc_occ_key;
   psio_address ptr;
 
 PSIO_INIT
@@ -185,25 +185,25 @@ PSIO_OPEN(unit,PSIO_OPEN_OLD)
   sprintf(size_key,":%s:%s",prefix,STRINGSET_KEY_SIZE);
   nelec_key = (char *) malloc(strlen(prefix) + strlen(STRINGSET_KEY_NELEC) + 3);
   sprintf(nelec_key,":%s:%s",prefix,STRINGSET_KEY_NELEC);
-  nfzc_key = (char *) malloc(strlen(prefix) + strlen(STRINGSET_KEY_NFZC) + 3);
-  sprintf(nfzc_key,":%s:%s",prefix,STRINGSET_KEY_NFZC);
-  fzc_occ_key = (char *) malloc(strlen(prefix) +
-    strlen(STRINGSET_KEY_FZC_OCC) + 3);
-  sprintf(fzc_occ_key,":%s:%s",prefix,STRINGSET_KEY_FZC_OCC);
+  ndrc_key = (char *) malloc(strlen(prefix) + strlen(STRINGSET_KEY_NDRC) + 3);
+  sprintf(ndrc_key,":%s:%s",prefix,STRINGSET_KEY_NDRC);
+  drc_occ_key = (char *) malloc(strlen(prefix) +
+    strlen(STRINGSET_KEY_DRC_OCC) + 3);
+  sprintf(drc_occ_key,":%s:%s",prefix,STRINGSET_KEY_DRC_OCC);
   strings_key = (char *) malloc(strlen(prefix) + strlen(STRINGSET_KEY_STRINGS) + 3);
   sprintf(strings_key,":%s:%s",prefix,STRINGSET_KEY_STRINGS);
 
   psio_write_entry( unit, size_key, (char *)&sset->size, sizeof(int));
   psio_write_entry( unit, nelec_key, (char *)&sset->nelec, sizeof(int));
-  psio_write_entry( unit, nfzc_key, (char *)&sset->nfzc, sizeof(int));
-  if (sset->nfzc) {
-    psio_write_entry( unit, fzc_occ_key, (char *)sset->fzc_occ,
-      sset->nfzc*sizeof(short int));
+  psio_write_entry( unit, ndrc_key, (char *)&sset->ndrc, sizeof(int));
+  if (sset->ndrc) {
+    psio_write_entry( unit, drc_occ_key, (char *)sset->drc_occ,
+      sset->ndrc*sizeof(short int));
   }
 
   ptr = PSIO_ZERO;
   size = sset->size;
-  nact = sset->nelec - sset->nfzc;
+  nact = sset->nelec - sset->ndrc;
   for(i=0; i<size; i++) {
     psio_write( unit, strings_key, (char *) &(sset->strings[i].index),
       sizeof(int), ptr, &ptr);
@@ -216,9 +216,9 @@ PSIO_DONE
 
   free(size_key);
   free(nelec_key);
-  free(nfzc_key);
+  free(ndrc_key);
   free(strings_key);
-  free(fzc_occ_key);
+  free(drc_occ_key);
 }
 
 
@@ -234,11 +234,11 @@ PSIO_DONE
 */
 void stringset_read(ULI unit, const char *prefix, StringSet **stringset)
 {
-  int i, size, nelec, nfzc, nact;
+  int i, size, nelec, ndrc, nact;
   int need_to_init_psio = 0;
   int unit_opened = 1;
-  char *size_key, *nelec_key, *nfzc_key, *fzc_occ_key, *strings_key;
-  short int *fzc_occ;
+  char *size_key, *nelec_key, *ndrc_key, *drc_occ_key, *strings_key;
+  short int *drc_occ;
   psio_address ptr;
   StringSet *sset = (StringSet *) malloc(sizeof(StringSet));
 
@@ -249,28 +249,28 @@ PSIO_OPEN(unit,PSIO_OPEN_OLD)
   sprintf(size_key,":%s:%s",prefix,STRINGSET_KEY_SIZE);
   nelec_key = (char *) malloc( strlen(prefix) + strlen(STRINGSET_KEY_NELEC)+ 3);
   sprintf(nelec_key,":%s:%s",prefix,STRINGSET_KEY_NELEC);
-  nfzc_key = (char *) malloc( strlen(prefix) + strlen(STRINGSET_KEY_NFZC) + 3);
-  sprintf(nfzc_key,":%s:%s",prefix,STRINGSET_KEY_NFZC);
-  fzc_occ_key = (char *) malloc(strlen(prefix) +
-    strlen(STRINGSET_KEY_FZC_OCC) + 3);
-  sprintf(fzc_occ_key,":%s:%s",prefix,STRINGSET_KEY_FZC_OCC);
+  ndrc_key = (char *) malloc( strlen(prefix) + strlen(STRINGSET_KEY_NDRC) + 3);
+  sprintf(ndrc_key,":%s:%s",prefix,STRINGSET_KEY_NDRC);
+  drc_occ_key = (char *) malloc(strlen(prefix) +
+    strlen(STRINGSET_KEY_DRC_OCC) + 3);
+  sprintf(drc_occ_key,":%s:%s",prefix,STRINGSET_KEY_DRC_OCC);
   strings_key = (char *) malloc( strlen(prefix) + strlen(STRINGSET_KEY_STRINGS)
     + 3);
   sprintf(strings_key,":%s:%s",prefix,STRINGSET_KEY_STRINGS);
 
   psio_read_entry( unit, size_key, (char *)&size, sizeof(int));
   psio_read_entry( unit, nelec_key, (char *)&nelec, sizeof(int));
-  psio_read_entry( unit, nfzc_key, (char *)&nfzc, sizeof(int));
-  if (nfzc > 0) {
-    fzc_occ = (short int *) malloc(nfzc*sizeof(short int));
-    psio_read_entry( unit, fzc_occ_key, (char *)fzc_occ,
-      nfzc*sizeof(short int));
+  psio_read_entry( unit, ndrc_key, (char *)&ndrc, sizeof(int));
+  if (ndrc > 0) {
+    drc_occ = (short int *) malloc(ndrc*sizeof(short int));
+    psio_read_entry( unit, drc_occ_key, (char *)drc_occ,
+      ndrc*sizeof(short int));
   }
-  else fzc_occ = NULL;
+  else drc_occ = NULL;
 
-  stringset_init(sset, size, nelec, nfzc, fzc_occ);
+  stringset_init(sset, size, nelec, ndrc, drc_occ);
 
-  nact = nelec - nfzc;
+  nact = nelec - ndrc;
   ptr = PSIO_ZERO;
   for(i=0; i<size; i++) {
     psio_read( unit, strings_key, (char *) &(sset->strings[i].index),
@@ -285,10 +285,10 @@ PSIO_DONE
 
   free(size_key);
   free(nelec_key);
-  free(nfzc_key);
-  free(fzc_occ_key);
+  free(ndrc_key);
+  free(drc_occ_key);
   free(strings_key);
-  if (nfzc > 0) free(fzc_occ);
+  if (ndrc > 0) free(drc_occ);
   *stringset = sset;
 }
 

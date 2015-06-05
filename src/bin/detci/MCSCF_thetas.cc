@@ -22,26 +22,29 @@
 
 /*! \file
     \ingroup DETCAS
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 #include <cmath>
 #include <libqt/qt.h>
-#include <libpsio/psio.hpp>
-#include <libpsio/psio.h>
 #include <psifiles.h>
-#define EXTERN
+#include <libparallel/ParallelPrinter.h>
+#include <libciomr/libciomr.h>
 #include "MCSCF.h"
+#include "globaldefs.h"
+#include "structs.h"
+#define EXTERN
+#include "globals.h"
 
-namespace psi { namespace detci { 
+namespace psi { namespace detci {
 
-void rotate_test(int dim, int npairs, int *p_arr, int *q_arr, 
+void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
                  double *theta_arr);
 
 
 /*
 ** postmult_by_U()
-** 
+**
 ** Postmultiply a block matrix (must be contiguous memory!) by a
 **  unitary matrix U parameterized as a series of Givens rotations
 **
@@ -56,7 +59,7 @@ void MCSCF::postmult_by_U(int irrep, int dim, double **mat,
   /* apply the transformation C = C^0 U, assuming square matrices */
   /* U is a series of Givens rotation matrices */
   for (pair=0; pair<npairs; pair++) {
-    p = *p_arr++; 
+    p = *p_arr++;
     q = *q_arr++;
     theta = *theta_arr++;
     theta = -theta; /* the DROT routine rotates around the other way    */
@@ -70,7 +73,7 @@ void MCSCF::postmult_by_U(int irrep, int dim, double **mat,
 
 /*
 ** postmult_by_exp_R()
-** 
+**
 ** Postmultiply a block matrix (must be contiguous memory!) by a
 **  unitary matrix U parameterized as e^R with R an antisymmetric
 **  matrix (based on formalism of notes by Yukio Yamaguchi)
@@ -95,7 +98,7 @@ void MCSCF::postmult_by_exp_R(int irrep, int dim, double **mat,
   }
 
   for (pair=0; pair<npairs; pair++) {
-    p = *p_arr++; 
+    p = *p_arr++;
     q = *q_arr++;
     tval = *theta_arr++;
     R[p][q] = tval;
@@ -118,8 +121,8 @@ void MCSCF::postmult_by_exp_R(int irrep, int dim, double **mat,
 
   /* C = C0 * U */
   C_DGEMM('n','n',dim,dim,dim,1.0,&(C0[0][0]),dim,&(U[0][0]),dim,0.0,
-          &(mat[0][0]),dim);  
-  
+          &(mat[0][0]),dim);
+
   free_block(C0);
   free_block(U);
   free_block(R);
@@ -129,7 +132,7 @@ void MCSCF::postmult_by_exp_R(int irrep, int dim, double **mat,
 
 /*
 ** premult_by_U()
-** 
+**
 ** Premultiply a block matrix (must be contiguous memory!) by a
 **  unitary matrix U parameterized as a series of Givens rotations
 **
@@ -145,7 +148,7 @@ void MCSCF::premult_by_U(int irrep, int dim, double **mat,
   /* U is a series of Givens rotation matrices */
   /* n.b. we need to go backwards through the list of Givens rotations */
   for (pair=npairs-1; pair>=0; pair--) {
-    p = ppair[pair]; 
+    p = ppair[pair];
     q = qpair[pair];
     theta = theta_arr[pair];
     costheta = cos(theta);
@@ -157,14 +160,13 @@ void MCSCF::premult_by_U(int irrep, int dim, double **mat,
 
 
 
-
 /*
 ** rotate_test
 **
 ** This does about the same thing as rotate_orbs_irrep except that
 ** it does it on a unit matrix so the results can be checked easily
 */
-void rotate_test(int dim, int npairs, int *p_arr, int *q_arr, 
+void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
                  double *theta_arr)
 {
 
@@ -176,7 +178,7 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
   for (i=0; i<dim; i++) {
     tmpmat[i][i] = 1.0;
   }
- 
+
   /* print new coefficients */
   outfile->Printf("\n\tOld molecular orbitals\n");
   print_mat(tmpmat, dim, dim, "outfile");
@@ -184,14 +186,14 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
 
   /* now apply U, as a series of Givens rotation matrices */
   for (pair=0; pair<npairs; pair++) {
-    p = *p_arr++; 
+    p = *p_arr++;
     q = *q_arr++;
     theta = *theta_arr++;
     theta = -theta;  /* DROT rotates around the other way */
     costheta = cos(theta);
     sintheta = sin(theta);
     outfile->Printf("\nApplying rotation (%2d,%2d) = %12.6lf\n", p, q, theta);
-    outfile->Printf("Cos(theta)=%12.6lf, Sin(theta)=%12.6lf\n", 
+    outfile->Printf("Cos(theta)=%12.6lf, Sin(theta)=%12.6lf\n",
             costheta, sintheta);
     C_DROT(dim,&(tmpmat[0][q]),dim,&(tmpmat[0][p]),dim,costheta,sintheta);
     if (MCSCF_Parameters.print_lvl > 3) {
@@ -206,54 +208,6 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
 
   free_block(tmpmat);
 
-}
-
-
-/*
-** read_thetas()
-**
-** Read in the theta array from disk.  If there is none, assume they're
-**  all set to 0.
-*/
-void MCSCF::read_thetas(int npairs)
-{
-
-
-  MCSCF_CalcInfo.theta_cur = init_array(npairs);
-  if (MCSCF_Parameters.print_lvl > 2)
-    outfile->Printf("\nReading orbital rotation angles\n");
- 
-  if (psio_tocentry_exists(PSIF_DETCAS, "Thetas")){ 
-    psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
-    psio_read_entry(PSIF_DETCAS, "Thetas", (char *) MCSCF_CalcInfo.theta_cur,
-                    npairs*sizeof(double));
-    psio_close(PSIF_DETCAS, 1);
-
-  }
-  else {
-    zero_arr(MCSCF_CalcInfo.theta_cur, npairs);
-  }
-}
-
-
-
-/*
-** write_thetas()
-**
-** Write the theta array to disk. 
-*/
-void MCSCF::write_thetas(int npairs)
-{
-
-
-  if (MCSCF_Parameters.print_lvl > 2)
-    outfile->Printf("\nWriting orbital rotation angles\n");
-  
-  psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
-  psio_write_entry(PSIF_DETCAS, "Thetas", (char *) MCSCF_CalcInfo.theta_cur,
-                  npairs*sizeof(double));
-
-  psio_close(PSIF_DETCAS, 1);
 }
 
 
@@ -299,7 +253,7 @@ void MCSCF::calc_dE_dT(int n, double **dEU, int npairs, int *ppair, int *qpair,
 
   for (pair=0; pair<npairs; pair++) {
     a = ppair[pair];
-    i = qpair[pair]; 
+    i = qpair[pair];
 
     costheta = cos(theta[pair]);
     sintheta = sin(theta[pair]);
@@ -319,7 +273,7 @@ void MCSCF::calc_dE_dT(int n, double **dEU, int npairs, int *ppair, int *qpair,
 
   /* Loop over i,a to form dE/d(theta): we are working right to left in this
      algorithm, hence we must go backwards through the theta list */
-  
+
   for (pair=npairs-1; pair>=0; pair--) {
     a = ppair[pair];
     i = qpair[pair];

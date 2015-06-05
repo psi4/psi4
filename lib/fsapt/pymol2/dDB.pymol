@@ -1,0 +1,26 @@
+# Zero everything out
+reinitialize
+
+# Load Geometry
+load geom.xyz
+util.cbaw
+show_as sticks, geom
+show nb_spheres, geom
+
+# Load
+load dDB.cube
+isosurface D_p, dDB,  0.0004
+color blue, D_p
+isosurface D_m, dDB, -0.0004
+color red, D_m 
+
+set transparency, 0.5
+
+# Visualization
+@vis.pymol
+
+### Still images
+@orient.pymol
+
+png dDB.png, width=1200, height=800, dpi=300, ray=1
+
