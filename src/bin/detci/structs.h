@@ -127,32 +127,32 @@ struct stringgraph {
 */
 struct olsen_graph {
    int num_str;             /* total number of strings */
-   int num_fzc_orbs;        /* number of frozen core orbitals */
-   int num_cor_orbs;        /* number of restricted core orbitals */
-   int fzc_sym;             /* symmetry (irrep) for the frozen core */
+   int num_drc_orbs;        /* number of dropped core orbitals */
+   int num_expl_cor_orbs;   /* number of explicit core orbitals */
+   int drc_sym;             /* symmetry (irrep) for the dropped core */
    int num_el;              /* number of electrons (total) in graph */
    int num_el_expl;         /* number of electrons (explicit) in graph */
    int num_orb;             /* number of orbitals explicitly treated */
-   int ras1_lvl;            /* orbital number where RAS I ends (less fzc),
+   int ras1_lvl;            /* orbital number where RAS I ends (less drc),
                                or the last level in RAS I */
    int ras1_min;            /* minimum number of electrons in RAS I (for
-                               the _strings_), incl. frozen core */
+                               the _strings_), incl. core */
    int ras1_max;            /* max number of RAS I electrons (useful when
                                the RAS I level may extend beyond the last
-                               occupied orbital), incl. frozen core */
-   int ras3_lvl ;           /* orbital num where RAS III begins (less fzc) */
+                               occupied orbital), incl. core */
+   int ras3_lvl ;           /* orbital num where RAS III begins (less drc) */
    int ras3_max ;           /* maximum number of electrons in RAS III */
-   int ras4_lvl ;           /* orbital number where RAS IV begins (less fzc) */
+   int ras4_lvl ;           /* orbital number where RAS IV begins (less drc) */
    int ras4_max ;           /* maximum number of electrons in RAS IV */
    int nirreps;             /* number of irreps */
    int subgr_per_irrep;     /* possible number of Olsen subgraphs per irrep */
    int max_str_per_irrep;   /* largest number of strings found in an irrep */
    int *str_per_irrep;      /* array containing num strings per irrep */
    int ***decode;           /* decode[ras1_holes][ras3_e][ras4_e] */
-   int **encode;            /* encode[0,1,2][code] gives ras1 e- (excl fzc) and
+   int **encode;            /* encode[0,1,2][code] gives ras1 e- (excl drc) and
                                ras3 e- and ras4 e- */ 
    struct stringgraph **sg; /* sg[irrep][code] */ 
-   int *orbsym;             /* array for orbital irreps (incl. fzc) */
+   int *orbsym;             /* array for orbital irreps (incl. drc) */
    int *list_offset;        /* absolute offset for each list */
    };
 
@@ -182,28 +182,31 @@ struct fastgraph {
 struct graph_set {
    int num_str;             /* total number of strings */
    int num_graphs;          /* total number of valid subgraphs */
-   int num_fzc_orbs;        /* number of frozen core orbitals */
-   int num_cor_orbs;        /* number of restricted core orbitals */
-   int fzc_sym;             /* symmetry (irrep) for the frozen core */
+   int num_drc_orbs;        /* number of dropped core orbitals */
+   int num_expl_cor_orbs;   /* number of explicit core orbitals */
+   int drc_sym;             /* symmetry (irrep) for the dropped core */
    int num_el;              /* number of electrons (total) in graph */
    int num_el_expl;         /* number of electrons (explicit) in graph */
    int num_orb;             /* number of orbitals explicitly treated */
-   int ras1_lvl;            /* orbital number where RAS I ends (less fzc),
+   int ras1_lvl;            /* orbital number where RAS I ends (not including
+                               dropped core orbitals in the numbering), 
                                or the last level in RAS I */
    int ras1_min;            /* minimum number of electrons in RAS I (for
-                               the _strings_), incl. frozen core */
+                               the _strings_), no longer incl. core
+                               (either explicit core or dropped core) */
    int ras1_max;            /* max number of RAS I electrons (useful when
                                the RAS I level may extend beyond the last
-                               occupied orbital), incl. frozen core */
-   int ras3_lvl;            /* orbital num where RAS III begins (less fzc) */
+                               occupied orbital), no longer incl. core 
+                               (either explicit core or dropped core) */
+   int ras3_lvl;            /* orbital num where RAS III begins (less drc) */
    int ras3_max;            /* maximum number of electrons in RAS III */
-   int ras4_lvl;            /* orbital number where RAS IV begins (less fzc) */
+   int ras4_lvl;            /* orbital number where RAS IV begins (less drc) */
    int ras4_max;            /* maximum number of electrons in RAS IV */
    int ras34_max;           /* max number of electrons in RAS III AND IV */
    int nirreps;             /* number of irreps */
    int num_codes;           /* possible number of subgraphs per irrep */
    int ***decode;           /* decode[ras1_holes][ras3_e][ras4_e] */
-   int **encode;            /* encode[0,1,2][code] gives ras1 e- (excl fzc) and
+   int **encode;            /* encode[0,1,2][code] gives ras1 e- (excl drc) and
                                ras3 e- and ras4 e- */ 
    struct fastgraph **AllGraph;
                             /* Pointers to all subgraphs */
@@ -211,7 +214,7 @@ struct graph_set {
    int *graph_irrep;        /* irrep of each non-null graph */
    int *graph_code;         /* code for each non-null graph */
    int *graph_offset;       /* absolute offset for each list */
-   int *orbsym;             /* array for orbital irreps (incl. fzc) */
+   int *orbsym;             /* array for orbital irreps (incl. drc) */
    unsigned char ***Occs;   /* Orbital occupancies for each string */
    };
 
@@ -268,25 +271,39 @@ struct calcinfo {
    int nmo;              /* number of molecular orbitals */
    int nmotri;           /* num elements in lwr diag matrix nmo big */
    int nirreps;          /* number of irreducible representations in pt grp */
-   int *docc;            /* doubly occupied orbitals per irrep */
-   int *socc;            /* singly occupied orbitals per irrep */
-   int *frozen_docc;     /* frozen doubly occupied orbs per irrep */
-   int *explicit_core;   /* explicit core orbitals per irrep: integrals
-                            involving these orbs are read, but excitations
-                            from these orbs are not allowed (maybe in +PT2) */
-   int *explicit_vir;    /* explicit virtual orbitals per irrep: these orbs
-                            are beyond the last RAS space and not accessible
-                            in normal CI computations, but their integrals
-                            and indices are available for possible +PT2 
-                            corrections, etc */
-   int *frozen_uocc;     /* frozen virtual orbs per irrep */
+   int *docc;            /* number of doubly occupied orbitals per irrep */
+   int *socc;            /* number of singly occupied orbitals per irrep */
+   int *dropped_docc;    /* number of core orbitals per irrep constrained to 
+                            be doubly occupied and dropped from explicit
+                            consideration in the CI computation; 
+                            sum of frozen_docc and rstr_docc - CDS 4/15 */
+   int *frozen_docc;     /* number of frozen doubly occupied orbs per irrep;
+                            these are not explicitly present in the CI
+                            and these orbitals are not allowed to optimize
+                            in an MCSCF - CDS 4/15 */
+   int *rstr_docc;       /* number of restricted doubly occupied orbs per 
+                            irrep; these are not explicitly present in the
+                            CI and these orbitals are allowed to optimize
+                            in an MCSCF - CDS 4/15 */
+   int *dropped_uocc;     /* number of unoccupied orbitals per irrep 
+                            constrained to be unoccupied and dropped from 
+                            explicit consideratin in the CI computation; 
+                            sum of frozen_uocc and rstr_uocc - CDS 4/15 */
+   int *frozen_uocc;     /* number of frozen unoccupied orbitals per irrep;
+                            these are not explicitly present in the CI
+                            and these orbitals are not allowed to optimize
+                            in an MCSCF */
+   int *rstr_uocc;       /* number of restricted unoccpied orbitals per irrep;
+                            these are not explicitly present in the CI 
+                            and these orbitals are allowed to optimize in
+                            an MCSCF */
    int iopen;            /* flag for whether open shell or not */
    double enuc;          /* nuclear repulsion energy */
    double escf;          /* scf energy */
    double eref;          /* ref det energy as computed here in detci */
-   double efzc;          /* frozen core energy */
+   double edrc;          /* energy of the dropped core orbitals */
    double e0;            /* E0, zeroth order energy */
-   double e0_fzc;        /* two times the sum of the fzc orbitals */
+   double e0_drc;        /* two times the sum of the dropped core orbitals */
    double e1;            /* E1, first order energy */
    int num_alp;          /* number of alpha electrons */
    int num_bet;          /* number of beta electrons */
@@ -308,14 +325,24 @@ struct calcinfo {
    double **gmat;        /* onel ints in RAS g matrix form */
    double *twoel_ints;   /* two-electron integrals */
    double **fock;        /* fock matrix */
-   int num_fzc_orbs;     /* number of FZC orbitals (i.e. frozen core) */
-   int num_cor_orbs;     /* number of COR orbitals (see explicit_core) */
+   int num_fzc_orbs;     /* number of frozen core orbitals */
+   int num_rsc_orbs;     /* number of restricted core orbitals */
+   int num_drc_orbs;     /* number of dropped core orbitals 
+                            (frozen + restricted) */
+   int num_fzv_orbs;     /* number of frozen/deleted virtual orbitals */
+   int num_rsv_orbs;     /* number of restricted virtual orbitals */
+   int num_drv_orbs;     /* number of dropped virtual orbitals 
+                            (frozen + restricted) */
+   int npop;             /* number of populated orbitals, nso - total virtual */
+   int num_expl_cor_orbs;/* number of explicit core orbitals, i.e., 
+                            orbitals that are constrained to be doubly
+                            occupied in the CI and but are nevertheless 
+                            explicitly included in the CI computation (not
+                            currently used for anything but kept because
+                            lower-level routines allow it; it is set to 0) */
    int num_alp_str;      /* number of alpha strings */
    int num_bet_str;      /* number of beta strings */
    int num_ci_orbs;      /* nmo - num orbs frozen */
-   int num_fzv_orbs;     /* number of frozen/deleted virtual orbitals */
-   int num_vir_orbs;     /* number of explicit virtual orbitals beyond
-                            the last RAS space (see explicit_vir) */
    int ref_alp;          /* address of reference alpha string */
    int ref_bet;          /* address of reference beta string */
    int ref_alp_list;     /* string list containing reference alpha string */
@@ -330,8 +357,6 @@ struct calcinfo {
    unsigned int *bsymnum;/* number of beta strings per irrep */
    int **ras_opi;        /* num orbs per irr per ras space ras_opi[ras][irr] */
    int **ras_orbs[4];    /* ras_orbs[ras][irr][cnt] gives an orbital number */
-   int max_orbs_per_irrep; /* maximum orbials per irrep fzv not included */
-   int max_pop_per_irrep;/* maximum populated orbitals per irrep fzv included */
    int sigma_initialized; /* has sigma_init been called yet? */
 
 };
@@ -367,16 +392,16 @@ struct params {
    int ras;          /* do a RAS calculation?  Set true if "RAS1" keyword */
    int fci;          /* do a FULL ci calc?  (affects sigma1-2 subroutines) */
    int fci_strings;  /* do a FULL ci calc?  (affects string storage) */
-   int fzc;          /* do implicit frozen core (remove those orbs)? */
-                     /* the alternative is a "restricted core" calc  */
    double S;         /* the value of quantum number S */
    int Ms0;          /* 1 if Ms=0, 0 otherwise */
    int ref_sym;      /* irrep for CI vectors;  -1 = find automatically */
    int opentype;     /* none, highspin, or open-shell singlet; see #define */
-   int a_ras1_lvl;   /* orbital number defining RAS I for alpha electrons */
+   int a_ras1_lvl;   /* orbital number defining RAS I for alpha electrons:
+                        any electrons at this level or lower are in RAS I */
    int a_ras1_min;   /* minimum number of alpha electrons in RAS I */
    int a_ras1_max;   /* maximum number of alpha electrons in RAS I */
-   int b_ras1_lvl;   /* orbital number defining RAS I for beta electrons */
+   int b_ras1_lvl;   /* orbital number defining RAS I for beta electrons:
+                        any electrons at this level or lower are in RAS I */
    int b_ras1_min;   /* minimum number of beta electrons in RAS I */
    int b_ras1_max;   /* maximum number of beta electrons in RAS I */
    int a_ras3_max;   /* maximum number of alpha electrons in RAS III */
@@ -387,8 +412,8 @@ struct params {
    int b_ras4_max;   /* maximum number of beta electrons in RAS IV */
    int cc_a_ras4_max;/* as above but for CC */
    int cc_b_ras4_max;/* as above but for CC */
-   int ras1_lvl;     /* orbital number defining RAS I overall */
-   int ras1_min;     /* currently min #e AT THE RAS I LEVEL (incl fzc) */
+   int ras1_lvl;     /* Orbital number of the highest orbital in RAS I */
+   int ras1_min;     /* currently min #e AT THE RAS I LEVEL (excluding drc) */
    int ras3_lvl;     /* orbital number defining RAS III overall */
    int ras4_lvl;     /* orbital number defining RAS IV overall */
                      /* make larger than num_ci_orbs if there is no RAS IV */
@@ -585,33 +610,33 @@ struct mcscf_calcinfo {
   // int nmotri;            /* num elements in lwr diag matrix nbfso big */
   // int nbfao;             /* number of basis functions in atomic orbitals */
   // int nirreps;           /* number of irreducible representations in pt grp */
-  int num_fzc_orbs;      /* number of FZC orbitals (i.e. frozen core) */
-  int num_cor_orbs;      /* number of COR orbitals (i.e. restricted core) */
-  int num_vir_orbs;      /* number of VIR orbitals (i.e. restricted virtual) */
-  int num_fzv_orbs;      /* number of frozen/deleted virtual orbitals */
-  int npop;              /* number of populated orbitals, nbfso - nfzv */
+  // int num_fzc_orbs;      /* number of FZC orbitals (i.e. frozen core) */
+  // int num_cor_orbs;      /* number of COR orbitals (i.e. restricted core) */
+  // int num_vir_orbs;      /* number of VIR orbitals (i.e. restricted virtual) */
+  // int num_fzv_orbs;      /* number of frozen/deleted virtual orbitals */
+  // int npop;              /* number of populated orbitals, nbfso - nfzv */
   // int max_orbs_per_irrep;/* max orbitals per irrep fzv not included */
   // int max_pop_per_irrep; /* max populated orbitals per irrep fzv included */
 
   // int *orbs_per_irr;     /* number of orbitals per irrep */
   // int *docc;             /* doubly occupied orbitals per irrep */
   // int *socc;             /* singly occupied orbitals per irrep */
-  int *frozen_docc;      /* frozen doubly occupied orbs per irrep */
-  int *frozen_uocc;      /* frozen virtual orbs per irrep */
-  int *rstr_docc;        /* restricted doubly occupied orbs per irrep */
-  int *rstr_uocc;        /* restricted virtual orbs per irrep */
+  // int *frozen_docc;      /* frozen doubly occupied orbs per irrep */
+  // int *frozen_uocc;      /* frozen virtual orbs per irrep */
+  // int *rstr_docc;        /* restricted doubly occupied orbs per irrep */
+  // int *rstr_uocc;        /* restricted virtual orbs per irrep */
   // int *orbsym;           /* irrep for each orbital */
   // int *pitz2ci;          /* map Pitzer-ordered orbitals to our ordering */
   // int *ci2pitz;          /* map our ordering back to Pitzer ordering */
-  int *ci2relpitz;       /* map CI ordering to _relative_ pitzer ordering */
+  // int *ci2relpitz;       /* map CI ordering to _relative_ pitzer ordering */
   // char **labels;         /* labels for irreps */
   // int **ras_opi;         /* num orbs per irr per ras space ras_opi[ras][irr] */
-  int **fzc_orbs;        /* frozen core orbitals numbers [irrep][orbnum] */
-  int **cor_orbs;        /* restricted core orbitals numbers [irrep][orbnum] */
-  int **vir_orbs;        /* restr virtual orbitals numbers [irrep][orbnum] */
-  int **fzv_orbs;        /* frozen virtual orbitals numbers [irrep][orbnum] */
+  // int **fzc_orbs;        /* frozen core orbitals numbers [irrep][orbnum] */
+  // int **cor_orbs;        /* restricted core orbitals numbers [irrep][orbnum] */
+  // int **vir_orbs;        /* restr virtual orbitals numbers [irrep][orbnum] */
+  // int **fzv_orbs;        /* frozen virtual orbitals numbers [irrep][orbnum] */
 
-  int ***ras_orbs;       /* ras_orbs[ras][irr][cnt] gives an orbital number */
+  // int ***ras_orbs;       /* ras_orbs[ras][irr][cnt] gives an orbital number */
 
   // int *first;            /* first orbital per irrep (in Pitzer order)    */
   // int *last;             /* last  orbital per irrep (in Pitzer order)    */
@@ -620,7 +645,8 @@ struct mcscf_calcinfo {
   // int *active;           /* num active orbs per irrep                    */
   // double enuc;           /* nuclear repulsion energy */
   // double efzc;           /* frozen-core energy */
-  double ***mo_coeffs;   /* matrix of molecular orbitals in Pitzer order */
+  // double ***ref_mo_coeffs;   /* Reference matrix of molecular orbitals in Pitzer order */
+  // double ***cur_mo_coeffs;   /* Current matrix of molecular orbitals in Pitzer order */
   double *onel_ints;     /* one-electron integrals */
   double *onel_ints_bare;/* one-electron integrals, bare h only */
   double *twoel_ints;    /* two-electron integrals */

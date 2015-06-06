@@ -350,8 +350,10 @@ void DFOCC::title()
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") outfile->Printf("                       DF-MP2.5  \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") outfile->Printf("                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP2   \n");
+   else if (wfn_type_ == "CD-CCSD" && orb_opt_ == "FALSE") outfile->Printf("                       CD-CCSD   \n");
+   else if (wfn_type_ == "CD-CCD" && orb_opt_ == "FALSE") outfile->Printf("                       CD-CCD   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision May 12, 2015\n") ;
+   outfile->Printf("              Latest Revision May 24, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
@@ -391,7 +393,9 @@ double DFOCC::compute_energy()
         else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") cd_omp2_manager();
         else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") cd_mp2_manager();
         else if (wfn_type_ == "DF-CCSD" && orb_opt_ == "FALSE") ccsd_manager();
+        else if (wfn_type_ == "CD-CCSD" && orb_opt_ == "FALSE") ccsd_manager_cd();
         else if (wfn_type_ == "DF-CCD" && orb_opt_ == "FALSE") ccd_manager();
+        else if (wfn_type_ == "CD-CCD" && orb_opt_ == "FALSE") ccd_manager_cd();
         //else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE") omp3_manager();
         //else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE") mp3_manager();
         //else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "TRUE") ocepa_manager();

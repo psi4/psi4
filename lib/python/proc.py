@@ -449,6 +449,64 @@ def run_dfccdl(name, **kwargs):
     return psi4.get_variable("CURRENT ENERGY")
 
 
+def run_cdccsd(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a cholesky-decomposed CCSD computation
+
+    """
+
+    optstash = p4util.OptionsState(
+        ['SCF', 'DF_INTS_IO'],
+        ['DFOCC', 'ORB_OPT'],
+        ['DFOCC', 'WFN_TYPE'])
+
+    # overwrite symmetry
+    molecule = psi4.get_active_molecule()
+    molecule.update_geometry()
+    molecule.reset_point_group('c1')
+
+    #psi4.set_global_option('SCF_TYPE', 'CD')
+    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'CD-CCSD')
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+
+    psi4.dfocc()
+    return psi4.get_variable("CURRENT ENERGY")
+
+
+def run_cdccd(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a cholesky-decomposed CCD computation
+
+    """
+
+    optstash = p4util.OptionsState(
+        ['SCF', 'DF_INTS_IO'],
+        ['DFOCC', 'ORB_OPT'],
+        ['DFOCC', 'WFN_TYPE'])
+
+    # overwrite symmetry
+    molecule = psi4.get_active_molecule()
+    molecule.update_geometry()
+    molecule.reset_point_group('c1')
+
+    #psi4.set_global_option('SCF_TYPE', 'CD')
+    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'CD-CCD')
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+
+    psi4.dfocc()
+    return psi4.get_variable("CURRENT ENERGY")
+
+
 def run_conv_omp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an orbital-optimized MP2 computation
@@ -2444,6 +2502,39 @@ def run_sapt_ct(name, **kwargs):
     optstash.restore()
     return e_sapt
 
+def run_fisapt(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an F/ISAPT0 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+        psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
+
+    molecule = psi4.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(True)
+    molecule.fix_com(True)  
+    molecule.update_geometry()
+    if user_pg != 'c1':
+        psi4.print_out('  FISAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
+
+    if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
+        raise ValidationError('FISAPT requires requires \"reference rhf\".')
+
+    activate(molecule)
+    scf_helper('RHF', **kwargs)
+    e_sapt = psi4.fisapt()
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
+
+    optstash.restore()
+    return e_sapt
 
 def run_mrcc(name, **kwargs):
     """Function that prepares environment and input files

@@ -778,11 +778,11 @@ void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
     } /* end sigma2 */
 
    
-   #ifdef DEBUG
-   outfile->Printf( "s2: Contribution to sblock=%d from cblock=%d\n",
-      sblock, cblock);
-   print_mat(smat, nas, nbs, "outfile");
-   #endif
+   if (Parameters.print_lvl > 3) {
+     outfile->Printf( "s2: Contribution to sblock=%d from cblock=%d\n",
+        sblock, cblock);
+     print_mat(smat, nas, nbs, "outfile");
+   }
 
    /* SIGMA1 CONTRIBUTION */
    if (!Ms0 || (sac != sbc)) {
@@ -836,11 +836,11 @@ void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
 
       } /* end sigma1 */
 
-   #ifdef DEBUG
-   outfile->Printf( "s1: Contribution to sblock=%d from cblock=%d\n",
-      sblock, cblock);
-   print_mat(smat, nas, nbs, "outfile");
-   #endif
+   if (Parameters.print_lvl > 3) {
+     outfile->Printf( "s1: Contribution to sblock=%d from cblock=%d\n",
+        sblock, cblock);
+     print_mat(smat, nas, nbs, "outfile");
+   }
 
    /* SIGMA3 CONTRIBUTION */
    if (s3_contrib[sblock][cblock]) {
@@ -905,11 +905,11 @@ void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
             }
          }
 
-      #ifdef DEBUG
-      outfile->Printf( "s3: Contribution to sblock=%d from cblock=%d\n",
-         sblock, cblock);
-      print_mat(smat, nas, nbs, "outfile");
-      #endif
+      if (Parameters.print_lvl > 3) {
+        outfile->Printf( "s3: Contribution to sblock=%d from cblock=%d\n",
+           sblock, cblock);
+        print_mat(smat, nas, nbs, "outfile");
+      }
       
       detci_time.s3_after_time = wall_time_new();
       detci_time.s3_total_time += 

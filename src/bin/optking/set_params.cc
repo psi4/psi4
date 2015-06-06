@@ -384,8 +384,8 @@ void set_params(void)
   if (Opt_params.generate_intcos_only && !options["KEEP_INTCOS"].has_changed())
     Opt_params.keep_intcos = true;
 
-  // for intcos with user-specified equilibrium values - this is the force constant
-  //Opt_params.fixed_eq_val_force_constant = options.get_double("INTCO_FIXED_EQ_FORCE_CONSTANT");
+  // for coordinates with user-specified equilibrium values - this is the force constant
+  //Opt_params.fixed_coord_force_constant = options.get_double("FIXED_COORD_FORCE_CONSTANT");
 
   // Currently, a static line search merely displaces along the gradient in internal
   // coordinates generating LINESEARCH_STATIC_N geometries.  The other two keywords
@@ -581,9 +581,9 @@ void set_params(void)
     Opt_params.fb_fragments_only = false;
   }
 
-  // for intcos with user-specified equilibrium values - this is the force constant
-  //i = rem_read(REM_INTCO_FIXED_EQ_FORCE_CONSTANT);
-  //Opt_params.fixed_eq_val_force_constant = i / 10; // default (20 -> 2 au)
+  // for coordinates with user-specified equilibrium values - this is the force constant
+  //i = rem_read(REM_FIXED_COORD_FORCE_CONSTANT);
+  //Opt_params.fixed_coord_force_constant = i / 10; // default (20 -> 2 au)
 
   Opt_params.consecutive_backsteps_allowed = rem_read(REM_GEOM_OPT2_CONSECUTIVE_BACKSTEPS);
 
@@ -601,6 +601,7 @@ void set_params(void)
   Opt_params.frozen_distance_str = options.get_str("FROZEN_DISTANCE");
   Opt_params.frozen_bend_str     = options.get_str("FROZEN_BEND");
   Opt_params.frozen_dihedral_str = options.get_str("FROZEN_DIHEDRAL");
+  Opt_params.frozen_cartesian_str = options.get_str("FROZEN_CARTESIAN");
 
   Opt_params.fixed_distance_str = options.get_str("FIXED_DISTANCE");
   Opt_params.fixed_bend_str     = options.get_str("FIXED_BEND");
@@ -645,6 +646,22 @@ void set_params(void)
     
     free_array(fd);
   }
+  // Read QChem input and write all the frozen dihedrals into a string
+  if (rem_read(REM_GEOM_OPT2_FROZEN_CARTESIANS) > 0) {
+    INTEGER n_frozen = rem_read(REM_GEOM_OPT2_FROZEN_CARTESIANS);
+    double* fd = init_array(2*n_frozen);
+    FileMan(FM_READ,FILE_FROZEN_CARTESIANS,FM_DP,2*n_frozen,0,FM_BEG,fd);
+
+    // TODO: will have to add code for "xyz" format to integer format for 
+    // subsequent reads of frozen cartesians from file.
+    std::stringstream atoms;
+    for (int i=0; i<2*n_frozen; ++i)
+      atoms << (int) fd[i] << ' ';
+    Opt_params.frozen_cartesian_str = atoms.str();
+
+    free_array(fd);
+  }
+
 #endif
 
 // ** Items are below unlikely to need modified
@@ -834,6 +851,7 @@ void print_params_out(void) {
   oprintf_out( "scale_connectivity     = %18.2e\n", Opt_params.scale_connectivity);
   oprintf_out( "interfragment_scale_connectivity = %18.2e\n",
     Opt_params.interfragment_scale_connectivity);
+  //oprintf_out( "fixed_coord_force_constant = %14.2e\n", Opt_params.fixed_coord_force_constant);
 
   if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE)
   oprintf_out( "fragment_mode          = %18s\n", "single");
@@ -997,6 +1015,10 @@ void print_params_out(void) {
   oprintf_out( "frozen_dihedral: \n");
   if (!Opt_params.frozen_dihedral_str.empty())
     oprintf_out( "%s\n", Opt_params.frozen_dihedral_str.c_str());
+
+  oprintf_out( "frozen_cartesian: \n");
+  if (!Opt_params.frozen_cartesian_str.empty())
+    oprintf_out( "%s\n", Opt_params.frozen_cartesian_str.c_str());
 
   oprintf_out( "fixed_distance: \n");
   if (!Opt_params.fixed_distance_str.empty())

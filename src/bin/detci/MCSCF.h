@@ -23,35 +23,34 @@
 #ifndef _psi_src_bin_detci_mcscf_h_
 #define _psi_src_bin_detci_mcscf_h_
 
-#include <libdiis/diismanager.h>
-#include <libdiis/diisentry.h>
-#include <libparallel/ParallelPrinter.h>
-#include <libciomr/libciomr.h>
-#include <psi4-dec.h>
-#include "MCSCF_indpairs.h"
-#include "globaldefs.h"
-#include "structs.h"
-#include "globals.h"
-
 namespace boost {
 template<class T> class shared_ptr;
 }
 
 namespace psi {
 
+class Wavefunction;
+class DIISManager;
+class Options;
+class OutFile;
+class Matrix;
+
 namespace detci {
 
-class MCSCF 
+class IndepPairs;
+class CIWavefunction;
+
+class MCSCF
 {
 private:
     /// Initialization block
     Options& options_;
     void title(void);
-    void get_mo_info(Options &options);
     OutFile& IterSummaryOut_;
+    boost::shared_ptr<CIWavefunction> ciwfn_;
 
     /// Independent pairs
-    IndepPairs IndPairs;
+    boost::shared_ptr<IndepPairs> IndPairs_;
     int num_indep_pairs_;
 
     /// DIIS
@@ -63,11 +62,8 @@ private:
     void iteration_clean(void);
 
 
-    // MCSCF.cc
+    // General
     void calc_gradient(void);
-    void bfgs_hessian(void);
-    void ds_hessian(void);
-    void calc_hessian(void);
     void scale_gradient(void);
     int check_conv(void);
     int take_step(void);
@@ -78,10 +74,10 @@ private:
     // MCSCF_f_act
     void form_F_act(void);
 
-    // get_mo_info
-    void read_cur_orbs(void);
-
-    //Hessians
+    // Hessians
+    void bfgs_hessian(void);
+    void ds_hessian(void);
+    void calc_hessian(void);
     void form_appx_diag_mo_hess(int npairs, int *ppair, int *qpair,
                            double *F_core, double *tei, double **opdm,
                            double *tpdm, double *F_act, int firstact,
@@ -96,7 +92,6 @@ private:
     void form_diag_mo_hess_yy(int npairs, int *ppair, int *qpair,
                       double *oei, double *tei, double **opdm,
                       double *tpdm, double **lag, double *hess);
-    void read_density_matrices(Options& options);
 
     // Rotate
     void calc_orb_step(int npairs, double *grad, double *hess_diag,
@@ -116,20 +111,20 @@ private:
     void postmult_by_exp_R(int irrep, int dim, double **mat,
                            int npairs, int *p_arr, int *q_arr,
                            double *theta_arr);
-    int  read_ref_orbs(void);
-    int  write_ref_orbs(void);
-    void read_thetas(int npairs);
-    void write_thetas(int npairs);
-
     void calc_dE_dT(int n, double **dEU, int npairs, int *ppair,
                     int *qpair, double *theta, double *dET);
 
+    /// Variables
+    double *theta_cur_;
+
+    /// Orbital rotations are always relative to reference orbitals.
+    SharedMatrix ref_orbs_;
 
 public:
 
     /// Constructor
-    MCSCF(Options& options, OutFile& IterSummaryOut);
-    ~MCSCF();   
+    MCSCF(boost::shared_ptr<CIWavefunction> ciwfn, OutFile& IterSummaryOut);
+    ~MCSCF();
 
     // MCSCF update, orbital rotation
     int update();

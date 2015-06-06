@@ -108,8 +108,8 @@ int og_lex_addr(struct olsen_graph *Graph, int *occs, int nel,
    int *orbsym;
    struct stringgraph *subgraph;
 
-   irrep = Graph->fzc_sym;
-   orbsym = Graph->orbsym + Graph->num_fzc_orbs;
+   irrep = Graph->drc_sym;
+   orbsym = Graph->orbsym + Graph->num_drc_orbs;
 
    for (i=0; i<nel; i++) {
       j = occs[i];
@@ -119,7 +119,7 @@ int og_lex_addr(struct olsen_graph *Graph, int *occs, int nel,
       else if (j >= Graph->ras4_lvl) inras4++;
       else inras2++;
       }
-   inras1 += Graph->num_fzc_orbs;
+   // inras1 += Graph->num_drc_orbs; // CDS 4/15
    inras1 -= Graph->ras1_min; 
    if (inras1 < 0) return(-1);
    if (inras3 > Graph->ras3_max) return(-1);
