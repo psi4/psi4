@@ -121,6 +121,7 @@ def parse_input():
             default=False,
             help='enable SGI MPT [default: %(default)s]')
     group.add_argument('--omp',
+            # at present, there's no way to turn this off. recc switch to on/off
             action='store_true',
             default=True,
             help='enable OpenMP [default: %(default)s]')
@@ -260,36 +261,39 @@ def parse_input():
     group = parser.add_argument_group('External quantum chemistry libraries')
     # ERD package
     group.add_argument('--erd',
-            action='store_true',
-            default=False,
+            action='store',
+            choices=('on', 'off'),
+            default='off',
             help='Add support for the ERD integral package [default: %(default)s]')
     #JK_Factory
     group.add_argument('--jkfactory',
-            action='store_true',
-            default=False,
+            action='store',
+            choices=('on', 'off'),
+            default='off',
             help='enable distributed J and K builds [default: %(default)s]')
     # GPU_DFCC package
     group.add_argument('--gpu-dfcc',
-            action='store_true',
-            default=False,
+            action='store',
+            choices=('on', 'off'),
+            default='off',
             help='Enable GPU_DFCC external project [default: %(default)s]')
     # Dummy plugin
     group.add_argument('--dummy-plugin',
-            action='store_true',
-            default=False,
+            action='store',
+            choices=('on', 'off'),
+            default='off',
             help='Enable dummy plugin external project [default: %(default)s]')
     # PCMSolver package
     group.add_argument('--pcmsolver',
-            action='store_true',
-            default=False,
+            action='store',
+            choices=('on', 'off'),
+            default='off',
             help='Enable PCMSolver [default: %(default)s]')
     # CheMPS2 package
     group.add_argument('--chemps2',
-            action='store_false',
-            default=True,
-            #action='store',
-            #choices=('on', 'off'),
-            #default='on',
+            action='store',
+            choices=('on', 'off'),
+            default='on',
             help='Enable CheMPS2 external project [default: %(default)s]')
     group.add_argument('--chemps2-dir',
             action='store',
@@ -489,7 +493,7 @@ def gen_cmake_command(args):
         command += ' -DZLIB_ROOT={0}'.format(args.zlib_dir)
 
     if args.gsl_dir:
-        command += ' -DGSL_ROOT={0}'.format(args.gsl_dir)
+        command += ' -DGSL_ROOT_DIR={0}'.format(args.gsl_dir)
 
     if args.hdf5_dir:
         command += ' -DHDF5_ROOT={0}'.format(args.hdf5_dir)
