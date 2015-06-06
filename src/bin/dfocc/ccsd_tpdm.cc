@@ -399,7 +399,7 @@ void DFOCC::ccsd_tpdm()
                 }
             } 
 
-	    /*
+	    /* OLD excluded
             // Form (+)Tau[b](f, m>=n) 
             #pragma omp parallel for
             for(int m = 0 ; m < naoccA; ++m){
@@ -434,7 +434,7 @@ void DFOCC::ccsd_tpdm()
                     }
                 }
             } 
-	    */
+	    OLD excluded */
 
 	    // G2[b](Q,a) = \sum(ef) b(Q,ef) * V[b](a,ef) 
             X->gemm(false, true, bQabA, V, 1.0, 0.0);
