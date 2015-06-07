@@ -37,6 +37,7 @@
 #include <libscf_solver/rhf.h>
 
 #include <libfock/jk.h>
+#include <libfock/soscf.h>
 
 #include <string>
 
@@ -960,5 +961,11 @@ void export_mints()
             .def("Qvv", &DFTensor::Qvv, "doctsring")
             .def("Imo", &DFTensor::Imo, "doctsring")
             .def("Idfmo", &DFTensor::Idfmo, "doctsring");
+
+    class_<SORHF, boost::shared_ptr<SORHF> >("SORHF", "docstring", no_init)
+        .def(init<boost::shared_ptr<JK> >())
+        .def("update", &SORHF::update, "docstring")
+        .def("Hx", &SORHF::Hx, "docstring")
+        .def("solve", &SORHF::solve, "docstring");
 
 }
