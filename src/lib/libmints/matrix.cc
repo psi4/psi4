@@ -406,7 +406,7 @@ SharedMatrix Matrix::horzcat(const std::vector<SharedMatrix >& mats)
             int cols = mats[a]->colspi()[h];
             if (cols == 0) continue;
 
-            double** Ap = mats[a]->pointer();
+            double** Ap = mats[a]->pointer(h);
 
             for (int col = 0; col < cols; ++col) {
                 C_DCOPY(rows,&Ap[0][col],cols,&catp[0][col + offset],colspi[h]);
@@ -453,7 +453,7 @@ SharedMatrix Matrix::vertcat(const std::vector<SharedMatrix >& mats)
             int rows = mats[a]->rowspi()[h];
             if (rows == 0) continue;
 
-            double** Ap = mats[a]->pointer();
+            double** Ap = mats[a]->pointer(h);
 
             for (int row = 0; row < rows; ++row) {
                 ::memcpy((void*) catp[row + offset], (void*) Ap[row], sizeof(double) * cols);
@@ -1485,6 +1485,7 @@ SharedMatrix Matrix::doublet(const SharedMatrix& A, const SharedMatrix& B, bool 
     SharedMatrix T(new Matrix("T", nirrep, m, n));
 
     for (int h = 0; h < nirrep; h++) {
+        if (!k[h] || !m[h] || !n[h]) continue;
         C_DGEMM(
             (transA ? 'T' : 'N'),
             (transB ? 'T' : 'N'),
