@@ -44,9 +44,13 @@ SORHF::~SORHF()
 
 void SORHF::update(SharedMatrix Cocc, SharedMatrix Cvir, SharedMatrix Fock)
 {
-    // Build C matrices
+    // => Build C matrices <= //
     nocc_ = Cocc->ncol();
     nvir_ = Cvir->ncol();
+
+    nirrep_ = Cocc->nirrep();
+    noccpi_ = Cocc->colspi();
+    nvirpi_ = Cvir->colspi();
 
     matrices_["Cocc"] = Cocc;
     matrices_["Cvir"] = Cvir;
@@ -55,50 +59,97 @@ void SORHF::update(SharedMatrix Cocc, SharedMatrix Cvir, SharedMatrix Fock)
     fullC.push_back(Cvir);
     matrices_["C"] = Matrix::horzcat(fullC);
 
-    nao_ = matrices_["C"]->ncol();
+    nso_ = matrices_["C"]->ncol();
+    nsopi_ = matrices_["C"]->colspi();
 
     // => MO Fock Matrix <= //
     matrices_["IFock"] = Matrix::triplet(matrices_["C"], Fock, matrices_["C"], true, false, false);
 
     // => Gradient and Diagonal denominator <= //
-    matrices_["Gradient"] = SharedMatrix(new Matrix("Gradient", nocc_, nvir_));
-    matrices_["ia_denom"] = SharedMatrix(new Matrix("ia_denom", nocc_, nvir_));
+    matrices_["Gradient"] = SharedMatrix(new Matrix("Gradient", nirrep_, noccpi_, nvirpi_));
+    matrices_["ia_denom"] = SharedMatrix(new Matrix("ia_denom", nirrep_, noccpi_, nvirpi_));
 
-    double* gp = matrices_["Gradient"]->pointer()[0];
-    double* denomp = matrices_["ia_denom"]->pointer()[0];
-    double** fp = matrices_["IFock"]->pointer();
-    for (size_t i=0, target=0; i<nocc_; i++){
-        double o_eps = fp[i][i];
-        for (size_t j=nocc_; j < nao_; j++)
-        {
-            gp[target] = -4.0 * fp[i][j];
-            denomp[target++] = 4.0 * (fp[j][j] - o_eps);
+    for (size_t h=0; h<nirrep_; h++){
+
+        if (!nsopi_[h] || !noccpi_[h] || !nvirpi_[h]) continue;
+        double* gp = matrices_["Gradient"]->pointer(h)[0];
+        double* denomp = matrices_["ia_denom"]->pointer(h)[0];
+        double** fp = matrices_["IFock"]->pointer(h);
+
+        for (size_t i=0, target=0; i<noccpi_[h]; i++){
+            double o_eps = fp[i][i];
+            for (size_t j=noccpi_[h]; j < nsopi_[h]; j++)
+            {
+                gp[target] = -4.0 * fp[i][j];
+                denomp[target++] = 4.0 * (fp[j][j] - o_eps);
+            }
         }
     }
 }
 
-SharedMatrix SORHF::Hx(SharedMatrix x)
+SharedMatrix SORHF::Ck(SharedMatrix x)
 {
 
-    // => Effective one electron part <= //
+    SharedMatrix tmp(new Matrix("Ck", nirrep_, nsopi_, nsopi_));
 
-    double** IFp = matrices_["IFock"]->pointer();
+    // Form full antisymmetric matrix
+    for (size_t h=0; h<nirrep_; h++){
 
-    SharedMatrix Focc(new Matrix("Focc", nocc_, nocc_));
-    double* Foccp = Focc->pointer()[0];
+        if (!nsopi_[h] || !noccpi_[h] || !nvirpi_[h]) continue;
+        double** tp = tmp->pointer(h);
+        double*  xp = x->pointer(h)[0];
 
-    SharedMatrix Fvir(new Matrix("Fvir", nvir_, nvir_));
-    double* Fvirp = Fvir->pointer()[0];
-
-    for (size_t i=0, target=0; i<nocc_; i++){
-        for (size_t j=0; j < nocc_; j++){
-            Foccp[target++] = IFp[i][j];
+        // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
+        for (size_t i=0, target=0; i<noccpi_[h]; i++){
+            for (size_t a=noccpi_[h]; a < nsopi_[h]; a++){
+                tp[i][a] = -1.0 * xp[target];
+                tp[a][i] = xp[target++];
+            }
         }
     }
 
-    for (size_t i=nocc_, target=0; i<nao_; i++){
-        for (size_t j=nocc_; j < nao_; j++){
-            Fvirp[target++] = IFp[i][j];
+    // Build exp(U) = 1 + U + 0.5 U U
+    SharedMatrix U = tmp->clone();
+    for (size_t h=0; h<nirrep_; h++){
+        double** up = U->pointer(h);
+        for (size_t i=0; i<U->rowspi()[h]; i++){
+            up[i][i] += 1.0;
+        }
+    }
+    U->gemm(false, false, 0.5, tmp, tmp, 1.0);
+
+    // We did not fully exponentiate the matrix, need to orthogonalize
+    U->schmidt();
+
+    // C' = C U
+    tmp->gemm(false, false, 1.0, matrices_["C"], U, 0.0);
+
+    return tmp;
+}
+
+SharedMatrix SORHF::Hk(SharedMatrix x)
+{
+
+    // => Effective one electron part <= //
+    SharedMatrix Focc(new Matrix("Focc", nirrep_, noccpi_, noccpi_));
+    SharedMatrix Fvir(new Matrix("Fvir", nirrep_, nvirpi_, nvirpi_));
+
+    for (size_t h=0; h<nirrep_; h++){
+        if (!nsopi_[h] || !noccpi_[h] || !nvirpi_[h]) continue;
+        double** IFp = matrices_["IFock"]->pointer(h);
+        double* Foccp = Focc->pointer(h)[0];
+        double* Fvirp = Fvir->pointer(h)[0];
+
+        for (size_t i=0, target=0; i<noccpi_[h]; i++){
+            for (size_t j=0; j < noccpi_[h]; j++){
+                Foccp[target++] = IFp[i][j];
+            }
+        }
+
+        for (size_t i=noccpi_[h], target=0; i<nsopi_[h]; i++){
+            for (size_t j=noccpi_[h]; j < nsopi_[h]; j++){
+                Fvirp[target++] = IFp[i][j];
+            }
         }
     }
 
@@ -107,7 +158,6 @@ SharedMatrix SORHF::Hx(SharedMatrix x)
 
 
     // => Two electron part <= //
-
     std::vector<SharedMatrix>& Cl = jk_->C_left();
     std::vector<SharedMatrix>& Cr = jk_->C_right();
     Cl.clear();
@@ -120,6 +170,8 @@ SharedMatrix SORHF::Hx(SharedMatrix x)
     Cr.push_back(R);
 
     jk_->compute();
+    Cl.clear();
+    Cr.clear();
 
     const std::vector<SharedMatrix>& J = jk_->J();
     const std::vector<SharedMatrix>& K = jk_->K();
@@ -136,7 +188,9 @@ SharedMatrix SORHF::Hx(SharedMatrix x)
 
 SharedMatrix SORHF::solve(int max_iter, double conv, bool print)
 {
+
     if (print){
+        outfile->Printf("\n");
         outfile->Printf("    ==> SORHF Iterations <==\n");
         outfile->Printf("    Maxiter     = %11d\n", max_iter);
         outfile->Printf("    Convergence = %11.3E\n", conv);
@@ -153,39 +207,51 @@ SharedMatrix SORHF::solve(int max_iter, double conv, bool print)
     SharedMatrix x = matrices_["Gradient"]->clone();
     x->apply_denominator(matrices_["ia_denom"]);
 
+    // Calc hessian vector product, find residual and conditioned residual
     SharedMatrix r = matrices_["Gradient"]->clone();
-    r->subtract(Hx(x));
+    SharedMatrix Ap = Hk(x);
+    r->subtract(Ap);
 
     SharedMatrix z = r->clone();
     z->apply_denominator(matrices_["ia_denom"]);
 
     SharedMatrix p = z->clone();
 
-    size_t npairs = x->nrow() * x->ncol();
     for (size_t iter = 0; iter < max_iter; iter++) {
-        SharedMatrix Ap = Hx(p);
 
+        // Calc hessian vector product
+        Ap = Hk(p);
+
+        // Find factors and scale
         double rzpre = r->vector_dot(z);
         double alpha = rzpre / p->vector_dot(Ap);
 
-        double* xp = x->pointer()[0];
-        double* rp = r->pointer()[0];
-        double* pp = p->pointer()[0];
-        double* App = Ap->pointer()[0];
-        C_DAXPY(npairs,  alpha, pp, 1, xp, 1);
-        C_DAXPY(npairs, -alpha, App, 1, rp, 1);
+        for (size_t h=0; h<nirrep_; h++){
+            if (!nsopi_[h] || !noccpi_[h] || !nvirpi_[h]) continue;
 
+            size_t npairs = noccpi_[h] * nvirpi_[h];
+            double* xp = x->pointer(h)[0];
+            double* rp = r->pointer(h)[0];
+            double* pp = p->pointer(h)[0];
+            double* App = Ap->pointer(h)[0];
 
+            C_DAXPY(npairs,  alpha, pp, 1, xp, 1);
+            C_DAXPY(npairs, -alpha, App, 1, rp, 1);
+        }
+
+        // Get residual
         double rconv = r->rms();
         stop = time(NULL);
         if (print){
             outfile->Printf("    %-4d %11.3E %10ld\n", iter+1, rconv, stop-start);
         }
 
+        // Check convergence
         if (rconv < conv){
             break;
         }
 
+        // Update p and z
         z->copy(r);
         z->apply_denominator(matrices_["ia_denom"]);
 
@@ -201,6 +267,8 @@ SharedMatrix SORHF::solve(int max_iter, double conv, bool print)
     }
     return x;
 }
+
+/// End SORHF class
 
 /// SOMCSCF class
 

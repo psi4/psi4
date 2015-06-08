@@ -62,7 +62,14 @@ public:
     ~SORHF(void);
 
     /**
-     * Update to the current macroiteration
+     * Rotate the current orbitals for a given rotation matrix.
+     * @param  x The [o, v] non-redundant orbital rotation parameters.
+     * @return   The rotated orbitals.
+     */
+    SharedMatrix Ck(SharedMatrix x);
+
+    /**
+     * Update to the current macroiteration.
      * @param Cocc Occupied orbitals
      * @param Cvir Virtual orbitals
      * @param Fock SO Fock Matrix
@@ -70,12 +77,12 @@ public:
     void update(SharedMatrix Cocc, SharedMatrix Cvir, SharedMatrix Fock);
 
     /**
-     * Returns the hessian times a trial vector or, in effect, the rotated inactive Fock matrix
+     * Returns the hessian times a trial vector or, in effect, the rotated inactive Fock matrix.
      * IF_k = IF_mp K_np + IF_pn K_mp + (4 G_mnip - G_mpin - G_npim) K_ip
      * @param  x  The [o, v] matrix of non-redundant orbital rotations.
-     * @return Hx The [o, v] block of the rotated Fock matrix
+     * @return Hx The [o, v] block of the rotated Fock matrix.
      */
-    SharedMatrix Hx(SharedMatrix x);
+    SharedMatrix Hk(SharedMatrix x);
 
     /**
      * Solves the set of linear equations Hx = gradient using CG. In this particular case only
@@ -87,9 +94,13 @@ public:
 protected:
 
     /// Parameters
+    size_t nirrep_;
     size_t nocc_;
+    Dimension noccpi_;
     size_t nvir_;
-    size_t nao_;
+    Dimension nvirpi_;
+    size_t nso_;
+    Dimension nsopi_;
 
     /// Global JK object
     boost::shared_ptr<JK> jk_;
