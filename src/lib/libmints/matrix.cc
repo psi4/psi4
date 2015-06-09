@@ -1461,10 +1461,10 @@ SharedMatrix Matrix::doublet(const SharedMatrix& A, const SharedMatrix& B, bool 
     if (A->symmetry() || B->symmetry()) {
         throw PSIEXCEPTION("Matrix::doublet is not supported for this non-totally-symmetric thing.");
     }
-    
+
     if (A->nirrep() != B->nirrep()) {
         throw PSIEXCEPTION("Matrix::doublet: Matrices do not have the same nirreps");
-    } 
+    }
 
     int nirrep = A->nirrep();
     int m[nirrep];
@@ -1479,7 +1479,7 @@ SharedMatrix Matrix::doublet(const SharedMatrix& A, const SharedMatrix& B, bool 
         k2[h] = (!transB ? B->rowspi()[h] : B->colspi()[h]);
         if (k[h] != k2[h]) {
             throw PSIEXCEPTION("Matrix::doublet: Dimension mismatch");
-        } 
+        }
     }
 
     SharedMatrix T(new Matrix("T", nirrep, m, n));
@@ -1489,7 +1489,7 @@ SharedMatrix Matrix::doublet(const SharedMatrix& A, const SharedMatrix& B, bool 
         C_DGEMM(
             (transA ? 'T' : 'N'),
             (transB ? 'T' : 'N'),
-            m[h],   
+            m[h],
             n[h],
             k[h],
             1.0,
@@ -1509,6 +1509,24 @@ SharedMatrix Matrix::triplet(const SharedMatrix& A, const SharedMatrix& B, const
     SharedMatrix T = Matrix::doublet(A,B,transA,transB);
     SharedMatrix S = Matrix::doublet(T,C,false,transC);
     return S;
+}
+void Matrix::axpy(double a, SharedMatrix X)
+{
+    if (nirrep_ != X->nirrep()) {
+        throw PSIEXCEPTION("Matrix::axpy: Matrices do not have the same nirreps");
+    }
+    for (int h=0; h<nirrep_; h++){
+        size_t size = colspi_[h] * rowspi_[h];
+        if (size != (X->rowspi()[h] * X->colspi()[h])) {
+            throw PSIEXCEPTION("Matrix::axpy: Matrices sizes do not match.");
+        }
+        if (size){
+            double* Xp = X->pointer(h)[0];
+            double* Yp = matrix_[h][0];
+            C_DAXPY(size, a, Xp, 1, Yp, 1);
+        }
+
+    }
 }
 SharedMatrix Matrix::collapse(int dim)
 {
@@ -1530,7 +1548,7 @@ SharedMatrix Matrix::collapse(int dim)
         int nrow = rowspi_[h];
         int ncol = colspi_[h];
         double** Mp = matrix_[h];
-        double** Tp = T->pointer(h);        
+        double** Tp = T->pointer(h);
         if (dim == 0) {
             for (int j = 0; j < ncol; j++) {
                 for (int i = 0; i < nrow; i++) {
@@ -1545,7 +1563,7 @@ SharedMatrix Matrix::collapse(int dim)
             }
         }
     }
-    
+
     return T;
 }
 
@@ -1712,10 +1730,10 @@ void Matrix::project_out(Matrix &constraints)
 //    constraints.print();
 
     double *v = new double[coldim()];
-//    outfile->Printf( "coldim(): %d\n", coldim()); 
+//    outfile->Printf( "coldim(): %d\n", coldim());
     for (int h=0; h<nirrep(); ++h) {
         for (int i=0; i<rowdim(h); ++i) {
-//            outfile->Printf( "i=%d, copying %d elements from temp[%d][%d] to v\n", i, coldim(h), h, i); 
+//            outfile->Printf( "i=%d, copying %d elements from temp[%d][%d] to v\n", i, coldim(h), h, i);
             memcpy(v, temp[h][i], sizeof(double)*coldim(h));
 
 //            outfile->Printf( "temp[%d][] ", h);
@@ -1737,7 +1755,7 @@ void Matrix::project_out(Matrix &constraints)
                 }
 //                outfile->Printf( "\n");
 //                double dotval = C_DDOT(coldim(h), &(temp[h][i][0]), 1, &(constraints[0][j][0]), 1);
-//                outfile->Printf( "dotval = %lf\n", dotval); 
+//                outfile->Printf( "dotval = %lf\n", dotval);
                 for (int I=0; I<coldim(h); ++I)
                     v[I] -= dotval * constraints[0][j][I];
             }
@@ -1844,12 +1862,12 @@ void Matrix::diagonalize(SharedMatrix& metric, SharedMatrix& /*eigvectors*/, boo
         if (err != 0) {
             if (err < 0) {
                 outfile->Printf( "Matrix::diagonalize with metric: C_DSYGV: argument %d has invalid parameter.\n", -err);
-                
+
                 abort();
             }
             if (err > 0) {
                 outfile->Printf( "Matrix::diagonalize with metric: C_DSYGV: error value: %d\n", err);
-                
+
                 abort();
             }
         }
@@ -1920,12 +1938,12 @@ void Matrix::svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
         if (info != 0) {
             if (info < 0) {
                 outfile->Printf( "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
-                
+
                 abort();
             }
             if (info > 0) {
                 outfile->Printf( "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
-                
+
                 abort();
             }
         }
@@ -1967,12 +1985,12 @@ void Matrix::svd_a(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
             if (info != 0) {
                 if (info < 0) {
                     outfile->Printf( "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
-                    
+
                     abort();
                 }
                 if (info > 0) {
                     outfile->Printf( "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
-                    
+
                     abort();
                 }
             }
@@ -2117,14 +2135,14 @@ void Matrix::cholesky_factorize()
             if (err != 0) {
                 if (err < 0) {
                     outfile->Printf( "cholesky_factorize: C_DPOTRF: argument %d has invalid paramter.\n", -err);
-                    
+
                     abort();
                 }
                 if (err > 1) {
                     outfile->Printf( "cholesky_factorize: C_DPOTRF: the leading minor of order %d is not "
                             "positive definite, and the factorization could not be "
                             "completed.", err);
-                    
+
                     abort();
                 }
             }
@@ -2248,8 +2266,8 @@ std::pair<SharedMatrix, SharedMatrix> Matrix::partial_square_root(double delta)
     }
 
     SharedMatrix V(new Matrix("V", colspi_, colspi_));
-    SharedVector d(new Vector("d", colspi_));         
-    
+    SharedVector d(new Vector("d", colspi_));
+
     diagonalize(V,d);
 
     Dimension Ppi(d->nirrep());
@@ -2280,12 +2298,12 @@ std::pair<SharedMatrix, SharedMatrix> Matrix::partial_square_root(double delta)
             if (fabs(d->get(h,i)) >= delta) {
                 if (d->get(h,i) >= 0.0) {
                     // +
-                    double val = sqrt(fabs(d->get(h,i))); 
+                    double val = sqrt(fabs(d->get(h,i)));
                     C_DAXPY(colspi_[h], val, &Vp[0][i], colspi_[h], &Pp[0][Pcounter], Ppi[h]);
                     Pcounter++;
                 } else {
                     // -
-                    double val = sqrt(fabs(d->get(h,i))); 
+                    double val = sqrt(fabs(d->get(h,i)));
                     C_DAXPY(colspi_[h],-val, &Vp[0][i], colspi_[h], &Np[0][Ncounter], Npi[h]);
                     Ncounter++;
                 }
@@ -2328,13 +2346,13 @@ void Matrix::general_invert()
             if (err != 0) {
                 if (err < 0) {
                     outfile->Printf( "invert: C_DGETRF: argument %d has invalid paramter.\n", -err);
-                    
+
                     abort();
                 }
                 if (err > 1) {
                     outfile->Printf( "invert: C_DGETRF: the (%d,%d) element of the factor U or L is "
                             "zero, and the inverse could not be computed.\n", err, err);
-                    
+
                     abort();
                 }
             }
@@ -2343,13 +2361,13 @@ void Matrix::general_invert()
             if (err != 0) {
                 if (err < 0) {
                     outfile->Printf( "invert: C_DGETRI: argument %d has invalid paramter.\n", -err);
-                    
+
                     abort();
                 }
                 if (err > 1) {
                     outfile->Printf( "invert: C_DGETRI: the (%d,%d) element of the factor U or L is "
                             "zero, and the inverse could not be computed.\n", err, err);
-                    
+
                     abort();
                 }
             }
@@ -2430,8 +2448,8 @@ void Matrix::expm(int m, bool scale)
     std::vector<double> fact;
     fact.push_back(1.0);
     for (int i = 1; i <= 2*m; i++) {
-        fact.push_back(fact[i-1] * i); 
-    }    
+        fact.push_back(fact[i-1] * i);
+    }
     std::vector<double> alpha;
     for (int k = 0; k <= m; k++) {
         alpha.push_back((fact[2*m-k] * fact[m])/(fact[2*m] * fact[k] * fact[m-k]));
@@ -2440,11 +2458,11 @@ void Matrix::expm(int m, bool scale)
     // Form the exponential
     for (int h = 0; h < nirrep_; ++h) {
         if (rowspi_[h] == 0) continue;
-    
-        int n = rowspi_[h];
-        double** A = matrix_[h];        
 
-        double L; 
+        int n = rowspi_[h];
+        double** A = matrix_[h];
+
+        double L;
         int S;
         if (scale) {
             // Trace reduction
@@ -2472,7 +2490,7 @@ void Matrix::expm(int m, bool scale)
             S = (int)(mag);
             C_DSCAL(n*(unsigned long int) n, pow(2.0, -S), A[0], 1);
         }
- 
+
         double** T = Matrix::matrix(n,n);
         double** U = Matrix::matrix(n,n);
         double** X = Matrix::matrix(n,n);
@@ -2481,7 +2499,7 @@ void Matrix::expm(int m, bool scale)
         // Zero-th Order
         for (int i = 0; i < n; i++) {
             X[i][i] = 1.0;
-        }    
+        }
 
         // Build X and Y as polynomials in A
         ::memcpy((void*) T[0], (void*) A[0], sizeof(double) * n * n);
@@ -2489,7 +2507,7 @@ void Matrix::expm(int m, bool scale)
 
             if ((Q % 2) == 1)
                 C_DAXPY(n * (unsigned long int) n,  alpha[Q], T[0], 1, Y[0], 1);
-            else 
+            else
                 C_DAXPY(n * (unsigned long int) n,  alpha[Q], T[0], 1, X[0], 1);
 
             if (Q == m) break;
@@ -2500,7 +2518,7 @@ void Matrix::expm(int m, bool scale)
             T = U;
             U = t;
         }
-        
+
         // Build N and D as polynomials in A (avoids cancelation)
         double** N = T;
         double** D = U;
@@ -2511,16 +2529,16 @@ void Matrix::expm(int m, bool scale)
         C_DAXPY(n * (unsigned long int) n,  1.0, Y[0], 1, D[0], 1);
 
         //outfile->Printf("  ## N ##\n\n");
-        //print_mat(N,n,n,outfile); 
+        //print_mat(N,n,n,outfile);
         //outfile->Printf("  ## D ##\n\n");
-        //print_mat(D,n,n,outfile); 
+        //print_mat(D,n,n,outfile);
 
         // Solve exp(A) = N / D = D^{1} N = D \ N
-        int* ipiv = new int[n];        
+        int* ipiv = new int[n];
 
         // LU = D
         int info1 = C_DGETRF(n,n,D[0],n,ipiv);
-        if (info1) 
+        if (info1)
             throw PSIEXCEPTION("Matrix::expm: LU factorization of D failed");
 
         // Transpose N before solvation (FORTRAN)
@@ -2533,19 +2551,19 @@ void Matrix::expm(int m, bool scale)
         }
 
         //outfile->Printf("  ## LU ##\n\n");
-        //print_mat(D,n,n,outfile); 
+        //print_mat(D,n,n,outfile);
         //outfile->Printf("  ## S(0) ##\n\n");
-        //print_mat(N,n,n,outfile); 
+        //print_mat(N,n,n,outfile);
 
         // D \ N
         int info2 = C_DGETRS('N',n,n,D[0],n,ipiv,N[0],n);
-        if (info2) 
+        if (info2)
             throw PSIEXCEPTION("Matrix::expm: LU solution of D failed");
 
         delete[] ipiv;
-    
+
         //outfile->Printf("  ## S ##\n\n");
-        //print_mat(N,n,n,outfile); 
+        //print_mat(N,n,n,outfile);
 
         if (scale) {
 
@@ -2561,14 +2579,14 @@ void Matrix::expm(int m, bool scale)
                 C_DGEMM('N','N',n,n,n,1.0,X[0],n,X[0],n,0.0,Y[0],n);
                 double** t = X;
                 X = Y;
-                Y = t; 
+                Y = t;
             }
             ::memcpy((void*) A[0], (void*) X[0], sizeof(double) * n * n);
 
             // Inverse trace shift
             C_DSCAL(n * (unsigned long int) n, exp(L), A[0], 1);
 
-        } else {        
+        } else {
             // Copy result back to A, transposing as you go (back to C++)
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < n; j++) {
