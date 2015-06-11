@@ -90,6 +90,8 @@ class FRAG {
   std::string get_coord_definition(int coord_index, int atom_offset=0);
   std::string get_simple_definition(int simple_index, int atom_offset=0);
 
+  INTCO_TYPE get_simple_type(int simple_index);
+
   void update_connectivity_by_distances(void);
   void update_connectivity_by_bonds(void);
 
@@ -287,9 +289,10 @@ class FRAG {
    * @param R_list string of atom pairs for frozen distances
    * @param B_list string of atom triples for frozen bends
    * @param D_list string of atom quartets for frozen dihedrals
+   * @param C_list string with lists of atom and xyz specification for frozen cartesians
    * @returns True if any constraints are present.
   */
-  bool apply_frozen_constraints(std::string R_list, std::string B_list, std::string D_list);
+  bool apply_frozen_constraints(std::string R_list, std::string B_list, std::string D_list, std::string C_list);
 
   /**
    * @param R_list string of atom pairs + equilibrium value for fixed distances

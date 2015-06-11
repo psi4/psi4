@@ -33,7 +33,7 @@ def parse_input():
             action='store',
             default=default_path,
             help='build directory [default: %(default)s]',
-            metavar='build path')
+            metavar='OBJDIR')
 
     group = parser.add_argument_group('Basic options')
     # The C compiler
@@ -56,7 +56,7 @@ def parse_input():
             metavar='STRING')
     # Libint maximum angular momentum.
     parser.add_argument('--max-am-eri',
-            metavar="= MAX_ANGULAR_MOMENTUM",
+            metavar="MAX_ANGULAR_MOMENTUM",
             type=int,
             default=5,
             help="""The maximum angular momentum level (1=p, 2=d, 3=f, etc.) for the libint and libderiv packages.
@@ -106,7 +106,7 @@ def parse_input():
             Failing that it will build one for you""",
             metavar='PATH')
     group.add_argument('--python',
-            metavar='= PYTHON',
+            metavar='PYTHON',
             action='store',
             default=None,
             help="""The Python interpreter (development version) to use.  CMake will detect one automatically, if omitted.""")
@@ -121,6 +121,7 @@ def parse_input():
             default=False,
             help='enable SGI MPT [default: %(default)s]')
     group.add_argument('--omp',
+            # at present, there's no way to turn this off. recc switch to on/off
             action='store_true',
             default=True,
             help='enable OpenMP [default: %(default)s]')
@@ -142,10 +143,10 @@ def parse_input():
             default='auto',
             help='specify LAPACK library; possible choices are "auto", "builtin", "none", or full path [default: %(default)s]',
             metavar='[{auto,builtin,none,/full/path/lib.a}]')
-    group.add_argument('--explicit-libs',
+    group.add_argument('--extra-math-flags',
             action='store',
             default=None,
-            help='explicit linker specification for extra libraries; passed directly to the linker',
+            help='extra linker flags (usually -Llibdir -llibname type arguments) [default: %(default)s]',
             metavar='STRING')
     group.add_argument('--accelerate',
             action='store_true',
@@ -170,11 +171,6 @@ def parse_input():
 
     # Advanced options
     group = parser.add_argument_group('Advanced options')
-    group.add_argument('--ldflags',
-            action='store',
-            default=None,
-            help="Any extra flags to pass to the linker (usually -Llibdir -llibname type arguments). You shouldn't need this.",
-            metavar='STRING')
     # C++11 support (CMake will detect what's available)
     group.add_argument('--cxx11',
             nargs='?',
@@ -188,7 +184,7 @@ def parse_input():
             action='store',
             choices=('on', 'off'),
             default='off',
-            help='Compile with support for plugins [default: %(default)s]')
+            help='Build the example plugins [default: %(default)s]')
     # Suffix for the psi4 executable
     group.add_argument('--suffix',
             type=str,
@@ -225,8 +221,9 @@ def parse_input():
             dest='define',
             default=[],
             help="""forward directly to cmake (example: -D ENABLE_THIS=1 -D ENABLE_THAT=1);
-                    you can also forward CPP defintions all the way to the program
-                    (example: -D CPP="-DDEBUG")""",
+                    you can also forward CPP definitions all the way to the program
+                    (example: -D CPP="-DDEBUG"); also handle multi-word arguments
+                    (example: -D MORELIBS="-L/path/to/lib /path/to/lib2")""",
             metavar='STRING')
     group.add_argument('--host',
             action='store',
@@ -261,32 +258,77 @@ def parse_input():
             default=False,
             help='enable undefined behaviour sanitizer (UBSan) build [default: %(default)s]')
 
-    group = parser.add_argument_group('External libraries')
+    group = parser.add_argument_group('External quantum chemistry libraries')
     # ERD package
     group.add_argument('--erd',
-            action='store_true',
-            default=False,
+            action='store',
+            choices=('on', 'off'),
+            default='off',
             help='Add support for the ERD integral package [default: %(default)s]')
     #JK_Factory
     group.add_argument('--jkfactory',
-            action='store_true',
-            default=False,
+            action='store',
+            choices=('on', 'off'),
+            default='off',
             help='enable distributed J and K builds [default: %(default)s]')
     # GPU_DFCC package
     group.add_argument('--gpu-dfcc',
-            action='store_true',
-            default=False,
+            action='store',
+            choices=('on', 'off'),
+            default='off',
             help='Enable GPU_DFCC external project [default: %(default)s]')
     # Dummy plugin
     group.add_argument('--dummy-plugin',
-            action='store_true',
-            default=False,
+            action='store',
+            choices=('on', 'off'),
+            default='off',
             help='Enable dummy plugin external project [default: %(default)s]')
     # PCMSolver package
     group.add_argument('--pcmsolver',
-            action='store_true',
-            default=False,
+            action='store',
+            choices=('on', 'off'),
+            default='off',
             help='Enable PCMSolver [default: %(default)s]')
+    # CheMPS2 package
+    group.add_argument('--chemps2',
+            action='store',
+            choices=('on', 'off'),
+            default='on',
+            help='Enable CheMPS2 external project [default: %(default)s]')
+    group.add_argument('--chemps2-dir',
+            action='store',
+            default=None,
+            help="""The install directory for a pre-built CheMPS2.
+            'lib/chemps2.so' and 'include/chemps2/DMRG.h' should be in this directory.
+            If this is left blank cmake will build one for you.""",
+            metavar='PATH')
+
+    group = parser.add_argument_group('External libraries')
+    # ZLIB
+    group.add_argument('--zlib-dir',
+            action='store',
+            default=None,
+            help="""The root directory for zlib.
+            'include/zlib.h' and 'lib/libz.so' (or similar) should be in this directory.
+            If this is left blank cmake will attempt to find one on your system.""",
+            metavar='PATH')
+
+    # GSL
+    group.add_argument('--gsl-dir',
+            action='store',
+            default=None,
+            help="""The root directory for gsl.
+            'include/gsl/gsl_sf.h' and 'lib/libgsl.so' should be in this directory.
+            If this is left blank cmake will attempt to find one on your system.""",
+            metavar='PATH')
+    # HDF5
+    group.add_argument('--hdf5-dir',
+            action='store',
+            default=None,
+            help="""The root directory for hdf5.
+            'include/hdf5.h' and 'lib/libhdf5.so' (or similar) should be in this directory.
+            If this is left blank cmake will attempt to find one on your system.""",
+            metavar='PATH')
 
     group = parser.add_argument_group('Pass extra flags to the compiler')
     group.add_argument('--extra-cc-flags',
@@ -337,7 +379,7 @@ def check_cmake_exists(cmake_command):
         print('   get CMake at http://www.cmake.org/')
         print('   on many clusters CMake is installed')
         print('   but you have to load it first:')
-        print('   $ module load cmake')
+        print('   >>> module load cmake')
         sys.exit()
 
 def translate_cmake(s):
@@ -379,6 +421,7 @@ def gen_cmake_command(args):
     command += ' -DENABLE_GPU_DFCC=%s'       % translate_cmake(args.gpu_dfcc)
     command += ' -DENABLE_DUMMY_PLUGIN=%s'   % translate_cmake(args.dummy_plugin)
     command += ' -DENABLE_PCMSOLVER=%s'      % translate_cmake(args.pcmsolver)
+    command += ' -DENABLE_CHEMPS2=%s'        % translate_cmake(args.chemps2)
     command += ' -DENABLE_CXX11_SUPPORT=%s'  % translate_cmake(args.cxx11)
     command += ' -DLIBINT_OPT_AM={0}'.format(args.max_am_eri)
     command += ' -DEXECUTABLE_SUFFIX={0}'.format(args.suffix)
@@ -432,10 +475,10 @@ def gen_cmake_command(args):
         command += ' -DENABLE_AUTO_BLAS=OFF'
         command += ' -DENABLE_AUTO_LAPACK=OFF'
 
-    if args.explicit_libs:
+    if args.extra_math_flags:
         # remove leading and trailing whitespace
         # otherwise CMake complains
-        command += ' -DEXPLICIT_LIBS="%s"' % args.explicit_libs.strip()
+        command += ' -DEXPLICIT_LIBS="%s"' % args.extra_math_flags.strip()
 
     if args.boost_incdir:
         command += ' -DBOOST_INCLUDEDIR={0}'.format(args.boost_incdir)
@@ -445,6 +488,18 @@ def gen_cmake_command(args):
 
     if args.python:
         command += ' -DPYTHON_INTERPRETER={0}'.format(args.python)
+
+    if args.zlib_dir:
+        command += ' -DZLIB_ROOT={0}'.format(args.zlib_dir)
+
+    if args.gsl_dir:
+        command += ' -DGSL_ROOT_DIR={0}'.format(args.gsl_dir)
+
+    if args.hdf5_dir:
+        command += ' -DHDF5_ROOT={0}'.format(args.hdf5_dir)
+
+    if args.chemps2_dir:
+        command += ' -DCHEMPS2_ROOT={0}'.format(args.chemps2_dir)
 
     if args.extra_cc_flags:
         command += ' -DEXTRA_C_FLAGS="%s"' % args.extra_cc_flags
@@ -497,7 +552,6 @@ def gen_cmake_command(args):
                 _tmp = definition.split('=', 1)
                 command += ' -D%s="%s"' % (_tmp[0], _tmp[1])
             else:
-                print definition
                 command += ' -D%s' % definition
 
     if args.generator:
@@ -514,10 +568,10 @@ def print_build_help(build_path):
     print('   configure step is done')
     print('   now you need to compile the sources:')
     if (build_path == default_path):
-        print('   $ cd objdir')
+        print('   >>> cd objdir')
     else:
-        print('   $ cd ' + build_path)
-    print('   $ make')
+        print('   >>> cd ' + build_path)
+    print('   >>> make')
 
 def save_setup_command(argv, command, build_path):
     file_name = os.path.join(build_path, 'setup_command')

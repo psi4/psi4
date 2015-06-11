@@ -119,10 +119,10 @@ class CIvect {
       BIGINT strings2det(int alp_code, int alp_idx,
          int bet_code, int bet_idx);
       void diag_mat_els(struct stringwr **alplist, struct stringwr
-         **betlist, double *oei, double *tei, double efzc, int na, int nb, 
+         **betlist, double *oei, double *tei, double edrc, int na, int nb, 
          int nbf, int method);
       void diag_mat_els_otf(struct stringwr **alplist, struct stringwr
-         **betlist, double *oei, double *tei, double efzc, int na, int nb, 
+         **betlist, double *oei, double *tei, double edrc, int na, int nb, 
          int nbf, int buf, int method);
       void init_vals(int ivect, int nvals, int *alplist, int *alpidx, 
          int *betlist, int *betidx, int *blknums, double *value);

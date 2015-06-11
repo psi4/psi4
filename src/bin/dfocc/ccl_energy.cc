@@ -90,13 +90,14 @@ else if (reference_ == "UNRESTRICTED") {
 
     Emp2L = Eref + EcorrL;
     DE = Emp2L - Emp2L_old;
+    
     /*
     outfile->Printf("\tDF-MP2L One-Electron Energy (a.u.) : %20.14f\n", Eoei);
     outfile->Printf("\tDF-MP2L OV Energy (a.u.)           : %20.14f\n", Eov);
     outfile->Printf("\tDF-MP2L Correlation Energy (a.u.)  : %20.14f\n", EcorrL);
     outfile->Printf("\tDF-MP2L Total Energy (a.u.)        : %20.14f\n", Emp2L);
-    
     */
+
     timer_off("CCL Energy");
 } // end mp2_energy
 
@@ -213,6 +214,7 @@ else if (reference_ == "UNRESTRICTED") {
     outfile->Printf("\tDF-CCSDL OV Energy (a.u.)          : %20.14f\n", Eov);
     outfile->Printf("\tDF-CCSDL VV Energy (a.u.)          : %20.14f\n", Evv);
     outfile->Printf("\tDF-CCSDL Correlation Energy (a.u.) : %20.14f\n", EcorrL);
+    outfile->Printf("\tDF-CCSD Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-CCSDL Total Energy (a.u.)       : %20.14f\n", EccsdL);
     
     timer_off("CCL Energy");

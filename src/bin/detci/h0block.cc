@@ -51,7 +51,7 @@ extern struct stringwr **betlist;
 
 extern void print_config(int nbf, int num_alp_el, int num_bet_el,
    struct stringwr *stralp, struct stringwr *strbet,
-   int num_fzc_orbs, char *outstring);
+   int num_drc_orbs, char *outstring);
 
 
 /*
@@ -154,7 +154,7 @@ void H0block_print(void)
       print_config(CalcInfo.num_ci_orbs, CalcInfo.num_alp_expl,
          CalcInfo.num_bet_expl, alplist[H0block.alplist[i]] +
          H0block.alpidx[i], betlist[H0block.betlist[i]] +
-         H0block.betidx[i], CalcInfo.num_fzc_orbs,configstring);
+         H0block.betidx[i], CalcInfo.num_drc_orbs,configstring);
       outfile->Printf( "  %3d [%3d] %10.6lf  Block %2d (%4d,%4d)  %s\n",
          i+1, H0block.pair[i] + 1, H0block.H00[i], H0block.blknum[i],
          H0block.alpidx[i], H0block.betidx[i], configstring);

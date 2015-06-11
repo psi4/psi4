@@ -182,10 +182,10 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
 
   //outfile->Printf(" CalcInfo.enuc = %25.15f\n", CalcInfo.enuc);
   //outfile->Printf(" <psi0|Hc|psi0> = %25.15f\n", tval);
-  //outfile->Printf(" CalcInfo.efzc = %25.15f\n", CalcInfo.efzc);
+  //outfile->Printf(" CalcInfo.edrc = %25.15f\n", CalcInfo.edrc);
   //outfile->Printf(" mpk_energy[0] = %25.15f\n", mpk_energy[0]);
  
-  tval += CalcInfo.efzc - mpk_energy[0]; 
+  tval += CalcInfo.edrc - mpk_energy[0]; 
  
   outfile->Printf("   1  %25.15f %25.15f\n", tval,
    tval+mpk_energy[0]+CalcInfo.enuc);

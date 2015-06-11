@@ -20,13 +20,15 @@ set(JK_GA_LIBS ${JK_GA_LIB}/libga.a
 )
 #I'm going to assume the user doesn't have GTFock
 #so let's build that now
+add_library(GTFockInt STATIC MinimalInterface.h
+                          MinimalInterface.cpp )
+set_property(GLOBAL APPEND PROPERTY LIBLIST GTFockInt)
 add_subdirectory(gtfock)
+add_dependencies(GTFockInt GTFock mints)
 
 set(JK_LIBS ${CMAKE_BINARY_DIR}/libGTFock.a)
 set(JK_LIBS ${JK_LIBS} ${JK_GA_LIBS} )
-add_library(GTFockInt STATIC MinimalInterface.h
-                          MinimalInterface.cpp )
 add_library(GTFockCInt STATIC CifiedFxns.h
                              CifiedFxns.cc)
-add_dependencies(GTFockInt GTFock mints)
 add_dependencies(GTFockCInt qt mints)
+set_property(GLOBAL APPEND PROPERTY LIBLIST GTFockCInt)
