@@ -23,6 +23,12 @@ if(NOT CHEMPS2_FOUND)
         CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                    -DSTATIC_ONLY=ON
                    -DENABLE_TESTS=OFF
+                   -DENABLE_GENERIC=${ENABLE_STATIC_LINKING}
+                   -DENABLE_XHOST=${ENABLE_XHOST}
+                   -DLAPACK_LIBRARIES=${BLAS_LIBRARIES}
+                   -DGSL_LIBRARIES=${GSL_LIBRARIES}
+                   -DHDF5_LIBRARIES=${HDF5_LIBRARIES}
+                   -DHDF5_INCLUDE_DIRS=${HDF5_INCLUDE_DIRS}
                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                    -DCMAKE_INSTALL_LIBDIR=lib
         INSTALL_DIR "${CUSTOM_CHEMPS2_LOCATION}/install")

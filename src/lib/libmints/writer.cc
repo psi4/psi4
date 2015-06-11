@@ -24,6 +24,7 @@
 #include "view.h"
 #include <libmints/mints.h>
 #include <psi4-dec.h>
+#include <physconst.h>
 
 #include <cstdio>
 #include <utility>
@@ -283,31 +284,32 @@ void NBOWriter::write(const std::string &filename)
         throw PSIEXCEPTION("NBO cannot handle angular momentum above f functions. \n");
     }
     //print $GENNBO section of file
-    //BOHR indicates atomic units for the coordinates
+    //BOHR indicates atomic units for the coordinates; now ANG but not sure about keyword
     //OPEN indicates that we'll provide separate alpha and beta matrices
-    printer->Printf( "$GENNBO NATOMS = %d NBAS = %d BOHR BODM ", mol.natom(), basisset.nbf());
+    printer->Printf(" $GENNBO NATOMS = %d NBAS = %d BODM ", mol.natom(), basisset.nbf());
 
     //To make this more user-friendly in the case of RHF wavefunctions...
     bool open_shell = (wavefunction_->nalpha() != wavefunction_->nbeta());
     if(open_shell)
-        printer->Printf( "OPEN $END\n");
+        printer->Printf(" OPEN $END\n");
     else
-        printer->Printf( "$END\n");
+        printer->Printf(" $END\n");
 
     //print NBO section of file47; user can modify this to suit their needs
-    printer->Printf( "$NBO       $END\n");
+    printer->Printf(" $NBO       $END\n");
 
     //Now print out the molecule
-    printer->Printf( "$COORD\n");
-    printer->Printf( "GENNBO expects one comment line here. So, here's a comment line.\n");
+    printer->Printf(" $COORD\n");
+    printer->Printf(" GENNBO expects one comment line here. So, here's a comment line.\n");
     for( int i =0; i< mol.natom(); i++)
     {
         //the second mol.Z() should be modified when pseudopotentials are implemented
         printer->Printf( "%2d  %2d  %20.12f %20.12f %20.12f\n",
                 static_cast<int>(mol.Z(i)), static_cast<int>(mol.Z(i)),
-                mol.x(i), mol.y(i), mol.z(i));
+                mol.x(i)*pc_bohr2angstroms, mol.y(i)*pc_bohr2angstroms, 
+                mol.z(i)*pc_bohr2angstroms);
     }
-    printer->Printf( "$END\n");
+    printer->Printf( " $END\n");
 
 
     //To form the BASIS and CONTRACT sections, we need some memory
@@ -354,100 +356,129 @@ void NBOWriter::write(const std::string &filename)
         }
     }
 
-    //Now, we print out the basis section
-    printer->Printf( "$BASIS\n");
-    //The CENTER section
-    printer->Printf( "CENTER = ");
-    for( int i =0; i < basisset.nbf(); i++)
+    // now, we print out the basis section
+    printer->Printf(" $BASIS\n");
+    // CENTER section
+    for(int i=0; i<basisset.nbf(); i++)
     {
-        printer->Printf( "%5d      ", (int)centers.get(0, i)+1);
-        if((i+1)%10 == 0)
-            printer->Printf( "\n");
+        if((i+1)%10 == 1) {
+            if(i==0)
+                printer->Printf("\n  CENTER =");
+            else
+                printer->Printf("\n          ");
+        }
+        printer->Printf( " %6d", (int)centers.get(0, i)+1);
     }
 
     //The LABEL section
-    printer->Printf( "\nLABEL = ");
     for( int i =0; i < basisset.nbf(); i++)
     {
-        printer->Printf( "%5d      ", (int)labels.get(0, i));
-        if((i+1)%10 == 0)
-            printer->Printf( "\n");
+        if((i+1)%10 == 1) {
+            if(i==0)
+                printer->Printf("\n   LABEL =");
+            else
+                printer->Printf("\n          ");
+        }
+        printer->Printf( " %6d", (int)labels.get(0, i));
     }
-    printer->Printf( "\n$END\n");
+    printer->Printf( "\n $END\n");
 
     //The CONTRACT heading
-    printer->Printf( "$CONTRACT \n");
-    printer->Printf( "NSHELL = %d\n", nshells);
-    printer->Printf( "NEXP = %d\n", nprim);
+    printer->Printf( " $CONTRACT\n");
+    printer->Printf( "  NSHELL = %6d\n", nshells);
+    printer->Printf( "    NEXP = %6d\n", nprim);
 
-    //List of the number of functions per shell
-    printer->Printf( "NCOMP = ");
-    for(int i = 0; i < nshells; i++)
+    // List of the number of functions per shell
+    for(int i=0; i < nshells; i++)
     {
-        printer->Printf( "%5d      ", (int)components.get(0, i));
-        if((i+1)%10 == 0)
-            printer->Printf( "\n");
+        if((i+1)%10 == 1) {
+            if(i==0)
+                printer->Printf("\n   NCOMP =");
+            else
+                printer->Printf("\n          ");
+        }
+        printer->Printf( " %6d", (int)components.get(0, i));
     }
-    //List the number of primitives per shell
-    printer->Printf( "\nNPRIM = ");
-    for(int i =0; i < nshells; i++)
+    // List the number of primitives per shell
+    for(int i=0; i < nshells; i++)
     {
-        printer->Printf( "%d      ", (int)nprimitives.get(0, i));
-        if((i+1)%10 == 0)
-            printer->Printf( "\n");
+        if((i+1)%10 == 1) {
+            if(i==0)
+                printer->Printf("\n   NPRIM =");
+            else
+                printer->Printf("\n          ");
+        }
+        printer->Printf( " %6d", (int)nprimitives.get(0, i));
     }
-    //location of the first exponent for each shell
-    printer->Printf( "\nNPTR = ");
+    // location of the first exponent for each shell
     int ptr = 1;
-    for( int i =0; i < nshells; i++)
+    for( int i=0; i < nshells; i++)
     {
-        printer->Printf( "%d      ", ptr);
+        if((i+1)%10 == 1) {
+            if(i==0)
+                printer->Printf("\n    NPTR =");
+            else
+                printer->Printf("\n          ");
+        }
+        printer->Printf( " %6d", ptr);
         ptr += nprimitives.get(0, i);
-        if((i+1)%10 == 0)
-            printer->Printf( "\n");
-
     }
-    //The exponents
-    printer->Printf( "\nEXP = \n");
-    for( int i =0; i < nprim; i++)
+    // exponents
+    for( int i=0; i<nprim; i++)
     {
-        printer->Printf( "%20.10f ", exponents.get(0, i));
-        if((i+1)%4 == 0)
-            printer->Printf( "\n");
+        if((i+1)%4 == 1) {
+            if(i==0)
+                printer->Printf("\n     EXP =");
+            else
+                printer->Printf("\n          ");
+        }
+        printer->Printf( "%15.6E", exponents.get(0, i));
     }
-    //Coefficients for s functions
-    printer->Printf( "\nCS = \n");
-    for( int i =0; i < nprim; i++)
+    // coefficients for s functions
+    for(int i=0; i<nprim; i++)
     {
-        printer->Printf( "%20.10f ", coefficient.get (0, 0, i));
-        if((i+1)%4 == 0)
-            printer->Printf( "\n");
+        if((i+1)%4 == 1) {
+            if(i==0)
+                printer->Printf("\n      CS =");
+            else
+                printer->Printf("\n          ");
+        }
+        printer->Printf( "%15.6E", coefficient.get (0, 0, i));
     }
-    //Coefficients for p functions
-    printer->Printf( "\nCP = \n");
-    for( int i =0; i < nprim; i++)
+    // coefficients for p functions
+    for(int i=0; i<nprim; i++)
     {
-        printer->Printf( "%20.10f ", coefficient.get (0, 1, i));
-        if((i+1)%4 == 0)
-            printer->Printf( "\n");
+        if((i+1)%4 == 1) {
+            if(i==0)
+                printer->Printf("\n      CP =");
+            else
+                printer->Printf("\n          ");
+        }
+        printer->Printf( "%15.6E", coefficient.get (0, 1, i));
     }
-    //coefficients for d functions
-    printer->Printf( "\nCD = \n");
-    for( int i =0; i < nprim; i++)
+    // coefficients for d functions
+    for(int i=0; i<nprim; i++)
     {
-        printer->Printf( "%20.10f ", coefficient.get (0, 2, i));
-        if((i+1)%4 == 0)
-            printer->Printf( "\n");
+        if((i+1)%4 == 1) {
+            if(i==0)
+                printer->Printf("\n      CD =");
+            else
+                printer->Printf("\n          ");
+        }
+        printer->Printf( "%15.6E", coefficient.get (0, 2, i));
     }
-    //coefficients for f functions
-    printer->Printf( "\nCF = \n");
-    for( int i =0; i < nprim; i++)
+    // coefficients for f functions
+    for(int i=0; i<nprim; i++)
     {
-        printer->Printf( "%20.10f ", coefficient.get (0, 3, i));
-        if((i+1)%4 == 0)
-            printer->Printf( "\n");
+        if((i+1)%4 == 1) {
+            if(i==0)
+                printer->Printf("\n      CF =");
+            else
+                printer->Printf("\n          ");
+        }
+        printer->Printf( "%15.6E", coefficient.get (0, 3, i));
     }
-    printer->Printf( "\n$END");
+    printer->Printf( "\n $END");
 
     //Matrix transformation information we'll need
     int nbf = basisset.nbf ();
@@ -455,17 +486,17 @@ void NBOWriter::write(const std::string &filename)
     //Now we need the overlap matrix in the AO basis
     SharedMatrix overlap = helper.ao_overlap();
     //Print overlap matrix
-    printer->Printf( "\n$OVERLAP \n");
-    for(int i =0; i < nbf; i++)
+    printer->Printf( "\n $OVERLAP");
+    for(int i=0; i<nbf; i++)
     {
-        for(int j =0; j < nbf; j++)
+        for(int j=0; j<nbf; j++)
         {
-            printer->Printf( "%20.10f ", overlap->get (0, i, j));
-            if(((nbf*i+j+1)%4)==0)
-                printer->Printf( "\n");
+            if(((nbf*i+j+1)%5) == 1)
+                printer->Printf("\n  ");
+            printer->Printf( "%15.6E", overlap->get (0, i, j));
         }
     }
-    printer->Printf( "\n$END");
+    printer->Printf( "\n $END");
 
     //Alpha Density Matrix
     SharedMatrix soalphadens = wavefunction_->Da();
@@ -476,19 +507,19 @@ void NBOWriter::write(const std::string &filename)
     SharedMatrix sobetadens = wavefunction_->Db();
     betadens->remove_symmetry (sobetadens, sotoao);
     //Now print the density matrix
-    printer->Printf( "\n$DENSITY\n ");
+    printer->Printf( "\n $DENSITY");
     if(wavefunction_->same_a_b_dens ())
     {
         SharedMatrix density(new Matrix(nbf, nbf));
         density->copy (alphadens);
         density->add (betadens);
-        for( int i =0; i < nbf; i++)
+        for( int i=0; i<nbf; i++)
         {
-            for(int j =0; j < nbf; j++)
+            for(int j=0; j<nbf; j++)
             {
-                printer->Printf( "%20.10f ", density->get(0, i, j));
-                if(((nbf*i+j+1)%4)==0)
-                    printer->Printf( "\n");
+                if(((nbf*i+j+1)%5)==1)
+                    printer->Printf( "\n  ");
+                printer->Printf( "%15.6E", density->get(0, i, j));
             }
         }
     }
@@ -499,48 +530,48 @@ void NBOWriter::write(const std::string &filename)
         {
             for(int j =0; j < nbf; j++)
             {
-                printer->Printf( "%20.10f ", alphadens->get (0, i, j));
                 count++;
-                if(count%4 ==0)
-                    printer->Printf( "\n");
+                if(count%5 == 1)
+                    printer->Printf( "\n  ");
+                printer->Printf( "%15.6E", alphadens->get (0, i, j));
             }
         }
-        for(int i =0; i < nbf; i++)
+        for(int i=0; i<nbf; i++)
         {
-            for(int j =0; j < nbf; j++)
+            for(int j=0; j<nbf; j++)
             {
-                printer->Printf( "%20.10f ", betadens->get (0, i, j));
                 count++;
-                if(count%4 ==0)
-                    printer->Printf( "\n");
+                if(count%5 ==0)
+                    printer->Printf( "\n  ");
+                printer->Printf( "%15.6E", betadens->get (0, i, j));
             }
         }
     }
-    printer->Printf( "\n$END");
+    printer->Printf( "\n $END");
 
 
-    //Alpha Fock Matrix
+    // alpha Fock matrix
     SharedMatrix alphasofock = wavefunction_->Fa();
     SharedMatrix alphafock(new Matrix(nbf, nbf));
     alphafock->remove_symmetry (alphasofock, sotoao);
-    //Print the Fock matrix
-    printer->Printf( "\n$FOCK\n ");
+    // print the Fock matrix
+    printer->Printf( "\n $FOCK");
     if(wavefunction_->same_a_b_dens ())
     {
         for(int i = 0; i < nbf; i++)
         {
             for(int j = 0; j < nbf; j++)
             {
-                printer->Printf( "%20.10f ", alphafock->get (0, i, j));
-                if(((nbf*i+j+1)%4)==0)
-                    printer->Printf( "\n");
+                if(((nbf*i+j+1)%5)==1)
+                    printer->Printf( "\n  ");
+                printer->Printf( "%15.6E", alphafock->get (0, i, j));
             }
         }
     }
 
     else
     {
-        //Beta Fock
+        // beta Fock
         SharedMatrix betafock(new Matrix(nbf, nbf));
         SharedMatrix betasofock = wavefunction_->Fb();
         betafock->remove_symmetry(betasofock, sotoao);
@@ -549,24 +580,24 @@ void NBOWriter::write(const std::string &filename)
         {
             for(int j =0; j < nbf; j++)
             {
-                printer->Printf( "%20.10f ", alphafock->get (0, i, j));
                 count++;
-                if(count%4 ==0)
-                    printer->Printf( "\n");
+                if(count%5 == 1)
+                    printer->Printf( "\n  ");
+                printer->Printf( "%15.6E", alphafock->get (0, i, j));
             }
         }
-        for(int i =0; i < nbf; i++)
+        for(int i=0; i<nbf; i++)
         {
-            for(int j =0; j < nbf; j++)
+            for(int j=0; j<nbf; j++)
             {
-                printer->Printf( "%20.10f ", betafock->get (0, i, j));
                 count++;
-                if(count%4 ==0)
-                    printer->Printf( "\n");
+                if(count%5 == 1)
+                    printer->Printf( "\n  ");
+                printer->Printf( "%15.6E", betafock->get (0, i, j));
             }
         }
     }
-    printer->Printf( "\n$END");
+    printer->Printf( "\n $END");
 
     //Alpha AO->MO transformation
     SharedMatrix soalphac = wavefunction_->Ca();
@@ -575,16 +606,16 @@ void NBOWriter::write(const std::string &filename)
     SharedMatrix alphac(new Matrix("Ca AO x MO", aos, nmo));
     alphac->gemm(true, false, 1.00, sotoao, soalphac, 0.00);
 
-    printer->Printf( "\n$LCAOMO\n ");
+    printer->Printf( "\n $LCAOMO");
     if(wavefunction_->same_a_b_orbs ())
     {
         for(int i = 0; i < nbf; i++)
         {
             for(int j = 0; j < nbf; j++)
             {
-                printer->Printf( "%20.10f ", alphac->get(0, i, j));
-                if(((nbf*i+j+1)%4)==0)
-                    printer->Printf( "\n");
+                if(((nbf*i+j+1)%5)==1)
+                    printer->Printf( "\n  ");
+                printer->Printf( "%15.6E", alphac->get(0, i, j));
             }
         }
     }
@@ -598,28 +629,28 @@ void NBOWriter::write(const std::string &filename)
 
         //Print the AO->MO coefficients
         int count = 0;
-        for(int i =0; i < nbf; i++)
+        for(int i=0; i<nbf; i++)
         {
-            for(int j =0; j < nbf; j++)
+            for(int j=0; j<nbf; j++)
             {
-                printer->Printf( "%20.10f ", alphac->get (0, i, j));
                 count++;
-                if(count%4==0)
-                    printer->Printf( "\n");
+                if(count%5==1)
+                    printer->Printf( "\n  ");
+                printer->Printf( "%15.6E", alphac->get (0, i, j));
             }
         }
         for(int i =0; i < nbf; i++)
         {
             for(int j =0; j < nbf; j++)
             {
-                printer->Printf( "%20.10f ", betac->get (0,   i, j));
                 count++;
-                if(count%4 ==0)
-                    printer->Printf( "\n");
+                if(count%5 ==1)
+                    printer->Printf( "\n  ");
+                printer->Printf( "%15.6E ", betac->get (0,   i, j));
             }
         }
     }
-    printer->Printf( "\n$END\n");
+    printer->Printf( "\n $END\n");
 
 }
 

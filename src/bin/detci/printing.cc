@@ -54,7 +54,7 @@ namespace psi { namespace detci {
 void orb2lbl(int orbnum, char *label);
 void print_config(int nbf, int num_alp_el, int num_bet_el, 
    struct stringwr *stralp, struct stringwr *strbet, 
-   int num_fzc_orbs, char *outstring);
+   int num_drc_orbs, char *outstring);
 extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
 
 
@@ -108,7 +108,7 @@ void print_vec(unsigned int nprint, int *Ialist, int *Iblist,
 
       print_config(AlphaG->num_orb, AlphaG->num_el_expl, BetaG->num_el_expl,
          alplist[Ialist[i]] + Iaidx[i], betlist[Iblist[i]] + Ibidx[i],
-         AlphaG->num_fzc_orbs, configstring);
+         AlphaG->num_drc_orbs, configstring);
 
       outfile->Printf( "%s\n", configstring);
 
@@ -130,7 +130,7 @@ void print_vec(unsigned int nprint, int *Ialist, int *Iblist,
 **
 */
 void print_config(int nbf, int num_alp_el, int num_bet_el, 
-   struct stringwr *stralp, struct stringwr *strbet, int num_fzc_orbs,
+   struct stringwr *stralp, struct stringwr *strbet, int num_drc_orbs,
    char *outstring)
 {
    int j,k;
@@ -142,7 +142,7 @@ void print_config(int nbf, int num_alp_el, int num_bet_el,
    /* loop over orbitals */
    for (j=0; j<nbf; j++) {
 
-      orb2lbl(j+num_fzc_orbs, olabel); /* get label for orbital j */
+      orb2lbl(j+num_drc_orbs, olabel); /* get label for orbital j */
 
       for (k=0,afound=0; k<num_alp_el; k++) {
          if ((stralp->occs)[k] > j) break;
@@ -321,9 +321,7 @@ int lbl2orb(char *orbstring)
 
    /* get correlated ordering */
    corr_orb = CalcInfo.reorder[pitzer_orb];
-
-   /* probably need to subtract frozen here */
-   corr_orb -= CalcInfo.num_fzc_orbs;
+   corr_orb -= CalcInfo.num_drc_orbs;
 
    if (corr_orb < 0 || corr_orb > CalcInfo.num_ci_orbs) {
      outfile->Printf( "lbl2orb: error corr_orb out of bounds, %d\n", 

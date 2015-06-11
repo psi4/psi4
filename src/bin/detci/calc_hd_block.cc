@@ -63,11 +63,11 @@ extern struct stringwr **betlist;
 **    na      = number of explicit alpha electrons 
 **    nb      = number of explicit beta electrons
 **    nbf     = number of orbitals in CI
-**    efzc    = frozen core energy
+**    edrc    = energy of the dropped core orbitals
 **
 */ 
 void calc_hd_block(struct stringwr *alplist_local, struct stringwr *betlist_local,
-      double **H0, double *oei, double *tei, double efzc,
+      double **H0, double *oei, double *tei, double edrc,
       int nas, int nbs, int na, int nb, int nbf)
 {
    int acnt, bcnt;
@@ -82,9 +82,9 @@ void calc_hd_block(struct stringwr *alplist_local, struct stringwr *betlist_loca
       
       for (bcnt=0, betlist_local=betlist0; bcnt<nbs; bcnt++) {
 
-         /* add frozen core energy first */
+         /* add dropped core energy first */
 /************************************************/
-         value = efzc; 
+         value = edrc; 
 
          /* loop over alpha occs */
          for (a1=0; a1<na; a1++) {
@@ -154,11 +154,11 @@ void calc_hd_block(struct stringwr *alplist_local, struct stringwr *betlist_loca
 **    na      = number of explicit alpha electrons 
 **    nb      = number of explicit beta electrons
 **    nbf     = number of orbitals in CI
-**    efzc    = frozen core energy
+**    edrc    = energy of the dropped core orbitals
 **
 */ 
 void calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *betlist_local,
-      double **H0, double *tf_oei, double *tei, double efzc,
+      double **H0, double *tf_oei, double *tei, double edrc,
       int nas, int nbs, int na, int nb, int nbf)
 {
    int acnt, bcnt;
@@ -183,8 +183,8 @@ void calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *betlist_
       
       for (bcnt=0, betlist_local=betlist0; bcnt<nbs; bcnt++) {
 
-         /* add frozen core energy first */
-         value = efzc; 
+         /* add dropped core energy first */
+         value = edrc; 
 
          /* loop over alpha occs */
          for (a1=0; a1<na; a1++) {
@@ -316,12 +316,12 @@ void calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *betlist_
 **    na      = number of explicit alpha electrons 
 **    nb      = number of explicit beta electrons
 **    nbf     = number of orbitals in CI
-**    efzc    = frozen core energy
+**    edrc    = energy of the dropped core orbitals
 **
 */ 
 void calc_hd_block_orbenergy(struct stringwr *alplist_local, 
       struct stringwr *betlist_local, double **H0, double *oei, 
-      double *tei, double efzc, int nas, int nbs, int na, int nb, int nbf)
+      double *tei, double edrc, int nas, int nbs, int na, int nb, int nbf)
 {
    int acnt, bcnt;
    int a1, b1, i,j; 
@@ -343,7 +343,7 @@ void calc_hd_block_orbenergy(struct stringwr *alplist_local,
       orb_e_diff_alp[acnt] = 0.0;
       for (a1=0; a1<na; a1++) {
          i = (int) alplist_local->occs[a1];
-         i += CalcInfo.num_fzc_orbs;
+         i += CalcInfo.num_drc_orbs;
          if(Parameters.zaptn) 
            orb_e_diff_alp[acnt] += CalcInfo.scfeigvala[i];
          else
@@ -356,7 +356,7 @@ void calc_hd_block_orbenergy(struct stringwr *alplist_local,
       orb_e_diff_bet[bcnt] = 0.0;
       for (b1=0; b1<nb; b1++) {
          j = (int) betlist_local->occs[b1];
-         j += CalcInfo.num_fzc_orbs;
+         j += CalcInfo.num_drc_orbs;
          if(Parameters.zaptn) 
            orb_e_diff_bet[bcnt] += CalcInfo.scfeigvalb[j];
          else
@@ -369,7 +369,7 @@ void calc_hd_block_orbenergy(struct stringwr *alplist_local,
    betlist_local = betlist0;
 
    for (acnt=0; acnt<nas; acnt++) {
-         tval = efzc + orb_e_diff_alp[acnt]; 
+         tval = edrc + orb_e_diff_alp[acnt]; 
       for (bcnt=0; bcnt<nbs; bcnt++) {
          value = orb_e_diff_bet[bcnt] + tval; 
          H0[acnt][bcnt] = value;
@@ -404,11 +404,11 @@ free(orb_e_diff_bet);
 **    na      = number of explicit alpha electrons 
 **    nb      = number of explicit beta electrons
 **    nbf     = number of orbitals in CI
-**    efzc    = frozen core energy
+**    edrc    = energy of the dropped core orbitals
 **
 */ 
 void calc_hd_block_evangelisti(struct stringwr *alplist_local, struct stringwr *betlist_local,
-      double **H0, double *tf_oei, double *tei, double efzc,
+      double **H0, double *tf_oei, double *tei, double edrc,
       int nas, int nbs, int na, int nb, int nbf)
 {
    int acnt, bcnt;
@@ -437,8 +437,8 @@ void calc_hd_block_evangelisti(struct stringwr *alplist_local, struct stringwr *
       for (a1=0; a1<num_alp_diff; a1++) {
          i = orb_diff[0][a1]; 
          j = orb_diff[1][a1]; 
-         i += CalcInfo.num_fzc_orbs;
-         j += CalcInfo.num_fzc_orbs;
+         i += CalcInfo.num_drc_orbs;
+         j += CalcInfo.num_drc_orbs;
          orb_e_diff_alp[acnt] += CalcInfo.scfeigval[j] 
                                  - CalcInfo.scfeigval[i]; 
          }
@@ -454,8 +454,8 @@ void calc_hd_block_evangelisti(struct stringwr *alplist_local, struct stringwr *
       for (b1=0; b1<num_bet_diff; b1++) {
          i = orb_diff[0][b1];
          j = orb_diff[1][b1];  
-         i += CalcInfo.num_fzc_orbs;
-         j += CalcInfo.num_fzc_orbs;
+         i += CalcInfo.num_drc_orbs;
+         j += CalcInfo.num_drc_orbs;
          orb_e_diff_bet[bcnt] += CalcInfo.scfeigval[j]
                                  - CalcInfo.scfeigval[i];
          }
@@ -466,7 +466,7 @@ void calc_hd_block_evangelisti(struct stringwr *alplist_local, struct stringwr *
    betlist_local = betlist0;
 
    for (acnt=0; acnt<nas; acnt++) {
-         /* add frozen core energy first */
+         /* add dropped core energy first */
          tval = CalcInfo.escf - CalcInfo.enuc; 
          tval += orb_e_diff_alp[acnt]; 
       for (bcnt=0; bcnt<nbs; bcnt++) {
@@ -506,12 +506,12 @@ free(orb_diff);
 **    na      = number of explicit alpha electrons 
 **    nb      = number of explicit beta electrons
 **    nbf     = number of orbitals in CI
-**    efzc    = frozen core energy
+**    edrc    = energy of the dropped core orbitals
 **
 */ 
 void calc_hd_block_mll(struct stringwr *alplist_local, 
       struct stringwr *betlist_local, double **H0, double *oei, 
-      double *tei, double efzc, int nas, int nbs, int na, int nb, int nbf)
+      double *tei, double edrc, int nas, int nbs, int na, int nb, int nbf)
 {
    int acnt, bcnt;
    int a1, b1, i,j, i_offset, j_offset, ii, jj; 
@@ -536,7 +536,7 @@ void calc_hd_block_mll(struct stringwr *alplist_local,
       for (a1=0; a1<na; a1++) {
          i = (int) alplist_local->occs[a1];
          ii = ioff[i] + i;
-         i_offset = i + CalcInfo.num_fzc_orbs;
+         i_offset = i + CalcInfo.num_drc_orbs;
          oei_alp[acnt] += oei[ii]; 
          orb_e_diff_alp[acnt] += CalcInfo.scfeigval[i_offset] - oei[ii];
          }
@@ -548,7 +548,7 @@ void calc_hd_block_mll(struct stringwr *alplist_local,
       for (b1=0; b1<nb; b1++) {
          j = (int) betlist_local->occs[b1];
          jj = ioff[j] + j;
-         j_offset = j + CalcInfo.num_fzc_orbs;
+         j_offset = j + CalcInfo.num_drc_orbs;
          oei_bet[bcnt] += oei[jj];
          orb_e_diff_bet[bcnt] += CalcInfo.scfeigval[j_offset] - oei[jj];
          }
@@ -559,7 +559,7 @@ void calc_hd_block_mll(struct stringwr *alplist_local,
    betlist_local = betlist0;
 
    for (acnt=0; acnt<nas; acnt++) {
-         tval = efzc + 0.5 * orb_e_diff_alp[acnt] + oei_alp[acnt]; 
+         tval = edrc + 0.5 * orb_e_diff_alp[acnt] + oei_alp[acnt]; 
       for (bcnt=0; bcnt<nbs; bcnt++) {
          value = 0.5 * orb_e_diff_bet[bcnt] + oei_bet[bcnt] + tval; 
          H0[acnt][bcnt] = value;
@@ -573,10 +573,11 @@ void calc_hd_block_mll(struct stringwr *alplist_local,
  free(orb_e_diff_alp);
  free(orb_e_diff_bet);
 }
+
 /*
-** calc_hd_block_z_ave(): Function calculates a block of H0 and the diagonal elements
-** of the Hamiltonian matrix averaged over spin-coupling sets to correct any
-** spin contamination of the c and sigma vectors.
+** calc_hd_block_z_ave(): Function calculates a block of H0 and the diagonal 
+** elements of the Hamiltonian matrix averaged over spin-coupling sets to 
+** correct any spin contamination of the c and sigma vectors.
 **
 ** Parameters:
 **    alplist_local = list of alpha strings with replacements (used to get occs)
@@ -589,12 +590,12 @@ void calc_hd_block_mll(struct stringwr *alplist_local,
 **    na      = number of explicit alpha electrons
 **    nb      = number of explicit beta electrons
 **    nbf     = number of orbitals in CI
-**    efzc    = frozen core energy
+**    edrc    = energy of the dropped core orbitals
 **
 */
-void calc_hd_block_z_ave(struct stringwr *alplist_local, struct stringwr *betlist_local, 
-double **H0, double pert_param, double *tei, double efzc, int nas, int nbs, int na, 
-int nb, int nbf)
+void calc_hd_block_z_ave(struct stringwr *alplist_local, 
+  struct stringwr *betlist_local, double **H0, double pert_param, 
+  double *tei, double edrc, int nas, int nbs, int na, int nb, int nbf)
 {
    int acnt, bcnt;
    int a1, a2, a3, b1, b2, b3;
@@ -617,13 +618,13 @@ int nb, int nbf)
 
       for (bcnt=0, betlist_local=betlist0; bcnt<nbs; bcnt++) {
 
-         /* add frozen core energy first */
-         value = efzc;
+         /* add dropped core energy first */
+         value = edrc;
 
          /* loop over alpha occs */
          for (a1=0; a1<na; a1++) {
             i = (int) alplist_local->occs[a1];
-            value += CalcInfo.scfeigval[i+CalcInfo.num_fzc_orbs];
+            value += CalcInfo.scfeigval[i+CalcInfo.num_drc_orbs];
             ii = ioff[i] + i;
             /* h_ii bar alpha alpha */
             iii = ioff[ii];
@@ -649,7 +650,7 @@ int nb, int nbf)
          /* loop over beta occs */
          for (b1=0; b1<nb; b1++) {
             i = (int) betlist_local->occs[b1];
-            value += CalcInfo.scfeigval[i+CalcInfo.num_fzc_orbs];
+            value += CalcInfo.scfeigval[i+CalcInfo.num_drc_orbs];
             ii = ioff[i] + i;
             iii = ioff[ii];
 

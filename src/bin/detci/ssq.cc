@@ -32,7 +32,6 @@
 **
 */
 
-/* #define DEBUG */
 #include <cstdio>
 #include <libciomr/libciomr.h>
 #include "structs.h"
@@ -72,9 +71,9 @@ double ssq(struct stringwr *alplist, struct stringwr *betlist,
    /* First determine the expection value of <S_S+> */
 
    /* loop over Ia */
-   #ifdef DEBUG
-   outfile->Printf("number of alpha strings = %d\n",nas);
-   #endif
+   if (Parameters.print_lvl > 2) {
+     outfile->Printf("number of alpha strings = %d\n",nas);
+   }
    for (Ia=alplist,Ia_idx=0; Ia_idx < nas; Ia_idx++,Ia++) {
 
       /* loop over excitations E^a_{ji} from |A(I_a)> */
@@ -90,9 +89,9 @@ double ssq(struct stringwr *alplist, struct stringwr *betlist,
          j1 = ji%CalcInfo.num_ci_orbs;
 
          /* loop over Ib */
-         #ifdef DEBUG
-         outfile->Printf("number of beta strings = %d\n",nbs);
-         #endif
+         if (Parameters.print_lvl > 2) {
+           outfile->Printf("number of beta strings = %d\n",nbs);
+         }
          for (Ib=betlist, Ib_idx=0; Ib_idx < nbs; Ib_idx++, Ib++) {
 
             /* loop over excitations E^b_{ij} from |B(I_b)> */
@@ -111,22 +110,22 @@ double ssq(struct stringwr *alplist, struct stringwr *betlist,
                if (i1!=j2 || i2!=j1) continue;
                tval += CR[Ia_idx][Ib_idx] * CL[Ja_idx][Jb_idx] *
                    (double) Ja_sgn * (double) Jb_sgn;
-               #ifdef DEBUG
-               outfile->Printf("\n\nIa_idx = %d\n",Ia_idx);
-               outfile->Printf("Ib_idx = %d\n",Ib_idx);
-               outfile->Printf("Ja_idx = %d\n",Ja_idx);
-               outfile->Printf("Jb_idx = %d\n",Jb_idx);
-               outfile->Printf("tval_ssq = %lf\n",-tval);
-               outfile->Printf("CR = %lf\n",CR[Ia_idx][Ib_idx]);
-               outfile->Printf("LR = %lf\n",CL[Ja_idx][Jb_idx]);
-               outfile->Printf("Ja_sgn = %lf\n",Ja_sgn);
-               outfile->Printf("Jb_sgn = %lf\n",Jb_sgn);
-               #endif
+               if (Parameters.print_lvl > 3) {
+                 outfile->Printf("\n\nIa_idx = %d\n",Ia_idx);
+                 outfile->Printf("Ib_idx = %d\n",Ib_idx);
+                 outfile->Printf("Ja_idx = %d\n",Ja_idx);
+                 outfile->Printf("Jb_idx = %d\n",Jb_idx);
+                 outfile->Printf("tval_ssq = %lf\n",-tval);
+                 outfile->Printf("CR = %lf\n",CR[Ia_idx][Ib_idx]);
+                 outfile->Printf("LR = %lf\n",CL[Ja_idx][Jb_idx]);
+                 outfile->Printf("Ja_sgn = %lf\n",Ja_sgn);
+                 outfile->Printf("Jb_sgn = %lf\n",Jb_sgn);
                }
+            }
             smin_spls += tval;
       
-            } /* end loop over Ib */
-         } /* end loop over Ia excitations */ 
+          } /* end loop over Ib */
+       } /* end loop over Ia excitations */ 
      } /* end loop over Ia */ 
 
    S2 = -smin_spls;
