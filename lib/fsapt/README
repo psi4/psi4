@@ -1,0 +1,18 @@
+This directory contains python and pymol scripts for use with the F-ISAPT code
+in PSI4. Contents:
+
+fsapt.py - script to postprocess F-SAPT and F-ISAPT data to produce order-2
+    tables and order-1 PDB files.
+    Usage: fsapt.py [fsapt-dirname]
+fsaptdiff.py - script to perform F-SAPT/F-ISAPT analysis on two chemical
+    systems with similar functional group topology (usually with substitutions)
+    to produce a difference analysis. The F-SAPT analysis for the two chemical
+    systems are also performed as if fsapt.py were run on each of these systems
+    individually.
+    Usage: fsaptdiff.py fsapt-A-dirname fsapt-B-dirname [fsapt-D-dirname]
+copy_pymol.py - Copy pymol scripts for order-1 PDB file analysis to a working
+    directory. Copies scripts out of the pymol directory
+    Usage: copy_pymol.py [fsapt-dirname]
+copy_pymol2.py - Copy pymol scripts for order-1 PDB file analysis to a working
+    directory. Copies scripts out of the pymol2 directory
+    Usage: copy_pymol2.py [plot-dirname]

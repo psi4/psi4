@@ -84,6 +84,10 @@ procedures = {
             'df-ccsdl'      : run_dfccsdl,
             'dfccdl'        : run_dfccdl,
             'df-ccdl'       : run_dfccdl,
+            'cd-ccsd'       : run_cdccsd,
+            'cdccsd'        : run_cdccsd,
+            'cd-ccd'        : run_cdccd,
+            'cdccd'         : run_cdccd,
             'cd-omp2'       : run_cdomp2,
             'cdomp2'        : run_cdomp2,
             'cd-mp2'        : run_cdmp2,
@@ -104,6 +108,7 @@ procedures = {
             'sapt2+(ccd)-ct'     : run_sapt_ct,
             'sapt2+(3)(ccd)-ct'  : run_sapt_ct,
             'sapt2+3(ccd)-ct'    : run_sapt_ct,
+            'fisapt0'       : run_fisapt,
             'mp2c'          : run_mp2c,
             'ccenergy'      : run_ccenergy,  # full control over ccenergy
             'ccsd'          : run_ccenergy,
@@ -204,11 +209,18 @@ procedures = {
             'omp2.5'        : run_omp2_5_gradient,
             'cepa0'         : run_cepa0_gradient,
             'ocepa'         : run_ocepa_gradient,
-            'df-ccsd'       : run_dfccsd_gradient,
-            'dfccsd'        : run_dfccsd_gradient,
-            'df-ccsd2'      : run_dfccsd_gradient,
-            'dfccsd2'       : run_dfccsd_gradient,
+            #'df-ccsd'       : run_dfccsd_gradient,
+            #'dfccsd'        : run_dfccsd_gradient,
+            #'df-ccsd2'      : run_dfccsd_gradient,
+            #'dfccsd2'       : run_dfccsd_gradient,
 #            'efp'           : run_efp_gradient,
+            'hf'            : run_scf_gradient,
+            'rhf'           : run_scf_gradient,
+            'uhf'           : run_scf_gradient,
+            'rohf'          : run_scf_gradient,
+            'rscf'          : run_scf_gradient,
+            'uscf'          : run_scf_gradient,
+            'roscf'         : run_scf_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
         'hessian' : {
@@ -233,6 +245,13 @@ procedures = {
             'cisdtq'   : run_detci_property,
             'ci'       : run_detci_property,  # arbitrary order ci(n)
             'fci'      : run_detci_property,
+            'hf'       : run_scf_property,
+            'rhf'      : run_scf_property,
+            'uhf'      : run_scf_property,
+            'rohf'     : run_scf_property,
+            'rscf'     : run_scf_property,
+            'uscf'     : run_scf_property,
+            'roscf'    : run_scf_property,
             # Upon adding a method to this list, add it to the docstring in property() below
         }}
 
@@ -912,6 +931,26 @@ def property(name, **kwargs):
     | 'fci'              | Full configuration interaction                | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
 
+    .. _`table:prop_scf`:
+
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | name                    | calls method (aliases to *name* = 'scf')                                              |
+    +=========================+=======================================================================================+
+    | hf                      | HF                                                                                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | rhf                     | HF with restricted reference                                                          |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | uhf                     | HF with unrestricted reference                                                        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | rohf                    | HF with restricted open-shell reference                                               |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | rscf                    | HF or DFT with restricted reference                                                   |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | uscf                    | HF or DFT with unrestricted reference                                                 |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | roscf                   | HF or DFT with restricted open-shell reference                                        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+
     :type name: string
     :param name: ``'ccsd'`` || etc.
 
@@ -1046,6 +1085,26 @@ def optimize(name, **kwargs):
     | eom-ccsd                | equation of motion (EOM) CCSD :ref:`[manual] <sec:eomcc>`                             |
     +-------------------------+---------------------------------------------------------------------------------------+
     | efp                     | efp-only optimizations                                                                |
+    +-------------------------+---------------------------------------------------------------------------------------+
+
+    .. _`table:grad_scf`:
+
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | name                    | calls method (aliases to *name* = 'scf')                                              |
+    +=========================+=======================================================================================+
+    | hf                      | HF                                                                                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | rhf                     | HF with restricted reference                                                          |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | uhf                     | HF with unrestricted reference                                                        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | rohf                    | HF with restricted open-shell reference                                               |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | rscf                    | HF or DFT with restricted reference                                                   |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | uscf                    | HF or DFT with unrestricted reference                                                 |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | roscf                   | HF or DFT with restricted open-shell reference                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. include:: autodoc_dft_opt.rst

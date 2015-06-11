@@ -3369,13 +3369,14 @@ void Tensor2d::set3_vv(const SharedTensor2d &A, int occ)
 void Tensor2d::set3_act_vv(const SharedTensor2d &A)
 {
     int naux = dim1_;
-    int vir = A->d2_;
+    int avir = A->d2_;
     #pragma omp parallel for
     for (int Q = 0; Q < naux; Q++) {
-         for (int a = 0; a < vir; a++) {
-              for (int b = 0; b < vir; b++) {
+         for (int a = 0; a < avir; a++) {
+              for (int b = 0; b < avir; b++) {
                    int ab = A->col_idx_[a][b];
-                   A2d_[Q][ab] = A->get(Q,ab);
+                   int vv = col_idx_[a][b];
+                   A2d_[Q][vv] = A->get(Q,ab);
               }
          }
     }

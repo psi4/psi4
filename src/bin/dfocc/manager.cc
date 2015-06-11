@@ -509,6 +509,7 @@ void DFOCC::mp2_manager()
             
  	    omp2_opdm();
 	    omp2_tpdm();
+	    //mp2l_energy();
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();

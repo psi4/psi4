@@ -37,7 +37,6 @@
 */
 
 #define EXTERN 
-/* #define DEBUG */
 
 #include <cstdlib>
 #include <cstdio>
@@ -62,7 +61,6 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
    std::string out);
 
 
-/* #define DEBUG */
 #define MITRUSH_E_DIFF_MIN 5.0E-6
 
 
@@ -79,7 +77,7 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
 */
 void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       **betlist, int nroots, double *evals, double conv_rms, double conv_e, 
-      double enuc, double efzc, int maxiter, int maxnvect, std::string out,
+      double enuc, double edrc, int maxiter, int maxnvect, std::string out,
       int print_lvl)
 {
 
@@ -245,7 +243,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
    /* get H00 */
    E = Cvec * Sigma; 
-   E += efzc;
+   E += edrc;
    E_last = CalcInfo.escf - CalcInfo.enuc;
 
    /* Cvec.print(outfile); */
@@ -291,8 +289,8 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
    E_est = y / x;  /* should I add fzc here? */
    if (Parameters.print_lvl > 2) {
-      outfile->Printf( "E_est = %12.6lf E-efzc = %12.6lf E = %12.6lf\n", 
-           E_est,E-efzc,E);
+      outfile->Printf( "E_est = %12.6lf E-edrc = %12.6lf E = %12.6lf\n", 
+           E_est,E-edrc,E);
        outfile->Printf( "x = %lf  y = %lf\n",x,y);
        }
     /* calculate delta_C and C(1) */
@@ -368,7 +366,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       Sigma.read(curr,0);
       /* calculate H(ii) */
       E_curr = Cvec * Sigma;      
-      E_curr += efzc;
+      E_curr += edrc;
       E = E_curr;
 
       /* check for convergence and exit if reached */
@@ -385,7 +383,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          /* calculate H(i,i-1) = H(i-1,i) */
         Cvec.read(last, 0);         
         E12 = Cvec * Sigma;
-        E12 += efzc * S;
+        E12 += edrc * S;
 
         /* fill up little H matrix and solve 2x2 eigenvalue problem */
         H2x2[0][0] = E_last;
@@ -468,7 +466,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       E_est = y / x;
       if (Parameters.print_lvl > 2) {
         outfile->Printf( "E_est = %12.6lf E = %12.6lf\n", 
-                E_est+efzc+enuc, E+enuc);
+                E_est+edrc+enuc, E+enuc);
         /* outfile->Printf( "x = %lf  y = %lf\n",x,y); */
         }
 

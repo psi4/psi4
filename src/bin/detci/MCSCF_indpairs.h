@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup DETCAS
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #ifndef _psi_src_bin_detcas_indpairs_h
 #define _psi_src_bin_detcas_indpairs_h
@@ -31,7 +31,7 @@ namespace psi { namespace detci {
 
 /*
 ** INDPAIRS.H
-** 
+**
 ** Contains code pertaining to the "independent pairs" of orbitals for which
 ** the energy is not invariant.  Only these pairs need to be considered in
 ** the MCSCF orbital rotation procedure.
@@ -48,7 +48,7 @@ class IndepPairs {
     // The following items are overall...contains all irreps
     int nirreps;           // number of irreducible representations in pt grp
     int npairs;            // number of independent orbital pairs
-    int *p;                // array of first elements in pairs 
+    int *p;                // array of first elements in pairs
     int *q;                // array of second elements in pairs
     int *map_pair_ir;      // map a pair to what irrep it is
     int *map_pair_rel;     // map a pair to the relative pair within an irrep
@@ -63,16 +63,16 @@ class IndepPairs {
 
   public:
     IndepPairs();
-    IndepPairs(int nirr, int num_ras, int **ras_opi, int ***ras_orbs,
-      int *fzc, int **fzc_orbs, int *cor, int **cor_orbs,
-      int *vir, int **vir_orbs, int *fzv, int **fzv_orbs,
+    IndepPairs(int nmo, int nirr, int num_ras, int **ras_opi,
+      int *fzc, int *cor,
+      int *vir, int *fzv,
       int *ci2relpitz, int ignore_ras_ras, int ignore_fz);
    ~IndepPairs();
-    void set(int nirr, int num_ras, int **ras_opi, int ***ras_orbs,
-      int *fzc, int **fzc_orbs, int *cor, int **cor_orbs,
-      int *vir, int **vir_orbs, int *fzv, int **fzv_orbs,
+    void set(int nmo, int nirr, int num_ras, int **ras_opi,
+      int *fzc, int *cor,
+      int *vir, int *fzv,
       int *ci2relpitz, int ignore_ras_ras, int ignore_fz);
-    void set_part(int &count, int *ir_cnt, int *num_orbs_i, 
+    void set_part(int &count, int *ir_cnt, int *num_orbs_i,
       int *num_orbs_j, int **orbs_i, int **orbs_j, int *ci2relpitz);
     void print(void);
     int get_num_pairs(void) { return npairs; }
