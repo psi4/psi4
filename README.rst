@@ -5,6 +5,8 @@ Psi4: Open-Source Quantum Chemistry
 
 * **Manual**  bit.ly/psi4manual or http://sirius.chem.vt.edu/psi4manual/master/index.html (built nightly from master branch)
 
+* **Downloading and Installing Psi4** https://github.com/psi4/psi4public/wiki
+
 * **Public Github**  https://github.com/psi4/psi4public (regularly synched from private github master)
 
 * **Private Github**  https://github.com/psi4/psi4
