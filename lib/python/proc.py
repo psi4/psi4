@@ -959,21 +959,12 @@ def run_mp2_5_gradient(name, **kwargs):
     optstash.restore()
 
 
-def run_scf(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a self-consistent-field theory (HF & DFT) calculation.
+def parse_scf_cases(name):
+    """Function to parse name string involving SCF family into proper
+    reference option.
 
     """
     lowername = name.lower()
-
-    optstash = p4util.OptionsState(
-        ['SCF', 'DFT_FUNCTIONAL'],
-        ['SCF', 'SCF_TYPE'],
-        ['SCF', 'REFERENCE'])
-
-    # Alter default algorithm
-    if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     if lowername == 'hf':
         if psi4.get_option('SCF', 'REFERENCE') == 'RKS':
@@ -1004,6 +995,24 @@ def run_scf(name, **kwargs):
         else:
             psi4.set_local_option('SCF', 'REFERENCE', 'ROHF')
 
+
+def run_scf(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a self-consistent-field theory (HF & DFT) calculation.
+
+    """
+    lowername = name.lower()
+
+    optstash = p4util.OptionsState(
+        ['SCF', 'DFT_FUNCTIONAL'],
+        ['SCF', 'SCF_TYPE'],
+        ['SCF', 'REFERENCE'])
+
+    # Alter default algorithm
+    if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+        psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
+
+    parse_scf_cases(name)
     scf_helper(name, **kwargs)
 
     optstash.restore()
@@ -1016,12 +1025,15 @@ def run_scf_gradient(name, **kwargs):
     """
     optstash = p4util.OptionsState(
         ['DF_BASIS_SCF'],
-        ['SCF', 'SCF_TYPE'])
+        ['SCF', 'SCF_TYPE'],
+        ['SCF', 'DFT_FUNCTIONAL'],
+        ['SCF', 'REFERENCE'])
 
     # Alter default algorithm
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
+    parse_scf_cases(name)
     run_scf(name, **kwargs)
 
     psi4.scfgrad()
@@ -1469,12 +1481,16 @@ def run_scf_property(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'])
+        ['SCF', 'SCF_TYPE'],
+        ['SCF', 'DFT_FUNCTIONAL'],
+        ['SCF', 'SCF_TYPE'],
+        ['SCF', 'REFERENCE'])
 
     # Alter default algorithm
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
+    parse_scf_cases(name)
     run_scf(name, **kwargs)
 
     optstash.restore()

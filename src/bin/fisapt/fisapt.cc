@@ -117,7 +117,7 @@ void FISAPT::print_header()
     outfile->Printf("\n");
 
     outfile->Printf("    Do F-SAPT = %11s\n", options_.get_bool("FISAPT_DO_FSAPT") ? "Yes" : "No");
-    outfile->Printf("    Do Plot   = %11s\n", options_.get_bool("FISAPT_DO_FSAPT") ? "Yes" : "No");
+    outfile->Printf("    Do Plot   = %11s\n", options_.get_bool("FISAPT_DO_PLOT") ? "Yes" : "No");
     outfile->Printf("    Memory    = %11.3f [GD]\n", doubles_ / (1024. * 1024. * 1024.));
     outfile->Printf("\n");
 }
@@ -675,7 +675,7 @@ void FISAPT::coulomb()
 
     int nn = primary_->nbf();
     matrices_["JC"] = boost::shared_ptr<Matrix>(new Matrix("JC", nn, nn));
-    matrices_["KC"] = boost::shared_ptr<Matrix>(new Matrix("JC", nn, nn));
+    matrices_["KC"] = boost::shared_ptr<Matrix>(new Matrix("KC", nn, nn));
     if (matrices_["LoccC"]->colspi()[0] > 0) {
         matrices_["JC"]->copy(J[0]);
         matrices_["KC"]->copy(K[0]);
@@ -993,7 +993,45 @@ void FISAPT::dHF()
     H_BC.reset();
     F_BC.reset();
     D_BC.reset();
-   
+
+    // We also compute the energies of the isolated A and B
+    // fragments, so that the orbital deformation energy is available
+
+    // => Monomer A Energy <= //
+
+    double EA = 0.0;
+    EA += Enuc2p[0][0];
+
+    boost::shared_ptr<Matrix> H_A(D_A->clone());
+    H_A->copy(T);
+    H_A->add(V_A);
+
+    boost::shared_ptr<Matrix> F_A(D_A->clone());
+    F_A->copy(H_A);
+    F_A->add(J_A);
+    F_A->add(J_A);
+    F_A->subtract(K_A);
+
+    EA += D_A->vector_dot(H_A) + D_A->vector_dot(F_A);
+
+    // => Monomer B Energy <= //
+
+    double EB = 0.0;
+    EB += Enuc2p[1][1];
+
+    boost::shared_ptr<Matrix> H_B(D_B->clone());
+    H_B->copy(T);
+    H_B->add(V_B);
+
+    boost::shared_ptr<Matrix> F_B(D_B->clone());
+    F_B->copy(H_B);
+    F_B->add(J_B);
+    F_B->add(J_B);
+    F_B->subtract(K_B);
+
+    EB += D_B->vector_dot(H_B) + D_B->vector_dot(F_B);
+
+
     // => Monomer C Energy <= //
 
     double EC = 0.0;
@@ -1020,11 +1058,15 @@ void FISAPT::dHF()
     outfile->Printf("    E ABC = %24.16E [H]\n", EABC);
     outfile->Printf("    E AC  = %24.16E [H]\n", EAC);
     outfile->Printf("    E BC  = %24.16E [H]\n", EBC);
+    outfile->Printf("    E A   = %24.16E [H]\n", EA);
+    outfile->Printf("    E B   = %24.16E [H]\n", EB);
     outfile->Printf("    E C   = %24.16E [H]\n", EC);
     outfile->Printf("    E HF  = %24.16E [H]\n", EHF);
     outfile->Printf("\n");
 
     scalars_["HF"] = EHF;
+    scalars_["E_A"] = EA;
+    scalars_["E_B"] = EB;
 }
 void FISAPT::elst()
 {
@@ -1117,7 +1159,8 @@ void FISAPT::exch()
     //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf H\n",k+1,Exch10_2M_terms[k]);
     //}
     //scalars_["Exch10(S^2)"] = Exch10_2;
-    outfile->Printf("    Exch10(S^2) [MCBS]  = %18.12lf H\n",Exch10_2M);
+    //outfile->Printf("    Exch10(S^2) [MCBS]  = %18.12lf H\n",Exch10_2M);
+    //outfile->Printf("    Exch10(S^2)         = %18.12lf H\n",Exch10_2M);
     //fflush(outfile);
 
     // ==> Exchange Terms (S^2, DCBS only) <== //
@@ -1149,7 +1192,8 @@ void FISAPT::exch()
     //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf H\n",k+1,Exch10_2_terms[k]);
     //}
     scalars_["Exch10(S^2)"] = Exch10_2;
-    outfile->Printf("    Exch10(S^2) [DCBS]  = %18.12lf H\n",Exch10_2);
+    //outfile->Printf("    Exch10(S^2) [DCBS]  = %18.12lf H\n",Exch10_2);
+    outfile->Printf("    Exch10(S^2)         = %18.12lf H\n",Exch10_2);
     //fflush(outfile);
 
     // ==> Exchange Terms (S^\infty, MCBS or DCBS) <== //
@@ -1242,7 +1286,8 @@ void FISAPT::exch()
     //    outfile->Printf("    Exch10 (%1d)          = %18.12lf H\n",k+1,Exch10_n_terms[k]);
     //}
     scalars_["Exch10"] = Exch10_n;
-    outfile->Printf("    Exch10      [MCBS]  = %18.12lf H\n",Exch10_n);
+    //outfile->Printf("    Exch10      [MCBS]  = %18.12lf H\n",Exch10_n);
+    outfile->Printf("    Exch10              = %18.12lf H\n",Exch10_n);
     outfile->Printf("\n");
     //fflush(outfile);
 
@@ -1629,8 +1674,9 @@ void FISAPT::disp()
 
     // => Auxiliary Basis Set <= //
 
-    boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_orbital(primary_->molecule(),
-        "RIFIT", options_.get_str("DF_BASIS_SAPT"));
+    boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+        "DF_BASIS_SAPT", options_.get_str("DF_BASIS_SAPT"), "RIFIT",
+        options_.get_str("BASIS"), primary_->has_puream());
 
     // => Pointers <= //
    
@@ -2411,8 +2457,9 @@ void FISAPT::felst()
 
     // => a <-> b <= //
 
-    boost::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_orbital(primary_->molecule(),
-        "JKFIT", options_.get_str("DF_BASIS_SCF"));
+    boost::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+        "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
+        options_.get_str("BASIS"), primary_->has_puream());
     size_t nQ = jkfit->nbf();
 
     boost::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,Process::environment.options);
@@ -2575,8 +2622,9 @@ void FISAPT::fexch()
 
     // ==> DF ERI Setup (JKFIT Type, in Full Basis) <== //
 
-    boost::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_orbital(primary_->molecule(),
-        "JKFIT", options_.get_str("DF_BASIS_SCF"));
+    boost::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+        "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
+        options_.get_str("BASIS"), primary_->has_puream());
     int nQ = jkfit->nbf();
 
     boost::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,Process::environment.options);
@@ -2825,8 +2873,9 @@ void FISAPT::find()
     
     // ==> DF ERI Setup (JKFIT Type, in Full Basis) <== //
 
-    boost::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_orbital(primary_->molecule(),
-        "JKFIT", options_.get_str("DF_BASIS_SCF"));
+    boost::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+        "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
+        options_.get_str("BASIS"), primary_->has_puream());
     size_t nQ = jkfit->nbf();
 
     boost::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,Process::environment.options);
@@ -3287,8 +3336,9 @@ void FISAPT::fdisp()
 
     // => Auxiliary Basis Set <= //
 
-    boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_orbital(primary_->molecule(),
-        "RIFIT", options_.get_str("DF_BASIS_SAPT"));
+    boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+        "DF_BASIS_SAPT", options_.get_str("DF_BASIS_SAPT"), "RIFIT",
+        options_.get_str("BASIS"), primary_->has_puream());
     
     // => Sizing <= //
 

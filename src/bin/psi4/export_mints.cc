@@ -861,6 +861,8 @@ void export_mints()
             def("Fb", &Wavefunction::Fb, "docstring").
             def("Da", &Wavefunction::Da, "docstring").
             def("Db", &Wavefunction::Db, "docstring").
+            def("X", &Wavefunction::X, "docstring").
+            def("TPDM", &Wavefunction::TPDM, "docstring").
             def("aotoso", &Wavefunction::aotoso, "docstring").
             def("epsilon_a", &Wavefunction::epsilon_a, "docstring").
             def("epsilon_b", &Wavefunction::epsilon_b, "docstring").
