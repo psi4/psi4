@@ -33,6 +33,7 @@
 #include "../libparallel2/ParallelEnvironment.h"
 #include "../libparallel2/Algorithms.h"
 extern "C" {
+   #include "CifiedFxns.h"
    #include "gtfock/libcint/CInt.h"
    #include "gtfock/pfock/pfock.h"
 }
