@@ -1978,7 +1978,7 @@ def writeCSX(name, **kwargs):
         molOrbEb = psi4.wavefunction().epsilon_b()
         orbNmopi = psi4.wavefunction().nmopi()
         orbNsopi = psi4.wavefunction().nsopi()
-        orbNum = psi4.wavefunction().nmo()
+        orbNum = psi4.wavefunction().nmo() if molOrbE else 0
         orbSNum = psi4.wavefunction().nso()
         molOrb = psi4.wavefunction().Ca()
         orbNirrep = psi4.wavefunction().nirrep()
@@ -2010,7 +2010,8 @@ def writeCSX(name, **kwargs):
             for iorb in range(orbNmopi.__getitem__(ih)):
                 hlist.append(ih)
                 orblist.append(iorb)
-                orbE.append(molOrbE.get(count))
+                if molOrbE:
+                    orbE.append(molOrbE.get(count))
                 eleNum = 1 if iorb < (orbDoccpi.__getitem__(ih) + orbSoccpi.__getitem__(ih)) else 0
                 eleNum += eleExtra if iorb < orbDoccpi.__getitem__(ih) else 0
                 orbOcc.append(eleNum)
@@ -2033,7 +2034,8 @@ def writeCSX(name, **kwargs):
                 for iorb in range(orbNmopi.__getitem__(ih)):
                     hlistCb.append(ih)
                     orblist.append(iorb)
-                    orbEb.append(molOrbEb.get(count))
+                    if molOrbEb:
+                        orbEb.append(molOrbEb.get(count))
                     eleNum = 1 if iorb < (orbDoccpi.__getitem__(ih) + orbSoccpi.__getitem__(ih)) else 0
                     if iorb < orbDoccpi.__getitem__(ih):
                         eleNum += eleExtra
@@ -2538,15 +2540,13 @@ def writeCSX(name, **kwargs):
             visibility=['PRIVATE', 'PROTECTED', 'PUBLIC'].index(psi4.get_global_option('PUBLICATIONVISIBILITY')),
             tags=psi4.get_global_option('PUBLICATIONTAGS'),
             key=psi4.get_global_option('PUBLICATIONKEY'))
-        source1 = api.sourcePackageType(name='Psi4', version=psi4.version())
-        mp1.set_sourcePackage(source1)
+        mp1.set_sourcePackage(api.sourcePackageType(name='Psi4', version=psi4.version()))
         email = psi4.get_global_option('EMAIL').replace('__', '@')
-        ath1 = api.authorType(
+        mp1.add_author(api.authorType(
             creator=psi4.get_global_option('CORRESPONDINGAUTHOR'),
             type_='cs:corresponding',
             organization=psi4.get_global_option('ORGANIZATION'),
-            email=None if email == '' else email)
-        mp1.add_author(ath1)
+            email=None if email == '' else email))
         cs1.set_molecularPublication(mp1)
 
         # molSystem section: 1.5
@@ -2628,11 +2628,26 @@ def writeCSX(name, **kwargs):
         srs1 = api.srsMethodType()
         sdm1 = api.srssdMethodType()
         psivars = psi4.get_variables()
-        try:
-            runproc = procedures['energy'][lowername]
-        except KeyError:
-            # hack since CSX could support method but can't check here
-            runproc = None
+
+        def form_ene(mandatoryPsivars, optionalPsivars={}, excessPsivars={}):
+            """
+
+            """
+            ene = api.energiesType(unit='cs:hartree')
+            for pv, csx in mandatoryPsivars.iteritems():
+                term = api.energyType(type_=csx)
+                term.set_valueOf_(psivars.pop(pv))
+                ene.add_energy(term)
+            for pv, csx in optionalPsivars.iteritems():
+                if pv in psivars:
+                    term = api.energyType(type_=csx)
+                    term.set_valueOf_(psivars.pop(pv))
+                    ene.add_energy(term)
+            for pv in excessPsivars:
+                if pv in psivars:
+                    psivars.pop(pv)
+            return ene
+
         # Reference stage- every calc has one
         # DFT 1.5
         if 'DFT TOTAL ENERGY' in psivars:  # TODO robust enough to avoid MP2C, etc.?
@@ -2656,20 +2671,7 @@ def writeCSX(name, **kwargs):
                 spinType='cs:' + molSpin,
                 basisSet='bse:' + molBasis,
                 dftFunctional=name)  # TODO this'll need to be exported
-            ene = api.energiesType(unit='cs:hartree')
-            for pv, csx in mandatoryPsivars.iteritems():
-                term = api.energyType(type_=csx)
-                term.set_valueOf_(psivars.pop(pv))
-                ene.add_energy(term)
-            for pv, csx in optionalPsivars.iteritems():
-                if pv in psivars:
-                    term = api.energyType(type_=csx)
-                    term.set_valueOf_(psivars.pop(pv))
-                    ene.add_energy(term)
-            for pv in excessPsivars:
-                if pv in psivars:
-                    psivars.pop(pv)
-            block.set_energies(ene)
+            block.set_energies(form_ene(mandatoryPsivars, optionalPsivars, excessPsivars))
             sdm1.set_dft(block)
 
         # SCF: 1.5
@@ -2685,12 +2687,7 @@ def writeCSX(name, **kwargs):
                 methodology='cs:normal',  # TODO handle dfhf, dfmp
                 spinType='cs:' + molSpin,
                 basisSet='bse:' + molBasis)
-            ene = api.energiesType(unit='cs:hartree')
-            for pv, csx in mandatoryPsivars.iteritems():
-                term = api.energyType(type_=csx)
-                term.set_valueOf_(psivars.pop(pv))
-                ene.add_energy(term)
-            block.set_energies(ene)
+            block.set_energies(form_ene(mandatoryPsivars))
             sdm1.set_abinitioScf(block)
         else:
             psi4.print_out("""\nCSX version {0} does not support """
@@ -2707,24 +2704,33 @@ def writeCSX(name, **kwargs):
             if not all([pv in psivars for pv in mandatoryPsivars.keys()]):
                 raise CSXError("""Malformed MP2 computation""")
 
-            block = api.resultType(
+            block = api.resultType(  # TODO should be pointing to HF for correlation
                 methodology='cs:normal',  # TODO handle dfmp
-                spinType='cs:' + molSpin,
+                spinType='cs:' + molSpin,  # TODO could have a closed-shell corl mtd atop open-shell scf?
                 basisSet='bse:' + molBasis)
-            ene = api.energiesType(unit='cs:hartree')
-            for pv, csx in mandatoryPsivars.iteritems():
-                term = api.energyType(type_=csx)
-                term.set_valueOf_(psivars.pop(pv))
-                ene.add_energy(term)
-            for pv, csx in optionalPsivars.iteritems():
-                if pv in psivars:
-                    term = api.energyType(type_=csx)
-                    term.set_valueOf_(psivars.pop(pv))
-                    ene.add_energy(term)
-            block.set_energies(ene)
+            block.set_energies(form_ene(mandatoryPsivars, optionalPsivars))
             sdm1.set_mp2(block)
 
-        #print('CSX not harvesting: ', ', '.join(psivars))
+        # CCSD: 1.5
+        if 'CCSD TOTAL ENERGY' in psivars:
+            mandatoryPsivars = {
+                'CCSD CORRELATION ENERGY': 'cs:correlation'}
+            optionalPsivars = {
+                'CCSD SAME-SPIN CORRELATION ENERGY': 'cs:sameSpin correlation'}
+            excessPsivars = [
+                'CCSD TOTAL ENERGY',
+                'CCSD OPPOSITE-SPIN CORRELATION ENERGY']
+            if not all([pv in psivars for pv in mandatoryPsivars.keys()]):
+                raise CSXError("""Malformed CCSD computation""")
+
+            block = api.resultType(  # TODO should be pointing to HF for correlation, maybe to MP2 for guess
+                methodology='cs:normal',  # TODO handle dfcc
+                spinType='cs:' + molSpin,  # TODO could have a closed-shell corl mtd atop open-shell scf?
+                basisSet='bse:' + molBasis)
+            block.set_energies(form_ene(mandatoryPsivars, optionalPsivars))
+            #sdm1.set_ccsd(block)
+
+        print('CSX not harvesting: ', ', '.join(psivars))
         # LAB TODO not addressed below here
         # wavefunction: 1.5
         if avalMethods:
@@ -2736,9 +2742,8 @@ def writeCSX(name, **kwargs):
                 orbe1.set_valueOf_(orbEString)
                 orbs1 = api.orbitalsType()
                 for iorb in range(orbNum):
-                    orbt = orbCaString[iorb]
                     orb1 = api.stringArrayType(id=iorb+1)
-                    orb1.set_valueOf_(orbt)
+                    orb1.set_valueOf_(orbCaString[iorb])
                     orbs1.add_orbital(orb1)
                 wfn1.set_orbitals(orbs1)
                 wfn1.set_orbitalEnergies(orbe1)
@@ -2751,9 +2756,8 @@ def writeCSX(name, **kwargs):
                 wfn1.set_alphaOrbitalOccupancies(orbOccString)
                 aorbs1 = api.orbitalsType()
                 for iorb in range(orbNum):
-                    orbt = orbCaString[iorb]
                     orb1 = api.stringArrayType(id=iorb+1)
-                    orb1.set_valueOf_(orbt)
+                    orb1.set_valueOf_(orbCaString[iorb])
                     aorbs1.add_orbital(orb1)
                 wfn1.set_alphaOrbitals(aorbs1)
                 # beta electron: 1.5
@@ -2763,9 +2767,8 @@ def writeCSX(name, **kwargs):
                 wfn1.set_betaOrbitalOccupancies(orbOccCbString)
                 borbs1 = api.orbitalsType()
                 for iorb in range(orbNum):
-                    orbt = orbCbString[iorb]
                     orb1 = api.stringArrayType(id=iorb+1)
-                    orb1.set_valueOf_(orbt)
+                    orb1.set_valueOf_(orbCbString[iorb])
                     borbs1.add_orbital(orb1)
                 wfn1.set_betaOrbitals(borbs1)
 
