@@ -255,6 +255,9 @@ procedures = {
             # Upon adding a method to this list, add it to the docstring in property() below
         }}
 
+# dictionary to register pre- and post-compute hooks for driver routines
+hooks = {k1: {k2: [] for k2 in ['pre', 'post']} for k1 in ['energy', 'optimize', 'frequency']}
+
 # Integrate DFT with driver routines
 for ssuper in superfunctional_list():
     procedures['energy'][ssuper.name().lower()] = run_dft
@@ -582,6 +585,9 @@ def energy(name, **kwargs):
     if level:
         kwargs['level'] = level
 
+    for precallback in hooks['energy']['pre']:
+        precallback(lowername, **kwargs)
+
     try:
         # Set method-dependent scf convergence criteria
         if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
@@ -635,8 +641,8 @@ def energy(name, **kwargs):
             alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
         raise ValidationError('Energy method %s not available.%s' % (lowername, alternatives))
 
-    if psi4.get_global_option('WRITE_CSX'):
-        writeCSX(name, **kwargs)
+    for postcallback in hooks['energy']['post']:
+        postcallback(lowername, **kwargs)
 
     optstash.restore()
     return psi4.get_variable('CURRENT ENERGY')
@@ -1251,8 +1257,8 @@ def optimize(name, **kwargs):
             if psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False:
                 if psi4.get_option('OPTKING', 'KEEP_INTCOS') == False:
                     psi4.opt_clean()
-            if psi4.get_global_option('WRITE_CSX'):
-                writeCSX(name, **kwargs)
+            for postcallback in hooks['optimize']['post']:
+                postcallback(lowername, **kwargs)
             psi4.clean()
 
             # S/R: Clean up opt input file
@@ -1807,8 +1813,8 @@ def frequency(name, **kwargs):
         # call thermo module
         psi4.thermo()
 
-    if psi4.get_global_option('WRITE_CSX'):
-        writeCSX(name, **kwargs)
+    for postcallback in hooks['frequency']['post']:
+        postcallback(lowername, **kwargs)
 
     #TODO add return current energy once satisfied that's set to energy at eq, not a findif
     return psi4.get_variable('CURRENT ENERGY')
