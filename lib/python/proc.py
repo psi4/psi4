@@ -1919,6 +1919,11 @@ def run_dft(name, **kwargs):
             psi4.dfmp2()
             vdh = dfun.c_alpha() * psi4.get_variable('MP2 CORRELATION ENERGY')
 
+        # TODO: delete these variables, since they don't mean what they look to mean?
+        # 'MP2 TOTAL ENERGY',
+        # 'MP2 CORRELATION ENERGY',
+        # 'MP2 SAME-SPIN CORRELATION ENERGY']
+
         psi4.set_variable('DOUBLE-HYBRID CORRECTION ENERGY', vdh)
         returnvalue += vdh
         psi4.set_variable('DFT TOTAL ENERGY', returnvalue)

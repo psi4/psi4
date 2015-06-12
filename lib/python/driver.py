@@ -1951,8 +1951,8 @@ def writeCSX(name, **kwargs):
     dertype = derdict[calledby]
     # Start to write the CSX file
     # First grab molecular information and energies from psi4
-    geom = molecule.save_string_xyz()
-    atomLine = geom.split('\n')
+    geom = molecule.save_string_xyz()  # OB
+    atomLine = geom.split('\n')  # OB
 
     # general molecular information
     atomNum = molecule.natom()
@@ -2556,67 +2556,76 @@ def writeCSX(name, **kwargs):
         temp1 = api.dataWithUnitsType(unit='cs:kelvin')
         temp1.set_valueOf_(298.0)  # LAB dispute
         ms1.set_systemTemperature(temp1)
-        mol1 = api.moleculeType(id='m1', atomCount=atomNum)
-        obmol1 = openbabel.OBMol()
-        for iatm in range(atomNum):
-            atomField = atomLine[iatm + 1].split()
-            atmSymbol = atomField[0]
-            xCoord = float(atomField[1])
-            yCoord = float(atomField[2])
-            zCoord = float(atomField[3])
-            obatm = obmol1.NewAtom()
-            obatm.SetAtomicNum(qcdb.periodictable.el2z[atmSymbol.upper()])
-            obatm.SetVector(xCoord, yCoord, zCoord)
-        obmol1.ConnectTheDots()
-        obmol1.PerceiveBondOrders()
-        obmol1.SetTotalSpinMultiplicity(molMulti)
-        obmol1.SetTotalCharge(molCharge)
-        conv1 = openbabel.OBConversion()
-        conv1.SetInAndOutFormats('mol', 'inchi')
-        conv1.SetOptions('K', conv1.OUTOPTIONS)
-        inchikey = conv1.WriteString(obmol1)
-        mol1.set_inchiKey(inchikey.rstrip())
-        iatm = 0
-        for obatom in openbabel.OBMolAtomIter(obmol1):
-            atmSymbol = qcdb.periodictable.z2el[obatom.GetAtomicNum()]
-            xCoord1 = api.dataWithUnitsType(unit='cs:angstrom')
-            xCoord1.set_valueOf_(obatom.GetX())
-            yCoord1 = api.dataWithUnitsType(unit='cs:angstrom')
-            yCoord1.set_valueOf_(obatom.GetY())
-            zCoord1 = api.dataWithUnitsType(unit='cs:angstrom')
-            zCoord1.set_valueOf_(obatom.GetZ())
+        mol1 = api.moleculeType(id='m1', atomCount=molecule.natom())
+        #OBmol1 = api.moleculeType(id='m1', atomCount=atomNum)
+        #OBobmol1 = openbabel.OBMol()
+        #OBfor iatm in range(atomNum):
+        #OB    atomField = atomLine[iatm + 1].split()
+        #OB    atmSymbol = atomField[0]
+        #OB    xCoord = float(atomField[1])
+        #OB    yCoord = float(atomField[2])
+        #OB    zCoord = float(atomField[3])
+        #OB    obatm = obmol1.NewAtom()
+        #OB    obatm.SetAtomicNum(qcdb.periodictable.el2z[atmSymbol.upper()])
+        #OB    obatm.SetVector(xCoord, yCoord, zCoord)
+        #OBobmol1.ConnectTheDots()
+        #OBobmol1.PerceiveBondOrders()
+        #OBobmol1.SetTotalSpinMultiplicity(molMulti)
+        #OBobmol1.SetTotalCharge(molCharge)
+        #OBconv1 = openbabel.OBConversion()
+        #OBconv1.SetInAndOutFormats('mol', 'inchi')
+        #OBconv1.SetOptions('K', conv1.OUTOPTIONS)
+        #OBinchikey = conv1.WriteString(obmol1)
+        #OBmol1.set_inchiKey(inchikey.rstrip())
+        #OBiatm = 0
+        for at in range(molecule.natom()):
+            #xCoord1 = api.dataWithUnitsType(unit='cs:angstrom')
+            #yCoord1 = api.dataWithUnitsType(unit='cs:angstrom')
+            #zCoord1 = api.dataWithUnitsType(unit='cs:angstrom')
+            #xCoord1.set_valueOf_(molecule.x(at) * p4const.psi_bohr2angstroms)
+            #yCoord1.set_valueOf_(molecule.y(at) * p4const.psi_bohr2angstroms)
+            #zCoord1.set_valueOf_(molecule.z(at) * p4const.psi_bohr2angstroms)
+            xCoord1 = api.dataWithUnitsType(unit='cs:bohr')
+            yCoord1 = api.dataWithUnitsType(unit='cs:bohr')
+            zCoord1 = api.dataWithUnitsType(unit='cs:bohr')
+            xCoord1.set_valueOf_(molecule.x(at))
+            yCoord1.set_valueOf_(molecule.y(at))
+            zCoord1.set_valueOf_(molecule.z(at))
+            # LAB 8jun2015: not getting masses from OB anymore so now dependent on qc programs
+            #   current proposition is changing API so masses only go into CSX if relevant (e.g., vib)
+            #   same situation as temperature
             atm = api.atomType(
-                id='a' + str(iatm + 1),
-                elementSymbol=atmSymbol,
-                atomMass=obatom.GetAtomicMass(),
+                id='a' + str(at + 1),
+                elementSymbol=molecule.symbol(at),
+                atomMass=molecule.mass(at),  # psi4 uses mass of most common isotope; OB uses natural distribution mass
                 xCoord3D=xCoord1,
                 yCoord3D=yCoord1,
                 zCoord3D=zCoord1,
                 basisSet='cs:' + molBasis,
                 calculatedAtomCharge=0,
                 formalAtomCharge=0)
-            iatm += 1
-            coord1 = api.coordinationType()
-            ibond = 0
-            for nb_atom in openbabel.OBAtomAtomIter(obatom):
-                bond = obatom.GetBond(nb_atom)
-                bond1 = api.bondType(
-                    id1='a' + str(obatom.GetId() + 1),
-                    id2='a' + str(nb_atom.GetId() + 1))
-                if bond.GetBondOrder() == 1:
-                    bond1.set_valueOf_('single')
-                elif bond.GetBondOrder() == 2:
-                    bond1.set_valueOf_('double')
-                elif bond.GetBondOrder() == 3:
-                    bond1.set_valueOf_('triple')
-                elif bond.GetBondOrder() == 5:
-                    bond1.set_valueOf_('aromatic')
-                else:
-                    print('wrong bond order')
-                coord1.add_bond(bond1)
-                ibond += 1
-            coord1.set_bondCount(ibond)
-            atm.set_coordination(coord1)
+            #OBiatm += 1
+            #OBcoord1 = api.coordinationType()
+            #OBibond = 0
+            #OBfor nb_atom in openbabel.OBAtomAtomIter(obatom):
+            #OB    bond = obatom.GetBond(nb_atom)
+            #OB    bond1 = api.bondType(
+            #OB        id1='a' + str(obatom.GetId() + 1),
+            #OB        id2='a' + str(nb_atom.GetId() + 1))
+            #OB    if bond.GetBondOrder() == 1:
+            #OB        bond1.set_valueOf_('single')
+            #OB    elif bond.GetBondOrder() == 2:
+            #OB        bond1.set_valueOf_('double')
+            #OB    elif bond.GetBondOrder() == 3:
+            #OB        bond1.set_valueOf_('triple')
+            #OB    elif bond.GetBondOrder() == 5:
+            #OB        bond1.set_valueOf_('aromatic')
+            #OB    else:
+            #OB        print('wrong bond order')
+            #OB    coord1.add_bond(bond1)
+            #OB    ibond += 1
+            #OBcoord1.set_bondCount(ibond)
+            #OBatm.set_coordination(coord1)
             mol1.add_atom(atm)
         ms1.add_molecule(mol1)
         cs1.set_molecularSystem(ms1)
