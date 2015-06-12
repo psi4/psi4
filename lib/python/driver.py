@@ -563,6 +563,7 @@ def energy(name, **kwargs):
     """
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
+    psi4.clean_variables()
 
     optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
@@ -602,7 +603,7 @@ def energy(name, **kwargs):
 # Before invoking the procedure, we rename any file that should be read.
 # This is a workaround to do restarts with the current PSI4 capabilities
 # before actual, clean restarts are put in there
-# Restartfile is always converted to a single-element list if 
+# Restartfile is always converted to a single-element list if
 # it contains a single string
         if 'restart_file' in kwargs:
             restartfile = kwargs['restart_file'] # Option still available for procedure-specific action
@@ -648,6 +649,7 @@ def gradient(name, **kwargs):
     """
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
+    psi4.clean_variables()
     dertype = 1
 
     optstash = p4util.OptionsState(
@@ -1388,6 +1390,7 @@ def hessian(name, **kwargs):
     """
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
+    psi4.clean_variables()
     dertype = 2
 
     optstash = p4util.OptionsState(
