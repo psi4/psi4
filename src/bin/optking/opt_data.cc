@@ -101,17 +101,18 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
 
   double *f =  g_forces_pointer();
 
-  // for IRC only consider forces tangent to the hypersphere search surface
+  if (Opt_params.opt_type == OPT_PARAMS::IRC)
+    if (!p_irc_data->go) { return 1; }
+
+  // Save forces and put back in below.
   double *f_backup;
-  if (Opt_params.opt_type == OPT_PARAMS::IRC) {
-    if(!p_irc_data->go)
-    {
-      return 1;
-    }
-    // save forces and put back in below
+  if (Opt_params.opt_type == OPT_PARAMS::IRC || mol.has_fixed_eq_vals()) {
     f_backup = init_array(Nintco);
     array_copy(f, f_backup, Nintco);
+  }
 
+  // for IRC only consider forces tangent to the hypersphere search surface
+  if (Opt_params.opt_type == OPT_PARAMS::IRC) {
     double **G = mol.compute_G(1);
     double **Ginv = symm_matrix_inv(G, Nintco, Nintco); 
     free_matrix(G);
@@ -146,17 +147,23 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
     oprintf_out("\tFor IRC computations, the forces perpendicular to the rxnpath are tested.\n");
   }
 
+  // Remove arbitrary forces for user-specified equilibrium values. 
+  if (mol.has_fixed_eq_vals()) {
+    array_copy(f, f_backup, Nintco); // save forces and put back in below
+    oprintf_out("\t Forces used to impose fixed constraints are not included.\n");
+    oprintf_out("\t  Forces zeroed: ");
+
+    for (int i=0; i<mol.Ncoord(); ++i) {
+      if (mol.is_coord_fixed(i)) {
+        oprintf_out("%d ", i+1);
+        f[i] = 0.0;
+      }
+    }
+    oprintf_out("\n");
+  }
+
   double max_force = array_abs_max(f, Nintco);
   double rms_force = array_rms(f, Nintco);
-
-/*
-  if (mol.has_fixed_eq_vals()) {
-    oprintf_out("\t Forces are not used to judge convergence, since artificial forces were added according\n");
-    oprintf_out("\t  to user-defined equilibrium values.\n");
-    Opt_params.i_max_force = false;
-    Opt_params.i_rms_force = false;
-  }
-*/
 
   oprintf_out( "\n  ==> Convergence Check <==\n\n");
   oprintf_out( "  Measures of convergence in internal coordinates in au.\n");
@@ -197,8 +204,8 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
 
   oprintf_out( "  ---------------------------------------------------------------------------------------------\n\n");
 
-  // return all forces to canonical place
-  if (Opt_params.opt_type == OPT_PARAMS::IRC) {
+  // Return forces to what they were when conv_check was called
+  if (Opt_params.opt_type == OPT_PARAMS::IRC || mol.has_fixed_eq_vals()) {
     array_copy(f_backup, f, Nintco);
     free_array(f_backup);
   }
