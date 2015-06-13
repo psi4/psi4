@@ -41,8 +41,8 @@ namespace psi { namespace detci {
 /*
 ** get_mo_info()
 **
-** Reads the checkpoint file and the input file and gets all sorts of 
-** useful information about the molecular orbitals (such as their 
+** Reads the checkpoint file and the input file and gets all sorts of
+** useful information about the molecular orbitals (such as their
 ** reordering array, the docc array, frozen orbitals, etc.)
 **
 ** Created by C. David Sherrill on 17 November 1994
@@ -98,10 +98,12 @@ void get_mo_info(Options &options)
   }
 
 
-  // these are all initialized to zero at this point 
+  // these are all initialized to zero at this point
   CalcInfo.frozen_docc   = init_int_array(CalcInfo.nirreps);
   CalcInfo.rstr_docc     = init_int_array(CalcInfo.nirreps);
   CalcInfo.dropped_docc  = init_int_array(CalcInfo.nirreps);
+
+  CalcInfo.ci_orbs       = init_int_array(CalcInfo.nirreps);
 
   CalcInfo.frozen_uocc   = init_int_array(CalcInfo.nirreps);
   CalcInfo.rstr_uocc     = init_int_array(CalcInfo.nirreps);
@@ -119,13 +121,13 @@ void get_mo_info(Options &options)
     core_guess[h] = Process::environment.wavefunction()->frzcpi()[h];
   }
 
-  // This routine sets all orbital subspace arrays properly given 
+  // This routine sets all orbital subspace arrays properly given
   // some minimal starting information and an Options object
-  if (!ras_set3(CalcInfo.nirreps, CalcInfo.nmo, 
+  if (!ras_set3(CalcInfo.nirreps, CalcInfo.nmo,
                 CalcInfo.orbs_per_irr, CalcInfo.docc, CalcInfo.socc,
                 CalcInfo.frozen_docc, CalcInfo.frozen_uocc,
                 CalcInfo.rstr_docc, CalcInfo.rstr_uocc,
-                CalcInfo.ras_opi, core_guess, CalcInfo.reorder, 1, 
+                CalcInfo.ras_opi, core_guess, CalcInfo.reorder, 1,
                 (Parameters.mcscf ? true : false), options))
   {
     throw PsiException("Error in ras_set3(). Aborting.",__FILE__,__LINE__);
@@ -164,8 +166,8 @@ void get_mo_info(Options &options)
   }
   */
 
-  // construct the "ordering" array, which maps the other direction 
-  // i.e., from a CI orbital to a Pitzer orbital                     
+  // construct the "ordering" array, which maps the other direction
+  // i.e., from a CI orbital to a Pitzer orbital
   CalcInfo.order = init_int_array(CalcInfo.nmo);
   for (i=0; i<CalcInfo.nmo; i++) {
     j = CalcInfo.reorder[i];
@@ -207,7 +209,7 @@ void get_mo_info(Options &options)
   }
   free(eig_unsrt);
 
-  // calculate number of electrons 
+  // calculate number of electrons
   CalcInfo.num_alp = CalcInfo.num_bet = CalcInfo.spab = 0;
   if (Parameters.opentype == PARM_OPENTYPE_NONE ||
       Parameters.opentype == PARM_OPENTYPE_HIGHSPIN) {
@@ -259,7 +261,7 @@ void get_mo_info(Options &options)
   // num_rsc_orbs.  Replaces most previous instances of CalcInfo.num_fzc_orbs.
   //
   // Likewise num_drv_orbs is the total number of dropped virtuals and
-  // is the sum of num_fzv_orbs and num_rsv_orbs, and replaces most 
+  // is the sum of num_fzv_orbs and num_rsv_orbs, and replaces most
   // instances of the previous num_fzv_orbs.
 
   CalcInfo.num_expl_cor_orbs = 0; // this isn't enabled anymore, zero it
@@ -280,8 +282,8 @@ void get_mo_info(Options &options)
   CalcInfo.num_drc_orbs = CalcInfo.num_fzc_orbs + CalcInfo.num_rsc_orbs;
   CalcInfo.num_drv_orbs = CalcInfo.num_fzv_orbs + CalcInfo.num_rsv_orbs;
 
-  // calculate number of orbitals active in CI 
-  // maybe this changes later for cor orbs, depends on where we go w/ it 
+  // calculate number of orbitals active in CI
+  // maybe this changes later for cor orbs, depends on where we go w/ it
   CalcInfo.num_ci_orbs = CalcInfo.nmo - CalcInfo.num_drc_orbs -
     CalcInfo.num_drv_orbs;
 
@@ -293,12 +295,13 @@ void get_mo_info(Options &options)
   CalcInfo.num_bet_expl = CalcInfo.num_bet - CalcInfo.num_drc_orbs;
   CalcInfo.npop = CalcInfo.nmo - CalcInfo.num_drv_orbs;
 
-  // construct the CalcInfo.ras_orbs array 
+  // construct the CalcInfo.ras_orbs array
   cnt = 0;
   for (i=0; i<4; i++) {
     CalcInfo.ras_orbs[i] = init_int_matrix(CalcInfo.nirreps,
       CalcInfo.num_ci_orbs);
     for (irrep=0; irrep<CalcInfo.nirreps; irrep++) {
+      CalcInfo.ci_orbs[irrep] += CalcInfo.ras_opi[i][irrep];
       for (j=0; j<CalcInfo.ras_opi[i][irrep]; j++) {
         CalcInfo.ras_orbs[i][irrep][j] = cnt++;
       }

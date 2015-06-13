@@ -49,14 +49,23 @@ public:
     double compute_energy();
     PsiReturnType cas_update();
 
+
+    /**!
+     * Similar to wavefunction.Ca_subset(); however, this version knows about all of the CI
+     * subspaces in the SO basis. We stick to the MCSCF definitions for now.
+     * @param  orbitals FZC, DOCC, ACT, VIR, FZV
+     * @return C        Returns the appropriate orbitals in the SO basis.
+     */
+    SharedMatrix orbital_helper(const std::string& orbitals);
+
     /**!
      * Obtains the OPDM <root| Epq |root> from disk
-     * @param root - root to obtain
-     * @param spin - 0 returns alpha, 1 returns beta, 2 sums alpha and beta
-     * @param transden - obtain <0 | Epq | root> transden
+     * @param root       Root to obtain
+     * @param spin       0 returns alpha, 1 returns beta, 2 sums alpha and beta
+     * @param transden   Obtain <0 | Epq | root> transition density matrix
      * @return OPDM or TDM shared matrix
      **/
-    SharedMatrix get_opdm(int root, int spin=2, bool transden=false);
+    SharedMatrix get_opdm(int root=0, int spin=2, bool transden=false);
 
     /**!
      * Loads the OPDM to the wavefunction Da_ and Db_
@@ -66,13 +75,13 @@ public:
 
     /**!
      * Obtains the TPDM from disk
-     * @param symmetrized - symmetrize the TPDM or not 
+     * @param symmetrized Symmetrize the TPDM or not
      * @return TPDM SharedVector
      **/
     SharedVector get_tpdm(bool symmetrized=true);
 
     /**!
-     * Sets the TPDM to the wavefunction TPDM_
+     * Sets the dense TPDM to the wavefunction TPDM_
     **/
     void set_tpdm();
 

@@ -922,7 +922,6 @@ void MCSCF::rotate_orbs(void)
     }
   }
 
-
 }
 
 

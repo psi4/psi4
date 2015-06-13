@@ -52,15 +52,23 @@
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
-#include <libmints/wavefunction.h>
-#include <libmints/molecule.h>
+#include <libmints/mints.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <libqt/slaterdset.h>
 #include <masses.h>
 #include <libparallel/ParallelPrinter.h>
+
+#include <libthce/thce.h>
+#include <libthce/lreri.h>
+#include <libfock/jk.h>
+#include <libfock/soscf.h>
+// #include <libtrans/integraltransform.h>
+// #include <libtrans/mospace.h>
+
 #include "structs.h"
 #include "globals.h"
+#include "globaldefs.h"
 #include "ci_tol.h"
 #include <pthread.h>
 #include "tpool.h"
@@ -70,8 +78,6 @@
 #include "civect.h"
 #include "ciwave.h"
 #include "MCSCF.h"
-#include<libtrans/integraltransform.h>
-#include<libtrans/mospace.h>
 
 namespace psi {
   extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
@@ -162,7 +168,7 @@ extern void compute_cc(void);
 extern void calc_mrpt(void);
 
 // MCSCF
-extern void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **alplist, struct stringwr **betlist);
+extern void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **alplist, struct stringwr **betlist, Options &options);
 extern void set_mcscf_parameters(Options &options);
 extern void mcscf_print_parameters(void);
 extern void detci_iteration_clean();
@@ -239,7 +245,7 @@ PsiReturnType detci(Options &options)
    else if (Parameters.cc)
      compute_cc();
    else if (Parameters.mcscf){
-     compute_mcscf(ciwfn, alplist, betlist);
+     compute_mcscf(ciwfn, alplist, betlist, options);
      }
    else
      diag_h(alplist, betlist);
@@ -1469,9 +1475,42 @@ void detci_iteration_clean()
 **
 ** Returns: none
 */
-void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **alplist, struct stringwr **betlist)
+void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **alplist, struct stringwr **betlist, Options &options)
 {
 
+  /// Grab and build basis sets
+  boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(
+    Process::environment.molecule(), "BASIS", options.get_str("BASIS"));
+  boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
+      "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT",
+      options.get_str("BASIS"), primary->has_puream());
+
+  /// Build H (can grab from somwhere else later)
+  boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary));
+  boost::shared_ptr<OneBodySOInt> Vint = boost::shared_ptr<OneBodySOInt>(fact->so_potential(true));
+  SharedMatrix H = boost::shared_ptr<Matrix>(new Matrix("H", ciwfn->nirrep(), ciwfn->nsopi(), ciwfn->nsopi()));
+  Vint->compute(H);
+
+  boost::shared_ptr<OneBodySOInt> Tint = boost::shared_ptr<OneBodySOInt>(fact->so_kinetic());
+  SharedMatrix T = boost::shared_ptr<Matrix>(new Matrix("T", ciwfn->nirrep(), ciwfn->nsopi(), ciwfn->nsopi()));
+  Tint->compute(T);
+  H->add(T);
+  // H->print();
+
+  /// Build JK, DFERI, and SOMCSCF objects
+  boost::shared_ptr<JK> jk = JK::build_JK();
+  jk->set_do_J(true);
+  jk->set_do_K(true);
+  jk->initialize();
+  jk->print_header();
+
+  boost::shared_ptr<DFERI> df = DFERI::build(primary,auxiliary,options);
+  boost::shared_ptr<SOMCSCF> somcscf(new SOMCSCF(jk, df, ciwfn->aotoso(), H, true));
+
+  /// Active OPDM and TPDM
+  SharedMatrix actOPDM(new Matrix("OPDM", ciwfn->nirrep(), CalcInfo.ci_orbs, CalcInfo.ci_orbs));
+
+  /// => Start traditional MCSCF <= //
 
   // Output file for MCSCF iters
   OutFile IterSummaryOut("file14.dat", TRUNCATE);
@@ -1518,7 +1557,65 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
     close_io();
     detci_iteration_clean();
 
+    //// Convential updated
     conv = mcscf->update();
+
+    //// Get orbitals for new update
+    SharedMatrix Cdocc = ciwfn->orbital_helper("DOCC");
+    SharedMatrix Cact = ciwfn->orbital_helper("ACT");
+    SharedMatrix Cvir = ciwfn->orbital_helper("VIR");
+
+    //// We need a active OPDM with symmetry
+    double** OPDMa = ciwfn->Da()->pointer();
+    double** OPDMb = ciwfn->Db()->pointer();
+
+    int offset = 0;
+    for (int h=0; h<ciwfn->nirrep(); h++){
+      int nact = CalcInfo.ci_orbs[h];
+      if (!nact) continue;
+
+      double* actp = actOPDM->pointer(h)[0];
+      offset += CalcInfo.dropped_docc[h];
+
+      for (int i=0, target=0; i<nact; i++){
+        int offi = offset + i;
+        for (int j=0; j<nact; j++){
+          actp[target++] = OPDMa[offi][offset + j] + OPDMb[offi][offset + j];
+        }
+      }
+      offset += CalcInfo.ci_orbs[h];
+    }
+
+    //// We need a active TPDM (no symmetry), make it dense for now
+    int nci   = CalcInfo.num_ci_orbs;
+    int ndocc = CalcInfo.num_drc_orbs;
+    int npop  = CalcInfo.num_ci_orbs + CalcInfo.num_drc_orbs;
+    SharedMatrix actTPDM(new Matrix("Something", nci*nci, nci*nci));
+    double* actTPDMp = actTPDM->pointer()[0];
+
+    SharedVector fullTPDM = ciwfn->get_tpdm();
+    double* fullTPDMp = fullTPDM->pointer();
+
+    int nci2 = nci * nci;
+    int nci3 = nci * nci * nci;
+    int ij, kl, ijkl;
+    for (int i=0; i<nci; i++){
+    for (int j=0; j<nci; j++){
+    for (int k=0; k<nci; k++){
+    for (int l=0; l<nci; l++){
+        ij = INDEX(ndocc + i, ndocc + j);
+        kl = INDEX(ndocc + k, ndocc + l);
+        ijkl = INDEX(ij, kl);
+        actTPDMp[i * nci3 + j * nci2 + k * nci + l] = fullTPDMp[ijkl];
+    }}}}
+    // actTPDM->print();
+
+    somcscf->update(Cdocc, Cact, Cvir, actOPDM, actTPDM);
+    // somcscf->solve(5, 1.e-5, true);
+    somcscf->H_approx_diag()->print();
+
+
+
 
     // If converged
     if (conv){
@@ -1555,6 +1652,8 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
 
   ciwfn->set_lag();
   ciwfn->set_tpdm();
+  //dferi.reset();
+  //jk.reset();
 }
 
 
