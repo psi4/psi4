@@ -47,15 +47,16 @@ abcd              - Virtual indices
 
 namespace psi {
 
+/// Forward declare
 class JK;
-class DFTensor;
+class DFERI;
 
 class SORHF {
 
 public:
     /**
      * Initialize the SORHF object
-     * @param jk object to compute
+     * @param jk object to use
      */
     SORHF(boost::shared_ptr<JK> jk);
 
@@ -108,72 +109,126 @@ protected:
     /// Map of matrices
     std::map<std::string, SharedMatrix > matrices_;
 
-}; // SOSCF class
+}; // SORHF class
+
+class SOMCSCF {
+
+public:
+
+    /**
+     * Initialize the SOMCSCF object
+     * @param jk      JK object to use.
+     * @param H       Core hamiltonian in the SO basis.
+     * @param casscf  Is this a CAS calculation? (ignore active-active rotations)
+     */
+    // SOMCSCF(boost::shared_ptr<JK> jk, SharedMatrix H, bool casscf);
+    SOMCSCF(boost::shared_ptr<JK> jk, boost::shared_ptr<DFERI> df, SharedMatrix AOTOSO,
+            SharedMatrix H, bool casscf);
+
+    ~SOMCSCF(void);
+
+    /**
+     * DGAS -- I dont think we actually need this.
+     * Sets the frozen core. Here frozen core are orbitals that do not rotate.
+     * @param Cfzc The frozen core orbitals
+     */
+    void set_frozen_core(SharedMatrix Cfzc);
+
+    /**
+     * DGAS -- I dont think we actually need this.
+     * Sets the virtual core. Here virtual core are orbitals that do not rotate.
+     * @param Cfzv The frozen core orbitals
+     */
+    void set_frozen_virtual(SharedMatrix Cfzv);
+
+    /**
+     * Updates all internal variables to the new reference frame and builds
+     * non-rotated intermediates.
+     * @param Cocc Current doubly occupied orbitals
+     * @param Cocc Current active orbitals
+     * @param Cocc Current virtual orbitals
+     * @param OPDM Current active one-particle density matrix
+     * @param TPDM Current active two-particle density matrix (symmetrized, dense)
+    */
+    void update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
+                SharedMatrix OPDM, SharedMatrix TPDM);
+    /**
+     * Returns the approximate diagonal hessian.
+     * @return Hdiag The [oa, av] block of the diagonal hessian.
+     */
+    SharedMatrix H_approx_diag();
+
+    /**
+     * Returns the hessian times a trial vector or, in effect, the rotated inactive Fock matrix.
+     * IF_k = IF_mp K_np + IF_pn K_mp + (4 G_mnip - G_mpin - G_npim) K_ip
+     * @param  x  The [oa, av] matrix of non-redundant orbital rotations.
+     * @return Hx The [oa, av] block of the rotated Fock matrix.
+     */
+    SharedMatrix Hk(SharedMatrix x);
+
+    /**
+     * Solves the set of linear equations Hx = gradient using CG.
+     * @return x The [oa, av] matrix of non-redundant orbital rotation parameters.
+     */
+    SharedMatrix solve(int max_iter=5, double conv=1.e-10, bool print=true);
+
+
+protected:
+
+    /// Parameters
+    bool casscf_;
+
+    // Frozen core orbitals in the sense that they cannot rotate
+    size_t nfzc_;
+    Dimension nfzcpi_;
+    bool freeze_core_;
+
+    size_t nocc_;
+    Dimension noccpi_;
+    size_t nact_;
+    Dimension nactpi_;
+    size_t nvir_;
+    Dimension nvirpi_;
+
+    // Frozen virtual orbitals in the sense that they cannot rotate
+    size_t nfzv_;
+    Dimension nfzvpi_;
+    bool freeze_virtual_;
+
+    // General info
+    size_t nirrep_;
+    size_t nmo_;
+    Dimension nmopi_;
+    size_t nso_;
+    size_t nao_;
+    Dimension nsopi_;
+
+    // Non-redunant rotatations
+    Dimension noapi_;
+    Dimension navpi_;
+
+    // AOTOSO
+    SharedMatrix AOTOSO_;
+
+    /// Global JK object
+    boost::shared_ptr<JK> jk_;
+
+    /// Global libtrans object
+    /// boost::shared_ptr<IntegralTransform> ints_;
+
+    /// Global DFERI object
+    boost::shared_ptr<DFERI> dferi_;
+
+    /// Map of matrices
+    std::map<std::string, SharedMatrix > matrices_;
+
+    /// Zeros out the active-active part of a trial vector
+    void zero_act(SharedMatrix vector);
+
+
+}; // SOMCSCF class
 
 } // Namespace psi
 
-// class SOSCF {
-
-// public:
-
-//     /**
-//      * What kind of wavefunction is this?
-//      *
-//      */
-//     enum WaveType {RHF, RASSCF, CASSCF};
-
-//     /**
-//      * Initialize the SOSCF object
-//      * @param nocc Number of doubly occupied orbitals
-//      * @param nact Number of variably occupied orbitals
-//      * @param nvir Number of virtual orbitals
-//      * @param cas  Is this a CAS calculation? (ignore active-active rotations)
-//      */
-//     SOSCF(boost::shared_ptr<JK> jk);
-
-//     /**
-//      * RHF Constructor
-//      */
-//     //SOSCF(size_t wave_type, size_t nocc, size_t nfzv);
-
-//     ~SOSCF(void);
-
-
-//     *
-//      * Updates all internal variables to the new reference frame and builds
-//      * non-rotated intermediates. The orbitals should enter ordered like
-//      * fzc, occ, act, vir, fzv
-//      * @param C    Current orbitals
-//      * @param OPDM Current active one-particle density matrix
-//      * @param TPDM Current active two-particle density matrix (symmetrized, dense)
-
-//     //void update(SharedMatrix C, SharedMatrix OPDM, SharedMatrix TPDM);
-
-//     /**
-//      * Same as for above, but for RHF
-//      */
-//     void update(SharedMatrix Cocc, SharedMatrix Cvir, SharedMatrix Fock);
-
-//     /**
-//      * Constructs the full antisymmetrix U matrix
-//      * @param  x The occupied-active by active-virtual non-redundant orbital rotations
-//      * @return   U
-//      */
-//     //SharedMatrix build_U_from_x(SharedMatrix x);
-
-//     /**
-//      * The inactive Fock matrix
-//      * IFock = h_mn + \sum_i (2 g_mnii - g_miin)
-//      * @return  IFock
-//      */
-//     //SharedMatrix IFock(void);
-
-//     /**
-//      * Returns the rotated inactive Fock matrix
-//      * IFock_k = IF_mp K_np + IF_pn K_mp + (4 G_mnip - G_mpin - G_npim) K_ip
-//      * @param  x The occupied-active by active-virtual non-redundant orbital rotations
-//      * @return   IFock_k
-//      */
-//     //SharedMatrix IFock_k(SharedMatrix x);
 
 #endif

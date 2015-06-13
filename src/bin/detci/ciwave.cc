@@ -1,11 +1,11 @@
-#include <libmints/wavefunction.h>
-#include <libmints/matrix.h>
-#include <libmints/vector.h>
+#include <libmints/mints.h>
 #include <psi4-dec.h>
-#include "globaldefs.h"
 #include <libiwl/iwl.h>
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
+#include <libqt/qt.h>
+
+#include "globaldefs.h"
 #include "ciwave.h"
 #include "structs.h"
 #define EXTERN
@@ -30,15 +30,11 @@ CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> reference_wavefun
 
     common_init();
 }
-
 CIWavefunction::~CIWavefunction()
 {
-
 }
-
 void CIWavefunction::common_init()
 {
-
     // We're copying this stuff over like it's done in ccenergy, but
     // these Wavefunction member data are not actually used by the code
     // yet (Sept 2011 CDS).  Copying these only in case they're needed
@@ -56,10 +52,11 @@ void CIWavefunction::common_init()
 
     // Per irrep data
     for(int h = 0; h < nirrep_; ++h){
+        frzcpi_[h] = CalcInfo.dropped_docc[h];
         doccpi_[h] = CalcInfo.docc[h];
         soccpi_[h] = CalcInfo.socc[h];
-        frzcpi_[h] = CalcInfo.dropped_docc[h];
         frzvpi_[h] = CalcInfo.dropped_uocc[h];
+
         nmopi_[h]  = CalcInfo.orbs_per_irr[h];
         nsopi_[h]  = CalcInfo.so_per_irr[h];
 
@@ -71,7 +68,6 @@ void CIWavefunction::common_init()
     name_ = "CIWavefunction";
     }
 }
-
 double CIWavefunction::compute_energy()
 {
     energy_ = 0.0;
@@ -83,13 +79,78 @@ double CIWavefunction::compute_energy()
 
     return energy_;
 }
+SharedMatrix CIWavefunction::orbital_helper(const std::string& orbitals)
+{
+    /// Figure out orbital positions
+    int* start = new int[nirrep_];
+    int* end = new int[nirrep_];
 
+    if (orbitals == "FZC"){
+      for (int h=0; h<nirrep_; h++){
+        start[h] = 0;
+        end[h] = CalcInfo.frozen_docc[h];
+      }
+    }
+    else if (orbitals == "DOCC"){
+      for (int h=0; h<nirrep_; h++){
+        start[h] = CalcInfo.frozen_docc[h];
+        end[h] = CalcInfo.dropped_docc[h];
+      }
+    }
+    else if (orbitals == "ACT"){
+      for (int h=0; h<nirrep_; h++){
+        start[h] = CalcInfo.dropped_docc[h];
+        end[h] = nsopi_[h] - CalcInfo.dropped_uocc[h];
+      }
+    }
+    else if (orbitals == "VIR"){
+      for (int h=0; h<nirrep_; h++){
+        start[h] = nsopi_[h] - CalcInfo.dropped_uocc[h];
+        end[h] = nsopi_[h] - CalcInfo.frozen_uocc[h];
+      }
+    }
+    else if (orbitals == "FZV"){
+      for (int h=0; h<nirrep_; h++){
+        start[h] = nsopi_[h] - CalcInfo.frozen_uocc[h];
+        end[h] = nsopi_[h];
+      }
+    }
+    else if (orbitals == "ALL"){
+      for (int h=0; h<nirrep_; h++){
+        start[h] = 0;
+        end[h] = nsopi_[h];
+      }
+    }
+    else{
+        throw PSIEXCEPTION("DETCI: Orbital subset is not defined, should be FZC, DOCC, ACT, VIR, FZV, or ALL");
+    }
+
+    int* spread = new int[nirrep_];
+    for (int h=0; h<nirrep_; h++){
+      spread[h] = end[h] - start[h];
+    }
+
+    /// Fill desired orbitals
+    SharedMatrix retC(new Matrix("C " + orbitals, nirrep_, nsopi_, spread));
+    for (int h = 0; h < nirrep_; h++) {
+        for (int i = start[h], pos=0; i < end[h]; i++, pos++) {
+            C_DCOPY(nsopi_[h], &Ca_->pointer(h)[0][i], nsopi_[h], &retC->pointer(h)[0][pos], spread[h]);
+        }
+    }
+
+    /// Cleanup
+    delete[] start;
+    delete[] end;
+    delete[] spread;
+
+    return retC;
+}
 void CIWavefunction::set_opdm(bool use_old_d)
 {
 
   // No new opdm
   if(use_old_d){
-    Da_ = reference_wavefunction_->Da(); 
+    Da_ = reference_wavefunction_->Da();
     Db_ = reference_wavefunction_->Db();
     return;
   }
@@ -124,16 +185,15 @@ void CIWavefunction::set_opdm(bool use_old_d)
   Db_ = opdm_b;
 
 }
-
 SharedMatrix CIWavefunction::get_opdm(int root, int spin, bool transden)
 {
     int npop = CalcInfo.num_ci_orbs + CalcInfo.num_drc_orbs;
     SharedMatrix opdm_a(new Matrix("One-Particle Alpha Density Matrix", npop, npop));
     double *opdm_ap = opdm_a->pointer()[0];
-  
+
     SharedMatrix opdm_b(new Matrix("One-Particle Beta Density Matrix", npop, npop));
     double *opdm_bp = opdm_b->pointer()[0];
-  
+
     char opdm_key[80];
     psio_open(Parameters.opdm_file, PSIO_OPEN_OLD);
     sprintf(opdm_key, "MO-basis Alpha OPDM %s Root %d", transden ? "TDM" : "OPDM", root);
@@ -155,10 +215,9 @@ SharedMatrix CIWavefunction::get_opdm(int root, int spin, bool transden)
         return opdm_a;
     }
     else {
-       throw PSIEXCEPTION("DETCI: option spin is not recognizable value."); 
+       throw PSIEXCEPTION("DETCI: option spin is not recognizable value.");
     }
 }
-
 void CIWavefunction::set_lag()
 {
     SharedMatrix lag(new Matrix("MCSCF Lagrangian", nmo_, nmo_));
@@ -167,11 +226,9 @@ void CIWavefunction::set_lag()
         for (size_t j=0; j<nmo_; j++){
             lagp[i][j] = MCSCF_CalcInfo.lag[i][j];
         }
-    }    
+    }
     Lagrangian_ = lag;
 }
-
-
 SharedVector CIWavefunction::get_tpdm(bool symmetrize)
 {
 
@@ -224,7 +281,7 @@ SharedVector CIWavefunction::get_tpdm(bool symmetrize)
           qprs = INDEX(qp,rs);
           pqsr = INDEX(pq,sr);
           qpsr = INDEX(qp,sr);
-          /* would be 0.25 but the formulae I used for the diag hessian 
+          /* would be 0.25 but the formulae I used for the diag hessian
            * seem to define the TPDM with the 1/2 back outside */
           symm_tpdmp[target] = 0.5 * (tpdmp[pqrs] + tpdmp[qprs] +
                          tpdmp[pqsr] + tpdmp[qpsr]);
@@ -235,13 +292,11 @@ SharedVector CIWavefunction::get_tpdm(bool symmetrize)
   }
   tpdm.reset();
   return symm_tpdm;
-
 }
-
 void CIWavefunction::set_tpdm()
 {
   int npop = CalcInfo.num_ci_orbs + CalcInfo.num_drc_orbs;
-  
+
   SharedVector symm_tpdm = get_tpdm(true);
   double* symm_tpdmp = symm_tpdm->pointer();
 
@@ -274,7 +329,7 @@ void CIWavefunction::set_tpdm()
 
 // void CIWavefunction::finalize()
 // {
-// 
+//
 // }
 
 
