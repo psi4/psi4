@@ -128,25 +128,18 @@ public:
     ~SOMCSCF(void);
 
     /**
-     * DGAS -- I dont think we actually need this.
-     * Sets the frozen core. Here frozen core are orbitals that do not rotate.
-     * @param Cfzc The frozen core orbitals
+     * Rotate the current orbitals for a given rotation matrix.
+     * @param  x The [oa, av] non-redundant orbital rotation parameters.
+     * @return   The rotated orbitals.
      */
-    void set_frozen_core(SharedMatrix Cfzc);
-
-    /**
-     * DGAS -- I dont think we actually need this.
-     * Sets the virtual core. Here virtual core are orbitals that do not rotate.
-     * @param Cfzv The frozen core orbitals
-     */
-    void set_frozen_virtual(SharedMatrix Cfzv);
+    SharedMatrix Ck(SharedMatrix x);
 
     /**
      * Updates all internal variables to the new reference frame and builds
      * non-rotated intermediates.
      * @param Cocc Current doubly occupied orbitals
-     * @param Cocc Current active orbitals
-     * @param Cocc Current virtual orbitals
+     * @param Cact Current active orbitals
+     * @param Cvir Current virtual orbitals
      * @param OPDM Current active one-particle density matrix
      * @param TPDM Current active two-particle density matrix (symmetrized, dense)
     */
@@ -160,7 +153,6 @@ public:
 
     /**
      * Returns the hessian times a trial vector or, in effect, the rotated inactive Fock matrix.
-     * IF_k = IF_mp K_np + IF_pn K_mp + (4 G_mnip - G_mpin - G_npim) K_ip
      * @param  x  The [oa, av] matrix of non-redundant orbital rotations.
      * @return Hx The [oa, av] block of the rotated Fock matrix.
      */
@@ -178,22 +170,12 @@ protected:
     /// Parameters
     bool casscf_;
 
-    // Frozen core orbitals in the sense that they cannot rotate
-    size_t nfzc_;
-    Dimension nfzcpi_;
-    bool freeze_core_;
-
     size_t nocc_;
     Dimension noccpi_;
     size_t nact_;
     Dimension nactpi_;
     size_t nvir_;
     Dimension nvirpi_;
-
-    // Frozen virtual orbitals in the sense that they cannot rotate
-    size_t nfzv_;
-    Dimension nfzvpi_;
-    bool freeze_virtual_;
 
     // General info
     size_t nirrep_;
@@ -206,9 +188,6 @@ protected:
     // Non-redunant rotatations
     Dimension noapi_;
     Dimension navpi_;
-
-    // AOTOSO
-    SharedMatrix AOTOSO_;
 
     /// Global JK object
     boost::shared_ptr<JK> jk_;
