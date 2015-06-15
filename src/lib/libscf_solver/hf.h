@@ -125,7 +125,6 @@ protected:
     double integral_threshold_;
 
     /// The soon to be ubiquitous JK object
-    boost::shared_ptr<MinimalInterface> JKFactory_;
     boost::shared_ptr<JK> jk_;
 
     /// Are we to do MOM?
