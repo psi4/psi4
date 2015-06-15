@@ -24,14 +24,12 @@
 #define JK_H
 
 #include <vector>
+#include <boost/shared_ptr.hpp>
 #include <libmints/typedefs.h>
 
-namespace boost {
-template<class T> class shared_ptr;
-}
 
 namespace psi {
-
+class MinimalInterface;
 class GPUDFJKHelper;
 class BasisSet;
 class Matrix;
@@ -613,6 +611,24 @@ public:
     virtual void print_header() const;
 };
 
+class GTFockJK: public JK{
+   private:
+      boost::shared_ptr<MinimalInterface> Impl_;
+   protected:
+      /// Do we need to backtransform to C1 under the hood?
+      virtual bool C1() const { return true; }
+      /// Setup integrals, files, etc
+      virtual void preiterations(){}
+      /// Compute J/K for current C/D
+      virtual void compute_JK();
+      /// Delete integrals, files, etc
+      virtual void postiterations(){}
+      ///I don't fell the need to print a header...
+      virtual void print_header() const{}
+   public:
+      GTFockJK(boost::shared_ptr<psi::BasisSet> Primary);
+
+};
 
 /**
  * Class DFJK

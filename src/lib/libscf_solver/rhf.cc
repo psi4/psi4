@@ -46,7 +46,6 @@
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
 #include "rhf.h"
-#include "../libJKFactory/MinimalInterface.h"
 using namespace boost;
 using namespace psi;
 using namespace std;
@@ -146,10 +145,7 @@ void forPermutation(int depth, vector<int>& array,
 }
 void RHF::form_G()
 {
-   typedef boost::shared_ptr<MinimalInterface> ShareInt;
-   if(!JKFactory_)
-      JKFactory_=ShareInt(new MinimalInterface());
-   if(!JKFactory_->UseJKFactory()){
+
      /// Push the C matrix on
      std::vector<SharedMatrix> & C = jk_->C_left();
      C.clear();
@@ -163,12 +159,7 @@ void RHF::form_G()
      const std::vector<SharedMatrix> & K = jk_->K();
      J_ = J[0];
      K_ = K[0];
-  }
-  else{
-     JKFactory_->SetP(D_);
-     JKFactory_->GetJ(J_);
-     JKFactory_->GetK(K_);
-  }
+
   J_->scale(2.0);
   G_->copy(J_);
   G_->subtract(K_);
