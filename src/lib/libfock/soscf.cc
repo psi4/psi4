@@ -271,32 +271,50 @@ SOMCSCF::SOMCSCF(boost::shared_ptr<JK> jk, boost::shared_ptr<DFERI> df, SharedMa
     dferi_ = df;
     matrices_["H"] = H;
     matrices_["AOTOSO"] = AOTOSO;
-    SharedMatrix AOTOSO_ = AOTOSO;
-    nao_ = AOTOSO_->rowspi()[0];
+    nao_ = AOTOSO->rowspi()[0];
     casscf_ = casscf;
-
-    nfzc_ = 0;
-    freeze_core_ = false;
-    nfzv_ = 0;
-    freeze_virtual_ = false;
-
 }
 SOMCSCF::~SOMCSCF()
 {
 }
-void SOMCSCF::set_frozen_core(SharedMatrix Cfzc)
+SharedMatrix SOMCSCF::Ck(SharedMatrix x)
 {
-    nfzc_ = Cfzc->ncol();
-    nfzcpi_ = Cfzc->colspi();
-    freeze_core_ = true;
-    matrices_["Cfzc"] = Cfzc;
-}
-void SOMCSCF::set_frozen_virtual(SharedMatrix Cfzv)
-{
-    nfzv_ = Cfzv->ncol();
-    nfzvpi_ = Cfzv->colspi();
-    freeze_virtual_ = true;
-    matrices_["Cfzv"] = Cfzv;
+
+    SharedMatrix tmp(new Matrix("Ck", nirrep_, nsopi_, nmopi_));
+
+    // Form full antisymmetric matrix
+    for (size_t h=0; h<nirrep_; h++){
+
+        if (!nsopi_[h] || !noccpi_[h] || !nvirpi_[h]) continue;
+        double** tp = tmp->pointer(h);
+        double*  xp = x->pointer(h)[0];
+
+        // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
+        for (size_t i=0, target=0; i<noccpi_[h]; i++){
+            for (size_t a=noccpi_[h]; a < nsopi_[h]; a++){
+                tp[i][a] = -1.0 * xp[target];
+                tp[a][i] = xp[target++];
+            }
+        }
+    }
+
+    // Build exp(U) = 1 + U + 0.5 U U
+    SharedMatrix U = tmp->clone();
+    for (size_t h=0; h<nirrep_; h++){
+        double** Up = U->pointer(h);
+        for (size_t i=0; i<U->rowspi()[h]; i++){
+            Up[i][i] += 1.0;
+        }
+    }
+    U->gemm(false, false, 0.5, tmp, tmp, 1.0);
+
+    // We did not fully exponentiate the matrix, need to orthogonalize
+    U->schmidt();
+
+    // C' = C U
+    tmp->gemm(false, false, 1.0, matrices_["C"], U, 0.0);
+
+    return tmp;
 }
 void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
             SharedMatrix OPDM, SharedMatrix TPDM)
@@ -323,6 +341,7 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
 
     nirrep_ = matrices_["C"]->nirrep();
     nso_    = matrices_["C"]->nrow();
+    nsopi_  = matrices_["C"]->rowspi();
     nmo_    = matrices_["C"]->ncol();
     nmopi_  = matrices_["C"]->colspi();
 
@@ -331,12 +350,6 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
 
     matrices_["OPDM"] = OPDM;
     matrices_["TPDM"] = TPDM;
-
-    // npairpi_ = Dimension(nirrep_, "Npairs");
-    // for (int h=0; h<nirrep_; h++){
-    //     npairpi_.set(h, (nactpi_[h] + noccpi_[h]) * (nactpi_[h] + nvirpi_[h]));
-    // }
-    // npair_ = npairpi_.sum();
 
     // => AO C matrices <= //
     // Only need for DF SOMCSCF
@@ -382,7 +395,8 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
 
     matrices_["AO_C"] = Matrix::horzcat(full_AOC);
     matrices_["AO_C"]->set_name("AO_C");
-    // nmo_ = matrices_["AO_C"]->ncol();
+    // matrices_["C"]->print();
+    // matrices_["AO_C"]->print();
 
 
     // => Build generalized inactive and active Fock matrices <= //
@@ -401,8 +415,6 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
     Cr.push_back(matrices_["Cact"]);
 
     jk_->compute();
-    Cl.clear();
-    Cr.clear();
 
     const std::vector<SharedMatrix>& J = jk_->J();
     const std::vector<SharedMatrix>& K = jk_->K();
@@ -421,9 +433,9 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
     matrices_["AFock"] = Matrix::doublet(matrices_["C"], K[1], true, false);
     matrices_["AFock"]->set_name("AFock");
     // matrices_["AFock"]->print();
-
-    // outfile->Printf("Finished inactive and active Fock builds\n");
-
+    // matrices_["OPDM"]->print();
+    // matrices_["C"]->print();
+    // matrices_["Cact"]->print();
 
     // => Q matrix <= //
     // This will be moved out to the DFSOMCSCF and PKSOMCSCF objects
@@ -478,7 +490,6 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
     double** denQp = denQ->pointer();
     C_DGEMM('N','T',nact_,nmo_,nQ*nact_,1.0,vwQp,nQ*nact_,NaQp,nQ*nact_,0.0,denQp[0],nmo_);
     NaQ.reset();
-    // denQ->print();
 
     // Symmetry block Q
     matrices_["Q"] = SharedMatrix(new Matrix("Qvn", nirrep_, nactpi_, nmopi_));
@@ -537,24 +548,20 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
 
     // => Orbtial Gradient <= //
     matrices_["Gradient"] = SharedMatrix(new Matrix("Gradient", nirrep_, noapi_, navpi_));
-    // matrices_["Precon"] = SharedMatrix(new Matrix("Precon", nirrep_, noapi_, navpi_));
     for (int h=0; h<nirrep_; h++){
         if (!noapi_[h] || !navpi_[h]) continue;
 
         double** dFp = matrices_["Fock"]->pointer(h);
         double** Gp = matrices_["Gradient"]->pointer(h);
-        // double** Pp = matrices_["Precon"]->pointer(h);
 
         for (int i=0; i<noapi_[h]; i++){
             for (int j=0; j<navpi_[h]; j++){
                 int nj = noccpi_[h] + j;
                 Gp[i][j] = 2.0 * (dFp[i][nj] - dFp[nj][i]);
-                // Pp[i][j] = (dFp[nj][nj] - dFp[i][i]);
 
                 // Ensure the gradient is zero for the active-active diagonal block
                 if (nj == i){
                     Gp[i][j] = 0.0;
-                    // Pp[i][j] = 1.0;
                 }
             }
         }
@@ -573,6 +580,7 @@ SharedMatrix SOMCSCF::H_approx_diag()
     fseek(aaQF,0L,SEEK_SET);
     fread(aaQp, sizeof(double), nact_ * nact_ * nQ, aaQF);
     SharedMatrix actMO = Matrix::doublet(aaQ, aaQ, false, true);
+    aaQ.reset();
 
     // d_tuvw I_tuvw -> gI_t, D_tu IF_tu -> DIF_t
     double** actMOp = actMO->pointer();
@@ -598,6 +606,7 @@ SharedMatrix SOMCSCF::H_approx_diag()
     }
 
     SharedMatrix H(new Matrix("Approximate diag hessian", nirrep_, noapi_, navpi_));
+    int offset_act = 0;
     for (int h=0; h<nirrep_; h++){
         if (!noapi_[h] || !navpi_[h]) continue;
         double** Hp = H->pointer(h);
@@ -642,21 +651,66 @@ SharedMatrix SOMCSCF::H_approx_diag()
             for (int i=0; i<noccpi_[h]; i++){
                 for (int a=0; a<nactpi_[h]; a++){
                     int oa = noccpi_[h] + a;
-                    Hp[i][a]  = 4.0 * (IFp[oa][oa] + AFp[oa][oa]);
-                    Hp[i][a] -= 4.0 * (IFp[i][i] + AFp[i][i]);
-                    Hp[i][a] += 2.0 * (OPDMp[a][a] * IFp[i][i]);
-                    Hp[i][a] += 2.0 * (OPDMp[a][a] * AFp[i][i]);
-                    Hp[i][a] -= 2.0 * dIp[a];
-                    Hp[i][a] -= 2.0 * DIFp[a];
+                    Hp[i][a]  = 2.0 * (IFp[oa][oa] + AFp[oa][oa]);
+                    Hp[i][a] -= 2.0 * (IFp[i][i] + AFp[i][i]);
+                    Hp[i][a] += (OPDMp[a][a] * IFp[i][i]);
+                    Hp[i][a] += (OPDMp[a][a] * AFp[i][i]);
+                    Hp[i][a] -= dIp[a];
+                    Hp[i][a] -= DIFp[a];
+                    Hp[i][a] *= 2.0;
                 }
             }
         } // end ia block
 
         // aa block for RASSCF
         if (nactpi_[h] && !casscf_){
-        throw PSIEXCEPTION("SOMCSCF:: RASSCF not yet implemented for approx diag hessian.");
+            double* dIp = dI->pointer(h);
+            double* DIFp = DIF->pointer(h);
+            double** IFp = matrices_["IFock"]->pointer(h);
+            double** OPDMp = matrices_["OPDM"]->pointer(h);
+            for (int i=0; i<nactpi_[h]; i++){
+                for (int a=0; a<nactpi_[h]; a++){
+                    int oa = i + noccpi_[h];
+
+                    // Ones on diagonal
+                    if (i == a){
+                        Hp[oa][a] = 1.0;
+                        continue;
+                    }
+
+                    Hp[oa][a]  = 4.0 * (DIFp[i] + DIFp[a]);
+                    Hp[oa][a] -= 4.0 * OPDMp[i][a] * IFp[noccpi_[h] + i][oa];
+                    Hp[oa][a] -= 2.0 * (dIp[i] + dIp[a]);
+                    double value = 0.0;
+                    int p = i + offset_act;
+                    int q = a + offset_act;
+                    int pp = p * nact_ + p;
+                    int pq = p * nact_ + q;
+                    int qq = q * nact_ + q;
+                    int end = offset_act + nactpi_[h];
+                    for (int u=offset_act; u<end; u++){
+                        int pu = p * nact_ + u;
+                        int qu = q * nact_ + u;
+                        for (int v=offset_act; v<end; v++){
+                            int pv = p*nact_ + v;
+                            int qv = q*nact_ + v;
+                            int uv = u*nact_ + v;
+                            value += 2.0 * TPDMp[pu][pv] * actMOp[qu][qv];
+                            value += 2.0 * TPDMp[qu][qv] * actMOp[pu][pv];
+                            value += TPDMp[pp][uv] * actMOp[qq][uv];
+                            value += TPDMp[qq][uv] * actMOp[pp][uv];
+                            value -= 4.0 * TPDMp[pv][qu] * actMOp[pu][qv];
+                            value -= 2.0 * TPDMp[pq][uv] * actMOp[pq][uv];
+                        }
+                    }
+                    Hp[oa][a] += 2.0 * value;
+
+                }
+            }
+            offset_act += nactpi_[h];
         }
-        else{ // Prevent divide by zero errors
+        // aa block for casscf is one to prevent divide by zero
+        if (nactpi_[h] && casscf_){
             for (int i=0; i<nactpi_[h]; i++){
                 for (int a=0; a<nactpi_[h]; a++){
                     Hp[i + noccpi_[h]][a] = 1.0;
@@ -800,10 +854,10 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x)
 
     SharedMatrix xyQ(new Matrix("xyQ", nact_ * nact_, nQ));
     double* xyQp = xyQ->pointer()[0];
-    double* dUactp = dUact->pointer()[0];
+    double** dUactp = dUact->pointer();
 
     // oyQ,xo->xyQ (NaQ, aU) QNa^2
-    C_DGEMM('N','N',nact_,nQ*nact_,nmo_,1.0,dUactp,nmo_,NaQp,nQ*nact_,0.0,xyQp,nQ*nact_);
+    C_DGEMM('N','N',nact_,nQ*nact_,nmo_,1.0,dUactp[0],nmo_,NaQp,nQ*nact_,0.0,xyQp,nQ*nact_);
 
     // xyQ += yxQ
     for (int x=0; x<nact_; x++){
@@ -828,35 +882,41 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x)
     double** dQkp = dQk->pointer();
 
     C_DGEMM('N','T',nact_,nmo_,nact3,1.0,TPDMp,nact3,Gnwxyp,nact3,0.0,dQkp[0],nmo_);
-    // dQk->print();
-
-    // Read NNQ, need to read it in strips later
-    boost::shared_ptr<Tensor> NNQT = dfints["NNQ"];
-    SharedMatrix NNQ(new Matrix("NNQ", nmo_ * nmo_, nQ));
-    double* NNQp = NNQ->pointer()[0];
-    FILE* NNQF = NNQT->file_pointer();
-    fseek(NNQF,0L,SEEK_SET);
-    fread(NNQp, sizeof(double), nmo_ * nmo_ * nQ, NNQF);
-
-    SharedMatrix wnQ(new Matrix("nwQ", nact_*nmo_, nQ));
-    double* wnQp = wnQ->pointer()[0];
 
     // wo,onQ->wnQ (aU, NNQ) QN^2a^2 (rate determining)
-    // outfile->Printf(" wo,onQ->wnQ\n");
-    C_DGEMM('N','N',nact_,nmo_*nQ,nmo_,1.0,dUactp,nmo_,NNQp,nmo_*nQ,0.0,wnQp,nmo_*nQ);
+    // Read and gemm in chunks, need to do blocking later
+    int chunk_size = 200;
+    boost::shared_ptr<Tensor> NNQT = dfints["NNQ"];
+
+    SharedMatrix wnQ(new Matrix("nwQ", nact_*nmo_, nQ));
+    double** wnQp = wnQ->pointer();
+    SharedMatrix NNQ(new Matrix("NNQ", chunk_size * nmo_, nQ));
+    double** NNQp = NNQ->pointer();
+    FILE* NNQF = NNQT->file_pointer();
+
+    for (int start=0; start < nmo_; start += chunk_size){
+        int block = (start + chunk_size > nmo_ ? nmo_ - start : chunk_size);
+        size_t read_start = sizeof(double) * start * nmo_ * nQ;
+        fseek(NNQF,read_start,SEEK_SET);
+        fread(NNQp[0], sizeof(double), block * nmo_ * nQ, NNQF);
+        C_DGEMM('N','N',nact_,nmo_*nQ,block,1.0,
+                dUactp[0]+start,nmo_,
+                NNQp[0],nmo_*nQ,
+                1.0,wnQp[0],nmo_*nQ);
+    }
     NNQ.reset();
 
-    // Read aaQ, need to read it in strips later
+    // Read aaQ
     boost::shared_ptr<Tensor> aaQT = dfints["aaQ"];
-    SharedMatrix aaQ(new Matrix("aaQ", nmo_ * nmo_, nQ));
+    SharedMatrix aaQ(new Matrix("aaQ", nact_ * nact_, nQ));
     double* aaQp = aaQ->pointer()[0];
     FILE* aaQF = aaQT->file_pointer();
     fseek(aaQF,0L,SEEK_SET);
-    fread(aaQp, sizeof(double), nmo_ * nmo_ * nQ, aaQF);
+    fread(aaQp, sizeof(double), nact_ * nact_ * nQ, aaQF);
 
     // wnQ,xyQ => tmp_wnxy (wNQ, aaQ) NQa^3
-    // outfile->Printf("wnQ,xyQ => tmp_wnxy\n");
-    C_DGEMM('N','T',nmo_*nact_,nact2,nQ,1.0,wnQp,nQ,aaQp,nQ,0.0,Gnwxyp,nact2);
+    C_DGEMM('N','T',nmo_*nact_,nact2,nQ,1.0,wnQp[0],nQ,aaQp,nQ,0.0,Gnwxyp,nact2);
+    aaQ.reset();
 
     // Should probably figure out an inplace algorithm
     SharedMatrix Gleft(new Matrix("Gnwxy", nmo_, nact3));
@@ -870,15 +930,12 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x)
     for (int y=0; y<nact_; y++){
         Gleftp[target++] = Gnwxyp[w*nmo_*nact2 + n*nact2 + x*nact_ + y];
     }}}}
+    Gnwxy.reset();
 
     // vwxy,nwxy => Qk_vm (TPDM, tmp_nwxy) Na^4
     C_DGEMM('N','T',nact_,nmo_,nact3,1.0,TPDMp,nact3,Gleftp,nact3,1.0,dQkp[0],nmo_);
-    // outfile->Printf("The dense Qk to add\n");
-    // dQk->print();
 
     SharedMatrix Qk = Matrix::doublet(matrices_["Q"], U, false, true);
-    // outfile->Printf("The first Qk\n");
-    // Qk->print();
 
     int offset_act = 0;
     int offset_nmo = 0;
@@ -894,7 +951,6 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x)
     // outfile->Printf("Final Qk\n");
     // Qk->print();
 
-
     // Add in Q and zero out virtual
     for (int h=0; h<nirrep_; h++){
         if (nactpi_[h]) {
@@ -902,17 +958,10 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x)
             double** Qkp = Qk->pointer(h);
 
             // OPDM_vw IF_wn->vn
-            // outfile->Printf("Irrep %d\n", h);
             C_DGEMM('N','N',nactpi_[h],nmopi_[h],nactpi_[h],1.0,
                     matrices_["OPDM"]->pointer(h)[0],nactpi_[h],
                     IFk->pointer(h)[noccpi_[h]],nmopi_[h],
                     0.0,Fkp[noccpi_[h]],nmopi_[h]);
-            // for (int a=0; a<nactpi_[h]; a++){
-            //     for (int i=0; i<nmopi_[h]; i++){
-            //         outfile->Printf("%5.10lf  ", Fkp[noccpi_[h] + a][i]);
-            //     }
-            //     outfile->Printf("\n");
-            // }
 
             // OPDM_vw += Qk
             C_DAXPY(nmopi_[h]*nactpi_[h], 1.0, Qkp[0], 1, Fkp[noccpi_[h]], 1);
@@ -928,7 +977,6 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x)
             }
         }
     }
-    // outfile->Printf("Fk\n");
     // ret->print();
 
 
@@ -993,15 +1041,16 @@ SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print)
         zero_act(r);
     }
     SharedMatrix Ap = Hk(x);
-    // Ap->print();
     r->subtract(Ap);
-    // return x;
 
     SharedMatrix z = r->clone();
     z->apply_denominator(matrices_["Precon"]);
 
     SharedMatrix p = z->clone();
 
+    SharedMatrix rold = r->clone();
+    SharedMatrix best = x->clone();
+    double best_conv = r->rms();
     for (int iter = 0; iter < max_iter; iter++) {
         // Calc hessian vector product
         Ap = Hk(p);
@@ -1010,6 +1059,7 @@ SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print)
         double rzpre = r->vector_dot(z);
         double alpha = rzpre / p->vector_dot(Ap);
 
+        rold->copy(r);
         x->axpy(alpha, p);
         r->axpy(-alpha, Ap);
 
@@ -1018,6 +1068,12 @@ SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print)
         stop = time(NULL);
         if (print){
             outfile->Printf("    %-4d %11.3E %10ld\n", iter+1, rconv, stop-start);
+        }
+
+        // Convergence may not be monotonic
+        if (rconv < best_conv){
+            best_conv = rconv;
+            best->copy(x);
         }
 
         // Check convergence
@@ -1029,17 +1085,19 @@ SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print)
         z->copy(r);
         z->apply_denominator(matrices_["Precon"]);
 
-        double beta = r->vector_dot(z) / rzpre;
+        rold->subtract(r);
+        double beta = -rold->vector_dot(z) / rzpre;
 
         p->scale(beta);
         p->add(z);
     }// End iterations
 
     if (print){
+        outfile->Printf("    %-4s %11.3E %10s\n", "Best", best_conv, "--");
         outfile->Printf("    ---------------------------------------\n");
         outfile->Printf("\n");
     }
-    return x;
+    return best;
 }
 void SOMCSCF::zero_act(SharedMatrix vector){
     for (int h=0; h<nirrep_; h++){

@@ -1495,7 +1495,6 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
   SharedMatrix T = boost::shared_ptr<Matrix>(new Matrix("T", ciwfn->nirrep(), ciwfn->nsopi(), ciwfn->nsopi()));
   Tint->compute(T);
   H->add(T);
-  // H->print();
 
   /// Build JK, DFERI, and SOMCSCF objects
   boost::shared_ptr<JK> jk = JK::build_JK();
@@ -1557,9 +1556,6 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
     close_io();
     detci_iteration_clean();
 
-    //// Convential updated
-    conv = mcscf->update();
-
     //// Get orbitals for new update
     SharedMatrix Cdocc = ciwfn->orbital_helper("DOCC");
     SharedMatrix Cact = ciwfn->orbital_helper("ACT");
@@ -1571,15 +1567,14 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
 
     int offset = 0;
     for (int h=0; h<ciwfn->nirrep(); h++){
-      int nact = CalcInfo.ci_orbs[h];
-      if (!nact) continue;
+      if (!CalcInfo.ci_orbs[h]) continue;
 
       double* actp = actOPDM->pointer(h)[0];
       offset += CalcInfo.dropped_docc[h];
 
-      for (int i=0, target=0; i<nact; i++){
+      for (int i=0, target=0; i<CalcInfo.ci_orbs[h]; i++){
         int offi = offset + i;
-        for (int j=0; j<nact; j++){
+        for (int j=0; j<CalcInfo.ci_orbs[h]; j++){
           actp[target++] = OPDMa[offi][offset + j] + OPDMb[offi][offset + j];
         }
       }
@@ -1608,11 +1603,13 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
         ijkl = INDEX(ij, kl);
         actTPDMp[i * nci3 + j * nci2 + k * nci + l] = fullTPDMp[ijkl];
     }}}}
-    // actTPDM->print();
 
     somcscf->update(Cdocc, Cact, Cvir, actOPDM, actTPDM);
-    // somcscf->solve(5, 1.e-5, true);
-    somcscf->H_approx_diag()->print();
+    somcscf->solve(5, 1.e-5, true);
+    // somcscf->H_approx_diag()->print();
+
+    //// Convential updated
+    conv = mcscf->update();
 
 
 
@@ -1652,8 +1649,8 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
 
   ciwfn->set_lag();
   ciwfn->set_tpdm();
-  //dferi.reset();
-  //jk.reset();
+  df.reset();
+  jk.reset();
 }
 
 

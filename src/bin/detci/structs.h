@@ -273,7 +273,7 @@ struct calcinfo {
    int nirreps;          /* number of irreducible representations in pt grp */
    int *docc;            /* number of doubly occupied orbitals per irrep */
    int *socc;            /* number of singly occupied orbitals per irrep */
-   int *ci_orbs;             /* number of act orbitals per irrep */
+   int *ci_orbs;         /* number of act orbitals per irrep */
    int *dropped_docc;    /* number of core orbitals per irrep constrained to
                             be doubly occupied and dropped from explicit
                             consideration in the CI computation;
