@@ -353,7 +353,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-CCSD" && orb_opt_ == "FALSE") outfile->Printf("                       CD-CCSD   \n");
    else if (wfn_type_ == "CD-CCD" && orb_opt_ == "FALSE") outfile->Printf("                       CD-CCD   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision May 24, 2015\n") ;
+   outfile->Printf("              Latest Revision June 16, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");

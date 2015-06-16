@@ -424,10 +424,11 @@ protected:
     void ccsdl_Wmbij();         // OVOO
     void ccsdl_Wmnij();         // OOOO
     void ccsdl_WmbejL2();
-    void ccsdl_WmnijL2();
+    void ccsdl_VmnijL2();
     void ccsdl_WijmnL2();
     void ccsdl_WabefL2();     
     void ccsdl_Wmnie_direct(SharedTensor2d &W);
+    void ccsdl_tau_amps(SharedTensor2d &U, SharedTensor2d &T);
 
     // CCSD Density
     void ccsd_pdm_3index_intr();
@@ -464,7 +465,7 @@ protected:
     void ccdl_Wmbje();         // OVOV
     void ccdl_Wmnij();         // OOOO
     void ccdl_WmbejL2();
-    void ccdl_WmnijL2();
+    void ccdl_VmnijL2();
     void ccdl_WijmnL2();
     void ccdl_WabefL2();     
 

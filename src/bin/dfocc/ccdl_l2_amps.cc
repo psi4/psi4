@@ -73,8 +73,8 @@ void DFOCC::ccdl_l2_amps()
     Lnew->write_symm(psio_, PSIF_DFOCC_AMPS);
     Lnew.reset();
 
-    // WmnijL2
-    ccdl_WmnijL2();
+    // VmnijL2
+    ccdl_VmnijL2();
 
     // WijmnL2
     ccdl_WijmnL2();
