@@ -65,6 +65,7 @@ boost::shared_ptr<JK> JK::build_JK()
         "BASIS", options.get_str("BASIS"));
     //Just going to massively ghetto this up
     #ifdef HAVE_JK_FACTORY
+       std::cout<<"Using GTFock!!!!"<<std::endl;
        return boost::shared_ptr<JK>(new GTFockJK(primary));
     #endif
     if (options.get_str("SCF_TYPE") == "CD") {
@@ -176,7 +177,9 @@ boost::shared_ptr<JK> JK::build_JK()
 
         return boost::shared_ptr<JK>(jk);
 
-    } else if (options.get_str("SCF_TYPE") == "DIRECT") {
+    }
+    #ifndef HAVE_JK_FACTORY
+    else if (options.get_str("SCF_TYPE") == "DIRECT") {
 
         DirectJK* jk = new DirectJK(primary);
 
@@ -223,7 +226,9 @@ boost::shared_ptr<JK> JK::build_JK()
       
       return boost::shared_ptr<JK>(jk);
       
-    } else {
+    }
+    #endif
+    else {
         throw PSIEXCEPTION("JK::build_JK: Unknown SCF Type");
     }
 }
