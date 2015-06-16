@@ -52,7 +52,6 @@ void DFOCC::ccsdl_iterations()
         ccsdl_Wmbje();
         ccsdl_Wmbij();
         //ccsdl_Wmnie();
-        //outfile->Printf("\tWmbij is done.\n");
 
         // Write
         // Form U_ij^ab
@@ -80,6 +79,7 @@ void DFOCC::ccsdl_iterations()
         //T->sort(1324, t2, 1.0, 0.0);
         //T->write(psio_, PSIF_DFOCC_AMPS);
         //T.reset();
+	//t1A->print();
               
         // Malloc and Free
         gQ = SharedTensor1d(new Tensor1d("CCSDL G_Q", nQ));
