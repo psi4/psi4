@@ -83,14 +83,14 @@ void DFOCC::ccsd_tpdm()
     // G_ij^Q -= P+(ij) \sum(e) l_j^e (t_ie^Q + Tau_ie^Q) 
     T = SharedTensor2d(new Tensor2d("T1 (Q|IA)", nQ, naoccA, navirA));
     T->read(psio_, PSIF_DFOCC_AMPS);
-    U = SharedTensor2d(new Tensor2d("Tau2 (Q|IA)", nQ, naoccA, navirA));
+    U = SharedTensor2d(new Tensor2d("Tau (Q|IA)", nQ, naoccA, navirA));
     U->read(psio_, PSIF_DFOCC_AMPS);
-    T->add(U);
+    T->axpy(U, 1.0);
     U.reset();
     G->contract(false, true, nQ*naoccA, naoccA, navirA, T, l1A, -1.0, 1.0);
     T.reset();
 
-    // G_ij^Q -= P+(ij) \sum(e) t_j^e (L_ie^Q + 2*V_ie^Q) 
+    // G_ij^Q -= P+(ij) \sum(e) t_j^e (L_ie^Q + 2*V_ei^Q) 
     V = SharedTensor2d(new Tensor2d("V (Q|AI)", nQ, navirA, naoccA));
     V->read(psio_, PSIF_DFOCC_AMPS);
     T = SharedTensor2d(new Tensor2d("Temp (Q|IA)", nQ, naoccA, navirA));
@@ -120,7 +120,7 @@ void DFOCC::ccsd_tpdm()
 
     // G_ia^Q = Tau_ia^Q
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|IA)", nQ, naoccA, navirA));
-    T = SharedTensor2d(new Tensor2d("Tau2 (Q|IA)", nQ, naoccA, navirA));
+    T = SharedTensor2d(new Tensor2d("Tau (Q|IA)", nQ, naoccA, navirA));
     T->read(psio_, PSIF_DFOCC_AMPS);
     G->axpy(T, 1.0);
     T.reset();
@@ -177,7 +177,7 @@ void DFOCC::ccsd_tpdm()
     T.reset();
 
     // G_ia^Q -= \sum(m) Tau_ma^Q Gt_im 
-    T = SharedTensor2d(new Tensor2d("Tau2 (Q|IA)", nQ, naoccA, navirA));
+    T = SharedTensor2d(new Tensor2d("Tau (Q|IA)", nQ, naoccA, navirA));
     T->read(psio_, PSIF_DFOCC_AMPS);
     G->contract233(false, false, naoccA, navirA, GtijA, T, -1.0, 1.0);
 
@@ -294,7 +294,7 @@ void DFOCC::ccsd_tpdm()
 
     // G_ab^Q -= P+(ab) \sum(m) (t_am^Q - Tau_ma^Q) l_m^b 
     T = SharedTensor2d(new Tensor2d("Temp (Q|AI)", nQ, navirA, naoccA));
-    U = SharedTensor2d(new Tensor2d("Tau2 (Q|IA)", nQ, naoccA, navirA));
+    U = SharedTensor2d(new Tensor2d("Tau (Q|IA)", nQ, naoccA, navirA));
     U->read(psio_, PSIF_DFOCC_AMPS);
     T->swap_3index_col(U);
     U.reset();
@@ -399,7 +399,8 @@ void DFOCC::ccsd_tpdm()
                 }
             } 
 
-	    /* OLD excluded
+#ifdef EXCLUDED
+	    // OLD Excluded
             // Form (+)Tau[b](f, m>=n) 
             #pragma omp parallel for
             for(int m = 0 ; m < naoccA; ++m){
@@ -434,7 +435,8 @@ void DFOCC::ccsd_tpdm()
                     }
                 }
             } 
-	    OLD excluded */
+	    //OLD excluded 
+#endif
 
 	    // G2[b](Q,a) = \sum(ef) b(Q,ef) * V[b](a,ef) 
             X->gemm(false, true, bQabA, V, 1.0, 0.0);
