@@ -78,6 +78,7 @@ psi::MinimalInterface::MinimalInterface(const int NMats,
    NBasis_=primary->nbf();
    BlockDims(NBasis_);
    MakeBasis(&GTBasis_,primary);
+   //I don't know how GTFock works
    double IntThresh=
          psi::Process::environment.options["INTS_TOLERANCE"].to_double();
    //It appears I can have GTFock figure this value out if I hand it

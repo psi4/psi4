@@ -23,7 +23,11 @@
 #include "jk.h"
 #include "../libJKFactory/MinimalInterface.h"
 namespace psi {
-GTFockJK::GTFockJK(boost::shared_ptr<psi::BasisSet> Primary):JK(Primary),Impl_(new MinimalInterface){}
+GTFockJK::GTFockJK(boost::shared_ptr<psi::BasisSet> Primary,
+      size_t NMats,bool AreSymm):
+      JK(Primary),Impl_(new MinimalInterface(NMats,AreSym)){
+
+}
 void GTFockJK::compute_JK() {
    Impl_->SetP(D_);
    Impl_->GetJ(J_);
