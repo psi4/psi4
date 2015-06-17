@@ -63,11 +63,6 @@ boost::shared_ptr<JK> JK::build_JK()
     Options& options = Process::environment.options;
     boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(Process::environment.molecule(), 
         "BASIS", options.get_str("BASIS"));
-    //Just going to massively ghetto this up
-    #ifdef HAVE_JK_FACTORY
-       std::cout<<"Using GTFock!!!!"<<std::endl;
-       return boost::shared_ptr<JK>(new GTFockJK(primary));
-    #endif
     if (options.get_str("SCF_TYPE") == "CD") {
 
         CDJK* jk = new CDJK(primary,options.get_double("CHOLESKY_TOLERANCE"));
@@ -178,9 +173,11 @@ boost::shared_ptr<JK> JK::build_JK()
         return boost::shared_ptr<JK>(jk);
 
     }
-    #ifndef HAVE_JK_FACTORY
     else if (options.get_str("SCF_TYPE") == "DIRECT") {
-
+       //Just going to massively ghetto this up
+       #ifdef HAVE_JK_FACTORY
+          return boost::shared_ptr<JK>(new GTFockJK(primary));
+       #endif
         DirectJK* jk = new DirectJK(primary);
 
         if (options["INTS_TOLERANCE"].has_changed())
@@ -226,9 +223,7 @@ boost::shared_ptr<JK> JK::build_JK()
       
       return boost::shared_ptr<JK>(jk);
       
-    }
-    #endif
-    else {
+    }else {
         throw PSIEXCEPTION("JK::build_JK: Unknown SCF Type");
     }
 }

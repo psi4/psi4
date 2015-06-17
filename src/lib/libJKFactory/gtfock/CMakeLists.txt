@@ -14,7 +14,7 @@ add_definitions(-DSCF_OUT=0)
 add_definitions(-D__ALIGNLEN__=64)
 
 #The additional flags that are wanted by GTFock
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m64 -pg")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m64")
 
 #If we have an Intel compiler also add this one:
 if(${CMAKE_C_COMPILER_ID} STREQUAL "Intel")

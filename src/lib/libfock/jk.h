@@ -94,7 +94,7 @@ class PSIO;
  * where possible.
  *
  * The typical calling convention for a JK instance is:
- *
+ * \code
  *      // Constructor, Algorithm corresponds
  *      // to Type
  *      boost::shared_ptr<JKType> jk(new JKType(
@@ -112,7 +112,7 @@ class PSIO;
  *      jk->set_do_wK(false);
  *      ...
  *
- *      // Initialize (builds integrals)
+ *      // Initialize calls your derived class's preiterations member
  *      jk->initialize();
  *
  *      // Enter iterations or whatever
@@ -146,6 +146,71 @@ class PSIO;
  *      // Finalize (frees most memory, including C/D/J/K
  *      // pointers you are no longer holding)
  *      jk->finalize();
+ *      \endcode
+ *
+ *  If you're like me and are trying to implement a new flavor of JK
+ *  object, you probably want to know what sorts of things it needs to
+ *  do and what hooks are
+ *  At least within the confines of the HF code, the JK object
+ *  works off of a modified visitor pattern.
+ *  The derived wavefunction class, HF, contains a pointer to an instance
+ *  of a JK object.  At certain hooks (vide infra) throughout the SCF
+ *  the boilerplate HF code calls the overloaded functions of the JK
+ *  object.  These are your chances to interact with the HF code.
+ *
+ *  1) During HF::integrals the JK instance is built by calling
+ *     JK::build_JK, which is a static factory function.  This is your
+ *     chance to set up your derived JK as you want it, via its
+ *     constructor.
+ *
+ *  2) Also within HF::integrals, JK::initialize is called, which is
+ *     a wrapper to an abstract function preiterations().  Best I can
+ *     tell this a second chance to setup your derived JK object.
+ *
+ *  3) The last thing HF::integrals does is call JK::print_header, which
+ *     is an abstract function that your derived class is supposed to
+ *     implement so that it, you guessed it, prints a header.
+ *
+ *  4) Now the SCF proceeds until HF::FormG() (an abstract function) is
+ *     called.  Because this function is implemented differently for
+ *     each flavor of SCF, there is the possibility that different calls
+ *     are made to your instance; however, all the calls seem to follow
+ *     the same ordering:
+ *
+ *     4a) A call to JK::C_left, which allows the SCF code to set the
+ *         MO coefficients
+ *
+ *     4b) A call to JK::compute() which:
+ *         4b1) Ensures you have both a C_left and C_right
+ *         4b2) Ensures you have a density
+ *         4b3) Allocates memory in J_ and K_
+ *         4b4) Calls compute_JK(), which is the next hook and is where
+ *              you build J and K.  The resulting J and K are to be
+ *              placed in the J_ and K_ members.
+ *     4c) The SCF routine then grabs the J and K via getters to the
+ *         base JK
+ *  5) At this point the SCF decides if it's looping, which if it does
+ *     return to point 4, otherwise...
+ *
+ *  6) You're off the hook! Do your cleanup in your destructor
+ *
+ *
+ *  General notes:
+ *
+ *   - Best I can tell, abstract member JK::postiterations is never
+ *     called (at least in RHF).  This means if you have actually used
+ *     it to tear down your object, you'll need to call it in your
+ *     destructor
+ *       - Despite not being called, I suspect most JK flavors are fine
+ *         and don't cause memory leaks owing to the use of shared
+ *         pointers everywhere
+ *       - Perhaps JK::~JK() should call it?
+ *    - Your derived class is not responsible for memory associated with
+ *      the density, MO coefficients, J, or K.  These things are
+ *      allocated by the base class into shared pointers and will be
+ *      autodestroyed when the pointers go out of scope
+ *
+ *
  */
 class JK {
 
@@ -189,13 +254,13 @@ protected:
     std::vector<SharedMatrix > C_left_;
     /// Pseudo-occupied C matrices, right side
     std::vector<SharedMatrix > C_right_;
-    /// Pseudo-density matrices D_ls =  C_li^left C_si^right
+    /// Pseudo-density matrices \f$D_{ls}=C_{li}^{left}C_{si}^{right}\f$
     std::vector<SharedMatrix > D_;
-    /// J matrices: J_mn = (mn|ls) C_li^left C_si^right
+    /// J matrices: \f$J_{mn}=(mn|ls)C_{li}^{left}C_{si}^{right}\f$
     std::vector<SharedMatrix > J_;
-    /// K matrices: K_mn = (ml|ns) C_li^left C_si^right
+    /// K matrices: \f$K_{mn}=(ml|ns)C_{li}^{left}C_{si}^{right}\f$
     std::vector<SharedMatrix > K_;
-    /// wK matrices: wK_mn = (ml|w|ns) C_li^left C_si^right
+    /// wK matrices: \f$K_{mn}(\omega)=(ml|\omega|ns)C_{li}^{left}C_{si}^{right}\f$
     std::vector<SharedMatrix > wK_;
 
     // => Microarchitecture-Level State Variables (No Spatial Symmetry) <= //
@@ -227,7 +292,17 @@ protected:
     void AO2USO();
     /// Allocate J_/K_ should we be using SOs
     void allocate_JK();
-    /// Common initialization
+    /**
+     *  Function that sets a number of flags and allocates memory
+     *  and sets up AO2USO.
+     *
+     *  Important note: no other memory is allocated here. That
+     *  needs to be done in your derived class' constructor!!!!
+     *
+     *  Warning: this function is currently shadowed in at least
+     *  one derived class, use with care!!!!!
+     *
+     */
     void common_init();
 
     // => Required Algorithm-Specific Methods <= //
@@ -250,11 +325,17 @@ public:
     // => Constructors <= //
 
     /**
+     *   Wrapper to common_init(), see that reference
+     *
+     *
+     *
      * @param primary primary basis set for this system.
      *        AO2USO transforms will be built with the molecule
      *        contained in this basis object, so the incoming
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
+     *
+     *
      */
     JK(boost::shared_ptr<BasisSet> primary);
 
@@ -611,8 +692,23 @@ public:
     virtual void print_header() const;
 };
 
+/** \brief Derived class extending the JK object to GTFock
+ *
+ *   Unfortunately GTFock needs to know the number of density
+ *   matrices and whether they are symmetric at construction.
+ *   These two points are not within the design considerations of
+ *   the base JK object and so this adds a slight complication if you
+ *   want to use GTFock under those circumstances.  To get around
+ *   this, you'll need to manually build a GTFockJK
+ *   object and pass it into the constructor.  Don't worry
+ *   building a GTFockJK object is easy, take a look at
+ *   the static JK member build_JK() and just fill in the last two
+ *   arguments of the constructor.
+ *
+ */
 class GTFockJK: public JK{
    private:
+      ///The actual instance that does the implementing
       boost::shared_ptr<MinimalInterface> Impl_;
    protected:
       /// Do we need to backtransform to C1 under the hood?
@@ -623,10 +719,25 @@ class GTFockJK: public JK{
       virtual void compute_JK();
       /// Delete integrals, files, etc
       virtual void postiterations(){}
-      ///I don't fell the need to print a header...
+      ///I don't fell the need to further clutter the output...
       virtual void print_header() const{}
    public:
-      GTFockJK(boost::shared_ptr<psi::BasisSet> Primary);
+      /** \brief Your public interface to GTFock
+       *
+       *  \param[in] Primary used by the base JK object, but not
+       *         by GTFock.  Long term, this should be changed,
+       *         but the reality is GTFock under the hood gets
+       *         its basis in the same way as JK::build_JK gets
+       *         Primary, so this shouldn't be an issue
+       *  \param[in] NMats The number of density matrices you are
+       *         passing in and consequently the number of Js and Ks
+       *         you'll be getting back
+       *  \param[in] AreSymm A flag specifying whether the density
+       *         matrices you'll be passing in are symmetric.
+       */
+      GTFockJK(boost::shared_ptr<psi::BasisSet> Primary,
+            size_t NMats=1,
+            bool AreSymm=true);
 
 };
 
