@@ -203,7 +203,7 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
     for (int h=0; h<wavefunction_->nirrep(); ++h) {
         for (int n=0; n<wavefunction_->nmopi()[h]; ++n) {
             mos.push_back(make_pair(Ea->get(h, n), make_pair(h, n)));
-            if(OccA->get(h,n) != OccB->get(h,n))
+            if(fabs(OccA->get(h,n) - OccB->get(h,n)) > 1e-10)
                 SameOcc = false;
         }
     }
