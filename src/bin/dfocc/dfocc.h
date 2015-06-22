@@ -470,6 +470,12 @@ protected:
     void ccdl_WijmnL2();
     void ccdl_WabefL2();     
 
+    // CCD Density
+    void ccd_pdm_3index_intr();
+    void ccd_pdm_yQia();
+    void ccd_opdm();
+    void ccd_tpdm();
+
     // orbital pairs
     int so_pair_idx(int i, int j);
     int mo_pair_idx(int i, int j);
