@@ -21,3 +21,6 @@ DEBUG:
 * L2 is okay
 * L1 is okay
 * OPDM and TPDM are okay
+* Seprable TPDMs are okay
+* GFM are okay
+* DF-CCSD gradients are okay 

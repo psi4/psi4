@@ -223,7 +223,7 @@ if (reference_ == "RESTRICTED") {
 
     // Fia += \sum_{Q} \sum_{m} G_ma^Q b_mi^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA * nvirA));
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
     GFov->contract(true, false, noccA, nvirA, nQ_ref * noccA, K, G, 1.0, 1.0);
