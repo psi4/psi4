@@ -573,8 +573,8 @@ void DFOCC::ccsd_manager_cd()
             outfile->Printf("\tComputing unrelaxed response density matrices...\n");
  	    ccsd_opdm();
 	    ccsd_tpdm();
-	    ccsdl_energy();
-            //prepare4grad();
+	    ccl_energy();
+            prepare4grad();
             //if (oeprop_ == "TRUE") oeprop();
             //if (dertype == "FIRST") dfgrad();
             //if (ekt_ip_ == "TRUE") ekt_ip(); 

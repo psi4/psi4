@@ -129,6 +129,8 @@ protected:
     void gwh();
     void qchf();
     void mo_coeff_blocks();
+    void ccl_energy();
+    void ccl_energy2();
 
     void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new);
     void sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec);
@@ -435,7 +437,6 @@ protected:
     void ccsd_pdm_yQia();
     void ccsd_opdm();
     void ccsd_tpdm();
-    void ccsdl_energy();
 
     // CCD
     void ccd_manager();
