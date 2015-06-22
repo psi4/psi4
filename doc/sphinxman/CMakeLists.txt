@@ -208,7 +208,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
     # Format git log for feed
     add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E make_directory feed
-        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/extract_changeset.py
+        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/extract_changeset.py ${CCBD}
         OUTPUT  ${CCBD}/feed/history_trac_changeset.txt
                 ${CCBD}/feed/latest_trac_changeset.txt
         DEPENDS ${CCSD}/extract_changeset.py
