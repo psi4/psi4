@@ -2,8 +2,8 @@
 import os
 # Extracts last git changelog item into html for psicode
 
-gitlast = '/var/www/trac/feed/latest_trac_changeset.txt'  # path to output file with latest changeset
-githist = '/var/www/trac/feed/history_trac_changeset.txt'  # path to output file with last Nhist changesets
+gitlast = 'feed/latest_trac_changeset.txt'  # path to output file with latest changeset
+githist = 'feed/history_trac_changeset.txt'  # path to output file with last Nhist changesets
 Nhist = 100
 
 # So that this can be called from anywhere
