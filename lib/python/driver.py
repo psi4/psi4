@@ -256,7 +256,7 @@ procedures = {
         }}
 
 # dictionary to register pre- and post-compute hooks for driver routines
-hooks = {k1: {k2: [] for k2 in ['pre', 'post']} for k1 in ['energy', 'optimize', 'frequency']}
+hooks = dict((k1, dict((k2, []) for k2 in ['pre', 'post'])) for k1 in ['energy', 'optimize', 'frequency']) 
 
 # Integrate DFT with driver routines
 for ssuper in superfunctional_list():
