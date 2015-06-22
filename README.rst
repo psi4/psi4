@@ -3,7 +3,9 @@ Psi4: Open-Source Quantum Chemistry
 
 * **Users' Website**  www.psicode.org
 
-* **Manual**  bit.ly/psi4manual or http://sirius.chem.vt.edu/psi4manual/master/index.html (built nightly from master branch)
+* **Getting Started** https://github.com/psi4/psi4public/wiki
+
+* **Manual**  http://psicode.org/psi4manual/master/index.html (**Moved June 2015!**, built nightly from master branch)
 
 * **Public Github**  https://github.com/psi4/psi4public (regularly synched from private github master)
 
@@ -24,5 +26,5 @@ high-accuracy simulations of a variety of molecular properties. We can routinely
 computations with more than 2500 basis functions running serially or with modest parallelism.
 
 With computationally demanding portions written in C++, Boost exports of many C++ classes into
-Python, and a flexible Python driver, PSI4 strives to be friendly to both users and developers.
+Python, and a flexible Python driver, Psi4 strives to be friendly to both users and developers.
 
