@@ -209,10 +209,12 @@ procedures = {
             'omp2.5'        : run_omp2_5_gradient,
             'cepa0'         : run_cepa0_gradient,
             'ocepa'         : run_ocepa_gradient,
-            #'df-ccsd'       : run_dfccsd_gradient,
-            #'dfccsd'        : run_dfccsd_gradient,
-            #'df-ccsd2'      : run_dfccsd_gradient,
-            #'dfccsd2'       : run_dfccsd_gradient,
+            'df-ccsd'       : run_dfccsd_gradient,
+            'dfccsd'        : run_dfccsd_gradient,
+            'df-ccsd2'      : run_dfccsd_gradient,
+            'dfccsd2'       : run_dfccsd_gradient,
+            'df-ccd'        : run_dfccd_gradient,
+            'dfccd'         : run_dfccd_gradient,
 #            'efp'           : run_efp_gradient,
             'hf'            : run_scf_gradient,
             'rhf'           : run_scf_gradient,
@@ -256,7 +258,7 @@ procedures = {
         }}
 
 # dictionary to register pre- and post-compute hooks for driver routines
-hooks = {k1: {k2: [] for k2 in ['pre', 'post']} for k1 in ['energy', 'optimize', 'frequency']}
+hooks = dict((k1, dict((k2, []) for k2 in ['pre', 'post'])) for k1 in ['energy', 'optimize', 'frequency']) 
 
 # Integrate DFT with driver routines
 for ssuper in superfunctional_list():
@@ -1091,6 +1093,10 @@ def optimize(name, **kwargs):
     | ccsd(t)                 | CCSD with perturbative triples (CCSD(T)) :ref:`[manual] <sec:cc>`                     |
     +-------------------------+---------------------------------------------------------------------------------------+
     | eom-ccsd                | equation of motion (EOM) CCSD :ref:`[manual] <sec:eomcc>`                             |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-ccsd                 | density-fitted CCSD (DF-CCSD) :ref:`[manual] <sec:dfocc>`                             |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-ccd                  | density-fitted CCD (DF-CCD) :ref:`[manual] <sec:dfocc>`                               |
     +-------------------------+---------------------------------------------------------------------------------------+
     | efp                     | efp-only optimizations                                                                |
     +-------------------------+---------------------------------------------------------------------------------------+

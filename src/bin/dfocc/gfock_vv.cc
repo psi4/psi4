@@ -93,7 +93,6 @@ if (reference_ == "RESTRICTED") {
     }
     Etemp += Enuc;
     outfile->Printf("\tDF-MP2L Total Energy via GFM (a.u.): %20.14f\n", Etemp);
-    
     */
 
 }// end if (reference_ == "RESTRICTED")
@@ -238,7 +237,7 @@ if (reference_ == "RESTRICTED") {
 
     // Fab += \sum_{Q} \sum_{m} G_mb^Q b_ma^Q 
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA));
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
     GFvv->contract(true, false, nvirA, nvirA, nQ * noccA, K, G, 1.0, 1.0);
@@ -279,6 +278,18 @@ if (reference_ == "RESTRICTED") {
     // Set global GF
     GF->set_vv(noccA, GFvv);
     if (print_ > 2) GF->print();
+
+    /*
+    // Energy
+    double Etemp = 0.0;
+    Etemp += 0.5 * G1->vector_dot(HmoA);
+    for (int p = 0; p < nmo_; p++) {
+         Etemp += 0.5*GF->get(p,p); 
+    }
+    Etemp += Enuc;
+    outfile->Printf("\tDF-CCL Total Energy via GFM (a.u.) : %20.14f\n", Etemp);
+    */
+
 
 }// end if (reference_ == "RESTRICTED")
 

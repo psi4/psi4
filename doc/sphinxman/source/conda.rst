@@ -30,7 +30,7 @@ distribution with same package manger `conda
 
 * add-ons (plugins, extra features requiring Fortran compiler, etc.) can be made available as conda packages
 
-The |PSIfour| binary repository is at `Binstar <https://binstar.org/psi4>`_.
+The |PSIfour| binary repository is at `Anaconda (formerly Binstar) <https://anaconda.org/psi4>`_.
 
 For commands to get a default installation, go to :ref:`sec:quickconda`.
 For more flexibility and a detailed explanation, go to
@@ -53,7 +53,7 @@ main conda environment at ``$HOME/miniconda/bin/psi4``.
     >>> echo "export PATH=$HOME/miniconda/bin:\$PATH" >> ~/.bashrc
     # log out, log back in so conda in path
     >>> conda update --yes --all
-    >>> conda config --add channels http://conda.binstar.org/psi4
+    >>> conda config --add channels http://conda.anaconda.org/psi4
     >>> conda install --yes psi4
     >>> psi4 "$(dirname $(which psi4))"/../share/psi/samples/scf1/input.dat -o stdout  # test installation. works b/c PSI_SCRATCH defaults to /tmp
 
@@ -117,15 +117,15 @@ Detailed Installation of Miniconda
 Detailed Installation of |PSIfour|
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-5. Subscribe to |PSIfour|. Subscribe to our channel at http://binstar.org/psi4 that contains the |PSIfour| package and several dependency packages. Make sure this shows up in your ``~/.condarc`` file.
+5. Subscribe to |PSIfour|. Subscribe to our channel at http://anaconda.org/psi4 that contains the |PSIfour| package and several dependency packages. Make sure this shows up in your ``~/.condarc`` file.
 
 .. code-block:: bash
 
-    >>> conda config --add channels http://conda.binstar.org/psi4
+    >>> conda config --add channels http://conda.anaconda.org/psi4
     # check
     >>> cat ~/.condarc
     channels:
-      - http://conda.binstar.org/psi4
+      - http://conda.anaconda.org/psi4
       - defaults
 
 6. Install |PSIfour|. You can install into the main conda environment so that whenever commands ``conda`` or (Ana/Miniconda's) ``python`` are available, then ``psi4`` is available, too. 

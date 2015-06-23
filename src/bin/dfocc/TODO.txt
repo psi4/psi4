@@ -17,6 +17,10 @@ DEBUG:
 * Ft_ij is okay
 * Ft_ab is okay
 * Check lambdas!
-* Be careful! Crawford uses a different denominator for Lambda equations
+* Be careful! Daniel uses a different denominator for Lambda equations
 * L2 is okay
 * L1 is okay
+* OPDM and TPDM are okay
+* Seprable TPDMs are okay
+* GFM are okay
+* DF-CCSD gradients are okay 

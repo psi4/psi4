@@ -369,6 +369,23 @@ def run_dfccd(name, **kwargs):
     return psi4.get_variable("CURRENT ENERGY")
 
 
+def run_dfccd_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted CCD gradient computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['REFERENCE'],
+        ['DFOCC', 'CC_LAMBDA'],
+        ['GLOBALS', 'DERTYPE'])
+
+    psi4.set_global_option('DERTYPE', 'FIRST')
+    psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+    run_dfccd(name, **kwargs)
+
+    optstash.restore()
+
+
 def run_dfccsdl(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an density-fitted CCSD Lambda computation
