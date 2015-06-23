@@ -78,9 +78,9 @@ PsiReturnType CoupledCluster::triples(){
   }
   memory -= 8L*(2L*o*o*v*v+o*o*o*v+o*v+3L*nthreads*v*v*v);
 
-  outfile->Printf("        num_threads =             %9i\n",nthreads);
-  outfile->Printf("        available memory =     %9.2lf mb\n",memory/1024./1024.);
-  outfile->Printf("        memory requirements =  %9.2lf mb\n",
+  outfile->Printf("        num_threads:              %9i\n",nthreads);
+  outfile->Printf("        available memory:      %9.2lf mb\n",memory/1024./1024.);
+  outfile->Printf("        memory requirements:   %9.2lf mb\n",
            8.*(2.*o*o*v*v+1.*o*o*o*v+(3.*nthreads)*v*v*v+1.*o*v)/1024./1024.);
   outfile->Printf("\n");
   

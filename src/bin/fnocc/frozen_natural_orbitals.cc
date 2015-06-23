@@ -516,7 +516,7 @@ void DFFrozenNO::ThreeIndexIntegrals() {
       psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
       psio->write_entry(PSIF_DCC_QSO,"Qso CC",(char*)&Qso[0][0],nQ*nso*nso*sizeof(double));
       psio->close(PSIF_DCC_QSO,1);
-      outfile->Printf("        Number of auxiliary functions:       %5li\n",nQ);
+      outfile->Printf("    Number of auxiliary functions:       %5li\n",nQ);
 
       // stick nQ in process environment so ccsd can know it
       Process::environment.globals["NAUX (CC)"] = (double)nQ;
