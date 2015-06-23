@@ -293,7 +293,7 @@ def parse_input():
     group.add_argument('--chemps2',
             action='store',
             choices=('on', 'off'),
-            default='on',
+            default='off',
             help='Enable CheMPS2 external project [default: %(default)s]')
     group.add_argument('--chemps2-dir',
             action='store',
