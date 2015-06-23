@@ -197,6 +197,13 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   /**
     *  if there is enough memory to explicitly thread, do so
     */
+
+  std::vector< boost::shared_ptr<PSIO> > mypsio;
+  for (int i = 0; i < nthreads; i++) {
+      mypsio.push_back( (boost::shared_ptr<PSIO>)(new PSIO()) );
+      mypsio[i]->open(PSIF_DCC_ABCI4,PSIO_OPEN_OLD);
+  }
+
   if (threaded){
      #pragma omp parallel for schedule (dynamic) num_threads(nthreads)
      for (int ind=0; ind<nabc; ind++){
@@ -209,10 +216,10 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
              thread = omp_get_thread_num();
          #endif
 
-         boost::shared_ptr<PSIO> mypsio(new PSIO());
-         mypsio->open(PSIF_DCC_ABCI4,PSIO_OPEN_OLD);
+         //boost::shared_ptr<PSIO> mypsio(new PSIO());
+         //mypsio->open(PSIF_DCC_ABCI4,PSIO_OPEN_OLD);
          psio_address addr = psio_get_address(PSIO_ZERO,(long int)(b*v*v*o+c*v*o)*sizeof(double));
-         mypsio->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],o*v*sizeof(double),addr,&addr);
+         mypsio[thread]->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],o*v*sizeof(double),addr,&addr);
         
          // (1)
          F_DGEMM('t','t',o,o*o,v,1.0,E2abci[thread],v,tempt+a*o*o*v,o*o,0.0,Z[thread],o); 
@@ -220,7 +227,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
          F_DGEMM('t','n',o,o*o,o,-1.0,tempt+c*o*o*v+a*o*o,o,E2ijak+b*o*o*o,o,1.0,Z[thread],o); 
 
          addr = psio_get_address(PSIO_ZERO,(long int)(a*v*v*o+c*v*o)*sizeof(double));
-         mypsio->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],o*v*sizeof(double),addr,&addr);
+         mypsio[thread]->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],o*v*sizeof(double),addr,&addr);
          //(ab)(ij)
          F_DGEMM('t','t',o,o*o,v,1.0,E2abci[thread],v,tempt+b*o*o*v,o*o,0.0,Z2[thread],o);
          //(ab)(ij)
@@ -232,7 +239,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
          }
 
          addr = psio_get_address(PSIO_ZERO,(long int)(c*v*v*o+b*v*o)*sizeof(double));
-         mypsio->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],o*v*sizeof(double),addr,&addr);
+         mypsio[thread]->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],o*v*sizeof(double),addr,&addr);
          //(bc)(jk)
          F_DGEMM('t','t',o,o*o,v,1.0,E2abci[thread],v,tempt+a*o*o*v,o*o,0.0,Z2[thread],o);
          //(bc)(jk)
@@ -243,7 +250,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
              }
          }
          addr = psio_get_address(PSIO_ZERO,(long int)(b*v*v*o+a*v*o)*sizeof(double));
-         mypsio->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],o*v*sizeof(double),addr,&addr);
+         mypsio[thread]->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],o*v*sizeof(double),addr,&addr);
          //(ac)(ik)
          F_DGEMM('t','t',o,o*o,v,1.0,E2abci[thread],v,tempt+c*o*o*v,o*o,0.0,Z2[thread],o);
          //(ac)(ik)
@@ -258,14 +265,14 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
              }
          }
          addr = psio_get_address(PSIO_ZERO,(long int)(c*v*v*o+a*v*o)*sizeof(double));
-         mypsio->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],o*v*sizeof(double),addr,&addr);
+         mypsio[thread]->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],o*v*sizeof(double),addr,&addr);
          //(ijk)(abc)
          F_DGEMM('t','t',o,o*o,v,1.0,E2abci[thread],v,tempt+b*o*o*v,o*o,0.0,Z2[thread],o);
          F_DGEMM('t','n',o*o,o,o,-1.0,E2ijak+a*o*o*o,o,tempt+b*o*o*v+c*o*o,o,1.0,Z2[thread],o*o);
          //(ijk)(abc)
          //(ikj)(acb)
          addr = psio_get_address(PSIO_ZERO,(long int)(a*v*v*o+b*v*o)*sizeof(double));
-         mypsio->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],o*v*sizeof(double),addr,&addr);
+         mypsio[thread]->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],o*v*sizeof(double),addr,&addr);
          F_DGEMM('n','n',o*o,o,v,1.0,tempt+c*o*o*v,o*o,E2abci[thread],v,1.0,Z2[thread],o*o);
          for (int i=0; i<o; i++){
              for (int j=0; j<o; j++){
@@ -424,13 +431,16 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
                
             }
          }
-         mypsio->close(PSIF_DCC_ABCI4,1);
-         mypsio.reset();
+         //mypsio->close(PSIF_DCC_ABCI4,1);
+         //mypsio.reset();
      }
   }
   else{
      outfile->Printf("on the to do pile!\n");
      return Failure;
+  }
+  for (int i = 0; i < nthreads; i++) {
+      mypsio[i]->close(PSIF_DCC_ABCI4,1);
   }
 
 
