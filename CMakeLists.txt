@@ -27,7 +27,7 @@ option(ENABLE_XHOST          "Enable processor-specific optimizations"     ON)
 option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
 option(ENABLE_PLUGINS        "Enable compilation of example plugins"       OFF)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
-option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     ON)
+option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     OFF)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
 # Modules requiring Fortran
 option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF)
