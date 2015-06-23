@@ -102,9 +102,9 @@ else if (reference_ == "UNRESTRICTED") {
 } // end mp2_energy
 
 //=======================================================
-//          CCSD Energy
+//          CC Energy
 //=======================================================          
-void DFOCC::ccsdl_energy()
+void DFOCC::ccl_energy()
 {   
 
     timer_on("CCL Energy");
@@ -121,33 +121,6 @@ if (reference_ == "RESTRICTED") {
     // DE = \sum_{p,q} G_pq f_pq
     EcorrL += G1c->vector_dot(FockA);
     Eoei = EcorrL;
-
-    /*
-    // OEI energies
-    double Eoei2 = 0.0;
-    Eoei2 = G1c_oo->vector_dot(FooA);
-    outfile->Printf("\tDF-CCSDL OEI OO Block Energy (a.u.): %20.14f\n", Eoei2);
-    Eoei2 = G1c_ov->vector_dot(FovA);
-    outfile->Printf("\tDF-CCSDL OEI OV Block Energy (a.u.): %20.14f\n", Eoei2);
-    Eoei2 = G1c_vo->vector_dot(FvoA);
-    outfile->Printf("\tDF-CCSDL OEI VO Block Energy (a.u.): %20.14f\n", Eoei2);
-    Eoei2 = G1c_vv->vector_dot(FvvA);
-    outfile->Printf("\tDF-CCSDL OEI VV Block Energy (a.u.): %20.14f\n", Eoei2);
-    Eoei2 = G1c->vector_dot(FockA);
-    outfile->Printf("\tDF-CCSDL One-Electron Energy (a.u.): %20.14f\n", Eoei2);
-
-    // OEI2 energies
-    Eoei2 = G1c_oo->vector_dot(HooA);
-    outfile->Printf("\tDF-CCSDL OEI OO Block Energy (a.u.): %20.14f\n", Eoei2);
-    Eoei2 = G1c_ov->vector_dot(HovA);
-    outfile->Printf("\tDF-CCSDL OEI OV Block Energy (a.u.): %20.14f\n", Eoei2);
-    Eoei2 = G1c_vo->vector_dot(HvoA);
-    outfile->Printf("\tDF-CCSDL OEI VO Block Energy (a.u.): %20.14f\n", Eoei2);
-    Eoei2 = G1c_vv->vector_dot(HvvA);
-    outfile->Printf("\tDF-CCSDL OEI VV Block Energy (a.u.): %20.14f\n", Eoei2);
-    Eoei2 = G1c->vector_dot(HmoA);
-    outfile->Printf("\tDF-CCSDL One-Electron Energy (a.u.): %20.14f\n", Eoei2);
-    */
 
     // DE += 1/2 \sum_{Q} \sum_{i,j} G_ij^Q b_ij^Q
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
@@ -209,16 +182,114 @@ else if (reference_ == "UNRESTRICTED") {
 }// else if (reference_ == "UNRESTRICTED")
 
     EccsdL = Eref + EcorrL;
-    outfile->Printf("\tDF-CCSDL One-Electron Energy (a.u.): %20.14f\n", Eoei);
-    outfile->Printf("\tDF-CCSDL OO Energy (a.u.)          : %20.14f\n", Eoo);
-    outfile->Printf("\tDF-CCSDL OV Energy (a.u.)          : %20.14f\n", Eov);
-    outfile->Printf("\tDF-CCSDL VV Energy (a.u.)          : %20.14f\n", Evv);
-    outfile->Printf("\tDF-CCSDL Correlation Energy (a.u.) : %20.14f\n", EcorrL);
-    outfile->Printf("\tDF-CCSD Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
-    outfile->Printf("\tDF-CCSDL Total Energy (a.u.)       : %20.14f\n", EccsdL);
+    outfile->Printf("\n\tEnergies re-computed from CC density: \n");
+    outfile->Printf("\t------------------------------------- \n");
+    outfile->Printf("\tOne-Electron Energy (a.u.)         : %20.14f\n", Eoei);
+    outfile->Printf("\tOO Energy (a.u.)                   : %20.14f\n", Eoo);
+    outfile->Printf("\tOV Energy (a.u.)                   : %20.14f\n", Eov);
+    outfile->Printf("\tVV Energy (a.u.)                   : %20.14f\n", Evv);
+    outfile->Printf("\tLagrangian Corr. Energy (a.u.)     : %20.14f\n", EcorrL);
+    outfile->Printf("\tLagrangian Total Energy (a.u.)     : %20.14f\n", EccsdL);
     
     timer_off("CCL Energy");
-} // end ccsdl_energy
+} // end ccl_energy
+
+//=======================================================
+//          CCL Energy-2
+//=======================================================          
+void DFOCC::ccl_energy2()
+{   
+
+    timer_on("CCL Energy");
+
+    SharedTensor2d G, K;
+
+    EcorrL = 0.0;
+    double Eoei = 0.0;
+    double Eoo = 0.0;
+    double Eov = 0.0;
+    double Evv = 0.0;
+
+if (reference_ == "RESTRICTED") {
+    // DE = \sum_{p,q} G_pq h_pq
+    EcorrL += G1c->vector_dot(HmoA);
+    Eoei = EcorrL;
+
+    // DE += 1/2 \sum_{Q} \sum_{i,j} G_ij^Q b_ij^Q
+    // Sep
+    G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA, noccA));
+    G->read(psio_, PSIF_DFOCC_DENS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
+    K->read(psio_, PSIF_DFOCC_INTS);
+    EcorrL += 0.5 * G->vector_dot(K);
+    G.reset();
+    K.reset();
+    // Corr
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
+    G->read(psio_, PSIF_DFOCC_DENS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA));
+    K->read(psio_, PSIF_DFOCC_INTS);
+    EcorrL += 0.5 * G->vector_dot(K);
+    G.reset();
+    K.reset();
+    Eoo = EcorrL - Eoei;
+
+    // DE += \sum_{Q} \sum_{i,a} G_ia^Q b_ia^Q
+    // Sep
+    G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA, nvirA));
+    G->read(psio_, PSIF_DFOCC_DENS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA));
+    K->read(psio_, PSIF_DFOCC_INTS);
+    EcorrL += G->vector_dot(K);
+    G.reset();
+    K.reset();
+    // Corr
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
+    G->read(psio_, PSIF_DFOCC_DENS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA));
+    K->read(psio_, PSIF_DFOCC_INTS);
+    EcorrL += G->vector_dot(K);
+    G.reset();
+    K.reset();
+    Eov = EcorrL - Eoei - Eoo;
+
+    // DE += 1/2 \sum_{Q} \sum_{a,b} G_ab^Q b_ab^Q
+    // Sep
+    G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
+    EcorrL += 0.5 * G->vector_dot(K);
+    G.reset();
+    K.reset();
+    // Corr
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
+    EcorrL += 0.5 * G->vector_dot(K);
+    G.reset();
+    K.reset();
+    Evv = EcorrL - Eoei - Eoo - Eov;
+
+}// end if (reference_ == "RESTRICTED")
+
+else if (reference_ == "UNRESTRICTED") {
+
+}// else if (reference_ == "UNRESTRICTED")
+
+    EccsdL = Eref + EcorrL;
+    outfile->Printf("\n\tEnergies re-computed from Fock-adjusted CC density: \n");
+    outfile->Printf("\t--------------------------------------------------- \n");
+    outfile->Printf("\tOne-Electron Energy (a.u.)         : %20.14f\n", Eoei);
+    outfile->Printf("\tOO Energy (a.u.)                   : %20.14f\n", Eoo);
+    outfile->Printf("\tOV Energy (a.u.)                   : %20.14f\n", Eov);
+    outfile->Printf("\tVV Energy (a.u.)                   : %20.14f\n", Evv);
+    outfile->Printf("\tLagrangian Corr. Energy (a.u.)     : %20.14f\n", EcorrL);
+    outfile->Printf("\tLagrangian Total Energy (a.u.)     : %20.14f\n", EccsdL);
+    
+    timer_off("CCL Energy");
+} // end ccl_energy2
 
 
 }} // End Namespaces

@@ -164,6 +164,7 @@ void DFOCC::ccsdl_3index_intr()
     V = SharedTensor2d(new Tensor2d("V (IA|JB)", naoccA, navirA, naoccA, navirA));
     V->sort(1432, X, 1.0, 0.0);
     X.reset();
+    //V->print();
 
     // V_ij^Q' = 2\sum_{ef} V_iejf b_ef^Q
     Vij = SharedTensor2d(new Tensor2d("Vp (Q|IJ)", nQ, naoccA, naoccA));
@@ -214,6 +215,7 @@ void DFOCC::ccsdl_3index_intr()
     Vai->gemm(false, false, bQiaA, X, -2.0, 1.0); 
     X.reset();
     Vai->write(psio_, PSIF_DFOCC_AMPS);
+    //Vai->print();
     Vai.reset();
 
     // Build L_ijka
