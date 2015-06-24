@@ -120,7 +120,7 @@ class IRC_DATA {
 
     // free memory
     ~IRC_DATA() {
-      for (int i=0; i<steps.size(); ++i)
+      for (ULI i=0; i<steps.size(); ++i)
         delete steps[i];
       steps.clear();
     }

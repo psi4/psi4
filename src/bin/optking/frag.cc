@@ -82,7 +82,7 @@ FRAG::~FRAG() {
   free_array(mass);
   free_bool_matrix(connectivity);
   coords.clear_combos();
-  for (int i=0; i<coords.simples.size(); ++i)
+  for (ULI i=0; i<coords.simples.size(); ++i)
     delete coords.simples[i];
   coords.simples.clear();
 }
@@ -191,7 +191,7 @@ int FRAG::add_hbonds(void) {
                   if (ang > pi/2) {
                     STRE *one_stre = new STRE(h,y);
                     int index = find(one_stre);
-                    if (index == coords.simples.size()) { // H-bond is absent
+                    if (index == (int) coords.simples.size()) { // H-bond is absent
                       one_stre->set_hbond(true);
                       coords.simples.push_back(one_stre);
                       ++nadded;
@@ -303,7 +303,7 @@ int FRAG::add_bend_by_connectivity(void) {
             }
           } // ijk
 
-  for (int i=0; i<opt::INTCO_EXCEPT::linear_angles.size(); i+=3) {
+  for (ULI i=0; i<opt::INTCO_EXCEPT::linear_angles.size(); i+=3) {
     int A = opt::INTCO_EXCEPT::linear_angles[i];
     int B = opt::INTCO_EXCEPT::linear_angles[i+1];
     int C = opt::INTCO_EXCEPT::linear_angles[i+2];
@@ -365,7 +365,6 @@ int FRAG::add_tors_by_connectivity(void) {
          }
 
   // search for additional torsions around collinear segments
-  bool I_found, L_found, more_found;
   int I,J,K,L,m;
   int nbonds;
 
@@ -428,8 +427,7 @@ int FRAG::add_tors_by_connectivity(void) {
 
 // is simple already present in list ?
 bool FRAG::present(const SIMPLE_COORDINATE *one) const {
-  int k;
-  for (k=0; k<coords.simples.size(); ++k) {
+  for (ULI k=0; k<coords.simples.size(); ++k) {
     if (*one == *(coords.simples[k]))
       return true;
   }
@@ -453,7 +451,7 @@ void FRAG::add_trivial_coord_combination(int simple_id) {
 
 int FRAG::form_trivial_coord_combinations(void) {
   coords.clear_combos();
-  for (int s=0; s<coords.simples.size(); ++s)
+  for (ULI s=0; s<coords.simples.size(); ++s)
     add_trivial_coord_combination(s);
   return coords.simples.size();
 }
@@ -550,7 +548,7 @@ int FRAG::add_cartesians(void) {
 // is already present in the set.  If so, it returns the index.
 // If not, it returns the index of the end + 1.
 int FRAG::find(const SIMPLE_COORDINATE *one) const {
-  for (int k=0; k<coords.simples.size(); ++k) {
+  for (ULI k=0; k<coords.simples.size(); ++k) {
     if (*one == *(coords.simples[k]))
       return k;
   }
@@ -634,7 +632,7 @@ double ** FRAG::compute_derivative_B(int coord_index) const {
 double ** FRAG::compute_constraints(void) const {
   double **C = init_matrix(coords.simples.size(), coords.simples.size());
 
-  for (int i=0; i<coords.simples.size(); ++i)
+  for (ULI i=0; i<coords.simples.size(); ++i)
     if (coords.simples[i]->is_frozen())
       C[i][i] = 1.0;
 
@@ -659,13 +657,13 @@ void FRAG::compute_G(double **G, bool use_masses) const {
 }
 
 void FRAG::fix_tors_near_180(void) {
-  for (int i=0; i<coords.simples.size(); ++i)
+  for (ULI i=0; i<coords.simples.size(); ++i)
     if (coords.simples[i]->g_type() == tors_type)
       coords.simples[i]->fix_tors_near_180(geom);
 }
 
 void FRAG::fix_oofp_near_180(void) {
-  for (int i=0; i<coords.simples.size(); ++i)
+  for (ULI i=0; i<coords.simples.size(); ++i)
     if (coords.simples[i]->g_type() == oofp_type)
       coords.simples[i]->fix_oofp_near_180(geom);
 }
@@ -732,8 +730,8 @@ std::vector<int> FRAG::validate_angles(double const * const dq, int atom_offset)
 
   // Compute change in simple coordinates.
   double *dq_simple = init_array(coords.simples.size());
-  for (int cc=0; cc<coords.index.size(); ++cc)
-    for (int s=0; s<coords.index[cc].size(); ++s)
+  for (ULI cc=0; cc<coords.index.size(); ++cc)
+    for (ULI s=0; s<coords.index[cc].size(); ++s)
       dq_simple[ coords.index[cc][s] ] += dq[cc] * coords.coeff[cc][s];
 
   std::vector<int> lin_angle;

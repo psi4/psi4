@@ -1,8 +1,26 @@
+TODO:
 * DF-OMP2.5 and DF-OMP3
 * DF-OLCCD
 * DF-OCCD
 * Consider perm symmetry in RHF T2(1) in t2_1st_gen.cc
 * Re-build Gij and Gab for DF-OMP2
-* Check all TPDMs, there is a minor bug!
-* TPDM codes appears to be correct, check the 3-index intermediates
-* 3-index intermediates appears to be okay
+
+
+DEBUG:
+* T-amplitudes are okay
+* WL(mbij) is okay
+* WL(mbej) is okay
+* WL(mbje) is okay
+* WL(mnie) is okay
+* WabefL2 is okay
+* Gmi and Gae are okay
+* Ft_ij is okay
+* Ft_ab is okay
+* Check lambdas!
+* Be careful! Daniel uses a different denominator for Lambda equations
+* L2 is okay
+* L1 is okay
+* OPDM and TPDM are okay
+* Seprable TPDMs are okay
+* GFM are okay
+* DF-CCSD gradients are okay 

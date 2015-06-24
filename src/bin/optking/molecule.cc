@@ -174,13 +174,15 @@ void MOLECULE::apply_constraint_forces(void) {
       if (fragments[f]->coord_has_fixed_eq_val(i)) {
         double eq_val = fragments[f]->coord_fixed_eq_val(i);
         double val = fragments[f]->coord_value(i);
-        // We need to begin with a Hessian value appropriate for the coordinate type.
-        // Then ramp it up to ensure convergence to fixed value.
 
         k = H[cnt][cnt];
-        if (iter > 10)
-          k += (iter - 10) * 0.005;
+        if (iter > 10) { // this works OK
+          k = abs(k);
+          k += 0.05;
+          H[cnt][cnt] = k;
+        }
 
+        // haven't tested this
 /* INTCO_TYPE it = fragments[f]->get_simple_type(i);
         if (it == stre_type) k = 0.5;
         else if (it == bend_type) k = 0.2;
@@ -194,6 +196,7 @@ void MOLECULE::apply_constraint_forces(void) {
         f_q[cnt] = force;
 
         // If user eq. value is specified delete coupling between this coordinate and others.
+        if (iter > 10)
         for (int j=0; j<N; ++j)
           if (j != cnt)
             H[j][cnt] = H[cnt][j] = 0;
@@ -906,6 +909,17 @@ bool MOLECULE::coord_combo_is_symmetric(double *intco_combo, int dim) {
   if (symm_rfo_step)
     return true;
   else
+    return false;
+}
+
+bool MOLECULE::is_coord_fixed(int coord_index) {
+  int cnt = 0;
+  for (int f=0; f<fragments.size(); ++f)
+    for  (int i=0; i<fragments[f]->Ncoord(); ++i) {
+      if (cnt == coord_index)
+        return fragments[f]->coord_has_fixed_eq_val(i);
+      ++cnt;
+    }
     return false;
 }
 
