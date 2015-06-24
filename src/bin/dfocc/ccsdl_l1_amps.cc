@@ -37,6 +37,7 @@ void DFOCC::ccsdl_l1_amps()
     SharedTensor2d K, L, T1, T, U, Tau, X, Y, Z, W, W2, V;
 
     // l_i^a <= Ftia 
+    //FiaA->print();
     l1newA->copy(FiaA);
 
     // l_i^a <= \sum_{e} l_i^e Ft_ea 
@@ -57,7 +58,7 @@ void DFOCC::ccsdl_l1_amps()
     W.reset();
     W = SharedTensor2d(new Tensor2d("WLp (ME|JB)", naoccA, navirA, naoccA, navirA));
     W->read(psio_, PSIF_DFOCC_AMPS);
-    X->subtract(W);
+    X->axpy(W, -1.0);
     W.reset();
     l1newA->gemv(false, X, l1A, 1.0, 1.0);
     X.reset();
@@ -119,7 +120,7 @@ void DFOCC::ccsdl_l1_amps()
     l1newA->contract(false, false, naoccA, navirA, navirA*naoccA*naoccA, Y, X, -1.0, 1.0);
     X.reset();
     Y.reset();
-
+    
     // l_i^a <= \sum_{Q,e} (L_ie^Q + Lt_ie^Q + 2V_ei^Q + Z_ie^Q) b_ea^Q  
     T = SharedTensor2d(new Tensor2d("Temp (Q|IA)", nQ, naoccA, navirA));
     V = SharedTensor2d(new Tensor2d("V (Q|AI)", nQ, navirA, naoccA));
@@ -145,7 +146,7 @@ void DFOCC::ccsdl_l1_amps()
     l1newA->contract(true, false, naoccA, navirA, nQ * navirA, Tau, bQabA, 1.0, 1.0);
     Tau.reset();
 
-    // l_i^a <= \sum_{Q,m} (V_mi^Q + Vt_mi^Q - 2V'_mi^Q - Z_mi^Q) b_ma^Q  
+    // l_i^a <= \sum_{Q,m} (V_mi^Q + Vt_mi^Q - 2V'_mi^Q - Z_im^Q) b_ma^Q  
     T = SharedTensor2d(new Tensor2d("Temp (Q|IJ)", nQ, naoccA, naoccA));
     U = SharedTensor2d(new Tensor2d("V (Q|IJ)", nQ, naoccA, naoccA));
     U->read(psio_, PSIF_DFOCC_AMPS);
@@ -161,14 +162,20 @@ void DFOCC::ccsdl_l1_amps()
     U.reset();
     U = SharedTensor2d(new Tensor2d("Zeta (Q|IJ)", nQ, naoccA, naoccA));
     U->read(psio_, PSIF_DFOCC_AMPS);
-    T->axpy(U, -1.0);
+    Tau = SharedTensor2d(new Tensor2d("Tau (Q|IJ)", nQ, naoccA, naoccA));
+    Tau->swap_3index_col(U);
     U.reset();
+    T->axpy(Tau, -1.0);
+    Tau.reset();
     l1newA->contract(true, false, naoccA, navirA, nQ * naoccA, T, bQiaA, 1.0, 1.0);
     T.reset();
 
     // l_i^a <= \sum_{Q} (Gp_Q - G_Q) b_ia^Q 
-    gQp->subtract(gQ);
-    l1newA->gemv(true, bQiaA, gQp, 1.0, 1.0);
+    SharedTensor1d gQp2 = SharedTensor1d(new Tensor1d("CCSDL G_Qp - G_Q", nQ));
+    gQp2->copy(gQp);
+    gQp2->axpy(gQ, -1.0);
+    l1newA->gemv(true, bQiaA, gQp2, 1.0, 1.0);
+    gQp2.reset();
 
     // l_i^a <= \sum_{Q,e} G_ei^Q (b_ea^Q - t_ea^Q)  
     T = SharedTensor2d(new Tensor2d("T1 (Q|AB)", nQ, navirA, navirA));

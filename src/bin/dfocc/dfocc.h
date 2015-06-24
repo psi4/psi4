@@ -129,6 +129,8 @@ protected:
     void gwh();
     void qchf();
     void mo_coeff_blocks();
+    void ccl_energy();
+    void ccl_energy2();
 
     void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new);
     void sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec);
@@ -424,17 +426,17 @@ protected:
     void ccsdl_Wmbij();         // OVOO
     void ccsdl_Wmnij();         // OOOO
     void ccsdl_WmbejL2();
-    void ccsdl_WmnijL2();
+    void ccsdl_VmnijL2();
     void ccsdl_WijmnL2();
     void ccsdl_WabefL2();     
     void ccsdl_Wmnie_direct(SharedTensor2d &W);
+    void ccsdl_tau_amps(SharedTensor2d &U, SharedTensor2d &T);
 
     // CCSD Density
     void ccsd_pdm_3index_intr();
     void ccsd_pdm_yQia();
     void ccsd_opdm();
     void ccsd_tpdm();
-    void ccsdl_energy();
 
     // CCD
     void ccd_manager();
@@ -464,9 +466,15 @@ protected:
     void ccdl_Wmbje();         // OVOV
     void ccdl_Wmnij();         // OOOO
     void ccdl_WmbejL2();
-    void ccdl_WmnijL2();
+    void ccdl_VmnijL2();
     void ccdl_WijmnL2();
     void ccdl_WabefL2();     
+
+    // CCD Density
+    void ccd_pdm_3index_intr();
+    void ccd_pdm_yQia();
+    void ccd_opdm();
+    void ccd_tpdm();
 
     // orbital pairs
     int so_pair_idx(int i, int j);

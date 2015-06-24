@@ -46,13 +46,8 @@ compare_values(ref_hf_1e, get_variable("One-Electron Energy"),   6, "HF: 1e")  #
 compare_values(ref_hf_2e, get_variable("Two-Electron Energy"),   6, "HF: 2e")  #TEST
 compare_values(ref_nn + ref_hf_1e + ref_hf_2e, get_variable("hf Total Energy"), 6, "HF: total HF")  #TEST
 compare_values(ref_nn + ref_hf_1e + ref_hf_2e, get_variable("SCF Total Energy"), 6, "HF: total SCF")  #TEST
+compare_csx()  #TEST
 clean()
-
-if get_global_option('WRITE_CSX'):  #TEST
-    enedict = csx2endict()  #TEST
-    compare_integers(len(enedict) >= 1, True, 'CSX harvested')  #TEST
-    for pv, en in enedict.iteritems():  #TEST
-        compare_values(get_variable(pv), en, 6, 'CSX ' + pv + ' ' + str(round(en, 4)))  #TEST
 
 energy('b3lyp')
 compare_values(ref_nn, get_variable("Nuclear Repulsion Energy"),  6, "DFT: NN")
@@ -62,13 +57,8 @@ compare_values(ref_b3lyp_xc, get_variable("DFT XC Energy"),       6, "DFT: XC")
 compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("DFT Functional Total Energy"), 6, "DFT: total FNCL")
 compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("SCF Total Energy"), 6, "DFT: total SCF")
 compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("DFT Total Energy"), 6, "DFT: total DFT")
+compare_csx()  #TEST
 clean()
-
-if get_global_option('WRITE_CSX'):  #TEST
-    enedict = csx2endict()  #TEST
-    compare_integers(len(enedict) >= 2, True, 'CSX harvested')  #TEST
-    for pv, en in enedict.iteritems():  #TEST
-        compare_values(get_variable(pv), en, 6, 'CSX ' + pv + ' ' + str(round(en, 4)))  #TEST
 
 energy('b3lyp-d')
 compare_values(ref_nn, get_variable("Nuclear Repulsion Energy"),          6, "DFT-D: NN")  #TEST
@@ -79,13 +69,8 @@ compare_values(ref_b3lyp_d, get_variable("dispersion correction Energy"), 6, "DF
 compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("DFT Functional Total Energy"), 6, "DFT-D: total FNCL")  #TEST
 compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc + ref_b3lyp_d, get_variable("SCF Total Energy"), 6, "DFT-D: total SCF")  #TEST
 compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc + ref_b3lyp_d, get_variable("DFT Total Energy"), 6, "DFT-D: total DFT")  #TEST
+compare_csx()  #TEST
 clean()
-
-if get_global_option('WRITE_CSX'):  #TEST
-    enedict = csx2endict()  #TEST
-    compare_integers(len(enedict) >= 3, True, 'CSX harvested')  #TEST
-    for pv, en in enedict.iteritems():  #TEST
-        compare_values(get_variable(pv), en, 6, 'CSX ' + pv + ' ' + str(round(en, 4)))  #TEST
 
 energy('b2plyp')
 compare_values(ref_nn, get_variable("Nuclear Repulsion Energy"),               6, "DH-DFT: NN")  #TEST
@@ -96,14 +81,15 @@ compare_values(ref_b2plyp_dh, get_variable("DOUBLE-hybrid correction Energy"), 6
 compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc, get_variable("DFT Functional Total Energy"), 6, "DH-DFT: total FNCL")  #TEST
 compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc, get_variable("SCF Total Energy"), 6, "DH-DFT: total SCF")  #TEST
 compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc + ref_b2plyp_dh, get_variable("DFT Total Energy"), 6, "DH-DFT: total DFT")  #TEST
+compare_csx()  #TEST
 clean()
 
-if get_global_option('WRITE_CSX'):  #TEST
-    enedict = csx2endict()  #TEST
-    compare_integers(len(enedict) >= 4, True, 'CSX harvested')  #TEST
-    for pv, en in enedict.iteritems():  #TEST
-        compare_values(get_variable(pv), en, 6, 'CSX ' + pv + ' ' + str(round(en, 4)))  #TEST
-    compare_values(enedict['DISPERSION CORRECTION ENERGY'], 0.0, 4, '-D psivar cleaned')
+# this will trigger if -D psivar from b3lyp-d shows up here after b2plyp  #TEST
+if 'csx4psi' in sys.modules.keys():  #TEST
+    if get_global_option('WRITE_CSX'):  #TEST
+        enedict = csx2endict()  #TEST
+        if 'DISPERSION CORRECTION ENERGY' in enedict.keys():  #TEST
+            compare_values(enedict['DISPERSION CORRECTION ENERGY'], 0.0, 4, '-D psivar cleaned')  #TEST
 
 energy('b2plyp-d')
 compare_values(ref_nn, get_variable("Nuclear Repulsion Energy"),               6, "DH-DFT-D: NN")  #TEST
@@ -115,10 +101,5 @@ compare_values(ref_b2plyp_dh, get_variable("double-hybrid correction Energy"), 6
 compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc, get_variable("DFT Functional Total Energy"), 6, "DH-DFT-D: total FNCL")  #TEST
 compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc + ref_b2plyp_d, get_variable("SCF Total Energy"), 6, "DH-DFT-D: total SCF")  #TEST
 compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc + ref_b2plyp_d + ref_b2plyp_dh, get_variable("DFT Total Energy"), 6, "DH-DFT-D: total DFT")  #TEST
-
-if get_global_option('WRITE_CSX'):  #TEST
-    enedict = csx2endict()  #TEST
-    compare_integers(len(enedict) >= 4, True, 'CSX harvested')  #TEST
-    for pv, en in enedict.iteritems():  #TEST
-        compare_values(get_variable(pv), en, 6, 'CSX ' + pv + ' ' + str(round(en, 4)))  #TEST
+compare_csx()  #TEST
 

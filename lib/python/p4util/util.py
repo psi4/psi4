@@ -350,3 +350,16 @@ def csx2endict():
                 enedict[pv] = float(vv[1])
 
     return enedict
+
+
+def compare_csx():
+    """Function to validate energies in CSX files against PSIvariables. Only
+    active if write_csx flag on.
+
+    """
+    if 'csx4psi' in sys.modules.keys():
+        if psi4.get_global_option('WRITE_CSX'):
+            enedict = csx2endict()
+            compare_integers(len(enedict) >= 2, True, 'CSX harvested')
+            for pv, en in enedict.iteritems():
+                compare_values(psi4.get_variable(pv), en, 6, 'CSX ' + pv + ' ' + str(round(en, 4)))

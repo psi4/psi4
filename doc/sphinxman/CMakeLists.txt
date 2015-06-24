@@ -52,7 +52,6 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CMAKE_SOURCE_DIR}/include/psifiles.h
         COMMENT "Autodoc binary scratch files")
 
-
     # Autodoc physical constants
     add_custom_command(
         COMMAND ${PERL_EXECUTABLE} ${CCSD}/document_physconst.pl ${CCSD}
@@ -206,8 +205,22 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CMAKE_SOURCE_DIR}/lib/efpfrag/*.efp
         COMMENT "Autodoc efp fragments")
 
+    # Format git log for feed
+    add_custom_command(
+        COMMAND ${CMAKE_COMMAND} -E make_directory feed
+        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/extract_changeset.py ${CCBD}
+        OUTPUT  ${CCBD}/feed/history_trac_changeset.txt
+                ${CCBD}/feed/latest_trac_changeset.txt
+        DEPENDS ${CCSD}/extract_changeset.py
+        COMMENT "Format git --log for psicode.org feed")
 
     # Establishing dependencies for docs targets
+
+    # * mini github feed for psicode.org
+    add_custom_target(ghfeed
+        DEPENDS ${CCBD}/feed/history_trac_changeset.txt
+                ${CCBD}/feed/latest_trac_changeset.txt
+        COMMENT "Preparing GitHub feed")
 
     # * announcement
     if (LATEX_COMPILER AND PDFLATEX_COMPILER)

@@ -13,9 +13,5 @@ set basis cc-pVDZ
 energy('scf')
 
 compare_values(-76.0266327341067125, get_variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
+compare_csx()  #TEST
 
-if get_global_option('WRITE_CSX'):  #TEST
-    enedict = csx2endict()  #TEST
-    compare_integers(len(enedict) >= 2, True, 'CSX harvested')  #TEST
-    for pv, en in enedict.iteritems():  #TEST
-        compare_values(get_variable(pv), en, 6, 'CSX ' + pv + ' ' + str(round(en, 4)))  #TEST

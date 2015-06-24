@@ -369,6 +369,23 @@ def run_dfccd(name, **kwargs):
     return psi4.get_variable("CURRENT ENERGY")
 
 
+def run_dfccd_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted CCD gradient computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['REFERENCE'],
+        ['DFOCC', 'CC_LAMBDA'],
+        ['GLOBALS', 'DERTYPE'])
+
+    psi4.set_global_option('DERTYPE', 'FIRST')
+    psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+    run_dfccd(name, **kwargs)
+
+    optstash.restore()
+
+
 def run_dfccsdl(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an density-fitted CCSD Lambda computation
@@ -1918,6 +1935,11 @@ def run_dft(name, **kwargs):
         else:
             psi4.dfmp2()
             vdh = dfun.c_alpha() * psi4.get_variable('MP2 CORRELATION ENERGY')
+
+        # TODO: delete these variables, since they don't mean what they look to mean?
+        # 'MP2 TOTAL ENERGY',
+        # 'MP2 CORRELATION ENERGY',
+        # 'MP2 SAME-SPIN CORRELATION ENERGY']
 
         psi4.set_variable('DOUBLE-HYBRID CORRECTION ENERGY', vdh)
         returnvalue += vdh
