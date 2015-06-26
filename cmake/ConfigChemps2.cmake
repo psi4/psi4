@@ -10,7 +10,7 @@ if(NOT CHEMPS2_FOUND)
 
     find_package (HDF5 QUIET)
     find_package (GSL QUIET)
-    if (NOT GSL_FOUND OR NOT_HDF5_FOUND)
+    if (NOT GSL_FOUND OR NOT HDF5_FOUND)
         message(FATAL_ERROR "No GSL or HDF5, no CheMPS2. Build against existing with -DCHEMPS2_ROOT=$CONDAENV or skip with -DENABLE_CHEMPS2=OFF")
     endif()
 
