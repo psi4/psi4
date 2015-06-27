@@ -40,7 +40,7 @@ if (reference_ == "RESTRICTED") {
     //Array2d *temp = new Array2d(psio_, PSIF_DFOCC_INTS, "(ia|jb)", naoccA, navirA, naoccA, navirA);
 
     // Build amplitudes in Mulliken order 
-    t2p_1 = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccA, navirA, naoccA, navirA));
+    t2p_1 = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
     tei_iajb_chem_directAA(K);
     t2p_1->copy(K);
@@ -55,13 +55,13 @@ if (reference_ == "RESTRICTED") {
     t2_1->write(psio_, PSIF_DFOCC_AMPS);
     t2_1.reset();
 
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d("T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
+    SharedTensor2d temp = SharedTensor2d(new Tensor2d("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     temp->sort(1432, t2p_1, 1.0, 0.0);
     temp->scale(-1.0);
     temp->add(t2p_1);
     temp->write(psio_, PSIF_DFOCC_AMPS);
 
-    u2p_1 = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
+    u2p_1 = SharedTensor2d(new Tensor2d("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     u2p_1->copy(temp);
     temp.reset();
     u2p_1->add(t2p_1);
@@ -86,7 +86,7 @@ else if (reference_ == "UNRESTRICTED") {
     if (regularization == "FALSE") t2_1AA->apply_denom(nfrzc, noccA, FockA);
     else if (regularization == "TRUE") t2_1AA->reg_denom(nfrzc, noccA, FockA, reg_param);
     t2_1AA->write(psio_, PSIF_DFOCC_AMPS);
-    t2p_1 = SharedTensor2d(new Tensor2d("T2_1(IA,JB)", naoccA, navirA, naoccA, navirA));
+    t2p_1 = SharedTensor2d(new Tensor2d("T2_1 (IA|JB)", naoccA, navirA, naoccA, navirA));
     t2p_1->sort(1324, t2_1AA, 1.0, 0.0);
     t2_1AA.reset();
     t2p_1->write(psio_, PSIF_DFOCC_AMPS);
@@ -107,7 +107,7 @@ else if (reference_ == "UNRESTRICTED") {
     if (regularization == "FALSE") t2_1BB->apply_denom(nfrzc, noccB, FockB);
     else if (regularization == "TRUE") t2_1BB->reg_denom(nfrzc, noccB, FockB, reg_param);
     t2_1BB->write(psio_, PSIF_DFOCC_AMPS);
-    t2p_1 = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccB, navirB, naoccB, navirB));
+    t2p_1 = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccB, navirB, naoccB, navirB));
     t2p_1->sort(1324, t2_1BB, 1.0, 0.0);
     t2_1BB.reset();
     t2p_1->write(psio_, PSIF_DFOCC_AMPS);
@@ -125,7 +125,7 @@ else if (reference_ == "UNRESTRICTED") {
     if (regularization == "FALSE") t2_1AB->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
     else if (regularization == "TRUE") t2_1AB->reg_denom_os(nfrzc, noccA, noccB, FockA, FockB, reg_param);
     t2_1AB->write(psio_, PSIF_DFOCC_AMPS);
-    t2p_1 = SharedTensor2d(new Tensor2d("T2_1(IA,jb)", naoccA, navirA, naoccB, navirB));
+    t2p_1 = SharedTensor2d(new Tensor2d("T2_1 (IA|jb)", naoccA, navirA, naoccB, navirB));
     t2p_1->sort(1324, t2_1AB, 1.0, 0.0);
     t2_1AB.reset();
     t2p_1->write(psio_, PSIF_DFOCC_AMPS);
