@@ -40,7 +40,7 @@ void DFOCC::omp2_tpdm()
 if (reference_ == "RESTRICTED") {
     // G_ia^Q = 2\sum_{m,e} b_me^Q (2t_im^ae - t_mi^ae)  
     G2c_ia = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|IA)", nQ, naoccA * navirA));
-    u2p_1 = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
+    u2p_1 = SharedTensor2d(new Tensor2d("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") u2_rmp2_direct(u2p_1);
     else u2p_1->read_symm(psio_, PSIF_DFOCC_AMPS);
     bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA * navirA));
@@ -69,7 +69,7 @@ if (reference_ == "RESTRICTED") {
 else if (reference_ == "UNRESTRICTED") {
     // G_IA^Q = \sum_{M,E} b_ME^Q t_IM^AE 
     G2c_iaA = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|IA)", nQ, naoccA * navirA));
-    t2p_1 = SharedTensor2d(new Tensor2d("T2_1(IA,JB)", naoccA, navirA, naoccA, navirA));
+    t2p_1 = SharedTensor2d(new Tensor2d("T2_1 (IA|JB)", naoccA, navirA, naoccA, navirA));
     if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") {
         T = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
         t2AA_ump2_direct(T);
@@ -84,7 +84,7 @@ else if (reference_ == "UNRESTRICTED") {
     bQiaA.reset();
 
     // G_IA^Q = \sum_{m,e} b_me^Q t_Im^Ae 
-    t2p_1 = SharedTensor2d(new Tensor2d("T2_1(IA,jb)", naoccA, navirA, naoccB, navirB));
+    t2p_1 = SharedTensor2d(new Tensor2d("T2_1 (IA|jb)", naoccA, navirA, naoccB, navirB));
     if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") {
         T = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
         t2AB_ump2_direct(T);
@@ -117,7 +117,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     // G_ia^Q = \sum_{m,e} b_me^Q t_im^ae 
     G2c_iaB = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|ia)", nQ, naoccB * navirB));
-    t2p_1 = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccB, navirB, naoccB, navirB));
+    t2p_1 = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccB, navirB, naoccB, navirB));
     if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") {
         T = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
         t2BB_ump2_direct(T);
@@ -133,7 +133,7 @@ else if (reference_ == "UNRESTRICTED") {
     //outfile->Printf("\tI am here.\n"); 
 
     // G_ia^Q = \sum_{M,E} b_ME^Q t_Mi^Ea 
-    t2p_1 = SharedTensor2d(new Tensor2d("T2_1(IA,jb)", naoccA, navirA, naoccB, navirB));
+    t2p_1 = SharedTensor2d(new Tensor2d("T2_1 (IA|jb)", naoccA, navirA, naoccB, navirB));
     if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") {
         T = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
         t2AB_ump2_direct(T);
