@@ -180,6 +180,35 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Order of Douglas-Kroll-Hess !expert -*/
   options.add_int("DKH_ORDER", 2);
 
+
+  /*- Cube property data filepath -*/
+  options.add_str_i("CUBEPROP_FILEPATH", ".");
+  /*-
+  Properties to compute. Valid tasks include:
+      DENSITY - Da, Db, Dt, Ds
+      ESP - Dt, ESP
+      ORBITALS - Psi_a_N, Psi_b_N
+      BASIS_FUNCTIONS - Phi_N
+      LOL - LOLa, LOLb
+      ELF - ELFa, ELFb
+  -*/
+  options.add("CUBEPROP_TASKS", new ArrayType());
+  /*- List of desired orbital indices (1-based, + for alpha, - for beta). All orbitals computed if empty.-*/
+  options.add("CUBEPROP_ORBITALS", new ArrayType());
+  /*- List of desired basis function indices (1-based). All basis functions computed if empty.-*/
+  options.add("CUBEPROP_BASIS_FUNCTIONS", new ArrayType());
+
+  /*- CubicScalarGrid basis cutoff. !expert -*/
+  options.add_double("CUBIC_BASIS_TOLERANCE", 1.0E-12);
+  /*- CubicScalarGrid maximum number of grid points per evaluation block. !expert -*/
+  options.add_int("CUBIC_BLOCK_MAX_POINTS",1000);
+  /*- CubicScalarGrid overages in bohr [O_X, O_Y, O_Z]. Defaults to 2.0 bohr each. -*/
+  options.add("CUBIC_GRID_OVERAGE", new ArrayType());
+  /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
+  options.add("CUBIC_GRID_SPACING", new ArrayType());
+
+
+
   if (name == "DETCI" || options.read_globals()) {
     /*- MODULEDESCRIPTION Performs configuration interaction (CI)
     computations of various types, including restricted-active-space
