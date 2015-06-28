@@ -355,7 +355,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "TRUE") outfile->Printf("                      CD-OMP3 (CD-OO-MP3)   \n");
    else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP3   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision June 27, 2015\n") ;
+   outfile->Printf("              Latest Revision June 28, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
