@@ -37,7 +37,7 @@ void DFOCC::t2_1st_sc()
     timer_on("1st-order T2");
 if (reference_ == "RESTRICTED") {
     // Build amplitudes in Mulliken order 
-    T = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccA, navirA, naoccA, navirA));
+    T = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
     tei_iajb_chem_directAA(K);
     T->copy(K);
@@ -55,7 +55,7 @@ if (reference_ == "RESTRICTED") {
     */
  
     // form U(ia,jb)
-    U = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
+    U = SharedTensor2d(new Tensor2d("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     U->sort(1432, T, 1.0, 0.0);
     U->scale(-1.0);
     U->axpy(T, 2.0);
@@ -91,7 +91,7 @@ else if (reference_ == "UNRESTRICTED") {
     Escsnmp2AA = 1.76 * Emp2AA;
 
     // sort AA
-    t2p_1 = SharedTensor2d(new Tensor2d("T2_1(IA,JB)", naoccA, navirA, naoccA, navirA));
+    t2p_1 = SharedTensor2d(new Tensor2d("T2_1 (IA|JB)", naoccA, navirA, naoccA, navirA));
     t2p_1->sort(1324, t2_1AA, 1.0, 0.0);
     t2_1AA.reset();
     t2p_1->write_symm(psio_, PSIF_DFOCC_AMPS);
@@ -119,7 +119,7 @@ else if (reference_ == "UNRESTRICTED") {
     Escsnmp2BB = 1.76 * Emp2BB;
 
     // sort BB
-    t2p_1 = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccB, navirB, naoccB, navirB));
+    t2p_1 = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccB, navirB, naoccB, navirB));
     t2p_1->sort(1324, t2_1BB, 1.0, 0.0);
     t2_1BB.reset();
     t2p_1->write_symm(psio_, PSIF_DFOCC_AMPS);
@@ -145,7 +145,7 @@ else if (reference_ == "UNRESTRICTED") {
     else if (mo_optimized == 1) Esosmp2AB = sos_scale2 * Emp2AB;
 
     // sort AB
-    t2p_1 = SharedTensor2d(new Tensor2d("T2_1(IA,jb)", naoccA, navirA, naoccB, navirB));
+    t2p_1 = SharedTensor2d(new Tensor2d("T2_1 (IA|jb)", naoccA, navirA, naoccB, navirB));
     t2p_1->sort(1324, t2_1AB, 1.0, 0.0);
     t2_1AB.reset();
     t2p_1->write(psio_, PSIF_DFOCC_AMPS);
