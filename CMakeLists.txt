@@ -27,7 +27,7 @@ option(ENABLE_XHOST          "Enable processor-specific optimizations"     ON)
 option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
 option(ENABLE_PLUGINS        "Enable compilation of example plugins"       OFF)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
-option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     ON)
+option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     OFF)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
 # Modules requiring Fortran
 option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF)
@@ -44,7 +44,7 @@ option(ENABLE_JKFACTORY      "Enable the distributed JKFactory (requires MPI)"  
 set(EXTERNAL_LIBS)
 
 # Decide if Fortran is needed
-if(ENABLE_LIBERD OR ENABLE_PCMSOLVER)
+if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY)
    if(CMAKE_Fortran_COMPILER)
       enable_language(Fortran)
       add_definitions(-DHAVE_FORTRAN)
@@ -247,6 +247,7 @@ if(MPI_FOUND AND ENABLE_JKFACTORY)
    set(BUILD_JK_FACTORY TRUE)
 endif()
 if(BUILD_JK_FACTORY)
+      fortran_enabler()
    set(JK_BLAS_LIB "")
    set(JK_BLAS_INC "")
    if(EXPLICIT_BLAS_LIB)
@@ -257,9 +258,6 @@ if(BUILD_JK_FACTORY)
    set(HAVE_GLOBAL_ARRAYS FALSE)
    add_definitions(-DHAVE_JK_FACTORY)
    set(JKROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/libJKFactory)
-   set_property(GLOBAL APPEND PROPERTY PSILIB GTFockInt GTFock GTFockCInt
-      ${PROJECT_BINARY_DIR}/lib/libga.a
-      ${PROJECT_BINARY_DIR}/lib/libarmci.a)
 endif()
 
 # Add the documentation subdirectory

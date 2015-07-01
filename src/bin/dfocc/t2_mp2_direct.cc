@@ -71,7 +71,7 @@ void DFOCC::u2_rmp2_direct(SharedTensor2d& U)
     SharedTensor2d K, T;
     timer_on("T2_MP2");
     // Build amplitudes in Mulliken order 
-    T = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccA, navirA, naoccA, navirA));
+    T = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
     tei_iajb_chem_directAA(K);
     T->copy(K);

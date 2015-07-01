@@ -375,6 +375,24 @@ protected:
     // OMP3
     void omp3_manager();
     void mp3_manager();
+    void omp3_manager_cd();
+    void mp3_manager_cd();
+    void omp3_opdm();
+    void omp3_tpdm();
+    void t2_2nd_sc();
+    void t2_2nd_gen();
+    void mp3_WmnijT2();
+    void mp3_WmbejT2();
+    void mp3_WabefT2();     
+    void mp3_WmnijT2AA();
+    void mp3_WmnijT2BB();
+    void mp3_WmnijT2AB();
+    void mp3_WmbejT2AA();
+    void mp3_WmbejT2BB();
+    void mp3_WmbejT2AB();
+    void mp3_WabefT2AA();     
+    void mp3_WabefT2BB();     
+    void mp3_WabefT2AB();     
 
     // OMP2.5
     void omp2_5_manager();
@@ -400,7 +418,9 @@ protected:
     void ccsd_t2_amps();
     void ccsd_energy();
     void ccsd_u2_amps(SharedTensor2d &U, SharedTensor2d &T);
+    void ccsd_u2_amps2(SharedTensor2d &U, SharedTensor2d &T);
     void ccsd_t2_prime_amps(SharedTensor2d &U, SharedTensor2d &T);
+    void ccsd_t2_prime_amps2(SharedTensor2d &U, SharedTensor2d &T);
     void ccsd_tau_amps(SharedTensor2d &U, SharedTensor2d &T);
     void ccsd_tau_tilde_amps(SharedTensor2d &U, SharedTensor2d &T);
     void ccsd_mp2_low();
@@ -519,7 +539,9 @@ protected:
      int ntri; 		// square matrix dimension (nmo) -> pitzer order
      int ntri_so;	// square matrix dimension (nso) -> pitzer order
      int ntri_ijAA;
+     int ntri_ijBB;
      int ntri_abAA;
+     int ntri_abBB;
      int nQ;          // numer of aux-basis
      int nQ_ref;      // numer of aux-basis for DF_BASIS_SCF
      int nso2_;       // nso * nso

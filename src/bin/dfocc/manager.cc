@@ -1398,171 +1398,220 @@ void DFOCC::omp3_manager()
 //======================================================================             
 void DFOCC::mp3_manager()
 {
-        /*
+
         time4grad = 0;// means i will not compute the gradient
-        timer_on("trans_ints");
-	if (reference_ == "RESTRICTED") trans_ints_rhf();  
-	else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
-        timer_off("trans_ints");
-        Eref = Escf;
-        timer_on("T2(1)");
-	omp3_t2_1st_sc();
-        timer_off("T2(1)");
-        timer_on("MP2 Energy");
-	omp3_mp2_energy();
-        timer_off("MP2 Energy");
+	mo_optimized = 0;// means MOs are not optimized
 
-	outfile->Printf("\n"); 
-	outfile->Printf("\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n"); 
-	outfile->Printf("\t============================================================================== \n");
-	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-	outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
-	outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-	outfile->Printf("\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
-	outfile->Printf("\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
-	outfile->Printf("\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-	outfile->Printf("\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
-	outfile->Printf("\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
-	outfile->Printf("\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-	outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
-	outfile->Printf("\t============================================================================== \n");
-	outfile->Printf("\n"); 
-	
-	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
-	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
-	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
-	Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
-	Process::environment.globals["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
-	Process::environment.globals["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
+        timer_on("DF CC Integrals");
+        df_corr();
+        trans_corr();
+        timer_off("DF CC Integrals");
+        outfile->Printf("\n\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
 
-        Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
-        Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
-        Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
-        Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
-        Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
-        Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
-
-        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
-
-        timer_on("T2(2)");
-	t2_2nd_sc();
-        timer_off("T2(2)");
-        timer_on("MP3 Energy");
-	mp3_energy();
-        timer_off("MP3 Energy");
-	Emp3L=Emp3;
-        EcorrL=Emp3L-Escf;
-	Emp3L_old=Emp3;
-        if (ip_poles == "TRUE") omp3_ip_poles();
-	
-	outfile->Printf("\n"); 
-	outfile->Printf("\tComputing MP3 energy using SCF MOs (Canonical MP3)... \n"); 
-	outfile->Printf("\t============================================================================== \n");
-	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-	outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
-	outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
-	outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
-	outfile->Printf("\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", (Emp2 - Escf) + 0.5 * (Emp3-Emp2));
-	outfile->Printf("\tMP2.5 Total Energy (a.u.)          : %20.14f\n", 0.5 * (Emp3+Emp2));
-	outfile->Printf("\tSCS-MP3 Total Energy (a.u.)        : %20.14f\n", Escsmp3);
-	outfile->Printf("\tSOS-MP3 Total Energy (a.u.)        : %20.14f\n", Esosmp3);
-	outfile->Printf("\tSCSN-MP3 Total Energy (a.u.)       : %20.14f\n", Escsnmp3);
-	outfile->Printf("\tSCS-MP3-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp3vdw);
-	outfile->Printf("\tSOS-PI-MP3 Total Energy (a.u.)     : %20.14f\n", Esospimp3);
-	outfile->Printf("\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3-Emp2);
-	outfile->Printf("\tMP3 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-	outfile->Printf("\tMP3 Total Energy (a.u.)            : %20.14f\n", Emp3);
-	outfile->Printf("\t============================================================================== \n");
-	outfile->Printf("\n"); 
-	
-	Process::environment.globals["CURRENT ENERGY"] = Emp3;
-	Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3 - Escf;
-	Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-
-	Process::environment.globals["MP3 TOTAL ENERGY"] = Emp3;
-	Process::environment.globals["SCS-MP3 TOTAL ENERGY"] = Escsmp3;
-	Process::environment.globals["SOS-MP3 TOTAL ENERGY"] = Esosmp3;
-	Process::environment.globals["SCSN-MP3 TOTAL ENERGY"] = Escsnmp3;
-	Process::environment.globals["SCS-MP3-VDW TOTAL ENERGY"] = Escsmp3vdw;
-	Process::environment.globals["SOS-PI-MP3 TOTAL ENERGY"] = Esospimp3;
-
-	Process::environment.globals["MP2.5 CORRELATION ENERGY"] = (Emp2 - Escf) + 0.5 * (Emp3-Emp2);
-	Process::environment.globals["MP2.5 TOTAL ENERGY"] = 0.5 * (Emp3+Emp2);
-	Process::environment.globals["MP3 CORRELATION ENERGY"] = Emp3 - Escf;
-	Process::environment.globals["SCS-MP3 CORRELATION ENERGY"] = Escsmp3 - Escf;
-	Process::environment.globals["SOS-MP3 CORRELATION ENERGY"] = Esosmp3 - Escf;
-	Process::environment.globals["SCSN-MP3 CORRELATION ENERGY"] = Escsnmp3 - Escf;
-	Process::environment.globals["SCS-MP3-VDW CORRELATION ENERGY"] = Escsmp3vdw - Escf;
-	Process::environment.globals["SOS-PI-MP3 CORRELATION ENERGY"] = Esospimp3 - Escf;
-
-        // if scs on	
-	if (do_scs == "TRUE") {
-	    if (scs_type_ == "SCS") {
-	       Process::environment.globals["CURRENT ENERGY"] = Escsmp3;
-	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsmp3 - Escf;
-            }
-
-	    else if (scs_type_ == "SCSN") {
-	       Process::environment.globals["CURRENT ENERGY"] = Escsnmp3;
-	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsnmp3 - Escf;
-            }
-
-	    else if (scs_type_ == "SCSVDW") {
-	       Process::environment.globals["CURRENT ENERGY"] = Escsmp3vdw;
-	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsmp3vdw - Escf;
-            }
-	}
-    
-        // else if sos on	
-	else if (do_sos == "TRUE") {
-	     if (sos_type_ == "SOS") {
-	         Process::environment.globals["CURRENT ENERGY"] = Esosmp3;
-	         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Esosmp3 - Escf;
-             }
-
-	     else if (sos_type_ == "SOSPI") {
-	             Process::environment.globals["CURRENT ENERGY"] = Esospimp3;
-	             Process::environment.globals["CURRENT CORRELATION ENERGY"] = Esospimp3 - Escf;
-             }
-	}
-
-        // Compute Analytic Gradients
-        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
-            time4grad = 1;
-	    outfile->Printf("\tAnalytic gradient computation is starting...\n");
-            outfile->Printf("\tComputing response density matrices...\n");
-            
-	    omp3_response_pdms();
-            outfile->Printf("\tComputing off-diagonal blocks of GFM...\n");
-            
-	    gfock();
-            outfile->Printf("\tForming independent-pairs...\n");
-            
-	    idp2();
-            outfile->Printf("\tComputing orbital gradient...\n");
-            
-	    mograd();
-            coord_grad();
-
-            if (ekt_ip_ == "TRUE") {
-                ekt_ip();
-            }
-
-            else if (ekt_ip_ == "FALSE") {
-	        outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	        
-            }
-
+        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE") {
+            timer_on("DF REF Integrals");
+            df_ref();
+            trans_ref();
+            timer_off("DF REF Integrals");
+            outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
+            Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
         }
-        */
+
+        // avaliable mem
+        memory = Process::environment.get_memory();
+        memory_mb = (double)memory/(1024.0 * 1024.0);
+        outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
+
+        // memory requirements
+        // DF-CC B(Q,ab) + B(Q,ia) + B(Q,ij)
+        cost_df = 0.0;
+        cost_df = (navirA * navirA) + (navirA * naoccA) + (naoccA * naoccA);
+        cost_df *= nQ;
+        cost_df /= 1024.0 * 1024.0;
+        cost_df *= sizeof(double);
+        if (reference_ == "RESTRICTED") outfile->Printf("\tMemory requirement for 3-index ints   : %9.2lf MB \n", cost_df);
+	else if (reference_ == "UNRESTRICTED") outfile->Printf("\tMemory requirement for 3-index ints   : %9.2lf MB \n", 2.0*cost_df);
+
+        // Cost of Integral transform for B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ * nso2_;
+        cost_ampAA += nQ * navirA * navirA;
+        cost_ampAA += nQ * nso_ * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
+
+        // Mem for amplitudes
+        cost_ampAA = 0.0;
+        cost_ampAA = nocc2AA * nvir2AA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        cost_3amp = 3.0 * cost_ampAA;
+        cost_4amp = 4.0 * cost_ampAA;
+        cost_5amp = 5.0 * cost_ampAA;
+
+        if ((cost_4amp+cost_df) <= memory_mb) { 
+             outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_4amp);
+             outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_4amp+cost_df);
+             nincore_amp = 4;
+             t2_incore = true;
+             df_ints_incore = true;
+        }
+        else if ((cost_3amp+cost_df) <= memory_mb) { 
+             outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
+             //outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_3amp+cost_df);
+             outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
+             nincore_amp = 3;
+             t2_incore = false;
+             df_ints_incore = false;
+        }
+        else if (cost_3amp < memory_mb && cost_df < memory_mb ) { 
+             outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
+             outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
+             nincore_amp = 3;
+             t2_incore = false;
+             df_ints_incore = false;
+        }
+        else { 
+             outfile->Printf("\tWarning: There is NOT enough memory for CC contractions!\n");
+             outfile->Printf("\tIncrease memory by                    : %9.2lf MB \n", cost_3amp+cost_df-memory_mb);
+             throw PSIEXCEPTION("There is NOT enough memory for CC contractions!");
+        }
+
+        // W_abef term
+        cost_ampAA = 0.0;
+        cost_ampAA = naoccA * naoccA * navirA * navirA;
+        cost_ampAA += 2.0 * nQ * navirA * navirA;
+        cost_ampAA += navirA * navirA * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        double cost_ampAA2 = 0.0;
+        cost_ampAA2 = naoccA * naoccA * navirA * navirA;
+        cost_ampAA2 += nQ * navirA * navirA;
+        cost_ampAA2 += 3.0 * navirA * navirA * navirA;
+        cost_ampAA2 /= 1024.0 * 1024.0;
+        cost_ampAA2 *= sizeof(double);
+        cost_amp = MAX0(cost_ampAA, cost_ampAA2);
+        outfile->Printf("\tMemory requirement for Wabef term     : %9.2lf MB \n", cost_amp);
+        
+        // Mem alloc for DF ints
+	/*
+        if (df_ints_incore) {
+            bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
+            bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+            bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
+            bQijA->read(psio_, PSIF_DFOCC_INTS);
+            bQiaA->read(psio_, PSIF_DFOCC_INTS);
+            bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
+        }
+	*/
+
+	/*
+        if (t2_incore) {
+            t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        }
+	*/
+
+
+
+        // memalloc for density intermediates
+        if (qchf_ == "TRUE" || dertype == "FIRST") { 
+            g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
+            g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
+            g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
+            g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
+            g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+        }
+
+        // QCHF
+        if (qchf_ == "TRUE") qchf();
+
+        // Compute MP2 energy
+        if (reference == "ROHF") t1_1st_sc();
+	t2_1st_sc();
+	
+	outfile->Printf("\n");
+	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing DF-MP2 energy ... \n"); 
+	outfile->Printf("\t======================================================================= \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA+Escsmp2BB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCSN-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+	if (reference_ == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
+	if (reference_ == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
+	outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
+	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
+	outfile->Printf("\t======================================================================= \n");
+	
+	Process::environment.globals["DF-MP2 TOTAL ENERGY"] = Emp2;
+	Process::environment.globals["DF-SCS-MP2 TOTAL ENERGY"] = Escsmp2;
+	Process::environment.globals["DF-SOS-MP2 TOTAL ENERGY"] = Esosmp2;
+	Process::environment.globals["DF-SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+        Process::environment.globals["DF-MP2 CORRELATION ENERGY"] = Emp2 - Escf;
+        Process::environment.globals["DF-SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
+        Process::environment.globals["DF-SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
+        Process::environment.globals["DF-SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+        Process::environment.globals["DF-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        Process::environment.globals["DF-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
+
+        // Perform MP3 iterations
+        timer_on("MP3");
+	t2_2nd_sc();
+        timer_off("MP3");
+
+	outfile->Printf("\n");
+	outfile->Printf("\t======================================================================= \n");
+	outfile->Printf("\t================ MP3 FINAL RESULTS ==================================== \n");
+	outfile->Printf("\t======================================================================= \n");
+	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
+	outfile->Printf("\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3-Emp2);
+	outfile->Printf("\tDF-MP3 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
+	outfile->Printf("\tDF-MP3 Total Energy (a.u.)         : %20.14f\n", Emp3);
+	outfile->Printf("\t======================================================================= \n");
+	outfile->Printf("\n");
+	
+	Process::environment.globals["CURRENT ENERGY"] = Eccd;
+        Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
+        Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3 - Escf;
+	Process::environment.globals["DF-MP3 TOTAL ENERGY"] = Emp3;
+        Process::environment.globals["DF-MP3 CORRELATION ENERGY"] = Emp3 - Escf;
+	Emp3L=Emp3;
+
+        // Malloc for PDMs 
+        if (dertype == "FIRST") {
+	    gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
+        }
+
+	/*
+        // Compute Analytic Gradients
+        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
+	    // memalloc
+	    G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
+	    G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+
+            outfile->Printf("\tComputing unrelaxed response density matrices...\n");
+ 	    omp3_opdm();
+	    omp3_tpdm();
+	    ccl_energy();
+            prepare4grad();
+            if (oeprop_ == "TRUE") oeprop();
+            if (dertype == "FIRST") dfgrad();
+            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
+	*/
 
 }// end mp3_manager 
 

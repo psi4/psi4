@@ -37,7 +37,6 @@
 #include <physconst.h>
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
-#include "../libJKFactory/MinimalInterface.h"
 #include "uhf.h"
 
 using namespace std;
@@ -120,10 +119,7 @@ void UHF::save_density_and_energy()
 
 void UHF::form_G()
 {
- typedef boost::shared_ptr<MinimalInterface> ShareInt;
- if(!JKFactory_)
-    JKFactory_=ShareInt(new MinimalInterface(2));
- if(!JKFactory_->UseJKFactory()){
+
     // Push the C matrix on
     std::vector<SharedMatrix> & C = jk_->C_left();
     C.clear();
@@ -140,21 +136,7 @@ void UHF::form_G()
     J_->add(J[1]);
     Ka_ = K[0];
     Kb_ = K[1];
- }
- else{
-    std::vector<SharedMatrix>Ds,Js,Ks;
-    Ds.push_back(Da_);Ds.push_back(Db_);
-    Js.push_back(J_);
-    Js.push_back(
-             SharedMatrix(new Matrix(Db_->nrow(),Db_->ncol()))
-             );
-    Ks.push_back(Ka_);
-    Ks.push_back(Kb_);
-    JKFactory_->SetP(Ds);
-    JKFactory_->GetJ(Js);
-    J_->add(Js[1]);
-    JKFactory_->GetK(Ks);
- }
+
     Ga_->copy(J_);
     Gb_->copy(Ga_);
     Ga_->subtract(Ka_);

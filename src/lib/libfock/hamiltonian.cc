@@ -335,7 +335,7 @@ void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
                 ss2 << "C_right, h = " << symm << ", N = " << N;
                 SharedMatrix Cr(new Matrix(ss2.str(), Caocc_->nirrep(), Caocc_->rowspi(), rank, symm));
 
-                double** Crp = Cr->pointer(delta_h);
+                double** Crp = Cr->pointer(delta_h^symm);  
                 double** Cvp = Cavir_->pointer(delta_h^symm);
                 C_DCOPY(Cavir_->rowspi()[delta_h^symm],&Cvp[0][delta_a],Cavir_->colspi()[delta_h^symm],Crp[0],1);
 

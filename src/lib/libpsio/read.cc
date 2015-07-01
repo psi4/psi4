@@ -59,11 +59,16 @@ void PSIO::read(unsigned int unit, const char *key, char *buffer, ULI size,
     start_data = psio_get_global_address(start_data, start);
 
     /* Make sure the block starts and ends within the entry */
-    if (start_data.page > this_entry->eadd.page)
+    if (start_data.page > this_entry->eadd.page) {
+      fprintf(stderr, "PSIO_ERROR: Start page %ld > this entry end page %ld\n",
+        start_data.page, this_entry->eadd.page);
       psio_error(unit, PSIO_ERROR_BLKSTART);
+    }
     else if ((start_data.page == this_entry->eadd.page) &&(start_data.offset
-        > this_entry->eadd.offset))
+        > this_entry->eadd.offset)) {
+      fprintf(stderr, "PSIO_ERROR: Start data offset %ld > this entry end address offset %ld\n",  start_data.offset, this_entry->eadd.offset);
       psio_error(unit, PSIO_ERROR_BLKSTART);
+    }
 
     end_data = psio_get_address(start_data, size);
     if ((end_data.page > this_entry->eadd.page))
