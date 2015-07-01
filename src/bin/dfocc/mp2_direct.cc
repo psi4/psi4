@@ -37,14 +37,14 @@ void DFOCC::mp2_direct()
     timer_on("MP2");
 if (reference_ == "RESTRICTED") {
     // Build amplitudes in Mulliken order 
-    T = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccA, navirA, naoccA, navirA));
+    T = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
     tei_iajb_chem_directAA(K);
     T->copy(K);
     T->apply_denom_chem(nfrzc, noccA, FockA);
  
     // form U(ia,jb)
-    U = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
+    U = SharedTensor2d(new Tensor2d("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     U->sort(1432, T, 1.0, 0.0);
     U->scale(-1.0);
     U->axpy(T, 2.0);

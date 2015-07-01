@@ -22,6 +22,7 @@
 #include<vector>
 #include<execinfo.h>
 #include<cxxabi.h>
+#include<stdlib.h>
 #include "../Exception2.h"
 namespace psi{
 
