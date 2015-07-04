@@ -20,12 +20,13 @@
  *@END LICENSE
  */
 
-#ifndef GRIDPROP_H
-#define GRIDPROP_H
+#ifndef _psi_src_lib_libcubeprop_csg_h_
+#define _psi_src_lib_libcubeprop_csg_h_
 
-#include <libmints/typedefs.h>
 #include <map>
 #include <set>
+
+#include <libmints/typedefs.h>
 
 namespace psi {
 

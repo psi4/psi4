@@ -21,13 +21,15 @@
  */
 
 #include <boost/filesystem.hpp>
+
+#include <psi4-dec.h>
 #include <libmints/mints.h>
 #include <libmints/sieve.h>
 #include <libfock/cubature.h>
 #include <libfock/points.h>
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
-#include <psi4-dec.h>
+
 #include "csg.h"
 
 #ifdef _OPENMP
