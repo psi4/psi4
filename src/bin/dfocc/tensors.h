@@ -426,6 +426,9 @@ class Tensor2d
   // A2d_(pq,rs) = 2 (pq|rs) - (rq|ps)
   void tei_cs4_anti_symm(const SharedTensor2d &J, const SharedTensor2d &K);
 
+  // A2d(ij,ab) += P_(ij) * P_(ab) A(ia,jb)
+  void P_ijab(const SharedTensor2d &A);
+
 
   friend class Tensor1d;
   friend class Tensor3d;

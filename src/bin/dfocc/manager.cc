@@ -1417,7 +1417,6 @@ void DFOCC::mp3_manager()
             Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
         }
 
-     if (reference_ == "RESTRICTED") {
         // avaliable mem
         memory = Process::environment.get_memory();
         memory_mb = (double)memory/(1024.0 * 1024.0);
@@ -1430,7 +1429,8 @@ void DFOCC::mp3_manager()
         cost_df *= nQ;
         cost_df /= 1024.0 * 1024.0;
         cost_df *= sizeof(double);
-        outfile->Printf("\tMemory requirement for 3-index ints   : %9.2lf MB \n", cost_df);
+        if (reference_ == "RESTRICTED") outfile->Printf("\tMemory requirement for 3-index ints   : %9.2lf MB \n", cost_df);
+	else if (reference_ == "UNRESTRICTED") outfile->Printf("\tMemory requirement for 3-index ints   : %9.2lf MB \n", 2.0*cost_df);
 
         // Cost of Integral transform for B(Q,ab)
         cost_ampAA = 0.0;
@@ -1512,28 +1512,7 @@ void DFOCC::mp3_manager()
         }
 	*/
 
-     }  // end if (reference_ == "RESTRICTED")
 
-     else if (reference_ == "UNRESTRICTED") {
-        // memory requirements
-        cost_ampAA = 0.0;
-        cost_ampAA = nocc2AA * nvir2AA;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        cost_ampBB = nocc2BB * nvir2BB;
-        cost_ampBB /= 1024.0 * 1024.0;
-        cost_ampBB *= sizeof(double);
-        cost_ampAB = nocc2AB * nvir2AB;
-        cost_ampAB /= 1024.0 * 1024.0;
-        cost_ampAB *= sizeof(double);
-        cost_amp = MAX0(cost_ampAA, cost_ampBB);
-        cost_amp = MAX0(cost_amp, cost_ampAB);
-        cost_amp = 3.0 * cost_amp;
-        memory = Process::environment.get_memory();
-        memory_mb = (double)memory/(1024.0 * 1024.0);
-        outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
-        outfile->Printf("\tMinimum required memory for amplitudes: %9.2lf MB \n", cost_amp);
-     }// else if (reference_ == "UNRESTRICTED")
 
         // memalloc for density intermediates
         if (qchf_ == "TRUE" || dertype == "FIRST") { 
@@ -1595,6 +1574,10 @@ void DFOCC::mp3_manager()
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
 	outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
+	if (reference_ == "UNRESTRICTED") outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
+	outfile->Printf("\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3-Emp2);
 	outfile->Printf("\tDF-MP3 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
 	outfile->Printf("\tDF-MP3 Total Energy (a.u.)         : %20.14f\n", Emp3);
 	outfile->Printf("\t======================================================================= \n");
@@ -1607,17 +1590,9 @@ void DFOCC::mp3_manager()
         Process::environment.globals["DF-MP3 CORRELATION ENERGY"] = Emp3 - Escf;
 	Emp3L=Emp3;
 
-        // CCDL 
-        if (dertype == "FIRST" || cc_lambda_ == "TRUE") {
-            // memalloc
-            if (dertype == "FIRST") {
-	        gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
-            }
-
-            timer_on("CCDL");
-            if (t2_incore) ccdl_iterations();
-            else throw PSIEXCEPTION("There is NOT enough memory for Lambda equations!");
-            timer_off("CCDL");
+        // Malloc for PDMs 
+        if (dertype == "FIRST") {
+	    gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
         }
 
 	/*
