@@ -1,15 +1,38 @@
-#ifndef PROP_H
-#define PROP_H
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
+#ifndef _psi_src_lib_libcubeprop_cubeprop_h_
+#define _psi_src_lib_libcubeprop_cubeprop_h_
+
+#include <map>
 
 #include <libmints/typedefs.h>
 #include <libmints/wavefunction.h>
-#include <map>
 
 namespace psi {
 
 class CubicScalarGrid;
 
-class Properties {
+class CubeProperties {
 
 protected:
     
@@ -44,10 +67,10 @@ protected:
 public:
     // => Constructors <= //
     
-    /// Construct a Properties object from a Wavefunction (possibly with symmetry in wfn)
-    Properties(boost::shared_ptr<Wavefunction> wfn);
+    /// Construct a CubeProperties object from a Wavefunction (possibly with symmetry in wfn)
+    CubeProperties();
     /// Common Destructor
-    virtual ~Properties();
+    virtual ~CubeProperties();
 
     // => High-Level Property Computers <= //
 

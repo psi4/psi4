@@ -1,8 +1,33 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <boost/filesystem.hpp>
-#include "prop.h"
-#include "csg.h"
-#include <libmints/mints.h>
+
 #include <psi4-dec.h>
+
+#include <libmints/mints.h>
+
+#include "cubeprop.h"
+#include "csg.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -14,9 +39,10 @@ using namespace std;
 
 namespace psi {
 
-Properties::Properties(boost::shared_ptr<Wavefunction> wfn) :
+CubeProperties::CubeProperties() :
     options_(Process::environment.options)
 {
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     basisset_ = wfn->basisset();
 
     Ca_ = wfn->Ca_subset("AO", "ALL");
@@ -36,23 +62,25 @@ Properties::Properties(boost::shared_ptr<Wavefunction> wfn) :
 
     common_init();
 }
-Properties::~Properties()
+CubeProperties::~CubeProperties()
 {
 }
-void Properties::common_init()
+void CubeProperties::common_init()
 {
     grid_ = boost::shared_ptr<CubicScalarGrid>(new CubicScalarGrid(basisset_));
-    grid_->set_filepath(options_.get_str("PROPERTY_FILEPATH"));
+    grid_->set_filepath(options_.get_str("CUBEPROP_FILEPATH"));
 }
-void Properties::print_header()
+void CubeProperties::print_header()
 {
     outfile->Printf( "  ==> One Electron Grid Properties (v2.0) <==\n\n");
     grid_->print_header();
     outfile->Flush();
 }
-void Properties::compute_properties()
+void CubeProperties::compute_properties()
 {
-    std::string filepath = options_.get_str("PROPERTY_FILEPATH");
+    print_header();
+
+    std::string filepath = options_.get_str("CUBEPROP_FILEPATH");
     std::stringstream ss;
     ss << filepath << "/" << "geom.xyz";
 
@@ -67,8 +95,8 @@ void Properties::compute_properties()
 
     basisset_->molecule()->save_xyz_file(ss.str());
 
-    for (int ind = 0; ind < options_["PROPERTY_TASKS"].size(); ind++) {
-        std::string task = options_["PROPERTY_TASKS"][ind].to_string();
+    for (size_t ind = 0; ind < options_["CUBEPROP_TASKS"].size(); ind++) {
+        std::string task = options_["CUBEPROP_TASKS"][ind].to_string();
 
         if (task == "DENSITY") {
             boost::shared_ptr<Matrix> Dt(Da_->clone());        
@@ -89,7 +117,7 @@ void Properties::compute_properties()
         } else if (task == "ORBITALS") {
             std::vector<int> indsa0;
             std::vector<int> indsb0;
-            if (options_["PROPERTY_ORBITALS"].size() == 0) {
+            if (options_["CUBEPROP_ORBITALS"].size() == 0) {
                 for (int ind = 0; ind < Ca_->colspi()[0]; ind++) {
                     indsa0.push_back(ind);
                 } 
@@ -97,8 +125,8 @@ void Properties::compute_properties()
                     indsb0.push_back(ind);
                 } 
             } else {
-                for (int ind = 0; ind < options_["PROPERTY_ORBITALS"].size(); ind++) {
-                    int val = options_["PROPERTY_ORBITALS"][ind].to_integer();
+                for (size_t ind = 0; ind < options_["CUBEPROP_ORBITALS"].size(); ind++) {
+                    int val = options_["CUBEPROP_ORBITALS"][ind].to_integer();
                     if (val > 0) {
                         indsa0.push_back(abs(val) - 1); 
                     } else {
@@ -110,13 +138,13 @@ void Properties::compute_properties()
             if (indsb0.size()) compute_orbitals(Cb_, indsb0, "Psi_b");
         } else if (task == "BASIS_FUNCTIONS") {
             std::vector<int> inds0;
-            if (options_["PROPERTY_BASIS_FUNCTIONS"].size() == 0) {
+            if (options_["CUBEPROP_BASIS_FUNCTIONS"].size() == 0) {
                 for (int ind = 0; ind < basisset_->nbf(); ind++) {
                     inds0.push_back(ind);
                 } 
             } else {
-                for (int ind = 0; ind < options_["PROPERTY_BASIS_FUNCTIONS"].size(); ind++) {
-                    inds0.push_back(options_["PROPERTY_BASIS_FUNCTIONS"][ind].to_integer() - 1);
+                for (size_t ind = 0; ind < options_["CUBEPROP_BASIS_FUNCTIONS"].size(); ind++) {
+                    inds0.push_back(options_["CUBEPROP_BASIS_FUNCTIONS"][ind].to_integer() - 1);
                 }
             }
             compute_basis_functions(inds0, "Phi");
@@ -127,32 +155,32 @@ void Properties::compute_properties()
             compute_ELF(Da_, "ELFa");
             compute_ELF(Db_, "ELFb");
         } else {
-            throw PSIEXCEPTION("Unrecognized PROPERTY_TASKS value");
+            throw PSIEXCEPTION(task + "is an unrecognized PROPERTY_TASKS value");
         }
     }
 }
-void Properties::compute_density(boost::shared_ptr<Matrix> D, const std::string& key)
+void CubeProperties::compute_density(boost::shared_ptr<Matrix> D, const std::string& key)
 {
     grid_->compute_density(D, key);
 }
-void Properties::compute_esp(boost::shared_ptr<Matrix> Dt)
+void CubeProperties::compute_esp(boost::shared_ptr<Matrix> Dt)
 {
     grid_->compute_density(Dt, "Dt");
     grid_->compute_esp(Dt, "ESP"); 
 }
-void Properties::compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::string& key)
+void CubeProperties::compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::string& key)
 {
     grid_->compute_orbitals(C, indices, key);
 }
-void Properties::compute_basis_functions(const std::vector<int>& indices, const std::string& key)
+void CubeProperties::compute_basis_functions(const std::vector<int>& indices, const std::string& key)
 {
     grid_->compute_basis_functions(indices, key);
 }
-void Properties::compute_LOL(boost::shared_ptr<Matrix> D, const std::string& key)
+void CubeProperties::compute_LOL(boost::shared_ptr<Matrix> D, const std::string& key)
 {
     grid_->compute_LOL(D, key);
 }
-void Properties::compute_ELF(boost::shared_ptr<Matrix> D, const std::string& key)
+void CubeProperties::compute_ELF(boost::shared_ptr<Matrix> D, const std::string& key)
 {
     grid_->compute_ELF(D, key);
 }
