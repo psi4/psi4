@@ -34,8 +34,9 @@ void DFOCC::t2_2nd_sc()
 {
 
     // defs
-    SharedTensor2d K, I, T, Tnew, T1, T2, U, Tau, W, X, Y;
+    SharedTensor2d K, L, M, I, T, Tnew, T1, T2, U, Tau, W, X, Y;
 
+if (reference_ == "RESTRICTED") {
     // Read DF integrals
     bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
     bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
@@ -99,6 +100,144 @@ void DFOCC::t2_2nd_sc()
     bQijA.reset();
     bQiaA.reset();
     bQabA.reset();
+}// end if (reference_ == "RESTRICTED")
+
+else if (reference_ == "UNRESTRICTED") {
+    // Read DF integrals
+    bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
+    bQijB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ij)", nQ, naoccB, naoccB));
+    bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    bQiaB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ia)", nQ, naoccB, navirB));
+    bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
+    bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB, navirB));
+    bQijA->read(psio_, PSIF_DFOCC_INTS);
+    bQijB->read(psio_, PSIF_DFOCC_INTS);
+    bQiaA->read(psio_, PSIF_DFOCC_INTS);
+    bQiaB->read(psio_, PSIF_DFOCC_INTS);
+    bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
+    bQabB->read(psio_, PSIF_DFOCC_INTS, true, true);
+
+    //=========================
+    // T2AA
+    //=========================
+
+    // WmnijT2
+    mp3_WmnijT2AA();
+
+    // WmbejT2
+    mp3_WmbejT2AA();
+
+    // WabefT2
+    mp3_WabefT2AA();
+
+    // Denom
+    Tnew = SharedTensor2d(new Tensor2d("New T2_2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    Tnew->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+    Tnew->apply_denom(nfrzc, noccA, FockA);
+
+    // Form T2 = T2(1) + T2(2)
+    U = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    U->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+    U->axpy(Tnew, 1.0);
+    Tnew.reset();
+
+    // Energy
+    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    L->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0);
+    M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    M->sort(1324, L, 1.0, 0.0);
+    L.reset();
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
+    tei_pqrs_anti_symm_direct(K, M);
+    M.reset();
+    Emp3AA = 0.25 * U->vector_dot(K);
+    U.reset();
+    K.reset();
+
+    //=========================
+    // T2BB
+    //=========================
+
+    // WmnijT2
+    mp3_WmnijT2BB();
+
+    // WmbejT2
+    mp3_WmbejT2BB();
+
+    // WabefT2
+    mp3_WabefT2BB();
+
+    // Denom
+    Tnew = SharedTensor2d(new Tensor2d("New T2_2 <ij|ab>", naoccB, naoccB, navirB, navirB));
+    Tnew->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+    Tnew->apply_denom(nfrzc, noccB, FockB);
+
+    // Form T2 = T2(1) + T2(2)
+    U = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
+    U->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+    U->axpy(Tnew, 1.0);
+    Tnew.reset();
+
+    // Energy BB
+    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB));
+    L->gemm(true, false, bQiaB, bQiaB, 1.0, 0.0);
+    M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB));
+    M->sort(1324, L, 1.0, 0.0);
+    L.reset();
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
+    tei_pqrs_anti_symm_direct(K, M);
+    M.reset();
+    Emp3BB = 0.25 * U->vector_dot(K);
+    U.reset();
+    K.reset();
+
+    //=========================
+    // T2AB
+    //=========================
+
+    // WmnijT2
+    mp3_WmnijT2AB();
+
+    // WmbejT2
+    mp3_WmbejT2AB();
+
+    // WabefT2
+    mp3_WabefT2AB();
+
+    // Denom
+    Tnew = SharedTensor2d(new Tensor2d("New T2_2 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+    Tnew->read(psio_, PSIF_DFOCC_AMPS);
+    Tnew->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
+
+    // Form T2 = T2(1) + T2(2)
+    U = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+    U->read(psio_, PSIF_DFOCC_AMPS);
+    U->axpy(Tnew, 1.0);
+    Tnew.reset();
+
+    // Energy
+    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB));
+    L->gemm(true, false, bQiaA, bQiaB, 1.0, 0.0);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+    K->sort(1324, L, 1.0, 0.0);
+    L.reset();
+    Emp3AB = U->vector_dot(K);
+    U.reset();
+    K.reset();
+
+    // Overall energy
+    Ecorr = Emp3AA + Emp3BB + Emp3AB;
+    Emp3 = Escf + Ecorr;
+
+    // Free ints
+    bQijA.reset();
+    bQijB.reset();
+    bQiaA.reset();
+    bQiaB.reset();
+    bQabA.reset();
+    bQabB.reset();
+
+}// else if (reference_ == "UNRESTRICTED")
 
 }// end t2_2nd_sc
 
