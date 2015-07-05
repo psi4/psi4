@@ -89,12 +89,13 @@ void CCMRCC::compute_delta_amps()
   // Compute the T-AMPS difference
   delta_t1_amps=0.0;
   delta_t2_amps=0.0;
-  for(int n=0;n<moinfo->get_ref_size(AllRefs);n++){
-    delta_t1_amps+=blas->get_scalar("||Delta_t1||",moinfo->get_ref_number(n));
-    delta_t2_amps+=blas->get_scalar("||Delta_t2||",moinfo->get_ref_number(n));
+  for(int n = 0; n < moinfo->get_ref_size(AllRefs); n++){
+    double c_n2 = std::pow(h_eff.get_right_eigenvector(n),2.0);
+    delta_t1_amps += c_n2 * blas->get_scalar("||Delta_t1||",moinfo->get_ref_number(n));
+    delta_t2_amps += c_n2 * blas->get_scalar("||Delta_t2||",moinfo->get_ref_number(n));
   }
-  delta_t1_amps=pow(delta_t1_amps,0.5)/((double)moinfo->get_nrefs());
-  delta_t2_amps=pow(delta_t2_amps,0.5)/((double)moinfo->get_nrefs());
+  delta_t1_amps = std::sqrt(delta_t1_amps);
+  delta_t2_amps = std::sqrt(delta_t2_amps);
 }
 
 void CCMRCC::update_t3_amps()
