@@ -1214,6 +1214,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     optimizations, in which case READ becomes the default after the first
     geometry step. -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
+    /*- Mix the HOMO/LUMO in UHF or UKS to break alpha/beta spatial symmetry.
+    Useful to produce broken-symmetry unrestricted solutions.
+    Notice that this procedure is defined only for calculations in C1 symmetry. -*/
+    options.add_bool("GUESS_MIX",false);
     /*- Do write a MOLDEN output file?  If so, the filename will end in
     .molden, and the prefix is determined by |globals__writer_file_label|
     (if set), or else by the name of the output file plus the name of
