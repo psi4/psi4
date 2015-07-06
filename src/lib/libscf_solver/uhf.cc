@@ -189,6 +189,15 @@ void UHF::form_C()
 {
     diagonalize_F(Fa_, Ca_, epsilon_a_);
     diagonalize_F(Fb_, Cb_, epsilon_b_);
+    if (options_.get_bool("GUESS_MIX") && (iteration_ == 0)){
+        if (Ca_->nirrep() == 1){
+            outfile->Printf("  Mixing alpha HOMO/LUMO orbitals (%d,%d)\n\n",nalpha_,nalpha_ + 1);
+            Ca_->rotate_columns(0,nalpha_ - 1,nalpha_, pc_pi * 0.25);
+            Cb_->rotate_columns(0,nbeta_ - 1,nbeta_,-pc_pi * 0.25);
+        }else{
+            throw InputException("Warning: cannot mix alpha HOMO/LUMO orbitals. Run in C1 symmetry.", "to 'symmetry c1'", __FILE__, __LINE__);
+        }
+    }
     find_occupation();
     if (debug_) {
         Ca_->print("outfile");

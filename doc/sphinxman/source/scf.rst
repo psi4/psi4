@@ -294,15 +294,24 @@ actually,::
 Broken Symmetry
 ~~~~~~~~~~~~~~~
 
-For certain problems, such diradicals, allowing the spin-up and spin-down orbitals to differ in closed-shell computations can be advantageous; this is known as symmetry breaking.  The resulting wavefunction will often provide superior energetics, due to the increased flexibility, but will suffer non-physicical spin contamination from higher multiplicity states.  |PSIfour| can compute a high-spin triplet wavefunction and then use this as a guess for the broken-symmetry low spin state.  To do this, you request broken symmetry in the :py:func:`~driver.energy` call, using one of the following:::
+For certain problems, such diradicals, allowing the spin-up and spin-down
+orbitals to differ in closed-shell computations can be advantageous;
+this is known as symmetry breaking.  The resulting unrestricted wavefunction
+will often provide superior energetics, due to the increased flexibility,
+but will suffer non-physicical spin contamination from higher multiplicity states.
+A convenient approach to break symmetry is to perform a UHF or UKS calculation
+with the guess HOMO and LUMO orbitals mixed.
+Mixing of the guess orbitals can be requested by setting the |scf__guess_mix|
+keyword to true::
 
-    energy('uhf', brokensymmetry=True)
+    set guess_mix true
+    energy('uhf')
 
     or, equivalently
 
     set reference uhf
-    energy('scf', brokensymmetry=True)
-
+    set guess_mix true
+    energy('scf')
 
 Orthogonalization
 ~~~~~~~~~~~~~~~~~
