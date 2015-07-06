@@ -496,6 +496,9 @@ protected:
     void ccd_opdm();
     void ccd_tpdm();
 
+    // QCHF
+    void qchf_manager();
+
     // orbital pairs
     int so_pair_idx(int i, int j);
     int mo_pair_idx(int i, int j);

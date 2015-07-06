@@ -76,6 +76,7 @@ procedures = {
             'df-omp2'       : run_dfomp2,
             'dfomp2'        : run_dfomp2,
             'dfocc'         : run_dfocc,
+            'qchf'          : run_qchf,
             'dfccsd2'       : run_dfccsd2,
             'df-ccsd2'      : run_dfccsd2,
             'dfccd'         : run_dfccd,
@@ -377,6 +378,8 @@ def energy(name, **kwargs):
     | df-mp3                  | density-fitted MP3 from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
     | dfmp3                   | density-fitted MP3 from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | qchf                    | density-fitted QC-HF from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | dfccd                   | density-fitted CCD from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+

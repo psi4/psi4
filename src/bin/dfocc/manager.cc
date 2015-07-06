@@ -2242,6 +2242,74 @@ void DFOCC::mp2_5_manager()
 
 }// end omp2.5_manager 
 
+//======================================================================
+//             HF Manager
+//======================================================================             
+void DFOCC::qchf_manager()
+{
+        time4grad = 0;// means i will not compute the gradient
+	mo_optimized = 0;// means MOs are not optimized
+
+	/*
+        timer_on("DF CC Integrals");
+        df_corr();
+        trans_corr();
+        timer_off("DF CC Integrals");
+	*/
+
+        df_ref();
+        //trans_ref();
+        outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
+
+        // memalloc for density intermediates
+        Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+	/*
+        g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
+        g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
+        g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
+        g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+	*/
+        //outfile->Printf("\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
+        
+
+     if (reference_ == "RESTRICTED") {
+        // memory requirements
+        // DF-CC B(Q,mn)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ_ref * nso2_;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for B-CC (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
+ 
+        // DF-CC B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ_ref * navirA * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for B-CC (Q|ab)    : %9.2lf MB \n", cost_ampAA);
+
+        // Cost of Integral transform for DF-CC B(Q,ab)
+        cost_ampAA = 0.0;
+        cost_ampAA = nQ_ref * nso2_;
+        cost_ampAA += nQ_ref * navirA * navirA;
+        cost_ampAA += nQ_ref * nso_ * navirA;
+        cost_ampAA /= 1024.0 * 1024.0;
+        cost_ampAA *= sizeof(double);
+        outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
+     }  // end if (reference_ == "RESTRICTED")
+
+     else if (reference_ == "UNRESTRICTED") {
+        // memory requirements
+        memory = Process::environment.get_memory();
+        memory_mb = (double)memory/(1024.0 * 1024.0);
+        outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
+     }  // end else if (reference_ == "UNRESTRICTED")
+
+        // QCHF
+        qchf();
+
+}// end qchf_manager 
+
 
 }} // End Namespaces
 
