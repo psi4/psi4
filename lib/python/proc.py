@@ -288,10 +288,12 @@ def run_qchf(name, **kwargs):
         ['MAXITER'],
         ['DFOCC', 'ORB_OPT'],
         ['DFOCC', 'WFN_TYPE'],
+        ['DFOCC', 'QCHF'],
         ['DFOCC', 'E_CONVERGENCE'])
 
     psi4.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
     psi4.set_local_option('DFOCC', 'WFN_TYPE', 'QCHF')
+    psi4.set_local_option('DFOCC', 'QCHF', 'TRUE')
     psi4.set_local_option('DFOCC', 'E_CONVERGENCE', 8)
 
     # override symmetry:
