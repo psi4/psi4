@@ -1231,6 +1231,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("PRINT_MOS", false);
     /*- Flag to print the basis set. -*/
     options.add_bool("PRINT_BASIS", false);
+    /*- Do perform a QCHF computation?  -*/
+    options.add_bool("QCHF",false);
 
     /*- SUBSECTION Convergence Control/Stabilization -*/
 
