@@ -88,6 +88,8 @@ if (reference_ == "RESTRICTED") {
 /********************************************************************************************/
         // Read orbital energies
         epsilon_a_ = reference_wavefunction_->epsilon_a();
+	eps_orbA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <P|Q>", nmo_));
+        for(int p = 0; p < nmo_; ++p) eps_orbA->set(p, epsilon_a_->get(0, p));
 
         // Build Initial fock matrix
 	FockA = SharedTensor2d(new Tensor2d("MO-basis alpha Fock matrix", nmo_, nmo_));
@@ -212,6 +214,10 @@ else if (reference_ == "UNRESTRICTED") {
         // Read orbital energies
         epsilon_a_ = reference_wavefunction_->epsilon_a();
         epsilon_b_ = reference_wavefunction_->epsilon_b();
+	eps_orbA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <P|Q>", nmo_));
+	eps_orbB = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <p|q>", nmo_));
+        for(int p = 0; p < nmo_; ++p) eps_orbA->set(p, epsilon_a_->get(0, p));
+        for(int p = 0; p < nmo_; ++p) eps_orbB->set(p, epsilon_b_->get(0, p));
 
         // Build Initial fock matrix
 	FockA = SharedTensor2d(new Tensor2d("MO-basis alpha Fock matrix", nmo_, nmo_));

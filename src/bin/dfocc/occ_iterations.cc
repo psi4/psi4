@@ -21,6 +21,9 @@
  */
 
 #include <libqt/qt.h>
+#include <libmints/mints.h>
+#include <libmints/writer.h>
+#include <libmints/writer_file_prefix.h>
 #include "defines.h"
 #include "dfocc.h"
 
@@ -283,23 +286,6 @@ else if (wfn_type_ == "DF-OCEPA") outfile->Printf(" ======================== DF-
 else if (wfn_type_ == "DF-OMP2.5") outfile->Printf(" ======================== DF-OMP2.5 ITERATIONS ARE CONVERGED ================== \n");
 outfile->Printf(" ============================================================================== \n");
 
-    /*
-    // Save mos to wfn
-    if (reference_ == "RESTRICTED") {
-	SharedMatrix Ca = SharedMatrix(new Matrix("Alpha MO Coefficients", nso_, nmo_));
-	CmoA->to_shared_matrix(Ca);
-	Ca.reset();
-    }
-    else if (reference_ == "UNRESTRICTED") {
-	SharedMatrix Ca = SharedMatrix(new Matrix("Alpha MO Coefficients", nso_, nmo_));
-	SharedMatrix Cb = SharedMatrix(new Matrix("Beta MO Coefficients", nso_, nmo_));
-	CmoA->to_shared_matrix(Ca);
-	CmoB->to_shared_matrix(Cb);
-	Ca.reset();
-	Cb.reset();
-    }
-    */
-
 }
 
 else if (conver == 0) {
@@ -311,6 +297,122 @@ else if (conver == 0) {
   throw PSIEXCEPTION("DF-OCC iterations did not converge");
 }
 
-}
+}// end occ_iterations
+
+
+//=========================
+// SAVE MOs to wfn
+//=========================
+void DFOCC::save_mo_to_wfn()
+{ 
+    // make sure we have semicanonic MOs
+    if (orbs_already_sc == 0) semi_canonic(); 
+
+    // Save mos to wfn
+    if (reference_ == "RESTRICTED") {
+	SharedMatrix Ca = SharedMatrix(new Matrix("Alpha MO Coefficients", nso_, nmo_));
+	CmoA->to_shared_matrix(Ca);
+	SharedMatrix moA = Process::environment.wavefunction()->Ca();
+	moA->copy(Ca);
+
+      if (options_.get_str("MOLDEN_WRITE") == "TRUE") {
+	// Diagonalize OPDM to obtain NOs
+	SharedMatrix aevecs(new Matrix("Eigenvectors (Alpha)", nmo_, nmo_));
+	SharedVector aevals(new Vector("Eigenvalues (Alpha)", nmo_));
+
+	// Diagonaliz OPDM
+	SharedMatrix a_opdm = SharedMatrix(new Matrix("Alpha OPDM", nmo_, nmo_));
+	G1->to_shared_matrix(a_opdm);
+        a_opdm->diagonalize(aevecs, aevals, descending);
+
+	// Form transformation matrix from AO to NO
+        SharedMatrix aAONO (new Matrix("NOs (Alpha)", nso_, nmo_));
+	aAONO->gemm(false, false, 1.0, Ca_, aevecs, 0.0);
+
+	// Write to MOLDEN file
+	boost::shared_ptr<Wavefunction> dfocc_ = Process::environment.wavefunction();
+	boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(dfocc_));
+	std::string filename = get_writer_file_prefix() + ".molden";
+
+        // For now use zeros instead of energies, and DCFT NO occupation numbers as occupation numbers
+	SharedVector dummy_a(new Vector("Dummy Vector Alpha", nmo_));
+        for(int i = 0; i < naoccA; ++i) eps_orbA->set(i+nfrzc, eigooA->get(i));
+        for(int a = 0; a < navirA; ++a) eps_orbA->set(a+noccA, eigvvA->get(a)); 
+	eps_orbA->to_shared_vector(dummy_a);
+
+	// write
+	molden->write(filename, aAONO, aAONO, dummy_a, dummy_a, aevals, aevals);
+
+	//free
+	aAONO.reset();
+	a_opdm.reset();
+      }
+
+	Ca.reset();
+    }
+
+    else if (reference_ == "UNRESTRICTED") {
+	SharedMatrix Ca = SharedMatrix(new Matrix("Alpha MO Coefficients", nso_, nmo_));
+	SharedMatrix Cb = SharedMatrix(new Matrix("Beta MO Coefficients", nso_, nmo_));
+	CmoA->to_shared_matrix(Ca);
+	CmoB->to_shared_matrix(Cb);
+
+	SharedMatrix moA = Process::environment.wavefunction()->Ca();
+	SharedMatrix moB = Process::environment.wavefunction()->Ca();
+	moA->copy(Ca);
+	moB->copy(Cb);
+
+      if (options_.get_str("MOLDEN_WRITE") == "TRUE") {
+	// Diagonalize OPDM to obtain NOs
+	SharedMatrix aevecs(new Matrix("Eigenvectors (Alpha)", nmo_, nmo_));
+	SharedMatrix bevecs(new Matrix("Eigenvectors (Beta)", nmo_, nmo_));
+	SharedVector aevals(new Vector("Eigenvalues (Alpha)", nmo_));
+	SharedVector bevals(new Vector("Eigenvalues (Beta)", nmo_));
+
+	// Diagonaliz OPDM
+	SharedMatrix a_opdm = SharedMatrix(new Matrix("Alpha OPDM", nmo_, nmo_));
+	SharedMatrix b_opdm = SharedMatrix(new Matrix("Alpha OPDM", nmo_, nmo_));
+	G1A->to_shared_matrix(a_opdm);
+	G1B->to_shared_matrix(b_opdm);
+        a_opdm->diagonalize(aevecs, aevals, descending);
+        b_opdm->diagonalize(bevecs, bevals, descending);
+
+	// Form transformation matrix from AO to NO
+        SharedMatrix aAONO (new Matrix("NOs (Alpha)", nso_, nmo_));
+        SharedMatrix bAONO (new Matrix("NOs (Beta)", nso_, nmo_));
+	aAONO->gemm(false, false, 1.0, Ca_, aevecs, 0.0);
+	bAONO->gemm(false, false, 1.0, Cb_, bevecs, 0.0);
+
+	// Write to MOLDEN file
+	boost::shared_ptr<Wavefunction> dfocc_ = Process::environment.wavefunction();
+	boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(dfocc_));
+	std::string filename = get_writer_file_prefix() + ".molden";
+
+        // For now use zeros instead of energies, and DCFT NO occupation numbers as occupation numbers
+	SharedVector dummy_a(new Vector("Dummy Vector Alpha", nmo_));
+	SharedVector dummy_b(new Vector("Dummy Vector Beta", nmo_));
+        for(int i = 0; i < naoccA; ++i) eps_orbA->set(i+nfrzc, eigooA->get(i));
+        for(int a = 0; a < navirA; ++a) eps_orbA->set(a+noccA, eigvvA->get(a)); 
+        for(int i = 0; i < naoccB; ++i) eps_orbB->set(i+nfrzc, eigooB->get(i));
+        for(int a = 0; a < navirB; ++a) eps_orbB->set(a+noccB, eigvvB->get(a)); 
+	eps_orbA->to_shared_vector(dummy_a);
+	eps_orbB->to_shared_vector(dummy_b);
+
+	// write
+	molden->write(filename, aAONO, bAONO, dummy_a, dummy_b, aevals, bevals);
+
+	// free
+	aAONO.reset();
+	bAONO.reset();
+	a_opdm.reset();
+	b_opdm.reset();
+      }
+
+	Ca.reset();
+	Cb.reset();
+    }
+
+} // end save_mo_to_wfn
+
 }} // End Namespaces
 

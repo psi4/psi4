@@ -421,7 +421,6 @@ else if (reference_ == "UNRESTRICTED") {
 void DFOCC::oeprop()
 { 
     outfile->Printf("\tComputing one-electron properties...\n");  
-    
 
     timer_on("oeprop");
     SharedMatrix Da_ = SharedMatrix(new Matrix("MO-basis alpha OPDM", nmo_, nmo_));
