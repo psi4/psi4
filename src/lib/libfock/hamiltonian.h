@@ -358,5 +358,48 @@ public:
                                std::vector<boost::shared_ptr<Vector> >& b);
 };
 
+// "Hamiltonian" for UHF stability analysis.
+class USTABHamiltonian : public UHamiltonian {
+
+protected:
+
+    SharedMatrix Cocca_;
+    SharedMatrix Cvira_;
+    SharedMatrix Coccb_;
+    SharedMatrix Cvirb_;
+    boost::shared_ptr<Vector> eps_occa_;
+    boost::shared_ptr<Vector> eps_vira_;
+    boost::shared_ptr<Vector> eps_occb_;
+    boost::shared_ptr<Vector> eps_virb_;
+
+public:
+
+// Should really use a map of matrices here. But meh.
+    USTABHamiltonian(boost::shared_ptr<JK> jk,
+                     SharedMatrix Cocca,
+                     SharedMatrix Cvira,
+                     SharedMatrix Coccb,
+                     SharedMatrix Cvirb,
+                     boost::shared_ptr<Vector> eps_occa,
+                     boost::shared_ptr<Vector> eps_vira,
+                     boost::shared_ptr<Vector> eps_occb,
+                     boost::shared_ptr<Vector> eps_virb,
+                     boost::shared_ptr<VBase> v = boost::shared_ptr<VBase>());
+    virtual ~USTABHamiltonian();
+
+    virtual void print_header() const;
+    virtual std::pair<boost::shared_ptr<Vector>,
+                      boost::shared_ptr<Vector> > diagonal();
+    virtual void product(const std::vector<std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > >& x,
+                               std::vector<std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > >& b);
+
+// Working with a pair is annoying, so we define a new function below
+    virtual std::vector<std::pair<SharedMatrix,SharedMatrix > > unpack(
+            const std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> >& x);
+    virtual std::vector<std::pair<SharedMatrix,SharedMatrix > > unpack_paired(
+            const boost::shared_ptr<Vector>& x);
+
+};
+
 }
 #endif
