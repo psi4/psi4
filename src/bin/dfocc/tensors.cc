@@ -185,6 +185,14 @@ void Tensor1d::subtract(int i, double value)
   A1d_[i]-=value;
 }//
 
+void Tensor1d::to_shared_vector(SharedVector A)
+{
+      #pragma omp parallel for
+      for (int i=0; i<dim1_; ++i) {
+           A->set(0,i,A1d_[i]);
+      }
+}//
+
 double Tensor1d::rms()
 {
   double summ = 0.0;

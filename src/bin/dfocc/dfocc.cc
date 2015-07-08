@@ -202,6 +202,8 @@ if (reference_ == "RESTRICTED") {
         HovA = SharedTensor2d(new Tensor2d("OEI <O|V>", noccA, nvirA));
         HvoA = SharedTensor2d(new Tensor2d("OEI <V|O>", nvirA, noccA));
         HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
+	eigooA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <I|J>", naoccA));
+	eigvvA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <A|B>", navirA));
 
     // if we need PDMs
     if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE" || cc_lambda_ == "TRUE") {
@@ -257,6 +259,10 @@ else if (reference_ == "UNRESTRICTED") {
         HvoB = SharedTensor2d(new Tensor2d("OEI <v|o>", nvirB, noccB));
         HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
         HvvB = SharedTensor2d(new Tensor2d("OEI <v|v>", nvirB, nvirB));
+	eigooA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <I|J>", naoccA));
+	eigooB = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <i|j>", naoccB));
+	eigvvA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <A|B>", navirA));
+	eigvvB = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <a|b>", navirB));
 
     // if we need PDMs
     if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE") {
@@ -356,7 +362,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP3   \n");
    else if (wfn_type_ == "QCHF") outfile->Printf("                      QCHF   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision July 7, 2015\n") ;
+   outfile->Printf("              Latest Revision July 8, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");

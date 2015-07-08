@@ -38,8 +38,6 @@ void DFOCC::semi_canonic()
 	SharedTensor2d UvvA = boost::shared_ptr<Tensor2d>(new Tensor2d("UvvA", navirA, navirA));
 	SharedTensor2d FockooA = boost::shared_ptr<Tensor2d>(new Tensor2d("Fock <I|J>", naoccA, naoccA));
 	SharedTensor2d FockvvA = boost::shared_ptr<Tensor2d>(new Tensor2d("Fock <A|B>", navirA, navirA));
-	SharedTensor1d eigooA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <I|J>", naoccA));
-	SharedTensor1d eigvvA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <A|B>", navirA));
      	
         // Fockoo alpha spin case
         #pragma omp parallel for
@@ -124,8 +122,6 @@ void DFOCC::semi_canonic()
 	UvvA.reset();
 	FockooA.reset();
 	FockvvA.reset();
-	eigooA.reset();
-	eigvvA.reset();
 
 //==========================================================================================
 //========================= UHF REFERENCE ==================================================
@@ -135,8 +131,6 @@ void DFOCC::semi_canonic()
 	SharedTensor2d UvvB = boost::shared_ptr<Tensor2d>(new Tensor2d("UvvB", navirB, navirB));
 	SharedTensor2d FockooB = boost::shared_ptr<Tensor2d>(new Tensor2d("Fock <i|j>", naoccB, naoccB));
 	SharedTensor2d FockvvB = boost::shared_ptr<Tensor2d>(new Tensor2d("Fock <a|b>", navirB, navirB));
-	SharedTensor1d eigooB = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <i|j>", naoccB));
-	SharedTensor1d eigvvB = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <a|b>", navirB));
      	
         // Fockoo beta spin case
         #pragma omp parallel for
@@ -221,8 +215,6 @@ void DFOCC::semi_canonic()
 	UvvB.reset();
 	FockooB.reset();
 	FockvvB.reset();
-	eigooB.reset();
-	eigvvB.reset();
      }// end uhf	
 
      // build mo coeff blocks

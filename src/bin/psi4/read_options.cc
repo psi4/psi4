@@ -3072,6 +3072,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("QCHF",false);
     /*- Do solve lambda amplitute equations?  -*/
     options.add_bool("CC_LAMBDA",false);
+    /*- Do write a MOLDEN output file?  If so, the filename will end in
+    .molden, and the prefix is determined by |globals__writer_file_label|
+    (if set), or else by the name of the output file plus the name of
+    the current molecule. -*/
+    options.add_bool("MOLDEN_WRITE", false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

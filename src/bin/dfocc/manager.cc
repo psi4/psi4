@@ -314,6 +314,9 @@ void DFOCC::omp2_manager()
 	//if (natorb == "TRUE") nbo();
 	//if (occ_orb_energy == "TRUE") semi_canonic(); 
 
+	// Save MOs to wfn
+	save_mo_to_wfn(); 
+
         // OEPROP
         if (oeprop_ == "TRUE") oeprop();
 

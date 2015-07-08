@@ -131,6 +131,7 @@ protected:
     void mo_coeff_blocks();
     void ccl_energy();
     void ccl_energy2();
+    void save_mo_to_wfn();
 
     void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new);
     void sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec);
@@ -821,6 +822,12 @@ protected:
      SharedTensor2d FvoB;          // Fock vo block     
      SharedTensor2d FvvA;          // Fock VV block     
      SharedTensor2d FvvB;          // Fock vv block     
+     SharedTensor1d eigooA;	 
+     SharedTensor1d eigooB;	 
+     SharedTensor1d eigvvA;	 
+     SharedTensor1d eigvvB;	 
+     SharedTensor1d eps_orbA;	 
+     SharedTensor1d eps_orbB;	 
 
      // DF Integrals
      SharedTensor2d Jmhalf;             // J Metric DF_BASIS_CC (RI)

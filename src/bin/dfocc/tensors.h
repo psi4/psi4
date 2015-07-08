@@ -83,6 +83,7 @@ class Tensor1d
   void subtract(const SharedTensor1d& Adum);
   void subtract(int i, double value);
   double get(int i);
+  void to_shared_vector(SharedVector A);
   // rms:  rms of A1d_
   double rms();
   // rms:  rms of (A1d_ - Atemp)
