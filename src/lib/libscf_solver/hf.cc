@@ -88,6 +88,8 @@ void HF::common_init()
 
     attempt_number_ = 1;
 
+    max_attempts_ = options_.get_int("MAX_ATTEMPTS");
+
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();
 

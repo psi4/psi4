@@ -1259,6 +1259,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- When using STABILITY_ANALYSIS = FOLLOW, how much to scale the step along the eigenvector
         by. !expert -*/
     options.add_double("FOLLOW_STEP_SCALE", 0.5);
+    /*- When using STABILITY_ANALYSIS = FOLLOW, maximum number of orbital optimization attempts
+        to make the wavefunction stable. !expert -*/
+    options.add_int("MAX_ATTEMPTS", 1);
 
     /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 

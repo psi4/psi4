@@ -46,6 +46,7 @@ protected:
     double compute_initial_E();
     virtual double compute_E();
     virtual void stability_analysis();
+    void stability_analysis_pk();
 
     virtual void form_G();
     virtual void form_F();
@@ -62,6 +63,11 @@ protected:
 
     // Finalize memory/files
     virtual void finalize();
+
+    // Scaling factor for orbital rotation
+    double step_scale_;
+    // Stability eigenvalue, for doing smart eigenvector following
+    double stab_val;
 
 public:
     UHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);

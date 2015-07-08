@@ -259,6 +259,8 @@ protected:
     /// Which set of iterations we're on in this computation, e.g., for stability
     /// analysis, where we want to retry SCF without going through all of the setup
     int attempt_number_;
+    /// Maximum number of macroiterations to take in e.g. a stability analysis
+    int max_attempts_;
 
     /// The number of electrons
     int nelectron_;
