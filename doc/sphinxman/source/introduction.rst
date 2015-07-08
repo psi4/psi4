@@ -533,7 +533,7 @@ GitHub account <https://github.com/signup/free>`_.
 .. rubric:: Footnotes
 
 .. [#f1] UHF-CCSD(T) gradients only, as of |version|
-.. [#f2] RHF and UHF reference are available, however the latter one should be requsted from DFOCC module.  DF-MP2 is recommended as a faster alternative.
+.. [#f2] Gradients are available for RHF and UHF references.  
 .. [#f3] threading through BLAS routines only
 .. [#f4] DFT gradients only implemented for SCF type DF. LRC-DFT gradients not implemented yet. 
 .. [#f5] Both EFP/EFP and QM/EFP energies are available.
