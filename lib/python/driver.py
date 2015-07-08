@@ -76,6 +76,7 @@ procedures = {
             'df-omp2'       : run_dfomp2,
             'dfomp2'        : run_dfomp2,
             'dfocc'         : run_dfocc,
+            'qchf'          : run_qchf,
             'dfccsd2'       : run_dfccsd2,
             'df-ccsd2'      : run_dfccsd2,
             'dfccd'         : run_dfccd,
@@ -84,10 +85,14 @@ procedures = {
             'df-ccsdl'      : run_dfccsdl,
             'dfccdl'        : run_dfccdl,
             'df-ccdl'       : run_dfccdl,
+            'dfmp3'         : run_dfmp3,
+            'df-mp3'        : run_dfmp3,
             'cd-ccsd'       : run_cdccsd,
             'cdccsd'        : run_cdccsd,
             'cd-ccd'        : run_cdccd,
             'cdccd'         : run_cdccd,
+            'cd-mp3'        : run_cdmp3,
+            'cdmp3'         : run_cdmp3,
             'cd-omp2'       : run_cdomp2,
             'cdomp2'        : run_cdomp2,
             'cd-mp2'        : run_cdmp2,
@@ -369,6 +374,12 @@ def energy(name, **kwargs):
     | dfccsd2                 | density-fitted CCSD from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-ccd                  | density-fitted CCD from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-mp3                  | density-fitted MP3 from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | dfmp3                   | density-fitted MP3 from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | qchf                    | density-fitted QC-HF from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | dfccd                   | density-fitted CCD from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
