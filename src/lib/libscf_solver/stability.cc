@@ -241,7 +241,7 @@ void UStab::analyze()
         if ( vals_[i] > convergence_ ) {
             break;
         } else if ( abs(vals_[i]) > convergence_ ) {
-            if ( vecs_[i].first->symmetry() ) {
+            if ( vecs_[i].first->symmetry() == 0) {
                 unstable = true;
                 unstable_val = vals_[i];
                 unstable_vec = vecs_[i];
