@@ -40,7 +40,7 @@ namespace psi { namespace thermo {
 
 PsiReturnType thermo(Options &options) {
   title();
-  
+
 
   double T = options.get_double("T"); // T in K
   double P = options.get_double("P"); // P in Pascals
@@ -95,9 +95,12 @@ PsiReturnType thermo(Options &options) {
 
   // Set number of vibrational frequencies.
   int nvib_freqs;
-  if (rot_type == 6) nvib_freqs = 0; //atom
-  else if (rot_type == 3) nvib_freqs = 3*Natom-5; //linear
-  else nvib_freqs = 3*Natom-6;
+  if (rot_type == RT_ATOM)
+    nvib_freqs = 0;
+  else if (rot_type == RT_LINEAR)
+    nvib_freqs = 3 * Natom - 5;
+  else
+    nvib_freqs = 3 * Natom - 6;
   if (vib_freqs->dim() != nvib_freqs) {
     outfile->Printf("\n");
     outfile->Printf("    Not all frequencies have been computed, skipping thermodynamic analysis.\n");
@@ -116,7 +119,9 @@ PsiReturnType thermo(Options &options) {
 
   outfile->Printf( "\n    Rotational constants:\n");
   outfile->Printf( "           wavenumbers          GHz\n");
-  if (rot_type < 4) {
+  if ((rot_type == RT_ASYMMETRIC_TOP) ||
+      (rot_type == RT_SYMMETRIC_TOP) ||
+      (rot_type == RT_SPHERICAL_TOP)) {
     outfile->Printf("        A:  %10.6lf   %10.5lf\n",rot_const[0],pc_c*rot_const[0]/1e7);
     outfile->Printf("        B:  %10.6lf   %10.5lf\n",rot_const[1],pc_c*rot_const[1]/1e7);
     outfile->Printf("        C:  %10.6lf   %10.5lf\n",rot_const[2],pc_c*rot_const[2]/1e7);
@@ -170,10 +175,10 @@ PsiReturnType thermo(Options &options) {
   Selec = log(qelec);
 
   // rotational part
-  if(rot_type == 6) { // atom
+  if (rot_type == RT_ATOM) {
     Erot = Cvrot = Srot = 0;
   }
-  else if(rot_type == 3) { // linear molecule
+  else if(rot_type == RT_LINEAR) {
     Erot = T;
     Cvrot = 1.0;
     qrot = kT / (rot_symm_num * 100 * pc_c * pc_h * rot_const[1]); // B goes from cm^-1 to 1/s

@@ -34,34 +34,36 @@ namespace psi{ namespace dfoccwave{
 void DFOCC::t2_1st_gen()
 {   
 
-    SharedTensor2d K, L, M;
+    SharedTensor2d K, L, M, X;
     timer_on("1st-order T2");
     Fint_zero();
 
 if (reference_ == "RESTRICTED") {
     // Build amplitudes in Mulliken order 
-    t2p_1new = SharedTensor2d(new Tensor2d("T2_1new(ia,jb)", naoccA, navirA, naoccA, navirA));
+    t2p_1new = SharedTensor2d(new Tensor2d("New T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
     tei_iajb_chem_directAA(K);
     t2p_1new->copy(K);
     K.reset();
 
     // Read old amps
-    t2p_1 = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccA, navirA, naoccA, navirA));
+    t2p_1 = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     t2p_1->read_symm(psio_, PSIF_DFOCC_AMPS);
 
     // Fint contributions
-    // T'(ia,jb) += \sum_{e} T_ij^ae F_be = \sum_{e} T'(ia,je) F_be
-    t2p_1new->contract424(4, 2, t2p_1, FabA, 1.0, 1.0);
+    // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
+    // X(ia,jb) = \sum_{e} t_ij^ae F_be = \sum_{e} T(ia,je) F_be
+    X = SharedTensor2d(new Tensor2d("X (IA|JB)", naoccA, navirA, naoccA, navirA));
+    X->contract(false, true, naoccA * navirA * naoccA, navirA, navirA, t2p_1, FabA, 1.0, 1.0);
 
-    // T'(ia,jb) += \sum_{e} T_ij^eb F_ae = \sum_{e} T'(ie,jb) F_ae
-    t2p_1new->contract424(2, 2, t2p_1, FabA, 1.0, 1.0);
+    // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
+    // X(ia,jb) = -\sum_{m} t_mj^ab F_mi = -\sum_{m} F(m,i) T(ma,jb)
+    X->contract(true, false, naoccA, naoccA * navirA * navirA, naoccA, FijA, t2p_1, -1.0, 1.0);
+    X->symmetrize();
 
-    // T'(ia,jb) -= \sum_{m} T_im^ab F_mj = \sum_{e} T'(ia,mb) F_mj
-    t2p_1new->contract424(3, 2, t2p_1, FijA, -1.0, 1.0);
-
-    // T'(ia,jb) -= \sum_{m} T_mj^ab F_mi = \sum_{e} T'(ma,jb) F_mi
-    t2p_1new->contract424(1, 2, t2p_1, FijA, -1.0, 1.0);
+    // Contributions of X
+    t2p_1new->axpy(X, 2.0);
+    X.reset();
 
     // Aplly denominators
     if (regularization == "FALSE") t2p_1new->apply_denom_chem(nfrzc, noccA, FockA);
@@ -87,7 +89,7 @@ if (reference_ == "RESTRICTED") {
     */
 
     // form U(ia,jb)
-    u2p_1 = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
+    u2p_1 = SharedTensor2d(new Tensor2d("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     u2p_1->sort(1432, t2p_1, 1.0, 0.0);
     u2p_1->scale(-1.0);
     u2p_1->axpy(t2p_1, 2.0);
@@ -106,7 +108,7 @@ else if (reference_ == "UNRESTRICTED") {
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
     tei_pqrs_anti_symm_direct(K, M);
     M.reset();
-    t2_1newAA = SharedTensor2d(new Tensor2d("T2_1new <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    t2_1newAA = SharedTensor2d(new Tensor2d("New T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     t2_1newAA->copy(K);
     K.reset();
 
@@ -139,7 +141,7 @@ else if (reference_ == "UNRESTRICTED") {
     t2_1AA->copy(t2_1newAA);
     t2_1newAA.reset();
     t2_1AA->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    t2p_1 = SharedTensor2d(new Tensor2d("T2_1(IA,JB)", naoccA, navirA, naoccA, navirA));
+    t2p_1 = SharedTensor2d(new Tensor2d("T2_1 (IA|JB)", naoccA, navirA, naoccA, navirA));
     t2p_1->sort(1324, t2_1AA, 1.0, 0.0);
     t2_1AA.reset();
     t2p_1->write_symm(psio_, PSIF_DFOCC_AMPS);
@@ -154,7 +156,7 @@ else if (reference_ == "UNRESTRICTED") {
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
     tei_pqrs_anti_symm_direct(K, M);
     M.reset();
-    t2_1newBB = SharedTensor2d(new Tensor2d("T2_1new <ij|ab>", naoccB, naoccB, navirB, navirB));
+    t2_1newBB = SharedTensor2d(new Tensor2d("New T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
     t2_1newBB->copy(K);
     K.reset();
 
@@ -187,7 +189,7 @@ else if (reference_ == "UNRESTRICTED") {
     t2_1BB->copy(t2_1newBB);
     t2_1newBB.reset();
     t2_1BB->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    t2p_1 = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccB, navirB, naoccB, navirB));
+    t2p_1 = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccB, navirB, naoccB, navirB));
     t2p_1->sort(1324, t2_1BB, 1.0, 0.0);
     t2_1BB.reset();
     t2p_1->write_symm(psio_, PSIF_DFOCC_AMPS);
@@ -199,7 +201,7 @@ else if (reference_ == "UNRESTRICTED") {
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
-    t2_1newAB = SharedTensor2d(new Tensor2d("T2_1new <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+    t2_1newAB = SharedTensor2d(new Tensor2d("New T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     t2_1newAB->copy(K);
     K.reset();
 
@@ -232,7 +234,7 @@ else if (reference_ == "UNRESTRICTED") {
     t2_1AB->copy(t2_1newAB);
     t2_1newAB.reset();
     t2_1AB->write(psio_, PSIF_DFOCC_AMPS);
-    t2p_1 = SharedTensor2d(new Tensor2d("T2_1(IA,jb)", naoccA, navirA, naoccB, navirB));
+    t2p_1 = SharedTensor2d(new Tensor2d("T2_1 (IA|jb)", naoccA, navirA, naoccB, navirB));
     t2p_1->sort(1324, t2_1AB, 1.0, 0.0);
     t2_1AB.reset();
     t2p_1->write(psio_, PSIF_DFOCC_AMPS);

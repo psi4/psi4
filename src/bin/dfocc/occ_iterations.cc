@@ -283,6 +283,23 @@ else if (wfn_type_ == "DF-OCEPA") outfile->Printf(" ======================== DF-
 else if (wfn_type_ == "DF-OMP2.5") outfile->Printf(" ======================== DF-OMP2.5 ITERATIONS ARE CONVERGED ================== \n");
 outfile->Printf(" ============================================================================== \n");
 
+    /*
+    // Save mos to wfn
+    if (reference_ == "RESTRICTED") {
+	SharedMatrix Ca = SharedMatrix(new Matrix("Alpha MO Coefficients", nso_, nmo_));
+	CmoA->to_shared_matrix(Ca);
+	Ca.reset();
+    }
+    else if (reference_ == "UNRESTRICTED") {
+	SharedMatrix Ca = SharedMatrix(new Matrix("Alpha MO Coefficients", nso_, nmo_));
+	SharedMatrix Cb = SharedMatrix(new Matrix("Beta MO Coefficients", nso_, nmo_));
+	CmoA->to_shared_matrix(Ca);
+	CmoB->to_shared_matrix(Cb);
+	Ca.reset();
+	Cb.reset();
+    }
+    */
+
 }
 
 else if (conver == 0) {

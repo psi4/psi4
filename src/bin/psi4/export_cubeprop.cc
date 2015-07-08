@@ -21,16 +21,13 @@
  */
 
 #include <boost/python.hpp>
-#include <libmints/cubefile.h>
+#include <libcubeprop/cubeprop.h>
 
 using namespace boost::python;
 using namespace psi;
 
-void export_cubefile()
+void export_cubeprop()
 {
-    class_<CubeFile, boost::shared_ptr<CubeFile> >("CubeFile", "docstring").
-        def("set_npts", &CubeFile::set_npts, "docstring").
-        def("set_buffer", &CubeFile::set_buffer, "docstring").
-        def("set_filename", &CubeFile::set_filename, "docstring").
-        def("process_density", &CubeFile::process_density, "docstring");
+    class_<CubeProperties, boost::shared_ptr<CubeProperties> >("CubeProperties", "docstring").
+        def("compute_properties", &CubeProperties::compute_properties, "docstring");
 }
