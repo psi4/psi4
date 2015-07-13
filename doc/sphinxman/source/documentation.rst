@@ -24,13 +24,15 @@ installed. Nevertheless, installation is easy.
 
 On Mac::
 
-    >>> easy_install sphinx
+    >>> pip install -U Sphinx
+    # or
+    >>> conda install sphinx
 
 On Linux:
 
 * Download ::
 
-   >>> curl -O http://pypi.python.org/packages/source/S/Sphinx/Sphinx-1.1.3.tar.gz
+   >>> curl -O http://pypi.python.org/packages/source/S/Sphinx/Sphinx-1.3.1.tar.gz
 
 * Unpack, etc.
 * Build and Install ::
