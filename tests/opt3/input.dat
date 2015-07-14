@@ -21,6 +21,7 @@ set globals {
   basis cc-pvdz
   e_convergence 10
   d_convergence 10
+  g_convergence gau_tight
 }
 
 thisenergy = optimize('scf')
