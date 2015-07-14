@@ -46,6 +46,14 @@ if (reference_ == "RESTRICTED") {
     T->write_symm(psio_, PSIF_DFOCC_AMPS);
     if (print_ > 2) T->print();
 
+
+    if (wfn_type_ != "DF-OMP2" || wfn_type_ != "CD-OMP2") {
+        M = SharedTensor2d(new Tensor2d("T2_1 (IA|JB)", naoccA, navirA, naoccA, navirA));
+	M->copy(T);
+        M->write_symm(psio_, PSIF_DFOCC_AMPS);
+        M.reset();
+    } 
+
     /*
     // Sort amplitudes to Dirac order
     t2_1 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
