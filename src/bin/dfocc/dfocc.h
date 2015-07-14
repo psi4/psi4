@@ -394,6 +394,7 @@ protected:
     void mp3_WabefT2AA();     
     void mp3_WabefT2BB();     
     void mp3_WabefT2AB();     
+    void mp3_pdm_3index_intr();
 
     // OMP2.5
     void omp2_5_manager();

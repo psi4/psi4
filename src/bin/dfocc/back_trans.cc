@@ -444,7 +444,7 @@ void DFOCC::oeprop()
     oe->add("QUADRUPOLE");
     oe->add("MULLIKEN_CHARGES");
     oe->add("NO_OCCUPATIONS");
-    oe->set_title("DF-OMP2");
+    oe->set_title(wfn_type_);
     oe->compute();
     Da_.reset();
     Db_.reset();

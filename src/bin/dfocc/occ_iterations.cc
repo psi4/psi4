@@ -251,8 +251,12 @@ do
 	rms_t2=MAX0(rms_t2,rms_t2AB);
     }
 	
-if(wfn_type_ == "DF-OMP2") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_t2);
-else if(wfn_type_ == "DF-OMP3") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
+if(wfn_type_ == "DF-OMP2" || wfn_type_ == "CD-OMP2") {
+	outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_t2);
+}
+else if(wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") {
+	outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
+}
 else if(wfn_type_ == "DF-OCEPA") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,EcepaL,DE,rms_wog,biggest_mograd,rms_t2);
 else if(wfn_type_ == "DF-OMP2.5") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
 else if(wfn_type_ == "CD-OMP2") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_t2);
