@@ -362,7 +362,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP3   \n");
    else if (wfn_type_ == "QCHF") outfile->Printf("                      QCHF   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision July 8, 2015\n") ;
+   outfile->Printf("              Latest Revision July 15, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
@@ -407,7 +407,7 @@ double DFOCC::compute_energy()
         else if (wfn_type_ == "CD-CCD" && orb_opt_ == "FALSE") ccd_manager_cd();
         else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE") omp3_manager();
         else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE") mp3_manager();
-        //else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "TRUE") omp3_manager_cd();
+        else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "TRUE") omp3_manager_cd();
         else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "FALSE") mp3_manager_cd();
         //else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "TRUE") ocepa_manager();
         //else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "FALSE") cepa_manager();
@@ -421,7 +421,7 @@ double DFOCC::compute_energy()
         if (wfn_type_ == "DF-OMP2" || wfn_type_ == "CD-OMP2") Etotal = Emp2L;
         else if (wfn_type_ == "DF-CCSD" || wfn_type_ == "CD-CCSD") Etotal = Eccsd;
         else if (wfn_type_ == "DF-CCD" || wfn_type_ == "CD-CCD") Etotal = Eccd;
-        else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5") Etotal = Emp3L;
+        else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") Etotal = Emp3L;
         else if (wfn_type_ == "QCHF") Etotal = Eref;
         //else if (wfn_type_ == "DF-OCEPA") Etotal = EcepaL;
 

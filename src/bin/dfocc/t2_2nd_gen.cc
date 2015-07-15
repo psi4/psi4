@@ -30,7 +30,7 @@ using namespace std;
 
 namespace psi{ namespace dfoccwave{
   
-void DFOCC::t2_2nd_sc()
+void DFOCC::t2_2nd_gen()
 {
 
     // defs
@@ -45,8 +45,24 @@ if (reference_ == "RESTRICTED") {
     bQiaA->read(psio_, PSIF_DFOCC_INTS);
     bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
 
+    /*
+    // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
+    // X(ia,jb) = \sum_{e} t_ij^ae F_be = \sum_{e} T(ia,je) F_be
+    X = SharedTensor2d(new Tensor2d("X (IA|JB)", naoccA, navirA, naoccA, navirA));
+    X->contract(false, true, naoccA * navirA * naoccA, navirA, navirA, t2, FabA, 1.0, 0.0);
+
+    // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
+    // X(ia,jb) = -\sum_{m} t_mj^ab F_mi = -\sum_{m} F(m,i) T(ma,jb)
+    X->contract(true, false, naoccA, naoccA * navirA * navirA, naoccA, FijA, t2, -1.0, 1.0);
+    X->symmetrize();
+
+    // Contributions of X
+    Tnew->axpy(X, 2.0);
+    X.reset();
+    */
+
     // Read T2_1
-    t2 = SharedTensor2d(new Tensor2d("T2_1 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    t2 = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     t2->read_symm(psio_, PSIF_DFOCC_AMPS);
 
     // WmnijT2
@@ -139,21 +155,6 @@ else if (reference_ == "UNRESTRICTED") {
     U = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     U->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
     U->axpy(Tnew, 1.0);
-
-    // Write
-    if (dertype == "FIRST" || orb_opt_ == "TRUE") {
-	// Write T2_2
-        T = SharedTensor2d(new Tensor2d("T2_2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-	T->copy(Tnew);
-        T->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-        T.reset();
-
-	// Write T2_1 + T2_2
-        T = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-	T->copy(U);
-        T->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-        T.reset();
-    }
     Tnew.reset();
 
     // Energy
@@ -191,21 +192,6 @@ else if (reference_ == "UNRESTRICTED") {
     U = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
     U->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
     U->axpy(Tnew, 1.0);
-
-    // Write
-    if (dertype == "FIRST" || orb_opt_ == "TRUE") {
-	// Write T2_2
-        T = SharedTensor2d(new Tensor2d("T2_2 <ij|ab>", naoccB, naoccB, navirB, navirB));
-	T->copy(Tnew);
-        T->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-        T.reset();
-
-	// Write T2_1 + T2_2
-        T = SharedTensor2d(new Tensor2d("T2 <ij|ab>", naoccB, naoccB, navirB, navirB));
-	T->copy(U);
-        T->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-        T.reset();
-    }
     Tnew.reset();
 
     // Energy BB
@@ -243,21 +229,6 @@ else if (reference_ == "UNRESTRICTED") {
     U = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     U->read(psio_, PSIF_DFOCC_AMPS);
     U->axpy(Tnew, 1.0);
-
-    // Write
-    if (dertype == "FIRST" || orb_opt_ == "TRUE") {
-	// Write T2_2
-        T = SharedTensor2d(new Tensor2d("T2_2 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-	T->copy(Tnew);
-        T->write(psio_, PSIF_DFOCC_AMPS);
-        T.reset();
-
-	// Write T2_1 + T2_2
-        T = SharedTensor2d(new Tensor2d("T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-	T->copy(U);
-        T->write(psio_, PSIF_DFOCC_AMPS);
-        T.reset();
-    }
     Tnew.reset();
 
     // Energy
@@ -284,7 +255,7 @@ else if (reference_ == "UNRESTRICTED") {
 
 }// else if (reference_ == "UNRESTRICTED")
 
-}// end t2_2nd_sc
+}// end t2_2nd_gen
 
 }} // End Namespaces
 
