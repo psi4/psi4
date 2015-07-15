@@ -399,7 +399,7 @@ version of |PSIfour|.
 compilers. For the Intel compilers, we recommend at least 12.1 (we have
 had trouble with version 12.0 and 13.0.1). GCC version 4.6 or above is
 recommended. For some architectures, a :ref:`precompiled binary
-sec:conda>` is available. See :ref:`Compiling and Installing
+<sec:conda>` is available. See :ref:`Compiling and Installing
 <sec:installFile>` for details.
 
 
