@@ -1,12 +1,14 @@
 # If the PYTHON_INTERPRETER variable is not empty, then the user passed a custom version
 # of the interpreter to be used. If that's the case, set PYTHON_EXECUTABLE accordingly and
 # proceed with detection of Python interpreter accordingly.
+
+set(Python_ADDITIONAL_VERSIONS 2.7 2.6 3.3)
 if("${PYTHON_INTERPRETER}" STREQUAL "")
-   find_package(PythonInterp 2.6 REQUIRED)
+   find_package(PythonInterp REQUIRED)
 else()
    set(PYTHONINTERP_FOUND TRUE)
    set(PYTHON_EXECUTABLE "${PYTHON_INTERPRETER}")
-   find_package(PythonInterp 2.6 REQUIRED)
+   find_package(PythonInterp REQUIRED)
 endif()	
 
 # Now find Python libraries and headers of the EXACT SAME VERSION

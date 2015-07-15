@@ -284,12 +284,12 @@ angle and bond length in water::
 
     molecule h2o{
       O
-      H1 R
-      H1 R2 A
+      H 1 R
+      H 1 R 2 A
     }
     
-    Rvals=[0.9,1.0,1.1]
-    Avals=range(102,106,2)
+    Rvals = [0.9, 1.0, 1.1]
+    Avals = range(102, 106, 2)
     
     set basis cc-pvdz
     set scf e_convergence=11
