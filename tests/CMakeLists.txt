@@ -281,6 +281,7 @@ add_subdirectory(tu3-h2o-opt)
 add_subdirectory(tu4-h2o-freq)
 add_subdirectory(tu5-sapt)
 add_subdirectory(tu6-cp-ne2)
+add_subdirectory(x2c1)
 add_subdirectory(zaptn-nh2)
 
 ###### START internal-executable-dependent tests ################
