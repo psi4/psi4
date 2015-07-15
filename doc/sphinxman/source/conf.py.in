@@ -52,7 +52,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'P\uA731\u026A4'
+project = u'Psi4'  # u'P\uA731\u026A4'
 copyright = u'2015, The {0} Project'.format(project)
 
 def get_gitversion():
@@ -291,9 +291,15 @@ texinfo_documents = [
 
 # Abbreviations
 rst_epilog = """
-.. |scs| unicode:: U+A731
-.. |sci| unicode:: U+026A
-.. |PSIfour| replace:: P\ |scs|\ |sci|\ 4
+.. role:: sc
+.. raw:: html
+
+  <style type="text/css"><!--
+   .green {color: red;}
+   .sc {font-variant: small-caps;}
+   --></style>
+
+.. |PSIfour| replace:: :sc:`Psi4`
 .. |PSIfours| replace:: |PSIfour|\ 's
 .. |psirc| replace:: ``~/.psi4rc``
 .. |dl| replace:: :math:`\Rightarrow`
@@ -307,6 +313,10 @@ rst_epilog = """
 .. |w---w| unicode:: U+02014 .. em dash
 .. include:: /abbr_accents.rst
 """
+#.. |PSIfourIM| image:: /psi4_blue.png
+#.. |scs| unicode:: U+A731
+#.. |sci| unicode:: U+026A
+#.. |PSIfourSC| replace:: P\ |scs|\ |sci|\ 4
 
 # Logo at top of page
 rst_prolog = """

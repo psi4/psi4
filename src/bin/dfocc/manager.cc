@@ -314,9 +314,6 @@ void DFOCC::omp2_manager()
 	//if (natorb == "TRUE") nbo();
 	//if (occ_orb_energy == "TRUE") semi_canonic(); 
 
-	// Save MOs to wfn
-	save_mo_to_wfn(); 
-
         // OEPROP
         if (oeprop_ == "TRUE") oeprop();
 
@@ -326,6 +323,9 @@ void DFOCC::omp2_manager()
 
         // Compute Analytic Gradients
         if (dertype == "FIRST") dfgrad();
+
+	// Save MOs to wfn
+	save_mo_to_wfn(); 
 
   }// end if (conver == 1)
 }// end omp2_manager 
@@ -792,7 +792,7 @@ void DFOCC::ccsd_manager()
         }
 
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
 	    // memalloc
 	    G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
 	    G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
@@ -800,7 +800,7 @@ void DFOCC::ccsd_manager()
             outfile->Printf("\tComputing unrelaxed response density matrices...\n");
  	    ccsd_opdm();
 	    ccsd_tpdm();
-	    ccl_energy();
+	    //ccl_energy();
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
@@ -1083,7 +1083,7 @@ void DFOCC::ccd_manager()
         }
 
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
 	    // memalloc
 	    G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
 	    G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
@@ -1091,7 +1091,7 @@ void DFOCC::ccd_manager()
             outfile->Printf("\tComputing unrelaxed response density matrices...\n");
  	    ccd_opdm();
 	    ccd_tpdm();
-	    ccl_energy();
+	    //ccl_energy();
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
@@ -1375,14 +1375,14 @@ void DFOCC::omp3_manager()
 	Process::environment.globals["DF-OMP3 TOTAL ENERGY"] = Emp3L;
         Process::environment.globals["DF-OMP3 CORRELATION ENERGY"] = Emp3L - Escf;
 
-	// Save MOs to wfn
-	save_mo_to_wfn(); 
-
         // OEPROP
         if (oeprop_ == "TRUE") oeprop();
 
         // Compute Analytic Gradients
         if (dertype == "FIRST") dfgrad();
+
+	// Save MOs to wfn
+	save_mo_to_wfn(); 
 
   }// end if (conver == 1)
 
@@ -1593,7 +1593,7 @@ void DFOCC::mp3_manager()
 
 	/*
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
 	    // memalloc
 	    G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
 	    G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));

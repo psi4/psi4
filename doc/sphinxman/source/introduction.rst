@@ -399,7 +399,7 @@ version of |PSIfour|.
 compilers. For the Intel compilers, we recommend at least 12.1 (we have
 had trouble with version 12.0 and 13.0.1). GCC version 4.6 or above is
 recommended. For some architectures, a :ref:`precompiled binary
-sec:conda>` is available. See :ref:`Compiling and Installing
+<sec:conda>` is available. See :ref:`Compiling and Installing
 <sec:installFile>` for details.
 
 
@@ -436,6 +436,8 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DF-MP2                  | Y         | Y [#f2]_  | RHF/ROHF/UHF         | threaded                    |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | DF-MP3                  | Y         | ---       | RHF/UHF              | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | MP3                     | Y         | Y         | RHF/UHF              | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | MP2.5                   | Y         | Y         | RHF/UHF              | threaded [#f3]_             |
@@ -457,8 +459,6 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     | OCEPA                   | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | CEPA(0)                 | Y         | Y         | RHF/UHF              | threaded [#f3]_             |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | DF-CCD                  | Y         | ---       | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | CEPA(n), n=0,1,3        | Y         | ---       | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
