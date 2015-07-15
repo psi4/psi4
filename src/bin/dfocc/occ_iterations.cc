@@ -251,8 +251,12 @@ do
 	rms_t2=MAX0(rms_t2,rms_t2AB);
     }
 	
-if(wfn_type_ == "DF-OMP2") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_t2);
-else if(wfn_type_ == "DF-OMP3") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
+if(wfn_type_ == "DF-OMP2" || wfn_type_ == "CD-OMP2") {
+	outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_t2);
+}
+else if(wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") {
+	outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
+}
 else if(wfn_type_ == "DF-OCEPA") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,EcepaL,DE,rms_wog,biggest_mograd,rms_t2);
 else if(wfn_type_ == "DF-OMP2.5") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
 else if(wfn_type_ == "CD-OMP2") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_t2);
@@ -314,6 +318,7 @@ void DFOCC::save_mo_to_wfn()
 	CmoA->to_shared_matrix(Ca);
 	SharedMatrix moA = Process::environment.wavefunction()->Ca();
 	moA->copy(Ca);
+	moA.reset();
 
       if (options_.get_str("MOLDEN_WRITE") == "TRUE") {
 	// Diagonalize OPDM to obtain NOs
@@ -327,7 +332,7 @@ void DFOCC::save_mo_to_wfn()
 
 	// Form transformation matrix from AO to NO
         SharedMatrix aAONO (new Matrix("NOs (Alpha)", nso_, nmo_));
-	aAONO->gemm(false, false, 1.0, Ca_, aevecs, 0.0);
+	aAONO->gemm(false, false, 1.0, Ca, aevecs, 0.0);
 
 	// Write to MOLDEN file
 	boost::shared_ptr<Wavefunction> dfocc_ = Process::environment.wavefunction();
@@ -361,6 +366,8 @@ void DFOCC::save_mo_to_wfn()
 	SharedMatrix moB = Process::environment.wavefunction()->Ca();
 	moA->copy(Ca);
 	moB->copy(Cb);
+	moA.reset();
+	moB.reset();
 
       if (options_.get_str("MOLDEN_WRITE") == "TRUE") {
 	// Diagonalize OPDM to obtain NOs
@@ -380,8 +387,8 @@ void DFOCC::save_mo_to_wfn()
 	// Form transformation matrix from AO to NO
         SharedMatrix aAONO (new Matrix("NOs (Alpha)", nso_, nmo_));
         SharedMatrix bAONO (new Matrix("NOs (Beta)", nso_, nmo_));
-	aAONO->gemm(false, false, 1.0, Ca_, aevecs, 0.0);
-	bAONO->gemm(false, false, 1.0, Cb_, bevecs, 0.0);
+	aAONO->gemm(false, false, 1.0, Ca, aevecs, 0.0);
+	bAONO->gemm(false, false, 1.0, Cb, bevecs, 0.0);
 
 	// Write to MOLDEN file
 	boost::shared_ptr<Wavefunction> dfocc_ = Process::environment.wavefunction();

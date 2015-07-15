@@ -183,8 +183,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   /*- Cube property data filepath -*/
   options.add_str_i("CUBEPROP_FILEPATH", ".");
-  /*-
-  Properties to compute. Valid tasks include:
+  /*- Properties to compute. Valid tasks include:
       DENSITY - Da, Db, Dt, Ds
       ESP - Dt, ESP
       ORBITALS - Psi_a_N, Psi_b_N
@@ -3068,7 +3067,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do read 3-index integrals from SCF files?  -*/
     options.add_bool("READ_SCF_3INDEX",true);
     /*- Do compute one electron properties?  -*/
-    options.add_bool("OEPROP",true);
+    options.add_bool("OEPROP",false);
     /*- Do compute <S2> for DF-OMP2/DF-MP2?  -*/
     options.add_bool("COMPUT_S2",false);
     /*- Do perform a QCHF computation?  -*/
