@@ -201,6 +201,27 @@ def compare_vectors(expected, computed, digits, label):
             sys.exit(1)
     success(label)
 
+
+def compare_cubes(expected, computed, label):
+    """Function to compare two cube files. Prints :py:func:`util.success`
+    when value *computed* matches value *expected*.
+    Performs a system exit on failure. Used in input files in the test suite.
+
+    """
+    # Skip the first six elemets which are just labels
+    evec = [float(k) for k in expected.split()[6:]]
+    cvec = [float(k) for k in computed.split()[6:]]
+    if len(evec) == len(cvec):
+        for n in xrange(len(evec)):
+            if (math.fabs(evec[n]-cvec[n]) > 1.0e-5):
+                print("\t%s: computed cube file does not match expected cube file." % label)
+                sys.exit(1)
+    else:
+        print("\t%s: computed cube file does not match expected cube file." % (label, computed, expected))
+        sys.exit(1)
+    success(label)
+
+
 def copy_file_to_scratch(filename, prefix, namespace, unit, move = False):
 
     """Function to move file into scratch with correct naming
