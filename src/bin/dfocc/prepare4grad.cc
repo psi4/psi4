@@ -36,7 +36,7 @@ void DFOCC::prepare4grad()
 {      
     if (wfn_type_ == "DF-OMP2") separable_tpdm();
     else sep_tpdm_cc();
-    if (wfn_type_ == "DF-CCSD" || wfn_type_ == "CD-CCSD" || wfn_type_ == "DF-CCD" || wfn_type_ == "CD-CCD") ccl_energy2();
+    //if (wfn_type_ == "DF-CCSD" || wfn_type_ == "CD-CCSD" || wfn_type_ == "DF-CCD" || wfn_type_ == "CD-CCD") ccl_energy2();
     idp2();
 
     outfile->Printf("\tComputing the generalized Fock matrix (GFM)...\n");

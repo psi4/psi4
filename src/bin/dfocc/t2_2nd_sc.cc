@@ -139,6 +139,21 @@ else if (reference_ == "UNRESTRICTED") {
     U = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     U->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
     U->axpy(Tnew, 1.0);
+
+    // Write
+    if (dertype == "FIRST" || orb_opt_ == "TRUE") {
+	// Write T2_2
+        T = SharedTensor2d(new Tensor2d("T2_2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+	T->copy(Tnew);
+        T->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+        T.reset();
+
+	// Write T2_1 + T2_2
+        T = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+	T->copy(U);
+        T->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+        T.reset();
+    }
     Tnew.reset();
 
     // Energy
@@ -176,6 +191,21 @@ else if (reference_ == "UNRESTRICTED") {
     U = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
     U->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
     U->axpy(Tnew, 1.0);
+
+    // Write
+    if (dertype == "FIRST" || orb_opt_ == "TRUE") {
+	// Write T2_2
+        T = SharedTensor2d(new Tensor2d("T2_2 <ij|ab>", naoccB, naoccB, navirB, navirB));
+	T->copy(Tnew);
+        T->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+        T.reset();
+
+	// Write T2_1 + T2_2
+        T = SharedTensor2d(new Tensor2d("T2 <ij|ab>", naoccB, naoccB, navirB, navirB));
+	T->copy(U);
+        T->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+        T.reset();
+    }
     Tnew.reset();
 
     // Energy BB
@@ -213,6 +243,21 @@ else if (reference_ == "UNRESTRICTED") {
     U = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     U->read(psio_, PSIF_DFOCC_AMPS);
     U->axpy(Tnew, 1.0);
+
+    // Write
+    if (dertype == "FIRST" || orb_opt_ == "TRUE") {
+	// Write T2_2
+        T = SharedTensor2d(new Tensor2d("T2_2 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+	T->copy(Tnew);
+        T->write(psio_, PSIF_DFOCC_AMPS);
+        T.reset();
+
+	// Write T2_1 + T2_2
+        T = SharedTensor2d(new Tensor2d("T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+	T->copy(U);
+        T->write(psio_, PSIF_DFOCC_AMPS);
+        T.reset();
+    }
     Tnew.reset();
 
     // Energy
