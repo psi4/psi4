@@ -40,14 +40,14 @@ Cholesky::~Cholesky()
 void Cholesky::choleskify()
 {
     // Initial dimensions
-    int n = N();
+    size_t n = N();
     Q_ = 0;
 
-    // Memory constraint on rows
-    int max_int = std::numeric_limits<int>::max();
+    // Memory constrasize_t on rows
+    size_t max_size_t = std::numeric_limits<int>::max();
 
     ULI max_rows_ULI = ((memory_ - n) / (2L * n));
-    int max_rows = (max_rows_ULI > max_int ? max_int : max_rows_ULI);
+    size_t max_rows = (max_rows_ULI > max_size_t ? max_size_t : max_rows_ULI);
 
     // Get the diagonal (Q|Q)^(0)
     double* diag = new double[n];
@@ -63,9 +63,9 @@ void Cholesky::choleskify()
     while (Q_ < n) {
 
         // Select the pivot
-        int pivot = 0;
+        size_t pivot = 0;
         double Dmax = diag[0];
-        for (int P = 0; P < n; P++) {
+        for (size_t P = 0; P < n; P++) {
             if (Dmax < diag[P]) {
                 Dmax = diag[P];
                 pivot = P;
@@ -91,7 +91,7 @@ void Cholesky::choleskify()
         compute_row(pivot, L[Q_]);
 
         // [(m|Q) - L_m^P L_Q^P]
-        for (int P = 0; P < Q_; P++) {
+        for (size_t P = 0; P < Q_; P++) {
             C_DAXPY(n,-L[P][pivots[Q_]],L[P],1,L[Q_],1);
         }
 
@@ -99,7 +99,7 @@ void Cholesky::choleskify()
         C_DSCAL(n, 1.0 / L_QQ, L[Q_], 1);
 
         // Zero the upper triangle
-        for (int P = 0; P < pivots.size(); P++) {
+        for (size_t P = 0; P < pivots.size(); P++) {
             L[Q_][pivots[P]] = 0.0;
         }
 
@@ -107,12 +107,12 @@ void Cholesky::choleskify()
         L[Q_][pivot] = L_QQ;
 
         // Update the Schur complement diagonal
-        for (int P = 0; P < n; P++) {
+        for (size_t P = 0; P < n; P++) {
             diag[P] -= L[Q_][P] * L[Q_][P];
         }
 
         // Force truly zero elements to zero
-        for (int P = 0; P < pivots.size(); P++) {
+        for (size_t P = 0; P < pivots.size(); P++) {
             diag[pivots[P]] = 0.0;
         }
 
@@ -123,7 +123,7 @@ void Cholesky::choleskify()
     L_ = SharedMatrix(new Matrix("Partial Cholesky", Q_, n));
     double** Lp = L_->pointer();
 
-    for (int Q = 0; Q < Q_; Q++) {
+    for (size_t Q = 0; Q < Q_; Q++) {
         ::memcpy(static_cast<void*>(Lp[Q]), static_cast<void*>(L[Q]), n * sizeof(double));
         delete[] L[Q];
     }
@@ -140,15 +140,15 @@ CholeskyMatrix::CholeskyMatrix(SharedMatrix A, double delta, unsigned long int m
 CholeskyMatrix::~CholeskyMatrix()
 {
 }
-int CholeskyMatrix::N()
+size_t CholeskyMatrix::N()
 {
     return A_->rowspi()[0];
 }
 void CholeskyMatrix::compute_diagonal(double* target)
 {
-    int n = N();
+    size_t n = N();
     double** Ap = A_->pointer();
-    for (int i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
         target[i] = Ap[i][i];
     }
 }
@@ -166,7 +166,7 @@ CholeskyERI::CholeskyERI(boost::shared_ptr<TwoBodyAOInt> integral, double schwar
 CholeskyERI::~CholeskyERI()
 {
 }
-int CholeskyERI::N()
+size_t CholeskyERI::N()
 {
     return basisset_->nbf() * basisset_->nbf();
 }
@@ -174,18 +174,18 @@ void CholeskyERI::compute_diagonal(double* target)
 {
     const double* buffer = integral_->buffer();
 
-    for (int M = 0; M < basisset_->nshell(); M++) {
-        for (int N = 0; N < basisset_->nshell(); N++) {
+    for (size_t M = 0; M < basisset_->nshell(); M++) {
+        for (size_t N = 0; N < basisset_->nshell(); N++) {
 
             integral_->compute_shell(M,N,M,N);
 
-            int nM = basisset_->shell(M).nfunction();
-            int nN = basisset_->shell(N).nfunction();
-            int mstart = basisset_->shell(M).function_index();
-            int nstart = basisset_->shell(N).function_index();
+            size_t nM = basisset_->shell(M).nfunction();
+            size_t nN = basisset_->shell(N).nfunction();
+            size_t mstart = basisset_->shell(M).function_index();
+            size_t nstart = basisset_->shell(N).function_index();
 
-            for (int om = 0; om < nM; om++) {
-                for (int on = 0; on < nN; on++) {
+            for (size_t om = 0; om < nM; om++) {
+                for (size_t on = 0; on < nN; on++) {
                     target[(om + mstart) * basisset_->nbf() + (on + nstart)] =
                         buffer[om * nN * nM * nN + on * nM * nN + om * nN + on];
                 }
@@ -197,31 +197,31 @@ void CholeskyERI::compute_row(int row, double* target)
 {
     const double* buffer = integral_->buffer();
 
-    int r = row / basisset_->nbf();
-    int s = row % basisset_->nbf();
-    int R = basisset_->function_to_shell(r);
-    int S = basisset_->function_to_shell(s);
+    size_t r = row / basisset_->nbf();
+    size_t s = row % basisset_->nbf();
+    size_t R = basisset_->function_to_shell(r);
+    size_t S = basisset_->function_to_shell(s);
 
-    int nR = basisset_->shell(R).nfunction();
-    int nS = basisset_->shell(S).nfunction();
-    int rstart = basisset_->shell(R).function_index();
-    int sstart = basisset_->shell(S).function_index();
+    size_t nR = basisset_->shell(R).nfunction();
+    size_t nS = basisset_->shell(S).nfunction();
+    size_t rstart = basisset_->shell(R).function_index();
+    size_t sstart = basisset_->shell(S).function_index();
 
-    int oR = r - rstart;
-    int os = s - sstart;
+    size_t oR = r - rstart;
+    size_t os = s - sstart;
 
-    for (int M = 0; M < basisset_->nshell(); M++) {
-        for (int N = 0; N < basisset_->nshell(); N++) {
+    for (size_t M = 0; M < basisset_->nshell(); M++) {
+        for (size_t N = 0; N < basisset_->nshell(); N++) {
 
             integral_->compute_shell(M,N,R,S);
 
-            int nM = basisset_->shell(M).nfunction();
-            int nN = basisset_->shell(N).nfunction();
-            int mstart = basisset_->shell(M).function_index();
-            int nstart = basisset_->shell(N).function_index();
+            size_t nM = basisset_->shell(M).nfunction();
+            size_t nN = basisset_->shell(N).nfunction();
+            size_t mstart = basisset_->shell(M).function_index();
+            size_t nstart = basisset_->shell(N).function_index();
 
-            for (int om = 0; om < nM; om++) {
-                for (int on = 0; on < nN; on++) {
+            for (size_t om = 0; om < nM; om++) {
+                for (size_t on = 0; on < nN; on++) {
                     target[(om + mstart) * basisset_->nbf() + (on + nstart)] =
                         buffer[om * nN * nR * nS + on * nR * nS + oR * nS + os];
                 }
@@ -242,22 +242,22 @@ CholeskyMP2::CholeskyMP2(SharedMatrix Qia,
 CholeskyMP2::~CholeskyMP2()
 {
 }
-int CholeskyMP2::N()
+size_t CholeskyMP2::N()
 {
     return Qia_->colspi()[0];
 }
 void CholeskyMP2::compute_diagonal(double* target)
 {
-    int naocc = eps_aocc_->dimpi()[0];
-    int navir = eps_avir_->dimpi()[0];
-    int nQ = Qia_->rowspi()[0];
+    size_t naocc = eps_aocc_->dimpi()[0];
+    size_t navir = eps_avir_->dimpi()[0];
+    size_t nQ = Qia_->rowspi()[0];
 
     double** Qp = Qia_->pointer();
     double* eop = eps_aocc_->pointer();
     double* evp = eps_avir_->pointer();
 
-    for (int i = 0, ia = 0; i < naocc; i++) {
-        for (int a = 0; a < navir; a++, ia++) {
+    for (size_t i = 0, ia = 0; i < naocc; i++) {
+        for (size_t a = 0; a < navir; a++, ia++) {
             target[ia] = C_DDOT(nQ,&Qp[0][ia], naocc * (ULI) navir, &Qp[0][ia], naocc * (ULI) navir) /
                 (symmetric_ ? sqrt(2.0 * (evp[a] - eop[i])) : (2.0 * (evp[a] - eop[i])));
         }
@@ -265,19 +265,19 @@ void CholeskyMP2::compute_diagonal(double* target)
 }
 void CholeskyMP2::compute_row(int row, double* target)
 {
-    int naocc = eps_aocc_->dimpi()[0];
-    int navir = eps_avir_->dimpi()[0];
-    int nQ = Qia_->rowspi()[0];
+    size_t naocc = eps_aocc_->dimpi()[0];
+    size_t navir = eps_avir_->dimpi()[0];
+    size_t nQ = Qia_->rowspi()[0];
 
-    int j = row / navir;
-    int b = row % navir;
+    size_t j = row / navir;
+    size_t b = row % navir;
 
     double** Qp = Qia_->pointer();
     double* eop = eps_aocc_->pointer();
     double* evp = eps_avir_->pointer();
 
-    for (int i = 0, ia = 0; i < naocc; i++) {
-        for (int a = 0; a < navir; a++, ia++) {
+    for (size_t i = 0, ia = 0; i < naocc; i++) {
+        for (size_t a = 0; a < navir; a++, ia++) {
             target[ia] = C_DDOT(nQ,&Qp[0][ia], naocc * (ULI) navir, &Qp[0][row], naocc * (ULI) navir) /
                 (symmetric_ ? sqrt(evp[a] + evp[b] - eop[i] - eop[j]) : (evp[a] + evp[b] - eop[i] - eop[j]));
         }
@@ -295,37 +295,37 @@ CholeskyDelta::CholeskyDelta(
 CholeskyDelta::~CholeskyDelta()
 {
 }
-int CholeskyDelta::N()
+size_t CholeskyDelta::N()
 {
     return eps_aocc_->dimpi()[0] * eps_avir_->dimpi()[0];
 }
 void CholeskyDelta::compute_diagonal(double* target)
 {
-    int naocc = eps_aocc_->dimpi()[0];
-    int navir = eps_avir_->dimpi()[0];
+    size_t naocc = eps_aocc_->dimpi()[0];
+    size_t navir = eps_avir_->dimpi()[0];
 
     double* eop = eps_aocc_->pointer();
     double* evp = eps_avir_->pointer();
 
-    for (int i = 0, ia = 0; i < naocc; i++) {
-        for (int a = 0; a < navir; a++, ia++) {
+    for (size_t i = 0, ia = 0; i < naocc; i++) {
+        for (size_t a = 0; a < navir; a++, ia++) {
             target[ia] = 1.0 / (2.0 * (evp[a] - eop[i]));
         }
     }
 }
 void CholeskyDelta::compute_row(int row, double* target)
 {
-    int naocc = eps_aocc_->dimpi()[0];
-    int navir = eps_avir_->dimpi()[0];
+    size_t naocc = eps_aocc_->dimpi()[0];
+    size_t navir = eps_avir_->dimpi()[0];
 
-    int j = row / navir;
-    int b = row % navir;
+    size_t j = row / navir;
+    size_t b = row % navir;
 
     double* eop = eps_aocc_->pointer();
     double* evp = eps_avir_->pointer();
 
-    for (int i = 0, ia = 0; i < naocc; i++) {
-        for (int a = 0; a < navir; a++, ia++) {
+    for (size_t i = 0, ia = 0; i < naocc; i++) {
+        for (size_t a = 0; a < navir; a++, ia++) {
             target[ia] = 1.0 / (evp[a] + evp[b] - eop[i] - eop[j]);
         }
     }
@@ -340,29 +340,29 @@ CholeskyLocal::CholeskyLocal(
 CholeskyLocal::~CholeskyLocal()
 {
 }
-int CholeskyLocal::N()
+size_t CholeskyLocal::N()
 {
     return C_->rowspi()[0];
 }
 void CholeskyLocal::compute_diagonal(double* target)
 {
-    int n = C_->rowspi()[0];
-    int nocc = C_->colspi()[0];
+    size_t n = C_->rowspi()[0];
+    size_t nocc = C_->colspi()[0];
 
     double** Cp = C_->pointer();
 
-    for (int m = 0; m < n; m++) {
+    for (size_t m = 0; m < n; m++) {
         target[m] = C_DDOT(nocc, Cp[m], 1, Cp[m], 1);
     }
 }
 void CholeskyLocal::compute_row(int row, double* target)
 {
-    int n = C_->rowspi()[0];
-    int nocc = C_->colspi()[0];
+    size_t n = C_->rowspi()[0];
+    size_t nocc = C_->colspi()[0];
 
     double** Cp = C_->pointer();
 
-    for (int m = 0; m < n; m++) {
+    for (size_t m = 0; m < n; m++) {
         target[m] = C_DDOT(nocc, Cp[m], 1, Cp[row], 1);
     }
 }
