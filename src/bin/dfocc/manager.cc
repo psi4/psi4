@@ -792,7 +792,7 @@ void DFOCC::ccsd_manager()
         }
 
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
 	    // memalloc
 	    G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
 	    G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
@@ -800,7 +800,7 @@ void DFOCC::ccsd_manager()
             outfile->Printf("\tComputing unrelaxed response density matrices...\n");
  	    ccsd_opdm();
 	    ccsd_tpdm();
-	    ccl_energy();
+	    //ccl_energy();
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
@@ -1083,7 +1083,7 @@ void DFOCC::ccd_manager()
         }
 
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
 	    // memalloc
 	    G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
 	    G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
@@ -1091,7 +1091,7 @@ void DFOCC::ccd_manager()
             outfile->Printf("\tComputing unrelaxed response density matrices...\n");
  	    ccd_opdm();
 	    ccd_tpdm();
-	    ccl_energy();
+	    //ccl_energy();
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
@@ -1593,7 +1593,7 @@ void DFOCC::mp3_manager()
 
 	/*
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
 	    // memalloc
 	    G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
 	    G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
