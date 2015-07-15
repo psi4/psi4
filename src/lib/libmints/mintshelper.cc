@@ -40,6 +40,7 @@
 #include <psiconfig.h>
 
 #include <boost/foreach.hpp>
+#include "x2cint.h"
 
 using namespace boost;
 
@@ -386,6 +387,9 @@ void MintsHelper::one_electron_integrals()
     }
     else if (options_.get_str("RELATIVISTIC") == "X2C"){
         outfile->Printf( " OEINTS: Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
+    X2CInt x2cint;
+    SharedMatrix T,V;
+    x2cint.compute(T,V,options_);
     }
 
     // Dipoles
