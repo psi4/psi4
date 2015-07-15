@@ -473,7 +473,7 @@ else if (reference_ == "UNRESTRICTED") {
     T.reset();
 
     //=========================
-    // V_iajb, V'_ij^Q, V_ab^Q
+    // V_IAJB
     //=========================
 
     // V_IAJB <= 1/2 \sum_{ME} T(IB,ME)(1) L(ME,JA)(1)
@@ -496,7 +496,7 @@ else if (reference_ == "UNRESTRICTED") {
     V = SharedTensor2d(new Tensor2d("V (IA|JB)", naoccA, navirA, naoccA, navirA));
     V->sort(1432, X, 1.0, 0.0);
     X.reset();
-    V->write(psio_, PSIF_DFOCC_AMPS);
+    //V->write(psio_, PSIF_DFOCC_AMPS);
 
     // V_IJ^Q' <= \sum_{EF} V_IEJF b_EF^Q
     Vij = SharedTensor2d(new Tensor2d("Vp (Q|IJ)", nQ, naoccA, naoccA));
@@ -506,6 +506,16 @@ else if (reference_ == "UNRESTRICTED") {
     X.reset();
     Vij->write(psio_, PSIF_DFOCC_AMPS);
     Vij.reset();
+
+    // y_IA^Q <= 2 \sum(ME) V_IEMA b_ME^Q
+    // Y(ME,IA) = V(IE,MA)
+    Y = SharedTensor2d(new Tensor2d("Y (ME|IA)", naoccA, navirA, naoccA, navirA));
+    Y->sort(3214, V, 1.0, 0.0);
+    Z = SharedTensor2d(new Tensor2d("Y (Q|IA)", nQ, naoccA, navirA));
+    Z->gemm(false, false, bQiaA, Y, 2.0, 0.0); 
+    Y.reset();
+    Z->write(psio_, PSIF_DFOCC_AMPS);
+    Z.reset();
 
     // V_AB^Q <= \sum_{MN} V_MANB b_MN^Q
     X = SharedTensor2d(new Tensor2d("X (MN|AB)", naoccA, naoccA, navirA, navirA));
@@ -517,6 +527,9 @@ else if (reference_ == "UNRESTRICTED") {
     Vab->write(psio_, PSIF_DFOCC_AMPS);
     Vab.reset();
 
+    //=========================
+    // V_iajb
+    //=========================
 
     // V_iajb <= 1/2 \sum_{me} T(ib,me)(1) L(me,ja)(1)
     U = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
@@ -538,7 +551,7 @@ else if (reference_ == "UNRESTRICTED") {
     V = SharedTensor2d(new Tensor2d("V (ia|jb)", naoccB, navirB, naoccB, navirB));
     V->sort(1432, X, 1.0, 0.0);
     X.reset();
-    V->write(psio_, PSIF_DFOCC_AMPS);
+    //V->write(psio_, PSIF_DFOCC_AMPS);
 
     // V_ij^Q' <= \sum_{ef} V_iejf b_ef^Q
     Vij = SharedTensor2d(new Tensor2d("Vp (Q|ij)", nQ, naoccB, naoccB));
@@ -548,6 +561,16 @@ else if (reference_ == "UNRESTRICTED") {
     X.reset();
     Vij->write(psio_, PSIF_DFOCC_AMPS);
     Vij.reset();
+
+    // y_ia^Q <= 2 \sum(me) V_iema b_me^Q
+    // Y(me,ia) = V(ie,ma)
+    Y = SharedTensor2d(new Tensor2d("Y (me|ia)", naoccB, navirB, naoccB, navirB));
+    Y->sort(3214, V, 1.0, 0.0);
+    Z = SharedTensor2d(new Tensor2d("Y (Q|ia)", nQ, naoccB, navirB));
+    Z->gemm(false, false, bQiaB, Y, 2.0, 0.0); 
+    Y.reset();
+    Z->write(psio_, PSIF_DFOCC_AMPS);
+    Z.reset();
 
     // V_ab^Q <= \sum_{mn} V_manb b_mn^Q
     X = SharedTensor2d(new Tensor2d("X (mn|ab)", naoccB, naoccB, navirB, navirB));
@@ -559,6 +582,9 @@ else if (reference_ == "UNRESTRICTED") {
     Vab->write(psio_, PSIF_DFOCC_AMPS);
     Vab.reset();
 
+    //=========================
+    // V_IaJb
+    //=========================
 
     // V_IaJb += 1/2 \sum_{mE} T'(Ib,mE)(1) L'(Ja,mE)(1)
     U = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
@@ -572,7 +598,7 @@ else if (reference_ == "UNRESTRICTED") {
     V = SharedTensor2d(new Tensor2d("V (Ia|Jb)", naoccA, navirB, naoccA, navirB));
     V->sort(1432, X, 1.0, 0.0);
     X.reset();
-    V->write(psio_, PSIF_DFOCC_AMPS);
+    //V->write(psio_, PSIF_DFOCC_AMPS);
 
     // V_IJ^Q' += \sum_{ef} V_IeJf b_ef^Q
     Vij = SharedTensor2d(new Tensor2d("Vp (Q|IJ)", nQ, naoccA, naoccA));
@@ -595,6 +621,9 @@ else if (reference_ == "UNRESTRICTED") {
     Vab->write(psio_, PSIF_DFOCC_AMPS);
     Vab.reset();
 
+    //=========================
+    // V_iAjB
+    //=========================
 
     // V_iAjB += 1/2 \sum_{Me} T'(Me,iB)(1) L'(Me,jA)(1)
     U = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
@@ -608,7 +637,7 @@ else if (reference_ == "UNRESTRICTED") {
     V = SharedTensor2d(new Tensor2d("V (iA|jB)", naoccB, navirA, naoccB, navirA));
     V->sort(1432, X, 1.0, 0.0);
     X.reset();
-    V->write(psio_, PSIF_DFOCC_AMPS);
+    //V->write(psio_, PSIF_DFOCC_AMPS);
 
     // V_ij^Q' += \sum_{EF} V_iEjF b_EF^Q
     Vij = SharedTensor2d(new Tensor2d("Vp (Q|ij)", nQ, naoccB, naoccB));
@@ -632,22 +661,58 @@ else if (reference_ == "UNRESTRICTED") {
     Vab.reset();
 
     //=========================
-    // Yt_ijab & y_ia^Q
+    // V_IajB
     //=========================
 
-    // Read amps
-    TAA = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    TAA->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    TAA.reset();
+    // V_IajB <= 1/2 \sum_{ME} T(IB,ME)(1) L(ME,ja)(1)
+    U = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    U->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+    T = SharedTensor2d(new Tensor2d("T2_1 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    T->sort(1324, U, 1.0, 0.0);
+    U.reset();
+    U = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+    U->read(psio_, PSIF_DFOCC_AMPS);
+    L = SharedTensor2d(new Tensor2d("T2_1 (IA|jb)", naoccA, navirA, naoccB, navirB));
+    L->sort(1324, U, 1.0, 0.0);
+    U.reset();
+    X = SharedTensor2d(new Tensor2d("X (IB|ja)", naoccA, navirA, naoccB, navirB));
+    X->gemm(false, false, T, L, 0.5, 0.0);
+    T.reset();
+    // V_IajB += 1/2 \sum_{me} T(IB,me)(1) L(me,ja)(1)
+    U = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
+    U->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+    T = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccB, navirB, naoccB, navirB));
+    T->sort(1324, U, 1.0, 0.0);
+    U.reset();
+    X->gemm(false, false, L, T, 0.5, 1.0);
+    T.reset();
+    L.reset();
+    V = SharedTensor2d(new Tensor2d("V (Ia|jB)", naoccA, navirB, naoccB, navirA));
+    V->sort(1432, X, 1.0, 0.0);
+    X.reset();
+    //V->write(psio_, PSIF_DFOCC_AMPS);
 
-    TBB = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
-    TBB->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    TBB.reset();
+    // y_IA^Q += 2 \sum(me) V_IemA b_me^Q
+    // Y(me,IA) = V(Ie,mA)
+    Y = SharedTensor2d(new Tensor2d("Y (me|IA)", naoccB, navirB, naoccA, navirA));
+    Y->sort(3214, V, 1.0, 0.0);
+    Z = SharedTensor2d(new Tensor2d("Y (Q|IA)", nQ, naoccA, navirA));
+    Z->read(psio_, PSIF_DFOCC_AMPS);
+    Z->gemm(false, false, bQiaB, Y, 2.0, 1.0); 
+    Y.reset();
+    Z->write(psio_, PSIF_DFOCC_AMPS);
+    Z.reset();
 
-    TAB = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    TAB->read(psio_, PSIF_DFOCC_AMPS);
-    TAB.reset();
-
+    // y_ia^Q += 2 \sum(ME) V_MaiE b_ME^Q
+    // Y(ME,ia) = V(Ma,iE)
+    Y = SharedTensor2d(new Tensor2d("Y (ME|ia)", naoccA, navirA, naoccB, navirB));
+    Y->sort(1432, V, 1.0, 0.0);
+    Z = SharedTensor2d(new Tensor2d("Y (Q|ia)", nQ, naoccB, navirB));
+    Z->read(psio_, PSIF_DFOCC_AMPS);
+    Z->gemm(false, false, bQiaA, Y, 2.0, 1.0); 
+    Y.reset();
+    Z->write(psio_, PSIF_DFOCC_AMPS);
+    Z.reset();
 
 
     // Free ints
