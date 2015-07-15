@@ -314,9 +314,6 @@ void DFOCC::omp2_manager()
 	//if (natorb == "TRUE") nbo();
 	//if (occ_orb_energy == "TRUE") semi_canonic(); 
 
-	// Save MOs to wfn
-	save_mo_to_wfn(); 
-
         // OEPROP
         if (oeprop_ == "TRUE") oeprop();
 
@@ -326,6 +323,9 @@ void DFOCC::omp2_manager()
 
         // Compute Analytic Gradients
         if (dertype == "FIRST") dfgrad();
+
+	// Save MOs to wfn
+	save_mo_to_wfn(); 
 
   }// end if (conver == 1)
 }// end omp2_manager 
@@ -1375,14 +1375,14 @@ void DFOCC::omp3_manager()
 	Process::environment.globals["DF-OMP3 TOTAL ENERGY"] = Emp3L;
         Process::environment.globals["DF-OMP3 CORRELATION ENERGY"] = Emp3L - Escf;
 
-	// Save MOs to wfn
-	save_mo_to_wfn(); 
-
         // OEPROP
         if (oeprop_ == "TRUE") oeprop();
 
         // Compute Analytic Gradients
         if (dertype == "FIRST") dfgrad();
+
+	// Save MOs to wfn
+	save_mo_to_wfn(); 
 
   }// end if (conver == 1)
 

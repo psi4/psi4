@@ -65,6 +65,7 @@ void UHF::common_init()
 
     Drms_ = 0.0;
     step_scale_ = options_.get_double("FOLLOW_STEP_SCALE");
+    step_increment_ = options_.get_double("FOLLOW_STEP_INCREMENT");
 
     Fa_     = SharedMatrix(factory_->create_matrix("F alpha"));
     Fb_     = SharedMatrix(factory_->create_matrix("F beta"));
@@ -549,8 +550,22 @@ void UHF::stability_analysis()
         stab->analyze();
 
         if (stab->is_unstable() && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW") {
-            stab_val = stab->get_eigval();
+            if (attempt_number_ == 1 ) {
+                stab_val = stab->get_eigval();
+            } else if (stab_val - stab->get_eigval() < 1e-4) {
+                // We probably fell on the same minimum, increase step_scale_
+                outfile->Printf("    Negative eigenvalue similar to previous one, wavefunction\n");
+                outfile->Printf("    likely to be in the same minimum.\n");
+                step_scale_ += step_increment_;
+                outfile->Printf("    Modifying FOLLOW_STEP_SCALE to %f.\n", step_scale_);
+            } else {
+                stab_val = stab->get_eigval();
+            }
+           //     outfile->Printf( "OLD ORBS");
+           //     Ca_->print();
             stab->rotate_orbs(step_scale_);
+           //     outfile->Printf( "NEW ORBS");
+           //     Ca_->print();
             if(attempt_number_ > max_attempts_) {
                 // Make sure we don't get stuck in an infinite loop
                 outfile->Printf( "    There's still a negative eigenvalue. Try modifying FOLLOW_STEP_SCALE\n");
@@ -559,15 +574,6 @@ void UHF::stability_analysis()
             }
             attempt_number_++;
 
-            if( (attempt_number_ > 2) && (stab_val - stab->get_eigval() < 1e-4)) {
-                // We probably fell on the same minimum, increase step_scale_
-                outfile->Printf("    Negative eigenvalue similar to previous one, wavefunction\n");
-                outfile->Printf("    likely to be in the same minimum.\n");
-                step_scale_ += 0.1;
-                outfile->Printf("    Increasing FOLLOW_STEP_SCALE to %f.\n", step_scale_);
-            } else {
-                stab_val = stab->get_eigval();
-            }
             outfile->Printf("    Running SCF again with the rotated orbitals.\n");
             diis_manager_->reset_subspace();
             compute_energy();
