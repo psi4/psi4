@@ -153,12 +153,12 @@ procedures = {
             'psimrcc'       : run_psimrcc,
             'psimrcc_scf'   : run_psimrcc_scf,
             'hf'            : run_scf,
-            'rhf'           : run_scf,
-            'uhf'           : run_scf,
-            'rohf'          : run_scf,
-            'rscf'          : run_scf,
-            'uscf'          : run_scf,
-            'roscf'         : run_scf,
+            #'rhf'           : run_scf,
+            #'uhf'           : run_scf,
+            #'rohf'          : run_scf,
+            #'rscf'          : run_scf,
+            #'uscf'          : run_scf,
+            #'roscf'         : run_scf,
             'qcisd'         : run_fnocc,
             'qcisd(t)'      : run_fnocc,
             'mp4(sdq)'      : run_fnocc,
@@ -226,12 +226,12 @@ procedures = {
             'dfccd'         : run_dfccd_gradient,
 #            'efp'           : run_efp_gradient,
             'hf'            : run_scf_gradient,
-            'rhf'           : run_scf_gradient,
-            'uhf'           : run_scf_gradient,
-            'rohf'          : run_scf_gradient,
-            'rscf'          : run_scf_gradient,
-            'uscf'          : run_scf_gradient,
-            'roscf'         : run_scf_gradient,
+            #'rhf'           : run_scf_gradient,
+            #'uhf'           : run_scf_gradient,
+            #'rohf'          : run_scf_gradient,
+            #'rscf'          : run_scf_gradient,
+            #'uscf'          : run_scf_gradient,
+            #'roscf'         : run_scf_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
         'hessian' : {
@@ -257,12 +257,12 @@ procedures = {
             'ci'       : run_detci_property,  # arbitrary order ci(n)
             'fci'      : run_detci_property,
             'hf'       : run_scf_property,
-            'rhf'      : run_scf_property,
-            'uhf'      : run_scf_property,
-            'rohf'     : run_scf_property,
-            'rscf'     : run_scf_property,
-            'uscf'     : run_scf_property,
-            'roscf'    : run_scf_property,
+            #'rhf'      : run_scf_property,
+            #'uhf'      : run_scf_property,
+            #'rohf'     : run_scf_property,
+            #'rscf'     : run_scf_property,
+            #'uscf'     : run_scf_property,
+            #'roscf'    : run_scf_property,
             # Upon adding a method to this list, add it to the docstring in property() below
         }}
 
@@ -334,6 +334,8 @@ def energy(name, **kwargs):
     | efp                     | effective fragment potential (EFP) :ref:`[manual] <sec:efp>`                          |
     +-------------------------+---------------------------------------------------------------------------------------+
     | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :ref:`[manual] <sec:scf>`       |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | hf                      | HF self consistent field (SCF)
     +-------------------------+---------------------------------------------------------------------------------------+
     | dcft                    | density cumulant functional theory :ref:`[manual] <sec:dcft>`                         |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -484,25 +486,6 @@ def energy(name, **kwargs):
     | eom-cc3                 | EOM-CC3 :ref:`[manual] <sec:eomcc>`                                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
 
-    .. _`table:energy_scf`:
-
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method (aliases to *name* = 'scf')                                              |
-    +=========================+=======================================================================================+
-    | hf                      | HF                                                                                    |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | rhf                     | HF with restricted reference                                                          |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | uhf                     | HF with unrestricted reference                                                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | rohf                    | HF with restricted open-shell reference                                               |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | rscf                    | HF or DFT with restricted reference                                                   |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | uscf                    | HF or DFT with unrestricted reference                                                 |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | roscf                   | HF or DFT with restricted open-shell reference                                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
 
     .. include:: autodoc_dft_energy.rst
 
