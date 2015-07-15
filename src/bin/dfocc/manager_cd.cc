@@ -1103,14 +1103,14 @@ void DFOCC::omp3_manager_cd()
 	Process::environment.globals["CD-OMP3 TOTAL ENERGY"] = Emp3L;
         Process::environment.globals["CD-OMP3 CORRELATION ENERGY"] = Emp3L - Escf;
 
-	// Save MOs to wfn
-	save_mo_to_wfn(); 
-
         // OEPROP
         if (oeprop_ == "TRUE") oeprop();
 
         // Compute Analytic Gradients
         if (dertype == "FIRST") dfgrad();
+
+	// Save MOs to wfn
+	save_mo_to_wfn(); 
 
   }// end if (conver == 1)
 
