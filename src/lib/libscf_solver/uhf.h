@@ -66,6 +66,8 @@ protected:
 
     // Scaling factor for orbital rotation
     double step_scale_;
+    // Increment to explore different scaling factors
+    double step_increment_;
     // Stability eigenvalue, for doing smart eigenvector following
     double stab_val;
 
