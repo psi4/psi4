@@ -39,7 +39,7 @@ protected:
     /// Full L (Q x n), if choleskify() called()
     SharedMatrix L_;
     /// Number of columns required, if choleskify() called
-    int Q_;
+    size_t Q_;
 
 public:
     /*!
@@ -57,9 +57,9 @@ public:
     /// Shared pointer to decomposition (Q x N), if choleskify() called
     SharedMatrix L() const { return L_; }
     /// Number of columns required to reach accuracy delta, if choleskify() called
-    int Q() const { return Q_; }
+    size_t Q() const { return Q_; }
     /// Dimension of the original square tensor, provided by the subclass
-    virtual int N() = 0;
+    virtual size_t N() = 0;
     /// Maximum Chebyshev error allowed in the decomposition
     double delta() const { return delta_; }
 
@@ -77,7 +77,7 @@ public:
     CholeskyMatrix(SharedMatrix A, double delta, unsigned long int memory);
     virtual ~CholeskyMatrix();
 
-    virtual int N();
+    virtual size_t N();
     virtual void compute_diagonal(double* target);
     virtual void compute_row(int row, double* target);
 };
@@ -92,7 +92,7 @@ public:
     CholeskyERI(boost::shared_ptr<TwoBodyAOInt> integral, double schwarz, double delta, unsigned long int memory);
     virtual ~CholeskyERI();
 
-    virtual int N();
+    virtual size_t N();
     virtual void compute_diagonal(double* target);
     virtual void compute_row(int row, double* target);
 };
@@ -110,7 +110,7 @@ public:
         double delta, unsigned long int memory);
     virtual ~CholeskyMP2();
 
-    virtual int N();
+    virtual size_t N();
     virtual void compute_diagonal(double* target);
     virtual void compute_row(int row, double* target);
 };
@@ -126,7 +126,7 @@ public:
         double delta, unsigned long int memory);
     virtual ~CholeskyDelta();
 
-    virtual int N();
+    virtual size_t N();
     virtual void compute_diagonal(double* target);
     virtual void compute_row(int row, double* target);
 };
@@ -140,7 +140,7 @@ public:
         double delta, unsigned long int memory);
     virtual ~CholeskyLocal();
 
-    virtual int N();
+    virtual size_t N();
     virtual void compute_diagonal(double* target);
     virtual void compute_row(int row, double* target);
 };
