@@ -101,8 +101,8 @@ void UStab::set_reference(boost::shared_ptr<Wavefunction> wfn)
         throw PSIEXCEPTION("UStab: Reference is restricted!");
     }
 
-    Ca_ = wfn->Ca_subset("SO","ALL");
-    Cb_ = wfn->Cb_subset("SO","ALL");
+    Ca_ = wfn->Ca();
+    Cb_ = wfn->Cb();
     Cocca_  = wfn->Ca_subset("SO","OCC");
     Coccb_  = wfn->Cb_subset("SO","OCC");
     Cvira_  = wfn->Ca_subset("SO","VIR");
@@ -136,7 +136,7 @@ void UStab::print_header()
     outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
     outfile->Printf( "  Nuclear repulsion = %20.15f\n", molecule_->nuclear_repulsion_energy());
-    outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
+    //outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
 
     outfile->Printf( "  ==> Basis Set <==\n\n");
     basis_->print_by_level("outfile", print_);
@@ -274,7 +274,7 @@ void UStab::rotate_orbs(double step_scale)
     // Rotate the alpha orbitals
         for (int i = 0; i < nocca; ++i) {
             for (int a = 0; a < nvira; ++a) {
-                Ca_->rotate_columns(h, i, a, scale*unveca->get(i,a));
+                Ca_->rotate_columns(h, i, a, scale*unveca->get(h,i,a));
             }
         }
         int noccb = unvecb->rowdim(h);
@@ -282,7 +282,7 @@ void UStab::rotate_orbs(double step_scale)
     // Rotate the beta orbitals
         for (int i = 0; i < noccb; ++i) {
             for (int a = 0; a < nvirb; ++a) {
-                Cb_->rotate_columns(h, i, a, scale*unvecb->get(i,a));
+                Cb_->rotate_columns(h, i, a, scale*unvecb->get(h,i,a));
             }
         }
     }
