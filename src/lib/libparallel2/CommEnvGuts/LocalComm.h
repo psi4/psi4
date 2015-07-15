@@ -24,6 +24,14 @@
 #include "CommBase.h"
 #include <boost/shared_ptr.hpp>
 #include "../Algorithms.h"
+
+// Use this to silence "warning: unused parameter" messages from the compiler.
+// Sometimes you have to define the parameter for Doxygen regardless if you
+// use it or not.
+#ifndef UNUSED
+#define UNUSED(expr) (void)(expr)
+#endif
+
 namespace psi{
 namespace LibParallel{
 
@@ -39,11 +47,13 @@ class LocalComm:public CommBase<LocalComm>{
       template<typename T>
       void AllReduceImpl(const T* LocalData, const int NElem,T* Target,
                      const MPIOperation& Op)const{
+         UNUSED(Op);
          if(Target!=LocalData)memcpy(Target,LocalData,NElem*sizeof(T));
       }
       template<typename T>
       void GatherImpl(const T* LocalData, const int NElem,T* Target,
             const int Root)const{
+         UNUSED(Root);
          if(Target!=LocalData)memcpy(Target,LocalData,NElem*sizeof(T));
       }
       template<typename T>

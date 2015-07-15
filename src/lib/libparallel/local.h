@@ -45,33 +45,50 @@ class LocalCommWrapper:public Parallel<LocalCommWrapper> {
       template <typename T>
       void bcastImpl(T& data,const int broadcaster,
             const std::string&Comm="NONE") const {
+          UNUSED(data);
+          UNUSED(broadcaster);
+          UNUSED(Comm);
       }
       template<typename type>
       void AllReduceImpl(const type* localdata,const int nelem,
             type* target,
             const MPIOperation& operation,
             const std::string& Name){
+          UNUSED(operation);
+          UNUSED(Name);
          memcpy(target,localdata,nelem);
       }
       template<typename T>
       void IrecvImpl(const int source, const int tag, T* message,
             const int length)const{
-
+          UNUSED(source);
+          UNUSED(tag);
+          UNUSED(message);
+          UNUSED(length);
       }
       template<typename T>
       void recvImpl(const int source, const int tag, T* message,
             const int length)const{
-
+          UNUSED(source);
+          UNUSED(tag);
+          UNUSED(message);
+          UNUSED(length);
       }
       template<typename T>
       void IsendImpl(const int source, const int tag, T* message,
             const int length)const{
-
+          UNUSED(source);
+          UNUSED(tag);
+          UNUSED(message);
+          UNUSED(length);
       }
       template<typename T>
       void sendImpl(const int source, const int tag, T* message,
             const int length)const{
-
+          UNUSED(source);
+          UNUSED(tag);
+          UNUSED(message);
+          UNUSED(length);
       }
       template <typename type>
       void all_gatherImpl(const type* localdata,
@@ -86,6 +103,8 @@ class LocalCommWrapper:public Parallel<LocalCommWrapper> {
       template <typename type>
       void gatherImpl(const type* localdata, const int nelem, type* target,
             const int Root,const std::string& CommName="NONE") const {
+          UNUSED(Root);
+          UNUSED(CommName);
          if (localdata!=target)
             std::memcpy(const_cast<type*>(localdata), target,
                   sizeof(type)*nelem);
