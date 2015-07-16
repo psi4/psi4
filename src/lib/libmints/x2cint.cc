@@ -73,7 +73,7 @@ void X2CInt::setup(Options& options)
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
 
     basis_ = options.get_str("BASIS");
-    x2c_basis_ = options.get_str("X2C_BASIS");
+    x2c_basis_ = options.get_str("REL_BASIS");
 
     // Print X2C options
     outfile->Printf("\n  ==> X2C Options <==\n");
@@ -100,7 +100,7 @@ void X2CInt::setup(Options& options)
     else{
         do_project_ = true;
         // Construct a new basis set that uses X2C_BASIS.
-        aoBasis_ = BasisSet::pyconstruct_orbital(molecule, "X2C_BASIS",x2c_basis_);
+        aoBasis_ = BasisSet::pyconstruct_orbital(molecule, "REL_BASIS",x2c_basis_);
         // Construct a new basis set that uses BASIS.
         aoBasis_contracted_ = BasisSet::pyconstruct_orbital(molecule, "BASIS",basis_);
         outfile->Printf("\n    The X2C Hamiltonian will be computed in the X2C Basis");
@@ -448,7 +448,7 @@ void X2CInt::project()
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
 
     // Construct a new basis set that uses X2C_BASIS.
-//    boost::shared_ptr<BasisSet> aoBasis = BasisSet::pyconstruct_orbital(molecule, "X2C_BASIS",x2c_basis_);
+//    boost::shared_ptr<BasisSet> aoBasis = BasisSet::pyconstruct_orbital(molecule, "REL_BASIS",x2c_basis_);
 
     // Construct a new basis set that uses BASIS.
 //    boost::shared_ptr<BasisSet> aoBasis_contracted = BasisSet::pyconstruct_orbital(molecule, "BASIS",basis_); //pv
