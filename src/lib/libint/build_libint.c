@@ -56,14 +56,14 @@ char* strdup(const char *str);
 
 int main()
 {
-  int i,j,k,l,f;
-  int j_min, j_max, k_min, k_max, l_min, l_max;
-  int errcod;
-  int old_am = 0;
+  int l;/*i,j,k,f;*/
+  /*int j_min, j_max, k_min, k_max, l_min, l_max;*/
+  /*int errcod;*/
+  /*int old_am = 0;*/
   int new_am, opt_am;
   int max_class_size = DEFAULT_MAX_CLASS_SIZE;
   int long_double = 0;     /*--- Whether to use long doubles ---*/
-  int stack_size;
+  /*int stack_size;*/
 
   /*-------------------------------
     Initialize files and libraries
