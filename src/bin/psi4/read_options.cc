@@ -171,11 +171,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
 #ifdef HAVE_FORTRAN
   /*- Relativistic Hamiltonian type !expert -*/
-  options.add_str("RELATIVISTIC", "NO","NO X2C DKH");
+  options.add_str("REL_METHOD", "NO","NO X2C DKH");
 #else
     /*- Relativistic Hamiltonian type !expert -*/
-    options.add_str("RELATIVISTIC", "NO","NO X2C");
+    options.add_str("REL_METHOD", "NO","NO X2C");
 #endif
+
+  /*- Whether to uncontract the basis set in a dual basis calculation -*/
+  options.add_str("REL_BASIS","");
 
   /*- Order of Douglas-Kroll-Hess !expert -*/
   options.add_int("DKH_ORDER", 2);
