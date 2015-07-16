@@ -45,7 +45,7 @@ Best Practices for Python Functions
     >>> pep8.py -r --ignore=E501 pythonfile.py
     >>> pep8.py -r --ignore=E501,E221,E222,E241,E201,E202 databasefile.py
 
-- Your python function should not prevent any test case (``make tests``, NOT ``make longtests``) from passing. A test case(s) should be written and checked in for any major python function, so that others do not break your code. If most of your work was on the python (as opposed to c++) side, the test case prefix pywrap\_ is suggested.
+- Your python function should not prevent any test case from passing. A test case(s) should be written and checked in for any major python function, so that others do not break your code. If most of your work was on the python (as opposed to c++) side, the test case prefix pywrap\_ is suggested.
 
 - Be sure to set any new PSI variables through lines like those below. Especially if the function returns an energy, set the 'current energy' variable. This last is needed to communicate with the optimizer. ::
 
