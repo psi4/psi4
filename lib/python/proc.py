@@ -2835,7 +2835,8 @@ def run_mrcc(name, **kwargs):
     except OSError as e:
         sys.stderr.write('Program %s not found in path or execution failed: %s\n' % (cfour_executable, e.strerror))
         p4out.write('Program %s not found in path or execution failed: %s\n' % (external_exe, e.strerror))
-        sys.exit(1)
+        message = ("Program %s not found in path or execution failed: %s\n" % (external_exe, e.strerror))
+        raise ValidationError(message)
 
     c4out = ''
     while True:
