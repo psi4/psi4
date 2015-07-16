@@ -1207,7 +1207,15 @@ def run_scf(name, **kwargs):
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    parse_scf_cases(name)
+    #parse_scf_cases(name)
+    if lowername == 'hf':
+        if psi4.get_option('SCF','REFERENCE') == 'RKS':
+            psi4.print_out('RKS reference set for HF, reference changed to RHF')
+            psi4.set_local_options('SCF','REFERENCE','RHF')
+        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
+            psi4.print_out('UKS reference set for HF, reference changed to UHF')
+            psi4.set_local_option('SCF','REFERENCE','UHF')
+     
     scf_helper(name, **kwargs)
 
     optstash.restore()
