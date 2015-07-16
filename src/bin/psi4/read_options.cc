@@ -1058,32 +1058,32 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add("LOCAL_IBO_STARS", new ArrayType());   
   }
   if(name == "DCFT"|| options.read_globals()) {
-      /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory
+      /*-MODULEDESCRIPTION Performs density cumulant functional theory
       computations -*/
 
       /*- Reference wavefunction type -*/
       options.add_str("REFERENCE", "UHF", "UHF");
-      /*- The algorithm to use for the density cumulant and orbital updates in the DCFT energy computation.
-      Two-step algorithm (default) is usually more efficient for small
-      systems, but for large systems the simultaneous algorithm is recommended.
-      In the cases where the convergence problems are encountered (especially
+      /*- Algorithm to use for the density cumulant and orbital updates in the DCFT energy computation.
+      Two-step algorithm is usually more efficient for small
+      systems, but for large systems simultaneous algorithm (default) is recommended.
+      If convergence problems are encountered (especially
       for highly symmetric systems) QC algorithm can be used. -*/
       options.add_str("ALGORITHM", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS QC");
-      /*- The algorithm to use for the solution of the response equations for the analytic gradients and properties-*/
+      /*- Algorithm to use for the solution of DC-06 response equations in computation of analytic gradients and properties-*/
       options.add_str("RESPONSE_ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
-      /*- Chooses the type of the quadratically-convergent algorithm (effective for ALGORITHM = QC).
+      /*- Controls the type of the quadratically-convergent algorithm (effective for ALGORITHM = QC).
       If set to TWOSTEP the Newton-Raphson equations are only solved for the orbital updates,
       the cumulant is updated using the standard Jacobi algorithm. If set to SIMULTANEOUS both cumulant
       and orbitals are updated in a single Newton-Raphson step. -*/
       options.add_str("QC_TYPE", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS");
-      /*- Convergence criterion for the RMS of the residual vector in the density cumulant updates, as well as
+      /*- Convergence criterion for the RMS of the residual vector in density cumulant updates, as well as
       the solution of the density cumulant and orbital response equations. In the orbital updates controls
       the RMS of the SCF error vector -*/
       options.add_double("R_CONVERGENCE", 1e-10);
       /*- Convergence criterion for the density cumulant and orbital guess for the
       variationally orbital-optimized DCFT methods. Currently only available for ALGORITHM = SIMULTANEOUS. -*/
       options.add_double("GUESS_R_CONVERGENCE", 1e-3);
-      /*- Maximum number of the macro- or micro-iterations for both the energy and the solution of the response equations -*/
+      /*- Maximum number of macro- or micro-iterations for both energy and response equations -*/
       options.add_int("MAXITER", 40);
       /*- Value of RMS of the density cumulant residual and SCF error vector below which DIIS extrapolation starts.
       Same keyword controls the DIIS extrapolation for the solution of the response equations. -*/
@@ -1096,7 +1096,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       (<VV||VV>) by computing the corresponding terms in the AO basis. AO_BASIS = DISK algorithm reduces the memory
       requirements and can significantly reduce the cost of the energy computation if SIMULTANEOUS
       algorithm is used. For the TWOSTEP algorithm, however, AO_BASIS = DISK
-      option is not recommended due to the extra I/O. -*/
+      option is not recommended due to extra I/O. -*/
       options.add_str("AO_BASIS", "DISK", "NONE DISK");
       /*- The amount (percentage) of damping to apply to the orbital update procedure:
       0 will result in a full update, 100 will completely stall the
