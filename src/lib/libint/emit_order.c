@@ -64,6 +64,14 @@ static int vrr_hash_table[MAX_AM+1][MAX_AM+1][2*MAX_AM+1];
 void mark_hrr_parents(int n, hrr_class *allnodes, int rent);
 void mark_vrr_parents(int n, vrr_class *allnodes, int rent);
 
+/* Function declarations to shut-up compiler*/
+int mk_hrr_node(hrr_class node, hrr_class *allnodes, int new);
+int mk_vrr_node(vrr_class node, vrr_class *allnodes, int new);
+int alloc_mem_hrr(hrr_class *nodes);
+int alloc_mem_vrr(vrr_class *nodes);
+void punt(char* str);
+
+
 void emit_order()
 {
   int old_am = Params.old_am;

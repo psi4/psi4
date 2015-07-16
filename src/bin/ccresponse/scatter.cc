@@ -25,8 +25,8 @@
     \brief Compute the three tensors needed for Raman Optical Activity.
 
     ROA requires the following polarizability tensors:
-      (1) electric-dipole/electric-dipole; 
-      (2) electric-dipole/electric-quadrupole; and 
+      (1) electric-dipole/electric-dipole;
+      (2) electric-dipole/electric-quadrupole; and
       (3) electric-dipole/magnetic-dipole.
 
   -TDC, August 2009
@@ -39,7 +39,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <libciomr/libciomr.h>
-#include <libpsio/psio.h> 
+#include <libpsio/psio.h>
 #include <libqt/qt.h>
 #include "MOInfo.h"
 #include "Params.h"
@@ -149,10 +149,10 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
         grad_mat->apply_denominator(denom_pol);
         pol_grad.push_back(grad_mat);
     }
-    
+
     SharedMatrix denom_rot(new Matrix(3,3));
     denom_rot->set(2.0 * step);
-	/* 
+	/*
 	 *  PSI4's OR Tensor is opposite in sign compared to PSI3.
 	 *  If we tried the trick below to match PSI3 OR tensor signs,
      *  AND read in the normal coord. transform, we could match TDC's
@@ -168,7 +168,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
         grad_mat->apply_denominator(denom_rot);
         rot_grad.push_back(grad_mat);
     }
-   
+
     SharedMatrix denom_quad(new Matrix(9,3));
     denom_quad->set(2.0 * step);
     std::vector <SharedMatrix> quad_grad;
@@ -180,7 +180,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
         grad_mat->apply_denominator(denom_quad);
         quad_grad.push_back(grad_mat);
     }
-   
+
     // Write Out the Tensor Derivatives to File tender.dat //
     // Outfile derivs("tender.dat", "w");
     boost::shared_ptr<OutFile> derivs(new OutFile("tender.dat", TRUNCATE));
@@ -202,7 +202,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
     int natom = molecule->natom();
     SharedMatrix geom(new Matrix(natom,3));
-    
+
     // Reading in the Hessian //
     FILE* hessian;
     FILE* dipole_moment;
@@ -214,11 +214,11 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
     {
       for(j=0; j < (3*natom); j++)
       {
-        fscanf(hessian,"%lf",&F->pointer()[i][j]);
+        int statusvalue=fscanf(hessian,"%lf",&F->pointer()[i][j]);
       }
     }
     fclose(hessian);
-  
+
 	// Read in the Dipole-Moment Derivatives //
     dipole_moment=fopen("file17.dat","r");
     SharedMatrix dipder(new Matrix(3, natom*3));
@@ -226,7 +226,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
     {
       for(j=0; j < natom; j++)
       {
-        fscanf(dipole_moment, "%lf %lf %lf", &dipder->pointer()[i][j*3], &dipder->pointer()[i][j*3+1], &dipder->pointer()[i][j*3+2]);
+        int statusvalue=fscanf(dipole_moment, "%lf %lf %lf", &dipder->pointer()[i][j*3], &dipder->pointer()[i][j*3+1], &dipder->pointer()[i][j*3+2]);
       }
     }
     fclose(dipole_moment);
@@ -279,7 +279,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
     }
 	molecule->move_to_com();
 	geom_orig->copy(molecule->geometry());
-    
+
     // Reading the Z-vals //
     //-> Just use the Molecule's mass(x) function to get appropriate mass
     //   of atom.
@@ -290,7 +290,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
         zvals[i]=molecule->Z(i);
     }
 */
-    
+
     // Mass-weighting the co-ordinates //
     //double massi[natom];
     outfile->Printf("\tAtomic Masses for Raman Computation:\n");
@@ -311,9 +311,9 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
 	  geom->print();
     }
     //delete[] massi;
- 
+
     //Generating the inertia tensor
-   
+
     SharedMatrix I(new Matrix(3,3));
     I->copy(molecule->inertia_tensor());
     //I = molecule->inertia_tensor();
@@ -321,11 +321,11 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
 	  outfile->Printf("\tMoment of Inertia Tensor:\n");
       I->print();
     }
-    
+
 /*
-    for(i=0; i < 3; i++) 
+    for(i=0; i < 3; i++)
     {
-      for(j=0; j <= i; j++) 
+      for(j=0; j <= i; j++)
       {
         if(i==j)
           for(k=0; k < natom; k++)
@@ -342,7 +342,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
 */
 
     // Diagonalizing the inertia tensor //
-   
+
     SharedMatrix Ievecs(new Matrix("Inertia Eigenvectors",3,3));
     SharedVector Ievals(new Vector("Inertia Eigenvalues",3));
 
@@ -353,7 +353,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
 
     SharedMatrix Iinv(new Matrix("I-Inverse",3,3));
     SharedMatrix Itmp(new Matrix(3,3));
-     
+
     Iinv->zero();
     for(i=0;i<3;i++)
     {
@@ -369,12 +369,12 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
 	  Ievals->print();
       Iinv->print();
     }
- 
+
     // Generating the 6 pure rotation and translation vectors //
     SharedMatrix P(new Matrix(natom*3,natom*3));
     int icart,jcart,iatom,jatom;
     double imass,jmass,total_mass;
-  
+
     total_mass=0.0;
     for(i=0;i<natom;i++)
     {
@@ -403,16 +403,16 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
         for(a=0; a < 3; a++)
           for(b=0; b < 3; b++)
             for(c=0; c < 3; c++)
-              for(d=0; d < 3; d++) 
+              for(d=0; d < 3; d++)
               {
                 P->add(i,j,-1.0*levi(a,b,icart)*geom->get(iatom,b)*Iinv->get(a,c)*levi(c,d,jcart)*geom->get(jatom,d));
               }
 
       }
-    }  
+    }
 
     // Generate mass-weighted Hessian matrix (Hartree/(bohr^2 amu)) //
-    M->zero();    
+    M->zero();
     SharedMatrix T(new Matrix(natom*3,natom*3));
     for(i=0; i < natom; i++)
     {
@@ -478,7 +478,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
        {
        redmass->set(i,1.0/norm);
        }
-    }  
+    }
 
    //redmass->print();
 
@@ -538,7 +538,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
      outfile->Printf("\n\tOptical Rotation Tensor Derivatives in Normal Coord.\n");
      optder_q->print();
    }
-  
+
    std::vector<SharedMatrix> G_der(3*natom);
    for(i=0; i < G_der.size(); ++i)
    {
@@ -567,7 +567,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
      outfile->Printf("\n\tDipole/Quadrupole Tensor Derivatives in Normal Coord.\n");
      quadder_q->print();
    }
- 
+
    int jkl,l;
    double**** Q_der = (double ****) malloc(natom*3*sizeof(double ***));
    for(i=0; i < natom*3; i++)
@@ -586,7 +586,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
        }
      }
    }
- 
+
    // Compute the Raman scattering activity //
    double raman_conv = pc_bohr2angstroms * pc_bohr2angstroms * pc_bohr2angstroms * pc_bohr2angstroms / pc_au2amu;
    double km_convert = pc_hartree2J/(pc_bohr2m * pc_bohr2m * pc_amu2kg * pc_au2amu);
@@ -659,7 +659,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
   G->zero();
   betaG2->zero();
   betaA2->zero();
-  
+
   for(i=0; i < natom*3; i++) {
     G->set(i,tensor_mean(G_der[i]));
     betaG2->set(i,beta_G2(alpha_der[i], G_der[i]));
@@ -695,7 +695,7 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
   outfile->Printf("     Harmonic Freq. Delta_z(90) Delta_x(90)   Delta(0)  Delta(180)\n");
   outfile->Printf("        (cm-1)\n");
   outfile->Printf("----------------------------------------------------------------------\n");
-  
+
   double delta_0,delta_180,delta_x,delta_z;
   for(i=natom*3-1; i >= 0; i--)
   {

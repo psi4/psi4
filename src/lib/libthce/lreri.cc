@@ -62,7 +62,7 @@ void LRERI::common_init()
     print_ = 1;
     debug_ = 0;
     bench_ = 0;
-    
+
     memory_ = 32000000L;
 }
 void LRERI::load_wavefunction(boost::shared_ptr<Wavefunction> ref)
@@ -89,7 +89,7 @@ void LRERI::load_wavefunction(boost::shared_ptr<Wavefunction> ref)
         list.push_back(ref->Cb_subset("AO", "ALL"));
         set_C(Matrix::horzcat(list));
 
-        int offset = ref->nmopi().sum(); 
+        int offset = ref->nmopi().sum();
         int nfocc_a = ref->frzcpi().sum();
         int nfvir_a = ref->frzvpi().sum();
         int naocc_a = ref->nalphapi().sum() - nfocc_a;
@@ -98,7 +98,7 @@ void LRERI::load_wavefunction(boost::shared_ptr<Wavefunction> ref)
         int nfvir_b = ref->frzvpi().sum();
         int naocc_b = ref->nbetapi().sum() - nfocc_b;
         int navir_b = ref->nmopi().sum() - naocc_b - nfocc_b - nfvir_b;
-        
+
         add_space("FROZEN_OCC_A", 0, nfocc_a);
         add_space("ACTIVE_OCC_A", nfocc_a, nfocc_a + naocc_a);
         add_space("ACTIVE_VIR_A", nfocc_a + naocc_a, nfocc_a + naocc_a + navir_a);
@@ -122,9 +122,9 @@ void LRERI::load_options(Options& options)
     print_ = options.get_int("PRINT");
     debug_ = options.get_int("DEBUG");
     bench_ = options.get_int("BENCH");
-    memory_ = (0.9 * Process::environment.get_memory() / 8L); 
+    memory_ = (0.9 * Process::environment.get_memory() / 8L);
 }
-void LRERI::set_C(boost::shared_ptr<Matrix> C) 
+void LRERI::set_C(boost::shared_ptr<Matrix> C)
 {
     clear();
     C_ = C;
@@ -148,7 +148,7 @@ boost::shared_ptr<Matrix> LRERI::Jm12(boost::shared_ptr<BasisSet> auxiliary, dou
     #ifdef _OPENMP
         nthread = omp_get_max_threads();
     #endif
-    
+
     int naux = auxiliary->nbf();
 
     boost::shared_ptr<Matrix> J(new Matrix("J", naux, naux));
@@ -177,7 +177,7 @@ boost::shared_ptr<Matrix> LRERI::Jm12(boost::shared_ptr<BasisSet> auxiliary, dou
         #endif
 
         std::pair<int,int> pair = Jpairs[PQ];
-        int P = pair.first; 
+        int P = pair.first;
         int Q = pair.second;
 
         Jeri[thread]->compute_shell(P,0,Q,0);
@@ -188,14 +188,14 @@ boost::shared_ptr<Matrix> LRERI::Jm12(boost::shared_ptr<BasisSet> auxiliary, dou
         int oq = auxiliary->shell(Q).function_index();
 
         const double* buffer = Jeri[thread]->buffer();
-        
+
         for (int p = 0; p < np; p++) {
         for (int q = 0; q < nq; q++) {
-            Jp[p + op][q + oq] = 
-            Jp[q + oq][p + op] = 
+            Jp[p + op][q + oq] =
+            Jp[q + oq][p + op] =
                 (*buffer++);
-        }} 
-    } 
+        }}
+    }
     Jfactory.reset();
     Jeri.clear();
 
@@ -238,7 +238,7 @@ boost::shared_ptr<DFERI> DFERI::build(boost::shared_ptr<BasisSet> primary, boost
 void DFERI::load_options(Options& options)
 {
     LRERI::load_options(options);
-    J_cutoff_ = options.get_double("DF_FITTING_CONDITION"); 
+    J_cutoff_ = options.get_double("DF_FITTING_CONDITION");
     schwarz_cutoff_ = options.get_double("INTS_TOLERANCE");
 }
 void DFERI::add_pair_space(const std::string& name, const std::string& space1, const std::string& space2, double power, bool transpose12)
@@ -269,17 +269,17 @@ void DFERI::print_header(int level)
     }
     outfile->Printf( "    Schwarz cutoff = %11.3E\n", schwarz_cutoff_);
     outfile->Printf( "    J cutoff       = %11.3E\n", J_cutoff_);
-    outfile->Printf( "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L)); 
+    outfile->Printf( "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L));
     outfile->Printf( "\n");
 
     if (level > 1) {
         outfile->Printf( "   => Primary Basis <=\n\n");
         primary_->print_by_level("outfile", print_);
     }
-    
+
     outfile->Printf( "   => Auxiliary Basis <=\n\n");
     auxiliary_->print_by_level("outfile", print_);
-    
+
     if (level > 1) {
         outfile->Printf( "   => Orbital Spaces: <=\n\n");
         outfile->Printf( "    %12s %12s %12s\n", "Space", "Start", "End");
@@ -288,7 +288,7 @@ void DFERI::print_header(int level)
         }
         outfile->Printf( "\n");
     }
-    
+
     if (level > 1) {
         outfile->Printf( "   => Required Orbital Pair Spaces: <=\n\n");
         outfile->Printf( "    %12s %12s %12s %11s %11s\n", "Tensor", "Space 1", "Space 2", "J Power", "Transpose12");
@@ -308,7 +308,7 @@ boost::shared_ptr<Matrix> DFERI::Jpow(double power)
     #ifdef _OPENMP
         nthread = omp_get_max_threads();
     #endif
-    
+
     int naux = auxiliary_->nbf();
 
     boost::shared_ptr<Matrix> J(new Matrix("J", naux, naux));
@@ -341,7 +341,7 @@ boost::shared_ptr<Matrix> DFERI::Jpow(double power)
         #endif
 
         std::pair<int,int> pair = Jpairs[PQ];
-        int P = pair.first; 
+        int P = pair.first;
         int Q = pair.second;
 
         Jeri[thread]->compute_shell(P,0,Q,0);
@@ -352,14 +352,14 @@ boost::shared_ptr<Matrix> DFERI::Jpow(double power)
         int oq = auxiliary_->shell(Q).function_index();
 
         const double* buffer = Jeri[thread]->buffer();
-        
+
         for (int p = 0; p < np; p++) {
         for (int q = 0; q < nq; q++) {
-            Jp[p + op][q + oq] = 
-            Jp[q + oq][p + op] = 
+            Jp[p + op][q + oq] =
+            Jp[q + oq][p + op] =
                 (*buffer++);
-        }} 
-    } 
+        }}
+    }
     Jfactory.reset();
     Jeri.clear();
 
@@ -373,16 +373,16 @@ boost::shared_ptr<Matrix> DFERI::Jpow(double power)
 void DFERI::compute()
 {
     // => Allocation <= //
-    
+
     allocate();
 
     // => (A|mn) C_mp C_nq => (A|pq) => (pq|A) <= //
 
-    transform();      
+    transform();
 
     // => (pq|A) J_{AQ}^-1/2 => (pq|Q) <= //
 
-    fit(); 
+    fit();
 }
 void DFERI::allocate()
 {
@@ -397,18 +397,18 @@ void DFERI::allocate()
 
         std::string naux = "NAUX";
 
-        if (pair_transposes_[name]) {   
+        if (pair_transposes_[name]) {
             std::swap(size1,size2);
             std::swap(space1,space2);
         }
-    
+
         ints_[name + "_temp"] = DiskTensor::build(name + "_temp",
             naux, auxiliary_->nbf(),
             space1, size1,
             space2, size2);
         ints_[name] = DiskTensor::build(name,
             space1, size1,
-            space2, size2,  
+            space2, size2,
             naux, auxiliary_->nbf());
     }
 }
@@ -418,17 +418,17 @@ void DFERI::transform()
 
     int nso = primary_->nbf();
     int naux = auxiliary_->nbf();
-    
+
     // > Threading < //
-    
+
     int nthread = 1;
     #ifdef _OPENMP
         nthread = omp_get_max_threads();
     #endif
-    
+
     // > Task merging < //
 
-    std::vector<std::vector<std::string> > tasks;    
+    std::vector<std::vector<std::string> > tasks;
     std::vector<std::string> rem = pair_spaces_order_;
 
     // Lump all common first half-transforms together
@@ -437,7 +437,7 @@ void DFERI::transform()
         std::vector<std::string> rem2;
         std::string space1 = pair_spaces_[rem[0]].first;
         for (int i = 0; i < rem.size(); i++) {
-            if (space1 == pair_spaces_[rem[i]].first) 
+            if (space1 == pair_spaces_[rem[i]].first)
                 task.push_back(rem[i]);
             else
                 rem2.push_back(rem[i]);
@@ -468,13 +468,13 @@ void DFERI::transform()
     // > Row requirements < //
 
     unsigned long int per_row = 0L;
-    // (Q|mn) 
+    // (Q|mn)
     per_row += nso * (unsigned long int) nso;
     // (Q|mi)
     per_row += max1 * (unsigned long int) nso;
     // (Q|ia)
     per_row += max12;
-     
+
     // > Maximum number of rows < //
 
     unsigned long int max_rows = (memory_ / per_row);
@@ -482,7 +482,7 @@ void DFERI::transform()
     max_rows = (max_rows > auxiliary_->nbf() ? auxiliary_->nbf() : max_rows);
 
     // > Shell block assignments < //
-    
+
     std::vector<int> shell_starts;
     shell_starts.push_back(0);
     int index = 0;
@@ -491,8 +491,8 @@ void DFERI::transform()
             shell_starts.push_back(Qshell);
             index++;
         }
-    } 
-    shell_starts.push_back(auxiliary_->nshell()); 
+    }
+    shell_starts.push_back(auxiliary_->nshell());
 
     for (int i=0; i<shell_starts.size()-1; i++) {
         if (i == shell_starts.size() - 2) {
@@ -503,7 +503,7 @@ void DFERI::transform()
             if (max_rows < auxiliary_->shell(shell_starts[i+1]).function_index() - auxiliary_->shell(shell_starts[i]).function_index()) {
               throw PSIEXCEPTION("Out of memory in DFERI.");
             }
-        }  
+        }
     }
 
     // => ERI Objects <= //
@@ -521,15 +521,15 @@ void DFERI::transform()
     // => ERI Sieve <= //
 
     boost::shared_ptr<ERISieve> sieve(new ERISieve(primary_, schwarz_cutoff_));
-    const std::vector<std::pair<int,int> >& shell_pairs = sieve->shell_pairs();    
+    const std::vector<std::pair<int,int> >& shell_pairs = sieve->shell_pairs();
     long int nshell_pairs = (long int) shell_pairs.size();
 
     // => Temporary Tensors <= //
-    
+
     // > Three-index buffers < //
-    boost::shared_ptr<Matrix> Amn(new Matrix("(A|mn)", max_rows, nso * (unsigned long int) nso)); 
-    boost::shared_ptr<Matrix> Ami(new Matrix("(A|mi)", max_rows, nso * (unsigned long int) max1)); 
-    boost::shared_ptr<Matrix> Aia(new Matrix("(A|ia)", max_rows, max12)); 
+    boost::shared_ptr<Matrix> Amn(new Matrix("(A|mn)", max_rows, nso * (unsigned long int) nso));
+    boost::shared_ptr<Matrix> Ami(new Matrix("(A|mi)", max_rows, nso * (unsigned long int) max1));
+    boost::shared_ptr<Matrix> Aia(new Matrix("(A|ia)", max_rows, max12));
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
     double** Aiap = Aia->pointer();
@@ -542,7 +542,7 @@ void DFERI::transform()
     // ==> Master Loop <== //
 
     for (int block = 0; block < shell_starts.size() - 1; block++) {
-        
+
         // > Block characteristics < //
 
         int Pstart = shell_starts[block];
@@ -550,7 +550,7 @@ void DFERI::transform()
         int nPshell = Pstop - Pstart;
         int pstart = auxiliary_->shell(Pstart).function_index();
         int pstop = (Pstop == auxiliary_->nshell() ? auxiliary_->nbf() : auxiliary_->shell(Pstop).function_index());
-        int rows = pstop - pstart; 
+        int rows = pstop - pstart;
 
         // > (Q|mn) ERIs < //
 
@@ -558,7 +558,7 @@ void DFERI::transform()
 
         #pragma omp parallel for schedule(dynamic) num_threads(nthread)
         for (long int PMN = 0L; PMN < nPshell * nshell_pairs; PMN++) {
-            
+
             int thread = 0;
             #ifdef _OPENMP
                 thread = omp_get_thread_num();
@@ -568,9 +568,9 @@ void DFERI::transform()
             int MN = PMN % nshell_pairs;
             std::pair<int,int> pair = shell_pairs[MN];
             int M = pair.first;
-            int N = pair.second; 
-        
-            eri[thread]->compute_shell(P,0,M,N); 
+            int N = pair.second;
+
+            eri[thread]->compute_shell(P,0,M,N);
 
             int nm = primary_->shell(M).nfunction();
             int nn = primary_->shell(N).nfunction();
@@ -580,28 +580,28 @@ void DFERI::transform()
             int op = auxiliary_->shell(P).function_index();
 
             const double* buffer = eri[thread]->buffer();
-            
+
             for (int p = 0; p < np; p++) {
             for (int m = 0; m < nm; m++) {
             for (int n = 0; n < nn; n++) {
-                Amnp[p + op - pstart][(m + om) * nso + (n + on)] =  
-                Amnp[p + op - pstart][(n + on) * nso + (m + om)] =  
+                Amnp[p + op - pstart][(m + om) * nso + (n + on)] =
+                Amnp[p + op - pstart][(n + on) * nso + (m + om)] =
                 (*buffer++);
             }}}
         }
 
-        for (int ind1 = 0; ind1 < tasks.size(); ind1++) { 
-        
-            std::string space1 = pair_spaces_[tasks[ind1][0]].first;       
+        for (int ind1 = 0; ind1 < tasks.size(); ind1++) {
+
+            std::string space1 = pair_spaces_[tasks[ind1][0]].first;
             int start1 = spaces_[space1].first;
             int end1   = spaces_[space1].second;
             int n1      = end1 - start1;
             double* C1p = &Cp[0][start1];
- 
+
             C_DGEMM('N','N',rows*nso,n1,nso,1.0,Amnp[0],nso,C1p,lda,0.0,Amip[0],n1);
 
             for (int ind2 = 0; ind2 < tasks[ind1].size(); ind2++) {
-                std::string space2 = pair_spaces_[tasks[ind1][ind2]].second;       
+                std::string space2 = pair_spaces_[tasks[ind1][ind2]].second;
                 int start2 = spaces_[space2].first;
                 int end2   = spaces_[space2].second;
                 int n2      = end2 - start2;
@@ -624,7 +624,7 @@ void DFERI::transform()
                         C_DGEMM('T','N',n1,n2,nso,1.0,Amip[0] + Q*no1,n1,C2p,lda,0.0,Aiap[0] + Q*n12,n2);
                     }
                 }
-                
+
                 //Amn->print();
                 //Ami->print();
                 //Aia->print();
@@ -640,10 +640,10 @@ void DFERI::fit()
 {
     boost::shared_ptr<Matrix> J = Jm12(auxiliary_,J_cutoff_);
     double** Jp = J->pointer();
-    
+
     int naux = auxiliary_->nbf();
 
-    size_t max_pairs = 0L; 
+    size_t max_pairs = 0L;
     for (int i = 0; i < pair_spaces_order_.size(); i++) {
         std::string name = pair_spaces_order_[i];
         boost::shared_ptr<Tensor> A = ints_[name];
@@ -658,8 +658,8 @@ void DFERI::fit()
 
     boost::shared_ptr<Matrix> T1(new Matrix("T1", naux, max_rows));
     boost::shared_ptr<Matrix> T2(new Matrix("T2", max_rows, naux));
-    double** T1p = T1->pointer(); 
-    double** T2p = T2->pointer(); 
+    double** T1p = T1->pointer();
+    double** T2p = T2->pointer();
 
     std::set<double> unique_pows;
     for (int i = 0; i < pair_spaces_order_.size(); i++) {
@@ -672,10 +672,10 @@ void DFERI::fit()
         it != unique_pows.end(); ++it) {
 
         double power = (*it);
-    
+
         boost::shared_ptr<Matrix> J = Jpow(power);;
         if (power == 0.0) J->identity();
-        double** Jp = J->pointer(); 
+        double** Jp = J->pointer();
 
         for (int i = 0; i < pair_spaces_order_.size(); i++) {
             std::string name = pair_spaces_order_[i];
@@ -687,7 +687,7 @@ void DFERI::fit()
             size_t pairs = A->sizes()[0] * (size_t) A->sizes()[1];
 
             boost::shared_ptr<Tensor> AT = ints_[name + "_temp"];
-            
+
             FILE* fh = A->file_pointer();
             FILE* fhT = AT->file_pointer();
 
@@ -697,19 +697,19 @@ void DFERI::fit()
                 fseek(fhT,pair*sizeof(double),SEEK_SET);
                 double* Ttp = T1p[0];
                 for (int Q = 0; Q < naux; Q++) {
-                    fread(Ttp,npairs,sizeof(double),fhT);
+                    size_t statusvalue=fread(Ttp,npairs,sizeof(double),fhT);
                     fseek(fhT,(pairs-npairs)*sizeof(double),SEEK_CUR);
-                    Ttp += npairs; 
-                }            
+                    Ttp += npairs;
+                }
 
                 //T1->print();
 
                 C_DGEMM('T','N',npairs,naux,naux,1.0,T1p[0],npairs,Jp[0],naux,0.0,T2p[0],naux);
-            
+
                 //T2->print();
 
                 fwrite(T2p[0],npairs*naux,sizeof(double),fh);
-            } 
+            }
 
             if (!keep_raw_integrals_) {
                 ints_.erase(name + "_temp");
@@ -752,8 +752,8 @@ boost::shared_ptr<LSTHCERI> LSTHCERI::build(boost::shared_ptr<BasisSet> primary,
 void LSTHCERI::load_options(Options& options)
 {
     LRERI::load_options(options);
-    J_cutoff_ = options.get_double("THC_J_CUTOFF"); 
-    S_cutoff_ = options.get_double("THC_S_CUTOFF"); 
+    J_cutoff_ = options.get_double("THC_J_CUTOFF");
+    S_cutoff_ = options.get_double("THC_S_CUTOFF");
     schwarz_cutoff_ = options.get_double("INTS_TOLERANCE");
     balance_ = options.get_bool("THC_BALANCE");
 }
@@ -765,7 +765,7 @@ void LSTHCERI::add_eri_space(const std::string& name, const std::string& space1,
     task.push_back(space2);
     task.push_back(space3);
     task.push_back(space4);
-    eri_spaces_[name] = task; 
+    eri_spaces_[name] = task;
 }
 void LSTHCERI::clear()
 {
@@ -782,7 +782,7 @@ void LSTHCERI::print_header(int level)
     outfile->Printf( "    J cutoff       = %11.3E\n", J_cutoff_);
     outfile->Printf( "    S cutoff       = %11.3E\n", S_cutoff_);
     outfile->Printf( "    Balance        = %11s\n", (balance_ ? "Yes" : "No"));
-    outfile->Printf( "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L)); 
+    outfile->Printf( "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L));
     outfile->Printf( "\n");
 
     if (level > 1) {
@@ -793,8 +793,8 @@ void LSTHCERI::print_header(int level)
     if (auxiliary_) {
         outfile->Printf( "   => Auxiliary Basis <=\n\n");
         auxiliary_->print_by_level("outfile", print_);
-    }    
-    
+    }
+
     if (level > 1) {
         outfile->Printf( "   => Orbital Spaces: <=\n\n");
         outfile->Printf( "    %12s %12s %12s\n", "Space", "Start", "End");
@@ -821,7 +821,7 @@ void LSTHCERI::compute()
     ints_.clear();
 
     // => Roll some X matrices <= //
-    
+
     std::map<std::string, boost::shared_ptr<Tensor> > Xs = build_X();
 
     // => Grow some L matrices <= //
@@ -845,7 +845,7 @@ void LSTHCERI::compute_meth()
     meths_.clear();
 
     // => Roll some X matrices <= //
-    
+
     std::map<std::string, boost::shared_ptr<Tensor> > Xs = build_X(true);
     std::map<std::string, boost::shared_ptr<Tensor> > Ss = build_S(Xs, true);
     pack_meth(Xs,Ss);
@@ -857,19 +857,19 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_X(bool meth)
         std::string name = eri_spaces_order_[k];
         std::vector<std::string> spaces = eri_spaces_[name];
         for (int l = 0; l < 3; l++) {
-            std::string space = spaces[l];    
+            std::string space = spaces[l];
             if (!Xs.count(space)) {
                 int start = spaces_[space].first;
                 int end   = spaces_[space].second;
-                
+
                 int na = end - start;
                 int nn = C_->colspi()[0];
                 int nm = X_->rowspi()[0];
                 int nP = X_->colspi()[0];
 
-                boost::shared_ptr<Tensor> X =  
+                boost::shared_ptr<Tensor> X =
                     (meth ? CoreTensor::build("T_" + space, space, na,"NP", nP) : CoreTensor::build("X_" + space, space, na,"NP", nP));
-                
+
                 double** X1p = X_->pointer();
                 double* X2p = X->pointer();
                 double** Cp  = C_->pointer();
@@ -882,10 +882,10 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_X(bool meth)
                         C_DSCAL(na, pow(w, -1.0/2.0), X2p + P, nP);
                     }
                 }
-    
+
                 Xs[space] = X;
             }
-        } 
+        }
     }
     return Xs;
 }
@@ -900,17 +900,17 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
         std::vector<std::string> spaces = eri_spaces_[name];
         for (int l = 0; l < 4; l+=2) {
             std::string space1 = spaces[l];
-            std::string space2 = spaces[l+1]; 
+            std::string space2 = spaces[l+1];
             if (!pair_spaces.count(space1 + "_" + space2)) {
                 pair_spaces_order.push_back(space1 + "_" + space2);
                 pair_spaces[space1 + "_" + space2] = std::pair<std::string,std::string>(space1,space2);
             }
-        }   
+        }
     }
 
     // > Task merging < //
 
-    std::vector<std::vector<std::string> > tasks;    
+    std::vector<std::vector<std::string> > tasks;
     std::vector<std::string> rem = pair_spaces_order;
 
     // Lump all common first half-transforms together
@@ -919,7 +919,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
         std::vector<std::string> rem2;
         std::string space1 = pair_spaces[rem[0]].first;
         for (int i = 0; i < rem.size(); i++) {
-            if (space1 == pair_spaces[rem[i]].first) 
+            if (space1 == pair_spaces[rem[i]].first)
                 task.push_back(rem[i]);
             else
                 rem2.push_back(rem[i]);
@@ -933,14 +933,14 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
     int nso = primary_->nbf();
     int naux = auxiliary_->nbf();
     int nP = X_->colspi()[0];
-    
+
     // > Threading < //
-    
+
     int nthread = 1;
     #ifdef _OPENMP
         nthread = omp_get_max_threads();
     #endif
-    
+
     // > Maximum orbital sizes < //
 
     size_t max1 = 0L;
@@ -961,7 +961,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
     // > Row requirements < //
 
     size_t per_row = 0L;
-    // (Q|mn) 
+    // (Q|mn)
     per_row += nso * (size_t) nso;
     // (Q|mi)
     per_row += max1 * (size_t) nso;
@@ -969,7 +969,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
     per_row += nP;
 
     // > Overhead < //
-    
+
     size_t mem = memory_;
     mem -= nthread * max2 * (size_t) nP;
     for (std::map<std::string, boost::shared_ptr<Tensor> >::iterator it = Xs.begin();
@@ -986,9 +986,9 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
     // > R pre-transformed objects < //
 
     std::map<std::string, boost::shared_ptr<Tensor> > Rs;
-    for (int ind1 = 0; ind1 < tasks.size(); ind1++) { 
+    for (int ind1 = 0; ind1 < tasks.size(); ind1++) {
         for (int ind2 = 0; ind2 < tasks[ind1].size(); ind2++) {
-            std::string space = pair_spaces[tasks[ind1][ind2]].second;       
+            std::string space = pair_spaces[tasks[ind1][ind2]].second;
             if (!Rs.count(space)) {
 
                 boost::shared_ptr<Tensor> X = Xs[space];
@@ -996,17 +996,17 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
                 int start1 = spaces_[space].first;
                 int end1   = spaces_[space].second;
                 int n1      = end1 - start1;
-       
+
                 boost::shared_ptr<Tensor> R = CoreTensor::build("R_" + space, "NSO", nso, "NP", nP);
                 double* Xp = X->pointer();
                 double* Rp = R->pointer();
-                
+
                 C_DGEMM('N','N',nso,nP,n1,1.0,Cp[0] + start1,lda,Xp,nP,0.0,Rp,nP);
                 Rs[space] = R;
                 mem -= nso * (size_t) nP;
             }
         }
-    } 
+    }
 
     // > Maximum number of rows < //
 
@@ -1015,7 +1015,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
     max_rows = (max_rows > auxiliary_->nbf() ? auxiliary_->nbf() : max_rows);
 
     // > Shell block assignments < //
-    
+
     std::vector<int> shell_starts;
     shell_starts.push_back(0);
     int index = 0;
@@ -1024,8 +1024,8 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
             shell_starts.push_back(Qshell);
             index++;
         }
-    } 
-    shell_starts.push_back(auxiliary_->nshell()); 
+    }
+    shell_starts.push_back(auxiliary_->nshell());
 
     for (int i=0; i<shell_starts.size()-1; i++) {
         if (i == shell_starts.size() - 2) {
@@ -1036,7 +1036,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
             if (max_rows < auxiliary_->shell(shell_starts[i+1]).function_index() - auxiliary_->shell(shell_starts[i]).function_index()) {
               throw PSIEXCEPTION("Out of memory in DFERI.");
             }
-        }  
+        }
     }
 
     // => ERI Objects <= //
@@ -1050,14 +1050,14 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
     // => ERI Sieve <= //
 
     boost::shared_ptr<ERISieve> sieve(new ERISieve(primary_, schwarz_cutoff_));
-    const std::vector<std::pair<int,int> >& shell_pairs = sieve->shell_pairs();    
+    const std::vector<std::pair<int,int> >& shell_pairs = sieve->shell_pairs();
     long int nshell_pairs = (long int) shell_pairs.size();
 
     // => Temporary Tensors <= //
-    
+
     // > Three-index buffers < //
-    boost::shared_ptr<Matrix> Amn(new Matrix("(A|mn)", max_rows, nso * (unsigned long int) nso)); 
-    boost::shared_ptr<Matrix> Ami(new Matrix("(A|mi)", max_rows, nso * (unsigned long int) max1)); 
+    boost::shared_ptr<Matrix> Amn(new Matrix("(A|mn)", max_rows, nso * (unsigned long int) nso));
+    boost::shared_ptr<Matrix> Ami(new Matrix("(A|mi)", max_rows, nso * (unsigned long int) max1));
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
 
@@ -1069,7 +1069,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
     boost::shared_ptr<Matrix> E(new Matrix("E", max_rows, nP));
     double** Ep = E->pointer();
 
-    // > E Targets < // 
+    // > E Targets < //
 
     std::map<std::string, boost::shared_ptr<Tensor> > Es;
     for (int k = 0; k < pair_spaces_order.size(); k++) {
@@ -1077,7 +1077,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
         std::string space1 = pair_spaces[name].first;
         std::string space2 = pair_spaces[name].second;
 
-        boost::shared_ptr<Tensor> ET = DiskTensor::build("E_" + space1 + "_" + space2, 
+        boost::shared_ptr<Tensor> ET = DiskTensor::build("E_" + space1 + "_" + space2,
             "NAUX", naux, "NP", nP, false, false);
 
         Es[space1 + "_" + space2] = ET;
@@ -1086,7 +1086,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
     // ==> Master Loop <== //
 
     for (int block = 0; block < shell_starts.size() - 1; block++) {
-        
+
         // > Block characteristics < //
 
         int Pstart = shell_starts[block];
@@ -1094,7 +1094,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
         int nPshell = Pstop - Pstart;
         int pstart = auxiliary_->shell(Pstart).function_index();
         int pstop = (Pstop == auxiliary_->nshell() ? auxiliary_->nbf() : auxiliary_->shell(Pstop).function_index());
-        int rows = pstop - pstart; 
+        int rows = pstop - pstart;
 
         // > (Q|mn) ERIs < //
 
@@ -1102,7 +1102,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
 
         #pragma omp parallel for schedule(dynamic) num_threads(nthread)
         for (long int PMN = 0L; PMN < nPshell * nshell_pairs; PMN++) {
-            
+
             int thread = 0;
             #ifdef _OPENMP
                 thread = omp_get_thread_num();
@@ -1112,9 +1112,9 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
             int MN = PMN % nshell_pairs;
             std::pair<int,int> pair = shell_pairs[MN];
             int M = pair.first;
-            int N = pair.second; 
-        
-            eri[thread]->compute_shell(P,0,M,N); 
+            int N = pair.second;
+
+            eri[thread]->compute_shell(P,0,M,N);
 
             int nm = primary_->shell(M).nfunction();
             int nn = primary_->shell(N).nfunction();
@@ -1124,31 +1124,31 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
             int op = auxiliary_->shell(P).function_index();
 
             const double* buffer = eri[thread]->buffer();
-            
+
             for (int p = 0; p < np; p++) {
             for (int m = 0; m < nm; m++) {
             for (int n = 0; n < nn; n++) {
-                Amnp[p + op - pstart][(m + om) * nso + (n + on)] =  
-                Amnp[p + op - pstart][(n + on) * nso + (m + om)] =  
+                Amnp[p + op - pstart][(m + om) * nso + (n + on)] =
+                Amnp[p + op - pstart][(n + on) * nso + (m + om)] =
                 (*buffer++);
             }}}
         }
 
-        for (int ind1 = 0; ind1 < tasks.size(); ind1++) { 
-        
-            std::string space1 = pair_spaces[tasks[ind1][0]].first;       
+        for (int ind1 = 0; ind1 < tasks.size(); ind1++) {
+
+            std::string space1 = pair_spaces[tasks[ind1][0]].first;
             int start1 = spaces_[space1].first;
             int end1   = spaces_[space1].second;
             int n1      = end1 - start1;
             double* C1p = &Cp[0][start1];
- 
+
             boost::shared_ptr<Tensor> X1 = Xs[space1];
             double* X1p = X1->pointer();
 
             C_DGEMM('N','N',rows*nso,n1,nso,1.0,Amnp[0],nso,C1p,lda,0.0,Amip[0],n1);
 
             for (int ind2 = 0; ind2 < tasks[ind1].size(); ind2++) {
-                std::string space2 = pair_spaces[tasks[ind1][ind2]].second;       
+                std::string space2 = pair_spaces[tasks[ind1][ind2]].second;
                 int start2 = spaces_[space2].first;
                 int end2   = spaces_[space2].second;
                 int n2      = end2 - start2;
@@ -1172,7 +1172,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
                     for (int P = 0; P < nP; P++) {
                         Ep[Q][P] = C_DDOT(n1,X1p + P,nP,QiPp + P,nP);
                     }
-                } 
+                }
 
                 std::string name = tasks[ind1][ind2];
                 boost::shared_ptr<Tensor> A = Es[name];
@@ -1182,7 +1182,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std
         }
     }
 
-    return Es;    
+    return Es;
 }
 std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_S(std::map<std::string, boost::shared_ptr<Tensor> >& Xs, bool meth)
 {
@@ -1192,23 +1192,23 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_S(std::map<std
         std::vector<std::string> spaces = eri_spaces_[name];
         for (int l = 0; l < 4; l+=2) {
             std::string space1 = spaces[l];
-            std::string space2 = spaces[l+1]; 
+            std::string space2 = spaces[l+1];
             if (!Ss.count(space1 + "_" + space2)) {
-                boost::shared_ptr<Tensor> X1 = Xs[space1];    
-                boost::shared_ptr<Tensor> X2 = Xs[space2];    
+                boost::shared_ptr<Tensor> X1 = Xs[space1];
+                boost::shared_ptr<Tensor> X2 = Xs[space2];
                 int nP = X1->sizes()[1];
                 int n1 = X1->sizes()[0];
                 int n2 = X2->sizes()[0];
 
                 boost::shared_ptr<Matrix> S1(new Matrix("S1", nP, nP));
                 boost::shared_ptr<Tensor> S2 = (meth ?
-                    CoreTensor::build("STinv_" + space1 + "_" + space2, "NP", nP, "NP", nP) : 
+                    CoreTensor::build("STinv_" + space1 + "_" + space2, "NP", nP, "NP", nP) :
                     CoreTensor::build("Sinv_" + space1 + "_" + space2, "NP", nP, "NP", nP));
-        
+
                 double*  X1p = X1->pointer();
                 double*  X2p = X2->pointer();
                 double*  S1p = S1->pointer()[0];
-                double*  S2p  = S2->pointer();                
+                double*  S2p  = S2->pointer();
 
                 C_DGEMM('T','N',nP,nP,n1,1.0,X1p,nP,X1p,nP,0.0,S1p,nP);
                 C_DGEMM('T','N',nP,nP,n2,1.0,X2p,nP,X2p,nP,0.0,S2p,nP);
@@ -1223,7 +1223,7 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_S(std::map<std
                 S1->power(-1.0,S_cutoff_);
 
                 ::memcpy(S2p,S1p,sizeof(double) * nP * nP);
-    
+
                 S2->swap_out();
                 Ss[space1 + "_" + space2] = S2;
             }
@@ -1243,27 +1243,27 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_L(std::map<std
         std::vector<std::string> spaces = eri_spaces_[name];
         for (int l = 0; l < 4; l+=2) {
             std::string space1 = spaces[l];
-            std::string space2 = spaces[l+1]; 
+            std::string space2 = spaces[l+1];
             if (!Ls.count(space1 + "_" + space2)) {
                 boost::shared_ptr<Tensor> E = Es[space1 + "_" + space2];
                 boost::shared_ptr<Tensor> S = Ss[space1 + "_" + space2];
                 S->swap_in();
 
-                int nA = E->sizes()[0];                    
-                int nP = E->sizes()[1];                    
+                int nA = E->sizes()[0];
+                int nP = E->sizes()[1];
 
                 boost::shared_ptr<Tensor> L = CoreTensor::build("L_" + space1 + "_" + space2,
                     "NP", nP, "NAUX", nA);
                 boost::shared_ptr<Matrix> T(new Matrix("LT", nA, nP));
-                
-                double* Tp = T->pointer()[0]; 
-                double* Lp = L->pointer(); 
-                double* Sp = S->pointer(); 
+
+                double* Tp = T->pointer()[0];
+                double* Lp = L->pointer();
+                double* Sp = S->pointer();
                 FILE* fh = E->file_pointer();
 
                 // Avert your eyes
                 fseek(fh,0,SEEK_SET);
-                fread(Lp,sizeof(double),nA*(size_t)nP,fh); 
+                size_t statusvalue=fread(Lp,sizeof(double),nA*(size_t)nP,fh);
 
                 C_DGEMM('N','N',nA,nP,nA,1.0,Jp,nA,Lp,nP,0.0,Tp,nP);
                 C_DGEMM('N','T',nP,nA,nP,1.0,Sp,nP,Tp,nP,0.0,Lp,nA);
@@ -1282,22 +1282,22 @@ std::map<std::string, boost::shared_ptr<Tensor> > LSTHCERI::build_Z(std::map<std
     for (int k = 0; k < eri_spaces_order_.size(); k++) {
         std::string name = eri_spaces_order_[k];
         std::vector<std::string> spaces = eri_spaces_[name];
-        boost::shared_ptr<Tensor> L12 = Ls[spaces[0] + "_" + spaces[1]];     
-        boost::shared_ptr<Tensor> L34 = Ls[spaces[2] + "_" + spaces[3]];     
-        int nP = L12->sizes()[0]; 
-        int nA = L12->sizes()[1]; 
-        boost::shared_ptr<Tensor> Z = CoreTensor::build("Z_" + name, 
+        boost::shared_ptr<Tensor> L12 = Ls[spaces[0] + "_" + spaces[1]];
+        boost::shared_ptr<Tensor> L34 = Ls[spaces[2] + "_" + spaces[3]];
+        int nP = L12->sizes()[0];
+        int nA = L12->sizes()[1];
+        boost::shared_ptr<Tensor> Z = CoreTensor::build("Z_" + name,
             "NP", nP, "NP", nP);
-        L12->swap_in();        
-        L34->swap_in();        
+        L12->swap_in();
+        L34->swap_in();
         double* L12p = L12->pointer();
         double* L34p = L34->pointer();
         double* Zp = Z->pointer();
         C_DGEMM('N','T',nP,nP,nA,1.0,L12p,nA,L34p,nA,0.0,Zp,nP);
-        L12->swap_out();        
-        L34->swap_out();        
+        L12->swap_out();
+        L34->swap_out();
         Z->swap_out();
-        Zs[name] = Z; 
+        Zs[name] = Z;
     }
     return Zs;
 }
@@ -1320,7 +1320,7 @@ void LSTHCERI::pack(std::map<std::string, boost::shared_ptr<Tensor> >& Xs,
         task.push_back(Ls[spaces[2] + "_" + spaces[3]]);
         task.push_back(Ss[spaces[0] + "_" + spaces[1]]);
         task.push_back(Ss[spaces[2] + "_" + spaces[3]]);
-        ints_[name] = task; 
+        ints_[name] = task;
     }
 }
 void LSTHCERI::pack_meth(std::map<std::string, boost::shared_ptr<Tensor> >& Xs,
@@ -1334,7 +1334,7 @@ void LSTHCERI::pack_meth(std::map<std::string, boost::shared_ptr<Tensor> >& Xs,
         task.push_back(Xs[spaces[0]]);
         task.push_back(Xs[spaces[1]]);
         task.push_back(Ss[spaces[0] + "_" + spaces[1]]);
-        meths_[name] = task; 
+        meths_[name] = task;
     }
 }
 
