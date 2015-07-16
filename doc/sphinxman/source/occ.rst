@@ -61,6 +61,14 @@ cases, users should prefer the DF-MP2 code described in the :ref:`DF-MP2 <sec:df
 faster. If gradients are needed (like in a geometry optimization), then the procedures outlined hereafter
 should be followed.
 
+Thus, there arise a few categories of method, each with corresponding input keywords:
+
+* Orbital-optimized MP and CC methods with conventional integrals( :ref:`OCC Methods <sec:occconv>`)
+* Non-orbital-optimized MP and CC methods with conventional integrals(:ref:`MP/CC  <sec:convocc>` )
+* Orbital-optimized MP and CC methods with DF and CD integrals(:ref:`DF/CD <sec:dfocc>` )
+    * Includes Non-orbital-optimized DF and CD methods 
+
+
 
 Theory 
 ~~~~~~
@@ -182,6 +190,7 @@ DFT orbitals may provide better initial guesses than UHF orbitals, hence converg
 In order to use ROHF orbitals we can simply use "reference rohf" option. For DFT orbitals one should use "reference uks" and "dft_functional b3lyp" options. Of 
 course users can use any DFT functional available in Psi4. 
 
+.. _`sec:occconv`:
 
 Methods
 ~~~~~~~
@@ -338,6 +347,7 @@ available and can be controlled through OCC keywards.
     | cepa0                   | CEPA(0) (identical to Linearized CCD)                        |    Y    |     Y    | RHF/UHF                |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
 
+.. _`sec:dfocc`:
 
 DF-OCC: Density-Fitted Orbital-Optimized Coupled-Cluster and Møller–Plesset Perturbation Theories
 =================================================================================================
