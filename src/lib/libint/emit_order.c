@@ -69,12 +69,12 @@ int mk_hrr_node(hrr_class node, hrr_class *allnodes, int new);
 int mk_vrr_node(vrr_class node, vrr_class *allnodes, int new);
 int alloc_mem_hrr(hrr_class *nodes);
 int alloc_mem_vrr(vrr_class *nodes);
-void punt(char* str);
-
+void punt(const char* str);
+void emit_order();
 
 void emit_order()
 {
-  int old_am = Params.old_am;
+  /*int old_am = Params.old_am;*/
   int new_am = Params.new_am;
   int opt_am = Params.opt_am;
   int am_to_inline_into_hrr = Params.max_am_to_inline_vrr_manager;
@@ -82,7 +82,7 @@ void emit_order()
   int am_to_inline_hrr = Params.max_am_manager_to_inline_hrr_worker;
   int to_inline_into_hrr, to_inline_vrr, to_inline_hrr;
 
-  int i, j, k, l;
+  int i, j, k;/*, l;*/
   int la, lc, lc_min, ld, ld_max, ld_min;
   int lb, lb_min, lb_max;
   int current_highest_am, max_node_am;
@@ -90,7 +90,7 @@ void emit_order()
   hrr_class hrr_nodes[MAXNODE];    /* Stack of HRR nodes */
   vrr_class vrr_nodes[MAXNODE];    /* Stack of VRR nodes */
   int target_data;
-  int done;
+  /*int done;*/
   int max_stack_size = 0;
   int num_vrr_targets;
   int target_vrr_nodes[MAX_AM*MAX_AM];
@@ -413,11 +413,11 @@ void emit_order()
 int mk_hrr_node(hrr_class node, hrr_class *allnodes, int new)
 {
 
-  int i, j, k, l;
+  int i;/*, j, k, l;*/
   hrr_class O[2];
-  int subnodes = 0;
+  /*int subnodes = 0;*/
   int thisnode;
-  int rlink, llink;
+  /*int rlink, llink;*/
   int made = 0;
 
   /* Search for the parent node on stack
@@ -504,11 +504,11 @@ int mk_hrr_node(hrr_class node, hrr_class *allnodes, int new)
 int mk_vrr_node(vrr_class node, vrr_class *allnodes, int new)
 {
 
-  int i, j, k, l;
+  int i;/*, j, k, l;*/
   vrr_class O[5];
-  int subnodes = 0;
+  /*int subnodes = 0;*/
   int thisnode;
-  int rlink, llink;
+  /*int rlink, llink;*/
   int made = 0;
 
   /* Are there any children? */
@@ -627,7 +627,7 @@ int mk_vrr_node(vrr_class node, vrr_class *allnodes, int new)
 void mark_hrr_parents(int n, hrr_class *allnodes, int rent)
 {
   int i;
-  int *tmp;
+  /*int *tmp;*/
 
   /* handle case where it's in the parent list already */
   for(i=allnodes[n].num_parents-1; i>=allnodes[n].parents_counter; i--)
@@ -656,7 +656,7 @@ void mark_hrr_parents(int n, hrr_class *allnodes, int rent)
 void mark_vrr_parents(int n, vrr_class *allnodes, int rent)
 {
   int i;
-  int *tmp;
+  /*int *tmp;*/
 
   /* handle case where it's in there already */
   for(i=allnodes[n].num_parents-1; i>=allnodes[n].parents_counter; i--)
@@ -687,8 +687,8 @@ void mark_vrr_parents(int n, vrr_class *allnodes, int rent)
 
 int alloc_mem_hrr(hrr_class *nodes)
 {
-  int i, j, k, l;
-  int size;
+  int /*i,*/ j, k, l;
+  /*int size;*/
   int child;
   int free_it;
 
@@ -727,7 +727,7 @@ int alloc_mem_hrr(hrr_class *nodes)
 int alloc_mem_vrr(vrr_class *nodes)
 {
   int i, j, k, l;
-  int size;
+  /*int size;*/
   int child;
   int free_it;
 
