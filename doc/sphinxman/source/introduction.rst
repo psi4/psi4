@@ -42,8 +42,8 @@ For the latest |PSIfour| documentation, check
 Citing |PSIfour|
 ================
 
-Overall PSI4 Package
-^^^^^^^^^^^^^^^^^^^^
+Overall |PSIfour| Package
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following citation should be used in any publication utilizing the
 |PSIfour| program package:
@@ -98,6 +98,14 @@ ODC-06 and ODC-12:
 * "Orbital-optimized density cumulant functional theory," A. Yu. Sokolov, and
   H. F. Schaefer, *J. Chem. Phys.*  **139**, 204110 (2013). 
   (doi: `10.1063/1.4833138 <http://dx.doi.org/10.1063/1.4833138>`_).
+
+ODC-13:
+
+* "Density cumulant functional theory from a unitary transformation:
+  N-representability, three-particle correlation effects, and application
+  to O4+," A. Yu. Sokolov, H. F. Schaefer, and W. Kutzelnigg,
+  *J. Chem. Phys.*  **141**, 074111 (2014). 
+  (doi: `10.1063/1.4892946 <http://dx.doi.org/10.1063/1.4892946>`_).
 
 Configuration Interaction (CI)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

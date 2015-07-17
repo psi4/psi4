@@ -242,7 +242,9 @@ Troubleshooting
     * no libraries "not found"
     * fundamental libraries like libc, ld-linux, pthreads found system libraries to link against
     * libpython linked against conda python *not* system python
-    * libm is linked against conda *or* system ::
+    * libm is linked against conda *or* system
+    * blas, c++, and gcc libraries are absent because statically linked ::
+
 
     >>> conda install conda-build  # needed for next command
     >>> conda inspect linkages psi4
@@ -259,4 +261,10 @@ Troubleshooting
         linux-vdso.so.1 ()
     not found:
 
+
+.. comment find out about the current environment.
+.. comment pythonhome should be empty
+.. comment pythonpath should be empty or set to non-interfering packages (e.g., qcdb)
+.. comment ld_library_path shouldn’t contain anything with a libpython
+.. comment >>> conda info -a
 

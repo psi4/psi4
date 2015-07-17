@@ -47,7 +47,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
      fac = 2.0;
   }else{
      sprintf(name,"MP4");
-     sprintf(space,"");
+     sprintf(space," ");
      fac = 0.0;
   }
 
@@ -58,7 +58,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   outfile->Printf( "        *                                                     *\n");
   outfile->Printf( "        *******************************************************\n");
   outfile->Printf("\n");
-  
+
 
   outfile->Printf("\n");
   outfile->Printf( "        Warning: due to limited available memory,\n");
@@ -75,7 +75,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   ULI vvo = (ULI)v*v*o;
   ULI vooo = (ULI)v*o*o*o;
   ULI vvoo = (ULI)v*v*o*o;
- 
+
   double *F  = eps;
   double *E2ijak,**E2abci;
   // CDS // E2ijak = (double*)malloc(o*o*o*v*sizeof(double));
@@ -98,10 +98,10 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   outfile->Printf("        memory requirements:   %9.2lf mb\n",
            (double)memory_reqd/1024./1024.);
   outfile->Printf("\n");
-  
+
 
   bool threaded = true;
-    
+
   /*
   if (memory_reqd > memory){
      // CDS // memory += (nthreads-1)*8L*5L*ooo;
@@ -111,7 +111,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
         outfile->Printf("        (T) requires at least %7.2lf mb\n",
              (double)(2.*o*o*v*v+1.*o*o*o*v+5.*o*o*o+1.*o*v)/1024./1024.);
         outfile->Printf("\n");
-        
+
         return Failure;
      }
      threaded = false;
@@ -121,10 +121,10 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
      outfile->Printf("        memory requirements =  %9.2lf mb\n",
               8.*(2.*o*o*v*v+1.*o*o*o*v+(5.)*o*o*o+1.*o*v)/1024./1024.);
      outfile->Printf("\n");
-     
+
   }
   */
- 
+
   // CDS updated
   if (memory_reqd > memory) {
      outfile->Printf("        Not enough memory for requested threading ...\n");
@@ -139,7 +139,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
      ULI mem_leftover = memory - min_memory_reqd;
      int extra_threads = (int) (mem_leftover / 5L*ooo);
      nthreads = 1 + extra_threads;
-     outfile->Printf("        Attempting to proceed with %d threads\n", 
+     outfile->Printf("        Attempting to proceed with %d threads\n",
        nthreads);
   }
 
@@ -225,13 +225,13 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   }
   outfile->Printf("        Number of abc combinations: %i\n",nabc);
   outfile->Printf("\n");
-  
+
   for (int i=0; i<nthreads; i++) etrip[i] = 0.0;
 
   outfile->Printf("        Computing (T) correction...\n");
   outfile->Printf("\n");
   outfile->Printf("        %% complete  total time\n");
-  
+
   /**
     *  if there is enough memory to explicitly thread, do so
     */
@@ -258,11 +258,11 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
          //mypsio->open(PSIF_DCC_ABCI4,PSIO_OPEN_OLD);
          psio_address addr = psio_get_address(PSIO_ZERO,(b*vvo+c*vo)*sizeof(double));
          mypsio[thread]->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],vo*sizeof(double),addr,&addr);
-        
+
          // (1)
-         F_DGEMM('t','t',o,oo,v,1.0,E2abci[thread],v,tempt+a*voo,oo,0.0,Z[thread],o); 
+         F_DGEMM('t','t',o,oo,v,1.0,E2abci[thread],v,tempt+a*voo,oo,0.0,Z[thread],o);
          // (ikj)(acb)
-         F_DGEMM('t','n',o,oo,o,-1.0,tempt+c*voo+a*oo,o,E2ijak+b*ooo,o,1.0,Z[thread],o); 
+         F_DGEMM('t','n',o,oo,o,-1.0,tempt+c*voo+a*oo,o,E2ijak+b*ooo,o,1.0,Z[thread],o);
 
          addr = psio_get_address(PSIO_ZERO,(a*vvo+c*vo)*sizeof(double));
          mypsio[thread]->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],vo*sizeof(double),addr,&addr);
@@ -338,7 +338,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
                  double tbj = t1[b*o+j];
                  double E2iajb = E2klcd[i*vvo+a*vo+j*v+b];
                  for (int k=0; k<o; k++){
-                     Z2[thread][i*oo+j*o+k] += fac * 
+                     Z2[thread][i*oo+j*o+k] += fac *
                          (tai * E2klcd[j*vvo+b*vo+k*v+c] +
                           tbj * E2klcd[i*vvo+a*vo+k*v+c] +
                           t1[c*o+k]*E2iajb);
@@ -354,8 +354,8 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
                  }
              }
          }
-         
-         
+
+
          int abcfac = ( 2-((a==b)+(b==c)+(a==c)) );
 
          // contribute to energy:
@@ -452,7 +452,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
          }
          etrip[thread] += tripval*abcfac;
 
-         // print out update 
+         // print out update
          if (thread==0){
             int print = 0;
             stop = time(NULL);
@@ -467,7 +467,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
             else if ((double)ind/nabc >= 0.9 && !pct90){ pct90 = 1; print=1;}
             if (print){
                outfile->Printf("              %3.1lf  %8d s\n",100.0*ind/nabc,(int)stop-(int)start);
-               
+
             }
          }
          //mypsio->close(PSIF_DCC_ABCI4,1);
@@ -504,14 +504,14 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
       outfile->Printf("      * MP4(SDTQ) total energy:            %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+emp4_t+escf);
       outfile->Printf("\n");
   }
-  
+
 
   delete name;
   delete space;
 
   // free memory:
   free(E2ijak);
-  for (int i=0; i<nthreads; i++){  
+  for (int i=0; i<nthreads; i++){
       free(E2abci[i]);
       free(Z[i]);
       free(Z2[i]);
@@ -524,7 +524,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   free(Z4);
   free(E2abci);
   free(etrip);
-            
+
   return Success;
 }
 

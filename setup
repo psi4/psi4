@@ -372,7 +372,7 @@ def check_cmake_exists(cmake_command):
             shell=True,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE)
-    if not ('cmake version' in p.communicate()[0]):
+    if not ('cmake version' in str(p.communicate()[0])):
         print('   This code is built using CMake')
         print('')
         print('   CMake is not found')
@@ -590,7 +590,7 @@ def setup_build_path(build_path):
             print('remove the build directory and then rerun setup')
             sys.exit(1)
     else:
-        os.makedirs(build_path, 0755)
+        os.makedirs(build_path, 0o755)
 
 def run_cmake(command, build_path):
     topdir = os.getcwd()
@@ -599,7 +599,7 @@ def run_cmake(command, build_path):
             shell=True,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE)
-    s = p.communicate()[0]
+    s = p.communicate()[0].decode('utf-8')
     # print cmake output to screen
     print(s)
     # write cmake output to file
@@ -622,7 +622,7 @@ def main(argv):
     command = gen_cmake_command(args)
     status = run_cmake(command, build_path)
 
-    if 'Configuring incomplete' in status:
+    if 'Configuring incomplete' in str(status):
         # configuration was not successful
         if (build_path == os.path.join(root_directory, 'objdir')):
             # remove build_path iff not set by the user
@@ -642,7 +642,7 @@ def configure_host(args):
             u = os.uname()
         else:
             u = "Windows"
-        host = string.join(u)
+        host = " ".join(u)
     msg = None
     # Generic systems
     if re.search('ubuntu', host, re.I):
@@ -657,7 +657,7 @@ def configure_host(args):
     if msg is None:
         return False
     if not args.show:
-        print msg
+        print(msg)
     return True
 
 
