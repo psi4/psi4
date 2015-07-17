@@ -18,7 +18,7 @@ add_library(int STATIC ${LI_SRC})
 # Build the compiler
 #
 set(COMPILER_SRC build_libint.c emit_hrr_build.c emit_hrr_build_macro.c emit_order.c
-                 emit_vrr_build.c emit_vrr_build_macro.c mem_man.c)
+                 emit_vrr_build.c emit_vrr_build_macro.c mem_man.c constants.c)
 add_executable(libint_compiler ${COMPILER_SRC})
 
 #

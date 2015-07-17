@@ -225,7 +225,7 @@ void BT2_AO(void)
             /* close the CC_TAMPS file for cints to use it */
             psio_close(PSIF_CC_TAMPS, 1);
 
-            system("cints --cc_bt2");
+            int statusvalue=system("cints --cc_bt2");
 
             /* re-open CCC_TAMPS for remaining terms */
             psio_open(PSIF_CC_TAMPS, PSIO_OPEN_OLD);
