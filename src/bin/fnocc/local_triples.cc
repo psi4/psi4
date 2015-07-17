@@ -49,7 +49,7 @@ PsiReturnType CoupledCluster::local_triples() {
      fac = 2.0;
   }else{
      sprintf(name,"MP4");
-     sprintf(space,"");
+     sprintf(space," ");
      fac = 0.0;
   }
 
@@ -60,7 +60,7 @@ PsiReturnType CoupledCluster::local_triples() {
   outfile->Printf( "        *                                                     *\n");
   outfile->Printf( "        *******************************************************\n");
   outfile->Printf("\n");
-  
+
 
   int o = ndoccact;
   int v = nvirt_no;
@@ -98,7 +98,7 @@ PsiReturnType CoupledCluster::local_triples() {
   outfile->Printf("        memory requirements =  %9.2lf mb\n",
            8.*(2.*o*o*v*v+1.*o*o*o*v+(5.*nthreads)*o*o*o+1.*o*v)/1024./1024.);
   outfile->Printf("\n");
-  
+
 
   bool threaded = true;
   if (memory<0){
@@ -109,7 +109,7 @@ PsiReturnType CoupledCluster::local_triples() {
         outfile->Printf("        (T) requires at least %7.2lf mb\n",
              8.*(2.*o*o*v*v+1.*o*o*o*v+5.*o*o*o+1.*o*v)/1024./1024.);
         outfile->Printf("\n");
-        
+
         return Failure;
      }
      threaded = false;
@@ -119,7 +119,7 @@ PsiReturnType CoupledCluster::local_triples() {
      outfile->Printf("        memory requirements =  %9.2lf mb\n",
               8.*(2.*o*o*v*v+1.*o*o*o*v+(5.)*o*o*o+1.*o*v)/1024./1024.);
      outfile->Printf("\n");
-     
+
   }
 
   E2abci = (double**)malloc(nthreads*sizeof(double*));
@@ -203,13 +203,13 @@ PsiReturnType CoupledCluster::local_triples() {
   }
   outfile->Printf("        Number of abc combinations: %i\n",nabc);
   outfile->Printf("\n");
-  
+
   for (int i=0; i<nthreads; i++) etrip[i] = 0.0;
 
   outfile->Printf("        Computing (T) correction...\n");
   outfile->Printf("\n");
   outfile->Printf("        %% complete  total time\n");
-  
+
   /**
     *  if there is enough memory to explicitly thread, do so
     */
@@ -229,11 +229,11 @@ PsiReturnType CoupledCluster::local_triples() {
          mypsio->open(PSIF_DCC_ABCI4,PSIO_OPEN_OLD);
          psio_address addr = psio_get_address(PSIO_ZERO,(long int)(b*v*v*o+c*v*o)*sizeof(double));
          mypsio->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],o*v*sizeof(double),addr,&addr);
-        
+
          // (1)
-         F_DGEMM('t','t',o,o*o,v,1.0,E2abci[thread],v,tempt+a*o*o*v,o*o,0.0,Z[thread],o); 
+         F_DGEMM('t','t',o,o*o,v,1.0,E2abci[thread],v,tempt+a*o*o*v,o*o,0.0,Z[thread],o);
          // (ikj)(acb)
-         F_DGEMM('t','n',o,o*o,o,-1.0,tempt+c*o*o*v+a*o*o,o,E2ijak+b*o*o*o,o,1.0,Z[thread],o); 
+         F_DGEMM('t','n',o,o*o,o,-1.0,tempt+c*o*o*v+a*o*o,o,E2ijak+b*o*o*o,o,1.0,Z[thread],o);
 
          addr = psio_get_address(PSIO_ZERO,(long int)(a*v*v*o+c*v*o)*sizeof(double));
          mypsio->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],o*v*sizeof(double),addr,&addr);
@@ -324,8 +324,8 @@ PsiReturnType CoupledCluster::local_triples() {
                  }
              }
          }
-         
-         
+
+
          int abcfac = ( 2-((a==b)+(b==c)+(a==c)) );
 
          // transform one index of Z2 and Z3 to lmo basis:
@@ -436,7 +436,7 @@ PsiReturnType CoupledCluster::local_triples() {
          }
          etrip[thread] += tripval*abcfac;
 
-         // print out update 
+         // print out update
          if (thread==0){
             int print = 0;
             stop = time(NULL);
@@ -451,7 +451,7 @@ PsiReturnType CoupledCluster::local_triples() {
             else if ((double)ind/nabc >= 0.9 && !pct90){ pct90 = 1; print=1;}
             if (print){
                outfile->Printf("              %3.1lf  %8d s\n",100.0*ind/nabc,(int)stop-(int)start);
-               
+
             }
          }
          mypsio->close(PSIF_DCC_ABCI4,1);
@@ -485,7 +485,7 @@ PsiReturnType CoupledCluster::local_triples() {
       outfile->Printf("      * MP4(SDTQ) total energy:            %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+emp4_t+escf);
       outfile->Printf("\n");
   }
-  
+
 
   delete name;
   delete space;
@@ -493,7 +493,7 @@ PsiReturnType CoupledCluster::local_triples() {
   // free memory:
   free(Rii);
   free(E2ijak);
-  for (int i=0; i<nthreads; i++){  
+  for (int i=0; i<nthreads; i++){
       free(E2abci[i]);
       free(Z[i]);
       free(Z2[i]);
@@ -506,7 +506,7 @@ PsiReturnType CoupledCluster::local_triples() {
   free(Z4);
   free(E2abci);
   free(etrip);
-            
+
   return Success;
 }
 
