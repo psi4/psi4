@@ -83,7 +83,7 @@ void FISAPT::compute_energy()
     elst();
     exch();
     ind();
-    if (!options_.get_bool("FISAPT_DO_FSAPT")) {    
+    if (!options_.get_bool("FISAPT_DO_FSAPT")) {
         disp(); // Expensive, only do if needed
     }
 
@@ -136,7 +136,7 @@ void FISAPT::localize()
     boost::shared_ptr<fisapt::IBOLocalizer2> local = fisapt::IBOLocalizer2::build(primary_, matrices_["Cocc"]);
     local->print_header();
     std::map<std::string, boost::shared_ptr<Matrix> > ret = local->localize(matrices_["Cocc"], Focc, ranges);
-     
+
 
     matrices_["Locc"] = ret["L"];
     matrices_["Qocc"] = ret["Q"];
@@ -151,7 +151,7 @@ void FISAPT::partition()
     int nA = mol->natom();
     int na = matrices_["Locc"]->colspi()[0];
 
-    // => Monomer Atoms <= // 
+    // => Monomer Atoms <= //
 
     const std::vector<std::pair<int, int> >& fragment_list = mol->fragments();
     if (!(fragment_list.size() == 2 || fragment_list.size() == 3)) {
@@ -164,14 +164,14 @@ void FISAPT::partition()
 
     for (int ind = fragment_list[0].first; ind < fragment_list[0].second; ind++) {
         indA.push_back(ind);
-    }    
+    }
     for (int ind = fragment_list[1].first; ind < fragment_list[1].second; ind++) {
         indB.push_back(ind);
-    }    
+    }
     if (fragment_list.size() == 3) {
         for (int ind = fragment_list[2].first; ind < fragment_list[2].second; ind++) {
             indC.push_back(ind);
-        }    
+        }
     }
 
     outfile->Printf("   => Atomic Partitioning <= \n\n");
@@ -190,19 +190,19 @@ void FISAPT::partition()
         for (int a = 0; a < na; a++) {
             QFp[0][a] += Qp[indA[ind]][a];
         }
-    }    
+    }
 
     for (int ind = 0; ind < indB.size(); ind++) {
         for (int a = 0; a < na; a++) {
             QFp[1][a] += Qp[indB[ind]][a];
         }
-    }    
+    }
 
     for (int ind = 0; ind < indC.size(); ind++) {
         for (int a = 0; a < na; a++) {
             QFp[2][a] += Qp[indC[ind]][a];
         }
-    }    
+    }
 
     // => Link Identification <= //
 
@@ -210,13 +210,13 @@ void FISAPT::partition()
     outfile->Printf("   => Link Bond Identification <=\n\n");
     outfile->Printf("    Link Bond Selection = %s\n\n", link_selection.c_str());
 
-    std::vector<int> link_orbs; 
+    std::vector<int> link_orbs;
     std::vector<std::pair<int, int> > link_atoms;
     std::vector<std::string> link_types;
-    
+
     if (link_selection == "AUTOMATIC") {
 
-        double delta = options_.get_double("FISAPT_CHARGE_COMPLETENESS"); 
+        double delta = options_.get_double("FISAPT_CHARGE_COMPLETENESS");
         outfile->Printf("    Charge Completeness = %5.3f\n\n", delta);
         for (int a = 0; a < na; a++) {
             if (QFp[0][a] > delta) {
@@ -224,13 +224,13 @@ void FISAPT::partition()
             } else if (QFp[2][a] > delta) {
             } else if (QFp[0][a] + QFp[2][a] > delta) {
                 link_orbs.push_back(a);
-                link_types.push_back("AC"); 
+                link_types.push_back("AC");
             } else if (QFp[1][a] + QFp[2][a] > delta) {
                 link_orbs.push_back(a);
-                link_types.push_back("BC"); 
+                link_types.push_back("BC");
             } else if (QFp[0][a] + QFp[1][a] > delta) {
                 link_orbs.push_back(a);
-                link_types.push_back("AB"); 
+                link_types.push_back("AB");
             } else if (QFp[0][a] + QFp[1][a] > delta) {
             } else {
                 throw PSIEXCEPTION("FISAPT: A, B, and C are bonded?! 3c-2e bonds are not cool.");
@@ -243,7 +243,7 @@ void FISAPT::partition()
             for (int A = 0; A < nA; A++) {
                 Qvals.push_back(std::pair<double,int>(Qp[A][a], A));
             }
-            std::sort(Qvals.begin(),Qvals.end(),std::greater<std::pair<double,int> >()); 
+            std::sort(Qvals.begin(),Qvals.end(),std::greater<std::pair<double,int> >());
             int A1 = Qvals[0].second;
             int A2 = Qvals[1].second;
             if (A2 < A1) std::swap(A1,A2);
@@ -262,7 +262,7 @@ void FISAPT::partition()
             int A1 = link_atoms[ind].first;
             int A2 = link_atoms[ind].second;
             if (A2 < A1) std::swap(A1,A2);
-            
+
             double Qmax = 0.0;
             int aind = -1;
             for (int a = 0; a < na; a++) {
@@ -273,7 +273,7 @@ void FISAPT::partition()
                 }
             }
             link_orbs.push_back(aind);
-            
+
             if (std::find(indA.begin(), indA.end(), A1) != indA.end() && std::find(indC.begin(), indC.end(), A2) != indC.end()) {
                 link_types.push_back("AC");
             } else if (std::find(indB.begin(), indB.end(), A1) != indB.end() && std::find(indC.begin(), indC.end(), A2) != indC.end()) {
@@ -290,11 +290,11 @@ void FISAPT::partition()
     }
 
     outfile->Printf("    Total Link Bonds = %zu\n\n", link_orbs.size());
-   
+
     if (link_orbs.size()) {
 
         outfile->Printf("    --------------------------\n");
-        outfile->Printf("    %-4s %4s %4s %5s %5s\n", 
+        outfile->Printf("    %-4s %4s %4s %5s %5s\n",
             "N",
             "Orb",
             "Type",
@@ -302,13 +302,13 @@ void FISAPT::partition()
             "Aind2");
         outfile->Printf("    --------------------------\n");
         for (int ind = 0; ind < link_orbs.size(); ind++) {
-            outfile->Printf("    %-4d %4d %4s %5d %5d\n", 
+            outfile->Printf("    %-4d %4d %4s %5d %5d\n",
                 ind+1,
                 link_orbs[ind],
                 link_types[ind].c_str(),
                 link_atoms[ind].first+1,
                 link_atoms[ind].second+1);
-        } 
+        }
         outfile->Printf("    --------------------------\n");
         outfile->Printf("\n");
 
@@ -354,11 +354,11 @@ void FISAPT::partition()
     if (link_assignment == "C") {
 
         for (int ind = 0; ind < link_orbs.size(); ind++) {
-                    
+
             int a = link_orbs[ind];
             int A1 = link_atoms[ind].first;
             int A2 = link_atoms[ind].second;
-            std::string type = link_types[ind]; 
+            std::string type = link_types[ind];
 
             if (type == "AC") {
                 ZAp[A1] -= 1.0;
@@ -380,11 +380,11 @@ void FISAPT::partition()
     } else if (link_assignment == "AB") {
 
         for (int ind = 0; ind < link_orbs.size(); ind++) {
-                    
+
             int a = link_orbs[ind];
             int A1 = link_atoms[ind].first;
             int A2 = link_atoms[ind].second;
-            std::string type = link_types[ind]; 
+            std::string type = link_types[ind];
 
             if (type == "AC") {
                 ZAp[A1] += 1.0;
@@ -404,8 +404,8 @@ void FISAPT::partition()
     // => Remaining Orbitals <= //
 
     const std::vector<int>& fragment_charges = mol->fragment_charges();
-    int CA2 = fragment_charges[0];    
-    int CB2 = fragment_charges[1];    
+    int CA2 = fragment_charges[0];
+    int CB2 = fragment_charges[1];
     int CC2 = (fragment_charges.size() == 3 ? fragment_charges[2] : 0);
 
     double ZA2 = 0.0;
@@ -450,7 +450,7 @@ void FISAPT::partition()
         int a = QCvals[ind].second;
         orbsC.push_back(a);
         taken_orbs.insert(a);
-    } 
+    }
 
     std::vector<std::pair<double, int> > QAvals;
     for (int a = 0; a < na; a++) {
@@ -462,7 +462,7 @@ void FISAPT::partition()
         int a = QAvals[ind].second;
         orbsA.push_back(a);
         taken_orbs.insert(a);
-    } 
+    }
 
     std::vector<std::pair<double, int> > QBvals;
     for (int a = 0; a < na; a++) {
@@ -474,14 +474,14 @@ void FISAPT::partition()
         int a = QBvals[ind].second;
         orbsB.push_back(a);
         taken_orbs.insert(a);
-    } 
-    
+    }
+
     // => Orbital Subsets <= //
-    
+
     std::sort(orbsA.begin(), orbsA.end());
     std::sort(orbsB.begin(), orbsB.end());
     std::sort(orbsC.begin(), orbsC.end());
-    
+
     matrices_["LoccA"] = FISAPT::extract_columns(orbsA, matrices_["Locc"]);
     matrices_["LoccB"] = FISAPT::extract_columns(orbsB, matrices_["Locc"]);
     matrices_["LoccC"] = FISAPT::extract_columns(orbsC, matrices_["Locc"]);
@@ -541,9 +541,9 @@ void FISAPT::kinetic()
 void FISAPT::nuclear()
 {
     outfile->Printf("  ==> Nuclear Integrals <==\n\n");
-    
+
     // => Sizing <= //
-    
+
     boost::shared_ptr<Molecule> mol = primary_->molecule();
     int nA = mol->natom();
     int nm = primary_->nbf();
@@ -556,10 +556,10 @@ void FISAPT::nuclear()
     boost::shared_ptr<IntegralFactory> Vfact(new IntegralFactory(primary_));
     boost::shared_ptr<PotentialInt> Vint;
     Vint = boost::shared_ptr<PotentialInt>(static_cast<PotentialInt*>(Vfact->ao_potential()));
-    Vint->set_charge_field(Zxyz);    
+    Vint->set_charge_field(Zxyz);
 
     // > Molecular Centers < //
-    
+
     for (int A = 0; A < nA; A++) {
         Zxyzp[A][1] = mol->x(A);
         Zxyzp[A][2] = mol->y(A);
@@ -600,7 +600,7 @@ void FISAPT::nuclear()
 
     boost::shared_ptr<Matrix> Zs(new Matrix("Zs", nA, 3));
     double** Zsp = Zs->pointer();
-        
+
     boost::shared_ptr<Matrix> Rinv(new Matrix("Rinv", nA, nA));
     double** Rinvp = Rinv->pointer();
 
@@ -642,9 +642,9 @@ void FISAPT::nuclear()
 void FISAPT::coulomb()
 {
     outfile->Printf("  ==> Coulomb Integrals <==\n\n");
-    
+
     // => Global JK Object <= //
-    
+
     jk_ = JK::build_JK();
     jk_->set_memory(doubles_);
 
@@ -698,9 +698,9 @@ void FISAPT::scf()
 
     boost::shared_ptr<Matrix> WC(matrices_["VC"]->clone());
     WC->copy(matrices_["VC"]);
-    WC->add(matrices_["JC"]);    
-    WC->add(matrices_["JC"]);    
-    WC->subtract(matrices_["KC"]);    
+    WC->add(matrices_["JC"]);
+    WC->add(matrices_["JC"]);
+    WC->subtract(matrices_["KC"]);
     matrices_["WC"] = WC;
 
     // => A <= //
@@ -716,7 +716,7 @@ void FISAPT::scf()
         matrices_["WC"],
         matrices_["LoccA"]
         ));
-    scfA->compute_energy(); 
+    scfA->compute_energy();
 
     scalars_["E0 A"] = scfA->scalars()["E SCF"];
     matrices_["Cocc0A"] = scfA->matrices()["Cocc"];
@@ -725,7 +725,7 @@ void FISAPT::scf()
     matrices_["K0A"] = scfA->matrices()["K"];
     vectors_["eps_occ0A"] = scfA->vectors()["eps_occ"];
     vectors_["eps_vir0A"] = scfA->vectors()["eps_vir"];
-    
+
     // => B <= //
 
     outfile->Printf("  ==> SCF B: <==\n\n");
@@ -739,8 +739,8 @@ void FISAPT::scf()
         matrices_["WC"],
         matrices_["LoccB"]
         ));
-    scfB->compute_energy(); 
-    
+    scfB->compute_energy();
+
     scalars_["E0 B"] = scfB->scalars()["E SCF"];
     matrices_["Cocc0B"] = scfB->matrices()["Cocc"];
     matrices_["Cvir0B"] = scfB->matrices()["Cvir"];
@@ -800,12 +800,12 @@ void FISAPT::freeze_core()
     matrices_["Caocc0A"] = boost::shared_ptr<Matrix>(new Matrix("Caocc0A", nbf, naocc0A));
     matrices_["Cfocc0B"] = boost::shared_ptr<Matrix>(new Matrix("Cfocc0B", nbf, nfocc0B));
     matrices_["Caocc0B"] = boost::shared_ptr<Matrix>(new Matrix("Caocc0B", nbf, naocc0B));
-    
+
     vectors_["eps_focc0A"] = boost::shared_ptr<Vector>(new Vector("eps_focc0A", nfocc0A));
     vectors_["eps_aocc0A"] = boost::shared_ptr<Vector>(new Vector("eps_aocc0A", naocc0A));
     vectors_["eps_focc0B"] = boost::shared_ptr<Vector>(new Vector("eps_focc0B", nfocc0B));
     vectors_["eps_aocc0B"] = boost::shared_ptr<Vector>(new Vector("eps_aocc0B", naocc0B));
-   
+
     double** Cocc0Ap = matrices_["Cocc0A"]->pointer();
     double** Cocc0Bp = matrices_["Cocc0B"]->pointer();
     double** Cfocc0Ap = matrices_["Cfocc0A"]->pointer();
@@ -862,7 +862,7 @@ void FISAPT::unify()
     boost::shared_ptr<Matrix> Cocc_A = matrices_["Cocc0A"];
     boost::shared_ptr<Matrix> Cocc_B = matrices_["Cocc0B"];
     boost::shared_ptr<Matrix> Cocc_C = matrices_["LoccC"];
-    
+
     boost::shared_ptr<Matrix> D_A = Matrix::doublet(Cocc_A, Cocc_A, false, true);
     boost::shared_ptr<Matrix> D_B = Matrix::doublet(Cocc_B, Cocc_B, false, true);
     boost::shared_ptr<Matrix> D_C(D_A->clone());
@@ -876,8 +876,8 @@ void FISAPT::unify()
     matrices_["D_C"] = D_C;
 
     // Incorrect for this application: C is not frozen in these orbitals
-    //boost::shared_ptr<Matrix> P_A = Matrix::doublet(matrices_["Cvir0A"], matrices_["Cvir0A"], false, true); 
-    //boost::shared_ptr<Matrix> P_B = Matrix::doublet(matrices_["Cvir0B"], matrices_["Cvir0B"], false, true); 
+    //boost::shared_ptr<Matrix> P_A = Matrix::doublet(matrices_["Cvir0A"], matrices_["Cvir0A"], false, true);
+    //boost::shared_ptr<Matrix> P_B = Matrix::doublet(matrices_["Cvir0B"], matrices_["Cvir0B"], false, true);
 
     // PA and PB are used only to define the complement of DA and DB in the DCBS
     boost::shared_ptr<Matrix> P_A = Matrix::doublet(reference_->Ca_subset("AO", "ALL"), reference_->Ca_subset("AO", "ALL"), false, true);
@@ -908,7 +908,7 @@ void FISAPT::dHF()
     outfile->Printf("  ==> dHF <==\n\n");
 
     // => Pointers <= //
-    
+
     boost::shared_ptr<Matrix> T   = matrices_["T"];
 
     boost::shared_ptr<Matrix> D_A = matrices_["D_A"];
@@ -969,7 +969,7 @@ void FISAPT::dHF()
     EBC += Enuc2p[2][2];
     EBC += Enuc2p[1][2];
     EBC += Enuc2p[2][1];
-    
+
     boost::shared_ptr<Matrix> H_BC(D_B->clone());
     H_BC->copy(T);
     H_BC->add(V_B);
@@ -1051,7 +1051,7 @@ void FISAPT::dHF()
 
     // => Delta HF <= //
 
-    double EHF = EABC - EAC - EBC + EC; 
+    double EHF = EABC - EAC - EBC + EC;
 
     // => Print <= //
 
@@ -1078,7 +1078,7 @@ void FISAPT::elst()
     boost::shared_ptr<Matrix> V_B = matrices_["V_B"];
     boost::shared_ptr<Matrix> J_A = matrices_["J_A"];
     boost::shared_ptr<Matrix> J_B = matrices_["J_B"];
-    
+
     double Enuc = 0.0;
     double** Enuc2p = matrices_["E NUC"]->pointer();
     Enuc += 2.0 * Enuc2p[0][1]; // A - B
@@ -1098,7 +1098,7 @@ void FISAPT::elst()
     //}
     scalars_["Elst10,r"] = Elst10;
     outfile->Printf("    Elst10,r            = %18.12lf H\n",Elst10);
-    outfile->Printf("\n"); 
+    outfile->Printf("\n");
     //fflush(outfile);
 }
 void FISAPT::exch()
@@ -1174,7 +1174,7 @@ void FISAPT::exch()
     Cr.push_back(C_AS);
     jk_->compute();
     boost::shared_ptr<Matrix> K_AS = K[0];
-    
+
     // => Accumulation <= //
 
     double Exch10_2 = 0.0;
@@ -1297,9 +1297,9 @@ void FISAPT::ind()
     outfile->Printf("  ==> Induction <==\n\n");
 
     // => Pointers <= //
-    
+
     boost::shared_ptr<Matrix> S = matrices_["S"];
-    
+
     boost::shared_ptr<Matrix> D_A = matrices_["D_A"];
     boost::shared_ptr<Matrix> D_B = matrices_["D_B"];
     boost::shared_ptr<Matrix> P_A = matrices_["P_A"];
@@ -1311,7 +1311,7 @@ void FISAPT::ind()
     boost::shared_ptr<Matrix> K_A = matrices_["K_A"];
     boost::shared_ptr<Matrix> K_B = matrices_["K_B"];
 
-    boost::shared_ptr<Matrix> Cocc0A = matrices_["Cocc0A"]; 
+    boost::shared_ptr<Matrix> Cocc0A = matrices_["Cocc0A"];
     boost::shared_ptr<Matrix> Cocc0B = matrices_["Cocc0B"];
     boost::shared_ptr<Matrix> Cvir0A = matrices_["Cvir0A"];
     boost::shared_ptr<Matrix> Cvir0B = matrices_["Cvir0B"];
@@ -1340,7 +1340,7 @@ void FISAPT::ind()
     Cr.push_back(C_O_A);
     // J/K[P_B]
     Cl.push_back(matrices_["Cocc_A"]);
-    Cr.push_back(C_P_B);    
+    Cr.push_back(C_P_B);
     // J/K[P_B]
     Cl.push_back(matrices_["Cocc_B"]);
     Cr.push_back(C_P_A);
@@ -1375,7 +1375,7 @@ void FISAPT::ind()
     mapA["K_B"] = K_B;
     mapA["J_O"] = J_O;
     mapA["K_O"] = K_O;
-    mapA["J_P"] = J_P_A; 
+    mapA["J_P"] = J_P_A;
 
     boost::shared_ptr<Matrix> wB = build_ind_pot(mapA);
     boost::shared_ptr<Matrix> uB = build_exch_ind_pot(mapA);
@@ -1396,7 +1396,7 @@ void FISAPT::ind()
     mapB["K_B"] = K_A;
     mapB["J_O"] = J_O;
     mapB["K_O"] = K_O;
-    mapB["J_P"] = J_P_B; 
+    mapB["J_P"] = J_P_B;
 
     boost::shared_ptr<Matrix> wA = build_ind_pot(mapB);
     boost::shared_ptr<Matrix> uA = build_exch_ind_pot(mapB);
@@ -1529,7 +1529,7 @@ void FISAPT::ind()
     }
 
     // => Stash for ExchDisp <= //
-    
+
     matrices_["J_O"] = J_O;
     matrices_["K_O"] = K_O;
     matrices_["J_P_A"] = J_P_A;
@@ -1583,13 +1583,13 @@ boost::shared_ptr<Matrix> FISAPT::build_exch_ind_pot(std::map<std::string, boost
     // 2
     T = Matrix::triplet(S,D_B,J_A);
     T->scale(-2.0);
-    W->add(T);    
+    W->add(T);
 
     // 3
     T->copy(K_O);
     T->scale(1.0);
     W->add(T);
-    
+
     // 4
     T->copy(J_O);
     T->scale(-2.0);
@@ -1629,7 +1629,7 @@ boost::shared_ptr<Matrix> FISAPT::build_exch_ind_pot(std::map<std::string, boost
     T->copy(J_P);
     T->scale(2.0);
     W->add(T);
-    
+
     // 12
     T = Matrix::triplet(Matrix::triplet(S,D_B,S),D_A,J_B);
     T->scale(2.0);
@@ -1643,13 +1643,13 @@ boost::shared_ptr<Matrix> FISAPT::build_exch_ind_pot(std::map<std::string, boost
     // 14
     T = Matrix::triplet(S,D_B,V_A);
     T->scale(-1.0);
-    W->add(T);    
-    
+    W->add(T);
+
     // 15
     T = Matrix::triplet(V_B,D_B,S);
     T->scale(-1.0);
     W->add(T);
-    
+
     // 16
     T = Matrix::triplet(Matrix::triplet(S,D_B,V_A),D_B,S);
     T->scale(1.0);
@@ -1679,7 +1679,7 @@ void FISAPT::disp()
         options_.get_str("BASIS"), primary_->has_puream());
 
     // => Pointers <= //
-   
+
     boost::shared_ptr<Matrix> Cocc0A = matrices_["Caocc0A"];
     boost::shared_ptr<Matrix> Cocc0B = matrices_["Caocc0B"];
     boost::shared_ptr<Matrix> Cvir0A = matrices_["Cvir0A"];
@@ -2013,8 +2013,8 @@ void FISAPT::disp()
     fseek(Farf,0L,SEEK_SET);
     for (int astart = 0; astart < na; astart += max_a) {
         int nablock = (astart + max_a >= na ? na - astart : max_a);
-        fread(Darp[0],sizeof(double),nablock*nrQ,Darf);
-        fread(Aarp[0],sizeof(double),nablock*nrQ,Earf);
+        size_t statusvalue=fread(Darp[0],sizeof(double),nablock*nrQ,Darf);
+        statusvalue=fread(Aarp[0],sizeof(double),nablock*nrQ,Earf);
         double* D2p = Darp[0];
         double* A2p = Aarp[0];
         for (long int arQ = 0L; arQ < nablock * nrQ; arQ++) {
@@ -2026,7 +2026,7 @@ void FISAPT::disp()
     fseek(Farf,0L,SEEK_SET);
     for (int astart = 0; astart < na; astart += max_a) {
         int nablock = (astart + max_a >= na ? na - astart : max_a);
-        fread(Darp[0],sizeof(double),nablock*nrQ,Farf);
+        size_t statusvalue=fread(Darp[0],sizeof(double),nablock*nrQ,Farf);
         fwrite(Darp[0],sizeof(double),nablock*nrQ,Darf);
     }
     EarT.reset();
@@ -2039,8 +2039,8 @@ void FISAPT::disp()
     fseek(Fbsf,0L,SEEK_SET);
     for (int bstart = 0; bstart < nb; bstart += max_b) {
         int nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
-        fread(Dbsp[0],sizeof(double),nbblock*nsQ,Dbsf);
-        fread(Absp[0],sizeof(double),nbblock*nsQ,Ebsf);
+        size_t statusvalue=fread(Dbsp[0],sizeof(double),nbblock*nsQ,Dbsf);
+        statusvalue=fread(Absp[0],sizeof(double),nbblock*nsQ,Ebsf);
         double* D2p = Dbsp[0];
         double* A2p = Absp[0];
         for (long int bsQ = 0L; bsQ < nbblock * nsQ; bsQ++) {
@@ -2052,7 +2052,7 @@ void FISAPT::disp()
     fseek(Fbsf,0L,SEEK_SET);
     for (int bstart = 0; bstart < nb; bstart += max_b) {
         int nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
-        fread(Dbsp[0],sizeof(double),nbblock*nsQ,Fbsf);
+        size_t statusvalue=fread(Dbsp[0],sizeof(double),nbblock*nsQ,Fbsf);
         fwrite(Dbsp[0],sizeof(double),nbblock*nsQ,Dbsf);
     }
     EbsT.reset();
@@ -2072,10 +2072,10 @@ void FISAPT::disp()
     for (int astart = 0; astart < na; astart += max_a) {
         int nablock = (astart + max_a >= na ? na - astart : max_a);
 
-        fread(Aarp[0],sizeof(double),nablock*nrQ,Aarf);
-        fread(Basp[0],sizeof(double),nablock*nsQ,Basf);
-        fread(Casp[0],sizeof(double),nablock*nsQ,Casf);
-        fread(Darp[0],sizeof(double),nablock*nrQ,Darf);
+        size_t statusvalue=fread(Aarp[0],sizeof(double),nablock*nrQ,Aarf);
+        statusvalue=fread(Basp[0],sizeof(double),nablock*nsQ,Basf);
+        statusvalue=fread(Casp[0],sizeof(double),nablock*nsQ,Casf);
+        statusvalue=fread(Darp[0],sizeof(double),nablock*nrQ,Darf);
 
         fseek(Absf,0L,SEEK_SET);
         fseek(Bbrf,0L,SEEK_SET);
@@ -2084,10 +2084,10 @@ void FISAPT::disp()
         for (int bstart = 0; bstart < nb; bstart += max_b) {
             int nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
 
-            fread(Absp[0],sizeof(double),nbblock*nsQ,Absf);
-            fread(Bbrp[0],sizeof(double),nbblock*nrQ,Bbrf);
-            fread(Cbrp[0],sizeof(double),nbblock*nrQ,Cbrf);
-            fread(Dbsp[0],sizeof(double),nbblock*nsQ,Dbsf);
+            statusvalue=fread(Absp[0],sizeof(double),nbblock*nsQ,Absf);
+            statusvalue=fread(Bbrp[0],sizeof(double),nbblock*nrQ,Bbrf);
+            statusvalue=fread(Cbrp[0],sizeof(double),nbblock*nrQ,Cbrf);
+            statusvalue=fread(Dbsp[0],sizeof(double),nbblock*nsQ,Dbsf);
 
             long int nab = nablock * nbblock;
 
@@ -2095,7 +2095,7 @@ void FISAPT::disp()
             for (long int ab = 0L; ab < nab; ab++) {
                 int a = ab / nbblock;
                 int b = ab % nbblock;
-        
+
                 int thread = 0;
                 #ifdef _OPENMP
                     thread = omp_get_thread_num();
@@ -2221,12 +2221,12 @@ void FISAPT::plot()
     boost::filesystem::create_directory(dir);
 
     boost::shared_ptr<fisapt::CubicScalarGrid> csg(new fisapt::CubicScalarGrid(primary_));
-    csg->set_filepath(filepath); 
+    csg->set_filepath(filepath);
     csg->print_header();
 
     std::stringstream ss;
     ss << filepath << "geom.xyz";
-    primary_->molecule()->save_xyz_file(ss.str(), true); 
+    primary_->molecule()->save_xyz_file(ss.str(), true);
 
     /// Zeroth-order wavefunctions
     boost::shared_ptr<Matrix> D_A = matrices_["D_A"];
@@ -2236,7 +2236,7 @@ void FISAPT::plot()
     /// Fully interacting wavefunctions
     boost::shared_ptr<Matrix> DFA = Matrix::doublet(matrices_["LoccA"], matrices_["LoccA"], false, true);
     boost::shared_ptr<Matrix> DFB = Matrix::doublet(matrices_["LoccB"], matrices_["LoccB"], false, true);
-     
+
     // => Density Fields <= //
 
     csg->compute_density(D_A, "DA");
@@ -2247,8 +2247,8 @@ void FISAPT::plot()
 
     // => Difference Density Fields <= //
 
-    DFA->subtract(D_A); 
-    DFB->subtract(D_B); 
+    DFA->subtract(D_A);
+    DFB->subtract(D_B);
 
     csg->compute_density(DFA, "dDA");
     csg->compute_density(DFB, "dDB");
@@ -2270,7 +2270,7 @@ void FISAPT::plot()
         w_B[A] = (ZBp[A]) / mol->Z(A);
         w_C[A] = (ZCp[A]) / mol->Z(A);
     }
-   
+
     D_A->scale(2.0);
     D_B->scale(2.0);
     D_C->scale(2.0);
@@ -2286,11 +2286,11 @@ void FISAPT::plot()
 void FISAPT::flocalize()
 {
     outfile->Printf("  ==> F-SAPT Localization (IBO) <==\n\n");
-    
+
     // Currently always separating core and valence
     {
         outfile->Printf("  Local Orbitals for Monomer A:\n\n");
-        
+
         int nn = matrices_["Caocc0A"]->rowspi()[0];
         int nf = matrices_["Cfocc0A"]->colspi()[0];
         int na = matrices_["Caocc0A"]->colspi()[0];
@@ -2300,10 +2300,10 @@ void FISAPT::flocalize()
         ranges.push_back(0);
         ranges.push_back(nf);
         ranges.push_back(nm);
-   
+
         boost::shared_ptr<Matrix> Focc(new Matrix("Focc", vectors_["eps_occ0A"]->dimpi()[0], vectors_["eps_occ0A"]->dimpi()[0]));
         Focc->set_diagonal(vectors_["eps_occ0A"]);
-    
+
         boost::shared_ptr<fisapt::IBOLocalizer2> local = fisapt::IBOLocalizer2::build(primary_, matrices_["Cocc0A"]);
         local->print_header();
         std::map<std::string, boost::shared_ptr<Matrix> > ret = local->localize(matrices_["Cocc0A"], Focc, ranges);
@@ -2332,7 +2332,7 @@ void FISAPT::flocalize()
                 Lap[n][i] = Lp[n][i+nf];
             }
         }
-    
+
         for (int i = 0; i < nf; i++) {
             for (int j = 0; j < nf; j++) {
                 Ufp[i][j] = Up[i][j];
@@ -2344,19 +2344,19 @@ void FISAPT::flocalize()
                 Uap[i][j] = Up[i+nf][j+nf];
             }
         }
-    
-        matrices_["Locc0A"]->set_name("Locc0A");    
-        matrices_["Lfocc0A"]->set_name("Lfocc0A");    
-        matrices_["Laocc0A"]->set_name("Laocc0A");    
-        matrices_["Uocc0A"]->set_name("Uocc0A");    
-        matrices_["Ufocc0A"]->set_name("Ufocc0A");    
-        matrices_["Uaocc0A"]->set_name("Uaocc0A");    
+
+        matrices_["Locc0A"]->set_name("Locc0A");
+        matrices_["Lfocc0A"]->set_name("Lfocc0A");
+        matrices_["Laocc0A"]->set_name("Laocc0A");
+        matrices_["Uocc0A"]->set_name("Uocc0A");
+        matrices_["Ufocc0A"]->set_name("Ufocc0A");
+        matrices_["Uaocc0A"]->set_name("Uaocc0A");
         matrices_["Qocc0A"]->set_name("Qocc0A");
     }
 
     {
         outfile->Printf("  Local Orbitals for Monomer B:\n\n");
-        
+
         int nn = matrices_["Caocc0B"]->rowspi()[0];
         int nf = matrices_["Cfocc0B"]->colspi()[0];
         int na = matrices_["Caocc0B"]->colspi()[0];
@@ -2366,10 +2366,10 @@ void FISAPT::flocalize()
         ranges.push_back(0);
         ranges.push_back(nf);
         ranges.push_back(nm);
-   
+
         boost::shared_ptr<Matrix> Focc(new Matrix("Focc", vectors_["eps_occ0B"]->dimpi()[0], vectors_["eps_occ0B"]->dimpi()[0]));
         Focc->set_diagonal(vectors_["eps_occ0B"]);
-    
+
         boost::shared_ptr<fisapt::IBOLocalizer2> local = fisapt::IBOLocalizer2::build(primary_, matrices_["Cocc0B"]);
         local->print_header();
         std::map<std::string, boost::shared_ptr<Matrix> > ret = local->localize(matrices_["Cocc0B"], Focc, ranges);
@@ -2398,7 +2398,7 @@ void FISAPT::flocalize()
                 Lap[n][i] = Lp[n][i+nf];
             }
         }
-    
+
         for (int i = 0; i < nf; i++) {
             for (int j = 0; j < nf; j++) {
                 Ufp[i][j] = Up[i][j];
@@ -2410,22 +2410,22 @@ void FISAPT::flocalize()
                 Uap[i][j] = Up[i+nf][j+nf];
             }
         }
-    
-        matrices_["Locc0B"]->set_name("Locc0B");    
-        matrices_["Lfocc0B"]->set_name("Lfocc0B");    
-        matrices_["Laocc0B"]->set_name("Laocc0B");    
-        matrices_["Uocc0B"]->set_name("Uocc0B");    
-        matrices_["Ufocc0B"]->set_name("Ufocc0B");    
-        matrices_["Uaocc0B"]->set_name("Uaocc0B");    
+
+        matrices_["Locc0B"]->set_name("Locc0B");
+        matrices_["Lfocc0B"]->set_name("Lfocc0B");
+        matrices_["Laocc0B"]->set_name("Laocc0B");
+        matrices_["Uocc0B"]->set_name("Uocc0B");
+        matrices_["Ufocc0B"]->set_name("Ufocc0B");
+        matrices_["Uaocc0B"]->set_name("Uaocc0B");
         matrices_["Qocc0B"]->set_name("Qocc0B");
     }
 }
 void FISAPT::felst()
 {
     outfile->Printf("  ==> F-SAPT Electrostatics <==\n\n");
-    
+
     // => Sizing <= //
-    
+
     boost::shared_ptr<Molecule> mol = primary_->molecule();
     int nn = primary_->nbf();
     int nA = mol->natom();
@@ -2442,7 +2442,7 @@ void FISAPT::felst()
     matrices_["Elst_AB"] = boost::shared_ptr<Matrix>(new Matrix("Elst_AB", nA + na, nB + nb));
     double** Ep = matrices_["Elst_AB"]->pointer();
 
-    // => A <-> B <= // 
+    // => A <-> B <= //
 
     double* ZAp = vectors_["ZA"]->pointer();
     double* ZBp = vectors_["ZB"]->pointer();
@@ -2451,7 +2451,7 @@ void FISAPT::felst()
             if (A == B) continue;
             double E = ZAp[A] * ZBp[B] / mol->xyz(A).distance(mol->xyz(B));
             Ep[A][B] += E;
-            Elst10_terms[3] += E; 
+            Elst10_terms[3] += E;
         }
     }
 
@@ -2496,7 +2496,7 @@ void FISAPT::felst()
     fseek(Aaaf,0L,SEEK_SET);
     for (size_t a = 0; a < na; a++) {
         fseek(Aaaf,(a * na + a) * nQ * sizeof(double), SEEK_SET);
-        fread(QaCp[a], sizeof(double), nQ, Aaaf);
+        size_t statusvalue=fread(QaCp[a], sizeof(double), nQ, Aaaf);
     }
     AaaT.reset();
 
@@ -2506,7 +2506,7 @@ void FISAPT::felst()
     fseek(Abbf,0L,SEEK_SET);
     for (size_t b = 0; b < nb; b++) {
         fseek(Abbf,(b * nb + b) * nQ * sizeof(double), SEEK_SET);
-        fread(QbCp[b], sizeof(double), nQ, Abbf);
+        size_t statusvalue=fread(QbCp[b], sizeof(double), nQ, Abbf);
     }
     AbbT.reset();
 
@@ -2524,7 +2524,7 @@ void FISAPT::felst()
     matrices_["Vlocc0B"] = QbC;
 
     // => Nuclear Part (PITA) <= //
-    
+
     boost::shared_ptr<Matrix> Zxyz2(new Matrix("Zxyz",1,4));
     double** Zxyz2p = Zxyz2->pointer();
     boost::shared_ptr<IntegralFactory> Vfact2(new IntegralFactory(primary_));
@@ -2588,7 +2588,7 @@ void FISAPT::fexch()
     outfile->Printf("  ==> F-SAPT Exchange <==\n\n");
 
     // => Sizing <= //
-    
+
     boost::shared_ptr<Molecule> mol = primary_->molecule();
     int nn = primary_->nbf();
     int nA = mol->natom();
@@ -2606,7 +2606,7 @@ void FISAPT::fexch()
 
     matrices_["Exch_AB"] = boost::shared_ptr<Matrix>(new Matrix("Exch_AB", nA + na, nB + nb));
     double** Ep = matrices_["Exch_AB"]->pointer();
-    
+
     // ==> Stack Variables <== //
 
     boost::shared_ptr<Matrix> S   = matrices_["S"];
@@ -2675,7 +2675,7 @@ void FISAPT::fexch()
     boost::shared_ptr<Matrix> WBar = Matrix::triplet(LoccA,W_B,CvirA,true,false,false);
     double** WBarp = WBar->pointer();
     double** WAbsp = WAbs->pointer();
-    
+
     W_A.reset();
     W_B.reset();
 
@@ -2728,7 +2728,7 @@ void FISAPT::fexch()
     fseek(Babf,0L,SEEK_SET);
     fseek(Aarf,0L,SEEK_SET);
     for (int a = 0; a < na; a++) {
-        fread(TrQp[0],sizeof(double),nr*nQ,Aarf);
+        size_t statusvalue=fread(TrQp[0],sizeof(double),nr*nQ,Aarf);
         C_DGEMM('N','N',nb,nQ,nr,1.0,Sbrp[0],nr,TrQp[0],nQ,0.0,TbQp[0],nQ);
         fwrite(TbQp[0],sizeof(double),nb*nQ,Babf);
     }
@@ -2739,7 +2739,7 @@ void FISAPT::fexch()
     fseek(Bbaf,0L,SEEK_SET);
     fseek(Absf,0L,SEEK_SET);
     for (int b = 0; b < nb; b++) {
-        fread(TsQp[0],sizeof(double),ns*nQ,Absf);
+        size_t statusvalue=fread(TsQp[0],sizeof(double),ns*nQ,Absf);
         C_DGEMM('N','N',na,nQ,ns,1.0,Sasp[0],ns,TsQp[0],nQ,0.0,TaQp[0],nQ);
         fwrite(TaQp[0],sizeof(double),na*nQ,Bbaf);
     }
@@ -2749,10 +2749,10 @@ void FISAPT::fexch()
 
     fseek(Babf,0L,SEEK_SET);
     for (int a = 0; a < na; a++) {
-        fread(TbQp[0],sizeof(double),nb*nQ,Babf);
+        size_t statusvalue=fread(TbQp[0],sizeof(double),nb*nQ,Babf);
         for (int b = 0; b < nb; b++) {
             fseek(Bbaf,(b*na+a)*(size_t)nQ*sizeof(double),SEEK_SET);
-            fread(TaQp[0],sizeof(double),nQ,Bbaf);
+            statusvalue=fread(TaQp[0],sizeof(double),nQ,Bbaf);
             E_exch3p[a][b] -= 2.0 * C_DDOT(nQ,TbQp[b],1,TaQp[0],1);
         }
     }
@@ -2797,7 +2797,7 @@ void FISAPT::find()
 
     // => Options <= //
 
-    bool ind_resp  = options_.get_bool("FISAPT_FSAPT_IND_RESPONSE"); 
+    bool ind_resp  = options_.get_bool("FISAPT_FSAPT_IND_RESPONSE");
     bool ind_scale = options_.get_bool("FISAPT_FSAPT_IND_SCALE");
 
     // => Sizing <= //
@@ -2830,7 +2830,7 @@ void FISAPT::find()
     boost::shared_ptr<Vector> eps_vir_B = vectors_["eps_vir0B"];
 
     // => ESPs <= //
-    
+
     boost::shared_ptr<Tensor> WBarT = DiskTensor::build("WBar", "nB", nB + nb, "na", na, "nr", nr, false, false);
     FILE* WBarf = WBarT->file_pointer();
     boost::shared_ptr<Tensor> WAbsT = DiskTensor::build("WAbs", "nA", nA + na, "nb", nb, "ns", ns, false, false);
@@ -2870,7 +2870,7 @@ void FISAPT::find()
         double** Varp = Var->pointer();
         fwrite(Varp[0],sizeof(double),na*nr,WBarf);
     }
-    
+
     // ==> DF ERI Setup (JKFIT Type, in Full Basis) <== //
 
     boost::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
@@ -2909,7 +2909,7 @@ void FISAPT::find()
     boost::shared_ptr<Tensor> AbsT = ints["Abs"];
 
     df.reset();
-   
+
     // => Electronic Part (Massive PITA) <= //
 
     double** RaCp = matrices_["Vlocc0A"]->pointer();
@@ -2919,10 +2919,10 @@ void FISAPT::find()
     fseek(Absf,0L,SEEK_SET);
     boost::shared_ptr<Matrix> TsQ(new Matrix("TsQ",ns,nQ));
     boost::shared_ptr<Matrix> T1As(new Matrix("T1As",na,ns));
-    double** TsQp = TsQ->pointer(); 
-    double** T1Asp = T1As->pointer(); 
+    double** TsQp = TsQ->pointer();
+    double** T1Asp = T1As->pointer();
     for (size_t b = 0; b < nb; b++) {
-        fread(TsQp[0],sizeof(double),ns*nQ,Absf);
+        size_t statusvalue=fread(TsQp[0],sizeof(double),ns*nQ,Absf);
         C_DGEMM('N','T',na,ns,nQ,2.0,RaCp[0],nQ,TsQp[0],nQ,0.0,T1Asp[0],ns);
         for (size_t a = 0; a < na; a++) {
             fseek(WAbsf,nA*nb*ns*sizeof(double) + a*nb*ns*sizeof(double) + b*ns*sizeof(double),SEEK_SET);
@@ -2934,17 +2934,17 @@ void FISAPT::find()
     fseek(Aarf,0L,SEEK_SET);
     boost::shared_ptr<Matrix> TrQ(new Matrix("TrQ",nr,nQ));
     boost::shared_ptr<Matrix> T1Br(new Matrix("T1Br",nb,nr));
-    double** TrQp = TrQ->pointer(); 
-    double** T1Brp = T1Br->pointer(); 
+    double** TrQp = TrQ->pointer();
+    double** T1Brp = T1Br->pointer();
     for (size_t a = 0; a < na; a++) {
-        fread(TrQp[0],sizeof(double),nr*nQ,Aarf);
+        size_t statusvalue=fread(TrQp[0],sizeof(double),nr*nQ,Aarf);
         C_DGEMM('N','T',nb,nr,nQ,2.0,RbDp[0],nQ,TrQp[0],nQ,0.0,T1Brp[0],nr);
         for (size_t b = 0; b < nb; b++) {
             fseek(WBarf,nB*na*nr*sizeof(double) + b*na*nr*sizeof(double) + a*nr*sizeof(double),SEEK_SET);
             fwrite(T1Brp[b],sizeof(double),nr,WBarf);
         }
     }
-     
+
     // ==> Stack Variables <== //
 
     double*  eap = eps_occ_A->pointer();
@@ -2970,14 +2970,14 @@ void FISAPT::find()
 
     boost::shared_ptr<Matrix> xA(new Matrix("xA",na,nr));
     boost::shared_ptr<Matrix> xB(new Matrix("xB",nb,ns));
-    double** xAp = xA->pointer(); 
-    double** xBp = xB->pointer(); 
+    double** xAp = xA->pointer();
+    double** xBp = xB->pointer();
 
     boost::shared_ptr<Matrix> wB(new Matrix("wB",na,nr));
     boost::shared_ptr<Matrix> wA(new Matrix("wA",nb,ns));
-    double** wBp = wB->pointer(); 
-    double** wAp = wA->pointer(); 
-    
+    double** wBp = wB->pointer();
+    double** wAp = wA->pointer();
+
     // ==> Generalized ESP (Flat and Exchange) <== //
 
     std::map<std::string, boost::shared_ptr<Matrix> > mapA;
@@ -2996,7 +2996,7 @@ void FISAPT::find()
     mapA["K_B"] = K_B;
     mapA["J_O"] = J_O;
     mapA["K_O"] = K_O;
-    mapA["J_P"] = J_P_A; 
+    mapA["J_P"] = J_P_A;
 
     boost::shared_ptr<Matrix> wBT = build_ind_pot(mapA);
     boost::shared_ptr<Matrix> uBT = build_exch_ind_pot(mapA);
@@ -3021,13 +3021,13 @@ void FISAPT::find()
     mapB["K_B"] = K_A;
     mapB["J_O"] = J_O;
     mapB["K_O"] = K_O;
-    mapB["J_P"] = J_P_B; 
+    mapB["J_P"] = J_P_B;
 
     boost::shared_ptr<Matrix> wAT = build_ind_pot(mapB);
     boost::shared_ptr<Matrix> uAT = build_exch_ind_pot(mapB);
     double** wATp = wAT->pointer();
     double** uATp = uAT->pointer();
-    
+
     K_O->transpose_this();
 
     // ==> Uncoupled Targets <== //
@@ -3037,7 +3037,7 @@ void FISAPT::find()
     double** Ind20u_AB_termsp = Ind20u_AB_terms->pointer();
     double** Ind20u_BA_termsp = Ind20u_BA_terms->pointer();
 
-    double Ind20u_AB = 0.0; 
+    double Ind20u_AB = 0.0;
     double Ind20u_BA = 0.0;
 
     boost::shared_ptr<Matrix> ExchInd20u_AB_terms(new Matrix("ExchInd20 [A<-B] (a x B)", na, nB + nb));
@@ -3045,7 +3045,7 @@ void FISAPT::find()
     double** ExchInd20u_AB_termsp = ExchInd20u_AB_terms->pointer();
     double** ExchInd20u_BA_termsp = ExchInd20u_BA_terms->pointer();
 
-    double ExchInd20u_AB = 0.0; 
+    double ExchInd20u_AB = 0.0;
     double ExchInd20u_BA = 0.0;
 
     boost::shared_ptr<Matrix> Indu_AB_terms(new Matrix("Ind [A<-B] (a x B)", na, nB + nb));
@@ -3053,17 +3053,17 @@ void FISAPT::find()
     double** Indu_AB_termsp = Indu_AB_terms->pointer();
     double** Indu_BA_termsp = Indu_BA_terms->pointer();
 
-    double Indu_AB = 0.0; 
+    double Indu_AB = 0.0;
     double Indu_BA = 0.0;
-    
+
     // ==> A <- B Uncoupled <== //
 
     fseek(WBarf,0L,SEEK_SET);
     for (int B = 0; B < nB + nb; B++) {
 
         // ESP
-        fread(wBp[0],sizeof(double),na*nr,WBarf); 
-        
+        size_t statusvalue=fread(wBp[0],sizeof(double),na*nr,WBarf);
+
         // Uncoupled amplitude
         for (int a = 0; a < na; a++) {
             for (int r = 0; r < nr; r++) {
@@ -3087,7 +3087,7 @@ void FISAPT::find()
             Indu_AB += Jval + Kval;
         }
 
-    } 
+    }
 
     // ==> B <- A Uncoupled <== //
 
@@ -3095,8 +3095,8 @@ void FISAPT::find()
     for (int A = 0; A < nA + na; A++) {
 
         // ESP
-        fread(wAp[0],sizeof(double),nb*ns,WAbsf); 
-        
+        size_t statusvalue=fread(wAp[0],sizeof(double),nb*ns,WAbsf);
+
         // Uncoupled amplitude
         for (int b = 0; b < nb; b++) {
             for (int s = 0; s < ns; s++) {
@@ -3119,8 +3119,8 @@ void FISAPT::find()
             Indu_BA_termsp[A][b] = Jval + Kval;
             Indu_BA += Jval + Kval;
         }
-    
-    } 
+
+    }
 
     double Ind20u = Ind20u_AB + Ind20u_BA;
     outfile->Printf("    Ind20,u (A<-B)      = %18.12lf H\n",Ind20u_AB);
@@ -3150,7 +3150,7 @@ void FISAPT::find()
         double** Ind20r_AB_termsp = Ind20r_AB_terms->pointer();
         double** Ind20r_BA_termsp = Ind20r_BA_terms->pointer();
 
-        double Ind20r_AB = 0.0; 
+        double Ind20r_AB = 0.0;
         double Ind20r_BA = 0.0;
 
         boost::shared_ptr<Matrix> ExchInd20r_AB_terms(new Matrix("ExchInd20 [A<-B] (a x B)", na, nB + nb));
@@ -3158,7 +3158,7 @@ void FISAPT::find()
         double** ExchInd20r_AB_termsp = ExchInd20r_AB_terms->pointer();
         double** ExchInd20r_BA_termsp = ExchInd20r_BA_terms->pointer();
 
-        double ExchInd20r_AB = 0.0; 
+        double ExchInd20r_AB = 0.0;
         double ExchInd20r_BA = 0.0;
 
         boost::shared_ptr<Matrix> Indr_AB_terms(new Matrix("Ind [A<-B] (a x B)", na, nB + nb));
@@ -3166,7 +3166,7 @@ void FISAPT::find()
         double** Indr_AB_termsp = Indr_AB_terms->pointer();
         double** Indr_BA_termsp = Indr_BA_terms->pointer();
 
-        double Indr_AB = 0.0; 
+        double Indr_AB = 0.0;
         double Indr_BA = 0.0;
 
         // => JK Object <= //
@@ -3189,42 +3189,42 @@ void FISAPT::find()
         jk->print_header();
 
         // ==> Master Loop over perturbing atoms <== //
-    
+
         int nC = std::max(nA + na,nB + nb);
 
         fseek(WBarf,0L,SEEK_SET);
         fseek(WAbsf,0L,SEEK_SET);
-        
+
         for (int C = 0; C < nC; C++) {
-            
-            if (C < nB + nb) fread(wBp[0],sizeof(double),na*nr,WBarf); 
-            if (C < nA + na) fread(wAp[0],sizeof(double),nb*ns,WAbsf); 
+
+            if (C < nB + nb) size_t statusvalue=fread(wBp[0],sizeof(double),na*nr,WBarf);
+            if (C < nA + na) size_t statusvalue=fread(wAp[0],sizeof(double),nb*ns,WAbsf);
 
             outfile->Printf("    Responses for (A <- Source B = %3d) and (B <- Source A = %3d)\n\n",
                     (C < nB + nb ? C : nB + nb - 1), (C < nA + na ? C : nA + na - 1));
 
             boost::shared_ptr<CPHF_FISAPT> cphf(new CPHF_FISAPT);
-        
+
             // Effective constructor
             cphf->delta_ =     options_.get_double("D_CONVERGENCE");
             cphf->maxiter_ =   options_.get_int("MAXITER");
             cphf->jk_ = jk;
-        
+
             cphf->w_A_ =       wB; // Reversal of convention
             cphf->Cocc_A_ =    Cocc_A;
             cphf->Cvir_A_ =    Cvir_A;
             cphf->eps_occ_A_ = eps_occ_A;
             cphf->eps_vir_A_ = eps_vir_A;
-        
+
             cphf->w_B_ =       wA; // Reversal of convention
             cphf->Cocc_B_ =    Cocc_B;
             cphf->Cvir_B_ =    Cvir_B;
             cphf->eps_occ_B_ = eps_occ_B;
             cphf->eps_vir_B_ = eps_vir_B;
-        
+
             // Gogo CPKS
             cphf->compute_cphf();
-        
+
             xA = cphf->x_A_;
             xB = cphf->x_B_;
 
@@ -3249,7 +3249,7 @@ void FISAPT::find()
                 }
             }
 
-            if (C < nA + na) { 
+            if (C < nA + na) {
                 // Backtransform the amplitude to LO
                 boost::shared_ptr<Matrix> x2B = Matrix::doublet(Uocc_B,xB,true,false);
                 double** x2Bp = x2B->pointer();
@@ -3313,8 +3313,8 @@ void FISAPT::find()
 
     matrices_["IndAB_AB"] = boost::shared_ptr<Matrix>(new Matrix("IndAB_AB", nA + na, nB + nb));
     matrices_["IndBA_AB"] = boost::shared_ptr<Matrix>(new Matrix("IndAB_AB", nA + na, nB + nb));
-    double** EABp = matrices_["IndAB_AB"]->pointer(); 
-    double** EBAp = matrices_["IndBA_AB"]->pointer(); 
+    double** EABp = matrices_["IndAB_AB"]->pointer();
+    double** EBAp = matrices_["IndBA_AB"]->pointer();
     double** EAB2p = Ind_AB_terms->pointer();
     double** EBA2p = Ind_BA_terms->pointer();
 
@@ -3339,7 +3339,7 @@ void FISAPT::fdisp()
     boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
         "DF_BASIS_SAPT", options_.get_str("DF_BASIS_SAPT"), "RIFIT",
         options_.get_str("BASIS"), primary_->has_puream());
-    
+
     // => Sizing <= //
 
     boost::shared_ptr<Molecule> mol = primary_->molecule();
@@ -3356,7 +3356,7 @@ void FISAPT::fdisp()
 
     int nfa = matrices_["Lfocc0A"]->colspi()[0];
     int nfb = matrices_["Lfocc0B"]->colspi()[0];
-    
+
     int nT = 1;
     #ifdef _OPENMP
         nT = omp_get_max_threads();
@@ -3692,8 +3692,8 @@ void FISAPT::fdisp()
     fseek(Farf,0L,SEEK_SET);
     for (int rstart = 0; rstart < nr; rstart += max_r) {
         int nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
-        fread(Darp[0],sizeof(double),nrblock*naQ,Darf);
-        fread(Aarp[0],sizeof(double),nrblock*naQ,Earf);
+        size_t statusvalue=fread(Darp[0],sizeof(double),nrblock*naQ,Darf);
+        statusvalue=fread(Aarp[0],sizeof(double),nrblock*naQ,Earf);
         double* D2p = Darp[0];
         double* A2p = Aarp[0];
         for (long int arQ = 0L; arQ < nrblock * naQ; arQ++) {
@@ -3705,7 +3705,7 @@ void FISAPT::fdisp()
     fseek(Farf,0L,SEEK_SET);
     for (int rstart = 0; rstart < nr; rstart += max_r) {
         int nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
-        fread(Darp[0],sizeof(double),nrblock*naQ,Farf);
+        size_t statusvalue=fread(Darp[0],sizeof(double),nrblock*naQ,Farf);
         fwrite(Darp[0],sizeof(double),nrblock*naQ,Darf);
     }
     EarT.reset();
@@ -3718,8 +3718,8 @@ void FISAPT::fdisp()
     fseek(Fbsf,0L,SEEK_SET);
     for (int sstart = 0; sstart < ns; sstart += max_s) {
         int nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
-        fread(Dbsp[0],sizeof(double),nsblock*nbQ,Dbsf);
-        fread(Absp[0],sizeof(double),nsblock*nbQ,Ebsf);
+        size_t statusvalue=fread(Dbsp[0],sizeof(double),nsblock*nbQ,Dbsf);
+        statusvalue=fread(Absp[0],sizeof(double),nsblock*nbQ,Ebsf);
         double* D2p = Dbsp[0];
         double* A2p = Absp[0];
         for (long int bsQ = 0L; bsQ < nsblock * nbQ; bsQ++) {
@@ -3731,7 +3731,7 @@ void FISAPT::fdisp()
     fseek(Fbsf,0L,SEEK_SET);
     for (int sstart = 0; sstart < ns; sstart += max_s) {
         int nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
-        fread(Dbsp[0],sizeof(double),nsblock*nbQ,Fbsf);
+        size_t statusvalue=fread(Dbsp[0],sizeof(double),nsblock*nbQ,Fbsf);
         fwrite(Dbsp[0],sizeof(double),nsblock*nbQ,Dbsf);
     }
     EbsT.reset();
@@ -3765,10 +3765,10 @@ void FISAPT::fdisp()
     for (int rstart = 0; rstart < nr; rstart += max_r) {
         int nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
 
-        fread(Aarp[0],sizeof(double),nrblock*naQ,Aarf);
-        fread(Bbrp[0],sizeof(double),nrblock*nbQ,Bbrf);
-        fread(Cbrp[0],sizeof(double),nrblock*nbQ,Cbrf);
-        fread(Darp[0],sizeof(double),nrblock*naQ,Darf);
+        size_t statusvalue=fread(Aarp[0],sizeof(double),nrblock*naQ,Aarf);
+        statusvalue=fread(Bbrp[0],sizeof(double),nrblock*nbQ,Bbrf);
+        statusvalue=fread(Cbrp[0],sizeof(double),nrblock*nbQ,Cbrf);
+        statusvalue=fread(Darp[0],sizeof(double),nrblock*naQ,Darf);
 
         fseek(Absf,0L,SEEK_SET);
         fseek(Basf,0L,SEEK_SET);
@@ -3777,10 +3777,10 @@ void FISAPT::fdisp()
         for (int sstart = 0; sstart < ns; sstart += max_s) {
             int nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
 
-            fread(Absp[0],sizeof(double),nsblock*nbQ,Absf);
-            fread(Basp[0],sizeof(double),nsblock*naQ,Basf);
-            fread(Casp[0],sizeof(double),nsblock*naQ,Casf);
-            fread(Dbsp[0],sizeof(double),nsblock*nbQ,Dbsf);
+            statusvalue=fread(Absp[0],sizeof(double),nsblock*nbQ,Absf);
+            statusvalue=fread(Basp[0],sizeof(double),nsblock*naQ,Basf);
+            statusvalue=fread(Casp[0],sizeof(double),nsblock*naQ,Casf);
+            statusvalue=fread(Dbsp[0],sizeof(double),nsblock*nbQ,Dbsf);
 
             long int nrs = nrblock * nsblock;
 
@@ -3796,7 +3796,7 @@ void FISAPT::fdisp()
 
                 double** E_disp20Tp = E_disp20_threads[thread]->pointer();
                 double** E_exch_disp20Tp = E_exch_disp20_threads[thread]->pointer();
-                
+
                 double** Tabp  = Tab[thread]->pointer();
                 double** Vabp  = Vab[thread]->pointer();
                 double** T2abp = T2ab[thread]->pointer();
@@ -3892,7 +3892,7 @@ void FISAPT::fdrop()
 
     std::stringstream ss;
     ss << filepath << "geom.xyz";
-    primary_->molecule()->save_xyz_file(ss.str(), true); 
+    primary_->molecule()->save_xyz_file(ss.str(), true);
 
     matrices_["Qocc0A"]->set_name("QA");
     matrices_["Qocc0B"]->set_name("QB");
@@ -3902,8 +3902,8 @@ void FISAPT::fdrop()
     matrices_["IndBA_AB"]->set_name("IndBA");
     matrices_["Disp_AB"]->set_name("Disp");
 
-    drop(vectors_["ZA"],filepath); 
-    drop(vectors_["ZB"],filepath); 
+    drop(vectors_["ZA"],filepath);
+    drop(vectors_["ZB"],filepath);
     drop(matrices_["Qocc0A"],filepath);
     drop(matrices_["Qocc0B"],filepath);
     drop(matrices_["Elst_AB"],filepath);
@@ -3963,19 +3963,19 @@ boost::shared_ptr<Matrix> FISAPT::extract_columns(
             A2p[m][i] = Ap[m][cols[i]];
         }
     }
-    
+
     return A2;
 }
 
 FISAPTSCF::FISAPTSCF(
-    boost::shared_ptr<JK> jk,    
-    double enuc,                 
+    boost::shared_ptr<JK> jk,
+    double enuc,
     boost::shared_ptr<Matrix> S,
-    boost::shared_ptr<Matrix> X, 
-    boost::shared_ptr<Matrix> T, 
-    boost::shared_ptr<Matrix> V, 
-    boost::shared_ptr<Matrix> W, 
-    boost::shared_ptr<Matrix> C  
+    boost::shared_ptr<Matrix> X,
+    boost::shared_ptr<Matrix> T,
+    boost::shared_ptr<Matrix> V,
+    boost::shared_ptr<Matrix> W,
+    boost::shared_ptr<Matrix> C
     ) :
     options_(Process::environment.options),
     jk_(jk)
@@ -4000,7 +4000,7 @@ void FISAPTSCF::compute_energy()
     int nocc = matrices_["C0"]->colspi()[0];
     int nvir = nmo - nocc;
 
-    // => One-electron potential <= //    
+    // => One-electron potential <= //
 
     matrices_["H"] = boost::shared_ptr<Matrix>(matrices_["T"]->clone());
     matrices_["H"]->set_name("H");
@@ -4026,7 +4026,7 @@ void FISAPTSCF::compute_energy()
     //matrices_["T"]->print();
     //matrices_["V"]->print();
     //matrices_["W"]->print();
-    //matrices_["C0"]->print(); 
+    //matrices_["C0"]->print();
 
     // => Guess <= //
 
@@ -4036,8 +4036,8 @@ void FISAPTSCF::compute_energy()
     // => Convergence Criteria <= //
 
     int maxiter = options_.get_int("MAXITER");
-    double Etol = options_.get_double("E_CONVERGENCE"); 
-    double Gtol = options_.get_double("D_CONVERGENCE"); 
+    double Etol = options_.get_double("E_CONVERGENCE");
+    double Gtol = options_.get_double("D_CONVERGENCE");
     bool converged = false;
     double Eold = 0.0;
 
@@ -4048,7 +4048,7 @@ void FISAPTSCF::compute_energy()
 
     // => DIIS Setup <= //
 
-    int max_diis_vectors = options_.get_int("DIIS_MAX_VECS"); 
+    int max_diis_vectors = options_.get_int("DIIS_MAX_VECS");
     outfile->Printf("    Max DIIS Vectors = %d\n", max_diis_vectors);
     outfile->Printf("\n");
 
@@ -4069,7 +4069,7 @@ void FISAPTSCF::compute_energy()
         boost::shared_ptr<Matrix> D = Matrix::doublet(Cocc2, Cocc2, false, true);
 
         // => Compute Fock Matrix <= //
-    
+
         std::vector<SharedMatrix>& Cl = jk_->C_left();
         std::vector<SharedMatrix>& Cr = jk_->C_right();
 
@@ -4084,14 +4084,14 @@ void FISAPTSCF::compute_energy()
 
         jk_->compute();
 
-        boost::shared_ptr<Matrix> J = Js[0]; 
-        boost::shared_ptr<Matrix> K = Ks[0]; 
+        boost::shared_ptr<Matrix> J = Js[0];
+        boost::shared_ptr<Matrix> K = Ks[0];
 
         F->copy(H);
-        F->add(W); 
-        F->add(J); 
-        F->add(J); 
-        F->subtract(K); 
+        F->add(W);
+        F->add(J);
+        F->add(J);
+        F->subtract(K);
 
         // => Compute Energy <= //
 
@@ -4109,16 +4109,16 @@ void FISAPTSCF::compute_energy()
 
         // => Print and Check Convergence <= //
 
-        outfile->Printf("    Iter %3d: %24.16E %11.3E %11.3E %s\n", iter, E, Ediff, Gnorm, 
+        outfile->Printf("    Iter %3d: %24.16E %11.3E %11.3E %s\n", iter, E, Ediff, Gnorm,
             (diised ? "DIIS" : ""));
 
         if (fabs(Ediff) < Etol && fabs(Gnorm) < Gtol) {
-            converged = true; 
+            converged = true;
             break;
-        } 
+        }
 
         Eold = E;
-            
+
         // => DIIS <= //
 
         diis->add_entry(2, G3.get(), F.get());
@@ -4128,7 +4128,7 @@ void FISAPTSCF::compute_energy()
 
         boost::shared_ptr<Matrix> F2 = Matrix::triplet(X,F,X,true,false,false);
         boost::shared_ptr<Matrix> U2 = boost::shared_ptr<Matrix>(new Matrix("C", nmo, nmo));
-        boost::shared_ptr<Vector> e2 = boost::shared_ptr<Vector>(new Vector("eps", nmo)); 
+        boost::shared_ptr<Vector> e2 = boost::shared_ptr<Vector>(new Vector("eps", nmo));
         F2->diagonalize(U2,e2,ascending);
         boost::shared_ptr<Matrix> C = Matrix::doublet(X,U2,false,false);
 
@@ -4220,7 +4220,7 @@ void FISAPTSCF::print_orbitals(
     boost::shared_ptr<Vector> eps
     )
 {
-    outfile->Printf("   => %s <=\n\n", header.c_str()); 
+    outfile->Printf("   => %s <=\n\n", header.c_str());
     outfile->Printf("    ");
     int n = eps->dimpi()[0];
     double* ep = eps->pointer();
