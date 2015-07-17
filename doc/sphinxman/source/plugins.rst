@@ -25,7 +25,7 @@ wrapped in a library, they should be placed into :source:`src/lib`, and
 codes that resemble modules belong in :source:`src/bin`.
 
 The single-executable design leads to a somewhat cumbersome development
-cycle, since every time a change is make, one must compile the code,
+cycle, since every time a change is made, one must compile the code,
 archive it into a library, and then re-link the code into the main
 executable. It's also daunting to new developers if they're required to
 learn the structure of the source tree, executable initialization code,
