@@ -1,3 +1,11 @@
 include(TestingMacros)
-
+file(COPY Psi_a_1.cube.ref DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY Psi_a_2.cube.ref DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY Psi_a_3.cube.ref DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY Psi_a_4.cube.ref DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY Psi_a_5.cube.ref DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY Da.cube.ref DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY Da.cube.ref DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY Ds.cube.ref DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY Dt.cube.ref DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 add_regression_test(cubeprop "psi;quicktests;cubeprop")
