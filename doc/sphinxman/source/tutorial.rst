@@ -23,6 +23,10 @@ If you give an input name but no output name, then the output name will
 be the same as the input name (subtracting any ".in" or ".dat" suffix),
 plus a ".out" suffix.
 
+   .. note:: Some |PSIfour| functions and keywords have aliases.  For example,
+             ``frequency()``, ``frequencies()``, and ``freq()`` all work to 
+             obtain vibrational frequencies.
+
 
 Sample Input Files
 ==================
