@@ -87,9 +87,10 @@ The division of the molecular orbitals into various subspaces such as
 RAS spaces, or frozen *vs.* active orbitals, *etc.*, needs to be clear not
 only to detci, but also at least to the transformation program
 (and in the case of MCSCF, to other programs as well).  Thus, orbital
-subspace keywords such as |detci__ras1|,
-|detci__ras2|, |detci__ras3|, |globals__frozen_docc|, |globals__frozen_uocc|,
-|detci__active|, etc., should be set
+subspace keywords such as |globals__ras1|,
+|globals__ras2|, |globals__ras3|, |globals__frozen_docc|, 
+|globals__frozen_uocc|,
+|globals__active|, etc., should be set
 in the global section of input so they may also be read by other modules.
 
 For single-reference CI computations, the easiest way to invoke a CI
@@ -118,6 +119,8 @@ Basic DETCI Keywords
 .. include:: autodir_options_c/detci__ex_level.rst
 .. include:: autodir_options_c/detci__fci.rst
 .. include:: autodir_options_c/globals__frozen_docc.rst
+.. include:: autodir_options_c/globals__restricted_docc.rst
+.. include:: autodir_options_c/globals__restricted_uocc.rst
 .. include:: autodir_options_c/globals__frozen_uocc.rst
 .. include:: autodir_options_c/detci__maxiter.rst
 .. include:: autodir_options_c/detci__num_roots.rst
