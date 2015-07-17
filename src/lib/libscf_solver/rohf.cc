@@ -280,7 +280,6 @@ void ROHF::save_information()
 
 void ROHF::compute_orbital_gradient(bool save_diis)
 {
-    throw PSIEXCEPTION("ROHF: ROHF Gradients are not currently supported in Psi4");
     SharedMatrix gradient(Feff_);
     gradient->zero_diagonal();
     gradient->back_transform(Ct_);
