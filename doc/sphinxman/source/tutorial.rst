@@ -24,6 +24,15 @@ be the same as the input name (subtracting any ".in" or ".dat" suffix),
 plus a ".out" suffix.
 
 
+Sample Input Files
+==================
+
+Below, we will provide a few simple input files as examples.  A large 
+number of sample input files, covering everything from single-point energies
+using density-functional theory to response properties from coupled-cluster
+theory, can be found in the :source:`samples` directory.
+
+
 Running a Basic Hartree--Fock Calculation
 =========================================
 
@@ -160,9 +169,9 @@ frequencies (roundoff errors of around 0.1 cm\ :sup:`-1` may exist)::
              Irrep      Harmonic Frequency
                              (cm-1)
            -----------------------------------------------
-                A1         1776.2423
-                A1         4113.7717
-                B2         4211.8290
+                A1         1776.7086
+                A1         4113.6152
+                B2         4211.6640
            -----------------------------------------------
 
 Notice that the symmetry type of the normal modes is specified (A1, A1,
@@ -170,18 +179,42 @@ B2).  The program also prints out the normal modes in terms of Cartesian
 coordinates of each atom.  For example, the normal mode at 1776 cm\ :sup:`-1` 
 is::
 
-      Frequency:       1776.24
-      Force constant:   0.1194
-            X       Y       Z           mass
+      Frequency:       1776.71
+      Force constant:   0.1195
+                X       Y       Z           mass
      O        0.000   0.000  -0.270      15.994915
      H        0.000   0.418   0.538       1.007825
      H        0.000  -0.418   0.538       1.007825
+
 
 
 where the table shows the displacements in the X, Y, and Z dimensions for
 each atom along the normal mode coordinate.  (This information could be used
 to animate the vibrational frequency using visualization software.)
 
+Because the vibrational frequencies are available, a thermodynamics
+analysis is automatically performed at the end of the computation.
+You can see this in the next section of the output file.  The vibrational
+frequencies are sufficient to obtain vibrational contributions to
+enthalpy (H), entropy (S), and Gibbs free energy (G).  Similarly, the
+molecular geometry is used to obtain rotational constants, which are
+then used to obtain rotational contributions to H, S, and G.
+
+.. warning:: It is important to know that |PSIfour|, like any other
+   quantum chemistry program, does *not* compute the usual enthalpies,
+   entropies, or Gibbs free energies *of formation* provided by most
+   reference books.  Instead, quantum chemistry programs compute "absolute"
+   thermodynamic properties relative to infinitely separated nuclei and
+   electrons, not "formation" values relative to elements in their standard
+   states.  If you are computing thermodynamic differences, like a reaction
+   enthalpy computed as the enthalpy of the products minus the enthalpy
+   of the reactants, then these "absolute" enthalpies are perfectly valid
+   and usable.  However, they cannot be mixed and matched with enthalpies of
+   formation from reference books, since the zero of energy is not the same.
+   Additionally, the "thermal energies" reported in kcal/mol are the 
+   finite-temperature *corrections* to the electronic total energy, and 
+   not the overall thermal energies themselves.  If in doubt, use the
+   reported Total Energies in Hartree/particle.
 
 Analysis of Intermolecular Interactions
 =======================================
