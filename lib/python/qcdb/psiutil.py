@@ -30,6 +30,7 @@ import re
 import os
 import string
 from vecutil import *
+from p4xcpt import *
 
 
 def _success(label):
@@ -50,12 +51,11 @@ def compare_values(expected, computed, digits, label):
     """
     thresh = 10 ** -digits if digits > 1 else digits
     if abs(expected - computed) > thresh:
-        print("\t%s: computed value (%f) does not match (%f) to %f digits." % (label, computed, expected, digits))
-        sys.exit(1)
+        message = ("\t%s: computed value (%f) does not match (%f) to %f digits." % (label, computed, expected, digits))
+        raise ValidationError(message)
     if math.isnan(computed):
-        print("\t%s: computed value (%f) does not match (%f)\n" % (label, computed, expected))
-        print("\tprobably because the computed value is nan.")
-        sys.exit(1)
+        message = ("\t%s: computed value (%f) does not match (%f)\n\tprobably because the computed value is nan." % (label, computed, expected))
+        raise ValidationError(message)
     _success(label)
 
 
@@ -66,8 +66,8 @@ def compare_integers(expected, computed, label):
 
     """
     if (expected != computed):
-        print("\t%s: computed value (%d) does not match (%d)." % (label, computed, expected))
-        sys.exit(1)
+        message = ("\t%s: computed value (%d) does not match (%d)." % (label, computed, expected))
+        raise ValidationError(message)
     _success(label)
 
 
@@ -78,8 +78,8 @@ def compare_strings(expected, computed, label):
 
     """
     if(expected != computed):
-        print("\t%s: computed value (%s) does not match (%s)." % (label, computed, expected))
-        sys.exit(1)
+        message = ("\t%s: computed value (%s) does not match (%s)." % (label, computed, expected))
+        raise ValidationError(message)
     _success(label)
 
 
@@ -105,7 +105,7 @@ def compare_matrices(expected, computed, digits, label):
         show(computed)
         print('\n')
         show(expected)
-        sys.exit(1)
+        raise ValidationError("\n")
     _success(label)
 
 

@@ -1803,6 +1803,10 @@ def run_cc_property(name, **kwargs):
             raise ValidationError("Unknown excited-state CC wave function.")
         psi4.set_global_option('DERTYPE', 'NONE')
         psi4.set_global_option('ONEPDM', 'TRUE')
+        # Tight convergence unnecessary for transition properties
+        psi4.set_local_option('CCLAMBDA','R_CONVERGENCE',1e-4)
+        psi4.set_local_option('CCEOM','R_CONVERGENCE',1e-4)
+        psi4.set_local_option('CCEOM','E_CONVERGENCE',1e-5)
         psi4.cceom()
         psi4.cclambda()
         psi4.ccdensity()
@@ -2835,7 +2839,8 @@ def run_mrcc(name, **kwargs):
     except OSError as e:
         sys.stderr.write('Program %s not found in path or execution failed: %s\n' % (cfour_executable, e.strerror))
         p4out.write('Program %s not found in path or execution failed: %s\n' % (external_exe, e.strerror))
-        sys.exit(1)
+        message = ("Program %s not found in path or execution failed: %s\n" % (external_exe, e.strerror))
+        raise ValidationError(message)
 
     c4out = ''
     while True:

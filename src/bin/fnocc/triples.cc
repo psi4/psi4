@@ -47,7 +47,7 @@ PsiReturnType CoupledCluster::triples(){
      fac = 2.0;
   }else{
      sprintf(name,"MP4");
-     sprintf(space,"");
+     sprintf(space," ");
      fac = 0.0;
   }
 
@@ -58,7 +58,7 @@ PsiReturnType CoupledCluster::triples(){
   outfile->Printf( "        *                                                     *\n");
   outfile->Printf( "        *******************************************************\n");
   outfile->Printf("\n");
-  
+
 
   int o = ndoccact;
   int v = nvirt_no;
@@ -94,7 +94,7 @@ PsiReturnType CoupledCluster::triples(){
   outfile->Printf("        memory requirements:   %9.2lf mb\n",
            (double)memory_reqd/1024./1024.);
   outfile->Printf("\n");
-  
+
 
   ULI nijk = 0;
   for (int i=0; i<o; i++){
@@ -119,8 +119,8 @@ PsiReturnType CoupledCluster::triples(){
   }
   outfile->Printf("        Number of ijk combinations: %ld\n",nijk);
   outfile->Printf("\n");
-  
-  
+
+
   E2abci = (double**)malloc(nthreads*sizeof(double*));
   // some v^3 intermediates
   double **Z  = (double**)malloc(nthreads*sizeof(double*));
@@ -162,7 +162,7 @@ PsiReturnType CoupledCluster::triples(){
   outfile->Printf("        Computing (T) correction...\n");
   outfile->Printf("\n");
   outfile->Printf("        %% complete  total time\n");
-  
+
 
   time_t stop,start = time(NULL);
   int pct10,pct20,pct30,pct40,pct50,pct60,pct70,pct80,pct90;
@@ -331,7 +331,7 @@ PsiReturnType CoupledCluster::triples(){
           }
       }
       etrip[thread] += tripval*ijkfac;
-      // print out update 
+      // print out update
       if (thread==0){
          int print = 0;
          stop = time(NULL);
@@ -346,7 +346,7 @@ PsiReturnType CoupledCluster::triples(){
          else if ((double)ind/nijk >= 0.9 && !pct90){ pct90 = 1; print=1;}
          if (print){
             outfile->Printf("              %3.1lf  %8d s\n",100.0*ind/nijk,(int)stop-(int)start);
-            
+
          }
       }
       mypsio->close(PSIF_DCC_ABCI,1);
@@ -374,12 +374,12 @@ PsiReturnType CoupledCluster::triples(){
       outfile->Printf("      * MP4(SDTQ) total energy:            %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+emp4_t+escf);
       outfile->Printf("\n");
   }
-  
+
 
   // free memory:
   free(E2ijak);
   free(tempt);
-  for (int i=0; i<nthreads; i++){  
+  for (int i=0; i<nthreads; i++){
       free(E2abci[i]);
       free(Z[i]);
       free(Z2[i]);
@@ -390,7 +390,7 @@ PsiReturnType CoupledCluster::triples(){
   free(etrip);
   delete[] name;
   delete[] space;
-            
+
   return Success;
 }
 
