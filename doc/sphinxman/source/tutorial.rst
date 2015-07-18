@@ -432,7 +432,9 @@ overall counterpoise-corrected interaction energy)::
 And that's it!  The only remaining part of the example input is a little table
 of the different R values and the CP-corrected CCSD(T) energies, converted from
 atomic units (hartree) to |kcalpermol| by multiplying by the
-automatically-defined conversion factor ``psi_hartree2kcalmol``.
+automatically-defined conversion factor ``psi_hartree2kcalmol``.  |PSIfour|
+provides several built-in physical constants and conversion factors, as
+described in section :ref:`sec:physicalConstants`.
 Notice the loop over :math:`R` to create
 the table looks just like the loop over ``R`` to run the different
 computations, and the CP-corrected energies ``ecp[R]`` are accessed the same
