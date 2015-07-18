@@ -295,6 +295,9 @@ void DFOCC::mp3_WmnijT2AB()
     Tnew->gemm(true, false, W, T, 1.0, 0.0);
     T.reset();
     W.reset();
+    //Tnew->cont444(false, 1, 2, 3, 4, W, false, 1, 2, 3, 4, T, 1.0, 0.0); // it works
+    //Tnew->cont444(true, 1, 2, 3, 4, W, true, 1, 2, 3, 4, T, 1.0, 0.0); // it works, W and T are deleted
+    //Tnew->cont444("IjAb", "MnIj", "MnAb", true, true, W, T, 1.0, 0.0); // it works, W and T are deleted
     Tnew->write(psio_, PSIF_DFOCC_AMPS);
     Tnew.reset();
     
@@ -396,6 +399,12 @@ void DFOCC::mp3_WmbejT2AA()
     X->gemm(false, false, U, W, 1.0, 0.0);
     U.reset();
     W.reset();
+    /* Experimental: The following works too.
+    T = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    T->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+    X = SharedTensor2d(new Tensor2d("X (IA|JB)", naoccA, navirA, naoccA, navirA));
+    X->cont444("IAJB", "IMAE", "MEJB", true, false, T, W, 1.0, 0.0);  
+    */
     Tnew = SharedTensor2d(new Tensor2d("New T2_2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     Tnew->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
     Tnew->P_ijab(X);
