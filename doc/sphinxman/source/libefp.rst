@@ -165,6 +165,7 @@ fragment is shown below. ::
      efp h2o  -4.0 0.0 0.0   0.0 0.0 0.0
    }
    
+   set basis 6-31g
    energy('scf')
 
 Whenever an EFP fragment is present in the active molecule, the SCF energy

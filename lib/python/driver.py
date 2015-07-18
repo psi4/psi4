@@ -565,7 +565,7 @@ def energy(name, **kwargs):
 
     >>> # [4] Converge scf as singlet, then run detci as triplet upon singlet reference
     >>> # Note that the integral transformation is not done automatically when detci is run in a separate step.
-    >>> molecule H2 {\\n0 1\\nH\\nH 1 0.74\\n}
+    >>> molecule H2 {\n0 1\nH\nH 1 0.74\n}
     >>> set global basis cc-pVDZ
     >>> set global reference rohf
     >>> energy('scf')

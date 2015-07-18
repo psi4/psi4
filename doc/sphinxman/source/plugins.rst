@@ -70,19 +70,19 @@ Several stable sample plugin directories are available to consult in the
 but are in active development. For documentation on plugin modules, see
 :ref:`Available Plugins <sec:availablePlugins>`.
 
-* :source:`plugins/aointegrals/aointegrals.cc.in` 
+* :source:`plugins/aointegrals/aointegrals.cc` 
   An example that uses the LibMints library to generate and print AO basis (no symmetry) integrals.
 
-* :source:`tests/plugin_backtrans/backtrans.cc.in` 
+* :source:`plugins/backtrans/backtrans.cc` 
   A test of the one- and two-particle density matrix backtransformation code.
 
-* :source:`plugins/mointegrals/mointegrals.cc.in` 
+* :source:`plugins/mointegrals/mointegrals.cc` 
   An example that uses the LibTrans library to generate and print MO basis integrals.
 
-* :source:`plugins/mp2/mp2.cc.in` 
+* :source:`plugins/mollerplesset2/mp2.cc` 
   A plugin that uses LibTrans to generate open- and closed-shell MP2 energies.
 
-* :source:`plugins/sointegrals/sointegrals.cc.in` 
+* :source:`plugins/sointegrals/sointegrals.cc` 
   An example that uses the LibMints library to generate and print SO basis (with symmetry) integrals.
 
 
