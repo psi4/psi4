@@ -1,6 +1,6 @@
 /*! \file
     \ingroup INT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include<stdio.h>
 #include<stdlib.h>
@@ -71,7 +71,7 @@ int get_mem(int size)
       }
     }
 
-  
+
 /* last resort, expand memory */
   add_mem(1000);
   return get_mem(size);
@@ -106,7 +106,7 @@ void use(int n, int s)
 
 void free_mem(int n, int size)
 {
-  int i, j;
+  /*int i, j;*/
 
   free_block[last_free] = n;
   block_length[last_free] = size;

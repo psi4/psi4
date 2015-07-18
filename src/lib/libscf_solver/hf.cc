@@ -575,12 +575,12 @@ void HF::print_header()
         outfile->Printf( "  Energy threshold   = %3.2e\n", energy_threshold_);
         outfile->Printf( "  Density threshold  = %3.2e\n", density_threshold_);
         outfile->Printf( "  Integral threshold = %3.2e\n\n", integral_threshold_);
-        
+
 
         outfile->Printf( "  ==> Primary Basis <==\n\n");
 
     basisset_->print_by_level("outfile", print_);
-    
+
 }
 void HF::print_preiterations()
 {
@@ -646,12 +646,12 @@ void HF::form_H()
 
           FILE* input = fopen("EMBPOT", "r");
           int npoints;
-          fscanf(input, "%d", &npoints);
+          int statusvalue=fscanf(input, "%d", &npoints);
           outfile->Printf( "  npoints = %d\n", npoints);
           double x, y, z, w, v;
           double max = 0;
           for(int k=0; k < npoints; k++) {
-            fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
+            statusvalue=fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
             if(fabs(v) > max) max = fabs(v);
 
             basisset_->compute_phi(phi_ao, x, y, z);
@@ -887,7 +887,7 @@ void HF::form_Shalf()
         S_->print("outfile");
         X_->print("outfile");
     }
-    
+
 }
 
 void HF::compute_fcpi()
@@ -1323,7 +1323,7 @@ void HF::load_orbitals()
         //boost::shared_ptr<BasisSet> dual_basis = BasisSet::pyconstruct(molecule_, basisname,
         //            "DUAL_BASIS_SCF");
         // TODO: I think Rob was planning to rework this projection bit anyways
-        // 2 Apr 2015: I (LAB) was hoping to avoid detangling this, but the need to 
+        // 2 Apr 2015: I (LAB) was hoping to avoid detangling this, but the need to
         //  optimize w/custom basis sets has arrived before the new scf code, hence this hack
     }
 
@@ -1450,7 +1450,7 @@ void HF::load_orbitals()
             }
         }
     }
-    psio_->close(PSIF_SCF_MOS,1);    
+    psio_->close(PSIF_SCF_MOS,1);
     delete[] basisnamec;
 }
 
@@ -1637,7 +1637,7 @@ double HF::compute_energy()
 
         outfile->Printf( "  ==> Iterations <==\n\n");
         outfile->Printf( "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", df ? "   " : "");
-    
+
 
     if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
         Process::environment.get_efp()->set_qm_atoms();
@@ -1685,7 +1685,7 @@ double HF::compute_energy()
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
             double efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update();
             E_ += efp_wfn_dependent_energy;
-        }   
+        }
 
 #ifdef HAVE_PCMSOLVER
         // The PCM potential must be added to the Fock operator *after* the
@@ -1715,7 +1715,7 @@ double HF::compute_energy()
           energies_["PCM Polarization"] = Epcm;
 	  Process::environment.globals["PCM POLARIZATION ENERGY"] = Epcm;
           E_ += Epcm;
-          
+
           // Add the PCM potential to the Fock matrix
           SharedMatrix V_pcm;
           V_pcm = hf_pcm_->compute_V();
@@ -1725,7 +1725,7 @@ double HF::compute_energy()
             Fb_->add(V_pcm);
           }
         }
-#endif	
+#endif
 
         timer_on("DIIS");
         bool add_to_diis_subspace = false;
@@ -1796,7 +1796,7 @@ double HF::compute_energy()
 
             outfile->Printf( "   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n", df ? "DF-" : "",
                               reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
-            
+
 
 
         // If a an excited MOM is requested but not started, don't stop yet
@@ -1848,7 +1848,7 @@ double HF::compute_energy()
         // Need to recompute the Fock matrices, as they are modified during the SCF interation
         // and might need to be dumped to checkpoint later
         form_F();
-#ifdef HAVE_PCMSOLVER	
+#ifdef HAVE_PCMSOLVER
         if(pcm_enabled_) {
             // Prepare the density
             SharedMatrix D_pcm;
@@ -1870,7 +1870,7 @@ double HF::compute_energy()
               Fb_->add(V_pcm);
             }
         }
-#endif	
+#endif
 
         // Print the orbitals
         if(print_)
@@ -1960,7 +1960,7 @@ double HF::compute_energy()
 
 
     //outfile->Printf("\nComputation Completed\n");
-    
+
     return E_;
 }
 

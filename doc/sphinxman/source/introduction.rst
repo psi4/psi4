@@ -42,8 +42,8 @@ For the latest |PSIfour| documentation, check
 Citing |PSIfour|
 ================
 
-Overall PSI4 Package
-^^^^^^^^^^^^^^^^^^^^
+Overall |PSIfour| Package
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following citation should be used in any publication utilizing the
 |PSIfour| program package:
