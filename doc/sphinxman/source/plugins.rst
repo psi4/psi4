@@ -25,7 +25,7 @@ wrapped in a library, they should be placed into :source:`src/lib`, and
 codes that resemble modules belong in :source:`src/bin`.
 
 The single-executable design leads to a somewhat cumbersome development
-cycle, since every time a change is make, one must compile the code,
+cycle, since every time a change is made, one must compile the code,
 archive it into a library, and then re-link the code into the main
 executable. It's also daunting to new developers if they're required to
 learn the structure of the source tree, executable initialization code,
@@ -70,19 +70,19 @@ Several stable sample plugin directories are available to consult in the
 but are in active development. For documentation on plugin modules, see
 :ref:`Available Plugins <sec:availablePlugins>`.
 
-* :source:`plugins/aointegrals/aointegrals.cc.in` 
+* :source:`plugins/aointegrals/aointegrals.cc` 
   An example that uses the LibMints library to generate and print AO basis (no symmetry) integrals.
 
-* :source:`tests/plugin_backtrans/backtrans.cc.in` 
+* :source:`plugins/backtrans/backtrans.cc` 
   A test of the one- and two-particle density matrix backtransformation code.
 
-* :source:`plugins/mointegrals/mointegrals.cc.in` 
+* :source:`plugins/mointegrals/mointegrals.cc` 
   An example that uses the LibTrans library to generate and print MO basis integrals.
 
-* :source:`plugins/mp2/mp2.cc.in` 
+* :source:`plugins/mollerplesset2/mp2.cc` 
   A plugin that uses LibTrans to generate open- and closed-shell MP2 energies.
 
-* :source:`plugins/sointegrals/sointegrals.cc.in` 
+* :source:`plugins/sointegrals/sointegrals.cc` 
   An example that uses the LibMints library to generate and print SO basis (with symmetry) integrals.
 
 

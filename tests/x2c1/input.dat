@@ -17,7 +17,7 @@ set {
 }
 
 testnr = energy('scf')
-set rel_method x2c
+set relativistic x2c
 testrel = energy('scf')
 
 compare_values(ref_nuc_energy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
