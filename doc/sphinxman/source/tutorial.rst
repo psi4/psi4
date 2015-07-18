@@ -343,7 +343,7 @@ in the :source:`samples` directory.
 Suppose you want to do a limited potential energy surface scan, such as
 computing the interaction energy between two neon atoms at various
 interatomic distances.  One simple but unappealing way to do this is to
-create separate input files for each distance to be studied.  But most of
+create separate input files for each distance to be studied.  Most of
 these input files are identical, except that the interatomic distance is
 different.  Psithon lets you specify all this in a single input file,
 looping over the different distances with an array like this:
@@ -405,11 +405,35 @@ the index.  Note we didn't need to specify ghost atoms, and we didn't need
 to call the monomer and dimer computations separately.  The built-in
 Psithon function :py:func:`~wrappers.cp` does it all for us, automatically.
 
+Near the very end of the output file, the counterpoise correction Python
+function will print a nice summary of the results of the counterpoise
+computation (the energies of the dimer, of monomer 1 with the ghost functions
+of monomer 2, of monomer 2 with the ghost functions of monomer 1, and the
+overall counterpoise-corrected interaction energy)::
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //      CP Computation: Results.     //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+  ============= Hartree =============
+  System:  Energy (full):
+  Complex       -257.4186740329
+  Monomer 1     -128.7093240575
+  Monomer 2     -128.7093240575
+  Interaction   -0.0000259178
+
+  =========== kcal*mol^-1 ===========
+  System:  Energy (full):
+  Complex     -161532.6634330375
+  Monomer 1    -80766.3235846726
+  Monomer 2    -80766.3235846725
+  Interaction      -0.0162636924
+
 And that's it!  The only remaining part of the example input is a little table
 of the different R values and the CP-corrected CCSD(T) energies, converted from
 atomic units (hartree) to |kcalpermol| by multiplying by the
-automatically-defined conversion factor ``psi_hartree2kcalmol``, which is
-defined in Sec. :ref:`sec:psirc`.  Notice the loop over :math:`R` to create
+automatically-defined conversion factor ``psi_hartree2kcalmol``.
+Notice the loop over :math:`R` to create
 the table looks just like the loop over ``R`` to run the different
 computations, and the CP-corrected energies ``ecp[R]`` are accessed the same
 way they were stored.  The ``print`` line at the end just specifies some
@@ -420,6 +444,17 @@ format strings are the same as in the C programming language.  For tables more
 complicated than the simple one used here, Psithon has built-in support for
 tables (see the next section).
 
+Our table is printed at the very end of the output file, and looks like
+this ::
+
+  CP-corrected CCSD(T)/aug-cc-pVDZ interaction energies
+  
+          R (Ang)         E_int (kcal/mol)
+  -----------------------------------------------------
+          2.5              0.757718
+          3.0              0.015687
+          4.0             -0.016264
+  
 The following section goes over Psithon in much more detail, but
 hopefully this example already makes it clear that many complex tasks
 can be done very easily in |PSIfour|.
