@@ -84,7 +84,7 @@ Detailed Installation of Miniconda
     # check
     >>> which bzip2
     /usr/bin/bzip2
-    >>> curl -O "http://sirius.chem.vt.edu/psi4manual/master/introduction.html"
+    >>> curl -O "http://psicode.org/psi4manual/master/introduction.html"
     >>> ls -1
     introduction.html
 
