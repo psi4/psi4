@@ -57,6 +57,7 @@ if (reference_ == "RESTRICTED") {
     // T(Q,ia) = \sum_{jb} b_jb^Q U_ij^ab = \sum_{jb} b(Q,jb) U(jb,ia)
     T = SharedTensor2d(new Tensor2d("T2 (Q|IA)", nQ, naoccA, navirA));
     T->gemm(false, false, bQiaA, U, 1.0, 0.0);
+    //T->cont343("IA", "JB", "IAJB", false, bQiaA, U, 1.0, 0.0); // it works
     T->write(psio_, PSIF_DFOCC_AMPS);
     T.reset();
 
@@ -68,6 +69,7 @@ if (reference_ == "RESTRICTED") {
     L = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     L->sort(1324, T1, 1.0, 0.0);
     GijA->contract(false, true, naoccA, naoccA, naoccA*navirA*navirA, T, L, 1.0, 0.0);
+    //GijA->cont442("MI", "MNEF", "INEF", false, false, T, L, 1.0, 0.0); // it works
 
     // G_ae = -\sum_{m,n,f} U_mn^ef L_mn^af(1) = L(mn,fa)(1) U(mn,fe) 
     GabA->contract(true, false, navirA, navirA, naoccA*naoccA*navirA, L, T, -1.0, 0.0);

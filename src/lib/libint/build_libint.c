@@ -1,6 +1,6 @@
 /*! \file
     \ingroup INT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 /*! \defgroup INT libint: The Integral Library */
@@ -52,17 +52,18 @@ int emit_vrr_build_macro();
 int emit_order();
 int emit_hrr_build();
 int emit_hrr_build_macro();
+char* strdup(const char *str);
 
 int main()
 {
-  int i,j,k,l,f;
-  int j_min, j_max, k_min, k_max, l_min, l_max;
-  int errcod;
-  int old_am = 0;
+  int l;/*i,j,k,f;*/
+  /*int j_min, j_max, k_min, k_max, l_min, l_max;*/
+  /*int errcod;*/
+  /*int old_am = 0;*/
   int new_am, opt_am;
   int max_class_size = DEFAULT_MAX_CLASS_SIZE;
   int long_double = 0;     /*--- Whether to use long doubles ---*/
-  int stack_size;
+  /*int stack_size;*/
 
   /*-------------------------------
     Initialize files and libraries
@@ -135,7 +136,7 @@ int main()
   /* put computed stack sizes for each angular momentum level into init_libint_base() */
   for(l=0;l<=new_am/2;l++)
     fprintf(init_code,"\n  libint_stack_size[%d] = %d;",l,libint_stack_size[l]);
-  
+
   fprintf(init_code,"\n}\n");
   fprintf(init_code,"/* These functions initialize library objects */\n");
   fprintf(init_code,"/* Library objects operate independently of each other */\n");
@@ -167,7 +168,7 @@ int main()
   fclose(init_code);
   fclose(vrr_header);
   fclose(hrr_header);
-  
+
     /* Setting up libint.h */
   fprintf(libint_header,"#ifndef _psi3_libint_h\n");
   fprintf(libint_header,"#define _psi3_libint_h\n\n");
@@ -180,8 +181,8 @@ int main()
   fprintf(libint_header,"typedef struct pdata{\n");
   fprintf(libint_header,"  REALTYPE F[%d];\n",2*new_am+1);
   fprintf(libint_header,"  REALTYPE U[6][3];\n");
-  fprintf(libint_header,"  REALTYPE twozeta_a;\n"); 
-  fprintf(libint_header,"  REALTYPE twozeta_b;\n"); 
+  fprintf(libint_header,"  REALTYPE twozeta_a;\n");
+  fprintf(libint_header,"  REALTYPE twozeta_b;\n");
   fprintf(libint_header,"  REALTYPE twozeta_c;\n");
   fprintf(libint_header,"  REALTYPE twozeta_d;\n");
   fprintf(libint_header,"  REALTYPE oo2z;\n");
@@ -193,8 +194,8 @@ int main()
   fprintf(libint_header,"  REALTYPE ss_r12_ss;\n");
   fprintf(libint_header,"  } prim_data;\n\n");
   fprintf(libint_header,"typedef struct {\n");
-  fprintf(libint_header,"  REALTYPE *int_stack;\n"); 
-  fprintf(libint_header,"  prim_data *PrimQuartet;\n"); 
+  fprintf(libint_header,"  REALTYPE *int_stack;\n");
+  fprintf(libint_header,"  prim_data *PrimQuartet;\n");
   fprintf(libint_header,"  REALTYPE AB[3];\n");
   fprintf(libint_header,"  REALTYPE CD[3];\n");
   fprintf(libint_header,"  REALTYPE *vrr_classes[%d][%d];\n",1+new_am,1+new_am);
@@ -221,7 +222,7 @@ int main()
 
 void punt(char* str)
 {
-  printf(str);
+  printf("%s",str);
   exit(1);
 }
 

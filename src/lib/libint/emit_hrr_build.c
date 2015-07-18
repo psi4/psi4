@@ -1,6 +1,6 @@
 /*! \file
     \ingroup INT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <math.h>
 #include <stdio.h>
@@ -11,9 +11,9 @@
 extern FILE* outfile, *hrr_header;
 extern LibintParams_t Params;
 
-extern void punt(char *);
-
-int emit_hrr_build()
+extern void punt(const char *);
+void emit_hrr_build();
+void emit_hrr_build()
 {
   int new_am = Params.new_am;
   int max_class_size = Params.max_class_size;
@@ -21,13 +21,13 @@ int emit_hrr_build()
 
   FILE *code;
   int p,q,r,s;
-  int ax,ay,az,bx,by,bz,cx,cy,cz,dx,dy,dz;
-  int t0, t1, t2, t3, t4;
-  int i,j,nj,i_i0,i_i1;
-  int k,l,nl,k_i0,k_i1;
+  /*int ax,ay,az,bx,by,bz,cx,cy,cz,dx,dy,dz;*/
+  int t0, t1;/* t2, t3, t4;*/
+  int i;/*,j,nj,i_i0,i_i1;*/
+  int nl;/*k,l,k_i0,k_i1;*/
   int i0_step,i1_step;
-  int a, b;
-  int flag;
+  /*int a, b;*/
+  /*int flag;*/
   int am_in[2];
   int am[2][3];
   int current_highest_am, to_inline;
@@ -42,7 +42,7 @@ int emit_hrr_build()
   char code_name[20];
   char function_name[18];
   char **subfunction_name;
-  
+
 
   for(lc=0;lc<=new_am;lc++) {
     ld_max = lc/2 + 1;
@@ -60,7 +60,7 @@ int emit_hrr_build()
       /* Is this function to be made inline */
       current_highest_am = (am_in[0] > am_in[1]) ? am_in[0] : am_in[1];
       to_inline = (current_highest_am <= am_to_inline) ? 1 : 0;
-      
+
       class_size = ((am_in[0]+1)*(am_in[0]+2)*(am_in[1]+1)*(am_in[1]+2))/4;
 
       if (to_inline)
@@ -78,7 +78,7 @@ int emit_hrr_build()
       else {
 	split = 0;
       }
-      
+
       sprintf(function_name,"hrr3_build_%c%c",am_letter[am_in[0]],am_letter[am_in[1]]);
       if (split) {
 	subfunction_name = (char **) malloc (num_subfunctions*sizeof(char *));
@@ -88,7 +88,7 @@ int emit_hrr_build()
 		  function_name,i);
 	}
       }
-      
+
       sprintf(code_name,"%s.cc",function_name);
       code = fopen(code_name,"w");
 
@@ -138,7 +138,7 @@ int emit_hrr_build()
 	for(q = 0; q <= p; q++){
 	  am[0][1] = p - q;
 	  am[0][2] = q;
-	  
+
 	  for(r = 0; r <= am_in[1]; r++){
 	    am[1][0] = am_in[1] - r;
 	    for(s = 0; s <= r; s++){
@@ -162,7 +162,7 @@ int emit_hrr_build()
 	      t1 = hash(am,am_in);
 	      am[1][xyz] += 1;
 	      am_in[1] += 1;
-	      
+
 	      fprintf(code, "    *(vp++) = I0[%d] + CD%d*I1[%d];\n",t0,xyz,t1);
 
 	      curr_count++;
@@ -189,8 +189,8 @@ int emit_hrr_build()
       }
       fclose(code);
       printf("Done with %s\n",code_name);
-      
-      
+
+
       /*-----------------------
 	HRR on centers A and B
        -----------------------*/
@@ -216,7 +216,7 @@ int emit_hrr_build()
       else {
 	split = 0;
       }
-      
+
       sprintf(function_name,"hrr1_build_%c%c",am_letter[am_in[0]],am_letter[am_in[1]]);
       if (split) {
 	subfunction_name = (char **) malloc (num_subfunctions*sizeof(char *));
@@ -226,7 +226,7 @@ int emit_hrr_build()
 		  function_name,i);
 	}
       }
-      
+
       sprintf(code_name,"%s.cc",function_name);
       code = fopen(code_name,"w");
       fprintf(code,"  /* This machine-generated function computes a quartet of (%c%c| integrals */\n\n",
@@ -268,15 +268,15 @@ int emit_hrr_build()
 	fprintf(code,"  REALTYPE *i0, *i1;\n");
 	fprintf(code,"  int cd;\n\n");
       }
-      
-      nj = (lb*(lb+1))/2;
+
+      /*nj = (lb*(lb+1))/2;*/
 
       for(p = 0; p <= am_in[0]; p++){
 	am[0][0] = am_in[0] - p;
 	for(q = 0; q <= p; q++){
 	  am[0][1] = p - q;
 	  am[0][2] = q;
-	  
+
 	  for(r = 0; r <= am_in[1]; r++){
 	    am[1][0] = am_in[1] - r;
 	    for(s = 0; s <= r; s++){
@@ -300,7 +300,7 @@ int emit_hrr_build()
 	      t1 = hash(am,am_in);
 	      am[1][xyz] += 1;
 	      am_in[1] += 1;
-	      
+
 	      if (t0)
 		fprintf(code,"  i0 = I0 + %d*cd_num;\n",t0);
 	      else

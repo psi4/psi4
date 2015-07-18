@@ -26,6 +26,7 @@ import math
 import p4util
 from molutil import *
 from driver import *
+from p4xcpt import *
 
 # Scan from +1 electron to -1 electron
 def frac_traverse(mol, **kwargs):
@@ -556,8 +557,8 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     delta_r = IPr - kIPr;
 
     if (IPr > kIPr):
-        psi4.print_out('\n***IP Fitting Error: Right Omega limit should have kIP > IP')
-        sys.exit(1)
+        message = ('\n***IP Fitting Error: Right Omega limit should have kIP > IP')
+        raise ValidationError(message)
 
     omegas.append(omega_r)
     types.append('Right Limit')
@@ -607,8 +608,8 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     delta_l = IPl - kIPl;
 
     if (IPl < kIPl):
-        psi4.print_out('\n***IP Fitting Error: Left Omega limit should have kIP < IP')
-        sys.exit(1)
+        message = ('\n***IP Fitting Error: Left Omega limit should have kIP < IP')
+        raise ValidationError(message)
 
     omegas.append(omega_l)
     types.append('Left Limit')
