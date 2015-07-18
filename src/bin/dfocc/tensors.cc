@@ -4015,6 +4015,1207 @@ void Tensor2d::P_ijab(const SharedTensor2d &A)
 
 }//
 
+void Tensor2d::cont444(int t_a1, int t_a2, int f_a1, int f_a2, const SharedTensor2d& A, 
+		     int t_b1, int t_b2, int f_b1, int f_b2, const SharedTensor2d& B, 
+		     double alpha, double beta)
+{
+    char ta, tb;
+    int nca, ncb, ncc;
+    int m, n, k;
+    int r1, r2, c1, c2;
+    int rr1, rr2, cc1, cc2;
+    int dim_t, dim_u;
+
+    // C(pq,rs) = \sum_{tu} A(pq,tu) B(tu,rs)
+    if (t_a1 == 3 && t_a2 == 4 && t_b1 == 1 && t_b2 == 2) {
+        ta = 'n';
+        tb = 'n';
+        m = dim1_;
+        n = dim2_;
+        k = A->dim2_;
+        nca = k; // lda
+        ncb = n; // ldb
+        ncc = n; // ldc
+
+        C_DGEMM(ta, tb, m, n, k, alpha, &(A->A2d_[0][0]), nca, &(B->A2d_[0][0]), ncb, beta, &(A2d_[0][0]), ncc);
+    }
+    
+    else {
+
+	// r1
+	if (t_a1 == 1) {
+	    r1 = t_a1;
+	    dim_t = A->d1_;
+	}
+	else if (t_a2 == 1) {
+	    r1 = t_a2;
+	    dim_u = A->d1_;
+	}
+	else if (f_a1 == 1) r1 = f_a1;
+	else if (f_a2 == 1) r1 = f_a2;
+
+	// r2
+	if (t_a1 == 2) {
+	    r2 = t_a1;
+	    dim_t = A->d2_;
+	}
+	else if (t_a2 == 2) {
+	    r2 = t_a2;
+	    dim_u = A->d2_;
+	}
+	else if (f_a1 == 2) r2 = f_a1;
+	else if (f_a2 == 2) r2 = f_a2;
+
+	// c1
+	if (t_a1 == 3) {
+	    c1 = t_a1;
+	    dim_t = A->d3_;
+	}
+	else if (t_a2 == 3) {
+	    c1 = t_a2;
+	    dim_u = A->d3_;
+	}
+	else if (f_a1 == 3) c1 = f_a1;
+	else if (f_a2 == 3) c1 = f_a2;
+
+	// c2
+	if (t_a1 == 4) {
+	    c2 = t_a1;
+	    dim_t = A->d4_;
+	}
+	else if (t_a2 == 4) {
+	    c2 = t_a2;
+	    dim_u = A->d4_;
+	}
+	else if (f_a1 == 4) c2 = f_a1;
+	else if (f_a2 == 4) c2 = f_a2;
+
+	//outfile->Printf("\tDimensions of A: %2d, %2d, %2d, %2d  \n", r1,r2,c1,c2);
+
+	// Sort A(..,..) to A(pq,tu)
+        SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", d1_, d2_, dim_t, dim_u));
+	#pragma omp parallel for
+        for (int p = 0; p < d1_; p++) {
+             for (int q = 0; q < d2_; q++) {
+                  int pq = temp1->row_idx_[p][q];
+                  for (int t = 0; t < dim_t; t++) {
+                       for (int u = 0; u < dim_u; u++) {
+                            int tu = temp1->col_idx_[t][u];
+
+			    if (r1 == f_a1) rr1 = p;
+			    else if (r1 == f_a2) rr1 = q;
+			    else if (r1 == t_a1) rr1 = t;
+			    else if (r1 == t_a2) rr1 = u;
+
+			    if (r2 == f_a1) rr2 = p;
+			    else if (r2 == f_a2) rr2 = q;
+			    else if (r2 == t_a1) rr2 = t;
+			    else if (r2 == t_a2) rr2 = u;
+
+			    if (c1 == f_a1) cc1 = p;
+			    else if (c1 == f_a2) cc1 = q;
+			    else if (c1 == t_a1) cc1 = t;
+			    else if (c1 == t_a2) cc1 = u;
+
+			    if (c2 == f_a1) cc2 = p;
+			    else if (c2 == f_a2) cc2 = q;
+			    else if (c2 == t_a1) cc2 = t;
+			    else if (c2 == t_a2) cc2 = u;
+
+			    int row = rr2 + (rr1 * A->d2_);
+			    int col = cc2 + (cc1 * A->d4_);
+
+                            temp1->A2d_[pq][tu] = A->A2d_[row][col];
+                       }
+                  }
+             }
+        }
+	//temp1->print();
+	
+
+        // r1
+        if (t_b1 == 1) r1 = t_b1;
+        else if (t_b2 == 1) r1 = t_b2;
+        else if (f_b1 == 1) r1 = f_b1;
+        else if (f_b2 == 1) r1 = f_b2;
+
+        // r2
+	if (t_b1 == 2) r2 = t_b1;
+	else if (t_b2 == 2) r2 = t_b2;
+	else if (f_b1 == 2) r2 = f_b1;
+	else if (f_b2 == 2) r2 = f_b2;
+
+	// c1
+	if (t_b1 == 3) c1 = t_b1;
+	else if (t_b2 == 3) c1 = t_b2;
+	else if (f_b1 == 3) c1 = f_b1;
+	else if (f_b2 == 3) c1 = f_b2;
+
+        // c2
+        if (t_b1 == 4) c2 = t_b1;
+        else if (t_b2 == 4) c2 = t_b2;
+        else if (f_b1 == 4) c2 = f_b1;
+        else if (f_b2 == 4) c2 = f_b2;
+
+	//outfile->Printf("\tDimensions of B: %2d, %2d, %2d, %2d  \n", r1,r2,c1,c2);
+
+	// Sort B(..,..) to B(tu,rs)
+        SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", dim_t, dim_u, d3_, d4_));
+	#pragma omp parallel for
+        for (int t = 0; t < dim_t; t++) {
+             for (int u = 0; u < dim_u; u++) {
+                  int tu = temp2->row_idx_[t][u];
+                  for (int r = 0; r < d3_; r++) {
+                       for (int s = 0; s < d4_; s++) {
+                            int rs = temp2->col_idx_[r][s];
+
+			    if (r1 == f_b1) rr1 = r;
+			    else if (r1 == f_b2) rr1 = s;
+			    else if (r1 == t_b1) rr1 = t;
+			    else if (r1 == t_b2) rr1 = u;
+
+			    if (r2 == f_b1) rr2 = r;
+			    else if (r2 == f_b2) rr2 = s;
+			    else if (r2 == t_b1) rr2 = t;
+			    else if (r2 == t_b2) rr2 = u;
+
+			    if (c1 == f_b1) cc1 = r;
+			    else if (c1 == f_b2) cc1 = s;
+			    else if (c1 == t_b1) cc1 = t;
+			    else if (c1 == t_b2) cc1 = u;
+
+			    if (c2 == f_b1) cc2 = r;
+			    else if (c2 == f_b2) cc2 = s;
+			    else if (c2 == t_b1) cc2 = t;
+			    else if (c2 == t_b2) cc2 = u;
+
+			    int row = rr2 + (rr1 * B->d2_);
+			    int col = cc2 + (cc1 * B->d4_);
+
+                            temp2->A2d_[tu][rs] = B->A2d_[row][col];
+                       }
+                  }
+             }
+        }
+	//temp2->print();
+
+        ta = 'n';
+        tb = 'n';
+        m = dim1_;
+        n = dim2_;
+        k = temp1->dim2();
+        nca = k; // lda
+        ncb = n; // ldb
+        ncc = n; // ldc
+
+        C_DGEMM(ta, tb, m, n, k, alpha, &(temp1->A2d_[0][0]), nca, &(temp2->A2d_[0][0]), ncb, beta, &(A2d_[0][0]), ncc);
+	temp1.reset();
+	temp2.reset();
+ 
+    }// end else
+
+
+
+}//
+
+void Tensor2d::cont444(bool delete_a, int t_a1, int t_a2, int f_a1, int f_a2, SharedTensor2d& A, 
+		     bool delete_b, int t_b1, int t_b2, int f_b1, int f_b2, SharedTensor2d& B, 
+		     double alpha, double beta)
+{
+
+    char ta, tb;
+    int nca, ncb, ncc;
+    int m, n, k;
+    int r1, r2, c1, c2;
+    int rr1, rr2, cc1, cc2;
+    int dim_t, dim_u;
+
+    // C(pq,rs) = \sum_{tu} A(pq,tu) B(tu,rs)
+    if (t_a1 == 3 && t_a2 == 4 && t_b1 == 1 && t_b2 == 2) {
+        ta = 'n';
+        tb = 'n';
+        m = dim1_;
+        n = dim2_;
+        k = A->dim2_;
+        nca = k; // lda
+        ncb = n; // ldb
+        ncc = n; // ldc
+
+        C_DGEMM(ta, tb, m, n, k, alpha, &(A->A2d_[0][0]), nca, &(B->A2d_[0][0]), ncb, beta, &(A2d_[0][0]), ncc);
+    }
+    
+    else {
+
+	// r1
+	if (t_a1 == 1) {
+	    r1 = t_a1;
+	    dim_t = A->d1_;
+	}
+	else if (t_a2 == 1) {
+	    r1 = t_a2;
+	    dim_u = A->d1_;
+	}
+	else if (f_a1 == 1) r1 = f_a1;
+	else if (f_a2 == 1) r1 = f_a2;
+
+	// r2
+	if (t_a1 == 2) {
+	    r2 = t_a1;
+	    dim_t = A->d2_;
+	}
+	else if (t_a2 == 2) {
+	    r2 = t_a2;
+	    dim_u = A->d2_;
+	}
+	else if (f_a1 == 2) r2 = f_a1;
+	else if (f_a2 == 2) r2 = f_a2;
+
+	// c1
+	if (t_a1 == 3) {
+	    c1 = t_a1;
+	    dim_t = A->d3_;
+	}
+	else if (t_a2 == 3) {
+	    c1 = t_a2;
+	    dim_u = A->d3_;
+	}
+	else if (f_a1 == 3) c1 = f_a1;
+	else if (f_a2 == 3) c1 = f_a2;
+
+	// c2
+	if (t_a1 == 4) {
+	    c2 = t_a1;
+	    dim_t = A->d4_;
+	}
+	else if (t_a2 == 4) {
+	    c2 = t_a2;
+	    dim_u = A->d4_;
+	}
+	else if (f_a1 == 4) c2 = f_a1;
+	else if (f_a2 == 4) c2 = f_a2;
+
+	//outfile->Printf("\tDimensions of A: %2d, %2d, %2d, %2d  \n", r1,r2,c1,c2);
+
+	// Sort A(..,..) to A(pq,tu)
+        SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", d1_, d2_, dim_t, dim_u));
+	#pragma omp parallel for
+        for (int p = 0; p < d1_; p++) {
+             for (int q = 0; q < d2_; q++) {
+                  int pq = temp1->row_idx_[p][q];
+                  for (int t = 0; t < dim_t; t++) {
+                       for (int u = 0; u < dim_u; u++) {
+                            int tu = temp1->col_idx_[t][u];
+
+			    if (r1 == f_a1) rr1 = p;
+			    else if (r1 == f_a2) rr1 = q;
+			    else if (r1 == t_a1) rr1 = t;
+			    else if (r1 == t_a2) rr1 = u;
+
+			    if (r2 == f_a1) rr2 = p;
+			    else if (r2 == f_a2) rr2 = q;
+			    else if (r2 == t_a1) rr2 = t;
+			    else if (r2 == t_a2) rr2 = u;
+
+			    if (c1 == f_a1) cc1 = p;
+			    else if (c1 == f_a2) cc1 = q;
+			    else if (c1 == t_a1) cc1 = t;
+			    else if (c1 == t_a2) cc1 = u;
+
+			    if (c2 == f_a1) cc2 = p;
+			    else if (c2 == f_a2) cc2 = q;
+			    else if (c2 == t_a1) cc2 = t;
+			    else if (c2 == t_a2) cc2 = u;
+
+			    int row = rr2 + (rr1 * A->d2_);
+			    int col = cc2 + (cc1 * A->d4_);
+
+                            temp1->A2d_[pq][tu] = A->A2d_[row][col];
+                       }
+                  }
+             }
+        }
+	//temp1->print();
+	if (delete_a) A.reset();
+	
+
+        // r1
+        if (t_b1 == 1) r1 = t_b1;
+        else if (t_b2 == 1) r1 = t_b2;
+        else if (f_b1 == 1) r1 = f_b1;
+        else if (f_b2 == 1) r1 = f_b2;
+
+        // r2
+	if (t_b1 == 2) r2 = t_b1;
+	else if (t_b2 == 2) r2 = t_b2;
+	else if (f_b1 == 2) r2 = f_b1;
+	else if (f_b2 == 2) r2 = f_b2;
+
+	// c1
+	if (t_b1 == 3) c1 = t_b1;
+	else if (t_b2 == 3) c1 = t_b2;
+	else if (f_b1 == 3) c1 = f_b1;
+	else if (f_b2 == 3) c1 = f_b2;
+
+        // c2
+        if (t_b1 == 4) c2 = t_b1;
+        else if (t_b2 == 4) c2 = t_b2;
+        else if (f_b1 == 4) c2 = f_b1;
+        else if (f_b2 == 4) c2 = f_b2;
+
+	//outfile->Printf("\tDimensions of B: %2d, %2d, %2d, %2d  \n", r1,r2,c1,c2);
+
+	// Sort B(..,..) to B(tu,rs)
+        SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", dim_t, dim_u, d3_, d4_));
+	#pragma omp parallel for
+        for (int t = 0; t < dim_t; t++) {
+             for (int u = 0; u < dim_u; u++) {
+                  int tu = temp2->row_idx_[t][u];
+                  for (int r = 0; r < d3_; r++) {
+                       for (int s = 0; s < d4_; s++) {
+                            int rs = temp2->col_idx_[r][s];
+
+			    if (r1 == f_b1) rr1 = r;
+			    else if (r1 == f_b2) rr1 = s;
+			    else if (r1 == t_b1) rr1 = t;
+			    else if (r1 == t_b2) rr1 = u;
+
+			    if (r2 == f_b1) rr2 = r;
+			    else if (r2 == f_b2) rr2 = s;
+			    else if (r2 == t_b1) rr2 = t;
+			    else if (r2 == t_b2) rr2 = u;
+
+			    if (c1 == f_b1) cc1 = r;
+			    else if (c1 == f_b2) cc1 = s;
+			    else if (c1 == t_b1) cc1 = t;
+			    else if (c1 == t_b2) cc1 = u;
+
+			    if (c2 == f_b1) cc2 = r;
+			    else if (c2 == f_b2) cc2 = s;
+			    else if (c2 == t_b1) cc2 = t;
+			    else if (c2 == t_b2) cc2 = u;
+
+			    int row = rr2 + (rr1 * B->d2_);
+			    int col = cc2 + (cc1 * B->d4_);
+
+                            temp2->A2d_[tu][rs] = B->A2d_[row][col];
+                       }
+                  }
+             }
+        }
+	//temp2->print();
+	if (delete_b) B.reset();
+
+        ta = 'n';
+        tb = 'n';
+        m = dim1_;
+        n = dim2_;
+        k = temp1->dim2();
+        nca = k; // lda
+        ncb = n; // ldb
+        ncc = n; // ldc
+
+        C_DGEMM(ta, tb, m, n, k, alpha, &(temp1->A2d_[0][0]), nca, &(temp2->A2d_[0][0]), ncb, beta, &(A2d_[0][0]), ncc);
+	temp1.reset();
+	temp2.reset();
+ 
+    }// end else
+
+}//
+
+void Tensor2d::cont444(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
+{
+
+    char ta, tb;
+    int nca, ncb, ncc;
+    int m, n, k;
+    int r1, r2, c1, c2;
+    int rr1, rr2, cc1, cc2;
+    int dim_t, dim_u;
+    int t_a1, t_a2, f_a1, f_a2;
+    int t_b1, t_b2, f_b1, f_b2;
+
+        // Expected order: C(pq,rs) = \sum_{tu} A(pq,tu) B(tu,rs)
+	/*
+        for (int i = 0; i < idx_a.size(); i++) {
+	     outfile->Printf("\tIDX_A[%1d]: %c \n", i, idx_a[i]);
+	}
+	*/
+
+	// Find dummy & free indices for A
+	// f_a1
+	if (idx_a[0] == idx_c[0]) f_a1 = 1; 
+	else if (idx_a[1] == idx_c[0]) f_a1 = 2; 
+	else if (idx_a[2] == idx_c[0]) f_a1 = 3; 
+	else if (idx_a[3] == idx_c[0]) f_a1 = 4; 
+
+	// f_a2
+	if (idx_a[0] == idx_c[1]) f_a2 = 1; 
+	else if (idx_a[1] == idx_c[1]) f_a2 = 2; 
+	else if (idx_a[2] == idx_c[1]) f_a2 = 3; 
+	else if (idx_a[3] == idx_c[1]) f_a2 = 4; 
+
+	// t_a1
+	if (f_a1 == 1 && f_a2 == 2) {
+	    t_a1 = 3; 
+	    t_a2 = 4; 
+	}
+	else if (f_a1 == 1 && f_a2 == 3) {
+	    t_a1 = 2; 
+	    t_a2 = 4; 
+	}
+	else if (f_a1 == 1 && f_a2 == 4) {
+	    t_a1 = 2; 
+	    t_a2 = 3; 
+	}
+	else if (f_a1 == 2 && f_a2 == 3) {
+	    t_a1 = 1; 
+	    t_a2 = 4; 
+	}
+	else if (f_a1 == 2 && f_a2 == 4) {
+	    t_a1 = 1; 
+	    t_a2 = 3; 
+	}
+	else if (f_a1 == 3 && f_a2 == 4) {
+	    t_a1 = 1; 
+	    t_a2 = 2; 
+	}
+	else if (f_a1 == 2 && f_a2 == 1) {
+	    t_a1 = 3; 
+	    t_a2 = 4; 
+	}
+	else if (f_a1 == 3 && f_a2 == 1) {
+	    t_a1 = 2; 
+	    t_a2 = 4; 
+	}
+	else if (f_a1 == 4 && f_a2 == 1) {
+	    t_a1 = 2; 
+	    t_a2 = 3; 
+	}
+	else if (f_a1 == 3 && f_a2 == 2) {
+	    t_a1 = 1; 
+	    t_a2 = 4; 
+	}
+	else if (f_a1 == 4 && f_a2 == 2) {
+	    t_a1 = 1; 
+	    t_a2 = 3; 
+	}
+	else if (f_a1 == 4 && f_a2 == 3) {
+	    t_a1 = 1; 
+	    t_a2 = 2; 
+	}
+	//outfile->Printf("\tf_a1, f_a2, t_a1, t_a2: %1d, %1d, %1d, %1d  \n", f_a1,f_a2,t_a1,t_a2);
+
+
+	// Find dummy & free indices for B
+	// f_b1
+	if (idx_b[0] == idx_c[2]) f_b1 = 1; 
+	else if (idx_b[1] == idx_c[2]) f_b1 = 2; 
+	else if (idx_b[2] == idx_c[2]) f_b1 = 3; 
+	else if (idx_b[3] == idx_c[2]) f_b1 = 4; 
+
+	// f_b2
+	if (idx_b[0] == idx_c[3]) f_b2 = 1; 
+	else if (idx_b[1] == idx_c[3]) f_b2 = 2; 
+	else if (idx_b[2] == idx_c[3]) f_b2 = 3; 
+	else if (idx_b[3] == idx_c[3]) f_b2 = 4; 
+
+	// t_b1
+	if (idx_b[0] == idx_a[t_a1-1]) t_b1 = 1; 
+	else if (idx_b[1] == idx_a[t_a1-1]) t_b1 = 2; 
+	else if (idx_b[2] == idx_a[t_a1-1]) t_b1 = 3; 
+	else if (idx_b[3] == idx_a[t_a1-1]) t_b1 = 4; 
+
+	// t_b2
+	if (idx_b[0] == idx_a[t_a2-1]) t_b2 = 1; 
+	else if (idx_b[1] == idx_a[t_a2-1]) t_b2 = 2; 
+	else if (idx_b[2] == idx_a[t_a2-1]) t_b2 = 3; 
+	else if (idx_b[3] == idx_a[t_a2-1]) t_b2 = 4; 
+	//outfile->Printf("\tf_b1, f_b2, t_b1, t_b2: %1d, %1d, %1d, %1d  \n", f_b1,f_b2,t_b1,t_b2);
+
+
+        // Figure out A
+	// r1
+	if (t_a1 == 1) {
+	    r1 = t_a1;
+	    dim_t = A->d1_;
+	}
+	else if (t_a2 == 1) {
+	    r1 = t_a2;
+	    dim_u = A->d1_;
+	}
+	else if (f_a1 == 1) r1 = f_a1;
+	else if (f_a2 == 1) r1 = f_a2;
+
+	// r2
+	if (t_a1 == 2) {
+	    r2 = t_a1;
+	    dim_t = A->d2_;
+	}
+	else if (t_a2 == 2) {
+	    r2 = t_a2;
+	    dim_u = A->d2_;
+	}
+	else if (f_a1 == 2) r2 = f_a1;
+	else if (f_a2 == 2) r2 = f_a2;
+
+	// c1
+	if (t_a1 == 3) {
+	    c1 = t_a1;
+	    dim_t = A->d3_;
+	}
+	else if (t_a2 == 3) {
+	    c1 = t_a2;
+	    dim_u = A->d3_;
+	}
+	else if (f_a1 == 3) c1 = f_a1;
+	else if (f_a2 == 3) c1 = f_a2;
+
+	// c2
+	if (t_a1 == 4) {
+	    c2 = t_a1;
+	    dim_t = A->d4_;
+	}
+	else if (t_a2 == 4) {
+	    c2 = t_a2;
+	    dim_u = A->d4_;
+	}
+	else if (f_a1 == 4) c2 = f_a1;
+	else if (f_a2 == 4) c2 = f_a2;
+
+	//outfile->Printf("\tDimensions of A: %2d, %2d, %2d, %2d  \n", r1,r2,c1,c2);
+
+	// Sort A(..,..) to A(pq,tu)
+        SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", d1_, d2_, dim_t, dim_u));
+	#pragma omp parallel for
+        for (int p = 0; p < d1_; p++) {
+             for (int q = 0; q < d2_; q++) {
+                  int pq = temp1->row_idx_[p][q];
+                  for (int t = 0; t < dim_t; t++) {
+                       for (int u = 0; u < dim_u; u++) {
+                            int tu = temp1->col_idx_[t][u];
+
+			    if (r1 == f_a1) rr1 = p;
+			    else if (r1 == f_a2) rr1 = q;
+			    else if (r1 == t_a1) rr1 = t;
+			    else if (r1 == t_a2) rr1 = u;
+
+			    if (r2 == f_a1) rr2 = p;
+			    else if (r2 == f_a2) rr2 = q;
+			    else if (r2 == t_a1) rr2 = t;
+			    else if (r2 == t_a2) rr2 = u;
+
+			    if (c1 == f_a1) cc1 = p;
+			    else if (c1 == f_a2) cc1 = q;
+			    else if (c1 == t_a1) cc1 = t;
+			    else if (c1 == t_a2) cc1 = u;
+
+			    if (c2 == f_a1) cc2 = p;
+			    else if (c2 == f_a2) cc2 = q;
+			    else if (c2 == t_a1) cc2 = t;
+			    else if (c2 == t_a2) cc2 = u;
+
+			    int row = rr2 + (rr1 * A->d2_);
+			    int col = cc2 + (cc1 * A->d4_);
+
+                            temp1->A2d_[pq][tu] = A->A2d_[row][col];
+                       }
+                  }
+             }
+        }
+	//temp1->print();
+	if (delete_a) A.reset();
+
+        // Figure out B
+        // r1
+        if (t_b1 == 1) r1 = t_b1;
+        else if (t_b2 == 1) r1 = t_b2;
+        else if (f_b1 == 1) r1 = f_b1;
+        else if (f_b2 == 1) r1 = f_b2;
+
+        // r2
+	if (t_b1 == 2) r2 = t_b1;
+	else if (t_b2 == 2) r2 = t_b2;
+	else if (f_b1 == 2) r2 = f_b1;
+	else if (f_b2 == 2) r2 = f_b2;
+
+	// c1
+	if (t_b1 == 3) c1 = t_b1;
+	else if (t_b2 == 3) c1 = t_b2;
+	else if (f_b1 == 3) c1 = f_b1;
+	else if (f_b2 == 3) c1 = f_b2;
+
+        // c2
+        if (t_b1 == 4) c2 = t_b1;
+        else if (t_b2 == 4) c2 = t_b2;
+        else if (f_b1 == 4) c2 = f_b1;
+        else if (f_b2 == 4) c2 = f_b2;
+
+	//outfile->Printf("\tDimensions of B: %2d, %2d, %2d, %2d  \n", r1,r2,c1,c2);
+
+	// Sort B(..,..) to B(tu,rs)
+        SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", dim_t, dim_u, d3_, d4_));
+	#pragma omp parallel for
+        for (int t = 0; t < dim_t; t++) {
+             for (int u = 0; u < dim_u; u++) {
+                  int tu = temp2->row_idx_[t][u];
+                  for (int r = 0; r < d3_; r++) {
+                       for (int s = 0; s < d4_; s++) {
+                            int rs = temp2->col_idx_[r][s];
+
+			    if (r1 == f_b1) rr1 = r;
+			    else if (r1 == f_b2) rr1 = s;
+			    else if (r1 == t_b1) rr1 = t;
+			    else if (r1 == t_b2) rr1 = u;
+
+			    if (r2 == f_b1) rr2 = r;
+			    else if (r2 == f_b2) rr2 = s;
+			    else if (r2 == t_b1) rr2 = t;
+			    else if (r2 == t_b2) rr2 = u;
+
+			    if (c1 == f_b1) cc1 = r;
+			    else if (c1 == f_b2) cc1 = s;
+			    else if (c1 == t_b1) cc1 = t;
+			    else if (c1 == t_b2) cc1 = u;
+
+			    if (c2 == f_b1) cc2 = r;
+			    else if (c2 == f_b2) cc2 = s;
+			    else if (c2 == t_b1) cc2 = t;
+			    else if (c2 == t_b2) cc2 = u;
+
+			    int row = rr2 + (rr1 * B->d2_);
+			    int col = cc2 + (cc1 * B->d4_);
+
+                            temp2->A2d_[tu][rs] = B->A2d_[row][col];
+                       }
+                  }
+             }
+        }
+	//temp2->print();
+	if (delete_b) B.reset();
+
+        ta = 'n';
+        tb = 'n';
+        m = dim1_;
+        n = dim2_;
+        k = temp1->dim2();
+        nca = k; // lda
+        ncb = n; // ldb
+        ncc = n; // ldc
+
+        C_DGEMM(ta, tb, m, n, k, alpha, &(temp1->A2d_[0][0]), nca, &(temp2->A2d_[0][0]), ncb, beta, &(A2d_[0][0]), ncc);
+	temp1.reset();
+	temp2.reset();
+ 
+
+}//
+
+void Tensor2d::cont343(string idx_c, string idx_a, string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
+{
+
+    char ta, tb;
+    int nca, ncb, ncc;
+    int m, n, k;
+    int r1, r2, c1, c2;
+    int rr1, rr2, cc1, cc2;
+    int t_b1, t_b2, f_b1, f_b2;
+
+        // Expected order: C(Q,pq) = \sum_{rs} A(Q,rs) B(rs,pq)
+
+	// Find dummy & free indices for B
+	// f_b1
+	if (idx_b[0] == idx_c[0]) f_b1 = 1; 
+	else if (idx_b[1] == idx_c[0]) f_b1 = 2; 
+	else if (idx_b[2] == idx_c[0]) f_b1 = 3; 
+	else if (idx_b[3] == idx_c[0]) f_b1 = 4; 
+
+	// f_b2
+	if (idx_b[0] == idx_c[1]) f_b2 = 1; 
+	else if (idx_b[1] == idx_c[1]) f_b2 = 2; 
+	else if (idx_b[2] == idx_c[1]) f_b2 = 3; 
+	else if (idx_b[3] == idx_c[1]) f_b2 = 4; 
+
+	// t_b1
+	if (idx_b[0] == idx_a[0]) t_b1 = 1; 
+	else if (idx_b[1] == idx_a[0]) t_b1 = 2; 
+	else if (idx_b[2] == idx_a[0]) t_b1 = 3; 
+	else if (idx_b[3] == idx_a[0]) t_b1 = 4; 
+
+	// t_b2
+	if (idx_b[0] == idx_a[1]) t_b2 = 1; 
+	else if (idx_b[1] == idx_a[1]) t_b2 = 2; 
+	else if (idx_b[2] == idx_a[1]) t_b2 = 3; 
+	else if (idx_b[3] == idx_a[1]) t_b2 = 4; 
+
+
+        // Figure out B
+        // r1
+        if (t_b1 == 1) r1 = t_b1;
+        else if (t_b2 == 1) r1 = t_b2;
+        else if (f_b1 == 1) r1 = f_b1;
+        else if (f_b2 == 1) r1 = f_b2;
+
+        // r2
+	if (t_b1 == 2) r2 = t_b1;
+	else if (t_b2 == 2) r2 = t_b2;
+	else if (f_b1 == 2) r2 = f_b1;
+	else if (f_b2 == 2) r2 = f_b2;
+
+	// c1
+	if (t_b1 == 3) c1 = t_b1;
+	else if (t_b2 == 3) c1 = t_b2;
+	else if (f_b1 == 3) c1 = f_b1;
+	else if (f_b2 == 3) c1 = f_b2;
+
+        // c2
+        if (t_b1 == 4) c2 = t_b1;
+        else if (t_b2 == 4) c2 = t_b2;
+        else if (f_b1 == 4) c2 = f_b1;
+        else if (f_b2 == 4) c2 = f_b2;
+
+	//outfile->Printf("\tDimensions of B: %2d, %2d, %2d, %2d  \n", r1,r2,c1,c2);
+
+	// Sort B(..,..) to B(rs,pq)
+        SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", A->d2_, A->d3_, d2_, d3_));
+	#pragma omp parallel for
+        for (int r = 0; r < A->d2_; r++) {
+             for (int s = 0; s < A->d3_; s++) {
+                  int rs = temp->row_idx_[r][s];
+                  for (int p = 0; p < d2_; p++) {
+                       for (int q = 0; q < d3_; q++) {
+                            int pq = temp->col_idx_[p][q];
+
+			    if (r1 == f_b1) rr1 = p;
+			    else if (r1 == f_b2) rr1 = q;
+			    else if (r1 == t_b1) rr1 = r;
+			    else if (r1 == t_b2) rr1 = s;
+
+			    if (r2 == f_b1) rr2 = p;
+			    else if (r2 == f_b2) rr2 = q;
+			    else if (r2 == t_b1) rr2 = r;
+			    else if (r2 == t_b2) rr2 = s;
+
+			    if (c1 == f_b1) cc1 = p;
+			    else if (c1 == f_b2) cc1 = q;
+			    else if (c1 == t_b1) cc1 = r;
+			    else if (c1 == t_b2) cc1 = s;
+
+			    if (c2 == f_b1) cc2 = p;
+			    else if (c2 == f_b2) cc2 = q;
+			    else if (c2 == t_b1) cc2 = r;
+			    else if (c2 == t_b2) cc2 = s;
+
+			    int row = rr2 + (rr1 * B->d2_);
+			    int col = cc2 + (cc1 * B->d4_);
+
+                            temp->A2d_[rs][pq] = B->A2d_[row][col];
+                       }
+                  }
+             }
+        }
+	//temp->print();
+	if (delete_b) B.reset();
+
+        ta = 'n';
+        tb = 'n';
+        m = d1_;
+        n = d2_ * d3_;
+        k = temp->dim1();
+        nca = k; // lda
+        ncb = n; // ldb
+        ncc = n; // ldc
+
+        C_DGEMM(ta, tb, m, n, k, alpha, &(A->A2d_[0][0]), nca, &(temp->A2d_[0][0]), ncb, beta, &(A2d_[0][0]), ncc);
+	temp.reset();
+
+}//
+
+void Tensor2d::cont442(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
+{
+
+    char ta, tb;
+    int nca, ncb, ncc;
+    int m, n, k;
+    int r1, r2, c1, c2;
+    int rr1, rr2, cc1, cc2;
+    int dim_r, dim_s, dim_t;
+    int t_a1, t_a2, t_a3, f_a1;
+    int t_b1, t_b2, t_b3, f_b1;
+
+        // Expected order: C(pq) = \sum_{rst} A(pr,st) B(rs,tq)
+
+	// Find dummy & free indices for A
+	// f_a1
+	if (idx_a[0] == idx_c[0]) f_a1 = 1; 
+	else if (idx_a[1] == idx_c[0]) f_a1 = 2; 
+	else if (idx_a[2] == idx_c[0]) f_a1 = 3; 
+	else if (idx_a[3] == idx_c[0]) f_a1 = 4; 
+
+	// t_a1, t_a2, t_a3
+	if (f_a1 == 1) {
+	    t_a1 = 2; 
+	    t_a2 = 3; 
+	    t_a3 = 4; 
+	}
+	else if (f_a1 == 2) {
+	    t_a1 = 1; 
+	    t_a2 = 3; 
+	    t_a3 = 4; 
+	}
+	else if (f_a1 == 3) {
+	    t_a1 = 1; 
+	    t_a2 = 2; 
+	    t_a3 = 4; 
+	}
+	else if (f_a1 == 4) {
+	    t_a1 = 1; 
+	    t_a2 = 2; 
+	    t_a3 = 3; 
+	}
+
+	// Find dummy & free indices for B
+	// f_b1
+	if (idx_b[0] == idx_c[1]) f_b1 = 1; 
+	else if (idx_b[1] == idx_c[1]) f_b1 = 2; 
+	else if (idx_b[2] == idx_c[1]) f_b1 = 3; 
+	else if (idx_b[3] == idx_c[1]) f_b1 = 4; 
+
+	// t_b1
+	if (idx_b[0] == idx_a[t_a1-1]) t_b1 = 1; 
+	else if (idx_b[1] == idx_a[t_a1-1]) t_b1 = 2; 
+	else if (idx_b[2] == idx_a[t_a1-1]) t_b1 = 3; 
+	else if (idx_b[3] == idx_a[t_a1-1]) t_b1 = 4; 
+
+	// t_b2
+	if (idx_b[0] == idx_a[t_a2-1]) t_b2 = 1; 
+	else if (idx_b[1] == idx_a[t_a2-1]) t_b2 = 2; 
+	else if (idx_b[2] == idx_a[t_a2-1]) t_b2 = 3; 
+	else if (idx_b[3] == idx_a[t_a2-1]) t_b2 = 4; 
+
+	// t_b3
+	if (idx_b[0] == idx_a[t_a3-1]) t_b3 = 1; 
+	else if (idx_b[1] == idx_a[t_a3-1]) t_b3 = 2; 
+	else if (idx_b[2] == idx_a[t_a3-1]) t_b3 = 3; 
+	else if (idx_b[3] == idx_a[t_a3-1]) t_b3 = 4; 
+
+
+        // Figure out A
+	// r1
+	if (t_a1 == 1) {
+	    r1 = t_a1;
+	    dim_r = A->d1_;
+	}
+	else if (t_a2 == 1) {
+	    r1 = t_a2;
+	    dim_s = A->d1_;
+	}
+	else if (t_a3 == 1) {
+	    r1 = t_a3;
+	    dim_t = A->d1_;
+	}
+	else if (f_a1 == 1) r1 = f_a1;
+
+	// r2
+	if (t_a1 == 2) {
+	    r2 = t_a1;
+	    dim_r = A->d2_;
+	}
+	else if (t_a2 == 2) {
+	    r2 = t_a2;
+	    dim_s = A->d2_;
+	}
+	else if (t_a3 == 2) {
+	    r2 = t_a3;
+	    dim_t = A->d2_;
+	}
+	else if (f_a1 == 2) r2 = f_a1;
+
+	// c1
+	if (t_a1 == 3) {
+	    c1 = t_a1;
+	    dim_r = A->d3_;
+	}
+	else if (t_a2 == 3) {
+	    c1 = t_a2;
+	    dim_s = A->d3_;
+	}
+	else if (t_a3 == 3) {
+	    c1 = t_a3;
+	    dim_t = A->d3_;
+	}
+	else if (f_a1 == 3) c1 = f_a1;
+
+	// c2
+	if (t_a1 == 4) {
+	    c2 = t_a1;
+	    dim_r = A->d4_;
+	}
+	else if (t_a2 == 4) {
+	    c2 = t_a2;
+	    dim_s = A->d4_;
+	}
+	else if (t_a3 == 4) {
+	    c2 = t_a3;
+	    dim_t = A->d4_;
+	}
+	else if (f_a1 == 3) c2 = f_a1;
+
+
+	// Sort A(..,..) to A(pr,st)
+        SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", dim1_, dim_r, dim_s, dim_t));
+	#pragma omp parallel for
+        for (int p = 0; p < dim1_; p++) {
+             for (int r = 0; r < dim_r; r++) {
+                  int pr = temp1->row_idx_[p][r];
+                  for (int s = 0; s < dim_s; s++) {
+                       for (int t = 0; t < dim_t; t++) {
+                            int st = temp1->col_idx_[s][t];
+
+			    if (r1 == f_a1) rr1 = p;
+			    else if (r1 == t_a1) rr1 = r;
+			    else if (r1 == t_a2) rr1 = s;
+			    else if (r1 == t_a3) rr1 = t;
+
+			    if (r2 == f_a1) rr2 = p;
+			    else if (r2 == t_a1) rr2 = r;
+			    else if (r2 == t_a2) rr2 = s;
+			    else if (r2 == t_a3) rr2 = t;
+
+			    if (c1 == f_a1) cc1 = p;
+			    else if (c1 == t_a1) cc1 = r;
+			    else if (c1 == t_a2) cc1 = s;
+			    else if (c1 == t_a3) cc1 = t;
+
+			    if (c2 == f_a1) cc2 = p;
+			    else if (c2 == t_a1) cc2 = r;
+			    else if (c2 == t_a2) cc2 = s;
+			    else if (c2 == t_a3) cc2 = t;
+
+			    int row = rr2 + (rr1 * A->d2_);
+			    int col = cc2 + (cc1 * A->d4_);
+
+                            temp1->A2d_[pr][st] = A->A2d_[row][col];
+                       }
+                  }
+             }
+        }
+	//temp1->print();
+	if (delete_a) A.reset();
+
+        // Figure out B
+        // r1
+        if (t_b1 == 1) r1 = t_b1;
+        else if (t_b2 == 1) r1 = t_b2;
+        else if (t_b3 == 1) r1 = t_b3;
+        else if (f_b1 == 1) r1 = f_b1;
+
+        // r2
+	if (t_b1 == 2) r2 = t_b1;
+        else if (t_b2 == 2) r2 = t_b2;
+        else if (t_b3 == 2) r2 = t_b3;
+        else if (f_b1 == 2) r2 = f_b1;
+
+	// c1
+	if (t_b1 == 3) c1 = t_b1;
+        else if (t_b2 == 3) c1 = t_b2;
+        else if (t_b3 == 3) c1 = t_b3;
+        else if (f_b1 == 3) c1 = f_b1;
+
+        // c2
+        if (t_b1 == 4) c2 = t_b1;
+        else if (t_b2 == 4) c2 = t_b2;
+        else if (t_b3 == 4) c2 = t_b3;
+        else if (f_b1 == 4) c2 = f_b1;
+
+	// Sort B(..,..) to B(rs,tq)
+        SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", dim_r, dim_s, dim_t, dim2_));
+	#pragma omp parallel for
+        for (int r = 0; r < dim_r; r++) {
+             for (int s = 0; s < dim_s; s++) {
+                  int rs = temp2->row_idx_[r][s];
+                  for (int t = 0; t < dim_t; t++) {
+                       for (int q = 0; q < dim2_; q++) {
+                            int tq = temp2->col_idx_[t][q];
+
+			    if (r1 == t_b1) rr1 = r;
+			    else if (r1 == t_b2) rr1 = s;
+			    else if (r1 == t_b3) rr1 = t;
+			    else if (r1 == f_b1) rr1 = q;
+
+			    if (r2 == t_b1) rr2 = r;
+			    else if (r2 == t_b2) rr2 = s;
+			    else if (r2 == t_b3) rr2 = t;
+			    else if (r2 == f_b1) rr2 = q;
+
+			    if (c1 == t_b1) cc1 = r;
+			    else if (c1 == t_b2) cc1 = s;
+			    else if (c1 == t_b3) cc1 = t;
+			    else if (c1 == f_b1) cc1 = q;
+
+			    if (c2 == t_b1) cc2 = r;
+			    else if (c2 == t_b2) cc2 = s;
+			    else if (c2 == t_b3) cc2 = t;
+			    else if (c2 == f_b1) cc2 = q;
+
+			    int row = rr2 + (rr1 * B->d2_);
+			    int col = cc2 + (cc1 * B->d4_);
+
+                            temp2->A2d_[rs][tq] = B->A2d_[row][col];
+                       }
+                  }
+             }
+        }
+	//temp2->print();
+	if (delete_b) B.reset();
+
+        ta = 'n';
+        tb = 'n';
+        m = dim1_;
+        n = dim2_;
+        k = dim_r * dim_s * dim_t;
+        nca = k; // lda
+        ncb = n; // ldb
+        ncc = n; // ldc
+
+        C_DGEMM(ta, tb, m, n, k, alpha, &(temp1->A2d_[0][0]), nca, &(temp2->A2d_[0][0]), ncb, beta, &(A2d_[0][0]), ncc);
+	temp1.reset();
+	temp2.reset();
+ 
+
+}//
+
+void Tensor2d::cont424(string idx_c, string idx_a, string idx_b, bool delete_a, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
+{
+
+    char ta, tb;
+    int nca, ncb, ncc;
+    int m, n, k;
+    int r1, r2, c1, c2;
+    int rr1, rr2, cc1, cc2;
+    int dim_t;
+    int t_a1, f_a1, f_a2, f_a3;
+    int t_b1, f_b1;
+
+        // Expected order: C(pq,rs) = \sum_{t} A(pq,rt) B(t,s)
+
+	// Find dummy & free indices for A
+	// f_a1
+	if (idx_a[0] == idx_c[0]) f_a1 = 1; 
+	else if (idx_a[1] == idx_c[0]) f_a1 = 2; 
+	else if (idx_a[2] == idx_c[0]) f_a1 = 3; 
+	else if (idx_a[3] == idx_c[0]) f_a1 = 4; 
+
+	// f_a2
+	if (idx_a[0] == idx_c[1]) f_a2 = 1; 
+	else if (idx_a[1] == idx_c[1]) f_a2 = 2; 
+	else if (idx_a[2] == idx_c[1]) f_a2 = 3; 
+	else if (idx_a[3] == idx_c[1]) f_a2 = 4; 
+
+	// f_a3
+	if (idx_a[0] == idx_c[2]) f_a3 = 1; 
+	else if (idx_a[1] == idx_c[2]) f_a3 = 2; 
+	else if (idx_a[2] == idx_c[2]) f_a3 = 3; 
+	else if (idx_a[3] == idx_c[2]) f_a3 = 4; 
+
+	// t_a1
+	if (idx_a[0] != idx_c[0] && idx_a[0] != idx_c[1] && idx_a[0] != idx_c[2] && idx_a[0] != idx_c[3]) t_a1 = 1; 
+	else if (idx_a[1] != idx_c[0] && idx_a[1] != idx_c[1] && idx_a[1] != idx_c[2] && idx_a[1] != idx_c[3]) t_a1 = 2; 
+	else if (idx_a[2] != idx_c[0] && idx_a[2] != idx_c[1] && idx_a[2] != idx_c[2] && idx_a[2] != idx_c[3]) t_a1 = 3; 
+	else if (idx_a[3] != idx_c[0] && idx_a[3] != idx_c[1] && idx_a[3] != idx_c[2] && idx_a[3] != idx_c[3]) t_a1 = 4; 
+
+	// Find dummy & free indices for B
+	// f_b1 and t_b1
+	if (idx_b[0] == idx_c[3]) {
+	    f_b1 = 1; 
+	    t_b1 = 2; 
+	    dim_t = B->dim2();
+	}
+	else if (idx_b[1] == idx_c[3]) {
+	    f_b1 = 2; 
+	    t_b1 = 1; 
+	    dim_t = B->dim1();
+	}
+
+        // Figure out A
+	// r1
+	if (t_a1 == 1) r1 = t_a1;
+	else if (f_a1 == 1) r1 = f_a1;
+	else if (f_a2 == 1) r1 = f_a2;
+	else if (f_a3 == 1) r1 = f_a3;
+
+	// r2
+	if (t_a1 == 2) r2 = t_a1;
+	else if (f_a1 == 2) r2 = f_a1;
+	else if (f_a2 == 2) r2 = f_a2;
+	else if (f_a3 == 2) r2 = f_a3;
+
+	// c1
+	if (t_a1 == 3) c1 = t_a1;
+	else if (f_a1 == 3) c1 = f_a1;
+	else if (f_a2 == 3) c1 = f_a2;
+	else if (f_a3 == 3) c1 = f_a3;
+
+	// c2
+	if (t_a1 == 4) c2 = t_a1;
+	else if (f_a1 == 4) c2 = f_a1;
+	else if (f_a2 == 4) c2 = f_a2;
+	else if (f_a3 == 4) c2 = f_a3;
+
+	// Sort A(..,..) to A(pq,rt)
+        SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", d1_, d2_, d3_, dim_t));
+	#pragma omp parallel for
+        for (int p = 0; p < d1_; p++) {
+             for (int q = 0; q < d2_; q++) {
+                  int pq = temp->row_idx_[p][q];
+                  for (int r = 0; r < d3_; r++) {
+                       for (int t = 0; t < dim_t; t++) {
+                            int rt = temp->col_idx_[r][t];
+
+			    if (r1 == f_a1) rr1 = p;
+			    else if (r1 == f_a2) rr1 = q;
+			    else if (r1 == f_a3) rr1 = r;
+			    else if (r1 == t_a1) rr1 = t;
+
+			    if (r2 == f_a1) rr2 = p;
+			    else if (r2 == f_a2) rr2 = q;
+			    else if (r2 == f_a3) rr2 = r;
+			    else if (r2 == t_a1) rr2 = t;
+
+			    if (c1 == f_a1) cc1 = p;
+			    else if (c1 == f_a2) cc1 = q;
+			    else if (c1 == f_a3) cc1 = r;
+			    else if (c1 == t_a1) cc1 = t;
+
+			    if (c2 == f_a1) cc2 = p;
+			    else if (c2 == f_a2) cc2 = q;
+			    else if (c2 == f_a3) cc2 = r;
+			    else if (c2 == t_a1) cc2 = t;
+
+			    int row = rr2 + (rr1 * A->d2_);
+			    int col = cc2 + (cc1 * A->d4_);
+
+                            temp->A2d_[pq][rt] = A->A2d_[row][col];
+                       }
+                  }
+             }
+        }
+	if (delete_a) A.reset();
+
+        ta = 'n';
+        if (t_b1 == 1) tb = 'n';
+	else tb = 't';
+        m = dim1_;
+        n = dim2_;
+        k = temp->d4_;
+        nca = k; // lda
+	// ldb
+	if (tb == 't') ncb = k;
+	else ncb = n;
+        ncc = n; // ldc
+
+        C_DGEMM(ta, tb, m, n, k, alpha, &(temp->A2d_[0][0]), nca, &(B->A2d_[0][0]), ncb, beta, &(A2d_[0][0]), ncc);
+	temp.reset();
+
+}//
 
 /********************************************************************************************/
 /************************** 3d array ********************************************************/
