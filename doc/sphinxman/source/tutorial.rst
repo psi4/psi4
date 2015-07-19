@@ -23,6 +23,19 @@ If you give an input name but no output name, then the output name will
 be the same as the input name (subtracting any ".in" or ".dat" suffix),
 plus a ".out" suffix.
 
+   .. note:: Some |PSIfour| functions and keywords have aliases.  For example,
+             ``frequency()``, ``frequencies()``, and ``freq()`` all work to 
+             obtain vibrational frequencies.
+
+
+Sample Input Files
+==================
+
+Below, we will provide a few simple input files as examples.  A large 
+number of sample input files, covering everything from single-point energies
+using density-functional theory to response properties from coupled-cluster
+theory, can be found in the :source:`samples` directory.
+
 
 Running a Basic Hartree--Fock Calculation
 =========================================
@@ -127,42 +140,37 @@ not). ::
        3     -76.027032729361     -0.000010060942      0.00014016      0.00008485      0.00077279      0.00044621  ~
    --------------------------------------------------------------------------------------------------------------- ~
 
-To get harmonic vibrational frequencies, *first we must set up an input
-using the OPTIMIZED GEOMETRY*.  We can easily get the optimized geometry
-from the previous computation.  Looking at the output from running the
-previous example, we see that the OH bond length is about 0.9463 |AA|\ ngstroms,
-and the bond angle is about 104.575 degrees.  It's good to give this many
-digits (or more) to make sure there's not significant roundoff error in the
-geometry when running a frequency computation.  So, our frequency
-computation input (which can be found as test case
-:srcsample:`tu4-h2o-freq`) is:
+To get harmonic vibrational frequencies, it's important to keep in mind that
+the values of the vibrational frequencies are a function of the molecular
+geometry.  Therefore, *it's important to obtain the vibrational frequencies 
+at the OPTIMIZED GEOMETRY*.  We could set up a second input file to perform
+the vibrational frequency analysis, being very careful to copy over the
+optimized geometry from the *bottom* of the output file for the geometry
+optimization.  This geometry could be specified in either z-matrix or
+Cartesian formats.  However, there's a much easier way to do this.  If we
+specify a vibrational frequency analysis in the same input file as the
+optimization, after the optimization function has been called, then the
+optimized geometry will automatically be carried over.
+
+So, it's easiset to do the optimization and vibrational frequency analysis
+together.  This can be specified as follows (see test case
+:srcsample:`tu4-h2o-freq`):
 
 .. literalinclude:: @SFNX_INCLUDE@samples/tu4-h2o-freq/input.dat
 
-Alternatively, it's also possible for |PSIfour| to use Cartesian coordinate
-input.  Here, the Cartesian coordinates of the optimized geometry can be
-extracted from the *bottom* of the optimization output.  The input
-would then look like this::
-
-   molecule h2o {
-      O     0.0000000000   0.0000000000  -0.0647163165
-      H     0.0000000000  -0.7490459647   0.5135474533
-      H     0.0000000000   0.7490459647   0.5135474533
-   }
-   
-   set basis cc-pVDZ
-   frequencies('scf')
-
-If either of the inputs above are run, the program should do some
-computations and then finally report the following harmonic vibrational
-frequencies (roundoff errors of around 0.1 cm\ :sup:`-1` may exist)::
+The program will do the same optimization as in our previous example,
+but then it will follow it with some computations to obtain the Hessian
+(second derivative matrix) of the electronic energy with respect to
+nuclear displacements.  From this, it can obtain the harmonic vibrational
+frequencies, given below (roundoff errors of around 0.1 cm\ :sup:`-1`
+may exist)::
 
              Irrep      Harmonic Frequency
                              (cm-1)
            -----------------------------------------------
-                A1         1776.2423
-                A1         4113.7717
-                B2         4211.8290
+                A1         1775.6480
+                A1         4113.3794
+                B2         4212.1826
            -----------------------------------------------
 
 Notice that the symmetry type of the normal modes is specified (A1, A1,
@@ -170,18 +178,41 @@ B2).  The program also prints out the normal modes in terms of Cartesian
 coordinates of each atom.  For example, the normal mode at 1776 cm\ :sup:`-1` 
 is::
 
-      Frequency:       1776.24
-      Force constant:   0.1194
-            X       Y       Z           mass
+      Frequency:       1775.65
+      Force constant:   0.1193
+                X       Y       Z           mass
      O        0.000   0.000  -0.270      15.994915
-     H        0.000   0.418   0.538       1.007825
-     H        0.000  -0.418   0.538       1.007825
+     H        0.000   0.417   0.538       1.007825
+     H        0.000  -0.417   0.538       1.007825
 
 
 where the table shows the displacements in the X, Y, and Z dimensions for
 each atom along the normal mode coordinate.  (This information could be used
 to animate the vibrational frequency using visualization software.)
 
+Because the vibrational frequencies are available, a thermodynamics
+analysis is automatically performed at the end of the computation.
+You can see this in the next section of the output file.  The vibrational
+frequencies are sufficient to obtain vibrational contributions to
+enthalpy (H), entropy (S), and Gibbs free energy (G).  Similarly, the
+molecular geometry is used to obtain rotational constants, which are
+then used to obtain rotational contributions to H, S, and G.
+
+.. warning:: It is important to know that |PSIfour|, like any other
+   quantum chemistry program, does *not* compute the usual enthalpies,
+   entropies, or Gibbs free energies *of formation* provided by most
+   reference books.  Instead, quantum chemistry programs compute "absolute"
+   thermodynamic properties relative to infinitely separated nuclei and
+   electrons, not "formation" values relative to elements in their standard
+   states.  If you are computing thermodynamic differences, like a reaction
+   enthalpy computed as the enthalpy of the products minus the enthalpy
+   of the reactants, then these "absolute" enthalpies are perfectly valid
+   and usable.  However, they cannot be mixed and matched with enthalpies of
+   formation from reference books, since the zero of energy is not the same.
+   Additionally, the "thermal energies" reported in kcal/mol are the 
+   finite-temperature *corrections* to the electronic total energy, and 
+   not the overall thermal energies themselves.  If in doubt, use the
+   reported Total Energies in Hartree/particle.
 
 Analysis of Intermolecular Interactions
 =======================================
@@ -312,7 +343,7 @@ in the :source:`samples` directory.
 Suppose you want to do a limited potential energy surface scan, such as
 computing the interaction energy between two neon atoms at various
 interatomic distances.  One simple but unappealing way to do this is to
-create separate input files for each distance to be studied.  But most of
+create separate input files for each distance to be studied.  Most of
 these input files are identical, except that the interatomic distance is
 different.  Psithon lets you specify all this in a single input file,
 looping over the different distances with an array like this:
@@ -374,11 +405,37 @@ the index.  Note we didn't need to specify ghost atoms, and we didn't need
 to call the monomer and dimer computations separately.  The built-in
 Psithon function :py:func:`~wrappers.cp` does it all for us, automatically.
 
+Near the very end of the output file, the counterpoise correction Python
+function will print a nice summary of the results of the counterpoise
+computation (the energies of the dimer, of monomer 1 with the ghost functions
+of monomer 2, of monomer 2 with the ghost functions of monomer 1, and the
+overall counterpoise-corrected interaction energy)::
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //      CP Computation: Results.     //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+  ============= Hartree =============
+  System:  Energy (full):
+  Complex       -257.4186740329
+  Monomer 1     -128.7093240575
+  Monomer 2     -128.7093240575
+  Interaction   -0.0000259178
+
+  =========== kcal*mol^-1 ===========
+  System:  Energy (full):
+  Complex     -161532.6634330375
+  Monomer 1    -80766.3235846726
+  Monomer 2    -80766.3235846725
+  Interaction      -0.0162636924
+
 And that's it!  The only remaining part of the example input is a little table
 of the different R values and the CP-corrected CCSD(T) energies, converted from
 atomic units (hartree) to |kcalpermol| by multiplying by the
-automatically-defined conversion factor ``psi_hartree2kcalmol``, which is
-defined in Sec. :ref:`sec:psirc`.  Notice the loop over :math:`R` to create
+automatically-defined conversion factor ``psi_hartree2kcalmol``.  |PSIfour|
+provides several built-in physical constants and conversion factors, as
+described in section :ref:`sec:physicalConstants`.
+Notice the loop over :math:`R` to create
 the table looks just like the loop over ``R`` to run the different
 computations, and the CP-corrected energies ``ecp[R]`` are accessed the same
 way they were stored.  The ``print`` line at the end just specifies some
@@ -389,6 +446,17 @@ format strings are the same as in the C programming language.  For tables more
 complicated than the simple one used here, Psithon has built-in support for
 tables (see the next section).
 
+Our table is printed at the very end of the output file, and looks like
+this ::
+
+  CP-corrected CCSD(T)/aug-cc-pVDZ interaction energies
+  
+          R (Ang)         E_int (kcal/mol)
+  -----------------------------------------------------
+          2.5              0.757718
+          3.0              0.015687
+          4.0             -0.016264
+  
 The following section goes over Psithon in much more detail, but
 hopefully this example already makes it clear that many complex tasks
 can be done very easily in |PSIfour|.
