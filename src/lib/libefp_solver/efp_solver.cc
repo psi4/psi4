@@ -288,10 +288,10 @@ efp_result electron_density_field_fn(size_t n_pt, const double *xyz, double *fie
     intmats.push_back(SharedMatrix(new Matrix("Ey integrals", nao, nao)));
     intmats.push_back(SharedMatrix(new Matrix("Ez integrals", nao, nao)));
 
-    SharedMatrix Da = wfn->Da_subset("AO");
+    SharedMatrix Da = wfn->Da_subset("CartAO");
     SharedMatrix Db;
     if (!wfn->same_a_b_orbs())
-        Db = wfn->Db_subset("AO");
+        Db = wfn->Db_subset("CartAO");
 
     for (size_t n=0; n<n_pt; ++n) {
         field_ints->set_origin(Vector3(xyz[3*n], xyz[3*n+1], xyz[3*n+2]));
