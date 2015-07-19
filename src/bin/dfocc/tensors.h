@@ -439,15 +439,21 @@ class Tensor2d
 	     bool delete_b, int t_b1, int t_b2, int f_b1, int f_b2, SharedTensor2d& B, 
 	     double alpha, double beta);
   void cont444(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
-  // C(Q,pq) = \sum_{rs} A(Q,rs) B(rs,pq)
-  // where dim(idx_c) & dim(idx_a)=2 but dim(idx_b)=4
-  void cont343(string idx_c, string idx_a, string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
   // C(pq) = \sum_{rst} A(pr,st) B(rs,tq)
   void cont442(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
   // C(pq,rs) = \sum_{t} A(pq,rt) B(t,s)
   void cont424(string idx_c, string idx_a, string idx_b, bool delete_a, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
-  // C(pq,rs) = \sum_{t} B(p,t) A(tq,rs) 
+  // C(pq,rs) = \sum_{t} A(p,t) B(tq,rs) 
   void cont244(string idx_c, string idx_a, string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(Q,pq) = \sum_{rs} A(Q,rs) B(rs,pq)
+  // where dim(idx_c) & dim(idx_a)=2 but dim(idx_b)=4
+  void cont343(string idx_c, string idx_a, string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(Q,pq) = \sum_{r} A(p,r) B(Q,rq)
+  void cont233(string idx_c, string idx_a, string idx_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(Q,pq) = \sum_{r} A(Q,pr) B(r,q)
+  void cont323(string idx_c, string idx_a, string idx_b, bool delete_a, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(pq) = \sum_{Qr} A(Q,rp) B(Q,rq)
+  void cont332(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
 
   friend class Tensor1d;
   friend class Tensor3d;
