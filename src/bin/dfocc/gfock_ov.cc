@@ -202,6 +202,7 @@ if (reference_ == "RESTRICTED") {
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
     GFov->contract(true, false, noccA, nvirA, nQ * noccA, K, G, 1.0, 1.0);
+    //GFov->cont332("IA", "MI", "MA", false, false, K, G, 1.0, 1.0); // it works
     G.reset();
     K.reset();
 

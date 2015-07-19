@@ -40,10 +40,12 @@ void DFOCC::ccd_t2_amps()
     // X(ia,jb) = \sum_{e} t_ij^ae F_be = \sum_{e} T(ia,je) F_be
     X = SharedTensor2d(new Tensor2d("X (IA|JB)", naoccA, navirA, naoccA, navirA));
     X->contract(false, true, naoccA * navirA * naoccA, navirA, navirA, t2, FabA, 1.0, 0.0);
+    //X->cont424("IAJB", "IAJE", "BE", false, t2, FabA, 1.0, 0.0); // it works
 
     // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
     // X(ia,jb) = -\sum_{m} t_mj^ab F_mi = -\sum_{m} F(m,i) T(ma,jb)
     X->contract(true, false, naoccA, naoccA * navirA * navirA, naoccA, FijA, t2, -1.0, 1.0);
+    //X->cont244("IAJB", "MI", "MAJB", false, FijA, t2, -1.0, 1.0); // it works
     X->symmetrize();
 
     // t_ij^ab <= <ij|ab>
