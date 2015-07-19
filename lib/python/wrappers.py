@@ -860,7 +860,7 @@ def cp(name, **kwargs):
 
     :examples:
 
-    >>> # [1] counterpoise-corrected mp2 interaction energy
+    >>> # [1] counterpoise-corrected density-fitted mp2 interaction energy
     >>> cp('df-mp2')
 
     """
