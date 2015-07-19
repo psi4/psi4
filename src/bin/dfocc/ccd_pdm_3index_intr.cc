@@ -71,6 +71,7 @@ void DFOCC::ccd_pdm_3index_intr()
     // G(Q,ij) = \sum_{m} G_im b_mj^Q 
     T = SharedTensor2d(new Tensor2d("G (Q|IJ)", nQ, naoccA, naoccA));
     T->contract233(false, false, naoccA, naoccA, GijA, bQijA, 1.0, 0.0);
+    //T->cont233("IJ", "IM", "MJ", GijA, bQijA, 1.0, 0.0); // it works
     T->write(psio_, PSIF_DFOCC_AMPS);
     T.reset();
 

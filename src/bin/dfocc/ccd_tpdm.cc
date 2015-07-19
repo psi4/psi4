@@ -95,6 +95,7 @@ void DFOCC::ccd_tpdm()
 
     // G_ia^Q += \sum(e) T_ie^Q G_ea 
     G->contract(false, false, nQ*naoccA, navirA, navirA, T, GabA, 1.0, 1.0);
+    //G->cont323("IA", "IE", "EA", false, T, GabA, 1.0, 1.0); // it works
     T.reset();
 
     // G_ia^Q += \sum(me) U(ia,me) (G_em^Q - G_me^Q)
