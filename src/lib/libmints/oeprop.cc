@@ -270,7 +270,7 @@ void Prop::add(const std::string& prop)
 }
 void Prop::add(std::vector<std::string> props)
 {
-    for (int i = 0; i < props.size(); i++) {
+    for (int i = 0; i < (int)props.size(); i++) {
         tasks_.insert(props[i]);
     }
 }
@@ -714,7 +714,7 @@ SharedMatrix Prop::overlap_so()
     return S;
 }
 
-OEProp::OEProp(boost::shared_ptr<Wavefunction> wfn) : Prop(wfn_)
+OEProp::OEProp(boost::shared_ptr<Wavefunction> wfn) : Prop(wfn)
 {
     common_init();
 }
@@ -973,7 +973,7 @@ void OEProp::compute_multipoles(int order, bool transition)
     }
     outfile->Printf( " --------------------------------------------------------------------------------\n");
 
-    
+
 }
 
 
@@ -1246,7 +1246,7 @@ void OEProp::compute_dipole(bool transition)
     s << title_ << " DIPOLE Z";
     Process::environment.globals[s.str()] = de[2]*dfac;
 
-    
+
 }
 
 void OEProp::compute_quadrupole(bool transition)
@@ -1349,7 +1349,7 @@ void OEProp::compute_quadrupole(bool transition)
     s << title_ << " QUADRUPOLE YZ";
     Process::environment.globals[s.str()] = qe[4]*dfac;
 
-    
+
 }
 void OEProp::compute_mo_extents()
 {
@@ -1486,7 +1486,7 @@ void OEProp::compute_mo_extents()
 
         outfile->Printf( "\n");
         for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
-        
+
 
     } else {
 
@@ -1577,7 +1577,7 @@ void OEProp::compute_mulliken_charges()
     delete[] PSb;
 
     outfile->Printf( "\n");
-    
+
 }
 void OEProp::compute_lowdin_charges()
 {
@@ -1661,7 +1661,7 @@ void OEProp::compute_lowdin_charges()
     delete[] Qa;
     delete[] Qb;
 
-    
+
 }
 void OEProp::compute_mayer_indices()
 {
@@ -1771,7 +1771,7 @@ void OEProp::compute_mayer_indices()
         MBI_valence->print();
     }
 
-    
+
 }
 void OEProp::compute_wiberg_lowdin_indices()
 {
@@ -1886,7 +1886,7 @@ void OEProp::compute_wiberg_lowdin_indices()
         WBI_valence->print();
     }
 
-    
+
 }
 void OEProp::compute_no_occupations(int max_num)
 {
@@ -1921,7 +1921,7 @@ void OEProp::compute_no_occupations(int max_num)
         int start_occ_a = offset_a - max_num;
         start_occ_a = (start_occ_a < 0 ? 0 : start_occ_a);
         int stop_vir_a = offset_a + max_num + 1;
-        stop_vir_a = (stop_vir_a >= metric_a.size() ? metric_a.size()  : stop_vir_a);
+        stop_vir_a = (int)((size_t)stop_vir_a >= metric_a.size() ? metric_a.size()  : stop_vir_a);
 
         outfile->Printf( "  Alpha Occupations:\n");
         for (int index = start_occ_a; index < stop_vir_a; index++) {
@@ -1950,7 +1950,7 @@ void OEProp::compute_no_occupations(int max_num)
         int start_occ_b = offset_b - max_num;
         start_occ_b = (start_occ_b < 0 ? 0 : start_occ_b);
         int stop_vir_b = offset_b + max_num + 1;
-        stop_vir_b = (stop_vir_b >= metric_b.size() ? metric_b.size()  : stop_vir_b);
+        stop_vir_b = (int)((size_t)stop_vir_b >= metric_b.size() ? metric_b.size()  : stop_vir_b);
 
         outfile->Printf( "  Beta Occupations:\n");
         for (int index = start_occ_b; index < stop_vir_b; index++) {
@@ -1984,7 +1984,7 @@ void OEProp::compute_no_occupations(int max_num)
     int start_occ = offset - max_num;
     start_occ = (start_occ < 0 ? 0 : start_occ);
     int stop_vir = offset + max_num + 1;
-    stop_vir = (stop_vir >= metric.size() ? metric.size()  : stop_vir);
+    stop_vir = (int)((size_t)stop_vir >= metric.size() ? metric.size()  : stop_vir);
 
     outfile->Printf( "  Total Occupations:\n");
     for (int index = start_occ; index < stop_vir; index++) {
@@ -2001,7 +2001,7 @@ void OEProp::compute_no_occupations(int max_num)
     outfile->Printf( "\n");
 
     //for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
-    
+
 }
 
 //GridProp::GridProp(boost::shared_ptr<Wavefunction> wfn) : filename_("out.grid"), Prop(wfn)

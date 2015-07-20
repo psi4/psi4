@@ -979,10 +979,10 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             if(regex_search(lines[lineNumber], reMatches, efpFileMarker_)) {
                 // Process file name
                 if(efp_fnames[currentFragment] != reMatches[1].str())
-                    throw PSIEXCEPTION("EFP fragment names not in sync (" + 
+                    throw PSIEXCEPTION("EFP fragment names not in sync (" +
                         efp_fnames[currentFragment] + " vs." + reMatches[1].str());
 
-                if((regex_match(lines[lineNumber+1], reMatches, fragmentMarker_)) || (lineNumber == lines.size() - 1)) {
+                if((regex_match(lines[lineNumber+1], reMatches, fragmentMarker_)) || ((size_t)lineNumber == lines.size() - 1)) {
                     // Process xyzabc hint
                     efp_ctype = XYZABC;
                     boost::algorithm::trim(lines[lineNumber]);
@@ -998,7 +998,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                         throw PSIEXCEPTION("Illegal EFP xyzbc specification line : " + lines[lineNumber] +
                                ".  efp fragname com_x com_y com_z euler_a euler_b euler_c expected.");
                 }
-                else if((regex_match(lines[lineNumber+4], reMatches, fragmentMarker_)) || (lineNumber == lines.size() - 4)) {
+                else if((regex_match(lines[lineNumber+4], reMatches, fragmentMarker_)) || ((size_t)lineNumber == lines.size() - 4)) {
                     // Process points hint
                     efp_ctype = POINTS;
                     boost::algorithm::trim(lines[lineNumber+1]);
@@ -1159,7 +1159,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             frag_atom_coord = Process::environment.get_efp()->get_frag_atom_coord(efpCount);
 
             for (unsigned int at=0; at < efp_natom; at++) {
-                // NOTE: Currently getting zVal & atomSym from libefp (no consistency check) and 
+                // NOTE: Currently getting zVal & atomSym from libefp (no consistency check) and
                 // mass from psi4 through zVal. May want to reshuffle this.
                 zVal = frag_atom_Z[at];
                 atomLabel = boost::to_upper_copy(frag_atom_label[at]);
@@ -1168,12 +1168,12 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                 // NOTE: EFP symbols look like A03O2 but unclear how standard this is
                 if(!regex_match(atomLabel, reMatches, efpAtomSymbol_))
                     throw PSIEXCEPTION("Illegal atom symbol in efp geometry specification: " + atomLabel
-                                       + " on atom" + boost::lexical_cast<std::string>(at) 
+                                       + " on atom" + boost::lexical_cast<std::string>(at)
                                        + " in fragment" + boost::lexical_cast<std::string>(efpCount) + "\n");
- 
+
                 // Save the actual atom symbol (A03O2 => O)
                 atomSym = reMatches[1].str();
- 
+
                 // TODO: need to handle dummies
                 // TODO: warn user that zmat mixed with efp uses total (qm + actual efp) atom counts for reference
 
@@ -1188,7 +1188,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             }
             ++efpCount;
             ++currentFragment;
-        }    
+        }
         else {
             // currentAtom belongs to QM fragment so read geometry of atom from line
 
@@ -1345,7 +1345,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         mol->fragments_[i].second = atom + frlen;
         atom += frlen;
     }
-        
+
     return mol;
 }
 
@@ -1704,13 +1704,13 @@ void Molecule::print_in_angstrom() const
             outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
             for(int i = 0; i < natom(); ++i){
-                outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); 
+                outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)");
                 for(int j = 0; j < 3; j++)
                     outfile->Printf( "  %17.12f", xyz(i, j) * pc_bohr2angstroms);
                 outfile->Printf("\n");
             }
             outfile->Printf("\n");
-            
+
         }
         else
             outfile->Printf( "  No atoms in this molecule.\n");
@@ -1732,13 +1732,13 @@ void Molecule::print_in_bohr() const
             outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
             for(int i = 0; i < natom(); ++i){
-                outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); 
+                outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)");
                 for(int j = 0; j < 3; j++)
                     outfile->Printf( "  %17.12f", xyz(i, j));
                 outfile->Printf("\n");
             }
             outfile->Printf("\n");
-            
+
         }
         else
             outfile->Printf( "  No atoms in this molecule.\n");
@@ -1763,7 +1763,7 @@ void Molecule::print_in_input_format() const
                 full_atoms_[i]->print_in_input_format();
             }
             outfile->Printf("\n");
-            
+
             if(geometry_variables_.size()){
                 std::map<std::string, double>::const_iterator iter;
                 for(iter = geometry_variables_.begin(); iter!=geometry_variables_.end(); ++iter){
@@ -1788,7 +1788,7 @@ void Molecule::print() const
 
             for(int i = 0; i < natom(); ++i){
                 Vector3 geom = atoms_[i]->compute();
-                outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); 
+                outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)");
                 for(int j = 0; j < 3; j++)
                     outfile->Printf( "  %17.12f", geom[j]);
                 outfile->Printf("\n");
@@ -1800,7 +1800,7 @@ void Molecule::print() const
                     std::map<std::string, std::string>::const_iterator iter;
                     for (iter = atoms_[i]->basissets().begin(); iter!=atoms_[i]->basissets().end(); ++iter){
                         std::map<std::string, std::string>::const_iterator otheriter = atoms_[i]->shells().find(iter->first);
-                        outfile->Printf("              %-15s %-20s %s\n", iter->first.c_str(), 
+                        outfile->Printf("              %-15s %-20s %s\n", iter->first.c_str(),
                             iter->second.c_str(), otheriter->second.c_str());
                     }
                 }
@@ -1836,13 +1836,13 @@ void Molecule::print_cluster() const
                 }
 
                 Vector3 geom = atoms_[i]->compute();
-                outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); 
+                outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)");
                 for(int j = 0; j < 3; j++)
                     outfile->Printf( "  %17.12f", geom[j]);
                 outfile->Printf("\n");
             }
             outfile->Printf("\n");
-            
+
         }
         else
             outfile->Printf( "  No atoms in this molecule.\n");
@@ -1862,13 +1862,13 @@ void Molecule::print_full() const
 
             for(size_t i = 0; i < full_atoms_.size(); ++i){
                 Vector3 geom = full_atoms_[i]->compute();
-                outfile->Printf( "    %8s%4s ",fsymbol(i).c_str(),fZ(i) ? "" : "(Gh)"); 
+                outfile->Printf( "    %8s%4s ",fsymbol(i).c_str(),fZ(i) ? "" : "(Gh)");
                 for(int j = 0; j < 3; j++)
                     outfile->Printf( "  %17.12f", geom[j]);
                 outfile->Printf("\n");
             }
             outfile->Printf("\n");
-            
+
         }
         else
             outfile->Printf( "  No atoms in this molecule.\n");

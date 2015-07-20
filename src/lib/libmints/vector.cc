@@ -354,7 +354,7 @@ void Vector::recv()
 {
 }
 
-void Vector::bcast(int broadcaster)
+void Vector::bcast(int)
 {
     // Assume the user allocated the matrix to the correct size first.
     /*std::cout<<"Someone is calling the vector bcast"<<std::endl;

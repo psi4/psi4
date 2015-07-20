@@ -122,7 +122,7 @@ OneBodyAOInt* OneBodyAOInt::clone()
     throw FeatureNotImplemented("libmints", "OneBodyInt::clone()", __FILE__, __LINE__);
 }
 
-void OneBodyAOInt::normalize_am(const GaussianShell& s1, const GaussianShell& s2, int nchunk)
+void OneBodyAOInt::normalize_am(const GaussianShell& /*s1*/, const GaussianShell& /*s2*/, int /*nchunk*/)
 {
     // ACS removed this; the normalize function just returns 1.0
 //    // Integrals are done. Normalize for angular momentum
@@ -238,12 +238,12 @@ void OneBodyAOInt::compute_shell(int sh1, int sh2)
     }
 }
 
-void OneBodyAOInt::compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2)
+void OneBodyAOInt::compute_pair_deriv1(const GaussianShell&, const GaussianShell&)
 {
     throw PSIEXCEPTION("OneBodyAOInt::compute_pair_deriv1: Not implemented.");
 }
 
-void OneBodyAOInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianShell& s2)
+void OneBodyAOInt::compute_pair_deriv2(const GaussianShell&, const GaussianShell&)
 {
     throw PSIEXCEPTION("OneBodyAOInt::compute_pair_deriv1: Not implemented.");
 }
@@ -309,7 +309,7 @@ void OneBodyAOInt::compute(std::vector<SharedMatrix > &result)
 
     // Check the length of result, must be chunk
     // There not an easy way of checking the size now.
-    if (result.size() != nchunk_) {
+    if (result.size() != (size_t)nchunk_) {
         outfile->Printf( "result length = %ld, nchunk = %d\n", result.size(), nchunk_);
         throw SanityCheckError("OneBodyInt::compute(result): result incorrect length.", __FILE__, __LINE__);
     }
@@ -358,7 +358,7 @@ void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix > &result)
     double *location = 0;
 
     // Check the length of result, must be 3*natom_
-    if (result.size() != 3*natom_)
+    if (result.size() != (size_t)3*natom_)
         throw SanityCheckError("OneBodyInt::compute_deriv1(result): result must be 3 * natom in length.", __FILE__, __LINE__);
 
     if (result[0]->nirrep() != 1)
@@ -417,7 +417,7 @@ void OneBodyAOInt::compute_deriv2(std::vector<SharedMatrix > &result)
     int i_offset = 0;
 
     // Check the length of result, must be 3*natom_
-    if (result.size() != 9*natom_*natom_)
+    if (result.size() != (size_t)9*natom_*natom_)
         throw SanityCheckError("OneBodyInt::compute_deriv2(result): result must be 9 * natom^2 in length.", __FILE__, __LINE__);
 
     if (result[0]->nirrep() != 1)

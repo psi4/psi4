@@ -929,7 +929,7 @@ PetiteList::compute_aotoso_info()
             }
             // Sanity check
             int expected = from_cart ? nimages * ncart : nimages * npure;
-            if(salc_count != expected){
+            if(salc_count != (size_t)expected){
                 std::stringstream err;
                 err << "form_ao_to_so_info(): Expected " << expected
                     << " symmetry adapted functions, but found " << salc_count;
@@ -960,7 +960,7 @@ PetiteList::compute_aotoso_info()
     for(int h = 0; h < nirrep_; ++h){
 //outfile->Printf( "Coeffs for irrep %d\n",h);
 //SOs[h].print("");
-        if(!c1_ && functions_per_irrep[h] != nbf_in_ir_[h] && include_pure_transform_){
+        if(!c1_ && (int)functions_per_irrep[h] != nbf_in_ir_[h] && include_pure_transform_){
             std::stringstream err;
             err << "PetiteList::aotoso_info(): In irrep " << h << " found " <<
                 functions_per_irrep[h] << " SOs, but expected " << nbf_in_ir_[h];

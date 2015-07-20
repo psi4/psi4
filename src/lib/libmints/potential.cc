@@ -373,12 +373,6 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
 //    const size_t center_i_start_x = center_i * 9 * size;
 //    const size_t center_j_start_x = center_j * 9 * size;
 
-    const int iz1 = 1;
-    const int iy1 = am1 + 1;
-    const int ix1 = iy1 * iy1;
-    const int jz1 = 1;
-    const int jy1 = am2 + 1;
-    const int jx1 = jy1 * jy1;
     const int iz2 = 1;
     const int iy2 = am1 + 3;
     const int ix2 = iy2 * iy2;
@@ -1127,7 +1121,7 @@ void PotentialInt::compute_deriv1(std::vector<SharedMatrix > &result)
     double *location = 0;
 
     // Check the length of result, must be 3*natom_
-    if (result.size() != 3*natom_)
+    if (result.size() != (size_t)3*natom_)
         throw SanityCheckError("PotentialInt::compute_deriv1(result): result must be 3 * natom in length.", __FILE__, __LINE__);
 
     for (int i=0; i<ns1; ++i) {
@@ -1168,7 +1162,7 @@ void PotentialInt::compute_deriv2(std::vector<SharedMatrix > &result)
     double *location = 0;
 
     // Check the length of result, must be 3*natom_
-    if (result.size() != 3*3*natom_*natom_)
+    if (result.size() != (size_t)3*3*natom_*natom_)
         throw SanityCheckError("PotentialInt::compute_deriv2(result): result must be 9 * natom^2 in length.", __FILE__, __LINE__);
 
     for (int i=0; i<ns1; ++i) {
@@ -1227,16 +1221,13 @@ void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix > result,
     // Loop over unique SO shells.
     for (int ish=0; ish<ns1; ++ish) {
         const SOTransform& t1 = b1_->sotrans(ish);
-        int nso1 = b1_->nfunction(ish);
         int nao1 = b1_->naofunction(ish);
 
         for (int jsh=0; jsh<ns2; ++jsh) {
             const SOTransform& t2= b2_->sotrans(jsh);
-            int nso2 = b2_->nfunction(jsh);
             int nao2 = b2_->naofunction(jsh);
 
             int nao12 = nao1 * nao2;
-            int nso12 = nso1 * nso2;
 
             // loop through the AO shells that make up this SO shell
             // by the end of these 4 for loops we will have our final integral in buffer_
@@ -1264,8 +1255,6 @@ void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix > result,
                         int isofunc  = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
                         // AO function offset in a linear array
                         int iaooff   = iaofunc;
-                        // SO function offset in a lienar array
-                        int isooff   = isofunc;
                         // Relative position of the SO function within its irrep
                         int irel     = b1_->function_within_irrep(ish, isofunc);
                         int iirrep   = ifunc.irrep;
@@ -1276,7 +1265,6 @@ void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix > result,
                             int jaofunc  = jfunc.aofunc;
                             int jsofunc  = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
                             int jaooff   = iaooff*nao2 + jaofunc;
-                            int jsooff   = isooff*nso2 + jsofunc;
                             int jrel     = b2_->function_within_irrep(jsh, jsofunc);
                             int jirrep   = jfunc.irrep;
 
