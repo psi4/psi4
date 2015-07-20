@@ -46,7 +46,11 @@ geometry of our water molecule using a standard Z-matrix.
 
 .. literalinclude:: @SFNX_INCLUDE@samples/tu1-h2o-energy/input.dat
 
-For your convenience, this example can be found in 
+   .. note:: The memory and basis set specifications are placed *before* the
+      energy function is called.  Any user options need to
+      be set before the procedure they are meant to affect.  
+
+For your convenience, the above example can be found in 
 :srcsample:`tu1-h2o-energy`.
 You can run it if you wish.
 Once |PSIfour| is in your path (see the :ref:`User Configuration <sec:install_III_7>` 
