@@ -198,7 +198,7 @@ enthalpy (H), entropy (S), and Gibbs free energy (G).  Similarly, the
 molecular geometry is used to obtain rotational constants, which are
 then used to obtain rotational contributions to H, S, and G.
 
-.. warning:: It is important to know that |PSIfour|, like any other
+.. caution:: It is important to know that |PSIfour|, like any other
    quantum chemistry program, does *not* compute the usual enthalpies,
    entropies, or Gibbs free energies *of formation* provided by most
    reference books.  Instead, quantum chemistry programs compute "absolute"
