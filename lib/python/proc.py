@@ -1215,12 +1215,12 @@ def run_scf(name, **kwargs):
             psi4.set_local_option('SCF','REFERENCE','UHF')
     elif lowername == 'scf': 
         if psi4.get_option('SCF','REFERENCE') == 'RKS':
-            if (len(psi5.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
                 pass
             else:
                 psi4.set_local_option('SCF','REFERENCE','RHF')
         elif psi4.get_option('SCF','REFERENCE') == 'UKS':
-            if (len(psi5.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
                 pass
             else:
                 psi4.set_local_option('SCF','REFERENCE','UHF')
@@ -1247,7 +1247,23 @@ def run_scf_gradient(name, **kwargs):
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    parse_scf_cases(name)
+    if lowername == 'hf':
+        if psi4.get_option('SCF','REFERENCE') == 'RKS':
+            psi4.set_local_option('SCF','REFERENCE','RHF')
+        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
+            psi4.set_local_option('SCF','REFERENCE','UHF')
+    elif lowername == 'scf': 
+        if psi4.get_option('SCF','REFERENCE') == 'RKS':
+            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+                pass
+            else:
+                psi4.set_local_option('SCF','REFERENCE','RHF')
+        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
+            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+                pass
+            else:
+                psi4.set_local_option('SCF','REFERENCE','UHF')
+
     run_scf(name, **kwargs)
 
     psi4.scfgrad()
@@ -1704,7 +1720,24 @@ def run_scf_property(name, **kwargs):
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    parse_scf_cases(name)
+
+    if lowername == 'hf':
+        if psi4.get_option('SCF','REFERENCE') == 'RKS':
+            psi4.set_local_option('SCF','REFERENCE','RHF')
+        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
+            psi4.set_local_option('SCF','REFERENCE','UHF')
+    elif lowername == 'scf': 
+        if psi4.get_option('SCF','REFERENCE') == 'RKS':
+            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+                pass
+            else:
+                psi4.set_local_option('SCF','REFERENCE','RHF')
+        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
+            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+                pass
+            else:
+                psi4.set_local_option('SCF','REFERENCE','UHF')
+
     run_scf(name, **kwargs)
 
     optstash.restore()
