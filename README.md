@@ -9,11 +9,15 @@ Psi4: Open-Source Quantum Chemistry
 
 * **Downloading and Installing Psi4** https://github.com/psi4/psi4public/wiki
 
+* **Tutorial** http://psicode.org/psi4manual/master/tutorial.html
+
+* **Forum** http://forum.psicode.org
+
 * **Public Github**  https://github.com/psi4/psi4public (regularly synched from private github master)
 
 * **Private Github**  https://github.com/psi4/psi4
 
-* **Anaconda**  https://anaconda.org/psi4 (binary available for Linux)
+* **Anaconda**  https://anaconda.org/psi4 (binary available for Linux) [instructions](http://psicode.org/psi4manual/master/conda.html#quick-installation)
 
 * **Interested Developers**  http://psicode.org/developers.php (welcome to fork psi4/psi4public or store private branches at psi4/psi4)
 
