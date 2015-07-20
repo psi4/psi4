@@ -149,11 +149,6 @@ if(ENABLE_CHEMPS2)
    include(ConfigChemps2)
 endif()
 
-#OpenBabel Detection
-#add_subdirectory(openbabel)
-#set(BABEL_LIBRARY_DIR ${CMAKE_BINARY_DIR}/lib)
-#set(BABEL_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include/openbabel-2.0)
-
 # Append the suffix given from input to all generated executables
 if(EXECUTABLE_SUFFIX)
    set(CMAKE_EXECUTABLE_SUFFIX "${EXECUTABLE_SUFFIX}")

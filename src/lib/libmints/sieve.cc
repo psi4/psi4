@@ -48,7 +48,7 @@ void ERISieve::common_init()
     erfc_thresh_ = boost::math::erfc_inv(sieve_);
   else
     erfc_thresh_ = DBL_MAX;
-  
+
   Options& options = Process::environment.options;
   do_qqr_ = options.get_bool("DO_QQR_SIEVE");
 
@@ -145,13 +145,13 @@ void ERISieve::set_sieve(double sieve)
         outfile->Printf( "\n");
 
         outfile->Printf( "   => Significant Shell Pairs <=\n\n");
-        for (int MN = 0; MN < shell_pairs_.size(); MN++) {
+        for (int MN = 0; MN < (int)shell_pairs_.size(); MN++) {
             outfile->Printf( "    %6d = (%3d,%3d|\n", MN, shell_pairs_[MN].first,shell_pairs_[MN].second);
         }
         outfile->Printf( "\n");
 
         outfile->Printf( "   => Significant Function Pairs <=\n\n");
-        for (int MN = 0; MN < function_pairs_.size(); MN++) {
+        for (int MN = 0; MN < (int)function_pairs_.size(); MN++) {
             outfile->Printf( "    %6d = (%3d,%3d|\n", MN, function_pairs_[MN].first,function_pairs_[MN].second);
         }
         outfile->Printf( "\n");
@@ -174,7 +174,7 @@ void ERISieve::set_sieve(double sieve)
 
         outfile->Printf( "   => Shell to Shell <=\n\n");
         for (int M = 0; M < nshell_; M++) {
-            for (int N = 0; N < shell_to_shell_[M].size(); N++) {
+            for (int N = 0; N < (int)shell_to_shell_[M].size(); N++) {
                 outfile->Printf( "    (%3d, %3d|\n", M, shell_to_shell_[M][N]);
             }
         }
@@ -182,7 +182,7 @@ void ERISieve::set_sieve(double sieve)
 
         outfile->Printf( "   => Function to Function <=\n\n");
         for (int M = 0; M < nbf_; M++) {
-            for (int N = 0; N < function_to_function_[M].size(); N++) {
+            for (int N = 0; N < (int)function_to_function_[M].size(); N++) {
                 outfile->Printf( "    (%3d, %3d|\n", M, function_to_function_[M][N]);
             }
         }
@@ -239,83 +239,83 @@ void ERISieve::integrals()
     }
 
     if (do_qqr_) {
-            
+
             //std::cout << "Doing QQR precomputations.\n";
-            
+
             const GaussianShell& mu_shell = primary_->shell(MU);
             const GaussianShell& nu_shell = primary_->shell(NU);
-            
+
             double coef_denominator = 0.0;
 
             std::vector<Vector3> primitive_centers;
             std::vector<double> primitive_extents;
-            
+
             // IMPORTANT: need to compute this first, outside these loops
             Vector3 contracted_center(0.0, 0.0, 0.0);
-            
+
             for (int p_ind = 0; p_ind < mu_shell.nprimitive(); p_ind++)
             {
-              
+
               double p_exp = mu_shell.exp(p_ind);
               double p_coef = fabs(mu_shell.coef(p_ind));
-              
+
               Vector3 p_center = mu_shell.center();
               p_center *= p_exp;
-              
+
               for (int r_ind = 0; r_ind < nu_shell.nprimitive(); r_ind++)
               {
-                
+
                 double r_exp = nu_shell.exp(r_ind);
                 double r_coef = fabs(nu_shell.coef(r_ind));
-                
+
                 Vector3 r_center = nu_shell.center();
                 r_center *= r_exp;
-                
+
                 Vector3 primitive_center = (p_center + r_center) / (p_exp + r_exp);
-                
+
                 primitive_centers.push_back(primitive_center);
-                
+
                 coef_denominator += p_coef * r_coef;
                 contracted_center += primitive_center;
-                
+
                 double this_extent = sqrt(2 / (p_exp + r_exp)) * erfc_thresh_;
-                
+
                 primitive_extents.push_back(this_extent);
-                
+
               } // loop over primitives in NU
-              
+
             } // loop over primitives in MU
-            
+
             contracted_center /= coef_denominator;
             unsigned long int this_ind = MU * (unsigned long int) nshell + NU;
             unsigned long int sym_ind = NU * (unsigned long int) nshell + MU;
-            
-            for (int prim_it = 0; prim_it < primitive_extents.size(); prim_it++)
+
+            for (int prim_it = 0; prim_it < (int)primitive_extents.size(); prim_it++)
             {
-              
+
               double this_dist = contracted_center.distance(primitive_centers[prim_it]);
 
               extents_[this_ind] = std::max(extents_[this_ind],
                                             primitive_extents[prim_it]
                                               + this_dist);
               extents_[sym_ind] = extents_[this_ind];
-              
+
             } // now loop over the pairs of primitives
-              
-            
+
+
      } // doing QQR
 }
 bool ERISieve::shell_significant_qqr(int M, int N, int R, int S)
 {
-  
+
   double Q_mn = shell_pair_values_[N * (unsigned long int) nshell_ + M];
   double Q_rs = shell_pair_values_[R * (unsigned long int) nshell_ + S];
-  
+
   double dist = contracted_centers_[N * (unsigned long int) nshell_ + M].distance(contracted_centers_[R * (unsigned long int) nshell_ + S]);
-  
+
   double denom = dist - extents_[N * (unsigned long int) nshell_ + M]
                       - extents_[R * (unsigned long int) nshell_ + S];
-  
+
   // this does the near field estimate if that's the only valid one
   // values of Q are squared
   double est = Q_mn * Q_rs / (denom > 0.0 ? denom * denom : 1.0);
@@ -328,14 +328,14 @@ bool ERISieve::shell_significant_qqr(int M, int N, int R, int S)
     std::cout << "sieve2: " << sieve2_ << "\n";
   }
   return est >= sieve2_;
-  
+
 }
 
 
 double ERISieve::shell_pair_value(int m, int n) const
 {
-  
+
   return shell_pair_values_[m * nshell_ + n];
-  
+
 }
 }
