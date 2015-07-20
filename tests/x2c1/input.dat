@@ -1,3 +1,5 @@
+#! Non- and X2C-Relativistic SCF Energy Point
+
 ref_nuc_energy =  9.779406144413407 #TEST
 ref_nr_energy  = -76.02176935053990 #TEST 
 ref_rel_energy = -76.07679144735926 #TEST
