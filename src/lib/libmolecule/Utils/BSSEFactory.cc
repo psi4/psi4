@@ -26,7 +26,7 @@
 namespace psi{
 namespace LibMolecule{
 
-BSSEFactory::BSSEFactory(Molecule& Mol, FragmentedSystem& Sys,uint Stop){
+BSSEFactory::BSSEFactory(Molecule& Mol, FragmentedSystem& Sys,unsigned int Stop){
    NMers& DaNMers =Sys.GetNMers();
    std::string Method=
          psi::Process::environment.options["BSSE_METHOD"].to_string();

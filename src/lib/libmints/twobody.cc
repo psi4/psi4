@@ -41,8 +41,8 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     original_bs2_(integral_->basis2()),
     original_bs3_(integral_->basis3()),
     original_bs4_(integral_->basis4()),
-    deriv_(deriv),
     target_(0),
+    deriv_(deriv),
     target_pybuffer_(&target_, true)
 {
     //outfile->Printf( "TwoBodyAOInt object created with: %s, %s, %s, %s\n",
@@ -99,6 +99,11 @@ TwoBodyAOInt* TwoBodyAOInt::clone()
 
 void TwoBodyAOInt::normalize_am(boost::shared_ptr<GaussianShell> s1, boost::shared_ptr<GaussianShell> s2, boost::shared_ptr<GaussianShell> s3, boost::shared_ptr<GaussianShell> s4, int nchunk)
 {
+    UNUSED(s1);
+    UNUSED(s2);
+    UNUSED(s3);
+    UNUSED(s4);
+    UNUSED(nchunk);
     // Integrals assume this normalization is 1.0.
     return;
 #if 0

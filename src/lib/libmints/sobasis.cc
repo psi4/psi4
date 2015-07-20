@@ -216,7 +216,7 @@ void SOBasisSet::init()
     SO_block *soblocks(petite_->compute_aotoso_info());
 
 //    for (i=0; i<nblocks; ++i) {
-//        outfile->Printf( "soblock[%d]\n", i); 
+//        outfile->Printf( "soblock[%d]\n", i);
 //        soblocks[i].print("");
 //    }
 
@@ -457,7 +457,7 @@ void SOBasisSet::print(std::string out) const
     printer->Printf( "    aotransform:\n");
     for (i=0; i<basis_->nshell(); ++i) {
         if (i>0) printer->Printf( "\n");
-        for (j=0; j<aotrans_[i].soshell.size(); ++j) {
+        for (j=0; j<(int)aotrans_[i].soshell.size(); ++j) {
             printer->Printf( "      AO(%3d) sofunc %d aofunc %d irrep %d coef %12.8f\n",
                     i,
                     aotrans_[i].soshell[j].sofunc,
