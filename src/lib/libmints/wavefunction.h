@@ -240,8 +240,11 @@ protected:
     int CIM_nactive_virtual_;
     int * CIM_nactive_virtual_pointer_;
 
+    /* Xiao Wang */
     /// Flag to tell if this is a DCFT computation
     bool isDCFT_;
+    /* Xiao Wang */
+
 private:
     // Wavefunction() {}
     void common_init();
@@ -532,10 +535,12 @@ public:
     /// Set if this is a CIM computation
     void CIMSet(bool value,int nactive_occupied);
 
+    /* Xiao Wang */
     /// Returns true if this is a DCFT computation
     bool isDCFT();
     /// Set if this is a DCFT computation
     void set_DCFT(bool val);
+    /* Xiao Wang */
 };
 
 }
