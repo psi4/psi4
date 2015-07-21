@@ -1,6 +1,6 @@
 /*! \file
     \ingroup INT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <math.h>
 #include <stdio.h>
@@ -15,9 +15,9 @@ REALTYPE *vrr_build_xxxx(int am_in[2], prim_data *Data, REALTYPE *vp, const REAL
 {
   int i, j, k, l;
   int a;
-  int flag = 0;
+  //int flag = 0;
   int am[2][3];
-  int t1, t2, t3, t4, t2max;
+  int /*t1,*/ t2, t3, t4, t2max;
   int xyz;
   int la, lc;
   REALTYPE PA[3], WP[3], loo2zn, loo2z, lpoz, eri;
@@ -69,18 +69,18 @@ REALTYPE *vrr_build_xxxx(int am_in[2], prim_data *Data, REALTYPE *vp, const REAL
 	for(l = 0; l <= k; l++){
 	  am[1][1] = k - l;
 	  am[1][2] = l;
-	  
+
 	  if(am[a][2]) xyz = 2;
 	  if(am[a][1]) xyz = 1;
 	  if(am[a][0]) xyz = 0;
-	  
+
 	  if (t2 == t2max) {
 	    /*--- reset indices (read Justin Fermann's thesis, pp 36-41 ---*/
 	    /*--- (a-1,0|c0) ---*/
 	    am[a][xyz] = am[a][xyz] - 1;
 	    am_in[a] = am_in[a] - 1;
 	    t2 = hash(am,am_in);
-	    
+
 	    /*--- (a-2,0|c0) ---*/
 	    if (am_in[a]) {
 	      am[a][xyz] = am[a][xyz] - 1;
@@ -89,7 +89,7 @@ REALTYPE *vrr_build_xxxx(int am_in[2], prim_data *Data, REALTYPE *vp, const REAL
 	      am[a][xyz] = am[a][xyz] + 1;
 	      am_in[a] = am_in[a] + 1;
 	    }
-	    
+
 	    /*--- (a-1,0|c-1,0) ---*/
 	    if (am_in[a^1]) {
 	      am[a^1][0] = am[a^1][0] - 1;
@@ -118,7 +118,7 @@ REALTYPE *vrr_build_xxxx(int am_in[2], prim_data *Data, REALTYPE *vp, const REAL
       }
     }
   }
-  
+
   return vp;
 }
 
