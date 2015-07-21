@@ -1237,6 +1237,7 @@ def run_scf_gradient(name, **kwargs):
     a SCF gradient calculation.
 
     """
+    lowername = name.lower()
     optstash = p4util.OptionsState(
         ['DF_BASIS_SCF'],
         ['SCF', 'SCF_TYPE'],
