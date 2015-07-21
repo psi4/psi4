@@ -20,6 +20,10 @@ no_com
 set {
   basis cc-pVDZ
   scf_type pk
+  dft_nuclear_scheme Becke
+  dft_radial_scheme Becke
+  dft_radial_points 75
+  dft_spherical_points 434
   pcm true
   pcm_scf_type total
 }
