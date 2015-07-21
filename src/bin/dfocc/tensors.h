@@ -83,6 +83,7 @@ class Tensor1d
   void subtract(const SharedTensor1d& Adum);
   void subtract(int i, double value);
   double get(int i);
+  void to_shared_vector(SharedVector A);
   // rms:  rms of A1d_
   double rms();
   // rms:  rms of (A1d_ - Atemp)
@@ -185,6 +186,8 @@ class Tensor2d
   void axpy(ULI length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha);
   double **transpose2();
   SharedTensor2d transpose();
+  void trans(const SharedTensor2d &A);
+  void trans(double **A);
   void copy(double **a);
   void copy(const SharedTensor2d &Adum);
   void copy(ULI length, const SharedTensor2d &A, int inc_a, int inc_2d);
@@ -350,12 +353,16 @@ class Tensor2d
   void add_aocc_fc(const SharedTensor2d &A, double alpha, double beta);
   void add_fc_aocc(const SharedTensor2d &A, double alpha, double beta);
 
-  void set3_oo(const SharedTensor2d &A);
   void add3_oo(const SharedTensor2d &A, double alpha, double beta);
-  void set3_act_ov(int frzc, int aocc, int avir, int vir, const SharedTensor2d &a);
+  void set3_oo(const SharedTensor2d &A);
   void set3_ov(const SharedTensor2d &A);
   void set3_vo(const SharedTensor2d &A);
   void set3_vv(const SharedTensor2d &A, int occ);
+
+  void set3_act_ov(int frzc, int aocc, int avir, int vir, const SharedTensor2d &a);
+  void set3_act_oo(int frzc, const SharedTensor2d &A);
+  void set3_act_vv(const SharedTensor2d &A);
+
   void swap_3index_col(const SharedTensor2d &A);
 
   void form_oo(const SharedTensor2d &A);
@@ -385,12 +392,13 @@ class Tensor2d
   void form_b_il(const SharedTensor2d &A);
   // form_b_ka: k is active occupied, and a is all virtual
   void form_b_ka(const SharedTensor2d &A);
-  // form_b_la: k is frozen core, and a is all virtual
+  // form_b_la: l is frozen core, and a is all virtual
   void form_b_la(const SharedTensor2d &A);
 
   // B_pq = 1/2 (A_pq + A_qp)
   void symmetrize();
-  // C(Q,pq) = 1/2 [ A(Q,pq) + B(Q,qp) ]
+  void symmetrize(const SharedTensor2d &A);
+  // B(Q,pq) = 1/2 [ A(Q,pq) + A(Q,qp) ]
   void symmetrize3(const SharedTensor2d &A);
   // A(Q, p>=q) = A(Q,pq) * (2 -\delta_{pq})
   void symm_packed(const SharedTensor2d &A);
@@ -419,6 +427,33 @@ class Tensor2d
   // A2d_(pq,rs) = 2 (pq|rs) - (rq|ps)
   void tei_cs4_anti_symm(const SharedTensor2d &J, const SharedTensor2d &K);
 
+  // A2d(ij,ab) += P_(ij) * P_(ab) A(ia,jb)
+  void P_ijab(const SharedTensor2d &A);
+
+
+  // General tensor contractions over
+  // C(pq,rs) = \sum_{tu} A(pq,tu) B(tu,rs)
+  // t_a1: t; t_a2: u; f_a1: p; f_a2: q
+  void cont444(int t_a1, int t_a2, int f_a1, int f_a2, const SharedTensor2d& A, int t_b1, int t_b2, int f_b1, int f_b2, const SharedTensor2d& B, double alpha, double beta);
+  void cont444(bool delete_a, int t_a1, int t_a2, int f_a1, int f_a2, SharedTensor2d& A, 
+	     bool delete_b, int t_b1, int t_b2, int f_b1, int f_b2, SharedTensor2d& B, 
+	     double alpha, double beta);
+  void cont444(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(pq) = \sum_{rst} A(pr,st) B(rs,tq)
+  void cont442(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(pq,rs) = \sum_{t} A(pq,rt) B(t,s)
+  void cont424(string idx_c, string idx_a, string idx_b, bool delete_a, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(pq,rs) = \sum_{t} A(p,t) B(tq,rs) 
+  void cont244(string idx_c, string idx_a, string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(Q,pq) = \sum_{rs} A(Q,rs) B(rs,pq)
+  // where dim(idx_c) & dim(idx_a)=2 but dim(idx_b)=4
+  void cont343(string idx_c, string idx_a, string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(Q,pq) = \sum_{r} A(p,r) B(Q,rq)
+  void cont233(string idx_c, string idx_a, string idx_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(Q,pq) = \sum_{r} A(Q,pr) B(r,q)
+  void cont323(string idx_c, string idx_a, string idx_b, bool delete_a, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(pq) = \sum_{Qr} A(Q,rp) B(Q,rq)
+  void cont332(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
 
   friend class Tensor1d;
   friend class Tensor3d;

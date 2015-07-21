@@ -52,8 +52,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Psi4'
-copyright = u'2015, The Psi4 Project'
+project = u'Psi4'  # u'P\uA731\u026A4'
+copyright = u'2015, The {0} Project'.format(project)
 
 def get_gitversion():
     file = '../../../src/bin/psi4/gitversion.h'
@@ -64,8 +64,6 @@ def get_gitversion():
         return ''
 
     try:
-        #define GIT_VERSION "{master} 1ea0a14 dirty"
-        #define PSI_VERSION "0.1.76"
         gith = f.readline().split()[3]
         vers = f.readline().split()[2]
         vers = vers[1:-1]
@@ -173,7 +171,7 @@ html_favicon = 'favicon-psi4.ico'
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-html_last_updated_fmt = '%b %d, %Y'
+html_last_updated_fmt = '%A, %d %B %Y %I:%M%p'
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
@@ -293,8 +291,16 @@ texinfo_documents = [
 
 # Abbreviations
 rst_epilog = """
-.. |PSIfour| replace:: PSI4
-.. |PSIfours| replace:: PSI4's
+.. role:: sc
+.. raw:: html
+
+  <style type="text/css"><!--
+   .green {color: red;}
+   .sc {font-variant: small-caps;}
+   --></style>
+
+.. |PSIfour| replace:: :sc:`Psi4`
+.. |PSIfours| replace:: |PSIfour|\ 's
 .. |psirc| replace:: ``~/.psi4rc``
 .. |dl| replace:: :math:`\Rightarrow`
 .. |dr| replace:: :math:`\Leftarrow`
@@ -307,6 +313,10 @@ rst_epilog = """
 .. |w---w| unicode:: U+02014 .. em dash
 .. include:: /abbr_accents.rst
 """
+#.. |PSIfourIM| image:: /psi4_blue.png
+#.. |scs| unicode:: U+A731
+#.. |sci| unicode:: U+026A
+#.. |PSIfourSC| replace:: P\ |scs|\ |sci|\ 4
 
 # Logo at top of page
 rst_prolog = """
@@ -335,17 +345,15 @@ extlinks = {'source':    ('https://github.com/psi4/psi4public/blob/master/%s', '
 pngmath_latex_preamble=r'\usepackage[active]{preview}'
 pngmath_use_preview=True
 
-trac_url = 'http://sirius.chem.vt.edu/trac/'
-
 from docutils import nodes, utils
 from docutils.parsers.rst import roles
 import urllib
 
-def trac_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
-  ref = trac_url + '/intertrac/' + urllib.quote(text, safe='')
-  node = nodes.reference(rawtext, utils.unescape(text), refuri=ref, **options)
-  return [node],[]
-
-roles.register_canonical_role('trac', trac_role)
+#def trac_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+#  ref = trac_url + '/intertrac/' + urllib.quote(text, safe='')
+#  node = nodes.reference(rawtext, utils.unescape(text), refuri=ref, **options)
+#  return [node],[]
+#
+#roles.register_canonical_role('trac', trac_role)
 
 

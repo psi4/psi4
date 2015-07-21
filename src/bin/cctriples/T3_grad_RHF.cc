@@ -767,7 +767,7 @@ namespace psi { namespace cctriples {
 	global_dpd_->buf4_mat_irrep_close(&F2ints, h);
 	global_dpd_->buf4_mat_irrep_close(&Dints, h);
       }
-      global_dpd_->buf4_print(&S2, "outfile", 1);
+//      global_dpd_->buf4_print(&S2, "outfile", 1);
       global_dpd_->buf4_close(&S2);
       global_dpd_->buf4_close(&T2);
       global_dpd_->buf4_close(&Eints);
@@ -777,7 +777,7 @@ namespace psi { namespace cctriples {
 
       global_dpd_->file2_mat_wrt(&S1);
       global_dpd_->file2_mat_close(&S1);
-      global_dpd_->file2_print(&S1, "outfile");
+//      global_dpd_->file2_print(&S1, "outfile");
       global_dpd_->file2_close(&S1);
 
       global_dpd_->file2_mat_close(&T1);

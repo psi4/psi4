@@ -102,6 +102,7 @@ import keyword
 import tokenize
 from optparse import OptionParser
 from fnmatch import fnmatch
+from p4xcpt import *
 try:
     frozenset
 except NameError:
@@ -1352,7 +1353,7 @@ def _main():
     if count:
         if options.count:
             sys.stderr.write(str(count) + '\n')
-        sys.exit(1)
+        raise ValidationError(str(count) + "\n")
 
 
 if __name__ == '__main__':

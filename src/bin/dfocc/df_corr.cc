@@ -756,7 +756,8 @@ void DFOCC::trans_oei()
     // Blocks
     HooA->form_oo(HmoA);
     HvoA->form_vo(HmoA);
-    HovA = HvoA->transpose();
+    HovA->form_ov(HmoA);
+    //HovA = HvoA->transpose();
     HvvA->form_vv(noccA, HmoA);
 
  if (reference_ == "UNRESTRICTED") {
@@ -765,7 +766,8 @@ void DFOCC::trans_oei()
     // Blocks
     HooB->form_oo(HmoB);
     HvoB->form_vo(HmoB);
-    HovB = HvoB->transpose();
+    HovB->form_ov(HmoB);
+    //HovB = HvoB->transpose();
     HvvB->form_vv(noccB, HmoB);
  } // uhf
 

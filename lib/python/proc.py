@@ -276,6 +276,89 @@ def run_dfocc(name, **kwargs):
     return psi4.get_variable("CURRENT ENERGY")
 
 
+def run_qchf(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted orbital-optimized MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF', 'DF_INTS_IO'],
+        ['DF_BASIS_SCF'],
+        ['DIE_IF_NOT_CONVERGED'],
+        ['MAXITER'],
+        ['DFOCC', 'ORB_OPT'],
+        ['DFOCC', 'WFN_TYPE'],
+        ['DFOCC', 'QCHF'],
+        ['DFOCC', 'E_CONVERGENCE'])
+
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
+    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'QCHF')
+    psi4.set_local_option('DFOCC', 'QCHF', 'TRUE')
+    psi4.set_local_option('DFOCC', 'E_CONVERGENCE', 8)
+
+    # override symmetry:
+    molecule = psi4.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(1)
+    molecule.update_geometry()
+    if user_pg != 'c1':
+        psi4.print_out('  QCHF does not make use of molecular symmetry, further calculations in C1 point group.\n')
+
+    #psi4.set_global_option('SCF_TYPE', 'DF')
+    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+    psi4.set_local_option('SCF', 'DIE_IF_NOT_CONVERGED', 'FALSE')
+    psi4.set_local_option('SCF', 'MAXITER', 1)
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    psi4.dfocc()
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
+
+    return psi4.get_variable("CURRENT ENERGY")
+
+
+def run_dfomp3(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted orbital-optimized MP3 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF', 'DF_INTS_IO'],
+        ['DF_BASIS_SCF'],
+        ['DFOCC', 'WFN_TYPE'],
+        ['DFOCC', 'ORB_OPT'],
+        ['GLOBALS', 'DF_BASIS_CC'])
+
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
+    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
+
+    # override symmetry:
+    molecule = psi4.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(1)
+    molecule.update_geometry()
+    if user_pg != 'c1':
+        psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
+
+    #psi4.set_global_option('SCF_TYPE', 'DF')
+    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    psi4.dfocc()
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
+
+    return psi4.get_variable("CURRENT ENERGY")
+
+
 def run_dfccsd2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an density-fitted orbital-optimized MP2 computation
@@ -314,6 +397,23 @@ def run_dfccsd2(name, **kwargs):
     return psi4.get_variable("CURRENT ENERGY")
 
 
+def run_dfccsd_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted CCSD gradient computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['REFERENCE'],
+        ['DFOCC', 'CC_LAMBDA'],
+        ['GLOBALS', 'DERTYPE'])
+
+    psi4.set_global_option('DERTYPE', 'FIRST')
+    psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+    run_dfccsd2(name, **kwargs)
+
+    optstash.restore()
+
+
 def run_dfccd(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an density-fitted orbital-optimized MP2 computation
@@ -350,6 +450,23 @@ def run_dfccd(name, **kwargs):
     molecule.update_geometry()
 
     return psi4.get_variable("CURRENT ENERGY")
+
+
+def run_dfccd_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted CCD gradient computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['REFERENCE'],
+        ['DFOCC', 'CC_LAMBDA'],
+        ['GLOBALS', 'DERTYPE'])
+
+    psi4.set_global_option('DERTYPE', 'FIRST')
+    psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+    run_dfccd(name, **kwargs)
+
+    optstash.restore()
 
 
 def run_dfccsdl(name, **kwargs):
@@ -429,6 +546,159 @@ def run_dfccdl(name, **kwargs):
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
 
+    return psi4.get_variable("CURRENT ENERGY")
+
+
+def run_dfmp3(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted MP3 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF','DF_INTS_IO'],
+        ['DF_BASIS_SCF'],
+        ['DFOCC', 'ORB_OPT'],
+        ['DFOCC', 'WFN_TYPE'],
+        ['GLOBALS', 'DF_BASIS_CC'])
+
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
+
+    # override symmetry:
+    molecule = psi4.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(1)
+    molecule.update_geometry()
+    if user_pg != 'c1':
+        psi4.print_out('  DF-MP3 does not make use of molecular symmetry, further calculations in C1 point group.\n')
+
+    #psi4.set_global_option('SCF_TYPE', 'DF')
+    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    psi4.dfocc()
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
+
+    return psi4.get_variable("CURRENT ENERGY")
+
+
+def run_cdomp3(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a cholesky-decomposed orbital-optimized MP3 computation
+
+    """
+
+    optstash = p4util.OptionsState(
+        ['SCF', 'DF_INTS_IO'],
+        ['DFOCC', 'ORB_OPT'],
+        ['DFOCC', 'WFN_TYPE'])
+
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
+    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'CD-OMP3')
+
+    # overwrite symmetry
+    molecule = psi4.get_active_molecule()
+    molecule.update_geometry()
+    molecule.reset_point_group('c1')
+
+    #psi4.set_global_option('SCF_TYPE', 'CD')
+    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    return psi4.dfocc()
+
+
+def run_cdccsd(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a cholesky-decomposed CCSD computation
+
+    """
+
+    optstash = p4util.OptionsState(
+        ['SCF', 'DF_INTS_IO'],
+        ['DFOCC', 'ORB_OPT'],
+        ['DFOCC', 'WFN_TYPE'])
+
+    # overwrite symmetry
+    molecule = psi4.get_active_molecule()
+    molecule.update_geometry()
+    molecule.reset_point_group('c1')
+
+    #psi4.set_global_option('SCF_TYPE', 'CD')
+    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'CD-CCSD')
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+
+    psi4.dfocc()
+    return psi4.get_variable("CURRENT ENERGY")
+
+
+def run_cdccd(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a cholesky-decomposed CCD computation
+
+    """
+
+    optstash = p4util.OptionsState(
+        ['SCF', 'DF_INTS_IO'],
+        ['DFOCC', 'ORB_OPT'],
+        ['DFOCC', 'WFN_TYPE'])
+
+    # overwrite symmetry
+    molecule = psi4.get_active_molecule()
+    molecule.update_geometry()
+    molecule.reset_point_group('c1')
+
+    #psi4.set_global_option('SCF_TYPE', 'CD')
+    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'CD-CCD')
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+
+    psi4.dfocc()
+    return psi4.get_variable("CURRENT ENERGY")
+
+
+def run_cdmp3(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a cholesky-decomposed MP3 computation
+
+    """
+
+    optstash = p4util.OptionsState(
+        ['SCF', 'DF_INTS_IO'],
+        ['DFOCC', 'ORB_OPT'],
+        ['DFOCC', 'WFN_TYPE'])
+
+    # overwrite symmetry
+    molecule = psi4.get_active_molecule()
+    molecule.update_geometry()
+    molecule.reset_point_group('c1')
+
+    #psi4.set_global_option('SCF_TYPE', 'CD')
+    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'CD-OMP3')
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+
+    psi4.dfocc()
     return psi4.get_variable("CURRENT ENERGY")
 
 
@@ -884,21 +1154,12 @@ def run_mp2_5_gradient(name, **kwargs):
     optstash.restore()
 
 
-def run_scf(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a self-consistent-field theory (HF & DFT) calculation.
+def parse_scf_cases(name):
+    """Function to parse name string involving SCF family into proper
+    reference option.
 
     """
     lowername = name.lower()
-
-    optstash = p4util.OptionsState(
-        ['SCF', 'DFT_FUNCTIONAL'],
-        ['SCF', 'SCF_TYPE'],
-        ['SCF', 'REFERENCE'])
-
-    # Alter default algorithm
-    if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     if lowername == 'hf':
         if psi4.get_option('SCF', 'REFERENCE') == 'RKS':
@@ -929,6 +1190,43 @@ def run_scf(name, **kwargs):
         else:
             psi4.set_local_option('SCF', 'REFERENCE', 'ROHF')
 
+
+def run_scf(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a self-consistent-field theory (HF & DFT) calculation.
+
+    """
+    lowername = name.lower()
+
+    optstash = p4util.OptionsState(
+        ['SCF', 'DFT_FUNCTIONAL'],
+        ['SCF', 'SCF_TYPE'],
+        ['SCF', 'REFERENCE'])
+
+    # Alter default algorithm
+    if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+        psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
+
+    # set r/uks ==> r/uhf for run_scf('hf')
+    if lowername == 'hf':
+        if psi4.get_option('SCF','REFERENCE') == 'RKS':
+            psi4.set_local_option('SCF','REFERENCE','RHF')
+        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
+            psi4.set_local_option('SCF','REFERENCE','UHF')
+    elif lowername == 'scf': 
+        if psi4.get_option('SCF','REFERENCE') == 'RKS':
+            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+                pass
+            else:
+                psi4.set_local_option('SCF','REFERENCE','RHF')
+        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
+            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+                pass
+            else:
+                psi4.set_local_option('SCF','REFERENCE','UHF')
+
+
+     
     scf_helper(name, **kwargs)
 
     optstash.restore()
@@ -941,11 +1239,30 @@ def run_scf_gradient(name, **kwargs):
     """
     optstash = p4util.OptionsState(
         ['DF_BASIS_SCF'],
-        ['SCF', 'SCF_TYPE'])
+        ['SCF', 'SCF_TYPE'],
+        ['SCF', 'DFT_FUNCTIONAL'],
+        ['SCF', 'REFERENCE'])
 
     # Alter default algorithm
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
+
+    if lowername == 'hf':
+        if psi4.get_option('SCF','REFERENCE') == 'RKS':
+            psi4.set_local_option('SCF','REFERENCE','RHF')
+        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
+            psi4.set_local_option('SCF','REFERENCE','UHF')
+    elif lowername == 'scf': 
+        if psi4.get_option('SCF','REFERENCE') == 'RKS':
+            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+                pass
+            else:
+                psi4.set_local_option('SCF','REFERENCE','RHF')
+        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
+            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+                pass
+            else:
+                psi4.set_local_option('SCF','REFERENCE','UHF')
 
     run_scf(name, **kwargs)
 
@@ -1203,19 +1520,7 @@ def run_dfmp2_gradient(name, **kwargs):
     if not psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
         raise ValidationError('DF-MP2 gradients need DF-SCF reference, for now.')
 
-    if 'restart_file' in kwargs:
-        restartfile = kwargs.pop('restart_file')
-        # Rename the checkpoint file to be consistent with psi4's file system
-        psioh = psi4.IOManager.shared_object()
-        psio = psi4.IO.shared_object()
-        filepath = psioh.get_file_path(32)
-        namespace = psio.get_default_namespace()
-        pid = str(os.getpid())
-        prefix = 'psi'
-        targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.32'
-        if(psi4.me() == 0):
-            shutil.copy(restartfile, targetfile)
-    else:
+    if not 'restart_file' in kwargs:
         scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
@@ -1406,11 +1711,32 @@ def run_scf_property(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'])
+        ['SCF', 'SCF_TYPE'],
+        ['SCF', 'DFT_FUNCTIONAL'],
+        ['SCF', 'SCF_TYPE'],
+        ['SCF', 'REFERENCE'])
 
     # Alter default algorithm
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
+
+
+    if lowername == 'hf':
+        if psi4.get_option('SCF','REFERENCE') == 'RKS':
+            psi4.set_local_option('SCF','REFERENCE','RHF')
+        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
+            psi4.set_local_option('SCF','REFERENCE','UHF')
+    elif lowername == 'scf': 
+        if psi4.get_option('SCF','REFERENCE') == 'RKS':
+            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+                pass
+            else:
+                psi4.set_local_option('SCF','REFERENCE','RHF')
+        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
+            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+                pass
+            else:
+                psi4.set_local_option('SCF','REFERENCE','UHF')
 
     run_scf(name, **kwargs)
 
@@ -1529,6 +1855,10 @@ def run_cc_property(name, **kwargs):
             raise ValidationError("Unknown excited-state CC wave function.")
         psi4.set_global_option('DERTYPE', 'NONE')
         psi4.set_global_option('ONEPDM', 'TRUE')
+        # Tight convergence unnecessary for transition properties
+        psi4.set_local_option('CCLAMBDA','R_CONVERGENCE',1e-4)
+        psi4.set_local_option('CCEOM','R_CONVERGENCE',1e-4)
+        psi4.set_local_option('CCEOM','E_CONVERGENCE',1e-5)
         psi4.cceom()
         psi4.cclambda()
         psi4.ccdensity()
@@ -1560,19 +1890,7 @@ def run_dfmp2_property(name, **kwargs):
     if not psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
         raise ValidationError('DF-MP2 properties need DF-SCF reference, for now.')
 
-    if 'restart_file' in kwargs:
-        restartfile = kwargs.pop('restart_file')
-        # Rename the checkpoint file to be consistent with psi4's file system
-        psioh = psi4.IOManager.shared_object()
-        psio = psi4.IO.shared_object()
-        filepath = psioh.get_file_path(32)
-        namespace = psio.get_default_namespace()
-        pid = str(os.getpid())
-        prefix = 'psi'
-        targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.32'
-        if(psi4.me() == 0):
-            shutil.copy(restartfile, targetfile)
-    else:
+    if not 'restart_file' in kwargs:
         scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
@@ -1852,6 +2170,11 @@ def run_dft(name, **kwargs):
             psi4.dfmp2()
             vdh = dfun.c_alpha() * psi4.get_variable('MP2 CORRELATION ENERGY')
 
+        # TODO: delete these variables, since they don't mean what they look to mean?
+        # 'MP2 TOTAL ENERGY',
+        # 'MP2 CORRELATION ENERGY',
+        # 'MP2 SAME-SPIN CORRELATION ENERGY']
+
         psi4.set_variable('DOUBLE-HYBRID CORRECTION ENERGY', vdh)
         returnvalue += vdh
         psi4.set_variable('DFT TOTAL ENERGY', returnvalue)
@@ -1990,19 +2313,7 @@ def run_dfmp2(name, **kwargs):
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    if 'restart_file' in kwargs:
-        restartfile = kwargs.pop('restart_file')
-        # Rename the checkpoint file to be consistent with psi4's file system
-        psioh = psi4.IOManager.shared_object()
-        psio = psi4.IO.shared_object()
-        filepath = psioh.get_file_path(32)
-        namespace = psio.get_default_namespace()
-        pid = str(os.getpid())
-        prefix = 'psi'
-        targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.32'
-        if(psi4.me() == 0):
-            shutil.copy(restartfile, targetfile)
-    else:
+    if not 'restart_file' in kwargs:
         scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
@@ -2463,6 +2774,39 @@ def run_sapt_ct(name, **kwargs):
     optstash.restore()
     return e_sapt
 
+def run_fisapt(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an F/ISAPT0 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+        psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
+
+    molecule = psi4.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(True)
+    molecule.fix_com(True)  
+    molecule.update_geometry()
+    if user_pg != 'c1':
+        psi4.print_out('  FISAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
+
+    if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
+        raise ValidationError('FISAPT requires requires \"reference rhf\".')
+
+    activate(molecule)
+    scf_helper('RHF', **kwargs)
+    e_sapt = psi4.fisapt()
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
+
+    optstash.restore()
+    return e_sapt
 
 def run_mrcc(name, **kwargs):
     """Function that prepares environment and input files
@@ -2547,7 +2891,8 @@ def run_mrcc(name, **kwargs):
     except OSError as e:
         sys.stderr.write('Program %s not found in path or execution failed: %s\n' % (cfour_executable, e.strerror))
         p4out.write('Program %s not found in path or execution failed: %s\n' % (external_exe, e.strerror))
-        sys.exit(1)
+        message = ("Program %s not found in path or execution failed: %s\n" % (external_exe, e.strerror))
+        raise ValidationError(message)
 
     c4out = ''
     while True:

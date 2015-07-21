@@ -47,6 +47,7 @@ set optking {
     1  2 0.950
     3  4 0.950
   ")
+  max_disp_g_convergence 0.0012
 }
 thisenergy = optimize('scf')
 compare_values(OH_950_stre , thisenergy, 6, "RHF energy of HOOH with O-H bonds fixed")  #TEST

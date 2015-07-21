@@ -1,7 +1,17 @@
 #! Accesses basis sets, databases, plugins, and executables in non-install locations
 
 memory 250 mb
+
 import os
+import sys
+currentdir = os.getcwd()
+psiauxdir1 = currentdir + '/../psithon2/psiaux1'
+psiauxdir2 = currentdir + '/../psithon2/psiaux2'
+sys.path.append(currentdir)
+sys.path.append(psiauxdir1)
+sys.path.append(psiauxdir2)
+os.environ['PSIPATH'] = currentdir + '/../psithon2/psiaux1'
+os.environ['PSIPATH'] = os.environ['PSIPATH'] + ":" + currentdir + '/../psithon2/psiaux2'
 print os.environ.get('PSIPATH')
 
 ###########################

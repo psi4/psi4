@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
-          PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0 Driver
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.2.21 Driver
 
-               Git: Rev {master} aaec5b2d20614c452e8171a956dd194b35b720f5
+                          Git: Rev {master} 34caeb8 
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -15,8 +15,11 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:   7970
-    PSI4DATADIR: /home/ugur/psi4/lib
+
+    Psi4 started on: Mon Jun 22 16:14:50 2015
+
+    Process ID:  45173
+    PSI4DATADIR: /Users/ugur/psi4/lib
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -26,7 +29,7 @@
 
 refnuc      =  9.18738642147759 #TEST
 refscf      = -76.02674017978640 #TEST
-refcc       = -76.23811793563542 #TEST
+refcc       = -76.23811132426373 #TEST
 
 memory 256 mb
 
@@ -54,22 +57,18 @@ compare_values(refcc, get_variable("DF-CCSD TOTAL ENERGY"), 6, "DF-CCSD Total En
 
 --------------------------------------------------------------------------
 
-*** tstart() called on bozkaya
-*** at Tue Jan 13 14:45:13 2015
-
-
   Memory set to 256.000 MiB by Python script.
   DF-CCSD does not make use of molecular symmetry, further calculations in C1 point group.
 
-*** tstart() called on bozkaya
-*** at Tue Jan 13 14:45:13 2015
+*** tstart() called on Ugurs-MBP.home
+*** at Mon Jun 22 16:14:50 2015
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -89,7 +88,7 @@ compare_values(refcc, get_variable("DF-CCSD TOTAL ENERGY"), 6, "DF-CCSD Total En
 
   Rotational constants: A =     27.36310  B =     14.58041  C =      9.51197 [cm^-1]
   Rotational constants: A = 820325.16776  B = 437109.76453  C = 285161.58706 [MHz]
-  Nuclear repulsion =    9.187386421477594
+  Nuclear repulsion =    9.187386421477592
 
   Charge       = 0
   Multiplicity = 1
@@ -137,8 +136,8 @@ compare_values(refcc, get_variable("DF-CCSD TOTAL ENERGY"), 6, "DF-CCSD Total En
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    OpenMP threads:              4
-    Integrals threads:           4
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory (MB):               183
     Algorithm:                Core
     Integral Cache:           SAVE
@@ -162,17 +161,17 @@ compare_values(refcc, get_variable("DF-CCSD TOTAL ENERGY"), 6, "DF-CCSD Total En
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   1:   -74.45729759707828   -7.44573e+01   8.90027e-02 
-   @DF-RHF iter   2:   -75.48203171291910   -1.02473e+00   4.99145e-02 DIIS
-   @DF-RHF iter   3:   -76.02183611428156   -5.39804e-01   4.30050e-03 DIIS
-   @DF-RHF iter   4:   -76.02656929718047   -4.73318e-03   6.16119e-04 DIIS
-   @DF-RHF iter   5:   -76.02673631823258   -1.67021e-04   8.74950e-05 DIIS
-   @DF-RHF iter   6:   -76.02673993126362   -3.61303e-06   1.89525e-05 DIIS
-   @DF-RHF iter   7:   -76.02674017348747   -2.42224e-07   3.22001e-06 DIIS
-   @DF-RHF iter   8:   -76.02674017962349   -6.13602e-09   4.78156e-07 DIIS
-   @DF-RHF iter   9:   -76.02674017977554   -1.52056e-10   1.49830e-07 DIIS
-   @DF-RHF iter  10:   -76.02674017978624   -1.07008e-11   2.68355e-08 DIIS
-   @DF-RHF iter  11:   -76.02674017978640   -1.56319e-13   1.32481e-09 DIIS
+   @DF-RHF iter   1:   -74.45729759707550   -7.44573e+01   8.90027e-02 
+   @DF-RHF iter   2:   -75.48203171291624   -1.02473e+00   4.99145e-02 DIIS
+   @DF-RHF iter   3:   -76.02183611427922   -5.39804e-01   4.30050e-03 DIIS
+   @DF-RHF iter   4:   -76.02656929717814   -4.73318e-03   6.16119e-04 DIIS
+   @DF-RHF iter   5:   -76.02673631823026   -1.67021e-04   8.74950e-05 DIIS
+   @DF-RHF iter   6:   -76.02673993126126   -3.61303e-06   1.89525e-05 DIIS
+   @DF-RHF iter   7:   -76.02674017348517   -2.42224e-07   3.22001e-06 DIIS
+   @DF-RHF iter   8:   -76.02674017962123   -6.13606e-09   4.78156e-07 DIIS
+   @DF-RHF iter   9:   -76.02674017977317   -1.51942e-10   1.49830e-07 DIIS
+   @DF-RHF iter  10:   -76.02674017978391   -1.07434e-11   2.68355e-08 DIIS
+   @DF-RHF iter  11:   -76.02674017978406   -1.42109e-13   1.32481e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -200,18 +199,20 @@ compare_values(refcc, get_variable("DF-CCSD TOTAL ENERGY"), 6, "DF-CCSD Total En
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.02674017978640
+  @DF-RHF Final Energy:   -76.02674017978406
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1873864214775942
-    One-Electron Energy =                -123.1375343175398598
-    Two-Electron Energy =                  37.9234077162758467
+    Nuclear Repulsion Energy =              9.1873864214775924
+    One-Electron Energy =                -123.1375343175374582
+    Two-Electron Energy =                  37.9234077162758041
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.0267401797864153
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -76.0267401797840563
 
-
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
@@ -223,34 +224,35 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.9765
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.1669
+     X:     0.0000      Y:    -0.0000      Z:    -0.1669
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.8097     Total:     0.8097
+     X:     0.0000      Y:    -0.0000      Z:     0.8097     Total:     0.8097
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     2.0580     Total:     2.0580
+     X:     0.0000      Y:    -0.0000      Z:     2.0580     Total:     2.0580
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Tue Jan 13 14:45:13 2015
+*** tstop() called on Ugurs-MBP.home at Mon Jun 22 16:14:51 2015
 Module time:
-	user time   =       0.57 seconds =       0.01 minutes
+	user time   =       0.18 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.59 seconds =       0.01 minutes
+	user time   =       0.18 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on bozkaya
-*** at Tue Jan 13 14:45:13 2015
+*** tstart() called on Ugurs-MBP.home
+*** at Mon Jun 22 16:14:51 2015
 
 
 
   Options:
   ----------------------------------------------------------------------------
+  ACTIVE                      => [  ]             
   BENCH                       => 0                
   CC_DIIS_MAX_VECS            => 6                
   CC_DIIS_MIN_VECS            => 2                
@@ -309,15 +311,23 @@ Total time:
   PCG_BETA_TYPE               => FLETCHER_REEVES  
   PCG_CONVERGENCE             => 1e-06            
   PCG_MAXITER                 => 50               
+  PCM                         => FALSE            
+  PCM_SCF_TYPE                => TOTAL            
   PRINT                       => 1                
   PROPERTIES                  => [  ]             
   PROPERTIES_ORIGIN           => [  ]             
   PUREAM                      => TRUE             
   QCHF                        => FALSE            
+  RAS1                        => [  ]             
+  RAS2                        => [  ]             
+  RAS3                        => [  ]             
+  RAS4                        => [  ]             
   READ_SCF_3INDEX             => TRUE             
   REGULARIZATION              => FALSE            
   REG_PARAM                   => 0.4              
   RELATIVISTIC                => NO               
+  RESTRICTED_DOCC             => [  ]             
+  RESTRICTED_UOCC             => [  ]             
   RMS_MOGRAD_CONVERGENCE      => 1e-06            
   R_CONVERGENCE               => 1e-05            
   SCS_TYPE                    => SCS              
@@ -335,7 +345,7 @@ Total time:
 
                        DF-CCSD   
               Program Written by Ugur Bozkaya
-              Latest Revision January 13, 2015
+              Latest Revision June 22, 2015
 
  ============================================================================== 
  ============================================================================== 
@@ -360,10 +370,10 @@ Total time:
 	Computing DF-MP2 energy ... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	DF-HF Energy (a.u.)                :   -76.02674017978640
-	REF Energy (a.u.)                  :   -76.02674017978640
-	DF-MP2 Correlation Energy (a.u.)   :    -0.20165224259167
-	DF-MP2 Total Energy (a.u.)         :   -76.22839242237808
+	DF-HF Energy (a.u.)                :   -76.02674017978406
+	REF Energy (a.u.)                  :   -76.02674017978406
+	DF-MP2 Correlation Energy (a.u.)   :    -0.20165224259168
+	DF-MP2 Total Energy (a.u.)         :   -76.22839242237573
 	======================================================================= 
 
  ============================================================================== 
@@ -372,29 +382,29 @@ Total time:
 
   Iter       E_corr                  DE                 T2 RMS        T1 RMS     
   ----   ----------------      ----------------       ----------    ----------   
-   1      -0.2069481721         -0.0052959295          1.61e-04      4.44e-04 
-   2      -0.2109486585         -0.0040004864          7.32e-05      1.56e-04 
-   3      -0.2113559599         -0.0004073014          1.37e-05      7.71e-05 
-   4      -0.2113687967         -0.0000128368          3.75e-06      2.28e-05 
-   5      -0.2113794059         -0.0000106091          7.21e-07      1.45e-05 
-   6      -0.2113775359         0.0000018700          2.47e-07      4.92e-06 
-   7      -0.2113777558         -0.0000002200          4.28e-08      1.44e-06 
+   1      -0.2069481721         -0.0052959295          3.09e-04      1.46e-03 
+   2      -0.2109463902         -0.0039982181          1.20e-04      2.65e-04 
+   3      -0.2113507298         -0.0004043396          2.71e-05      1.43e-04 
+   4      -0.2113619408         -0.0000112110          6.70e-06      2.67e-05 
+   5      -0.2113727764         -0.0000108356          1.40e-06      1.45e-05 
+   6      -0.2113709409         0.0000018355          4.32e-07      5.11e-06 
+   7      -0.2113711445         -0.0000002036          9.75e-08      1.48e-06 
 
  ============================================================================== 
  ===================== DF-CCSD ITERATIONS ARE CONVERGED ======================= 
  ============================================================================== 
 
 	T1 diagnostic reference value:     0.02000000000000
-	T1 diagnostic                :     0.00590086107643
+	T1 diagnostic                :     0.00589729419478
 
 	======================================================================= 
 	================ CCSD FINAL RESULTS =================================== 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	SCF Energy (a.u.)                  :   -76.02674017978640
-	REF Energy (a.u.)                  :   -76.02674017978640
-	DF-CCSD Correlation Energy (a.u.)  :    -0.21137775584902
-	DF-CCSD Total Energy (a.u.)        :   -76.23811793563542
+	SCF Energy (a.u.)                  :   -76.02674017978406
+	REF Energy (a.u.)                  :   -76.02674017978406
+	DF-CCSD Correlation Energy (a.u.)  :    -0.21137114447964
+	DF-CCSD Total Energy (a.u.)        :   -76.23811132426370
 	======================================================================= 
 
 
@@ -404,28 +414,25 @@ Total time:
 
   Iter       E_corr                  DE                 L2 RMS        L1 RMS     
   ----   ----------------      ----------------       ----------    ----------   
-   1      -0.2086491379         0.0027286180          2.06e-05      2.17e-04 
-   2      -0.2083482946         0.0003008433          6.24e-06      3.46e-05 
-   3      -0.2082980433         0.0000502513          1.16e-06      1.58e-05 
-   4      -0.2082890165         0.0000090268          2.49e-07      1.64e-06 
-   5      -0.2082914622         -0.0000024457          1.13e-07      3.62e-07 
-   6      -0.2082913804         0.0000000818          3.80e-08      1.37e-07 
+   1      -0.2086761531         0.0026949914          4.38e-05      3.82e-04 
+   2      -0.2083654386         0.0003107145          1.07e-05      5.61e-05 
+   3      -0.2083113018         0.0000541368          2.44e-06      3.30e-05 
+   4      -0.2083034979         0.0000078040          9.24e-07      9.20e-06 
+   5      -0.2083063475         -0.0000028496          2.23e-07      3.46e-06 
+   6      -0.2083061322         0.0000002153          7.53e-08      7.29e-07 
 
  ============================================================================== 
  ===================== DF-CCSDL ITERATIONS ARE CONVERGED ====================== 
  ============================================================================== 
 
-	L1 diagnostic reference value:     0.02000000000000
-	L1 diagnostic                :     0.00474359822493
-
-*** tstop() called on bozkaya at Tue Jan 13 14:45:14 2015
+*** tstop() called on Ugurs-MBP.home at Mon Jun 22 16:14:52 2015
 Module time:
-	user time   =       2.19 seconds =       0.04 minutes
-	system time =       0.15 seconds =       0.00 minutes
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.42 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.78 seconds =       0.05 minutes
-	system time =       0.16 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.41 seconds =       0.01 minutes
+	system time =       0.43 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

@@ -204,6 +204,9 @@ protected:
     /// The TPDM contribution to the gradient
     boost::shared_ptr<Matrix> tpdm_gradient_contribution_;
 
+    /// The active part of the TPDM
+    SharedMatrix TPDM_;
+
     /// Helpers for C/D/epsilon transformers
     SharedMatrix C_subset_helper(SharedMatrix C, const Dimension& noccpi, SharedVector epsilon, const std::string& basis, const std::string& subset);
     SharedMatrix D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string& basis);
@@ -475,6 +478,9 @@ public:
     SharedMatrix gradient() const;
     /// Set the gradient for the wavefunction
     void set_gradient(SharedMatrix& grad);
+
+    /// Return active part of the TPDM
+    SharedMatrix TPDM() const;
 
     /// Returns the atomic point charges
     boost::shared_ptr<double[]> atomic_point_charges()const{

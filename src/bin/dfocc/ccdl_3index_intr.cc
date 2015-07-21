@@ -90,6 +90,7 @@ void DFOCC::ccdl_3index_intr()
     V->gemm(false, true, U, L, 1.0, 0.0);
     L.reset();
     U.reset();
+    V->write(psio_, PSIF_DFOCC_AMPS);
 
     // V_ij^Q = \sum_{mn} (2*V_imjn - V_imnj) b_mn^Q = B(Q,mn) Y(mn,ij)
     X = SharedTensor2d(new Tensor2d("X <IJ|KL>", naoccA, naoccA, naoccA, naoccA));

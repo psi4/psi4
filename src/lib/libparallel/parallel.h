@@ -30,11 +30,18 @@
 #ifndef _psi_src_lib_libparallel_parallel_h_
 #define	_psi_src_lib_libparallel_parallel_h_
 
-#include <boost/shared_ptr.hpp>
 #include <vector>
 #include <string>
 #include "process.h"
 #include "libparallel.h"
+
+// Use this to silence "warning: unused parameter" messages from the compiler.
+// Sometimes you have to define the parameter for Doxygen regardless if you
+// use it or not.
+#ifndef UNUSED
+#define UNUSED(expr) (void)(expr)
+#endif
+
 namespace psi {
 
 template <typename DerivedType>
@@ -58,6 +65,7 @@ class Parallel {
 
       ///Provides MPI barrier functionality
       virtual void sync(const std::string& CommName="NONE") const {
+          UNUSED(CommName);
       }
 
       /** \brief Performs and all reduce
@@ -147,13 +155,19 @@ class Parallel {
        *  \return The identity of the sender, or -1 if there is no message
        */
       virtual int Iprobe(const int Sender,const int MessageTag,
-            const std::string& Comm="NONE")const{
+            const std::string& Comm="NONE") const {
+          UNUSED(Sender);
+          UNUSED(MessageTag);
+          UNUSED(Comm);
          return true;
       }
 
       ///Same as Iprobe, except blocking
       virtual int probe(const int Sender,const int MessageTag,
             const std::string& Comm="NONE")const{
+          UNUSED(Sender);
+          UNUSED(MessageTag);
+          UNUSED(Comm);
          return true;
       }
 
@@ -233,11 +247,13 @@ class Parallel {
 
       ///Returns the current MPI process number
       virtual int me(const std::string& CommName="NONE") const {
+          UNUSED(CommName);
          return 0;
       }
 
       ///Returns the current number of MPI processes
       virtual int nproc(const std::string& CommName="NONE") const {
+          UNUSED(CommName);
          return 1;
       }
 
@@ -261,4 +277,5 @@ class Parallel {
       virtual void FreeComm(const std::string& /*Name*/="NONE"){}
 };// End Parallel base class
 }//End namespace psi
+
 #endif  /* _psi_src_lib_libparallel_parallel_h_ */

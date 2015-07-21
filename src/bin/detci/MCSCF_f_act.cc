@@ -22,17 +22,21 @@
 
 /*! \file
     \ingroup DETCAS
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
-#include <libqt/qt.h>
-#define EXTERN
+#include <libciomr/libciomr.h>
+#include <psi4-dec.h>
 #include "MCSCF.h"
+#define EXTERN
+#include "globaldefs.h"
+#include "structs.h"
+#include "globals.h"
 
 namespace psi { namespace detci {
 
-void calc_F_act(double *F_act, int nmo, int firstact, int lastact, 
+void calc_F_act(double *F_act, int nmo, int firstact, int lastact,
          double **onepdm, double *tei);
-void check_F_act(double *F_act, int nmo, int firstact, int lastact, 
+void check_F_act(double *F_act, int nmo, int firstact, int lastact,
          double **onepdm, double *tei);
 void test_lag(int nbf, int ncore, int npop, double *onei,
      double *tei, double **opdm, double *tpdm);
@@ -42,21 +46,19 @@ void test_lag2(int nbf, int ncore, int npop, double *onei,
 
 void MCSCF::form_F_act(void)
 {
-  int ncore;
 
   /* Form the intermediates we need */
   MCSCF_CalcInfo.F_act = init_array(CalcInfo.nmotri);
-  ncore = MCSCF_CalcInfo.num_fzc_orbs + MCSCF_CalcInfo.num_cor_orbs;
-  calc_F_act(MCSCF_CalcInfo.F_act, CalcInfo.nmo, ncore,  MCSCF_CalcInfo.npop, 
+  calc_F_act(MCSCF_CalcInfo.F_act, CalcInfo.nmo, CalcInfo.num_drc_orbs,  CalcInfo.npop,
              MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.twoel_ints);
   /*
-  check_F_act(MCSCF_CalcInfo.F_act, CalcInfo.nmo, ncore,  MCSCF_CalcInfo.npop, 
+  check_F_act(MCSCF_CalcInfo.F_act, CalcInfo.nmo, ncore,  CalcInfo.npop,
              MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.twoel_ints);
-  test_lag(CalcInfo.nmo, ncore, MCSCF_CalcInfo.npop, MCSCF_CalcInfo.onel_ints,
+  test_lag(CalcInfo.nmo, ncore, CalcInfo.npop, MCSCF_CalcInfo.onel_ints,
            MCSCF_CalcInfo.twoel_ints, MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm);
   test_fzc(CalcInfo.nmo, ncore, MCSCF_CalcInfo.onel_ints, MCSCF_CalcInfo.twoel_ints);
 
-  test_lag2(CalcInfo.nmo, ncore, MCSCF_CalcInfo.npop, MCSCF_CalcInfo.onel_ints,
+  test_lag2(CalcInfo.nmo, ncore, CalcInfo.npop, MCSCF_CalcInfo.onel_ints,
            MCSCF_CalcInfo.twoel_ints, MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm);
   */
 
@@ -71,16 +73,16 @@ void MCSCF::form_F_act(void)
 /*
 ** calc_F_act
 **
-** This forms the "active" Fock matrix as defined by eq. 13b of 
+** This forms the "active" Fock matrix as defined by eq. 13b of
 ** Siegbahn, Heiberg, Roos, and Levy, Physica Scripta 21, 323 (1980).
 **
-** F_act_{pq} = \sum_{uv}^{active} \gamma_{uv} [ (pq|uv) - 1/2 (pu|qv) ] 
+** F_act_{pq} = \sum_{uv}^{active} \gamma_{uv} [ (pq|uv) - 1/2 (pu|qv) ]
 **
 ** This thing looks symmetric so I will use that in the calculation
 ** I am assuming that the pairs (p,q) are always given such that p>=q
 **
 */
-void calc_F_act(double *F_act, int nmo, int firstact, int lastact, 
+void calc_F_act(double *F_act, int nmo, int firstact, int lastact,
                 double **onepdm, double *tei)
 {
 
@@ -99,7 +101,7 @@ void calc_F_act(double *F_act, int nmo, int firstact, int lastact,
           uv = INDEX(u,v);
           qv = INDEX(q,v);
           pquv = INDEX(pq,uv);
-          puqv = INDEX(pu,qv);  
+          puqv = INDEX(pu,qv);
           I1 = tei[pquv];
           I2 = tei[puqv];
           val += onepdm[u][v] * (I1 - 0.5 * I2);
@@ -111,7 +113,7 @@ void calc_F_act(double *F_act, int nmo, int firstact, int lastact,
   }
 }
 
-void check_F_act(double *F_act, int nmo, int firstact, int lastact, 
+void check_F_act(double *F_act, int nmo, int firstact, int lastact,
                 double **onepdm, double *tei)
 {
   int p, q, pq, u, v, uv, pquv;
@@ -125,7 +127,7 @@ void check_F_act(double *F_act, int nmo, int firstact, int lastact,
   p = 6; q = 0;
   pq = ioff[p] + q;
 
-  for (u=1; u<6; u++) { 
+  for (u=1; u<6; u++) {
     for (v=1; v<=u; v++) {
       uv = ioff[u] + v;
       pquv = ioff[pq] + uv;
@@ -156,7 +158,7 @@ void check_F_act(double *F_act, int nmo, int firstact, int lastact,
   }
 
   outfile->Printf("Final F_act{0,6} = %12.6lf\n", sum / 4.0);
- 
+
 }
 
 void test_lag(int nbf, int ncore, int npop, double *oei,
@@ -166,7 +168,7 @@ void test_lag(int nbf, int ncore, int npop, double *oei,
   double *lag;
 
   lag = init_array(nbf * (nbf + 1) / 2);
- 
+
   for (p=0; p<nbf; p++) {
     for (q=0; (q<=p && q<npop); q++) {
       pq = ioff[p] + q;
@@ -180,8 +182,8 @@ void test_lag(int nbf, int ncore, int npop, double *oei,
             qr = INDEX(q,r);
             st = INDEX(s,t);
             prst = INDEX(pr,st);
-            qrst = INDEX(qr,st); 
-            lag[pq] += tei[prst] * tpdm[qrst]; 
+            qrst = INDEX(qr,st);
+            lag[pq] += tei[prst] * tpdm[qrst];
           }
         }
       }
@@ -198,7 +200,7 @@ void test_fzc(int nbf, int ncore, double *oei, double *tei)
 {
   int p, q, pq, k, kk, pqkk, pk, qk, pkqk;
   double *fzc_op;
- 
+
   fzc_op = init_array(nbf * (nbf+1) / 2);
   for (p=0,pq=0; p<nbf; p++) {
     for(q=0; q<=p; q++,pq++) {
@@ -210,7 +212,7 @@ void test_fzc(int nbf, int ncore, double *oei, double *tei)
         qk = INDEX(q,k);
         pkqk = INDEX(pk,qk);
         fzc_op[pq] += (2.0 * tei[pqkk] - tei[pkqk]);
-      } 
+      }
     }
   }
 
@@ -244,8 +246,8 @@ void test_lag2(int nbf, int ncore, int npop, double *oei,
         qr = INDEX(q,r);
         st = INDEX(s,t);
         prst = INDEX(pr,st);
-        qrst = INDEX(qr,st); 
-        val = 2.0 * tei[prst] * tpdm[qrst]; 
+        qrst = INDEX(qr,st);
+        val = 2.0 * tei[prst] * tpdm[qrst];
         if (val != 0.0) {
           outfile->Printf("tei[%d %d %d %d]  = %12.6lf\n", p, r, s, t,
                   tei[prst]);

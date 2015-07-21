@@ -70,33 +70,33 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- The number of virtual orbitals to freeze in later correlated computations. -*/
   options.add_int("NUM_FROZEN_UOCC", 0);
 
-  // DS EDIT!
-  // /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
-  // options.add("RAS1", new ArrayType());
+  /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
+  options.add("RAS1", new ArrayType());
 
-  // /*- An array giving the number of orbitals per irrep for RAS2 !expert -*/
-  // options.add("RAS2", new ArrayType());
+  /*- An array giving the number of orbitals per irrep for RAS2 !expert -*/
+  options.add("RAS2", new ArrayType());
 
-  // /*- An array giving the number of orbitals per irrep for RAS3 !expert -*/
-  // options.add("RAS3", new ArrayType());
+  /*- An array giving the number of orbitals per irrep for RAS3 !expert -*/
+  options.add("RAS3", new ArrayType());
 
-  // /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
-  // options.add("RAS4", new ArrayType());
+  /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
+  options.add("RAS4", new ArrayType());
 
-  // /*- An array giving the number of restricted doubly-occupied orbitals per
-  // irrep (not excited in CI wavefunctions, but orbitals can be optimized
-  // in MCSCF) -*/
-  // options.add("RESTRICTED_DOCC", new ArrayType());
+  /*- An array giving the number of restricted doubly-occupied orbitals per
+  irrep (not excited in CI wavefunctions, but orbitals can be optimized
+  in MCSCF) -*/
+  options.add("RESTRICTED_DOCC", new ArrayType());
 
-  // /*- An array giving the number of restricted unoccupied orbitals per
-  // irrep (not occupied in CI wavefunctions, but orbitals can be optimized
-  // in MCSCF) -*/
-  // options.add("RESTRICTED_UOCC", new ArrayType());
+  /*- An array giving the number of restricted unoccupied orbitals per
+  irrep (not occupied in CI wavefunctions, but orbitals can be optimized
+  in MCSCF) -*/
+  options.add("RESTRICTED_UOCC", new ArrayType());
 
-  // /*- An array giving the number of active orbitals (occupied plus
-  // unoccupied) per irrep (shorthand to make MCSCF easier to specify than
-  // using RAS keywords) -*/
-  // options.add("ACTIVE", new ArrayType());
+  /*- An array giving the number of active orbitals (occupied plus
+  unoccupied) per irrep (shorthand to make MCSCF easier to specify than
+  using RAS keywords) -*/
+  options.add("ACTIVE", new ArrayType());
+
   /*- Specifies how many core orbitals to freeze in correlated computations.
   ``TRUE`` will default to freezing the standard default number of core
   orbitals.  For PSI, the standard number of core orbitals is the
@@ -177,8 +177,39 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("RELATIVISTIC", "NO","NO X2C");
 #endif
 
+  /*- Whether to uncontract the basis set in a dual basis calculation -*/
+  options.add_str("REL_BASIS","");
+
   /*- Order of Douglas-Kroll-Hess !expert -*/
   options.add_int("DKH_ORDER", 2);
+
+
+  /*- Cube property data filepath -*/
+  options.add_str_i("CUBEPROP_FILEPATH", ".");
+  /*- Properties to compute. Valid tasks include:
+      DENSITY - Da, Db, Dt, Ds
+      ESP - Dt, ESP
+      ORBITALS - Psi_a_N, Psi_b_N
+      BASIS_FUNCTIONS - Phi_N
+      LOL - LOLa, LOLb
+      ELF - ELFa, ELFb
+  -*/
+  options.add("CUBEPROP_TASKS", new ArrayType());
+  /*- List of desired orbital indices (1-based, + for alpha, - for beta). All orbitals computed if empty.-*/
+  options.add("CUBEPROP_ORBITALS", new ArrayType());
+  /*- List of desired basis function indices (1-based). All basis functions computed if empty.-*/
+  options.add("CUBEPROP_BASIS_FUNCTIONS", new ArrayType());
+
+  /*- CubicScalarGrid basis cutoff. !expert -*/
+  options.add_double("CUBIC_BASIS_TOLERANCE", 1.0E-12);
+  /*- CubicScalarGrid maximum number of grid points per evaluation block. !expert -*/
+  options.add_int("CUBIC_BLOCK_MAX_POINTS",1000);
+  /*- CubicScalarGrid overages in bohr [O_X, O_Y, O_Z]. Defaults to 2.0 bohr each. -*/
+  options.add("CUBIC_GRID_OVERAGE", new ArrayType());
+  /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
+  options.add("CUBIC_GRID_SPACING", new ArrayType());
+
+
 
   if (name == "DETCI" || options.read_globals()) {
     /*- MODULEDESCRIPTION Performs configuration interaction (CI)
@@ -271,32 +302,32 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- SUBSECTION Specifying the CI Space -*/
 
-    /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
-    options.add("RAS1", new ArrayType());
+    // /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
+    // options.add("RAS1", new ArrayType());
 
-    /*- An array giving the number of orbitals per irrep for RAS2 !expert -*/
-    options.add("RAS2", new ArrayType());
+    // /*- An array giving the number of orbitals per irrep for RAS2 !expert -*/
+    // options.add("RAS2", new ArrayType());
 
-    /*- An array giving the number of orbitals per irrep for RAS3 !expert -*/
-    options.add("RAS3", new ArrayType());
+    // /*- An array giving the number of orbitals per irrep for RAS3 !expert -*/
+    // options.add("RAS3", new ArrayType());
 
-    /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
-    options.add("RAS4", new ArrayType());
+    // /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
+    // options.add("RAS4", new ArrayType());
 
-    /*- An array giving the number of restricted doubly-occupied orbitals per
-    irrep (not excited in CI wavefunctions, but orbitals can be optimized
-    in MCSCF) -*/
-    options.add("RESTRICTED_DOCC", new ArrayType());
+    // /*- An array giving the number of restricted doubly-occupied orbitals per
+    // irrep (not excited in CI wavefunctions, but orbitals can be optimized
+    // in MCSCF) -*/
+    // options.add("RESTRICTED_DOCC", new ArrayType());
 
-    /*- An array giving the number of restricted unoccupied orbitals per
-    irrep (not occupied in CI wavefunctions, but orbitals can be optimized
-    in MCSCF) -*/
-    options.add("RESTRICTED_UOCC", new ArrayType());
+    // /*- An array giving the number of restricted unoccupied orbitals per
+    // irrep (not occupied in CI wavefunctions, but orbitals can be optimized
+    // in MCSCF) -*/
+    // options.add("RESTRICTED_UOCC", new ArrayType());
 
-    /*- An array giving the number of active orbitals (occupied plus
-    unoccupied) per irrep (shorthand to make MCSCF easier to specify than
-    using RAS keywords) -*/
-    options.add("ACTIVE", new ArrayType());
+    // /*- An array giving the number of active orbitals (occupied plus
+    // unoccupied) per irrep (shorthand to make MCSCF easier to specify than
+    // using RAS keywords) -*/
+    // options.add("ACTIVE", new ArrayType());
 
     /*- The value of the spin quantum number $S$ is given by this option.
     The default is determined by the value of the multiplicity.  This is used
@@ -945,33 +976,117 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     printed. -*/
     options.add_int("PRINT", 1);
   }
+
+  if (name == "FISAPT"|| options.read_globals()) {
+
+      // ==> FISAPT Options <== //
+
+      // => Overall Options <= //
+
+      /*- Memory safety factor for heavy FISAPT operations !expert -*/
+      options.add_double("FISAPT_MEM_SAFETY_FACTOR", 0.9);
+      /*- Convergence criterion for residual of the CPHF coefficients in the SAPT
+      $E@@{ind,resp}^{(20)}$ term. -*/
+      options.add_double("D_CONVERGENCE",1E-8);
+      /*- Maximum number of iterations for CPHF -*/
+      options.add_int("MAXITER", 50);
+      /*- Minimum absolute value below which integrals are neglected.
+      For ISAPT, a variational collapse problem seems to occur for even rather
+      modest values of this cutoff, when DF is used and when very close
+      contacts occur. Therefore, we will be safe and turn it off (this does not
+      affect performance overtly) -*/
+      options.add_double("INTS_TOLERANCE",0.0);
+
+      // => ISAPT Zero-th Order Wavefunction Options <= //
+
+      /*- Specification algorithm for link bonds in ISAPT -*/
+      options.add_str("FISAPT_LINK_SELECTION", "AUTOMATIC", "AUTOMATIC MANUAL");
+      /*- Amount of fragment charge completeness to distinguish link bonds -*/
+      options.add_double("FISAPT_CHARGE_COMPLETENESS", 0.8);
+      /*- Manual link bond specification [[Atom1, Atom2], ...] -*/
+      options.add("FISAPT_MANUAL_LINKS", new ArrayType());
+      /*- Where do sigma links go (to C or to AB)? -*/
+      options.add_str("FISAPT_LINK_ASSIGNMENT", "C", "C AB");
+
+      // => F-SAPT Options <= //
+
+      /*- Do an F-SAPT analysis? -*/
+      options.add_bool("FISAPT_DO_FSAPT", true);
+      /*- Filepath to drop F-SAPT data -*/
+      options.add_str_i("FISAPT_FSAPT_FILEPATH", "fsapt/");
+      /*- Do F-SAPT exchange scaling? (ratio of S^\infty to S^2) -*/
+      options.add_bool("FISAPT_FSAPT_EXCH_SCALE", true);
+      /*- Do F-SAPT induction scaling? (ratio of HF induction to F-SAPT induction) -*/
+      options.add_bool("FISAPT_FSAPT_IND_SCALE", true);
+      /*- Do F-SAPT coupled response? (not recommended) -*/
+      options.add_bool("FISAPT_FSAPT_IND_RESPONSE", false);
+
+      // => CubicScalarGrid options <= //
+
+      /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/ 
+      options.add("CUBIC_GRID_SPACING", new ArrayType());
+      /*- CubicScalarGrid overages in bohr [O_X, O_Y, O_Z]. Defaults to 2.0 bohr each. -*/ 
+      options.add("CUBIC_GRID_OVERAGE", new ArrayType());
+      /*- CubicScalarGrid basis cutoff. !expert -*/
+      options.add_double("CUBIC_BASIS_TOLERANCE", 1.0E-12);
+      /*- CubicScalarGrid maximum number of grid points per evaluation block. !expert -*/
+      options.add_int("CUBIC_BLOCK_MAX_POINTS",1000);
+  
+      // => Scalar Field Plotting Options <= //
+
+      /*- Plot a scalar-field analysis -*/
+      options.add_bool("FISAPT_DO_PLOT", false);
+      /*- Filepath to drop scalar data -*/
+      options.add_str_i("FISAPT_PLOT_FILEPATH", "plot/");
+
+      // => Localization Tech <= //
+
+      /*- Relative convergence in orbital localization -*/
+      options.add_double("LOCAL_CONVERGENCE",1.0E-12);
+      /*- Maximum iterations in localization -*/
+      options.add_int("LOCAL_MAXITER", 1000);
+      /*- Use ghost atoms in Pipek-Mezey or IBO metric !expert -*/
+      options.add_bool("LOCAL_USE_GHOSTS", false);
+      /*- Condition number to use in IBO metric inversions !expert -*/
+      options.add_double("LOCAL_IBO_CONDITION", 1.0E-7);
+      /*- IBO localization metric power -*/
+      options.add_int("LOCAL_IBO_POWER", 4);
+      /*- MinAO Basis for IBO !expert -*/ 
+      options.add_str("MINAO_BASIS", "CC-PVTZ-MINAO");
+      /*- IBO Stars procedure -*/
+      options.add_bool("LOCAL_IBO_USE_STARS", false);
+      /*- IBO Charge metric for classification as Pi -*/
+      options.add_double("LOCAL_IBO_STARS_COMPLETENESS", 0.90);
+      /*- IBO Centers for Pi Degeneracy -*/
+      options.add("LOCAL_IBO_STARS", new ArrayType());   
+  }
   if(name == "DCFT"|| options.read_globals()) {
-      /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory
+      /*-MODULEDESCRIPTION Performs density cumulant functional theory
       computations -*/
 
       /*- Reference wavefunction type -*/
       options.add_str("REFERENCE", "UHF", "UHF");
-      /*- The algorithm to use for the density cumulant and orbital updates in the DCFT energy computation.
-      Two-step algorithm (default) is usually more efficient for small
-      systems, but for large systems the simultaneous algorithm is recommended.
-      In the cases where the convergence problems are encountered (especially
+      /*- Algorithm to use for the density cumulant and orbital updates in the DCFT energy computation.
+      Two-step algorithm is usually more efficient for small
+      systems, but for large systems simultaneous algorithm (default) is recommended.
+      If convergence problems are encountered (especially
       for highly symmetric systems) QC algorithm can be used. -*/
       options.add_str("ALGORITHM", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS QC");
-      /*- The algorithm to use for the solution of the response equations for the analytic gradients and properties-*/
+      /*- Algorithm to use for the solution of DC-06 response equations in computation of analytic gradients and properties-*/
       options.add_str("RESPONSE_ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
-      /*- Chooses the type of the quadratically-convergent algorithm (effective for ALGORITHM = QC).
+      /*- Controls the type of the quadratically-convergent algorithm (effective for ALGORITHM = QC).
       If set to TWOSTEP the Newton-Raphson equations are only solved for the orbital updates,
       the cumulant is updated using the standard Jacobi algorithm. If set to SIMULTANEOUS both cumulant
       and orbitals are updated in a single Newton-Raphson step. -*/
       options.add_str("QC_TYPE", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS");
-      /*- Convergence criterion for the RMS of the residual vector in the density cumulant updates, as well as
+      /*- Convergence criterion for the RMS of the residual vector in density cumulant updates, as well as
       the solution of the density cumulant and orbital response equations. In the orbital updates controls
       the RMS of the SCF error vector -*/
       options.add_double("R_CONVERGENCE", 1e-10);
       /*- Convergence criterion for the density cumulant and orbital guess for the
       variationally orbital-optimized DCFT methods. Currently only available for ALGORITHM = SIMULTANEOUS. -*/
       options.add_double("GUESS_R_CONVERGENCE", 1e-3);
-      /*- Maximum number of the macro- or micro-iterations for both the energy and the solution of the response equations -*/
+      /*- Maximum number of macro- or micro-iterations for both energy and response equations -*/
       options.add_int("MAXITER", 40);
       /*- Value of RMS of the density cumulant residual and SCF error vector below which DIIS extrapolation starts.
       Same keyword controls the DIIS extrapolation for the solution of the response equations. -*/
@@ -984,7 +1099,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       (<VV||VV>) by computing the corresponding terms in the AO basis. AO_BASIS = DISK algorithm reduces the memory
       requirements and can significantly reduce the cost of the energy computation if SIMULTANEOUS
       algorithm is used. For the TWOSTEP algorithm, however, AO_BASIS = DISK
-      option is not recommended due to the extra I/O. -*/
+      option is not recommended due to extra I/O. -*/
       options.add_str("AO_BASIS", "DISK", "NONE DISK");
       /*- The amount (percentage) of damping to apply to the orbital update procedure:
       0 will result in a full update, 100 will completely stall the
@@ -1101,6 +1216,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     optimizations, in which case READ becomes the default after the first
     geometry step. -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
+    /*- Mix the HOMO/LUMO in UHF or UKS to break alpha/beta spatial symmetry.
+    Useful to produce broken-symmetry unrestricted solutions.
+    Notice that this procedure is defined only for calculations in C1 symmetry. -*/
+    options.add_bool("GUESS_MIX",false);
     /*- Do write a MOLDEN output file?  If so, the filename will end in
     .molden, and the prefix is determined by |globals__writer_file_label|
     (if set), or else by the name of the output file plus the name of
@@ -1114,38 +1233,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("PRINT_MOS", false);
     /*- Flag to print the basis set. -*/
     options.add_bool("PRINT_BASIS", false);
-
-    /*- SUBSECTION CSX publication -*/
-
-    /*- Do write a CSX output file? -*/
-    options.add_bool("WRITE_CSX", false);
-    /*- Version of CSX. -*/
-    options.add_int("CSX_VERSION", 1);
-    /*- Brief title for CSX publication. -*/
-    options.add_str("PUBLICATIONTITLE", "");
-    /*- Abstract for CSX publication. -*/
-    options.add_str("PUBLICATIONABSTRACT", "");
-    /*- Additional tags to aid publication searches. -*/
-    options.add_str("PUBLICATIONTAGS", "");
-    /*- Submitting author for CSX publication. -*/
-    options.add_str("publicationPublisher", "");
-    /*- Corresponding author for CSX publication. -*/
-    options.add_str("CORRESPONDINGAUTHOR", "");
-    /*- Organization to which corresponding or submitting author belongs. -*/
-    options.add_str("ORGANIZATION", "");
-    /*- E-mail address of record for CSX publication -*/
-    options.add_str("EMAIL", "");
-    /*- Area of chemistry. -*/
-    options.add_int("PUBLICATIONCATEGORY", 2);
-    /*- Visibility of CSX publication. ``PRIVATE`` accessible only by
-    submitting author with password. ``PROTECTED`` accessible with key
-    provided by submitting author. ``PUBLIC`` freely accessible. -*/
-    options.add_str("PUBLICATIONVISIBILITY", "PRIVATE", "PRIVATE PROTECTED PUBLIC");
-    /*- Status of CSX publication. ``PRELIMINARY`` is unreviewed.
-    ``DRAFT`` is not fully reviewed. ``FINAL`` is final. -*/
-    options.add_str("PUBLICATIONSTATUS", "PRELIMINARY", "PRELIMINARY DRAFT FINAL");
-    /*-  -*/
-    options.add_int("PUBLICATIONKEY", 0);
+    /*- Do perform a QCHF computation?  -*/
+    options.add_bool("QCHF",false);
 
     /*- SUBSECTION Convergence Control/Stabilization -*/
 
@@ -1207,6 +1296,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- When using STABILITY_ANALYSIS = FOLLOW, how much to scale the step along the eigenvector
         by. !expert -*/
     options.add_double("FOLLOW_STEP_SCALE", 0.5);
+    /*- When using STABILITY_ANALYSIS = FOLLOW, the increment to modify FOLLOW_STEP_SCALE_ value
+        if we end up in the same SCF solution. !expert -*/
+    options.add_double("FOLLOW_STEP_INCREMENT", 0.5);
+    /*- When using STABILITY_ANALYSIS = FOLLOW, maximum number of orbital optimization attempts
+        to make the wavefunction stable. !expert -*/
+    options.add_int("MAX_ATTEMPTS", 1);
 
     /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 
@@ -1530,6 +1625,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("NO_TEI", false);
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
+
+    // /*- An array giving the number of active orbitals (occupied plus
+    // unoccupied) per irrep (shorthand to make MCSCF easier to specify than
+    // using RAS keywords) -*/
+    // options.add("ACTIVE", new ArrayType());
   }
   // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT"|| options.read_globals()) {
@@ -1643,27 +1743,32 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Numbering of MOs for reordering requests?  -*/
     options.add("MOORDER", new ArrayType());
 
-    /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
-    options.add("RAS1", new ArrayType());
+    // /*- An array giving the number of active orbitals (occupied plus
+    // unoccupied) per irrep (shorthand to make MCSCF easier to specify than
+    // using RAS keywords) -*/
+    // options.add("ACTIVE", new ArrayType());
 
-    /*- An array giving the number of orbitals per irrep for RAS2 !expert -*/
-    options.add("RAS2", new ArrayType());
+    // /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
+    // options.add("RAS1", new ArrayType());
 
-    /*- An array giving the number of orbitals per irrep for RAS3 !expert -*/
-    options.add("RAS3", new ArrayType());
+    // /*- An array giving the number of orbitals per irrep for RAS2 !expert -*/
+    // options.add("RAS2", new ArrayType());
 
-    /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
-    options.add("RAS4", new ArrayType());
+    // /*- An array giving the number of orbitals per irrep for RAS3 !expert -*/
+    // options.add("RAS3", new ArrayType());
 
-    /*- An array giving the number of restricted doubly-occupied orbitals per
-    irrep (not excited in CI wavefunctions, but orbitals can be optimized
-    in MCSCF) -*/
-    options.add("RESTRICTED_DOCC", new ArrayType());
+    // /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
+    // options.add("RAS4", new ArrayType());
 
-    /*- An array giving the number of restricted unoccupied orbitals per
-    irrep (not occupied in CI wavefunctions, but orbitals can be optimized
-    in MCSCF) -*/
-    options.add("RESTRICTED_UOCC", new ArrayType());
+    // /*- An array giving the number of restricted doubly-occupied orbitals per
+    // irrep (not excited in CI wavefunctions, but orbitals can be optimized
+    // in MCSCF) -*/
+    // options.add("RESTRICTED_DOCC", new ArrayType());
+
+    // /*- An array giving the number of restricted unoccupied orbitals per
+    // irrep (not occupied in CI wavefunctions, but orbitals can be optimized
+    // in MCSCF) -*/
+    // options.add("RESTRICTED_UOCC", new ArrayType());
 
   }
   if(name == "CCSORT"|| options.read_globals()) {
@@ -2504,14 +2609,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
     /*- Whether to use spin symmetry to map equivalent configurations onto each other, for efficiency !expert -*/
     options.add_bool("USE_SPIN_SYMMETRY", true);
-    /*- The number of frozen occupied orbitals per irrep -*/
-    options.add("FROZEN_DOCC", new ArrayType());
-    /*- The number of doubly occupied orbitals per irrep -*/
-    options.add("RESTRICTED_DOCC", new ArrayType());
-    /*- The number of active orbitals per irrep -*/
-    options.add("ACTIVE", new ArrayType());
-    /*- The number of frozen virtual orbitals per irrep -*/
-    options.add("FROZEN_UOCC", new ArrayType());
+    // /*- The number of frozen occupied orbitals per irrep -*/
+    // options.add("FROZEN_DOCC", new ArrayType());
+    // /*- The number of doubly occupied orbitals per irrep -*/
+    // options.add("RESTRICTED_DOCC", new ArrayType());
+    // /*- The number of active orbitals per irrep -*/
+    // options.add("ACTIVE", new ArrayType());
+    // /*- The number of frozen virtual orbitals per irrep -*/
+    // options.add("FROZEN_UOCC", new ArrayType());
     /*- -*/
     options.add_int("SMALL_CUTOFF", 0);
     /*- Do disregard updating single excitation amplitudes? -*/
@@ -2576,6 +2681,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("FROZEN_BEND", "");
       /*- Specify dihedral angles between atoms to be frozen (unchanged) -*/
       options.add_str("FROZEN_DIHEDRAL", "");
+      /*- Specify atom and X, XY, XYZ, ... to be frozen (unchanged) -*/
+      options.add_str("FROZEN_CARTESIAN", "");
       /*- Specify distances between atoms to be fixed (eq. value specified) -*/
       options.add_str("FIXED_DISTANCE", "");
       /*- Specify angles between atoms to be fixed (eq. value specified) -*/
@@ -2684,14 +2791,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("TEST_DERIVATIVE_B", false);
       /*- Keep internal coordinate definition file. -*/
       options.add_bool("KEEP_INTCOS", false);
-      /*In constrained optimizations, for internal coordinates with user-specified
+      /*In constrained optimizations, for coordinates with user-specified
       equilibrium values, this is the force constant (in au) used to apply an additional
-      force to each coordinate.  If the user is only concerned to satify the desired constraint,
-      then the user need only ensure that this value is sufficiently large.  Alternatively,
-      the user may specify this value to apply a force of a particular magnitude, in which case the
-      given equilibrium value may or may not be reached by the optimization.
-      Currently, we specify the value of eq. not the force applied, so this keyword may go away.
-      options.add_double("INTCO_FIXED_EQ_FORCE_CONSTANT", 2.0); */
+      force to each coordinate.  If the user is only concerned to satisfy the desired constraint,
+      then the user need only ensure that this value is sufficiently large. */
+      //options.add_double("FIXED_COORD_FORCE_CONSTANT", 2.0);
       /*- If doing a static line search, scan this many points. -*/
       options.add_int("LINESEARCH_STATIC_N", 8);
       /*- If doing a static line search, this fixes the shortest step, whose largest
@@ -2931,7 +3035,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Type of the SOS method -*/
     options.add_str("SOS_TYPE","SOS","SOS SOSPI");
     /*- Type of the wavefunction. -*/
-    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OCEPA(0) DF-OMP2.5 DFGRAD DF-CCSD DF-CCD CD-OMP2 CD-CCSD CD-CCD");
+    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OLCCD DF-OMP2.5 DFGRAD DF-CCSD DF-CCD CD-OMP2 CD-CCSD CD-CCD CD-OMP3 QCHF");
     /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
     options.add_str("CEPA_TYPE","CEPA(0)","CEPA(0)");
     /*- The algorithm that used for 4 index MO TEIs. -*/
@@ -2973,6 +3077,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("QCHF",false);
     /*- Do solve lambda amplitute equations?  -*/
     options.add_bool("CC_LAMBDA",false);
+    /*- Do write a MOLDEN output file?  If so, the filename will end in
+    .molden, and the prefix is determined by |globals__writer_file_label|
+    (if set), or else by the name of the output file plus the name of
+    the current molecule. -*/
+    options.add_bool("MOLDEN_WRITE", false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

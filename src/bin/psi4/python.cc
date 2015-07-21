@@ -87,6 +87,7 @@ void export_cubefile();
 void export_libfrag();
 void export_libparallel();
 void export_efp();
+void export_cubeprop();
 
 // In export_plugins.cc
 void py_psi_plugin_close_all();
@@ -115,9 +116,7 @@ namespace psi {
     namespace dfmp2      { PsiReturnType dfmp2(Options &);    }
     namespace dfmp2      { PsiReturnType dfmp2grad(Options &);}
     namespace sapt       { PsiReturnType sapt(Options &);     }
-    namespace dftsapt    { PsiReturnType dftsapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB); }
-    namespace dftsapt    { PsiReturnType asapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB); }
-    namespace dftsapt    { PsiReturnType infsapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB); }
+    namespace fisapt     { PsiReturnType fisapt(Options &);     }
     namespace dcft       { PsiReturnType dcft(Options &);     }
     namespace lmp2       { PsiReturnType lmp2(Options &);     }
     namespace mcscf      { PsiReturnType mcscf(Options &);    }
@@ -474,30 +473,10 @@ double py_psi_sapt()
         return 0.0;
 }
 
-double py_psi_dftsapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB)
+double py_psi_fisapt()
 {
-    py_psi_prepare_options_for_module("DFTSAPT");
-    if (dftsapt::dftsapt(dimer, mA, mB) == Success) {
-        return Process::environment.globals["SAPT ENERGY"];
-    }
-    else
-        return 0.0;
-}
-
-double py_psi_asapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB)
-{
-    py_psi_prepare_options_for_module("DFTSAPT");
-    if (dftsapt::asapt(dimer, mA, mB) == Success) {
-        return Process::environment.globals["SAPT ENERGY"];
-    }
-    else
-        return 0.0;
-}
-
-double py_psi_infsapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB)
-{
-    py_psi_prepare_options_for_module("DFTSAPT");
-    if (dftsapt::infsapt(dimer, mA, mB) == Success) {
+    py_psi_prepare_options_for_module("FISAPT");
+    if (fisapt::fisapt(Process::environment.options) == Success) {
         return Process::environment.globals["SAPT ENERGY"];
     }
     else
@@ -813,6 +792,8 @@ bool py_psi_set_local_option_string(std::string const & module, std::string cons
 
     if (data.type() == "string") {
         Process::environment.options.set_str(module, nonconst_key, value);
+    } else if (data.type() == "istring") {
+        Process::environment.options.set_str_i(module, nonconst_key, value);
     } else if (data.type() == "boolean") {
         if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
           boost::to_upper_copy(value) == "ON")
@@ -836,7 +817,7 @@ bool py_psi_set_local_option_int(std::string const & module, std::string const &
         Process::environment.options.set_double(module, nonconst_key, val);
     }else if (data.type() == "boolean") {
         Process::environment.options.set_bool(module, nonconst_key, value ? true : false);
-    }else if (data.type() == "string") {
+    }else if (data.type() == "string" || data.type() == "istring") {
         Process::environment.options.set_str(module, nonconst_key, boost::lexical_cast<std::string>(value));
     }else{
         Process::environment.options.set_int(module, nonconst_key, value);
@@ -870,7 +851,7 @@ bool py_psi_set_global_option_string(std::string const & key, std::string const 
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options[nonconst_key];
 
-    if (data.type() == "string") {
+    if (data.type() == "string" || data.type() == "istring") {
         Process::environment.options.set_global_str(nonconst_key, value);
     } else if (data.type() == "boolean") {
         if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
@@ -895,7 +876,7 @@ bool py_psi_set_global_option_int(std::string const & key, int value)
         Process::environment.options.set_global_double(nonconst_key, val);
     }else if (data.type() == "boolean") {
         Process::environment.options.set_global_bool(nonconst_key, value ? true : false);
-    }else if (data.type() == "string") {
+    }else if (data.type() == "string" || data.type() == "istring") {
         Process::environment.options.set_global_str(nonconst_key, boost::lexical_cast<std::string>(value));
     }else{
         Process::environment.options.set_global_int(nonconst_key, value);
@@ -1053,7 +1034,7 @@ object py_psi_get_local_option(std::string const & module, std::string const & k
     py_psi_prepare_options_for_module(module);
     Data& data = Process::environment.options.get_local(nonconst_key);
 
-    if (data.type() == "string")
+    if (data.type() == "string" || data.type() == "istring")
         return str(data.to_string());
     else if (data.type() == "boolean" || data.type() == "int")
         return object(data.to_integer());
@@ -1070,7 +1051,7 @@ object py_psi_get_global_option(std::string const & key)
     string nonconst_key = key;
     Data& data = Process::environment.options.get_global(nonconst_key);
 
-    if (data.type() == "string")
+    if (data.type() == "string" || data.type() == "istring")
         return str(data.to_string());
     else if (data.type() == "boolean" || data.type() == "int")
         return object(data.to_integer());
@@ -1089,7 +1070,7 @@ object py_psi_get_option(std::string const & module, std::string const & key)
     py_psi_prepare_options_for_module(module);
     Data& data = Process::environment.options.use_local(nonconst_key);
 
-    if (data.type() == "string")
+    if (data.type() == "string" || data.type() == "istring")
         return str(data.to_string());
     else if (data.type() == "boolean" || data.type() == "int")
         return object(data.to_integer());
@@ -1389,7 +1370,13 @@ void psi4_python_module_finalize()
 
 void translate_psi_exception(const PsiException& e)
 {
+#ifdef DEBUG
+    PyObject* message = PyString_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
+    PyErr_SetObject(PyExc_RuntimeError, message);
+    Py_DECREF(message);
+#else
     PyErr_SetString(PyExc_RuntimeError, e.what());
+#endif
 }
 
 // Tell python about the default final argument to the array setting functions
@@ -1464,6 +1451,9 @@ BOOST_PYTHON_MODULE(psi4)
 
     // EFP
     export_efp();
+
+    // CubeProperties
+    export_cubeprop();
 
     // Options
 // The following line was conflct between master and roa branch (TDC, 10/29/2014)
@@ -1578,9 +1568,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("atomic_displacements", py_psi_atomic_displacements, "Returns list of displacements generated by displacing each atom in the +/- x, y, z directions");
     def("displace_atom", py_psi_displace_atom, "Displaces one coordinate of single atom.");
     def("sapt", py_psi_sapt, "Runs the symmetry adapted perturbation theory code.");
-    def("dftsapt", py_psi_dftsapt, "Runs the DFT variant of the symmetry adapted perturbation theory code.");
-    def("asapt", py_psi_asapt, "Runs the atomic variant of the symmetry adapted perturbation theory code.");
-    def("infsapt", py_psi_infsapt, "Runs the infinite-order variant of the symmetry adapted perturbation theory code.");
+    def("fisapt", py_psi_fisapt, "Runs the functional-group intramolecular symmetry adapted perturbation theory code.");
     def("stability", py_psi_stability, "Runs the (experimental version) of HF stability analysis.");
     def("psimrcc", py_psi_psimrcc, "Runs the multireference coupled cluster code.");
     def("optking", py_psi_optking, "Runs the geometry optimization / frequency analysis code.");

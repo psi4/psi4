@@ -46,10 +46,22 @@ void DFOCC::ccsd_t2_amps()
     X->contract(true, false, naoccA, naoccA * navirA * navirA, naoccA, FtijA, t2, -1.0, 1.0);
 
     // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
-    // X(ia,jb) = \sum_{Q} T'_ia^Q b_jb^Q
+    // X(ia,jb) = \sum_{Q} t'_ia^Q b_jb^Q
     T = SharedTensor2d(new Tensor2d("T1p (Q|IA)", nQ, naoccA, navirA));
     T->read(psio_, PSIF_DFOCC_AMPS);
     X->gemm(true, false, T, bQiaA, 1.0, 1.0);
+    T.reset();
+
+    // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
+    // X(ia,jb) = -\sum_{Q} t_ai^Q t_jb^Q
+    U = SharedTensor2d(new Tensor2d("T1 (Q|AI)", nQ, navirA, naoccA));
+    U->read(psio_, PSIF_DFOCC_AMPS);
+    K = SharedTensor2d(new Tensor2d("Temp (Q|IA)", nQ, naoccA, navirA));
+    K->swap_3index_col(U);
+    U.reset();
+    T = SharedTensor2d(new Tensor2d("T1 (Q|IA)", nQ, naoccA, navirA));
+    T->read(psio_, PSIF_DFOCC_AMPS);
+    X->gemm(true, false, K, T, -1.0, 1.0);
     T.reset();
     X->symmetrize();
 
@@ -145,7 +157,7 @@ void DFOCC::ccsd_t2_amps()
 }// end ccsd_t2_amps
 
 //======================================================================
-//    CCSD: u_ij^ab = 2*t_ij^ab - t_ji^ab
+//    CCSD: u_ij^ab = 2*t_ij^ab - t_ji^ab; T(ia,jb)
 //======================================================================             
 void DFOCC::ccsd_u2_amps(SharedTensor2d &U, SharedTensor2d &T)
 {
@@ -155,12 +167,30 @@ void DFOCC::ccsd_u2_amps(SharedTensor2d &U, SharedTensor2d &T)
 }// end ccsd_u2_amps
 
 //======================================================================
-//    CCSD: T'(ib,ja) = t_ij^ab
+//    CCSD: u_ij^ab = 2*t_ij^ab - t_ji^ab; T(ij,ab)
+//======================================================================             
+void DFOCC::ccsd_u2_amps2(SharedTensor2d &U, SharedTensor2d &T)
+{
+    U->sort(2134, T, 1.0, 0.0);
+    U->scale(-1.0);
+    U->axpy(T, 2.0);
+}// end ccsd_u2_amps2
+
+//======================================================================
+//    CCSD: T'(ib,ja) = t_ij^ab = T(ia,jb)
 //======================================================================             
 void DFOCC::ccsd_t2_prime_amps(SharedTensor2d &U, SharedTensor2d &T)
 {
     U->sort(1432, T, 1.0, 0.0);
 }// end ccsd_t2_prime_amps
+
+//======================================================================
+//    CCSD: T'(ib,ja) = t_ij^ab = T(ij,ab) 
+//======================================================================             
+void DFOCC::ccsd_t2_prime_amps2(SharedTensor2d &U, SharedTensor2d &T)
+{
+    U->sort(1423, T, 1.0, 0.0);
+}// end ccsd_t2_prime_amps2
 
 //======================================================================
 //    CCSD: Tau_ij^ab = t_ij^ab + t_i^a t_j^b

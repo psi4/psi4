@@ -1,4 +1,4 @@
-#!/usr/bin/perl 
+#!/usr/bin/env perl 
 
 #
 # Rules of use:
@@ -43,6 +43,7 @@ $PSITEST_SUMMARY_FILE = "../../test-case-results";
 @PSITEST_RESPONSE = ("ccsd", "cc2");
 
 $PSITEST_ETOL = 10**-7;           # Default test criterion for energies
+$PSITEST_LAMBDATOL = 10**-4;      # Default test criterion for lambda overlaps
 $PSITEST_ENUCTOL = 10**-13;       # Check nuclear repulsion energy tighter than other energies
 $PSITEST_EEOMTOL = 10**-5;        # Less stringent test for EOM-CC energies
 $PSITEST_GEOMTOL = 10**-6;        # Default test criterion for Cartesian geometries
@@ -50,11 +51,14 @@ $PSITEST_GTOL = 10**-6;           # Default test criterion for gradients
 $PSITEST_HTOL = 10**-1;           # Default test criterion for Hessians
 $PSITEST_POLARTOL = 10**-5;       # Default test criterion for polarizabilities
 $PSITEST_OPTROTTOL = 10**-3;      # Default test criterion for optical rotation
+$PSITEST_OSCTOL = 10**-3;         # Default test criterion for oscillator strengths
 $PSITEST_STABTOL = 10**-4;        # Default test criterion for Hessian eigenvalues
 $PSITEST_MPOPTOL = 10**-5;        # Default test criterion for Mulliken populations
 $PSITEST_CIDIPTOL = 10**-4;       # Default test criterion for CI dipoles
 $PSITEST_STRICT_ETOL = 10**-12;   # Strict  test criterion for energies
 $PSIMRCCTEST_ETOL = 10**-10;      # Default test criterion for PSIMRCC energies
+$PSITEST_EINSTEINTOL = 0.05;      # Einstein coefficient test -- 5.0% Difference
+
 ##################################################
 #
 # This is a "smart" tester -- it parses the input and figures out
@@ -463,7 +467,7 @@ sub compare_cclambda_overlap
   my $REF_FILE = "$SRC_PATH/output.ref";
   my $TEST_FILE = "output.dat";
 
-  if(abs(seek_lambda($REF_FILE) - seek_lambda($TEST_FILE)) > $PSITEST_ETOL) {
+  if(abs(seek_lambda($REF_FILE) - seek_lambda($TEST_FILE)) > $PSITEST_LAMBDATOL) {
     fail_test("$wfn Lambda Overlap"); $fail = 1;
   }
   else {
@@ -677,6 +681,8 @@ sub compare_eomcc_oeprop
     pass_test("$LABEL");
   }
 
+  pass_test("\tPSITEST_OSCTOL = $PSITEST_OSCTOL\n");
+
   # The search wasn't refined enough.
   # Also, it caused some problems when looking for ex->ex data.
   # -HM, 10/29/1013
@@ -686,7 +692,7 @@ sub compare_eomcc_oeprop
   @int_test = seek_osc_str($TEST_FILE,"Ground State -> Excited State",$NSTATES-1);
 
   $LABEL = "Oscillator Strength";
-  if(!compare_arrays(\@int_ref, \@int_test, $NSTATES, $TTOL)) {
+  if(!compare_arrays(\@int_ref, \@int_test, $NSTATES, $PSITEST_OSCTOL)) {
     fail_test("$LABEL"); $fail = 1;
   }
   else {
@@ -697,7 +703,7 @@ sub compare_eomcc_oeprop
   @int_test = seek_rot_str($TEST_FILE,"Ground State -> Excited State",$NSTATES-1);
 
   $LABEL = "Rotational Strength";
-  if(!compare_arrays(\@int_ref, \@int_test, $NSTATES, $TTOL)) {
+  if(!compare_arrays(\@int_ref, \@int_test, $NSTATES, $PSITEST_OSCTOL)) {
     fail_test("$LABEL"); $fail = 1;
   }
   else {
@@ -706,12 +712,11 @@ sub compare_eomcc_oeprop
 
   if($proptype eq "oscillator_strength") {
 
-    $EINSTEIN_TOL = 0.0001; # Or 0.01% Difference
     @int_ref = seek_einstein_a($REF_FILE,"Ground State -> Excited State",$NSTATES-1);
     @int_test = seek_einstein_a($TEST_FILE,"Ground State -> Excited State",$NSTATES-1);
  
     $LABEL = "Einstein A Coefficient";
-    if(!compare_einstein_a_arrays(\@int_ref, \@int_test, $NSTATES, $EINSTEIN_TOL)) {
+    if(!compare_einstein_a_arrays(\@int_ref, \@int_test, $NSTATES, $PSITEST_EINSTEINTOL)) {
       fail_test("$LABEL"); $fail = 1;
     }
     else {
@@ -735,7 +740,7 @@ sub compare_eomcc_oeprop
       @int_test = seek_osc_str($TEST_FILE,"Excited State -> Excited State",$NTRANS);
    
       $LABEL = "Oscillator Strength (Ex.->Ex.)";
-      if(!compare_arrays(\@int_ref, \@int_test, $NTRANS, $TTOL)) {
+      if(!compare_arrays(\@int_ref, \@int_test, $NTRANS, $PSITEST_OSCTOL)) {
         fail_test("$LABEL"); $fail = 1;
       }
       else {
@@ -746,7 +751,7 @@ sub compare_eomcc_oeprop
       @int_test = seek_rot_str($TEST_FILE,"Excited State -> Excited State",$NTRANS);
    
       $LABEL = "Rotational Strength (Ex.->Ex.)";
-      if(!compare_arrays(\@int_ref, \@int_test, $NTRANS, $TTOL)) {
+      if(!compare_arrays(\@int_ref, \@int_test, $NTRANS, $PSITEST_OSCTOL)) {
         fail_test("$LABEL"); $fail = 1;
       }
       else {
@@ -757,7 +762,7 @@ sub compare_eomcc_oeprop
       @int_test = seek_einstein_a($TEST_FILE,"Excited State -> Excited State",$NTRANS);
    
       $LABEL = "Einstein A Coefficient (Ex.->Ex.)";
-      if(!compare_einstein_a_arrays(\@int_ref, \@int_test, $NTRANS, $EINSTEIN_TOL)) {
+      if(!compare_einstein_a_arrays(\@int_ref, \@int_test, $NTRANS, $PSITEST_EINSTEINTOL)) {
         fail_test("$LABEL"); $fail = 1;
       }
       else {
@@ -3044,6 +3049,10 @@ sub compare_einstein_a_arrays
     }
     if(@$A[$i] != 0 && @$B[$i] != 0) {
       if(abs(@$A[$i] - @$B[$i])/@$A[$i] > $tol) {
+        open(RE, ">junk.txt") || die "cannot open $target $!";
+        printf RE "abs(@$A[$i] - @$B[$i])/@$A[$i]\n";
+        close (RE);
+
         $OK = 0;
       }
     }

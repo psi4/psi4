@@ -30,7 +30,7 @@ distribution with same package manger `conda
 
 * add-ons (plugins, extra features requiring Fortran compiler, etc.) can be made available as conda packages
 
-The |PSIfour| binary repository is at `Binstar <https://binstar.org/psi4>`_.
+The |PSIfour| binary repository is at `Anaconda (formerly Binstar) <https://anaconda.org/psi4>`_.
 
 For commands to get a default installation, go to :ref:`sec:quickconda`.
 For more flexibility and a detailed explanation, go to
@@ -53,7 +53,7 @@ main conda environment at ``$HOME/miniconda/bin/psi4``.
     >>> echo "export PATH=$HOME/miniconda/bin:\$PATH" >> ~/.bashrc
     # log out, log back in so conda in path
     >>> conda update --yes --all
-    >>> conda config --add channels http://conda.binstar.org/psi4
+    >>> conda config --add channels http://conda.anaconda.org/psi4
     >>> conda install --yes psi4
     >>> psi4 "$(dirname $(which psi4))"/../share/psi/samples/scf1/input.dat -o stdout  # test installation. works b/c PSI_SCRATCH defaults to /tmp
 
@@ -84,7 +84,7 @@ Detailed Installation of Miniconda
     # check
     >>> which bzip2
     /usr/bin/bzip2
-    >>> curl -O "http://sirius.chem.vt.edu/psi4manual/master/introduction.html"
+    >>> curl -O "http://psicode.org/psi4manual/master/introduction.html"
     >>> ls -1
     introduction.html
 
@@ -117,15 +117,15 @@ Detailed Installation of Miniconda
 Detailed Installation of |PSIfour|
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-5. Subscribe to |PSIfour|. Subscribe to our channel at http://binstar.org/psi4 that contains the |PSIfour| package and several dependency packages. Make sure this shows up in your ``~/.condarc`` file.
+5. Subscribe to |PSIfour|. Subscribe to our channel at http://anaconda.org/psi4 that contains the |PSIfour| package and several dependency packages. Make sure this shows up in your ``~/.condarc`` file.
 
 .. code-block:: bash
 
-    >>> conda config --add channels http://conda.binstar.org/psi4
+    >>> conda config --add channels http://conda.anaconda.org/psi4
     # check
     >>> cat ~/.condarc
     channels:
-      - http://conda.binstar.org/psi4
+      - http://conda.anaconda.org/psi4
       - defaults
 
 6. Install |PSIfour|. You can install into the main conda environment so that whenever commands ``conda`` or (Ana/Miniconda's) ``python`` are available, then ``psi4`` is available, too. 
@@ -242,7 +242,9 @@ Troubleshooting
     * no libraries "not found"
     * fundamental libraries like libc, ld-linux, pthreads found system libraries to link against
     * libpython linked against conda python *not* system python
-    * libm is linked against conda *or* system ::
+    * libm is linked against conda *or* system
+    * blas, c++, and gcc libraries are absent because statically linked ::
+
 
     >>> conda install conda-build  # needed for next command
     >>> conda inspect linkages psi4
@@ -259,4 +261,10 @@ Troubleshooting
         linux-vdso.so.1 ()
     not found:
 
+
+.. comment find out about the current environment.
+.. comment pythonhome should be empty
+.. comment pythonpath should be empty or set to non-interfering packages (e.g., qcdb)
+.. comment ld_library_path shouldn’t contain anything with a libpython
+.. comment >>> conda info -a
 

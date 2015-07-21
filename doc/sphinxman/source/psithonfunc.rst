@@ -28,4 +28,5 @@ extent |PSIfours| functionality.
    diatomic
    intercalls
    sowreap
+   cubeprop
 

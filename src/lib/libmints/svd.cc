@@ -67,7 +67,7 @@ static int
 scl_(double *d, double *u, int *n, double *q,
      int *lq, int *mq, double *p, int *lp, int *mp,
      double *e, double *f, double *b,
-     int *j, int *k, int *jl, 
+     int *j, int *k, int *jl,
      int *jr);
 static int
 eig3_(double *ea, double *eb, double *a, double *b, double *y, double *z);
@@ -88,7 +88,7 @@ main(int argc, char**argv)
   int n = atoi(argv[2]);
 
   int l = ((m<n)?m:n);
-  
+
   double *q = (double*)malloc(sizeof(double)*m*m);
   double *s = (double*)malloc(sizeof(double)*n);
   double *p = (double*)malloc(sizeof(double)*n*n);
@@ -207,7 +207,7 @@ main(int argc, char**argv)
         }
       printf("\n");
     }
-  
+
 
   return 0;
 }
@@ -362,7 +362,7 @@ L80:
     }
     iu = 1;
 L90:
-    singb_(&s[1], &l, &w[1], &iu, &q[q_offset], lq, m, &jl, &p[p_offset], lp, 
+    singb_(&s[1], &l, &w[1], &iu, &q[q_offset], lq, m, &jl, &p[p_offset], lp,
 	    n, &jr, &w[l], &w[l + l]);
     return 0;
 } /* sing_ */
@@ -2115,10 +2115,10 @@ sft_(double *s, double *a, double *b, double *c,
 
 /* % */
 static int
-scl_(double *d, double *u, int *n, double *q,
+scl_(double *d, double *u, int */*n*/, double *q,
      int *lq, int *mq, double *p, int *lp, int *mp,
      double *e, double *f, double *b,
-     int *j, int *k, int *jl, 
+     int *j, int *k, int *jl,
      int *jr)
 {
     /* System generated locals */

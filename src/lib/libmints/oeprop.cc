@@ -270,7 +270,7 @@ void Prop::add(const std::string& prop)
 }
 void Prop::add(std::vector<std::string> props)
 {
-    for (int i = 0; i < props.size(); i++) {
+    for (int i = 0; i < (int)props.size(); i++) {
         tasks_.insert(props[i]);
     }
 }
@@ -421,20 +421,6 @@ SharedMatrix Prop::Db_mo()
     delete[] temp;
     delete[] SC;
     return D;
-}
-SharedMatrix Prop::Dt_ao(bool total)
-{
-    SharedMatrix Da = Da_ao();
-    if (same_dens_) {
-        Da->set_name((total ? "Dt_ao" : "Ds_ao"));
-        Da->scale((total ? 2.0 : 0.0));
-    } else {
-        Da->set_name((total ? "Dt_ao" : "Ds_ao"));
-        SharedMatrix Db = Db_ao();
-        if (total) Da->add(Db);
-        else Da->subtract(Db);
-    }
-    return Da;
 }
 SharedMatrix Prop::Dt_so(bool total)
 {
@@ -728,7 +714,7 @@ SharedMatrix Prop::overlap_so()
     return S;
 }
 
-OEProp::OEProp(boost::shared_ptr<Wavefunction> wfn) : Prop(wfn_)
+OEProp::OEProp(boost::shared_ptr<Wavefunction> wfn) : Prop(wfn)
 {
     common_init();
 }
@@ -935,11 +921,11 @@ void OEProp::compute_multipoles(int order, bool transition)
         aompOBI->compute(mp_ints);
 
         if (same_dens_) {
-            Da = Da_ao();
+            Da = wfn_->Da_subset("CartAO");
             Db = Da;
         } else {
-            Da = Da_ao();
-            Db = Db_ao();
+            Da = wfn_->Da_subset("CartAO");
+            Db = wfn_->Db_subset("CartAO");
         }
     }
 
@@ -987,7 +973,7 @@ void OEProp::compute_multipoles(int order, bool transition)
     }
     outfile->Printf( " --------------------------------------------------------------------------------\n");
 
-    
+
 }
 
 
@@ -1049,11 +1035,11 @@ void OEProp::compute_esp_over_grid()
 
     outfile->Printf( "\n Electrostatic potential computed on the grid and written to grid_esp.dat\n");
 
-    SharedMatrix Dtot = Da_ao();
+    SharedMatrix Dtot = wfn_->Da_subset("CartAO");
     if (same_dens_) {
         Dtot->scale(2.0);
     }else{
-        Dtot->add(Db_ao());
+        Dtot->add(wfn_->Db_subset("CartAO"));
     }
 
     int nao = basisset_->nao();
@@ -1092,11 +1078,11 @@ void OEProp::compute_field_over_grid()
 
     outfile->Printf( "\n Field computed on the grid and written to grid_field.dat\n");
 
-    SharedMatrix Dtot = Da_ao();
+    SharedMatrix Dtot = wfn_->Da_subset("CartAO");
     if (same_dens_) {
         Dtot->scale(2.0);
     }else{
-        Dtot->add(Db_ao());
+        Dtot->add(wfn_->Db_subset("CartAO"));
     }
 
     boost::shared_ptr<ElectricFieldInt> field_ints(dynamic_cast<ElectricFieldInt*>(wfn_->integral()->electric_field()));
@@ -1138,11 +1124,11 @@ void OEProp::compute_esp_at_nuclei()
     int nbf = basisset_->nbf();
     int natoms = mol->natom();
 
-    SharedMatrix Dtot = Da_ao();
+    SharedMatrix Dtot = wfn_->Da_subset("AO");
     if (same_dens_) {
         Dtot->scale(2.0);
     }else{
-        Dtot->add(Db_ao());
+        Dtot->add(wfn_->Db_subset("AO"));
     }
 
     Matrix dist = mol->distance_matrix();
@@ -1202,11 +1188,11 @@ void OEProp::compute_dipole(bool transition)
         aodOBI->set_origin(origin_);
         aodOBI->compute(dipole_ints);
         if (same_dens_) {
-            Da = Da_ao();
+            Da = wfn_->Da_subset("AO");
             Db = Da;
         } else {
-            Da = Da_ao();
-            Db = Db_ao();
+            Da = wfn_->Da_subset("AO");
+            Db = wfn_->Db_subset("AO");
         }
     }
 
@@ -1260,7 +1246,7 @@ void OEProp::compute_dipole(bool transition)
     s << title_ << " DIPOLE Z";
     Process::environment.globals[s.str()] = de[2]*dfac;
 
-    
+
 }
 
 void OEProp::compute_quadrupole(bool transition)
@@ -1294,11 +1280,11 @@ void OEProp::compute_quadrupole(bool transition)
         aoqOBI->set_origin(origin_);
         aoqOBI->compute(qpole_ints);
         if (same_dens_) {
-            Da = Da_ao();
+            Da = wfn_->Da_subset("AO");
             Db = Da;
         } else {
-            Da = Da_ao();
-            Db = Db_ao();
+            Da = wfn_->Da_subset("AO");
+            Db = wfn_->Db_subset("AO");
         }
     }
 
@@ -1363,7 +1349,7 @@ void OEProp::compute_quadrupole(bool transition)
     s << title_ << " QUADRUPOLE YZ";
     Process::environment.globals[s.str()] = qe[4]*dfac;
 
-    
+
 }
 void OEProp::compute_mo_extents()
 {
@@ -1500,7 +1486,7 @@ void OEProp::compute_mo_extents()
 
         outfile->Printf( "\n");
         for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
-        
+
 
     } else {
 
@@ -1532,11 +1518,11 @@ void OEProp::compute_mulliken_charges()
 //    Get the Density Matrices for alpha and beta spins
 
     if (same_dens_) {
-        Da = Da_ao();
+        Da = wfn_->Da_subset("AO");
         Db = Da;
     } else {
-        Da = Da_ao();
-        Db = Db_ao();
+        Da = wfn_->Da_subset("AO");
+        Db = wfn_->Db_subset("AO");
     }
 
 //    Compute the overlap matrix
@@ -1591,7 +1577,7 @@ void OEProp::compute_mulliken_charges()
     delete[] PSb;
 
     outfile->Printf( "\n");
-    
+
 }
 void OEProp::compute_lowdin_charges()
 {
@@ -1619,11 +1605,11 @@ void OEProp::compute_lowdin_charges()
 //    Get the Density Matrices for alpha and beta spins
 
     if (same_dens_) {
-        Da = Da_ao();
+        Da = wfn_->Da_subset("AO");
         Db = Da;
     } else {
-        Da = Da_ao();
-        Db = Db_ao();
+        Da = wfn_->Da_subset("AO");
+        Db = wfn_->Db_subset("AO");
     }
 
 //    Compute the overlap matrix
@@ -1675,7 +1661,7 @@ void OEProp::compute_lowdin_charges()
     delete[] Qa;
     delete[] Qb;
 
-    
+
 }
 void OEProp::compute_mayer_indices()
 {
@@ -1694,11 +1680,11 @@ void OEProp::compute_mayer_indices()
 //    Get the Density Matrices for alpha and beta spins
 
     if (same_dens_) {
-        Da = Da_ao();
+        Da = wfn_->Da_subset("AO");
         Db = Da;
     } else {
-        Da = Da_ao();
-        Db = Db_ao();
+        Da = wfn_->Da_subset("AO");
+        Db = wfn_->Db_subset("AO");
     }
 
 //    Compute the overlap matrix
@@ -1785,7 +1771,7 @@ void OEProp::compute_mayer_indices()
         MBI_valence->print();
     }
 
-    
+
 }
 void OEProp::compute_wiberg_lowdin_indices()
 {
@@ -1808,11 +1794,11 @@ void OEProp::compute_wiberg_lowdin_indices()
 //    Get the Density Matrices for alpha and beta spins
 
     if (same_dens_) {
-        Da = Da_ao();
+        Da = wfn_->Da_subset("AO");
         Db = Da;
     } else {
-        Da = Da_ao();
-        Db = Db_ao();
+        Da = wfn_->Da_subset("AO");
+        Db = wfn_->Db_subset("AO");
     }
 
 //    Compute the overlap matrix
@@ -1900,7 +1886,7 @@ void OEProp::compute_wiberg_lowdin_indices()
         WBI_valence->print();
     }
 
-    
+
 }
 void OEProp::compute_no_occupations(int max_num)
 {
@@ -1935,7 +1921,7 @@ void OEProp::compute_no_occupations(int max_num)
         int start_occ_a = offset_a - max_num;
         start_occ_a = (start_occ_a < 0 ? 0 : start_occ_a);
         int stop_vir_a = offset_a + max_num + 1;
-        stop_vir_a = (stop_vir_a >= metric_a.size() ? metric_a.size()  : stop_vir_a);
+        stop_vir_a = (int)((size_t)stop_vir_a >= metric_a.size() ? metric_a.size()  : stop_vir_a);
 
         outfile->Printf( "  Alpha Occupations:\n");
         for (int index = start_occ_a; index < stop_vir_a; index++) {
@@ -1964,7 +1950,7 @@ void OEProp::compute_no_occupations(int max_num)
         int start_occ_b = offset_b - max_num;
         start_occ_b = (start_occ_b < 0 ? 0 : start_occ_b);
         int stop_vir_b = offset_b + max_num + 1;
-        stop_vir_b = (stop_vir_b >= metric_b.size() ? metric_b.size()  : stop_vir_b);
+        stop_vir_b = (int)((size_t)stop_vir_b >= metric_b.size() ? metric_b.size()  : stop_vir_b);
 
         outfile->Printf( "  Beta Occupations:\n");
         for (int index = start_occ_b; index < stop_vir_b; index++) {
@@ -1998,7 +1984,7 @@ void OEProp::compute_no_occupations(int max_num)
     int start_occ = offset - max_num;
     start_occ = (start_occ < 0 ? 0 : start_occ);
     int stop_vir = offset + max_num + 1;
-    stop_vir = (stop_vir >= metric.size() ? metric.size()  : stop_vir);
+    stop_vir = (int)((size_t)stop_vir >= metric.size() ? metric.size()  : stop_vir);
 
     outfile->Printf( "  Total Occupations:\n");
     for (int index = start_occ; index < stop_vir; index++) {
@@ -2015,7 +2001,7 @@ void OEProp::compute_no_occupations(int max_num)
     outfile->Printf( "\n");
 
     //for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
-    
+
 }
 
 //GridProp::GridProp(boost::shared_ptr<Wavefunction> wfn) : filename_("out.grid"), Prop(wfn)

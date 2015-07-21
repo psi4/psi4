@@ -8,36 +8,13 @@ Installation and Runtime Configuration
 Obtaining |PSIfour|
 ===================
 
-The latest version of the |PSIfour| program package may be obtained at
-`www.psicode.org <http://www.psicode.org>`_.  The
-source code is available as a gzipped tar archive (named, for example,
-``psi4.X.tar.gz``, and binaries may be available for certain architectures.
-For detailed installation and testing instructions, please refer to
-:ref:`Compiling and Installing <sec:installFilePage>` (same information as 
-the file :source:`INSTALL` distributed with the package).
+The latest version of the |PSIfour| program package may be
+obtained at `www.psicode.org <http://www.psicode.org>`_. The
+package is available as a binary for Linux (:ref:`Installing
+from Binary <sec:conda>`) or as source code (zipped
+archive or git repository from `www.github.com/psi4/psi4public
+<http://www.github.com/psi4/psi4public>`_).
 
-.. comment To avoid dependency problems, a script is provided at
-.. comment :source:`lib/scripts/psi4depend-v2.sh` that will download, configure, and
-.. comment install all dependencies that the Psi4 developers currently recommend.
-.. comment This script simply needs one to edit the top lines to tell it where to
-.. comment install all the files to and for the user to put this into their path. The
-.. comment script will print out the lines that you need to add to your
-.. comment :envvar:`path` and :envvar:`LD_LIBRARY_PATH`. This script will build the
-.. comment following: autoconf-2.68, automake-1.11, gcc-4.1.2, mpich2-1.2.1,
-.. comment Python-2.6.6, Boost-1.48.0 (as well as some dependencies). After running
-.. comment the script, proceed with building |PSIfour| as described in
-.. comment :source:`INSTALL`.
-
-
-.. index:: prerequisites, compiling, installing
-.. _`sec:installFile`:
-
-Compiling and Installing from Source
-====================================
-
-.. toctree::
-
-   installfile
 
 Installing from Binary
 ======================
@@ -46,6 +23,22 @@ Installing from Binary
    :maxdepth: 2
 
    conda
+
+
+.. index:: prerequisites, compiling, installing
+.. _`sec:installFile`:
+
+Compiling and Installing from Source
+====================================
+
+Detailed directions on 
+`obtaining <https://github.com/psi4/psi4public/wiki/1_Obtaining>`_, 
+`prerequisites <https://github.com/psi4/psi4public/wiki/2_Planning#-what-are-the-tools-and-dependencies-strictly-required-for-building-psi4>`_,
+`building and installing <https://github.com/psi4/psi4public/wiki/3_Building>`_,
+and `FAQ <https://github.com/psi4/psi4public/wiki/0_FAQ>`_
+are maintained on the `GitHub Wiki <https://github.com/psi4/psi4public/wiki>`_. 
+If uncertain, `start here <https://github.com/psi4/psi4public/wiki/1_Obtaining#quiz>`_.
+
 
 .. index:: scratch files, psirc, psi4rc
 .. _`sec:psirc`:
