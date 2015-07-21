@@ -10,8 +10,8 @@ symmetry c1
 
 set e_convergence 12
 set basis cc-pvdz
-
-thisSCF = energy('uhf')
+set reference uhf
+thisSCF = energy('scf')
 set guess_mix true
-thisBSSCF = energy('uhf')
+thisBSSCF = energy('scf')
 
