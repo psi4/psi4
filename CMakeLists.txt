@@ -27,7 +27,7 @@ option(ENABLE_XHOST          "Enable processor-specific optimizations"     ON)
 option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
 option(ENABLE_PLUGINS        "Enable compilation of example plugins"       OFF)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
-option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     ON)
+option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     OFF)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
 # Modules requiring Fortran
 option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF)
@@ -44,7 +44,7 @@ option(ENABLE_JKFACTORY      "Enable the distributed JKFactory (requires MPI)"  
 set(EXTERNAL_LIBS)
 
 # Decide if Fortran is needed
-if(ENABLE_LIBERD OR ENABLE_PCMSOLVER)
+if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY)
    if(CMAKE_Fortran_COMPILER)
       enable_language(Fortran)
       add_definitions(-DHAVE_FORTRAN)
@@ -149,11 +149,6 @@ if(ENABLE_CHEMPS2)
    include(ConfigChemps2)
 endif()
 
-#OpenBabel Detection
-#add_subdirectory(openbabel)
-#set(BABEL_LIBRARY_DIR ${CMAKE_BINARY_DIR}/lib)
-#set(BABEL_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include/openbabel-2.0)
-
 # Append the suffix given from input to all generated executables
 if(EXECUTABLE_SUFFIX)
    set(CMAKE_EXECUTABLE_SUFFIX "${EXECUTABLE_SUFFIX}")
@@ -226,13 +221,10 @@ set_property(GLOBAL PROPERTY PSILIB)
 # PCMSolver
 if(ENABLE_PCMSOLVER)
    find_package(ZLIB)
-   if(NOT ZLIB_FOUND)
-      set(ENABLE_PCMSOLVER OFF)
-      message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
-      message(STATUS " PCMSolver dependencies NOT satisfied:")
-      if(NOT ZLIB_FOUND)
-          message(STATUS "  - install Zlib development libraries")
-      endif()
+    if (NOT ZLIB_FOUND)
+        message(FATAL_ERROR "No Zlib, no PCMSolver. Skip with -DENABLE_PCMSOLVER=OFF")
+        # TODO ability to build psi4 against pre-built pcmsolver library like chemps2
+        #message(FATAL_ERROR "No Zlib, no PCMSolver. Build against existing with -DPCMSOLVER_ROOT=/path/to/pcmsolver or skip with -DENABLE_PCMSOLVER=OFF")
    else()
       fortran_enabler()
       add_definitions(-DHAVE_PCMSOLVER)
@@ -250,6 +242,7 @@ if(MPI_FOUND AND ENABLE_JKFACTORY)
    set(BUILD_JK_FACTORY TRUE)
 endif()
 if(BUILD_JK_FACTORY)
+      fortran_enabler()
    set(JK_BLAS_LIB "")
    set(JK_BLAS_INC "")
    if(EXPLICIT_BLAS_LIB)
@@ -260,9 +253,6 @@ if(BUILD_JK_FACTORY)
    set(HAVE_GLOBAL_ARRAYS FALSE)
    add_definitions(-DHAVE_JK_FACTORY)
    set(JKROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/libJKFactory)
-   set_property(GLOBAL APPEND PROPERTY PSILIB GTFockInt GTFock GTFockCInt
-      ${PROJECT_BINARY_DIR}/lib/libga.a
-      ${PROJECT_BINARY_DIR}/lib/libarmci.a)
 endif()
 
 # Add the documentation subdirectory

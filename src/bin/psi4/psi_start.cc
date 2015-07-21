@@ -365,7 +365,8 @@ void print_usage(void)
     printf(" -w  --wipe                Clean out your scratch area.\n");
     printf("\n");
     printf("Environment Variables\n");
-    printf("     PSI_SCRATCH           Directory where scratch files are written. Default: /tmp/\n");
+    printf("     PSI_SCRATCH           Directory where scratch files are written.\n");
+    printf("                           Default: $TMPDIR (or /tmp/ when not set)\n");
     printf("                           This should be a local, not network, disk\n");
 
     exit(EXIT_FAILURE);

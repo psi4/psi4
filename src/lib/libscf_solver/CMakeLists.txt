@@ -1,6 +1,6 @@
 set(headers_list "")
 # List of headers
-list(APPEND headers_list hf.h pairs.h sad.h rhf.h uhf.h cuhf.h rohf.h ks.h)
+list(APPEND headers_list hf.h pairs.h sad.h rhf.h uhf.h cuhf.h rohf.h ks.h stability.h)
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
@@ -17,7 +17,7 @@ endif()
 
 set(sources_list "")
 # List of sources
-list(APPEND sources_list uhf.cc ks.cc cuhf.cc rhf.cc hf.cc sad.cc frac.cc mom.cc rohf.cc)
+list(APPEND sources_list uhf.cc ks.cc cuhf.cc rhf.cc hf.cc sad.cc frac.cc mom.cc rohf.cc stability.cc)
 
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
@@ -35,6 +35,9 @@ write_to_cloc_list("${to_count}")
 add_library(scf_solver STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 add_dependencies(scf_solver mints)
+if(BUILD_JK_FACTORY)
+  add_dependencies(scf_solver GTFockInt GTFockCInt)
+endif()
 set_property(GLOBAL APPEND PROPERTY LIBLIST scf_solver)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(scf_solver custom_boost)

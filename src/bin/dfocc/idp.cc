@@ -360,7 +360,7 @@ else if (reference_ == "UNRESTRICTED") {
 //=======================================================          
 void DFOCC::idp2()
 {
-    outfile->Printf("\tForming independent-pairs...\n");
+    outfile->Printf("\n\tForming independent-pairs...\n");
     
 if (reference_ == "RESTRICTED") {
     // Form IDPs: All V-O

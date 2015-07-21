@@ -55,7 +55,7 @@ void DFOCC::ccdl_l2_amps()
     U.reset();
     U = SharedTensor2d(new Tensor2d("G (Q|IA)", nQ, naoccA, navirA));
     U->read(psio_, PSIF_DFOCC_AMPS);
-    T->axpy(U, -1.0);;
+    T->axpy(U, -1.0);
     U.reset();
     X->gemm(true, false, T, bQiaA, 1.0, 1.0);
     T.reset();
@@ -73,8 +73,8 @@ void DFOCC::ccdl_l2_amps()
     Lnew->write_symm(psio_, PSIF_DFOCC_AMPS);
     Lnew.reset();
 
-    // WmnijL2
-    ccdl_WmnijL2();
+    // VmnijL2
+    ccdl_VmnijL2();
 
     // WijmnL2
     ccdl_WijmnL2();

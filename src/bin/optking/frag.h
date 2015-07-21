@@ -48,14 +48,14 @@ using std::vector;
 class FRAG {
 
  protected:              // private, except the EFP derived class can access
-  int natom;             //< number of atoms in fragment
-  double *Z;             //< atomic numbers
-  double **geom;         //< cartesian coordinates
-  double **grad;         //< cartesian coordinates
-  double *mass;          //< nuclear masses
-  bool   **connectivity; //< connectivity matrix
-  bool frozen;           //< whether to optimize
-  COMBO_COORDINATES coords; //< simple or linear combinations of simple coordinates
+  int natom;             ///< number of atoms in fragment
+  double *Z;             ///< atomic numbers
+  double **geom;         ///< cartesian coordinates
+  double **grad;         ///< cartesian coordinates
+  double *mass;          ///< nuclear masses
+  bool   **connectivity; ///< connectivity matrix
+  bool frozen;           ///< whether to optimize
+  COMBO_COORDINATES coords; ///< simple or linear combinations of simple coordinates
   
  public:
   friend class INTERFRAG;
@@ -89,6 +89,8 @@ class FRAG {
 
   std::string get_coord_definition(int coord_index, int atom_offset=0);
   std::string get_simple_definition(int simple_index, int atom_offset=0);
+
+  INTCO_TYPE get_simple_type(int simple_index);
 
   void update_connectivity_by_distances(void);
   void update_connectivity_by_bonds(void);
@@ -284,17 +286,18 @@ class FRAG {
   void add_combination_coord(vector<int> ids, vector<double> coeffs); // for molecule_read_coord
 
   /**
-   * @param R_list string of atom pairs for frozen distances
-   * @param B_list string of atom triples for frozen bends
-   * @param D_list string of atom quartets for frozen dihedrals
+   * @param R_string string of atom pairs for frozen distances
+   * @param B_string string of atom triples for frozen bends
+   * @param D_string string of atom quartets for frozen dihedrals
+   * @param C_string string with lists of atom and xyz specification for frozen cartesians
    * @returns True if any constraints are present.
   */
-  bool apply_frozen_constraints(std::string R_list, std::string B_list, std::string D_list);
+  bool apply_frozen_constraints(std::string R_string, std::string B_string, std::string D_string, std::string C_string);
 
   /**
-   * @param R_list string of atom pairs + equilibrium value for fixed distances
-   * @param B_list string of atom triplets + equilibrium value for fixed bends
-   * @param D_list string of atom quartets + equilibrium value for fixed dihedrals
+   * @param R_string string of atom pairs + equilibrium value for fixed distances
+   * @param B_string string of atom triplets + equilibrium value for fixed bends
+   * @param D_string string of atom quartets + equilibrium value for fixed dihedrals
    * @returns True if any constraints are present.
   */
   bool apply_fixed_constraints(std::string R_string, std::string B_string, std::string D_string);

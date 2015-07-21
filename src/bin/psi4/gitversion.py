@@ -16,7 +16,8 @@ def write_version(branch, mmp, ghash, status):
     if mmp:
         mmp_str = "#define PSI_VERSION \"%s\"\n" % (mmp)
     else:
-        mmp_str = "#undef PSI_VERSION"
+        #mmp_str = "#undef PSI_VERSION"
+        mmp_str = "#define PSI_VERSION \"%s\"\n" % ('(no tag)')
 
     with open('gitversion.h.tmp', 'w') as handle:
         handle.write(version_str)
@@ -62,6 +63,7 @@ try:
     else:
         ghash = ''
 
+    # major-minor-patch
     if len(fields) == 2:
         mmp = '.'.join(fields)
     else:

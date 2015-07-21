@@ -13,22 +13,5 @@ set basis cc-pVDZ
 energy('scf')
 
 compare_values(-76.0266327341067125, get_variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
-
-if get_global_option('WRITE_CSX'):  #TEST
-    from lxml import etree  #TEST
-    csx = os.path.splitext(psi4.outfile_name())[0] + '.csx'  #TEST
-    root = etree.parse(csx).getroot()  #TEST
-
-    csxdict = {}  #TEST
-    for en in root.findall('cs:molecularCalculation/'  #TEST
-                           'cs:quantumMechanics/'  #TEST
-                           'cs:singleReferenceState/'  #TEST
-                           'cs:singleDeterminant/'  #TEST
-                           'cs:abinitioScf/'  #TEST
-                           'cs:energies/'  #TEST
-                           'cs:energy', root.nsmap):  #TEST
-        csxdict[en.attrib['type']] = float(en.text)  #TEST
-
-    compare_values(get_variable('NUCLEAR REPULSION ENERGY'), csxdict['cs:nuclearRepulsion'], 6, 'CSX nre')  #TEST
-    compare_values(get_variable('SCF TOTAL ENERGY'), csxdict['cs:totalPotential'], 6, 'CSX hf')  #TEST
+compare_csx()  #TEST
 

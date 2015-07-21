@@ -57,9 +57,9 @@ class ParallelEnvironment{
        *  Older versions of MPI need main's arguments, so we request
        *  them for compatability.
        *
-       *  \params[in] argc The number of arguments (including the program
+       *  \param[in] argc The number of arguments (including the program
        *                   name), that the program was invoked with
-       *  \params[in] argv The list of arguments that the program was
+       *  \param[in] argv The list of arguments that the program was
        *                   invoked with.  Length is given by argc.
        */
       ParallelEnvironment(int argc, char* argv[]);

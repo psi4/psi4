@@ -59,13 +59,10 @@ void print_version(std::string)
   printer->Printf( "    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov\n");
   printer->Printf( "    -----------------------------------------------------------------------\n\n");
   printer->Printf("\n");
-  printer->Printf( "    Psi4 started on: ");
-  std::time_t     now = time(0);
-  struct tm  tstruct;
-  char       buf[80];
-  tstruct = *localtime(&now);
-  strftime(buf, sizeof(buf), "%m-%d-%Y  %I:%M:%S %p %Z", &tstruct);
-  (*printer) << buf<< std::endl<<std::endl;
+
+  std::time_t cur_time = time(0);
+  printer->Printf( "    Psi4 started on: %s\n",ctime(&cur_time));
+
   pid_t pid = getpid();
   printer->Printf( "    Process ID: %6d\n",pid);
   printer->Printf( "    PSI4DATADIR: %s\n", Process::environment("PSIDATADIR").c_str());

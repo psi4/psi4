@@ -46,6 +46,7 @@ set optking {
     1  2 0.950
     3  4 0.950
   ")
+  max_disp_g_convergence 0.0012
 }
 thisenergy = optimize('scf')
 

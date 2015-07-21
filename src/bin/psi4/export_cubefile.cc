@@ -34,4 +34,3 @@ void export_cubefile()
         def("set_filename", &CubeFile::set_filename, "docstring").
         def("process_density", &CubeFile::process_density, "docstring");
 }
-

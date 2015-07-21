@@ -39,7 +39,7 @@ protected:
 public:
     /// Initialize the iterator for the given angular momentum.
     CartesianIter(int l);
-    ~CartesianIter();
+    virtual ~CartesianIter();
 
     /// Start the iteration.
     virtual void start();

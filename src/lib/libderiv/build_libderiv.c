@@ -1,6 +1,6 @@
 /*! \file
     \ingroup DERIV
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 /*! \defgroup DERIV libderiv: The Derivative Library */
@@ -155,7 +155,7 @@ int main()
 #endif
   for(l=0;l<=new_am12/2;l++)
     fprintf(init_code,"\n  libderiv12_stack_size[%d] = %d;",l,libderiv12_stack_size[l]);
-  
+
   fprintf(init_code,"\n}\n\n");
   fprintf(init_code,"/* These functions initialize library objects */\n");
   fprintf(init_code,"/* Library objects operate independently of each other */\n");
@@ -239,7 +239,7 @@ int main()
   fclose(init_code);
   fclose(d1hrr_header);
   fclose(deriv_header);
-  
+
     /* Setting up libderiv.h */
   fprintf(libderiv_header,"#ifndef _psi3_libderiv_h\n");
   fprintf(libderiv_header,"#define _psi3_libderiv_h\n\n");
@@ -255,7 +255,7 @@ int main()
   fprintf(libderiv_header,"#endif\n");
   fprintf(libderiv_header,"#define DERIV_LVL %d\n\n",DERIV_LVL);
   fprintf(libderiv_header,"typedef struct {\n");
-  fprintf(libderiv_header,"  double *int_stack;\n"); 
+  fprintf(libderiv_header,"  double *int_stack;\n");
   fprintf(libderiv_header,"  prim_data *PrimQuartet;\n");
   fprintf(libderiv_header,"  double *zero_stack;\n");
   fprintf(libderiv_header,"  double *ABCD[12+144];\n");
@@ -301,7 +301,7 @@ int main()
 
 void punt(char* str)
 {
-  printf(str);
+  printf("%s",str);
   exit(1);
 }
 

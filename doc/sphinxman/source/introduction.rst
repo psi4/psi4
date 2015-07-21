@@ -42,8 +42,8 @@ For the latest |PSIfour| documentation, check
 Citing |PSIfour|
 ================
 
-Overall PSI4 Package
-^^^^^^^^^^^^^^^^^^^^
+Overall |PSIfour| Package
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following citation should be used in any publication utilizing the
 |PSIfour| program package:
@@ -99,6 +99,14 @@ ODC-06 and ODC-12:
   H. F. Schaefer, *J. Chem. Phys.*  **139**, 204110 (2013). 
   (doi: `10.1063/1.4833138 <http://dx.doi.org/10.1063/1.4833138>`_).
 
+ODC-13:
+
+* "Density cumulant functional theory from a unitary transformation:
+  N-representability, three-particle correlation effects, and application
+  to O4+," A. Yu. Sokolov, H. F. Schaefer, and W. Kutzelnigg,
+  *J. Chem. Phys.*  **141**, 074111 (2014). 
+  (doi: `10.1063/1.4892946 <http://dx.doi.org/10.1063/1.4892946>`_).
+
 Configuration Interaction (CI)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -113,7 +121,7 @@ and highly correlated configuration interaction, as described in
   <http://dx.doi.org/10.1016/S0065-3276(08)60532-8>`_).
 
 Coupled Cluster (CC)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 A general discussion of coupled cluster theory is given in
 
@@ -272,8 +280,8 @@ SAPT2+(CCD), SAPT2+(3)(CCD), and SAPT2+3(CCD)
   (doi: `10.1063/1.3451077 <http://dx.doi.org/10.1063/1.3451077>`_).
 
 
-Orbital-Optimized Post-Hartree-Fock Methods
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Orbital-Optimized Post-Hartree |--| Fock Methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Orbital-optimized second-order perturbation theory (OMP2)
 
 * "Quadratically convergent algorithm for orbital optimization in the 
@@ -323,14 +331,15 @@ Orbital-optimized coupled electron pair approximation (OCEPA)
 Orbital-optimized MP2.5 (OMP2.5)
 
 * "Orbital-optimized MP2.5 and its analytic gradients: Approaching CCSD(T)
-   quality for noncovalent interactions," U. Bozkaya and C. D. Sherrill,
+  quality for noncovalent interactions," U. Bozkaya and C. D. Sherrill, 
   *J. Chem. Phys.* **141**, 204105 (2014).
   (doi: `10.1063/1.4902226 <http://dx.doi.org/10.1063/1.4902226>`_).
 
 Extended Koopmans' Theorem
 
-* "The extended Koopmans' theorem for orbital-optimized methods: Accurate computation of ionization potentials," 
-   U. Bozkaya,  *J. Chem. Phys.* **139**, 154105 (2013).
+* "The extended Koopmans' theorem for orbital-optimized methods: Accurate 
+  computation of ionization potentials," U. Bozkaya,  *J. Chem. Phys.* 
+  **139**, 154105 (2013).
   (doi: `10.1063/1.4825041 <http://dx.doi.org/10.1063/1.4825041>`_).
 
 * "Accurate Electron Affinities from the Extended Koopmans' Theorem Based on Orbital-Optimized Methods,"
@@ -339,12 +348,14 @@ Extended Koopmans' Theorem
 
 Density-Fitted Orbital-optimized second-order perturbation theory (DF-OMP2)
 
-* "Orbital-Optimized Second-Order Perturbation Theory with Density-Fitting and Cholesky Decomposition Approximations: 
-   An Efficient Implementation," U. Bozkaya,   *J. Chem. Theory Comput.* **10**, 2371 (2014).
+* "Orbital-Optimized Second-Order Perturbation Theory with Density-Fitting 
+  and Cholesky Decomposition Approximations: An Efficient Implementation," 
+  U. Bozkaya,   *J. Chem. Theory Comput.* **10**, 2371 (2014).
   (doi: `10.1021/ct500231c <http://dx.doi.org/10.1021/ct500231c>`_).
 
-* "Analytic Energy Gradients and Spin Multiplicities for Orbital-Optimized Second-Order Perturbation Theory with Density-Fitting
-   Approximation: An Efficient Implementation," U. Bozkaya,   *J. Chem. Theory Comput.* **10**, 4389 (2014).
+* "Analytic Energy Gradients and Spin Multiplicities for Orbital-Optimized 
+  Second-Order Perturbation Theory with Density-Fitting Approximation: An 
+  Efficient Implementation," U. Bozkaya, *J. Chem. Theory Comput.* **10**, 4389 (2014).
   (doi: `10.1021/ct500634s <http://dx.doi.org/10.1021/ct500634s>`_).
 
 Second-Order Algebraic-Diagrammatic Construction [ADC(2)]
@@ -368,6 +379,18 @@ and their implementation in |PSIfour|
   (doi: `10.1016/j.cplett.2011.12.063 
   <http://dx.doi.org/10.1016/j.cplett.2011.12.063>`_).
 
+Density Matrix Renormalization Group (DMRG)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* "CheMPS2: a free open-source spin-adapted implementation of the density 
+  matrix renormalization group for ab initio quantum chemistry,"
+  S. Wouters, W. Poelmans, P. W. Ayers and D. Van Neck,
+  *Comput. Phys. Commun.* **185** (6), 1501-1514 (2014).
+  (doi: `10.1016/j.cpc.2014.01.019 <http://dx.doi.org/10.1016/j.cpc.2014.01.019>`_).
+
+* "The density matrix renormalization group for ab initio quantum chemistry,"
+  S. Wouters and D. Van Neck, *Eur. Phys. J. D* **68** (9), 272 (2014).
+  (doi: `10.1140/epjd/e2014-50500-1 <http://dx.doi.org/10.1140/epjd/e2014-50500-1>`_).
+
 
 .. index:: architectures
 .. index:: compilers
@@ -375,14 +398,16 @@ and their implementation in |PSIfour|
 Supported Architectures
 =======================
 
-The majority of |PSIfour| was developed on Mac and Linux machines.  In
+The majority of |PSIfour| was developed on Mac and Linux machines. In
 principle, it should work on any Unix system; however, we have not tested
-extensively on systems other than Mac and Linux.  There is not a Windows
+extensively on systems other than Mac and Linux. There is not a Windows
 version of |PSIfour|.
 
 |PSIfour| has been successfully compiled using Intel, GCC, and Clang
-compilers.  For the Intel compilers, use versions 11 or 12.1 (we have had
-trouble with version 12.0). See Sec. :ref:`Compiling and Installing
+compilers. For the Intel compilers, we recommend at least 12.1 (we have
+had trouble with version 12.0 and 13.0.1). GCC version 4.6 or above is
+recommended. For some architectures, a :ref:`precompiled binary
+<sec:conda>` is available. See :ref:`Compiling and Installing
 <sec:installFile>` for details.
 
 
@@ -419,6 +444,8 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DF-MP2                  | Y         | Y [#f2]_  | RHF/ROHF/UHF         | threaded                    |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | DF-MP3                  | Y         | ---       | RHF/UHF              | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | MP3                     | Y         | Y         | RHF/UHF              | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | MP2.5                   | Y         | Y         | RHF/UHF              | threaded [#f3]_             |
@@ -435,13 +462,11 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | OMP2.5                  | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | DF-OMP2                 | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | OCEPA                   | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | CEPA(0)                 | Y         | Y         | RHF/UHF              | threaded [#f3]_             |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | DF-OMP2                 | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | threaded [#f3]_             |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | DF-CCD                  | Y         | ---       | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | CEPA(n), n=0,1,3        | Y         | ---       | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
@@ -455,7 +480,9 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | CCSD                    | Y         | Y         | RHF/ROHF/UHF         | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | DF-CCSD                 | Y         | ---       | RHF                  | threaded [#f3]_             |
+    | DF-CCSD                 | Y         | Y         | RHF                  | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | DF-CCD                  | Y         | Y         | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | CCSD(T)                 | Y         | Y [#f1]_  | RHF/ROHF/UHF         | threaded (pthreads)         |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
@@ -480,6 +507,10 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     | ADC(2)                  | Y         | ---       | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | EOM-CCSD                | Y         | Y         | RHF/ROHF/UHF         | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | DMRG-CI                 | Y         | ---       |                      |                             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | DMRG-SCF                | Y         | ---       |                      |                             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
 
 ..    | %HF DBOC                | Y         | N         |
@@ -521,7 +552,7 @@ this user's manual may be sent to
 `sherrill@gatech.edu <mailto:sherrill@gatech.edu>`_.
 
 Alternatively, bug reports and comments can be submitted to the `Issue
-tracker on GitHub <https://github.com/psi4/psi4.0b4/issues/new>`_ . This site
+tracker on GitHub <https://github.com/psi4/psi4public/issues/new>`_ . This site
 is viewable by all, but reporting bugs requires signing up for a `free
 GitHub account <https://github.com/signup/free>`_.
 
@@ -529,7 +560,7 @@ GitHub account <https://github.com/signup/free>`_.
 .. rubric:: Footnotes
 
 .. [#f1] UHF-CCSD(T) gradients only, as of |version|
-.. [#f2] RHF and UHF reference are available, however the latter one should be requsted from DFOCC module.  DF-MP2 is recommended as a faster alternative.
+.. [#f2] Gradients are available for RHF and UHF references.  
 .. [#f3] threading through BLAS routines only
 .. [#f4] DFT gradients only implemented for SCF type DF. LRC-DFT gradients not implemented yet. 
 .. [#f5] Both EFP/EFP and QM/EFP energies are available.

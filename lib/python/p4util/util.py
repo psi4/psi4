@@ -45,6 +45,17 @@ def oeprop(*args, **kwargs):
         oe.add(prop)
     oe.compute()
 
+def cubeprop(*args, **kwargs):
+    """Evaluate properties on a grid and generate cube files.
+
+    """
+    # By default compute the orbitals
+    if not psi4.has_global_option_changed('CUBEPROP_TASKS'):
+        psi4.set_global_option('CUBEPROP_TASKS',['ORBITALS'])
+
+    cp = psi4.CubeProperties()
+    cp.compute_properties()
+
 def set_memory(bytes):
     """Function to reset the total memory allocation."""
     psi4.set_memory(bytes)
@@ -99,8 +110,8 @@ def compare_integers(expected, computed, label):
 
     """
     if (expected != computed):
-        print("\t%s: computed value (%d) does not match (%d)." % (label, computed, expected))
-        sys.exit(1)
+        message = ("\t%s: computed value (%d) does not match (%d)." % (label, computed, expected))
+        raise TestComparisonError(message)
     success(label)
 
 
@@ -111,8 +122,8 @@ def compare_strings(expected, computed, label):
 
     """
     if(expected != computed):
-        print("\t%s: computed value (%s) does not match (%s)." % (label, computed, expected))
-        sys.exit(1)
+        message = ("\t%s: computed value (%s) does not match (%s)." % (label, computed, expected))
+        raise TestComparisonError(message)
     success(label)
 
 
@@ -124,20 +135,20 @@ def compare_matrices(expected, computed, digits, label):
 
     """
     if (expected.nirrep() != computed.nirrep()):
-        print("\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(), computed.nirrep()))
-        sys.exit(1)
+        message = ("\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(), computed.nirrep()))
+        raise TestComparisonError(message)
     if (expected.symmetry() != computed.symmetry()):
-        print("\t%s has %d symmetry, but %s has %d\n." % (expected.name(), expected.symmetry(), computed.name(), computed.symmetry()))
-        sys.exit(1)
+        message = ("\t%s has %d symmetry, but %s has %d\n." % (expected.name(), expected.symmetry(), computed.name(), computed.symmetry()))
+        raise TestComparisonError(message)
     nirreps = expected.nirrep()
     symmetry = expected.symmetry()
     for irrep in range(nirreps):
         if(expected.rows(irrep) != computed.rows(irrep)):
-            print("\t%s has %d rows in irrep %d, but %s has %d\n." % (expected.name(), expected.rows(irrep), irrep, computed.name(), computed.rows(irrep)))
-            sys.exit(1)
+            message = ("\t%s has %d rows in irrep %d, but %s has %d\n." % (expected.name(), expected.rows(irrep), irrep, computed.name(), computed.rows(irrep)))
+            raise TestComparisonError(message)
         if(expected.cols(irrep ^ symmetry) != computed.cols(irrep ^ symmetry)):
-            print("\t%s has %d columns in irrep, but %s has %d\n." % (expected.name(), expected.cols(irrep), irrep, computed.name(), computed.cols(irrep)))
-            sys.exit(1)
+            message = ("\t%s has %d columns in irrep, but %s has %d\n." % (expected.name(), expected.cols(irrep), irrep, computed.name(), computed.cols(irrep)))
+            raise TestComparisonError(message)
         rows = expected.rows(irrep)
         cols = expected.cols(irrep ^ symmetry)
         failed = 0
@@ -155,7 +166,7 @@ def compare_matrices(expected, computed, digits, label):
             computed.print_out()
             psi4.print_out("Expected Matrix (1st matrix passed in)\n")
             expected.print_out()
-            sys.exit(1)
+            raise TestComparisonError("\n")
     success(label)
 
 
@@ -167,18 +178,17 @@ def compare_vectors(expected, computed, digits, label):
 
     """
     if (expected.nirrep() != computed.nirrep()):
-        print("\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(), computed.nirrep()))
-        sys.exit(1)
+        message = ("\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(), computed.nirrep()))
+        raise TestComparisonError(message)
     nirreps = expected.nirrep()
     for irrep in range(nirreps):
         if(expected.dim(irrep) != computed.dim(irrep)):
-            print("\tThe reference has %d entries in irrep %d, but the computed vector has %d\n." % (expected.dim(irrep), irrep, computed.dim(irrep)))
-            sys.exit(1)
+            message = ("\tThe reference has %d entries in irrep %d, but the computed vector has %d\n." % (expected.dim(irrep), irrep, computed.dim(irrep)))
+            raise TestComparisonError(message)
         dim = expected.dim(irrep)
         failed = 0
         for entry in range(dim):
             if(abs(expected.get(irrep, entry) - computed.get(irrep, entry)) > 10 ** (-digits)):
-                print("\t%s: computed value (%s) does not match (%s)." % (label, computed.get(irrep, entry), expected.get(irrep, entry)))
                 failed = 1
                 break
 
@@ -187,8 +197,30 @@ def compare_vectors(expected, computed, digits, label):
             computed.print_out()
             psi4.print_out("The reference vector\n")
             expected.print_out()
-            sys.exit(1)
+            message = ("\t%s: computed value (%s) does not match (%s)." % (label, computed.get(irrep, entry), expected.get(irrep, entry)))
+            raise TestComparisonError(message)
     success(label)
+
+
+def compare_cubes(expected, computed, label):
+    """Function to compare two cube files. Prints :py:func:`util.success`
+    when value *computed* matches value *expected*.
+    Performs a system exit on failure. Used in input files in the test suite.
+
+    """
+    # Skip the first six elemets which are just labels
+    evec = [float(k) for k in expected.split()[6:]]
+    cvec = [float(k) for k in computed.split()[6:]]
+    if len(evec) == len(cvec):
+        for n in xrange(len(evec)):
+            if (math.fabs(evec[n]-cvec[n]) > 1.0e-5):
+                message = ("\t%s: computed cube file does not match expected cube file." % label)
+                raise TestComparisonError(message)
+    else:
+        message = ("\t%s: computed cube file does not match expected cube file." % (label, computed, expected))
+        raise TestComparisonError(message)
+    success(label)
+
 
 def copy_file_to_scratch(filename, prefix, namespace, unit, move = False):
 
@@ -292,5 +324,74 @@ def copy_file_from_scratch(filename, prefix, namespace, unit, move = False):
     command = ('%s %s/%s %s' % (cp, scratch, target, filename))
 
     os.system(command)
-    #print command
 
+
+def xml2dict(filename=None):
+    """Read XML *filename* into nested OrderedDict-s. *filename* defaults to
+    active CSX file.
+
+    """
+    import xmltodict as xd
+    if filename is None:
+        csx = os.path.splitext(psi4.outfile_name())[0] + '.csx'
+    else:
+        csx = filename
+    with open(csx, 'r') as handle:
+        csxdict = xd.parse(handle)
+
+    return csxdict
+
+
+def getFromDict(dataDict, mapList):
+    return reduce(lambda d, k: d[k], mapList, dataDict)
+
+
+def csx2endict():
+    """Grabs the CSX file as a dictionary, encodes translation of PSI variables
+    to XML blocks, gathers all available energies from CSX file into returned
+    dictionary.
+
+    """
+    blockprefix = ['chemicalSemantics', 'molecularCalculation', 'quantumMechanics', 'singleReferenceState', 'singleDeterminant']
+    blockmidfix = ['energies', 'energy']
+    prefix = 'cs:'
+
+    pv2xml = {
+        'MP2 CORRELATION ENERGY': [['mp2'], 'correlation'],
+        'MP2 SAME-SPIN CORRELATION ENERGY': [['mp2'], 'sameSpin correlation'],
+        'HF TOTAL ENERGY': [['abinitioScf'], 'electronic'],
+        'NUCLEAR REPULSION ENERGY': [['abinitioScf'], 'nuclearRepulsion'],
+        'DFT FUNCTIONAL TOTAL ENERGY': [['dft'], 'dftFunctional'],
+        'DFT TOTAL ENERGY': [['dft'], 'electronic'],
+        'DOUBLE-HYBRID CORRECTION ENERGY': [['dft'], 'doubleHybrid correction'],
+        'DISPERSION CORRECTION ENERGY': [['dft'], 'dispersion correction'],
+    }
+
+    csxdict = xml2dict()
+    enedict = {}
+    for pv, lpv in pv2xml.iteritems():
+        address = blockprefix + lpv[0] + blockmidfix
+        indices = [prefix + bit for bit in address]
+        try:
+            qwer = getFromDict(csxdict, indices)
+        except KeyError:
+            continue
+        for v in qwer:
+            vv = v.values()
+            if vv[0] == prefix + lpv[1]:
+                enedict[pv] = float(vv[1])
+
+    return enedict
+
+
+def compare_csx():
+    """Function to validate energies in CSX files against PSIvariables. Only
+    active if write_csx flag on.
+
+    """
+    if 'csx4psi' in sys.modules.keys():
+        if psi4.get_global_option('WRITE_CSX'):
+            enedict = csx2endict()
+            compare_integers(len(enedict) >= 2, True, 'CSX harvested')
+            for pv, en in enedict.iteritems():
+                compare_values(psi4.get_variable(pv), en, 6, 'CSX ' + pv + ' ' + str(round(en, 4)))

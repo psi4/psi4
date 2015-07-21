@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 /*
@@ -52,9 +52,9 @@ namespace psi { namespace detci {
 #define MIN_COEFF 1.0E-13
 
 void orb2lbl(int orbnum, char *label);
-void print_config(int nbf, int num_alp_el, int num_bet_el, 
-   struct stringwr *stralp, struct stringwr *strbet, 
-   int num_fzc_orbs, char *outstring);
+void print_config(int nbf, int num_alp_el, int num_bet_el,
+   struct stringwr *stralp, struct stringwr *strbet,
+   int num_drc_orbs, char *outstring);
 extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
 
 
@@ -64,9 +64,9 @@ extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
 ** Print the Most Important Determinants in the CI vector
 ** David Sherrill, February 1995
 */
-void print_vec(unsigned int nprint, int *Ialist, int *Iblist, 
+void print_vec(unsigned int nprint, int *Ialist, int *Iblist,
       int *Iaidx, int *Ibidx, double *coeff,
-      struct olsen_graph *AlphaG, struct olsen_graph *BetaG, 
+      struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
       struct stringwr **alplist, struct stringwr **betlist,
       std::string out)
 {
@@ -77,7 +77,7 @@ void print_vec(unsigned int nprint, int *Ialist, int *Iblist,
    char configstring[CONFIG_STRING_MAX];
    int Ia_abs, Ib_abs;
 
-   #ifdef FLAG_NONBLOCKS 
+   #ifdef FLAG_NONBLOCKS
    int found_inblock=0;
    #endif
 
@@ -92,35 +92,35 @@ void print_vec(unsigned int nprint, int *Ialist, int *Iblist,
 
       #ifdef FLAG_NONBLOCKS
       for (j=0, found_inblock=0; j<H0block.size; j++) {
-         if (Iaidx[i] == H0block.alpidx[j] && 
+         if (Iaidx[i] == H0block.alpidx[j] &&
              Ibidx[i] == H0block.betidx[j] &&
-             Ialist[i] == H0block.alplist[j] && 
+             Ialist[i] == H0block.alplist[j] &&
              Iblist[i] == H0block.betlist[j]) {
             found_inblock = 1;
-            break; 
+            break;
             }
          }
       outfile->Printf( "%c", found_inblock ? ' ' : '*');
       #endif
 
-      outfile->Printf( "%4d  %10.6lf  (%5d,%5d)  ", i+1, coeff[i], 
+      outfile->Printf( "%4d  %10.6lf  (%5d,%5d)  ", i+1, coeff[i],
          Ia_abs, Ib_abs);
 
       print_config(AlphaG->num_orb, AlphaG->num_el_expl, BetaG->num_el_expl,
          alplist[Ialist[i]] + Iaidx[i], betlist[Iblist[i]] + Ibidx[i],
-         AlphaG->num_fzc_orbs, configstring);
+         AlphaG->num_drc_orbs, configstring);
 
       outfile->Printf( "%s\n", configstring);
 
       } /* end loop over important determinants */
 
    outfile->Printf( "\n\n");
- 
+
 }
 
 
 
-/* 
+/*
 ** PRINT_CONFIG()
 **
 ** Function prints a configuration, given a list of
@@ -129,20 +129,20 @@ void print_vec(unsigned int nprint, int *Ialist, int *Iblist,
 ** David Sherrill, February 1995
 **
 */
-void print_config(int nbf, int num_alp_el, int num_bet_el, 
-   struct stringwr *stralp, struct stringwr *strbet, int num_fzc_orbs,
+void print_config(int nbf, int num_alp_el, int num_bet_el,
+   struct stringwr *stralp, struct stringwr *strbet, int num_drc_orbs,
    char *outstring)
 {
    int j,k;
    int afound, bfound;
    char olabel[10];
 
-   sprintf(outstring, "");
+   sprintf(outstring, "%s","");
 
    /* loop over orbitals */
    for (j=0; j<nbf; j++) {
 
-      orb2lbl(j+num_fzc_orbs, olabel); /* get label for orbital j */
+      orb2lbl(j+num_drc_orbs, olabel); /* get label for orbital j */
 
       for (k=0,afound=0; k<num_alp_el; k++) {
          if ((stralp->occs)[k] > j) break;
@@ -165,13 +165,13 @@ void print_config(int nbf, int num_alp_el, int num_bet_el,
       else if (bfound) strcat(outstring, "B  ");
       } /* end loop over orbitals */
 
-} 
+}
 
 
 /*
 ** PRINT_CI_SPACE()
-** 
-** This function is for debugging purposes.  It prints the 
+**
+** This function is for debugging purposes.  It prints the
 ** CI space and the associated single-replacement lists.
 **
 ** Arguments:
@@ -182,7 +182,7 @@ void print_config(int nbf, int num_alp_el, int num_bet_el,
 **    nel         = number of electrons explicitly included
 **    outfile     = file to print to
 */
-void print_ci_space(struct stringwr *strlist, int num_strings, 
+void print_ci_space(struct stringwr *strlist, int num_strings,
       int nirreps, int strtypes, int nel,std::string out)
 {
    int i, j, strsym, cnt=0 ;
@@ -198,10 +198,10 @@ void print_ci_space(struct stringwr *strlist, int num_strings,
          for (strsym=0; strsym < strtypes; strsym++) {
             for (j=0; j<strlist->cnt[strsym]; j++) {
                outfile->Printf( "   %3d [%3d] %c (%2d %3d)   %d\n",
-                  strlist->ij[strsym][j], 
+                  strlist->ij[strsym][j],
                   strlist->oij[strsym][j],
-                  (strlist->sgn[strsym][j] == 1) ? '+' : '-', 
-                  strsym, strlist->ridx[strsym][j], 
+                  (strlist->sgn[strsym][j] == 1) ? '+' : '-',
+                  strsym, strlist->ridx[strsym][j],
                   (int) strlist->sgn[strsym][j]);
                }
             } /* end loop over strsym */
@@ -221,15 +221,15 @@ void print_ci_space(struct stringwr *strlist, int num_strings,
 **
 ** Needs Global (CalcInfo):
 **    orbs_per_irrep = number of orbitals per irrep
-**    order          = ordering array which maps a CI orbital to a 
-**                     Pitzer orbital (the opposite mapping from the 
+**    order          = ordering array which maps a CI orbital to a
+**                     Pitzer orbital (the opposite mapping from the
 **                     "reorder" array)
 **    irreps         = number of irreducible reps
 **    nmo            = num of molecular orbitals
 **    labels         = labels for all the irreps
 **
 ** Notes:
-**    If there are frozen core (FZC) orbitals, they are not included in the 
+**    If there are frozen core (FZC) orbitals, they are not included in the
 **       CI numbering (unless they're "restricted" or COR orbitals).  This
 **       is bothersome because some of the arrays constructed in the CI program
 **       do start numbering from FZC orbitals.  Thus, pass orbnum as the CI
@@ -246,7 +246,7 @@ void orb2lbl(int orbnum, char *label)
 
    /* get Pitzer ordering */
    pitzer_orb = CalcInfo.order[orbnum];
-   
+
    if (pitzer_orb > CalcInfo.nmo) {
       outfile->Printf( "(orb2lbl): pitzer_orb > nmo!\n");
       }
@@ -264,7 +264,7 @@ void orb2lbl(int orbnum, char *label)
    else if (rel_orb > CalcInfo.orbs_per_irr[ir]) {
       outfile->Printf( "(orb2lbl): rel_orb > orbs_per_irrep[ir]\n");
       }
- 
+
    sprintf(label, "%d%s", rel_orb+1, CalcInfo.labels[ir]);
 
 }
@@ -298,7 +298,7 @@ int lbl2orb(char *orbstring)
      t = CalcInfo.labels[i];
      j = 0;
      while ((toupper(*s) == toupper(*t)) && (j < strlen(orblbl))) {
-       s++; 
+       s++;
        t++;
        j++;
      }
@@ -321,12 +321,10 @@ int lbl2orb(char *orbstring)
 
    /* get correlated ordering */
    corr_orb = CalcInfo.reorder[pitzer_orb];
-
-   /* probably need to subtract frozen here */
-   corr_orb -= CalcInfo.num_fzc_orbs;
+   corr_orb -= CalcInfo.num_drc_orbs;
 
    if (corr_orb < 0 || corr_orb > CalcInfo.num_ci_orbs) {
-     outfile->Printf( "lbl2orb: error corr_orb out of bounds, %d\n", 
+     outfile->Printf( "lbl2orb: error corr_orb out of bounds, %d\n",
        corr_orb);
      return(0);
    }
@@ -386,10 +384,10 @@ void print_ciblk_summary(std::string out)
 
    outfile->Printf( "\nCI Block Summary:\n");
    for (blk=0; blk<CIblks.num_blocks; blk++) {
-      outfile->Printf("Block %3d: Alp=%3d, Bet=%3d  Size = %4d x %4d = %ld\n", 
-              blk, CIblks.Ia_code[blk], CIblks.Ib_code[blk], 
+      outfile->Printf("Block %3d: Alp=%3d, Bet=%3d  Size = %4d x %4d = %ld\n",
+              blk, CIblks.Ia_code[blk], CIblks.Ib_code[blk],
               CIblks.Ia_size[blk], CIblks.Ib_size[blk],
-              (unsigned long) CIblks.Ia_size[blk] * 
+              (unsigned long) CIblks.Ia_size[blk] *
               (unsigned long) CIblks.Ib_size[blk]);
       }
 }
@@ -405,7 +403,7 @@ void write_energy(int nroots, double *evals, double offset)
   int i;
   boost::shared_ptr<OutFile> printer(new OutFile("detci_energies.dat",APPEND));
   //ffile(&efile,"detci_energies.dat",1);
-  for (i=0; i<nroots; i++) { 
+  for (i=0; i<nroots; i++) {
     printer->Printf("%8.6lf ", evals[i]+offset);
   }
   printer->Printf("\n");

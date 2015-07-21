@@ -164,6 +164,8 @@ void MOLECULE::apply_constraint_forces(void) {
   double * f_q = p_Opt_data->g_forces_pointer();
   double **H = p_Opt_data->g_H_pointer();
   int N = Ncoord();
+  int iter = p_Opt_data->g_iteration();
+  double k;
 
   int cnt = -1;
   for (int f=0; f<fragments.size(); ++f) {
@@ -172,14 +174,29 @@ void MOLECULE::apply_constraint_forces(void) {
       if (fragments[f]->coord_has_fixed_eq_val(i)) {
         double eq_val = fragments[f]->coord_fixed_eq_val(i);
         double val = fragments[f]->coord_value(i);
-        //double force = (eq_val - val) * Opt_params.fixed_eq_val_force_constant;
-        double force = (eq_val - val) * H[cnt][cnt];
-        oprintf_out("\tAdding user-defined constraint for coordinate %d.\n", cnt+1);
-        oprintf_out("\tValue is %8.4e; Eq. value is %8.4e; Force is set to %8.4e.\n", val, eq_val, force);
+
+        k = H[cnt][cnt];
+        if (iter > 10) { // this works OK
+          k = abs(k);
+          k += 0.05;
+          H[cnt][cnt] = k;
+        }
+
+        // haven't tested this
+/* INTCO_TYPE it = fragments[f]->get_simple_type(i);
+        if (it == stre_type) k = 0.5;
+        else if (it == bend_type) k = 0.2;
+        else k = 0.1; */
+
+        double force = (eq_val - val) * fabs(k);
+        oprintf_out("\tAdding user-defined constraint: Fragment %d; Coordinate %d; Force constant %8.4e.\n",
+           f+1, i+1, k);
+        oprintf_out("\tValue=%8.4e; Fixed value=%8.4e; Force=%8.4e.\n", val, eq_val, force);
         oprintf_out("\tRemoving off-diagonal coupling of this coordinate with others.\n");
         f_q[cnt] = force;
 
         // If user eq. value is specified delete coupling between this coordinate and others.
+        if (iter > 10)
         for (int j=0; j<N; ++j)
           if (j != cnt)
             H[j][cnt] = H[cnt][j] = 0;
@@ -719,10 +736,11 @@ bool MOLECULE::apply_input_constraints(void) {
 
   if (   !Opt_params.frozen_distance_str.empty()
       || !Opt_params.frozen_bend_str.empty() 
-      || !Opt_params.frozen_dihedral_str.empty() ) {
+      || !Opt_params.frozen_dihedral_str.empty()
+      || !Opt_params.frozen_cartesian_str.empty() ) {
     oprintf_out("\tAssuming in current code that numbering for constraints corresponds to unified fragment.\n");
     frozen_present = fragments[0]->apply_frozen_constraints(Opt_params.frozen_distance_str,
-      Opt_params.frozen_bend_str, Opt_params.frozen_dihedral_str);
+      Opt_params.frozen_bend_str, Opt_params.frozen_dihedral_str, Opt_params.frozen_cartesian_str);
   }
 
   if (   !Opt_params.fixed_distance_str.empty()
@@ -891,6 +909,17 @@ bool MOLECULE::coord_combo_is_symmetric(double *intco_combo, int dim) {
   if (symm_rfo_step)
     return true;
   else
+    return false;
+}
+
+bool MOLECULE::is_coord_fixed(int coord_index) {
+  int cnt = 0;
+  for (int f=0; f<fragments.size(); ++f)
+    for  (int i=0; i<fragments[f]->Ncoord(); ++i) {
+      if (cnt == coord_index)
+        return fragments[f]->coord_has_fixed_eq_val(i);
+      ++cnt;
+    }
     return false;
 }
 
