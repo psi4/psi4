@@ -136,7 +136,7 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Jul 19 22:55:01 2015
+     Date and time (Linux)  : Tue Jul 21 09:14:58 2015
      Host name              : spongebob                               
 
  * Work memory size             :    64000000 =  488.28 megabytes.
@@ -184,6 +184,13 @@ Compilation information
 **WAVE FUNCTIONS                                  
 .DFT                                              
 B3LYPg                                            
+*DFT INPUT                                        
+.GRID TYPE                                        
+ BECKE                                            
+.RADINT                                           
+ 1.0D-13                                          
+.ANGINT                                           
+ 35                                               
 **END OF DALTON INPUT                             
                                                   
 
@@ -434,9 +441,9 @@ Permittivity = 78.39
  HERMIT - Number of two-electron integrals written:       81535 ( 86.0% )
  HERMIT - Megabytes written:                              0.934
 
- >>>  Time used in TWOINT     is   0.17 seconds
- >>>> Total CPU  time used in HERMIT:   0.22 seconds
- >>>> Total wall time used in HERMIT:   0.22 seconds
+ >>>  Time used in TWOINT     is   0.15 seconds
+ >>>> Total CPU  time used in HERMIT:   0.20 seconds
+ >>>> Total wall time used in HERMIT:   0.21 seconds
 
 
                         .----------------------------------.
@@ -449,6 +456,14 @@ Permittivity = 78.39
                    | Starting in Wave Function Section (SIRIUS) |
                    `--------------------------------------------'
 
+
+
+ Settings for DFT calculation:
+ -----------------------------
+
+     Default thresholds:                                       1.00D-09    1.00D-10    2.00D-12
+     Default threshold for number of electrons:                1.00D-03
+     DFT radial quadrature accuracy and ang. expansion order:              1.00D-13  35
 
  *** Output from Huckel module :
 
@@ -469,7 +484,7 @@ Permittivity = 78.39
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Jul 19 22:55:04 2015
+     Date and time (Linux)  : Tue Jul 21 09:15:00 2015
      Host name              : spongebob                               
 
  Title lines from ".mol" input file:
@@ -542,46 +557,46 @@ Permittivity = 78.39
 
  Iter      Total energy       Solvation energy    Error norm    Delta(E)
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -6.336811753155  10.0000000749    7.49D-08
-@  1  -56.3788020305     -5.965934993452E-03    1.54025D+00   -5.64D+01
+      K-S energy, electrons, error :     -6.336811544769   9.9999998521   -1.48D-07
+@  1  -56.3788018222     -5.965934993452E-03    1.54025D+00   -5.64D+01
       Virial theorem: -V/T =      2.020744
 @      MULPOP N      -0.28; H       0.09; H       0.09; H       0.09; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -6.673587526965  10.0000001397    1.40D-07
-@  2  -56.5056148626     -6.610770631281E-03    9.82016D-01   -1.27D-01
+      K-S energy, electrons, error :     -6.673587550608   9.9999995830   -4.17D-07
+@  2  -56.5056145300     -6.610775836528E-03    9.82018D-01   -1.27D-01
       Virial theorem: -V/T =      1.986139
 @      MULPOP N      -0.48; H       0.16; H       0.16; H       0.16; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -6.459683041828  10.0000001247    1.25D-07
-@  3  -56.5474049583     -4.839729303085E-03    4.40815D-01   -4.18D-02
+      K-S energy, electrons, error :     -6.459682895238   9.9999996638   -3.36D-07
+@  3  -56.5474048012     -4.839728156447E-03    4.40815D-01   -4.18D-02
       Virial theorem: -V/T =      2.015574
 @      MULPOP N      -0.11; H       0.04; H       0.04; H       0.04; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -6.528280340793  10.0000001298    1.30D-07
-@  4  -56.5571231015     -6.266420025035E-03    4.70022D-02   -9.72D-03
+      K-S energy, electrons, error :     -6.528280180022   9.9999996475   -3.53D-07
+@  4  -56.5571229459     -6.266419438967E-03    4.70023D-02   -9.72D-03
       Virial theorem: -V/T =      2.005827
 @      MULPOP N      -0.28; H       0.09; H       0.09; H       0.09; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -6.522216244608  10.0000001297    1.30D-07
-@  5  -56.5572459409     -6.075541736040E-03    4.60038D-03   -1.23D-04
+      K-S energy, electrons, error :     -6.522216082616   9.9999996495   -3.50D-07
+@  5  -56.5572457855     -6.075540607430E-03    4.60035D-03   -1.23D-04
       Virial theorem: -V/T =      2.006648
 @      MULPOP N      -0.27; H       0.09; H       0.09; H       0.09; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -6.522869330951  10.0000001297    1.30D-07
-@  6  -56.5572471073     -6.092075998503E-03    1.74231D-04   -1.17D-06
+      K-S energy, electrons, error :     -6.522869165824   9.9999996495   -3.51D-07
+@  6  -56.5572469519     -6.092074617615E-03    1.74165D-04   -1.17D-06
       Virial theorem: -V/T =      2.006554
 @      MULPOP N      -0.27; H       0.09; H       0.09; H       0.09; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -6.522892324905  10.0000001298    1.30D-07
-@  7  -56.5572471095     -6.092184606831E-03    1.71385D-05   -2.13D-09
+      K-S energy, electrons, error :     -6.522892159993   9.9999996495   -3.50D-07
+@  7  -56.5572469541     -6.092183210440E-03    1.70253D-05   -2.13D-09
       Virial theorem: -V/T =      2.006551
 @      MULPOP N      -0.27; H       0.09; H       0.09; H       0.09; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :     -6.522890751584  10.0000001298    1.30D-07
-@  8  -56.5572471095     -6.092077842670E-03    2.69492D-06   -2.50D-11
+      K-S energy, electrons, error :     -6.522890581015   9.9999996495   -3.50D-07
+@  8  -56.5572469541     -6.092076415881E-03    2.48344D-06   -2.48D-11
 
 @ *** DIIS converged in   8 iterations !
-@     Converged SCF energy, gradient:    -56.557247109493    2.69D-06
+@     Converged SCF energy, gradient:    -56.557246954077    2.48D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -594,20 +609,20 @@ Permittivity = 78.39
 
  Sym       Kohn-Sham orbital energies
 
-1 A     -14.29104506    -0.83644096    -0.45509856    -0.45509008    -0.24519785
-          0.07009337     0.15354935     0.15355154     0.53315215     0.53316182
-          0.62990530     0.73627282     0.82468061     0.82468816     1.10567949
-          1.10568691     1.15444487     1.48338696     1.67903014     1.69842133
-          1.69842919     2.03442353     2.03442716     2.16529257     2.52242940
+1 A     -14.29104492    -0.83644102    -0.45509856    -0.45509004    -0.24519787
+          0.07009341     0.15354941     0.15355154     0.53315206     0.53316167
+          0.62990514     0.73627273     0.82468069     0.82468818     1.10567946
+          1.10568695     1.15444479     1.48338693     1.67902992     1.69842113
+          1.69842920     2.03442364     2.03442731     2.16529259     2.52242939
 
-    E(LUMO) :     0.07009337 au (symmetry 1)
-  - E(HOMO) :    -0.24519785 au (symmetry 1)
+    E(LUMO) :     0.07009341 au (symmetry 1)
+  - E(HOMO) :    -0.24519787 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.31529122 au
+    gap     :     0.31529128 au
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :      18.729      18.772
+ >>>> CPU and wall time for SCF :      24.524      26.966
 
 
                        .-----------------------------------.
@@ -621,19 +636,19 @@ Permittivity = 78.39
 
      SOLVATION MODEL: polarizable continuum model (PCM),
 
-       Solvation energy:          -0.006092077843
+       Solvation energy:          -0.006092076416
 
-@    Final DFT energy:            -56.557247109493                 
+@    Final DFT energy:            -56.557246954077                 
 @    Nuclear repulsion:            12.036719663618
-@    Electronic energy:           -68.587874695269
+@    Electronic energy:           -68.587874541279
 
-@    Final gradient norm:           0.000002694917
+@    Final gradient norm:           0.000002483441
 
  
-     Date and time (Linux)  : Sun Jul 19 22:55:22 2015
+     Date and time (Linux)  : Tue Jul 21 09:15:27 2015
      Host name              : spongebob                               
 
-File label for MO orbitals:  19Jul15   FOCKDIIS
+File label for MO orbitals:  21Jul15   FOCKDIIS
 
  (Only coefficients >0.0100 are printed.)
 
@@ -679,7 +694,7 @@ File label for MO orbitals:  19Jul15   FOCKDIIS
    5 N   :2py    0.0000  -0.0001   0.0000  -0.4907  -1.3442  -0.0001   0.0000
    6 N   :2pz   -0.5440  -0.0000  -0.1913   0.0000   0.0000  -0.0000  -1.2396
    7 N   :2px    0.0000  -0.4989   0.0000   0.0000  -0.0001   2.4212  -0.0000
-   8 N   :2py   -0.0000   0.0001  -0.0000   0.4211   1.7785   0.0001   0.0000
+   8 N   :2py   -0.0000   0.0001  -0.0000   0.4211   1.7785   0.0001  -0.0000
    9 N   :2pz   -0.5662  -0.0000  -0.4989   0.0000  -0.0000   0.0000   2.4212
   10 N   :3d2-   0.0000   0.0696  -0.0000  -0.0000  -0.0000   0.0659  -0.0000
   11 N   :3d1-  -0.0156   0.0000   0.0696   0.0000   0.0000   0.0000   0.0659
@@ -725,11 +740,11 @@ File label for MO orbitals:  19Jul15   FOCKDIIS
 
 
 
- >>>> Total CPU  time used in SIRIUS :     18.75 seconds
- >>>> Total wall time used in SIRIUS :     18.79 seconds
+ >>>> Total CPU  time used in SIRIUS :     24.54 seconds
+ >>>> Total wall time used in SIRIUS :     26.99 seconds
 
  
-     Date and time (Linux)  : Sun Jul 19 22:55:22 2015
+     Date and time (Linux)  : Tue Jul 21 09:15:27 2015
      Host name              : spongebob                               
 
 
@@ -737,9 +752,9 @@ File label for MO orbitals:  19Jul15   FOCKDIIS
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  20.97 seconds
- >>>> Total wall time used in DALTON:  21.02 seconds
+ >>>> Total CPU  time used in DALTON:  26.54 seconds
+ >>>> Total wall time used in DALTON:  29.01 seconds
 
  
-     Date and time (Linux)  : Sun Jul 19 22:55:22 2015
+     Date and time (Linux)  : Tue Jul 21 09:15:27 2015
      Host name              : spongebob                               
