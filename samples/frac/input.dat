@@ -9,10 +9,10 @@ reference_energies = {\
     5.900E+00 : -3.7644429418258895E+01,\
     6.000E+00 : -3.7687760545777166E+01,\
     6.100E+00 : -3.7686231278907293E+01,\
-    6.200E+00 : -3.7591946718659159E+01,\
-    6.300E+00 : -3.7589357487772773E+01,\
+    6.200E+00 : -3.7685148131020334E+01,\
+    6.300E+00 : -3.7684578391807577E+01,\
     6.400E+00 : -3.7684604177989534E+01,\
-    6.500E+00 :  0.0000000000000000E+00,\
+    6.500E+00 : -3.7685326293326547E+01,\
     6.600E+00 : -3.7686869113983775E+01,\
     6.700E+00 : -3.7689386736023820E+01,\
     6.800E+00 : -3.7693070640744025E+01,\
@@ -125,6 +125,9 @@ for occ in high_occs:
     # New options for FRAC
     set frac_start 7
     set mom_start 8
+    if occ == 0.5:
+        set frac_start 6
+        set mom_start 7
     set frac_occ [5]
     set frac_val [$occ]
     
@@ -148,7 +151,5 @@ for k in range(len(occs)):
 
 # Test the results 
 for k in range(len(occs)):
-    if k == 7 or k == 8:
-        break
     compare_values(reference_energies[occs[k]], energies[k], 8, "%11.3E electron energy" % occs[k])  
 
