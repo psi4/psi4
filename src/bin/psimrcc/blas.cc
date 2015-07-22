@@ -33,8 +33,9 @@
 #include "index.h"
 #include "matrix.h"
 
-namespace psi{
 
+namespace psi{
+    
     namespace psimrcc{
     extern MOInfo *moinfo;
     extern MemoryManager *memory_manager;
@@ -80,13 +81,8 @@ void CCBLAS::allocate_work()
       if(work[n]!=NULL)
         release1(work[n]);
 
-  for(int n=0;n<options_.get_int("CC_NUM_THREADS");n++) {
-#ifdef HAS_CXX11_NULLPTR
+  for(int n=0;n<options_.get_int("CC_NUM_THREADS");n++)
     work.push_back(nullptr);
-#else
-    work.push_back(0);
-#endif
-  }
   // Compute the temporary work space size
   CCIndex* oo_pair = get_index("[oo]");
   CCIndex* vv_pair = get_index("[vv]");
@@ -117,13 +113,8 @@ void CCBLAS::allocate_buffer()
       if(buffer[n]!=NULL)
         release1(buffer[n]);
 
-  for(int n=0;n<options_.get_int("CC_NUM_THREADS");n++) {
-#ifdef HAS_CXX11_NULLPTR
-    work.push_back(nullptr);
-#else
-    work.push_back(0);
-#endif
-  }
+  for(int n=0;n<options_.get_int("CC_NUM_THREADS");n++)
+    buffer.push_back(nullptr);
   // Compute the temporary buffer space size, 101% of the actual strip size
   buffer_size = static_cast<size_t>(1.01 * CCMatrix::fraction_of_memory_for_buffer *
                                     static_cast<double>(memory_manager->get_FreeMemory()) /
@@ -247,11 +238,11 @@ void CCBLAS::add_indices()
 //   for(MatrixMap::iterator iter=matrices.begin();iter!=matrices.end();++iter){
 //     CCMatrix* Matrix = iter->second;
 //     outfile->Printf("\n%s(analyzing)",Matrix->get_label().c_str());
-//
+//     
 //     if(Matrix->get_out_of_core()){
 //       Matrix->load();
 //       outfile->Printf("\n%s <- reading from disk",Matrix->get_label().c_str());
-//
+//       
 //     }else if(!Matrix->is_allocated())
 //       Matrix->allocate_memory();
 //   }
