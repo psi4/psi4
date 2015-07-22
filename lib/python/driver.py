@@ -249,7 +249,7 @@ procedures = {
         }}
 
 # dictionary to register pre- and post-compute hooks for driver routines
-hooks = dict((k1, dict((k2, []) for k2 in ['pre', 'post'])) for k1 in ['energy', 'optimize', 'frequency']) 
+hooks = dict((k1, dict((k2, []) for k2 in ['pre', 'post'])) for k1 in ['energy', 'optimize', 'frequency'])
 
 # Integrate DFT with driver routines
 for ssuper in superfunctional_list():
@@ -1129,6 +1129,9 @@ def optimize(name, **kwargs):
 
     full_hess_every = psi4.get_local_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
+    hessian_with_method = name
+    if ('hessian_with' in kwargs):
+        hessian_with_method = kwargs['hessian_with']
 
     # are we in sow/reap mode?
     isSowReap = False
@@ -1188,7 +1191,7 @@ def optimize(name, **kwargs):
             psi4.IOManager.shared_object().set_specific_retention(1, True)
             psi4.IOManager.shared_object().set_specific_path(1, './')
             psi4.set_global_option('HESSIAN_WRITE', True)
-            frequencies(name, **kwargs)
+            frequencies(hessian_with_method, **kwargs)
             steps_since_last_hessian = 0
             psi4.set_gradient(G)
             psi4.set_global_option('CART_HESS_READ', True)
