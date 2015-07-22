@@ -32,24 +32,16 @@ namespace psi{ namespace dcft{
 
 SharedMatrix DCFTSolver::compute_gradient()
 {
-    // Print out the header
-    outfile->Printf("\n\n\t***********************************************************************************\n");
-    outfile->Printf(    "\t*                           DCFT Analytic Gradients Code                          *\n");
-    outfile->Printf(    "\t*                     by Alexander Sokolov and Andy Simmonett                     *\n");
-    outfile->Printf(    "\t***********************************************************************************\n\n");
-
-    // Transform the one and two-electron integrals to the MO basis and write them into the DPD file
-    gradient_init();
-
-    if (!orbital_optimized_) {
-        compute_gradient_dc();
+    // If the system is closed-shell, then ...
+    if(options_.get_str("REFERENCE") == "RHF"){
+        compute_gradient_RHF();
     }
-    else {
-        compute_gradient_odc();
+    // If the system is open-shell, then ...
+    else{
+        compute_gradient_UHF();
     }
 
     return SharedMatrix(new Matrix("NULL", 0, 0));
-
 }
 
 void

@@ -20,43 +20,34 @@
  *@END LICENSE
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "psi4-dec.h"
-#include "libqt/qt.h"
-#include "libchkpt/chkpt.hpp"
-#include "libpsio/psio.h"
-#include "libchkpt/chkpt.h"
-#include "defines.h"
+#include <libtrans/integraltransform.h>
+#include <libpsio/psio.hpp>
+#include <libqt/qt.h>
+#include <libiwl/iwl.h>
+#include <libdiis/diismanager.h>
 #include "dcft.h"
-
-using namespace psi;
-using namespace boost;
+#include "defines.h"
 
 namespace psi{ namespace dcft{
 
-PsiReturnType
-dcft(Options &options)
+void DCFTSolver::compute_gradient_UHF()
 {
-
-    // Start the timers
-    tstart();
-
+    // Print out the header
     outfile->Printf("\n\n\t***********************************************************************************\n");
-    outfile->Printf(    "\t*                        Density Cumulant Functional Theory                       *\n");
+    outfile->Printf(    "\t*                           DCFT Analytic Gradients Code                          *\n");
     outfile->Printf(    "\t*                     by Alexander Sokolov and Andy Simmonett                     *\n");
-    outfile->Printf(    "\t*                           and Xiao Wang (RHF-ODC-12)                            *\n");
-    outfile->Printf(    "\t***********************************************************************************\n");
+    outfile->Printf(    "\t***********************************************************************************\n\n");
 
-    boost::shared_ptr<Wavefunction> dcft = boost::shared_ptr<Wavefunction>(new DCFTSolver(Process::environment.wavefunction(), options));
-    Process::environment.set_wavefunction(dcft);
+    // Transform the one and two-electron integrals to the MO basis and write them into the DPD file
+    gradient_init();
 
-    dcft->compute_energy();
+    if (!orbital_optimized_) {
+        compute_gradient_dc();
+    }
+    else {
+        compute_gradient_odc();
+    }
 
-    // Shut down the timers
-    tstop();
-
-    return Success;
 }
 
-}} // End Namespaces
+}} // Namespace
