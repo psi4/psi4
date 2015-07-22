@@ -124,10 +124,7 @@ for occ in high_occs:
 
     # New options for FRAC
     set frac_start 7
-    set mom_start 8
-    if occ == 0.5:
-        set frac_start 6
-        set mom_start 7
+    set mom_start 9
     set frac_occ [5]
     set frac_val [$occ]
     
