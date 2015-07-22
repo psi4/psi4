@@ -54,8 +54,6 @@ DCFTSolver::DCFTSolver(boost::shared_ptr<Wavefunction> reference_wavefunction, O
 
     psio_->open(PSIF_DCFT_DPD, PSIO_OPEN_OLD);
 
-//    if(options.get_str("REFERENCE") != "UHF") throw PSIEXCEPTION("You must have REFERENCE = UHF in the input file");
-
     exact_tau_ = false;
     if (options.get_str("DCFT_FUNCTIONAL") == "DC-12"
             || options.get_str("DCFT_FUNCTIONAL") == "ODC-12"

@@ -1,0 +1,39 @@
+#! 
+#! 
+#! 
+#! 
+#! 
+
+memory 250 mb
+
+# ODC-12 RHF                            #TEST
+refscf_rhf      = -76.0229178543069111  #TEST
+refmp2_rhf      = -76.222419414047764   #TEST
+refodc12_rhf    = -76.232477572738489   #TEST 
+
+molecule h2o {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+}
+
+set globals {
+    r_convergence 12
+    d_convergence 12
+    ao_basis    disk
+    algorithm   simultaneous
+    basis       6-31G**
+    dcft_functional odc-12
+}
+set reference uhf
+energy('dcft')
+
+clean()
+
+set reference rhf
+energy('dcft')
+compare_values(refscf_rhf, get_variable("SCF TOTAL ENERGY"), 10, "RHF Energy");                                       #TEST
+compare_values(refmp2_rhf, get_variable("MP2 TOTAL ENERGY"), 10, "RHF-MP2 Energy");                                             #TEST
+compare_values(refodc12_rhf, get_variable("CURRENT ENERGY"), 10, "RHF-ODC-12 Total Energy (simultaneous, ao_basis=disk)");     #TEST
+
