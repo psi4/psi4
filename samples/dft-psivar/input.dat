@@ -1,5 +1,6 @@
 #! HF and DFT variants single-points on zmat methane, mostly to test that 
 #!   PSI variables are set and computed correctly.
+#!   Now also testing that CSX harvesting PSI variables correctly
 
 memory 200 mb
 
@@ -45,6 +46,7 @@ clean()
 
 energy('b2plyp')
 clean()
+
 
 energy('b2plyp-d')
 

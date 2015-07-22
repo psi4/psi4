@@ -42,7 +42,7 @@ void emit_vrr_build_macro()
   int la, lc, lc_min, lc_max;
   int k1max, k2max, k3max;
   /*int split,num_subfunctions,subbatch_length;*/
-  int curr_count;/*,curr_subfunction;*/
+  int curr_count=0;/*,curr_subfunction;*/
   static const char *k4[] = {"lpoz","lpon"};
   static const char *k1_suff = "o2z";
   static const char *k2_suff = "o2zn";
