@@ -65,16 +65,16 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   outfile->Printf( "        using less efficient, low-memory algorithm\n");
   outfile->Printf("\n");
 
-  int o = ndoccact;
-  int v = nvirt_no;
+  long int o = ndoccact;
+  long int v = nvirt_no;
 
-  ULI oo  = (ULI)o*o;
-  ULI vo  = (ULI)v*o;
-  ULI ooo = (ULI)o*o*o;
-  ULI voo = (ULI)v*o*o;
-  ULI vvo = (ULI)v*v*o;
-  ULI vooo = (ULI)v*o*o*o;
-  ULI vvoo = (ULI)v*v*o*o;
+  long int oo   = o*o;
+  long int vo   = v*o;
+  long int ooo  = o*o*o;
+  long int voo  = v*o*o;
+  long int vvo  = v*v*o;
+  long int vooo = v*o*o*o;
+  long int vvoo = v*v*o*o;
 
   double *F  = eps;
   double *E2ijak,**E2abci;
@@ -85,13 +85,13 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
       nthreads = omp_get_max_threads();
   #endif
 
-  ULI memory = Process::environment.get_memory();
+  long int memory = Process::environment.get_memory();
   if (options_["MEMORY"].has_changed()){
      memory  = options_.get_int("MEMORY");
-     memory *= (ULI)1024*1024;
+     memory *= (long int)1024*1024;
   }
   // CDS // memory -= 8L*(2L*o*o*v*v+o*o*o*v+o*v+5L*nthreads*o*o*o);
-  ULI memory_reqd = 8L*(2L*vvoo+vooo+vo+5L*nthreads*ooo);
+  long int memory_reqd = 8L*(2L*vvoo+vooo+vo+5L*nthreads*ooo);
 
   outfile->Printf("        num_threads:              %9i\n",nthreads);
   outfile->Printf("        available memory:      %9.2lf mb\n",(double)memory/1024./1024.);
@@ -130,13 +130,13 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
      outfile->Printf("        Not enough memory for requested threading ...\n");
      outfile->Printf("\n");
 
-     ULI min_memory_reqd = 8L*(2L*vvoo+vooo+vo+5L*ooo);
+     long int min_memory_reqd = 8L*(2L*vvoo+vooo+vo+5L*ooo);
      if (min_memory_reqd > memory) {
          outfile->Printf("        Sorry, not even enough memory for 1 thread.\n");
          return Failure;
      }
 
-     ULI mem_leftover = memory - min_memory_reqd;
+     long int mem_leftover = memory - min_memory_reqd;
      int extra_threads = (int) (mem_leftover / 5L*ooo);
      nthreads = 1 + extra_threads;
      outfile->Printf("        Attempting to proceed with %d threads\n",
@@ -155,14 +155,14 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   psio->open(PSIF_DCC_IJAK,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_IJAK,"E2ijak",(char*)&tempE2[0],vooo*sizeof(double));
   psio->close(PSIF_DCC_IJAK,1);
-  for (ULI i=0; i<ooo; i++){
-      for (int a=0; a<v; a++){
+  for (long int i=0; i<ooo; i++){
+      for (long int a=0; a<v; a++){
           E2ijak[a*ooo+i] = tempE2[i*v+a];
       }
   }
   free(tempE2);
 
-  ULI dim = ooo > vo ? ooo : vo;
+  long int dim = ooo > vo ? ooo : vo;
   for (int i=0; i<nthreads; i++){
       E2abci[i] = (double*)malloc(dim*sizeof(double));
       Z[i]      = (double*)malloc(ooo*sizeof(double));
@@ -174,7 +174,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   double *tempt = (double*)malloc(vvoo*sizeof(double));
 
   if (t2_on_disk){
-     // CDS // tb = (double*)malloc((ULI)o*o*v*v*sizeof(double));
+     // CDS // tb = (double*)malloc((long int)o*o*v*v*sizeof(double));
      tb = (double*)malloc(vvoo*sizeof(double));
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
      psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tb[0],vvoo*sizeof(double));
@@ -202,20 +202,20 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   int pct10,pct20,pct30,pct40,pct50,pct60,pct70,pct80,pct90;
   pct10=pct20=pct30=pct40=pct50=pct60=pct70=pct80=pct90=0;
 
-  int nabc = 0;
-  for (int a=0; a<v; a++){
-      for (int b=0; b<=a; b++){
-          for (int c=0; c<=b; c++){
+  long int nabc = 0;
+  for (long int a=0; a<v; a++){
+      for (long int b=0; b<=a; b++){
+          for (long int c=0; c<=b; c++){
               nabc++;
           }
       }
   }
-  int**abc = (int**)malloc(nabc*sizeof(int*));
+  long int**abc = (long int**)malloc(nabc*sizeof(long int*));
   nabc = 0;
-  for (int a=0; a<v; a++){
-      for (int b=0; b<=a; b++){
-          for (int c=0; c<=b; c++){
-              abc[nabc] = (int*)malloc(3*sizeof(int));
+  for (long int a=0; a<v; a++){
+      for (long int b=0; b<=a; b++){
+          for (long int c=0; c<=b; c++){
+              abc[nabc] = (long int*)malloc(3*sizeof(long int));
               abc[nabc][0] = a;
               abc[nabc][1] = b;
               abc[nabc][2] = c;
@@ -244,10 +244,10 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
 
   if (threaded){
      #pragma omp parallel for schedule (dynamic) num_threads(nthreads)
-     for (int ind=0; ind<nabc; ind++){
-         int a = abc[ind][0];
-         int b = abc[ind][1];
-         int c = abc[ind][2];
+     for (long int ind=0; ind<nabc; ind++){
+         long int a = abc[ind][0];
+         long int b = abc[ind][1];
+         long int c = abc[ind][2];
 
          int thread = 0;
          #ifdef _OPENMP
@@ -270,8 +270,8 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
          F_DGEMM('t','t',o,oo,v,1.0,E2abci[thread],v,tempt+b*voo,oo,0.0,Z2[thread],o);
          //(ab)(ij)
          F_DGEMM('t','n',o*o,o,o,-1.0,E2ijak+c*ooo,o,tempt+b*voo+a*oo,o,1.0,Z2[thread],oo);
-         for (int i=0; i<o; i++){
-             for (int j=0; j<o; j++){
+         for (long int i=0; i<o; i++){
+             for (long int j=0; j<o; j++){
                  F_DAXPY(o,1.0,Z2[thread]+j*oo+i*o,1,Z[thread]+i*oo+j*o,1);
              }
          }
@@ -282,8 +282,8 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
          F_DGEMM('t','t',o,oo,v,1.0,E2abci[thread],v,tempt+a*voo,oo,0.0,Z2[thread],o);
          //(bc)(jk)
          F_DGEMM('t','n',oo,o,o,-1.0,E2ijak+b*ooo,o,tempt+a*voo+c*oo,o,1.0,Z2[thread],oo);
-         for (int i=0; i<o; i++){
-             for (int j=0; j<o; j++){
+         for (long int i=0; i<o; i++){
+             for (long int j=0; j<o; j++){
                  F_DAXPY(o,1.0,Z2[thread]+i*oo+j,o,Z[thread]+i*oo+j*o,1);
              }
          }
@@ -295,9 +295,9 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
          F_DGEMM('t','n',oo,o,o,-1.0,E2ijak+a*ooo,o,tempt+c*voo+b*oo,o,1.0,Z2[thread],oo);
          //(1)
          F_DGEMM('t','t',o,oo,o,-1.0,tempt+a*voo+b*oo,o,E2ijak+c*ooo,oo,1.0,Z2[thread],o);
-         for (int i=0; i<o; i++){
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
+         for (long int i=0; i<o; i++){
+             for (long int j=0; j<o; j++){
+                 for (long int k=0; k<o; k++){
                      Z[thread][i*oo+j*o+k] += Z2[thread][k*oo+j*o+i];
                  }
              }
@@ -312,9 +312,9 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
          addr = psio_get_address(PSIO_ZERO,(a*vvo+b*vo)*sizeof(double));
          mypsio[thread]->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],o*v*sizeof(double),addr,&addr);
          F_DGEMM('n','n',oo,o,v,1.0,tempt+c*voo,oo,E2abci[thread],v,1.0,Z2[thread],oo);
-         for (int i=0; i<o; i++){
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
+         for (long int i=0; i<o; i++){
+             for (long int j=0; j<o; j++){
+                 for (long int k=0; k<o; k++){
                      Z[thread][i*oo+j*o+k] += Z2[thread][j*oo+k*o+i];
                  }
              }
@@ -322,22 +322,22 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
 
          C_DCOPY(ooo,Z[thread],1,Z2[thread],1);
          double dabc = -F[a+o]-F[b+o]-F[c+o];
-         for (int i=0; i<o; i++){
+         for (long int i=0; i<o; i++){
              double dabci = dabc+F[i];
-             for (int j=0; j<o; j++){
+             for (long int j=0; j<o; j++){
                  double dabcij = dabci+F[j];
-                 for (int k=0; k<o; k++){
+                 for (long int k=0; k<o; k++){
                      double denom = dabcij+F[k];
                      Z[thread][i*oo+j*o+k] /= denom;
                  }
              }
          }
-         for (int i=0; i<o; i++){
+         for (long int i=0; i<o; i++){
              double tai = t1[a*o+i];
-             for (int j=0; j<o; j++){
+             for (long int j=0; j<o; j++){
                  double tbj = t1[b*o+j];
                  double E2iajb = E2klcd[i*vvo+a*vo+j*v+b];
-                 for (int k=0; k<o; k++){
+                 for (long int k=0; k<o; k++){
                      Z2[thread][i*oo+j*o+k] += fac *
                          (tai * E2klcd[j*vvo+b*vo+k*v+c] +
                           tbj * E2klcd[i*vvo+a*vo+k*v+c] +
@@ -347,24 +347,24 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
          }
 
          C_DCOPY(ooo,Z[thread],1,Z3[thread],1);
-         for (int i=0; i<o; i++){
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
+         for (long int i=0; i<o; i++){
+             for (long int j=0; j<o; j++){
+                 for (long int k=0; k<o; k++){
                      Z3[thread][i*oo+j*o+k] *= (1.0+0.5*(i==j)*(j==k));
                  }
              }
          }
 
 
-         int abcfac = ( 2-((a==b)+(b==c)+(a==c)) );
+         long int abcfac = ( 2-((a==b)+(b==c)+(a==c)) );
 
          // contribute to energy:
          double tripval = 0.0;
-         for (int i=0; i<o; i++){
+         for (long int i=0; i<o; i++){
              double dum = 0.0;
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
-                     ULI ijk = i*oo+j*o+k;
+             for (long int j=0; j<o; j++){
+                 for (long int k=0; k<o; k++){
+                     long int ijk = i*oo+j*o+k;
                      dum         += Z3[thread][ijk] * Z2[thread][ijk];
                  }
              }
@@ -373,26 +373,26 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
          etrip[thread] += 3.0*tripval*abcfac;
 
          // Z3(ijk) = -2(Z(ijk) + jki + kij) + ikj + jik + kji
-         for (int i=0; i<o; i++){
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
-                     ULI ijk = i*oo+j*o+k;
-                     ULI jki = j*oo+k*o+i;
-                     ULI kij = k*oo+i*o+j;
-                     ULI ikj = i*oo+k*o+j;
-                     ULI jik = j*oo+i*o+k;
-                     ULI kji = k*oo+j*o+i;
+         for (long int i=0; i<o; i++){
+             for (long int j=0; j<o; j++){
+                 for (long int k=0; k<o; k++){
+                     long int ijk = i*oo+j*o+k;
+                     long int jki = j*oo+k*o+i;
+                     long int kij = k*oo+i*o+j;
+                     long int ikj = i*oo+k*o+j;
+                     long int jik = j*oo+i*o+k;
+                     long int kji = k*oo+j*o+i;
                      Z3[thread][ijk] = -2.0*(Z[thread][ijk] + Z[thread][jki] + Z[thread][kij])
                                     +        Z[thread][ikj] + Z[thread][jik] + Z[thread][kji];
                  }
              }
          }
 
-         for (int i=0; i<o; i++){
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
-                     ULI ijk = i*oo+j*o+k;
-                     ULI ikj = i*oo+k*o+j;
+         for (long int i=0; i<o; i++){
+             for (long int j=0; j<o; j++){
+                 for (long int k=0; k<o; k++){
+                     long int ijk = i*oo+j*o+k;
+                     long int ikj = i*oo+k*o+j;
                      E2abci[thread][ijk] = Z2[thread][ikj]*0.5*(1.0+0.5*(i==j)*(j==k));
                  }
              }
@@ -400,11 +400,11 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
 
          // contribute to energy:
          tripval = 0.0;
-         for (int i=0; i<o; i++){
+         for (long int i=0; i<o; i++){
              double dum = 0.0;
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
-                     ULI ijk = i*oo+j*o+k;
+             for (long int j=0; j<o; j++){
+                 for (long int k=0; k<o; k++){
+                     long int ijk = i*oo+j*o+k;
                      dum         += E2abci[thread][ijk] * Z3[thread][ijk];
                  }
              }
@@ -413,25 +413,25 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
          etrip[thread] += tripval*abcfac;
 
          // the second bit
-         for (int i=0; i<o; i++){
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
-                     ULI ijk = i*oo+j*o+k;
+         for (long int i=0; i<o; i++){
+             for (long int j=0; j<o; j++){
+                 for (long int k=0; k<o; k++){
+                     long int ijk = i*oo+j*o+k;
                      E2abci[thread][ijk] = Z2[thread][ijk]*0.5*(1.0+0.5*(i==j)*(j==k));
                  }
              }
          }
 
          // Z4 = Z(ijk)+jki+kij - 2( (ikj)+(jik)+(kji) )
-         for (int i=0; i<o; i++){
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
-                     ULI ijk = i*oo+j*o+k;
-                     ULI jki = j*oo+k*o+i;
-                     ULI kij = k*oo+i*o+j;
-                     ULI ikj = i*oo+k*o+j;
-                     ULI jik = j*oo+i*o+k;
-                     ULI kji = k*oo+j*o+i;
+         for (long int i=0; i<o; i++){
+             for (long int j=0; j<o; j++){
+                 for (long int k=0; k<o; k++){
+                     long int ijk = i*oo+j*o+k;
+                     long int jki = j*oo+k*o+i;
+                     long int kij = k*oo+i*o+j;
+                     long int ikj = i*oo+k*o+j;
+                     long int jik = j*oo+i*o+k;
+                     long int kji = k*oo+j*o+i;
                      Z4[thread][ijk] =        Z[thread][ijk] + Z[thread][jki] + Z[thread][kij]
                                      - 2.0 * (Z[thread][ikj] + Z[thread][jik] + Z[thread][kji]);
                  }
@@ -440,11 +440,11 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
 
          // contribute to energy:
          tripval = 0.0;
-         for (int i=0; i<o; i++){
+         for (long int i=0; i<o; i++){
              double dum = 0.0;
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
-                     ULI ijk = i*oo+j*o+k;
+             for (long int j=0; j<o; j++){
+                 for (long int k=0; k<o; k++){
+                     long int ijk = i*oo+j*o+k;
                      dum         += Z4[thread][ijk] * E2abci[thread][ijk];
                  }
              }
