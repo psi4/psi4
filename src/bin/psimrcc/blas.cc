@@ -81,7 +81,7 @@ void CCBLAS::allocate_work()
         release1(work[n]);
 
   for(int n=0;n<options_.get_int("CC_NUM_THREADS");n++) {
-#ifdef HAS_CXX11_NULLPTR
+#if __has_feature(cxx_nullptr)
     work.push_back(nullptr);
 #else
     work.push_back(0);
@@ -118,7 +118,7 @@ void CCBLAS::allocate_buffer()
         release1(buffer[n]);
 
   for(int n=0;n<options_.get_int("CC_NUM_THREADS");n++) {
-#ifdef HAS_CXX11_NULLPTR
+#if __has_feature(cxx_nullptr)
     work.push_back(nullptr);
 #else
     work.push_back(0);
