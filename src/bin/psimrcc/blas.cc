@@ -33,10 +33,6 @@
 #include "index.h"
 #include "matrix.h"
 
-#ifndef nullptr
-#define nullptr 0
-#endif
-
 namespace psi{
 
     namespace psimrcc{
@@ -84,8 +80,13 @@ void CCBLAS::allocate_work()
       if(work[n]!=NULL)
         release1(work[n]);
 
-  for(int n=0;n<options_.get_int("CC_NUM_THREADS");n++)
+  for(int n=0;n<options_.get_int("CC_NUM_THREADS");n++) {
+#ifdef HAS_CXX11_NULLPTR
     work.push_back(nullptr);
+#else
+    work.push_back(0);
+#endif
+  }
   // Compute the temporary work space size
   CCIndex* oo_pair = get_index("[oo]");
   CCIndex* vv_pair = get_index("[vv]");
@@ -116,8 +117,13 @@ void CCBLAS::allocate_buffer()
       if(buffer[n]!=NULL)
         release1(buffer[n]);
 
-  for(int n=0;n<options_.get_int("CC_NUM_THREADS");n++)
-    buffer.push_back(nullptr);
+  for(int n=0;n<options_.get_int("CC_NUM_THREADS");n++) {
+#ifdef HAS_CXX11_NULLPTR
+    work.push_back(nullptr);
+#else
+    work.push_back(0);
+#endif
+  }
   // Compute the temporary buffer space size, 101% of the actual strip size
   buffer_size = static_cast<size_t>(1.01 * CCMatrix::fraction_of_memory_for_buffer *
                                     static_cast<double>(memory_manager->get_FreeMemory()) /
