@@ -362,13 +362,44 @@ Python Wrappers
 
 The Python foundations of the |PSIfour| driver and Psithon syntax permit
 many commonly performed post-processing procedures to be integrated into
-the |PSIfour| suite.  Among these are automated computations of
-interaction energies through :py:func:`~wrappers.cp`, of a model chemistry
-applied to a database of systems through :py:func:`~wrappers.database`,
-and of several model chemistries together approximating greater accuracy
-through :py:func:`~wrappers.complete_basis_set`.  These are discussed
-separately in :ref:`sec:psithonFunc`.  Note that the options documented
-for Python functions are placed as arguments in the command that calls the
-function, not in the ``set {...}`` block or with any other ``set``
-command.
+the |PSIfour| suite.  
+
+As seen in the neon dimer example from the :ref:`sec:tutorial` section,
+the :py:func:`~wrappers.cp` wrapper provides automatic computation of 
+counterpoise-corrected interaction energies between two molecules.  For
+example,::
+
+  cp('df-mp2')
+
+will compute the counterpoise-corrected density-fitted MP2 interaction energy
+between two molecules.
+
+|PSIfour| also provides the :py:func:`~wrappers.complete_basis_set` wrapper,
+which automatically computes a complete-basis-set extrapolation (and
+automatically sets up the computations with different basis sets required to
+do the extrapolation).  For example,::
+
+  cbs('mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
+
+will compute a 2-point Helgaker extrapolation of the correlation energy
+using the cc-pVDZ and cc-pVTZ basis sets (with method MP2), and add this
+extrapolated correlation energy to the Hartree--Fock energy in the
+largest basis (cc-pVTZ).
+
+Another very useful and powerful feature of |PSIfour| is the ability
+to compute results on entire databases of molecules at a time,
+as provided by the :py:func:`~wrappers.database` wrapper.  For example,::
+
+  database('df-mp2','S22',cp=1,benchmark='S22B')
+
+will perform DF-MP2 counterpoise-corrected interaction energies
+(``cp=1``) on all members of Hobza's S22 database set of van der Waals
+dimers, and then compare the results against the S22B benchmark energies.
+Built-in databases include S22, A24, HTBH, HBC6, HSG, S22by5, S66, JSCH,
+NCB31, S66by8, and NBC10, among others.
+
+These wrapper functions are discussed separately in
+:ref:`sec:psithonFunc`.  Note that the options documented for Python
+functions are placed as arguments in the command that calls the function,
+not in the ``set {...}`` block or with any other ``set`` command.
 

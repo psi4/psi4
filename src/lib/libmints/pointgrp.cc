@@ -223,7 +223,7 @@ PointGroup::char_table() const
 }
 
 int
-PointGroup::equiv(const boost::shared_ptr<PointGroup> &grp, double tol) const
+PointGroup::equiv(const boost::shared_ptr<PointGroup> &grp, double /*tol*/) const
 {
     if (symb != grp->symb)
         return 0;

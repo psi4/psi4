@@ -25,6 +25,9 @@
 #include <string>
 #include <map>
 #include <liboptions/liboptions.h>
+#include <libmints/typedefs.h>
+#include <boost/shared_ptr.hpp>
+
 namespace psi{
 class Molecule;
 class Wavefunction;
@@ -32,7 +35,6 @@ class PointGroup;
 class ExternalPotential;
 class Matrix;
 class Vector;
-typedef boost::shared_ptr<Matrix> SharedMatrix;
 
 namespace efp {
     class EFP;
@@ -85,9 +87,9 @@ public:
         /// Get frequencies manually
         boost::shared_ptr<Vector> frequencies() const { return frequencies_; }
 
-        /// Set EFP 
+        /// Set EFP
         void set_efp(const boost::shared_ptr<psi::efp::EFP>& efp) { efp_ = efp; }
-        /// Get EFP 
+        /// Get EFP
         boost::shared_ptr<psi::efp::EFP> get_efp() const { return efp_; }
 
         /// Set EFP gradient manually

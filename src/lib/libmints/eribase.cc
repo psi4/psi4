@@ -939,6 +939,8 @@ namespace {
                                       int nprim1, int nprim2, int nprim3, int nprim4,
                                       bool sh1eqsh2, bool sh3eqsh4, int deriv_lvl)
     {
+        UNUSED(sh1eqsh2);
+        UNUSED(sh3eqsh4);
         double zeta, eta, ooze, rho, poz, coef1, PQx, PQy, PQz, PQ2, Wx, Wy, Wz, o12, o34, T, *F;
         double a1, a2, a3, a4;
         int p1, p2, p3, p4, i;

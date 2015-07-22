@@ -1,21 +1,21 @@
-#! Frequencies for H2O HF/cc-pVDZ at optimized geometry
+#! Optimization followed by frequencies H2O HF/cc-pVDZ
 
 memory 250 mb
 
 molecule h2o {
   O 
-  H 1 0.9463
-  H 1 0.9463 2 104.575
+  H 1 0.96
+  H 1 0.96 2 104.5
 }
 
 set basis cc-pVDZ
-set scf_type pk
+optimize('scf')
 frequencies('scf')
 
 ref_freqs = psi4.Vector(3) #TEST
-ref_freqs.set(0, 0, 1776.17) #TEST
-ref_freqs.set(0, 1, 4113.80) #TEST
-ref_freqs.set(0, 2, 4211.79) #TEST
+ref_freqs.set(0, 0, 1775.65) #TEST
+ref_freqs.set(0, 1, 4113.38) #TEST
+ref_freqs.set(0, 2, 4212.18) #TEST
 
 fd_freqs = psi4.wavefunction().frequencies() #TEST
 compare_vectors(ref_freqs, fd_freqs, 1, "Reference vs computed frequencies to 0.1 cm^-1") #TEST

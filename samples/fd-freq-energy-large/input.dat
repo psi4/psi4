@@ -16,64 +16,88 @@ molecule c4nh4 {
     H         1.274488047821    -0.899961499592    -1.835960153318
 }
 
-# Test against analytic second derivatives from PSI3 (for now).
-anal_freqs = psi4.Vector(21)
-anal_freqs.set(0, 0,  -184.0613)
-anal_freqs.set(0, 1,   236.5665)
-anal_freqs.set(0, 2,   601.8179)
-anal_freqs.set(0, 3,   663.5969)
-anal_freqs.set(0, 4,   667.0854)
-anal_freqs.set(0, 5,   895.5586)
-anal_freqs.set(0, 6,  1008.6894)
-anal_freqs.set(0, 7,  1008.9522)
-anal_freqs.set(0, 8,  1046.9718)
-anal_freqs.set(0, 9,  1160.1266)
-anal_freqs.set(0,10,  1161.1594)
-anal_freqs.set(0,11,  1215.7027)
-anal_freqs.set(0,12,  1225.2493)
-anal_freqs.set(0,13,  1600.6695)
-anal_freqs.set(0,14,  1622.1779)
-anal_freqs.set(0,15,  1673.4861)
-anal_freqs.set(0,16,  2239.4185)
-anal_freqs.set(0,17,  3171.5147)
-anal_freqs.set(0,18,  3182.4027)
-anal_freqs.set(0,19,  3224.7634)
-anal_freqs.set(0,20,  3244.2997)
+#These are the old reference values
+## Test against analytic second derivatives from PSI3 (for now).
+#anal_freqs.set(0, 0,  -184.0613)
+#anal_freqs.set(0, 1,   236.5665)
+#anal_freqs.set(0, 2,   601.8179)
+#anal_freqs.set(0, 3,   663.5969)
+#anal_freqs.set(0, 4,   667.0854)
+#anal_freqs.set(0, 5,   895.5586)
+#anal_freqs.set(0, 6,  1008.6894)
+#anal_freqs.set(0, 7,  1008.9522)
+#anal_freqs.set(0, 8,  1046.9718)
+#anal_freqs.set(0, 9,  1160.1266)
+#anal_freqs.set(0,10,  1161.1594)
+#anal_freqs.set(0,11,  1215.7027)
+#anal_freqs.set(0,12,  1225.2493)
+#anal_freqs.set(0,13,  1600.6695)
+#anal_freqs.set(0,14,  1622.1779)
+#anal_freqs.set(0,15,  1673.4861)
+#anal_freqs.set(0,16,  2239.4185)
+#anal_freqs.set(0,17,  3171.5147)
+#anal_freqs.set(0,18,  3182.4027)
+#anal_freqs.set(0,20,  3244.2997)
+
+#These are the new reference values, they are the finite difference results
+ref_freqs = psi4.Vector(21)
+ref_freqs.set(0, 0, -185.3806810)
+ref_freqs.set(0, 1,  236.6736194)
+ref_freqs.set(0, 2,  600.8861278)
+ref_freqs.set(0, 3,  663.7373907)
+ref_freqs.set(0, 4,  667.1277034)
+ref_freqs.set(0, 5,  895.6058773)
+ref_freqs.set(0, 6, 1009.3357983)
+ref_freqs.set(0, 7,  1008.9476251)
+ref_freqs.set(0, 8,  1047.0252516)
+ref_freqs.set(0, 9, 1160.0942687)
+ref_freqs.set(0,10,  1161.2390978)
+ref_freqs.set(0,11,  1215.7764819)
+ref_freqs.set(0,12, 1225.2606141)
+ref_freqs.set(0,13,  1600.7766133)
+ref_freqs.set(0,14,  1622.1707093)
+ref_freqs.set(0,15,  1673.4406189)
+ref_freqs.set(0,16,  2239.3784603)
+ref_freqs.set(0,17,  3171.4980225)
+ref_freqs.set(0,18,  3182.3588200)
+ref_freqs.set(0,19, 3224.6209621)
+ref_freqs.set(0,20, 3244.2534858)
+
 
 a1_freqs = psi4.Vector(7)
-a1_freqs.set(0, 0, anal_freqs[ 4])
-a1_freqs.set(0, 1, anal_freqs[ 7])
-a1_freqs.set(0, 2, anal_freqs[10])
-a1_freqs.set(0, 3, anal_freqs[13])
-a1_freqs.set(0, 4, anal_freqs[15])
-a1_freqs.set(0, 5, anal_freqs[16])
-a1_freqs.set(0, 6, anal_freqs[18])
+a1_freqs.set(0, 0, ref_freqs[ 4])
+a1_freqs.set(0, 1, ref_freqs[ 7])
+a1_freqs.set(0, 2, ref_freqs[10])
+a1_freqs.set(0, 3, ref_freqs[13])
+a1_freqs.set(0, 4, ref_freqs[15])
+a1_freqs.set(0, 5, ref_freqs[16])
+a1_freqs.set(0, 6, ref_freqs[18])
 
 a2_freqs = psi4.Vector(3)
-a2_freqs.set(0, 0, anal_freqs[6])
-a2_freqs.set(0, 1, anal_freqs[12])
-a2_freqs.set(0, 2, anal_freqs[19])
+a2_freqs.set(0, 0, ref_freqs[6])
+a2_freqs.set(0, 1, ref_freqs[12])
+a2_freqs.set(0, 2, ref_freqs[19])
 
 b1_freqs = psi4.Vector(6)
-b1_freqs.set(0, 0, anal_freqs[1])
-b1_freqs.set(0, 1, anal_freqs[3])
-b1_freqs.set(0, 2, anal_freqs[8])
-b1_freqs.set(0, 3, anal_freqs[11])
-b1_freqs.set(0, 4, anal_freqs[14])
-b1_freqs.set(0, 5, anal_freqs[17])
+b1_freqs.set(0, 0, ref_freqs[1])
+b1_freqs.set(0, 1, ref_freqs[3])
+b1_freqs.set(0, 2, ref_freqs[8])
+b1_freqs.set(0, 3, ref_freqs[11])
+b1_freqs.set(0, 4, ref_freqs[14])
+b1_freqs.set(0, 5, ref_freqs[17])
 
 b2_freqs = psi4.Vector(5)
-b2_freqs.set(0, 0, anal_freqs[0])
-b2_freqs.set(0, 1, anal_freqs[2])
-b2_freqs.set(0, 2, anal_freqs[5])
-b2_freqs.set(0, 3, anal_freqs[9])
-b2_freqs.set(0, 4, anal_freqs[20])
+b2_freqs.set(0, 0, ref_freqs[0])
+b2_freqs.set(0, 1, ref_freqs[2])
+b2_freqs.set(0, 2, ref_freqs[5])
+b2_freqs.set(0, 3, ref_freqs[9])
+b2_freqs.set(0, 4, ref_freqs[20])
 
 
 # *** Test all frequencies by 3-pt formula.
 set globals {
   basis dz
-  d_convergence 10
+  d_convergence 11
   points 3
 }
 
@@ -83,11 +107,8 @@ frequencies('scf',dertype=0,irrep=2)
 fd_freqs = psi4.wavefunction().frequencies()
 clean()
 
-compare_vectors(a2_freqs, fd_freqs, 1, "Finite-difference frequencies with 3-pt. formula to 0.1 cm^-1")
+compare_vectors(a2_freqs, fd_freqs, 0, "Finite-difference frequencies with 3-pt. formula to 1 cm^-1")
 del fd_freqs
-
-exit()
-
 
 # *** Test frequencies by 5-pt formula for A1 irrep only.
 molecule c4nh4 {
@@ -115,7 +136,7 @@ frequencies('scf', irrep=1)
 fd_freqs = psi4.wavefunction().frequencies()
 clean()
 
-compare_vectors(a1_freqs, fd_freqs, 3, "A1 finite-diffence frequencies with 5-pt. formula to 0.001 cm^-1")
+compare_vectors(a1_freqs, fd_freqs, 0, "A1 finite-diffence frequencies with 5-pt. formula to 1 cm^-1")
 del fd_freqs
 
 # *** Test frequencies by 3-pt formula for A2 irrep only.
@@ -144,7 +165,7 @@ frequencies('scf', irrep=2)
 fd_freqs = psi4.wavefunction().frequencies()
 clean()
 
-compare_vectors(a2_freqs, fd_freqs, 3, "A2 finite-diffence frequencies with 5-pt. formula to 0.001 cm^-1")
+compare_vectors(a2_freqs, fd_freqs, 0, "A2 finite-diffence frequencies with 5-pt. formula to 1 cm^-1")
 del fd_freqs
 
 
@@ -174,7 +195,7 @@ frequencies('scf', irrep=3)
 fd_freqs = psi4.wavefunction().frequencies()
 clean()
 
-compare_vectors(b1_freqs, fd_freqs, 3, "B1 finite-diffence frequencies with 5-pt. formula to 0.001 cm^-1")
+compare_vectors(b1_freqs, fd_freqs, 0, "B1 finite-diffence frequencies with 5-pt. formula to 1 cm^-1")
 del fd_freqs
 
 
@@ -203,12 +224,12 @@ set globals {
 frequencies('scf', irrep=4)
 fd_freqs = psi4.wavefunction().frequencies()
 
-compare_vectors(b2_freqs, fd_freqs, 3, "B2 finite-diffence frequencies with 5-pt. formula to 0.001 cm^-1")
+compare_vectors(b2_freqs, fd_freqs, 0, "B2 finite-diffence frequencies with 5-pt. formula to 1 cm^-1")
 del fd_freqs
 
 del a1_freqs
 del a2_freqs
 del b1_freqs
 del b2_freqs
-del anal_freqs
+del ref_freqs
 

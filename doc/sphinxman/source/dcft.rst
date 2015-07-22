@@ -249,7 +249,7 @@ Minimal input for the DCFT single-point computation looks like this::
     H 1 1.0
     }
 
-    set basis 3-21G
+    set basis cc-pvdz
     
     energy('dcft')
 
@@ -268,7 +268,7 @@ optimization following the example below::
     H 1 1.0
     }
 
-    set basis 3-21G
+    set basis cc-pvdz
     
     optimize('dcft')
 
