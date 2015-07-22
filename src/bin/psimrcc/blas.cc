@@ -33,12 +33,9 @@
 #include "index.h"
 #include "matrix.h"
 
-#ifndef nullptr
-#define nullptr 0
-#endif
 
 namespace psi{
-
+    
     namespace psimrcc{
     extern MOInfo *moinfo;
     extern MemoryManager *memory_manager;
@@ -241,11 +238,11 @@ void CCBLAS::add_indices()
 //   for(MatrixMap::iterator iter=matrices.begin();iter!=matrices.end();++iter){
 //     CCMatrix* Matrix = iter->second;
 //     outfile->Printf("\n%s(analyzing)",Matrix->get_label().c_str());
-//
+//     
 //     if(Matrix->get_out_of_core()){
 //       Matrix->load();
 //       outfile->Printf("\n%s <- reading from disk",Matrix->get_label().c_str());
-//
+//       
 //     }else if(!Matrix->is_allocated())
 //       Matrix->allocate_memory();
 //   }

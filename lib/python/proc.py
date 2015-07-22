@@ -1238,10 +1238,7 @@ def run_scf_gradient(name, **kwargs):
     a SCF gradient calculation.
 
     """
-    #* Xiao Wang *#
     lowername = name.lower()
-    #* Xiao Wang *#
-
     optstash = p4util.OptionsState(
         ['DF_BASIS_SCF'],
         ['SCF', 'SCF_TYPE'],
