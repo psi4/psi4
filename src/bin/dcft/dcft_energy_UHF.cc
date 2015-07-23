@@ -21,134 +21,188 @@
  */
 
 #include "dcft.h"
-#include <cmath>
-#include <libdpd/dpd.h>
-#include <libtrans/integraltransform.h>
-#include <libdiis/diismanager.h>
+#include <psifiles.h>
 #include <libpsio/psio.hpp>
-#include <libpsio/psio.h>
-
+#include <libtrans/integraltransform.h>
 #include "defines.h"
-
-using namespace boost;
 
 namespace psi{ namespace dcft{
 
 /**
-  * Compute DCFT energy using unrestricted HF reference
-  */
-double DCFTSolver::compute_energy_UHF()
+ * Uses the intermediates to compute the energy
+ */
+void
+DCFTSolver::compute_dcft_energy()
 {
-    orbitalsDone_    = false;
-    cumulantDone_ = false;
-    densityConverged_ = false;
-    energyConverged_ = false;
-    // Perform SCF guess for the orbitals
-    scf_guess();
-    // Perform MP2 guess for the cumulant
-    mp2_guess();
+    dcft_timer_on("DCFTSolver::compute_dcft_energy()");
 
-    // Print out information about the job
-    outfile->Printf( "\n\tDCFT Functional:    \t\t %s", options_.get_str("DCFT_FUNCTIONAL").c_str());
-    outfile->Printf( "\n\tAlgorithm:          \t\t %s", options_.get_str("ALGORITHM").c_str());
-    outfile->Printf( "\n\tAO-Basis Integrals: \t\t %s", options_.get_str("AO_BASIS").c_str());
-    if (options_.get_str("ALGORITHM") == "QC") {
-        outfile->Printf( "\n\tQC type:            \t\t %s", options_.get_str("QC_TYPE").c_str());
-        outfile->Printf( "\n\tQC coupling:        \t\t %s", options_.get_bool("QC_COUPLING") ? "TRUE" : "FALSE");
-    }
-    if (energy_level_shift_ > 1E-6) {
-        outfile->Printf( "\n\tUsing level shift of %5.3f a.u.            ", energy_level_shift_);
-    }
+    dpdbuf4 L, G, I;
+    double eGaa, eGab, eGbb, eIaa, eIab, eIbb;
 
-    // Things that are not implemented yet...
-    if (options_.get_str("DERTYPE") == "FIRST" && (options_.get_str("DCFT_FUNCTIONAL") == "DC-12"))
-        throw FeatureNotImplemented("DC-12 functional", "Analytic gradients", __FILE__, __LINE__);
-    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0")
-        throw FeatureNotImplemented("CEPA0", "AO_BASIS = DISK", __FILE__, __LINE__);
-    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("ALGORITHM") == "QC" && options_.get_str("QC_TYPE") == "SIMULTANEOUS")
-        throw FeatureNotImplemented("Simultaneous QC", "AO_BASIS = DISK", __FILE__, __LINE__);
-    if (!(options_.get_str("ALGORITHM") == "TWOSTEP") && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0")
-        throw FeatureNotImplemented("CEPA0", "Requested DCFT algorithm", __FILE__, __LINE__);
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-    // Orbital-optimized stuff
-    if (options_.get_str("ALGORITHM") == "TWOSTEP" && orbital_optimized_)
-        throw PSIEXCEPTION("Two-step algorithm cannot be run for the orbital-optimized DCFT methods");
+    // E += 1/4 L_IJAB G_IJAB
+    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+    global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "G <OO|VV>");
+    eGaa = global_dpd_->buf4_dot(&G, &L);
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_close(&L);
 
-    // Choose a paricular algorithm and solve the equations
-    if(options_.get_str("ALGORITHM") == "TWOSTEP") {
-        run_twostep_dcft();
-    }
-    else if (options_.get_str("ALGORITHM") == "SIMULTANEOUS") {
-        if (!orbital_optimized_) {
-            run_simult_dcft();
-        }
-        else {
-            run_simult_dcft_oo();
-        }
-    }
-    else if (options_.get_str("ALGORITHM") == "QC") {
-        run_qc_dcft();
+    if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-13") {
+        psio_->open(PSIF_DCFT_DENSITY, PSIO_OPEN_OLD);
+
+        // E += gbar_IJAB Gamma_IJAB
+        global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O>O]-"), ID("[V>V]-"),
+                      ID("[O>O]-"), ID("[V>V]-"), 0, "Gamma <OO|VV>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                      ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
+        eIaa = 4.0 * global_dpd_->buf4_dot(&I, &G);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&G);
+
     }
     else {
-        throw PSIEXCEPTION("Unknown DCFT algoritm");
+        // E += 1/2 gbar_IJAB L_IJAB
+        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                      ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                      ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
+        eIaa = 2.0 * global_dpd_->buf4_dot(&I, &L);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&L);
     }
 
-    // If not converged -> Break
-    if(!orbitalsDone_ || !cumulantDone_ || !densityConverged_)
-        throw ConvergenceError<int>("DCFT", maxiter_, cumulant_threshold_, cumulant_convergence_, __FILE__, __LINE__);
+    // E += L_IjAb G_IjAb
+    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+    global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
+    eGab =  global_dpd_->buf4_dot(&G, &L);
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_close(&L);
 
-    outfile->Printf("\n\t*%6s SCF Energy                                 = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), scf_energy_);
-    outfile->Printf("\t*%6s Lambda Energy                              = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), lambda_energy_);
-    outfile->Printf("\t*%6s Total Energy                               = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), new_total_energy_);
-
-
-    Process::environment.globals["DCFT SCF ENERGY"]    = scf_energy_;
-    Process::environment.globals["DCFT LAMBDA ENERGY"] = lambda_energy_;
-    Process::environment.globals["DCFT TOTAL ENERGY"]  = new_total_energy_;
-
-    // Compute three-particle contribution to the DCFT energy
-    if (options_.get_str("THREE_PARTICLE") == "PERTURBATIVE") {
-        // Check options
-        if (options_.get_str("DERTYPE") == "FIRST")
-            throw FeatureNotImplemented("DCFT three-particle energy correction", "Analytic gradients", __FILE__, __LINE__);
-        // Compute the three-particle energy
-        double three_particle_energy = compute_three_particle_energy();
-        outfile->Printf("\t*DCFT Three-particle Energy                        = %20.15f\n", three_particle_energy);
-        outfile->Printf("\t*DCFT Total Energy                                 = %20.15f\n", new_total_energy_ + three_particle_energy);
-        // Set global variables
-        Process::environment.globals["DCFT THREE-PARTICLE ENERGY"] = three_particle_energy;
-        Process::environment.globals["CURRENT ENERGY"]             = new_total_energy_ + three_particle_energy;
+    if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-13") {
+        // E += 4.0 * gbar_IjAb Gamma_IjAb
+        global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"),
+                      ID("[O,o]"), ID("[V,v]"), 0, "Gamma <Oo|Vv>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                      ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
+        eIab = 4.0 * global_dpd_->buf4_dot(&I, &G);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&G);
     }
     else {
-        Process::environment.globals["CURRENT ENERGY"]             = new_total_energy_;
+        // E += 2.0 gbar_IjAb L_IjAb
+        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                      ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                      ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
+        eIab = 2.0 * global_dpd_->buf4_dot(&I, &L);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&L);
     }
 
-    if(!options_.get_bool("MO_RELAX")){
-        outfile->Printf( "Warning!  The orbitals were not relaxed\n");
+    // E += 1/4 L_ijab G_ijab
+    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+    global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "G <oo|vv>");
+    eGbb = global_dpd_->buf4_dot(&G, &L);
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_close(&L);
+
+    if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-13") {
+        // E += gbar_ijab Gamma_ijab
+        global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o>o]-"), ID("[v>v]-"),
+                      ID("[o>o]-"), ID("[v>v]-"), 0, "Gamma <oo|vv>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                      ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
+        eIbb = 4.0 * global_dpd_->buf4_dot(&I, &G);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&G);
+
+        psio_->close(PSIF_DCFT_DENSITY, 1);
     }
-
-    // Print natural occupations
-    print_opdm();
-
-    if (orbital_optimized_) {
-        // Compute one-electron properties
-        compute_oe_properties();
-        // Write to MOLDEN file if requested
-        if (options_.get_bool("MOLDEN_WRITE")) write_molden_file();
+    else {
+        // E += 1/2 gbar_ijab L_ijab
+        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                      ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                      ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
+        eIbb = 2.0 * global_dpd_->buf4_dot(&I, &L);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&L);
     }
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
 
-    if(options_.get_bool("TPDM")) dump_density();
-//    check_n_representability();
 
-    if (options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
-        compute_unrelaxed_density_OOOO();
-        compute_unrelaxed_density_OVOV();
-        compute_unrelaxed_density_VVVV();
-        compute_TPDM_trace();
-    }
+#if PRINT_ENERGY_COMPONENTS
+    outfile->Printf( "\tAA G Energy = %20.12f\n", eGaa);
+    outfile->Printf( "\tAB G Energy = %20.12f\n", eGab);
+    outfile->Printf( "\tBB G Energy = %20.12f\n", eGbb);
+    outfile->Printf( "\tAA I Energy = %20.12f\n", eIaa);
+    outfile->Printf( "\tAB I Energy = %20.12f\n", eIab);
+    outfile->Printf( "\tBB I Energy = %20.12f\n", eIbb);
+    outfile->Printf( "\tTotal G Energy = %20.12f\n", eGaa + eGab + eGbb);
+    outfile->Printf( "\tTotal I Energy = %20.12f\n", eIaa + eIab + eIbb);
+#endif
 
-    return(new_total_energy_);
+    lambda_energy_ = eGaa + eGab + eGbb + eIaa + eIab + eIbb;
+
+    dcft_timer_off("DCFTSolver::compute_dcft_energy()");
 }
 
-}} // Namespace
+void
+DCFTSolver::compute_cepa0_energy()
+{
+    dcft_timer_on("DCFTSolver::compute_dcft_energy()");
+
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+    /*
+     * Compute the CEPA-0 correlation energy
+     * E = 1/4 L_IJAB <IJ||AB>
+     *        +L_IjAb <Ij|Ab>
+     *    +1/4 L_ijab <ij||ab>
+     */
+    dpdbuf4 I, L;
+    // Alpha - Alpha
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
+    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+    double eAA = 0.25 * global_dpd_->buf4_dot(&L, &I);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&L);
+
+    // Alpha - Beta
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
+    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+    double eAB = global_dpd_->buf4_dot(&L, &I);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&L);
+
+    // Beta - Beta
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
+    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+    double eBB = 0.25 * global_dpd_->buf4_dot(&L, &I);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&L);
+
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+    lambda_energy_ = eAA + eAB + eBB;
+
+    dcft_timer_off("DCFTSolver::compute_dcft_energy()");
+}
+
+}} // Namespaces
+
+
 
