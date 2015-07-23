@@ -52,15 +52,27 @@ DCFTSolver::build_cumulant_intermediates_RHF()
     /*
      * G_IjAb += Sum_Cd gbar_CdAb lambda_IjCd
      */
-
-    /***********AB***********/
-    global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                           ID("[O,O]"), ID("[V,V]"), 0, "G <OO|VV>"); // G <Oo|Vv>
-    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                           ID("[O,O]"), ID("[V,V]"), 0, "tau(temp) SF <OO|VV>"); // tau(temp) <Oo|Vv>
-    global_dpd_->buf4_axpy(&L, &G, 1.0);
-    global_dpd_->buf4_close(&L);
-    global_dpd_->buf4_close(&G);
+    if (options_.get_str("AO_BASIS") == "NONE"){
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
+                                ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>"); // MO Ints <Vv|Vv> 
+        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                                ID("[O,O]"), ID("[V,V]"), 0, "Lambda SF <OO|VV>"); // Lambda <Oo|Vv>
+        global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                                ID("[O,O]"), ID("[V,V]"), 0, "G <OO|VV>"); // G <Oo|Vv>
+        global_dpd_->contract444(&L, &I, &G, 0, 0, 1.0, 1.0);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&L);
+        global_dpd_->buf4_close(&G);
+    }
+    else{
+        global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                               ID("[O,O]"), ID("[V,V]"), 0, "G <OO|VV>"); // G <Oo|Vv>
+        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                               ID("[O,O]"), ID("[V,V]"), 0, "tau(temp) SF <OO|VV>"); // tau(temp) <Oo|Vv>
+        global_dpd_->buf4_axpy(&L, &G, 1.0);
+        global_dpd_->buf4_close(&L);
+        global_dpd_->buf4_close(&G);
+    }
 
     /*
      * G_IjAb += Sum_Kl gbar_IjKl lambda_KlAb
