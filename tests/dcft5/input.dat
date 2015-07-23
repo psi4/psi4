@@ -27,6 +27,7 @@ set globals {
     max_energy_g_convergence 1e-6
 }
 
+set dcft_functional dc-06
 optimize('dcft')
 
 compare_values(refnuc, O2.nuclear_repulsion_energy(), 5, "Nuclear Repulsion Energy")                       #TEST
