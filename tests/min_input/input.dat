@@ -49,7 +49,7 @@ for method in Earray:
    print_out('%s\t%s\t%s\t%s\t%s\n' % ('SYMMTOL AFTER:  ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY'), ans))
 
 #-------------------------------------------------------------------------------------------
-
+clean()
 set reference uhf
 
 Earray = [
