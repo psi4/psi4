@@ -20,8 +20,6 @@ set globals {
     df_scf_guess false
 }
 
-set docc       [3, 0, 1, 1]
-
 set maxiter    1
 set e_convergence 1.0e1
 set d_convergence 1.0e1
@@ -40,8 +38,6 @@ molecule h2o_c1 {
 }
 
 set basis cc-pvdz
-
-set docc [5]
 
 set maxiter 1
 set e_convergence 1.0e1

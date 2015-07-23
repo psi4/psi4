@@ -567,6 +567,7 @@ perform IP fitting, one simply calls the :py:func:`~frac.ip_fitting` Python macr
 setting up a standard LRC UKS computation. A representative example is::
 
     memory 512 MB
+    from frac import *
 
     molecule h2o {
     0 1
@@ -612,6 +613,7 @@ used to investigate the fractional occupation behavior within one electron above
 and below the neutral. An example is::
 
     memory 512 MB
+    from frac import *
 
     molecule h2o {
     0 1

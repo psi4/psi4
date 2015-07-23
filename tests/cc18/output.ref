@@ -1,26 +1,31 @@
     -----------------------------------------------------------------------
-          PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-beta1 Driver
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.2.227 Driver
+
+                          Git: Rev {master} 19b1749 
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
 
                          Additional Contributions by
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
-    Using LocalCommunicator (Number of processes = 1)
+    Psi4 started on: Wed Jul 22 14:42:24 2015
 
+    Process ID:  55377
+    PSI4DATADIR: /Users/crawdad/src/psi4/lib
     Memory level set to 256.000 MB
 
   ==> Input File <==
 
 --------------------------------------------------------------------------
-# RHF-CCSD-LR/cc-pVDZ static polarizability of HOF
+#! RHF-CCSD-LR/cc-pVDZ static polarizability of HOF
 
 memory 250 mb
 
@@ -36,7 +41,7 @@ set {
    basis cc-pVDZ
 }
 
-response('ccsd')
+property('ccsd', properties=['polarizability'])
 
 refnuc = 46.780362058359806     #TEST
 refscf = -174.41843300162472    #TEST
@@ -51,12 +56,12 @@ compare_values(reftotal, get_variable("Current energy"),         8, "CCSD total 
 
   Memory set to 250.000 MiB by Python script.
 
-*** tstart() called on QuickSilver.local
-*** at Mon Jan 23 15:03:45 2012
+*** tstart() called on ganymede.local
+*** at Wed Jul 22 14:42:25 2015
 
-	There are an even number of electrons - assuming singlet.
-	Specify the multiplicity with the MULTP option in the
-	input if this is incorrect
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity with the MULTP option in the
+    input if this is incorrect
 
 
          ---------------------------------------------------------
@@ -69,6 +74,7 @@ compare_values(reftotal, get_variable("Current energy"),         8, "CCSD total 
   ==> Geometry <==
 
     Molecular point group: cs
+    Full point group: Cs
 
     Geometry (in Bohr), charge = 0, multiplicity = 1:
 
@@ -78,15 +84,10 @@ compare_values(reftotal, get_variable("Current energy"),         8, "CCSD total 
            H         -1.513924046286     1.610489987673     0.000000000000
            F          0.878279174340     0.026485523618     0.000000000000
 
-    Number of unique atoms: 3
-
-    Atoms equivalency:
-       unique atom 0: 0 
-       unique atom 1: 1 
-       unique atom 2: 2 
-
   Running in cs symmetry.
 
+  Rotational constants: A =     20.68749  B =      1.92124  C =      1.75798 [cm^-1]
+  Rotational constants: A = 620195.40405  B =  57597.45554  C =  52702.94118 [MHz]
   Nuclear repulsion =   46.780362058359806
 
   Charge       = 0
@@ -102,13 +103,13 @@ compare_values(reftotal, get_variable("Current energy"),         8, "CCSD total 
   MOM disabled.
   Fractional occupation disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-08
-  Density threshold  = 1.00e-08
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
   Integral threshold = 0.00e+00
 
-  ==> Primary Basis: CC-PVDZ <==
+  ==> Primary Basis <==
 
-  Basis Set
+  Basis Set: CC-PVDZ
     Number of shells: 15
     Number of basis function: 33
     Number of Cartesian functions: 35
@@ -117,20 +118,78 @@ compare_values(reftotal, get_variable("Current energy"),         8, "CCSD total 
 
   ==> Pre-Iterations <==
 
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'        24      24       0       0       0       0
+     A"         9       9       0       0       0       0
+   -------------------------------------------------------
+    Total      33      33       9       9       9       0
+   -------------------------------------------------------
+
+  Starting with a DF guess...
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: 
+    Number of shells: 57
+    Number of basis function: 163
+    Number of Cartesian functions: 187
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
   Minimum eigenvalue in the overlap matrix is 1.1480368199E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:  -133.10619662228331
+  ==> Iterations <==
 
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A'        24      24       7       7       7       0
-     A"         9       9       2       2       2       0
-   -------------------------------------------------------
-    Total      33      33       9       9       9       0
-   -------------------------------------------------------
+                           Total Energy        Delta E     RMS |[F,P]|
+
+    Occupation by irrep:
+             Ap   App 
+    DOCC [     8,    1 ]
+
+   @DF-RHF iter   1:  -159.89414832879714   -1.59894e+02   1.86414e-01 
+    Occupation by irrep:
+             Ap   App 
+    DOCC [     7,    2 ]
+
+   @DF-RHF iter   2:  -161.86884450291890   -1.97470e+00   1.86582e-01 DIIS
+   @DF-RHF iter   3:  -174.13789140539765   -1.22690e+01   3.35841e-02 DIIS
+   @DF-RHF iter   4:  -174.39616419515050   -2.58273e-01   7.21357e-03 DIIS
+   @DF-RHF iter   5:  -174.41458492621936   -1.84207e-02   2.83407e-03 DIIS
+   @DF-RHF iter   6:  -174.41741190823336   -2.82698e-03   1.01841e-03 DIIS
+   @DF-RHF iter   7:  -174.41794580478350   -5.33897e-04   2.86000e-04 DIIS
+   @DF-RHF iter   8:  -174.41800001698181   -5.42122e-05   3.69792e-05 DIIS
+   @DF-RHF iter   9:  -174.41800140160001   -1.38462e-06   9.03115e-06 DIIS
+   @DF-RHF iter  10:  -174.41800148219102   -8.05910e-08   1.67489e-06 DIIS
+   @DF-RHF iter  11:  -174.41800148317054   -9.79526e-10   4.36072e-07 DIIS
+   @DF-RHF iter  12:  -174.41800148321624   -4.57021e-11   5.43303e-08 DIIS
+   @DF-RHF iter  13:  -174.41800148321786   -1.62004e-12   8.24454e-09 DIIS
+   @DF-RHF iter  14:  -174.41800148321792   -5.68434e-14   1.02532e-09 DIIS
+   @DF-RHF iter  15:  -174.41800148321778    1.42109e-13   2.15430e-10 DIIS
+   @DF-RHF iter  16:  -174.41800148321795   -1.70530e-13   3.98265e-11 DIIS
+
+  DF guess converged.
 
   ==> Integral Setup <==
 
@@ -146,71 +205,85 @@ compare_values(reftotal, get_variable("Current energy"),         8, "CCSD total 
       Number of basis functions:        33
 
       Number of irreps:                  2
+      Integral cutoff                 0.00e+00
       Number of functions per irrep: [  24    9 ]
 
-      Overlap, kinetic, potential, dipole, and quadrupole integrals
-        stored in file 35.
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
 
       Computing two-electron integrals...done
-      Computed 78700 non-zero two-electron integrals.
+      Computed 79879 non-zero two-electron integrals.
         Stored in file 33.
 
-  ==> Iterations <==
+	Batch   1 pq = [       0,     345] index = [             0,59685]
+  ==> DiskJK: Disk-Based J/K Matrices <==
 
-                        Total Energy        Delta E     Density RMS
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               178
+    Schwarz Cutoff:          1E-12
 
-   @RHF iter   1:  -159.89903886265745   -2.67928e+01   0.00000e+00 
-	Occupation by irrep:
-	         A'    A" 
-	DOCC [     8,    1 ]
-   @RHF iter   2:  -161.87005159720300   -1.97101e+00   2.86011e-01 DIIS
-	Occupation by irrep:
-	         A'    A" 
-	DOCC [     7,    2 ]
-   @RHF iter   3:  -174.13894832477413   -1.22689e+01   2.46076e-01 DIIS
-   @RHF iter   4:  -174.39661955605203   -2.57671e-01   1.68208e-02 DIIS
-   @RHF iter   5:  -174.41501884406316   -1.83993e-02   4.76869e-03 DIIS
-   @RHF iter   6:  -174.41784376455013   -2.82492e-03   2.13077e-03 DIIS
-   @RHF iter   7:  -174.41837739415647   -5.33630e-04   1.13021e-03 DIIS
-   @RHF iter   8:  -174.41843153805800   -5.41439e-05   4.74213e-04 DIIS
-   @RHF iter   9:  -174.41843292019803   -1.38214e-06   7.43395e-05 DIIS
-   @RHF iter  10:  -174.41843300059733   -8.03993e-08   2.07694e-05 DIIS
-   @RHF iter  11:  -174.41843300157751   -9.80179e-10   1.80913e-06 DIIS
-   @RHF iter  12:  -174.41843300162284   -4.53326e-11   2.54361e-07 DIIS
-   @RHF iter  13:  -174.41843300162458   -1.73372e-12   8.65693e-08 DIIS
-   @RHF iter  14:  -174.41843300162458    0.00000e+00   1.45291e-08 DIIS
+   @RHF iter  17:  -174.41843268281738   -4.31200e-04   4.21425e-05 DIIS
+   @RHF iter  18:  -174.41843298519137   -3.02374e-07   8.66392e-06 DIIS
+   @RHF iter  19:  -174.41843299965586   -1.44645e-08   2.92962e-06 DIIS
+   @RHF iter  20:  -174.41843300152433   -1.86847e-09   5.69876e-07 DIIS
+   @RHF iter  21:  -174.41843300161963   -9.52980e-11   8.70665e-08 DIIS
+   @RHF iter  22:  -174.41843300162421   -4.57590e-12   2.26317e-08 DIIS
+   @RHF iter  23:  -174.41843300162452   -3.12639e-13   9.68029e-09 DIIS
+   @RHF iter  24:  -174.41843300162466   -1.42109e-13   2.00880e-09 DIIS
+   @RHF iter  25:  -174.41843300162461    5.68434e-14   3.93663e-10 DIIS
+   @RHF iter  26:  -174.41843300162466   -5.68434e-14   8.53537e-11 DIIS
 
   ==> Post-Iterations <==
 
-	Orbital Energies (a.u.)
-	-----------------------
+    Orbital Energies (a.u.)
+    -----------------------
 
-	Doubly Occupied:                                                      
+    Doubly Occupied:                                                      
 
-	   1A'   -26.330356     2A'   -20.627725     3A'    -2.082395  
-	   4A'    -1.191294     5A'    -0.971697     1A"    -0.924953  
-	   6A'    -0.850985     7A'    -0.460395     2A"    -0.380150  
+       1Ap   -26.330356     2Ap   -20.627725     3Ap    -2.082395  
+       4Ap    -1.191294     5Ap    -0.971697     1App   -0.924953  
+       6Ap    -0.850985     7Ap    -0.460395     2App   -0.380150  
 
-	Virtual:                                                              
+    Virtual:                                                              
 
-	   8A'     0.192183     9A'     0.648601    10A'     0.823611  
-	   3A"     1.119958    11A'     1.143363    12A'     1.228844  
-	  13A'     1.367723    14A'     1.461132     4A"     1.471205  
-	   5A"     1.535571    15A'     1.667967    16A'     1.769476  
-	  17A'     2.310638    18A'     2.700605     6A"     2.776264  
-	  19A'     3.034541     7A"     3.108650    20A'     3.654401  
-	  21A'     3.975079     8A"     4.008294    22A'     4.151683  
-	   9A"     4.827587    23A'     4.882340    24A'     5.266361  
+       8Ap     0.192183     9Ap     0.648601    10Ap     0.823611  
+       3App    1.119958    11Ap     1.143363    12Ap     1.228844  
+      13Ap     1.367723    14Ap     1.461132     4App    1.471205  
+       5App    1.535571    15Ap     1.667967    16Ap     1.769476  
+      17Ap     2.310638    18Ap     2.700605     6App    2.776264  
+      19Ap     3.034541     7App    3.108650    20Ap     3.654401  
+      21Ap     3.975079     8App    4.008294    22Ap     4.151683  
+       9App    4.827587    23Ap     4.882340    24Ap     5.266361  
 
-	Final Occupation by Irrep:
-	         A'    A" 
-	DOCC [     7,    2 ]
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     7,    2 ]
 
   Energy converged.
 
-  @RHF Final Energy:  -174.41843300162458
+  @RHF Final Energy:  -174.41843300162466
 
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             46.7803620583598061
+    One-Electron Energy =                -334.7576923191949163
+    Two-Electron Energy =                 113.5588972592104398
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -174.4184330016246918
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
   Nuclear Dipole Moment: (a.u.)
      X:    -1.1919      Y:     0.7854      Z:     0.0000
 
@@ -226,18 +299,18 @@ compare_values(reftotal, get_variable("Current energy"),         8, "CCSD total 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on QuickSilver.local at Mon Jan 23 15:03:45 2012
+*** tstop() called on ganymede.local at Wed Jul 22 14:42:26 2015
 Module time:
-	user time   =       0.26 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.85 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.26 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.85 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on QuickSilver.local
-*** at Mon Jan 23 15:03:45 2012
+*** tstart() called on ganymede.local
+*** at Wed Jul 22 14:42:26 2015
 
 
 	**************************************************
@@ -255,7 +328,7 @@ Total time:
 	Print Level     =	1
 	Print TEIs      =	No
 	Reference wfn   =	RHF
-	Derivative      =	Response
+	Derivative      =	None
 	Delete TEI File =	Yes
 	Memory (Mbytes) =	250.0
 	Cache Level     =	2
@@ -269,11 +342,11 @@ Total time:
 
 	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	------	------	------	------	------
-	 A'	   24	    0	    7	    0	    17	    0
-	 A"	   9	    0	    2	    0	    7	    0
+	 Ap	   24	    0	    7	    0	    17	    0
+	 App	   9	    0	    2	    0	    7	    0
 
 	Nuclear Rep. energy (chkpt) =     46.78036205835981
-	SCF energy          (chkpt) =   -174.41843300162458
+	SCF energy          (chkpt) =   -174.41843300162466
 
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (pq,rs) nbuckets = 1
@@ -283,18 +356,18 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on QuickSilver.local at Mon Jan 23 15:03:45 2012
+*** tstop() called on ganymede.local at Wed Jul 22 14:42:27 2015
 Module time:
-	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.31 seconds =       0.01 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.91 seconds =       0.02 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstart() called on QuickSilver.local
-*** at Mon Jan 23 15:03:45 2012
+*** tstart() called on ganymede.local
+*** at Wed Jul 22 14:42:27 2015
 
 
 			**************************
@@ -308,7 +381,7 @@ Total time:
 	-----------------
 	Wave function   =	CCSD
 	Reference wfn   =	RHF
-	Derivative      =	Response
+	Derivative      =	None
 	Memory (Mbytes) =	250.0
 	AO Basis        =	NONE
 	Make (ab|cd)    =	True
@@ -326,11 +399,11 @@ Total time:
 
 	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	------	------	------	------	------
-	 A'	   24	    0	    7	    0	    17	    0
-	 A"	   9	    0	    2	    0	    7	    0
+	 Ap	   24	    0	    7	    0	    17	    0
+	 App	   9	    0	    2	    0	    7	    0
 
 	Nuclear Rep. energy (chkpt) =     46.78036205835981
-	SCF energy          (chkpt) =   -174.41843300162458
+	SCF energy          (chkpt) =   -174.41843300162466
 
 	Size of irrep 0 of <ab|cd> integrals:      0.114 (MW) /      0.914 (MB)
 	Size of irrep 1 of <ab|cd> integrals:      0.057 (MW) /      0.453 (MB)
@@ -351,26 +424,27 @@ Total time:
 	Sorting File: D <ij|ab> nbuckets = 1
 	Sorting File: E <ai|jk> nbuckets = 1
 	Sorting File: F <ia|bc> nbuckets = 1
-	One-electron energy          =   -334.75769231860568
-	Two-electron (AA) energy     =     47.26858977470966
-	Two-electron (BB) energy     =     47.26858977470966
-	Two-electron (AB) energy     =     66.29030748391150
-	Two-electron energy          =    113.55889725862116
+	Nuclear energy               =     46.78036205835981
+	One-electron energy          =   -334.75769231720489
+	Two-electron (AA) energy     =     47.26858977392498
+	Two-electron (BB) energy     =     47.26858977392498
+	Two-electron (AB) energy     =     66.29030748329538
+	Two-electron energy          =    113.55889725722037
 	Frozen-core energy (transqt) =      0.00000000000000
 	Reference energy             =   -174.41843300162472
 
-*** tstop() called on QuickSilver.local at Mon Jan 23 15:03:46 2012
+*** tstop() called on ganymede.local at Wed Jul 22 14:42:29 2015
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       0.35 seconds =       0.01 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.98 seconds =       0.02 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
-*** tstart() called on QuickSilver.local
-*** at Mon Jan 23 15:03:46 2012
+*** tstart() called on ganymede.local
+*** at Wed Jul 22 14:42:29 2015
 
 			**************************
 			*                        *
@@ -379,17 +453,19 @@ Total time:
 			**************************
 
 	Nuclear Rep. energy (chkpt)   =   46.780362058359806
-	SCF energy          (chkpt)   = -174.418433001624578
+	SCF energy          (chkpt)   = -174.418433001624663
 	Reference energy    (file100) = -174.418433001624720
 
 	Input parameters:
 	-----------------
 	Wave function   =     CCSD
 	Reference wfn   =     RHF
+	Brueckner       =     No
 	Memory (Mbytes) =     250.0
 	Maxiter         =     50
-	Convergence     =     1.0e-07
-	Restart         =     No
+	R_Convergence   =     1.0e-07
+	E_Convergence   =     1.0e-08
+	Restart         =     Yes
 	DIIS            =     Yes
 	AO Basis        =     NONE
 	ABCD            =     NEW
@@ -408,75 +484,76 @@ Total time:
 
 	            Solving CC Amplitude Equations
 	            ------------------------------
-  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
-  ----     ---------------------    ---------   ----------  ----------  ----------
-     0        -0.356636240726634    0.000e+00    0.000000    0.000000    0.000000
-     1        -0.362752063098801    3.144e-02    0.004275    0.011894    0.011894
-     2        -0.368196197119331    1.020e-02    0.004675    0.013297    0.013297
-     3        -0.368909989053916    3.691e-03    0.005274    0.015965    0.015965
-     4        -0.368843223250080    1.064e-03    0.005417    0.016790    0.016790
-     5        -0.368847102126304    5.172e-04    0.005511    0.017384    0.017384
-     6        -0.368845295153107    1.896e-04    0.005559    0.017671    0.017671
-     7        -0.368842607498800    4.221e-05    0.005566    0.017712    0.017712
-     8        -0.368842991731537    9.726e-06    0.005568    0.017722    0.017722
-     9        -0.368843083956378    1.805e-06    0.005568    0.017722    0.017722
-    10        -0.368843084633750    4.602e-07    0.005568    0.017723    0.017723
-    11        -0.368843099035879    1.246e-07    0.005568    0.017723    0.017723
-    12        -0.368843101561144    3.400e-08    0.005568    0.017723    0.017723
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------   --------
+     0        -0.356636240717491    0.000e+00    0.000000    0.000000    0.000000    0.109615
+     1        -0.362752063083724    3.144e-02    0.004275    0.011894    0.011894    0.119295
+     2        -0.368196197125458    1.020e-02    0.004675    0.013297    0.013297    0.125545
+     3        -0.368909989026185    3.691e-03    0.005274    0.015965    0.015965    0.127551
+     4        -0.368843223239159    1.064e-03    0.005417    0.016790    0.016790    0.128058
+     5        -0.368847102115696    5.172e-04    0.005511    0.017384    0.017384    0.128207
+     6        -0.368845295142958    1.896e-04    0.005559    0.017671    0.017671    0.128212
+     7        -0.368842607488941    4.221e-05    0.005566    0.017712    0.017712    0.128200
+     8        -0.368842991721711    9.726e-06    0.005568    0.017722    0.017722    0.128199
+     9        -0.368843083946547    1.805e-06    0.005568    0.017722    0.017722    0.128199
+    10        -0.368843084623923    4.602e-07    0.005568    0.017723    0.017723    0.128198
+    11        -0.368843099026055    1.246e-07    0.005568    0.017723    0.017723    0.128198
+    12        -0.368843101802470    3.400e-08    0.005568    0.017723    0.017723    0.128198
+    13        -0.368843102632047    8.788e-09    0.005568    0.017723    0.017723    0.128198
 
 	Iterations converged.
 
 
 	Largest TIA Amplitudes:
-	          6   0         0.0137314001
-	          6   2        -0.0064752642
-	          7  17        -0.0058546052
-	          5   0        -0.0054830915
-	          6   9         0.0050129170
-	          3   1         0.0049539855
-	          8  17        -0.0043004430
-	          6   1        -0.0041980484
-	          4   9        -0.0039633122
-	          7  18         0.0038967923
+	          6   0         0.0137313966
+	          6   2        -0.0064752639
+	          7  17        -0.0058546059
+	          5   0        -0.0054830979
+	          6   9         0.0050129178
+	          3   1         0.0049539841
+	          8  17        -0.0043004443
+	          6   1        -0.0041980390
+	          4   9        -0.0039633123
+	          7  18         0.0038967922
 
 	Largest TIjAb Amplitudes:
-	  8   8  17  17        -0.0347803133
-	  6   6   2   2        -0.0346572608
-	  6   6   0   0        -0.0242680503
-	  6   6   0   2         0.0221026069
-	  6   6   2   0         0.0221026069
-	  8   8  18  18        -0.0216499648
-	  7   7  18  18        -0.0211241949
-	  7   8  17  17        -0.0203462179
-	  8   7  17  17        -0.0203462179
-	  7   8  18  18         0.0189838367
+	  8   8  17  17        -0.0347803136
+	  6   6   2   2        -0.0346572612
+	  6   6   0   0        -0.0242680488
+	  6   6   0   2         0.0221026068
+	  6   6   2   0         0.0221026068
+	  8   8  18  18        -0.0216499642
+	  7   7  18  18        -0.0211241947
+	  7   8  17  17        -0.0203462181
+	  8   7  17  17        -0.0203462181
+	  7   8  18  18         0.0189838363
 
-	SCF energy       (chkpt)              = -174.418433001624578
+	SCF energy       (chkpt)              = -174.418433001624663
 	Reference energy (file100)            = -174.418433001624720
 
-	Opposite-spin MP2 correlation energy  =   -0.260477904536016
-	Same-spin MP2 correlation energy      =   -0.096158336190617
-	MP2 correlation energy                =   -0.356636240726634
-      * MP2 total energy                      = -174.775069242351350
+	Opposite-spin MP2 correlation energy  =   -0.260477904530766
+	Same-spin MP2 correlation energy      =   -0.096158336186725
+	MP2 correlation energy                =   -0.356636240717491
+      * MP2 total energy                      = -174.775069242342198
 
-	Opposite-spin CCSD correlation energy =   -0.280899923857957
-	Same-spin CCSD correlation energy     =   -0.087943177709775
-	CCSD correlation energy               =   -0.368843101561144
-      * CCSD total energy                     = -174.787276103185860
+	Opposite-spin CCSD correlation energy =   -0.280899925278620
+	Same-spin CCSD correlation energy     =   -0.087943177357641
+	CCSD correlation energy               =   -0.368843102632047
+      * CCSD total energy                     = -174.787276104256762
 
 
-*** tstop() called on QuickSilver.local at Mon Jan 23 15:03:50 2012
+*** tstop() called on ganymede.local at Wed Jul 22 14:42:57 2015
 Module time:
-	user time   =       0.76 seconds =       0.01 minutes
-	system time =       0.45 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       0.72 seconds =       0.01 minutes
+	system time =       0.51 seconds =       0.01 minutes
+	total time  =         28 seconds =       0.47 minutes
 Total time:
-	user time   =       1.12 seconds =       0.02 minutes
-	system time =       0.55 seconds =       0.01 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       1.74 seconds =       0.03 minutes
+	system time =       0.64 seconds =       0.01 minutes
+	total time  =         32 seconds =       0.53 minutes
 
-*** tstart() called on QuickSilver.local
-*** at Mon Jan 23 15:03:50 2012
+*** tstart() called on ganymede.local
+*** at Wed Jul 22 14:42:57 2015
 
 
 			**************************
@@ -486,18 +563,18 @@ Total time:
 			**************************
 
 
-*** tstop() called on QuickSilver.local at Mon Jan 23 15:03:51 2012
+*** tstop() called on ganymede.local at Wed Jul 22 14:42:59 2015
 Module time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
 	system time =       0.06 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       1.20 seconds =       0.02 minutes
-	system time =       0.61 seconds =       0.01 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       1.81 seconds =       0.03 minutes
+	system time =       0.70 seconds =       0.01 minutes
+	total time  =         34 seconds =       0.57 minutes
 
-*** tstart() called on QuickSilver.local
-*** at Mon Jan 23 15:03:51 2012
+*** tstart() called on ganymede.local
+*** at Wed Jul 22 14:43:00 2015
 
 
 			**************************
@@ -507,10 +584,10 @@ Total time:
 
 	Nuclear Rep. energy (chkpt)   =   46.780362058359806
 	Reference           (chkpt)   = 0
-	SCF energy          (chkpt)   = -174.418433001624578
+	SCF energy          (chkpt)   = -174.787276104256762
 	Reference energy    (CC_INFO) = -174.418433001624720
-	CCSD energy         (CC_INFO) =   -0.368843101561144
-	Total CCSD energy   (CC_INFO) = -174.787276103185860
+	CCSD energy         (CC_INFO) =   -0.368843102632047
+	Total CCSD energy   (CC_INFO) = -174.787276104256762
 
 	Input parameters:
 	-----------------
@@ -529,43 +606,43 @@ Total time:
 	Labels for eigenvector 1:
 	LIA 0 -1, Lia 0 -1, LIJAB 0 -1, Lijab 0 -1, LIjAb 0 -1, 2LIjAb - LIjbA 0 -1
 	Deleting old CC_LAMBDA data.
-	Symmetry of left-hand state: A'
-	Symmetry of left-hand eigenvector: A'
+	Symmetry of left-hand state: Ap
+	Symmetry of left-hand eigenvector: Ap
 
 	          Solving Lambda Equations
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0        -0.368917657479702    0.000e+00
-	   1        -0.364932522710935    1.124e-02
-	   2        -0.364255665845356    1.639e-03
-	   3        -0.364135867455912    9.744e-04
-	   4        -0.364111552241288    4.261e-04
-	   5        -0.364122022092683    1.761e-04
-	   6        -0.364124905790445    4.164e-05
-	   7        -0.364124461359542    9.123e-06
-	   8        -0.364124452963068    1.977e-06
-	   9        -0.364124473967865    5.096e-07
-	  10        -0.364124471235739    1.305e-07
-	  11        -0.364124470197863    3.649e-08
+	   0        -0.368917658538275    0.000e+00
+	   1        -0.364932522974446    1.124e-02
+	   2        -0.364255665895154    1.639e-03
+	   3        -0.364135867442077    9.744e-04
+	   4        -0.364111552220203    4.261e-04
+	   5        -0.364122022063646    1.761e-04
+	   6        -0.364124905762903    4.164e-05
+	   7        -0.364124461331381    9.123e-06
+	   8        -0.364124452934735    1.977e-06
+	   9        -0.364124473939456    5.096e-07
+	  10        -0.364124471207294    1.305e-07
+	  11        -0.364124470169413    3.649e-08
 
 	Largest LIA Amplitudes:
-	          6   0         0.0088889556
+	          6   0         0.0088889522
 	          6   9         0.0046230270
-	          6   2        -0.0043558327
-	          7  17        -0.0037331035
-	          3   1         0.0037156071
-	          4   9        -0.0037153617
-	          5   0        -0.0036782953
-	          6   1        -0.0029821744
-	          4   2        -0.0027873895
-	          3  10         0.0027698858
+	          6   2        -0.0043558317
+	          7  17        -0.0037331041
+	          3   1         0.0037156073
+	          4   9        -0.0037153618
+	          5   0        -0.0036782947
+	          6   1        -0.0029821783
+	          4   2        -0.0027873898
+	          3  10         0.0027698857
 
 	Largest LIjAb Amplitudes:
 	  8   8  17  17        -0.0343768543
 	  6   6   2   2        -0.0334418934
-	  6   6   0   0        -0.0231204892
-	  8   8  18  18        -0.0214011798
+	  6   6   0   0        -0.0231204890
+	  8   8  18  18        -0.0214011799
 	  6   6   0   2         0.0212279748
 	  6   6   2   0         0.0212279748
 	  7   7  18  18        -0.0210288529
@@ -575,20 +652,20 @@ Total time:
 
 	Iterations converged.
 
-	Overlap <L|e^T> =        0.92327310293
+	Overlap <L|e^T> =        0.92327310270
 
-*** tstop() called on QuickSilver.local at Mon Jan 23 15:03:52 2012
+*** tstop() called on ganymede.local at Wed Jul 22 14:43:04 2015
 Module time:
-	user time   =       0.34 seconds =       0.01 minutes
-	system time =       0.14 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 Total time:
-	user time   =       1.54 seconds =       0.03 minutes
-	system time =       0.75 seconds =       0.01 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       2.17 seconds =       0.04 minutes
+	system time =       0.82 seconds =       0.01 minutes
+	total time  =         39 seconds =       0.65 minutes
 
-*** tstart() called on QuickSilver.local
-*** at Mon Jan 23 15:03:52 2012
+*** tstart() called on ganymede.local
+*** at Wed Jul 22 14:43:04 2015
 
 			**************************
 			*                        *
@@ -610,159 +687,72 @@ Total time:
 	Model III        =     No
 	Linear Model     =     No
 	ABCD             =     NEW
-	Irrep X          =     A'
-	Irrep Y          =     A'
-	Irrep Z          =     A"
-	Irrep RX         =     A"
-	Irrep RY         =     A"
-	Irrep RZ         =     A'
+	Irrep X          =     Ap
+	Irrep Y          =     Ap
+	Irrep Z          =    App
+	Irrep RX         =    App
+	Irrep RY         =    App
+	Irrep RZ         =     Ap
 	Gauge            =    LENGTH
 	Applied field  0 =  0.000
 	Analyze X2 Amps  =    No
 	Local CC         =    No
 
-    Molecular point group: cs
-
-    Geometry (in Bohr), charge = 0, multiplicity = 1:
-
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           O         -0.947809457408    -0.132934425181     0.000000000000
-           H         -1.513924046286     1.610489987673     0.000000000000
-           F          0.878279174340     0.026485523618     0.000000000000
-
-    Number of unique atoms: 3
-
-    Atoms equivalency:
-       unique atom 0: 0 
-       unique atom 1: 1 
-       unique atom 2: 2 
-
-  -AO BASIS SET INFORMATION:
-    Total number of shells = 15
-    Number of primitives   = 49
-    Number of AO           = 35
-    Number of SO           = 33
-    Maximum AM             = 2
-    Spherical Harmonics    = TRUE
-
-  -Contraction Scheme:
-    Atom   Type   All Primitives // Shells:
-   ------ ------ --------------------------
-       1     O     17s 4p 1d // 3s 2p 1d 
-       2     H     4s 1p // 2s 1p 
-       3     F     17s 4p 1d // 3s 2p 1d 
-
-  -Basis set on unique center 1: O
-     S (      11720.00000000           0.56970172)
-       (       1759.00000000           1.05835210)
-       (        400.80000000           1.77628106)
-       (        113.70000000           2.59941189)
-       (         37.03000000           3.02684600)
-       (         13.27000000           2.22239433)
-       (          5.02500000           0.64779543)
-       (          1.01300000           0.01111870)
-     S (      11720.00000000          -0.25243426)
-       (       1759.00000000          -0.48049109)
-       (        400.80000000          -0.78629966)
-       (        113.70000000          -1.25416990)
-       (         37.03000000          -1.49121792)
-       (         13.27000000          -1.61083178)
-       (          5.02500000          -0.54979838)
-       (          1.01300000           0.78828221)
-     S (          0.30230000           0.29056192)
-     P (         17.70000000           3.24361935)
-       (          3.85400000           2.56727965)
-       (          1.04600000           1.11766932)
-     P (          0.27530000           0.28424828)
-     D (          1.18500000           2.21521850)
-
-  -Basis set on unique center 2: H
-     S (         13.01000000           0.16354842)
-       (          1.96200000           0.27741754)
-       (          0.44460000           0.31574931)
-     S (          0.12200000           0.14712279)
-     P (          0.72700000           0.95688138)
-
-  -Basis set on unique center 3: F
-     S (      14710.00000000           0.68605396)
-       (       2207.00000000           1.27377561)
-       (        502.80000000           2.13815742)
-       (        142.60000000           3.12913526)
-       (         46.47000000           3.63658177)
-       (         16.70000000           2.64027899)
-       (          6.35600000           0.75501475)
-       (          1.31600000           0.01342093)
-     S (      14710.00000000          -0.30576437)
-       (       2207.00000000          -0.58432291)
-       (        502.80000000          -0.95679530)
-       (        142.60000000          -1.52808641)
-       (         46.47000000          -1.81962328)
-       (         16.70000000          -1.95730098)
-       (          6.35600000          -0.62382891)
-       (          1.31600000           0.95940115)
-     S (          0.38970000           0.35152636)
-     P (         22.67000000           4.57148657)
-       (          4.97700000           3.60837656)
-       (          1.34700000           1.51959530)
-     P (          0.34710000           0.37975924)
-     D (          1.64000000           3.91188600)
-
 
 	Computing Mu_X-Perturbed Wave Function (0.000 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         3.976751861500
-	   1         4.972589740699    2.597e-01
-	   2         5.830519227654    1.478e-01
-	   3         5.866075558985    4.363e-02
-	   4         5.892854013179    2.424e-02
-	   5         5.896437495541    3.929e-03
-	   6         5.895342130047    1.112e-03
-	   7         5.895385827086    3.007e-04
-	   8         5.895365485461    7.196e-05
-	   9         5.895352712436    1.804e-05
-	  10         5.895354082576    4.329e-06
-	  11         5.895356078069    1.026e-06
-	  12         5.895356844131    2.202e-07
+	   0         3.976751890377
+	   1         4.972589780256    2.597e-01
+	   2         5.830519284897    1.478e-01
+	   3         5.866075617807    4.363e-02
+	   4         5.892854072992    2.424e-02
+	   5         5.896437555542    3.929e-03
+	   6         5.895342190006    1.112e-03
+	   7         5.895385887055    3.007e-04
+	   8         5.895365545429    7.196e-05
+	   9         5.895352772404    1.804e-05
+	  10         5.895354142544    4.329e-06
+	  11         5.895356138037    1.026e-06
+	  12         5.895356904099    2.202e-07
 	-----------------------------------------
 	Converged Mu_X-Perturbed Wfn to 5.099e-08
 
 	Computing Mu_Y-Perturbed Wave Function (0.000 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         4.189912882013
-	   1         5.316215440929    3.468e-01
-	   2         6.621374958851    2.143e-01
-	   3         6.657896584431    5.176e-02
-	   4         6.705061216649    2.583e-02
-	   5         6.710746810019    3.633e-03
-	   6         6.710441197956    1.007e-03
-	   7         6.710586073596    1.961e-04
-	   8         6.710602153632    4.222e-05
-	   9         6.710595578387    1.178e-05
-	  10         6.710596799914    3.554e-06
-	  11         6.710598657841    1.037e-06
-	  12         6.710599550063    2.329e-07
+	   0         4.189912856449
+	   1         5.316215401153    3.468e-01
+	   2         6.621374892771    2.143e-01
+	   3         6.657896517917    5.176e-02
+	   4         6.705061149578    2.583e-02
+	   5         6.710746743025    3.633e-03
+	   6         6.710441130932    1.007e-03
+	   7         6.710586006568    1.961e-04
+	   8         6.710602086602    4.222e-05
+	   9         6.710595511357    1.178e-05
+	  10         6.710596732884    3.554e-06
+	  11         6.710598590811    1.037e-06
+	  12         6.710599483033    2.329e-07
 	-----------------------------------------
 	Converged Mu_Y-Perturbed Wfn to 4.263e-08
 
 	Computing Mu_Z-Perturbed Wave Function (0.000 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         2.373344876506
-	   1         2.824593333896    1.684e-01
-	   2         3.156590672444    1.031e-01
-	   3         3.191926384084    4.791e-02
-	   4         3.218019293843    1.967e-02
-	   5         3.217647248985    5.012e-03
-	   6         3.218678116948    1.279e-03
-	   7         3.218717437624    2.750e-04
-	   8         3.218701643572    6.891e-05
-	   9         3.218708523979    1.640e-05
-	  10         3.218709880172    5.543e-06
-	  11         3.218709458431    1.454e-06
-	  12         3.218708965307    4.171e-07
+	   0         2.373344873587
+	   1         2.824593328795    1.684e-01
+	   2         3.156590661638    1.031e-01
+	   3         3.191926371444    4.791e-02
+	   4         3.218019280015    1.967e-02
+	   5         3.217647235212    5.012e-03
+	   6         3.218678103160    1.279e-03
+	   7         3.218717423832    2.750e-04
+	   8         3.218701629780    6.891e-05
+	   9         3.218708510187    1.640e-05
+	  10         3.218709866380    5.543e-06
+	  11         3.218709444639    1.454e-06
+	  12         3.218708951515    4.171e-07
 	-----------------------------------------
 	Converged Mu_Z-Perturbed Wfn to 9.472e-08
 
@@ -773,22 +763,22 @@ Total time:
    Evaluated at omega = 0.000000 E_h (Inf nm, 0.000 eV,     0.00 cm-1)
   -------------------------------------------------------------------------
 
-                0                  1                  2        
+                   0                     1                     2        
 
-    0   5.725436996511798 -1.786158500275983  0.000000000000000
-    1  -1.786158500275983  6.486317406373391  0.000000000000000
-    2   0.000000000000000  0.000000000000000  3.162419719886142
+    0      5.725437017198855    -1.786158507468984     0.000000000000000
+    1     -1.786158507468984     6.486317362374262     0.000000000000000
+    2      0.000000000000000     0.000000000000000     3.162419713623457
 
-	alpha_(0.000) =      15.374174122771 a.u.
+	alpha_(0.000) =       5.124724697732 a.u.
 
-*** tstop() called on QuickSilver.local at Mon Jan 23 15:03:56 2012
+*** tstop() called on ganymede.local at Wed Jul 22 14:43:21 2015
 Module time:
-	user time   =       1.79 seconds =       0.03 minutes
-	system time =       0.99 seconds =       0.02 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       1.65 seconds =       0.03 minutes
+	system time =       0.74 seconds =       0.01 minutes
+	total time  =         17 seconds =       0.28 minutes
 Total time:
-	user time   =       3.33 seconds =       0.06 minutes
-	system time =       1.74 seconds =       0.03 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =       3.82 seconds =       0.06 minutes
+	system time =       1.56 seconds =       0.03 minutes
+	total time  =         56 seconds =       0.93 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

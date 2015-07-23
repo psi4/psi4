@@ -171,7 +171,7 @@ html_favicon = 'favicon-psi4.ico'
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-html_last_updated_fmt = '%b %d, %Y'
+html_last_updated_fmt = '%A, %d %B %Y %I:%M%p'
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
@@ -345,17 +345,15 @@ extlinks = {'source':    ('https://github.com/psi4/psi4public/blob/master/%s', '
 pngmath_latex_preamble=r'\usepackage[active]{preview}'
 pngmath_use_preview=True
 
-trac_url = 'http://sirius.chem.vt.edu/trac/'
-
 from docutils import nodes, utils
 from docutils.parsers.rst import roles
 import urllib
 
-def trac_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
-  ref = trac_url + '/intertrac/' + urllib.quote(text, safe='')
-  node = nodes.reference(rawtext, utils.unescape(text), refuri=ref, **options)
-  return [node],[]
-
-roles.register_canonical_role('trac', trac_role)
+#def trac_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+#  ref = trac_url + '/intertrac/' + urllib.quote(text, safe='')
+#  node = nodes.reference(rawtext, utils.unescape(text), refuri=ref, **options)
+#  return [node],[]
+#
+#roles.register_canonical_role('trac', trac_role)
 
 

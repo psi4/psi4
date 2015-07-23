@@ -35,7 +35,7 @@ void emit_hrr_build_macro()
   /*int split;*/
   int la, lb;
   int ld, lc, ld_max;
-  int curr_count;/*,curr_subfunction;*/
+  int curr_count=0;/*,curr_subfunction;*/
   /*int num_subfunctions;, subbatch_length;*/
   /*int f;*/
   char code_name[20];

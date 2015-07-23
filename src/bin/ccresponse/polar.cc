@@ -125,7 +125,13 @@ void polar(void)
     outfile->Printf( "  -------------------------------------------------------------------------\n");
     mat_print(tensor[i], 3, 3, "outfile");
     trace[i] = tensor[i][0][0] + tensor[i][1][1] + tensor[i][2][2];
-    outfile->Printf( "\n\talpha_(%5.3f) = %20.12f a.u.\n", params.omega[i], trace[i]);
+    outfile->Printf( "\n\talpha_(%5.3f) = %20.12f a.u.\n", params.omega[i], trace[i]/3.0);
+
+    // Need to generalize this for multi-wavelength calcs
+    if (params.wfn == "CC2")
+      Process::environment.globals["CC2 DIPOLE POLARIZABILITY"] = trace[i]/3.0;
+    else
+      Process::environment.globals["CCSD DIPOLE POLARIZABILITY"] = trace[i]/3.0;
   }
 
   if(params.nomega > 1) {  /* print a summary table for multi-wavelength calcs */
@@ -140,7 +146,7 @@ void polar(void)
     outfile->Printf(   "\t E_h      nm        a.u.        \n");
     outfile->Printf(   "\t-----   ------ ----------------\n");
     for(i=0; i < params.nomega; i++)
-      outfile->Printf( "\t%5.3f   %6.2f      %10.5f\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), trace[i]);
+      outfile->Printf( "\t%5.3f   %6.2f      %10.5f\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), trace[i]/3.0);
   }
 
   for(i=0; i < params.nomega; i++)

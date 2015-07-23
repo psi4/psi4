@@ -1370,7 +1370,13 @@ void psi4_python_module_finalize()
 
 void translate_psi_exception(const PsiException& e)
 {
+#ifdef DEBUG
+    PyObject* message = PyString_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
+    PyErr_SetObject(PyExc_RuntimeError, message);
+    Py_DECREF(message);
+#else
     PyErr_SetString(PyExc_RuntimeError, e.what());
+#endif
 }
 
 // Tell python about the default final argument to the array setting functions

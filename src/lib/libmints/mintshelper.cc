@@ -375,7 +375,7 @@ void MintsHelper::one_electron_integrals()
 
     // Compute and dump one-electron SO integrals.
 
-    if (options_.get_str("REL_METHOD") == "NO" || options_.get_str("REL_METHOD") == "DKH"){
+    if (options_.get_str("RELATIVISTIC") == "NO" || options_.get_str("RELATIVISTIC") == "DKH"){
         // Overlap
         so_overlap()->save(psio_, PSIF_OEI);
 
@@ -385,7 +385,7 @@ void MintsHelper::one_electron_integrals()
         // Potential -- DKH perturbation added to potential integrals if needed.
         so_potential()->save(psio_, PSIF_OEI);
     }
-    else if (options_.get_str("REL_METHOD") == "X2C"){
+    else if (options_.get_str("RELATIVISTIC") == "X2C"){
         outfile->Printf( " OEINTS: Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
     X2CInt x2cint;
     SharedMatrix T,V;
@@ -523,6 +523,7 @@ SharedMatrix MintsHelper::ao_dkh(int dkh_order)
 
     return H_dk;
 #else
+    UNUSED(dkh_order);
     outfile->Printf("    Douglas-Kroll-Hess integrals requested but are not available.\n");
     throw PSIEXCEPTION("Douglas-Kroll-Hess integrals requested but were not compiled in.");
 #endif
@@ -1019,7 +1020,7 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations)
             }
         }
 
-        if (options_.get_str("REL_METHOD") == "DKH") {
+        if (options_.get_str("RELATIVISTIC") == "DKH") {
             int dkh_order = options_.get_int("DKH_ORDER");
             SharedMatrix dkh = so_dkh(dkh_order);
 
@@ -1266,7 +1267,7 @@ SharedMatrix MintsHelper::mo_transform(SharedMatrix Iso, SharedMatrix C1, Shared
     double** Imop = Imo->pointer();
 
     // Currently 2143, need to transform back
-    int left, right, tmp;
+    int left, right;
     for (int i = 0; i < n1; i++) {
         for (int j = 0; j < n3; j++) {
             for (int a = 0; a < n2; a++) {

@@ -210,7 +210,7 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
     }
     std::sort(mos.begin(), mos.end());
 
-    for (int i=0; i<mos.size(); ++i) {
+    for (int i=0; i<(int)mos.size(); ++i) {
         int h = mos[i].second.first;
         int n = mos[i].second.second;
 
@@ -235,7 +235,7 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
         }
         std::sort(mos.begin(), mos.end());
 
-        for (int i=0; i<mos.size(); ++i) {
+        for (int i=0; i<(int)mos.size(); ++i) {
             int h = mos[i].second.first;
             int n = mos[i].second.second;
 
@@ -306,7 +306,7 @@ void NBOWriter::write(const std::string &filename)
         //the second mol.Z() should be modified when pseudopotentials are implemented
         printer->Printf( "%2d  %2d  %20.12f %20.12f %20.12f\n",
                 static_cast<int>(mol.Z(i)), static_cast<int>(mol.Z(i)),
-                mol.x(i)*pc_bohr2angstroms, mol.y(i)*pc_bohr2angstroms, 
+                mol.x(i)*pc_bohr2angstroms, mol.y(i)*pc_bohr2angstroms,
                 mol.z(i)*pc_bohr2angstroms);
     }
     printer->Printf( " $END\n");
