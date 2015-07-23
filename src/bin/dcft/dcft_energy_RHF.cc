@@ -21,97 +21,15 @@
  */
 
 #include "dcft.h"
-#include <cmath>
-#include <libdpd/dpd.h>
-#include <libtrans/integraltransform.h>
-#include <libdiis/diismanager.h>
-#include <libpsio/psio.hpp>
-#include <libpsio/psio.h>
 #include <psifiles.h>
+#include <libpsio/psio.hpp>
+#include <libtrans/integraltransform.h>
 #include "defines.h"
-
-using namespace boost;
 
 namespace psi{ namespace dcft{
 
 /**
- * Compute DCFT energy using restricted HF reference
- */
-double DCFTSolver::compute_energy_RHF()
-{
-    orbitalsDone_    = false;
-    cumulantDone_ = false;
-    densityConverged_ = false;
-    energyConverged_ = false;
-
-    // Perform SCF guess for the orbitals
-    scf_guess_RHF();
-
-    // Perform MP2 guess for the cumulant
-    mp2_guess_RHF();
-
-    // Print out information about the job
-    outfile->Printf( "\n\tDCFT Functional:    \t\t %s", options_.get_str("DCFT_FUNCTIONAL").c_str());
-    outfile->Printf( "\n\tAlgorithm:          \t\t %s", options_.get_str("ALGORITHM").c_str());
-    outfile->Printf( "\n\tAO-Basis Integrals: \t\t %s", options_.get_str("AO_BASIS").c_str());
-    if (options_.get_str("ALGORITHM") == "QC") {
-        outfile->Printf( "\n\tQC type:            \t\t %s", options_.get_str("QC_TYPE").c_str());
-        outfile->Printf( "\n\tQC coupling:        \t\t %s", options_.get_bool("QC_COUPLING") ? "TRUE" : "FALSE");
-    }
-
-    // Things that are not implemented yet...
-    if (options_.get_str("DERTYPE") == "FIRST" && (options_.get_str("DCFT_FUNCTIONAL") == "DC-12"))
-        throw FeatureNotImplemented("DC-12 functional", "Analytic gradients", __FILE__, __LINE__);
-    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0")
-        throw FeatureNotImplemented("CEPA0", "AO_BASIS = DISK", __FILE__, __LINE__);
-    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("ALGORITHM") == "QC" && options_.get_str("QC_TYPE") == "SIMULTANEOUS")
-        throw FeatureNotImplemented("Simultaneous QC", "AO_BASIS = DISK", __FILE__, __LINE__);
-    if (!(options_.get_str("ALGORITHM") == "TWOSTEP") && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0")
-        throw FeatureNotImplemented("CEPA0", "Requested DCFT algorithm", __FILE__, __LINE__);
-    if (options_.get_str("ALGORITHM") == "QC" || options_.get_str("ALGORITHM") == "TWOSTEP")
-        throw FeatureNotImplemented("Spin-adapted RHF-reference DCFT", "ALGORITHM = QC/TWOSTEP", __FILE__, __LINE__);
-
-    // Orbital-optimized stuff
-    if (options_.get_str("ALGORITHM") == "TWOSTEP" && orbital_optimized_)
-        throw PSIEXCEPTION("Two-step algorithm cannot be run for orbital-optimized DCFT methods");
-
-    // Choose a paricular algorithm and solve the equations
-    if (options_.get_str("ALGORITHM") == "SIMULTANEOUS") {
-        if (!orbital_optimized_) {
-            throw PSIEXCEPTION("RHF reference only available for orbital-optimized DCFT methods.");
-        }
-        else {
-            run_simult_dcft_oo_RHF();
-        }
-    }
-    else {
-        throw PSIEXCEPTION("Unknown DCFT algoritm");
-    }
-
-    // If not converged -> Break
-    if(!orbitalsDone_ || !cumulantDone_ || !densityConverged_)
-        throw ConvergenceError<int>("DCFT", maxiter_, cumulant_threshold_, cumulant_convergence_, __FILE__, __LINE__);
-
-    outfile->Printf( "\n\t*DCFT SCF Energy                                 = %20.15f\n", scf_energy_);
-    outfile->Printf(   "\t*DCFT Lambda Energy                              = %20.15f\n", lambda_energy_);
-    outfile->Printf(   "\t*DCFT Total Energy                               = %20.15f\n", new_total_energy_);
-
-    Process::environment.globals["CURRENT ENERGY"] = new_total_energy_;
-    Process::environment.globals["DCFT TOTAL ENERGY"] = new_total_energy_;
-    Process::environment.globals["DCFT SCF ENERGY"] = scf_energy_;
-    Process::environment.globals["DCFT LAMBDA ENERGY"] = lambda_energy_;
-
-    if(!options_.get_bool("MO_RELAX")){
-        outfile->Printf( "Warning!  The orbitals were not relaxed\n");
-    }
-
-    print_opdm_RHF();
-
-    return new_total_energy_;
-}
-
-/**
- * Uses the intermediates to compute the energy
+ * Uses the intermediates to compute the energy for RHF reference
  */
 void
 DCFTSolver::compute_dcft_energy_RHF()
@@ -169,4 +87,4 @@ DCFTSolver::compute_dcft_energy_RHF()
 
 }
 
-}} // Namespace
+}}
