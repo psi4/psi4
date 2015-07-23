@@ -3,7 +3,7 @@ set(TestsNotSetUpRight cfour optking testgrendel)
 
 # In order to get CTest to run tests in separate categories,
 # labels are used. All tests must carry the label "psi".
-# 
+#
 # The following labels are defined:
 #
 #  longtests   = The (as of right now) 4 really long tests
@@ -287,9 +287,9 @@ add_subdirectory(zaptn-nh2)
 
 ###### START internal-executable-dependent tests ################
 
-# For code that is distributed with and required for psi4 to build, 
-#   and thus should always be tested, but is developed and maintained 
-#   externally and dropped into psi4 as version increment, and thus 
+# For code that is distributed with and required for psi4 to build,
+#   and thus should always be tested, but is developed and maintained
+#   externally and dropped into psi4 as version increment, and thus
 #   should get its own subdirectory:
 #   * Follow directory structure described below for ext-exe-dep
 #   * Follow un-qualified inclusion as above for normal tests
@@ -301,7 +301,7 @@ add_subdirectory(libefp)
 ###### START external-executable-dependent tests ################
 
 # Set up groups of test cases analogous to dftd3 below
-#   In particular, new ext-exe-dep tests should 
+#   In particular, new ext-exe-dep tests should
 #   * get their own directory in tests (e.g., tests/dftd3)
 #   * have a name that doesn't repeat the exe (e.g., tests/dftd3/energy)
 #   * be listed in the exeShort and exeLong variable name as exe-name (e.g., dftd3-energy)
@@ -345,6 +345,7 @@ endif()
 # External module dependent tests
 if(ENABLE_PCMSOLVER)
    add_subdirectory(pcm_scf)
+   add_subdirectory(pcm_dft)
 endif()
 
 if(NOT PERL_FOUND)

@@ -124,7 +124,7 @@ class Communicator: private CommGuts{
        *  list of available operations is available in Algorithms.h,
        *  and this function assumes B is preallocated.
        *
-       *  \param[in] LocalData \f$A_i\f$ from the description
+       *  \param[in] LocalData A_i from the description
        *  \param[in] NElem  M from the description
        *  \param[out] Target The array B from the description,
        *                     preallocated
@@ -145,7 +145,7 @@ class Communicator: private CommGuts{
        *
        *   \param[in] LocalData The data the current process has
        *                  collected
-       *   \param[in] NElmen    The number of data points the
+       *   \param[in] NElem    The number of data points the
        *                        in LocalData
        *   \param[out] Target  Where the data will go on the root
        *                       process (ignored on all others)

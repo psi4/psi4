@@ -120,7 +120,7 @@ static inline int icart(int a, int b, int c)
 {
   return (((((a+b+c+1)<<1)-a)*(a+1))>>1)-b-1;
 }
-static inline int ipure(int l, int m) { return m<0?2*-m:(m==0?0:2*m-1); }
+static inline int ipure(int, int m) { return m<0?2*-m:(m==0?0:2*m-1); }
 
 void solidharmcontrib(int sign,
                       const uint64_t &bin,const uint64_t &den,
