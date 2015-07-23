@@ -78,7 +78,7 @@ double DCFTSolver::compute_energy_RHF()
     // Choose a paricular algorithm and solve the equations
     if (options_.get_str("ALGORITHM") == "SIMULTANEOUS") {
         if (!orbital_optimized_) {
-            throw PSIEXCEPTION("RHF reference is noly available for orbital-optimized DCFT methods.");
+            throw PSIEXCEPTION("RHF reference only available for orbital-optimized DCFT methods.");
         }
         else {
             run_simult_dcft_oo_RHF();
