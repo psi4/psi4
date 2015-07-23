@@ -349,6 +349,7 @@ DCFTSolver::form_density_weighted_fock_RHF() {
         for(int ap = 0 ; ap < navirpi_[h]; ++ap){
             for(int dp = 0 ; dp < navirpi_[h]; ++dp){
                 F_VV.matrix[h][ap][dp] = nso_Fa->get(h, ap + naoccpi_[h], dp + naoccpi_[h]);
+                if (ap == dp) F_VV.matrix[h][ap][dp] += energy_level_shift_;
             }
         }
     }
