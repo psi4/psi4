@@ -331,6 +331,8 @@ public:
     const Dimension& frzcpi() const { return frzcpi_; }
     /// Returns the frozen virtual orbitals per irrep array.
     const Dimension& frzvpi() const { return frzvpi_; }
+    /// Sets the frozen virtual orbitals per irrep array.
+    void set_frzvpi(const Dimension& frzvpi) { for(int h=0; h < nirrep_; h++) frzvpi_[h] = frzvpi[0]; }
     /// Return the number of frozen core orbitals
     int nfrzc() const { return nfrzc_; }
     /// Return the number of alpha electrons
