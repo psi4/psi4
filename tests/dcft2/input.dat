@@ -24,6 +24,7 @@ set globals {
     df_scf_guess false
 }
 
+set dcft_functional dc-06
 energy('dcft')
 
 compare_values(refnuc, he2.nuclear_repulsion_energy(), 10, "Nuclear Repulsion Energy"); #TEST
