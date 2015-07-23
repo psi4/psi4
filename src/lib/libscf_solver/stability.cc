@@ -43,17 +43,6 @@ namespace psi{
 
 namespace scf {
 
-//extern "C"
-//int read_options(std::string name, Options& options)
-//{
-//    if (name == "STABILITY"|| options.read_globals()) {
-//        /*- The amount of information printed to the output file -*/
-//        options.add_int("PRINT", 1);
-//    }
-//
-//    return true;
-//}
-
 PsiReturnType stability(Options& options)
 {
 
@@ -115,12 +104,6 @@ void UStab::set_reference(boost::shared_ptr<Wavefunction> wfn)
     basis_ = wfn->basisset();
     Eref_ = wfn->reference_energy();
 
-    //std::vector<SharedMatrix> Cs;
-    //Cs.push_back(Cocca_);
-    //Cs.push_back(Coccb_);
-    //Cs.push_back(Cvira_);
-    //Cs.push_back(Cvirb_);
-    //C_ = Matrix::horzcat(Cs);
 }
 
 void UStab::print_header()
@@ -184,6 +167,11 @@ double UStab::compute_energy()
 
     solver->solve();
 
+    // Did we converge?
+    if ( !solver->converged()) {
+        throw PSIEXCEPTION("Error: Roots not converged.");
+    }
+
     // Unpack
     const std::vector<boost::shared_ptr<Vector> > stabvecs = solver->eigenvectors();
     const std::vector<std::vector<double> > stabvals = solver->eigenvalues();
@@ -222,33 +210,47 @@ double UStab::compute_energy()
     // Finalize solver
     solver->finalize();
 
-    // Print wavefunctions and properties
-/*    sort_states();
-    print_wavefunctions();
-    print_amplitudes();
-    print_transitions();
-    print_densities();
-*/
     return 0.0;
 }
 
-void UStab::analyze()
+SharedMatrix UStab::analyze()
 {
 
     // We use the convergence criterion to eliminate zero eigenvalues
     // suffering from numerical noise.
+    int nirrep = vecs_[0].first->nirrep();
+    int eig_dims[nirrep];
+    int col_dim[nirrep];
+
+    for (int i = 0; i < nirrep; ++i) {
+        eig_dims[i] = 0;
+        col_dim[i] = 1;
+    }
+
     for (int i = 0; i < vals_.size(); ++i) {
-        if ( vals_[i] > convergence_ ) {
-            break;
-        } else if ( abs(vals_[i]) > convergence_ ) {
+        ++(eig_dims[vecs_[i].first->symmetry()]);
+
+    }
+
+    SharedMatrix eval_sym(new Matrix("SCF STABILITY EIGENVALUES", nirrep, eig_dims, col_dim));
+    for (int h = 0; h < nirrep; ++h)
+    {
+        eig_dims[h] = 0;
+    }
+
+    for (int i = 0; i < vals_.size(); ++i) {
+        int h = vecs_[i].first->symmetry();
+        eval_sym->set(h,eig_dims[h],0,vals_[i]);
+        ++eig_dims[h];
+        if ((vals_[i] < unstable_val) && (abs(vals_[i]) > convergence_) ) {
             if ( vecs_[i].first->symmetry() == 0) {
                 unstable = true;
                 unstable_val = vals_[i];
                 unstable_vec = vecs_[i];
-                break;
             }
         }
     }
+
 
     if (unstable) {
         outfile->Printf("    Negative totally symmetric eigenvalue detected: %f \n", unstable_val);
@@ -257,6 +259,8 @@ void UStab::analyze()
         outfile->Printf("    Wavefunction stable under totally symmetric rotations.\n");
         outfile->Printf("    Lowest eigenvalue: %f \n", vals_[0]);
     }
+
+    return eval_sym;
 }
 
 void UStab::rotate_orbs(double step_scale)

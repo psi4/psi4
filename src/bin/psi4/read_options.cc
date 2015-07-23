@@ -1298,7 +1298,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("FOLLOW_STEP_SCALE", 0.5);
     /*- When using STABILITY_ANALYSIS = FOLLOW, the increment to modify FOLLOW_STEP_SCALE_ value
         if we end up in the same SCF solution. !expert -*/
-    options.add_double("FOLLOW_STEP_INCREMENT", 0.5);
+    options.add_double("FOLLOW_STEP_INCREMENT", 0.2);
     /*- When using STABILITY_ANALYSIS = FOLLOW, maximum number of orbital optimization attempts
         to make the wavefunction stable. !expert -*/
     options.add_int("MAX_ATTEMPTS", 1);
