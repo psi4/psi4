@@ -17,7 +17,9 @@ set globals {
     algorithm   twostep
     basis       6-31G**
     df_scf_guess false
+    reference   uhf
 }
 
+set dcft_functional dc-06
 energy('dcft')
 
