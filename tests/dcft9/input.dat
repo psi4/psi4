@@ -45,6 +45,7 @@ set globals {
     dcft_functional odc-12
 }
 
+set reference uhf
 set ao_basis disk
 energy('dcft')
 compare_values(refscf_uhf, get_variable("SCF TOTAL ENERGY"), 10, "UHF Energy");                                       #TEST

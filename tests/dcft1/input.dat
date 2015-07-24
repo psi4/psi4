@@ -31,6 +31,7 @@ set globals {
     algorithm   simultaneous
     basis       6-31G**
     df_scf_guess false
+    reference   uhf
 }
 
 set dcft_functional dc-06
@@ -45,6 +46,9 @@ set dcft_functional dc-12
 energy('dcft')
 compare_values(refdc12scf, get_variable("DCFT SCF ENERGY"), 10, "DC-12 SCF Energy");     #TEST
 compare_values(refdc12, get_variable("DCFT TOTAL ENERGY"), 10, "DC-12 Energy");                #TEST
+
+clean()
+set reference rhf
 
 set dcft_functional odc-06
 energy('dcft')
