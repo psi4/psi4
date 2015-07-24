@@ -1065,7 +1065,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       computations -*/
 
       /*- Reference wavefunction type -*/
-      options.add_str("REFERENCE", "UHF", "UHF RHF");
+      options.add_str("REFERENCE", "RHF", "UHF RHF");
       /*- Algorithm to use for the density cumulant and orbital updates in the DCFT energy computation.
       Two-step algorithm is usually more efficient for small
       systems, but for large systems simultaneous algorithm (default) is recommended.
