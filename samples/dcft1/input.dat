@@ -20,14 +20,17 @@ set globals {
     algorithm   simultaneous
     basis       6-31G**
     df_scf_guess false
+    reference   uhf
 }
 
-energy('dcft')
-
 set dcft_functional dc-06
+energy('dcft')
 
 set dcft_functional dc-12
 energy('dcft')
+
+clean()
+set reference rhf
 
 set dcft_functional odc-06
 energy('dcft')
