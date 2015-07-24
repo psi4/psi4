@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.2.260 Driver
+                              Psi4 0.2.261 Driver
 
-                          Git: Rev {master} e753844 
+                          Git: Rev {master} 9c8e3f9 
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,9 +16,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Fri Jul 24 00:20:09 2015
+    Psi4 started on: Fri Jul 24 11:38:28 2015
 
-    Process ID:   7075
+    Process ID:  12202
     PSI4DATADIR: /Users/xiaowang/Programs/psi4/lib
     Memory level set to 256.000 MB
 
@@ -27,17 +27,29 @@
 --------------------------------------------------------------------------
 #! RHF-ODC-12 analytic gradient computations for H2O use
 #! AO_BASIS=DISK and AO_BASIS=NONE, respectively. 
+#!
+#! RHF-ODC-06 analytic gradient computations for H2O use
+#! AO_BASIS=DISK and AO_BASIS=NONE, respectively. 
 
 memory 250 mb
 
 # RHF-ODC-12 gradients
-ref_vals = [
+ref_vals_odc12 = [
            [-0.000463315203,     0.011184720362,     0.000000000000],
            [-0.000214140480,    -0.007910878984,     0.000000000000],
            [ 0.000677455683,    -0.003273841378,     0.000000000000]  
            ]
-ref_grad = psi4.Matrix(3, 3)
-ref_grad.set(ref_vals)
+ref_grad_odc12 = psi4.Matrix(3, 3)
+ref_grad_odc12.set(ref_vals_odc12)
+
+# RHF-ODC-06 gradients
+ref_vals_odc06 = [
+            [ 0.000515887175,     0.012925332081,     0.000000000000],
+            [ 0.000220010700,    -0.009272548044,     0.000000000000],
+            [-0.000735897876,    -0.003652784037,     0.000000000000]
+            ]
+ref_grad_odc06 = psi4.Matrix(3, 3)
+ref_grad_odc06.set(ref_vals_odc06)
 
 
 molecule h2o {
@@ -52,28 +64,44 @@ set globals {
     d_convergence 12
     algorithm   simultaneous
     basis       cc-pvdz
-    dcft_functional odc-12
+    reference rhf
 }
 
-set reference rhf
+set dcft_functional odc-12
 set ao_basis disk
 gradient('dcft')
 grad = psi4.wavefunction().gradient() 
-compare_matrices(ref_grad, grad, 8, "RHF-ODC-12 analytic gradient (simultaneous, ao_basis=disk)") 
+compare_matrices(ref_grad_odc12, grad, 8, "RHF-ODC-12 analytic gradient (simultaneous, ao_basis=disk)") 
 clean()
 
-set reference rhf
+set dcft_functional odc-12
 set ao_basis none
 gradient('dcft')
 grad = psi4.wavefunction().gradient() 
-compare_matrices(ref_grad, grad, 8, "RHF-ODC-12 analytic gradient (simultaneous, ao_basis=none)") 
+compare_matrices(ref_grad_odc12, grad, 8, "RHF-ODC-12 analytic gradient (simultaneous, ao_basis=none)") 
+clean()
+
+set dcft_functional odc-06
+set ao_basis disk
+gradient('dcft')
+grad = psi4.wavefunction().gradient()
+compare_matrices(ref_grad_odc06, grad, 8, "RHF-ODC-06 analytic gradient (simultaneous, ao_basis=disk)") 
+clean()
+
+set dcft_functional odc-06
+set ao_basis none
+gradient('dcft')
+grad = psi4.wavefunction().gradient()
+compare_matrices(ref_grad_odc06, grad, 8, "RHF-ODC-06 analytic gradient (simultaneous, ao_basis=none)") 
+clean()
+
 --------------------------------------------------------------------------
 
   Memory set to 250.000 MiB by Python script.
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on s172-20-49-h3.paws.uga.edu
-*** at Fri Jul 24 00:20:09 2015
+*** tstart() called on Xiaos-MacBook-Pro.local
+*** at Fri Jul 24 11:38:28 2015
 
 
          ---------------------------------------------------------
@@ -194,14 +222,14 @@ gradient() will perform analytic gradient computation.
    @DF-RHF iter   8:   -76.02658201972025   -1.62752e-06   2.34339e-05 DIIS
    @DF-RHF iter   9:   -76.02658210980954   -9.00893e-08   1.35740e-06 DIIS
    @DF-RHF iter  10:   -76.02658211056239   -7.52848e-10   4.86831e-07 DIIS
-   @DF-RHF iter  11:   -76.02658211061168   -4.92975e-11   8.62694e-08 DIIS
-   @DF-RHF iter  12:   -76.02658211061305   -1.36424e-12   6.71545e-09 DIIS
-   @DF-RHF iter  13:   -76.02658211061306   -1.42109e-14   7.48856e-10 DIIS
-   @DF-RHF iter  14:   -76.02658211061315   -8.52651e-14   1.45470e-10 DIIS
-   @DF-RHF iter  15:   -76.02658211061306    8.52651e-14   2.09121e-11 DIIS
-   @DF-RHF iter  16:   -76.02658211061305    1.42109e-14   4.23360e-12 DIIS
-   @DF-RHF iter  17:   -76.02658211061303    1.42109e-14   1.32017e-12 DIIS
-   @DF-RHF iter  18:   -76.02658211061309   -5.68434e-14   1.86142e-13 DIIS
+   @DF-RHF iter  11:   -76.02658211061171   -4.93259e-11   8.62694e-08 DIIS
+   @DF-RHF iter  12:   -76.02658211061306   -1.35003e-12   6.71545e-09 DIIS
+   @DF-RHF iter  13:   -76.02658211061308   -1.42109e-14   7.48856e-10 DIIS
+   @DF-RHF iter  14:   -76.02658211061315   -7.10543e-14   1.45470e-10 DIIS
+   @DF-RHF iter  15:   -76.02658211061303    1.13687e-13   2.09121e-11 DIIS
+   @DF-RHF iter  16:   -76.02658211061305   -1.42109e-14   4.23357e-12 DIIS
+   @DF-RHF iter  17:   -76.02658211061309   -4.26326e-14   1.32011e-12 DIIS
+   @DF-RHF iter  18:   -76.02658211061308    1.42109e-14   1.86022e-13 DIIS
 
   DF guess converged.
 
@@ -238,17 +266,17 @@ gradient() will perform analytic gradient computation.
     Memory (MB):               178
     Schwarz Cutoff:          1E-12
 
-   @RHF iter  19:   -76.02660308313021   -2.09725e-05   8.81726e-06 DIIS
-   @RHF iter  20:   -76.02660309550562   -1.23754e-08   1.42180e-06 DIIS
-   @RHF iter  21:   -76.02660309588963   -3.84006e-10   2.80329e-07 DIIS
-   @RHF iter  22:   -76.02660309590361   -1.39835e-11   8.21249e-08 DIIS
-   @RHF iter  23:   -76.02660309590489   -1.27898e-12   3.29126e-08 DIIS
-   @RHF iter  24:   -76.02660309590500   -1.13687e-13   3.03463e-09 DIIS
-   @RHF iter  25:   -76.02660309590506   -5.68434e-14   5.33337e-10 DIIS
-   @RHF iter  26:   -76.02660309590505    1.42109e-14   5.97868e-11 DIIS
-   @RHF iter  27:   -76.02660309590503    1.42109e-14   1.40003e-11 DIIS
-   @RHF iter  28:   -76.02660309590500    2.84217e-14   2.83698e-12 DIIS
-   @RHF iter  29:   -76.02660309590507   -7.10543e-14   3.05764e-13 DIIS
+   @RHF iter  19:   -76.02660308313020   -2.09725e-05   8.81726e-06 DIIS
+   @RHF iter  20:   -76.02660309550556   -1.23754e-08   1.42180e-06 DIIS
+   @RHF iter  21:   -76.02660309588958   -3.84020e-10   2.80329e-07 DIIS
+   @RHF iter  22:   -76.02660309590360   -1.40119e-11   8.21249e-08 DIIS
+   @RHF iter  23:   -76.02660309590483   -1.23634e-12   3.29126e-08 DIIS
+   @RHF iter  24:   -76.02660309590503   -1.98952e-13   3.03463e-09 DIIS
+   @RHF iter  25:   -76.02660309590505   -1.42109e-14   5.33338e-10 DIIS
+   @RHF iter  26:   -76.02660309590506   -1.42109e-14   5.97869e-11 DIIS
+   @RHF iter  27:   -76.02660309590503    2.84217e-14   1.40001e-11 DIIS
+   @RHF iter  28:   -76.02660309590500    2.84217e-14   2.83757e-12 DIIS
+   @RHF iter  29:   -76.02660309590505   -4.26326e-14   3.05520e-13 DIIS
 
   ==> Post-Iterations <==
 
@@ -276,18 +304,18 @@ gradient() will perform analytic gradient computation.
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02660309590507
+  @RHF Final Energy:   -76.02660309590505
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1638301459659299
-    One-Electron Energy =                -123.0952382024145209
-    Two-Electron Energy =                  37.9048049605435153
+    One-Electron Energy =                -123.0952382024143787
+    Two-Electron Energy =                  37.9048049605434088
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0266030959050738
+    Total Energy =                        -76.0266030959050454
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -312,18 +340,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on s172-20-49-h3.paws.uga.edu at Fri Jul 24 00:20:10 2015
+*** tstop() called on Xiaos-MacBook-Pro.local at Fri Jul 24 11:38:28 2015
 Module time:
-	user time   =       0.43 seconds =       0.01 minutes
+	user time   =       0.45 seconds =       0.01 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.43 seconds =       0.01 minutes
+	user time   =       0.45 seconds =       0.01 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on s172-20-49-h3.paws.uga.edu
-*** at Fri Jul 24 00:20:10 2015
+*** tstart() called on Xiaos-MacBook-Pro.local
+*** at Fri Jul 24 11:38:29 2015
 
 
 
@@ -339,9 +367,9 @@ Total time:
 
 
 	This is a closed-shell molecule so the spin adapted code is used!
-	*Total Hartree-Fock energy        =  -76.026603095905074
+	*Total Hartree-Fock energy        =  -76.026603095905045
 	 Total MP2 correlation energy     =   -0.204206011090802
-	*Total MP2 energy                 =  -76.230809106995878
+	*Total MP2 energy                 =  -76.230809106995849
 
 	DCFT Functional:    		 ODC-12
 	Algorithm:          		 SIMULTANEOUS
@@ -350,29 +378,29 @@ Total time:
 	*=================================================================================*
 	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
 	*---------------------------------------------------------------------------------*
-	* 1        2.943e-02         1.501e-03     -1.780e-02    -76.248604545737635      *
-	* 2        7.607e-03         4.698e-04     -8.274e-04    -76.249431960659706      *
-	* 3        1.268e-03         1.699e-04      5.872e-03    -76.243560214328539      *
-	* 4        5.897e-04         7.089e-05      1.155e-03    -76.242405104527435  S   *
-	* 5        2.384e-04         3.072e-05      4.685e-04    -76.241936599626314  S   *
-	* 6        1.317e-04         1.383e-05      1.760e-04    -76.241760629653669  S   *
-	* 7        6.172e-05         6.314e-06      7.098e-05    -76.241689645310146  S/E *
-	* 8        4.146e-06         3.117e-07      5.420e-05    -76.241635441367791  S/E *
+	* 1        2.943e-02         1.501e-03     -1.780e-02    -76.248604545737649      *
+	* 2        7.607e-03         4.698e-04     -8.274e-04    -76.249431960659749      *
+	* 3        1.268e-03         1.699e-04      5.872e-03    -76.243560214328610      *
+	* 4        5.897e-04         7.089e-05      1.155e-03    -76.242405104527478  S   *
+	* 5        2.384e-04         3.072e-05      4.685e-04    -76.241936599626371  S   *
+	* 6        1.317e-04         1.383e-05      1.760e-04    -76.241760629653683  S   *
+	* 7        6.172e-05         6.314e-06      7.098e-05    -76.241689645310160  S/E *
+	* 8        4.146e-06         3.117e-07      5.420e-05    -76.241635441367819  S/E *
 	* 9        6.485e-07         4.645e-08     -1.341e-06    -76.241636782147836  S/E *
-	* 10       1.117e-07         9.842e-09      2.398e-07    -76.241636542395653  S/E *
+	* 10       1.117e-07         9.842e-09      2.398e-07    -76.241636542395611  S/E *
 	* 11       1.845e-08         1.868e-09     -9.771e-09    -76.241636552166440  S/E *
-	* 12       5.285e-09         5.380e-10      6.923e-09    -76.241636545243935  S/E *
-	* 13       6.683e-10         1.070e-10     -3.130e-09    -76.241636548373805  S/E *
-	* 14       2.357e-10         2.549e-11      1.235e-10    -76.241636548250256  S/E *
-	* 15       6.659e-11         6.232e-12      1.038e-10    -76.241636548146417  S/E *
-	* 16       9.457e-12         1.429e-12      1.963e-11    -76.241636548126792  S/E *
-	* 17       6.765e-13         2.434e-13      2.913e-12    -76.241636548123878  S/E *
-	* 18       3.339e-13         7.730e-14     -2.274e-13    -76.241636548124106  S/E *
+	* 12       5.285e-09         5.380e-10      6.922e-09    -76.241636545243949  S/E *
+	* 13       6.683e-10         1.070e-10     -3.130e-09    -76.241636548373847  S/E *
+	* 14       2.357e-10         2.549e-11      1.236e-10    -76.241636548250284  S/E *
+	* 15       6.658e-11         6.232e-12      1.039e-10    -76.241636548146417  S/E *
+	* 16       9.461e-12         1.429e-12      1.961e-11    -76.241636548126806  S/E *
+	* 17       6.699e-13         2.434e-13      2.899e-12    -76.241636548123907  S/E *
+	* 18       3.268e-13         7.728e-14     -2.274e-13    -76.241636548124134  S/E *
 	*=================================================================================*
 
-	*ODC-12 SCF Energy                                 =  -75.795053067927356
-	*ODC-12 Lambda Energy                              =   -0.446583480196751
-	*ODC-12 Total Energy                               =  -76.241636548124106
+	*ODC-12 SCF Energy                                 =  -75.795053067927384
+	*ODC-12 Lambda Energy                              =   -0.446583480196750
+	*ODC-12 Total Energy                               =  -76.241636548124134
 
 	Orbital occupations:
 		Doubly occupied orbitals
@@ -387,18 +415,18 @@ Total time:
 		  16Ap       0.0018    17Ap       0.0016    18Ap       0.0006  
 
 
-*** tstop() called on s172-20-49-h3.paws.uga.edu at Fri Jul 24 00:20:16 2015
+*** tstop() called on Xiaos-MacBook-Pro.local at Fri Jul 24 11:38:35 2015
 Module time:
 	user time   =       0.93 seconds =       0.02 minutes
-	system time =       0.57 seconds =       0.01 minutes
+	system time =       0.60 seconds =       0.01 minutes
 	total time  =          6 seconds =       0.10 minutes
 Total time:
-	user time   =       1.36 seconds =       0.02 minutes
-	system time =       0.60 seconds =       0.01 minutes
+	user time   =       1.38 seconds =       0.02 minutes
+	system time =       0.63 seconds =       0.01 minutes
 	total time  =          7 seconds =       0.12 minutes
 
-*** tstart() called on s172-20-49-h3.paws.uga.edu
-*** at Fri Jul 24 00:20:16 2015
+*** tstart() called on Xiaos-MacBook-Pro.local
+*** at Fri Jul 24 11:38:35 2015
 
 
 
@@ -418,18 +446,18 @@ Total time:
 	nbuckets = 1
 
 
-*** tstop() called on s172-20-49-h3.paws.uga.edu at Fri Jul 24 00:20:17 2015
+*** tstop() called on Xiaos-MacBook-Pro.local at Fri Jul 24 11:38:36 2015
 Module time:
-	user time   =       0.53 seconds =       0.01 minutes
+	user time   =       0.56 seconds =       0.01 minutes
 	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.89 seconds =       0.03 minutes
-	system time =       0.63 seconds =       0.01 minutes
+	user time   =       1.94 seconds =       0.03 minutes
+	system time =       0.66 seconds =       0.01 minutes
 	total time  =          8 seconds =       0.13 minutes
 
-*** tstart() called on s172-20-49-h3.paws.uga.edu
-*** at Fri Jul 24 00:20:17 2015
+*** tstart() called on Xiaos-MacBook-Pro.local
+*** at Fri Jul 24 11:38:36 2015
 
  DERIV: Derivative code.
    by Justin Turney
@@ -529,20 +557,20 @@ Total time:
        3        0.000677455683    -0.003273841378     0.000000000000
 
 
-*** tstop() called on s172-20-49-h3.paws.uga.edu at Fri Jul 24 00:20:18 2015
+*** tstop() called on Xiaos-MacBook-Pro.local at Fri Jul 24 11:38:36 2015
 Module time:
 	user time   =       0.23 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.12 seconds =       0.04 minutes
-	system time =       0.65 seconds =       0.01 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =       2.17 seconds =       0.04 minutes
+	system time =       0.67 seconds =       0.01 minutes
+	total time  =          8 seconds =       0.13 minutes
 CURRENT ENERGY:  -76.2416365481
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on s172-20-49-h3.paws.uga.edu
-*** at Fri Jul 24 00:20:18 2015
+*** tstart() called on Xiaos-MacBook-Pro.local
+*** at Fri Jul 24 11:38:36 2015
 
 
          ---------------------------------------------------------
@@ -663,14 +691,14 @@ gradient() will perform analytic gradient computation.
    @DF-RHF iter   8:   -76.02658201972025   -1.62752e-06   2.34339e-05 DIIS
    @DF-RHF iter   9:   -76.02658210980954   -9.00893e-08   1.35740e-06 DIIS
    @DF-RHF iter  10:   -76.02658211056239   -7.52848e-10   4.86831e-07 DIIS
-   @DF-RHF iter  11:   -76.02658211061168   -4.92975e-11   8.62694e-08 DIIS
-   @DF-RHF iter  12:   -76.02658211061305   -1.36424e-12   6.71545e-09 DIIS
-   @DF-RHF iter  13:   -76.02658211061306   -1.42109e-14   7.48856e-10 DIIS
-   @DF-RHF iter  14:   -76.02658211061309   -2.84217e-14   1.45470e-10 DIIS
-   @DF-RHF iter  15:   -76.02658211061306    2.84217e-14   2.09121e-11 DIIS
-   @DF-RHF iter  16:   -76.02658211061308   -1.42109e-14   4.23367e-12 DIIS
-   @DF-RHF iter  17:   -76.02658211061309   -1.42109e-14   1.32022e-12 DIIS
-   @DF-RHF iter  18:   -76.02658211061311   -1.42109e-14   1.86078e-13 DIIS
+   @DF-RHF iter  11:   -76.02658211061171   -4.93259e-11   8.62694e-08 DIIS
+   @DF-RHF iter  12:   -76.02658211061306   -1.35003e-12   6.71545e-09 DIIS
+   @DF-RHF iter  13:   -76.02658211061308   -1.42109e-14   7.48856e-10 DIIS
+   @DF-RHF iter  14:   -76.02658211061315   -7.10543e-14   1.45470e-10 DIIS
+   @DF-RHF iter  15:   -76.02658211061303    1.13687e-13   2.09121e-11 DIIS
+   @DF-RHF iter  16:   -76.02658211061305   -1.42109e-14   4.23357e-12 DIIS
+   @DF-RHF iter  17:   -76.02658211061309   -4.26326e-14   1.32011e-12 DIIS
+   @DF-RHF iter  18:   -76.02658211061308    1.42109e-14   1.86022e-13 DIIS
 
   DF guess converged.
 
@@ -708,16 +736,485 @@ gradient() will perform analytic gradient computation.
     Schwarz Cutoff:          1E-12
 
    @RHF iter  19:   -76.02660308313021   -2.09725e-05   8.81726e-06 DIIS
-   @RHF iter  20:   -76.02660309550558   -1.23754e-08   1.42180e-06 DIIS
-   @RHF iter  21:   -76.02660309588961   -3.84034e-10   2.80329e-07 DIIS
-   @RHF iter  22:   -76.02660309590362   -1.40119e-11   8.21249e-08 DIIS
+   @RHF iter  20:   -76.02660309550559   -1.23754e-08   1.42180e-06 DIIS
+   @RHF iter  21:   -76.02660309588963   -3.84034e-10   2.80329e-07 DIIS
+   @RHF iter  22:   -76.02660309590362   -1.39977e-11   8.21249e-08 DIIS
    @RHF iter  23:   -76.02660309590487   -1.25056e-12   3.29126e-08 DIIS
-   @RHF iter  24:   -76.02660309590503   -1.56319e-13   3.03463e-09 DIIS
-   @RHF iter  25:   -76.02660309590506   -2.84217e-14   5.33337e-10 DIIS
-   @RHF iter  26:   -76.02660309590499    7.10543e-14   5.97868e-11 DIIS
-   @RHF iter  27:   -76.02660309590502   -2.84217e-14   1.40003e-11 DIIS
-   @RHF iter  28:   -76.02660309590500    1.42109e-14   2.83716e-12 DIIS
-   @RHF iter  29:   -76.02660309590500    0.00000e+00   3.05625e-13 DIIS
+   @RHF iter  24:   -76.02660309590506   -1.84741e-13   3.03463e-09 DIIS
+   @RHF iter  25:   -76.02660309590499    7.10543e-14   5.33337e-10 DIIS
+   @RHF iter  26:   -76.02660309590507   -8.52651e-14   5.97865e-11 DIIS
+   @RHF iter  27:   -76.02660309590497    9.94760e-14   1.40001e-11 DIIS
+   @RHF iter  28:   -76.02660309590500   -2.84217e-14   2.83732e-12 DIIS
+   @RHF iter  29:   -76.02660309590505   -4.26326e-14   3.05662e-13 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ap   -20.551097     2Ap    -1.335189     3Ap    -0.697224  
+       4Ap    -0.566325     1App   -0.492979  
+
+    Virtual:                                                              
+
+       5Ap     0.184976     6Ap     0.255795     7Ap     0.786256  
+       8Ap     0.852207     9Ap     1.163851     2App    1.200290  
+      10Ap     1.253705    11Ap     1.443518     3App    1.476005  
+       4App    1.673089    12Ap     1.867609    13Ap     1.932346  
+      14Ap     2.443034    15Ap     2.484314     5App    3.283478  
+       6App    3.335295    16Ap     3.507032    17Ap     3.860935  
+      18Ap     4.144884  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.02660309590505
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1638301459659299
+    One-Electron Energy =                -123.0952382024144214
+    Two-Electron Energy =                  37.9048049605434372
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -76.0266030959050454
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.4728      Y:     0.8591      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0832      Y:    -0.1475      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.3896      Y:     0.7116      Z:     0.0000     Total:     0.8113
+
+  Dipole Moment: (Debye)
+     X:     0.9903      Y:     1.8088      Z:     0.0000     Total:     2.0621
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on Xiaos-MacBook-Pro.local at Fri Jul 24 11:38:37 2015
+Module time:
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       2.68 seconds =       0.04 minutes
+	system time =       0.71 seconds =       0.01 minutes
+	total time  =          9 seconds =       0.15 minutes
+
+*** tstart() called on Xiaos-MacBook-Pro.local
+*** at Fri Jul 24 11:38:37 2015
+
+
+
+	***********************************************************************************
+	*                        Density Cumulant Functional Theory                       *
+	*                     by Alexander Sokolov and Andy Simmonett                     *
+	*                           and Xiao Wang (RHF-ODC-12)                            *
+	***********************************************************************************
+
+
+	Transforming two-electron integrals for RHF reference ...
+	Computing MP2 amplitude guess...
+
+
+	This is a closed-shell molecule so the spin adapted code is used!
+	*Total Hartree-Fock energy        =  -76.026603095905045
+	 Total MP2 correlation energy     =   -0.204206011090802
+	*Total MP2 energy                 =  -76.230809106995849
+
+	DCFT Functional:    		 ODC-12
+	Algorithm:          		 SIMULTANEOUS
+	AO-Basis Integrals: 		 NONE
+
+	*=================================================================================*
+	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
+	*---------------------------------------------------------------------------------*
+	* 1        2.943e-02         1.501e-03     -1.780e-02    -76.248604545737649      *
+	* 2        7.607e-03         4.698e-04     -8.274e-04    -76.249431960659734      *
+	* 3        1.268e-03         1.699e-04      5.872e-03    -76.243560214328568      *
+	* 4        5.897e-04         7.089e-05      1.155e-03    -76.242405104527478  S   *
+	* 5        2.384e-04         3.072e-05      4.685e-04    -76.241936599626328  S   *
+	* 6        1.317e-04         1.383e-05      1.760e-04    -76.241760629653669  S   *
+	* 7        6.172e-05         6.314e-06      7.098e-05    -76.241689645310203  S/E *
+	* 8        4.146e-06         3.117e-07      5.420e-05    -76.241635441367819  S/E *
+	* 9        6.485e-07         4.645e-08     -1.341e-06    -76.241636782147822  S/E *
+	* 10       1.117e-07         9.842e-09      2.398e-07    -76.241636542395611  S/E *
+	* 11       1.845e-08         1.868e-09     -9.771e-09    -76.241636552166440  S/E *
+	* 12       5.285e-09         5.380e-10      6.922e-09    -76.241636545243949  S/E *
+	* 13       6.683e-10         1.070e-10     -3.130e-09    -76.241636548373847  S/E *
+	* 14       2.357e-10         2.549e-11      1.236e-10    -76.241636548250256  S/E *
+	* 15       6.659e-11         6.232e-12      1.038e-10    -76.241636548146417  S/E *
+	* 16       9.459e-12         1.429e-12      1.964e-11    -76.241636548126777  S/E *
+	* 17       6.751e-13         2.434e-13      2.885e-12    -76.241636548123893  S/E *
+	* 18       3.302e-13         7.730e-14     -2.416e-13    -76.241636548124134  S/E *
+	*=================================================================================*
+
+	*ODC-12 SCF Energy                                 =  -75.795053067927384
+	*ODC-12 Lambda Energy                              =   -0.446583480196751
+	*ODC-12 Total Energy                               =  -76.241636548124134
+
+	Orbital occupations:
+		Doubly occupied orbitals
+		   1Ap       1.9999     2Ap       1.9826     1App      1.9723     3Ap       1.9672  
+		   4Ap       1.9626  
+
+		Virtual orbitals
+		   2App      0.0167     5Ap       0.0134     6Ap       0.0127     7Ap       0.0114  
+		   8Ap       0.0105     9Ap       0.0097    10Ap       0.0074    11Ap       0.0049  
+		  12Ap       0.0042     3App      0.0034    13Ap       0.0031    14Ap       0.0028  
+		   4App      0.0028     5App      0.0027     6App      0.0025    15Ap       0.0022  
+		  16Ap       0.0018    17Ap       0.0016    18Ap       0.0006  
+
+
+*** tstop() called on Xiaos-MacBook-Pro.local at Fri Jul 24 11:38:45 2015
+Module time:
+	user time   =       0.99 seconds =       0.02 minutes
+	system time =       0.74 seconds =       0.01 minutes
+	total time  =          8 seconds =       0.13 minutes
+Total time:
+	user time   =       3.67 seconds =       0.06 minutes
+	system time =       1.45 seconds =       0.02 minutes
+	total time  =         17 seconds =       0.28 minutes
+
+*** tstart() called on Xiaos-MacBook-Pro.local
+*** at Fri Jul 24 11:38:45 2015
+
+
+
+	***********************************************************************************
+	*                           DCFT Analytic Gradients Code                          *
+	*                     by Alexander Sokolov and Andy Simmonett                     *
+	*                            and Xiao Wang (RHF-ODC-12)                           *
+	***********************************************************************************
+
+	 Computing energy-weighted density matrix from one- and two-particle densities...
+	Pre-Presorting MO-basis TPDM: AB.
+
+	Sorting File: MO TPDM (AA|AA) nbuckets = 1
+	Pre-Presorting MO-basis TPDM: AA and BB.
+
+	Sorting File: MO TPDM (AA|AA) TEMP nbuckets = 1
+	nbuckets = 1
+
+
+*** tstop() called on Xiaos-MacBook-Pro.local at Fri Jul 24 11:38:46 2015
+Module time:
+	user time   =       0.55 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       4.22 seconds =       0.07 minutes
+	system time =       1.47 seconds =       0.02 minutes
+	total time  =         18 seconds =       0.30 minutes
+
+*** tstart() called on Xiaos-MacBook-Pro.local
+*** at Fri Jul 24 11:38:46 2015
+
+ DERIV: Derivative code.
+   by Justin Turney
+
+  Cartesian Displacement SALCs
+  By SALC:
+  Number of SALCs: 6, nirreps: 1
+  Project out translations: False
+  Project out rotations: False
+	irrep = 0, ncomponent = 1
+		0: atom 0, direction x, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 0, direction y, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 1, direction x, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 1, direction y, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 2, direction x, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 2, direction y, coef 1.000000
+
+  By Atomic Center:
+  Number of atomic centers: 3
+   Atomic Center 0:
+	x component, size = 1
+		0: salc 0, irrep 0, coef 1.000000
+	y component, size = 1
+		0: salc 1, irrep 0, coef 1.000000
+	z component, size = 0
+   Atomic Center 1:
+	x component, size = 1
+		0: salc 2, irrep 0, coef 1.000000
+	y component, size = 1
+		0: salc 3, irrep 0, coef 1.000000
+	z component, size = 0
+   Atomic Center 2:
+	x component, size = 1
+		0: salc 4, irrep 0, coef 1.000000
+	y component, size = 1
+		0: salc 5, irrep 0, coef 1.000000
+	z component, size = 0
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.060070970883    -0.109155010490     0.000000000000
+           H         -0.784312290764     1.548178271751     0.000000000000
+           H          1.737682191115     0.184190956570     0.000000000000
+
+	Starting first half-transformation.
+	Sorting half-transformed TPDM.
+	First half integral transformation complete.
+
+
+  -Nuclear Repulsion Energy 1st Derivatives:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        1.400384961252     2.629199943313     0.000000000000
+       2        1.086252509473    -2.298771831804     0.000000000000
+       3       -2.486637470725    -0.330428111509     0.000000000000
+
+
+  -One-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1       -3.534236251143    -6.564706747346     0.000000000000
+       2       -2.582284669822     5.667423926272     0.000000000000
+       3        6.116520920965     0.897282821074     0.000000000000
+
+
+  -Lagrangian contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.223546319305     0.413471141931     0.000000000000
+       2        0.139260749208    -0.344254800743     0.000000000000
+       3       -0.362807068513    -0.069216341188     0.000000000000
+
+
+  -Two-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        1.909841655383     3.533220382464     0.000000000000
+       2        1.356557270661    -3.032308172709     0.000000000000
+       3       -3.266398926045    -0.500912209755     0.000000000000
+
+
+  -Total gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1       -0.000463315203     0.011184720362     0.000000000000
+       2       -0.000214140480    -0.007910878984     0.000000000000
+       3        0.000677455683    -0.003273841378     0.000000000000
+
+
+*** tstop() called on Xiaos-MacBook-Pro.local at Fri Jul 24 11:38:46 2015
+Module time:
+	user time   =       0.24 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       4.46 seconds =       0.07 minutes
+	system time =       1.49 seconds =       0.02 minutes
+	total time  =         18 seconds =       0.30 minutes
+CURRENT ENERGY:  -76.2416365481
+gradient() will perform analytic gradient computation.
+
+*** tstart() called on Xiaos-MacBook-Pro.local
+*** at Fri Jul 24 11:38:46 2015
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.031788188689    -0.057762343755     0.000000000000
+           H         -0.415040188689     0.819260656245     0.000000000000
+           H          0.919541811311     0.097469656245     0.000000000000
+
+  Running in cs symmetry.
+
+  Rotational constants: A =     27.13720  B =     14.53088  C =      9.46354 [cm^-1]
+  Rotational constants: A = 813552.74647  B = 435624.91870  C = 283709.72274 [MHz]
+  Nuclear repulsion =    9.163830145965930
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-12
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'        18      18       0       0       0       0
+     A"         6       6       0       0       0       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  Starting with a DF guess...
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: 
+    Number of shells: 42
+    Number of basis function: 116
+    Number of Cartesian functions: 131
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.4387299179E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+    Occupation by irrep:
+             Ap   App 
+    DOCC [     5,    0 ]
+
+   @DF-RHF iter   1:   -68.87702573876567   -6.88770e+01   1.63294e-01 
+    Occupation by irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+
+   @DF-RHF iter   2:   -69.94360595190376   -1.06658e+00   1.33704e-01 DIIS
+   @DF-RHF iter   3:   -75.73875544067789   -5.79515e+00   4.58039e-02 DIIS
+   @DF-RHF iter   4:   -76.00163995587772   -2.62885e-01   1.24136e-02 DIIS
+   @DF-RHF iter   5:   -76.02629426944577   -2.46543e-02   1.11781e-03 DIIS
+   @DF-RHF iter   6:   -76.02653944418932   -2.45175e-04   4.97186e-04 DIIS
+   @DF-RHF iter   7:   -76.02658039220266   -4.09480e-05   6.96756e-05 DIIS
+   @DF-RHF iter   8:   -76.02658201972025   -1.62752e-06   2.34339e-05 DIIS
+   @DF-RHF iter   9:   -76.02658210980954   -9.00893e-08   1.35740e-06 DIIS
+   @DF-RHF iter  10:   -76.02658211056239   -7.52848e-10   4.86831e-07 DIIS
+   @DF-RHF iter  11:   -76.02658211061171   -4.93259e-11   8.62694e-08 DIIS
+   @DF-RHF iter  12:   -76.02658211061306   -1.35003e-12   6.71545e-09 DIIS
+   @DF-RHF iter  13:   -76.02658211061308   -1.42109e-14   7.48856e-10 DIIS
+   @DF-RHF iter  14:   -76.02658211061315   -7.10543e-14   1.45470e-10 DIIS
+   @DF-RHF iter  15:   -76.02658211061303    1.13687e-13   2.09121e-11 DIIS
+   @DF-RHF iter  16:   -76.02658211061305   -1.42109e-14   4.23357e-12 DIIS
+   @DF-RHF iter  17:   -76.02658211061309   -4.26326e-14   1.32011e-12 DIIS
+   @DF-RHF iter  18:   -76.02658211061303    5.68434e-14   1.86035e-13 DIIS
+
+  DF guess converged.
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  2
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  18    6 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 22762 non-zero two-electron integrals.
+        Stored in file 33.
+
+	Batch   1 pq = [       0,     192] index = [             0,18528]
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               178
+    Schwarz Cutoff:          1E-12
+
+   @RHF iter  19:   -76.02660308313024   -2.09725e-05   8.81726e-06 DIIS
+   @RHF iter  20:   -76.02660309550555   -1.23753e-08   1.42180e-06 DIIS
+   @RHF iter  21:   -76.02660309588960   -3.84048e-10   2.80329e-07 DIIS
+   @RHF iter  22:   -76.02660309590362   -1.40261e-11   8.21249e-08 DIIS
+   @RHF iter  23:   -76.02660309590483   -1.20792e-12   3.29126e-08 DIIS
+   @RHF iter  24:   -76.02660309590500   -1.70530e-13   3.03463e-09 DIIS
+   @RHF iter  25:   -76.02660309590503   -2.84217e-14   5.33337e-10 DIIS
+   @RHF iter  26:   -76.02660309590503    0.00000e+00   5.97866e-11 DIIS
+   @RHF iter  27:   -76.02660309590502    1.42109e-14   1.40000e-11 DIIS
+   @RHF iter  28:   -76.02660309590497    4.26326e-14   2.83728e-12 DIIS
+   @RHF iter  29:   -76.02660309590500   -2.84217e-14   3.05985e-13 DIIS
 
   ==> Post-Iterations <==
 
@@ -781,18 +1278,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on s172-20-49-h3.paws.uga.edu at Fri Jul 24 00:20:18 2015
+*** tstop() called on Xiaos-MacBook-Pro.local at Fri Jul 24 11:38:47 2015
 Module time:
-	user time   =       0.44 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.50 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.58 seconds =       0.04 minutes
-	system time =       0.67 seconds =       0.01 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =       4.99 seconds =       0.08 minutes
+	system time =       1.52 seconds =       0.03 minutes
+	total time  =         19 seconds =       0.32 minutes
 
-*** tstart() called on s172-20-49-h3.paws.uga.edu
-*** at Fri Jul 24 00:20:18 2015
+*** tstart() called on Xiaos-MacBook-Pro.local
+*** at Fri Jul 24 11:38:47 2015
 
 
 
@@ -812,62 +1309,65 @@ Total time:
 	 Total MP2 correlation energy     =   -0.204206011090802
 	*Total MP2 energy                 =  -76.230809106995807
 
-	DCFT Functional:    		 ODC-12
+	DCFT Functional:    		 ODC-06
 	Algorithm:          		 SIMULTANEOUS
-	AO-Basis Integrals: 		 NONE
+	AO-Basis Integrals: 		 DISK
 
 	*=================================================================================*
 	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
 	*---------------------------------------------------------------------------------*
-	* 1        2.943e-02         1.501e-03     -1.780e-02    -76.248604545737621      *
-	* 2        7.607e-03         4.698e-04     -8.274e-04    -76.249431960659706      *
-	* 3        1.268e-03         1.699e-04      5.872e-03    -76.243560214328511      *
-	* 4        5.897e-04         7.089e-05      1.155e-03    -76.242405104527435  S   *
-	* 5        2.384e-04         3.072e-05      4.685e-04    -76.241936599626314  S   *
-	* 6        1.317e-04         1.383e-05      1.760e-04    -76.241760629653655  S   *
-	* 7        6.172e-05         6.314e-06      7.098e-05    -76.241689645310132  S/E *
-	* 8        4.146e-06         3.117e-07      5.420e-05    -76.241635441367791  S/E *
-	* 9        6.485e-07         4.645e-08     -1.341e-06    -76.241636782147822  S/E *
-	* 10       1.117e-07         9.842e-09      2.398e-07    -76.241636542395582  S/E *
-	* 11       1.845e-08         1.868e-09     -9.771e-09    -76.241636552166383  S/E *
-	* 12       5.285e-09         5.380e-10      6.922e-09    -76.241636545243935  S/E *
-	* 13       6.683e-10         1.070e-10     -3.130e-09    -76.241636548373805  S/E *
-	* 14       2.357e-10         2.549e-11      1.236e-10    -76.241636548250213  S/E *
-	* 15       6.658e-11         6.232e-12      1.038e-10    -76.241636548146388  S/E *
-	* 16       9.460e-12         1.429e-12      1.964e-11    -76.241636548126749  S/E *
-	* 17       6.759e-13         2.434e-13      2.871e-12    -76.241636548123878  S/E *
-	* 18       3.341e-13         7.729e-14     -2.416e-13    -76.241636548124120  S/E *
+	* 1        3.006e-02         1.557e-03     -2.424e-02    -76.255052118151241      *
+	* 2        7.932e-03         5.589e-04      6.531e-04    -76.254398968967308      *
+	* 3        1.385e-03         2.155e-04      7.581e-03    -76.246818176910921      *
+	* 4        6.562e-04         9.860e-05      1.530e-03    -76.245288335019623  S   *
+	* 5        3.146e-04         4.598e-05      7.924e-04    -76.244495896210339  S   *
+	* 6        1.529e-04         2.216e-05      3.013e-04    -76.244194563734681  S   *
+	* 7        8.570e-05         1.085e-05      1.429e-04    -76.244051710767465  S/E *
+	* 8        5.327e-06         6.030e-07      1.283e-04    -76.243923389759289  S/E *
+	* 9        2.229e-06         3.212e-07     -1.859e-05    -76.243941975419645  S/E *
+	* 10       7.382e-07         1.256e-07      6.280e-06    -76.243935695019474  S/E *
+	* 11       1.416e-07         2.493e-08      2.523e-06    -76.243933172069660  S/E *
+	* 12       2.070e-08         3.093e-09      5.021e-07    -76.243932669988709  S/E *
+	* 13       6.340e-09         7.980e-10      3.548e-09    -76.243932666440998  S/E *
+	* 14       2.968e-09         2.370e-10      1.200e-09    -76.243932665241431  S/E *
+	* 15       5.985e-10         7.325e-11      5.290e-10    -76.243932664712446  S/E *
+	* 16       2.904e-10         1.900e-11     -4.917e-10    -76.243932665204127  S/E *
+	* 17       5.479e-11         5.930e-12      2.807e-10    -76.243932664923392  S/E *
+	* 18       9.943e-12         2.555e-12     -4.755e-11    -76.243932664970941  S/E *
+	* 19       4.497e-12         7.474e-13     -2.264e-11    -76.243932664993579  S/E *
+	* 20       1.377e-12         1.622e-13     -1.037e-11    -76.243932665003953  S/E *
+	* 21       6.019e-13         6.470e-14     -6.821e-13    -76.243932665004635  S/E *
 	*=================================================================================*
 
-	*ODC-12 SCF Energy                                 =  -75.795053067927370
-	*ODC-12 Lambda Energy                              =   -0.446583480196751
-	*ODC-12 Total Energy                               =  -76.241636548124120
+	*ODC-06 SCF Energy                                 =  -75.786604336704372
+	*ODC-06 Lambda Energy                              =   -0.457328328300260
+	*ODC-06 Total Energy                               =  -76.243932665004635
 
 	Orbital occupations:
 		Doubly occupied orbitals
-		   1Ap       1.9999     2Ap       1.9826     1App      1.9723     3Ap       1.9672  
-		   4Ap       1.9626  
+		   1Ap       1.9999     2Ap       1.9820     1App      1.9716     3Ap       1.9659  
+		   4Ap       1.9608  
 
 		Virtual orbitals
-		   2App      0.0167     5Ap       0.0134     6Ap       0.0127     7Ap       0.0114  
-		   8Ap       0.0105     9Ap       0.0097    10Ap       0.0074    11Ap       0.0049  
-		  12Ap       0.0042     3App      0.0034    13Ap       0.0031    14Ap       0.0028  
-		   4App      0.0028     5App      0.0027     6App      0.0025    15Ap       0.0022  
-		  16Ap       0.0018    17Ap       0.0016    18Ap       0.0006  
+		   2App      0.0174     5Ap       0.0142     6Ap       0.0135     7Ap       0.0119  
+		   8Ap       0.0113     9Ap       0.0104    10Ap       0.0077    11Ap       0.0051  
+		  12Ap       0.0043     3App      0.0035    13Ap       0.0032    14Ap       0.0029  
+		   4App      0.0029     5App      0.0028     6App      0.0026    15Ap       0.0022  
+		  16Ap       0.0019    17Ap       0.0016    18Ap       0.0006  
 
 
-*** tstop() called on s172-20-49-h3.paws.uga.edu at Fri Jul 24 00:20:25 2015
+*** tstop() called on Xiaos-MacBook-Pro.local at Fri Jul 24 11:38:54 2015
 Module time:
-	user time   =       0.94 seconds =       0.02 minutes
-	system time =       0.70 seconds =       0.01 minutes
+	user time   =       1.09 seconds =       0.02 minutes
+	system time =       0.68 seconds =       0.01 minutes
 	total time  =          7 seconds =       0.12 minutes
 Total time:
-	user time   =       3.53 seconds =       0.06 minutes
-	system time =       1.37 seconds =       0.02 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =       6.08 seconds =       0.10 minutes
+	system time =       2.20 seconds =       0.04 minutes
+	total time  =         26 seconds =       0.43 minutes
 
-*** tstart() called on s172-20-49-h3.paws.uga.edu
-*** at Fri Jul 24 00:20:25 2015
+*** tstart() called on Xiaos-MacBook-Pro.local
+*** at Fri Jul 24 11:38:54 2015
 
 
 
@@ -887,18 +1387,18 @@ Total time:
 	nbuckets = 1
 
 
-*** tstop() called on s172-20-49-h3.paws.uga.edu at Fri Jul 24 00:20:26 2015
+*** tstop() called on Xiaos-MacBook-Pro.local at Fri Jul 24 11:38:55 2015
 Module time:
-	user time   =       0.54 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.57 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.07 seconds =       0.07 minutes
-	system time =       1.39 seconds =       0.02 minutes
-	total time  =         17 seconds =       0.28 minutes
+	user time   =       6.65 seconds =       0.11 minutes
+	system time =       2.23 seconds =       0.04 minutes
+	total time  =         27 seconds =       0.45 minutes
 
-*** tstart() called on s172-20-49-h3.paws.uga.edu
-*** at Fri Jul 24 00:20:26 2015
+*** tstart() called on Xiaos-MacBook-Pro.local
+*** at Fri Jul 24 11:38:55 2015
 
  DERIV: Derivative code.
    by Justin Turney
@@ -969,44 +1469,516 @@ Total time:
   -One-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -3.534236251143    -6.564706747346     0.000000000000
-       2       -2.582284669822     5.667423926272     0.000000000000
-       3        6.116520920965     0.897282821074     0.000000000000
+       1       -3.527976008531    -6.553753250771     0.000000000000
+       2       -2.579747789789     5.658956922359     0.000000000000
+       3        6.107723798320     0.894796328412     0.000000000000
 
 
   -Lagrangian contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.223546319305     0.413471141931     0.000000000000
-       2        0.139260749208    -0.344254800743     0.000000000000
-       3       -0.362807068513    -0.069216341188     0.000000000000
+       1        0.222862935413     0.412274196215     0.000000000000
+       2        0.138928073518    -0.343300996716     0.000000000000
+       3       -0.361791008931    -0.068973199498     0.000000000000
 
 
   -Two-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        1.909841655383     3.533220382464     0.000000000000
-       2        1.356557270661    -3.032308172709     0.000000000000
-       3       -3.266398926045    -0.500912209755     0.000000000000
+       1        1.905243999042     3.525204443325     0.000000000000
+       2        1.354787217497    -3.026156641883     0.000000000000
+       3       -3.260031216539    -0.499047801441     0.000000000000
 
 
   -Total gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000463315203     0.011184720362     0.000000000000
-       2       -0.000214140480    -0.007910878984     0.000000000000
-       3        0.000677455683    -0.003273841378     0.000000000000
+       1        0.000515887175     0.012925332081     0.000000000000
+       2        0.000220010700    -0.009272548044     0.000000000000
+       3       -0.000735897876    -0.003652784037     0.000000000000
 
 
-*** tstop() called on s172-20-49-h3.paws.uga.edu at Fri Jul 24 00:20:26 2015
+*** tstop() called on Xiaos-MacBook-Pro.local at Fri Jul 24 11:38:55 2015
 Module time:
 	user time   =       0.23 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.30 seconds =       0.07 minutes
-	system time =       1.41 seconds =       0.02 minutes
-	total time  =         17 seconds =       0.28 minutes
-CURRENT ENERGY:  -76.2416365481
+	user time   =       6.88 seconds =       0.11 minutes
+	system time =       2.25 seconds =       0.04 minutes
+	total time  =         27 seconds =       0.45 minutes
+CURRENT ENERGY:  -76.2439326650
+gradient() will perform analytic gradient computation.
+
+*** tstart() called on Xiaos-MacBook-Pro.local
+*** at Fri Jul 24 11:38:55 2015
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.031788188689    -0.057762343755     0.000000000000
+           H         -0.415040188689     0.819260656245     0.000000000000
+           H          0.919541811311     0.097469656245     0.000000000000
+
+  Running in cs symmetry.
+
+  Rotational constants: A =     27.13720  B =     14.53088  C =      9.46354 [cm^-1]
+  Rotational constants: A = 813552.74647  B = 435624.91870  C = 283709.72274 [MHz]
+  Nuclear repulsion =    9.163830145965930
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-12
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'        18      18       0       0       0       0
+     A"         6       6       0       0       0       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  Starting with a DF guess...
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: 
+    Number of shells: 42
+    Number of basis function: 116
+    Number of Cartesian functions: 131
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.4387299179E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+    Occupation by irrep:
+             Ap   App 
+    DOCC [     5,    0 ]
+
+   @DF-RHF iter   1:   -68.87702573876567   -6.88770e+01   1.63294e-01 
+    Occupation by irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+
+   @DF-RHF iter   2:   -69.94360595190376   -1.06658e+00   1.33704e-01 DIIS
+   @DF-RHF iter   3:   -75.73875544067789   -5.79515e+00   4.58039e-02 DIIS
+   @DF-RHF iter   4:   -76.00163995587772   -2.62885e-01   1.24136e-02 DIIS
+   @DF-RHF iter   5:   -76.02629426944577   -2.46543e-02   1.11781e-03 DIIS
+   @DF-RHF iter   6:   -76.02653944418932   -2.45175e-04   4.97186e-04 DIIS
+   @DF-RHF iter   7:   -76.02658039220266   -4.09480e-05   6.96756e-05 DIIS
+   @DF-RHF iter   8:   -76.02658201972025   -1.62752e-06   2.34339e-05 DIIS
+   @DF-RHF iter   9:   -76.02658210980954   -9.00893e-08   1.35740e-06 DIIS
+   @DF-RHF iter  10:   -76.02658211056239   -7.52848e-10   4.86831e-07 DIIS
+   @DF-RHF iter  11:   -76.02658211061168   -4.92975e-11   8.62694e-08 DIIS
+   @DF-RHF iter  12:   -76.02658211061305   -1.36424e-12   6.71545e-09 DIIS
+   @DF-RHF iter  13:   -76.02658211061309   -4.26326e-14   7.48856e-10 DIIS
+   @DF-RHF iter  14:   -76.02658211061313   -4.26326e-14   1.45470e-10 DIIS
+   @DF-RHF iter  15:   -76.02658211061302    1.13687e-13   2.09121e-11 DIIS
+   @DF-RHF iter  16:   -76.02658211061301    1.42109e-14   4.23365e-12 DIIS
+   @DF-RHF iter  17:   -76.02658211061305   -4.26326e-14   1.32020e-12 DIIS
+   @DF-RHF iter  18:   -76.02658211061305    0.00000e+00   1.86093e-13 DIIS
+
+  DF guess converged.
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  2
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  18    6 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 22762 non-zero two-electron integrals.
+        Stored in file 33.
+
+	Batch   1 pq = [       0,     192] index = [             0,18528]
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               178
+    Schwarz Cutoff:          1E-12
+
+   @RHF iter  19:   -76.02660308313021   -2.09725e-05   8.81726e-06 DIIS
+   @RHF iter  20:   -76.02660309550559   -1.23754e-08   1.42180e-06 DIIS
+   @RHF iter  21:   -76.02660309588960   -3.84006e-10   2.80329e-07 DIIS
+   @RHF iter  22:   -76.02660309590360   -1.39977e-11   8.21249e-08 DIIS
+   @RHF iter  23:   -76.02660309590485   -1.25056e-12   3.29126e-08 DIIS
+   @RHF iter  24:   -76.02660309590505   -1.98952e-13   3.03463e-09 DIIS
+   @RHF iter  25:   -76.02660309590505    0.00000e+00   5.33338e-10 DIIS
+   @RHF iter  26:   -76.02660309590495    9.94760e-14   5.97864e-11 DIIS
+   @RHF iter  27:   -76.02660309590496   -1.42109e-14   1.40003e-11 DIIS
+   @RHF iter  28:   -76.02660309590495    1.42109e-14   2.83712e-12 DIIS
+   @RHF iter  29:   -76.02660309590505   -9.94760e-14   3.05722e-13 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ap   -20.551097     2Ap    -1.335189     3Ap    -0.697224  
+       4Ap    -0.566325     1App   -0.492979  
+
+    Virtual:                                                              
+
+       5Ap     0.184976     6Ap     0.255795     7Ap     0.786256  
+       8Ap     0.852207     9Ap     1.163851     2App    1.200290  
+      10Ap     1.253705    11Ap     1.443518     3App    1.476005  
+       4App    1.673089    12Ap     1.867609    13Ap     1.932346  
+      14Ap     2.443034    15Ap     2.484314     5App    3.283478  
+       6App    3.335295    16Ap     3.507032    17Ap     3.860935  
+      18Ap     4.144884  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.02660309590505
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1638301459659299
+    One-Electron Energy =                -123.0952382024145066
+    Two-Electron Energy =                  37.9048049605435295
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -76.0266030959050454
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.4728      Y:     0.8591      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0832      Y:    -0.1475      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.3896      Y:     0.7116      Z:     0.0000     Total:     0.8113
+
+  Dipole Moment: (Debye)
+     X:     0.9903      Y:     1.8088      Z:     0.0000     Total:     2.0621
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on Xiaos-MacBook-Pro.local at Fri Jul 24 11:38:56 2015
+Module time:
+	user time   =       0.46 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       7.37 seconds =       0.12 minutes
+	system time =       2.28 seconds =       0.04 minutes
+	total time  =         28 seconds =       0.47 minutes
+
+*** tstart() called on Xiaos-MacBook-Pro.local
+*** at Fri Jul 24 11:38:56 2015
+
+
+
+	***********************************************************************************
+	*                        Density Cumulant Functional Theory                       *
+	*                     by Alexander Sokolov and Andy Simmonett                     *
+	*                           and Xiao Wang (RHF-ODC-12)                            *
+	***********************************************************************************
+
+
+	Transforming two-electron integrals for RHF reference ...
+	Computing MP2 amplitude guess...
+
+
+	This is a closed-shell molecule so the spin adapted code is used!
+	*Total Hartree-Fock energy        =  -76.026603095905045
+	 Total MP2 correlation energy     =   -0.204206011090802
+	*Total MP2 energy                 =  -76.230809106995849
+
+	DCFT Functional:    		 ODC-06
+	Algorithm:          		 SIMULTANEOUS
+	AO-Basis Integrals: 		 NONE
+
+	*=================================================================================*
+	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
+	*---------------------------------------------------------------------------------*
+	* 1        3.006e-02         1.557e-03     -2.424e-02    -76.255052118151198      *
+	* 2        7.932e-03         5.589e-04      6.531e-04    -76.254398968967294      *
+	* 3        1.385e-03         2.155e-04      7.581e-03    -76.246818176910878      *
+	* 4        6.562e-04         9.860e-05      1.530e-03    -76.245288335019623  S   *
+	* 5        3.146e-04         4.598e-05      7.924e-04    -76.244495896210310  S   *
+	* 6        1.529e-04         2.216e-05      3.013e-04    -76.244194563734681  S   *
+	* 7        8.570e-05         1.085e-05      1.429e-04    -76.244051710767465  S/E *
+	* 8        5.327e-06         6.030e-07      1.283e-04    -76.243923389759289  S/E *
+	* 9        2.229e-06         3.212e-07     -1.859e-05    -76.243941975419631  S/E *
+	* 10       7.382e-07         1.256e-07      6.280e-06    -76.243935695019445  S/E *
+	* 11       1.416e-07         2.493e-08      2.523e-06    -76.243933172069688  S/E *
+	* 12       2.070e-08         3.093e-09      5.021e-07    -76.243932669988695  S/E *
+	* 13       6.340e-09         7.980e-10      3.548e-09    -76.243932666441026  S/E *
+	* 14       2.968e-09         2.370e-10      1.200e-09    -76.243932665241417  S/E *
+	* 15       5.985e-10         7.325e-11      5.290e-10    -76.243932664712446  S/E *
+	* 16       2.904e-10         1.900e-11     -4.917e-10    -76.243932665204127  S/E *
+	* 17       5.479e-11         5.930e-12      2.807e-10    -76.243932664923378  S/E *
+	* 18       9.945e-12         2.555e-12     -4.758e-11    -76.243932664970956  S/E *
+	* 19       4.497e-12         7.474e-13     -2.257e-11    -76.243932664993523  S/E *
+	* 20       1.375e-12         1.622e-13     -1.040e-11    -76.243932665003925  S/E *
+	* 21       6.024e-13         6.471e-14     -7.105e-13    -76.243932665004635  S/E *
+	*=================================================================================*
+
+	*ODC-06 SCF Energy                                 =  -75.786604336704372
+	*ODC-06 Lambda Energy                              =   -0.457328328300259
+	*ODC-06 Total Energy                               =  -76.243932665004635
+
+	Orbital occupations:
+		Doubly occupied orbitals
+		   1Ap       1.9999     2Ap       1.9820     1App      1.9716     3Ap       1.9659  
+		   4Ap       1.9608  
+
+		Virtual orbitals
+		   2App      0.0174     5Ap       0.0142     6Ap       0.0135     7Ap       0.0119  
+		   8Ap       0.0113     9Ap       0.0104    10Ap       0.0077    11Ap       0.0051  
+		  12Ap       0.0043     3App      0.0035    13Ap       0.0032    14Ap       0.0029  
+		   4App      0.0029     5App      0.0028     6App      0.0026    15Ap       0.0022  
+		  16Ap       0.0019    17Ap       0.0016    18Ap       0.0006  
+
+
+*** tstop() called on Xiaos-MacBook-Pro.local at Fri Jul 24 11:39:04 2015
+Module time:
+	user time   =       1.07 seconds =       0.02 minutes
+	system time =       0.82 seconds =       0.01 minutes
+	total time  =          8 seconds =       0.13 minutes
+Total time:
+	user time   =       8.45 seconds =       0.14 minutes
+	system time =       3.10 seconds =       0.05 minutes
+	total time  =         36 seconds =       0.60 minutes
+
+*** tstart() called on Xiaos-MacBook-Pro.local
+*** at Fri Jul 24 11:39:04 2015
+
+
+
+	***********************************************************************************
+	*                           DCFT Analytic Gradients Code                          *
+	*                     by Alexander Sokolov and Andy Simmonett                     *
+	*                            and Xiao Wang (RHF-ODC-12)                           *
+	***********************************************************************************
+
+	 Computing energy-weighted density matrix from one- and two-particle densities...
+	Pre-Presorting MO-basis TPDM: AB.
+
+	Sorting File: MO TPDM (AA|AA) nbuckets = 1
+	Pre-Presorting MO-basis TPDM: AA and BB.
+
+	Sorting File: MO TPDM (AA|AA) TEMP nbuckets = 1
+	nbuckets = 1
+
+
+*** tstop() called on Xiaos-MacBook-Pro.local at Fri Jul 24 11:39:05 2015
+Module time:
+	user time   =       0.52 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       8.97 seconds =       0.15 minutes
+	system time =       3.12 seconds =       0.05 minutes
+	total time  =         37 seconds =       0.62 minutes
+
+*** tstart() called on Xiaos-MacBook-Pro.local
+*** at Fri Jul 24 11:39:05 2015
+
+ DERIV: Derivative code.
+   by Justin Turney
+
+  Cartesian Displacement SALCs
+  By SALC:
+  Number of SALCs: 6, nirreps: 1
+  Project out translations: False
+  Project out rotations: False
+	irrep = 0, ncomponent = 1
+		0: atom 0, direction x, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 0, direction y, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 1, direction x, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 1, direction y, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 2, direction x, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 2, direction y, coef 1.000000
+
+  By Atomic Center:
+  Number of atomic centers: 3
+   Atomic Center 0:
+	x component, size = 1
+		0: salc 0, irrep 0, coef 1.000000
+	y component, size = 1
+		0: salc 1, irrep 0, coef 1.000000
+	z component, size = 0
+   Atomic Center 1:
+	x component, size = 1
+		0: salc 2, irrep 0, coef 1.000000
+	y component, size = 1
+		0: salc 3, irrep 0, coef 1.000000
+	z component, size = 0
+   Atomic Center 2:
+	x component, size = 1
+		0: salc 4, irrep 0, coef 1.000000
+	y component, size = 1
+		0: salc 5, irrep 0, coef 1.000000
+	z component, size = 0
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.060070970883    -0.109155010490     0.000000000000
+           H         -0.784312290764     1.548178271751     0.000000000000
+           H          1.737682191115     0.184190956570     0.000000000000
+
+	Starting first half-transformation.
+	Sorting half-transformed TPDM.
+	First half integral transformation complete.
+
+
+  -Nuclear Repulsion Energy 1st Derivatives:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        1.400384961252     2.629199943313     0.000000000000
+       2        1.086252509473    -2.298771831804     0.000000000000
+       3       -2.486637470725    -0.330428111509     0.000000000000
+
+
+  -One-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1       -3.527976008531    -6.553753250771     0.000000000000
+       2       -2.579747789789     5.658956922359     0.000000000000
+       3        6.107723798320     0.894796328412     0.000000000000
+
+
+  -Lagrangian contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.222862935413     0.412274196215     0.000000000000
+       2        0.138928073518    -0.343300996716     0.000000000000
+       3       -0.361791008931    -0.068973199498     0.000000000000
+
+
+  -Two-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        1.905243999042     3.525204443325     0.000000000000
+       2        1.354787217497    -3.026156641883     0.000000000000
+       3       -3.260031216539    -0.499047801441     0.000000000000
+
+
+  -Total gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000515887175     0.012925332081     0.000000000000
+       2        0.000220010700    -0.009272548044     0.000000000000
+       3       -0.000735897876    -0.003652784037     0.000000000000
+
+
+*** tstop() called on Xiaos-MacBook-Pro.local at Fri Jul 24 11:39:05 2015
+Module time:
+	user time   =       0.22 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       9.19 seconds =       0.15 minutes
+	system time =       3.13 seconds =       0.05 minutes
+	total time  =         37 seconds =       0.62 minutes
+CURRENT ENERGY:  -76.2439326650
 
 *** PSI4 exiting successfully. Buy a developer a beer!
