@@ -4,9 +4,6 @@
 #!
 #! In the next RHF-ODC-12 computation, AO_BASIS=NONE is used, where four-virtual integrals
 #! are transformed into MO basis.
-#!
-#! The last two RHF-ODC-12 analytic gradient computations for H2O use
-#! AO_BASIS=DISK and AO_BASIS=NONE, respectively. 
 
 memory 250 mb
 
@@ -19,16 +16,6 @@ refodc12_uhf    = -76.241636548124134   #TEST
 refscf_rhf      = -76.0266030959050596  #TEST
 refmp2_rhf      = -76.230809106995864   #TEST
 refodc12_rhf    = -76.241636548124106   #TEST 
-
-# RHF-ODC-12 gradients
-ref_vals = [
-           [-0.000463315203,     0.011184720362,     0.000000000000],
-           [-0.000214140480,    -0.007910878984,     0.000000000000],
-           [ 0.000677455683,    -0.003273841378,     0.000000000000]  
-           ]
-ref_grad = psi4.Matrix(3, 3)
-ref_grad.set(ref_vals)
-
 
 molecule h2o {
 0 1
@@ -69,15 +56,3 @@ compare_values(refmp2_rhf, get_variable("MP2 TOTAL ENERGY"), 10, "RHF-MP2 Energy
 compare_values(refodc12_rhf, get_variable("CURRENT ENERGY"), 10, "RHF-ODC-12 Total Energy (simultaneous, ao_basis=none)");     #TEST
 clean()
 
-set reference rhf
-set ao_basis disk
-gradient('dcft')
-grad = psi4.wavefunction().gradient() 
-compare_matrices(ref_grad, grad, 8, "RHF-ODC-12 analytic gradient (simultaneous, ao_basis=disk)") 
-clean()
-
-set reference rhf
-set ao_basis none
-gradient('dcft')
-grad = psi4.wavefunction().gradient() 
-compare_matrices(ref_grad, grad, 8, "RHF-ODC-12 analytic gradient (simultaneous, ao_basis=none)") 
