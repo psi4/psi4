@@ -3,8 +3,8 @@
 memory 250 mb
 
 nucenergy = 12.0367196636183458 #TEST
-polenergy = -0.0053059995317373 #TEST
-totalenergy = -55.4559426361763812 #TEST
+polenergy = -0.0060920917340277 #TEST
+totalenergy = -56.5572469754297273 #TEST
 
 molecule NH3 {
 symmetry c1
@@ -20,10 +20,6 @@ no_com
 set {
   basis cc-pVDZ
   scf_type pk
-  dft_nuclear_scheme Becke
-  dft_radial_scheme Becke
-  dft_radial_points 75
-  dft_spherical_points 434
   pcm true
   pcm_scf_type total
 }
