@@ -2516,9 +2516,9 @@ void DLUSolver::solve()
 
     if (print_ > 1) {
         outfile->Printf( "\n");
-        if (!converged_ && print_ > 1) {
+        if (!converged_ ) {
             outfile->Printf( "    %sSolver did not converge.\n\n", name_.c_str());
-        } else if (print_ > 1) {
+        } else {
             outfile->Printf( "    %sSolver converged.\n\n", name_.c_str());
         }
 

@@ -10,13 +10,13 @@ H
 H 1 3.0
 symmetry c1
 }
-
+set reference uhf
 set e_convergence 12
 set basis cc-pvdz
 
-thisSCF = energy('uhf')
+thisSCF = energy('scf')
 set guess_mix true
-thisBSSCF = energy('uhf')
+thisBSSCF = energy('scf')
 
 compare_values(refENuc, h2.nuclear_repulsion_energy(),                      #TEST
                10, "Nuclear repulsion energy")                              #TEST
