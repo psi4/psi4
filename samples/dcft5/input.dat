@@ -20,8 +20,10 @@ set globals {
     max_disp_g_convergence   1e-6
     rms_force_g_convergence  1e-6
     max_energy_g_convergence 1e-6
+    reference                uhf
 }
 
+set dcft_functional dc-06
 optimize('dcft')
 
 

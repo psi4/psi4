@@ -29,6 +29,7 @@ set globals {
     ao_basis    disk
     algorithm   simultaneous
     basis       cc-pcvtz
+    reference   uhf
 }
 
 set dcft_functional odc-06

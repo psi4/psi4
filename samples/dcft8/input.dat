@@ -27,6 +27,7 @@ set globals {
     ao_basis    disk
     algorithm   simultaneous
     basis       sto-3g
+    reference   uhf 
 }
 
 #ODC-12 (Lambda_3)
