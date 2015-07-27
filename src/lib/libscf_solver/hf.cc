@@ -367,6 +367,10 @@ void HF::common_init()
     soscf_max_iter_ = options_.get_int("SOSCF_MAX_ITER");
     soscf_conv_ = options_.get_double("SOSCF_CONV");
     soscf_print_ = options_.get_bool("SOSCF_PRINT");
+    if (soscf_conv_ == 0.0) {
+        soscf_conv_ = energy_threshold_; 
+    }
+
 
     // MOM convergence acceleration
     MOM_enabled_ = (options_.get_int("MOM_START") != 0);

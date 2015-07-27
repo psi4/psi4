@@ -1302,7 +1302,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Minimum number of second-order microiterations to perform. -*/
     options.add_int("SOSCF_MAX_ITER", 4);
     /*- Maximum number of second-order microiterations to perform. -*/
-    options.add_double("SOSCF_CONV", 1.0E-10);
+    options.add_double("SOSCF_CONV", 0.0);
     /*- Secord order convergence threshold. -*/
     options.add_bool("SOSCF_PRINT", false);
     /*- Do we print the SOSCF microiterations?. -*/
