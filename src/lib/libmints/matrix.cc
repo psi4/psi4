@@ -1509,6 +1509,24 @@ SharedMatrix Matrix::triplet(const SharedMatrix& A, const SharedMatrix& B, const
     SharedMatrix S = Matrix::doublet(T,C,false,transC);
     return S;
 }
+void Matrix::axpy(double a, SharedMatrix X)
+{
+    if (nirrep_ != X->nirrep()) {
+        throw PSIEXCEPTION("Matrix::axpy: Matrices do not have the same nirreps");
+    }
+    for (int h=0; h<nirrep_; h++){
+        size_t size = colspi_[h] * rowspi_[h];
+        if (size != (X->rowspi()[h] * X->colspi()[h])) {
+            throw PSIEXCEPTION("Matrix::axpy: Matrices sizes do not match.");
+        }
+        if (size){
+            double* Xp = X->pointer(h)[0];
+            double* Yp = matrix_[h][0];
+            C_DAXPY(size, a, Xp, 1, Yp, 1);
+        }
+
+    }
+}
 SharedMatrix Matrix::collapse(int dim)
 {
     if (dim < 0 || dim > 1) throw PSIEXCEPTION("Matrix::collapse: dim must be 0 (row sum) or 1 (col sum)");
