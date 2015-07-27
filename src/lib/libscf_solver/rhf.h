@@ -78,6 +78,10 @@ protected:
 
     void save_density_and_energy();
 
+    // Compute hessian vector product and place the result in ret
+    void Hx(SharedMatrix x, SharedMatrix IFock, SharedMatrix Cocc, SharedMatrix Cvir, SharedMatrix ret);
+    virtual int soscf_update(void);
+
 public:
     RHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     RHF(Options& options, boost::shared_ptr<PSIO> psio);
