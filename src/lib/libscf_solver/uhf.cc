@@ -547,7 +547,19 @@ void UHF::stability_analysis()
     if(scf_type_ != "PK"){
         boost::shared_ptr<UStab> stab = boost::shared_ptr<UStab>(new UStab());
         stab->compute_energy();
-        stab->analyze();
+        SharedMatrix eval_sym = stab->analyze();
+        outfile->Printf( "    Lowest UHF->UHF stability eigenvalues: \n");
+        std::vector < std::pair < double,int > >  eval_print;
+        for (int h = 0; h < eval_sym->nirrep(); ++h) {
+            for (int i = 0; i < eval_sym->rowdim(h); ++i) {
+                eval_print.push_back(make_pair(eval_sym->get(h,i,0),h));
+            }
+        }
+        print_stability_analysis(eval_print);
+
+        // And now, export the eigenvalues to a PSI4 array, mainly for testing purposes
+
+        Process::environment.arrays["SCF STABILITY EIGENVALUES"] = eval_sym;
 
         if (stab->is_unstable() && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW") {
             if (attempt_number_ == 1 ) {
