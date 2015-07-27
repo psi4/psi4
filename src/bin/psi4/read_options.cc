@@ -1065,7 +1065,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       computations -*/
 
       /*- Reference wavefunction type -*/
-      options.add_str("REFERENCE", "UHF", "UHF");
+      options.add_str("REFERENCE", "UHF", "UHF RHF");
       /*- Algorithm to use for the density cumulant and orbital updates in the DCFT energy computation.
       Two-step algorithm is usually more efficient for small
       systems, but for large systems simultaneous algorithm (default) is recommended.
@@ -1152,7 +1152,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
       options.add_bool("RELAX_TAU", true);
       /*- Chooses appropriate DCFT method -*/
-      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
+      options.add_str("DCFT_FUNCTIONAL", "ODC-12", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
       /*- Whether to compute three-particle energy correction or not -*/
       options.add_str("THREE_PARTICLE", "NONE", "NONE PERTURBATIVE");
       /*- Do write a MOLDEN output file?  If so, the filename will end in
@@ -1312,7 +1312,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("FOLLOW_STEP_SCALE", 0.5);
     /*- When using STABILITY_ANALYSIS = FOLLOW, the increment to modify FOLLOW_STEP_SCALE_ value
         if we end up in the same SCF solution. !expert -*/
-    options.add_double("FOLLOW_STEP_INCREMENT", 0.5);
+    options.add_double("FOLLOW_STEP_INCREMENT", 0.2);
     /*- When using STABILITY_ANALYSIS = FOLLOW, maximum number of orbital optimization attempts
         to make the wavefunction stable. !expert -*/
     options.add_int("MAX_ATTEMPTS", 1);
