@@ -1292,6 +1292,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         the computation.  FOLLOW will perform the analysis and, if a totally symmetric instability
         is found, will attemp to follow the eigenvector and re-run the computations to find a stable
         solution. -*/
+    options.add_bool("SOSCF", false);
+    /*- Do use second-order SCF convergence methods? -*/
+    options.add_double("SOSCF_E_START", 1.0E-2);
+    /*- Do use second-order SCF convergence methods? -*/
+    options.add_double("SOSCF_R_START", 1.0E-2);
+    /*- When to start second-order SCF iterations based on gradient RMS -*/
+    options.add_int("SOSCF_MIN_ITER", 2);
+    /*- Minimum number of second-order microiterations to perform. -*/
+    options.add_int("SOSCF_MAX_ITER", 4);
+    /*- Maximum number of second-order microiterations to perform. -*/
+    options.add_double("SOSCF_CONV", 0.0);
+    /*- Secord order convergence threshold. -*/
+    options.add_bool("SOSCF_PRINT", false);
+    /*- Do we print the SOSCF microiterations?. -*/
     options.add_str("STABILITY_ANALYSIS", "NONE", "NONE CHECK FOLLOW");
     /*- When using STABILITY_ANALYSIS = FOLLOW, how much to scale the step along the eigenvector
         by. !expert -*/
