@@ -28,9 +28,11 @@ set globals {
     algorithm   twostep
     basis       sto-3g
     qc_coupling true
+    reference   uhf
 }
 
 #DC-06
+set dcft_functional dc-06
 energy('dcft')
 
 
