@@ -101,20 +101,44 @@ void dipole(void)
 //    Pa->print();
 //    Pb->print();
 
-    if(!wfn->same_a_b_dens()) {
-      SharedMatrix Pa_V(new Matrix("Alpha Density Eigenvectors", Ca->colspi(), Ca->colspi()));
-      SharedVector Pa_v(new Vector("Alpha Density Eigenvalues", Ca->colspi()));
-      Pa->diagonalize(Pa_V, Pa_v, descending);
-      Pa_v->print();
-      SharedMatrix Pb_V(new Matrix("Beta Density Eigenvectors", Cb->colspi(), Cb->colspi()));
-      SharedVector Pb_v(new Vector("Beta Density Eigenvalues", Cb->colspi()));
-      Pb->diagonalize(Pb_V, Pb_v, descending);
-      Pb_v->print();
+      SharedMatrix Nb(new Matrix("Beta Natural Orbitals", Pb->colspi(), Pb->colspi()));
+      SharedVector Ob(new Vector("Beta NO Occupations", Pb->colspi()));
+      SharedMatrix Na(new Matrix("Alpha Natural Orbitals", Pa->colspi(), Pa->colspi()));
+      SharedVector Oa(new Vector("Alpha NO Occupations", Pa->colspi()));
+      SharedMatrix Nt(new Matrix("Total Naural Orbitals",Pa->colspi(),Pa->colspi()));
+      SharedVector Ot(new Vector("Total NO Occupations",Pa->colspi()));
+      
+      
+    if(wfn->same_a_b_dens()) {
+        SharedMatrix Pt = Pa;
+        Pa->scale(0.5);
+        Pa->diagonalize(Na, Oa, descending);
+        Oa->set_name("Alpha/Beta NO Occupations");
+        Oa->print();
+        Pt->set_name("Total Density");
+        Pt->diagonalize(Nt,Ot, descending);
+        Ot->print();
+    }else{
+        SharedMatrix Pt = Pa;
+        Pa->diagonalize(Na, Oa, descending);
+        Oa->print();
+        Pb->diagonalize(Nb, Ob, descending);
+        Ob->print();
+        Pt->set_name("Total Density");
+        Pt->diagonalize(Nt,Ot,descending);
+        Ot->print();
     }
+        SharedMatrix Pt = Pa;
+        Pt->set_name("Total Density");
+        Pt->add(Pb);
+        Pt->diagonalize(Nt,Ot, descending);
+        Ot->print();
+
+//     MoldenWriter NOWriter(wfn);
+//     std::string mol_name = Process::environment.molecule()->name();
+//     NOWriter.writeNO(mol_name+".NO.molden", Na, Nb, Oa, Ob);
 
     if(wfn->same_a_b_dens()) Pa->scale(0.5);
-    //Pa->print();
-
     oe->set_Da_mo(Pa);
     if(!wfn->same_a_b_dens()) oe->set_Db_mo(Pb);
 
