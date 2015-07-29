@@ -11,7 +11,7 @@ def write_version(branch, mmp, ghash, status):
         version_str = "#define GIT_VERSION \"{%s} %s %s\"\n" % \
                       (branch, ghash, status)
     else:
-        version_str = "#undef GIT_VERSION"
+        version_str = "#undef GIT_VERSION\n"
 
     if mmp:
         mmp_str = "#define PSI_VERSION \"%s\"\n" % (mmp)
