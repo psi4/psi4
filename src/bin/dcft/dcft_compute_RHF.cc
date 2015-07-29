@@ -80,8 +80,6 @@ double DCFTSolver::compute_energy_RHF()
         throw FeatureNotImplemented("RHF-reference DCFT", "DCFT_FUNCTIONAL = ODC-13", __FILE__, __LINE__);
     if (options_.get_str("THREE_PARTICLE") == "PERTURBATIVE")
         throw FeatureNotImplemented("RHF-reference DCFT", "Three-particle energy correction", __FILE__, __LINE__);
-    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_bool("DCFT_DENSITY_FITTING") == true)
-        throw FeatureNotImplemented("Density Fitting", "AO_BASIS = DISK", __FILE__, __LINE__);
 
     // Orbital-optimized stuff
     if (options_.get_str("ALGORITHM") == "TWOSTEP" && orbital_optimized_)

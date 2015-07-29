@@ -1164,6 +1164,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("ENERGY_LEVEL_SHIFT", 0.0);
       /*- Controls whether to run density-fitted DCFT -*/
       options.add_bool("DCFT_DENSITY_FITTING", false);
+      /*- Auxiliary basis set for DCFT density fitting computations.
+      :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
+      options.add_str("DF_BASIS_DCFT","");
+
   }
   if (name == "MINTS"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Called at the beginning of SCF computations,
