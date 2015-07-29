@@ -60,7 +60,7 @@ void CIWavefunction::common_init()
         nmopi_[h]  = CalcInfo.orbs_per_irr[h];
         nsopi_[h]  = CalcInfo.so_per_irr[h];
 
-    Ca_ = reference_wavefunction_->Ca();
+    Ca_ = reference_wavefunction_->Ca()->clone();
     psio_ = reference_wavefunction_->psio();
     AO2SO_ = reference_wavefunction_->aotoso();
     molecule_ = reference_wavefunction_->molecule();
@@ -79,12 +79,8 @@ double CIWavefunction::compute_energy()
 
     return energy_;
 }
-SharedMatrix CIWavefunction::orbital_helper(const std::string& orbitals)
-{
-    /// Figure out orbital positions
-    int* start = new int[nirrep_];
-    int* end = new int[nirrep_];
 
+void CIWavefunction::orbital_locations(const std::string& orbitals, int* start, int* end){
     if (orbitals == "FZC"){
       for (int h=0; h<nirrep_; h++){
         start[h] = 0;
@@ -124,6 +120,15 @@ SharedMatrix CIWavefunction::orbital_helper(const std::string& orbitals)
     else{
         throw PSIEXCEPTION("DETCI: Orbital subset is not defined, should be FZC, DOCC, ACT, VIR, FZV, or ALL");
     }
+}
+
+SharedMatrix CIWavefunction::get_orbitals(const std::string& orbital_name)
+{
+    /// Figure out orbital positions
+    int* start = new int[nirrep_];
+    int* end = new int[nirrep_];
+
+    orbital_locations(orbital_name, start, end);
 
     int* spread = new int[nirrep_];
     for (int h=0; h<nirrep_; h++){
@@ -131,10 +136,10 @@ SharedMatrix CIWavefunction::orbital_helper(const std::string& orbitals)
     }
 
     /// Fill desired orbitals
-    SharedMatrix retC(new Matrix("C " + orbitals, nirrep_, nsopi_, spread));
+    SharedMatrix retC(new Matrix("C " + orbital_name, nirrep_, nsopi_, spread));
     for (int h = 0; h < nirrep_; h++) {
         for (int i = start[h], pos=0; i < end[h]; i++, pos++) {
-            C_DCOPY(nsopi_[h], &Ca_->pointer(h)[0][i], nsopi_[h], &retC->pointer(h)[0][pos], spread[h]);
+            C_DCOPY(nsopi_[h], &Ca_->pointer(h)[0][i], nmopi_[h], &retC->pointer(h)[0][pos], spread[h]);
         }
     }
 
@@ -145,6 +150,37 @@ SharedMatrix CIWavefunction::orbital_helper(const std::string& orbitals)
 
     return retC;
 }
+
+void CIWavefunction::set_orbitals(const std::string& orbital_name, SharedMatrix orbitals)
+{
+    /// Figure out orbital positions
+    int* start = new int[nirrep_];
+    int* end = new int[nirrep_];
+
+    orbital_locations(orbital_name, start, end);
+
+    int* spread = new int[nirrep_];
+    for (int h=0; h<nirrep_; h++){
+      spread[h] = end[h] - start[h];
+    }
+
+    /// Fill desired orbitals
+    for (int h = 0; h < nirrep_; h++) {
+        for (int i = start[h], pos=0; i < end[h]; i++, pos++) {
+            C_DCOPY(nsopi_[h], &orbitals->pointer(h)[0][i], nmopi_[h], &Ca_->pointer(h)[0][pos], spread[h]);
+        }
+    }
+
+    /// Cleanup
+    delete[] start;
+    delete[] end;
+    delete[] spread;
+}
+void CIWavefunction::my_set(SharedMatrix set)
+{
+  Ca_ = set;
+}
+
 void CIWavefunction::set_opdm(bool use_old_d)
 {
 

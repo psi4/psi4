@@ -159,6 +159,12 @@ public:
     SharedMatrix Hk(SharedMatrix x);
 
     /**
+     * Uses the approximate H diagonal hessian for an update.
+     * @return x         The [oa, av] matrix of non-redundant orbital rotation parameters.
+     */
+    SharedMatrix approx_solve();
+
+    /**
      * Solves the set of linear equations Hx = gradient using CG.
      * @return x The [oa, av] matrix of non-redundant orbital rotation parameters.
      */

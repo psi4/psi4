@@ -735,8 +735,6 @@ void MCSCF::calc_hessian(void)
     outfile->Printf( "(detcas): Unrecognized Hessian option %s\n",
       MCSCF_Parameters.hessian.c_str());
   }
-
-
 }
 
 
@@ -803,6 +801,7 @@ void MCSCF::scale_gradient(void)
     for (pair=0; pair<npairs; pair++)
       MCSCF_CalcInfo.theta_step[pair] *= MCSCF_Parameters.scale_step;
   }
+  IndPairs_->print_vec(MCSCF_CalcInfo.theta_step,"\n\tScaled Orbital Grad:");
 
 }
 
@@ -903,6 +902,7 @@ void MCSCF::rotate_orbs(void)
       /* Orbital rotations are related to reference orbitals */
       ciwfn_->Ca_->copy(ref_orbs_);
 
+      outfile->Printf("I am about to rotate the orbitals for irrep %d!\n", h);
       if (MCSCF_Parameters.use_thetas)
         postmult_by_U(h, ir_norbs, ciwfn_->Ca()->pointer(h), ir_npairs,
           ir_ppair, ir_qpair, ir_theta);
@@ -910,13 +910,14 @@ void MCSCF::rotate_orbs(void)
         postmult_by_exp_R(h, ir_norbs, ciwfn_->Ca()->pointer(h), ir_npairs,
           ir_ppair, ir_qpair, ir_theta);
 
+      print_mat(ciwfn_->Ca()->pointer(h), ir_norbs, ir_norbs, "outfile");
       /* print new coefficients */
       if (MCSCF_Parameters.print_mos) ciwfn_->Ca()->print();
 
       /* write the new block of MO coefficients to file30 */
-      chkpt_init(PSIO_OPEN_OLD);
-      chkpt_wt_scf_irrep(ciwfn_->Ca()->pointer(h), h);
-      chkpt_close();
+      // chkpt_init(PSIO_OPEN_OLD);
+      // chkpt_wt_scf_irrep(ciwfn_->Ca()->pointer(h), h);
+      // chkpt_close();
 
       delete [] ir_theta;
     }
