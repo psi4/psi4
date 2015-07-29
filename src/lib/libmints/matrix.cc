@@ -1623,8 +1623,10 @@ int mat_schmidt_tol(double **C, double **S, int nrow, int ncol, double tolerance
 
 void Matrix::schmidt()
 {
-    for (int h=0; h<nirrep(); ++h)
+    for (int h=0; h<nirrep(); ++h){
+        if (!rowspi(h) || !colspi(h)) continue;
         psi::schmidt(matrix_[h], rowspi(h), colspi(h), "STUPID");
+    }
 }
 
 Dimension Matrix::schmidt_orthog_columns(SharedMatrix S, double tol, double * /*res*/)

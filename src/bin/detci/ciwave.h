@@ -53,10 +53,21 @@ public:
     /**!
      * Similar to wavefunction.Ca_subset(); however, this version knows about all of the CI
      * subspaces in the SO basis. We stick to the MCSCF definitions for now.
-     * @param  orbitals FZC, DOCC, ACT, VIR, FZV
-     * @return C        Returns the appropriate orbitals in the SO basis.
+     * @param  orbital_name FZC, DOCC, ACT, VIR, FZV
+     * @return C            Returns the appropriate orbitals in the SO basis.
      */
-    SharedMatrix orbital_helper(const std::string& orbitals);
+    SharedMatrix get_orbitals(const std::string& orbital_name);
+
+    /**!
+     * Similar to wavefunction.Ca_subset(); however, this version knows about all of the CI
+     * subspaces in the SO basis. We stick to the MCSCF definitions for now.
+     * @param  orbital_name FZC, DOCC, ACT, VIR, FZV
+     * @param  orbitals     SharedMatrix to set
+     * @return C            Returns the appropriate orbitals in the SO basis.
+     */
+    void set_orbitals(const std::string& orbital_name, SharedMatrix orbitals);
+
+    void my_set(SharedMatrix set);
 
     /**!
      * Obtains the OPDM <root| Epq |root> from disk
@@ -90,6 +101,7 @@ public:
 
 private:
     void common_init();
+    void orbital_locations(const std::string& orbital_name, int* start, int* end);
 
 };
 

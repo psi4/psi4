@@ -285,15 +285,16 @@ SharedMatrix SOMCSCF::Ck(SharedMatrix x)
     // Form full antisymmetric matrix
     for (size_t h=0; h<nirrep_; h++){
 
-        if (!nsopi_[h] || !noccpi_[h] || !nvirpi_[h]) continue;
+        if (!noapi_[h] || !navpi_[h]) continue;
         double** tp = tmp->pointer(h);
         double*  xp = x->pointer(h)[0];
 
         // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
-        for (size_t i=0, target=0; i<noccpi_[h]; i++){
-            for (size_t a=noccpi_[h]; a < nsopi_[h]; a++){
-                tp[i][a] = -1.0 * xp[target];
-                tp[a][i] = xp[target++];
+        for (size_t i=0, target=0; i<noapi_[h]; i++){
+            for (size_t a=noccpi_[h]; a<nmopi_[h]; a++){
+                // outfile->Printf("%d %d %d | %lf\n", h, i, a, xp[target]);
+                tp[i][a] = xp[target];
+                tp[a][i] = -1.0 * xp[target++];
             }
         }
     }
@@ -1010,6 +1011,15 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x)
     return hessx;
 
 }
+SharedMatrix SOMCSCF::approx_solve()
+{
+    SharedMatrix ret = matrices_["Gradient"]->clone();
+    ret->apply_denominator(matrices_["Precon"]);
+    if (casscf_){
+        zero_act(ret);
+    }
+    return ret;
+}
 SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print)
 {
     if (print){
@@ -1048,7 +1058,6 @@ SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print)
 
     SharedMatrix p = z->clone();
 
-    SharedMatrix rold = r->clone();
     SharedMatrix best = x->clone();
     double best_conv = r->rms();
     for (int iter = 0; iter < max_iter; iter++) {
@@ -1059,7 +1068,6 @@ SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print)
         double rzpre = r->vector_dot(z);
         double alpha = rzpre / p->vector_dot(Ap);
 
-        rold->copy(r);
         x->axpy(alpha, p);
         r->axpy(-alpha, Ap);
 
@@ -1085,8 +1093,7 @@ SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print)
         z->copy(r);
         z->apply_denominator(matrices_["Precon"]);
 
-        rold->subtract(r);
-        double beta = -rold->vector_dot(z) / rzpre;
+        double beta = r->vector_dot(z) / rzpre;
 
         p->scale(beta);
         p->add(z);
