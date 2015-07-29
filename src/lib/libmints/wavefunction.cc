@@ -206,6 +206,11 @@ void Wavefunction::common_init()
 
     // not a CIM computation by default
     isCIM_ = false;
+
+    /* Xiao Wang */
+    // not a DCFT computation by default
+    isDCFT_ = false;
+    /* Xiao Wang */
 }
 
 void Wavefunction::map_irreps(std::vector<int*> &arrays)
@@ -830,7 +835,19 @@ bool Wavefunction::isCIM()
     return isCIM_;
 }
 
-boost::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const {
+/* Xiao Wang */
+void Wavefunction::set_DCFT(bool val)
+{
+    isDCFT_ = val;
+}
+
+bool Wavefunction::isDCFT()
+{
+    return isDCFT_;
+}
+/* Xiao Wang */
+
+boost::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const { 
     boost::shared_ptr<double[]> q = atomic_point_charges();
 
     int n = molecule_->natom();

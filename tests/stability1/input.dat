@@ -1,0 +1,79 @@
+#! UHF->UHF stability analysis test for BH with cc-pVDZ
+
+ref_vals_sym = [ 0.127528, 0.240102,-0.095389, 0.000000,   #TEST 
+               -0.266345,-0.090082, 0.238508, 0.462468 ]   #TEST
+
+nirrep = 4                                                 #TEST
+rows = psi4.Dimension(nirrep)                              #TEST
+col = psi4.Dimension(nirrep)                               #TEST
+
+for i in range(0,nirrep):                                  #TEST
+    col[i] = 1                                             #TEST  
+    rows[i] = 2                                            #TEST 
+
+ref = psi4.Matrix("Refs values",rows,col)                  #TEST
+
+for h in range(0,4):                                       #TEST
+    for i in range(0,2):                                   #TEST
+      ref.set(h,i,0,ref_vals_sym[h * 2 + i])               #TEST
+
+memory 500 mb
+
+nucenergy =   2.64588604295000  #TEST
+refenergy =  -24.86759257755563 #TEST
+
+molecule bh {
+    b      0.0000        0.0000        0.0000
+    h      0.0000        0.0000        1.0000
+}
+
+set globals = {
+    reference uhf
+    scf_type   direct
+    basis      cc-pVDZ
+    e_convergence 10
+    stability_analysis follow
+    solver_n_guess 6
+    solver_n_root 2
+}
+
+thisenergy = energy('scf')
+
+stab = get_array_variable("SCF STABILITY EIGENVALUES")
+
+compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
+compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")                   #TEST
+
+ref_vals_sym = [ [-0.266345 ],             #TEST 
+                 [-0.090082 ],             #TEST
+               ]                           #TEST
+
+ref = psi4.Matrix(2,1)                     #TEST
+ref.set(ref_vals_sym)                      #TEST
+
+molecule bh {
+    b      0.0000        0.0000        0.0000
+    h      0.0000        0.0000        1.0000
+symmetry c1
+}
+
+set globals = {
+    reference uhf
+    scf_type   direct
+    basis      cc-pVDZ
+    e_convergence 10
+    stability_analysis follow
+    solver_n_guess 6
+    solver_n_root 2
+    max_attempts  0
+}
+
+thisenergy = energy('scf')
+
+stab = get_array_variable("SCF STABILITY EIGENVALUES")
+
+compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
+compare_matrices(ref, stab, 5, "Stability eigenvalues without symmetry")                #TEST
+
