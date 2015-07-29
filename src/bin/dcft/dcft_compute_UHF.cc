@@ -45,6 +45,9 @@ double DCFTSolver::compute_energy_UHF()
     energyConverged_ = false;
     // Perform SCF guess for the orbitals
     scf_guess();
+    //
+    if (options_.get_bool("DCFT_DENSITY_FITTING"))
+        df_build_b_so();
     // Perform MP2 guess for the cumulant
     mp2_guess();
 
@@ -69,6 +72,12 @@ double DCFTSolver::compute_energy_UHF()
         throw FeatureNotImplemented("Simultaneous QC", "AO_BASIS = DISK", __FILE__, __LINE__);
     if (!(options_.get_str("ALGORITHM") == "TWOSTEP") && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0")
         throw FeatureNotImplemented("CEPA0", "Requested DCFT algorithm", __FILE__, __LINE__);
+    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_bool("DCFT_DENSITY_FITTING") == true)
+        throw FeatureNotImplemented("Density Fitting", "AO_BASIS = DISK", __FILE__, __LINE__);
+    if (!(options_.get_str("DCFT_FUNCTIONAL") == "ODC-06" || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") && options_.get_bool("DCFT_DENSITY_FITTING") == true)
+        throw FeatureNotImplemented("DC-06/DC-12/ODC-13/CEPA0", "Density Fitting", __FILE__, __LINE__);
+    if (options_.get_str("THREE_PARTICLE") == "PERTURBATIVE" && options_.get_bool("DCFT_DENSITY_FITTING") == true)
+        throw FeatureNotImplemented("Three-particle energy correction", "Density Fitting", __FILE__, __LINE__);
 
     // Orbital-optimized stuff
     if (options_.get_str("ALGORITHM") == "TWOSTEP" && orbital_optimized_)

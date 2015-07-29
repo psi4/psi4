@@ -47,7 +47,7 @@ DCFTSolver::compute_dcft_energy_RHF()
     global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                            ID("[O,O]"), ID("[V,V]"), 0, "Lambda SF <OO|VV>"); // Lambda <Oo|Vv>
 
-    dcft_timer_on("Timing::G_IjAb + g_IjAb");
+    dcft_timer_on("DCFTSolver::G_IjAb + g_IjAb");
     // M_IjAb = G_IjAb
     global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                            ID("[O,O]"), ID("[V,V]"), 0, "G <OO|VV>"); // G <Oo|Vv>
@@ -61,7 +61,7 @@ DCFTSolver::compute_dcft_energy_RHF()
     dpd_buf4_add(&M, &temp, 1.0);
     global_dpd_->buf4_close(&M);
     global_dpd_->buf4_close(&temp);
-    dcft_timer_off("Timing::G_IjAb + g_IjAb");
+    dcft_timer_off("DCFTSolver::G_IjAb + g_IjAb");
 
     // Form (2 M_IjAb - M_JiAb) = (M_IjAb - M_JiAb) + M_IjAb
     global_dpd_->buf4_init(&M, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),

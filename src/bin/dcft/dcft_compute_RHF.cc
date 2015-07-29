@@ -47,6 +47,9 @@ double DCFTSolver::compute_energy_RHF()
     // Perform SCF guess for the orbitals
     scf_guess_RHF();
 
+    // If DCFT_DENSITY_FITTING = True, build b(Q|mn) in SO basis
+    if(options_.get_bool("DCFT_DENSITY_FITTING")) df_build_b_so();
+
     // Perform MP2 guess for the cumulant
     mp2_guess_RHF();
 
@@ -77,6 +80,8 @@ double DCFTSolver::compute_energy_RHF()
         throw FeatureNotImplemented("RHF-reference DCFT", "DCFT_FUNCTIONAL = ODC-13", __FILE__, __LINE__);
     if (options_.get_str("THREE_PARTICLE") == "PERTURBATIVE")
         throw FeatureNotImplemented("RHF-reference DCFT", "Three-particle energy correction", __FILE__, __LINE__);
+    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_bool("DCFT_DENSITY_FITTING") == true)
+        throw FeatureNotImplemented("Density Fitting", "AO_BASIS = DISK", __FILE__, __LINE__);
 
     // Orbital-optimized stuff
     if (options_.get_str("ALGORITHM") == "TWOSTEP" && orbital_optimized_)

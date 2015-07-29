@@ -32,13 +32,6 @@ namespace psi{ namespace dcft{
 
 void DCFTSolver::compute_gradient_RHF()
 {
-    // Print out the header
-    outfile->Printf("\n\n\t***********************************************************************************\n");
-    outfile->Printf(    "\t*                           DCFT Analytic Gradients Code                          *\n");
-    outfile->Printf(    "\t*                     by Alexander Sokolov and Andy Simmonett                     *\n");
-    outfile->Printf(    "\t*                            and Xiao Wang (RHF-ODC-12)                           *\n");
-    outfile->Printf(    "\t***********************************************************************************\n\n");
-
     // Transform the one and two-electron integrals to the MO basis and write them into the DPD file
     gradient_init_RHF();
 
@@ -65,17 +58,20 @@ DCFTSolver::gradient_init_RHF()
         throw FeatureNotImplemented("DC-06 analytic gradients w/o QC algorithm", "RHF reference", __FILE__, __LINE__);
     }
 
-    // If the <VV|VV> integrals were not used for the energy computation (AO_BASIS = DISK) -> compute them for the gradients
-    dcft_timer_on("Timing::Transform_VVVV");
-    if (options_.get_str("AO_BASIS") == "DISK") _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
-    dcft_timer_off("Timing::Transform_VVVV");
+    if(options_.get_bool("DCFT_DENSITY_FITTING") == false){
+        // If the <VV|VV> integrals were not used for the energy computation (AO_BASIS = DISK) -> compute them for the gradients
+        dcft_timer_on("DCFTSolver::Transform_VVVV");
+        if (options_.get_str("AO_BASIS") == "DISK") _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
+        dcft_timer_off("DCFTSolver::Transform_VVVV");
 
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+        psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-    // (VV|VV)
-    if(options_.get_str("AO_BASIS") == "DISK") sort_VVVV_integrals_RHF();
+        // (VV|VV)
+        if(options_.get_str("AO_BASIS") == "DISK") sort_VVVV_integrals_RHF();
 
-    psio_->close(PSIF_LIBTRANS_DPD, 1);
+        psio_->close(PSIF_LIBTRANS_DPD, 1);
+    }
+
 }
 
 void
@@ -338,7 +334,7 @@ DCFTSolver::compute_lagrangian_VV_RHF()
     //
 
     // X_EA += 2 * <EB||CD> Г_ABCD
-    dcft_timer_on("Timing::2 * g_EBCD Gamma_ABCD");
+    dcft_timer_on("DCFTSolver::2 * g_EBCD Gamma_ABCD");
     global_dpd_->file2_init(&X, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "X <V|V>");
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                            ID("[V,V]"), ID("[V,V]"), 1, "MO Ints <VV|VV>");
@@ -349,7 +345,7 @@ DCFTSolver::compute_lagrangian_VV_RHF()
     global_dpd_->buf4_close(&G);
     global_dpd_->buf4_close(&I);
     global_dpd_->file2_close(&X);
-    dcft_timer_off("Timing::2 * g_EBCD Gamma_ABCD");
+    dcft_timer_off("DCFTSolver::2 * g_EBCD Gamma_ABCD");
 
     // X_EA += 4 * <Eb|Cd> Г_AbCd
     global_dpd_->file2_init(&X, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "X <V|V>");
