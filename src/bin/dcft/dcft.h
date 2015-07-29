@@ -29,6 +29,9 @@
 #include <libdpd/dpd.h>
 #include <libciomr/libciomr.h>
 #include <libmints/dimension.h>
+#include <../bin/dfocc/tensors.h>
+
+#define DCFT_TIMER
 
 // Handy mints timer macros, requires libqt to be included
 #ifdef DCFT_TIMER
@@ -485,6 +488,112 @@ protected:
 
     /// Used to align things in the output
     std::string indent;
+
+
+    // Density-Fitting DCFT
+    /// Density-fitted MP2 (DF-MP2) guess
+    void df_build_b_so();
+    /// Calculate memory required for density-fitting
+    void df_memory();
+    /// Build density-fitted <VV||VV>, <vv||vv>, and <Vv|Vv> tensors in G intermediate
+    void build_DF_tensors_RHF();
+    void build_DF_tensors_UHF();
+    /// Form J(P|Q)^-1/2
+    void formJm12(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
+    /// Form b(Q, mu, nu)
+    void formbso(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
+    /// Transform SO-basis b(Q, mn) to MO-basis b(Q, pq)
+    void transform_b();
+    /// Form MO-basis b(Q, ij)
+    void formb_oo();
+    /// Form MO-basis b(Q, ia)
+    void formb_ov();
+    /// Form MO-basis b(Q, ab)
+    void formb_vv();
+    /// Form MO-basis b(Q, pq)
+    void formb_pq();
+    /// Form density-fitted MO-basis TEI g(OV|OV) in chemists' notation
+    void form_df_g_ovov();
+    /// Form density-fitted MO-basis TEI g(OO|OO) in chemists' notation
+    void form_df_g_oooo();
+    /// Form density-fitted MO-basis TEI g(VV|OO) in chemists' notation
+    void form_df_g_vvoo();
+    /// Form density-fitted MO-basis TEI g(VO|OO) in chemists' notation
+    void form_df_g_vooo();
+    /// Form density-fitted MO-basis TEI g(OV|VV) in chemists' notation
+    void form_df_g_ovvv();
+    /// Form MO-based Gbar*Gamma
+    void build_gbarGamma_RHF();
+    void build_gbarGamma_UHF();
+    /// Convert 2-index <P|Q> to 3-index <1|PQ>
+    dfoccwave::SharedTensor2d convert_2ind_to_3ind(SharedMatrix X);
+    /// Back-convert 3-index <1|PQ> to 2-index <P|Q>
+    SharedMatrix backconvert_3ind_to_2ind(dfoccwave::SharedTensor2d X);
+
+
+    // Density-Fitting DCFT
+    /// Density-fitting or Not
+    bool is_density_fitting_;
+    /// Auxiliary basis
+    boost::shared_ptr<BasisSet> auxiliary_;
+    /// Primary basis
+    boost::shared_ptr<BasisSet> primary_;
+    /// Number of total primary basis functions
+    int nn_;
+    /// Number of total auxilliary basis functions
+    int nQ_;
+    /// Number of alpha occupied orbitals
+    int naocc_;
+    /// J^-1/2 Matrix
+    double **Jm12_;
+    /// J^-1/2 SharedTensor
+    dfoccwave::SharedTensor2d Jmhalf_;
+    /// b(Q|mu,nu) SharedTensor
+    dfoccwave::SharedTensor2d bQso_;
+    /// b(Q|mu, a)
+    dfoccwave::SharedTensor2d bQnvA_;
+    dfoccwave::SharedTensor2d bQnvB_;
+    /// b(Q|mu, i)
+    dfoccwave::SharedTensor2d bQnoA_;
+    dfoccwave::SharedTensor2d bQnoB_;
+    /// b(Q|i, j)
+    dfoccwave::SharedTensor2d bQooA_;
+    dfoccwave::SharedTensor2d bQooB_;
+    /// b(Q|i, a)
+    dfoccwave::SharedTensor2d bQovA_;
+    dfoccwave::SharedTensor2d bQovB_;
+    /// b(Q|a, i)
+    dfoccwave::SharedTensor2d bQvoA_;
+    dfoccwave::SharedTensor2d bQvoB_;
+    /// b(Q|a, b)
+    dfoccwave::SharedTensor2d bQvvA_;
+    dfoccwave::SharedTensor2d bQvvB_;
+    /// b(Q|mu, q)
+    dfoccwave::SharedTensor2d bQnqA_;
+    dfoccwave::SharedTensor2d bQnqB_;
+    /// b(Q|p, q)
+    dfoccwave::SharedTensor2d bQpqA_;
+    dfoccwave::SharedTensor2d bQpqB_;
+    /// C(mu, a)
+    dfoccwave::SharedTensor2d CvirA_;
+    dfoccwave::SharedTensor2d CvirB_;
+    /// C(mu, i)
+    dfoccwave::SharedTensor2d CoccA_;
+    dfoccwave::SharedTensor2d CoccB_;
+    /// C(mu, p)
+    dfoccwave::SharedTensor2d CallA_;
+    dfoccwave::SharedTensor2d CallB_;
+    /// Intermediate G<ij|ab> = lambda <ij|cd> g <ab|cd>
+    dfoccwave::SharedTensor2d Gijab_;
+    /// The Tau in the MO basis (All)
+    SharedMatrix mo_tauA_;
+    SharedMatrix mo_tauB_;
+    /// MO-based (Gbar Tau + Gbar Kappa)
+    SharedMatrix mo_gbarGamma_A_;
+    SharedMatrix mo_gbarGamma_B_;
+    /// MO-based Gamma <r|s>
+    SharedMatrix mo_gammaA_;
+    SharedMatrix mo_gammaB_;
 };
 
 }} // Namespaces

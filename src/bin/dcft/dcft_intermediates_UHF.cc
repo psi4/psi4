@@ -65,7 +65,7 @@ DCFTSolver::compute_G_intermediate() {
     /*
      * G_ijab = 1/2 Sum_cd gbar_cdab lambda_ijcd
      */
-    if(options_.get_str("AO_BASIS") == "NONE"){
+    if(options_.get_str("AO_BASIS") == "NONE" && options_.get_bool("DCFT_DENSITY_FITTING") == false){
         // G_IJAB += 1/2 Sum_CD gbar_CDAB lambda_IJCD
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V>V]-"), ID("[V>V]-"),
                       ID("[V,V]"), ID("[V,V]"), 1, "MO Ints <VV|VV>");

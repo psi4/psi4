@@ -79,20 +79,41 @@ DCFTSolver::run_simult_dcft_oo()
             refine_tau();
         }
         transform_tau();
-        // Copy core hamiltonian into the Fock matrix array: F = H
-        Fa_->copy(so_h_);
-        Fb_->copy(so_h_);
-        // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
-        process_so_ints();
-        // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
-        Fa_->add(g_tau_a_);
-        Fb_->add(g_tau_b_);
-        // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
-        moFa_->copy(Fa_);
-        moFb_->copy(Fb_);
-        // Transform the Fock matrix to the MO basis
-        moFa_->transform(Ca_);
-        moFb_->transform(Cb_);
+
+        if (options_.get_bool("DCFT_DENSITY_FITTING")){
+
+            build_DF_tensors_UHF();
+
+            SharedMatrix mo_h_A = SharedMatrix(new Matrix("MO-based H Alpha", nirrep_, nmopi_, nmopi_));
+            mo_h_A->copy(so_h_);
+            mo_h_A->transform(Ca_);
+
+            SharedMatrix mo_h_B = SharedMatrix(new Matrix("MO-based H Beta", nirrep_, nmopi_, nmopi_));
+            mo_h_B->copy(so_h_);
+            mo_h_B->transform(Cb_);
+
+            moFa_->copy(mo_h_A);
+            moFb_->copy(mo_h_B);
+
+            moFa_->add(mo_gbarGamma_A_);
+            moFb_->add(mo_gbarGamma_B_);
+        }
+        else{
+            // Copy core hamiltonian into the Fock matrix array: F = H
+            Fa_->copy(so_h_);
+            Fb_->copy(so_h_);
+            // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
+            process_so_ints();
+            // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
+            Fa_->add(g_tau_a_);
+            Fb_->add(g_tau_b_);
+            // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
+            moFa_->copy(Fa_);
+            moFb_->copy(Fb_);
+            // Transform the Fock matrix to the MO basis
+            moFa_->transform(Ca_);
+            moFb_->transform(Cb_);
+        }
         // Compute new SCF energy
         compute_scf_energy();
         // Save the old energy

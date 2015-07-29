@@ -44,7 +44,7 @@ dcft(Options &options)
 
     outfile->Printf("\n\n\t***********************************************************************************\n");
     outfile->Printf(    "\t*                        Density Cumulant Functional Theory                       *\n");
-    outfile->Printf(    "\t*                     by Alexander Sokolov and Andy Simmonett                     *\n");
+    outfile->Printf(    "\t*                       by Alexander Sokolov, Andy Simmonett                      *\n");
     outfile->Printf(    "\t*                           and Xiao Wang (RHF-ODC-12)                            *\n");
     outfile->Printf(    "\t***********************************************************************************\n");
 

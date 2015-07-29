@@ -39,6 +39,31 @@ DCFTSolver::transform_integrals_RHF()
 {
     dcft_timer_on("DCFTSolver::transform_integrals()");
 
+    if (options_.get_bool("DCFT_DENSITY_FITTING")){
+        // Transform b(Q|mn) to b(Q|pq) in MO basis
+        transform_b();
+
+        psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+        /*- Transform g(OV|OV) -*/
+        form_df_g_ovov();
+        /*- Transform g(OO|OO) -*/
+        form_df_g_oooo();
+        /*- Transform g(VV|OO) -*/
+        form_df_g_vvoo();
+
+        if(orbital_optimized_){
+            /*- Transform g(VO|OO) -*/
+            form_df_g_vooo();
+            /*- Transform g(OV|VV) -*/
+            form_df_g_ovvv();
+        }
+
+        psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+        _ints->update_orbitals();
+    }
+    else{
         _ints->update_orbitals();
 
         if(print_ > 1){
@@ -49,17 +74,17 @@ DCFTSolver::transform_integrals_RHF()
 
         // Generate the integrals in various spaces in chemists' notation
 
-        dcft_timer_on("Timing::transform_OVOV");
+        dcft_timer_on("DCFTSolver::transform_OVOV");
         _ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
-        dcft_timer_off("Timing::transform_OVOV");
+        dcft_timer_off("DCFTSolver::transform_OVOV");
 
-        dcft_timer_on("Timing::transform_OOOO");
+        dcft_timer_on("DCFTSolver::transform_OOOO");
         _ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ);
-        dcft_timer_off("Timing::transform_OOOO");
+        dcft_timer_off("DCFTSolver::transform_OOOO");
 
-        dcft_timer_on("Timing::transform_OOVV");
+        dcft_timer_on("DCFTSolver::transform_OOVV");
         _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::occ);
-        dcft_timer_off("Timing::transform_OOVV");
+        dcft_timer_off("DCFTSolver::transform_OOVV");
 
         if((options_.get_str("AO_BASIS") == "NONE")){
             _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
@@ -68,29 +93,33 @@ DCFTSolver::transform_integrals_RHF()
                                                    && options_.get_str("QC_TYPE") == "SIMULTANEOUS")
                                                    || orbital_optimized_) {
             // Compute the integrals needed for the MO Hessian
-            dcft_timer_on("Timing::transform_VOOO");
+            dcft_timer_on("DCFTSolver::transform_VOOO");
             _ints->transform_tei(MOSpace::vir, MOSpace::occ, MOSpace::occ, MOSpace::occ);
-            dcft_timer_off("Timing::transform_VOOO");
+            dcft_timer_off("DCFTSolver::transform_VOOO");
 
-            dcft_timer_on("Timing::transform_OVVV");
+            dcft_timer_on("DCFTSolver::transform_OVVV");
             _ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir);
-            dcft_timer_off("Timing::transform_OVVV");
+            dcft_timer_off("DCFTSolver::transform_OVVV");
         }
 
-    // The integral object closes this file - we need to re-open it.
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+    }
 
     /*
      * Re-sort the chemists' notation integrals to physisicts' notation
      * (pq|rs) = <pr|qs>
      */
+
+    // The integral object closes this file - we need to re-open it.
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
     sort_OVOV_integrals_RHF();
 
     sort_OOOO_integrals_RHF();
 
     sort_OOVV_integrals_RHF();
 
-    if(options_.get_str("AO_BASIS") == "NONE") sort_VVVV_integrals_RHF();
+    if(options_.get_str("AO_BASIS") == "NONE" && options_.get_bool("DCFT_DENSITY_FITTING") == false)
+        sort_VVVV_integrals_RHF();
 
     // VVVO and OOOV integrals are needed for the QC algorithm
     if ((options_.get_str("ALGORITHM") == "QC" && options_.get_bool("QC_COUPLING")
