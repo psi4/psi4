@@ -27,7 +27,7 @@ protected:
     std::vector<double> vals_;
 
     bool unstable = false;
-    double unstable_val = 0;
+    double unstable_val = 0.0;
     std::pair<SharedMatrix,SharedMatrix> unstable_vec;
 
     int print_;
@@ -97,7 +97,7 @@ public:
     void set_reference(boost::shared_ptr<Wavefunction> reference);
 
     virtual double compute_energy();
-    void analyze();
+    SharedMatrix analyze();
     void rotate_orbs(double scale);
 };
 

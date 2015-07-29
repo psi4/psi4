@@ -202,6 +202,8 @@ class IntegralTransform{
         void set_keep_iwl_so_ints(bool val) {keepIwlSoInts_ = val;}
         /// Whether the library will keep or delete the SO integrals in IWL form after processing
         bool get_keep_iwl_so_ints() const {return keepIwlSoInts_;}
+        /// Whether TPDM has already presorted
+        void set_tpdm_already_presorted(bool val) {tpdmAlreadyPresorted_ = val;}
 
         /// Set the memory (in MB) available to the library
         void set_memory(size_t memory) {memory_ = memory;}

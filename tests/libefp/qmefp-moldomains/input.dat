@@ -95,7 +95,7 @@ H -1 -2 -6
 }
 
 set basis cc-pvdz
-#set puream false  # FAILS! with puream true at present
+set puream false
 set scf_type df
 set guess sad
 set efp_disp true

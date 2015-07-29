@@ -169,7 +169,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   // Same goes for restricted_docc, restricted_uocc, ras1, ras2, ras3,
   // frozen_uocc.
 
-#ifdef HAVE_FORTRAN
+#ifdef HAVE_DKH
   /*- Relativistic Hamiltonian type !expert -*/
   options.add_str("RELATIVISTIC", "NO","NO X2C DKH");
 #else
@@ -1065,7 +1065,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       computations -*/
 
       /*- Reference wavefunction type -*/
-      options.add_str("REFERENCE", "UHF", "UHF");
+      options.add_str("REFERENCE", "RHF", "UHF RHF");
       /*- Algorithm to use for the density cumulant and orbital updates in the DCFT energy computation.
       Two-step algorithm is usually more efficient for small
       systems, but for large systems simultaneous algorithm (default) is recommended.
@@ -1152,7 +1152,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
       options.add_bool("RELAX_TAU", true);
       /*- Chooses appropriate DCFT method -*/
-      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
+      options.add_str("DCFT_FUNCTIONAL", "ODC-12", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
       /*- Whether to compute three-particle energy correction or not -*/
       options.add_str("THREE_PARTICLE", "NONE", "NONE PERTURBATIVE");
       /*- Do write a MOLDEN output file?  If so, the filename will end in
@@ -1292,13 +1292,27 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         the computation.  FOLLOW will perform the analysis and, if a totally symmetric instability
         is found, will attemp to follow the eigenvector and re-run the computations to find a stable
         solution. -*/
+    options.add_bool("SOSCF", false);
+    /*- Do use second-order SCF convergence methods? -*/
+    options.add_double("SOSCF_E_START", 1.0E-2);
+    /*- Do use second-order SCF convergence methods? -*/
+    options.add_double("SOSCF_R_START", 1.0E-2);
+    /*- When to start second-order SCF iterations based on gradient RMS -*/
+    options.add_int("SOSCF_MIN_ITER", 2);
+    /*- Minimum number of second-order microiterations to perform. -*/
+    options.add_int("SOSCF_MAX_ITER", 4);
+    /*- Maximum number of second-order microiterations to perform. -*/
+    options.add_double("SOSCF_CONV", 0.0);
+    /*- Secord order convergence threshold. -*/
+    options.add_bool("SOSCF_PRINT", false);
+    /*- Do we print the SOSCF microiterations?. -*/
     options.add_str("STABILITY_ANALYSIS", "NONE", "NONE CHECK FOLLOW");
     /*- When using STABILITY_ANALYSIS = FOLLOW, how much to scale the step along the eigenvector
         by. !expert -*/
     options.add_double("FOLLOW_STEP_SCALE", 0.5);
     /*- When using STABILITY_ANALYSIS = FOLLOW, the increment to modify FOLLOW_STEP_SCALE_ value
         if we end up in the same SCF solution. !expert -*/
-    options.add_double("FOLLOW_STEP_INCREMENT", 0.5);
+    options.add_double("FOLLOW_STEP_INCREMENT", 0.2);
     /*- When using STABILITY_ANALYSIS = FOLLOW, maximum number of orbital optimization attempts
         to make the wavefunction stable. !expert -*/
     options.add_int("MAX_ATTEMPTS", 1);
