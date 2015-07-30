@@ -188,10 +188,6 @@ void DCFTSolver::formJm12(boost::shared_ptr<BasisSet> auxiliary, boost::shared_p
     C_DGEMM('t', 'n', nQ_, nQ_, nQ_, 1.0, J_copy[0], nQ_, J[0], nQ_, 0.0, Jm12_[0], nQ_);
     free_block(J);
     free_block(J_copy);
-
-    // Save J^-1/2
-    Jmhalf_ = dfoccwave::SharedTensor2d(new dfoccwave::Tensor2d("DF_BASIS Jmhalf <P|Q>", nQ_, nQ_));
-    Jmhalf_->set(Jm12_);
 }
 
 /**
@@ -317,26 +313,30 @@ void DCFTSolver::df_memory(){
 
     // Memory requirements
     outfile->Printf("\t => Memory Requirement <=\n\n");
-    double cost_df = 0.0;
-    cost_df += nQ_ * nQ_; // store J(P|Q)-1/2
-    cost_df += nQ_ * nso_ * nso_; // store b(Q|mn)
-    cost_df += nQ_ * nso_ * navir_; // store b(Q|mV)
-    cost_df += nQ_ * navir_ * navir_; // store b(Q|VV)
-    cost_df *= sizeof(double);
-    cost_df /= 1024.0 * 1024.0;
-    outfile->Printf("\tMemory required for 3-index integrals   : %9.2lf MB \n", cost_df);
+    double cost_3ind = 0.0;
+    cost_3ind += nQ_ * nQ_; // store J(P|Q)-1/2
+    cost_3ind += nQ_ * nso_ * nso_; // store b(Q|mn)
+    double cost_bQpq = 2.0 * nQ_ * nso_ * nso_; // store b(Q|vv) and b(Q|pq), ignore b(Q|oo) and b(Q|ov)
+    if (options_.get_str("REFERENCE") == "RHF")
+        cost_3ind += cost_bQpq;       // b(Q|AA)
+    else
+        cost_3ind += 2.0 * cost_bQpq; // b(Q|AA) and b(Q|BB)
+    cost_3ind *= sizeof(double);
+    cost_3ind /= 1024.0 * 1024.0;
+    outfile->Printf("\tMemory required for 3-index integrals   : %9.2lf MB \n", cost_3ind);
 
-    double cost_abcd = 0.0;
-    cost_abcd += 2.0 * pow(navir_, 4.0); // store g(ab|cd) and g<ac|bd>
+    double cost_abcd = 3.0 * pow(navir_, 4.0); // store g(ab|cd), g<ac|bd>, and gbar<ac|bd>
     cost_abcd += 2.0 * nalpha_ * nalpha_ * navir_ * navir_; // store lambda<oo|vv> and G<ij|ab> intermediates
-    cost_abcd *= sizeof(double);
-    cost_abcd /= 1024.0 * 1024.0;
-    outfile->Printf("\tMemory required for ABCD-type integrals : %9.2lf MB \n\n", cost_abcd);
+    double cost_pqrs = 2.0 * pow(nso_, 4.0); // store g(pq|rs) and g~(pq|rs)
+    double cost_4ind = (cost_abcd > cost_pqrs ? cost_abcd : cost_pqrs);
+    cost_4ind *= sizeof(double);
+    cost_4ind /= 1024.0 * 1024.0;
+    outfile->Printf("\tMemory required for 4-index integrals   : %9.2lf MB \n\n", cost_4ind);
 
     double memory_mb = (double)memory / (1024.0 * 1024.0);
-    outfile->Printf("\tMinimum Memory required                 : %9.2lf MB \n", cost_df + cost_abcd);
-    outfile->Printf("\tMemory available                        : %9.2lf MB \n\n", memory_mb);
-//    if(cost_df >= memory_mb)
+    outfile->Printf("\tMinimum Memory required                 : %9.2lf MB \n", cost_3ind + cost_4ind);
+    outfile->Printf("\tMemory available                        : %9.2lf MB \n", memory_mb);
+//    if(cost_3ind + cost_4ind >= memory_mb)
 //            throw PSIEXCEPTION("There is NOT enough memory for ABCD-type contraction!");
 }
 
