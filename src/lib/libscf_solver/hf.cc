@@ -1756,10 +1756,7 @@ double HF::compute_energy()
             int nmicro = soscf_update();
             find_occupation();
             status += "SOSCF, nmicro = "; 
-            status += std::to_string(nmicro);
-            //Ca_->print();
-            //Da_->print();
-            //Fa_->print();
+            status += std::to_string(static_cast<long long>(nmicro));
         }
         else{ // Normal convergence procedures if we do not do SOSCF
 
