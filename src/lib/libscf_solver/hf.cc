@@ -46,7 +46,7 @@
 #include <psifiles.h>
 #include <libfock/jk.h>
 #include <libpsipcm/psipcm.h>
-
+#include <libpsi4util/libpsi4util.h>
 
 #include "hf.h"
 
@@ -368,7 +368,7 @@ void HF::common_init()
     soscf_conv_ = options_.get_double("SOSCF_CONV");
     soscf_print_ = options_.get_bool("SOSCF_PRINT");
     if (soscf_conv_ == 0.0) {
-        soscf_conv_ = energy_threshold_; 
+        soscf_conv_ = energy_threshold_;
     }
 
 
@@ -1755,8 +1755,8 @@ double HF::compute_energy()
             compute_orbital_gradient(false);
             int nmicro = soscf_update();
             find_occupation();
-            status += "SOSCF, nmicro = "; 
-            status += std::to_string(static_cast<long long>(nmicro));
+            status += "SOSCF, nmicro = ";
+            status += psi::to_string(nmicro);
         }
         else{ // Normal convergence procedures if we do not do SOSCF
 
