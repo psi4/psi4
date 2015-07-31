@@ -495,7 +495,7 @@ void UHF::stability_analysis_pk()
 
                     Ca_->rotate_columns(isym, irel, arel, scale*evecs[ia][0]);
                     outfile->Printf( "Rotating %d and %d in irrep %d by %f\n",
-                            irel, arel, isym, scale*evecs[0][ia]);
+                            irel, arel, isym, scale*evecs[ia][0]);
                 }
 //                outfile->Printf( "NEW ORBS");
 //                Ca_->print();
@@ -507,7 +507,7 @@ void UHF::stability_analysis_pk()
                     int asym = Abb.params->qsym[aabs];
                     int irel = iabs - Abb.params->poff[isym];
                     int arel = aabs - Abb.params->qoff[asym] + doccpi_[asym];
-                    Cb_->rotate_columns(isym, irel, arel, scale*evecs[0][ia+aDim]);
+                    Cb_->rotate_columns(isym, irel, arel, scale*evecs[ia+aDim][0]);
                 }
             }else{
                 status =  "    No totally symmetric instabilities detected: "
