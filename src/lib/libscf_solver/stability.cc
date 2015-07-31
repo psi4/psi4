@@ -257,7 +257,7 @@ SharedMatrix UStab::analyze()
         outfile->Printf("    Wavefunction unstable!\n");
     } else {
         outfile->Printf("    Wavefunction stable under totally symmetric rotations.\n");
-        outfile->Printf("    Lowest eigenvalue: %f \n", vals_[0]);
+        outfile->Printf("    Lowest totally symmetric eigenvalue: %f \n", vals_[0]);
     }
 
     return eval_sym;
@@ -277,16 +277,16 @@ void UStab::rotate_orbs(double step_scale)
         int nvira = unveca->coldim(h);
     // Rotate the alpha orbitals
         for (int i = 0; i < nocca; ++i) {
-            for (int a = 0; a < nvira; ++a) {
-                Ca_->rotate_columns(h, i, a, scale*unveca->get(h,i,a));
+            for (int a = nocca; a < nvira + nocca; ++a) {
+                Ca_->rotate_columns(h, i, a, scale*unveca->get(h,i,a - nocca));
             }
         }
         int noccb = unvecb->rowdim(h);
         int nvirb = unvecb->coldim(h);
     // Rotate the beta orbitals
         for (int i = 0; i < noccb; ++i) {
-            for (int a = 0; a < nvirb; ++a) {
-                Cb_->rotate_columns(h, i, a, scale*unvecb->get(h,i,a));
+            for (int a = noccb; a < nvirb + noccb; ++a) {
+                Cb_->rotate_columns(h, i, a, scale*unvecb->get(h,i,a - nocca));
             }
         }
     }
