@@ -46,6 +46,7 @@ class SimpleVector;
 class TwoBodySOInt;
 class JK;
 class MinimalInterface;
+class SOSCF;
 namespace scf {
 
 class HF : public Wavefunction {
@@ -154,6 +155,21 @@ protected:
     int diis_start_;
     /// Are we even using DIIS?
     int diis_enabled_;
+
+    /// Are we doing second-order convergence acceleration?
+    bool soscf_enabled_;
+    /// What is the energy diff that we should start?
+    double soscf_e_start_;
+    /// What is the gradient threshold that we should start?
+    double soscf_r_start_;
+    /// Maximum number of iterations
+    int soscf_min_iter_;
+    /// Minimum number of iterations
+    int soscf_max_iter_;
+    /// Break if the residual RMS is less than this
+    double soscf_conv_;
+    /// Do we print the microiterations?
+    double soscf_print_;
 
     /// The amount (%) of the previous orbitals to mix in during SCF damping
     double damping_percentage_;
@@ -297,6 +313,9 @@ protected:
 
     /** Applies damping to the density update */
     virtual void damp_update();
+
+    /** Applies second-order convergence acceleration */
+    virtual int soscf_update();
 
     /** Compute the MO coefficients (C_) */
     virtual void form_C() =0;

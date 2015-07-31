@@ -1,5 +1,5 @@
 #! RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates
-#! using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables
+#! using Python's built-in loop mechanisms.  The geometry is specified using a Z-matrix with variables
 #! that are updated during the potential energy surface scan, and then the same procedure is performed
 #! using polar coordinates, converted to Cartesian coordinates.
 
@@ -12,7 +12,7 @@ Rvals = [ 0.9, 1.0, 1.1 ]
 Avals = range(102, 106, 2)
 
 
-# Start with a potentital energy scan in Z-matrix coordinates
+# Start with a potential energy scan in Z-matrix coordinates
 molecule h2o {
     O
     H 1 R
