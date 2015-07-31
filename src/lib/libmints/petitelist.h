@@ -24,11 +24,13 @@
 #define _psi_src_lib_libmints_petitelist_h_
 
 #include "typedefs.h"
+#include "pointgrp.h"
 
 #include <map>
 #include <cstdio>
 #include <stdint.h>
-#include "pointgrp.h"
+
+#include <boost/shared_ptr.hpp>
 
 namespace psi {
 
@@ -127,39 +129,15 @@ struct SOCoefficients{
     //        Contribution(std::map<int, double> coefficients_, int irrep_):
     //            coefficients(coefficients_), irrep(irrep_){}
     SOCoefficients(): irrep(-1){}
-    void add_contribution(int bf, double coeff, int symm){
-        if(irrep != -1 && irrep != symm)
-            throw PSIEXCEPTION("Contribution::symmetry changed!");
-        irrep = symm;
-        coefficients[bf] += coeff;
-    }
+    void add_contribution(int bf, double coeff, int symm);
 
-    void print() const {
-        outfile->Printf("\nSOCoefficients, irrep = %d\n", irrep);
-        std::map<int, double>::const_iterator iter;
-        for(iter = coefficients.begin(); iter != coefficients.end(); ++iter){
-            outfile->Printf( "Basis function:%d Coefficient: %.5f\n", iter->first, iter->second);
-        }
-    }
+    void print() const;
 
     size_t size() const {return(coefficients.size());}
 
-    void scale_coefficients(double factor){
-        std::map<int, double>::iterator iter;
-        for(iter = coefficients.begin(); iter != coefficients.end(); ++iter){
-            iter->second *= factor;
-        }
-    }
+    void scale_coefficients(double factor);
 
-    void delete_zeros(){
-        std::map<int, double>::iterator iter;
-        for(iter = coefficients.begin(); iter != coefficients.end();){
-            std::map<int, double>::iterator erase_iter = iter++;
-
-            if(fabs(erase_iter->second) < 1E-10) coefficients.erase(erase_iter);
-        }
-
-    }
+    void delete_zeros();
 };
 /////////////////////////////////////////////////////////////////////////////
 
