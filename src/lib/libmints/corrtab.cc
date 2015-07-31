@@ -51,6 +51,7 @@
 //
 
 #include <psi4-dec.h>
+#include <exception.h>
 #include <libmints/corrtab.h>
 
 using namespace std;
