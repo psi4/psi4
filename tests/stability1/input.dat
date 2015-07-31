@@ -45,12 +45,14 @@ compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion e
 compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
 compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")                   #TEST
 
-ref_vals_sym = [ [-0.266345 ],             #TEST 
-                 [-0.090082 ],             #TEST
+ref_vals_sym = [ [ 0.000000 ],             #TEST 
+                 [ 0.089100 ],             #TEST
                ]                           #TEST
 
 ref = psi4.Matrix(2,1)                     #TEST
 ref.set(ref_vals_sym)                      #TEST
+
+refenergy =  -25.10074424397277 #TEST
 
 molecule bh {
     b      0.0000        0.0000        0.0000
@@ -66,7 +68,6 @@ set globals = {
     stability_analysis follow
     solver_n_guess 6
     solver_n_root 2
-    max_attempts  0
 }
 
 thisenergy = energy('scf')
