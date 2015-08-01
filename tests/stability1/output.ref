@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.2.150 Driver
+                              Psi4 0.2.239 Driver
 
-                          Git: Rev {master} 4eeeb45 dirty
+                          Git: Rev {master} e7c67a2 dirty
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,9 +16,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wed Jul 22 16:33:17 2015
+    Psi4 started on: Thu Jul 30 23:56:51 2015
 
-    Process ID:  11803
+    Process ID:   4498
     PSI4DATADIR: /home/jerome/Documents/Atlanta/PSIcode/psi4public/lib/
     Memory level set to 256.000 MB
 
@@ -72,12 +72,14 @@ compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion e
 compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
 compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")                   #TEST
 
-ref_vals_sym = [ [-0.266345 ],             #TEST 
-                 [-0.090082 ],             #TEST
+ref_vals_sym = [ [ 0.000000 ],             #TEST 
+                 [ 0.089100 ],             #TEST
                ]                           #TEST
 
 ref = psi4.Matrix(2,1)                     #TEST
 ref.set(ref_vals_sym)                      #TEST
+
+refenergy =  -25.10074424397277 #TEST
 
 molecule bh {
     b      0.0000        0.0000        0.0000
@@ -93,7 +95,6 @@ set globals = {
     stability_analysis follow
     solver_n_guess 6
     solver_n_root 2
-    max_attempts  0
 }
 
 thisenergy = energy('scf')
@@ -109,7 +110,7 @@ compare_matrices(ref, stab, 5, "Stability eigenvalues without symmetry")        
   Memory set to 500.000 MiB by Python script.
 
 *** tstart() called on Graveworm.chemlocal
-*** at Wed Jul 22 16:33:17 2015
+*** at Thu Jul 30 23:56:51 2015
 
     There are an even number of electrons - assuming singlet.
     Specify the multiplicity with the MULTP option in the
@@ -391,14 +392,14 @@ Properties computed using the SCF density matrix
     DLUSolver converged.
 
     Wavefunction stable under totally symmetric rotations.
-    Lowest eigenvalue: -0.266345 
+    Lowest totally symmetric eigenvalue: -0.266345 
     Lowest UHF->UHF stability eigenvalues: 
       B1 -0.266345       A2 -0.095389       B1 -0.090082       A2 0.000000  
       A1 0.127528        B2 0.238508        A1 0.240102        B2 0.462468  
     
     Stability analysis over.
 
-*** tstop() called on Graveworm.chemlocal at Wed Jul 22 16:33:19 2015
+*** tstop() called on Graveworm.chemlocal at Thu Jul 30 23:56:53 2015
 Module time:
 	user time   =       1.96 seconds =       0.03 minutes
 	system time =       0.02 seconds =       0.00 minutes
@@ -409,7 +410,7 @@ Total time:
 	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on Graveworm.chemlocal
-*** at Wed Jul 22 16:33:19 2015
+*** at Thu Jul 30 23:56:53 2015
 
     There are an even number of electrons - assuming singlet.
     Specify the multiplicity with the MULTP option in the
@@ -692,17 +693,217 @@ Properties computed using the SCF density matrix
        A -0.266345        A -0.090082     
 
     Rotating orbitals by 0.500000 * pi / 2 radians along unstable eigenvector.
-    There's still a negative eigenvalue. Try modifying FOLLOW_STEP_SCALE
-    or increasing MAX_ATTEMPTS.
+    Running SCF again with the rotated orbitals.
+  ==> Pre-Iterations <==
 
-*** tstop() called on Graveworm.chemlocal at Wed Jul 22 16:33:21 2015
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         19      19       3       3       3       0
+   -------------------------------------------------------
+    Total      19      19       3       3       3       0
+   -------------------------------------------------------
+
+  Starting with a DF guess...
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:   -24.99021581072876   -8.68358e+00   6.28277e-03 
+   @DF-UHF iter   2:   -25.05167343016809   -6.14576e-02   4.76557e-03 DIIS
+   @DF-UHF iter   3:   -25.09503600259768   -4.33626e-02   1.86000e-03 DIIS
+   @DF-UHF iter   4:   -25.09890795281873   -3.87195e-03   1.05908e-03 DIIS
+   @DF-UHF iter   5:   -25.10064893302896   -1.74098e-03   2.37787e-04 DIIS
+   @DF-UHF iter   6:   -25.10072506580586   -7.61328e-05   1.13200e-04 DIIS
+   @DF-UHF iter   7:   -25.10074306444006   -1.79986e-05   3.66499e-05 DIIS
+   @DF-UHF iter   8:   -25.10074418107984   -1.11664e-06   7.76321e-06 DIIS
+   @DF-UHF iter   9:   -25.10074424300796   -6.19281e-08   9.02919e-07 DIIS
+   @DF-UHF iter  10:   -25.10074424396930   -9.61343e-10   8.22985e-08 DIIS
+   @DF-UHF iter  11:   -25.10074424397243   -3.12639e-12   1.92004e-08 DIIS
+
+  DF guess converged.
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+   @UHF iter  12:   -25.10074424397277   -3.44613e-13   2.78002e-09 DIIS
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   5.261222279E-01
+   @S^2 Expected:                0.000000000E+00
+   @S^2 Observed:                5.261222279E-01
+   @S   Expected:                0.000000000E+00
+   @S   Observed:                0.000000000E+00
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -7.651790     2A     -0.699868     3A     -0.364656  
+
+    Alpha Virtual:                                                        
+
+       4A      0.066413     5A      0.085829     6A      0.296157  
+       7A      0.357041     8A      0.481401     9A      0.503944  
+      10A      0.567233    11A      0.870651    12A      0.873146  
+      13A      0.909412    14A      0.919382    15A      0.920933  
+      16A      1.558359    17A      1.990399    18A      1.994621  
+      19A      2.932266  
+
+    Beta Occupied:                                                        
+
+       1A     -7.651790     2A     -0.699868     3A     -0.364656  
+
+    Beta Virtual:                                                         
+
+       4A      0.066413     5A      0.085829     6A      0.296157  
+       7A      0.357041     8A      0.481401     9A      0.503944  
+      10A      0.567233    11A      0.870651    12A      0.873146  
+      13A      0.909412    14A      0.919382    15A      0.920933  
+      16A      1.558359    17A      1.990399    18A      1.994621  
+      19A      2.932266  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     3 ]
+    SOCC [     0 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -25.10074424397277
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              2.6458860429499995
+    One-Electron Energy =                 -38.0606343659667701
+    Two-Electron Energy =                  10.3140040790440004
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -25.1007442439727733
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.9388
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:    -0.3166
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.6222     Total:     0.6222
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:     1.5816     Total:     1.5816
+
+
+  Saving occupied orbitals to File 180.
+
+         ------------------------------------------------------------
+                              UHF Stability code                     
+                                Jérôme Gonthier                     
+               Strong inspiration from R. Parrish's CIS              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C_inf_v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           B          0.000000000000     0.000000000000    -0.083865697994
+           H          0.000000000000     0.000000000000     0.916134302006
+
+  Nuclear repulsion =    2.645886042950000
+  ==> Basis Set <==
+
+  Basis Set: CC-PVDZ
+    Number of shells: 9
+    Number of basis function: 19
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DLUSolver (by Jerome Gonthier) <== 
+ ==> (Basically a copy-paste from R.Parrish DLR Solver) <== 
+
+   Number of roots         =           2
+   Number of guess vectors =           6
+   Maximum subspace size   =           6
+   Minimum subspace size   =           4
+   Subspace expansion norm =       1E-06
+   Convergence cutoff      =       1E-06
+   Maximum iterations      =         100
+   Preconditioning         =      JACOBI
+
+  ==> USTABHamiltonian (by Jérôme Gonthier) <== 
+  ==> Inspired by R.Parrish CISRHamiltonian <== 
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+  => Iterations <=
+
+             Iter  Converged   Subspace    Residual
+  DLU           1          0          2   9.560E-01
+  DLU           2          0          4   9.993E-01
+  DLU           3          0          6   9.999E-01
+  DLU           4          0          8   1.000E+00
+  DLU           5          0          6   1.000E+00
+  DLU           6          0          8   1.000E+00
+  DLU           7          0          6   1.000E+00
+  DLU           8          0          8   9.996E-01
+  DLU           9          0          6   9.656E-01
+  DLU          10          0          8   4.225E-01
+  DLU          11          1          6   9.042E-02
+  DLU          12          1          7   1.692E-02
+  DLU          13          1          5   1.683E-03
+  DLU          14          1          6   2.271E-04
+  DLU          15          1          7   1.824E-05
+  DLU          16          2          5   9.250E-07
+
+    DLUSolver converged.
+
+    Wavefunction stable under totally symmetric rotations.
+    Lowest totally symmetric eigenvalue: 0.000000 
+    Lowest UHF->UHF stability eigenvalues: 
+       A 0.000000         A 0.089100      
+
+    Stability analysis over.
+
+*** tstop() called on Graveworm.chemlocal at Thu Jul 30 23:56:57 2015
 Module time:
-	user time   =       1.48 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
-Total time:
-	user time   =       3.47 seconds =       0.06 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       3.85 seconds =       0.06 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
+Total time:
+	user time   =       5.85 seconds =       0.10 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

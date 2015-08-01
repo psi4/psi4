@@ -1308,7 +1308,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do we print the SOSCF microiterations?. -*/
     options.add_str("STABILITY_ANALYSIS", "NONE", "NONE CHECK FOLLOW");
     /*- When using STABILITY_ANALYSIS = FOLLOW, how much to scale the step along the eigenvector
-        by. !expert -*/
+        by. A full step of pi/2 corresponds to a value of 1.0. !expert -*/
     options.add_double("FOLLOW_STEP_SCALE", 0.5);
     /*- When using STABILITY_ANALYSIS = FOLLOW, the increment to modify FOLLOW_STEP_SCALE_ value
         if we end up in the same SCF solution. !expert -*/
