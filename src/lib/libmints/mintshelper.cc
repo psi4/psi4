@@ -387,9 +387,21 @@ void MintsHelper::one_electron_integrals()
     }
     else if (options_.get_str("RELATIVISTIC") == "X2C"){
         outfile->Printf( " OEINTS: Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
-    X2CInt x2cint;
-    SharedMatrix T,V;
-    x2cint.compute(T,V,options_);
+
+        X2CInt x2cint;
+        SharedMatrix so_overlap_x2c = so_overlap();
+        SharedMatrix so_kinetic_x2c = so_kinetic();
+        SharedMatrix so_potential_x2c = so_potential();
+        x2cint.compute(so_overlap_x2c,so_kinetic_x2c,so_potential_x2c,options_);
+
+        // Overlap
+        so_overlap_x2c->save(psio_, PSIF_OEI);
+
+        // Kinetic
+        so_kinetic_x2c->save(psio_, PSIF_OEI);
+
+        // Potential
+        so_potential_x2c->save(psio_, PSIF_OEI);
     }
 
     // Dipoles
