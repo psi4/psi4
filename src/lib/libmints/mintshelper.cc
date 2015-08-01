@@ -44,7 +44,7 @@
 
 using namespace boost;
 
-#ifdef HAVE_FORTRAN
+#ifdef HAVE_DKH
 #include "FCMangle.h"
 #define F_DKH  FC_MODULE(dkh_main, dkh, DKH_MAIN, DKH)
 
@@ -495,7 +495,7 @@ SharedMatrix MintsHelper::ao_pvp()
 
 SharedMatrix MintsHelper::ao_dkh(int dkh_order)
 {
-#ifdef HAVE_FORTRAN
+#ifdef HAVE_DKH
     SharedMatrix S = ao_overlap();
     SharedMatrix T = ao_kinetic();
     SharedMatrix Torig = T->clone();

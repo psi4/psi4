@@ -22,6 +22,7 @@
 #ifndef PSIFILEIMPL_H_
 #define PSIFILEIMPL_H_
 
+#include <exception.h>
 #include <fstream>
 
 ///Typedef of std::file modes

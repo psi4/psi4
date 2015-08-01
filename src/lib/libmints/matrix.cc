@@ -406,7 +406,7 @@ SharedMatrix Matrix::horzcat(const std::vector<SharedMatrix >& mats)
             int cols = mats[a]->colspi()[h];
             if (cols == 0) continue;
 
-            double** Ap = mats[a]->pointer();
+            double** Ap = mats[a]->pointer(h);
 
             for (int col = 0; col < cols; ++col) {
                 C_DCOPY(rows,&Ap[0][col],cols,&catp[0][col + offset],colspi[h]);
@@ -453,7 +453,7 @@ SharedMatrix Matrix::vertcat(const std::vector<SharedMatrix >& mats)
             int rows = mats[a]->rowspi()[h];
             if (rows == 0) continue;
 
-            double** Ap = mats[a]->pointer();
+            double** Ap = mats[a]->pointer(h);
 
             for (int row = 0; row < rows; ++row) {
                 ::memcpy((void*) catp[row + offset], (void*) Ap[row], sizeof(double) * cols);
@@ -1485,6 +1485,7 @@ SharedMatrix Matrix::doublet(const SharedMatrix& A, const SharedMatrix& B, bool 
     SharedMatrix T(new Matrix("T", nirrep, m, n));
 
     for (int h = 0; h < nirrep; h++) {
+        if (!k[h] || !m[h] || !n[h]) continue;
         C_DGEMM(
             (transA ? 'T' : 'N'),
             (transB ? 'T' : 'N'),
@@ -1508,6 +1509,24 @@ SharedMatrix Matrix::triplet(const SharedMatrix& A, const SharedMatrix& B, const
     SharedMatrix T = Matrix::doublet(A,B,transA,transB);
     SharedMatrix S = Matrix::doublet(T,C,false,transC);
     return S;
+}
+void Matrix::axpy(double a, SharedMatrix X)
+{
+    if (nirrep_ != X->nirrep()) {
+        throw PSIEXCEPTION("Matrix::axpy: Matrices do not have the same nirreps");
+    }
+    for (int h=0; h<nirrep_; h++){
+        size_t size = colspi_[h] * rowspi_[h];
+        if (size != (X->rowspi()[h] * X->colspi()[h])) {
+            throw PSIEXCEPTION("Matrix::axpy: Matrices sizes do not match.");
+        }
+        if (size){
+            double* Xp = X->pointer(h)[0];
+            double* Yp = matrix_[h][0];
+            C_DAXPY(size, a, Xp, 1, Yp, 1);
+        }
+
+    }
 }
 SharedMatrix Matrix::collapse(int dim)
 {
@@ -1604,8 +1623,10 @@ int mat_schmidt_tol(double **C, double **S, int nrow, int ncol, double tolerance
 
 void Matrix::schmidt()
 {
-    for (int h=0; h<nirrep(); ++h)
+    for (int h=0; h<nirrep(); ++h){
+        if ((rowspi(h) == 0) || (colspi(h) == 0)) continue;
         psi::schmidt(matrix_[h], rowspi(h), colspi(h), "STUPID");
+    }
 }
 
 Dimension Matrix::schmidt_orthog_columns(SharedMatrix S, double tol, double * /*res*/)

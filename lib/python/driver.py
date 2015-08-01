@@ -153,12 +153,6 @@ procedures = {
             'psimrcc'       : run_psimrcc,
             'psimrcc_scf'   : run_psimrcc_scf,
             'hf'            : run_scf,
-            'rhf'           : run_scf,
-            'uhf'           : run_scf,
-            'rohf'          : run_scf,
-            'rscf'          : run_scf,
-            'uscf'          : run_scf,
-            'roscf'         : run_scf,
             'qcisd'         : run_fnocc,
             'qcisd(t)'      : run_fnocc,
             'mp4(sdq)'      : run_fnocc,
@@ -226,12 +220,6 @@ procedures = {
             'dfccd'         : run_dfccd_gradient,
 #            'efp'           : run_efp_gradient,
             'hf'            : run_scf_gradient,
-            'rhf'           : run_scf_gradient,
-            'uhf'           : run_scf_gradient,
-            'rohf'          : run_scf_gradient,
-            'rscf'          : run_scf_gradient,
-            'uscf'          : run_scf_gradient,
-            'roscf'         : run_scf_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
         'hessian' : {
@@ -257,17 +245,11 @@ procedures = {
             'ci'       : run_detci_property,  # arbitrary order ci(n)
             'fci'      : run_detci_property,
             'hf'       : run_scf_property,
-            'rhf'      : run_scf_property,
-            'uhf'      : run_scf_property,
-            'rohf'     : run_scf_property,
-            'rscf'     : run_scf_property,
-            'uscf'     : run_scf_property,
-            'roscf'    : run_scf_property,
             # Upon adding a method to this list, add it to the docstring in property() below
         }}
 
 # dictionary to register pre- and post-compute hooks for driver routines
-hooks = dict((k1, dict((k2, []) for k2 in ['pre', 'post'])) for k1 in ['energy', 'optimize', 'frequency']) 
+hooks = dict((k1, dict((k2, []) for k2 in ['pre', 'post'])) for k1 in ['energy', 'optimize', 'frequency'])
 
 # Integrate DFT with driver routines
 for ssuper in superfunctional_list():
@@ -334,6 +316,8 @@ def energy(name, **kwargs):
     | efp                     | effective fragment potential (EFP) :ref:`[manual] <sec:efp>`                          |
     +-------------------------+---------------------------------------------------------------------------------------+
     | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :ref:`[manual] <sec:scf>`       |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | hf                      | HF self consistent field (SCF)
     +-------------------------+---------------------------------------------------------------------------------------+
     | dcft                    | density cumulant functional theory :ref:`[manual] <sec:dcft>`                         |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -484,25 +468,6 @@ def energy(name, **kwargs):
     | eom-cc3                 | EOM-CC3 :ref:`[manual] <sec:eomcc>`                                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
 
-    .. _`table:energy_scf`:
-
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method (aliases to *name* = 'scf')                                              |
-    +=========================+=======================================================================================+
-    | hf                      | HF                                                                                    |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | rhf                     | HF with restricted reference                                                          |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | uhf                     | HF with unrestricted reference                                                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | rohf                    | HF with restricted open-shell reference                                               |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | rscf                    | HF or DFT with restricted reference                                                   |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | uscf                    | HF or DFT with unrestricted reference                                                 |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | roscf                   | HF or DFT with restricted open-shell reference                                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
 
     .. include:: autodoc_dft_energy.rst
 
@@ -939,6 +904,8 @@ def property(name, **kwargs):
     +====================+===============================================+================+===============================================================+
     | scf                | Self-consistent field method(s)               | RHF/ROHF/UHF   | Listed :ref:`here <sec:oeprop>`                               |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | hf                 | HF Self-consistent field method(s)            | RHF/ROHF/UHF   | Listed :ref:`here <sec:oeprop>`                               |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------------------+
     | cc2                | 2nd-order approximate CCSD                    | RHF            | dipole, quadrupole, polarizability, rotation, roa             |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | ccsd               | Coupled cluster singles and doubles (CCSD)    | RHF            | dipole, quadrupole, polarizability, rotation, roa             |
@@ -955,26 +922,6 @@ def property(name, **kwargs):
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | 'fci'              | Full configuration interaction                | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
-
-    .. _`table:prop_scf`:
-
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method (aliases to *name* = 'scf')                                              |
-    +=========================+=======================================================================================+
-    | hf                      | HF                                                                                    |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | rhf                     | HF with restricted reference                                                          |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | uhf                     | HF with unrestricted reference                                                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | rohf                    | HF with restricted open-shell reference                                               |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | rscf                    | HF or DFT with restricted reference                                                   |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | uscf                    | HF or DFT with unrestricted reference                                                 |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | roscf                   | HF or DFT with restricted open-shell reference                                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
 
     :type name: string
     :param name: ``'ccsd'`` || etc.
@@ -1081,6 +1028,8 @@ def optimize(name, **kwargs):
     +=========================+=======================================================================================+
     | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :ref:`[manual] <sec:scf>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
+    | hf                      | Hartree--Fock (HF)  :ref:`[manual] <sec:scf>`                                         |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | dcft                    | density cumulant functional theory :ref:`[manual] <sec:dcft>`                         |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2) :ref:`[manual] <sec:dfmp2>`        |
@@ -1118,23 +1067,6 @@ def optimize(name, **kwargs):
 
     .. _`table:grad_scf`:
 
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method (aliases to *name* = 'scf')                                              |
-    +=========================+=======================================================================================+
-    | hf                      | HF                                                                                    |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | rhf                     | HF with restricted reference                                                          |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | uhf                     | HF with unrestricted reference                                                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | rohf                    | HF with restricted open-shell reference                                               |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | rscf                    | HF or DFT with restricted reference                                                   |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | uscf                    | HF or DFT with unrestricted reference                                                 |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | roscf                   | HF or DFT with restricted open-shell reference                                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
 
     .. include:: autodoc_dft_opt.rst
 
@@ -1197,6 +1129,9 @@ def optimize(name, **kwargs):
 
     full_hess_every = psi4.get_local_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
+    hessian_with_method = name
+    if ('hessian_with' in kwargs):
+        hessian_with_method = kwargs['hessian_with']
 
     # are we in sow/reap mode?
     isSowReap = False
@@ -1256,7 +1191,7 @@ def optimize(name, **kwargs):
             psi4.IOManager.shared_object().set_specific_retention(1, True)
             psi4.IOManager.shared_object().set_specific_path(1, './')
             psi4.set_global_option('HESSIAN_WRITE', True)
-            frequencies(name, **kwargs)
+            frequencies(hessian_with_method, **kwargs)
             steps_since_last_hessian = 0
             psi4.set_gradient(G)
             psi4.set_global_option('CART_HESS_READ', True)

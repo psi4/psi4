@@ -3,16 +3,7 @@
 memory 250 mb
 
 import os
-import sys
-currentdir = os.getcwd()
-psiauxdir1 = currentdir + '/psiaux1'
-psiauxdir2 = currentdir + '/psiaux2'
-sys.path.append(currentdir)
-sys.path.append(psiauxdir1)
-sys.path.append(psiauxdir2)
-os.environ['PSIPATH'] = currentdir + '/psiaux1'
-os.environ['PSIPATH'] = os.environ['PSIPATH'] + ":" + currentdir + '/psiaux2'
-print os.environ.get('PSIPATH')
+os.environ['PSIPATH'] = 'psiaux1:psiaux2'
 
 ###########################
 molecule h2o {
