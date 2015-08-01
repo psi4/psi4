@@ -70,7 +70,7 @@ std::vector<frozen_cart> split_to_frozen_cart(string &str);
 // R_string = integer list of atoms, each 2 of which are frozen
 // B_string = integer list of atoms, each 3 of which are frozen
 // D_string = integer list of atoms, each 4 of which are frozen
-// C_string = (integer string) pair list for frozen cartesians, e.g., "4 z" 
+// C_string = (integer string) pair list for frozen cartesians, e.g., "4 z"
 
 bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_string, string C_string)
 {
@@ -121,7 +121,7 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
 
     if (index == coords.simples.size())
       coords.simples.push_back(one_stre);// add it
-    else { 
+    else {
       coords.simples[index]->freeze();   // it's there already; make sure it's frozen
       delete one_stre;
     }
@@ -142,7 +142,7 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
 
     if (index == coords.simples.size())
       coords.simples.push_back(one_bend);// add it
-    else { 
+    else {
       coords.simples[index]->freeze();   // it's there already; make sure it's frozen
       delete one_bend;
     }
@@ -164,7 +164,7 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
 
     if (index == coords.simples.size())
       coords.simples.push_back(one_tors);// add it
-    else { 
+    else {
       coords.simples[index]->freeze();   // it's there already; make sure it's frozen
       delete one_tors;
     }
@@ -197,7 +197,7 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
       int index = find(one_cart);
       if (index == coords.simples.size())
         coords.simples.push_back(one_cart);// add it
-      else { 
+      else {
         coords.simples[index]->freeze();   // it's there already; make sure it's frozen
         delete one_cart;
       }
@@ -232,7 +232,7 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
     for (int i=0; i<D.size(); ++i)
       oprintf_out("\t %5d %5d %5d %5d\n", D[i].atoms[0]+1, D[i].atoms[i+1]+1, D[i].atoms[2]+1, D[i].atoms[3]+1);
   }
-  
+
 
   // do fixed distances
   for (int i=0; i<R.size(); ++i) {
@@ -251,7 +251,7 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
 
     if (index == coords.simples.size())
       coords.simples.push_back(one_stre);// add it
-    else { 
+    else {
       coords.simples[index]->set_fixed_eq_val(R[i].eq_val/_bohr2angstroms); // it's there already, add the fixed value
       delete one_stre;
     }
@@ -261,17 +261,17 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
     int a = B[i].atoms[0];
     int b = B[i].atoms[1];
     int c = B[i].atoms[2];
-    
+
     if (a >= natom || b >= natom || c >= natom)
       throw(INTCO_EXCEPT("Impossibly large index for atom in fixed bend string."));
-    
+
     BEND *one_bend = new BEND(a, b, c, 0);
     // Insist on user-specified fixed coordinates to be given in Angstroms/radians
     one_bend->set_fixed_eq_val(B[i].eq_val/180.0*_pi);
 
     // check if coord is already present; returns 1 past the end if not found
     int index = find(one_bend);
-  
+
     if (index == coords.simples.size())
       coords.simples.push_back(one_bend);// add it
     else {
@@ -308,7 +308,7 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
 }
 
 template <typename T>
-T StringToNumber ( const string & Text ) { 
+T StringToNumber ( const string & Text ) {
   stringstream ss(Text);
   T result;
   return ss >> result ? result : -1;
@@ -409,6 +409,10 @@ std::vector<frozen_cart> split_to_frozen_cart(string &str) {
         int len = item.size();
         if (len > 3)
           throw(INTCO_EXCEPT("Frozen cartesian specification (X, XY, ...) should have no more than 3 letters."));
+
+        one_cart.freeze_x = false;
+        one_cart.freeze_y = false;
+        one_cart.freeze_z = false;
 
         for (int i=0; i<len; ++i) {
           if (item[i] == 'X')
