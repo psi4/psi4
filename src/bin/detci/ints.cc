@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 
@@ -46,7 +46,11 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
+#include <libtrans/integraltransform.h>
+#include <libmints/mints.h>
+#include <psi4-dec.h>
 #include "structs.h"
+#include "ciwave.h"
 #define EXTERN
 #include "globals.h"
 #include "globaldefs.h"
@@ -56,13 +60,57 @@ namespace psi { namespace detci {
 // #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 // #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 
+void CIWavefunction::transform_integrals()
+{
+// For simplicity we use the following conversions:
+
+SharedMatrix fzc = get_orbitals("FZC");
+
+SharedMatrix docc = get_orbitals("DOCC");
+SharedMatrix act = get_orbitals("ACT");
+std::vector<SharedMatrix > vocc;
+vocc.push_back(docc); vocc.push_back(act);
+SharedMatrix occ = Matrix::horzcat(vocc);
+
+SharedMatrix vir = get_orbitals("VIR");
+SharedMatrix fzv = get_orbitals("FZV");
+
+std::vector<boost::shared_ptr<MOSpace> > spaces;
+spaces.push_back(MOSpace::all);
+// spaces.push_back(MOSpace::occ);
+// spaces.push_back(MOSpace::vir);
+// spaces.push_back(MOSpace::fzv);
+
+outfile->Printf("Initializing libtrans!\n");
+IntegralTransform *ints = new IntegralTransform(fzc, occ, vir, fzv, spaces);
+                          // IntegralTransform::Restricted,
+                          // IntegralTransform::IWLOnly,
+                          // IntegralTransform::PitzerOrder,
+                          // IntegralTransform::None,
+                          // true);
+
+outfile->Printf("Started tei transform!\n");
+ints->transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all, IntegralTransform::MakeAndNuke);
+delete ints;
+
+int nmotri = (CalcInfo.num_ci_orbs * (CalcInfo.num_ci_orbs + 1)) / 2 ;
+CalcInfo.onel_ints = (double *) init_array(nmotri) ;
+outfile->Printf("Finished tei transform!\n");
+iwl_rdone(Parameters.oei_file, PSIF_MO_FZC, CalcInfo.onel_ints, nmotri,
+             0, (Parameters.print_lvl>4), "outfile");
+for (int i=0; i<nmotri; i++){
+    outfile->Printf("%d | %lf\n", i, CalcInfo.onel_ints[i]);
+   }
+
+}
+
 void read_integrals()
 {
    int i, j, ij, k, l, kl, ijkl, ijij;
    int nmotri, nmotri_full;
    double value;
-   extern double check_energy(double *H, double *twoel_ints, int *docc, 
-      int *dropped_docc, int drc_flag, double escf, double enuc, double edrc, 
+   extern double check_energy(double *H, double *twoel_ints, int *docc,
+      int *dropped_docc, int drc_flag, double escf, double enuc, double edrc,
       int nirreps, int *reorder, int *opi, int print_lvl, std::string out);
    int junk;
    double *tmp_onel_ints;
@@ -74,7 +122,7 @@ void read_integrals()
    nmotri = (CalcInfo.num_ci_orbs * (CalcInfo.num_ci_orbs + 1)) / 2 ;
    CalcInfo.onel_ints = (double *) init_array(nmotri) ;
    CalcInfo.twoel_ints = (double *) init_array(nmotri * (nmotri + 1) / 2);
-   CalcInfo.maxK = (double *) init_array(CalcInfo.num_ci_orbs);  
+   CalcInfo.maxK = (double *) init_array(CalcInfo.num_ci_orbs);
 
    /*
      One-electron integrals: always filter what DETCI considers
@@ -87,8 +135,12 @@ void read_integrals()
    tmp_onel_ints = init_array(nmotri_full);
    iwl_rdone(Parameters.oei_file, PSIF_MO_FZC, tmp_onel_ints, nmotri_full,
              0, (Parameters.print_lvl>4), "outfile");
-   filter(tmp_onel_ints, CalcInfo.onel_ints, ioff, CalcInfo.nmo, 
+   filter(tmp_onel_ints, CalcInfo.onel_ints, ioff, CalcInfo.nmo,
 	  CalcInfo.num_drc_orbs, CalcInfo.num_drv_orbs);
+
+   for (int i=0; i<nmotri; i++){
+    outfile->Printf("%d | %lf\n", i, CalcInfo.onel_ints[i]);
+   }
    free(tmp_onel_ints);
 
    /*
@@ -111,13 +163,13 @@ void read_integrals()
   }
 
   iwl_rdtwo(Parameters.tei_file, CalcInfo.twoel_ints, ioff, CalcInfo.nmo,
-             nfilter_core, nfilter_vir, 
+             nfilter_core, nfilter_vir,
              (Parameters.print_lvl>4), "outfile");
 
    /* Determine maximum K integral for use in averaging the diagonal */
    /* Hamiltonian matrix elements over spin-coupling set */
    if (Parameters.hd_ave) {
-     for(i=0; i<CalcInfo.num_ci_orbs; i++) 
+     for(i=0; i<CalcInfo.num_ci_orbs; i++)
         for(j=0; j<CalcInfo.num_ci_orbs; j++) {
            /* if (i==j) continue; */
            ij = ioff[MAX0(i,j)] + MIN0(i,j);
@@ -130,14 +182,14 @@ void read_integrals()
           CalcInfo.maxKlist = CalcInfo.maxK[i];
         if (Parameters.print_lvl > 4)
           outfile->Printf("maxK[%d] = %lf\n",i, CalcInfo.maxK[i]);
-        } 
+        }
       }
 
    if (Parameters.print_lvl > 4) {
       outfile->Printf( "\nOne-electron integrals\n") ;
       for (i=0, ij=0; i<CalcInfo.num_ci_orbs; i++) {
          for (j=0; j<=i; j++, ij++) {
-            outfile->Printf( "h(%d)(%d) = %11.7lf\n", i, j, 
+            outfile->Printf( "h(%d)(%d) = %11.7lf\n", i, j,
                CalcInfo.onel_ints[ij]) ;
             }
          }
@@ -156,18 +208,18 @@ void read_integrals()
                   ijkl = ioff[MAX0(ij,kl)] + MIN0(ij,kl) ;
                   outfile->Printf( "%2d %2d %2d %2d (%4d) = %10.6lf\n",
                      i, j, k, l, ijkl, CalcInfo.twoel_ints[ijkl]);
-                  } 
+                  }
                }
             }
          }
       }
 
-   CalcInfo.eref = check_energy(CalcInfo.onel_ints, CalcInfo.twoel_ints, 
-      CalcInfo.docc, CalcInfo.dropped_docc, 1, CalcInfo.escf, 
-      CalcInfo.enuc, CalcInfo.edrc, CalcInfo.nirreps, CalcInfo.reorder, 
+   CalcInfo.eref = check_energy(CalcInfo.onel_ints, CalcInfo.twoel_ints,
+      CalcInfo.docc, CalcInfo.dropped_docc, 1, CalcInfo.escf,
+      CalcInfo.enuc, CalcInfo.edrc, CalcInfo.nirreps, CalcInfo.reorder,
       CalcInfo.orbs_per_irr, Parameters.print_lvl, "outfile");
 
-} 
+}
 
 
 
@@ -233,7 +285,7 @@ void tf_onel_ints(int printflag, std::string out)
       we would need to account for RAS-out-of-space contributions
       (requiring fci=false).
     */
-   if (Parameters.fci && (nbf > Parameters.ras3_lvl) && 
+   if (Parameters.fci && (nbf > Parameters.ras3_lvl) &&
        Parameters.ras34_max == 0)
       nbf = Parameters.ras3_lvl;
 
@@ -251,7 +303,7 @@ void tf_onel_ints(int printflag, std::string out)
             ikkj = ioff[ik] + kj ;
             teptr = tei + ikkj ;
             tval -= 0.5 * (*teptr) ;
-            } 
+            }
 
          CalcInfo.tf_onel_ints[ij++] = tval ;
          }
@@ -306,7 +358,7 @@ void form_gmat(int printflag, std::string out)
             }
          CalcInfo.gmat[i][j] = tval ;
          }
-      } 
+      }
 
    for (i=0, ij=0; i<nbf; i++) {
       for (j=0; j<=i; j++,ij++) {
@@ -353,7 +405,7 @@ void mcscf_read_integrals()
       outfile->Printf("\n\tOne-electron integrals (frozen core operator):\n");
     }
     // can't erase file, re-reading it below
-    iwl_rdone(MCSCF_Parameters.oei_file, PSIF_MO_FZC, MCSCF_CalcInfo.onel_ints, nbstri, 
+    iwl_rdone(MCSCF_Parameters.oei_file, PSIF_MO_FZC, MCSCF_CalcInfo.onel_ints, nbstri,
               0, (MCSCF_Parameters.print_lvl>3), "outfile");
   }
   else {
@@ -361,7 +413,7 @@ void mcscf_read_integrals()
       outfile->Printf("\n\tOne-electron integrals (bare):\n");
     }
     // can't erase file, re-reading it below
-    iwl_rdone(MCSCF_Parameters.oei_file, PSIF_MO_OEI, MCSCF_CalcInfo.onel_ints, nbstri, 
+    iwl_rdone(MCSCF_Parameters.oei_file, PSIF_MO_OEI, MCSCF_CalcInfo.onel_ints, nbstri,
               0, (MCSCF_Parameters.print_lvl>3), "outfile");
   }
 
@@ -370,22 +422,22 @@ void mcscf_read_integrals()
      that, too (both should be available from the transformation code)
      -CDS 10/3/14
   */
-  if (MCSCF_Parameters.print_lvl > 3) { 
+  if (MCSCF_Parameters.print_lvl > 3) {
     outfile->Printf("\n\tOne-electron integrals (bare):\n");
     }
   iwl_rdone(MCSCF_Parameters.oei_file, PSIF_MO_OEI, MCSCF_CalcInfo.onel_ints_bare, nbstri,
             MCSCF_Parameters.oei_erase ? 0 : 1, (MCSCF_Parameters.print_lvl>3), "outfile");
 
-  
-  if (MCSCF_Parameters.print_lvl > 6) 
+
+  if (MCSCF_Parameters.print_lvl > 6)
     outfile->Printf("\n\tTwo-electron integrals:\n");
 
-  iwl_rdtwo(MCSCF_Parameters.tei_file, MCSCF_CalcInfo.twoel_ints, ioff, 
-     CalcInfo.nmo, MCSCF_Parameters.filter_ints ? CalcInfo.num_fzc_orbs : 0, 
-     MCSCF_Parameters.filter_ints ? CalcInfo.num_fzv_orbs : 0, 
+  iwl_rdtwo(MCSCF_Parameters.tei_file, MCSCF_CalcInfo.twoel_ints, ioff,
+     CalcInfo.nmo, MCSCF_Parameters.filter_ints ? CalcInfo.num_fzc_orbs : 0,
+     MCSCF_Parameters.filter_ints ? CalcInfo.num_fzv_orbs : 0,
      (MCSCF_Parameters.print_lvl>6), "outfile");
 
-} 
+}
 
 
 
@@ -429,7 +481,7 @@ void mcscf_get_mat_block(double **src, double **dst, int dst_dim, int dst_offset
     for (Q=0; Q<dst_dim; Q++) {
       q = dst2src[Q+dst_offset];
       dst[P][Q] = src[p][q];
-    } 
+    }
   }
 
 }

@@ -194,11 +194,12 @@ PsiReturnType detci(Options &options)
    get_parameters(options);     /* get running params (convergence, etc)    */
    init_ioff();                 /* set up the ioff array                    */
    title();                     /* print program identification             */
-   get_mo_info(options);        /* read DOCC, SOCC, frozen, nmo, etc        */
-   set_ras_parms();             /* set fermi levels and the like            */
 
    boost::shared_ptr<Wavefunction> refwfn = Process::environment.wavefunction();
    boost::shared_ptr<CIWavefunction> ciwfn(new CIWavefunction(refwfn, options));
+
+   // get_mo_info(options);        /* read DOCC, SOCC, frozen, nmo, etc        */
+   set_ras_parms();             /* set fermi levels and the like            */
 
    if (Parameters.print_lvl) {
    print_parameters();       /* print running parameters                 */
@@ -223,8 +224,8 @@ PsiReturnType detci(Options &options)
      return Success;
    }
 
-
    read_integrals();            /* get the 1 and 2 elec MO integrals        */
+   // ciwfn->transform_integrals();
 
    if(Parameters.zaptn)         /* Shift SCF eigenvalues for ZAPTn          */
       zapt_shift(CalcInfo.twoel_ints, CalcInfo.nirreps, CalcInfo.nmo,
@@ -268,8 +269,6 @@ PsiReturnType detci(Options &options)
    close_io();
    cleanup();
    Process::environment.set_wavefunction((static_cast<boost::shared_ptr<Wavefunction> > (ciwfn)));
-   ciwfn->Ca()->print();
-   ciwfn->reference_wavefunction()->Ca()->print();
    return Success;
 }
 
@@ -1606,11 +1605,11 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
         actTPDMp[i * nci3 + j * nci2 + k * nci + l] = fullTPDMp[ijkl];
     }}}}
 
-    somcscf->update(Cdocc, Cact, Cvir, actOPDM, actTPDM);
-    SharedMatrix x = somcscf->approx_solve();
+    // somcscf->update(Cdocc, Cact, Cvir, actOPDM, actTPDM);
+    // SharedMatrix x = somcscf->approx_solve();
     // x = somcscf->solve(5, 1.e-5, true);
-    SharedMatrix new_orbs = somcscf->Ck(x);
-    ciwfn->my_set(new_orbs);
+    // SharedMatrix new_orbs = somcscf->Ck(x);
+    // ciwfn->my_set(new_orbs);
     // outfile->Printf("Rotation Parameters!\n");
     // x->print();
     // outfile->Printf("New orbitals!\n");
@@ -1619,19 +1618,19 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
     // somcscf->H_approx_diag()->print();
 
     //// Convential updated
-    // conv = mcscf->update();
+    conv = mcscf->update();
     // outfile->Printf("Convential orbitals!\n");
     // ciwfn->Ca()->print();
 
 
-    if (iter > 10){
-      conv = 1;
-    }
-    for (int h=0; h<CalcInfo.nirreps; h++) {
-    chkpt_init(PSIO_OPEN_OLD);
-    chkpt_wt_scf_irrep(new_orbs->pointer(h), h);
-    chkpt_close();
-    }
+    // if (iter > 10){
+    //   conv = 1;
+    // }
+    // for (int h=0; h<CalcInfo.nirreps; h++) {
+    // chkpt_init(PSIO_OPEN_OLD);
+    // chkpt_wt_scf_irrep(new_orbs->pointer(h), h);
+    // chkpt_close();
+    // }
 
 
     // If converged
@@ -1665,7 +1664,7 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
   }
 
   outfile->Printf("\nCleaning up MCSCF.\n");
-  conv = mcscf->update();
+  // conv = mcscf->update();
   mcscf->finalize();
 
   ciwfn->set_lag();
