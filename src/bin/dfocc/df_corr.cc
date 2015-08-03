@@ -773,6 +773,77 @@ void DFOCC::trans_oei()
 
 } // end trans_oei
 
+//=======================================================
+//       Form non-zero DF ints
+//=======================================================          
+void DFOCC::b_so_non_zero()
+{
+
+    /*
+    // defs
+    SharedTensor2d K, L;
+    int nmn_nz, syc;
+
+    // Read SO integrals
+    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+    bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
+
+
+    ndf_nz = 0;
+    #pragma omp parallel for
+    for(int Q = 0 ; Q < nQ; ++Q){
+        for(int m = 0 ; m < nso_; ++m){
+            for(int n = 0 ; n < nso_; ++n){
+                int mn = n + (m * nso_); 
+		if (fabs(bQso->get(Q,mn)) > int_cutoff_) ndf_nz++;
+            }
+        }
+    }
+
+    int ndf_ao = 0;
+    ndf_ao = nQ*nso_*nso_;
+    double perct_ = 0.0;
+    perct_ = (double)ndf_nz / (double)ndf_ao;
+    perct_ *= 100;
+    outfile->Printf("\tNumber of AO-basis DF-CC integrals          : %3d\n", ndf_ao);
+    outfile->Printf("\tNumber of non-zero AO-basis DF-CC integrals : %3d\n", ndf_nz);
+    outfile->Printf("\tPercent of non-zero DF-CC integrals         : %2.2f\n", perct_);
+
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC NONZERO B (Q|mn)", ndf_nz, 1));
+    ndf_nz = 0;
+    #pragma omp parallel for
+    for(int Q = 0 ; Q < nQ; ++Q){
+        for(int m = 0 ; m < nso_; ++m){
+            for(int n = 0 ; n < nso_; ++n){
+                int mn = n + (m * nso_); 
+
+		if (fabs(bQso->get(Q,mn)) > int_cutoff_) {
+		    K->set(ndf_nz, 0, bQso->get(Q,mn));
+		    ndf_nz++;
+		    if (m >= n) outfile->Printf("\tQ, m, n: %3d %3d %3d \n", Q, m, n); 
+		}
+
+            }
+        }
+    }
+    K->write(psio_, PSIF_DFOCC_INTS);
+
+
+    //L = SharedTensor2d(new Tensor2d("DF_BASIS_CC AO-Basis (mn|ls)", nso_, nso_, nso_, nso_));
+    //L->gemm(true, false, bQso, bQso, 1.0, 0.0);
+    //L->print();
+    //L.reset();
+
+    bQso->print();
+    K->print();
+
+    // free
+    bQso.reset();
+    K.reset();
+    */
+
+} // end b_so_non_zero
+
 }} // Namespaces
 
 
