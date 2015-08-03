@@ -437,6 +437,11 @@ void optrot(void)
       rotation_rl[i] = prefactor * TrG_rl * nu * nu / M;
       outfile->Printf( "\n   Specific rotation using length-gauge electric-dipole Rosenfeld tensor.\n");
       outfile->Printf( "\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_rl[i]);
+
+      if(params.wfn == "CC2")
+        Process::environment.globals["CC2 SPECIFIC ROTATION (LEN)"] = rotation_rl[i];
+      else if(params.wfn == "CCSD")
+        Process::environment.globals["CCSD SPECIFIC ROTATION (LEN)"] = rotation_rl[i];
     }
 
     if(compute_pl) {
@@ -459,6 +464,11 @@ void optrot(void)
       rotation_pl[i] = prefactor * TrG_pl * nu * nu / M;
       outfile->Printf( "\n   Specific rotation using velocity-gauge electric-dipole Rosenfeld tensor.\n");
       outfile->Printf( "\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_pl[i]);
+
+      if(params.wfn == "CC2")
+        Process::environment.globals["CC2 SPECIFIC ROTATION (VEL)"] = rotation_pl[i];
+      else if(params.wfn == "CCSD")
+        Process::environment.globals["CCSD SPECIFIC ROTATION (VEL)"] = rotation_pl[i];
 
       /* subtract the zero-frequency beta tensor */
       for(j=0; j < 3; j++)
@@ -484,6 +494,11 @@ void optrot(void)
       rotation_mod[i] = prefactor * TrG_pl * nu * nu / M;
       outfile->Printf( "\n   Specific rotation using modified velocity-gauge Rosenfeld tensor.\n");
       outfile->Printf( "\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_mod[i]);
+
+      if(params.wfn == "CC2")
+        Process::environment.globals["CC2 SPECIFIC ROTATION (MVG)"] = rotation_mod[i];
+      else if(params.wfn == "CCSD")
+        Process::environment.globals["CCSD SPECIFIC ROTATION (MVG)"] = rotation_mod[i];
     }
 
     if(params.gauge == "BOTH") {
