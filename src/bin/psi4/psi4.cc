@@ -45,23 +45,26 @@
 #include <psifiles.h>
 
 #include <psi4-def.h>
+
 #define MAIN
+
 #include "psi4.h"
 #include "script.h"
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 namespace psi {
-    int psi_start(int argc, char *argv[]);
-    int psi_stop(FILE* infile, std::string, char* psi_file_prefix);
-    void print_version(std::string OutFileRMR);
-    void set_memory(std::string OutFileRMR);
-    int psi4_driver();
-    void psiclean(void);
+int psi_start(int argc, char *argv[]);
+int psi_stop(FILE *infile, std::string, char *psi_file_prefix);
+void print_version(std::string OutFileRMR);
+void set_memory(std::string OutFileRMR);
+int psi4_driver();
+void psiclean(void);
 
-    extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
+extern int read_options(const std::string& name, Options& options, bool suppress_printing = false);
 
-    PSIO *psio = NULL;
+PSIO *psio = NULL;
 
 }
 
@@ -72,19 +75,18 @@ int main(int argc, char **argv)
     using namespace psi;
     // Initialize the MPI environment
     WorldComm = boost::shared_ptr<LibParallel::ParallelEnvironment>(
-          new LibParallel::ParallelEnvironment(argc, argv));
+            new LibParallel::ParallelEnvironment(argc, argv));
 
 
     // Setup the environment
-    Process::arguments.initialize(argc, argv);
     Process::environment.initialize();   // grabs the environment from the global environ variable
 
     //The next five lines used to live in WorldComm, they are here now
 #ifdef _OPENMP
-         omp_set_nested(0);
+    omp_set_nested(0);
 #endif
-         if (Process::environment("OMP_NUM_THREADS")=="")
-            Process::environment.set_n_threads(1);
+    if (Process::environment("OMP_NUM_THREADS") == "")
+        Process::environment.set_n_threads(1);
 
     // There is only one timer:
     timer_init();
@@ -97,9 +99,9 @@ int main(int argc, char **argv)
     // Create base objects in the scripting language and initialize the language
     Script::language->initialize();
 
-    if(psi_start(argc, argv) == PSI_RETURN_FAILURE) return EXIT_FAILURE;
+    if (psi_start(argc, argv) == PSI_RETURN_FAILURE) return EXIT_FAILURE;
 
-    if(!clean_only) print_version("outfile");
+    if (!clean_only) print_version("outfile");
 
     // Set the default memory limit for Psi4
     set_memory("outfile");
@@ -108,7 +110,7 @@ int main(int argc, char **argv)
     psio_init();
 
     // If the user ran 'psi4 -w' catch it and exit
-    if(clean_only) {
+    if (clean_only) {
         psiclean();
         exit(EXIT_SUCCESS);
     }
@@ -123,7 +125,7 @@ int main(int argc, char **argv)
     Script::language->run(infile);
 
     // Automatically clean scratch, unless the user asked for a messy run
-    if(!messy) PSIOManager::shared_object()->psiclean();
+    if (!messy) PSIOManager::shared_object()->psiclean();
 
     // Shut things down:
     // There is only one timer:
