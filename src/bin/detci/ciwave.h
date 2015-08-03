@@ -49,7 +49,6 @@ public:
     double compute_energy();
     PsiReturnType cas_update();
 
-
     /**!
      * Similar to wavefunction.Ca_subset(); however, this version knows about all of the CI
      * subspaces in the SO basis. We stick to the MCSCF definitions for now.
@@ -67,6 +66,12 @@ public:
      */
     void set_orbitals(const std::string& orbital_name, SharedMatrix orbitals);
 
+    /**
+     * Transform the one and two electron integrals.
+     */
+    void transform_integrals(void);
+
+    // Dummy function-- nuke this when ready!
     void my_set(SharedMatrix set);
 
     /**!
@@ -96,11 +101,20 @@ public:
     **/
     void set_tpdm();
 
+    /**
+     * Sets the langrangian.
+     */
     void set_lag();
 
 
 private:
+    // Grabs mo info
+    void get_mo_info();
+
+    // Sets the ciwavefunction object
     void common_init();
+
+    // Find out which orbitals belong hwere
     void orbital_locations(const std::string& orbital_name, int* start, int* end);
 
 };

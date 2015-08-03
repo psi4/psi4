@@ -915,9 +915,9 @@ void MCSCF::rotate_orbs(void)
       if (MCSCF_Parameters.print_mos) ciwfn_->Ca()->print();
 
       /* write the new block of MO coefficients to file30 */
-      // chkpt_init(PSIO_OPEN_OLD);
-      // chkpt_wt_scf_irrep(ciwfn_->Ca()->pointer(h), h);
-      // chkpt_close();
+      chkpt_init(PSIO_OPEN_OLD);
+      chkpt_wt_scf_irrep(ciwfn_->Ca()->pointer(h), h);
+      chkpt_close();
 
       delete [] ir_theta;
     }

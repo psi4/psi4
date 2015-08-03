@@ -30,8 +30,10 @@
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
 #include <libmints/wavefunction.h>
+#include <libmints/molecule.h>
 #include <libqt/qt.h>
 #include <libpsio/psio.h>
+#include <ciwave.h>
 #include "structs.h"
 #define EXTERN
 #include "globals.h"
@@ -55,9 +57,10 @@ namespace psi { namespace detci {
 **              spaces and to update to ras_set3() routine that sets all
 **              the orbital subspaces
 **
+** DGAS 7/1/15 Moving this into CIWavefunction so we can get rid of chkpt
 ** options = Options object used to parse user input
 */
-void get_mo_info(Options &options)
+void CIWavefunction::get_mo_info()
 {
   int i, j, k, tmp, cnt, irrep, errcod, errbad;
   int size;
@@ -67,21 +70,22 @@ void get_mo_info(Options &options)
   CalcInfo.maxKlist = 0.0;
   CalcInfo.sigma_initialized = 0;
 
-  chkpt_init(PSIO_OPEN_OLD);
-  CalcInfo.nirreps = chkpt_rd_nirreps();
-  CalcInfo.nso = chkpt_rd_nmo();
-  CalcInfo.nmo = chkpt_rd_nmo();
-  CalcInfo.iopen = chkpt_rd_iopen();
-  CalcInfo.labels = chkpt_rd_irr_labs();
-  CalcInfo.orbs_per_irr = chkpt_rd_orbspi();
-  CalcInfo.so_per_irr = chkpt_rd_sopi();
-  CalcInfo.docc = chkpt_rd_clsdpi();
-  CalcInfo.socc = chkpt_rd_openpi();
-  CalcInfo.enuc = chkpt_rd_enuc();
-  CalcInfo.escf = chkpt_rd_escf();
-  CalcInfo.edrc = chkpt_rd_efzc();
-  eig_unsrt = chkpt_rd_evals();
-  chkpt_close();
+  // Initial guess will overwrite some of this later.
+  // chkpt_init(PSIO_OPEN_OLD);
+  CalcInfo.nirreps = reference_wavefunction_->nirrep();
+  CalcInfo.nso = reference_wavefunction_->nso();
+  CalcInfo.nmo = reference_wavefunction_->nmo();
+  CalcInfo.iopen = !reference_wavefunction_->same_a_b_orbs();
+  CalcInfo.labels = reference_wavefunction_->molecule()->irrep_labels();
+  CalcInfo.orbs_per_irr = reference_wavefunction_->nmopi();
+  CalcInfo.so_per_irr = reference_wavefunction_->nsopi();
+  CalcInfo.docc = reference_wavefunction_->doccpi();
+  CalcInfo.socc = reference_wavefunction_->soccpi();
+  CalcInfo.enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy();
+  CalcInfo.escf = reference_wavefunction_->reference_energy();
+  CalcInfo.edrc = 0.0;
+  // eig_unsrt = chkpt_rd_evals();
+  // chkpt_close();
 
   if (CalcInfo.iopen && Parameters.opentype == PARM_OPENTYPE_NONE) {
     outfile->Printf( "Warning: iopen=1,opentype=none. Making iopen=0\n");
@@ -128,7 +132,7 @@ void get_mo_info(Options &options)
                 CalcInfo.frozen_docc, CalcInfo.frozen_uocc,
                 CalcInfo.rstr_docc, CalcInfo.rstr_uocc,
                 CalcInfo.ras_opi, core_guess, CalcInfo.reorder, 1,
-                (Parameters.mcscf ? true : false), options))
+                (Parameters.mcscf ? true : false), options_))
   {
     throw PsiException("Error in ras_set3(). Aborting.",__FILE__,__LINE__);
   }

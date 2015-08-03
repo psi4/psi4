@@ -41,6 +41,8 @@ void CIWavefunction::common_init()
     // by someone else who uses the CIWavefunction and expects them to
     // be available.
 
+    get_mo_info();        /* read DOCC, SOCC, frozen, nmo, etc        */
+
     // Wavefunction frozen nomenclature is equivalent to dropped in detci.
     // In detci frozen means doubly occupied, but no orbital rotations.
     nirrep_     = reference_wavefunction_->nirrep();
