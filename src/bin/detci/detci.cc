@@ -100,7 +100,7 @@ extern void tf_onel_ints(int printflg, std::string OutFileRMR);
 extern void zapt_shift(double *TEI, int nirreps, int nmo, int *doccpi,
    int *soccpi, int *orbspi, int *frzdoccpi, int *reorder);
 extern void form_gmat(int printflg, std::string OutFileRMR);
-extern void get_mo_info(Options &);
+// extern void get_mo_info(Options &);
 extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
    int *Iaidx, int *Ibidx, double *coeff,
    struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
@@ -224,8 +224,8 @@ PsiReturnType detci(Options &options)
      return Success;
    }
 
-   read_integrals();            /* get the 1 and 2 elec MO integrals        */
-   // ciwfn->transform_integrals();
+   //read_integrals();            /* get the 1 and 2 elec MO integrals        */
+   ciwfn->transform_ci_integrals();
 
    if(Parameters.zaptn)         /* Shift SCF eigenvalues for ZAPTn          */
       zapt_shift(CalcInfo.twoel_ints, CalcInfo.nirreps, CalcInfo.nmo,

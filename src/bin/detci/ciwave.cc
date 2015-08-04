@@ -95,28 +95,40 @@ void CIWavefunction::orbital_locations(const std::string& orbitals, int* start, 
         end[h] = CalcInfo.dropped_docc[h];
       }
     }
+    else if (orbitals == "DRC"){
+      for (int h=0; h<nirrep_; h++){
+        start[h] = 0;
+        end[h] = CalcInfo.dropped_docc[h];
+      }
+    }
     else if (orbitals == "ACT"){
       for (int h=0; h<nirrep_; h++){
         start[h] = CalcInfo.dropped_docc[h];
-        end[h] = nsopi_[h] - CalcInfo.dropped_uocc[h];
+        end[h] = nmopi_[h] - CalcInfo.dropped_uocc[h];
+      }
+    }
+    else if (orbitals == "DRV"){
+      for (int h=0; h<nirrep_; h++){
+        start[h] = nmopi_[h] - CalcInfo.dropped_uocc[h];
+        end[h] = nmopi_[h];
       }
     }
     else if (orbitals == "VIR"){
       for (int h=0; h<nirrep_; h++){
-        start[h] = nsopi_[h] - CalcInfo.dropped_uocc[h];
-        end[h] = nsopi_[h] - CalcInfo.frozen_uocc[h];
+        start[h] = nmopi_[h] - CalcInfo.dropped_uocc[h];
+        end[h] = nmopi_[h] - CalcInfo.frozen_uocc[h];
       }
     }
     else if (orbitals == "FZV"){
       for (int h=0; h<nirrep_; h++){
-        start[h] = nsopi_[h] - CalcInfo.frozen_uocc[h];
-        end[h] = nsopi_[h];
+        start[h] = nmopi_[h] - CalcInfo.frozen_uocc[h];
+        end[h] = nmopi_[h];
       }
     }
     else if (orbitals == "ALL"){
       for (int h=0; h<nirrep_; h++){
         start[h] = 0;
-        end[h] = nsopi_[h];
+        end[h] = nmopi_[h];
       }
     }
     else{

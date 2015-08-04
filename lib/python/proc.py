@@ -1753,7 +1753,6 @@ def run_detci_property(name, **kwargs):
         if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
             psi4.MintsHelper().integrals()
 
-    psi4.transqt2()
     psi4.detci()
 
     optstash.restore()
@@ -2022,7 +2021,7 @@ def run_detci(name, **kwargs):
         if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
             psi4.MintsHelper().integrals()
 
-    psi4.transqt2()
+    #psi4.transqt2()
     psi4.detci()
 
     optstash.restore()
