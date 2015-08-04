@@ -134,6 +134,12 @@ public:
     void set_ras(std::vector<Dimension> ras_spaces);
 
     /**
+     * Sets the frozen core orbitals, these orbitals do not rotate.
+     * @param Cfzc The frozen core orbitals
+     */
+    void set_frozen_orbitals(SharedMatrix Cfzc);
+
+    /**
      * Rotate the current orbitals for a given rotation matrix.
      * @param  x The [oa, av] non-redundant orbital rotation parameters.
      * @return   The rotated orbitals.
@@ -181,6 +187,7 @@ protected:
 
     /// Parameters
     bool casscf_;
+    bool has_fzc_;
 
     size_t nocc_;
     Dimension noccpi_;
