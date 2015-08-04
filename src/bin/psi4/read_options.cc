@@ -3062,7 +3062,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The algorithm that used to handle mp2 amplitudes. The DIRECT option means compute amplitudes on the fly whenever they are necessary. -*/
     options.add_str("MP2_AMP_TYPE","DIRECT","DIRECT CONV");
     /*- Type of the CCSD Wabef term. -*/
-    options.add_str("WABEF_TYPE","LOW_MEM","LOW_MEM HIGH_MEM");
+    options.add_str("WABEF_TYPE","AUTO","LOW_MEM HIGH_MEM AUTO");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);

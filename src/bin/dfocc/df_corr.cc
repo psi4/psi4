@@ -774,14 +774,13 @@ void DFOCC::trans_oei()
 } // end trans_oei
 
 //=======================================================
-//       Form non-zero DF ints
+//       Form non-zero DF ints: Experimental
 //=======================================================          
 void DFOCC::b_so_non_zero()
 {
 
-    /*
     // defs
-    SharedTensor2d K, L;
+    SharedTensor2d K, L, J, G;
     int nmn_nz, syc;
 
     // Read SO integrals
@@ -805,9 +804,9 @@ void DFOCC::b_so_non_zero()
     double perct_ = 0.0;
     perct_ = (double)ndf_nz / (double)ndf_ao;
     perct_ *= 100;
-    outfile->Printf("\tNumber of AO-basis DF-CC integrals          : %3d\n", ndf_ao);
-    outfile->Printf("\tNumber of non-zero AO-basis DF-CC integrals : %3d\n", ndf_nz);
-    outfile->Printf("\tPercent of non-zero DF-CC integrals         : %2.2f\n", perct_);
+    //outfile->Printf("\tNumber of AO-basis DF-CC integrals          : %3d\n", ndf_ao);
+    //outfile->Printf("\tNumber of non-zero AO-basis DF-CC integrals : %3d\n", ndf_nz);
+    //outfile->Printf("\tPercent of non-zero DF-CC integrals         : %2.2f\n", perct_);
 
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC NONZERO B (Q|mn)", ndf_nz, 1));
     ndf_nz = 0;
@@ -820,27 +819,146 @@ void DFOCC::b_so_non_zero()
 		if (fabs(bQso->get(Q,mn)) > int_cutoff_) {
 		    K->set(ndf_nz, 0, bQso->get(Q,mn));
 		    ndf_nz++;
-		    if (m >= n) outfile->Printf("\tQ, m, n: %3d %3d %3d \n", Q, m, n); 
+		    //if (m >= n) outfile->Printf("\tQ, m, n: %3d %3d %3d \n", Q, m, n); 
 		}
 
             }
         }
     }
-    K->write(psio_, PSIF_DFOCC_INTS);
+    //K->write(psio_, PSIF_DFOCC_INTS);
 
 
-    //L = SharedTensor2d(new Tensor2d("DF_BASIS_CC AO-Basis (mn|ls)", nso_, nso_, nso_, nso_));
-    //L->gemm(true, false, bQso, bQso, 1.0, 0.0);
+    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC AO-Basis (mn|ls)", nso_, nso_, nso_, nso_));
+    L->gemm(true, false, bQso, bQso, 1.0, 0.0);
     //L->print();
-    //L.reset();
 
-    bQso->print();
-    K->print();
+    /*
+    ndf_nz = 0;
+    #pragma omp parallel for
+    for(int m = 0 ; m < nso_; ++m){
+        for(int n = 0 ; n < nso_; ++n){
+            int mn = n + (m * nso_); 
+            for(int l = 0 ; l < nso_; ++l){
+                for(int s = 0 ; s < nso_; ++s){
+                    int ls = s + (l * nso_); 
+		    if (fabs(L->get(mn,ls)) > int_cutoff_) ndf_nz++;
+		}
+            }
+        }
+    }
+    L.reset();
+
+    ndf_ao = nso_*nso_*nso_*nso_;
+    perct_ = 0.0;
+    perct_ = (double)ndf_nz / (double)ndf_ao;
+    perct_ *= 100;
+    outfile->Printf("\tNumber of (mn|ls) integrals                 : %3d\n", ndf_ao);
+    outfile->Printf("\tNumber of non-zero (mn|ls) integrals        : %3d\n", ndf_nz);
+    outfile->Printf("\tPercent of non-zero (mn|ls) integrals       : %2.2f\n", perct_);
+    */
+
+    ndf_nz = 0;
+    #pragma omp parallel for
+    for(int m = 0 ; m < nso_; ++m){
+        for(int n = 0 ; n <=m; ++n){
+            int mn2 = n + (m * nso_); 
+	    int mn = index2(m,n);
+            for(int l = 0 ; l < nso_; ++l){
+                for(int s = 0 ; s <=l; ++s){
+                    int ls2 = s + (l * nso_); 
+	            int ls = index2(l,s);
+
+		    if (mn >= ls ) {
+		        if (fabs(L->get(mn2,ls2)) > int_cutoff_) ndf_nz++;
+		    }
+
+		}
+            }
+        }
+    }
+    L.reset();
+
+    ndf_ao = ntri_so*(ntri_so+1) / 2;
+    perct_ = 0.0;
+    perct_ = (double)ndf_nz / (double)ndf_ao;
+    perct_ *= 100;
+    outfile->Printf("\tNumber of (mn|ls) integrals                 : %3d\n", ndf_ao);
+    outfile->Printf("\tNumber of non-zero (mn|ls) integrals        : %3d\n", ndf_nz);
+    outfile->Printf("\tPercent of non-zero (mn|ls) integrals       : %2.2f\n", perct_);
+
+
+    // screening
+    G = SharedTensor2d(new Tensor2d("Presecreening (mn|mn)", nso_, nso_));
+
+    #pragma omp parallel for
+    for(int m = 0 ; m < nso_; ++m){
+        for(int n = 0 ; n < nso_; ++n){
+            int mn = n + (m * nso_); 
+	    double sum = 0.0;
+            for(int Q = 0 ; Q < nQ; ++Q){
+                sum += bQso->get(Q,mn) * bQso->get(Q,mn);
+            }
+	    double value = sqrt(sum);
+	    G->set(m, n, value);
+        }
+    }
+    //G->print();
+
+
+    ndf_nz = 0;
+    #pragma omp parallel for
+    for(int m = 0 ; m < nso_; ++m){
+        for(int n = 0 ; n <=m; ++n){
+	    int mn = index2(m,n);
+            for(int l = 0 ; l < nso_; ++l){
+                for(int s = 0 ; s <=l; ++s){
+	            int ls = index2(l,s);
+
+		    if (mn >= ls ) {
+		        if ( fabs(G->get(m,n)*G->get(l,s)) > int_cutoff_) ndf_nz++;
+		    }
+
+		}
+            }
+        }
+    }
+    G.reset();
+
+    perct_ = 0.0;
+    perct_ = (double)ndf_nz / (double)ndf_ao;
+    perct_ *= 100;
+    outfile->Printf("\tNumber of (mn|ls) integrals                 : %3d\n", ndf_ao);
+    outfile->Printf("\tNumber of prescreened (mn|ls) integrals     : %3d\n", ndf_nz);
+    outfile->Printf("\tPercent of non-zero (mn|ls) integrals       : %2.2f\n", perct_);
+
+    ndf_nz = 0;
+    #pragma omp parallel for
+    for(int m = 0 ; m < nso_; ++m){
+        for(int n = 0 ; n <=m; ++n){
+	    int mn = index2(m,n);
+            for(int l = 0 ; l < nso_; ++l){
+                for(int s = 0 ; s <=l; ++s){
+	            int ls = index2(l,s);
+
+		    if (mn >= ls ) {
+		        if ( fabs(Sso->get(m,n)*Sso->get(l,s)) > int_cutoff_) ndf_nz++;
+		    }
+
+		}
+            }
+        }
+    }
+
+    perct_ = 0.0;
+    perct_ = (double)ndf_nz / (double)ndf_ao;
+    perct_ *= 100;
+    outfile->Printf("\tNumber of (mn|ls) integrals                 : %3d\n", ndf_ao);
+    outfile->Printf("\tNumber of overlap-prescreened (mn|ls)       : %3d\n", ndf_nz);
+    outfile->Printf("\tPercent of non-zero (mn|ls) integrals       : %2.2f\n", perct_);
 
     // free
     bQso.reset();
     K.reset();
-    */
 
 } // end b_so_non_zero
 
