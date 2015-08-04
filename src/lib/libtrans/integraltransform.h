@@ -406,6 +406,8 @@ class IntegralTransform{
         bool useDPD_;
         // Has this object already pre-sorted?
         bool tpdmAlreadyPresorted_;
+        // This keeps track of which labels have been assigned by other spaces
+        std::map<char, int> labelsUsed_;
 };
 
 } // End namespaces
