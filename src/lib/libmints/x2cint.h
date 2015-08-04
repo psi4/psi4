@@ -40,19 +40,13 @@ public:
     ~X2CInt();
 
     /*! @{
-     * Computes the X2C kinetic and potential integrals and stores them in
+     * Computes the X2C kinetic and potential integrals
+     * @param S Shared matrix object that will hold the X2C overlap integrals.
      * @param T Shared matrix object that will hold the X2C kinetic energy integrals.
      * @param V Shared matrix object that will hold the X2C potential energy integrals.
+     * @param options an Options object used to read basis set information.
      */
-    void compute(SharedMatrix T, SharedMatrix V, Options &options);
-    /*! @} */
-
-    /*! @{
-     * Computes the X2C kinetic and potential integrals and stores them in
-     * @param T Shared matrix object that will hold the X2C kinetic energy integrals.
-     * @param V Shared matrix object that will hold the X2C potential energy integrals.
-     */
-    void compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatrix pVp, Options &options);
+    void compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, Options &options);
     /*! @} */
 
 private:
