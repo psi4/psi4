@@ -55,6 +55,7 @@ void DFOCC::common_init()
     cc_maxdiis_=options_.get_int("CC_DIIS_MAX_VECS");
     cc_mindiis_=options_.get_int("CC_DIIS_MIN_VECS");
     exp_cutoff=options_.get_int("CUTOFF");
+    exp_int_cutoff=options_.get_int("INTEGRAL_CUTOFF");
     pcg_maxiter=options_.get_int("PCG_MAXITER");
 
     step_max=options_.get_double("MO_STEP_MAX");
@@ -98,6 +99,7 @@ void DFOCC::common_init()
     mp2_amp_type_=options_.get_str("MP2_AMP_TYPE");
     qchf_=options_.get_str("QCHF");
     cc_lambda_=options_.get_str("CC_LAMBDA");
+    Wabef_type_=options_.get_str("WABEF_TYPE");
 
     //title
     title();
@@ -181,6 +183,7 @@ void DFOCC::common_init()
     }
 
     cutoff = pow(10.0,-exp_cutoff);
+    int_cutoff_ = pow(10.0,-exp_int_cutoff);
     get_moinfo();
     pair_index();
 
@@ -362,7 +365,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP3   \n");
    else if (wfn_type_ == "QCHF") outfile->Printf("                      QCHF   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision July 19, 2015\n") ;
+   outfile->Printf("              Latest Revision August 4, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
