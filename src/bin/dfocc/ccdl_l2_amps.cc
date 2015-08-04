@@ -83,7 +83,12 @@ void DFOCC::ccdl_l2_amps()
     ccdl_WmbejL2();
 
     // WabefL2
-    ccdl_WabefL2();
+    if (Wabef_type_ == "AUTO") {
+	if (!do_4vex_hm) ccdl_WabefL2();
+	else ccsdl_WabefL2_high_mem();
+    }
+    else if (Wabef_type_ == "LOW_MEM") ccdl_WabefL2();
+    else if (Wabef_type_ == "HIGH_MEM") ccsdl_WabefL2_high_mem();
 
     // Denom
     Lnew = SharedTensor2d(new Tensor2d("New L2 (IA|JB)", naoccA, navirA, naoccA, navirA));
