@@ -94,10 +94,20 @@ IntegralTransform::process_spaces()
     bool qt_order = (moOrdering_ == QTOrder);  // If false, we assume Pitzer below
 
     for(space = uniqueSpaces_.begin(); space != uniqueSpaces_.end(); ++space){
+
         shared_ptr<MOSpace> moSpace = *space;
         int *aOrbsPI = new int[nirreps_];
         int *aIndex;
         int *aOrbSym;
+
+        char label = moSpace->label();
+        if(labelsUsed_.count(label)){
+            std::string error("Space ");
+            error += label;
+            error += " is already in use.  Choose a unique name for the custom MOSpace.";
+            throw SanityCheckError(error, __FILE__, __LINE__);
+        }
+        ++labelsUsed_[label];
 
         if(moSpace->label() == MOSPACE_FZC){
             // This is the frozen occupied space
