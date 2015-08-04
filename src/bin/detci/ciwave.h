@@ -69,7 +69,7 @@ public:
     /**
      * Transform the one and two electron integrals.
      */
-    void transform_integrals(void);
+    void transform_ci_integrals(void);
 
     // Dummy function-- nuke this when ready!
     void my_set(SharedMatrix set);

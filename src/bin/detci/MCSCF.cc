@@ -910,7 +910,7 @@ void MCSCF::rotate_orbs(void)
         postmult_by_exp_R(h, ir_norbs, ciwfn_->Ca()->pointer(h), ir_npairs,
           ir_ppair, ir_qpair, ir_theta);
 
-      print_mat(ciwfn_->Ca()->pointer(h), ir_norbs, ir_norbs, "outfile");
+      // print_mat(ciwfn_->Ca()->pointer(h), ir_norbs, ir_norbs, "outfile");
       /* print new coefficients */
       if (MCSCF_Parameters.print_mos) ciwfn_->Ca()->print();
 

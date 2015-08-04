@@ -31,6 +31,7 @@
 #include <libchkpt/chkpt.h>
 #include <libmints/wavefunction.h>
 #include <libmints/molecule.h>
+#include <libmints/vector.h>
 #include <libqt/qt.h>
 #include <libpsio/psio.h>
 #include <ciwave.h>
@@ -84,7 +85,7 @@ void CIWavefunction::get_mo_info()
   CalcInfo.enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy();
   CalcInfo.escf = reference_wavefunction_->reference_energy();
   CalcInfo.edrc = 0.0;
-  // eig_unsrt = chkpt_rd_evals();
+  eig_unsrt = reference_wavefunction_->epsilon_a()->to_block_vector();
   // chkpt_close();
 
   if (CalcInfo.iopen && Parameters.opentype == PARM_OPENTYPE_NONE) {
