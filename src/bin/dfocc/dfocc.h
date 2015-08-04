@@ -415,6 +415,7 @@ protected:
     void ccsd_F_intr();
     void ccsd_WmnijT2();
     void ccsd_WijamT2();
+    void ccsd_WijamT2_high_mem();
     void ccsd_WmbejT2();
     void ccsd_WabefT2();     
     void ccsd_Wabef2T2();     
@@ -455,9 +456,10 @@ protected:
     void ccsdl_VmnijL2();
     void ccsdl_WijmnL2();
     void ccsdl_WabefL2();     
-    void ccsdl_WabefL2_ao_basis();     
+    void ccsdl_WabefL2_high_mem();     
     void ccsdl_Wmnie_direct(SharedTensor2d &W);
     void ccsdl_tau_amps(SharedTensor2d &U, SharedTensor2d &T);
+    void ccsdl_LijmeL2_high_mem();
 
     // CCSD Density
     void ccsd_pdm_3index_intr();
@@ -475,7 +477,7 @@ protected:
     void ccd_WmnijT2();
     void ccd_WmbejT2();
     void ccd_WabefT2();     
-    void ccd_WabefT2_ao_basis();     
+    void ccd_WabefT2_high_mem();     
     void ccd_t2_amps();
     void ccd_mp2_low();
     void ccd_iterations_low();
@@ -497,7 +499,6 @@ protected:
     void ccdl_VmnijL2();
     void ccdl_WijmnL2();
     void ccdl_WabefL2();     
-    void ccdl_WabefL2_ao_basis();     
 
     // CCD Density
     void ccd_pdm_3index_intr();
@@ -621,6 +622,7 @@ protected:
      double cost_3amp; 
      double cost_4amp; 
      double cost_5amp; 
+     double cost_4vex_hm;       // Mem req. for high mem evaluation of 4-virtuals exchange term  
 
      // Common
      double Enuc;
@@ -789,6 +791,7 @@ protected:
 
      bool df_ints_incore;
      bool t2_incore;
+     bool do_4vex_hm;
 
      double **C_pitzerA;     
      double **C_pitzerB;     
@@ -1244,8 +1247,6 @@ protected:
      SharedTensor2i vv_idxAA;           // Pair index for all VV 
      SharedTensor2i vv_idxAB;           // Pair index for all VV 
      SharedTensor2i vv_idxBB;           // Pair index for all VV 
-
-     //SharedTensor1i nmnQ;               // non-zero mn[Q] 
 
      SharedMatrix Tso_;
      SharedMatrix Vso_;
