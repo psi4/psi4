@@ -1016,6 +1016,7 @@ void DFOCC::ccsd_WabefT2_high_mem()
 void DFOCC::ccsd_WabefT2_ao_basis()
 {
 
+    /*
     // defs
     SharedTensor2d K, M, L, I, T, Tnew, U, Tau, W, X, Y, S, A;
     SharedTensor2d V, Vs, Ts, Va, Ta, G, D, Tt, J;
@@ -1214,7 +1215,6 @@ void DFOCC::ccsd_WabefT2_ao_basis()
     bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
     bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
  
-    /*
     // 2nd version
     // Read SO integrals
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
@@ -1355,9 +1355,9 @@ void DFOCC::ccsd_WabefT2_ao_basis()
     // Read B(Q,ab)
     bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
     bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
-    */
  
     timer_off("WabefT2");
+    */
 
 }// end ccsd_WabefT2_basis
 
