@@ -123,9 +123,15 @@ public:
      */
     // SOMCSCF(boost::shared_ptr<JK> jk, SharedMatrix H, bool casscf);
     SOMCSCF(boost::shared_ptr<JK> jk, boost::shared_ptr<DFERI> df, SharedMatrix AOTOSO,
-            SharedMatrix H, bool casscf);
+            SharedMatrix H);
 
     ~SOMCSCF(void);
+
+    /**
+     * Sets the ras spaces, rotations will not happen inside of a space
+     * @param ras_spaces Standard vector of arbitrary length with Dimension objects
+     */
+    void set_ras(std::vector<Dimension> ras_spaces);
 
     /**
      * Rotate the current orbitals for a given rotation matrix.
@@ -207,8 +213,15 @@ protected:
     /// Map of matrices
     std::map<std::string, SharedMatrix > matrices_;
 
+    /// RAS arrays
+    std::vector<Dimension> ras_spaces_;
+
+    /// Zero's out redundant rotations, will chose act or ras.
+    void zero_redundant(SharedMatrix vector);
     /// Zeros out the active-active part of a trial vector
     void zero_act(SharedMatrix vector);
+    /// Zeros out the redundant ras-ras part of a trial vector
+    void zero_ras(SharedMatrix vector);
 
 
 }; // SOMCSCF class

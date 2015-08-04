@@ -265,17 +265,23 @@ SharedMatrix SORHF::solve(int max_iter, double conv, bool print)
 /// SOMCSCF class
 
 SOMCSCF::SOMCSCF(boost::shared_ptr<JK> jk, boost::shared_ptr<DFERI> df, SharedMatrix AOTOSO,
-                SharedMatrix H, bool casscf)
+                SharedMatrix H)
 {
     jk_ = jk;
     dferi_ = df;
     matrices_["H"] = H;
     matrices_["AOTOSO"] = AOTOSO;
     nao_ = AOTOSO->rowspi()[0];
-    casscf_ = casscf;
+    casscf_ = true;
 }
 SOMCSCF::~SOMCSCF()
 {
+}
+void SOMCSCF::set_ras(std::vector<Dimension> ras_spaces)
+{
+    ras_spaces_ = ras_spaces;
+    casscf_ = false;
+    // Check the sum of ras equals the act size
 }
 SharedMatrix SOMCSCF::Ck(SharedMatrix x)
 {
@@ -567,7 +573,9 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
             }
         }
     }
+    zero_redundant(matrices_["Gradient"]);
     matrices_["Precon"] = H_approx_diag();
+    matrices_["Gradient"]->print();
 }
 SharedMatrix SOMCSCF::H_approx_diag()
 {
@@ -583,7 +591,7 @@ SharedMatrix SOMCSCF::H_approx_diag()
     SharedMatrix actMO = Matrix::doublet(aaQ, aaQ, false, true);
     aaQ.reset();
 
-    // d_tuvw I_tuvw -> gI_t, D_tu IF_tu -> DIF_t
+    // d_tuvw I_tuvw -> dI_t, D_tu IF_tu -> DIF_t
     double** actMOp = actMO->pointer();
     double** TPDMp = matrices_["TPDM"]->pointer();
     int relact = 0;
@@ -663,26 +671,52 @@ SharedMatrix SOMCSCF::H_approx_diag()
             }
         } // end ia block
 
+        // aa block is one to prevent divide by zero
+        if (nactpi_[h]){
+            for (int i=0; i<nactpi_[h]; i++){
+                for (int a=0; a<nactpi_[h]; a++){
+                    Hp[i + noccpi_[h]][a] = 1.0;
+                }
+            }
+        }// end aa block
+
         // aa block for RASSCF
         if (nactpi_[h] && !casscf_){
             double* dIp = dI->pointer(h);
             double* DIFp = DIF->pointer(h);
             double** IFp = matrices_["IFock"]->pointer(h);
             double** OPDMp = matrices_["OPDM"]->pointer(h);
-            for (int i=0; i<nactpi_[h]; i++){
-                for (int a=0; a<nactpi_[h]; a++){
-                    int oa = i + noccpi_[h];
 
-                    // Ones on diagonal
-                    if (i == a){
-                        Hp[oa][a] = 1.0;
-                        continue;
-                    }
+            // Need to figure out the right rotations
+            std::vector<std::pair<int, int>> iter;
 
-                    Hp[oa][a]  = 4.0 * (DIFp[i] + DIFp[a]);
-                    Hp[oa][a] -= 4.0 * OPDMp[i][a] * IFp[noccpi_[h] + i][oa];
-                    Hp[oa][a] -= 2.0 * (dIp[i] + dIp[a]);
+            int offset_col = 0;
+            int offset_row = 0;
+            // Loop over spaces last space will have no rotations
+            for (int nras = 0; nras < ras_spaces_.size()-1; nras++){
+                int ras_size = ras_spaces_[nras][h];
+                offset_col += ras_size;
+
+                // Loop over pairs
+                for (int i=offset_row; i<(offset_row + ras_size); i++){
+                for (int a=offset_col; a<nactpi_[h]; a++){
+                    // outfile->Printf("Running %d %d %d\n", nras, i, a);
+                    int oa = a + noccpi_[h];
+                    int oi = i + noccpi_[h];
+
                     double value = 0.0;
+                    value += 2.0 * OPDMp[a][a] * IFp[oi][oi];
+                    value += 2.0 * OPDMp[i][i] * IFp[oa][oa];
+                    value -= 4.0 * OPDMp[i][a] * IFp[oi][oa];
+                    Hp[oi][a] = value;
+
+                    value = 0.0;
+                    value += (dIp[i] + dIp[a]);
+                    value += DIFp[i];
+                    value += DIFp[a];
+                    Hp[oi][a] -= 2.0 * value;
+
+                    value = 0.0;
                     int p = i + offset_act;
                     int q = a + offset_act;
                     int pp = p * nact_ + p;
@@ -704,20 +738,18 @@ SharedMatrix SOMCSCF::H_approx_diag()
                             value -= 2.0 * TPDMp[pq][uv] * actMOp[pq][uv];
                         }
                     }
-                    Hp[oa][a] += 2.0 * value;
+                    Hp[oi][a] += 2.0 * value;
+                    // outfile->Printf("double loop thing %lf\n", value);
+                    // outfile->Printf("%d %d | %lf\n", oi, a, Hp[oi][a]);
 
-                }
-            }
+                    // Hp[oa][a] += 2.0 * value;
+
+                } // End i loop
+                } // End a loop
+                offset_row += ras_size;
+            } // End ras loop
             offset_act += nactpi_[h];
-        }
-        // aa block for casscf is one to prevent divide by zero
-        if (nactpi_[h] && casscf_){
-            for (int i=0; i<nactpi_[h]; i++){
-                for (int a=0; a<nactpi_[h]; a++){
-                    Hp[i + noccpi_[h]][a] = 1.0;
-                }
-            }
-        }// end aa block
+        } // End aa RASSCF block
     }
     return H;
 }
@@ -1003,9 +1035,8 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x)
         }
     }
 
-    if (casscf_){
-        zero_act(hessx);
-    }
+    zero_redundant(hessx);
+    // hessx->scale(4.0);
     // hessx->print();
 
     return hessx;
@@ -1015,9 +1046,7 @@ SharedMatrix SOMCSCF::approx_solve()
 {
     SharedMatrix ret = matrices_["Gradient"]->clone();
     ret->apply_denominator(matrices_["Precon"]);
-    if (casscf_){
-        zero_act(ret);
-    }
+    zero_redundant(ret);
     return ret;
 }
 SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print)
@@ -1040,16 +1069,11 @@ SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print)
     SharedMatrix x = matrices_["Gradient"]->clone();
     x->set_name("Trial Vector x");
     x->apply_denominator(matrices_["Precon"]);
-    if (casscf_){
-        zero_act(x);
-    }
     // x->print();
 
     // Calc hessian vector product, find residual and conditioned residual
     SharedMatrix r = matrices_["Gradient"]->clone();
-    if (casscf_){
-        zero_act(r);
-    }
+
     SharedMatrix Ap = Hk(x);
     r->subtract(Ap);
 
@@ -1106,6 +1130,14 @@ SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print)
     }
     return best;
 }
+void SOMCSCF::zero_redundant(SharedMatrix vector){
+    if (casscf_){
+        zero_act(vector);
+    }
+    else{
+        zero_ras(vector);
+    }
+}
 void SOMCSCF::zero_act(SharedMatrix vector){
     for (int h=0; h<nirrep_; h++){
         if (!nactpi_[h]) continue;
@@ -1114,12 +1146,34 @@ void SOMCSCF::zero_act(SharedMatrix vector){
         for (int i=0; i<nactpi_[h]; i++){
             for (int j=0; j<nactpi_[h]; j++){
                 int io = noccpi_[h] + i;
-                vp[io][j] = 0;
+                vp[io][j] = 0.0;
             }
         }
     }
 }
+void SOMCSCF::zero_ras(SharedMatrix vector){
+    for (int h=0; h<nirrep_; h++){
+        if (!nactpi_[h]) continue;
 
+        double** vp = vector->pointer(h);
+
+        // Loop over spaces last space will have no rotations
+        int offset_row = 0;
+        int offset_col = 0;
+        for (int nras = 0; nras < ras_spaces_.size(); nras++){
+            int ras_size = ras_spaces_[nras][h];
+            offset_col += ras_size;
+
+            // Loop over pairs
+            for (int i=offset_row; i<(offset_row + ras_size); i++){
+                for (int a=0; a<offset_col; a++){
+                    vp[noccpi_[h]+i][a] = 0.0;
+                }
+            }
+            offset_row += ras_size;
+        } // End ras loop
+    }
+}
 
 
 /// End SOMCSCF class
