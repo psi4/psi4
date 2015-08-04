@@ -499,18 +499,33 @@ OptReturnType optking(void) {
   }
   catch (INTCO_EXCEPT exc) {
     oprintf_out("\tThe INTCO_EXCEPTion handler:\n\t%s\n", exc.g_message());
+    fprintf(stderr, "%s\n", exc.g_message());
     oprintf_out("\tDynamic level is %d.\n", Opt_params.dynamic);
     oprintf_out("\texc.g_really_quit() is %d.\n", exc.g_really_quit());
 
-    // Give up and quit.
-    if (Opt_params.dynamic == 0 || Opt_params.dynamic == 7 || exc.g_really_quit()) {
-      fprintf(stderr, "%s\n", exc.g_message());
-      oprintf_out( "%s\n", exc.g_message());
+    if (exc.g_really_quit()) { // quit no matter what is indicated by exception
+      oprintf_out("\n  **** Optimization has failed! (in %d steps) ****\n", p_Opt_data->nsteps());
+      delete p_Opt_data;
+      print_end_out();
+      close_output_dat();
+      return OptReturnFailure;
+    }
+
+    // There is no indication that new linear coordinates need to be added AND we are
+    // either not doing a dynamic optimization, or we have tried all available levels.
+    if ( (Opt_params.dynamic == 0 || Opt_params.dynamic == 7) && exc.linear_angles.empty()) {
+      oprintf_out("\n  **** Optimization has failed! (in %d steps) ****\n", p_Opt_data->nsteps());
+      delete p_Opt_data;
+      print_end_out();
+      close_output_dat();
+      return OptReturnFailure;
+/*
 #if defined (OPTKING_PACKAGE_QCHEM)
       QCrash(exc.g_message());
 #elif defined (OPTKING_PACKAGE_PSI)
       abort();
 #endif
+*/
     }
     else {
       if (exc.linear_angles.empty()) {
