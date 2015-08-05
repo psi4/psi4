@@ -1013,6 +1013,7 @@ void DFOCC::ccsd_WabefT2_high_mem()
 //======================================================================
 //    WabefT2: AO Basis: EXPERIMENTAL & NOT FINISHED  
 //======================================================================             
+/*
 void DFOCC::ccsd_WabefT2_ao_basis()
 {
 
@@ -1136,7 +1137,7 @@ void DFOCC::ccsd_WabefT2_ao_basis()
             }
 
             // Form T[a](b, i>=j) = \sum_{e>=f} Tau(i>=j,e>=f) V[a](b, e>=f) 
-            #pragma omp single
+            //#pragma omp single
             Ts->contract(false, true, nb, ntri_ijAA, ntri_so, Vs, U, 1.0, 0.0);
             Ta->contract(false, true, nb, ntri_ijAA, ntri_so, Va, T, 1.0, 0.0);
 
@@ -1214,7 +1215,6 @@ void DFOCC::ccsd_WabefT2_ao_basis()
     bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
     bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
  
-    /*
     // 2nd version
     // Read SO integrals
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
@@ -1355,12 +1355,11 @@ void DFOCC::ccsd_WabefT2_ao_basis()
     // Read B(Q,ab)
     bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
     bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
-    */
  
     timer_off("WabefT2");
 
 }// end ccsd_WabefT2_basis
-
+*/
 
 
 }} // End Namespaces

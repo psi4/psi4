@@ -400,6 +400,7 @@ void MOLECULE::rfo_step(void) {
   double norm = sqrt(array_dot(dq, dq, dim));
 
   if (norm > 10 * trust) {
+    p_Opt_data->restore_previous_consecutive_backsteps(); // it has already been reset to 0
     throw(BAD_STEP_EXCEPT("Step is far too large.\n"));
   }
 
