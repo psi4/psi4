@@ -1136,7 +1136,7 @@ void DFOCC::ccsd_WabefT2_ao_basis()
             }
 
             // Form T[a](b, i>=j) = \sum_{e>=f} Tau(i>=j,e>=f) V[a](b, e>=f) 
-            #pragma omp single
+            //#pragma omp single
             Ts->contract(false, true, nb, ntri_ijAA, ntri_so, Vs, U, 1.0, 0.0);
             Ta->contract(false, true, nb, ntri_ijAA, ntri_so, Va, T, 1.0, 0.0);
 
