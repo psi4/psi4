@@ -462,6 +462,8 @@ OptReturnType optking(void) {
   } // end try STEP1
   catch (BAD_STEP_EXCEPT exc) {
     oprintf_out("\tThe BAD_STEP_EXCEPTion handler:\n\t%s\n", exc.g_message());
+    oprintf_out("\tDynamic level is %d.\n", Opt_params.dynamic);
+    oprintf_out("\tConsecutive backsteps is %d.\n", p_Opt_data->g_consecutive_backsteps());
 
     if ( (!Opt_params.dynamic || (p_Opt_data->g_consecutive_backsteps() < Opt_params.consecutive_backsteps_allowed))
         && (p_Opt_data->g_iteration() > 1) ) {
