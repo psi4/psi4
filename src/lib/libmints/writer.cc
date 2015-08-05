@@ -122,8 +122,8 @@ void MoldenWriter::writeNO(const std::string &filename, boost::shared_ptr<Matrix
     boost::shared_ptr<PetiteList> pl(new PetiteList(wavefunction_->basisset(), wavefunction_->integral()));
     SharedMatrix aotoso = pl->aotoso();
     //get C's
-    SharedMatrix Ca = wavefunction->Ca();
-    SharedMatrix Cb = wavefunction->Cb();
+    SharedMatrix Ca = wavefunction_->Ca();
+    SharedMatrix Cb = wavefunction_->Cb();
     // need dimensions
     const Dimension aos = pl->AO_basisdim();
     const Dimension sos = pl->SO_basisdim();
@@ -225,7 +225,7 @@ void MoldenWriter::writeNO(const std::string &filename, boost::shared_ptr<Matrix
         printer->Printf(" Ene= %20.10f\n", Oa->get(h, n));
         printer->Printf(" Spin= Alpha\n");
         if(Na == Nb && Oa == Ob && SameOcc)
-            printer->Printf(" Occup= %7.4lf\n", Oa->get(h,n)+OccB->get(h,n));
+            printer->Printf(" Occup= %7.4lf\n", Oa->get(h,n)+Ob->get(h,n));
         else
             printer->Printf(" Occup= %7.4lf\n", Oa->get(h,n));
         for (int so=0; so<wavefunction_->nso(); ++so)
@@ -257,7 +257,7 @@ void MoldenWriter::writeNO(const std::string &filename, boost::shared_ptr<Matrix
 
 
 }
-}
+
 
 void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> Ca, boost::shared_ptr<Matrix> Cb, boost::shared_ptr<Vector> Ea, boost::shared_ptr<Vector> Eb, boost::shared_ptr<Vector> OccA, boost::shared_ptr<Vector> OccB)
 {
