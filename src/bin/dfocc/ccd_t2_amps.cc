@@ -67,7 +67,12 @@ void DFOCC::ccd_t2_amps()
     ccd_WmbejT2();
 
     // WabefT2
-    ccd_WabefT2();
+    if (Wabef_type_ == "AUTO") {
+	if (!do_4vex_hm) ccd_WabefT2();
+	else ccd_WabefT2_high_mem();
+    }
+    else if (Wabef_type_ == "LOW_MEM") ccd_WabefT2();
+    else if (Wabef_type_ == "HIGH_MEM") ccd_WabefT2_high_mem();
 
     // Denom
     Tnew = SharedTensor2d(new Tensor2d("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA));

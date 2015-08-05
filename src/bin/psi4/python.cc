@@ -101,76 +101,77 @@ extern std::map<std::string, plugin_info> plugins;
      }
 
 namespace opt {
-  psi::PsiReturnType optking(psi::Options &);
-  void opt_clean(void);
+psi::PsiReturnType optking(psi::Options&);
+void opt_clean(void);
 }
 
 namespace psi {
-    namespace mints      { PsiReturnType mints(Options &);    }
-    namespace deriv      { PsiReturnType deriv(Options &);    }
-    namespace scfgrad    { PsiReturnType scfgrad(Options &);  }
-    namespace scfgrad    { PsiReturnType scfhess(Options &);  }
-    namespace scf        { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
-    namespace scf        { PsiReturnType scf_dummy(Options &);   }
-    namespace libfock    { PsiReturnType libfock(Options &);  }
-    namespace dfmp2      { PsiReturnType dfmp2(Options &);    }
-    namespace dfmp2      { PsiReturnType dfmp2grad(Options &);}
-    namespace sapt       { PsiReturnType sapt(Options &);     }
-    namespace fisapt     { PsiReturnType fisapt(Options &);     }
-    namespace dcft       { PsiReturnType dcft(Options &);     }
-    namespace lmp2       { PsiReturnType lmp2(Options &);     }
-    namespace mcscf      { PsiReturnType mcscf(Options &);    }
-    namespace psimrcc    { PsiReturnType psimrcc(Options &);  }
-    namespace transqt    { PsiReturnType transqt(Options &);  }
-    namespace transqt2   { PsiReturnType transqt2(Options &); }
-    namespace ccsort     { PsiReturnType ccsort(Options&);    }
+namespace mints { PsiReturnType mints(Options&); }
+namespace deriv { PsiReturnType deriv(Options&); }
+namespace scfgrad { PsiReturnType scfgrad(Options&); }
+namespace scfgrad { PsiReturnType scfhess(Options&); }
+namespace scf { PsiReturnType scf(Options&, PyObject *pre, PyObject *post); }
+namespace scf { PsiReturnType scf_dummy(Options&); }
+namespace libfock { PsiReturnType libfock(Options&); }
+namespace dfmp2 { PsiReturnType dfmp2(Options&); }
+namespace dfmp2 { PsiReturnType dfmp2grad(Options&); }
+namespace sapt { PsiReturnType sapt(Options&); }
+namespace fisapt { PsiReturnType fisapt(Options&); }
+namespace dcft { PsiReturnType dcft(Options&); }
+namespace lmp2 { PsiReturnType lmp2(Options&); }
+namespace mcscf { PsiReturnType mcscf(Options&); }
+namespace psimrcc { PsiReturnType psimrcc(Options&); }
+namespace transqt { PsiReturnType transqt(Options&); }
+namespace transqt2 { PsiReturnType transqt2(Options&); }
+namespace ccsort { PsiReturnType ccsort(Options&); }
 //    namespace lmp2       { PsiReturnType lmp2(Options&);      }
-    namespace cctriples  { PsiReturnType cctriples(Options&); }
-    namespace cchbar     { PsiReturnType cchbar(Options&);    }
-    namespace cclambda   { PsiReturnType cclambda(Options&);  }
-    namespace ccdensity  { PsiReturnType ccdensity(Options&); }
-    namespace ccresponse {
-        PsiReturnType ccresponse(Options&);
-        void scatter(Options&, double step, std::vector<SharedMatrix> dip, std::vector<SharedMatrix> rot, std::vector<SharedMatrix> quad);
-    }
-    namespace cceom      { PsiReturnType cceom(Options&);     }
-    namespace detci      { PsiReturnType detci(Options&);     }
+namespace cctriples { PsiReturnType cctriples(Options&); }
+namespace cchbar { PsiReturnType cchbar(Options&); }
+namespace cclambda { PsiReturnType cclambda(Options&); }
+namespace ccdensity { PsiReturnType ccdensity(Options&); }
+namespace ccresponse {
+PsiReturnType ccresponse(Options&);
+void scatter(Options&, double step, std::vector<SharedMatrix> dip, std::vector<SharedMatrix> rot,
+             std::vector<SharedMatrix> quad);
+}
+namespace cceom { PsiReturnType cceom(Options&); }
+namespace detci { PsiReturnType detci(Options&); }
 #ifdef ENABLE_CHEMPS2
-    namespace dmrg       { PsiReturnType dmrg(Options&);     }
+namespace dmrg       { PsiReturnType dmrg(Options&);     }
 #endif
 //    namespace detcas     { PsiReturnType detcas(Options&);     }
-    namespace fnocc      { PsiReturnType fnocc(Options&);     }
-    namespace efp        { PsiReturnType efp_init(Options&);  }
-    namespace efp        { PsiReturnType efp_set_options();   }
-    namespace stable     { PsiReturnType stability(Options&); }
-    namespace occwave    { PsiReturnType occwave(Options&);   }
-    namespace dfoccwave  { PsiReturnType dfoccwave(Options&);   }
-    namespace adc        { PsiReturnType adc(Options&);       }
-    namespace thermo     { PsiReturnType thermo(Options&);    }
-    namespace mrcc       {
-        PsiReturnType mrcc_generate_input(Options&, const boost::python::dict&);
-        PsiReturnType mrcc_load_ccdensities(Options&, const boost::python::dict&);
-    }
-    namespace findif    {
-      std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
-      //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
-      std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &, int irrep=-1);
-      std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_1(Options &, int irrep=-1);
-      std::vector< boost::shared_ptr<Matrix> > fd_geoms_hessian_0(Options &);
-      std::vector< boost::shared_ptr<Matrix> > atomic_displacements(Options &);
+namespace fnocc { PsiReturnType fnocc(Options&); }
+namespace efp { PsiReturnType efp_init(Options&); }
+namespace efp { PsiReturnType efp_set_options(); }
+namespace stable { PsiReturnType stability(Options&); }
+namespace occwave { PsiReturnType occwave(Options&); }
+namespace dfoccwave { PsiReturnType dfoccwave(Options&); }
+namespace adc { PsiReturnType adc(Options&); }
+namespace thermo { PsiReturnType thermo(Options&); }
+namespace mrcc {
+PsiReturnType mrcc_generate_input(Options&, const boost::python::dict&);
+PsiReturnType mrcc_load_ccdensities(Options&, const boost::python::dict&);
+}
+namespace findif {
+std::vector<boost::shared_ptr<Matrix> > fd_geoms_1_0(Options&);
+//std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
+std::vector<boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options&, int irrep = -1);
+std::vector<boost::shared_ptr<Matrix> > fd_geoms_freq_1(Options&, int irrep = -1);
+std::vector<boost::shared_ptr<Matrix> > fd_geoms_hessian_0(Options&);
+std::vector<boost::shared_ptr<Matrix> > atomic_displacements(Options&);
 
-      PsiReturnType fd_1_0(Options &, const boost::python::list&);
-      //PsiReturnType fd_2_0(Options &, const boost::python::list&);
-      PsiReturnType fd_freq_0(Options &, const boost::python::list&, int irrep=-1);
-      PsiReturnType fd_freq_1(Options &, const boost::python::list&, int irrep=-1);
-      PsiReturnType fd_hessian_0(Options &, const boost::python::list&);
-      SharedMatrix displace_atom(SharedMatrix geom, const int atom,
-		                 const int coord, const int sign,
-				 const double disp_size);
-    }
+PsiReturnType fd_1_0(Options&, const boost::python::list&);
+//PsiReturnType fd_2_0(Options &, const boost::python::list&);
+PsiReturnType fd_freq_0(Options&, const boost::python::list&, int irrep = -1);
+PsiReturnType fd_freq_1(Options&, const boost::python::list&, int irrep = -1);
+PsiReturnType fd_hessian_0(Options&, const boost::python::list&);
+SharedMatrix displace_atom(SharedMatrix geom, const int atom,
+                           const int coord, const int sign,
+                           const double disp_size);
+}
 
-    extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
-    extern void print_version(std::string);
+extern int read_options(const std::string& name, Options& options, bool suppress_printing = false);
+extern void print_version(std::string);
 
 }
 
@@ -182,28 +183,28 @@ void py_flush_outfile()
 void py_close_outfile()
 {
     if (outfile) {
-        outfile =boost::shared_ptr<OutFile>();
+        outfile = boost::shared_ptr<OutFile>();
     }
 }
 
 void py_reopen_outfile()
 {
-    if (outfile_name == "stdout"){
+    if (outfile_name == "stdout") {
         //outfile = stdout;
     }
     else {
-        outfile = boost::shared_ptr<OutFile>(new OutFile(outfile_name,APPEND));
-        if(!outfile)
+        outfile = boost::shared_ptr<OutFile>(new OutFile(outfile_name, APPEND));
+        if (!outfile)
             throw PSIEXCEPTION("PSI4: Unable to reopen output file.");
     }
 }
 
 void py_be_quiet()
 {
-	py_close_outfile();
-	outfile = boost::shared_ptr<OutFile>(new OutFile("/dev/null", APPEND));
-	if (!outfile)
-		throw PSIEXCEPTION("PSI4: Unable to redirect output to /dev/null.");
+    py_close_outfile();
+    outfile = boost::shared_ptr<OutFile>(new OutFile("/dev/null", APPEND));
+    if (!outfile)
+        throw PSIEXCEPTION("PSI4: Unable to redirect output to /dev/null.");
 }
 
 std::string py_get_outfile_name()
@@ -211,7 +212,7 @@ std::string py_get_outfile_name()
     return outfile_name;
 }
 
-void py_psi_prepare_options_for_module(std::string const & name)
+void py_psi_prepare_options_for_module(std::string const& name)
 {
     // Tell the options object which module is about to run
     Process::environment.options.set_current_module(name);
@@ -295,7 +296,7 @@ int py_psi_libfock()
     return libfock::libfock(Process::environment.options);
 }
 
-double py_psi_scf_callbacks(PyObject* precallback, PyObject* postcallback)
+double py_psi_scf_callbacks(PyObject *precallback, PyObject *postcallback)
 {
     py_psi_prepare_options_for_module("SCF");
     if (scf::scf(Process::environment.options, precallback, postcallback) == Success) {
@@ -338,7 +339,7 @@ PsiReturnType py_psi_mrcc_load_densities(const boost::python::dict& level)
     return mrcc::mrcc_load_ccdensities(Process::environment.options, level);
 }
 
-std::vector< SharedMatrix > py_psi_fd_geoms_1_0()
+std::vector<SharedMatrix> py_psi_fd_geoms_1_0()
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_1_0(Process::environment.options);
@@ -347,23 +348,23 @@ std::vector< SharedMatrix > py_psi_fd_geoms_1_0()
 
 //std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_2_0()
 //{
-    //py_psi_prepare_options_for_module("FINDIF");
-    //return findif::fd_geoms_2_0(Process::environment.options);
+//py_psi_prepare_options_for_module("FINDIF");
+//return findif::fd_geoms_2_0(Process::environment.options);
 //}
 
-std::vector< SharedMatrix > py_psi_fd_geoms_freq_0(int irrep)
+std::vector<SharedMatrix> py_psi_fd_geoms_freq_0(int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_freq_0(Process::environment.options, irrep);
 }
 
-std::vector< SharedMatrix > py_psi_fd_geoms_hessian_0()
+std::vector<SharedMatrix> py_psi_fd_geoms_hessian_0()
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_hessian_0(Process::environment.options);
 }
 
-std::vector< SharedMatrix > py_psi_fd_geoms_freq_1(int irrep)
+std::vector<SharedMatrix> py_psi_fd_geoms_freq_1(int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_freq_1(Process::environment.options, irrep);
@@ -377,8 +378,8 @@ PsiReturnType py_psi_fd_1_0(const boost::python::list& energies)
 
 //PsiReturnType py_psi_fd_2_0(const boost::python::list& energies)
 //{
-    //py_psi_prepare_options_for_module("FINDIF");
-    //return findif::fd_2_0(Process::environment.options, energies);
+//py_psi_prepare_options_for_module("FINDIF");
+//return findif::fd_2_0(Process::environment.options, energies);
 //}
 
 PsiReturnType py_psi_fd_freq_0(const boost::python::list& energies, int irrep)
@@ -399,7 +400,7 @@ PsiReturnType py_psi_fd_freq_1(const boost::python::list& grads, int irrep)
     return findif::fd_freq_1(Process::environment.options, grads, irrep);
 }
 
-std::vector< SharedMatrix > py_psi_atomic_displacements()
+std::vector<SharedMatrix> py_psi_atomic_displacements()
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::atomic_displacements(Process::environment.options);
@@ -407,7 +408,7 @@ std::vector< SharedMatrix > py_psi_atomic_displacements()
 
 SharedMatrix py_psi_displace_atom(SharedMatrix geom, const int atom,
                                   const int coord, const int sign,
-				  const double disp_size)
+                                  const double disp_size)
 {
     return findif::displace_atom(geom, atom, coord, sign, disp_size);
 }
@@ -508,15 +509,15 @@ double py_psi_ccenergy()
 {
     py_psi_prepare_options_for_module("CCENERGY");
     boost::shared_ptr<Wavefunction> ccwave(new ccenergy::CCEnergyWavefunction(
-                                               Process::environment.wavefunction(),
-                                               Process::environment.options)
-                                           );
+            Process::environment.wavefunction(),
+            Process::environment.options)
+    );
 
     std::string name = Process::environment.wavefunction()->name();
     std::string wfn = Process::environment.options.get_str("WFN");
-    if(wfn != name) {
-      ccwave->set_name(wfn);
-      Process::environment.set_wavefunction(ccwave);
+    if (wfn != name) {
+        ccwave->set_name(wfn);
+        Process::environment.set_wavefunction(ccwave);
     }
 
     double energy = ccwave->compute_energy();
@@ -632,9 +633,9 @@ double py_psi_cclambda()
 {
     py_psi_prepare_options_for_module("CCLAMBDA");
     boost::shared_ptr<Wavefunction> cclambda(new cclambda::CCLambdaWavefunction(
-                                               Process::environment.wavefunction(),
-                                               Process::environment.options)
-                                           );
+            Process::environment.wavefunction(),
+            Process::environment.options)
+    );
     Process::environment.set_wavefunction(cclambda);
 
     double energy = cclambda->compute_energy();
@@ -658,40 +659,41 @@ double py_psi_ccresponse()
 
 void py_psi_print_list(python::list py_list)
 {
-	return;
+    return;
 }
 
-void py_psi_scatter(double step, python::list dip_polar_list, python::list opt_rot_list, python::list dip_quad_polar_list)
+void py_psi_scatter(double step, python::list dip_polar_list, python::list opt_rot_list,
+                    python::list dip_quad_polar_list)
 {
     py_psi_prepare_options_for_module("CCRESPONSE");
 
     // Convert python tensor lists into vectors of sharedmatrices
-    std::vector <SharedMatrix> dip_polar_tensors;
-    std::vector <SharedMatrix> opt_rot_tensors;
-    std::vector <SharedMatrix> dip_quad_polar_tensors;
+    std::vector<SharedMatrix> dip_polar_tensors;
+    std::vector<SharedMatrix> opt_rot_tensors;
+    std::vector<SharedMatrix> dip_quad_polar_tensors;
 
     int list_len = len(dip_polar_list);
-    for(int i=0; i < list_len; ++i) {
-        python::list dip_list  = extract<python::list>(dip_polar_list[i]);
-        python::list rot_list  = extract<python::list>(opt_rot_list[i]);
+    for (int i = 0; i < list_len; ++i) {
+        python::list dip_list = extract<python::list>(dip_polar_list[i]);
+        python::list rot_list = extract<python::list>(opt_rot_list[i]);
         python::list quad_list = extract<python::list>(dip_quad_polar_list[i]);
         SharedMatrix dip_mat(new Matrix(3, 3));
         SharedMatrix rot_mat(new Matrix(3, 3));
         SharedMatrix quad_mat(new Matrix(9, 3));
-        for(int row=0,j=0; row < 3; ++row) {
-            for(int col=0; col < 3; ++col,++j) {
-              dip_mat->set(row, col, extract<double>(dip_list[j]));
-              rot_mat->set(row, col, extract<double>(rot_list[j]));
+        for (int row = 0, j = 0; row < 3; ++row) {
+            for (int col = 0; col < 3; ++col, ++j) {
+                dip_mat->set(row, col, extract<double>(dip_list[j]));
+                rot_mat->set(row, col, extract<double>(rot_list[j]));
             }
         }
-        for(int row=0,j=0; row < 9; ++row) {
-            for(int col=0; col < 3; ++col,++j) {
+        for (int row = 0, j = 0; row < 9; ++row) {
+            for (int col = 0; col < 3; ++col, ++j) {
                 quad_mat->set(row, col, extract<double>(quad_list[j]));
             }
         }
-    dip_polar_tensors.push_back(dip_mat);
-    opt_rot_tensors.push_back(rot_mat);
-    dip_quad_polar_tensors.push_back(quad_mat);
+        dip_polar_tensors.push_back(dip_mat);
+        opt_rot_tensors.push_back(rot_mat);
+        dip_quad_polar_tensors.push_back(quad_mat);
     }
 
 //    for(std::vector<SharedMatrix>::iterator i=dip_polar_tensors.begin(); i != dip_polar_tensors.end(); ++i)
@@ -738,12 +740,12 @@ double py_psi_thermo()
     return 0.0;
 }
 
-char const* py_psi_version()
+char const *py_psi_version()
 {
     return PSI_VERSION;
 }
 
-char const* py_psi_git_version()
+char const *py_psi_git_version()
 {
     return GIT_VERSION;
 }
@@ -775,17 +777,18 @@ boost::python::list py_psi_get_global_option_list()
 
 void py_psi_print_out(std::string s)
 {
-    (*outfile)<<s;
+    (*outfile) << s;
 }
 
 /**
  * @return whether key describes a convergence threshold or not
  */
-bool specifies_convergence(std::string const & key){
+bool specifies_convergence(std::string const& key)
+{
     return ((key.find("CONV") != key.npos) || (key.find("TOL") != key.npos));
 }
 
-bool py_psi_set_local_option_string(std::string const & module, std::string const & key, std::string const & value)
+bool py_psi_set_local_option_string(std::string const& module, std::string const& key, std::string const& value)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options[nonconst_key];
@@ -807,46 +810,46 @@ bool py_psi_set_local_option_string(std::string const & module, std::string cons
     return true;
 }
 
-bool py_psi_set_local_option_int(std::string const & module, std::string const & key, int value)
+bool py_psi_set_local_option_int(std::string const& module, std::string const& key, int value)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options[nonconst_key];
 
-    if(data.type() == "double" && specifies_convergence(nonconst_key)){
+    if (data.type() == "double" && specifies_convergence(nonconst_key)) {
         double val = pow(10.0, -value);
         Process::environment.options.set_double(module, nonconst_key, val);
-    }else if (data.type() == "boolean") {
+    } else if (data.type() == "boolean") {
         Process::environment.options.set_bool(module, nonconst_key, value ? true : false);
-    }else if (data.type() == "string" || data.type() == "istring") {
+    } else if (data.type() == "string" || data.type() == "istring") {
         Process::environment.options.set_str(module, nonconst_key, boost::lexical_cast<std::string>(value));
-    }else{
+    } else {
         Process::environment.options.set_int(module, nonconst_key, value);
     }
     return true;
 
 }
 
-bool py_psi_set_local_option_double(std::string const & module, std::string const & key, double value)
+bool py_psi_set_local_option_double(std::string const& module, std::string const& key, double value)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Process::environment.options.set_double(module, nonconst_key, value);
     return true;
 }
 
-template <class T>
+template<class T>
 bool is_int(T x)
 {
-   using boost::python::type_id;
-   return type_id<T>() == type_id<int>();
+    using boost::python::type_id;
+    return type_id<T>() == type_id<int>();
 }
-template <class T>
+template<class T>
 bool is_double(T x)
 {
-   using boost::python::type_id;
-   return type_id<T>() == type_id<double>();
+    using boost::python::type_id;
+    return type_id<T>() == type_id<double>();
 }
 
-bool py_psi_set_global_option_string(std::string const & key, std::string const & value)
+bool py_psi_set_global_option_string(std::string const& key, std::string const& value)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options[nonconst_key];
@@ -866,67 +869,68 @@ bool py_psi_set_global_option_string(std::string const & key, std::string const 
     return true;
 }
 
-bool py_psi_set_global_option_int(std::string const & key, int value)
+bool py_psi_set_global_option_int(std::string const& key, int value)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options[nonconst_key];
 
-    if(data.type() == "double" && specifies_convergence(nonconst_key)){
+    if (data.type() == "double" && specifies_convergence(nonconst_key)) {
         double val = pow(10.0, -value);
         Process::environment.options.set_global_double(nonconst_key, val);
-    }else if (data.type() == "boolean") {
+    } else if (data.type() == "boolean") {
         Process::environment.options.set_global_bool(nonconst_key, value ? true : false);
-    }else if (data.type() == "string" || data.type() == "istring") {
+    } else if (data.type() == "string" || data.type() == "istring") {
         Process::environment.options.set_global_str(nonconst_key, boost::lexical_cast<std::string>(value));
-    }else{
+    } else {
         Process::environment.options.set_global_int(nonconst_key, value);
     }
     return true;
 }
 
-bool py_psi_set_global_option_double(std::string const & key, double value)
+bool py_psi_set_global_option_double(std::string const& key, double value)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Process::environment.options.set_global_double(nonconst_key, value);
     return true;
 }
 
-bool py_psi_set_global_option_python(std::string const & key, boost::python::object& obj)
+bool py_psi_set_global_option_python(std::string const& key, boost::python::object& obj)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Process::environment.options.set_global_python(nonconst_key, obj);
     return true;
 }
 
-bool py_psi_set_local_option_array(std::string const & module, std::string const & key, const python::list &values, DataType *entry = NULL)
+bool py_psi_set_local_option_array(std::string const& module, std::string const& key, const python::list& values,
+                                   DataType *entry = NULL)
 {
     string nonconst_key = boost::to_upper_copy(key);
     // Assign a new head entry on the first time around only
-    if(entry == NULL){
+    if (entry == NULL) {
         // We just do a cheesy "get" to make sure keyword is valid.  This get will throw if not.
         Data& data = Process::environment.options[nonconst_key];
         // This "if" statement is really just here to make sure the compiler doesn't optimize out the get, above.
         if (data.type() == "array")
-            Process::environment.options.set_array(module,nonconst_key);
+            Process::environment.options.set_array(module, nonconst_key);
     }
     size_t size = len(values);
-    for(int n = 0; n < size; ++n){
+    for (int n = 0; n < size; ++n) {
         extract<python::list> lval(values[n]);
         extract<std::string> sval(values[n]);
         extract<double> fval(values[n]);
         extract<int> ival(values[n]);
-        if(lval.check()){
+        if (lval.check()) {
             python::list l = extract<python::list>(values[n]);
             DataType *newentry = Process::environment.options.set_local_array_array(module, nonconst_key, entry);
             // Now we need to recurse, to fill in the data
             py_psi_set_local_option_array(module, key, l, newentry);
-        }else if(sval.check()){
+        } else if (sval.check()) {
             std::string s = extract<std::string>(values[n]);
             Process::environment.options.set_local_array_string(module, nonconst_key, s, entry);
-        }else if(ival.check()){
+        } else if (ival.check()) {
             int i = extract<int>(values[n]);
             Process::environment.options.set_local_array_int(module, nonconst_key, i, entry);
-        }else if(fval.check()){
+        } else if (fval.check()) {
             double f = extract<double>(values[n]);
             Process::environment.options.set_local_array_double(module, nonconst_key, f, entry);
         }
@@ -935,11 +939,11 @@ bool py_psi_set_local_option_array(std::string const & module, std::string const
 }
 
 
-bool py_psi_set_global_option_array(std::string const & key, python::list values, DataType *entry=NULL)
+bool py_psi_set_global_option_array(std::string const& key, python::list values, DataType *entry = NULL)
 {
     string nonconst_key = boost::to_upper_copy(key);
     // Assign a new head entry on the first time around only
-    if(entry == NULL){
+    if (entry == NULL) {
         // We just do a cheesy "get" to make sure keyword is valid.  This get will throw if not.
         Data& data = Process::environment.options[nonconst_key];
         // This "if" statement is really just here to make sure the compiler doesn't optimize out the get, above.
@@ -947,23 +951,23 @@ bool py_psi_set_global_option_array(std::string const & key, python::list values
             Process::environment.options.set_global_array(nonconst_key);
     }
     size_t size = len(values);
-    for(int n = 0; n < size; ++n){
+    for (int n = 0; n < size; ++n) {
         extract<python::list> lval(values[n]);
         extract<std::string> sval(values[n]);
         extract<double> fval(values[n]);
         extract<int> ival(values[n]);
-        if(lval.check()){
+        if (lval.check()) {
             python::list l = extract<python::list>(values[n]);
             DataType *newentry = Process::environment.options.set_global_array_array(nonconst_key, entry);
             // Now we need to recurse, to fill in the data
             py_psi_set_global_option_array(key, l, newentry);
-        }else if(sval.check()){
+        } else if (sval.check()) {
             std::string s = extract<std::string>(values[n]);
             Process::environment.options.set_global_array_string(nonconst_key, s, entry);
-        }else if(ival.check()){
+        } else if (ival.check()) {
             int i = extract<int>(values[n]);
             Process::environment.options.set_global_array_int(nonconst_key, i, entry);
-        }else if(fval.check()){
+        } else if (fval.check()) {
             double f = extract<double>(values[n]);
             Process::environment.options.set_global_array_double(nonconst_key, f, entry);
         }
@@ -977,12 +981,12 @@ void py_psi_set_local_option_python(const string& key, boost::python::object& ob
     Data& data = Process::environment.options[nonconst_key];
 
     if (data.type() == "python")
-        dynamic_cast<PythonDataType*>(data.get())->assign(obj);
+        dynamic_cast<PythonDataType *>(data.get())->assign(obj);
     else
         throw PSIEXCEPTION("Unable to set option to a Python object.");
 }
 
-bool py_psi_has_local_option_changed(std::string const & module, std::string const & key)
+bool py_psi_has_local_option_changed(std::string const& module, std::string const& key)
 {
     string nonconst_key = key;
     Process::environment.options.set_current_module(module);
@@ -992,7 +996,7 @@ bool py_psi_has_local_option_changed(std::string const & module, std::string con
     return data.has_changed();
 }
 
-bool py_psi_has_global_option_changed(std::string const & key)
+bool py_psi_has_global_option_changed(std::string const& key)
 {
     string nonconst_key = key;
     Data& data = Process::environment.options.get_global(nonconst_key);
@@ -1000,7 +1004,7 @@ bool py_psi_has_global_option_changed(std::string const & key)
     return data.has_changed();
 }
 
-bool py_psi_has_option_changed(std::string const & module, std::string const & key)
+bool py_psi_has_option_changed(std::string const& module, std::string const& key)
 {
     string nonconst_key = key;
     Process::environment.options.set_current_module(module);
@@ -1010,14 +1014,14 @@ bool py_psi_has_option_changed(std::string const & module, std::string const & k
     return data.has_changed();
 }
 
-void py_psi_revoke_global_option_changed(std::string const & key)
+void py_psi_revoke_global_option_changed(std::string const& key)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options.get_global(nonconst_key);
     data.dechanged();
 }
 
-void py_psi_revoke_local_option_changed(std::string const & module, std::string const & key)
+void py_psi_revoke_local_option_changed(std::string const& module, std::string const& key)
 {
 
     string nonconst_key = boost::to_upper_copy(key);
@@ -1027,7 +1031,7 @@ void py_psi_revoke_local_option_changed(std::string const & module, std::string 
     data.dechanged();
 }
 
-object py_psi_get_local_option(std::string const & module, std::string const & key)
+object py_psi_get_local_option(std::string const& module, std::string const& key)
 {
     string nonconst_key = key;
     Process::environment.options.set_current_module(module);
@@ -1046,7 +1050,7 @@ object py_psi_get_local_option(std::string const & module, std::string const & k
     return object();
 }
 
-object py_psi_get_global_option(std::string const & key)
+object py_psi_get_global_option(std::string const& key)
 {
     string nonconst_key = key;
     Data& data = Process::environment.options.get_global(nonconst_key);
@@ -1063,7 +1067,7 @@ object py_psi_get_global_option(std::string const & key)
     return object();
 }
 
-object py_psi_get_option(std::string const & module, std::string const & key)
+object py_psi_get_option(std::string const& module, std::string const& key)
 {
     string nonconst_key = key;
     Process::environment.options.set_current_module(module);
@@ -1090,7 +1094,7 @@ void py_psi_set_active_molecule(boost::shared_ptr<Molecule> molecule)
 void py_psi_set_parent_symmetry(std::string pg)
 {
     boost::shared_ptr<PointGroup> group = boost::shared_ptr<PointGroup>();
-    if(pg != ""){
+    if (pg != "") {
         group = boost::shared_ptr<PointGroup>(new PointGroup(pg));
     }
 
@@ -1180,8 +1184,8 @@ boost::shared_ptr<Vector> py_psi_get_atomic_point_charges()
         return wf->get_atomic_point_charges();
     }
     else {
-      boost::shared_ptr<psi::Vector> empty(new psi::Vector());
-      return empty; // charges not added to process.h for environment - yet(?)
+        boost::shared_ptr<psi::Vector> empty(new psi::Vector());
+        return empty; // charges not added to process.h for environment - yet(?)
     }
 }
 
@@ -1195,28 +1199,28 @@ boost::shared_ptr<Vector> py_psi_get_normalmodes()
     }
 }
 
-double py_psi_get_variable(const std::string & key)
+double py_psi_get_variable(const std::string& key)
 {
     string uppercase_key = key;
     transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
     return Process::environment.globals[uppercase_key];
 }
 
-SharedMatrix py_psi_get_array_variable(const std::string & key)
+SharedMatrix py_psi_get_array_variable(const std::string& key)
 {
     string uppercase_key = key;
     transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
     return Process::environment.arrays[uppercase_key];
 }
 
-void py_psi_set_variable(const std::string & key, double val)
+void py_psi_set_variable(const std::string& key, double val)
 {
     string uppercase_key = key;
     transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
     Process::environment.globals[uppercase_key] = val;
 }
 
-void py_psi_set_array_variable(const std::string & key, SharedMatrix val)
+void py_psi_set_array_variable(const std::string& key, SharedMatrix val)
 {
     string uppercase_key = key;
     transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
@@ -1232,8 +1236,8 @@ void py_psi_clean_variable_map()
 void py_psi_set_memory(unsigned long int mem)
 {
     Process::environment.set_memory(mem);
-    outfile->Printf("\n  Memory set to %7.3f %s by Python script.\n",(mem > 1000000000 ? mem/1.0E9 : mem/1.0E6), \
-        (mem > 1000000000 ? "GiB" : "MiB" ));
+    outfile->Printf("\n  Memory set to %7.3f %s by Python script.\n", (mem > 1000000000 ? mem / 1.0E9 : mem / 1.0E6), \
+        (mem > 1000000000 ? "GiB" : "MiB"));
 }
 
 unsigned long int py_psi_get_memory()
@@ -1264,7 +1268,8 @@ string py_psi_get_input_directory()
 void py_psi_print_variable_map()
 {
     int largest_key = 0;
-    for ( std::map<string,double>::iterator it = Process::environment.globals.begin() ; it != Process::environment.globals.end(); it++ ) {
+    for (std::map<string, double>::iterator it = Process::environment.globals.begin();
+         it != Process::environment.globals.end(); it++) {
         if (it->first.size() > largest_key)
             largest_key = it->first.size();
     }
@@ -1272,21 +1277,23 @@ void py_psi_print_variable_map()
 
     std::stringstream line;
     std::string first_tmp;
-    for ( std::map<string,double>::iterator it = Process::environment.globals.begin() ; it != Process::environment.globals.end(); it++ ) {
+    for (std::map<string, double>::iterator it = Process::environment.globals.begin();
+         it != Process::environment.globals.end(); it++) {
         first_tmp = "\"" + it->first + "\"";
         line << "  " << std::left << std::setw(largest_key) << first_tmp << " => " << std::setw(20) << std::right <<
-            std::fixed << std::setprecision(12) << it->second << std::endl;
+        std::fixed << std::setprecision(12) << it->second << std::endl;
     }
 
-    outfile->Printf( "\n\n  Variable Map:");
-    outfile->Printf( "\n  ----------------------------------------------------------------------------\n");
-    outfile->Printf( "%s\n\n", line.str().c_str());
+    outfile->Printf("\n\n  Variable Map:");
+    outfile->Printf("\n  ----------------------------------------------------------------------------\n");
+    outfile->Printf("%s\n\n", line.str().c_str());
 }
 
 // Converts a C++ map to a python dict
 // from https://gist.github.com/octavifs/5362297
-template <class K, class V>
-boost::python::dict toPythonDict(std::map<K, V> map) {
+template<class K, class V>
+boost::python::dict toPythonDict(std::map<K, V> map)
+{
     typename std::map<K, V>::iterator iter;
     boost::python::dict dictionary;
     for (iter = map.begin(); iter != map.end(); ++iter) {
@@ -1371,7 +1378,7 @@ void psi4_python_module_finalize()
 void translate_psi_exception(const PsiException& e)
 {
 #ifdef DEBUG
-    PyObject* message = PyString_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
+    PyObject *message = PyString_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
     PyErr_SetObject(PyExc_RuntimeError, message);
     Py_DECREF(message);
 #else
@@ -1381,9 +1388,10 @@ void translate_psi_exception(const PsiException& e)
 
 // Tell python about the default final argument to the array setting functions
 BOOST_PYTHON_FUNCTION_OVERLOADS(set_global_option_overloads, py_psi_set_global_option_array, 2, 3)
+
 BOOST_PYTHON_FUNCTION_OVERLOADS(set_local_option_overloads, py_psi_set_local_option_array, 3, 4)
 
-BOOST_PYTHON_MODULE(psi4)
+BOOST_PYTHON_MODULE (psi4)
 {
 #if defined(MAKE_PYTHON_MODULE)
     // Initialize the world communicator
@@ -1413,9 +1421,6 @@ BOOST_PYTHON_MODULE(psi4)
     def("initialize", &psi4_python_module_initialize);
     def("finalize", &psi4_python_module_finalize);
 #endif
-
-
-
 
 
     register_exception_translator<PsiException>(&translate_psi_exception);
@@ -1458,41 +1463,81 @@ BOOST_PYTHON_MODULE(psi4)
     // Options
 // The following line was conflct between master and roa branch (TDC, 10/29/2014)
 //    def("print_list", py_psi_print_list, "Prints a python list using a C function.");
-    def("prepare_options_for_module", py_psi_prepare_options_for_module, "Sets the options module up to return options pertaining to the named argument (e.g. SCF).");
-    def("set_active_molecule", py_psi_set_active_molecule, "Activates a previously defined (in the input) molecule, by name.");
+    def("prepare_options_for_module",
+        py_psi_prepare_options_for_module,
+        "Sets the options module up to return options pertaining to the named argument (e.g. SCF).");
+    def("set_active_molecule",
+        py_psi_set_active_molecule,
+        "Activates a previously defined (in the input) molecule, by name.");
     def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
-    def("wavefunction", py_psi_wavefunction, "Returns the current wavefunction object from the most recent computation.");
+    def("wavefunction",
+        py_psi_wavefunction,
+        "Returns the current wavefunction object from the most recent computation.");
     def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
-    def("set_gradient", py_psi_set_gradient, "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
+    def("set_gradient",
+        py_psi_set_gradient,
+        "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
     def("get_active_efp", &py_psi_get_active_efp, "Returns the currently active EFP object.");
-    def("get_efp_torque", py_psi_get_efp_torque, "Returns the most recently computed gradient for the EFP portion, as a Nefp by 6 Matrix object.");
-    def("set_efp_torque", py_psi_set_efp_torque, "Assigns the global EFP gradient to the values stored in the Nefp by 6 Matrix argument.");
-    def("get_frequencies", py_psi_get_frequencies, "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
-    def("get_atomic_point_charges", py_psi_get_atomic_point_charges, "Returns the most recently computed atomic point charges, as a double * object.");
+    def("get_efp_torque",
+        py_psi_get_efp_torque,
+        "Returns the most recently computed gradient for the EFP portion, as a Nefp by 6 Matrix object.");
+    def("set_efp_torque",
+        py_psi_set_efp_torque,
+        "Assigns the global EFP gradient to the values stored in the Nefp by 6 Matrix argument.");
+    def("get_frequencies",
+        py_psi_get_frequencies,
+        "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
+    def("get_atomic_point_charges",
+        py_psi_get_atomic_point_charges,
+        "Returns the most recently computed atomic point charges, as a double * object.");
     def("get_normalmodes", py_psi_get_normalmodes, "Returns the most recently computed normal modes Vector object.");
-    def("set_frequencies", py_psi_set_frequencies, "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
-    def("set_normalmodes", py_psi_set_normalmodes, "Assigns the global normalmodes to the values stored in a Vector argument.");
+    def("set_frequencies",
+        py_psi_set_frequencies,
+        "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
+    def("set_normalmodes",
+        py_psi_set_normalmodes,
+        "Assigns the global normalmodes to the values stored in a Vector argument.");
     def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");
     def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
     def("set_nthread", &py_psi_set_n_threads, "Sets the number of threads to use in SMP parallel computations.");
     def("nthread", &py_psi_get_n_threads, "Returns the number of threads to use in SMP parallel computations.");
 //    def("mol_from_file",&LibBabel::ParseFile,"Reads a molecule from another input file");
-    def("set_parent_symmetry", py_psi_set_parent_symmetry, "Sets the symmetry of the 'parent' (undisplaced) geometry, by Schoenflies symbol, at the beginning of a finite difference computation.");
-    def("print_options", py_psi_print_options, "Prints the currently set options (to the output file) for the current module.");
-    def("print_global_options", py_psi_print_global_options, "Prints the currently set global (all modules) options to the output file.");
+    def("set_parent_symmetry",
+        py_psi_set_parent_symmetry,
+        "Sets the symmetry of the 'parent' (undisplaced) geometry, by Schoenflies symbol, at the beginning of a finite difference computation.");
+    def("print_options",
+        py_psi_print_options,
+        "Prints the currently set options (to the output file) for the current module.");
+    def("print_global_options",
+        py_psi_print_global_options,
+        "Prints the currently set global (all modules) options to the output file.");
     def("print_out", py_psi_print_out, "Prints a string (using sprintf-like notation) to the output file.");
 
     // Set the different local option types
-    def("set_local_option", py_psi_set_local_option_string, "Sets value *arg3* to string keyword *arg2* scoped only to a specific module *arg1*.");
-    def("set_local_option", py_psi_set_local_option_double, "Sets value *arg3* to double keyword *arg2* scoped only to a specific module *arg1*.");
-    def("set_local_option", py_psi_set_local_option_int, "Sets value *arg3* to integer keyword *arg2* scoped only to a specific module *arg1*.");
+    def("set_local_option",
+        py_psi_set_local_option_string,
+        "Sets value *arg3* to string keyword *arg2* scoped only to a specific module *arg1*.");
+    def("set_local_option",
+        py_psi_set_local_option_double,
+        "Sets value *arg3* to double keyword *arg2* scoped only to a specific module *arg1*.");
+    def("set_local_option",
+        py_psi_set_local_option_int,
+        "Sets value *arg3* to integer keyword *arg2* scoped only to a specific module *arg1*.");
     def("set_local_option", py_psi_set_local_option_array, set_local_option_overloads());
-    def("set_local_option_python", py_psi_set_local_option_python, "Sets an option to a Python object, but scoped only to a single module.");
+    def("set_local_option_python",
+        py_psi_set_local_option_python,
+        "Sets an option to a Python object, but scoped only to a single module.");
 
     // Set the different global option types
-    def("set_global_option", py_psi_set_global_option_string, "Sets value *arg2* to string keyword *arg1* for all modules.");
-    def("set_global_option", py_psi_set_global_option_double, "Sets value *arg2* to double keyword *arg1* for all modules.");
-    def("set_global_option", py_psi_set_global_option_int, "Sets value *arg2* to integer keyword *arg1* for all modules.");
+    def("set_global_option",
+        py_psi_set_global_option_string,
+        "Sets value *arg2* to string keyword *arg1* for all modules.");
+    def("set_global_option",
+        py_psi_set_global_option_double,
+        "Sets value *arg2* to double keyword *arg1* for all modules.");
+    def("set_global_option",
+        py_psi_set_global_option_int,
+        "Sets value *arg2* to integer keyword *arg1* for all modules.");
     def("set_global_option", py_psi_set_global_option_array, set_global_option_overloads());
     def("set_global_option_python", py_psi_set_global_option_python, "Sets a global option to a Python object type.");
 
@@ -1500,27 +1545,51 @@ BOOST_PYTHON_MODULE(psi4)
     def("get_global_option_list", py_psi_get_global_option_list, "Returns a list of all global options.");
 
     // Get the option; either global or local or let liboptions decide whether to use global or local
-    def("get_global_option", py_psi_get_global_option, "Given a string of a keyword name *arg1*, returns the value associated with the keyword from the global options. Returns error if keyword is not recognized.");
-    def("get_local_option", py_psi_get_local_option, "Given a string of a keyword name *arg2* and a particular module *arg1*, returns the value associated with the keyword in the module options scope. Returns error if keyword is not recognized for the module.");
-    def("get_option", py_psi_get_option, "Given a string of a keyword name *arg2* and a particular module *arg1*, returns the local value associated with the keyword if it's been set, else the global value if it's been set, else the local default value. Returns error if keyword is not recognized globally or if keyword is not recognized for the module.");
+    def("get_global_option",
+        py_psi_get_global_option,
+        "Given a string of a keyword name *arg1*, returns the value associated with the keyword from the global options. Returns error if keyword is not recognized.");
+    def("get_local_option",
+        py_psi_get_local_option,
+        "Given a string of a keyword name *arg2* and a particular module *arg1*, returns the value associated with the keyword in the module options scope. Returns error if keyword is not recognized for the module.");
+    def("get_option",
+        py_psi_get_option,
+        "Given a string of a keyword name *arg2* and a particular module *arg1*, returns the local value associated with the keyword if it's been set, else the global value if it's been set, else the local default value. Returns error if keyword is not recognized globally or if keyword is not recognized for the module.");
 
     // Returns whether the option has changed/revoke has changed for silent resets
-    def("has_global_option_changed", py_psi_has_global_option_changed, "Returns boolean for whether the keyword *arg1* has been touched in the global scope, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched in the global scope by the user.");
-    def("has_local_option_changed", py_psi_has_local_option_changed, "Returns boolean for whether the keyword *arg2* has been touched in the scope of the specified module *arg1*, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched in the module scope by the user.");
-    def("has_option_changed", py_psi_has_option_changed, "Returns boolean for whether the option *arg2* has been touched either locally to the specified module *arg1* or globally, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched by the user.");
-    def("revoke_global_option_changed", py_psi_revoke_global_option_changed, "Given a string of a keyword name *arg1*, sets the has_changed attribute in the global options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
-    def("revoke_local_option_changed", py_psi_revoke_local_option_changed, "Given a string of a keyword name *arg2* and a particular module *arg1*, sets the has_changed attribute in the module options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
+    def("has_global_option_changed",
+        py_psi_has_global_option_changed,
+        "Returns boolean for whether the keyword *arg1* has been touched in the global scope, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched in the global scope by the user.");
+    def("has_local_option_changed",
+        py_psi_has_local_option_changed,
+        "Returns boolean for whether the keyword *arg2* has been touched in the scope of the specified module *arg1*, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched in the module scope by the user.");
+    def("has_option_changed",
+        py_psi_has_option_changed,
+        "Returns boolean for whether the option *arg2* has been touched either locally to the specified module *arg1* or globally, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched by the user.");
+    def("revoke_global_option_changed",
+        py_psi_revoke_global_option_changed,
+        "Given a string of a keyword name *arg1*, sets the has_changed attribute in the global options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
+    def("revoke_local_option_changed",
+        py_psi_revoke_local_option_changed,
+        "Given a string of a keyword name *arg2* and a particular module *arg1*, sets the has_changed attribute in the module options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
 
     // These return/set/print PSI variables found in Process::environment.globals
-    def("get_variable", py_psi_get_variable, "Returns one of the PSI variables set internally by the modules or python driver (see manual for full listing of variables available).");
+    def("get_variable",
+        py_psi_get_variable,
+        "Returns one of the PSI variables set internally by the modules or python driver (see manual for full listing of variables available).");
     def("set_variable", py_psi_set_variable, "Sets a PSI variable, by name.");
     def("print_variables", py_psi_print_variable_map, "Prints all PSI variables that have been set internally.");
     def("clean_variables", py_psi_clean_variable_map, "Empties all PSI variables that have set internally.");
-    def("get_variables", py_psi_return_variable_map, "Returns dictionary of the PSI variables set internally by the modules or python driver.");
-    def("get_array_variable", py_psi_get_array_variable, "Returns one of the PSI variables set internally by the modules or python driver (see manual for full listing of variables available).");
+    def("get_variables",
+        py_psi_return_variable_map,
+        "Returns dictionary of the PSI variables set internally by the modules or python driver.");
+    def("get_array_variable",
+        py_psi_get_array_variable,
+        "Returns one of the PSI variables set internally by the modules or python driver (see manual for full listing of variables available).");
     def("set_array_variable", py_psi_set_array_variable, "Sets a PSI variable, by name.");
 //    def("print_array_variables", py_psi_print_array_variable_map, "Prints all PSI variables that have been set internally.");
-    def("get_array_variables", py_psi_return_array_variable_map, "Returns dictionary of the PSI variables set internally by the modules or python driver.");
+    def("get_array_variables",
+        py_psi_return_array_variable_map,
+        "Returns dictionary of the PSI variables set internally by the modules or python driver.");
 
     // Get the name of the directory where the input file is at
     def("get_input_directory", py_psi_get_input_directory, "Returns the location of the input file.");
@@ -1532,16 +1601,20 @@ BOOST_PYTHON_MODULE(psi4)
     def("close_outfile", py_close_outfile, "Closes the output file.");
     def("reopen_outfile", py_reopen_outfile, "Reopens the output file.");
     def("outfile_name", py_get_outfile_name, "Returns the name of the output file.");
-    def("be_quiet", py_be_quiet, "Redirects output to /dev/null.  To switch back to regular output mode, use reopen_outfile()");
+    def("be_quiet",
+        py_be_quiet,
+        "Redirects output to /dev/null.  To switch back to regular output mode, use reopen_outfile()");
 
     // modules
     def("mints", py_psi_mints, "Runs mints, which generate molecular integrals on disk.");
-    def("deriv", py_psi_deriv, "Runs deriv, which contracts density matrices with derivative integrals, to compute gradients.");
+    def("deriv",
+        py_psi_deriv,
+        "Runs deriv, which contracts density matrices with derivative integrals, to compute gradients.");
     def("scfgrad", py_psi_scfgrad, "Run scfgrad, which is a specialized DF-SCF gradient program.");
     def("scfhess", py_psi_scfhess, "Run scfhess, which is a specialized DF-SCF hessian program.");
 
     typedef double (*scf_module_none)();
-    typedef double (*scf_module_two)(PyObject*, PyObject*);
+    typedef double (*scf_module_two)(PyObject *, PyObject *);
 
     def("scf", py_psi_scf_callbacks, "Runs the SCF code.");
     def("scf", py_psi_scf, "Runs the SCF code.");
@@ -1555,17 +1628,31 @@ BOOST_PYTHON_MODULE(psi4)
     def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
     def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");
     def("mrcc_load_densities", py_psi_mrcc_load_densities, "Reads in the density matrices from Kallay's MRCC code.");
-    def("fd_geoms_1_0", py_psi_fd_geoms_1_0, "Gets the list of displacements needed for a finite difference gradient computation, from energy points.");
+    def("fd_geoms_1_0",
+        py_psi_fd_geoms_1_0,
+        "Gets the list of displacements needed for a finite difference gradient computation, from energy points.");
     //def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
-    def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0, "Gets the list of displacements needed for a finite difference frequency computation, from energy points, for a given irrep.");
-    def("fd_geoms_freq_1", py_psi_fd_geoms_freq_1, "Gets the list of displacements needed fof a finite difference frequency computation, from gradients, for a given irrep");
-    def("fd_geoms_hessian_0", py_psi_fd_geoms_hessian_0, "Gets the list of displacements needed fof a finite difference frequency computation, from energy points.");
+    def("fd_geoms_freq_0",
+        py_psi_fd_geoms_freq_0,
+        "Gets the list of displacements needed for a finite difference frequency computation, from energy points, for a given irrep.");
+    def("fd_geoms_freq_1",
+        py_psi_fd_geoms_freq_1,
+        "Gets the list of displacements needed fof a finite difference frequency computation, from gradients, for a given irrep");
+    def("fd_geoms_hessian_0",
+        py_psi_fd_geoms_hessian_0,
+        "Gets the list of displacements needed fof a finite difference frequency computation, from energy points.");
     def("fd_1_0", py_psi_fd_1_0, "Performs a finite difference gradient computation, from energy points.");
     //def("fd_2_0", py_psi_fd_2_0);
-    def("fd_freq_0", py_psi_fd_freq_0, "Performs a finite difference frequency computation, from energy points, for a given irrep.");
-    def("fd_freq_1", py_psi_fd_freq_1, "Performs a finite difference frequency computation, from gradients, for a given irrep.");
+    def("fd_freq_0",
+        py_psi_fd_freq_0,
+        "Performs a finite difference frequency computation, from energy points, for a given irrep.");
+    def("fd_freq_1",
+        py_psi_fd_freq_1,
+        "Performs a finite difference frequency computation, from gradients, for a given irrep.");
     def("fd_hessian_0", py_psi_fd_hessian_0, "Performs a finite difference frequency computation, from energy points.");
-    def("atomic_displacements", py_psi_atomic_displacements, "Returns list of displacements generated by displacing each atom in the +/- x, y, z directions");
+    def("atomic_displacements",
+        py_psi_atomic_displacements,
+        "Returns list of displacements generated by displacing each atom in the +/- x, y, z directions");
     def("displace_atom", py_psi_displace_atom, "Displaces one coordinate of single atom.");
     def("sapt", py_psi_sapt, "Runs the symmetry adapted perturbation theory code.");
     def("fisapt", py_psi_fisapt, "Runs the functional-group intramolecular symmetry adapted perturbation theory code.");
@@ -1606,15 +1693,10 @@ BOOST_PYTHON_MODULE(psi4)
     typedef string (Process::Environment::*environmentStringFunction)(const string&);
 
     class_<Process::Environment>("Environment").
-        def("__getitem__", environmentStringFunction(&Process::Environment::operator ()), "docstring");
-
-    typedef string (Process::Arguments::*argumentsStringFunction)(int);
-
-    class_<Process::Arguments>("Arguments").
-        def("__getitem__", argumentsStringFunction(&Process::Arguments::operator ()), "docstring");
+            def("__getitem__", environmentStringFunction(&Process::Environment::operator()), "docstring");
 
     class_<Process>("Process").
-        add_static_property("environment", Process::get_environment, "docstring");
+            add_static_property("environment", Process::get_environment, "docstring");
 }
 
 Python::Python() : Script()
@@ -1646,7 +1728,7 @@ void Python::run(FILE *input)
 
 #if PY_MAJOR_VERSION == 2
         if (PyImport_AppendInittab(strdup("psi4"), initpsi4) == -1) {
-            outfile->Printf( "Unable to register psi4 with your Python.\n");
+            outfile->Printf("Unable to register psi4 with your Python.\n");
             abort();
         }
 #else
@@ -1658,11 +1740,11 @@ void Python::run(FILE *input)
 
         // Py_InitializeEx(0) causes sig handlers to not be installed.
         Py_InitializeEx(0);
-        #if PY_VERSION_HEX >= 0x03000000
+#if PY_VERSION_HEX >= 0x03000000
         Py_SetProgramName(L"psi");
-        #else
+#else
         Py_SetProgramName(s);
-        #endif
+#endif
 
         // Track down the location of PSI4's auxiliary directories path
         std::string psiPath = Process::environment("PSIPATH") + ":./";
@@ -1670,18 +1752,18 @@ void Python::run(FILE *input)
         typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
         tokenizer tokens(psiPath, sep);
         PyObject *path, *sysmod, *str;
-        PY_TRY(sysmod , PyImport_ImportModule("sys"));
-        PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
-        for( tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter) {
+        PY_TRY(sysmod, PyImport_ImportModule("sys"));
+        PY_TRY(path, PyObject_GetAttrString(sysmod, "path"));
+        for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter) {
             boost::filesystem::path bf_path2;
             bf_path2 = boost::filesystem::system_complete(*tok_iter);
-            if(!boost::filesystem::is_directory(bf_path2)) {
+            if (!boost::filesystem::is_directory(bf_path2)) {
                 printf("Unable to read the PSI4 Auxililary folder - check the PSIPATH environmental variable\n"
-                        "      Current value of PSIPATH is %s\n", psiPath.c_str());
+                               "      Current value of PSIPATH is %s\n", psiPath.c_str());
                 exit(1);
             }
 #if PY_MAJOR_VERSION == 2
-            PY_TRY(str    , PyString_FromString((*tok_iter).c_str()));
+            PY_TRY(str, PyString_FromString((*tok_iter).c_str()));
 #else
             PY_TRY(str    , PyBytes_FromString((*tok_iter).c_str()));
 #endif
@@ -1697,17 +1779,17 @@ void Python::run(FILE *input)
         boost::filesystem::path bf_path;
         bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
         // printf("Python dir is at %s\n", psiDataDirName.c_str());
-        if(!boost::filesystem::is_directory(bf_path)) {
+        if (!boost::filesystem::is_directory(bf_path)) {
             printf("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
-                    "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
+                           "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
             exit(1);
         }
 
         // Add PSI library python path
-        PY_TRY(sysmod , PyImport_ImportModule("sys"));
-        PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
+        PY_TRY(sysmod, PyImport_ImportModule("sys"));
+        PY_TRY(path, PyObject_GetAttrString(sysmod, "path"));
 #if PY_MAJOR_VERSION == 2
-        PY_TRY(str    , PyString_FromString(psiDataDirWithPython.c_str()));
+        PY_TRY(str, PyString_FromString(psiDataDirWithPython.c_str()));
 #else
         PY_TRY(str    , PyUnicode_FromString(psiDataDirWithPython.c_str()));
 #endif
@@ -1733,20 +1815,20 @@ void Python::run(FILE *input)
                 // Stupid way to read in entire file.
                 char line[256];
                 std::stringstream file;
-                while(fgets(line, sizeof(line), input)) {
+                while (fgets(line, sizeof(line), input)) {
                     file << line;
                 }
 
                 if (!skip_input_preprocess) {
                     // Process the input file
                     PyObject *input;
-                    PY_TRY(input, PyImport_ImportModule("inputparser") );
+                    PY_TRY(input, PyImport_ImportModule("inputparser"));
                     PyObject *function;
                     PY_TRY(function, PyObject_GetAttrString(input, "process_input"));
                     PyObject *pargs;
-                    PY_TRY(pargs, Py_BuildValue("(s)", file.str().c_str()) );
+                    PY_TRY(pargs, Py_BuildValue("(s)", file.str().c_str()));
                     PyObject *ret;
-                    PY_TRY( ret, PyEval_CallObject(function, pargs) );
+                    PY_TRY(ret, PyEval_CallObject(function, pargs));
 
                     char *val;
                     PyArg_Parse(ret, "s", &val);
@@ -1761,38 +1843,37 @@ void Python::run(FILE *input)
                     inputfile = file.str();
 
                 if (verbose) {
-                    outfile->Printf( "\n Input file to run:\n%s", inputfile.c_str());
+                    outfile->Printf("\n Input file to run:\n%s", inputfile.c_str());
 
                 }
 
                 str strStartScript(inputfile);
 
-                object objectScriptInit = exec( strStartScript, objectDict, objectDict );
+                object objectScriptInit = exec(strStartScript, objectDict, objectDict);
             }
             else { // interactive python
                 // Process the input file
                 PyObject *input;
 
-                PY_TRY(input, PyImport_ImportModule("interactive") );
+                PY_TRY(input, PyImport_ImportModule("interactive"));
                 PyObject *function;
                 PY_TRY(function, PyObject_GetAttrString(input, "run"));
                 PyObject *ret;
-                PY_TRY( ret, PyEval_CallObject(function, NULL) );
+                PY_TRY(ret, PyEval_CallObject(function, NULL));
             }
         }
-        catch (error_already_set const& e)
-        {
+        catch (error_already_set const& e) {
             PyErr_Print();
             exit(1);
         }
     }
     else {
-        outfile->Printf( "Unable to run Python input file.\n");
+        outfile->Printf("Unable to run Python input file.\n");
         return;
     }
 
     if (s)
-      free(s);
+        free(s);
     Process::environment.molecule().reset();
     Process::environment.wavefunction().reset();
     py_psi_plugin_close_all();

@@ -48,7 +48,6 @@ using namespace psi;
 using namespace boost;
 
 Process::Environment Process::environment;
-Process::Arguments Process::arguments;
 const std::string empty_;
 
 
@@ -174,30 +173,6 @@ boost::shared_ptr<Wavefunction> Process::Environment::wavefunction() const
     return wavefunction_;
 }
 
-void Process::Arguments::initialize(int argc, char **argv)
-{
-    argc_ = argc;
-    argv_ = argv;
-
-    for (int i=0; i<argc; ++i)
-        arguments_.push_back(argv[i]);
-}
-
-const string& Process::Arguments::operator ()(int argc) const
-{
-    if (argc < 0 || argc >= arguments_.size())
-        throw SanityCheckError("Process:Arguments::operator ()(int argc): argc is either < 0 or >= the number of arguments.\n", __FILE__, __LINE__);
-
-    return arguments_[argc];
-}
-
-string Process::Arguments::operator ()(int argc)
-{
-    if (argc < 0 || argc >= arguments_.size())
-        throw SanityCheckError("Process:Arguments::operator ()(int argc): argc is either < 0 or >= the number of arguments.\n", __FILE__, __LINE__);
-
-    return arguments_[argc];
-}
 
 Process::Environment Process::get_environment()
 {
@@ -208,8 +183,6 @@ unsigned long int Process::Environment::get_memory() const { return memory_; }
 void Process::Environment::set_memory(unsigned long int m)  { memory_ = m; }
 
 int Process::Environment::get_n_threads() const {return nthread_; }
-
-int Process::Arguments::argc() const { return arguments_.size(); }
 
 namespace psi {
 void die_if_not_converged()
