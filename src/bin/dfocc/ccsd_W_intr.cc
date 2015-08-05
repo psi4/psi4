@@ -1013,10 +1013,10 @@ void DFOCC::ccsd_WabefT2_high_mem()
 //======================================================================
 //    WabefT2: AO Basis: EXPERIMENTAL & NOT FINISHED  
 //======================================================================             
+/*
 void DFOCC::ccsd_WabefT2_ao_basis()
 {
 
-    /*
     // defs
     SharedTensor2d K, M, L, I, T, Tnew, U, Tau, W, X, Y, S, A;
     SharedTensor2d V, Vs, Ts, Va, Ta, G, D, Tt, J;
@@ -1357,10 +1357,9 @@ void DFOCC::ccsd_WabefT2_ao_basis()
     bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
  
     timer_off("WabefT2");
-    */
 
 }// end ccsd_WabefT2_basis
-
+*/
 
 
 }} // End Namespaces
