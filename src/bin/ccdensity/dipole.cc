@@ -107,36 +107,38 @@ void dipole(void)
       SharedVector Oa(new Vector("Alpha NO Occupations", Pa->colspi()));
       SharedMatrix Nt(new Matrix("Total Naural Orbitals",Pa->colspi(),Pa->colspi()));
       SharedVector Ot(new Vector("Total NO Occupations",Pa->colspi()));
-      
-      
+      MoldenWriter nowriter(wfn);
+      std::string mol_name = Process::environment.molecule()->name();
+    if(params.PRINT_NOONS || params.PRINT_NOS || params.WRITE_NOS){
     if(wfn->same_a_b_dens()) {
-        SharedMatrix Pt = Pa;
-        Pa->scale(0.5);
-        Pa->diagonalize(Na, Oa, descending);
-        Oa->set_name("Alpha/Beta NO Occupations");
-        Oa->print();
-        Pt->set_name("Total Density");
-        Pt->diagonalize(Nt,Ot, descending);
-        Ot->print();
-    }else{
-        SharedMatrix Pt = Pa;
-        Pa->diagonalize(Na, Oa, descending);
-        Oa->print();
-        Pb->diagonalize(Nb, Ob, descending);
-        Ob->print();
-        Pt->set_name("Total Density");
-        Pt->diagonalize(Nt,Ot,descending);
-        Ot->print();
+            SharedMatrix Pt = Pa;
+            Pa->scale(0.5);
+            Pa->diagonalize(Na, Oa, descending);
+            Oa->set_name("Alpha/Beta NO Occupations");
+            if(params.PRINT_NOONS)Oa->print();
+            if(params.PRINT_NOS)Pa->print();
+            if(params.WRITE_NOS)nowriter.write(mol_name+"NO.molden",Na,Na,Oa,Oa);
+        }else{
+            SharedMatrix Pt = Pa;
+            Pa->diagonalize(Na, Oa, descending);
+            Pb->diagonalize(Nb, Ob, descending);
+            Pt->set_name("Total Density");
+            Pt->add(Pb);
+            Pt->diagonalize(Nt,Ot, descending);
+            if(params.PRINT_NOS){
+                Oa->print();
+                Ob->print();
+                Ot->print();
+            }
+            if(params.PRINT_NOS){
+                Pa->print();
+                Pb->print();
+                Pt->print();
+            }
+            if(params.WRITE_NOS)nowriter.write(mol_name+"NO.molden",Na,Nb,Oa,Ob);
+        }
     }
-        SharedMatrix Pt = Pa;
-        Pt->set_name("Total Density");
-        Pt->add(Pb);
-        Pt->diagonalize(Nt,Ot, descending);
-        Ot->print();
 
-//     MoldenWriter NOWriter(wfn);
-//     std::string mol_name = Process::environment.molecule()->name();
-//     NOWriter.writeNO(mol_name+".NO.molden", Na, Nb, Oa, Ob);
 
     if(wfn->same_a_b_dens()) Pa->scale(0.5);
     oe->set_Da_mo(Pa);
