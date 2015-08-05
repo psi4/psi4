@@ -195,6 +195,7 @@ class Tensor2d
   // partial copy
   void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip);
   void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip, int start);
+  double get_max_element();
   // diagonalize: diagonalize via rsp
   void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff);
   // cdsyev: diagonalize via lapack
@@ -409,6 +410,10 @@ class Tensor2d
   void symm4(const SharedTensor2d &a);
   // (-)A(p>=q, r>=s) = 1/2 [A(pq,rs) - A(qp,rs)]
   void antisymm4(const SharedTensor2d &a);
+  // (+)A(p>=q, r>=s) = 1/2 [A(pq,rs) + A(pq,sr)]
+  void symm_col4(const SharedTensor2d &a);
+  // (-)A(p>=q, r>=s) = 1/2 [A(pq,rs) - A(pq,sr)]
+  void antisymm_col4(const SharedTensor2d &a);
   // (+)At(p>=q, r>=s) = 1/2 [A(pq,rs) + A(qp,rs)] * (2 -\delta_{pq})
   void symm_row_packed4(const SharedTensor2d &a);
   // (+)At(p>=q, r>=s) = 1/2 [A(pq,rs) + A(qp,rs)] * (2 -\delta_{rs})
