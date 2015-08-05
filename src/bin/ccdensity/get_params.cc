@@ -128,6 +128,10 @@ void get_params( Options& options)
   if(options["XI_CONNECT"].has_changed()) 
     params.connect_xi = options.get_bool("XI_CONNECT");
 
+  params.PRINT_NOONS = options.get_bool("PRINT_NOONS");
+  params.PRINT_NOS = options.get_bool("PRINT_NOS");
+  params.WRITE_NOS = options.get_bool("WRITE_NOS");
+
   outfile->Printf( "\n\tInput parameters:\n");
   outfile->Printf( "\t-----------------\n");
   outfile->Printf( "\tWave function    = %6s\n", params.wfn.c_str() );
@@ -147,6 +151,9 @@ void get_params( Options& options)
           (params.use_zeta) ? "Yes" : "No");
   outfile->Printf( "\tXi connected     = %s\n",
           (params.connect_xi) ? "Yes" : "No");
+  outfile->Printf( "\tCompute NO       = %s\n",
+          (params.PRINT_NOONS||params.PRINT_NOS||params.WRITE_NOS) ? "Yes" : "No");
+
   
 }
 
