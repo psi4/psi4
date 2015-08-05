@@ -68,7 +68,7 @@ MoldenWriter::MoldenWriter(boost::shared_ptr<Wavefunction> wavefunction)
 {
 
 }
-MoldenWriter::writeNO(const std::string &filename, boost::shared_ptr<Matrix> Na, boost::shared_ptr<Matrix> Nb, boost::shared_ptr<Vector> Oa, boost::shared_ptr<Vector> Ob)
+void MoldenWriter::writeNO(const std::string &filename, boost::shared_ptr<Matrix> Na, boost::shared_ptr<Matrix> Nb, boost::shared_ptr<Vector> Oa, boost::shared_ptr<Vector> Ob)
 {
     //Same as MO Writer below 
     boost::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
