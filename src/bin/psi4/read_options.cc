@@ -1898,6 +1898,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("ONEPDM_GRID_CUTOFF", 1.0e-30);
     /*- Stepsize (Angstrom) for one-particle density matrix values on a grid -*/
     options.add_double("ONEPDM_GRID_STEPSIZE", 0.1);
+    /* Do print NOs ?*/
+    options.add_bool("PRINT_NOS",false);
+    /* Do print NOONS? */
+    options.add_bool("PRINT_NOONS",true);
+    /* Do Write NOs (molden) */
+    options.add_bool("WRITE_NOS",false);
+
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Solves for the Lagrange multipliers, which are needed whenever coupled cluster properties
