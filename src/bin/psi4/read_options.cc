@@ -1459,6 +1459,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("LOCAL_CONVERGENCE",1E-12);
     /*- The maxiter on the orbital localization procedure -*/
     options.add_int("LOCAL_MAXITER",200);
+    /*- The number of NOONs to print in a UHF calc -*/
+    options.add_str("UHF_NOONS", "3");
   }
   if (name == "CPHF"|| options.read_globals()) {
     /*- The amount of information printed
