@@ -40,6 +40,9 @@
 #include "uhf.h"
 #include "stability.h"
 
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
+
 using namespace std;
 using namespace psi;
 using namespace boost;
@@ -110,6 +113,8 @@ void UHF::finalize()
     Dtold_.reset();
     Ga_.reset();
     Gb_.reset();
+
+    compute_nos();
 
     HF::finalize();
 }
@@ -596,6 +601,74 @@ void UHF::stability_analysis()
     }else{
         stability_analysis_pk();
     }
+}
+
+void UHF::compute_nos()
+{
+    // Compute UHF NOs and NOONs [J. Chem. Phys. 88, 4926 (1988)] -- TDC, 8/15
+
+    // Build S^1/2
+    SharedMatrix eigvec = factory_->create_shared_matrix("S Evecs");
+    SharedVector eigval(factory_->create_vector());
+
+    S_->diagonalize(eigvec, eigval);
+    for(int h=0; h < nirrep_; h++)
+      for(int i=0; i < eigval->dimpi()[h]; i++) {
+        double shalf = sqrt(eigval->get(h,i));
+        eigval->set(h, i, shalf);
+      }
+    SharedMatrix s = factory_->create_shared_matrix("sqrt S eigenvalues");
+    s->set_diagonal(eigval);
+
+    SharedMatrix TMP = factory_->create_shared_matrix("shalf * L+");
+    TMP->gemm(false, true, 1.0, s, eigvec, 0.0);
+    SharedMatrix SHalf = factory_->create_shared_matrix("L * shalf * L+");
+    SHalf->gemm(false, false, 1.0, eigvec, TMP, 0.0);
+
+    // Diagonalize S^1/2 Dt S^1/2
+    SharedMatrix Dt = factory_->create_shared_matrix("UHF Total Density");
+    Dt->copy(Da_);
+    Dt->add(Db_);
+    SharedMatrix TMP2 = factory_->create_shared_matrix("SHalf * Dt");
+    TMP2->gemm(false, false, 1.0, SHalf, Dt, 0.0);
+    SharedMatrix SDS = factory_->create_shared_matrix("S^1/2 Dt S^1/2");
+    SDS->gemm(false, false, 1.0, TMP2, SHalf, 0.0);
+
+    SharedMatrix UHF_NOs = factory_->create_shared_matrix("UHF NOs");
+    SharedVector UHF_NOONs(factory_->create_vector());
+    SDS->diagonalize(UHF_NOs, UHF_NOONs);
+
+    // Print the NOONs -- code ripped off from OEProp::compute_no_occupations()
+    int max_num;
+    if(options_.get_str("UHF_NOONS") == "ALL") max_num = nmo_;
+    else max_num = std::stoi(options_.get_str("UHF_NOONS"));
+
+    std::vector<boost::tuple<double, int, int> > metric;
+    for (int h = 0; h < UHF_NOONs->nirrep(); h++)
+      for (int i = 0; i < UHF_NOONs->dimpi()[h]; i++)
+        metric.push_back(boost::tuple<double,int,int>(UHF_NOONs->get(h,i), i ,h));
+
+    std::sort(metric.begin(), metric.end(), std::greater<boost::tuple<double,int,int> >());
+    int offset = nalpha_;
+    int start_occ = offset - max_num;
+    start_occ = (start_occ < 0 ? 0 : start_occ);
+    int stop_vir = offset + max_num + 1;
+    stop_vir = (int)((size_t)stop_vir >= metric.size() ? metric.size() : stop_vir);
+    char** labels = basisset_->molecule()->irrep_labels();
+    outfile->Printf( "\n  UHF NO Occupations:\n");
+    for (int index = start_occ; index < stop_vir; index++) {
+      if (index < offset) {
+        outfile->Printf( "  HONO-%-2d: %4d%3s %9.7f\n", offset- index - 1,
+        boost::get<1>(metric[index])+1,labels[boost::get<2>(metric[index])],
+        boost::get<0>(metric[index]));
+      } 
+      else {
+        outfile->Printf( "  LUNO+%-2d: %4d%3s %9.7f\n", index - offset,
+        boost::get<1>(metric[index])+1,labels[boost::get<2>(metric[index])],
+        boost::get<0>(metric[index]));
+      }
+    }
+    outfile->Printf( "\n");
 }
 
 
