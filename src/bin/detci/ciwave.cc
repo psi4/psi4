@@ -270,6 +270,29 @@ SharedMatrix CIWavefunction::get_opdm(int root, int spin, bool transden)
        throw PSIEXCEPTION("DETCI: option spin is not recognizable value.");
     }
 }
+SharedMatrix CIWavefunction::get_active_opdm()
+{
+  SharedMatrix actOPDM(new Matrix("OPDM", nirrep_, CalcInfo.ci_orbs, CalcInfo.ci_orbs));
+  double** OPDMa = Da_->pointer();
+  double** OPDMb = Db_->pointer();
+
+  int offset = 0;
+  for (int h=0; h<nirrep_; h++){
+    offset += CalcInfo.dropped_docc[h];
+    if (!CalcInfo.ci_orbs[h]) continue;
+
+    double* actp = actOPDM->pointer(h)[0];
+
+    for (int i=0, target=0; i<CalcInfo.ci_orbs[h]; i++){
+      int offi = offset + i;
+      for (int j=0; j<CalcInfo.ci_orbs[h]; j++){
+        actp[target++] = OPDMa[offi][offset + j] + OPDMb[offi][offset + j];
+      }
+    }
+    offset += CalcInfo.ci_orbs[h];
+  }
+  return actOPDM;
+}
 void CIWavefunction::set_lag()
 {
     SharedMatrix lag(new Matrix("MCSCF Lagrangian", nmo_, nmo_));
@@ -281,7 +304,7 @@ void CIWavefunction::set_lag()
     }
     Lagrangian_ = lag;
 }
-SharedVector CIWavefunction::get_tpdm(bool symmetrize)
+SharedVector CIWavefunction::get_tpdm(bool symmetrize, bool act_only)
 {
 
   int sqnbf, ntri;
@@ -344,6 +367,32 @@ SharedVector CIWavefunction::get_tpdm(bool symmetrize)
   }
   tpdm.reset();
   return symm_tpdm;
+}
+SharedMatrix CIWavefunction::get_active_tpdm()
+{
+  int nci   = CalcInfo.num_ci_orbs;
+  int ndocc = CalcInfo.num_drc_orbs;
+  int npop  = CalcInfo.num_ci_orbs + CalcInfo.num_drc_orbs;
+  SharedMatrix actTPDM(new Matrix("TPDM", nci*nci, nci*nci));
+  double* actTPDMp = actTPDM->pointer()[0];
+
+  SharedVector fullTPDM = get_tpdm();
+  double* fullTPDMp = fullTPDM->pointer();
+
+  int nci2 = nci * nci;
+  int nci3 = nci * nci * nci;
+  int ij, kl, ijkl;
+  for (int i=0; i<nci; i++){
+  for (int j=0; j<nci; j++){
+  for (int k=0; k<nci; k++){
+  for (int l=0; l<nci; l++){
+      ij = INDEX(ndocc + i, ndocc + j);
+      kl = INDEX(ndocc + k, ndocc + l);
+      ijkl = INDEX(ij, kl);
+      actTPDMp[i * nci3 + j * nci2 + k * nci + l] = fullTPDMp[ijkl];
+  }}}}
+  fullTPDM.reset();
+  return actTPDM;
 }
 void CIWavefunction::set_tpdm()
 {

@@ -34,11 +34,9 @@ namespace psi {
 
 /// SOMCSCF class
 
-SOMCSCF::SOMCSCF(boost::shared_ptr<JK> jk, boost::shared_ptr<DFERI> df, SharedMatrix AOTOSO,
-                SharedMatrix H)
+SOMCSCF::SOMCSCF(boost::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H)
 {
     jk_ = jk;
-    dferi_ = df;
     matrices_["H"] = H;
     matrices_["AOTOSO"] = AOTOSO;
     nao_ = AOTOSO->rowspi()[0];
@@ -49,6 +47,18 @@ SOMCSCF::SOMCSCF(boost::shared_ptr<JK> jk, boost::shared_ptr<DFERI> df, SharedMa
 }
 SOMCSCF::~SOMCSCF()
 {
+}
+void SOMCSCF::transform()
+{
+    throw PSIEXCEPTION("The SOMCSCF object must be initilized as a DF or Disk object.");
+}
+void SOMCSCF::Q()
+{
+    throw PSIEXCEPTION("The SOMCSCF object must be initilized as a DF or Disk object.");
+}
+void SOMCSCF::Qk(SharedMatrix U, SharedMatrix Uact)
+{
+    throw PSIEXCEPTION("The SOMCSCF object must be initilized as a DF or Disk object.");
 }
 void SOMCSCF::set_ras(std::vector<Dimension> ras_spaces)
 {
@@ -87,25 +97,29 @@ void SOMCSCF::set_frozen_orbitals(SharedMatrix Cfzc)
         has_fzc_ = true;
     }
 }
-double SOMCSCF::get_drc_energy(void)
+double SOMCSCF::rhf_energy(SharedMatrix C)
 {
+    std::vector<SharedMatrix>& Cl = jk_->C_left();
+    std::vector<SharedMatrix>& Cr = jk_->C_right();
+    Cl.clear();
+    Cr.clear();
+    Cl.push_back(C);
+    jk_->compute();
+    Cl.clear();
 
-    // I need to think about this.
-    // Compute dropped core energy
-    // SharedMatrix DRCFock = J[0]->clone();
-    // DRCFock->add(matrices_["H"]);
-    // std::vector<SharedMatrix> vCdrc;
-    // vCdrc.push_back(matrices_["Cfzc"]);
-    // vCdrc.push_back(matrices_["Cocc"]);
-    // SharedMatrix Cdrc = Matrix::horzcat(vCdrc);
+    const std::vector<SharedMatrix>& J = jk_->J();
+    const std::vector<SharedMatrix>& K = jk_->K();
 
-    // SharedMatrix D = Matrix::doublet(Cdrc, Cdrc, false, true);
-    // edrc_ = DRCFock->vector_dot(D);
-    // vCdrc.clear();
-    // D.reset();
-    // Cdrc.reset();
-    // DRCFock.reset();
-    return edrc_;
+    J[0]->scale(2.0);
+    J[0]->subtract(K[0]);
+
+    J[0]->add(matrices_["H"]);
+    J[0]->add(matrices_["H"]);
+
+    SharedMatrix D = Matrix::doublet(C, C, false, true);
+    double erhf = J[0]->vector_dot(D);
+    D.reset();
+    return erhf;
 }
 
 SharedMatrix SOMCSCF::Ck(SharedMatrix x)
@@ -186,38 +200,39 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
     // Make sure our ras and active spaces align
     if (!casscf_) check_ras();
 
-    // => AO C matrices <= //
-    // We want pitzer order C matrix with appended Cact
-    int aoc_rowdim = nmo_ + nact_;
-    SharedMatrix AO_C = SharedMatrix(new Matrix("AO_C", nao_, aoc_rowdim));
-    double** AO_Cp = AO_C->pointer();
-    for (int h=0, offset=0, offset_act=0; h < nirrep_; h++){
-        int hnso = matrices_["AOTOSO"]->colspi()[h];
-        if (hnso == 0) continue;
-        double** Up = matrices_["AOTOSO"]->pointer(h);
+    // // => AO C matrices <= //
+    // // We want pitzer order C matrix with appended Cact
+    // int aoc_rowdim = nmo_ + nact_;
+    // SharedMatrix AO_C = SharedMatrix(new Matrix("AO_C", nao_, aoc_rowdim));
+    // double** AO_Cp = AO_C->pointer();
+    // for (int h=0, offset=0, offset_act=0; h < nirrep_; h++){
+    //     int hnso = matrices_["AOTOSO"]->colspi()[h];
+    //     if (hnso == 0) continue;
+    //     double** Up = matrices_["AOTOSO"]->pointer(h);
 
-        // occupied
-        if (noccpi_[h]){
-            double** CSOp = matrices_["Cocc"]->pointer(h);
-            C_DGEMM('N','N',nao_,noccpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],noccpi_[h],0.0,&AO_Cp[0][offset],aoc_rowdim);
-            offset += noccpi_[h];
-        }
-        // active
-        if (nactpi_[h]){
-            double** CSOp = matrices_["Cact"]->pointer(h);
-            C_DGEMM('N','N',nao_,nactpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],nactpi_[h],0.0,&AO_Cp[0][offset],aoc_rowdim);
-            offset += nactpi_[h];
+    //     // occupied
+    //     if (noccpi_[h]){
+    //         double** CSOp = matrices_["Cocc"]->pointer(h);
+    //         C_DGEMM('N','N',nao_,noccpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],noccpi_[h],0.0,&AO_Cp[0][offset],aoc_rowdim);
+    //         offset += noccpi_[h];
+    //     }
+    //     // active
+    //     if (nactpi_[h]){
+    //         double** CSOp = matrices_["Cact"]->pointer(h);
+    //         C_DGEMM('N','N',nao_,nactpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],nactpi_[h],0.0,&AO_Cp[0][offset],aoc_rowdim);
+    //         offset += nactpi_[h];
 
-            C_DGEMM('N','N',nao_,nactpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],nactpi_[h],0.0,&AO_Cp[0][offset_act + nmo_],aoc_rowdim);
-            offset_act += nactpi_[h];
-        }
-        // virtual
-        if (nvirpi_[h]){
-            double** CSOp = matrices_["Cvir"]->pointer(h);
-            C_DGEMM('N','N',nao_,nvirpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],nvirpi_[h],0.0,&AO_Cp[0][offset],aoc_rowdim);
-            offset += nvirpi_[h];
-        }
-    }
+    //         C_DGEMM('N','N',nao_,nactpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],nactpi_[h],0.0,&AO_Cp[0][offset_act + nmo_],aoc_rowdim);
+    //         offset_act += nactpi_[h];
+    //     }
+    //     // virtual
+    //     if (nvirpi_[h]){
+    //         double** CSOp = matrices_["Cvir"]->pointer(h);
+    //         C_DGEMM('N','N',nao_,nvirpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],nvirpi_[h],0.0,&AO_Cp[0][offset],aoc_rowdim);
+    //         offset += nvirpi_[h];
+    //     }
+    // }
+    transform();
 
 
     // => Build generalized inactive and active Fock matrices <= //
@@ -259,73 +274,74 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
 
     // => Q matrix <= //
     // d_vwxy I_nwxy => Q_vn
-    dferi_->clear();
-    dferi_->set_C(AO_C);
-    dferi_->add_space("N", 0, nmo_);
-    dferi_->add_space("a", nmo_, aoc_rowdim);
+    // dferi_->clear();
+    // dferi_->set_C(AO_C);
+    // dferi_->add_space("N", 0, nmo_);
+    // dferi_->add_space("a", nmo_, aoc_rowdim);
 
-    // Is it smart enough to order then untranspose?
-    // In the future build this once then slice it
-    dferi_->add_pair_space("aaQ", "a", "a");
-    dferi_->add_pair_space("NaQ", "N", "a");
-    dferi_->add_pair_space("NNQ", "N", "N");
+    // // Is it smart enough to order then untranspose?
+    // // In the future build this once then slice it
+    // dferi_->add_pair_space("aaQ", "a", "a");
+    // dferi_->add_pair_space("NaQ", "N", "a");
+    // dferi_->add_pair_space("NNQ", "N", "N");
 
-    // dferi_->print_header(2);
-    dferi_->compute();
-    std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
+    // // dferi_->print_header(2);
+    // dferi_->compute();
+    // std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
 
-    int nQ = dferi_->size_Q();
-    int nact2 = nact_ * nact_;
-    double* TPDMp = TPDM->pointer()[0];
+    // int nQ = dferi_->size_Q();
+    // int nact2 = nact_ * nact_;
+    // double* TPDMp = TPDM->pointer()[0];
 
-    // Load aaQ
-    boost::shared_ptr<Tensor> aaQT = dfints["aaQ"];
-    SharedMatrix aaQ(new Matrix("aaQ", nact_ * nact_, nQ));
-    double* aaQp = aaQ->pointer()[0];
-    FILE* aaQF = aaQT->file_pointer();
-    fseek(aaQF,0L,SEEK_SET);
-    fread(aaQp, sizeof(double), nact_ * nact_ * nQ, aaQF);
+    // // Load aaQ
+    // boost::shared_ptr<Tensor> aaQT = dfints["aaQ"];
+    // SharedMatrix aaQ(new Matrix("aaQ", nact_ * nact_, nQ));
+    // double* aaQp = aaQ->pointer()[0];
+    // FILE* aaQF = aaQT->file_pointer();
+    // fseek(aaQF,0L,SEEK_SET);
+    // fread(aaQp, sizeof(double), nact_ * nact_ * nQ, aaQF);
 
-    // d_vwxy I_xyQ -> d_vwQ (Qa^4)
-    SharedMatrix vwQ(new Matrix("vwQ", nact_ * nact_, nQ));
-    double* vwQp = vwQ->pointer()[0];
-    C_DGEMM('N','N',nact2,nQ,nact2,1.0,TPDMp,nact2,aaQp,nQ,0.0,vwQp,nQ);
-    aaQ.reset();
+    // // d_vwxy I_xyQ -> d_vwQ (Qa^4)
+    // SharedMatrix vwQ(new Matrix("vwQ", nact_ * nact_, nQ));
+    // double* vwQp = vwQ->pointer()[0];
+    // C_DGEMM('N','N',nact2,nQ,nact2,1.0,TPDMp,nact2,aaQp,nQ,0.0,vwQp,nQ);
+    // aaQ.reset();
 
-    // Load NaQ
-    boost::shared_ptr<Tensor> NaQT = dfints["NaQ"];
-    SharedMatrix NaQ(new Matrix("NaQ", nmo_ * nact_, nQ));
-    double* NaQp = NaQ->pointer()[0];
-    FILE* NaQF = NaQT->file_pointer();
-    fseek(NaQF,0L,SEEK_SET);
-    fread(NaQp, sizeof(double), nmo_ * nact_ * nQ, NaQF);
+    // // Load NaQ
+    // boost::shared_ptr<Tensor> NaQT = dfints["NaQ"];
+    // SharedMatrix NaQ(new Matrix("NaQ", nmo_ * nact_, nQ));
+    // double* NaQp = NaQ->pointer()[0];
+    // FILE* NaQF = NaQT->file_pointer();
+    // fseek(NaQF,0L,SEEK_SET);
+    // fread(NaQp, sizeof(double), nmo_ * nact_ * nQ, NaQF);
 
-    // d_vwQ I_NwQ -> Q_vN (NQa^2)
-    SharedMatrix denQ(new Matrix("Dense Qvn", nact_, nmo_));
-    double** denQp = denQ->pointer();
-    C_DGEMM('N','T',nact_,nmo_,nQ*nact_,1.0,vwQp,nQ*nact_,NaQp,nQ*nact_,0.0,denQp[0],nmo_);
-    NaQ.reset();
+    // // d_vwQ I_NwQ -> Q_vN (NQa^2)
+    // SharedMatrix denQ(new Matrix("Dense Qvn", nact_, nmo_));
+    // double** denQp = denQ->pointer();
+    // C_DGEMM('N','T',nact_,nmo_,nQ*nact_,1.0,vwQp,nQ*nact_,NaQp,nQ*nact_,0.0,denQp[0],nmo_);
+    // NaQ.reset();
 
-    // Symmetry block Q
-    matrices_["Q"] = SharedMatrix(new Matrix("Qvn", nirrep_, nactpi_, nmopi_));
+    // // Symmetry block Q
+    // matrices_["Q"] = SharedMatrix(new Matrix("Qvn", nirrep_, nactpi_, nmopi_));
 
-    int offset_act = 0;
-    int offset_nmo = 0;
-    for (int h=0; h<nirrep_; h++){
-        if (!nactpi_[h] || !nmopi_[h]){
-            offset_nmo += nmopi_[h];
-            continue;
-        }
+    // int offset_act = 0;
+    // int offset_nmo = 0;
+    // for (int h=0; h<nirrep_; h++){
+    //     if (!nactpi_[h] || !nmopi_[h]){
+    //         offset_nmo += nmopi_[h];
+    //         continue;
+    //     }
 
-        double* Qp = matrices_["Q"]->pointer(h)[0];
-        for (int i=0, target=0; i<nactpi_[h]; i++){
-            for (int j=0; j<nmopi_[h]; j++){
-                Qp[target++] = denQp[offset_act + i][offset_nmo + j];
-            }
-        }
-        offset_act += nactpi_[h];
-        offset_nmo += nmopi_[h];
-    }
+    //     double* Qp = matrices_["Q"]->pointer(h)[0];
+    //     for (int i=0, target=0; i<nactpi_[h]; i++){
+    //         for (int j=0; j<nmopi_[h]; j++){
+    //             Qp[target++] = denQp[offset_act + i][offset_nmo + j];
+    //         }
+    //     }
+    //     offset_act += nactpi_[h];
+    //     offset_nmo += nmopi_[h];
+    // }
+    Q();
 
 
     // => Generalized Fock matrix <= //
@@ -652,147 +668,148 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x)
 
     /// Build Qk
 
-    // Remove U symmetry
-    SharedMatrix dUact;
-    if (nirrep_ == 1){
-        dUact = Uact;
-    }
-    else{
-        dUact = SharedMatrix(new Matrix("Dense Uact", nact_, nmo_));
-        double** dUactp = dUact->pointer();
-        int offset_act = 0;
-        int offset_nmo = 0;
-        for (int h=0; h<nirrep_; h++){
-            if (!nactpi_[h]) continue;
-            double** Uactp = Uact->pointer(h);
-            for (int a=0; a<nactpi_[h]; a++) {
-                C_DCOPY(nmopi_[h], Uactp[a], 1, dUactp[offset_act+a]+offset_nmo, 1);
-            }
-            offset_act += nactpi_[h];
-            offset_nmo += nmopi_[h];
-        }
-    }
+    // // Remove U symmetry
+    // SharedMatrix dUact;
+    // if (nirrep_ == 1){
+    //     dUact = Uact;
+    // }
+    // else{
+    //     dUact = SharedMatrix(new Matrix("Dense Uact", nact_, nmo_));
+    //     double** dUactp = dUact->pointer();
+    //     int offset_act = 0;
+    //     int offset_nmo = 0;
+    //     for (int h=0; h<nirrep_; h++){
+    //         if (!nactpi_[h]) continue;
+    //         double** Uactp = Uact->pointer(h);
+    //         for (int a=0; a<nactpi_[h]; a++) {
+    //             C_DCOPY(nmopi_[h], Uactp[a], 1, dUactp[offset_act+a]+offset_nmo, 1);
+    //         }
+    //         offset_act += nactpi_[h];
+    //         offset_nmo += nmopi_[h];
+    //     }
+    // }
 
-    int nQ = dferi_->size_Q();
-    int nact2 = nact_*nact_;
-    int nact3 = nact2*nact_;
-    double* TPDMp = matrices_["TPDM"]->pointer()[0];
-    std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
+    // int nQ = dferi_->size_Q();
+    // int nact2 = nact_*nact_;
+    // int nact3 = nact2*nact_;
+    // double* TPDMp = matrices_["TPDM"]->pointer()[0];
+    // std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
 
-    // Read NaQ
-    boost::shared_ptr<Tensor> NaQT = dfints["NaQ"];
-    SharedMatrix NaQ(new Matrix("NaQ", nmo_ * nact_, nQ));
-    double* NaQp = NaQ->pointer()[0];
-    FILE* NaQF = NaQT->file_pointer();
-    fseek(NaQF,0L,SEEK_SET);
-    fread(NaQp, sizeof(double), nmo_ * nact_ * nQ, NaQF);
+    // // Read NaQ
+    // boost::shared_ptr<Tensor> NaQT = dfints["NaQ"];
+    // SharedMatrix NaQ(new Matrix("NaQ", nmo_ * nact_, nQ));
+    // double* NaQp = NaQ->pointer()[0];
+    // FILE* NaQF = NaQT->file_pointer();
+    // fseek(NaQF,0L,SEEK_SET);
+    // fread(NaQp, sizeof(double), nmo_ * nact_ * nQ, NaQF);
 
-    SharedMatrix xyQ(new Matrix("xyQ", nact_ * nact_, nQ));
-    double* xyQp = xyQ->pointer()[0];
-    double** dUactp = dUact->pointer();
+    // SharedMatrix xyQ(new Matrix("xyQ", nact_ * nact_, nQ));
+    // double* xyQp = xyQ->pointer()[0];
+    // double** dUactp = dUact->pointer();
 
-    // oyQ,xo->xyQ (NaQ, aU) QNa^2
-    C_DGEMM('N','N',nact_,nQ*nact_,nmo_,1.0,dUactp[0],nmo_,NaQp,nQ*nact_,0.0,xyQp,nQ*nact_);
+    // // oyQ,xo->xyQ (NaQ, aU) QNa^2
+    // C_DGEMM('N','N',nact_,nQ*nact_,nmo_,1.0,dUactp[0],nmo_,NaQp,nQ*nact_,0.0,xyQp,nQ*nact_);
 
-    // xyQ += yxQ
-    for (int x=0; x<nact_; x++){
-        for (int y=x; y<nact_; y++){
-            for (int q=0; q<nQ; q++){
-                size_t idx1 = x * nQ * nact_ + y * nQ + q;
-                size_t idx2 = y * nQ * nact_ + x * nQ + q;
-                double tmpn = xyQp[idx1] + xyQp[idx2];
-                xyQp[idx1] = tmpn;
-                xyQp[idx2] = tmpn;
-            }
-        }
-    }
+    // // xyQ += yxQ
+    // for (int x=0; x<nact_; x++){
+    //     for (int y=x; y<nact_; y++){
+    //         for (int q=0; q<nQ; q++){
+    //             size_t idx1 = x * nQ * nact_ + y * nQ + q;
+    //             size_t idx2 = y * nQ * nact_ + x * nQ + q;
+    //             double tmpn = xyQp[idx1] + xyQp[idx2];
+    //             xyQp[idx1] = tmpn;
+    //             xyQp[idx2] = tmpn;
+    //         }
+    //     }
+    // }
 
-    // nwQ,xyQ => tmp_nwxy (NaQ, xyQ) NQa^3
-    SharedMatrix Gnwxy = Matrix::doublet(NaQ, xyQ, false, true);
-    double* Gnwxyp = Gnwxy->pointer()[0];
-    NaQ.reset();
+    // // nwQ,xyQ => tmp_nwxy (NaQ, xyQ) NQa^3
+    // SharedMatrix Gnwxy = Matrix::doublet(NaQ, xyQ, false, true);
+    // double* Gnwxyp = Gnwxy->pointer()[0];
+    // NaQ.reset();
 
-    // vwxy,nwxy => Qk_vm (TPDM, tmp_nwxy) Na^4
-    SharedMatrix dQk(new Matrix("dQk", nact_, nmo_));
-    double** dQkp = dQk->pointer();
+    // // vwxy,nwxy => Qk_vm (TPDM, tmp_nwxy) Na^4
+    // SharedMatrix dQk(new Matrix("dQk", nact_, nmo_));
+    // double** dQkp = dQk->pointer();
 
-    C_DGEMM('N','T',nact_,nmo_,nact3,1.0,TPDMp,nact3,Gnwxyp,nact3,0.0,dQkp[0],nmo_);
+    // C_DGEMM('N','T',nact_,nmo_,nact3,1.0,TPDMp,nact3,Gnwxyp,nact3,0.0,dQkp[0],nmo_);
 
-    // wo,onQ->wnQ (aU, NNQ) QN^2a^2 (rate determining)
-    // Read and gemm in chunks, need to do blocking later
-    int chunk_size = 200;
-    boost::shared_ptr<Tensor> NNQT = dfints["NNQ"];
+    // // wo,onQ->wnQ (aU, NNQ) QN^2a^2 (rate determining)
+    // // Read and gemm in chunks, need to do blocking later
+    // int chunk_size = 200;
+    // boost::shared_ptr<Tensor> NNQT = dfints["NNQ"];
 
-    SharedMatrix wnQ(new Matrix("nwQ", nact_*nmo_, nQ));
-    double** wnQp = wnQ->pointer();
-    SharedMatrix NNQ(new Matrix("NNQ", chunk_size * nmo_, nQ));
-    double** NNQp = NNQ->pointer();
-    FILE* NNQF = NNQT->file_pointer();
+    // SharedMatrix wnQ(new Matrix("nwQ", nact_*nmo_, nQ));
+    // double** wnQp = wnQ->pointer();
+    // SharedMatrix NNQ(new Matrix("NNQ", chunk_size * nmo_, nQ));
+    // double** NNQp = NNQ->pointer();
+    // FILE* NNQF = NNQT->file_pointer();
 
-    for (int start=0; start < nmo_; start += chunk_size){
-        int block = (start + chunk_size > nmo_ ? nmo_ - start : chunk_size);
-        size_t read_start = sizeof(double) * start * nmo_ * nQ;
-        fseek(NNQF,read_start,SEEK_SET);
-        fread(NNQp[0], sizeof(double), block * nmo_ * nQ, NNQF);
-        C_DGEMM('N','N',nact_,nmo_*nQ,block,1.0,
-                dUactp[0]+start,nmo_,
-                NNQp[0],nmo_*nQ,
-                1.0,wnQp[0],nmo_*nQ);
-    }
-    NNQ.reset();
+    // for (int start=0; start < nmo_; start += chunk_size){
+    //     int block = (start + chunk_size > nmo_ ? nmo_ - start : chunk_size);
+    //     size_t read_start = sizeof(double) * start * nmo_ * nQ;
+    //     fseek(NNQF,read_start,SEEK_SET);
+    //     fread(NNQp[0], sizeof(double), block * nmo_ * nQ, NNQF);
+    //     C_DGEMM('N','N',nact_,nmo_*nQ,block,1.0,
+    //             dUactp[0]+start,nmo_,
+    //             NNQp[0],nmo_*nQ,
+    //             1.0,wnQp[0],nmo_*nQ);
+    // }
+    // NNQ.reset();
 
-    // Read aaQ
-    boost::shared_ptr<Tensor> aaQT = dfints["aaQ"];
-    SharedMatrix aaQ(new Matrix("aaQ", nact_ * nact_, nQ));
-    double* aaQp = aaQ->pointer()[0];
-    FILE* aaQF = aaQT->file_pointer();
-    fseek(aaQF,0L,SEEK_SET);
-    fread(aaQp, sizeof(double), nact_ * nact_ * nQ, aaQF);
+    // // Read aaQ
+    // boost::shared_ptr<Tensor> aaQT = dfints["aaQ"];
+    // SharedMatrix aaQ(new Matrix("aaQ", nact_ * nact_, nQ));
+    // double* aaQp = aaQ->pointer()[0];
+    // FILE* aaQF = aaQT->file_pointer();
+    // fseek(aaQF,0L,SEEK_SET);
+    // fread(aaQp, sizeof(double), nact_ * nact_ * nQ, aaQF);
 
-    // wnQ,xyQ => tmp_wnxy (wNQ, aaQ) NQa^3
-    C_DGEMM('N','T',nmo_*nact_,nact2,nQ,1.0,wnQp[0],nQ,aaQp,nQ,0.0,Gnwxyp,nact2);
-    aaQ.reset();
+    // // wnQ,xyQ => tmp_wnxy (wNQ, aaQ) NQa^3
+    // C_DGEMM('N','T',nmo_*nact_,nact2,nQ,1.0,wnQp[0],nQ,aaQp,nQ,0.0,Gnwxyp,nact2);
+    // aaQ.reset();
 
-    // Should probably figure out an inplace algorithm
-    SharedMatrix Gleft(new Matrix("Gnwxy", nmo_, nact3));
-    double* Gleftp = Gleft->pointer()[0];
+    // // Should probably figure out an inplace algorithm
+    // SharedMatrix Gleft(new Matrix("Gnwxy", nmo_, nact3));
+    // double* Gleftp = Gleft->pointer()[0];
 
-    // wnxy => nwxy
-    size_t target = 0;
-    for (int n=0; n<nmo_; n++){
-    for (int w=0; w<nact_; w++){
-    for (int x=0; x<nact_; x++){
-    for (int y=0; y<nact_; y++){
-        Gleftp[target++] = Gnwxyp[w*nmo_*nact2 + n*nact2 + x*nact_ + y];
-    }}}}
-    Gnwxy.reset();
+    // // wnxy => nwxy
+    // size_t target = 0;
+    // for (int n=0; n<nmo_; n++){
+    // for (int w=0; w<nact_; w++){
+    // for (int x=0; x<nact_; x++){
+    // for (int y=0; y<nact_; y++){
+    //     Gleftp[target++] = Gnwxyp[w*nmo_*nact2 + n*nact2 + x*nact_ + y];
+    // }}}}
+    // Gnwxy.reset();
 
-    // vwxy,nwxy => Qk_vm (TPDM, tmp_nwxy) Na^4
-    C_DGEMM('N','T',nact_,nmo_,nact3,1.0,TPDMp,nact3,Gleftp,nact3,1.0,dQkp[0],nmo_);
+    // // vwxy,nwxy => Qk_vm (TPDM, tmp_nwxy) Na^4
+    // C_DGEMM('N','T',nact_,nmo_,nact3,1.0,TPDMp,nact3,Gleftp,nact3,1.0,dQkp[0],nmo_);
 
-    // Symm block Qk
-    SharedMatrix Qk = Matrix::doublet(matrices_["Q"], U, false, true);
+    // // Symm block Qk
+    // SharedMatrix Qk = Matrix::doublet(matrices_["Q"], U, false, true);
 
-    int offset_act = 0;
-    int offset_nmo = 0;
-    for (int h=0; h<nirrep_; h++){
-        if (!nactpi_[h]){
-            offset_nmo += nmopi_[h];
-            continue;
-        }
-        double** Qkp = Qk->pointer(h);
-        for (int a=0; a<nactpi_[h]; a++){
-            C_DCOPY(nmopi_[h], dQkp[offset_act+a]+offset_nmo, 1, Qkp[a], 1);
-        }
-        offset_act += nactpi_[h];
-        offset_nmo += nmopi_[h];
-    }
+    // int offset_act = 0;
+    // int offset_nmo = 0;
+    // for (int h=0; h<nirrep_; h++){
+    //     if (!nactpi_[h]){
+    //         offset_nmo += nmopi_[h];
+    //         continue;
+    //     }
+    //     double** Qkp = Qk->pointer(h);
+    //     for (int a=0; a<nactpi_[h]; a++){
+    //         C_DCOPY(nmopi_[h], dQkp[offset_act+a]+offset_nmo, 1, Qkp[a], 1);
+    //     }
+    //     offset_act += nactpi_[h];
+    //     offset_nmo += nmopi_[h];
+    // }
+    Qk(U, Uact);
 
     // Add in Q and zero out virtual
     for (int h=0; h<nirrep_; h++){
         if (nactpi_[h]) {
             double** Fkp = ret->pointer(h);
-            double** Qkp = Qk->pointer(h);
+            double** Qkp = matrices_["Qk"]->pointer(h);
 
             // OPDM_vw IF_wn->vn
             C_DGEMM('N','N',nactpi_[h],nmopi_[h],nactpi_[h],1.0,
@@ -974,8 +991,266 @@ void SOMCSCF::zero_ras(SharedMatrix vector){
         } // End ras loop
     }
 }
-
-
 /// End SOMCSCF class
+
+/// DFSOMCSCF class
+DFSOMCSCF::DFSOMCSCF(boost::shared_ptr<JK> jk, boost::shared_ptr<DFERI> df, SharedMatrix AOTOSO,
+            SharedMatrix H) :
+            SOMCSCF(jk, AOTOSO, H)
+{
+    dferi_ = df;
+}
+DFSOMCSCF::~DFSOMCSCF()
+{
+}
+void DFSOMCSCF::transform()
+{
+    // => AO C matrices <= //
+    // We want pitzer order C matrix with appended Cact
+    int aoc_rowdim = nmo_ + nact_;
+    SharedMatrix AO_C = SharedMatrix(new Matrix("AO_C", nao_, aoc_rowdim));
+    double** AO_Cp = AO_C->pointer();
+    for (int h=0, offset=0, offset_act=0; h < nirrep_; h++){
+        int hnso = matrices_["AOTOSO"]->colspi()[h];
+        if (hnso == 0) continue;
+        double** Up = matrices_["AOTOSO"]->pointer(h);
+
+        // occupied
+        if (noccpi_[h]){
+            double** CSOp = matrices_["Cocc"]->pointer(h);
+            C_DGEMM('N','N',nao_,noccpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],noccpi_[h],0.0,&AO_Cp[0][offset],aoc_rowdim);
+            offset += noccpi_[h];
+        }
+        // active
+        if (nactpi_[h]){
+            double** CSOp = matrices_["Cact"]->pointer(h);
+            C_DGEMM('N','N',nao_,nactpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],nactpi_[h],0.0,&AO_Cp[0][offset],aoc_rowdim);
+            offset += nactpi_[h];
+
+            C_DGEMM('N','N',nao_,nactpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],nactpi_[h],0.0,&AO_Cp[0][offset_act + nmo_],aoc_rowdim);
+            offset_act += nactpi_[h];
+        }
+        // virtual
+        if (nvirpi_[h]){
+            double** CSOp = matrices_["Cvir"]->pointer(h);
+            C_DGEMM('N','N',nao_,nvirpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],nvirpi_[h],0.0,&AO_Cp[0][offset],aoc_rowdim);
+            offset += nvirpi_[h];
+        }
+    }
+
+    // => Q matrix <= //
+    // d_vwxy I_nwxy => Q_vn
+    dferi_->clear();
+    dferi_->set_C(AO_C);
+    dferi_->add_space("N", 0, nmo_);
+    dferi_->add_space("a", nmo_, aoc_rowdim);
+
+    // Is it smart enough to order then untranspose?
+    // In the future build this once then slice it
+    dferi_->add_pair_space("aaQ", "a", "a");
+    dferi_->add_pair_space("NaQ", "N", "a");
+    dferi_->add_pair_space("NNQ", "N", "N");
+
+    // dferi_->print_header(2);
+    dferi_->compute();
+}
+void DFSOMCSCF::Q(){
+
+    std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
+
+    int nQ = dferi_->size_Q();
+    int nact2 = nact_ * nact_;
+    double* TPDMp = matrices_["TPDM"]->pointer()[0];
+
+    // Load aaQ
+    boost::shared_ptr<Tensor> aaQT = dfints["aaQ"];
+    SharedMatrix aaQ(new Matrix("aaQ", nact_ * nact_, nQ));
+    double* aaQp = aaQ->pointer()[0];
+    FILE* aaQF = aaQT->file_pointer();
+    fseek(aaQF,0L,SEEK_SET);
+    fread(aaQp, sizeof(double), nact_ * nact_ * nQ, aaQF);
+
+    // d_vwxy I_xyQ -> d_vwQ (Qa^4)
+    SharedMatrix vwQ(new Matrix("vwQ", nact_ * nact_, nQ));
+    double* vwQp = vwQ->pointer()[0];
+    C_DGEMM('N','N',nact2,nQ,nact2,1.0,TPDMp,nact2,aaQp,nQ,0.0,vwQp,nQ);
+    aaQ.reset();
+
+    // Load NaQ
+    boost::shared_ptr<Tensor> NaQT = dfints["NaQ"];
+    SharedMatrix NaQ(new Matrix("NaQ", nmo_ * nact_, nQ));
+    double* NaQp = NaQ->pointer()[0];
+    FILE* NaQF = NaQT->file_pointer();
+    fseek(NaQF,0L,SEEK_SET);
+    fread(NaQp, sizeof(double), nmo_ * nact_ * nQ, NaQF);
+
+    // d_vwQ I_NwQ -> Q_vN (NQa^2)
+    SharedMatrix denQ(new Matrix("Dense Qvn", nact_, nmo_));
+    double** denQp = denQ->pointer();
+    C_DGEMM('N','T',nact_,nmo_,nQ*nact_,1.0,vwQp,nQ*nact_,NaQp,nQ*nact_,0.0,denQp[0],nmo_);
+    NaQ.reset();
+
+    // Symmetry block Q
+    matrices_["Q"] = SharedMatrix(new Matrix("Qvn", nirrep_, nactpi_, nmopi_));
+
+    int offset_act = 0;
+    int offset_nmo = 0;
+    for (int h=0; h<nirrep_; h++){
+        if (!nactpi_[h] || !nmopi_[h]){
+            offset_nmo += nmopi_[h];
+            continue;
+        }
+
+        double* Qp = matrices_["Q"]->pointer(h)[0];
+        for (int i=0, target=0; i<nactpi_[h]; i++){
+            for (int j=0; j<nmopi_[h]; j++){
+                Qp[target++] = denQp[offset_act + i][offset_nmo + j];
+            }
+        }
+        offset_act += nactpi_[h];
+        offset_nmo += nmopi_[h];
+    }
+}
+void DFSOMCSCF::Qk(SharedMatrix U, SharedMatrix Uact)
+{
+    // Remove U symmetry
+    SharedMatrix dUact;
+    if (nirrep_ == 1){
+        dUact = Uact;
+    }
+    else{
+        dUact = SharedMatrix(new Matrix("Dense Uact", nact_, nmo_));
+        double** dUactp = dUact->pointer();
+        int offset_act = 0;
+        int offset_nmo = 0;
+        for (int h=0; h<nirrep_; h++){
+            if (!nactpi_[h]) continue;
+            double** Uactp = Uact->pointer(h);
+            for (int a=0; a<nactpi_[h]; a++) {
+                C_DCOPY(nmopi_[h], Uactp[a], 1, dUactp[offset_act+a]+offset_nmo, 1);
+            }
+            offset_act += nactpi_[h];
+            offset_nmo += nmopi_[h];
+        }
+    }
+
+    int nQ = dferi_->size_Q();
+    int nact2 = nact_*nact_;
+    int nact3 = nact2*nact_;
+    double* TPDMp = matrices_["TPDM"]->pointer()[0];
+    std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
+
+    // Read NaQ
+    boost::shared_ptr<Tensor> NaQT = dfints["NaQ"];
+    SharedMatrix NaQ(new Matrix("NaQ", nmo_ * nact_, nQ));
+    double* NaQp = NaQ->pointer()[0];
+    FILE* NaQF = NaQT->file_pointer();
+    fseek(NaQF,0L,SEEK_SET);
+    fread(NaQp, sizeof(double), nmo_ * nact_ * nQ, NaQF);
+
+    SharedMatrix xyQ(new Matrix("xyQ", nact_ * nact_, nQ));
+    double* xyQp = xyQ->pointer()[0];
+    double** dUactp = dUact->pointer();
+
+    // oyQ,xo->xyQ (NaQ, aU) QNa^2
+    C_DGEMM('N','N',nact_,nQ*nact_,nmo_,1.0,dUactp[0],nmo_,NaQp,nQ*nact_,0.0,xyQp,nQ*nact_);
+
+    // xyQ += yxQ
+    for (int x=0; x<nact_; x++){
+        for (int y=x; y<nact_; y++){
+            for (int q=0; q<nQ; q++){
+                size_t idx1 = x * nQ * nact_ + y * nQ + q;
+                size_t idx2 = y * nQ * nact_ + x * nQ + q;
+                double tmpn = xyQp[idx1] + xyQp[idx2];
+                xyQp[idx1] = tmpn;
+                xyQp[idx2] = tmpn;
+            }
+        }
+    }
+
+    // nwQ,xyQ => tmp_nwxy (NaQ, xyQ) NQa^3
+    SharedMatrix Gnwxy = Matrix::doublet(NaQ, xyQ, false, true);
+    double* Gnwxyp = Gnwxy->pointer()[0];
+    NaQ.reset();
+
+    // vwxy,nwxy => Qk_vm (TPDM, tmp_nwxy) Na^4
+    SharedMatrix dQk(new Matrix("dQk", nact_, nmo_));
+    double** dQkp = dQk->pointer();
+
+    C_DGEMM('N','T',nact_,nmo_,nact3,1.0,TPDMp,nact3,Gnwxyp,nact3,0.0,dQkp[0],nmo_);
+
+    // wo,onQ->wnQ (aU, NNQ) QN^2a^2 (rate determining)
+    // Read and gemm in chunks, need to do blocking later
+    int chunk_size = 200;
+    boost::shared_ptr<Tensor> NNQT = dfints["NNQ"];
+
+    SharedMatrix wnQ(new Matrix("nwQ", nact_*nmo_, nQ));
+    double** wnQp = wnQ->pointer();
+    SharedMatrix NNQ(new Matrix("NNQ", chunk_size * nmo_, nQ));
+    double** NNQp = NNQ->pointer();
+    FILE* NNQF = NNQT->file_pointer();
+
+    for (int start=0; start < nmo_; start += chunk_size){
+        int block = (start + chunk_size > nmo_ ? nmo_ - start : chunk_size);
+        size_t read_start = sizeof(double) * start * nmo_ * nQ;
+        fseek(NNQF,read_start,SEEK_SET);
+        fread(NNQp[0], sizeof(double), block * nmo_ * nQ, NNQF);
+        C_DGEMM('N','N',nact_,nmo_*nQ,block,1.0,
+                dUactp[0]+start,nmo_,
+                NNQp[0],nmo_*nQ,
+                1.0,wnQp[0],nmo_*nQ);
+    }
+    NNQ.reset();
+
+    // Read aaQ
+    boost::shared_ptr<Tensor> aaQT = dfints["aaQ"];
+    SharedMatrix aaQ(new Matrix("aaQ", nact_ * nact_, nQ));
+    double* aaQp = aaQ->pointer()[0];
+    FILE* aaQF = aaQT->file_pointer();
+    fseek(aaQF,0L,SEEK_SET);
+    fread(aaQp, sizeof(double), nact_ * nact_ * nQ, aaQF);
+
+    // wnQ,xyQ => tmp_wnxy (wNQ, aaQ) NQa^3
+    C_DGEMM('N','T',nmo_*nact_,nact2,nQ,1.0,wnQp[0],nQ,aaQp,nQ,0.0,Gnwxyp,nact2);
+    aaQ.reset();
+
+    // Should probably figure out an inplace algorithm
+    SharedMatrix Gleft(new Matrix("Gnwxy", nmo_, nact3));
+    double* Gleftp = Gleft->pointer()[0];
+
+    // wnxy => nwxy
+    size_t target = 0;
+    for (int n=0; n<nmo_; n++){
+    for (int w=0; w<nact_; w++){
+    for (int x=0; x<nact_; x++){
+    for (int y=0; y<nact_; y++){
+        Gleftp[target++] = Gnwxyp[w*nmo_*nact2 + n*nact2 + x*nact_ + y];
+    }}}}
+    Gnwxy.reset();
+
+    // vwxy,nwxy => Qk_vm (TPDM, tmp_nwxy) Na^4
+    C_DGEMM('N','T',nact_,nmo_,nact3,1.0,TPDMp,nact3,Gleftp,nact3,1.0,dQkp[0],nmo_);
+
+    // Symm block Qk
+    matrices_["Qk"] = Matrix::doublet(matrices_["Q"], U, false, true);
+
+    int offset_act = 0;
+    int offset_nmo = 0;
+    for (int h=0; h<nirrep_; h++){
+        if (!nactpi_[h]){
+            offset_nmo += nmopi_[h];
+            continue;
+        }
+        double** Qkp = matrices_["Qk"]->pointer(h);
+        for (int a=0; a<nactpi_[h]; a++){
+            C_DCOPY(nmopi_[h], dQkp[offset_act+a]+offset_nmo, 1, Qkp[a], 1);
+        }
+        offset_act += nactpi_[h];
+        offset_nmo += nmopi_[h];
+    }
+
+}
+
+// End DFSOMCSCF object
 
 } // Namespace psi

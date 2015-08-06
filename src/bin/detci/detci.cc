@@ -221,33 +221,39 @@ PsiReturnType detci(Options &options)
      return Success;
    }
 
-   // Setup and/or transform MO integrals
-   read_integrals();            /* get the 1 and 2 elec MO integrals        */
-   // ciwfn->transform_ci_integrals();
-
-   if(Parameters.zaptn)         /* Shift SCF eigenvalues for ZAPTn          */
-      zapt_shift(CalcInfo.twoel_ints, CalcInfo.nirreps, CalcInfo.nmo,
-         CalcInfo.docc, CalcInfo.socc, CalcInfo.orbs_per_irr,
-         CalcInfo.dropped_docc, CalcInfo.reorder);
-
    if (Parameters.bendazzoli) /* form the Bendazzoli OV arrays            */
       form_ov(alplist);
-                                /* lump together one-electron contributions */
-   tf_onel_ints((Parameters.print_lvl>3), "outfile");
 
-                                /* form the RAS g matrix (eq 28-29)         */
-   form_gmat((Parameters.print_lvl>3), "outfile");
-
-
-   if (Parameters.mpn)
-     mpn(alplist, betlist);
-   else if (Parameters.cc)
-     compute_cc();
-   else if (Parameters.mcscf){
+   // MCSCF is special, we let it handle a lot of its own issues
+   if (Parameters.mcscf){
      compute_mcscf(ciwfn, alplist, betlist, options);
-     }
-   else
-     diag_h(alplist, betlist);
+   }
+   else{
+     /* Transform and set ci integrals*/
+     ciwfn->transform_ci_integrals();
+
+     /* lump together one-electron contributions */
+     tf_onel_ints((Parameters.print_lvl>3), "outfile");
+
+     /* form the RAS g matrix (eq 28-29)         */
+     form_gmat((Parameters.print_lvl>3), "outfile");
+
+     if (Parameters.mpn){
+       if(Parameters.zaptn){         /* Shift SCF eigenvalues for ZAPTn          */
+          zapt_shift(CalcInfo.twoel_ints, CalcInfo.nirreps, CalcInfo.nmo,
+             CalcInfo.docc, CalcInfo.socc, CalcInfo.orbs_per_irr,
+             CalcInfo.dropped_docc, CalcInfo.reorder);
+       }
+       mpn(alplist, betlist);
+       }
+     else if (Parameters.cc)
+       compute_cc();
+     else if (Parameters.mcscf){
+       compute_mcscf(ciwfn, alplist, betlist, options);
+       }
+     else
+       diag_h(alplist, betlist);
+   }
 
    // Finished CI, setting wavefunction parameters
    if(!Parameters.zaptn & Parameters.opdm){
@@ -1492,7 +1498,7 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
   jk->print_header();
 
   boost::shared_ptr<DFERI> df = DFERI::build(primary,auxiliary,options);
-  boost::shared_ptr<SOMCSCF> somcscf(new SOMCSCF(jk, df, ciwfn->aotoso(), ciwfn->H()));
+  boost::shared_ptr<SOMCSCF> somcscf(new DFSOMCSCF(jk, df, ciwfn->aotoso(), ciwfn->H()));
 
   // We assume some kind of ras here.
   if (Parameters.wfn != "CASSCF"){
@@ -1514,51 +1520,13 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
   SharedMatrix Cfzc = ciwfn->get_orbitals("FZC");
   somcscf->set_frozen_orbitals(Cfzc);
 
-
-  // Set drc energy for the ci space
-  // SharedMatrix Cdrc = ciwfn->get_orbitals("DRC");
-  // std::vector<SharedMatrix>& Cl = jk->C_left();
-  // Cl.clear();
-  // Cl.push_back(Cdrc);
-  // jk->compute();
-  // Cl.clear();
-
-  // const std::vector<SharedMatrix>& J = jk->J();
-  // const std::vector<SharedMatrix>& K = jk->K();
-
-  // J[0]->scale(2.0);
-  // J[0]->subtract(K[0]);
-  // J[0]->add(ciwfn->H());
-  // J[0]->add(ciwfn->H());
-  // SharedMatrix D = Matrix::doublet(Cdrc, Cdrc, false, true);
-  // CalcInfo.edrc = J[0]->vector_dot(D);
-  // Cdrc.reset();
-  // D.reset();
-  chkpt_init(PSIO_OPEN_OLD);
-  CalcInfo.edrc = chkpt_rd_efzc();
-  chkpt_close();
-
-
-  /// Active OPDM and TPDM
-  SharedMatrix actOPDM(new Matrix("OPDM", ciwfn->nirrep(), CalcInfo.ci_orbs, CalcInfo.ci_orbs));
+  // Setup for initial CI run
+  CalcInfo.edrc = somcscf->rhf_energy(ciwfn->get_orbitals("DRC"));
+  ciwfn->transform_ci_integrals();
+  tf_onel_ints((Parameters.print_lvl>3), "outfile");
+  form_gmat((Parameters.print_lvl>3), "outfile");
 
   /// => Start traditional MCSCF <= //
-
-  // Output file for MCSCF iters
-  OutFile IterSummaryOut("file14.dat", TRUNCATE);
-
-  set_mcscf_parameters(ciwfn->options());     /* get running params (convergence, etc)    */
-  MCSCF* mcscf = new MCSCF(ciwfn, IterSummaryOut);
-
-  if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
-
-  // Need a TRANSQT2 Options object to be able to call that module correctly
-  // Can delete this when we replace TRANSQT2 with libtrans
-  Options transqt_options = ciwfn->options();
-  transqt_options.set_current_module("TRANSQT2");
-  psi::read_options("TRANSQT2", transqt_options, false);
-  transqt_options.set_str("TRANSQT2", "WFN", Parameters.wfn);
-  transqt_options.validate_options();
 
   // Parameters
   int conv = 0;
@@ -1566,23 +1534,23 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
   if (MCSCF_Parameters.print_lvl) tstart();
 
   // Iterate
-  for (int iter=0; iter<MCSCF_Parameters.max_iter; iter++){
+  for (int iter=0; iter<30; iter++){
     outfile->Printf("\nStarting MCSCF iteration %d\n\n", iter+1);
 
     diag_h(alplist, betlist);
 
-    if (Parameters.average_num > 1) { // state average
-      MCSCF_CalcInfo.energy =
-        Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"];
-    }
-    else if (Parameters.root != 0) { // follow some specific root != lowest
-      std::stringstream s;
-      s << "CI ROOT " << (Parameters.root+1) << " TOTAL ENERGY";
-      MCSCF_CalcInfo.energy = Process::environment.globals[s.str()];
-    }
-    else {
-      MCSCF_CalcInfo.energy = Process::environment.globals["CI TOTAL ENERGY"];
-    }
+    // if (Parameters.average_num > 1) { // state average
+    //   MCSCF_CalcInfo.energy =
+    //     Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"];
+    // }
+    // else if (Parameters.root != 0) { // follow some specific root != lowest
+    //   std::stringstream s;
+    //   s << "CI ROOT " << (Parameters.root+1) << " TOTAL ENERGY";
+    //   MCSCF_CalcInfo.energy = Process::environment.globals[s.str()];
+    // }
+    // else {
+    //   MCSCF_CalcInfo.energy = Process::environment.globals["CI TOTAL ENERGY"];
+    // }
 
     form_opdm();
     ciwfn->set_opdm();
@@ -1594,140 +1562,30 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
     SharedMatrix Cdocc = ciwfn->get_orbitals("DOCC");
     SharedMatrix Cact = ciwfn->get_orbitals("ACT");
     SharedMatrix Cvir = ciwfn->get_orbitals("VIR");
-
-    //// We need a active OPDM with symmetry
-    double** OPDMa = ciwfn->Da()->pointer();
-    double** OPDMb = ciwfn->Db()->pointer();
-
-    int offset = 0;
-    for (int h=0; h<ciwfn->nirrep(); h++){
-      if (!CalcInfo.ci_orbs[h]) continue;
-
-      double* actp = actOPDM->pointer(h)[0];
-      offset += CalcInfo.dropped_docc[h];
-
-      for (int i=0, target=0; i<CalcInfo.ci_orbs[h]; i++){
-        int offi = offset + i;
-        for (int j=0; j<CalcInfo.ci_orbs[h]; j++){
-          actp[target++] = OPDMa[offi][offset + j] + OPDMb[offi][offset + j];
-        }
-      }
-      offset += CalcInfo.ci_orbs[h];
-    }
-
-    //// We need a active TPDM (no symmetry), make it dense for now
-    int nci   = CalcInfo.num_ci_orbs;
-    int ndocc = CalcInfo.num_drc_orbs;
-    int npop  = CalcInfo.num_ci_orbs + CalcInfo.num_drc_orbs;
-    SharedMatrix actTPDM(new Matrix("Something", nci*nci, nci*nci));
-    double* actTPDMp = actTPDM->pointer()[0];
-
-    SharedVector fullTPDM = ciwfn->get_tpdm();
-    double* fullTPDMp = fullTPDM->pointer();
-
-    int nci2 = nci * nci;
-    int nci3 = nci * nci * nci;
-    int ij, kl, ijkl;
-    for (int i=0; i<nci; i++){
-    for (int j=0; j<nci; j++){
-    for (int k=0; k<nci; k++){
-    for (int l=0; l<nci; l++){
-        ij = INDEX(ndocc + i, ndocc + j);
-        kl = INDEX(ndocc + k, ndocc + l);
-        ijkl = INDEX(ij, kl);
-        actTPDMp[i * nci3 + j * nci2 + k * nci + l] = fullTPDMp[ijkl];
-    }}}}
+    SharedMatrix actOPDM = ciwfn->get_active_opdm();
+    SharedMatrix actTPDM = ciwfn->get_active_tpdm();
 
     outfile->Printf("SOMCSCF: Updating\n");
     somcscf->update(Cdocc, Cact, Cvir, actOPDM, actTPDM);
-    // outfile->Printf("SOMCSCF: Approximate hessian\n");
-    // somcscf->H_approx_diag()->print();
-    // x = somcscf->solve(5, 1.e-5, true);
-    // outfile->Printf("SOMCSCF: Rotation Parameters!\n");
-    // x = somcscf->approx_solve();
+    x = somcscf->approx_solve();
 
-
-    // if (iter < 3){
-    // x = somcscf->approx_solve();
-    // }
-    // else{
-    // x = somcscf->solve(5, 1.e-10, true);
-    // }
-    // outfile->Printf("SOMCSCF: Approximate Rotation\n");
-    // x->print();
     SharedMatrix new_orbs = somcscf->Ck(x);
     ciwfn->set_orbitals("ROT", new_orbs);
 
-    if (iter > 20){
-      conv = 1;
-    }
-    for (int h=0; h<CalcInfo.nirreps; h++) {
-    chkpt_init(PSIO_OPEN_OLD);
-    chkpt_wt_scf_irrep(new_orbs->pointer(h), h);
-    chkpt_close();
-    }
-    // new_orbs.reset();
-
-
-    //// Convential updated
-    // conv = mcscf->update();
-
-
-    // If converged
-    if (conv){
-      outfile->Printf("\nMCSCF converged\n");
-      break;
-    }
-
-    // If max iter
-    if (iter == (MCSCF_Parameters.max_iter - 1)){
-      outfile->Printf("\nMCSCF did not converge\n");
-      break;
-    }
-
-    MCSCF_CalcInfo.iter++;
-    MCSCF_CalcInfo.energy_old = MCSCF_CalcInfo.energy;
-    outfile->Printf("\nFinished MCSCF iteration %d\n\n", iter+1);
-
-    psi::transqt2::transqt2(transqt_options);
-    // Set drc energy for the ci space
-    // SharedMatrix Cdrc = ciwfn->get_orbitals("DRC");
-    // std::vector<SharedMatrix>& Cl = jk->C_left();
-    // Cl.clear();
-    // Cl.push_back(Cdrc);
-    // jk->compute();
-    // Cl.clear();
-
-    // const std::vector<SharedMatrix>& J = jk->J();
-    // const std::vector<SharedMatrix>& K = jk->K();
-
-    // J[0]->scale(2.0);
-    // J[0]->subtract(K[0]);
-    // J[0]->add(ciwfn->H());
-    // J[0]->add(ciwfn->H());
-    // SharedMatrix D = Matrix::doublet(Cdrc, Cdrc, false, true);
-    // CalcInfo.edrc = J[0]->vector_dot(D);
-    // Cdrc.reset();
-    // D.reset();
-
     // Need to grab the new edrc energy after transqt2 computations
-    chkpt_init(PSIO_OPEN_OLD);
-    CalcInfo.edrc = chkpt_rd_efzc();
-    chkpt_close();
-
-    read_integrals();
+    CalcInfo.edrc = somcscf->rhf_energy(ciwfn->get_orbitals("DRC"));
+    ciwfn->transform_ci_integrals();
     tf_onel_ints((Parameters.print_lvl>3), "outfile");
     form_gmat((Parameters.print_lvl>3), "outfile");
 
 
   }
 
-  outfile->Printf("\nCleaning up MCSCF.\n");
-  // conv = mcscf->update();
-  mcscf->finalize();
+  // outfile->Printf("\nCleaning up MCSCF.\n");
 
   // ciwfn->set_lag();
-  // ciwfn->set_tpdm();
+  ciwfn->set_opdm();
+  ciwfn->set_tpdm();
   df.reset();
   jk.reset();
 }

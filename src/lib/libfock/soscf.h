@@ -62,10 +62,10 @@ public:
      * @param casscf  Is this a CAS calculation? (ignore active-active rotations)
      */
     // SOMCSCF(boost::shared_ptr<JK> jk, SharedMatrix H, bool casscf);
-    SOMCSCF(boost::shared_ptr<JK> jk, boost::shared_ptr<DFERI> df, SharedMatrix AOTOSO,
+    SOMCSCF(boost::shared_ptr<JK> jk, SharedMatrix AOTOSO,
             SharedMatrix H);
 
-    ~SOMCSCF(void);
+    virtual ~SOMCSCF(void);
 
     /**
      * Sets the ras spaces, rotations will not happen inside of a space
@@ -85,6 +85,13 @@ public:
      * @return   The rotated orbitals.
      */
     SharedMatrix Ck(SharedMatrix x);
+
+    /**
+     * Computes the RHF energy for a given C matrix
+     * @param  C The desired orbitals
+     * @return   The RHF energy
+     */
+    double rhf_energy(SharedMatrix C);
 
     /**
      * Updates all internal variables to the new reference frame and builds
@@ -121,12 +128,6 @@ public:
      * @return x The [oa, av] matrix of non-redundant orbital rotation parameters.
      */
     SharedMatrix solve(int max_iter=5, double conv=1.e-10, bool print=true);
-
-    /**
-     * Get the dropped core energy, the sum of frozen + docc orbitals
-     * @return The dropped core energy
-     */
-    double get_drc_energy();
 
 protected:
 
@@ -180,8 +181,45 @@ protected:
     /// Zeros out the redundant ras-ras part of a trial vector
     void zero_ras(SharedMatrix vector);
 
+    // Transform the integrals
+    virtual void transform();
+
+    // Build the Q matrices
+    virtual void Q();
+    virtual void Qk(SharedMatrix U, SharedMatrix Uact);
+
 
 }; // SOMCSCF class
+
+
+/**
+ * Class DFSOMCSCF
+ *
+ * Density fitted second-order MCSCF
+ */
+class DFSOMCSCF : public SOMCSCF {
+
+public:
+    /**
+     * Initialize the DF SOMCSCF object
+     * @param jk      JK object to use.
+     * @param df      DFERI object to use.
+     * @param df      AOTOSO object to use.
+     * @param H       Core hamiltonian in the SO basis.
+     */
+    DFSOMCSCF(boost::shared_ptr<JK> jk, boost::shared_ptr<DFERI> df, SharedMatrix AOTOSO,
+            SharedMatrix H);
+
+    virtual ~DFSOMCSCF();
+
+protected:
+
+    virtual void transform();
+    virtual void Q();
+    virtual void Qk(SharedMatrix U, SharedMatrix Uact);
+
+}; // DFSOMCSCF class
+
 
 } // Namespace psi
 
