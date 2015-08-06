@@ -88,10 +88,6 @@ void CIWavefunction::transform_ci_integrals()
     orbnum += CalcInfo.dropped_uocc[h];
   }
 
-  // outfile->Printf("Orbitals\n");
-  // for (std::vector<int>::iterator ot = orbitals.begin(), it=indices.begin(); it != orbitals.end(); ++it){
-  //   outfile->Printf("%4d %4d\n", *ot, *it);
-  // }
   boost::shared_ptr<MOSpace> custom_space(new MOSpace('X', orbitals, indices));
   spaces.push_back(custom_space);
 
@@ -101,6 +97,7 @@ void CIWavefunction::transform_ci_integrals()
                             IntegralTransform::PitzerOrder,
                             IntegralTransform::OccAndVir,
                             true);
+
   // Incase we do two ci runs
   ints->set_keep_iwl_so_ints(true);
   ints->transform_tei(custom_space, custom_space, custom_space, custom_space);
@@ -421,6 +418,124 @@ void mcscf_get_mat_block(double **src, double **dst, int dst_dim, int dst_offset
       dst[P][Q] = src[p][q];
     }
   }
+
+}
+
+void read_integrals()
+{
+   int i, j, ij, k, l, kl, ijkl, ijij;
+   int nmotri, nmotri_full;
+   double value;
+   extern double check_energy(double *H, double *twoel_ints, int *docc,
+      int *dropped_docc, int drc_flag, double escf, double enuc, double edrc,
+      int nirreps, int *reorder, int *opi, int print_lvl, std::string out);
+   int junk;
+   double *tmp_onel_ints;
+   int *tmp_frdocc, *tmp_fruocc;
+   int nfilter_core, nfilter_vir;
+
+   /* allocate memory for one and two electron integrals */
+   nmotri_full = (CalcInfo.nmo * (CalcInfo.nmo + 1)) / 2;
+   nmotri = (CalcInfo.num_ci_orbs * (CalcInfo.num_ci_orbs + 1)) / 2 ;
+   CalcInfo.onel_ints = (double *) init_array(nmotri) ;
+   CalcInfo.twoel_ints = (double *) init_array(nmotri * (nmotri + 1) / 2);
+   CalcInfo.maxK = (double *) init_array(CalcInfo.num_ci_orbs);
+
+   /*
+     One-electron integrals: always filter what DETCI considers
+     dropped (whatever is in the drc arrays, which internally DETCI
+     uses for user's frozen core + restricted core)
+     because the one-electron integrals are written out as the full
+     size over all MO's regardless of the computation type.
+   */
+
+   tmp_onel_ints = init_array(nmotri_full);
+   iwl_rdone(Parameters.oei_file, PSIF_MO_FZC, tmp_onel_ints, nmotri_full,
+             0, (Parameters.print_lvl>4), "outfile");
+   filter(tmp_onel_ints, CalcInfo.onel_ints, ioff, CalcInfo.nmo,
+	  CalcInfo.num_drc_orbs, CalcInfo.num_drv_orbs);
+
+   free(tmp_onel_ints);
+   outfile->Printf("One electron integrals\n");
+   for (int i = 0; i < nmotri; ++i){
+       outfile->Printf("%d | %lf\n", i, CalcInfo.onel_ints[i]);
+   }
+
+   /*
+     Two-electron integrals: filter out what we don't need.  TRANSQT2
+     supplies restricted orbitals always (well, for now).  It will also
+     supply frozen core if it's a gradient calculation (need for orbital
+     response) or an MCSCF (need for MO Hessian).  We normally want to
+     filter all these out of the CI energy computation.  Likewise, we
+     normally won't need restricted or frozen virtuals in the CI energy
+     computation and should filter them out if they are in the TEI file
+   */
+
+  if (Parameters.filter_ints) {
+    nfilter_core = CalcInfo.num_drc_orbs;
+    nfilter_vir  = CalcInfo.num_drv_orbs;
+  }
+  else {
+    nfilter_core = 0;
+    nfilter_vir = 0;
+  }
+
+  iwl_rdtwo(PSIF_MO_TEI, CalcInfo.twoel_ints, ioff, CalcInfo.nmo,
+             nfilter_core, nfilter_vir,
+             (Parameters.print_lvl>4), "outfile");
+
+   /* Determine maximum K integral for use in averaging the diagonal */
+   /* Hamiltonian matrix elements over spin-coupling set */
+   if (Parameters.hd_ave) {
+     for(i=0; i<CalcInfo.num_ci_orbs; i++)
+        for(j=0; j<CalcInfo.num_ci_orbs; j++) {
+           /* if (i==j) continue; */
+           ij = ioff[MAX0(i,j)] + MIN0(i,j);
+           ijij = ioff[ij] + ij;
+           value = CalcInfo.twoel_ints[ijij];
+           if(value > CalcInfo.maxK[i]) CalcInfo.maxK[i] = value;
+           }
+      for(i=0; i<CalcInfo.num_ci_orbs; i++) {
+        if(CalcInfo.maxK[i] > CalcInfo.maxKlist)
+          CalcInfo.maxKlist = CalcInfo.maxK[i];
+        if (Parameters.print_lvl > 4)
+          outfile->Printf("maxK[%d] = %lf\n",i, CalcInfo.maxK[i]);
+        }
+      }
+
+   if (Parameters.print_lvl > 4) {
+      outfile->Printf( "\nOne-electron integrals\n") ;
+      for (i=0, ij=0; i<CalcInfo.num_ci_orbs; i++) {
+         for (j=0; j<=i; j++, ij++) {
+            outfile->Printf( "h(%d)(%d) = %11.7lf\n", i, j,
+               CalcInfo.onel_ints[ij]) ;
+            }
+         }
+      outfile->Printf( "\n") ;
+      }
+
+   if (Parameters.print_lvl > 4) {
+      outfile->Printf( "\nmaxKlist = %lf\n",CalcInfo.maxKlist);
+      outfile->Printf( "\nTwo-electron integrals\n");
+      for (i=0; i<CalcInfo.num_ci_orbs; i++) {
+         for (j=0; j<=i; j++) {
+            ij = ioff[MAX0(i,j)] + MIN0(i,j) ;
+            for (k=0; k<=i; k++) {
+               for (l=0; l<=k; l++) {
+                  kl = ioff[MAX0(k,l)] + MIN0(k,l) ;
+                  ijkl = ioff[MAX0(ij,kl)] + MIN0(ij,kl) ;
+                  outfile->Printf( "%2d %2d %2d %2d (%4d) = %10.6lf\n",
+                     i, j, k, l, ijkl, CalcInfo.twoel_ints[ijkl]);
+                  }
+               }
+            }
+         }
+      }
+
+   CalcInfo.eref = check_energy(CalcInfo.onel_ints, CalcInfo.twoel_ints,
+      CalcInfo.docc, CalcInfo.dropped_docc, 1, CalcInfo.escf,
+      CalcInfo.enuc, CalcInfo.edrc, CalcInfo.nirreps, CalcInfo.reorder,
+      CalcInfo.orbs_per_irr, Parameters.print_lvl, "outfile");
 
 }
 

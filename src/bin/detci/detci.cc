@@ -63,9 +63,9 @@
 #include <libthce/lreri.h>
 #include <libfock/jk.h>
 #include <libfock/soscf.h>
+#include <libpsi4util/libpsi4util.h>
 // #include <libtrans/integraltransform.h>
 // #include <libtrans/mospace.h>
-
 #include "structs.h"
 #include "globals.h"
 #include "globaldefs.h"
@@ -188,8 +188,6 @@ PsiReturnType detci(Options &options)
    int fci_norb_check = 0;
    int i = 0;
 
-   //boost::shared_ptr<PSIO> psio = PSIO::shared_object();
-
    init_io();                   /* parse cmd line and open input and output */
    get_parameters(options);     /* get running params (convergence, etc)    */
    init_ioff();                 /* set up the ioff array                    */
@@ -198,7 +196,6 @@ PsiReturnType detci(Options &options)
    boost::shared_ptr<Wavefunction> refwfn = Process::environment.wavefunction();
    boost::shared_ptr<CIWavefunction> ciwfn(new CIWavefunction(refwfn, options));
 
-   // get_mo_info(options);        /* read DOCC, SOCC, frozen, nmo, etc        */
    set_ras_parms();             /* set fermi levels and the like            */
 
    if (Parameters.print_lvl) {
@@ -224,8 +221,9 @@ PsiReturnType detci(Options &options)
      return Success;
    }
 
-   //read_integrals();            /* get the 1 and 2 elec MO integrals        */
-   ciwfn->transform_ci_integrals();
+   // Setup and/or transform MO integrals
+   read_integrals();            /* get the 1 and 2 elec MO integrals        */
+   // ciwfn->transform_ci_integrals();
 
    if(Parameters.zaptn)         /* Shift SCF eigenvalues for ZAPTn          */
       zapt_shift(CalcInfo.twoel_ints, CalcInfo.nirreps, CalcInfo.nmo,
@@ -1486,17 +1484,6 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
       "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT",
       options.get_str("BASIS"), primary->has_puream());
 
-  /// Build H (can grab from somwhere else later)
-  boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary));
-  boost::shared_ptr<OneBodySOInt> Vint = boost::shared_ptr<OneBodySOInt>(fact->so_potential(true));
-  SharedMatrix H = boost::shared_ptr<Matrix>(new Matrix("H", ciwfn->nirrep(), ciwfn->nsopi(), ciwfn->nsopi()));
-  Vint->compute(H);
-
-  boost::shared_ptr<OneBodySOInt> Tint = boost::shared_ptr<OneBodySOInt>(fact->so_kinetic());
-  SharedMatrix T = boost::shared_ptr<Matrix>(new Matrix("T", ciwfn->nirrep(), ciwfn->nsopi(), ciwfn->nsopi()));
-  Tint->compute(T);
-  H->add(T);
-
   /// Build JK, DFERI, and SOMCSCF objects
   boost::shared_ptr<JK> jk = JK::build_JK();
   jk->set_do_J(true);
@@ -1505,7 +1492,52 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
   jk->print_header();
 
   boost::shared_ptr<DFERI> df = DFERI::build(primary,auxiliary,options);
-  boost::shared_ptr<SOMCSCF> somcscf(new SOMCSCF(jk, df, ciwfn->aotoso(), H, Parameters.wfn == "CASSCF"));
+  boost::shared_ptr<SOMCSCF> somcscf(new SOMCSCF(jk, df, ciwfn->aotoso(), ciwfn->H()));
+
+  // We assume some kind of ras here.
+  if (Parameters.wfn != "CASSCF"){
+    std::vector<Dimension> ras_spaces;
+
+    // We only have four spaces currently
+    for (int nras = 0; nras < 4; nras++){
+      Dimension rasdim = Dimension(ciwfn->nirrep(), "RAS" + psi::to_string(nras));
+      for (int h = 0; h < ciwfn->nirrep(); h++){
+          rasdim[h] = CalcInfo.ras_opi[nras][h];
+      }
+      ras_spaces.push_back(rasdim);
+    }
+    somcscf->set_ras(ras_spaces);
+
+  }
+
+  // Set fzc energy
+  SharedMatrix Cfzc = ciwfn->get_orbitals("FZC");
+  somcscf->set_frozen_orbitals(Cfzc);
+
+
+  // Set drc energy for the ci space
+  // SharedMatrix Cdrc = ciwfn->get_orbitals("DRC");
+  // std::vector<SharedMatrix>& Cl = jk->C_left();
+  // Cl.clear();
+  // Cl.push_back(Cdrc);
+  // jk->compute();
+  // Cl.clear();
+
+  // const std::vector<SharedMatrix>& J = jk->J();
+  // const std::vector<SharedMatrix>& K = jk->K();
+
+  // J[0]->scale(2.0);
+  // J[0]->subtract(K[0]);
+  // J[0]->add(ciwfn->H());
+  // J[0]->add(ciwfn->H());
+  // SharedMatrix D = Matrix::doublet(Cdrc, Cdrc, false, true);
+  // CalcInfo.edrc = J[0]->vector_dot(D);
+  // Cdrc.reset();
+  // D.reset();
+  chkpt_init(PSIO_OPEN_OLD);
+  CalcInfo.edrc = chkpt_rd_efzc();
+  chkpt_close();
+
 
   /// Active OPDM and TPDM
   SharedMatrix actOPDM(new Matrix("OPDM", ciwfn->nirrep(), CalcInfo.ci_orbs, CalcInfo.ci_orbs));
@@ -1530,6 +1562,7 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
 
   // Parameters
   int conv = 0;
+  SharedMatrix x;
   if (MCSCF_Parameters.print_lvl) tstart();
 
   // Iterate
@@ -1605,32 +1638,39 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
         actTPDMp[i * nci3 + j * nci2 + k * nci + l] = fullTPDMp[ijkl];
     }}}}
 
-    // somcscf->update(Cdocc, Cact, Cvir, actOPDM, actTPDM);
-    // SharedMatrix x = somcscf->approx_solve();
-    // x = somcscf->solve(5, 1.e-5, true);
-    // SharedMatrix new_orbs = somcscf->Ck(x);
-    // ciwfn->my_set(new_orbs);
-    // outfile->Printf("Rotation Parameters!\n");
-    // x->print();
-    // outfile->Printf("New orbitals!\n");
-    // new_orbs->print();
-    // ciwfn->Ca()->print();
+    outfile->Printf("SOMCSCF: Updating\n");
+    somcscf->update(Cdocc, Cact, Cvir, actOPDM, actTPDM);
+    // outfile->Printf("SOMCSCF: Approximate hessian\n");
     // somcscf->H_approx_diag()->print();
+    // x = somcscf->solve(5, 1.e-5, true);
+    // outfile->Printf("SOMCSCF: Rotation Parameters!\n");
+    // x = somcscf->approx_solve();
+
+
+    // if (iter < 3){
+    // x = somcscf->approx_solve();
+    // }
+    // else{
+    // x = somcscf->solve(5, 1.e-10, true);
+    // }
+    // outfile->Printf("SOMCSCF: Approximate Rotation\n");
+    // x->print();
+    SharedMatrix new_orbs = somcscf->Ck(x);
+    ciwfn->set_orbitals("ROT", new_orbs);
+
+    if (iter > 20){
+      conv = 1;
+    }
+    for (int h=0; h<CalcInfo.nirreps; h++) {
+    chkpt_init(PSIO_OPEN_OLD);
+    chkpt_wt_scf_irrep(new_orbs->pointer(h), h);
+    chkpt_close();
+    }
+    // new_orbs.reset();
+
 
     //// Convential updated
-    conv = mcscf->update();
-    // outfile->Printf("Convential orbitals!\n");
-    // ciwfn->Ca()->print();
-
-
-    // if (iter > 10){
-    //   conv = 1;
-    // }
-    // for (int h=0; h<CalcInfo.nirreps; h++) {
-    // chkpt_init(PSIO_OPEN_OLD);
-    // chkpt_wt_scf_irrep(new_orbs->pointer(h), h);
-    // chkpt_close();
-    // }
+    // conv = mcscf->update();
 
 
     // If converged
@@ -1650,6 +1690,25 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
     outfile->Printf("\nFinished MCSCF iteration %d\n\n", iter+1);
 
     psi::transqt2::transqt2(transqt_options);
+    // Set drc energy for the ci space
+    // SharedMatrix Cdrc = ciwfn->get_orbitals("DRC");
+    // std::vector<SharedMatrix>& Cl = jk->C_left();
+    // Cl.clear();
+    // Cl.push_back(Cdrc);
+    // jk->compute();
+    // Cl.clear();
+
+    // const std::vector<SharedMatrix>& J = jk->J();
+    // const std::vector<SharedMatrix>& K = jk->K();
+
+    // J[0]->scale(2.0);
+    // J[0]->subtract(K[0]);
+    // J[0]->add(ciwfn->H());
+    // J[0]->add(ciwfn->H());
+    // SharedMatrix D = Matrix::doublet(Cdrc, Cdrc, false, true);
+    // CalcInfo.edrc = J[0]->vector_dot(D);
+    // Cdrc.reset();
+    // D.reset();
 
     // Need to grab the new edrc energy after transqt2 computations
     chkpt_init(PSIO_OPEN_OLD);
@@ -1667,8 +1726,8 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
   // conv = mcscf->update();
   mcscf->finalize();
 
-  ciwfn->set_lag();
-  ciwfn->set_tpdm();
+  // ciwfn->set_lag();
+  // ciwfn->set_tpdm();
   df.reset();
   jk.reset();
 }

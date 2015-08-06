@@ -72,7 +72,6 @@ void CIWavefunction::get_mo_info()
   CalcInfo.sigma_initialized = 0;
 
   // Initial guess will overwrite some of this later.
-  // chkpt_init(PSIO_OPEN_OLD);
   CalcInfo.nirreps = reference_wavefunction_->nirrep();
   CalcInfo.nso = reference_wavefunction_->nso();
   CalcInfo.nmo = reference_wavefunction_->nmo();
@@ -84,8 +83,10 @@ void CIWavefunction::get_mo_info()
   CalcInfo.socc = reference_wavefunction_->soccpi();
   CalcInfo.enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy();
   CalcInfo.escf = reference_wavefunction_->reference_energy();
-  CalcInfo.edrc = 0.0;
   eig_unsrt = reference_wavefunction_->epsilon_a()->to_block_vector();
+  CalcInfo.edrc = 0.0;
+  // chkpt_init(PSIO_OPEN_OLD);
+  // CalcInfo.edrc = chkpt_rd_efzc();
   // chkpt_close();
 
   if (CalcInfo.iopen && Parameters.opentype == PARM_OPENTYPE_NONE) {

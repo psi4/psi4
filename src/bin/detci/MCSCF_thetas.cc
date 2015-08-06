@@ -107,7 +107,7 @@ void MCSCF::postmult_by_exp_R(int irrep, int dim, double **mat,
     R[q][p] = -tval;
     U[q][p] = -tval;
   }
-  print_mat(R, dim, dim, "outfile");
+  // print_mat(R, dim, dim, "outfile");
 
   /* U = U + 1/2 R*R */
   /* can you pass the same matrix twice to DGEMM?? */
@@ -120,7 +120,7 @@ void MCSCF::postmult_by_exp_R(int irrep, int dim, double **mat,
   }
 
   schmidt(U,dim,dim,"outfile");
-  print_mat(U, dim, dim, "outfile");
+  // print_mat(U, dim, dim, "outfile");
 
   /* C = C0 * U */
   C_DGEMM('n','n',dim,dim,dim,1.0,&(C0[0][0]),dim,&(U[0][0]),dim,0.0,

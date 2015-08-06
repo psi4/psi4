@@ -302,6 +302,7 @@ struct calcinfo {
    double enuc;          /* nuclear repulsion energy */
    double escf;          /* scf energy */
    double eref;          /* ref det energy as computed here in detci */
+   double efzc;          /* energy of the frozen core orbitals */
    double edrc;          /* energy of the dropped core orbitals */
    double e0;            /* E0, zeroth order energy */
    double e0_drc;        /* two times the sum of the dropped core orbitals */
