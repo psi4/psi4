@@ -654,8 +654,10 @@ void DFOCC::ccsd_manager()
         }
 
  	// cost_4vex_hm
-	cost_4vex_hm = ntri_abAA * ntri_abAA;
-        cost_4vex_hm /= 1024.0 * 1024.0;
+	//cost_4vex_hm = ntri_abAA * ntri_abAA;
+        //cost_4vex_hm /= 1024.0 * 1024.0;
+	cost_4vex_hm = ntri_abAA / 1024.0;
+        cost_4vex_hm *= cost_4vex_hm;
         cost_4vex_hm *= sizeof(double);
         cost_4vex_hm += cost_amp;
         outfile->Printf("\tMemory for high mem Wabef algorithm   : %9.2lf MB \n", cost_4vex_hm);
@@ -938,8 +940,8 @@ void DFOCC::ccd_manager()
         outfile->Printf("\tMemory requirement for Wabef term     : %9.2lf MB \n", cost_amp);
 
 	// cost_4vex_hm
-	cost_4vex_hm = ntri_abAA * ntri_abAA;
-        cost_4vex_hm /= 1024.0 * 1024.0;
+	cost_4vex_hm = ntri_abAA / 1024.0;
+        cost_4vex_hm *= cost_4vex_hm;
         cost_4vex_hm *= sizeof(double);
         cost_4vex_hm += cost_amp;
         outfile->Printf("\tMemory for high mem Wabef algorithm   : %9.2lf MB \n", cost_4vex_hm);
