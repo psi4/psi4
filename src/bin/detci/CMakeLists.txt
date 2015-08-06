@@ -30,7 +30,7 @@ write_to_cloc_list("${to_count}")
 # Build static library
 add_library(detci STATIC ${sources_list})
 # Specify dependencies for the library (if any)
-add_dependencies(detci mints)
+add_dependencies(detci mints thce trans)
 set_property(GLOBAL APPEND PROPERTY PSILIB detci)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(detci custom_boost)

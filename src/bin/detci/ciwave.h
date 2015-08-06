@@ -31,6 +31,9 @@ template<class T> class shared_ptr;
 namespace psi {
 class Wavefunction;
 class Options;
+class JK;
+class DFERI;
+class IntegralTransform;
 typedef boost::shared_ptr<Matrix> SharedMatrix;
 }
 
@@ -71,9 +74,6 @@ public:
      */
     void transform_ci_integrals(void);
 
-    // Dummy function-- nuke this when ready!
-    void my_set(SharedMatrix set);
-
     /**!
      * Obtains the OPDM <root| Epq |root> from disk
      * @param root       Root to obtain
@@ -105,7 +105,6 @@ public:
      * Sets the langrangian.
      */
     void set_lag();
-
 
 private:
     // Grabs mo info
