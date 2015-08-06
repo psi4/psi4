@@ -117,7 +117,7 @@ void dipole(void)
             Oa->set_name("Alpha/Beta NO Occupations");
             if(params.PRINT_NOONS)Oa->print();
             if(params.PRINT_NOS)Pa->print();
-            if(params.WRITE_NOS)nowriter.write(mol_name+"NO.molden",Na,Na,Oa,Oa);
+            if(params.WRITE_NOS)nowriter.writeNO(mol_name+"NO.molden",Na,Na,Oa,Oa);
         }else{
             SharedMatrix Pt = Pa;
             Pa->diagonalize(Na, Oa, descending);
@@ -135,7 +135,7 @@ void dipole(void)
                 Pb->print();
                 Pt->print();
             }
-            if(params.WRITE_NOS)nowriter.write(mol_name+"NO.molden",Na,Nb,Oa,Ob);
+            if(params.WRITE_NOS)nowriter.writeNO(mol_name+"NO.molden",Na,Nb,Oa,Ob);
         }
     }
 
