@@ -293,17 +293,6 @@ SharedMatrix CIWavefunction::get_active_opdm()
   }
   return actOPDM;
 }
-void CIWavefunction::set_lag()
-{
-    SharedMatrix lag(new Matrix("MCSCF Lagrangian", nmo_, nmo_));
-    double **lagp = lag->pointer();
-    for (size_t i=0; i<nmo_; i++){
-        for (size_t j=0; j<nmo_; j++){
-            lagp[i][j] = MCSCF_CalcInfo.lag[i][j];
-        }
-    }
-    Lagrangian_ = lag;
-}
 SharedVector CIWavefunction::get_tpdm(bool symmetrize, bool act_only)
 {
 

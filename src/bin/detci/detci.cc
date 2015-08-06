@@ -77,7 +77,6 @@
 #include "slaterd.h"
 #include "civect.h"
 #include "ciwave.h"
-#include "MCSCF.h"
 
 namespace psi {
   extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
@@ -169,8 +168,6 @@ extern void calc_mrpt(void);
 
 // MCSCF
 extern void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **alplist, struct stringwr **betlist, Options &options);
-extern void set_mcscf_parameters(Options &options);
-extern void mcscf_print_parameters(void);
 extern void detci_iteration_clean();
 
 PsiReturnType detci(Options &options);
@@ -1531,7 +1528,6 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
   // Parameters
   int conv = 0;
   SharedMatrix x;
-  if (MCSCF_Parameters.print_lvl) tstart();
 
   // Iterate
   for (int iter=0; iter<30; iter++){

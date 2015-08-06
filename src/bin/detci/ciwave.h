@@ -111,11 +111,6 @@ public:
     **/
     void set_tpdm();
 
-    /**
-     * Sets the langrangian.
-     */
-    void set_lag();
-
 private:
     // Grabs mo info
     void get_mo_info();
