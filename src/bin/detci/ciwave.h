@@ -84,6 +84,11 @@ public:
     SharedMatrix get_opdm(int root=0, int spin=2, bool transden=false);
 
     /**!
+     Returns the symmetry block active OPDM
+     **/
+    SharedMatrix get_active_opdm();
+
+    /**!
      * Loads the OPDM to the wavefunction Da_ and Db_
      * @param use_old_d - If no new OPDM is calculated use the reference density matrices
     **/
@@ -94,7 +99,12 @@ public:
      * @param symmetrized Symmetrize the TPDM or not
      * @return TPDM SharedVector
      **/
-    SharedVector get_tpdm(bool symmetrized=true);
+    SharedVector get_tpdm(bool symmetrized=true, bool act_only=true);
+
+    /**!
+     Returns the a full 4D active TPDM
+     **/
+    SharedMatrix get_active_tpdm();
 
     /**!
      * Sets the dense TPDM to the wavefunction TPDM_
@@ -115,6 +125,9 @@ private:
 
     // Find out which orbitals belong hwere
     void orbital_locations(const std::string& orbital_name, int* start, int* end);
+
+    // Symmetry block a matrix
+    SharedMatrix symm_block(SharedMatrix x, Dimension dim1, Dimension dim2);
 
 };
 
