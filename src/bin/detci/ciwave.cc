@@ -41,7 +41,12 @@ void CIWavefunction::common_init()
     // by someone else who uses the CIWavefunction and expects them to
     // be available.
 
-    get_mo_info();        /* read DOCC, SOCC, frozen, nmo, etc        */
+    get_parameters(options_);     /* get running params (convergence, etc)    */
+    get_mo_info();               /* read DOCC, SOCC, frozen, nmo, etc        */
+    set_ras_parameters();             /* set fermi levels and the like            */ 
+
+    print_parameters();
+    print_ras_parameters();
 
     // Wavefunction frozen nomenclature is equivalent to dropped in detci.
     // In detci frozen means doubly occupied, but no orbital rotations.
