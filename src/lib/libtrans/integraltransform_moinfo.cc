@@ -573,7 +573,16 @@ IntegralTransform::update_orbitals()
     process_eigenvectors();
     generate_oei();
 }
-
+/**
+ * Sets the orbital matrix, but touches nothing else. This is used for a MCSCF wavefunction
+ * and is a bit of a hack, use at your own risk.
+**/
+void
+IntegralTransform::set_orbitals(SharedMatrix C)
+{
+    Ca_ = C->clone();
+    Cb_ = Ca_;
+}
 
 /**
  * Sets up the eigenvectors for the transformation by querying the MO spaces

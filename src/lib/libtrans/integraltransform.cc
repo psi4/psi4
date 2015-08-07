@@ -193,9 +193,7 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
 
     common_initialize();
 
-    outfile->Printf("Starting initializing\n");
     if(init) initialize();
-    outfile->Printf("Finished initializing\n");
 }
 
 
