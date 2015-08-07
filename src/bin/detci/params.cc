@@ -40,10 +40,11 @@
 #include <boost/lexical_cast.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
-#include <libchkpt/chkpt.h>
+//#include <libchkpt/chkpt.h>
 #include <libpsio/psio.h>
 #include <psifiles.h>
-#include <libmints/molecule.h>
+#include <libmints/mints.h>
+#include "ciwave.h"
 #include "structs.h"
 #include "globals.h"
 #include "psi4-dec.h"
@@ -54,7 +55,7 @@ namespace psi { namespace detci {
 ** get_parameters(): Function gets the program running parameters such
 **   as convergence.  These are stored in the Parameters data structure.
 */
-void get_parameters(Options &options)
+void CIWavefunction::get_parameters(Options &options)
 {
   int i, j, k, errcod;
   int iopen=0, tval;
@@ -69,6 +70,7 @@ void get_parameters(Options &options)
   // CDS-TODO: Check these
   /* Parameters.print_lvl is set in detci.cc */
   /* Parameters.have_special_conv is set in detci.cc */
+  Parameters.have_special_conv = 0;
 
   Parameters.ex_lvl = options.get_int("EX_LEVEL");
   Parameters.cc_ex_lvl = options.get_int("CC_EX_LEVEL");
@@ -87,12 +89,10 @@ void get_parameters(Options &options)
   // (or similar mechanism) in CASSCF, etc.
   // DGAS: A lot of MCSCF parameters have been removed, we need to print this for now.
   // CASSCF printing needs to be reworked
-  //if (Parameters.wfn == "DETCAS" ||
-  //    Parameters.wfn == "CASSCF"   || Parameters.wfn == "RASSCF") {
-  //  Parameters.print_lvl = 0;
-  //}
-  //else
-  Parameters.print_lvl = 1;
+  if (Parameters.wfn == "DETCAS" ||
+      Parameters.wfn == "CASSCF"   || Parameters.wfn == "RASSCF") {
+    Parameters.print_lvl = 0;
+  }
   if (options["PRINT"].has_changed()) {
     Parameters.print_lvl = options.get_int("PRINT");
   }
@@ -564,26 +564,27 @@ void get_parameters(Options &options)
 
   Parameters.tpdm_print = options["TPDM_PRINT"].to_integer();
 
-  if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE &&
-      Parameters.wfn != "DETCAS" &&
-      Parameters.wfn != "CASSCF" &&
-      Parameters.wfn != "RASSCF")
-  {
+  // We always phase check now
+  //if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE &&
+  //    Parameters.wfn != "DETCAS" &&
+  //    Parameters.wfn != "CASSCF" &&
+  //    Parameters.wfn != "RASSCF")
+  //{
 
-    chkpt_init(PSIO_OPEN_OLD);
-    i = chkpt_rd_phase_check();
-    chkpt_close();
+  //  chkpt_init(PSIO_OPEN_OLD);
+  //  i = chkpt_rd_phase_check();
+  //  chkpt_close();
 
-    if (!i) {
-      outfile->Printf( "Can't use d file guess: SCF phase not checked\n");
-      if (Parameters.h0guess_size) {
-        Parameters.guess_vector = PARM_GUESS_VEC_H0_BLOCK;
-        if (Parameters.precon == PRECON_GEN_DAVIDSON)
-          Parameters.precon = PRECON_H0BLOCK_ITER_INVERT;
-      }
-      else Parameters.guess_vector = PARM_GUESS_VEC_UNIT;
-    }
-  }
+  //  if (!i) {
+  //    outfile->Printf( "Can't use d file guess: SCF phase not checked\n");
+  //    if (Parameters.h0guess_size) {
+  //      Parameters.guess_vector = PARM_GUESS_VEC_H0_BLOCK;
+  //      if (Parameters.precon == PRECON_GEN_DAVIDSON)
+  //        Parameters.precon = PRECON_H0BLOCK_ITER_INVERT;
+  //    }
+  //    else Parameters.guess_vector = PARM_GUESS_VEC_UNIT;
+  //  }
+  //}
 
   if (Parameters.num_init_vecs < Parameters.num_roots)
     Parameters.num_init_vecs = Parameters.num_roots;
@@ -864,7 +865,7 @@ void get_parameters(Options &options)
 ** print_parameters(): Function prints the program's running parameters
 **   found in the Parameters structure.
 */
-void print_parameters(void)
+void CIWavefunction::print_parameters(void)
 {
    int i;
 
@@ -1093,7 +1094,7 @@ void print_parameters(void)
 **   (i.e. fermi level, etc).
 **
 */
-void set_ras_parms(void)
+void CIWavefunction::set_ras_parameters(void)
 {
    int i,j,cnt;
    int errcod;
@@ -1490,7 +1491,7 @@ void set_ras_parms(void)
 **   (i.e. fermi level, etc).
 **
 */
-void print_ras_parms(void)
+void CIWavefunction::print_ras_parameters(void)
 {
   int i, j;
 

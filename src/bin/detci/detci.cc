@@ -59,11 +59,9 @@
 #include <masses.h>
 #include <libparallel/ParallelPrinter.h>
 
-#include <libthce/thce.h>
-#include <libthce/lreri.h>
-#include <libfock/jk.h>
 #include <libfock/soscf.h>
 #include <libpsi4util/libpsi4util.h>
+
 #include "structs.h"
 #include "globals.h"
 #include "globaldefs.h"
@@ -131,10 +129,6 @@ void diag_h(struct stringwr **strlista, struct stringwr **strlistb);
 void mpn(struct stringwr **strlista, struct stringwr **strlistb);
 void form_opdm(void);
 void form_tpdm(void);
-extern void get_parameters(Options &);
-extern void print_parameters(void);
-extern void set_ras_parms(void);
-extern void print_ras_parms(void);
 extern void form_strings(void);
 extern void mitrush_iter(CIvect &Hd,
    struct stringwr **alplist, struct stringwr **betlist,
@@ -159,8 +153,6 @@ extern void tpdm(struct stringwr **alplist, struct stringwr **betlist,
 extern void compute_cc(void);
 extern void calc_mrpt(void);
 
-// MCSCF
-extern void detci_iteration_clean();
 PsiReturnType detci(Options &options);
 
 }} // namespace psi::detci
@@ -171,24 +163,12 @@ namespace psi { namespace detci {
 
 PsiReturnType detci(Options &options)
 {
-   Parameters.print_lvl = 1;
-   Parameters.have_special_conv = 0;
-   int fci_norb_check = 0;
-   int i = 0;
 
-   get_parameters(options);     /* get running params (convergence, etc)    */
    init_ioff();                 /* set up the ioff array                    */
    title();                     /* print program identification             */
 
    boost::shared_ptr<Wavefunction> refwfn = Process::environment.wavefunction();
    boost::shared_ptr<CIWavefunction> ciwfn(new CIWavefunction(refwfn, options));
-
-   set_ras_parms();             /* set fermi levels and the like            */
-
-   if (Parameters.print_lvl) {
-   print_parameters();       /* print running parameters                 */
-   print_ras_parms();
-   }
 
    form_strings();              /* form the alpha/beta strings              */
    if (Parameters.nthreads > 1)
@@ -285,7 +265,7 @@ void cleanup(void)
 */
 void title(void)
 {
-  if (Parameters.print_lvl) {
+  //if (Parameters.print_lvl) {
    outfile->Printf("\n");
    outfile->Printf("*******************************************************\n");
    outfile->Printf("                       D E T C I  \n");
@@ -295,11 +275,11 @@ void title(void)
    outfile->Printf("                     18 June 1999\n") ;
    outfile->Printf("*******************************************************\n");
    outfile->Printf("\n\n\n");
-   }
-  else {
-   outfile->Printf(
-   "\nD E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999\n");
-   }
+  // }
+  //else {
+  // outfile->Printf(
+  // "\nD E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999\n");
+  // }
 
 }
 
@@ -339,7 +319,6 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
    if ((BIGINT) Parameters.nprint > size) Parameters.nprint = (int) size;
    nucrep = CalcInfo.enuc;
    edrc = CalcInfo.edrc;
-   tmp_ras_array = init_array(1024);
 
    H0block.size = 0;
    H0block.osize = 0;
@@ -1394,21 +1373,6 @@ BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx) {
 }
 
 /*
-** detci_iteration_clean(); Removes DETCI's two electron integrals.
-** Prevents duplication of twoel in memory.
-**
-** Returns: none
-*/
-void detci_iteration_clean()
-{
-  free(CalcInfo.onel_ints);
-  free(CalcInfo.twoel_ints);
-  free(CalcInfo.maxK);
-  free(CalcInfo.tf_onel_ints);
-  free(CalcInfo.gmat[0]);
-}
-
-/*
 ** compute_mcscf(); Optimizes MO and CI coefficients
 **
 ** Parameters:
@@ -1421,22 +1385,6 @@ void detci_iteration_clean()
 void CIWavefunction::compute_mcscf(struct stringwr **alplist, struct stringwr **betlist)
 {
 
-  /// Grab and build basis sets
-  // boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(
-  //   Process::environment.molecule(), "BASIS", options.get_str("BASIS"));
-  // boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
-  //     "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT",
-  //     options.get_str("BASIS"), primary->has_puream());
-
-  // /// Build JK, DFERI, and SOMCSCF objects
-  // boost::shared_ptr<JK> jk = JK::build_JK();
-  // jk->set_do_J(true);
-  // jk->set_do_K(true);
-  // jk->initialize();
-  // jk->print_header();
-
-  // boost::shared_ptr<JK> jk = JK::build_JK();
-  // boost::shared_ptr<DFERI> df = DFERI::build(primary,auxiliary,options);
   // Setup for initial CI run
   transform_dfmcscf_ints();
   boost::shared_ptr<SOMCSCF> somcscf(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
@@ -1460,7 +1408,6 @@ void CIWavefunction::compute_mcscf(struct stringwr **alplist, struct stringwr **
   // Set fzc energy
   SharedMatrix Cfzc = get_orbitals("FZC");
   somcscf->set_frozen_orbitals(Cfzc);
-
 
   /// => Start traditional MCSCF <= //
   // Parameters

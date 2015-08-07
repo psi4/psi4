@@ -117,8 +117,13 @@ public:
 
 private:
 
-    // Grabs mo info
+    // Paramater and CalcInfo setters
     void get_mo_info();
+    void get_parameters(Options &options);
+    void print_parameters();
+    void set_ras_parameters();
+    void print_ras_parameters();
+
 
     // Sets the ciwavefunction object
     void common_init();
