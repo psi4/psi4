@@ -68,6 +68,9 @@ void CIWavefunction::common_init()
     AO2SO_ = reference_wavefunction_->aotoso();
     molecule_ = reference_wavefunction_->molecule();
 
+    // Set information
+    ints_init_ = false;
+
     name_ = "CIWavefunction";
     }
 }

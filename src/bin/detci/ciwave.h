@@ -29,21 +29,21 @@ template<class T> class shared_ptr;
 }
 
 namespace psi {
+
 class Wavefunction;
 class Options;
 class JK;
 class DFERI;
 class IntegralTransform;
+class MOSpace;
+struct stringwr;
 typedef boost::shared_ptr<Matrix> SharedMatrix;
 }
 
 namespace psi { namespace detci {
 
-class MCSCF;
-
 class CIWavefunction : public Wavefunction
 {
-friend class MCSCF;
 
 public:
     CIWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
@@ -71,6 +71,7 @@ public:
 
     /**
      * Transform the one and two electron integrals.
+     * The
      */
     void transform_ci_integrals(void);
 
@@ -111,7 +112,11 @@ public:
     **/
     void set_tpdm();
 
+    // Should be private
+    void compute_mcscf(struct stringwr **alplist, struct stringwr **betlist);
+
 private:
+
     // Grabs mo info
     void get_mo_info();
 
@@ -123,6 +128,22 @@ private:
 
     // Symmetry block a matrix
     SharedMatrix symm_block(SharedMatrix x, Dimension dim1, Dimension dim2);
+
+    // Integrals
+    bool ints_init_;
+    boost::shared_ptr<IntegralTransform> ints_; // Non-DF
+    boost::shared_ptr<DFERI> dferi_; // For DF
+    boost::shared_ptr<JK> jk_;       // For DF
+
+    void tf_onel_ints();
+    void form_gmat();
+
+    void setup_mcscf_ints();
+    void transform_mcscf_ints();
+    void setup_dfmcscf_ints();
+    void transform_dfmcscf_ints();
+    // void transform_dfmcscf_ints();
+
 
 };
 

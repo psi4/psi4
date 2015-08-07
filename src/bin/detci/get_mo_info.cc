@@ -75,6 +75,8 @@ void CIWavefunction::get_mo_info()
   CalcInfo.nirreps = reference_wavefunction_->nirrep();
   CalcInfo.nso = reference_wavefunction_->nso();
   CalcInfo.nmo = reference_wavefunction_->nmo();
+
+  // DGAS: David does this make sense?
   CalcInfo.iopen = !reference_wavefunction_->same_a_b_orbs();
   CalcInfo.labels = reference_wavefunction_->molecule()->irrep_labels();
   CalcInfo.orbs_per_irr = reference_wavefunction_->nmopi();
@@ -85,9 +87,6 @@ void CIWavefunction::get_mo_info()
   CalcInfo.escf = reference_wavefunction_->reference_energy();
   eig_unsrt = reference_wavefunction_->epsilon_a()->to_block_vector();
   CalcInfo.edrc = 0.0;
-  // chkpt_init(PSIO_OPEN_OLD);
-  // CalcInfo.edrc = chkpt_rd_efzc();
-  // chkpt_close();
 
   if (CalcInfo.iopen && Parameters.opentype == PARM_OPENTYPE_NONE) {
     outfile->Printf( "Warning: iopen=1,opentype=none. Making iopen=0\n");
@@ -314,14 +313,12 @@ void CIWavefunction::get_mo_info()
     }
   }
 
-  // temporarily go back to old variables until entire switchover is done
-  // X CDS 4/15
-  // CalcInfo.num_fzc_orbs = CalcInfo.num_drc_orbs;
-  // CalcInfo.num_fzv_orbs = CalcInfo.num_drv_orbs;
-  // for (int h=0; h<CalcInfo.nirreps; h++) {
-  //   CalcInfo.frozen_docc[h] = CalcInfo.dropped_docc[h];
-  //   CalcInfo.frozen_uocc[h] = CalcInfo.dropped_uocc[h];
-  // }
+  // Build integral arrays
+  CalcInfo.onel_ints = (double *) init_array(CalcInfo.nmotri);
+  CalcInfo.twoel_ints = (double *) init_array(CalcInfo.nmotri * (CalcInfo.nmotri + 1) / 2);
+  CalcInfo.maxK = (double *) init_array(CalcInfo.num_ci_orbs);
+  CalcInfo.gmat = init_matrix(CalcInfo.num_ci_orbs, CalcInfo.num_ci_orbs);
+  CalcInfo.tf_onel_ints = init_array(CalcInfo.nmotri) ;
 
 } // end get_mo_info()
 
