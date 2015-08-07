@@ -158,13 +158,9 @@ protected:
     Dimension noapi_;
     Dimension navpi_;
 
-    /// Global JK object
+    /// Integral objects
     boost::shared_ptr<JK> jk_;
-
-    /// Global libtrans object
-    /// boost::shared_ptr<IntegralTransform> ints_;
-
-    /// Global DFERI object
+    // boost::shared_ptr<IntegralTransform> ints_;
     boost::shared_ptr<DFERI> dferi_;
 
     /// Map of matrices
@@ -185,8 +181,8 @@ protected:
     virtual void transform();
 
     // Build the Q matrices
-    virtual void Q();
-    virtual void Qk(SharedMatrix U, SharedMatrix Uact);
+    virtual void compute_Q();
+    virtual void compute_Qk(SharedMatrix U, SharedMatrix Uact);
 
 
 }; // SOMCSCF class
@@ -215,8 +211,8 @@ public:
 protected:
 
     virtual void transform();
-    virtual void Q();
-    virtual void Qk(SharedMatrix U, SharedMatrix Uact);
+    virtual void compute_Q();
+    virtual void compute_Qk(SharedMatrix U, SharedMatrix Uact);
 
 }; // DFSOMCSCF class
 

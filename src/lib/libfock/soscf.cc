@@ -34,9 +34,9 @@ namespace psi {
 
 /// SOMCSCF class
 
-SOMCSCF::SOMCSCF(boost::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H)
+SOMCSCF::SOMCSCF(boost::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H) :
+    jk_(jk)
 {
-    jk_ = jk;
     matrices_["H"] = H;
     matrices_["AOTOSO"] = AOTOSO;
     nao_ = AOTOSO->rowspi()[0];
@@ -52,11 +52,11 @@ void SOMCSCF::transform()
 {
     throw PSIEXCEPTION("The SOMCSCF object must be initilized as a DF or Disk object.");
 }
-void SOMCSCF::Q()
+void SOMCSCF::compute_Q()
 {
     throw PSIEXCEPTION("The SOMCSCF object must be initilized as a DF or Disk object.");
 }
-void SOMCSCF::Qk(SharedMatrix U, SharedMatrix Uact)
+void SOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
 {
     throw PSIEXCEPTION("The SOMCSCF object must be initilized as a DF or Disk object.");
 }
@@ -200,44 +200,10 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
     // Make sure our ras and active spaces align
     if (!casscf_) check_ras();
 
-    // // => AO C matrices <= //
-    // // We want pitzer order C matrix with appended Cact
-    // int aoc_rowdim = nmo_ + nact_;
-    // SharedMatrix AO_C = SharedMatrix(new Matrix("AO_C", nao_, aoc_rowdim));
-    // double** AO_Cp = AO_C->pointer();
-    // for (int h=0, offset=0, offset_act=0; h < nirrep_; h++){
-    //     int hnso = matrices_["AOTOSO"]->colspi()[h];
-    //     if (hnso == 0) continue;
-    //     double** Up = matrices_["AOTOSO"]->pointer(h);
-
-    //     // occupied
-    //     if (noccpi_[h]){
-    //         double** CSOp = matrices_["Cocc"]->pointer(h);
-    //         C_DGEMM('N','N',nao_,noccpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],noccpi_[h],0.0,&AO_Cp[0][offset],aoc_rowdim);
-    //         offset += noccpi_[h];
-    //     }
-    //     // active
-    //     if (nactpi_[h]){
-    //         double** CSOp = matrices_["Cact"]->pointer(h);
-    //         C_DGEMM('N','N',nao_,nactpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],nactpi_[h],0.0,&AO_Cp[0][offset],aoc_rowdim);
-    //         offset += nactpi_[h];
-
-    //         C_DGEMM('N','N',nao_,nactpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],nactpi_[h],0.0,&AO_Cp[0][offset_act + nmo_],aoc_rowdim);
-    //         offset_act += nactpi_[h];
-    //     }
-    //     // virtual
-    //     if (nvirpi_[h]){
-    //         double** CSOp = matrices_["Cvir"]->pointer(h);
-    //         C_DGEMM('N','N',nao_,nvirpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],nvirpi_[h],0.0,&AO_Cp[0][offset],aoc_rowdim);
-    //         offset += nvirpi_[h];
-    //     }
-    // }
-    transform();
-
-
     // => Build generalized inactive and active Fock matrices <= //
     std::vector<SharedMatrix>& Cl = jk_->C_left();
     std::vector<SharedMatrix>& Cr = jk_->C_right();
+
     Cl.clear();
     Cr.clear();
 
@@ -271,77 +237,7 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
     matrices_["AFock"] = Matrix::triplet(matrices_["C"], J[1], matrices_["C"], true, false, false);
     matrices_["AFock"]->set_name("AFock");
 
-
-    // => Q matrix <= //
-    // d_vwxy I_nwxy => Q_vn
-    // dferi_->clear();
-    // dferi_->set_C(AO_C);
-    // dferi_->add_space("N", 0, nmo_);
-    // dferi_->add_space("a", nmo_, aoc_rowdim);
-
-    // // Is it smart enough to order then untranspose?
-    // // In the future build this once then slice it
-    // dferi_->add_pair_space("aaQ", "a", "a");
-    // dferi_->add_pair_space("NaQ", "N", "a");
-    // dferi_->add_pair_space("NNQ", "N", "N");
-
-    // // dferi_->print_header(2);
-    // dferi_->compute();
-    // std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
-
-    // int nQ = dferi_->size_Q();
-    // int nact2 = nact_ * nact_;
-    // double* TPDMp = TPDM->pointer()[0];
-
-    // // Load aaQ
-    // boost::shared_ptr<Tensor> aaQT = dfints["aaQ"];
-    // SharedMatrix aaQ(new Matrix("aaQ", nact_ * nact_, nQ));
-    // double* aaQp = aaQ->pointer()[0];
-    // FILE* aaQF = aaQT->file_pointer();
-    // fseek(aaQF,0L,SEEK_SET);
-    // fread(aaQp, sizeof(double), nact_ * nact_ * nQ, aaQF);
-
-    // // d_vwxy I_xyQ -> d_vwQ (Qa^4)
-    // SharedMatrix vwQ(new Matrix("vwQ", nact_ * nact_, nQ));
-    // double* vwQp = vwQ->pointer()[0];
-    // C_DGEMM('N','N',nact2,nQ,nact2,1.0,TPDMp,nact2,aaQp,nQ,0.0,vwQp,nQ);
-    // aaQ.reset();
-
-    // // Load NaQ
-    // boost::shared_ptr<Tensor> NaQT = dfints["NaQ"];
-    // SharedMatrix NaQ(new Matrix("NaQ", nmo_ * nact_, nQ));
-    // double* NaQp = NaQ->pointer()[0];
-    // FILE* NaQF = NaQT->file_pointer();
-    // fseek(NaQF,0L,SEEK_SET);
-    // fread(NaQp, sizeof(double), nmo_ * nact_ * nQ, NaQF);
-
-    // // d_vwQ I_NwQ -> Q_vN (NQa^2)
-    // SharedMatrix denQ(new Matrix("Dense Qvn", nact_, nmo_));
-    // double** denQp = denQ->pointer();
-    // C_DGEMM('N','T',nact_,nmo_,nQ*nact_,1.0,vwQp,nQ*nact_,NaQp,nQ*nact_,0.0,denQp[0],nmo_);
-    // NaQ.reset();
-
-    // // Symmetry block Q
-    // matrices_["Q"] = SharedMatrix(new Matrix("Qvn", nirrep_, nactpi_, nmopi_));
-
-    // int offset_act = 0;
-    // int offset_nmo = 0;
-    // for (int h=0; h<nirrep_; h++){
-    //     if (!nactpi_[h] || !nmopi_[h]){
-    //         offset_nmo += nmopi_[h];
-    //         continue;
-    //     }
-
-    //     double* Qp = matrices_["Q"]->pointer(h)[0];
-    //     for (int i=0, target=0; i<nactpi_[h]; i++){
-    //         for (int j=0; j<nmopi_[h]; j++){
-    //             Qp[target++] = denQp[offset_act + i][offset_nmo + j];
-    //         }
-    //     }
-    //     offset_act += nactpi_[h];
-    //     offset_nmo += nmopi_[h];
-    // }
-    Q();
+    compute_Q();
 
 
     // => Generalized Fock matrix <= //
@@ -803,7 +699,7 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x)
     //     offset_act += nactpi_[h];
     //     offset_nmo += nmopi_[h];
     // }
-    Qk(U, Uact);
+    compute_Qk(U, Uact);
 
     // Add in Q and zero out virtual
     for (int h=0; h<nirrep_; h++){
@@ -1054,7 +950,7 @@ void DFSOMCSCF::transform()
     // dferi_->print_header(2);
     dferi_->compute();
 }
-void DFSOMCSCF::Q(){
+void DFSOMCSCF::compute_Q(){
 
     std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
 
@@ -1111,7 +1007,7 @@ void DFSOMCSCF::Q(){
         offset_nmo += nmopi_[h];
     }
 }
-void DFSOMCSCF::Qk(SharedMatrix U, SharedMatrix Uact)
+void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
 {
     // Remove U symmetry
     SharedMatrix dUact;

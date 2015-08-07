@@ -64,8 +64,6 @@
 #include <libfock/jk.h>
 #include <libfock/soscf.h>
 #include <libpsi4util/libpsi4util.h>
-// #include <libtrans/integraltransform.h>
-// #include <libtrans/mospace.h>
 #include "structs.h"
 #include "globals.h"
 #include "globaldefs.h"
@@ -95,11 +93,8 @@ struct stringwr **betlist;
 extern void eivout_t(double **evecs, double *evals, int rows, int cols,
    std::string OutFileRMR);
 extern void read_integrals(void);
-extern void tf_onel_ints(int printflg, std::string OutFileRMR);
 extern void zapt_shift(double *TEI, int nirreps, int nmo, int *doccpi,
    int *soccpi, int *orbspi, int *frzdoccpi, int *reorder);
-extern void form_gmat(int printflg, std::string OutFileRMR);
-// extern void get_mo_info(Options &);
 extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
    int *Iaidx, int *Ibidx, double *coeff,
    struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
@@ -128,8 +123,6 @@ extern void sem_test(double **A, int N, int M, int L, double **evecs,
 extern void form_ov(struct stringwr **alplist);
 extern void write_energy(int nroots, double *evals, double offset);
 
-void init_io(void);
-void close_io(void);
 void cleanup(void);
 void title(void);
 void quote(void);
@@ -167,9 +160,7 @@ extern void compute_cc(void);
 extern void calc_mrpt(void);
 
 // MCSCF
-extern void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **alplist, struct stringwr **betlist, Options &options);
 extern void detci_iteration_clean();
-
 PsiReturnType detci(Options &options);
 
 }} // namespace psi::detci
@@ -185,7 +176,6 @@ PsiReturnType detci(Options &options)
    int fci_norb_check = 0;
    int i = 0;
 
-   init_io();                   /* parse cmd line and open input and output */
    get_parameters(options);     /* get running params (convergence, etc)    */
    init_ioff();                 /* set up the ioff array                    */
    title();                     /* print program identification             */
@@ -208,7 +198,6 @@ PsiReturnType detci(Options &options)
 
 
    if (Parameters.istop) {      /* Print size of space, other stuff, only   */
-     close_io();
      cleanup();
      Process::environment.globals["CURRENT ENERGY"] = 0.0;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = 0.0;
@@ -223,17 +212,11 @@ PsiReturnType detci(Options &options)
 
    // MCSCF is special, we let it handle a lot of its own issues
    if (Parameters.mcscf){
-     compute_mcscf(ciwfn, alplist, betlist, options);
+     ciwfn->compute_mcscf(alplist, betlist);
    }
    else{
      /* Transform and set ci integrals*/
      ciwfn->transform_ci_integrals();
-
-     /* lump together one-electron contributions */
-     tf_onel_ints((Parameters.print_lvl>3), "outfile");
-
-     /* form the RAS g matrix (eq 28-29)         */
-     form_gmat((Parameters.print_lvl>3), "outfile");
 
      if (Parameters.mpn){
        if(Parameters.zaptn){         /* Shift SCF eigenvalues for ZAPTn          */
@@ -245,9 +228,6 @@ PsiReturnType detci(Options &options)
        }
      else if (Parameters.cc)
        compute_cc();
-     else if (Parameters.mcscf){
-       compute_mcscf(ciwfn, alplist, betlist, options);
-       }
      else
        diag_h(alplist, betlist);
    }
@@ -267,37 +247,9 @@ PsiReturnType detci(Options &options)
    if (Parameters.print_lvl > 0) quote();
 
 
-   close_io();
    cleanup();
    Process::environment.set_wavefunction((static_cast<boost::shared_ptr<Wavefunction> > (ciwfn)));
    return Success;
-}
-
-
-/*
-** init_io(): Figure out command-line arguments and start up I/O for
-** input and output files.
-**
-*/
-//void init_io(int argc, char *argv[])
-void init_io(void)
-{
-
-   if (Parameters.print_lvl) tstart();
-
-   /*
-    * this stuff is now inside psi_start
-   ip_set_uppercase(1);
-   ip_initialize(infile, outfile);
-   ip_cwk_clear();
-   ip_cwk_add(":DEFAULT");
-   */
-
-   /*
-   ip_cwk_add(":DETCI");
-   psio_init(); psio_ipv1_config();
-   */
-
 }
 
 
@@ -318,17 +270,6 @@ void init_ioff(void)
       }
 }
 
-
-
-/*
-** close_io(): Function closes down I/O and exits
-*/
-void close_io(void)
-{
-   // psio_done();
-   if (Parameters.print_lvl) tstop();
-   //errcod = psi_stop(infile,outfile,psi_file_prefix);
-}
 
 
 /*
@@ -1477,25 +1418,28 @@ void detci_iteration_clean()
 **
 ** Returns: none
 */
-void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **alplist, struct stringwr **betlist, Options &options)
+void CIWavefunction::compute_mcscf(struct stringwr **alplist, struct stringwr **betlist)
 {
 
   /// Grab and build basis sets
-  boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(
-    Process::environment.molecule(), "BASIS", options.get_str("BASIS"));
-  boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
-      "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT",
-      options.get_str("BASIS"), primary->has_puream());
+  // boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(
+  //   Process::environment.molecule(), "BASIS", options.get_str("BASIS"));
+  // boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
+  //     "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT",
+  //     options.get_str("BASIS"), primary->has_puream());
 
-  /// Build JK, DFERI, and SOMCSCF objects
-  boost::shared_ptr<JK> jk = JK::build_JK();
-  jk->set_do_J(true);
-  jk->set_do_K(true);
-  jk->initialize();
-  jk->print_header();
+  // /// Build JK, DFERI, and SOMCSCF objects
+  // boost::shared_ptr<JK> jk = JK::build_JK();
+  // jk->set_do_J(true);
+  // jk->set_do_K(true);
+  // jk->initialize();
+  // jk->print_header();
 
-  boost::shared_ptr<DFERI> df = DFERI::build(primary,auxiliary,options);
-  boost::shared_ptr<SOMCSCF> somcscf(new DFSOMCSCF(jk, df, ciwfn->aotoso(), ciwfn->H()));
+  // boost::shared_ptr<JK> jk = JK::build_JK();
+  // boost::shared_ptr<DFERI> df = DFERI::build(primary,auxiliary,options);
+  // Setup for initial CI run
+  transform_dfmcscf_ints();
+  boost::shared_ptr<SOMCSCF> somcscf(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
 
   // We assume some kind of ras here.
   if (Parameters.wfn != "CASSCF"){
@@ -1503,8 +1447,8 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
 
     // We only have four spaces currently
     for (int nras = 0; nras < 4; nras++){
-      Dimension rasdim = Dimension(ciwfn->nirrep(), "RAS" + psi::to_string(nras));
-      for (int h = 0; h < ciwfn->nirrep(); h++){
+      Dimension rasdim = Dimension(nirrep_, "RAS" + psi::to_string(nras));
+      for (int h = 0; h < nirrep_; h++){
           rasdim[h] = CalcInfo.ras_opi[nras][h];
       }
       ras_spaces.push_back(rasdim);
@@ -1514,17 +1458,11 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
   }
 
   // Set fzc energy
-  SharedMatrix Cfzc = ciwfn->get_orbitals("FZC");
+  SharedMatrix Cfzc = get_orbitals("FZC");
   somcscf->set_frozen_orbitals(Cfzc);
 
-  // Setup for initial CI run
-  CalcInfo.edrc = somcscf->rhf_energy(ciwfn->get_orbitals("DRC"));
-  ciwfn->transform_ci_integrals();
-  tf_onel_ints((Parameters.print_lvl>3), "outfile");
-  form_gmat((Parameters.print_lvl>3), "outfile");
 
   /// => Start traditional MCSCF <= //
-
   // Parameters
   int conv = 0;
   SharedMatrix x;
@@ -1549,41 +1487,36 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
     // }
 
     form_opdm();
-    ciwfn->set_opdm();
+    set_opdm();
     form_tpdm();
-    close_io();
-    detci_iteration_clean();
+    // detci_iteration_clean();
 
     //// Get orbitals for new update
-    SharedMatrix Cdocc = ciwfn->get_orbitals("DOCC");
-    SharedMatrix Cact = ciwfn->get_orbitals("ACT");
-    SharedMatrix Cvir = ciwfn->get_orbitals("VIR");
-    SharedMatrix actOPDM = ciwfn->get_active_opdm();
-    SharedMatrix actTPDM = ciwfn->get_active_tpdm();
+    SharedMatrix Cdocc = get_orbitals("DOCC");
+    SharedMatrix Cact = get_orbitals("ACT");
+    SharedMatrix Cvir = get_orbitals("VIR");
+    SharedMatrix actOPDM = get_active_opdm();
+    SharedMatrix actTPDM = get_active_tpdm();
 
     outfile->Printf("SOMCSCF: Updating\n");
     somcscf->update(Cdocc, Cact, Cvir, actOPDM, actTPDM);
     x = somcscf->approx_solve();
 
     SharedMatrix new_orbs = somcscf->Ck(x);
-    ciwfn->set_orbitals("ROT", new_orbs);
+    set_orbitals("ROT", new_orbs);
 
     // Need to grab the new edrc energy after transqt2 computations
-    CalcInfo.edrc = somcscf->rhf_energy(ciwfn->get_orbitals("DRC"));
-    ciwfn->transform_ci_integrals();
-    tf_onel_ints((Parameters.print_lvl>3), "outfile");
-    form_gmat((Parameters.print_lvl>3), "outfile");
-
-
+    CalcInfo.edrc = somcscf->rhf_energy(get_orbitals("DRC"));
+    transform_dfmcscf_ints();
   }
 
   // outfile->Printf("\nCleaning up MCSCF.\n");
 
   // ciwfn->set_lag();
-  ciwfn->set_opdm();
-  ciwfn->set_tpdm();
-  df.reset();
-  jk.reset();
+  set_opdm();
+  set_tpdm();
+  // df_.reset();
+  // jk_.reset();
 }
 
 

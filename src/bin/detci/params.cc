@@ -1113,7 +1113,7 @@ void set_ras_parms(void)
      Parameters.ex_allow = init_int_array(Parameters.ex_lvl);
      for (i=0; i<Parameters.ex_lvl; i++) Parameters.ex_allow[i] = 1;
 
-     if (Parameters.print_lvl) {
+     if (Parameters.print_lvl>2) {
        outfile->Printf( "Note: Calculation requested is a full CI.\n");
        outfile->Printf(
                "Resetting EX_LEVEL to %d and turning on all excitations\n\n",
@@ -1510,25 +1510,27 @@ void print_ras_parms(void)
     CalcInfo.num_alp_expl, CalcInfo.num_bet_expl);
   outfile->Printf( "   IOPEN        =   %6s\n", CalcInfo.iopen ? "yes" :
     "no");
-  outfile->Printf( "   RAS1 LVL     =   %6d      A RAS3 MAX   =   %6d\n",
-    Parameters.ras1_lvl, Parameters.a_ras3_max);
-  outfile->Printf( "   RAS1 MIN     =   %6d      B RAS3 MAX   =   %6d\n",
-    Parameters.ras1_min, Parameters.b_ras3_max);
-  outfile->Printf( "   A RAS1 LVL   =   %6d      RAS4 LVL     =   %6d\n",
-    Parameters.a_ras1_lvl, Parameters.ras4_lvl);
-  outfile->Printf( "   A RAS1 MIN   =   %6d      A RAS4 MAX   =   %6d\n",
-    Parameters.a_ras1_min, Parameters.a_ras4_max);
-  outfile->Printf( "   A RAS1 MAX   =   %6d      B RAS4 MAX   =   %6d\n",
-    Parameters.a_ras1_max, Parameters.b_ras4_max);
-  outfile->Printf( "   B RAS1 LVL   =   %6d      RAS4 MAX     =   %6d\n",
-    Parameters.b_ras1_lvl, Parameters.ras4_max);
-  outfile->Printf( "   B RAS1 MIN   =   %6d      A RAS34 MAX  =   %6d\n",
-    Parameters.b_ras1_min, Parameters.a_ras34_max);
-  outfile->Printf( "   B RAS1 MAX   =   %6d      B RAS34 MAX  =   %6d\n",
-    Parameters.b_ras1_max, Parameters.b_ras34_max);
-  outfile->Printf( "   RAS3 LVL     =   %6d      RAS34 MAX    =   %6d\n",
-    Parameters.ras3_lvl, Parameters.ras34_max);
-  outfile->Printf( "   RAS3 MAX     =   %6d\n", Parameters.ras3_max);
+  if (!Parameters.fci){
+    outfile->Printf( "   RAS1 LVL     =   %6d      A RAS3 MAX   =   %6d\n",
+      Parameters.ras1_lvl, Parameters.a_ras3_max);
+    outfile->Printf( "   RAS1 MIN     =   %6d      B RAS3 MAX   =   %6d\n",
+      Parameters.ras1_min, Parameters.b_ras3_max);
+    outfile->Printf( "   A RAS1 LVL   =   %6d      RAS4 LVL     =   %6d\n",
+      Parameters.a_ras1_lvl, Parameters.ras4_lvl);
+    outfile->Printf( "   A RAS1 MIN   =   %6d      A RAS4 MAX   =   %6d\n",
+      Parameters.a_ras1_min, Parameters.a_ras4_max);
+    outfile->Printf( "   A RAS1 MAX   =   %6d      B RAS4 MAX   =   %6d\n",
+      Parameters.a_ras1_max, Parameters.b_ras4_max);
+    outfile->Printf( "   B RAS1 LVL   =   %6d      RAS4 MAX     =   %6d\n",
+      Parameters.b_ras1_lvl, Parameters.ras4_max);
+    outfile->Printf( "   B RAS1 MIN   =   %6d      A RAS34 MAX  =   %6d\n",
+      Parameters.b_ras1_min, Parameters.a_ras34_max);
+    outfile->Printf( "   B RAS1 MAX   =   %6d      B RAS34 MAX  =   %6d\n",
+      Parameters.b_ras1_max, Parameters.b_ras34_max);
+    outfile->Printf( "   RAS3 LVL     =   %6d      RAS34 MAX    =   %6d\n",
+      Parameters.ras3_lvl, Parameters.ras34_max);
+    outfile->Printf( "   RAS3 MAX     =   %6d\n", Parameters.ras3_max);
+  }
   if (Parameters.cc) {
     outfile->Printf( "   CC RAS3 MAX  =   %6d      CC RAS4 MAX  =   %6d\n",
       Parameters.cc_ras3_max, Parameters.cc_ras4_max);
@@ -1564,10 +1566,19 @@ void print_ras_parms(void)
   for (i=0; i<CalcInfo.nirreps; i++) {
     outfile->Printf( "%2d ", CalcInfo.rstr_docc[i]) ;
   }
-  for (i=0; i<4; i++) {
-    outfile->Printf( "\n   RAS %d           = ",i+1);
-    for (j=0; j<CalcInfo.nirreps; j++) {
-      outfile->Printf("%2d ",CalcInfo.ras_opi[i][j]);
+
+  if (Parameters.fci){
+    outfile->Printf( "\n   ACTIVE = ");
+    for (i=0; i<CalcInfo.nirreps; i++) {
+      outfile->Printf("%2d ",CalcInfo.ci_orbs[i]);
+    }
+  }
+  else{
+    for (i=0; i<4; i++) {
+      outfile->Printf( "\n   RAS %d           = ",i+1);
+      for (j=0; j<CalcInfo.nirreps; j++) {
+        outfile->Printf("%2d ",CalcInfo.ras_opi[i][j]);
+      }
     }
   }
   outfile->Printf( "\n   RESTRICTED UOCC = ") ;

@@ -469,21 +469,21 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
       sprintf(opdm_key,"MO-basis %s Root %d", transdens ? "TDM" : "OPDM",Jroot);
       psio_write_entry(targetfile, opdm_key, (char *) onepdm[0], 
         populated_orbs * populated_orbs * sizeof(double));
-      if (Parameters.print_lvl) 
+      if (Parameters.print_lvl>2) 
         outfile->Printf( "\nWrote MO-basis %s %d to disk\n", 
           transdens ? "TDM" : "OPDM", Jroot+1);
 
       sprintf(opdm_key,"MO-basis Alpha %s Root %d", transdens ? "TDM" : "OPDM",Jroot);
       psio_write_entry(targetfile, opdm_key, (char *) onepdm_a[0], 
         populated_orbs * populated_orbs * sizeof(double));
-      if (Parameters.print_lvl) 
+      if (Parameters.print_lvl>2) 
         outfile->Printf( "\nWrote MO-basis Alpha %s %d to disk\n", 
           transdens ? "TDM" : "OPDM", Jroot+1);
 
       sprintf(opdm_key,"MO-basis Beta %s Root %d", transdens ? "TDM" : "OPDM",Jroot);
       psio_write_entry(targetfile, opdm_key, (char *) onepdm_b[0], 
         populated_orbs * populated_orbs * sizeof(double));
-      if (Parameters.print_lvl) 
+      if (Parameters.print_lvl>2) 
         outfile->Printf( "\nWrote MO-basis Beta %s %d to disk\n", 
           transdens ? "TDM" : "OPDM", Jroot+1);
 
@@ -493,7 +493,7 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
         sprintf(opdm_key,"MO-basis %s", transdens ? "TDM" : "OPDM");
         psio_write_entry(targetfile, opdm_key, (char *) onepdm[0],
           populated_orbs * populated_orbs * sizeof(double));
-        if (Parameters.print_lvl) 
+        if (Parameters.print_lvl>2) 
           outfile->Printf( "Wrote MO-basis %s to disk\n", 
             transdens ? "TDM" : "OPDM");
         
@@ -501,13 +501,13 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
         sprintf(opdm_key,"MO-basis Alpha %s", transdens ? "TDM" : "OPDM");
         psio_write_entry(targetfile, opdm_key, (char *) onepdm_a[0],
           populated_orbs * populated_orbs * sizeof(double));
-        if (Parameters.print_lvl) 
+        if (Parameters.print_lvl>2) 
           outfile->Printf( "Wrote MO-basis Alpha %s to disk\n", 
             transdens ? "TDM" : "OPDM");
         sprintf(opdm_key,"MO-basis Beta %s", transdens ? "TDM" : "OPDM");
         psio_write_entry(targetfile, opdm_key, (char *) onepdm_b[0],
           populated_orbs * populated_orbs * sizeof(double));
-        if (Parameters.print_lvl) 
+        if (Parameters.print_lvl>2) 
           outfile->Printf( "Wrote MO-basis Beta %s to disk\n", 
             transdens ? "TDM" : "OPDM");
 
