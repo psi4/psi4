@@ -30,14 +30,22 @@ template<class T> class shared_ptr;
 
 namespace psi {
 
+// From psi4
 class Wavefunction;
 class Options;
 class JK;
 class DFERI;
 class IntegralTransform;
 class MOSpace;
-struct stringwr;
 typedef boost::shared_ptr<Matrix> SharedMatrix;
+
+// From the detci module
+struct stringwr;
+struct ci_blks;
+struct olsen_graph;
+struct graph_set;
+struct H_zero_block;
+struct detci_timings;
 }
 
 namespace psi { namespace detci {
@@ -115,9 +123,13 @@ public:
     // Should be private
     void compute_mcscf(struct stringwr **alplist, struct stringwr **betlist);
 
+    // Alpha and beta accessors
+    struct stringwr** alplist() { return alplist_; }
+    struct stringwr** betlist() { return alplist_; }
+
 private:
 
-    // Paramater and CalcInfo setters
+    /// Paramater and CalcInfo setters
     void get_mo_info();
     void get_parameters(Options &options);
     void print_parameters();
@@ -125,16 +137,16 @@ private:
     void print_ras_parameters();
 
 
-    // Sets the ciwavefunction object
+    /// Sets the ciwavefunction object
     void common_init();
 
-    // Find out which orbitals belong hwere
+    /// Find out which orbitals belong hwere
     void orbital_locations(const std::string& orbital_name, int* start, int* end);
 
-    // Symmetry block a matrix
+    /// Symmetry block a matrix
     SharedMatrix symm_block(SharedMatrix x, Dimension dim1, Dimension dim2);
 
-    // Integrals
+    /// Integrals
     bool ints_init_;
     boost::shared_ptr<IntegralTransform> ints_; // Non-DF
     boost::shared_ptr<DFERI> dferi_; // For DF
@@ -147,8 +159,18 @@ private:
     void transform_mcscf_ints();
     void setup_dfmcscf_ints();
     void transform_dfmcscf_ints();
-    // void transform_dfmcscf_ints();
 
+    /// Stuff moved from globals
+    //struct stringwr **alplist_;
+    //struct stringwr **betlist_;
+    //struct ci_blks CIblks_;
+    //struct olsen_graph *AlphaG_;
+    //struct olsen_graph *BetaG_;
+    //struct graph_set *AlphaGraph_;
+    //struct graph_set *BetaGraph_;
+    //struct H_zero_block H0block_;
+
+    // Form strings
 
 };
 
