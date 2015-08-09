@@ -46,6 +46,7 @@
 #include "globals.h"
 #include <iostream>
 #include "odometer.h"
+#include "ciwave.h"
 
 namespace psi { namespace detci {
 
