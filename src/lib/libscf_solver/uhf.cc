@@ -608,35 +608,18 @@ void UHF::compute_nos()
     // Compute UHF NOs and NOONs [J. Chem. Phys. 88, 4926 (1988)] -- TDC, 8/15
 
     // Build S^1/2
-    SharedMatrix eigvec = factory_->create_shared_matrix("S Evecs");
-    SharedVector eigval(factory_->create_vector());
-
-    S_->diagonalize(eigvec, eigval);
-    for(int h=0; h < nirrep_; h++)
-      for(int i=0; i < eigval->dimpi()[h]; i++) {
-        double shalf = sqrt(eigval->get(h,i));
-        eigval->set(h, i, shalf);
-      }
-    SharedMatrix s = factory_->create_shared_matrix("sqrt S eigenvalues");
-    s->set_diagonal(eigval);
-
-    SharedMatrix TMP = factory_->create_shared_matrix("shalf * L+");
-    TMP->gemm(false, true, 1.0, s, eigvec, 0.0);
-    SharedMatrix SHalf = factory_->create_shared_matrix("L * shalf * L+");
-    SHalf->gemm(false, false, 1.0, eigvec, TMP, 0.0);
+    SharedMatrix SHalf = S_->clone();
+    SHalf->power(0.5);
 
     // Diagonalize S^1/2 Dt S^1/2
-    SharedMatrix Dt = factory_->create_shared_matrix("UHF Total Density");
-    Dt->copy(Da_);
-    Dt->add(Db_);
-    SharedMatrix TMP2 = factory_->create_shared_matrix("SHalf * Dt");
-    TMP2->gemm(false, false, 1.0, SHalf, Dt, 0.0);
     SharedMatrix SDS = factory_->create_shared_matrix("S^1/2 Dt S^1/2");
-    SDS->gemm(false, false, 1.0, TMP2, SHalf, 0.0);
+    SDS->copy(Da_);
+    SDS->add(Db_);
+    SDS->transform(SHalf);
 
     SharedMatrix UHF_NOs = factory_->create_shared_matrix("UHF NOs");
     SharedVector UHF_NOONs(factory_->create_vector());
-    SDS->diagonalize(UHF_NOs, UHF_NOONs);
+    SDS->diagonalize(UHF_NOs, UHF_NOONs, descending);
 
     // Print the NOONs -- code ripped off from OEProp::compute_no_occupations()
     int max_num;
@@ -669,7 +652,17 @@ void UHF::compute_nos()
       }
     }
     outfile->Printf( "\n");
-}
 
+    if(options_.get_bool("SAVE_UHF_NOS")){
+        // Save the NOs to Ca and Cb. The resulting orbitals will be restricted.
+
+        outfile->Printf( "  Saving the UHF Natural Orbitals.\n");
+
+        SharedMatrix SHalf_inv = S_->clone();
+        SHalf_inv->power(-0.5);
+        Ca_->gemm(false, false, 1.0,SHalf_inv,UHF_NOs, 0.0);
+        Cb_->copy(Ca_);
+    }
+}
 
 }}
