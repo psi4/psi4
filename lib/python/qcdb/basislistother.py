@@ -20,12 +20,14 @@
 #@END LICENSE
 #
 
+from __future__ import absolute_import
+from __future__ import print_function
 """Module with commands building :py:class:`~basislist.BasisFamily` objects
 for Pople and other non-Dunning orbital basis sets. Some
 plausible fitting basis sets are supplied as defaults.
 
 """
-from basislist import *
+from .basislist import *
 
 
 def load_basfam_other():
