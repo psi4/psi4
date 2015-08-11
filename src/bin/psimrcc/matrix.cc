@@ -32,7 +32,7 @@
 #include "matrix.h"
 #include "libparallel/ParallelPrinter.h"
 namespace psi{
-    
+
     namespace psimrcc{
     extern MOInfo *moinfo;
     extern MemoryManager* memory_manager;
@@ -81,7 +81,7 @@ fock(false),integral(false),chemist_notation(false),antisymmetric(false),out_of_
   string::size_type left_curly  = str.find("{");
   string::size_type right_curly = str.find("}");
   if(left_curly!=string::npos && right_curly!=string::npos) // TODO add check on the size of the string
-    reference  = string_to_integer(str.substr(left_curly+1,right_curly-left_curly-1));
+    reference  = to_integer(str.substr(left_curly + 1, right_curly - left_curly - 1));
 }
 
 
@@ -112,7 +112,7 @@ void CCMatrix::print()
       print_dpdmatrix(i,"outfile");
     }
   }
-  
+
 }
 
 void CCMatrix::add_numerical_factor(double factor)
@@ -270,7 +270,7 @@ void CCMatrix::tensor_product(string& reindexing,double factor,CCMatrix* B_Matri
 
   intpairvec pairs;
   for(int i=0;i<reindexing.size();i++)
-    pairs.push_back(make_pair(string_to_integer(reindexing.substr(i,1)),i));
+    pairs.push_back(make_pair(to_integer(reindexing.substr(i, 1)),i));
   sort(pairs.begin(),pairs.end());
   for(int i = 0; i< reindexing.size(); i++)
     reindexing_array[i]=pairs[i].second;

@@ -23,35 +23,37 @@
 #ifndef _psi_src_lib_libmints_vector_h
 #define _psi_src_lib_libmints_vector_h
 
+#include "dimension.h"
+
 #include <cstdlib>
 #include <cstdio>
-#include <psi4-dec.h>
-
-#include <libparallel/serialize.h>
-
 #include <vector>
 #include <iterator>
 
-namespace boost {
-template<class T> class shared_ptr;
+#include <boost/shared_ptr.hpp>
 
+namespace boost {
 namespace python {
 class tuple;
-}}
+}
+}
 
 namespace psi {
 
 class Dimension;
+
 class Matrix;
+
 class VectorIterator;
 
 /*! \ingroup MINTS */
-class Vector : public Serializable {
+class Vector
+{
 protected:
     /// Actual data, of size dimpi_.sum()
     std::vector<double> v_;
     /// Pointer offsets into v_, of size dimpi_.n()
-    std::vector<double* > vector_;
+    std::vector<double *> vector_;
     /// Number of irreps
     int nirrep_;
     /// Dimensions per irrep
@@ -71,8 +73,8 @@ protected:
     void assign_pointer_offsets();
 
     /// Numpy Shape
-    int  numpy_dims_;
-    int* numpy_shape_;
+    int numpy_dims_;
+    int *numpy_shape_;
 
 public:
     /// Default constructor, zeros everything out
@@ -98,64 +100,73 @@ public:
     /**
      * Convenient creation function return SharedMatrix
      */
-    static SharedVector create(const std::string& name,
-                               const Dimension& dim);
+    static boost::shared_ptr<Vector> create(const std::string& name,
+                                            const Dimension& dim);
 
     void init(int nirrep, int *dimpi);
     void init(int nirrep, const int *dimpi, const std::string& name = "");
     void init(const Dimension& v);
 
-    Vector* clone();
+    Vector *clone();
 
     /// Sets the vector_ to the data in vec
     void set(double *vec);
 
     /// Returns a pointer to irrep h
-    double* pointer(int h = 0) {
+    double *pointer(int h = 0)
+    {
         return vector_[h];
     }
 
     /// Returns a single element value
-    double get(int h, int m) {
+    double get(int h, int m)
+    {
         return vector_[h][m];
     }
     /// Sets a single element value
-    void set(int h, int m, double val) {
+    void set(int h, int m, double val)
+    {
         vector_[h][m] = val;
     }
 
     /// Returns a single element value
-    double get(int m) {
+    double get(int m)
+    {
         return vector_[0][m];
     }
     /// Sets a single element value
-    void set(int m, double val) {
+    void set(int m, double val)
+    {
         vector_[0][m] = val;
     }
 
-    void add(int m, double val) {
+    void add(int m, double val)
+    {
         vector_[0][m] += val;
     }
 
-    void add(int h, int m, double val) {
+    void add(int h, int m, double val)
+    {
         vector_[h][m] += val;
     }
 
     void add(const std::vector<double>& rhs);
 
     /// Adds other vector to this
-    void add(const boost::shared_ptr<Vector>& other) {
-        for (int h=0; h<nirrep_; ++h) {
-            for (int m=0; m<dimpi_[h]; ++m) {
+    void add(const boost::shared_ptr<Vector>& other)
+    {
+        for (int h = 0; h < nirrep_; ++h) {
+            for (int m = 0; m < dimpi_[h]; ++m) {
                 vector_[h][m] += other->vector_[h][m];
             }
         }
     }
 
     /// Subtracts other vector from this
-    void subtract(const boost::shared_ptr<Vector>& other) {
-        for (int h=0; h<nirrep_; ++h) {
-            for (int m=0; m<dimpi_[h]; ++m) {
+    void subtract(const boost::shared_ptr<Vector>& other)
+    {
+        for (int h = 0; h < nirrep_; ++h) {
+            for (int m = 0; m < dimpi_[h]; ++m) {
                 vector_[h][m] -= other->vector_[h][m];
             }
         }
@@ -165,27 +176,33 @@ public:
     void zero();
 
     /// Adds other vector to this
-    void add(const Vector& other) {
-        for (int h=0; h<nirrep_; ++h) {
-            for (int m=0; m<dimpi_[h]; ++m) {
+    void add(const Vector& other)
+    {
+        for (int h = 0; h < nirrep_; ++h) {
+            for (int m = 0; m < dimpi_[h]; ++m) {
                 vector_[h][m] += other.vector_[h][m];
             }
         }
     }
 
     /// Subtracts other vector from this
-    void subtract(const Vector& other) {
-        for (int h=0; h<nirrep_; ++h) {
-            for (int m=0; m<dimpi_[h]; ++m) {
+    void subtract(const Vector& other)
+    {
+        for (int h = 0; h < nirrep_; ++h) {
+            for (int m = 0; m < dimpi_[h]; ++m) {
                 vector_[h][m] -= other.vector_[h][m];
             }
         }
     }
 
-    double& operator()(int i) { return vector_[0][i]; }
-    const double& operator()(int i) const { return vector_[0][i]; }
-    double& operator[](int i) { return vector_[0][i]; }
-    const double& operator[](int i) const { return vector_[0][i]; }
+    double& operator()(int i)
+    { return vector_[0][i]; }
+    const double& operator()(int i) const
+    { return vector_[0][i]; }
+    double& operator[](int i)
+    { return vector_[0][i]; }
+    const double& operator[](int i) const
+    { return vector_[0][i]; }
 
     double pyget(const boost::python::tuple& key);
     void pyset(const boost::python::tuple& key, double value);
@@ -196,16 +213,19 @@ public:
     double *to_block_vector();
 
     /// Returns the dimension per irrep h
-    int dim(int h = 0) const {
+    int dim(int h = 0) const
+    {
         return dimpi_[h];
     }
 
     /// Returns the dimension array
-    int *dimpi() const {
+    int *dimpi() const
+    {
         return dimpi_;
     }
     /// Returns the number of irreps
-    int nirrep() const {
+    int nirrep() const
+    {
         return nirrep_;
     }
 
@@ -214,37 +234,40 @@ public:
      *
      * @param name New name to use.
      */
-    void set_name(const std::string& name) {
+    void set_name(const std::string& name)
+    {
         name_ = name;
     }
 
     /**
      * Gets the name of the matrix.
      */
-    std::string name() const {
+    std::string name() const
+    {
         return name_;
     }
 
     /// Python compatible printer
-    void print_out() { print("outfile"); }
+    void print_out()
+    { print("outfile"); }
     /**
      * Print the matrix using print_mat
      *
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(std::string outfile = "outfile", const char *extra=NULL) const;
+    void print(std::string outfile = "outfile", const char *extra = NULL) const;
 
     /// Copies rhs to this
-    void copy(const Vector* rhs);
+    void copy(const Vector *rhs);
     /// Copies rhs to this
     void copy(const Vector& rhs);
 
     /// General matrix vector multiplication
-    void gemv(bool transa, double alpha, Matrix* A, Vector* X, double beta);
+    void gemv(bool transa, double alpha, Matrix *A, Vector *X, double beta);
 
     /// Vector dot product
-    double dot(Vector* X);
+    double dot(Vector *X);
 
     /// Vector norm
     double norm();
@@ -261,61 +284,70 @@ public:
      */
     void sum();
 
-    typedef std::vector<double>::iterator       iterator;
+    typedef std::vector<double>::iterator iterator;
     typedef std::vector<double>::const_iterator const_iterator;
 
     /// @{
     /** Returns the starting iterator for the entire v_. */
     iterator begin()
-        { return v_.begin(); }
+    { return v_.begin(); }
     const_iterator begin() const
-        { return v_.begin(); }
+    { return v_.begin(); }
     /// @}
 
     /// @{
     /** Returns the ending iterator for the entire v_. */
     iterator end()
-        { return v_.end(); }
+    { return v_.end(); }
     const_iterator end() const
-        { return v_.end(); }
+    { return v_.end(); }
     /// @}
 
     /// @{
     /** Returns the starting iterator for irrep h. */
     iterator begin_irrep(int h)
-        {  iterator it = v_.begin();
-           for (int g = 0; g < h; ++g) it += dimpi_[h];
-           return it; }
+    {
+        iterator it = v_.begin();
+        for (int g = 0; g < h; ++g) it += dimpi_[h];
+        return it;
+    }
     // The following won't compile with clang++ and c++11
     //const_iterator begin_irrep(int h) const
-      //  { return const_iterator(vector_[h]); }
+    //  { return const_iterator(vector_[h]); }
     /// @}
- 
+
     /// @{
     /** Returns the starting iterator for irrep h. */
     iterator end_irrep(int h)
-        {  iterator it = v_.begin();
-           for (int g = 0; g <= h; ++g) it += dimpi_[h];
-           return it; }
+    {
+        iterator it = v_.begin();
+        for (int g = 0; g <= h; ++g) it += dimpi_[h];
+        return it;
+    }
     // The following won't compile with clang++ and c++11
     //const_iterator end_irrep(int h) const
     //    { return const_iterator(vector_[h]) + dimpi_[h]; }
     /// @}
 
-     /**
-     * Adds accessability to the matrix shape for numpy
-     */
-    void set_numpy_dims(int dims) { numpy_dims_ = dims; }
-    void set_numpy_shape(int* shape) { numpy_shape_ = shape; }
-    int numpy_dims() { return numpy_dims_; }
-    int* numpy_shape() { return numpy_shape_; }
+    /**
+    * Adds accessability to the matrix shape for numpy
+    */
+    void set_numpy_dims(int dims)
+    { numpy_dims_ = dims; }
+    void set_numpy_shape(int *shape)
+    { numpy_shape_ = shape; }
+    int numpy_dims()
+    { return numpy_dims_; }
+    int *numpy_shape()
+    { return numpy_shape_; }
 
 
     friend class Matrix;
 };
 
 /*! \ingroup MINTS */
-class IntVector {
+class IntVector
+{
 protected:
     /// IntVector data
     int **vector_;
@@ -357,16 +389,19 @@ public:
     void set(int *vec);
 
     /// Returns a pointer to irrep h
-    int* pointer(int h = 0) {
+    int *pointer(int h = 0)
+    {
         return vector_[h];
     }
 
     /// Returns a single element value
-    int get(int h, int m) {
+    int get(int h, int m)
+    {
         return vector_[h][m];
     }
     /// Sets a single element value
-    void set(int h, int m, int val) {
+    void set(int h, int m, int val)
+    {
         vector_[h][m] = val;
     }
 
@@ -374,16 +409,19 @@ public:
     int *to_block_vector();
 
     /// Returns the dimension per irrep h
-    int dim(int h = 0) const {
+    int dim(int h = 0) const
+    {
         return dimpi_[h];
     }
 
     /// Returns the dimension array
-    int *dimpi() const {
+    int *dimpi() const
+    {
         return dimpi_;
     }
     /// Returns the number of irreps
-    int nirrep() const {
+    int nirrep() const
+    {
         return nirrep_;
     }
 
@@ -392,18 +430,21 @@ public:
      *
      * @param name New name to use.
      */
-    void set_name(const std::string& name) {
+    void set_name(const std::string& name)
+    {
         name_ = name;
     }
 
     /**
      * Gets the name of the matrix.
      */
-    std::string name() const {
+    std::string name() const
+    {
         return name_;
     }
     /// Python compatible printer
-    void print_out() { print("outfile"); }
+    void print_out()
+    { print("outfile"); }
 
     /**
      * Print the matrix using print_mat
@@ -411,9 +452,9 @@ public:
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(std::string outfile = "outfile", const char *extra=NULL) const;
+    void print(std::string outfile = "outfile", const char *extra = NULL) const;
     /// Copies rhs to this
-    void copy(const IntVector* rhs);
+    void copy(const IntVector *rhs);
     /// Copies rhs to this
     void copy(const IntVector& rhs);
 

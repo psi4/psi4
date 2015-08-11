@@ -25,7 +25,7 @@
 
 #include <vector>
 #include <string>
-#include <psi4-dec.h>
+#include <exception.h>
 #include "gshell.h"
 
 // Forward declare boost boost::shared_ptr

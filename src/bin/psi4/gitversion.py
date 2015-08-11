@@ -30,7 +30,8 @@ def write_version(branch, mmp, ghash, status):
 try:
     command = "git symbolic-ref -q HEAD"
     process = subprocess.Popen(command.split(), stderr=subprocess.PIPE,
-                               stdout=subprocess.PIPE, cwd=top_srcdir)
+                               stdout=subprocess.PIPE, cwd=top_srcdir,
+                               universal_newlines=True)
     (out, err) = process.communicate()
     branch = str(out).rstrip()[11:]
     if process.returncode:
@@ -42,7 +43,8 @@ except:
 try:
     command = "git describe --long --dirty --always"
     process = subprocess.Popen(command.split(), stderr=subprocess.PIPE,
-                               stdout=subprocess.PIPE, cwd=top_srcdir)
+                               stdout=subprocess.PIPE, cwd=top_srcdir,
+                               universal_newlines=True)
     (out, err) = process.communicate()
     fields = str(out).rstrip().split('-')
 

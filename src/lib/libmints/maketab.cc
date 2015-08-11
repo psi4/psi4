@@ -74,6 +74,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <exception.h>
 
 #include <libmints/pointgrp.h>
 
