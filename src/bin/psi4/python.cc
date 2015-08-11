@@ -1813,9 +1813,6 @@ void Python::run(FILE *input)
             object objectDict = objectMain.attr("__dict__");
             s = strdup("import psi4");
             PyRun_SimpleString(s);
-            if (PyErr_Occurred() != NULL) {
-                PyErr_Print();
-            }
 
             if (!interactive_python) {
 
