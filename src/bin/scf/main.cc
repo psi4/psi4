@@ -55,16 +55,15 @@ namespace psi { namespace scf {
 
 PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
 {
-    printf("scf::scf...\n");
     tstart();
-    
+
     boost::shared_ptr<PSIO> psio = PSIO::shared_object();
 
     string reference = options.get_str("REFERENCE");
     boost::shared_ptr<Wavefunction> scf;
     double energy;
     //bool parallel = options.get_bool("PARALLEL");
-    std::cout << "ref: " << reference << "\n";
+
 
     if (reference == "RHF") {
         scf = boost::shared_ptr<Wavefunction>(new RHF(options, psio));
@@ -88,7 +87,6 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
         throw InputException("Unknown reference " + reference, "REFERENCE", __FILE__, __LINE__);
         energy = 0.0;
     }
-    printf("2\n");
 
     // print the basis set
     if ( options.get_bool("PRINT_BASIS") ) {
@@ -100,14 +98,13 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     // Set this early because the callback mechanism uses it.
     Process::environment.set_wavefunction(scf);
 
-    if (pre)        
+    if (pre)
         scf->add_preiteration_callback(pre);
     if (post)
         scf->add_postiteration_callback(post);
 
-    printf("scf->compute_energy...\n");
     energy = scf->compute_energy();
-    printf("scf->compute_energy\n");
+
 
     // Print a molden file
     if ( options.get_bool("MOLDEN_WRITE") ) {
@@ -131,7 +128,7 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     Process::environment.globals["CURRENT REFERENCE ENERGY"] = energy;
 
     // Shut down psi.
-    printf("scf::scf\n");
+
     tstop();
 
     return Success;
