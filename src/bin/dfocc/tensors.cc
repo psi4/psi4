@@ -3876,6 +3876,25 @@ void Tensor2d::symm4(const SharedTensor2d &a)
      }
 }//
 
+void Tensor2d::symm_col4(const SharedTensor2d &a)
+{
+     #pragma omp parallel for
+     for (int i=0; i < a->d1_; i++) {
+          for (int j=0; j <= i; j++) {
+               int ij = a->row_idx_[i][j];
+               int ij2 = index2(i,j);
+               for (int k=0; k < a->d3_; k++) {
+                    for (int l=0; l <= k; l++) {
+                         int kl = a->col_idx_[k][l];
+                         int lk = a->col_idx_[l][k];
+                         int kl2 = index2(k,l);
+                         A2d_[ij2][kl2] = 0.5 * ( a->get(ij,kl) + a->get(ij,lk) );
+                    }
+               }
+          }
+     }
+}//
+
 void Tensor2d::antisymm4(const SharedTensor2d &a)
 {
      #pragma omp parallel for
@@ -3889,6 +3908,25 @@ void Tensor2d::antisymm4(const SharedTensor2d &a)
                          int kl = a->col_idx_[k][l];
                          int kl2 = index2(k,l);
                          A2d_[ij2][kl2] = 0.5 * ( a->get(ij,kl) - a->get(ji,kl) );
+                    }
+               }
+          }
+     }
+}//
+
+void Tensor2d::antisymm_col4(const SharedTensor2d &a)
+{
+     #pragma omp parallel for
+     for (int i=0; i < a->d1_; i++) {
+          for (int j=0; j <= i; j++) {
+               int ij = a->row_idx_[i][j];
+               int ij2 = index2(i,j);
+               for (int k=0; k < a->d3_; k++) {
+                    for (int l=0; l <= k; l++) {
+                         int kl = a->col_idx_[k][l];
+                         int lk = a->col_idx_[l][k];
+                         int kl2 = index2(k,l);
+                         A2d_[ij2][kl2] = 0.5 * ( a->get(ij,kl) - a->get(ij,lk) );
                     }
                }
           }
@@ -5617,6 +5655,19 @@ void Tensor2d::cont332(string idx_c, string idx_a, string idx_b, bool delete_a, 
 	temp2.reset();
 	temp2.reset();
 }//
+
+double Tensor2d::get_max_element()
+{
+  double value = 0.0;
+  #pragma omp parallel for
+  for (int i=0; i < dim1_; i++) {
+       for (int j=0; j < dim2_; j++) {
+           if ( fabs(A2d_[i][j]) > value ) value = fabs(A2d_[i][j]);
+       }
+  }
+  return value;
+}//
+
 
 
 /********************************************************************************************/

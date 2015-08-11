@@ -22,7 +22,7 @@ X2CInt::~X2CInt()
 {
 }
 
-void X2CInt::compute(SharedMatrix T, SharedMatrix V, Options& options)
+void X2CInt::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, Options& options)
 {
     tstart();
     setup(options);
@@ -32,42 +32,25 @@ void X2CInt::compute(SharedMatrix T, SharedMatrix V, Options& options)
     form_X();
     form_R();
     form_h_FW_plus();
-    if(do_project_){
-        project();
-    }
-    write_integrals_to_disk();
-//    if(not do_project_){
-        test_h_FW_plus();
-//    }
-    tstop();
-}
 
-void X2CInt::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatrix pVp, Options& options)
-{
-    setup(options);
-    sMat = S;
-    tMat = T;
-    vMat = V;
-    wMat = pVp;
-    form_dirac_h();
-    diagonalize_dirac_h();
-    form_X();
-    form_R();
-    form_h_FW_plus();
     if(do_project_){
         project();
     }
-    write_integrals_to_disk();
+
+    test_h_FW_plus();
+
+    S->copy(S_x2c_);
     T->copy(T_x2c_);
     V->copy(V_x2c_);
+    tstop();
 }
 
 void X2CInt::setup(Options& options)
 {
-    outfile->Printf("         ---------------------------------------------------------");
-    outfile->Printf("\n                    One-Electron X2C Integrals (1e-X2C)");
-    outfile->Printf("\n               by Prakash Verma and Francesco A. Evangelista");
-    outfile->Printf("\n         ---------------------------------------------------------\n");
+    outfile->Printf("         ------------------------------------------------------------");
+    outfile->Printf("\n         Spin-Free X2C Integrals at the One-Electron Level (SFX2C-1e)");
+    outfile->Printf("\n                 by Prakash Verma and Francesco A. Evangelista");
+    outfile->Printf("\n         ------------------------------------------------------------\n");
 
     // Read the molecule information
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
@@ -80,15 +63,15 @@ void X2CInt::setup(Options& options)
     outfile->Printf("\n    Computational Basis: %s",basis_.c_str());
     outfile->Printf("\n    X2C Basis: %s",x2c_basis_.c_str());
 
-    // If the X2C_BASIS is not specified or it is equal to BASIS, then use the standard computational basis
-    if ((x2c_basis_ == "") or (x2c_basis_ == basis_)){
+    // If the X2C_BASIS is equal to BASIS, then use the standard computational basis
+    if (x2c_basis_ == basis_){
         x2c_basis_ = basis_;
         do_project_ = false;
         aoBasis_ = BasisSet::pyconstruct_orbital(molecule, "BASIS",basis_);
         outfile->Printf("\n    The X2C Hamiltonian will be computed in the computational basis");
     }
-    // If the X2C_BASIS = DECONTRACT then decontract the computational basis
-    else if ((x2c_basis_ == "DECONTRACT") or (x2c_basis_ == "UNCONTRACT") or (x2c_basis_ == "DUAL")){
+    // If X2C_BASIS equals "" or "DECONTRACT" then decontract the computational basis
+    else if ((x2c_basis_ == "") or (x2c_basis_ == "DECONTRACT")){
         do_project_ = true;
         // Construct a new basis set that uses BASIS.
         aoBasis_contracted_ = BasisSet::pyconstruct_orbital(molecule, "BASIS",basis_);

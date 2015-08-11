@@ -1314,7 +1314,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do we print the SOSCF microiterations?. -*/
     options.add_str("STABILITY_ANALYSIS", "NONE", "NONE CHECK FOLLOW");
     /*- When using STABILITY_ANALYSIS = FOLLOW, how much to scale the step along the eigenvector
-        by. !expert -*/
+        by. A full step of pi/2 corresponds to a value of 1.0. !expert -*/
     options.add_double("FOLLOW_STEP_SCALE", 0.5);
     /*- When using STABILITY_ANALYSIS = FOLLOW, the increment to modify FOLLOW_STEP_SCALE_ value
         if we end up in the same SCF solution. !expert -*/
@@ -1465,6 +1465,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("LOCAL_CONVERGENCE",1E-12);
     /*- The maxiter on the orbital localization procedure -*/
     options.add_int("LOCAL_MAXITER",200);
+    /*- The number of NOONs to print in a UHF calc -*/
+    options.add_str("UHF_NOONS", "3");
+    /*- Save the UHF NOs -*/
+    options.add_bool("SAVE_UHF_NOS",false);
   }
   if (name == "CPHF"|| options.read_globals()) {
     /*- The amount of information printed
@@ -2996,8 +3000,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CC_DIIS_MIN_VECS",2);
     /*- Maximum number of vectors used in amplitude DIIS -*/
     options.add_int("CC_DIIS_MAX_VECS",6);
+    /*- Cutoff value for DF integrals -*/
+    options.add_int("INTEGRAL_CUTOFF",9);
     /*- Cutoff value for numerical procedures -*/
     options.add_int("CUTOFF",8);
+
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
     different calculation types. -*/
@@ -3064,6 +3071,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("PCG_BETA_TYPE","FLETCHER_REEVES","FLETCHER_REEVES POLAK_RIBIERE");
     /*- The algorithm that used to handle mp2 amplitudes. The DIRECT option means compute amplitudes on the fly whenever they are necessary. -*/
     options.add_str("MP2_AMP_TYPE","DIRECT","DIRECT CONV");
+    /*- Type of the CCSD Wabef term. -*/
+    options.add_str("WABEF_TYPE","AUTO","LOW_MEM HIGH_MEM AUTO");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);

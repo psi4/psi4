@@ -645,13 +645,31 @@ void DFOCC::ccsd_manager()
         cost_amp = MAX0(cost_amp1, cost_amp2);
         cost_amp = MAX0(cost_amp, cost_amp3);
         outfile->Printf("\tMemory requirement for Wabef term (T2): %9.2lf MB \n", cost_amp);
+
         if (cc_lambda_ == "TRUE") {
             cost_amp1 = navirA * navirA * navirA;
             cost_amp1 /= 1024.0 * 1024.0;
             cost_amp += cost_amp1;
             outfile->Printf("\tMemory requirement for Wefab term (L2): %9.2lf MB \n", cost_amp);
         }
-        
+
+ 	// cost_4vex_hm
+	//cost_4vex_hm = ntri_abAA * ntri_abAA;
+        //cost_4vex_hm /= 1024.0 * 1024.0;
+	cost_4vex_hm = ntri_abAA / 1024.0;
+        cost_4vex_hm *= cost_4vex_hm;
+        cost_4vex_hm *= sizeof(double);
+        cost_4vex_hm += cost_amp;
+        outfile->Printf("\tMemory for high mem Wabef algorithm   : %9.2lf MB \n", cost_4vex_hm);
+	if (cost_4vex_hm > memory_mb && Wabef_type_ == "AUTO") {
+	    do_4vex_hm = false;
+            outfile->Printf("\tI will use the LOW_MEM Wabef algorithm! \n");
+	}
+	else if (cost_4vex_hm <= memory_mb && Wabef_type_ == "AUTO") {
+	    do_4vex_hm = true;
+            outfile->Printf("\tI will use the HIGH_MEM Wabef algorithm! \n");
+	}
+       
         // Mem alloc for DF ints
         if (df_ints_incore) {
             bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
@@ -843,40 +861,6 @@ void DFOCC::ccd_manager()
         outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
 
         // memory requirements
-        /*
-        // DF-HF B(Q,mn)
-        cost_ampAA = 0;
-        cost_ampAA = nQ_ref * nso2_;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        cost_amp = 3.0 * cost_ampAA;
-        outfile->Printf("\n\tMemory requirement for B-HF (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
-        outfile->Printf("\tMemory requirement for 3*B-HF (Q|mu nu) %9.2lf MB \n", cost_amp);
- 
-        // DF-HF B(Q,ab)
-        cost_ampAA = 0;
-        cost_ampAA = nQ_ref * nvir2AA;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        cost_amp = 3.0 * cost_ampAA;
-        outfile->Printf("\tMemory requirement for B-HF (Q|ab)    : %9.2lf MB \n", cost_ampAA);
-        outfile->Printf("\tMemory requirement for 3*B-HF (Q|ab)  : %9.2lf MB \n", cost_amp);
-
-        // DF-CC B(Q,mn)
-        cost_ampAA = 0.0;
-        cost_ampAA = nQ * nso2_;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        outfile->Printf("\tMemory requirement for B-CC (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
- 
-        // DF-CC B(Q,ab)
-        cost_ampAA = 0.0;
-        cost_ampAA = nQ * navirA * navirA;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        outfile->Printf("\tMemory requirement for B-CC (Q|ab)    : %9.2lf MB \n", cost_ampAA);
-        */
-
         // DF-CC B(Q,ab) + B(Q,ia) + B(Q,ij)
         cost_df = 0.0;
         cost_df = (navirA * navirA) + (navirA * naoccA) + (naoccA * naoccA);
@@ -954,6 +938,21 @@ void DFOCC::ccd_manager()
         cost_ampAA2 *= sizeof(double);
         cost_amp = MAX0(cost_ampAA, cost_ampAA2);
         outfile->Printf("\tMemory requirement for Wabef term     : %9.2lf MB \n", cost_amp);
+
+	// cost_4vex_hm
+	cost_4vex_hm = ntri_abAA / 1024.0;
+        cost_4vex_hm *= cost_4vex_hm;
+        cost_4vex_hm *= sizeof(double);
+        cost_4vex_hm += cost_amp;
+        outfile->Printf("\tMemory for high mem Wabef algorithm   : %9.2lf MB \n", cost_4vex_hm);
+	if (cost_4vex_hm > memory_mb && Wabef_type_ == "AUTO") {
+	    do_4vex_hm = false;
+            outfile->Printf("\tI will use the LOW_MEM Wabef algorithm! \n");
+	}
+	else if (cost_4vex_hm <= memory_mb && Wabef_type_ == "AUTO") {
+	    do_4vex_hm = true;
+            outfile->Printf("\tI will use the HIGH_MEM Wabef algorithm! \n");
+	}
         
         // Mem alloc for DF ints
         if (df_ints_incore) {

@@ -95,6 +95,7 @@ class OPT_DATA {
                      // # of previous steps of data stored should be == iteration
   int steps_since_last_H;   // number of steps since H has been computed
   int consecutive_backsteps; // # of consecutive steps backwards, if any
+  int previous_consecutive_backsteps; // only used in current memory; not saved
   double *rfo_eigenvector;  // for RFO root-following
   std::vector<STEP_DATA *> steps; 
 
@@ -213,7 +214,13 @@ class OPT_DATA {
     void decrement_iteration(void) { --iteration; }
 
     void increment_consecutive_backsteps(void) { ++consecutive_backsteps; }
-    void reset_consecutive_backsteps(void) { consecutive_backsteps = 0; }
+    void reset_consecutive_backsteps(void) {
+      previous_consecutive_backsteps = consecutive_backsteps; // only used in current memory; not saved
+      consecutive_backsteps = 0;
+    }
+    void restore_previous_consecutive_backsteps(void) {
+      consecutive_backsteps = previous_consecutive_backsteps; // for last second aborts after reset has been done
+    }
     int g_consecutive_backsteps(void) { return consecutive_backsteps; }
 
     int g_steps_since_last_H(void) const { return steps_since_last_H; }

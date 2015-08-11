@@ -53,6 +53,7 @@
 #include <cmath>
 
 #include <libmints/pointgrp.h>
+#include <exception.h>
 
 using namespace std;
 using namespace psi;
