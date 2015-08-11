@@ -21,6 +21,7 @@
 #
 
 """Module with utility functions that act on molecule objects."""
+from __future__ import absolute_import
 import math
 import psi4
 import p4const

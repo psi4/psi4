@@ -21,6 +21,7 @@
 #
 
 """Module with non-generic exceptions classes."""
+from __future__ import print_function
 
 
 class QcdbException(Exception):

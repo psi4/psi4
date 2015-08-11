@@ -1,6 +1,7 @@
 """Class to
 
 """
+from __future__ import absolute_import
 import math
 
 #MAX_IOFF = 30000

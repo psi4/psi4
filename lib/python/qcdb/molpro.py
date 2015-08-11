@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #
 #@BEGIN LICENSE
 #
@@ -23,8 +24,8 @@
 import math
 
 import qcdb.exceptions
-import qcformat
-import molpro_basissets
+from . import qcformat
+from . import molpro_basissets
 
 
 class MolproIn(qcformat.InputFormat):

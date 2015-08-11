@@ -26,6 +26,8 @@ Justin M. Turney, with incremental improvements by other
 psi4 developers.
 
 """
+from __future__ import print_function
+from __future__ import absolute_import
 import math
 import copy
 from .vecutil import *
@@ -33,7 +35,7 @@ from .exceptions import *
 try:
     from collections import OrderedDict
 except ImportError:
-    from oldpymodules import OrderedDict
+    from .oldpymodules import OrderedDict
 
 
 class CoordValue(object):
