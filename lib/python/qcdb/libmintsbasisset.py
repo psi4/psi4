@@ -554,12 +554,6 @@ class BasisSet(object):
             orb = other
             aux = target
 
-        if isinstance(aux, bytes):
-            aux = aux.decode('utf-8')
-        if isinstance(orb, bytes):
-            orb = orb.decode('utf-8')
-
-
         #print 'BasisSet::pyconstructP', 'key =', key, 'aux =', aux, 'fitrole =', fitrole, 'orb =', orb, 'orbonly =', orbonly #, mol
         # Create (if necessary) and update qcdb.Molecule
         if isinstance(mol, basestring):
