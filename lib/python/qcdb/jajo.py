@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #@BEGIN LICENSE
 #
@@ -476,63 +477,63 @@ def getrec(reclabelarray, verbose=False):
         }
 
     if verbose:
-        print '\n<<<  JAINDX  >>>\n'
+        print('\n<<<  JAINDX  >>>\n')
 
     posf = srcrecs
     istr = intlen2format[srcrecs]
     jastart = struct.unpack(istr, fileContent[:posf])
     if verbose:
-        print '%10s%10d%10d' % ('start', 0, posf)
+        print('%10s%10d%10d' % ('start', 0, posf))
 
     poss = posf
     posf = poss + 8 * nopt
     istr = '8s' * nopt
     jaindx = struct.unpack(istr, fileContent[poss:posf])
     if verbose:
-        print '%10s%10d%10d' % ('jaindx', poss, posf)
+        print('%10s%10d%10d' % ('jaindx', poss, posf))
 
     poss = posf
     posf = poss + srcints * nopt
     istr = intlen2format[srcints] * nopt
     jaindx2 = struct.unpack(istr, fileContent[poss:posf])
     if verbose:
-        print '%10s%10d%10d' % ('jaindx2', poss, posf)
+        print('%10s%10d%10d' % ('jaindx2', poss, posf))
 
     poss = posf
     posf = poss + srcints * nopt
     istr = intlen2format[srcints] * nopt
     jaindx3 = struct.unpack(istr, fileContent[poss:posf])
     if verbose:
-        print '%10s%10d%10d' % ('jaindx3', poss, posf)
+        print('%10s%10d%10d' % ('jaindx3', poss, posf))
 
     poss = posf
     posf = poss + srcints
     istr = intlen2format[srcints]
     jamid = struct.unpack(istr, fileContent[poss:posf])
     if verbose:
-        print '%10s%10d%10d' % ('mid', poss, posf)
+        print('%10s%10d%10d' % ('mid', poss, posf))
 
     poss = posf
     posf = poss + srcrecs
     istr = intlen2format[srcrecs]
     jaend = struct.unpack(istr, fileContent[poss:posf])
     if verbose:
-        print '%10s%10d%10d' % ('end', poss, posf)
+        print('%10s%10d%10d' % ('end', poss, posf))
 
     nrecs = jaindx.index('OPENSLOT')  # number of active records
 
     if verbose:
-        print '\n'
-        print '%20s%10d' % ('File Length:', fileLength)
-        print '%20s%10d' % ('srcints Int Length:', srcints)
-        print '%20s%10d' % ('srcrecs Int Length:', srcrecs)
-        print '%20s%10d' % ('First Rec:', jastart[0])
-        print '%20s%10d' % ('Second Rec:', jamid[0])
-        print '%20s%10d' % ('Last Rec:', jaend[0])
-        print '%20s%10d' % ('Full Records:', nrecs)
-        print '\n'
+        print('\n')
+        print('%20s%10d' % ('File Length:', fileLength))
+        print('%20s%10d' % ('srcints Int Length:', srcints))
+        print('%20s%10d' % ('srcrecs Int Length:', srcrecs))
+        print('%20s%10d' % ('First Rec:', jastart[0]))
+        print('%20s%10d' % ('Second Rec:', jamid[0]))
+        print('%20s%10d' % ('Last Rec:', jaend[0]))
+        print('%20s%10d' % ('Full Records:', nrecs))
+        print('\n')
 
-        print '\n<<<  JOBARC  >>>\n'
+        print('\n<<<  JOBARC  >>>\n')
 
     with open('JOBARC', mode='rb') as file:  # b is important -> binary
         fileContent = file.read()
@@ -551,7 +552,7 @@ def getrec(reclabelarray, verbose=False):
         if verbose:
             #print item, istr, poss, posf, '\t', jaindx[item], jaindx2[item], jaindx3[item], jobarc
             if jaindx3[item] < 120:
-                print jaindx[item], jaindx2[item], jaindx3[item], jobarc
+                print(jaindx[item], jaindx2[item], jaindx3[item], jobarc)
 
         poss = posf
         if jaindx[item] in reclabelarray:

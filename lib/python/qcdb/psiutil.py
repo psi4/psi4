@@ -24,12 +24,15 @@ r"""Stuff stolen from psi. Should import or not as necessary
 or some better way. Apologies to the coders.
 
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
 import sys
 import math
 import re
 import os
 import string
-from vecutil import *
+from .vecutil import *
 from p4xcpt import *
 
 
@@ -153,7 +156,7 @@ def search_file(filename, search_path):
 
     """
     file_found = False
-    paths = string.split(search_path, os.pathsep)
+    paths = search_path.split(os.pathsep)
     for path in paths:
         if os.path.exists(os.path.join(path, filename)):
             file_found = True

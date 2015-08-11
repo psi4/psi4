@@ -1348,7 +1348,7 @@ bool psi4_python_module_initialize()
 #if PY_MAJOR_VERSION == 2
     PY_TRY(str    , PyString_FromString(psiDataDirWithPython.c_str()));
 #else
-    PY_TRY(str    , PyBytes_FromString(psiDataDirWithPython.c_str()));
+    PY_TRY(str    , PyUnicode_FromString(psiDataDirWithPython.c_str()));
 #endif
     PyList_Append(path, str);
     Py_DECREF(str);
@@ -1378,7 +1378,11 @@ void psi4_python_module_finalize()
 void translate_psi_exception(const PsiException& e)
 {
 #ifdef DEBUG
+#if PY_MAJOR_VERSION == 2
     PyObject *message = PyString_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
+#else
+    PyObject *message = PyUnicode_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
+#endif
     PyErr_SetObject(PyExc_RuntimeError, message);
     Py_DECREF(message);
 #else
@@ -1765,7 +1769,7 @@ void Python::run(FILE *input)
 #if PY_MAJOR_VERSION == 2
             PY_TRY(str, PyString_FromString((*tok_iter).c_str()));
 #else
-            PY_TRY(str    , PyBytes_FromString((*tok_iter).c_str()));
+            PY_TRY(str    , PyUnicode_FromString((*tok_iter).c_str()));
 #endif
             PyList_Append(path, str);
         }
@@ -1809,6 +1813,9 @@ void Python::run(FILE *input)
             object objectDict = objectMain.attr("__dict__");
             s = strdup("import psi4");
             PyRun_SimpleString(s);
+            if (PyErr_Occurred() != NULL) {
+                PyErr_Print();
+            }
 
             if (!interactive_python) {
 
