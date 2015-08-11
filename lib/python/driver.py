@@ -28,6 +28,7 @@ functionality, namely single-point energies, geometry optimizations,
 properties, and vibrational frequency calculations.
 
 """
+from __future__ import absolute_import
 import sys
 import re
 #CUimport psi4
