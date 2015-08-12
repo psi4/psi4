@@ -21,6 +21,7 @@
 #
 
 """Module with functions that interface with Grimme's DFTD3 code."""
+from __future__ import absolute_import
 import os
 import re
 import subprocess
