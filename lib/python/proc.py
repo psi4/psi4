@@ -26,6 +26,7 @@ calls for each of the *name* values of the energy(), optimize(),
 response(), and frequency() function.
 
 """
+from __future__ import absolute_import
 import shutil
 import os
 import subprocess
@@ -2932,7 +2933,7 @@ def run_mrcc(name, **kwargs):
 
     # Scan iface file and grab the file energy.
     e = 0.0
-    for line in file('iface'):
+    for line in open('iface'):
         fields = line.split()
         m = fields[1]
         try:

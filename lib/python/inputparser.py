@@ -23,6 +23,7 @@
 ## Force Python 3 print syntax, if this is python 2.X
 #if sys.hexversion < 0x03000000:
 from __future__ import print_function
+from __future__ import absolute_import
 
 """Module with functions to parse the input file and convert
 Psithon into standard Python. Particularly, forms psi4
@@ -332,7 +333,7 @@ def process_basis_block(matchobj):
                 leftover_lines.append(line.strip())
 
     # Now look for regular basis set definitions
-    basblock = filter(None, basislabel.split('\n'.join(leftover_lines)))
+    basblock = list(filter(None, basislabel.split('\n'.join(leftover_lines))))
     if len(basblock) == 1:
         if len(result.split('\n')) == 3:
             # case with no [basname] markers where whole block is contents of gbs file
@@ -724,8 +725,15 @@ def process_input(raw_input, print_level=1):
     lit_block = re.compile(r'literals_psi4_yo-(\d*\d)')
     temp = re.sub(lit_block, process_literal_blocks, temp)
 
+    future_imports = []
+    def future_replace(m):
+        future_imports.append(m.group(0))
+        return ''
+    temp = re.sub('^from __future__ import .*$', future_replace, temp, flags=re.MULTILINE)
+
     # imports
-    imports = 'from psi4 import *\n'
+    imports = '\n'.join(future_imports) + '\n'
+    imports += 'from psi4 import *\n'
     imports += 'from p4const import *\n'
     imports += 'from p4util import *\n'
     imports += 'from molutil import *\n'

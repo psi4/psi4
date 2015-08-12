@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import collections
 import shelve
 import copy
@@ -21,7 +23,7 @@ def run_roa(name, **kwargs):
 
     ### Initialize database
     db = shelve.open('database',writeback=True)
-    if not db.has_key('inputs_generated'):
+    if 'inputs_generated' not in db:
         initialize_database(db)
 
     ### Generate input files

@@ -1,4 +1,5 @@
 from __future__ import print_function, division
+from __future__ import absolute_import
 from abc import abstractmethod, abstractproperty, ABCMeta
 from collections import Iterable, defaultdict
 from inspect import getargspec
