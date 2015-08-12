@@ -66,7 +66,7 @@ void CIWavefunction::get_parameters(Options &options)
   Parameters.dertype = options.get_str("DERTYPE");
   Parameters.wfn = options.get_str("WFN");
 
- 
+
   // CDS-TODO: Check these
   /* Parameters.print_lvl is set in detci.cc */
   /* Parameters.have_special_conv is set in detci.cc */
@@ -597,7 +597,7 @@ void CIWavefunction::get_parameters(Options &options)
   if (Parameters.guess_vector == PARM_GUESS_VEC_UNIT)
     Parameters.h0blocksize = Parameters.h0guess_size = 1;
 
-  
+
   Parameters.nthreads = Process::environment.get_n_threads();
   if (options["CI_NUM_THREADS"].has_changed()){
      Parameters.nthreads = options.get_int("CI_NUM_THREADS");
@@ -1085,7 +1085,7 @@ void CIWavefunction::print_parameters(void)
    }
 
    outfile->Printf( "\n\n");
-   
+
 }
 
 
@@ -1182,7 +1182,7 @@ void CIWavefunction::set_ras_parameters(void)
          Parameters.a_ras1_lvl + 1) ? Parameters.a_ras1_lvl + 1 :
          (CalcInfo.num_alp_expl) ;
    // CDS 4/15
-   // if (Parameters.fzc) Parameters.a_ras1_max += CalcInfo.num_fzc_orbs; 
+   // if (Parameters.fzc) Parameters.a_ras1_max += CalcInfo.num_fzc_orbs;
 
    Parameters.b_ras1_max = (CalcInfo.num_bet_expl >
          Parameters.b_ras1_lvl + 1) ? Parameters.b_ras1_lvl + 1:
@@ -1552,43 +1552,43 @@ void CIWavefunction::print_ras_parameters(void)
 
   outfile->Printf( "\n   DOCC            = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.docc[i]) ;
+    outfile->Printf( "%3d ", CalcInfo.docc[i]) ;
   }
   outfile->Printf( "\n   SOCC            = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.socc[i]) ;
+    outfile->Printf( "%3d ", CalcInfo.socc[i]) ;
   }
   outfile->Printf("\n");
   outfile->Printf( "\n   FROZEN DOCC     = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.frozen_docc[i]) ;
+    outfile->Printf( "%3d ", CalcInfo.frozen_docc[i]) ;
   }
   outfile->Printf( "\n   RESTRICTED DOCC = ");
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.rstr_docc[i]) ;
+    outfile->Printf( "%3d ", CalcInfo.rstr_docc[i]) ;
   }
 
   if (Parameters.fci){
-    outfile->Printf( "\n   ACTIVE = ");
+    outfile->Printf( "\n   ACTIVE          = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      outfile->Printf("%2d ",CalcInfo.ci_orbs[i]);
+      outfile->Printf("%3d ",CalcInfo.ci_orbs[i]);
     }
   }
   else{
     for (i=0; i<4; i++) {
       outfile->Printf( "\n   RAS %d           = ",i+1);
       for (j=0; j<CalcInfo.nirreps; j++) {
-        outfile->Printf("%2d ",CalcInfo.ras_opi[i][j]);
+        outfile->Printf("%3d ",CalcInfo.ras_opi[i][j]);
       }
     }
   }
   outfile->Printf( "\n   RESTRICTED UOCC = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.rstr_uocc[i]) ;
+    outfile->Printf( "%3d ", CalcInfo.rstr_uocc[i]) ;
   }
   outfile->Printf( "\n   FROZEN UOCC     = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.frozen_uocc[i]) ;
+    outfile->Printf( "%3d ", CalcInfo.frozen_uocc[i]) ;
   }
   outfile->Printf("\n");
 
@@ -1597,4 +1597,4 @@ void CIWavefunction::print_ras_parameters(void)
 }
 
 }} // namespace psi::detci
- 
+
