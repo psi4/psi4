@@ -81,8 +81,10 @@ procedures = {
             'df-omp3'       : run_dfomp3,
             'dfomp3'        : run_dfomp3,
             'qchf'          : run_qchf,
-            'dfccsd2'       : run_dfccsd2,
-            'df-ccsd2'      : run_dfccsd2,
+            'dfccsd2'       : run_dfccsd,
+            'df-ccsd2'      : run_dfccsd,
+            'ri-ccsd(t)'    : run_dfccsd_t,
+            'riccsd(t)'     : run_dfccsd_t,
             'dfccd'         : run_dfccd,
             'df-ccd'        : run_dfccd,
             'dfccsdl'       : run_dfccsdl,
@@ -93,6 +95,8 @@ procedures = {
             'df-mp3'        : run_dfmp3,
             'cd-ccsd'       : run_cdccsd,
             'cdccsd'        : run_cdccsd,
+            'cd-ccsd(t)'    : run_cdccsd_t,
+            'cdccsd(t)'     : run_cdccsd_t,
             'cd-ccd'        : run_cdccd,
             'cdccd'         : run_cdccd,
             'cdomp3'        : run_cdomp3,
@@ -362,6 +366,10 @@ def energy(name, **kwargs):
     | df-ccsd2                | density-fitted CCSD from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
     +-------------------------+---------------------------------------------------------------------------------------+
     | dfccsd2                 | density-fitted CCSD from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | ri-ccsd(t)              | density-fitted CCSD(T) from DFOCC module :ref:`[manual] <sec:dfocc>`                  |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | riccsd(t)               | density-fitted CCSD(T) from DFOCC module :ref:`[manual] <sec:dfocc>`                  |
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-ccd                  | density-fitted CCD from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
