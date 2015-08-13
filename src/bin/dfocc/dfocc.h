@@ -467,6 +467,11 @@ protected:
     void ccsd_opdm();
     void ccsd_tpdm();
 
+    // CCSD(T)
+    void ccsd_canonic_triples();
+    void ccsd_t_manager();
+    void ccsd_t_manager_cd();
+
     // CCD
     void ccd_manager();
     void ccd_manager_cd();
@@ -739,6 +744,8 @@ protected:
      double EccsdLAA;
      double EccsdLBB;
      double EccsdLAB;
+     double Eccsd_t;
+     double E_t;
 
      // CCD
      double Eccd;
