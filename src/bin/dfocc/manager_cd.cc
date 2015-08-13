@@ -851,7 +851,7 @@ void DFOCC::ccsd_t_manager_cd()
 	ccsd_canonic_triples();
         timer_off("(T)");
 	outfile->Printf("\t(T) Correction (a.u.)              : %20.14f\n", E_t);
-	outfile->Printf("\tDF-CCSD(T) Total Energy (a.u.)     : %20.14f\n", Eccsd_t);
+	outfile->Printf("\tCD-CCSD(T) Total Energy (a.u.)     : %20.14f\n", Eccsd_t);
 
 	Process::environment.globals["CURRENT ENERGY"] = Eccsd_t;
         Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
