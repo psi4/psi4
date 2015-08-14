@@ -201,6 +201,7 @@ void DFOCC::ccsd_canonic_triples()
 		V->copy(W);
 
 		// V[ijk](ab,c) += t_i^a (jb|kc) + t_j^b (ia|kc) + t_k^c (ia|jb)
+		// Vt[ijk](ab,c) = V[ijk](ab,c) / (1 + \delta(abc))
                 #pragma omp parallel for
                 for(int a = 0 ; a < navirA; ++a){
 	            int ia = ia_idxAA->get(i,a);
@@ -209,33 +210,16 @@ void DFOCC::ccsd_canonic_triples()
 			int ab = ab_idxAA->get(a,b);
                         for(int c = 0 ; c < navirA; ++c){
 			    int kc = ia_idxAA->get(k,c);
-			    double value = ( t1A->get(i,a)*J->get(jb,kc) ) + ( t1A->get(j,b)*J->get(ia,kc) ) + ( t1A->get(k,c)*J->get(ia,jb) );
-			    V->add(ab, c, value);
-			}
-		    }
-		}
-
-		// Vt[ijk](ab,c) = V[ijk](ab,c) / (1 + \delta(abc))
-                #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
-			int ab = ab_idxAA->get(a,b);
-                        for(int c = 0 ; c < navirA; ++c){
-			    double denom = 1.0;
-			    if (a == b) denom += 1.0;
-			    if (b == c) denom += 1.0;
-			    if (a == c) denom += 1.0;
-			    V->set(ab, c, V->get(ab,c)/denom);
+			    double value = V->get(ab,c) + ( t1A->get(i,a)*J->get(jb,kc) ) + ( t1A->get(j,b)*J->get(ia,kc) ) + ( t1A->get(k,c)*J->get(ia,jb) );
+			    double denom =  1 + ( (a==b) + (b==c) + (a==c) );
+			    V->set(ab, c, value/denom);
 			}
 		    }
 		}
 
 		// Denom
 		double Dijk = Dij + FockA->get(k + nfrzc, k + nfrzc);
-                double factor = 2.0;
-		if (i == j) factor -= 1.0;
-		if (j == k) factor -= 1.0;
-		if (i == k) factor -= 1.0;
+	        double factor =  2 - ( (i==j) + (j==k) + (i==k) );
 
 		// Compute energy
                 #pragma omp parallel for
@@ -446,6 +430,7 @@ void DFOCC::ccsd_canonic_triples_hm()
 		V->copy(W);
 
 		// V[ijk](ab,c) += t_i^a (jb|kc) + t_j^b (ia|kc) + t_k^c (ia|jb)
+		// Vt[ijk](ab,c) = V[ijk](ab,c) / (1 + \delta(abc))
                 #pragma omp parallel for
                 for(int a = 0 ; a < navirA; ++a){
 	            int ia = ia_idxAA->get(i,a);
@@ -454,33 +439,16 @@ void DFOCC::ccsd_canonic_triples_hm()
 			int ab = ab_idxAA->get(a,b);
                         for(int c = 0 ; c < navirA; ++c){
 			    int kc = ia_idxAA->get(k,c);
-			    double value = ( t1A->get(i,a)*J->get(jb,kc) ) + ( t1A->get(j,b)*J->get(ia,kc) ) + ( t1A->get(k,c)*J->get(ia,jb) );
-			    V->add(ab, c, value);
-			}
-		    }
-		}
-
-		// Vt[ijk](ab,c) = V[ijk](ab,c) / (1 + \delta(abc))
-                #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
-			int ab = ab_idxAA->get(a,b);
-                        for(int c = 0 ; c < navirA; ++c){
-			    double denom = 1.0;
-			    if (a == b) denom += 1.0;
-			    if (b == c) denom += 1.0;
-			    if (a == c) denom += 1.0;
-			    V->set(ab, c, V->get(ab,c)/denom);
+			    double value = V->get(ab,c) + ( t1A->get(i,a)*J->get(jb,kc) ) + ( t1A->get(j,b)*J->get(ia,kc) ) + ( t1A->get(k,c)*J->get(ia,jb) );
+			    double denom =  1 + ( (a==b) + (b==c) + (a==c) );
+			    V->set(ab, c, value/denom);
 			}
 		    }
 		}
 
 		// Denom
 		double Dijk = Dij + FockA->get(k + nfrzc, k + nfrzc);
-                double factor = 2.0;
-		if (i == j) factor -= 1.0;
-		if (j == k) factor -= 1.0;
-		if (i == k) factor -= 1.0;
+	        double factor =  2 - ( (i==j) + (j==k) + (i==k) );
 
 		// Compute energy
                 #pragma omp parallel for
