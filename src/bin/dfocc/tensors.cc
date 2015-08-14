@@ -1518,6 +1518,11 @@ void Tensor2d::axpy(ULI length, int inc_a, const SharedTensor2d &a, int inc_2d, 
     C_DAXPY(length, alpha, a->A2d_[0], inc_a, A2d_[0], inc_2d);
 }//
 
+void Tensor2d::axpy(ULI length, int start_a, int inc_a, const SharedTensor2d &A, int start_2d, int inc_2d, double alpha)
+{
+    C_DAXPY(length, alpha, A->A2d_[0]+start_a, inc_a, A2d_[0]+start_2d, inc_2d);
+}//
+
 double Tensor2d::norm()
 {
     double value = 0.0;
