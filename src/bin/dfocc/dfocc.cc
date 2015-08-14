@@ -100,6 +100,7 @@ void DFOCC::common_init()
     qchf_=options_.get_str("QCHF");
     cc_lambda_=options_.get_str("CC_LAMBDA");
     Wabef_type_=options_.get_str("WABEF_TYPE");
+    triples_iabc_type_=options_.get_str("TRIPLES_IABC_TYPE");
 
     //title
     title();
@@ -367,7 +368,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP3   \n");
    else if (wfn_type_ == "QCHF") outfile->Printf("                      QCHF   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision August 13, 2015\n") ;
+   outfile->Printf("              Latest Revision August 14, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
