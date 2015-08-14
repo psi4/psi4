@@ -134,7 +134,12 @@ void DFOCC::ccsd_canonic_triples()
                 // W[ijk](ac,b) -= \sum(m) t_im^ac <kj|mb> (2-)
                 // W[ijk](ac,b) -= \sum(m) T[i](m,ac) I[kj](mb)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, i*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
-		W->sort3b(132, navirA, navirA, navirA, V, 1.0, 1.0);
+                #pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        W->axpy((ULI)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
 
                 // W[ijk](ba,c) = \sum(e) t_ik^ec (jb|ae) (3+)
                 // W[ijk](ba,c) = \sum(e) J[j](ba,e) T[ik](ec)
@@ -143,7 +148,12 @@ void DFOCC::ccsd_canonic_triples()
                 // W[ijk](ba,c) -= \sum(m) t_jm^ba <ik|mc> (3-)
                 // W[ijk](ba,c) -= \sum(m) T[j](m,ba) I[ik](mc)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, j*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (k*naoccA*navirA), -1.0, 1.0);
-		W->sort3b(213, navirA, navirA, navirA, V, 1.0, 1.0);
+		#pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        W->axpy((ULI)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
 
                 // W[ijk](bc,a) = \sum(e) t_ki^ea (jb|ce) (4+)
                 // W[ijk](bc,a) = \sum(e) J[j](bc,e) T[ki](ea)
@@ -152,7 +162,12 @@ void DFOCC::ccsd_canonic_triples()
                 // W[ijk](bc,a) -= \sum(m) t_jm^bc <ki|ma> (4-)
                 // W[ijk](bc,a) -= \sum(m) T[j](m,bc) I[ki](ma)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, j*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
-		W->sort3b(312, navirA, navirA, navirA, V, 1.0, 1.0);
+		#pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        W->axpy((ULI)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
 
                 // W[ijk](ca,b) = \sum(e) t_ij^eb (kc|ae) (5+)
                 // W[ijk](ca,b) = \sum(e) J[k](ca,e) T[ij](eb)
@@ -161,7 +176,12 @@ void DFOCC::ccsd_canonic_triples()
                 // W[ijk](ca,b) -= \sum(m) t_km^ca <ij|mb> (5-)
                 // W[ijk](ca,b) -= \sum(m) T[k](m,ca) I[ij](mb)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, k*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
-		W->sort3b(231, navirA, navirA, navirA, V, 1.0, 1.0);
+		#pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        W->axpy((ULI)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
 
                 // W[ijk](cb,a) = \sum(e) t_ji^ea (kc|be) (6+)
                 // W[ijk](cb,a) = \sum(e) J[k](cb,e) T[ji](ea)
@@ -170,7 +190,12 @@ void DFOCC::ccsd_canonic_triples()
                 // W[ijk](cb,a) -= \sum(m) t_km^cb <ji|ma> (6-)
                 // W[ijk](cb,a) -= \sum(m) T[k](m,cb) I[ji](ma)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, k*naoccA*navirA*navirA, (j*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
-		W->sort3b(321, navirA, navirA, navirA, V, 1.0, 1.0);
+		#pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        W->axpy((ULI)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
 
 		// V[ijk](ab,c) = W[ijk](ab,c) 
 		V->copy(W);
@@ -354,7 +379,12 @@ void DFOCC::ccsd_canonic_triples_hm()
                 // W[ijk](ac,b) -= \sum(m) t_im^ac <kj|mb> (2-)
                 // W[ijk](ac,b) -= \sum(m) T[i](m,ac) I[kj](mb)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, i*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
-		W->sort3b(132, navirA, navirA, navirA, V, 1.0, 1.0);
+                #pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        W->axpy((ULI)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
 
                 // W[ijk](ba,c) = \sum(e) t_ik^ec (jb|ae) (3+)
                 // W[ijk](ba,c) = \sum(e) J[j](ba,e) T[ik](ec)
@@ -363,7 +393,12 @@ void DFOCC::ccsd_canonic_triples_hm()
                 // W[ijk](ba,c) -= \sum(m) t_jm^ba <ik|mc> (3-)
                 // W[ijk](ba,c) -= \sum(m) T[j](m,ba) I[ik](mc)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, j*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (k*naoccA*navirA), -1.0, 1.0);
-		W->sort3b(213, navirA, navirA, navirA, V, 1.0, 1.0);
+		#pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        W->axpy((ULI)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
 
                 // W[ijk](bc,a) = \sum(e) t_ki^ea (jb|ce) (4+)
                 // W[ijk](bc,a) = \sum(e) J[j](bc,e) T[ki](ea)
@@ -372,7 +407,12 @@ void DFOCC::ccsd_canonic_triples_hm()
                 // W[ijk](bc,a) -= \sum(m) t_jm^bc <ki|ma> (4-)
                 // W[ijk](bc,a) -= \sum(m) T[j](m,bc) I[ki](ma)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, j*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
-		W->sort3b(312, navirA, navirA, navirA, V, 1.0, 1.0);
+		#pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        W->axpy((ULI)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
 
                 // W[ijk](ca,b) = \sum(e) t_ij^eb (kc|ae) (5+)
                 // W[ijk](ca,b) = \sum(e) J[k](ca,e) T[ij](eb)
@@ -381,7 +421,12 @@ void DFOCC::ccsd_canonic_triples_hm()
                 // W[ijk](ca,b) -= \sum(m) t_km^ca <ij|mb> (5-)
                 // W[ijk](ca,b) -= \sum(m) T[k](m,ca) I[ij](mb)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, k*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
-		W->sort3b(231, navirA, navirA, navirA, V, 1.0, 1.0);
+		#pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        W->axpy((ULI)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
 
                 // W[ijk](cb,a) = \sum(e) t_ji^ea (kc|be) (6+)
                 // W[ijk](cb,a) = \sum(e) J[k](cb,e) T[ji](ea)
@@ -390,7 +435,12 @@ void DFOCC::ccsd_canonic_triples_hm()
                 // W[ijk](cb,a) -= \sum(m) t_km^cb <ji|ma> (6-)
                 // W[ijk](cb,a) -= \sum(m) T[k](m,cb) I[ji](ma)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, k*naoccA*navirA*navirA, (j*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
-		W->sort3b(321, navirA, navirA, navirA, V, 1.0, 1.0);
+		#pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        W->axpy((ULI)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
 
 		// V[ijk](ab,c) = W[ijk](ab,c) 
 		V->copy(W);
