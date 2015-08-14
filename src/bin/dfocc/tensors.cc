@@ -3831,6 +3831,22 @@ void Tensor2d::ltm(const SharedTensor2d &A)
 
 }//
 
+void Tensor2d::expand23(int d1, int d2, int d3, const SharedTensor2d &A)
+{
+    // Convert Lower triangular to full tensor
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+          for (int q = 0; q < d2; q++) {
+               for (int r = 0; r < d3; r++) {
+		    int pq = (p*d2) + q;
+                    int qr = index2(q,r);
+                    A2d_[pq][r] = A->get(p,qr);
+               }
+          }
+    }
+
+}//
+
 void Tensor2d::set_row(const SharedTensor2d &A, int n)
 {
   #pragma omp parallel for
