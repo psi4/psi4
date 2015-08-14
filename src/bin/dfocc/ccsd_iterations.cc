@@ -126,10 +126,14 @@ while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2);
 
  // free t2 amps
  if (t2_incore) {
+     /*
      if (cc_lambda_ == "TRUE") {
         t2->write_symm(psio_, PSIF_DFOCC_AMPS);
      }
      else t2.reset();
+     */
+     t2->write_symm(psio_, PSIF_DFOCC_AMPS);
+     if (cc_lambda_ == "FALSE") t2.reset(); 
  }
 
 if (conver == 1) {

@@ -10,7 +10,7 @@
 DCFT: Density Cumulant Functional Theory
 ========================================
 
-.. codeauthor:: Alexander Yu. Sokolov and Andrew C. Simmonett
+.. codeauthor:: Alexander Yu. Sokolov, Andrew C. Simmonett, and Xiao Wang
 .. sectionauthor:: Alexander Yu. Sokolov
 
 *Module:* :ref:`Keywords <apdx:dcft>`, :ref:`PSI Variables <apdx:dcft_psivar>`, :source:`DCFT <src/bin/dcft>`
@@ -132,10 +132,10 @@ molecules with open-shell character. If highly accurate results are desired, a
 combination of the ODC-13 method with a three-particle energy correction
 [:math:`\mbox{ODC-13$(\lambda_3)$}`] can be used (see below).
 For the detailed comparison of the quality of these methods we refer 
-users to our :ref:` <intro:dcftcitations>`. 
+users to our :ref:`publications <intro:dcftcitations>`. 
 
 The DCFT functional can be specified by the |dcft__dcft_functional| option. The
-default choice is the DC-06 functional. In addition to five methods listed
+default choice is the ODC-12 functional. In addition to five methods listed
 above, |dcft__dcft_functional| option can be set to CEPA0 (coupled electron
 pair approximation zero, equivalent to linearized coupled cluster doubles
 method, LCCD). CEPA0 can be considered as a particular case of the DC-06 and DC-12
@@ -150,9 +150,13 @@ combination of the ODC-13 functional with the  :math:`(\lambda_3)` correction
 [denoted as :math:`\mbox{ODC-13$(\lambda_3)$}`] has been shown to provide highly
 accurate results for open-shell molecules near equilibrium geometries.
 
-At the present moment, the DCFT code can only be run with the unrestricted
-reference orbitals. If the |scf__reference| option is not specified in the input file,
-the |PSIfour| Python driver will conveniently set it to UHF when the DCFT code is executed.
+At the present moment, all of the DCFT methods support unrestricted reference
+orbitals (|scf__reference| = UHF), which can be used to perform energy and
+gradient computations for both closed- and open-shell molecules. In addition,
+the ODC-06 and ODC-12 methods support restricted reference orbitals
+(|scf__reference| = RHF) for the energy and gradient computations of
+closed-shell molecules. Note that in this case restricted reference orbitals
+are only available for |dcft__algorithm| = SIMULTANEOUS.
 
 .. _`sec:dcftalgorithms`:
 
@@ -237,6 +241,38 @@ need to be solved, which makes the computation of the analytic gradients very
 efficient. Analytic gradients are not available for the three-particle energy
 correction :math:`(\lambda_3)`.
 
+.. _`sec:dcftmethodsummary`:
+
+Methods Summary
+~~~~~~~~~~~~~~~
+
+The table below summarizes current DCFT code features:
+
+    .. _`table:dcft_methods_summary`:
+
+    +-------------------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | Method                              | Available algorithms                                         |  Energy | Gradient | Reference              |
+    +=====================================+==============================================================+=========+==========+========================+
+    | ODC-06                              | SIMULTANEOUS, QC                                             |    Y    |     Y    | RHF/UHF                |
+    +-------------------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | ODC-12                              | SIMULTANEOUS, QC                                             |    Y    |     Y    | RHF/UHF                |
+    +-------------------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | ODC-13                              | SIMULTANEOUS, QC                                             |    Y    |     Y    | UHF                    |
+    +-------------------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | :math:`\mbox{ODC-12$(\lambda_3)$}`  | SIMULTANEOUS, QC                                             |    Y    |     N    | UHF                    |
+    +-------------------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | :math:`\mbox{ODC-13$(\lambda_3)$}`  | SIMULTANEOUS, QC                                             |    Y    |     N    | UHF                    |
+    +-------------------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | DC-06                               | SIMULTANEOUS, QC, TWOSTEP                                    |    Y    |     Y    | UHF                    |
+    +-------------------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | DC-12                               | SIMULTANEOUS, QC, TWOSTEP                                    |    Y    |     N    | UHF                    |
+    +-------------------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+
+Note that for ODC-06 and ODC-12 |scf__reference| = RHF is only available for
+|dcft__algorithm| = SIMULTANEOUS. To compute :math:`(\lambda_3)` correction,
+the |dcft__three_particle| option needs to be set to PERTURBATIVE.
+
+
 .. _`sec:dcftmininput`:
 
 Minimal Input
@@ -255,13 +291,11 @@ Minimal input for the DCFT single-point computation looks like this::
 
 The ``energy('dcft')`` call to :py:func:`~driver.energy` executes the DCFT
 module, which will first call the SCF module and perform the SCF computation
-with UHF reference to obtain a guess for the DCFT orbitals. After SCF is
-converged, the program will perform the energy computation using the DC-06
-method. By default, the simultaneous algorithm will be used for the solution of
-the equations. Note that while the default value for the option
-|scf__reference| is RHF, this option is set to UHF before the DCFT module is
-executed. For the DC-06 method one can also request to perform geometry
-optimization following the example below::
+with RHF reference to obtain a guess for the DCFT orbitals. After SCF is
+converged, the program will perform the energy computation using the ODC-12
+method. By default, simultaneous algorithm will be used for the solution of
+the equations. One can also request to perform geometry
+optimization following example below::
 
     molecule { 
     H
@@ -273,10 +307,8 @@ optimization following the example below::
     optimize('dcft')
 
 The ``optimize('dcft')`` call will first perform all of the procedures
-described above to obtain the DC-06 energy. After that, the DC-06 analytic
-gradients code will be executed to perform the solution of the DCFT response
-equations, compute analytic gradients of the DCFT energy and perform the
-geometry optimization. 
+described above to obtain the ODC-12 energy. After that, the ODC-12 analytic
+gradients code will be executed and geometry optimization will be performed. 
 
 .. _`sec:dcftrecommend`:
 

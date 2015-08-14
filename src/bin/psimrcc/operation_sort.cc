@@ -32,7 +32,7 @@
 #include "matrix.h"
 
 namespace psi{
-    
+
     namespace psimrcc{
     extern MOInfo *moinfo;
 
@@ -53,7 +53,7 @@ void CCOperation::sort(CCIndex* T_left,CCIndex* T_right,double*** T_matrix,doubl
     throw PSIEXCEPTION("CCOperation::sort() doesn't support more that six indices");
   short* reindexing_array = new short[6];
   for(size_t i = 0; i< reindexing.size(); i++)
-    reindexing_array[i]=string_to_integer(reindexing.substr(i,1))-1;
+    reindexing_array[i]= to_integer(reindexing.substr(i, 1))-1;
 
   CCIndex* A_left    = A_Matrix->get_left();
   CCIndex* A_right   = A_Matrix->get_right();

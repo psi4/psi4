@@ -32,6 +32,8 @@ if(ENABLE_PCMSOLVER)
         -DENABLE_TESTS=${PCMSOLVER_TESTS}
         -DZLIB_ROOT=${ZLIB_ROOT}
         -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
+        -DENABLE_LOGGER=OFF
+        -DENABLE_TIMER=OFF
      )
 
     if(PCMSOLVER_TESTS)
@@ -80,12 +82,7 @@ write_to_cloc_list("${to_count}")
 add_library(psipcm STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 add_dependencies(psipcm pcmsolver)
-# PCMSolver needs Fortran libraries
-if(CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
-  list(APPEND PCMSOLVER_LIBS pcm getkw gfortran quadmath ${ZLIB_LIBRARIES})
-else() # Intel case
-  list(APPEND PCMSOLVER_LIBS pcm getkw ifcore imf ${ZLIB_LIBRARIES})
-endif()
+list(APPEND PCMSOLVER_LIBS pcm getkw ${ZLIB_LIBRARIES} "${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES}")
 set_property(GLOBAL APPEND PROPERTY LIBLIST psipcm ${PCMSOLVER_LIBS})
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(pcmsolver custom_boost)

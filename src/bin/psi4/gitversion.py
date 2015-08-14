@@ -11,7 +11,7 @@ def write_version(branch, mmp, ghash, status):
         version_str = "#define GIT_VERSION \"{%s} %s %s\"\n" % \
                       (branch, ghash, status)
     else:
-        version_str = "#undef GIT_VERSION"
+        version_str = "#undef GIT_VERSION\n"
 
     if mmp:
         mmp_str = "#define PSI_VERSION \"%s\"\n" % (mmp)
@@ -30,7 +30,8 @@ def write_version(branch, mmp, ghash, status):
 try:
     command = "git symbolic-ref -q HEAD"
     process = subprocess.Popen(command.split(), stderr=subprocess.PIPE,
-                               stdout=subprocess.PIPE, cwd=top_srcdir)
+                               stdout=subprocess.PIPE, cwd=top_srcdir,
+                               universal_newlines=True)
     (out, err) = process.communicate()
     branch = str(out).rstrip()[11:]
     if process.returncode:
@@ -42,7 +43,8 @@ except:
 try:
     command = "git describe --long --dirty --always"
     process = subprocess.Popen(command.split(), stderr=subprocess.PIPE,
-                               stdout=subprocess.PIPE, cwd=top_srcdir)
+                               stdout=subprocess.PIPE, cwd=top_srcdir,
+                               universal_newlines=True)
     (out, err) = process.communicate()
     fields = str(out).rstrip().split('-')
 
