@@ -145,7 +145,7 @@ link_libraries("${CMAKE_THREAD_LIBS_INIT}")
 
 # Python Detection
 include(ConfigPython)
-link_libraries("${PYTHON_LIBRARIES}")
+link_libraries("${PYTHON_LIBRARY}")
 include_directories(SYSTEM "${PYTHON_INCLUDE_DIR}")
 
 # Boost Detection
