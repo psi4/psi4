@@ -184,6 +184,7 @@ class Tensor2d
   void axpy(double **a, double alpha);
   void axpy(const SharedTensor2d &a, double alpha);
   void axpy(ULI length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha);
+  void axpy(ULI length, int start_a, int inc_a, const SharedTensor2d &A, int start_2d, int inc_2d, double alpha);
   double **transpose2();
   SharedTensor2d transpose();
   void trans(const SharedTensor2d &A);
@@ -195,6 +196,7 @@ class Tensor2d
   // partial copy
   void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip);
   void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip, int start);
+  double get_max_element();
   // diagonalize: diagonalize via rsp
   void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff);
   // cdsyev: diagonalize via lapack
@@ -404,11 +406,17 @@ class Tensor2d
   void symm_packed(const SharedTensor2d &A);
   // A(Q, p>=q) = A(Q,pq)
   void ltm(const SharedTensor2d &A);
+  // A(p,qr) = A(p,q>=r)
+  void expand23(int d1, int d2, int d3, const SharedTensor2d &A);
 
   // (+)A(p>=q, r>=s) = 1/2 [A(pq,rs) + A(qp,rs)]
   void symm4(const SharedTensor2d &a);
   // (-)A(p>=q, r>=s) = 1/2 [A(pq,rs) - A(qp,rs)]
   void antisymm4(const SharedTensor2d &a);
+  // (+)A(p>=q, r>=s) = 1/2 [A(pq,rs) + A(pq,sr)]
+  void symm_col4(const SharedTensor2d &a);
+  // (-)A(p>=q, r>=s) = 1/2 [A(pq,rs) - A(pq,sr)]
+  void antisymm_col4(const SharedTensor2d &a);
   // (+)At(p>=q, r>=s) = 1/2 [A(pq,rs) + A(qp,rs)] * (2 -\delta_{pq})
   void symm_row_packed4(const SharedTensor2d &a);
   // (+)At(p>=q, r>=s) = 1/2 [A(pq,rs) + A(qp,rs)] * (2 -\delta_{rs})

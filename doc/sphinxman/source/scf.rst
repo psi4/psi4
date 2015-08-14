@@ -304,11 +304,6 @@ with the guess HOMO and LUMO orbitals mixed.
 Mixing of the guess orbitals can be requested by setting the |scf__guess_mix|
 keyword to true::
 
-    set guess_mix true
-    energy('uhf')
-
-    or, equivalently
-
     set reference uhf
     set guess_mix true
     energy('scf')

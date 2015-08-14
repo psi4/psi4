@@ -30,8 +30,21 @@ option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
 option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     OFF)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
 # Modules requiring Fortran
-option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF)
-option(ENABLE_PCMSOLVER      "Enable PCMSolver library"                    OFF)
+if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH)
+   if(NOT CMAKE_Fortran_COMPILER)
+      message(FATAL_ERROR "The Fortran compiler has to be explicitly specified!")
+   endif()
+endif()
+include(CMakeDependentOption)
+CMAKE_DEPENDENT_OPTION(
+       ENABLE_DKH            "Enable DKH in libmints"                      ON
+                             "CMAKE_Fortran_COMPILER"                      OFF)
+CMAKE_DEPENDENT_OPTION(
+       ENABLE_PCMSOLVER      "Enable PCMSolver library"                    OFF
+                             "CMAKE_Fortran_COMPILER"                      OFF)
+CMAKE_DEPENDENT_OPTION(
+       ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF
+                             "CMAKE_Fortran_COMPILER"                      OFF)
 # Options for dashboard builds
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                        OFF)
 option(ENABLE_MEMCHECK       "Enable Valgrind memory check"                OFF)
@@ -44,16 +57,13 @@ option(ENABLE_JKFACTORY      "Enable the distributed JKFactory (requires MPI)"  
 set(EXTERNAL_LIBS)
 
 # Decide if Fortran is needed
-if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY)
-   if(CMAKE_Fortran_COMPILER)
-      enable_language(Fortran)
-      add_definitions(-DHAVE_FORTRAN)
-      # This is to use the CMake generated macros and not those based on FC_SYMBOL
-      add_definitions(-DUSE_FCMANGLE_H)
-      set(FORTRAN_ENABLED TRUE)
-   else()
-      message(FATAL_ERROR "The Fortran compiler has to be explicitly specified!")
-   endif()
+if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH)
+   enable_language(Fortran)
+   # add_definitions(-DHAVE_FORTRAN)  # unused
+   # This is to use the CMake generated macros and not those based on FC_SYMBOL
+   add_definitions(-DUSE_FCMANGLE_H)
+   set(FORTRAN_ENABLED TRUE)
+   message(STATUS "Fortran ENABLED")
 endif()
 
 # Include CMake modules as needed
@@ -135,8 +145,8 @@ link_libraries("${CMAKE_THREAD_LIBS_INIT}")
 
 # Python Detection
 include(ConfigPython)
-link_libraries("${PYTHON_LIBRARIES}")
-include_directories(SYSTEM "${PYTHON_INCLUDE_DIRS}")
+link_libraries("${PYTHON_LIBRARY}")
+include_directories(SYSTEM "${PYTHON_INCLUDE_DIR}")
 
 # Boost Detection
 # We need Boost.Python, so this has to come _after_ Python detection
@@ -191,6 +201,12 @@ endif()
 if(ENABLE_LIBERD)
    message(WARNING "Building/Using LibERD instead of LibInts!!!!")
    add_definitions(-DHAVE_ERD)
+endif()
+
+if(ENABLE_DKH)
+   message(STATUS "DKH in LibMints ENABLED")
+   fortran_enabler()
+   add_definitions(-DHAVE_DKH)
 endif()
 
 # Libint configuration

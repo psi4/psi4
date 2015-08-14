@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 #
 #@BEGIN LICENSE
 #
@@ -24,11 +26,11 @@ import re
 import math
 from collections import defaultdict
 
-from exceptions import *
-import qcformat
+from .exceptions import *
+from . import qcformat
 #import molpro_basissets
-import options
-from pdict import PreservingDict
+from . import options
+from .pdict import PreservingDict
 
 
 def harvest_output(outtext):
@@ -68,7 +70,7 @@ class Infile(qcformat.InputFormat2):
     def __init__(self, mem, mol, mtd, der, opt):
         qcformat.InputFormat2.__init__(self, mem, mol, mtd, der, opt)
 
-        print self.method, self.molecule.nactive_fragments()
+        print(self.method, self.molecule.nactive_fragments())
         if 'sapt' in self.method and self.molecule.nactive_fragments() != 2:
             raise FragmentCountError("""Requested molecule has %d, not 2, fragments.""" % (self.molecule.nactive_fragments()))
 
