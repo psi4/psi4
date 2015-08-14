@@ -46,6 +46,7 @@
 #include <libmints/pointgrp.h>
 #include <libciomr/libciomr.h>
 #include <libefp_solver/efp_solver.h>
+#include <psi4-dec.h>
 
 #include "vector3.h"
 #include "coordentry.h"
@@ -57,6 +58,7 @@
 #include <element_to_Z.h>
 #include "../libparallel2/Communicator.h"
 #include "../libparallel2/ParallelEnvironment.h"
+
 using namespace std;
 using namespace psi;
 using namespace boost;

@@ -352,6 +352,7 @@ protected:
     void pair_index();
     void fock_so();
     void ref_grad();
+    void b_so_non_zero(); // form non-zero so-basis df ints
 
     // Cholesky
     void cd_ints();
@@ -363,6 +364,7 @@ protected:
     void b_ij_cd();
     void b_ia_cd();
     void b_ab_cd();
+    void b_so_non_zero_cd(); // form non-zero so-basis cd ints
 
     // OMP2
     void omp2_manager();
@@ -413,9 +415,12 @@ protected:
     void ccsd_F_intr();
     void ccsd_WmnijT2();
     void ccsd_WijamT2();
+    void ccsd_WijamT2_high_mem();
     void ccsd_WmbejT2();
     void ccsd_WabefT2();     
     void ccsd_Wabef2T2();     
+    void ccsd_WabefT2_high_mem();     
+    void ccsd_WabefT2_ao_basis();     
     void ccsd_t1_amps();
     void ccsd_t2_amps();
     void ccsd_energy();
@@ -451,14 +456,22 @@ protected:
     void ccsdl_VmnijL2();
     void ccsdl_WijmnL2();
     void ccsdl_WabefL2();     
+    void ccsdl_WabefL2_high_mem();     
     void ccsdl_Wmnie_direct(SharedTensor2d &W);
     void ccsdl_tau_amps(SharedTensor2d &U, SharedTensor2d &T);
+    void ccsdl_LijmeL2_high_mem();
 
     // CCSD Density
     void ccsd_pdm_3index_intr();
     void ccsd_pdm_yQia();
     void ccsd_opdm();
     void ccsd_tpdm();
+
+    // CCSD(T)
+    void ccsd_canonic_triples();
+    void ccsd_canonic_triples_hm();
+    void ccsd_t_manager();
+    void ccsd_t_manager_cd();
 
     // CCD
     void ccd_manager();
@@ -470,6 +483,7 @@ protected:
     void ccd_WmnijT2();
     void ccd_WmbejT2();
     void ccd_WabefT2();     
+    void ccd_WabefT2_high_mem();     
     void ccd_t2_amps();
     void ccd_mp2_low();
     void ccd_iterations_low();
@@ -525,6 +539,8 @@ protected:
      int natom;
      int nmo;		// Number of MOs
      int nao;		// Number of AOs
+     int nao_nz;	// Number of non-zero AOs
+     int ndf_nz;	// Number of non-zero DF ints in AO-basis
      int nso;		// Number of SOs
      int noccA;		// Number of alpha occupied orbitals
      int noccB;		// Number of beta occupied orbitals
@@ -580,6 +596,7 @@ protected:
      int pcg_conver;
 
      int exp_cutoff;
+     int exp_int_cutoff;
      int multp; 
      int charge;
      int print_;
@@ -611,6 +628,8 @@ protected:
      double cost_3amp; 
      double cost_4amp; 
      double cost_5amp; 
+     double cost_4vex_hm;        // Mem req. for high mem evaluation of 4-virtuals exchange term  
+     double cost_triples_iabc;   // Mem req. for high mem evaluation of (ia|bc) used in (T) 
 
      // Common
      double Enuc;
@@ -641,6 +660,7 @@ protected:
      double Escsnmp2AB;
      double DE;
      double cutoff;
+     double int_cutoff_;
      double tol_Eod;
      double tol_grad;
      double tol_t2;
@@ -726,6 +746,8 @@ protected:
      double EccsdLAA;
      double EccsdLBB;
      double EccsdLAB;
+     double Eccsd_t;
+     double E_t;
 
      // CCD
      double Eccd;
@@ -774,9 +796,13 @@ protected:
      string guess_type_; 
      string qchf_; 
      string cc_lambda_; 
+     string Wabef_type_; 
+     string triples_iabc_type_; 
 
      bool df_ints_incore;
      bool t2_incore;
+     bool do_4vex_hm;
+     bool do_triples_hm;
 
      double **C_pitzerA;     
      double **C_pitzerB;     

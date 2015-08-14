@@ -169,7 +169,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   // Same goes for restricted_docc, restricted_uocc, ras1, ras2, ras3,
   // frozen_uocc.
 
-#ifdef HAVE_FORTRAN
+#ifdef HAVE_DKH
   /*- Relativistic Hamiltonian type !expert -*/
   options.add_str("RELATIVISTIC", "NO","NO X2C DKH");
 #else
@@ -1065,7 +1065,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       computations -*/
 
       /*- Reference wavefunction type -*/
-      options.add_str("REFERENCE", "UHF", "UHF");
+      options.add_str("REFERENCE", "RHF", "UHF RHF");
       /*- Algorithm to use for the density cumulant and orbital updates in the DCFT energy computation.
       Two-step algorithm is usually more efficient for small
       systems, but for large systems simultaneous algorithm (default) is recommended.
@@ -1152,7 +1152,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
       options.add_bool("RELAX_TAU", true);
       /*- Chooses appropriate DCFT method -*/
-      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
+      options.add_str("DCFT_FUNCTIONAL", "ODC-12", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
       /*- Whether to compute three-particle energy correction or not -*/
       options.add_str("THREE_PARTICLE", "NONE", "NONE PERTURBATIVE");
       /*- Do write a MOLDEN output file?  If so, the filename will end in
@@ -1292,13 +1292,27 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         the computation.  FOLLOW will perform the analysis and, if a totally symmetric instability
         is found, will attemp to follow the eigenvector and re-run the computations to find a stable
         solution. -*/
+    options.add_bool("SOSCF", false);
+    /*- Do use second-order SCF convergence methods? -*/
+    options.add_double("SOSCF_E_START", 1.0E-2);
+    /*- Do use second-order SCF convergence methods? -*/
+    options.add_double("SOSCF_R_START", 1.0E-2);
+    /*- When to start second-order SCF iterations based on gradient RMS -*/
+    options.add_int("SOSCF_MIN_ITER", 2);
+    /*- Minimum number of second-order microiterations to perform. -*/
+    options.add_int("SOSCF_MAX_ITER", 4);
+    /*- Maximum number of second-order microiterations to perform. -*/
+    options.add_double("SOSCF_CONV", 0.0);
+    /*- Secord order convergence threshold. -*/
+    options.add_bool("SOSCF_PRINT", false);
+    /*- Do we print the SOSCF microiterations?. -*/
     options.add_str("STABILITY_ANALYSIS", "NONE", "NONE CHECK FOLLOW");
     /*- When using STABILITY_ANALYSIS = FOLLOW, how much to scale the step along the eigenvector
-        by. !expert -*/
+        by. A full step of pi/2 corresponds to a value of 1.0. !expert -*/
     options.add_double("FOLLOW_STEP_SCALE", 0.5);
     /*- When using STABILITY_ANALYSIS = FOLLOW, the increment to modify FOLLOW_STEP_SCALE_ value
         if we end up in the same SCF solution. !expert -*/
-    options.add_double("FOLLOW_STEP_INCREMENT", 0.5);
+    options.add_double("FOLLOW_STEP_INCREMENT", 0.2);
     /*- When using STABILITY_ANALYSIS = FOLLOW, maximum number of orbital optimization attempts
         to make the wavefunction stable. !expert -*/
     options.add_int("MAX_ATTEMPTS", 1);
@@ -1445,6 +1459,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("LOCAL_CONVERGENCE",1E-12);
     /*- The maxiter on the orbital localization procedure -*/
     options.add_int("LOCAL_MAXITER",200);
+    /*- The number of NOONs to print in a UHF calc -*/
+    options.add_str("UHF_NOONS", "3");
+    /*- Save the UHF NOs -*/
+    options.add_bool("SAVE_UHF_NOS",false);
   }
   if (name == "CPHF"|| options.read_globals()) {
     /*- The amount of information printed
@@ -2976,8 +2994,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CC_DIIS_MIN_VECS",2);
     /*- Maximum number of vectors used in amplitude DIIS -*/
     options.add_int("CC_DIIS_MAX_VECS",6);
+    /*- Cutoff value for DF integrals -*/
+    options.add_int("INTEGRAL_CUTOFF",9);
     /*- Cutoff value for numerical procedures -*/
     options.add_int("CUTOFF",8);
+
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
     different calculation types. -*/
@@ -3035,7 +3056,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Type of the SOS method -*/
     options.add_str("SOS_TYPE","SOS","SOS SOSPI");
     /*- Type of the wavefunction. -*/
-    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OLCCD DF-OMP2.5 DFGRAD DF-CCSD DF-CCD CD-OMP2 CD-CCSD CD-CCD CD-OMP3 QCHF");
+    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OLCCD DF-OMP2.5 DFGRAD DF-CCSD DF-CCD DF-CCSD(T) CD-OMP2 CD-CCSD CD-CCD CD-CCSD(T) CD-OMP3 QCHF");
     /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
     options.add_str("CEPA_TYPE","CEPA(0)","CEPA(0)");
     /*- The algorithm that used for 4 index MO TEIs. -*/
@@ -3044,6 +3065,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("PCG_BETA_TYPE","FLETCHER_REEVES","FLETCHER_REEVES POLAK_RIBIERE");
     /*- The algorithm that used to handle mp2 amplitudes. The DIRECT option means compute amplitudes on the fly whenever they are necessary. -*/
     options.add_str("MP2_AMP_TYPE","DIRECT","DIRECT CONV");
+    /*- Type of the CCSD Wabef term. -*/
+    options.add_str("WABEF_TYPE","AUTO","LOW_MEM HIGH_MEM AUTO");
+    /*- The algorithm to handle (ia|bc) type integrals that used for (T) correction. -*/
+    options.add_str("TRIPLES_IABC_TYPE","AUTO","INCORE AUTO DIRECT");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);

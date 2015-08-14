@@ -495,10 +495,10 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_combined(const boost::shared_p
         PyList_SetItem(f, i, PyString_FromString(fitroles[i].c_str()));
         PyList_SetItem(o, i, PyString_FromString(others[i].c_str()));
 #else
-        PyList_SetItem(k, i, PyBytes_FromString(keys[i].c_str()));
-        PyList_SetItem(t, i, PyBytes_FromString(targets[i].c_str()));
-        PyList_SetItem(f, i, PyBytes_FromString(fitroles[i].c_str()));
-        PyList_SetItem(o, i, PyBytes_FromString(others[i].c_str()));
+        PyList_SetItem(k, i, PyUnicode_FromString(keys[i].c_str()));
+        PyList_SetItem(t, i, PyUnicode_FromString(targets[i].c_str()));
+        PyList_SetItem(f, i, PyUnicode_FromString(fitroles[i].c_str()));
+        PyList_SetItem(o, i, PyUnicode_FromString(others[i].c_str()));
 #endif
     }
 
@@ -607,7 +607,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
 #if PY_MAJOR_VERSION == 2
         orbfunc = PyString_FromString(orb.c_str());
 #else
-        orbfunc = PyBytes_FromString(orb.c_str());
+        orbfunc = PyUnicode_FromString(orb.c_str());
 #endif
     }
     if (!orbonly) {
@@ -620,7 +620,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
 #if PY_MAJOR_VERSION == 2
             auxfunc = PyString_FromString(aux.c_str());
 #else
-            auxfunc = PyBytes_FromString(aux.c_str());
+            auxfunc = PyUnicode_FromString(aux.c_str());
 #endif
         }
     }

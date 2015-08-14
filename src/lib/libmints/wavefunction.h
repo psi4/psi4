@@ -243,6 +243,11 @@ protected:
     int CIM_nactive_virtual_;
     int * CIM_nactive_virtual_pointer_;
 
+    /* Xiao Wang */
+    /// Flag to tell if this is a DCFT computation
+    bool isDCFT_;
+    /* Xiao Wang */
+
 private:
     // Wavefunction() {}
     void common_init();
@@ -326,6 +331,8 @@ public:
     const Dimension& frzcpi() const { return frzcpi_; }
     /// Returns the frozen virtual orbitals per irrep array.
     const Dimension& frzvpi() const { return frzvpi_; }
+    /// Sets the frozen virtual orbitals per irrep array.
+    void set_frzvpi(const Dimension& frzvpi) { for(int h=0; h < nirrep_; h++) frzvpi_[h] = frzvpi[0]; }
     /// Return the number of frozen core orbitals
     int nfrzc() const { return nfrzc_; }
     /// Return the number of alpha electrons
@@ -535,6 +542,13 @@ public:
 
     /// Set if this is a CIM computation
     void CIMSet(bool value,int nactive_occupied);
+
+    /* Xiao Wang */
+    /// Returns true if this is a DCFT computation
+    bool isDCFT();
+    /// Set if this is a DCFT computation
+    void set_DCFT(bool val);
+    /* Xiao Wang */
 };
 
 }
