@@ -3067,6 +3067,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("MP2_AMP_TYPE","DIRECT","DIRECT CONV");
     /*- Type of the CCSD Wabef term. -*/
     options.add_str("WABEF_TYPE","AUTO","LOW_MEM HIGH_MEM AUTO");
+    /*- The algorithm to handle (ia|bc) type integrals that used for (T) correction. -*/
+    options.add_str("TRIPLES_IABC_TYPE","AUTO","INCORE AUTO DIRECT");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);

@@ -6,7 +6,6 @@ TODO:
 * Re-build Gij and Gab for DF-OMP2
 * Write Wabef3T2 where int trans should be V4N/4
 
-
 DEBUG:
 * T-amplitudes are okay
 * WL(mbij) is okay
