@@ -405,6 +405,8 @@ class Tensor2d
   void symm_packed(const SharedTensor2d &A);
   // A(Q, p>=q) = A(Q,pq)
   void ltm(const SharedTensor2d &A);
+  // A(p,qr) = A(p,q>=r)
+  void expand23(int d1, int d2, int d3, const SharedTensor2d &A);
 
   // (+)A(p>=q, r>=s) = 1/2 [A(pq,rs) + A(qp,rs)]
   void symm4(const SharedTensor2d &a);
