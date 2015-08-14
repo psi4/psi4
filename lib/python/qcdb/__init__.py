@@ -24,22 +24,26 @@
 databases. Contains Molecule class and physical constants from psi4 suite.
 
 """
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
 __version__ = '0.3'
 __author__ = 'Lori A. Burns'
 
 # Load Python modules
-from molecule import Molecule
-from dbproc import *
-from options import *
-from qcformat import *
-import cfour
-import jajo
-from orient import OrientMols
+import sys
+from .molecule import Molecule
+from .dbproc import *
+from .options import *
+from .qcformat import *
+from . import cfour
+from . import jajo
+from .orient import OrientMols
 #from origdbwrap import Database, FourDatabases, ThreeDatabases  # , ReactionDatum, Reagent, Reaction
-from dbwrap import Database, DB4 #DatabaseWrapper  #ReactionDatum, Reagent, Reaction
-from libmintspointgrp import SymmetryOperation, PointGroup
-from libmintsbasisset import BasisSet
+from .dbwrap import Database, DB4 #DatabaseWrapper  #ReactionDatum, Reagent, Reaction
+from .libmintspointgrp import SymmetryOperation, PointGroup
+from .libmintsbasisset import BasisSet
 
 # Load items that are useful to access from an input file
-from psiutil import *
-from physconst import *
+from .psiutil import *
+from .physconst import *

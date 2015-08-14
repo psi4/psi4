@@ -137,10 +137,10 @@ def format_kwargs_for_input(filename, lmode=1, **kwargs):
     if lmode == 2:
         kwargs['mode'] = 'reap'
         kwargs['linkage'] = os.getpid()
-    filename.write('''\npickle_kw = ("""''')
+    filename.write('''\npickle_kw = ("""'''.encode('utf-8'))
     pickle.dump(kwargs, filename)
-    filename.write('''""")\n''')
-    filename.write("""\nkwargs = pickle.loads(pickle_kw)\n""")
+    filename.write('''""")\n'''.encode('utf-8'))
+    filename.write("""\nkwargs = pickle.loads(pickle_kw)\n""".encode('utf-8'))
     if lmode == 2:
         kwargs['mode'] = 'sow'
         del kwargs['linkage']
