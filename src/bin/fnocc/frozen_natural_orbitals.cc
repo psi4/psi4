@@ -77,6 +77,11 @@ void FrozenNO::common_init() {
     ndoccact = ndocc - nfzc;
     nvirt    = nmo - ndocc;
 
+    // quit if not RHF
+    if ( options_.get_str("REFERENCE")!="RHF") {
+        throw PsiException("FNOs only implemented for reference=rhf",__FILE__,__LINE__);
+    }
+
     // quit if number of virtuals is less than number of doubly occupied
     if (nvirt<ndoccact){
        throw PsiException("ndocc must be less than nvirt",__FILE__,__LINE__);
