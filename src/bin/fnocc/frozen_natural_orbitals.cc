@@ -477,10 +477,21 @@ void DFFrozenNO::ThreeIndexIntegrals() {
   // read integrals that were written to disk in the scf
   long int nQ_scf = Process::environment.globals["NAUX (SCF)"];
   if ( options_.get_str("SCF_TYPE") == "DF" ) {
+
+      boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(molecule(),
+          "BASIS", options_.get_str("BASIS"));
+
       boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(molecule(),
-            "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"));
+          "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
+          options_.get_str("BASIS"), primary->has_puream());
+
       nQ_scf = auxiliary->nbf();
       Process::environment.globals["NAUX (SCF)"] = nQ_scf;
+
+      //boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(molecule(),
+      //      "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"));
+      //nQ_scf = auxiliary->nbf();
+      //Process::environment.globals["NAUX (SCF)"] = nQ_scf;
   }
 
   boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ_scf,ntri));
