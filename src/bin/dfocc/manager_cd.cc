@@ -725,7 +725,39 @@ void DFOCC::ccsd_t_manager_cd()
 	    do_4vex_hm = true;
             outfile->Printf("\tI will use the HIGH_MEM Wabef algorithm! \n");
 	}
-        
+
+       	// Memory for triples: 2*O^2V^2 + 5*V^3 + O^3V + V^2N + V^3/2
+        cost_amp1 = 0.0;
+        cost_amp1 = 2.0 * naoccA * naoccA * navirA * navirA;
+        cost_amp1 += 5.0 * naoccA * navirA * navirA;
+        cost_amp1 += naoccA * naoccA * naoccA * navirA;
+        cost_amp1 += nQ * navirA * navirA;
+        cost_amp1 += navirA * ntri_abAA;
+        cost_amp1 /= 1024.0 * 1024.0;
+        cost_amp1 *= sizeof(double);
+	// Memory: OV^3 + 2*O^2V^2 + 2*V^3 + O^3V + V^2N
+        cost_triples_iabc = 0.0;
+        cost_triples_iabc = 2.0 * naoccA * naoccA * navirA * navirA;
+        cost_triples_iabc += 5.0 * naoccA * navirA * navirA;
+        cost_triples_iabc += naoccA * naoccA * naoccA * navirA;
+        cost_triples_iabc += nQ * navirA * navirA;
+        cost_triples_iabc /= 1024.0 * 1024.0;
+        cost_amp2 = 0.0;
+        cost_amp2 = (navirA * navirA) / 1024.0;
+        cost_amp2 *= (naoccA * navirA) / 1024.0;
+        cost_triples_iabc += cost_amp2;
+        cost_triples_iabc *= sizeof(double);
+	if (cost_triples_iabc > memory_mb && triples_iabc_type_ == "AUTO") {
+	    do_triples_hm = false;
+            outfile->Printf("\n\tI will use a DIRECT algorithm for (ia|bc) in (T)! \n");
+            outfile->Printf("\tMemory requirement for (T) correction : %9.2lf MB \n", cost_amp1);
+	}
+	else if (cost_triples_iabc <= memory_mb && triples_iabc_type_ == "AUTO") {
+	    do_triples_hm = true;
+            outfile->Printf("\n\tI will use an INCORE algorithm for (ia|bc) in (T)! \n");
+            outfile->Printf("\tMemory requirement for (T) correction : %9.2lf MB \n", cost_triples_iabc);
+	}
+       
         // Mem alloc for DF ints
         if (df_ints_incore) {
             bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
@@ -846,9 +878,16 @@ void DFOCC::ccsd_t_manager_cd()
         Process::environment.globals["CD-CCSD CORRELATION ENERGY"] = Eccsd - Escf;
 
 	// CCSD(T)
+        tstop();
+        tstart();
         outfile->Printf("\tComputing (T) correction...\n");
         timer_on("(T)");
-	ccsd_canonic_triples();
+        if (triples_iabc_type_ == "AUTO") {
+	    if (do_triples_hm) ccsd_canonic_triples_hm();
+	    else ccsd_canonic_triples();
+        }
+        else if (triples_iabc_type_ == "INCORE") ccsd_canonic_triples_hm();
+        else if (triples_iabc_type_ == "DIRECT") ccsd_canonic_triples();
         timer_off("(T)");
 	outfile->Printf("\t(T) Correction (a.u.)              : %20.14f\n", E_t);
 	outfile->Printf("\tCD-CCSD(T) Total Energy (a.u.)     : %20.14f\n", Eccsd_t);
@@ -856,7 +895,7 @@ void DFOCC::ccsd_t_manager_cd()
 	Process::environment.globals["CURRENT ENERGY"] = Eccsd_t;
         Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Eccsd_t - Escf;
-	Process::environment.globals["DF-CCSD(T) TOTAL ENERGY"] = Eccsd_t;
+	Process::environment.globals["CD-CCSD(T) TOTAL ENERGY"] = Eccsd_t;
 	Process::environment.globals["(T) CORRECTION"] = E_t;
 
 	/*
