@@ -638,12 +638,9 @@ void DFERI::transform()
 }
 void DFERI::fit()
 {
-    boost::shared_ptr<Matrix> J = Jm12(auxiliary_,J_cutoff_);
-    double** Jp = J->pointer();
-
     int naux = auxiliary_->nbf();
 
-    size_t max_pairs = 0L;
+    size_t max_pairs = 0L; 
     for (int i = 0; i < pair_spaces_order_.size(); i++) {
         std::string name = pair_spaces_order_[i];
         boost::shared_ptr<Tensor> A = ints_[name];
@@ -658,8 +655,8 @@ void DFERI::fit()
 
     boost::shared_ptr<Matrix> T1(new Matrix("T1", naux, max_rows));
     boost::shared_ptr<Matrix> T2(new Matrix("T2", max_rows, naux));
-    double** T1p = T1->pointer();
-    double** T2p = T2->pointer();
+    double** T1p = T1->pointer(); 
+    double** T2p = T2->pointer(); 
 
     std::set<double> unique_pows;
     for (int i = 0; i < pair_spaces_order_.size(); i++) {
@@ -672,10 +669,9 @@ void DFERI::fit()
         it != unique_pows.end(); ++it) {
 
         double power = (*it);
-
-        boost::shared_ptr<Matrix> J = Jpow(power);;
-        if (power == 0.0) J->identity();
-        double** Jp = J->pointer();
+    
+        boost::shared_ptr<Matrix> J = Jpow(power);
+        double** Jp = J->pointer(); 
 
         for (int i = 0; i < pair_spaces_order_.size(); i++) {
             std::string name = pair_spaces_order_[i];
@@ -687,29 +683,28 @@ void DFERI::fit()
             size_t pairs = A->sizes()[0] * (size_t) A->sizes()[1];
 
             boost::shared_ptr<Tensor> AT = ints_[name + "_temp"];
-
+            
             FILE* fh = A->file_pointer();
             FILE* fhT = AT->file_pointer();
 
-            for (size_t pair = 0L; pair < pairs; pair += max_pairs) {
-                size_t npairs = (pair + max_pairs >= pairs? pairs - pair : max_pairs);
+            for (size_t pair = 0L; pair < pairs; pair += max_rows) {
+                size_t npairs = (pair + max_rows >= pairs? pairs - pair : max_rows);
 
-                fseek(fhT,pair*sizeof(double),SEEK_SET);
                 double* Ttp = T1p[0];
                 for (int Q = 0; Q < naux; Q++) {
-                    size_t statusvalue=fread(Ttp,npairs,sizeof(double),fhT);
-                    fseek(fhT,(pairs-npairs)*sizeof(double),SEEK_CUR);
-                    Ttp += npairs;
-                }
+                    fseek(fhT,Q*pairs*sizeof(double) + pair*sizeof(double),SEEK_SET);
+                    fread(Ttp,sizeof(double),npairs,fhT);
+                    Ttp += npairs; 
+                }            
 
                 //T1->print();
 
                 C_DGEMM('T','N',npairs,naux,naux,1.0,T1p[0],npairs,Jp[0],naux,0.0,T2p[0],naux);
-
+            
                 //T2->print();
 
-                fwrite(T2p[0],npairs*naux,sizeof(double),fh);
-            }
+                fwrite(T2p[0],sizeof(double),npairs*(size_t)naux,fh); 
+            } 
 
             if (!keep_raw_integrals_) {
                 ints_.erase(name + "_temp");

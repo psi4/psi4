@@ -24,6 +24,7 @@
 Module to provide lightweight definitions of functionals and
 SuperFunctionals
 """
+from __future__ import absolute_import
 #CUimport psi4
 import re
 import os

@@ -21,6 +21,7 @@
 #
 
 """Module with non-generic exceptions classes."""
+from __future__ import absolute_import
 import psi4
 
 

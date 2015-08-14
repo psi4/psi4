@@ -100,6 +100,7 @@ void DFOCC::common_init()
     qchf_=options_.get_str("QCHF");
     cc_lambda_=options_.get_str("CC_LAMBDA");
     Wabef_type_=options_.get_str("WABEF_TYPE");
+    triples_iabc_type_=options_.get_str("TRIPLES_IABC_TYPE");
 
     //title
     title();
@@ -350,6 +351,7 @@ void DFOCC::title()
    if (wfn_type_ == "DF-OMP2" && orb_opt_ == "TRUE") outfile->Printf("                      DF-OMP2 (DF-OO-MP2)   \n");
    else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       DF-MP2   \n");
    else if (wfn_type_ == "DF-CCSD" && orb_opt_ == "FALSE") outfile->Printf("                       DF-CCSD   \n");
+   else if (wfn_type_ == "DF-CCSD(T)" && orb_opt_ == "FALSE") outfile->Printf("                       DF-CCSD(T)   \n");
    else if (wfn_type_ == "DF-CCD" && orb_opt_ == "FALSE") outfile->Printf("                       DF-CCD   \n");
    else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE") outfile->Printf("                       DF-OMP3 (DF-OO-MP3)   \n");
    else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE") outfile->Printf("                       DF-MP3   \n");
@@ -360,12 +362,13 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") outfile->Printf("                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP2   \n");
    else if (wfn_type_ == "CD-CCSD" && orb_opt_ == "FALSE") outfile->Printf("                       CD-CCSD   \n");
+   else if (wfn_type_ == "CD-CCSD(T)" && orb_opt_ == "FALSE") outfile->Printf("                       CD-CCSD(T)   \n");
    else if (wfn_type_ == "CD-CCD" && orb_opt_ == "FALSE") outfile->Printf("                       CD-CCD   \n");
    else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "TRUE") outfile->Printf("                      CD-OMP3 (CD-OO-MP3)   \n");
    else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP3   \n");
    else if (wfn_type_ == "QCHF") outfile->Printf("                      QCHF   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision August 5, 2015\n") ;
+   outfile->Printf("              Latest Revision August 14, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
@@ -405,7 +408,9 @@ double DFOCC::compute_energy()
         else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") cd_omp2_manager();
         else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") cd_mp2_manager();
         else if (wfn_type_ == "DF-CCSD" && orb_opt_ == "FALSE") ccsd_manager();
+        else if (wfn_type_ == "DF-CCSD(T)" && orb_opt_ == "FALSE") ccsd_t_manager();
         else if (wfn_type_ == "CD-CCSD" && orb_opt_ == "FALSE") ccsd_manager_cd();
+        else if (wfn_type_ == "CD-CCSD(T)" && orb_opt_ == "FALSE") ccsd_t_manager_cd();
         else if (wfn_type_ == "DF-CCD" && orb_opt_ == "FALSE") ccd_manager();
         else if (wfn_type_ == "CD-CCD" && orb_opt_ == "FALSE") ccd_manager_cd();
         else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE") omp3_manager();
@@ -423,6 +428,7 @@ double DFOCC::compute_energy()
 
         if (wfn_type_ == "DF-OMP2" || wfn_type_ == "CD-OMP2") Etotal = Emp2L;
         else if (wfn_type_ == "DF-CCSD" || wfn_type_ == "CD-CCSD") Etotal = Eccsd;
+        else if (wfn_type_ == "DF-CCSD(T)" || wfn_type_ == "CD-CCSD(T)") Etotal = Eccsd;
         else if (wfn_type_ == "DF-CCD" || wfn_type_ == "CD-CCD") Etotal = Eccd;
         else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") Etotal = Emp3L;
         else if (wfn_type_ == "QCHF") Etotal = Eref;

@@ -3056,7 +3056,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Type of the SOS method -*/
     options.add_str("SOS_TYPE","SOS","SOS SOSPI");
     /*- Type of the wavefunction. -*/
-    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OLCCD DF-OMP2.5 DFGRAD DF-CCSD DF-CCD CD-OMP2 CD-CCSD CD-CCD CD-OMP3 QCHF");
+    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OLCCD DF-OMP2.5 DFGRAD DF-CCSD DF-CCD DF-CCSD(T) CD-OMP2 CD-CCSD CD-CCD CD-CCSD(T) CD-OMP3 QCHF");
     /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
     options.add_str("CEPA_TYPE","CEPA(0)","CEPA(0)");
     /*- The algorithm that used for 4 index MO TEIs. -*/
@@ -3067,6 +3067,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("MP2_AMP_TYPE","DIRECT","DIRECT CONV");
     /*- Type of the CCSD Wabef term. -*/
     options.add_str("WABEF_TYPE","AUTO","LOW_MEM HIGH_MEM AUTO");
+    /*- The algorithm to handle (ia|bc) type integrals that used for (T) correction. -*/
+    options.add_str("TRIPLES_IABC_TYPE","AUTO","INCORE AUTO DIRECT");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);

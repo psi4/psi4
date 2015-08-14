@@ -33,6 +33,7 @@
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <libmints/mints.h>
+#include <libpsi4util/libpsi4util.h>
 #include <libfock/jk.h>
 #include <physconst.h>
 #include "libtrans/integraltransform.h"
@@ -133,7 +134,7 @@ void UHF::form_G()
     C.clear();
     C.push_back(Ca_subset("SO", "OCC"));
     C.push_back(Cb_subset("SO", "OCC"));
-    
+
     // Run the JK object
     jk_->compute();
 
@@ -259,11 +260,11 @@ double UHF::compute_initial_E()
 double UHF::compute_E()
 {
     double one_electron_E = Dt_->vector_dot(H_);
-    double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);   
- 
+    double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);
+
     energies_["Nuclear"] = nuclearrep_;
     energies_["One-Electron"] = one_electron_E;
-    energies_["Two-Electron"] = two_electron_E; 
+    energies_["Two-Electron"] = two_electron_E;
     energies_["XC"] = 0.0;
     energies_["-D"] = 0.0;
 
@@ -624,7 +625,7 @@ void UHF::compute_nos()
     // Print the NOONs -- code ripped off from OEProp::compute_no_occupations()
     int max_num;
     if(options_.get_str("UHF_NOONS") == "ALL") max_num = nmo_;
-    else max_num = std::stoi(options_.get_str("UHF_NOONS"));
+    else max_num = to_integer(options_.get_str("UHF_NOONS"));
 
     std::vector<boost::tuple<double, int, int> > metric;
     for (int h = 0; h < UHF_NOONs->nirrep(); h++)
@@ -644,7 +645,7 @@ void UHF::compute_nos()
         outfile->Printf( "  HONO-%-2d: %4d%3s %9.7f\n", offset- index - 1,
         boost::get<2>(metric[index])+1,labels[boost::get<1>(metric[index])],
         boost::get<0>(metric[index]));
-      } 
+      }
       else {
         outfile->Printf( "  LUNO+%-2d: %4d%3s %9.7f\n", index - offset,
         boost::get<2>(metric[index])+1,labels[boost::get<1>(metric[index])],
