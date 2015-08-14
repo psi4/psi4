@@ -50,11 +50,14 @@
 // The U.S. Government is granted a limited license as per AL 91-7.
 //
 
-#include <cmath>
 
 #include <libciomr/libciomr.h>
 #include <libmints/pointgrp.h>
 #include "libparallel/ParallelPrinter.h"
+#include <psi4-dec.h>
+
+#include <cmath>
+
 using namespace std;
 using namespace psi;
 

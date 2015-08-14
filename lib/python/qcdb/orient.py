@@ -20,16 +20,18 @@
 #@END LICENSE
 #
 
+from __future__ import absolute_import
+from __future__ import print_function
 #import os
 #import re
 #import math
 #import copy
 import itertools
-from molecule import Molecule
+from .molecule import Molecule
 #from periodictable import *
 #from physconst import *
-from vecutil import *
-from exceptions import *
+from .vecutil import *
+from .exceptions import *
 
 #LINEAR_A_TOL = 1.0E-2  # When sin(a) is below this, we consider the angle to be linear
 #DEFAULT_SYM_TOL = 1.0E-8
@@ -83,7 +85,7 @@ class OrientMols(object):
                (abs(self.Pmol.nuclear_repulsion_energy() - self.Cmol.nuclear_repulsion_energy()) < 1.0e-3)):
                 self.create_orientation_from_molecules(self.Pmol, self.Cmol)
             else:
-                print 'qcdb.orient.__init__ debug info'
+                print('qcdb.orient.__init__ debug info')
                 self.Pmol.print_out()
                 print('natom', self.Pmol.natom(), 'NRE', self.Pmol.nuclear_repulsion_energy(), 'rotor', self.Pmol.rotor_type())
                 self.Cmol.print_out()
@@ -187,18 +189,18 @@ class OrientMols(object):
                     axExch[Psort[Paxs]].append(Csort[Caxs])
 
             if len(axPhse[Psort[Paxs]]) == 0:
-                print 'qcdb.orient.create_orientation_from_molecules debug info'
-                print '\nrotor', rotor, 'Paxs', Paxs, 'Caxs', Caxs, \
+                print('qcdb.orient.create_orientation_from_molecules debug info')
+                print('\nrotor', rotor, 'Paxs', Paxs, 'Caxs', Caxs, \
                     'allowed', allowed, 'P(axs)', Psort.index(Paxs), 'C(Caxs)', Csort.index(Caxs), \
                     '\nPcolS: ', PcolS, '\nCcolS: ', CcolS, '\nCcolMS: ', CcolMS, \
-                    'axExch', axExch, 'axPhse', axPhse
-                print '\nPgeom: '
+                    'axExch', axExch, 'axPhse', axPhse)
+                print('\nPgeom: ')
                 for item in Pgeom:
-                    print '       %16.8f %16.8f %16.8f' % (item[0], item[1], item[2])
-                print '\nCgeom: '
+                    print('       %16.8f %16.8f %16.8f' % (item[0], item[1], item[2]))
+                print('\nCgeom: ')
                 for item in Cgeom:
-                    print '       %16.8f %16.8f %16.8f' % (item[0], item[1], item[2])
-                print self
+                    print('       %16.8f %16.8f %16.8f' % (item[0], item[1], item[2]))
+                print(self)
                 raise ValidationError("""Axis unreconcilable between QC programs.""")
 
         allowedExchflip = []
@@ -244,19 +246,19 @@ class OrientMols(object):
 #                print 'accept exchflp', exfp, 'with map', mapMat
                 break
         else:
-            print 'else of for', exfp, mapMat
-            print 'qcdb.orient.create_orientation_from_molecules debug info'
-            print '\nPatm', Patm, 'Catm', Catm, 'Pwhite', Pwhite, \
+            print('else of for', exfp, mapMat)
+            print('qcdb.orient.create_orientation_from_molecules debug info')
+            print('\nPatm', Patm, 'Catm', Catm, 'Pwhite', Pwhite, \
                 'Cwhite', Cwhite, 'sameElem', sameElem, 'allowed', allowed, \
                 '\nCgeom[Catm]: ', Cgeom[Catm], '\nPgeom[Patm]: ', Pgeom[Patm], \
-                '\nmapMat', mapMat
-            print '\nPgeom: '
+                '\nmapMat', mapMat)
+            print('\nPgeom: ')
             for item in Pgeom:
                 print('       %16.8f %16.8f %16.8f' % (item[0], item[1], item[2]))
             print('\nCgeom: ')
             for item in Cgeom:
                 print('       %16.8f %16.8f %16.8f' % (item[0], item[1], item[2]))
-            print self
+            print(self)
             raise ValidationError("""Atom unreconcilable between QC programs.""")
 
         self.Cexchflip = exfp
@@ -280,19 +282,19 @@ class OrientMols(object):
 
         """
         #print self
-        print "Original"
+        print("Original")
         coord.print_out()
 
         coord.translate(scale(self.Cshift, -1.0))
-        print "Shift"
+        print("Shift")
         coord.print_out()
 
         coord.rotate(self.Crotate)
-        print "Rotate"
+        print("Rotate")
         coord.print_out()
 
         coord.rotate(self.Cexchflip)
-        print "ExchFlip"
+        print("ExchFlip")
         coord.print_out()
 
         geom = coord.geometry()
@@ -300,15 +302,15 @@ class OrientMols(object):
         for at in range(coord.natom()):
             new_geom.append(geom[self.Catommap[at]])
         coord.set_geometry(new_geom)
-        print "AtomMap"
+        print("AtomMap")
         coord.print_out()
 
         coord.rotate(transpose(self.Protate))
-        print "P4 Rotate"
+        print("P4 Rotate")
         coord.print_out()
 
         coord.translate(self.Pshift)
-        print "P4 Shift"
+        print("P4 Shift")
         coord.print_out()
 
     def transform_coordinates2(self, coord):

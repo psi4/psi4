@@ -22,21 +22,13 @@
 
 #ifndef psi_include_psi4_dec_h
 #define psi_include_psi4_dec_h
-#include <boost/shared_ptr.hpp>
-#include <boost/current_function.hpp>
-
-#include <string>
-#include <list>
-#include <map>
-
-#include <exception.h>
-#include <libmints/typedefs.h>
-
-
-#include "process.h"
 
 #include "libparallel/PsiOutStream.h"
-#include <cstdarg>
+#include "process.h"
+
+#include <boost/shared_ptr.hpp>
+#include <string>
+
 namespace psi {
 namespace LibParallel{
 class ParallelEnvironment;

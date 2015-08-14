@@ -26,7 +26,6 @@
 #include<map>
 #include<boost/shared_ptr.hpp>
 #include "BasesBase.h"
-#include"exception.h"
 //This is the signature of std::endl and other sorts of iomanip things
 typedef std::ostream& (*StreamManips)(std::ostream&);
 

@@ -1518,6 +1518,11 @@ void Tensor2d::axpy(ULI length, int inc_a, const SharedTensor2d &a, int inc_2d, 
     C_DAXPY(length, alpha, a->A2d_[0], inc_a, A2d_[0], inc_2d);
 }//
 
+void Tensor2d::axpy(ULI length, int start_a, int inc_a, const SharedTensor2d &A, int start_2d, int inc_2d, double alpha)
+{
+    C_DAXPY(length, alpha, A->A2d_[0]+start_a, inc_a, A2d_[0]+start_2d, inc_2d);
+}//
+
 double Tensor2d::norm()
 {
     double value = 0.0;
@@ -2760,6 +2765,58 @@ void Tensor2d::sort3b(int sort_type, int d1, int d2, int d3, const SharedTensor2
     }
  }
 
+ else if (sort_type == 213) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = q + (p*d2);
+              int qp = p + (q*d1);
+              for (int r = 0; r < d3; r++) {
+                   A2d_[qp][r] = (alpha*A->A2d_[pq][r]) + (beta*A2d_[qp][r]);
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 312) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = q + (p*d2);
+              for (int r = 0; r < d3; r++) {
+                   int rp = p + (r*d1);
+                   A2d_[rp][q] = (alpha*A->A2d_[pq][r]) + (beta*A2d_[rp][q]);
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 231) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = q + (p*d2);
+              for (int r = 0; r < d3; r++) {
+                   int qr = r + (q*d3);
+                   A2d_[qr][p] = (alpha*A->A2d_[pq][r]) + (beta*A2d_[qr][p]);
+              }
+         }
+    }
+ }
+
+ else if (sort_type == 321) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = q + (p*d2);
+              for (int r = 0; r < d3; r++) {
+                   int rq = q + (r*d2);
+                   A2d_[rq][p] = (alpha*A->A2d_[pq][r]) + (beta*A2d_[rq][p]);
+              }
+         }
+    }
+ }
+
  else {
     outfile->Printf("\tUnrecognized sort type!\n");
     throw PSIEXCEPTION("Unrecognized sort type!");
@@ -3779,6 +3836,22 @@ void Tensor2d::ltm(const SharedTensor2d &A)
 
 }//
 
+void Tensor2d::expand23(int d1, int d2, int d3, const SharedTensor2d &A)
+{
+    // Convert Lower triangular to full tensor
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+          for (int q = 0; q < d2; q++) {
+               for (int r = 0; r < d3; r++) {
+		    int pq = (p*d2) + q;
+                    int qr = index2(q,r);
+                    A2d_[pq][r] = A->get(p,qr);
+               }
+          }
+    }
+
+}//
+
 void Tensor2d::set_row(const SharedTensor2d &A, int n)
 {
   #pragma omp parallel for
@@ -3876,6 +3949,25 @@ void Tensor2d::symm4(const SharedTensor2d &a)
      }
 }//
 
+void Tensor2d::symm_col4(const SharedTensor2d &a)
+{
+     #pragma omp parallel for
+     for (int i=0; i < a->d1_; i++) {
+          for (int j=0; j <= i; j++) {
+               int ij = a->row_idx_[i][j];
+               int ij2 = index2(i,j);
+               for (int k=0; k < a->d3_; k++) {
+                    for (int l=0; l <= k; l++) {
+                         int kl = a->col_idx_[k][l];
+                         int lk = a->col_idx_[l][k];
+                         int kl2 = index2(k,l);
+                         A2d_[ij2][kl2] = 0.5 * ( a->get(ij,kl) + a->get(ij,lk) );
+                    }
+               }
+          }
+     }
+}//
+
 void Tensor2d::antisymm4(const SharedTensor2d &a)
 {
      #pragma omp parallel for
@@ -3889,6 +3981,25 @@ void Tensor2d::antisymm4(const SharedTensor2d &a)
                          int kl = a->col_idx_[k][l];
                          int kl2 = index2(k,l);
                          A2d_[ij2][kl2] = 0.5 * ( a->get(ij,kl) - a->get(ji,kl) );
+                    }
+               }
+          }
+     }
+}//
+
+void Tensor2d::antisymm_col4(const SharedTensor2d &a)
+{
+     #pragma omp parallel for
+     for (int i=0; i < a->d1_; i++) {
+          for (int j=0; j <= i; j++) {
+               int ij = a->row_idx_[i][j];
+               int ij2 = index2(i,j);
+               for (int k=0; k < a->d3_; k++) {
+                    for (int l=0; l <= k; l++) {
+                         int kl = a->col_idx_[k][l];
+                         int lk = a->col_idx_[l][k];
+                         int kl2 = index2(k,l);
+                         A2d_[ij2][kl2] = 0.5 * ( a->get(ij,kl) - a->get(ij,lk) );
                     }
                }
           }
@@ -5617,6 +5728,19 @@ void Tensor2d::cont332(string idx_c, string idx_a, string idx_b, bool delete_a, 
 	temp2.reset();
 	temp2.reset();
 }//
+
+double Tensor2d::get_max_element()
+{
+  double value = 0.0;
+  #pragma omp parallel for
+  for (int i=0; i < dim1_; i++) {
+       for (int j=0; j < dim2_; j++) {
+           if ( fabs(A2d_[i][j]) > value ) value = fabs(A2d_[i][j]);
+       }
+  }
+  return value;
+}//
+
 
 
 /********************************************************************************************/

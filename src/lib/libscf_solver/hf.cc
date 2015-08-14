@@ -46,7 +46,7 @@
 #include <psifiles.h>
 #include <libfock/jk.h>
 #include <libpsipcm/psipcm.h>
-
+#include <libpsi4util/libpsi4util.h>
 
 #include "hf.h"
 
@@ -359,6 +359,20 @@ void HF::common_init()
 
     initialized_diis_manager_ = false;
 
+    // Second-order convergence acceleration
+    soscf_enabled_ = options_.get_bool("SOSCF");
+    soscf_e_start_ = options_.get_double("SOSCF_E_START");
+    soscf_r_start_ = options_.get_double("SOSCF_R_START");
+    soscf_min_iter_ = options_.get_int("SOSCF_MIN_ITER");
+    soscf_max_iter_ = options_.get_int("SOSCF_MAX_ITER");
+    soscf_conv_ = options_.get_double("SOSCF_CONV");
+    soscf_print_ = options_.get_bool("SOSCF_PRINT");
+    if (soscf_conv_ == 0.0) {
+        soscf_conv_ = energy_threshold_;
+    }
+
+
+    // MOM convergence acceleration
     MOM_enabled_ = (options_.get_int("MOM_START") != 0);
     MOM_excited_ = (options_["MOM_OCC"].size() != 0 && MOM_enabled_);
     MOM_started_ = false;
@@ -380,6 +394,13 @@ void HF::damp_update()
 {
     throw PSIEXCEPTION("Sorry, damping has not been implemented for this "
                        "type of SCF wavefunction yet.");
+}
+
+int HF::soscf_update()
+{
+    throw PSIEXCEPTION("Sorry, second-order convergence has not been implemented for this "
+                       "type of SCF wavefunction yet.");
+    return 0;
 }
 
 void HF::integrals()
@@ -1726,53 +1747,64 @@ double HF::compute_energy()
           }
         }
 #endif
-
-        timer_on("DIIS");
-        bool add_to_diis_subspace = false;
-        if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
-            add_to_diis_subspace = true;
-
-        compute_orbital_gradient(add_to_diis_subspace);
-
-        if (diis_enabled_ == true && iteration_ >= diis_start_ + min_diis_vectors_ - 1) {
-            diis_performed_ = diis();
-        } else {
-            diis_performed_ = false;
-        }
-        timer_off("DIIS");
-
-        if (print_>4 && diis_performed_) {
-            outfile->Printf("  After DIIS:\n");
-            Fa_->print("outfile");
-            Fb_->print("outfile");
-        }
-
-        // If we're too well converged, or damping wasn't enabled, do DIIS
-        damping_performed_ = (damping_enabled_ && iteration_ > 1 && Drms_ > damping_convergence_);
-
         std::string status = "";
-        if(diis_performed_){
-            if(status != "") status += "/";
-            status += "DIIS";
-        }
-        if(MOM_performed_){
-            if(status != "") status += "/";
-            status += "MOM";
-        }
-        if(damping_performed_){
-            if(status != "") status += "/";
-            status += "DAMP";
-        }
-        if(frac_performed_){
-            if(status != "") status += "/";
-            status += "FRAC";
-        }
 
+        // We either do SOSCF or everything else
+        double ediff = fabs(E_ - Eold_);
+        if (soscf_enabled_ && (Drms_ < soscf_r_start_) && (ediff < soscf_e_start_) && (iteration_ > 1)){
+            compute_orbital_gradient(false);
+            int nmicro = soscf_update();
+            find_occupation();
+            status += "SOSCF, nmicro = ";
+            status += psi::to_string(nmicro);
+        }
+        else{ // Normal convergence procedures if we do not do SOSCF
 
+            timer_on("DIIS");
+            bool add_to_diis_subspace = false;
+            if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
+                add_to_diis_subspace = true;
 
-        timer_on("Form C");
-        form_C();
-        timer_off("Form C");
+            compute_orbital_gradient(add_to_diis_subspace);
+
+            if (diis_enabled_ == true && iteration_ >= diis_start_ + min_diis_vectors_ - 1) {
+                diis_performed_ = diis();
+            } else {
+                diis_performed_ = false;
+            }
+            timer_off("DIIS");
+
+            if (print_>4 && diis_performed_) {
+                outfile->Printf("  After DIIS:\n");
+                Fa_->print("outfile");
+                Fb_->print("outfile");
+            }
+
+            // If we're too well converged, or damping wasn't enabled, do DIIS
+            damping_performed_ = (damping_enabled_ && iteration_ > 1 && Drms_ > damping_convergence_);
+
+            if(diis_performed_){
+                if(status != "") status += "/";
+                status += "DIIS";
+            }
+            if(MOM_performed_){
+                if(status != "") status += "/";
+                status += "MOM";
+            }
+            if(damping_performed_){
+                if(status != "") status += "/";
+                status += "DAMP";
+            }
+            if(frac_performed_){
+                if(status != "") status += "/";
+                status += "FRAC";
+            }
+
+            timer_on("Form C");
+            form_C();
+            timer_off("Form C");
+        } // End SOSCF else
+
         timer_on("Form D");
         form_D();
         timer_off("Form D");
