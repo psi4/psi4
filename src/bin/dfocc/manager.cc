@@ -804,13 +804,23 @@ void DFOCC::ccsd_manager()
             }
 
             timer_on("CCSDL");
-            if (t2_incore) ccsdl_iterations();
+            if (t2_incore) {
+                tstop();
+                tstart();
+		lambda_title();
+                outfile->Printf("\tSolving Lambda amplitude equations...\n");
+		ccsdl_iterations();
+	    }
             else throw PSIEXCEPTION("There is NOT enough memory for Lambda equations!");
             timer_off("CCSDL");
         }
 
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
+            tstop();
+            tstart();
+            pdm_title();
+
 	    // memalloc
 	    G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
 	    G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
@@ -1119,6 +1129,7 @@ void DFOCC::ccsd_t_manager()
 	// CCSD(T)
         tstop();
         tstart();
+	pt_title();
         outfile->Printf("\tComputing (T) correction...\n");
         timer_on("(T)");
         if (triples_iabc_type_ == "AUTO") {
@@ -1422,13 +1433,23 @@ void DFOCC::ccd_manager()
             }
 
             timer_on("CCDL");
-            if (t2_incore) ccdl_iterations();
+            if (t2_incore) {
+                tstop();
+                tstart();
+		lambda_title();
+                outfile->Printf("\tSolving Lambda amplitude equations...\n");
+		ccdl_iterations();
+	    }
             else throw PSIEXCEPTION("There is NOT enough memory for Lambda equations!");
             timer_off("CCDL");
         }
 
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
+            tstop();
+            tstart();
+            pdm_title();
+
 	    // memalloc
 	    G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
 	    G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
