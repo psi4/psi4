@@ -351,7 +351,7 @@ void DFOCC::title()
    if (wfn_type_ == "DF-OMP2" && orb_opt_ == "TRUE") outfile->Printf("                      DF-OMP2 (DF-OO-MP2)   \n");
    else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       DF-MP2   \n");
    else if (wfn_type_ == "DF-CCSD" && orb_opt_ == "FALSE") outfile->Printf("                       DF-CCSD   \n");
-   else if (wfn_type_ == "DF-CCSD(T)" && orb_opt_ == "FALSE") outfile->Printf("                       DF-CCSD(T)   \n");
+   else if (wfn_type_ == "DF-CCSD(T)" && orb_opt_ == "FALSE") outfile->Printf("                       DF-CCSD   \n");
    else if (wfn_type_ == "DF-CCD" && orb_opt_ == "FALSE") outfile->Printf("                       DF-CCD   \n");
    else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE") outfile->Printf("                       DF-OMP3 (DF-OO-MP3)   \n");
    else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE") outfile->Printf("                       DF-MP3   \n");
@@ -362,13 +362,13 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") outfile->Printf("                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP2   \n");
    else if (wfn_type_ == "CD-CCSD" && orb_opt_ == "FALSE") outfile->Printf("                       CD-CCSD   \n");
-   else if (wfn_type_ == "CD-CCSD(T)" && orb_opt_ == "FALSE") outfile->Printf("                       CD-CCSD(T)   \n");
+   else if (wfn_type_ == "CD-CCSD(T)" && orb_opt_ == "FALSE") outfile->Printf("                       CD-CCSD   \n");
    else if (wfn_type_ == "CD-CCD" && orb_opt_ == "FALSE") outfile->Printf("                       CD-CCD   \n");
    else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "TRUE") outfile->Printf("                      CD-OMP3 (CD-OO-MP3)   \n");
    else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP3   \n");
    else if (wfn_type_ == "QCHF") outfile->Printf("                      QCHF   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision August 15, 2015\n") ;
+   outfile->Printf("              Latest Revision August 17, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
@@ -389,6 +389,62 @@ void DFOCC::title_grad()
    outfile->Printf("               for Density-Fitted Methods       \n");
    outfile->Printf("                   by Ugur Bozkaya\n") ; 
    outfile->Printf("              Latest Revision May 11, 2015\n") ;
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+
+}//
+
+void DFOCC::lambda_title()
+{
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+   if (wfn_type_ == "DF-CCSD" || wfn_type_ == "CD-CCSD") outfile->Printf("                       DF-CCSD-Lambda   \n");
+   else if (wfn_type_ == "DF-CCD" || wfn_type_ == "CD-CCD") outfile->Printf("                       DF-CCSD-Lambda   \n");
+   outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
+   outfile->Printf("              Latest Revision August 17, 2015\n") ;
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+}//
+
+void DFOCC::pt_title()
+{
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+   if (wfn_type_ == "DF-CCSD(T)" || wfn_type_ == "CD-CCSD(T)") outfile->Printf("                       DF-CCSD(T)   \n");
+   else if (wfn_type_ == "DF-CCD(T)" || wfn_type_ == "CD-CCD(T)") outfile->Printf("                       DF-CCSD(T)   \n");
+   outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
+   outfile->Printf("              Latest Revision August 17, 2015\n") ;
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+}//
+
+void DFOCC::pdm_title()
+{
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+   outfile->Printf("                         DFPDM   \n");
+   outfile->Printf("              Particle Density Matrix Code   \n");
+   outfile->Printf("               for Density-Fitted Methods       \n");
+   outfile->Printf("                   by Ugur Bozkaya\n") ; 
+   outfile->Printf("              Latest Revision August 17, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
