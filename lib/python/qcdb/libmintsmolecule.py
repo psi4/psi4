@@ -588,7 +588,7 @@ class LibmintsMolecule(object):
         com = re.compile(r'^\s*(no_com|nocom)\s*$', re.IGNORECASE)
         symmetry = re.compile(r'^\s*symmetry[\s=]+(\w+)\s*$', re.IGNORECASE)
         ATOM = '((([A-Z]{1,3})_\w+)|(([A-Z]{1,3})\d*))'  # match 'C', 'al', 'p88', 'p_pass' not 'Ofail', 'h99_text'  # good, but unused
-        atom = re.compile(r'^(?:(?P<gh1>@)|(?P<gh2>Gh\())?(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)(?(gh2)\))$', re.IGNORECASE)
+        atom = re.compile(r'^(?:(?P<gh1>@)|(?P<gh2>Gh\())?(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)(?(gh2)\))(?:@(?P<mass>\d+\.\d+))?$', re.IGNORECASE)
         cgmp = re.compile(r'^\s*(-?\d+)\s+(\d+)\s*$')
         frag = re.compile(r'^\s*--\s*$')
         variable = re.compile(r'^\s*(\w+)\s*=\s*(-?\d+\.\d+|-?\d+\.|-?\.\d+|-?\d+|tda)\s*$', re.IGNORECASE)
@@ -657,6 +657,7 @@ class LibmintsMolecule(object):
             elif atom.match(line.split()[0].strip()):
                 glines.append(line)
             else:
+                print(line.split()[0].strip())
                 raise ValidationError('Molecule::create_molecule_from_string: Unidentifiable line in geometry specification: %s' % (line))
 
         # catch last default fragment cgmp
@@ -697,6 +698,9 @@ class LibmintsMolecule(object):
                     raise ValidationError('Molecule::create_molecule_from_string: Illegal atom symbol in geometry specification: %s' % (atomSym))
 
                 zVal = el2z[atomSym]
+
+                atomMass = el2masses[atomSym] if atomm.group('mass') is None else float(atomm.group('mass'))
+
                 charge = float(zVal)
                 if ghostAtom:
                     zVal = 0
@@ -709,7 +713,7 @@ class LibmintsMolecule(object):
                     yval = self.get_coord_value(entries[2])
                     zval = self.get_coord_value(entries[3])
                     self.full_atoms.append(CartesianEntry(iatom, zVal, charge, \
-                        el2masses[atomSym], atomSym, atomLabel, \
+                        atomMass, atomSym, atomLabel, \
                         xval, yval, zval))
 
                 # handle first line of Zmat
@@ -717,7 +721,7 @@ class LibmintsMolecule(object):
                     zmatrix = True
                     tempfrag.append(iatom)
                     self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge, \
-                        el2masses[atomSym], atomSym, atomLabel))
+                        atomMass, atomSym, atomLabel))
 
                 # handle second line of Zmat
                 elif len(entries) == 3:
@@ -733,7 +737,7 @@ class LibmintsMolecule(object):
                         rval.set_fixed(True)
 
                     self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge, \
-                        el2masses[atomSym], atomSym, atomLabel, \
+                        atomMass, atomSym, atomLabel, \
                         self.full_atoms[rTo], rval))
 
                 # handle third line of Zmat
@@ -758,7 +762,7 @@ class LibmintsMolecule(object):
                         aval.set_fixed(True)
 
                     self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge, \
-                        el2masses[atomSym], atomSym, atomLabel, \
+                        atomMass, atomSym, atomLabel, \
                         self.full_atoms[rTo], rval, \
                         self.full_atoms[aTo], aval))
 
@@ -791,7 +795,7 @@ class LibmintsMolecule(object):
                         dval.set_fixed(True)
 
                     self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge, \
-                        el2masses[atomSym], atomSym, atomLabel, \
+                        atomMass, atomSym, atomLabel, \
                         self.full_atoms[rTo], rval, \
                         self.full_atoms[aTo], aval, \
                         self.full_atoms[dTo], dval))
