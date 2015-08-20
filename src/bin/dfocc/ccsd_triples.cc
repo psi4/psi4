@@ -325,23 +325,23 @@ void DFOCC::ccsd_canonic_triples_hm()
     L = M->transpose();
     M.reset();
 
-    // malloc W[ijk](abc)
-    W = SharedTensor2d(new Tensor2d("W[IJK] <AB|C>", navirA * navirA, navirA));
-    V = SharedTensor2d(new Tensor2d("V[IJK] <BA|C>", navirA * navirA, navirA));
-    J1 = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|BC)", naoccA, navirA, navirA, navirA));
-
     // B(Q,ab)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
     K->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     // Form (ia|bc)
+    J1 = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|BC)", naoccA, navirA, navirA, navirA));
     J1->gemm(false, false, L, K, 1.0, 0.0);
     K.reset();
+    L.reset();
+
+    // malloc W[ijk](abc)
+    W = SharedTensor2d(new Tensor2d("W[IJK] <AB|C>", navirA * navirA, navirA));
+    V = SharedTensor2d(new Tensor2d("V[IJK] <BA|C>", navirA * navirA, navirA));
 
     // B(Q,a>=b)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA));
-    K->read(psio_, PSIF_DFOCC_INTS);
-    Jt = SharedTensor2d(new Tensor2d("J[I] <A|B>=C", navirA, ntri_abAA));
+    //K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA));
+    //K->read(psio_, PSIF_DFOCC_INTS);
 
     // main loop
     E_t = 0.0;
@@ -498,8 +498,6 @@ void DFOCC::ccsd_canonic_triples_hm()
     J.reset();
     W.reset();
     V.reset();
-    K.reset();
-    L.reset();
     I.reset();
  
     // set energy
