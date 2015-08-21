@@ -248,6 +248,10 @@ TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs)
 
 TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs)
 {
+#ifdef HAVE_ERD
+    if(deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "ERD")
+        return new ERDERI(this, deriv, use_shell_pairs);
+#endif
     return new ERI(this, deriv, use_shell_pairs);
 }
 
