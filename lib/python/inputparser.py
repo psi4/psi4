@@ -729,7 +729,9 @@ def process_input(raw_input, print_level=1):
     def future_replace(m):
         future_imports.append(m.group(0))
         return ''
-    temp = re.sub('^from __future__ import .*$', future_replace, temp, flags=re.MULTILINE)
+
+    future_string = re.compile('^from __future__ import .*$', flags=re.MULTILINE)
+    temp = re.sub(future_string, future_replace, temp)
 
     # imports
     imports = '\n'.join(future_imports) + '\n'
