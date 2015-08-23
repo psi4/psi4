@@ -268,36 +268,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     // CDS:TODO - Does this work for doubles??
     options.add("AVG_WEIGHTS", new ArrayType());
 
-
-    /*- SUBSECTION Specifying the CI Space -*/
-
-    // /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
-    // options.add("RAS1", new ArrayType());
-
-    // /*- An array giving the number of orbitals per irrep for RAS2 !expert -*/
-    // options.add("RAS2", new ArrayType());
-
-    // /*- An array giving the number of orbitals per irrep for RAS3 !expert -*/
-    // options.add("RAS3", new ArrayType());
-
-    // /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
-    // options.add("RAS4", new ArrayType());
-
-    // /*- An array giving the number of restricted doubly-occupied orbitals per
-    // irrep (not excited in CI wavefunctions, but orbitals can be optimized
-    // in MCSCF) -*/
-    // options.add("RESTRICTED_DOCC", new ArrayType());
-
-    // /*- An array giving the number of restricted unoccupied orbitals per
-    // irrep (not occupied in CI wavefunctions, but orbitals can be optimized
-    // in MCSCF) -*/
-    // options.add("RESTRICTED_UOCC", new ArrayType());
-
-    // /*- An array giving the number of active orbitals (occupied plus
-    // unoccupied) per irrep (shorthand to make MCSCF easier to specify than
-    // using RAS keywords) -*/
-    // options.add("ACTIVE", new ArrayType());
-
     /*- The value of the spin quantum number $S$ is given by this option.
     The default is determined by the value of the multiplicity.  This is used
     for two things: (1) determining the phase of the redundant half of the CI
@@ -731,13 +701,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     how their clever scheme might be extended to RAS in general. !expert -*/
     options.add_bool("BENDAZZOLI", false);
 
-  /* Start MCSCF options*/
-  // }
-
-  // if (name == "DETCAS" || options.read_globals()) {
-  //   /*- Wavefunction type.  This should be set automatically from
-  //    *     the calling Psithon function.  !expert -*/
-  //   options.add_str("WFN", "DETCAS", "DETCAS CASSCF RASSCF");
+    /*- SUBSECTION MCSCF -*/
 
     /*- Convergence criterion for CI residual vector in the Davidson
     algorithm (RMS error).
@@ -749,87 +713,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     different calculation types. -*/
     options.add_double("MCSCF_E_CONVERGENCE", 1e-7);
 
-    /*- Maximum number CASSCF of iterations -*/
+    /*- Maximum number MCSCF of iterations -*/
     options.add_int("MCSCF_MAXITER", 30);
 
-    /*- Print the MOs? -*/
-    options.add_bool("MCSCF_PRINT_MOS", false);
+    /*- Start onestep MCSCF based on RMS of orbital gradient -*/
+    options.add_double("MCSCF_ONESTEP_GRAD", 1e-3);
 
-    /*- Erase the one-electron integrals after DETCAS executes? !expert -*/
-    options.add_bool("MCSCF_OEI_ERASE", false);
-
-    /*- Erase the two-electron integrals after DETCAS executes? !expert -*/
-    options.add_bool("MCSCF_TEI_ERASE", false);
-
-    /*- Erase the one-particle density matrix after DETCAS executes? !expert -*/
-    options.add_bool("MCSCF_OPDM_ERASE", false);
-
-    /*- Erase the two-particle density matrix after DETCAS executes? !expert -*/
-    options.add_bool("MCSCF_TPDM_ERASE", false);
-
-    /*- Erase the Lagrangian file after DETCAS executes? !expert -*/
-    options.add_bool("MCSCF_LAG_ERASE", false);
-
-    /*- Ignore frozen orbitals for independent pairs? !expert -*/
-    options.add_bool("MCSCF_IGNORE_FZ", true);
-
-    /*- Iteration to turn on DIIS -*/
-    options.add_int("MCSCF_DIIS_START", 3);
-
-    /*- How often to do a DIIS extrapolation -*/
-    options.add_int("MCSCF_DIIS_FREQ", 1);
-
-    /*- Maximum number of DIIS vectors -*/
-    options.add_int("MCSCF_DIIS_MAX_VECS", 8);
-
-    /*- Minimum number of DIIS vectors -*/
-    options.add_int("MCSCF_DIIS_MIN_VECS", 2);
-
-    /*- Scale step by this. !expert -*/
-    options.add_double("MCSCF_SCALE_STEP", 1.0);
-
-    /*- Use frozen-core operator for one-electron ints? !expert  -*/
-    options.add_bool("MCSCF_USE_FZC_H", true);
-
-    /*- Level shift in the Hessian?  -*/
-    options.add_bool("MCSCF_DO_LEVEL_SHIFT", true);
-
-    /*- Level shift value  -*/
-    options.add_double("MCSCF_SHIFT", 0.01);
-
-    /*- Lowest allowed MO Hess before levelshift  -*/
-    options.add_double("MCSCF_DETERM_MIN", 0.00001);
-
-    /*- Maximum allowed theta step  !expert -*/
-    options.add_double("MCSCF_STEP_MAX", 0.30);
-
-    /*- Use thetas by default  !expert -*/
-    options.add_bool("MCSCF_USE_THETAS", true);
-
-    /*- directly invert MO Hessian instead of solving system of
-    linear equations for orbital step if full Hessian available. !expert -*/
-    options.add_bool("MCSCF_INVERT_HESSIAN", true);
-
-    /*- Ignore usual step and force user-given step !expert -*/
-    options.add_bool("MCSCF_FORCE_STEP", false);
-
-    /*- Which pair to force a step along !expert -*/
-    options.add_int("MCSCF_FORCE_PAIR", 0);
-
-    /*- How far to step along forced direction !expert -*/
-    options.add_double("MCSCF_FORCE_VALUE", 0.0);
-
-    /*- Scale for act/act Hessian elements  -*/
-    options.add_double("MCSCF_SCALE_ACT_ACT", 1.0);
-
-    /* string describing type of MO Hessian DIAG, APPROX_DIAG, or FULL*/
-    options.add_str("MCSCF_HESSIAN", "APPROX_DIAG", "DIAG APPROX_DIAG FULL");
-
-    /*- Use BFGS to update hessian  !expert -*/
-    options.add_bool("MCSCF_BFGS", false);
-
-    /*- Use DS Hessian update? !expert -*/
-    options.add_bool("MCSCF_DS_HESSIAN", false);
+    /*- Start onestep MCSCF energy convergence -*/
+    options.add_double("MCSCF_ONESTEP_E", 1e-3);
 
   }
 
@@ -992,15 +883,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       // => CubicScalarGrid options <= //
 
-      /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/ 
+      /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
       options.add("CUBIC_GRID_SPACING", new ArrayType());
-      /*- CubicScalarGrid overages in bohr [O_X, O_Y, O_Z]. Defaults to 2.0 bohr each. -*/ 
+      /*- CubicScalarGrid overages in bohr [O_X, O_Y, O_Z]. Defaults to 2.0 bohr each. -*/
       options.add("CUBIC_GRID_OVERAGE", new ArrayType());
       /*- CubicScalarGrid basis cutoff. !expert -*/
       options.add_double("CUBIC_BASIS_TOLERANCE", 1.0E-12);
       /*- CubicScalarGrid maximum number of grid points per evaluation block. !expert -*/
       options.add_int("CUBIC_BLOCK_MAX_POINTS",1000);
-  
+
       // => Scalar Field Plotting Options <= //
 
       /*- Plot a scalar-field analysis -*/
@@ -1020,14 +911,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("LOCAL_IBO_CONDITION", 1.0E-7);
       /*- IBO localization metric power -*/
       options.add_int("LOCAL_IBO_POWER", 4);
-      /*- MinAO Basis for IBO !expert -*/ 
+      /*- MinAO Basis for IBO !expert -*/
       options.add_str("MINAO_BASIS", "CC-PVTZ-MINAO");
       /*- IBO Stars procedure -*/
       options.add_bool("LOCAL_IBO_USE_STARS", false);
       /*- IBO Charge metric for classification as Pi -*/
       options.add_double("LOCAL_IBO_STARS_COMPLETENESS", 0.90);
       /*- IBO Centers for Pi Degeneracy -*/
-      options.add("LOCAL_IBO_STARS", new ArrayType());   
+      options.add("LOCAL_IBO_STARS", new ArrayType());
   }
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory

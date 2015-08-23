@@ -39,6 +39,10 @@ class IntegralTransform;
 class MOSpace;
 typedef boost::shared_ptr<Matrix> SharedMatrix;
 
+}
+
+namespace psi { namespace detci {
+
 // From the detci module
 struct stringwr;
 struct ci_blks;
@@ -46,9 +50,7 @@ struct olsen_graph;
 struct graph_set;
 struct H_zero_block;
 struct detci_timings;
-}
-
-namespace psi { namespace detci {
+struct mcscf_params;
 
 class CIWavefunction : public Wavefunction
 {
@@ -132,6 +134,7 @@ private:
     /// Paramater and CalcInfo setters
     void get_mo_info();
     void get_parameters(Options &options);
+    void get_mcscf_parameters();
     void print_parameters();
     void set_ras_parameters();
     void print_ras_parameters();
@@ -159,10 +162,16 @@ private:
     void transform_mcscf_ints();
     void setup_dfmcscf_ints();
     void transform_dfmcscf_ints();
+    boost::shared_ptr<MOSpace> rot_space_;
+    boost::shared_ptr<MOSpace> act_space_;
+
 
     /// Stuff moved from globals
-    //struct stringwr **alplist_;
-    //struct stringwr **betlist_;
+    struct stringwr **alplist_;
+    struct stringwr **betlist_;
+    struct mcscf_params *MCSCF_Parameters;
+    //struct params Parameters;
+
     //struct ci_blks CIblks_;
     //struct olsen_graph *AlphaG_;
     //struct olsen_graph *BetaG_;

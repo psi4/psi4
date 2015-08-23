@@ -245,7 +245,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    if (Parameters.nodfile == FALSE && 
      Parameters.guess_vector == PARM_GUESS_VEC_DFILE) {
      if ((i = Dvec.read_num_vecs()) != nroots) {
-       outfile->Printf( "D file contains %d not %d vectors.  Trying another guess.\n", i, nroots);
+       if (Parameters.print_lvl) outfile->Printf( "D file contains %d not %d vectors.  Trying another guess.\n", i, nroots);
        dvec_read_fail = true;
        /*
        if (Parameters.h0blocksize == 0) {
@@ -266,11 +266,11 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       i = Sigma.read_num_vecs();
       if (i != L) {
         outfile->Printf( "%d C vectors and %d Sigma vectors.\n", i, L);
-    if (i < L) {
+        if (i < L) {
           L = i;
-      Cvec.write_num_vecs(L);
+          Cvec.write_num_vecs(L);
         }
-    outfile->Printf( "Using %d vectors \n", L);
+        if (Parameters.print_lvl) outfile->Printf( "Using %d vectors \n", L);
       }
       if (L < nroots) {
         str = "Restart failed...  ";
@@ -281,7 +281,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         throw PsiException(str,__FILE__,__LINE__);
       }
 
-      outfile->Printf( "\nAttempting Restart with %d vectors\n", L);
+      if (Parameters.print_lvl) outfile->Printf( "\nAttempting Restart with %d vectors\n", L);
 
    /* open detci.dat and write file_offset and file_number array out to
       detci.dat */
@@ -390,11 +390,11 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
       zero_mat(G, L, L);
       k = nroots;
-      }
+   }
 
    /* previous-run d vector */
    else if (Parameters.guess_vector==PARM_GUESS_VEC_DFILE && !dvec_read_fail) {
-     outfile->Printf( "Attempting to use %d previous converged vectors\n",
+     if (Parameters.print_lvl) outfile->Printf( "Attempting to use %d previous converged vectors\n",
         nroots);
 
      if (Parameters.nodfile) {
@@ -500,8 +500,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       sm_evals = init_array(L);
 
       /* need to fill out sm_evecs into b (pad w/ 0's) */
-      outfile->Printf( "Using %d initial trial vectors\n",
-         Parameters.num_init_vecs);
+      if (Parameters.print_lvl) outfile->Printf( "Using %d initial trial vectors\n", Parameters.num_init_vecs);
 
       Cvec.buf_lock(buffer1);
       for (i=0,k=0; i<L && k < Parameters.num_init_vecs; i++) {
@@ -681,17 +680,17 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
             outfile->Printf("Sigma[%d] = ", i);
             Sigma.print("outfile");
             
-            }
+          }
           for (j=i; j<L; j++) {
              Sigma2.read(j, 0);
              if (print_lvl > 2) {
                outfile->Printf("Sigma2[%d] = ", j);
                Sigma2.print("outfile");
                
-               }
-             sigma_overlap[i][j] = sigma_overlap[j][i] = Sigma * Sigma2;
              }
+             sigma_overlap[i][j] = sigma_overlap[j][i] = Sigma * Sigma2;
           }
+       }
        Sigma.buf_unlock();
        Sigma2.buf_unlock();
 
@@ -1098,18 +1097,19 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
             root_converged[i] = 0;
             converged = 0;
             }
-         outfile->Printf( "Iter %2d  Root %2d = %13.9lf",
-            iter, i+1, (lambda[iter2][i] + enuc + edrc));
-         outfile->Printf( "   Delta_E %10.3E   Delta_C %10.3E %c\n",
-            lambda[iter2][i] - lastroot[i], dvecnorm[i],
-            root_converged[i] ? 'c' : ' ');
-         
+         if (Parameters.print_lvl) {
+            outfile->Printf( "Iter %2d  Root %2d = %13.9lf",
+               iter, i+1, (lambda[iter2][i] + enuc + edrc));
+            outfile->Printf( "   Delta_E %10.3E   Delta_C %10.3E %c\n",
+               lambda[iter2][i] - lastroot[i], dvecnorm[i],
+               root_converged[i] ? 'c' : ' ');
          }
+      }
 
-      if (nroots > 1) outfile->Printf( "\n");
+      if ((nroots > 1) && Parameters.print_lvl) outfile->Printf( "\n");
 
-      if (iter == maxiter) {
-         outfile->Printf( "\nMaximum number of iterations reached\n");
+      if (iter == maxiter && !Parameters.mcscf) {
+         outfile->Printf( "\nMaximum number of CI iterations reached\n");
          }
 
       if (converged || iter == maxiter) {
@@ -1127,26 +1127,26 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
                Dvec.civ_xpeay(tval, Cvec, i, j);
                }
 
-            outfile->Printf( "\n* ROOT %d CI total energy = %17.13lf", i+1,
-               evals[i] + enuc + edrc);
-
-            if (nroots > 1) {
-               outfile->Printf( "  (%6.4lf eV, %9.2lf 1/cm)\n",
-                 (evals[i] - evals[0]) * pc_hartree2ev,
-                 (evals[i] - evals[0]) * pc_hartree2wavenumbers);
-               }
-            else outfile->Printf( "\n");
-
             if (Parameters.print_lvl) {
+              outfile->Printf( "\n* ROOT %d CI total energy = %17.13lf", i+1,
+                 evals[i] + enuc + edrc);
+
+              if (nroots > 1) {
+                 outfile->Printf( "  (%6.4lf eV, %9.2lf 1/cm)\n",
+                   (evals[i] - evals[0]) * pc_hartree2ev,
+                   (evals[i] - evals[0]) * pc_hartree2wavenumbers);
+                 }
+              else outfile->Printf( "\n");
+
                zero_arr(mi_coeff, Parameters.nprint);
                Dvec.max_abs_vals(Parameters.nprint, mi_iac, mi_ibc,
                   mi_iaidx, mi_ibidx, mi_coeff, Parameters.neg_only);
                print_vec(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
                   mi_coeff, AlphaG, BetaG, alplist, betlist, "outfile");
                outfile->Printf( "\n");
-               }
-            Dvec.write_num_vecs(i+1);  // only if nodfile ?
             }
+            Dvec.write_num_vecs(i+1);  // only if nodfile ?
+         }
          Cvec.buf_unlock();
          Dvec.buf_unlock();
          break;

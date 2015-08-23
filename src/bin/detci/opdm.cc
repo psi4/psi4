@@ -512,7 +512,7 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
             transdens ? "TDM" : "OPDM");
 
       }
-      outfile->Printf( "\n");
+      if (Parameters.print_lvl) outfile->Printf( "\n");
     }
 
     /* Get the kinetic energy if requested */

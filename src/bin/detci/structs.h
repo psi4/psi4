@@ -709,6 +709,15 @@ double wall_time_new(void);
 void init_time_new(struct detci_timings time);
 void print_time_new(struct detci_timings time);
 
+
+struct mcscf_params {
+   double rms_grad_convergence; /* convergence on RMS of orbital grad           */
+   double energy_convergence;   /* convergence on CI energy                     */
+   int max_iter;                /* maximum number of casscf iterations          */
+   double start_onestep_grad;   /* RMS of orbital grad threshold for one-step   */
+   double start_onestep_e;      /* energy convergence threshold for one-step    */
+};
+
 }} // namespace psi::detci
 
 #endif // header guard

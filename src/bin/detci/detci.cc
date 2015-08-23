@@ -267,14 +267,14 @@ void title(void)
 {
   //if (Parameters.print_lvl) {
    outfile->Printf("\n");
-   outfile->Printf("*******************************************************\n");
-   outfile->Printf("                       D E T C I  \n");
+   outfile->Printf("         ---------------------------------------------------------\n");
+   outfile->Printf("                                 D E T C I  \n");
    outfile->Printf("\n");
-   outfile->Printf("                   C. David Sherrill\n") ;
-   outfile->Printf("                   Matt L. Leininger\n") ;
-   outfile->Printf("                     18 June 1999\n") ;
-   outfile->Printf("*******************************************************\n");
-   outfile->Printf("\n\n\n");
+   outfile->Printf("                             C. David Sherrill\n") ;
+   outfile->Printf("                             Matt L. Leininger\n") ;
+   outfile->Printf("                               18 June 1999\n") ;
+   outfile->Printf("         ---------------------------------------------------------\n");
+   outfile->Printf("\n");
   // }
   //else {
   // outfile->Printf(
@@ -995,6 +995,22 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
        tval - CalcInfo.escf;
    }
 
+   // Set the energy as MCSCF would find it
+   if (Parameters.average_num > 1) { // state average
+     Process::environment.globals["MCSCF TOTAL ENERGY"] =
+       Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"];
+   }
+   else if (Parameters.root != 0) { // follow some specific root != lowest
+     std::stringstream s;
+     s << "CI ROOT " << (Parameters.root+1) << " TOTAL ENERGY";
+     Process::environment.globals["MCSCF TOTAL ENERGY"] =
+      Process::environment.globals[s.str()];
+   }
+   else {
+     Process::environment.globals["MCSCF TOTAL ENERGY"] =
+      Process::environment.globals["CI TOTAL ENERGY"];
+   }
+
    chkpt_close();
 
 }
@@ -1385,7 +1401,10 @@ BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx) {
 void CIWavefunction::compute_mcscf(struct stringwr **alplist, struct stringwr **betlist)
 {
 
-  // Setup for initial CI run
+  Parameters.print_lvl = 0;
+  Parameters.maxiter = 1;
+
+  // Build SOMCSCF object
   transform_dfmcscf_ints();
   boost::shared_ptr<SOMCSCF> somcscf(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
 
@@ -1412,48 +1431,74 @@ void CIWavefunction::compute_mcscf(struct stringwr **alplist, struct stringwr **
   /// => Start traditional MCSCF <= //
   // Parameters
   int conv = 0;
+  double ediff, grad_rms, current_energy;
+  double old_energy = 0;
+  std::string itertype;
   SharedMatrix x;
 
+  ediff = -CalcInfo.escf;
+
   // Iterate
-  for (int iter=0; iter<30; iter++){
-    outfile->Printf("\nStarting MCSCF iteration %d\n\n", iter+1);
+  for (int iter=1; iter<MCSCF_Parameters->max_iter + 1; iter++){
 
+    // Run and set CI
+    old_energy = current_energy;
     diag_h(alplist, betlist);
-
-    // if (Parameters.average_num > 1) { // state average
-    //   MCSCF_CalcInfo.energy =
-    //     Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"];
-    // }
-    // else if (Parameters.root != 0) { // follow some specific root != lowest
-    //   std::stringstream s;
-    //   s << "CI ROOT " << (Parameters.root+1) << " TOTAL ENERGY";
-    //   MCSCF_CalcInfo.energy = Process::environment.globals[s.str()];
-    // }
-    // else {
-    //   MCSCF_CalcInfo.energy = Process::environment.globals["CI TOTAL ENERGY"];
-    // }
-
     form_opdm();
     set_opdm();
     form_tpdm();
-    // detci_iteration_clean();
+    current_energy = Process::environment.globals["MCSCF TOTAL ENERGY"];
+    ediff = current_energy - old_energy;
 
     //// Get orbitals for new update
     SharedMatrix Cdocc = get_orbitals("DOCC");
-    SharedMatrix Cact = get_orbitals("ACT");
-    SharedMatrix Cvir = get_orbitals("VIR");
+    SharedMatrix Cact  = get_orbitals("ACT");
+    SharedMatrix Cvir  = get_orbitals("VIR");
     SharedMatrix actOPDM = get_active_opdm();
     SharedMatrix actTPDM = get_active_tpdm();
 
-    outfile->Printf("SOMCSCF: Updating\n");
     somcscf->update(Cdocc, Cact, Cvir, actOPDM, actTPDM);
-    x = somcscf->approx_solve();
+    grad_rms = somcscf->gradient_rms();
+
+    outfile->Printf("   @MCSCF Iter %3d:  % 5.16lf   % 1.5e  % 1.5e %s\n", iter,
+                    current_energy, ediff, grad_rms, itertype.c_str());
+
+    if (grad_rms < MCSCF_Parameters->rms_grad_convergence &&
+        (fabs(ediff) < fabs(MCSCF_Parameters->energy_convergence)) &&
+        (iter > 3)){
+      outfile->Printf("    MCSCF has converged\n");
+      break;
+    }
+
+    if (((grad_rms < MCSCF_Parameters->start_onestep_grad) &&
+        (ediff < MCSCF_Parameters->start_onestep_e) &&
+        (iter > 2))
+        || (itertype == "SOMCSCF")){
+      itertype = "SOMCSCF";
+      x = somcscf->solve(5, 1.e-10, false);
+    }
+    else {
+      itertype = "APPROX";
+      x = somcscf->approx_solve();
+    }
+
+    double maxx = 0.0;
+    for (int h=0; h<x->nirrep(); ++h) {
+        for (int i=0; i<x->rowspi()[h]; i++) {
+            for (int j=0; j<x->colspi()[h]; j++) {
+                if (fabs(x->get(h,i,j)) > maxx) maxx = fabs(x->get(h,i,j));
+            }
+        }
+    }
+
+    if (maxx > 0.5){
+      x->scale(0.5/maxx);
+    }
 
     SharedMatrix new_orbs = somcscf->Ck(x);
     set_orbitals("ROT", new_orbs);
 
     // Need to grab the new edrc energy after transqt2 computations
-    CalcInfo.edrc = somcscf->rhf_energy(get_orbitals("DRC"));
     transform_dfmcscf_ints();
   }
 

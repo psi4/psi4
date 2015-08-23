@@ -66,10 +66,9 @@ void CIWavefunction::get_parameters(Options &options)
   Parameters.dertype = options.get_str("DERTYPE");
   Parameters.wfn = options.get_str("WFN");
 
- 
+
   // CDS-TODO: Check these
-  /* Parameters.print_lvl is set in detci.cc */
-  /* Parameters.have_special_conv is set in detci.cc */
+  Parameters.print_lvl = 1;
   Parameters.have_special_conv = 0;
 
   Parameters.ex_lvl = options.get_int("EX_LEVEL");
@@ -85,14 +84,6 @@ void CIWavefunction::get_parameters(Options &options)
   Parameters.istop = options["ISTOP"].to_integer();
   Parameters.print_ciblks = options["CIBLKS_PRINT"].to_integer();
 
-  // CDS-TODO: We might override the default for PRINT by command line
-  // (or similar mechanism) in CASSCF, etc.
-  // DGAS: A lot of MCSCF parameters have been removed, we need to print this for now.
-  // CASSCF printing needs to be reworked
-  if (Parameters.wfn == "DETCAS" ||
-      Parameters.wfn == "CASSCF"   || Parameters.wfn == "RASSCF") {
-    Parameters.print_lvl = 0;
-  }
   if (options["PRINT"].has_changed()) {
     Parameters.print_lvl = options.get_int("PRINT");
   }
@@ -597,7 +588,7 @@ void CIWavefunction::get_parameters(Options &options)
   if (Parameters.guess_vector == PARM_GUESS_VEC_UNIT)
     Parameters.h0blocksize = Parameters.h0guess_size = 1;
 
-  
+
   Parameters.nthreads = Process::environment.get_n_threads();
   if (options["CI_NUM_THREADS"].has_changed()){
      Parameters.nthreads = options.get_int("CI_NUM_THREADS");
@@ -1070,13 +1061,6 @@ void CIWavefunction::print_parameters(void)
        Parameters.average_weights[i]);
    }
 
-   outfile->Printf( "\n   STATE AVERAGE = ");
-   for (i=0; i<Parameters.average_num; i++) {
-     if (i%5==0 && i!=0) outfile->Printf( "\n");
-     outfile->Printf( "%2d(%4.2lf) ",Parameters.average_states[i]+1,
-       Parameters.average_weights[i]);
-   }
-
    if (Parameters.follow_vec_num > 0) {
      outfile->Printf("\nDensity matrices will follow vector like:\n");
      for (i=0; i<Parameters.follow_vec_num; i++)
@@ -1085,7 +1069,7 @@ void CIWavefunction::print_parameters(void)
    }
 
    outfile->Printf( "\n\n");
-   
+
 }
 
 
@@ -1182,7 +1166,7 @@ void CIWavefunction::set_ras_parameters(void)
          Parameters.a_ras1_lvl + 1) ? Parameters.a_ras1_lvl + 1 :
          (CalcInfo.num_alp_expl) ;
    // CDS 4/15
-   // if (Parameters.fzc) Parameters.a_ras1_max += CalcInfo.num_fzc_orbs; 
+   // if (Parameters.fzc) Parameters.a_ras1_max += CalcInfo.num_fzc_orbs;
 
    Parameters.b_ras1_max = (CalcInfo.num_bet_expl >
          Parameters.b_ras1_lvl + 1) ? Parameters.b_ras1_lvl + 1:
@@ -1569,7 +1553,7 @@ void CIWavefunction::print_ras_parameters(void)
   }
 
   if (Parameters.fci){
-    outfile->Printf( "\n   ACTIVE = ");
+    outfile->Printf( "\n   ACTIVE          = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
       outfile->Printf("%2d ",CalcInfo.ci_orbs[i]);
     }
@@ -1593,8 +1577,18 @@ void CIWavefunction::print_ras_parameters(void)
   outfile->Printf("\n");
 
   outfile->Printf(
-     "*******************************************************\n\n");
+     "         ---------------------------------------------------------\n\n");
+}
+
+void CIWavefunction::get_mcscf_parameters()
+{
+
+  MCSCF_Parameters->rms_grad_convergence = options_.get_double("MCSCF_R_CONVERGENCE");
+  MCSCF_Parameters->energy_convergence = options_.get_double("MCSCF_E_CONVERGENCE");
+  MCSCF_Parameters->max_iter = options_.get_int("MCSCF_MAXITER");
+  MCSCF_Parameters->start_onestep_grad = options_.get_double("MCSCF_ONESTEP_GRAD");
+  MCSCF_Parameters->start_onestep_e = options_.get_double("MCSCF_ONESTEP_E");
 }
 
 }} // namespace psi::detci
- 
+
