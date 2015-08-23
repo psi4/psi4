@@ -488,7 +488,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
      iwl_buf_close(&TBuff_bb, 1);
      iwl_buf_flush(&TBuff_ab, 1);
      iwl_buf_close(&TBuff_ab, 1);
-     outfile->Printf( "\n");
+     if (Parameters.print_lvl) outfile->Printf( "\n");
    }
 
 

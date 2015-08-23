@@ -346,10 +346,8 @@ void CIWavefunction::transform_dfmcscf_ints(){
         lmax = (i==k) ? j+1 : k+1;
         for (int l=0; l<lmax; l++){
           lrel = myorder[l];
-          // double val = actMOp[irel * nact + jrel][krel * nact + lrel];
           // outfile->Printf("%d %d %d %d | %d %lf\n", i, j, k, l, target, val);
           CalcInfo.twoel_ints[target++] = actMOp[irel * nact + jrel][krel * nact + lrel];
-          // CalcInfo.twoel_ints[target++] = actMOp[irel * nact + jrel][krel * nact + lrel];
   }}}}
   actMO.reset();
   delete[] myorder;
@@ -382,17 +380,46 @@ void CIWavefunction::setup_mcscf_ints(){
   // Grab orbitals
   SharedMatrix Cdrc = get_orbitals("DRC");
   SharedMatrix Cact = get_orbitals("ACT");
-  SharedMatrix Crot = get_orbitals("ROT");
+  SharedMatrix Cvir = get_orbitals("VIR");
   SharedMatrix Cfzv = get_orbitals("FZV");
 
+  // Need active and rot spaces
   std::vector<boost::shared_ptr<MOSpace> > spaces;
-  spaces.push_back(MOSpace::occ);
-  spaces.push_back(MOSpace::vir);
+
+  std::vector<int> rot_orbitals(CalcInfo.num_ci_orbs, 0);
+  std::vector<int> act_orbitals(CalcInfo.num_ci_orbs, 0);
+  int act_orbnum = 0;
+  int rot_orbnum = 0;
+  for (int h = 0, rn = 0, an = 0; h < CalcInfo.nirreps; h++){
+    act_orbnum += CalcInfo.dropped_docc[h];
+    rot_orbnum += CalcInfo.frozen_docc[h];
+
+    // Act space
+    for (int i = 0; i < CalcInfo.ci_orbs[h]; i++){
+      act_orbitals[an++] = act_orbnum;
+    }
+    act_orbnum += CalcInfo.dropped_uocc[h];
+
+    int nrotorbs = CalcInfo.rstr_docc[h] + CalcInfo.ci_orbs[h] + CalcInfo.rstr_uocc[h];
+    for (int i = 0; i < nrotorbs; i++){
+      rot_orbitals[rn++] = rot_orbnum;
+    }
+    rot_orbnum += CalcInfo.frozen_uocc[h];
+  }
+
+  MOSpace* rot_space = new MOSpace('r', rot_orbitals);
+  MOSpace* act_space = new MOSpace('a', act_orbitals);
+
+  rot_space_ = boost::shared_ptr<MOSpace>(rot_space);
+  act_space_ = boost::shared_ptr<MOSpace>(act_space);
+  spaces.push_back(rot_space_);
+  spaces.push_back(act_space_);
+
 
   // Now the occ space is active, the vir space is our rot space (FZC to FZV)
-  IntegralTransform *ints = new IntegralTransform(Cdrc, Cact, Crot, Cfzv, spaces,
+  IntegralTransform *ints = new IntegralTransform(Cdrc, Cact, Cvir, Cfzv, spaces,
                                                 IntegralTransform::Restricted,
-                                                IntegralTransform::IWLOnly,
+                                                IntegralTransform::DPDOnly,
                                                 IntegralTransform::PitzerOrder,
                                                 IntegralTransform::OccAndVir,
                                                 true);
@@ -408,18 +435,17 @@ void CIWavefunction::transform_mcscf_ints(){
   if (!ints_init_) setup_mcscf_ints();
 
   // The orbital matrix need to be identical to the previous one
-  SharedMatrix drc = get_orbitals("DRC");
-  SharedMatrix act = get_orbitals("ACT");
-  SharedMatrix rot = get_orbitals("ROT");
-  SharedMatrix fzv = get_orbitals("FZV");
+  ints_->set_orbitals(get_orbitals("ALL"));
 
-  std::vector<SharedMatrix > vC;
-  vC.push_back(drc); vC.push_back(act); vC.push_back(rot); vC.push_back(fzv);
-  SharedMatrix C = Matrix::horzcat(vC);
-  ints_->set_orbitals(C);
+  // We need (aa|aa), (aa|aN), (aa|NN), (aN|aN)
+  ints_->transform_tei(act_space_, rot_space_, act_space_, rot_space_);
 
-  // active, rot, rot, rot transformation
-  ints_->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir);
+  // Half trans then work from there
+  ints_->transform_tei_first_half(act_space_, act_space_);
+  ints_->transform_tei_second_half(act_space_, act_space_, act_space_, rot_space_);
+  ints_->transform_tei_second_half(act_space_, act_space_, rot_space_, rot_space_);
+  ints_->transform_tei_second_half(act_space_, act_space_, act_space_, act_space_);
+
 
   CalcInfo.edrc = ints_->get_frozen_core_energy();
 

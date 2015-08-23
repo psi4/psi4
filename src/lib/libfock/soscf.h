@@ -129,6 +129,11 @@ public:
      */
     SharedMatrix solve(int max_iter=5, double conv=1.e-10, bool print=true);
 
+    /**
+     * @return gradient_rms Returns the RMS of the gradient.
+     */
+    double gradient_rms();
+
 protected:
 
     /// Parameters
@@ -172,13 +177,14 @@ protected:
 
     /// Zero's out redundant rotations, will chose act or ras.
     void zero_redundant(SharedMatrix vector);
-    /// Zeros out the active-active part of a trial vector
     void zero_act(SharedMatrix vector);
-    /// Zeros out the redundant ras-ras part of a trial vector
     void zero_ras(SharedMatrix vector);
 
     // Transform the integrals
     virtual void transform();
+
+    // Grab actMO (dense)
+    virtual void set_act_MO();
 
     // Build the Q matrices
     virtual void compute_Q();
@@ -211,6 +217,33 @@ public:
 protected:
 
     virtual void transform();
+    virtual void set_act_MO();
+    virtual void compute_Q();
+    virtual void compute_Qk(SharedMatrix U, SharedMatrix Uact);
+
+}; // DFSOMCSCF class
+
+/**
+ * Class DFSOMCSCF
+ *
+ * Density fitted second-order MCSCF
+ */
+class DiskSOMCSCF : public SOMCSCF {
+
+public:
+    /**
+     * Initialize the DF SOMCSCF object.
+     * @param jk      JK object to use.
+     * @param H       Core hamiltonian in the SO basis.
+     */
+    DiskSOMCSCF(boost::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H);
+
+    virtual ~DiskSOMCSCF();
+
+protected:
+
+    virtual void transform();
+    virtual void set_act_MO();
     virtual void compute_Q();
     virtual void compute_Qk(SharedMatrix U, SharedMatrix Uact);
 
