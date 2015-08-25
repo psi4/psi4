@@ -5,9 +5,9 @@
 if("${PYTHON_INTERPRETER}" STREQUAL "")
    find_package(PythonInterp REQUIRED)
 else()
-    if(NOT EXISTS PYTHON_INTERPRETER)
+    if(NOT EXISTS "${PYTHON_INTERPRETER}")
         find_program(PYTHON_EXECUTABLE NAMES ${PYTHON_INTERPRETER})
-        if (NOT EXISTS PYTHON_EXECUTABLE)
+        if (NOT EXISTS "${PYTHON_EXECUTABLE}")
             set(PYTHONINTERP_FOUND FALSE)
         endif()
     else()
@@ -16,6 +16,7 @@ else()
     endif()
 endif()
 find_package(PythonInterp REQUIRED)
+
 
 
 # Now find Python libraries and headers of the EXACT SAME VERSION
@@ -31,9 +32,11 @@ if(PYTHONINTERP_FOUND)
                   OUTPUT_VARIABLE _PYTHON_LIB_PATH
                   RESULT_VARIABLE _PYTHON_LIB_RESULT)
 
+
    set(PYTHON_INCLUDE_DIR ${_PYTHON_INCLUDE_PATH} CACHE PATH "Path to a directory")
    set(_PYTHON_VERSION "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
    set(_PYTHON_VERSION_NO_DOTS "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
+
    find_library(PYTHON_LIBRARY
      NAMES
      python${_PYTHON_VERSION_NO_DOTS}
@@ -41,10 +44,25 @@ if(PYTHONINTERP_FOUND)
      python${_PYTHON_VERSION}m
      python${_PYTHON_VERSION}u
      python${_PYTHON_VERSION}
+     NO_DEFAULT_PATH
      HINTS
      "${_PYTHON_LIB_PATH}"
      DOC "Path to Python library file."
    )
+   if (NOT EXISTS "${PYTHON_LIBRARY}")
+       # redo with default paths
+       find_library(PYTHON_LIBRARY
+         NAMES
+         python${_PYTHON_VERSION_NO_DOTS}
+         python${_PYTHON_VERSION}mu
+         python${_PYTHON_VERSION}m
+         python${_PYTHON_VERSION}u
+         python${_PYTHON_VERSION}
+         HINTS
+         "${_PYTHON_LIB_PATH}"
+         DOC "Path to Python library file."
+       )
+   endif()
 
    mark_as_advanced(CLEAR PYTHON_EXECUTABLE)
    mark_as_advanced(FORCE PYTHON_LIBRARY)
