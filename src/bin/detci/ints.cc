@@ -551,7 +551,6 @@ void CIWavefunction::tf_onel_ints()
    /* set up some shorthand notation (speed up access) */
    nbf = CalcInfo.num_ci_orbs ;
    tei = CalcInfo.twoel_ints ;
-   ntri = (nbf * (nbf + 1)) / 2;
 
    /* ok, new special thing for CASSCF...if there are *no* excitations
       into restricted orbitals, and if Parameters.fci=TRUE, then we
@@ -624,10 +623,10 @@ void CIWavefunction::form_gmat()
             kj = ioff[j] + k ;
             ikkj = ioff[kj] + ik ;
             tval -= tei[ikkj] ;
-            }
-         CalcInfo.gmat[i][j] = tval ;
          }
+         CalcInfo.gmat[i][j] = tval ;
       }
+   }
 
    for (i=0, ij=0; i<nbf; i++) {
       for (j=0; j<=i; j++,ij++) {
@@ -637,14 +636,14 @@ void CIWavefunction::form_gmat()
             kj = ioff[MAX0(k,j)] + MIN0(k,j) ;
             ikkj = ioff[ik] + kj ;
             tval -= tei[ikkj] ;
-            }
+         }
          ii = ioff[i] + i ;
          iiij = ioff[ii] + ij ;
          if (i==j) tval -= 0.5 * tei[iiij] ;
          else tval -= tei[iiij] ;
          CalcInfo.gmat[i][j] = tval ;
-         }
       }
+   }
 
    // if (printflag) {
    //    outfile->Printf( "\ng matrix\n") ;

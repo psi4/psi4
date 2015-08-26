@@ -313,12 +313,13 @@ void CIWavefunction::get_mo_info()
     }
   }
 
-  // Build integral arrays
-  CalcInfo.onel_ints = (double *) init_array(CalcInfo.nmotri);
-  CalcInfo.twoel_ints = (double *) init_array(CalcInfo.nmotri * (CalcInfo.nmotri + 1) / 2);
+  // Build arrays for integrals
+  int ncitri = (CalcInfo.num_ci_orbs * (CalcInfo.num_ci_orbs + 1)) / 2 ;
+  CalcInfo.onel_ints = (double *) init_array(ncitri);
+  CalcInfo.twoel_ints = (double *) init_array(ncitri * (ncitri + 1) / 2);
   CalcInfo.maxK = (double *) init_array(CalcInfo.num_ci_orbs);
   CalcInfo.gmat = init_matrix(CalcInfo.num_ci_orbs, CalcInfo.num_ci_orbs);
-  CalcInfo.tf_onel_ints = init_array(CalcInfo.nmotri) ;
+  CalcInfo.tf_onel_ints = init_array(ncitri) ;
 
 } // end get_mo_info()
 
