@@ -1619,9 +1619,9 @@ def hessian(name, **kwargs):
             fmaster = open('FREQ-master.in', 'wb')
             fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
             fmaster.write(p4util.format_molecule_for_input(molecule).encode('utf-8'))
-            fmaster.write(p4util.format_options_for_input())
+            fmaster.write(p4util.format_options_for_input(molecule, **kwargs))
             p4util.format_kwargs_for_input(fmaster, 2, **kwargs)
-            fmaster.write("""%s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername).encode('utf-8'))
+            fmaster.write(("""%s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
             fmaster.write(instructionsM.encode('utf-8'))
             fmaster.close()
             psi4.print_out(instructionsM)
@@ -1666,7 +1666,7 @@ def hessian(name, **kwargs):
                 freagent = open('%s.in' % (rfile), 'wb')
                 freagent.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
                 freagent.write(p4util.format_molecule_for_input(molecule).encode('utf-8'))
-                freagent.write(p4util.format_options_for_input().encode('utf-8'))
+                freagent.write(p4util.format_options_for_input(molecule, **kwargs).encode('utf-8'))
                 p4util.format_kwargs_for_input(freagent, **kwargs)
 
                 # S/R: Prepare function call and energy save
