@@ -1,6 +1,6 @@
 set(headers_list "")
 # List of headers
-list(APPEND headers_list StringArray.h aiohandler.h MOFile.h BinaryFile.h psio.h config.h )
+list(APPEND headers_list StringArray.h aiohandler.h MOFile.h BinaryFile.h psio.h config.h psio.hpp )
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
