@@ -5,7 +5,6 @@ TODO:
 * Consider perm symmetry in T2(1) in t2_1st_gen.cc
 * Re-build Gij and Gab for DF-OMP2
 
-
 DEBUG:
 * T-amplitudes are okay
 * WL(mbij) is okay

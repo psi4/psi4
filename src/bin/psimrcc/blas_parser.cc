@@ -28,7 +28,7 @@
 #include <algorithm>
 
 namespace psi{
-    
+
     namespace psimrcc{
 
 typedef std::vector<std::string>            strvec;
@@ -157,16 +157,16 @@ double get_number(const std::string& str){
     std::string denominator = str.substr(fraction_sign+1,str.size()-fraction_sign-1);
     std::string unsigned_numerator = find_and_replace(numerator,"-","");
     if(unsigned_numerator.size() * denominator.size()!=0){
-      value=ToDouble(numerator)/ToDouble(denominator);
+      value=to_double(numerator)/to_double(denominator);
     }else{
       outfile->Printf("\n\nSolve couldn't parse the numerical factor %s\n\n",str.c_str());
       outfile->Printf("\n\nCritical Breakdown of the Program. Blame the programmers!!!\n\n");
-      
+
       exit(1);
     }
 
   }else{
-    value=ToDouble(str);
+    value=to_double(str);
   }
   return(value);
 }
@@ -185,17 +185,17 @@ bool is_operation(const std::string& str){
 // {
 //   size_t opening = str.find_first_of("[");
 //   string index_str = str.substr(opening,8);
-// 
+//
 //   size_t opening_ref = str.find_first_of("{");
 //   size_t closing_ref = str.find_first_of("}");
 //   string ref_str     = str.substr(opening_ref,closing_ref-opening_ref+1);
-// 
+//
 //   intpairvec pairs;
 //   std::vector<char> labels;
 //   int index=0;
 //   for(int i=0;i<index_str.size();i++){
 //     if(index_str[i]=='o' || index_str[i]=='O' || index_str[i]=='v' || index_str[i]=='V') labels.push_back(index_str[i]);
-// 
+//
 //     if(index_str[i]=='o') pairs.push_back(make_pair(0,index++));
 //     if(index_str[i]=='O') pairs.push_back(make_pair(1,index++));
 //     if(index_str[i]=='v') pairs.push_back(make_pair(2,index++));
@@ -210,7 +210,7 @@ bool is_operation(const std::string& str){
 //       t2_label += "][";
 //   }
 //   t2_label += "]" + ref_str;
-// 
+//
 //   first_t1_indices[0]=pairs[0].second;
 //   first_t1_indices[1]=pairs[2].second;
 //   second_t1_indices[0]=pairs[1].second;
@@ -227,7 +227,7 @@ bool is_operation(const std::string& str){
 //   }
 //   first_t1_label += "]" + ref_str;
 //   second_t1_label += "]" + ref_str;
-// 
+//
 // //   if(moinfo->get_debug()>7){
 // //     printf("\n\nInput string : %s",str.c_str());
 // //     printf("\n\nIndex string : %s + %s + %s",t2_label.c_str(),first_t1_label.c_str(),second_t1_label.c_str());

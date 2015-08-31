@@ -1,10 +1,11 @@
+from __future__ import print_function
 import os
 import sys
 import time
 import subprocess
 
 if len(sys.argv) not in [5, 6, 7]:
-    print """Usage: %s input_file logfile doperltest top_srcdir [alt_output_file alt_psi4_exe]""" % (sys.argv[0])
+    print("""Usage: %s input_file logfile doperltest top_srcdir [alt_output_file alt_psi4_exe]""" % (sys.argv[0]))
     sys.exit(1)
 
 # extract run condition from arguments
@@ -26,7 +27,7 @@ else:
 try:
     loghandle = open(logfile, 'a')
 except IOError as e:
-    print """I can't write to %s: %s""" % (logfile, e)
+    print("""I can't write to %s: %s""" % (logfile, e))
 loghandle.write("""\n%s\n%s\n""" % (os.path.dirname(infile).split(os.sep)[-1], time.strftime("%Y-%m-%d %H:%M")))
 
 
@@ -37,7 +38,7 @@ def backtick(exelist):
 
     """
     try:
-        retcode = subprocess.Popen(exelist, bufsize=0, stdout=subprocess.PIPE)
+        retcode = subprocess.Popen(exelist, bufsize=0, stdout=subprocess.PIPE, universal_newlines=True)
     except OSError as e:
         sys.stderr.write('Command %s execution failed: %s\n' % (exelist, e.strerror))
         sys.exit(1)
@@ -71,7 +72,7 @@ if psiautotest == 'true':
     try:
         retcode = subprocess.Popen(['perl', '%s/tests/psitest.pl' % (top_srcdir), infile, logfile])
     except IOError as e:
-        print """Can't find psitest script: %s""" % (e)
+        print("""Can't find psitest script: %s""" % (e))
     while True:
         retcode.poll()
         exstat = retcode.returncode
@@ -84,5 +85,5 @@ else:
 
 # combine, print, and return (0/1) testing status
 exitcode = 0 if (pyexitcode == 0 and (plexitcode is None or plexitcode == 0)) else 1
-print 'Exit Status: infile (', pyexitcode, '); autotest (', plexitcode, '); overall (', exitcode, ')'
+print('Exit Status: infile (', pyexitcode, '); autotest (', plexitcode, '); overall (', exitcode, ')')
 sys.exit(exitcode)

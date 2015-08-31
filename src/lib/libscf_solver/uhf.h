@@ -71,6 +71,9 @@ protected:
     // Stability eigenvalue, for doing smart eigenvector following
     double stab_val;
 
+    // Compute UHF NOs
+    void compute_nos();
+
 public:
     UHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     UHF(Options& options, boost::shared_ptr<PSIO> psio);

@@ -161,11 +161,6 @@ void to_upper(std::string& str)
   std::transform( str.begin(), str.end(), str.begin(),::toupper);
 }
 
-double ToDouble(const std::string str)
-{
-  return std::strtod( str.c_str(), NULL);
-}
-
 double to_double(const std::string str)
 {
   return std::atof(str.c_str());
@@ -185,7 +180,7 @@ std::string to_string(const double val)
     return strm.str();
 }
 
-int string_to_integer(const std::string inString)
+int to_integer(const std::string inString)
 {
   int i = 0;
   char* end;
