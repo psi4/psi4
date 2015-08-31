@@ -1459,6 +1459,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("LOCAL_CONVERGENCE",1E-12);
     /*- The maxiter on the orbital localization procedure -*/
     options.add_int("LOCAL_MAXITER",200);
+    /*- The number of NOONs to print in a UHF calc -*/
+    options.add_str("UHF_NOONS", "3");
+    /*- Save the UHF NOs -*/
+    options.add_bool("SAVE_UHF_NOS",false);
   }
   if (name == "CPHF"|| options.read_globals()) {
     /*- The amount of information printed
@@ -2990,8 +2994,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CC_DIIS_MIN_VECS",2);
     /*- Maximum number of vectors used in amplitude DIIS -*/
     options.add_int("CC_DIIS_MAX_VECS",6);
+    /*- Cutoff value for DF integrals -*/
+    options.add_int("INTEGRAL_CUTOFF",9);
     /*- Cutoff value for numerical procedures -*/
     options.add_int("CUTOFF",8);
+
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
     different calculation types. -*/
@@ -3049,7 +3056,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Type of the SOS method -*/
     options.add_str("SOS_TYPE","SOS","SOS SOSPI");
     /*- Type of the wavefunction. -*/
-    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OLCCD DF-OMP2.5 DFGRAD DF-CCSD DF-CCD CD-OMP2 CD-CCSD CD-CCD CD-OMP3 QCHF");
+    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OLCCD DF-OMP2.5 DFGRAD DF-CCSD DF-CCD DF-CCSD(T) CD-OMP2 CD-CCSD CD-CCD CD-CCSD(T) CD-OMP3 QCHF");
     /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
     options.add_str("CEPA_TYPE","CEPA(0)","CEPA(0)");
     /*- The algorithm that used for 4 index MO TEIs. -*/
@@ -3058,6 +3065,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("PCG_BETA_TYPE","FLETCHER_REEVES","FLETCHER_REEVES POLAK_RIBIERE");
     /*- The algorithm that used to handle mp2 amplitudes. The DIRECT option means compute amplitudes on the fly whenever they are necessary. -*/
     options.add_str("MP2_AMP_TYPE","DIRECT","DIRECT CONV");
+    /*- Type of the CCSD Wabef term. -*/
+    options.add_str("WABEF_TYPE","AUTO","LOW_MEM HIGH_MEM AUTO");
+    /*- The algorithm to handle (ia|bc) type integrals that used for (T) correction. -*/
+    options.add_str("TRIPLES_IABC_TYPE","AUTO","INCORE AUTO DIRECT");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);

@@ -1,21 +1,69 @@
-#! Non- and X2C-Relativistic SCF Energy Point
+# Test of SFX2C-1e on water uncontracted cc-pVDZ-DK
+# The reference numbers are from Lan Cheng's implementation in Cfour
 
-ref_nuc_energy =  9.779406144413407 #TEST
-ref_nr_energy  = -76.02176935053990 #TEST 
-ref_rel_energy = -76.07679144735926 #TEST
+ref_nuc_energy =  8.316179709840201 #TEST
+ref_nr_energy  = -76.00770336258013 #TEST 
+ref_rel_energy = -76.059287839660001 #TEST
 
 molecule h2o {
 O
 H 1 R
 H 1 R 2 A
 
-R = .9
+R = 2.0
 A = 104.5
+units bohr
 }
 
 set {
-  basis cc-pVDZ
   scf_type pk
+}
+
+basis {
+spherical
+****
+H     0
+S   1   1.00
+     13.0100000              1.0000000
+S   1   1.00
+      1.9620000              1.0000000
+S   1   1.00
+      0.4446000              1.0000000
+S   1   1.00
+      0.1220000              1.0000000
+P   1   1.00
+      0.7270000              1.0000000
+****
+O     0
+S   1   1.00
+  11720.0000000              1.0000000
+S   1   1.00
+   1759.0000000              1.0000000
+S   1   1.00
+    400.8000000              1.0000000
+S   1   1.00
+    113.7000000              1.0000000
+S   1   1.00
+     37.0300000              1.0000000
+S   1   1.00
+     13.2700000              1.0000000
+S   1   1.00
+      5.0250000              1.0000000
+S   1   1.00
+      1.0130000              1.0000000
+S   1   1.00
+      0.3023000              1.0000000
+P   1   1.00
+     17.7000000              1.0000000
+P   1   1.00
+      3.8540000              1.0000000
+P   1   1.00
+      1.0460000              1.0000000
+P   1   1.00
+      0.2753000              1.0000000
+D   1   1.00
+      1.1850000              1.0000000
+****
 }
 
 testnr = energy('scf')

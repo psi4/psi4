@@ -23,6 +23,7 @@
 """
 Module to hold and distribute the -D dispersion correction parameters.
 """
+from __future__ import absolute_import
 from p4xcpt import *
 
 

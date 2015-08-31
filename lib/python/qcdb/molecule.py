@@ -20,6 +20,8 @@
 #@END LICENSE
 #
 
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 #import re
 #import math
@@ -34,7 +36,7 @@ import socket
 import shutil
 import random
 from collections import defaultdict
-from libmintsmolecule import *
+from .libmintsmolecule import *
 
 
 class Molecule(LibmintsMolecule):
@@ -463,7 +465,7 @@ class Molecule(LibmintsMolecule):
 
         """
         if self.nfragments() != 1:
-            print 'Molecule already fragmented so no further action by auto_fragments().'
+            print('Molecule already fragmented so no further action by auto_fragments().')
             return self
 
         flist = self.BFS()
@@ -690,7 +692,7 @@ class Molecule(LibmintsMolecule):
             text += '  Eqn. of Plane: %14.8f %14.8f %14.8f %14.8f   [Ai + Bj + Ck + D = 0]\n' % \
                 (xplane[0], xplane[1], xplane[2], xplane[3])
             dtemp = math.sqrt(evecs[0][midx] * evecs[0][midx] + evecs[1][midx] * evecs[1][midx] + evecs[2][midx] * evecs[2][midx])
-            print 'denom', dtemp
+            print('denom', dtemp)
             hessplane = [evecs[0][midx] / dtemp, evecs[1][midx] / dtemp, evecs[2][midx] / dtemp, xplane[3] / dtemp]
             hessplane2 = [xplane[0] / dtemp, xplane[1] / dtemp, xplane[2] / dtemp, xplane[3] / dtemp]
             text += '  Eqn. of Plane: %14.8f %14.8f %14.8f %14.8f   [Ai + Bj + Ck + D = 0] H\n' % \
@@ -735,7 +737,7 @@ class Molecule(LibmintsMolecule):
             text += '  Distance from Center of %s to Center of %s along Plane of %s:  %14.8f   [Angstrom]\n' % \
                 ('2', '1', '1', distCPC * psi_bohr2angstroms)
 
-        print text
+        print(text)
 
 #        text = "        Interatomic Distances (Angstroms)\n\n"
 #        for i in range(self.natom()):
