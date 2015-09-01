@@ -54,29 +54,6 @@
 
 using namespace boost;
 
-#ifndef USE_FCMANGLE_H
-#if FC_SYMBOL == 2
-#define F_DGESVD dgesvd_
-#elif FC_SYMBOL == 1
-#define F_DGESVD dgesvd
-#elif FC_SYMBOL==3
-#define F_DGESVD DGESVD
-#elif FC_SYMBOL==4
-#define F_DGESVD DGESVD_
-#endif
-#else // USE_FCMANGLE_H
-#include "FCMangle.h"
-#define F_DGESVD FC_GLOBAL(dgesvd, DGESVD)
-#endif
-
-extern int sing_(double *q, int *lq, int *iq, double *s, double *p,
-                 int *lp, int *ip, double *a, int *la, int *m, int *n, double *w);
-
-extern "C" {
-extern int F_DGESVD(const char *, const char *, int *, int *, double *, int *,
-                    double *, double *, int *, double *, int *, double *, int *, int *);
-}
-
 namespace psi {
 
 ///////////////////////////////////////////////////////////////////////////////
