@@ -33,21 +33,19 @@ typedef std::vector<std::string> strvec;
 
 std::string file_to_string(std::string const& name);
 
-
 bool space(char c);
 bool not_space(char c);
 std::vector<std::string> split(const std::string& str);
 std::vector<std::string> split_indices(const std::string& str);
 void to_lower(std::string& str);
 void to_upper(std::string& str);
+
 std::string to_string(const int val);
 std::string to_string(const double val);
 
 double to_double(const std::string str);
+int to_integer(const std::string inString);
 
-double to_double(const std::string str);
-double ToDouble(const std::string inString);
-int string_to_integer(const std::string inString);
 void append_reference(std::string& str, int reference);
 std::string add_reference(std::string& str, int reference);
 void append_reference(std::string& str, int reference);

@@ -100,7 +100,7 @@ def format_molecule_for_input(mol, name=''):
     #return eval(commands)
 
 
-def format_options_for_input():
+def format_options_for_input(molecule, **kwargs):
     """Function to return a string of commands to replicate the
     current state of user-modified options. Used to capture C++
     options information for distributed (sow/reap) input files.
@@ -110,11 +110,17 @@ def format_options_for_input():
        - Does not cover local (as opposed to global) options.
 
     """
+    symmetry = molecule.find_point_group(0.00001).symbol()
     commands = ''
     commands += """\npsi4.set_memory(%s)\n\n""" % (psi4.get_memory())
     for chgdopt in psi4.get_global_option_list():
         if psi4.has_global_option_changed(chgdopt):
             chgdoptval = psi4.get_global_option(chgdopt)
+
+            if chgdopt.lower() in kwargs:
+                if symmetry in kwargs[chgdopt.lower()]:
+                    chgdoptval = kwargs[chgdopt.lower()][symmetry]
+
             if isinstance(chgdoptval, basestring):
                 commands += """psi4.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
 # Next four lines were conflict between master and roa branches (TDC, 10/29/2014)
@@ -137,10 +143,10 @@ def format_kwargs_for_input(filename, lmode=1, **kwargs):
     if lmode == 2:
         kwargs['mode'] = 'reap'
         kwargs['linkage'] = os.getpid()
-    filename.write('''\npickle_kw = ("""''')
+    filename.write('''\npickle_kw = ("""'''.encode('utf-8'))
     pickle.dump(kwargs, filename)
-    filename.write('''""")\n''')
-    filename.write("""\nkwargs = pickle.loads(pickle_kw)\n""")
+    filename.write('''""")\n'''.encode('utf-8'))
+    filename.write("""\nkwargs = pickle.loads(pickle_kw)\n""".encode('utf-8'))
     if lmode == 2:
         kwargs['mode'] = 'sow'
         del kwargs['linkage']

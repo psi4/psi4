@@ -22,13 +22,10 @@
  *@END LICENSE
  */
 
-#include <libplugin/plugin.h>
 #include <psi4-dec.h>
 #include <liboptions/liboptions.h>
 #include <libmints/mints.h>
 #include <scf.h>
-
-INIT_PLUGIN
 
 namespace psi{ namespace @plugin@ {
 
@@ -101,7 +98,7 @@ PsiReturnType @plugin@(Options &options)
         matrix->print();
         evecs->print();
         evals->print();
-        
+
         // Compute U(t) D U, where U are the eigenvectors and D has the evals on the diagonal
         // and (t) means the transpose. This should, yield the original matrix
         // First, the hard(er) way

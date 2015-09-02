@@ -36,6 +36,7 @@ from __future__ import print_function
                                                         with PSI4's Molecule creation
 
 """
+from __future__ import absolute_import
 try:
     # Python 2 syntax
     from urllib2 import urlopen

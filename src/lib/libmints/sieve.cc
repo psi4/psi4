@@ -50,7 +50,7 @@ void ERISieve::common_init()
     erfc_thresh_ = DBL_MAX;
 
   Options& options = Process::environment.options;
-  do_qqr_ = options.get_bool("DO_QQR_SIEVE");
+  do_qqr_ = false; // Code below for QQR was/is utterly broken.
 
     debug_ = 0;
 
@@ -209,35 +209,31 @@ void ERISieve::integrals()
     boost::shared_ptr<TwoBodyAOInt> eri = boost::shared_ptr<TwoBodyAOInt>(schwarzfactory.eri());
     const double *buffer = eri->buffer();
 
-    int MU, NU, mu, nu,omu,onu, nummu, numnu, index;
-    for (MU=0; MU < nshell; ++MU) {
-        nummu = primary_->shell(MU).nfunction();
-        for (NU=0; NU <= MU; ++NU) {
-            numnu = primary_->shell(NU).nfunction();
-            eri->compute_shell(MU,NU,MU,NU);
-            for (mu=0; mu < nummu; ++mu) {
-                omu = primary_->shell(MU).function_index() + mu;
-                for (nu=0; nu < numnu; ++nu) {
-                    onu = primary_->shell(NU).function_index() + nu;
-
-                    if (omu>=onu) {
-                        index = mu*(numnu*nummu*numnu+numnu)+nu*(nummu*numnu+1);
-                        if (max_ < fabs(buffer[index]))
-                            max_ = fabs(buffer[index]);
-                        if (shell_pair_values_[MU * (unsigned long int) nshell + NU] < fabs(buffer[index])) {
-                            shell_pair_values_[MU * (unsigned long int) nshell + NU] = fabs(buffer[index]);
-                            shell_pair_values_[NU * (unsigned long int) nshell + MU] = fabs(buffer[index]);
-                        }
-                        if (function_pair_values_[omu * (unsigned long int) nbf + onu] < fabs(buffer[index])) {
-                            function_pair_values_[omu * (unsigned long int) nbf + onu] = fabs(buffer[index]);
-                            function_pair_values_[onu * (unsigned long int) nbf + omu] = fabs(buffer[index]);
-                        }
-                    }
-                }
+    for (int P = 0; P < nshell_; P++) {
+    for (int Q = 0; Q <= P; Q++) {
+        int nP = primary_->shell(P).nfunction();
+        int nQ = primary_->shell(Q).nfunction();
+        int oP = primary_->shell(P).function_index();
+        int oQ = primary_->shell(Q).function_index();
+        eri->compute_shell(P,Q,P,Q);
+        double max_val = 0.0;
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                max_val = std::max(max_val,fabs(buffer[p*(nQ*nP*nQ + nQ) + q*(nP*nQ + 1)]));  
             }
         }
-    }
+        max_ = std::max(max_,max_val);
+        shell_pair_values_[P * nshell_ + Q] = shell_pair_values_[Q * nshell_ + P] = max_val;
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                function_pair_values_[(p + oP) * nbf_ + (q + oQ)] =
+                function_pair_values_[(q + oQ) * nbf_ + (p + oP)] = max_val;
+            }
+        }
+    }}
 
+    // All this is broken (only built one shell-pair's info)
+    #if 0 
     if (do_qqr_) {
 
             //std::cout << "Doing QQR precomputations.\n";
@@ -304,6 +300,7 @@ void ERISieve::integrals()
 
 
      } // doing QQR
+    #endif
 }
 bool ERISieve::shell_significant_qqr(int M, int N, int R, int S)
 {
