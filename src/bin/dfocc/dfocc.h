@@ -54,6 +54,9 @@ protected:
     void get_moinfo();
     void title();
     void title_grad();
+    void lambda_title();
+    void pt_title();
+    void pdm_title();
     void ref_energy();
     void mp2_energy();
     void scs_mp2_energy();
@@ -467,6 +470,12 @@ protected:
     void ccsd_opdm();
     void ccsd_tpdm();
 
+    // CCSD(T)
+    void ccsd_canonic_triples();
+    void ccsd_canonic_triples_hm();
+    void ccsd_t_manager();
+    void ccsd_t_manager_cd();
+
     // CCD
     void ccd_manager();
     void ccd_manager_cd();
@@ -622,7 +631,8 @@ protected:
      double cost_3amp; 
      double cost_4amp; 
      double cost_5amp; 
-     double cost_4vex_hm;       // Mem req. for high mem evaluation of 4-virtuals exchange term  
+     double cost_4vex_hm;        // Mem req. for high mem evaluation of 4-virtuals exchange term  
+     double cost_triples_iabc;   // Mem req. for high mem evaluation of (ia|bc) used in (T) 
 
      // Common
      double Enuc;
@@ -739,6 +749,8 @@ protected:
      double EccsdLAA;
      double EccsdLBB;
      double EccsdLAB;
+     double Eccsd_t;
+     double E_t;
 
      // CCD
      double Eccd;
@@ -788,10 +800,12 @@ protected:
      string qchf_; 
      string cc_lambda_; 
      string Wabef_type_; 
+     string triples_iabc_type_; 
 
      bool df_ints_incore;
      bool t2_incore;
      bool do_4vex_hm;
+     bool do_triples_hm;
 
      double **C_pitzerA;     
      double **C_pitzerB;     

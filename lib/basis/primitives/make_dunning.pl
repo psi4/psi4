@@ -15,7 +15,7 @@ print FAM_OUT "encode the Dunning basis set orbital definitions in\n";
 print FAM_OUT ":source:`lib/basis/NOTES` and fitting bases designed for those\n";
 print FAM_OUT "orbital bases.\n\n\"\"\"\n";
 
-print FAM_OUT "from basislist import *\n\n\n";
+print FAM_OUT "from .basislist import *\n\n\n";
 print FAM_OUT "def load_basfam_dunning():\n\n";
 
 foreach $ord (@HORDINAL) {

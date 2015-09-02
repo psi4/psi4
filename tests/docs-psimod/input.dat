@@ -1,11 +1,11 @@
 #! This test is used to construct the documentation;
 #! it is not suitable for emulation by users. !nosample
-
+from __future__ import print_function
 import pydoc
 import inspect
 
 def pts(category, pyfile):
-    print 'Auto-documenting %s file %s' % (category, pyfile)
+    print('Auto-documenting %s file %s' % (category, pyfile))
 
 # Boost Python psi4 module in psi4/src/bin/psi4 -- pure text, all
 with open("autodoc_man_psi4.txt", "w") as f:

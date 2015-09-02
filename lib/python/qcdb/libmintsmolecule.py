@@ -19,7 +19,8 @@
 #
 #@END LICENSE
 #
-
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import re
 import copy
@@ -27,14 +28,14 @@ import math
 try:
     from collections import OrderedDict
 except ImportError:
-    from oldpymodules import OrderedDict
-from periodictable import *
-from physconst import *
-from vecutil import *
-from exceptions import *
+    from .oldpymodules import OrderedDict
+from .periodictable import *
+from .physconst import *
+from .vecutil import *
+from .exceptions import *
 #from libmintscoordentry import *
-from libmintscoordentry import NumberValue, VariableValue, CartesianEntry, ZMatrixEntry
-from libmintspointgrp import SymmOps, similar, SymmetryOperation, PointGroup
+from .libmintscoordentry import NumberValue, VariableValue, CartesianEntry, ZMatrixEntry
+from .libmintspointgrp import SymmOps, similar, SymmetryOperation, PointGroup
 
 #from libmintspointgrp import PointGroups
 #print PointGroups
@@ -345,7 +346,7 @@ class LibmintsMolecule(object):
             return self.atoms[atom].mass()
 
         if math.fabs(self.atoms[atom].Z() - int(self.atoms[atom].Z())) > 0.0:
-            print "WARNING: Obtaining masses from atom with fractional charge...may be incorrect!!!\n"
+            print("WARNING: Obtaining masses from atom with fractional charge...may be incorrect!!!\n")
             # TODO outfile
         return z2masses[int(self.atoms[atom].Z())]
 
@@ -488,9 +489,9 @@ class LibmintsMolecule(object):
     def activate_all_fragments(self):
         """Sets all fragments in the molecule to be active."""
         self.lock_frame = False
-        print 'it lives', 'activate all'
+        print('it lives', 'activate all')
         for fr in range(self.nfragments()):
-            print 'reviving', fr
+            print('reviving', fr)
             self.fragment_types[fr] = 'Real'
 
     def set_active_fragment(self, fr):
@@ -512,9 +513,9 @@ class LibmintsMolecule(object):
     def set_ghost_fragments(self, ghosts):
         """Tags the fragments in array *ghosts* as composed of ghost atoms."""
         self.lock_frame = False
-        print 'doomed', ghosts
+        print('doomed', ghosts)
         for fr in ghosts:
-            print 'killing', fr - 1
+            print('killing', fr - 1)
             self.fragment_types[fr - 1] = 'Ghost'
 
     def deactivate_all_fragments(self):
@@ -587,7 +588,7 @@ class LibmintsMolecule(object):
         com = re.compile(r'^\s*(no_com|nocom)\s*$', re.IGNORECASE)
         symmetry = re.compile(r'^\s*symmetry[\s=]+(\w+)\s*$', re.IGNORECASE)
         ATOM = '((([A-Z]{1,3})_\w+)|(([A-Z]{1,3})\d*))'  # match 'C', 'al', 'p88', 'p_pass' not 'Ofail', 'h99_text'  # good, but unused
-        atom = re.compile(r'^(?:(?P<gh1>@)|(?P<gh2>Gh\())?(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)(?(gh2)\))$', re.IGNORECASE)
+        atom = re.compile(r'^(?:(?P<gh1>@)|(?P<gh2>Gh\())?(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)(?(gh2)\))(?:@(?P<mass>\d+\.\d+))?$', re.IGNORECASE)
         cgmp = re.compile(r'^\s*(-?\d+)\s+(\d+)\s*$')
         frag = re.compile(r'^\s*--\s*$')
         variable = re.compile(r'^\s*(\w+)\s*=\s*(-?\d+\.\d+|-?\d+\.|-?\.\d+|-?\d+|tda)\s*$', re.IGNORECASE)
@@ -656,6 +657,7 @@ class LibmintsMolecule(object):
             elif atom.match(line.split()[0].strip()):
                 glines.append(line)
             else:
+                print(line.split()[0].strip())
                 raise ValidationError('Molecule::create_molecule_from_string: Unidentifiable line in geometry specification: %s' % (line))
 
         # catch last default fragment cgmp
@@ -696,6 +698,9 @@ class LibmintsMolecule(object):
                     raise ValidationError('Molecule::create_molecule_from_string: Illegal atom symbol in geometry specification: %s' % (atomSym))
 
                 zVal = el2z[atomSym]
+
+                atomMass = el2masses[atomSym] if atomm.group('mass') is None else float(atomm.group('mass'))
+
                 charge = float(zVal)
                 if ghostAtom:
                     zVal = 0
@@ -708,7 +713,7 @@ class LibmintsMolecule(object):
                     yval = self.get_coord_value(entries[2])
                     zval = self.get_coord_value(entries[3])
                     self.full_atoms.append(CartesianEntry(iatom, zVal, charge, \
-                        el2masses[atomSym], atomSym, atomLabel, \
+                        atomMass, atomSym, atomLabel, \
                         xval, yval, zval))
 
                 # handle first line of Zmat
@@ -716,7 +721,7 @@ class LibmintsMolecule(object):
                     zmatrix = True
                     tempfrag.append(iatom)
                     self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge, \
-                        el2masses[atomSym], atomSym, atomLabel))
+                        atomMass, atomSym, atomLabel))
 
                 # handle second line of Zmat
                 elif len(entries) == 3:
@@ -732,7 +737,7 @@ class LibmintsMolecule(object):
                         rval.set_fixed(True)
 
                     self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge, \
-                        el2masses[atomSym], atomSym, atomLabel, \
+                        atomMass, atomSym, atomLabel, \
                         self.full_atoms[rTo], rval))
 
                 # handle third line of Zmat
@@ -757,7 +762,7 @@ class LibmintsMolecule(object):
                         aval.set_fixed(True)
 
                     self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge, \
-                        el2masses[atomSym], atomSym, atomLabel, \
+                        atomMass, atomSym, atomLabel, \
                         self.full_atoms[rTo], rval, \
                         self.full_atoms[aTo], aval))
 
@@ -790,7 +795,7 @@ class LibmintsMolecule(object):
                         dval.set_fixed(True)
 
                     self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge, \
-                        el2masses[atomSym], atomSym, atomLabel, \
+                        atomMass, atomSym, atomLabel, \
                         self.full_atoms[rTo], rval, \
                         self.full_atoms[aTo], aval, \
                         self.full_atoms[dTo], dval))
@@ -945,7 +950,7 @@ class LibmintsMolecule(object):
             text += "\n"
         else:
             text += "  No atoms in this molecule.\n"
-        print text
+        print(text)
         # TODO outfile
 
     def print_out_in_bohr(self):
@@ -972,7 +977,7 @@ class LibmintsMolecule(object):
             text += "\n"
         else:
             text += "  No atoms in this molecule.\n"
-        print text
+        print(text)
         # TODO outfile
 
     def print_out_in_angstrom(self):
@@ -999,7 +1004,7 @@ class LibmintsMolecule(object):
             text += "\n"
         else:
             text += "  No atoms in this molecule.\n"
-        print text
+        print(text)
         # TODO outfile
 
     def print_full(self):
@@ -1026,7 +1031,7 @@ class LibmintsMolecule(object):
             text += "\n"
         else:
             text += "  No atoms in this molecule.\n"
-        print text
+        print(text)
         # TODO outfile
 
     def print_in_input_format(self):
@@ -1049,7 +1054,7 @@ class LibmintsMolecule(object):
                     text += """    %-10s=%16.10f\n""" % (vb, val)
                 text += "\n"
 
-        print text
+        print(text)
         # TODO outfile
 
     def everything(self):
@@ -1064,7 +1069,7 @@ class LibmintsMolecule(object):
         text += """  input symm    %s\n""" % (self.symmetry_from_input())
         text += """  Nfragments    %d\t\tNactive        %d\n""" % (self.nfragments(), self.nactive_fragments())
         text += """  zmat?         %s\n""" % (self.has_zmatrix())
-        print text
+        print(text)
 
     def create_psi4_string_from_molecule(self):
         """Regenerates a input file molecule specification string from the
@@ -1211,7 +1216,7 @@ class LibmintsMolecule(object):
         """
         self.__dict__['lock_frame'] = False
         self.__dict__['geometry_variables'][vstr.upper()] = val
-        print "Setting geometry variable %s to %f" % (vstr.upper(), val)
+        print("Setting geometry variable %s to %f" % (vstr.upper(), val))
         try:
             self.update_geometry()
         except IncompleteAtomError:
@@ -1391,7 +1396,7 @@ class LibmintsMolecule(object):
                     distm[j][i] = dist
             text += "\n"
         text += "\n\n"
-        print text
+        print(text)
         return distm
         # TODO outfile
 
@@ -1885,7 +1890,7 @@ class LibmintsMolecule(object):
             'A', '%16.8f' % (im_cm / evals[0]) if not isLinear else '*****', \
             'B', '%16.8f' % (im_cm / evals[1]) if not isOne else '*****', \
             'C', '%16.8f' % (im_cm / evals[2]) if not isAtom else '*****')
-        print text
+        print(text)
         # TODO outfile
         rot_const = []
         rot_const.append(im_cm / evals[0] if not isLinear else None)
@@ -2085,20 +2090,20 @@ class LibmintsMolecule(object):
         # Get rotor type
         rotor = self.rotor_type(tol)
         if verbose > 2:
-            print """  Rotor type                       : %s""" % (rotor)
+            print("""  Rotor type                       : %s""" % (rotor))
 
         # Get the D2h point group from Jet and Ed's code: c1 ci c2 cs d2 c2v c2h d2h
         #   and ignore the user-specified subgroup in this case.
         pg = self.find_highest_point_group(tol)
         d2h_subgroup = pg.symbol()
         if verbose > 2:
-            print """  D2h_subgroup                     : %s""" % (self.point_group().symbol())
+            print("""  D2h_subgroup                     : %s""" % (self.point_group().symbol()))
 
         # Check inversion
         v3_zero = [0.0, 0.0, 0.0]
         op_i = self.has_inversion(v3_zero, tol)
         if verbose > 2:
-            print """  Inversion symmetry               : %s""" % ('yes' if op_i else 'no')
+            print("""  Inversion symmetry               : %s""" % ('yes' if op_i else 'no'))
 
         x_axis = [1, 0, 0]
         y_axis = [0, 1, 0]
@@ -2122,7 +2127,7 @@ class LibmintsMolecule(object):
                 test_mat = matrix_3d_rotation(geom, z_axis, math.pi / 2.0, True)
                 op_symm = equal_but_for_row_order(geom, test_mat, tol)
                 if verbose > 2:
-                    print """  S4z                              : %s""" % ('yes' if op_symm else 'no')
+                    print("""  S4z                              : %s""" % ('yes' if op_symm else 'no'))
 
                 if op_symm:
                     self.full_pg = 'Oh'
@@ -2166,18 +2171,18 @@ class LibmintsMolecule(object):
                 self.PYfull_pg_n = 2
 
             else:
-                print """  Warning: Cannot determine point group."""
+                print("""  Warning: Cannot determine point group.""")
 
         elif rotor in ['RT_SYMMETRIC_TOP', 'RT_PROLATE_SYMMETRIC_TOP', 'RT_OBLATE_SYMMETRIC_TOP']:
 
             # Find principal axis that is unique and make it z-axis.
             It = self.inertia_tensor()
             I_evals, I_evecs = diagonalize3x3symmat(It)
-            ev_list = zip(I_evals, transpose(I_evecs))  # eigenvectors are cols of I_evecs
+            ev_list = list(zip(I_evals, transpose(I_evecs)))  # eigenvectors are cols of I_evecs
             ev_list.sort(key=lambda tup: tup[0], reverse=False)
             I_evals, I_evecs = zip(*ev_list)  # sorted eigenvectors are now rows of I_evecs
             if verbose > 2:
-                print """  I_evals: %15.10lf %15.10lf %15.10lf""" % (I_evals[0], I_evals[1], I_evals[2])
+                print("""  I_evals: %15.10lf %15.10lf %15.10lf""" % (I_evals[0], I_evals[1], I_evals[2]))
 
             unique_axis = 1
             if abs(I_evals[0] - I_evals[1]) < tol:
@@ -2201,23 +2206,23 @@ class LibmintsMolecule(object):
                 rot_axis = cross(z_axis, old_axis)  # right order?
                 test_mat = matrix_3d_rotation(geom, rot_axis, phi, False)
                 if verbose > 2:
-                    print """  Rotating by %lf to get principal axis on z-axis ...""" % (phi)
+                    print("""  Rotating by %lf to get principal axis on z-axis ...""" % (phi))
                 geom = [row[:] for row in test_mat]
 
             if verbose > 2:
-                print """  Geometry to analyze - principal axis on z-axis:"""
+                print("""  Geometry to analyze - principal axis on z-axis:""")
                 for at in range(self.natom()):
-                    print "%20.15lf %20.15lf %20.15lf" % (geom[at][0], geom[at][1], geom[at][2])
-                print "\n"
+                    print("%20.15lf %20.15lf %20.15lf" % (geom[at][0], geom[at][1], geom[at][2]))
+                print("\n")
 
             # Determine order Cn and Sn of principal axis.
             Cn_z = matrix_3d_rotation_Cn(geom, z_axis, False, tol)
             if verbose > 2:
-                print """  Highest rotation axis (Cn_z)     : %d""" % (Cn_z)
+                print("""  Highest rotation axis (Cn_z)     : %d""" % (Cn_z))
 
             Sn_z = matrix_3d_rotation_Cn(geom, z_axis, True, tol)
             if verbose > 2:
-                print """  Rotation axis (Sn_z)             : %d""" % (Sn_z)
+                print("""  Rotation axis (Sn_z)             : %d""" % (Sn_z))
 
             # Check for sigma_h (xy plane).
             op_sigma_h = False
@@ -2231,7 +2236,7 @@ class LibmintsMolecule(object):
             else:
                 op_sigma_h = True
             if verbose > 2:
-                print """  sigma_h                          : %s""" % ('yes' if op_sigma_h else 'no')
+                print("""  sigma_h                          : %s""" % ('yes' if op_sigma_h else 'no'))
 
             # Rotate one off-axis atom to the yz plane and check for sigma_v's.
             for at in range(self.natom()):
@@ -2257,7 +2262,7 @@ class LibmintsMolecule(object):
             if abs(phi) > 1.0e-14:
                 test_mat = matrix_3d_rotation(geom, z_axis, phi, False)
                 if verbose > 2:
-                    print "  Rotating by %8.3e to get atom %d in yz-plane ..." % (phi, pivot_atom_i + 1)
+                    print("  Rotating by %8.3e to get atom %d in yz-plane ..." % (phi, pivot_atom_i + 1))
                 geom = [row[:] for row in test_mat]
 
             # Check for sigma_v (yz plane).
@@ -2273,12 +2278,12 @@ class LibmintsMolecule(object):
             #if at == self.natom():
                 op_sigma_v = True
             if verbose > 2:
-                print """  sigma_v                          : %s""" % ('yes' if op_sigma_v else 'no')
+                print("""  sigma_v                          : %s""" % ('yes' if op_sigma_v else 'no'))
 
-                print """  geom to analyze - one atom in yz plane:"""
+                print("""  geom to analyze - one atom in yz plane:""")
                 for at in range(self.natom()):
-                    print "%20.15lf %20.15lf %20.15lf" % (geom[at][0], geom[at][1], geom[at][2])
-                print "\n"
+                    print("%20.15lf %20.15lf %20.15lf" % (geom[at][0], geom[at][1], geom[at][2]))
+                print("\n")
 
             # Check for perpendicular C2's.
             # Loop through pairs of atoms to find c2 axis candidates.
@@ -2307,7 +2312,7 @@ class LibmintsMolecule(object):
                     if matrix_3d_rotation_Cn(geom, axis, False, tol, 2) == 2:
                         is_D = True
             if verbose > 2:
-                print """  perp. C2's                       : %s""" % ('yes' if is_D else 'no')
+                print("""  perp. C2's                       : %s""" % ('yes' if is_D else 'no'))
 
             # Now assign point groups!  Sn first.
             if Sn_z == 2 * Cn_z and not is_D:
@@ -2894,7 +2899,7 @@ class LibmintsMolecule(object):
             self.nequiv = 0
             self.PYatom_to_unique = 0
             self.equiv = 0
-            print "No atoms detected, returning\n"
+            print("No atoms detected, returning\n")
             return
 
         self.nequiv = []
@@ -3281,10 +3286,10 @@ def compute_atom_map(mol):
 
             atom_map[i][g] = mol.atom_at_position(np, 0.05)
             if atom_map[i][g] < 0:
-                print "  Molecule:\n"
+                print("  Molecule:\n")
                 mol.print_out()
-                print "  attempted to find atom at\n"
-                print "    %lf %lf %lf\n" % (np[0], np[1], np[2])
+                print("  attempted to find atom at\n")
+                print("    %lf %lf %lf\n" % (np[0], np[1], np[2]))
                 raise ValidationError("ERROR: Symmetry operation %d did not map atom %d to another atom:\n" % (g, i + 1))
 
     return atom_map

@@ -40,13 +40,9 @@ CXXDEFS = @PLUGIN_DEFINES@
 CXXFLAGS = @PLUGIN_FLAGS@
 LDFLAGS = @PLUGIN_LDFLAGS@
 INCLUDES = @PLUGIN_INCLUDES@
-OBJDIR = @PLUGIN_OBJDIR@
 
 # Used to determine linking flags.
 UNAME = $(shell uname)
-
-# Need to link against Psi4 plugin library
-PSIPLUGIN = -L$(OBJDIR)/lib -lplugin
 
 DEPENDINCLUDE = $(notdir $(wildcard *.h*))
 
@@ -71,7 +67,7 @@ BINOBJ = $(CXXSRC:%.cc=%.o)
 	$(CXX) $(CXXDEFS) $(CXXFLAGS) $(INCLUDES) -c $<
 
 $(PSITARGET): $(BINOBJ)
-	$(CXX) $(LDFLAGS) -o $@ $^ $(CXXDEFS) $(PSIPLUGIN)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(CXXDEFS)
 
 # Erase all compiled intermediate files
 clean:

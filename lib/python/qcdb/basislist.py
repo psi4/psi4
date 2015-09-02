@@ -20,6 +20,8 @@
 #@END LICENSE
 #
 
+from __future__ import absolute_import
+from __future__ import print_function
 r"""Module to define a class :py:class:`~BasisFamily` that associates
 fitting basis sets to an orbital basis and to provide functions to
 query appropriate fitting bases for any orbital basis distributed
@@ -152,8 +154,8 @@ def load_basis_families():
     BasisFamily objects for all Psi4's standard installed bases.
 
     """
-    from basislistdunning import load_basfam_dunning
-    from basislistother import load_basfam_other
+    from .basislistdunning import load_basfam_dunning
+    from .basislistother import load_basfam_other
 
     if len(basisfamily_list) == 0:
         load_basfam_dunning()

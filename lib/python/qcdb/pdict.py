@@ -20,6 +20,8 @@
 #@END LICENSE
 #
 
+from __future__ import absolute_import
+from __future__ import print_function
 from decimal import Decimal, ROUND_FLOOR, ROUND_CEILING
 import qcdb.exceptions
 
@@ -95,4 +97,4 @@ if __name__ == '__main__':
     c4info['curl'] = '-437.1234444'  # fails
     c4info['curl'] = '-437.123456789'
     #c4info['curl'] = '-437.1234567779'  # fails
-    print c4info
+    print(c4info)
