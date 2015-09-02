@@ -33,12 +33,16 @@
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <libmints/mints.h>
+#include <libpsi4util/libpsi4util.h>
 #include <libfock/jk.h>
 #include <physconst.h>
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
 #include "uhf.h"
 #include "stability.h"
+
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
 
 using namespace std;
 using namespace psi;
@@ -111,6 +115,8 @@ void UHF::finalize()
     Ga_.reset();
     Gb_.reset();
 
+    compute_nos();
+
     HF::finalize();
 }
 
@@ -128,7 +134,7 @@ void UHF::form_G()
     C.clear();
     C.push_back(Ca_subset("SO", "OCC"));
     C.push_back(Cb_subset("SO", "OCC"));
-    
+
     // Run the JK object
     jk_->compute();
 
@@ -254,11 +260,11 @@ double UHF::compute_initial_E()
 double UHF::compute_E()
 {
     double one_electron_E = Dt_->vector_dot(H_);
-    double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);   
- 
+    double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);
+
     energies_["Nuclear"] = nuclearrep_;
     energies_["One-Electron"] = one_electron_E;
-    energies_["Two-Electron"] = two_electron_E; 
+    energies_["Two-Electron"] = two_electron_E;
     energies_["XC"] = 0.0;
     energies_["-D"] = 0.0;
 
@@ -598,5 +604,130 @@ void UHF::stability_analysis()
     }
 }
 
+void UHF::compute_nos()
+{
+    // Compute UHF NOs and NOONs [J. Chem. Phys. 88, 4926 (1988)] -- TDC, 8/15
+
+    // Build S^1/2
+    SharedMatrix SHalf = S_->clone();
+    SHalf->power(0.5);
+
+    // Diagonalize S^1/2 Dt S^1/2
+    SharedMatrix SDS = factory_->create_shared_matrix("S^1/2 Dt S^1/2");
+    SDS->copy(Da_);
+    SDS->add(Db_);
+    SDS->transform(SHalf);
+
+    SharedMatrix UHF_NOs = factory_->create_shared_matrix("UHF NOs");
+    SharedVector UHF_NOONs(factory_->create_vector());
+    SDS->diagonalize(UHF_NOs, UHF_NOONs, descending);
+
+    // Print the NOONs -- code ripped off from OEProp::compute_no_occupations()
+    int max_num;
+    if(options_.get_str("UHF_NOONS") == "ALL") max_num = nmo_;
+    else max_num = to_integer(options_.get_str("UHF_NOONS"));
+
+    std::vector<boost::tuple<double, int, int> > metric;
+    for (int h = 0; h < UHF_NOONs->nirrep(); h++)
+      for (int i = 0; i < UHF_NOONs->dimpi()[h]; i++)
+        metric.push_back(boost::tuple<double,int,int>(UHF_NOONs->get(h,i), h ,i));
+
+    std::sort(metric.begin(), metric.end(), std::greater<boost::tuple<double,int,int> >());
+    int offset = nalpha_;
+    int start_occ = offset - max_num;
+    start_occ = (start_occ < 0 ? 0 : start_occ);
+    int stop_vir = offset + max_num + 1;
+    stop_vir = (int)((size_t)stop_vir >= metric.size() ? metric.size() : stop_vir);
+    char** labels = basisset_->molecule()->irrep_labels();
+    outfile->Printf( "\n  UHF NO Occupations:\n");
+    for (int index = start_occ; index < stop_vir; index++) {
+      if (index < offset) {
+        outfile->Printf( "  HONO-%-2d: %4d%3s %9.7f\n", offset- index - 1,
+        boost::get<2>(metric[index])+1,labels[boost::get<1>(metric[index])],
+        boost::get<0>(metric[index]));
+      }
+      else {
+        outfile->Printf( "  LUNO+%-2d: %4d%3s %9.7f\n", index - offset,
+        boost::get<2>(metric[index])+1,labels[boost::get<1>(metric[index])],
+        boost::get<0>(metric[index]));
+      }
+    }
+    outfile->Printf( "\n");
+
+    if(options_.get_bool("SAVE_UHF_NOS")){
+        // Save the NOs to Ca and Cb. The resulting orbitals will be restricted.
+
+        outfile->Printf( "  Saving the UHF Natural Orbitals.\n");
+
+        SharedMatrix SHalf_inv = S_->clone();
+        SHalf_inv->power(-0.5);
+        Ca_->gemm(false, false, 1.0,SHalf_inv,UHF_NOs, 0.0);
+
+        double actv_threshold = 0.02;
+
+        // Transform the average Fock matrix to the NO basis
+        SharedMatrix F_UHF_NOs = factory_->create_shared_matrix("Fock Matrix");
+        F_UHF_NOs->copy(Fa_);
+        F_UHF_NOs->add(Fb_);
+        F_UHF_NOs->transform(Ca_);
+
+        // Sort orbitals according to type (core,active,virtual) and energy
+        std::vector<boost::tuple<int, double, int, int> > sorted_nos;
+        for (int h = 0; h < UHF_NOONs->nirrep(); h++){
+            for (int i = 0; i < UHF_NOONs->dimpi()[h]; i++){
+                double noon = UHF_NOONs->get(h,i);
+                int type = 0; // core      NO >= 1.98
+                if (noon < actv_threshold){
+                    type = 2; // virtual   NO < 0.02
+                }else if (noon < 2.0 - actv_threshold){
+                    type = 1; // active    0.02 <= NO < 1.98
+                }
+                double epsilon = F_UHF_NOs->get(h,i,i);
+                sorted_nos.push_back(boost::tuple<int,double,int,int>(type,epsilon,h,i));
+            }
+        }
+        std::sort(sorted_nos.begin(), sorted_nos.end());
+
+        // Build the final set of UHF NOs
+        std::vector<int> irrep_count(nirrep_,0);
+
+        for (size_t i = 0; i < sorted_nos.size(); i++){
+            int h = boost::get<2>(sorted_nos[i]);
+            int Ca_p = boost::get<3>(sorted_nos[i]);
+            int Cb_p = irrep_count[h];
+            for (int mu = 0; mu < Ca_->colspi(h); mu++){
+                double value = Ca_->get(h,mu,Ca_p);
+                Cb_->set(h,mu,Cb_p,value);
+            }
+            irrep_count[h] += 1;
+        }
+
+        // Copy sorted orbitals to Ca
+        Ca_->copy(Cb_);
+
+        // Suggest an active space
+        Dimension corepi(nirrep_);
+        Dimension actvpi(nirrep_);
+        for (size_t i = 0; i < sorted_nos.size(); i++){
+            int type = boost::get<0>(sorted_nos[i]);
+            int h = boost::get<2>(sorted_nos[i]);
+            if (type == 0) corepi[h] += 1;
+            if (type == 1) actvpi[h] += 1;
+        }
+        outfile->Printf("\n  Active Space from UHF-NOs (NO threshold = %.4f):\n\n",actv_threshold);
+
+        outfile->Printf("    restricted_docc = [");
+        for (int h = 0; h < nirrep_; h++){
+            outfile->Printf("%s%d",h ? "," : "",corepi[h]);
+        }
+        outfile->Printf("]\n");
+
+        outfile->Printf("    active = [");
+        for (int h = 0; h < nirrep_; h++){
+            outfile->Printf("%s%d",h ? "," : "",actvpi[h]);
+        }
+        outfile->Printf("]\n");
+    }
+}
 
 }}
