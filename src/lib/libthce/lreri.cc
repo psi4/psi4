@@ -478,33 +478,42 @@ void DFERI::transform()
     // > Maximum number of rows < //
 
     unsigned long int max_rows = (memory_ / per_row);
-    max_rows = (max_rows < auxiliary_->max_function_per_shell() ? auxiliary_->max_function_per_shell() : max_rows);
+    //max_rows = 3L * auxiliary_->max_function_per_shell(); // Debug
+    if (max_rows < auxiliary_->max_function_per_shell()) {
+        throw PSIEXCEPTION("Out of memory in DFERI.");
+    }
     max_rows = (max_rows > auxiliary_->nbf() ? auxiliary_->nbf() : max_rows);
 
     // > Shell block assignments < //
 
     std::vector<int> shell_starts;
     shell_starts.push_back(0);
-    int index = 0;
-    for (int Qshell = 1; Qshell < auxiliary_->nshell()-1; Qshell++) {
-        if (auxiliary_->shell(Qshell+1).function_index() - auxiliary_->shell(shell_starts[index]).function_index() > max_rows) {
-            shell_starts.push_back(Qshell);
-            index++;
+    int fcount = auxiliary_->shell(0).nfunction();
+    for (int Q = 1; Q < auxiliary_->nshell(); Q++) {
+        if (fcount + auxiliary_->shell(Q).nfunction() > max_rows) {
+            shell_starts.push_back(Q);
+            fcount = auxiliary_->shell(Q).nfunction();
+        } else {
+            fcount += auxiliary_->shell(Q).nfunction();
         }
     }
     shell_starts.push_back(auxiliary_->nshell());
 
-    for (int i=0; i<shell_starts.size()-1; i++) {
-        if (i == shell_starts.size() - 2) {
-            if (max_rows < auxiliary_->nbf() - auxiliary_->shell(shell_starts[i]).function_index()) {
-              throw PSIEXCEPTION("Out of memory in DFERI.");
-            }
-        } else {
-            if (max_rows < auxiliary_->shell(shell_starts[i+1]).function_index() - auxiliary_->shell(shell_starts[i]).function_index()) {
-              throw PSIEXCEPTION("Out of memory in DFERI.");
-            }
-        }
-    }
+    // > Task printing (Debug) < //
+
+    //outfile->Printf("Auxiliary Composition:\n\n");
+    //for (int Q = 0; Q < auxiliary_->nshell(); Q++) {
+    //    outfile->Printf("%3d: %2d\n", Q, auxiliary_->shell(Q).nfunction());
+    //}
+    //outfile->Printf("\n");
+
+    //outfile->Printf("Max Rows: %zu\n\n", max_rows);
+
+    //outfile->Printf("Task Starts:\n\n");
+    //for (int task = 0; task < shell_starts.size() - 1; task++) {
+    //    outfile->Printf("%3d: %3d\n", task, shell_starts[task]);
+    //}
+    //outfile->Printf("\n");
 
     // => ERI Objects <= //
 
@@ -638,12 +647,9 @@ void DFERI::transform()
 }
 void DFERI::fit()
 {
-    boost::shared_ptr<Matrix> J = Jm12(auxiliary_,J_cutoff_);
-    double** Jp = J->pointer();
-
     int naux = auxiliary_->nbf();
 
-    size_t max_pairs = 0L;
+    size_t max_pairs = 0L; 
     for (int i = 0; i < pair_spaces_order_.size(); i++) {
         std::string name = pair_spaces_order_[i];
         boost::shared_ptr<Tensor> A = ints_[name];
@@ -658,8 +664,8 @@ void DFERI::fit()
 
     boost::shared_ptr<Matrix> T1(new Matrix("T1", naux, max_rows));
     boost::shared_ptr<Matrix> T2(new Matrix("T2", max_rows, naux));
-    double** T1p = T1->pointer();
-    double** T2p = T2->pointer();
+    double** T1p = T1->pointer(); 
+    double** T2p = T2->pointer(); 
 
     std::set<double> unique_pows;
     for (int i = 0; i < pair_spaces_order_.size(); i++) {
@@ -672,10 +678,9 @@ void DFERI::fit()
         it != unique_pows.end(); ++it) {
 
         double power = (*it);
-
-        boost::shared_ptr<Matrix> J = Jpow(power);;
-        if (power == 0.0) J->identity();
-        double** Jp = J->pointer();
+    
+        boost::shared_ptr<Matrix> J = Jpow(power);
+        double** Jp = J->pointer(); 
 
         for (int i = 0; i < pair_spaces_order_.size(); i++) {
             std::string name = pair_spaces_order_[i];
@@ -687,29 +692,28 @@ void DFERI::fit()
             size_t pairs = A->sizes()[0] * (size_t) A->sizes()[1];
 
             boost::shared_ptr<Tensor> AT = ints_[name + "_temp"];
-
+            
             FILE* fh = A->file_pointer();
             FILE* fhT = AT->file_pointer();
 
-            for (size_t pair = 0L; pair < pairs; pair += max_pairs) {
-                size_t npairs = (pair + max_pairs >= pairs? pairs - pair : max_pairs);
+            for (size_t pair = 0L; pair < pairs; pair += max_rows) {
+                size_t npairs = (pair + max_rows >= pairs? pairs - pair : max_rows);
 
-                fseek(fhT,pair*sizeof(double),SEEK_SET);
                 double* Ttp = T1p[0];
                 for (int Q = 0; Q < naux; Q++) {
-                    size_t statusvalue=fread(Ttp,npairs,sizeof(double),fhT);
-                    fseek(fhT,(pairs-npairs)*sizeof(double),SEEK_CUR);
-                    Ttp += npairs;
-                }
+                    fseek(fhT,Q*pairs*sizeof(double) + pair*sizeof(double),SEEK_SET);
+                    fread(Ttp,sizeof(double),npairs,fhT);
+                    Ttp += npairs; 
+                }            
 
                 //T1->print();
 
                 C_DGEMM('T','N',npairs,naux,naux,1.0,T1p[0],npairs,Jp[0],naux,0.0,T2p[0],naux);
-
+            
                 //T2->print();
 
-                fwrite(T2p[0],npairs*naux,sizeof(double),fh);
-            }
+                fwrite(T2p[0],sizeof(double),npairs*(size_t)naux,fh); 
+            } 
 
             if (!keep_raw_integrals_) {
                 ints_.erase(name + "_temp");

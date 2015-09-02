@@ -58,12 +58,14 @@ set(EXTERNAL_LIBS)
 
 # Decide if Fortran is needed
 if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH)
+   include(FortranEnabler)
    enable_language(Fortran)
    # add_definitions(-DHAVE_FORTRAN)  # unused
    # This is to use the CMake generated macros and not those based on FC_SYMBOL
    add_definitions(-DUSE_FCMANGLE_H)
    set(FORTRAN_ENABLED TRUE)
    message(STATUS "Fortran ENABLED")
+   fortran_enabler()
 endif()
 
 # Include CMake modules as needed
@@ -91,8 +93,6 @@ include(CheckIncludeFiles)
 include(CheckFunctionExists)
 # Here we look for Perl, Sphinx, Doxygen and LaTeX
 include(ConfigDocumentation)
-# Access to the fortran_enabler macro
-include(FortranEnabler)
 
 if(NOT FORTRAN_ENABLED)
    # For linking to math subroutines use the FC_SYMBOL strategy, if Fortran was not enabled
@@ -145,8 +145,8 @@ link_libraries("${CMAKE_THREAD_LIBS_INIT}")
 
 # Python Detection
 include(ConfigPython)
-link_libraries("${PYTHON_LIBRARIES}")
-include_directories(SYSTEM "${PYTHON_INCLUDE_DIRS}")
+link_libraries("${PYTHON_LIBRARY}")
+include_directories(SYSTEM "${PYTHON_INCLUDE_DIR}")
 
 # Boost Detection
 # We need Boost.Python, so this has to come _after_ Python detection
@@ -199,13 +199,12 @@ if(NOT HAVE_FUNC_ERF)
 endif()
 
 if(ENABLE_LIBERD)
-   message(WARNING "Building/Using LibERD instead of LibInts!!!!")
+   message(STATUS "Building LibERD in addition to LibInts! When able LibERD will be used by default.")
    add_definitions(-DHAVE_ERD)
 endif()
 
 if(ENABLE_DKH)
    message(STATUS "DKH in LibMints ENABLED")
-   fortran_enabler()
    add_definitions(-DHAVE_DKH)
 endif()
 
@@ -242,7 +241,6 @@ if(ENABLE_PCMSOLVER)
         # TODO ability to build psi4 against pre-built pcmsolver library like chemps2
         #message(FATAL_ERROR "No Zlib, no PCMSolver. Build against existing with -DPCMSOLVER_ROOT=/path/to/pcmsolver or skip with -DENABLE_PCMSOLVER=OFF")
    else()
-      fortran_enabler()
       add_definitions(-DHAVE_PCMSOLVER)
       message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
       link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
@@ -258,7 +256,6 @@ if(MPI_FOUND AND ENABLE_JKFACTORY)
    set(BUILD_JK_FACTORY TRUE)
 endif()
 if(BUILD_JK_FACTORY)
-      fortran_enabler()
    set(JK_BLAS_LIB "")
    set(JK_BLAS_INC "")
    if(EXPLICIT_BLAS_LIB)

@@ -1,3 +1,4 @@
+
 #
 #@BEGIN LICENSE
 #
@@ -27,6 +28,7 @@ functionality, namely single-point energies, geometry optimizations,
 properties, and vibrational frequency calculations.
 
 """
+from __future__ import absolute_import
 import sys
 import re
 #CUimport psi4
@@ -79,8 +81,10 @@ procedures = {
             'df-omp3'       : run_dfomp3,
             'dfomp3'        : run_dfomp3,
             'qchf'          : run_qchf,
-            'dfccsd2'       : run_dfccsd2,
-            'df-ccsd2'      : run_dfccsd2,
+            'dfccsd2'       : run_dfccsd,
+            'df-ccsd2'      : run_dfccsd,
+            'ri-ccsd(t)'    : run_dfccsd_t,
+            'riccsd(t)'     : run_dfccsd_t,
             'dfccd'         : run_dfccd,
             'df-ccd'        : run_dfccd,
             'dfccsdl'       : run_dfccsdl,
@@ -91,6 +95,8 @@ procedures = {
             'df-mp3'        : run_dfmp3,
             'cd-ccsd'       : run_cdccsd,
             'cdccsd'        : run_cdccsd,
+            'cd-ccsd(t)'    : run_cdccsd_t,
+            'cdccsd(t)'     : run_cdccsd_t,
             'cd-ccd'        : run_cdccd,
             'cdccd'         : run_cdccd,
             'cdomp3'        : run_cdomp3,
@@ -360,6 +366,10 @@ def energy(name, **kwargs):
     | df-ccsd2                | density-fitted CCSD from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
     +-------------------------+---------------------------------------------------------------------------------------+
     | dfccsd2                 | density-fitted CCSD from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | ri-ccsd(t)              | density-fitted CCSD(T) from DFOCC module :ref:`[manual] <sec:dfocc>`                  |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | riccsd(t)               | density-fitted CCSD(T) from DFOCC module :ref:`[manual] <sec:dfocc>`                  |
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-ccd                  | density-fitted CCD from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -808,13 +818,13 @@ def gradient(name, **kwargs):
             instructionsM += """#    overwritten and so maintains a history of the job. To use the (binary) optimizer\n"""
             instructionsM += """#    data file to accelerate convergence, the OPT-master jobs must run on the same computer.\n\n"""
 
-            fmaster = open('OPT-master.in', 'w')
-            fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
-            fmaster.write(p4util.format_molecule_for_input(molecule))
-            fmaster.write(p4util.format_options_for_input())
+            fmaster = open('OPT-master.in', 'wb')
+            fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
+            fmaster.write(p4util.format_molecule_for_input(molecule).encode('utf-8'))
+            fmaster.write(p4util.format_options_for_input().encode('utf-8'))
             p4util.format_kwargs_for_input(fmaster, 2, **kwargs)
-            fmaster.write("""%s('%s', **kwargs)\n\n""" % (optimize.__name__, lowername))
-            fmaster.write(instructionsM)
+            fmaster.write(("""%s('%s', **kwargs)\n\n""" % (optimize.__name__, lowername)).encode('utf-8'))
+            fmaster.write(instructionsM.encode('utf-8'))
             fmaster.close()
 
         for n, displacement in enumerate(displacements):
@@ -854,16 +864,16 @@ def gradient(name, **kwargs):
                 psi4.get_active_molecule().set_geometry(displacement)
 
                 # S/R: Prepare molecule, options, and kwargs
-                freagent = open('%s.in' % (rfile), 'w')
-                freagent.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
-                freagent.write(p4util.format_molecule_for_input(molecule))
-                freagent.write(p4util.format_options_for_input())
+                freagent = open('%s.in' % (rfile), 'wb')
+                freagent.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
+                freagent.write(p4util.format_molecule_for_input(molecule).encode('utf-8'))
+                freagent.write(p4util.format_options_for_input().encode('utf-8'))
                 p4util.format_kwargs_for_input(freagent, **kwargs)
 
                 # S/R: Prepare function call and energy save
-                freagent.write("""electronic_energy = %s('%s', **kwargs)\n\n""" % (func.__name__, lowername))
-                freagent.write("""psi4.print_out('\\nGRADIENT RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
-                freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
+                freagent.write(("""electronic_energy = %s('%s', **kwargs)\n\n""" % (func.__name__, lowername)).encode('utf-8'))
+                freagent.write(("""psi4.print_out('\\nGRADIENT RESULT: computation %d for item %d """ % (os.getpid(), n + 1)).encode('utf-8'))
+                freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""".encode('utf-8'))
                 freagent.close()
 
             # S/R: Read energy from each displaced geometry output file and save in energies array
@@ -1219,9 +1229,9 @@ def optimize(name, **kwargs):
 
             # S/R: Clean up opt input file
             if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
-                fmaster = open('OPT-master.in', 'w')
-                fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
-                fmaster.write('# Optimization complete!\n\n')
+                fmaster = open('OPT-master.in', 'wb')
+                fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
+                fmaster.write('# Optimization complete!\n\n'.encode('utf-8'))
                 fmaster.close()
 
             optstash.restore()
@@ -1606,13 +1616,13 @@ def hessian(name, **kwargs):
             instructionsM += """#         length and give summary results for the frequency computation in its output file.\n#\n"""
             instructionsM += """#             psi4 -i %-27s -o %-27s\n#\n\n""" % ('FREQ-master.in', 'FREQ-master.out')
 
-            fmaster = open('FREQ-master.in', 'w')
-            fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n')
-            fmaster.write(p4util.format_molecule_for_input(molecule))
-            fmaster.write(p4util.format_options_for_input())
+            fmaster = open('FREQ-master.in', 'wb')
+            fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
+            fmaster.write(p4util.format_molecule_for_input(molecule).encode('utf-8'))
+            fmaster.write(p4util.format_options_for_input(molecule, **kwargs))
             p4util.format_kwargs_for_input(fmaster, 2, **kwargs)
-            fmaster.write("""%s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername))
-            fmaster.write(instructionsM)
+            fmaster.write(("""%s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
+            fmaster.write(instructionsM.encode('utf-8'))
             fmaster.close()
             psi4.print_out(instructionsM)
 
@@ -1653,10 +1663,10 @@ def hessian(name, **kwargs):
                 molecule.set_geometry(displacement)
 
                 # S/R: Prepare molecule, options, and kwargs
-                freagent = open('%s.in' % (rfile), 'w')
+                freagent = open('%s.in' % (rfile), 'wb')
                 freagent.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
-                freagent.write(p4util.format_molecule_for_input(molecule))
-                freagent.write(p4util.format_options_for_input())
+                freagent.write(p4util.format_molecule_for_input(molecule).encode('utf-8'))
+                freagent.write(p4util.format_options_for_input(molecule, **kwargs).encode('utf-8'))
                 p4util.format_kwargs_for_input(freagent, **kwargs)
 
                 # S/R: Prepare function call and energy save

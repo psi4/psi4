@@ -77,6 +77,11 @@ void FrozenNO::common_init() {
     ndoccact = ndocc - nfzc;
     nvirt    = nmo - ndocc;
 
+    // quit if not RHF
+    if ( options_.get_str("REFERENCE")!="RHF") {
+        throw PsiException("FNOs only implemented for reference=rhf",__FILE__,__LINE__);
+    }
+
     // quit if number of virtuals is less than number of doubly occupied
     if (nvirt<ndoccact){
        throw PsiException("ndocc must be less than nvirt",__FILE__,__LINE__);
@@ -472,10 +477,21 @@ void DFFrozenNO::ThreeIndexIntegrals() {
   // read integrals that were written to disk in the scf
   long int nQ_scf = Process::environment.globals["NAUX (SCF)"];
   if ( options_.get_str("SCF_TYPE") == "DF" ) {
+
+      boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(molecule(),
+          "BASIS", options_.get_str("BASIS"));
+
       boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(molecule(),
-            "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"));
+          "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
+          options_.get_str("BASIS"), primary->has_puream());
+
       nQ_scf = auxiliary->nbf();
       Process::environment.globals["NAUX (SCF)"] = nQ_scf;
+
+      //boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(molecule(),
+      //      "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"));
+      //nQ_scf = auxiliary->nbf();
+      //Process::environment.globals["NAUX (SCF)"] = nQ_scf;
   }
 
   boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ_scf,ntri));

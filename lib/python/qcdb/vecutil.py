@@ -25,9 +25,11 @@ Credit for the libmints vector3 class to Justin M. Turney and
 incremental improvements by other psi4 developers.
 
 """
+from __future__ import absolute_import
+from __future__ import print_function
 import math
 import copy
-from exceptions import *
+from .exceptions import *
 
 ZERO = 1.0E-14
 
@@ -284,7 +286,7 @@ def identity(m):
 def show(matrix):
     """ Print out matrix"""
     for col in matrix:
-        print col
+        print(col)
 
 
 def mscale(matrix, d):

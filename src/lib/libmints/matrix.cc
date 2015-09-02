@@ -996,7 +996,7 @@ void Matrix::zero()
     int h;
 
     for (h=0; h<nirrep_; ++h) {
-        size = rowspi_[h] * colspi_[h^symmetry_] * sizeof(double);
+        size = rowspi_[h] * ((size_t) colspi_[h^symmetry_]) * sizeof(double);
 
         if (size) {
             memset(&(matrix_[h][0][0]), 0, size);

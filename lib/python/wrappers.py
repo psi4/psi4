@@ -25,6 +25,7 @@ functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`,
 :py:mod:`driver.response`, and :py:mod:`driver.frequency`.
 
 """
+from __future__ import absolute_import
 import re
 import os
 import math
