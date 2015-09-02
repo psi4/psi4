@@ -125,7 +125,7 @@ void dipole(void)
             Pt->set_name("Total Density");
             Pt->add(Pb);
             Pt->diagonalize(Nt,Ot, descending);
-            if(params.PRINT_NOS){
+            if(params.PRINT_NOONS){
                 Oa->print();
                 Ob->print();
                 Ot->print();
