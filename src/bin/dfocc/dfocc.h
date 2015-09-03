@@ -56,6 +56,7 @@ protected:
     void title_grad();
     void lambda_title();
     void pt_title();
+    void pat_title();
     void pdm_title();
     void ref_energy();
     void mp2_energy();
@@ -477,6 +478,11 @@ protected:
     void ccsd_t_manager();
     void ccsd_t_manager_cd();
 
+    // Lambda-CCSD(T)
+    void ccsdl_canonic_triples_disk();
+    void ccsdl_t_manager();
+    void ccsdl_t_manager_cd();
+
     // CCD
     void ccd_manager();
     void ccd_manager_cd();
@@ -752,6 +758,8 @@ protected:
      double EccsdLAB;
      double Eccsd_t;
      double E_t;
+     double Eccsd_at;
+     double E_at;
 
      // CCD
      double Eccd;
