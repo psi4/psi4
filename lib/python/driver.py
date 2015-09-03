@@ -85,6 +85,8 @@ procedures = {
             'df-ccsd2'      : run_dfccsd,
             'ri-ccsd(t)'    : run_dfccsd_t,
             'riccsd(t)'     : run_dfccsd_t,
+            'df-ccsd(at)'   : run_dfccsd_at,
+            'dfccsd(at)'    : run_dfccsd_at,
             'dfccd'         : run_dfccd,
             'df-ccd'        : run_dfccd,
             'dfccsdl'       : run_dfccsdl,
@@ -97,6 +99,8 @@ procedures = {
             'cdccsd'        : run_cdccsd,
             'cd-ccsd(t)'    : run_cdccsd_t,
             'cdccsd(t)'     : run_cdccsd_t,
+            'cd-ccsd(at)'   : run_cdccsd_at,
+            'cdccsd(at)'    : run_cdccsd_at,
             'cd-ccd'        : run_cdccd,
             'cdccd'         : run_cdccd,
             'cdomp3'        : run_cdomp3,
@@ -370,6 +374,10 @@ def energy(name, **kwargs):
     | ri-ccsd(t)              | density-fitted CCSD(T) from DFOCC module :ref:`[manual] <sec:dfocc>`                  |
     +-------------------------+---------------------------------------------------------------------------------------+
     | riccsd(t)               | density-fitted CCSD(T) from DFOCC module :ref:`[manual] <sec:dfocc>`                  |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-ccsd(at)             | density-fitted Lambda-CCSD(T) from DFOCC module :ref:`[manual] <sec:dfocc>`           |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | dfccsd(at)              | density-fitted Lambda-CCSD(T) from DFOCC module :ref:`[manual] <sec:dfocc>`           |
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-ccd                  | density-fitted CCD from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+

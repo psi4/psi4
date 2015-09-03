@@ -758,6 +758,351 @@ void DFOCC::ccsd_canonic_triples_disk()
 
 }// end ccsd_canonic_triples_disk
 
+//======================================================================
+//       Asymetric Triples: (AT)
+//======================================================================             
+void DFOCC::ccsdl_canonic_triples_disk()
+{
+    // defs
+    SharedTensor2d K, L, M, I, J, T, U, Tau, W, WL, X, Y, Z;
+    SharedTensor2d V, J1, J2, J3, Jt;
+    SharedTensor1d Eijk;
+    int Nijk;
+
+    // Find number of unique ijk combinations (i>=j>=k)
+    Nijk = naoccA * (naoccA + 1) * (naoccA + 2) / 6;
+    outfile->Printf("\tNumber of ijk combinations: %i \n",Nijk);
+
+    // Malloc Eijk
+    //Eijk = SharedTensor1d(new Tensor1d("Eijk", Nijk));
+
+    // Memory: 3*O^2V^2 + 5*V^3 + O^3V + V^2N + V^3/2 
+
+    // Read t2 amps
+    t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    t2->read_symm(psio_, PSIF_DFOCC_AMPS);
+    T = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    T->sort(1324, t2, 1.0, 0.0);
+    t2.reset();
+
+    // Read l2 amps
+    l2 = SharedTensor2d(new Tensor2d("L2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    l2->read_symm(psio_, PSIF_DFOCC_AMPS);
+    L = SharedTensor2d(new Tensor2d("L2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    L->sort(1324, l2, 1.0, 0.0);
+    l2.reset();
+
+    // Form (ij|ka)
+    M = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    M->read(psio_, PSIF_DFOCC_INTS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
+    K->read(psio_, PSIF_DFOCC_INTS);
+    J = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA));
+    J->gemm(true, false, K, M, 1.0, 0.0);
+    K.reset();
+    I = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|KA>", naoccA, naoccA, naoccA, navirA));
+    I->sort(1324, J, 1.0, 0.0);
+    J.reset();
+
+    // Form (ia|jb)
+    J = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    J->gemm(true, false, M, M, 1.0, 0.0);
+
+    // B(iaQ)
+    U = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ));
+    U = M->transpose();
+    M.reset();
+
+    // malloc W[ijk](abc)
+    W = SharedTensor2d(new Tensor2d("W[IJK] <AB|C>", navirA * navirA, navirA));
+    WL = SharedTensor2d(new Tensor2d("WL[IJK] <AB|C>", navirA * navirA, navirA));
+    V = SharedTensor2d(new Tensor2d("V[IJK] <BA|C>", navirA * navirA, navirA));
+    J1 = SharedTensor2d(new Tensor2d("J[I] (A|BC)", navirA * navirA, navirA));
+    J2 = SharedTensor2d(new Tensor2d("J[I] (A|BC)", navirA * navirA, navirA));
+    J3 = SharedTensor2d(new Tensor2d("J[I] (A|BC)", navirA * navirA, navirA));
+
+    // B(Q,ab)
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA));
+    K->read(psio_, PSIF_DFOCC_INTS);
+
+    // Form (ia|bc)
+    Jt = SharedTensor2d(new Tensor2d("J[I] <A|B>=C", navirA, ntri_abAA));
+    psio_address addr = PSIO_ZERO;
+    for(int i = 0 ; i < naoccA; ++i){
+	// Compute J[i](a,bc) = (ia|bc) = \sum(Q) B[i](aQ) * B(Q,bc)
+        Jt->contract(false, false, navirA, ntri_abAA, nQ, U, K, i*navirA*nQ, 0, 1.0, 0.0);
+	J1->expand23(navirA, navirA, navirA, Jt);
+
+	// write
+	J1->write(psio_, PSIF_DFOCC_INTS, addr, &addr);
+    }
+    K.reset();
+    Jt.reset();
+    U.reset();
+
+    // main loop
+    E_at = 0.0;
+    double sum = 0.0;
+    for(int i = 0 ; i < naoccA; ++i){
+        double Di = FockA->get(i + nfrzc, i + nfrzc);
+
+	// Read J[i](a,bc) 
+	psio_address addr1 = psio_get_address(PSIO_ZERO,i*navirA*navirA*navirA*sizeof(double));
+	J1->read(psio_, PSIF_DFOCC_INTS, addr1, &addr1);
+
+        for(int j = 0 ; j <= i; ++j){
+	    double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
+
+	    // Read J[j](a,bc) 
+	    psio_address addr2 = psio_get_address(PSIO_ZERO,j*navirA*navirA*navirA*sizeof(double));
+	    J2->read(psio_, PSIF_DFOCC_INTS, addr2, &addr2);
+
+            for(int k = 0 ; k <= j; ++k){
+	        // Read J[k](a,bc) 
+	        psio_address addr3 = psio_get_address(PSIO_ZERO,k*navirA*navirA*navirA*sizeof(double));
+	        J3->read(psio_, PSIF_DFOCC_INTS, addr3, &addr3);
+
+                // W[ijk](ab,c) = \sum(e) t_jk^ec (ia|be) (1+)
+                // W[ijk](ab,c) = \sum(e) J[i](ab,e) T[jk](ec)
+                W->contract(false, false, navirA*navirA, navirA, navirA, J1, T, 0, (j*naoccA*navirA*navirA) + (k*navirA*navirA), 1.0, 0.0);
+
+                // W[ijk](ab,c) -= \sum(m) t_im^ab <jk|mc> (1-)
+                // W[ijk](ab,c) -= \sum(m) T[i](m,ab) I[jk](mc)
+                W->contract(true, false, navirA*navirA, navirA, naoccA, T, I, i*naoccA*navirA*navirA, (j*naoccA*naoccA*navirA) + (k*naoccA*navirA), -1.0, 1.0);
+
+                // W[ijk](ac,b) = \sum(e) t_kj^eb (ia|ce) (2+)
+                // W[ijk](ac,b) = \sum(e) J[i](ac,e) T[kj](eb)
+                V->contract(false, false, navirA*navirA, navirA, navirA, J1, T, 0, (k*naoccA*navirA*navirA) + (j*navirA*navirA), 1.0, 0.0);
+
+                // W[ijk](ac,b) -= \sum(m) t_im^ac <kj|mb> (2-)
+                // W[ijk](ac,b) -= \sum(m) T[i](m,ac) I[kj](mb)
+                V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, i*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
+                #pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        W->axpy((ULI)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
+
+                // W[ijk](ba,c) = \sum(e) t_ik^ec (jb|ae) (3+)
+                // W[ijk](ba,c) = \sum(e) J[j](ba,e) T[ik](ec)
+                V->contract(false, false, navirA*navirA, navirA, navirA, J2, T, 0, (i*naoccA*navirA*navirA) + (k*navirA*navirA), 1.0, 0.0);
+
+                // W[ijk](ba,c) -= \sum(m) t_jm^ba <ik|mc> (3-)
+                // W[ijk](ba,c) -= \sum(m) T[j](m,ba) I[ik](mc)
+                V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, j*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (k*naoccA*navirA), -1.0, 1.0);
+                #pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        W->axpy((ULI)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
+
+                // W[ijk](bc,a) = \sum(e) t_ki^ea (jb|ce) (4+)
+                // W[ijk](bc,a) = \sum(e) J[j](bc,e) T[ki](ea)
+                V->contract(false, false, navirA*navirA, navirA, navirA, J2, T, 0, (k*naoccA*navirA*navirA) + (i*navirA*navirA), 1.0, 0.0);
+
+                // W[ijk](bc,a) -= \sum(m) t_jm^bc <ki|ma> (4-)
+                // W[ijk](bc,a) -= \sum(m) T[j](m,bc) I[ki](ma)
+                V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, j*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
+                #pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        W->axpy((ULI)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
+
+                // W[ijk](ca,b) = \sum(e) t_ij^eb (kc|ae) (5+)
+                // W[ijk](ca,b) = \sum(e) J[k](ca,e) T[ij](eb)
+                V->contract(false, false, navirA*navirA, navirA, navirA, J3, T, 0, (i*naoccA*navirA*navirA) + (j*navirA*navirA), 1.0, 0.0);
+
+                // W[ijk](ca,b) -= \sum(m) t_km^ca <ij|mb> (5-)
+                // W[ijk](ca,b) -= \sum(m) T[k](m,ca) I[ij](mb)
+                V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, k*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
+                #pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        W->axpy((ULI)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
+
+                // W[ijk](cb,a) = \sum(e) t_ji^ea (kc|be) (6+)
+                // W[ijk](cb,a) = \sum(e) J[k](cb,e) T[ji](ea)
+                V->contract(false, false, navirA*navirA, navirA, navirA, J3, T, 0, (j*naoccA*navirA*navirA) + (i*navirA*navirA), 1.0, 0.0);
+
+                // W[ijk](cb,a) -= \sum(m) t_km^cb <ji|ma> (6-)
+                // W[ijk](cb,a) -= \sum(m) T[k](m,cb) I[ji](ma)
+                V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, k*naoccA*navirA*navirA, (j*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
+                #pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        W->axpy((ULI)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
+
+		
+		//=========================
+		// Asymmetric WL[ijk][abc]
+		//=========================
+	
+	        // W[ijk](ab,c) = \sum(e) l_jk^ec (ia|be) (1+)
+                // W[ijk](ab,c) = \sum(e) J[i](ab,e) L[jk](ec)
+                WL->contract(false, false, navirA*navirA, navirA, navirA, J1, L, 0, (j*naoccA*navirA*navirA) + (k*navirA*navirA), 1.0, 0.0);
+
+                // W[ijk](ab,c) -= \sum(m) l_im^ab <jk|mc> (1-)
+                // W[ijk](ab,c) -= \sum(m) L[i](m,ab) I[jk](mc)
+                WL->contract(true, false, navirA*navirA, navirA, naoccA, L, I, i*naoccA*navirA*navirA, (j*naoccA*naoccA*navirA) + (k*naoccA*navirA), -1.0, 1.0);
+
+                // W[ijk](ac,b) = \sum(e) l_kj^eb (ia|ce) (2+)
+                // W[ijk](ac,b) = \sum(e) J[i](ac,e) L[kj](eb)
+                V->contract(false, false, navirA*navirA, navirA, navirA, J1, L, 0, (k*naoccA*navirA*navirA) + (j*navirA*navirA), 1.0, 0.0);
+
+                // W[ijk](ac,b) -= \sum(m) l_im^ac <kj|mb> (2-)
+                // W[ijk](ac,b) -= \sum(m) L[i](m,ac) I[kj](mb)
+                V->contract(true, false, navirA*navirA, navirA, naoccA, L, I, i*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
+                #pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        WL->axpy((ULI)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
+
+                // W[ijk](ba,c) = \sum(e) l_ik^ec (jb|ae) (3+)
+                // W[ijk](ba,c) = \sum(e) J[j](ba,e) L[ik](ec)
+                V->contract(false, false, navirA*navirA, navirA, navirA, J2, L, 0, (i*naoccA*navirA*navirA) + (k*navirA*navirA), 1.0, 0.0);
+
+                // W[ijk](ba,c) -= \sum(m) l_jm^ba <ik|mc> (3-)
+                // W[ijk](ba,c) -= \sum(m) L[j](m,ba) I[ik](mc)
+                V->contract(true, false, navirA*navirA, navirA, naoccA, L, I, j*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (k*naoccA*navirA), -1.0, 1.0);
+                #pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        WL->axpy((ULI)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
+
+                // W[ijk](bc,a) = \sum(e) l_ki^ea (jb|ce) (4+)
+                // W[ijk](bc,a) = \sum(e) J[j](bc,e) L[ki](ea)
+                V->contract(false, false, navirA*navirA, navirA, navirA, J2, L, 0, (k*naoccA*navirA*navirA) + (i*navirA*navirA), 1.0, 0.0);
+
+                // W[ijk](bc,a) -= \sum(m) l_jm^bc <ki|ma> (4-)
+                // W[ijk](bc,a) -= \sum(m) L[j](m,bc) I[ki](ma)
+                V->contract(true, false, navirA*navirA, navirA, naoccA, L, I, j*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
+                #pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        WL->axpy((ULI)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
+
+                // W[ijk](ca,b) = \sum(e) l_ij^eb (kc|ae) (5+)
+                // W[ijk](ca,b) = \sum(e) J[k](ca,e) L[ij](eb)
+                V->contract(false, false, navirA*navirA, navirA, navirA, J3, L, 0, (i*naoccA*navirA*navirA) + (j*navirA*navirA), 1.0, 0.0);
+
+                // W[ijk](ca,b) -= \sum(m) l_km^ca <ij|mb> (5-)
+                // W[ijk](ca,b) -= \sum(m) L[k](m,ca) I[ij](mb)
+                V->contract(true, false, navirA*navirA, navirA, naoccA, L, I, k*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
+                #pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        WL->axpy((ULI)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
+
+                // W[ijk](cb,a) = \sum(e) l_ji^ea (kc|be) (6+)
+                // W[ijk](cb,a) = \sum(e) J[k](cb,e) L[ji](ea)
+                V->contract(false, false, navirA*navirA, navirA, navirA, J3, L, 0, (j*naoccA*navirA*navirA) + (i*navirA*navirA), 1.0, 0.0);
+
+                // W[ijk](cb,a) -= \sum(m) l_km^cb <ji|ma> (6-)
+                // W[ijk](cb,a) -= \sum(m) L[k](m,cb) I[ji](ma)
+                V->contract(true, false, navirA*navirA, navirA, naoccA, L, I, k*naoccA*navirA*navirA, (j*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
+                #pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+                    for(int b = 0 ; b < navirA; ++b){
+		        WL->axpy((ULI)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		    }
+		}
+
+		// V[ijk](ab,c) = WL[ijk](ab,c) 
+		V->copy(WL);
+
+		// V[ijk](ab,c) += l_i^a (jb|kc) + l_j^b (ia|kc) + l_k^c (ia|jb)
+		// Vt[ijk](ab,c) = V[ijk](ab,c) / (1 + \delta(abc))
+                #pragma omp parallel for
+                for(int a = 0 ; a < navirA; ++a){
+	            int ia = ia_idxAA->get(i,a);
+                    for(int b = 0 ; b < navirA; ++b){
+			int jb = ia_idxAA->get(j,b);
+			int ab = ab_idxAA->get(a,b);
+                        for(int c = 0 ; c < navirA; ++c){
+			    int kc = ia_idxAA->get(k,c);
+			    double value = V->get(ab,c) + ( l1A->get(i,a)*J->get(jb,kc) ) + ( l1A->get(j,b)*J->get(ia,kc) ) + ( l1A->get(k,c)*J->get(ia,jb) );
+			    double denom =  1 + ( (a==b) + (b==c) + (a==c) );
+			    V->set(ab, c, value/denom);
+			}
+		    }
+		}
+
+		// Denom
+		double Dijk = Dij + FockA->get(k + nfrzc, k + nfrzc);
+	        double factor =  2 - ( (i==j) + (j==k) + (i==k) );
+
+		// Compute energy
+		double Xvalue, Yvalue, Zvalue;
+                #pragma omp parallel for private(Xvalue,Yvalue,Zvalue) reduction(+:sum)
+                for(int a = 0 ; a < navirA; ++a){
+	            double Dijka = Dijk - FockA->get(a + noccA, a + noccA);
+                    for(int b = 0 ; b <=a; ++b){
+			double Dijkab = Dijka - FockA->get(b + noccA, b + noccA);
+			int ab = ab_idxAA->get(a,b);
+			int ba = ab_idxAA->get(b,a);
+                        for(int c = 0 ; c <= b; ++c){
+			    int ac = ab_idxAA->get(a,c);
+			    int bc = ab_idxAA->get(b,c);
+			    int ca = ab_idxAA->get(c,a);
+			    int cb = ab_idxAA->get(c,b);
+
+			    // X_ijk^abc
+			    Xvalue = ( W->get(ab,c)*V->get(ab,c) ) + ( W->get(ac,b)*V->get(ac,b) ) 
+				         + ( W->get(ba,c)*V->get(ba,c) ) + ( W->get(bc,a)*V->get(bc,a) )
+					 + ( W->get(ca,b)*V->get(ca,b) ) + ( W->get(cb,a)*V->get(cb,a) );
+
+			    // Y_ijk^abc
+			    Yvalue = V->get(ab,c) + V->get(bc,a) + V->get(ca,b);
+
+			    // Z_ijk^abc
+			    Zvalue = V->get(ac,b) + V->get(ba,c) + V->get(cb,a);
+
+			    // contributions to energy
+			    double value = (Yvalue - (2.0*Zvalue)) * ( W->get(ab,c) + W->get(bc,a) + W->get(ca,b) ) ;
+			    value += (Zvalue - (2.0*Yvalue)) * ( W->get(ac,b) + W->get(ba,c) + W->get(cb,a) ) ;
+			    value += 3.0 * Xvalue;
+			    double Dijkabc = Dijkab - FockA->get(c + noccA, c + noccA);
+			    sum += (value * factor) / Dijkabc;
+			}
+		    }
+		}
+
+	    }//k
+	}//j
+    }//i
+    T.reset();
+    L.reset();
+    J.reset();
+    W.reset();
+    WL.reset();
+    V.reset();
+    J1.reset();
+    J2.reset();
+    J3.reset();
+    I.reset();
+ 
+    // set energy
+    E_at = sum;
+    Eccsd_at = Eccsd + E_at;
+
+}// end ccsdl_canonic_triples_disk
+
 
 
 }} // End Namespaces
