@@ -425,7 +425,7 @@ void DFOCC::pt_title()
    if (wfn_type_ == "DF-CCSD(T)" || wfn_type_ == "CD-CCSD(T)") outfile->Printf("                       DF-CCSD(T)   \n");
    else if (wfn_type_ == "DF-CCD(T)" || wfn_type_ == "CD-CCD(T)") outfile->Printf("                       DF-CCSD(T)   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision August 20, 2015\n") ;
+   outfile->Printf("              Latest Revision September 3, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
