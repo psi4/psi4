@@ -473,6 +473,7 @@ protected:
     // CCSD(T)
     void ccsd_canonic_triples();
     void ccsd_canonic_triples_hm();
+    void ccsd_canonic_triples_disk();
     void ccsd_t_manager();
     void ccsd_t_manager_cd();
 

@@ -757,7 +757,18 @@ void DFOCC::ccsd_t_manager_cd()
         cost_amp2 *= (naoccA * navirA) / 1024.0;
         cost_triples_iabc += cost_amp2;
         cost_triples_iabc *= sizeof(double);
-	if (cost_triples_iabc > memory_mb && triples_iabc_type_ == "AUTO") {
+
+	if (triples_iabc_type_ == "DISK") {
+	    do_triples_hm = false;
+            //outfile->Printf("\n\tI will use a DISK algorithm for (ia|bc) in (T)! \n");
+            outfile->Printf("\tMemory requirement for (T) correction : %9.2lf MB \n", cost_amp1);
+	}
+	else if (triples_iabc_type_ == "DIRECT") {
+	    do_triples_hm = false;
+            outfile->Printf("\n\tI will use a DIRECT algorithm for (ia|bc) in (T)! \n");
+            outfile->Printf("\tMemory requirement for (T) correction : %9.2lf MB \n", cost_amp1);
+	}
+	else if (cost_triples_iabc > memory_mb && triples_iabc_type_ == "AUTO") {
 	    do_triples_hm = false;
             outfile->Printf("\n\tI will use a DIRECT algorithm for (ia|bc) in (T)! \n");
             outfile->Printf("\tMemory requirement for (T) correction : %9.2lf MB \n", cost_amp1);
@@ -893,12 +904,14 @@ void DFOCC::ccsd_t_manager_cd()
 	pt_title();
         outfile->Printf("\tComputing (T) correction...\n");
         timer_on("(T)");
-        if (triples_iabc_type_ == "AUTO") {
+        if (triples_iabc_type_ == "DISK") ccsd_canonic_triples_disk();
+	else if (triples_iabc_type_ == "AUTO") {
 	    if (do_triples_hm) ccsd_canonic_triples_hm();
 	    else ccsd_canonic_triples();
         }
         else if (triples_iabc_type_ == "INCORE") ccsd_canonic_triples_hm();
         else if (triples_iabc_type_ == "DIRECT") ccsd_canonic_triples();
+        else if (triples_iabc_type_ == "DISK") ccsd_canonic_triples_disk();
         timer_off("(T)");
 	outfile->Printf("\t(T) Correction (a.u.)              : %20.14f\n", E_t);
 	outfile->Printf("\tCD-CCSD(T) Total Energy (a.u.)     : %20.14f\n", Eccsd_t);
