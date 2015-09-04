@@ -339,15 +339,19 @@ void CIWavefunction::transform_dfmcscf_ints(){
   int ndrc = CalcInfo.num_drc_orbs;
   for (int i=0; i<nact; i++){
     irel = myorder[i];
+
     for (int j=0; j<=i; j++){
       jrel = myorder[j];
+
       for (int k=0; k<=i; k++){
         krel = myorder[k];
         lmax = (i==k) ? j+1 : k+1;
+
         for (int l=0; l<lmax; l++){
-          lrel = myorder[l];
+        lrel = myorder[l];
           // outfile->Printf("%d %d %d %d | %d %lf\n", i, j, k, l, target, val);
           CalcInfo.twoel_ints[target++] = actMOp[irel * nact + jrel][krel * nact + lrel];
+
   }}}}
   actMO.reset();
   delete[] myorder;
