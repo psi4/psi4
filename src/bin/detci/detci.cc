@@ -1402,7 +1402,7 @@ void CIWavefunction::compute_mcscf(struct stringwr **alplist, struct stringwr **
 {
 
   Parameters.print_lvl = 0;
-  Parameters.maxiter = 1;
+  Parameters.maxiter = 2;
 
   // Build SOMCSCF object
   transform_dfmcscf_ints();
@@ -1438,6 +1438,11 @@ void CIWavefunction::compute_mcscf(struct stringwr **alplist, struct stringwr **
 
   ediff = -CalcInfo.escf;
 
+  // Energy header
+  //
+    outfile->Printf("\n                          "
+                    "Total Energy         Delta E       RMS Grad\n\n");
+
   // Iterate
   for (int iter=1; iter<MCSCF_Parameters->max_iter + 1; iter++){
 
@@ -1470,12 +1475,14 @@ void CIWavefunction::compute_mcscf(struct stringwr **alplist, struct stringwr **
       break;
     }
 
-    if (((grad_rms < MCSCF_Parameters->start_onestep_grad) &&
+    if (
+        ((grad_rms < MCSCF_Parameters->start_onestep_grad) &&
         (ediff < MCSCF_Parameters->start_onestep_e) &&
-        (iter > 2))
-        || (itertype == "SOMCSCF")){
-      itertype = "SOMCSCF";
-      x = somcscf->solve(5, 1.e-10, false);
+        (iter >= 2))
+        || (itertype == "SOMCSCF")
+        ){
+         itertype = "SOMCSCF";
+         x = somcscf->solve(5, 1.e-10, false);
     }
     else {
       itertype = "APPROX";

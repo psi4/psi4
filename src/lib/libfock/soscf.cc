@@ -604,11 +604,6 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x)
             for (int j=0; j<navpi_[h]; j++){
                 int nj = noccpi_[h] + j;
                 Hxp[i][j] = 2.0 * (Fkp[i][nj] - Fkp[nj][i]);
-
-                // Ensure the hessian is zero for the active-active diagonal block
-                if (nj == i){
-                    Hxp[i][j] = 0.0;
-                }
             }
         }
     }
