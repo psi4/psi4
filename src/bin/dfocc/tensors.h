@@ -27,6 +27,7 @@
 #include <libiwl/iwl.h>
 #include <libmints/mints.h>
 #include <libpsio/psio.hpp>
+#include <libpsio/psio.h>
 
 #define index2(i,j) ((i>j) ? ((i*(i+1)/2)+j) : ((j*(j+1)/2)+i))
 #define index4(i,j,k,l) index2(index2(i,j),index2(k,l))
@@ -184,6 +185,7 @@ class Tensor2d
   void axpy(double **a, double alpha);
   void axpy(const SharedTensor2d &a, double alpha);
   void axpy(ULI length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha);
+  void axpy(ULI length, int start_a, int inc_a, const SharedTensor2d &A, int start_2d, int inc_2d, double alpha);
   double **transpose2();
   SharedTensor2d transpose();
   void trans(const SharedTensor2d &A);
@@ -279,8 +281,11 @@ class Tensor2d
   int dim2() const { return dim2_; }
 
   void write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  void write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end);
   void write(psi::PSIO* const psio, unsigned int fileno);
+  void write(psi::PSIO* psio, unsigned int fileno, psio_address start, psio_address *end);
   void write(psi::PSIO& psio, unsigned int fileno);
+  void write(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end);
   void write(boost::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno);
   void write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm);
   void write(boost::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno, bool three_index, bool symm);
@@ -288,8 +293,11 @@ class Tensor2d
   void write_anti_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
 
   void read(psi::PSIO* psio, unsigned int fileno);
+  void read(psi::PSIO* psio, unsigned int fileno, psio_address start, psio_address *end);
   void read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  void read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end);
   void read(psi::PSIO& psio, unsigned int fileno);
+  void read(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end);
   void read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm);
   void read_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
   void read_anti_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
@@ -405,6 +413,8 @@ class Tensor2d
   void symm_packed(const SharedTensor2d &A);
   // A(Q, p>=q) = A(Q,pq)
   void ltm(const SharedTensor2d &A);
+  // A(p,qr) = A(p,q>=r)
+  void expand23(int d1, int d2, int d3, const SharedTensor2d &A);
 
   // (+)A(p>=q, r>=s) = 1/2 [A(pq,rs) + A(qp,rs)]
   void symm4(const SharedTensor2d &a);

@@ -22,14 +22,11 @@
  *@END LICENSE
  */
 
-#include <libplugin/plugin.h>
 #include <psi4-dec.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
 #include <libmints/mints.h>
 #include <libpsio/psio.h>
-
-INIT_PLUGIN
 
 namespace psi{ namespace @plugin@ {
 
@@ -64,7 +61,7 @@ PsiReturnType @plugin@(Options &options)
     // The integral factory oversees the creation of integral objects
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory
             (aoBasis, aoBasis, aoBasis, aoBasis));
-    
+
     // N.B. This should be called after the basis has been built, because the geometry has not been
     // fully initialized until this time.
     molecule->print();
