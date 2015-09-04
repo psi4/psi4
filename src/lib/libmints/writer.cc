@@ -68,6 +68,196 @@ MoldenWriter::MoldenWriter(boost::shared_ptr<Wavefunction> wavefunction)
 {
 
 }
+void MoldenWriter::writeNO(const std::string &filename, boost::shared_ptr<Matrix> Na, boost::shared_ptr<Matrix> Nb, boost::shared_ptr<Vector> Oa, boost::shared_ptr<Vector> Ob)
+{
+    //Same as MO Writer below 
+    boost::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
+
+    int atom;
+
+    printer->Printf("[Molden Format]\n");
+    BasisSet& basisset = *wavefunction_->basisset().get();
+    Molecule& mol = *basisset.molecule().get();
+
+    // Print the molecule to molden
+    printer->Printf("[Atoms] (AU)\n");
+    for (atom=0; atom<mol.natom(); ++atom) {
+        Vector3 coord = mol.xyz(atom);
+        printer->Printf("%-2s  %2d  %3d   %20.12f %20.12f %20.12f\n",
+                mol.symbol(atom).c_str(), atom+1, static_cast<int>(mol.Z(atom)), coord[0], coord[1], coord[2]);
+    }
+
+    // Dump the basis set using code adapted from psi2molden
+    printer->Printf("[GTO]\n");
+
+    // For each atom
+    for (atom=0; atom<mol.natom(); ++atom) {
+        printer->Printf("  %d 0\n", atom+1);
+
+        // Go through all the shells on this center
+        for (int shell=0; shell < basisset.nshell_on_center(atom); ++shell) {
+            int overall_shell = basisset.shell_on_center(atom, shell);
+
+            const GaussianShell& gs = basisset.shell(overall_shell);
+
+            printer->Printf(" %c%5d  1.00\n", gs.amchar(), gs.nprimitive());
+
+            for (int prim=0; prim<gs.nprimitive(); ++prim) {
+                printer->Printf("%20.10f %20.10f\n", gs.exp(prim), gs.original_coef(prim));
+            }
+        }
+
+        // An empty line separates atoms
+        printer->Printf("\n");
+    }
+    /* Natural Orbital Transformation to AO basis 
+     *N  (mo x no)
+     *1st Half Transform
+     *N' (so x no) = C (so x mo) x N (mo x no)
+     *Fully transformed 
+     *N'' (ao x no) = S (ao x no) x N'(so x no)
+     */
+    //setup 
+    // get the "S" transformation matrix, ao by so
+    boost::shared_ptr<PetiteList> pl(new PetiteList(wavefunction_->basisset(), wavefunction_->integral()));
+    SharedMatrix aotoso = pl->aotoso();
+    //get C's
+    SharedMatrix Ca = wavefunction_->Ca();
+    SharedMatrix Cb = wavefunction_->Cb();
+    // need dimensions
+    const Dimension aos = pl->AO_basisdim();
+    const Dimension sos = pl->SO_basisdim();
+    const Dimension nmo = Ca->colspi();
+    const Dimension nos = Na->colspi();
+    //New N's
+    SharedMatrix Naprime(new Matrix("Na' ", sos, nos));
+    SharedMatrix Nbprime(new Matrix("Nb' ", sos, nos));
+    // do N' = C x N 
+    Naprime->gemm(false, false, 1.0, Ca,Na, 0.0);
+    Nbprime->gemm(false, false, 1.0, Cb,Na, 0.0);
+    //Fully transformed
+    SharedMatrix NaFT(new Matrix("NaFT", aos,nos));
+    SharedMatrix NbFT(new Matrix("NbFT", aos,nos));
+    // do N'' = S x N'
+    NaFT->gemm(false,false,1.0,aotoso,Naprime,0.0);
+    NbFT->gemm(false,false,1.0,aotoso,Nbprime,0.0);
+    
+    // The order Molden expects
+    //     P: x, y, z
+    //    5D: D 0, D+1, D-1, D+2, D-2
+    //    6D: xx, yy, zz, xy, xz, yz
+    //
+    //    7F: F 0, F+1, F-1, F+2, F-2, F+3, F-3
+    //   10F: xxx, yyy, zzz, xyy, xxy, xxz, xzz, yzz, yyz, xyz
+    //
+    //    9G: G 0, G+1, G-1, G+2, G-2, G+3, G-3, G+4, G-4
+    //   15G: xxxx yyyy zzzz xxxy xxxz yyyx yyyz zzzx zzzy,
+    //        xxyy xxzz yyzz xxyz yyxz zzxy
+    // Since Molden doesn't handle higher than g we'll just leave them be.
+    int molden_cartesian_order[][15] = {
+        { 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },    // p
+        { 0, 3, 4, 1, 5, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 },    // d
+        { 0, 4, 5, 3, 9, 6, 1, 8, 7, 2, 0, 0, 0, 0, 0 },    // f
+        { 0, 3, 4, 9, 12, 10, 5, 13, 14, 7, 1, 6, 11, 8, 2} // g
+    };
+
+    int nirrep = NaFT->nirrep();
+    Dimension countpi(nirrep);
+    Dimension zeropi(nirrep);
+    Dimension ncartpi(nirrep);
+
+    for(int i = 0; i < basisset.nshell(); i++) {
+        int am = basisset.shell(i).am();
+
+        int ncart = basisset.shell(i).nfunction();
+        if((am == 1 && basisset.has_puream()) || (am > 1 && am < 5 && basisset.shell(i).is_cartesian())) {
+            for (int h=0; h<nirrep; ++h)
+                ncartpi[h] = ncart;
+
+            View block_a(NaFT, ncartpi, NaFT->colspi(), countpi, zeropi);
+            View block_b(NbFT, ncartpi, NbFT->colspi(), countpi, zeropi);
+
+            SharedMatrix temp_a = block_a();
+            SharedMatrix temp_b = block_b();
+
+            for( int j =0; j < ncart; j++) {
+                for (int h=0; h < NaFT->nirrep(); ++h) {
+                    for (int k=0; k<NaFT->coldim(h); ++k) {
+                        // outfile->Printf( "am %d\n, from %d to %d\n", am, j, countpi[h] + molden_cartesian_order[am-1][j]);
+                        NaFT->set(h, countpi[h] + molden_cartesian_order[am-1][j], k, temp_a->get(h, j, k));
+                        NaFT->set(h, countpi[h] + molden_cartesian_order[am-1][j], k, temp_b->get(h, j, k));
+                    }
+                }
+            }
+        }
+
+        for (int h=0; h<nirrep; ++h)
+            countpi[h] += ncart;
+    }
+
+    if (basisset.has_puream()) {
+        // Tell Molden to use spherical.  5d implies 5d and 7f.
+        printer->Printf("[5D]\n[9G]\n\n");
+    }
+    CharacterTable ct = mol.point_group()->char_table();
+
+    // Dump MO's to the molden file
+    printer->Printf("[MO]\n");
+
+    std::vector<std::pair<double, std::pair<int, int> > > mos;
+
+    // do alpha's
+    bool SameOcc = true;
+    for (int h=0; h<wavefunction_->nirrep(); ++h) {
+        for (int n=0; n<wavefunction_->nmopi()[h]; ++n) {
+            mos.push_back(make_pair(Oa->get(h, n), make_pair(h, n)));
+            if(fabs(Oa->get(h,n) - Ob->get(h,n)) > 1e-10)
+                SameOcc = false;
+        }
+    }
+    std::sort(mos.begin(), mos.end());
+
+    for (int i=0; i<(int)mos.size(); ++i) {
+        int h = mos[i].second.first;
+        int n = mos[i].second.second;
+
+        printer->Printf(" Sym= %s\n", ct.gamma(h).symbol());
+        printer->Printf(" Ene= %20.10f\n", Oa->get(h, n));
+        printer->Printf(" Spin= Alpha\n");
+        if(Na == Nb && Oa == Ob && SameOcc)
+            printer->Printf(" Occup= %7.4lf\n", Oa->get(h,n)+Ob->get(h,n));
+        else
+            printer->Printf(" Occup= %7.4lf\n", Oa->get(h,n));
+        for (int so=0; so<wavefunction_->nso(); ++so)
+            printer->Printf("%3d %20.12lf\n", so+1, NaFT->get(h, so, n));
+    }
+
+    // do beta's
+    mos.clear();
+    if (Na != Nb || Oa != Ob || !SameOcc) {
+        for (int h=0; h<wavefunction_->nirrep(); ++h) {
+            for (int n=0; n<wavefunction_->nmopi()[h]; ++n) {
+                mos.push_back(make_pair(Ob->get(h, n), make_pair(h, n)));
+            }
+        }
+        std::sort(mos.begin(), mos.end());
+
+        for (int i=0; i<(int)mos.size(); ++i) {
+            int h = mos[i].second.first;
+            int n = mos[i].second.second;
+
+            printer->Printf(" Sym= %s\n", ct.gamma(h).symbol());
+            printer->Printf(" Ene= %20.10lf\n", Ob->get(h, n));
+            printer->Printf(" Spin= Beta\n");
+            printer->Printf(" Occup= %7.4lf\n", Ob->get(h,n));
+            for (int so=0; so<wavefunction_->nso(); ++so)
+                printer->Printf("%3d %20.12lf\n", so+1, NbFT->get(h, so, n));
+        }
+    }
+
+
+}
+
 
 void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> Ca, boost::shared_ptr<Matrix> Cb, boost::shared_ptr<Vector> Ea, boost::shared_ptr<Vector> Eb, boost::shared_ptr<Vector> OccA, boost::shared_ptr<Vector> OccB)
 {

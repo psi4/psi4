@@ -101,20 +101,46 @@ void dipole(void)
 //    Pa->print();
 //    Pb->print();
 
-    if(!wfn->same_a_b_dens()) {
-      SharedMatrix Pa_V(new Matrix("Alpha Density Eigenvectors", Ca->colspi(), Ca->colspi()));
-      SharedVector Pa_v(new Vector("Alpha Density Eigenvalues", Ca->colspi()));
-      Pa->diagonalize(Pa_V, Pa_v, descending);
-      Pa_v->print();
-      SharedMatrix Pb_V(new Matrix("Beta Density Eigenvectors", Cb->colspi(), Cb->colspi()));
-      SharedVector Pb_v(new Vector("Beta Density Eigenvalues", Cb->colspi()));
-      Pb->diagonalize(Pb_V, Pb_v, descending);
-      Pb_v->print();
+      SharedMatrix Nb(new Matrix("Beta Natural Orbitals", Pb->colspi(), Pb->colspi()));
+      SharedVector Ob(new Vector("Beta NO Occupations", Pb->colspi()));
+      SharedMatrix Na(new Matrix("Alpha Natural Orbitals", Pa->colspi(), Pa->colspi()));
+      SharedVector Oa(new Vector("Alpha NO Occupations", Pa->colspi()));
+      SharedMatrix Nt(new Matrix("Total Naural Orbitals",Pa->colspi(),Pa->colspi()));
+      SharedVector Ot(new Vector("Total NO Occupations",Pa->colspi()));
+      MoldenWriter nowriter(wfn);
+      std::string mol_name = Process::environment.molecule()->name();
+    if(params.PRINT_NOONS || params.PRINT_NOS || params.WRITE_NOS){
+    if(wfn->same_a_b_dens()) {
+            SharedMatrix Pt = Pa;
+            Pa->scale(0.5);
+            Pa->diagonalize(Na, Oa, descending);
+            Oa->set_name("Alpha/Beta NO Occupations");
+            if(params.PRINT_NOONS)Oa->print();
+            if(params.PRINT_NOS)Pa->print();
+            if(params.WRITE_NOS)nowriter.writeNO(mol_name+"NO.molden",Na,Na,Oa,Oa);
+        }else{
+            SharedMatrix Pt = Pa;
+            Pa->diagonalize(Na, Oa, descending);
+            Pb->diagonalize(Nb, Ob, descending);
+            Pt->set_name("Total Density");
+            Pt->add(Pb);
+            Pt->diagonalize(Nt,Ot, descending);
+            if(params.PRINT_NOONS){
+                Oa->print();
+                Ob->print();
+                Ot->print();
+            }
+            if(params.PRINT_NOS){
+                Pa->print();
+                Pb->print();
+                Pt->print();
+            }
+            if(params.WRITE_NOS)nowriter.writeNO(mol_name+"NO.molden",Na,Nb,Oa,Ob);
+        }
     }
 
-    if(wfn->same_a_b_dens()) Pa->scale(0.5);
-    //Pa->print();
 
+    if(wfn->same_a_b_dens()) Pa->scale(0.5);
     oe->set_Da_mo(Pa);
     if(!wfn->same_a_b_dens()) oe->set_Db_mo(Pb);
 
