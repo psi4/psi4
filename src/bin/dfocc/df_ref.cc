@@ -90,8 +90,9 @@ void DFOCC::df_ref()
       // read integrals from disk if they were generated in the SCF
       if ( options_.get_str("SCF_TYPE") == "DF") {
           outfile->Printf("\tReading DF integrals from disk ...\n");
+	  boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(molecule(), "BASIS", options_.get_str("BASIS"));
           boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(molecule(),
-              "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"));
+              "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"), primary->has_puream());
           boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
           nQ_ref = auxiliary->nbf();
 

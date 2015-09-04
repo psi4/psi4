@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # Obtained from http://code.activestate.com/recipes/576693/ on 15 Nov 2014
 
 # Backport of OrderedDict() class that runs on Python 2.4, 2.5, 2.6, 2.7 and pypy.
