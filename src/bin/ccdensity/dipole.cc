@@ -54,22 +54,8 @@ void dipole(void)
     boost::shared_ptr<Matrix> Ca = wfn->Ca();
     boost::shared_ptr<Matrix> Cb = wfn->Cb();
 
-//    Ca->print();
-
     Dimension nmopi = wfn->nmopi();
     Dimension frzvpi = wfn->frzvpi();
-
-    wfn->nalphapi().print();
-    wfn->nbetapi().print();
-    wfn->doccpi().print();
-    wfn->soccpi().print();
-    outfile->Printf("Wfn name = %s\n", wfn->name().c_str());
-    outfile->Printf("Same alpha/beta density? %d\n", wfn->same_a_b_dens());
-
-//    outfile->Printf("Alpha OPDM:\n");
-//    mat_print(moinfo.opdm_a, moinfo.nmo, moinfo.nmo, "outfile");
-//    outfile->Printf("Beta OPDM:\n");
-//    mat_print(moinfo.opdm_b, moinfo.nmo, moinfo.nmo, "outfile");
 
     SharedMatrix Pa(new Matrix("P alpha", Ca->colspi(), Ca->colspi()));
     SharedMatrix Pb(new Matrix("P beta", Cb->colspi(), Cb->colspi()));
@@ -98,48 +84,6 @@ void dipole(void)
       mo_offset += nmo;
     }
 
-    SharedMatrix Nb(new Matrix("Beta Natural Orbitals", Pb->colspi(), Pb->colspi()));
-    SharedVector Ob(new Vector("Beta NO Occupations", Pb->colspi()));
-    SharedMatrix Na(new Matrix("Alpha Natural Orbitals", Pa->colspi(), Pa->colspi()));
-    SharedVector Oa(new Vector("Alpha NO Occupations", Pa->colspi()));
-    SharedMatrix Nt(new Matrix("Total Naural Orbitals",Pa->colspi(),Pa->colspi()));
-    SharedVector Ot(new Vector("Total NO Occupations",Pa->colspi()));
-    MoldenWriter nowriter(wfn);
-    std::string mol_name = Process::environment.molecule()->name();
-
-    if(params.PRINT_NOONS || params.PRINT_NOS || params.WRITE_NOS) {
-
-      if(wfn->same_a_b_dens()) {
-        SharedMatrix Pt = Pa;
-        Pa->scale(0.5);
-        Pa->diagonalize(Na, Oa, descending);
-        Oa->set_name("Alpha/Beta NO Occupations");
-        if(params.PRINT_NOONS) Oa->print();
-        if(params.PRINT_NOS) Pa->print();
-        if(params.WRITE_NOS) nowriter.writeNO(mol_name+"NO.molden",Na,Na,Oa,Oa);
-      }
-      else{
-        SharedMatrix Pt = Pa;
-        Pa->diagonalize(Na, Oa, descending);
-        Pb->diagonalize(Nb, Ob, descending);
-        Pt->set_name("Total Density");
-        Pt->add(Pb);
-        Pt->diagonalize(Nt,Ot, descending);
-        if(params.PRINT_NOONS){
-          Oa->print();
-          Ob->print();
-          Ot->print();
-        }
-        if(params.PRINT_NOS){
-          Pa->print();
-          Pb->print();
-          Pt->print();
-        }
-        if(params.WRITE_NOS)nowriter.writeNO(mol_name+"NO.molden",Na,Nb,Oa,Ob);
-      }
-    }
-
-
     if(wfn->same_a_b_dens()) Pa->scale(0.5);
     oe->set_Da_mo(Pa);
     if(!wfn->same_a_b_dens()) oe->set_Db_mo(Pb);
@@ -155,6 +99,36 @@ void dipole(void)
     oe->set_title("CC");
 
     oe->compute();
+
+    if(params.write_nos) {
+      MoldenWriter nowriter(wfn);
+      std::string mol_name = Process::environment.molecule()->name();
+
+      if(wfn->same_a_b_dens()) {
+        SharedMatrix Na(new Matrix("Alpha Natural Orbitals", Pa->colspi(), Pa->colspi()));
+        SharedVector Oa(new Vector("Alpha NO Occupations", Pa->colspi()));
+        // Pa->scale(0.5);
+        Pa->diagonalize(Na, Oa, descending);
+        nowriter.writeNO(mol_name+"NO.molden",Na,Na,Oa,Oa);
+      }
+      else{
+        SharedMatrix Na(new Matrix("Alpha Natural Orbitals", Pa->colspi(), Pa->colspi()));
+        SharedVector Oa(new Vector("Alpha NO Occupations", Pa->colspi()));
+        SharedMatrix Nb(new Matrix("Beta Natural Orbitals", Pb->colspi(), Pb->colspi()));
+        SharedVector Ob(new Vector("Beta NO Occupations", Pb->colspi()));
+        Pa->diagonalize(Na, Oa, descending);
+        Pb->diagonalize(Nb, Ob, descending);
+
+        SharedMatrix Pt(Pa);
+        Pt->set_name("Total Density");
+        Pt->add(Pb);
+        SharedMatrix Nt(new Matrix("Total Naural Orbitals", Pa->colspi(), Pa->colspi()));
+        SharedVector Ot(new Vector("Total NO Occupations", Pa->colspi()));
+        Pt->diagonalize(Nt,Ot, descending);
+
+        nowriter.writeNO(mol_name+"NO.molden",Na,Nb,Oa,Ob);
+      }
+    }
 
 //  Comments so that autodoc utility will find these PSI variables
 //
