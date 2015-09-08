@@ -25,6 +25,7 @@
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
+#include <libpsio/psio.h>
 #include <libiwl/iwl.hpp>
 #include "tensors.h"
 #include "libparallel/ParallelPrinter.h"
@@ -1869,6 +1870,16 @@ void Tensor2d::write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
+void Tensor2d::write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end)
+{
+    // Check to see if the file is open
+    bool already_open = false;
+    if (psio->open_check(fileno)) already_open = true;
+    else psio->open(fileno, PSIO_OPEN_OLD);
+    psio->write(fileno, const_cast<char*>(name_.c_str()), (char*)A2d_[0], sizeof(double) * dim1_ * dim2_, start, end);
+    if (!already_open) psio->close(fileno, 1);     // Close and keep
+}//
+
 void Tensor2d::write(psi::PSIO* const psio, unsigned int fileno)
 {
     // Check to see if the file is open
@@ -1879,9 +1890,24 @@ void Tensor2d::write(psi::PSIO* const psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
+void Tensor2d::write(psi::PSIO* const psio, unsigned int fileno, psio_address start, psio_address *end)
+{
+    // Check to see if the file is open
+    bool already_open = false;
+    if (psio->open_check(fileno)) already_open = true;
+    else psio->open(fileno, PSIO_OPEN_OLD);
+    psio->write(fileno, const_cast<char*>(name_.c_str()), (char*)A2d_[0], sizeof(double) * dim1_ * dim2_, start, end);
+    if (!already_open) psio->close(fileno, 1);     // Close and keep
+}//
+
 void Tensor2d::write(psi::PSIO& psio, unsigned int fileno)
 {
     write(&psio, fileno);
+}//
+
+void Tensor2d::write(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end)
+{
+    write(&psio, fileno, start, end);
 }//
 
 void Tensor2d::write(boost::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno)
@@ -2032,6 +2058,16 @@ void Tensor2d::read(psi::PSIO* psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
+void Tensor2d::read(psi::PSIO* psio, unsigned int fileno, psio_address start, psio_address *end)
+{
+    // Check to see if the file is open
+    bool already_open = false;
+    if (psio->open_check(fileno)) already_open = true;
+    else psio->open(fileno, PSIO_OPEN_OLD);
+    psio->read(fileno, const_cast<char*>(name_.c_str()), (char*)A2d_[0], sizeof(double) * dim1_ * dim2_, start, end);
+    if (!already_open) psio->close(fileno, 1);     // Close and keep
+}
+
 void Tensor2d::read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
 {
     // Check to see if the file is open
@@ -2042,9 +2078,24 @@ void Tensor2d::read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
+void Tensor2d::read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end)
+{
+    // Check to see if the file is open
+    bool already_open = false;
+    if (psio->open_check(fileno)) already_open = true;
+    else psio->open(fileno, PSIO_OPEN_OLD);
+    psio->read(fileno, const_cast<char*>(name_.c_str()), (char*)A2d_[0], sizeof(double) * dim1_ * dim2_, start, end);
+    if (!already_open) psio->close(fileno, 1);     // Close and keep
+}
+
 void Tensor2d::read(psi::PSIO& psio, unsigned int fileno)
 {
     read(&psio, fileno);
+}//
+
+void Tensor2d::read(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end)
+{
+    read(&psio, fileno, start, end);
 }//
 
 void Tensor2d::read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm)

@@ -624,8 +624,8 @@ void UHF::compute_nos()
 
     // Print the NOONs -- code ripped off from OEProp::compute_no_occupations()
     int max_num;
-    if(options_.get_str("UHF_NOONS") == "ALL") max_num = nmo_;
-    else max_num = to_integer(options_.get_str("UHF_NOONS"));
+    if(options_.get_str("PRINT_NOONS") == "ALL") max_num = nmo_;
+    else max_num = to_integer(options_.get_str("PRINT_NOONS"));
 
     std::vector<boost::tuple<double, int, int> > metric;
     for (int h = 0; h < UHF_NOONs->nirrep(); h++)
