@@ -1,3 +1,4 @@
 [submodule "interfaces/pcmsolver"]
 	path = interfaces/pcmsolver
-	url = https://github.com/PCMSolver/pcmsolver.git
+    url = git@gitlab.com:PCMSolver/pcmsolver.git
+    branch = master
