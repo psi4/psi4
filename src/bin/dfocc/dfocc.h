@@ -136,6 +136,7 @@ protected:
     void ccl_energy();
     void ccl_energy2();
     void save_mo_to_wfn();
+    void remove_binary_file(int fileno);
 
     void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new);
     void sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec);
