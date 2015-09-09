@@ -287,7 +287,7 @@ def parse_input():
     group.add_argument('--pcmsolver',
             action='store',
             choices=('on', 'off'),
-            default='off',
+            default='on',
             help='Enable PCMSolver [default: %(default)s]')
     # CheMPS2 package
     group.add_argument('--chemps2',
