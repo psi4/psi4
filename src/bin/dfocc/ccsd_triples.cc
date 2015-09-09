@@ -567,14 +567,28 @@ void DFOCC::ccsd_canonic_triples_disk()
 
     // Form (ia|bc)
     Jt = SharedTensor2d(new Tensor2d("J[I] <A|B>=C", navirA, ntri_abAA));
-    psio_address addr = PSIO_ZERO;
+    /*
+    //psio_address addr = PSIO_ZERO;
     for(int i = 0 ; i < naoccA; ++i){
 	// Compute J[i](a,bc) = (ia|bc) = \sum(Q) B[i](aQ) * B(Q,bc)
         Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, i*navirA*nQ, 0, 1.0, 0.0);
 	J1->expand23(navirA, navirA, navirA, Jt);
 
 	// write
+	psio_address addr = psio_get_address(PSIO_ZERO,(ULI)(i*navirA*navirA*navirA)*sizeof(double));
 	J1->write(psio_, PSIF_DFOCC_INTS, addr, &addr);
+    }
+    */
+    Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, 0, 0, 1.0, 0.0);
+    J1->expand23(navirA, navirA, navirA, Jt);
+    J1->mywrite(PSIF_DFOCC_IABC, false);
+    for(int i = 1 ; i < naoccA; ++i){
+	// Compute J[i](a,bc) = (ia|bc) = \sum(Q) B[i](aQ) * B(Q,bc)
+        Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, i*navirA*nQ, 0, 1.0, 0.0);
+	J1->expand23(navirA, navirA, navirA, Jt);
+
+	// write
+	J1->mywrite(PSIF_DFOCC_IABC, true);
     }
     K.reset();
     Jt.reset();
@@ -587,20 +601,23 @@ void DFOCC::ccsd_canonic_triples_disk()
         double Di = FockA->get(i + nfrzc, i + nfrzc);
 
 	// Read J[i](a,bc) 
-	psio_address addr1 = psio_get_address(PSIO_ZERO,i*navirA*navirA*navirA*sizeof(double));
-	J1->read(psio_, PSIF_DFOCC_INTS, addr1, &addr1);
+	//psio_address addr1 = psio_get_address(PSIO_ZERO,(ULI)(i*navirA*navirA*navirA)*sizeof(double));
+	//J1->read(psio_, PSIF_DFOCC_INTS, addr1, &addr1);
+	J1->myread(PSIF_DFOCC_IABC, (ULI)(i*navirA*navirA*navirA)*sizeof(double));
 
         for(int j = 0 ; j <= i; ++j){
 	    double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
 
 	    // Read J[j](a,bc) 
-	    psio_address addr2 = psio_get_address(PSIO_ZERO,j*navirA*navirA*navirA*sizeof(double));
-	    J2->read(psio_, PSIF_DFOCC_INTS, addr2, &addr2);
+	    //psio_address addr2 = psio_get_address(PSIO_ZERO,(ULI)(j*navirA*navirA*navirA)*sizeof(double));
+	    //J2->read(psio_, PSIF_DFOCC_INTS, addr2, &addr2);
+	    J2->myread(PSIF_DFOCC_IABC, (ULI)(j*navirA*navirA*navirA)*sizeof(double));
 
             for(int k = 0 ; k <= j; ++k){
 	        // Read J[k](a,bc) 
-	        psio_address addr3 = psio_get_address(PSIO_ZERO,k*navirA*navirA*navirA*sizeof(double));
-	        J3->read(psio_, PSIF_DFOCC_INTS, addr3, &addr3);
+	        //psio_address addr3 = psio_get_address(PSIO_ZERO,(ULI)(k*navirA*navirA*navirA)*sizeof(double));
+	        //J3->read(psio_, PSIF_DFOCC_INTS, addr3, &addr3);
+	        J3->myread(PSIF_DFOCC_IABC, (ULI)(k*navirA*navirA*navirA)*sizeof(double));
 
                 // W[ijk](ab,c) = \sum(e) t_jk^ec (ia|be) (1+)
                 // W[ijk](ab,c) = \sum(e) J[i](ab,e) T[jk](ec)
@@ -827,15 +844,30 @@ void DFOCC::ccsdl_canonic_triples_disk()
 
     // Form (ia|bc)
     Jt = SharedTensor2d(new Tensor2d("J[I] <A|B>=C", navirA, ntri_abAA));
-    psio_address addr = PSIO_ZERO;
+    /*
+    //psio_address addr = PSIO_ZERO;
     for(int i = 0 ; i < naoccA; ++i){
 	// Compute J[i](a,bc) = (ia|bc) = \sum(Q) B[i](aQ) * B(Q,bc)
         Jt->contract(false, false, navirA, ntri_abAA, nQ, U, K, i*navirA*nQ, 0, 1.0, 0.0);
 	J1->expand23(navirA, navirA, navirA, Jt);
 
 	// write
+	psio_address addr = psio_get_address(PSIO_ZERO,(ULI)(i*navirA*navirA*navirA)*sizeof(double));
 	J1->write(psio_, PSIF_DFOCC_INTS, addr, &addr);
     }
+    */
+    Jt->contract(false, false, navirA, ntri_abAA, nQ, U, K, 0, 0, 1.0, 0.0);
+    J1->expand23(navirA, navirA, navirA, Jt);
+    J1->mywrite(PSIF_DFOCC_IABC, false);
+    for(int i = 1 ; i < naoccA; ++i){
+	// Compute J[i](a,bc) = (ia|bc) = \sum(Q) B[i](aQ) * B(Q,bc)
+        Jt->contract(false, false, navirA, ntri_abAA, nQ, U, K, i*navirA*nQ, 0, 1.0, 0.0);
+	J1->expand23(navirA, navirA, navirA, Jt);
+
+	// write
+	J1->mywrite(PSIF_DFOCC_IABC, true);
+    }
+
     K.reset();
     Jt.reset();
     U.reset();
@@ -847,20 +879,23 @@ void DFOCC::ccsdl_canonic_triples_disk()
         double Di = FockA->get(i + nfrzc, i + nfrzc);
 
 	// Read J[i](a,bc) 
-	psio_address addr1 = psio_get_address(PSIO_ZERO,i*navirA*navirA*navirA*sizeof(double));
-	J1->read(psio_, PSIF_DFOCC_INTS, addr1, &addr1);
+	//psio_address addr1 = psio_get_address(PSIO_ZERO,(ULI)(i*navirA*navirA*navirA)*sizeof(double));
+	//J1->read(psio_, PSIF_DFOCC_INTS, addr1, &addr1);
+	J1->myread(PSIF_DFOCC_IABC, (ULI)(i*navirA*navirA*navirA)*sizeof(double));
 
         for(int j = 0 ; j <= i; ++j){
 	    double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
 
 	    // Read J[j](a,bc) 
-	    psio_address addr2 = psio_get_address(PSIO_ZERO,j*navirA*navirA*navirA*sizeof(double));
-	    J2->read(psio_, PSIF_DFOCC_INTS, addr2, &addr2);
+	    //psio_address addr2 = psio_get_address(PSIO_ZERO,(ULI)(j*navirA*navirA*navirA)*sizeof(double));
+	    //J2->read(psio_, PSIF_DFOCC_INTS, addr2, &addr2);
+	    J2->myread(PSIF_DFOCC_IABC, (ULI)(j*navirA*navirA*navirA)*sizeof(double));
 
             for(int k = 0 ; k <= j; ++k){
 	        // Read J[k](a,bc) 
-	        psio_address addr3 = psio_get_address(PSIO_ZERO,k*navirA*navirA*navirA*sizeof(double));
-	        J3->read(psio_, PSIF_DFOCC_INTS, addr3, &addr3);
+	        //psio_address addr3 = psio_get_address(PSIO_ZERO,(ULI)(k*navirA*navirA*navirA)*sizeof(double));
+	        //J3->read(psio_, PSIF_DFOCC_INTS, addr3, &addr3);
+	        J3->myread(PSIF_DFOCC_IABC, (ULI)(k*navirA*navirA*navirA)*sizeof(double));
 
                 // W[ijk](ab,c) = \sum(e) t_jk^ec (ia|be) (1+)
                 // W[ijk](ab,c) = \sum(e) J[i](ab,e) T[jk](ec)

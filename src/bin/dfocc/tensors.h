@@ -311,6 +311,15 @@ class Tensor2d
   void load(psi::PSIO* const psio, unsigned int fileno, string name, int d1,int d2);
   void load(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2);
 
+  void mywrite(const string& filename);
+  void mywrite(int fileno);
+  void mywrite(int fileno, bool append);
+
+  void myread(const string& filename);
+  void myread(int fileno);
+  void myread(int fileno, bool append);
+  void myread(int fileno, ULI start);
+
   // sort (for example 1432 sort): A2d_(ps,rq) = A(pq,rs)
   // A2d_ = alpha*A + beta*A2d_
   void sort(int sort_type, const SharedTensor2d &A, double alpha, double beta);
