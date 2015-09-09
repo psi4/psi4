@@ -366,7 +366,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP3   \n");
    else if (wfn_type_ == "QCHF") outfile->Printf("                      QCHF   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision September 4, 2015\n") ;
+   outfile->Printf("              Latest Revision September 8, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
@@ -424,7 +424,7 @@ void DFOCC::pt_title()
    if (wfn_type_ == "DF-CCSD(T)" || wfn_type_ == "CD-CCSD(T)") outfile->Printf("                       DF-CCSD(T)   \n");
    else if (wfn_type_ == "DF-CCD(T)" || wfn_type_ == "CD-CCD(T)") outfile->Printf("                       DF-CCSD(T)   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision September 3, 2015\n") ;
+   outfile->Printf("              Latest Revision September 8, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
@@ -442,7 +442,7 @@ void DFOCC::pat_title()
    if (wfn_type_ == "DF-CCSD(AT)" || wfn_type_ == "CD-CCSD(AT)") outfile->Printf("                       DF-CCSD(AT)    \n");
    else if (wfn_type_ == "DF-CCD(AT)" || wfn_type_ == "CD-CCD(AT)") outfile->Printf("                       DF-CCD(AT)  \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision September 4, 2015\n") ;
+   outfile->Printf("              Latest Revision September 8, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
