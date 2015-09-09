@@ -773,6 +773,9 @@ void DFOCC::ccsd_canonic_triples_disk()
     E_t = sum;
     Eccsd_t = Eccsd + E_t;
 
+    // Delete the (IA|BC) file
+    remove_binary_file(PSIF_DFOCC_IABC);
+
 }// end ccsd_canonic_triples_disk
 
 //======================================================================
@@ -1136,8 +1139,10 @@ void DFOCC::ccsdl_canonic_triples_disk()
     E_at = sum;
     Eccsd_at = Eccsd + E_at;
 
-}// end ccsdl_canonic_triples_disk
+    // Delete the (IA|BC) file
+    remove_binary_file(PSIF_DFOCC_IABC);
 
+}// end ccsdl_canonic_triples_disk
 
 
 }} // End Namespaces
