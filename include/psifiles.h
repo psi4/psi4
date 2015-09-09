@@ -278,6 +278,8 @@
 #define PSIF_DFOCC_INTS        276  /*- DFOCC Integrals -*/ 
 #define PSIF_DFOCC_AMPS        277  /*- DFOCC Amplitudes -*/
 #define PSIF_DFOCC_DENS        278  /*- DFOCC PDMs -*/
+#define PSIF_DFOCC_IABC        279  /*- DFOCC (IA|BC) -*/ 
+#define PSIF_DFOCC_TEMP        280  /*- DFOCC temporary storage -*/
 
 /* All of these one-electron quantities have been moved into PSIF_OEI
    Most integrals are real Hermitian hence only lower triangle of the matrix is written out */
