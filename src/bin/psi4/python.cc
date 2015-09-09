@@ -742,12 +742,20 @@ double py_psi_thermo()
 
 char const *py_psi_version()
 {
+#ifdef PSI_VERSION
     return PSI_VERSION;
+#else
+    return "";
+#endif
 }
 
 char const *py_psi_git_version()
 {
+#ifdef GIT_VERSION
     return GIT_VERSION;
+#else
+    return "";
+#endif
 }
 
 void py_psi_clean()
