@@ -145,6 +145,13 @@ Bibliography
    F. A. Evangelista, A. C. Simmonett, W. D. Allen, H. F. Schaefer, III, and J. Gauss, 
    *J. Chem. Phys.* **128**, 124104 (2008).    
 
+.. [Verma:2015]
+   P. Verma, W. D. Derricotte, F. A. Evangelista (2015).
+
+.. [Cheng:084114]
+   L. Cheng and J. Gauss,
+   *J. Chem. Phys.* **135**, 084114 (2011).
+
 .. [Jeziorski:1981:1668]
    B. Jeziorski and H. J. Monkhorst,
    *Phys. Rev. A* **24**, 1668 (1981).
