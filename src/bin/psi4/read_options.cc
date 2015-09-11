@@ -1980,23 +1980,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 //    /*- Root to get OPDM -*/
 //    options.add_int("FOLLOW_ROOT",1);
 //  }
-  if(name == "STABILITY"|| options.read_globals()) {
-     /*- MODULEDESCRIPTION Performs wavefunction stability analysis. Called when specifically requested
-         by the user. -*/
-    /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE","RHF", "RHF UHF ROHF");
-    /*- -*/
-    options.add_int("CACHELEVEL",2);
-    /*- Do follow the most negative eigenvalue of the Hessian towards a lower
-    energy HF solution? Follow a UHF $\rightarrow$ UHF instability of same symmetry? -*/
-    options.add_bool("FOLLOW",false);
-    /*- Number of lowest MO Hessian eigenvalues to print -*/
-    options.add_int("NUM_VECS_PRINT",0);
-    /*- Method for following eigenvectors, either 0 by angles or 1 by antisymmetric matrix. -*/
-    options.add_int("ROTATION_SCHEME",0);
-    /*- Scale factor (between 0 and 1) for orbital rotation step -*/
-    options.add_double("SCALE",0.5);
-  }
   if(name == "ADC" || options.read_globals()) {
      /*- MODULEDESCRIPTION Performs Algebraic-Diagrammatic Construction (ADC) propagator computations for excited states. -*/
     /*- Reference wavefunction type -*/
