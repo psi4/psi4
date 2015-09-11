@@ -446,6 +446,21 @@ void DFOCC::mo_coeff_blocks()
 
 }// end of mo_coeff_blocks
 
+//======================================================================
+//      Remove a binary file
+//======================================================================             
+void DFOCC::remove_binary_file(int fileno)
+{
+      ostringstream convert;
+      convert << fileno;
+      std::string scr = PSIOManager::shared_object()->get_default_path();
+      std::string pid_ = psio_getpid();
+      std::string fname = scr + "psi." + pid_  + "." + convert.str();
+      //std::string fname = scr + "psi_dfocc." + convert.str();
+      remove(const_cast<char*>(fname.c_str()));
+
+}// end of remove_binary_file
+
 }} // End Namespaces
 
 

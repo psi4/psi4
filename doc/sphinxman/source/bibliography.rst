@@ -286,3 +286,14 @@ Bibliography
    Q. Wu and W. Yang,
    *J. Chem. Phys.* **116**, 515 (2002).
 
+.. [Hohenberg:1964:136]
+   P. Hohenberg and W. Kohn,
+   *Phys. Rev.* **136**, B864-B871 (1964).
+
+.. [Kohn:1965:A1133]
+   W. Kohn and L.J. Sham,
+   *Phys. Rev.* **140**, A1133-A1138 (1965).
+
+.. [Parr:1989]
+   R.G. Parr and W. Yang,
+   *Density Functional Theory of Atoms and Molecules* **Oxford University Press, USA, 1989** ISBN:0195357736, 9780195357738
