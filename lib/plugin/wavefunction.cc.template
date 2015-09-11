@@ -22,14 +22,11 @@
  *@END LICENSE
  */
 
-#include <libplugin/plugin.h>
 #include <psi4-dec.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
 #include <libmints/mints.h>
 #include <libpsio/psio.hpp>
-
-INIT_PLUGIN
 
 using namespace boost;
 

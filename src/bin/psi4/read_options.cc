@@ -209,7 +209,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
   options.add("CUBIC_GRID_SPACING", new ArrayType());
 
-
+  /* How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc */
+  options.add_str("PRINT_NOONS","3");
 
   if (name == "DETCI" || options.read_globals()) {
     /*- MODULEDESCRIPTION Performs configuration interaction (CI)
@@ -1902,6 +1903,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("ONEPDM_GRID_CUTOFF", 1.0e-30);
     /*- Stepsize (Angstrom) for one-particle density matrix values on a grid -*/
     options.add_double("ONEPDM_GRID_STEPSIZE", 0.1);
+    /* Do Write NOs (molden) */
+    options.add_bool("WRITE_NOS",false);
+
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Solves for the Lagrange multipliers, which are needed whenever coupled cluster properties
@@ -1976,23 +1980,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 //    /*- Root to get OPDM -*/
 //    options.add_int("FOLLOW_ROOT",1);
 //  }
-  if(name == "STABILITY"|| options.read_globals()) {
-     /*- MODULEDESCRIPTION Performs wavefunction stability analysis. Called when specifically requested
-         by the user. -*/
-    /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE","RHF", "RHF UHF ROHF");
-    /*- -*/
-    options.add_int("CACHELEVEL",2);
-    /*- Do follow the most negative eigenvalue of the Hessian towards a lower
-    energy HF solution? Follow a UHF $\rightarrow$ UHF instability of same symmetry? -*/
-    options.add_bool("FOLLOW",false);
-    /*- Number of lowest MO Hessian eigenvalues to print -*/
-    options.add_int("NUM_VECS_PRINT",0);
-    /*- Method for following eigenvectors, either 0 by angles or 1 by antisymmetric matrix. -*/
-    options.add_int("ROTATION_SCHEME",0);
-    /*- Scale factor (between 0 and 1) for orbital rotation step -*/
-    options.add_double("SCALE",0.5);
-  }
   if(name == "ADC" || options.read_globals()) {
      /*- MODULEDESCRIPTION Performs Algebraic-Diagrammatic Construction (ADC) propagator computations for excited states. -*/
     /*- Reference wavefunction type -*/
@@ -3056,7 +3043,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Type of the SOS method -*/
     options.add_str("SOS_TYPE","SOS","SOS SOSPI");
     /*- Type of the wavefunction. -*/
-    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OLCCD DF-OMP2.5 DFGRAD DF-CCSD DF-CCD DF-CCSD(T) CD-OMP2 CD-CCSD CD-CCD CD-CCSD(T) CD-OMP3 QCHF");
+    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OLCCD DF-OMP2.5 DFGRAD DF-CCSD DF-CCD DF-CCSD(T) DF-CCSD(AT) CD-OMP2 CD-CCSD CD-CCD CD-CCSD(T) CD-CCSD(AT) CD-OMP3 QCHF");
     /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
     options.add_str("CEPA_TYPE","CEPA(0)","CEPA(0)");
     /*- The algorithm that used for 4 index MO TEIs. -*/
@@ -3068,7 +3055,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Type of the CCSD Wabef term. -*/
     options.add_str("WABEF_TYPE","AUTO","LOW_MEM HIGH_MEM AUTO");
     /*- The algorithm to handle (ia|bc) type integrals that used for (T) correction. -*/
-    options.add_str("TRIPLES_IABC_TYPE","AUTO","INCORE AUTO DIRECT");
+    options.add_str("TRIPLES_IABC_TYPE","DISK","INCORE AUTO DIRECT DISK");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);

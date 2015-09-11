@@ -2256,6 +2256,8 @@ boost::shared_ptr<DLUSolver> DLUSolver::build_solver(Options& options,
     }
     if (options["SOLVER_MAX_SUBSPACE"].has_changed()) {
         solver->set_max_subspace(options.get_int("SOLVER_MAX_SUBSPACE"));
+    } else {
+        solver->set_max_subspace(18);
     }
     if (options["SOLVER_NORM"].has_changed()) {
         solver->set_norm(options.get_double("SOLVER_NORM"));

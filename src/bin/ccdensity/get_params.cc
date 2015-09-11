@@ -128,6 +128,8 @@ void get_params( Options& options)
   if(options["XI_CONNECT"].has_changed()) 
     params.connect_xi = options.get_bool("XI_CONNECT");
 
+  params.write_nos = options.get_bool("WRITE_NOS");
+
   outfile->Printf( "\n\tInput parameters:\n");
   outfile->Printf( "\t-----------------\n");
   outfile->Printf( "\tWave function    = %6s\n", params.wfn.c_str() );
@@ -135,19 +137,13 @@ void get_params( Options& options)
   outfile->Printf( "\tDertype          = %d\n", params.dertype);
   outfile->Printf( "\tTolerance        = %3.1e\n", params.tolerance);
   outfile->Printf( "\tCache Level      = %1d\n", params.cachelev);
-  outfile->Printf( "\tAO Basis         = %s\n",
-          params.aobasis ? "Yes" : "No");
-  outfile->Printf( "\tOPDM Only        = %s\n",
-          params.onepdm ? "Yes" : "No");
-  outfile->Printf( "\tRelax OPDM       = %s\n",
-          params.relax_opdm ? "Yes" : "No");
-  outfile->Printf( "\tCompute Xi       = %s\n",
-          (params.calc_xi) ? "Yes" : "No");
-  outfile->Printf( "\tUse Zeta         = %s\n",
-          (params.use_zeta) ? "Yes" : "No");
-  outfile->Printf( "\tXi connected     = %s\n",
-          (params.connect_xi) ? "Yes" : "No");
-  
+  outfile->Printf( "\tAO Basis         = %s\n", params.aobasis ? "Yes" : "No");
+  outfile->Printf( "\tOPDM Only        = %s\n", params.onepdm ? "Yes" : "No");
+  outfile->Printf( "\tRelax OPDM       = %s\n", params.relax_opdm ? "Yes" : "No");
+  outfile->Printf( "\tCompute Xi       = %s\n", (params.calc_xi) ? "Yes" : "No");
+  outfile->Printf( "\tUse Zeta         = %s\n", (params.use_zeta) ? "Yes" : "No");
+  outfile->Printf( "\tXi connected     = %s\n", (params.connect_xi) ? "Yes" : "No");
+  outfile->Printf( "\tCompute NO       = %s\n", (params.write_nos) ? "Yes" : "No");
 }
 
 

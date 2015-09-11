@@ -56,6 +56,7 @@ protected:
     void title_grad();
     void lambda_title();
     void pt_title();
+    void pat_title();
     void pdm_title();
     void ref_energy();
     void mp2_energy();
@@ -135,6 +136,7 @@ protected:
     void ccl_energy();
     void ccl_energy2();
     void save_mo_to_wfn();
+    void remove_binary_file(int fileno);
 
     void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new);
     void sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec);
@@ -473,8 +475,14 @@ protected:
     // CCSD(T)
     void ccsd_canonic_triples();
     void ccsd_canonic_triples_hm();
+    void ccsd_canonic_triples_disk();
     void ccsd_t_manager();
     void ccsd_t_manager_cd();
+
+    // Lambda-CCSD(T)
+    void ccsdl_canonic_triples_disk();
+    void ccsdl_t_manager();
+    void ccsdl_t_manager_cd();
 
     // CCD
     void ccd_manager();
@@ -751,6 +759,8 @@ protected:
      double EccsdLAB;
      double Eccsd_t;
      double E_t;
+     double Eccsd_at;
+     double E_at;
 
      // CCD
      double Eccd;
