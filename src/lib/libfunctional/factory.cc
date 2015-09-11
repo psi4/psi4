@@ -169,7 +169,14 @@ boost::shared_ptr<Functional> Functional::build_base(const std::string& alias)
         wPBECFunctional* x = new wPBECFunctional();
         x->set_wPBEC_type(wPBECFunctional::pbec_sr_type);
         fun = static_cast<Functional*>(x);
-    } else {
+    } else if (alias == "HF_X") {
+        XFunctional* x = new XFunctional();
+        x->gga_type_  = XFunctional::GGA_None;
+        x->meta_type_ = XFunctional::Meta_None;
+        x->sr_type_   = XFunctional::SR_None;
+        fun = static_cast<Functional*>(x);
+     }
+   else {
         throw PSIEXCEPTION("Functional::build_base: Unrecognized base Functional.");
     }
 
