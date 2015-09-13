@@ -664,7 +664,10 @@ explicitly indicated here.
 In case convergence problems are encountered during the Davidson procedure,
 it is recommended to first increase |cphf__solver_max_subspace|, especially if you solve 
 for a large number of roots. This will result in a higher computational cost of each iteration, but should
-make the solver better behaved.
+make the solver better behaved. However, note that |cphf__solver_max_subspace| should never be larger than
+the full subspace minus the number of desired roots to avoid adding artificial zero eigenvalues. 
+This may happen in minimal basis sets, especially with symmetry, but the code automatically adjusts 
+|cphf__solver_max_subspace| if it is too large.
 If the solver seems to converge on the wrong eigenvalue, try increasing |cphf__solver_n_guess|.
 Otherwise, if the solver is almost converged but reaches the maximum number of iterations, try increasing
 |cphf__solver_maxiter|.
