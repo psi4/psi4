@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.2.239 Driver
+                              Psi4 0.3.131 Driver
 
-                          Git: Rev {master} e7c67a2 dirty
+                          Git: Rev {master} 7a8bad0 dirty
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,10 +16,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thu Jul 30 23:56:51 2015
+    Psi4 started on: Sun Sep 13 11:22:38 2015
 
-    Process ID:   4498
-    PSI4DATADIR: /home/jerome/Documents/Atlanta/PSIcode/psi4public/lib/
+    Process ID:   8525
+    PSI4DATADIR: /home/jerome/Documents/Atlanta/PSIcode/psi4public/lib
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -110,7 +110,7 @@ compare_matrices(ref, stab, 5, "Stability eigenvalues without symmetry")        
   Memory set to 500.000 MiB by Python script.
 
 *** tstart() called on Graveworm.chemlocal
-*** at Thu Jul 30 23:56:51 2015
+*** at Sun Sep 13 11:22:39 2015
 
     There are an even number of electrons - assuming singlet.
     Specify the multiplicity with the MULTP option in the
@@ -131,10 +131,10 @@ compare_matrices(ref, stab, 5, "Stability eigenvalues without symmetry")        
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           B          0.000000000000     0.000000000000    -0.083865697994
-           H          0.000000000000     0.000000000000     0.916134302006
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           B          0.000000000000     0.000000000000    -0.083865697994    11.009305406000
+           H          0.000000000000     0.000000000000     0.916134302006     1.007825032070
 
   Running in c2v symmetry.
 
@@ -338,10 +338,10 @@ Properties computed using the SCF density matrix
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           B          0.000000000000     0.000000000000    -0.083865697994
-           H          0.000000000000     0.000000000000     0.916134302006
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           B          0.000000000000     0.000000000000    -0.083865697994    11.009305406000
+           H          0.000000000000     0.000000000000     0.916134302006     1.007825032070
 
   Nuclear repulsion =    2.645886042950000
   ==> Basis Set <==
@@ -353,13 +353,17 @@ Properties computed using the SCF density matrix
     Spherical Harmonics?: true
     Max angular momentum: 2
 
+  SOLVER_MAX_SUBSPACE should not be larger than the dimension 
+  of the smallest irrep - SOLVER_N_ROOT.
+  Setting SOLVER_MAX_SUBSPACE to   10.
+
   ==> DLUSolver (by Jerome Gonthier) <== 
  ==> (Basically a copy-paste from R.Parrish DLR Solver) <== 
 
    Number of roots         =           2
    Number of guess vectors =           6
-   Maximum subspace size   =           6
-   Minimum subspace size   =           4
+   Maximum subspace size   =          10
+   Minimum subspace size   =           2
    Subspace expansion norm =       1E-06
    Convergence cutoff      =       1E-06
    Maximum iterations      =         100
@@ -383,11 +387,11 @@ Properties computed using the SCF density matrix
   DLU           2          0          4   8.031E-02
   DLU           3          0          6   1.998E-02
   DLU           4          0          8   2.837E-03
-  DLU           5          0          6   8.195E-04
-  DLU           6          0          8   1.329E-04
-  DLU           7          0          6   2.745E-05
-  DLU           8          1          8   1.481E-06
-  DLU           9          2          5   9.240E-07
+  DLU           5          0         10   5.972E-04
+  DLU           6          0         12   1.360E-04
+  DLU           7          0          4   1.565E-05
+  DLU           8          1          6   3.535E-06
+  DLU           9          2          7   9.073E-07
 
     DLUSolver converged.
 
@@ -399,18 +403,28 @@ Properties computed using the SCF density matrix
     
     Stability analysis over.
 
-*** tstop() called on Graveworm.chemlocal at Thu Jul 30 23:56:53 2015
+  UHF NO Occupations:
+  HONO-2 :    1 A1 2.0000000
+  HONO-1 :    2 A1 2.0000000
+  HONO-0 :    1 B1 2.0000000
+  LUNO+0 :    3 A1 0.0000000
+  LUNO+1 :    2 B1 0.0000000
+  LUNO+2 :    4 A1 0.0000000
+  LUNO+3 :    5 A1 0.0000000
+
+
+*** tstop() called on Graveworm.chemlocal at Sun Sep 13 11:22:41 2015
 Module time:
 	user time   =       1.96 seconds =       0.03 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
 	user time   =       1.96 seconds =       0.03 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on Graveworm.chemlocal
-*** at Thu Jul 30 23:56:53 2015
+*** at Sun Sep 13 11:22:41 2015
 
     There are an even number of electrons - assuming singlet.
     Specify the multiplicity with the MULTP option in the
@@ -431,10 +445,10 @@ Total time:
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           B          0.000000000000     0.000000000000    -0.083865697994
-           H          0.000000000000     0.000000000000     0.916134302006
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           B          0.000000000000     0.000000000000    -0.083865697994    11.009305406000
+           H          0.000000000000     0.000000000000     0.916134302006     1.007825032070
 
   Running in c1 symmetry.
 
@@ -635,10 +649,10 @@ Properties computed using the SCF density matrix
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           B          0.000000000000     0.000000000000    -0.083865697994
-           H          0.000000000000     0.000000000000     0.916134302006
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           B          0.000000000000     0.000000000000    -0.083865697994    11.009305406000
+           H          0.000000000000     0.000000000000     0.916134302006     1.007825032070
 
   Nuclear repulsion =    2.645886042950000
   ==> Basis Set <==
@@ -655,8 +669,8 @@ Properties computed using the SCF density matrix
 
    Number of roots         =           2
    Number of guess vectors =           6
-   Maximum subspace size   =           6
-   Minimum subspace size   =           4
+   Maximum subspace size   =          12
+   Minimum subspace size   =           2
    Subspace expansion norm =       1E-06
    Convergence cutoff      =       1E-06
    Maximum iterations      =         100
@@ -680,10 +694,10 @@ Properties computed using the SCF density matrix
   DLU           2          0          4   3.037E-01
   DLU           3          0          6   4.808E-02
   DLU           4          0          8   5.917E-03
-  DLU           5          0          6   1.231E-03
-  DLU           6          0          8   5.697E-05
-  DLU           7          0          6   8.361E-06
-  DLU           8          2          8   9.576E-07
+  DLU           5          0         10   6.741E-04
+  DLU           6          0         12   5.145E-05
+  DLU           7          1         14   2.915E-06
+  DLU           8          2          3   8.433E-07
 
     DLUSolver converged.
 
@@ -710,17 +724,17 @@ Properties computed using the SCF density matrix
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-UHF iter   1:   -24.99021581072876   -8.68358e+00   6.28277e-03 
-   @DF-UHF iter   2:   -25.05167343016809   -6.14576e-02   4.76557e-03 DIIS
-   @DF-UHF iter   3:   -25.09503600259768   -4.33626e-02   1.86000e-03 DIIS
-   @DF-UHF iter   4:   -25.09890795281873   -3.87195e-03   1.05908e-03 DIIS
-   @DF-UHF iter   5:   -25.10064893302896   -1.74098e-03   2.37787e-04 DIIS
-   @DF-UHF iter   6:   -25.10072506580586   -7.61328e-05   1.13200e-04 DIIS
-   @DF-UHF iter   7:   -25.10074306444006   -1.79986e-05   3.66499e-05 DIIS
-   @DF-UHF iter   8:   -25.10074418107984   -1.11664e-06   7.76321e-06 DIIS
-   @DF-UHF iter   9:   -25.10074424300796   -6.19281e-08   9.02919e-07 DIIS
-   @DF-UHF iter  10:   -25.10074424396930   -9.61343e-10   8.22985e-08 DIIS
-   @DF-UHF iter  11:   -25.10074424397243   -3.12639e-12   1.92004e-08 DIIS
+   @DF-UHF iter   1:   -24.99021581178962   -8.68358e+00   6.28277e-03 
+   @DF-UHF iter   2:   -25.05167343024856   -6.14576e-02   4.76557e-03 DIIS
+   @DF-UHF iter   3:   -25.09503600872950   -4.33626e-02   1.86000e-03 DIIS
+   @DF-UHF iter   4:   -25.09890795271999   -3.87194e-03   1.05908e-03 DIIS
+   @DF-UHF iter   5:   -25.10064893290772   -1.74098e-03   2.37787e-04 DIIS
+   @DF-UHF iter   6:   -25.10072506574847   -7.61328e-05   1.13200e-04 DIIS
+   @DF-UHF iter   7:   -25.10074306444002   -1.79987e-05   3.66499e-05 DIIS
+   @DF-UHF iter   8:   -25.10074418107995   -1.11664e-06   7.76322e-06 DIIS
+   @DF-UHF iter   9:   -25.10074424300795   -6.19280e-08   9.02920e-07 DIIS
+   @DF-UHF iter  10:   -25.10074424396930   -9.61347e-10   8.22985e-08 DIIS
+   @DF-UHF iter  11:   -25.10074424397243   -3.12994e-12   1.92004e-08 DIIS
 
   DF guess converged.
 
@@ -734,7 +748,7 @@ Properties computed using the SCF density matrix
     Integrals threads:           1
     Schwarz Cutoff:          1E-12
 
-   @UHF iter  12:   -25.10074424397277   -3.44613e-13   2.78002e-09 DIIS
+   @UHF iter  12:   -25.10074424397277   -3.41061e-13   2.78002e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -785,13 +799,13 @@ Properties computed using the SCF density matrix
    => Energetics <=
 
     Nuclear Repulsion Energy =              2.6458860429499995
-    One-Electron Energy =                 -38.0606343659667701
-    Two-Electron Energy =                  10.3140040790440004
+    One-Electron Energy =                 -38.0606343659666990
+    Two-Electron Energy =                  10.3140040790439276
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -25.1007442439727733
+    Total Energy =                        -25.1007442439727768
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -829,10 +843,10 @@ Properties computed using the SCF density matrix
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           B          0.000000000000     0.000000000000    -0.083865697994
-           H          0.000000000000     0.000000000000     0.916134302006
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           B          0.000000000000     0.000000000000    -0.083865697994    11.009305406000
+           H          0.000000000000     0.000000000000     0.916134302006     1.007825032070
 
   Nuclear repulsion =    2.645886042950000
   ==> Basis Set <==
@@ -849,8 +863,8 @@ Properties computed using the SCF density matrix
 
    Number of roots         =           2
    Number of guess vectors =           6
-   Maximum subspace size   =           6
-   Minimum subspace size   =           4
+   Maximum subspace size   =          12
+   Minimum subspace size   =           2
    Subspace expansion norm =       1E-06
    Convergence cutoff      =       1E-06
    Maximum iterations      =         100
@@ -874,18 +888,19 @@ Properties computed using the SCF density matrix
   DLU           2          0          4   9.993E-01
   DLU           3          0          6   9.999E-01
   DLU           4          0          8   1.000E+00
-  DLU           5          0          6   1.000E+00
-  DLU           6          0          8   1.000E+00
-  DLU           7          0          6   1.000E+00
-  DLU           8          0          8   9.996E-01
-  DLU           9          0          6   9.656E-01
-  DLU          10          0          8   4.225E-01
-  DLU          11          1          6   9.042E-02
-  DLU          12          1          7   1.692E-02
-  DLU          13          1          5   1.683E-03
-  DLU          14          1          6   2.271E-04
-  DLU          15          1          7   1.824E-05
-  DLU          16          2          5   9.250E-07
+  DLU           5          0         10   1.000E+00
+  DLU           6          0         12   1.000E+00
+  DLU           7          0         14   9.997E-01
+  DLU           8          0          4   9.875E-01
+  DLU           9          0          6   7.133E-01
+  DLU          10          0          8   8.091E-02
+  DLU          11          1         10   8.152E-03
+  DLU          12          1         11   4.642E-03
+  DLU          13          1         12   8.203E-04
+  DLU          14          1         13   1.299E-04
+  DLU          15          1          3   2.908E-05
+  DLU          16          1          4   1.900E-06
+  DLU          17          2          5   8.312E-07
 
     DLUSolver converged.
 
@@ -896,14 +911,34 @@ Properties computed using the SCF density matrix
 
     Stability analysis over.
 
-*** tstop() called on Graveworm.chemlocal at Thu Jul 30 23:56:57 2015
+  UHF NO Occupations:
+  HONO-2 :    1  A 1.9999999
+  HONO-1 :    2  A 1.9994320
+  HONO-0 :    3  A 1.6892123
+  LUNO+0 :    4  A 0.3107877
+  LUNO+1 :    5  A 0.0005680
+  LUNO+2 :    6  A 0.0000001
+  LUNO+3 :    7  A 0.0000000
+
+
+  UHF NO Occupations:
+  HONO-2 :    1  A 1.9999999
+  HONO-1 :    2  A 1.9994320
+  HONO-0 :    3  A 1.6892123
+  LUNO+0 :    4  A 0.3107877
+  LUNO+1 :    5  A 0.0005680
+  LUNO+2 :    6  A 0.0000001
+  LUNO+3 :    7  A 0.0000000
+
+
+*** tstop() called on Graveworm.chemlocal at Sun Sep 13 11:22:45 2015
 Module time:
-	user time   =       3.85 seconds =       0.06 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       3.96 seconds =       0.07 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 Total time:
-	user time   =       5.85 seconds =       0.10 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       5.96 seconds =       0.10 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          6 seconds =       0.10 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!
