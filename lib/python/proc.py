@@ -3029,7 +3029,6 @@ def run_detcas(name, **kwargs):
     """
 
     optstash = p4util.OptionsState(
-        ['TRANSQT2', 'WFN'],
         ['DETCI', 'WFN'],
     )
 
@@ -3038,10 +3037,8 @@ def run_detcas(name, **kwargs):
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
     if (name.lower() == 'rasscf'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'RASSCF')
         psi4.set_local_option('DETCI', 'WFN', 'RASSCF')
     elif (name.lower() == 'casscf'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'CASSCF')
         psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
 
     # Bypass routine scf if user did something special to get it to converge
@@ -3053,7 +3050,6 @@ def run_detcas(name, **kwargs):
             psi4.MintsHelper().integrals()
 
 
-#    psi4.transqt2()
     psi4.detci()
 
     optstash.restore()

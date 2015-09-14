@@ -1536,43 +1536,43 @@ void CIWavefunction::print_ras_parameters(void)
 
   outfile->Printf( "\n   DOCC            = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.docc[i]) ;
+    outfile->Printf( "%3d ", CalcInfo.docc[i]) ;
   }
   outfile->Printf( "\n   SOCC            = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.socc[i]) ;
+    outfile->Printf( "%3d ", CalcInfo.socc[i]) ;
   }
   outfile->Printf("\n");
   outfile->Printf( "\n   FROZEN DOCC     = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.frozen_docc[i]) ;
+    outfile->Printf( "%3d ", CalcInfo.frozen_docc[i]) ;
   }
   outfile->Printf( "\n   RESTRICTED DOCC = ");
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.rstr_docc[i]) ;
+    outfile->Printf( "%3d ", CalcInfo.rstr_docc[i]) ;
   }
 
   if (Parameters.fci){
     outfile->Printf( "\n   ACTIVE          = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      outfile->Printf("%2d ",CalcInfo.ci_orbs[i]);
+      outfile->Printf("%3d ",CalcInfo.ci_orbs[i]);
     }
   }
   else{
     for (i=0; i<4; i++) {
       outfile->Printf( "\n   RAS %d           = ",i+1);
       for (j=0; j<CalcInfo.nirreps; j++) {
-        outfile->Printf("%2d ",CalcInfo.ras_opi[i][j]);
+        outfile->Printf("%3d ",CalcInfo.ras_opi[i][j]);
       }
     }
   }
   outfile->Printf( "\n   RESTRICTED UOCC = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.rstr_uocc[i]) ;
+    outfile->Printf( "%3d ", CalcInfo.rstr_uocc[i]) ;
   }
   outfile->Printf( "\n   FROZEN UOCC     = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    outfile->Printf( "%2d ", CalcInfo.frozen_uocc[i]) ;
+    outfile->Printf( "%3d ", CalcInfo.frozen_uocc[i]) ;
   }
   outfile->Printf("\n");
 

@@ -61,7 +61,6 @@
 
 #include <libfock/soscf.h>
 #include <libpsi4util/libpsi4util.h>
-
 #include "structs.h"
 #include "globals.h"
 #include "globaldefs.h"
@@ -73,11 +72,6 @@
 #include "slaterd.h"
 #include "civect.h"
 #include "ciwave.h"
-
-namespace psi {
-  extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
-  namespace transqt2 { extern PsiReturnType transqt2(Options &); }
-}
 
 namespace psi { namespace detci {
 
@@ -122,14 +116,10 @@ extern void form_ov(struct stringwr **alplist);
 extern void write_energy(int nroots, double *evals, double offset);
 
 void cleanup(void);
-void title(void);
 void quote(void);
-void init_ioff(void);
-void diag_h(struct stringwr **strlista, struct stringwr **strlistb);
 void mpn(struct stringwr **strlista, struct stringwr **strlistb);
 void form_opdm(void);
 void form_tpdm(void);
-extern void form_strings(void);
 extern void mitrush_iter(CIvect &Hd,
    struct stringwr **alplist, struct stringwr **betlist,
    int nroots, double *evals, double conv_rms, double conv_e, double enuc,
@@ -164,13 +154,9 @@ namespace psi { namespace detci {
 PsiReturnType detci(Options &options)
 {
 
-   init_ioff();                 /* set up the ioff array                    */
-   title();                     /* print program identification             */
-
    boost::shared_ptr<Wavefunction> refwfn = Process::environment.wavefunction();
    boost::shared_ptr<CIWavefunction> ciwfn(new CIWavefunction(refwfn, options));
 
-   form_strings();              /* form the alpha/beta strings              */
    if (Parameters.nthreads > 1)
      tpool_init(&thread_pool, Parameters.nthreads, CalcInfo.num_alp_str, 0);
                                 /* initialize thread pool */
@@ -192,24 +178,19 @@ PsiReturnType detci(Options &options)
 
    // MCSCF is special, we let it handle a lot of its own issues
    if (Parameters.mcscf){
-     ciwfn->compute_mcscf(alplist, betlist);
+     ciwfn->compute_mcscf();
    }
    else{
      /* Transform and set ci integrals*/
      ciwfn->transform_ci_integrals();
 
      if (Parameters.mpn){
-       if(Parameters.zaptn){         /* Shift SCF eigenvalues for ZAPTn          */
-          zapt_shift(CalcInfo.twoel_ints, CalcInfo.nirreps, CalcInfo.nmo,
-             CalcInfo.docc, CalcInfo.socc, CalcInfo.orbs_per_irr,
-             CalcInfo.dropped_docc, CalcInfo.reorder);
-       }
        mpn(alplist, betlist);
        }
      else if (Parameters.cc)
        compute_cc();
      else
-       diag_h(alplist, betlist);
+       ciwfn->diag_h();
    }
 
    // Finished CI, setting wavefunction parameters
@@ -238,7 +219,7 @@ PsiReturnType detci(Options &options)
 ** init_ioff(): Set up the ioff array for quick indexing
 **
 */
-void init_ioff(void)
+void CIWavefunction::init_ioff(void)
 {
    int i;
 
@@ -263,9 +244,9 @@ void cleanup(void)
 /*
 ** title(): Function prints a program identification
 */
-void title(void)
+void CIWavefunction::title(void)
 {
-  //if (Parameters.print_lvl) {
+  // if (Parameters.print_lvl) {
    outfile->Printf("\n");
    outfile->Printf("         ---------------------------------------------------------\n");
    outfile->Printf("                                 D E T C I  \n");
@@ -280,6 +261,16 @@ void title(void)
   // outfile->Printf(
   // "\nD E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999\n");
   // }
+   outfile->Printf("                   C. David Sherrill\n") ;
+   outfile->Printf("                   Matt L. Leininger\n") ;
+   outfile->Printf("                     18 June 1999\n") ;
+   outfile->Printf("*******************************************************\n");
+   outfile->Printf("\n\n\n");
+  //  }
+  // else {
+  //  outfile->Printf(
+  //  "\nD E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999\n");
+  //  }
 
 }
 
@@ -295,7 +286,8 @@ void title(void)
 **
 ** Returns: none
 */
-void diag_h(struct stringwr **alplist, struct stringwr **betlist)
+void CIWavefunction::diag_h()
+// void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 {
    BIGINT size;
    int nroots, i, j;
@@ -319,6 +311,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
    if ((BIGINT) Parameters.nprint > size) Parameters.nprint = (int) size;
    nucrep = CalcInfo.enuc;
    edrc = CalcInfo.edrc;
+   // tmp_ras_array = init_array(1024);
 
    H0block.size = 0;
    H0block.osize = 0;
@@ -391,20 +384,20 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
       for (ii=0; ii<size; ii++) {
          Cvec.det2strings(ii, &Ialist, &Iarel, &Iblist, &Ibrel);
          I.set(CalcInfo.num_alp_expl,
-               alplist[Ialist][Iarel].occs, CalcInfo.num_bet_expl,
-               betlist[Iblist][Ibrel].occs);
+               alplist_[Ialist][Iarel].occs, CalcInfo.num_bet_expl,
+               betlist_[Iblist][Ibrel].occs);
          /* introduce symmetry or other restrictions here */
          for (jj=0; jj<ii; jj++) {
             Cvec.det2strings(jj, &Ialist, &Iarel, &Iblist, &Ibrel);
             J.set(CalcInfo.num_alp_expl,
-               alplist[Ialist][Iarel].occs, CalcInfo.num_bet_expl,
-               betlist[Iblist][Ibrel].occs);
+               alplist_[Ialist][Iarel].occs, CalcInfo.num_bet_expl,
+               betlist_[Iblist][Ibrel].occs);
             H[ii][jj] = H[jj][ii] = matrix_element(&I, &J);
             }
          Cvec.det2strings(jj, &Ialist, &Iarel, &Iblist, &Ibrel);
          J.set(CalcInfo.num_alp_expl,
-            alplist[Ialist][Iarel].occs, CalcInfo.num_bet_expl,
-            betlist[Iblist][Ibrel].occs);
+            alplist_[Ialist][Iarel].occs, CalcInfo.num_bet_expl,
+            betlist_[Iblist][Ibrel].occs);
          H[jj][jj] = matrix_element(&J, &J) + CalcInfo.edrc;
          }
 
@@ -442,7 +435,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
             Cvec.max_abs_vals(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx,
                mi_ibidx, mi_coeff, Parameters.neg_only);
             print_vec(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
-               mi_coeff, AlphaG, BetaG, alplist, betlist, "outfile");
+               mi_coeff, AlphaG, BetaG, alplist_, betlist_, "outfile");
             }
 
          free(mi_iac);  free(mi_ibc);
@@ -484,7 +477,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
               /* convert occs to Pitzer order */
               for (int n=0; n<AlphaG->num_el; n++) {
                 newocc[n] = (unsigned char)
-                  CalcInfo.order[alplist[list_gr][l].occs[n] +
+                  CalcInfo.order[alplist_[list_gr][l].occs[n] +
                                 CalcInfo.num_drc_orbs];
               }
               stringset_add(&alphastrings,l+offset,newocc);
@@ -504,7 +497,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
               /* convert occs to Pitzer order */
               for (int n=0; n<BetaG->num_el; n++) {
                 newocc[n] = (unsigned char)
-                  CalcInfo.order[betlist[list_gr][l].occs[n] +
+                  CalcInfo.order[betlist_[list_gr][l].occs[n] +
                                 CalcInfo.num_drc_orbs];
               }
               stringset_add(&betastrings,l+offset,newocc);
@@ -577,7 +570,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 
       /* get the diagonal elements of H into an array Hd */
 
-      Hd.diag_mat_els(alplist, betlist, CalcInfo.onel_ints,
+      Hd.diag_mat_els(alplist_, betlist_, CalcInfo.onel_ints,
          CalcInfo.twoel_ints, edrc, CalcInfo.num_alp_expl,
          CalcInfo.num_bet_expl, CalcInfo.num_ci_orbs, Parameters.hd_ave);
 
@@ -618,7 +611,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 
 
       if (H0block.size) {
-         H0block_fill(alplist, betlist);
+         H0block_fill(alplist_, betlist_);
          }
 
       if (Parameters.print_lvl > 2 && H0block.size) {
@@ -635,20 +628,20 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
       for (ii=0; ii<size; ii++) {
          Cvec.det2strings(ii, &Ialist, &Iarel, &Iblist, &Ibrel);
          I.set(CalcInfo.num_alp_expl,
-               alplist[Ialist][Iarel].occs, CalcInfo.num_bet_expl,
-               betlist[Iblist][Ibrel].occs);
+               alplist_[Ialist][Iarel].occs, CalcInfo.num_bet_expl,
+               betlist_[Iblist][Ibrel].occs);
          /* introduce symmetry or other restrictions here */
          for (jj=0; jj<ii; jj++) {
             Cvec.det2strings(jj, &Ialist, &Iarel, &Iblist, &Ibrel);
             J.set(CalcInfo.num_alp_expl,
-               alplist[Ialist][Iarel].occs, CalcInfo.num_bet_expl,
-               betlist[Iblist][Ibrel].occs);
+               alplist_[Ialist][Iarel].occs, CalcInfo.num_bet_expl,
+               betlist_[Iblist][Ibrel].occs);
             H[ii][jj] = H[jj][ii] = matrix_element(&I, &J);
             }
          Cvec.det2strings(jj, &Ialist, &Iarel, &Iblist, &Ibrel);
          J.set(CalcInfo.num_alp_expl,
-            alplist[Ialist][Iarel].occs, CalcInfo.num_bet_expl,
-            betlist[Iblist][Ibrel].occs);
+            alplist_[Ialist][Iarel].occs, CalcInfo.num_bet_expl,
+            betlist_[Iblist][Ibrel].occs);
          H[jj][jj] = matrix_element(&J, &J) + CalcInfo.edrc;
          }
 
@@ -742,7 +735,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
             Cvec.max_abs_vals(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx,
                mi_ibidx, mi_coeff, Parameters.neg_only);
             print_vec(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
-               mi_coeff, AlphaG, BetaG, alplist, betlist, "outfile");
+               mi_coeff, AlphaG, BetaG, alplist_, betlist_, "outfile");
             }
          free(mi_iac);  free(mi_ibc);
          free(mi_iaidx);  free(mi_ibidx);
@@ -782,7 +775,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
             outfile->Printf( "\nForming diagonal elements of H\n");
 
            }
-         Hd.diag_mat_els(alplist, betlist, CalcInfo.onel_ints,
+         Hd.diag_mat_els(alplist_, betlist_, CalcInfo.onel_ints,
             CalcInfo.twoel_ints, edrc, CalcInfo.num_alp_expl,
             CalcInfo.num_bet_expl, CalcInfo.num_ci_orbs, Parameters.hd_ave);
          }
@@ -864,7 +857,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          }
 
       if (H0block.size) {
-         H0block_fill(alplist, betlist);
+         H0block_fill(alplist_, betlist_);
          }
 
       if (Parameters.print_lvl > 2 && H0block.size) {
@@ -890,7 +883,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 
          evals = init_array(nroots);
 
-         sem_iter(Hd, alplist, betlist, evals, conv_e, conv_rms,
+         sem_iter(Hd, alplist_, betlist_, evals, conv_e, conv_rms,
             nucrep, edrc, nroots, Parameters.maxiter,
             Parameters.maxnvect, "outfile", Parameters.print_lvl);
          }
@@ -912,7 +905,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 
          evals = init_array(nroots);
 
-         mitrush_iter(Hd, alplist, betlist, nroots, evals, conv_rms, conv_e,
+         mitrush_iter(Hd, alplist_, betlist_, nroots, evals, conv_rms, conv_e,
             nucrep, edrc, Parameters.maxiter, Parameters.maxnvect, "outfile",
             Parameters.print_lvl);
 
@@ -1310,6 +1303,12 @@ void mpn(struct stringwr **alplist, struct stringwr **betlist)
   int **drc_orbs;
   double tval;
 
+  if(Parameters.zaptn){         /* Shift SCF eigenvalues for ZAPTn          */
+    zapt_shift(CalcInfo.twoel_ints, CalcInfo.nirreps, CalcInfo.nmo,
+       CalcInfo.docc, CalcInfo.socc, CalcInfo.orbs_per_irr,
+       CalcInfo.dropped_docc, CalcInfo.reorder);
+  }
+
   H0block_init(CIblks.vectlen);
 
   CIvect Hd(CIblks.vectlen, CIblks.num_blocks, Parameters.icore,
@@ -1388,6 +1387,7 @@ BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx) {
 
 }
 
+
 /*
 ** compute_mcscf(); Optimizes MO and CI coefficients
 **
@@ -1398,7 +1398,7 @@ BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx) {
 **
 ** Returns: none
 */
-void CIWavefunction::compute_mcscf(struct stringwr **alplist, struct stringwr **betlist)
+void CIWavefunction::compute_mcscf()
 {
 
   Parameters.print_lvl = 0;
@@ -1428,6 +1428,7 @@ void CIWavefunction::compute_mcscf(struct stringwr **alplist, struct stringwr **
   SharedMatrix Cfzc = get_orbitals("FZC");
   somcscf->set_frozen_orbitals(Cfzc);
 
+
   /// => Start traditional MCSCF <= //
   // Parameters
   int conv = 0;
@@ -1442,6 +1443,7 @@ void CIWavefunction::compute_mcscf(struct stringwr **alplist, struct stringwr **
   //
     outfile->Printf("\n                          "
                     "Total Energy         Delta E       RMS Grad\n\n");
+    diag_h();
 
   // Iterate
   for (int iter=1; iter<MCSCF_Parameters->max_iter + 1; iter++){
@@ -1509,11 +1511,10 @@ void CIWavefunction::compute_mcscf(struct stringwr **alplist, struct stringwr **
     transform_dfmcscf_ints();
   }
 
-  // outfile->Printf("\nCleaning up MCSCF.\n");
+  // outfile->printf("\ncleaning up mcscf.\n");
 
-  // ciwfn->set_lag();
-  set_opdm();
-  set_tpdm();
+  // set_opdm();
+  // set_tpdm();
   // df_.reset();
   // jk_.reset();
 }
