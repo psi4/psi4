@@ -129,26 +129,27 @@ double SOMCSCF::rhf_energy(SharedMatrix C)
 SharedMatrix SOMCSCF::Ck(SharedMatrix x)
 {
 
-    SharedMatrix tmp(new Matrix("Ck", nirrep_, nsopi_, nmopi_));
+    SharedMatrix tmp(new Matrix("Ck", nirrep_, nmopi_, nmopi_));
 
     // Form full antisymmetric matrix
     for (size_t h=0; h<nirrep_; h++){
 
         if (!noapi_[h] || !navpi_[h]) continue;
         double** tp = tmp->pointer(h);
-        double*  xp = x->pointer(h)[0];
+        double**  xp = x->pointer(h);
 
         // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
         for (size_t i=0, target=0; i<noapi_[h]; i++){
-            for (size_t a=noccpi_[h]; a<nmopi_[h]; a++){
-                tp[i][a] = xp[target];
-                tp[a][i] = -1.0 * xp[target++];
+            for (size_t a=fmax(noccpi_[h], i); a<nmopi_[h]; a++){
+                tp[i][a] = xp[i][a-noccpi_[h]];
+                tp[a][i] = -1.0 * xp[i][a-noccpi_[h]];
             }
         }
     }
 
-    // Build exp(U) = 1 + U + 0.5 U U
+    // Build exp(U) = 1 + U + 1/2 U U + 1/6 U U U
     SharedMatrix U = tmp->clone();
+
     for (size_t h=0; h<nirrep_; h++){
         if (!U->rowspi()[h]) continue;
         double** Up = U->pointer(h);
@@ -156,15 +157,22 @@ SharedMatrix SOMCSCF::Ck(SharedMatrix x)
             Up[i][i] += 1.0;
         }
     }
+
     U->gemm(false, false, 0.5, tmp, tmp, 1.0);
+
+    SharedMatrix tmp_third = Matrix::triplet(tmp, tmp, tmp);
+    tmp_third->scale(1.0/6.0);
+    U->add(tmp_third);
+    tmp_third.reset();
 
     // We did not fully exponentiate the matrix, need to orthogonalize
     U->schmidt();
+    U->print();
 
     // C' = C U
-    tmp->gemm(false, false, 1.0, matrices_["C"], U, 0.0);
+    SharedMatrix Cp = Matrix::doublet(matrices_["C"], U);
 
-    return tmp;
+    return Cp;
 }
 void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
             SharedMatrix OPDM, SharedMatrix TPDM)
@@ -290,6 +298,7 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
             for (int j=0; j<navpi_[h]; j++){
                 int nj = noccpi_[h] + j;
                 Gp[i][j] = 2.0 * (dFp[i][nj] - dFp[nj][i]);
+                // Gp[i][j] = 2.0 * (dFp[i][nj] - dFp[nj][i]);
 
                 // Ensure the gradient is zero for the active-active diagonal block
                 if (nj == i){
@@ -300,6 +309,8 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
     }
     zero_redundant(matrices_["Gradient"]);
     matrices_["Precon"] = H_approx_diag();
+    matrices_["Gradient"]->print();
+    matrices_["Precon"]->print();
 }
 SharedMatrix SOMCSCF::H_approx_diag()
 {
@@ -609,7 +620,6 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x)
     }
 
     zero_redundant(hessx);
-
     return hessx;
 
 }
@@ -648,6 +658,12 @@ SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print)
     SharedMatrix Ap = Hk(x);
     // outfile->Printf("Ap\n");
     // Ap->print();
+
+    outfile->Printf("Gradient\n");
+    r->print();
+    outfile->Printf("Ap guess\n");
+    Ap->print();
+
     r->subtract(Ap);
     if (print){
         double rconv = r->rms();
@@ -707,6 +723,7 @@ SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print)
         outfile->Printf("    ---------------------------------------\n");
         outfile->Printf("\n");
     }
+    zero_redundant(best);
     return best;
 }
 double SOMCSCF::gradient_rms()

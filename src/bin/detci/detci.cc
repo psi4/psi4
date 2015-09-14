@@ -256,22 +256,6 @@ void CIWavefunction::title(void)
    outfile->Printf("                               18 June 1999\n") ;
    outfile->Printf("         ---------------------------------------------------------\n");
    outfile->Printf("\n");
-  // }
-  //else {
-  // outfile->Printf(
-  // "\nD E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999\n");
-  // }
-   outfile->Printf("                   C. David Sherrill\n") ;
-   outfile->Printf("                   Matt L. Leininger\n") ;
-   outfile->Printf("                     18 June 1999\n") ;
-   outfile->Printf("*******************************************************\n");
-   outfile->Printf("\n\n\n");
-  //  }
-  // else {
-  //  outfile->Printf(
-  //  "\nD E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999\n");
-  //  }
-
 }
 
 
@@ -1402,7 +1386,7 @@ void CIWavefunction::compute_mcscf()
 {
 
   Parameters.print_lvl = 0;
-  Parameters.maxiter = 2;
+  //Parameters.maxiter = 2;
 
   // Build SOMCSCF object
   transform_dfmcscf_ints();
@@ -1443,17 +1427,18 @@ void CIWavefunction::compute_mcscf()
   //
     outfile->Printf("\n                          "
                     "Total Energy         Delta E       RMS Grad\n\n");
-    diag_h();
 
   // Iterate
-  for (int iter=1; iter<MCSCF_Parameters->max_iter + 1; iter++){
+  for (int iter=1; iter<(MCSCF_Parameters->max_iter + 1); iter++){
 
     // Run and set CI
     old_energy = current_energy;
-    diag_h(alplist, betlist);
+
+    diag_h();
     form_opdm();
     set_opdm();
     form_tpdm();
+
     current_energy = Process::environment.globals["MCSCF TOTAL ENERGY"];
     ediff = current_energy - old_energy;
 
@@ -1508,6 +1493,7 @@ void CIWavefunction::compute_mcscf()
     set_orbitals("ROT", new_orbs);
 
     // Need to grab the new edrc energy after transqt2 computations
+    outfile->Printf("About to transform ints.\n");
     transform_dfmcscf_ints();
   }
 

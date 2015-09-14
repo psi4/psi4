@@ -133,8 +133,8 @@ extern void xpeay(double *x, double a, double *y, int size);
 extern void xpey(double *x, double *y, int size);
 extern void xeax(double *x, double a, int size);
 extern void xexmy(double *x, double *y, int size);
-extern void calc_d(double *target, double alpha, double *sigma,
-   double lambda, double *c, int size);
+//extern void calc_d(double *target, double alpha, double *sigma,
+//   double lambda, double *c, int size);
 extern double calc_d2(double *target, double lambda, double *Hd,
    int size, int precon);
 extern double calc_mpn_vec(double *target, double energy, double *Hd,

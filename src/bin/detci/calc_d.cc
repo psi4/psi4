@@ -30,7 +30,6 @@
 #include <cmath>
 #include "ci_tol.h"
 #include "structs.h"
-#include "globals.h"
 
 namespace psi { namespace detci {
 
@@ -50,17 +49,17 @@ namespace psi { namespace detci {
 **
 ** Returns: none
 */
-void calc_d(double *target, double alpha, double *sigma, double lambda,
-      double *c, int size)
-{
-   register int i;
-   double tval;
-
-   for (i=0; i<size; i++) {
-      tval = alpha * (sigma[i] - lambda * c[i]);
-      target[i] += tval;
-      }
-}
+//void calc_d(double *target, double alpha, double *sigma, double lambda,
+//      double *c, int size)
+//{
+//   register int i;
+//   double tval;
+//
+//   for (i=0; i<size; i++) {
+//      tval = alpha * (sigma[i] - lambda * c[i]);
+//      target[i] += tval;
+//      }
+//}
 
 
 /*

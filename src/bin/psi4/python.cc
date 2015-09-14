@@ -1446,7 +1446,7 @@ BOOST_PYTHON_MODULE(psi4)
     // EFP
     export_efp();
 
-    // EFP
+    // CIWave
     export_ciwave();
 
     // Options

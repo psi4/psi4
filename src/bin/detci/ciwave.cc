@@ -35,7 +35,6 @@ CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> ref_wfn,
     // such that we don't explicitly need checkpoint
     // Destroy it. Otherwise we will see a "file already open" error.
     chkpt_.reset();
-
     common_init();
 }
 CIWavefunction::~CIWavefunction()
@@ -49,16 +48,20 @@ void CIWavefunction::common_init()
     // by someone else who uses the CIWavefunction and expects them to
     // be available.
 
-    MCSCF_Parameters = new mcscf_params;
     title();
     init_ioff();
+
+    // CI Params
     get_parameters(options_);     /* get running params (convergence, etc)    */
-    get_mcscf_parameters();
     get_mo_info();               /* read DOCC, SOCC, frozen, nmo, etc        */
     set_ras_parameters();             /* set fermi levels and the like            */
 
     print_parameters();
     print_ras_parameters();
+
+    //MCSCF_Params
+    MCSCF_Parameters = new mcscf_params;
+    get_mcscf_parameters();
 
     // Wavefunction frozen nomenclature is equivalent to dropped in detci.
     // In detci frozen means doubly occupied, but no orbital rotations.
@@ -78,6 +81,7 @@ void CIWavefunction::common_init()
 
         nmopi_[h]  = CalcInfo.orbs_per_irr[h];
         nsopi_[h]  = CalcInfo.so_per_irr[h];
+    }
 
     H_ = reference_wavefunction_->H();
     Ca_ = reference_wavefunction_->Ca()->clone();
@@ -90,11 +94,14 @@ void CIWavefunction::common_init()
 
     // Form strings
     form_strings();
+
+    // This will all be nuked
     alplist_ = alplist;
     betlist_ = betlist;
+    CalcInfo_ = &CalcInfo;
+    Parameters_ = &Parameters;
 
     name_ = "CIWavefunction";
-    }
 }
 double CIWavefunction::compute_energy()
 {
