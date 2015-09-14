@@ -221,6 +221,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src/lib
     ${PROJECT_BINARY_DIR}/src/lib
+    ${PROJECT_BINARY_DIR}/interfaces/include
 )
 
 #

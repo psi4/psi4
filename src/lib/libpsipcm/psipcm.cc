@@ -22,10 +22,59 @@
 
 #include "psipcm.h"
 #include "psi4-dec.h" //Gives us psi::outfile
+#include "pcmsolver.h"
 
-#include "Interface.hpp" // Contains interface function signatures from PCMSolver library
+namespace psi {
+// Functions needed by PCMSolver. Could be implemented as lambda-s...
+int collect_nctot()
+{
+  return psi::Process::environment.molecule()->natom();
+}
 
-namespace psi { 
+void collect_atoms(double charges[], double centers[])
+{
+    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
+    int nat = molecule->natom();
+    for(int i = 0; i < nat; ++i) {
+        charges[i] = molecule->fZ(i);
+    }
+
+    Matrix geom = molecule->geometry();
+    for(int j =  0; j < 3; ++j) {
+        for(int i = 0; i < nat; ++i) {
+            // Eigen stores matrices in Column-Major order
+            centers[j + i * 3] = geom.get(i, j);
+        }
+    }
+}
+
+void host_writer(const char * message, unsigned int /* message_length */)
+{
+    outfile->Printf(message);
+    outfile->Printf("\n");
+}
+
+void set_point_group(int * nr_gen, int * gen1, int * gen2, int * gen3)
+{
+    /* Pass the number of generators in the point group and the
+     * integer representing the generator.
+     * The integer-to-operation mapping is according to PCMSolver
+     * internal convention:
+     *      zyx         Parity
+     *   0  000    E      1.0
+     *   1  001   Oyz    -1.0
+     *   2  010   Oxz    -1.0
+     *   3  011   C2z     1.0
+     *   4  100   Oxy    -1.0
+     *   5  101   C2y     1.0
+     *   6  110   C2x     1.0
+     *   7  111    i     -1.0
+     */
+    *nr_gen = 0;
+    *gen1   = 0;
+    *gen2   = 0;
+    *gen3   = 0;
+}
 
 PCM::PCM(Options &options, boost::shared_ptr<PSIO> psio, int nirrep, boost::shared_ptr<BasisSet> basisset)
 {
@@ -56,9 +105,10 @@ PCM::PCM(Options &options, boost::shared_ptr<PSIO> psio, int nirrep, boost::shar
    * }
    */
   int PSI4_provides_input = 0;
-  set_up_pcm(&PSI4_provides_input);
-  print_pcm();
-  get_cavity_size(&ntess_, &ntessirr_);
+  context_ = pcmsolver_new(collect_nctot, collect_atoms, host_writer, set_point_group);
+  pcmsolver_print(context_);
+  ntess_ = pcmsolver_get_cavity_size(context_);
+  ntessirr_ = pcmsolver_get_irreducible_cavity_size(context_);
   outfile->Printf("  There are %d tesserae, %d of which irreducible.\n\n",ntess_,ntessirr_);
   tess_pot_ = new double[ntess_];
   tess_pot_e_ = new double[ntess_];
@@ -82,7 +132,7 @@ PCM::PCM(Options &options, boost::shared_ptr<PSIO> psio, int nirrep, boost::shar
   double **ptess_Zxyz = tess_Zxyz_->pointer();
   // Set the tesserae's coordinates (note the loop bounds; this function is 1-based)
   for(int tess = 1; tess <= ntess_; ++tess)
-    get_tesserae_centers(&tess, &(ptess_Zxyz[tess-1][1]));
+      pcmsolver_get_center(context_, tess, &(ptess_Zxyz[tess-1][1]));
 
   // Compute the nuclear potentials at the tesserae
   double **patom_Zxyz = atom_Zxyz_->pointer();
@@ -112,10 +162,10 @@ PCM::PCM(Options &options, boost::shared_ptr<PSIO> psio, int nirrep, boost::shar
   ::memset(tess_charges_n_, 0, ntess_*sizeof(double));
   const char *potential_name = "NucMEP";
   const char *charge_name = "NucASC";
-  set_surface_function(&ntess_, tess_pot_n_, (char *) potential_name);
+  pcmsolver_set_surface_function(context_, ntess_, tess_pot_n_, potential_name);
   int irrep = 0;
-  compute_asc((char *) potential_name, (char *) charge_name, &irrep);
-  get_surface_function(&ntess_, tess_charges_n_, (char *) charge_name);
+  pcmsolver_compute_asc(context_, potential_name, charge_name, irrep);
+  pcmsolver_get_surface_function(context_, ntess_, tess_charges_n_, charge_name);
 
   // A little debug info
   if(pcm_print_ > 2) {
@@ -136,7 +186,7 @@ PCM::~PCM()
   delete [] tess_charges_e_;
   delete [] tess_charges_n_;
 
-  // tear_down_pcm(); // Causes a malloc error
+  pcmsolver_delete(context_);
 }
 
 double PCM::compute_E(SharedMatrix &D, CalcType type)
@@ -150,7 +200,7 @@ double PCM::compute_E(SharedMatrix &D, CalcType type)
 	case EleOnly:
 		return compute_E_electronic(D);
 	default:
-		throw PSIEXCEPTION("Unknown PCM calculation type.");  
+		throw PSIEXCEPTION("Unknown PCM calculation type.");
   }
 }
 
@@ -187,10 +237,10 @@ double PCM::compute_E_total(SharedMatrix &D)
 
   const char *tot_potential_name = "TotMEP";
   const char *tot_charge_name = "TotASC";
-  set_surface_function(&ntess_, tess_pot_, (char *) tot_potential_name);
+  pcmsolver_set_surface_function(context_, ntess_, tess_pot_, tot_potential_name);
   int irrep = 0;
-  compute_asc((char *) tot_potential_name, (char *) tot_charge_name, &irrep);
-  get_surface_function(&ntess_, tess_charges_, (char *) tot_charge_name);
+  pcmsolver_compute_asc(context_, tot_potential_name, tot_charge_name, irrep);
+  pcmsolver_get_surface_function(context_, ntess_, tess_charges_, tot_charge_name);
 
   if(pcm_print_ > 2) {
     outfile->Printf("Total MEP & ASC at each tessera:\n");
@@ -202,8 +252,7 @@ double PCM::compute_E_total(SharedMatrix &D)
   }
 
   // Grab the polarization energy from PCMSolver
-  double Epol = 0.0;
-  compute_polarization_energy(&Epol);
+  double Epol = pcmsolver_compute_polarization_energy(context_, tot_potential_name, tot_charge_name);
   outfile->Printf("   PCM polarization energy = %16.14f\n", Epol);
 
   return Epol;
@@ -241,10 +290,10 @@ double PCM::compute_E_separate(SharedMatrix &D)
 
   const char *e_potential_name = "EleMEP";
   const char *e_charge_name = "EleASC";
-  set_surface_function(&ntess_, tess_pot_e_, (char *) e_potential_name);
+  pcmsolver_set_surface_function(context_, ntess_, tess_pot_e_, e_potential_name);
   int irrep = 0;
-  compute_asc((char *) e_potential_name, (char *) e_charge_name, &irrep);
-  get_surface_function(&ntess_, tess_charges_e_, (char *) e_charge_name);
+  pcmsolver_compute_asc(context_, e_potential_name, e_charge_name, irrep);
+  pcmsolver_get_surface_function(context_, ntess_, tess_charges_e_, e_charge_name);
 
   // Combine the nuclear and electronic potentials at each tessera
   for(int tess = 0; tess < ntess_; ++tess) tess_pot_[tess] = tess_pot_n_[tess] + tess_pot_e_[tess];
@@ -260,13 +309,24 @@ double PCM::compute_E_separate(SharedMatrix &D)
 
   const char *tot_potential_name = "TotMEP";
   const char *tot_charge_name = "TotASC";
-  set_surface_function(&ntess_, tess_pot_, (char *) tot_potential_name);
-  compute_asc((char *) tot_potential_name, (char *) tot_charge_name, &irrep);
-  get_surface_function(&ntess_, tess_charges_, (char *) tot_charge_name);
+  pcmsolver_set_surface_function(context_, ntess_, tess_pot_, tot_potential_name);
+  pcmsolver_compute_asc(context_, tot_potential_name, tot_charge_name, irrep);
+  pcmsolver_get_surface_function(context_, ntess_, tess_charges_, tot_charge_name);
 
   // Grab the polarization energy from PCMSolver
-  double Epol = 0.0;
-  compute_polarization_energy(&Epol);
+  const char * n_potential_name = "NucMEP";
+  const char * n_charge_name = "NucASC";
+  double U_NN = pcmsolver_compute_polarization_energy(context_, n_potential_name, n_charge_name);
+  double U_eN = pcmsolver_compute_polarization_energy(context_, n_potential_name, e_charge_name);
+  double U_Ne = pcmsolver_compute_polarization_energy(context_, e_potential_name, n_charge_name);
+  double U_ee = pcmsolver_compute_polarization_energy(context_, e_potential_name, e_charge_name);
+  outfile->Printf("  Polarization energy components\n");
+  outfile->Printf("  U_ee = %16.14f\n", 2.0*U_ee);
+  outfile->Printf("  U_eN = %16.14f\n", 2.0*U_eN);
+  outfile->Printf("  U_Ne = %16.14f\n", 2.0*U_Ne);
+  outfile->Printf("  U_NN = %16.14f\n", 2.0*U_NN);
+  outfile->Printf("  U_eN - U_Ne = %16.14f\n", U_eN - U_Ne);
+  double Epol = U_NN + U_eN + U_Ne + U_ee;
   outfile->Printf("   PCM polarization energy = %16.14f\n", Epol);
   return Epol;
 }
@@ -301,10 +361,10 @@ double PCM::compute_E_electronic(SharedMatrix &D)
 
   const char *e_potential_name = "EleMEP";
   const char *e_charge_name = "EleASC";
-  set_surface_function(&ntess_, tess_pot_e_, (char *) e_potential_name);
+  pcmsolver_set_surface_function(context_, ntess_, tess_pot_e_, e_potential_name);
   int irrep = 0;
-  compute_asc((char *) e_potential_name, (char *) e_charge_name, &irrep);
-  get_surface_function(&ntess_, tess_charges_e_, (char *) e_charge_name);
+  pcmsolver_compute_asc(context_, e_potential_name, e_charge_name, irrep);
+  pcmsolver_get_surface_function(context_, ntess_, tess_charges_e_, e_charge_name);
 
   if(pcm_print_ > 2) {
     outfile->Printf("Electronic MEP & ASC at each tessera:\n");
@@ -316,10 +376,7 @@ double PCM::compute_E_electronic(SharedMatrix &D)
   }
 
   // Grab the polarization energy from PCMSolver
-  double Epol = 0.0;
-  // We are taking the dot product of the electronic MEP and ASC surface functions WITHOUT the 1/2
-  dot_surface_functions(&Epol, e_potential_name, e_charge_name);
-  Epol *= 0.5;
+  double Epol = pcmsolver_compute_polarization_energy(context_, e_potential_name, e_charge_name);
   outfile->Printf("   PCM polarization energy (electronic only) = %16.14f\n", Epol);
   return Epol;
 }
@@ -354,65 +411,12 @@ SharedMatrix PCM::compute_V_electronic()
   else return V_pcm_cart;
 }
 
-// External functions needed by pcmsolver
-extern "C" 
-{
-  void collect_nctot(int *nuclei) 
-  {
-    *nuclei = psi::Process::environment.molecule()->natom();
-  }
-
-  void collect_atoms(double *charges, double *centers) 
-  {
-    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
-    int nat = molecule->natom();
-    for(int i = 0; i < nat; ++i) {
-      charges[i] = molecule->fZ(i);
-    }
-
-    Matrix geom = molecule->geometry();
-    for(int j =  0; j < 3; ++j) {
-      for(int i = 0; i < nat; ++i) {
-        // Eigen stores matrices in Column-Major order
-        centers[j + i * 3] = geom.get(i, j);
-      }
-    }
-  }
-
-  void host_writer(const char * message, size_t * message_length)
-  {
-	  outfile->Printf(message);
-  }
-
+/*
   void host_input(cavityInput * cav, solverInput * solv, greenInput * green)
   {
-      /*
        * If input reading for PCMSolver was done host-side put
        * the input data inside the cav, solv and green structs
-       */
   }
-
-  void set_point_group(int * nr_gen, int * gen1, int * gen2, int * gen3)
-  {
-	  /* Pass the number of generators in the point group and the
-	   * integer representing the generator.
-	   * The integer-to-operation mapping is according to PCMSolver
-	   * internal convention:
-           *      zyx         Parity
-           *   0  000    E      1.0
-           *   1  001   Oyz    -1.0
-           *   2  010   Oxz    -1.0
-           *   3  011   C2z     1.0
-           *   4  100   Oxy    -1.0
-           *   5  101   C2y     1.0
-           *   6  110   C2x     1.0
-           *   7  111    i     -1.0
-	   */
-	  *nr_gen = 0;
-	  *gen1   = 0;
-	  *gen2   = 0;
-	  *gen3   = 0;
-  }
-}
+*/
 
 } // psi namespace
