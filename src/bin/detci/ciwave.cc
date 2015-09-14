@@ -15,11 +15,19 @@
 
 namespace psi { namespace detci {
 
-CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction,
-                               Options &options)
-    : Wavefunction(options, reference_wavefunction->psio())
+CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> ref_wfn)
+    : Wavefunction(Process::environment.options, ref_wfn->psio())
 {
-    set_reference_wavefunction(reference_wavefunction);
+    set_reference_wavefunction(ref_wfn);
+    chkpt_.reset();
+    common_init();
+}
+
+CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> ref_wfn,
+                               Options &options)
+    : Wavefunction(options, ref_wfn->psio())
+{
+    set_reference_wavefunction(ref_wfn);
 
     // TODO-CDS:
     // The CC codes destroy the checkpoint object created by Wavefunction.
@@ -42,6 +50,8 @@ void CIWavefunction::common_init()
     // be available.
 
     MCSCF_Parameters = new mcscf_params;
+    title();
+    init_ioff();
     get_parameters(options_);     /* get running params (convergence, etc)    */
     get_mcscf_parameters();
     get_mo_info();               /* read DOCC, SOCC, frozen, nmo, etc        */
@@ -77,6 +87,11 @@ void CIWavefunction::common_init()
 
     // Set information
     ints_init_ = false;
+
+    // Form strings
+    form_strings();
+    alplist_ = alplist;
+    betlist_ = betlist;
 
     name_ = "CIWavefunction";
     }
@@ -303,7 +318,7 @@ SharedMatrix CIWavefunction::get_active_opdm()
   }
   return actOPDM;
 }
-SharedVector CIWavefunction::get_tpdm(bool symmetrize, bool act_only)
+SharedVector CIWavefunction::get_tpdm(bool symmetrize, const std::string& tpdm_type)
 {
 
   int sqnbf, ntri;
@@ -311,7 +326,14 @@ SharedVector CIWavefunction::get_tpdm(bool symmetrize, bool act_only)
   int p,q,r,s,smax,pq,qp,rs,sr,pqrs,qprs,pqsr,qpsr,target;
   struct iwlbuf TBuff;
 
-  iwl_buf_init(&TBuff, Parameters.tpdm_file, 0.0, 1, 1);
+  int tpdm_file;
+  if (tpdm_type == "SUM") tpdm_file = Parameters.tpdm_file;
+  else if (tpdm_type == "AA") tpdm_file = PSIF_MO_AA_TPDM;
+  else if (tpdm_type == "BB") tpdm_file = PSIF_MO_BB_TPDM;
+  else if (tpdm_type == "AB") tpdm_file = PSIF_MO_AB_TPDM;
+  else throw PSIEXCEPTION("DETCI: TPDM can only be AA, AB, or BB");
+
+  iwl_buf_init(&TBuff, tpdm_file, 0.0, 1, 1);
   int npop = CalcInfo.num_ci_orbs + CalcInfo.num_drc_orbs;
 
   sqnbf = npop * npop;
@@ -367,7 +389,7 @@ SharedVector CIWavefunction::get_tpdm(bool symmetrize, bool act_only)
   tpdm.reset();
   return symm_tpdm;
 }
-SharedMatrix CIWavefunction::get_active_tpdm()
+SharedMatrix CIWavefunction::get_active_tpdm(const std::string& tpdm_type)
 {
   int nci   = CalcInfo.num_ci_orbs;
   int ndocc = CalcInfo.num_drc_orbs;
@@ -375,7 +397,7 @@ SharedMatrix CIWavefunction::get_active_tpdm()
   SharedMatrix actTPDM(new Matrix("TPDM", nci*nci, nci*nci));
   double* actTPDMp = actTPDM->pointer()[0];
 
-  SharedVector fullTPDM = get_tpdm();
+  SharedVector fullTPDM = get_tpdm(true, tpdm_type);
   double* fullTPDMp = fullTPDM->pointer();
 
   int nci2 = nci * nci;
@@ -391,40 +413,15 @@ SharedMatrix CIWavefunction::get_active_tpdm()
       actTPDMp[i * nci3 + j * nci2 + k * nci + l] = fullTPDMp[ijkl];
   }}}}
   fullTPDM.reset();
-  return actTPDM;
-}
-void CIWavefunction::set_tpdm()
-{
-  int npop = CalcInfo.num_ci_orbs + CalcInfo.num_drc_orbs;
-
-  SharedVector symm_tpdm = get_tpdm(true);
-  double* symm_tpdmp = symm_tpdm->pointer();
-
-  SharedMatrix sm_tpdm(new Matrix("TPDM", npop * npop, npop * npop));
-  double* sm_tpdmp = sm_tpdm->pointer()[0];
-
-  int npop2 = npop * npop;
-  int npop3 = npop * npop * npop;
-  int ij, kl, ijkl;
-  for (int i=0; i<npop; i++){
-  for (int j=0; j<npop; j++){
-  for (int k=0; k<npop; k++){
-  for (int l=0; l<npop; l++){
-      ij = INDEX(i,j);
-      kl = INDEX(k,l);
-      ijkl = INDEX(ij, kl);
-      sm_tpdmp[i * npop3 + j * npop2 + k * npop + l] = symm_tpdmp[ijkl];
-  }}}}
-  symm_tpdm.reset();
 
   // Set numpy shape
-  sm_tpdm->set_numpy_dims(4);
+  actTPDM->set_numpy_dims(4);
   int* shape = new int[4];
-  shape[0] = npop; shape[1] = npop;
-  shape[2] = npop; shape[3] = npop;
-  sm_tpdm->set_numpy_shape(shape);
+  shape[0] = nci; shape[1] = nci;
+  shape[2] = nci; shape[3] = nci;
+  actTPDM->set_numpy_shape(shape);
 
-  TPDM_ = sm_tpdm;
+  return actTPDM;
 }
 
 // void CIWavefunction::finalize()

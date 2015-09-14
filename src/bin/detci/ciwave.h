@@ -52,15 +52,19 @@ struct H_zero_block;
 struct detci_timings;
 struct mcscf_params;
 
+// Need to nuke this eventually
+extern struct stringwr **alplist;
+extern struct stringwr **betlist;
+
 class CIWavefunction : public Wavefunction
 {
 
 public:
+    CIWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction);
     CIWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
     virtual ~CIWavefunction();
 
     double compute_energy();
-    PsiReturnType cas_update();
 
     /**!
      * Similar to wavefunction.Ca_subset(); however, this version knows about all of the CI
@@ -110,24 +114,16 @@ public:
      * @param symmetrized Symmetrize the TPDM or not
      * @return TPDM SharedVector
      **/
-    SharedVector get_tpdm(bool symmetrized=true, bool act_only=true);
+    SharedVector get_tpdm(bool symmetrized=true, const std::string& = "SUM");
 
     /**!
      Returns the a full 4D active TPDM
      **/
-    SharedMatrix get_active_tpdm();
-
-    /**!
-     * Sets the dense TPDM to the wavefunction TPDM_
-    **/
-    void set_tpdm();
+    SharedMatrix get_active_tpdm(const std::string& tpdm_type = "SUM");
 
     // Should be private
-    void compute_mcscf(struct stringwr **alplist, struct stringwr **betlist);
-
-    // Alpha and beta accessors
-    struct stringwr** alplist() { return alplist_; }
-    struct stringwr** betlist() { return alplist_; }
+    void compute_mcscf();
+    void diag_h();
 
 private:
 
@@ -138,6 +134,11 @@ private:
     void print_parameters();
     void set_ras_parameters();
     void print_ras_parameters();
+
+    // General setup
+    void title();
+    void init_ioff();
+    void form_strings();
 
 
     /// Sets the ciwavefunction object

@@ -47,6 +47,7 @@
 #include "globals.h"
 #include <iostream>
 #include "odometer.h"
+#include <libmints/mints.h>
 #include "ciwave.h"
 
 namespace psi { namespace detci {
@@ -83,7 +84,7 @@ void og_print(struct olsen_graph *Graph, std::string out);
 **    graph for every irrep * (num el in RAS I) * (num el in RAS III)
 **
 */
-void form_strings(void)
+void CIWavefunction::form_strings(void)
 {
    int i, nlists, nirreps, ncodes;
    int irrep, code, listnum;
