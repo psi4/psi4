@@ -67,9 +67,6 @@ namespace psi { namespace detci {
 
 void CIWavefunction::transform_ci_integrals()
 {
-   extern double check_energy(double *H, double *twoel_ints, int *docc,
-      int *dropped_docc, int drc_flag, double escf, double enuc, double edrc,
-      int nirreps, int *reorder, int *opi, int print_lvl, std::string out);
 
   // Grab orbitals
   SharedMatrix Cdrc = get_orbitals("DRC");
@@ -126,16 +123,19 @@ void CIWavefunction::transform_ci_integrals()
 
 
   filter(tmp_onel_ints2, CalcInfo.onel_ints, ioff, CalcInfo.nmo,
-  CalcInfo.num_drc_orbs, CalcInfo.num_drv_orbs);
+         CalcInfo.num_drc_orbs, CalcInfo.num_drv_orbs);
   free(tmp_onel_ints1);
   free(tmp_onel_ints2);
+
+  // outfile->Printf("Onel ints\n");
+  // for (int i=0; i<((CalcInfo.num_ci_orbs * (CalcInfo.num_ci_orbs + 1)) / 2); i++) outfile->Printf("%d %lf\n", i, CalcInfo.onel_ints[i]);
 
   // Read drc energy
   CalcInfo.edrc = ints->get_frozen_core_energy();
 
   // Read two electron integrals
   iwl_rdtwo(PSIF_MO_TEI, CalcInfo.twoel_ints, ioff, CalcInfo.num_ci_orbs,
-            0, 0, (Parameters.print_lvl>4), "outfile");
+           0, 0, (Parameters.print_lvl>4), "outfile");
 
   /* Determine maximum K integral for use in averaging the diagonal */
   /* Hamiltonian matrix elements over spin-coupling set */
@@ -155,10 +155,6 @@ void CIWavefunction::transform_ci_integrals()
          outfile->Printf("maxK[%d] = %lf\n",i, CalcInfo.maxK[i]);
        }
    }
-   CalcInfo.eref = check_energy(CalcInfo.onel_ints, CalcInfo.twoel_ints,
-      CalcInfo.docc, CalcInfo.dropped_docc, 1, CalcInfo.escf,
-      CalcInfo.enuc, CalcInfo.edrc, CalcInfo.nirreps, CalcInfo.reorder,
-      CalcInfo.orbs_per_irr, Parameters.print_lvl, "outfile");
 
   tf_onel_ints();
   form_gmat();
@@ -207,8 +203,7 @@ void CIWavefunction::transform_dfmcscf_ints(){
   if (!ints_init_) setup_dfmcscf_ints();
 
   // => AO C matrices <= //
-  // We want pitzer order C matrix with appended Cact
-
+  // We want a pitzer order C matrix with appended Cact
   SharedMatrix Cocc = get_orbitals("DOCC");
   SharedMatrix Cact = get_orbitals("ACT");
   SharedMatrix Cvir = get_orbitals("VIR");
@@ -250,6 +245,18 @@ void CIWavefunction::transform_dfmcscf_ints(){
       }
   }
 
+  // => Build an active reorder array <= //
+  int nact = nact = Cact->ncol();
+  int* myorder = new int[nact];
+  for (int h=0, target=0, pos=0; h<nirrep_; h++){
+    target += CalcInfo.dropped_docc[h];
+    for (int i=0; i<CalcInfo.ci_orbs[h]; i++){
+      //outfile->Printf("%d \n", CalcInfo.reorder[target] - CalcInfo.num_drc_orbs);
+      myorder[pos++] = CalcInfo.reorder[target++] - CalcInfo.num_drc_orbs;
+    }
+    target += CalcInfo.dropped_uocc[h];
+  }
+
   // => Compute DF ints <= //
   dferi_->clear();
   dferi_->set_C(AO_C);
@@ -284,7 +291,10 @@ void CIWavefunction::transform_dfmcscf_ints(){
   J[0]->add(H_);
   SharedMatrix onel_ints = Matrix::triplet(Cact, J[0], Cact, true, false, false);
 
-  // Set onel ints
+  // Set 1D onel ints
+  int nmotri = (CalcInfo.num_ci_orbs * (CalcInfo.num_ci_orbs + 1)) / 2 ;
+  double* tmp_onel_ints = (double *) init_array(nmotri);
+
   for (int h=0, target=0, offset=0; h<nirrep_; h++){
     int nactpih = Cact->colspi()[h];
     if (!nactpih) continue;
@@ -293,13 +303,13 @@ void CIWavefunction::transform_dfmcscf_ints(){
     for (int i=0; i<nactpih; i++){
       target += offset;
       for (int j=0; j<=i; j++){
-        CalcInfo.onel_ints[target++] = onep[i][j];
+        CalcInfo.onel_ints[INDEX(myorder[i+offset], myorder[j+offset])] = onep[i][j];
       }
     }
     offset += nactpih;
   }
 
-  // Compute Dropped core energy
+  // => Compute dropped core energy <= //
   J[0]->add(H_);
 
   SharedMatrix D = Matrix::doublet(Cdrc, Cdrc, false, true);
@@ -307,10 +317,8 @@ void CIWavefunction::transform_dfmcscf_ints(){
   Cdrc.reset();
   D.reset();
 
-
-  // Build two electron integrals
+  // => Compute twoel ints <= //
   int nQ = dferi_->size_Q();
-  int nact = nact = Cact->ncol();
 
   std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
   boost::shared_ptr<Tensor> aaQT = dfints["aaQ"];
@@ -323,18 +331,8 @@ void CIWavefunction::transform_dfmcscf_ints(){
   SharedMatrix actMO = Matrix::doublet(aaQ, aaQ, false, true);
   aaQ.reset();
 
-  // Set twoel ints, ohboy
-  int* myorder = new int[nact];
-  for (int h=0, target=0, pos=0; h<nirrep_; h++){
-    target += CalcInfo.dropped_docc[h];
-    for (int i=0; i<CalcInfo.ci_orbs[h]; i++){
-      myorder[pos++] = CalcInfo.reorder[target++] - CalcInfo.num_drc_orbs;
-    }
-    target += CalcInfo.dropped_uocc[h];
-  }
-
   double** actMOp = actMO->pointer();
-  int irel, jrel, krel, lrel, lmax;
+  int irel, jrel, krel, lrel, lmax, ij, kl, ijrel, klrel;
   int target = 0;
   int ndrc = CalcInfo.num_drc_orbs;
   for (int i=0; i<nact; i++){
@@ -342,16 +340,16 @@ void CIWavefunction::transform_dfmcscf_ints(){
 
     for (int j=0; j<=i; j++){
       jrel = myorder[j];
+      ijrel = INDEX(irel, jrel);
 
       for (int k=0; k<=i; k++){
         krel = myorder[k];
         lmax = (i==k) ? j+1 : k+1;
 
         for (int l=0; l<lmax; l++){
-        lrel = myorder[l];
-          // outfile->Printf("%d %d %d %d | %d %lf\n", i, j, k, l, target, val);
-          CalcInfo.twoel_ints[target++] = actMOp[irel * nact + jrel][krel * nact + lrel];
-
+          lrel = myorder[l];
+          klrel = INDEX(krel, lrel);
+          CalcInfo.twoel_ints[INDEX(ijrel, klrel)] = actMOp[i * nact + j][k *nact + l];
   }}}}
   actMO.reset();
   delete[] myorder;
@@ -376,7 +374,6 @@ void CIWavefunction::transform_dfmcscf_ints(){
   }
   tf_onel_ints();
   form_gmat();
-
 }
 void CIWavefunction::setup_mcscf_ints(){
   // We need to do a few weird things to make IntegralTransform work for us

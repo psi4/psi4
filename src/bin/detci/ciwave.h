@@ -28,9 +28,8 @@ namespace boost {
 template<class T> class shared_ptr;
 }
 
-namespace psi {
-
 // From psi4
+namespace psi {
 class Wavefunction;
 class Options;
 class JK;
@@ -38,12 +37,12 @@ class DFERI;
 class IntegralTransform;
 class MOSpace;
 typedef boost::shared_ptr<Matrix> SharedMatrix;
-
 }
 
-namespace psi { namespace detci {
-
 // From the detci module
+namespace psi { namespace detci {
+struct calcinfo;
+struct params;
 struct stringwr;
 struct ci_blks;
 struct olsen_graph;
@@ -51,6 +50,9 @@ struct graph_set;
 struct H_zero_block;
 struct detci_timings;
 struct mcscf_params;
+}}
+
+namespace psi { namespace detci {
 
 // Need to nuke this eventually
 extern struct stringwr **alplist;
@@ -171,7 +173,8 @@ private:
     struct stringwr **alplist_;
     struct stringwr **betlist_;
     struct mcscf_params *MCSCF_Parameters;
-    //struct params Parameters;
+    struct calcinfo *CalcInfo_;
+    struct params *Parameters_;
 
     //struct ci_blks CIblks_;
     //struct olsen_graph *AlphaG_;

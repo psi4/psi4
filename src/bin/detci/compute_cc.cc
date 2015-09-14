@@ -45,7 +45,6 @@
 #include <libqt/slaterdset.h>
 #include <libpsio/psio.h>
 #include "structs.h"
-#include "globals.h"
 
 namespace psi { namespace detci {
 
