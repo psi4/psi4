@@ -29,6 +29,7 @@
 #include "psi4/libqt/qt.h"
 
 #include "psi4/libsapt_solver/sapt0.h"
+#include "psi4/libsapt_solver/usapt0.h"
 #include "psi4/libsapt_solver/sapt2.h"
 #include "psi4/libsapt_solver/sapt2p.h"
 #include "psi4/libsapt_solver/sapt2p3.h"
@@ -47,8 +48,13 @@ PsiReturnType sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA,
   std::shared_ptr<PSIO> psio(new PSIO);
 
   if (options.get_str("SAPT_LEVEL") == "SAPT0") {
-    SAPT0 sapt(Dimer, MonomerA, MonomerB, options, psio);
-    sapt.compute_energy();
+    if (options.get_str("REFERENCE") == "RHF") {
+        SAPT0 sapt(Dimer, MonomerA, MonomerB, options, psio);
+        sapt.compute_energy();
+    } else {
+        USAPT0 sapt(Dimer, MonomerA, MonomerB, options, psio);
+        sapt.compute_energy();
+    }
   } else if (options.get_str("SAPT_LEVEL") == "SAPT2") {
     SAPT2 sapt(Dimer, MonomerA, MonomerB, options, psio);
     sapt.compute_energy();

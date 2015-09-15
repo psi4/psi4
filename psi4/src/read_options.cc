@@ -842,7 +842,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     additional thread. -*/
     options.add_bool("AIO_DF_INTS",false);
 
-    /*- Maxmum number of CPHF iterations -*/
+    /*- Maximum number of CPHF iterations -*/
     options.add_int("MAXITER",50);
     /*- Do CCD dispersion correction in SAPT2+, SAPT2+(3) or SAPT2+3? !expert -*/
     options.add_bool("DO_CCD_DISP",false);
@@ -912,6 +912,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (recommended for large calculations) some intermediate quantities are also
     printed. -*/
     options.add_int("PRINT", 1);
+    /*- \% of emmory for DF-MP2 three-index buffers -*/
+    options.add_double("SAPT_MEM_FACTOR", 0.9);
+    /*- The dimer wavefunction is stored in DIM and passed on to the
+    newest version of the SAPT code. -*/
+    options.add("DIM", new PythonDataType());
+    /*- The monomer A wavefunction is stored in MONA and passed on to the
+    newest version of the SAPT code. -*/
+    options.add("MONA", new PythonDataType());
+    /*- The monomer B wavefunction is stored in MONB and passed on to the
+    newest version of the SAPT code. -*/
+    options.add("MONB", new PythonDataType());
   }
 
   if (name == "FISAPT"|| options.read_globals()) {

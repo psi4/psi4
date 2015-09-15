@@ -2871,8 +2871,10 @@ def run_sapt(name, **kwargs):
         sapt_dimer.fix_com(True)
         sapt_dimer.update_geometry()
 
-    if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
-        raise ValidationError('SAPT requires requires \"reference rhf\".')
+    scf_ref = psi4.get_option('SCF', 'REFERENCE')
+    if scf_ref != 'RHF':
+        if name not in 'sapt0':
+            raise ValidationError('Only SAPT0 supports a reference different from \"reference rhf\".')
 
     nfrag = sapt_dimer.nfragments()
     if nfrag != 2:
@@ -2905,41 +2907,42 @@ def run_sapt(name, **kwargs):
     p4util.banner('Dimer HF')
     psi4.print_out('\n')
 
-    if sapt_basis == 'dimer':
+    if sapt_basis == 'dimer' and ri == 'DF':
         psi4.set_global_option('DF_INTS_IO', 'SAVE')
-    dimer_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
+    dimer_wfn = scf_helper(scf_ref, molecule=sapt_dimer, **kwargs)
     if do_delta_mp2:
         select_mp2(name, ref_wfn=dimer_wfn, **kwargs)
         mp2_corl_interaction_e = psi4.get_variable('MP2 CORRELATION ENERGY')
-    if sapt_basis == 'dimer':
+    if sapt_basis == 'dimer' and ri == 'DF':
         psi4.set_global_option('DF_INTS_IO', 'LOAD')
 
-    if sapt_basis == 'dimer':
+    if sapt_basis == 'dimer' and ri == 'DF':
         psi4.IO.change_file_namespace(97, 'dimer', 'monomerA')
     psi4.IO.set_default_namespace('monomerA')
     psi4.print_out('\n')
     p4util.banner('Monomer A HF')
     psi4.print_out('\n')
-    monomerA_wfn = scf_helper('RHF', molecule=monomerA, **kwargs)
+    monomerA_wfn = scf_helper(scf_ref, molecule=monomerA, **kwargs)
     if do_delta_mp2:
         select_mp2(name, ref_wfn=monomerA_wfn, **kwargs)
         mp2_corl_interaction_e -= psi4.get_variable('MP2 CORRELATION ENERGY')
 
-    if sapt_basis == 'dimer':
+    if sapt_basis == 'dimer' and ri == 'DF':
         psi4.IO.change_file_namespace(97, 'monomerA', 'monomerB')
     psi4.IO.set_default_namespace('monomerB')
     psi4.print_out('\n')
     p4util.banner('Monomer B HF')
     psi4.print_out('\n')
-    monomerB_wfn = scf_helper('RHF', molecule=monomerB, **kwargs)
+    monomerB_wfn = scf_helper(scf_ref, molecule=monomerB, **kwargs)
     if do_delta_mp2:
         select_mp2(name, ref_wfn=monomerB_wfn, **kwargs)
         mp2_corl_interaction_e -= psi4.get_variable('MP2 CORRELATION ENERGY')
         psi4.set_variable('SAPT MP2 CORRELATION ENERGY', mp2_corl_interaction_e)
     psi4.set_global_option('DF_INTS_IO', df_ints_io)
 
-    psi4.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
-    psi4.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
+    if scf_ref == 'RHF':
+        psi4.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+        psi4.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
 
     psi4.IO.set_default_namespace('dimer')
     psi4.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
