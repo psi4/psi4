@@ -1,0 +1,42 @@
+A orbital diagram of the nomenclature used for CI and MCSCF calculations.
+
+
+Diagramatically:
+
+       CI       |      RAS      |     CAS
+-----------------------------------------------
+                | frozen_uocc   | frozen_uocc
+dropped_uocc    | rstr_uocc     | rstr_uocc
+-----------------------------------------------
+                | RAS IV        |
+                | RAS III       |
+active          |               | active
+                | RAS II        |
+                | RAS I         |
+-----------------------------------------------
+dropped_docc    | rstr_docc     | rstr_docc
+                | frozen_docc   | frozen_docc
+
+
+Notations:
+
+uocc           - Unoccupied orbitals.
+active         - Variable occupation numbers.
+socc           - Singly occupied orbitals.
+docc           - Doubly occupied orbitals.
+
+
+frozen_uocc    - Absolutely frozen virtual orbital.
+rstr_uocc      - Can have rotations, no excitations into.
+dropped_uocc   - rstr_uocc + frozen_uocc
+----- end CI active
+RAS IV         - uocc, limited number of excitations into
+RAS III        - uocc, limited number of excitations into
+RAS II         - docc/socc/uocc, equivalent to active in CAS
+RAS I          - docc/socc/uocc, limited excitations out of
+----- start CI active
+dropped_docc   - rstr_docc + frozen_docc
+rstr_docc      - Can have rotations, no excitations from.
+frozen_docc    - Absolutely frozen core orbital.
+
+Orbitals are sorted by space, irrep, eigenvalue.

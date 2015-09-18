@@ -58,6 +58,7 @@
 #include <libpsio/psio.hpp>
 #include <libqt/slaterdset.h>
 #include <masses.h>
+#include <libparallel/ParallelPrinter.h>
 #include "structs.h"
 #include "globals.h"
 #include "ci_tol.h"
@@ -69,6 +70,8 @@
 #include "civect.h"
 #include "ciwave.h"
 #include "MCSCF.h"
+#include<libtrans/integraltransform.h>
+#include<libtrans/mospace.h>
 
 namespace psi {
   extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
@@ -99,7 +102,7 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
    std::string OutFileRMR);
 extern void print_config(int nbf, int num_alp_el, int num_bet_el,
    struct stringwr *stralp, struct stringwr *strbet,
-   int num_fzc_orbs, char *outstring);
+   int num_drc_orbs, char *outstring);
 extern void init_stringwr_temps(int nel, int num_ci_orbs, int nsym);
 extern void free_stringwr_temps(int nsym);
 extern void str_abs2rel(int absidx, int *relidx, int *listnum,
@@ -138,11 +141,11 @@ extern void form_strings(void);
 extern void mitrush_iter(CIvect &Hd,
    struct stringwr **alplist, struct stringwr **betlist,
    int nroots, double *evals, double conv_rms, double conv_e, double enuc,
-   double efzc, int maxiter, int maxnvect, std::string OutFileRMR,
+   double edrc, int maxiter, int maxnvect, std::string OutFileRMR,
    int print_lvl);
 extern void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    **betlist, double *evals, double conv_e,
-   double conv_rms, double enuc, double efzc,
+   double conv_rms, double enuc, double edrc,
    int nroots, int maxiter, int maxnvect, std::string OutFileRMR, int print_lvl);
 extern void mpn_generator(CIvect &Hd, struct stringwr **alplist,
    struct stringwr **betlist);
@@ -159,7 +162,7 @@ extern void compute_cc(void);
 extern void calc_mrpt(void);
 
 // MCSCF
-extern void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist);
+extern void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **alplist, struct stringwr **betlist);
 extern void set_mcscf_parameters(Options &options);
 extern void mcscf_print_parameters(void);
 extern void detci_iteration_clean();
@@ -171,60 +174,6 @@ PsiReturnType detci(Options &options);
 
 namespace psi { namespace detci {
 
-CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
-    : Wavefunction(options, _default_psio_lib_)
-{
-    set_reference_wavefunction(reference_wavefunction);
-    init();
-}
-
-CIWavefunction::~CIWavefunction()
-{
-
-}
-
-void CIWavefunction::init()
-{
-    // TODO-CDS:
-    // The CC codes destroy the checkpoint object created by Wavefunction.
-    // We'd like to be able to do the same here.  Need to convert everything
-    // such that we don't explicitly need checkpoint
-    // Destroy it. Otherwise we will see a "file already open" error.
-    chkpt_.reset();
-
-    // We're copying this stuff over like it's done in ccenergy, but
-    // these Wavefunction member data are not actually used by the code
-    // yet (Sept 2011 CDS).  Copying these only in case they're needed
-    // by someone else who uses the CIWavefunction and expects them to
-    // be available.
-
-    // CDS-TODO: Note, some of these data should be updated to reflect what
-    // the CI wavefunction is doing, not what the reference wavefunction
-    // is doing, in case these are actually used elsewhere.
-    nso_        = reference_wavefunction_->nso();
-    nirrep_     = reference_wavefunction_->nirrep();
-    nmo_        = reference_wavefunction_->nmo();
-    for(int h = 0; h < nirrep_; ++h){
-        soccpi_[h] = reference_wavefunction_->soccpi()[h];
-        doccpi_[h] = reference_wavefunction_->doccpi()[h];
-        frzcpi_[h] = reference_wavefunction_->frzcpi()[h];
-        frzvpi_[h] = reference_wavefunction_->frzvpi()[h];
-        nmopi_[h]  = reference_wavefunction_->nmopi()[h];
-        nsopi_[h]  = reference_wavefunction_->nsopi()[h];
-    }
-}
-
-double CIWavefunction::compute_energy()
-{
-    energy_ = 0.0;
-    PsiReturnType ci_return;
-    if ((ci_return = psi::detci::detci(options_)) == Success) {
-        // Get the total energy
-        energy_ = Process::environment.globals["CURRENT ENERGY"];
-    }
-
-    return energy_;
-}
 
 PsiReturnType detci(Options &options)
 {
@@ -233,7 +182,7 @@ PsiReturnType detci(Options &options)
    int fci_norb_check = 0;
    int i = 0;
 
-   boost::shared_ptr<PSIO> psio = PSIO::shared_object();
+   //boost::shared_ptr<PSIO> psio = PSIO::shared_object();
 
    init_io();                   /* parse cmd line and open input and output */
    get_parameters(options);     /* get running params (convergence, etc)    */
@@ -242,18 +191,20 @@ PsiReturnType detci(Options &options)
    get_mo_info(options);        /* read DOCC, SOCC, frozen, nmo, etc        */
    set_ras_parms();             /* set fermi levels and the like            */
 
+   boost::shared_ptr<Wavefunction> refwfn = Process::environment.wavefunction();
+   boost::shared_ptr<CIWavefunction> ciwfn(new CIWavefunction(refwfn, options));
+
    if (Parameters.print_lvl) {
-     print_parameters();       /* print running parameters                 */
-     print_ras_parms();
+   print_parameters();       /* print running parameters                 */
+   print_ras_parms();
    }
-   
 
    form_strings();              /* form the alpha/beta strings              */
    if (Parameters.nthreads > 1)
      tpool_init(&thread_pool, Parameters.nthreads, CalcInfo.num_alp_str, 0);
                                 /* initialize thread pool */
    init_time_new(detci_time);             /* initialize timing routines */
-   
+
 
    if (Parameters.istop) {      /* Print size of space, other stuff, only   */
      close_io();
@@ -272,7 +223,7 @@ PsiReturnType detci(Options &options)
    if(Parameters.zaptn)         /* Shift SCF eigenvalues for ZAPTn          */
       zapt_shift(CalcInfo.twoel_ints, CalcInfo.nirreps, CalcInfo.nmo,
          CalcInfo.docc, CalcInfo.socc, CalcInfo.orbs_per_irr,
-         CalcInfo.frozen_docc, CalcInfo.reorder);
+         CalcInfo.dropped_docc, CalcInfo.reorder);
 
    if (Parameters.bendazzoli) /* form the Bendazzoli OV arrays            */
       form_ov(alplist);
@@ -281,25 +232,36 @@ PsiReturnType detci(Options &options)
 
                                 /* form the RAS g matrix (eq 28-29)         */
    form_gmat((Parameters.print_lvl>3), "outfile");
-   
+
 
    if (Parameters.mpn)
      mpn(alplist, betlist);
    else if (Parameters.cc)
      compute_cc();
    else if (Parameters.mcscf){
-     compute_mcscf(options, alplist, betlist);
+     compute_mcscf(ciwfn, alplist, betlist);
      }
    else
      diag_h(alplist, betlist);
 
-   if (Parameters.opdm || Parameters.transdens) form_opdm();
+   // Finished CI, setting wavefunction parameters
+   if(!Parameters.zaptn & Parameters.opdm){
+     form_opdm();
+     ciwfn->set_opdm();
+   }
+   else{
+     ciwfn->set_opdm(true);
+   }
+
    if (Parameters.tpdm) form_tpdm();
    if (Parameters.print_lvl) print_time_new(detci_time);
    if (Parameters.nthreads > 1) tpool_destroy(thread_pool, 1);
    if (Parameters.print_lvl > 0) quote();
+
+
    close_io();
    cleanup();
+   Process::environment.set_wavefunction((static_cast<boost::shared_ptr<Wavefunction> > (ciwfn)));
    return Success;
 }
 
@@ -312,46 +274,6 @@ PsiReturnType detci(Options &options)
 //void init_io(int argc, char *argv[])
 void init_io(void)
 {
-   /*
-   int i, num_unparsed;
-   char *argv_unparsed[100];
-   */
-
-   /*
-   Parameters.write_energy = 0;
-
-   for (i=1,num_unparsed=0; i<argc; i++) {
-      if (strcmp(argv[i], "--quiet") == 0) {
-         Parameters.print_lvl = 0;
-      }
-      else if (strcmp(argv[i], "-e") == 0) {
-         Parameters.write_energy = 1;
-      }
-      else if (strcmp(argv[i], "-c") == 0) {
-         Parameters.have_special_conv = 1;
-         if (i+1 >= argc) {
-            outfile->Printf( "detci: -c flag requires an argument\n");
-            exit(1);
-         }
-         if (sscanf(argv[i+1], "%lf", &(Parameters.special_conv)) != 1) {
-            outfile->Printf( "detci: trouble reading argument to -c flag\n");
-            exit(1);
-         }
-      i++;
-      }
-      else {
-        argv_unparsed[num_unparsed++] = argv[i];
-      }
-   }
-   */
-
-   /* initialize input and output files.  We want to pass the list
-    * of arguments starting after the last one we have parsed, so
-    * we do pointer arithmetic on argv
-    */
-   /* init_in_out(argc-parsed,argv+parsed); */
-
-    // errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed,argv_unparsed,0);
 
    if (Parameters.print_lvl) tstart();
 
@@ -406,7 +328,7 @@ void close_io(void)
 */
 void cleanup(void)
 {
- 
+
 }
 
 /*
@@ -429,7 +351,7 @@ void title(void)
    outfile->Printf(
    "\nD E T C I : C. David Sherrill and Matt L. Leininger, 18 June 1999\n");
    }
-  
+
 }
 
 
@@ -448,7 +370,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 {
    BIGINT size;
    int nroots, i, j;
-   double conv_rms, conv_e, *evals, **evecs, nucrep, efzc, tval;
+   double conv_rms, conv_e, *evals, **evecs, nucrep, edrc, tval;
    int *tptr;
    double *cbuf;
    char e_label[PSIO_KEYLEN]; /* 80... */
@@ -467,7 +389,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
    size = CIblks.vectlen;
    if ((BIGINT) Parameters.nprint > size) Parameters.nprint = (int) size;
    nucrep = CalcInfo.enuc;
-   efzc = CalcInfo.efzc;
+   edrc = CalcInfo.edrc;
    tmp_ras_array = init_array(1024);
 
    H0block.size = 0;
@@ -484,7 +406,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
          CalcInfo.nirreps, AlphaG->subgr_per_irrep, 1, 0, 0,
          CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-      // shouldn't need to open I/O files for this fake CIvec, unit=0 
+      // shouldn't need to open I/O files for this fake CIvec, unit=0
 
       double **H, **rsp_evecs;
       int Iarel, Ialist, Ibrel, Iblist;
@@ -555,7 +477,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          J.set(CalcInfo.num_alp_expl,
             alplist[Ialist][Iarel].occs, CalcInfo.num_bet_expl,
             betlist[Iblist][Ibrel].occs);
-         H[jj][jj] = matrix_element(&J, &J) + CalcInfo.efzc;
+         H[jj][jj] = matrix_element(&J, &J) + CalcInfo.edrc;
          }
 
       if (Parameters.print_lvl > 4 && size < 200) {
@@ -608,14 +530,14 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
         StringSet alphastrings, betastrings;
         SlaterDetSet dets;
         SlaterDetVector vec;
-        short int *fzc_occ;
+        short int *drc_occ;
         unsigned char *newocc;
 
-        if (CalcInfo.num_fzc_orbs > 0) {
-          fzc_occ = (short int *)
-            malloc(CalcInfo.num_fzc_orbs*sizeof(short int));
-          for (int l=0; l<CalcInfo.num_fzc_orbs; l++) {
-            fzc_occ[l] = CalcInfo.order[l]; /* put it in Pitzer order */
+        if (CalcInfo.num_drc_orbs > 0) {
+          drc_occ = (short int *)
+            malloc(CalcInfo.num_drc_orbs*sizeof(short int));
+          for (int l=0; l<CalcInfo.num_drc_orbs; l++) {
+            drc_occ[l] = CalcInfo.order[l]; /* put it in Pitzer order */
           }
         }
 
@@ -624,7 +546,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
             AlphaG->num_el : BetaG->num_el)*sizeof(unsigned char));
 
         stringset_init(&alphastrings,AlphaG->num_str,AlphaG->num_el,
-                       CalcInfo.num_fzc_orbs, fzc_occ);
+                       CalcInfo.num_drc_orbs, drc_occ);
         int list_gr = 0;
         int offset = 0;
         for(int irrep=0; irrep<AlphaG->nirreps; irrep++) {
@@ -635,7 +557,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
               for (int n=0; n<AlphaG->num_el; n++) {
                 newocc[n] = (unsigned char)
                   CalcInfo.order[alplist[list_gr][l].occs[n] +
-                                CalcInfo.num_fzc_orbs];
+                                CalcInfo.num_drc_orbs];
               }
               stringset_add(&alphastrings,l+offset,newocc);
             }
@@ -644,7 +566,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
         }
 
         stringset_init(&betastrings,BetaG->num_str,BetaG->num_el,
-                       CalcInfo.num_fzc_orbs, fzc_occ);
+                       CalcInfo.num_drc_orbs, drc_occ);
         list_gr = 0;
         offset = 0;
         for(int irrep=0; irrep<BetaG->nirreps; irrep++) {
@@ -655,7 +577,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
               for (int n=0; n<BetaG->num_el; n++) {
                 newocc[n] = (unsigned char)
                   CalcInfo.order[betlist[list_gr][l].occs[n] +
-                                CalcInfo.num_fzc_orbs];
+                                CalcInfo.num_drc_orbs];
               }
               stringset_add(&betastrings,l+offset,newocc);
             }
@@ -663,8 +585,8 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
           }
         }
         free(newocc);
-        if (CalcInfo.num_fzc_orbs > 0)
-          free(fzc_occ);
+        if (CalcInfo.num_drc_orbs > 0)
+          free(drc_occ);
 
         int Iarel, Ialist, Ibrel, Iblist;
         // the slaterdetset code below will fail if size > int
@@ -728,7 +650,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
       /* get the diagonal elements of H into an array Hd */
 
       Hd.diag_mat_els(alplist, betlist, CalcInfo.onel_ints,
-         CalcInfo.twoel_ints, efzc, CalcInfo.num_alp_expl,
+         CalcInfo.twoel_ints, edrc, CalcInfo.num_alp_expl,
          CalcInfo.num_bet_expl, CalcInfo.num_ci_orbs, Parameters.hd_ave);
 
       /* get the biggest elements and put in H0block */
@@ -749,7 +671,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
             outfile->Printf("H0block size reduced by %d to %d to ensure"
              "completion of spin-coupling sets\n",
              (H0block.osize - H0block.size), H0block.size);
-            
+
             }
         }
       if (Parameters.Ms0) {
@@ -757,7 +679,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          if (H0block.osize - H0block.size) {
             outfile->Printf("H0block size reduced by %d to ensure pairing.\n",
                (H0block.osize - H0block.size));
-            
+
             }
          }
 
@@ -799,7 +721,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          J.set(CalcInfo.num_alp_expl,
             alplist[Ialist][Iarel].occs, CalcInfo.num_bet_expl,
             betlist[Iblist][Ibrel].occs);
-         H[jj][jj] = matrix_element(&J, &J) + CalcInfo.efzc;
+         H[jj][jj] = matrix_element(&J, &J) + CalcInfo.edrc;
          }
 
       /* obtain a set of L orthonormal trial vectors, L > nroots */
@@ -866,7 +788,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          throw PsiException("(diag_h sem_test): Ooops! L < num_roots!",__FILE__,__LINE__);
          }
       sem_test(H, size, Parameters.num_roots, L, evecs, evals, b, conv_e,
-         conv_rms, Parameters.maxiter, (nucrep+CalcInfo.efzc), &i,
+         conv_rms, Parameters.maxiter, (nucrep+CalcInfo.edrc), &i,
          Parameters.maxnvect, "outfile");
 
       outfile->Printf( "SEM used %d expansion vectors\n", i);
@@ -930,10 +852,10 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
       if (!Parameters.restart || (Parameters.restart && Parameters.hd_otf)) {
          if (Parameters.print_lvl > 1) {
             outfile->Printf( "\nForming diagonal elements of H\n");
-            
+
            }
          Hd.diag_mat_els(alplist, betlist, CalcInfo.onel_ints,
-            CalcInfo.twoel_ints, efzc, CalcInfo.num_alp_expl,
+            CalcInfo.twoel_ints, edrc, CalcInfo.num_alp_expl,
             CalcInfo.num_bet_expl, CalcInfo.num_ci_orbs, Parameters.hd_ave);
          }
       else {
@@ -945,7 +867,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 
          if (Parameters.print_lvl > 1) {
             outfile->Printf( "\nForming H0 block\n");
-            
+
            }
 
          if (!Parameters.hd_otf)
@@ -981,7 +903,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
              (H0block.ocoupling_size - H0block.coupling_size));
             H0block.ocoupling_size = H0block.coupling_size;
            }
-        
+
         }
       if (Parameters.Ms0) {
          /* if (H0block.guess_size < H0block.size) */
@@ -1004,7 +926,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
                "ensure pairing and spin-coupling.\n",
                (H0block.ocoupling_size - H0block.coupling_size));
             }
-         
+
          }
 
       Parameters.neg_only = 0; /* MLL 7-2-97 */
@@ -1035,13 +957,13 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
             outfile->Printf( "(Block Davidson Method)\n");
             outfile->Printf( "Energy convergence = %3g\n", conv_e);
             outfile->Printf( "RMS CI vector convergence = %3g\n\n", conv_rms);
-            
+
             }
 
          evals = init_array(nroots);
 
          sem_iter(Hd, alplist, betlist, evals, conv_e, conv_rms,
-            nucrep, efzc, nroots, Parameters.maxiter,
+            nucrep, edrc, nroots, Parameters.maxiter,
             Parameters.maxnvect, "outfile", Parameters.print_lvl);
          }
 
@@ -1057,25 +979,25 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
                 "\nFind the roots with Olsen's single vector algorithm\n");
             outfile->Printf( "Energy convergence = %3g\n", conv_e);
             outfile->Printf( "RMS CI vector convergence = %3g\n", conv_rms);
-            
+
             }
 
          evals = init_array(nroots);
 
          mitrush_iter(Hd, alplist, betlist, nroots, evals, conv_rms, conv_e,
-            nucrep, efzc, Parameters.maxiter, Parameters.maxnvect, "outfile",
+            nucrep, edrc, Parameters.maxiter, Parameters.maxnvect, "outfile",
             Parameters.print_lvl);
 
          H0block_free();
          }
 
-      if (Parameters.write_energy) write_energy(nroots, evals, nucrep+efzc);
+      if (Parameters.write_energy) write_energy(nroots, evals, nucrep+edrc);
 
       } /* end the Davidson-Liu/Mitrushenkov-Olsen-Davidson section */
 
    /* write the CI energy to PSIF_CHKPT: later fix this to loop over roots */
    chkpt_init(PSIO_OPEN_OLD);
-   tval = evals[Parameters.root]+efzc+nucrep;
+   tval = evals[Parameters.root]+edrc+nucrep;
    chkpt_wt_etot(tval);
 
    Process::environment.globals["CURRENT ENERGY"] = tval;
@@ -1117,7 +1039,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 
    for (i=0; i<nroots; i++) {
      sprintf(e_label,"Root %2d energy",i);
-     tval = evals[i]+efzc+nucrep;
+     tval = evals[i]+edrc+nucrep;
      chkpt_wt_e_labeled(e_label, tval);
 
      /*- Process::environment.globals["CI ROOT n TOTAL ENERGY"] -*/
@@ -1136,7 +1058,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
      tval = 0.0;
      for (i=0; i<Parameters.average_num; i++)
        tval += Parameters.average_weights[i] *
-               (efzc+nucrep+evals[Parameters.average_states[i]]);
+               (edrc+nucrep+evals[Parameters.average_states[i]]);
      chkpt_wt_e_labeled("State averaged energy",tval);
      Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"] = tval;
      // eref seems wrong for open shells so replace it with escf below
@@ -1180,7 +1102,7 @@ void H0block_fill(struct stringwr **alplist, struct stringwr **betlist)
 
          /* pointers in next line avoids copying structures I and J */
          H0block.H0b[i][j] = matrix_element(&I, &J);
-         if (i==j) H0block.H0b[i][i] += CalcInfo.efzc;
+         if (i==j) H0block.H0b[i][i] += CalcInfo.edrc;
          /* outfile->Printf(" i = %d   j = %d\n",i,j); */
          }
 
@@ -1196,7 +1118,7 @@ void H0block_fill(struct stringwr **alplist, struct stringwr **betlist)
    */
    evals = init_array(H0block.guess_size);
    evecs = init_matrix(H0block.guess_size, H0block.guess_size);
-   
+
    if (Parameters.precon == PRECON_GEN_DAVIDSON)
      size = H0block.size;
    else
@@ -1211,7 +1133,7 @@ void H0block_fill(struct stringwr **alplist, struct stringwr **betlist)
              H0block.coupling_size);
      outfile->Printf("Diagonalizing H0block.H0b size %d in h0block_fill in"
                      " detci.cc ... ", size);
-     
+
    }
 
    sq_rsp(size, size, H0block.H0b, H0block.H0b_eigvals, 1,
@@ -1220,7 +1142,7 @@ void H0block_fill(struct stringwr **alplist, struct stringwr **betlist)
    if (Parameters.print_lvl) {
       outfile->Printf( "\n*** H0 Block Eigenvalue = %12.8lf\n",
              H0block.H0b_eigvals[0] + CalcInfo.enuc);
-      
+
       }
 
    if (Parameters.print_lvl > 5 && size < 1000) {
@@ -1239,33 +1161,7 @@ void form_opdm(void)
   int i, j, natom;
   double *zvals, **geom;
 
-  Process::environment.molecule()->print();
-
-  //if (Parameters.dipmom) {
-  //  chkpt_init(PSIO_OPEN_OLD);
-  //  natom = chkpt_rd_natom();
-  //  zvals = chkpt_rd_zvals();
-  //  geom = chkpt_rd_geom();
-  //  chkpt_close();
-
-  //  outfile->Printf( "   Cartesian Coordinates of Nuclear Centers (a.u.)\n\n");
-  //  outfile->Printf(
-  //     "   Center           X                   Y                    Z\n");
-  //  outfile->Printf(
-  //     "   ------   -----------------   -----------------   -----------------\n");
-
-  //  for(i=0;i<natom;i++){
-  //    outfile->Printf("   %4s ",atomic_labels[(int) zvals[i]]);
-  //    for(j=0;j<3;j++)
-  //      outfile->Printf("   %17.12lf",geom[i][j]);
-  //    outfile->Printf("\n");
-  //  }
-  //  outfile->Printf("\n");
-  //  
-
-  //  free(zvals);
-  //  free_block(geom);
-  //}
+  // Process::environment.molecule()->print();
 
   /* don't need Parameters.root since it writes all opdm's */
   if (Parameters.transdens) {
@@ -1274,7 +1170,7 @@ void form_opdm(void)
       Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
       Parameters.num_roots, 0,
       Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
-      Parameters.opdm_file, Parameters.tdm_write, Parameters.tdm_print);
+      Parameters.opdm_file, 1, Parameters.tdm_print);
   }
   if (Parameters.opdm) {
     opdm(alplist, betlist, 0, Parameters.dipmom,
@@ -1282,7 +1178,7 @@ void form_opdm(void)
       Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
       Parameters.num_roots, 0,
       Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
-      Parameters.opdm_file, Parameters.opdm_write, Parameters.opdm_print);
+      Parameters.opdm_file, 1, Parameters.opdm_print);
   }
 
 }
@@ -1304,7 +1200,7 @@ void quote(void)
    outfile->Printf("\t\t\t - Starship Troopers\n\n");
    outfile->Printf("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
    outfile->Printf("\t\t\t - Edward Valeev\n\n");
-   
+
 }
 
 void H0block_coupling_calc(double E, struct stringwr **alplist, struct
@@ -1467,7 +1363,7 @@ void mpn(struct stringwr **alplist, struct stringwr **betlist)
 {
   int i, j, irrep, cnt;
   struct stringwr *stralp, *strbet;
-  int **fzc_orbs;
+  int **drc_orbs;
   double tval;
 
   H0block_init(CIblks.vectlen);
@@ -1485,41 +1381,41 @@ void mpn(struct stringwr **alplist, struct stringwr **betlist)
   stralp = alplist[CalcInfo.ref_alp_list] + CalcInfo.ref_alp_rel;
   strbet = betlist[CalcInfo.ref_bet_list] + CalcInfo.ref_bet_rel;
 
-  fzc_orbs = init_int_matrix(CalcInfo.nirreps, CalcInfo.num_fzc_orbs);
+  drc_orbs = init_int_matrix(CalcInfo.nirreps, CalcInfo.num_drc_orbs);
   cnt = 0;
   for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
-     for (i=0; i<CalcInfo.frozen_docc[irrep]; i++)
-        fzc_orbs[irrep][i] = cnt++;
+     for (i=0; i<CalcInfo.dropped_docc[irrep]; i++)
+        drc_orbs[irrep][i] = cnt++;
 
   /* Loop over alp occs */
-  //CalcInfo.e0 = CalcInfo.efzc;
+  //CalcInfo.e0 = CalcInfo.edrc;
   CalcInfo.e0 = 0.0;
-  CalcInfo.e0_fzc = 0.0;
-  for (i=0; i<CalcInfo.num_fzc_orbs; i++) {
+  CalcInfo.e0_drc = 0.0;
+  for (i=0; i<CalcInfo.num_drc_orbs; i++) {
      outfile->Printf(" orb_energy[%d] = %lf\n", i, CalcInfo.scfeigval[i]);
      tval = 2.0 * CalcInfo.scfeigval[i];
      CalcInfo.e0 += tval;
-     CalcInfo.e0_fzc += tval;
+     CalcInfo.e0_drc += tval;
      }
 
   if(Parameters.zaptn) {
     for (i=0; i<CalcInfo.num_alp_expl; i++) {
-       j = (stralp->occs)[i] + CalcInfo.num_fzc_orbs;
+       j = (stralp->occs)[i] + CalcInfo.num_drc_orbs;
        CalcInfo.e0 += CalcInfo.scfeigvala[j];
        }
 
     for (i=0; i<CalcInfo.num_bet_expl; i++) {
-       j = (strbet->occs)[i] + CalcInfo.num_fzc_orbs;
+       j = (strbet->occs)[i] + CalcInfo.num_drc_orbs;
        CalcInfo.e0 += CalcInfo.scfeigvalb[j];
        }
     } else {
     for (i=0; i<CalcInfo.num_alp_expl; i++) {
-       j = (stralp->occs)[i] + CalcInfo.num_fzc_orbs;
+       j = (stralp->occs)[i] + CalcInfo.num_drc_orbs;
        CalcInfo.e0 += CalcInfo.scfeigval[j];
        }
 
     for (i=0; i<CalcInfo.num_bet_expl; i++) {
-       j = (strbet->occs)[i] + CalcInfo.num_fzc_orbs;
+       j = (strbet->occs)[i] + CalcInfo.num_drc_orbs;
        CalcInfo.e0 += CalcInfo.scfeigval[j];
        }
     }
@@ -1527,7 +1423,7 @@ void mpn(struct stringwr **alplist, struct stringwr **betlist)
    /* prepare the H0 block */
 
    Hd.diag_mat_els(alplist, betlist, CalcInfo.onel_ints,
-          CalcInfo.twoel_ints, CalcInfo.e0_fzc, CalcInfo.num_alp_expl,
+          CalcInfo.twoel_ints, CalcInfo.e0_drc, CalcInfo.num_alp_expl,
           CalcInfo.num_bet_expl, CalcInfo.num_ci_orbs, Parameters.hd_ave);
 
    H0block_setup(CIblks.num_blocks, CIblks.Ia_code, CIblks.Ib_code);
@@ -1573,23 +1469,21 @@ void detci_iteration_clean()
 **
 ** Returns: none
 */
-void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr **betlist)
+void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **alplist, struct stringwr **betlist)
 {
 
 
   // Output file for MCSCF iters
   OutFile IterSummaryOut("file14.dat", TRUNCATE);
 
-  set_mcscf_parameters(options);     /* get running params (convergence, etc)    */
-  MCSCF* mcscf = new MCSCF(options, IterSummaryOut);
+  set_mcscf_parameters(ciwfn->options());     /* get running params (convergence, etc)    */
+  MCSCF* mcscf = new MCSCF(ciwfn, IterSummaryOut);
 
-  if (MCSCF_Parameters.print_lvl) tstart();
-  //mcscf->mcscf_title();                     /* print program identification             */
   if (MCSCF_Parameters.print_lvl) mcscf_print_parameters();
 
   // Need a TRANSQT2 Options object to be able to call that module correctly
   // Can delete this when we replace TRANSQT2 with libtrans
-  Options transqt_options = options;
+  Options transqt_options = ciwfn->options();
   transqt_options.set_current_module("TRANSQT2");
   psi::read_options("TRANSQT2", transqt_options, false);
   transqt_options.set_str("TRANSQT2", "WFN", Parameters.wfn);
@@ -1597,15 +1491,16 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
 
   // Parameters
   int conv;
+  if (MCSCF_Parameters.print_lvl) tstart();
 
   // Iterate
   for (int i=0; i<MCSCF_Parameters.max_iter; i++){
     outfile->Printf("\nStarting MCSCF iteration %d\n\n", i+1);
-   
+
     diag_h(alplist, betlist);
 
     if (Parameters.average_num > 1) { // state average
-      MCSCF_CalcInfo.energy = 
+      MCSCF_CalcInfo.energy =
         Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"];
     }
     else if (Parameters.root != 0) { // follow some specific root != lowest
@@ -1617,10 +1512,8 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
       MCSCF_CalcInfo.energy = Process::environment.globals["CI TOTAL ENERGY"];
     }
 
-    outfile->Printf("Hi I just got %12.7lf total energy\n", 
-      MCSCF_CalcInfo.energy);
-
     form_opdm();
+    ciwfn->set_opdm();
     form_tpdm();
     close_io();
     detci_iteration_clean();
@@ -1643,24 +1536,25 @@ void compute_mcscf(Options &options, struct stringwr **alplist, struct stringwr 
     MCSCF_CalcInfo.energy_old = MCSCF_CalcInfo.energy;
     outfile->Printf("\nFinished MCSCF iteration %d\n\n", i+1);
 
-    psi::transqt2::transqt2(transqt_options);    
+    psi::transqt2::transqt2(transqt_options);
 
-    // Need to grab the new efzc energy after transqt2 computations
+    // Need to grab the new edrc energy after transqt2 computations
     chkpt_init(PSIO_OPEN_OLD);
-    CalcInfo.efzc = chkpt_rd_efzc();
-    CalcInfo.escf = chkpt_rd_escf();
+    CalcInfo.edrc = chkpt_rd_efzc();
     chkpt_close();
 
     read_integrals();
     tf_onel_ints((Parameters.print_lvl>3), "outfile");
     form_gmat((Parameters.print_lvl>3), "outfile");
-    
+
 
   }
 
-  outfile->Printf("\nFinishing MCSCF\n");
+  outfile->Printf("\nCleaning up MCSCF.\n");
   mcscf->finalize();
 
+  ciwfn->set_lag();
+  ciwfn->set_tpdm();
 }
 
 

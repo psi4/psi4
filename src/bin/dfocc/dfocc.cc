@@ -55,6 +55,7 @@ void DFOCC::common_init()
     cc_maxdiis_=options_.get_int("CC_DIIS_MAX_VECS");
     cc_mindiis_=options_.get_int("CC_DIIS_MIN_VECS");
     exp_cutoff=options_.get_int("CUTOFF");
+    exp_int_cutoff=options_.get_int("INTEGRAL_CUTOFF");
     pcg_maxiter=options_.get_int("PCG_MAXITER");
 
     step_max=options_.get_double("MO_STEP_MAX");
@@ -98,6 +99,8 @@ void DFOCC::common_init()
     mp2_amp_type_=options_.get_str("MP2_AMP_TYPE");
     qchf_=options_.get_str("QCHF");
     cc_lambda_=options_.get_str("CC_LAMBDA");
+    Wabef_type_=options_.get_str("WABEF_TYPE");
+    triples_iabc_type_=options_.get_str("TRIPLES_IABC_TYPE");
 
     //title
     title();
@@ -181,6 +184,7 @@ void DFOCC::common_init()
     }
 
     cutoff = pow(10.0,-exp_cutoff);
+    int_cutoff_ = pow(10.0,-exp_int_cutoff);
     get_moinfo();
     pair_index();
 
@@ -202,9 +206,11 @@ if (reference_ == "RESTRICTED") {
         HovA = SharedTensor2d(new Tensor2d("OEI <O|V>", noccA, nvirA));
         HvoA = SharedTensor2d(new Tensor2d("OEI <V|O>", nvirA, noccA));
         HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
+	eigooA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <I|J>", naoccA));
+	eigvvA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <A|B>", navirA));
 
     // if we need PDMs
-    if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE"|| cc_lambda_ == "TRUE") {
+    if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE" || cc_lambda_ == "TRUE") {
         GijA = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
         GabA = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
         G1c_oo = SharedTensor2d(new Tensor2d("Correlation OPDM <O|O>", noccA, noccA));
@@ -257,6 +263,10 @@ else if (reference_ == "UNRESTRICTED") {
         HvoB = SharedTensor2d(new Tensor2d("OEI <v|o>", nvirB, noccB));
         HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
         HvvB = SharedTensor2d(new Tensor2d("OEI <v|v>", nvirB, nvirB));
+	eigooA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <I|J>", naoccA));
+	eigooB = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <i|j>", naoccB));
+	eigvvA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <A|B>", navirA));
+	eigvvB = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <a|b>", navirB));
 
     // if we need PDMs
     if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE") {
@@ -340,8 +350,8 @@ void DFOCC::title()
    outfile->Printf("\n");
    if (wfn_type_ == "DF-OMP2" && orb_opt_ == "TRUE") outfile->Printf("                      DF-OMP2 (DF-OO-MP2)   \n");
    else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       DF-MP2   \n");
-   else if (wfn_type_ == "DF-CCSD" && orb_opt_ == "FALSE") outfile->Printf("                       DF-CCSD   \n");
-   else if (wfn_type_ == "DF-CCD" && orb_opt_ == "FALSE") outfile->Printf("                       DF-CCD   \n");
+   else if (wfn_type_ == "DF-CCSD" || wfn_type_ == "DF-CCSD(T)" || wfn_type_ == "DF-CCSD(AT)") outfile->Printf("                       DF-CCSD   \n");
+   else if (wfn_type_ == "DF-CCD") outfile->Printf("                       DF-CCD   \n");
    else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE") outfile->Printf("                       DF-OMP3 (DF-OO-MP3)   \n");
    else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE") outfile->Printf("                       DF-MP3   \n");
    else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "TRUE") outfile->Printf("                       DF-OCEPA(0) (DF-OO-CEPA)   \n");
@@ -350,8 +360,13 @@ void DFOCC::title()
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") outfile->Printf("                       DF-MP2.5  \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") outfile->Printf("                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP2   \n");
+   else if (wfn_type_ == "CD-CCSD" || wfn_type_ == "CD-CCSD(T)" || wfn_type_ == "CD-CCSD(AT)") outfile->Printf("                       CD-CCSD   \n");
+   else if (wfn_type_ == "CD-CCD") outfile->Printf("                       CD-CCD   \n");
+   else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "TRUE") outfile->Printf("                      CD-OMP3 (CD-OO-MP3)   \n");
+   else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP3   \n");
+   else if (wfn_type_ == "QCHF") outfile->Printf("                      QCHF   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision January 13, 2015\n") ;
+   outfile->Printf("              Latest Revision September 9, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
@@ -371,13 +386,87 @@ void DFOCC::title_grad()
    outfile->Printf("            A General Analytic Gradients Code   \n");
    outfile->Printf("               for Density-Fitted Methods       \n");
    outfile->Printf("                   by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision October 31, 2014\n") ;
+   outfile->Printf("              Latest Revision May 11, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf("\n");
-   
+
+}//
+
+void DFOCC::lambda_title()
+{
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+   if (wfn_type_ == "DF-CCSD" || wfn_type_ == "CD-CCSD") outfile->Printf("                       DF-CCSD-Lambda   \n");
+   else if (wfn_type_ == "DF-CCSD(AT)" || wfn_type_ == "CD-CCSD(AT)") outfile->Printf("                       DF-CCSD-Lambda   \n");
+   else if (wfn_type_ == "DF-CCD" || wfn_type_ == "CD-CCD") outfile->Printf("                       DF-CCD-Lambda   \n");
+   outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
+   outfile->Printf("              Latest Revision September 4, 2015\n") ;
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+}//
+
+void DFOCC::pt_title()
+{
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+   if (wfn_type_ == "DF-CCSD(T)" || wfn_type_ == "CD-CCSD(T)") outfile->Printf("                       DF-CCSD(T)   \n");
+   else if (wfn_type_ == "DF-CCD(T)" || wfn_type_ == "CD-CCD(T)") outfile->Printf("                       DF-CCSD(T)   \n");
+   outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
+   outfile->Printf("              Latest Revision September 9, 2015\n") ;
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+}//
+
+void DFOCC::pat_title()
+{
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+   if (wfn_type_ == "DF-CCSD(AT)" || wfn_type_ == "CD-CCSD(AT)") outfile->Printf("                       DF-CCSD(AT)    \n");
+   else if (wfn_type_ == "DF-CCD(AT)" || wfn_type_ == "CD-CCD(AT)") outfile->Printf("                       DF-CCD(AT)  \n");
+   outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
+   outfile->Printf("              Latest Revision September 9, 2015\n") ;
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+}//
+
+void DFOCC::pdm_title()
+{
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+   outfile->Printf("                         DFPDM   \n");
+   outfile->Printf("              Particle Density Matrix Code   \n");
+   outfile->Printf("               for Density-Fitted Methods       \n");
+   outfile->Printf("                   by Ugur Bozkaya\n") ; 
+   outfile->Printf("              Latest Revision August 17, 2015\n") ;
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
 
 }//
 
@@ -391,22 +480,34 @@ double DFOCC::compute_energy()
         else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE") mp2_manager();
         else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") cd_omp2_manager();
         else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") cd_mp2_manager();
-        else if (wfn_type_ == "DF-CCSD" && orb_opt_ == "FALSE") ccsd_manager();
-        else if (wfn_type_ == "DF-CCD" && orb_opt_ == "FALSE") ccd_manager();
-        //else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE") omp3_manager();
-        //else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE") mp3_manager();
+        else if (wfn_type_ == "DF-CCSD") ccsd_manager();
+        else if (wfn_type_ == "DF-CCSD(T)") ccsd_t_manager();
+        else if (wfn_type_ == "DF-CCSD(AT)") ccsdl_t_manager();
+        else if (wfn_type_ == "CD-CCSD") ccsd_manager_cd();
+        else if (wfn_type_ == "CD-CCSD(T)") ccsd_t_manager_cd();
+        else if (wfn_type_ == "CD-CCSD(AT)") ccsdl_t_manager_cd();
+        else if (wfn_type_ == "DF-CCD") ccd_manager();
+        else if (wfn_type_ == "CD-CCD") ccd_manager_cd();
+        else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE") omp3_manager();
+        else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE") mp3_manager();
+        else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "TRUE") omp3_manager_cd();
+        else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "FALSE") mp3_manager_cd();
         //else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "TRUE") ocepa_manager();
         //else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "FALSE") cepa_manager();
         //else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") omp2_5_manager();
         //else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") mp2_5_manager();
+        else if (wfn_type_ == "QCHF") qchf_manager();
         else {
              throw PSIEXCEPTION("Unrecognized WFN_TYPE!");
         }
 
         if (wfn_type_ == "DF-OMP2" || wfn_type_ == "CD-OMP2") Etotal = Emp2L;
         else if (wfn_type_ == "DF-CCSD" || wfn_type_ == "CD-CCSD") Etotal = Eccsd;
+        else if (wfn_type_ == "DF-CCSD(T)" || wfn_type_ == "CD-CCSD(T)") Etotal = Eccsd_t;
+        else if (wfn_type_ == "DF-CCSD(AT)" || wfn_type_ == "CD-CCSD(AT)") Etotal = Eccsd_at;
         else if (wfn_type_ == "DF-CCD" || wfn_type_ == "CD-CCD") Etotal = Eccd;
-        //else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5") Etotal = Emp3L;
+        else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") Etotal = Emp3L;
+        else if (wfn_type_ == "QCHF") Etotal = Eref;
         //else if (wfn_type_ == "DF-OCEPA") Etotal = EcepaL;
 
         return Etotal;

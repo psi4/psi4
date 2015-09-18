@@ -20,17 +20,19 @@
 #@END LICENSE
 #
 
+from __future__ import absolute_import
+from __future__ import print_function
 import re
 import struct
 from collections import defaultdict
 from decimal import Decimal
-from pdict import PreservingDict
-from periodictable import *
-from physconst import *
-from exceptions import *
-from molecule import Molecule
-from orient import OrientMols
-from options import conv_float2negexp
+from .pdict import PreservingDict
+from .periodictable import *
+from .physconst import *
+from .exceptions import *
+from .molecule import Molecule
+from .orient import OrientMols
+from .options import conv_float2negexp
 
 
 def harvest_output(outtext):

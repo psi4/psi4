@@ -3,7 +3,7 @@ set(TestsNotSetUpRight cfour optking testgrendel)
 
 # In order to get CTest to run tests in separate categories,
 # labels are used. All tests must carry the label "psi".
-# 
+#
 # The following labels are defined:
 #
 #  longtests   = The (as of right now) 4 really long tests
@@ -106,7 +106,9 @@ add_subdirectory(cisd-h2o-clpse)
 add_subdirectory(cisd-opt-fd)
 add_subdirectory(cisd-sp)
 add_subdirectory(cisd-sp-2)
+add_subdirectory(cubeprop)
 add_subdirectory(dcft-grad1)
+add_subdirectory(dcft-grad2)
 add_subdirectory(dcft1)
 add_subdirectory(dcft2)
 add_subdirectory(dcft3)
@@ -115,10 +117,13 @@ add_subdirectory(dcft5)
 add_subdirectory(dcft6)
 add_subdirectory(dcft7)
 add_subdirectory(dcft8)
+add_subdirectory(dcft9)
 add_subdirectory(dfccd1)
 add_subdirectory(dfccdl1)
+add_subdirectory(dfccd-grad1)
 add_subdirectory(dfccsd1)
 add_subdirectory(dfccsdl1)
+add_subdirectory(dfccsd-grad1)
 add_subdirectory(dfmp2-1)
 add_subdirectory(dfmp2-2)
 add_subdirectory(dfmp2-3)
@@ -165,7 +170,7 @@ add_subdirectory(fnocc4)
 add_subdirectory(frac)
 add_subdirectory(ghosts)
 add_subdirectory(gibbs)
-add_subdirectory(large_atoms)
+#add_subdirectory(large_atoms)
 add_subdirectory(matrix1)
 add_subdirectory(mcscf1)
 add_subdirectory(mcscf2)
@@ -264,6 +269,7 @@ add_subdirectory(sapt4)
 add_subdirectory(sapt5)
 add_subdirectory(scf-bz2)
 add_subdirectory(scf-guess-read)
+add_subdirectory(scf-bs)
 add_subdirectory(scf1)
 add_subdirectory(scf11-freq-from-energies)
 add_subdirectory(scf2)
@@ -271,19 +277,24 @@ add_subdirectory(scf3)
 add_subdirectory(scf4)
 add_subdirectory(scf5)
 add_subdirectory(scf6)
+add_subdirectory(soscf1)
+add_subdirectory(stability1)
 add_subdirectory(tu1-h2o-energy)
 add_subdirectory(tu2-ch2-energy)
 add_subdirectory(tu3-h2o-opt)
 add_subdirectory(tu4-h2o-freq)
 add_subdirectory(tu5-sapt)
 add_subdirectory(tu6-cp-ne2)
+add_subdirectory(x2c1)
+add_subdirectory(x2c2)
+add_subdirectory(x2c3)
 add_subdirectory(zaptn-nh2)
 
 ###### START internal-executable-dependent tests ################
 
-# For code that is distributed with and required for psi4 to build, 
-#   and thus should always be tested, but is developed and maintained 
-#   externally and dropped into psi4 as version increment, and thus 
+# For code that is distributed with and required for psi4 to build,
+#   and thus should always be tested, but is developed and maintained
+#   externally and dropped into psi4 as version increment, and thus
 #   should get its own subdirectory:
 #   * Follow directory structure described below for ext-exe-dep
 #   * Follow un-qualified inclusion as above for normal tests
@@ -295,7 +306,7 @@ add_subdirectory(libefp)
 ###### START external-executable-dependent tests ################
 
 # Set up groups of test cases analogous to dftd3 below
-#   In particular, new ext-exe-dep tests should 
+#   In particular, new ext-exe-dep tests should
 #   * get their own directory in tests (e.g., tests/dftd3)
 #   * have a name that doesn't repeat the exe (e.g., tests/dftd3/energy)
 #   * be listed in the exeShort and exeLong variable name as exe-name (e.g., dftd3-energy)
@@ -339,6 +350,7 @@ endif()
 # External module dependent tests
 if(ENABLE_PCMSOLVER)
    add_subdirectory(pcm_scf)
+   add_subdirectory(pcm_dft)
 endif()
 
 if(NOT PERL_FOUND)

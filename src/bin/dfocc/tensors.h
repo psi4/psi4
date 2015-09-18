@@ -27,6 +27,7 @@
 #include <libiwl/iwl.h>
 #include <libmints/mints.h>
 #include <libpsio/psio.hpp>
+#include <libpsio/psio.h>
 
 #define index2(i,j) ((i>j) ? ((i*(i+1)/2)+j) : ((j*(j+1)/2)+i))
 #define index4(i,j,k,l) index2(index2(i,j),index2(k,l))
@@ -83,6 +84,7 @@ class Tensor1d
   void subtract(const SharedTensor1d& Adum);
   void subtract(int i, double value);
   double get(int i);
+  void to_shared_vector(SharedVector A);
   // rms:  rms of A1d_
   double rms();
   // rms:  rms of (A1d_ - Atemp)
@@ -183,8 +185,11 @@ class Tensor2d
   void axpy(double **a, double alpha);
   void axpy(const SharedTensor2d &a, double alpha);
   void axpy(ULI length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha);
+  void axpy(ULI length, int start_a, int inc_a, const SharedTensor2d &A, int start_2d, int inc_2d, double alpha);
   double **transpose2();
   SharedTensor2d transpose();
+  void trans(const SharedTensor2d &A);
+  void trans(double **A);
   void copy(double **a);
   void copy(const SharedTensor2d &Adum);
   void copy(ULI length, const SharedTensor2d &A, int inc_a, int inc_2d);
@@ -192,6 +197,7 @@ class Tensor2d
   // partial copy
   void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip);
   void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip, int start);
+  double get_max_element();
   // diagonalize: diagonalize via rsp
   void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff);
   // cdsyev: diagonalize via lapack
@@ -275,8 +281,11 @@ class Tensor2d
   int dim2() const { return dim2_; }
 
   void write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  void write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end);
   void write(psi::PSIO* const psio, unsigned int fileno);
+  void write(psi::PSIO* psio, unsigned int fileno, psio_address start, psio_address *end);
   void write(psi::PSIO& psio, unsigned int fileno);
+  void write(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end);
   void write(boost::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno);
   void write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm);
   void write(boost::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno, bool three_index, bool symm);
@@ -284,8 +293,11 @@ class Tensor2d
   void write_anti_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
 
   void read(psi::PSIO* psio, unsigned int fileno);
+  void read(psi::PSIO* psio, unsigned int fileno, psio_address start, psio_address *end);
   void read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  void read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end);
   void read(psi::PSIO& psio, unsigned int fileno);
+  void read(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end);
   void read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm);
   void read_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
   void read_anti_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
@@ -298,6 +310,15 @@ class Tensor2d
   void load(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2);
   void load(psi::PSIO* const psio, unsigned int fileno, string name, int d1,int d2);
   void load(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2);
+
+  void mywrite(const string& filename);
+  void mywrite(int fileno);
+  void mywrite(int fileno, bool append);
+
+  void myread(const string& filename);
+  void myread(int fileno);
+  void myread(int fileno, bool append);
+  void myread(int fileno, ULI start);
 
   // sort (for example 1432 sort): A2d_(ps,rq) = A(pq,rs)
   // A2d_ = alpha*A + beta*A2d_
@@ -350,12 +371,16 @@ class Tensor2d
   void add_aocc_fc(const SharedTensor2d &A, double alpha, double beta);
   void add_fc_aocc(const SharedTensor2d &A, double alpha, double beta);
 
-  void set3_oo(const SharedTensor2d &A);
   void add3_oo(const SharedTensor2d &A, double alpha, double beta);
-  void set3_act_ov(int frzc, int aocc, int avir, int vir, const SharedTensor2d &a);
+  void set3_oo(const SharedTensor2d &A);
   void set3_ov(const SharedTensor2d &A);
   void set3_vo(const SharedTensor2d &A);
   void set3_vv(const SharedTensor2d &A, int occ);
+
+  void set3_act_ov(int frzc, int aocc, int avir, int vir, const SharedTensor2d &a);
+  void set3_act_oo(int frzc, const SharedTensor2d &A);
+  void set3_act_vv(const SharedTensor2d &A);
+
   void swap_3index_col(const SharedTensor2d &A);
 
   void form_oo(const SharedTensor2d &A);
@@ -385,22 +410,29 @@ class Tensor2d
   void form_b_il(const SharedTensor2d &A);
   // form_b_ka: k is active occupied, and a is all virtual
   void form_b_ka(const SharedTensor2d &A);
-  // form_b_la: k is frozen core, and a is all virtual
+  // form_b_la: l is frozen core, and a is all virtual
   void form_b_la(const SharedTensor2d &A);
 
   // B_pq = 1/2 (A_pq + A_qp)
   void symmetrize();
-  // C(Q,pq) = 1/2 [ A(Q,pq) + B(Q,qp) ]
+  void symmetrize(const SharedTensor2d &A);
+  // B(Q,pq) = 1/2 [ A(Q,pq) + A(Q,qp) ]
   void symmetrize3(const SharedTensor2d &A);
   // A(Q, p>=q) = A(Q,pq) * (2 -\delta_{pq})
   void symm_packed(const SharedTensor2d &A);
   // A(Q, p>=q) = A(Q,pq)
   void ltm(const SharedTensor2d &A);
+  // A(p,qr) = A(p,q>=r)
+  void expand23(int d1, int d2, int d3, const SharedTensor2d &A);
 
   // (+)A(p>=q, r>=s) = 1/2 [A(pq,rs) + A(qp,rs)]
   void symm4(const SharedTensor2d &a);
   // (-)A(p>=q, r>=s) = 1/2 [A(pq,rs) - A(qp,rs)]
   void antisymm4(const SharedTensor2d &a);
+  // (+)A(p>=q, r>=s) = 1/2 [A(pq,rs) + A(pq,sr)]
+  void symm_col4(const SharedTensor2d &a);
+  // (-)A(p>=q, r>=s) = 1/2 [A(pq,rs) - A(pq,sr)]
+  void antisymm_col4(const SharedTensor2d &a);
   // (+)At(p>=q, r>=s) = 1/2 [A(pq,rs) + A(qp,rs)] * (2 -\delta_{pq})
   void symm_row_packed4(const SharedTensor2d &a);
   // (+)At(p>=q, r>=s) = 1/2 [A(pq,rs) + A(qp,rs)] * (2 -\delta_{rs})
@@ -419,6 +451,33 @@ class Tensor2d
   // A2d_(pq,rs) = 2 (pq|rs) - (rq|ps)
   void tei_cs4_anti_symm(const SharedTensor2d &J, const SharedTensor2d &K);
 
+  // A2d(ij,ab) += P_(ij) * P_(ab) A(ia,jb)
+  void P_ijab(const SharedTensor2d &A);
+
+
+  // General tensor contractions over
+  // C(pq,rs) = \sum_{tu} A(pq,tu) B(tu,rs)
+  // t_a1: t; t_a2: u; f_a1: p; f_a2: q
+  void cont444(int t_a1, int t_a2, int f_a1, int f_a2, const SharedTensor2d& A, int t_b1, int t_b2, int f_b1, int f_b2, const SharedTensor2d& B, double alpha, double beta);
+  void cont444(bool delete_a, int t_a1, int t_a2, int f_a1, int f_a2, SharedTensor2d& A, 
+	     bool delete_b, int t_b1, int t_b2, int f_b1, int f_b2, SharedTensor2d& B, 
+	     double alpha, double beta);
+  void cont444(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(pq) = \sum_{rst} A(pr,st) B(rs,tq)
+  void cont442(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(pq,rs) = \sum_{t} A(pq,rt) B(t,s)
+  void cont424(string idx_c, string idx_a, string idx_b, bool delete_a, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(pq,rs) = \sum_{t} A(p,t) B(tq,rs) 
+  void cont244(string idx_c, string idx_a, string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(Q,pq) = \sum_{rs} A(Q,rs) B(rs,pq)
+  // where dim(idx_c) & dim(idx_a)=2 but dim(idx_b)=4
+  void cont343(string idx_c, string idx_a, string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(Q,pq) = \sum_{r} A(p,r) B(Q,rq)
+  void cont233(string idx_c, string idx_a, string idx_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(Q,pq) = \sum_{r} A(Q,pr) B(r,q)
+  void cont323(string idx_c, string idx_a, string idx_b, bool delete_a, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // C(pq) = \sum_{Qr} A(Q,rp) B(Q,rq)
+  void cont332(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
 
   friend class Tensor1d;
   friend class Tensor3d;

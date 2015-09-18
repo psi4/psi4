@@ -728,10 +728,10 @@ public:
      */
     void apply_symmetry(const SharedMatrix& a, const SharedMatrix& transformer);
 
-    /** Special function to transform a SimpleMatrix (no symmetry) into
-     *  a symmetry matrix.
+    /** Special function to transform a symmetry matrix into 
+     *  a SimpleMatrix (no symmetry).
      *
-     *  \param a SimpleMatrix to transform
+     *  \param a symmetry matrix to transform
      *  \param transformer The matrix returned by PetiteList::sotoao() that acts as the transformer
      */
     void remove_symmetry(const SharedMatrix& a, const SharedMatrix& transformer);
@@ -835,6 +835,13 @@ public:
     * \param transC Transpose the third matrix
     */
     static SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C, bool transA = false, bool transB = false, bool transC = false);
+
+    /**
+     * Simple AXPY call with support for irrep,s Y = a * X + Y
+     * @param a Scaling parameter
+     * @param X Matrix to be be added
+     */
+    void axpy(double a, SharedMatrix X);
 
     /** Summation collapse along either rows (0) or columns (1), always producing a column matrix
     * \param dim 0 (row sum) or 1 (col sum)

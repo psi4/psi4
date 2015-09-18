@@ -152,7 +152,7 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
 
 
    for (I=0; I<N; I++)
-      A[I][I] -= CalcInfo.efzc;
+      A[I][I] -= CalcInfo.edrc;
    
 
    /* make space for temp vector */

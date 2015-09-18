@@ -59,12 +59,14 @@ public:
     ~DCFTSolver();
 
     double compute_energy();
-    virtual bool same_a_b_orbs() const { return false; }
-    virtual bool same_a_b_dens() const { return false; }
+    virtual bool same_a_b_orbs() const { if(options_.get_str("REFERENCE") == "RHF") return true; else return false; }
+    virtual bool same_a_b_dens() const { if(options_.get_str("REFERENCE") == "RHF") return true; else return false; }
 
 protected:
     IntegralTransform *_ints;
 
+    void mp2_guess();
+    void scf_guess();
     void finalize();
     void transform_integrals();
     void transform_core_integrals();
@@ -79,9 +81,8 @@ protected:
     void compute_cepa0_energy();
     void update_cumulant_jacobi();
     void compute_scf_energy();
-    void mp2_guess();
-    void build_tau();
     void build_tau_fourth_order();
+    void build_tau();
     void transform_tau();
     void build_gtau();
     void print_opdm();
@@ -96,7 +97,6 @@ protected:
     void update_fock();
     void dump_density();
     void dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha);
-    void scf_guess();
     void half_transform(dpdbuf4 *A, dpdbuf4 *B, SharedMatrix& C1, SharedMatrix& C2,
                         int *mospi_left, int *mospi_right, int **so_row, int **mo_row,
                         bool backwards, double alpha, double beta);
@@ -201,6 +201,55 @@ protected:
     double compute_triples_abb();
     double compute_triples_bbb();
 
+    // RHF-reference DCFT
+    double compute_energy_RHF();
+    void scf_guess_RHF();
+    double update_scf_density_RHF(bool damp = false);
+    void build_denominators_RHF();
+    void mp2_guess_RHF();
+    void transform_integrals_RHF();
+    void transform_core_integrals_RHF();
+    void sort_OOOO_integrals_RHF();
+    void sort_OOVV_integrals_RHF();
+    void sort_VVVV_integrals_RHF();
+    void sort_OVOV_integrals_RHF();
+    void sort_OVVV_integrals_RHF();
+    void sort_OOOV_integrals_RHF();
+    void run_simult_dcft_oo_RHF();
+    void build_tau_RHF();
+    void refine_tau_RHF();
+    void transform_tau_RHF();
+    void process_so_ints_RHF();
+    void build_cumulant_intermediates_RHF();
+    void form_density_weighted_fock_RHF();
+    void compute_F_intermediate_RHF();
+    double compute_cumulant_residual_RHF();
+    void update_cumulant_jacobi_RHF();
+    void compute_scf_energy_RHF();
+    void compute_dcft_energy_RHF();
+    void compute_orbital_rotation_jacobi_RHF();
+    double compute_orbital_residual_RHF();
+    void rotate_orbitals_RHF();
+    void compute_orbital_gradient_VO_RHF();
+    void compute_orbital_gradient_OV_RHF();
+    void compute_unrelaxed_density_VVVV_RHF();
+    void compute_unrelaxed_density_OVOV_RHF();
+    void compute_unrelaxed_density_OOVV_RHF();
+    void compute_unrelaxed_density_OOOO_RHF();
+    void compute_gradient_RHF();
+    void gradient_init_RHF();
+    void compute_gradient_odc_RHF();
+    void compute_lagrangian_OO_RHF();
+    void compute_lagrangian_VV_RHF();
+    void compute_ewdm_odc_RHF();
+    void print_opdm_RHF();
+    void compute_R_AA_and_BB();
+    void presort_mo_tpdm_AB();
+    void presort_mo_tpdm_AA();
+
+    // UHF-reference DCFT
+    void compute_gradient_UHF();
+    double compute_energy_UHF();
 
     bool augment_b(double *vec, double tol);
     /// Controls convergence of the orbital updates

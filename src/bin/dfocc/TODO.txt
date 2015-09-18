@@ -1,6 +1,27 @@
+TODO:
 * DF-OMP2.5 and DF-OMP3
 * DF-OLCCD
 * DF-OCCD
-* Consider perm symmetry in RHF T2(1) in t2_1st_gen.cc
+* Consider perm symmetry in T2(1) in t2_1st_gen.cc
 * Re-build Gij and Gab for DF-OMP2
-* Build Wmnie on the fly at each iteration
+
+DEBUG:
+* T-amplitudes are okay
+* WL(mbij) is okay
+* WL(mbej) is okay
+* WL(mbje) is okay
+* WL(mnie) is okay
+* WabefL2 is okay
+* Gmi and Gae are okay
+* Ft_ij is okay
+* Ft_ab is okay
+* Check lambdas!
+* Be careful! Daniel uses a different denominator for Lambda equations
+* L2 is okay
+* L1 is okay
+* OPDM and TPDM are okay
+* Seprable TPDMs are okay
+* GFM are okay
+* DF-CCSD gradients are okay 
+* DF-CCD gradients are okay 
+

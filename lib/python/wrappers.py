@@ -25,6 +25,7 @@ functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`,
 :py:mod:`driver.response`, and :py:mod:`driver.frequency`.
 
 """
+from __future__ import absolute_import
 import re
 import os
 import math
@@ -860,7 +861,7 @@ def cp(name, **kwargs):
 
     :examples:
 
-    >>> # [1] counterpoise-corrected mp2 interaction energy
+    >>> # [1] counterpoise-corrected density-fitted mp2 interaction energy
     >>> cp('df-mp2')
 
     """
@@ -1192,9 +1193,16 @@ def database(name, db_name, **kwargs):
     if (func is cp):
         raise ValidationError('Wrapper database is unhappy to be calling function \'%s\'. Use the cp keyword within database instead.' % (func.__name__))
 
+    # Paths to search for database files: here + PSIPATH + library + PYTHONPATH
+    psidatadir = os.environ.get('PSIDATADIR', None)
+    psidatadir = __file__ + '/../..' if psidatadir is None else psidatadir
+    libraryPath = ':' + os.path.abspath(psidatadir) + '/databases'
+    dbPath = os.path.abspath('.') + \
+        ':' + ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + \
+        libraryPath
+    sys.path = [sys.path[0]] + dbPath.split(':') + sys.path[1:]
+
     # Define path and load module for requested database
-    sys.path.append('%sdatabases' % (psi4.Process.environment["PSIDATADIR"]))
-    sys.path.append('%s/lib/databases' % psi4.psi_top_srcdir())
     database = p4util.import_ignorecase(db_name)
     if database is None:
         psi4.print_out('\nPython module for database %s failed to load\n\n' % (db_name))

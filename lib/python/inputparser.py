@@ -23,6 +23,7 @@
 ## Force Python 3 print syntax, if this is python 2.X
 #if sys.hexversion < 0x03000000:
 from __future__ import print_function
+from __future__ import absolute_import
 
 """Module with functions to parse the input file and convert
 Psithon into standard Python. Particularly, forms psi4
@@ -45,8 +46,8 @@ literals = {}
 
 def bad_option_syntax(line):
     """Function to report bad syntax to screen and output file."""
-    print('Unsupported syntax:\n\n%s\n\n' % (line))
-    sys.exit(1)
+    message = ('Unsupported syntax:\n\n%s\n\n' % (line))
+    raise TestComparisonError(message)
 
 
 def process_word_quotes(matchobj):
@@ -58,8 +59,8 @@ def process_word_quotes(matchobj):
         if re.match(r'^[A-Za-z][\w]*', val):
             return val
         else:
-            print("Invalid Python variable: %s" % (val))
-            sys.exit(1)
+            message = ("Invalid Python variable: %s" % (val))
+            raise TestComparisonError(message)
     elif re.match(r'^-?\d+\.?\d*(?:[Ee]-?\d+)?$', val):
         # This must be a number, don't wrap it in quotes
         return val
@@ -78,7 +79,7 @@ def quotify(string):
     """
     # This wraps anything that looks like a string in quotes, and removes leading
     # dollar signs from python variables
-    wordre = re.compile(r'(([$]?)([-+()*.\w\"\']+))')
+    wordre = re.compile(r'(([$]?)([-+()*.\w\"\'/\\]+))')
     string = wordre.sub(process_word_quotes, string)
     return string
 
@@ -159,7 +160,7 @@ def process_from_file_command(matchobj):
            mol+=i
            mol+="\n"
     return mol
-    
+
 
 def process_pubchem_command(matchobj):
     """Function to process match of ``pubchem`` in molecule block."""
@@ -332,7 +333,7 @@ def process_basis_block(matchobj):
                 leftover_lines.append(line.strip())
 
     # Now look for regular basis set definitions
-    basblock = filter(None, basislabel.split('\n'.join(leftover_lines)))
+    basblock = list(filter(None, basislabel.split('\n'.join(leftover_lines))))
     if len(basblock) == 1:
         if len(result.split('\n')) == 3:
             # case with no [basname] markers where whole block is contents of gbs file
@@ -341,8 +342,8 @@ def process_basis_block(matchobj):
             result += """%s    basstrings['%s'] = \"\"\"\n%s\n\"\"\"\n""" % \
                 (spaces, basname(name), basblock[0])
         else:
-            print("Conflicting basis set specification: assign lines present but shells have no [basname] label.""")
-            sys.exit(1)
+            message = ("Conflicting basis set specification: assign lines present but shells have no [basname] label.""")
+            raise TestComparisonError(message)
     else:
         # case with specs separated by [basname] markers
         for idx in range(0, len(basblock), 2):
@@ -489,8 +490,7 @@ def process_external_command(matchobj):
     if len(lines):
         print('Input parsing for external {}: Extra line(s) present:')
         for line in lines:
-            print(line)
-            sys.exit(1)
+            raise TestComparisonError(line)
 
     # Return is actually an ExternalPotential, not a QMMM
     extern += '%sqmmm.populateExtern()\n' % (spaces)
@@ -530,19 +530,19 @@ def check_parentheses_and_brackets(input_string, exit_on_error):
                 # Run out of opening parens
                 all_matched = 0
                 if exit_on_error:
-                    print("Input error: extra %s" % (ch))
-                    sys.exit(1)
+                    message = ("Input error: extra %s" % (ch))
+                    raise TestComparisonError(message)
             if lrmap[opench] != ch:
                 # wrong type of parenthesis popped from stack
                 all_matched = 0
                 if exit_on_error:
-                    print("Input error: %s closed with a %s" % (opench, ch))
-                    sys.exit(1)
+                    message = ("Input error: %s closed with a %s" % (opench, ch))
+                    raise TestComparisonError(message)
     if len(parenstack) != 0:
         all_matched = 0
         if exit_on_error:
-            print("Input error: Unmatched %s" % (parenstack.pop()))
-            sys.exit(1)
+            message = ("Input error: Unmatched %s" % (parenstack.pop()))
+            raise TestComparisonError(message)
 
     return all_matched
 
@@ -613,8 +613,8 @@ def process_input(raw_input, print_level=1):
                 break
 
         if input_start == -1 or input_stop == -1:
-            print('Cannot extract infile from outfile.')
-            sys.exit(1)
+            message = ('Cannot extract infile from outfile.')
+            raise TestComparisonError(message)
 
         raw_input = '\n'.join(input_lines[input_start:input_stop])
         raw_input += '\n'
@@ -648,7 +648,7 @@ def process_input(raw_input, print_level=1):
     # Return from handling literal blocks to normal processing
 
     # Nuke all comments
-    comment = re.compile(r'[^\\]#.*')
+    comment = re.compile(r'(^|[^\\])#.*')
     temp = re.sub(comment, '', temp)
     # Now, nuke any escapes from comment lines
     comment = re.compile(r'\\#')
@@ -725,8 +725,17 @@ def process_input(raw_input, print_level=1):
     lit_block = re.compile(r'literals_psi4_yo-(\d*\d)')
     temp = re.sub(lit_block, process_literal_blocks, temp)
 
+    future_imports = []
+    def future_replace(m):
+        future_imports.append(m.group(0))
+        return ''
+
+    future_string = re.compile('^from __future__ import .*$', flags=re.MULTILINE)
+    temp = re.sub(future_string, future_replace, temp)
+
     # imports
-    imports = 'from psi4 import *\n'
+    imports = '\n'.join(future_imports) + '\n'
+    imports += 'from psi4 import *\n'
     imports += 'from p4const import *\n'
     imports += 'from p4util import *\n'
     imports += 'from molutil import *\n'

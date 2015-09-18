@@ -40,10 +40,11 @@
 #include <psiconfig.h>
 
 #include <boost/foreach.hpp>
+#include "x2cint.h"
 
 using namespace boost;
 
-#ifdef HAVE_FORTRAN
+#ifdef HAVE_DKH
 #include "FCMangle.h"
 #define F_DKH  FC_MODULE(dkh_main, dkh, DKH_MAIN, DKH)
 
@@ -386,6 +387,21 @@ void MintsHelper::one_electron_integrals()
     }
     else if (options_.get_str("RELATIVISTIC") == "X2C"){
         outfile->Printf( " OEINTS: Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
+
+        X2CInt x2cint;
+        SharedMatrix so_overlap_x2c = so_overlap();
+        SharedMatrix so_kinetic_x2c = so_kinetic();
+        SharedMatrix so_potential_x2c = so_potential();
+        x2cint.compute(so_overlap_x2c,so_kinetic_x2c,so_potential_x2c,options_);
+
+        // Overlap
+        so_overlap_x2c->save(psio_, PSIF_OEI);
+
+        // Kinetic
+        so_kinetic_x2c->save(psio_, PSIF_OEI);
+
+        // Potential
+        so_potential_x2c->save(psio_, PSIF_OEI);
     }
 
     // Dipoles
@@ -479,7 +495,7 @@ SharedMatrix MintsHelper::ao_pvp()
 
 SharedMatrix MintsHelper::ao_dkh(int dkh_order)
 {
-#ifdef HAVE_FORTRAN
+#ifdef HAVE_DKH
     SharedMatrix S = ao_overlap();
     SharedMatrix T = ao_kinetic();
     SharedMatrix Torig = T->clone();
@@ -519,6 +535,7 @@ SharedMatrix MintsHelper::ao_dkh(int dkh_order)
 
     return H_dk;
 #else
+    UNUSED(dkh_order);
     outfile->Printf("    Douglas-Kroll-Hess integrals requested but are not available.\n");
     throw PSIEXCEPTION("Douglas-Kroll-Hess integrals requested but were not compiled in.");
 #endif
@@ -1262,7 +1279,7 @@ SharedMatrix MintsHelper::mo_transform(SharedMatrix Iso, SharedMatrix C1, Shared
     double** Imop = Imo->pointer();
 
     // Currently 2143, need to transform back
-    int left, right, tmp;
+    int left, right;
     for (int i = 0; i < n1; i++) {
         for (int j = 0; j < n3; j++) {
             for (int a = 0; a < n2; a++) {

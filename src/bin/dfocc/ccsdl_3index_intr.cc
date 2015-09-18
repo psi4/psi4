@@ -78,11 +78,9 @@ void DFOCC::ccsdl_3index_intr()
     U.reset();
     L = SharedTensor2d(new Tensor2d("L2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     L->sort(1324, l2, 1.0, 0.0);
-    //GijA->contract442(1, 1, U, l2, 1.0, 0.0);
     GijA->contract(false, true, naoccA, naoccA, naoccA*navirA*navirA, T, L, 1.0, 0.0);
 
     // G_ae = -\sum_{m,n,f} U_mn^ef L_mn^af = L(mn,fa) U(mn,fe) 
-    //GabA->contract442(2, 2, l2, U, -1.0, 0.0);
     GabA->contract(true, false, navirA, navirA, naoccA*naoccA*navirA, L, T, -1.0, 0.0);
     T.reset();
     L.reset();
@@ -124,6 +122,7 @@ void DFOCC::ccsdl_3index_intr()
     V->gemm(false, true, U, L, 1.0, 0.0);
     L.reset();
     U.reset();
+    V->write(psio_, PSIF_DFOCC_AMPS);
 
     // V_ij^Q = \sum_{mn} (2*V_imjn - V_imnj) b_mn^Q = B(Q,mn) Y(mn,ij)
     X = SharedTensor2d(new Tensor2d("X <IJ|KL>", naoccA, naoccA, naoccA, naoccA));
@@ -138,14 +137,17 @@ void DFOCC::ccsdl_3index_intr()
     T->gemm(false, false, bQijA, Y, 1.0, 0.0); 
     T->write(psio_, PSIF_DFOCC_AMPS);
     T.reset();
-    // V_ij^Q = \sum_{mn} (2*V_imjn - V_imnj) t_mn^Q
+    // Vt_ij^Q = \sum_{mn} (2*V_imjn - V_imnj) t_nm^Q
     T = SharedTensor2d(new Tensor2d("Vt (Q|IJ)", nQ, naoccA, naoccA));
     U = SharedTensor2d(new Tensor2d("T1 (Q|IJ)", nQ, naoccA, naoccA));
     U->read(psio_, PSIF_DFOCC_AMPS);
-    T->gemm(false, false, U, Y, 1.0, 0.0); 
+    L = SharedTensor2d(new Tensor2d("T1 (Q|JI)", nQ, naoccA, naoccA));
+    L->swap_3index_col(U);
+    U.reset();
+    T->gemm(false, false, L, Y, 1.0, 0.0); 
     T->write(psio_, PSIF_DFOCC_AMPS);
     T.reset();
-    U.reset();
+    L.reset();
     Y.reset();
 
     // Build V_iajb
@@ -162,6 +164,7 @@ void DFOCC::ccsdl_3index_intr()
     V = SharedTensor2d(new Tensor2d("V (IA|JB)", naoccA, navirA, naoccA, navirA));
     V->sort(1432, X, 1.0, 0.0);
     X.reset();
+    //V->print();
 
     // V_ij^Q' = 2\sum_{ef} V_iejf b_ef^Q
     Vij = SharedTensor2d(new Tensor2d("Vp (Q|IJ)", nQ, naoccA, naoccA));
@@ -212,6 +215,7 @@ void DFOCC::ccsdl_3index_intr()
     Vai->gemm(false, false, bQiaA, X, -2.0, 1.0); 
     X.reset();
     Vai->write(psio_, PSIF_DFOCC_AMPS);
+    //Vai->print();
     Vai.reset();
 
     // Build L_ijka

@@ -20,6 +20,8 @@
  *@END LICENSE
  */
 #include "PsiOutStream.h"
+#include <exception.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 namespace psi{

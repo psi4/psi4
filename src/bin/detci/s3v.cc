@@ -92,7 +92,7 @@ void s3_block_vdiag(struct stringwr *alplist, struct stringwr *betlist,
     }
   
   norbs = CalcInfo.num_ci_orbs;
-  orbsym = CalcInfo.orbsym + CalcInfo.num_fzc_orbs;
+  orbsym = CalcInfo.orbsym + CalcInfo.num_drc_orbs;
 
   /* loop over i, j */
   for (i=0; i<norbs; i++) {
@@ -303,7 +303,7 @@ void s3_block_v(struct stringwr *alplist, struct stringwr *betlist,
    pthread_t *thread;
    
    norbs = CalcInfo.num_ci_orbs;
-   orbsym = CalcInfo.orbsym + CalcInfo.num_fzc_orbs;
+   orbsym = CalcInfo.orbsym + CalcInfo.num_drc_orbs;
 
    thread = (pthread_t *) malloc(sizeof(pthread_t)*Parameters.nthreads);
    thread_info = (struct pthreads_s3diag **)
@@ -548,7 +548,7 @@ void s3_block_vdiag_rotf(int *Cnt[2], int **Ij[2], int **Ridx[2],
    double *Tptr;
    
    norbs = CalcInfo.num_ci_orbs;
-   orbsym = CalcInfo.orbsym + CalcInfo.num_fzc_orbs;
+   orbsym = CalcInfo.orbsym + CalcInfo.num_drc_orbs;
 
    /* loop over i, j */
    for (i=0; i<norbs; i++) {
@@ -640,7 +640,7 @@ void s3_block_vrotf(int *Cnt[2], int **Ij[2], int **Ridx[2],
    double *Tptr;
    
    norbs = CalcInfo.num_ci_orbs;
-   orbsym = CalcInfo.orbsym + CalcInfo.num_fzc_orbs;
+   orbsym = CalcInfo.orbsym + CalcInfo.num_drc_orbs;
 
    /* loop over i, j */
    for (i=0; i<norbs; i++) {

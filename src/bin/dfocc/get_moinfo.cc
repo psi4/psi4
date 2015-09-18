@@ -88,6 +88,8 @@ if (reference_ == "RESTRICTED") {
 /********************************************************************************************/
         // Read orbital energies
         epsilon_a_ = reference_wavefunction_->epsilon_a();
+	eps_orbA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <P|Q>", nmo_));
+        for(int p = 0; p < nmo_; ++p) eps_orbA->set(p, epsilon_a_->get(0, p));
 
         // Build Initial fock matrix
 	FockA = SharedTensor2d(new Tensor2d("MO-basis alpha Fock matrix", nmo_, nmo_));
@@ -201,6 +203,10 @@ else if (reference_ == "UNRESTRICTED") {
         ntri = 0.5*nmo_*(nmo_+1);
 	dimtei = 0.5*ntri*(ntri+1);
         nso2_ = nso_ * nso_;
+        ntri_ijAA = 0.5*naoccA*(naoccA+1);
+        ntri_ijBB = 0.5*naoccB*(naoccB+1);
+        ntri_abAA = 0.5*navirA*(navirA+1);
+        ntri_abBB = 0.5*navirB*(navirB+1);
 
 /********************************************************************************************/
 /************************** Read orbital coefficients ***************************************/
@@ -208,6 +214,10 @@ else if (reference_ == "UNRESTRICTED") {
         // Read orbital energies
         epsilon_a_ = reference_wavefunction_->epsilon_a();
         epsilon_b_ = reference_wavefunction_->epsilon_b();
+	eps_orbA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <P|Q>", nmo_));
+	eps_orbB = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <p|q>", nmo_));
+        for(int p = 0; p < nmo_; ++p) eps_orbA->set(p, epsilon_a_->get(0, p));
+        for(int p = 0; p < nmo_; ++p) eps_orbB->set(p, epsilon_b_->get(0, p));
 
         // Build Initial fock matrix
 	FockA = SharedTensor2d(new Tensor2d("MO-basis alpha Fock matrix", nmo_, nmo_));
@@ -435,6 +445,21 @@ void DFOCC::mo_coeff_blocks()
   }// end else if (reference_ == "UNRESTRICTED") 
 
 }// end of mo_coeff_blocks
+
+//======================================================================
+//      Remove a binary file
+//======================================================================             
+void DFOCC::remove_binary_file(int fileno)
+{
+      ostringstream convert;
+      convert << fileno;
+      std::string scr = PSIOManager::shared_object()->get_default_path();
+      std::string pid_ = psio_getpid();
+      std::string fname = scr + "psi." + pid_  + "." + convert.str();
+      //std::string fname = scr + "psi_dfocc." + convert.str();
+      remove(const_cast<char*>(fname.c_str()));
+
+}// end of remove_binary_file
 
 }} // End Namespaces
 

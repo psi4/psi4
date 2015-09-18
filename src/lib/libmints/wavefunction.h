@@ -204,6 +204,9 @@ protected:
     /// The TPDM contribution to the gradient
     boost::shared_ptr<Matrix> tpdm_gradient_contribution_;
 
+    /// The active part of the TPDM
+    SharedMatrix TPDM_;
+
     /// Helpers for C/D/epsilon transformers
     SharedMatrix C_subset_helper(SharedMatrix C, const Dimension& noccpi, SharedVector epsilon, const std::string& basis, const std::string& subset);
     SharedMatrix D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string& basis);
@@ -239,6 +242,11 @@ protected:
     /// Number of active virtual orbitals in a CIM computation
     int CIM_nactive_virtual_;
     int * CIM_nactive_virtual_pointer_;
+
+    /* Xiao Wang */
+    /// Flag to tell if this is a DCFT computation
+    bool isDCFT_;
+    /* Xiao Wang */
 
 private:
     // Wavefunction() {}
@@ -323,6 +331,8 @@ public:
     const Dimension& frzcpi() const { return frzcpi_; }
     /// Returns the frozen virtual orbitals per irrep array.
     const Dimension& frzvpi() const { return frzvpi_; }
+    /// Sets the frozen virtual orbitals per irrep array.
+    void set_frzvpi(const Dimension& frzvpi) { for(int h=0; h < nirrep_; h++) frzvpi_[h] = frzvpi[0]; }
     /// Return the number of frozen core orbitals
     int nfrzc() const { return nfrzc_; }
     /// Return the number of alpha electrons
@@ -471,6 +481,9 @@ public:
     /// Set the gradient for the wavefunction
     void set_gradient(SharedMatrix& grad);
 
+    /// Return active part of the TPDM
+    SharedMatrix TPDM() const;
+
     /// Returns the atomic point charges
     boost::shared_ptr<double[]> atomic_point_charges()const{
        return atomic_point_charges_;
@@ -529,6 +542,13 @@ public:
 
     /// Set if this is a CIM computation
     void CIMSet(bool value,int nactive_occupied);
+
+    /* Xiao Wang */
+    /// Returns true if this is a DCFT computation
+    bool isDCFT();
+    /// Set if this is a DCFT computation
+    void set_DCFT(bool val);
+    /* Xiao Wang */
 };
 
 }

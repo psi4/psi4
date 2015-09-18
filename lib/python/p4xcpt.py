@@ -21,6 +21,7 @@
 #
 
 """Module with non-generic exceptions classes."""
+from __future__ import absolute_import
 import psi4
 
 
@@ -50,3 +51,13 @@ class TestComparisonError(PsiException):
         PsiException.__init__(self, msg)
         self.msg = msg
         psi4.print_out('\nPsiException: %s\n\n' % (msg))
+
+
+class CSXError(PsiException):
+    """Error called when CSX generation fails.
+
+    """
+    def __init__(self, msg):
+        PsiException.__init__(self, msg)
+        self.msg = msg
+        psi4.print_out('\nCSXException: %s\n\n' % (msg))

@@ -30,6 +30,7 @@ compare_values(refci, thisenergy,                      7, "CI energy") #TEST
 compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
 
 clean()
+revoke_global_option_changed("ACTIVE")
 
 
 # The following is an alternative way of specifying exactly the same CI

@@ -368,6 +368,7 @@ void update_WFNco( CheMPS2::DMRGSCFmatrix * Coeff_orig, CheMPS2::DMRGSCFindices 
 
 PsiReturnType dmrg(Options &options)
 {
+    tstart();
 
     /* This plugin is able to perform a DMRGSCF calculation in a molecular orbital active space. */
 
@@ -835,6 +836,8 @@ PsiReturnType dmrg(Options &options)
     outfile->Printf("The DMRG-SCF energy = %3.10f \n", Energy);
     Process::environment.globals["CURRENT ENERGY"] = Energy;
     Process::environment.globals["DMRGSCF ENERGY"] = Energy;
+
+    tstop();
 
     return Success;
 }

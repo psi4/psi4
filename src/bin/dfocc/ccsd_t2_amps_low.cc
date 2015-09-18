@@ -59,6 +59,18 @@ void DFOCC::ccsd_t2_amps_low()
     X->gemm(true, false, T, K, 1.0, 1.0);
     K.reset();
     T.reset();
+
+    // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
+    // X(ia,jb) = -\sum_{Q} t_ai^Q t_jb^Q
+    U = SharedTensor2d(new Tensor2d("T1 (Q|AI)", nQ, navirA, naoccA));
+    U->read(psio_, PSIF_DFOCC_AMPS);
+    K = SharedTensor2d(new Tensor2d("Temp (Q|IA)", nQ, naoccA, navirA));
+    K->swap_3index_col(U);
+    U.reset();
+    T = SharedTensor2d(new Tensor2d("T1 (Q|IA)", nQ, naoccA, navirA));
+    T->read(psio_, PSIF_DFOCC_AMPS);
+    X->gemm(true, false, K, T, -1.0, 1.0);
+    T.reset();
     X->symmetrize();
 
     // t_ij^ab <= <ij|ab>

@@ -47,7 +47,7 @@ namespace psi { namespace detci {
 
 extern int og_lex_addr(struct olsen_graph *Graph, int *occs, int nel,
   int *listnum);
-void stringset_translate_addr(StringSet *sset, int new_nel, int new_nfzc,
+void stringset_translate_addr(StringSet *sset, int new_nel, int new_ndrc,
   int *pitz2corr, struct olsen_graph *Graph, int *new_list, int *new_idx);
 
 
@@ -77,15 +77,15 @@ void parse_import_vector(SlaterDetSet *sdset, int *ialplist, int *ialpidx,
   betastrings = sdset->betastrings;
 
   /* now figure out how the frozen stuff is going to map */
-  if (CalcInfo.num_fzc_orbs > alphastrings->nfzc ||
-      CalcInfo.num_fzc_orbs > betastrings->nfzc) {
-    outfile->Printf( "(parse_import_vector): Can't freeze more orbitals now" \
+  if (CalcInfo.num_drc_orbs > alphastrings->ndrc ||
+      CalcInfo.num_drc_orbs > betastrings->ndrc) {
+    outfile->Printf( "(parse_import_vector): Can't drop more orbitals now" \
       " than in the imported guess!\n");
     abort();
   }
 
-  if (alphastrings->nfzc != betastrings->nfzc) {
-    outfile->Printf( "(parse_import_vector): alpha nfzc != beta nfzc!\n");
+  if (alphastrings->ndrc != betastrings->ndrc) {
+    outfile->Printf( "(parse_import_vector): alpha ndrc != beta ndrc!\n");
     abort();
   }
 
@@ -95,10 +95,10 @@ void parse_import_vector(SlaterDetSet *sdset, int *ialplist, int *ialpidx,
   new_betastr_idx   = init_int_array(betastrings->size);
 
   stringset_translate_addr(alphastrings, CalcInfo.num_alp_expl, 
-    CalcInfo.num_fzc_orbs, CalcInfo.reorder, AlphaG, new_alphastr_list,
+    CalcInfo.num_drc_orbs, CalcInfo.reorder, AlphaG, new_alphastr_list,
     new_alphastr_idx);
   stringset_translate_addr(betastrings, CalcInfo.num_bet_expl, 
-    CalcInfo.num_fzc_orbs, CalcInfo.reorder, BetaG, new_betastr_list,
+    CalcInfo.num_drc_orbs, CalcInfo.reorder, BetaG, new_betastr_list,
     new_betastr_idx);
 
   /* loop over all the dets in the imported vector and translate
@@ -145,27 +145,27 @@ void parse_import_vector(SlaterDetSet *sdset, int *ialplist, int *ialpidx,
 ** C. David Sherrill
 ** August 2003
 */
-void stringset_translate_addr(StringSet *sset, int new_nel, int new_nfzc,
+void stringset_translate_addr(StringSet *sset, int new_nel, int new_ndrc,
   int *pitz2corr, struct olsen_graph *Graph, int *new_list, int *new_idx)
 {
 
   int i, j, l, s;
   int old_nel;
-  int *former_fzc_occ, num_former_fzc, *tmpocc;
+  int *former_drc_occ, num_former_drc, *tmpocc;
   short int *old_occ;
 
-  old_nel = sset->nelec - sset->nfzc;
+  old_nel = sset->nelec - sset->ndrc;
 
-  former_fzc_occ = init_int_array(sset->nfzc);
+  former_drc_occ = init_int_array(sset->ndrc);
 
-  for (i=0,num_former_fzc=0; i<sset->nfzc; i++) {
-    j = (int) sset->fzc_occ[i];
-    j = pitz2corr[j] - new_nfzc;
-    if (j >= 0) former_fzc_occ[num_former_fzc++] = j;
+  for (i=0,num_former_drc=0; i<sset->ndrc; i++) {
+    j = (int) sset->drc_occ[i];
+    j = pitz2corr[j] - new_ndrc;
+    if (j >= 0) former_drc_occ[num_former_drc++] = j;
   }
 
-  if (num_former_fzc + old_nel > new_nel) {
-    outfile->Printf( "(stringset_translate_addr): num_former_fzc + old_nel" \
+  if (num_former_drc + old_nel > new_nel) {
+    outfile->Printf( "(stringset_translate_addr): num_former_drc + old_nel" \
       " > new_nel!\n");
     
     abort();
@@ -181,12 +181,12 @@ void stringset_translate_addr(StringSet *sset, int new_nel, int new_nfzc,
   for (s=0; s<sset->size; s++) {
     old_occ = sset->strings[s].occ;
 
-    for (i=0,l=0; i<num_former_fzc; i++)
-      tmpocc[l++] = former_fzc_occ[i]; /* these are already translated */
+    for (i=0,l=0; i<num_former_drc; i++)
+      tmpocc[l++] = former_drc_occ[i]; /* these are already translated */
 
     for (i=0; i<old_nel; i++) {
       j = (int) old_occ[i];
-      j = pitz2corr[j] - new_nfzc;
+      j = pitz2corr[j] - new_ndrc;
       if (j >= 0) tmpocc[l++] = j;
     }
 
@@ -200,7 +200,7 @@ void stringset_translate_addr(StringSet *sset, int new_nel, int new_nfzc,
     new_idx[s] = og_lex_addr(Graph,tmpocc,new_nel,&(new_list[s]));
   }
 
-  free(former_fzc_occ);
+  free(former_drc_occ);
   free(tmpocc);
 
 }

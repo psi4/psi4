@@ -36,11 +36,12 @@ using namespace boost;
 using namespace psi;
 
 // Initialize potential_recur_ to +1 basis set angular momentum
-RelPotentialInt::RelPotentialInt(std::vector<SphericalTransform>& st, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv) :
-    OneBodyAOInt(st, bs1, bs2, deriv)
+RelPotentialInt::RelPotentialInt(std::vector<SphericalTransform>& st, boost::shared_ptr<BasisSet> bs1,
+                                 boost::shared_ptr<BasisSet> bs2, int deriv) :
+        OneBodyAOInt(st, bs1, bs2, deriv)
 {
     if (deriv == 0)
-    potential_recur_ = new ObaraSaikaTwoCenterVIRecursion(bs1->max_am()+2, bs2->max_am()+2);
+        potential_recur_ = new ObaraSaikaTwoCenterVIRecursion(bs1->max_am() + 2, bs2->max_am() + 2);
     else
         throw PSIEXCEPTION("RelPotentialInt: deriv > 0 is not supported.");
 
@@ -50,11 +51,11 @@ RelPotentialInt::RelPotentialInt(std::vector<SphericalTransform>& st, boost::sha
     int maxnao1 = INT_NCART(maxam1);
     int maxnao2 = INT_NCART(maxam2);
 
-    buffer_ = new double[maxnao1*maxnao2];
+    buffer_ = new double[maxnao1 * maxnao2];
 
     // Setup the initial field of partial charges
-    Zxyz_ = SharedMatrix (new Matrix("Partial Charge Field (Z,x,y,z)", bs1_->molecule()->natom(), 4));
-    double** Zxyzp = Zxyz_->pointer();
+    Zxyz_ = SharedMatrix(new Matrix("Partial Charge Field (Z,x,y,z)", bs1_->molecule()->natom(), 4));
+    double **Zxyzp = Zxyz_->pointer();
 
     for (int A = 0; A < bs1_->molecule()->natom(); A++) {
         Zxyzp[A][0] = (double) bs1_->molecule()->Z(A);
@@ -76,7 +77,7 @@ RelPotentialInt::~RelPotentialInt()
 
 // The engine only supports segmented basis sets
 void RelPotentialInt::compute_pair(const GaussianShell& s1,
-                                const GaussianShell& s2)
+                                   const GaussianShell& s2)
 {
     int ao12;
     int am1 = s1.am();
@@ -85,7 +86,7 @@ void RelPotentialInt::compute_pair(const GaussianShell& s1,
     int nprim2 = s2.nprimitive();
     double A[3], B[3];
     double Ixx, Iyy, Izz, Itotal;
- 
+
     A[0] = s1.center()[0];
     A[1] = s1.center()[1];
     A[2] = s1.center()[2];
@@ -110,38 +111,38 @@ void RelPotentialInt::compute_pair(const GaussianShell& s1,
 
     double ***vi = potential_recur_->vi();
 
-    double** Zxyzp = Zxyz_->pointer();
+    double **Zxyzp = Zxyz_->pointer();
     int ncharge = Zxyz_->rowspi()[0];
 
 #if RELVDEBUG
-          outfile->Printf("\n s1= %d, s2= %d,  \n\n",nprim1,nprim2);
-          outfile->Printf("\n am1= %d, am2= %d,  \n\n",am1,am2);
-          outfile->Printf("izm= %d, jzm= %d\n", izm, jzm);
-          outfile->Printf("iym= %d, jym= %d\n", am1+1, am2+1);
-          outfile->Printf("ixm= %d, jxm= %d\n", (am1+1)*(am1+1), (am2+1)*(am2+1));
+    outfile->Printf("\n s1= %d, s2= %d,  \n\n",nprim1,nprim2);
+    outfile->Printf("\n am1= %d, am2= %d,  \n\n",am1,am2);
+    outfile->Printf("izm= %d, jzm= %d\n", izm, jzm);
+    outfile->Printf("iym= %d, jym= %d\n", am1+1, am2+1);
+    outfile->Printf("ixm= %d, jxm= %d\n", (am1+1)*(am1+1), (am2+1)*(am2+1));
 #endif
 
-    for (int p1=0; p1<nprim1; ++p1) {
+    for (int p1 = 0; p1 < nprim1; ++p1) {
         double a1 = s1.exp(p1);
 #if RELVDEBUG
         outfile->Printf("alpha_a=%20.14f\n",a1);
 #endif
         double c1 = s1.coef(p1);
-        for (int p2=0; p2<nprim2; ++p2) {
+        for (int p2 = 0; p2 < nprim2; ++p2) {
             double a2 = s2.exp(p2);
 #if RELVDEBUG
             outfile->Printf("alpha_b=%20.14f\n",a2);
 #endif
             double c2 = s2.coef(p2);
             double gamma = a1 + a2;
-            double oog = 1.0/gamma;
+            double oog = 1.0 / gamma;
 
             double PA[3], PB[3];
             double P[3];
 
-            P[0] = (a1*A[0] + a2*B[0])*oog;
-            P[1] = (a1*A[1] + a2*B[1])*oog;
-            P[2] = (a1*A[2] + a2*B[2])*oog;
+            P[0] = (a1 * A[0] + a2 * B[0]) * oog;
+            P[1] = (a1 * A[1] + a2 * B[1]) * oog;
+            P[2] = (a1 * A[2] + a2 * B[2]) * oog;
             PA[0] = P[0] - A[0];
             PA[1] = P[1] - A[1];
             PA[2] = P[2] - A[2];
@@ -149,11 +150,11 @@ void RelPotentialInt::compute_pair(const GaussianShell& s1,
             PB[1] = P[1] - B[1];
             PB[2] = P[2] - B[2];
 
-            double over_pf = exp(-a1*a2*AB2*oog) * sqrt(M_PI*oog) * M_PI * oog * c1 * c2;
+            double over_pf = exp(-a1 * a2 * AB2 * oog) * sqrt(M_PI * oog) * M_PI * oog * c1 * c2;
 
             // Loop over atoms of basis set 1 (only works if bs1_ and bs2_ are on the same
             // molecule)
-            for (int atom=0; atom<ncharge; ++atom) {
+            for (int atom = 0; atom < ncharge; ++atom) {
 #if RELVDEBUG
                 outfile->Printf("\n atoms=%d \n",atom);
 #endif
@@ -166,18 +167,18 @@ void RelPotentialInt::compute_pair(const GaussianShell& s1,
                 PC[2] = P[2] - Zxyzp[atom][3];
 
                 // Do recursion and ask to compute one higher angular momentum
-                potential_recur_->compute(PA, PB, PC, gamma, am1+1, am2+1);
+                potential_recur_->compute(PA, PB, PC, gamma, am1 + 1, am2 + 1);
 
                 ao12 = 0;
-                for(int ii = 0; ii <= am1; ii++) {
+                for (int ii = 0; ii <= am1; ii++) {
                     int l1 = am1 - ii;
-                    for(int jj = 0; jj <= ii; jj++) {
+                    for (int jj = 0; jj <= ii; jj++) {
                         int m1 = ii - jj;
                         int n1 = jj;
                         /*--- create all am components of sj ---*/
-                        for(int kk = 0; kk <= am2; kk++) {
+                        for (int kk = 0; kk <= am2; kk++) {
                             int l2 = am2 - kk;
-                            for(int ll = 0; ll <= kk; ll++) {
+                            for (int ll = 0; ll <= kk; ll++) {
                                 int m2 = kk - ll;
                                 int n2 = ll;
 
@@ -190,75 +191,66 @@ void RelPotentialInt::compute_pair(const GaussianShell& s1,
                                 Izz = 4.0 * a1 * a2 * vi[iind + izm][jind + jzm][0];
 
 #if RELVDEBUG
-                               outfile->Printf("l1= %d, m1= %d, n1= %d  \n",l1,m1,n1);
-                               outfile->Printf("l2= %d, m2= %d, n2= %d \n",l2,m2,n2);
-                               outfile->Printf("iind =%d, jind= %d \n", iind,jind);
-                               outfile->Printf("Siind+ixm= %d, jind+jxm= %d \n", iind+ixm, jind+jxm);
-                               outfile->Printf("Siind+iym= %d, jind+jym= %d \n", iind+iym, jind+jym);
-                               outfile->Printf("Siind+izm= %d, jind+jzm= %d \n", iind+izm, jind+jzm);
+                                outfile->Printf("l1= %d, m1= %d, n1= %d  \n",l1,m1,n1);
+                                outfile->Printf("l2= %d, m2= %d, n2= %d \n",l2,m2,n2);
+                                outfile->Printf("iind =%d, jind= %d \n", iind,jind);
+                                outfile->Printf("Siind+ixm= %d, jind+jxm= %d \n", iind+ixm, jind+jxm);
+                                outfile->Printf("Siind+iym= %d, jind+jym= %d \n", iind+iym, jind+jym);
+                                outfile->Printf("Siind+izm= %d, jind+jzm= %d \n", iind+izm, jind+jzm);
 #endif
 
-                               // <a+1|V|b-1>, <a-1|V|b+1>, <a-1|V|b-1> terms
-                                if (l1 && l2)
-                                {
+                                // <a+1|V|b-1>, <a-1|V|b+1>, <a-1|V|b-1> terms
+                                if (l1 && l2) {
                                     Ixx += l1 * l2 * vi[iind - ixm][jind - jxm][0];
 #if RELVDEBUG
                                     outfile->Printf("iind-ixm= %d, jind-jxm= %d \n", iind-ixm, jind-jxm);
 #endif
                                 }
-                                if(l1)
-                                {
+                                if (l1) {
                                     Ixx -= 2.0 * l1 * a2 * vi[iind - ixm][jind + jxm][0];
 #if RELVDEBUG
                                     outfile->Printf("iind-ixm= %d, jind+jxm= %d \n", iind-ixm, jind+jxm);
 #endif
                                 }
-                                if(l2)
-                                {
+                                if (l2) {
                                     Ixx -= 2.0 * l2 * a1 * vi[iind + ixm][jind - jxm][0];
 #if RELVDEBUG
                                     outfile->Printf("iind+ixm= %d, jind-jxm= %d \n", iind+ixm, jind-jxm);
 #endif
                                 }
-                                if(m1 && m2)
-                                {
+                                if (m1 && m2) {
                                     Iyy += m1 * m2 * vi[iind - iym][jind - jym][0];
 #if RELVDEBUG
                                     outfile->Printf("iind-iym= %d, jind-jym= %d \n", iind-iym, jind-jym);
 #endif
                                 }
-                                if(m1)
-                                {
+                                if (m1) {
                                     Iyy -= 2.0 * m1 * a2 * vi[iind - iym][jind + jym][0];
 #if RELVDEBUG
                                     outfile->Printf("iind-iym= %d, jind+jym= %d \n", iind-iym, jind+jym);
 #endif
                                 }
-                                if(m2)
-                                {
+                                if (m2) {
                                     Iyy -= 2.0 * m2 * a1 * vi[iind + iym][jind - jym][0];
 #if RELVDEBUG
                                     outfile->Printf("iind+iym= %d, jind-jym= %d \n", iind+iym, jind-jym);
 #endif
                                 }
 
-                                if(n1 && n2)
-                                {
+                                if (n1 && n2) {
                                     Izz += n1 * n2 * vi[iind - izm][jind - jzm][0];
 #if RELVDEBUG
                                     outfile->Printf("iind-izm= %d, jind-jzm= %d \n", iind-izm, jind-jzm);
 #endif
                                 }
 
-                                if(n1)
-                                {
+                                if (n1) {
                                     Izz -= 2.0 * n1 * a2 * vi[iind - izm][jind + jzm][0];
 #if RELVDEBUG
                                     outfile->Printf("iind-izm= %d, jind+jzm= %d \n", iind-izm, jind+jzm);
 #endif
                                 }
-                                if(n2)
-                                {
+                                if (n2) {
                                     Izz -= 2.0 * n2 * a1 * vi[iind + izm][jind - jzm][0];
 #if RELVDEBUG
                                     outfile->Printf("iind+izm= %d, jind-jzm= %d \n", iind+izm, jind-jzm);
@@ -280,40 +272,41 @@ void RelPotentialInt::compute_pair(const GaussianShell& s1,
     }
 }
 
-void RelPotentialInt::compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2)
+void RelPotentialInt::compute_pair_deriv1(const GaussianShell&, const GaussianShell&)
 {
     throw SanityCheckError("RelPotentialInt::compute_pair_deriv1(): not implemented.", __FILE__, __LINE__);
 }
 
-void RelPotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianShell& s2)
+void RelPotentialInt::compute_pair_deriv2(const GaussianShell&, const GaussianShell&)
 {
     throw SanityCheckError("RelPotentialInt::compute_pair_deriv2(): not implemented.", __FILE__, __LINE__);
 }
 
-void RelPotentialInt::compute_deriv1(std::vector<SharedMatrix > &result)
+void RelPotentialInt::compute_deriv1(std::vector<SharedMatrix>&)
 {
     throw SanityCheckError("RelPotentialInt::compute_deriv1(): not implemented.", __FILE__, __LINE__);
 }
 
-void RelPotentialInt::compute_deriv2(std::vector<SharedMatrix > &result)
+void RelPotentialInt::compute_deriv2(std::vector<SharedMatrix>&)
 {
     throw SanityCheckError("RelPotentialInt::compute_deriv2(): not implemented.", __FILE__, __LINE__);
 }
 
-RelPotentialSOInt::RelPotentialSOInt(const boost::shared_ptr<OneBodyAOInt> &aoint, const boost::shared_ptr<IntegralFactory> &fact)
-    : OneBodySOInt(aoint, fact)
+RelPotentialSOInt::RelPotentialSOInt(const boost::shared_ptr<OneBodyAOInt>& aoint,
+                                     const boost::shared_ptr<IntegralFactory>& fact)
+        : OneBodySOInt(aoint, fact)
 {
     natom_ = ob_->basis1()->molecule()->natom();
 }
 
-RelPotentialSOInt::RelPotentialSOInt(const boost::shared_ptr<OneBodyAOInt> &aoint, const IntegralFactory *fact)
-    : OneBodySOInt(aoint, fact)
+RelPotentialSOInt::RelPotentialSOInt(const boost::shared_ptr<OneBodyAOInt>& aoint, const IntegralFactory *fact)
+        : OneBodySOInt(aoint, fact)
 {
     natom_ = ob_->basis1()->molecule()->natom();
 }
 
-void RelPotentialSOInt::compute_deriv1(std::vector<SharedMatrix > result,
-                                    const CdSalcList &cdsalcs)
+void RelPotentialSOInt::compute_deriv1(std::vector<SharedMatrix>,
+                                       const CdSalcList&)
 {
     throw SanityCheckError("RelPotentialSOInt::compute_deriv1(): not implemented.", __FILE__, __LINE__);
 }

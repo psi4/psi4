@@ -52,7 +52,6 @@ void DFOCC::ccsdl_iterations()
         ccsdl_Wmbje();
         ccsdl_Wmbij();
         //ccsdl_Wmnie();
-        //outfile->Printf("\tWmbij is done.\n");
 
         // Write
         // Form U_ij^ab
@@ -65,7 +64,11 @@ void DFOCC::ccsdl_iterations()
         U = SharedTensor2d(new Tensor2d("Tau (IA|JB)", naoccA, navirA, naoccA, navirA));
         ccsd_tau_amps(U,t2);
         U->write_symm(psio_, PSIF_DFOCC_AMPS);
+	T = SharedTensor2d(new Tensor2d("2*Tau(ia,jb) - Tau(ib,ja)", naoccA, navirA, naoccA, navirA));
+        ccsd_u2_amps(T,U);
         U.reset();
+        T->write_symm(psio_, PSIF_DFOCC_AMPS);
+        T.reset();
         // Form T'(ib,ja) = t_ij^ab
         U = SharedTensor2d(new Tensor2d("T2p (IA|JB)", naoccA, navirA, naoccA, navirA));
         ccsd_t2_prime_amps(U,t2);
@@ -76,6 +79,7 @@ void DFOCC::ccsdl_iterations()
         //T->sort(1324, t2, 1.0, 0.0);
         //T->write(psio_, PSIF_DFOCC_AMPS);
         //T.reset();
+	//t1A->print();
               
         // Malloc and Free
         gQ = SharedTensor1d(new Tensor1d("CCSDL G_Q", nQ));
@@ -164,40 +168,51 @@ do
 }
 while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2); 
 
- //delete
- if (do_diis_ == 1) ccsdlDiisManager->delete_diis_file();
-
- // Mem alloc for DF ints
- //if (df_ints_incore) {
-     bQijA.reset();
-     bQiaA.reset();
-     bQabA.reset();
- //}
-
- // free t2 amps
- //if (t2_incore) {
-     l2.reset();
- //}
 
 if (conver == 1) {
 outfile->Printf("\n");
 outfile->Printf(" ============================================================================== \n");
 outfile->Printf(" ===================== DF-CCSDL ITERATIONS ARE CONVERGED ====================== \n");
 outfile->Printf(" ============================================================================== \n");
-
-    // T1 Diagnostic 
-    double t1diag, t1norm, t1_ref;
-    t1_ref = 0.02;
-    t1norm = l1A->norm();
-    t1diag = t1norm/sqrt(2.0*naoccA);
-    outfile->Printf("\n\tL1 diagnostic reference value: %20.14f\n", t1_ref);
-    outfile->Printf("\tL1 diagnostic                : %20.14f\n", t1diag);
 }
 
 else if (conver == 0) {
   outfile->Printf("\n ====================== DF-CCSDL IS NOT CONVERGED IN %2d ITERATIONS =========== \n", cc_maxiter);
   throw PSIEXCEPTION("DF-CCSDL iterations did not converge");
 }
+
+ //delete
+ if (do_diis_ == 1) ccsdlDiisManager->delete_diis_file();
+
+     // For GRAD
+     if (dertype == "FIRST") {
+	 outfile->Printf("\n\tComputing 3-index intermediates...\n");
+         timer_on("CCSD PDM 3-index intr");
+         ccsd_pdm_3index_intr();
+         timer_off("CCSD PDM 3-index intr");
+     }
+
+     // free l2 amps
+     U = SharedTensor2d(new Tensor2d("Ut2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+     ccsd_u2_amps(U,l2);
+     U->write_symm(psio_, PSIF_DFOCC_AMPS);
+     U.reset();
+     l2->write_symm(psio_, PSIF_DFOCC_AMPS);
+     l2.reset();
+
+     // For GRAD
+     if (dertype == "FIRST") {
+         timer_on("CCSD PDM yQia");
+	 ccsd_pdm_yQia();
+         timer_off("CCSD PDM yQia");
+     }
+
+     // Mem free for DF ints
+     //if (df_ints_incore) {
+     bQijA.reset();
+     bQiaA.reset();
+     bQabA.reset();
+     //}
 
 }// end ccsdl_iterations
 }} // End Namespaces

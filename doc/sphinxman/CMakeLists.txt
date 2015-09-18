@@ -12,10 +12,10 @@ if(PERL_FOUND AND SPHINX_FOUND)
 
 
     # Static-doc reST files
-    set(STATICDOC abbr_accents.rst adc.rst appendices.rst basissets.rst basissets_byelement.rst bestpractices_py.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst cp.rst customizing.rst db.rst detci.rst dfmp2.rst diatomic.rst documentation.rst energy.rst external.rst freq.rst glossary_psivariables.rst index.rst intercalls.rst interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst oeprop.rst opt.rst optking.rst plugins.rst programming.rst prop.rst psithonfunc.rst psithoninput.rst quickaddalias.rst basissets_tables.rst quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst fnocc.rst installfile.rst optionshandling.rst basissets_byfamily.rst psipep.rst pep0001.rst dftd3.rst occ.rst dfocc.rst molden.rst dcft.rst dkh.rst proc_py.rst psithonmol.rst cfour.rst mrcc_table_energy.rst cfour_table_energy.rst cfour_table_grad.rst prog_basissets.rst libefp.rst conda.rst)
+    set(STATICDOC abbr_accents.rst adc.rst appendices.rst basissets.rst basissets_byelement.rst bestpractices_py.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst cp.rst customizing.rst db.rst detci.rst dfmp2.rst diatomic.rst documentation.rst energy.rst external.rst freq.rst glossary_psivariables.rst index.rst intercalls.rst interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst oeprop.rst opt.rst optking.rst plugins.rst programming.rst prop.rst psithonfunc.rst psithoninput.rst quickaddalias.rst basissets_tables.rst quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst fnocc.rst installfile.rst optionshandling.rst basissets_byfamily.rst psipep.rst pep0001.rst dftd3.rst occ.rst molden.rst cubeprop.rst dcft.rst dkh.rst proc_py.rst psithonmol.rst cfour.rst mrcc_table_energy.rst cfour_table_energy.rst cfour_table_grad.rst prog_basissets.rst libefp.rst conda.rst)
     # * compute relative path btwn top_srcdir and objdir/doc/sphinxman
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
-        "import sys; import os; print '/' + os.path.relpath('${CMAKE_SOURCE_DIR}', '${CCBD}') + '/../'"
+        "import sys; import os; print('/' + os.path.relpath('${CMAKE_SOURCE_DIR}', '${CCBD}') + '/../')"
         OUTPUT_VARIABLE SFNX_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
     # * copy all over to objdir, substituting literalinclude along the way
     foreach(rst ${STATICDOC})
@@ -51,7 +51,6 @@ if(PERL_FOUND AND SPHINX_FOUND)
         DEPENDS ${CCSD}/document_psifiles.py
                 ${CMAKE_SOURCE_DIR}/include/psifiles.h
         COMMENT "Autodoc binary scratch files")
-
 
     # Autodoc physical constants
     add_custom_command(
@@ -206,8 +205,22 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CMAKE_SOURCE_DIR}/lib/efpfrag/*.efp
         COMMENT "Autodoc efp fragments")
 
+    # Format git log for feed
+    add_custom_command(
+        COMMAND ${CMAKE_COMMAND} -E make_directory feed
+        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/extract_changeset.py ${CCBD}
+        OUTPUT  ${CCBD}/feed/history_trac_changeset.txt
+                ${CCBD}/feed/latest_trac_changeset.txt
+        DEPENDS ${CCSD}/extract_changeset.py
+        COMMENT "Format git --log for psicode.org feed")
 
     # Establishing dependencies for docs targets
+
+    # * mini github feed for psicode.org
+    add_custom_target(ghfeed
+        DEPENDS ${CCBD}/feed/history_trac_changeset.txt
+                ${CCBD}/feed/latest_trac_changeset.txt
+        COMMENT "Preparing GitHub feed")
 
     # * announcement
     if (LATEX_COMPILER AND PDFLATEX_COMPILER)

@@ -54,6 +54,10 @@ protected:
     void get_moinfo();
     void title();
     void title_grad();
+    void lambda_title();
+    void pt_title();
+    void pat_title();
+    void pdm_title();
     void ref_energy();
     void mp2_energy();
     void scs_mp2_energy();
@@ -66,9 +70,12 @@ protected:
     void Fint_zero();
     void fock();
     void separable_tpdm();
+    void sep_tpdm_cc();
     void combine_ref_sep_tpdm();
     void tpdm_tilde();
     void back_trans();
+    void tpdm_tilde_cc();
+    void back_trans_cc();
     void dfgrad();
     void oei_grad();
     void tei_grad_ref();
@@ -78,6 +85,10 @@ protected:
     void gfock_ov();
     void gfock_vv();
     void gftilde_vv();
+    void gfock_cc_oo();
+    void gfock_cc_vo();
+    void gfock_cc_ov();
+    void gfock_cc_vv();
     void idp();
     void idp2();
     void idp_hf();
@@ -122,6 +133,10 @@ protected:
     void gwh();
     void qchf();
     void mo_coeff_blocks();
+    void ccl_energy();
+    void ccl_energy2();
+    void save_mo_to_wfn();
+    void remove_binary_file(int fileno);
 
     void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new);
     void sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec);
@@ -342,6 +357,7 @@ protected:
     void pair_index();
     void fock_so();
     void ref_grad();
+    void b_so_non_zero(); // form non-zero so-basis df ints
 
     // Cholesky
     void cd_ints();
@@ -353,6 +369,7 @@ protected:
     void b_ij_cd();
     void b_ia_cd();
     void b_ab_cd();
+    void b_so_non_zero_cd(); // form non-zero so-basis cd ints
 
     // OMP2
     void omp2_manager();
@@ -366,6 +383,25 @@ protected:
     // OMP3
     void omp3_manager();
     void mp3_manager();
+    void omp3_manager_cd();
+    void mp3_manager_cd();
+    void omp3_opdm();
+    void omp3_tpdm();
+    void t2_2nd_sc();
+    void t2_2nd_gen();
+    void mp3_WmnijT2();
+    void mp3_WmbejT2();
+    void mp3_WabefT2();     
+    void mp3_WmnijT2AA();
+    void mp3_WmnijT2BB();
+    void mp3_WmnijT2AB();
+    void mp3_WmbejT2AA();
+    void mp3_WmbejT2BB();
+    void mp3_WmbejT2AB();
+    void mp3_WabefT2AA();     
+    void mp3_WabefT2BB();     
+    void mp3_WabefT2AB();     
+    void mp3_pdm_3index_intr();
 
     // OMP2.5
     void omp2_5_manager();
@@ -377,20 +413,26 @@ protected:
 
     // CCSD
     void ccsd_manager();
+    void ccsd_manager_cd();
     void ccsd_mp2();
     void ccsd_iterations();
     void ccsd_3index_intr();
     void ccsd_F_intr();
     void ccsd_WmnijT2();
     void ccsd_WijamT2();
+    void ccsd_WijamT2_high_mem();
     void ccsd_WmbejT2();
     void ccsd_WabefT2();     
     void ccsd_Wabef2T2();     
+    void ccsd_WabefT2_high_mem();     
+    void ccsd_WabefT2_ao_basis();     
     void ccsd_t1_amps();
     void ccsd_t2_amps();
     void ccsd_energy();
     void ccsd_u2_amps(SharedTensor2d &U, SharedTensor2d &T);
+    void ccsd_u2_amps2(SharedTensor2d &U, SharedTensor2d &T);
     void ccsd_t2_prime_amps(SharedTensor2d &U, SharedTensor2d &T);
+    void ccsd_t2_prime_amps2(SharedTensor2d &U, SharedTensor2d &T);
     void ccsd_tau_amps(SharedTensor2d &U, SharedTensor2d &T);
     void ccsd_tau_tilde_amps(SharedTensor2d &U, SharedTensor2d &T);
     void ccsd_mp2_low();
@@ -416,13 +458,35 @@ protected:
     void ccsdl_Wmbij();         // OVOO
     void ccsdl_Wmnij();         // OOOO
     void ccsdl_WmbejL2();
-    void ccsdl_WmnijL2();
+    void ccsdl_VmnijL2();
     void ccsdl_WijmnL2();
     void ccsdl_WabefL2();     
+    void ccsdl_WabefL2_high_mem();     
     void ccsdl_Wmnie_direct(SharedTensor2d &W);
+    void ccsdl_tau_amps(SharedTensor2d &U, SharedTensor2d &T);
+    void ccsdl_LijmeL2_high_mem();
+
+    // CCSD Density
+    void ccsd_pdm_3index_intr();
+    void ccsd_pdm_yQia();
+    void ccsd_opdm();
+    void ccsd_tpdm();
+
+    // CCSD(T)
+    void ccsd_canonic_triples();
+    void ccsd_canonic_triples_hm();
+    void ccsd_canonic_triples_disk();
+    void ccsd_t_manager();
+    void ccsd_t_manager_cd();
+
+    // Lambda-CCSD(T)
+    void ccsdl_canonic_triples_disk();
+    void ccsdl_t_manager();
+    void ccsdl_t_manager_cd();
 
     // CCD
     void ccd_manager();
+    void ccd_manager_cd();
     void ccd_mp2();
     void ccd_iterations();
     void ccd_3index_intr();
@@ -430,6 +494,7 @@ protected:
     void ccd_WmnijT2();
     void ccd_WmbejT2();
     void ccd_WabefT2();     
+    void ccd_WabefT2_high_mem();     
     void ccd_t2_amps();
     void ccd_mp2_low();
     void ccd_iterations_low();
@@ -448,9 +513,18 @@ protected:
     void ccdl_Wmbje();         // OVOV
     void ccdl_Wmnij();         // OOOO
     void ccdl_WmbejL2();
-    void ccdl_WmnijL2();
+    void ccdl_VmnijL2();
     void ccdl_WijmnL2();
     void ccdl_WabefL2();     
+
+    // CCD Density
+    void ccd_pdm_3index_intr();
+    void ccd_pdm_yQia();
+    void ccd_opdm();
+    void ccd_tpdm();
+
+    // QCHF
+    void qchf_manager();
 
     // orbital pairs
     int so_pair_idx(int i, int j);
@@ -476,6 +550,8 @@ protected:
      int natom;
      int nmo;		// Number of MOs
      int nao;		// Number of AOs
+     int nao_nz;	// Number of non-zero AOs
+     int ndf_nz;	// Number of non-zero DF ints in AO-basis
      int nso;		// Number of SOs
      int noccA;		// Number of alpha occupied orbitals
      int noccB;		// Number of beta occupied orbitals
@@ -495,7 +571,9 @@ protected:
      int ntri; 		// square matrix dimension (nmo) -> pitzer order
      int ntri_so;	// square matrix dimension (nso) -> pitzer order
      int ntri_ijAA;
+     int ntri_ijBB;
      int ntri_abAA;
+     int ntri_abBB;
      int nQ;          // numer of aux-basis
      int nQ_ref;      // numer of aux-basis for DF_BASIS_SCF
      int nso2_;       // nso * nso
@@ -529,6 +607,7 @@ protected:
      int pcg_conver;
 
      int exp_cutoff;
+     int exp_int_cutoff;
      int multp; 
      int charge;
      int print_;
@@ -560,6 +639,8 @@ protected:
      double cost_3amp; 
      double cost_4amp; 
      double cost_5amp; 
+     double cost_4vex_hm;        // Mem req. for high mem evaluation of 4-virtuals exchange term  
+     double cost_triples_iabc;   // Mem req. for high mem evaluation of (ia|bc) used in (T) 
 
      // Common
      double Enuc;
@@ -590,6 +671,7 @@ protected:
      double Escsnmp2AB;
      double DE;
      double cutoff;
+     double int_cutoff_;
      double tol_Eod;
      double tol_grad;
      double tol_t2;
@@ -675,6 +757,10 @@ protected:
      double EccsdLAA;
      double EccsdLBB;
      double EccsdLAB;
+     double Eccsd_t;
+     double E_t;
+     double Eccsd_at;
+     double E_at;
 
      // CCD
      double Eccd;
@@ -723,9 +809,13 @@ protected:
      string guess_type_; 
      string qchf_; 
      string cc_lambda_; 
+     string Wabef_type_; 
+     string triples_iabc_type_; 
 
      bool df_ints_incore;
      bool t2_incore;
+     bool do_4vex_hm;
+     bool do_triples_hm;
 
      double **C_pitzerA;     
      double **C_pitzerB;     
@@ -772,6 +862,12 @@ protected:
      SharedTensor2d FvoB;          // Fock vo block     
      SharedTensor2d FvvA;          // Fock VV block     
      SharedTensor2d FvvB;          // Fock vv block     
+     SharedTensor1d eigooA;	 
+     SharedTensor1d eigooB;	 
+     SharedTensor1d eigvvA;	 
+     SharedTensor1d eigvvB;	 
+     SharedTensor1d eps_orbA;	 
+     SharedTensor1d eps_orbB;	 
 
      // DF Integrals
      SharedTensor2d Jmhalf;             // J Metric DF_BASIS_CC (RI)
@@ -815,6 +911,8 @@ protected:
      SharedTensor2d G1c_ij;             
      SharedTensor2d G1c_ab;             
      SharedTensor2d G1c_oo;             
+     SharedTensor2d G1c_ov;             
+     SharedTensor2d G1c_vo;             
      SharedTensor2d G1c_vv;             
      SharedTensor2d G1c;               // Correlation part of OPDM
      SharedTensor2d G1;                // Full OPDM (MO)
@@ -843,6 +941,10 @@ protected:
      SharedTensor2d GiaB;              
      SharedTensor2d GaiA;              
      SharedTensor2d GaiB;              
+     SharedTensor2d GtijA;              
+     SharedTensor2d GtijB;              
+     SharedTensor2d GtabA;              
+     SharedTensor2d GtabB;              
 
      // DF TPDM
      SharedTensor2d G2c_ij;                                    
@@ -1032,12 +1134,14 @@ protected:
      SharedTensor2d t1newA;            // T_i^a(1)
      SharedTensor2d t1newB;            // T_i^a(1)
      SharedTensor1d T1c;               // T1_Q
+     SharedTensor1d L1c;               // L1_Q
      SharedTensor2d l1A;               // T_i^a(1)
      SharedTensor2d l1B;               // T_i^a(1)
      SharedTensor2d l1newA;            // T_i^a(1)
      SharedTensor2d l1newB;            // T_i^a(1)
      SharedTensor1d gQ;                // G_Q
      SharedTensor1d gQp;               // G_Q'
+     SharedTensor1d gQt;               // Gt_Q
 
      SharedTensor2d FijA;               
      SharedTensor2d FijB;               

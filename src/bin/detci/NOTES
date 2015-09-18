@@ -1,7 +1,7 @@
 ****************************************************************************
 22 January 2008: CDS
 
-I took out 
+I took out
 #include <unistd.h>
 #include <sys/time.h>
 
@@ -38,4 +38,78 @@ be perfect, as well as different icore options.
 Ok, added several new test cases.  I then ripped out all I/O offset
 and I/O-related zero block stuff.  Amazingly, all test cases seem
 to pass.  This is actually somewhat surprising...
+
+*************************************************************************
+27 April 2015: CDS
+
+Unified naming scheme for CI, MCSCF, and beyond
+
+Per irrep:
+
+----- read from input and just used to set up spaces below, not really
+      especially meaningful to the CI:
+docc           - Doubly occupied orbitals.
+socc           - Singly occupied orbitals.
+
+----- orbitals dropped from the CI, kept doubly occupied
+frozen_docc    : truly frozen orbitals, no excitations or orbital rotations
+rstr_docc      : Kept doubly occupied but orbital rotations ok in MCSCF
+dropped_docc   : frozen_docc + rstr_docc , replaces old frozen_docc
+
+----- orbitals active in the CI
+ras_opi[ras]   : orbitals per irrep for RAS space "ras", ras=[0,1,2,3]
+                 corresponding to RAS1, RAS2, RAS3, RAS4.  Same thing
+                 it always meant.
+
+----- orbitals dropped from the CI, kept unoccupied
+frozen_uocc    : absolutely frozen unoccupied orbitals
+rstr_uocc      : kept unoccupied but orbital rotations ok in MCSCF
+dropped_uocc   : frozen_uocc + rstr_uocc, replaces old frozen_uocc
+
+Totals:
+  CalcInfo.num_expl_cor_orbs = 0; // this isn't enabled anymore, zero it
+  CalcInfo.num_fzc_orbs; // truly frozen core, sum(frozen_docc)
+  CalcInfo.num_rsc_orbs; // restricted core, sum(rstr_docc)
+  CalcInfo.num_fzv_orbs; // truly frozen virts, sum(frozen_uocc)
+  CalcInfo.num_rsv_orbs; // restricted virtuals, sum(rstr_uocc)
+  CalcInfo.num_drc_orbs; // dropped core  = num_fzc_orbs + num_rsc_orbs
+  CalcInfo.num_drv_orbs; // dropped virts = num_fzv_orbs + num_rsv_orbs
+
+
+  o New orbital space setup routine, ras_set3(), replaces ras_set2().
+Now called from DETCI and TRANSQT2.
+
+  o Did a global replace of num_fzc_orbs with
+num_drc_orbs and num_fzv_orbs with num_drv_orbs.
+
+  o Likewise did global replace of frozen_docc -> dropped_docc,
+frozen_uocc -> dropped_uocc.
+
+In progress:
+
+  o With the above few changes in place, should go through MCSCF_ files
+and make similar changes.
+
+  o We should not be getting the guess frozen_per_irrep out of the
+current Process::environment.wavefunction()->frzcpi()[h].  Who knows where
+that came from?  Need another mechanism to pass this information.  Maybe
+generate it from the molecule itself... is SCF really necessary to get this
+info?  See what the SCF does.
+
+  o transqt2 is not currently allowing mixed frozen/restricted, it's either
+or (see get_moinfo.cc)
+
+  o test case rasci-c2-active was failing because we redefined active in a
+two-part input.  This is really more of an input parsing issue than a
+detci issue.  At the moment I fixed this by adding
+revoke_global_option_changed("ACTIVE") in between runs.  Wonder if there
+is a better shortcut for this command.
+
+  o At the moment, the ZAPT2 test case zaptn-nh2 is not running with the CI
+tests.  Need to add it.
+
+  o CI wavefunction currently has fzcpi and fzvpi arrays that copy over
+the stuff from CalcInfo, but this is kind of meaningless because we normally
+work with the dropped core arrays not just frozen parts.  Need to reformulate
+what goes in a CI wavefunction anyways
 

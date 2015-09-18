@@ -33,7 +33,6 @@
 ** Last modified by MLL on 25 November 1997
 */
 
-/* #define DEBUG */
 
 #include <cstdio>
 #include <cstdlib>
@@ -69,7 +68,7 @@ extern void H0block_coupling_calc(double E, struct stringwr **alplist,
 
 void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       **betlist, double *evals, double conv_e,
-      double conv_rms, double enuc, double efzc,
+      double conv_rms, double enuc, double edrc,
       int nroots, int maxiter, int maxnvect, std::string out, int print_lvl)
 {
    int i, j, k, l, ij, I, L, L2=0, L3=0, tmpi, detH0;
@@ -246,7 +245,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    if (Parameters.nodfile == FALSE && 
      Parameters.guess_vector == PARM_GUESS_VEC_DFILE) {
      if ((i = Dvec.read_num_vecs()) != nroots) {
-       outfile->Printf( "D file contains %d not %d vectors.  Trying another guess.", i, nroots);
+       outfile->Printf( "D file contains %d not %d vectors.  Trying another guess.\n", i, nroots);
        dvec_read_fail = true;
        /*
        if (Parameters.h0blocksize == 0) {
@@ -609,10 +608,10 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
       Lvec[iter2] = L;
 
-      #ifdef DEBUG
-      outfile->Printf( "L[cur] = %3d, L[last] = %3d\n", L,
-        iter2 > 0 ? Lvec[iter2-1] : 999);
-      #endif
+      if (Parameters.print_lvl > 2) {
+        outfile->Printf( "L[cur] = %3d, L[last] = %3d\n", L,
+          iter2 > 0 ? Lvec[iter2-1] : 999);
+      }
 
       /* form contributions to the G matrix */
       Cvec.buf_lock(buffer1);
@@ -761,7 +760,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
        for (i=0; i<L; i++) {
          outfile->Printf( "\nGuess energy #%d = %15.9lf\n", i,
-           -1.0 * sqrt(sigma_overlap[i][i]) + CalcInfo.enuc + CalcInfo.efzc);
+           -1.0 * sqrt(sigma_overlap[i][i]) + CalcInfo.enuc + CalcInfo.edrc);
          }
 
        /* diagonalize sigma_overlap to see what that does
@@ -782,7 +781,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        sq_rsp(L, L, M[0], m_lambda[0][0], 1, m_alpha[0][0], 1.0E-14);
        for (i=0; i<L; i++) {
          m_lambda[0][0][i] = -1.0 * sqrt(m_lambda[0][0][i]) +
-           CalcInfo.enuc + CalcInfo.efzc;
+           CalcInfo.enuc + CalcInfo.edrc;
        }
        outfile->Printf( "\n Guess energy from H^2 = %15.9lf\n",
          m_lambda[0][0][L]);
@@ -867,10 +866,10 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        Dvec2.buf_unlock();
        L2 = L3 = nroots;
 
-       #ifdef DEBUG
-       outfile->Printf( "Gathered vectors 0 to %d and wrote to positions \
-          %d to %d\n", L-1, maxnvect-nroots, maxnvect-1);
-       #endif
+       if (Parameters.print_lvl > 2) {
+         outfile->Printf( "Gathered vectors 0 to %d and wrote to positions \
+            %d to %d\n", L-1, maxnvect-nroots, maxnvect-1);
+       }
 
        for (i=1; i<Parameters.collapse_size; i++) {
 
@@ -941,9 +940,9 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         L = L2;
         Llast = L;
         iter2 = 0;  Lvec[0] = L;
-        #ifdef DEBUG
-        outfile->Printf( "L = %d, L2 = %d, L3 = %d\n",L, L2, L3);
-        #endif
+        if (Parameters.print_lvl > 2) {
+          outfile->Printf( "L = %d, L2 = %d, L3 = %d\n",L, L2, L3);
+        }
 
         /* write file_offset and file_number array out to detci.dat */
     /*
@@ -1059,11 +1058,11 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
           Cvec.buf_unlock();
           for (i=0; i<nroots; i++) {
              olsen_iter_xy(Dvec,Sigma,Hd,&tmpx,&tmpy,buffer1,buffer2,
-               lambda[iter2][i]+efzc,i,L,alpha[iter2], alplist, betlist);
+               lambda[iter2][i]+edrc,i,L,alpha[iter2], alplist, betlist);
              x[i] = tmpx;
              y[i] = tmpy;
              /* outfile->Printf("x[%d] = %lf    y[%d] = %lf\n",i,x[i],i,y[i]);
-               E_est[i] += efzc; */
+               E_est[i] += edrc; */
              errcod = H0block_calc(lambda[iter2][i]);
              if (!errcod)
                outfile->Printf("Determinant of H0block is too small.\n");
@@ -1076,7 +1075,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
              E_est[i] = y[i]/x[i];
              /*
                outfile->Printf("E_est[%d] = %20.12f lambda[%d] = %20.12f\n",i,
-                    E_est[i]+efzc+enuc,i,lambda[iter2][i]+efzc+enuc);
+                    E_est[i]+edrc+enuc,i,lambda[iter2][i]+edrc+enuc);
              */
              }
          Dvec.dcalc(nroots,L,alpha[iter2],lambda[iter2],dvecnorm,Cvec,Sigma,
@@ -1100,7 +1099,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
             converged = 0;
             }
          outfile->Printf( "Iter %2d  Root %2d = %13.9lf",
-            iter, i+1, (lambda[iter2][i] + enuc + efzc));
+            iter, i+1, (lambda[iter2][i] + enuc + edrc));
          outfile->Printf( "   Delta_E %10.3E   Delta_C %10.3E %c\n",
             lambda[iter2][i] - lastroot[i], dvecnorm[i],
             root_converged[i] ? 'c' : ' ');
@@ -1129,7 +1128,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
                }
 
             outfile->Printf( "\n* ROOT %d CI total energy = %17.13lf", i+1,
-               evals[i] + enuc + efzc);
+               evals[i] + enuc + edrc);
 
             if (nroots > 1) {
                outfile->Printf( "  (%6.4lf eV, %9.2lf 1/cm)\n",
@@ -1186,14 +1185,14 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          if (root_converged[k]) continue;
          Hd.buf_lock(buffer2);
          if (Parameters.precon == PRECON_EVANGELISTI)
-           tval = Dvec.dcalc_evangelisti(k, L, lambda[iter2][k]+efzc, Hd, Cvec,
+           tval = Dvec.dcalc_evangelisti(k, L, lambda[iter2][k]+edrc, Hd, Cvec,
                 buffer1, buffer2, Parameters.precon, L, alplist,
                 betlist, alpha[iter2]);
-         else tval = Dvec.dcalc2(k, lambda[iter2][k]+efzc, Hd,
+         else tval = Dvec.dcalc2(k, lambda[iter2][k]+edrc, Hd,
                 Parameters.precon, alplist, betlist);
          if (Parameters.precon >= PRECON_GEN_DAVIDSON && (iter >= 1)) {
            if (Parameters.h0block_coupling && (iter >= 2))
-             H0block_coupling_calc(lambda[iter2][k]+efzc, alplist, betlist);
+             H0block_coupling_calc(lambda[iter2][k]+edrc, alplist, betlist);
            Dvec.h0block_buf_precon(&tval, k);
            }
          if (tval < 1.0E-13 && print_lvl > 0) {
@@ -1285,14 +1284,14 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
      StringSet alphastrings, betastrings;
      SlaterDetSet dets;
      //SlaterDetVector vec;
-     short int *fzc_occ;
+     short int *drc_occ;
      unsigned char *newocc;
      int irrep, gr, l, n;
 
-     if (CalcInfo.num_fzc_orbs > 0) {
-       fzc_occ = (short int *) malloc(CalcInfo.num_fzc_orbs*sizeof(short int));
-       for (int l=0; l<CalcInfo.num_fzc_orbs; l++) {
-         fzc_occ[l] = CalcInfo.order[l]; /* put it in Pitzer order */
+     if (CalcInfo.num_drc_orbs > 0) {
+       drc_occ = (short int *) malloc(CalcInfo.num_drc_orbs*sizeof(short int));
+       for (int l=0; l<CalcInfo.num_drc_orbs; l++) {
+         drc_occ[l] = CalcInfo.order[l]; /* put it in Pitzer order */
        }
      }
 
@@ -1300,7 +1299,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        AlphaG->num_el : BetaG->num_el)*sizeof(unsigned char));
 
      stringset_init(&alphastrings,AlphaG->num_str,AlphaG->num_el,
-                    CalcInfo.num_fzc_orbs, fzc_occ);
+                    CalcInfo.num_drc_orbs, drc_occ);
      int list_gr = 0;
      int offset = 0;
      for(irrep=0; irrep<AlphaG->nirreps; irrep++) {
@@ -1311,7 +1310,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
            for (n=0; n<AlphaG->num_el; n++) {
              newocc[n] = (unsigned char)
                CalcInfo.order[alplist[list_gr][l].occs[n] +
-               CalcInfo.num_fzc_orbs];
+               CalcInfo.num_drc_orbs];
            }
        stringset_add(&alphastrings,l+offset,newocc);
          }
@@ -1320,7 +1319,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
      }
 
      stringset_init(&betastrings,BetaG->num_str,BetaG->num_el,
-                    CalcInfo.num_fzc_orbs, fzc_occ);
+                    CalcInfo.num_drc_orbs, drc_occ);
      list_gr = 0;
      offset = 0;
      for(irrep=0; irrep<BetaG->nirreps; irrep++) {
@@ -1331,7 +1330,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
            for (n=0; n<BetaG->num_el; n++) {
              newocc[n] = (unsigned char)
                CalcInfo.order[betlist[list_gr][l].occs[n] +
-               CalcInfo.num_fzc_orbs];
+               CalcInfo.num_drc_orbs];
            }
        stringset_add(&betastrings,l+offset,newocc);
          }
@@ -1339,8 +1338,8 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        }
      }
      free(newocc);
-     if (CalcInfo.num_fzc_orbs > 0)
-       free(fzc_occ);
+     if (CalcInfo.num_drc_orbs > 0)
+       free(drc_occ);
 
      int ii;
      int size = CIblks.vectlen;

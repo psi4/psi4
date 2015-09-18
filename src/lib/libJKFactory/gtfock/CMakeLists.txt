@@ -26,3 +26,6 @@ add_subdirectory(libcint)
 include_directories(${JK_GA_INC} ../libmints ../libqt pfock libcint)
 add_library(GTFock STATIC ${PFOCKSRC} ${CINTSRC})
 add_dependencies(GTFock GlobalArrays GTFockCInt)
+target_link_libraries(GTFock ${JK_GA_LIBS})
+set_property(GLOBAL APPEND PROPERTY LIBLIST GTFock)
+

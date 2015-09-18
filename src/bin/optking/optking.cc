@@ -41,9 +41,9 @@
 // Define the return types for optking.
 #if defined(OPTKING_PACKAGE_PSI)
   typedef psi::PsiReturnType OptReturnType;
-  #define OptReturnEndloop (psi::EndLoop)
   #define OptReturnSuccess (psi::Success)
   #define OptReturnFailure (psi::Failure)
+  #define OptReturnEndloop (psi::EndLoop)
 #elif defined(OPTKING_PACKAGE_QCHEM)
   typedef int OptReturnType;
   #define OptReturnFailure 2
@@ -216,11 +216,8 @@ OptReturnType optking(void) {
 
     // only generate coordinates and print them out
     if (Opt_params.generate_intcos_only) {
-      oprintf_out("\tUpon request, generating intcos and halting.");
+      oprintf_out("\tUpon request, generating intcos and halting.\n");
       close_output_dat();
-#if defined(OPTKING_PACKAGE_PSI)
-      psi::psiclean();
-#endif
       return OptReturnEndloop;
     }
 
@@ -465,6 +462,8 @@ OptReturnType optking(void) {
   } // end try STEP1
   catch (BAD_STEP_EXCEPT exc) {
     oprintf_out("\tThe BAD_STEP_EXCEPTion handler:\n\t%s\n", exc.g_message());
+    oprintf_out("\tDynamic level is %d.\n", Opt_params.dynamic);
+    oprintf_out("\tConsecutive backsteps is %d.\n", p_Opt_data->g_consecutive_backsteps());
 
     if ( (!Opt_params.dynamic || (p_Opt_data->g_consecutive_backsteps() < Opt_params.consecutive_backsteps_allowed))
         && (p_Opt_data->g_iteration() > 1) ) {
@@ -502,18 +501,33 @@ OptReturnType optking(void) {
   }
   catch (INTCO_EXCEPT exc) {
     oprintf_out("\tThe INTCO_EXCEPTion handler:\n\t%s\n", exc.g_message());
+    fprintf(stderr, "%s\n", exc.g_message());
     oprintf_out("\tDynamic level is %d.\n", Opt_params.dynamic);
     oprintf_out("\texc.g_really_quit() is %d.\n", exc.g_really_quit());
 
-    // Give up and quit.
-    if (Opt_params.dynamic == 0 || Opt_params.dynamic == 7 || exc.g_really_quit()) {
-      fprintf(stderr, "%s\n", exc.g_message());
-      oprintf_out( "%s\n", exc.g_message());
+    if (exc.g_really_quit()) { // quit no matter what is indicated by exception
+      oprintf_out("\n  **** Optimization has failed! (in %d steps) ****\n", p_Opt_data->nsteps());
+      delete p_Opt_data;
+      print_end_out();
+      close_output_dat();
+      return OptReturnFailure;
+    }
+
+    // There is no indication that new linear coordinates need to be added AND we are
+    // either not doing a dynamic optimization, or we have tried all available levels.
+    if ( (Opt_params.dynamic == 0 || Opt_params.dynamic == 7) && exc.linear_angles.empty()) {
+      oprintf_out("\n  **** Optimization has failed! (in %d steps) ****\n", p_Opt_data->nsteps());
+      delete p_Opt_data;
+      print_end_out();
+      close_output_dat();
+      return OptReturnFailure;
+/*
 #if defined (OPTKING_PACKAGE_QCHEM)
       QCrash(exc.g_message());
 #elif defined (OPTKING_PACKAGE_PSI)
       abort();
 #endif
+*/
     }
     else {
       if (exc.linear_angles.empty()) {

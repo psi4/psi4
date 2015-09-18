@@ -183,6 +183,7 @@ public:
     /// The list of atom ranges defining each fragment from parent molecule
     std::vector<std::pair<int, int> > fragments_;
 //****AVC****//
+
     Molecule();
     /// Copy constructor.
     Molecule(const Molecule& other);
@@ -617,6 +618,17 @@ public:
      * @return The ref counted cloned molecule.
      */
     boost::shared_ptr<Molecule> py_extract_subsets_6(int reals);
+
+    // => Fragment Composition <= //
+
+    /// The list of atom ranges defining each fragment from parent molecule (fragments[frag_ind] = <Afirst,Alast+1>)
+    const std::vector<std::pair<int, int> >& fragments() const { return fragments_; } 
+    /// A list describing how to handle each fragment
+    const std::vector<FragmentType>& fragment_types() const { return fragment_types_; }
+    /// The charge of each fragment
+    const std::vector<int>& fragment_charges() const { return fragment_charges_; }
+    /// The multiplicity of each fragment
+    const std::vector<int>& fragment_multiplicities() const { return fragment_multiplicities_; }
 
     /// Sets whether this molecule contains at least one zmatrix entry
     void set_has_zmatrix(bool tf) {zmat_ = tf;}
