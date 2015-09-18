@@ -87,7 +87,6 @@ void export_cubefile();
 void export_libfrag();
 void export_libparallel();
 void export_efp();
-void export_ciwave();
 
 // In export_plugins.cc
 void py_psi_plugin_close_all();
@@ -1445,9 +1444,6 @@ BOOST_PYTHON_MODULE(psi4)
 
     // EFP
     export_efp();
-
-    // CIWave
-    export_ciwave();
 
     // Options
 // The following line was conflct between master and roa branch (TDC, 10/29/2014)
