@@ -590,6 +590,7 @@ microiterations taken are as follows:
 
 Stability Analysis
 ~~~~~~~~~~~~~~~~~~
+.. _`stability_doc`:
 
 SCF algorithms attempt to minimize the gradient of the energy with respect  
 to orbital variation parameters. At convergence, the gradient should be approximately zero

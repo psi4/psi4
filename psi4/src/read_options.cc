@@ -912,16 +912,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (recommended for large calculations) some intermediate quantities are also
     printed. -*/
     options.add_int("PRINT", 1);
-    /*- \% of emmory for DF-MP2 three-index buffers -*/
+    /*- Proportion of memory available for the DF-MP2 three-index integral
+        buffers used to evaluate dispersion. !expert -*/
     options.add_double("SAPT_MEM_FACTOR", 0.9);
-    /*- The dimer wavefunction is stored in DIM and passed on to the
-    newest version of the SAPT code. -*/
+    /*- This option is used internally by the driver to pass the dimer 
+    wavefunction to the open-shell SAPT0 code. !expert -*/
     options.add("DIM", new PythonDataType());
-    /*- The monomer A wavefunction is stored in MONA and passed on to the
-    newest version of the SAPT code. -*/
+    /*- This option is used internally by the driver to pass the monomer A
+    wavefunction to the open-shell SAPT0 code. !expert -*/
     options.add("MONA", new PythonDataType());
-    /*- The monomer B wavefunction is stored in MONB and passed on to the
-    newest version of the SAPT code. -*/
+    /*- This option is used internally by the driver to pass the monomer B
+    wavefunction to the open-shell SAPT0 code. !expert -*/
     options.add("MONB", new PythonDataType());
   }
 

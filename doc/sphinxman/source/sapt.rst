@@ -10,8 +10,8 @@
 SAPT: Symmetry-Adapted Perturbation Theory
 ==========================================
 
-.. codeauthor:: Edward G. Hohenstein and Rob M. Parrish
-.. sectionauthor:: Edward G. Hohenstein
+.. codeauthor:: Edward G. Hohenstein, Rob M. Parrish and Jerome F. Gonthier
+.. sectionauthor:: Edward G. Hohenstein and Jerome F. Gonthier
 
 *Module:* :ref:`Keywords <apdx:sapt>`, :ref:`PSI Variables <apdx:sapt_psivar>`, :source:`LIBSAPT_SOLVER <src/lib/libsapt_solver>`
 
@@ -53,7 +53,7 @@ included; induction and dispersion first appear at second-order in :math:`V`. Fo
 a complete description of SAPT, the reader is referred to the excellent
 review by Jeziorski, Moszynski, and Szalewicz [Jeziorski:1994:1887]_.
 
-Several truncations of the SAPT expansion are available in the SAPT
+Several truncations of the closed-shell SAPT expansion are available in the SAPT
 module of |PSIfour|. The simplest truncation of SAPT is denoted SAPT0
 and defined in Eq. :eq:`SAPT0`.
 
@@ -110,7 +110,7 @@ description of electrostatically dominated complexes. :math:`\delta_{MP2}^{(2)}`
 can be applied to SAPT2+ or SAPT2+(3) energies whereas :math:`\delta_{MP2}^{(3)}` 
 should be applied to SAPT2+3 energies.
 
-A thorough analysis of the performance of these truncations of SAPT can be
+A thorough analysis of the performance of these truncations of closed-shell SAPT can be
 found in a review by Hohenstein and Sherrill [Hohenstein:2012:WIREs]_,
 and a systematic study of the accuracy of these truncations (with and 
 without an improved CCD treatment of dispersion) using different basis sets
@@ -124,6 +124,14 @@ exact integrals. In practice, we have found that the density-fitting
 approximation introduces negligible errors into the SAPT energy 
 (often less than 0.01 kcal/mol for small dimers) and greatly
 improves efficiency. 
+
+The latest addition to the SAPT code is the SAPT0 method for open-shell 
+monomers. Currently, |scf__reference| ``UHF`` should be used. This code
+is available for both exact and density fitted integrals, except for the
+dispersion terms which are only implemented with a factorization relying on
+density fitting.
+If both monomers are open-shell, their coupling is assumed to be high spin, i.e.
+two doublets would interact to form a triplet.
 
 The S\ :superscript:`2` approximation and scaling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -200,9 +208,10 @@ into monomers. SAPT does not use spatial symmetry and needs the geometry
 of the system to remain fixed throughout monomer and dimer calculations.
 These requirements are imposed whenever a SAPT calculation is requested
 but can also be set explicitly with the ``no_reorient`` and ``symmetry
-c1`` molecule keywords, as in the example above. A final note is that the
-SAPT module is only capable of performing SAPT computations for
-interactions between closed-shell singlets.
+c1`` molecule keywords, as in the example above. As a reminder, only
+SAPT0 can handle the interaction of both closed- and open-shell monomers.
+Higher-order SAPT is only available for computation of interactions between
+closed-shell singlets.
 
 The example input shown above would not be used in practice.
 To exploit the efficiency of the density-fitted SAPT implementation in
@@ -224,6 +233,117 @@ To exploit the efficiency of the density-fitted SAPT implementation in
 These options will perform the SAPT computation with DF-HF and a 
 superposition-of-atomic-densities guess. This is the preferred method of 
 running the SAPT module.
+As already mentioned above, the SAPT0 module for open-shell cases can also
+use exact integrals for all terms except for dispersion. In practice,
+density fitting is considerably faster and introduce negligible errors, thus
+it is the preferred method for open-shell cases as well.
+
+Below, you can find a minimum example of open-shell SAPT0 computation. ::
+
+  molecule {
+       0 1
+       O 0.000000  0.000000  6.000000
+       H 0.000000  1.431500  4.890600
+       H 0.000000 -1.431500  4.890600
+       --
+       0 2
+       O 0.000000  0.000000  0.000000
+       O 0.000000  2.503900  0.000000
+       H 0.000000 -0.424700 -1.839500
+       units bohr
+       symmetry c1
+       no_reorient
+       no_com
+  }
+  
+  set {
+  reference uhf
+  scf_type     df
+  basis         cc-pVDZ
+  }
+
+|scf__reference| needs to be ``UHF`` for the open-shell computation to proceed.
+
+Advanced example
+^^^^^^^^^^^^^^^^
+
+UHF computations can be difficult to converge in certain cases, thus you may
+want to have more control over the SCF procedure. You have the option of 
+doing the driver job in the input file, by performing the dimer and monomer computations
+yourself. In the example below, we do a stability analysis for the open-shell monomer only ::
+
+  molecule {
+       0 2
+       O 0.000000  0.000000  0.000000
+       O 0.000000  2.503900  0.000000
+       H 0.000000 -0.424700 -1.839500
+       --
+       0 1
+       O 0.000000  0.000000  6.000000
+       H 0.000000  1.431500  4.890600
+       H 0.000000 -1.431500  4.890600
+       units bohr
+       symmetry c1
+       no_reorient
+       no_com
+  }
+  
+  dimer = psi4.get_active_molecule()  
+  
+  set {
+  reference uhf
+  scf_type     df
+  basis         cc-pVDZ
+  df_basis_sapt cc-pVDZ-ri
+  guess sad
+  }
+  
+  dimer = psi4.get_active_molecule()
+  
+  set df_ints_io save
+  psi4.IO.set_default_namespace('dimer')
+  energy('scf')
+  wfn_dimer = psi4.wavefunction()
+  set df_ints_io load
+  
+  monomerA = dimer.extract_subsets(1,2)
+  activate(monomerA)
+  psi4.IO.change_file_namespace(97, 'dimer', 'monomerA')
+  psi4.IO.set_default_namespace('monomerA')
+  set {
+  stability_analysis follow
+  }
+  energy('scf')
+  wfn_monA = psi4.wavefunction()
+  
+  monomerB = dimer.extract_subsets(2,1)
+  activate(monomerB)
+  psi4.IO.change_file_namespace(97, 'monomerA', 'monomerB')
+  psi4.IO.set_default_namespace('monomerB')
+  set {
+  stability_analysis none
+  }
+  energy('scf')
+  wfn_monB = psi4.wavefunction()
+  
+  psi4.IO.change_file_namespace(97, 'monomerB', 'dimer')
+  activate(dimer)
+  psi4.IO.set_default_namespace('dimer')
+  
+  psi4.set_global_option_python('DIM', wfn_dimer)
+  psi4.set_global_option_python('MONA',wfn_monA)
+  psi4.set_global_option_python('MONB',wfn_monB)
+  
+  psi4.sapt()
+
+File 97 contains the three-index integrals processed for density fitting, and
+the command ``psi4.IO.change_file_namespace`` allow us to rename it
+and read integrals from it. Before each invokation of energy('scf'), options
+can be modified as desired. The |sapt__dim|, |sapt__mona| and |sapt__monb|
+options should be set through ``psi4.set_global_option_python`` to a 
+PSI4 wavefunction object.
+For more information on stability analysis, see the :ref:`stability <stability_doc>`
+documentation.
 
 .. index:: SAPT; SAPT0
 
@@ -235,7 +355,7 @@ sets. The performance of SAPT0 relies entirely on error cancellation, which
 seems to be optimal with a truncated aug-cc-pVDZ basis, namely,
 jun-cc-pVDZ (which we have referred to in previous work as
 aug-cc-pVDZ').  We do not recommend using SAPT0 with large basis sets
-like aug-cc-pVTZ.  A systematic study of the accuracy of SAPT0 and other SAPT 
+like aug-cc-pVTZ.  A systematic study of the accuracy of closed-shell SAPT0 and other SAPT 
 truncations, using different basis sets, is reported in 
 [Parker:2014:094106]_. In particular, an empirical recipe for scaled SAPT0
 can yield improved performance and has been included in the output file as
@@ -271,6 +391,14 @@ Advanced SAPT0 Keywords
 .. include:: autodir_options_c/sapt__denominator_delta.rst
 .. include:: autodir_options_c/sapt__denominator_algorithm.rst
 .. include:: autodir_options_c/globals__debug.rst
+
+Specific open-shell SAPT0 keywords
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. include:: autodir_options_c/sapt__mem_factor.rst
+.. include:: autodir_options_c/sapt__dim.rst
+.. include:: autodir_options_c/sapt__mona.rst
+.. include:: autodir_options_c/sapt__monb.rst
 
 .. index:: SAPT; higher-order
 
@@ -317,7 +445,7 @@ memory to hold :math:`3o^2v^2+v^2N_{aux}` arrays in core. With this
 requirement computations on the adenine-thymine complex can be performed
 with an aug-cc-pVTZ basis in less than 64GB of memory.
 
-Higher-order SAPT is treated separately from the higly optimized SAPT0
+Higher-order SAPT is treated separately from the highly optimized SAPT0
 code, therefore, higher-order SAPT uses a separate set of keywords. 
 The following keywords are relevant for higher-order SAPT.
 
@@ -388,6 +516,8 @@ energy function. ::
     energy('sapt2+(3)(ccd)-ct')
     energy('sapt2+3(ccd)-ct')
 
+For now, charge transfer computations are not available with open-shell SAPT0.
+
 A SAPT charge-transfer analysis will perform 5 HF computations: the dimer
 in the dimer basis, monomer A in the dimer basis, monomer B in the dimer
 basis, monomer A in the monomer A basis, and monomer B in the monomer B
@@ -415,8 +545,8 @@ The charge-transfer analysis above is carried out by taking the
 difference between SAPT induction as calculated in the dimer-centered
 basis (i.e., each monomer sees the basis functions on both monomers)
 vs. the monomer-centered basis (i.e., each monomer utilizes only its
-own basis set).  It is also possible to run a SAPT computation at any
-level using only the monomer-centered basis.  To do this, simply add
+own basis set).  It is also possible to run a closed-shell SAPT computation at any
+level using only the monomer-centered basis. To do this, simply add
 ``sapt_basis='monomer'`` to the energy function, such as ::
 
     energy('sapt2',sapt_basis='monomer')
@@ -424,7 +554,8 @@ level using only the monomer-centered basis.  To do this, simply add
 This procedure leads to faster compuations, but it converges more slowly
 towards the complete basis set limit than the default procedure, which uses
 the dimer-centered basis set.  Hence, monomer-centered basis SAPT
-computations are not recommended.
+computations are not recommended. The open-shell SAPT0 code is not
+compatible yet with monomer-centered computations.
 
 
 Interpreting SAPT Results

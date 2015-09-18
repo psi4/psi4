@@ -48,6 +48,8 @@ namespace psi{
 
 namespace sapt {
 
+// TODO: ROHF orbitals for coupled induction
+// TODO: SAPT charge transfer energy
 USAPT0::USAPT0()
 {
     common_init();
@@ -181,6 +183,10 @@ double USAPT0::compute_energy()
     }
 
     Process::environment.globals["SAPT ENERGY"] = energies_["SAPT"];
+    Process::environment.globals["SAPT ELST ENERGY"] = energies_["Electrostatics"];
+    Process::environment.globals["SAPT EXCH ENERGY"] = energies_["Exchange"];
+    Process::environment.globals["SAPT IND ENERGY"] = energies_["Induction"];
+    Process::environment.globals["SAPT DISP ENERGY"] = energies_["Dispersion"];
 
     return 0.0;
 }
@@ -925,6 +931,7 @@ void USAPT0::fock_terms()
     energies_["Exch-Ind20,u"] = ExchInd20u_AB + ExchInd20u_BA;
 
     // => Coupled Induction <= //
+    // TODO: Handle ROHF orbitals, their MO Hessian is not SPD
 
     // Compute CPKS for both alpha and beta electrons.
     std::map < std::string, boost::shared_ptr<Matrix> > x_sol = compute_x(jk,waB,wbB,waA,wbA);
