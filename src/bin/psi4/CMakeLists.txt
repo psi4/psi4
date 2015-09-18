@@ -24,7 +24,7 @@ list(SORT headers_list)
 
 set(sources_list "")
 # List of sources
-list(APPEND sources_list export_psio.cc export_mints.cc psi_stop.cc export_functional.cc export_chkpt.cc export_oeprop.cc export_plugins.cc export_libfrag.cc export_blas_lapack.cc psi4.cc export_cubefile.cc export_benchmarks.cc export_efp.cc clean.cc create_new_plugin.cc script.cc set_memory.cc read_options.cc export_libparallel.cc)
+list(APPEND sources_list export_psio.cc export_mints.cc psi_stop.cc export_functional.cc export_chkpt.cc export_oeprop.cc export_plugins.cc export_libfrag.cc export_blas_lapack.cc psi4.cc export_cubefile.cc export_benchmarks.cc export_efp.cc export_cubeprop.cc clean.cc create_new_plugin.cc script.cc set_memory.cc read_options.cc export_libparallel.cc)
 list(APPEND sources_list $<TARGET_OBJECTS:versioned_code>)
 
 # If you want to remove some sources specify them explictly here
@@ -49,7 +49,7 @@ list(APPEND
      LINKLIBS "${LIBC_INTERJECT}"
      "${psi_libraries}" "${Boost_LIBRARIES}"
      "${LAPACK_LIBRARIES}" "${BLAS_LIBRARIES}"
-     "${PYTHON_LIBRARIES}" "${EXTERNAL_LIBS}"
+     "${PYTHON_LIBRARY}" "${EXTERNAL_LIBS}"
      "${LIBUTIL_LIBRARIES}" "${LIBDL_LIBRARIES}"
      "${LIBRT_LIBRARIES}" "${LIBM_LIBRARIES}"
      )

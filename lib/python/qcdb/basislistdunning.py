@@ -20,6 +20,8 @@
 #@END LICENSE
 #
 
+from __future__ import absolute_import
+from __future__ import print_function
 """Module (auto-generated from make_dunning.pl script)
 with commands building :py:class:`~basislist.BasisFamily` objects that
 encode the Dunning basis set orbital definitions in
@@ -27,7 +29,7 @@ encode the Dunning basis set orbital definitions in
 orbital bases.
 
 """
-from basislist import *
+from .basislist import *
 
 
 def load_basfam_dunning():

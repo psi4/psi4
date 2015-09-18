@@ -1,6 +1,6 @@
 /*! \file
     \ingroup INT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <math.h>
 #include <stdio.h>
@@ -10,15 +10,15 @@
 #include <libint/constants.h>
 
 extern FILE* outfile, *vrr_header;
-extern void punt(char *);
+extern void punt(const char *);
 extern LibintParams_t Params;
 
 static void declare_localv();
 static void define_localv();
-
+void emit_vrr_build();
 static char **k1, **k2, **k3;
 
-int emit_vrr_build()
+void emit_vrr_build()
 {
   int old_am = Params.old_am;
   int new_am = Params.opt_am;
@@ -28,14 +28,14 @@ int emit_vrr_build()
   FILE *code;
   int i, j, k, l, f;
   int a, b;
-  int flag;
+  /*int flag;*/
   int am[2][3];
   int am_in[2];
   int current_highest_am, to_inline;
-  int nflip = 0;
+  /*int nflip = 0;*/
   int t1, t2, t3, t4;
   int class_size;
-  int type;
+  /*int type;*/
   int max1 = 0;
   int max2 = 0;
   int foo;
@@ -43,7 +43,7 @@ int emit_vrr_build()
   int k1max, k2max, k3max;
   int split,num_subfunctions,subbatch_length;
   int curr_count,curr_subfunction;
-  static char *k4[] = {"lpoz","lpon"};
+  static const char *k4[] = {"lpoz","lpon"};
   static const char *k1_suff = "o2z";
   static const char *k2_suff = "o2zn";
   static const char *k3_suff = "o2n";
@@ -77,7 +77,7 @@ int emit_vrr_build()
       /* Is this function to be made inline */
       current_highest_am = (la > lc) ? la : lc;
       to_inline = (current_highest_am <= am_to_inline) ? 1 : 0;
-      
+
       fprintf(outfile,"  AM_a = %c  AM_c = %c\n",am_letter[la],am_letter[lc]);
       am_in[0] = la;
       am_in[1] = lc;
@@ -179,18 +179,18 @@ int emit_vrr_build()
 	      if(am[a][1]) b = 1;
 	      if(am[a][0]) b = 0;
 
-          
+
 	      am[a][b] = am[a][b] - 1;
 	      am_in[a] = am_in[a] - 1;
 	      t2 = hash(am,am_in);
 	      fprintf(code, "*(vp++) = U%d%d*I0[%d] + U%d%d*I1[%d]",
-		      a*2, b, t2, foo, b , t2); 
+		      a*2, b, t2, foo, b , t2);
 	      if(am[a][b]){
 		am[a][b] = am[a][b] - 1;
 		am_in[a] = am_in[a] - 1;
 		t3 = hash(am,am_in);
-		fprintf(code, "\n           + (%s)*(I2[%d] - (%s)*I3[%d])", 
-			(a==0 ? k1[am[a][b]] : k3[am[a][b]]), 
+		fprintf(code, "\n           + (%s)*(I2[%d] - (%s)*I3[%d])",
+			(a==0 ? k1[am[a][b]] : k3[am[a][b]]),
 			t3, (k4[a]), t3);
 		max1 = (max1>am[a][b]+1) ? max1 : am[a][b]+1;
 		am[a][b] = am[a][b] + 1;
@@ -208,7 +208,7 @@ int emit_vrr_build()
 	      fprintf(code, ";\n");
 	      am[a][b] = am[a][b] + 1;
 	      am_in[a] = am_in[a] + 1;
-		
+
 	      t1++;
 	      curr_count++;
 	      if (curr_count == subbatch_length && split == 1) {
@@ -263,7 +263,7 @@ void declare_localv(int a, int k1max, int k2max, int k3max, FILE *code)
 void define_localv(int a, int foo, int k1max, int k2max, int k3max, FILE *code)
 {
   int i;
-  
+
   for(i=0;i<k2max;i++)
     fprintf(code,"  %s = %.1lf*Data->oo2zn;\n",k2[i],(double)(i+1));
   if(a==0)

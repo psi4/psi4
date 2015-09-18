@@ -27,6 +27,7 @@ Organizationally, this module isolates qcdb code from psi4 code.
 
 """
 from __future__ import print_function
+from __future__ import absolute_import
 import shutil
 import os
 import subprocess
@@ -45,6 +46,7 @@ import difflib
 #CUfrom molutil import *
 #CUfrom functional import *
 from driver import *
+from p4xcpt import *
 # never import driver, wrappers, or aliases into this file
 
 
@@ -59,7 +61,8 @@ def run_cfour_module(xmod):
     except OSError as e:
         sys.stderr.write('Program %s not found in path or execution failed: %s\n' % (cfour_executable, e.strerror))
         #p4out.write('Program %s not found in path or execution failed: %s\n' % (cfour_executable, e.strerror))
-        sys.exit(1)
+        message = ('Program %s not found in path or execution failed: %s\n' % (cfour_executable, e.strerror))
+        raise ValidationError(message)        
 
     c4out = ''
     while True:

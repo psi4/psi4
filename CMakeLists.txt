@@ -27,11 +27,24 @@ option(ENABLE_XHOST          "Enable processor-specific optimizations"     ON)
 option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
 option(ENABLE_PLUGINS        "Enable compilation of example plugins"       OFF)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
-option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     ON)
+option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     OFF)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
 # Modules requiring Fortran
-option(ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF)
-option(ENABLE_PCMSOLVER      "Enable PCMSolver library"                    OFF)
+if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH)
+   if(NOT CMAKE_Fortran_COMPILER)
+      message(FATAL_ERROR "The Fortran compiler has to be explicitly specified!")
+   endif()
+endif()
+include(CMakeDependentOption)
+CMAKE_DEPENDENT_OPTION(
+       ENABLE_DKH            "Enable DKH in libmints"                      ON
+                             "CMAKE_Fortran_COMPILER"                      OFF)
+CMAKE_DEPENDENT_OPTION(
+       ENABLE_PCMSOLVER      "Enable PCMSolver library"                    OFF
+                             "CMAKE_Fortran_COMPILER"                      OFF)
+CMAKE_DEPENDENT_OPTION(
+       ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF
+                             "CMAKE_Fortran_COMPILER"                      OFF)
 # Options for dashboard builds
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                        OFF)
 option(ENABLE_MEMCHECK       "Enable Valgrind memory check"                OFF)
@@ -44,16 +57,15 @@ option(ENABLE_JKFACTORY      "Enable the distributed JKFactory (requires MPI)"  
 set(EXTERNAL_LIBS)
 
 # Decide if Fortran is needed
-if(ENABLE_LIBERD OR ENABLE_PCMSOLVER)
-   if(CMAKE_Fortran_COMPILER)
-      enable_language(Fortran)
-      add_definitions(-DHAVE_FORTRAN)
-      # This is to use the CMake generated macros and not those based on FC_SYMBOL
-      add_definitions(-DUSE_FCMANGLE_H)
-      set(FORTRAN_ENABLED TRUE)
-   else()
-      message(FATAL_ERROR "The Fortran compiler has to be explicitly specified!")
-   endif()
+if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH)
+   include(FortranEnabler)
+   enable_language(Fortran)
+   # add_definitions(-DHAVE_FORTRAN)  # unused
+   # This is to use the CMake generated macros and not those based on FC_SYMBOL
+   add_definitions(-DUSE_FCMANGLE_H)
+   set(FORTRAN_ENABLED TRUE)
+   message(STATUS "Fortran ENABLED")
+   fortran_enabler()
 endif()
 
 # Include CMake modules as needed
@@ -81,8 +93,6 @@ include(CheckIncludeFiles)
 include(CheckFunctionExists)
 # Here we look for Perl, Sphinx, Doxygen and LaTeX
 include(ConfigDocumentation)
-# Access to the fortran_enabler macro
-include(FortranEnabler)
 
 if(NOT FORTRAN_ENABLED)
    # For linking to math subroutines use the FC_SYMBOL strategy, if Fortran was not enabled
@@ -135,8 +145,8 @@ link_libraries("${CMAKE_THREAD_LIBS_INIT}")
 
 # Python Detection
 include(ConfigPython)
-link_libraries("${PYTHON_LIBRARIES}")
-include_directories(SYSTEM "${PYTHON_INCLUDE_DIRS}")
+link_libraries("${PYTHON_LIBRARY}")
+include_directories(SYSTEM "${PYTHON_INCLUDE_DIR}")
 
 # Boost Detection
 # We need Boost.Python, so this has to come _after_ Python detection
@@ -148,11 +158,6 @@ include_directories(SYSTEM "${Boost_INCLUDE_DIRS}")
 if(ENABLE_CHEMPS2)
    include(ConfigChemps2)
 endif()
-
-#OpenBabel Detection
-#add_subdirectory(openbabel)
-#set(BABEL_LIBRARY_DIR ${CMAKE_BINARY_DIR}/lib)
-#set(BABEL_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include/openbabel-2.0)
 
 # Append the suffix given from input to all generated executables
 if(EXECUTABLE_SUFFIX)
@@ -194,8 +199,13 @@ if(NOT HAVE_FUNC_ERF)
 endif()
 
 if(ENABLE_LIBERD)
-   message(WARNING "Building/Using LibERD instead of LibInts!!!!")
+   message(STATUS "Building LibERD in addition to LibInts! When able LibERD will be used by default.")
    add_definitions(-DHAVE_ERD)
+endif()
+
+if(ENABLE_DKH)
+   message(STATUS "DKH in LibMints ENABLED")
+   add_definitions(-DHAVE_DKH)
 endif()
 
 # Libint configuration
@@ -226,15 +236,11 @@ set_property(GLOBAL PROPERTY PSILIB)
 # PCMSolver
 if(ENABLE_PCMSOLVER)
    find_package(ZLIB)
-   if(NOT ZLIB_FOUND)
-      set(ENABLE_PCMSOLVER OFF)
-      message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
-      message(STATUS " PCMSolver dependencies NOT satisfied:")
-      if(NOT ZLIB_FOUND)
-          message(STATUS "  - install Zlib development libraries")
-      endif()
+    if (NOT ZLIB_FOUND)
+        message(FATAL_ERROR "No Zlib, no PCMSolver. Skip with -DENABLE_PCMSOLVER=OFF")
+        # TODO ability to build psi4 against pre-built pcmsolver library like chemps2
+        #message(FATAL_ERROR "No Zlib, no PCMSolver. Build against existing with -DPCMSOLVER_ROOT=/path/to/pcmsolver or skip with -DENABLE_PCMSOLVER=OFF")
    else()
-      fortran_enabler()
       add_definitions(-DHAVE_PCMSOLVER)
       message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
       link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
@@ -260,9 +266,6 @@ if(BUILD_JK_FACTORY)
    set(HAVE_GLOBAL_ARRAYS FALSE)
    add_definitions(-DHAVE_JK_FACTORY)
    set(JKROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/libJKFactory)
-   set_property(GLOBAL APPEND PROPERTY PSILIB GTFockInt GTFock GTFockCInt
-      ${PROJECT_BINARY_DIR}/lib/libga.a
-      ${PROJECT_BINARY_DIR}/lib/libarmci.a)
 endif()
 
 # Add the documentation subdirectory

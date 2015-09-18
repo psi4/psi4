@@ -26,7 +26,7 @@ OCC: Orbital-Optimized Coupled-Cluster and M\ |o_slash|\ ller--Plesset Perturbat
 Introduction
 ~~~~~~~~~~~~
 
-Orbital-optimized methods have several advantages over non-optimized counterparts. 
+Orbital-optimized methods have several advantages over their non-optimized counterparts. 
 Once the orbitals are optimized, the wave function will obey the Hellmann-Feynman theorem 
 for orbital rotation parameters. Therefore, there is no need for orbital response terms 
 in the evaluation of analytic gradients. In other words, it is unnecessary to solve the 
@@ -34,11 +34,11 @@ first order coupled-perturbed CC and many-body perturbation theory (MBPT) equati
 Further, computation of one-electron properties is easier because there are no response contributions to the particle 
 density matrices (PDMs). Moreover, active space approximations can be readily incorporated into the CC methods 
 [Krylov:2000:vod]_. Additionally, orbital-optimized coupled-cluster avoids spurious second-order 
-poles in its response function, and its transition dipole moments are gauge invarianti [Pedersen:1999:od]_.
+poles in its response function, and its transition dipole moments are gauge invariant [Pedersen:1999:od]_.
 
-Another advantage is that the orbital-optimized methods does not suffer from artifactual symmetry-breaking 
+Another advantage is that the orbital-optimized methods do not suffer from artifactual symmetry-breaking 
 instabilities [Crawford:1997:instability]_, [Sherrill:1998:od]_, [Bozkaya:2011:omp2]_, and [Bozkaya:2011:omp3]_.
-Further, Kurlancheek and Head-Gordon [Kurlancek:2009]_ demonstrated that first order properties such as 
+Furthermore, Kurlancheek and Head-Gordon [Kurlancek:2009]_ demonstrated that first order properties such as 
 forces or dipole moments are discontinuous along nuclear coordinates when such a symmetry breaking occurs. 
 They also observed that although the energy appears well behaved, the MP2 method can have natural occupation 
 numbers greater than 2 or less than 0, hence may violate the N-representability condition. They further 
@@ -54,6 +54,21 @@ CCD (OD) is similar, the situation is different in the case of triples correctio
 geometries [Bozkaya:2012:odtl]_. Bozkaya and Schaefer demonstrated that orbital-optimized coupled cluster based 
 triple corrections, especially those of asymmetrics, provide significantly better potential energy curves than 
 CCSD based triples corrections.  
+
+**NOTE**: As will be discussed later, all methods with orbital-optimization functionality have non-orbital 
+optimized counterparts. Consequently, there arise two possible ways to call MP2 and DF-MP2. In most
+cases, users should prefer the DF-MP2 code described in the :ref:`DF-MP2 <sec:dfmp2>` section because it is
+faster. If gradients are needed (like in a geometry optimization), then the procedures outlined hereafter
+should be followed.
+
+Thus, there arise a few categories of method, each with corresponding input keywords:
+
+* Orbital-optimized MP and CC methods with conventional integrals( :ref:`OCC Methods <sec:occconv>`)
+* Non-orbital-optimized MP and CC methods with conventional integrals(:ref:`MP/CC  <sec:convocc>` )
+* Orbital-optimized MP and CC methods with DF and CD integrals(:ref:`DF/CD <sec:dfocc>` )
+    * Includes Non-orbital-optimized DF and CD methods 
+
+
 
 Theory 
 ~~~~~~
@@ -175,11 +190,13 @@ DFT orbitals may provide better initial guesses than UHF orbitals, hence converg
 In order to use ROHF orbitals we can simply use "reference rohf" option. For DFT orbitals one should use "reference uks" and "dft_functional b3lyp" options. Of 
 course users can use any DFT functional available in Psi4. 
 
+.. _`sec:occconv`:
 
 Methods
 ~~~~~~~
 
-The conventional and orbital-optimized MP2 methods currently supported in |Psifour| are outlined in Table :ref:`OMP2 Methods <table:omp2_calls>`.
+The conventional (i.e. non-orbital optimized) and orbital-optimized MP2 methods 
+currently supported in |Psifour| are outlined in Table :ref:`OMP2 Methods <table:omp2_calls>`.
 
     .. _`table:omp2_calls`:
 
@@ -294,8 +311,8 @@ Advanced Keywords
 
 .. _`sec:convocc`:
 
-OCC: Conventional M\ |o_slash|\ ller--Plesset Perturbation Theories 
-===================================================================
+Conventional OCC  M\ |o_slash|\ ller--Plesset Perturbation Theories 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 *Module:* :ref:`Keywords <apdx:occ>`, :ref:`PSI Variables <apdx:occ_psivar>`, :source:`OCC <src/bin/occ>`
 
@@ -307,6 +324,7 @@ conventional MP2 code, set |occ__mp2_type| to ``conv`` and call as usual
 
 Basic Keywords
 ~~~~~~~~~~~~~~
+
 .. include:: autodir_options_c/occ__mp2_type.rst
 .. include:: /autodir_options_c/occ__mp2_os_scale.rst
 .. include:: /autodir_options_c/occ__mp2_ss_scale.rst
@@ -328,4 +346,75 @@ available and can be controlled through OCC keywards.
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
     | cepa0                   | CEPA(0) (identical to Linearized CCD)                        |    Y    |     Y    | RHF/UHF                |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+
+.. _`sec:dfocc`:
+
+DF-OCC: Density-Fitted Orbital-Optimized Coupled-Cluster and Møller–Plesset Perturbation Theories
+=================================================================================================
+
+A lot of the functionality in OCC has been enabled with Density Fitting (DF) and Cholesky 
+Decomposition (CD) techniques, which can greatly speed up calculations and reduce memory
+requirements for typically negligible losses in accuracy.
+
+Methods
+~~~~~~~
+
+Density-fitted conventional and orbital-optimized CC methods currently supported in |Psifour| are outlined in Table :ref:`DF-OMP2 Methods <table:dfomp2_calls>`.
+
+    .. _`table:dfomp2_calls`:
+
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | Name                    | Calls Method                                                 |  Energy | Gradient | Reference              |
+    +=========================+==============================================================+=========+==========+========================+
+    | ri-mp2                  | Density-Fitted MP2                                           |    Y    |     Y    | RHF/ROHF/UHF           |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | cd-mp2                  | Cholesky-Decomposed MP2                                      |    Y    |     N    | RHF/ROHF/UHF           |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | df-omp2                 | Density-Fitted Orbital-Optimized MP2                         |    Y    |     Y    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | cd-omp2                 | Cholesky-Decomposed Orbital-Optimized MP2                    |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | df-ccsd2                | Density-Fitted CCSD                                          |    Y    |     Y    | RHF                    |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | cd-ccsd                 | Cholesky-Decomposed CCSD                                     |    Y    |     N    | RHF                    |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | df-ccd                  | Density-Fitted CCD                                           |    Y    |     Y    | RHF                    |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | cd-ccd                  | Cholesky-Decomposed CCD                                      |    Y    |     N    | RHF                    |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | ri-ccsd(t)              | Density-Fitted CCSD(T)                                       |    Y    |     N    | RHF                    |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | df-ccsd(at)             | Density-Fitted Lambda-CCSD(T)                                |    Y    |     N    | RHF                    |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | cd-ccsd(t)              | Cholesky-Decomposed CCSD(T)                                  |    Y    |     N    | RHF                    |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | cd-ccsd(at)             | Cholesky-Decomposed Lambda-CCSD(T)                           |    Y    |     N    | RHF                    |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+
+.. index:: DF-OMP2; setting keywords
+
+Basic Keywords
+~~~~~~~~~~~~~~
+
+.. include:: /autodir_options_c/dfocc__e_convergence.rst
+.. include:: /autodir_options_c/dfocc__r_convergence.rst
+.. include:: /autodir_options_c/dfocc__rms_mograd_convergence.rst
+.. include:: /autodir_options_c/dfocc__max_mograd_convergence.rst
+.. include:: /autodir_options_c/dfocc__mo_maxiter.rst
+.. include:: /autodir_options_c/dfocc__orb_opt.rst
+
+Advanced Keywords
+~~~~~~~~~~~~~~~~~
+
+.. include:: /autodir_options_c/dfocc__opt_method.rst
+.. include:: /autodir_options_c/dfocc__hess_type.rst
+.. include:: /autodir_options_c/dfocc__mo_diis_num_vecs.rst
+.. include:: /autodir_options_c/dfocc__orth_type.rst
+.. include:: /autodir_options_c/dfocc__do_diis.rst
+.. include:: /autodir_options_c/dfocc__do_level_shift.rst
+
+
+.. _`sec:dfconvocc`:
+
+
 

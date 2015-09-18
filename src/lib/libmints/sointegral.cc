@@ -34,7 +34,6 @@
 #include <boost/shared_ptr.hpp>
 #include "../libparallel2/Communicator.h"
 #include "../libparallel2/ParallelEnvironment.h"
-#define DEBUG
 
 namespace psi {
 

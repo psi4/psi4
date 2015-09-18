@@ -25,8 +25,11 @@
     \brief Enter brief description of file here 
 */
 #include <libqt/qt.h>
-#define EXTERN
 #include "MCSCF.h"
+#define EXTERN
+#include "globaldefs.h"
+#include "structs.h"
+#include "globals.h"
 
 namespace psi { namespace detci {
 
@@ -478,7 +481,7 @@ void MCSCF::form_full_mo_hess(int npairs, int *ppair, int *qpair, double *oei,
   outfile->Printf("Forming full MCSCF orbital Hessian\n");
  
   nmo = CalcInfo.nmo;
-  npop = MCSCF_CalcInfo.npop;
+  npop = CalcInfo.npop;
 
   /* loop over the pairs of independent pairs */
   for (pair1=0; pair1<npairs; pair1++) {
@@ -632,7 +635,7 @@ void MCSCF::form_diag_mo_hess_yy(int npairs, int *ppair, int *qpair, double *oei
   outfile->Printf("Forming diagonal MCSCF orbital Hessian (YY)\n");
 
   nmo = CalcInfo.nmo;
-  npop = MCSCF_CalcInfo.npop;
+  npop = CalcInfo.npop;
 
   /* loop over the pairs of independent pairs */
   for (pair1=0; pair1<npairs; pair1++) {

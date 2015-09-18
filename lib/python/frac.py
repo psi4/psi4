@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #
 #@BEGIN LICENSE
 #
@@ -26,6 +27,7 @@ import math
 import p4util
 from molutil import *
 from driver import *
+from p4xcpt import *
 
 # Scan from +1 electron to -1 electron
 def frac_traverse(mol, **kwargs):
@@ -44,23 +46,23 @@ def frac_traverse(mol, **kwargs):
     # These are overridden with the cation_mult and anion_mult kwargs
     multp = mult0 + 1
     multm = mult0 + 1
-    if kwargs.has_key('cation_mult'):
+    if 'cation_mult' in kwargs:
         multp = kwargs['cation_mult']
-    if kwargs.has_key('anion_mult'):
+    if 'anion_mult' in kwargs:
         multm = kwargs['anion_mult']
 
     # By default, we start the frac procedure on the 25th iteration
     # when not reading a previous guess
     frac_start = 25
-    if kwargs.has_key('frac_start'):
+    if 'frac_start' in kwargs:
         frac_start = kwargs['frac_start']
 
     # By default, we occupy by tenths of electrons
     LUMO_occs = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
     HOMO_occs  = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
-    if kwargs.has_key('HOMO_occs'):
+    if 'HOMO_occs' in kwargs:
         HOMO_occs = kwargs['HOMO_occs']
-    if kwargs.has_key('LUMO_occs'):
+    if 'LUMO_occs' in kwargs:
         LUMO_occs = kwargs['LUMO_occs']
 
     # By default, HOMO and LUMO are both in alpha
@@ -73,36 +75,36 @@ def frac_traverse(mol, **kwargs):
     else:
         HOMO = Z/2
     LUMO = HOMO+1
-    if kwargs.has_key('HOMO'):
+    if 'HOMO' in kwargs:
         HOMO = kwargs['HOMO']
-    if kwargs.has_key('LUMO'):
+    if 'LUMO' in kwargs:
         LUMO = kwargs['LUMO']
 
     # By default, DIIS in FRAC (1.0 occupation is always DIIS'd)
     frac_diis = True
-    if kwargs.has_key('frac_diis'):
+    if 'frac_diis' in kwargs:
         frac_diis = kwargs['frac_diis']
 
     # By default, use the neutral orbitals as a guess for the anion
     neutral_guess = True
-    if kwargs.has_key('neutral_guess'):
+    if 'neutral_guess' in kwargs:
         neutral_guess = kwargs['neutral_guess']
 
     # By default, burn-in with UHF first, if UKS
     hf_guess = False
     if psi4.get_global_option('REFERENCE') == 'UKS':
         hf_guess = True
-        if kwargs.has_key('hf_guess'):
+        if 'hf_guess' in kwargs:
             hf_guess = kwargs['hf_guess']
 
     # By default, re-guess at each N
     continuous_guess = False
-    if kwargs.has_key('continuous_guess'):
+    if 'continuous_guess' in kwargs:
          continuous_guess = kwargs['continuous_guess']
 
     # By default, drop the files to the molecule's name
     root = mol.name()
-    if kwargs.has_key('filename'):
+    if 'filename' in kwargs:
         root = kwargs['filename']
     traverse_filename = root + '.traverse.dat'
     # => Traverse <= #
@@ -258,12 +260,12 @@ def frac_nuke(mol, **kwargs):
     # By default, we start the frac procedure on the 25th iteration
     # when not reading a previous guess
     frac_start = 25
-    if kwargs.has_key('frac_start'):
+    if 'frac_start' in kwargs:
         frac_start = kwargs['frac_start']
 
     # By default, we occupy by tenths of electrons
     foccs = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
-    if kwargs.has_key('foccs'):
+    if 'foccs' in kwargs:
         foccs = kwargs['foccs']
 
     # By default, HOMO and LUMO are both in alpha
@@ -280,17 +282,17 @@ def frac_nuke(mol, **kwargs):
 
     # By default, nuke all the electrons
     Nmin = 0;
-    if (kwargs.has_key('nmax')):
+    if ('nmax' in kwargs):
         Nmin = N - int(kwargs['nmax'])
 
     # By default, DIIS in FRAC (1.0 occupation is always DIIS'd)
     frac_diis = True
-    if kwargs.has_key('frac_diis'):
+    if 'frac_diis' in kwargs:
         frac_diis = kwargs['frac_diis']
 
     # By default, drop the files to the molecule's name
     root = mol.name()
-    if kwargs.has_key('filename'):
+    if 'filename' in kwargs:
         root = kwargs['filename']
     traverse_filename = root + '.traverse.dat'
     stats_filename = root + '.stats.dat'
@@ -436,18 +438,18 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
 
     # By default, zero the omega to 3 digits
     omega_tol = 1.0E-3;
-    if (kwargs.has_key('omega_tolerance')):
+    if ('omega_tolerance' in kwargs):
         omega_tol = kwargs['omega_tolerance']
 
     # By default, do up to twenty iterations
     maxiter = 20;
-    if (kwargs.has_key('maxiter')):
+    if ('maxiter' in kwargs):
         maxiter = kwargs['maxiter']
 
     # By default, do not read previous 180 orbitals file
     read = False;
     read180 = ''
-    if (kwargs.has_key('read')):
+    if ('read' in kwargs):
         read = True;
         read180 = kwargs['read']
 
@@ -556,8 +558,8 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     delta_r = IPr - kIPr;
 
     if (IPr > kIPr):
-        psi4.print_out('\n***IP Fitting Error: Right Omega limit should have kIP > IP')
-        sys.exit(1)
+        message = ('\n***IP Fitting Error: Right Omega limit should have kIP > IP')
+        raise ValidationError(message)
 
     omegas.append(omega_r)
     types.append('Right Limit')
@@ -607,8 +609,8 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     delta_l = IPl - kIPl;
 
     if (IPl < kIPl):
-        psi4.print_out('\n***IP Fitting Error: Left Omega limit should have kIP < IP')
-        sys.exit(1)
+        message = ('\n***IP Fitting Error: Left Omega limit should have kIP < IP')
+        raise ValidationError(message)
 
     omegas.append(omega_l)
     types.append('Left Limit')

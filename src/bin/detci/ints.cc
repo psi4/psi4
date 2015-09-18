@@ -62,7 +62,7 @@ void read_integrals()
    int nmotri, nmotri_full;
    double value;
    extern double check_energy(double *H, double *twoel_ints, int *docc, 
-      int *frozen_docc, int fzc_flag, double escf, double enuc, double efzc, 
+      int *dropped_docc, int drc_flag, double escf, double enuc, double edrc, 
       int nirreps, int *reorder, int *opi, int print_lvl, std::string out);
    int junk;
    double *tmp_onel_ints;
@@ -78,8 +78,8 @@ void read_integrals()
 
    /*
      One-electron integrals: always filter what DETCI considers
-     frozen (whatever is in the fzc arrays, which internally DETCI
-     uses for user's frozen core or user's frozen core + restricted core)
+     dropped (whatever is in the drc arrays, which internally DETCI
+     uses for user's frozen core + restricted core)
      because the one-electron integrals are written out as the full
      size over all MO's regardless of the computation type.
    */
@@ -88,7 +88,7 @@ void read_integrals()
    iwl_rdone(Parameters.oei_file, PSIF_MO_FZC, tmp_onel_ints, nmotri_full,
              0, (Parameters.print_lvl>4), "outfile");
    filter(tmp_onel_ints, CalcInfo.onel_ints, ioff, CalcInfo.nmo, 
-	  CalcInfo.num_fzc_orbs, CalcInfo.num_fzv_orbs);
+	  CalcInfo.num_drc_orbs, CalcInfo.num_drv_orbs);
    free(tmp_onel_ints);
 
    /*
@@ -102,8 +102,8 @@ void read_integrals()
    */
 
   if (Parameters.filter_ints) {
-    nfilter_core = CalcInfo.num_fzc_orbs;
-    nfilter_vir  = CalcInfo.num_fzv_orbs;
+    nfilter_core = CalcInfo.num_drc_orbs;
+    nfilter_vir  = CalcInfo.num_drv_orbs;
   }
   else {
     nfilter_core = 0;
@@ -163,8 +163,8 @@ void read_integrals()
       }
 
    CalcInfo.eref = check_energy(CalcInfo.onel_ints, CalcInfo.twoel_ints, 
-      CalcInfo.docc, CalcInfo.frozen_docc, Parameters.fzc, CalcInfo.escf, 
-      CalcInfo.enuc, CalcInfo.efzc, CalcInfo.nirreps, CalcInfo.reorder, 
+      CalcInfo.docc, CalcInfo.dropped_docc, 1, CalcInfo.escf, 
+      CalcInfo.enuc, CalcInfo.edrc, CalcInfo.nirreps, CalcInfo.reorder, 
       CalcInfo.orbs_per_irr, Parameters.print_lvl, "outfile");
 
 } 
@@ -381,8 +381,8 @@ void mcscf_read_integrals()
     outfile->Printf("\n\tTwo-electron integrals:\n");
 
   iwl_rdtwo(MCSCF_Parameters.tei_file, MCSCF_CalcInfo.twoel_ints, ioff, 
-     CalcInfo.nmo, MCSCF_Parameters.filter_ints ? MCSCF_CalcInfo.num_fzc_orbs : 0, 
-     MCSCF_Parameters.filter_ints ? MCSCF_CalcInfo.num_fzv_orbs : 0, 
+     CalcInfo.nmo, MCSCF_Parameters.filter_ints ? CalcInfo.num_fzc_orbs : 0, 
+     MCSCF_Parameters.filter_ints ? CalcInfo.num_fzv_orbs : 0, 
      (MCSCF_Parameters.print_lvl>6), "outfile");
 
 } 

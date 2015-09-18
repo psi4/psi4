@@ -39,8 +39,8 @@ void DFOCC::omp2_opdm()
     timer_on("opdm");
 if (reference_ == "RESTRICTED") {
     // Tensors 
-    T = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccA, navirA, naoccA, navirA));
-    U = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
+    T = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
+    U = SharedTensor2d(new Tensor2d("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") {
         u2_rmp2_direct(T, U);
     }

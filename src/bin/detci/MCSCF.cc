@@ -42,8 +42,19 @@
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <psifiles.h>
-#define EXTERN
+#include <libciomr/libciomr.h>
+#include <libdiis/diismanager.h>
+#include <libdiis/diisentry.h>
+#include <libmints/wavefunction.h>
+#include <libmints/matrix.h>
+#include <libmints/vector.h>
 #include "MCSCF.h"
+#include "ciwave.h"
+#include "MCSCF_indpairs.h"
+#include "globaldefs.h"
+#include "structs.h"
+#define EXTERN
+#include "globals.h"
 
 
 namespace psi { namespace detci {
@@ -59,22 +70,32 @@ extern void mcscf_get_mat_block(double **src, double **dst, int dst_dim,
 
 namespace psi { namespace detci {
 
-MCSCF::MCSCF(Options& options, OutFile& IterSummaryOut)
-    : options_(options), IterSummaryOut_(IterSummaryOut)
+MCSCF::MCSCF(boost::shared_ptr<CIWavefunction> ciwave, OutFile& IterSummaryOut)
+    : options_(ciwave->options()), IterSummaryOut_(IterSummaryOut)
 {
     title();
-    get_mo_info(options_);
+    ciwfn_ = ciwave;
 
     // Form independent pairs
-    IndPairs.set(CalcInfo.nirreps, MAX_RAS_SPACES, CalcInfo.ras_opi,
-                 MCSCF_CalcInfo.ras_orbs, MCSCF_CalcInfo.frozen_docc, MCSCF_CalcInfo.fzc_orbs,
-                 MCSCF_CalcInfo.rstr_docc, MCSCF_CalcInfo.cor_orbs,
-                 MCSCF_CalcInfo.rstr_uocc, MCSCF_CalcInfo.vir_orbs,
-                 MCSCF_CalcInfo.frozen_uocc, MCSCF_CalcInfo.fzv_orbs,
-                 MCSCF_CalcInfo.ci2relpitz, MCSCF_Parameters.ignore_ras_ras, MCSCF_Parameters.ignore_fz);
+    int* ci2relpitz = init_int_array(CalcInfo.nmo);
+    int i, j, h, cnt;
+    for (h=0, cnt=0; h<CalcInfo.nirreps; h++) {
+      for (i=0; i<CalcInfo.orbs_per_irr[h]; i++,cnt++) {
+        j = CalcInfo.reorder[cnt];
+        ci2relpitz[j] = i;
+      }
+    }
 
-    if (MCSCF_Parameters.print_lvl > 3) IndPairs.print();
-    num_indep_pairs_ = IndPairs.get_num_pairs();
+    IndPairs_ = boost::shared_ptr<IndepPairs>(new IndepPairs());
+    IndPairs_->set(CalcInfo.nmo, CalcInfo.nirreps, MAX_RAS_SPACES,
+                 CalcInfo.ras_opi, CalcInfo.frozen_docc,
+                 CalcInfo.rstr_docc, CalcInfo.rstr_uocc,
+                 CalcInfo.frozen_uocc, ci2relpitz,
+                 MCSCF_Parameters.ignore_ras_ras, MCSCF_Parameters.ignore_fz);
+    free(ci2relpitz);
+
+    if (MCSCF_Parameters.print_lvl > 3) IndPairs_->print();
+    num_indep_pairs_ = IndPairs_->get_num_pairs();
 
     // Setup the DIIS manager
     diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(MCSCF_Parameters.diis_max_vecs,
@@ -83,7 +104,15 @@ MCSCF::MCSCF(Options& options, OutFile& IterSummaryOut)
     diis_manager_->set_error_vector_size(1, DIISEntry::Pointer, num_indep_pairs_);
     diis_manager_->set_vector_size(1, DIISEntry::Pointer, num_indep_pairs_);
 
-//    IterSummaryOut_ = OutFile("file14.dat", TRUNCATE);
+    // Setup general parameters
+    theta_cur_ = init_array(num_indep_pairs_);
+    zero_arr(theta_cur_, num_indep_pairs_);
+
+    // Grab reference orbs
+    ref_orbs_ = SharedMatrix(ciwfn_->Ca()->clone());
+
+   MCSCF_CalcInfo.mo_hess = NULL;
+   MCSCF_CalcInfo.mo_hess_diag = NULL;
 }
 
 MCSCF::~MCSCF()
@@ -96,24 +125,24 @@ int MCSCF::update(void)
   int converged = 0;
   int steptype = 0;
 
+  // Grab integrals
   mcscf_read_integrals();            /* get the 1 and 2 elec MO integrals        */
-  read_density_matrices(options_);
+
+  // Grab the opdm and tpdm
+  SharedMatrix opdm(ciwfn_->Da()->clone());
+  opdm->add(ciwfn_->Db());
+  MCSCF_CalcInfo.opdm = opdm->pointer();
+
+  SharedVector tpdm = ciwfn_->get_tpdm();
+  MCSCF_CalcInfo.tpdm = tpdm->pointer();
 
   // Compute lagrangian
   MCSCF_CalcInfo.lag = lagcalc(MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm, MCSCF_CalcInfo.onel_ints_bare,
                      MCSCF_CalcInfo.twoel_ints, CalcInfo.nmo,
-                     MCSCF_CalcInfo.npop, MCSCF_Parameters.print_lvl, PSIF_MO_LAG); 
+                     CalcInfo.npop, MCSCF_Parameters.print_lvl, PSIF_MO_LAG);
 
-  read_thetas(num_indep_pairs_);
   if (MCSCF_Parameters.print_lvl > 2)
-    IndPairs.print_vec(MCSCF_CalcInfo.theta_cur, "\n\tRotation Angles:");
-
-  if (!read_ref_orbs()) {
-    read_cur_orbs();
-    write_ref_orbs();
-    zero_arr(MCSCF_CalcInfo.theta_cur, num_indep_pairs_);
-    write_thetas(num_indep_pairs_);
-  }
+    IndPairs_->print_vec(theta_cur_, "\n\tRotation Angles:");
 
   form_F_act();
   calc_gradient();
@@ -131,7 +160,7 @@ int MCSCF::update(void)
   if (!converged) {
     steptype = take_step();
     rotate_orbs();
-    write_thetas(num_indep_pairs_);
+    //transform_ints();
   }
   else
     steptype = 0;
@@ -140,6 +169,8 @@ int MCSCF::update(void)
 
   // Cleanup the iteration
   iteration_clean();
+  opdm.reset();
+  tpdm.reset();
 
   if (MCSCF_Parameters.print_lvl) tstop();
 
@@ -160,10 +191,10 @@ void MCSCF::title(void)
    outfile->Printf("                   C. David Sherrill\n") ;
    outfile->Printf("                     April 27 1998\n") ;
    outfile->Printf("*******************************************************\n");
-   outfile->Printf("\n\n\n");
+   outfile->Printf("\n");
    }
   else {
-   outfile->Printf( 
+   outfile->Printf(
      "\nD E T C A S: C. David Sherrill, April 27 1998\n");
    }
 }
@@ -183,25 +214,25 @@ void MCSCF::calc_gradient(void)
   int *parr, *qarr, *ir_ppair, *ir_qpair;
   int p, q;
 
-  npair = IndPairs.get_num_pairs();
-  parr  = IndPairs.get_p_ptr();
-  qarr  = IndPairs.get_q_ptr();
+  npair = IndPairs_->get_num_pairs();
+  parr  = IndPairs_->get_p_ptr();
+  qarr  = IndPairs_->get_q_ptr();
 
   MCSCF_CalcInfo.mo_grad = init_array(npair);
 
   // scratch array for dEdTheta, big enough for any irrep
   ir_mo_grad = init_array(npair);
-  
+
   // calculate dEdU, then dEdTheta
   for (h=0,offset=0; h<CalcInfo.nirreps; h++) {
 
     // Setup for this irrep
-    ir_npairs = IndPairs.get_ir_num_pairs(h);
+    ir_npairs = IndPairs_->get_ir_num_pairs(h);
     ir_norbs = CalcInfo.orbs_per_irr[h];
     if (h>0) offset += CalcInfo.orbs_per_irr[h-1];
     if (!ir_npairs) continue;
-    ir_ppair = IndPairs.get_ir_prel_ptr(h);
-    ir_qpair = IndPairs.get_ir_qrel_ptr(h);
+    ir_ppair = IndPairs_->get_ir_prel_ptr(h);
+    ir_qpair = IndPairs_->get_ir_qrel_ptr(h);
     ir_lag = block_matrix(ir_norbs, ir_norbs);
     mcscf_get_mat_block(MCSCF_CalcInfo.lag, ir_lag, ir_norbs, offset, CalcInfo.reorder);
 
@@ -210,7 +241,7 @@ void MCSCF::calc_gradient(void)
       print_mat(ir_lag, ir_norbs, ir_norbs, "outfile");
     }
 
-    ir_theta_cur = IndPairs.get_irrep_vec(h, MCSCF_CalcInfo.theta_cur); 
+    ir_theta_cur = IndPairs_->get_irrep_vec(h, theta_cur_);
 
     // Need to mult the Lagrangian by 2 to get dEdU
     C_DSCAL(ir_norbs*ir_norbs, 2.0, ir_lag[0], 1);
@@ -244,9 +275,9 @@ void MCSCF::calc_gradient(void)
     }
 
     // Put dEdTheta into the large gradient array
-    IndPairs.put_irrep_vec(h, ir_mo_grad, MCSCF_CalcInfo.mo_grad);
+    IndPairs_->put_irrep_vec(h, ir_mo_grad, MCSCF_CalcInfo.mo_grad);
     delete [] ir_theta_cur;
-    free_block(ir_lag); 
+    free_block(ir_lag);
   }
 
 
@@ -256,8 +287,8 @@ void MCSCF::calc_gradient(void)
     rms += value * value;
   }
 
-  if (MCSCF_Parameters.print_lvl > 2) 
-    IndPairs.print_vec(MCSCF_CalcInfo.mo_grad, "\n\tOrbital Gradient:");
+  if (MCSCF_Parameters.print_lvl > 2)
+    IndPairs_->print_vec(MCSCF_CalcInfo.mo_grad, "\n\tOrbital Gradient:");
 
   rms = sqrt(rms);
   MCSCF_CalcInfo.mo_grad_rms = rms;
@@ -284,7 +315,7 @@ void MCSCF::bfgs_hessian(void)
   double *dx, *dg, *hdg, **hess_copy, **hess_copy2, hess_det;
   int *idx;
 
-  npairs = IndPairs.get_num_pairs();
+  npairs = IndPairs_->get_num_pairs();
 
   psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
 
@@ -302,7 +333,7 @@ void MCSCF::bfgs_hessian(void)
       idx = init_int_array(npairs);
       for (i=0; i<npairs; i++) {
         for (j=0; j<npairs; j++) {
-          hess_copy[i][j] = MCSCF_CalcInfo.mo_hess[i][j];     
+          hess_copy[i][j] = MCSCF_CalcInfo.mo_hess[i][j];
         }
       }
       ludcmp(hess_copy,npairs,idx,&hess_det);
@@ -342,15 +373,15 @@ void MCSCF::bfgs_hessian(void)
 
       free(idx);
       free_block(hess_copy);
-    } 
+    }
 
     /* write Hessian */
-    psio_write_entry(PSIF_DETCAS, "Hessian Inverse", 
+    psio_write_entry(PSIF_DETCAS, "Hessian Inverse",
       (char *) MCSCF_CalcInfo.mo_hess[0], npairs*npairs*sizeof(double));
     /* write thetas */
-    psio_write_entry(PSIF_DETCAS, "Thetas", (char *) MCSCF_CalcInfo.theta_cur,
+    psio_write_entry(PSIF_DETCAS, "Thetas", (char *) theta_cur_,
       npairs*sizeof(double));
-    /* write gradient */  
+    /* write gradient */
     psio_write_entry(PSIF_DETCAS, "MO Gradient", (char *) MCSCF_CalcInfo.mo_grad,
       npairs*sizeof(double));
     psio_close(PSIF_DETCAS, 1);
@@ -365,7 +396,7 @@ void MCSCF::bfgs_hessian(void)
 
   /* read previous Hessian */
   MCSCF_CalcInfo.mo_hess = block_matrix(npairs,npairs);
-  psio_read_entry(PSIF_DETCAS, "Hessian Inverse", (char *) MCSCF_CalcInfo.mo_hess[0], 
+  psio_read_entry(PSIF_DETCAS, "Hessian Inverse", (char *) MCSCF_CalcInfo.mo_hess[0],
     npairs*npairs*sizeof(double));
 
   /* read previous thetas */
@@ -376,10 +407,10 @@ void MCSCF::bfgs_hessian(void)
     npairs*sizeof(double));
 
   /* compute updated Hessian by BFGS procedure, see Numerical Recipies in C */
-  
+
   /* get difference in thetas and gradient */
   for (i=0; i<npairs; i++) {
-    dx[i] = MCSCF_CalcInfo.theta_cur[i] - dx[i];
+    dx[i] = theta_cur_[i] - dx[i];
     dg[i] = MCSCF_CalcInfo.mo_grad[i] - dg[i];
   }
 
@@ -413,7 +444,7 @@ void MCSCF::bfgs_hessian(void)
   for (i=0; i<npairs; i++) {
     for (j=0; j<npairs; j++) {
       MCSCF_CalcInfo.mo_hess[i][j] += fac*dx[i]*dx[j] - fad*hdg[i]*hdg[j]
-         + fae*dg[i]*dg[j]; 
+         + fae*dg[i]*dg[j];
     }
   }
 
@@ -423,9 +454,9 @@ void MCSCF::bfgs_hessian(void)
     outfile->Printf( "\n");
   }
 
-  /* 
-     this doesn't work unless you fix that dg is not overwritten above 
-     when that's ensured, it seems to match 
+  /*
+     this doesn't work unless you fix that dg is not overwritten above
+     when that's ensured, it seems to match
    */
   /*
   if (MCSCF_Parameters.print_lvl > 3) {
@@ -445,7 +476,7 @@ void MCSCF::bfgs_hessian(void)
   hess_copy = block_matrix(npairs, npairs);
   for (i=0; i<npairs; i++) {
     for (j=0; j<npairs; j++) {
-      hess_copy[i][j] = MCSCF_CalcInfo.mo_hess[i][j];     
+      hess_copy[i][j] = MCSCF_CalcInfo.mo_hess[i][j];
     }
   }
   ludcmp(hess_copy,npairs,idx,&hess_det);
@@ -459,7 +490,7 @@ void MCSCF::bfgs_hessian(void)
     hess_copy2 = block_matrix(npairs, npairs);
     for (i=0; i<npairs; i++) {
       for (j=0; j<npairs; j++) {
-        hess_copy[i][j] = MCSCF_CalcInfo.mo_hess[i][j];     
+        hess_copy[i][j] = MCSCF_CalcInfo.mo_hess[i][j];
       }
     }
 
@@ -487,7 +518,7 @@ void MCSCF::bfgs_hessian(void)
           }
           ludcmp(hess_copy,npairs,idx,&hess_det);
           for (i=0;i<npairs;i++) hess_det *= hess_copy[i][i];
-          outfile->Printf("The determinant of the hessian is %8.3E\n",hess_det);                                                                                
+          outfile->Printf("The determinant of the hessian is %8.3E\n",hess_det);
           for (i=0; i<npairs; i++) {
             for (j=0; j<npairs; j++) {
               hess_copy2[i][j] = hess_copy[i][j];
@@ -495,7 +526,7 @@ void MCSCF::bfgs_hessian(void)
           }
         }
       }
-                                                                                
+
     /* n.b. this destroys hess_copy2, and mo_hess now is INVERSE Hess */
     invert_matrix(hess_copy2,MCSCF_CalcInfo.mo_hess,npairs,"outfile");
 
@@ -505,9 +536,9 @@ void MCSCF::bfgs_hessian(void)
   free_block(hess_copy);
 
   /* write thetas */
-  psio_write_entry(PSIF_DETCAS, "Thetas", (char *) MCSCF_CalcInfo.theta_cur,
+  psio_write_entry(PSIF_DETCAS, "Thetas", (char *) theta_cur_,
     npairs*sizeof(double));
-  /* write gradient */  
+  /* write gradient */
   psio_write_entry(PSIF_DETCAS, "MO Gradient", (char *) MCSCF_CalcInfo.mo_grad,
     npairs*sizeof(double));
   /* write updated Hessian */
@@ -539,7 +570,7 @@ void MCSCF::ds_hessian(void)
   double tval;
   double *dx, *dg;
 
-  npairs = IndPairs.get_num_pairs();
+  npairs = IndPairs_->get_num_pairs();
 
   psio_open(PSIF_DETCAS, PSIO_OPEN_OLD);
 
@@ -561,18 +592,18 @@ void MCSCF::ds_hessian(void)
 
     if (MCSCF_Parameters.print_lvl > 3) {
       outfile->Printf( "\nInitial MO Hessian:\n");
-      for (i=0; i<npairs; i++) 
+      for (i=0; i<npairs; i++)
         outfile->Printf( "%12.6lf\n", MCSCF_CalcInfo.mo_hess_diag[i]);
       outfile->Printf( "\n");
     }
 
     /* write Hessian */
-    psio_write_entry(PSIF_DETCAS, "Hessian", 
+    psio_write_entry(PSIF_DETCAS, "Hessian",
       (char *) MCSCF_CalcInfo.mo_hess_diag, npairs*sizeof(double));
     /* write thetas */
-    psio_write_entry(PSIF_DETCAS, "Thetas", (char *) MCSCF_CalcInfo.theta_cur,
+    psio_write_entry(PSIF_DETCAS, "Thetas", (char *) theta_cur_,
       npairs*sizeof(double));
-    /* write gradient */  
+    /* write gradient */
     psio_write_entry(PSIF_DETCAS, "MO Gradient", (char *) MCSCF_CalcInfo.mo_grad,
       npairs*sizeof(double));
     psio_close(PSIF_DETCAS, 1);
@@ -584,7 +615,7 @@ void MCSCF::ds_hessian(void)
 
   /* read previous Hessian */
   MCSCF_CalcInfo.mo_hess_diag = init_array(npairs);
-  psio_read_entry(PSIF_DETCAS, "Hessian", (char *) MCSCF_CalcInfo.mo_hess_diag, 
+  psio_read_entry(PSIF_DETCAS, "Hessian", (char *) MCSCF_CalcInfo.mo_hess_diag,
     npairs*sizeof(double));
 
   /* read previous thetas */
@@ -595,10 +626,10 @@ void MCSCF::ds_hessian(void)
     npairs*sizeof(double));
 
   /* compute updated Hessian by David's recipie */
-  
+
   /* get difference in thetas and gradient */
   for (i=0; i<npairs; i++) {
-    dx[i] = MCSCF_CalcInfo.theta_cur[i] - dx[i];
+    dx[i] = theta_cur_[i] - dx[i];
     dg[i] = MCSCF_CalcInfo.mo_grad[i] - dg[i];
   }
 
@@ -615,21 +646,21 @@ void MCSCF::ds_hessian(void)
     if (tval < - MO_HESS_MIN) tval = - MO_HESS_MIN;
     if (tval > 500.0) tval = 500.0;
     MCSCF_CalcInfo.mo_hess_diag[i] = 0.5 * (MCSCF_CalcInfo.mo_hess_diag[i] + tval);
-    if (MCSCF_CalcInfo.mo_hess_diag[i] < MO_HESS_MIN) 
+    if (MCSCF_CalcInfo.mo_hess_diag[i] < MO_HESS_MIN)
       MCSCF_CalcInfo.mo_hess_diag[i] = MO_HESS_MIN;
   }
 
   if (MCSCF_Parameters.print_lvl > 3) {
     outfile->Printf( "\nDS MO Hessian:\n");
-    for (i=0; i<npairs; i++) 
+    for (i=0; i<npairs; i++)
       outfile->Printf( "%12.6lf\n", MCSCF_CalcInfo.mo_hess_diag[i]);
     outfile->Printf( "\n");
   }
 
   /* write thetas */
-  psio_write_entry(PSIF_DETCAS, "Thetas", (char *) MCSCF_CalcInfo.theta_cur,
+  psio_write_entry(PSIF_DETCAS, "Thetas", (char *) theta_cur_,
     npairs*sizeof(double));
-  /* write gradient */  
+  /* write gradient */
   psio_write_entry(PSIF_DETCAS, "MO Gradient", (char *) MCSCF_CalcInfo.mo_grad,
     npairs*sizeof(double));
   /* write updated Hessian */
@@ -647,7 +678,7 @@ void MCSCF::ds_hessian(void)
 /*!
 ** calc_hessian()
 **
-** This function calculates an approximate MO Hessian from the 
+** This function calculates an approximate MO Hessian from the
 ** Fock matrix intermediates and two-electron integrals.
 **
 ** C. David Sherrill
@@ -658,42 +689,40 @@ void MCSCF::ds_hessian(void)
 void MCSCF::calc_hessian(void)
 {
 
-  int npairs, *ppair, *qpair, ncore;
+  int npairs, *ppair, *qpair;
 
-  npairs = IndPairs.get_num_pairs();
-  ppair = IndPairs.get_p_ptr();
-  qpair = IndPairs.get_q_ptr();
+  npairs = IndPairs_->get_num_pairs();
+  ppair = IndPairs_->get_p_ptr();
+  qpair = IndPairs_->get_q_ptr();
 
   /* Now calculate the approximate diagonal MO Hessian */
-  ncore = MCSCF_CalcInfo.num_fzc_orbs + MCSCF_CalcInfo.num_cor_orbs;
-
   if (MCSCF_Parameters.hessian == "DIAG") {
     MCSCF_CalcInfo.mo_hess_diag = init_array(npairs);
-    
-    if (MCSCF_Parameters.use_fzc_h == 1) 
-      form_diag_mo_hess(npairs, ppair, qpair, MCSCF_CalcInfo.onel_ints, 
-        MCSCF_CalcInfo.twoel_ints, MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm, MCSCF_CalcInfo.F_act, 
-        ncore, MCSCF_CalcInfo.npop, MCSCF_CalcInfo.mo_hess_diag);
+
+    if (MCSCF_Parameters.use_fzc_h == 1)
+      form_diag_mo_hess(npairs, ppair, qpair, MCSCF_CalcInfo.onel_ints,
+        MCSCF_CalcInfo.twoel_ints, MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm, MCSCF_CalcInfo.F_act,
+        CalcInfo.num_drc_orbs, CalcInfo.npop, MCSCF_CalcInfo.mo_hess_diag);
     else
-      form_diag_mo_hess_yy(npairs, ppair, qpair, MCSCF_CalcInfo.onel_ints, 
+      form_diag_mo_hess_yy(npairs, ppair, qpair, MCSCF_CalcInfo.onel_ints,
         MCSCF_CalcInfo.twoel_ints, MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm, MCSCF_CalcInfo.lag,
         MCSCF_CalcInfo.mo_hess_diag);
 
-    if (MCSCF_Parameters.print_lvl > 3)  
-      IndPairs.print_vec(MCSCF_CalcInfo.mo_hess_diag,"\n\tDiagonal MO Hessian:");
+    if (MCSCF_Parameters.print_lvl > 3)
+      IndPairs_->print_vec(MCSCF_CalcInfo.mo_hess_diag,"\n\tDiagonal MO Hessian:");
   }
   else if (MCSCF_Parameters.hessian == "APPROX_DIAG") {
     MCSCF_CalcInfo.mo_hess_diag = init_array(npairs);
-    form_appx_diag_mo_hess(npairs, ppair, qpair, MCSCF_CalcInfo.onel_ints, 
-                      MCSCF_CalcInfo.twoel_ints, MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm, 
-                      MCSCF_CalcInfo.F_act, ncore, MCSCF_CalcInfo.npop, 
+    form_appx_diag_mo_hess(npairs, ppair, qpair, MCSCF_CalcInfo.onel_ints,
+                      MCSCF_CalcInfo.twoel_ints, MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm,
+                      MCSCF_CalcInfo.F_act, CalcInfo.num_drc_orbs, CalcInfo.npop,
                       MCSCF_CalcInfo.mo_hess_diag);
-    if (MCSCF_Parameters.print_lvl > 3)  
-      IndPairs.print_vec(MCSCF_CalcInfo.mo_hess_diag,"\n\tAppx Diagonal MO Hessian:");
+    if (MCSCF_Parameters.print_lvl > 3)
+      IndPairs_->print_vec(MCSCF_CalcInfo.mo_hess_diag,"\n\tAppx Diagonal MO Hessian:");
   }
   else if (MCSCF_Parameters.hessian == "FULL") {
     MCSCF_CalcInfo.mo_hess = block_matrix(npairs,npairs);
-    form_full_mo_hess(npairs, ppair, qpair, MCSCF_CalcInfo.onel_ints, 
+    form_full_mo_hess(npairs, ppair, qpair, MCSCF_CalcInfo.onel_ints,
       MCSCF_CalcInfo.twoel_ints, MCSCF_CalcInfo.opdm, MCSCF_CalcInfo.tpdm, MCSCF_CalcInfo.lag,
       MCSCF_CalcInfo.mo_hess);
     if (MCSCF_Parameters.print_lvl > 3) {
@@ -703,10 +732,10 @@ void MCSCF::calc_hessian(void)
     }
   }
   else {
-    outfile->Printf( "(detcas): Unrecognized Hessian option %s\n", 
+    outfile->Printf( "(detcas): Unrecognized Hessian option %s\n",
       MCSCF_Parameters.hessian.c_str());
   }
- 
+
 
 }
 
@@ -724,7 +753,7 @@ void MCSCF::scale_gradient(void)
   int pair, npairs;
   double rms, value;
 
-  npairs = IndPairs.get_num_pairs();
+  npairs = IndPairs_->get_num_pairs();
 
   MCSCF_CalcInfo.theta_step = init_array(npairs);
 
@@ -737,7 +766,7 @@ void MCSCF::scale_gradient(void)
       MCSCF_CalcInfo.theta_step);
   }
   // non-BFGS diagonal Hessian
-  else if (MCSCF_Parameters.scale_grad && ((MCSCF_Parameters.hessian == "DIAG") || 
+  else if (MCSCF_Parameters.scale_grad && ((MCSCF_Parameters.hessian == "DIAG") ||
        (MCSCF_Parameters.hessian == "APPROX_DIAG"))) {
     calc_orb_step(npairs, MCSCF_CalcInfo.mo_grad, MCSCF_CalcInfo.mo_hess_diag,
       MCSCF_CalcInfo.theta_step);
@@ -750,13 +779,13 @@ void MCSCF::scale_gradient(void)
   }
   // No Hessian available: take unit step down gradient direction
   else {
-    for (pair=0; pair<npairs; pair++) 
+    for (pair=0; pair<npairs; pair++)
       MCSCF_CalcInfo.theta_step[pair] = MCSCF_CalcInfo.mo_grad[pair];
   }
-    
 
-  if (MCSCF_Parameters.print_lvl > 3)  
-    IndPairs.print_vec(MCSCF_CalcInfo.theta_step,"\n\tScaled Orbital Grad:");
+
+  if (MCSCF_Parameters.print_lvl > 3)
+    IndPairs_->print_vec(MCSCF_CalcInfo.theta_step,"\n\tScaled Orbital Grad:");
 
   rms = 0.0;
   for (pair=0; pair<npairs; pair++) {
@@ -766,12 +795,12 @@ void MCSCF::scale_gradient(void)
 
   rms = sqrt(rms);
   MCSCF_CalcInfo.scaled_mo_grad_rms = rms;
- 
+
   if (MCSCF_Parameters.print_lvl)
     outfile->Printf( "\n\tScaled RMS Orbital Gradient: %6.10E\n", rms);
 
   if (MCSCF_Parameters.scale_step != 1.0) {
-    for (pair=0; pair<npairs; pair++) 
+    for (pair=0; pair<npairs; pair++)
       MCSCF_CalcInfo.theta_step[pair] *= MCSCF_Parameters.scale_step;
   }
 
@@ -790,22 +819,22 @@ void MCSCF::scale_gradient(void)
 int MCSCF::take_step(void)
 {
   int took_diis;
-  
+
   /* for debugging purposes */
   if (MCSCF_Parameters.force_step) {
-    MCSCF_CalcInfo.theta_cur[MCSCF_Parameters.force_pair] = MCSCF_Parameters.force_value;
+    theta_cur_[MCSCF_Parameters.force_pair] = MCSCF_Parameters.force_value;
     outfile->Printf( "Forcing step for pair %d of size %8.3E\n",
       MCSCF_Parameters.force_pair, MCSCF_Parameters.force_value);
     return(1);
   }
 
   // Add new step to theta (Newton-Raphson)
-  for (int pair=0; pair<num_indep_pairs_; pair++) 
-    MCSCF_CalcInfo.theta_cur[pair] += MCSCF_CalcInfo.theta_step[pair];
+  for (int pair=0; pair<num_indep_pairs_; pair++)
+    theta_cur_[pair] += MCSCF_CalcInfo.theta_step[pair];
 
-  if (MCSCF_CalcInfo.iter >= MCSCF_Parameters.diis_start){ 
+  if (MCSCF_CalcInfo.iter >= MCSCF_Parameters.diis_start){
     // Add DIIS vector
-    diis_manager_->add_entry(2, MCSCF_CalcInfo.theta_step, MCSCF_CalcInfo.theta_cur);
+    diis_manager_->add_entry(2, MCSCF_CalcInfo.theta_step, theta_cur_);
     ndiis_vec_++;
 
     // Check if we should skip DIIS
@@ -815,18 +844,18 @@ int MCSCF::take_step(void)
     else {
         // Extrapolate new thetas
         outfile->Printf("Taking a DIIS step\n");
-        zero_arr(MCSCF_CalcInfo.theta_cur, num_indep_pairs_);
-        diis_manager_->extrapolate(1, MCSCF_CalcInfo.theta_cur);
+        zero_arr(theta_cur_, num_indep_pairs_);
+        diis_manager_->extrapolate(1, theta_cur_);
         diis_iter_++;
         took_diis = 1;
     }
 
   }
-  else { 
+  else {
     took_diis = 0;
   }
   if (!took_diis) {
-    if (MCSCF_Parameters.print_lvl) 
+    if (MCSCF_Parameters.print_lvl)
       outfile->Printf("Taking regular step\n");
   }
 
@@ -840,6 +869,7 @@ int MCSCF::take_step(void)
 ** rotate_orbs()
 **
 ** Rotate the orbitals, irrep by irrep
+** Orbitals are rotated relative to reference orbitals
 **
 ** \ingroup DETCAS
 */
@@ -849,15 +879,15 @@ void MCSCF::rotate_orbs(void)
   int h, pair, ir_norbs, ir_npairs, *ir_ppair, *ir_qpair;
 
   // First, we need to come up with Theta vectors for each irrep
-  ir_theta = init_array(IndPairs.get_num_pairs());  // always big enough
+  ir_theta = init_array(IndPairs_->get_num_pairs());  // always big enough
   for (h=0; h<CalcInfo.nirreps; h++) {
-    ir_npairs = IndPairs.get_ir_num_pairs(h);
+    ir_npairs = IndPairs_->get_ir_num_pairs(h);
     if (ir_npairs) {
       ir_norbs = CalcInfo.orbs_per_irr[h];
-      ir_theta = IndPairs.get_irrep_vec(h, MCSCF_CalcInfo.theta_cur);
-      ir_ppair  = IndPairs.get_ir_prel_ptr(h);
-      ir_qpair  = IndPairs.get_ir_qrel_ptr(h);
-      
+      ir_theta = IndPairs_->get_irrep_vec(h, theta_cur_);
+      ir_ppair  = IndPairs_->get_ir_prel_ptr(h);
+      ir_qpair  = IndPairs_->get_ir_qrel_ptr(h);
+
       if (MCSCF_Parameters.print_lvl > 3) {
         outfile->Printf( "Thetas for irrep %d\n", h);
         for (pair=0; pair<ir_npairs; pair++) {
@@ -865,35 +895,29 @@ void MCSCF::rotate_orbs(void)
                   ir_ppair[pair], ir_qpair[pair], ir_theta[pair]);
         }
         outfile->Printf( "\n");
-        //fflush(outfile);
       }
 
       /* print old coefficients */
-      if (MCSCF_Parameters.print_mos) {
-        outfile->Printf( "\n\tOld molecular orbitals for irrep %s\n", 
-          CalcInfo.labels[h]);
-        print_mat(MCSCF_CalcInfo.mo_coeffs[h], ir_norbs, ir_norbs, "outfile");
-      }
+      if (MCSCF_Parameters.print_mos) ref_orbs_->print();
+
+      /* Orbital rotations are related to reference orbitals */
+      ciwfn_->Ca_->copy(ref_orbs_);
 
       if (MCSCF_Parameters.use_thetas)
-        postmult_by_U(h, ir_norbs, MCSCF_CalcInfo.mo_coeffs[h], ir_npairs, 
+        postmult_by_U(h, ir_norbs, ciwfn_->Ca()->pointer(h), ir_npairs,
           ir_ppair, ir_qpair, ir_theta);
       else
-        postmult_by_exp_R(h, ir_norbs, MCSCF_CalcInfo.mo_coeffs[h], ir_npairs,
+        postmult_by_exp_R(h, ir_norbs, ciwfn_->Ca()->pointer(h), ir_npairs,
           ir_ppair, ir_qpair, ir_theta);
 
       /* print new coefficients */
-      if (MCSCF_Parameters.print_mos) {
-        outfile->Printf( "\n\tNew molecular orbitals for irrep %s\n", 
-          CalcInfo.labels[h]);
-        print_mat(MCSCF_CalcInfo.mo_coeffs[h], ir_norbs, ir_norbs, "outfile");
-      }
-
+      if (MCSCF_Parameters.print_mos) ciwfn_->Ca()->print();
 
       /* write the new block of MO coefficients to file30 */
       chkpt_init(PSIO_OPEN_OLD);
-      chkpt_wt_scf_irrep(MCSCF_CalcInfo.mo_coeffs[h], h);
+      chkpt_wt_scf_irrep(ciwfn_->Ca()->pointer(h), h);
       chkpt_close();
+
       delete [] ir_theta;
     }
   }
@@ -939,25 +963,9 @@ int MCSCF::check_conv(void)
 */
 void MCSCF::finalize(void)
 {
-  int i;
-  free(MCSCF_CalcInfo.frozen_docc);
-  free(MCSCF_CalcInfo.frozen_uocc);
-  free(MCSCF_CalcInfo.rstr_docc);
-  free(MCSCF_CalcInfo.rstr_uocc);
-  free(MCSCF_CalcInfo.ci2relpitz);
-  free_int_matrix(MCSCF_CalcInfo.fzc_orbs);
-  free_int_matrix(MCSCF_CalcInfo.fzv_orbs);
-  for (i=0; i<MAX_RAS_SPACES; i++)
-    free_int_matrix(MCSCF_CalcInfo.ras_orbs[i]);
-  free(MCSCF_CalcInfo.ras_orbs);
-
-  for (i=0; i<CalcInfo.nirreps; i++) {
-    if (CalcInfo.orbs_per_irr[i])
-      free_block(MCSCF_CalcInfo.mo_coeffs[i]);
-  }
-  free(MCSCF_CalcInfo.mo_coeffs);
-
+  ref_orbs_.reset();
   diis_manager_->delete_diis_file();
+  free(theta_cur_);
 }
 
 /*
@@ -971,14 +979,10 @@ void MCSCF::iteration_clean(void)
   free(MCSCF_CalcInfo.onel_ints);
   free(MCSCF_CalcInfo.onel_ints_bare);
   free(MCSCF_CalcInfo.twoel_ints);
-  free_block(MCSCF_CalcInfo.opdm);
-  free(MCSCF_CalcInfo.tpdm);
-  free_block(MCSCF_CalcInfo.lag);
   free(MCSCF_CalcInfo.F_act);
   free(MCSCF_CalcInfo.mo_grad);
   if (MCSCF_CalcInfo.mo_hess_diag != NULL) free(MCSCF_CalcInfo.mo_hess_diag);
   if (MCSCF_CalcInfo.mo_hess != NULL) free_block(MCSCF_CalcInfo.mo_hess);
-  free(MCSCF_CalcInfo.theta_cur);
   free(MCSCF_CalcInfo.theta_step);
 }
 

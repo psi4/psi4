@@ -28,6 +28,9 @@
 # A user may set ``CHEMPS2_ROOT`` to a CheMPS2 installation root to tell
 # this module where to look.
 
+# defines CMAKE_INSTALL_LIBDIR for Debian package
+include (GNUInstallDirs)
+
 find_package (GSL QUIET)
 find_package (HDF5 QUIET)
 
@@ -43,6 +46,7 @@ endif()
 set(_CHEMPS2_SEARCH_NORMAL
   PATHS "[HKEY_LOCAL_MACHINE\\SOFTWARE\\GnuWin32\\CheMPS2;InstallPath]"
         "$ENV{PROGRAMFILES}/chemps2"
+        "/usr"
   )
 list(APPEND _CHEMPS2_SEARCHES _CHEMPS2_SEARCH_NORMAL)
 
@@ -59,7 +63,7 @@ foreach(search ${_CHEMPS2_SEARCHES})
     find_library(CHEMPS2_LIBRARY  
         NAMES ${CHEMPS2_NAMES} 
         ${${search}} 
-        PATH_SUFFIXES lib lib64)
+        PATH_SUFFIXES lib lib64 ${CMAKE_INSTALL_LIBDIR})
 endforeach()
 
 mark_as_advanced(CHEMPS2_LIBRARY CHEMPS2_INCLUDE_DIR)

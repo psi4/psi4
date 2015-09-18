@@ -55,7 +55,7 @@ class BROKEN_SYMMETRY_EXCEPT;
 using namespace std;
 
 bool is_integer(const char *check) {
-  for (int i=0; i<strlen(check); ++i) {
+  for (ULI i=0; i<strlen(check); ++i) {
     if (!isdigit(check[i]))
       return false;
   }
@@ -91,7 +91,7 @@ int read_natoms(void) {
 // and with allocated memory.
 void MOLECULE::read_geom_grad(void) {
   int nfrag = fragments.size();
-  int nallatom = g_natom();
+  //int nallatom = g_natom();
 
 #if defined(OPTKING_PACKAGE_PSI)
 
@@ -287,7 +287,7 @@ void MOLECULE::read_geom_grad(void) {
 #endif
 
   // update interfragment reference points if they exist
-  for (int i=0; i<interfragments.size(); ++i)
+  for (ULI i=0; i<interfragments.size(); ++i)
     interfragments[i]->update_reference_points();
 
   return;

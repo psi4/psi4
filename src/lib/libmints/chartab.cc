@@ -71,9 +71,11 @@
 *      June, 1993
 */
 
-#include <ctype.h>
 #include <libmints/pointgrp.h>
 #include "libparallel/ParallelPrinter.h"
+#include <psi4-dec.h>
+#include <ctype.h>
+
 using namespace std;
 using namespace psi;
 

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #
 #@BEGIN LICENSE
 #
@@ -22,10 +23,10 @@
 
 import math
 from collections import defaultdict
-from exceptions import *
-import qcformat
-import molpro_basissets
-import options
+from .exceptions import *
+from . import qcformat
+from . import molpro_basissets
+from . import options
 
 
 class Infile(qcformat.InputFormat2):

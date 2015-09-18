@@ -22,7 +22,6 @@
  *@END LICENSE
  */
 
-#include <libplugin/plugin.h>
 #include <psi4-dec.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
@@ -30,11 +29,9 @@
 #include <libmints/sointegral.h>
 #include <libpsio/psio.hpp>
 
-INIT_PLUGIN
-
 namespace psi{ namespace @plugin@ {
 
-extern "C" 
+extern "C"
 int read_options(std::string name, Options& options)
 {
     if (name == "@PLUGIN@"|| options.read_globals()) {
@@ -60,12 +57,12 @@ public:
                      int sirrep, int sso,
                      double value)
     {
-        psi::outfile->Printf("\t(%2d %2d | %2d %2d) = %20.10lf\n", 
+        psi::outfile->Printf("\t(%2d %2d | %2d %2d) = %20.10lf\n",
 			pabs, qabs, rabs, sabs, value);
     }
 };
 
-extern "C" 
+extern "C"
 PsiReturnType @plugin@(Options &options)
 {
     int print = options.get_int("PRINT");
@@ -80,7 +77,7 @@ PsiReturnType @plugin@(Options &options)
 
     // The integral factory oversees the creation of integral objects
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(aoBasis));
-    
+
     // N.B. This should be called after the basis has been built, because
     // the geometry has not been
     // fully initialized until this time.
@@ -130,17 +127,17 @@ PsiReturnType @plugin@(Options &options)
         // 1. Obtain an object that knows how to compute two-electron AO
         // integrals.
         boost::shared_ptr<TwoBodyAOInt> tb(integral->eri());
-        
+
         // 2. Create an object that knows how to convert any two-body AO
         // integral to SO.
         boost::shared_ptr<TwoBodySOInt> eri(new TwoBodySOInt(tb, integral));
-        
+
         // 3. Find out how many SO shells we have.
         int nsoshell = soBasis->nshell();
 
         // 4. We to create an instance of our ERIPrinter
         ERIPrinter printer;
-        
+
         // 5. Create an SOShellCombintationsIterator to step through the
         // necessary combinations
         SOShellCombinationsIterator shellIter(soBasis, soBasis, soBasis, soBasis);

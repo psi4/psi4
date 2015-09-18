@@ -72,7 +72,7 @@ if (reference_ == "RESTRICTED") {
     Ecorr = 0.0;
     JiajbAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
     tei_iajb_chem_directAA(JiajbAA);
-    u2p_1 = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
+    u2p_1 = SharedTensor2d(new Tensor2d("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     u2p_1->read_symm(psio_, PSIF_DFOCC_AMPS);
     Ecorr = u2p_1->vector_dot(JiajbAA); 
     JiajbAA.reset();
@@ -178,7 +178,7 @@ if (reference_ == "RESTRICTED") {
     tei_iajb_chem_directAA(JiajbAA);
 
     // Same spin part
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d("T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
+    SharedTensor2d temp = SharedTensor2d(new Tensor2d("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     temp->read(psio_, PSIF_DFOCC_AMPS);
     Ecorr = 0.5*temp->vector_dot(JiajbAA); 
     temp.reset();
@@ -190,7 +190,7 @@ if (reference_ == "RESTRICTED") {
     Escsnmp2BB = 1.76 * Emp2BB;
 
     // Opposit spin part
-    u2p_1 = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
+    u2p_1 = SharedTensor2d(new Tensor2d("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
     u2p_1->read(psio_, PSIF_DFOCC_AMPS);
     Ecorr = u2p_1->vector_dot(JiajbAA); 
     JiajbAA.reset();

@@ -8,7 +8,7 @@ HF: Hartree--Fock Theory
 ========================
 
 .. codeauthor:: Justin M. Turney, Robert M. Parrish, and Andrew C. Simmonett
-.. sectionauthor:: Robert M. Parrish
+.. sectionauthor:: Robert M. Parrish and Jerome F. Gonthier
 
 *Module:* :ref:`Keywords <apdx:scf>`, :ref:`PSI Variables <apdx:scf_psivar>`, :source:`LIBSCF_SOLVER <src/lib/libscf_solver>`, :source:`LIBMINTS <src/lib/libmints>`, :source:`LIBFOCK <src/lib/libfock>`, :source:`LIBDIIS <src/lib/libdiis>`
 
@@ -294,15 +294,19 @@ actually,::
 Broken Symmetry
 ~~~~~~~~~~~~~~~
 
-For certain problems, such diradicals, allowing the spin-up and spin-down orbitals to differ in closed-shell computations can be advantageous; this is known as symmetry breaking.  The resulting wavefunction will often provide superior energetics, due to the increased flexibility, but will suffer non-physicical spin contamination from higher multiplicity states.  |PSIfour| can compute a high-spin triplet wavefunction and then use this as a guess for the broken-symmetry low spin state.  To do this, you request broken symmetry in the :py:func:`~driver.energy` call, using one of the following:::
-
-    energy('uhf', brokensymmetry=True)
-
-    or, equivalently
+For certain problems, such diradicals, allowing the spin-up and spin-down
+orbitals to differ in closed-shell computations can be advantageous;
+this is known as symmetry breaking.  The resulting unrestricted wavefunction
+will often provide superior energetics, due to the increased flexibility,
+but will suffer non-physicical spin contamination from higher multiplicity states.
+A convenient approach to break symmetry is to perform a UHF or UKS calculation
+with the guess HOMO and LUMO orbitals mixed.
+Mixing of the guess orbitals can be requested by setting the |scf__guess_mix|
+keyword to true::
 
     set reference uhf
-    energy('scf', brokensymmetry=True)
-
+    set guess_mix true
+    energy('scf')
 
 Orthogonalization
 ~~~~~~~~~~~~~~~~~
@@ -545,6 +549,130 @@ cases, you will see an error message of the form::
 This failure can be fixed by either setting |scf__df_basis_scf| to an auxiliary
 basis set defined for all atoms in the system, or by setting |scf__df_scf_guess|
 to false, which disables this acceleration entirely.
+
+Stability Analysis
+~~~~~~~~~~~~~~~~~~
+
+SCF algorithms attempt to minimize the gradient of the energy with respect  
+to orbital variation parameters. At convergence, the gradient should be approximately zero
+given a convergence criterion. Although this is enough to make sure the SCF converged to a
+stationary point, this is not a sufficient condition for a minimal SCF solution. It may be 
+a sadle point or a maximum. 
+
+To ensure that a minimum has been found, the electronic Hessian, i.e. the matrix of second 
+derivatives of the energy with respect to orbital variation parameters, must be computed. 
+If one or more eigenvalues of the electronic Hessian are negative, the SCF solution is not a minimum. 
+In that case, orbital parameters can be varied along the lowest Hessian eigenvector to lower the energy.
+
+Orbital variation parameters are usually constrained. For example, in RHF the 
+spatial parts of the :math:`\alpha` and :math:`\beta` orbitals are the same. In
+UHF, the orbital coefficients are usually constrained to be real. A stability analysis
+can check whether a lower SCF solution exists while respecting the constraints of the original
+solution; this is an internal instability. If one or more constraints have to be relaxed to reach
+a lower-energy solution, there is an external instability. In |PSIfour|, the only external instability
+that can be checked at present is the RHF->UHF one.
+
+Currently, two algorithms exist in |PSIfour| for stability analysis: the original
+Direct Inversion and the newly implemented Davidson algorithms. We will first describe 
+options common to both algorithms. To request a stability analysis at the end of the SCF, 
+set the keyword |scf__stability_analysis|::
+
+  set stability_analysis check
+
+to only compute the electronic Hessian eigenvalue and check if an actual SCF minimum
+has been found, or::
+
+  set stability_analysis follow
+
+to rotate the converged orbitals along the lowest eigenvector, then invoke the SCF
+procedure again to lower the energy. In case the minimization does not succeed
+or ends up on the same unstable solution, you can tune the scale factor for the orbital
+rotation through the keyword |scf__follow_step_scale|::
+
+  set follow_step_scale 0.5
+
+The rotation angle is (|scf__follow_step_scale|)*:math:`\pi / 2`. The default value of
+0.5 usually provides a good guess and modification is only recommended in difficult cases.
+The default behavior for the stability code is to stop after trying to reoptimize the orbitals once
+if the instability still exists. For more attempts, set |scf__max_attempts|::
+
+  set max_attempts 1
+
+the default value of 1 is recommended. In case the SCF ends up in the same minimum, modification
+of |scf__follow_step_scale| is recommended over increasing |scf__max_attempts|.
+
+
+The main algorithm available in |PSIfour| is the Direct Inversion algorithm. It can *only*
+work with |scf__scf_type| ``PK``, and it explicitly builds the full electronic Hessian
+matrix before explicitly inverting it. As such, this algorithm is very slow and it should
+be avoided whenever possible. Direct Inversion is automatically invoked if |scf__scf_type| = ``PK``.
+
+The Davidson algorithm for stability analysis was implemented recently. Due to limitations of
+the |scf__scf_type| ``PK``, Davidson *cannot* be used with these integrals, but supports both
+|scf__scf_type| ``DIRECT`` and ``DF``. 
+Only the lowest eigenvalues of the electronic Hessian are computed, and Hessian-vector
+products are computed instead of the full Hessian. This algorithm is thus
+much more efficient than the Direct Inversion, but is at present only available for UHF->UHF stability
+analysis. The capabilities of both algorithms are summarized below:
+
+.. _`table:stab_methods`:
+
+.. table:: Stability analysis methods available in |PSIfour|
+
+    +------------------+------------------+----------------------------+-----------------+
+    |     Algorithm    | |scf__reference| |     Stability checked      | |scf__scf_type| |
+    +==================+==================+============================+=================+
+    |                  |       RHF        | Internal, External (->UHF) | PK only         |
+    +                  +------------------+----------------------------+-----------------+
+    | Direct Inversion |       ROHF       | Internal                   | PK only         |
+    +                  +------------------+----------------------------+-----------------+
+    |                  |       UHF        | Internal                   | PK only         |
+    +------------------+------------------+----------------------------+-----------------+
+    |   Davidson       |       UHF        | Internal                   | Anything but PK |
+    +------------------+------------------+----------------------------+-----------------+
+
+The algorithm corresponding to the current integral choice is automatically selected.
+
+In addition to the options available for Direct Inversion, the Davidson algorithm can automatically
+adapt |scf__follow_step_scale| to find a new SCF minimum. If |scf__max_attempts| > 1, additional attempts 
+will automatically increment |scf__follow_step_scale| by 0.2 every time the SCF falls back to the previously 
+found unstable minimum. The increment can be adjusted by setting |scf__follow_step_increment|::
+
+  set follow_step_increment 0.2
+
+The default value is 0.2, adjust if needed to try different values of |scf__follow_step_scale| in a single compution.
+
+The Davidson solver for the eigenvalues is controlled through several keywords. In the following
+we only report the most pertinent for stability analysis, see documentation for the :ref:`CPHF <apdx:cphf>` 
+module for a complete list.
+Some default values were modified for the stability analysis code, in that case they are 
+explicitly indicated here.
+
+  |cphf__solver_maxiter|: maximum number of iterations
+
+  |cphf__solver_convergence|: eigenvector convergence threshold 
+
+  |cphf__solver_n_root|: Solve for N eigenvectors in each irreducible representation
+
+  |cphf__solver_n_guess|: Use N guess vectors, this needs to be larger than the number of roots so that the lowest ones can be captured reliably. Default: 3
+
+  |cphf__solver_min_subspace|: Minimum size of the subspace when collapsing. Default: 4
+
+  |cphf__solver_max_subspace|: Maximum size of the subspace. Default: 18
+   
+
+In case convergence problems are encountered during the Davidson procedure,
+it is recommended to first increase |cphf__solver_max_subspace|, especially if you solve 
+for a large number of roots. This will result in a higher computational cost of each iteration, but should
+make the solver better behaved. However, note that |cphf__solver_max_subspace| should never be larger than
+the full subspace minus the number of desired roots to avoid adding artificial zero eigenvalues. 
+This may happen in minimal basis sets, especially with symmetry, but the code automatically adjusts 
+|cphf__solver_max_subspace| if it is too large.
+If the solver seems to converge on the wrong eigenvalue, try increasing |cphf__solver_n_guess|.
+Otherwise, if the solver is almost converged but reaches the maximum number of iterations, try increasing
+|cphf__solver_maxiter|.
+   
+
 
 Convergence and Algorithm Defaults
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

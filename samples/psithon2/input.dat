@@ -1,8 +1,9 @@
 #! Accesses basis sets, databases, plugins, and executables in non-install locations
 
 memory 250 mb
+
 import os
-print os.environ.get('PSIPATH')
+os.environ['PSIPATH'] = 'psiaux1:psiaux2'
 
 ###########################
 molecule h2o {

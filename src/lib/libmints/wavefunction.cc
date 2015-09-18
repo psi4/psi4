@@ -206,6 +206,11 @@ void Wavefunction::common_init()
 
     // not a CIM computation by default
     isCIM_ = false;
+
+    /* Xiao Wang */
+    // not a DCFT computation by default
+    isDCFT_ = false;
+    /* Xiao Wang */
 }
 
 void Wavefunction::map_irreps(std::vector<int*> &arrays)
@@ -421,12 +426,12 @@ SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension& nocc
     std::vector<std::vector<int> > positions = subset_occupation(noccpi, subset);
 
     Dimension nmopi(nirrep_);
-    for (int h = 0; h < positions.size(); h++) {
+    for (int h = 0; h < (int)positions.size(); h++) {
         nmopi[h] = positions[h].size();
     }
     SharedMatrix C2(new Matrix("C " + basis + " " + subset, nsopi_, nmopi));
-    for (int h = 0; h < positions.size(); h++) {
-        for (int i = 0; i < positions[h].size(); i++) {
+    for (int h = 0; h < (int)positions.size(); h++) {
+        for (int i = 0; i < (int)positions[h].size(); i++) {
             C_DCOPY(nsopi_[h], &C->pointer(h)[0][positions[h][i]], nmopi_[h], &C2->pointer(h)[0][i], nmopi[h]);
         }
     }
@@ -438,14 +443,14 @@ SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension& nocc
 
         std::vector<boost::tuple<double, int, int> > order;
         for (int h = 0; h < nirrep_; h++) {
-            for (int i = 0; i < positions[h].size(); i++) {
+            for (int i = 0; i < (int)positions[h].size(); i++) {
                 order.push_back(boost::tuple<double,int,int>(epsilon->get(h,positions[h][i]),i,h));
             }
         }
 
         std::sort(order.begin(), order.end(), std::less<boost::tuple<double,int,int> >());
 
-        for (int index = 0; index < order.size(); index++) {
+        for (int index = 0; index < (int)order.size(); index++) {
             int i = boost::get<1>(order[index]);
             int h = boost::get<2>(order[index]);
 
@@ -470,7 +475,7 @@ SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dim
     std::vector<std::vector<int> > positions = subset_occupation(noccpi, subset);
 
     Dimension nmopi(nirrep_);
-    for (int h = 0; h < positions.size(); h++) {
+    for (int h = 0; h < (int)positions.size(); h++) {
         nmopi[h] = positions[h].size();
     }
 
@@ -482,22 +487,22 @@ SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dim
 
         std::vector<boost::tuple<double, int, int> > order;
         for (int h = 0; h < nirrep_; h++) {
-            for (int i = 0; i < positions[h].size(); i++) {
+            for (int i = 0; i < (int)positions[h].size(); i++) {
                 order.push_back(boost::tuple<double,int,int>(epsilon->get(h,positions[h][i]),i,h));
             }
         }
 
         std::sort(order.begin(), order.end(), std::less<boost::tuple<double,int,int> >());
 
-        for (int index = 0; index < order.size(); index++) {
+        for (int index = 0; index < (int)order.size(); index++) {
             C2->set(0,index,boost::get<0>(order[index]));
         }
 
     } else if (basis == "SO" || basis == "MO") {
 
         C2 = SharedVector(new Vector("Epsilon " + basis + " " + subset, nmopi));
-        for (int h = 0; h < positions.size(); h++) {
-            for (int i = 0; i < positions[h].size(); i++) {
+        for (int h = 0; h < (int)positions.size(); h++) {
+            for (int i = 0; i < (int)positions[h].size(); i++) {
                 C2->set(h,i,epsilon->get(h,positions[h][i]));
             }
         }
@@ -586,6 +591,33 @@ SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const
         }
         delete[] temp;
         return D2;
+    } else if (basis == "CartAO") {
+        /*
+         * Added by ACS. Rob's definition of AO is simply a desymmetrized SO (i.e. using spherical basis
+         * functions).  In cases like EFP and PCM where many OE integral evaluations are needed, we want
+         * to avoid the spherical transformation, so we need to back transform the density matrix all the
+         * way back to Cartesian AOs.
+         */
+
+        PetiteList petite(basisset_, integral_, true);
+        SharedMatrix my_aotoso = petite.aotoso();
+        double* temp = new double[my_aotoso->max_ncol() * my_aotoso->max_nrow()];
+        SharedMatrix D2 = SharedMatrix(new Matrix("D (ao basis)", basisset_->nao(), basisset_->nao()));
+        int symm = D->symmetry();
+        for (int h = 0; h < my_aotoso->nirrep(); ++h) {
+            int nao = my_aotoso->rowspi()[0];
+            int nsol = my_aotoso->colspi()[h];
+            int nsor = my_aotoso->colspi()[h^symm];
+            if (!nsol || !nsor) continue;
+            double** Ulp = my_aotoso->pointer(h);
+            double** Urp = my_aotoso->pointer(h^symm);
+            double** DSOp = D->pointer(h^symm);
+            double** DAOp = D2->pointer();
+            C_DGEMM('N','T',nsol,nao,nsor,1.0,DSOp[0],nsor,Urp[0],nsor,0.0,temp,nao);
+            C_DGEMM('N','N',nao,nao,nsol,1.0,Ulp[0],nsol,temp,nao,1.0,DAOp[0],nao);
+        }
+        delete[] temp;
+        return D2;
     } else if (basis == "SO") {
         return SharedMatrix(D->clone());
     } else if (basis == "MO") {
@@ -618,7 +650,7 @@ SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const
         delete[] SC;
         return D;
     } else {
-        throw PSIEXCEPTION("Invalid basis requested, use AO, SO, or MO");
+        throw PSIEXCEPTION("Invalid basis requested, use AO, CartAO, SO, or MO");
     }
 }
 
@@ -712,6 +744,11 @@ void Wavefunction::set_gradient(SharedMatrix& grad)
     gradient_ = grad;
 }
 
+SharedMatrix Wavefunction::TPDM() const
+{
+    return TPDM_;
+}
+
 boost::shared_ptr<Vector> Wavefunction::frequencies() const
 {
     return frequencies_;
@@ -785,11 +822,11 @@ void Wavefunction::CIMSet(bool value,int nactive_occupied)
     CIM_orbital_factors_.reset();
     CIM_orbital_energies_.reset();
 
-    QLMO_to_LMO_ = 
+    QLMO_to_LMO_ =
         SharedMatrix (new Matrix("CIM Rii",nactive_occupied,nactive_occupied));
-    CIM_orbital_factors_ = 
+    CIM_orbital_factors_ =
         SharedVector (new Vector("CIM Orbital Factors",nactive_occupied));
-    CIM_orbital_energies_ = 
+    CIM_orbital_energies_ =
         SharedVector (new Vector("CIM Orbital Energies",nmo_));
 }
 
@@ -797,6 +834,18 @@ bool Wavefunction::isCIM()
 {
     return isCIM_;
 }
+
+/* Xiao Wang */
+void Wavefunction::set_DCFT(bool val)
+{
+    isDCFT_ = val;
+}
+
+bool Wavefunction::isDCFT()
+{
+    return isDCFT_;
+}
+/* Xiao Wang */
 
 boost::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const { 
     boost::shared_ptr<double[]> q = atomic_point_charges();
@@ -808,7 +857,7 @@ boost::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const {
     return q_vector;
 }
 
-void Wavefunction::load_values_from_chkpt() 
+void Wavefunction::load_values_from_chkpt()
 {
 /*
  Below is a list of all quantities that could be stored in the chkpt file as of August 2014.
@@ -827,7 +876,7 @@ void Wavefunction::load_values_from_chkpt()
 //    nalphapi_ = Dimension(nirrep_, "Alpha electrons per irrep");
 //    nbetapi_  = Dimension(nirrep_, "Beta electrons per irrep");
 
-    int *v; 
+    int *v;
     if (chkpt_->exist_add_prefix("SO's per irrep")) {
       v = chkpt_->rd_sopi();
       for (int i=0; i<nirrep_; ++i) nsopi_[i] = v[i];

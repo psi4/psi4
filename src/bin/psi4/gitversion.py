@@ -7,16 +7,13 @@ if len(sys.argv) == 2:
 
 
 def write_version(branch, mmp, ghash, status):
-    if ghash:
-        version_str = "#define GIT_VERSION \"{%s} %s %s\"\n" % \
-                      (branch, ghash, status)
-    else:
-        version_str = "#undef GIT_VERSION"
+    version_str = "#define GIT_VERSION \"{%s} %s %s\"\n" % \
+                  (branch, ghash, status)
 
     if mmp:
         mmp_str = "#define PSI_VERSION \"%s\"\n" % (mmp)
     else:
-        mmp_str = "#undef PSI_VERSION"
+        mmp_str = "#define PSI_VERSION \"%s\"\n" % ('(no tag)')
 
     with open('gitversion.h.tmp', 'w') as handle:
         handle.write(version_str)
@@ -29,7 +26,8 @@ def write_version(branch, mmp, ghash, status):
 try:
     command = "git symbolic-ref -q HEAD"
     process = subprocess.Popen(command.split(), stderr=subprocess.PIPE,
-                               stdout=subprocess.PIPE, cwd=top_srcdir)
+                               stdout=subprocess.PIPE, cwd=top_srcdir,
+                               universal_newlines=True)
     (out, err) = process.communicate()
     branch = str(out).rstrip()[11:]
     if process.returncode:
@@ -41,13 +39,14 @@ except:
 try:
     command = "git describe --long --dirty --always"
     process = subprocess.Popen(command.split(), stderr=subprocess.PIPE,
-                               stdout=subprocess.PIPE, cwd=top_srcdir)
+                               stdout=subprocess.PIPE, cwd=top_srcdir,
+                               universal_newlines=True)
     (out, err) = process.communicate()
     fields = str(out).rstrip().split('-')
 
     #         a68d223        # tags not pulled, clean git directory
     #         a68d223-dirty  # tags not pulled, changes to git-controlled files
-    # 0.1-62-ga68d223        #  tags pulled, clean git directory
+    # 0.1-62-ga68d223        # tags pulled, clean git directory
     # 0.1-62-ga68d223-dirty  # tags pulled, changes to git-controlled files
 
     if fields[-1] == 'dirty':
@@ -62,15 +61,34 @@ try:
     else:
         ghash = ''
 
+    # major-minor-patch
     if len(fields) == 2:
         mmp = '.'.join(fields)
     else:
         mmp = ''
 
     if process.returncode:
-        status = ''
-        ghash = ''
-        mmp = ''
+        try:
+            # try to get some minimal version info from tarball not under git control
+            zipname = top_srcdir.split('/')[-2]  # ending slash guaranteed
+            command = "unzip -z ../" + zipname
+            process = subprocess.Popen(command.split(), stderr=subprocess.PIPE,
+                                       stdout=subprocess.PIPE, cwd=top_srcdir,
+                                       universal_newlines=True)
+            (out, err) = process.communicate()
+            fields = str(out).rstrip().split()
+
+            if zipname.endswith('master'):
+                branch = 'master'
+            status = ''
+            ghash = fields.pop()[:7]
+            mmp = ''
+
+        except:
+            status = ''
+            ghash = ''
+            mmp = ''
+
 except:
     status = ''
     ghash = ''

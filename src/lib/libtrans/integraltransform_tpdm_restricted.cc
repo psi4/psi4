@@ -72,7 +72,7 @@ IntegralTransform::backtransform_tpdm_restricted()
     dpdbuf4 J, K;
     global_dpd_->buf4_init(&J, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A,A]"),
                   DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), 0, "MO TPDM (AA|AA)");
-//dpd_buf4_print(&J, outfile, 1);
+//    global_dpd_->buf4_print(&J, "outfile", 1);
     global_dpd_->buf4_init(&K, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[A>=A]+"), DPD_ID("[n,n]"),
                   DPD_ID("[A>=A]+"), DPD_ID("[n>=n]+"), 0, "Half-Transformed TPDM (AA|nn)");
 
@@ -148,6 +148,7 @@ IntegralTransform::backtransform_tpdm_restricted()
 
     global_dpd_->buf4_init(&K, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[A>=A]+"), DPD_ID("[n>=n]+"),
                   DPD_ID("[A>=A]+"), DPD_ID("[n>=n]+"), 0, "Half-Transformed TPDM (AA|nn)");
+//    global_dpd_->buf4_print(&K, "outfile", 1);
     global_dpd_->buf4_sort(&K, PSIF_TPDM_HALFTRANS, rspq, DPD_ID("[n>=n]+"), DPD_ID("[A>=A]+"), "Half-Transformed TPDM (nn|AA)");
     global_dpd_->buf4_close(&K);
 

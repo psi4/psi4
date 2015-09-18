@@ -22,7 +22,6 @@
  *@END LICENSE
  */
 
-#include <libplugin/plugin.h>
 #include "psi4-dec.h"
 #include <libdpd/dpd.h>
 #include "psifiles.h"
@@ -32,8 +31,6 @@
 
 // This allows us to be lazy in getting the spaces in DPD calls
 #define ID(x) ints.DPD_ID(x)
-
-INIT_PLUGIN
 
 namespace psi{ namespace @plugin@{
 
@@ -58,7 +55,7 @@ extern "C" PsiReturnType
      * possible to generate integrals with labels (IWL) formatted files, but that's not shown here.
      */
     int print = options.get_int("PRINT");
-   
+
     // Grab the global (default) PSIO object, for file I/O
     boost::shared_ptr<PSIO> psio(_default_psio_lib_);
 
@@ -108,8 +105,8 @@ extern "C" PsiReturnType
                 psi::outfile->Printf("(%2d %2d | %2d %2d) = %16.10f, "
                                  "symmetries = (%1d %1d | %1d %1d), "
                                  "relative indices = (%2d %2d | %2d %2d)\n",
-                                 p, q, r, s, K.matrix[h][pq][rs], 
-                                 psym, qsym, rsym, ssym, 
+                                 p, q, r, s, K.matrix[h][pq][rs],
+                                 psym, qsym, rsym, ssym,
                                  prel, qrel, rrel, srel);
             }
         }

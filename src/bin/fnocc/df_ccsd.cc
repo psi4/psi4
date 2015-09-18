@@ -633,23 +633,28 @@ void DFCoupledCluster::AllocateMemory() {
   }
 
   outfile->Printf("  ==> Memory <==\n\n");
-  outfile->Printf("        Total memory requirements:       %9.2lf mb\n",df_memory+total_memory-size_of_t2*t2_on_disk);
-  outfile->Printf("        3-index integrals:               %9.2lf mb\n",df_memory);
-  outfile->Printf("        CCSD intermediates:              %9.2lf mb\n",total_memory-size_of_t2*t2_on_disk);
+  outfile->Printf("        Total memory available:          %9.2lf mb\n",available_memory);
   outfile->Printf("\n");
+  outfile->Printf("        CCSD memory requirements:        %9.2lf mb\n",df_memory+total_memory-size_of_t2*t2_on_disk);
+  outfile->Printf("            3-index integrals:           %9.2lf mb\n",df_memory);
+  outfile->Printf("            CCSD intermediates:          %9.2lf mb\n",total_memory-size_of_t2*t2_on_disk);
 
   if (options_.get_bool("COMPUTE_TRIPLES")) {
-      long int nthreads = omp_get_max_threads();
-      double tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+3L*v*v*v*nthreads);
-      if (tempmem > memory) {
-          outfile->Printf("\n        <<< warning! >>> switched to low-memory (t) algorithm\n\n");
+      int nthreads = omp_get_max_threads();
+      double mem_t = 8.*(2L*o*o*v*v+1L*o*o*o*v+o*v+3L*v*v*v*nthreads);
+      outfile->Printf("\n");
+      outfile->Printf("        (T) part (regular algorithm):    %9.2lf mb\n",
+          mem_t/1024./1024.);
+      if (mem_t > memory) {
+          outfile->Printf("        <<< warning! >>> switched to low-memory (t) algorithm\n\n");
       }
-      if (tempmem > memory || options_.get_bool("TRIPLES_LOW_MEMORY")){
+      if (mem_t > memory || options_.get_bool("TRIPLES_LOW_MEMORY")){
          isLowMemory = true;
-         tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+5L*o*o*o*nthreads);
+         mem_t = 8.*(2L*o*o*v*v+o*o*o*v+o*v+5L*o*o*o*nthreads);
+         outfile->Printf("        (T) part (low-memory alg.):      %9.2lf mb\n\n",mem_t/1024./1024.);
       }
-      outfile->Printf("        memory requirements for CCSD(T): %9.2lf mb\n\n",tempmem/1024./1024.);
   }
+  outfile->Printf("\n");
   outfile->Printf("  ==> Input parameters <==\n\n");
   outfile->Printf("        Freeze core orbitals?               %5s\n",nfzc > 0 ? "yes" : "no");
   outfile->Printf("        Use frozen natural orbitals?        %5s\n",options_.get_bool("NAT_ORBS") ? "yes" : "no");

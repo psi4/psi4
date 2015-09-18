@@ -22,11 +22,11 @@ section is also relevant here.
 Theory
 ~~~~~~
 
-Generalized Kohn-Sham Density Functional Theory (KS-DFT) is one of the primary
+Generalized Kohn-Sham Density Functional Theory (KS-DFT) [Kohn:1965:A1133]_ [Parr:1989]_ is one of the primary
 workhorses of modern computational chemistry due to its phenomenal accuracy/cost
 ratio. 
 
-Pure Kohn-Sham DFT is based on the ideas that A) the energy is a universal
+Pure Kohn-Sham DFT is built on the Hohenberg-Kohn theorems [Hohenberg:1964:136]_ which states: A) the energy is a universal
 functional of the one-particle electronic density and B) there exists a set of
 noninteracting quasiparticles with the same density as the true set of
 electrons, with the quasiparticle states determined as eigenvectors of an
@@ -567,6 +567,7 @@ perform IP fitting, one simply calls the :py:func:`~frac.ip_fitting` Python macr
 setting up a standard LRC UKS computation. A representative example is::
 
     memory 512 MB
+    from frac import *
 
     molecule h2o {
     0 1
@@ -612,6 +613,7 @@ used to investigate the fractional occupation behavior within one electron above
 and below the neutral. An example is::
 
     memory 512 MB
+    from frac import *
 
     molecule h2o {
     0 1

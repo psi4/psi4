@@ -33,12 +33,16 @@
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <libmints/mints.h>
+#include <libpsi4util/libpsi4util.h>
 #include <libfock/jk.h>
 #include <physconst.h>
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
-#include "../libJKFactory/MinimalInterface.h"
 #include "uhf.h"
+#include "stability.h"
+
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
 
 using namespace std;
 using namespace psi;
@@ -64,6 +68,8 @@ void UHF::common_init()
 {
 
     Drms_ = 0.0;
+    step_scale_ = options_.get_double("FOLLOW_STEP_SCALE");
+    step_increment_ = options_.get_double("FOLLOW_STEP_INCREMENT");
 
     Fa_     = SharedMatrix(factory_->create_matrix("F alpha"));
     Fb_     = SharedMatrix(factory_->create_matrix("F beta"));
@@ -109,6 +115,8 @@ void UHF::finalize()
     Ga_.reset();
     Gb_.reset();
 
+    compute_nos();
+
     HF::finalize();
 }
 
@@ -120,16 +128,13 @@ void UHF::save_density_and_energy()
 
 void UHF::form_G()
 {
- typedef boost::shared_ptr<MinimalInterface> ShareInt;
- if(!JKFactory_)
-    JKFactory_=ShareInt(new MinimalInterface(2));
- if(!JKFactory_->UseJKFactory()){
+
     // Push the C matrix on
     std::vector<SharedMatrix> & C = jk_->C_left();
     C.clear();
     C.push_back(Ca_subset("SO", "OCC"));
     C.push_back(Cb_subset("SO", "OCC"));
-    
+
     // Run the JK object
     jk_->compute();
 
@@ -140,21 +145,7 @@ void UHF::form_G()
     J_->add(J[1]);
     Ka_ = K[0];
     Kb_ = K[1];
- }
- else{
-    std::vector<SharedMatrix>Ds,Js,Ks;
-    Ds.push_back(Da_);Ds.push_back(Db_);
-    Js.push_back(J_);
-    Js.push_back(
-             SharedMatrix(new Matrix(Db_->nrow(),Db_->ncol()))
-             );
-    Ks.push_back(Ka_);
-    Ks.push_back(Kb_);
-    JKFactory_->SetP(Ds);
-    JKFactory_->GetJ(Js);
-    J_->add(Js[1]);
-    JKFactory_->GetK(Ks);
- }
+
     Ga_->copy(J_);
     Gb_->copy(Ga_);
     Ga_->subtract(Ka_);
@@ -207,6 +198,15 @@ void UHF::form_C()
 {
     diagonalize_F(Fa_, Ca_, epsilon_a_);
     diagonalize_F(Fb_, Cb_, epsilon_b_);
+    if (options_.get_bool("GUESS_MIX") && (iteration_ == 0)){
+        if (Ca_->nirrep() == 1){
+            outfile->Printf("  Mixing alpha HOMO/LUMO orbitals (%d,%d)\n\n",nalpha_,nalpha_ + 1);
+            Ca_->rotate_columns(0,nalpha_ - 1,nalpha_, pc_pi * 0.25);
+            Cb_->rotate_columns(0,nbeta_ - 1,nbeta_,-pc_pi * 0.25);
+        }else{
+            throw InputException("Warning: cannot mix alpha HOMO/LUMO orbitals. Run in C1 symmetry.", "to 'symmetry c1'", __FILE__, __LINE__);
+        }
+    }
     find_occupation();
     if (debug_) {
         Ca_->print("outfile");
@@ -260,11 +260,11 @@ double UHF::compute_initial_E()
 double UHF::compute_E()
 {
     double one_electron_E = Dt_->vector_dot(H_);
-    double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);   
- 
+    double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);
+
     energies_["Nuclear"] = nuclearrep_;
     energies_["One-Electron"] = one_electron_E;
-    energies_["Two-Electron"] = two_electron_E; 
+    energies_["Two-Electron"] = two_electron_E;
     energies_["XC"] = 0.0;
     energies_["-D"] = 0.0;
 
@@ -304,249 +304,430 @@ bool UHF::diis()
     return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get());
 }
 
+void UHF::stability_analysis_pk()
+{
+    // ==> Legacy old stability code <==
+
+    outfile->Printf("WARNING: PK integrals extremely slow for stability analysis.\n");
+    outfile->Printf("Proceeding, but feel free to kill the computation and use other integrals.\n");
+    // Build the Fock Matrix
+    SharedMatrix aMoF(new Matrix("Alpha MO basis fock matrix", nmopi_, nmopi_));
+    SharedMatrix bMoF(new Matrix("Beta MO basis fock matrix", nmopi_, nmopi_));
+    aMoF->transform(Fa_, Ca_);
+    bMoF->transform(Fb_, Cb_);
+
+    std::vector<boost::shared_ptr<MOSpace> > spaces;
+    spaces.push_back(MOSpace::occ);
+    spaces.push_back(MOSpace::vir);
+    // Ref wfn is really "this"
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+#define ID(x) ints->DPD_ID(x)
+    IntegralTransform* ints = new IntegralTransform(wfn, spaces, IntegralTransform::Unrestricted, IntegralTransform::DPDOnly,
+                           IntegralTransform::QTOrder, IntegralTransform::None);
+    ints->set_keep_dpd_so_ints(true);
+    ints->set_keep_iwl_so_ints(true);
+    ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
+    ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
+    dpd_set_default(ints->get_dpd_id());
+    dpdbuf4 Aaa, Aab, Abb, I;
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                  ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
+    // A_IA_jb = 2 (IA|jb)
+    global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "UHF Hessian (IA|jb)", 2.0);
+    global_dpd_->buf4_close(&I);
+
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
+    // A_IA_JB = 2 (IA|JB)
+    global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "UHF Hessian (IA|JB)", 2.0);
+    // A_IA_JB -= (IB|JA)
+    global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq,
+                       ID("[O,V]"), ID("[O,V]"), "UHF Hessian (IA|JB)", -1.0);
+    global_dpd_->buf4_close(&I);
+
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
+    // A_ia_jb = 2 (ia|jb)
+    global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "UHF Hessian (ia|jb)", 2.0);
+    // A_ia_jb -= (ib|ja)
+    global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq,
+                       ID("[o,v]"), ID("[o,v]"), "UHF Hessian (ia|jb)", -1.0);
+    global_dpd_->buf4_close(&I);
+
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O>=O]+"), ID("[V>=V]+"), 0, "MO Ints (OO|VV)");
+    // A_IA_JB -= (IJ|AB)
+    global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, prqs,
+                       ID("[O,V]"), ID("[O,V]"), "UHF Hessian (IA|JB)", -1.0);
+    global_dpd_->buf4_close(&I);
+
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o>=o]+"), ID("[v>=v]+"), 0, "MO Ints (oo|vv)");
+    // A_ia_jb -= (ij|ab)
+    global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, prqs,
+                       ID("[o,v]"), ID("[o,v]"), "UHF Hessian (ia|jb)", -1.0);
+    global_dpd_->buf4_close(&I);
+
+    global_dpd_->buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "UHF Hessian (IA|JB)");
+    for(int h = 0; h < Aaa.params->nirreps; ++h){
+        global_dpd_->buf4_mat_irrep_init(&Aaa, h);
+        global_dpd_->buf4_mat_irrep_rd(&Aaa, h);
+        for(int ia = 0; ia < Aaa.params->rowtot[h]; ++ia){
+            int iabs = Aaa.params->roworb[h][ia][0];
+            int aabs = Aaa.params->roworb[h][ia][1];
+            int isym = Aaa.params->psym[iabs];
+            int asym = Aaa.params->qsym[aabs];
+            int irel = iabs - Aaa.params->poff[isym];
+            int arel = aabs - Aaa.params->qoff[asym] + soccpi_[asym] + doccpi_[asym];
+            for(int jb = 0; jb < Aaa.params->coltot[h]; ++jb){
+                int jabs = Aaa.params->colorb[h][jb][0];
+                int babs = Aaa.params->colorb[h][jb][1];
+                int jsym = Aaa.params->rsym[jabs];
+                int bsym = Aaa.params->ssym[babs];
+                int jrel = jabs - Aaa.params->roff[jsym];
+                int brel = babs - Aaa.params->soff[bsym] + soccpi_[asym] + doccpi_[asym];
+                // A_IA_JB += delta_IJ F_AB - delta_AB F_IJ
+                if((iabs == jabs) && (asym == bsym))
+                    Aaa.matrix[h][ia][jb] += aMoF->get(asym, arel, brel);
+                if((aabs == babs) && (isym == jsym))
+                    Aaa.matrix[h][ia][jb] -= aMoF->get(isym, irel, jrel);
+            }
+        }
+        global_dpd_->buf4_mat_irrep_wrt(&Aaa, h);
+    }
+    global_dpd_->buf4_close(&Aaa);
+
+    global_dpd_->buf4_init(&Abb, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "UHF Hessian (ia|jb)");
+
+    for(int h = 0; h < Abb.params->nirreps; ++h){
+        global_dpd_->buf4_mat_irrep_init(&Abb, h);
+        global_dpd_->buf4_mat_irrep_rd(&Abb, h);
+        for(int ia = 0; ia < Abb.params->rowtot[h]; ++ia){
+            int iabs = Abb.params->roworb[h][ia][0];
+            int aabs = Abb.params->roworb[h][ia][1];
+            int isym = Abb.params->psym[iabs];
+            int asym = Abb.params->qsym[aabs];
+            int irel = iabs - Abb.params->poff[isym];
+            int arel = aabs - Abb.params->qoff[asym] + doccpi_[asym];
+            for(int jb = 0; jb < Abb.params->coltot[h]; ++jb){
+                int jabs = Abb.params->colorb[h][jb][0];
+                int babs = Abb.params->colorb[h][jb][1];
+                int jsym = Abb.params->rsym[jabs];
+                int bsym = Abb.params->ssym[babs];
+                int jrel = jabs - Abb.params->roff[jsym];
+                int brel = babs - Abb.params->soff[bsym] + doccpi_[asym];
+                // A_ia_jb += delta_ij F_ab - delta_ab F_ij
+                if((iabs == jabs) && (asym == bsym))
+                    Abb.matrix[h][ia][jb] += bMoF->get(asym, arel, brel);
+                if((aabs == babs) && (isym == jsym))
+                    Abb.matrix[h][ia][jb] -= bMoF->get(isym, irel, jrel);
+            }
+        }
+        global_dpd_->buf4_mat_irrep_wrt(&Abb, h);
+    }
+    global_dpd_->buf4_close(&Abb);
+
+    /*
+     *  Perform the stability analysis
+     */
+    std::vector<std::pair<double, int> >eval_sym;
+
+    std::string status;
+    bool redo = false;
+    global_dpd_->buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "UHF Hessian (IA|JB)");
+    global_dpd_->buf4_init(&Aab, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                  ID("[O,V]"), ID("[o,v]"), 0, "UHF Hessian (IA|jb)");
+    global_dpd_->buf4_init(&Abb, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "UHF Hessian (ia|jb)");
+    for(int h = 0; h < Aaa.params->nirreps; ++h) {
+        int aDim = Aaa.params->rowtot[h];
+        int bDim = Abb.params->rowtot[h];
+        int dim =  aDim + bDim;
+        if(dim == 0) continue;
+        double *evals = init_array(dim);
+        double **evecs = block_matrix(dim, dim);
+        double **A = block_matrix(dim, dim);
+
+        // Alpha-alpha contribution to the Hessian
+        global_dpd_->buf4_mat_irrep_init(&Aaa, h);
+        global_dpd_->buf4_mat_irrep_rd(&Aaa, h);
+        for(int ia = 0; ia < aDim; ++ia)
+            for(int jb = 0; jb < aDim; ++jb)
+                A[ia][jb] = Aaa.matrix[h][ia][jb];
+        global_dpd_->buf4_mat_irrep_close(&Aaa, h);
+
+        // Alpha-beta and beta-alpha contribution to the Hessian
+        global_dpd_->buf4_mat_irrep_init(&Aab, h);
+        global_dpd_->buf4_mat_irrep_rd(&Aab, h);
+        for(int ia = 0; ia < aDim; ++ia)
+            for(int jb = 0; jb < bDim; ++jb)
+                A[ia][jb + aDim] = A[jb + aDim][ia] = Aab.matrix[h][ia][jb];
+        global_dpd_->buf4_mat_irrep_close(&Aab, h);
+        // Beta-beta contribution to the Hessian
+        global_dpd_->buf4_mat_irrep_init(&Abb, h);
+        global_dpd_->buf4_mat_irrep_rd(&Abb, h);
+        for(int ia = 0; ia < bDim; ++ia)
+            for(int jb = 0; jb < bDim; ++jb)
+                A[ia + aDim][jb + aDim] = Abb.matrix[h][ia][jb];
+        global_dpd_->buf4_mat_irrep_close(&Abb, h);
+
+        sq_rsp(dim, dim, A, evals, 1, evecs, 1e-12);
+
+        int mindim = dim < 5 ? dim : 5;
+        for(int i = 0; i < mindim; i++)
+            eval_sym.push_back(std::make_pair(evals[i], h));
+
+        // Perform totally symmetric rotations, if necessary
+        if(h == 0 && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW"){
+            if(evals[0] < 0.0){
+                redo = true;
+                status = "    Negative hessian eigenvalue detected: rotating orbitals.\n";
+                double scale = pc_pi*options_.get_double("FOLLOW_STEP_SCALE")/2.0;
+                // Rotate the alpha orbitals
+//                outfile->Printf( "OLD ORBS");
+//                Ca_->print();
+                for(int ia = 0; ia < Aaa.params->rowtot[h]; ++ia){
+                    int iabs = Aaa.params->roworb[h][ia][0];
+                    int aabs = Aaa.params->roworb[h][ia][1];
+                    int isym = Aaa.params->psym[iabs];
+                    int asym = Aaa.params->qsym[aabs];
+                    int irel = iabs - Aaa.params->poff[isym];
+                    int arel = aabs - Aaa.params->qoff[asym] + doccpi_[asym] + soccpi_[asym];
+
+                    Ca_->rotate_columns(isym, irel, arel, scale*evecs[ia][0]);
+                    outfile->Printf( "Rotating %d and %d in irrep %d by %f\n",
+                            irel, arel, isym, scale*evecs[ia][0]);
+                }
+//                outfile->Printf( "NEW ORBS");
+//                Ca_->print();
+                // Rotate the beta orbitals
+                for(int ia = 0; ia < Abb.params->rowtot[h]; ++ia){
+                    int iabs = Abb.params->roworb[h][ia][0];
+                    int aabs = Abb.params->roworb[h][ia][1];
+                    int isym = Abb.params->psym[iabs];
+                    int asym = Abb.params->qsym[aabs];
+                    int irel = iabs - Abb.params->poff[isym];
+                    int arel = aabs - Abb.params->qoff[asym] + doccpi_[asym];
+                    Cb_->rotate_columns(isym, irel, arel, scale*evecs[ia+aDim][0]);
+                }
+            }else{
+                status =  "    No totally symmetric instabilities detected: "
+                          "no rotation will be performed.\n";
+            }
+        }
+
+        free_block(A);
+        free_block(evecs);
+        delete [] evals;
+    }
+
+    outfile->Printf( "    Lowest UHF->UHF stability eigenvalues:-\n");
+    print_stability_analysis(eval_sym);
+
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
+    delete ints;
+
+    outfile->Printf( "%s", status.c_str());
+
+    if(redo){
+        if(attempt_number_ > 1){
+            // Make sure we don't get stuck in an infinite loop
+            outfile->Printf( "    There's still a negative eigenvalue.  Try increasing FOLLOW_STEP_SCALE");
+            return;
+        }
+        attempt_number_++;
+        outfile->Printf( "    Re-running the SCF, using the rotated orbitals\n");
+        diis_manager_->reset_subspace();
+        compute_energy();
+    }
+
+}
+
 void UHF::stability_analysis()
 {
-    if(scf_type_ == "DF" || scf_type_ == "CD"){
-        throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
-    }else{
-        // Build the Fock Matrix
-        SharedMatrix aMoF(new Matrix("Alpha MO basis fock matrix", nmopi_, nmopi_));
-        SharedMatrix bMoF(new Matrix("Beta MO basis fock matrix", nmopi_, nmopi_));
-        aMoF->transform(Fa_, Ca_);
-        bMoF->transform(Fb_, Cb_);
-
-        std::vector<boost::shared_ptr<MOSpace> > spaces;
-        spaces.push_back(MOSpace::occ);
-        spaces.push_back(MOSpace::vir);
-        // Ref wfn is really "this"
-        boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-#define ID(x) ints->DPD_ID(x)
-        IntegralTransform* ints = new IntegralTransform(wfn, spaces, IntegralTransform::Unrestricted, IntegralTransform::DPDOnly,
-                               IntegralTransform::QTOrder, IntegralTransform::None);
-        ints->set_keep_dpd_so_ints(true);
-        ints->set_keep_iwl_so_ints(true);
-        ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
-        ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
-        dpd_set_default(ints->get_dpd_id());
-        dpdbuf4 Aaa, Aab, Abb, I;
-        psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-
-        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
-                      ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
-        // A_IA_jb = 2 (IA|jb)
-        global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "UHF Hessian (IA|jb)", 2.0);
-        global_dpd_->buf4_close(&I);
-
-        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-        // A_IA_JB = 2 (IA|JB)
-        global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "UHF Hessian (IA|JB)", 2.0);
-        // A_IA_JB -= (IB|JA)
-        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq,
-                           ID("[O,V]"), ID("[O,V]"), "UHF Hessian (IA|JB)", -1.0);
-        global_dpd_->buf4_close(&I);
-
-        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
-                      ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
-        // A_ia_jb = 2 (ia|jb)
-        global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "UHF Hessian (ia|jb)", 2.0);
-        // A_ia_jb -= (ib|ja)
-        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq,
-                           ID("[o,v]"), ID("[o,v]"), "UHF Hessian (ia|jb)", -1.0);
-        global_dpd_->buf4_close(&I);
-
-        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O>=O]+"), ID("[V>=V]+"), 0, "MO Ints (OO|VV)");
-        // A_IA_JB -= (IJ|AB)
-        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, prqs,
-                           ID("[O,V]"), ID("[O,V]"), "UHF Hessian (IA|JB)", -1.0);
-        global_dpd_->buf4_close(&I);
-
-        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o>=o]+"), ID("[v>=v]+"), 0, "MO Ints (oo|vv)");
-        // A_ia_jb -= (ij|ab)
-        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, prqs,
-                           ID("[o,v]"), ID("[o,v]"), "UHF Hessian (ia|jb)", -1.0);
-        global_dpd_->buf4_close(&I);
-
-        global_dpd_->buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "UHF Hessian (IA|JB)");
-        for(int h = 0; h < Aaa.params->nirreps; ++h){
-            global_dpd_->buf4_mat_irrep_init(&Aaa, h);
-            global_dpd_->buf4_mat_irrep_rd(&Aaa, h);
-            for(int ia = 0; ia < Aaa.params->rowtot[h]; ++ia){
-                int iabs = Aaa.params->roworb[h][ia][0];
-                int aabs = Aaa.params->roworb[h][ia][1];
-                int isym = Aaa.params->psym[iabs];
-                int asym = Aaa.params->qsym[aabs];
-                int irel = iabs - Aaa.params->poff[isym];
-                int arel = aabs - Aaa.params->qoff[asym] + soccpi_[asym] + doccpi_[asym];
-                for(int jb = 0; jb < Aaa.params->coltot[h]; ++jb){
-                    int jabs = Aaa.params->colorb[h][jb][0];
-                    int babs = Aaa.params->colorb[h][jb][1];
-                    int jsym = Aaa.params->rsym[jabs];
-                    int bsym = Aaa.params->ssym[babs];
-                    int jrel = jabs - Aaa.params->roff[jsym];
-                    int brel = babs - Aaa.params->soff[bsym] + soccpi_[asym] + doccpi_[asym];
-                    // A_IA_JB += delta_IJ F_AB - delta_AB F_IJ
-                    if((iabs == jabs) && (asym == bsym))
-                        Aaa.matrix[h][ia][jb] += aMoF->get(asym, arel, brel);
-                    if((aabs == babs) && (isym == jsym))
-                        Aaa.matrix[h][ia][jb] -= aMoF->get(isym, irel, jrel);
-                }
+    if(scf_type_ != "PK"){
+        boost::shared_ptr<UStab> stab = boost::shared_ptr<UStab>(new UStab());
+        stab->compute_energy();
+        SharedMatrix eval_sym = stab->analyze();
+        outfile->Printf( "    Lowest UHF->UHF stability eigenvalues: \n");
+        std::vector < std::pair < double,int > >  eval_print;
+        for (int h = 0; h < eval_sym->nirrep(); ++h) {
+            for (int i = 0; i < eval_sym->rowdim(h); ++i) {
+                eval_print.push_back(make_pair(eval_sym->get(h,i,0),h));
             }
-            global_dpd_->buf4_mat_irrep_wrt(&Aaa, h);
         }
-        global_dpd_->buf4_close(&Aaa);
+        print_stability_analysis(eval_print);
 
-        global_dpd_->buf4_init(&Abb, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
-                      ID("[o,v]"), ID("[o,v]"), 0, "UHF Hessian (ia|jb)");
+        // And now, export the eigenvalues to a PSI4 array, mainly for testing purposes
 
-        for(int h = 0; h < Abb.params->nirreps; ++h){
-            global_dpd_->buf4_mat_irrep_init(&Abb, h);
-            global_dpd_->buf4_mat_irrep_rd(&Abb, h);
-            for(int ia = 0; ia < Abb.params->rowtot[h]; ++ia){
-                int iabs = Abb.params->roworb[h][ia][0];
-                int aabs = Abb.params->roworb[h][ia][1];
-                int isym = Abb.params->psym[iabs];
-                int asym = Abb.params->qsym[aabs];
-                int irel = iabs - Abb.params->poff[isym];
-                int arel = aabs - Abb.params->qoff[asym] + doccpi_[asym];
-                for(int jb = 0; jb < Abb.params->coltot[h]; ++jb){
-                    int jabs = Abb.params->colorb[h][jb][0];
-                    int babs = Abb.params->colorb[h][jb][1];
-                    int jsym = Abb.params->rsym[jabs];
-                    int bsym = Abb.params->ssym[babs];
-                    int jrel = jabs - Abb.params->roff[jsym];
-                    int brel = babs - Abb.params->soff[bsym] + doccpi_[asym];
-                    // A_ia_jb += delta_ij F_ab - delta_ab F_ij
-                    if((iabs == jabs) && (asym == bsym))
-                        Abb.matrix[h][ia][jb] += bMoF->get(asym, arel, brel);
-                    if((aabs == babs) && (isym == jsym))
-                        Abb.matrix[h][ia][jb] -= bMoF->get(isym, irel, jrel);
-                }
+        Process::environment.arrays["SCF STABILITY EIGENVALUES"] = eval_sym;
+
+        if (stab->is_unstable() && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW") {
+            if (attempt_number_ == 1 ) {
+                stab_val = stab->get_eigval();
+            } else if (stab_val - stab->get_eigval() < 1e-4) {
+                // We probably fell on the same minimum, increase step_scale_
+                outfile->Printf("    Negative eigenvalue similar to previous one, wavefunction\n");
+                outfile->Printf("    likely to be in the same minimum.\n");
+                step_scale_ += step_increment_;
+                outfile->Printf("    Modifying FOLLOW_STEP_SCALE to %f.\n", step_scale_);
+            } else {
+                stab_val = stab->get_eigval();
             }
-            global_dpd_->buf4_mat_irrep_wrt(&Abb, h);
-        }
-        global_dpd_->buf4_close(&Abb);
-
-        /*
-         *  Perform the stability analysis
-         */
-        std::vector<std::pair<double, int> >eval_sym;
-
-        std::string status;
-        bool redo = false;
-        global_dpd_->buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                      ID("[O,V]"), ID("[O,V]"), 0, "UHF Hessian (IA|JB)");
-        global_dpd_->buf4_init(&Aab, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
-                      ID("[O,V]"), ID("[o,v]"), 0, "UHF Hessian (IA|jb)");
-        global_dpd_->buf4_init(&Abb, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
-                      ID("[o,v]"), ID("[o,v]"), 0, "UHF Hessian (ia|jb)");
-        for(int h = 0; h < Aaa.params->nirreps; ++h) {
-            int aDim = Aaa.params->rowtot[h];
-            int bDim = Abb.params->rowtot[h];
-            int dim =  aDim + bDim;
-            if(dim == 0) continue;
-            double *evals = init_array(dim);
-            double **evecs = block_matrix(dim, dim);
-            double **A = block_matrix(dim, dim);
-
-            // Alpha-alpha contribution to the Hessian
-            global_dpd_->buf4_mat_irrep_init(&Aaa, h);
-            global_dpd_->buf4_mat_irrep_rd(&Aaa, h);
-            for(int ia = 0; ia < aDim; ++ia)
-                for(int jb = 0; jb < aDim; ++jb)
-                    A[ia][jb] = Aaa.matrix[h][ia][jb];
-            global_dpd_->buf4_mat_irrep_close(&Aaa, h);
-
-            // Alpha-beta and beta-alpha contribution to the Hessian
-            global_dpd_->buf4_mat_irrep_init(&Aab, h);
-            global_dpd_->buf4_mat_irrep_rd(&Aab, h);
-            for(int ia = 0; ia < aDim; ++ia)
-                for(int jb = 0; jb < bDim; ++jb)
-                    A[ia][jb + aDim] = A[jb + aDim][ia] = Aab.matrix[h][ia][jb];
-            global_dpd_->buf4_mat_irrep_close(&Aab, h);
-            // Beta-beta contribution to the Hessian
-            global_dpd_->buf4_mat_irrep_init(&Abb, h);
-            global_dpd_->buf4_mat_irrep_rd(&Abb, h);
-            for(int ia = 0; ia < bDim; ++ia)
-                for(int jb = 0; jb < bDim; ++jb)
-                    A[ia + aDim][jb + aDim] = Abb.matrix[h][ia][jb];
-            global_dpd_->buf4_mat_irrep_close(&Abb, h);
-
-            sq_rsp(dim, dim, A, evals, 1, evecs, 1e-12);
-
-            int mindim = dim < 5 ? dim : 5;
-            for(int i = 0; i < mindim; i++)
-                eval_sym.push_back(std::make_pair(evals[i], h));
-
-            // Perform totally symmetric rotations, if necessary
-            if(h == 0 && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW"){
-                if(evals[0] < 0.0){
-                    redo = true;
-                    status = "    Negative hessian eigenvalue detected: rotating orbitals.\n";
-                    double scale = pc_pi*options_.get_double("FOLLOW_STEP_SCALE")/2.0;
-                    // Rotate the alpha orbitals
-//                    outfile->Printf( "OLD ORBS");
-//                    Ca_->print();
-                    for(int ia = 0; ia < Aaa.params->rowtot[h]; ++ia){
-                        int iabs = Aaa.params->roworb[h][ia][0];
-                        int aabs = Aaa.params->roworb[h][ia][1];
-                        int isym = Aaa.params->psym[iabs];
-                        int asym = Aaa.params->qsym[aabs];
-                        int irel = iabs - Aaa.params->poff[isym];
-                        int arel = aabs - Aaa.params->qoff[asym] + doccpi_[asym] + soccpi_[asym];
-
-                        Ca_->rotate_columns(isym, irel, arel, scale*evecs[ia][0]);
-                        outfile->Printf( "Rotating %d and %d in irrep %d by %f\n",
-                                irel, arel, isym, scale*evecs[0][ia]);
-                    }
-//                    outfile->Printf( "NEW ORBS");
-//                    Ca_->print();
-                    // Rotate the beta orbitals
-                    for(int ia = 0; ia < Abb.params->rowtot[h]; ++ia){
-                        int iabs = Abb.params->roworb[h][ia][0];
-                        int aabs = Abb.params->roworb[h][ia][1];
-                        int isym = Abb.params->psym[iabs];
-                        int asym = Abb.params->qsym[aabs];
-                        int irel = iabs - Abb.params->poff[isym];
-                        int arel = aabs - Abb.params->qoff[asym] + doccpi_[asym];
-                        Cb_->rotate_columns(isym, irel, arel, scale*evecs[0][ia+aDim]);
-                    }
-                }else{
-                    status =  "    No totally symmetric instabilities detected: "
-                              "no rotation will be performed.\n";
-                }
-            }
-
-            free_block(A);
-            free_block(evecs);
-            delete [] evals;
-        }
-
-        outfile->Printf( "    Lowest UHF->UHF stability eigenvalues:-\n");
-        print_stability_analysis(eval_sym);
-
-        psio_->close(PSIF_LIBTRANS_DPD, 1);
-        delete ints;
-
-        outfile->Printf( "%s", status.c_str());
-
-        if(redo){
-            if(attempt_number_ > 1){
+           //     outfile->Printf( "OLD ORBS");
+           //     Ca_->print();
+            stab->rotate_orbs(step_scale_);
+           //     outfile->Printf( "NEW ORBS");
+           //     Ca_->print();
+            if(attempt_number_ > max_attempts_) {
                 // Make sure we don't get stuck in an infinite loop
-                outfile->Printf( "    There's still a negative eigenvalue.  Try increasing FOLLOW_STEP_SCALE");
+                outfile->Printf( "    There's still a negative eigenvalue. Try modifying FOLLOW_STEP_SCALE\n");
+                outfile->Printf("    or increasing MAX_ATTEMPTS.\n");
                 return;
             }
             attempt_number_++;
-            outfile->Printf( "    Re-running the SCF, using the rotated orbitals\n");
+
+            outfile->Printf("    Running SCF again with the rotated orbitals.\n");
             diis_manager_->reset_subspace();
             compute_energy();
+        } else {
+            outfile->Printf("    Stability analysis over.\n");
         }
 
+    }else{
+        stability_analysis_pk();
     }
 }
 
+void UHF::compute_nos()
+{
+    // Compute UHF NOs and NOONs [J. Chem. Phys. 88, 4926 (1988)] -- TDC, 8/15
+
+    // Build S^1/2
+    SharedMatrix SHalf = S_->clone();
+    SHalf->power(0.5);
+
+    // Diagonalize S^1/2 Dt S^1/2
+    SharedMatrix SDS = factory_->create_shared_matrix("S^1/2 Dt S^1/2");
+    SDS->copy(Da_);
+    SDS->add(Db_);
+    SDS->transform(SHalf);
+
+    SharedMatrix UHF_NOs = factory_->create_shared_matrix("UHF NOs");
+    SharedVector UHF_NOONs(factory_->create_vector());
+    SDS->diagonalize(UHF_NOs, UHF_NOONs, descending);
+
+    // Print the NOONs -- code ripped off from OEProp::compute_no_occupations()
+    int max_num;
+    if(options_.get_str("PRINT_NOONS") == "ALL") max_num = nmo_;
+    else max_num = to_integer(options_.get_str("PRINT_NOONS"));
+
+    std::vector<boost::tuple<double, int, int> > metric;
+    for (int h = 0; h < UHF_NOONs->nirrep(); h++)
+      for (int i = 0; i < UHF_NOONs->dimpi()[h]; i++)
+        metric.push_back(boost::tuple<double,int,int>(UHF_NOONs->get(h,i), h ,i));
+
+    std::sort(metric.begin(), metric.end(), std::greater<boost::tuple<double,int,int> >());
+    int offset = nalpha_;
+    int start_occ = offset - max_num;
+    start_occ = (start_occ < 0 ? 0 : start_occ);
+    int stop_vir = offset + max_num + 1;
+    stop_vir = (int)((size_t)stop_vir >= metric.size() ? metric.size() : stop_vir);
+    char** labels = basisset_->molecule()->irrep_labels();
+    outfile->Printf( "\n  UHF NO Occupations:\n");
+    for (int index = start_occ; index < stop_vir; index++) {
+      if (index < offset) {
+        outfile->Printf( "  HONO-%-2d: %4d%3s %9.7f\n", offset- index - 1,
+        boost::get<2>(metric[index])+1,labels[boost::get<1>(metric[index])],
+        boost::get<0>(metric[index]));
+      }
+      else {
+        outfile->Printf( "  LUNO+%-2d: %4d%3s %9.7f\n", index - offset,
+        boost::get<2>(metric[index])+1,labels[boost::get<1>(metric[index])],
+        boost::get<0>(metric[index]));
+      }
+    }
+    outfile->Printf( "\n");
+
+    if(options_.get_bool("SAVE_UHF_NOS")){
+        // Save the NOs to Ca and Cb. The resulting orbitals will be restricted.
+
+        outfile->Printf( "  Saving the UHF Natural Orbitals.\n");
+
+        SharedMatrix SHalf_inv = S_->clone();
+        SHalf_inv->power(-0.5);
+        Ca_->gemm(false, false, 1.0,SHalf_inv,UHF_NOs, 0.0);
+
+        double actv_threshold = 0.02;
+
+        // Transform the average Fock matrix to the NO basis
+        SharedMatrix F_UHF_NOs = factory_->create_shared_matrix("Fock Matrix");
+        F_UHF_NOs->copy(Fa_);
+        F_UHF_NOs->add(Fb_);
+        F_UHF_NOs->transform(Ca_);
+
+        // Sort orbitals according to type (core,active,virtual) and energy
+        std::vector<boost::tuple<int, double, int, int> > sorted_nos;
+        for (int h = 0; h < UHF_NOONs->nirrep(); h++){
+            for (int i = 0; i < UHF_NOONs->dimpi()[h]; i++){
+                double noon = UHF_NOONs->get(h,i);
+                int type = 0; // core      NO >= 1.98
+                if (noon < actv_threshold){
+                    type = 2; // virtual   NO < 0.02
+                }else if (noon < 2.0 - actv_threshold){
+                    type = 1; // active    0.02 <= NO < 1.98
+                }
+                double epsilon = F_UHF_NOs->get(h,i,i);
+                sorted_nos.push_back(boost::tuple<int,double,int,int>(type,epsilon,h,i));
+            }
+        }
+        std::sort(sorted_nos.begin(), sorted_nos.end());
+
+        // Build the final set of UHF NOs
+        std::vector<int> irrep_count(nirrep_,0);
+
+        for (size_t i = 0; i < sorted_nos.size(); i++){
+            int h = boost::get<2>(sorted_nos[i]);
+            int Ca_p = boost::get<3>(sorted_nos[i]);
+            int Cb_p = irrep_count[h];
+            for (int mu = 0; mu < Ca_->colspi(h); mu++){
+                double value = Ca_->get(h,mu,Ca_p);
+                Cb_->set(h,mu,Cb_p,value);
+            }
+            irrep_count[h] += 1;
+        }
+
+        // Copy sorted orbitals to Ca
+        Ca_->copy(Cb_);
+
+        // Suggest an active space
+        Dimension corepi(nirrep_);
+        Dimension actvpi(nirrep_);
+        for (size_t i = 0; i < sorted_nos.size(); i++){
+            int type = boost::get<0>(sorted_nos[i]);
+            int h = boost::get<2>(sorted_nos[i]);
+            if (type == 0) corepi[h] += 1;
+            if (type == 1) actvpi[h] += 1;
+        }
+        outfile->Printf("\n  Active Space from UHF-NOs (NO threshold = %.4f):\n\n",actv_threshold);
+
+        outfile->Printf("    restricted_docc = [");
+        for (int h = 0; h < nirrep_; h++){
+            outfile->Printf("%s%d",h ? "," : "",corepi[h]);
+        }
+        outfile->Printf("]\n");
+
+        outfile->Printf("    active = [");
+        for (int h = 0; h < nirrep_; h++){
+            outfile->Printf("%s%d",h ? "," : "",actvpi[h]);
+        }
+        outfile->Printf("]\n");
+    }
+}
 
 }}

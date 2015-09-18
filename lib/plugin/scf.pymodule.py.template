@@ -46,7 +46,7 @@ def run_@plugin@(name, **kwargs):
     kwargs = p4util.kwargs_lower(kwargs)
 
     # Your plugin's psi4 run sequence goes here
-    psi4.set_global_option('BASIS', 'sto-3g')
+    #psi4.set_global_option('BASIS', 'sto-3g')
     psi4.set_local_option('@PLUGIN@', 'PRINT', 1)
     returnvalue = psi4.plugin('@plugin@.so')
     psi4.set_variable('CURRENT ENERGY', returnvalue)
