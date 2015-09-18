@@ -970,6 +970,8 @@ void CIWavefunction::diag_h()
      // until I fix it ---CDS 11/5/11
      Process::environment.globals["CI STATE-AVERAGED CORRELATION ENERGY"] =
        tval - CalcInfo.escf;
+     Process::environment.globals["CURRENT CORRELATION ENERGY"] =
+       Process::environment.globals["CI STATE-AVERAGED CORRELATION ENERGY"];
    }
 
    // Set the energy as MCSCF would find it
@@ -1388,9 +1390,18 @@ void CIWavefunction::compute_mcscf()
   Parameters.print_lvl = 0;
   //Parameters.maxiter = 2;
 
-  // Build SOMCSCF object
-  transform_dfmcscf_ints();
-  boost::shared_ptr<SOMCSCF> somcscf(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
+  boost::shared_ptr<SOMCSCF> somcscf;
+  if (MCSCF_Parameters->mcscf_type == "DF"){
+    transform_dfmcscf_ints();
+    somcscf = boost::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
+  }
+  else {
+    transform_mcscf_ints();
+    // for (int x=0; x<25; x++) outfile->Printf("%d %lf\n", x, CalcInfo.twoel_ints[x]);
+    somcscf = boost::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
+    // transform_dfmcscf_ints();
+    // for (int x=0; x<25; x++) outfile->Printf("%d %lf\n", x, CalcInfo.twoel_ints[x]);
+  }
 
   // We assume some kind of ras here.
   if (Parameters.wfn != "CASSCF"){
@@ -1417,23 +1428,18 @@ void CIWavefunction::compute_mcscf()
   // Parameters
   int conv = 0;
   double ediff, grad_rms, current_energy;
-  double old_energy = 0;
-  std::string itertype;
+  double old_energy = CalcInfo.escf;
+  std::string itertype = "Initial CI";
   SharedMatrix x;
 
-  ediff = -CalcInfo.escf;
-
   // Energy header
-  //
-    outfile->Printf("\n                          "
+  outfile->Printf("\n                          "
                     "Total Energy         Delta E       RMS Grad\n\n");
 
   // Iterate
   for (int iter=1; iter<(MCSCF_Parameters->max_iter + 1); iter++){
 
-    // Run and set CI
-    old_energy = current_energy;
-
+    // Run CI and set quantities
     diag_h();
     form_opdm();
     set_opdm();
@@ -1461,20 +1467,22 @@ void CIWavefunction::compute_mcscf()
       outfile->Printf("    MCSCF has converged\n");
       break;
     }
+    old_energy = current_energy;
 
-    if (
-        ((grad_rms < MCSCF_Parameters->start_onestep_grad) &&
-        (ediff < MCSCF_Parameters->start_onestep_e) &&
-        (iter >= 2))
-        || (itertype == "SOMCSCF")
-        ){
-         itertype = "SOMCSCF";
-         x = somcscf->solve(5, 1.e-10, false);
+    bool do_so_orbital = (((grad_rms < MCSCF_Parameters->so_start_grad) &&
+                           (ediff < MCSCF_Parameters->so_start_e) &&
+                           (iter >= 2))
+                           || (itertype == "SOMCSCF"));
+
+    if (do_so_orbital && MCSCF_Parameters->oo_so){
+      itertype = "SOMCSCF";
+      x = somcscf->solve(3, 1.e-10, false);
     }
     else {
       itertype = "APPROX";
       x = somcscf->approx_solve();
     }
+
 
     double maxx = 0.0;
     for (int h=0; h<x->nirrep(); ++h) {
@@ -1485,24 +1493,23 @@ void CIWavefunction::compute_mcscf()
         }
     }
 
-    if (maxx > 0.5){
-      x->scale(0.5/maxx);
+    if (maxx > MCSCF_Parameters->max_rot){
+      x->scale((MCSCF_Parameters->max_rot)/maxx);
     }
 
     SharedMatrix new_orbs = somcscf->Ck(x);
     set_orbitals("ROT", new_orbs);
 
-    // Need to grab the new edrc energy after transqt2 computations
-    outfile->Printf("About to transform ints.\n");
-    transform_dfmcscf_ints();
-  }
+    // Transform integrals
+    if (MCSCF_Parameters->mcscf_type == "DF"){
+      transform_dfmcscf_ints();
+    }
+    else {
+      transform_mcscf_ints();
+    }
 
-  // outfile->printf("\ncleaning up mcscf.\n");
+  }// End MCSCF
 
-  // set_opdm();
-  // set_tpdm();
-  // df_.reset();
-  // jk_.reset();
 }
 
 

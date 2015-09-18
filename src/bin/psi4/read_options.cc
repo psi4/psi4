@@ -703,9 +703,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- SUBSECTION MCSCF -*/
 
-    /*- Convergence criterion for CI residual vector in the Davidson
-    algorithm (RMS error).
-    The default is 1e-4 for energies and 1e-7 for gradients. -*/
+    /*- Convergence criterion for the RMS of the orbital gradient -*/
     options.add_double("MCSCF_R_CONVERGENCE", 1e-4);
 
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
@@ -716,11 +714,37 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Maximum number MCSCF of iterations -*/
     options.add_int("MCSCF_MAXITER", 30);
 
-    /*- Start onestep MCSCF based on RMS of orbital gradient -*/
-    options.add_double("MCSCF_ONESTEP_GRAD", 1e-3);
+    /* - Do we run conventional or density fitted? -*/
+    options.add_str("MCSCF_TYPE", "DF", "DF CONV");
 
-    /*- Start onestep MCSCF energy convergence -*/
-    options.add_double("MCSCF_ONESTEP_E", 1e-3);
+    /*- Convergence algorithm to utilize. -*/
+    options.add_str("MCSCF_ALGORITHM", "TWO_STEP", "ONE_STEP TWO_STEP");
+
+    /*- Do second-order orbital-orbital MCSCF -*/
+    options.add_bool("MCSCF_SO", false);
+
+    /*- Start second-order orbital-orbital MCSCF based on RMS of orbital gradient -*/
+    options.add_double("MCSCF_SO_START_GRAD", 1e-3);
+
+    /*- Start second-order orbital-orbital MCSCF based on energy convergence -*/
+    options.add_double("MCSCF_SO_START_E", 1e-3);
+
+    /*- Iteration to turn on DIIS -*/
+    options.add_int("MCSCF_DIIS_START", 3);
+
+    /*- How often to do a DIIS extrapolation -*/
+    options.add_int("MCSCF_DIIS_FREQ", 1);
+
+    /*- Maximum number of DIIS vectors -*/
+    options.add_int("MCSCF_DIIS_MAX_VECS", 8);
+
+    /*- Minimum number of DIIS vectors -*/
+    options.add_int("MCSCF_DIIS_MIN_VECS", 2);
+
+    /*- Maximum value in the rotation matrix. If a value is greater than this number
+    al values are scaled. -*/
+    options.add_double("MCSCF_MAX_ROT", 0.5);
+
 
   }
 

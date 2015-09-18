@@ -3041,13 +3041,24 @@ def run_detcas(name, **kwargs):
     elif (name.lower() == 'casscf'):
         psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
 
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
+    # The DF case
+    if psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF':
+        if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+            psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-        # If the scf type is DF/CD, then the AO integrals were never written to disk
-        if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') or (psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
-            psi4.MintsHelper().integrals()
+        # Bypass routine scf if user did something special to get it to converge
+        if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+            scf_helper(name, **kwargs)
+
+    # The non-DF case
+    else:
+        # Bypass routine scf if user did something special to get it to converge
+        if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+            scf_helper(name, **kwargs)
+
+            # If the scf type is DF/CD, then the AO integrals were never written to disk
+            if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') or (psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+                psi4.MintsHelper().integrals()
 
 
     psi4.detci()

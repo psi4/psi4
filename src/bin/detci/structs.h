@@ -315,6 +315,7 @@ struct calcinfo {
    int *so_per_irr;      /* symmetry orbitals per irrep */
    int *orbsym;          /* irrep for each orbital */
    int *reorder;         /* map Pitzer-ordered orbitals to our ordering */
+   int *act_reorder;     /* map Pitzer-ordered orbitals to our ordering for active only*/
    int *order;           /* map our ordering back to Pitzer ordering */
    double *scfeigval;    /* SCF eigenvalues */
    double *scfeigvala;    /* For ZAPTn, alpha and beta eigenvalues different */
@@ -334,6 +335,8 @@ struct calcinfo {
    int num_rsv_orbs;     /* number of restricted virtual orbitals */
    int num_drv_orbs;     /* number of dropped virtual orbitals
                             (frozen + restricted) */
+   int num_rot_orbs;     /* number of rotatable orbitals
+                            (nmo - nfzc - nfzv) */
    int npop;             /* number of populated orbitals, nso - total virtual */
    int num_expl_cor_orbs;/* number of explicit core orbitals, i.e.,
                             orbitals that are constrained to be doubly
@@ -710,11 +713,21 @@ void print_time_new(struct detci_timings time);
 
 
 struct mcscf_params {
-   double rms_grad_convergence; /* convergence on RMS of orbital grad           */
-   double energy_convergence;   /* convergence on CI energy                     */
-   int max_iter;                /* maximum number of casscf iterations          */
-   double start_onestep_grad;   /* RMS of orbital grad threshold for one-step   */
-   double start_onestep_e;      /* energy convergence threshold for one-step    */
+  double rms_grad_convergence; /* convergence on RMS of orbital grad           */
+  double energy_convergence;   /* convergence on CI energy                     */
+  int max_iter;                /* maximum number of casscf iterations          */
+  std::string mcscf_type;      /* Is this df?                                  */
+  std::string algorithm;       /* What convergence algorithm do we use?        */
+  double max_rot;              /* Maximum value in the rotation matrix         */
+
+  bool oo_so;                  /* Do we do second-order orbital orbital?       */
+  double so_start_grad;        /* RMS of orbital grad threshold for one-step   */
+  double so_start_e;           /* energy convergence threshold for one-step    */
+
+  int diis_start;              /* Start DIIS at this iteration                 */
+  int diis_freq;               /* Do DIIS every n steps                        */
+  int diis_max_vecs;           /* Maximum number of DIIS vectors               */
+  int diis_min_vecs;           /* Minimum number of DIIS vectors               */
 };
 
 }} // namespace psi::detci

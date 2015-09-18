@@ -31,9 +31,14 @@ using namespace psi::detci;
 
 void export_ciwave()
 {
-    class_<CIWavefunction, boost::shared_ptr<CIWavefunction> >("CIWavefunction", "docstring", no_init)
-        .def(init<boost::shared_ptr<Wavefunction> >())
-        .def("get_active_tpdm", &CIWavefunction::get_active_tpdm, "docstring")
-        .def("compute_mcscf", &CIWavefunction::compute_mcscf, "docstring");
+   // class_<CIWavefunction, boost::shared_ptr<CIWavefunction>, bases<Wavefunction> >("CIWavefunction", "docstring", no_init)
+   //     .def(init<boost::shared_ptr<Wavefunction> >())
+   //     .def("get_active_tpdm", &CIWavefunction::get_active_tpdm, "docstring")
+   //     .def("compute_mcscf", &CIWavefunction::compute_mcscf, "docstring")
+   //     .def("get_orbitals", &CIWavefunction::get_orbitals, "docstring")
+   //     .def("set_orbitals", &CIWavefunction::set_orbitals, "docstring")
+   //     .def("get_opdm", &CIWavefunction::get_opdm, "docstring")
+   //     .def("get_tpdm", &CIWavefunction::get_tpdm, "docstring")
+   //     .def("get_active_tpdm", &CIWavefunction::get_active_tpdm, "docstring");
 }
 

@@ -23,9 +23,14 @@
 #include <libmints/mints.h>
 #include <libqt/qt.h>
 #include <psi4-dec.h>
+
 #include <libthce/thce.h>
 #include <libthce/lreri.h>
 
+#include <libdpd/dpd.h>
+#include <psifiles.h>
+#include <libtrans/integraltransform.h>
+#include <libpsio/psio.hpp>
 
 #include "soscf.h"
 #include "jk.h"
@@ -167,7 +172,6 @@ SharedMatrix SOMCSCF::Ck(SharedMatrix x)
 
     // We did not fully exponentiate the matrix, need to orthogonalize
     U->schmidt();
-    U->print();
 
     // C' = C U
     SharedMatrix Cp = Matrix::doublet(matrices_["C"], U);
@@ -251,7 +255,8 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
     matrices_["AFock"]->set_name("AFock");
 
     compute_Q();
-
+    // matrices_["IFock"]->print();
+    // matrices_["Q"]->print();
 
     // => Generalized Fock matrix <= //
     matrices_["Fock"] = SharedMatrix(new Matrix("Generalized Fock", nirrep_, nmopi_, nmopi_));
@@ -285,6 +290,7 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
             }
         }
     }
+    // matrices_["Fock"]->print();
 
     // => Orbtial Gradient <= //
     matrices_["Gradient"] = SharedMatrix(new Matrix("Gradient", nirrep_, noapi_, navpi_));
@@ -298,7 +304,6 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
             for (int j=0; j<navpi_[h]; j++){
                 int nj = noccpi_[h] + j;
                 Gp[i][j] = 2.0 * (dFp[i][nj] - dFp[nj][i]);
-                // Gp[i][j] = 2.0 * (dFp[i][nj] - dFp[nj][i]);
 
                 // Ensure the gradient is zero for the active-active diagonal block
                 if (nj == i){
@@ -309,8 +314,8 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
     }
     zero_redundant(matrices_["Gradient"]);
     matrices_["Precon"] = H_approx_diag();
-    matrices_["Gradient"]->print();
-    matrices_["Precon"]->print();
+    // matrices_["Gradient"]->print();
+    // matrices_["Precon"]->print();
 }
 SharedMatrix SOMCSCF::H_approx_diag()
 {
@@ -659,10 +664,10 @@ SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print)
     // outfile->Printf("Ap\n");
     // Ap->print();
 
-    outfile->Printf("Gradient\n");
-    r->print();
-    outfile->Printf("Ap guess\n");
-    Ap->print();
+    // outfile->Printf("Gradient\n");
+    // r->print();
+    // outfile->Printf("Ap guess\n");
+    // Ap->print();
 
     r->subtract(Ap);
     if (print){
@@ -907,6 +912,8 @@ void DFSOMCSCF::compute_Q(){
         offset_act += nactpi_[h];
         offset_nmo += nmopi_[h];
     }
+    // outfile->Printf("Printing the Q matrix\n");
+    // matrices_["Q"]->print();
 }
 void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
 {
@@ -1056,10 +1063,13 @@ void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
 }// End DFSOMCSCF object
 
 /// DiskSOMCSCF class
-DiskSOMCSCF::DiskSOMCSCF(boost::shared_ptr<JK> jk, SharedMatrix AOTOSO,
-            SharedMatrix H) :
+DiskSOMCSCF::DiskSOMCSCF(boost::shared_ptr<JK> jk,
+            boost::shared_ptr<IntegralTransform> ints,
+            SharedMatrix AOTOSO, SharedMatrix H) :
             SOMCSCF(jk, AOTOSO, H)
 {
+    ints_ = ints;
+    psio_ = _default_psio_lib_;
 }
 DiskSOMCSCF::~DiskSOMCSCF()
 {
@@ -1070,28 +1080,273 @@ void DiskSOMCSCF::transform()
 }
 void DiskSOMCSCF::set_act_MO()
 {
-    throw PSIEXCEPTION("DOES NOT WORK YET!");
-    // Build (aa|aa)
-    // matrices_["actMO"] = Matrix::doublet(aaQ, aaQ, false, true);
+    dpdbuf4 I, TPDM;
+
+    // => Write active TPDM <= //
+
+    double** TPDMp = matrices_["TPDM"]->pointer();
+    psio_->open(PSIF_MCSCF, PSIO_OPEN_OLD);
+    global_dpd_->buf4_init(&TPDM, PSIF_MCSCF, 0,
+                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"),
+                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "CI TPDM (XX|XX)");
+
+    for (int h=0; h<nirrep_; h++){
+        global_dpd_->buf4_mat_irrep_init(&TPDM, h);
+    }
+
+    // 4 fold symmetry
+    for(int p = 0; p < nact_; p++){
+      int p_sym = TPDM.params->psym[p];
+
+      for(int q = 0; q <= p; q++){
+        int q_sym = TPDM.params->psym[q];
+        int pq_sym = p_sym^q_sym;
+        int pq = TPDM.params->rowidx[p][q];
+
+        for(int r = 0; r < nact_; r++){
+          int r_sym = TPDM.params->psym[r];
+
+          for(int s = 0; s <= r; s++){
+            int s_sym = TPDM.params->psym[s];
+            int rs_sym = r_sym^s_sym;
+            int rs = TPDM.params->colidx[r][s];
+
+            if (pq_sym != rs_sym) continue;
+
+            TPDM.matrix[pq_sym][pq][rs] = TPDMp[p*nact_ + q][r*nact_ + s];
+    }}}}
+
+    for (int h=0; h<nirrep_; h++){
+        global_dpd_->buf4_mat_irrep_wrt(&TPDM, h);
+        global_dpd_->buf4_mat_irrep_close(&TPDM, h);
+    }
+    global_dpd_->buf4_close(&TPDM);
+    psio_->close(PSIF_MCSCF, 1);
+
+    // => Read dense active MO <= //
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0,
+                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"),
+                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "MO Ints (XX|XX)");
+
+    matrices_["actMO"] = SharedMatrix(new Matrix("actMO", nact_*nact_, nact_*nact_));
+    double** actMOp = matrices_["actMO"]->pointer();
+
+    for (int h=0; h<nirrep_; h++){
+        global_dpd_->buf4_mat_irrep_init(&I, h);
+        global_dpd_->buf4_mat_irrep_rd(&I, h);
+    }
+
+    // 8 fold symmetry
+    for(int p = 0; p < nact_; p++){
+      int p_sym = I.params->psym[p];
+
+      for(int q = 0; q <= p; q++){
+        int q_sym = I.params->qsym[q];
+        int pq = I.params->rowidx[p][q];
+        int pq_sym = p_sym^q_sym;
+
+        for(int r = 0; r <= p; r++){
+          int r_sym = I.params->rsym[r];
+          int smax = (p==r) ? q+1 : r+1;
+
+          for(int s = 0; s < smax; s++){
+            int s_sym = I.params->ssym[s];
+            int rs_sym = r_sym^s_sym;
+            int rs = I.params->colidx[r][s];
+
+            if (pq_sym != rs_sym) continue;
+
+            double value = I.matrix[pq_sym][pq][rs];
+
+            actMOp[p*nact_ + q][r*nact_ + s] = value;
+            actMOp[q*nact_ + p][r*nact_ + s] = value;
+            actMOp[p*nact_ + q][s*nact_ + r] = value;
+            actMOp[q*nact_ + p][s*nact_ + r] = value;
+
+            actMOp[r*nact_ + s][p*nact_ + q] = value;
+            actMOp[s*nact_ + r][p*nact_ + q] = value;
+            actMOp[r*nact_ + s][q*nact_ + p] = value;
+            actMOp[s*nact_ + r][q*nact_ + p] = value;
+
+          }
+        }
+      }
+    }
+
+    // Close everything out
+    for (int h=0; h<nirrep_; h++){
+        global_dpd_->buf4_mat_irrep_close(&I, h);
+    }
+    global_dpd_->buf4_close(&I);
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
 void DiskSOMCSCF::compute_Q()
 {
     // G_mwxy TPDM_vwxy -> Q_mv
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+    psio_->open(PSIF_MCSCF, PSIO_OPEN_OLD);
 
-    throw PSIEXCEPTION("DOES NOT WORK YET!");
+    dpdfile2 Q;
+    // We init R then a so we need 1, 0 here for index types
+    global_dpd_->file2_init(&Q, PSIF_MCSCF, 0, 1, 0, "Q");
+
+    dpdbuf4 G, TPDM;
+    global_dpd_->buf4_init(&G, PSIF_LIBTRANS_DPD, 0,
+                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,R]"),
+                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X,R]"), 0, "MO Ints (XX|XR)");
+
+    global_dpd_->buf4_init(&TPDM, PSIF_MCSCF, 0,
+                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,X]"),
+                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "CI TPDM (XX|XX)");
+
+    global_dpd_->contract442(&TPDM, &G, &Q, 3, 3, 1.0, 0.0);
+    matrices_["Q"] = SharedMatrix(new Matrix::Matrix(&Q));
+
+    // outfile->Printf("Printing the Q matrix\n");
+    // matrices_["Q"]->print();
+
+    global_dpd_->file2_close(&Q);
+    global_dpd_->buf4_close(&TPDM);
+    global_dpd_->buf4_close(&G);
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
+    psio_->close(PSIF_MCSCF, 1);
+
 }
 void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
 {
     // \TPDM_{vwxy}\kappa_{mo}g_{owxy}
     // \TPDM_{vwxy}(\kappa_{wo}g_{moxy} +\kappa_{xo}g_{mwoy} + \kappa_{yo}g_{mwxo})
-    throw PSIEXCEPTION("DOES NOT WORK YET!");
 
-    // dpdbuf4 TPDM, G, tmp;
-    // dpdfile2 Qk;
-    // global_dpd_->buf4_init(&TPDM, ??, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
-    // global_dps_->file2_init(&Qk, ??, 0, 0, 1, "tIA");
+    outfile->Printf("Init files\n");
+    Uact->print();
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+    psio_->open(PSIF_MCSCF, PSIO_OPEN_OLD);
 
-    // global_dpd_->buf4_init(&TPDM, ??, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
+    dpdfile2 Qk, dpdUact;
+    dpdbuf4 G, Gk, TPDM;
+
+    // We init R then a so we need 1, 0 here for index types
+    global_dpd_->file2_init(&dpdUact, PSIF_MCSCF, 0, 1, 0, "Uact");
+    // Uact->print();
+
+    // Copy SharedMatrix Uact into Ua
+    global_dpd_->file2_mat_init(&dpdUact);
+
+    for (int h=0; h<nirrep_; h++){
+        if (!nactpi_[h]) continue;
+        double** Uactp = Uact->pointer(h);
+        int size = nactpi_[h] * nmopi_[h];
+        C_DCOPY(size, Uactp[0], 1, dpdUact.matrix[h][0], 1);
+    }
+
+    global_dpd_->file2_mat_wrt(&dpdUact);
+    global_dpd_->file2_mat_close(&dpdUact);
+    SharedMatrix(new Matrix::Matrix(&dpdUact))->print();
+    outfile->Printf("Wrote Uact\n");
+
+
+    // Rotate the two electron integrals
+    global_dpd_->buf4_init(&Gk, PSIF_MCSCF, 0,
+                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,R]"),
+                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,R]"), 0, "Rotated MO Ints (XX|XR)");
+
+
+    // \kappa_{yo}g_{mwxo} -> Gk_{mwxy}
+    global_dpd_->buf4_init(&G, PSIF_LIBTRANS_DPD, 0,
+                ints_->DPD_ID("[X,R]"), ints_->DPD_ID("[X,R]"),
+                ints_->DPD_ID("[X,R]"), ints_->DPD_ID("[X,R]"), 0, "MO Ints (XR|XR)");
+
+    outfile->Printf("About to contract\n");
+    global_dpd_->contract244(&dpdUact, &G, &Gk, 1, 1, 0, 1.0, 0.0);
+    global_dpd_->buf4_close(&G);
+    outfile->Printf("First contraction done\n\n");
+
+    // Sneaky code
+    global_dpd_->file2_init(&Qk, PSIF_MCSCF, 0, 1, 0, "Qk");
+    global_dpd_->buf4_init(&TPDM, PSIF_MCSCF, 0,
+                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,X]"),
+                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "CI TPDM (XX|XX)");
+
+    global_dpd_->contract442(&TPDM, &Gk, &Qk, 3, 3, 1.0, 0.0);
+    SharedMatrix(new Matrix::Matrix(&Qk))->print();
+    global_dpd_->buf4_close(&TPDM);
+    global_dpd_->file2_close(&Qk);
+    // End sneaky code
+
+
+    // \kappa_{xo}g_{mwoy} -> Gk_{mwxy}
+    global_dpd_->buf4_sort(&Gk, PSIF_MCSCF, qprs,
+        ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,R]"),
+        "Tran Copy Ints (XX|XR)");
+
+    global_dpd_->buf4_init(&G, PSIF_MCSCF, 0,
+                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,R]"),
+                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,R]"), 0, "Tran Copy Ints (XX|XR)");
+
+    outfile->Printf("About to contract\n");
+    global_dpd_->buf4_axpy(&G, &Gk, 1.0);
+    global_dpd_->buf4_close(&G);
+    outfile->Printf("Second contraction done\n\n");
+
+    // Sneaky code
+    global_dpd_->file2_init(&Qk, PSIF_MCSCF, 0, 1, 0, "Qk");
+    global_dpd_->buf4_init(&TPDM, PSIF_MCSCF, 0,
+                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,X]"),
+                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "CI TPDM (XX|XX)");
+
+    global_dpd_->contract442(&TPDM, &Gk, &Qk, 3, 3, 1.0, 0.0);
+    SharedMatrix(new Matrix::Matrix(&Qk))->print();
+    global_dpd_->buf4_close(&TPDM);
+    global_dpd_->file2_close(&Qk);
+    // throw PSIEXCEPTION("DOES NOT WORK YET!");
+    // End sneaky code
+
+
+    // \kappa_{wo}g_{moxy}
+    global_dpd_->buf4_init(&G, PSIF_LIBTRANS_DPD, 0,
+                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[R,R]"),
+                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[R>=R]+"), 0, "MO Ints (XX|RR)");
+
+    outfile->Printf("About to contract\n");
+    // global_dpd_->contract424(&G, &dpdUact, &Gk, 2, 1, 0, 1.0, 1.0);
+    global_dpd_->contract244(&dpdUact, &G, &Gk, 1, 2, 0, 1.0, 1.0);
+    outfile->Printf("Third contraction done\n");
+    global_dpd_->buf4_close(&G);
+    outfile->Printf("Third contraction done\n");
+    global_dpd_->file2_close(&dpdUact);
+    outfile->Printf("Third contraction done\n");
+
+
+    // \TPDM_{vwxy}(gk_{moxy})
+    global_dpd_->file2_init(&Qk, PSIF_MCSCF, 0, 1, 0, "Qk");
+    global_dpd_->buf4_init(&TPDM, PSIF_MCSCF, 0,
+                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,X]"),
+                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "CI TPDM (XX|XX)");
+
+    global_dpd_->contract442(&TPDM, &Gk, &Qk, 3, 3, 1.0, 0.0);
+    global_dpd_->buf4_close(&Gk);
+    global_dpd_->buf4_close(&TPDM);
+
+    outfile->Printf("Fourth contraction\n");
+
+    // outfile->Printf("Printing the Q matrix\n");
+    // matrices_["Q"]->print();
+
+    outfile->Printf("Read Qk\n");
+    matrices_["Qk"] = SharedMatrix(new Matrix::Matrix(&Qk));
+    global_dpd_->file2_close(&Qk);
+
+    // \TPDM_{vwxy}\kappa_{mo}g_{owxy} -> Qk
+    matrices_["Qk"]->doublet(matrices_["Q"], U, false, true);
+
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
+    psio_->close(PSIF_MCSCF, 1);
+
+    matrices_["Qk"]->print();
+
+    throw PSIEXCEPTION("DiskMCSCF::Qk: Qk does not work quite yet, check back in after the break.");
+
 }// End DiskSOMCSCF object
 
 } // Namespace psi

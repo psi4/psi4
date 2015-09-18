@@ -157,20 +157,6 @@ void CIWavefunction::get_mo_info()
     Parameters.filter_ints = 1;
   }
 
-
-  /* This seems to not be used CDS 4/15
-  CalcInfo.max_orbs_per_irrep = 0;
-  CalcInfo.max_pop_per_irrep = 0;
-  for (i=0; i<CalcInfo.nirreps; i++) {
-    if (CalcInfo.max_orbs_per_irrep < CalcInfo.orbs_per_irr[i])
-       CalcInfo.max_orbs_per_irrep = CalcInfo.orbs_per_irr[i];
-    if (CalcInfo.max_pop_per_irrep < (CalcInfo.orbs_per_irr[i] -
-                                   CalcInfo.frozen_uocc[i] - CalcI))
-      CalcInfo.max_pop_per_irrep = CalcInfo.orbs_per_irr[i] -
-                                   CalcInfo.frozen_uocc[i];
-  }
-  */
-
   // construct the "ordering" array, which maps the other direction
   // i.e., from a CI orbital to a Pitzer orbital
   CalcInfo.order = init_int_array(CalcInfo.nmo);
@@ -286,6 +272,7 @@ void CIWavefunction::get_mo_info()
   }
   CalcInfo.num_drc_orbs = CalcInfo.num_fzc_orbs + CalcInfo.num_rsc_orbs;
   CalcInfo.num_drv_orbs = CalcInfo.num_fzv_orbs + CalcInfo.num_rsv_orbs;
+  CalcInfo.num_rot_orbs = CalcInfo.nmo - CalcInfo.num_fzc_orbs - CalcInfo.num_fzv_orbs;
 
   // calculate number of orbitals active in CI
   // maybe this changes later for cor orbs, depends on where we go w/ it
@@ -312,6 +299,17 @@ void CIWavefunction::get_mo_info()
       }
     }
   }
+
+  // Construct "active reordering array"
+  CalcInfo.act_reorder = init_int_array(CalcInfo.num_ci_orbs);
+  for (int h=0, target=0, pos=0; h<nirrep_; h++){
+    target += CalcInfo.dropped_docc[h];
+    for (int i=0; i<CalcInfo.ci_orbs[h]; i++){
+      CalcInfo.act_reorder[pos++] = CalcInfo.reorder[target++] - CalcInfo.num_drc_orbs;
+    }
+    target += CalcInfo.dropped_uocc[h];
+  }
+  // for (int i=0; i<CalcInfo.num_ci_orbs; i++) outfile->Printf("Act_reorder %d \n", CalcInfo.act_reorder[i]);
 
   // Build arrays for integrals
   int ncitri = (CalcInfo.num_ci_orbs * (CalcInfo.num_ci_orbs + 1)) / 2 ;

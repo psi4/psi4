@@ -3665,7 +3665,7 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2,
     }
     S2 = CalcInfo.num_bet_expl + tval + Ms + Ms*Ms;
 
-    outfile->Printf("Computed <S^2> vector %d = %20.15f\n\n", vec_num, S2);
+    if (Parameters.print_lvl) outfile->Printf("Computed <S^2> vector %d = %20.15f\n\n", vec_num, S2);
 
   buf_unlock();
   return(S2);

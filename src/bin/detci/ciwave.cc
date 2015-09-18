@@ -91,6 +91,7 @@ void CIWavefunction::common_init()
 
     // Set information
     ints_init_ = false;
+    df_ints_init_ = false;
 
     // Form strings
     form_strings();

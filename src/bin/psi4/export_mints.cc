@@ -37,6 +37,7 @@
 #include <libscf_solver/rhf.h>
 
 #include <libfock/jk.h>
+#include <../bin/detci/ciwave.h>
 
 #include <string>
 
@@ -961,5 +962,18 @@ void export_mints()
             .def("Qvv", &DFTensor::Qvv, "doctsring")
             .def("Imo", &DFTensor::Imo, "doctsring")
             .def("Idfmo", &DFTensor::Idfmo, "doctsring");
+
+
+    // Looks like this has to go here.
+    class_<detci::CIWavefunction, boost::shared_ptr<detci::CIWavefunction>, bases<Wavefunction> >("CIWavefunction", "docstring", no_init)
+        .def(init<boost::shared_ptr<Wavefunction> >())
+        .def("get_active_tpdm", &detci::CIWavefunction::get_active_tpdm, "docstring")
+        .def("compute_mcscf", &detci::CIWavefunction::compute_mcscf, "docstring")
+        .def("get_orbitals", &detci::CIWavefunction::get_orbitals, "docstring")
+        .def("set_orbitals", &detci::CIWavefunction::set_orbitals, "docstring")
+        .def("get_opdm", &detci::CIWavefunction::get_opdm, "docstring")
+        .def("get_tpdm", &detci::CIWavefunction::get_tpdm, "docstring")
+        .def("get_active_tpdm", &detci::CIWavefunction::get_active_tpdm, "docstring");
+
 
 }
