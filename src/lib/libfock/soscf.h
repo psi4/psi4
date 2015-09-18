@@ -50,6 +50,8 @@ namespace psi {
 /// Forward declare
 class JK;
 class DFERI;
+class IntegralTransform;
+class PSIO;
 
 class SOMCSCF {
 
@@ -165,8 +167,6 @@ protected:
 
     /// Integral objects
     boost::shared_ptr<JK> jk_;
-    // boost::shared_ptr<IntegralTransform> ints_;
-    boost::shared_ptr<DFERI> dferi_;
 
     /// Map of matrices
     std::map<std::string, SharedMatrix > matrices_;
@@ -216,6 +216,7 @@ public:
 
 protected:
 
+    boost::shared_ptr<DFERI> dferi_;
     virtual void transform();
     virtual void set_act_MO();
     virtual void compute_Q();
@@ -236,12 +237,14 @@ public:
      * @param jk      JK object to use.
      * @param H       Core hamiltonian in the SO basis.
      */
-    DiskSOMCSCF(boost::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H);
+    DiskSOMCSCF(boost::shared_ptr<JK> jk, boost::shared_ptr<IntegralTransform> ints, SharedMatrix AOTOSO, SharedMatrix H);
 
     virtual ~DiskSOMCSCF();
 
 protected:
 
+    boost::shared_ptr<IntegralTransform> ints_;
+    boost::shared_ptr<PSIO>  psio_;
     virtual void transform();
     virtual void set_act_MO();
     virtual void compute_Q();

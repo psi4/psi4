@@ -129,6 +129,7 @@ public:
 
 private:
 
+    /// => General Helper Functions <= ///
     /// Paramater and CalcInfo setters
     void get_mo_info();
     void get_parameters(Options &options);
@@ -152,24 +153,32 @@ private:
     /// Symmetry block a matrix
     SharedMatrix symm_block(SharedMatrix x, Dimension dim1, Dimension dim2);
 
-    /// Integrals
+    /// => Integrals <= ///
     bool ints_init_;
+    bool df_ints_init_;
     boost::shared_ptr<IntegralTransform> ints_; // Non-DF
-    boost::shared_ptr<DFERI> dferi_; // For DF
-    boost::shared_ptr<JK> jk_;       // For DF
-
-    void tf_onel_ints();
-    void form_gmat();
-
-    void setup_mcscf_ints();
-    void transform_mcscf_ints();
-    void setup_dfmcscf_ints();
-    void transform_dfmcscf_ints();
     boost::shared_ptr<MOSpace> rot_space_;
     boost::shared_ptr<MOSpace> act_space_;
+    boost::shared_ptr<DFERI> dferi_; // DF
+    boost::shared_ptr<JK> jk_;
+
+    /// General transforms
+    void tf_onel_ints();
+    void form_gmat();
+    void onel_ints_from_jk();
 
 
-    /// Stuff moved from globals
+    /// Non-DF integral functions
+    void setup_mcscf_ints();
+    void transform_mcscf_ints();
+    void read_dpd_ci_ints();
+
+    /// DF integral functions
+    void setup_dfmcscf_ints();
+    void transform_dfmcscf_ints();
+
+
+    /// => Old Globals <= //
     struct stringwr **alplist_;
     struct stringwr **betlist_;
     struct mcscf_params *MCSCF_Parameters;
