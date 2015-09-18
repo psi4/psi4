@@ -582,6 +582,7 @@ IntegralTransform::set_orbitals(SharedMatrix C)
 {
     Ca_ = C->clone();
     Cb_ = Ca_;
+    process_eigenvectors();
 }
 
 /**
