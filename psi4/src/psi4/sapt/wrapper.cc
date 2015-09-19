@@ -52,6 +52,13 @@ PsiReturnType sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA,
         SAPT0 sapt(Dimer, MonomerA, MonomerB, options, psio);
         sapt.compute_energy();
     } else {
+    // This is added to make sure the default for COUPLED_INDUCTION is properly
+    // set even if the user bypasses the driver to run.
+        if (options.get_str("REFERENCE") == "ROHF") {
+            if(! (options["COUPLED_INDUCTION"].has_changed() ) && options.get_bool("COUPLED_INDUCTION") ) {
+                options.set_bool("SAPT","COUPLED_INDUCTION", false);
+            }
+        } 
         USAPT0 sapt(Dimer, MonomerA, MonomerB, options, psio);
         sapt.compute_energy();
     }
