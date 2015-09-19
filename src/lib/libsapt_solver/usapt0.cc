@@ -78,6 +78,7 @@ boost::shared_ptr<USAPT0> USAPT0::build(boost::shared_ptr<Wavefunction> d,
     sapt->print_ = options.get_int("PRINT");
     sapt->debug_ = options.get_int("DEBUG");
     sapt->bench_ = options.get_int("BENCH");
+    sapt->coupled_ind_ = options.get_bool("COUPLED_INDUCTION");
 
 // Get memory and convert it into words.
     sapt->memory_ = (unsigned long int)(Process::environment.get_memory() * options.get_double("SAPT_MEM_FACTOR") * 0.125);
@@ -260,13 +261,22 @@ void USAPT0::print_header() const
 void USAPT0::print_trailer()
 {
     energies_["delta HF,r (2)"] = 0.0;
+    energies_["delta HF,u (2)"] = 0.0;
     if (energies_["HF"] != 0.0) {
-        energies_["delta HF,r (2)"] = energies_["HF"] - energies_["Elst10,r"] - energies_["Exch10"] - energies_["Ind20,r"] - energies_["Exch-Ind20,r"];
+        if (coupled_ind_) {
+          energies_["delta HF,r (2)"] = energies_["HF"] - energies_["Elst10,r"] - energies_["Exch10"] - energies_["Ind20,r"] - energies_["Exch-Ind20,r"];
+        } else {
+          energies_["delta HF,u (2)"] = energies_["HF"] - energies_["Elst10,r"] - energies_["Exch10"] - energies_["Ind20,u"] - energies_["Exch-Ind20,u"];
+        }
     }
 
     energies_["Electrostatics"] = energies_["Elst10,r"];
     energies_["Exchange"]       = energies_["Exch10"];
-    energies_["Induction"]      = energies_["Ind20,r"] + energies_["Exch-Ind20,r"] + energies_["delta HF,r (2)"];
+    if (coupled_ind_) {
+        energies_["Induction"]      = energies_["Ind20,r"] + energies_["Exch-Ind20,r"] + energies_["delta HF,r (2)"];
+    } else {
+        energies_["Induction"]      = energies_["Ind20,u"] + energies_["Exch-Ind20,u"] + energies_["delta HF,u (2)"];
+    }
     energies_["Dispersion"]     = energies_["Disp20"] + energies_["Exch-Disp20"];
     energies_["SAPT"]           = energies_["Electrostatics"] + energies_["Exchange"] + energies_["Induction"] + energies_["Dispersion"];
 
@@ -284,12 +294,21 @@ void USAPT0::print_trailer()
       energies_["Exch10(S^2)"]*1000.0,energies_["Exch10(S^2)"]*pc_hartree2kcalmol);
     outfile->Printf("    Induction          %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Induction"]*1000.0,energies_["Induction"]*pc_hartree2kcalmol);
-    outfile->Printf("      Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
-      energies_["Ind20,r"]*1000.0,energies_["Ind20,r"]*pc_hartree2kcalmol);
-    outfile->Printf("      Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
-      energies_["Exch-Ind20,r"]*1000.0,energies_["Exch-Ind20,r"]*pc_hartree2kcalmol);
-    outfile->Printf("      delta HF,r (2)   %16.8lf mH %16.8lf kcal mol^-1\n\n",
-      energies_["delta HF,r (2)"]*1000.0,energies_["delta HF,r (2)"]*pc_hartree2kcalmol);
+    if (coupled_ind_) {
+        outfile->Printf("      Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
+          energies_["Ind20,r"]*1000.0,energies_["Ind20,r"]*pc_hartree2kcalmol);
+        outfile->Printf("      Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
+          energies_["Exch-Ind20,r"]*1000.0,energies_["Exch-Ind20,r"]*pc_hartree2kcalmol);
+        outfile->Printf("      delta HF,r (2)   %16.8lf mH %16.8lf kcal mol^-1\n\n",
+          energies_["delta HF,r (2)"]*1000.0,energies_["delta HF,r (2)"]*pc_hartree2kcalmol);
+    } else {
+        outfile->Printf("      Ind20,u          %16.8lf mH %16.8lf kcal mol^-1\n",
+          energies_["Ind20,u"]*1000.0,energies_["Ind20,u"]*pc_hartree2kcalmol);
+        outfile->Printf("      Exch-Ind20,u     %16.8lf mH %16.8lf kcal mol^-1\n",
+          energies_["Exch-Ind20,u"]*1000.0,energies_["Exch-Ind20,u"]*pc_hartree2kcalmol);
+        outfile->Printf("      delta HF,u (2)   %16.8lf mH %16.8lf kcal mol^-1\n\n",
+          energies_["delta HF,u (2)"]*1000.0,energies_["delta HF,r (2)"]*pc_hartree2kcalmol);
+    }
     outfile->Printf("    Dispersion         %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Dispersion"]*1000.0,energies_["Dispersion"]*pc_hartree2kcalmol);
     outfile->Printf("      Disp20           %16.8lf mH %16.8lf kcal mol^-1\n",
@@ -930,51 +949,54 @@ void USAPT0::fock_terms()
     energies_["Exch-Ind20,u (B<-A)"] = ExchInd20u_BA;
     energies_["Exch-Ind20,u"] = ExchInd20u_AB + ExchInd20u_BA;
 
-    // => Coupled Induction <= //
-    // TODO: Handle ROHF orbitals, their MO Hessian is not SPD
+    if (coupled_ind_) {
+        // => Coupled Induction <= //
+        // TODO: Write an RO CPHF solver for ROHF reference orbitals
+    
+        // Compute CPKS for both alpha and beta electrons.
+        std::map < std::string, boost::shared_ptr<Matrix> > x_sol = compute_x(jk,waB,wbB,waA,wbA);
+        boost::shared_ptr<Matrix> xaA = x_sol["Aa"];
+        boost::shared_ptr<Matrix> xbA = x_sol["Ab"];
+        boost::shared_ptr<Matrix> xaB = x_sol["Ba"];
+        boost::shared_ptr<Matrix> xbB = x_sol["Bb"];
+    
+        // Backward in Ed's convention
+        xaA->scale(-1.0);
+        xaB->scale(-1.0);
+        xbA->scale(-1.0);
+        xbB->scale(-1.0);
+    
+        // => Induction <= //
+    
+        double Ind20r_AB = xaA->vector_dot(waB);
+        Ind20r_AB += xbA->vector_dot(wbB);
+        double Ind20r_BA = xaB->vector_dot(waA);
+        Ind20r_BA += xbB->vector_dot(wbA);
+        double Ind20r = Ind20r_AB + Ind20r_BA;
+        energies_["Ind20,r (A<-B)"] = Ind20r_AB;
+        energies_["Ind20,r (B<-A)"] = Ind20r_BA;
+        energies_["Ind20,r"] = Ind20r;
+        outfile->Printf("    Ind20,r (A<-B)      = %18.12lf H\n",Ind20r_AB);
+        outfile->Printf("    Ind20,r (B<-A)      = %18.12lf H\n",Ind20r_BA);
+        outfile->Printf("    Ind20,r             = %18.12lf H\n",Ind20r);
+    
+        // => Exchange-Induction <= //
+    
+        double ExchInd20r_AB = xaA->vector_dot(uaB);
+        ExchInd20r_AB += xbA->vector_dot(ubB);
+        double ExchInd20r_BA = xaB->vector_dot(uaA);
+        ExchInd20r_BA += xbB->vector_dot(ubA);
+        double ExchInd20r = ExchInd20r_AB + ExchInd20r_BA;
+        outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf H\n",ExchInd20r_AB);
+        outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf H\n",ExchInd20r_BA);
+        outfile->Printf("    Exch-Ind20,r        = %18.12lf H\n",ExchInd20r);
+        outfile->Printf("\n");
+    
+        energies_["Exch-Ind20,r (A<-B)"] = ExchInd20r_AB;
+        energies_["Exch-Ind20,r (B<-A)"] = ExchInd20r_BA;
+        energies_["Exch-Ind20,r"] = ExchInd20r_AB + ExchInd20r_BA;
 
-    // Compute CPKS for both alpha and beta electrons.
-    std::map < std::string, boost::shared_ptr<Matrix> > x_sol = compute_x(jk,waB,wbB,waA,wbA);
-    boost::shared_ptr<Matrix> xaA = x_sol["Aa"];
-    boost::shared_ptr<Matrix> xbA = x_sol["Ab"];
-    boost::shared_ptr<Matrix> xaB = x_sol["Ba"];
-    boost::shared_ptr<Matrix> xbB = x_sol["Bb"];
-
-    // Backward in Ed's convention
-    xaA->scale(-1.0);
-    xaB->scale(-1.0);
-    xbA->scale(-1.0);
-    xbB->scale(-1.0);
-
-    // => Induction <= //
-
-    double Ind20r_AB = xaA->vector_dot(waB);
-    Ind20r_AB += xbA->vector_dot(wbB);
-    double Ind20r_BA = xaB->vector_dot(waA);
-    Ind20r_BA += xbB->vector_dot(wbA);
-    double Ind20r = Ind20r_AB + Ind20r_BA;
-    energies_["Ind20,r (A<-B)"] = Ind20r_AB;
-    energies_["Ind20,r (B<-A)"] = Ind20r_BA;
-    energies_["Ind20,r"] = Ind20r;
-    outfile->Printf("    Ind20,r (A<-B)      = %18.12lf H\n",Ind20r_AB);
-    outfile->Printf("    Ind20,r (B<-A)      = %18.12lf H\n",Ind20r_BA);
-    outfile->Printf("    Ind20,r             = %18.12lf H\n",Ind20r);
-
-    // => Exchange-Induction <= //
-
-    double ExchInd20r_AB = xaA->vector_dot(uaB);
-    ExchInd20r_AB += xbA->vector_dot(ubB);
-    double ExchInd20r_BA = xaB->vector_dot(uaA);
-    ExchInd20r_BA += xbB->vector_dot(ubA);
-    double ExchInd20r = ExchInd20r_AB + ExchInd20r_BA;
-    outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf H\n",ExchInd20r_AB);
-    outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf H\n",ExchInd20r_BA);
-    outfile->Printf("    Exch-Ind20,r        = %18.12lf H\n",ExchInd20r);
-    outfile->Printf("\n");
-
-    energies_["Exch-Ind20,r (A<-B)"] = ExchInd20r_AB;
-    energies_["Exch-Ind20,r (B<-A)"] = ExchInd20r_BA;
-    energies_["Exch-Ind20,r"] = ExchInd20r_AB + ExchInd20r_BA;
+    }
 
     vars_["S"]   = S;
     vars_["Da_A"] = Da_A;

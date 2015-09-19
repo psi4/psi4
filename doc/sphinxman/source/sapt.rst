@@ -126,10 +126,11 @@ approximation introduces negligible errors into the SAPT energy
 improves efficiency. 
 
 The latest addition to the SAPT code is the SAPT0 method for open-shell 
-monomers. Currently, |scf__reference| ``UHF`` should be used. This code
-is available for both exact and density fitted integrals, except for the
-dispersion terms which are only implemented with a factorization relying on
-density fitting.
+monomers. This code is available for both exact and density fitted integrals, 
+except for the dispersion terms which are only implemented with a factorization relying on
+density fitting. Both ``UHF`` and ``ROHF`` |scf__reference| can be used, but coupled
+induction computations are currently not supported with ``ROHF``. This means that orbital
+relaxation is not included and the uncoupled induction term is computed instead.
 If both monomers are open-shell, their coupling is assumed to be high spin, i.e.
 two doublets would interact to form a triplet.
 
@@ -262,12 +263,12 @@ Below, you can find a minimum example of open-shell SAPT0 computation. ::
   basis         cc-pVDZ
   }
 
-|scf__reference| needs to be ``UHF`` for the open-shell computation to proceed.
+|scf__reference| needs to be ``UHF``  or ``ROHF`` for the open-shell computation to proceed.
 
 Advanced example
 ^^^^^^^^^^^^^^^^
 
-UHF computations can be difficult to converge in certain cases, thus you may
+Open-shell computations can be difficult to converge in certain cases, thus you may
 want to have more control over the SCF procedure. You have the option of 
 doing the driver job in the input file, by performing the dimer and monomer computations
 yourself. In the example below, we do a stability analysis for the open-shell monomer only ::
@@ -396,6 +397,7 @@ Specific open-shell SAPT0 keywords
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. include:: autodir_options_c/sapt__mem_factor.rst
+.. include:: autodir_options_c/sapt__coupled_induction.rst
 .. include:: autodir_options_c/sapt__dim.rst
 .. include:: autodir_options_c/sapt__mona.rst
 .. include:: autodir_options_c/sapt__monb.rst

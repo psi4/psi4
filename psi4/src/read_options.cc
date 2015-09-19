@@ -912,6 +912,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (recommended for large calculations) some intermediate quantities are also
     printed. -*/
     options.add_int("PRINT", 1);
+    /*- Whether or not to compute coupled induction, applies only to 
+        the open-shell SAPT0 code. Coupled induction is not available for 
+        ROHF, and the option is automatically false in this case. !expert -*/
+    options.add_bool("COUPLED_INDUCTION",true);
     /*- Proportion of memory available for the DF-MP2 three-index integral
         buffers used to evaluate dispersion. !expert -*/
     options.add_double("SAPT_MEM_FACTOR", 0.9);

@@ -2974,6 +2974,13 @@ def run_sapt(name, **kwargs):
         psi4.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', True)
 
+    # Make sure we are not going to run CPHF on ROHF, since its MO Hessian
+    # is not SPD
+    if scf_ref == 'ROHF':
+        psi4.set_local_option('SAPT','COUPLED_INDUCTION',False)
+        psi4.print_out('  Coupled induction not available for ROHF.\n')
+        psi4.print_out('  Proceeding with uncoupled induction only.\n')
+
     psi4.print_out('\n')
     p4util.banner(name.upper())
     psi4.print_out('\n')

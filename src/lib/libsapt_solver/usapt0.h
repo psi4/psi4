@@ -60,6 +60,9 @@ protected:
     int cpks_maxiter_;
     // CPKS convergence threshold
     double cpks_delta_;
+
+    // Do coupled induction ?
+    bool coupled_ind_;
     
     // Memory in doubles
     unsigned long int memory_;
