@@ -22,7 +22,7 @@
 #ifndef PSIAPI_GAUSSIANBASIS_H_
 #define PSIAPI_GAUSSIANBASIS_H_
 #include "BasisSet.h"
-#include "Utils/NestedIterator.h"
+//#include "Utils/NestedIterator.h"
 
 ///Macro for defining a clone and copy function with minimal retyping
 #define CLONE(ClassName)\
