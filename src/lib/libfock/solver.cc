@@ -2283,17 +2283,18 @@ void DLUSolver::print_header() const
     }
 }
 
-// Commented implementation below is from DLR solver but this function
+/*// Commented implementation below is from DLR solver but this function
 // is never called in the DLU solver.
 unsigned long int DLUSolver::memory_estimate()
 {
-/*    unsigned long int dimension = 0L;
+    unsigned long int dimension = 0L;
     if (!diag_) diag_ = H_->diagonal();
     for (int h = 0; h < diag_->nirrep(); h++) {
         dimension += diag_->dimpi()[h];
     }
     return (2L * max_subspace_ + 3L * nroot_ + 1L) * dimension;
-*/}
+}
+*/
 
 void DLUSolver::initialize()
 {

@@ -628,7 +628,7 @@ public:
     // => Required Methods <= //
 
     virtual void print_header() const;
-    virtual unsigned long int memory_estimate();
+    virtual unsigned long int memory_estimate(){ return 0;};
     virtual void initialize();
     void solve();
     void finalize();
