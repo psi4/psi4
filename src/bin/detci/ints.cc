@@ -164,7 +164,8 @@ void CIWavefunction::setup_dfmcscf_ints(){
 
   df_ints_init_ = true;
 }
-void CIWavefunction::transform_dfmcscf_ints(){
+void CIWavefunction::transform_dfmcscf_ints(bool approx_only)
+{
 
   if (!df_ints_init_) setup_dfmcscf_ints();
 
@@ -173,6 +174,9 @@ void CIWavefunction::transform_dfmcscf_ints(){
   SharedMatrix Cocc = get_orbitals("DOCC");
   SharedMatrix Cact = get_orbitals("ACT");
   SharedMatrix Cvir = get_orbitals("VIR");
+
+
+
 
   int nao = AO2SO_->rowspi()[0];
   int nact = CalcInfo.num_ci_orbs;
@@ -212,6 +216,10 @@ void CIWavefunction::transform_dfmcscf_ints(){
       }
   }
 
+  // Reorder
+
+
+
   // => Compute DF ints <= //
   dferi_->clear();
   dferi_->set_C(AO_C);
@@ -222,7 +230,11 @@ void CIWavefunction::transform_dfmcscf_ints(){
   // In the future build this once then slice it
   dferi_->add_pair_space("aaQ", "a", "a");
   dferi_->add_pair_space("NaQ", "N", "a");
-  dferi_->add_pair_space("NNQ", "N", "N");
+
+  // Not needed for approximate update
+  if (!approx_only){
+    dferi_->add_pair_space("NNQ", "N", "N");
+  }
 
   // dferi_->print_header(2);
   dferi_->compute();
@@ -356,24 +368,35 @@ void CIWavefunction::setup_mcscf_ints(){
   jk_->set_memory(Process::environment.get_memory() * 0.8);
 
 }
-void CIWavefunction::transform_mcscf_ints(){
+void CIWavefunction::transform_mcscf_ints(bool approx_only)
+{
 
   if (!ints_init_) setup_mcscf_ints();
 
   // The orbital matrix need to be identical to the previous one
   ints_->set_orbitals(get_orbitals("ALL"));
 
-  // We need (aa|aa), (aa|aN), (aa|NN), (aN|aN)
-  ints_->set_keep_ht_ints(false); // Need to nuke the half ints after building
-  ints_->transform_tei(act_space_, rot_space_, act_space_, rot_space_);
+  if (approx_only){
+    // We only need (aa|aa), (aa|aN) for appoximate update
+    ints_->set_keep_ht_ints(true); // Save the aa half ints here
+    ints_->transform_tei_first_half(act_space_, act_space_);
+    ints_->transform_tei_second_half(act_space_, act_space_, act_space_, rot_space_);
+    ints_->set_keep_ht_ints(false); // Need to nuke the half ints after building act/act
+    ints_->transform_tei_second_half(act_space_, act_space_, act_space_, act_space_);
+  }
+  else{
+    // We need (aa|aa), (aa|aN), (aa|NN), (aN|aN)
+    ints_->set_keep_ht_ints(false); // Need to nuke the half ints after building
+    ints_->transform_tei(act_space_, rot_space_, act_space_, rot_space_);
 
-  // Half trans then work from there
-  ints_->set_keep_ht_ints(true); // Save the aa half ints here
-  ints_->transform_tei_first_half(act_space_, act_space_);
-  ints_->transform_tei_second_half(act_space_, act_space_, rot_space_, rot_space_);
-  ints_->transform_tei_second_half(act_space_, act_space_, act_space_, rot_space_);
-  ints_->set_keep_ht_ints(false); // Need to nuke the half ints after building act/act
-  ints_->transform_tei_second_half(act_space_, act_space_, act_space_, act_space_);
+    // Half trans then work from there
+    ints_->set_keep_ht_ints(true); // Save the aa half ints here
+    ints_->transform_tei_first_half(act_space_, act_space_);
+    ints_->transform_tei_second_half(act_space_, act_space_, rot_space_, rot_space_);
+    ints_->transform_tei_second_half(act_space_, act_space_, act_space_, rot_space_);
+    ints_->set_keep_ht_ints(false); // Need to nuke the half ints after building act/act
+    ints_->transform_tei_second_half(act_space_, act_space_, act_space_, act_space_);
+  }
 
   // Read DPD ints into memory
   read_dpd_ci_ints();

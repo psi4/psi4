@@ -1395,11 +1395,11 @@ void CIWavefunction::compute_mcscf()
 
   boost::shared_ptr<SOMCSCF> somcscf;
   if (MCSCF_Parameters->mcscf_type == "DF"){
-    transform_dfmcscf_ints();
+    transform_dfmcscf_ints(!MCSCF_Parameters->orbital_so);
     somcscf = boost::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
   }
   else {
-    transform_mcscf_ints();
+    transform_mcscf_ints(!MCSCF_Parameters->orbital_so);
     somcscf = boost::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
   }
 
@@ -1488,7 +1488,7 @@ void CIWavefunction::compute_mcscf()
                            (iter >= 2))
                            || (itertype == "SOMCSCF"));
 
-    if (do_so_orbital && MCSCF_Parameters->oo_so){
+    if (do_so_orbital && MCSCF_Parameters->orbital_so){
       itertype = "SOMCSCF";
       xstep = somcscf->solve(3, 1.e-10, false);
     }
@@ -1531,10 +1531,10 @@ void CIWavefunction::compute_mcscf()
 
     // Transform integrals
     if (MCSCF_Parameters->mcscf_type == "DF"){
-      transform_dfmcscf_ints();
+      transform_dfmcscf_ints(!MCSCF_Parameters->orbital_so);
     }
     else {
-      transform_mcscf_ints();
+      transform_mcscf_ints(!MCSCF_Parameters->orbital_so);
     }
 
   }// End MCSCF
