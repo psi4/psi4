@@ -230,6 +230,25 @@ void CIWavefunction::set_orbitals(const std::string& orbital_name, SharedMatrix 
     delete[] end;
     delete[] spread;
 }
+
+Dimension CIWavefunction::get_dimension(const std::string& orbital_name)
+{
+    /// Figure out orbital positions
+    int* start = new int[nirrep_];
+    int* end = new int[nirrep_];
+    orbital_locations(orbital_name, start, end);
+
+    Dimension dim = Dimension(nirrep_);
+
+    for (int h=0; h<nirrep_; h++){
+      dim[h] = end[h] - start[h];
+    }
+
+    delete[] start;
+    delete[] end;
+    return dim;
+}
+
 void CIWavefunction::set_opdm(bool use_old_d)
 {
 
@@ -310,19 +329,26 @@ SharedMatrix CIWavefunction::get_active_opdm()
   double** OPDMb = Db_->pointer();
 
   int offset = 0;
+
   for (int h=0; h<nirrep_; h++){
     offset += CalcInfo.dropped_docc[h];
-    if (!CalcInfo.ci_orbs[h]) continue;
+    if (!CalcInfo.ci_orbs[h]){
+      offset += CalcInfo.dropped_uocc[h];
+      continue;
+    }
 
     double* actp = actOPDM->pointer(h)[0];
 
     for (int i=0, target=0; i<CalcInfo.ci_orbs[h]; i++){
-      int offi = offset + i;
+      int ni = CalcInfo.reorder[i + offset];
       for (int j=0; j<CalcInfo.ci_orbs[h]; j++){
-        actp[target++] = OPDMa[offi][offset + j] + OPDMb[offi][offset + j];
+        int nj = CalcInfo.reorder[j + offset];
+
+        actp[target++] = OPDMa[ni][nj] + OPDMb[ni][nj];
       }
     }
     offset += CalcInfo.ci_orbs[h];
+    offset += CalcInfo.dropped_uocc[h];
   }
   return actOPDM;
 }
@@ -339,7 +365,7 @@ SharedVector CIWavefunction::get_tpdm(bool symmetrize, const std::string& tpdm_t
   else if (tpdm_type == "AA") tpdm_file = PSIF_MO_AA_TPDM;
   else if (tpdm_type == "BB") tpdm_file = PSIF_MO_BB_TPDM;
   else if (tpdm_type == "AB") tpdm_file = PSIF_MO_AB_TPDM;
-  else throw PSIEXCEPTION("DETCI: TPDM can only be AA, AB, or BB");
+  else throw PSIEXCEPTION("DETCI: TPDM can only be SUM, AA, AB, or BB");
 
   iwl_buf_init(&TBuff, tpdm_file, 0.0, 1, 1);
   int npop = CalcInfo.num_ci_orbs + CalcInfo.num_drc_orbs;
@@ -410,16 +436,20 @@ SharedMatrix CIWavefunction::get_active_tpdm(const std::string& tpdm_type)
 
   int nci2 = nci * nci;
   int nci3 = nci * nci * nci;
-  int ij, kl, ijkl;
   for (int i=0; i<nci; i++){
   for (int j=0; j<nci; j++){
   for (int k=0; k<nci; k++){
   for (int l=0; l<nci; l++){
-      ij = INDEX(ndocc + i, ndocc + j);
-      kl = INDEX(ndocc + k, ndocc + l);
-      ijkl = INDEX(ij, kl);
-      actTPDMp[i * nci3 + j * nci2 + k * nci + l] = fullTPDMp[ijkl];
+      int r_i = CalcInfo.act_reorder[i];
+      int r_j = CalcInfo.act_reorder[j];
+      int r_k = CalcInfo.act_reorder[k];
+      int r_l = CalcInfo.act_reorder[l];
+      int r_ij = INDEX(ndocc + r_i, ndocc + r_j);
+      int r_kl = INDEX(ndocc + r_k, ndocc + r_l);
+      int r_ijkl = INDEX(r_ij, r_kl);
+      actTPDMp[i * nci3 + j * nci2 + k * nci + l] = fullTPDMp[r_ijkl];
   }}}}
+
   fullTPDM.reset();
 
   // Set numpy shape
