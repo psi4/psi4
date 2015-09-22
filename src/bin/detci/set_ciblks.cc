@@ -340,7 +340,7 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
 
    if (Parameters.print_lvl) {
      outfile->Printf(
-       "\nCI space requires %.0lf determinants\n", (double) CIblks.vectlen);
+       "\nCI space requires %.0lf determinants\n\n", (double) CIblks.vectlen);
      
      }
 

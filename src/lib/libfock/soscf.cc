@@ -871,7 +871,7 @@ void DFSOMCSCF::compute_Q(){
     aaQ.reset();
 
     // Load NaQ
-    boost::shared_ptr<Tensor> NaQT = dfints["NaQ"];
+    boost::shared_ptr<Tensor> NaQT = dfints["RaQ"];
     SharedMatrix NaQ(new Matrix("NaQ", nmo_ * nact_, nQ));
     double* NaQp = NaQ->pointer()[0];
     FILE* NaQF = NaQT->file_pointer();
@@ -940,8 +940,8 @@ void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
     std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
 
     // Read NaQ
-    boost::shared_ptr<Tensor> NaQT = dfints["NaQ"];
-    SharedMatrix NaQ(new Matrix("NaQ", nmo_ * nact_, nQ));
+    boost::shared_ptr<Tensor> NaQT = dfints["RaQ"];
+    SharedMatrix NaQ(new Matrix("RaQ", nmo_ * nact_, nQ));
     double* NaQp = NaQ->pointer()[0];
     FILE* NaQF = NaQT->file_pointer();
     fseek(NaQF,0L,SEEK_SET);
@@ -981,11 +981,11 @@ void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
     // wo,onQ->wnQ (aU, NNQ) QN^2a^2 (rate determining)
     // Read and gemm in chunks, need to do blocking later
     int chunk_size = 200;
-    boost::shared_ptr<Tensor> NNQT = dfints["NNQ"];
+    boost::shared_ptr<Tensor> NNQT = dfints["RRQ"];
 
     SharedMatrix wnQ(new Matrix("nwQ", nact_*nmo_, nQ));
     double** wnQp = wnQ->pointer();
-    SharedMatrix NNQ(new Matrix("NNQ", chunk_size * nmo_, nQ));
+    SharedMatrix NNQ(new Matrix("RRQ", chunk_size * nmo_, nQ));
     double** NNQp = NNQ->pointer();
     FILE* NNQF = NNQT->file_pointer();
 

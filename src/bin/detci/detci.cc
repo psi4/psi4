@@ -1391,7 +1391,6 @@ void CIWavefunction::compute_mcscf()
 {
 
   Parameters.print_lvl = 0;
-  //Parameters.maxiter = 2;
 
   boost::shared_ptr<SOMCSCF> somcscf;
   if (MCSCF_Parameters->mcscf_type == "DF"){
@@ -1424,12 +1423,15 @@ void CIWavefunction::compute_mcscf()
   somcscf->set_frozen_orbitals(Cfzc);
 
 
-  /// => Start traditional MCSCF <= //
+  /// => Start traditional two-step MCSCF <= //
   // Parameters
   int conv = 0;
   double ediff, grad_rms, current_energy;
   double old_energy = CalcInfo.escf;
   std::string itertype = "Initial CI";
+  std::string mcscf_type;
+  if (MCSCF_Parameters->mcscf_type == "DF") mcscf_type = "   @DF-MCSCF";
+  else mcscf_type = "      @MCSCF";
 
 
   // Setup the DIIS manager
@@ -1447,7 +1449,7 @@ void CIWavefunction::compute_mcscf()
   int diis_count = 0;
 
   // Energy header
-  outfile->Printf("\n                          "
+  outfile->Printf("\n                             "
                     "Total Energy         Delta E       RMS Grad\n\n");
 
   // Iterate
@@ -1472,13 +1474,13 @@ void CIWavefunction::compute_mcscf()
     somcscf->update(Cdocc, Cact, Cvir, actOPDM, actTPDM);
     grad_rms = somcscf->gradient_rms();
 
-    outfile->Printf("   @MCSCF Iter %3d:  % 5.16lf   % 1.5e  % 1.5e %s\n", iter,
+    outfile->Printf("%s Iter %3d:  % 5.16lf   % 1.5e  % 1.5e %s\n", mcscf_type.c_str(), iter,
                     current_energy, ediff, grad_rms, itertype.c_str());
 
     if (grad_rms < MCSCF_Parameters->rms_grad_convergence &&
         (fabs(ediff) < fabs(MCSCF_Parameters->energy_convergence)) &&
         (iter > 3)){
-      outfile->Printf("    MCSCF has converged\n");
+      outfile->Printf("\n       MCSCF has converged!\n");
       break;
     }
     old_energy = current_energy;

@@ -161,6 +161,7 @@ void CIWavefunction::setup_dfmcscf_ints(){
 
   /// Build DF object
   dferi_ = DFERI::build(primary,auxiliary,options_);
+  dferi_->print_header();
 
   df_ints_init_ = true;
 }
@@ -174,9 +175,6 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only)
   SharedMatrix Cocc = get_orbitals("DOCC");
   SharedMatrix Cact = get_orbitals("ACT");
   SharedMatrix Cvir = get_orbitals("VIR");
-
-
-
 
   int nao = AO2SO_->rowspi()[0];
   int nact = CalcInfo.num_ci_orbs;
@@ -216,28 +214,26 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only)
       }
   }
 
-  // Reorder
-
-
 
   // => Compute DF ints <= //
   dferi_->clear();
   dferi_->set_C(AO_C);
-  dferi_->add_space("N", 0, nrot);
+  dferi_->add_space("R", 0, nrot);
   dferi_->add_space("a", nrot, aoc_rowdim);
+  dferi_->add_space("F", 0, aoc_rowdim);
 
-  // Is it smart enough to order then untranspose?
-  // In the future build this once then slice it
-  dferi_->add_pair_space("aaQ", "a", "a");
-  dferi_->add_pair_space("NaQ", "N", "a");
-
-  // Not needed for approximate update
-  if (!approx_only){
-    dferi_->add_pair_space("NNQ", "N", "N");
+  if (approx_only){
+    dferi_->add_pair_space("aaQ", "a", "a");
+    dferi_->add_pair_space("RaQ", "a", "R", -1.0/2.0, true);
+  }
+  else{
+    dferi_->add_pair_space("aaQ", "a", "a");
+    dferi_->add_pair_space("RaQ", "a", "R", -1.0/2.0, true);
+    dferi_->add_pair_space("RRQ", "R", "R");
   }
 
-  // dferi_->print_header(2);
   dferi_->compute();
+  std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
 
   // => Compute onel ints <= //
   onel_ints_from_jk();
@@ -245,7 +241,6 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only)
   // => Compute twoel ints <= //
   int nQ = dferi_->size_Q();
 
-  std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
   boost::shared_ptr<Tensor> aaQT = dfints["aaQ"];
   SharedMatrix aaQ(new Matrix("aaQ", nact * nact, nQ));
 
