@@ -131,7 +131,7 @@ double SOMCSCF::rhf_energy(SharedMatrix C)
     return erhf;
 }
 
-SharedMatrix SOMCSCF::Ck(SharedMatrix x)
+SharedMatrix SOMCSCF::Ck(SharedMatrix C, SharedMatrix x)
 {
 
     SharedMatrix tmp(new Matrix("Ck", nirrep_, nmopi_, nmopi_));
@@ -174,7 +174,7 @@ SharedMatrix SOMCSCF::Ck(SharedMatrix x)
     U->schmidt();
 
     // C' = C U
-    SharedMatrix Cp = Matrix::doublet(matrices_["C"], U);
+    SharedMatrix Cp = Matrix::doublet(C, U);
 
     return Cp;
 }
@@ -255,8 +255,6 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
     matrices_["AFock"]->set_name("AFock");
 
     compute_Q();
-    // matrices_["IFock"]->print();
-    // matrices_["Q"]->print();
 
     // => Generalized Fock matrix <= //
     matrices_["Fock"] = SharedMatrix(new Matrix("Generalized Fock", nirrep_, nmopi_, nmopi_));
@@ -321,7 +319,6 @@ SharedMatrix SOMCSCF::H_approx_diag()
 {
 
     // d_tuvw I_tuvw -> dI_t, D_tu IF_tu -> DIF_t
-    // double** actMOp = actMO->pointer();
     double** actMOp = matrices_["actMO"]->pointer();
     double** TPDMp = matrices_["TPDM"]->pointer();
     int relact = 0;
@@ -417,12 +414,10 @@ SharedMatrix SOMCSCF::H_approx_diag()
             double** IFp = matrices_["IFock"]->pointer(h);
             double** OPDMp = matrices_["OPDM"]->pointer(h);
 
-            // Need to figure out the right rotations
-            std::vector<std::pair<int, int>> iter;
-
             int offset_col = 0;
             int offset_row = 0;
-            // Loop over spaces last space will have no rotations
+
+            // Loop over spaces, last space will have no rotations
             for (int nras = 0; nras < ras_spaces_.size()-1; nras++){
                 int ras_size = ras_spaces_[nras][h];
                 offset_col += ras_size;
@@ -445,20 +440,21 @@ SharedMatrix SOMCSCF::H_approx_diag()
                     value += DIFp[a];
                     Hp[oi][a] -= 2.0 * value;
 
+
                     value = 0.0;
                     int p = i + offset_act;
                     int q = a + offset_act;
                     int pp = p * nact_ + p;
                     int pq = p * nact_ + q;
                     int qq = q * nact_ + q;
-                    int end = offset_act + nactpi_[h];
-                    for (int u=offset_act; u<end; u++){
+                    // int end = offset_act + nactpi_[h];
+                    for (int u=0; u<nact_; u++){
                         int pu = p * nact_ + u;
                         int qu = q * nact_ + u;
-                        for (int v=offset_act; v<end; v++){
-                            int pv = p*nact_ + v;
-                            int qv = q*nact_ + v;
-                            int uv = u*nact_ + v;
+                        for (int v=0; v<nact_; v++){
+                            int pv = p * nact_ + v;
+                            int qv = q * nact_ + v;
+                            int uv = u * nact_ + v;
                             value += 2.0 * TPDMp[pu][pv] * actMOp[qu][qv];
                             value += 2.0 * TPDMp[qu][qv] * actMOp[pu][pv];
                             value += TPDMp[pp][uv] * actMOp[qq][uv];
@@ -467,23 +463,17 @@ SharedMatrix SOMCSCF::H_approx_diag()
                             value -= 2.0 * TPDMp[pq][uv] * actMOp[pq][uv];
                         }
                     }
+                    // outfile->Printf("%d %d | %d %d : %lf %lf\n", h, nras, i, a, Hp[oi][a], value);
                     Hp[oi][a] += 2.0 * value;
-
-                    // Hp[oa][a] += 2.0 * value;
 
                 } // End i loop
                 } // End a loop
                 offset_row += ras_size;
             } // End ras loop
             offset_act += nactpi_[h];
-        } // End aa RASSCF block
+        } // End active-active RASSCF block
 
-        // for (int i = 0; i < (H->colspi()[h]*H->rowspi()[h]); i++){
-        //     if (Hp[0][i] < 0.1){
-        //         Hp[0][i] = 0.1;
-        //     }
-        // }
-    }
+    } // End irrep loop
     return H;
 }
 SharedMatrix SOMCSCF::Hk(SharedMatrix x)
@@ -630,6 +620,8 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x)
 }
 SharedMatrix SOMCSCF::approx_solve()
 {
+    // outfile->Printf("In approx solve\n");
+
     SharedMatrix ret = matrices_["Gradient"]->clone();
     ret->apply_denominator(matrices_["Precon"]);
     zero_redundant(ret);
@@ -1040,7 +1032,6 @@ void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
 
     // Symm block Qk
     matrices_["Qk"] = Matrix::doublet(matrices_["Q"], U, false, true);
-    // matrices_["Qk"]->print();
     // dQk->print();
 
     int offset_act = 0;

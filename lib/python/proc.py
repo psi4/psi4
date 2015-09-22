@@ -3046,14 +3046,26 @@ def run_detcas(name, **kwargs):
         if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
             psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
+        # Make sure a valid JK algorithm is selected
+        if psi4.get_option('SCF', 'SCF_TYPE') == 'PK':
+            raise ValidationError("MCSCF: Must use a JK algorithm that supports non-symmetric density matrices.")
+
         # Bypass routine scf if user did something special to get it to converge
         if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
             scf_helper(name, **kwargs)
 
     # The non-DF case
     else:
+        if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+            psi4.set_local_option('SCF', 'SCF_TYPE', 'OUT_OF_CORE')
+
+        # Make sure a valid JK algorithm is selected
+        if psi4.get_option('SCF', 'SCF_TYPE') == 'PK':
+            raise ValidationError("MCSCF: Must use a JK algorithm that supports non-symmetric density matrices.")
+
         # Bypass routine scf if user did something special to get it to converge
         if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+
             scf_helper(name, **kwargs)
 
             # If the scf type is DF/CD, then the AO integrals were never written to disk

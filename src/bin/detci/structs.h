@@ -727,7 +727,6 @@ struct mcscf_params {
   int diis_start;              /* Start DIIS at this iteration                 */
   int diis_freq;               /* Do DIIS every n steps                        */
   int diis_max_vecs;           /* Maximum number of DIIS vectors               */
-  int diis_min_vecs;           /* Minimum number of DIIS vectors               */
 };
 
 }} // namespace psi::detci

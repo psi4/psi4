@@ -60,6 +60,9 @@
 #include <libparallel/ParallelPrinter.h>
 
 #include <libfock/soscf.h>
+#include <libdiis/diismanager.h>
+#include <libdiis/diisentry.h>
+
 #include <libpsi4util/libpsi4util.h>
 #include "structs.h"
 #include "globals.h"
@@ -1397,10 +1400,7 @@ void CIWavefunction::compute_mcscf()
   }
   else {
     transform_mcscf_ints();
-    // for (int x=0; x<25; x++) outfile->Printf("%d %lf\n", x, CalcInfo.twoel_ints[x]);
     somcscf = boost::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
-    // transform_dfmcscf_ints();
-    // for (int x=0; x<25; x++) outfile->Printf("%d %lf\n", x, CalcInfo.twoel_ints[x]);
   }
 
   // We assume some kind of ras here.
@@ -1430,7 +1430,21 @@ void CIWavefunction::compute_mcscf()
   double ediff, grad_rms, current_energy;
   double old_energy = CalcInfo.escf;
   std::string itertype = "Initial CI";
-  SharedMatrix x;
+
+
+  // Setup the DIIS manager
+  Dimension dim_oa = get_dimension("DOCC") + get_dimension("ACT");
+  Dimension dim_av = get_dimension("VIR") + get_dimension("ACT");
+
+  SharedMatrix x(new Matrix("Rotation Matrix", nirrep_, dim_oa, dim_av));
+  SharedMatrix xstep;
+  SharedMatrix original_orbs = get_orbitals("ROT");
+
+  boost::shared_ptr<DIISManager> diis_manager(new DIISManager(MCSCF_Parameters->diis_max_vecs,
+                      "MCSCF DIIS", DIISManager::OldestAdded, DIISManager::InCore));
+  diis_manager->set_error_vector_size(1, DIISEntry::Matrix, x.get());
+  diis_manager->set_vector_size(1, DIISEntry::Matrix, x.get());
+  int diis_count = 0;
 
   // Energy header
   outfile->Printf("\n                          "
@@ -1476,28 +1490,43 @@ void CIWavefunction::compute_mcscf()
 
     if (do_so_orbital && MCSCF_Parameters->oo_so){
       itertype = "SOMCSCF";
-      x = somcscf->solve(3, 1.e-10, false);
+      xstep = somcscf->solve(3, 1.e-10, false);
     }
     else {
       itertype = "APPROX";
-      x = somcscf->approx_solve();
+      xstep = somcscf->approx_solve();
     }
 
-
+    // Scale x if needed
     double maxx = 0.0;
-    for (int h=0; h<x->nirrep(); ++h) {
-        for (int i=0; i<x->rowspi()[h]; i++) {
-            for (int j=0; j<x->colspi()[h]; j++) {
-                if (fabs(x->get(h,i,j)) > maxx) maxx = fabs(x->get(h,i,j));
+    for (int h=0; h<xstep->nirrep(); ++h) {
+        for (int i=0; i<xstep->rowspi()[h]; i++) {
+            for (int j=0; j<xstep->colspi()[h]; j++) {
+                if (fabs(xstep->get(h,i,j)) > maxx) maxx = fabs(xstep->get(h,i,j));
             }
         }
     }
 
     if (maxx > MCSCF_Parameters->max_rot){
-      x->scale((MCSCF_Parameters->max_rot)/maxx);
+      xstep->scale((MCSCF_Parameters->max_rot)/maxx);
     }
 
-    SharedMatrix new_orbs = somcscf->Ck(x);
+    // Add step to overall rotation
+    x->add(xstep);
+
+    // Do we add diis?
+    if (iter > MCSCF_Parameters->diis_start){
+      diis_manager->add_entry(2, xstep.get(), x.get());
+      diis_count++;
+    }
+
+    // Do we do diis?
+    if ((itertype == "APPROX") && !(diis_count % MCSCF_Parameters->diis_freq) && (iter > MCSCF_Parameters->diis_start)){
+      diis_manager->extrapolate(1, x.get());
+      itertype = "APPROX, DIIS";
+    }
+
+    SharedMatrix new_orbs = somcscf->Ck(original_orbs, x);
     set_orbitals("ROT", new_orbs);
 
     // Transform integrals
@@ -1509,6 +1538,9 @@ void CIWavefunction::compute_mcscf()
     }
 
   }// End MCSCF
+  diis_manager->delete_diis_file();
+  diis_manager.reset();
+
 
 }
 

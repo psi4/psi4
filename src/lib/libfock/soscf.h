@@ -83,10 +83,11 @@ public:
 
     /**
      * Rotate the current orbitals for a given rotation matrix.
+     * @param  C The orbital matrix to rotate.
      * @param  x The [oa, av] non-redundant orbital rotation parameters.
      * @return   The rotated orbitals.
      */
-    SharedMatrix Ck(SharedMatrix x);
+    SharedMatrix Ck(SharedMatrix C, SharedMatrix x);
 
     /**
      * Computes the RHF energy for a given C matrix

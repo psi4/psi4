@@ -85,6 +85,12 @@ public:
      */
     void set_orbitals(const std::string& orbital_name, SharedMatrix orbitals);
 
+    /**!
+     * Gets the dimension of the desired subspace.
+     * @param orbital_name FZC, DOCC, ACT, VIR, FZV
+     * @return dim         Dimension object
+     */
+    Dimension get_dimension(const std::string& orbital_name);
     /**
      * Transform the one and two electron integrals.
      * The
@@ -130,6 +136,7 @@ public:
 private:
 
     /// => General Helper Functions <= ///
+
     /// Paramater and CalcInfo setters
     void get_mo_info();
     void get_parameters(Options &options);

@@ -4,13 +4,14 @@
 set {
   reference = rhf
 
-
-  restricted_docc = [1, 0, 0, 0]
-  ras1            = [2, 0, 1, 1]
-  ras3            = [1, 0, 0, 1]
-  restricted_uocc = [8, 2, 3, 5]
-  mcscf_type      = conv
-  mcscf_maxiter   = 80
+  restricted_docc      [1, 0, 0, 0]
+  ras1                 [2, 0, 1, 1]
+  ras3                 [1, 0, 0, 1]
+  restricted_uocc      [8, 2, 3, 5]
+  mcscf_type           conv
+  mcscf_maxiter        80
+  mcscf_r_convergence  5.e-6
+  scf_type             out_of_core
 
   basis = 6-31G**
 }
@@ -27,4 +28,4 @@ molecule mol {
 rasscf_energy = energy('RASSCF')
 
 
-compare_values(-76.073064779671, rasscf_energy, 6, 'RASSCF Energy')  #TEST
+compare_values(-76.073064815921, rasscf_energy, 6, 'RASSCF Energy')  #TEST

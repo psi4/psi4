@@ -738,9 +738,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Maximum number of DIIS vectors -*/
     options.add_int("MCSCF_DIIS_MAX_VECS", 8);
 
-    /*- Minimum number of DIIS vectors -*/
-    options.add_int("MCSCF_DIIS_MIN_VECS", 2);
-
     /*- Maximum value in the rotation matrix. If a value is greater than this number
     al values are scaled. -*/
     options.add_double("MCSCF_MAX_ROT", 0.5);

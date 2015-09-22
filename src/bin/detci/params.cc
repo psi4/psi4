@@ -1596,12 +1596,10 @@ void CIWavefunction::get_mcscf_parameters()
   MCSCF_Parameters->so_start_grad = options_.get_double("MCSCF_SO_START_GRAD");
   MCSCF_Parameters->so_start_e = options_.get_double("MCSCF_SO_START_E");
 
-  // DIIS
+  // DIIS options for two step
   MCSCF_Parameters->diis_start = options_.get_int("MCSCF_DIIS_START");
   MCSCF_Parameters->diis_freq = options_.get_int("MCSCF_DIIS_FREQ");
   MCSCF_Parameters->diis_max_vecs = options_.get_int("MCSCF_DIIS_MAX_VECS");
-  MCSCF_Parameters->diis_min_vecs = options_.get_int("MCSCF_DIIS_MIN_VECS");
-  outfile->Printf("Starting MCSCF ints\n");
 }
 
 }} // namespace psi::detci
