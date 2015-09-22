@@ -177,12 +177,12 @@ private:
 
     /// Non-DF integral functions
     void setup_mcscf_ints();
-    void transform_mcscf_ints();
+    void transform_mcscf_ints(bool approx_only = false);
     void read_dpd_ci_ints();
 
     /// DF integral functions
     void setup_dfmcscf_ints();
-    void transform_dfmcscf_ints();
+    void transform_dfmcscf_ints(bool approx_only = false);
 
 
     /// => Old Globals <= //

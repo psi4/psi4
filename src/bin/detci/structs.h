@@ -720,7 +720,7 @@ struct mcscf_params {
   std::string algorithm;       /* What convergence algorithm do we use?        */
   double max_rot;              /* Maximum value in the rotation matrix         */
 
-  bool oo_so;                  /* Do we do second-order orbital orbital?       */
+  bool orbital_so;             /* Do we do second-order orbital orbital?       */
   double so_start_grad;        /* RMS of orbital grad threshold for one-step   */
   double so_start_e;           /* energy convergence threshold for one-step    */
 
