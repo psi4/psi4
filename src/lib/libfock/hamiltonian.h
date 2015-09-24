@@ -395,7 +395,7 @@ public:
 
 // Working with a pair is annoying, so we define a new function below
     virtual std::vector<std::pair<SharedMatrix,SharedMatrix > > unpack(
-            const std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> >& x);
+            const std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> >& x){} ;
     virtual std::vector<std::pair<SharedMatrix,SharedMatrix > > unpack_paired(
             const boost::shared_ptr<Vector>& x);
 

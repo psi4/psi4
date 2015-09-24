@@ -1828,10 +1828,10 @@ void USTABHamiltonian::product(const std::vector<std::pair <boost::shared_ptr<Ve
 }
 
 // No implementation here, working with pairs is annoying.
-std::vector<std::pair<SharedMatrix, SharedMatrix> > USTABHamiltonian::unpack(
-        const std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> >& eig)
-{
-}
+//std::vector<std::pair<SharedMatrix, SharedMatrix> > USTABHamiltonian::unpack(
+//        const std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> >& eig)
+//{
+//}
 // New, better function for our purpose.
 std::vector<std::pair<SharedMatrix, SharedMatrix> > USTABHamiltonian::unpack_paired(
         const boost::shared_ptr<Vector>& eig)
