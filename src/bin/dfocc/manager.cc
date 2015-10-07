@@ -1960,7 +1960,7 @@ void DFOCC::omp3_manager()
 
         // ROHF REF
         if (reference == "ROHF") t1_1st_sc();
-	t2_1st_sc();
+	mp3_t2_1st_sc();
 	Emp2L=Emp2;
         EcorrL=Emp2L-Escf;
 	Emp2L_old=Emp2;
@@ -2021,17 +2021,26 @@ void DFOCC::omp3_manager()
 	Process::environment.globals["DF-MP3 TOTAL ENERGY"] = Emp3;
         Process::environment.globals["DF-MP3 CORRELATION ENERGY"] = Emp3 - Escf;
 	Emp3L=Emp3;
+        EcorrL=Emp3L-Escf;
+	Emp3L_old=Emp3;
 
         // Malloc for PDMs 
 	gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
-	G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-	G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+	if (reference_ == "RESTRICTED") {
+	    G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
+	    G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+	}
+	else if (reference_ == "UNRESTRICTED") {
+	    G1c_ovA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
+	    G1c_ovB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|v>", noccB, nvirB));
+	    G1c_voA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+	    G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
+	}
 
 	mp3_pdm_3index_intr();
 	omp3_opdm();
 	omp3_tpdm();
-	ccl_energy();
-        //separable_tpdm();
+	//ccl_energy();
 	sep_tpdm_cc();
 	gfock_cc_vo();
 	gfock_cc_ov();
@@ -2050,21 +2059,19 @@ void DFOCC::omp3_manager()
 	            outfile->Printf("\tI will consider the present orbitals as optimized.\n");
            }
 	   outfile->Printf("\tTransforming MOs to the semicanonical basis... \n");
-	   
 	   semi_canonic();
-	   outfile->Printf("\tSwitching to the standard DF-MP2 computation... \n");
-	   
+	   outfile->Printf("\tSwitching to the standard DF-MP3 computation... \n");
            trans_corr();
            trans_ref();
            fock();
-	   t2_1st_sc();
+           ref_energy();
+	   mp3_t2_1st_sc();
 	   t2_2nd_sc();
            conver = 1;
            if (dertype == "FIRST") {
 	       mp3_pdm_3index_intr();
 	       omp3_opdm();
 	       omp3_tpdm();
-               //separable_tpdm();
 	       sep_tpdm_cc();
 	       gfock_cc_vo();
 	       gfock_cc_ov();
@@ -2081,8 +2088,6 @@ void DFOCC::omp3_manager()
 
 
   if (conver == 1) {
-        ref_energy();
-	mp2_energy();
         if (orbs_already_opt == 1) Emp3L = Emp3;
 	
 	outfile->Printf("\n");
@@ -2269,7 +2274,7 @@ void DFOCC::mp3_manager()
 
         // Compute MP2 energy
         if (reference == "ROHF") t1_1st_sc();
-	t2_1st_sc();
+	mp3_t2_1st_sc();
 	
 	outfile->Printf("\n");
 	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n"); 
@@ -2333,19 +2338,23 @@ void DFOCC::mp3_manager()
         Process::environment.globals["DF-MP3 CORRELATION ENERGY"] = Emp3 - Escf;
 	Emp3L=Emp3;
 
-        // Malloc for PDMs 
-        if (dertype == "FIRST") {
-	    gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
-        }
-
-	/*
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
 	    // memalloc
-	    G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-	    G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+	    gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
+	    if (reference_ == "RESTRICTED") {
+	        G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
+	        G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+	    }
+	    else if (reference_ == "UNRESTRICTED") {
+	        G1c_ovA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
+	        G1c_ovB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|v>", noccB, nvirB));
+	        G1c_voA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+	        G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
+	    }
 
             outfile->Printf("\tComputing unrelaxed response density matrices...\n");
+	    mp3_pdm_3index_intr();
  	    omp3_opdm();
 	    omp3_tpdm();
 	    ccl_energy();
@@ -2354,7 +2363,6 @@ void DFOCC::mp3_manager()
             if (dertype == "FIRST") dfgrad();
             //if (ekt_ip_ == "TRUE") ekt_ip(); 
         }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
-	*/
 
 }// end mp3_manager 
 
