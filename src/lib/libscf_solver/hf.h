@@ -32,7 +32,6 @@
 #include <libdiis/diisentry.h>
 #include <psi4-dec.h>
 #include <libqt/qt.h>
-#include <libpsipcm/psipcm.h>
 
 
 namespace boost {
@@ -47,6 +46,7 @@ class TwoBodySOInt;
 class JK;
 class MinimalInterface;
 class SOSCF;
+class PCM;
 namespace scf {
 
 class HF : public Wavefunction {
