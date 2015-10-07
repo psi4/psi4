@@ -1,7 +1,7 @@
 #! UHF->UHF stability analysis test for BH with cc-pVDZ
 
-ref_vals_sym = [ 0.127528, 0.240102,-0.095389, 0.000000,   #TEST 
-               -0.266345,-0.090082, 0.238508, 0.462468 ]   #TEST
+ref_vals_sym = [ 0.163530, 0.385029, 0.000000, 0.523085,   #TEST 
+               -0.131403, 0.390496, 0.248212, 0.493736 ]   #TEST
 
 nirrep = 4                                                 #TEST
 rows = psi4.Dimension(nirrep)                              #TEST
@@ -20,9 +20,10 @@ for h in range(0,4):                                       #TEST
 memory 500 mb
 
 nucenergy =   2.64588604295000  #TEST
-refenergy =  -24.86759257755563 #TEST
+refenergy =  -24.6562185615315  #TEST
 
 molecule bh {
+    1  2
     b      0.0000        0.0000        0.0000
     h      0.0000        0.0000        1.0000
 }
@@ -31,6 +32,8 @@ set globals = {
     reference uhf
     scf_type   direct
     basis      cc-pVDZ
+    docc [2,0,0,0]   # B1 and B2 are degenerate, we fix occupations
+    socc [0,0,1,0]   # for testing purposes
     e_convergence 10
     stability_analysis follow
     solver_n_guess 6
@@ -45,16 +48,17 @@ compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion e
 compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
 compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")                   #TEST
 
-ref_vals_sym = [ [ 0.000000 ],             #TEST 
-                 [ 0.089100 ],             #TEST
+ref_vals_sym = [ [ 0.128037 ],             #TEST 
+                 [ 0.128037 ],             #TEST
                ]                           #TEST
 
 ref = psi4.Matrix(2,1)                     #TEST
 ref.set(ref_vals_sym)                      #TEST
 
-refenergy =  -25.10074424397277 #TEST
+refenergy =  -24.78964070898462 #TEST
 
 molecule bh {
+    1  2
     b      0.0000        0.0000        0.0000
     h      0.0000        0.0000        1.0000
 symmetry c1
@@ -64,6 +68,8 @@ set globals = {
     reference uhf
     scf_type   direct
     basis      cc-pVDZ
+    docc [2]   # B1 and B2 are degenerate, we fix occupations
+    socc [1]   # for testing purposes
     e_convergence 10
     stability_analysis follow
     solver_n_guess 6

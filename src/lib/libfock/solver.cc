@@ -2251,13 +2251,11 @@ boost::shared_ptr<DLUSolver> DLUSolver::build_solver(Options& options,
     }
     if (options["SOLVER_MIN_SUBSPACE"].has_changed()) {
         solver->set_min_subspace(options.get_int("SOLVER_MIN_SUBSPACE"));
-    } else {
-        solver->set_min_subspace(4);
     }
     if (options["SOLVER_MAX_SUBSPACE"].has_changed()) {
         solver->set_max_subspace(options.get_int("SOLVER_MAX_SUBSPACE"));
     } else {
-        solver->set_max_subspace(18);
+        solver->set_max_subspace(12);
     }
     if (options["SOLVER_NORM"].has_changed()) {
         solver->set_norm(options.get_double("SOLVER_NORM"));
@@ -2285,17 +2283,18 @@ void DLUSolver::print_header() const
     }
 }
 
-// Commented implementation below is from DLR solver but this function
+/*// Commented implementation below is from DLR solver but this function
 // is never called in the DLU solver.
 unsigned long int DLUSolver::memory_estimate()
 {
-/*    unsigned long int dimension = 0L;
+    unsigned long int dimension = 0L;
     if (!diag_) diag_ = H_->diagonal();
     for (int h = 0; h < diag_->nirrep(); h++) {
         dimension += diag_->dimpi()[h];
     }
     return (2L * max_subspace_ + 3L * nroot_ + 1L) * dimension;
-*/}
+}
+*/
 
 void DLUSolver::initialize()
 {
@@ -2310,6 +2309,29 @@ void DLUSolver::initialize()
     diag_components = H_->diagonal();
 
     diag_ = contract_pair(diag_components);
+
+    // We get the dimension of the smallest irrep
+
+    int nirrep = diag_->nirrep();
+    int* dim = diag_->dimpi();
+    int mindim=dim[0];
+
+    for (int symm = 1; symm < nirrep; ++symm) {
+        if ( dim[symm] < mindim ) mindim = dim[symm];
+    }
+
+    // The maximum subspace dimension should never be larger than
+    // the dimension of the smallest irrep. Otherwise, cols. and lines
+    // of zeroes are added to the matrix to diagonalize.
+
+    int new_sub = mindim - nroot_;
+
+    if ( max_subspace_ > new_sub ) {
+        outfile->Printf("  SOLVER_MAX_SUBSPACE should not be larger than the dimension \n");
+        outfile->Printf("  of the smallest irrep - SOLVER_N_ROOT.\n");
+        outfile->Printf("  Setting SOLVER_MAX_SUBSPACE to %4i.\n\n",new_sub);
+        max_subspace_ = new_sub;
+    }
 }
 
 // Contract an alpha/beta pair into a new vector. Each irrep is separately contracted.
