@@ -4,24 +4,10 @@ TODO:
 * DF-OCCD
 * Consider perm symmetry in T2(1) in t2_1st_gen.cc
 * Re-build Gij and Gab for DF-OMP2
+* Adjust timer for (T), exclude int trans
+* Re-build ABCD terms for UHF-MP3, consider only antisymmetric components
+
+NOTES:
 
 DEBUG:
-* T-amplitudes are okay
-* WL(mbij) is okay
-* WL(mbej) is okay
-* WL(mbje) is okay
-* WL(mnie) is okay
-* WabefL2 is okay
-* Gmi and Gae are okay
-* Ft_ij is okay
-* Ft_ab is okay
-* Check lambdas!
-* Be careful! Daniel uses a different denominator for Lambda equations
-* L2 is okay
-* L1 is okay
-* OPDM and TPDM are okay
-* Seprable TPDMs are okay
-* GFM are okay
-* DF-CCSD gradients are okay 
-* DF-CCD gradients are okay 
 

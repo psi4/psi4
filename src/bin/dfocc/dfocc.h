@@ -402,6 +402,9 @@ protected:
     void mp3_WabefT2BB();     
     void mp3_WabefT2AB();     
     void mp3_pdm_3index_intr();
+    void mp3_t2_1st_sc();
+    void mp3_t2_1st_gen();
+    void mp3l_energy();
 
     // OMP2.5
     void omp2_5_manager();

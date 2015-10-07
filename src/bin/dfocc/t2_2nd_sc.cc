@@ -45,6 +45,11 @@ if (reference_ == "RESTRICTED") {
     bQiaA->read(psio_, PSIF_DFOCC_INTS);
     bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
 
+    // Write for the general code
+    Tnew = SharedTensor2d(new Tensor2d("New T2_2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    Tnew->write_symm(psio_, PSIF_DFOCC_AMPS);
+    Tnew.reset();
+
     // Read T2_1
     t2 = SharedTensor2d(new Tensor2d("T2_1 (IA|JB)", naoccA, navirA, naoccA, navirA));
     t2->read_symm(psio_, PSIF_DFOCC_AMPS);
@@ -62,6 +67,7 @@ if (reference_ == "RESTRICTED") {
     Tnew = SharedTensor2d(new Tensor2d("New T2_2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     Tnew->read_symm(psio_, PSIF_DFOCC_AMPS);
     Tnew->apply_denom_chem(nfrzc, noccA, FockA);
+    //Tnew->print();
 
     // Form T2 = T2(1) + T2(2)
     t2->axpy(Tnew, 1.0);
@@ -94,7 +100,7 @@ if (reference_ == "RESTRICTED") {
     Ecorr = U->vector_dot(K);
     U.reset();
     K.reset();
-    Emp3 = Escf + Ecorr;
+    Emp3 = Eref + Ecorr;
 
     // Free ints
     bQijA.reset();

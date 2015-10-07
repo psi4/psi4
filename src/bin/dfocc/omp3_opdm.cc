@@ -37,7 +37,7 @@ void DFOCC::omp3_opdm()
 
     SharedTensor2d T, U, X;
     timer_on("opdm");
-//if (reference_ == "RESTRICTED") {
+if (reference_ == "RESTRICTED") {
 
     // G1_ij = -(G_ij + G_ji)
     T = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
@@ -77,10 +77,43 @@ void DFOCC::omp3_opdm()
     
   }
 
-//}// end if (reference_ == "RESTRICTED")
+}// end if (reference_ == "RESTRICTED")
 
-//else if (reference_ == "UNRESTRICTED") {
-//}// else if (reference_ == "UNRESTRICTED")
+else if (reference_ == "UNRESTRICTED") {
+    // Build G1c_oo and G1c_vv
+    G1c_ooA->set_act_oo(nfrzc, naoccA, GijA);
+    G1c_ooB->set_act_oo(nfrzc, naoccB, GijB);
+    G1c_ooA->scale(-1.0);
+    G1c_ooB->scale(-1.0);
+    G1c_vvA->set_act_vv(GabA);
+    G1c_vvB->set_act_vv(GabB);
+    G1c_vvA->scale(-1.0);
+    G1c_vvB->scale(-1.0);
+
+    // Build G1c
+    G1cA->set_oo(G1c_ooA);
+    G1cA->set_vv(noccA, G1c_vvA);
+    G1cB->set_oo(G1c_ooB);
+    G1cB->set_vv(noccB, G1c_vvB);
+
+    // Build G1
+    G1A->copy(G1cA);
+    G1B->copy(G1cB);
+    for (int i = 0; i < noccA; i++) G1A->add(i, i, 1.0); 
+    for (int i = 0; i < noccB; i++) G1B->add(i, i, 1.0); 
+
+    // print
+  if(print_ > 2) {
+    G1A->print();
+    G1B->print();
+    double trace = G1A->trace();
+    outfile->Printf("\t Alpha trace: %12.12f \n", trace);
+    trace = G1B->trace();
+    outfile->Printf("\t Beta trace: %12.12f \n", trace);
+    
+  }
+
+}// else if (reference_ == "UNRESTRICTED")
     timer_off("opdm");
 } // end omp3_opdm
 
