@@ -71,7 +71,6 @@ if (reference_ == "RESTRICTED") {
     if(print_ > 2){
       for(int i = 0; i < nidpA; i++){
         outfile->Printf("\ti, idprowA, idpcolA, wogA: %3d %3d %3d %20.14f\n", i, idprowA->get(i), idpcolA->get(i), wogA->get(i)); 
-	
       }
     }
 
