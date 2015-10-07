@@ -2,7 +2,6 @@
 # PCMSolver uses the git submodules + CMake ExternalProject_Add combo
 if(ENABLE_PCMSOLVER)
     include(ConfigExternal)
-    set(PCMSOLVER_TESTS ON)
     get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
     # PCMSolver does not know profile
     if(CMAKE_BUILD_TYPE MATCHES "profile")
@@ -12,7 +11,8 @@ if(ENABLE_PCMSOLVER)
     endif()
     list(APPEND PCMSolverCMakeArgs
         -DCMAKE_BUILD_TYPE=${PCM_BUILD_TYPE}
-        -DCMAKE_INSTALL_PREFIX=${EXTERNAL_PROJECT_INSTALL_PREFIX}
+        -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/interfaces
+        -DSUBMODULES_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/interfaces
         -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
         -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -20,32 +20,21 @@ if(ENABLE_PCMSOLVER)
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
 	    -DENABLE_CXX11_SUPPORT=${ENABLE_CXX11_SUPPORT}
-        -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/interfaces/include
-        -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
-        -DEIGEN3_ROOT=${EIGEN3_ROOT}
-        -DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
-        -DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
-        -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
 	    -DBOOST_INCLUDEDIR=${BOOST_INCLUDE_DIRS}
 	    -DBOOST_LIBRARYDIR=${BOOST_LIBRARIES}
         -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-        -DENABLE_TESTS=${PCMSOLVER_TESTS}
-        -DZLIB_ROOT=${ZLIB_ROOT}
-        -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
+        -DENABLE_TESTS=OFF
         -DENABLE_LOGGER=OFF
         -DENABLE_TIMER=OFF
         -DBUILD_STANDALONE=OFF
+        -DZLIB_ROOT=${ZLIB_ROOT}
+        -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
      )
 
-    if(PCMSOLVER_TESTS)
-       add_external(pcmsolver "${PCMSolverCMakeArgs}" ${CMAKE_CTEST_COMMAND})
-    else()
-       add_external(pcmsolver "${PCMSolverCMakeArgs}")
-    endif()
+    add_external(pcmsolver "${PCMSolverCMakeArgs}")
 
-    include_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/include
-        ${EXTERNAL_PROJECT_INSTALL_PREFIX}/include/eigen3/include/eigen3)
-    set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
+    include_directories(${PROJECT_SOURCE_DIR}/interfaces/pcmsolver/api)
+    set(PCMSOLVER_PARSE_DIR ${PROJECT_BINARY_DIR}/interfaces/pcmsolver-build/bin)
     configure_file(${CMAKE_SOURCE_DIR}/lib/python/pcm_placeholder.py.in
 	           ${CMAKE_SOURCE_DIR}/lib/python/pcm_placeholder.py)
 endif()

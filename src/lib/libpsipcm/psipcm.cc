@@ -48,7 +48,7 @@ void collect_atoms(double charges[], double centers[])
     }
 }
 
-void host_writer(const char * message, unsigned int /* message_length */)
+void host_writer(const char * message, size_t /* message_length */)
 {
     outfile->Printf(message);
     outfile->Printf("\n");
@@ -78,6 +78,7 @@ void set_point_group(int * nr_gen, int * gen1, int * gen2, int * gen3)
 
 PCM::PCM(Options &options, boost::shared_ptr<PSIO> psio, int nirrep, boost::shared_ptr<BasisSet> basisset)
 {
+  if(!pcmsolver_is_compatible_library()) throw PSIEXCEPTION("Incompatible PCMSolver library version.");
   outfile->Printf("  **PSI4:PCMSOLVER Interface Active**\n");
 
   pcm_print_ = options.get_int("PRINT");
