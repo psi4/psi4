@@ -263,6 +263,8 @@ Below, you can find a minimum example of open-shell SAPT0 computation. ::
   basis         cc-pVDZ
   }
 
+  energy('sapt0')
+
 |scf__reference| needs to be ``UHF``  or ``ROHF`` for the open-shell computation to proceed.
 
 Advanced example
