@@ -59,7 +59,7 @@ if (reference_ == "RESTRICTED") {
 
     // symmetrize
     G->symmetrize3(G);
-    G->scale(2.0);
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") G->scale(2.0);
     G2 = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
     G2->set3_act_oo(nfrzc, G);
     G.reset();
@@ -77,10 +77,12 @@ if (reference_ == "RESTRICTED") {
     T->read(psio_, PSIF_DFOCC_AMPS);
     G->axpy(T, 2.0);
     T.reset();
-    // G_ia^Q += 2*y_ia^Q
+    // G_ia^Q += 2*y_ia^Q : MP3
     T = SharedTensor2d(new Tensor2d("Y (Q|IA)", nQ, naoccA, navirA));
     T->read(psio_, PSIF_DFOCC_AMPS);
-    G->axpy(T, 2.0);
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") G->axpy(T, 2.0);
+    // G_ia^Q += y_ia^Q : MP2.5
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") G->axpy(T, 1.0);
     T.reset();
 
     // Form overall OV Block
@@ -203,7 +205,7 @@ if (reference_ == "RESTRICTED") {
 
     // symmetrize
     G->symmetrize3(G);
-    G->scale(2.0);
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") G->scale(2.0);
     G2 = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
     G2->set3_act_vv(G);
     G.reset();
@@ -234,6 +236,8 @@ else if (reference_ == "UNRESTRICTED") {
     // Active to full
     //G->symmetrize3(G);
     //G->scale(2.0);
+    // G(MP2.5)_IJ^Q = 1/2 * G(MP3)_IJ^Q
+    if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") G->scale(0.5);
     G2 = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
     G2->set3_act_oo(nfrzc, G);
     G.reset();
@@ -257,6 +261,8 @@ else if (reference_ == "UNRESTRICTED") {
     // Active to full
     //G->symmetrize3(G);
     //G->scale(2.0);
+    // G(MP2.5)_ij^Q = 1/2 * G(MP3)_ij^Q
+    if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") G->scale(0.5);
     G2 = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|oo)", nQ, noccB, noccB));
     G2->set3_act_oo(nfrzc, G);
     G.reset();
@@ -277,10 +283,12 @@ else if (reference_ == "UNRESTRICTED") {
     T->read(psio_, PSIF_DFOCC_AMPS);
     G->axpy(T, 1.0);
     T.reset();
-    // G_IA^Q += y_IA^Q
+    // G_IA^Q += y_IA^Q: MP3
     T = SharedTensor2d(new Tensor2d("Y (Q|IA)", nQ, naoccA, navirA));
     T->read(psio_, PSIF_DFOCC_AMPS);
-    G->axpy(T, 1.0);
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") G->axpy(T, 1.0);
+    // G_IA^Q += 1/2 * y_IA^Q : MP2.5
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") G->axpy(T, 0.5);
     T.reset();
 
     // Form overall OV Block
@@ -305,10 +313,12 @@ else if (reference_ == "UNRESTRICTED") {
     T->read(psio_, PSIF_DFOCC_AMPS);
     G->axpy(T, 1.0);
     T.reset();
-    // G_ia^Q += y_ia^Q
+    // G_ia^Q += y_ia^Q : MP3
     T = SharedTensor2d(new Tensor2d("Y (Q|ia)", nQ, naoccB, navirB));
     T->read(psio_, PSIF_DFOCC_AMPS);
-    G->axpy(T, 1.0);
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") G->axpy(T, 1.0);
+    // G_ia^Q += 1/2 * y_ia^Q : MP2.5
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") G->axpy(T, 0.5);
     T.reset();
 
     // Form overall OV Block
@@ -464,6 +474,8 @@ else if (reference_ == "UNRESTRICTED") {
     // Active to full
     //G->symmetrize3(G);
     //G->scale(2.0);
+    // G(MP2.5)_AB^Q = 1/2 * G(MP3)_AB^Q
+    if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") G->scale(0.5);
     G2 = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
     G2->set3_act_vv(G);
     G.reset();
@@ -619,6 +631,8 @@ else if (reference_ == "UNRESTRICTED") {
     // Active to full
     //G->symmetrize3(G);
     //G->scale(2.0);
+    // G(MP2.5)_ab^Q = 1/2 * G(MP3)_ab^Q
+    if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") G->scale(0.5);
     G2 = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|vv)", nQ, nvirB, nvirB));
     G2->set3_act_vv(G);
     G.reset();

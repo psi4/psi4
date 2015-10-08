@@ -88,10 +88,12 @@ if (reference_ == "RESTRICTED") {
     T->write_symm(psio_, PSIF_DFOCC_AMPS);
     T.reset();
 
-    // Form T2 = T2(1) + T2(2)
+    // Form T2 = T2(1) + T2(2) : MP3
     t2 = SharedTensor2d(new Tensor2d("T2_1 (IA|JB)", naoccA, navirA, naoccA, navirA));
     t2->read_symm(psio_, PSIF_DFOCC_AMPS);
-    t2->axpy(Tnew, 1.0);
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") t2->axpy(Tnew, 1.0);
+    // Form T2 = T2(1) + 1/2 T2(2) : MP2.5
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") t2->axpy(Tnew, 0.5);
     Tnew.reset();
     T = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     T->copy(t2);
@@ -185,7 +187,9 @@ else if (reference_ == "UNRESTRICTED") {
     // Form T2 = T2(1) + T2(2)
     U = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     U->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    U->axpy(Tnew, 1.0);
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") U->axpy(Tnew, 1.0);
+    // Form T2 = T2(1) + 1/2 T2(2) : MP2.5
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") U->axpy(Tnew, 0.5);
     Tnew.reset();
     T = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     T->copy(U);
@@ -257,7 +261,9 @@ else if (reference_ == "UNRESTRICTED") {
     // Form T2 = T2(1) + T2(2)
     U = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
     U->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    U->axpy(Tnew, 1.0);
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") U->axpy(Tnew, 1.0);
+    // Form T2 = T2(1) + 1/2 T2(2) : MP2.5
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") U->axpy(Tnew, 0.5);
     Tnew.reset();
     T = SharedTensor2d(new Tensor2d("T2 <ij|ab>", naoccB, naoccB, navirB, navirB));
     T->copy(U);
@@ -320,7 +326,9 @@ else if (reference_ == "UNRESTRICTED") {
     // Form T2 = T2(1) + T2(2)
     U = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     U->read(psio_, PSIF_DFOCC_AMPS);
-    U->axpy(Tnew, 1.0);
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") U->axpy(Tnew, 1.0);
+    // Form T2 = T2(1) + 1/2 T2(2) : MP2.5
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") U->axpy(Tnew, 0.5);
     Tnew.reset();
     T = SharedTensor2d(new Tensor2d("T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     T->copy(U);

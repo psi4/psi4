@@ -409,6 +409,8 @@ protected:
     // OMP2.5
     void omp2_5_manager();
     void mp2_5_manager();
+    void omp2_5_manager_cd();
+    void mp2_5_manager_cd();
 
     // OCEPA
     void ocepa_manager();

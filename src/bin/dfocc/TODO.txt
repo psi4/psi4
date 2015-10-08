@@ -1,5 +1,4 @@
 TODO:
-* DF-OMP2.5 and DF-OMP3
 * DF-OLCCD
 * DF-OCCD
 * Consider perm symmetry in T2(1) in t2_1st_gen.cc
