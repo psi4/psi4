@@ -18,7 +18,7 @@ no_com
 }
 
 set {
-  basis STO-3G 
+  basis STO-3G
   scf_type pk
   pcm true
   pcm_scf_type total
@@ -29,16 +29,16 @@ pcm = {
    Medium {
    SolverType = IEFPCM
    Solvent = Water
-   }     
-        
+   }
+
    Cavity {
-   RadiiSet = UFF	   
+   RadiiSet = UFF
    Type = GePol
    Scaling = False
    Area = 0.3
    Mode = Implicit
    }
-}   
+}
 
 energy_scf1 = energy('scf')
 compare_values(NH3.nuclear_repulsion_energy(), nucenergy, 10, "Nuclear repulsion energy (PCM, total algorithm)") #TEST
