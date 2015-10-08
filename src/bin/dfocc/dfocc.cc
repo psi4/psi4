@@ -357,7 +357,7 @@ void DFOCC::title()
    else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "TRUE") outfile->Printf("                       DF-OCEPA(0) (DF-OO-CEPA)   \n");
    else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "FALSE") outfile->Printf("                       DF-CEPA(0)   \n");
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") outfile->Printf("                    DF-OMP2.5 (DF-OO-MP2.5)   \n");
-   else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") outfile->Printf("                       DF-MP2.5  \n");
+   else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") outfile->Printf("                    DF-MP2.5  \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") outfile->Printf("                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP2   \n");
    else if (wfn_type_ == "CD-CCSD" || wfn_type_ == "CD-CCSD(T)" || wfn_type_ == "CD-CCSD(AT)") outfile->Printf("                       CD-CCSD   \n");
@@ -365,7 +365,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "TRUE") outfile->Printf("                    CD-OMP3 (CD-OO-MP3)   \n");
    else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "FALSE") outfile->Printf("                    CD-MP3   \n");
    else if (wfn_type_ == "CD-OMP2.5" && orb_opt_ == "TRUE") outfile->Printf("                   CD-OMP2.5 (CD-OO-MP2.5)   \n");
-   else if (wfn_type_ == "CD-OMP2.5" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP2.5   \n");
+   else if (wfn_type_ == "CD-OMP2.5" && orb_opt_ == "FALSE") outfile->Printf("                    CD-MP2.5   \n");
    else if (wfn_type_ == "QCHF") outfile->Printf("                      QCHF   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
    outfile->Printf("              Latest Revision October 8, 2015\n") ;
