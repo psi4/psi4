@@ -68,6 +68,7 @@ void UHF::common_init()
 {
 
     Drms_ = 0.0;
+    // TODO: Move that to the base object
     step_scale_ = options_.get_double("FOLLOW_STEP_SCALE");
     step_increment_ = options_.get_double("FOLLOW_STEP_INCREMENT");
 
@@ -304,9 +305,9 @@ bool UHF::diis()
     return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get());
 }
 
-void UHF::stability_analysis_pk()
+bool UHF::stability_analysis_pk()
 {
-    // ==> Legacy old stability code <==
+    // ==> Old legacy stability code <==
 
     outfile->Printf("WARNING: PK integrals extremely slow for stability analysis.\n");
     outfile->Printf("Proceeding, but feel free to kill the computation and use other integrals.\n");
@@ -534,21 +535,11 @@ void UHF::stability_analysis_pk()
 
     outfile->Printf( "%s", status.c_str());
 
-    if(redo){
-        if(attempt_number_ > 1){
-            // Make sure we don't get stuck in an infinite loop
-            outfile->Printf( "    There's still a negative eigenvalue.  Try increasing FOLLOW_STEP_SCALE");
-            return;
-        }
-        attempt_number_++;
-        outfile->Printf( "    Re-running the SCF, using the rotated orbitals\n");
-        diis_manager_->reset_subspace();
-        compute_energy();
-    }
+    return redo;
 
 }
 
-void UHF::stability_analysis()
+bool UHF::stability_analysis()
 {
     if(scf_type_ != "PK"){
         boost::shared_ptr<UStab> stab = boost::shared_ptr<UStab>(new UStab());
@@ -566,7 +557,6 @@ void UHF::stability_analysis()
         // And now, export the eigenvalues to a PSI4 array, mainly for testing purposes
 
         Process::environment.arrays["SCF STABILITY EIGENVALUES"] = eval_sym;
-
         if (stab->is_unstable() && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW") {
             if (attempt_number_ == 1 ) {
                 stab_val = stab->get_eigval();
@@ -584,23 +574,17 @@ void UHF::stability_analysis()
             stab->rotate_orbs(step_scale_);
            //     outfile->Printf( "NEW ORBS");
            //     Ca_->print();
-            if(attempt_number_ > max_attempts_) {
-                // Make sure we don't get stuck in an infinite loop
-                outfile->Printf( "    There's still a negative eigenvalue. Try modifying FOLLOW_STEP_SCALE\n");
-                outfile->Printf("    or increasing MAX_ATTEMPTS.\n");
-                return;
-            }
-            attempt_number_++;
 
-            outfile->Printf("    Running SCF again with the rotated orbitals.\n");
-            diis_manager_->reset_subspace();
-            compute_energy();
+           // Ask politely SCF control for a new set of iterations
+           return true;
         } else {
             outfile->Printf("    Stability analysis over.\n");
+            // We are done, no more iterations
+            return false;
         }
 
     }else{
-        stability_analysis_pk();
+        return stability_analysis_pk();
     }
 }
 

@@ -89,6 +89,10 @@ protected:
     /// Current Iteration
     int iteration_;
 
+    /// Did the SCF converge?
+
+    bool converged_;
+
     /// Nuclear repulsion energy
     double nuclearrep_;
 
@@ -113,6 +117,10 @@ protected:
 
     /// SCF algorithm type
     std::string scf_type_;
+
+    /// Old SCF type for DF guess trick
+    /// TODO We should really get rid of that and put it in the driver
+    std::string old_scf_type_;
 
     /// Perturb the Hamiltonian?
     int perturb_h_;
@@ -228,9 +236,6 @@ protected:
     /// Common initializer
     void common_init();
 
-    /// Clears memory and closes files (Should they be open) prior to correlated code execution
-    virtual void finalize();
-
     /// Figure out how to occupy the orbitals in the absence of DOCC and SOCC
     void find_occupation();
 
@@ -245,7 +250,7 @@ protected:
     void frac_renormalize();
 
     /// Check the stability of the wavefunction, and correct (if requested)
-    virtual void stability_analysis();
+    virtual bool stability_analysis();
     void print_stability_analysis(std::vector<std::pair<double, int> > &vec);
 
 
@@ -380,7 +385,26 @@ public:
 
     virtual ~HF();
 
+    /// Specialized initialization, compute integrals and does everything to prepare for iterations
+    virtual void initialize();
+
+    /// Performs the actual SCF iterations
+    virtual void iterations();
+
+    /// Performs stability analysis and calls back SCF with new guess if needed,
+    /// Returns the SCF energy
+    ///  This function should be called once orbitals are ready for energy/property computations,
+    /// usually after iterations() is called.
+    virtual double finalize_E();
+   
+    /// Base class Wavefunction requires this function. Here it is simply a wrapper around
+    /// initialize(), iterations(), finalize_E(). It returns the SCF energy computed by
+    /// finalize_E()
     virtual double compute_energy();
+
+    /// Clears memory and closes files (Should they be open) prior to correlated code execution
+    /// Derived classes override it for additional operations and then call HF::finalize()
+    virtual void finalize();
 };
 
 }} // Namespaces
