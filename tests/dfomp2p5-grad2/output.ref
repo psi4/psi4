@@ -16,21 +16,21 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thu Oct  8 14:18:47 2015
+    Psi4 started on: Thu Oct  8 14:08:30 2015
 
-    Process ID:  10540
+    Process ID:  10397
     PSI4DATADIR: /Users/ugur/psi4/lib
     Memory level set to 256.000 MB
 
   ==> Input File <==
 
 --------------------------------------------------------------------------
-#! DF-OMP3 cc-pVDZ gradients for the H2O molecule.
+#! DF-OMP2.5 cc-pVDZ gradients for the H2O+ cation.
 
 ref_vals = [                                                             #TEST
-             [ 0.000000000000,     0.00000000000000,     0.01038659662705],  #TEST
-             [ 0.000000000000,     0.00116746506418,    -0.00519329831353],  #TEST
-             [ 0.000000000000,    -0.00116746506418,    -0.00519329831353]   #TEST
+             [ 0.000000000000,     0.00000000000000,    -0.03784500521799],  #TEST
+             [ 0.000000000000,     0.07763513810122,     0.01892250260900],  #TEST
+             [ 0.000000000000,    -0.07763513810122,     0.01892250260900]   #TEST
            ]                                                             #TEST
 ref = psi4.Matrix(3, 3)                                                #TEST
 ref.set(ref_vals)
@@ -38,7 +38,7 @@ ref.set(ref_vals)
 memory 256 mb
 
 molecule h2o {
-0 1
+1 2
 o
 h 1 0.958
 h 1 0.958 2 104.4776 
@@ -51,8 +51,9 @@ set {
   scf_type df
   guess sad
   freeze_core true
+  reference uhf
 }
-gradient('df-omp3')
+gradient('df-omp2.5')
 
 grad = psi4.wavefunction().gradient()                           #TEST
 compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
@@ -65,13 +66,13 @@ gradient() will perform analytic gradient computation.
   DFOCC does not make use of molecular symmetry, further calculations in C1 point group.
 
 *** tstart() called on Ugurs-MacBook-Pro.local
-*** at Thu Oct  8 14:18:47 2015
+*** at Thu Oct  8 14:08:31 2015
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
-                              RHF Reference
+                              UHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
@@ -80,7 +81,7 @@ gradient() will perform analytic gradient computation.
     Molecular point group: c1
     Full point group: C2v
 
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
@@ -94,11 +95,11 @@ gradient() will perform analytic gradient computation.
   Rotational constants: A = 820325.16776  B = 437109.76453  C = 285161.58706 [MHz]
   Nuclear repulsion =    9.187386421477592
 
-  Charge       = 0
-  Multiplicity = 1
-  Electrons    = 10
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 9
   Nalpha       = 5
-  Nbeta        = 5
+  Nbeta        = 4
 
   ==> Algorithm <==
 
@@ -127,7 +128,7 @@ gradient() will perform analytic gradient computation.
    -------------------------------------------------------
      A         24      24       0       0       0       0
    -------------------------------------------------------
-    Total      24      24       5       5       5       0
+    Total      24      24       5       4       4       1
    -------------------------------------------------------
 
  OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
@@ -165,59 +166,89 @@ gradient() will perform analytic gradient computation.
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.90593700229374   -7.59059e+01   6.95641e-02 
-   @DF-RHF iter   1:   -76.00548055416290   -9.95436e-02   9.65358e-03 
-   @DF-RHF iter   2:   -76.02227450915103   -1.67940e-02   4.53168e-03 DIIS
-   @DF-RHF iter   3:   -76.02652223220913   -4.24772e-03   7.39561e-04 DIIS
-   @DF-RHF iter   4:   -76.02671745783768   -1.95226e-04   1.70563e-04 DIIS
-   @DF-RHF iter   5:   -76.02673853337902   -2.10755e-05   4.20910e-05 DIIS
-   @DF-RHF iter   6:   -76.02674013024911   -1.59687e-06   7.36364e-06 DIIS
-   @DF-RHF iter   7:   -76.02674017827262   -4.80235e-08   1.21624e-06 DIIS
-   @DF-RHF iter   8:   -76.02674017970189   -1.42927e-09   2.77382e-07 DIIS
-   @DF-RHF iter   9:   -76.02674017978163   -7.97371e-11   5.08837e-08 DIIS
-   @DF-RHF iter  10:   -76.02674017978399   -2.35900e-12   9.62112e-09 DIIS
-   @DF-RHF iter  11:   -76.02674017978408   -9.94760e-14   8.24879e-10 DIIS
-   @DF-RHF iter  12:   -76.02674017978411   -2.84217e-14   1.66391e-10 DIIS
-   @DF-RHF iter  13:   -76.02674017978408    2.84217e-14   2.46534e-11 DIIS
+   @DF-UHF iter   0:   -70.77913151350013   -7.07791e+01   6.94514e-02 
+   @DF-UHF iter   1:   -75.41506851289348   -4.63594e+00   2.54812e-02 
+   @DF-UHF iter   2:   -75.52807062818533   -1.13002e-01   1.02590e-02 DIIS
+   @DF-UHF iter   3:   -75.55027079670552   -2.22002e-02   1.17512e-03 DIIS
+   @DF-UHF iter   4:   -75.55188985293937   -1.61906e-03   7.91527e-04 DIIS
+   @DF-UHF iter   5:   -75.55293983415444   -1.04998e-03   8.35268e-04 DIIS
+   @DF-UHF iter   6:   -75.54861407023765    4.32576e-03   5.01666e-04 DIIS
+   @DF-UHF iter   7:   -75.54732809054062    1.28598e-03   2.81546e-04 DIIS
+   @DF-UHF iter   8:   -75.54727598049605    5.21100e-05   9.49591e-05 DIIS
+   @DF-UHF iter   9:   -75.54727918360071   -3.20310e-06   3.80934e-05 DIIS
+   @DF-UHF iter  10:   -75.54727948053151   -2.96931e-07   1.19670e-05 DIIS
+   @DF-UHF iter  11:   -75.54727959183799   -1.11306e-07   3.85984e-06 DIIS
+   @DF-UHF iter  12:   -75.54727960227896   -1.04410e-08   7.96057e-07 DIIS
+   @DF-UHF iter  13:   -75.54727960274246   -4.63501e-10   3.33834e-07 DIIS
+   @DF-UHF iter  14:   -75.54727960289495   -1.52482e-10   2.25543e-07 DIIS
+   @DF-UHF iter  15:   -75.54727960299178   -9.68328e-11   1.49788e-07 DIIS
+   @DF-UHF iter  16:   -75.54727960301979   -2.80096e-11   3.87904e-08 DIIS
+   @DF-UHF iter  17:   -75.54727960302053   -7.38964e-13   6.62258e-09 DIIS
+   @DF-UHF iter  18:   -75.54727960302040    1.27898e-13   1.65971e-09 DIIS
+   @DF-UHF iter  19:   -75.54727960302046   -5.68434e-14   4.55166e-10 DIIS
+   @DF-UHF iter  20:   -75.54727960302046    0.00000e+00   1.48246e-10 DIIS
+   @DF-UHF iter  21:   -75.54727960302040    5.68434e-14   7.34981e-11 DIIS
 
   ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   3.281722707E-03
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.532817227E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
 
     Orbital Energies (a.u.)
     -----------------------
 
-    Doubly Occupied:                                                      
+    Alpha Occupied:                                                       
 
-       1A    -20.550585     2A     -1.336342     3A     -0.698830  
-       4A     -0.566503     5A     -0.493099  
+       1A    -21.118817     2A     -1.887716     3A     -1.209155  
+       4A     -1.196559     5A     -1.022448  
 
-    Virtual:                                                              
+    Alpha Virtual:                                                        
 
-       6A      0.185441     7A      0.256144     8A      0.788691  
-       9A      0.853812    10A      1.163733    11A      1.200441  
-      12A      1.253476    13A      1.444765    14A      1.476603  
-      15A      1.674917    16A      1.867631    17A      1.934918  
-      18A      2.451189    19A      2.488875    20A      3.285846  
-      21A      3.338551    22A      3.510393    23A      3.865411  
-      24A      4.147172  
+       6A     -0.134265     7A     -0.059247     8A      0.369635  
+       9A      0.446153    10A      0.666878    11A      0.736855  
+      12A      0.825305    13A      0.997250    14A      1.059380  
+      15A      1.246572    16A      1.407817    17A      1.515820  
+      18A      1.980651    19A      2.030467    20A      2.735331  
+      21A      2.830224    22A      2.947293    23A      3.359841  
+      24A      3.609015  
+
+    Beta Occupied:                                                        
+
+       1A    -21.076630     2A     -1.748360     3A     -1.166219  
+       4A     -0.966831  
+
+    Beta Virtual:                                                         
+
+       5A     -0.407217     6A     -0.112757     7A     -0.042240  
+       8A      0.417513     9A      0.479510    10A      0.761977  
+      11A      0.808924    12A      0.843185    13A      1.048300  
+      14A      1.064623    15A      1.278290    16A      1.457334  
+      17A      1.528882    18A      2.023187    19A      2.056732  
+      20A      2.825966    21A      2.855222    22A      3.052802  
+      23A      3.393881    24A      3.679414  
 
     Final Occupation by Irrep:
               A 
-    DOCC [     5 ]
+    DOCC [     4 ]
+    SOCC [     1 ]
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.02674017978408
+  @DF-UHF Final Energy:   -75.54727960302040
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1873864214775924
-    One-Electron Energy =                -123.1375342610699164
-    Two-Electron Energy =                  37.9234076598082410
+    One-Electron Energy =                -118.0765989263882147
+    Two-Electron Energy =                  33.3419329018902104
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0267401797840705
+    Total Energy =                        -75.5472796030203995
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -231,29 +262,39 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.9765
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.1669
+     X:     0.0000      Y:     0.0000      Z:    -0.1628
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.8097     Total:     0.8097
+     X:     0.0000      Y:     0.0000      Z:     0.8138     Total:     0.8138
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     2.0580     Total:     2.0580
+     X:     0.0000      Y:     0.0000      Z:     2.0684     Total:     2.0684
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on Ugurs-MacBook-Pro.local at Thu Oct  8 14:18:47 2015
+  UHF NO Occupations:
+  HONO-2 :    3  A 1.9995806
+  HONO-1 :    4  A 1.9991120
+  HONO-0 :    5  A 1.0000000
+  LUNO+0 :    6  A 0.0008880
+  LUNO+1 :    7  A 0.0004194
+  LUNO+2 :    8  A 0.0003336
+  LUNO+3 :    9  A 0.0000003
+
+
+*** tstop() called on Ugurs-MacBook-Pro.local at Thu Oct  8 14:08:31 2015
 Module time:
-	user time   =       0.58 seconds =       0.01 minutes
+	user time   =       0.61 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.58 seconds =       0.01 minutes
+	user time   =       0.61 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on Ugurs-MacBook-Pro.local
-*** at Thu Oct  8 14:18:47 2015
+*** at Thu Oct  8 14:08:31 2015
 
 
 
@@ -355,7 +396,7 @@ Total time:
   UNITS                       => ANGSTROMS        
   WABEF_TYPE                  => AUTO             
   WFN                         => SCF              
-  WFN_TYPE                    => DF-OMP3         !
+  WFN_TYPE                    => DF-OMP2.5       !
   WRITER_FILE_LABEL           => (empty)          
 
 
@@ -363,7 +404,7 @@ Total time:
  ============================================================================== 
  ============================================================================== 
 
-                     DF-OMP3 (DF-OO-MP3)   
+                    DF-OMP2.5 (DF-OO-MP2.5)   
               Program Written by Ugur Bozkaya
               Latest Revision October 8, 2015
 
@@ -373,17 +414,18 @@ Total time:
 
 	RMS orbital gradient is changed to :     2.51e-06
 	MAX orbital gradient is changed to :     1.05e-04
+	MO Hessian type is changed to 'APPROX_DIAG'
 	MO spaces... 
 
-	 FC   OCC   VIR   FV 
-	----------------------
-	  1    4    19    0
+	 FC   AOCC   BOCC  AVIR   BVIR   FV 
+	------------------------------------------
+	  1     4     3    19     20     0
 	Reading DF integrals from disk ...
 	Number of basis functions in the DF-HF basis: 116
 	Number of basis functions in the DF-CC basis:  84
 
 	Available memory                      :    244.14 MB 
-	Memory requirement for 3-index ints   :      0.29 MB 
+	Memory requirement for 3-index ints   :      0.58 MB 
 	Memory requirement for DF-CC int trans:      0.89 MB 
 	Memory requirement for CC contractions:      0.28 MB 
 	Total memory requirement for DF+CC int:      0.57 MB 
@@ -392,82 +434,95 @@ Total time:
 	Computing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	DF-HF Energy (a.u.)                :   -76.02674017978408
-	REF Energy (a.u.)                  :   -76.02674017978408
-	DF-MP2 Correlation Energy (a.u.)   :    -0.20165224255482
-	DF-MP2 Total Energy (a.u.)         :   -76.22839242233891
+	DF-HF Energy (a.u.)                :   -75.54727960302040
+	REF Energy (a.u.)                  :   -75.54727960302040
+	Alpha-Alpha Contribution (a.u.)    :    -0.02415809693563
+	Alpha-Beta Contribution (a.u.)     :    -0.11598792998259
+	Beta-Beta Contribution (a.u.)      :    -0.01199289966661
+	Scaled_SS Correlation Energy (a.u.):    -0.01205033220075
+	Scaled_OS Correlation Energy (a.u.):    -0.13918551597911
+	DF-SCS-MP2 Total Energy (a.u.)     :   -75.69851545120025
+	DF-SOS-MP2 Total Energy (a.u.)     :   -75.69806391199776
+	DF-SCSN-MP2 Total Energy (a.u.)    :   -75.61090535704034
+	DF-MP2 Correlation Energy (a.u.)   :    -0.15213892658483
+	DF-MP2 Total Energy (a.u.)         :   -75.69941852960523
 	======================================================================= 
 
-	Computing DF-MP3 energy using SCF MOs (Canonical DF-MP3)... 
+	Computing DF-MP2.5 energy using SCF MOs (Canonical DF-MP2.5)... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	SCF Energy (a.u.)                  :   -76.02674017978408
-	REF Energy (a.u.)                  :   -76.02674017978408
-	3rd Order Energy (a.u.)            :    -0.00710384249156
-	DF-MP2.5 Correlation Energy (a.u.) :    -0.20520416380061
-	DF-MP2.5 Total Energy (a.u.)       :   -76.23194434358470
-	DF-MP3 Correlation Energy (a.u.)   :    -0.20875608504639
-	DF-MP3 Total Energy (a.u.)         :   -76.23549626483047
+	SCF Energy (a.u.)                  :   -75.54727960302040
+	REF Energy (a.u.)                  :   -75.54727960302040
+	Alpha-Alpha Contribution (a.u.)    :    -0.02409743752648
+	Alpha-Beta Contribution (a.u.)     :    -0.12277461692775
+	Beta-Beta Contribution (a.u.)      :    -0.01186162112061
+	DF-MP3 Correlation Energy (a.u.)   :    -0.16532842456485
+	DF-MP3 Total Energy (a.u.)         :   -75.71260802758525
+	DF-MP2.5 Correlation Energy (a.u.) :    -0.15873367557484
+	DF-MP2.5 Total Energy (a.u.)       :   -75.70601327859524
 	======================================================================= 
 
-	Number of independent-pairs:  99
+	Number of alpha independent-pairs: 99
+	Number of beta independent-pairs : 83
 
  ============================================================================== 
- ================ Performing DF-OMP3 iterations... ============================ 
+ ================ Performing DF-OMP2.5 iterations... ========================== 
  ============================================================================== 
-	            Minimizing DF-MP3-L Functional 
+	            Minimizing DF-MP2.5-L Functional 
 	            ------------------------------ 
  Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    
  ----    ---------------    ----------     -----------      -----------     ---------- 
-   1     -76.2361362272     -6.40e-04       8.52e-04         4.58e-03        5.59e-06 
-   2     -76.2361777796     -4.16e-05       3.72e-04         3.38e-03        8.73e-07 
-   3     -76.2361947228     -1.69e-05       2.67e-04         2.50e-03        3.57e-07 
-   4     -76.2362037218     -9.00e-06       1.92e-04         1.85e-03        2.22e-07 
-   5     -76.2362085984     -4.88e-06       1.42e-04         1.36e-03        1.57e-07 
-   6     -76.2362142835     -5.69e-06       2.04e-05         1.60e-04        3.83e-07 
-   7     -76.2362143688     -8.53e-08       4.84e-06         2.63e-05        5.14e-08 
-   8     -76.2362143712     -2.44e-09       8.92e-07         4.10e-06        1.66e-08 
+   1     -75.7066011634     -5.88e-04       1.37e-03         6.07e-03        5.95e-06 
+   2     -75.7066357955     -3.46e-05       5.63e-04         3.11e-03        9.12e-07 
+   3     -75.7066446272     -8.83e-06       3.01e-04         1.64e-03        4.54e-07 
+   4     -75.7066481106     -3.48e-06       1.96e-04         1.33e-03        2.57e-07 
+   5     -75.7066498042     -1.69e-06       1.27e-04         1.08e-03        1.47e-07 
+   6     -75.7066520195     -2.22e-06       4.60e-05         4.05e-04        1.88e-07 
+   7     -75.7066523528     -3.33e-07       9.30e-06         4.95e-05        8.54e-08 
+   8     -75.7066523580     -5.17e-09       3.26e-06         1.82e-05        1.07e-08 
 
  ============================================================================== 
- ======================== DF-OMP3 ITERATIONS ARE CONVERGED ==================== 
+ ======================== DF-OMP2.5 ITERATIONS ARE CONVERGED ================== 
  ============================================================================== 
 
-	Computing DF-MP3 energy using optimized MOs... 
+	Computing DF-MP2.5 energy using optimized MOs... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	SCF Energy (a.u.)                  :   -76.02674017978408
-	REF Energy (a.u.)                  :   -76.02614443469271
-	3rd Order Energy (a.u.)            :    -0.00782194935704
-	DF-MP2.5 Correlation Energy (a.u.) :    -0.20556321723335
-	DF-MP2.5 Total Energy (a.u.)       :   -76.23230339701743
-	DF-MP3 Correlation Energy (a.u.)   :    -0.21006993700324
-	DF-MP3 Total Energy (a.u.)         :   -76.23621437169595
+	SCF Energy (a.u.)                  :   -75.54727960302040
+	REF Energy (a.u.)                  :   -75.54670444334562
+	Alpha-Alpha Contribution (a.u.)    :    -0.02420195059347
+	Alpha-Beta Contribution (a.u.)     :    -0.12383555586945
+	Beta-Beta Contribution (a.u.)      :    -0.01191040812598
+	DF-MP3 Correlation Energy (a.u.)   :    -0.16660658324341
+	DF-MP3 Total Energy (a.u.)         :   -75.71388618626381
+	DF-MP2.5 Correlation Energy (a.u.) :    -0.15994791458890
+	DF-MP2.5 Total Energy (a.u.)       :   -75.70665235793452
 	======================================================================= 
 
 	======================================================================= 
-	================ DF-OMP3 FINAL RESULTS ================================ 
+	================ DF-OMP2.5 FINAL RESULTS ============================== 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	DF-HF Energy (a.u.)                :   -76.02674017978408
-	REF Energy (a.u.)                  :   -76.02614443469271
-	DF-OMP3 Correlation Energy (a.u.)  :    -0.20947419142780
-	Edfomp3 - Eref (a.u.)              :    -0.21006993651918
-	DF-OMP3 Total Energy (a.u.)        :   -76.23621437121189
+	DF-HF Energy (a.u.)                :   -75.54727960302040
+	REF Energy (a.u.)                  :   -75.54670444334562
+	DF-OMP2.5 Correlation Energy (a.u.):    -0.15937275495406
+	Edfomp2.5 - Eref (a.u.)            :    -0.15994791462884
+	DF-OMP2.5 Total Energy (a.u.)      :   -75.70665235797446
 	======================================================================= 
 
 
-*** tstop() called on Ugurs-MacBook-Pro.local at Thu Oct  8 14:18:49 2015
+*** tstop() called on Ugurs-MacBook-Pro.local at Thu Oct  8 14:08:38 2015
 Module time:
-	user time   =       0.67 seconds =       0.01 minutes
-	system time =       0.38 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.34 seconds =       0.02 minutes
+	system time =       5.28 seconds =       0.09 minutes
+	total time  =          7 seconds =       0.12 minutes
 Total time:
-	user time   =       1.25 seconds =       0.02 minutes
-	system time =       0.39 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.95 seconds =       0.03 minutes
+	system time =       5.29 seconds =       0.09 minutes
+	total time  =          7 seconds =       0.12 minutes
 
 *** tstart() called on Ugurs-MacBook-Pro.local
-*** at Thu Oct  8 14:18:49 2015
+*** at Thu Oct  8 14:08:38 2015
 
 
  ============================================================================== 
@@ -500,60 +555,60 @@ Total time:
   -Kinetic Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000    -0.000000000000     0.893338007065
-       2       -0.000000000000     0.595413710985    -0.446669003533
-       3        0.000000000000    -0.595413710985    -0.446669003532
+       1       -0.000000004309    -0.000000000000     1.013980333856
+       2        0.000000002155     0.571686690489    -0.506990166928
+       3        0.000000002155    -0.571686690489    -0.506990166928
 
 
   -Potential Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000000001     0.000000000000    -8.374920662038
-       2        0.000000000002    -5.588634711715     4.187460331020
-       3       -0.000000000001     5.588634711715     4.187460331018
+       1        0.000000038739     0.000000000001    -9.458499575715
+       2       -0.000000019369    -5.330884685456     4.729249787858
+       3       -0.000000019369     5.330884685455     4.729249787857
 
 
   -Overlap Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000000000     0.000000000000     0.474029186917
-       2        0.000000000000     0.289853581772    -0.237014591497
-       3        0.000000000000    -0.289853581772    -0.237014595420
+       1       -0.000000005321     0.000000000000     0.861321154865
+       2        0.000000002661     0.425934525640    -0.430660560210
+       3        0.000000002661    -0.425934525640    -0.430660594655
 
 
   -One-Electron Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000000001     0.000000000000    -7.481582654973
-       2        0.000000000002    -4.993221000730     3.740791327487
-       3       -0.000000000001     4.993221000730     3.740791327486
+       1        0.000000034430     0.000000000001    -8.444519241860
+       2       -0.000000017215    -4.759197994967     4.222259620930
+       3       -0.000000017215     4.759197994966     4.222259620930
 
 
   -Two-Electron Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000001    -0.000000000000     4.028391323622
-       2       -0.000000000002     2.652733520108    -2.014195661812
-       3        0.000000000001    -2.652733520107    -2.014195661810
+       1       -0.000000026066    -0.000000000001     4.555801935665
+       2        0.000000013033     2.359097991500    -2.277900967833
+       3        0.000000013033    -2.359097991500    -2.277900967833
 
 
   -Total Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000000000    -0.000000000000     0.010392050984
-       2        0.000000000000     0.001166105813    -0.005196023530
-       3       -0.000000000000    -0.001166105813    -0.005196027453
+       1        0.000000003042     0.000000000000    -0.037841955911
+       2       -0.000000001521     0.077634526837     0.018920995178
+       3       -0.000000001521    -0.077634526837     0.018920960733
 
 
-*** tstop() called on Ugurs-MacBook-Pro.local at Thu Oct  8 14:18:49 2015
+*** tstop() called on Ugurs-MacBook-Pro.local at Thu Oct  8 14:08:39 2015
 Module time:
-	user time   =       0.35 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.60 seconds =       0.03 minutes
-	system time =       0.41 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
-CURRENT ENERGY:  -76.2362143712
+	user time   =       2.31 seconds =       0.04 minutes
+	system time =       5.47 seconds =       0.09 minutes
+	total time  =          8 seconds =       0.13 minutes
+CURRENT ENERGY:  -75.7066523580
 
 *** PSI4 exiting successfully. Buy a developer a beer!
