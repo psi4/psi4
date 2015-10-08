@@ -361,6 +361,21 @@ def run_dfomp3(name, **kwargs):
     return psi4.get_variable("CURRENT ENERGY")
 
 
+def run_dfomp3_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted OO-MP3 gradient computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
+
+    psi4.set_global_option('DERTYPE', 'FIRST')
+    run_dfomp3(name, **kwargs)
+
+    optstash.restore()
+
+
 def run_dfccsd(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an density-fitted CCSD computation
@@ -665,6 +680,21 @@ def run_dfmp3(name, **kwargs):
     molecule.update_geometry()
 
     return psi4.get_variable("CURRENT ENERGY")
+
+
+def run_dfmp3_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted MP3 gradient computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
+
+    psi4.set_global_option('DERTYPE', 'FIRST')
+    run_dfmp3(name, **kwargs)
+
+    optstash.restore()
 
 
 def run_cdomp3(name, **kwargs):

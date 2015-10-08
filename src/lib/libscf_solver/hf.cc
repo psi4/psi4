@@ -97,7 +97,7 @@ void HF::common_init()
 
     scf_type_ = options_.get_str("SCF_TYPE");
 
-    H_.reset(factory_->create_matrix("One-electron Hamiltonion"));
+    H_.reset(factory_->create_matrix("One-electron Hamiltonian"));
     X_.reset(factory_->create_matrix("X"));
 
     nmo_ = 0;
@@ -452,8 +452,186 @@ void HF::integrals()
     jk_->print_header();
 }
 
-void HF::finalize()
+double HF::compute_energy()
 {
+  initialize();
+  iterations();
+  return finalize_E();
+}
+
+double HF::finalize_E()
+{
+    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+        Process::environment.get_efp()->compute();
+
+        double efp_wfn_independent_energy = Process::environment.globals["EFP TOTAL ENERGY"] -
+                                            Process::environment.globals["EFP IND ENERGY"];
+        energies_["EFP"] = Process::environment.globals["EFP TOTAL ENERGY"];
+
+        outfile->Printf("    EFP excluding EFP Induction   %20.12f [H]\n", efp_wfn_independent_energy);
+        outfile->Printf("    SCF including EFP Induction   %20.12f [H]\n", E_);
+
+        E_ += efp_wfn_independent_energy;
+
+        outfile->Printf("    Total SCF including Total EFP %20.12f [H]\n", E_);
+    }
+
+
+    outfile->Printf( "\n  ==> Post-Iterations <==\n\n");
+
+    check_phases();
+    compute_spin_contamination();
+    frac_renormalize();
+    std::string reference = options_.get_str("REFERENCE");
+
+    if (converged_ || !fail_on_maxiter_) {
+
+        // Print the orbitals
+        if(print_)
+            print_orbitals();
+
+        if (converged_) {
+            outfile->Printf( "  Energy converged.\n\n");
+        }
+        if (!converged_) {
+            outfile->Printf( "  Energy did not converge, but proceeding anyway.\n\n");
+        }
+
+        bool df = (options_.get_str("SCF_TYPE") == "DF");
+
+        outfile->Printf( "  @%s%s Final Energy: %20.14f", df ? "DF-" : "", reference.c_str(), E_);
+        if (perturb_h_) {
+            outfile->Printf( " with %f perturbation", lambda_);
+        }
+        outfile->Printf( "\n\n");
+        print_energies();
+
+        // Perform wavefunction stability analysis before doing
+        // anything on a wavefunction that may not be truly converged.
+        if(options_.get_str("STABILITY_ANALYSIS") != "NONE") {
+            bool follow = stability_analysis();
+
+            while ( follow && !(attempt_number_ > max_attempts_) ) {
+
+              attempt_number_++;
+              outfile->Printf("    Running SCF again with the rotated orbitals.\n");
+
+              if(initialized_diis_manager_) diis_manager_->reset_subspace();
+              // Reading the rotated orbitals in before starting iterations
+              form_D();
+              E_ = compute_initial_E();
+              iterations();
+              follow = stability_analysis();
+            }
+            if ( follow && (attempt_number_ > max_attempts_) ) {
+              outfile->Printf( "    There's still a negative eigenvalue. Try modifying FOLLOW_STEP_SCALE\n");
+              outfile->Printf("    or increasing MAX_ATTEMPTS (not available for PK integrals).\n");
+            }
+        }
+
+        // At this point, we are not doing any more SCF cycles
+        // and we can compute and print final quantities.
+
+        // Need to recompute the Fock matrices, as they are modified during the SCF iteration
+        // and might need to be dumped to checkpoint later
+        form_F();
+#ifdef HAVE_PCMSOLVER
+        if(pcm_enabled_) {
+            // Prepare the density
+            SharedMatrix D_pcm;
+            if(same_a_b_orbs()) {
+              D_pcm = Da_;
+              D_pcm->scale(2.0); // PSI4's density doesn't include the occupation
+            }
+            else {
+              D_pcm = Da_;
+              D_pcm->add(Db_);
+            }
+
+            // Add the PCM potential to the Fock matrix
+            SharedMatrix V_pcm;
+            V_pcm = hf_pcm_->compute_V();
+            if(same_a_b_orbs()) Fa_->add(V_pcm);
+            else {
+              Fa_->add(V_pcm);
+              Fb_->add(V_pcm);
+            }
+        }
+#endif
+
+        // Properties
+        if (print_) {
+            boost::shared_ptr<OEProp> oe(new OEProp());
+            oe->set_title("SCF");
+            oe->add("DIPOLE");
+
+            if (print_ >= 2) {
+                oe->add("QUADRUPOLE");
+                oe->add("MULLIKEN_CHARGES");
+            }
+
+            if (print_ >= 3) {
+                oe->add("LOWDIN_CHARGES");
+                oe->add("MAYER_INDICES");
+                oe->add("WIBERG_LOWDIN_INDICES");
+            }
+
+                outfile->Printf( "  ==> Properties <==\n\n");
+            oe->compute();
+
+            // TODO: Hack to test CubicScalarGrid
+            /*
+            boost::shared_ptr<CubicScalarGrid> grid(new CubicScalarGrid(basisset_));
+            grid->print_header();
+            grid->compute_density_cube(Da_, "Da");
+            */
+
+//  Comments so that autodoc utility will find these PSI variables
+//
+//  Process::environment.globals["SCF DIPOLE X"] =
+//  Process::environment.globals["SCF DIPOLE Y"] =
+//  Process::environment.globals["SCF DIPOLE Z"] =
+//  Process::environment.globals["SCF QUADRUPOLE XX"] =
+//  Process::environment.globals["SCF QUADRUPOLE XY"] =
+//  Process::environment.globals["SCF QUADRUPOLE XZ"] =
+//  Process::environment.globals["SCF QUADRUPOLE YY"] =
+//  Process::environment.globals["SCF QUADRUPOLE YZ"] =
+//  Process::environment.globals["SCF QUADRUPOLE ZZ"] =
+
+            Process::environment.globals["CURRENT DIPOLE X"] = Process::environment.globals["SCF DIPOLE X"];
+            Process::environment.globals["CURRENT DIPOLE Y"] = Process::environment.globals["SCF DIPOLE Y"];
+            Process::environment.globals["CURRENT DIPOLE Z"] = Process::environment.globals["SCF DIPOLE Z"];
+        }
+
+        save_information();
+    } else {
+            outfile->Printf( "  Failed to converged.\n");
+            outfile->Printf( "    NOTE: MO Coefficients will not be saved to Checkpoint.\n");
+        E_ = 0.0;
+        if(psio_->open_check(PSIF_CHKPT))
+            psio_->close(PSIF_CHKPT, 1);
+
+        // Throw if we didn't converge?
+        die_if_not_converged();
+    }
+
+    // Orbitals are always saved, in case an MO guess is requested later
+    save_orbitals();
+    if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
+        save_sapt_info();
+
+    finalize();
+
+    //outfile->Printf("\nComputation Completed\n");
+
+    return E_;
+
+}
+
+void HF::finalize() 
+{
+    // Clean memory off, handle diis closeout, etc
+
     // This will be the only one
     if (!options_.get_bool("SAVE_JK")) {
         jk_.reset();
@@ -483,6 +661,7 @@ void HF::finalize()
     // Close the chkpt
     if(psio_->open_check(PSIF_CHKPT))
         psio_->close(PSIF_CHKPT, 1);
+
 }
 
 void HF::find_occupation()
@@ -1590,13 +1769,10 @@ void HF::dump_to_checkpoint()
     psio_->close(PSIF_CHKPT, 1);
 }
 
-double HF::compute_energy()
+void HF::initialize()
 {
-    std::string reference = options_.get_str("REFERENCE");
+    converged_ = false;
 
-    bool converged = false;
-    MOM_performed_ = false;
-    diis_performed_ = false;
     // Neither of these are idempotent
     if (options_.get_str("GUESS") == "SAD" || options_.get_str("GUESS") == "READ")
         iteration_ = -1;
@@ -1610,8 +1786,8 @@ double HF::compute_energy()
         print_preiterations();
 
     // Andy trick 2.0
-    std::string old_scf_type = options_.get_str("SCF_TYPE");
-    if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF" || old_scf_type == "CD")) {
+    old_scf_type_ = options_.get_str("SCF_TYPE");
+    if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type_ == "DF" || old_scf_type_ == "CD")) {
          outfile->Printf( "  Starting with a DF guess...\n\n");
          if(!options_["DF_BASIS_SCF"].has_changed()) {
              // TODO: Match Dunning basis sets
@@ -1631,7 +1807,7 @@ double HF::compute_energy()
         form_H(); //Core Hamiltonian
         timer_off("Form H");
 
-        // EFP: Add in permenent moment contribution and cache
+        // EFP: Add in permanent moment contribution and cache
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
             boost::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_permanent();
             H_->add(Vefp);
@@ -1654,15 +1830,24 @@ double HF::compute_energy()
         E_ = compute_initial_E();
     }
 
+    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+        Process::environment.get_efp()->set_qm_atoms();
+    }
+
+}
+
+void HF::iterations()
+{
+    std::string reference = options_.get_str("REFERENCE");
+
+    MOM_performed_ = false;
+    diis_performed_ = false;
+
     bool df = (options_.get_str("SCF_TYPE") == "DF");
 
         outfile->Printf( "  ==> Iterations <==\n\n");
         outfile->Printf( "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", df ? "   " : "");
 
-
-    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-        Process::environment.get_efp()->set_qm_atoms();
-    }
 
     // SCF iterations
     do {
@@ -1821,7 +2006,7 @@ double HF::compute_energy()
             Db_->print("outfile");
         }
 
-        converged = test_convergency();
+        converged_ = test_convergency();
 
         df = (options_.get_str("SCF_TYPE") == "DF");
 
@@ -1832,168 +2017,28 @@ double HF::compute_energy()
 
 
         // If a an excited MOM is requested but not started, don't stop yet
-        if (MOM_excited_ && !MOM_started_) converged = false;
+        if (MOM_excited_ && !MOM_started_) converged_ = false;
 
         // If a fractional occupation is requested but not started, don't stop yet
-        if (frac_enabled_ && !frac_performed_) converged = false;
+        if (frac_enabled_ && !frac_performed_) converged_ = false;
 
         // If a DF Guess environment, reset the JK object, and keep running
-        if (converged && options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF" || old_scf_type == "CD")) {
+        if (converged_ && options_.get_bool("DF_SCF_GUESS") && !(old_scf_type_ == "DF" || old_scf_type_ == "CD")) {
             outfile->Printf( "\n  DF guess converged.\n\n"); // Be cool dude.
-            converged = false;
+            converged_ = false;
             if(initialized_diis_manager_)
                 diis_manager_->reset_subspace();
-            scf_type_ = old_scf_type;
-            options_.set_str("SCF","SCF_TYPE",old_scf_type);
-            old_scf_type = "DF";
+            scf_type_ = old_scf_type_;
+            options_.set_str("SCF","SCF_TYPE",old_scf_type_);
+            old_scf_type_ = "DF";
             integrals();
         }
 
         // Call any postiteration callbacks
         call_postiteration_callbacks();
 
-    } while (!converged && iteration_ < maxiter_ );
+    } while (!converged_ && iteration_ < maxiter_ );
 
-    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-        Process::environment.get_efp()->compute();
-
-        double efp_wfn_independent_energy = Process::environment.globals["EFP TOTAL ENERGY"] -
-                                            Process::environment.globals["EFP IND ENERGY"];
-        energies_["EFP"] = Process::environment.globals["EFP TOTAL ENERGY"];
-
-        outfile->Printf("    EFP excluding EFP Induction   %20.12f [H]\n", efp_wfn_independent_energy);
-        outfile->Printf("    SCF including EFP Induction   %20.12f [H]\n", E_);
-
-        E_ += efp_wfn_independent_energy;
-
-        outfile->Printf("    Total SCF including Total EFP %20.12f [H]\n", E_);
-    }
-
-
-        outfile->Printf( "\n  ==> Post-Iterations <==\n\n");
-
-    check_phases();
-    compute_spin_contamination();
-    frac_renormalize();
-
-    if (converged || !fail_on_maxiter_) {
-        // Need to recompute the Fock matrices, as they are modified during the SCF interation
-        // and might need to be dumped to checkpoint later
-        form_F();
-#ifdef HAVE_PCMSOLVER
-        if(pcm_enabled_) {
-            // Prepare the density
-            SharedMatrix D_pcm;
-            if(same_a_b_orbs()) {
-              D_pcm = Da_;
-              D_pcm->scale(2.0); // PSI4's density doesn't include the occupation
-            }
-            else {
-              D_pcm = Da_;
-              D_pcm->add(Db_);
-            }
-
-            // Add the PCM potential to the Fock matrix
-            SharedMatrix V_pcm;
-            V_pcm = hf_pcm_->compute_V();
-            if(same_a_b_orbs()) Fa_->add(V_pcm);
-            else {
-              Fa_->add(V_pcm);
-              Fb_->add(V_pcm);
-            }
-        }
-#endif
-
-        // Print the orbitals
-        if(print_)
-            print_orbitals();
-
-        if (converged) {
-            outfile->Printf( "  Energy converged.\n\n");
-        }
-        if (!converged) {
-            outfile->Printf( "  Energy did not converge, but proceeding anyway.\n\n");
-        }
-            outfile->Printf( "  @%s%s Final Energy: %20.14f", df ? "DF-" : "", reference.c_str(), E_);
-            if (perturb_h_) {
-                outfile->Printf( " with %f perturbation", lambda_);
-            }
-            outfile->Printf( "\n\n");
-            print_energies();
-
-
-        // Properties
-        if (print_) {
-            boost::shared_ptr<OEProp> oe(new OEProp());
-            oe->set_title("SCF");
-            oe->add("DIPOLE");
-
-            if (print_ >= 2) {
-                oe->add("QUADRUPOLE");
-                oe->add("MULLIKEN_CHARGES");
-            }
-
-            if (print_ >= 3) {
-                oe->add("LOWDIN_CHARGES");
-                oe->add("MAYER_INDICES");
-                oe->add("WIBERG_LOWDIN_INDICES");
-            }
-
-                outfile->Printf( "  ==> Properties <==\n\n");
-            oe->compute();
-
-            // TODO: Hack to test CubicScalarGrid
-            /*
-            boost::shared_ptr<CubicScalarGrid> grid(new CubicScalarGrid(basisset_));
-            grid->print_header();
-            grid->compute_density_cube(Da_, "Da");
-            */
-
-//  Comments so that autodoc utility will find these PSI variables
-//
-//  Process::environment.globals["SCF DIPOLE X"] =
-//  Process::environment.globals["SCF DIPOLE Y"] =
-//  Process::environment.globals["SCF DIPOLE Z"] =
-//  Process::environment.globals["SCF QUADRUPOLE XX"] =
-//  Process::environment.globals["SCF QUADRUPOLE XY"] =
-//  Process::environment.globals["SCF QUADRUPOLE XZ"] =
-//  Process::environment.globals["SCF QUADRUPOLE YY"] =
-//  Process::environment.globals["SCF QUADRUPOLE YZ"] =
-//  Process::environment.globals["SCF QUADRUPOLE ZZ"] =
-
-            Process::environment.globals["CURRENT DIPOLE X"] = Process::environment.globals["SCF DIPOLE X"];
-            Process::environment.globals["CURRENT DIPOLE Y"] = Process::environment.globals["SCF DIPOLE Y"];
-            Process::environment.globals["CURRENT DIPOLE Z"] = Process::environment.globals["SCF DIPOLE Z"];
-        }
-
-        save_information();
-    } else {
-            outfile->Printf( "  Failed to converged.\n");
-            outfile->Printf( "    NOTE: MO Coefficients will not be saved to Checkpoint.\n");
-        E_ = 0.0;
-        if(psio_->open_check(PSIF_CHKPT))
-            psio_->close(PSIF_CHKPT, 1);
-
-        // Throw if we didn't converge?
-        die_if_not_converged();
-    }
-
-    // Orbitals are always saved, in case an MO guess is requested later
-    save_orbitals();
-    if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
-        save_sapt_info();
-
-    // Perform wavefunction stability analysis
-    if(options_.get_str("STABILITY_ANALYSIS") != "NONE")
-        stability_analysis();
-
-    // Clean memory off, handle diis closeout, etc
-    finalize();
-
-
-    //outfile->Printf("\nComputation Completed\n");
-
-    return E_;
 }
 
 void HF::print_energies()
@@ -2209,8 +2254,9 @@ void HF::print_stability_analysis(std::vector<std::pair<double, int> > &vec)
         free(irrep_labels[h]);
     free(irrep_labels);
 }
-void HF::stability_analysis()
+bool HF::stability_analysis()
 {
     throw PSIEXCEPTION("Stability analysis hasn't been implemented yet for this wfn type.");
+    return false;
 }
 }}

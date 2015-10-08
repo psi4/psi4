@@ -209,8 +209,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
   options.add("CUBIC_GRID_SPACING", new ArrayType());
 
-  /* How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc */
-  options.add_str("PRINT_NOONS","3");
+   /* How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc */
+   options.add_str("PRINT_NOONS","3");
+
+
 
   if (name == "DETCI" || options.read_globals()) {
     /*- MODULEDESCRIPTION Performs configuration interaction (CI)
@@ -1905,7 +1907,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("ONEPDM_GRID_STEPSIZE", 0.1);
     /* Do Write NOs (molden) */
     options.add_bool("WRITE_NOS",false);
-
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Solves for the Lagrange multipliers, which are needed whenever coupled cluster properties

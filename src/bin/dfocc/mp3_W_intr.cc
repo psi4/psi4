@@ -124,34 +124,25 @@ void DFOCC::mp3_WmnijT2AA()
     K.reset();
 
     // t_ij^ab <= 1/2 \sum_{m,n} T_mn^ab Wmnij
-    // (+)T(ij, ab) = 1/2 (T_ij^ab + T_ji^ab) * (2 - \delta_{ij})
     // (-)T(ij, ab) = 1/2 (T_ij^ab - T_ji^ab) * (2 - \delta_{ij}) 
     U = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     U->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    Ts = SharedTensor2d(new Tensor2d("(+)tT [I>=J|A>=B]", ntri_ijAA, ntri_abAA));
     Ta = SharedTensor2d(new Tensor2d("(-)tT [I>=J|A>=B]", ntri_ijAA, ntri_abAA));
-    Ts->symm_row_packed4(U);
     Ta->antisymm_row_packed4(U);
     U.reset();
 
-    // Form (+/-)W(m>=n, i>=j)
-    Vs = SharedTensor2d(new Tensor2d("(+)W [M>=N|I>=J]", ntri_ijAA, ntri_ijAA));
+    // Form (-)W(m>=n, i>=j)
     Va = SharedTensor2d(new Tensor2d("(-)W [M>=N|I>=J]", ntri_ijAA, ntri_ijAA));
-    Vs->symm4(W);
     Va->antisymm4(W);
     W.reset();
 
-    // Symmetric & Anti-symmetric contributions
-    S = SharedTensor2d(new Tensor2d("S (I>=J, A>=B)", ntri_ijAA, ntri_abAA));
+    // Anti-symmetric contributions
     A = SharedTensor2d(new Tensor2d("A (I>=J, A>=B)", ntri_ijAA, ntri_abAA));
-    S->gemm(true, false, Vs, Ts, 0.5, 0.0); 
     A->gemm(true, false, Va, Ta, 0.5, 0.0); 
-    Ts.reset();
     Ta.reset();
-    Vs.reset();
     Va.reset();
 
-    // T(ia,jb) <-- S(a>=b,i>=j) + A(a>=b,i>=j)
+    // T(ia,jb) <-- A(a>=b,i>=j)
     Tnew = SharedTensor2d(new Tensor2d("New T2_2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     //Tnew->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
     #pragma omp parallel for
@@ -165,13 +156,12 @@ void DFOCC::mp3_WmnijT2AA()
                     int ij = index2(i,j); 
                     int perm1 = ( i > j ) ? 1 : -1;
                     int perm2 = ( a > b ) ? 1 : -1;
-                    double value = S->get(ij,ab) + (perm1 * perm2 * A->get(ij,ab));
+                    double value = perm1 * perm2 * A->get(ij,ab);
                     Tnew->add(ij2, ab2, value);
                 }
             }
         }
     }
-    S.reset();
     A.reset();
     Tnew->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
     Tnew.reset();
@@ -215,34 +205,25 @@ void DFOCC::mp3_WmnijT2BB()
     K.reset();
 
     // t_ij^ab <= 1/2 \sum_{m,n} T_mn^ab Wmnij
-    // (+)T(ij, ab) = 1/2 (T_ij^ab + T_ji^ab) * (2 - \delta_{ij})
     // (-)T(ij, ab) = 1/2 (T_ij^ab - T_ji^ab) * (2 - \delta_{ij}) 
     U = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
     U->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    Ts = SharedTensor2d(new Tensor2d("(+)tT [I>=J|A>=B]", ntri_ijBB, ntri_abBB));
     Ta = SharedTensor2d(new Tensor2d("(-)tT [I>=J|A>=B]", ntri_ijBB, ntri_abBB));
-    Ts->symm_row_packed4(U);
     Ta->antisymm_row_packed4(U);
     U.reset();
 
-    // Form (+/-)W(m>=n, i>=j)
-    Vs = SharedTensor2d(new Tensor2d("(+)W [M>=N|I>=J]", ntri_ijBB, ntri_ijBB));
+    // Form (-)W(m>=n, i>=j)
     Va = SharedTensor2d(new Tensor2d("(-)W [M>=N|I>=J]", ntri_ijBB, ntri_ijBB));
-    Vs->symm4(W);
     Va->antisymm4(W);
     W.reset();
 
-    // Symmetric & Anti-symmetric contributions
-    S = SharedTensor2d(new Tensor2d("S (I>=J, A>=B)", ntri_ijBB, ntri_abBB));
+    // Anti-symmetric contributions
     A = SharedTensor2d(new Tensor2d("A (I>=J, A>=B)", ntri_ijBB, ntri_abBB));
-    S->gemm(true, false, Vs, Ts, 1.0, 0.0); 
     A->gemm(true, false, Va, Ta, 1.0, 0.0); 
-    Ts.reset();
     Ta.reset();
-    Vs.reset();
     Va.reset();
 
-    // T(ia,jb) <-- S(a>=b,i>=j) + A(a>=b,i>=j)
+    // T(ia,jb) <-- A(a>=b,i>=j)
     Tnew = SharedTensor2d(new Tensor2d("New T2_2 <ij|ab>", naoccB, naoccB, navirB, navirB));
     //Tnew->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
     #pragma omp parallel for
@@ -256,13 +237,12 @@ void DFOCC::mp3_WmnijT2BB()
                     int ij = index2(i,j); 
                     int perm1 = ( i > j ) ? 1 : -1;
                     int perm2 = ( a > b ) ? 1 : -1;
-                    double value = S->get(ij,ab) + (perm1 * perm2 * A->get(ij,ab));
+                    double value = perm1 * perm2 * A->get(ij,ab);
                     Tnew->add(ij2, ab2, 0.5*value);
                 }
             }
         }
     }
-    S.reset();
     A.reset();
     Tnew->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
     Tnew.reset();
@@ -781,13 +761,10 @@ void DFOCC::mp3_WabefT2AA()
     timer_on("WabefT2");
 
     // t_ij^ab <= 1/2 \sum_{ef} T_ij^ef <ab||ef> = \sum_{ef} T_ij^ef <ab|ef>
-    // (+)T(ij, ab) = 1/2 (T_ij^ab + T_ji^ab) * (2 - \delta_{ab})
     // (-)T(ij, ab) = 1/2 (T_ij^ab - T_ji^ab) * (2 - \delta_{ab}) 
     X = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     X->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    U = SharedTensor2d(new Tensor2d("(+)T [I>=J|A>=B]", ntri_ijAA, ntri_abAA));
     T = SharedTensor2d(new Tensor2d("(-)T [I>=J|A>=B]", ntri_ijAA, ntri_abAA));
-    U->symm_col_packed4(X);
     T->antisymm_col_packed4(X);
     X.reset();
 
@@ -797,13 +774,10 @@ void DFOCC::mp3_WabefT2AA()
 
     // malloc
     I = SharedTensor2d(new Tensor2d("I[A] <BF|E>", navirA * navirA, navirA));
-    Vs = SharedTensor2d(new Tensor2d("(+)V[A] (B, E>=F)", navirA, ntri_abAA));
     Va = SharedTensor2d(new Tensor2d("(-)V[A] (B, E>=F)", navirA, ntri_abAA));
-    Ts = SharedTensor2d(new Tensor2d("(+)T[A] (B, I>=J)", navirA, ntri_ijAA));
     Ta = SharedTensor2d(new Tensor2d("(-)T[B] (B, I>=J)", navirA, ntri_ijAA));
 
-    // Symmetric & Anti-symmetric contributions
-    S = SharedTensor2d(new Tensor2d("S (A>=B, I>=J)", ntri_abAA, ntri_ijAA));
+    // Anti-symmetric contributions
     A = SharedTensor2d(new Tensor2d("A (A>=B, I>=J)", ntri_abAA, ntri_ijAA));
     // Main loop
     for(int a = 0 ; a < navirA; ++a){
@@ -820,26 +794,22 @@ void DFOCC::mp3_WabefT2AA()
                     for(int f = 0 ; f <= e; ++f){
                         int ef = index2(e,f); 
                         int bf = f + (b * navirA);
-                        double value1 = 0.5 * ( I->get(bf, e) + I->get(be, f) );
                         double value2 = 0.5 * ( I->get(bf, e) - I->get(be, f) );
-                        Vs->set(b, ef, value1);
                         Va->set(b, ef, value2);
                     }
                 }
             }
 
             // Form T[a](b, i>=j) = 1/2\sum_{e>=f} Tau(i>=j,e>=f) V[a](b, e>=f) 
-            Ts->contract(false, true, nb, ntri_ijAA, ntri_abAA, Vs, U, 1.0, 0.0);
             Ta->contract(false, true, nb, ntri_ijAA, ntri_abAA, Va, T, 1.0, 0.0);
 
-            // Form S(ij,ab) & A(ij,ab)
+            // Form A(ij,ab)
             #pragma omp parallel for
             for(int b = 0 ; b <=a; ++b){
                 int ab = index2(a,b); 
                 for(int i = 0 ; i < naoccA; ++i){
                     for(int j = 0 ; j <= i; ++j){
                         int ij = index2(i,j); 
-                        S->add(ab, ij, Ts->get(b,ij));
                         A->add(ab, ij, Ta->get(b,ij));
                     }
                 }
@@ -848,14 +818,11 @@ void DFOCC::mp3_WabefT2AA()
     }
     K.reset();
     I.reset();
-    Vs.reset();
     Va.reset();
-    Ts.reset();
     Ta.reset();
-    U.reset();
     T.reset();
 
-    // T(ia,jb) <-- S(a>=b,i>=j) + A(a>=b,i>=j)
+    // T(ia,jb) <-- A(a>=b,i>=j)
     Tnew = SharedTensor2d(new Tensor2d("New T2_2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     Tnew->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
     #pragma omp parallel for
@@ -869,13 +836,12 @@ void DFOCC::mp3_WabefT2AA()
                     int ij = index2(i,j); 
                     int perm1 = ( i > j ) ? 1 : -1;
                     int perm2 = ( a > b ) ? 1 : -1;
-                    double value = S->get(ab,ij) + (perm1 * perm2 * A->get(ab,ij));
+                    double value = perm1 * perm2 * A->get(ab,ij);
                     Tnew->add(ij2, ab2, value);
                 }
             }
         }
     }
-    S.reset();
     A.reset();
     Tnew->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
     Tnew.reset();
@@ -896,13 +862,10 @@ void DFOCC::mp3_WabefT2BB()
     timer_on("WabefT2");
 
     // t_ij^ab <= 1/2 \sum_{ef} T_ij^ef <ab||ef> = \sum_{ef} T_ij^ef <ab|ef>
-    // (+)T(ij, ab) = 1/2 (T_ij^ab + T_ji^ab) * (2 - \delta_{ab})
     // (-)T(ij, ab) = 1/2 (T_ij^ab - T_ji^ab) * (2 - \delta_{ab}) 
     X = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
     X->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    U = SharedTensor2d(new Tensor2d("(+)T [I>=J|A>=B]", ntri_ijBB, ntri_abBB));
     T = SharedTensor2d(new Tensor2d("(-)T [I>=J|A>=B]", ntri_ijBB, ntri_abBB));
-    U->symm_col_packed4(X);
     T->antisymm_col_packed4(X);
     X.reset();
 
@@ -912,13 +875,10 @@ void DFOCC::mp3_WabefT2BB()
 
     // malloc
     I = SharedTensor2d(new Tensor2d("I[A] <BF|E>", navirB * navirB, navirB));
-    Vs = SharedTensor2d(new Tensor2d("(+)V[A] (B, E>=F)", navirB, ntri_abBB));
     Va = SharedTensor2d(new Tensor2d("(-)V[A] (B, E>=F)", navirB, ntri_abBB));
-    Ts = SharedTensor2d(new Tensor2d("(+)T[A] (B, I>=J)", navirB, ntri_ijBB));
     Ta = SharedTensor2d(new Tensor2d("(-)T[B] (B, I>=J)", navirB, ntri_ijBB));
 
-    // Symmetric & Anti-symmetric contributions
-    S = SharedTensor2d(new Tensor2d("S (A>=B, I>=J)", ntri_abBB, ntri_ijBB));
+    // Anti-symmetric contributions
     A = SharedTensor2d(new Tensor2d("A (A>=B, I>=J)", ntri_abBB, ntri_ijBB));
     // Main loop
     for(int a = 0 ; a < navirB; ++a){
@@ -935,26 +895,22 @@ void DFOCC::mp3_WabefT2BB()
                     for(int f = 0 ; f <= e; ++f){
                         int ef = index2(e,f); 
                         int bf = f + (b * navirB);
-                        double value1 = 0.5 * ( I->get(bf, e) + I->get(be, f) );
                         double value2 = 0.5 * ( I->get(bf, e) - I->get(be, f) );
-                        Vs->set(b, ef, value1);
                         Va->set(b, ef, value2);
                     }
                 }
             }
 
             // Form T[a](b, i>=j) = \sum_{e>=f} Tau(i>=j,e>=f) V[a](b, e>=f) 
-            Ts->contract(false, true, nb, ntri_ijBB, ntri_abBB, Vs, U, 1.0, 0.0);
             Ta->contract(false, true, nb, ntri_ijBB, ntri_abBB, Va, T, 1.0, 0.0);
 
-            // Form S(ij,ab) & A(ij,ab)
+            // Form A(ij,ab)
             #pragma omp parallel for
             for(int b = 0 ; b <=a; ++b){
                 int ab = index2(a,b); 
                 for(int i = 0 ; i < naoccB; ++i){
                     for(int j = 0 ; j <= i; ++j){
                         int ij = index2(i,j); 
-                        S->add(ab, ij, Ts->get(b,ij));
                         A->add(ab, ij, Ta->get(b,ij));
                     }
                 }
@@ -963,14 +919,11 @@ void DFOCC::mp3_WabefT2BB()
     }
     K.reset();
     I.reset();
-    Vs.reset();
     Va.reset();
-    Ts.reset();
     Ta.reset();
-    U.reset();
     T.reset();
 
-    // T(ia,jb) <-- S(a>=b,i>=j) + A(a>=b,i>=j)
+    // T(ia,jb) <-- A(a>=b,i>=j)
     Tnew = SharedTensor2d(new Tensor2d("New T2_2 <ij|ab>", naoccB, naoccB, navirB, navirB));
     Tnew->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
     #pragma omp parallel for
@@ -984,13 +937,12 @@ void DFOCC::mp3_WabefT2BB()
                     int ij = index2(i,j); 
                     int perm1 = ( i > j ) ? 1 : -1;
                     int perm2 = ( a > b ) ? 1 : -1;
-                    double value = S->get(ab,ij) + (perm1 * perm2 * A->get(ab,ij));
+                    double value = perm1 * perm2 * A->get(ab,ij);
                     Tnew->add(ij2, ab2, value);
                 }
             }
         }
     }
-    S.reset();
     A.reset();
     Tnew->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
     Tnew.reset();

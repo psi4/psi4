@@ -482,6 +482,15 @@ else if (reference_ == "UNRESTRICTED") {
     Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_CC Jmhalf <P|Q>", nQ, nQ));
     Jmhalf->read(psio_, PSIF_DFOCC_INTS);
 
+    // OO Block
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|OO>", nQ, noccA, noccA));
+    Gcorr = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
+    Gcorr->read(psio_, PSIF_DFOCC_DENS);
+    G->gemm(true, false, Jmhalf, Gcorr, 1.0, 0.0);
+    Gcorr.reset();
+    G->write(psio_, PSIF_DFOCC_DENS);
+    G.reset();
+
     // OV Block
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|OV>", nQ, noccA, nvirA));
     Gcorr = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
@@ -497,6 +506,24 @@ else if (reference_ == "UNRESTRICTED") {
     G2->write(psio_, PSIF_DFOCC_DENS);
     G2.reset();
 
+    // VV Block
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|VV>", nQ, nvirA, nvirA));
+    Gcorr = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
+    Gcorr->read(psio_, PSIF_DFOCC_DENS, true, true);
+    G->gemm(true, false, Jmhalf, Gcorr, 1.0, 0.0);
+    Gcorr.reset();
+    G->write(psio_, PSIF_DFOCC_DENS, true, true);
+    G.reset();
+
+    // oo Block
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|oo>", nQ, noccB, noccB));
+    Gcorr = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|oo)", nQ, noccB, noccB));
+    Gcorr->read(psio_, PSIF_DFOCC_DENS);
+    G->gemm(true, false, Jmhalf, Gcorr, 1.0, 0.0);
+    Gcorr.reset();
+    G->write(psio_, PSIF_DFOCC_DENS);
+    G.reset();
+
     // ov Block
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|ov>", nQ, noccB, nvirB));
     Gcorr = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|ov)", nQ, noccB, nvirB));
@@ -511,6 +538,15 @@ else if (reference_ == "UNRESTRICTED") {
     G.reset();
     G2->write(psio_, PSIF_DFOCC_DENS);
     G2.reset();
+
+    // vv Block
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|vv>", nQ, nvirB, nvirB));
+    Gcorr = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|vv)", nQ, nvirB, nvirB));
+    Gcorr->read(psio_, PSIF_DFOCC_DENS, true, true);
+    G->gemm(true, false, Jmhalf, Gcorr, 1.0, 0.0);
+    Gcorr.reset();
+    G->write(psio_, PSIF_DFOCC_DENS, true, true);
+    G.reset();
 
     // Free J-1/2
     Jmhalf.reset();
