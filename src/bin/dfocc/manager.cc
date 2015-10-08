@@ -2813,7 +2813,7 @@ void DFOCC::mp2_5_manager()
 
 	outfile->Printf("\n");
 	outfile->Printf("\t======================================================================= \n");
-	outfile->Printf("\t================ MP3 FINAL RESULTS ==================================== \n");
+	outfile->Printf("\t================ MP2.5 FINAL RESULTS ================================== \n");
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
@@ -2821,19 +2821,18 @@ void DFOCC::mp2_5_manager()
 	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
 	if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
 	if (reference_ == "UNRESTRICTED") outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
-	outfile->Printf("\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3-Emp2);
-	outfile->Printf("\tDF-MP2.5 Correlation Energy (a.u.) : %20.14f\n", (Emp2 - Escf) + 0.5 * (Emp3-Emp2));
-	outfile->Printf("\tDF-MP2.5 Total Energy (a.u.)       : %20.14f\n", 0.5 * (Emp3+Emp2));
-	outfile->Printf("\tDF-MP3 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
-	outfile->Printf("\tDF-MP3 Total Energy (a.u.)         : %20.14f\n", Emp3);
+	outfile->Printf("\tDF-MP3 Correlation Energy (a.u.)   : %20.14f\n", (Emp2-Escf) + 2.0*(Emp3-Emp2));
+	outfile->Printf("\tDF-MP3 Total Energy (a.u.)         : %20.14f\n", Emp2 + 2.0*(Emp3-Emp2));
+	outfile->Printf("\tDF-MP2.5 Correlation Energy (a.u.) : %20.14f\n", Ecorr);
+	outfile->Printf("\tDF-MP2.5 Total Energy (a.u.)       : %20.14f\n", Emp3);
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\n");
 	
 	Process::environment.globals["CURRENT ENERGY"] = Emp3;
         Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3 - Escf;
-	Process::environment.globals["DF-MP3 TOTAL ENERGY"] = Emp3;
-        Process::environment.globals["DF-MP3 CORRELATION ENERGY"] = Emp3 - Escf;
+	Process::environment.globals["DF-MP2.5 TOTAL ENERGY"] = Emp3;
+        Process::environment.globals["DF-MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
 	Emp3L=Emp3;
 
         // Compute Analytic Gradients

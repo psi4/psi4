@@ -87,6 +87,7 @@ procedures = {
             'df-ccsdl'      : run_dfccsdl,
             'df-ccdl'       : run_dfccdl,
             'df-mp3'        : run_dfmp3,
+            'df-mp2.5'      : run_dfmp2p5,
             'cd-ccsd'       : run_cdccsd,
             'cd-ccsd(t)'    : run_cdccsd_t,
             'cd-ccsd(at)'   : run_cdccsd_at,
@@ -94,6 +95,7 @@ procedures = {
             'cd-omp3'       : run_cdomp3,
             'cd-omp2.5'     : run_cdomp2p5,
             'cd-mp3'        : run_cdmp3,
+            'cd-mp2.5'      : run_cdmp2p5,
             'cd-omp2'       : run_cdomp2,
             'cd-mp2'        : run_cdmp2,
             'sapt0'         : run_sapt,
@@ -213,6 +215,7 @@ procedures = {
             'df-omp3'       : run_dfomp3_gradient,
             'df-mp3'        : run_dfmp3_gradient,
             'df-omp2.5'     : run_dfomp2p5_gradient,
+            'df-mp2.5'      : run_dfmp2p5_gradient,
 #            'efp'           : run_efp_gradient,
             'hf'            : run_scf_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below
