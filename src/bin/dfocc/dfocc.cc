@@ -366,7 +366,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP3" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP3   \n");
    else if (wfn_type_ == "QCHF") outfile->Printf("                      QCHF   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision September 9, 2015\n") ;
+   outfile->Printf("              Latest Revision October 7, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
@@ -386,7 +386,7 @@ void DFOCC::title_grad()
    outfile->Printf("            A General Analytic Gradients Code   \n");
    outfile->Printf("               for Density-Fitted Methods       \n");
    outfile->Printf("                   by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision May 11, 2015\n") ;
+   outfile->Printf("              Latest Revision October 7, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
