@@ -302,11 +302,9 @@ else if (reference_ == "UNRESTRICTED") {
     GFvvA->gemm(true, false, HvvA, G1c_vvA, 1.0, 0.0);
     GFvvB->gemm(true, false, HvvB, G1c_vvB, 1.0, 0.0);
 
- if (reference == "ROHF" && orb_opt_ == "FALSE") {
     // Fab = \sum_{m} h_am G_mb
     GFvvA->gemm(false, false, HvoA, G1c_ovA, 1.0, 1.0);
     GFvvB->gemm(false, false, HvoB, G1c_ovB, 1.0, 1.0);
- }
 
     // Fab += \sum_{Q} \sum_{m} G_mb^Q b_ma^Q 
     // alpha spin
@@ -324,6 +322,25 @@ else if (reference_ == "UNRESTRICTED") {
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
     GFvvB->contract(true, false, nvirB, nvirB, nQ * noccB, K, G, 1.0, 1.0);
+    G.reset();
+    K.reset();
+
+    // Fab += \sum_{Q} \sum_{e} G_eb^Q b_ea^Q 
+    // alpha spin
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
+    GFvvA->contract(true, false, nvirA, nvirA, nQ * nvirA, K, G, 1.0, 1.0);
+    G.reset();
+    K.reset();
+
+    // beta spin
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|vv)", nQ, nvirB, nvirB));
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|vv)", nQ, nvirB, nvirB));
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
+    GFvvB->contract(true, false, nvirB, nvirB, nQ * nvirB, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
 

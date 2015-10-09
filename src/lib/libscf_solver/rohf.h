@@ -55,7 +55,7 @@ protected:
     void form_D();
     double compute_initial_E();
     double compute_E();
-    virtual void stability_analysis();
+    virtual bool stability_analysis();
     void semicanonicalize();
 
     void form_G();

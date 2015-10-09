@@ -34,7 +34,7 @@ write_to_cloc_list("${to_count}")
 # Build static library
 add_library(scf_solver STATIC ${sources_list})
 # Specify dependencies for the library (if any)
-add_dependencies(scf_solver mints)
+add_dependencies(scf_solver mints psipcm)
 if(BUILD_JK_FACTORY)
   add_dependencies(scf_solver GTFockInt GTFockCInt)
 endif()

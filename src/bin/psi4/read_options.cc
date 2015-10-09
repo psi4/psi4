@@ -208,7 +208,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add("CUBIC_GRID_OVERAGE", new ArrayType());
   /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
   options.add("CUBIC_GRID_SPACING", new ArrayType());
-
   /* How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc */
   options.add_str("PRINT_NOONS","3");
 
@@ -1905,7 +1904,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("ONEPDM_GRID_STEPSIZE", 0.1);
     /* Do Write NOs (molden) */
     options.add_bool("WRITE_NOS",false);
-
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Solves for the Lagrange multipliers, which are needed whenever coupled cluster properties
@@ -3043,7 +3041,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Type of the SOS method -*/
     options.add_str("SOS_TYPE","SOS","SOS SOSPI");
     /*- Type of the wavefunction. -*/
-    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OLCCD DF-OMP2.5 DFGRAD DF-CCSD DF-CCD DF-CCSD(T) DF-CCSD(AT) CD-OMP2 CD-CCSD CD-CCD CD-CCSD(T) CD-CCSD(AT) CD-OMP3 QCHF");
+    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OLCCD DF-OMP2.5 DFGRAD DF-CCSD DF-CCD DF-CCSD(T) DF-CCSD(AT) CD-OMP2 CD-CCSD CD-CCD CD-CCSD(T) CD-CCSD(AT) CD-OMP3 CD-OMP2.5 QCHF");
     /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
     options.add_str("CEPA_TYPE","CEPA(0)","CEPA(0)");
     /*- The algorithm that used for 4 index MO TEIs. -*/
