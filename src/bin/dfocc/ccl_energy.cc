@@ -99,10 +99,147 @@ else if (reference_ == "UNRESTRICTED") {
     */
 
     timer_off("CCL Energy");
-} // end mp2_energy
+} // end mp2l_energy
 
 //=======================================================
-//          CC Energy
+//          MP3-L Energy
+//=======================================================          
+void DFOCC::mp3l_energy()
+{   
+
+    timer_on("CCL Energy");
+
+    SharedTensor2d G, K;
+
+    EcorrL = 0.0;
+    double Eoei = 0.0;
+    double Eoo = 0.0;
+    double Eov = 0.0;
+    double Evv = 0.0;
+    Emp3L_old = Emp3L;
+
+if (reference_ == "RESTRICTED") {
+    // DE = \sum_{p,q} G_pq f_pq
+    EcorrL += G1c->vector_dot(FockA);
+    Eoei = EcorrL;
+
+    // DE += 1/2 \sum_{Q} \sum_{i,j} G_ij^Q b_ij^Q
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
+    G->read(psio_, PSIF_DFOCC_DENS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA));
+    K->read(psio_, PSIF_DFOCC_INTS);
+    EcorrL += 0.5 * G->vector_dot(K);
+    G.reset();
+    K.reset();
+    Eoo = EcorrL - Eoei;
+
+    // DE += \sum_{Q} \sum_{i,a} G_ia^Q b_ia^Q
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
+    G->read(psio_, PSIF_DFOCC_DENS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA));
+    K->read(psio_, PSIF_DFOCC_INTS);
+    EcorrL += G->vector_dot(K);
+    G.reset();
+    K.reset();
+    Eov = EcorrL - Eoei - Eoo;
+
+    // DE += 1/2 \sum_{Q} \sum_{a,b} G_ab^Q b_ab^Q
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
+    EcorrL += 0.5 * G->vector_dot(K);
+    G.reset();
+    K.reset();
+    Evv = EcorrL - Eoei - Eoo - Eov;
+
+}// end if (reference_ == "RESTRICTED")
+
+else if (reference_ == "UNRESTRICTED") {
+    // DE = \sum_{p,q} G_pq f_pq
+    EcorrL += G1cA->vector_dot(FockA);
+    EcorrL += G1cB->vector_dot(FockB);
+    Eoei = EcorrL;
+
+    // DE += 1/2 \sum_{Q} \sum_{I,J} G_IJ^Q b_IJ^Q
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
+    G->read(psio_, PSIF_DFOCC_DENS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA));
+    K->read(psio_, PSIF_DFOCC_INTS);
+    EcorrL += 0.5 * G->vector_dot(K);
+    G.reset();
+    K.reset();
+
+    // DE += 1/2 \sum_{Q} \sum_{i,j} G_ij^Q b_ij^Q
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|oo)", nQ, noccB, noccB));
+    G->read(psio_, PSIF_DFOCC_DENS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|oo)", nQ, noccB, noccB));
+    K->read(psio_, PSIF_DFOCC_INTS);
+    EcorrL += 0.5 * G->vector_dot(K);
+    G.reset();
+    K.reset();
+    Eoo = EcorrL - Eoei;
+
+    // DE += \sum_{Q} \sum_{I,A} G_IA^Q b_IA^Q
+    G2c_ovA = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA * nvirA));
+    bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
+    G2c_ovA->read(psio_, PSIF_DFOCC_DENS);
+    bQovA->read(psio_, PSIF_DFOCC_INTS);
+    EcorrL += G2c_ovA->vector_dot(bQovA);
+    G2c_ovA.reset();
+    bQovA.reset();
+
+    // DE += \sum_{Q} \sum_{i,a} G_ia^Q b_ia^Q
+    G2c_ovB = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|ov)", nQ, noccB * nvirB));
+    bQovB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB));
+    G2c_ovB->read(psio_, PSIF_DFOCC_DENS);
+    bQovB->read(psio_, PSIF_DFOCC_INTS);
+    EcorrL += G2c_ovB->vector_dot(bQovB);
+    G2c_ovB.reset();
+    bQovB.reset();
+    Eov = EcorrL - Eoei - Eoo;
+
+    // DE += 1/2 \sum_{Q} \sum_{A,B} G_AB^Q b_AB^Q
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
+    EcorrL += 0.5 * G->vector_dot(K);
+    G.reset();
+    K.reset();
+
+    // DE += 1/2 \sum_{Q} \sum_{a,b} G_ab^Q b_ab^Q
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|vv)", nQ, nvirB, nvirB));
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|vv)", nQ, nvirB, nvirB));
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
+    EcorrL += 0.5 * G->vector_dot(K);
+    G.reset();
+    K.reset();
+    Evv = EcorrL - Eoei - Eoo - Eov;
+
+}// else if (reference_ == "UNRESTRICTED")
+
+    Emp3L = Eref + EcorrL;
+    DE = Emp3L - Emp3L_old;
+    
+    /*
+    outfile->Printf("\n\tEnergies re-computed from CC density: \n");
+    outfile->Printf("\t------------------------------------- \n");
+    outfile->Printf("\tReference Energy (a.u.)            : %20.14f\n", Eref);
+    outfile->Printf("\tOne-Electron Energy (a.u.)         : %20.14f\n", Eoei);
+    outfile->Printf("\tOO Energy (a.u.)                   : %20.14f\n", Eoo);
+    outfile->Printf("\tOV Energy (a.u.)                   : %20.14f\n", Eov);
+    outfile->Printf("\tVV Energy (a.u.)                   : %20.14f\n", Evv);
+    outfile->Printf("\tLagrangian Corr. Energy (a.u.)     : %20.14f\n", EcorrL);
+    outfile->Printf("\tLagrangian Total Energy (a.u.)     : %20.14f\n", EccsdL);
+    */
+    
+    timer_off("CCL Energy");
+} // end mp3l_energy
+
+//=======================================================
+//          CCL Energy
 //=======================================================          
 void DFOCC::ccl_energy()
 {   
@@ -160,6 +297,25 @@ else if (reference_ == "UNRESTRICTED") {
     EcorrL += G1cB->vector_dot(FockB);
     Eoei = EcorrL;
 
+    // DE += 1/2 \sum_{Q} \sum_{I,J} G_IJ^Q b_IJ^Q
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
+    G->read(psio_, PSIF_DFOCC_DENS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA));
+    K->read(psio_, PSIF_DFOCC_INTS);
+    EcorrL += 0.5 * G->vector_dot(K);
+    G.reset();
+    K.reset();
+
+    // DE += 1/2 \sum_{Q} \sum_{i,j} G_ij^Q b_ij^Q
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|oo)", nQ, noccB, noccB));
+    G->read(psio_, PSIF_DFOCC_DENS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|oo)", nQ, noccB, noccB));
+    K->read(psio_, PSIF_DFOCC_INTS);
+    EcorrL += 0.5 * G->vector_dot(K);
+    G.reset();
+    K.reset();
+    Eoo = EcorrL - Eoei;
+
     // DE += \sum_{Q} \sum_{I,A} G_IA^Q b_IA^Q
     G2c_ovA = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA * nvirA));
     bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
@@ -177,13 +333,33 @@ else if (reference_ == "UNRESTRICTED") {
     EcorrL += G2c_ovB->vector_dot(bQovB);
     G2c_ovB.reset();
     bQovB.reset();
-    Eov = EcorrL - Eoei;
+    Eov = EcorrL - Eoei - Eoo;
+
+    // DE += 1/2 \sum_{Q} \sum_{A,B} G_AB^Q b_AB^Q
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
+    EcorrL += 0.5 * G->vector_dot(K);
+    G.reset();
+    K.reset();
+
+    // DE += 1/2 \sum_{Q} \sum_{a,b} G_ab^Q b_ab^Q
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|vv)", nQ, nvirB, nvirB));
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|vv)", nQ, nvirB, nvirB));
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
+    EcorrL += 0.5 * G->vector_dot(K);
+    G.reset();
+    K.reset();
+    Evv = EcorrL - Eoei - Eoo - Eov;
 
 }// else if (reference_ == "UNRESTRICTED")
 
     EccsdL = Eref + EcorrL;
     outfile->Printf("\n\tEnergies re-computed from CC density: \n");
     outfile->Printf("\t------------------------------------- \n");
+    outfile->Printf("\tReference Energy (a.u.)            : %20.14f\n", Eref);
     outfile->Printf("\tOne-Electron Energy (a.u.)         : %20.14f\n", Eoei);
     outfile->Printf("\tOO Energy (a.u.)                   : %20.14f\n", Eoo);
     outfile->Printf("\tOV Energy (a.u.)                   : %20.14f\n", Eov);
