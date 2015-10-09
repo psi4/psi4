@@ -1023,15 +1023,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       // => CubicScalarGrid options <= //
 
-      /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/ 
+      /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
       options.add("CUBIC_GRID_SPACING", new ArrayType());
-      /*- CubicScalarGrid overages in bohr [O_X, O_Y, O_Z]. Defaults to 2.0 bohr each. -*/ 
+      /*- CubicScalarGrid overages in bohr [O_X, O_Y, O_Z]. Defaults to 2.0 bohr each. -*/
       options.add("CUBIC_GRID_OVERAGE", new ArrayType());
       /*- CubicScalarGrid basis cutoff. !expert -*/
       options.add_double("CUBIC_BASIS_TOLERANCE", 1.0E-12);
       /*- CubicScalarGrid maximum number of grid points per evaluation block. !expert -*/
       options.add_int("CUBIC_BLOCK_MAX_POINTS",1000);
-  
+
       // => Scalar Field Plotting Options <= //
 
       /*- Plot a scalar-field analysis -*/
@@ -1051,14 +1051,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("LOCAL_IBO_CONDITION", 1.0E-7);
       /*- IBO localization metric power -*/
       options.add_int("LOCAL_IBO_POWER", 4);
-      /*- MinAO Basis for IBO !expert -*/ 
+      /*- MinAO Basis for IBO !expert -*/
       options.add_str("MINAO_BASIS", "CC-PVTZ-MINAO");
       /*- IBO Stars procedure -*/
       options.add_bool("LOCAL_IBO_USE_STARS", false);
       /*- IBO Charge metric for classification as Pi -*/
       options.add_double("LOCAL_IBO_STARS_COMPLETENESS", 0.90);
       /*- IBO Centers for Pi Degeneracy -*/
-      options.add("LOCAL_IBO_STARS", new ArrayType());   
+      options.add("LOCAL_IBO_STARS", new ArrayType());
   }
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs density cumulant functional theory

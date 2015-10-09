@@ -176,6 +176,12 @@ endif()
 # MKL_Free_Buffers NEEDS TO BE TESTED
 check_function_exists(MKL_Free_Buffers HAVE_MKL)
 
+# Check for mm_malloc.h for the _mm_malloc and _mm_free aligned memory allocation
+check_include_files(mm_malloc.h HAVE_MM_MALLOC_H)
+if(HAVE_MM_MALLOC_H)
+    add_definitions(-DHAVE_MM_MALLOC_H)
+endif()
+
 # Detection of erf, __builtin_expect, __builtin_prefetch, __builtin_constant_p
 # This step is skipped for GCC and Clang: they are all defined but for some reasons not detected by CMake
 if(CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)

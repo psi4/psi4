@@ -46,7 +46,7 @@ DFOCC::~DFOCC()
 void DFOCC::common_init()
 {
 
-    print_=options_.get_int("PRINT"); 
+    print_=options_.get_int("PRINT");
     if (print_ > 0) options_.print();
 
     cc_maxiter=options_.get_int("CC_MAXITER");
@@ -117,14 +117,14 @@ void DFOCC::common_init()
     }
     else {
         double temp;
-        temp = (-0.9 * log10(tol_Eod)) - 1.6; 
+        temp = (-0.9 * log10(tol_Eod)) - 1.6;
         if (temp < 4.0) {
             temp = 4.0;
         }
         tol_grad = pow(10.0, -temp);
-        //tol_grad = 100.0*tol_Eod; 
+        //tol_grad = 100.0*tol_Eod;
         outfile->Printf("\tRMS orbital gradient is changed to : %12.2e\n", tol_grad);
-        
+
     }
 
     // Determine the MAXIMUM MOGRAD CONVERGENCE
@@ -140,9 +140,9 @@ void DFOCC::common_init()
         mograd_max = pow(10.0, -temp2);
         //mograd_max = 10.0*tol_grad;
         outfile->Printf("\tMAX orbital gradient is changed to : %12.2e\n", mograd_max);
-        
+
     }
-    } // end if (orb_opt_ == "TRUE") 
+    } // end if (orb_opt_ == "TRUE")
 
     // Figure out REF
     if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
@@ -164,7 +164,7 @@ void DFOCC::common_init()
     }
     else {
          if (reference_ == "RESTRICTED" && freeze_core_ == "FALSE") {
-             hess_type = "HF"; 
+             hess_type = "HF";
          }
          else if (reference_ == "RESTRICTED" && freeze_core_ == "TRUE") {
              hess_type = "APPROX_DIAG";
@@ -172,15 +172,15 @@ void DFOCC::common_init()
          else if (reference_ == "UNRESTRICTED") {
              hess_type = "APPROX_DIAG";
              outfile->Printf("\tMO Hessian type is changed to 'APPROX_DIAG'\n");
-             
+
          }
     }
 
-    // Regularization 
+    // Regularization
     if (regularization == "TRUE") {
         outfile->Printf("\n\tNOTE: A regularization procedure will be applied to the method.\n");
         outfile->Printf("\tThe regularization parameter is : %12.2f mh\n", reg_param * 1000.0);
-        
+
     }
 
     cutoff = pow(10.0,-exp_cutoff);
@@ -236,9 +236,9 @@ if (reference_ == "RESTRICTED") {
         if (nfrzc > 0) AooA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <I|FC>", naoccA, nfrzc));
     }
 
-        outfile->Printf("\tMO spaces... \n\n"); 
+        outfile->Printf("\tMO spaces... \n\n");
         outfile->Printf( "\t FC   OCC   VIR   FV \n");
-        outfile->Printf( "\t----------------------\n");                                                 
+        outfile->Printf( "\t----------------------\n");
         outfile->Printf( "\t%3d  %3d   %3d  %3d\n", nfrzc, naoccA, navirA, nfrzv);
 
 }  // end if (reference_ == "RESTRICTED")
@@ -330,14 +330,14 @@ else if (reference_ == "UNRESTRICTED") {
             G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
         }
 
-        outfile->Printf("\tMO spaces... \n\n"); 
+        outfile->Printf("\tMO spaces... \n\n");
         outfile->Printf( "\t FC   AOCC   BOCC  AVIR   BVIR   FV \n");
         outfile->Printf( "\t------------------------------------------\n");
         outfile->Printf( "\t%3d   %3d   %3d   %3d    %3d   %3d\n", nfrzc, naoccA, naoccB, navirA, navirB, nfrzv);
-       
+
 }// else if (reference_ == "UNRESTRICTED")
-	
-        //outfile->Printf("\tI am here.\n"); 
+
+        //outfile->Printf("\tI am here.\n");
 
 }// end common_init
 
@@ -367,7 +367,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP2.5" && orb_opt_ == "TRUE") outfile->Printf("                   CD-OMP2.5 (CD-OO-MP2.5)   \n");
    else if (wfn_type_ == "CD-OMP2.5" && orb_opt_ == "FALSE") outfile->Printf("                       CD-MP2.5   \n");
    else if (wfn_type_ == "QCHF") outfile->Printf("                      QCHF   \n");
-   outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
+   outfile->Printf("              Program Written by Ugur Bozkaya\n") ;
    outfile->Printf("              Latest Revision October 8, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
@@ -387,7 +387,7 @@ void DFOCC::title_grad()
    outfile->Printf("                         DFGRAD   \n");
    outfile->Printf("            A General Analytic Gradients Code   \n");
    outfile->Printf("               for Density-Fitted Methods       \n");
-   outfile->Printf("                   by Ugur Bozkaya\n") ; 
+   outfile->Printf("                   by Ugur Bozkaya\n") ;
    outfile->Printf("              Latest Revision October 7, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
@@ -407,7 +407,7 @@ void DFOCC::lambda_title()
    if (wfn_type_ == "DF-CCSD" || wfn_type_ == "CD-CCSD") outfile->Printf("                       DF-CCSD-Lambda   \n");
    else if (wfn_type_ == "DF-CCSD(AT)" || wfn_type_ == "CD-CCSD(AT)") outfile->Printf("                       DF-CCSD-Lambda   \n");
    else if (wfn_type_ == "DF-CCD" || wfn_type_ == "CD-CCD") outfile->Printf("                       DF-CCD-Lambda   \n");
-   outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
+   outfile->Printf("              Program Written by Ugur Bozkaya\n") ;
    outfile->Printf("              Latest Revision September 4, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
@@ -425,7 +425,7 @@ void DFOCC::pt_title()
    outfile->Printf("\n");
    if (wfn_type_ == "DF-CCSD(T)" || wfn_type_ == "CD-CCSD(T)") outfile->Printf("                       DF-CCSD(T)   \n");
    else if (wfn_type_ == "DF-CCD(T)" || wfn_type_ == "CD-CCD(T)") outfile->Printf("                       DF-CCSD(T)   \n");
-   outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
+   outfile->Printf("              Program Written by Ugur Bozkaya\n") ;
    outfile->Printf("              Latest Revision September 9, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
@@ -443,7 +443,7 @@ void DFOCC::pat_title()
    outfile->Printf("\n");
    if (wfn_type_ == "DF-CCSD(AT)" || wfn_type_ == "CD-CCSD(AT)") outfile->Printf("                       DF-CCSD(AT)    \n");
    else if (wfn_type_ == "DF-CCD(AT)" || wfn_type_ == "CD-CCD(AT)") outfile->Printf("                       DF-CCD(AT)  \n");
-   outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
+   outfile->Printf("              Program Written by Ugur Bozkaya\n") ;
    outfile->Printf("              Latest Revision September 9, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
@@ -462,7 +462,7 @@ void DFOCC::pdm_title()
    outfile->Printf("                         DFPDM   \n");
    outfile->Printf("              Particle Density Matrix Code   \n");
    outfile->Printf("               for Density-Fitted Methods       \n");
-   outfile->Printf("                   by Ugur Bozkaya\n") ; 
+   outfile->Printf("                   by Ugur Bozkaya\n") ;
    outfile->Printf("              Latest Revision August 17, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
@@ -473,7 +473,7 @@ void DFOCC::pdm_title()
 }//
 
 double DFOCC::compute_energy()
-{   
+{
 
         // Call the appropriate manager
         do_cd = "FALSE";
