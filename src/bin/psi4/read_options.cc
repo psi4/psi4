@@ -3009,11 +3009,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
     options.add_double("MP2_SOS_SCALE2",1.2);
     /*- CEPA opposite-spin scaling value from SCS-CCSD -*/
-    options.add_double("CEPA_OS_SCALE",1.27);
+    //options.add_double("CEPA_OS_SCALE",1.27);
     /*- CEPA same-spin scaling value from SCS-CCSD -*/
-    options.add_double("CEPA_SS_SCALE",1.13);
+    //options.add_double("CEPA_SS_SCALE",1.13);
     /*- CEPA Spin-opposite scaling (SOS) value -*/
-    options.add_double("CEPA_SOS_SCALE",1.3);
+    //options.add_double("CEPA_SOS_SCALE",1.3);
     /*- Scaling value for 3rd order energy correction (S. Grimme, Vol. 24, pp. 1529, J. Comput. Chem.) -*/
     options.add_double("E3_SCALE",0.25);
     /*- OO scaling factor used in MSD -*/
@@ -3044,7 +3044,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Type of the wavefunction. -*/
     options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OLCCD DF-OMP2.5 DFGRAD DF-CCSD DF-CCD DF-CCSD(T) DF-CCSD(AT) QCHF");
     /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
-    options.add_str("CEPA_TYPE","CEPA(0)","CEPA(0)");
+    //options.add_str("CEPA_TYPE","CEPA(0)","CEPA(0)");
     /*- The algorithm that used for 4 index MO TEIs. -*/
     //options.add_str("CONV_TEI_TYPE","DIRECT","DIRECT DISK");
     /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
