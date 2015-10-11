@@ -3186,13 +3186,23 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("COMPUTE_MP4_TRIPLES", false);
       /*- Do use MP2 NOs to truncate virtual space for QCISD/CCSD and (T)? -*/
       options.add_bool("NAT_ORBS", false);
-      /*- Cutoff for occupation of MP2 NO orbitals in FNO-QCISD/CCSD(T)
-          ( only valid if |fnocc__nat_orbs| = true ) -*/
+      /*- Cutoff for occupation of MP2 virtual NOs in FNO-QCISD/CCSD(T).  
+          Virtual NOs with occupations less than |fnocc__occ_tolerance| 
+          will be discarded. This option is only used if |fnocc__nat_orbs| = 
+          true. -*/
       options.add_double("OCC_TOLERANCE", 1.0e-6);
+      /*- Cutoff for occupation of MP2 virtual NOs in FNO-QCISD/CCSD(T).  
+          The number of virtual NOs is chosen so the occupation of the 
+          truncated virtual space is |fnocc__occ_percentage| percent of
+          occupation of the original MP2 virtual space. This option is only 
+          used if |fnocc__nat_orbs| = true. This keyword overrides 
+          |fnocc__occ_tolerance|. -*/
+      options.add_double("OCC_PERCENTAGE", 99.0);
       /*- An array containing the number of virtual natural orbitals per irrep
       (in Cotton order) so a user can specify the number of retained
       natural orbitals rather than determining them with |fnocc__occ_tolerance|.
-      This keyword overrides |fnocc__occ_tolerance|. -*/
+      This keyword overrides |fnocc__occ_tolerance| and 
+      |fnocc__occ_fraction|. -*/
       options.add("ACTIVE_NAT_ORBS", new ArrayType());
       /*- Do SCS-MP2? -*/
       options.add_bool("SCS_MP2", false);
