@@ -79,6 +79,7 @@ procedures = {
             'dfocc'         : run_dfocc,
             'df-omp3'       : run_dfomp3,
             'df-omp2.5'     : run_dfomp2p5,
+            'df-olccd'      : run_dfolccd,
             'qchf'          : run_qchf,
             'df-ccsd2'      : run_dfccsd,
             'ri-ccsd(t)'    : run_dfccsd_t,
@@ -88,6 +89,7 @@ procedures = {
             'df-ccdl'       : run_dfccdl,
             'df-mp3'        : run_dfmp3,
             'df-mp2.5'      : run_dfmp2p5,
+            'df-lccd'       : run_dflccd,
             'cd-ccsd'       : run_cdccsd,
             'cd-ccsd(t)'    : run_cdccsd_t,
             'cd-ccsd(at)'   : run_cdccsd_at,
@@ -95,8 +97,11 @@ procedures = {
             'cd-omp3'       : run_cdomp3,
             'cd-omp2.5'     : run_cdomp2p5,
             'cd-mp3'        : run_cdmp3,
+            'cd-mp2.5'      : run_cdmp2p5,
             'cd-omp2'       : run_cdomp2,
             'cd-mp2'        : run_cdmp2,
+            'cd-olccd'      : run_cdolccd,
+            'cd-lccd'       : run_cdlccd,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
@@ -350,39 +355,39 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-omp2                 | density-fitted orbital-optimized MP2 :ref:`[manual] <sec:dfocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
+    | df-omp3                 | density-fitted orbital-optimized MP3 :ref:`[manual] <sec:dfocc>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-omp2.5               | density-fitted orbital-optimized MP2.5 :ref:`[manual] <sec:dfocc>`                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | cd-omp2                 | cholesky decomposed orbital-optimized MP2 :ref:`[manual] <sec:dfocc>`                 |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cd-omp3                 | cholesky decomposed orbital-optimized MP3 :ref:`[manual] <sec:dfocc>`                 |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cd-omp2.5               | cholesky decomposed orbital-optimized MP2.5 :ref:`[manual] <sec:dfocc>`               |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cd-mp2                  | cholesky decomposed MP2 :ref:`[manual] <sec:dfocc>`                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | df-ccsd2                | density-fitted CCSD from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
+    | cd-mp3                  | cholesky decomposed MP3 :ref:`[manual] <sec:dfocc>`                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | dfccsd2                 | density-fitted CCSD from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
+    | cd-mp2.5                | cholesky decomposed MP2.5 :ref:`[manual] <sec:dfocc>`                                 |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-ccsd2                | density-fitted CCSD from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ri-ccsd(t)              | density-fitted CCSD(T) from DFOCC module :ref:`[manual] <sec:dfocc>`                  |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | riccsd(t)               | density-fitted CCSD(T) from DFOCC module :ref:`[manual] <sec:dfocc>`                  |
-    +-------------------------+---------------------------------------------------------------------------------------+
     | df-ccsd(at)             | density-fitted Lambda-CCSD(T) from DFOCC module :ref:`[manual] <sec:dfocc>`           |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | dfccsd(at)              | density-fitted Lambda-CCSD(T) from DFOCC module :ref:`[manual] <sec:dfocc>`           |
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-ccd                  | density-fitted CCD from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-mp3                  | density-fitted MP3 from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | dfmp3                   | density-fitted MP3 from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
+    | df-mp2.5                | density-fitted MP2.5 from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | qchf                    | density-fitted QC-HF from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | dfccd                   | density-fitted CCD from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
-    +-------------------------+---------------------------------------------------------------------------------------+
     | df-ccsdl                | density-fitted CCSDL from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | dfccsdl                 | density-fitted CCSDL from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
-    +-------------------------+---------------------------------------------------------------------------------------+
     | df-ccdl                 | density-fitted CCDL from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | dfccdl                  | density-fitted CCDL from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cepa(0)                 | coupled electron pair approximation variant 0 :ref:`[manual] <sec:fnocepa>`           |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -1063,9 +1068,19 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | eom-ccsd                | equation of motion (EOM) CCSD :ref:`[manual] <sec:eomcc>`                             |
     +-------------------------+---------------------------------------------------------------------------------------+
+    | df-omp2                 | density-fitted orbital-optimized MP2 :ref:`[manual] <sec:dfocc>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-omp3                 | density-fitted orbital-optimized MP3 :ref:`[manual] <sec:dfocc>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-omp2.5               | density-fitted orbital-optimized MP2.5 :ref:`[manual] <sec:dfocc>`                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | df-ccsd                 | density-fitted CCSD (DF-CCSD) :ref:`[manual] <sec:dfocc>`                             |
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-ccd                  | density-fitted CCD (DF-CCD) :ref:`[manual] <sec:dfocc>`                               |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-mp3                  | density-fitted MP3 from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-mp2.5                | density-fitted MP2.5 from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | efp                     | efp-only optimizations                                                                |
     +-------------------------+---------------------------------------------------------------------------------------+

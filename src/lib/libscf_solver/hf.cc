@@ -45,7 +45,9 @@
 #include <liboptions/liboptions_python.h>
 #include <psifiles.h>
 #include <libfock/jk.h>
+#ifdef HAVE_PCMSOLVER
 #include <libpsipcm/psipcm.h>
+#endif
 #include <libpsi4util/libpsi4util.h>
 
 #include "hf.h"
