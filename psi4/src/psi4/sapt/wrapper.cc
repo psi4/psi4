@@ -45,6 +45,11 @@ PsiReturnType sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA,
 {
   tstart();
 
+  // Add a fool-proofing step in case the driver is bypassed
+  if ( Dimer->molecule()->schoenflies_symbol() != "c1" ) {
+      throw PSIEXCEPTION("SAPT can only run in C1 symmetry!\n");
+  }
+
   std::shared_ptr<PSIO> psio(new PSIO);
 
   if (options.get_str("SAPT_LEVEL") == "SAPT0") {
