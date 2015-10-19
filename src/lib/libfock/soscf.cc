@@ -1192,7 +1192,8 @@ void DiskSOMCSCF::compute_Q()
                 ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "CI TPDM (XX|XX)");
 
     global_dpd_->contract442(&TPDM, &G, &Q, 3, 3, 1.0, 0.0);
-    matrices_["Q"] = SharedMatrix(new Matrix::Matrix(&Q));
+    Matrix* Qmat = new Matrix::Matrix(&Q);
+    matrices_["Q"] = boost::shared_ptr<Matrix> (Qmat);
 
     // outfile->Printf("Printing the Q matrix\n");
     // matrices_["Q"]->print();
@@ -1209,6 +1210,7 @@ void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
     // \TPDM_{vwxy}\kappa_{mo}g_{owxy}
     // \TPDM_{vwxy}(\kappa_{wo}g_{moxy} +\kappa_{xo}g_{mwoy} + \kappa_{yo}g_{mwxo})
 
+    /*
     outfile->Printf("Init files\n");
     Uact->print();
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
@@ -1335,6 +1337,7 @@ void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
     psio_->close(PSIF_MCSCF, 1);
 
     matrices_["Qk"]->print();
+    */
 
     throw PSIEXCEPTION("DiskMCSCF::Qk: Qk does not work quite yet, check back in after the break.");
 
