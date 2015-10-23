@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import re
 
 yes = re.compile(r'^(yes|true|on|1)', re.IGNORECASE)

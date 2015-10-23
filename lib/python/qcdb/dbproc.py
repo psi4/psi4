@@ -23,6 +23,8 @@
 r"""File to
 
 """
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 import os
 import glob
@@ -30,7 +32,7 @@ import ast
 
 
 def useful():
-    print "in qcdb.useful()"
+    print("in qcdb.useful()")
     return 'qcdb successfully accessed'
 
 

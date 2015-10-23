@@ -50,37 +50,18 @@ namespace psi {
 ** Returns: none
 ** \ingroup QT
 */
-void schmidt(double **A, int rows, int cols, std::string OutFileRMR)
+void schmidt(double **A, int rows, int cols, std::string)
 {
-   double *tmp;
-   double normval, dotval;
-   int i, j;
-   register int I;
-
-   /* initialize working array */
-   tmp = init_array(cols);
-
-   /* always take the first vector (normalized) as given */
-   dot_arr(A[0], A[0], cols, &normval) ; /* normval = dot (A0 * A0) */
-   normval = sqrt(normval) ;
-
-   for (i=0; i<cols; i++) A[0][i] /= normval;
-
-   /* now, one at a time, get the new rows */
-   for (i=1; i<rows; i++) {
-      for (I=0; I<cols; I++) tmp[I] = A[i][I] ;
-      for (j=0; j<i; j++) {
-         dot_arr(A[i], A[j], cols, &dotval) ;
-         for (I=0; I<cols; I++) tmp[I] -= dotval * A[j][I];
-         }
-      dot_arr(tmp, tmp, cols, &normval);
-      normval = sqrt(normval);
-      /* outfile->Printf("\n norm[%d] = %20.15f\n",i, (1.0/normval));
-       */
-      for (I=0; I<cols; I++) A[i][I] = tmp[I] / normval;
+   double RValue;
+   for(size_t i=0;i<cols;++i){
+      dot_arr(A[i],A[i],cols,&RValue);
+      RValue=sqrt(RValue);
+      for(size_t I=0;I<cols;++I)A[i][I]/=RValue;
+      for(size_t j=i+1;j<cols;++j){
+         dot_arr(A[i],A[j],cols,&RValue);
+         for(size_t I=0;I<cols;++I)A[j][I]-=RValue*A[i][I];
       }
-
-   free(tmp);
+   }
 
 }
 

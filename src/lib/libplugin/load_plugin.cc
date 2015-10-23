@@ -51,16 +51,6 @@ plugin_info plugin_load(std::string& plugin_pathname)
         throw PSIEXCEPTION(msg.c_str());
     }
 
-    info.init_plugin = (init_plugin_t) dlsym(info.plugin_handle, "init_plugin");
-    const char *dlsym_error1 = dlerror();
-    if (dlsym_error1) {
-        dlclose(info.plugin_handle);
-
-        std::string msg = "load_plugin: Cannot find symbol: init_plugin; ";
-        msg += dlsym_error1;
-        throw PSIEXCEPTION(msg);
-    }
-
     info.read_options = (read_options_t) dlsym(info.plugin_handle, "read_options");
     const char *dlsym_error2 = dlerror();
     if (dlsym_error2) {
@@ -98,9 +88,6 @@ plugin_info plugin_load(std::string& plugin_pathname)
     Process::environment.options.set_read_globals(true);
     info.read_options(info.name, Process::environment.options);
     Process::environment.options.set_read_globals(false);
-
-    // Tell the plugin to initialize itself (found in libplugin)
-    info.init_plugin();
 
     return info;
 }

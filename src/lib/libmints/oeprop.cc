@@ -791,6 +791,9 @@ void OEProp::common_init()
     outfile->Printf( "\n\nProperties will be evaluated at %10.6f, %10.6f, %10.6f Bohr\n",
             origin_[0], origin_[1], origin_[2]);
 
+    // Determine number of NOONs to print; default is 3
+    if(options.get_str("PRINT_NOONS") == "ALL") max_noon_ = wfn_->nmo();
+    else max_noon_ = to_integer(options.get_str("PRINT_NOONS"));
 
     /*
      * Now check the symmetry of the origin; if it's off-axis we can't use symmetry for multipoles anymore
@@ -1888,9 +1891,8 @@ void OEProp::compute_wiberg_lowdin_indices()
 
 
 }
-void OEProp::compute_no_occupations(int max_num)
+void OEProp::compute_no_occupations()
 {
-
     char** labels = basisset_->molecule()->irrep_labels();
 
     outfile->Printf( "  Natural Orbital Occupations:\n\n");
@@ -1918,9 +1920,9 @@ void OEProp::compute_no_occupations(int max_num)
 
         std::sort(metric_a.begin(), metric_a.end(), std::greater<boost::tuple<double,int,int> >());
         int offset_a = wfn_->nalpha();
-        int start_occ_a = offset_a - max_num;
+        int start_occ_a = offset_a - max_noon_;
         start_occ_a = (start_occ_a < 0 ? 0 : start_occ_a);
-        int stop_vir_a = offset_a + max_num + 1;
+        int stop_vir_a = offset_a + max_noon_ + 1;
         stop_vir_a = (int)((size_t)stop_vir_a >= metric_a.size() ? metric_a.size()  : stop_vir_a);
 
         outfile->Printf( "  Alpha Occupations:\n");
@@ -1947,9 +1949,9 @@ void OEProp::compute_no_occupations(int max_num)
         std::sort(metric_b.begin(), metric_b.end(), std::greater<boost::tuple<double,int,int> >());
 
         int offset_b = wfn_->nbeta();
-        int start_occ_b = offset_b - max_num;
+        int start_occ_b = offset_b - max_noon_;
         start_occ_b = (start_occ_b < 0 ? 0 : start_occ_b);
-        int stop_vir_b = offset_b + max_num + 1;
+        int stop_vir_b = offset_b + max_noon_ + 1;
         stop_vir_b = (int)((size_t)stop_vir_b >= metric_b.size() ? metric_b.size()  : stop_vir_b);
 
         outfile->Printf( "  Beta Occupations:\n");
@@ -1981,9 +1983,9 @@ void OEProp::compute_no_occupations(int max_num)
     std::sort(metric.begin(), metric.end(), std::greater<boost::tuple<double,int,int> >());
 
     int offset = wfn_->nbeta();
-    int start_occ = offset - max_num;
+    int start_occ = offset - max_noon_;
     start_occ = (start_occ < 0 ? 0 : start_occ);
-    int stop_vir = offset + max_num + 1;
+    int stop_vir = offset + max_noon_ + 1;
     stop_vir = (int)((size_t)stop_vir >= metric.size() ? metric.size()  : stop_vir);
 
     outfile->Printf( "  Total Occupations:\n");

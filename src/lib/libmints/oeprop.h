@@ -113,6 +113,8 @@ protected:
     /// Print header
     virtual void print_header() = 0;
 
+    int max_noon_ = 3;
+
 public:
 
     /// Build a Prop object with C, epsilon, and restricted buit from wfn
@@ -254,7 +256,7 @@ protected:
     /// Compute Wiberg Bond Indices using Lowdin Orbitals (symmetrically orthogonal basis)
     void compute_wiberg_lowdin_indices();
     /// Compute/display natural orbital occupations around the bandgap. Displays max_num above and below the bandgap
-    void compute_no_occupations(int max_num = 3);
+    void compute_no_occupations();
     /// Compute electric field and electric field gradients
     void compute_electric_field_and_gradients();
     /// Compute electrostatic potentials at the nuclei

@@ -143,7 +143,6 @@ namespace dmrg       { PsiReturnType dmrg(Options&);     }
 namespace fnocc { PsiReturnType fnocc(Options&); }
 namespace efp { PsiReturnType efp_init(Options&); }
 namespace efp { PsiReturnType efp_set_options(); }
-namespace stable { PsiReturnType stability(Options&); }
 namespace occwave { PsiReturnType occwave(Options&); }
 namespace dfoccwave { PsiReturnType dfoccwave(Options&); }
 namespace adc { PsiReturnType adc(Options&); }
@@ -227,12 +226,6 @@ void py_psi_prepare_options_for_module(std::string const& name)
     }
     // Now we've read in the defaults, make sure that user-specified options are recognized by the current module
     Process::environment.options.validate_options();
-}
-
-int py_psi_stability()
-{
-    py_psi_prepare_options_for_module("STABILITY");
-    return stable::stability(Process::environment.options);
 }
 
 int py_psi_optking()
@@ -742,12 +735,20 @@ double py_psi_thermo()
 
 char const *py_psi_version()
 {
+#ifdef PSI_VERSION
     return PSI_VERSION;
+#else
+    return "";
+#endif
 }
 
 char const *py_psi_git_version()
 {
+#ifdef GIT_VERSION
     return GIT_VERSION;
+#else
+    return "";
+#endif
 }
 
 void py_psi_clean()
@@ -1348,7 +1349,7 @@ bool psi4_python_module_initialize()
 #if PY_MAJOR_VERSION == 2
     PY_TRY(str    , PyString_FromString(psiDataDirWithPython.c_str()));
 #else
-    PY_TRY(str    , PyBytes_FromString(psiDataDirWithPython.c_str()));
+    PY_TRY(str    , PyUnicode_FromString(psiDataDirWithPython.c_str()));
 #endif
     PyList_Append(path, str);
     Py_DECREF(str);
@@ -1378,7 +1379,11 @@ void psi4_python_module_finalize()
 void translate_psi_exception(const PsiException& e)
 {
 #ifdef DEBUG
+#if PY_MAJOR_VERSION == 2
     PyObject *message = PyString_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
+#else
+    PyObject *message = PyUnicode_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
+#endif
     PyErr_SetObject(PyExc_RuntimeError, message);
     Py_DECREF(message);
 #else
@@ -1656,7 +1661,6 @@ BOOST_PYTHON_MODULE (psi4)
     def("displace_atom", py_psi_displace_atom, "Displaces one coordinate of single atom.");
     def("sapt", py_psi_sapt, "Runs the symmetry adapted perturbation theory code.");
     def("fisapt", py_psi_fisapt, "Runs the functional-group intramolecular symmetry adapted perturbation theory code.");
-    def("stability", py_psi_stability, "Runs the (experimental version) of HF stability analysis.");
     def("psimrcc", py_psi_psimrcc, "Runs the multireference coupled cluster code.");
     def("optking", py_psi_optking, "Runs the geometry optimization / frequency analysis code.");
     def("transqt", py_psi_transqt, "Runs the (deprecated) transformation code.");
@@ -1765,7 +1769,7 @@ void Python::run(FILE *input)
 #if PY_MAJOR_VERSION == 2
             PY_TRY(str, PyString_FromString((*tok_iter).c_str()));
 #else
-            PY_TRY(str    , PyBytes_FromString((*tok_iter).c_str()));
+            PY_TRY(str    , PyUnicode_FromString((*tok_iter).c_str()));
 #endif
             PyList_Append(path, str);
         }

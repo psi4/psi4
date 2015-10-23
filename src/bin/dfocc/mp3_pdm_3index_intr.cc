@@ -80,7 +80,7 @@ if (reference_ == "RESTRICTED") {
     T2 = SharedTensor2d(new Tensor2d("T2_2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     T2->read_symm(psio_, PSIF_DFOCC_AMPS);
 
-    // G_mi += \sum_{n,e,f} U_mn^ef(1) L_in^ef(2) = U(mn,ef)(1) L(in,ef)(2)
+    // G_mi += \sum_{n,e,f} U_mn^ef(1) L_in^ef(2) = U(mn,ef)(1) L(in,ef)(2) : MP3
     U = SharedTensor2d(new Tensor2d("U2_1 (IA|JB)", naoccA, navirA, naoccA, navirA));
     ccsd_u2_amps(U,T1);
     T = SharedTensor2d(new Tensor2d("U2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
@@ -89,10 +89,22 @@ if (reference_ == "RESTRICTED") {
     L = SharedTensor2d(new Tensor2d("T2_2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     L->sort(1324, T2, 1.0, 0.0);
     T2.reset();
-    GijA->contract(false, true, naoccA, naoccA, naoccA*navirA*navirA, T, L, 1.0, 1.0);
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") {
+        GijA->contract(false, true, naoccA, naoccA, naoccA*navirA*navirA, T, L, 1.0, 1.0);
+    }
+    // G_mi += 1/2 \sum_{n,e,f} U_mn^ef(1) L_in^ef(2) = U(mn,ef)(1) L(in,ef)(2) : MP2.5
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") {
+        GijA->contract(false, true, naoccA, naoccA, naoccA*navirA*navirA, T, L, 0.5, 1.0);
+    }
 
-    // G_ae += -\sum_{m,n,f} U_mn^ef(1) L_mn^af(2) = L(mn,fa)(2) U(mn,fe)(1) 
-    GabA->contract(true, false, navirA, navirA, naoccA*naoccA*navirA, L, T, -1.0, 1.0);
+    // G_ae += -\sum_{m,n,f} U_mn^ef(1) L_mn^af(2) = L(mn,fa)(2) U(mn,fe)(1) : MP3 
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") {
+        GabA->contract(true, false, navirA, navirA, naoccA*naoccA*navirA, L, T, -1.0, 1.0);
+    }
+    // G_ae += -1/2 \sum_{m,n,f} U_mn^ef(1) L_mn^af(2) = L(mn,fa)(2) U(mn,fe)(1) : MP2.5 
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") {
+        GabA->contract(true, false, navirA, navirA, naoccA*naoccA*navirA, L, T, -0.5, 1.0);
+    }
     T.reset();
     L.reset();
 
@@ -130,7 +142,7 @@ if (reference_ == "RESTRICTED") {
     V = SharedTensor2d(new Tensor2d("V (IA|JB)", naoccA, navirA, naoccA, navirA));
     V->sort(1432, X, 1.0, 0.0);
     X.reset();
-    V->write(psio_, PSIF_DFOCC_AMPS);
+    //V->write(psio_, PSIF_DFOCC_AMPS);
 
     // V_ij^Q' <= 2\sum_{ef} V_iejf b_ef^Q
     Vij = SharedTensor2d(new Tensor2d("Vp (Q|IJ)", nQ, naoccA, naoccA));
@@ -142,12 +154,24 @@ if (reference_ == "RESTRICTED") {
     // V_ab^Q = 2\sum_{mn} V_manb b_mn^Q
     X = SharedTensor2d(new Tensor2d("X (MN|AB)", naoccA, naoccA, navirA, navirA));
     X->sort(1324, V, 1.0, 0.0);
-    V.reset();
+    //V.reset();
     Vab = SharedTensor2d(new Tensor2d("V (Q|AB)", nQ, navirA, navirA));
     Vab->gemm(false, false, bQijA, X, 2.0, 0.0); 
     X.reset();
     Vab->write(psio_, PSIF_DFOCC_AMPS);
     Vab.reset();
+
+    // Build y_ia^Q : Part 1
+    // Y(me,ia) = V(ie,ma)
+    Y = SharedTensor2d(new Tensor2d("Y (ME|IA)", naoccA, navirA, naoccA, navirA));
+    Y->sort(3214, V, 1.0, 0.0);
+    V.reset();
+    // y_ia^Q <= 2\sum(me) b(Q,me) * Y(me,ia)
+    Z = SharedTensor2d(new Tensor2d("Y (Q|IA)", nQ, naoccA, navirA));
+    Z->gemm(false, false, bQiaA, Y, 2.0, 0.0); 
+    Y.reset();
+    Z->write(psio_, PSIF_DFOCC_AMPS);
+    Z.reset();
 
     // Build V_iabj
     // V_iabj = -1/2 \sum_{me} U(ib,me)(1) L(me,ja)(1)
@@ -165,7 +189,7 @@ if (reference_ == "RESTRICTED") {
     V = SharedTensor2d(new Tensor2d("V (IA|BJ)", naoccA, navirA, navirA, naoccA));
     V->sort(1423, X, 1.0, 0.0);
     X.reset();
-    V->write(psio_, PSIF_DFOCC_AMPS);
+    //V->write(psio_, PSIF_DFOCC_AMPS);
 
     // V_ij^Q' -= \sum_{ef} V_iefj b_ef^Q
     X = SharedTensor2d(new Tensor2d("X (AB|IJ)", navirA, navirA, naoccA, naoccA));
@@ -178,7 +202,7 @@ if (reference_ == "RESTRICTED") {
     // V_ab^Q -= \sum_{mn} V_mabn b_mn^Q
     X = SharedTensor2d(new Tensor2d("X (MN|AB)", naoccA, naoccA, navirA, navirA));
     X->sort(1423, V, 1.0, 0.0);
-    V.reset();
+    //V.reset();
     Vab = SharedTensor2d(new Tensor2d("V (Q|AB)", nQ, navirA, navirA));
     Vab->read(psio_, PSIF_DFOCC_AMPS);
     Vab->gemm(false, false, bQijA, X, -1.0, 1.0); 
@@ -186,6 +210,20 @@ if (reference_ == "RESTRICTED") {
     Vab->write(psio_, PSIF_DFOCC_AMPS);
     Vab.reset();
 
+    // Build y_ia^Q : Part 2
+    // Y(me,ia) = V(ie,am)
+    Y = SharedTensor2d(new Tensor2d("Y (ME|IA)", naoccA, navirA, naoccA, navirA));
+    Y->sort(4213, V, 1.0, 0.0);
+    V.reset();
+    // y_ia^Q <= -4\sum(me) b(Q,me) * Y(me,ia)
+    Z = SharedTensor2d(new Tensor2d("Y (Q|IA)", nQ, naoccA, navirA));
+    Z->read(psio_, PSIF_DFOCC_AMPS);
+    Z->gemm(false, false, bQiaA, Y, -4.0, 1.0); 
+    Y.reset();
+    Z->write(psio_, PSIF_DFOCC_AMPS);
+    Z.reset();
+
+    /*
     // Build Yt_ijab
     // Yt_ijab -= V_jabi + V_ibaj
     Yt = SharedTensor2d(new Tensor2d("Y2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
@@ -220,6 +258,7 @@ if (reference_ == "RESTRICTED") {
     Y.reset();
     Z->write(psio_, PSIF_DFOCC_AMPS);
     Z.reset();
+    */
 
     // Free ints
     bQijA.reset();
@@ -246,13 +285,25 @@ else if (reference_ == "UNRESTRICTED") {
     T.reset();
     //L.reset();
     
-    // G_MI += 1/2 \sum_{N,E,F} T(MN,EF)(1) L(IN,EF)(2)
+    // G_MI += 1/2 \sum_{N,E,F} T(MN,EF)(1) L(IN,EF)(2) : MP3
     T = SharedTensor2d(new Tensor2d("T2_2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     T->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    GijA->contract(false, true, naoccA, naoccA, naoccA*navirA*navirA, L, T, 0.5, 1.0);
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") {
+        GijA->contract(false, true, naoccA, naoccA, naoccA*navirA*navirA, L, T, 0.5, 1.0);
+    }
+    // G_MI += 1/4 \sum_{N,E,F} T(MN,EF)(1) L(IN,EF)(2) : MP2.5
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") {
+        GijA->contract(false, true, naoccA, naoccA, naoccA*navirA*navirA, L, T, 0.25, 1.0);
+    }
 
-    // G_AE += -1/2 \sum_{MNF} L(MN,FA)(2) T(MN,FE)(1)
-    GabA->contract(true, false, navirA, navirA, naoccA*naoccA*navirA, T, L, -0.5, 1.0);
+    // G_AE += -1/2 \sum_{MNF} L(MN,FA)(2) T(MN,FE)(1) : MP3
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") {
+        GabA->contract(true, false, navirA, navirA, naoccA*naoccA*navirA, T, L, -0.5, 1.0);
+    }
+    // G_AE += -1/4 \sum_{MNF} L(MN,FA)(2) T(MN,FE)(1) : MP2.5
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") {
+        GabA->contract(true, false, navirA, navirA, naoccA*naoccA*navirA, T, L, -0.25, 1.0);
+    }
     T.reset();
     L.reset();
 
@@ -274,21 +325,33 @@ else if (reference_ == "UNRESTRICTED") {
     X.reset();
     Y.reset();
 
-    // G_MI += \sum_{n,E,f} T(Mn,Ef)(1) L(In,Ef)(2)
+    // G_MI += \sum_{n,E,f} T(Mn,Ef)(1) L(In,Ef)(2) : MP3
     T = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     T->read(psio_, PSIF_DFOCC_AMPS);
     L = SharedTensor2d(new Tensor2d("T2_2 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     L->read(psio_, PSIF_DFOCC_AMPS);
-    GijA->contract(false, true, naoccA, naoccA, naoccB*navirA*navirB, T, L, 1.0, 1.0);
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") {
+        GijA->contract(false, true, naoccA, naoccA, naoccB*navirA*navirB, T, L, 1.0, 1.0);
+    }
+    // G_MI += 1/2 \sum_{n,E,f} T(Mn,Ef)(1) L(In,Ef)(2) : MP2.5
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") {
+        GijA->contract(false, true, naoccA, naoccA, naoccB*navirA*navirB, T, L, 0.5, 1.0);
+    }
 
-    // G_AE += - \sum_{Mnf} L(Mn,Af)(2) T(Mn,Ef)(1)
+    // G_AE += - \sum_{Mnf} L(Mn,Af)(2) T(Mn,Ef)(1) : MP3
     X = SharedTensor2d(new Tensor2d("T2_2 <Ij|bA>", naoccA, naoccB, navirB, navirA));
     X->sort(1243, L, 1.0, 0.0);
     L.reset();
     Y = SharedTensor2d(new Tensor2d("T2_1 <Ij|bA>", naoccA, naoccB, navirB, navirA));
     Y->sort(1243, T, 1.0, 0.0);
     T.reset();
-    GabA->contract(true, false, navirA, navirA, naoccA*naoccB*navirB, X, Y, -1.0, 1.0);
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") {
+        GabA->contract(true, false, navirA, navirA, naoccA*naoccB*navirB, X, Y, -1.0, 1.0);
+    }
+    // G_AE += -1/2 \sum_{Mnf} L(Mn,Af)(2) T(Mn,Ef)(1) : MP2.5
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") {
+        GabA->contract(true, false, navirA, navirA, naoccA*naoccB*navirB, X, Y, -0.5, 1.0);
+    }
     X.reset();
     Y.reset();
 
@@ -305,13 +368,25 @@ else if (reference_ == "UNRESTRICTED") {
     T.reset();
     //L.reset();
     
-    // G_mi += 1/2 \sum_{nef} T(mn,ef)(1) L(in,ef)(2)
+    // G_mi += 1/2 \sum_{nef} T(mn,ef)(1) L(in,ef)(2) : MP3
     T = SharedTensor2d(new Tensor2d("T2_2 <ij|ab>", naoccB, naoccB, navirB, navirB));
     T->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    GijB->contract(false, true, naoccB, naoccB, naoccB*navirB*navirB, L, T, 0.5, 1.0);
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") {
+        GijB->contract(false, true, naoccB, naoccB, naoccB*navirB*navirB, L, T, 0.5, 1.0);
+    }
+    // G_mi += 1/4 \sum_{nef} T(mn,ef)(1) L(in,ef)(2) : MP2.5
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") {
+        GijB->contract(false, true, naoccB, naoccB, naoccB*navirB*navirB, L, T, 0.25, 1.0);
+    }
 
-    // G_ae += -1/2 \sum_{mnf} L(mn,fa)(2) T(mn,fe)(1)
-    GabB->contract(true, false, navirB, navirB, naoccB*naoccB*navirB, T, L, -0.5, 1.0);
+    // G_ae += -1/2 \sum_{mnf} L(mn,fa)(2) T(mn,fe)(1) : MP3
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") {
+        GabB->contract(true, false, navirB, navirB, naoccB*naoccB*navirB, T, L, -0.5, 1.0);
+    }
+    // G_ae += -1/4 \sum_{mnf} L(mn,fa)(2) T(mn,fe)(1) : MP2.5
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") {
+        GabB->contract(true, false, navirB, navirB, naoccB*naoccB*navirB, T, L, -0.25, 1.0);
+    }
     T.reset();
     L.reset();
 
@@ -327,30 +402,43 @@ else if (reference_ == "UNRESTRICTED") {
     X->sort(2134, T, 1.0, 0.0);
     T.reset();
     Y = SharedTensor2d(new Tensor2d("T2_1 <jI|Ab>", naoccB, naoccA, navirA, navirB));
-    Y->sort(1243, L, 1.0, 0.0);
+    Y->sort(2134, L, 1.0, 0.0);
     L.reset();
     GijB->contract(false, true, naoccB, naoccB, naoccA*navirB*navirA, X, Y, 1.0, 1.0);
     X.reset();
     Y.reset();
 
-    // G_ae += - \sum_{mNF} L(Nm,Fa)(2) T(Nm,Fe)(1)
+    // G_ae += - \sum_{mNF} L(Nm,Fa)(2) T(Nm,Fe)(1) : MP3
     T = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     T->read(psio_, PSIF_DFOCC_AMPS);
     L = SharedTensor2d(new Tensor2d("T2_2 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     L->read(psio_, PSIF_DFOCC_AMPS);
-    GabB->contract(true, false, navirB, navirB, naoccB*naoccA*navirA, L, T, -1.0, 1.0);
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") {
+        GabB->contract(true, false, navirB, navirB, naoccB*naoccA*navirA, L, T, -1.0, 1.0);
+    }
+    // G_ae += -1/2 \sum_{mNF} L(Nm,Fa)(2) T(Nm,Fe)(1) : MP2.5
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") {
+        GabB->contract(true, false, navirB, navirB, naoccB*naoccA*navirA, L, T, -0.5, 1.0);
+    }
 
-    // G_mi += \sum_{N,e,F} T(Nm,Fe)(1) L(Ni,Fe)(2)
+    // G_mi += \sum_{N,e,F} T(Nm,Fe)(1) L(Ni,Fe)(2) : MP3
     X = SharedTensor2d(new Tensor2d("T2_1 <jI|Ab>", naoccB, naoccA, navirA, navirB));
     X->sort(2134, T, 1.0, 0.0);
     T.reset();
     Y = SharedTensor2d(new Tensor2d("T2_2 <jI|Ab>", naoccB, naoccA, navirA, navirB));
-    Y->sort(1243, L, 1.0, 0.0);
+    Y->sort(2134, L, 1.0, 0.0);
     L.reset();
-    GijB->contract(false, true, naoccB, naoccB, naoccA*navirB*navirA, X, Y, 1.0, 1.0);
+    if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3") {
+        GijB->contract(false, true, naoccB, naoccB, naoccA*navirB*navirA, X, Y, 1.0, 1.0);
+    }
+    // G_mi += 1/2 \sum_{N,e,F} T(Nm,Fe)(1) L(Ni,Fe)(2) : MP2.5
+    else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") {
+        GijB->contract(false, true, naoccB, naoccB, naoccA*navirB*navirA, X, Y, 0.5, 1.0);
+    }
     X.reset();
     Y.reset();
 
+    //outfile->Printf("\tG intermediates are done.\n");
 
     //=========================
     // 3-Index Intermediates
@@ -393,8 +481,6 @@ else if (reference_ == "UNRESTRICTED") {
     T = SharedTensor2d(new Tensor2d("T2 (Q|ia)", nQ, naoccB, navirB));
     T->gemm(false, false, bQiaA, U, 1.0, 0.0);
     U.reset();
-    T->write(psio_, PSIF_DFOCC_AMPS);
-    T.reset();
     // T(Q,ia) <= \sum_{jb} b(Q,jb) T(jb,ia)
     TBB = SharedTensor2d(new Tensor2d("T2 <ij|ab>", naoccB, naoccB, navirB, navirB));
     TBB->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
@@ -403,6 +489,8 @@ else if (reference_ == "UNRESTRICTED") {
     TBB.reset();
     T->gemm(false, false, bQiaB, U, 1.0, 1.0);
     U.reset();
+    T->write(psio_, PSIF_DFOCC_AMPS);
+    T.reset();
 
     //=========================
     // V_ijkl & V_ij^Q
@@ -490,7 +578,7 @@ else if (reference_ == "UNRESTRICTED") {
     // V_IAJB += 1/2 \sum_{me} T(IB,me)(1) L(JA,me)(1)
     U = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     U->read(psio_, PSIF_DFOCC_AMPS);
-    T = SharedTensor2d(new Tensor2d("T2_1 (Ib|jA)", naoccA, navirB, naoccB, navirA));
+    T = SharedTensor2d(new Tensor2d("T2_1 (IA|jb)", naoccA, navirA, naoccB, navirB));
     T->sort(1324, U, 1.0, 0.0);
     U.reset();
     X->gemm(false, true, T, T, 0.5, 1.0);
@@ -545,7 +633,7 @@ else if (reference_ == "UNRESTRICTED") {
     // V_iajb += 1/2 \sum_{ME} T(me,IB)(1) L(me,JA)(1)
     U = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     U->read(psio_, PSIF_DFOCC_AMPS);
-    T = SharedTensor2d(new Tensor2d("T2_1 (Ib|jA)", naoccA, navirB, naoccB, navirA));
+    T = SharedTensor2d(new Tensor2d("T2_1 (IA|jb)", naoccA, navirA, naoccB, navirB));
     T->sort(1324, U, 1.0, 0.0);
     U.reset();
     X->gemm(true, false, T, T, 0.5, 1.0);
@@ -715,7 +803,6 @@ else if (reference_ == "UNRESTRICTED") {
     Y.reset();
     Z->write(psio_, PSIF_DFOCC_AMPS);
     Z.reset();
-
 
     // Free ints
     bQijA.reset();
