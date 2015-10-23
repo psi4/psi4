@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from psi4 import *
 import readline # optional, will allow Up/Down/History in the console
 import code

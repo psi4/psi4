@@ -1,8 +1,11 @@
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
 import itertools
 try:
     from collections import OrderedDict
 except ImportError:
-    from oldpymodules import OrderedDict
+    from .oldpymodules import OrderedDict
 from qcdb.modelchems import Method, BasisSet, Error, methods, bases, errors
 
 mc_archive = {'mtd': methods, 'bas': bases, 'err': errors}
@@ -160,7 +163,7 @@ def table_generic(dbse, serrors,
         text.append(r"""\end{document}""")
 
     text = '\n'.join(text)
-    print text
+    print(text)
 
 
 if __name__ == "__main__":

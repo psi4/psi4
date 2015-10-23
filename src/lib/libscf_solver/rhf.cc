@@ -620,7 +620,7 @@ int RHF::soscf_update()
     return fock_builds;
 }
 
-void RHF::stability_analysis()
+bool RHF::stability_analysis()
 {
     if(scf_type_ == "DF" || scf_type_ == "CD"){
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
@@ -738,6 +738,9 @@ void RHF::stability_analysis()
         print_stability_analysis(triplet_eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }
+
+    // FOLLOW is not implemented for RHF
+    return false;
 }
 
 }}

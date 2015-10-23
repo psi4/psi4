@@ -139,6 +139,9 @@ In addition to the main ``myplugin.cc`` file, a fresh plugin directory contains 
   for building documentation and :ref:`Available Plugins <sec:availablePlugins>` 
   for this file's final destination.
 
+Please note that pure virtual functions in a plugin may cause undefined symbols errors when
+the plugin is loaded.
+
 To create a purely Python plugin, create a new plugin directory, then
 remove the ``Makefile`` and ``myplugin.cc`` files and
 erase the shared object loading portion of ``__init__.py``. Create as many .py
