@@ -216,6 +216,7 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
 
     // Make sure our ras and active spaces align
     if (!casscf_) check_ras();
+    timer_on("SOMCSCF: Compute Gradient");
 
     // => Build generalized inactive and active Fock matrices <= //
     std::vector<SharedMatrix>& Cl = jk_->C_left();
@@ -311,6 +312,7 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
         }
     }
     zero_redundant(matrices_["Gradient"]);
+    timer_off("SOMCSCF: Compute Gradient");
     matrices_["Precon"] = H_approx_diag();
     // matrices_["Gradient"]->print();
     // matrices_["Precon"]->print();
@@ -318,6 +320,7 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
 SharedMatrix SOMCSCF::H_approx_diag()
 {
 
+    timer_on("SOMCSCF: Approximate hessian");
     // d_tuvw I_tuvw -> dI_t, D_tu IF_tu -> DIF_t
     double** actMOp = matrices_["actMO"]->pointer();
     double** TPDMp = matrices_["TPDM"]->pointer();
@@ -474,10 +477,12 @@ SharedMatrix SOMCSCF::H_approx_diag()
         } // End active-active RASSCF block
 
     } // End irrep loop
+    timer_off("SOMCSCF: Approximate hessian");
     return H;
 }
 SharedMatrix SOMCSCF::Hk(SharedMatrix x)
 {
+    timer_on("SOMCSCF: Rotated fock");
 
     // => Antisymmetric rotation matrix <= //
     SharedMatrix U(new Matrix("U", nirrep_, nmopi_, nmopi_));
@@ -615,6 +620,7 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x)
     }
 
     zero_redundant(hessx);
+    timer_off("SOMCSCF: Rotated fock");
     return hessx;
 
 }
@@ -850,6 +856,7 @@ void DFSOMCSCF::set_act_MO()
 }
 void DFSOMCSCF::compute_Q(){
 
+    timer_on("SOMCSCF: DF-Q matrix");
     std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
 
     int nQ = dferi_->size_Q();
@@ -904,11 +911,13 @@ void DFSOMCSCF::compute_Q(){
         offset_act += nactpi_[h];
         offset_nmo += nmopi_[h];
     }
+    timer_off("SOMCSCF: DF-Q matrix");
     // outfile->Printf("Printing the Q matrix\n");
     // matrices_["Q"]->print();
 }
 void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
 {
+    timer_on("SOMCSCF: DF-Qk matrix");
     // Remove U symmetry
     SharedMatrix dUact;
     if (nirrep_ == 1){
@@ -1049,6 +1058,7 @@ void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
         offset_nmo += nmopi_[h];
     }
     // matrices_["Qk"]->print();
+    timer_off("SOMCSCF: DF-Qk matrix");
 
 
 }// End DFSOMCSCF object
@@ -1174,6 +1184,7 @@ void DiskSOMCSCF::set_act_MO()
 }
 void DiskSOMCSCF::compute_Q()
 {
+    timer_on("SOMCSCF: Q matrix");
     // G_mwxy TPDM_vwxy -> Q_mv
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
     psio_->open(PSIF_MCSCF, PSIO_OPEN_OLD);
@@ -1192,8 +1203,7 @@ void DiskSOMCSCF::compute_Q()
                 ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "CI TPDM (XX|XX)");
 
     global_dpd_->contract442(&TPDM, &G, &Q, 3, 3, 1.0, 0.0);
-    Matrix* Qmat = new Matrix::Matrix(&Q);
-    matrices_["Q"] = boost::shared_ptr<Matrix> (Qmat);
+    matrices_["Q"] = SharedMatrix(new Matrix(&Q));
 
     // outfile->Printf("Printing the Q matrix\n");
     // matrices_["Q"]->print();
@@ -1203,10 +1213,12 @@ void DiskSOMCSCF::compute_Q()
     global_dpd_->buf4_close(&G);
     psio_->close(PSIF_LIBTRANS_DPD, 1);
     psio_->close(PSIF_MCSCF, 1);
+    timer_off("SOMCSCF: Q matrix");
 
 }
 void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
 {
+    //timer_on("SOMCSCF: Qk matrix");
     // \TPDM_{vwxy}\kappa_{mo}g_{owxy}
     // \TPDM_{vwxy}(\kappa_{wo}g_{moxy} +\kappa_{xo}g_{mwoy} + \kappa_{yo}g_{mwxo})
 
@@ -1235,7 +1247,7 @@ void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
 
     global_dpd_->file2_mat_wrt(&dpdUact);
     global_dpd_->file2_mat_close(&dpdUact);
-    SharedMatrix(new Matrix::Matrix(&dpdUact))->print();
+    SharedMatrix(new Matrix(&dpdUact))->print();
     outfile->Printf("Wrote Uact\n");
 
 
@@ -1262,7 +1274,7 @@ void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
                 ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "CI TPDM (XX|XX)");
 
     global_dpd_->contract442(&TPDM, &Gk, &Qk, 3, 3, 1.0, 0.0);
-    SharedMatrix(new Matrix::Matrix(&Qk))->print();
+    SharedMatrix(new Matrix(&Qk))->print();
     global_dpd_->buf4_close(&TPDM);
     global_dpd_->file2_close(&Qk);
     // End sneaky code
@@ -1289,7 +1301,7 @@ void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
                 ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "CI TPDM (XX|XX)");
 
     global_dpd_->contract442(&TPDM, &Gk, &Qk, 3, 3, 1.0, 0.0);
-    SharedMatrix(new Matrix::Matrix(&Qk))->print();
+    SharedMatrix(new Matrix(&Qk))->print();
     global_dpd_->buf4_close(&TPDM);
     global_dpd_->file2_close(&Qk);
     // throw PSIEXCEPTION("DOES NOT WORK YET!");
@@ -1327,7 +1339,7 @@ void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
     // matrices_["Q"]->print();
 
     outfile->Printf("Read Qk\n");
-    matrices_["Qk"] = SharedMatrix(new Matrix::Matrix(&Qk));
+    matrices_["Qk"] = SharedMatrix(new Matrix(&Qk));
     global_dpd_->file2_close(&Qk);
 
     // \TPDM_{vwxy}\kappa_{mo}g_{owxy} -> Qk
@@ -1337,6 +1349,7 @@ void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
     psio_->close(PSIF_MCSCF, 1);
 
     matrices_["Qk"]->print();
+    timer_off("SOMCSCF: Qk matrix");
     */
 
     throw PSIEXCEPTION("DiskMCSCF::Qk: Qk does not work quite yet, check back in after the break.");
