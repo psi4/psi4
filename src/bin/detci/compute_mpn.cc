@@ -59,10 +59,10 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
    struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
    struct stringwr **alplist, struct stringwr **betlist,
    std::string );
-extern void mpn_generator(CIvect &Hd, struct stringwr **alplist, 
-      struct stringwr **betlist);
-extern void H0block_init(unsigned int size);
-extern void H0block_setup(int num_blocks, int *Ia_code, int *Ib_code);
+//extern void mpn_generator(CIvect &Hd, struct stringwr **alplist, 
+//      struct stringwr **betlist);
+//extern void H0block_init(unsigned int size);
+//extern void H0block_setup(int num_blocks, int *Ia_code, int *Ib_code);
 
 
 /*
@@ -185,7 +185,7 @@ void CIWavefunction::compute_mpn()
 }
 
 
-void mpn_generator(CIvect &Hd, struct stringwr **alplist, 
+void CIWavefunction::mpn_generator(CIvect &Hd, struct stringwr **alplist, 
       struct stringwr **betlist)
 {
   double *mpk_energy, *mp2k_energy, *oei, *tei, *buffer1, *buffer2;

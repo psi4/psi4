@@ -42,16 +42,18 @@
 #include <cstring>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libmints/mints.h>
 #include "structs.h"
 #define EXTERN
 #include "globals.h"
 #include "civect.h"
+#include "ciwave.h"
 
 namespace psi { namespace detci {
 
 extern void transp_sigma(double **a, int rows, int cols, int phase);
-extern void H0block_gather(double **mat, int al, int bl, int cscode, 
-   int mscode, int phase);
+//extern void H0block_gather(double **mat, int al, int bl, int cscode, 
+//   int mscode, int phase);
 extern void b2brepl(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
    int **Jridx, signed char **Jsgn, struct olsen_graph *Graph,
    int Ilist, int Jlist, int len);
@@ -211,7 +213,7 @@ double **cprime = NULL, **sprime = NULL;
 ** the sigma vector.
 **
 */
-void sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist, 
+void CIWavefunction::sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist, 
       struct stringwr **betlist)
 {
    int i,j;
@@ -362,7 +364,7 @@ void sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
 ** Changed into a master function which calls the appropriate subfunction
 **
 */
-void sigma(struct stringwr **alplist, struct stringwr **betlist,
+void CIWavefunction::sigma(struct stringwr **alplist, struct stringwr **betlist,
       CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec)
 {
    if (!CalcInfo.sigma_initialized) sigma_init(C, S, alplist, betlist);
@@ -404,7 +406,7 @@ void sigma(struct stringwr **alplist, struct stringwr **betlist,
 **    
 ** Notes: assumes M_s = 0 for now
 */
-void sigma_a(struct stringwr **alplist, struct stringwr **betlist,
+void CIWavefunction::sigma_a(struct stringwr **alplist, struct stringwr **betlist,
       CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec)
 {
 
@@ -524,7 +526,7 @@ void sigma_a(struct stringwr **alplist, struct stringwr **betlist,
 **    
 ** Notes: I think I removed the M_s = 0 assumption from this one
 */
-void sigma_b(struct stringwr **alplist, struct stringwr **betlist,
+void CIWavefunction::sigma_b(struct stringwr **alplist, struct stringwr **betlist,
       CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec)
 {
 
@@ -608,7 +610,7 @@ void sigma_b(struct stringwr **alplist, struct stringwr **betlist,
 **    
 ** Notes: tried to remove Ms=0 assumption
 */
-void sigma_c(struct stringwr **alplist, struct stringwr **betlist,
+void CIWavefunction::sigma_c(struct stringwr **alplist, struct stringwr **betlist,
       CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec)
 {
 

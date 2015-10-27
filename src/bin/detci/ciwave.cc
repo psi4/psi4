@@ -100,6 +100,9 @@ void CIWavefunction::common_init()
     // This will all be nuked
     alplist_ = alplist;
     betlist_ = betlist;
+    AlphaG_ = AlphaG;
+    BetaG_ = BetaG;
+//    H0block_ = &H0block;
     CalcInfo_ = &CalcInfo;
     Parameters_ = &Parameters;
 

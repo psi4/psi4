@@ -35,8 +35,11 @@
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libmints/mints.h>
 #include "structs.h"
 #include "ci_tol.h"
+#include "ciwave.h"
+#include "slaterd.h"
 #define EXTERN
 #include "globals.h"
 
@@ -60,7 +63,7 @@ extern void print_config(int nbf, int num_alp_el, int num_bet_el,
 ** initialize everything but buf_num and buf_member, which depend on the
 ** CIvector structure
 */
-void H0block_init(unsigned int size) {
+void CIWavefunction::H0block_init(unsigned int size) {
 
    unsigned int size2;
 
@@ -112,7 +115,7 @@ void H0block_init(unsigned int size) {
 }
 
 
-void H0block_free(void)
+void CIWavefunction::H0block_free(void)
 {
    int i;
 
@@ -144,7 +147,7 @@ void H0block_free(void)
       }
 }
 
-void H0block_print(void)
+void CIWavefunction::H0block_print(void)
 {
    int i;
    char configstring[CONFIG_STRING_MAX];
@@ -162,7 +165,7 @@ void H0block_print(void)
 }
 
 
-int H0block_calc(double E)
+int CIWavefunction::H0block_calc(double E)
 {
    static int first_call = 1;
    int i, j, size;
@@ -303,7 +306,7 @@ int H0block_calc(double E)
 ** cscode == 0 refers to c0b, while cscode == 1 refers to s0b
 **
 */
-void H0block_gather(double **mat, int al, int bl, int cscode, int mscode,
+void CIWavefunction::H0block_gather(double **mat, int al, int bl, int cscode, int mscode,
    int phase)
 {
 
@@ -338,7 +341,7 @@ void H0block_gather(double **mat, int al, int bl, int cscode, int mscode,
 /*
 ** Calculate the contributions to x and y due to the H0 block
 */
-void H0block_xy(double *x, double *y, double E)
+void CIWavefunction::H0block_xy(double *x, double *y, double E)
 {
    int i;
    double tx=0.0, ty=0.0, tval, c;
@@ -379,7 +382,7 @@ void H0block_xy(double *x, double *y, double E)
 
 }
 
-void H0block_setup(int num_blocks, int *Ia_code, int *Ib_code)
+void CIWavefunction::H0block_setup(int num_blocks, int *Ia_code, int *Ib_code)
 {
    int member;
    int ac, bc, ai, bi;
@@ -436,7 +439,7 @@ void H0block_setup(int num_blocks, int *Ia_code, int *Ib_code)
 ** Modified by Matt Leininger July 1998
 **
 */
-void H0block_pairup(int guess)
+void CIWavefunction::H0block_pairup(int guess)
 {
   int i,first,newsize,size;
 
@@ -495,7 +498,7 @@ void H0block_pairup(int guess)
 ** Substantial modifications by David Sherrill, October 1998
 **
 */
-void H0block_spin_cpl_chk(void)
+void CIWavefunction::H0block_spin_cpl_chk(void)
 {
   int i,newsize,tmpsize;
   double zero = 1E-13;
@@ -610,7 +613,7 @@ void H0block_spin_cpl_chk(void)
 **
 ** C. David Sherrill, July 2003
 */
-void H0block_filter_setup(void)
+void CIWavefunction::H0block_filter_setup(void)
 {
   int Iac, Ibc, Iaridx, Ibridx;
   int Jac, Jbc, Jaridx, Jbridx;
@@ -666,6 +669,234 @@ void H0block_filter_setup(void)
   }
 
 }
+
+void CIWavefunction::H0block_fill()
+{
+   int i, j, size;
+   int Ia, Ib, Ja, Jb;
+   int Ialist, Iblist;
+   SlaterDeterminant I, J;
+   double *evals, **evecs;
+
+   /* fill lower triangle */
+   for (i=0; i<H0block.size; i++) {
+
+      Ialist = H0block.alplist[i];
+      Iblist = H0block.betlist[i];
+      Ia = H0block.alpidx[i];
+      Ib = H0block.betidx[i];
+      I.set(CalcInfo.num_alp_expl,
+          alplist[Ialist][Ia].occs, CalcInfo.num_bet_expl,
+          betlist[Iblist][Ib].occs);
+      for (j=0; j<=i; j++) {
+         Ialist = H0block.alplist[j];
+         Iblist = H0block.betlist[j];
+         Ia = H0block.alpidx[j];
+         Ib = H0block.betidx[j];
+         J.set(CalcInfo.num_alp_expl,
+            alplist[Ialist][Ia].occs, CalcInfo.num_bet_expl,
+            betlist[Iblist][Ib].occs);
+
+         /* pointers in next line avoids copying structures I and J */
+         H0block.H0b[i][j] = matrix_element(&I, &J);
+         if (i==j) H0block.H0b[i][i] += CalcInfo.edrc;
+         /* outfile->Printf(" i = %d   j = %d\n",i,j); */
+         }
+
+      H0block.H00[i] = H0block.H0b[i][i];
+      }
+
+   /* fill upper triangle */
+   fill_sym_matrix(H0block.H0b, H0block.size);
+
+   /*
+   evals = init_array(H0block.size);
+   evecs = init_matrix(H0block.size, H0block.size);
+   */
+   evals = init_array(H0block.guess_size);
+   evecs = init_matrix(H0block.guess_size, H0block.guess_size);
+
+   if (Parameters.precon == PRECON_GEN_DAVIDSON)
+     size = H0block.size;
+   else
+     size = H0block.guess_size;
+
+   if (Parameters.print_lvl > 2) {
+     outfile->Printf("H0block size = %d in H0block_fill\n",H0block.size);
+     outfile->Printf(
+             "H0block guess size = %d in H0block_fill\n",H0block.guess_size);
+     outfile->Printf(
+             "H0block coupling size = %d in H0block_fill\n",
+             H0block.coupling_size);
+     outfile->Printf("Diagonalizing H0block.H0b size %d in h0block_fill in"
+                     " detci.cc ... ", size);
+
+   }
+
+   sq_rsp(size, size, H0block.H0b, H0block.H0b_eigvals, 1,
+          H0block.H0b_diag, 1.0E-14);
+
+   if (Parameters.print_lvl) {
+      outfile->Printf( "\n*** H0 Block Eigenvalue = %12.8lf\n",
+             H0block.H0b_eigvals[0] + CalcInfo.enuc);
+
+      }
+
+   if (Parameters.print_lvl > 5 && size < 1000) {
+      for (i=0; i<size; i++) H0block.H0b_eigvals[i] += CalcInfo.enuc;
+      outfile->Printf( "\nH0 Block Eigenvectors\n");
+      eivout(H0block.H0b_diag, H0block.H0b_eigvals,
+             size, size, "outfile");
+      outfile->Printf( "\nH0b matrix\n");
+      print_mat(H0block.H0b, size, size, "outfile");
+      }
+}
+
+void CIWavefunction::H0block_coupling_calc(double E)
+{
+   static int first_call = 1;
+   int i, j, size, size2;
+   double tval1, tval2, tval3;
+   double *delta_2, *gamma_1, *gamma_2, *H_12, *delta_1;
+   SlaterDeterminant I, J;
+   int Ia, Ib, Ja, Jb;
+   int Ialist, Iblist;
+   double detH0;
+
+   size = H0block.size;
+   size2 = H0block.size + H0block.coupling_size;
+
+   H_12 = init_array(H0block.coupling_size);
+   delta_1 = init_array(H0block.size);
+   delta_2 = init_array(H0block.coupling_size);
+   gamma_1 = init_array(H0block.size);
+   gamma_2 = init_array(H0block.coupling_size);
+
+   if (Parameters.print_lvl > 5) {
+      outfile->Printf( "\nc0b in H0block_coupling_calc = \n");
+      print_mat(&(H0block.c0b), 1, size2, "outfile");
+      outfile->Printf( "\nc0bp in H0block_coupling_calc = \n");
+      print_mat(&(H0block.c0bp), 1, size2, "outfile");
+      }
+
+     /* copy to delta_1 */
+     for (i=0; i<size; i++)
+        delta_1[i] = H0block.c0bp[i];
+
+     /* form delta_2 array  (D-E)^-1 r_2 */
+     for (i=size; i<size2; i++) {
+        tval1 = H0block.H00[i] - E;
+        if (fabs(tval1) > HD_MIN)
+          H0block.c0bp[i] = H0block.c0b[i]/tval1;
+        else H0block.c0bp[i] = 0.0;
+        delta_2[i-size] = H0block.c0bp[i];
+        }
+/*
+     for (i=0; i<size2; i++)
+        outfile->Printf("In Hcc H0block.c0bp[%d] = %lf\n", i, H0block.c0bp[i]);
+*/
+
+     zero_arr(gamma_2, size);
+     /* Construct H_12 coupling block on-the-fly */
+     for (i=0; i<size; i++) {
+        Ialist = H0block.alplist[i];
+        Iblist = H0block.betlist[i];
+        Ia = H0block.alpidx[i];
+        Ib = H0block.betidx[i];
+        I.set(CalcInfo.num_alp_expl, alplist[Ialist][Ia].occs,
+              CalcInfo.num_bet_expl, betlist[Iblist][Ib].occs);
+        for (j=size; j<size2; j++) {
+           Ialist = H0block.alplist[j];
+           Iblist = H0block.betlist[j];
+           Ia = H0block.alpidx[j];
+           Ib = H0block.betidx[j];
+           J.set(CalcInfo.num_alp_expl, alplist[Ialist][Ia].occs,
+                 CalcInfo.num_bet_expl, betlist[Iblist][Ib].occs);
+           H_12[j-size] = matrix_element(&I, &J);
+           } /* end loop over j */
+
+        dot_arr(H_12, delta_2, H0block.coupling_size, &tval2);
+        gamma_1[i] = tval2;
+        for (j=0; j<H0block.coupling_size; j++)
+           gamma_2[j] += H_12[j] * delta_1[i];
+
+        } /* end loop over i */
+
+
+     /* Construct delta_1 = (H_11)^-1 gamma_1, delta_2 = (D_2-E)^-1 * gamma_2 */
+     /* First delta_2 */
+     for (i=size; i<size2; i++) {
+        tval1 = H0block.H00[i] - E;
+        if (fabs(tval1) > HD_MIN)
+          delta_2[i-size] = gamma_2[i-size]/tval1;
+        else delta_2[i-size] = 0.0;
+        }
+
+     /* Now delta_1 */
+
+     /* form H0b-E and take its inverse */
+     for (i=0; i<size; i++) {
+        delta_1[i] = gamma_1[i];
+        for (j=0; j<size; j++) {
+           H0block.tmp1[i][j] = H0block.H0b[i][j];
+           if (i==j) H0block.tmp1[i][i] -= E;
+           }
+        }
+
+     if (Parameters.print_lvl > 4) {
+        outfile->Printf( "\n E = %lf\n", E);
+        outfile->Printf( " H0 - E\n");
+        print_mat(H0block.tmp1, H0block.size, H0block.size, "outfile");
+        }
+
+/*
+       for (i=0; i<size; i++)
+          outfile->Printf("gamma_1[%d] = %lf\n", i, gamma_1[i]);
+
+       pople(H0block.tmp1, delta_1, size, 1, 1e-9, outfile,
+             Parameters.print_lvl);
+*/
+       flin(H0block.tmp1, delta_1, size, 1, &tval1);
+
+     /*
+       detH0 = invert_matrix(H0block.tmp1, H0block.H0b_inv, size, outfile);
+       mmult(H0block.H0b_inv,0,&(gamma_1),1,&(delta_1),1,size,size,1,0);
+     */
+
+    /*
+       if (Parameters.update == UPDATE_OLSEN) {
+         for (i=0; i<size; i++)
+            for (j=0; j<size; j++) {
+               H0block.tmp1[i][j] = H0block.H0b[i][j];
+               if (i==j) H0block.tmp1[i][i] -= E;
+               }
+         pople(H0block.tmp1,H0block.s0bp,size,1,1e-9,outfile,
+               Parameters.print_lvl);
+         }
+    */
+
+      /* Construction of delta_1 and delta_2 completed */
+      /* Now modify correction vectors in H0block structure */
+
+      for (i=0; i<size; i++) H0block.c0bp[i] -= delta_1[i];
+      for (i=size; i<size2; i++) H0block.c0bp[i] -= delta_2[i-size];
+
+     /*
+      for (i=0; i<size2; i++) {
+         if (i>=H0block.coupling_size)
+           H0block.c0bp[i] -= delta_2[i-size];
+         else H0block.c0bp[i] -= delta_1[i];
+         }
+    */
+
+    /*
+      free(gamma_1);
+      free(gamma_2);
+      free(delta_2);
+     */
+
+}
+
 
 }} // namespace psi::detci
 
