@@ -102,7 +102,7 @@ void CIWavefunction::common_init()
     betlist_ = betlist;
     AlphaG_ = AlphaG;
     BetaG_ = BetaG;
-//    H0block_ = &H0block;
+    CIblks_ = &CIblks;
     CalcInfo_ = &CalcInfo;
     Parameters_ = &Parameters;
 

@@ -243,8 +243,7 @@ private:
 
 
     /// => MPn helpers <= //
-    void mpn_generator(CIvect &Hd, struct stringwr **alplist,
-          struct stringwr **betlist); 
+    void mpn_generator(CIvect &Hd); 
 
 };
 
