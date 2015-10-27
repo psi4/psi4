@@ -64,6 +64,47 @@ extern void s3_block_bz(int Ialist, int Iblist, int Jalist,
    double *tei, double **C, double **S, double **Cprime, double **Sprime);
 extern void set_row_ptrs(int rows, int cols, double **matrix);
 
+#ifdef OLD_CDS_ALG
+extern void s1_block_fci(struct stringwr **alplist, 
+   struct stringwr **betlist, 
+   double **C, double **S, double *oei, double *tei, double *F, 
+   int nlists, int nas, int nbs, int sbc, int cbc, int cnbs);
+extern void s2_block_fci(struct stringwr **alplist, 
+   struct stringwr **betlist, 
+   double **C, double **S, double *oei, double *tei, double *F,
+   int nlists, int nas, int nbs, int Ia_list, int Ja_list, 
+   int Ja_list_nas);
+extern void s1_block_ras(struct stringwr **alplist, 
+   struct stringwr **betlist, 
+   double **C, double **S, double *oei, double *tei, double *F, 
+   int nlists, int nas, int nbs, int sbc, int cbc, int cnbs);
+extern void s1_block_ras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
+   int **Ridx[2], signed char **Sgn[2], unsigned char **Toccs,
+   double **C, double **S,
+   double *oei, double *tei, double *F, int nlists, int nas, int nbs,
+   int Ib_list, int Jb_list, int Jb_list_nbs);
+extern void s2_block_ras(struct stringwr **alplist, 
+   struct stringwr **betlist, 
+   double **C, double **S, double *oei, double *tei, double *F,
+   int nlists, int nas, int nbs, int sac, int cac, int cnas);
+extern void s2_block_ras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
+   int **Ridx[2], signed char **Sgn[2], unsigned char **Toccs,
+   double **C, double **S,
+   double *oei, double *tei, double *F, int nlists, int nas, int nbs,
+   int Ia_list, int Ja_list, int Ja_list_nbs);
+extern void s3_block(struct stringwr *alplist, struct stringwr *betlist,
+   double **C, double **S, double *tei, int nas, int nbs,
+   int Ja_list, int Jb_list);
+extern void s3_block_diag(struct stringwr *alplist,struct stringwr *betlist,
+   double **C, double **S, double *tei, int nas, int nbs,
+   int Ja_list, int Jb_list);
+extern void s3_block_diag_rotf(int *Cnt[2], int **Ij[2], 
+   int **Ridx[2], signed char **Sgn[2], double **C, double **S,
+   double *tei, int nas, int nbs);
+extern void s3_block_rotf(int *Cnt[2], int **Ij[2], 
+   int **Ridx[2], signed char **Sgn[2], double **C, double **S,
+   double *tei, int nas, int nbs);
+#else
 extern void s1_block_vfci_thread(struct stringwr **alplist, 
    struct stringwr **betlist,
    double **C, double **S, double *oei, double *tei, double *F,
@@ -129,10 +170,11 @@ extern void s3_block_vdiag_rotf(int *Cnt[2], int **Ij[2], int **Ridx[2],
    double *tei, int nas, int nbs, int cnas,
    int Ib_list, int Ja_list, int Jb_list, int Ib_sym, int Jb_sym,
    double **Cprime, double *F, double *V, double *Sgn, int *L, int *R);
+#endif
 
 extern unsigned char ***Occs;
-//extern struct olsen_graph *AlphaG;
-//extern struct olsen_graph *BetaG;
+extern struct olsen_graph *AlphaG;
+extern struct olsen_graph *BetaG;
 
 extern int cc_reqd_sblocks[CI_BLK_MAX];
 
@@ -157,8 +199,11 @@ int *Jcnt[2];
 unsigned char **Toccs;
 double **transp_tmp = NULL;
 double **cprime = NULL, **sprime = NULL;
-double *V, *Sgn;
-int *L, *R;
+
+#ifndef OLD_CDS_ALG
+   double *V, *Sgn;
+   int *L, *R;
+#endif
 
 
 /*
@@ -176,7 +221,7 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
    int nsingles, max_dim=0;
    unsigned long int bufsz=0;
 
-   if (CalcInfo_->sigma_initialized) {
+   if (CalcInfo.sigma_initialized) {
       printf("(sigma_init): sigma_initialized already set to 1\n");
       return;
       }
@@ -187,14 +232,16 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
       }
    F = init_array(max_dim);
 
+   #ifndef OLD_CDS_ALG
    Sgn = init_array(max_dim);
    V = init_array(max_dim);
    L = init_int_array(max_dim);
    R = init_int_array(max_dim);
+   #endif
 
-   if (Parameters_->repl_otf) {
-      max_dim += AlphaG_->num_el_expl;
-      nsingles = AlphaG_->num_el_expl * AlphaG_->num_orb;
+   if (Parameters.repl_otf) {
+      max_dim += AlphaG->num_el_expl;
+      nsingles = AlphaG->num_el_expl * AlphaG->num_orb;
       for (i=0; i<2; i++) {
          Jcnt[i] = init_int_array(max_dim);
          Jij[i] = init_int_matrix(max_dim, nsingles);
@@ -219,14 +266,14 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
    s1_contrib = init_int_matrix(S.num_blocks, C.num_blocks);
    s2_contrib = init_int_matrix(S.num_blocks, C.num_blocks);
    s3_contrib = init_int_matrix(S.num_blocks, C.num_blocks);
-   if (Parameters_->repl_otf)
+   if (Parameters.repl_otf)
       sigma_get_contrib_rotf(C, S, s1_contrib, s2_contrib, s3_contrib,
          Jcnt, Jij, Joij, Jridx, Jsgn, Toccs);
    else  
       sigma_get_contrib(alplist, betlist, C, S, s1_contrib, s2_contrib,
          s3_contrib);
 
-   if ((C.icore==2 && C.Ms0 && CalcInfo_->ref_sym != 0) || (C.icore==0 &&
+   if ((C.icore==2 && C.Ms0 && CalcInfo.ref_sym != 0) || (C.icore==0 &&
          C.Ms0)) {
      for (i=0, maxrows=0, maxcols=0; i<C.num_blocks; i++) {
        if (C.Ia_size[i] > maxrows) maxrows = C.Ia_size[i];
@@ -249,12 +296,13 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
      if (C.Ia_size[i] > maxrows) maxrows = C.Ia_size[i];
      if (C.Ib_size[i] > maxcols) maxcols = C.Ib_size[i];
    }
-   if ((C.icore==2 && C.Ms0 && CalcInfo_->ref_sym != 0) || (C.icore==0 &&
+   if ((C.icore==2 && C.Ms0 && CalcInfo.ref_sym != 0) || (C.icore==0 &&
          C.Ms0)) {
      if (maxcols > maxrows) maxrows = maxcols;
    }
    bufsz = C.get_max_blk_size();
 
+   #ifndef OLD_CDS_ALG
    cprime = (double **) malloc (maxrows * sizeof(double *));
    if (cprime == NULL) {
       printf("(sigma_init): Trouble with malloc'ing cprime\n");
@@ -268,7 +316,7 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
      printf("(sigma_init): Trouble with malloc'ing cprime[0]\n");
    }
 
-   if (Parameters_->bendazzoli) {
+   if (Parameters.bendazzoli) {
      sprime = (double **) malloc (maxrows * sizeof(double *));
      if (sprime == NULL) {
        printf("(sigma_init): Trouble with malloc'ing sprime\n");
@@ -278,8 +326,33 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
        printf("(sigma_init): Trouble with malloc'ing sprime[0]\n");
      }
    }
+
+   #else
+   if (Parameters.bendazzoli) {
+     cprime = (double **) malloc (maxrows * sizeof(double *));
+     if (cprime == NULL) {
+       printf("(sigma_init): Trouble with malloc'ing cprime\n");
+     }
+     if (C.icore==0 && C.Ms0 && transp_tmp != NULL && transp_tmp[0] != NULL) 
+       cprime[0] = transp_tmp[0];
+     else 
+       cprime[0] = init_array(bufsz);
+
+     if (cprime[0] == NULL) {
+       printf("(sigma_init): Trouble with malloc'ing cprime[0]\n");
+     }
+     sprime = (double **) malloc (maxrows * sizeof(double *));
+     if (sprime == NULL) {
+       printf("(sigma_init): Trouble with malloc'ing sprime\n");
+     }
+     sprime[0] = init_array(bufsz);
+     if (sprime[0] == NULL) {
+       printf("(sigma_init): Trouble with malloc'ing sprime[0]\n");
+     }
+   }
+   #endif
  
-   CalcInfo_->sigma_initialized = 1;
+   CalcInfo.sigma_initialized = 1;
 }
 
 
@@ -294,7 +367,7 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
 void CIWavefunction::sigma(struct stringwr **alplist, struct stringwr **betlist,
       CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec)
 {
-   if (!CalcInfo_->sigma_initialized) sigma_init(C, S, alplist, betlist);
+   if (!CalcInfo.sigma_initialized) sigma_init(C, S, alplist, betlist);
 
    switch (C.icore) {
       case 0: 
@@ -347,8 +420,8 @@ void CIWavefunction::sigma_a(struct stringwr **alplist, struct stringwr **betlis
    int did_sblock = 0;
    int phase;
 
-   if (!Parameters_->Ms0) phase = 1;
-   else phase = ((int) Parameters_->S % 2) ? -1 : 1;
+   if (!Parameters.Ms0) phase = 1;
+   else phase = ((int) Parameters.S % 2) ? -1 : 1;
 
    /* this does a sigma subblock at a time: icore==0 */
    for (buf=0; buf<S.buf_per_vect; buf++) {
@@ -359,7 +432,7 @@ void CIWavefunction::sigma_a(struct stringwr **alplist, struct stringwr **betlis
       sbc = S.Ib_code[sblock];
       nas = S.Ia_size[sblock];
       nbs = S.Ib_size[sblock];
-      sbirr = sbc / BetaG_->subgr_per_irrep;
+      sbirr = sbc / BetaG->subgr_per_irrep;
       if (sprime != NULL) set_row_ptrs(nas, nbs, sprime);
 
       for (cbuf=0; cbuf<C.buf_per_vect; cbuf++) {
@@ -368,8 +441,8 @@ void CIWavefunction::sigma_a(struct stringwr **alplist, struct stringwr **betlis
          cblock2 = -1;
          cac = C.Ia_code[cblock];
          cbc = C.Ib_code[cblock];
-         cbirr = cbc / BetaG_->subgr_per_irrep;
-         cairr = cac / AlphaG_->subgr_per_irrep;
+         cbirr = cbc / BetaG->subgr_per_irrep;
+         cairr = cac / AlphaG->subgr_per_irrep;
          if (C.Ms0) cblock2 = C.decode[cbc][cac];
          cnas = C.Ia_size[cblock];
          cnbs = C.Ib_size[cblock];
@@ -421,10 +494,10 @@ void CIWavefunction::sigma_a(struct stringwr **alplist, struct stringwr **betlis
       if (S.Ms0 && (sac==sbc)) 
          transp_sigma(S.blocks[sblock], nas, nbs, phase);
 
-      H0block_gather(S.blocks[sblock], sac, sbc, 1, Parameters_->Ms0, phase);
+      H0block_gather(S.blocks[sblock], sac, sbc, 1, Parameters.Ms0, phase);
 
       if (S.Ms0) {
-         if ((int) Parameters_->S % 2) S.symmetrize(-1.0, sblock);
+         if ((int) Parameters.S % 2) S.symmetrize(-1.0, sblock);
          else S.symmetrize(1.0, sblock);
          }
       S.write(ivec, buf);
@@ -464,15 +537,15 @@ void CIWavefunction::sigma_b(struct stringwr **alplist, struct stringwr **betlis
    int did_sblock = 0;
    int phase;
 
-   if (!Parameters_->Ms0) phase = 1;
-   else phase = ((int) Parameters_->S % 2) ? -1 : 1;
+   if (!Parameters.Ms0) phase = 1;
+   else phase = ((int) Parameters.S % 2) ? -1 : 1;
 
    S.zero(); 
    C.read(C.cur_vect, 0);
 
    /* loop over unique sigma subblocks */ 
    for (sblock=0; sblock<S.num_blocks; sblock++) {
-      if (Parameters_->cc && !cc_reqd_sblocks[sblock]) continue;
+      if (Parameters.cc && !cc_reqd_sblocks[sblock]) continue;
       did_sblock = 0;
       sac = S.Ia_code[sblock];
       sbc = S.Ib_code[sblock];
@@ -480,7 +553,7 @@ void CIWavefunction::sigma_b(struct stringwr **alplist, struct stringwr **betlis
       nbs = S.Ib_size[sblock];
       if (nas==0 || nbs==0) continue;
       if (S.Ms0 && sbc > sac) continue;
-      sbirr = sbc / BetaG_->subgr_per_irrep;
+      sbirr = sbc / BetaG->subgr_per_irrep;
       if (sprime != NULL) set_row_ptrs(nas, nbs, sprime);
 
       for (cblock=0; cblock<C.num_blocks; cblock++) {
@@ -489,7 +562,7 @@ void CIWavefunction::sigma_b(struct stringwr **alplist, struct stringwr **betlis
          cbc = C.Ib_code[cblock];
          cnas = C.Ia_size[cblock];
          cnbs = C.Ib_size[cblock];
-         cbirr = cbc / BetaG_->subgr_per_irrep;
+         cbirr = cbc / BetaG->subgr_per_irrep;
          if (s1_contrib[sblock][cblock] || s2_contrib[sblock][cblock] ||
              s3_contrib[sblock][cblock]) {
             if (cprime != NULL) set_row_ptrs(cnas, cnbs, cprime);
@@ -505,12 +578,12 @@ void CIWavefunction::sigma_b(struct stringwr **alplist, struct stringwr **betlis
 
       if (S.Ms0 && (sac==sbc)) 
          transp_sigma(S.blocks[sblock], nas, nbs, phase);
-      H0block_gather(S.blocks[sblock], sac, sbc, 1, Parameters_->Ms0, 
+      H0block_gather(S.blocks[sblock], sac, sbc, 1, Parameters.Ms0, 
          phase);
       } /* end loop over sigma blocks */
 
       if (S.Ms0) {
-         if ((int) Parameters_->S % 2) S.symmetrize(-1.0, 0);
+         if ((int) Parameters.S % 2) S.symmetrize(-1.0, 0);
          else S.symmetrize(1.0, 0);
          }
 
@@ -552,18 +625,18 @@ void CIWavefunction::sigma_c(struct stringwr **alplist, struct stringwr **betlis
    int did_sblock = 0;
    int phase;
 
-   if (!Parameters_->Ms0) phase = 1;
-   else phase = ((int) Parameters_->S % 2) ? -1 : 1;
+   if (!Parameters.Ms0) phase = 1;
+   else phase = ((int) Parameters.S % 2) ? -1 : 1;
 
 
    for (buf=0; buf<S.buf_per_vect; buf++) {
       sairr = S.buf2blk[buf];
-      sbirr = sairr ^ CalcInfo_->ref_sym;
+      sbirr = sairr ^ CalcInfo.ref_sym;
       S.zero();
       for (cbuf=0; cbuf<C.buf_per_vect; cbuf++) {
          C.read(C.cur_vect, cbuf); /* go ahead and assume it will contrib */
          cairr = C.buf2blk[cbuf];
-         cbirr = cairr ^ CalcInfo_->ref_sym;
+         cbirr = cairr ^ CalcInfo.ref_sym;
 
          for (sblock=S.first_ablk[sairr];sblock<=S.last_ablk[sairr];sblock++){
             sac = S.Ia_code[sblock];
@@ -627,13 +700,13 @@ void CIWavefunction::sigma_c(struct stringwr **alplist, struct stringwr **betlis
 
          /* also gather the contributions from sigma to the H0block */
          if (!S.Ms0 || sac >= sbc) {
-            H0block_gather(S.blocks[sblock], sac, sbc, 1, Parameters_->Ms0,
+            H0block_gather(S.blocks[sblock], sac, sbc, 1, Parameters.Ms0,
                phase);
             }
          }
 
       if (S.Ms0) {
-         if ((int) Parameters_->S % 2) S.symmetrize(-1.0, sairr);
+         if ((int) Parameters.S % 2) S.symmetrize(-1.0, sairr);
          else S.symmetrize(1.0, sairr);
          }
      S.write(ivec, buf);
@@ -648,7 +721,7 @@ void CIWavefunction::sigma_c(struct stringwr **alplist, struct stringwr **betlis
 ** Calculate the contribution to sigma block sblock from C block cblock
 **
 */
-void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **betlist,
+void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
       double **cmat, double **smat, double *oei, double *tei, int fci, 
       int cblock, int sblock, int nas, int nbs, int sac, int sbc, 
       int cac, int cbc, int cnas, int cnbs, int cnac, int cnbc, 
@@ -660,8 +733,9 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
 
     detci_time.s2_before_time = wall_time_new();
 
+#ifndef OLD_CDS_ALG
       if (fci) {
-          if (Parameters_->nthreads > 1)
+          if (Parameters.nthreads > 1)
               s2_block_vfci_thread(alplist, betlist, cmat, smat, oei, tei, F, 
                  cnac, nas, nbs, sac, cac, cnas);
           else
@@ -669,12 +743,12 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
                             nas, nbs, sac, cac, cnas);
         }
       else {
-          if (Parameters_->repl_otf) {
+          if (Parameters.repl_otf) {
               s2_block_vras_rotf(Jcnt, Jij, Joij, Jridx, Jsgn,
                                  Toccs, cmat, smat, oei, tei, F, cnac, 
                                  nas, nbs, sac, cac, cnas);
             }
-          else if (Parameters_->nthreads > 1) {
+          else if (Parameters.nthreads > 1) {
             s2_block_vras_thread(alplist, betlist, cmat, smat, 
                             oei, tei, F, cnac, nas, nbs, sac, cac, cnas);  
             }
@@ -683,13 +757,30 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
                             oei, tei, F, cnac, nas, nbs, sac, cac, cnas);
             }
         }
+#else
+      if (fci) {
+          s2_block_fci(alplist, betlist, cmat, smat, oei, tei, F, cnac,
+                       nas, nbs, sac, cac, cnas);
+        }
+      else {
+          if (Parameters.repl_otf) {
+              s2_block_ras_rotf(Jcnt, Jij, Joij, Jridx, Jsgn,
+                                Toccs, cmat, smat, oei, tei, F, cnac, 
+                                nas, nbs, sac, cac, cnas);
+            }
+          else {
+              s2_block_ras(alplist, betlist, cmat, smat, 
+                           oei, tei, F, cnac, nas, nbs, sac, cac, cnas);
+            }
+        }
+#endif
     detci_time.s2_after_time = wall_time_new();
     detci_time.s2_total_time += detci_time.s2_after_time - detci_time.s2_before_time;
 
     } /* end sigma2 */
 
    
-   if (Parameters_->print_lvl > 3) {
+   if (Parameters.print_lvl > 3) {
      outfile->Printf( "s2: Contribution to sblock=%d from cblock=%d\n",
         sblock, cblock);
      print_mat(smat, nas, nbs, "outfile");
@@ -700,8 +791,9 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
     detci_time.s1_before_time = wall_time_new();
 
       if (s1_contrib[sblock][cblock]) {
+         #ifndef OLD_CDS_ALG
           if (fci) { 
-              if (Parameters_->nthreads > 1)
+              if (Parameters.nthreads > 1)
                   s1_block_vfci_thread(alplist, betlist, cmat, smat, oei, tei, F, cnbc,
                                        nas, nbs, sbc, cbc, cnbs);
               else
@@ -709,12 +801,12 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
                                 oei, tei, F, cnbc, nas, nbs, sbc, cbc, cnbs);
             } 
          else {
-            if (Parameters_->repl_otf) {
+            if (Parameters.repl_otf) {
                s1_block_vras_rotf(Jcnt, Jij, Joij, Jridx, Jsgn,
                   Toccs, cmat, smat, oei, tei, F, cnbc, nas, nbs,
                   sbc, cbc, cnbs);
                }
-            else if (Parameters_->nthreads > 1) {
+            else if (Parameters.nthreads > 1) {
                s1_block_vras_thread(alplist, betlist, cmat, smat, oei, tei, F, cnbc, 
                   nas, nbs, sbc, cbc, cnbs);
               }
@@ -723,13 +815,30 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
                   nas, nbs, sbc, cbc, cnbs);
                }
             } 
+         #else
+         if (fci) { 
+            s1_block_fci(alplist, betlist, cmat, smat, 
+               oei, tei, F, cnbc, nas, nbs, sbc, cbc, cnbs);
+            } 
+         else {
+            if (Parameters.repl_otf) {
+               s1_block_ras_rotf(Jcnt, Jij, Joij, Jridx, Jsgn,
+                  Toccs, cmat, smat, oei, tei, F, cnbc, nas, nbs,
+                  sbc, cbc, cnbs);
+               }
+            else {
+               s1_block_ras(alplist, betlist, cmat, smat, oei, tei, F, cnbc, 
+                  nas, nbs, sbc, cbc, cnbs);
+               }
+            } 
+         #endif
          }
           detci_time.s1_after_time = wall_time_new();
           detci_time.s1_total_time += detci_time.s1_after_time - detci_time.s1_before_time;
 
       } /* end sigma1 */
 
-   if (Parameters_->print_lvl > 3) {
+   if (Parameters.print_lvl > 3) {
      outfile->Printf( "s1: Contribution to sblock=%d from cblock=%d\n",
         sblock, cblock);
      print_mat(smat, nas, nbs, "outfile");
@@ -742,44 +851,63 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
       /* zero_mat(smat, nas, nbs); */
 
       if (!Ms0 || (sac != sbc)) {
-         if (Parameters_->repl_otf) {
+         if (Parameters.repl_otf) {
             b2brepl(Occs[sac], Jcnt[0], Jij[0], Joij[0], Jridx[0],
-               Jsgn[0], AlphaG_, sac, cac, nas);  
+               Jsgn[0], AlphaG, sac, cac, nas);  
             b2brepl(Occs[sbc], Jcnt[1], Jij[1], Joij[1], Jridx[1],
-               Jsgn[1], BetaG_, sbc, cbc, nbs);  
+               Jsgn[1], BetaG, sbc, cbc, nbs);  
+            #ifndef OLD_CDS_ALG
             s3_block_vrotf(Jcnt, Jij, Jridx, Jsgn, cmat, smat, tei, nas, nbs,
                cnas, sbc, cac, cbc, sbirr, cbirr, cprime, F, V, Sgn, L, R);
+            #else
+            s3_block_rotf(Jcnt, Jij, Jridx, Jsgn, cmat, smat, tei, nas, nbs);
+            #endif
             }      
          else {
+         #ifndef OLD_CDS_ALG
             s3_block_v(alplist[sac], betlist[sbc], cmat, smat, tei,
                nas, nbs, cnas, sbc, cac, cbc, sbirr, cbirr, 
                cprime, F, V, Sgn, L, R);
+         #else
+            s3_block(alplist[sac], betlist[sbc], cmat, smat, 
+               tei, nas, nbs, cac, cbc);
+         #endif
             }
          }
 
-      else if (Parameters_->bendazzoli) {
+      else if (Parameters.bendazzoli) {
          s3_block_bz(sac, sbc, cac, cbc, nas, nbs, cnas, tei, cmat, smat, 
             cprime, sprime);
          }
 
       else {
-         if (Parameters_->repl_otf) {
+         if (Parameters.repl_otf) {
             b2brepl(Occs[sac], Jcnt[0], Jij[0], Joij[0], Jridx[0],
-               Jsgn[0], AlphaG_, sac, cac, nas);  
+               Jsgn[0], AlphaG, sac, cac, nas);  
             b2brepl(Occs[sbc], Jcnt[1], Jij[1], Joij[1], Jridx[1],
-               Jsgn[1], BetaG_, sbc, cbc, nbs);  
+               Jsgn[1], BetaG, sbc, cbc, nbs);  
+            #ifndef OLD_CDS_ALG
             s3_block_vdiag_rotf(Jcnt, Jij, Jridx, Jsgn, cmat, smat, tei, 
                nas, nbs, cnas, sbc, cac, cbc, sbirr, cbirr, cprime, F, V,
                Sgn, L, R);
+            #else
+            s3_block_diag_rotf(Jcnt, Jij, Jridx, Jsgn,
+               cmat, smat, tei, nas, nbs);
+            #endif
             }      
          else {
+            #ifndef OLD_CDS_ALG
             s3_block_vdiag(alplist[sac], betlist[sbc], cmat, smat, tei,
                nas, nbs, cnas, sbc, cac, cbc, sbirr, cbirr, 
                cprime, F, V, Sgn, L, R);
+            #else
+            s3_block_diag(alplist[sac], betlist[sbc], cmat, smat, tei, 
+               nas, nbs, cac, cbc);
+            #endif
             }
          }
 
-      if (Parameters_->print_lvl > 3) {
+      if (Parameters.print_lvl > 3) {
         outfile->Printf( "s3: Contribution to sblock=%d from cblock=%d\n",
            sblock, cblock);
         print_mat(smat, nas, nbs, "outfile");

@@ -201,8 +201,7 @@ private:
     struct olsen_graph *AlphaG_;
     struct olsen_graph *BetaG_;
     struct H_zero_block *H0block_;
-    //struct graph_set *AlphaGraph_;
-    //struct graph_set *BetaGraph_;
+    int **s1_contrib_, **s2_contrib_, **s3_contrib_;
 
     /// => H0block functions <= //
     void H0block_init(unsigned int size);
@@ -240,6 +239,11 @@ private:
           CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec);
     void sigma_c(struct stringwr **alplist, struct stringwr **betlist,
           CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec);
+    void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
+          double **cmat, double **smat, double *oei, double *tei, int fci, 
+          int cblock, int sblock, int nas, int nbs, int sac, int sbc, 
+          int cac, int cbc, int cnas, int cnbs, int cnac, int cnbc, 
+          int sbirr, int cbirr, int Ms0);
 
 
     /// => MPn helpers <= //
