@@ -103,15 +103,15 @@ extern void free_stringwr_temps(int nsym);
 extern void str_abs2rel(int absidx, int *relidx, int *listnum,
    struct olsen_graph *Graph);
 extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
-extern void H0block_init(unsigned int size);
-extern void H0block_fill(struct stringwr **alplist,
-   struct stringwr **betlist);
-extern void H0block_free(void);
-extern void H0block_print(void);
-extern void H0block_setup(int num_blocks, int *Ia_code, int *Ib_code);
-extern void H0block_pairup(int guess);
-extern void H0block_spin_cpl_chk(void);
-extern void H0block_filter_setup(void);
+//extern void H0block_init(unsigned int size);
+//extern void H0block_fill(struct stringwr **alplist,
+//   struct stringwr **betlist);
+//extern void H0block_free(void);
+//extern void H0block_print(void);
+//extern void H0block_setup(int num_blocks, int *Ia_code, int *Ib_code);
+//extern void H0block_pairup(int guess);
+//extern void H0block_spin_cpl_chk(void);
+//extern void H0block_filter_setup(void);
 extern void sem_test(double **A, int N, int M, int L, double **evecs,
    double *evals, double **b, double conv_e, double conv_rms,
    int maxiter, double offst, int *vu, int maxnvect, std::string OutFileRMR);
@@ -120,20 +120,20 @@ extern void write_energy(int nroots, double *evals, double offset);
 
 void cleanup(void);
 void quote(void);
-void mpn(struct stringwr **strlista, struct stringwr **strlistb);
-void form_opdm(void);
-void form_tpdm(void);
-extern void mitrush_iter(CIvect &Hd,
-   struct stringwr **alplist, struct stringwr **betlist,
-   int nroots, double *evals, double conv_rms, double conv_e, double enuc,
-   double edrc, int maxiter, int maxnvect, std::string OutFileRMR,
-   int print_lvl);
-extern void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
-   **betlist, double *evals, double conv_e,
-   double conv_rms, double enuc, double edrc,
-   int nroots, int maxiter, int maxnvect, std::string OutFileRMR, int print_lvl);
-extern void mpn_generator(CIvect &Hd, struct stringwr **alplist,
-   struct stringwr **betlist);
+//void mpn(struct stringwr **strlista, struct stringwr **strlistb);
+//void form_opdm(void);
+//void form_tpdm(void);
+//extern void mitrush_iter(CIvect &Hd,
+//   struct stringwr **alplist, struct stringwr **betlist,
+//   int nroots, double *evals, double conv_rms, double conv_e, double enuc,
+//   double edrc, int maxiter, int maxnvect, std::string OutFileRMR,
+//   int print_lvl);
+//extern void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
+//   **betlist, double *evals, double conv_e,
+//   double conv_rms, double enuc, double edrc,
+//   int nroots, int maxiter, int maxnvect, std::string OutFileRMR, int print_lvl);
+//extern void mpn_generator(CIvect &Hd, struct stringwr **alplist,
+//   struct stringwr **betlist);
 extern void opdm(struct stringwr **alplist, struct stringwr **betlist,
    int transdens, int dipmom,
    int Inroots, int Iroot, int Inunits, int Ifirstunit,
@@ -143,8 +143,8 @@ extern void tpdm(struct stringwr **alplist, struct stringwr **betlist,
    int Inroots, int Inunits, int Ifirstunit,
    int Jnroots, int Jnunits, int Jfirstunit,
    int targetfile, int writeflag, int printflag);
-extern void compute_cc(void);
-extern void calc_mrpt(void);
+//extern void compute_cc(void);
+//extern void calc_mrpt(void);
 
 PsiReturnType detci(Options &options);
 
@@ -184,28 +184,28 @@ PsiReturnType detci(Options &options)
      ciwfn->compute_mcscf();
    }
    else{
-     /* Transform and set ci integrals*/
+     // Transform and set ci integrals
      ciwfn->transform_ci_integrals();
 
      if (Parameters.mpn){
-       mpn(alplist, betlist);
+       ciwfn->compute_mpn();
        }
      else if (Parameters.cc)
-       compute_cc();
+       ciwfn->compute_cc();
      else
        ciwfn->diag_h();
    }
 
    // Finished CI, setting wavefunction parameters
    if(!Parameters.zaptn & Parameters.opdm){
-     form_opdm();
+     ciwfn->form_opdm();
      ciwfn->set_opdm();
    }
    else{
      ciwfn->set_opdm(true);
    }
 
-   if (Parameters.tpdm) form_tpdm();
+   if (Parameters.tpdm) ciwfn->form_tpdm();
    if (Parameters.print_lvl) print_time_new(detci_time);
    if (Parameters.nthreads > 1) tpool_destroy(thread_pool, 1);
    if (Parameters.print_lvl > 0) quote();
@@ -598,7 +598,7 @@ void CIWavefunction::diag_h()
 
 
       if (H0block.size) {
-         H0block_fill(alplist_, betlist_);
+         H0block_fill();
          }
 
       if (Parameters.print_lvl > 2 && H0block.size) {
@@ -844,7 +844,7 @@ void CIWavefunction::diag_h()
          }
 
       if (H0block.size) {
-         H0block_fill(alplist_, betlist_);
+         H0block_fill();
          }
 
       if (Parameters.print_lvl > 2 && H0block.size) {
@@ -999,90 +999,7 @@ void CIWavefunction::diag_h()
 
 
 
-void H0block_fill(struct stringwr **alplist, struct stringwr **betlist)
-{
-   int i, j, size;
-   int Ia, Ib, Ja, Jb;
-   int Ialist, Iblist;
-   SlaterDeterminant I, J;
-   double *evals, **evecs;
-
-   /* fill lower triangle */
-   for (i=0; i<H0block.size; i++) {
-
-      Ialist = H0block.alplist[i];
-      Iblist = H0block.betlist[i];
-      Ia = H0block.alpidx[i];
-      Ib = H0block.betidx[i];
-      I.set(CalcInfo.num_alp_expl,
-          alplist[Ialist][Ia].occs, CalcInfo.num_bet_expl,
-          betlist[Iblist][Ib].occs);
-      for (j=0; j<=i; j++) {
-         Ialist = H0block.alplist[j];
-         Iblist = H0block.betlist[j];
-         Ia = H0block.alpidx[j];
-         Ib = H0block.betidx[j];
-         J.set(CalcInfo.num_alp_expl,
-            alplist[Ialist][Ia].occs, CalcInfo.num_bet_expl,
-            betlist[Iblist][Ib].occs);
-
-         /* pointers in next line avoids copying structures I and J */
-         H0block.H0b[i][j] = matrix_element(&I, &J);
-         if (i==j) H0block.H0b[i][i] += CalcInfo.edrc;
-         /* outfile->Printf(" i = %d   j = %d\n",i,j); */
-         }
-
-      H0block.H00[i] = H0block.H0b[i][i];
-      }
-
-   /* fill upper triangle */
-   fill_sym_matrix(H0block.H0b, H0block.size);
-
-   /*
-   evals = init_array(H0block.size);
-   evecs = init_matrix(H0block.size, H0block.size);
-   */
-   evals = init_array(H0block.guess_size);
-   evecs = init_matrix(H0block.guess_size, H0block.guess_size);
-
-   if (Parameters.precon == PRECON_GEN_DAVIDSON)
-     size = H0block.size;
-   else
-     size = H0block.guess_size;
-
-   if (Parameters.print_lvl > 2) {
-     outfile->Printf("H0block size = %d in H0block_fill\n",H0block.size);
-     outfile->Printf(
-             "H0block guess size = %d in H0block_fill\n",H0block.guess_size);
-     outfile->Printf(
-             "H0block coupling size = %d in H0block_fill\n",
-             H0block.coupling_size);
-     outfile->Printf("Diagonalizing H0block.H0b size %d in h0block_fill in"
-                     " detci.cc ... ", size);
-
-   }
-
-   sq_rsp(size, size, H0block.H0b, H0block.H0b_eigvals, 1,
-          H0block.H0b_diag, 1.0E-14);
-
-   if (Parameters.print_lvl) {
-      outfile->Printf( "\n*** H0 Block Eigenvalue = %12.8lf\n",
-             H0block.H0b_eigvals[0] + CalcInfo.enuc);
-
-      }
-
-   if (Parameters.print_lvl > 5 && size < 1000) {
-      for (i=0; i<size; i++) H0block.H0b_eigvals[i] += CalcInfo.enuc;
-      outfile->Printf( "\nH0 Block Eigenvectors\n");
-      eivout(H0block.H0b_diag, H0block.H0b_eigvals,
-             size, size, "outfile");
-      outfile->Printf( "\nH0b matrix\n");
-      print_mat(H0block.H0b, size, size, "outfile");
-      }
-}
-
-
-void form_opdm(void)
+void CIWavefunction::form_opdm(void)
 {
   int i, j, natom;
   double *zvals, **geom;
@@ -1110,7 +1027,7 @@ void form_opdm(void)
 }
 
 
-void form_tpdm(void)
+void CIWavefunction::form_tpdm(void)
 {
   tpdm(alplist, betlist,
        Parameters.num_roots,
@@ -1128,423 +1045,20 @@ void quote(void)
    outfile->Printf("\t\t\t - Edward Valeev\n\n");
 
 }
+//BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx) {
+//
+//   int blknum;
+//   BIGINT addr;
+//
+//   blknum = CIblks.decode[alp_code][bet_code];
+//   addr = CIblks.offset[blknum];
+//   addr += alp_idx * CIblks.Ib_size[blknum] + bet_idx;
+//
+//   return(addr);
+//
+//}
 
-void H0block_coupling_calc(double E, struct stringwr **alplist, struct
-                           stringwr **betlist)
-{
-   static int first_call = 1;
-   int i, j, size, size2;
-   double tval1, tval2, tval3;
-   double *delta_2, *gamma_1, *gamma_2, *H_12, *delta_1;
-   SlaterDeterminant I, J;
-   int Ia, Ib, Ja, Jb;
-   int Ialist, Iblist;
-   double detH0;
 
-   size = H0block.size;
-   size2 = H0block.size + H0block.coupling_size;
-
-   H_12 = init_array(H0block.coupling_size);
-   delta_1 = init_array(H0block.size);
-   delta_2 = init_array(H0block.coupling_size);
-   gamma_1 = init_array(H0block.size);
-   gamma_2 = init_array(H0block.coupling_size);
-
-   if (Parameters.print_lvl > 5) {
-      outfile->Printf( "\nc0b in H0block_coupling_calc = \n");
-      print_mat(&(H0block.c0b), 1, size2, "outfile");
-      outfile->Printf( "\nc0bp in H0block_coupling_calc = \n");
-      print_mat(&(H0block.c0bp), 1, size2, "outfile");
-      }
-
-     /* copy to delta_1 */
-     for (i=0; i<size; i++)
-        delta_1[i] = H0block.c0bp[i];
-
-     /* form delta_2 array  (D-E)^-1 r_2 */
-     for (i=size; i<size2; i++) {
-        tval1 = H0block.H00[i] - E;
-        if (fabs(tval1) > HD_MIN)
-          H0block.c0bp[i] = H0block.c0b[i]/tval1;
-        else H0block.c0bp[i] = 0.0;
-        delta_2[i-size] = H0block.c0bp[i];
-        }
-/*
-     for (i=0; i<size2; i++)
-        outfile->Printf("In Hcc H0block.c0bp[%d] = %lf\n", i, H0block.c0bp[i]);
-*/
-
-     zero_arr(gamma_2, size);
-     /* Construct H_12 coupling block on-the-fly */
-     for (i=0; i<size; i++) {
-        Ialist = H0block.alplist[i];
-        Iblist = H0block.betlist[i];
-        Ia = H0block.alpidx[i];
-        Ib = H0block.betidx[i];
-        I.set(CalcInfo.num_alp_expl, alplist[Ialist][Ia].occs,
-              CalcInfo.num_bet_expl, betlist[Iblist][Ib].occs);
-        for (j=size; j<size2; j++) {
-           Ialist = H0block.alplist[j];
-           Iblist = H0block.betlist[j];
-           Ia = H0block.alpidx[j];
-           Ib = H0block.betidx[j];
-           J.set(CalcInfo.num_alp_expl, alplist[Ialist][Ia].occs,
-                 CalcInfo.num_bet_expl, betlist[Iblist][Ib].occs);
-           H_12[j-size] = matrix_element(&I, &J);
-           } /* end loop over j */
-
-        dot_arr(H_12, delta_2, H0block.coupling_size, &tval2);
-        gamma_1[i] = tval2;
-        for (j=0; j<H0block.coupling_size; j++)
-           gamma_2[j] += H_12[j] * delta_1[i];
-
-        } /* end loop over i */
-
-
-     /* Construct delta_1 = (H_11)^-1 gamma_1, delta_2 = (D_2-E)^-1 * gamma_2 */
-     /* First delta_2 */
-     for (i=size; i<size2; i++) {
-        tval1 = H0block.H00[i] - E;
-        if (fabs(tval1) > HD_MIN)
-          delta_2[i-size] = gamma_2[i-size]/tval1;
-        else delta_2[i-size] = 0.0;
-        }
-
-     /* Now delta_1 */
-
-     /* form H0b-E and take its inverse */
-     for (i=0; i<size; i++) {
-        delta_1[i] = gamma_1[i];
-        for (j=0; j<size; j++) {
-           H0block.tmp1[i][j] = H0block.H0b[i][j];
-           if (i==j) H0block.tmp1[i][i] -= E;
-           }
-        }
-
-     if (Parameters.print_lvl > 4) {
-        outfile->Printf( "\n E = %lf\n", E);
-        outfile->Printf( " H0 - E\n");
-        print_mat(H0block.tmp1, H0block.size, H0block.size, "outfile");
-        }
-
-/*
-       for (i=0; i<size; i++)
-          outfile->Printf("gamma_1[%d] = %lf\n", i, gamma_1[i]);
-
-       pople(H0block.tmp1, delta_1, size, 1, 1e-9, outfile,
-             Parameters.print_lvl);
-*/
-       flin(H0block.tmp1, delta_1, size, 1, &tval1);
-
-     /*
-       detH0 = invert_matrix(H0block.tmp1, H0block.H0b_inv, size, outfile);
-       mmult(H0block.H0b_inv,0,&(gamma_1),1,&(delta_1),1,size,size,1,0);
-     */
-
-    /*
-       if (Parameters.update == UPDATE_OLSEN) {
-         for (i=0; i<size; i++)
-            for (j=0; j<size; j++) {
-               H0block.tmp1[i][j] = H0block.H0b[i][j];
-               if (i==j) H0block.tmp1[i][i] -= E;
-               }
-         pople(H0block.tmp1,H0block.s0bp,size,1,1e-9,outfile,
-               Parameters.print_lvl);
-         }
-    */
-
-      /* Construction of delta_1 and delta_2 completed */
-      /* Now modify correction vectors in H0block structure */
-
-      for (i=0; i<size; i++) H0block.c0bp[i] -= delta_1[i];
-      for (i=size; i<size2; i++) H0block.c0bp[i] -= delta_2[i-size];
-
-     /*
-      for (i=0; i<size2; i++) {
-         if (i>=H0block.coupling_size)
-           H0block.c0bp[i] -= delta_2[i-size];
-         else H0block.c0bp[i] -= delta_1[i];
-         }
-    */
-
-    /*
-      free(gamma_1);
-      free(gamma_2);
-      free(delta_2);
-     */
-
-}
-
-
-/*
-** mpn(): Function which sets up and generates the mpn series
-**
-** Parameters:
-**    alplist = list of alpha strings
-**    betlist = list of beta strings
-**
-** Returns: none
-*/
-void mpn(struct stringwr **alplist, struct stringwr **betlist)
-{
-  int i, j, irrep, cnt;
-  struct stringwr *stralp, *strbet;
-  int **drc_orbs;
-  double tval;
-
-  if(Parameters.zaptn){         /* Shift SCF eigenvalues for ZAPTn          */
-    zapt_shift(CalcInfo.twoel_ints, CalcInfo.nirreps, CalcInfo.nmo,
-       CalcInfo.docc, CalcInfo.socc, CalcInfo.orbs_per_irr,
-       CalcInfo.dropped_docc, CalcInfo.reorder);
-  }
-
-  H0block_init(CIblks.vectlen);
-
-  CIvect Hd(CIblks.vectlen, CIblks.num_blocks, Parameters.icore,
-         Parameters.Ms0, CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size,
-         CIblks.Ib_size, CIblks.offset, CIblks.num_alp_codes,
-         CIblks.num_bet_codes, CalcInfo.nirreps, AlphaG->subgr_per_irrep, 1,
-         Parameters.num_hd_tmp_units, Parameters.first_hd_tmp_unit,
-         CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-
-  Hd.init_io_files(false);
-
-  /* Compute E0 from orbital energies */
-  stralp = alplist[CalcInfo.ref_alp_list] + CalcInfo.ref_alp_rel;
-  strbet = betlist[CalcInfo.ref_bet_list] + CalcInfo.ref_bet_rel;
-
-  drc_orbs = init_int_matrix(CalcInfo.nirreps, CalcInfo.num_drc_orbs);
-  cnt = 0;
-  for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
-     for (i=0; i<CalcInfo.dropped_docc[irrep]; i++)
-        drc_orbs[irrep][i] = cnt++;
-
-  /* Loop over alp occs */
-  //CalcInfo.e0 = CalcInfo.edrc;
-  CalcInfo.e0 = 0.0;
-  CalcInfo.e0_drc = 0.0;
-  for (i=0; i<CalcInfo.num_drc_orbs; i++) {
-     outfile->Printf(" orb_energy[%d] = %lf\n", i, CalcInfo.scfeigval[i]);
-     tval = 2.0 * CalcInfo.scfeigval[i];
-     CalcInfo.e0 += tval;
-     CalcInfo.e0_drc += tval;
-     }
-
-  if(Parameters.zaptn) {
-    for (i=0; i<CalcInfo.num_alp_expl; i++) {
-       j = (stralp->occs)[i] + CalcInfo.num_drc_orbs;
-       CalcInfo.e0 += CalcInfo.scfeigvala[j];
-       }
-
-    for (i=0; i<CalcInfo.num_bet_expl; i++) {
-       j = (strbet->occs)[i] + CalcInfo.num_drc_orbs;
-       CalcInfo.e0 += CalcInfo.scfeigvalb[j];
-       }
-    } else {
-    for (i=0; i<CalcInfo.num_alp_expl; i++) {
-       j = (stralp->occs)[i] + CalcInfo.num_drc_orbs;
-       CalcInfo.e0 += CalcInfo.scfeigval[j];
-       }
-
-    for (i=0; i<CalcInfo.num_bet_expl; i++) {
-       j = (strbet->occs)[i] + CalcInfo.num_drc_orbs;
-       CalcInfo.e0 += CalcInfo.scfeigval[j];
-       }
-    }
-
-   /* prepare the H0 block */
-
-   Hd.diag_mat_els(alplist, betlist, CalcInfo.onel_ints,
-          CalcInfo.twoel_ints, CalcInfo.e0_drc, CalcInfo.num_alp_expl,
-          CalcInfo.num_bet_expl, CalcInfo.num_ci_orbs, Parameters.hd_ave);
-
-   H0block_setup(CIblks.num_blocks, CIblks.Ia_code, CIblks.Ib_code);
-
-   mpn_generator(Hd, alplist, betlist);
-}
-
-BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx) {
-
-   int blknum;
-   BIGINT addr;
-
-   blknum = CIblks.decode[alp_code][bet_code];
-   addr = CIblks.offset[blknum];
-   addr += alp_idx * CIblks.Ib_size[blknum] + bet_idx;
-
-   return(addr);
-
-}
-
-
-/*
-** compute_mcscf(); Optimizes MO and CI coefficients
-**
-** Parameters:
-**    options = options object
-**    alplist = list of alpha strings
-**    betlist = list of beta strings
-**
-** Returns: none
-*/
-void CIWavefunction::compute_mcscf()
-{
-
-  Parameters.print_lvl = 0;
-
-  boost::shared_ptr<SOMCSCF> somcscf;
-  if (MCSCF_Parameters->mcscf_type == "DF"){
-    transform_dfmcscf_ints(!MCSCF_Parameters->orbital_so);
-    somcscf = boost::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
-  }
-  else {
-    transform_mcscf_ints(!MCSCF_Parameters->orbital_so);
-    somcscf = boost::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
-  }
-
-  // We assume some kind of ras here.
-  if (Parameters.wfn != "CASSCF"){
-    std::vector<Dimension> ras_spaces;
-
-    // We only have four spaces currently
-    for (int nras = 0; nras < 4; nras++){
-      Dimension rasdim = Dimension(nirrep_, "RAS" + psi::to_string(nras));
-      for (int h = 0; h < nirrep_; h++){
-          rasdim[h] = CalcInfo.ras_opi[nras][h];
-      }
-      ras_spaces.push_back(rasdim);
-    }
-    somcscf->set_ras(ras_spaces);
-
-  }
-
-  // Set fzc energy
-  SharedMatrix Cfzc = get_orbitals("FZC");
-  somcscf->set_frozen_orbitals(Cfzc);
-
-
-  /// => Start traditional two-step MCSCF <= //
-  // Parameters
-  int conv = 0;
-  double ediff, grad_rms, current_energy;
-  double old_energy = CalcInfo.escf;
-  std::string itertype = "Initial CI";
-  std::string mcscf_type;
-  if (MCSCF_Parameters->mcscf_type == "DF") mcscf_type = "   @DF-MCSCF";
-  else mcscf_type = "      @MCSCF";
-
-
-  // Setup the DIIS manager
-  Dimension dim_oa = get_dimension("DOCC") + get_dimension("ACT");
-  Dimension dim_av = get_dimension("VIR") + get_dimension("ACT");
-
-  SharedMatrix x(new Matrix("Rotation Matrix", nirrep_, dim_oa, dim_av));
-  SharedMatrix xstep;
-  SharedMatrix original_orbs = get_orbitals("ROT");
-
-  boost::shared_ptr<DIISManager> diis_manager(new DIISManager(MCSCF_Parameters->diis_max_vecs,
-                      "MCSCF DIIS", DIISManager::OldestAdded, DIISManager::InCore));
-  diis_manager->set_error_vector_size(1, DIISEntry::Matrix, x.get());
-  diis_manager->set_vector_size(1, DIISEntry::Matrix, x.get());
-  int diis_count = 0;
-
-  // Energy header
-  outfile->Printf("\n                             "
-                    "Total Energy         Delta E       RMS Grad\n\n");
-
-  // Iterate
-  for (int iter=1; iter<(MCSCF_Parameters->max_iter + 1); iter++){
-
-    // Run CI and set quantities
-    diag_h();
-    form_opdm();
-    set_opdm();
-    form_tpdm();
-
-    current_energy = Process::environment.globals["MCSCF TOTAL ENERGY"];
-    ediff = current_energy - old_energy;
-
-    //// Get orbitals for new update
-    SharedMatrix Cdocc = get_orbitals("DOCC");
-    SharedMatrix Cact  = get_orbitals("ACT");
-    SharedMatrix Cvir  = get_orbitals("VIR");
-    SharedMatrix actOPDM = get_active_opdm();
-    SharedMatrix actTPDM = get_active_tpdm();
-
-    somcscf->update(Cdocc, Cact, Cvir, actOPDM, actTPDM);
-    grad_rms = somcscf->gradient_rms();
-
-    outfile->Printf("%s Iter %3d:  % 5.16lf   % 1.5e  % 1.5e %s\n", mcscf_type.c_str(), iter,
-                    current_energy, ediff, grad_rms, itertype.c_str());
-
-    if (grad_rms < MCSCF_Parameters->rms_grad_convergence &&
-        (fabs(ediff) < fabs(MCSCF_Parameters->energy_convergence)) &&
-        (iter > 3)){
-      outfile->Printf("\n       MCSCF has converged!\n");
-      break;
-    }
-    old_energy = current_energy;
-
-    bool do_so_orbital = (((grad_rms < MCSCF_Parameters->so_start_grad) &&
-                           (ediff < MCSCF_Parameters->so_start_e) &&
-                           (iter >= 2))
-                           || (itertype == "SOMCSCF"));
-
-    if (do_so_orbital && MCSCF_Parameters->orbital_so){
-      itertype = "SOMCSCF";
-      xstep = somcscf->solve(3, 1.e-10, false);
-    }
-    else {
-      itertype = "APPROX";
-      xstep = somcscf->approx_solve();
-    }
-
-    // Scale x if needed
-    double maxx = 0.0;
-    for (int h=0; h<xstep->nirrep(); ++h) {
-        for (int i=0; i<xstep->rowspi()[h]; i++) {
-            for (int j=0; j<xstep->colspi()[h]; j++) {
-                if (fabs(xstep->get(h,i,j)) > maxx) maxx = fabs(xstep->get(h,i,j));
-            }
-        }
-    }
-
-    if (maxx > MCSCF_Parameters->max_rot){
-      xstep->scale((MCSCF_Parameters->max_rot)/maxx);
-    }
-
-    // Add step to overall rotation
-    x->add(xstep);
-
-    // Do we add diis?
-    if (iter > MCSCF_Parameters->diis_start){
-      diis_manager->add_entry(2, xstep.get(), x.get());
-      diis_count++;
-    }
-
-    // Do we do diis?
-    if ((itertype == "APPROX") && !(diis_count % MCSCF_Parameters->diis_freq) && (iter > MCSCF_Parameters->diis_start)){
-      diis_manager->extrapolate(1, x.get());
-      itertype = "APPROX, DIIS";
-    }
-
-    SharedMatrix new_orbs = somcscf->Ck(original_orbs, x);
-    set_orbitals("ROT", new_orbs);
-
-    // Transform integrals
-    if (MCSCF_Parameters->mcscf_type == "DF"){
-      transform_dfmcscf_ints(!MCSCF_Parameters->orbital_so);
-    }
-    else {
-      transform_mcscf_ints(!MCSCF_Parameters->orbital_so);
-    }
-
-  }// End MCSCF
-  diis_manager->delete_diis_file();
-  diis_manager.reset();
-
-
-}
 
 
 }} // namespace psi::detci

@@ -42,17 +42,19 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libqt/slaterdset.h>
+#include <libmints/mints.h>
 #include "structs.h"
 #include "ci_tol.h"
 #define EXTERN
 #include "globals.h"
 #include "civect.h"
+#include "ciwave.h"
 #include <physconst.h>
 
 namespace psi { namespace detci {
 
-extern int H0block_calc(double E);
-extern void H0block_xy(double *x, double *y, double E);
+//extern int H0block_calc(double E);
+//extern void H0block_xy(double *x, double *y, double E);
 extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
    int *Iaidx, int *Ibidx, double *coeff,
    struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
@@ -61,12 +63,12 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
 extern void parse_import_vector(SlaterDetSet *sdset, int *i_alplist,
    int *i_alpidx, int *i_betlist, int *i_betidx, int *i_blknums);
 
-extern void H0block_coupling_calc(double E, struct stringwr **alplist,
-   struct stringwr **betlist);
+//extern void H0block_coupling_calc(double E, struct stringwr **alplist,
+//   struct stringwr **betlist);
 
 #define MALPHA_TOLERANCE 1E-15
 
-void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
+void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       **betlist, double *evals, double conv_e,
       double conv_rms, double enuc, double edrc,
       int nroots, int maxiter, int maxnvect, std::string out, int print_lvl)
@@ -1188,11 +1190,14 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
            tval = Dvec.dcalc_evangelisti(k, L, lambda[iter2][k]+edrc, Hd, Cvec,
                 buffer1, buffer2, Parameters.precon, L, alplist,
                 betlist, alpha[iter2]);
-         else tval = Dvec.dcalc2(k, lambda[iter2][k]+edrc, Hd,
+         else{
+             tval = Dvec.dcalc2(k, lambda[iter2][k]+edrc, Hd,
                 Parameters.precon, alplist, betlist);
+             errcod = H0block_calc(lambda[iter2][k]+edrc); /* MLL */
+          }
          if (Parameters.precon >= PRECON_GEN_DAVIDSON && (iter >= 1)) {
            if (Parameters.h0block_coupling && (iter >= 2))
-             H0block_coupling_calc(lambda[iter2][k]+edrc, alplist, betlist);
+             H0block_coupling_calc(lambda[iter2][k]+edrc);
            Dvec.h0block_buf_precon(&tval, k);
            }
          if (tval < 1.0E-13 && print_lvl > 0) {

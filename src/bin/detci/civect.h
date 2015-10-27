@@ -28,9 +28,15 @@
 #define _psi_src_bin_detci_civect_h
 
 namespace psi { namespace detci {
-
+// Forward declarations
 //typedef unsigned long long int BIGINT;
 typedef unsigned long int BIGINT;
+struct calcinfo;
+struct params;
+struct olsen_graph;
+struct H_zero_block;
+
+class CIWavefunction;
 
 /*
 ** CIVECT.H
@@ -43,7 +49,14 @@ typedef unsigned long int BIGINT;
 */
 
 class CIvect {
+   friend class CIWavefunction;
    protected:
+      struct calcinfo *CI_CalcInfo;
+      struct params *CI_Params;
+      struct olsen_graph *CI_AlphaGraph_;
+      struct olsen_graph *CI_BetaGraph_;
+      struct H_zero_block *CI_H0block_;
+
       BIGINT vectlen;            /* total vector length */ 
       unsigned long buffer_size; /* size of largest in-core chunk */
       int num_blocks;            /* number of blocks in vector */

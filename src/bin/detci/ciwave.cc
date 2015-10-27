@@ -85,6 +85,7 @@ void CIWavefunction::common_init()
 
     H_ = reference_wavefunction_->H();
     Ca_ = reference_wavefunction_->Ca()->clone();
+    Cb_ = Ca_; // We can only do RHF or ROHF reference wavefunctions.
     psio_ = reference_wavefunction_->psio();
     AO2SO_ = reference_wavefunction_->aotoso();
     molecule_ = reference_wavefunction_->molecule();
@@ -99,6 +100,9 @@ void CIWavefunction::common_init()
     // This will all be nuked
     alplist_ = alplist;
     betlist_ = betlist;
+    AlphaG_ = AlphaG;
+    BetaG_ = BetaG;
+    CIblks_ = &CIblks;
     CalcInfo_ = &CalcInfo;
     Parameters_ = &Parameters;
 
