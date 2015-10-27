@@ -120,7 +120,7 @@ extern void write_energy(int nroots, double *evals, double offset);
 
 void cleanup(void);
 void quote(void);
-void mpn(struct stringwr **strlista, struct stringwr **strlistb);
+//void mpn(struct stringwr **strlista, struct stringwr **strlistb);
 //void form_opdm(void);
 //void form_tpdm(void);
 extern void mitrush_iter(CIvect &Hd,
@@ -184,11 +184,11 @@ PsiReturnType detci(Options &options)
      ciwfn->compute_mcscf();
    }
    else{
-     /* Transform and set ci integrals*/
+     // Transform and set ci integrals
      ciwfn->transform_ci_integrals();
 
      if (Parameters.mpn){
-       mpn(alplist, betlist);
+       ciwfn->compute_mpn();
        }
      else if (Parameters.cc)
        ciwfn->compute_cc();
@@ -1273,94 +1273,6 @@ void H0block_coupling_calc(double E, struct stringwr **alplist, struct
       free(delta_2);
      */
 
-}
-
-
-/*
-** mpn(): Function which sets up and generates the mpn series
-**
-** Parameters:
-**    alplist = list of alpha strings
-**    betlist = list of beta strings
-**
-** Returns: none
-*/
-void mpn(struct stringwr **alplist, struct stringwr **betlist)
-{
-  int i, j, irrep, cnt;
-  struct stringwr *stralp, *strbet;
-  int **drc_orbs;
-  double tval;
-
-  if(Parameters.zaptn){         /* Shift SCF eigenvalues for ZAPTn          */
-    zapt_shift(CalcInfo.twoel_ints, CalcInfo.nirreps, CalcInfo.nmo,
-       CalcInfo.docc, CalcInfo.socc, CalcInfo.orbs_per_irr,
-       CalcInfo.dropped_docc, CalcInfo.reorder);
-  }
-
-  H0block_init(CIblks.vectlen);
-
-  CIvect Hd(CIblks.vectlen, CIblks.num_blocks, Parameters.icore,
-         Parameters.Ms0, CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size,
-         CIblks.Ib_size, CIblks.offset, CIblks.num_alp_codes,
-         CIblks.num_bet_codes, CalcInfo.nirreps, AlphaG->subgr_per_irrep, 1,
-         Parameters.num_hd_tmp_units, Parameters.first_hd_tmp_unit,
-         CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-
-  Hd.init_io_files(false);
-
-  /* Compute E0 from orbital energies */
-  stralp = alplist[CalcInfo.ref_alp_list] + CalcInfo.ref_alp_rel;
-  strbet = betlist[CalcInfo.ref_bet_list] + CalcInfo.ref_bet_rel;
-
-  drc_orbs = init_int_matrix(CalcInfo.nirreps, CalcInfo.num_drc_orbs);
-  cnt = 0;
-  for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
-     for (i=0; i<CalcInfo.dropped_docc[irrep]; i++)
-        drc_orbs[irrep][i] = cnt++;
-
-  /* Loop over alp occs */
-  //CalcInfo.e0 = CalcInfo.edrc;
-  CalcInfo.e0 = 0.0;
-  CalcInfo.e0_drc = 0.0;
-  for (i=0; i<CalcInfo.num_drc_orbs; i++) {
-     outfile->Printf(" orb_energy[%d] = %lf\n", i, CalcInfo.scfeigval[i]);
-     tval = 2.0 * CalcInfo.scfeigval[i];
-     CalcInfo.e0 += tval;
-     CalcInfo.e0_drc += tval;
-     }
-
-  if(Parameters.zaptn) {
-    for (i=0; i<CalcInfo.num_alp_expl; i++) {
-       j = (stralp->occs)[i] + CalcInfo.num_drc_orbs;
-       CalcInfo.e0 += CalcInfo.scfeigvala[j];
-       }
-
-    for (i=0; i<CalcInfo.num_bet_expl; i++) {
-       j = (strbet->occs)[i] + CalcInfo.num_drc_orbs;
-       CalcInfo.e0 += CalcInfo.scfeigvalb[j];
-       }
-    } else {
-    for (i=0; i<CalcInfo.num_alp_expl; i++) {
-       j = (stralp->occs)[i] + CalcInfo.num_drc_orbs;
-       CalcInfo.e0 += CalcInfo.scfeigval[j];
-       }
-
-    for (i=0; i<CalcInfo.num_bet_expl; i++) {
-       j = (strbet->occs)[i] + CalcInfo.num_drc_orbs;
-       CalcInfo.e0 += CalcInfo.scfeigval[j];
-       }
-    }
-
-   /* prepare the H0 block */
-
-   Hd.diag_mat_els(alplist, betlist, CalcInfo.onel_ints,
-          CalcInfo.twoel_ints, CalcInfo.e0_drc, CalcInfo.num_alp_expl,
-          CalcInfo.num_bet_expl, CalcInfo.num_ci_orbs, Parameters.hd_ave);
-
-   H0block_setup(CIblks.num_blocks, CIblks.Ia_code, CIblks.Ib_code);
-
-   mpn_generator(Hd, alplist, betlist);
 }
 
 BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx) {

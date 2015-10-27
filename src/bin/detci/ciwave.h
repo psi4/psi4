@@ -133,6 +133,7 @@ public:
     void compute_mcscf();
     void compute_cc();
     void diag_h();
+    void compute_mpn();
 
     // Build CI quantities
     void form_opdm();

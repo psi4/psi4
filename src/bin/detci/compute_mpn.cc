@@ -42,12 +42,15 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libchkpt/chkpt.h>
+#include <libmints/mints.h>
 #include "structs.h"
 #include "ci_tol.h"
 #include <libpsio/psio.h>
 #define EXTERN
 #include "globals.h"
+#include "globaldefs.h"
 #include "civect.h"
+#include "ciwave.h"
 
 namespace psi { namespace detci {
 
@@ -56,6 +59,130 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
    struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
    struct stringwr **alplist, struct stringwr **betlist,
    std::string );
+extern void mpn_generator(CIvect &Hd, struct stringwr **alplist, 
+      struct stringwr **betlist);
+extern void H0block_init(unsigned int size);
+extern void H0block_setup(int num_blocks, int *Ia_code, int *Ib_code);
+
+
+/*
+** mpn(): Function which sets up and generates the mpn series
+**
+** Parameters:
+**    alplist = list of alpha strings
+**    betlist = list of beta strings
+**
+** Returns: none
+*/
+void CIWavefunction::compute_mpn()
+{
+  int i, j, irrep, cnt;
+  struct stringwr *stralp, *strbet;
+  int **drc_orbs;
+  double tval;
+
+  if(Parameters.zaptn){         /* Shift SCF eigenvalues for ZAPTn          */
+    int h1, h2;
+    int x, y, i, j;
+    int offset, offset2;
+    int ij, ijij;
+    int docc, socc;
+    int docc2, socc2;
+    int totfzc;
+
+    for(h1=0,totfzc=0; h1<CalcInfo.nirreps; h1++)
+        totfzc += CalcInfo.dropped_docc[h1];
+
+    for(h1 = 0,offset = 0; h1 < CalcInfo.nirreps; h1++) {
+        if(h1>0) offset += CalcInfo.orbs_per_irr[h1-1];
+        docc = CalcInfo.docc[h1];
+        socc = CalcInfo.socc[h1];
+        for(x = offset+docc; x<offset+docc+socc; x++){
+            for(h2 = 0,offset2 = 0; h2 < CalcInfo.nirreps; h2++) {
+                if(h2>0) offset2 += CalcInfo.orbs_per_irr[h2-1];
+                docc2 = CalcInfo.docc[h2];
+                socc2 = CalcInfo.socc[h2];
+                for(y=offset2+docc2;y<offset2+docc2+socc2;y++) {
+                    i = CalcInfo.reorder[x] - totfzc;
+                    j = CalcInfo.reorder[y] - totfzc;
+                    ij = INDEX(i,j);
+                    ijij = ioff[ij] + ij;
+                    CalcInfo.scfeigvala[i+totfzc] -= 0.5*CalcInfo.twoel_ints[ijij];
+                    CalcInfo.scfeigvalb[i+totfzc] += 0.5*CalcInfo.twoel_ints[ijij];
+                }
+            }
+        }
+    }
+
+  //  zapt_shift(CalcInfo.twoel_ints, CalcInfo.nirreps, CalcInfo.nmo,
+  //     CalcInfo.docc, CalcInfo.socc, CalcInfo.orbs_per_irr,
+  //     CalcInfo.dropped_docc, CalcInfo.reorder);
+  }
+
+  H0block_init(CIblks.vectlen);
+
+  CIvect Hd(CIblks.vectlen, CIblks.num_blocks, Parameters.icore,
+         Parameters.Ms0, CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size,
+         CIblks.Ib_size, CIblks.offset, CIblks.num_alp_codes,
+         CIblks.num_bet_codes, CalcInfo.nirreps, AlphaG->subgr_per_irrep, 1,
+         Parameters.num_hd_tmp_units, Parameters.first_hd_tmp_unit,
+         CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+
+  Hd.init_io_files(false);
+
+  /* Compute E0 from orbital energies */
+  stralp = alplist_[CalcInfo.ref_alp_list] + CalcInfo.ref_alp_rel;
+  strbet = betlist_[CalcInfo.ref_bet_list] + CalcInfo.ref_bet_rel;
+
+  drc_orbs = init_int_matrix(CalcInfo.nirreps, CalcInfo.num_drc_orbs);
+  cnt = 0;
+  for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
+     for (i=0; i<CalcInfo.dropped_docc[irrep]; i++)
+        drc_orbs[irrep][i] = cnt++;
+
+  /* Loop over alp occs */
+  //CalcInfo.e0 = CalcInfo.edrc;
+  CalcInfo.e0 = 0.0;
+  CalcInfo.e0_drc = 0.0;
+  for (i=0; i<CalcInfo.num_drc_orbs; i++) {
+     outfile->Printf(" orb_energy[%d] = %lf\n", i, CalcInfo.scfeigval[i]);
+     tval = 2.0 * CalcInfo.scfeigval[i];
+     CalcInfo.e0 += tval;
+     CalcInfo.e0_drc += tval;
+     }
+
+  if(Parameters.zaptn) {
+    for (i=0; i<CalcInfo.num_alp_expl; i++) {
+       j = (stralp->occs)[i] + CalcInfo.num_drc_orbs;
+       CalcInfo.e0 += CalcInfo.scfeigvala[j];
+       }
+
+    for (i=0; i<CalcInfo.num_bet_expl; i++) {
+       j = (strbet->occs)[i] + CalcInfo.num_drc_orbs;
+       CalcInfo.e0 += CalcInfo.scfeigvalb[j];
+       }
+    } else {
+    for (i=0; i<CalcInfo.num_alp_expl; i++) {
+       j = (stralp->occs)[i] + CalcInfo.num_drc_orbs;
+       CalcInfo.e0 += CalcInfo.scfeigval[j];
+       }
+
+    for (i=0; i<CalcInfo.num_bet_expl; i++) {
+       j = (strbet->occs)[i] + CalcInfo.num_drc_orbs;
+       CalcInfo.e0 += CalcInfo.scfeigval[j];
+       }
+    }
+
+   /* prepare the H0 block */
+
+   Hd.diag_mat_els(alplist_, betlist_, CalcInfo.onel_ints,
+          CalcInfo.twoel_ints, CalcInfo.e0_drc, CalcInfo.num_alp_expl,
+          CalcInfo.num_bet_expl, CalcInfo.num_ci_orbs, Parameters.hd_ave);
+
+   H0block_setup(CIblks.num_blocks, CIblks.Ia_code, CIblks.Ib_code);
+
+   mpn_generator(Hd, alplist_, betlist_);
+}
 
 
 void mpn_generator(CIvect &Hd, struct stringwr **alplist, 
