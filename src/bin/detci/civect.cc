@@ -119,8 +119,8 @@ extern void s3_block_rotf(int *Cnt[2], int **Ij[2],
    int **Ridx[2], signed char **Sgn[2], double **C, double **S,
    double *tei, int nas, int nbs);
 extern void transp_sigma(double **a, int rows, int cols, int phase);
-extern void H0block_gather(double **mat, int al, int bl, int cscode,
-   int mscode, int phase);
+//extern void H0block_gather(double **mat, int al, int bl, int cscode,
+//   int mscode, int phase);
 extern double buf_xy1(double *c, double *hd, double E, int len);
 extern void b2brepl(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
    int **Jridx, signed char **Jsgn, struct olsen_graph *Graph,
@@ -145,7 +145,7 @@ extern void xexy(double *x, double *y, int size);
 extern void buf_ols_denom(double *a, double *hd, double E, int len);
 extern void buf_ols_updt(double *a, double *c, double *norm, double *ovrlap,
    double *c1norm, int len, std::string OutFileRMR);
-extern int H0block_calc(double E);
+//extern int H0block_calc(double E);
 extern double ssq(struct stringwr *alplist, struct stringwr *betlist,
   double **CL, double **CR, int nas, int nbs, int Ja_list, int Jb_list);
 
@@ -153,8 +153,8 @@ extern unsigned char ***Occs;
 extern struct olsen_graph *AlphaG;
 extern struct olsen_graph *BetaG;
 
-extern void H0block_coupling_calc(double E, struct stringwr **alplist,
-   struct stringwr **betlist);
+//extern void H0block_coupling_calc(double E, struct stringwr **alplist,
+//   struct stringwr **betlist);
 
 
 CIvect::CIvect() // Default constructor
@@ -2263,7 +2263,7 @@ double CIvect::dcalc2(int rootnum, double lambda, CIvect &Hd,
       norm += tval;
       write(rootnum, buf);
       }
-   if (!Parameters.mpn) errcod = H0block_calc(lambda); /* MLL */
+   //if (!Parameters.mpn) errcod = H0block_calc(lambda); /* MLL */
    return(norm);
 }
 
