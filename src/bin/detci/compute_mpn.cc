@@ -45,10 +45,6 @@
 #include <libmints/mints.h>
 #include "structs.h"
 #include "ci_tol.h"
-#include <libpsio/psio.h>
-#define EXTERN
-#include "globals.h"
-#include "globaldefs.h"
 #include "civect.h"
 #include "ciwave.h"
 
@@ -59,8 +55,8 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
    struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
    struct stringwr **alplist, struct stringwr **betlist,
    std::string );
-//extern void mpn_generator(CIvect &Hd, struct stringwr **alplist, 
-//      struct stringwr **betlist);
+//extern void mpn_generator(CIvect &Hd, struct stringwr **alplist_, 
+//      struct stringwr **betlist_);
 //extern void H0block_init(unsigned int size);
 //extern void H0block_setup(int num_blocks, int *Ia_code, int *Ib_code);
 
@@ -69,8 +65,8 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
 ** mpn(): Function which sets up and generates the mpn series
 **
 ** Parameters:
-**    alplist = list of alpha strings
-**    betlist = list of beta strings
+**    alplist_ = list of alpha strings
+**    betlist_ = list of beta strings
 **
 ** Returns: none
 */
@@ -81,7 +77,7 @@ void CIWavefunction::compute_mpn()
   int **drc_orbs;
   double tval;
 
-  if(Parameters.zaptn){         /* Shift SCF eigenvalues for ZAPTn          */
+  if(Parameters_->zaptn){         /* Shift SCF eigenvalues for ZAPTn          */
     int h1, h2;
     int x, y, i, j;
     int offset, offset2;
@@ -90,103 +86,102 @@ void CIWavefunction::compute_mpn()
     int docc2, socc2;
     int totfzc;
 
-    for(h1=0,totfzc=0; h1<CalcInfo.nirreps; h1++)
-        totfzc += CalcInfo.dropped_docc[h1];
+    for(h1=0,totfzc=0; h1<CalcInfo_->nirreps; h1++)
+        totfzc += CalcInfo_->dropped_docc[h1];
 
-    for(h1 = 0,offset = 0; h1 < CalcInfo.nirreps; h1++) {
-        if(h1>0) offset += CalcInfo.orbs_per_irr[h1-1];
-        docc = CalcInfo.docc[h1];
-        socc = CalcInfo.socc[h1];
+    for(h1 = 0,offset = 0; h1 < CalcInfo_->nirreps; h1++) {
+        if(h1>0) offset += CalcInfo_->orbs_per_irr[h1-1];
+        docc = CalcInfo_->docc[h1];
+        socc = CalcInfo_->socc[h1];
         for(x = offset+docc; x<offset+docc+socc; x++){
-            for(h2 = 0,offset2 = 0; h2 < CalcInfo.nirreps; h2++) {
-                if(h2>0) offset2 += CalcInfo.orbs_per_irr[h2-1];
-                docc2 = CalcInfo.docc[h2];
-                socc2 = CalcInfo.socc[h2];
+            for(h2 = 0,offset2 = 0; h2 < CalcInfo_->nirreps; h2++) {
+                if(h2>0) offset2 += CalcInfo_->orbs_per_irr[h2-1];
+                docc2 = CalcInfo_->docc[h2];
+                socc2 = CalcInfo_->socc[h2];
                 for(y=offset2+docc2;y<offset2+docc2+socc2;y++) {
-                    i = CalcInfo.reorder[x] - totfzc;
-                    j = CalcInfo.reorder[y] - totfzc;
-                    ij = INDEX(i,j);
+                    i = CalcInfo_->reorder[x] - totfzc;
+                    j = CalcInfo_->reorder[y] - totfzc;
+                    ij = INDEX2(i,j);
                     ijij = ioff[ij] + ij;
-                    CalcInfo.scfeigvala[i+totfzc] -= 0.5*CalcInfo.twoel_ints[ijij];
-                    CalcInfo.scfeigvalb[i+totfzc] += 0.5*CalcInfo.twoel_ints[ijij];
+                    CalcInfo_->scfeigvala[i+totfzc] -= 0.5*CalcInfo_->twoel_ints[ijij];
+                    CalcInfo_->scfeigvalb[i+totfzc] += 0.5*CalcInfo_->twoel_ints[ijij];
                 }
             }
         }
     }
 
-  //  zapt_shift(CalcInfo.twoel_ints, CalcInfo.nirreps, CalcInfo.nmo,
-  //     CalcInfo.docc, CalcInfo.socc, CalcInfo.orbs_per_irr,
-  //     CalcInfo.dropped_docc, CalcInfo.reorder);
+  //  zapt_shift(CalcInfo_->twoel_ints, CalcInfo_->nirreps, CalcInfo_->nmo,
+  //     CalcInfo_->docc, CalcInfo_->socc, CalcInfo_->orbs_per_irr,
+  //     CalcInfo_->dropped_docc, CalcInfo_->reorder);
   }
 
-  H0block_init(CIblks.vectlen);
+  H0block_init(CIblks_->vectlen);
 
-  CIvect Hd(CIblks.vectlen, CIblks.num_blocks, Parameters.icore,
-         Parameters.Ms0, CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size,
-         CIblks.Ib_size, CIblks.offset, CIblks.num_alp_codes,
-         CIblks.num_bet_codes, CalcInfo.nirreps, AlphaG->subgr_per_irrep, 1,
-         Parameters.num_hd_tmp_units, Parameters.first_hd_tmp_unit,
-         CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+  CIvect Hd(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore,
+         Parameters_->Ms0, CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size,
+         CIblks_->Ib_size, CIblks_->offset, CIblks_->num_alp_codes,
+         CIblks_->num_bet_codes, CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, 1,
+         Parameters_->num_hd_tmp_units, Parameters_->first_hd_tmp_unit,
+         CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
 
   Hd.init_io_files(false);
 
   /* Compute E0 from orbital energies */
-  stralp = alplist_[CalcInfo.ref_alp_list] + CalcInfo.ref_alp_rel;
-  strbet = betlist_[CalcInfo.ref_bet_list] + CalcInfo.ref_bet_rel;
+  stralp = alplist_[CalcInfo_->ref_alp_list] + CalcInfo_->ref_alp_rel;
+  strbet = betlist_[CalcInfo_->ref_bet_list] + CalcInfo_->ref_bet_rel;
 
-  drc_orbs = init_int_matrix(CalcInfo.nirreps, CalcInfo.num_drc_orbs);
+  drc_orbs = init_int_matrix(CalcInfo_->nirreps, CalcInfo_->num_drc_orbs);
   cnt = 0;
-  for (irrep=0; irrep<CalcInfo.nirreps; irrep++)
-     for (i=0; i<CalcInfo.dropped_docc[irrep]; i++)
+  for (irrep=0; irrep<CalcInfo_->nirreps; irrep++)
+     for (i=0; i<CalcInfo_->dropped_docc[irrep]; i++)
         drc_orbs[irrep][i] = cnt++;
 
   /* Loop over alp occs */
-  //CalcInfo.e0 = CalcInfo.edrc;
-  CalcInfo.e0 = 0.0;
-  CalcInfo.e0_drc = 0.0;
-  for (i=0; i<CalcInfo.num_drc_orbs; i++) {
-     outfile->Printf(" orb_energy[%d] = %lf\n", i, CalcInfo.scfeigval[i]);
-     tval = 2.0 * CalcInfo.scfeigval[i];
-     CalcInfo.e0 += tval;
-     CalcInfo.e0_drc += tval;
+  //CalcInfo_->e0 = CalcInfo_->edrc;
+  CalcInfo_->e0 = 0.0;
+  CalcInfo_->e0_drc = 0.0;
+  for (i=0; i<CalcInfo_->num_drc_orbs; i++) {
+     outfile->Printf(" orb_energy[%d] = %lf\n", i, CalcInfo_->scfeigval[i]);
+     tval = 2.0 * CalcInfo_->scfeigval[i];
+     CalcInfo_->e0 += tval;
+     CalcInfo_->e0_drc += tval;
      }
 
-  if(Parameters.zaptn) {
-    for (i=0; i<CalcInfo.num_alp_expl; i++) {
-       j = (stralp->occs)[i] + CalcInfo.num_drc_orbs;
-       CalcInfo.e0 += CalcInfo.scfeigvala[j];
+  if(Parameters_->zaptn) {
+    for (i=0; i<CalcInfo_->num_alp_expl; i++) {
+       j = (stralp->occs)[i] + CalcInfo_->num_drc_orbs;
+       CalcInfo_->e0 += CalcInfo_->scfeigvala[j];
        }
 
-    for (i=0; i<CalcInfo.num_bet_expl; i++) {
-       j = (strbet->occs)[i] + CalcInfo.num_drc_orbs;
-       CalcInfo.e0 += CalcInfo.scfeigvalb[j];
+    for (i=0; i<CalcInfo_->num_bet_expl; i++) {
+       j = (strbet->occs)[i] + CalcInfo_->num_drc_orbs;
+       CalcInfo_->e0 += CalcInfo_->scfeigvalb[j];
        }
     } else {
-    for (i=0; i<CalcInfo.num_alp_expl; i++) {
-       j = (stralp->occs)[i] + CalcInfo.num_drc_orbs;
-       CalcInfo.e0 += CalcInfo.scfeigval[j];
+    for (i=0; i<CalcInfo_->num_alp_expl; i++) {
+       j = (stralp->occs)[i] + CalcInfo_->num_drc_orbs;
+       CalcInfo_->e0 += CalcInfo_->scfeigval[j];
        }
 
-    for (i=0; i<CalcInfo.num_bet_expl; i++) {
-       j = (strbet->occs)[i] + CalcInfo.num_drc_orbs;
-       CalcInfo.e0 += CalcInfo.scfeigval[j];
+    for (i=0; i<CalcInfo_->num_bet_expl; i++) {
+       j = (strbet->occs)[i] + CalcInfo_->num_drc_orbs;
+       CalcInfo_->e0 += CalcInfo_->scfeigval[j];
        }
     }
 
    /* prepare the H0 block */
 
-   Hd.diag_mat_els(alplist_, betlist_, CalcInfo.onel_ints,
-          CalcInfo.twoel_ints, CalcInfo.e0_drc, CalcInfo.num_alp_expl,
-          CalcInfo.num_bet_expl, CalcInfo.num_ci_orbs, Parameters.hd_ave);
+   Hd.diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints,
+          CalcInfo_->twoel_ints, CalcInfo_->e0_drc, CalcInfo_->num_alp_expl,
+          CalcInfo_->num_bet_expl, CalcInfo_->num_ci_orbs, Parameters_->hd_ave);
 
-   H0block_setup(CIblks.num_blocks, CIblks.Ia_code, CIblks.Ib_code);
+   H0block_setup(CIblks_->num_blocks, CIblks_->Ia_code, CIblks_->Ib_code);
 
-   mpn_generator(Hd, alplist_, betlist_);
+   mpn_generator(Hd);
 }
 
 
-void CIWavefunction::mpn_generator(CIvect &Hd, struct stringwr **alplist, 
-      struct stringwr **betlist)
+void CIWavefunction::mpn_generator(CIvect &Hd)
 {
   double *mpk_energy, *mp2k_energy, *oei, *tei, *buffer1, *buffer2;
   double tval, Empn = 0.0, **wfn_overlap, Empn2 = 0.0, **cvec_coeff;
@@ -199,24 +194,24 @@ void CIWavefunction::mpn_generator(CIvect &Hd, struct stringwr **alplist,
   CIvect Cvec2;
   CIvect Sigma;
 
-  Cvec.set(CIblks.vectlen,CIblks.num_blocks,Parameters.icore,Parameters.Ms0,
-     CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-     CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-     CalcInfo.nirreps, AlphaG->subgr_per_irrep, Parameters.maxnvect,
-     Parameters.num_c_tmp_units, Parameters.first_c_tmp_unit,
-     CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-  Sigma.set(CIblks.vectlen,CIblks.num_blocks,Parameters.icore,Parameters.Ms0,
-     CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-     CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-     CalcInfo.nirreps, AlphaG->subgr_per_irrep, 1,
-     Parameters.num_s_tmp_units, Parameters.first_s_tmp_unit,
-     CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-  Cvec2.set(CIblks.vectlen,CIblks.num_blocks,Parameters.icore,Parameters.Ms0,
-     CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-     CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-     CalcInfo.nirreps, AlphaG->subgr_per_irrep, Parameters.maxnvect,
-     Parameters.num_c_tmp_units, Parameters.first_c_tmp_unit,
-     CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+  Cvec.set(CIblks_->vectlen,CIblks_->num_blocks,Parameters_->icore,Parameters_->Ms0,
+     CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
+     CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
+     CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Parameters_->maxnvect,
+     Parameters_->num_c_tmp_units, Parameters_->first_c_tmp_unit,
+     CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
+  Sigma.set(CIblks_->vectlen,CIblks_->num_blocks,Parameters_->icore,Parameters_->Ms0,
+     CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
+     CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
+     CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, 1,
+     Parameters_->num_s_tmp_units, Parameters_->first_s_tmp_unit,
+     CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
+  Cvec2.set(CIblks_->vectlen,CIblks_->num_blocks,Parameters_->icore,Parameters_->Ms0,
+     CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
+     CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
+     CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Parameters_->maxnvect,
+     Parameters_->num_c_tmp_units, Parameters_->first_c_tmp_unit,
+     CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
 
    // setup I/O files, don't open old versions of these files
    Cvec.init_io_files(false);
@@ -232,32 +227,32 @@ void CIWavefunction::mpn_generator(CIvect &Hd, struct stringwr **alplist,
   buffer2 = Hd.buf_malloc();
   Hd.buf_unlock(); 
   
-  wfn_overlap = init_matrix(Parameters.maxnvect+1, Parameters.maxnvect+1);
-  cvec_coeff = init_matrix(Parameters.maxnvect+1, Parameters.maxnvect+1);
-  tmp_coeff = init_array(Parameters.maxnvect+1);
-  cvec_norm = init_array(Parameters.maxnvect+1);
-  mpk_energy = init_array(Parameters.maxnvect+1);
-  mp2k_energy = init_array(2*(Parameters.maxnvect+1)+1);
-  mpk_energy[0] = mp2k_energy[0] = CalcInfo.e0;
-  mpk_energy[1] = CalcInfo.e1 = mp2k_energy[1] =  
-       CalcInfo.escf - CalcInfo.e0 - CalcInfo.enuc;
-  if (CalcInfo.iopen) kvec_offset = 0;
+  wfn_overlap = init_matrix(Parameters_->maxnvect+1, Parameters_->maxnvect+1);
+  cvec_coeff = init_matrix(Parameters_->maxnvect+1, Parameters_->maxnvect+1);
+  tmp_coeff = init_array(Parameters_->maxnvect+1);
+  cvec_norm = init_array(Parameters_->maxnvect+1);
+  mpk_energy = init_array(Parameters_->maxnvect+1);
+  mp2k_energy = init_array(2*(Parameters_->maxnvect+1)+1);
+  mpk_energy[0] = mp2k_energy[0] = CalcInfo_->e0;
+  mpk_energy[1] = CalcInfo_->e1 = mp2k_energy[1] =  
+       CalcInfo_->escf - CalcInfo_->e0 - CalcInfo_->enuc;
+  if (CalcInfo_->iopen) kvec_offset = 0;
   else kvec_offset = 0;
  
-  for (i=0; i<=Parameters.maxnvect; i++) cvec_coeff[i][i] = 1.0; 
+  for (i=0; i<=Parameters_->maxnvect; i++) cvec_coeff[i][i] = 1.0; 
   cvec_norm[0] = 1.0;
   wfn_overlap[0][0] = 1.0;
 
-  /* oei = CalcInfo.tf_onel_ints; */
-  if (Parameters.fci) oei = CalcInfo.tf_onel_ints;
-  else oei = CalcInfo.gmat[0];
-  tei = CalcInfo.twoel_ints;
+  /* oei = CalcInfo_->tf_onel_ints; */
+  if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints;
+  else oei = CalcInfo_->gmat[0];
+  tei = CalcInfo_->twoel_ints;
 
-  outfile->Printf("   CalcInfo.escf = %25.15f\n", CalcInfo.escf);
-  outfile->Printf("   CalcInfo.e0   = %25.15f\n", CalcInfo.e0);
-  outfile->Printf("   CalcInfo.enuc = %25.15f\n", CalcInfo.enuc);
-  outfile->Printf("   CalcInfo.e1   = %25.15f\n\n", CalcInfo.e1);
-  if(Parameters.zaptn) {
+  outfile->Printf("   CalcInfo_->escf = %25.15f\n", CalcInfo_->escf);
+  outfile->Printf("   CalcInfo_->e0   = %25.15f\n", CalcInfo_->e0);
+  outfile->Printf("   CalcInfo_->enuc = %25.15f\n", CalcInfo_->enuc);
+  outfile->Printf("   CalcInfo_->e1   = %25.15f\n\n", CalcInfo_->e1);
+  if(Parameters_->zaptn) {
     outfile->Printf("   n         Corr. Energy \t\t E(ZAPTn) \t\t"
         "   n         Corr. Energy \t\t E(ZAPTn)\n\n");
     } else {
@@ -265,10 +260,10 @@ void CIWavefunction::mpn_generator(CIvect &Hd, struct stringwr **alplist,
         "   n         Corr. Energy \t\t E(MPn)\n\n");
     }
   outfile->Printf("   0  %25.15f %25.15f\n", 0.0000000000,
-      CalcInfo.e0+CalcInfo.enuc);
+      CalcInfo_->e0+CalcInfo_->enuc);
   outfile->Printf("   1  %25.15f %25.15f\n",mpk_energy[1],
-      mpk_energy[0]+mpk_energy[1]+CalcInfo.enuc);
-  Empn = mpk_energy[0]+mpk_energy[1]+CalcInfo.enuc;
+      mpk_energy[0]+mpk_energy[1]+CalcInfo_->enuc);
+  Empn = mpk_energy[0]+mpk_energy[1]+CalcInfo_->enuc;
   Empn2 = Empn;
   
 
@@ -276,10 +271,10 @@ void CIWavefunction::mpn_generator(CIvect &Hd, struct stringwr **alplist,
 
   Cvec.h0block_buf_init();
   tval = 1.0;
-  Cvec.init_vals(0, 1, &(CalcInfo.ref_alp_list), &(CalcInfo.ref_alp_rel),
-      &(CalcInfo.ref_bet_list), &(CalcInfo.ref_bet_rel), H0block.blknum, 
+  Cvec.init_vals(0, 1, &(CalcInfo_->ref_alp_list), &(CalcInfo_->ref_alp_rel),
+      &(CalcInfo_->ref_bet_list), &(CalcInfo_->ref_bet_rel), H0block_->blknum, 
       &tval);
-  if (Parameters.print_lvl >= 5) {
+  if (Parameters_->print_lvl >= 5) {
     outfile->Printf("Zeroth-order wavefunction\n");
     Cvec.print("outfile");
   }
@@ -294,8 +289,8 @@ void CIWavefunction::mpn_generator(CIvect &Hd, struct stringwr **alplist,
   //outfile->Printf("Sigma zero_blocks after set_zero_blocks_all.\n");
   //Sigma.print_zero_blocks(); 
   
-  sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters.fci, 0); 
-  if (Parameters.print_lvl >= 5) {
+  sigma(alplist_, betlist_, Cvec, Sigma, oei, tei, Parameters_->fci, 0); 
+  if (Parameters_->print_lvl >= 5) {
     outfile->Printf("Sigma vector for 0 C vector\n");
     Sigma.read(0,0);
     Sigma.print("outfile");
@@ -307,22 +302,22 @@ void CIWavefunction::mpn_generator(CIvect &Hd, struct stringwr **alplist,
   Sigma.read(0,0); /* Set Sigma up correctly ? */
   tval = Cvec * Sigma;
 
-  //outfile->Printf(" CalcInfo.enuc = %25.15f\n", CalcInfo.enuc);
+  //outfile->Printf(" CalcInfo_->enuc = %25.15f\n", CalcInfo_->enuc);
   //outfile->Printf(" <psi0|Hc|psi0> = %25.15f\n", tval);
-  //outfile->Printf(" CalcInfo.edrc = %25.15f\n", CalcInfo.edrc);
+  //outfile->Printf(" CalcInfo_->edrc = %25.15f\n", CalcInfo_->edrc);
   //outfile->Printf(" mpk_energy[0] = %25.15f\n", mpk_energy[0]);
  
-  tval += CalcInfo.edrc - mpk_energy[0]; 
+  tval += CalcInfo_->edrc - mpk_energy[0]; 
  
   outfile->Printf("   1  %25.15f %25.15f\n", tval,
-   tval+mpk_energy[0]+CalcInfo.enuc);
+   tval+mpk_energy[0]+CalcInfo_->enuc);
   if (tval - mpk_energy[1] > ZERO) 
     outfile->Printf( "First-order energies do not agree!\n");
   
 
   Cvec.copy_zero_blocks(Sigma); /* Probably don't need this anymore */ 
   Cvec.copy(Sigma, (1-kvec_offset), 0);
-  if (Parameters.print_lvl >= 5) {
+  if (Parameters_->print_lvl >= 5) {
     outfile->Printf( "Cvec copying Sigma.\n");
     Cvec.print("outfile");
   }
@@ -330,33 +325,33 @@ void CIWavefunction::mpn_generator(CIvect &Hd, struct stringwr **alplist,
   Sigma.buf_unlock();
   Hd.buf_lock(buffer2); 
 
-  tval = Cvec.dcalc2(1, CalcInfo.e0, Hd, 1, alplist, betlist);
+  tval = Cvec.dcalc2(1, CalcInfo_->e0, Hd, 1, alplist_, betlist_);
   Hd.buf_unlock();
 
   tval = 0.0;
-  if (Parameters.print_lvl >= 5) {
+  if (Parameters_->print_lvl >= 5) {
     outfile->Printf( "Cvec after dcalc2.\n");
     Cvec.print("outfile");
   }
   Cvec.read((1-kvec_offset),0);
-  Cvec.set_vals((1-kvec_offset), 1, &(CalcInfo.ref_alp_list), 
-          &(CalcInfo.ref_alp_rel), &(CalcInfo.ref_bet_list), 
-          &(CalcInfo.ref_bet_rel), H0block.blknum, &tval);
+  Cvec.set_vals((1-kvec_offset), 1, &(CalcInfo_->ref_alp_list), 
+          &(CalcInfo_->ref_alp_rel), &(CalcInfo_->ref_bet_list), 
+          &(CalcInfo_->ref_bet_rel), H0block_->blknum, &tval);
   Sigma.buf_lock(buffer2);
 
-  if (Parameters.print_lvl >= 5) {
+  if (Parameters_->print_lvl >= 5) {
     outfile->Printf( "Cvec after set_vals.\n");
     Cvec.print("outfile");
     }
 
   /* Here buffer1 = Cvec and buffer2 = Sigma */
   k=1; 
-  while (k<Parameters.maxnvect) {
+  while (k<Parameters_->maxnvect) {
 
      /* Form Sigma */
      Sigma.read(0, 0);
      Cvec.read((k-kvec_offset), 0);  /* Set Cvec up correctly ? */
-     sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters.fci, 0);
+     sigma(alplist_, betlist_, Cvec, Sigma, oei, tei, Parameters_->fci, 0);
      //outfile->Printf("Sigma zero_blocks after sigma call.\n");
      //Sigma.print_zero_blocks(); 
 
@@ -371,22 +366,22 @@ void CIWavefunction::mpn_generator(CIvect &Hd, struct stringwr **alplist,
        outfile->Printf(" norm of Sigma = %20.10f\n", tval);
      #endif
 
-     if (CalcInfo.iopen) { 
+     if (CalcInfo_->iopen) { 
        Cvec.read(0,0); /* E_k = C_0 x S_k */
        tval = Cvec * Sigma;
        }
-     else Sigma.extract_vals(0, 1, &(CalcInfo.ref_alp_list),
-          &(CalcInfo.ref_alp_rel), &(CalcInfo.ref_bet_list),
-          &(CalcInfo.ref_bet_rel), H0block.blknum, &tval);
+     else Sigma.extract_vals(0, 1, &(CalcInfo_->ref_alp_list),
+          &(CalcInfo_->ref_alp_rel), &(CalcInfo_->ref_bet_list),
+          &(CalcInfo_->ref_bet_rel), H0block_->blknum, &tval);
      mpk_energy[k+1] = tval; 
      Empn += tval;
      outfile->Printf("  %2d  %25.15f %25.15f", k+1, mpk_energy[k+1], Empn); 
  
-     std::string label = (Parameters.zaptn) ? "ZAPT" : "MP";
+     std::string label = (Parameters_->zaptn) ? "ZAPT" : "MP";
 
      Sigma.buf_unlock();
-     if (Parameters.wigner) {
-       Cvec.wigner_E2k_formula(Hd, Sigma, Cvec2, alplist, betlist, buffer1,
+     if (Parameters_->wigner) {
+       Cvec.wigner_E2k_formula(Hd, Sigma, Cvec2, alplist_, betlist_, buffer1,
           buffer2, k, mp2k_energy, wfn_overlap, cvec_coeff, cvec_norm, kvec_offset);
        Empn2 += mp2k_energy[2*k];
        outfile->Printf("\t %2d %25.15f %25.15f\n",2*k,mp2k_energy[2*k],Empn2);
@@ -401,7 +396,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd, struct stringwr **alplist,
        Process::environment.globals[s.str()] = Empn2;
        s.str(std::string());
        s << label << (2*k) << " CORRELATION ENERGY";
-       Process::environment.globals[s.str()] = Empn2 - CalcInfo.escf;
+       Process::environment.globals[s.str()] = Empn2 - CalcInfo_->escf;
        //s.str(std::string());
        //s << label << (2*k) << " CORRECTION ENERGY";
        //Process::environment.globals[s.str()] = mp2k_energy[2*k];
@@ -419,7 +414,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd, struct stringwr **alplist,
        Process::environment.globals[s.str()] = Empn2;
        s.str(std::string());
        s << label << (2*k+1) << " CORRELATION ENERGY";
-       Process::environment.globals[s.str()] = Empn2 - CalcInfo.escf;
+       Process::environment.globals[s.str()] = Empn2 - CalcInfo_->escf;
        //s.str(std::string());
        //s << label << (2*k+1) << " CORRECTION ENERGY";
        //Process::environment.globals[s.str()] = mp2k_energy[2*k+1];
@@ -433,7 +428,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd, struct stringwr **alplist,
        Process::environment.globals[s.str()] = Empn;
        s.str(std::string());
        s << label << (k+1) << " CORRELATION ENERGY";
-       Process::environment.globals[s.str()] = Empn - CalcInfo.escf;
+       Process::environment.globals[s.str()] = Empn - CalcInfo_->escf;
        //s.str(std::string());
        //s << label << (k+1) << " CORRECTION ENERGY";
        //Process::environment.globals[s.str()] = mpk_energy[k+1];
@@ -441,10 +436,10 @@ void CIWavefunction::mpn_generator(CIvect &Hd, struct stringwr **alplist,
 
      
 
-     if (k+1 == Parameters.maxnvect) break;
+     if (k+1 == Parameters_->maxnvect) break;
 
      /* Schmidt orthogonalize vector space */
-     if (Parameters.mpn_schmidt && k>1) {
+     if (Parameters_->mpn_schmidt && k>1) {
        Cvec2.buf_lock(buffer2);
        if (Cvec.schmidt_add2(Cvec2,0,k-2,k-1,k-1,cvec_coeff[k-1],
            (&cvec_norm[k-1]),&max_overlap)) did_vec = 1;
@@ -500,20 +495,20 @@ void CIWavefunction::mpn_generator(CIvect &Hd, struct stringwr **alplist,
        }
 
      /* Construct k+1th order wavefunction */
-     Cvec.construct_kth_order_wf(Hd, Sigma, Cvec2, alplist, betlist, buffer1,
+     Cvec.construct_kth_order_wf(Hd, Sigma, Cvec2, alplist_, betlist_, buffer1,
         buffer2, k+1, mpk_energy, cvec_coeff, cvec_norm);
      
      // outfile->Printf( "Cvec %d = \n", k+1);
      // Cvec.print(outfile);
 
-     if (Parameters.mpn_schmidt) {
+     if (Parameters_->mpn_schmidt) {
        outfile->Printf( "cvec_coeff = \n");
        print_mat(cvec_coeff, k-1, k-1, "outfile");
        }
 
      tval = 0.0;
-     Cvec.set_vals(k+1, 1, &(CalcInfo.ref_alp_list), &(CalcInfo.ref_alp_rel),
-             &(CalcInfo.ref_bet_list), &(CalcInfo.ref_bet_rel), H0block.blknum,
+     Cvec.set_vals(k+1, 1, &(CalcInfo_->ref_alp_list), &(CalcInfo_->ref_alp_rel),
+             &(CalcInfo_->ref_bet_list), &(CalcInfo_->ref_bet_rel), H0block_->blknum,
              &tval);
      Sigma.buf_lock(buffer2);
      k++;
@@ -524,35 +519,35 @@ void CIWavefunction::mpn_generator(CIvect &Hd, struct stringwr **alplist,
     * Save the MPn or MP(2n-1) energy
     */
    chkpt_init(PSIO_OPEN_OLD);
-   if (Parameters.save_mpn2 == 1 && Parameters.wigner) {
+   if (Parameters_->save_mpn2 == 1 && Parameters_->wigner) {
      chkpt_wt_etot(Empn2);
      Process::environment.globals["CURRENT ENERGY"] = Empn2;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = Empn2 - Process::environment.globals["CURRENT REFERENCE ENERGY"];
 
-     if(Parameters.zaptn) 
-       outfile->Printf( "\nZAPT%d energy saved\n", (Parameters.maxnvect * 2) - 1);
+     if(Parameters_->zaptn) 
+       outfile->Printf( "\nZAPT%d energy saved\n", (Parameters_->maxnvect * 2) - 1);
      else
-       outfile->Printf( "\nMP%d energy saved\n", (Parameters.maxnvect * 2) - 1);
+       outfile->Printf( "\nMP%d energy saved\n", (Parameters_->maxnvect * 2) - 1);
    }
-   else if (Parameters.save_mpn2 == 2 && Parameters.wigner) {
+   else if (Parameters_->save_mpn2 == 2 && Parameters_->wigner) {
      chkpt_wt_etot(Empn2a);
      Process::environment.globals["CURRENT ENERGY"] = Empn2a;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = Empn2a - Process::environment.globals["CURRENT REFERENCE ENERGY"];
-     if(Parameters.zaptn)
-       outfile->Printf( "\nZAPT%d energy saved\n", (Parameters.maxnvect * 2) - 2);
+     if(Parameters_->zaptn)
+       outfile->Printf( "\nZAPT%d energy saved\n", (Parameters_->maxnvect * 2) - 2);
      else
-       outfile->Printf( "\nMP%d energy saved\n", (Parameters.maxnvect * 2) - 2);
+       outfile->Printf( "\nMP%d energy saved\n", (Parameters_->maxnvect * 2) - 2);
    }
    else {
      chkpt_wt_etot(Empn);
      Process::environment.globals["CURRENT ENERGY"] = Empn;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = Empn - Process::environment.globals["CURRENT REFERENCE ENERGY"];
-     if(Parameters.zaptn)
-       outfile->Printf( "\nZAPT%d energy saved\n", Parameters.maxnvect);
+     if(Parameters_->zaptn)
+       outfile->Printf( "\nZAPT%d energy saved\n", Parameters_->maxnvect);
      else
-       outfile->Printf( "\nMP%d energy saved\n", Parameters.maxnvect);
+       outfile->Printf( "\nMP%d energy saved\n", Parameters_->maxnvect);
    }
-   if(Parameters.zaptn)
+   if(Parameters_->zaptn)
      outfile->Printf( "\nEZAPTn = %17.13lf\n", chkpt_rd_etot());
    else
      outfile->Printf( "\nEMPn = %17.13lf\n", chkpt_rd_etot());

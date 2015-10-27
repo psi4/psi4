@@ -112,6 +112,8 @@ void CIWavefunction::H0block_init(unsigned int size) {
         H0block.tmp_array2 = init_array(size2);
         }
      }
+  // Need to nuke this eventually
+  H0block_ = &H0block;
 }
 
 
