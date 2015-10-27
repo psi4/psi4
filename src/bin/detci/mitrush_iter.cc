@@ -43,17 +43,19 @@
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libmints/mints.h>
 #include "structs.h"
 #include "globals.h"
 #include "civect.h"
 #include "ci_tol.h"
+#include "ciwave.h"
 
 namespace psi { namespace detci {
 
-extern int H0block_calc(double E);
-extern int H0block_coupling_calc(double E, struct stringwr *alplist,
-   struct stringwr *betlist);
-extern void H0block_xy(double *x, double *y, double E);
+//extern int H0block_calc(double E);
+//extern int H0block_coupling_calc(double E, struct stringwr *alplist,
+//   struct stringwr *betlist);
+//extern void H0block_xy(double *x, double *y, double E);
 extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode, 
    int *Iaidx, int *Ibidx, double *coeff,
    struct olsen_graph *AlphaG, struct olsen_graph *BetaG, 
@@ -75,10 +77,13 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
 ** 19 June 1995
 **
 */
-void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
+void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       **betlist, int nroots, double *evals, double conv_rms, double conv_e, 
       double enuc, double edrc, int maxiter, int maxnvect, std::string out,
       int print_lvl)
+//void mitrush_iter(CIvect &Hd, int nroots, double *evals, double conv_rms, double conv_e, 
+//      double enuc, double edrc, int maxiter, int maxnvect, std::string out,
+//      int print_lvl)
 {
 
    int i, j, ij, k, l, curr, last, iter=0, L, tmpi;

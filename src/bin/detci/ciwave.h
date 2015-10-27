@@ -41,6 +41,7 @@ typedef boost::shared_ptr<Matrix> SharedMatrix;
 
 // From the detci module
 namespace psi { namespace detci {
+class CIvect;
 struct calcinfo;
 struct params;
 struct stringwr;
@@ -129,9 +130,15 @@ public:
      **/
     SharedMatrix get_active_tpdm(const std::string& tpdm_type = "SUM");
 
-    // Should be private
+    // Should be private?
     void compute_mcscf();
+    void compute_cc();
     void diag_h();
+    void compute_mpn();
+
+    // Build CI quantities
+    void form_opdm();
+    void form_tpdm();
 
 private:
 
@@ -174,7 +181,6 @@ private:
     void form_gmat();
     void onel_ints_from_jk();
 
-
     /// Non-DF integral functions
     void setup_mcscf_ints();
     void transform_mcscf_ints(bool approx_only = false);
@@ -185,21 +191,63 @@ private:
     void transform_dfmcscf_ints(bool approx_only = false);
 
 
-    /// => Old Globals <= //
+    /// => Globals <= //
     struct stringwr **alplist_;
     struct stringwr **betlist_;
     struct mcscf_params *MCSCF_Parameters;
     struct calcinfo *CalcInfo_;
     struct params *Parameters_;
+    struct ci_blks *CIblks_;
+    struct olsen_graph *AlphaG_;
+    struct olsen_graph *BetaG_;
+    struct H_zero_block *H0block_;
+    int **s1_contrib_, **s2_contrib_, **s3_contrib_;
 
-    //struct ci_blks CIblks_;
-    //struct olsen_graph *AlphaG_;
-    //struct olsen_graph *BetaG_;
-    //struct graph_set *AlphaGraph_;
-    //struct graph_set *BetaGraph_;
-    //struct H_zero_block H0block_;
+    /// => H0block functions <= //
+    void H0block_init(unsigned int size);
+    void H0block_free(void);
+    void H0block_print(void);
+    int  H0block_calc(double E);
+    void H0block_gather(double **mat, int al, int bl, int cscode, int mscode, int phase);
+    void H0block_xy(double *x, double *y, double E);
+    void H0block_setup(int num_blocks, int *Ia_code, int *Ib_code);
+    void H0block_pairup(int guess);
+    void H0block_spin_cpl_chk(void);
+    void H0block_filter_setup(void);
+    void H0block_fill();
+    void H0block_coupling_calc(double E);
 
-    // Form strings
+    /// => CI Iterators <= //
+    //void mitrush_iter(CIvect &Hd, int nroots, double *evals, double conv_rms, double conv_e,
+    //  double enuc, double edrc, int maxiter, int maxnvect, std::string out,
+    //  int print_lvl);
+    void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
+          **betlist, int nroots, double *evals, double conv_rms, double conv_e,
+          double enuc, double edrc, int maxiter, int maxnvect, std::string out,
+          int print_lvl);
+    void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
+      **betlist, double *evals, double conv_e,
+      double conv_rms, double enuc, double edrc,
+      int nroots, int maxiter, int maxnvect, std::string out, int print_lvl);
+    void sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
+          struct stringwr **betlist);
+    void sigma(struct stringwr **alplist, struct stringwr **betlist,
+          CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec);
+    void sigma_a(struct stringwr **alplist, struct stringwr **betlist,
+          CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec);
+    void sigma_b(struct stringwr **alplist, struct stringwr **betlist,
+          CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec);
+    void sigma_c(struct stringwr **alplist, struct stringwr **betlist,
+          CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec);
+    void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
+          double **cmat, double **smat, double *oei, double *tei, int fci, 
+          int cblock, int sblock, int nas, int nbs, int sac, int sbc, 
+          int cac, int cbc, int cnas, int cnbs, int cnac, int cnbc, 
+          int sbirr, int cbirr, int Ms0);
+
+
+    /// => MPn helpers <= //
+    void mpn_generator(CIvect &Hd); 
 
 };
 
