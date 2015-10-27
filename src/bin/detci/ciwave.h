@@ -129,9 +129,14 @@ public:
      **/
     SharedMatrix get_active_tpdm(const std::string& tpdm_type = "SUM");
 
-    // Should be private
+    // Should be private?
     void compute_mcscf();
+    void compute_cc();
     void diag_h();
+
+    // Build CI quantities
+    void form_opdm();
+    void form_tpdm();
 
 private:
 
@@ -173,7 +178,6 @@ private:
     void tf_onel_ints();
     void form_gmat();
     void onel_ints_from_jk();
-
 
     /// Non-DF integral functions
     void setup_mcscf_ints();
