@@ -169,6 +169,7 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only)
 {
 
   if (!df_ints_init_) setup_dfmcscf_ints();
+  timer_on("CIWave: DFMCSCF integral transform");
 
   // => AO C matrices <= //
   // We want a pitzer order C matrix with appended Cact
@@ -293,6 +294,7 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only)
   }
   tf_onel_ints();
   form_gmat();
+  timer_off("CIWave: DFMCSCF integral transform");
 }
 void CIWavefunction::setup_mcscf_ints(){
   // We need to do a few weird things to make IntegralTransform work for us
@@ -367,6 +369,7 @@ void CIWavefunction::transform_mcscf_ints(bool approx_only)
 {
 
   if (!ints_init_) setup_mcscf_ints();
+  timer_on("CIWave: MCSCF integral transform");
 
   // The orbital matrix need to be identical to the previous one
   ints_->set_orbitals(get_orbitals("ALL"));
@@ -405,6 +408,7 @@ void CIWavefunction::transform_mcscf_ints(bool approx_only)
   // Form auxiliary matrices
   tf_onel_ints();
   form_gmat();
+  timer_off("CIWave: MCSCF integral transform");
 
 }
 
