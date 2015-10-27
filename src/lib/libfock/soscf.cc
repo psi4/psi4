@@ -53,7 +53,7 @@ SOMCSCF::SOMCSCF(boost::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H) 
 SOMCSCF::~SOMCSCF()
 {
 }
-void SOMCSCF::transform()
+void SOMCSCF::transform(bool approx_only)
 {
     throw PSIEXCEPTION("The SOMCSCF object must be initilized as a DF or Disk object.");
 }
@@ -783,55 +783,67 @@ DFSOMCSCF::DFSOMCSCF(boost::shared_ptr<JK> jk, boost::shared_ptr<DFERI> df, Shar
 DFSOMCSCF::~DFSOMCSCF()
 {
 }
-void DFSOMCSCF::transform()
+void DFSOMCSCF::transform(bool approx_only)
 {
     // => AO C matrices <= //
-    // We want pitzer order C matrix with appended Cact
-    int aoc_rowdim = nmo_ + nact_;
+    // We want a pitzer order C matrix with appended Cact
+    SharedMatrix Cocc = matrices_["Cocc"];
+    SharedMatrix Cact = matrices_["Cact"];
+    SharedMatrix Cvir = matrices_["Cvir"];
+
+    int nrot = Cocc->ncol() + Cact->ncol() + Cvir->ncol();
+    int aoc_rowdim =  nrot + Cact->ncol();
     SharedMatrix AO_C = SharedMatrix(new Matrix("AO_C", nao_, aoc_rowdim));
+
     double** AO_Cp = AO_C->pointer();
     for (int h=0, offset=0, offset_act=0; h < nirrep_; h++){
-        int hnso = matrices_["AOTOSO"]->colspi()[h];
+        int hnso = nsopi_[h];
         if (hnso == 0) continue;
         double** Up = matrices_["AOTOSO"]->pointer(h);
 
+        int noccpih = Cocc->colspi()[h];
+        int nactpih = Cact->colspi()[h];
+        int nvirpih = Cvir->colspi()[h];
         // occupied
-        if (noccpi_[h]){
-            double** CSOp = matrices_["Cocc"]->pointer(h);
-            C_DGEMM('N','N',nao_,noccpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],noccpi_[h],0.0,&AO_Cp[0][offset],aoc_rowdim);
-            offset += noccpi_[h];
+        if (noccpih){
+            double** CSOp = Cocc->pointer(h);
+            C_DGEMM('N','N',nao_,noccpih,hnso,1.0,Up[0],hnso,CSOp[0],noccpih,0.0,&AO_Cp[0][offset],aoc_rowdim);
+            offset += noccpih;
         }
         // active
-        if (nactpi_[h]){
-            double** CSOp = matrices_["Cact"]->pointer(h);
-            C_DGEMM('N','N',nao_,nactpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],nactpi_[h],0.0,&AO_Cp[0][offset],aoc_rowdim);
-            offset += nactpi_[h];
+        if (nactpih){
+            double** CSOp = Cact->pointer(h);
+            C_DGEMM('N','N',nao_,nactpih,hnso,1.0,Up[0],hnso,CSOp[0],nactpih,0.0,&AO_Cp[0][offset],aoc_rowdim);
+            offset += nactpih;
 
-            C_DGEMM('N','N',nao_,nactpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],nactpi_[h],0.0,&AO_Cp[0][offset_act + nmo_],aoc_rowdim);
-            offset_act += nactpi_[h];
+            C_DGEMM('N','N',nao_,nactpih,hnso,1.0,Up[0],hnso,CSOp[0],nactpih,0.0,&AO_Cp[0][offset_act + nrot],aoc_rowdim);
+            offset_act += nactpih;
         }
         // virtual
-        if (nvirpi_[h]){
-            double** CSOp = matrices_["Cvir"]->pointer(h);
-            C_DGEMM('N','N',nao_,nvirpi_[h],hnso,1.0,Up[0],hnso,CSOp[0],nvirpi_[h],0.0,&AO_Cp[0][offset],aoc_rowdim);
-            offset += nvirpi_[h];
+        if (nvirpih){
+            double** CSOp = Cvir->pointer(h);
+            C_DGEMM('N','N',nao_,nvirpih,hnso,1.0,Up[0],hnso,CSOp[0],nvirpih,0.0,&AO_Cp[0][offset],aoc_rowdim);
+            offset += nvirpih;
         }
     }
 
-    // => Q matrix <= //
-    // d_vwxy I_nwxy => Q_vn
+
+    // => Compute DF ints <= //
     dferi_->clear();
     dferi_->set_C(AO_C);
-    dferi_->add_space("N", 0, nmo_);
-    dferi_->add_space("a", nmo_, aoc_rowdim);
+    dferi_->add_space("R", 0, nrot);
+    dferi_->add_space("a", nrot, aoc_rowdim);
+    dferi_->add_space("F", 0, aoc_rowdim);
 
-    // Is it smart enough to order then untranspose?
-    // In the future build this once then slice it
-    dferi_->add_pair_space("aaQ", "a", "a");
-    dferi_->add_pair_space("NaQ", "N", "a");
-    dferi_->add_pair_space("NNQ", "N", "N");
-
-    // dferi_->print_header(2);
+    if (approx_only){
+      dferi_->add_pair_space("aaQ", "a", "a");
+      dferi_->add_pair_space("RaQ", "a", "R", -1.0/2.0, true);
+    }
+    else{
+      dferi_->add_pair_space("aaQ", "a", "a");
+      dferi_->add_pair_space("RaQ", "a", "R", -1.0/2.0, true);
+      dferi_->add_pair_space("RRQ", "R", "R");
+    }
     dferi_->compute();
 }
 void DFSOMCSCF::set_act_MO()
@@ -1065,7 +1077,7 @@ DiskSOMCSCF::DiskSOMCSCF(boost::shared_ptr<JK> jk,
 DiskSOMCSCF::~DiskSOMCSCF()
 {
 }
-void DiskSOMCSCF::transform()
+void DiskSOMCSCF::transform(bool approx_only)
 {
     throw PSIEXCEPTION("DiskSOMCSCF::transoform is not supported for Disk integrals.");
 }
