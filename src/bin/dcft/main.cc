@@ -46,7 +46,7 @@ dcft(Options &options)
     outfile->Printf(    "\t*                        Density Cumulant Functional Theory                       *\n");
     outfile->Printf(    "\t*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *\n");
     outfile->Printf(    "\t***********************************************************************************\n");
-
+                
     boost::shared_ptr<Wavefunction> dcft = boost::shared_ptr<Wavefunction>(new DCFTSolver(Process::environment.wavefunction(), options));
     Process::environment.set_wavefunction(dcft);
 

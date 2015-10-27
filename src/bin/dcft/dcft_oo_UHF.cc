@@ -80,7 +80,7 @@ DCFTSolver::run_simult_dcft_oo()
         }
         transform_tau();
 
-        if (options_.get_bool("DCFT_DENSITY_FITTING")){
+        if (options_.get_bool("DCFT_DENSITY_FITTING") && options_.get_str("AO_BASIS") == "NONE"){
 
             build_DF_tensors_UHF();
 
@@ -223,6 +223,8 @@ DCFTSolver::run_simult_dc_guess()
 double
 DCFTSolver::compute_orbital_residual() {
 
+    dcft_timer_on("DCFTSolver::compute_orbital_residual()");
+
     dpdfile2 Xai, Xia;
 
     // Compute the unrelaxed densities for the orbital gradient
@@ -282,6 +284,8 @@ DCFTSolver::compute_orbital_residual() {
 
     global_dpd_->file2_close(&Xai);
     global_dpd_->file2_close(&Xia);
+
+    dcft_timer_off("DCFTSolver::compute_orbital_residual()");
 
     return maxGradient;
 }
@@ -878,6 +882,8 @@ DCFTSolver::compute_orbital_gradient_VO() {
 void
 DCFTSolver::compute_orbital_rotation_jacobi() {
 
+    dcft_timer_on("DCFTSolver::compute_orbital_rotation_jacobi()");
+
     // Determine the orbital rotation step
     // Alpha spin
     for(int h = 0; h < nirrep_; ++h){
@@ -905,11 +911,13 @@ DCFTSolver::compute_orbital_rotation_jacobi() {
     Xtotal_a_->add(X_a_);
     Xtotal_b_->add(X_b_);
 
+    dcft_timer_off("DCFTSolver::compute_orbital_rotation_jacobi()");
 }
 
 void
 DCFTSolver::rotate_orbitals()
 {
+    dcft_timer_on("DCFTSolver::rotate_orbitals()");
 
     // Initialize the orbital rotation matrix
     SharedMatrix U_a(new Matrix("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_));
@@ -954,6 +962,7 @@ DCFTSolver::rotate_orbitals()
     Ca_->gemm(false, false, 1.0, old_ca_, U_a, 0.0);
     Cb_->gemm(false, false, 1.0, old_cb_, U_b, 0.0);
 
+    dcft_timer_off("DCFTSolver::rotate_orbitals()");
 
 }
 

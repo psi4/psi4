@@ -29,7 +29,6 @@
 #include <libdpd/dpd.h>
 #include <libciomr/libciomr.h>
 #include <libmints/dimension.h>
-#include <../bin/dfocc/tensors.h>
 
 #define DCFT_TIMER
 
@@ -500,8 +499,10 @@ protected:
     void build_DF_tensors_UHF();
     /// Form J(P|Q)^-1/2
     void formJm12(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
-    /// Form b(Q, mu, nu)
-    void formbso(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
+    /// Form AO basis b(Q|mu,nu)
+    void formb_ao(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
+    /// Transform b(Q|mu,nu) from AO basis to SO basis
+    void transform_b_ao2so();
     /// Transform SO-basis b(Q, mn) to MO-basis b(Q, pq)
     void transform_b();
     /// Form MO-basis b(Q, ij)
@@ -522,18 +523,21 @@ protected:
     void form_df_g_vooo();
     /// Form density-fitted MO-basis TEI g(OV|VV) in chemists' notation
     void form_df_g_ovvv();
+    /// Form density-fitted MO-basis TEI g<VV|VV> in physists' notation
+    void form_df_g_vvvv();
     /// Form MO-based Gbar*Gamma
     void build_gbarGamma_RHF();
     void build_gbarGamma_UHF();
-    /// Convert 2-index <P|Q> to 3-index <1|PQ>
-    dfoccwave::SharedTensor2d convert_2ind_to_3ind(SharedMatrix X);
-    /// Back-convert 3-index <1|PQ> to 2-index <P|Q>
-    SharedMatrix backconvert_3ind_to_2ind(dfoccwave::SharedTensor2d X);
+    /// Form gbar<ab|cd> * lambda <ij|cd>
+    void build_gbarlambda_RHF_v2mem();
+    void build_gbarlambda_RHF_v3mem();
+    void build_gbarlambda_RHF_v4mem();
 
+    void build_gbarlambda_UHF_v2mem();
+    void build_gbarlambda_UHF_v3mem();
+    void build_gbarlambda_UHF_v4mem();
 
     // Density-Fitting DCFT
-    /// Density-fitting or Not
-    bool is_density_fitting_;
     /// Auxiliary basis
     boost::shared_ptr<BasisSet> auxiliary_;
     /// Primary basis
@@ -546,45 +550,44 @@ protected:
     int naocc_;
     /// J^-1/2 Matrix
     double **Jm12_;
-    /// J^-1/2 SharedTensor
-    dfoccwave::SharedTensor2d Jmhalf_;
-    /// b(Q|mu,nu) SharedTensor
-    dfoccwave::SharedTensor2d bQso_;
+    /// b(Q|mu,nu)
+    SharedMatrix bQmn_ao_;
+    SharedMatrix bQmn_so_;
     /// b(Q|mu, a)
-    dfoccwave::SharedTensor2d bQnvA_;
-    dfoccwave::SharedTensor2d bQnvB_;
+    SharedMatrix bQnaA;
+    SharedMatrix bQnaB;
     /// b(Q|mu, i)
-    dfoccwave::SharedTensor2d bQnoA_;
-    dfoccwave::SharedTensor2d bQnoB_;
+    SharedMatrix bQniA;
+    SharedMatrix bQniB;
     /// b(Q|i, j)
-    dfoccwave::SharedTensor2d bQooA_;
-    dfoccwave::SharedTensor2d bQooB_;
+    SharedMatrix bQijA;
+    SharedMatrix bQijB;
+    SharedMatrix bQijA_mo_;
+    SharedMatrix bQijB_mo_;
     /// b(Q|i, a)
-    dfoccwave::SharedTensor2d bQovA_;
-    dfoccwave::SharedTensor2d bQovB_;
+    SharedMatrix bQiaA;
+    SharedMatrix bQiaB;
+    SharedMatrix bQiaA_mo_;
+    SharedMatrix bQiaB_mo_;
     /// b(Q|a, i)
-    dfoccwave::SharedTensor2d bQvoA_;
-    dfoccwave::SharedTensor2d bQvoB_;
+    SharedMatrix bQaiA;
+    SharedMatrix bQaiB;
+    SharedMatrix bQaiA_mo_;
+    SharedMatrix bQaiB_mo_;
     /// b(Q|a, b)
-    dfoccwave::SharedTensor2d bQvvA_;
-    dfoccwave::SharedTensor2d bQvvB_;
+    SharedMatrix bQabA;
+    SharedMatrix bQabB;
+    SharedMatrix bQabA_mo_;
+    SharedMatrix bQabB_mo_;
     /// b(Q|mu, q)
-    dfoccwave::SharedTensor2d bQnqA_;
-    dfoccwave::SharedTensor2d bQnqB_;
+    SharedMatrix bQnqA;
+    SharedMatrix bQnqB;
     /// b(Q|p, q)
-    dfoccwave::SharedTensor2d bQpqA_;
-    dfoccwave::SharedTensor2d bQpqB_;
-    /// C(mu, a)
-    dfoccwave::SharedTensor2d CvirA_;
-    dfoccwave::SharedTensor2d CvirB_;
-    /// C(mu, i)
-    dfoccwave::SharedTensor2d CoccA_;
-    dfoccwave::SharedTensor2d CoccB_;
-    /// C(mu, p)
-    dfoccwave::SharedTensor2d CallA_;
-    dfoccwave::SharedTensor2d CallB_;
-    /// Intermediate G<ij|ab> = lambda <ij|cd> g <ab|cd>
-    dfoccwave::SharedTensor2d Gijab_;
+    SharedMatrix bQpqA;
+    SharedMatrix bQpqB;
+    SharedMatrix bQpqA_mo_;
+    SharedMatrix bQpqB_mo_;
+
     /// The Tau in the MO basis (All)
     SharedMatrix mo_tauA_;
     SharedMatrix mo_tauB_;

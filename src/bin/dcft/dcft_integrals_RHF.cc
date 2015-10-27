@@ -164,6 +164,7 @@ DCFTSolver:: sort_OOOO_integrals_RHF() {
                            ID("[O>=O]+"), ID("[O>=O]+"), 0, "MO Ints (OO|OO)");
     global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[O,O]"), "MO Ints <OO|OO>"); // MO Ints <Oo|Oo>
     global_dpd_->buf4_close(&I);
+
 }
 
 void
@@ -226,6 +227,7 @@ DCFTSolver:: sort_OOOV_integrals_RHF() {
     // Intermediate MO_SF <OV|OO> = MO <Ov|oO>
     global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, rpqs, ID("[O,V]"), ID("[O,O]"), "MO Ints SF <OV|OO>");
     global_dpd_->buf4_close(&I);
+
 }
 
 void
