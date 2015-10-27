@@ -58,19 +58,25 @@ DCFTSolver::gradient_init_RHF()
         throw FeatureNotImplemented("DC-06 analytic gradients w/o QC algorithm", "RHF reference", __FILE__, __LINE__);
     }
 
-    if(options_.get_bool("DCFT_DENSITY_FITTING") == false){
-        // If the <VV|VV> integrals were not used for the energy computation (AO_BASIS = DISK) -> compute them for the gradients
-        dcft_timer_on("DCFTSolver::Transform_VVVV");
-        if (options_.get_str("AO_BASIS") == "DISK") _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
-        dcft_timer_off("DCFTSolver::Transform_VVVV");
 
+    // If the <VV|VV> integrals were not used for the energy computation (AO_BASIS = DISK) -> compute them for the gradients
+    dcft_timer_on("DCFTSolver::Transform_VVVV");
+    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_bool("DCFT_DENSITY_FITTING") == false)
+        _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
+    else if(options_.get_bool("DCFT_DENSITY_FITTING") == true){
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-
-        // (VV|VV)
-        if(options_.get_str("AO_BASIS") == "DISK") sort_VVVV_integrals_RHF();
-
+        form_df_g_vvvv();
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }
+    dcft_timer_off("DCFTSolver::Transform_VVVV");
+
+
+    // (VV|VV)
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+    if(options_.get_str("AO_BASIS") == "DISK" || options_.get_bool("DCFT_DENSITY_FITTING") == true)
+        sort_VVVV_integrals_RHF();
+
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
 
 }
 

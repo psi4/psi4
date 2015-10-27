@@ -272,17 +272,21 @@ DCFTSolver::gradient_init()
         _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::vir);
     }
 
+
     // If the <VV|VV> integrals were not used for the energy computation (AO_BASIS = DISK) -> compute them for the gradients
     if (options_.get_str("AO_BASIS") == "DISK" && options_.get_bool("DCFT_DENSITY_FITTING") == false)
         _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
-
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-
+    else if (options_.get_bool("DCFT_DENSITY_FITTING") == true){
+        psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+        form_df_g_vvvv();
+        psio_->close(PSIF_LIBTRANS_DPD, 1);
+    }
     /*
      * Re-sort the chemists' notation integrals to physisists' notation
      * (pq|rs) = <pr|qs>
      */
 
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
     if ((options_.get_str("DCFT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") != "QC")
             || (options_.get_str("DCFT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") == "QC"
             && (!options_.get_bool("QC_COUPLING") || options_.get_str("QC_TYPE") != "SIMULTANEOUS"))) {
@@ -312,7 +316,7 @@ DCFTSolver::gradient_init()
 
     // Hack for now. TODO: Implement AO_BASIS=DISK algorithm for gradients
     // (VV|VV)
-    if(options_.get_str("AO_BASIS") == "DISK" && options_.get_bool("DCFT_DENSITY_FITTING") == false)
+    if(options_.get_str("AO_BASIS") == "DISK" || options_.get_bool("DCFT_DENSITY_FITTING") == true)
         sort_VVVV_integrals();
 
     // Transform one-electron integrals to the MO basis and store them in the DPD file

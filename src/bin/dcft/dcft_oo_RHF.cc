@@ -91,10 +91,8 @@ DCFTSolver::run_simult_dcft_oo_RHF()
         }
         transform_tau_RHF();
 
-        if(options_.get_bool("DCFT_DENSITY_FITTING")){
-            dcft_timer_on("DCFTSolver::DF g_AbCd lambda_IjCd");
+        if(options_.get_bool("DCFT_DENSITY_FITTING") && options_.get_str("AO_BASIS") == "NONE"){
             build_DF_tensors_RHF();
-            dcft_timer_off("DCFTSolver::DF g_AbCd lambda_IjCd");
 
             SharedMatrix mo_h = SharedMatrix(new Matrix("MO-based H", nirrep_, nmopi_, nmopi_));
             mo_h->copy(so_h_);
@@ -214,6 +212,8 @@ DCFTSolver::run_simult_dcft_oo_RHF()
 
 double
 DCFTSolver::compute_orbital_residual_RHF() {
+    dcft_timer_on("DCFTSolver::compute_orbital_residual_RHF()");
+
     dpdfile2 Xai, Xia;
 
     // Compute the unrelaxed densities for the orbital gradient
@@ -250,6 +250,8 @@ DCFTSolver::compute_orbital_residual_RHF() {
 
     global_dpd_->file2_close(&Xai);
     global_dpd_->file2_close(&Xia);
+
+    dcft_timer_off("DCFTSolver::compute_orbital_residual_RHF()");
 
     return maxGradient;
 }
@@ -587,6 +589,9 @@ DCFTSolver::compute_orbital_gradient_VO_RHF() {
 
 void
 DCFTSolver::compute_orbital_rotation_jacobi_RHF() {
+
+    dcft_timer_on("DCFTSolver::ccompute_orbital_rotation_jacobi_RHF()");
+
     // Determine the orbital rotation step
     // Alpha spin
     for(int h = 0; h < nirrep_; ++h){
@@ -604,10 +609,15 @@ DCFTSolver::compute_orbital_rotation_jacobi_RHF() {
 
     // Copy alpha case to beta case
     Xtotal_b_->copy(Xtotal_a_);
+
+    dcft_timer_off("DCFTSolver::ccompute_orbital_rotation_jacobi_RHF()");
 }
 
 void
 DCFTSolver::rotate_orbitals_RHF() {
+
+    dcft_timer_on("DCFTSolver::rotate_orbitals_RHF()");
+
     // Initialize the orbital rotation matrix
     SharedMatrix U_a(new Matrix("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_));
 
@@ -638,6 +648,9 @@ DCFTSolver::rotate_orbitals_RHF() {
 
     // Copy alpha case to beta case
     Cb_->copy(Ca_);
+
+    dcft_timer_off("DCFTSolver::rotate_orbitals_RHF()");
+
 }
 
 }} // Namespace

@@ -67,25 +67,11 @@ def run_dcft(name, **kwargs):
         raise ValidationError('Frozen core is not available for DCFT.')
 
     # Use UHF reference if user specified references for SCF and DCFT conflict
-    if psi4.get_option('SCF', 'REFERENCE') == 'RHF' and psi4.get_option('DCFT', 'REFERENCE') == 'UHF':
-        optstash = p4util.OptionsState(
-            ['SCF', 'REFERENCE'],
-            ['DCFT', 'REFERENCE'])
-        psi4.set_global_option('REFERENCE', 'UHF')
-
-    # Use C1 point group and AO_BASIS=NONE if density-fitting is used
-    if psi4.get_option('DCFT', 'DCFT_DENSITY_FITTING'):
-        molecule = psi4.get_active_molecule()
-        user_pg = molecule.schoenflies_symbol()
-        if user_pg != 'c1':
-            psi4.print_out("\n                          !!!!!!!!!! ATTENTION !!!!!!!!!!\n")
-            psi4.print_out(  "  DF-DCFT does not make use of molecular symmetry, further calculations in C1 point group.\n")
-        molecule.reset_point_group('c1')
-        molecule.update_geometry()
-        if psi4.get_option('DCFT', 'AO_BASIS') == 'DISK':
-            psi4.print_out("\n                          !!!!!!!!!! ATTENTION !!!!!!!!!!\n")
-            psi4.print_out(  "  AO_BASIS=DISK not implemented in DF-DCFT, further calculation will use AO_BASIS=NONE.\n")
-            psi4.set_local_option('DCFT', 'AO_BASIS', 'NONE')
+#    if psi4.get_option('SCF', 'REFERENCE') == 'RHF' and psi4.get_option('DCFT', 'REFERENCE') == 'UHF':
+#        optstash = p4util.OptionsState(
+#            ['SCF', 'REFERENCE'],
+#            ['DCFT', 'REFERENCE'])
+#        psi4.set_global_option('REFERENCE', 'UHF')
 
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
