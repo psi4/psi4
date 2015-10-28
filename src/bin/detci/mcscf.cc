@@ -93,9 +93,13 @@ void CIWavefunction::compute_mcscf()
 
     // Run CI and set quantities
     diag_h();
+    outfile->Printf("Diag h\n");
     form_opdm();
+    outfile->Printf("opdm\n");
     set_opdm();
+    outfile->Printf("tpdm\n");
     form_tpdm();
+    outfile->Printf("Formed matrices\n");
 
     current_energy = Process::environment.globals["MCSCF TOTAL ENERGY"];
     ediff = current_energy - old_energy;

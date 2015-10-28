@@ -35,10 +35,12 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libiwl/iwl.h>
+#include <libmints/mints.h>
 #include "structs.h"
 #define EXTERN
 #include "globals.h"
 #include "civect.h"
+#include "ciwave.h"
 
 namespace psi { namespace detci {
 
@@ -46,14 +48,14 @@ namespace psi { namespace detci {
 #define TPDMINDEX2(i,j,n) ((i)*(n) + (j))
 
 
-void tpdm_block(struct stringwr **alplist, struct stringwr **betlist,
-		int nbf, int nalpcodes, int nbetcodes,
-		double *twopdm_aa, double *twopdm_bb, double *twopdm_ab, double **CJ, double **CI, int Ja_list, 
-		int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list, 
-		int Inas, int Inbs, double weight);
+//void tpdm_block(struct stringwr **alplist, struct stringwr **betlist,
+//		int nbf, int nalpcodes, int nbetcodes,
+//		double *twopdm_aa, double *twopdm_bb, double *twopdm_ab, double **CJ, double **CI, int Ja_list, 
+//		int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list, 
+//		int Inas, int Inbs, double weight);
+//
 
-
-void tpdm(struct stringwr **alplist, struct stringwr **betlist, 
+void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist, 
           int Inroots, int Inunits, int Ifirstunit, 
 	  int Jnroots, int Jnunits, int Jfirstunit, 
 	  int targetfile, int writeflag, int printflag)
@@ -82,26 +84,26 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
    int root_idx;   /* what root we're on */
    double weight;  /* the weight of that root */
 
-   ndrc = CalcInfo.num_drc_orbs;
-   populated_orbs = CalcInfo.nmo - CalcInfo.num_drv_orbs;
+   ndrc = CalcInfo_->num_drc_orbs;
+   populated_orbs = CalcInfo_->nmo - CalcInfo_->num_drv_orbs;
 
    if (ndrc) { // dropped core parts computed from OPDM
-     psio_open(Parameters.opdm_file, PSIO_OPEN_OLD);
+     psio_open(Parameters_->opdm_file, PSIO_OPEN_OLD);
      onepdm_a = block_matrix(populated_orbs, populated_orbs);
      onepdm_b = block_matrix(populated_orbs, populated_orbs);
    }
 
-   Ivec.set(CIblks.vectlen, CIblks.num_blocks, Parameters.icore, 1,
-	     CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-	     CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-	     CalcInfo.nirreps, AlphaG->subgr_per_irrep, Inroots, Inunits,
-	     Ifirstunit, CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+   Ivec.set(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore, 1,
+	     CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
+	     CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
+	     CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Inroots, Inunits,
+	     Ifirstunit, CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
 
-   Jvec.set(CIblks.vectlen, CIblks.num_blocks, Parameters.icore, 1,
-	     CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-	     CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-	     CalcInfo.nirreps, AlphaG->subgr_per_irrep, Jnroots, Jnunits,
-	     Jfirstunit, CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+   Jvec.set(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore, 1,
+	     CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
+	     CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
+	     CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Jnroots, Jnunits,
+	     Jfirstunit, CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
 
    // Open I/O files for these CIvectors if not already open
    Ivec.init_io_files(true);
@@ -112,13 +114,13 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
    Ivec.buf_lock(buffer1);
    Jvec.buf_lock(buffer2);
 
-   ntri = CalcInfo.num_ci_orbs * CalcInfo.num_ci_orbs;
+   ntri = CalcInfo_->num_ci_orbs * CalcInfo_->num_ci_orbs;
    ntri2 = (ntri * (ntri + 1)) / 2;
    twopdm_aa = init_array(ntri2);
    twopdm_bb = init_array(ntri2);
    twopdm_ab = init_array(ntri * ntri);
 
-   if ((Ivec.icore==2 && Ivec.Ms0 && CalcInfo.ref_sym != 0) || 
+   if ((Ivec.icore==2 && Ivec.Ms0 && CalcInfo_->ref_sym != 0) || 
        (Ivec.icore==0 && Ivec.Ms0)) {
      for (i=0, maxrows=0, maxcols=0; i<Ivec.num_blocks; i++) {
        if (Ivec.Ia_size[i] > maxrows) maxrows = Ivec.Ia_size[i];
@@ -139,12 +141,12 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
    }
 
 
-   if (Parameters.icore == 0) {
+   if (Parameters_->icore == 0) {
 
      /* loop over all the roots requested */
-     for (root_idx=0; root_idx<Parameters.average_num; root_idx++)  {
-       Iroot = Parameters.average_states[root_idx];
-       weight = Parameters.average_weights[root_idx];
+     for (root_idx=0; root_idx<Parameters_->average_num; root_idx++)  {
+       Iroot = Parameters_->average_states[root_idx];
+       weight = Parameters_->average_weights[root_idx];
        Jroot = Iroot;  /* change later if need transition matrix elements */
 
        for (Ibuf=0; Ibuf<Ivec.buf_per_vect; Ibuf++) {
@@ -176,7 +178,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
            Jvec.read(Jroot, Jbuf);
 	 
            if (do_Jblock) {
-             tpdm_block(alplist, betlist, CalcInfo.num_ci_orbs, 
+             tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs, 
                Ivec.num_alpcodes, Ivec.num_betcodes, twopdm_aa, twopdm_bb, twopdm_ab, 
                Jvec.blocks[Jblock], Ivec.blocks[Iblock], 
                Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
@@ -184,7 +186,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
 	 
            if (do_Jblock2) {
              Jvec.transp_block(Jblock, transp_tmp);
-             tpdm_block(alplist, betlist, CalcInfo.num_ci_orbs,
+             tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs,
                Ivec.num_alpcodes, Ivec.num_betcodes, 
                twopdm_aa, twopdm_bb, twopdm_ab, transp_tmp, Ivec.blocks[Iblock], 
                Jbc, Jac, Jnbs, Jnas, Iac, Ibc, Inas, Inbs, weight);
@@ -222,7 +224,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
              Jvec.read(Jroot, Jbuf);
 	 
              if (do_Jblock) {
-               tpdm_block(alplist, betlist, CalcInfo.num_ci_orbs, 
+               tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs, 
                  Ivec.num_alpcodes, Ivec.num_betcodes, 
                  twopdm_aa, twopdm_bb, twopdm_ab, Jvec.blocks[Jblock], 
                  transp_tmp2, Jac, Jbc, Jnas,
@@ -231,7 +233,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
 	   
              if (do_Jblock2) {
                Jvec.transp_block(Jblock, transp_tmp);
-               tpdm_block(alplist, betlist, CalcInfo.num_ci_orbs,
+               tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs,
                  Ivec.num_alpcodes, Ivec.num_betcodes,
                  twopdm_aa, twopdm_bb, twopdm_ab, transp_tmp, transp_tmp2, 
                  Jbc, Jac, Jnbs, Jnas, Iac, Ibc, Inas, Inbs, weight);
@@ -243,11 +245,11 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
      } /* end loop over roots */
    } /* end icore==0 */
 
-   else if (Parameters.icore==1) { /* whole vectors in-core */
+   else if (Parameters_->icore==1) { /* whole vectors in-core */
 
-     for (root_idx=0; root_idx<Parameters.average_num; root_idx++)  {
-       Iroot = Parameters.average_states[root_idx];
-       weight = Parameters.average_weights[root_idx];
+     for (root_idx=0; root_idx<Parameters_->average_num; root_idx++)  {
+       Iroot = Parameters_->average_states[root_idx];
+       weight = Parameters_->average_weights[root_idx];
        Jroot = Iroot;  /* change later if need transition matrix elements */
 
        Ivec.read(Iroot, 0);
@@ -265,7 +267,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
            Jnbs = Jvec.Ib_size[Jblock];
            if (s1_contrib[Iblock][Jblock] || s2_contrib[Iblock][Jblock] ||
              s3_contrib[Iblock][Jblock])
-             tpdm_block(alplist, betlist, CalcInfo.num_ci_orbs,
+             tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs,
                Ivec.num_alpcodes, Ivec.num_betcodes, 
                twopdm_aa, twopdm_bb, twopdm_ab, Jvec.blocks[Jblock], Ivec.blocks[Iblock], 
                Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
@@ -274,10 +276,10 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
      } /* end loop over roots */
    } /* end icore==1 */
 
-   else if (Parameters.icore==2) { /* icore==2 */
-     for (root_idx=0; root_idx<Parameters.average_num; root_idx++)  {
-       Iroot = Parameters.average_states[root_idx];
-       weight = Parameters.average_weights[root_idx];
+   else if (Parameters_->icore==2) { /* icore==2 */
+     for (root_idx=0; root_idx<Parameters_->average_num; root_idx++)  {
+       Iroot = Parameters_->average_states[root_idx];
+       weight = Parameters_->average_weights[root_idx];
        Jroot = Iroot;  /* change later if need transition matrix elements */
 
        for (Ibuf=0; Ibuf<Ivec.buf_per_vect; Ibuf++) {
@@ -304,7 +306,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
    
                if (s1_contrib[Iblock][Jblock] || s2_contrib[Iblock][Jblock] ||
                  s3_contrib[Iblock][Jblock])
-               tpdm_block(alplist, betlist, CalcInfo.num_ci_orbs, 
+               tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs, 
                  Ivec.num_alpcodes, Ivec.num_betcodes,
                  twopdm_aa, twopdm_bb, twopdm_ab, Jvec.blocks[Jblock], Ivec.blocks[Iblock], 
                  Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
@@ -315,7 +317,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
                    s2_contrib[Iblock][Jblock2] ||
                    s3_contrib[Iblock][Jblock2]) {
                    Jvec.transp_block(Jblock, transp_tmp);
-                   tpdm_block(alplist, betlist, CalcInfo.num_ci_orbs,
+                   tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs,
                      Ivec.num_alpcodes, Ivec.num_betcodes,
                      twopdm_aa, twopdm_bb, twopdm_ab, transp_tmp, Ivec.blocks[Iblock], 
                      Jbc, Jac, Jnbs, Jnas, Iac, Ibc, Inas, Inbs, weight);
@@ -341,7 +343,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
 	   
                  if (s1_contrib[Iblock2][Jblock] || s2_contrib[Iblock2][Jblock]
                    || s3_contrib[Iblock2][Jblock])
-                   tpdm_block(alplist, betlist, CalcInfo.num_ci_orbs,
+                   tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs,
                      Ivec.num_alpcodes, Ivec.num_betcodes, 
                      twopdm_aa, twopdm_bb, twopdm_ab, Jvec.blocks[Jblock], transp_tmp2, 
                      Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
@@ -352,7 +354,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
                      s2_contrib[Iblock][Jblock2] ||
                      s3_contrib[Iblock][Jblock2]) {
                      Jvec.transp_block(Jblock, transp_tmp);
-                     tpdm_block(alplist, betlist, CalcInfo.num_ci_orbs,
+                     tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs,
                      Ivec.num_alpcodes, Ivec.num_betcodes,
                      twopdm_aa, twopdm_bb, twopdm_ab, transp_tmp, transp_tmp2, Jbc, Jac,
                      Jnbs, Jnas, Iac, Ibc, Inas, Inbs, weight);
@@ -386,26 +388,26 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
      iwl_buf_init(&TBuff_aa, PSIF_MO_AA_TPDM, 0.0, 0, 0);
      iwl_buf_init(&TBuff_bb, PSIF_MO_BB_TPDM, 0.0, 0, 0);
      iwl_buf_init(&TBuff_ab, PSIF_MO_AB_TPDM, 0.0, 0, 0);
-     orbsym = CalcInfo.orbsym + ndrc;
+     orbsym = CalcInfo_->orbsym + ndrc;
 
      /* do the core-core and core-active part here */
      if (ndrc) {
-         if (Parameters.average_num == 1) 
+         if (Parameters_->average_num == 1) 
            sprintf(opdm_key, "MO-basis Alpha OPDM Root %d",
-             Parameters.average_states[0]);
+             Parameters_->average_states[0]);
          else
            sprintf(opdm_key, "MO-basis Alpha OPDM");
 
-         psio_read_entry(Parameters.opdm_file, opdm_key, (char *) onepdm_a[0],
+         psio_read_entry(Parameters_->opdm_file, opdm_key, (char *) onepdm_a[0],
            populated_orbs * populated_orbs * sizeof(double));
 
-         if (Parameters.average_num == 1) 
+         if (Parameters_->average_num == 1) 
            sprintf(opdm_key, "MO-basis Beta OPDM Root %d",
-             Parameters.average_states[0]);
+             Parameters_->average_states[0]);
          else
            sprintf(opdm_key, "MO-basis Beta OPDM");
 
-         psio_read_entry(Parameters.opdm_file, opdm_key, (char *) onepdm_b[0],
+         psio_read_entry(Parameters_->opdm_file, opdm_key, (char *) onepdm_b[0],
            populated_orbs * populated_orbs * sizeof(double));
 
        /* core-core part */
@@ -445,20 +447,20 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
        }
      }
  
-     for (i=0; i<CalcInfo.num_ci_orbs; i++) {
+     for (i=0; i<CalcInfo_->num_ci_orbs; i++) {
        i2 = i+ ndrc;
-       for (j=0; j<CalcInfo.num_ci_orbs; j++) {
+       for (j=0; j<CalcInfo_->num_ci_orbs; j++) {
          j2 = j + ndrc;
 	 for (k=0; k<=i; k++) {
            k2 = k + ndrc;
 	   if (k==i) lmax = j+1;
-	   else lmax = CalcInfo.num_ci_orbs;
+	   else lmax = CalcInfo_->num_ci_orbs;
 	   ijksym = orbsym[i] ^ orbsym[j] ^ orbsym[k];
 	   for (l=0; l<lmax; l++) {
              l2 = l + ndrc;
 	     if ((orbsym[l] ^ ijksym) != 0) continue;
-	     ij = i * CalcInfo.num_ci_orbs + j;
-	     kl = k * CalcInfo.num_ci_orbs + l;
+	     ij = i * CalcInfo_->num_ci_orbs + j;
+	     kl = k * CalcInfo_->num_ci_orbs + l;
 	     const long int ijkl_tri = INDEX(ij,kl);
          const long int ijkl = TPDMINDEX2(ij,kl,ntri);
          const long int klij = TPDMINDEX2(kl,ij,ntri);
@@ -488,12 +490,12 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
      iwl_buf_close(&TBuff_bb, 1);
      iwl_buf_flush(&TBuff_ab, 1);
      iwl_buf_close(&TBuff_ab, 1);
-     if (Parameters.print_lvl) outfile->Printf( "\n");
+     if (Parameters_->print_lvl) outfile->Printf( "\n");
    }
 
 
    if (ndrc) {
-     psio_close(Parameters.opdm_file, 1);
+     psio_close(Parameters_->opdm_file, 1);
      free_block(onepdm_a);
      free_block(onepdm_b);
    }
@@ -511,7 +513,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
 
 
 
-void tpdm_block(struct stringwr **alplist, struct stringwr **betlist,
+void CIWavefunction::tpdm_block(struct stringwr **alplist, struct stringwr **betlist,
 	        int nbf, int nalplists, int nbetlists,
 		double *twopdm_aa, double *twopdm_bb, double *twopdm_ab, double **CJ, double **CI, int Ja_list, 
 		int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list, 

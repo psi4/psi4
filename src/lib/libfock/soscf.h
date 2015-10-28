@@ -182,7 +182,7 @@ protected:
     void zero_ras(SharedMatrix vector);
 
     // Transform the integrals
-    virtual void transform();
+    virtual void transform(bool approx_only);
 
     // Grab actMO (dense)
     virtual void set_act_MO();
@@ -218,7 +218,7 @@ public:
 protected:
 
     boost::shared_ptr<DFERI> dferi_;
-    virtual void transform();
+    virtual void transform(bool approx_only);
     virtual void set_act_MO();
     virtual void compute_Q();
     virtual void compute_Qk(SharedMatrix U, SharedMatrix Uact);
@@ -246,7 +246,7 @@ protected:
 
     boost::shared_ptr<IntegralTransform> ints_;
     boost::shared_ptr<PSIO>  psio_;
-    virtual void transform();
+    virtual void transform(bool approx_only);
     virtual void set_act_MO();
     virtual void compute_Q();
     virtual void compute_Qk(SharedMatrix U, SharedMatrix Uact);

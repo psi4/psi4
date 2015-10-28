@@ -97,6 +97,9 @@ void CIWavefunction::common_init()
     // Form strings
     form_strings();
 
+   // Form Bendazzoli OV arrays
+   if (Parameters.bendazzoli) form_ov();
+
     // This will all be nuked
     alplist_ = alplist;
     betlist_ = betlist;
