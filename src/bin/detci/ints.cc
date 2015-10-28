@@ -82,16 +82,16 @@ void CIWavefunction::transform_ci_integrals()
   std::vector<boost::shared_ptr<MOSpace> > spaces;
 
   // Indices should be empty
-  std::vector<int> indices(CalcInfo.num_ci_orbs, 0);
+  std::vector<int> indices(CalcInfo_->num_ci_orbs, 0);
 
-  std::vector<int> orbitals(CalcInfo.num_ci_orbs, 0);
+  std::vector<int> orbitals(CalcInfo_->num_ci_orbs, 0);
 
-  for (int h = 0, cinum = 0, orbnum = 0; h < CalcInfo.nirreps; h++){
-    orbnum += CalcInfo.dropped_docc[h];
-    for (int i = 0; i < CalcInfo.ci_orbs[h]; i++){
+  for (int h = 0, cinum = 0, orbnum = 0; h < CalcInfo_->nirreps; h++){
+    orbnum += CalcInfo_->dropped_docc[h];
+    for (int i = 0; i < CalcInfo_->ci_orbs[h]; i++){
       orbitals[cinum++] = orbnum++;
     }
-    orbnum += CalcInfo.dropped_uocc[h];
+    orbnum += CalcInfo_->dropped_uocc[h];
   }
 
   boost::shared_ptr<MOSpace> act_space(new MOSpace('X', orbitals, indices));
@@ -113,7 +113,7 @@ void CIWavefunction::transform_ci_integrals()
   ints_->transform_tei(act_space, act_space, act_space, act_space);
 
   // Read drc energy
-  CalcInfo.edrc = ints_->get_frozen_core_energy();
+  CalcInfo_->edrc = ints_->get_frozen_core_energy();
 
   // Read integrals
   read_dpd_ci_ints();
@@ -178,7 +178,7 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only)
   SharedMatrix Cvir = get_orbitals("VIR");
 
   int nao = AO2SO_->rowspi()[0];
-  int nact = CalcInfo.num_ci_orbs;
+  int nact = CalcInfo_->num_ci_orbs;
   int nrot = Cocc->ncol() + Cact->ncol() + Cvir->ncol();
   int aoc_rowdim =  nrot + Cact->ncol();
   SharedMatrix AO_C = SharedMatrix(new Matrix("AO_C", nao, aoc_rowdim));
@@ -255,41 +255,41 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only)
   double** actMOp = actMO->pointer();
   int irel, jrel, krel, lrel, lmax, ij, kl, ijrel, klrel;
   int target = 0;
-  int ndrc = CalcInfo.num_drc_orbs;
+  int ndrc = CalcInfo_->num_drc_orbs;
   for (int i=0; i<nact; i++){
-    irel = CalcInfo.act_reorder[i];
+    irel = CalcInfo_->act_reorder[i];
 
     for (int j=0; j<=i; j++){
-      jrel = CalcInfo.act_reorder[j];
+      jrel = CalcInfo_->act_reorder[j];
       ijrel = INDEX(irel, jrel);
 
       for (int k=0; k<=i; k++){
-        krel = CalcInfo.act_reorder[k];
+        krel = CalcInfo_->act_reorder[k];
         lmax = (i==k) ? j+1 : k+1;
 
         for (int l=0; l<lmax; l++){
-          lrel = CalcInfo.act_reorder[l];
+          lrel = CalcInfo_->act_reorder[l];
           klrel = INDEX(krel, lrel);
-          CalcInfo.twoel_ints[INDEX(ijrel, klrel)] = actMOp[i * nact + j][k *nact + l];
+          CalcInfo_->twoel_ints[INDEX(ijrel, klrel)] = actMOp[i * nact + j][k *nact + l];
   }}}}
   actMO.reset();
 
  /* Determine maximum K integral for use in averaging the diagonal */
  /* Hamiltonian matrix elements over spin-coupling set */
  if (Parameters.hd_ave) {
-   for(int i=0; i<CalcInfo.num_ci_orbs; i++)
-      for(int j=0; j<CalcInfo.num_ci_orbs; j++) {
+   for(int i=0; i<CalcInfo_->num_ci_orbs; i++)
+      for(int j=0; j<CalcInfo_->num_ci_orbs; j++) {
          /* if (i==j) continue; */
          int ij = ioff[MAX0(i,j)] + MIN0(i,j);
          int ijij = ioff[ij] + ij;
-         double value = CalcInfo.twoel_ints[ijij];
-         if(value > CalcInfo.maxK[i]) CalcInfo.maxK[i] = value;
+         double value = CalcInfo_->twoel_ints[ijij];
+         if(value > CalcInfo_->maxK[i]) CalcInfo_->maxK[i] = value;
          }
-    for(int i=0; i<CalcInfo.num_ci_orbs; i++) {
-      if(CalcInfo.maxK[i] > CalcInfo.maxKlist)
-        CalcInfo.maxKlist = CalcInfo.maxK[i];
+    for(int i=0; i<CalcInfo_->num_ci_orbs; i++) {
+      if(CalcInfo_->maxK[i] > CalcInfo_->maxKlist)
+        CalcInfo_->maxKlist = CalcInfo_->maxK[i];
       if (Parameters.print_lvl > 4)
-        outfile->Printf("maxK[%d] = %lf\n",i, CalcInfo.maxK[i]);
+        outfile->Printf("maxK[%d] = %lf\n",i, CalcInfo_->maxK[i]);
       }
   }
   tf_onel_ints();
@@ -308,29 +308,29 @@ void CIWavefunction::setup_mcscf_ints(){
   // Need active and rot spaces
   std::vector<boost::shared_ptr<MOSpace> > spaces;
 
-  std::vector<int> rot_orbitals(CalcInfo.num_rot_orbs, 0);
-  std::vector<int> act_orbitals(CalcInfo.num_ci_orbs, 0);
+  std::vector<int> rot_orbitals(CalcInfo_->num_rot_orbs, 0);
+  std::vector<int> act_orbitals(CalcInfo_->num_ci_orbs, 0);
 
   // Indices *should* be zero, DPD does not use it
-  std::vector<int> indices(CalcInfo.num_ci_orbs, 0);
+  std::vector<int> indices(CalcInfo_->num_ci_orbs, 0);
 
   int act_orbnum = 0;
   int rot_orbnum = 0;
-  for (int h = 0, rn = 0, an = 0; h < CalcInfo.nirreps; h++){
-    act_orbnum += CalcInfo.dropped_docc[h];
-    rot_orbnum += CalcInfo.frozen_docc[h];
+  for (int h = 0, rn = 0, an = 0; h < CalcInfo_->nirreps; h++){
+    act_orbnum += CalcInfo_->dropped_docc[h];
+    rot_orbnum += CalcInfo_->frozen_docc[h];
 
     // Act space
-    for (int i = 0; i < CalcInfo.ci_orbs[h]; i++){
+    for (int i = 0; i < CalcInfo_->ci_orbs[h]; i++){
       act_orbitals[an++] = act_orbnum++;
     }
-    act_orbnum += CalcInfo.dropped_uocc[h];
+    act_orbnum += CalcInfo_->dropped_uocc[h];
 
-    int nrotorbs = CalcInfo.rstr_docc[h] + CalcInfo.ci_orbs[h] + CalcInfo.rstr_uocc[h];
+    int nrotorbs = CalcInfo_->rstr_docc[h] + CalcInfo_->ci_orbs[h] + CalcInfo_->rstr_uocc[h];
     for (int i = 0; i < nrotorbs; i++){
       rot_orbitals[rn++] = rot_orbnum++;
     }
-    rot_orbnum += CalcInfo.frozen_uocc[h];
+    rot_orbnum += CalcInfo_->frozen_uocc[h];
   }
 
   rot_space_ = boost::shared_ptr<MOSpace>(new MOSpace('R', rot_orbitals, indices));
@@ -417,7 +417,7 @@ void CIWavefunction::read_dpd_ci_ints()
 
   // => Read one electron integrals <= //
   // Build temporary desired arrays
-  int nmotri_full = (CalcInfo.nmo * (CalcInfo.nmo + 1)) / 2 ;
+  int nmotri_full = (CalcInfo_->nmo * (CalcInfo_->nmo + 1)) / 2 ;
   double*  tmp_onel_ints1 = (double *) init_array(nmotri_full);
   double*  tmp_onel_ints2 = (double *) init_array(nmotri_full);
 
@@ -426,15 +426,15 @@ void CIWavefunction::read_dpd_ci_ints()
                0, (Parameters.print_lvl>4), "outfile");
 
   // IntegralTransform does not properly order one electron integrals for whatever reason
-  for (int i=0, cnt=0; i<CalcInfo.nmo; i++){
-    for (int j=i; j<CalcInfo.nmo; j++){
-      int reorder_idx = INDEX(CalcInfo.reorder[i],CalcInfo.reorder[j]);
+  for (int i=0, cnt=0; i<CalcInfo_->nmo; i++){
+    for (int j=i; j<CalcInfo_->nmo; j++){
+      int reorder_idx = INDEX(CalcInfo_->reorder[i],CalcInfo_->reorder[j]);
       tmp_onel_ints2[reorder_idx] = tmp_onel_ints1[INDEX(i,j)];
     }
   }
 
-  filter(tmp_onel_ints2, CalcInfo.onel_ints, ioff, CalcInfo.nmo,
-         CalcInfo.num_drc_orbs, CalcInfo.num_drv_orbs);
+  filter(tmp_onel_ints2, CalcInfo_->onel_ints, ioff, CalcInfo_->nmo,
+         CalcInfo_->num_drc_orbs, CalcInfo_->num_drv_orbs);
 
   free(tmp_onel_ints1);
   free(tmp_onel_ints2);
@@ -450,19 +450,19 @@ void CIWavefunction::read_dpd_ci_ints()
                 ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "MO Ints (XX|XX)");
 
   // Read everything into memory
-  for (int h=0; h<CalcInfo.nirreps; h++){
+  for (int h=0; h<CalcInfo_->nirreps; h++){
     global_dpd_->buf4_mat_irrep_init(&I, h);
     global_dpd_->buf4_mat_irrep_rd(&I, h);
   }
 
-  for(int p = 0; p < CalcInfo.num_ci_orbs; p++){
+  for(int p = 0; p < CalcInfo_->num_ci_orbs; p++){
       int p_sym = I.params->psym[p];
 
       for(int q = 0; q <= p; q++){
           int q_sym = I.params->qsym[q];
           int pq = I.params->rowidx[p][q];
           int pq_sym = p_sym^q_sym;
-          int r_pq = INDEX(CalcInfo.act_reorder[p], CalcInfo.act_reorder[q]);
+          int r_pq = INDEX(CalcInfo_->act_reorder[p], CalcInfo_->act_reorder[q]);
 
           for(int r = 0; r <= p; r++){
               int r_sym = I.params->rsym[r];
@@ -475,17 +475,17 @@ void CIWavefunction::read_dpd_ci_ints()
                   int rs = I.params->colidx[r][s];
 
                   double value = I.matrix[pq_sym][pq][rs];
-                  int r_rs = INDEX(CalcInfo.act_reorder[r], CalcInfo.act_reorder[s]);
+                  int r_rs = INDEX(CalcInfo_->act_reorder[r], CalcInfo_->act_reorder[s]);
                   int r_pqrs = INDEX(r_pq, r_rs);
 
-                  CalcInfo.twoel_ints[r_pqrs] = value;
+                  CalcInfo_->twoel_ints[r_pqrs] = value;
               }
           }
       }
   }
 
   // Close everything out
-  for (int h=0; h<CalcInfo.nirreps; h++){
+  for (int h=0; h<CalcInfo_->nirreps; h++){
     global_dpd_->buf4_mat_irrep_close(&I, h);
   }
 
@@ -495,19 +495,19 @@ void CIWavefunction::read_dpd_ci_ints()
   /* Determine maximum K integral for use in averaging the diagonal */
   /* Hamiltonian matrix elements over spin-coupling set */
   if (Parameters.hd_ave) {
-    for(int i=0; i<CalcInfo.num_ci_orbs; i++)
-       for(int j=0; j<CalcInfo.num_ci_orbs; j++) {
+    for(int i=0; i<CalcInfo_->num_ci_orbs; i++)
+       for(int j=0; j<CalcInfo_->num_ci_orbs; j++) {
           /* if (i==j) continue; */
           int ij = ioff[MAX0(i,j)] + MIN0(i,j);
           int ijij = ioff[ij] + ij;
-          double value = CalcInfo.twoel_ints[ijij];
-          if(value > CalcInfo.maxK[i]) CalcInfo.maxK[i] = value;
+          double value = CalcInfo_->twoel_ints[ijij];
+          if(value > CalcInfo_->maxK[i]) CalcInfo_->maxK[i] = value;
           }
-     for(int i=0; i<CalcInfo.num_ci_orbs; i++) {
-       if(CalcInfo.maxK[i] > CalcInfo.maxKlist)
-         CalcInfo.maxKlist = CalcInfo.maxK[i];
+     for(int i=0; i<CalcInfo_->num_ci_orbs; i++) {
+       if(CalcInfo_->maxK[i] > CalcInfo_->maxKlist)
+         CalcInfo_->maxKlist = CalcInfo_->maxK[i];
        if (Parameters.print_lvl > 4)
-         outfile->Printf("maxK[%d] = %lf\n",i, CalcInfo.maxK[i]);
+         outfile->Printf("maxK[%d] = %lf\n",i, CalcInfo_->maxK[i]);
        }
    }
 
@@ -562,8 +562,8 @@ void CIWavefunction::tf_onel_ints()
    int ntri;
 
    /* set up some shorthand notation (speed up access) */
-   nbf = CalcInfo.num_ci_orbs ;
-   tei = CalcInfo.twoel_ints ;
+   nbf = CalcInfo_->num_ci_orbs ;
+   tei = CalcInfo_->twoel_ints ;
 
    /* ok, new special thing for CASSCF...if there are *no* excitations
       into restricted orbitals, and if Parameters.fci=TRUE, then we
@@ -576,12 +576,12 @@ void CIWavefunction::tf_onel_ints()
       nbf = Parameters.ras3_lvl;
 
    // /* allocate space for the new array */
-   // CalcInfo.tf_onel_ints = init_array(ntri) ;
+   // CalcInfo_->tf_onel_ints = init_array(ntri) ;
 
    /* fill up the new array */
    for (i=0,ij=0; i<nbf; i++)
       for (j=0; j<=i; j++) {
-         tval = CalcInfo.onel_ints[ij] ;
+         tval = CalcInfo_->onel_ints[ij] ;
 
          for (k=0; k<nbf; k++) {
             ik = ioff[MAX0(i,k)] + MIN0(i,k) ;
@@ -591,12 +591,12 @@ void CIWavefunction::tf_onel_ints()
             tval -= 0.5 * (*teptr) ;
             }
 
-         CalcInfo.tf_onel_ints[ij++] = tval ;
+         CalcInfo_->tf_onel_ints[ij++] = tval ;
          }
    /* print if necessary */
    // if (printflag) {
    //    outfile->Printf( "\nh' matrix\n") ;
-   //    print_array(CalcInfo.tf_onel_ints, nbf, "outfile") ;
+   //    print_array(CalcInfo_->tf_onel_ints, nbf, "outfile") ;
    //    outfile->Printf( "\n") ;
    //    }
 }
@@ -618,12 +618,12 @@ void CIWavefunction::form_gmat()
 
 
    /* set up some shorthand notation (speed up access) */
-   nbf = CalcInfo.num_ci_orbs ;
-   oei = CalcInfo.onel_ints ;
-   tei = CalcInfo.twoel_ints ;
+   nbf = CalcInfo_->num_ci_orbs ;
+   oei = CalcInfo_->onel_ints ;
+   tei = CalcInfo_->twoel_ints ;
 
    for (i=1; i<nbf; i++) {
-      CalcInfo.gmat[i] = CalcInfo.gmat[i-1] + nbf;
+      CalcInfo_->gmat[i] = CalcInfo_->gmat[i-1] + nbf;
       }
 
    /* fill up the new array */
@@ -637,7 +637,7 @@ void CIWavefunction::form_gmat()
             ikkj = ioff[kj] + ik ;
             tval -= tei[ikkj] ;
          }
-         CalcInfo.gmat[i][j] = tval ;
+         CalcInfo_->gmat[i][j] = tval ;
       }
    }
 
@@ -654,13 +654,13 @@ void CIWavefunction::form_gmat()
          iiij = ioff[ii] + ij ;
          if (i==j) tval -= 0.5 * tei[iiij] ;
          else tval -= tei[iiij] ;
-         CalcInfo.gmat[i][j] = tval ;
+         CalcInfo_->gmat[i][j] = tval ;
       }
    }
 
    // if (printflag) {
    //    outfile->Printf( "\ng matrix\n") ;
-   //    print_mat(CalcInfo.gmat, nbf, nbf, "outfile") ;
+   //    print_mat(CalcInfo_->gmat, nbf, nbf, "outfile") ;
    //    outfile->Printf( "\n") ;
    //    }
 }
@@ -687,7 +687,7 @@ void CIWavefunction::onel_ints_from_jk()
   SharedMatrix onel_ints = Matrix::triplet(Cact, J[0], Cact, true, false, false);
 
   // Set 1D onel ints
-  int nmotri = (CalcInfo.num_ci_orbs * (CalcInfo.num_ci_orbs + 1)) / 2 ;
+  int nmotri = (CalcInfo_->num_ci_orbs * (CalcInfo_->num_ci_orbs + 1)) / 2 ;
   double* tmp_onel_ints = (double *) init_array(nmotri);
 
   for (int h=0, target=0, offset=0; h<nirrep_; h++){
@@ -698,8 +698,8 @@ void CIWavefunction::onel_ints_from_jk()
     for (int i=0; i<nactpih; i++){
       target += offset;
       for (int j=0; j<=i; j++){
-        int r_ij = INDEX(CalcInfo.act_reorder[i+offset], CalcInfo.act_reorder[j+offset]);
-        CalcInfo.onel_ints[r_ij] = onep[i][j];
+        int r_ij = INDEX(CalcInfo_->act_reorder[i+offset], CalcInfo_->act_reorder[j+offset]);
+        CalcInfo_->onel_ints[r_ij] = onep[i][j];
       }
     }
     offset += nactpih;
@@ -709,7 +709,7 @@ void CIWavefunction::onel_ints_from_jk()
   J[0]->add(H_);
 
   SharedMatrix D = Matrix::doublet(Cdrc, Cdrc, false, true);
-  CalcInfo.edrc = J[0]->vector_dot(D);
+  CalcInfo_->edrc = J[0]->vector_dot(D);
   Cdrc.reset();
   D.reset();
 }

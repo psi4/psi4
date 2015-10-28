@@ -791,6 +791,234 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
 
       } /* end sigma3 */
 }
+
+void CIWavefunction::sigma_get_contrib(struct stringwr **alplist, struct stringwr **betlist,
+      CIvect &C, CIvect &S, int **s1_contrib, int **s2_contrib,
+      int **s3_contrib)
+{
+
+   int sblock,cblock;
+   int sac, sbc, cac, cbc;
+   int nas, nbs;
+   struct stringwr *Ib, *Ia, *Kb, *Ka;
+   unsigned int Ibidx, Iaidx, Kbidx, Kaidx, Ib_ex, Ia_ex;
+   unsigned int Ibcnt, Iacnt, *Ibridx, *Iaridx;
+   int Kb_list, Ka_list;
+   int found,i,j;
+
+   for (sblock=0; sblock<S.num_blocks; sblock++) {
+      sac = S.Ia_code[sblock];
+      sbc = S.Ib_code[sblock];
+      nas = S.Ia_size[sblock];
+      nbs = S.Ib_size[sblock];
+      for (cblock=0; cblock<C.num_blocks; cblock++) {
+         cac = C.Ia_code[cblock];
+         cbc = C.Ib_code[cblock];
+
+
+         /* does this c block contribute to sigma1? */
+         if (sac == cac) {
+            for (Ib=betlist[sbc], Ibidx=0, found=0; Ibidx < nbs && !found;
+               Ibidx++, Ib++) {
+               /* loop over excitations E^b_{kl} from |B(I_b)> */
+               for (Kb_list=0; Kb_list < S.num_betcodes && !found; Kb_list++) {
+                  Ibcnt = Ib->cnt[Kb_list];
+                  Ibridx = Ib->ridx[Kb_list];
+                  for (Ib_ex=0; Ib_ex < Ibcnt; Ib_ex++) {
+                     Kbidx = *Ibridx++;
+                     Kb = betlist[Kb_list] + Kbidx;
+                     if (Kb->cnt[cbc]) { found=1;  break; }
+                     }
+                  }
+               }
+            if (found) s1_contrib[sblock][cblock] = 1;
+            }
+
+         /* does this c block contribute to sigma2? */
+         if (sbc == cbc) {
+         for (Ia=alplist[sac], Iaidx=0, found=0; Iaidx < nas && !found;
+               Iaidx++, Ia++) {
+               /* loop over excitations E^a_{kl} from |A(I_a)> */
+               for (Ka_list=0; Ka_list < S.num_alpcodes && !found; Ka_list++) {
+                  Iacnt = Ia->cnt[Ka_list];
+                  Iaridx = Ia->ridx[Ka_list];
+                  for (Ia_ex=0; Ia_ex < Iacnt; Ia_ex++) {
+                     Kaidx = *Iaridx++;
+                     Ka = alplist[Ka_list] + Kaidx;
+                     if (Ka->cnt[cac]) { found=1;  break; }
+                     }
+                  }
+               }
+            if (found) s2_contrib[sblock][cblock] = 1;
+            }
+
+         /* does this c block contribute to sigma3? */
+         for (Iaidx=0,found=0; Iaidx<S.Ia_size[sblock]; Iaidx++) {
+            if (alplist[sac][Iaidx].cnt[cac]) found=1;
+            }
+         if (found) { /* see if beta is ok */
+            found=0;
+            for (Ibidx=0; Ibidx<S.Ib_size[sblock]; Ibidx++) {
+               if (betlist[sbc][Ibidx].cnt[cbc]) found=1;
+               }
+            if (found)
+               s3_contrib[sblock][cblock] = 1;
+            }
+
+         } /* end loop over c blocks */
+      } /* end loop over sigma blocks */
+
+   if (Parameters.print_lvl > 4) {
+     printf("\nSigma 1:\n");
+     for (i=0; i<S.num_blocks; i++) {
+       outfile->Printf( "Contributions to sigma block %d\n", i);
+       for (j=0; j<C.num_blocks; j++) {
+         if (s1_contrib[i][j]) outfile->Printf( "%3d ", j);
+       }
+       outfile->Printf( "\n");
+     }
+
+     printf("\n\nSigma 2:\n");
+     for (i=0; i<S.num_blocks; i++) {
+       outfile->Printf( "Contributions to sigma block %d\n", i);
+       for (j=0; j<C.num_blocks; j++) {
+         if (s2_contrib[i][j]) outfile->Printf( "%3d ", j);
+       }
+       outfile->Printf( "\n");
+     }
+
+     printf("\n\nSigma 3:\n");
+     for (i=0; i<S.num_blocks; i++) {
+       outfile->Printf( "Contributions to sigma block %d\n", i);
+       for (j=0; j<C.num_blocks; j++) {
+         if (s3_contrib[i][j]) outfile->Printf( "%3d ", j);
+       }
+       outfile->Printf( "\n");
+     }
+   }
+
+}
+
+void CIWavefunction::sigma_get_contrib_rotf(CIvect &C, CIvect &S,
+      int **s1_contrib, int **s2_contrib, int **s3_contrib,
+      int *Cnt[2], int **Ij[2], int **Oij[2], int **Ridx[2],
+      signed char **Sgn[2], unsigned char **Toccs)
+{
+
+   int sblock,cblock;
+   int sac, sbc, cac, cbc;
+   int nas, nbs;
+   int Ibidx, Iaidx, Ib_ex, Ia_ex;
+   int Ibcnt, Iacnt;
+   int Kb_list, Ka_list;
+   int found,i,j;
+
+   for (sblock=0; sblock<S.num_blocks; sblock++) {
+      sac = S.Ia_code[sblock];
+      sbc = S.Ib_code[sblock];
+      nas = S.Ia_size[sblock];
+      nbs = S.Ib_size[sblock];
+      for (cblock=0; cblock<C.num_blocks; cblock++) {
+         cac = C.Ia_code[cblock];
+         cbc = C.Ib_code[cblock];
+
+
+         /* does this c block contribute to sigma1? */
+         if (sac == cac) {
+            found = 0;
+            for (Kb_list=0; Kb_list < S.num_betcodes && !found; Kb_list++) {
+               b2brepl(Occs[sbc], Cnt[0], Ij[0], Oij[0], Ridx[0],
+                  Sgn[0], BetaG, sbc, Kb_list, nbs);
+               for (Ibidx=0; Ibidx < nbs && !found; Ibidx++) {
+                  Ibcnt = Cnt[0][Ibidx];
+                  if (Ibcnt) {
+                     for (i=0; i<Ibcnt; i++) {
+                        j = Ridx[0][Ibidx][i];
+                        Toccs[i] = Occs[Kb_list][j];
+                        }
+                     b2brepl(Toccs, Cnt[1], Ij[1], Oij[1], Ridx[1], Sgn[1],
+                        BetaG, Kb_list, cbc, Ibcnt);
+                     for (Ib_ex=0; Ib_ex < Ibcnt; Ib_ex++) {
+                        if (Cnt[1][Ib_ex]) { found=1; break; }
+                        }
+                     }
+                  }
+               }
+            if (found) s1_contrib[sblock][cblock] = 1;
+            }
+
+         /* does this c block contribute to sigma2? */
+         if (sbc == cbc) {
+            found = 0;
+            for (Ka_list=0; Ka_list < S.num_alpcodes && !found; Ka_list++) {
+               b2brepl(Occs[sac], Cnt[0], Ij[0], Oij[0], Ridx[0],
+                  Sgn[0], AlphaG, sac, Ka_list, nas);
+               for (Iaidx=0; Iaidx < nas && !found; Iaidx++) {
+                  Iacnt = Cnt[0][Iaidx];
+                  if (Iacnt) {
+                     for (i=0; i<Iacnt; i++) {
+                        j = Ridx[0][Iaidx][i];
+                        Toccs[i] = Occs[Ka_list][j];
+                        }
+                     b2brepl(Toccs, Cnt[1], Ij[1], Oij[1], Ridx[1], Sgn[1],
+                        AlphaG, Ka_list, cac, Iacnt);
+                     for (Ia_ex=0; Ia_ex < Iacnt; Ia_ex++) {
+                        if (Cnt[1][Ia_ex]) { found=1; break; }
+                        }
+                     }
+                  }
+               }
+            if (found) s2_contrib[sblock][cblock] = 1;
+            }
+
+         /* does this c block contribute to sigma3? */
+         b2brepl(Occs[sac], Cnt[0], Ij[0], Oij[0], Ridx[0],
+            Sgn[0], AlphaG, sac, cac, nas);
+         for (Iaidx=0,found=0; Iaidx<S.Ia_size[sblock]; Iaidx++) {
+            if (Cnt[0][Iaidx]) found=1;
+            }
+         if (found) { /* see if beta is ok */
+            found=0;
+            b2brepl(Occs[sbc], Cnt[0], Ij[0], Oij[0], Ridx[0],
+               Sgn[0], BetaG, sbc, cbc, nbs);
+            for (Ibidx=0; Ibidx<S.Ib_size[sblock]; Ibidx++) {
+               if (Cnt[0][Ibidx]) found=1;
+               }
+            if (found) s3_contrib[sblock][cblock] = 1;
+            }
+         } /* end loop over c blocks */
+      } /* end loop over sigma blocks */
+
+   if (Parameters.print_lvl > 3) {
+     printf("\nSigma 1:\n");
+     for (i=0; i<S.num_blocks; i++) {
+       outfile->Printf( "Contributions to sigma block %d\n", i);
+       for (j=0; j<C.num_blocks; j++) {
+         if (s1_contrib[i][j]) outfile->Printf( "%3d ", j);
+       }
+       outfile->Printf( "\n");
+     }
+
+     printf("\n\nSigma 2:\n");
+     for (i=0; i<S.num_blocks; i++) {
+       outfile->Printf( "Contributions to sigma block %d\n", i);
+       for (j=0; j<C.num_blocks; j++) {
+         if (s2_contrib[i][j]) outfile->Printf( "%3d ", j);
+       }
+       outfile->Printf( "\n");
+     }
+
+     printf("\n\nSigma 3:\n");
+     for (i=0; i<S.num_blocks; i++) {
+       outfile->Printf( "Contributions to sigma block %d\n", i);
+       for (j=0; j<C.num_blocks; j++) {
+         if (s3_contrib[i][j]) outfile->Printf( "%3d ", j);
+       }
+       outfile->Printf( "\n");
+     }
+   }
+
+}
  
 
 }} // namespace psi::detci
