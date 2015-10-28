@@ -130,7 +130,7 @@ public:
      **/
     SharedMatrix get_active_tpdm(const std::string& tpdm_type = "SUM");
 
-    // Should be private?
+    // Compute functions
     void compute_mcscf();
     void compute_cc();
     void diag_h();
@@ -139,6 +139,9 @@ public:
     // Build CI quantities
     void form_opdm();
     void form_tpdm();
+
+    // Extraneous
+    void cleanup();
 
 private:
 
@@ -225,10 +228,22 @@ private:
           **betlist, int nroots, double *evals, double conv_rms, double conv_e,
           double enuc, double edrc, int maxiter, int maxnvect, std::string out,
           int print_lvl);
+    void olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, double E_est,
+          double *norm, double *c1norm, double *ovrlap, double *buffer1,
+          double *buffer2,
+          int curr, int next, std::string out, int iter, struct stringwr **alplist,
+          struct stringwr **betlist);
+    void olsen_iter_xy(CIvect &C, CIvect &S, CIvect &Hd, double *x, double *y,
+          double *buffer1, double *buffer2, double E, int curvect, int L,
+          double **alpha, struct stringwr **alplist, struct stringwr **betlist);
+    void mitrush_update(CIvect &C, CIvect &S, double norm, double acur,
+       double alast, double *buffer1, double *buffer2, int curr, int next);
+
     void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       **betlist, double *evals, double conv_e,
       double conv_rms, double enuc, double edrc,
       int nroots, int maxiter, int maxnvect, std::string out, int print_lvl);
+
     void sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
           struct stringwr **betlist);
     void sigma(struct stringwr **alplist, struct stringwr **betlist,
@@ -244,7 +259,16 @@ private:
           int cblock, int sblock, int nas, int nbs, int sac, int sbc, 
           int cac, int cbc, int cnas, int cnbs, int cnac, int cnbc, 
           int sbirr, int cbirr, int Ms0);
-    void form_ov();
+
+    void sigma_get_contrib(struct stringwr **alplist, struct stringwr **betlist,
+          CIvect &C, CIvect &S, int **s1_contrib, int **s2_contrib,
+          int **s3_contrib);
+        void form_ov();
+    void sigma_get_contrib_rotf(CIvect &C, CIvect &S,
+          int **s1_contrib, int **s2_contrib, int **s3_contrib,
+          int *Cnt[2], int **Ij[2], int **Oij[2], int **Ridx[2],
+          signed char **Sgn[2], unsigned char **Toccs);
+
 
 
     /// => MPn helpers <= //

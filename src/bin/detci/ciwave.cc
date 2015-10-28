@@ -469,6 +469,41 @@ SharedMatrix CIWavefunction::get_active_tpdm(const std::string& tpdm_type)
   return actTPDM;
 }
 
+
+
+void CIWavefunction::form_opdm(void)
+{
+
+  /* don't need Parameters_->root since it writes all opdm's */
+  if (Parameters_->transdens) {
+    opdm(alplist_, betlist_, 1, Parameters_->dipmom,
+      Parameters_->num_roots, 0,
+      Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
+      Parameters_->num_roots, 0,
+      Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
+      Parameters_->opdm_file, 1, Parameters_->tdm_print);
+  }
+  if (Parameters_->opdm) {
+    opdm(alplist_, betlist_, 0, Parameters_->dipmom,
+      Parameters_->num_roots, 0,
+      Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
+      Parameters_->num_roots, 0,
+      Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
+      Parameters_->opdm_file, 1, Parameters_->opdm_print);
+  }
+
+}
+
+
+void CIWavefunction::form_tpdm(void)
+{
+  tpdm(alplist_, betlist_, Parameters_->num_roots,
+       Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
+       Parameters_->num_roots,
+       Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
+       Parameters_->tpdm_file, Parameters_->tpdm_write, Parameters_->tpdm_print);
+}
+
 // void CIWavefunction::finalize()
 // {
 //

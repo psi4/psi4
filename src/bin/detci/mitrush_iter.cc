@@ -61,6 +61,13 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
    struct olsen_graph *AlphaG, struct olsen_graph *BetaG, 
    struct stringwr **alplist, struct stringwr **betlist,
    std::string out);
+extern void xeaxmy(double *x, double *y, double a, int size);
+extern void xeaxpby(double *x, double *y, double a, double b, int size);
+extern void xexy(double *x, double *y, int size);
+extern void buf_ols_denom(double *a, double *hd, double E, int len);
+extern void buf_ols_updt(double *a, double *c, double *norm, double *ovrlap,
+   double *c1norm, int len, std::string OutFileRMR);
+extern double buf_xy1(double *c, double *hd, double E, int len);
 
 
 #define MITRUSH_E_DIFF_MIN 5.0E-6
@@ -536,6 +543,236 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
       } /* end while (1) */
 
 }
+
+/*
+** olsen_update()
+**
+** Update the CI vector according to the Olsen method.
+** Try to assume storage of only one C, one S, and Hd on disk.  Let
+** the mitrush_update() function assume two C and two S.  No, can't
+** assume that or we'll never get Mitrush started.  Just fix it so that
+** Cn can be identical to Cc.
+** The update formula is c0' = c0 + (Ho-Eo)^-1(E_est*Co - sigma_o)
+** this is the same formula as the davidson procedure except lambda_i
+** has been substituted by E_est
+*/
+void CIWavefunction::olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, double E_est,
+      double *norm, double *c1norm, double *ovrlap, double *buffer1,
+      double *buffer2,
+      int curr, int next, std::string out, int iter, struct stringwr **alplist,
+      struct stringwr **betlist)
+{
+
+   int buf;
+   double nx=0.0, ox=0.0, tmp1, tmp2, normc1=0.0, tmpnorm=0.0;
+   double rnorm=0.0, rnormtmp=0.0;
+
+   for (buf=0; buf<C.buf_per_vect; buf++) {
+      tmp1 = 0.0;
+      tmp2 = 0.0;
+      C.buf_lock(buffer1);
+      S.buf_lock(buffer2);
+      C.read(curr, buf);
+      S.read(curr, buf);
+      /* C = E_est * C - S, C is buffer1*/
+      xeaxmy(buffer1, buffer2, E_est, C.buf_size[buf]);
+      C.buf_unlock();
+      S.buf_unlock();
+      Hd.buf_lock(buffer2);
+      if (Parameters.hd_otf == FALSE) Hd.read(0,buf);
+      else Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
+           CalcInfo.twoel_ints, CalcInfo.edrc, CalcInfo.num_alp_expl,
+           CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
+      /* Check norm of residual vector i.e. before preconditioning */
+      dot_arr(buffer1, buffer1, C.buf_size[buf], &rnormtmp);
+      /* C = C/(Hd - E) */
+      buf_ols_denom(buffer1, buffer2, E, S.buf_size[buf]);
+      /* buffer1 is now equal to C^1, i.e. the correction to C_i
+      ** without the H0block correction
+      */
+      Hd.buf_unlock();
+      /* C_new = C_i + C^1 */
+      C.buf_lock(buffer2);
+      C.read(curr, buf);
+      buf_ols_updt(buffer1,buffer2,&tmp1,&tmp2,&tmpnorm,C.buf_size[buf],"outfile");
+      if (Parameters.precon >= PRECON_GEN_DAVIDSON)
+        C.h0block_buf_ols(&tmp1,&tmp2,&tmpnorm,E_est);
+      if (C.buf_offdiag[buf]) {
+         tmp1 *= 2.0;
+         tmp2 *= 2.0;
+         tmpnorm *= 2.0;
+         rnormtmp *= 2.0;
+         }
+      normc1 += tmpnorm;
+      nx += tmp1;
+      ox += tmp2;
+      rnorm += rnormtmp;
+      C.write(next, buf);
+      C.buf_unlock();
+ }
+
+   *norm = nx;
+   /* outfile->Printf("\n ovrlap(ox) = %20.16f\n", ox); */
+   *ovrlap = ox;
+   if (normc1 <= 1.0E-13) {
+     outfile->Printf("Norm of correction vector = %5.4e\n", normc1);
+     outfile->Printf("This may cause numerical errors which would" \
+         " deteriorate the diagonalization procedure.\n");
+     }
+   *c1norm = sqrt(rnorm);
+   normc1 = sqrt(normc1);
+}
+
+/*
+** olsen_iter_xy(): This function evaluates the quantities x and y defined by
+**    x = C^(i) * (Hd - E)^-1 * C^(i)
+**    y = C^(i) * (Hd - E)^-1 * sigma^(i)
+**    The diagonal elements of H (Hd) are used in this routine.
+**    These quantities are subtracted out and substituted in later
+**    routines if the gen_davidson or h0block_inv preconditioners
+**    are used. A very intelligent approach originally implimented
+**    by a fellow Jedi.
+**
+** Parameters:
+**   C       =  reference of current iteration's ci vector
+**   S       =  reference of current iteration's sigma vector
+**   Hd      =  reference of vector of diagonal elements of H
+**   x       =  pointer to double to hold x
+**   y       =  pointer to double to hold y
+**   buffer1 = pointer to first I/O buffer
+**   buffer2 = pointer to second I/O buffer
+**   E       =  current iteration's energy
+**   curvect = current vector
+**   L       = number of vectors in b or sigma files
+**   alplist = alpha string list for use with diag energies on the fly
+**   betlist = beta string list for use with diag energies on the fly
+**
+** Returns: none
+*/
+void CIWavefunction::olsen_iter_xy(CIvect &C, CIvect &S, CIvect &Hd, double *x, double *y,
+      double *buffer1, double *buffer2, double E, int curvect, int L,
+      double **alpha, struct stringwr **alplist, struct stringwr **betlist)
+{
+
+   int buf, i,j;
+   double tx = 0.0, ty = 0.0, tmpy = 0.0;
+   double *sigma0b1, *sigma0b2;
+   *x = 0.0;
+   *y = 0.0;
+
+   Hd.buf_lock(buffer2);
+   if (Parameters.diag_method==METHOD_DAVIDSON_LIU_SEM) {
+     sigma0b1 = init_array(H0block.size);
+     sigma0b2 = init_array(H0block.size);
+     }
+   for (buf=0; buf<C.buf_per_vect; buf++) {
+      tx = ty = 0.0;
+      C.buf_lock(buffer1);
+      C.read(curvect,buf);
+      if (Parameters.diag_method==METHOD_DAVIDSON_LIU_SEM)
+        C.h0block_gather_vec(CI_VEC);
+      if (Parameters.hd_otf == FALSE) Hd.read(0,buf);
+      else Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
+           CalcInfo.twoel_ints, CalcInfo.edrc, CalcInfo.num_alp_expl,
+           CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
+      tx = buf_xy1(buffer1, buffer2, E, Hd.buf_size[buf]);
+      /* buffer2 = Hd * Ci */
+      C.buf_unlock();
+      S.buf_lock(buffer1);
+      if (Parameters.diag_method <= METHOD_MITRUSHENKOV) {
+        /* Olsen and Mitrushenkov iterators */
+        S.read(curvect,buf);
+        dot_arr(buffer1, buffer2, C.buf_size[buf], &ty);
+        }
+      else { /* Dot buffer2 with all Sigma vectors on disk */
+        for (i=0; i<L; i++) {
+           S.read(i,buf);
+           dot_arr(buffer1, buffer2, C.buf_size[buf], &tmpy);
+           ty += tmpy * alpha[i][curvect];
+           zero_arr(sigma0b1,H0block.size);
+           S.h0block_gather_multivec(sigma0b1);
+           for (j=0; j<H0block.size; j++)
+              sigma0b2[j] += alpha[i][curvect] * sigma0b1[j];
+           }
+
+       }
+      if (C.buf_offdiag[buf]) {
+         *x += 2.0 * tx;
+         *y += 2.0 * ty;
+         }
+      else {
+         *x += tx;
+         *y += ty;
+         }
+      S.buf_unlock();
+      }
+
+   Hd.buf_unlock();
+   if (Parameters.diag_method==METHOD_DAVIDSON_LIU_SEM) {
+     for (j=0; j<H0block.size; j++)
+        H0block.s0b[j] = sigma0b2[j];
+     free(sigma0b1);
+     free(sigma0b2);
+     }
+
+}
+
+/*
+** mitrush_update()
+** Perform the Mitrushenkov update.  New version 3/96
+**
+*/
+void CIWavefunction::mitrush_update(CIvect &C, CIvect &S, double norm, double acur,
+   double alast, double *buffer1, double *buffer2, int curr, int next)
+{
+   int i, j, k, buf, blk, al, bl;
+   double phase, tval;
+
+   if (!Parameters.Ms0) phase = 1.0;
+   else phase = ((int) Parameters.S % 2) ? -1.0 : 1.0;
+
+   for (buf=0; buf<C.buf_per_vect; buf++) {
+      C.buf_lock(buffer1);
+      C.read(curr, buf);
+      C.buf_unlock();
+      C.buf_lock(buffer2);
+      C.read(next, buf);
+      xeaxpby(buffer2, buffer1, alast, acur, C.buf_size[buf]);
+      /* buffer2 is the new C(i) vector constructed from
+      ** alpha(i-1)*C(i-1) + alpha(i)*C(i).
+      ** However, this vector is not normalized or symmetrized yet.
+      ** Still need to construct the olsen_update of this new
+      ** C(i) vector.
+      */
+      C.write(curr, buf);
+      C.buf_unlock();
+      }
+   C.buf_lock(buffer1);
+   C.read(curr,0);
+   C.symnorm(norm,0,1);
+   C.buf_unlock();
+
+   for (buf=0; buf<S.buf_per_vect; buf++) {
+      S.buf_lock(buffer1);
+      S.read(curr, buf);
+      S.buf_unlock();
+      S.buf_lock(buffer2);
+      S.read(next, buf);
+      xeaxpby(buffer2, buffer1, alast, acur, S.buf_size[buf]);
+      S.write(curr, buf);
+      S.buf_unlock();
+      }
+   S.buf_lock(buffer1);
+   S.read(curr,0);
+   S.symnorm(norm,1,1);
+   S.buf_unlock();
+}
+
+
+
+
+
+
 
 }} // namespace psi::detci
 

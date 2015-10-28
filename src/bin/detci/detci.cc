@@ -118,7 +118,7 @@ extern void sem_test(double **A, int N, int M, int L, double **evecs,
 extern void form_ov(struct stringwr **alplist);
 extern void write_energy(int nroots, double *evals, double offset);
 
-void cleanup(void);
+//void cleanup(void);
 void quote(void);
 //void mpn(struct stringwr **strlista, struct stringwr **strlistb);
 //void form_opdm(void);
@@ -166,7 +166,7 @@ PsiReturnType detci(Options &options)
    init_time_new(detci_time);             /* initialize timing routines */
 
    if (Parameters.istop) {      /* Print size of space, other stuff, only   */
-     cleanup();
+     ciwfn->cleanup();
      Process::environment.globals["CURRENT ENERGY"] = 0.0;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = 0.0;
      Process::environment.globals["CI TOTAL ENERGY"] = 0.0;
@@ -207,12 +207,10 @@ PsiReturnType detci(Options &options)
    if (Parameters.print_lvl > 0) quote();
 
 
-   cleanup();
+   ciwfn->cleanup();
    Process::environment.set_wavefunction((static_cast<boost::shared_ptr<Wavefunction> > (ciwfn)));
    return Success;
 }
-
-
 
 /*
 ** init_ioff(): Set up the ioff array for quick indexing
@@ -235,7 +233,7 @@ void CIWavefunction::init_ioff(void)
 /*
 ** cleanup(): Free any allocated memory that wasn't already freed elsewhere
 */
-void cleanup(void)
+void CIWavefunction::cleanup(void)
 {
 
 }
@@ -256,6 +254,9 @@ void CIWavefunction::title(void)
    outfile->Printf("         ---------------------------------------------------------\n");
    outfile->Printf("\n");
 }
+
+
+
 
 
 
@@ -993,44 +994,6 @@ void CIWavefunction::diag_h()
 
 }
 
-
-
-void CIWavefunction::form_opdm(void)
-{
-  int i, j, natom;
-  double *zvals, **geom;
-
-  // Process::environment.molecule()->print();
-
-  /* don't need Parameters.root since it writes all opdm's */
-  if (Parameters.transdens) {
-    opdm(alplist, betlist, 1, Parameters.dipmom,
-      Parameters.num_roots, 0,
-      Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
-      Parameters.num_roots, 0,
-      Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
-      Parameters.opdm_file, 1, Parameters.tdm_print);
-  }
-  if (Parameters.opdm) {
-    opdm(alplist, betlist, 0, Parameters.dipmom,
-      Parameters.num_roots, 0,
-      Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
-      Parameters.num_roots, 0,
-      Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
-      Parameters.opdm_file, 1, Parameters.opdm_print);
-  }
-
-}
-
-
-void CIWavefunction::form_tpdm(void)
-{
-  tpdm(alplist_, betlist_, Parameters.num_roots,
-       Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
-       Parameters.num_roots,
-       Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
-       Parameters.tpdm_file, Parameters.tpdm_write, Parameters.tpdm_print);
-}
 
 void quote(void)
 {
