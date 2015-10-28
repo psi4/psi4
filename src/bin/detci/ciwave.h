@@ -244,12 +244,35 @@ private:
           int cblock, int sblock, int nas, int nbs, int sac, int sbc, 
           int cac, int cbc, int cnas, int cnbs, int cnac, int cnbc, 
           int sbirr, int cbirr, int Ms0);
+    void form_ov();
 
 
     /// => MPn helpers <= //
     void mpn_generator(CIvect &Hd); 
 
-};
+    /// => Density Matrix helpers <= //
+    void opdm(struct stringwr **alplist, struct stringwr **betlist,
+              int transdens, int dipmom,
+              int Inroots, int Iroot, int Inunits, int Ifirstunit,
+          int Jnroots, int Jroot, int Jnunits, int Jfirstunit,
+          int targetfile, int writeflag, int printflag);
+    void opdm_block(struct stringwr **alplist, struct stringwr **betlist,
+            double **onepdm_a, double **onepdm_b, double **CJ, double **CI, int Ja_list,
+            int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list,
+            int Inas, int Inbs);
+    void opdm_ave(int targetfile);
+    void opdm_ke(double **onepdm);
+    void tpdm(struct stringwr **alplist, struct stringwr **betlist,
+          int Inroots, int Inunits, int Ifirstunit,
+          int Jnroots, int Jnunits, int Jfirstunit,
+          int targetfile, int writeflag, int printflag);
+    void tpdm_block(struct stringwr **alplist, struct stringwr **betlist,
+            int nbf, int nalplists, int nbetlists,
+            double *twopdm_aa, double *twopdm_bb, double *twopdm_ab, double **CJ, double **CI, int Ja_list,
+            int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list,
+            int Inas, int Inbs, double weight);
+
+}; // End CIWavefunction
 
 }}
 

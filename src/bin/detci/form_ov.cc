@@ -33,17 +33,19 @@
 #include <cstdio>
 #include <cstdlib>
 #include <libciomr/libciomr.h>
+#include <libmints/mints.h>
 #include "structs.h"
 #define EXTERN
 #include "globals.h"
+#include "ciwave.h"
 
 namespace psi { namespace detci {
 
 /*
 ** FORM_OV()
-** This will only work for Full CI's right now (where Parameters.fci=true)
+** This will only work for Full CI's right now (where Parameters_->fci=true)
 */
-void form_ov(struct stringwr **alplist)
+void CIWavefunction::form_ov()
 {
 
    int i, j, nirreps, norbs;
@@ -61,13 +63,13 @@ void form_ov(struct stringwr **alplist)
 
    /* allocate memory for OV[list][fullij][string] */
 
-   norbs = CalcInfo.num_ci_orbs;
-   nirreps = AlphaG->nirreps;
+   norbs = CalcInfo_->num_ci_orbs;
+   nirreps = AlphaG_->nirreps;
    OV = (int ***) malloc (sizeof(int **) * nirreps);
    for (i=0; i<nirreps; i++) {
       OV[i] = (int **) malloc (sizeof(int *) * norbs * norbs);
       for (j=0; j<norbs*norbs; j++) {
-         OV[i][j] = (int *) malloc (sizeof(int) * AlphaG->max_str_per_irrep+1);
+         OV[i][j] = (int *) malloc (sizeof(int) * AlphaG_->max_str_per_irrep+1);
          OV[i][j][0] = 0;
          }
       }
@@ -76,9 +78,9 @@ void form_ov(struct stringwr **alplist)
    /* now fill up OV by walking through the stringwr lists */
 
    for (irrep=0; irrep < nirreps; irrep++) {
-      strnum = AlphaG->sg[irrep][0].num_strings;
+      strnum = AlphaG_->sg[irrep][0].num_strings;
       cnt=0;
-      strlist = alplist[irrep];
+      strlist = alplist_[irrep];
       while (cnt != strnum) { 
          for (strsym=0; strsym < nirreps; strsym++) {
             for (i=0; i<strlist->cnt[strsym]; i++) {
@@ -100,7 +102,7 @@ void form_ov(struct stringwr **alplist)
 
    /* print out the OV data */
 
-   if (Parameters.print_lvl > 3) {
+   if (Parameters_->print_lvl > 3) {
       for (irrep=0; irrep < nirreps; irrep++) {
          for (fullij=0; fullij<norbs*norbs; fullij++) {
             outfile->Printf( "OV[irrep=%d][oij=%d]:  ", irrep, fullij);

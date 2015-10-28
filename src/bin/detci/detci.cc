@@ -87,22 +87,22 @@ struct stringwr **betlist;
 
 extern void eivout_t(double **evecs, double *evals, int rows, int cols,
    std::string OutFileRMR);
-extern void read_integrals(void);
-extern void zapt_shift(double *TEI, int nirreps, int nmo, int *doccpi,
-   int *soccpi, int *orbspi, int *frzdoccpi, int *reorder);
+//extern void read_integrals(void);
+//extern void zapt_shift(double *TEI, int nirreps, int nmo, int *doccpi,
+//   int *soccpi, int *orbspi, int *frzdoccpi, int *reorder);
 extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
    int *Iaidx, int *Ibidx, double *coeff,
    struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
    struct stringwr **alplist, struct stringwr **betlist,
    std::string OutFileRMR);
-extern void print_config(int nbf, int num_alp_el, int num_bet_el,
-   struct stringwr *stralp, struct stringwr *strbet,
-   int num_drc_orbs, char *outstring);
-extern void init_stringwr_temps(int nel, int num_ci_orbs, int nsym);
-extern void free_stringwr_temps(int nsym);
-extern void str_abs2rel(int absidx, int *relidx, int *listnum,
-   struct olsen_graph *Graph);
-extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
+//extern void print_config(int nbf, int num_alp_el, int num_bet_el,
+//   struct stringwr *stralp, struct stringwr *strbet,
+//   int num_drc_orbs, char *outstring);
+//extern void init_stringwr_temps(int nel, int num_ci_orbs, int nsym);
+//extern void free_stringwr_temps(int nsym);
+//extern void str_abs2rel(int absidx, int *relidx, int *listnum,
+//   struct olsen_graph *Graph);
+//extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
 //extern void H0block_init(unsigned int size);
 //extern void H0block_fill(struct stringwr **alplist,
 //   struct stringwr **betlist);
@@ -134,15 +134,15 @@ void quote(void);
 //   int nroots, int maxiter, int maxnvect, std::string OutFileRMR, int print_lvl);
 //extern void mpn_generator(CIvect &Hd, struct stringwr **alplist,
 //   struct stringwr **betlist);
-extern void opdm(struct stringwr **alplist, struct stringwr **betlist,
-   int transdens, int dipmom,
-   int Inroots, int Iroot, int Inunits, int Ifirstunit,
-   int Jnroots, int Jroot, int Jnunits, int Jfirstunit,
-   int targetfile, int writeflag, int printflag);
-extern void tpdm(struct stringwr **alplist, struct stringwr **betlist,
-   int Inroots, int Inunits, int Ifirstunit,
-   int Jnroots, int Jnunits, int Jfirstunit,
-   int targetfile, int writeflag, int printflag);
+//extern void opdm(struct stringwr **alplist, struct stringwr **betlist,
+//   int transdens, int dipmom,
+//   int Inroots, int Iroot, int Inunits, int Ifirstunit,
+//   int Jnroots, int Jroot, int Jnunits, int Jfirstunit,
+//   int targetfile, int writeflag, int printflag);
+//extern void tpdm(struct stringwr **alplist, struct stringwr **betlist,
+//   int Inroots, int Inunits, int Ifirstunit,
+//   int Jnroots, int Jnunits, int Jfirstunit,
+//   int targetfile, int writeflag, int printflag);
 //extern void compute_cc(void);
 //extern void calc_mrpt(void);
 
@@ -165,7 +165,6 @@ PsiReturnType detci(Options &options)
                                 /* initialize thread pool */
    init_time_new(detci_time);             /* initialize timing routines */
 
-
    if (Parameters.istop) {      /* Print size of space, other stuff, only   */
      cleanup();
      Process::environment.globals["CURRENT ENERGY"] = 0.0;
@@ -175,9 +174,6 @@ PsiReturnType detci(Options &options)
 
      return Success;
    }
-
-   if (Parameters.bendazzoli) /* form the Bendazzoli OV arrays            */
-      form_ov(alplist);
 
    // MCSCF is special, we let it handle a lot of its own issues
    if (Parameters.mcscf){
@@ -1029,8 +1025,7 @@ void CIWavefunction::form_opdm(void)
 
 void CIWavefunction::form_tpdm(void)
 {
-  tpdm(alplist, betlist,
-       Parameters.num_roots,
+  tpdm(alplist_, betlist_, Parameters.num_roots,
        Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
        Parameters.num_roots,
        Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
