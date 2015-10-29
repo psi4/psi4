@@ -621,6 +621,7 @@ struct ci_blks {
    int num_bet_codes;         /* number of beta codes in decode matrix */
    int *first_iablk;          /* first blocknum for a given Ia irrep */
    int *last_iablk;           /* last blocknum for a given Ia irrep */
+   int subgr_per_irrep;       /* possible number of Olsen subgraphs per irrep */
    };
 
 /*
