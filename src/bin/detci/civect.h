@@ -33,9 +33,10 @@ namespace psi { namespace detci {
 typedef unsigned long int BIGINT;
 struct calcinfo;
 struct params;
-struct olsen_graph;
 struct H_zero_block;
+struct ci_blks;
 class CIWavefunction;
+
 
 /*
 ** CIVECT.H
@@ -53,9 +54,10 @@ class CIvect {
    protected:
       struct calcinfo *CI_CalcInfo;
       struct params *CI_Params;
-      struct olsen_graph *CI_AlphaGraph_;
-      struct olsen_graph *CI_BetaGraph_;
       struct H_zero_block *CI_H0block_;
+      struct ci_blks *CI_CIblks_;
+
+      void common_init();        /* common init func */
 
       BIGINT vectlen;            /* total vector length */ 
       unsigned long buffer_size; /* size of largest in-core chunk */
@@ -115,6 +117,7 @@ class CIvect {
       ~CIvect();
 
       double * buf_malloc(void);
+//      void set(int incor, int ms0, int maxvect, int nunits, int funit, struct ci_blks *CIblks); 
       void set(BIGINT vl, int nb, int incor, int ms0, int *iac,
          int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc, 
          int nirr, int cdperirr, int maxvect, int nunits, int funit, 

@@ -49,8 +49,8 @@ namespace psi { namespace detci {
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 #define TOL 1E-14
 
-void orbsfile_rd_blk(int targetfile, int root, int irrep, double **orbs_vector);
-void orbsfile_wt_blk(int targetfile, int root, int irrep, double **orbs_vector);
+//void orbsfile_rd_blk(int targetfile, int root, int irrep, double **orbs_vector);
+//void orbsfile_wt_blk(int targetfile, int root, int irrep, double **orbs_vector);
 //void opdm_ave(int targetfile);
 //void opdm_block(struct stringwr **alplist, struct stringwr **betlist,
 //		double **onepdm_a, double **onepdm_b, double **CJ, double **CI, int Ja_list, 
@@ -278,10 +278,10 @@ void CIWavefunction::opdm(struct stringwr **alplist, struct stringwr **betlist,
           if (Jvec.Ms0) Jblock2 = Jvec.decode[Jbc][Jac];
           Jnas = Jvec.Ia_size[Jblock];
           Jnbs = Jvec.Ib_size[Jblock];
-          if (s1_contrib[Iblock][Jblock] || s2_contrib[Iblock][Jblock]) 
+          if (s1_contrib_[Iblock][Jblock] || s2_contrib_[Iblock][Jblock]) 
             do_Jblock = 1;
-          if (Jvec.buf_offdiag[Jbuf] && (s1_contrib[Iblock][Jblock2] ||
-                                         s2_contrib[Iblock][Jblock2]))
+          if (Jvec.buf_offdiag[Jbuf] && (s1_contrib_[Iblock][Jblock2] ||
+                                         s2_contrib_[Iblock][Jblock2]))
             do_Jblock2 = 1;
           if (!do_Jblock && !do_Jblock2) continue;
 	 
@@ -320,10 +320,10 @@ void CIWavefunction::opdm(struct stringwr **alplist, struct stringwr **betlist,
             if (Jvec.Ms0) Jblock2 = Jvec.decode[Jbc][Jac];
             Jnas = Jvec.Ia_size[Jblock];
             Jnbs = Jvec.Ib_size[Jblock];
-            if (s1_contrib[Iblock2][Jblock] || s2_contrib[Iblock2][Jblock]) 
+            if (s1_contrib_[Iblock2][Jblock] || s2_contrib_[Iblock2][Jblock]) 
               do_Jblock = 1;
-            if (Jvec.buf_offdiag[Jbuf] && (s1_contrib[Iblock2][Jblock2] ||
-                                           s2_contrib[Iblock2][Jblock2]))
+            if (Jvec.buf_offdiag[Jbuf] && (s1_contrib_[Iblock2][Jblock2] ||
+                                           s2_contrib_[Iblock2][Jblock2]))
               do_Jblock2 = 1;
             if (!do_Jblock && !do_Jblock2) continue;
 	   
@@ -360,7 +360,7 @@ void CIWavefunction::opdm(struct stringwr **alplist, struct stringwr **betlist,
           Jbc = Jvec.Ib_code[Jblock];
           Jnas = Jvec.Ia_size[Jblock];
           Jnbs = Jvec.Ib_size[Jblock];
-          if (s1_contrib[Iblock][Jblock] || s2_contrib[Iblock][Jblock])
+          if (s1_contrib_[Iblock][Jblock] || s2_contrib_[Iblock][Jblock])
             opdm_block(alplist, betlist, onepdm_a, onepdm_b, Jvec.blocks[Jblock],
                        Ivec.blocks[Iblock], Jac, Jbc, Jnas,
                        Jnbs, Iac, Ibc, Inas, Inbs);
@@ -391,15 +391,15 @@ void CIWavefunction::opdm(struct stringwr **alplist, struct stringwr **betlist,
             Jnas = Jvec.Ia_size[Jblock];
             Jnbs = Jvec.Ib_size[Jblock];
 	   
-            if (s1_contrib[Iblock][Jblock] || s2_contrib[Iblock][Jblock])
+            if (s1_contrib_[Iblock][Jblock] || s2_contrib_[Iblock][Jblock])
               opdm_block(alplist, betlist, onepdm_a, onepdm_b, Jvec.blocks[Jblock],
                          Ivec.blocks[Iblock], Jac, Jbc, Jnas,
                          Jnbs, Iac, Ibc, Inas, Inbs);
 
             if (Jvec.buf_offdiag[Jbuf]) {
               Jblock2 = Jvec.decode[Jbc][Jac];
-              if (s1_contrib[Iblock][Jblock2] ||
-                  s2_contrib[Iblock][Jblock2]) {
+              if (s1_contrib_[Iblock][Jblock2] ||
+                  s2_contrib_[Iblock][Jblock2]) {
               Jvec.transp_block(Jblock, transp_tmp);
                 opdm_block(alplist, betlist, onepdm_a, onepdm_b, transp_tmp,
                   Ivec.blocks[Iblock], Jbc, Jac,
@@ -424,15 +424,15 @@ void CIWavefunction::opdm(struct stringwr **alplist, struct stringwr **betlist,
               Jnas = Jvec.Ia_size[Jblock];
               Jnbs = Jvec.Ib_size[Jblock];
 	   
-              if (s1_contrib[Iblock2][Jblock] || s2_contrib[Iblock2][Jblock])
+              if (s1_contrib_[Iblock2][Jblock] || s2_contrib_[Iblock2][Jblock])
                 opdm_block(alplist, betlist, onepdm_a, onepdm_b, Jvec.blocks[Jblock],
                            transp_tmp2, Jac, Jbc, Jnas, Jnbs, Iac, Ibc, 
                            Inas, Inbs);
 
                 if (Jvec.buf_offdiag[Jbuf]) {
                   Jblock2 = Jvec.decode[Jbc][Jac];
-                  if (s1_contrib[Iblock][Jblock2] || 
-                    s2_contrib[Iblock][Jblock2]) {
+                  if (s1_contrib_[Iblock][Jblock2] || 
+                    s2_contrib_[Iblock][Jblock2]) {
                     Jvec.transp_block(Jblock, transp_tmp);
                     opdm_block(alplist, betlist, onepdm_a, onepdm_b, transp_tmp,
                       transp_tmp2, Jbc, Jac, Jnbs, Jnas, Iac, Ibc, Inas, Inbs);

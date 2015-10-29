@@ -159,6 +159,28 @@ extern struct olsen_graph *BetaG;
 
 CIvect::CIvect() // Default constructor
 {
+   common_init();
+}
+
+
+CIvect::CIvect(BIGINT vl, int nb, int incor, int ms0, int *iac,
+         int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc,
+         int nirr, int cdpirr, int mxv, int nu,
+         int funit, int *fablk, int *lablk, int **dc)
+{
+   common_init();
+
+   set(vl, nb, incor, ms0, iac, ibc, ias, ibs, offs, nac, nbc,
+         nirr, cdpirr, mxv, nu, funit, fablk, lablk, dc);
+
+   buffer = buf_malloc();
+   blocks[0][0] = buffer;
+   buf_lock(buffer);
+
+}
+
+void CIvect::common_init(void)
+{
    vectlen = 0;
    num_blocks = 0;
    icore = 1;
@@ -201,62 +223,7 @@ CIvect::CIvect() // Default constructor
    first_unit = 0;
 }
 
-
-CIvect::CIvect(BIGINT vl, int nb, int incor, int ms0, int *iac,
-         int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc,
-         int nirr, int cdpirr, int mxv, int nu,
-         int funit, int *fablk, int *lablk, int **dc)
-{
-
-   vectlen = 0;
-   num_blocks = 0;
-   icore = 1;
-   Ms0 = 0;
-   Ia_code = NULL;
-   Ib_code = NULL;
-   Ia_size = NULL;
-   Ib_size = NULL;
-   offset = NULL;
-   num_alpcodes = 0;
-   num_betcodes = 0;
-   nirreps = 0;
-   codes_per_irrep = 0;
-   buf_per_vect = 0;
-   buf_total = 0;
-   maxvect = 0;
-   nvect = 0;
-   nunits = 0;
-   cur_vect = -1;
-   cur_buf = -1;
-   buffer_size = 0;
-   units = NULL;
-   file_number = NULL;
-   buf_size = NULL;
-   buf2blk = NULL;
-   buf_offdiag = NULL;
-   first_ablk = NULL;
-   last_ablk = NULL;
-   decode = NULL;
-   blocks = NULL;
-   zero_blocks = NULL;
-   buf_locked = 0;
-   buffer = NULL;
-   in_file = 0;
-   extras = 0;
-   units_used = 0;
-   cur_unit = 0;
-   cur_size = 0;
-
-   set(vl, nb, incor, ms0, iac, ibc, ias, ibs, offs, nac, nbc,
-         nirr, cdpirr, mxv, nu, funit, fablk, lablk, dc);
-
-   buffer = buf_malloc();
-   blocks[0][0] = buffer;
-   buf_lock(buffer);
-
-}
-
-
+//void set(int incor, int ms0, int maxvect, int nunits, int funit, struct ci_blks *CIblks); 
 
 void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac,
          int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc,
