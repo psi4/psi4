@@ -66,6 +66,11 @@ DCFTSolver::scf_guess_RHF()
         epsilon_b_->copy(epsilon_a_.get());
         Ca_->copy(reference_wavefunction_->Ca());
         Cb_->copy(Ca_);
+
+        // Check:
+//        Ca_->print();
+//        reference_wavefunction()->aotoso()->print();
+
         moFa_->copy(reference_wavefunction_->Fa());
         moFa_->transform(Ca_);
         moFb_->copy(moFa_);
@@ -515,7 +520,7 @@ DCFTSolver::compute_scf_energy_RHF()
     scf_energy_ += kappa_so_a_->vector_dot(so_h_);
     scf_energy_ += tau_so_a_->vector_dot(so_h_);
 
-    if(options_.get_bool("DCFT_DENSITY_FITTING") && options_.get_str("AO_BASIS") == "NONE"){
+    if(options_.get_str("DCFT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE"){
         scf_energy_ += mo_gammaA_->vector_dot(moFa_);
     }
     else{

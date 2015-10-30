@@ -40,12 +40,25 @@ DCFTSolver::compute_energy()
 {
     double total_energy = 0.0;
 
+    if (options_.get_str("SCF_TYPE") == "DF" || options_.get_str("SCF_TYPE") == "CD" || options_.get_str("SCF_TYPE") == "DIRECT"){
+        if (!options_["DCFT_TYPE"].has_changed())
+            options_.set_global_str("DCFT_TYPE", "DF");
+        else if (options_.get_str("DCFT_TYPE") == "EXACT")
+            throw PSIEXCEPTION("Please set SCF_TYPE to PK or OUT_OF_CORE in order to use DCFT_TYPE=EXACT.");
+    }
+
+    if (options_.get_str("DCFT_TYPE") == "DF" && (!options_["AO_BASIS"].has_changed()))
+        options_.set_str("DCFT", "AO_BASIS", "NONE");
+
+
     if(options_.get_str("REFERENCE") == "RHF")
         total_energy = compute_energy_RHF();
     else if (options_.get_str("REFERENCE") == "UHF")
         total_energy = compute_energy_UHF();
-    else if (options_.get_str("REFERENCE") == "ROHF")
-        throw FeatureNotImplemented("DCFT", "ROHF reference", __FILE__, __LINE__);
+    else if (options_.get_str("REFERENCE") == "ROHF"){
+        outfile->Printf("\n\n\t**** Warning: ROHF reference, then unrestricted DCFT ****\n\n");
+        total_energy = compute_energy_UHF();
+    }
     else
         throw PSIEXCEPTION("Unknown DCFT reference.");
 
@@ -58,7 +71,7 @@ DCFTSolver::compute_energy()
         tstart();
         // Solve the response equations, compute relaxed OPDM and TPDM and dump them to disk
         compute_gradient();
-        if (options_.get_str("REFERENCE") == "UHF") {
+        if (options_.get_str("REFERENCE") != "RHF") {
             // Compute TPDM trace
             compute_TPDM_trace();
         }

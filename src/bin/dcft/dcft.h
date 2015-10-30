@@ -491,7 +491,7 @@ protected:
 
     // Density-Fitting DCFT
     /// Density-fitted MP2 (DF-MP2) guess
-    void df_build_b_so();
+    void df_build_b_ao();
     /// Calculate memory required for density-fitting
     void df_memory();
     /// Build density-fitted <VV||VV>, <vv||vv>, and <Vv|Vv> tensors in G intermediate
@@ -501,10 +501,10 @@ protected:
     void formJm12(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
     /// Form AO basis b(Q|mu,nu)
     void formb_ao(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
+    /// Transform AO-basis b(Q, mn) to MO-basis b(Q, pq)
+    void transform_b();
     /// Transform b(Q|mu,nu) from AO basis to SO basis
     void transform_b_ao2so();
-    /// Transform SO-basis b(Q, mn) to MO-basis b(Q, pq)
-    void transform_b();
     /// Form MO-basis b(Q, ij)
     void formb_oo();
     /// Form MO-basis b(Q, ia)
@@ -529,13 +529,8 @@ protected:
     void build_gbarGamma_RHF();
     void build_gbarGamma_UHF();
     /// Form gbar<ab|cd> * lambda <ij|cd>
-    void build_gbarlambda_RHF_v2mem();
     void build_gbarlambda_RHF_v3mem();
-    void build_gbarlambda_RHF_v4mem();
-
-    void build_gbarlambda_UHF_v2mem();
     void build_gbarlambda_UHF_v3mem();
-    void build_gbarlambda_UHF_v4mem();
 
     // Density-Fitting DCFT
     /// Auxiliary basis
@@ -553,41 +548,21 @@ protected:
     /// b(Q|mu,nu)
     SharedMatrix bQmn_ao_;
     SharedMatrix bQmn_so_;
-    /// b(Q|mu, a)
-    SharedMatrix bQnaA;
-    SharedMatrix bQnaB;
-    /// b(Q|mu, i)
-    SharedMatrix bQniA;
-    SharedMatrix bQniB;
     /// b(Q|i, j)
-    SharedMatrix bQijA;
-    SharedMatrix bQijB;
     SharedMatrix bQijA_mo_;
     SharedMatrix bQijB_mo_;
     /// b(Q|i, a)
-    SharedMatrix bQiaA;
-    SharedMatrix bQiaB;
     SharedMatrix bQiaA_mo_;
     SharedMatrix bQiaB_mo_;
     /// b(Q|a, i)
-    SharedMatrix bQaiA;
-    SharedMatrix bQaiB;
     SharedMatrix bQaiA_mo_;
     SharedMatrix bQaiB_mo_;
     /// b(Q|a, b)
-    SharedMatrix bQabA;
-    SharedMatrix bQabB;
     SharedMatrix bQabA_mo_;
     SharedMatrix bQabB_mo_;
-    /// b(Q|mu, q)
-    SharedMatrix bQnqA;
-    SharedMatrix bQnqB;
     /// b(Q|p, q)
-    SharedMatrix bQpqA;
-    SharedMatrix bQpqB;
     SharedMatrix bQpqA_mo_;
     SharedMatrix bQpqB_mo_;
-
     /// The Tau in the MO basis (All)
     SharedMatrix mo_tauA_;
     SharedMatrix mo_tauB_;

@@ -91,7 +91,7 @@ DCFTSolver::run_simult_dcft_oo_RHF()
         }
         transform_tau_RHF();
 
-        if(options_.get_bool("DCFT_DENSITY_FITTING") && options_.get_str("AO_BASIS") == "NONE"){
+        if(options_.get_str("DCFT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE"){
             build_DF_tensors_RHF();
 
             SharedMatrix mo_h = SharedMatrix(new Matrix("MO-based H", nirrep_, nmopi_, nmopi_));

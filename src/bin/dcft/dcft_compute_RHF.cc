@@ -47,8 +47,8 @@ double DCFTSolver::compute_energy_RHF()
     // Perform SCF guess for the orbitals
     scf_guess_RHF();
 
-    // If DCFT_DENSITY_FITTING = True, build b(Q|mn) in SO basis
-    if(options_.get_bool("DCFT_DENSITY_FITTING")) df_build_b_so();
+    // If DCFT computation type is density fitting, build b(Q|mn) in AO basis
+    if (options_.get_str("DCFT_TYPE") == "DF") df_build_b_ao();
 
     // Perform MP2 guess for the cumulant
     mp2_guess_RHF();

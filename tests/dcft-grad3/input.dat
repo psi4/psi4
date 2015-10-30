@@ -42,7 +42,7 @@ D2 = 0.0
 
 set {
   basis cc-pvdz
-  dcft_density_fitting true
+  dcft_type df
   df_basis_dcft cc-pvdz-ri
   dcft_guess mp2
   algorithm simultaneous
