@@ -314,24 +314,33 @@ void DCFTSolver::df_memory(){
 
     // Memory requirements
     outfile->Printf("\t => Memory Requirement <=\n\n");
+
     double cost_df = 0.0;
-    cost_df += nQ_ * nQ_; // store J(P|Q)-1/2
-    cost_df += nQ_ * nso_ * nso_; // store b(Q|mn)
-    cost_df += nQ_ * nso_ * navir_; // store b(Q|mV)
-    cost_df += nQ_ * navir_ * navir_; // store b(Q|VV)
+
+    if (options_.get_str("REFERENCE") == "RHF"){
+        cost_df += nQ_ * nQ_; // J(P|Q)-1/2
+        cost_df += 2 * nQ_ * nso_ * nso_; // b(Q|mn)
+        cost_df += nQ_ * nalpha_ * nalpha_; // b(Q|oo)
+        cost_df += 2 * nQ_ * nalpha_ * navir_; // b(Q|ov) and b(Q|vo)
+        cost_df += nQ_ * navir_ * navir_; // b(Q|vv)
+        cost_df += nQ_ * nso_ * nso_; // b(Q|pq)
+        cost_df += 2 * navirpi_.max() * navirpi_.max() * navirpi_.max(); // (V'V|VV)
+    }
+    else {
+        cost_df += nQ_ * nQ_; // J(P|Q)-1/2
+        cost_df += 2 * nQ_ * nso_ * nso_; // b(Q|mn)
+        cost_df += 2 * nQ_ * nalpha_ * nalpha_; // b(Q|oo)
+        cost_df += 4 * nQ_ * nalpha_ * navir_; // b(Q|ov) and b(Q|vo)
+        cost_df += 2 * nQ_ * navir_ * navir_; // b(Q|vv)
+        cost_df += 2 * nQ_ * nso_ * nso_; // b(Q|pq)
+        cost_df += 2 * navirpi_.max() * navirpi_.max() * navirpi_.max(); // (V'V|VV)
+    }
+
     cost_df *= sizeof(double);
     cost_df /= 1024.0 * 1024.0;
-    outfile->Printf("\tMemory required for 3-index integrals   : %9.2lf MB \n", cost_df);
-
-    double cost_abcd = 0.0;
-    cost_abcd += 2.0 * pow(navir_, 4.0); // store g(ab|cd) and g<ac|bd>
-    cost_abcd += 2.0 * nalpha_ * nalpha_ * navir_ * navir_; // store lambda<oo|vv> and G<ij|ab> intermediates
-    cost_abcd *= sizeof(double);
-    cost_abcd /= 1024.0 * 1024.0;
-    outfile->Printf("\tMemory required for ABCD-type integrals : %9.2lf MB \n\n", cost_abcd);
 
     double memory_mb = (double)memory / (1024.0 * 1024.0);
-    outfile->Printf("\tMinimum Memory required                 : %9.2lf MB \n", cost_df + cost_abcd);
+    outfile->Printf("\tMinimum Memory required                 : %9.2lf MB \n", cost_df);
     outfile->Printf("\tMemory available                        : %9.2lf MB \n\n", memory_mb);
 //    if(cost_df >= memory_mb)
 //            throw PSIEXCEPTION("There is NOT enough memory for ABCD-type contraction!");
@@ -1465,14 +1474,11 @@ void DCFTSolver::build_gbarlambda_RHF_v3mem()
                                  thread = omp_get_thread_num();
                             #endif
                             double** CBDp = CBD[thread]->pointer();
-//                            double* CBDp = malloc((navirpi_[hc] * navirpi_[hb] * navirpi_[hd]) * sizeof(double));
 
                             // g(A'C|BD) = b(A'C|Q) b(Q|BD)
                             C_DGEMM('T', 'N', navirpi_[hc], navirpi_[hb]*navirpi_[hd], nQ_, 1.0, bQvvAp[0]+block[hac][ha].first+A*navirpi_[hc], bQabA_mo_->coldim(hac), bQvvAp[0]+block[hbd][hb].first, bQabA_mo_->coldim(hbd), 0.0, CBDp[0], navirpi_[hb]*navirpi_[hd]);
                             // G<IJ|A'B> = lambda<IJ|CD> g(A'C|DB)
                             C_DGEMM('N', 'N', Gaa.params->rowtot[hij], navirpi_[hb], navirpi_[hc]*navirpi_[hd], 1.0, Laa.matrix[hij][0]+block[hcd][hc].first, Laa.params->coltot[hij], CBDp[0], navirpi_[hb], 1.0, Gaa.matrix[hij][0]+block[hab][ha].first+A*navirpi_[hb], Gaa.params->coltot[hij]);
-
-//                            free(CBDp);
                         }
                     }
                     else{

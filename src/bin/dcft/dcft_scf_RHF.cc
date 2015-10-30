@@ -66,11 +66,6 @@ DCFTSolver::scf_guess_RHF()
         epsilon_b_->copy(epsilon_a_.get());
         Ca_->copy(reference_wavefunction_->Ca());
         Cb_->copy(Ca_);
-
-        // Check:
-//        Ca_->print();
-//        reference_wavefunction()->aotoso()->print();
-
         moFa_->copy(reference_wavefunction_->Fa());
         moFa_->transform(Ca_);
         moFb_->copy(moFa_);

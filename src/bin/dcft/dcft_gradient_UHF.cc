@@ -4989,7 +4989,6 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
-        #pragma omp parallel for
         for(size_t ab = 0; ab < G.params->rowtot[h]; ++ab){
             int a = G.params->roworb[h][ab][0];
             int b = G.params->roworb[h][ab][1];
@@ -5025,7 +5024,6 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
-        #pragma omp parallel for
         for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
             int j = G.params->roworb[h][ij][1];
@@ -5060,7 +5058,6 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
-        #pragma omp parallel for
         for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
             int j = G.params->roworb[h][ij][1];
@@ -5092,7 +5089,6 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
-        #pragma omp parallel for
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -5117,7 +5113,6 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
-        #pragma omp parallel for
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -5146,7 +5141,6 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
-        #pragma omp parallel for
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -5171,7 +5165,6 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
-        #pragma omp parallel for
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -5197,7 +5190,6 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
-        #pragma omp parallel for
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -5222,7 +5214,6 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
-        #pragma omp parallel for
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];

@@ -164,19 +164,6 @@ DCFTSolver:: sort_OOOO_integrals_RHF() {
                            ID("[O>=O]+"), ID("[O>=O]+"), 0, "MO Ints (OO|OO)");
     global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[O,O]"), "MO Ints <OO|OO>"); // MO Ints <Oo|Oo>
     global_dpd_->buf4_close(&I);
-
-
-    // Check:
-//    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
-//                           ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO|OO>");
-//    global_dpd_->buf4_print(&I, "outfile", 1);
-//    global_dpd_->buf4_close(&I);
-
-//    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>=O]+"), ID("[O>=O]+"),
-//                           ID("[O>=O]+"), ID("[O>=O]+"), 0, "MO Ints (OO|OO)");
-//    global_dpd_->buf4_print(&I, "outfile", 1);
-//    global_dpd_->buf4_close(&I);
-
 }
 
 void
@@ -185,17 +172,8 @@ DCFTSolver:: sort_OOVV_integrals_RHF() {
 
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[O,O]"),
                            ID("[V>=V]+"), ID("[O>=O]+"), 0, "MO Ints (VV|OO)");
-    // Check:
-//    global_dpd_->buf4_print(&I, "outfile", 1);
-
     global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, sqrp, ID("[O,V]"), ID("[O,V]"), "MO Ints <OV|OV>"); // MO Ints <oV|oV>, MO Ints <Ov|Ov>, MO Ints <ov|ov>
     global_dpd_->buf4_close(&I);
-
-    // Check:
-//    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V>=V]+"), ID("[O>=O]+"),
-//                           ID("[V>=V]+"), ID("[O>=O]+"), 0, "MO Ints (VV|OO)");
-//    global_dpd_->buf4_print(&I, "outfile", 1);
-//    global_dpd_->buf4_close(&I);
 
     /*
      * Antisymmetrize the <OV|OV> integrals
@@ -244,20 +222,10 @@ DCFTSolver:: sort_OOOV_integrals_RHF() {
     dpdbuf4 I;
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"),
                            ID("[V,O]"), ID("[O>=O]+"), 0, "MO Ints (VO|OO)");
-    // Check:
-//    global_dpd_->buf4_print(&I, "outfile", 1);
-
     global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, rpsq, ID("[O,V]"), ID("[O,O]"), "MO Ints <OV|OO>"); // MO Ints <oV|oO>, MO Ints <Ov|Oo>
     // Intermediate MO_SF <OV|OO> = MO <Ov|oO>
     global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, rpqs, ID("[O,V]"), ID("[O,O]"), "MO Ints SF <OV|OO>");
     global_dpd_->buf4_close(&I);
-
-    // Check:
-//    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O>=O]+"),
-//                           ID("[V,O]"), ID("[O>=O]+"), 0, "MO Ints (VO|OO)");
-//    global_dpd_->buf4_print(&I, "outfile", 1);
-//    global_dpd_->buf4_close(&I);
-
 }
 
 void
@@ -265,20 +233,10 @@ DCFTSolver:: sort_OVVV_integrals_RHF() {
     dpdbuf4 I;
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
                   ID("[O,V]"), ID("[V>=V]+"), 0, "MO Ints (OV|VV)");
-    // Check:
-//    global_dpd_->buf4_print(&I, "outfile", 1);
-
     global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[O,V]"), ID("[V,V]"), "MO Ints <OV|VV>"); // MO Ints <Ov|Vv>
     // Intermediate MO_SF <OV|VV> = MO <oV|Vv>
     global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, prsq, ID("[O,V]"), ID("[V,V]"), "MO Ints SF <OV|VV>");
     global_dpd_->buf4_close(&I);
-
-    // Check:
-//    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V>=V]+"),
-//                  ID("[O,V]"), ID("[V>=V]+"), 0, "MO Ints (OV|VV)");
-//    global_dpd_->buf4_print(&I, "outfile", 1);
-//    global_dpd_->buf4_close(&I);
-
 }
 
 void
