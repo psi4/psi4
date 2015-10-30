@@ -80,7 +80,7 @@ DCFTSolver::run_simult_dcft_oo()
         }
         transform_tau();
 
-        if (options_.get_bool("DCFT_DENSITY_FITTING") && options_.get_str("AO_BASIS") == "NONE"){
+        if (options_.get_str("DCFT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE"){
 
             build_DF_tensors_UHF();
 

@@ -66,13 +66,6 @@ def run_dcft(name, **kwargs):
     if (psi4.get_global_option('FREEZE_CORE') == 'TRUE'):
         raise ValidationError('Frozen core is not available for DCFT.')
 
-    # Use UHF reference if user specified references for SCF and DCFT conflict
-#    if psi4.get_option('SCF', 'REFERENCE') == 'RHF' and psi4.get_option('DCFT', 'REFERENCE') == 'UHF':
-#        optstash = p4util.OptionsState(
-#            ['SCF', 'REFERENCE'],
-#            ['DCFT', 'REFERENCE'])
-#        psi4.set_global_option('REFERENCE', 'UHF')
-
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)

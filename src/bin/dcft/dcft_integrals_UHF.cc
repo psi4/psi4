@@ -39,7 +39,7 @@ DCFTSolver::transform_integrals()
 {
     dcft_timer_on("DCFTSolver::transform_integrals()");
 
-    if (options_.get_bool("DCFT_DENSITY_FITTING")){
+    if (options_.get_str("DCFT_TYPE") == "DF"){
         // Transform b(Q|mn) to b(Q|pq) in MO basis
         transform_b();
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
@@ -103,7 +103,7 @@ DCFTSolver::transform_integrals()
 
     sort_OOVV_integrals();
 
-    if(options_.get_str("AO_BASIS") == "NONE" && options_.get_bool("DCFT_DENSITY_FITTING") == false)
+    if(options_.get_str("AO_BASIS") == "NONE" && options_.get_str("DCFT_TYPE") == "EXACT")
         sort_VVVV_integrals();
 
     // VVVO and OOOV integrals are needed for the QC algorithm

@@ -384,7 +384,7 @@ namespace psi{ namespace dcft{
       scf_energy_ += 0.5 * tau_so_a_->vector_dot(so_h_);
       scf_energy_ += 0.5 * tau_so_b_->vector_dot(so_h_);
 
-      if (options_.get_bool("DCFT_DENSITY_FITTING") && options_.get_str("AO_BASIS") == "NONE"){
+      if (options_.get_str("DCFT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE"){
           scf_energy_ += 0.5 * mo_gammaA_->vector_dot(moFa_);
           scf_energy_ += 0.5 * mo_gammaB_->vector_dot(moFb_);
       }

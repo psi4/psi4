@@ -274,19 +274,20 @@ DCFTSolver::gradient_init()
 
 
     // If the <VV|VV> integrals were not used for the energy computation (AO_BASIS = DISK) -> compute them for the gradients
-    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_bool("DCFT_DENSITY_FITTING") == false)
+    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCFT_TYPE") == "EXACT")
         _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
-    else if (options_.get_bool("DCFT_DENSITY_FITTING") == true){
+    else if (options_.get_str("DCFT_TYPE") == "DF"){
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
         form_df_g_vvvv();
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }
+
     /*
      * Re-sort the chemists' notation integrals to physisists' notation
      * (pq|rs) = <pr|qs>
      */
-
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
     if ((options_.get_str("DCFT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") != "QC")
             || (options_.get_str("DCFT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") == "QC"
             && (!options_.get_bool("QC_COUPLING") || options_.get_str("QC_TYPE") != "SIMULTANEOUS"))) {
@@ -316,7 +317,7 @@ DCFTSolver::gradient_init()
 
     // Hack for now. TODO: Implement AO_BASIS=DISK algorithm for gradients
     // (VV|VV)
-    if(options_.get_str("AO_BASIS") == "DISK" || options_.get_bool("DCFT_DENSITY_FITTING") == true)
+    if(options_.get_str("AO_BASIS") == "DISK" || options_.get_str("DCFT_TYPE") == "DF")
         sort_VVVV_integrals();
 
     // Transform one-electron integrals to the MO basis and store them in the DPD file
@@ -4988,6 +4989,7 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
         for(size_t ab = 0; ab < G.params->rowtot[h]; ++ab){
             int a = G.params->roworb[h][ab][0];
             int b = G.params->roworb[h][ab][1];
@@ -5023,6 +5025,7 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
         for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
             int j = G.params->roworb[h][ij][1];
@@ -5057,6 +5060,7 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
         for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
             int j = G.params->roworb[h][ij][1];
@@ -5088,6 +5092,7 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -5112,6 +5117,7 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -5140,6 +5146,7 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -5164,6 +5171,7 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -5189,6 +5197,7 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -5213,6 +5222,7 @@ DCFTSolver::compute_ewdm_odc()
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];

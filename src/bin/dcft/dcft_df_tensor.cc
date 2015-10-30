@@ -65,13 +65,13 @@ using namespace boost;
 namespace psi { namespace dcft{
 
 /**
-  * Build the density-fitting tensor: b(Q|mn) in SO-basis
+  * Build the density-fitting tensor: b(Q|mn) in AO-basis
   * b(Q|mn) = Sum_P (mn|P) [J^-1/2]_PQ
   * where J is the matrix of (P|Q)
   */
-void DCFTSolver::df_build_b_so()
+void DCFTSolver::df_build_b_ao()
 {
-    dcft_timer_on("DCFTSolver::df_build_b_so()");
+    dcft_timer_on("DCFTSolver::df_build_b_ao()");
 
     outfile->Printf( "\n\n\t                  ************************************************\n");
     outfile->Printf(     "\t                  *        Density Fitting Module in DCFT        *\n");
@@ -103,7 +103,7 @@ void DCFTSolver::df_build_b_so()
     formb_ao(primary_, auxiliary_, zero);
     dcft_timer_off("DCFTSolver::Form B(Q,mn)");
 
-    dcft_timer_off("DCFTSolver::df_build_b_so()");
+    dcft_timer_off("DCFTSolver::df_build_b_ao()");
 }
 
 /**
@@ -459,7 +459,7 @@ void DCFTSolver::formb_oo()
         }
     }
 
-    if (options_.get_str("REFERENCE") == "UHF"){
+    if (options_.get_str("REFERENCE") != "RHF"){
 
         // Set up dimensions for b(Q|ij)
         Dimension oo(nirrep_), Q(nirrep_);
@@ -558,7 +558,7 @@ void DCFTSolver::formb_ov()
         }
     }
 
-    if (options_.get_str("REFERENCE") == "UHF"){
+    if (options_.get_str("REFERENCE") != "RHF"){
         // Set up dimensions for b(Q|ia)
         Dimension ov(nirrep_), Q(nirrep_);
         for (int hi = 0; hi < nirrep_; ++hi){
@@ -653,7 +653,7 @@ void DCFTSolver::formb_vv()
         }
     }
 
-    if (options_.get_str("REFERENCE") == "UHF"){
+    if (options_.get_str("REFERENCE") != "RHF"){
 
         // Set up dimensions for b(Q|ab)
         Dimension vv(nirrep_), Q(nirrep_);
@@ -752,7 +752,7 @@ void DCFTSolver::formb_pq()
         }
     }
 
-    if (options_.get_str("REFERENCE") == "UHF"){
+    if (options_.get_str("REFERENCE") != "RHF"){
         // Set up dimensions for b(Aux|pq)
         bQpqB_mo_ = SharedMatrix(new Matrix("b(Aux|pq)", Aux, PQ));
 
@@ -817,7 +817,7 @@ void DCFTSolver::form_df_g_ovov()
     }
     global_dpd_->buf4_close(&I);
 
-    if (options_.get_str("REFERENCE") == "UHF"){
+    if (options_.get_str("REFERENCE") != "RHF"){
         // Alpha-Beta
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                                ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
@@ -880,7 +880,7 @@ void DCFTSolver::form_df_g_oooo()
     }
     global_dpd_->buf4_close(&I);
 
-    if (options_.get_str("REFERENCE") == "UHF"){
+    if (options_.get_str("REFERENCE") != "RHF"){
         // Alpha-Beta
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[o,o]"),
                                ID("[O>=O]+"), ID("[o>=o]+"), 0, "MO Ints (OO|oo)");
@@ -1099,7 +1099,7 @@ void DCFTSolver::form_df_g_vooo()
     }
     global_dpd_->buf4_close(&I);
 
-    if (options_.get_str("REFERENCE") == "UHF"){
+    if (options_.get_str("REFERENCE") != "RHF"){
 
         /*** Form b(Q|ai) ***/
 
@@ -1237,7 +1237,7 @@ void DCFTSolver::form_df_g_ovvv()
     }
     global_dpd_->buf4_close(&I);
 
-    if (options_.get_str("REFERENCE") == "UHF"){
+    if (options_.get_str("REFERENCE") != "RHF"){
         // g(ia|bc) = Sum_Q b(ia|Q) (Q|bc)
 
         // Alpha-Beta
@@ -1321,7 +1321,7 @@ void DCFTSolver::form_df_g_vvvv()
     }
     global_dpd_->buf4_close(&I);
 
-    if (options_.get_str("REFERENCE") == "UHF"){
+    if (options_.get_str("REFERENCE") != "RHF"){
         // Alpha-Beta
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[v,v]"),
                                ID("[V>=V]+"), ID("[v>=v]+"), 0, "MO Ints (VV|vv)");

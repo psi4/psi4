@@ -1066,7 +1066,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       computations -*/
 
       /*- Reference wavefunction type -*/
-      options.add_str("REFERENCE", "RHF", "UHF RHF");
+      options.add_str("REFERENCE", "RHF", "UHF RHF ROHF");
       /*- Algorithm to use for the density cumulant and orbital updates in the DCFT energy computation.
       Two-step algorithm is usually more efficient for small
       systems, but for large systems simultaneous algorithm (default) is recommended.
@@ -1163,8 +1163,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("MOLDEN_WRITE", false);
       /*- Level shift applied to the diagonal of the density-weighted Fock operator. While this shift can improve convergence, it does change the DCFT energy. !expert-*/
       options.add_double("ENERGY_LEVEL_SHIFT", 0.0);
-      /*- Controls whether to run density-fitted DCFT -*/
-      options.add_bool("DCFT_DENSITY_FITTING", false);
+      /*- What algorithm to use for the DCFT computation -*/
+      options.add_str("DCFT_TYPE", "EXACT", "EXACT DF");
       /*- Auxiliary basis set for DCFT density fitting computations.
       :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
       options.add_str("DF_BASIS_DCFT","");
