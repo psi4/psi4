@@ -35,8 +35,7 @@ SharedMatrix DCFTSolver::compute_gradient()
     // Print out the header
     outfile->Printf("\n\n\t***********************************************************************************\n");
     outfile->Printf(    "\t*                           DCFT Analytic Gradients Code                          *\n");
-    outfile->Printf(    "\t*                        by Alexander Sokolov, Andy Simmonett                     *\n");
-    outfile->Printf(    "\t*                            and Xiao Wang (RHF-ODC-12)                           *\n");
+    outfile->Printf(    "\t*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *\n");
     outfile->Printf(    "\t***********************************************************************************\n\n");
 
     // If the system is closed-shell, then ...
