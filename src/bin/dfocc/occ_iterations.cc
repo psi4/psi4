@@ -296,6 +296,8 @@ void DFOCC::save_mo_to_wfn()
 	// Diagonaliz OPDM
 	SharedMatrix a_opdm = SharedMatrix(new Matrix("Alpha OPDM", nmo_, nmo_));
 	G1->to_shared_matrix(a_opdm);
+	// scale by 1/2 because MoldenWrite expect only alpha part
+	a_opdm->scale(0.5);
         a_opdm->diagonalize(aevecs, aevals, descending);
 
 	// Form transformation matrix from AO to NO
