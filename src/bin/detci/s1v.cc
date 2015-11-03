@@ -44,7 +44,6 @@
 #include <libmints/mints.h>
 #include "structs.h"
 #define EXTERN
-#include "globals.h"
 #include <pthread.h>
 #include "tpool.h"
 
@@ -206,7 +205,7 @@ void s1_block_vfci_thread(struct stringwr **alplist, struct stringwr **betlist,
   tpool_queue_open(thread_pool);
    
 
-  detci_time.s1_mt_before_time = wall_time_new();
+  timer_on("DETCI: s1_mt");
 
   /* loop over I_b */
   for (Ib=betlist[Ib_list], Ib_idx=0; Ib_idx < nbs; Ib_idx++, Ib++) {
@@ -228,8 +227,7 @@ void s1_block_vfci_thread(struct stringwr **alplist, struct stringwr **betlist,
     } /* end loop over Ib */
   tpool_queue_close(thread_pool, 1);
 
-  detci_time.s1_mt_after_time = wall_time_new();
-  detci_time.s1_mt_total_time += detci_time.s1_mt_after_time - detci_time.s1_mt_before_time;
+  timer_off("DETCI: s1_mt");
 
   for (i=0; i<nbs; i++) free(thread_info[i]);
 
@@ -496,8 +494,9 @@ void s1_block_vras_thread(struct stringwr **alplist, struct stringwr **betlist,
     }
 
   tpool_queue_open(thread_pool);
-  
-  detci_time.s1_mt_before_time = wall_time_new();
+ 
+  timer_on("DETCI: s1_mt");
+
   /* loop over I_b */
   for (Ib=betlist[Ib_list], Ib_idx=0; Ib_idx < nbs; Ib_idx++, Ib++) {
       thread_info[Ib_idx]->alplist=alplist;
@@ -518,8 +517,7 @@ void s1_block_vras_thread(struct stringwr **alplist, struct stringwr **betlist,
     } /* end loop over Ib */
   tpool_queue_close(thread_pool, 1);
 
-  detci_time.s1_mt_after_time = wall_time_new();
-  detci_time.s1_mt_total_time += detci_time.s1_mt_after_time - detci_time.s1_mt_before_time;
+  timer_off("DETCI: s1_mt"); 
 
   for (i=0; i<nbs; i++) free(thread_info[i]);
 

@@ -189,7 +189,6 @@ void CIWavefunction::set_ciblks()
    CIblks_->decode = init_int_matrix(CIblks_->num_alp_codes, CIblks_->num_bet_codes);
 
    /* figure out the possible alpha/beta combinations */
-   outfile->Printf("CIvect struct\n");
  
    if (Parameters_->fci_strings) {
       for (irrep=0; irrep<AlphaG_->nirreps; irrep++) {
@@ -343,7 +342,6 @@ void CIWavefunction::set_ciblks()
                     (BIGINT) CIblks_->Ia_size[nblocks-1] *
                     (BIGINT) CIblks_->Ib_size[nblocks-1];
 
-   outfile->Printf("Vectlen: %ld", CIblks_->vectlen);
    if (Parameters_->print_lvl) {
      outfile->Printf(
        "\nCI space requires %.0lf determinants\n\n", (double) CIblks_->vectlen);
