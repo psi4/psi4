@@ -51,11 +51,7 @@
 
 namespace psi { namespace detci {
 
-extern struct stringwr **alplist;
-extern struct stringwr **betlist;
-
-extern void stringlist(struct olsen_graph *Graph, struct stringwr **slist);
-//extern void set_ciblks(struct olsen_graph *AG, struct olsen_graph *BG);
+extern void stringlist(struct olsen_graph *Graph, struct stringwr **slist, int repl_otf);
 extern void print_ci_space(struct stringwr *strlist, int num_strings,
    int nirreps, int strtypes, int nel, int repl_otf);
 extern void str_abs2rel(int absidx, int *relidx, int *listnum,
@@ -100,7 +96,6 @@ void CIWavefunction::form_strings(void)
       Parameters_->ras4_lvl, Parameters_->a_ras4_max, Parameters_->a_ras34_max,
       Parameters_);
 
-   outfile->Printf("Built alpha graph\n");
    if (Parameters_->print_lvl > 3)
       og_print(AlphaG_);
 
@@ -108,18 +103,17 @@ void CIWavefunction::form_strings(void)
    nirreps = AlphaG_->nirreps;
    nlists = nirreps * ncodes;
    /* alplist = new stringwr*[nlists]; */
-   alplist = (struct stringwr **) malloc(nlists * sizeof(struct stringwr *));
-   for (i=0; i<nlists; i++) alplist[i] = NULL;
+   alplist_ = (struct stringwr **) malloc(nlists * sizeof(struct stringwr *));
+   for (i=0; i<nlists; i++) alplist_[i] = NULL;
 
-   stringlist(AlphaG_, alplist);
-   outfile->Printf("Built alpha stringlist\n");
+   stringlist(AlphaG_, alplist_, Parameters_->repl_otf);
 
    if (Parameters_->print_lvl>=4) {
       for (irrep=0,listnum=0; irrep < nirreps; irrep++) {
          for (code=0; code < ncodes; code++, listnum++) {
             outfile->Printf( "Strings for irrep %d code %2d (list %2d)\n",
                irrep, code, listnum);
-            print_ci_space(alplist[irrep * ncodes + code],
+            print_ci_space(alplist_[irrep * ncodes + code],
                AlphaG_->sg[irrep][code].num_strings,
                nirreps, nlists, AlphaG_->num_el_expl, Parameters_->repl_otf);
             }
@@ -145,18 +139,18 @@ void CIWavefunction::form_strings(void)
       ncodes = BetaG_->subgr_per_irrep;
       nirreps = BetaG_->nirreps;
       nlists = nirreps * ncodes;
-      betlist = (struct stringwr **) malloc(nlists * sizeof(struct stringwr *));
-      for (i=0; i<nlists; i++) betlist[i] = NULL;
+      betlist_ = (struct stringwr **) malloc(nlists * sizeof(struct stringwr *));
+      for (i=0; i<nlists; i++) betlist_[i] = NULL;
 
 
-      stringlist(BetaG_, betlist);
+      stringlist(BetaG_, betlist_, Parameters_->repl_otf);
 
       if (Parameters_->print_lvl>=4) {
          for (irrep=0; irrep < nirreps; irrep++) {
             for (code=0; code < ncodes; code++) {
                outfile->Printf( "Strings for irrep %d code %2d\n", irrep,
                   code);
-               print_ci_space(betlist[irrep * ncodes + code],
+               print_ci_space(betlist_[irrep * ncodes + code],
                   BetaG_->sg[irrep][code].num_strings,
                   nirreps, nlists, BetaG_->num_el_expl, Parameters_->repl_otf) ;
                }
@@ -165,7 +159,7 @@ void CIWavefunction::form_strings(void)
       }
 
    else {
-      betlist = alplist;
+      betlist_ = alplist_;
       BetaG_ = AlphaG_;
       }
 

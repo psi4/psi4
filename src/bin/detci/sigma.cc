@@ -44,8 +44,6 @@
 #include <libqt/qt.h>
 #include <libmints/mints.h>
 #include "structs.h"
-#define EXTERN
-#include "globals.h"
 #include "civect.h"
 #include "ciwave.h"
 
@@ -113,7 +111,7 @@ extern void s2_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
    double **C, double **S,
    double *oei, double *tei, double *F, int nlists, int nas, int nbs,
    int Ia_list, int Ja_list, int Ja_list_nbs, struct olsen_graph *AlphaG,
-   struct olsen_graph *BetaG);
+   struct olsen_graph *BetaG, struct calcinfo *CIinfo);
 extern void s3_block_vdiag(struct stringwr *alplist,
    struct stringwr *betlist,
    double **C, double **S, double *tei, int nas, int nbs, int cnas,
@@ -139,19 +137,8 @@ extern void s3_block_vdiag_rotf(int *Cnt[2], int **Ij[2], int **Ridx[2],
    int norbs, int *orbsym);
 
 extern unsigned char ***Occs;
-//extern struct olsen_graph *AlphaG;
-//extern struct olsen_graph *BetaG;
 
 extern int cc_reqd_sblocks[CI_BLK_MAX];
-
-/* FUNCTION PROTOS THIS MODULE */
-
-void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
-      double **cmat, double **smat, double *oei, double *tei, int fci, 
-      int cblock, int sblock, int nas, int nbs, int sac, int sbc, 
-      int cac, int cbc, int cnas, int cnbs, int cnac, int cnbc, 
-      int sbirr, int cbirr, int Ms0);
-
 
 
 /* GLOBALS THIS MODULE */
@@ -680,7 +667,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
           if (Parameters_->repl_otf) {
               s2_block_vras_rotf(Jcnt, Jij, Joij, Jridx, Jsgn,
                                  Toccs, cmat, smat, oei, tei, F, cnac, 
-                                 nas, nbs, sac, cac, cnas, AlphaG_, BetaG_);
+                                 nas, nbs, sac, cac, cnas, AlphaG_, BetaG_, CalcInfo_);
             }
           else if (Parameters_->nthreads > 1) {
             s2_block_vras_thread(alplist, betlist, cmat, smat, 

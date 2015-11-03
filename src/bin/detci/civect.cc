@@ -148,7 +148,8 @@ extern void xexy(double *x, double *y, int size);
 //   double *c1norm, int len, std::string OutFileRMR);
 //extern int H0block_calc(double E);
 extern double ssq(struct stringwr *alplist, struct stringwr *betlist,
-  double **CL, double **CR, int nas, int nbs, int Ja_list, int Jb_list);
+  double **CL, double **CR, int nas, int nbs, int Ja_list, int Jb_list,
+  int num_ci_orbs, int print_lvl);
 extern int calc_orb_diff(int cnt, unsigned char *I, unsigned char *J,
    int *I_alpha_diff, int *J_alpha_diff, int *sign, int *same, int extended);
 
@@ -4243,6 +4244,87 @@ void CIvect::calc_hd_block_z_ave(struct stringwr *alplist_local,
       alplist_local++;
       }
 
+}
+double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist,
+     double **CL, double **CR, int nas, int nbs,
+     int Ja_list, int Jb_list) 
+{
+   struct stringwr *Ia, *Ib ;
+   unsigned int Ia_ex, Ib_ex;
+   int Ia_idx, Ib_idx;
+   int Ja_idx, Jb_idx;
+   int Ja_sgn, Jb_sgn;
+   int ij, ji, i1, j1, i2, j2;
+   double tval, Ms, S2, smin_spls = 0.0;
+
+   int Iacnt, Jbcnt, *Iaij, *Ibij;
+   unsigned int *Iaridx, *Ibridx;
+   signed char *Iasgn, *Ibsgn;
+
+   /* <S^2> = <S_z> + <S_z>^2 + <S_S+> */
+   /* First determine the expection value of <S_S+> */
+
+   /* loop over Ia */
+   if (Parameters.print_lvl > 2) {
+     outfile->Printf("number of alpha strings = %d\n",nas);
+   }
+   for (Ia=alplist,Ia_idx=0; Ia_idx < nas; Ia_idx++,Ia++) {
+
+      /* loop over excitations E^a_{ji} from |A(I_a)> */
+      Iacnt = Ia->cnt[Ja_list];
+      Iaridx = Ia->ridx[Ja_list];
+      Iasgn = Ia->sgn[Ja_list];
+      Iaij = Ia->oij[Ja_list];
+      for (Ia_ex=0; Ia_ex < Iacnt; Ia_ex++) {
+         ji = *Iaij++;
+         Ja_idx = *Iaridx++;
+         Ja_sgn = *Iasgn++;
+         i1 = ji/CalcInfo.num_ci_orbs;
+         j1 = ji%CalcInfo.num_ci_orbs;
+
+         /* loop over Ib */
+         if (Parameters.print_lvl > 2) {
+           outfile->Printf("number of beta strings = %d\n",nbs);
+         }
+         for (Ib=betlist, Ib_idx=0; Ib_idx < nbs; Ib_idx++, Ib++) {
+
+            /* loop over excitations E^b_{ij} from |B(I_b)> */
+            Jbcnt = Ib->cnt[Jb_list];
+            Ibridx = Ib->ridx[Jb_list];
+            Ibsgn = Ib->sgn[Jb_list];
+            Ibij = Ib->oij[Jb_list];
+ 
+            tval = 0.0;
+            for (Ib_ex=0; Ib_ex < Jbcnt; Ib_ex++) {
+               ij = *Ibij++;
+               Jb_idx = *Ibridx++;
+               Jb_sgn = *Ibsgn++;
+               i2 = ij/CalcInfo.num_ci_orbs;
+               j2 = ij%CalcInfo.num_ci_orbs; 
+               if (i1!=j2 || i2!=j1) continue;
+               tval += CR[Ia_idx][Ib_idx] * CL[Ja_idx][Jb_idx] *
+                   (double) Ja_sgn * (double) Jb_sgn;
+               if (Parameters.print_lvl > 3) {
+                 outfile->Printf("\n\nIa_idx = %d\n",Ia_idx);
+                 outfile->Printf("Ib_idx = %d\n",Ib_idx);
+                 outfile->Printf("Ja_idx = %d\n",Ja_idx);
+                 outfile->Printf("Jb_idx = %d\n",Jb_idx);
+                 outfile->Printf("tval_ssq = %lf\n",-tval);
+                 outfile->Printf("CR = %lf\n",CR[Ia_idx][Ib_idx]);
+                 outfile->Printf("LR = %lf\n",CL[Ja_idx][Jb_idx]);
+                 outfile->Printf("Ja_sgn = %lf\n",Ja_sgn);
+                 outfile->Printf("Jb_sgn = %lf\n",Jb_sgn);
+               }
+            }
+            smin_spls += tval;
+      
+          } /* end loop over Ib */
+       } /* end loop over Ia excitations */ 
+     } /* end loop over Ia */ 
+
+   S2 = -smin_spls;
+
+   return(S2);
 }
 
 }} // namespace psi::detci

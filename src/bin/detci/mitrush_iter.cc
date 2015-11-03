@@ -65,7 +65,7 @@ extern void xeaxpby(double *x, double *y, double a, double b, int size);
 extern void xexy(double *x, double *y, int size);
 extern void buf_ols_denom(double *a, double *hd, double E, int len);
 extern void buf_ols_updt(double *a, double *c, double *norm, double *ovrlap,
-   double *c1norm, int len, std::string OutFileRMR);
+   double *c1norm, int len);
 extern double buf_xy1(double *c, double *hd, double E, int len);
 
 
@@ -597,7 +597,7 @@ void CIWavefunction::olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, do
       /* C_new = C_i + C^1 */
       C.buf_lock(buffer2);
       C.read(curr, buf);
-      buf_ols_updt(buffer1,buffer2,&tmp1,&tmp2,&tmpnorm,C.buf_size[buf],"outfile");
+      buf_ols_updt(buffer1,buffer2,&tmp1,&tmp2,&tmpnorm,C.buf_size[buf]);
       if (Parameters_->precon >= PRECON_GEN_DAVIDSON)
         C.h0block_buf_ols(&tmp1,&tmp2,&tmpnorm,E_est);
       if (C.buf_offdiag[buf]) {

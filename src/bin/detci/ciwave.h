@@ -60,8 +60,8 @@ struct mcscf_params;
 namespace psi { namespace detci {
 
 // Need to nuke this eventually
-extern struct stringwr **alplist;
-extern struct stringwr **betlist;
+//extern struct stringwr **alplist;
+//extern struct stringwr **betlist;
 
 class CIWavefunction : public Wavefunction
 {
