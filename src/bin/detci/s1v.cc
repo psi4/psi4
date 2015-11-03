@@ -89,13 +89,11 @@ void s1_block_vfci(struct stringwr **alplist, struct stringwr **betlist,
    unsigned int Ia_idx, Ib_idx, Kb_idx, Jb_idx;
    unsigned int Ibcnt, Kbcnt, Kb_list, Ib_ex, Kb_ex;
    unsigned int *Ibridx, *Kbridx;
-   int nirreps, *Ibij, *Kbij;
+   int *Ibij, *Kbij;
    signed char *Ibsgn, *Kbsgn;
    int ij,kl,ijkl;
    double Kb_sgn, Jb_sgn;
    double tval;
-
-   nirreps = CalcInfo.nirreps;
 
    /* loop over I_b */
    for (Ib=betlist[Ib_list], Ib_idx=0; Ib_idx < nbs; Ib_idx++, Ib++) {
@@ -184,13 +182,13 @@ void s1_block_vfci(struct stringwr **alplist, struct stringwr **betlist,
 void s1_block_vfci_thread(struct stringwr **alplist, struct stringwr **betlist,
       double **C, double **S, double *oei, double *tei, double *F,
       int nlists, int nas, int nbs, int Ib_list, int Jb_list, 
-      int Jb_list_nbs, struct olsen_graph *BetaG)
+      int Jb_list_nbs)
 {
   struct stringwr *Ib, *Kb;
   unsigned int Ia_idx, Ib_idx, Kb_idx, Jb_idx;
   unsigned int Ibcnt, Kbcnt, Kb_list, Ib_ex, Kb_ex;
   unsigned int *Ibridx, *Kbridx;
-  int nirreps, *Ibij, *Kbij;
+  int *Ibij, *Kbij;
   signed char *Ibsgn, *Kbsgn;
   int ij,kl,ijkl;
   double Kb_sgn, Jb_sgn;
@@ -263,7 +261,7 @@ void s1_block_vfci_pthread(void *threadarg)
   unsigned int Ia_idx, Ib_idx, Kb_idx, Jb_idx;
   unsigned int Ibcnt, Kbcnt, Kb_list, Ib_ex, Kb_ex;
   unsigned int *Ibridx, *Kbridx;
-  int nirreps, *Ibij, *Kbij;
+  int *Ibij, *Kbij;
   signed char *Ibsgn, *Kbsgn;
   int ij,kl,ijkl;
   double Kb_sgn, Jb_sgn;
@@ -288,7 +286,6 @@ void s1_block_vfci_pthread(void *threadarg)
   Ib = thread_info->Ib;
   Ib_idx = thread_info->Ib_idx;
   
-  nirreps = CalcInfo.nirreps;
   F = init_array(Jb_list_nbs);
   zero_arr(F, Jb_list_nbs);
 
@@ -381,13 +378,11 @@ void s1_block_vras(struct stringwr **alplist, struct stringwr **betlist,
    unsigned int Ia_idx, Ib_idx, Kb_idx, Jb_idx;
    unsigned int Ibcnt, Kbcnt, Kb_list, Ib_ex, Kb_ex;
    unsigned int *Ibridx, *Kbridx;
-   int nirreps,  *Ibij, *Kbij, *Iboij, *Kboij;
+   int  *Ibij, *Kbij, *Iboij, *Kboij;
    signed char *Ibsgn, *Kbsgn;
    int ij,kl,ijkl,oij,okl;
    double Kb_sgn, Jb_sgn;
    double tval;
-
-   nirreps = CalcInfo.nirreps;
 
    /* loop over I_b */
    for (Ib=betlist[Ib_list], Ib_idx=0; Ib_idx < nbs; Ib_idx++, Ib++) {
@@ -556,7 +551,7 @@ void s1_block_vras_pthread(void *threadarg)
   unsigned int Ia_idx, Ib_idx, Kb_idx, Jb_idx;
   unsigned int Ibcnt, Kbcnt, Kb_list, Ib_ex, Kb_ex;
   unsigned int *Ibridx, *Kbridx;
-  int nirreps,  *Ibij, *Kbij, *Iboij, *Kboij;
+  int *Ibij, *Kbij, *Iboij, *Kboij;
   signed char *Ibsgn, *Kbsgn;
   int ij,kl,ijkl,oij,okl;
   double Kb_sgn, Jb_sgn;
@@ -581,7 +576,6 @@ void s1_block_vras_pthread(void *threadarg)
   Ib = thread_info->Ib;
   Ib_idx = thread_info->Ib_idx;
 
-  nirreps = CalcInfo.nirreps;
   F = init_array(Jb_list_nbs);
   zero_arr(F, Jb_list_nbs);
 
@@ -674,22 +668,21 @@ void s1_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
       int **Ridx[2], signed char **Sgn[2], unsigned char **Toccs,
       double **C, double **S,
       double *oei, double *tei, double *F, int nlists, int nas, int nbs,
-      int Ib_list, int Jb_list, int Jb_list_nbs, struct olsen_graph *BetaG)
+      int Ib_list, int Jb_list, int Jb_list_nbs, struct olsen_graph *BetaG,
+      struct calcinfo *CIinfo)
 {
    int Ia_idx, Ib_idx, Kb_idx, Jb_idx;
    int Ibcnt, Kbcnt, Kb_list, Ib_ex, Kb_ex;
    int *Ibridx, *Kbridx;
-   int nirreps,  *Ibij, *Kbij, *Iboij, *Kboij;
+   int *Ibij, *Kbij, *Iboij, *Kboij;
    signed char *Ibsgn, *Kbsgn;
    int i,ij,kl,ijkl,oij,okl;
    double Kb_sgn, Jb_sgn;
    double tval;
 
-   nirreps = CalcInfo.nirreps;
-
    for (Kb_list=0; Kb_list < nlists; Kb_list++) {
       b2brepl(Occs[Ib_list], Cnt[0], Ij[0], Oij[0], Ridx[0],
-         Sgn[0], BetaG, Ib_list, Kb_list, nbs, &CalcInfo);
+         Sgn[0], BetaG, Ib_list, Kb_list, nbs, CIinfo);
 
       /* loop over I_b */
       for (Ib_idx=0; Ib_idx < nbs; Ib_idx++) {
@@ -707,7 +700,7 @@ void s1_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
             Toccs[i] = Occs[Kb_list][Ibridx[i]];
 
          b2brepl(Toccs, Cnt[1], Ij[1], Oij[1], Ridx[1], Sgn[1],
-            BetaG, Kb_list, Jb_list, Ibcnt, &CalcInfo);
+            BetaG, Kb_list, Jb_list, Ibcnt, CIinfo);
 
          for (Ib_ex=0; Ib_ex < Ibcnt; Ib_ex++) {
             kl = *Ibij++;

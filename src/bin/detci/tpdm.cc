@@ -37,8 +37,6 @@
 #include <libiwl/iwl.h>
 #include <libmints/mints.h>
 #include "structs.h"
-//#define EXTERN
-//#include "globals.h"
 #include "civect.h"
 #include "ciwave.h"
 
@@ -47,13 +45,6 @@ namespace psi { namespace detci {
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 #define TPDMINDEX2(i,j,n) ((i)*(n) + (j))
 
-
-//void tpdm_block(struct stringwr **alplist, struct stringwr **betlist,
-//		int nbf, int nalpcodes, int nbetcodes,
-//		double *twopdm_aa, double *twopdm_bb, double *twopdm_ab, double **CJ, double **CI, int Ja_list, 
-//		int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list, 
-//		int Inas, int Inbs, double weight);
-//
 
 void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist, 
           int Inroots, int Inunits, int Ifirstunit, 

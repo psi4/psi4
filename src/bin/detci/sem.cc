@@ -45,8 +45,6 @@
 #include <libmints/mints.h>
 #include "structs.h"
 #include "ci_tol.h"
-//#define EXTERN
-//#include "globals.h"
 #include "civect.h"
 #include "ciwave.h"
 #include <physconst.h>
@@ -55,14 +53,14 @@ namespace psi { namespace detci {
 
 //extern int H0block_calc(double E);
 //extern void H0block_xy(double *x, double *y, double E);
-extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
-   int *Iaidx, int *Ibidx, double *coeff,
-   struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
-   struct stringwr **alplist, struct stringwr **betlist,
-   std::string out);
-extern void parse_import_vector(SlaterDetSet *sdset, int *i_alplist,
-   int *i_alpidx, int *i_betlist, int *i_betidx, int *i_blknums, struct ci_blks *CIblks,
-   struct olsen_graph *AlphaG, struct olsen_graph *BetaG);
+//extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
+//   int *Iaidx, int *Ibidx, double *coeff,
+//   struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
+//   struct stringwr **alplist, struct stringwr **betlist,
+//   std::string out);
+//extern void parse_import_vector(SlaterDetSet *sdset, int *i_alplist,
+//   int *i_alpidx, int *i_betlist, int *i_betidx, int *i_blknums, struct ci_blks *CIblks,
+//   struct olsen_graph *AlphaG, struct olsen_graph *BetaG);
 
 //extern void H0block_coupling_calc(double E, struct stringwr **alplist,
 //   struct stringwr **betlist);
@@ -486,7 +484,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
      import_blknums = init_int_array(dets->size);
 
      parse_import_vector(dets, import_alplist, import_alpidx, import_betlist,
-       import_betidx, import_blknums, CIblks_, AlphaG_, BetaG_);
+       import_betidx, import_blknums);
 
      k=0;
      for (i=0; i<nroots; i++) {
@@ -1164,7 +1162,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
                Dvec.max_abs_vals(Parameters_->nprint, mi_iac, mi_ibc,
                   mi_iaidx, mi_ibidx, mi_coeff, Parameters_->neg_only);
                print_vec(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
-                  mi_coeff, AlphaG_, BetaG_, alplist, betlist, "outfile");
+                  mi_coeff);
                outfile->Printf( "\n");
             }
             Dvec.write_num_vecs(i+1);  // only if nodfile ?

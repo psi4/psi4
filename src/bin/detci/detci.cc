@@ -79,8 +79,8 @@ unsigned char ***Occs;
 struct stringwr **alplist;
 struct stringwr **betlist;
 
-extern void eivout_t(double **evecs, double *evals, int rows, int cols,
-   std::string OutFileRMR);
+//extern void eivout_t(double **evecs, double *evals, int rows, int cols,
+//   std::string OutFileRMR);
 //extern void read_integrals(void);
 //extern void zapt_shift(double *TEI, int nirreps, int nmo, int *doccpi,
 //   int *soccpi, int *orbspi, int *frzdoccpi, int *reorder);
@@ -106,14 +106,14 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
 //extern void H0block_pairup(int guess);
 //extern void H0block_spin_cpl_chk(void);
 //extern void H0block_filter_setup(void);
-extern void sem_test(double **A, int N, int M, int L, double **evecs,
-   double *evals, double **b, double conv_e, double conv_rms,
-   int maxiter, double offst, int *vu, int maxnvect, std::string OutFileRMR);
-extern void form_ov(struct stringwr **alplist);
-extern void write_energy(int nroots, double *evals, double offset);
+//extern void sem_test(double **A, int N, int M, int L, double **evecs,
+//   double *evals, double **b, double conv_e, double conv_rms,
+//   int maxiter, double offst, int *vu, int maxnvect, std::string OutFileRMR);
+//extern void form_ov(struct stringwr **alplist);
+//extern void write_energy(int nroots, double *evals, double offset);
 
 //void cleanup(void);
-void quote(void);
+//void quote(void);
 //void mpn(struct stringwr **strlista, struct stringwr **strlistb);
 //void form_opdm(void);
 //void form_tpdm(void);
@@ -198,7 +198,12 @@ PsiReturnType detci(Options &options)
    if (Parameters.tpdm) ciwfn->form_tpdm();
    if (Parameters.print_lvl) print_time_new(detci_time);
    if (Parameters.nthreads > 1) tpool_destroy(thread_pool, 1);
-   if (Parameters.print_lvl > 0) quote();
+   if (Parameters.print_lvl > 0){
+     outfile->Printf("\t\t \"A good bug is a dead bug\" \n\n");
+     outfile->Printf("\t\t\t - Starship Troopers\n\n");
+     outfile->Printf("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
+     outfile->Printf("\t\t\t - Edward Valeev\n\n");
+   }
 
 
    ciwfn->cleanup();
@@ -416,7 +421,7 @@ void CIWavefunction::diag_h()
             Cvec.max_abs_vals(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx,
                mi_ibidx, mi_coeff, Parameters.neg_only);
             print_vec(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
-               mi_coeff, AlphaG_, BetaG_, alplist_, betlist_, "outfile");
+               mi_coeff);
             }
 
          free(mi_iac);  free(mi_ibc);
@@ -424,7 +429,7 @@ void CIWavefunction::diag_h()
          free(mi_coeff);
          }
 
-      if (Parameters.write_energy) write_energy(nroots, evals, nucrep);
+      //if (Parameters.write_energy) write_energy(nroots, evals, nucrep);
 
       /* Dump the vector to a PSIO file
          Added by Edward valeev (June 2002) */
@@ -691,7 +696,7 @@ void CIWavefunction::diag_h()
          }
       sem_test(H, size, Parameters.num_roots, L, evecs, evals, b, conv_e,
          conv_rms, Parameters.maxiter, (nucrep+CalcInfo.edrc), &i,
-         Parameters.maxnvect, "outfile");
+         Parameters.maxnvect);
 
       outfile->Printf( "SEM used %d expansion vectors\n", i);
 
@@ -716,7 +721,7 @@ void CIWavefunction::diag_h()
             Cvec.max_abs_vals(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx,
                mi_ibidx, mi_coeff, Parameters.neg_only);
             print_vec(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
-               mi_coeff, AlphaG_, BetaG_, alplist_, betlist_, "outfile");
+               mi_coeff);
             }
          free(mi_iac);  free(mi_ibc);
          free(mi_iaidx);  free(mi_ibidx);
@@ -724,7 +729,7 @@ void CIWavefunction::diag_h()
          free_matrix(evecs, Parameters.num_roots);
          }
 
-      if (Parameters.write_energy) write_energy(nroots, evals, nucrep);
+      //if (Parameters.write_energy) write_energy(nroots, evals, nucrep);
 
       } /* end Test of Davidson/Liu section */
 
@@ -893,7 +898,7 @@ void CIWavefunction::diag_h()
          H0block_free();
          }
 
-      if (Parameters.write_energy) write_energy(nroots, evals, nucrep+edrc);
+      //if (Parameters.write_energy) write_energy(nroots, evals, nucrep+edrc);
 
       } /* end the Davidson-Liu/Mitrushenkov-Olsen-Davidson section */
 
@@ -992,14 +997,14 @@ void CIWavefunction::diag_h()
 }
 
 
-void quote(void)
-{
-   outfile->Printf("\t\t \"A good bug is a dead bug\" \n\n");
-   outfile->Printf("\t\t\t - Starship Troopers\n\n");
-   outfile->Printf("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
-   outfile->Printf("\t\t\t - Edward Valeev\n\n");
-
-}
+//void quote(void)
+//{
+//   outfile->Printf("\t\t \"A good bug is a dead bug\" \n\n");
+//   outfile->Printf("\t\t\t - Starship Troopers\n\n");
+//   outfile->Printf("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
+//   outfile->Printf("\t\t\t - Edward Valeev\n\n");
+//
+//}
 //BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx) {
 //
 //   int blknum;

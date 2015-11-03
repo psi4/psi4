@@ -37,11 +37,11 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libqt/slaterdset.h>
+#include <libmints/mints.h>
+#include <physconst.h>
 #include "structs.h"
 #include "ci_tol.h"
-#define EXTERN
-#include "globals.h"
-#include <physconst.h>
+#include "ciwave.h"
 
 namespace psi { namespace detci {
 
@@ -62,9 +62,8 @@ void stringset_translate_addr(StringSet *sset, int new_nel, int new_ndrc,
 ** C. David Sherrill
 ** August 2003
 */
-void parse_import_vector(SlaterDetSet *sdset, int *ialplist, int *ialpidx,
-  int *ibetlist, int *ibetidx, int *blknums, struct ci_blks *CIblks,
-  struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
+void CIWavefunction::parse_import_vector(SlaterDetSet *sdset, int *ialplist, int *ialpidx,
+  int *ibetlist, int *ibetidx, int *blknums)
 {
   int i,j;
   StringSet *alphastrings, *betastrings;
@@ -78,8 +77,8 @@ void parse_import_vector(SlaterDetSet *sdset, int *ialplist, int *ialpidx,
   betastrings = sdset->betastrings;
 
   /* now figure out how the frozen stuff is going to map */
-  if (CalcInfo.num_drc_orbs > alphastrings->ndrc ||
-      CalcInfo.num_drc_orbs > betastrings->ndrc) {
+  if (CalcInfo_->num_drc_orbs > alphastrings->ndrc ||
+      CalcInfo_->num_drc_orbs > betastrings->ndrc) {
     outfile->Printf( "(parse_import_vector): Can't drop more orbitals now" \
       " than in the imported guess!\n");
     abort();
@@ -95,11 +94,11 @@ void parse_import_vector(SlaterDetSet *sdset, int *ialplist, int *ialpidx,
   new_betastr_list  = init_int_array(betastrings->size);
   new_betastr_idx   = init_int_array(betastrings->size);
 
-  stringset_translate_addr(alphastrings, CalcInfo.num_alp_expl, 
-    CalcInfo.num_drc_orbs, CalcInfo.reorder, AlphaG, new_alphastr_list,
+  stringset_translate_addr(alphastrings, CalcInfo_->num_alp_expl, 
+    CalcInfo_->num_drc_orbs, CalcInfo_->reorder, AlphaG_, new_alphastr_list,
     new_alphastr_idx);
-  stringset_translate_addr(betastrings, CalcInfo.num_bet_expl, 
-    CalcInfo.num_drc_orbs, CalcInfo.reorder, BetaG, new_betastr_list,
+  stringset_translate_addr(betastrings, CalcInfo_->num_bet_expl, 
+    CalcInfo_->num_drc_orbs, CalcInfo_->reorder, BetaG_, new_betastr_list,
     new_betastr_idx);
 
   /* loop over all the dets in the imported vector and translate
@@ -114,7 +113,7 @@ void parse_import_vector(SlaterDetSet *sdset, int *ialplist, int *ialpidx,
     ibetidx[i]  = new_betastr_idx[betastr];
 
     /* figure out what block we're in */
-    j = CIblks->decode[ialplist[i]][ibetlist[i]];
+    j = CIblks_->decode[ialplist[i]][ibetlist[i]];
     if (j == -1) {
       outfile->Printf( "Import vector: can't find CI block!\n");
       outfile->Printf( "Determinant number %d\n", i);

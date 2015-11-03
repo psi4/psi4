@@ -35,8 +35,6 @@
 #include <libciomr/libciomr.h>
 #include <libmints/mints.h>
 #include "structs.h"
-//#define EXTERN
-//#include "globals.h"
 #include "ciwave.h"
 
 namespace psi { namespace detci {

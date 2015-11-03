@@ -152,9 +152,9 @@ extern double ssq(struct stringwr *alplist, struct stringwr *betlist,
 extern int calc_orb_diff(int cnt, unsigned char *I, unsigned char *J,
    int *I_alpha_diff, int *J_alpha_diff, int *sign, int *same, int extended);
 
-extern unsigned char ***Occs;
-extern struct olsen_graph *AlphaG;
-extern struct olsen_graph *BetaG;
+//extern unsigned char ***Occs;
+//extern struct olsen_graph *AlphaG;
+//extern struct olsen_graph *BetaG;
 
 /* C "GLOBAL" VARIABLES FOR THIS MODULE */
 //extern struct stringwr **alplist;

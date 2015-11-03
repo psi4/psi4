@@ -38,7 +38,6 @@
 #include <psifiles.h>
 #include <physconst.h>
 #include "structs.h"
-//#include "globals.h"
 #include "civect.h"
 #include "ciwave.h"
 
