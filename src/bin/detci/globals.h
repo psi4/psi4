@@ -46,9 +46,9 @@ namespace psi { namespace detci {
 EXTERN struct calcinfo CalcInfo;
 EXTERN struct params Parameters;
 EXTERN int *ioff;
-EXTERN struct ci_blks CIblks;
-EXTERN struct olsen_graph *AlphaG;
-EXTERN struct olsen_graph *BetaG;
+//EXTERN struct ci_blks CIblks;
+//EXTERN struct olsen_graph *AlphaG;
+//EXTERN struct olsen_graph *BetaG;
 //EXTERN struct graph_set *AlphaGraph;
 //EXTERN struct graph_set *BetaGraph;
 EXTERN struct H_zero_block H0block;

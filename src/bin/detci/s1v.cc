@@ -181,10 +181,10 @@ void s1_block_vfci(struct stringwr **alplist, struct stringwr **betlist,
 ** Modified 6/21/95 for use in new RAS program
 ** Modified 5/10/96 for new sparse-F method
 */
-void s1_block_vfci_thread(struct stringwr **alplist, struct stringwr **betlist, 
+void s1_block_vfci_thread(struct stringwr **alplist, struct stringwr **betlist,
       double **C, double **S, double *oei, double *tei, double *F,
       int nlists, int nas, int nbs, int Ib_list, int Jb_list, 
-      int Jb_list_nbs)
+      int Jb_list_nbs, struct olsen_graph *BetaG)
 {
   struct stringwr *Ib, *Kb;
   unsigned int Ia_idx, Ib_idx, Kb_idx, Jb_idx;
@@ -674,7 +674,7 @@ void s1_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
       int **Ridx[2], signed char **Sgn[2], unsigned char **Toccs,
       double **C, double **S,
       double *oei, double *tei, double *F, int nlists, int nas, int nbs,
-      int Ib_list, int Jb_list, int Jb_list_nbs)
+      int Ib_list, int Jb_list, int Jb_list_nbs, struct olsen_graph *BetaG)
 {
    int Ia_idx, Ib_idx, Kb_idx, Jb_idx;
    int Ibcnt, Kbcnt, Kb_list, Ib_ex, Kb_ex;

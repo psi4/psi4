@@ -276,7 +276,7 @@ void CIWavefunction::diag_h()
 
    nroots = Parameters.num_roots;
 
-   conv_rms = Parameters.   convergence;
+   conv_rms = Parameters.convergence;
    conv_e = Parameters.energy_convergence;
 
    if (Parameters.have_special_conv) {
@@ -285,7 +285,10 @@ void CIWavefunction::diag_h()
      if (Parameters.special_conv > conv_rms)
        conv_rms = Parameters.special_conv;
    }
-   size = CIblks.vectlen;
+   outfile->Printf("About to print vectlen!\n");
+   outfile->Printf("Vectlen: %ld", CIblks_->vectlen);
+   size = CIblks_->vectlen;
+   outfile->Printf("here!\n");
    if ((BIGINT) Parameters.nprint > size) Parameters.nprint = (int) size;
    nucrep = CalcInfo.enuc;
    edrc = CalcInfo.edrc;
@@ -300,11 +303,11 @@ void CIWavefunction::diag_h()
    /* Direct Method --- use RSP diagonalization routine */
    if (Parameters.diag_method == METHOD_RSP) {
 
-      CIvect Cvec(CIblks.vectlen, CIblks.num_blocks, 1, Parameters.Ms0,
-         CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-         CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-         CalcInfo.nirreps, AlphaG->subgr_per_irrep, 1, 0, 0,
-         CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+      CIvect Cvec(CIblks_->vectlen, CIblks_->num_blocks, 1, Parameters.Ms0,
+         CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
+         CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
+         CalcInfo.nirreps, AlphaG_->subgr_per_irrep, 1, 0, 0,
+         CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
       // shouldn't need to open I/O files for this fake CIvec, unit=0
 
       double **H, **rsp_evecs;
@@ -324,20 +327,20 @@ void CIWavefunction::diag_h()
       int ii2, jj2, blk, blk2, det1, det2;
       double **Hpart;
 
-      for (blk = 0; blk < CIblks.num_blocks; blk++) {
-        for (blk2 = 0; blk2 < CIblks.num_blocks; blk2++) {
-          Hpart = init_matrix(CIblks.Ia_size[blk]*CIblks.Ib_size[blk],
-                              CIblks.Ia_size[blk2]*CIblks.Ib_size[blk2]);
-          for (ii=0,det1=0; ii<CIblks.Ia_size[blk]; ii++) {
-            for (jj=0; jj<CIblks.Ib_size[blk]; jj++, det1++) {
-              I.set(CalcInfo.num_alp_expl,alplist[CIblks.Ia_code[blk]][ii].occs,
-                   CalcInfo.num_bet_expl,betlist[CIblks.Ib_code[blk]][jj].occs);
-              for (ii2=0,det2=0; ii2<CIblks.Ia_size[blk2]; ii2++) {
-                for (jj2=0; jj2<CIblks.Ib_size[blk2]; jj2++,det2++) {
+      for (blk = 0; blk < CIblks_->num_blocks; blk++) {
+        for (blk2 = 0; blk2 < CIblks_->num_blocks; blk2++) {
+          Hpart = init_matrix(CIblks_->Ia_size[blk]*CIblks_->Ib_size[blk],
+                              CIblks_->Ia_size[blk2]*CIblks_->Ib_size[blk2]);
+          for (ii=0,det1=0; ii<CIblks_->Ia_size[blk]; ii++) {
+            for (jj=0; jj<CIblks_->Ib_size[blk]; jj++, det1++) {
+              I.set(CalcInfo.num_alp_expl,alplist[CIblks_->Ia_code[blk]][ii].occs,
+                   CalcInfo.num_bet_expl,betlist[CIblks_->Ib_code[blk]][jj].occs);
+              for (ii2=0,det2=0; ii2<CIblks_->Ia_size[blk2]; ii2++) {
+                for (jj2=0; jj2<CIblks_->Ib_size[blk2]; jj2++,det2++) {
                   J.set(CalcInfo.num_alp_expl,
-                        alplist[CIblks.Ia_code[blk2]][ii2].occs,
+                        alplist[CIblks_->Ia_code[blk2]][ii2].occs,
                         CalcInfo.num_bet_expl,
-                        betlist[CIblks.Ib_code[blk2]][jj2].occs);
+                        betlist[CIblks_->Ib_code[blk2]][jj2].occs);
                   Hpart[det1][det2] = matrix_element(&I,&J);
                 }
               }
@@ -346,11 +349,11 @@ void CIWavefunction::diag_h()
           if (Parameters.print_lvl > 4 && size < 200) {
             outfile->Printf( "\nBlock %d %d of ", blk, blk2);
             outfile->Printf( "Hamiltonian matrix:\n");
-            print_mat(Hpart, CIblks.Ia_size[blk]*CIblks.Ib_size[blk],
-                             CIblks.Ia_size[blk2]*CIblks.Ib_size[blk2],
+            print_mat(Hpart, CIblks_->Ia_size[blk]*CIblks_->Ib_size[blk],
+                             CIblks_->Ia_size[blk2]*CIblks_->Ib_size[blk2],
                       outfile);
           }
-          free_matrix(Hpart, CIblks.Ia_size[blk]*CIblks.Ib_size[blk]);
+          free_matrix(Hpart, CIblks_->Ia_size[blk]*CIblks_->Ib_size[blk]);
         }
       }
       */
@@ -413,7 +416,7 @@ void CIWavefunction::diag_h()
             Cvec.max_abs_vals(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx,
                mi_ibidx, mi_coeff, Parameters.neg_only);
             print_vec(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
-               mi_coeff, AlphaG, BetaG, alplist_, betlist_, "outfile");
+               mi_coeff, AlphaG_, BetaG_, alplist_, betlist_, "outfile");
             }
 
          free(mi_iac);  free(mi_ibc);
@@ -441,19 +444,19 @@ void CIWavefunction::diag_h()
         }
 
         newocc = (unsigned char *)
-          malloc(((AlphaG->num_el > BetaG->num_el) ?
-            AlphaG->num_el : BetaG->num_el)*sizeof(unsigned char));
+          malloc(((AlphaG_->num_el > BetaG_->num_el) ?
+            AlphaG_->num_el : BetaG_->num_el)*sizeof(unsigned char));
 
-        stringset_init(&alphastrings,AlphaG->num_str,AlphaG->num_el,
+        stringset_init(&alphastrings,AlphaG_->num_str,AlphaG_->num_el,
                        CalcInfo.num_drc_orbs, drc_occ);
         int list_gr = 0;
         int offset = 0;
-        for(int irrep=0; irrep<AlphaG->nirreps; irrep++) {
-          for(int gr=0; gr<AlphaG->subgr_per_irrep; gr++,list_gr++) {
-            int nlists_per_gr = AlphaG->sg[irrep][gr].num_strings;
+        for(int irrep=0; irrep<AlphaG_->nirreps; irrep++) {
+          for(int gr=0; gr<AlphaG_->subgr_per_irrep; gr++,list_gr++) {
+            int nlists_per_gr = AlphaG_->sg[irrep][gr].num_strings;
             for(int l=0; l<nlists_per_gr; l++) {
               /* convert occs to Pitzer order */
-              for (int n=0; n<AlphaG->num_el; n++) {
+              for (int n=0; n<AlphaG_->num_el; n++) {
                 newocc[n] = (unsigned char)
                   CalcInfo.order[alplist_[list_gr][l].occs[n] +
                                 CalcInfo.num_drc_orbs];
@@ -464,16 +467,16 @@ void CIWavefunction::diag_h()
           }
         }
 
-        stringset_init(&betastrings,BetaG->num_str,BetaG->num_el,
+        stringset_init(&betastrings,BetaG_->num_str,BetaG_->num_el,
                        CalcInfo.num_drc_orbs, drc_occ);
         list_gr = 0;
         offset = 0;
-        for(int irrep=0; irrep<BetaG->nirreps; irrep++) {
-          for(int gr=0; gr<BetaG->subgr_per_irrep; gr++,list_gr++) {
-            int nlists_per_gr = BetaG->sg[irrep][gr].num_strings;
+        for(int irrep=0; irrep<BetaG_->nirreps; irrep++) {
+          for(int gr=0; gr<BetaG_->subgr_per_irrep; gr++,list_gr++) {
+            int nlists_per_gr = BetaG_->sg[irrep][gr].num_strings;
             for(int l=0; l<nlists_per_gr; l++) {
               /* convert occs to Pitzer order */
-              for (int n=0; n<BetaG->num_el; n++) {
+              for (int n=0; n<BetaG_->num_el; n++) {
                 newocc[n] = (unsigned char)
                   CalcInfo.order[betlist_[list_gr][l].occs[n] +
                                 CalcInfo.num_drc_orbs];
@@ -493,12 +496,12 @@ void CIWavefunction::diag_h()
         slaterdetset_init(&dets,size,&alphastrings,&betastrings);
         for (int ii=0; ii<size; ii++) {
           Cvec.det2strings(ii, &Ialist, &Iarel, &Iblist, &Ibrel);
-          int irrep = Ialist/AlphaG->subgr_per_irrep;
-          int gr = Ialist%AlphaG->subgr_per_irrep;
-          int Ia = Iarel + AlphaG->list_offset[Ialist];
-          irrep = Iblist/BetaG->subgr_per_irrep;
-          gr = Iblist%BetaG->subgr_per_irrep;
-          int Ib = Ibrel + BetaG->list_offset[Iblist];
+          int irrep = Ialist/AlphaG_->subgr_per_irrep;
+          int gr = Ialist%AlphaG_->subgr_per_irrep;
+          int Ia = Iarel + AlphaG_->list_offset[Ialist];
+          irrep = Iblist/BetaG_->subgr_per_irrep;
+          gr = Iblist%BetaG_->subgr_per_irrep;
+          int Ib = Ibrel + BetaG_->list_offset[Iblist];
           slaterdetset_add(&dets, ii, Ia, Ib);
         }
 
@@ -517,16 +520,16 @@ void CIWavefunction::diag_h()
    else if (Parameters.diag_method == METHOD_RSPTEST_OF_SEM) {
 
       // in-core CIvectors, shouldn't need to open files
-      CIvect Cvec(CIblks.vectlen, CIblks.num_blocks, 1, Parameters.Ms0,
-         CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-         CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-         CalcInfo.nirreps, AlphaG->subgr_per_irrep, 1, 0, 0,
-         CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-      CIvect Hd(CIblks.vectlen, CIblks.num_blocks, 1, Parameters.Ms0,
-         CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-         CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-         CalcInfo.nirreps, AlphaG->subgr_per_irrep, 1, 0, 0,
-         CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+      CIvect Cvec(CIblks_->vectlen, CIblks_->num_blocks, 1, Parameters.Ms0,
+         CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
+         CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
+         CalcInfo.nirreps, AlphaG_->subgr_per_irrep, 1, 0, 0,
+         CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
+      CIvect Hd(CIblks_->vectlen, CIblks_->num_blocks, 1, Parameters.Ms0,
+         CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
+         CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
+         CalcInfo.nirreps, AlphaG_->subgr_per_irrep, 1, 0, 0,
+         CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
 
       double **H, **b;
       int Ia, Ib, Iarel, Ialist, Ibrel, Iblist, ij, k, l, tmpi, L;
@@ -563,7 +566,7 @@ void CIWavefunction::diag_h()
       if (Parameters.hd_otf) rclose(Parameters.first_hd_tmp_unit,4);
     */
 
-      H0block_setup(CIblks.num_blocks, CIblks.Ia_code, CIblks.Ib_code);
+      H0block_setup(CIblks_->num_blocks, CIblks_->Ia_code, CIblks_->Ib_code);
       if (Parameters.hd_ave) {
         H0block_spin_cpl_chk();
          if (H0block.osize - H0block.size) {
@@ -713,7 +716,7 @@ void CIWavefunction::diag_h()
             Cvec.max_abs_vals(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx,
                mi_ibidx, mi_coeff, Parameters.neg_only);
             print_vec(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
-               mi_coeff, AlphaG, BetaG, alplist_, betlist_, "outfile");
+               mi_coeff, AlphaG_, BetaG_, alplist_, betlist_, "outfile");
             }
          free(mi_iac);  free(mi_ibc);
          free(mi_iaidx);  free(mi_ibidx);
@@ -736,12 +739,12 @@ void CIWavefunction::diag_h()
       /* prepare the H0 block */
       H0block_init(size);
 
-      CIvect Hd(CIblks.vectlen, CIblks.num_blocks, Parameters.icore,
-         Parameters.Ms0, CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size,
-         CIblks.Ib_size, CIblks.offset, CIblks.num_alp_codes,
-         CIblks.num_bet_codes, CalcInfo.nirreps, AlphaG->subgr_per_irrep, 1,
+      CIvect Hd(CIblks_->vectlen, CIblks_->num_blocks, Parameters.icore,
+         Parameters.Ms0, CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size,
+         CIblks_->Ib_size, CIblks_->offset, CIblks_->num_alp_codes,
+         CIblks_->num_bet_codes, CalcInfo.nirreps, AlphaG_->subgr_per_irrep, 1,
          Parameters.num_hd_tmp_units, Parameters.first_hd_tmp_unit,
-         CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+         CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
 
       bool open_old = false;
       if (Parameters.restart) open_old = true;
@@ -778,7 +781,7 @@ void CIWavefunction::diag_h()
       //if (Parameters.hd_otf) rclose(Parameters.first_hd_tmp_unit,4);
       if (Parameters.hd_otf) psio_close(Parameters.first_hd_tmp_unit,1);
 
-      H0block_setup(CIblks.num_blocks, CIblks.Ia_code, CIblks.Ib_code);
+      H0block_setup(CIblks_->num_blocks, CIblks_->Ia_code, CIblks_->Ib_code);
       if (Parameters.filter_guess) H0block_filter_setup();
       if (Parameters.hd_ave) {
         H0block_spin_cpl_chk();
@@ -1002,9 +1005,9 @@ void quote(void)
 //   int blknum;
 //   BIGINT addr;
 //
-//   blknum = CIblks.decode[alp_code][bet_code];
-//   addr = CIblks.offset[blknum];
-//   addr += alp_idx * CIblks.Ib_size[blknum] + bet_idx;
+//   blknum = CIblks_->decode[alp_code][bet_code];
+//   addr = CIblks_->offset[blknum];
+//   addr += alp_idx * CIblks_->Ib_size[blknum] + bet_idx;
 //
 //   return(addr);
 //

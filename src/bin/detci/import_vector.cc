@@ -63,7 +63,8 @@ void stringset_translate_addr(StringSet *sset, int new_nel, int new_ndrc,
 ** August 2003
 */
 void parse_import_vector(SlaterDetSet *sdset, int *ialplist, int *ialpidx,
-  int *ibetlist, int *ibetidx, int *blknums)
+  int *ibetlist, int *ibetidx, int *blknums, struct ci_blks *CIblks,
+  struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
 {
   int i,j;
   StringSet *alphastrings, *betastrings;
@@ -113,7 +114,7 @@ void parse_import_vector(SlaterDetSet *sdset, int *ialplist, int *ialpidx,
     ibetidx[i]  = new_betastr_idx[betastr];
 
     /* figure out what block we're in */
-    j = CIblks.decode[ialplist[i]][ibetlist[i]];
+    j = CIblks->decode[ialplist[i]][ibetlist[i]];
     if (j == -1) {
       outfile->Printf( "Import vector: can't find CI block!\n");
       outfile->Printf( "Determinant number %d\n", i);
