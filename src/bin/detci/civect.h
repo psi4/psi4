@@ -107,6 +107,10 @@ class CIvect {
       int cur_size;              /* current size of buffer */
       int first_unit;            /* first file unit number (if > 1) */ 
       int subgr_per_irrep;       /* possible number of Olsen subgraphs per irrep */
+
+      double ssq(struct stringwr *alplist, struct stringwr *betlist,
+           double **CL, double **CR, int nas, int nbs,
+           int Ja_list, int Jb_list);
       
    public:
       CIvect();

@@ -29,9 +29,9 @@
 #include <cstdlib>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libmints/mints.h>
 #include "structs.h"
 #define EXTERN
-#include "globals.h"
 #include <pthread.h>
 #include "tpool.h"
 
@@ -638,7 +638,7 @@ void s2_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
       double **C, double **S,
       double *oei, double *tei, double *F, int nlists, int nas, int nbs,
       int Ia_list, int Ja_list, int Ja_list_nas, struct olsen_graph *AlphaG,
-      struct olsen_graph *BetaG)
+      struct olsen_graph *BetaG, struct calcinfo *CIinfo)
 {
    int Ia_idx, Ib_idx, Ka_idx, Ja_idx;
    int Iacnt, Kacnt, Ka_list, Ia_ex, Ka_ex;
@@ -651,7 +651,7 @@ void s2_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
 
    for (Ka_list=0; Ka_list < nlists; Ka_list++) {
       b2brepl(Occs[Ia_list], Cnt[0], Ij[0], Oij[0], Ridx[0],
-         Sgn[0], BetaG, Ia_list, Ka_list, nas, &CalcInfo);
+         Sgn[0], BetaG, Ia_list, Ka_list, nas, CIinfo);
 
       /* loop over I_a */
       for (Ia_idx=0; Ia_idx < nas; Ia_idx++) {
@@ -670,7 +670,7 @@ void s2_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
             Toccs[i] = Occs[Ka_list][Iaridx[i]];
 
          b2brepl(Toccs, Cnt[1], Ij[1], Oij[1], Ridx[1], Sgn[1],
-            AlphaG, Ka_list, Ja_list, Iacnt, &CalcInfo);
+            AlphaG, Ka_list, Ja_list, Iacnt, CIinfo);
 
          for (Ia_ex=0; Ia_ex < Iacnt; Ia_ex++) {
             kl = *Iaij++;

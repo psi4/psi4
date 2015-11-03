@@ -76,69 +76,6 @@ namespace psi { namespace detci {
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 
 unsigned char ***Occs;
-struct stringwr **alplist;
-struct stringwr **betlist;
-
-//extern void eivout_t(double **evecs, double *evals, int rows, int cols,
-//   std::string OutFileRMR);
-//extern void read_integrals(void);
-//extern void zapt_shift(double *TEI, int nirreps, int nmo, int *doccpi,
-//   int *soccpi, int *orbspi, int *frzdoccpi, int *reorder);
-extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
-   int *Iaidx, int *Ibidx, double *coeff,
-   struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
-   struct stringwr **alplist, struct stringwr **betlist,
-   std::string OutFileRMR);
-//extern void print_config(int nbf, int num_alp_el, int num_bet_el,
-//   struct stringwr *stralp, struct stringwr *strbet,
-//   int num_drc_orbs, char *outstring);
-//extern void init_stringwr_temps(int nel, int num_ci_orbs, int nsym);
-//extern void free_stringwr_temps(int nsym);
-//extern void str_abs2rel(int absidx, int *relidx, int *listnum,
-//   struct olsen_graph *Graph);
-//extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
-//extern void H0block_init(unsigned int size);
-//extern void H0block_fill(struct stringwr **alplist,
-//   struct stringwr **betlist);
-//extern void H0block_free(void);
-//extern void H0block_print(void);
-//extern void H0block_setup(int num_blocks, int *Ia_code, int *Ib_code);
-//extern void H0block_pairup(int guess);
-//extern void H0block_spin_cpl_chk(void);
-//extern void H0block_filter_setup(void);
-//extern void sem_test(double **A, int N, int M, int L, double **evecs,
-//   double *evals, double **b, double conv_e, double conv_rms,
-//   int maxiter, double offst, int *vu, int maxnvect, std::string OutFileRMR);
-//extern void form_ov(struct stringwr **alplist);
-//extern void write_energy(int nroots, double *evals, double offset);
-
-//void cleanup(void);
-//void quote(void);
-//void mpn(struct stringwr **strlista, struct stringwr **strlistb);
-//void form_opdm(void);
-//void form_tpdm(void);
-//extern void mitrush_iter(CIvect &Hd,
-//   struct stringwr **alplist, struct stringwr **betlist,
-//   int nroots, double *evals, double conv_rms, double conv_e, double enuc,
-//   double edrc, int maxiter, int maxnvect, std::string OutFileRMR,
-//   int print_lvl);
-//extern void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
-//   **betlist, double *evals, double conv_e,
-//   double conv_rms, double enuc, double edrc,
-//   int nroots, int maxiter, int maxnvect, std::string OutFileRMR, int print_lvl);
-//extern void mpn_generator(CIvect &Hd, struct stringwr **alplist,
-//   struct stringwr **betlist);
-//extern void opdm(struct stringwr **alplist, struct stringwr **betlist,
-//   int transdens, int dipmom,
-//   int Inroots, int Iroot, int Inunits, int Ifirstunit,
-//   int Jnroots, int Jroot, int Jnunits, int Jfirstunit,
-//   int targetfile, int writeflag, int printflag);
-//extern void tpdm(struct stringwr **alplist, struct stringwr **betlist,
-//   int Inroots, int Inunits, int Ifirstunit,
-//   int Jnroots, int Jnunits, int Jfirstunit,
-//   int targetfile, int writeflag, int printflag);
-//extern void compute_cc(void);
-//extern void calc_mrpt(void);
 
 PsiReturnType detci(Options &options);
 

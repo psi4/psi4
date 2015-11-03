@@ -35,9 +35,8 @@
 #include <cstdio>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libmints/mints.h>
 #include "structs.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace detci {
 
@@ -71,7 +70,7 @@ void subgr_trav_init(struct level *head, int ci_orbs, int **outarr, int
 void subgr_traverse(int i, int j);
 void form_stringwr(struct stringwr *strlist, int *occs, int N,
       int num_ci_orbs, struct stringgraph *subgraph, struct olsen_graph
-      *Graph, int first_orb_active);
+      *Graph, int first_orb_active, int repl_otf);
 void og_form_repinfo(struct stringwr *string, int num_ci_orbs, 
       struct olsen_graph *Graph, int first_orb_active);
 void init_stringwr_temps(int nel, int num_ci_orbs, int nsym);
@@ -85,7 +84,7 @@ void free_stringwr_temps(int nsym);
 **    single replacements using the Olsen Graph structures.
 **
 */
-void stringlist(struct olsen_graph *Graph, struct stringwr **slist)
+void stringlist(struct olsen_graph *Graph, struct stringwr **slist, int repl_otf)
 {
 
    int i;
@@ -101,7 +100,7 @@ void stringlist(struct olsen_graph *Graph, struct stringwr **slist)
    outarr = init_int_matrix(nel_expl, Graph->max_str_per_irrep);
    occs = init_int_array(nel_expl);
 
-   if (!Parameters.repl_otf) {
+   if (!repl_otf) {
       init_stringwr_temps(Graph->num_el_expl, Graph->num_orb, nirreps * ncodes);
       }
 
@@ -141,13 +140,13 @@ void stringlist(struct olsen_graph *Graph, struct stringwr **slist)
 
             form_stringwr(slist[irrep * ncodes + code], occs, 
                nel_expl, Graph->num_orb, subgraph, Graph, 
-               Graph->num_expl_cor_orbs);
+               Graph->num_expl_cor_orbs, repl_otf);
             }
          } /* end loop over subgraph codes */
       } /* end loop over irreps */
 
    /* free the stringwr scratch space */
-   if (!Parameters.repl_otf) {
+   if (!repl_otf) {
       free_stringwr_temps(nirreps * ncodes);
       }
 
@@ -208,7 +207,7 @@ void subgr_traverse(int i, int j)
 */
 void form_stringwr(struct stringwr *strlist, int *occs, int N,
       int num_ci_orbs, struct stringgraph *subgraph, struct olsen_graph
-      *Graph, int first_orb_active)
+      *Graph, int first_orb_active, int repl_otf)
 {
    unsigned char *occlist;
    unsigned int addr;
@@ -229,7 +228,7 @@ void form_stringwr(struct stringwr *strlist, int *occs, int N,
    node = strlist + addr;
    node->occs = occlist;
 
-   if (!Parameters.repl_otf) {
+   if (!repl_otf) {
       og_form_repinfo(node, num_ci_orbs, Graph, first_orb_active);
       }
 }

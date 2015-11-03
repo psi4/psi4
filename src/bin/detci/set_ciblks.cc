@@ -32,8 +32,6 @@
 #include <libmints/mints.h>
 #include "structs.h"
 #include "ciwave.h"
-//#define EXTERN
-//#include "globals.h"
 
 namespace psi { namespace detci {
 
