@@ -35,8 +35,7 @@
  
 #include <cstdio>
 #include "structs.h"
-#define EXTERN
-#include "globals.h"
+#include <libmints/mints.h>
 
 namespace psi { namespace detci {
 

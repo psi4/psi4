@@ -37,8 +37,8 @@
 #include <libiwl/iwl.h>
 #include <libmints/mints.h>
 #include "structs.h"
-#define EXTERN
-#include "globals.h"
+//#define EXTERN
+//#include "globals.h"
 #include "civect.h"
 #include "ciwave.h"
 
@@ -93,17 +93,19 @@ void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist,
      onepdm_b = block_matrix(populated_orbs, populated_orbs);
    }
 
-   Ivec.set(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore, 1,
-	     CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
-	     CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
-	     CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Inroots, Inunits,
-	     Ifirstunit, CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
+   Ivec.set(Parameters_->icore, Inroots, Inunits, Ifirstunit, CIblks_);  
+//   Ivec.set(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore, 1,
+//	     CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
+//	     CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
+//	     CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Inroots, Inunits,
+//	     Ifirstunit, CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
 
-   Jvec.set(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore, 1,
-	     CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
-	     CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
-	     CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Jnroots, Jnunits,
-	     Jfirstunit, CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
+   Jvec.set(Parameters_->icore, Jnroots, Jnunits, Jfirstunit, CIblks_);  
+//   Jvec.set(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore, 1,
+//	     CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
+//	     CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
+//	     CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Jnroots, Jnunits,
+//	     Jfirstunit, CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
 
    // Open I/O files for these CIvectors if not already open
    Ivec.init_io_files(true);

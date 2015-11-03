@@ -357,7 +357,11 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
    free(occs);  free(occs2);
 
    if (Parameters.print_ciblks) print_ciblk_summary("outfile");
+
+   // Copy a few things to make CIblks self contained
    CIblks.subgr_per_irrep = AlphaG->subgr_per_irrep;
+   CIblks.nirreps = CalcInfo.nirreps;
+   CIblks.Ms0 = Parameters.Ms0;
 }
 
 }} // namespace psi::detci

@@ -41,6 +41,7 @@
 #include <cstdlib>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libmints/mints.h>
 #include "structs.h"
 #define EXTERN
 #include "globals.h"
@@ -53,7 +54,7 @@ extern unsigned char ***Occs;
 
 extern void b2brepl(unsigned char **occs, int *Jcnt, int **Jij, int **Joij, 
       int **Jridx, signed char **Jsgn, struct olsen_graph *Graph,
-      int Ilist, int Jlist, int len);
+      int Ilist, int Jlist, int len, struct calcinfo *Cinfo);
 void s1_block_vfci_pthread(void *threadarg);
 void s1_block_vras_pthread(void *threadarg);
 
@@ -688,7 +689,7 @@ void s1_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
 
    for (Kb_list=0; Kb_list < nlists; Kb_list++) {
       b2brepl(Occs[Ib_list], Cnt[0], Ij[0], Oij[0], Ridx[0],
-         Sgn[0], BetaG, Ib_list, Kb_list, nbs);
+         Sgn[0], BetaG, Ib_list, Kb_list, nbs, &CalcInfo);
 
       /* loop over I_b */
       for (Ib_idx=0; Ib_idx < nbs; Ib_idx++) {
@@ -706,7 +707,7 @@ void s1_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
             Toccs[i] = Occs[Kb_list][Ibridx[i]];
 
          b2brepl(Toccs, Cnt[1], Ij[1], Oij[1], Ridx[1], Sgn[1],
-            BetaG, Kb_list, Jb_list, Ibcnt);
+            BetaG, Kb_list, Jb_list, Ibcnt, &CalcInfo);
 
          for (Ib_ex=0; Ib_ex < Ibcnt; Ib_ex++) {
             kl = *Ibij++;

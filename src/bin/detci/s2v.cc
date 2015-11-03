@@ -41,7 +41,7 @@ extern unsigned char ***Occs;
 
 extern void b2brepl(unsigned char **occs, int *Jcnt, int **Jij, int **Joij, 
       int **Jridx, signed char **Jsgn, struct olsen_graph *Graph,
-      int Ilist, int Jlist, int len);
+      int Ilist, int Jlist, int len, struct calcinfo *Cinfo);
 void s2_block_vfci_pthread(void *threadarg);
 void s2_block_vras_pthread(void *threadarg);
 
@@ -656,7 +656,7 @@ void s2_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
 
    for (Ka_list=0; Ka_list < nlists; Ka_list++) {
       b2brepl(Occs[Ia_list], Cnt[0], Ij[0], Oij[0], Ridx[0],
-         Sgn[0], BetaG, Ia_list, Ka_list, nas);
+         Sgn[0], BetaG, Ia_list, Ka_list, nas, &CalcInfo);
 
       /* loop over I_a */
       for (Ia_idx=0; Ia_idx < nas; Ia_idx++) {
@@ -675,7 +675,7 @@ void s2_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
             Toccs[i] = Occs[Ka_list][Iaridx[i]];
 
          b2brepl(Toccs, Cnt[1], Ij[1], Oij[1], Ridx[1], Sgn[1],
-            AlphaG, Ka_list, Ja_list, Iacnt);
+            AlphaG, Ka_list, Ja_list, Iacnt, &CalcInfo);
 
          for (Ia_ex=0; Ia_ex < Iacnt; Ia_ex++) {
             kl = *Iaij++;

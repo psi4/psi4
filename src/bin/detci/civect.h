@@ -55,7 +55,6 @@ class CIvect {
       struct calcinfo *CI_CalcInfo;
       struct params *CI_Params;
       struct H_zero_block *CI_H0block_;
-      struct ci_blks *CI_CIblks_;
 
       void common_init();        /* common init func */
 
@@ -107,6 +106,7 @@ class CIvect {
       int cur_unit;              /* current unit file */
       int cur_size;              /* current size of buffer */
       int first_unit;            /* first file unit number (if > 1) */ 
+      int subgr_per_irrep;       /* possible number of Olsen subgraphs per irrep */
       
    public:
       CIvect();
@@ -114,10 +114,11 @@ class CIvect {
          int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc, 
          int nirr, int cdperirr, int maxvect, int nunits, 
          int funit, int *fablk, int *lablk, int **dc);
+      CIvect(int incor, int maxvect, int nunits, int funit, struct ci_blks *CIblks);
       ~CIvect();
 
       double * buf_malloc(void);
-//      void set(int incor, int ms0, int maxvect, int nunits, int funit, struct ci_blks *CIblks); 
+      void set(int incor, int maxvect, int nunits, int funit, struct ci_blks *CIblks); 
       void set(BIGINT vl, int nb, int incor, int ms0, int *iac,
          int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc, 
          int nirr, int cdperirr, int maxvect, int nunits, int funit, 
@@ -219,6 +220,30 @@ class CIvect {
         **betlist);
       double compute_follow_overlap(int troot, int ncoef, double *coef,
         int *Iac, int *Iaridx, int *Ibc, int *Ibridx);
+
+      void calc_hd_block(struct stringwr *alplist,
+         struct stringwr *betlist,
+         double **H0, double *oei, double *tei, double edrc,
+         int nas, int nbs, int na, int nb, int nbf);
+      void calc_hd_block_ave(struct stringwr *alplist,
+         struct stringwr *betlist, double **H0, double *tf_oei,
+         double *tei, double edrc, int nas, int nbs, int na, int nb, int nbf);
+      void calc_hd_block_z_ave(struct stringwr *alplist,
+         struct stringwr *betlist, double **H0, double pert_param,
+         double *tei, double edrc, int nas, int nbs, int na, int nb, int nbf);
+      void calc_hd_block_orbenergy(struct stringwr *alplist,
+         struct stringwr *betlist, double **H0, double *oei,
+         double *tei, double edrc, int nas, int nbs, int na,
+         int nb, int nbf);
+      void calc_hd_block_mll(struct stringwr *alplist,
+         struct stringwr *betlist, double **H0, double *oei,
+         double *tei, double edrc, int nas, int nbs, int na,
+         int nb, int nbf);
+      void calc_hd_block_evangelisti(struct stringwr **alplist,
+         struct stringwr **betlist, struct stringwr *alplist_local,
+         struct stringwr *betlist_local, double **H0, double *tf_oei,
+         double *tei, double edrc, int nas, int nbs, int na,
+         int nb, int nbf);
 
       //friend void sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist, 
       //   struct stringwr **betlist);
