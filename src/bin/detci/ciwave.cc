@@ -97,9 +97,7 @@ void CIWavefunction::common_init()
     df_ints_init_ = false;
 
     // Form strings
-    outfile->Printf("Forming strings!\n");
     form_strings();
-    outfile->Printf("Made it here!\n");
 
    // Form Bendazzoli OV arrays
    if (Parameters.bendazzoli) form_ov();

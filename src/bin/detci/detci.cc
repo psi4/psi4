@@ -157,7 +157,6 @@ PsiReturnType detci(Options &options)
    if (Parameters.nthreads > 1)
      tpool_init(&thread_pool, Parameters.nthreads, CalcInfo.num_alp_str, 0);
                                 /* initialize thread pool */
-   init_time_new(detci_time);             /* initialize timing routines */
 
    if (Parameters.istop) {      /* Print size of space, other stuff, only   */
      ciwfn->cleanup();
@@ -196,7 +195,6 @@ PsiReturnType detci(Options &options)
    }
 
    if (Parameters.tpdm) ciwfn->form_tpdm();
-   if (Parameters.print_lvl) print_time_new(detci_time);
    if (Parameters.nthreads > 1) tpool_destroy(thread_pool, 1);
    if (Parameters.print_lvl > 0){
      outfile->Printf("\t\t \"A good bug is a dead bug\" \n\n");

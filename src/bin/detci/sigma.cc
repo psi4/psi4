@@ -666,7 +666,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
    /* SIGMA2 CONTRIBUTION */
   if (s2_contrib_[sblock][cblock]) {
 
-    detci_time.s2_before_time = wall_time_new();
+    timer_on("DETCI: s2");
 
       if (fci) {
           if (Parameters_->nthreads > 1)
@@ -691,8 +691,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
                             oei, tei, F, cnac, nas, nbs, sac, cac, cnas);
             }
         }
-    detci_time.s2_after_time = wall_time_new();
-    detci_time.s2_total_time += detci_time.s2_after_time - detci_time.s2_before_time;
+    timer_off("DETCI: s2");
 
     } /* end sigma2 */
 
@@ -705,7 +704,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
 
    /* SIGMA1 CONTRIBUTION */
    if (!Ms0 || (sac != sbc)) {
-    detci_time.s1_before_time = wall_time_new();
+    timer_on("DETCI: s1");
 
       if (s1_contrib_[sblock][cblock]) {
           if (fci) { 
@@ -732,10 +731,9 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
                }
             } 
          }
-          detci_time.s1_after_time = wall_time_new();
-          detci_time.s1_total_time += detci_time.s1_after_time - detci_time.s1_before_time;
 
-      } /* end sigma1 */
+      timer_off("DETCI: s1");
+   } /* end sigma1 */
 
    if (Parameters_->print_lvl > 3) {
      outfile->Printf( "s1: Contribution to sblock=%d from cblock=%d\n",
@@ -745,7 +743,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
 
    /* SIGMA3 CONTRIBUTION */
    if (s3_contrib_[sblock][cblock]) {
-      detci_time.s3_before_time = wall_time_new();
+      timer_on("DETCI: s3");
 
       /* zero_mat(smat, nas, nbs); */
 
@@ -799,9 +797,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
         print_mat(smat, nas, nbs, "outfile");
       }
       
-      detci_time.s3_after_time = wall_time_new();
-      detci_time.s3_total_time += 
-         detci_time.s3_after_time - detci_time.s3_before_time;
+      timer_off("DETCI: s3");
 
       } /* end sigma3 */
 }

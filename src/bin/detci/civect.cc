@@ -1775,8 +1775,7 @@ int CIvect::read(int ivect, int ibuf)
    int blk;
    char key[20];
 
-   detci_time.read_before_time = wall_time_new();
-
+   timer_on("DETCI: CIvect read");
    if (nunits < 1) {
       cur_vect = ivect;
       cur_buf = ibuf;
@@ -1804,9 +1803,7 @@ int CIvect::read(int ivect, int ibuf)
    cur_vect = ivect;
    cur_buf = ibuf;
 
-   detci_time.read_after_time = wall_time_new();
-   detci_time.read_total_time += detci_time.read_after_time -
-     detci_time.read_before_time;
+   timer_off("DETCI: CIvect read");
 
    return(1);
 }
@@ -1830,7 +1827,7 @@ int CIvect::write(int ivect, int ibuf)
    int blk;
    char key[20];
 
-   detci_time.write_before_time = wall_time_new();
+   timer_on("DETCI: CIvect write");
 
    if (nunits < 1) return(1);
 
@@ -1860,9 +1857,7 @@ int CIvect::write(int ivect, int ibuf)
    cur_vect = ivect;
    cur_buf = ibuf;
 
-   detci_time.write_after_time = wall_time_new();
-   detci_time.write_total_time += detci_time.write_after_time -
-     detci_time.write_before_time;
+   timer_off("DETCI: CIvect write");
 
    return(1);
 }
