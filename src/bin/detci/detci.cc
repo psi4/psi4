@@ -56,21 +56,15 @@
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <libqt/slaterdset.h>
-#include <masses.h>
-#include <libparallel/ParallelPrinter.h>
-
-#include <libfock/soscf.h>
-#include <libdiis/diismanager.h>
-#include <libdiis/diisentry.h>
 
 #include <libpsi4util/libpsi4util.h>
+#include <pthread.h>
+#include <iostream>
 #include "structs.h"
 #include "globals.h"
 #include "globaldefs.h"
 #include "ci_tol.h"
-#include <pthread.h>
 #include "tpool.h"
-#include <iostream>
 #include "odometer.h"
 #include "slaterd.h"
 #include "civect.h"

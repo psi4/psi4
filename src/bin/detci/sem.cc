@@ -45,8 +45,8 @@
 #include <libmints/mints.h>
 #include "structs.h"
 #include "ci_tol.h"
-#define EXTERN
-#include "globals.h"
+//#define EXTERN
+//#include "globals.h"
 #include "civect.h"
 #include "ciwave.h"
 #include <physconst.h>
@@ -88,7 +88,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    double ***M, **sigma_overlap, Mtmp, **cmp_cncoe, **tr_cmp_cncoe;
    int *lse_do_arr, lse_do = 0, collapse_num = 0, iter_tmp = 0;
    int form_M = 0, tmpval;
-   int last_lse_collapse_num = -Parameters.lse_collapse;
+   int last_lse_collapse_num = -Parameters_->lse_collapse;
    double *x, *y, tmpx, tmpy;
    double lse_tolerance, *renorm_c, *E_est, ovlpmax=0.0;
    double cknorm, tvalmatt=0.0, tmp; /* Add by CDS for debugging purposes */
@@ -103,57 +103,76 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    CIvect Dvec;
    CIvect Dvec2;
 
-   Cvec.set(CIblks.vectlen,CIblks.num_blocks,Parameters.icore,Parameters.Ms0,
-      CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-      CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-      CalcInfo.nirreps, AlphaG->subgr_per_irrep, maxnvect,
-      Parameters.num_c_tmp_units, Parameters.first_c_tmp_unit,
-      CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-   Cvec2.set(CIblks.vectlen,CIblks.num_blocks,Parameters.icore,Parameters.Ms0,
-      CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-      CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-      CalcInfo.nirreps, AlphaG->subgr_per_irrep, maxnvect,
-      Parameters.num_c_tmp_units, Parameters.first_c_tmp_unit,
-      CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-   Sigma.set(CIblks.vectlen,CIblks.num_blocks,Parameters.icore,Parameters.Ms0,
-      CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-      CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-      CalcInfo.nirreps, AlphaG->subgr_per_irrep, maxnvect,
-      Parameters.num_s_tmp_units, Parameters.first_s_tmp_unit,
-      CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-   Sigma2.set(CIblks.vectlen,CIblks.num_blocks,Parameters.icore,Parameters.Ms0,
-      CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-      CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-      CalcInfo.nirreps, AlphaG->subgr_per_irrep, maxnvect,
-      Parameters.num_s_tmp_units, Parameters.first_s_tmp_unit,
-      CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-   if (!Parameters.nodfile) {
-     Dvec.set(CIblks.vectlen,CIblks.num_blocks,Parameters.icore,Parameters.Ms0,
-        CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-        CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-        CalcInfo.nirreps, AlphaG->subgr_per_irrep, nroots,
-        Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
-        CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-     Dvec2.set(CIblks.vectlen,CIblks.num_blocks,Parameters.icore,Parameters.Ms0,
-        CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-        CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-        CalcInfo.nirreps, AlphaG->subgr_per_irrep, nroots,
-        Parameters.num_d_tmp_units, Parameters.first_d_tmp_unit,
-        CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+   Cvec.set(Parameters_->icore, maxnvect, Parameters_->num_c_tmp_units,
+            Parameters_->first_c_tmp_unit, CIblks_);  
+   Cvec2.set(Parameters_->icore, maxnvect, Parameters_->num_c_tmp_units,
+             Parameters_->first_c_tmp_unit, CIblks_);  
+   Sigma.set(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
+             Parameters_->first_s_tmp_unit, CIblks_);  
+   Sigma2.set(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
+              Parameters_->first_s_tmp_unit, CIblks_);  
+
+   //Cvec.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
+   //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
+   //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
+   //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, maxnvect,
+   //   Parameters_->num_c_tmp_units, Parameters_->first_c_tmp_unit,
+   //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+   //Cvec2.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
+   //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
+   //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
+   //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, maxnvect,
+   //   Parameters_->num_c_tmp_units, Parameters_->first_c_tmp_unit,
+   //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+   //Sigma.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
+   //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
+   //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
+   //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, maxnvect,
+   //   Parameters_->num_s_tmp_units, Parameters_->first_s_tmp_unit,
+   //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+   //Sigma2.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
+   //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
+   //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
+   //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, maxnvect,
+   //   Parameters_->num_s_tmp_units, Parameters_->first_s_tmp_unit,
+   //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+   if (!Parameters_->nodfile) {
+     Dvec.set(Parameters_->icore, nroots, Parameters_->num_d_tmp_units,
+              Parameters_->first_d_tmp_unit, CIblks_);  
+     Dvec2.set(Parameters_->icore, nroots, Parameters_->num_d_tmp_units,
+               Parameters_->first_d_tmp_unit, CIblks_);  
+
+     //Dvec.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
+     //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
+     //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
+     //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, nroots,
+     //   Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
+     //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+     //Dvec2.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
+     //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
+     //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
+     //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, nroots,
+     //   Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
+     //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
      }
    else {
-     Dvec.set(CIblks.vectlen,CIblks.num_blocks,Parameters.icore,Parameters.Ms0,
-        CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-        CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-        CalcInfo.nirreps, AlphaG->subgr_per_irrep, maxnvect,
-        Parameters.num_c_tmp_units, Parameters.first_c_tmp_unit,
-        CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-     Dvec2.set(CIblks.vectlen,CIblks.num_blocks,Parameters.icore,Parameters.Ms0,
-        CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-        CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-        CalcInfo.nirreps, AlphaG->subgr_per_irrep, maxnvect,
-        Parameters.num_s_tmp_units, Parameters.first_s_tmp_unit,
-        CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+     Dvec.set(Parameters_->icore, maxnvect, Parameters_->num_c_tmp_units,
+              Parameters_->first_c_tmp_unit, CIblks_);  
+     Dvec2.set(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
+               Parameters_->first_s_tmp_unit, CIblks_);  
+
+     //Dvec.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
+     //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
+     //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
+     //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, maxnvect,
+     //   Parameters_->num_c_tmp_units, Parameters_->first_c_tmp_unit,
+     //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+     //Dvec2.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
+     //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
+     //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
+     //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, maxnvect,
+     //   Parameters_->num_s_tmp_units, Parameters_->first_s_tmp_unit,
+     //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
      }
 
    /* open the files: some of these CIvectors are logical vectors that
@@ -161,12 +180,12 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
       for those
    */
    bool open_old;
-   if (Parameters.restart) open_old = true;
+   if (Parameters_->restart) open_old = true;
    else open_old = false;
    Cvec.init_io_files(open_old);
    Sigma.init_io_files(open_old);
 
-   if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE) open_old = true;
+   if (Parameters_->guess_vector == PARM_GUESS_VEC_DFILE) open_old = true;
    else open_old = false;
    Dvec.init_io_files(open_old);
 
@@ -189,11 +208,11 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
 
    /* get some of the stuff from CalcInfo for easier access */
-   num_alp_str = CalcInfo.num_alp_str;
-   num_bet_str = CalcInfo.num_bet_str;
-   if (Parameters.fci) oei = CalcInfo.tf_onel_ints;
-   else oei = CalcInfo.gmat[0];
-   tei = CalcInfo.twoel_ints;
+   num_alp_str = CalcInfo_->num_alp_str;
+   num_bet_str = CalcInfo_->num_bet_str;
+   if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints;
+   else oei = CalcInfo_->gmat[0];
+   tei = CalcInfo_->twoel_ints;
 
    lastroot = init_array(nroots);
    dvecnorm = init_array(nroots);
@@ -209,11 +228,11 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    E_est = init_array(nroots);
 
    /* small arrays to hold most important config information */
-   mi_iac = init_int_array(Parameters.nprint);
-   mi_ibc = init_int_array(Parameters.nprint);
-   mi_iaidx = init_int_array(Parameters.nprint);
-   mi_ibidx = init_int_array(Parameters.nprint);
-   mi_coeff = init_array(Parameters.nprint);
+   mi_iac = init_int_array(Parameters_->nprint);
+   mi_ibc = init_int_array(Parameters_->nprint);
+   mi_iaidx = init_int_array(Parameters_->nprint);
+   mi_ibidx = init_int_array(Parameters_->nprint);
+   mi_coeff = init_array(Parameters_->nprint);
 
    G = init_matrix(maxnvect, maxnvect);
    cmp_cncoe = init_matrix(maxnvect, maxnvect);
@@ -242,28 +261,28 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          m_alpha[i][j] = init_matrix(maxnvect, maxnvect);
       }
 
-   if (Parameters.lse) lse_tolerance = Parameters.lse_tolerance;
+   if (Parameters_->lse) lse_tolerance = Parameters_->lse_tolerance;
 
-   if (Parameters.nodfile == FALSE && 
-     Parameters.guess_vector == PARM_GUESS_VEC_DFILE) {
+   if (Parameters_->nodfile == FALSE && 
+     Parameters_->guess_vector == PARM_GUESS_VEC_DFILE) {
      if ((i = Dvec.read_num_vecs()) != nroots) {
-       if (Parameters.print_lvl) outfile->Printf( "D file contains %d not %d vectors.  Trying another guess.\n", i, nroots);
+       if (Parameters_->print_lvl) outfile->Printf( "D file contains %d not %d vectors.  Trying another guess.\n", i, nroots);
        dvec_read_fail = true;
        /*
-       if (Parameters.h0blocksize == 0) {
-         Parameters.guess_vector = PARM_GUESS_VEC_UNIT;
+       if (Parameters_->h0blocksize == 0) {
+         Parameters_->guess_vector = PARM_GUESS_VEC_UNIT;
          outfile->Printf( "unit vector guess.\n");
        }
        else {
-         Parameters.guess_vector = PARM_GUESS_VEC_H0_BLOCK;
+         Parameters_->guess_vector = PARM_GUESS_VEC_H0_BLOCK;
          outfile->Printf( "H0block guess.\n");
        }
        */
      }
    }
 
-   if (Parameters.restart) {  /* restart option! */
-      // L = Parameters.restart_vecs;
+   if (Parameters_->restart) {  /* restart option! */
+      // L = Parameters_->restart_vecs;
       L = Cvec.read_num_vecs();
       i = Sigma.read_num_vecs();
       if (i != L) {
@@ -272,7 +291,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
           L = i;
           Cvec.write_num_vecs(L);
         }
-        if (Parameters.print_lvl) outfile->Printf( "Using %d vectors \n", L);
+        if (Parameters_->print_lvl) outfile->Printf( "Using %d vectors \n", L);
       }
       if (L < nroots) {
         str = "Restart failed...  ";
@@ -283,7 +302,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
         throw PsiException(str,__FILE__,__LINE__);
       }
 
-      if (Parameters.print_lvl) outfile->Printf( "\nAttempting Restart with %d vectors\n", L);
+      if (Parameters_->print_lvl) outfile->Printf( "\nAttempting Restart with %d vectors\n", L);
 
    /* open detci.dat and write file_offset and file_number array out to
       detci.dat */
@@ -300,7 +319,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
       Sigma2.set_new_first_buf(j);
       /* the first buffer of D file should not change unless there
        * is only a logical D file not a physical D file */
-      if (Parameters.nodfile) {
+      if (Parameters_->nodfile) {
         //Dvec.reset_detfile(CI_VEC);
     Dvec.set_new_first_buf(i);
         //Dvec2.reset_detfile(SIGMA_VEC);
@@ -395,11 +414,11 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    }
 
    /* previous-run d vector */
-   else if (Parameters.guess_vector==PARM_GUESS_VEC_DFILE && !dvec_read_fail) {
-     if (Parameters.print_lvl) outfile->Printf( "Attempting to use %d previous converged vectors\n",
+   else if (Parameters_->guess_vector==PARM_GUESS_VEC_DFILE && !dvec_read_fail) {
+     if (Parameters_->print_lvl) outfile->Printf( "Attempting to use %d previous converged vectors\n",
         nroots);
 
-     if (Parameters.nodfile) {
+     if (Parameters_->nodfile) {
        i = Cvec.read_new_first_buf();
        Cvec.set_new_first_buf(i);
        Cvec2.set_new_first_buf(i);
@@ -435,12 +454,12 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    }
 
    /* unit vector */
-   else if (Parameters.guess_vector == PARM_GUESS_VEC_UNIT ||
-            (dvec_read_fail && Parameters.h0blocksize==0)) {
+   else if (Parameters_->guess_vector == PARM_GUESS_VEC_UNIT ||
+            (dvec_read_fail && Parameters_->h0blocksize==0)) {
      tval = 1.0;
      Cvec.buf_lock(buffer1);
-     Cvec.init_vals(0, 1, &(CalcInfo.ref_alp_list), &(CalcInfo.ref_alp_rel),
-        &(CalcInfo.ref_bet_list), &(CalcInfo.ref_bet_rel), H0block.blknum,
+     Cvec.init_vals(0, 1, &(CalcInfo_->ref_alp_list), &(CalcInfo_->ref_alp_rel),
+        &(CalcInfo_->ref_bet_list), &(CalcInfo_->ref_bet_rel), H0block_->blknum,
         &tval);
      Cvec.buf_unlock();
      Cvec.write_num_vecs(1);
@@ -449,7 +468,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    }
 
    /* import a previously exported CI vector */
-   else if (Parameters.guess_vector == PARM_GUESS_VEC_IMPORT) {
+   else if (Parameters_->guess_vector == PARM_GUESS_VEC_IMPORT) {
 
      SlaterDetSet *dets;
      int *import_alplist, *import_alpidx, *import_betlist, *import_betidx;
@@ -494,69 +513,69 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    }
 
    else { /* use H0BLOCK eigenvector guess */
-      if (Parameters.precon == PRECON_GEN_DAVIDSON) L = H0block.size;
-      else L = H0block.guess_size;
+      if (Parameters_->precon == PRECON_GEN_DAVIDSON) L = H0block_->size;
+      else L = H0block_->guess_size;
 
       /* outfile->Printf( " L = %d in sem.cc line 345\n", L); */
       /* N = CIblks.vectlen; The variable N is never used */
       sm_evals = init_array(L);
 
       /* need to fill out sm_evecs into b (pad w/ 0's) */
-      if (Parameters.print_lvl) outfile->Printf( "Using %d initial trial vectors\n", Parameters.num_init_vecs);
+      if (Parameters_->print_lvl) outfile->Printf( "Using %d initial trial vectors\n", Parameters_->num_init_vecs);
 
       Cvec.buf_lock(buffer1);
-      for (i=0,k=0; i<L && k < Parameters.num_init_vecs; i++) {
+      for (i=0,k=0; i<L && k < Parameters_->num_init_vecs; i++) {
 
          /* if Ms=0 check sm_evecs[i] to see if it has the correct
           * spin symmetry
           */
          tmpi=0;
-         for (j=0; Parameters.Ms0 && j<L && !tmpi; j++) {
-            l = H0block.pair[j];
+         for (j=0; Parameters_->Ms0 && j<L && !tmpi; j++) {
+            l = H0block_->pair[j];
             if (l == -1) {
                printf("(sem_iter): Warning: unpaired h0block member!\n");
                tmpi = 1;
                }
-            tval = H0block.H0b_diag[l][i];
-            if ((int) Parameters.S % 2) tval = -tval;
-            if (fabs(H0block.H0b_diag[j][i] - tval) > 1.0E-8) {
+            tval = H0block_->H0b_diag[l][i];
+            if ((int) Parameters_->S % 2) tval = -tval;
+            if (fabs(H0block_->H0b_diag[j][i] - tval) > 1.0E-8) {
               tmpi = 1;
-              outfile->Printf("(sem_iter): H0block.H0b_diag[%d][%d]"
-                      " - H0block.H0b_diag[%d][%d] = %lf - %lf = %lf"
-                      " > 1.0E-8\n", j, i, l, i, H0block.H0b_diag[j][i],
-                     tval, (H0block.H0b_diag[j][i] - tval));
+              outfile->Printf("(sem_iter): H0block_->H0b_diag[%d][%d]"
+                      " - H0block_->H0b_diag[%d][%d] = %lf - %lf = %lf"
+                      " > 1.0E-8\n", j, i, l, i, H0block_->H0b_diag[j][i],
+                     tval, (H0block_->H0b_diag[j][i] - tval));
               }
             }
 
          /* also check that it satisfies any user-specified properties */
-         if (!tmpi && Parameters.filter_guess) {
-       j = Parameters.filter_guess_H0_det1;
-       l = Parameters.filter_guess_H0_det2;
-           tval = H0block.H0b_diag[l][i];
-       if (Parameters.filter_guess_sign == -1) tval = -tval;
-       if (fabs(H0block.H0b_diag[j][i] - tval) > 1.0E-8) {
+         if (!tmpi && Parameters_->filter_guess) {
+       j = Parameters_->filter_guess_H0_det1;
+       l = Parameters_->filter_guess_H0_det2;
+           tval = H0block_->H0b_diag[l][i];
+       if (Parameters_->filter_guess_sign == -1) tval = -tval;
+       if (fabs(H0block_->H0b_diag[j][i] - tval) > 1.0E-8) {
          tmpi = 1;
          outfile->Printf( "(sem_iter): Guess vector failed user-specified"
                           " criterion.\n");
-         outfile->Printf( "(sem_iter): H0block.H0b_diag[%d][%d]"
-                 " - H0block.H0b_diag[%d][%d] = %lf - %lf = %lf"
-             " > 1.0E-8\n", j, i, l, i, H0block.H0b_diag[j][i],
-             tval, (H0block.H0b_diag[j][i] - tval));
+         outfile->Printf( "(sem_iter): H0block_->H0b_diag[%d][%d]"
+                 " - H0block_->H0b_diag[%d][%d] = %lf - %lf = %lf"
+             " > 1.0E-8\n", j, i, l, i, H0block_->H0b_diag[j][i],
+             tval, (H0block_->H0b_diag[j][i] - tval));
        }
      }
 
          if (tmpi) continue;
 
-         for (j=0; j<L; j++) sm_evals[j] = H0block.H0b_diag[j][i];
+         for (j=0; j<L; j++) sm_evals[j] = H0block_->H0b_diag[j][i];
 
-         Cvec.init_vals(k, L, H0block.alplist, H0block.alpidx,
-            H0block.betlist, H0block.betidx, H0block.blknum, sm_evals);
+         Cvec.init_vals(k, L, H0block_->alplist, H0block_->alpidx,
+            H0block_->betlist, H0block_->betidx, H0block_->blknum, sm_evals);
 
-         if (Parameters.calc_ssq && Parameters.icore==1) {
+         if (Parameters_->calc_ssq && Parameters_->icore==1) {
             Cvec.buf_unlock();
             tval = Cvec.calc_ssq(buffer1, buffer2, alplist, betlist, k);
             Cvec.buf_lock(buffer1);
-            if (fabs(tval - (Parameters.S*(Parameters.S+1.0))) > 1.0E-3) {
+            if (fabs(tval - (Parameters_->S*(Parameters_->S+1.0))) > 1.0E-3) {
               outfile->Printf(
                  "Computed <S^2> not as desired, discarding guess\n");
               }
@@ -582,7 +601,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    /* write file_offset and file_number array out to detci.dat */
    //Cvec.write_detfile(CI_VEC);
    //Sigma.write_detfile(SIGMA_VEC);
-   //if (Parameters.print_lvl > 1)
+   //if (Parameters_->print_lvl > 1)
    //  outfile->Printf("Restart info written.\n");
    
 
@@ -599,7 +618,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    L = k;
    Llast = 0;
 
-   if (Parameters.nodfile) {
+   if (Parameters_->nodfile) {
      Dvec.restart_reord_fp(maxnvect-1);
      Dvec2.restart_reord_fp(maxnvect-1);
      }
@@ -609,7 +628,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
       Lvec[iter2] = L;
 
-      if (Parameters.print_lvl > 2) {
+      if (Parameters_->print_lvl > 2) {
         outfile->Printf( "L[cur] = %3d, L[last] = %3d\n", L,
           iter2 > 0 ? Lvec[iter2-1] : 999);
       }
@@ -625,9 +644,9 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
             Cvec.print("outfile");
             }
 
-         sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters.fci, i);
+         sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters_->fci, i);
 
-         if (Parameters.z_scale_H) {
+         if (Parameters_->z_scale_H) {
            Cvec.buf_unlock();
            Sigma.buf_unlock();
            Sigma.scale_sigma(Hd, Cvec, alplist, betlist, i, buffer1, buffer2);
@@ -667,7 +686,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
       Cvec.buf_unlock();
       Sigma.buf_unlock();
 
-     if (Parameters.lse && (maxnvect-L <= nroots*Parameters.collapse_size)
+     if (Parameters_->lse && (maxnvect-L <= nroots*Parameters_->collapse_size)
          && L>2) form_M = 1;
      else form_M = 0;
 
@@ -731,7 +750,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
        }
 
-     if (Parameters.print_sigma_overlap) {
+     if (Parameters_->print_sigma_overlap) {
        /* Form sigma_overlap matrix */
        Sigma.buf_lock(buffer1);
        Sigma2.buf_lock(buffer2);
@@ -761,7 +780,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
        for (i=0; i<L; i++) {
          outfile->Printf( "\nGuess energy #%d = %15.9lf\n", i,
-           -1.0 * sqrt(sigma_overlap[i][i]) + CalcInfo.enuc + CalcInfo.edrc);
+           -1.0 * sqrt(sigma_overlap[i][i]) + CalcInfo_->enuc + CalcInfo_->edrc);
          }
 
        /* diagonalize sigma_overlap to see what that does
@@ -782,7 +801,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
        sq_rsp(L, L, M[0], m_lambda[0][0], 1, m_alpha[0][0], 1.0E-14);
        for (i=0; i<L; i++) {
          m_lambda[0][0][i] = -1.0 * sqrt(m_lambda[0][0][i]) +
-           CalcInfo.enuc + CalcInfo.edrc;
+           CalcInfo_->enuc + CalcInfo_->edrc;
        }
        outfile->Printf( "\n Guess energy from H^2 = %15.9lf\n",
          m_lambda[0][0][L]);
@@ -794,14 +813,14 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
        * append new b vectors to Davidson subspace.
        */
 
-      if ((iter2 - Parameters.collapse_size + 1 >= 0) && (Lvec[iter2 -
-           Parameters.collapse_size + 1] + nroots * Parameters.collapse_size
+      if ((iter2 - Parameters_->collapse_size + 1 >= 0) && (Lvec[iter2 -
+           Parameters_->collapse_size + 1] + nroots * Parameters_->collapse_size
            > maxnvect) && iter != maxiter) {
 
          Cvec.set_nvect(maxnvect);
          Cvec2.set_nvect(maxnvect);
          Sigma.set_nvect(maxnvect);
-         if (Parameters.lse) Sigma2.set_nvect(maxnvect);
+         if (Parameters_->lse) Sigma2.set_nvect(maxnvect);
          collapse_num++;
          lse_do = 0;
 
@@ -810,7 +829,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          zero_int_array(lse_do_arr, nroots);
          for (i=0; i<nroots; i++) {
             if (form_M && ((collapse_num-last_lse_collapse_num)
-               >= Parameters.lse_collapse) &&
+               >= Parameters_->lse_collapse) &&
                (fabs(lambda[iter2][i]-lastroot[i]) < lse_tolerance)
                 && (m_lambda[iter2][i][0] > MALPHA_TOLERANCE)) {
                lse_do_arr[i] = 1; lse_do++;
@@ -867,14 +886,14 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
        Dvec2.buf_unlock();
        L2 = L3 = nroots;
 
-       if (Parameters.print_lvl > 2) {
+       if (Parameters_->print_lvl > 2) {
          outfile->Printf( "Gathered vectors 0 to %d and wrote to positions \
             %d to %d\n", L-1, maxnvect-nroots, maxnvect-1);
        }
 
-       for (i=1; i<Parameters.collapse_size; i++) {
+       for (i=1; i<Parameters_->collapse_size; i++) {
 
-          if (Parameters.nodfile) {
+          if (Parameters_->nodfile) {
             Dvec.restart_reord_fp(maxnvect-2);
             Dvec2.restart_reord_fp(maxnvect-2);
             }
@@ -941,7 +960,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
         L = L2;
         Llast = L;
         iter2 = 0;  Lvec[0] = L;
-        if (Parameters.print_lvl > 2) {
+        if (Parameters_->print_lvl > 2) {
           outfile->Printf( "L = %d, L2 = %d, L3 = %d\n",L, L2, L3);
         }
 
@@ -949,12 +968,12 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
     /*
         Cvec.write_detfile(CI_VEC);
         Sigma.write_detfile(SIGMA_VEC);
-        if (Parameters.print_lvl > 1)
+        if (Parameters_->print_lvl > 1)
           outfile->Printf("Restart info written.\n");
         
     */
 
-        if (Parameters.nodfile) {
+        if (Parameters_->nodfile) {
           Dvec.set_nvect(L2);
           Dvec2.set_nvect(L3);
           //Dvec.reset_detfile(CI_VEC);
@@ -1001,7 +1020,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          if (1) {
            for (i=0; i<L; i++) {
               Cvec.read(i,0);
-              sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters.fci, i);
+              sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters_->fci, i);
               if (print_lvl > 1) {
                 outfile->Printf(
                   "Exact Sigma: (redid multiplication) H * b[%d] = \n", i);
@@ -1044,13 +1063,13 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
         } /* end collapse routine */
 
-        if (Parameters.update == UPDATE_DAVIDSON) {
+        if (Parameters_->update == UPDATE_DAVIDSON) {
           /* form the d part of the correction vector */
           Dvec.dcalc(nroots, L, alpha[iter2], lambda[iter2], dvecnorm, Cvec,
                      Sigma, buffer1, buffer2, root_converged, (print_lvl > 4),
                      "outfile", E_est);
           }
-        else if (Parameters.update == UPDATE_OLSEN) {
+        else if (Parameters_->update == UPDATE_OLSEN) {
           /* Compute x and y values for E_est */
           Cvec.buf_lock(buffer1);
           Dvec.buf_lock(buffer2);
@@ -1067,7 +1086,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
              errcod = H0block_calc(lambda[iter2][i]);
              if (!errcod)
                outfile->Printf("Determinant of H0block is too small.\n");
-             if (Parameters.precon>=PRECON_GEN_DAVIDSON)
+             if (Parameters_->precon>=PRECON_GEN_DAVIDSON)
                H0block_xy(&x[i],&y[i],lambda[iter2][i]);
         /*
              outfile->Printf(
@@ -1099,7 +1118,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
             root_converged[i] = 0;
             converged = 0;
             }
-         if (Parameters.print_lvl) {
+         if (Parameters_->print_lvl) {
             outfile->Printf( "Iter %2d  Root %2d = %13.9lf",
                iter, i+1, (lambda[iter2][i] + enuc + edrc));
             outfile->Printf( "   Delta_E %10.3E   Delta_C %10.3E %c\n",
@@ -1108,9 +1127,9 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          }
       }
 
-      if ((nroots > 1) && Parameters.print_lvl) outfile->Printf( "\n");
+      if ((nroots > 1) && Parameters_->print_lvl) outfile->Printf( "\n");
 
-      if (iter == maxiter && !Parameters.mcscf) {
+      if (iter == maxiter && !Parameters_->mcscf) {
          outfile->Printf( "\nMaximum number of CI iterations reached\n");
          }
 
@@ -1118,7 +1137,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          
          Cvec.buf_lock(buffer1);
          Dvec.buf_lock(buffer2);
-         //if (Parameters.nodfile) Dvec.reset_detfile(CI_VEC);
+         //if (Parameters_->nodfile) Dvec.reset_detfile(CI_VEC);
          for (i=0; i<nroots; i++) {
             evals[i] = lambda[iter2][i];
             tval = alpha[iter2][0][i];
@@ -1129,7 +1148,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
                Dvec.civ_xpeay(tval, Cvec, i, j);
                }
 
-            if (Parameters.print_lvl) {
+            if (Parameters_->print_lvl) {
               outfile->Printf( "\n* ROOT %d CI total energy = %17.13lf", i+1,
                  evals[i] + enuc + edrc);
 
@@ -1140,11 +1159,11 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
                  }
               else outfile->Printf( "\n");
 
-               zero_arr(mi_coeff, Parameters.nprint);
-               Dvec.max_abs_vals(Parameters.nprint, mi_iac, mi_ibc,
-                  mi_iaidx, mi_ibidx, mi_coeff, Parameters.neg_only);
-               print_vec(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
-                  mi_coeff, AlphaG, BetaG, alplist, betlist, "outfile");
+               zero_arr(mi_coeff, Parameters_->nprint);
+               Dvec.max_abs_vals(Parameters_->nprint, mi_iac, mi_ibc,
+                  mi_iaidx, mi_ibidx, mi_coeff, Parameters_->neg_only);
+               print_vec(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
+                  mi_coeff, AlphaG_, BetaG_, alplist, betlist, "outfile");
                outfile->Printf( "\n");
             }
             Dvec.write_num_vecs(i+1);  // only if nodfile ?
@@ -1186,17 +1205,17 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
       for (k=0; k<nroots; k++) {
          if (root_converged[k]) continue;
          Hd.buf_lock(buffer2);
-         if (Parameters.precon == PRECON_EVANGELISTI)
+         if (Parameters_->precon == PRECON_EVANGELISTI)
            tval = Dvec.dcalc_evangelisti(k, L, lambda[iter2][k]+edrc, Hd, Cvec,
-                buffer1, buffer2, Parameters.precon, L, alplist,
+                buffer1, buffer2, Parameters_->precon, L, alplist,
                 betlist, alpha[iter2]);
          else{
              tval = Dvec.dcalc2(k, lambda[iter2][k]+edrc, Hd,
-                Parameters.precon, alplist, betlist);
+                Parameters_->precon, alplist, betlist);
              errcod = H0block_calc(lambda[iter2][k]+edrc); /* MLL */
           }
-         if (Parameters.precon >= PRECON_GEN_DAVIDSON && (iter >= 1)) {
-           if (Parameters.h0block_coupling && (iter >= 2))
+         if (Parameters_->precon >= PRECON_GEN_DAVIDSON && (iter >= 1)) {
+           if (Parameters_->h0block_coupling && (iter >= 2))
              H0block_coupling_calc(lambda[iter2][k]+edrc);
            Dvec.h0block_buf_precon(&tval, k);
            }
@@ -1205,11 +1224,11 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
                   "correction (root %d) is < 1.0E-13\n", k);
            }
          Dvec.read(k,0);
-         if (Parameters.filter_zero_det) {
-           tval -= Dvec.zero_det(Parameters.filter_zero_det_Iac,
-                     Parameters.filter_zero_det_Iaridx,
-                     Parameters.filter_zero_det_Ibc,
-                     Parameters.filter_zero_det_Ibridx);
+         if (Parameters_->filter_zero_det) {
+           tval -= Dvec.zero_det(Parameters_->filter_zero_det_Iac,
+                     Parameters_->filter_zero_det_Iaridx,
+                     Parameters_->filter_zero_det_Ibc,
+                     Parameters_->filter_zero_det_Ibridx);
          }
          tval = sqrt(1.0 / tval);
          Dvec.symnorm(tval,0,0);
@@ -1272,7 +1291,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
      */
 
         /* not sure that you really want to do this every iter...  CDS
-        if (Parameters.calc_ssq && Parameters.icore==1) {
+        if (Parameters_->calc_ssq && Parameters_->icore==1) {
           for (k=0; k<L; k++)
             tval = Cvec.calc_ssq(buffer1, buffer2, alplist, betlist, k);
           }
@@ -1285,7 +1304,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
    /* Dump the vector to a PSIO file
       Added by Edward valeev (August 2002) */
-   if (Parameters.export_ci_vector && Parameters.icore==1) {
+   if (Parameters_->export_ci_vector && Parameters_->icore==1) {
      StringSet alphastrings, betastrings;
      SlaterDetSet dets;
      //SlaterDetVector vec;
@@ -1293,29 +1312,29 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
      unsigned char *newocc;
      int irrep, gr, l, n;
 
-     if (CalcInfo.num_drc_orbs > 0) {
-       drc_occ = (short int *) malloc(CalcInfo.num_drc_orbs*sizeof(short int));
-       for (int l=0; l<CalcInfo.num_drc_orbs; l++) {
-         drc_occ[l] = CalcInfo.order[l]; /* put it in Pitzer order */
+     if (CalcInfo_->num_drc_orbs > 0) {
+       drc_occ = (short int *) malloc(CalcInfo_->num_drc_orbs*sizeof(short int));
+       for (int l=0; l<CalcInfo_->num_drc_orbs; l++) {
+         drc_occ[l] = CalcInfo_->order[l]; /* put it in Pitzer order */
        }
      }
 
-     newocc = (unsigned char *) malloc(((AlphaG->num_el > BetaG->num_el) ?
-       AlphaG->num_el : BetaG->num_el)*sizeof(unsigned char));
+     newocc = (unsigned char *) malloc(((AlphaG_->num_el > BetaG_->num_el) ?
+       AlphaG_->num_el : BetaG_->num_el)*sizeof(unsigned char));
 
-     stringset_init(&alphastrings,AlphaG->num_str,AlphaG->num_el,
-                    CalcInfo.num_drc_orbs, drc_occ);
+     stringset_init(&alphastrings,AlphaG_->num_str,AlphaG_->num_el,
+                    CalcInfo_->num_drc_orbs, drc_occ);
      int list_gr = 0;
      int offset = 0;
-     for(irrep=0; irrep<AlphaG->nirreps; irrep++) {
-       for(gr=0; gr<AlphaG->subgr_per_irrep; gr++,list_gr++) {
-         int nlists_per_gr = AlphaG->sg[irrep][gr].num_strings;
+     for(irrep=0; irrep<AlphaG_->nirreps; irrep++) {
+       for(gr=0; gr<AlphaG_->subgr_per_irrep; gr++,list_gr++) {
+         int nlists_per_gr = AlphaG_->sg[irrep][gr].num_strings;
          for(l=0; l<nlists_per_gr; l++) {
            /* convert occs to Pitzer order */
-           for (n=0; n<AlphaG->num_el; n++) {
+           for (n=0; n<AlphaG_->num_el; n++) {
              newocc[n] = (unsigned char)
-               CalcInfo.order[alplist[list_gr][l].occs[n] +
-               CalcInfo.num_drc_orbs];
+               CalcInfo_->order[alplist[list_gr][l].occs[n] +
+               CalcInfo_->num_drc_orbs];
            }
        stringset_add(&alphastrings,l+offset,newocc);
          }
@@ -1323,19 +1342,19 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
        }
      }
 
-     stringset_init(&betastrings,BetaG->num_str,BetaG->num_el,
-                    CalcInfo.num_drc_orbs, drc_occ);
+     stringset_init(&betastrings,BetaG_->num_str,BetaG_->num_el,
+                    CalcInfo_->num_drc_orbs, drc_occ);
      list_gr = 0;
      offset = 0;
-     for(irrep=0; irrep<BetaG->nirreps; irrep++) {
-       for(gr=0; gr<BetaG->subgr_per_irrep; gr++,list_gr++) {
-         int nlists_per_gr = BetaG->sg[irrep][gr].num_strings;
+     for(irrep=0; irrep<BetaG_->nirreps; irrep++) {
+       for(gr=0; gr<BetaG_->subgr_per_irrep; gr++,list_gr++) {
+         int nlists_per_gr = BetaG_->sg[irrep][gr].num_strings;
          for(l=0; l<nlists_per_gr; l++) {
            /* convert occs to Pitzer order */
-           for (n=0; n<BetaG->num_el; n++) {
+           for (n=0; n<BetaG_->num_el; n++) {
              newocc[n] = (unsigned char)
-               CalcInfo.order[betlist[list_gr][l].occs[n] +
-               CalcInfo.num_drc_orbs];
+               CalcInfo_->order[betlist[list_gr][l].occs[n] +
+               CalcInfo_->num_drc_orbs];
            }
        stringset_add(&betastrings,l+offset,newocc);
          }
@@ -1343,21 +1362,21 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
        }
      }
      free(newocc);
-     if (CalcInfo.num_drc_orbs > 0)
+     if (CalcInfo_->num_drc_orbs > 0)
        free(drc_occ);
 
      int ii;
-     int size = CIblks.vectlen;
+     int size = CIblks_->vectlen;
      int Iarel, Ialist, Ibrel, Iblist;
      slaterdetset_init(&dets,size,&alphastrings,&betastrings);
      for (ii=0; ii<size; ii++) {
        Dvec.det2strings(ii, &Ialist, &Iarel, &Iblist, &Ibrel);
-       int irrep = Ialist/AlphaG->subgr_per_irrep;
-       int gr = Ialist%AlphaG->subgr_per_irrep;
-       int Ia = Iarel + AlphaG->list_offset[Ialist];
-       irrep = Iblist/BetaG->subgr_per_irrep;
-       gr = Iblist%BetaG->subgr_per_irrep;
-       int Ib = Ibrel + BetaG->list_offset[Iblist];
+       int irrep = Ialist/AlphaG_->subgr_per_irrep;
+       int gr = Ialist%AlphaG_->subgr_per_irrep;
+       int Ia = Iarel + AlphaG_->list_offset[Ialist];
+       irrep = Iblist/BetaG_->subgr_per_irrep;
+       gr = Iblist%BetaG_->subgr_per_irrep;
+       int Ib = Ibrel + BetaG_->list_offset[Iblist];
        slaterdetset_add(&dets, ii, Ia, Ib);
      }
 
@@ -1365,7 +1384,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
      // slaterdetvector_init(&vec, &dets);
 
      Dvec.buf_lock(buffer1);
-     for (ii=0; ii<Parameters.num_export; ii++) {
+     for (ii=0; ii<Parameters_->num_export; ii++) {
        zero_arr(buffer1, size);
        Dvec.read(ii,0);
        // slaterdetvector_set(&vec, buffer1);
@@ -1377,14 +1396,14 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
      Dvec.buf_unlock();
      slaterdetset_delete_full(&dets);
    }
-   else if (Parameters.export_ci_vector && Parameters.icore != 1) {
+   else if (Parameters_->export_ci_vector && Parameters_->icore != 1) {
      outfile->Printf( "\nWarning: requested CI vector export, unavailable " \
-       "for icore = %d\n", Parameters.icore);
+       "for icore = %d\n", Parameters_->icore);
    }
 
    /* PT correction */
    /*
-   if (Parameters.calc_pt_corr) {
+   if (Parameters_->calc_pt_corr) {
      Dvec.buf_lock(buffer1);
      Dvec.read(0,0);
      Dvec.pt_correction();
@@ -1393,14 +1412,14 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    */
 
    /* Compute S^2 */
-   if (Parameters.calc_ssq && Parameters.icore==1) {
+   if (Parameters_->calc_ssq && Parameters_->icore==1) {
      for (k=0; k<nroots; k++)
        Dvec.calc_ssq(buffer1, buffer2, alplist, betlist, k);
    }
 
    Cvec.close_io_files(1);
    Sigma.close_io_files(1);
-   if (Parameters.nodfile == FALSE) Dvec.close_io_files(1);
+   if (Parameters_->nodfile == FALSE) Dvec.close_io_files(1);
 
    free(mi_iac); free(mi_ibc); free(mi_iaidx); free(mi_ibidx); free(mi_coeff);
    free(dvecnorm);  free(lastroot);  free(root_converged);

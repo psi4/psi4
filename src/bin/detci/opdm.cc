@@ -38,7 +38,7 @@
 #include <psifiles.h>
 #include <physconst.h>
 #include "structs.h"
-#include "globals.h"
+//#include "globals.h"
 #include "civect.h"
 #include "ciwave.h"
 
@@ -100,19 +100,21 @@ void CIWavefunction::opdm(struct stringwr **alplist, struct stringwr **betlist,
   else
     Jroot = 0; 
   if (Jroot > Jnroots) return;
-  
-  Ivec.set(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore, Parameters_->Ms0,
-           CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
-           CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
-           CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Inroots, Inunits,
-           Ifirstunit, CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
+
+  Ivec.set(Parameters_->icore, Inroots, Inunits, Ifirstunit, CIblks_);  
+  //Ivec.set(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore, Parameters_->Ms0,
+  //         CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
+  //         CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
+  //         CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Inroots, Inunits,
+  //         Ifirstunit, CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
   Ivec.init_io_files(true);
 
-  Jvec.set(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore, Parameters_->Ms0,
-           CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
-           CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
-           CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Jnroots, Jnunits,
-           Jfirstunit, CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
+  Jvec.set(Parameters_->icore, Jnroots, Jnunits, Jfirstunit, CIblks_);  
+  //Jvec.set(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore, Parameters_->Ms0,
+  //         CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
+  //         CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
+  //         CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Jnroots, Jnunits,
+  //         Jfirstunit, CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
   Jvec.init_io_files(true);
 
   populated_orbs = CalcInfo_->num_ci_orbs + CalcInfo_->num_drc_orbs;

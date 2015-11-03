@@ -31,8 +31,8 @@
 #include <cstdlib>
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
+#include <libmints/mints.h>
 #include "structs.h"
-#include "globals.h"
 
 namespace psi { namespace detci {
 
@@ -46,14 +46,15 @@ extern int subgr_lex_addr(struct level *head, int *occs, int nel, int norb);
 
 void b2brepl(unsigned char **occs, int *Jcnt, int **Jij, int **Joij, 
    int **Jridx, signed char **Jsgn, struct olsen_graph *Graph,
-   int Ilist, int Jlist, int len);
+   int Ilist, int Jlist, int len, struct calcinfo *Cinfo);
 void b2bgen1(unsigned char **occs, int *Jcnt, int **Jij, int **Joij, 
    int **Jridx, signed char **Jsgn, struct level *subgr_head, 
-   int len, int ijsym, int nel, int ras1_lvl, int ras3_lvl, int ras4_lvl);
+   int len, int ijsym, int nel, int ras1_lvl, int ras3_lvl, int ras4_lvl,
+   struct calcinfo *Cinfo);
 void b2bgen2(unsigned char **occs, int *Jcnt, int **Jij, int **Joij, 
    int **Jridx, signed char **Jsgn, struct level *subgr_head,
    int up, int down, int len, int ijsym, int nel, int ras1_lvl, int ras3_lvl,
-   int ras4_lvl);
+   int ras4_lvl, struct calcinfo *Cinfo);
 
 
 /*
@@ -81,7 +82,7 @@ void b2bgen2(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
 */
 void b2brepl(unsigned char **occs, int *Jcnt, int **Jij, int **Joij, 
       int **Jridx, signed char **Jsgn, struct olsen_graph *Graph,
-      int Ilist, int Jlist, int len)
+      int Ilist, int Jlist, int len, struct calcinfo *Cinfo)
 {
    int I_n1, I_n2, I_n3, I_n4;
    int J_n1, J_n2, J_n3, J_n4;
@@ -133,7 +134,7 @@ void b2brepl(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
    /* figure out the case */
    if (D_n1 == 0 && D_n2 == 0 && D_n3 == 0 && D_n4 == 0) {
       b2bgen1(occs,Jcnt,Jij,Joij,Jridx,Jsgn,subgr_head,len,ijsym,nel,
-         Graph->ras1_lvl, Graph->ras3_lvl, Graph->ras4_lvl);
+         Graph->ras1_lvl, Graph->ras3_lvl, Graph->ras4_lvl, Cinfo);
       }
    else { /* figure out which is 1 and which is -1 */
       if (D_n1 == 1) up = 0;
@@ -145,7 +146,7 @@ void b2brepl(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
       else if (D_n3 == -1) down = 2;
       else if (D_n4 == -1) down = 3;
       b2bgen2(occs,Jcnt,Jij,Joij,Jridx,Jsgn,subgr_head,up,down,len,ijsym,nel,
-         Graph->ras1_lvl, Graph->ras3_lvl, Graph->ras4_lvl);
+         Graph->ras1_lvl, Graph->ras3_lvl, Graph->ras4_lvl, Cinfo);
       }         
 } 
 
@@ -159,7 +160,8 @@ void b2brepl(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
 */
 void b2bgen1(unsigned char **occs, int *Jcnt, int **Jij, int **Joij, 
       int **Jridx, signed char **Jsgn, struct level *subgr_head, 
-      int len, int ijsym, int nel, int ras1_lvl, int ras3_lvl, int ras4_lvl)
+      int len, int ijsym, int nel, int ras1_lvl, int ras3_lvl, int ras4_lvl,
+      struct calcinfo *Cinfo)
 {
    int I;
    int O[MAX_EL], T[MAX_EL], ras_occs[4][MAX_EL], ecnt[4];
@@ -170,9 +172,9 @@ void b2bgen1(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
    int ras,hole,part,abshole,hops,iused;
    int **ras_orbs[4], **ras_opi;
 
-   for (i=0; i<4; i++) ras_orbs[i] = CalcInfo.ras_orbs[i];
-   ras_opi = CalcInfo.ras_opi;
-   norb = CalcInfo.num_ci_orbs;
+   for (i=0; i<4; i++) ras_orbs[i] = Cinfo->ras_orbs[i];
+   ras_opi = Cinfo->ras_opi;
+   norb = Cinfo->num_ci_orbs;
 
    /* loop over strings */
    for (I=0; I<len; I++) {
@@ -223,8 +225,8 @@ void b2bgen1(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
             for (k=0; k<ras; k++) abshole += ecnt[k];
  
             j = ras_occs[ras][hole];
-            if (j < CalcInfo.num_expl_cor_orbs) continue;
-            jsym = CalcInfo.orbsym[j + CalcInfo.num_drc_orbs];
+            if (j < Cinfo->num_expl_cor_orbs) continue;
+            jsym = Cinfo->orbsym[j + Cinfo->num_drc_orbs];
             isym = ijsym ^ jsym;
             for (part=0; part<ras_opi[ras][isym]; part++) {
                i = ras_orbs[ras][isym][part]; 
@@ -291,7 +293,7 @@ void b2bgen1(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
 void b2bgen2(unsigned char **occs, int *Jcnt, int **Jij, int **Joij, 
       int **Jridx, signed char **Jsgn, struct level *subgr_head,
       int up, int down, int len, int ijsym, int nel, int ras1_lvl,
-      int ras3_lvl, int ras4_lvl)
+      int ras3_lvl, int ras4_lvl, struct calcinfo *Cinfo)
 {
    int I;
    int O[MAX_EL], T[MAX_EL], ras_occs[4][MAX_EL], ecnt[4];
@@ -302,7 +304,7 @@ void b2bgen2(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
    int hole,part,abshole,hops,iused;
    int **ras_orbs, *ras_opi, *ras_occs_excite, *ras_occs_virt;
 
-   norb = CalcInfo.num_ci_orbs;
+   norb = Cinfo->num_ci_orbs;
 
    /* loop over strings */
    for (I=0; I<len; I++) {
@@ -326,8 +328,8 @@ void b2bgen2(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
       ecnt[3] = r4cnt;
       ras_occs_excite = ras_occs[down]; 
       ras_occs_virt = ras_occs[up];
-      ras_opi = CalcInfo.ras_opi[up];
-      ras_orbs = CalcInfo.ras_orbs[up];
+      ras_opi = Cinfo->ras_opi[up];
+      ras_orbs = Cinfo->ras_orbs[up];
 
       for (hole=0; hole<ecnt[down]; hole++) {
 
@@ -335,8 +337,8 @@ void b2bgen2(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
          for (k=0; k<down; k++) abshole += ecnt[k];
 
          j = ras_occs_excite[hole];
-         if (j < CalcInfo.num_expl_cor_orbs) continue;
-         jsym = CalcInfo.orbsym[j + CalcInfo.num_drc_orbs];
+         if (j < Cinfo->num_expl_cor_orbs) continue;
+         jsym = Cinfo->orbsym[j + Cinfo->num_drc_orbs];
          isym = ijsym ^ jsym;
          for (part=0; part<ras_opi[isym]; part++) {
             i = ras_orbs[isym][part];
@@ -384,7 +386,7 @@ void b2bgen2(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
 
 
 void b2brepl_test(unsigned char ***occs, int *Jcnt, int **Jij, int **Joij, 
-      int **Jridx, signed char **Jsgn, struct olsen_graph *Graph)
+      int **Jridx, signed char **Jsgn, struct olsen_graph *Graph, struct calcinfo *Cinfo)
 {
    int i, j, nirreps, ncodes;
    int Iirrep, Icode, Ilistnum;
@@ -405,7 +407,7 @@ void b2brepl_test(unsigned char ***occs, int *Jcnt, int **Jij, int **Joij,
                if (!Jsubgraph->num_strings) continue;
 
                b2brepl(occs[Ilistnum], Jcnt, Jij, Joij, Jridx, Jsgn,
-                  Graph, Ilistnum, Jlistnum, Isubgraph->num_strings);
+                  Graph, Ilistnum, Jlistnum, Isubgraph->num_strings, Cinfo);
 
                for (i=0; i<Isubgraph->num_strings; i++) {
                   outfile->Printf( "\nString %4d (",i);

@@ -45,7 +45,7 @@
 #include <libqt/qt.h>
 #include <libmints/mints.h>
 #include "structs.h"
-#include "globals.h"
+//#include "globals.h"
 #include "civect.h"
 #include "ci_tol.h"
 #include "ciwave.h"
@@ -109,18 +109,22 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
    CIvect Cvec;
    CIvect Sigma;
 
-   Cvec.set(CIblks.vectlen, CIblks.num_blocks, Parameters.icore, Parameters.Ms0,
-      CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-      CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-      CalcInfo.nirreps, AlphaG->subgr_per_irrep, maxnvect,
-      Parameters.num_c_tmp_units, Parameters.first_c_tmp_unit,
-      CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-   Sigma.set(CIblks.vectlen, CIblks.num_blocks, Parameters.icore,Parameters.Ms0,
-      CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-      CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-      CalcInfo.nirreps, AlphaG->subgr_per_irrep, maxnvect,
-      Parameters.num_s_tmp_units, Parameters.first_s_tmp_unit,
-      CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+   Cvec.set(Parameters_->icore, maxnvect, Parameters_->num_c_tmp_units,
+            Parameters_->first_s_tmp_unit, CIblks_);  
+   Sigma.set(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
+             Parameters_->first_s_tmp_unit, CIblks_);  
+   //Cvec.set(CIblks.vectlen, CIblks.num_blocks, Parameters_->icore, Parameters_->Ms0,
+   //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
+   //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
+   //   CalcInfo_->nirreps, AlphaG->subgr_per_irrep, maxnvect,
+   //   Parameters_->num_c_tmp_units, Parameters_->first_c_tmp_unit,
+   //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+   //Sigma.set(CIblks.vectlen, CIblks.num_blocks, Parameters_->icore,Parameters_->Ms0,
+   //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
+   //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
+   //   CalcInfo_->nirreps, AlphaG->subgr_per_irrep, maxnvect,
+   //   Parameters_->num_s_tmp_units, Parameters_->first_s_tmp_unit,
+   //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
 
    // Open I/O files but not with OPEN_OLD
    Cvec.init_io_files(false);
@@ -135,8 +139,8 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
    Cvec.h0block_buf_init();
 
    curr = 0;  
-   last = (Parameters.diag_method == METHOD_MITRUSHENKOV) ? 1 : 0;
-   diag_method = Parameters.diag_method;
+   last = (Parameters_->diag_method == METHOD_MITRUSHENKOV) ? 1 : 0;
+   diag_method = Parameters_->diag_method;
 
    /* set buffer pointers */
 
@@ -146,19 +150,19 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
 
    /* get some of the stuff from CalcInfo for easier access */
 
-   num_alp_str = CalcInfo.num_alp_str;
-   num_bet_str = CalcInfo.num_bet_str;
-   if (Parameters.fci) oei = CalcInfo.tf_onel_ints;
-   else oei = CalcInfo.gmat[0];
-   tei = CalcInfo.twoel_ints;
+   num_alp_str = CalcInfo_->num_alp_str;
+   num_bet_str = CalcInfo_->num_bet_str;
+   if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints;
+   else oei = CalcInfo_->gmat[0];
+   tei = CalcInfo_->twoel_ints;
 
    /* small arrays to hold most important config information */
 
-   mi_iac = init_int_array(Parameters.nprint);
-   mi_ibc = init_int_array(Parameters.nprint);
-   mi_iaidx = init_int_array(Parameters.nprint);
-   mi_ibidx = init_int_array(Parameters.nprint);
-   mi_coeff = init_array(Parameters.nprint);
+   mi_iac = init_int_array(Parameters_->nprint);
+   mi_ibc = init_int_array(Parameters_->nprint);
+   mi_iaidx = init_int_array(Parameters_->nprint);
+   mi_ibidx = init_int_array(Parameters_->nprint);
+   mi_coeff = init_array(Parameters_->nprint);
 
 
    /* stuff for the 2x2 Davidson procedure */
@@ -171,7 +175,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
 
    /* setup initial guess vector */
 
-   if (Parameters.restart) {
+   if (Parameters_->restart) {
      outfile->Printf("\nAttempting Restart with 1 vector\n");
      if ((i=Cvec.read_num_vecs())< 1) {
        throw PsiException("CI vector file should contain only 1 vector.",__FILE__,__LINE__);
@@ -184,13 +188,13 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
      " Attempting to correct by renormalizing.\n"); 
      Cvec.symnorm(tval,CI_VEC,TRUE);
      }
-   else if (Parameters.guess_vector == PARM_GUESS_VEC_UNIT && nroots == 1 &&
-      Parameters.num_init_vecs == 1) { /* use unit vector */
+   else if (Parameters_->guess_vector == PARM_GUESS_VEC_UNIT && nroots == 1 &&
+      Parameters_->num_init_vecs == 1) { /* use unit vector */
       tval = 1.0;
       Cvec.buf_lock(buffer1);
-      Cvec.init_vals(0, 1, &(CalcInfo.ref_alp_list), &(CalcInfo.ref_alp_rel),
-                     &(CalcInfo.ref_bet_list), &(CalcInfo.ref_bet_rel), 
-                     H0block.blknum, &tval);
+      Cvec.init_vals(0, 1, &(CalcInfo_->ref_alp_list), &(CalcInfo_->ref_alp_rel),
+                     &(CalcInfo_->ref_bet_list), &(CalcInfo_->ref_bet_rel), 
+                     H0block_->blknum, &tval);
       Cvec.write_num_vecs(1);
       k = 1;
       Cvec.read(0, 0);
@@ -199,31 +203,31 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
       }
 
    else { /* use H0BLOCK eigenvector guess */
-      if (Parameters.precon == PRECON_GEN_DAVIDSON) L = H0block.size;
-      else L = H0block.guess_size;
+      if (Parameters_->precon == PRECON_GEN_DAVIDSON) L = H0block_->size;
+      else L = H0block_->guess_size;
       sm_evals = init_array(L);
       /* need to fill out sm_evecs into b (pad w/ 0's) */
       outfile->Printf( "Using %d initial trial vectors\n",
-         Parameters.num_init_vecs);
+         Parameters_->num_init_vecs);
 
       Cvec.buf_lock(buffer1);
       for (i=0,k=0; i<L && k<1; i++) {
 
          /* check sm_evecs[i] to see if it has the correct spin symmetry */
          /* if Ms=0 ... */
-         for (j=0,tmpi=0; j<L && !tmpi && Parameters.Ms0; j++) {
-            l = H0block.pair[j];
+         for (j=0,tmpi=0; j<L && !tmpi && Parameters_->Ms0; j++) {
+            l = H0block_->pair[j];
             if (l == -1) { tmpi = 1; break; }
-            tval = H0block.H0b_diag[l][i];
-            if ((int) Parameters.S % 2) tval = -tval;
-            if (H0block.H0b_diag[j][i] - tval > 1.0E-8) tmpi = 1;
+            tval = H0block_->H0b_diag[l][i];
+            if ((int) Parameters_->S % 2) tval = -tval;
+            if (H0block_->H0b_diag[j][i] - tval > 1.0E-8) tmpi = 1;
             }
          if (tmpi) continue;
 
-         for (j=0; j<L; j++) sm_evals[j] = H0block.H0b_diag[j][i];
+         for (j=0; j<L; j++) sm_evals[j] = H0block_->H0b_diag[j][i];
 
-         Cvec.init_vals(k, L, H0block.alplist, H0block.alpidx,
-            H0block.betlist, H0block.betidx, H0block.blknum, sm_evals);
+         Cvec.init_vals(k, L, H0block_->alplist, H0block_->alpidx,
+            H0block_->betlist, H0block_->betidx, H0block_->blknum, sm_evals);
          Cvec.write_num_vecs(1);
          k++;
          /* MLL added 6-15-98 */
@@ -242,7 +246,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
 
    Sigma.buf_lock(buffer2);
    Cvec.read(0, 0);
-   sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters.fci, 0);
+   sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters_->fci, 0);
    Sigma.write_num_vecs(1);
 
    Cvec.copy_zero_blocks(Sigma);
@@ -256,7 +260,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
    /* get H00 */
    E = Cvec * Sigma; 
    E += edrc;
-   E_last = CalcInfo.escf - CalcInfo.enuc;
+   E_last = CalcInfo_->escf - CalcInfo_->enuc;
 
    /* Cvec.print(outfile); */
    Cvec.buf_unlock();
@@ -271,12 +275,12 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
    olsen_iter_xy(Cvec,Sigma,Hd,&x,&y,buffer1,buffer2,E,curr,1,alpha,alplist,
                  betlist);
 
-   if (Parameters.print_lvl > 3) {
+   if (Parameters_->print_lvl > 3) {
      outfile->Printf( "Straight x = %12.6lf\n", x);
      outfile->Printf( "Straight y = %12.6lf\n", y);
      }
 
-   if (Parameters.precon >= PRECON_GEN_DAVIDSON && H0block.size) {
+   if (Parameters_->precon >= PRECON_GEN_DAVIDSON && H0block_->size) {
        detH0 = 1;
        /* 
        detH0 = H0block_calc(E); 
@@ -286,13 +290,13 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
          outfile->Printf( "H0block inverse is nearly nonsingular:");
          outfile->Printf(" initiating DAVIDSON preconditioner\n");
          
-         Parameters.precon = PRECON_DAVIDSON;
+         Parameters_->precon = PRECON_DAVIDSON;
          }
-       if (Parameters.precon >= PRECON_GEN_DAVIDSON) {
+       if (Parameters_->precon >= PRECON_GEN_DAVIDSON) {
          /* 
          H0block_xy(&x,&y,E); 
          */
-         if (Parameters.print_lvl > 3) {
+         if (Parameters_->print_lvl > 3) {
             outfile->Printf( "x = %12.6lf\n", x);
             outfile->Printf( "y = %12.6lf\n", y);
             }
@@ -300,7 +304,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
      }
 
    E_est = y / x;  /* should I add fzc here? */
-   if (Parameters.print_lvl > 2) {
+   if (Parameters_->print_lvl > 2) {
       outfile->Printf( "E_est = %12.6lf E-edrc = %12.6lf E = %12.6lf\n", 
            E_est,E-edrc,E);
        outfile->Printf( "x = %lf  y = %lf\n",x,y);
@@ -315,7 +319,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
    Cvec.symnorm(norm,CI_VEC,TRUE); 
    S *= norm;
    Cvec.buf_unlock();
-   if (Parameters.calc_ssq && Parameters.icore==1)
+   if (Parameters_->calc_ssq && Parameters_->icore==1)
      Cvec.calc_ssq(buffer1, buffer2, alplist, betlist, 0);
 
   /*
@@ -336,7 +340,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
    
 
    iter = 1;
-   if (Parameters.diag_method == METHOD_MITRUSHENKOV) {
+   if (Parameters_->diag_method == METHOD_MITRUSHENKOV) {
       curr = 1; last = 0;
       }
 
@@ -357,7 +361,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
       Cvec.read(curr,0);
       /* Sigma.read(curr,0);
       */
-      sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters.fci, curr);
+      sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters_->fci, curr);
       Cvec.copy_zero_blocks(Sigma);
       Cvec.read(curr,0);
       if (print_lvl > 4) {
@@ -387,7 +391,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
 
       /* if the 2x2 matrix diagonalization can be done, take Mitrush Step */
 
-      if (Parameters.diag_method==METHOD_MITRUSHENKOV && 
+      if (Parameters_->diag_method==METHOD_MITRUSHENKOV && 
           diag_method==METHOD_MITRUSHENKOV && S < S_MAX && 
           fabs(E_last-E_curr) > MITRUSH_E_DIFF_MIN) {
         outfile->Printf( "Taking Mitrushenkov step (S =%10.6lf <%10.6lf)\n",
@@ -437,7 +441,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
       else {
          Cvec.buf_unlock();
          Sigma.buf_unlock();
-         if (Parameters.diag_method==METHOD_MITRUSHENKOV && 
+         if (Parameters_->diag_method==METHOD_MITRUSHENKOV && 
              diag_method==METHOD_MITRUSHENKOV)
            { 
             diag_method = METHOD_OLSEN;
@@ -452,23 +456,23 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
       olsen_iter_xy(Cvec,Sigma,Hd,&x,&y,buffer1,buffer2,E,curr,1,alpha, 
                     alplist, betlist);
 
-      if (Parameters.print_lvl > 3) {
+      if (Parameters_->print_lvl > 3) {
         outfile->Printf( "Straight x = %12.6lf\n", x);
         outfile->Printf( "Straight y = %12.6lf\n", y);
         }
 
-      if (Parameters.precon >= PRECON_GEN_DAVIDSON && H0block.size) {
+      if (Parameters_->precon >= PRECON_GEN_DAVIDSON && H0block_->size) {
         detH0 = H0block_calc(E);
         /* outfile->Printf("detH0 = %d\n", detH0);
          */
         if (detH0 == 0) {
           outfile->Printf( "H0block inverse is nearly singular:");
           outfile->Printf(" initiating DAVIDSON preconditioner\n");
-          Parameters.precon = PRECON_DAVIDSON;
+          Parameters_->precon = PRECON_DAVIDSON;
           }
-        if (Parameters.precon >= PRECON_GEN_DAVIDSON) {
+        if (Parameters_->precon >= PRECON_GEN_DAVIDSON) {
           H0block_xy(&x,&y,E);
-          if (Parameters.print_lvl > 3) {
+          if (Parameters_->print_lvl > 3) {
             outfile->Printf( "x = %12.6lf\n", x);
             outfile->Printf( "y = %12.6lf\n", y);
             }
@@ -476,7 +480,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
         }
 
       E_est = y / x;
-      if (Parameters.print_lvl > 2) {
+      if (Parameters_->print_lvl > 2) {
         outfile->Printf( "E_est = %12.6lf E = %12.6lf\n", 
                 E_est+edrc+enuc, E+enuc);
         /* outfile->Printf( "x = %lf  y = %lf\n",x,y); */
@@ -490,7 +494,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
       Cvec.buf_lock(buffer1);
       Cvec.read(last, 0);
       S *= norm; 
-      if (Parameters.precon >= PRECON_GEN_DAVIDSON && 
+      if (Parameters_->precon >= PRECON_GEN_DAVIDSON && 
           diag_method==METHOD_MITRUSHENKOV && S<S_MAX) 
         Cvec.symnorm(norm,CI_VEC,FALSE); 
       else Cvec.symnorm(norm,CI_VEC,TRUE);
@@ -522,10 +526,10 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
         free_matrix(evecs2x2,2);
         outfile->Printf( "\n\n* ROOT 1 CI total energy = %19.15lf\n", E + enuc);
 
-        Cvec.max_abs_vals(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx,
-           mi_ibidx, mi_coeff, Parameters.neg_only);
-        print_vec(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
-           mi_coeff, AlphaG, BetaG, alplist, betlist, "outfile");
+        Cvec.max_abs_vals(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx,
+           mi_ibidx, mi_coeff, Parameters_->neg_only);
+        print_vec(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
+           mi_coeff, AlphaG_, BetaG_, alplist, betlist, "outfile");
         free(mi_iac);  free(mi_ibc); free(mi_iaidx);  free(mi_ibidx);
         free(mi_coeff);
         return;
@@ -538,7 +542,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
       
       iter++;
       E_last = E;
-      if (Parameters.calc_ssq && Parameters.icore==1)
+      if (Parameters_->calc_ssq && Parameters_->icore==1)
         Cvec.calc_ssq(buffer1, buffer2, alplist, betlist, 0);
       } /* end while (1) */
 
@@ -579,10 +583,10 @@ void CIWavefunction::olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, do
       C.buf_unlock();
       S.buf_unlock();
       Hd.buf_lock(buffer2);
-      if (Parameters.hd_otf == FALSE) Hd.read(0,buf);
-      else Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-           CalcInfo.twoel_ints, CalcInfo.edrc, CalcInfo.num_alp_expl,
-           CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
+      if (Parameters_->hd_otf == FALSE) Hd.read(0,buf);
+      else Hd.diag_mat_els_otf(alplist, betlist, CalcInfo_->onel_ints,
+           CalcInfo_->twoel_ints, CalcInfo_->edrc, CalcInfo_->num_alp_expl,
+           CalcInfo_->num_bet_expl, CalcInfo_->nmo, buf, Parameters_->hd_ave);
       /* Check norm of residual vector i.e. before preconditioning */
       dot_arr(buffer1, buffer1, C.buf_size[buf], &rnormtmp);
       /* C = C/(Hd - E) */
@@ -595,7 +599,7 @@ void CIWavefunction::olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, do
       C.buf_lock(buffer2);
       C.read(curr, buf);
       buf_ols_updt(buffer1,buffer2,&tmp1,&tmp2,&tmpnorm,C.buf_size[buf],"outfile");
-      if (Parameters.precon >= PRECON_GEN_DAVIDSON)
+      if (Parameters_->precon >= PRECON_GEN_DAVIDSON)
         C.h0block_buf_ols(&tmp1,&tmp2,&tmpnorm,E_est);
       if (C.buf_offdiag[buf]) {
          tmp1 *= 2.0;
@@ -661,25 +665,25 @@ void CIWavefunction::olsen_iter_xy(CIvect &C, CIvect &S, CIvect &Hd, double *x, 
    *y = 0.0;
 
    Hd.buf_lock(buffer2);
-   if (Parameters.diag_method==METHOD_DAVIDSON_LIU_SEM) {
-     sigma0b1 = init_array(H0block.size);
-     sigma0b2 = init_array(H0block.size);
+   if (Parameters_->diag_method==METHOD_DAVIDSON_LIU_SEM) {
+     sigma0b1 = init_array(H0block_->size);
+     sigma0b2 = init_array(H0block_->size);
      }
    for (buf=0; buf<C.buf_per_vect; buf++) {
       tx = ty = 0.0;
       C.buf_lock(buffer1);
       C.read(curvect,buf);
-      if (Parameters.diag_method==METHOD_DAVIDSON_LIU_SEM)
+      if (Parameters_->diag_method==METHOD_DAVIDSON_LIU_SEM)
         C.h0block_gather_vec(CI_VEC);
-      if (Parameters.hd_otf == FALSE) Hd.read(0,buf);
-      else Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-           CalcInfo.twoel_ints, CalcInfo.edrc, CalcInfo.num_alp_expl,
-           CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
+      if (Parameters_->hd_otf == FALSE) Hd.read(0,buf);
+      else Hd.diag_mat_els_otf(alplist, betlist, CalcInfo_->onel_ints,
+           CalcInfo_->twoel_ints, CalcInfo_->edrc, CalcInfo_->num_alp_expl,
+           CalcInfo_->num_bet_expl, CalcInfo_->nmo, buf, Parameters_->hd_ave);
       tx = buf_xy1(buffer1, buffer2, E, Hd.buf_size[buf]);
       /* buffer2 = Hd * Ci */
       C.buf_unlock();
       S.buf_lock(buffer1);
-      if (Parameters.diag_method <= METHOD_MITRUSHENKOV) {
+      if (Parameters_->diag_method <= METHOD_MITRUSHENKOV) {
         /* Olsen and Mitrushenkov iterators */
         S.read(curvect,buf);
         dot_arr(buffer1, buffer2, C.buf_size[buf], &ty);
@@ -689,9 +693,9 @@ void CIWavefunction::olsen_iter_xy(CIvect &C, CIvect &S, CIvect &Hd, double *x, 
            S.read(i,buf);
            dot_arr(buffer1, buffer2, C.buf_size[buf], &tmpy);
            ty += tmpy * alpha[i][curvect];
-           zero_arr(sigma0b1,H0block.size);
+           zero_arr(sigma0b1,H0block_->size);
            S.h0block_gather_multivec(sigma0b1);
-           for (j=0; j<H0block.size; j++)
+           for (j=0; j<H0block_->size; j++)
               sigma0b2[j] += alpha[i][curvect] * sigma0b1[j];
            }
 
@@ -708,9 +712,9 @@ void CIWavefunction::olsen_iter_xy(CIvect &C, CIvect &S, CIvect &Hd, double *x, 
       }
 
    Hd.buf_unlock();
-   if (Parameters.diag_method==METHOD_DAVIDSON_LIU_SEM) {
-     for (j=0; j<H0block.size; j++)
-        H0block.s0b[j] = sigma0b2[j];
+   if (Parameters_->diag_method==METHOD_DAVIDSON_LIU_SEM) {
+     for (j=0; j<H0block_->size; j++)
+        H0block_->s0b[j] = sigma0b2[j];
      free(sigma0b1);
      free(sigma0b2);
      }
@@ -728,8 +732,8 @@ void CIWavefunction::mitrush_update(CIvect &C, CIvect &S, double norm, double ac
    int i, j, k, buf, blk, al, bl;
    double phase, tval;
 
-   if (!Parameters.Ms0) phase = 1.0;
-   else phase = ((int) Parameters.S % 2) ? -1.0 : 1.0;
+   if (!Parameters_->Ms0) phase = 1.0;
+   else phase = ((int) Parameters_->S % 2) ? -1.0 : 1.0;
 
    for (buf=0; buf<C.buf_per_vect; buf++) {
       C.buf_lock(buffer1);

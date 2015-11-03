@@ -622,7 +622,9 @@ struct ci_blks {
    int *first_iablk;          /* first blocknum for a given Ia irrep */
    int *last_iablk;           /* last blocknum for a given Ia irrep */
    int subgr_per_irrep;       /* possible number of Olsen subgraphs per irrep */
-   };
+   int nirreps;               /* number of molecular irreps */
+   int Ms0;                   /* 1 if Ms=0, 0 otherwise */
+};
 
 /*
 ** Structure for pthreads information in s3v.c (s3_block_vdiag)
@@ -640,6 +642,7 @@ struct pthreads_s3diag {
     int thread_id;            /* thread id number */
     struct stringwr *Ia_local; /* ptr to string replacement struct */
     int Ia_idx_local;         /* index of c block string */
+    int nirreps;
 };
 
 struct pthreads_s2vfci {
@@ -657,6 +660,7 @@ struct pthreads_s2vfci {
     int Ja_list_nas;
     struct stringwr *Ia;
     unsigned int Ia_idx;
+    int nirreps;
 };
 
 struct pthreads_s1vfci {
@@ -674,6 +678,7 @@ struct pthreads_s1vfci {
     int Jb_list_nbs;
     struct stringwr *Ib;
     unsigned int Ib_idx;
+    int nirreps;
 };
 
 struct detci_timings {

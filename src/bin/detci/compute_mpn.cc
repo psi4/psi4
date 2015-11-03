@@ -55,18 +55,10 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
    struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
    struct stringwr **alplist, struct stringwr **betlist,
    std::string );
-//extern void mpn_generator(CIvect &Hd, struct stringwr **alplist_, 
-//      struct stringwr **betlist_);
-//extern void H0block_init(unsigned int size);
-//extern void H0block_setup(int num_blocks, int *Ia_code, int *Ib_code);
 
 
 /*
 ** mpn(): Function which sets up and generates the mpn series
-**
-** Parameters:
-**    alplist_ = list of alpha strings
-**    betlist_ = list of beta strings
 **
 ** Returns: none
 */
@@ -116,13 +108,15 @@ void CIWavefunction::compute_mpn()
   }
 
   H0block_init(CIblks_->vectlen);
-
-  CIvect Hd(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore,
-         Parameters_->Ms0, CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size,
-         CIblks_->Ib_size, CIblks_->offset, CIblks_->num_alp_codes,
-         CIblks_->num_bet_codes, CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, 1,
-         Parameters_->num_hd_tmp_units, Parameters_->first_hd_tmp_unit,
-         CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
+  //CIvect Hd;
+  CIvect Hd(Parameters_->icore, 1, Parameters_->num_hd_tmp_units,
+         Parameters_->first_hd_tmp_unit, CIblks_);  
+  //CIvect Hd(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore,
+  //       Parameters_->Ms0, CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size,
+  //       CIblks_->Ib_size, CIblks_->offset, CIblks_->num_alp_codes,
+  //       CIblks_->num_bet_codes, CIblks_->nirreps, CIblks_->subgr_per_irrep, 1,
+  //       Parameters_->num_hd_tmp_units, Parameters_->first_hd_tmp_unit,
+  //       CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
 
   Hd.init_io_files(false);
 
@@ -194,24 +188,31 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   CIvect Cvec2;
   CIvect Sigma;
 
-  Cvec.set(CIblks_->vectlen,CIblks_->num_blocks,Parameters_->icore,Parameters_->Ms0,
-     CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
-     CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
-     CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Parameters_->maxnvect,
-     Parameters_->num_c_tmp_units, Parameters_->first_c_tmp_unit,
-     CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
-  Sigma.set(CIblks_->vectlen,CIblks_->num_blocks,Parameters_->icore,Parameters_->Ms0,
-     CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
-     CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
-     CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, 1,
-     Parameters_->num_s_tmp_units, Parameters_->first_s_tmp_unit,
-     CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
-  Cvec2.set(CIblks_->vectlen,CIblks_->num_blocks,Parameters_->icore,Parameters_->Ms0,
-     CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
-     CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
-     CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Parameters_->maxnvect,
-     Parameters_->num_c_tmp_units, Parameters_->first_c_tmp_unit,
-     CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
+  Cvec.set(Parameters_->icore, Parameters_->maxnvect, Parameters_->num_c_tmp_units,
+           Parameters_->first_c_tmp_unit, CIblks_);  
+  Sigma.set(Parameters_->icore, 1, Parameters_->num_s_tmp_units,
+            Parameters_->first_s_tmp_unit, CIblks_);  
+  Cvec2.set(Parameters_->icore, Parameters_->maxnvect, Parameters_->num_c_tmp_units,
+            Parameters_->first_c_tmp_unit, CIblks_);  
+
+  //Cvec.set(CIblks_->vectlen,CIblks_->num_blocks,Parameters_->icore,Parameters_->Ms0,
+  //   CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
+  //   CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
+  //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Parameters_->maxnvect,
+  //   Parameters_->num_c_tmp_units, Parameters_->first_c_tmp_unit,
+  //   CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
+  //Sigma.set(CIblks_->vectlen,CIblks_->num_blocks,Parameters_->icore,Parameters_->Ms0,
+  //   CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
+  //   CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
+  //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, 1,
+  //   Parameters_->num_s_tmp_units, Parameters_->first_s_tmp_unit,
+  //   CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
+  //Cvec2.set(CIblks_->vectlen,CIblks_->num_blocks,Parameters_->icore,Parameters_->Ms0,
+  //   CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
+  //   CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
+  //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Parameters_->maxnvect,
+  //   Parameters_->num_c_tmp_units, Parameters_->first_c_tmp_unit,
+  //   CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
 
    // setup I/O files, don't open old versions of these files
    Cvec.init_io_files(false);

@@ -35,8 +35,8 @@
 #include <libciomr/libciomr.h>
 #include <libmints/mints.h>
 #include "structs.h"
-#define EXTERN
-#include "globals.h"
+//#define EXTERN
+//#include "globals.h"
 #include "ciwave.h"
 
 namespace psi { namespace detci {
@@ -65,12 +65,12 @@ void CIWavefunction::form_ov()
 
    norbs = CalcInfo_->num_ci_orbs;
    nirreps = AlphaG_->nirreps;
-   OV = (int ***) malloc (sizeof(int **) * nirreps);
+   OV_ = (int ***) malloc (sizeof(int **) * nirreps);
    for (i=0; i<nirreps; i++) {
-      OV[i] = (int **) malloc (sizeof(int *) * norbs * norbs);
+      OV_[i] = (int **) malloc (sizeof(int *) * norbs * norbs);
       for (j=0; j<norbs*norbs; j++) {
-         OV[i][j] = (int *) malloc (sizeof(int) * AlphaG_->max_str_per_irrep+1);
-         OV[i][j][0] = 0;
+         OV_[i][j] = (int *) malloc (sizeof(int) * AlphaG_->max_str_per_irrep+1);
+         OV_[i][j][0] = 0;
          }
       }
 
@@ -88,10 +88,10 @@ void CIWavefunction::form_ov()
                /* idx = cnt + 1; */
                idx = cnt;
                if (strlist->sgn[strsym][i] != 1) idx = idx | signmask;
-               ovcnt = OV[irrep][fullij][0];
+               ovcnt = OV_[irrep][fullij][0];
                ovcnt++;
-               OV[irrep][fullij][ovcnt] = idx;
-               OV[irrep][fullij][0] = ovcnt;
+               OV_[irrep][fullij][ovcnt] = idx;
+               OV_[irrep][fullij][0] = ovcnt;
                }  
             }
          strlist++;
@@ -106,8 +106,8 @@ void CIWavefunction::form_ov()
       for (irrep=0; irrep < nirreps; irrep++) {
          for (fullij=0; fullij<norbs*norbs; fullij++) {
             outfile->Printf( "OV[irrep=%d][oij=%d]:  ", irrep, fullij);
-            for (i=0; i<OV[irrep][fullij][0]; i++) {
-               idx = OV[irrep][fullij][i+1];
+            for (i=0; i<OV_[irrep][fullij][0]; i++) {
+               idx = OV_[irrep][fullij][i+1];
                outfile->Printf( "%c", (idx & signmask) ? '-' : '+');
                idx = idx & nsignmask;
                outfile->Printf( "%2d ", idx);
