@@ -159,7 +159,7 @@ private:
     void title();
     void init_ioff();
     void form_strings();
-
+    void set_ciblks();
 
     /// Sets the ciwavefunction object
     void common_init();

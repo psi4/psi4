@@ -62,6 +62,8 @@ void CIWavefunction::common_init()
     //MCSCF_Params
     MCSCF_Parameters = new mcscf_params;
     get_mcscf_parameters();
+    CalcInfo_ = &CalcInfo;
+    Parameters_ = &Parameters;
 
     // Wavefunction frozen nomenclature is equivalent to dropped in detci.
     // In detci frozen means doubly occupied, but no orbital rotations.
@@ -95,7 +97,9 @@ void CIWavefunction::common_init()
     df_ints_init_ = false;
 
     // Form strings
+    outfile->Printf("Forming strings!\n");
     form_strings();
+    outfile->Printf("Made it here!\n");
 
    // Form Bendazzoli OV arrays
    if (Parameters.bendazzoli) form_ov();
@@ -103,11 +107,6 @@ void CIWavefunction::common_init()
     // This will all be nuked
     alplist_ = alplist;
     betlist_ = betlist;
-    AlphaG_ = AlphaG;
-    BetaG_ = BetaG;
-    CIblks_ = &CIblks;
-    CalcInfo_ = &CalcInfo;
-    Parameters_ = &Parameters;
 
     name_ = "CIWavefunction";
 }

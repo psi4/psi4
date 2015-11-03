@@ -378,19 +378,19 @@ L200:
 ** April 1996
 **
 */
-void print_ciblk_summary(std::string out)
-{
-   int blk;
-
-   outfile->Printf( "\nCI Block Summary:\n");
-   for (blk=0; blk<CIblks.num_blocks; blk++) {
-      outfile->Printf("Block %3d: Alp=%3d, Bet=%3d  Size = %4d x %4d = %ld\n", 
-              blk, CIblks.Ia_code[blk], CIblks.Ib_code[blk], 
-              CIblks.Ia_size[blk], CIblks.Ib_size[blk],
-              (unsigned long) CIblks.Ia_size[blk] * 
-              (unsigned long) CIblks.Ib_size[blk]);
-      }
-}
+//void print_ciblk_summary(std::string out)
+//{
+//   int blk;
+//
+//   outfile->Printf( "\nCI Block Summary:\n");
+//   for (blk=0; blk<CIblks.num_blocks; blk++) {
+//      outfile->Printf("Block %3d: Alp=%3d, Bet=%3d  Size = %4d x %4d = %ld\n", 
+//              blk, CIblks.Ia_code[blk], CIblks.Ib_code[blk], 
+//              CIblks.Ia_size[blk], CIblks.Ib_size[blk],
+//              (unsigned long) CIblks.Ia_size[blk] * 
+//              (unsigned long) CIblks.Ib_size[blk]);
+//      }
+//}
 
 /*
 ** WRITE_ENERGY

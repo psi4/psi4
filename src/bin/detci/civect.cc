@@ -3181,7 +3181,10 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2,
       ket_nas = Ia_size[ket_block];
       ket_nbs = Ib_size[ket_block];
       if (ket_nas==0 || ket_nbs==0) continue;
-      ket_birr = ket_block / BetaG->subgr_per_irrep;
+
+      // CDS help: Is this correct?
+      //ket_birr = ket_block / BetaG->subgr_per_irrep;
+      ket_birr = ket_block / codes_per_irrep;
 
       for (bra_block=0; bra_block<num_blocks; bra_block++) {
          bra_ac = Ia_code[bra_block];
@@ -3189,7 +3192,11 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2,
          bra_nas = Ia_size[bra_block];
          bra_nbs = Ib_size[bra_block];
          if (bra_nas==0 || bra_nbs==0) continue;
-         bra_birr = bra_bc / BetaG->subgr_per_irrep;
+
+         // CDS help: Is this correct?
+         //bra_birr = bra_bc / BetaG->subgr_per_irrep;
+         bra_birr = bra_bc / codes_per_irrep;
+
          tval2 = ssq(alplist[ket_ac], betlist[ket_bc], blocks[bra_block],
                    blocks[ket_block], ket_nas, ket_nbs, bra_ac, bra_bc);
          tval += tval2;

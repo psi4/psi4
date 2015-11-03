@@ -61,7 +61,8 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
    struct stringwr **alplist, struct stringwr **betlist,
    std::string out);
 extern void parse_import_vector(SlaterDetSet *sdset, int *i_alplist,
-   int *i_alpidx, int *i_betlist, int *i_betidx, int *i_blknums);
+   int *i_alpidx, int *i_betlist, int *i_betidx, int *i_blknums, struct ci_blks *CIblks,
+   struct olsen_graph *AlphaG, struct olsen_graph *BetaG);
 
 //extern void H0block_coupling_calc(double E, struct stringwr **alplist,
 //   struct stringwr **betlist);
@@ -485,7 +486,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
      import_blknums = init_int_array(dets->size);
 
      parse_import_vector(dets, import_alplist, import_alpidx, import_betlist,
-       import_betidx, import_blknums);
+       import_betidx, import_blknums, CIblks_, AlphaG_, BetaG_);
 
      k=0;
      for (i=0; i<nroots; i++) {

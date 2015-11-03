@@ -641,7 +641,8 @@ void s2_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
       int **Ridx[2], signed char **Sgn[2], unsigned char **Toccs,
       double **C, double **S,
       double *oei, double *tei, double *F, int nlists, int nas, int nbs,
-      int Ia_list, int Ja_list, int Ja_list_nas)
+      int Ia_list, int Ja_list, int Ja_list_nas, struct olsen_graph *AlphaG,
+      struct olsen_graph *BetaG)
 {
    int Ia_idx, Ib_idx, Ka_idx, Ja_idx;
    int Iacnt, Kacnt, Ka_list, Ia_ex, Ka_ex;

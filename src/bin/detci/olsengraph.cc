@@ -56,7 +56,7 @@ extern struct stringwr **alplist;
 extern struct stringwr **betlist;
 
 extern void stringlist(struct olsen_graph *Graph, struct stringwr **slist);
-extern void set_ciblks(struct olsen_graph *AG, struct olsen_graph *BG);
+//extern void set_ciblks(struct olsen_graph *AG, struct olsen_graph *BG);
 extern void print_ci_space(struct stringwr *strlist, int num_strings,
    int nirreps, int strtypes, int nel, std::string out);
 extern void str_abs2rel(int absidx, int *relidx, int *listnum,
@@ -90,27 +90,29 @@ void CIWavefunction::form_strings(void)
    int irrep, code, listnum;
    int *occs;
 
-   AlphaG = new olsen_graph[1];
+   AlphaG_ = new olsen_graph[1];
 
    // Make the graph
-   olsengraph(AlphaG, CalcInfo.num_ci_orbs, CalcInfo.num_alp,
+   olsengraph(AlphaG_, CalcInfo.num_ci_orbs, CalcInfo.num_alp,
       CalcInfo.nirreps, CalcInfo.orbsym,
       Parameters.a_ras1_lvl, Parameters.a_ras1_min, Parameters.a_ras1_max,
       Parameters.ras3_lvl, Parameters.a_ras3_max,
       CalcInfo.num_drc_orbs, CalcInfo.num_expl_cor_orbs,
       Parameters.ras4_lvl, Parameters.a_ras4_max, Parameters.a_ras34_max);
 
+   outfile->Printf("Built alpha graph\n");
    if (Parameters.print_lvl > 3)
-      og_print(AlphaG, "outfile") ;
+      og_print(AlphaG_, "outfile") ;
 
-   ncodes = AlphaG->subgr_per_irrep;
-   nirreps = AlphaG->nirreps;
+   ncodes = AlphaG_->subgr_per_irrep;
+   nirreps = AlphaG_->nirreps;
    nlists = nirreps * ncodes;
    /* alplist = new stringwr*[nlists]; */
    alplist = (struct stringwr **) malloc(nlists * sizeof(struct stringwr *));
    for (i=0; i<nlists; i++) alplist[i] = NULL;
 
-   stringlist(AlphaG, alplist);
+   stringlist(AlphaG_, alplist);
+   outfile->Printf("Built alpha stringlist\n");
 
    if (Parameters.print_lvl>=4) {
       for (irrep=0,listnum=0; irrep < nirreps; irrep++) {
@@ -118,8 +120,8 @@ void CIWavefunction::form_strings(void)
             outfile->Printf( "Strings for irrep %d code %2d (list %2d)\n",
                irrep, code, listnum);
             print_ci_space(alplist[irrep * ncodes + code],
-               AlphaG->sg[irrep][code].num_strings,
-               nirreps, nlists, AlphaG->num_el_expl, "outfile") ;
+               AlphaG_->sg[irrep][code].num_strings,
+               nirreps, nlists, AlphaG_->num_el_expl, "outfile") ;
             }
          }
       }
@@ -127,9 +129,9 @@ void CIWavefunction::form_strings(void)
    /* for beta string graph if necessary */
    if (CalcInfo.iopen && !(Parameters.Ms0)) {
 
-      BetaG = new olsen_graph[1];
+      BetaG_ = new olsen_graph[1];
 
-      olsengraph(BetaG, CalcInfo.num_ci_orbs, CalcInfo.num_bet,
+      olsengraph(BetaG_, CalcInfo.num_ci_orbs, CalcInfo.num_bet,
           CalcInfo.nirreps, CalcInfo.orbsym,
           Parameters.b_ras1_lvl,  Parameters.b_ras1_min, Parameters.b_ras1_max,
           Parameters.ras3_lvl, Parameters.b_ras3_max,
@@ -137,16 +139,16 @@ void CIWavefunction::form_strings(void)
           Parameters.ras4_lvl, Parameters.b_ras4_max, Parameters.b_ras3_max);
 
       if (Parameters.print_lvl > 3)
-         og_print(BetaG, "outfile") ;
+         og_print(BetaG_, "outfile") ;
 
-      ncodes = BetaG->subgr_per_irrep;
-      nirreps = BetaG->nirreps;
+      ncodes = BetaG_->subgr_per_irrep;
+      nirreps = BetaG_->nirreps;
       nlists = nirreps * ncodes;
       betlist = (struct stringwr **) malloc(nlists * sizeof(struct stringwr *));
       for (i=0; i<nlists; i++) betlist[i] = NULL;
 
 
-      stringlist(BetaG, betlist);
+      stringlist(BetaG_, betlist);
 
       if (Parameters.print_lvl>=4) {
          for (irrep=0; irrep < nirreps; irrep++) {
@@ -154,8 +156,8 @@ void CIWavefunction::form_strings(void)
                outfile->Printf( "Strings for irrep %d code %2d\n", irrep,
                   code);
                print_ci_space(betlist[irrep * ncodes + code],
-                  BetaG->sg[irrep][code].num_strings,
-                  nirreps, nlists, BetaG->num_el_expl, "outfile") ;
+                  BetaG_->sg[irrep][code].num_strings,
+                  nirreps, nlists, BetaG_->num_el_expl, "outfile") ;
                }
             }
          }
@@ -163,11 +165,13 @@ void CIWavefunction::form_strings(void)
 
    else {
       betlist = alplist;
-      BetaG = AlphaG;
+      BetaG_ = AlphaG_;
       }
 
    /* get number of alpha/beta strings, ref symmetry, etc */
-   set_ciblks(AlphaG, BetaG) ;
+   outfile->Printf("Starting CIblks\n");
+   set_ciblks();
+   outfile->Printf("End CIblks\n");
 
    /* if the user wants to filter out some initial guesses based on
       phases of two determinants, we need to convert their absolute
@@ -176,27 +180,27 @@ void CIWavefunction::form_strings(void)
     */
    if (Parameters.filter_guess) {
      str_abs2rel(Parameters.filter_guess_Ia, &Parameters.filter_guess_Iaridx,
-                 &Parameters.filter_guess_Iac, AlphaG);
+                 &Parameters.filter_guess_Iac, AlphaG_);
      str_abs2rel(Parameters.filter_guess_Ib, &Parameters.filter_guess_Ibridx,
-                 &Parameters.filter_guess_Ibc, BetaG);
+                 &Parameters.filter_guess_Ibc, BetaG_);
      str_abs2rel(Parameters.filter_guess_Ja, &Parameters.filter_guess_Jaridx,
-                 &Parameters.filter_guess_Jac, AlphaG);
+                 &Parameters.filter_guess_Jac, AlphaG_);
      str_abs2rel(Parameters.filter_guess_Jb, &Parameters.filter_guess_Jbridx,
-                 &Parameters.filter_guess_Jbc, BetaG);
+                 &Parameters.filter_guess_Jbc, BetaG_);
    }
    if (Parameters.filter_zero_det) {
      str_abs2rel(Parameters.filter_zero_det_Ia,
                  &Parameters.filter_zero_det_Iaridx,
-                 &Parameters.filter_zero_det_Iac, AlphaG);
+                 &Parameters.filter_zero_det_Iac, AlphaG_);
      str_abs2rel(Parameters.filter_zero_det_Ib,
                  &Parameters.filter_zero_det_Ibridx,
-                 &Parameters.filter_zero_det_Ibc, BetaG);
+                 &Parameters.filter_zero_det_Ibc, BetaG_);
    }
    for (i=0; i<Parameters.follow_vec_num; i++) {
      str_abs2rel(Parameters.follow_vec_Ia[i], Parameters.follow_vec_Iaridx+i,
-       Parameters.follow_vec_Iac+i, AlphaG);
+       Parameters.follow_vec_Iac+i, AlphaG_);
      str_abs2rel(Parameters.follow_vec_Ib[i], Parameters.follow_vec_Ibridx+i,
-       Parameters.follow_vec_Ibc+i, BetaG);
+       Parameters.follow_vec_Ibc+i, BetaG_);
    }
 
 }
