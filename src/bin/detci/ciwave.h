@@ -37,6 +37,10 @@ class DFERI;
 class IntegralTransform;
 class MOSpace;
 typedef boost::shared_ptr<Matrix> SharedMatrix;
+
+// Well this is not ideal
+struct _SlaterDetSet;
+typedef _SlaterDetSet SlaterDetSet;
 }
 
 // From the detci module
@@ -220,6 +224,9 @@ private:
     void H0block_filter_setup(void);
     void H0block_fill();
     void H0block_coupling_calc(double E);
+    void print_config(int nbf, int num_alp_el, int num_bet_el,
+       struct stringwr *stralp, struct stringwr *strbet, int num_drc_orbs,
+       char *outstring);
 
     /// => CI Iterators <= //
     //void mitrush_iter(CIvect &Hd, int nroots, double *evals, double conv_rms, double conv_e,
@@ -244,6 +251,11 @@ private:
       **betlist, double *evals, double conv_e,
       double conv_rms, double enuc, double edrc,
       int nroots, int maxiter, int maxnvect, std::string out, int print_lvl);
+    void parse_import_vector(SlaterDetSet *sdset, int *ialplist, int *ialpidx,
+      int *ibetlist, int *ibetidx, int *blknums);
+    void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
+          double **b, double conv_e, double conv_rms, int maxiter, double offst,
+          int *vu, int maxnvect);
 
     void sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
           struct stringwr **betlist);
@@ -270,6 +282,8 @@ private:
           int *Cnt[2], int **Ij[2], int **Oij[2], int **Ridx[2],
           signed char **Sgn[2], unsigned char **Toccs);
 
+    void print_vec(unsigned int nprint, int *Ialist, int *Iblist,
+          int *Iaidx, int *Ibidx, double *coeff);
 
 
     /// => MPn helpers <= //

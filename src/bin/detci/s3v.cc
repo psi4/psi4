@@ -65,13 +65,14 @@ void s3_block_v_pthread(void *threadarg);
 void s3_block_vdiag(struct stringwr *alplist, struct stringwr *betlist,
       double **C, double **S, double *tei, int nas, int nbs, int cnas,
       int Ib_list, int Ja_list, int Jb_list, int Ib_sym, int Jb_sym,
-      double **Cprime, double *F, double *V, double *Sgn, int *L, int *R)
+      double **Cprime, double *F, double *V, double *Sgn, int *L, int *R,
+      int norbs, int *orbsym, int nthreads)
 {
   struct stringwr *Ia;
   unsigned int Ia_ex;
   int ij, i, j, t, kl, I, J, RJ;
   double tval, VS, *CprimeI0, *CI0;
-  int jlen, Jacnt, *Iaij, *orbsym, norbs, Ia_idx;
+  int jlen, Jacnt, *Iaij, Ia_idx;
   unsigned int *Iaridx;
   signed char *Iasgn;
   double *Tptr;
@@ -79,9 +80,9 @@ void s3_block_vdiag(struct stringwr *alplist, struct stringwr *betlist,
   int npthreads, rc, status;
   pthread_t *thread;
    
-  npthreads = Parameters.nthreads-1;  /* subtract out the main thread */
+  npthreads = nthreads-1;  /* subtract out the main thread */
 
-  thread = (pthread_t *) malloc(sizeof(pthread_t)*Parameters.nthreads);
+  thread = (pthread_t *) malloc(sizeof(pthread_t)*nthreads);
 
   thread_info = (struct pthreads_s3diag **)
                 malloc(sizeof(struct pthreads_s3diag *) * nas);
@@ -91,9 +92,6 @@ void s3_block_vdiag(struct stringwr *alplist, struct stringwr *betlist,
                        malloc(sizeof(struct pthreads_s3diag));
     }
   
-  norbs = CalcInfo.num_ci_orbs;
-  orbsym = CalcInfo.orbsym + CalcInfo.num_drc_orbs;
-
   /* loop over i, j */
   for (i=0; i<norbs; i++) {
       for (j=0; j<=i; j++) {
@@ -118,7 +116,7 @@ void s3_block_vdiag(struct stringwr *alplist, struct stringwr *betlist,
 
 
           /* loop over Ia */
-          if (Parameters.nthreads > 1) {
+          if (nthreads > 1) {
               detci_time.s3_mt_before_time = wall_time_new();
               tpool_queue_open(thread_pool);
               for (Ia=alplist, Ia_idx=0; Ia_idx<nas; Ia_idx++, Ia++) {
@@ -288,13 +286,14 @@ void s3_block_vdiag_pthread(void *threadarg)
 void s3_block_v(struct stringwr *alplist, struct stringwr *betlist,
       double **C, double **S, double *tei, int nas, int nbs, int cnas,
       int Ib_list, int Ja_list, int Jb_list, int Ib_sym, int Jb_sym,
-      double **Cprime, double *F, double *V, double *Sgn, int *L, int *R)
+      double **Cprime, double *F, double *V, double *Sgn, int *L, int *R,
+      int norbs, int *orbsym, int nthreads)
 {
    struct stringwr *Ia;
    unsigned int Ia_ex;
    int ij, i, j, kl, ijkl, I, J, RJ;
    double tval, VS, *CprimeI0, *CI0;
-   int jlen, Ia_idx, Jacnt, *Iaij, *orbsym, norbs;
+   int jlen, Ia_idx, Jacnt, *Iaij;
    unsigned int *Iaridx;
    signed char *Iasgn;
    double *Tptr;
@@ -302,10 +301,7 @@ void s3_block_v(struct stringwr *alplist, struct stringwr *betlist,
    int t, npthreads, rc, status;
    pthread_t *thread;
    
-   norbs = CalcInfo.num_ci_orbs;
-   orbsym = CalcInfo.orbsym + CalcInfo.num_drc_orbs;
-
-   thread = (pthread_t *) malloc(sizeof(pthread_t)*Parameters.nthreads);
+   thread = (pthread_t *) malloc(sizeof(pthread_t)*nthreads);
    thread_info = (struct pthreads_s3diag **)
                   malloc(sizeof(struct pthreads_s3diag *) * nas);
    for (i=0; i<nas; i++) {
@@ -336,7 +332,7 @@ void s3_block_v(struct stringwr *alplist, struct stringwr *betlist,
 
 
        /* loop over Ia */
-       if (Parameters.nthreads > 1) {
+       if (nthreads > 1) {
            detci_time.s3_mt_before_time = wall_time_new();
            tpool_queue_open(thread_pool);
            for (Ia=alplist, Ia_idx=0; Ia_idx<nas; Ia_idx++, Ia++) {
@@ -537,19 +533,17 @@ void s3_block_vdiag_rotf(int *Cnt[2], int **Ij[2], int **Ridx[2],
       signed char **Sn[2], double **C, double **S, 
       double *tei, int nas, int nbs, int cnas,
       int Ib_list, int Ja_list, int Jb_list, int Ib_sym, int Jb_sym,
-      double **Cprime, double *F, double *V, double *Sgn, int *L, int *R)
+      double **Cprime, double *F, double *V, double *Sgn, int *L, int *R,
+      int norbs, int *orbsym)
 {
    int Ia_ex;
    int ij, i, j, kl, I, J, RJ;
    double tval, VS, *CprimeI0, *CI0;
-   int jlen, Ia_idx, Jacnt, *Iaij, *orbsym, norbs;
+   int jlen, Ia_idx, Jacnt, *Iaij;
    int *Iaridx;
    signed char *Iasgn;
    double *Tptr;
    
-   norbs = CalcInfo.num_ci_orbs;
-   orbsym = CalcInfo.orbsym + CalcInfo.num_drc_orbs;
-
    /* loop over i, j */
    for (i=0; i<norbs; i++) {
      for (j=0; j<=i; j++) {
@@ -629,18 +623,16 @@ void s3_block_vrotf(int *Cnt[2], int **Ij[2], int **Ridx[2],
       signed char **Sn[2], double **C, double **S, 
       double *tei, int nas, int nbs, int cnas,
       int Ib_list, int Ja_list, int Jb_list, int Ib_sym, int Jb_sym,
-      double **Cprime, double *F, double *V, double *Sgn, int *L, int *R)
+      double **Cprime, double *F, double *V, double *Sgn, int *L, int *R,
+      int norbs, int *orbsym)
 {
    int Ia_ex;
    int ij, i, j, kl, ijkl, I, J, RJ;
    double tval, VS, *CprimeI0, *CI0;
-   int jlen, Ia_idx, Jacnt, *Iaij, *orbsym, norbs;
+   int jlen, Ia_idx, Jacnt, *Iaij;
    int *Iaridx;
    signed char *Iasgn;
    double *Tptr;
-   
-   norbs = CalcInfo.num_ci_orbs;
-   orbsym = CalcInfo.orbsym + CalcInfo.num_drc_orbs;
 
    /* loop over i, j */
    for (i=0; i<norbs; i++) {

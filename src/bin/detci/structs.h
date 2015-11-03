@@ -642,7 +642,6 @@ struct pthreads_s3diag {
     int thread_id;            /* thread id number */
     struct stringwr *Ia_local; /* ptr to string replacement struct */
     int Ia_idx_local;         /* index of c block string */
-    int nirreps;
 };
 
 struct pthreads_s2vfci {
@@ -660,7 +659,6 @@ struct pthreads_s2vfci {
     int Ja_list_nas;
     struct stringwr *Ia;
     unsigned int Ia_idx;
-    int nirreps;
 };
 
 struct pthreads_s1vfci {
@@ -678,7 +676,6 @@ struct pthreads_s1vfci {
     int Jb_list_nbs;
     struct stringwr *Ib;
     unsigned int Ib_idx;
-    int nirreps;
 };
 
 struct detci_timings {

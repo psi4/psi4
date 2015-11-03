@@ -52,9 +52,9 @@ namespace psi { namespace detci {
 
 #define CONFIG_STRING_MAX 200
 
-extern void print_config(int nbf, int num_alp_el, int num_bet_el,
-   struct stringwr *stralp, struct stringwr *strbet,
-   int num_drc_orbs, char *outstring);
+//extern void print_config(int nbf, int num_alp_el, int num_bet_el,
+//   struct stringwr *stralp, struct stringwr *strbet,
+//   int num_drc_orbs, char *outstring);
 
 
 /*
@@ -159,7 +159,7 @@ void CIWavefunction::H0block_print(void)
       print_config(CalcInfo_->num_ci_orbs, CalcInfo_->num_alp_expl,
          CalcInfo_->num_bet_expl, alplist_[H0block.alplist[i]] +
          H0block.alpidx[i], betlist_[H0block.betlist[i]] +
-         H0block.betidx[i], CalcInfo_->num_drc_orbs,configstring);
+         H0block.betidx[i], CalcInfo_->num_drc_orbs, configstring);
       outfile->Printf( "  %3d [%3d] %10.6lf  Block %2d (%4d,%4d)  %s\n",
          i+1, H0block.pair[i] + 1, H0block.H00[i], H0block.blknum[i],
          H0block.alpidx[i], H0block.betidx[i], configstring);

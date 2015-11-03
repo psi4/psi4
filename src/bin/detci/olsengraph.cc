@@ -44,7 +44,6 @@
 #include <libqt/qt.h>
 #include <libmints/mints.h>
 #include "structs.h"
-#include "globals.h"
 #include <iostream>
 #include "odometer.h"
 #include <libmints/mints.h>
@@ -58,7 +57,7 @@ extern struct stringwr **betlist;
 extern void stringlist(struct olsen_graph *Graph, struct stringwr **slist);
 //extern void set_ciblks(struct olsen_graph *AG, struct olsen_graph *BG);
 extern void print_ci_space(struct stringwr *strlist, int num_strings,
-   int nirreps, int strtypes, int nel, std::string out);
+   int nirreps, int strtypes, int nel, int repl_otf);
 extern void str_abs2rel(int absidx, int *relidx, int *listnum,
    struct olsen_graph *Graph);
 
@@ -66,7 +65,7 @@ extern void str_abs2rel(int absidx, int *relidx, int *listnum,
 void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
    int nirreps, int *orbsym, int ras1_lvl, int ras1_min, int ras1_max,
    int ras3_lvl, int ras3_max, int num_drc_orbs, int num_expl_cor_orbs,
-   int ras4_lvl, int ras4_max, int ras34_max);
+   int ras4_lvl, int ras4_max, int ras34_max, struct params *CIparams);
 void og_add_walk(int ras1_idx, int ras3_num, int ras4_num, int *occs,
    int nel_expl, int norb, int nirreps, int num_drc_orbs,
    struct olsen_graph *Graph);
@@ -76,7 +75,7 @@ void og_fill(int num_el, int norb, int nirreps, int num_drc_orbs,
 int subgr_lex_addr(struct level *head, int *occs, int nel, int norb);
 int og_lex_addr(struct olsen_graph *Graph, int *occs, int nel,
    int *listnum);
-void og_print(struct olsen_graph *Graph, std::string out);
+void og_print(struct olsen_graph *Graph);
 
 
 /*
@@ -93,16 +92,17 @@ void CIWavefunction::form_strings(void)
    AlphaG_ = new olsen_graph[1];
 
    // Make the graph
-   olsengraph(AlphaG_, CalcInfo.num_ci_orbs, CalcInfo.num_alp,
-      CalcInfo.nirreps, CalcInfo.orbsym,
-      Parameters.a_ras1_lvl, Parameters.a_ras1_min, Parameters.a_ras1_max,
-      Parameters.ras3_lvl, Parameters.a_ras3_max,
-      CalcInfo.num_drc_orbs, CalcInfo.num_expl_cor_orbs,
-      Parameters.ras4_lvl, Parameters.a_ras4_max, Parameters.a_ras34_max);
+   olsengraph(AlphaG_, CalcInfo_->num_ci_orbs, CalcInfo_->num_alp,
+      CalcInfo_->nirreps, CalcInfo_->orbsym,
+      Parameters_->a_ras1_lvl, Parameters_->a_ras1_min, Parameters_->a_ras1_max,
+      Parameters_->ras3_lvl, Parameters_->a_ras3_max,
+      CalcInfo_->num_drc_orbs, CalcInfo_->num_expl_cor_orbs,
+      Parameters_->ras4_lvl, Parameters_->a_ras4_max, Parameters_->a_ras34_max,
+      Parameters_);
 
    outfile->Printf("Built alpha graph\n");
-   if (Parameters.print_lvl > 3)
-      og_print(AlphaG_, "outfile") ;
+   if (Parameters_->print_lvl > 3)
+      og_print(AlphaG_);
 
    ncodes = AlphaG_->subgr_per_irrep;
    nirreps = AlphaG_->nirreps;
@@ -114,32 +114,33 @@ void CIWavefunction::form_strings(void)
    stringlist(AlphaG_, alplist);
    outfile->Printf("Built alpha stringlist\n");
 
-   if (Parameters.print_lvl>=4) {
+   if (Parameters_->print_lvl>=4) {
       for (irrep=0,listnum=0; irrep < nirreps; irrep++) {
          for (code=0; code < ncodes; code++, listnum++) {
             outfile->Printf( "Strings for irrep %d code %2d (list %2d)\n",
                irrep, code, listnum);
             print_ci_space(alplist[irrep * ncodes + code],
                AlphaG_->sg[irrep][code].num_strings,
-               nirreps, nlists, AlphaG_->num_el_expl, "outfile") ;
+               nirreps, nlists, AlphaG_->num_el_expl, Parameters_->repl_otf);
             }
          }
       }
 
    /* for beta string graph if necessary */
-   if (CalcInfo.iopen && !(Parameters.Ms0)) {
+   if (CalcInfo_->iopen && !(Parameters_->Ms0)) {
 
       BetaG_ = new olsen_graph[1];
 
-      olsengraph(BetaG_, CalcInfo.num_ci_orbs, CalcInfo.num_bet,
-          CalcInfo.nirreps, CalcInfo.orbsym,
-          Parameters.b_ras1_lvl,  Parameters.b_ras1_min, Parameters.b_ras1_max,
-          Parameters.ras3_lvl, Parameters.b_ras3_max,
-          CalcInfo.num_drc_orbs, CalcInfo.num_expl_cor_orbs,
-          Parameters.ras4_lvl, Parameters.b_ras4_max, Parameters.b_ras3_max);
+      olsengraph(BetaG_, CalcInfo_->num_ci_orbs, CalcInfo_->num_bet,
+          CalcInfo_->nirreps, CalcInfo_->orbsym,
+          Parameters_->b_ras1_lvl,  Parameters_->b_ras1_min, Parameters_->b_ras1_max,
+          Parameters_->ras3_lvl, Parameters_->b_ras3_max,
+          CalcInfo_->num_drc_orbs, CalcInfo_->num_expl_cor_orbs,
+          Parameters_->ras4_lvl, Parameters_->b_ras4_max, Parameters_->b_ras3_max,
+          Parameters_);
 
-      if (Parameters.print_lvl > 3)
-         og_print(BetaG_, "outfile") ;
+      if (Parameters_->print_lvl > 3)
+         og_print(BetaG_);
 
       ncodes = BetaG_->subgr_per_irrep;
       nirreps = BetaG_->nirreps;
@@ -150,14 +151,14 @@ void CIWavefunction::form_strings(void)
 
       stringlist(BetaG_, betlist);
 
-      if (Parameters.print_lvl>=4) {
+      if (Parameters_->print_lvl>=4) {
          for (irrep=0; irrep < nirreps; irrep++) {
             for (code=0; code < ncodes; code++) {
                outfile->Printf( "Strings for irrep %d code %2d\n", irrep,
                   code);
                print_ci_space(betlist[irrep * ncodes + code],
                   BetaG_->sg[irrep][code].num_strings,
-                  nirreps, nlists, BetaG_->num_el_expl, "outfile") ;
+                  nirreps, nlists, BetaG_->num_el_expl, Parameters_->repl_otf) ;
                }
             }
          }
@@ -178,29 +179,29 @@ void CIWavefunction::form_strings(void)
       string numbers into string lists (subgraphs) and relative
       addresses
     */
-   if (Parameters.filter_guess) {
-     str_abs2rel(Parameters.filter_guess_Ia, &Parameters.filter_guess_Iaridx,
-                 &Parameters.filter_guess_Iac, AlphaG_);
-     str_abs2rel(Parameters.filter_guess_Ib, &Parameters.filter_guess_Ibridx,
-                 &Parameters.filter_guess_Ibc, BetaG_);
-     str_abs2rel(Parameters.filter_guess_Ja, &Parameters.filter_guess_Jaridx,
-                 &Parameters.filter_guess_Jac, AlphaG_);
-     str_abs2rel(Parameters.filter_guess_Jb, &Parameters.filter_guess_Jbridx,
-                 &Parameters.filter_guess_Jbc, BetaG_);
+   if (Parameters_->filter_guess) {
+     str_abs2rel(Parameters_->filter_guess_Ia, &Parameters_->filter_guess_Iaridx,
+                 &Parameters_->filter_guess_Iac, AlphaG_);
+     str_abs2rel(Parameters_->filter_guess_Ib, &Parameters_->filter_guess_Ibridx,
+                 &Parameters_->filter_guess_Ibc, BetaG_);
+     str_abs2rel(Parameters_->filter_guess_Ja, &Parameters_->filter_guess_Jaridx,
+                 &Parameters_->filter_guess_Jac, AlphaG_);
+     str_abs2rel(Parameters_->filter_guess_Jb, &Parameters_->filter_guess_Jbridx,
+                 &Parameters_->filter_guess_Jbc, BetaG_);
    }
-   if (Parameters.filter_zero_det) {
-     str_abs2rel(Parameters.filter_zero_det_Ia,
-                 &Parameters.filter_zero_det_Iaridx,
-                 &Parameters.filter_zero_det_Iac, AlphaG_);
-     str_abs2rel(Parameters.filter_zero_det_Ib,
-                 &Parameters.filter_zero_det_Ibridx,
-                 &Parameters.filter_zero_det_Ibc, BetaG_);
+   if (Parameters_->filter_zero_det) {
+     str_abs2rel(Parameters_->filter_zero_det_Ia,
+                 &Parameters_->filter_zero_det_Iaridx,
+                 &Parameters_->filter_zero_det_Iac, AlphaG_);
+     str_abs2rel(Parameters_->filter_zero_det_Ib,
+                 &Parameters_->filter_zero_det_Ibridx,
+                 &Parameters_->filter_zero_det_Ibc, BetaG_);
    }
-   for (i=0; i<Parameters.follow_vec_num; i++) {
-     str_abs2rel(Parameters.follow_vec_Ia[i], Parameters.follow_vec_Iaridx+i,
-       Parameters.follow_vec_Iac+i, AlphaG_);
-     str_abs2rel(Parameters.follow_vec_Ib[i], Parameters.follow_vec_Ibridx+i,
-       Parameters.follow_vec_Ibc+i, BetaG_);
+   for (i=0; i<Parameters_->follow_vec_num; i++) {
+     str_abs2rel(Parameters_->follow_vec_Ia[i], Parameters_->follow_vec_Iaridx+i,
+       Parameters_->follow_vec_Iac+i, AlphaG_);
+     str_abs2rel(Parameters_->follow_vec_Ib[i], Parameters_->follow_vec_Ibridx+i,
+       Parameters_->follow_vec_Ibc+i, BetaG_);
    }
 
 }
@@ -252,7 +253,7 @@ void CIWavefunction::form_strings(void)
 void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
       int nirreps, int *orbsym, int ras1_lvl, int ras1_min, int ras1_max,
       int ras3_lvl, int ras3_max, int num_drc_orbs, int num_expl_cor_orbs,
-      int ras4_lvl, int ras4_max, int ras34_max)
+      int ras4_lvl, int ras4_max, int ras34_max, struct params *CIparams)
 {
    Odometer Ras1, Ras2, Ras3, Ras4;
    int n1, n2, n3, n4;
@@ -264,7 +265,7 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
    struct stringgraph *sgptr;
 
 
-   if (Parameters.print_lvl > 3) {
+   if (CIparams->print_lvl > 3) {
      outfile->Printf( "ras1_lvl = %d   ras1_min = %d  ras1_max = %d\n",
         ras1_lvl, ras1_min, ras1_max) ;
      outfile->Printf( "ras3_lvl = %d   ras3_max = %d\n", ras3_lvl, ras3_max) ;
@@ -320,17 +321,17 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
                    * (ras4_max + 1));
 
    /* need to know how many possible RAS I/RAS III/RAS IV combinations */
-   if (!Parameters.fci_strings) {
+   if (!CIparams->fci_strings) {
       for (i=ras1_max; i>=ras1_min; i--) {
          for (j=0; j<=ras3_max; j++) {
             for (k=0; k<=ras4_max; k++) {
                //if ((i+j+k<=num_el) && (num_el-i-j-k<=ras3_lvl-ras1_lvl-1)
-               //    && (j+k <= ras34_max) && (!(Parameters.r4s && k>=2 &&
-               //    ras1_max - i > Parameters.ex_lvl))) {
+               //    && (j+k <= ras34_max) && (!(CIparams->r4s && k>=2 &&
+               //    ras1_max - i > CIparams->ex_lvl))) {
                if ((i+j+k<=num_el_expl) &&
                    (num_el_expl-i-j-k<=ras3_lvl-ras1_lvl-1)
-                   && (j+k <= ras34_max) && (!(Parameters.r4s && k>=2 &&
-                   ras1_max - i > Parameters.ex_lvl))) {
+                   && (j+k <= ras34_max) && (!(CIparams->r4s && k>=2 &&
+                   ras1_max - i > CIparams->ex_lvl))) {
                   Graph->decode[i-ras1_min][j][k] = code;
                   // encode_tmp[0][code] = i - num_fzc_orbs; CDS 4/15
                   encode_tmp[0][code] = i;
@@ -359,7 +360,7 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
             }
          }
       code = 1;
-      }
+   }
 
    Graph->encode = init_int_matrix(3,code);
    for (i=0; i<code; i++) {
@@ -423,10 +424,10 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
             if (n2 < 0 || n2 > ras3_lvl - ras1_lvl - 1) continue ;
 
             /* CDS 8/24/95 */
-            if (Parameters.r4s && n4 >= 2 && n1max - n1 > Parameters.ex_lvl)
+            if (CIparams->r4s && n4 >= 2 && n1max - n1 > CIparams->ex_lvl)
                continue;
 
-            if (Parameters.print_lvl > 4) {
+            if (CIparams->print_lvl > 4) {
               outfile->Printf( "n1 = %d, n2 = %d, n3 = %d, n4 = %d\n",
                  n1, n2, n3, n4) ;
               if (n2 < 0) printf("Error: n2 < 0 in form_strings()\n") ;
@@ -459,7 +460,7 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
                            occs[j++] = array4[i] ;
 
                         // print out occupations for debugging
-                        if (Parameters.print_lvl > 4) {
+                        if (CIparams->print_lvl > 4) {
                           for (i=0; i<num_el_expl; i++)
                              outfile->Printf( "%2d ", occs[i]) ;
                           outfile->Printf( "\n") ;
@@ -809,7 +810,7 @@ int og_calc_y(struct level *lvl, int ci_orbs)
 
 
 
-void og_print(struct olsen_graph *Graph, std::string out)
+void og_print(struct olsen_graph *Graph)
 {
 
    struct level *curr;
@@ -882,6 +883,48 @@ void og_print(struct olsen_graph *Graph, std::string out)
 
    outfile->Printf( "\n");
 
+}
+
+/*
+** PRINT_CI_SPACE()
+**
+** This function is for debugging purposes.  It prints the
+** CI space and the associated single-replacement lists.
+**
+** Arguments:
+**    strlist     = list of alpha/beta strings
+**    num_strings = number of strings in list
+**    nirreps     = number of irreducible representations in molecular pt grp
+**    strtypes    = number of possible string types (nirreps * ncodes)
+**    nel         = number of electrons explicitly included
+**    outfile     = file to print to
+*/
+void print_ci_space(struct stringwr *strlist, int num_strings,
+      int nirreps, int strtypes, int nel, int repl_otf)
+{
+   int i, j, strsym, cnt=0 ;
+
+   while (cnt != num_strings) {
+      outfile->Printf( "\nString %4d (", cnt++);
+      for (i=0; i<nel; i++)
+         outfile->Printf( "%2d ", (int) (strlist->occs)[i]) ;
+      outfile->Printf( ")\n");
+
+      if (!repl_otf) {
+         outfile->Printf( "   Links:\n") ;
+         for (strsym=0; strsym < strtypes; strsym++) {
+            for (j=0; j<strlist->cnt[strsym]; j++) {
+               outfile->Printf( "   %3d [%3d] %c (%2d %3d)   %d\n",
+                  strlist->ij[strsym][j],
+                  strlist->oij[strsym][j],
+                  (strlist->sgn[strsym][j] == 1) ? '+' : '-',
+                  strsym, strlist->ridx[strsym][j],
+                  (int) strlist->sgn[strsym][j]);
+               }
+            } /* end loop over strsym */
+         }
+      strlist++;
+      }
 }
 
 }} // namespace psi::detci

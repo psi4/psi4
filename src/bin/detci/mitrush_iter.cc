@@ -45,7 +45,6 @@
 #include <libqt/qt.h>
 #include <libmints/mints.h>
 #include "structs.h"
-//#include "globals.h"
 #include "civect.h"
 #include "ci_tol.h"
 #include "ciwave.h"
@@ -56,11 +55,11 @@ namespace psi { namespace detci {
 //extern int H0block_coupling_calc(double E, struct stringwr *alplist,
 //   struct stringwr *betlist);
 //extern void H0block_xy(double *x, double *y, double E);
-extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode, 
-   int *Iaidx, int *Ibidx, double *coeff,
-   struct olsen_graph *AlphaG, struct olsen_graph *BetaG, 
-   struct stringwr **alplist, struct stringwr **betlist,
-   std::string out);
+//extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode, 
+//   int *Iaidx, int *Ibidx, double *coeff,
+//   struct olsen_graph *AlphaG, struct olsen_graph *BetaG, 
+//   struct stringwr **alplist, struct stringwr **betlist,
+//   std::string out);
 extern void xeaxmy(double *x, double *y, double a, int size);
 extern void xeaxpby(double *x, double *y, double a, double b, int size);
 extern void xexy(double *x, double *y, int size);
@@ -529,7 +528,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
         Cvec.max_abs_vals(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx,
            mi_ibidx, mi_coeff, Parameters_->neg_only);
         print_vec(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
-           mi_coeff, AlphaG_, BetaG_, alplist, betlist, "outfile");
+           mi_coeff);
         free(mi_iac);  free(mi_ibc); free(mi_iaidx);  free(mi_ibidx);
         free(mi_coeff);
         return;

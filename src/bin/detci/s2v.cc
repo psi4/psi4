@@ -345,14 +345,12 @@ void s2_block_vras(struct stringwr **alplist, struct stringwr **betlist,
    unsigned int Ia_idx, Ib_idx, Ka_idx, Ja_idx;
    unsigned int Iacnt, Kacnt, Ka_list, Ia_ex, Ka_ex;
    unsigned int *Iaridx, *Karidx;
-   int nirreps, *Iaij, *Kaij, *Iaoij, *Kaoij;
+   int *Iaij, *Kaij, *Iaoij, *Kaoij;
    signed char *Iasgn, *Kasgn;
    int ij,kl,ijkl,oij,okl;
    double Ka_sgn, Ja_sgn;
    double tval;
    double *Sptr, *Cptr;
-
-   nirreps = CalcInfo.nirreps;
 
    /* loop over I_a */
    for (Ia=alplist[Ia_list], Ia_idx=0; Ia_idx < nas; Ia_idx++, Ia++) {
@@ -520,7 +518,7 @@ void s2_block_vras_pthread(void *threadarg)
   unsigned int Ia_idx, Ib_idx, Ka_idx, Ja_idx;
   unsigned int Iacnt, Kacnt, Ka_list, Ia_ex, Ka_ex;
   unsigned int *Iaridx, *Karidx;
-  int nirreps, *Iaij, *Kaij, *Iaoij, *Kaoij;
+  int *Iaij, *Kaij, *Iaoij, *Kaoij;
   signed char *Iasgn, *Kasgn;
   int ij,kl,ijkl,oij,okl;
   double Ka_sgn, Ja_sgn;
@@ -548,8 +546,6 @@ void s2_block_vras_pthread(void *threadarg)
   F = init_array(Ja_list_nas);
   Sptr = S[Ia_idx];
   zero_arr(F, Ja_list_nas);
-
-  nirreps = CalcInfo.nirreps;
 
   /* loop over excitations E^a_{kl} from |A(I_a)> */
   for (Ka_list=0; Ka_list < nlists; Ka_list++) {
@@ -647,13 +643,11 @@ void s2_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
    int Ia_idx, Ib_idx, Ka_idx, Ja_idx;
    int Iacnt, Kacnt, Ka_list, Ia_ex, Ka_ex;
    int *Iaridx, *Karidx;
-   int nirreps, *Iaij, *Kaij, *Iaoij, *Kaoij;
+   int *Iaij, *Kaij, *Iaoij, *Kaoij;
    signed char *Iasgn, *Kasgn;
    int i,ij,kl,ijkl,oij,okl;
    double Ka_sgn, Ja_sgn;
    double tval, *Cptr, *Sptr;
-
-   nirreps = CalcInfo.nirreps;
 
    for (Ka_list=0; Ka_list < nlists; Ka_list++) {
       b2brepl(Occs[Ia_list], Cnt[0], Ij[0], Oij[0], Ridx[0],
