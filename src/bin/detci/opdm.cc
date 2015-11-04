@@ -48,17 +48,6 @@ namespace psi { namespace detci {
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 #define TOL 1E-14
 
-//void orbsfile_rd_blk(int targetfile, int root, int irrep, double **orbs_vector);
-//void orbsfile_wt_blk(int targetfile, int root, int irrep, double **orbs_vector);
-//void opdm_ave(int targetfile);
-//void opdm_block(struct stringwr **alplist, struct stringwr **betlist,
-//		double **onepdm_a, double **onepdm_b, double **CJ, double **CI, int Ja_list, 
-//		int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list, 
-//		int Inas, int Inbs);
-//void opdm_ke(double **onepdm);
-// void get_mo_dipmom_ints(double **mux_mo, double **muy_mo, double **muz_mo);
-// void get_dipmom_nuc(double *mu_x_n, double *mu_y_n, double *mu_z_n);
-
 
 /*
 ** Computes the one-particle density matrix for all n roots.  If

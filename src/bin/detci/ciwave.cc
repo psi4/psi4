@@ -500,6 +500,33 @@ void CIWavefunction::form_tpdm(void)
        Parameters_->tpdm_file, Parameters_->tpdm_write, Parameters_->tpdm_print);
 }
 
+/*
+** cleanup(): Free any allocated memory that wasn't already freed elsewhere
+*/
+void CIWavefunction::cleanup(void)
+{
+
+}
+
+/*
+** title(): Function prints a program identification
+*/
+void CIWavefunction::title(void)
+{
+  // if (Parameters.print_lvl) {
+   outfile->Printf("\n");
+   outfile->Printf("         ---------------------------------------------------------\n");
+   outfile->Printf("                                 D E T C I  \n");
+   outfile->Printf("\n");
+   outfile->Printf("                             C. David Sherrill\n") ;
+   outfile->Printf("                             Matt L. Leininger\n") ;
+   outfile->Printf("                               18 June 1999\n") ;
+   outfile->Printf("         ---------------------------------------------------------\n");
+   outfile->Printf("\n");
+}
+
+
+
 // void CIWavefunction::finalize()
 // {
 //
