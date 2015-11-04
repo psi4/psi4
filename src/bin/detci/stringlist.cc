@@ -47,7 +47,11 @@ namespace psi { namespace detci {
 extern unsigned char ***Occs;
 
 
-/* GLOBALS for this module */
+/*
+GLOBALS for this module
+DGAS: I think this is ok, it uses and cleans up all globals upon
+a single stringlist call. 
+*/
 struct level *sbgr_tr_head;
 int sbgr_tr_orbs;
 int **sbgr_tr_out;
@@ -77,8 +81,6 @@ void init_stringwr_temps(int nel, int num_ci_orbs, int nsym);
 void free_stringwr_temps(int nsym);
 
 
-
-
 /*
 ** stringlist():  This function forms the list of strings with their
 **    single replacements using the Olsen Graph structures.
@@ -102,7 +104,7 @@ void stringlist(struct olsen_graph *Graph, struct stringwr **slist, int repl_otf
 
    if (!repl_otf) {
       init_stringwr_temps(Graph->num_el_expl, Graph->num_orb, nirreps * ncodes);
-      }
+   }
 
    Occs = (unsigned char ***) malloc (nirreps * ncodes * sizeof(unsigned
       char **));
@@ -126,6 +128,7 @@ void stringlist(struct olsen_graph *Graph, struct stringwr **slist, int repl_otf
    
          subgr_trav_init(subgraph->lvl, Graph->num_orb, outarr, 0);
          subgr_traverse(0, 0);
+         free(sbgr_tr_alist);
 
          for (walk=0; walk<subgraph->num_strings; walk++) {
             for (i=0; i<nel_expl; i++) occs[i]= outarr[i][walk];
@@ -133,7 +136,7 @@ void stringlist(struct olsen_graph *Graph, struct stringwr **slist, int repl_otf
 
             if (addr < 0) {
                printf("(stringlist): Impossible string addr\n");
-               }
+            }
 
             for (i=0; i<nel_expl; i++) 
                Occs[listnum][addr][i] = (unsigned char) occs[i];
@@ -141,18 +144,17 @@ void stringlist(struct olsen_graph *Graph, struct stringwr **slist, int repl_otf
             form_stringwr(slist[irrep * ncodes + code], occs, 
                nel_expl, Graph->num_orb, subgraph, Graph, 
                Graph->num_expl_cor_orbs, repl_otf);
-            }
-         } /* end loop over subgraph codes */
-      } /* end loop over irreps */
+         }
+      } /* end loop over subgraph codes */
+   } /* end loop over irreps */
 
    /* free the stringwr scratch space */
    if (!repl_otf) {
       free_stringwr_temps(nirreps * ncodes);
-      }
+   }
 
    free_int_matrix(outarr);
    free(occs);
-   free(sbgr_tr_alist);
 }
 
 
