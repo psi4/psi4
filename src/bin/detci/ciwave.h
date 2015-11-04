@@ -46,6 +46,7 @@ typedef _SlaterDetSet SlaterDetSet;
 // From the detci module
 namespace psi { namespace detci {
 class CIvect;
+class SlaterDeterminant;
 struct calcinfo;
 struct params;
 struct stringwr;
@@ -187,6 +188,8 @@ private:
     void tf_onel_ints();
     void form_gmat();
     void onel_ints_from_jk();
+    double get_twoel(int i, int j, int k, int l);
+    double get_onel(int i, int j);
 
     /// Non-DF integral functions
     void setup_mcscf_ints();
@@ -228,10 +231,15 @@ private:
        struct stringwr *stralp, struct stringwr *strbet, int num_drc_orbs,
        char *outstring);
 
+    /// => Slater Matrix Elements <= //
+    double matrix_element(SlaterDeterminant* I, SlaterDeterminant* J);
+    int sme_first_call_;
+    int *same_alpha_, *same_beta_;
+    int *common_docc_, *common_alp_socc_, *common_bet_socc_;
+    int init_nalp_, init_nbet_;
+    int **I_diff_, **J_diff_;
+
     /// => CI Iterators <= //
-    //void mitrush_iter(CIvect &Hd, int nroots, double *evals, double conv_rms, double conv_e,
-    //  double enuc, double edrc, int maxiter, int maxnvect, std::string out,
-    //  int print_lvl);
     void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
           **betlist, int nroots, double *evals, double conv_rms, double conv_e,
           double enuc, double edrc, int maxiter, int maxnvect, std::string out,
@@ -257,6 +265,7 @@ private:
           double **b, double conv_e, double conv_rms, int maxiter, double offst,
           int *vu, int maxnvect);
 
+    /// => Sigma Calculations <= //
     void sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
           struct stringwr **betlist);
     void sigma(struct stringwr **alplist, struct stringwr **betlist,

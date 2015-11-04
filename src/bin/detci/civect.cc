@@ -266,7 +266,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac,
    int maxrows = 0, maxcols = 0;
    unsigned long bufsize, maxbufsize;
    unsigned long size, cur_offset;
-   static int first=1;
+   //static int first=1;
    /* int in_file, extras, units_used, cur_unit; */
 
    vectlen = vl;
@@ -513,13 +513,10 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac,
      }
 
    // MLL 5/7/98: Want to know the subblock length of a vector //
-   if (first) {
-     if (Parameters.print_lvl) {
-        outfile->Printf("\n CI vector/subblock length = %ld\n", buffer_size);
-        
-        }
-     first=0;
-     }
+   //  if (Parameters.print_lvl) {
+   //     outfile->Printf("\n CI vector/subblock length = %ld\n", buffer_size);
+   //     
+   //     }
 
 
 }
