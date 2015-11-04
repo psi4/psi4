@@ -51,6 +51,9 @@ void CIWavefunction::common_init()
     title();
     init_ioff();
 
+    // Make sure a few things are 0
+    sme_first_call_ = 1;
+
     // CI Params
     get_parameters(options_);     /* get running params (convergence, etc)    */
     get_mo_info();               /* read DOCC, SOCC, frozen, nmo, etc        */

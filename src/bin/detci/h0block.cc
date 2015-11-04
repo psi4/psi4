@@ -46,15 +46,7 @@
 namespace psi { namespace detci {
 
 #define SMALL_DET 1e-10
-
-//extern struct stringwr **alplist;
-//extern struct stringwr **betlist;
-
 #define CONFIG_STRING_MAX 200
-
-//extern void print_config(int nbf, int num_alp_el, int num_bet_el,
-//   struct stringwr *stralp, struct stringwr *strbet,
-//   int num_drc_orbs, char *outstring);
 
 
 /*
@@ -169,7 +161,6 @@ void CIWavefunction::H0block_print(void)
 
 int CIWavefunction::H0block_calc(double E)
 {
-   static int first_call = 1;
    int i, j, size;
    double detH0 = -1.0;
    double c_tmp, s_tmp, tval1, tval2, tval3;
@@ -185,13 +176,6 @@ int CIWavefunction::H0block_calc(double E)
       }
 
    if (Parameters_->precon == PRECON_GEN_DAVIDSON) {
-     if (first_call) {
-       first_call = 0;
-     /*  for (i=0; i<size; i++)
-          for (j=0; j<size; j++)
-             H0block.H0b_diag_transpose[i][j] = H0block.H0b_diag[j][i];
-     */
-       }
      H0xc0 = init_array(size);
      H0xs0 = init_array(size);
      for (i=0; i<size; i++) {
@@ -756,7 +740,6 @@ void CIWavefunction::H0block_fill()
 
 void CIWavefunction::H0block_coupling_calc(double E)
 {
-   static int first_call = 1;
    int i, j, size, size2;
    double tval1, tval2, tval3;
    double *delta_2, *gamma_1, *gamma_2, *H_12, *delta_1;

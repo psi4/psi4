@@ -164,9 +164,7 @@ void CIWavefunction::form_strings(void)
       }
 
    /* get number of alpha/beta strings, ref symmetry, etc */
-   outfile->Printf("Starting CIblks\n");
    set_ciblks();
-   outfile->Printf("End CIblks\n");
 
    /* if the user wants to filter out some initial guesses based on
       phases of two determinants, we need to convert their absolute

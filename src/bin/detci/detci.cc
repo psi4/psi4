@@ -225,10 +225,8 @@ void CIWavefunction::diag_h()
      if (Parameters.special_conv > conv_rms)
        conv_rms = Parameters.special_conv;
    }
-   outfile->Printf("About to print vectlen!\n");
-   outfile->Printf("Vectlen: %ld", CIblks_->vectlen);
+
    size = CIblks_->vectlen;
-   outfile->Printf("here!\n");
    if ((BIGINT) Parameters.nprint > size) Parameters.nprint = (int) size;
    nucrep = CalcInfo.enuc;
    edrc = CalcInfo.edrc;

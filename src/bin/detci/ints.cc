@@ -60,8 +60,6 @@
 
 #include "structs.h"
 #include "ciwave.h"
-#define EXTERN
-#include "globals.h"
 #include "globaldefs.h"
 
 namespace psi { namespace detci {
@@ -276,7 +274,7 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only)
 
  /* Determine maximum K integral for use in averaging the diagonal */
  /* Hamiltonian matrix elements over spin-coupling set */
- if (Parameters.hd_ave) {
+ if (Parameters_->hd_ave) {
    for(int i=0; i<CalcInfo_->num_ci_orbs; i++)
       for(int j=0; j<CalcInfo_->num_ci_orbs; j++) {
          /* if (i==j) continue; */
@@ -288,7 +286,7 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only)
     for(int i=0; i<CalcInfo_->num_ci_orbs; i++) {
       if(CalcInfo_->maxK[i] > CalcInfo_->maxKlist)
         CalcInfo_->maxKlist = CalcInfo_->maxK[i];
-      if (Parameters.print_lvl > 4)
+      if (Parameters_->print_lvl > 4)
         outfile->Printf("maxK[%d] = %lf\n",i, CalcInfo_->maxK[i]);
       }
   }
@@ -418,29 +416,26 @@ void CIWavefunction::read_dpd_ci_ints()
   // => Read one electron integrals <= //
   // Build temporary desired arrays
   int nmotri_full = (CalcInfo_->nmo * (CalcInfo_->nmo + 1)) / 2 ;
-  double*  tmp_onel_ints1 = (double *) init_array(nmotri_full);
-  double*  tmp_onel_ints2 = (double *) init_array(nmotri_full);
+  double* tmp_onel_ints = new double[nmotri_full];
 
   // Read one electron integrals
-  iwl_rdone(PSIF_OEI, PSIF_MO_FZC, tmp_onel_ints1, nmotri_full,
-               0, (Parameters.print_lvl>4), "outfile");
+  iwl_rdone(PSIF_OEI, PSIF_MO_FZC, tmp_onel_ints, nmotri_full,
+               0, (Parameters_->print_lvl>4), "outfile");
 
   // IntegralTransform does not properly order one electron integrals for whatever reason
-  for (int i=0, cnt=0; i<CalcInfo_->nmo; i++){
-    for (int j=i; j<CalcInfo_->nmo; j++){
-      int reorder_idx = INDEX(CalcInfo_->reorder[i],CalcInfo_->reorder[j]);
-      tmp_onel_ints2[reorder_idx] = tmp_onel_ints1[INDEX(i,j)];
+  for (int i=0, ij=0; i < CalcInfo_->num_ci_orbs; i++){
+    for (int j=0; j<=i; j++){
+      int si = i + CalcInfo_->num_drc_orbs;
+      int sj = j + CalcInfo_->num_drc_orbs;
+      int order_idx = INDEX(CalcInfo_->order[si],CalcInfo_->order[sj]);
+      CalcInfo_->onel_ints[ij++] = tmp_onel_ints[order_idx];
     }
   }
 
-  filter(tmp_onel_ints2, CalcInfo_->onel_ints, ioff, CalcInfo_->nmo,
-         CalcInfo_->num_drc_orbs, CalcInfo_->num_drv_orbs);
-
-  free(tmp_onel_ints1);
-  free(tmp_onel_ints2);
+  delete[] tmp_onel_ints;
 
   // => Read two electron integral <= //
-  // This is not a good algorithm, storea two e's in memory twice!
+  // This is not a good algorithm, stores two e's in memory twice!
   // However, this CI is still limited to 256 basis functions
 
   psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
@@ -494,7 +489,7 @@ void CIWavefunction::read_dpd_ci_ints()
 
   /* Determine maximum K integral for use in averaging the diagonal */
   /* Hamiltonian matrix elements over spin-coupling set */
-  if (Parameters.hd_ave) {
+  if (Parameters_->hd_ave) {
     for(int i=0; i<CalcInfo_->num_ci_orbs; i++)
        for(int j=0; j<CalcInfo_->num_ci_orbs; j++) {
           /* if (i==j) continue; */
@@ -506,32 +501,32 @@ void CIWavefunction::read_dpd_ci_ints()
      for(int i=0; i<CalcInfo_->num_ci_orbs; i++) {
        if(CalcInfo_->maxK[i] > CalcInfo_->maxKlist)
          CalcInfo_->maxKlist = CalcInfo_->maxK[i];
-       if (Parameters.print_lvl > 4)
+       if (Parameters_->print_lvl > 4)
          outfile->Printf("maxK[%d] = %lf\n",i, CalcInfo_->maxK[i]);
        }
    }
 
 }
 
-double get_onel(int i, int j)
+double CIWavefunction::get_onel(int i, int j)
 {
    int ij ;
    double value ;
 
    if (i > j) {
       ij = ioff[i] + j;
-      value = CalcInfo.onel_ints[ij] ;
+      value = CalcInfo_->onel_ints[ij] ;
       return(value) ;
       }
    else {
       ij = ioff[j] + i ;
-      value = CalcInfo.onel_ints[ij] ;
+      value = CalcInfo_->onel_ints[ij] ;
       return(value) ;
       }
-   return(CalcInfo.onel_ints[ij]) ;
+   return(CalcInfo_->onel_ints[ij]) ;
 }
 
-double get_twoel(int i, int j, int k, int l)
+double CIWavefunction::get_twoel(int i, int j, int k, int l)
 {
    int ij, kl, ijkl ;
 
@@ -543,7 +538,7 @@ double get_twoel(int i, int j, int k, int l)
    ijkl += MIN0(ij,kl) ;
 
 
-   return(CalcInfo.twoel_ints[ijkl]) ;
+   return(CalcInfo_->twoel_ints[ijkl]) ;
 }
 
 /*
@@ -566,14 +561,14 @@ void CIWavefunction::tf_onel_ints()
    tei = CalcInfo_->twoel_ints ;
 
    /* ok, new special thing for CASSCF...if there are *no* excitations
-      into restricted orbitals, and if Parameters.fci=TRUE, then we
+      into restricted orbitals, and if Parameters_->fci=TRUE, then we
       do *not* want to sum over the restricted virts in h' or else
       we would need to account for RAS-out-of-space contributions
       (requiring fci=false).
     */
-   if (Parameters.fci && (nbf > Parameters.ras3_lvl) &&
-       Parameters.ras34_max == 0)
-      nbf = Parameters.ras3_lvl;
+   if (Parameters_->fci && (nbf > Parameters_->ras3_lvl) &&
+       Parameters_->ras34_max == 0)
+      nbf = Parameters_->ras3_lvl;
 
    // /* allocate space for the new array */
    // CalcInfo_->tf_onel_ints = init_array(ntri) ;
