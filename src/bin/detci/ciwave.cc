@@ -386,7 +386,7 @@ SharedVector CIWavefunction::get_tpdm(bool symmetrize, const std::string& tpdm_t
     ioff_lt[i] = i * npop;
   }
 
- iwl_buf_rd_all(&TBuff, tpdmp, ioff_lt, ioff_lt, 1, ioff,
+ iwl_buf_rd_all(&TBuff, tpdmp, ioff_lt, ioff_lt, 1, ioff_,
                 false, "outfile");
 
   iwl_buf_close(&TBuff, 1);
@@ -505,6 +505,7 @@ void CIWavefunction::form_tpdm(void)
 */
 void CIWavefunction::cleanup(void)
 {
+    delete[] ioff_;
 
 }
 
@@ -525,6 +526,19 @@ void CIWavefunction::title(void)
    outfile->Printf("\n");
 }
 
+
+/*
+** init_ioff(): Set up the ioff array for quick indexing
+**
+*/
+void CIWavefunction::init_ioff(void)
+{
+   ioff_ = new int[65025];
+   ioff_[0] = 0;
+   for (int i = 1; i < 65025; i++) {
+      ioff_[i] = ioff_[i-1] + i;
+    }
+}
 
 
 // void CIWavefunction::finalize()
