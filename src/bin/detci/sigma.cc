@@ -138,23 +138,6 @@ extern void s3_block_vdiag_rotf(int *Cnt[2], int **Ij[2], int **Ridx[2],
 
 extern unsigned char ***Occs;
 
-extern int cc_reqd_sblocks[CI_BLK_MAX];
-
-
-/* GLOBALS THIS MODULE */
-
-double *F;
-int **Jij[2];
-int **Joij[2];
-int **Jridx[2];
-signed char **Jsgn[2];
-int *Jcnt[2];
-unsigned char **Toccs;
-double **transp_tmp = NULL;
-double **cprime = NULL, **sprime = NULL;
-double *V, *Sgn;
-int *L, *R;
-
 
 /*
 ** sigma_init()
@@ -171,6 +154,10 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
    int nsingles, max_dim=0;
    unsigned long int bufsz=0;
 
+   SigmaData_->transp_tmp = NULL;
+   SigmaData_->cprime = NULL;
+   SigmaData_->sprime = NULL;
+
    if (CalcInfo_->sigma_initialized) {
       printf("(sigma_init): sigma_initialized already set to 1\n");
       return;
@@ -180,33 +167,34 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
       if (C.Ib_size[i] > max_dim) max_dim = C.Ib_size[i];
       if (C.Ia_size[i] > max_dim) max_dim = C.Ia_size[i];
       }
-   F = init_array(max_dim);
+   SigmaData_->max_dim = max_dim;
+   SigmaData_->F = init_array(max_dim);
 
-   Sgn = init_array(max_dim);
-   V = init_array(max_dim);
-   L = init_int_array(max_dim);
-   R = init_int_array(max_dim);
+   SigmaData_->Sgn = init_array(max_dim);
+   SigmaData_->V = init_array(max_dim);
+   SigmaData_->L = init_int_array(max_dim);
+   SigmaData_->R = init_int_array(max_dim);
 
    if (Parameters_->repl_otf) {
       max_dim += AlphaG_->num_el_expl;
       nsingles = AlphaG_->num_el_expl * AlphaG_->num_orb;
       for (i=0; i<2; i++) {
-         Jcnt[i] = init_int_array(max_dim);
-         Jij[i] = init_int_matrix(max_dim, nsingles);
-         Joij[i] = init_int_matrix(max_dim, nsingles);
-         Jridx[i] = init_int_matrix(max_dim, nsingles);
-         Jsgn[i] = (signed char **) malloc (max_dim * sizeof(signed char *));
+         SigmaData_->Jcnt[i] = init_int_array(max_dim);
+         SigmaData_->Jij[i] = init_int_matrix(max_dim, nsingles);
+         SigmaData_->Joij[i] = init_int_matrix(max_dim, nsingles);
+         SigmaData_->Jridx[i] = init_int_matrix(max_dim, nsingles);
+         SigmaData_->Jsgn[i] = (signed char **) malloc (max_dim * sizeof(signed char *));
          for (j=0; j<max_dim; j++) { 
-            Jsgn[i][j] = (signed char *) malloc (nsingles * 
+            SigmaData_->Jsgn[i][j] = (signed char *) malloc (nsingles * 
                sizeof(signed char));
             }
          }
 
-      Toccs = (unsigned char **) malloc (sizeof(unsigned char *) * nsingles);
+      SigmaData_->Toccs = (unsigned char **) malloc (sizeof(unsigned char *) * nsingles);
 
       /* test out the on-the-fly replacement routines */
       /*
-      b2brepl_test(Occs,Jcnt[0],Jij[0],Joij[0],Jridx[0],Jsgn[0],AlphaG);
+      b2brepl_test(Occs,SigmaData_->Jcnt[0],SigmaData_->Jij[0],SigmaData_->Joij[0],SigmaData_->Jridx[0],SigmaData_->Jsgn[0],AlphaG);
       */
       }
 
@@ -216,7 +204,8 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
    s3_contrib_ = init_int_matrix(S.num_blocks, C.num_blocks);
    if (Parameters_->repl_otf)
       sigma_get_contrib_rotf(C, S, s1_contrib_, s2_contrib_, s3_contrib_,
-         Jcnt, Jij, Joij, Jridx, Jsgn, Toccs);
+         SigmaData_->Jcnt, SigmaData_->Jij, SigmaData_->Joij,
+         SigmaData_->Jridx, SigmaData_->Jsgn, SigmaData_->Toccs);
    else  
       sigma_get_contrib(alplist, betlist, C, S, s1_contrib_, s2_contrib_,
          s3_contrib_);
@@ -228,18 +217,18 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
        if (C.Ib_size[i] > maxcols) maxcols = C.Ib_size[i];
      }
      if (maxcols > maxrows) maxrows = maxcols;
-     transp_tmp = (double **) malloc (maxrows * sizeof(double *));
-     if (transp_tmp == NULL) {
-       printf("(sigma_init): Trouble with malloc'ing transp_tmp\n");
+     SigmaData_->transp_tmp = (double **) malloc (maxrows * sizeof(double *));
+     if (SigmaData_->transp_tmp == NULL) {
+       printf("(sigma_init): Trouble with malloc'ing SigmaData_->transp_tmp\n");
      }
      bufsz = C.get_max_blk_size();
-     transp_tmp[0] = init_array(bufsz);
-     if (transp_tmp[0] == NULL) {
-       printf("(sigma_init): Trouble with malloc'ing transp_tmp[0]\n");
+     SigmaData_->transp_tmp[0] = init_array(bufsz);
+     if (SigmaData_->transp_tmp[0] == NULL) {
+       printf("(sigma_init): Trouble with malloc'ing SigmaData_->transp_tmp[0]\n");
      }
    }
 
-   /* make room for cprime and sprime if necessary */
+   /* make room for SigmaData_->cprime and SigmaData_->sprime if necessary */
    for (i=0, maxrows=0; i<C.num_blocks; i++) {
      if (C.Ia_size[i] > maxrows) maxrows = C.Ia_size[i];
      if (C.Ib_size[i] > maxcols) maxcols = C.Ib_size[i];
@@ -250,33 +239,57 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
    }
    bufsz = C.get_max_blk_size();
 
-   cprime = (double **) malloc (maxrows * sizeof(double *));
-   if (cprime == NULL) {
-      printf("(sigma_init): Trouble with malloc'ing cprime\n");
+   SigmaData_->cprime = (double **) malloc (maxrows * sizeof(double *));
+   if (SigmaData_->cprime == NULL) {
+      printf("(sigma_init): Trouble with malloc'ing SigmaData_->cprime\n");
    }
-   if (C.icore==0 && C.Ms0 && transp_tmp != NULL && transp_tmp[0] != NULL) 
-     cprime[0] = transp_tmp[0];
+   if (C.icore==0 && C.Ms0 && SigmaData_->transp_tmp != NULL && SigmaData_->transp_tmp[0] != NULL) 
+     SigmaData_->cprime[0] = SigmaData_->transp_tmp[0];
    else 
-     cprime[0] = init_array(bufsz);
+     SigmaData_->cprime[0] = init_array(bufsz);
 
-   if (cprime[0] == NULL) {
-     printf("(sigma_init): Trouble with malloc'ing cprime[0]\n");
+   if (SigmaData_->cprime[0] == NULL) {
+     printf("(sigma_init): Trouble with malloc'ing SigmaData_->cprime[0]\n");
    }
 
    if (Parameters_->bendazzoli) {
-     sprime = (double **) malloc (maxrows * sizeof(double *));
-     if (sprime == NULL) {
-       printf("(sigma_init): Trouble with malloc'ing sprime\n");
+     SigmaData_->sprime = (double **) malloc (maxrows * sizeof(double *));
+     if (SigmaData_->sprime == NULL) {
+       printf("(sigma_init): Trouble with malloc'ing SigmaData_->sprime\n");
      }
-     sprime[0] = init_array(bufsz);
-     if (sprime[0] == NULL) {
-       printf("(sigma_init): Trouble with malloc'ing sprime[0]\n");
+     SigmaData_->sprime[0] = init_array(bufsz);
+     if (SigmaData_->sprime[0] == NULL) {
+       printf("(sigma_init): Trouble with malloc'ing SigmaData_->sprime[0]\n");
      }
    }
  
    CalcInfo_->sigma_initialized = 1;
 }
 
+void CIWavefunction::sigma_free()
+{
+   free(SigmaData_->F);
+   free(SigmaData_->Sgn);
+   free(SigmaData_->V);
+   free(SigmaData_->L);
+   free(SigmaData_->R);
+   if (Parameters_->repl_otf) {
+      for (int i=0; i<2; i++) {
+         free(SigmaData_->Jcnt[i]);
+         free_int_matrix(SigmaData_->Jij[i]);
+         free_int_matrix(SigmaData_->Joij[i]);
+         free_int_matrix(SigmaData_->Jridx[i]);
+         for (int j=0; j<SigmaData_->max_dim; j++) { 
+            free(SigmaData_->Jsgn[i][j]);
+         }
+         free(SigmaData_->Jsgn[i]);
+      }
+   }
+// DGAS: Not sure how to free these yet
+//      SigmaData_->Toccs = (unsigned char **) malloc (sizeof(unsigned char *) * nsingles);
+//unsigned char **SigmaData_->Toccs;
+//double **SigmaData_->transp_tmp, **SigmaData_->cprime, **SigmaData_->sprime;
+}
 
 /*
 ** sigma()
@@ -355,7 +368,7 @@ void CIWavefunction::sigma_a(struct stringwr **alplist, struct stringwr **betlis
       nas = S.Ia_size[sblock];
       nbs = S.Ib_size[sblock];
       sbirr = sbc / BetaG_->subgr_per_irrep;
-      if (sprime != NULL) set_row_ptrs(nas, nbs, sprime);
+      if (SigmaData_->sprime != NULL) set_row_ptrs(nas, nbs, SigmaData_->sprime);
 
       for (cbuf=0; cbuf<C.buf_per_vect; cbuf++) {
          do_cblock=0; do_cblock2=0;
@@ -380,7 +393,7 @@ void CIWavefunction::sigma_a(struct stringwr **alplist, struct stringwr **betlis
          C.read(C.cur_vect, cbuf);
 
          if (do_cblock) {
-            if (cprime != NULL) set_row_ptrs(cnas, cnbs, cprime);
+            if (SigmaData_->cprime != NULL) set_row_ptrs(cnas, cnbs, SigmaData_->cprime);
             sigma_block(alplist, betlist, C.blocks[cblock], S.blocks[sblock], 
                oei, tei, fci, cblock, sblock, nas, nbs, sac, sbc, cac, cbc, 
                cnas, cnbs, C.num_alpcodes, C.num_betcodes, sbirr, cbirr,
@@ -391,14 +404,14 @@ void CIWavefunction::sigma_a(struct stringwr **alplist, struct stringwr **betlis
          /* what's with this bcopy stuff?  what's going on?  -DS 6/11/96 */
          /* I think I should copy to cblock2 not cblock */
          if (do_cblock2) {
-            C.transp_block(cblock, transp_tmp);
-//          bcopy((char *) transp_tmp[0], (char *) C.blocks[cblock][0], 
+            C.transp_block(cblock, SigmaData_->transp_tmp);
+//          bcopy((char *) SigmaData_->transp_tmp[0], (char *) C.blocks[cblock][0], 
 //            cnas * cnbs * sizeof(double));
 //          bcopy is non-ANSI.  memcpy reverses the arguments.
-            memcpy((void *) C.blocks[cblock][0], (void *) transp_tmp[0],
+            memcpy((void *) C.blocks[cblock][0], (void *) SigmaData_->transp_tmp[0],
               cnas * cnbs * sizeof(double));
             /* set_row_ptrs(cnbs, cnas, C.blocks[cblock]); */
-            if (cprime != NULL) set_row_ptrs(cnbs, cnas, cprime);
+            if (SigmaData_->cprime != NULL) set_row_ptrs(cnbs, cnas, SigmaData_->cprime);
             sigma_block(alplist, betlist, C.blocks[cblock2], S.blocks[sblock], 
                oei, tei, fci, cblock2, sblock, nas, nbs, sac, sbc, 
                cbc, cac, cnbs, cnas, C.num_alpcodes, C.num_betcodes, sbirr,
@@ -467,7 +480,7 @@ void CIWavefunction::sigma_b(struct stringwr **alplist, struct stringwr **betlis
 
    /* loop over unique sigma subblocks */ 
    for (sblock=0; sblock<S.num_blocks; sblock++) {
-      if (Parameters_->cc && !cc_reqd_sblocks[sblock]) continue;
+      //if (Parameters_->cc && !cc_reqd_sblocks[sblock]) continue;
       did_sblock = 0;
       sac = S.Ia_code[sblock];
       sbc = S.Ib_code[sblock];
@@ -476,7 +489,7 @@ void CIWavefunction::sigma_b(struct stringwr **alplist, struct stringwr **betlis
       if (nas==0 || nbs==0) continue;
       if (S.Ms0 && sbc > sac) continue;
       sbirr = sbc / BetaG_->subgr_per_irrep;
-      if (sprime != NULL) set_row_ptrs(nas, nbs, sprime);
+      if (SigmaData_->sprime != NULL) set_row_ptrs(nas, nbs, SigmaData_->sprime);
 
       for (cblock=0; cblock<C.num_blocks; cblock++) {
          if (C.check_zero_block(cblock)) continue;
@@ -487,7 +500,7 @@ void CIWavefunction::sigma_b(struct stringwr **alplist, struct stringwr **betlis
          cbirr = cbc / BetaG_->subgr_per_irrep;
          if (s1_contrib_[sblock][cblock] || s2_contrib_[sblock][cblock] ||
              s3_contrib_[sblock][cblock]) {
-            if (cprime != NULL) set_row_ptrs(cnas, cnbs, cprime);
+            if (SigmaData_->cprime != NULL) set_row_ptrs(cnas, cnbs, SigmaData_->cprime);
             sigma_block(alplist, betlist, C.blocks[cblock], S.blocks[sblock], 
                oei, tei, fci, cblock, sblock, nas, nbs, sac, sbc, 
                cac, cbc, cnas, cnbs, C.num_alpcodes, C.num_betcodes, sbirr,
@@ -568,7 +581,7 @@ void CIWavefunction::sigma_c(struct stringwr **alplist, struct stringwr **betlis
             did_sblock = 0;
 
             if (S.Ms0 && (sac < sbc)) continue;
-            if (sprime != NULL) set_row_ptrs(nas, nbs, sprime);
+            if (SigmaData_->sprime != NULL) set_row_ptrs(nas, nbs, SigmaData_->sprime);
 
             for (cblock=C.first_ablk[cairr]; cblock <= C.last_ablk[cairr];
                   cblock++) {
@@ -581,7 +594,7 @@ void CIWavefunction::sigma_c(struct stringwr **alplist, struct stringwr **betlis
                if ((s1_contrib_[sblock][cblock] || s2_contrib_[sblock][cblock] ||
                     s3_contrib_[sblock][cblock]) && 
                     !C.check_zero_block(cblock)) {
-		  if (cprime != NULL) set_row_ptrs(cnas, cnbs, cprime);
+		  if (SigmaData_->cprime != NULL) set_row_ptrs(cnas, cnbs, SigmaData_->cprime);
                   sigma_block(alplist, betlist, C.blocks[cblock], 
                      S.blocks[sblock], oei, tei, fci, cblock,
                      sblock, nas, nbs, sac, sbc, cac, cbc, cnas, cnbs, 
@@ -595,9 +608,9 @@ void CIWavefunction::sigma_c(struct stringwr **alplist, struct stringwr **betlis
                        s2_contrib_[sblock][cblock2] ||
                        s3_contrib_[sblock][cblock2]) &&
                       !C.check_zero_block(cblock2)) {
-                     C.transp_block(cblock, transp_tmp);
-		     if (cprime != NULL) set_row_ptrs(cnbs, cnas, cprime);
-                     sigma_block(alplist, betlist, transp_tmp,S.blocks[sblock],
+                     C.transp_block(cblock, SigmaData_->transp_tmp);
+		     if (SigmaData_->cprime != NULL) set_row_ptrs(cnbs, cnas, SigmaData_->cprime);
+                     sigma_block(alplist, betlist, SigmaData_->transp_tmp,S.blocks[sblock],
                         oei, tei, fci, cblock2, sblock, nas, nbs, sac, sbc, 
                         cbc, cac, cnbs, cnas, C.num_alpcodes, C.num_betcodes,
                         sbirr, cairr, S.Ms0);
@@ -657,25 +670,26 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
 
       if (fci) {
           if (Parameters_->nthreads > 1)
-              s2_block_vfci_thread(alplist, betlist, cmat, smat, oei, tei, F, 
+              s2_block_vfci_thread(alplist, betlist, cmat, smat, oei, tei, SigmaData_->F, 
                  cnac, nas, nbs, sac, cac, cnas);
           else
-              s2_block_vfci(alplist, betlist, cmat, smat, oei, tei, F, cnac,
+              s2_block_vfci(alplist, betlist, cmat, smat, oei, tei, SigmaData_->F, cnac,
                             nas, nbs, sac, cac, cnas);
         }
       else {
           if (Parameters_->repl_otf) {
-              s2_block_vras_rotf(Jcnt, Jij, Joij, Jridx, Jsgn,
-                                 Toccs, cmat, smat, oei, tei, F, cnac, 
+              s2_block_vras_rotf(SigmaData_->Jcnt, SigmaData_->Jij, SigmaData_->Joij,
+                                 SigmaData_->Jridx, SigmaData_->Jsgn,
+                                 SigmaData_->Toccs, cmat, smat, oei, tei, SigmaData_->F, cnac, 
                                  nas, nbs, sac, cac, cnas, AlphaG_, BetaG_, CalcInfo_);
             }
           else if (Parameters_->nthreads > 1) {
             s2_block_vras_thread(alplist, betlist, cmat, smat, 
-                            oei, tei, F, cnac, nas, nbs, sac, cac, cnas);  
+                            oei, tei, SigmaData_->F, cnac, nas, nbs, sac, cac, cnas);  
             }
           else {
               s2_block_vras(alplist, betlist, cmat, smat, 
-                            oei, tei, F, cnac, nas, nbs, sac, cac, cnas);
+                            oei, tei, SigmaData_->F, cnac, nas, nbs, sac, cac, cnas);
             }
         }
     timer_off("DETCI: s2");
@@ -696,24 +710,25 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
       if (s1_contrib_[sblock][cblock]) {
           if (fci) { 
               if (Parameters_->nthreads > 1)
-                  s1_block_vfci_thread(alplist, betlist, cmat, smat, oei, tei, F, cnbc,
+                  s1_block_vfci_thread(alplist, betlist, cmat, smat, oei, tei, SigmaData_->F, cnbc,
                                        nas, nbs, sbc, cbc, cnbs);
               else
-                  s1_block_vfci(alplist, betlist, cmat, smat, oei, tei, F, cnbc,
+                  s1_block_vfci(alplist, betlist, cmat, smat, oei, tei, SigmaData_->F, cnbc,
                                 nas, nbs, sbc, cbc, cnbs);
             } 
          else {
             if (Parameters_->repl_otf) {
-               s1_block_vras_rotf(Jcnt, Jij, Joij, Jridx, Jsgn,
-                  Toccs, cmat, smat, oei, tei, F, cnbc, nas, nbs,
+               s1_block_vras_rotf(SigmaData_->Jcnt, SigmaData_->Jij, SigmaData_->Joij,
+                  SigmaData_->Jridx, SigmaData_->Jsgn,
+                  SigmaData_->Toccs, cmat, smat, oei, tei, SigmaData_->F, cnbc, nas, nbs,
                   sbc, cbc, cnbs, BetaG_, CalcInfo_);
                }
             else if (Parameters_->nthreads > 1) {
-               s1_block_vras_thread(alplist, betlist, cmat, smat, oei, tei, F, cnbc, 
+               s1_block_vras_thread(alplist, betlist, cmat, smat, oei, tei, SigmaData_->F, cnbc, 
                   nas, nbs, sbc, cbc, cnbs);
               }
             else {
-               s1_block_vras(alplist, betlist, cmat, smat, oei, tei, F, cnbc, 
+               s1_block_vras(alplist, betlist, cmat, smat, oei, tei, SigmaData_->F, cnbc, 
                   nas, nbs, sbc, cbc, cnbs);
                }
             } 
@@ -736,45 +751,56 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
 
       if (!Ms0 || (sac != sbc)) {
          if (Parameters_->repl_otf) {
-            b2brepl(Occs[sac], Jcnt[0], Jij[0], Joij[0], Jridx[0],
-               Jsgn[0], AlphaG_, sac, cac, nas, CalcInfo_);  
-            b2brepl(Occs[sbc], Jcnt[1], Jij[1], Joij[1], Jridx[1],
-               Jsgn[1], BetaG_, sbc, cbc, nbs, CalcInfo_);  
-            s3_block_vrotf(Jcnt, Jij, Jridx, Jsgn, cmat, smat, tei, nas, nbs,
-               cnas, sbc, cac, cbc, sbirr, cbirr, cprime, F, V, Sgn, L, R,
-               CalcInfo_->num_ci_orbs, CalcInfo_->orbsym + CalcInfo_->num_drc_orbs);
+            b2brepl(Occs[sac], SigmaData_->Jcnt[0], SigmaData_->Jij[0],
+               SigmaData_->Joij[0], SigmaData_->Jridx[0],
+               SigmaData_->Jsgn[0], AlphaG_, sac, cac, nas, CalcInfo_);  
+            b2brepl(Occs[sbc], SigmaData_->Jcnt[1], SigmaData_->Jij[1],
+                    SigmaData_->Joij[1], SigmaData_->Jridx[1],
+                    SigmaData_->Jsgn[1], BetaG_, sbc, cbc, nbs, CalcInfo_);  
+            s3_block_vrotf(SigmaData_->Jcnt, SigmaData_->Jij, SigmaData_->Jridx,
+                           SigmaData_->Jsgn, cmat, smat, tei, nas, nbs,
+                           cnas, sbc, cac, cbc, sbirr, cbirr, SigmaData_->cprime,
+                           SigmaData_->F, SigmaData_->V, SigmaData_->Sgn, SigmaData_->L,
+                           SigmaData_->R, CalcInfo_->num_ci_orbs,
+                           CalcInfo_->orbsym + CalcInfo_->num_drc_orbs);
             }      
          else {
             s3_block_v(alplist[sac], betlist[sbc], cmat, smat, tei,
                nas, nbs, cnas, sbc, cac, cbc, sbirr, cbirr, 
-               cprime, F, V, Sgn, L, R, CalcInfo_->num_ci_orbs,
-               CalcInfo_->orbsym + CalcInfo_->num_drc_orbs,
+               SigmaData_->cprime, SigmaData_->F, SigmaData_->V,
+               SigmaData_->Sgn, SigmaData_->L, SigmaData_->R,
+               CalcInfo_->num_ci_orbs, CalcInfo_->orbsym + CalcInfo_->num_drc_orbs,
                Parameters_->nthreads);
             }
          }
 
       else if (Parameters_->bendazzoli) {
          s3_block_bz(sac, sbc, cac, cbc, nas, nbs, cnas, tei, cmat, smat, 
-            cprime, sprime, CalcInfo_, OV_);
+            SigmaData_->cprime, SigmaData_->sprime, CalcInfo_, OV_);
          }
 
       else {
          if (Parameters_->repl_otf) {
-            b2brepl(Occs[sac], Jcnt[0], Jij[0], Joij[0], Jridx[0],
-               Jsgn[0], AlphaG_, sac, cac, nas, CalcInfo_);  
-            b2brepl(Occs[sbc], Jcnt[1], Jij[1], Joij[1], Jridx[1],
-               Jsgn[1], BetaG_, sbc, cbc, nbs, CalcInfo_);  
-            s3_block_vdiag_rotf(Jcnt, Jij, Jridx, Jsgn, cmat, smat, tei, 
-               nas, nbs, cnas, sbc, cac, cbc, sbirr, cbirr, cprime, F, V,
-               Sgn, L, R, CalcInfo_->num_ci_orbs,
-               CalcInfo_->orbsym + CalcInfo_->num_drc_orbs);
+            b2brepl(Occs[sac], SigmaData_->Jcnt[0], SigmaData_->Jij[0],
+                    SigmaData_->Joij[0], SigmaData_->Jridx[0],
+                    SigmaData_->Jsgn[0], AlphaG_, sac, cac, nas, CalcInfo_);  
+            b2brepl(Occs[sbc], SigmaData_->Jcnt[1], SigmaData_->Jij[1],
+                    SigmaData_->Joij[1], SigmaData_->Jridx[1],
+                    SigmaData_->Jsgn[1], BetaG_, sbc, cbc, nbs, CalcInfo_);  
+            s3_block_vdiag_rotf(SigmaData_->Jcnt, SigmaData_->Jij, SigmaData_->Jridx,
+                                SigmaData_->Jsgn, cmat, smat, tei, nas, nbs, cnas, sbc, 
+                                cac, cbc, sbirr, cbirr, SigmaData_->cprime, SigmaData_->F,
+                                SigmaData_->V, SigmaData_->Sgn, SigmaData_->L,
+                                SigmaData_->R, CalcInfo_->num_ci_orbs,
+                                CalcInfo_->orbsym + CalcInfo_->num_drc_orbs);
             }      
          else {
-            s3_block_vdiag(alplist[sac], betlist[sbc], cmat, smat, tei,
-               nas, nbs, cnas, sbc, cac, cbc, sbirr, cbirr, 
-               cprime, F, V, Sgn, L, R, CalcInfo_->num_ci_orbs,
-               CalcInfo_->orbsym + CalcInfo_->num_drc_orbs,
-               Parameters_->nthreads);
+            s3_block_vdiag(alplist[sac], betlist[sbc], cmat, smat, tei, nas, nbs,
+                           cnas, sbc, cac, cbc, sbirr, cbirr, SigmaData_->cprime,
+                           SigmaData_->F, SigmaData_->V, SigmaData_->Sgn,
+                           SigmaData_->L, SigmaData_->R, CalcInfo_->num_ci_orbs,
+                           CalcInfo_->orbsym + CalcInfo_->num_drc_orbs,
+                           Parameters_->nthreads);
             }
          }
 

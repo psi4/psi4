@@ -204,7 +204,7 @@ private:
     /// => Globals <= //
     struct stringwr **alplist_;
     struct stringwr **betlist_;
-    struct mcscf_params *MCSCF_Parameters;
+    struct mcscf_params *MCSCF_Parameters_;
     struct calcinfo *CalcInfo_;
     struct params *Parameters_;
     struct ci_blks *CIblks_;
@@ -267,22 +267,25 @@ private:
           int *vu, int maxnvect);
 
     /// => Sigma Calculations <= //
+    struct sigma_data *SigmaData_;
     void sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
           struct stringwr **betlist);
+    void sigma_free(void);
     void sigma(struct stringwr **alplist, struct stringwr **betlist,
           CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec);
+
     void sigma_a(struct stringwr **alplist, struct stringwr **betlist,
           CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec);
     void sigma_b(struct stringwr **alplist, struct stringwr **betlist,
           CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec);
     void sigma_c(struct stringwr **alplist, struct stringwr **betlist,
           CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec);
+
     void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
           double **cmat, double **smat, double *oei, double *tei, int fci, 
           int cblock, int sblock, int nas, int nbs, int sac, int sbc, 
           int cac, int cbc, int cnas, int cnbs, int cnac, int cnbc, 
           int sbirr, int cbirr, int Ms0);
-
     void sigma_get_contrib(struct stringwr **alplist, struct stringwr **betlist,
           CIvect &C, CIvect &S, int **s1_contrib, int **s2_contrib,
           int **s3_contrib);

@@ -50,7 +50,7 @@
 
 namespace psi { namespace detci {
 
-int cc_reqd_sblocks[CI_BLK_MAX];
+//int cc_reqd_sblocks[CI_BLK_MAX];
 
 /*
 ** compute_cc()

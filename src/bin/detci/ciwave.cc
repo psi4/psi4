@@ -51,8 +51,11 @@ void CIWavefunction::common_init()
     title();
     init_ioff();
 
-    // Make sure a few things are 0
+    // Build and set structs
     sme_first_call_ = 1;
+    MCSCF_Parameters_ = new mcscf_params();
+    CIblks_ = new ci_blks();
+    SigmaData_ = new sigma_data();
 
     // CI Params
     get_parameters(options_);     /* get running params (convergence, etc)    */
@@ -63,7 +66,6 @@ void CIWavefunction::common_init()
     print_ras_parameters();
 
     //MCSCF_Params
-    MCSCF_Parameters = new mcscf_params;
     get_mcscf_parameters();
     CalcInfo_ = &CalcInfo;
     Parameters_ = &Parameters;
@@ -506,7 +508,7 @@ void CIWavefunction::form_tpdm(void)
 void CIWavefunction::cleanup(void)
 {
     delete[] ioff_;
-
+    sigma_free();
 }
 
 /*

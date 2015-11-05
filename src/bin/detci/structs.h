@@ -627,6 +627,26 @@ struct ci_blks {
 };
 
 /*
+** Struct to keep track of variable required in a sigma calculation
+*/
+struct sigma_data {
+   double *F;
+   int **Jij[2];
+   int **Joij[2];
+   int **Jridx[2];
+   int *Jcnt[2];
+   signed char **Jsgn[2];
+   unsigned char **Toccs;
+   double **transp_tmp;
+   double **cprime;
+   double  **sprime;
+   double *V, *Sgn;
+   int *L, *R;
+   int max_dim;
+};
+
+
+/*
 ** Structure for pthreads information in s3v.c (s3_block_vdiag)
 **
 */
