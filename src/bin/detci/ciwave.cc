@@ -9,6 +9,7 @@
 #include "ciwave.h"
 #include "structs.h"
 #define EXTERN
+#include "tpool.h"
 #include "globals.h"
 #include "globaldefs.h"
 
@@ -107,18 +108,62 @@ void CIWavefunction::common_init()
     // Form Bendazzoli OV arrays
     if (Parameters.bendazzoli) form_ov();
 
+    /* initialize thread pool */
+    if (Parameters.nthreads > 1)
+      tpool_init(&thread_pool, Parameters.nthreads, CalcInfo.num_alp_str, 0);
+
     name_ = "CIWavefunction";
 }
 double CIWavefunction::compute_energy()
 {
-    energy_ = 0.0;
-    // PsiReturnType ci_return;
-    // if ((ci_return = detci(options_)) == Success) {
-    //     // Get the total energy
-    //     energy_ = Process::environment.globals["CURRENT ENERGY"];
-    // }
 
-    return energy_;
+   if (Parameters.istop) {      /* Print size of space, other stuff, only   */
+     cleanup();
+     Process::environment.globals["CURRENT ENERGY"] = 0.0;
+     Process::environment.globals["CURRENT CORRELATION ENERGY"] = 0.0;
+     Process::environment.globals["CI TOTAL ENERGY"] = 0.0;
+     Process::environment.globals["CI CORRELATION ENERGY"] = 0.0;
+
+     return Success;
+   }
+
+   // MCSCF is special, we let it handle a lot of its own issues
+   if (Parameters.mcscf){
+     compute_mcscf();
+   }
+   else{
+     // Transform and set ci integrals
+     transform_ci_integrals();
+
+     if (Parameters.mpn){
+       compute_mpn();
+       }
+     else if (Parameters.cc)
+       compute_cc();
+     else
+       diag_h();
+   }
+
+   // Finished CI, setting wavefunction parameters
+   if(!Parameters.zaptn & Parameters.opdm){
+     form_opdm();
+     set_opdm();
+   }
+   else{
+     set_opdm(true);
+   }
+
+   if (Parameters.tpdm) form_tpdm();
+   if (Parameters.print_lvl > 0){
+     outfile->Printf("\t\t \"A good bug is a dead bug\" \n\n");
+     outfile->Printf("\t\t\t - Starship Troopers\n\n");
+     outfile->Printf("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
+     outfile->Printf("\t\t\t - Edward Valeev\n\n");
+   }
+
+   cleanup(); 
+
+   return Process::environment.globals["CURRENT ENERGY"];
 }
 
 void CIWavefunction::orbital_locations(const std::string& orbitals, int* start, int* end){
@@ -509,6 +554,7 @@ void CIWavefunction::cleanup(void)
 {
     delete[] ioff_;
     sigma_free();
+    if (Parameters.nthreads > 1) tpool_destroy(thread_pool, 1);
 }
 
 /*
