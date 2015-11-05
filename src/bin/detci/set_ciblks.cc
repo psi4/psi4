@@ -53,8 +53,6 @@ void CIWavefunction::set_ciblks()
    double orbsum = 0.0;
    int set = 0;
 
-   CIblks_ = new ci_blks();
-
    CalcInfo_->num_alp_str = AlphaG_->num_str;
    CalcInfo_->num_bet_str = BetaG_->num_str;
    xlvl = Parameters_->ex_lvl;

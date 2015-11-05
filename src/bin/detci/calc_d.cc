@@ -52,7 +52,7 @@ namespace psi { namespace detci {
 //void calc_d(double *target, double alpha, double *sigma, double lambda,
 //      double *c, int size)
 //{
-//   register int i;
+//   int i;
 //   double tval;
 //
 //   for (i=0; i<size; i++) {
@@ -79,7 +79,7 @@ namespace psi { namespace detci {
 */
 double calc_d2(double *target, double lambda, double *Hd, int size, int precon)
 {
-   register int i;
+   int i;
    double norm = 0.0, tval, tval2;
 
    for (i=0; i<size; i++) {
@@ -114,7 +114,7 @@ double calc_d2(double *target, double lambda, double *Hd, int size, int precon)
 double calc_mpn_vec(double *target, double energy, double *Hd, int size, double
         sign1, double sign2, int precon)
 {
-   register int i;
+   int i;
    double norm = 0.0, tval, tval2;
 
    for (i=0; i<size; i++) {
