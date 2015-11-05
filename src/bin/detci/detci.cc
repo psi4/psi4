@@ -43,11 +43,8 @@
 
 #include <cstdio>
 #include <libmints/mints.h>
-#include <pthread.h>
 #include "structs.h"
 #include "globals.h"
-#include "tpool.h"
-#include "civect.h"
 #include "ciwave.h"
 
 namespace psi { namespace detci {
@@ -66,57 +63,8 @@ PsiReturnType detci(Options &options)
    boost::shared_ptr<Wavefunction> refwfn = Process::environment.wavefunction();
    boost::shared_ptr<CIWavefunction> ciwfn(new CIWavefunction(refwfn, options));
 
-   if (Parameters.nthreads > 1)
-     tpool_init(&thread_pool, Parameters.nthreads, CalcInfo.num_alp_str, 0);
-                                /* initialize thread pool */
+   ciwfn->compute_energy();
 
-   if (Parameters.istop) {      /* Print size of space, other stuff, only   */
-     ciwfn->cleanup();
-     Process::environment.globals["CURRENT ENERGY"] = 0.0;
-     Process::environment.globals["CURRENT CORRELATION ENERGY"] = 0.0;
-     Process::environment.globals["CI TOTAL ENERGY"] = 0.0;
-     Process::environment.globals["CI CORRELATION ENERGY"] = 0.0;
-
-     return Success;
-   }
-
-   // MCSCF is special, we let it handle a lot of its own issues
-   if (Parameters.mcscf){
-     ciwfn->compute_mcscf();
-   }
-   else{
-     // Transform and set ci integrals
-     ciwfn->transform_ci_integrals();
-
-     if (Parameters.mpn){
-       ciwfn->compute_mpn();
-       }
-     else if (Parameters.cc)
-       ciwfn->compute_cc();
-     else
-       ciwfn->diag_h();
-   }
-
-   // Finished CI, setting wavefunction parameters
-   if(!Parameters.zaptn & Parameters.opdm){
-     ciwfn->form_opdm();
-     ciwfn->set_opdm();
-   }
-   else{
-     ciwfn->set_opdm(true);
-   }
-
-   if (Parameters.tpdm) ciwfn->form_tpdm();
-   if (Parameters.nthreads > 1) tpool_destroy(thread_pool, 1);
-   if (Parameters.print_lvl > 0){
-     outfile->Printf("\t\t \"A good bug is a dead bug\" \n\n");
-     outfile->Printf("\t\t\t - Starship Troopers\n\n");
-     outfile->Printf("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
-     outfile->Printf("\t\t\t - Edward Valeev\n\n");
-   }
-
-
-   ciwfn->cleanup();
    Process::environment.set_wavefunction((static_cast<boost::shared_ptr<Wavefunction> > (ciwfn)));
    return Success;
 }
