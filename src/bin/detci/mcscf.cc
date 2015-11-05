@@ -204,6 +204,20 @@ void CIWavefunction::compute_mcscf()
   diis_manager->delete_diis_file();
   diis_manager.reset();
 
+  // Print out the energy
+  outfile->Printf("\n\n    => Energetics <=\n\n");
+  outfile->Printf("    SCF energy =             %20.15f\n", CalcInfo_->escf);
+  outfile->Printf("    Total CI energy =        %20.15f\n", current_energy);
+  if (Parameters_->average_num > 1) {
+    std::stringstream s;
+    outfile->Printf("\n");
+    for (int i=0; i<Parameters_->average_num; i++){
+     s.str(std::string());
+     s << "CI ROOT " << (i+1) << " CORRELATION ENERGY";
+     outfile->Printf("    CI Root %2d energy =      %20.15f\n", i+1,
+         Process::environment.globals[s.str()] + CalcInfo_->escf);
+    }
+  }
 
 }
 
