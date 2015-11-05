@@ -110,7 +110,7 @@ void CIWavefunction::compute_mpn()
   H0block_init(CIblks_->vectlen);
   //CIvect Hd;
   CIvect Hd(Parameters_->icore, 1, Parameters_->num_hd_tmp_units,
-         Parameters_->first_hd_tmp_unit, CIblks_);  
+         Parameters_->first_hd_tmp_unit, CIblks_, CalcInfo_, Parameters_, H0block_);  
   //CIvect Hd(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore,
   //       Parameters_->Ms0, CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size,
   //       CIblks_->Ib_size, CIblks_->offset, CIblks_->num_alp_codes,
@@ -184,16 +184,16 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   int i, j, k, order, did_vec=0;
   int kvec_offset; /* offset if c_0 is not stored on disk */
 
-  CIvect Cvec;
-  CIvect Cvec2;
-  CIvect Sigma;
+  //CIvect Cvec;
+  //CIvect Cvec2;
+  //CIvect Sigma;
 
-  Cvec.set(Parameters_->icore, Parameters_->maxnvect, Parameters_->num_c_tmp_units,
-           Parameters_->first_c_tmp_unit, CIblks_);  
-  Sigma.set(Parameters_->icore, 1, Parameters_->num_s_tmp_units,
-            Parameters_->first_s_tmp_unit, CIblks_);  
-  Cvec2.set(Parameters_->icore, Parameters_->maxnvect, Parameters_->num_c_tmp_units,
-            Parameters_->first_c_tmp_unit, CIblks_);  
+  CIvect Cvec(Parameters_->icore, Parameters_->maxnvect, Parameters_->num_c_tmp_units,
+           Parameters_->first_c_tmp_unit, CIblks_, CalcInfo_, Parameters_, H0block_, false); 
+  CIvect Sigma(Parameters_->icore, 1, Parameters_->num_s_tmp_units,
+            Parameters_->first_s_tmp_unit, CIblks_, CalcInfo_, Parameters_, H0block_, false);
+  CIvect Cvec2(Parameters_->icore, Parameters_->maxnvect, Parameters_->num_c_tmp_units,
+            Parameters_->first_c_tmp_unit, CIblks_, CalcInfo_, Parameters_, H0block_, false);
 
   //Cvec.set(CIblks_->vectlen,CIblks_->num_blocks,Parameters_->icore,Parameters_->Ms0,
   //   CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,

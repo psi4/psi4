@@ -52,7 +52,7 @@ void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist,
 	  int targetfile, int writeflag, int printflag)
 {
 
-   CIvect Ivec, Jvec;
+   //CIvect Ivec, Jvec;
    struct iwlbuf TBuff;
    struct iwlbuf TBuff_aa;
    struct iwlbuf TBuff_bb;
@@ -84,14 +84,18 @@ void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist,
      onepdm_b = block_matrix(populated_orbs, populated_orbs);
    }
 
-   Ivec.set(Parameters_->icore, Inroots, Inunits, Ifirstunit, CIblks_);  
+   CIvect Ivec(Parameters_->icore, Inroots, Inunits, Ifirstunit, CIblks_, CalcInfo_, Parameters_,
+               H0block_, false);
+   //Ivec.set(Parameters_->icore, Inroots, Inunits, Ifirstunit, CIblks_);  
 //   Ivec.set(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore, 1,
 //	     CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
 //	     CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
 //	     CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Inroots, Inunits,
 //	     Ifirstunit, CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
 
-   Jvec.set(Parameters_->icore, Jnroots, Jnunits, Jfirstunit, CIblks_);  
+   CIvect Jvec(Parameters_->icore, Jnroots, Jnunits, Jfirstunit, CIblks_, CalcInfo_, Parameters_,
+               H0block_, false);
+   //Jvec.set(Parameters_->icore, Jnroots, Jnunits, Jfirstunit, CIblks_);  
 //   Jvec.set(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore, 1,
 //	     CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
 //	     CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
