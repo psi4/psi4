@@ -84,7 +84,7 @@ void CIWavefunction::diag_h()
    /* Direct Method --- use RSP diagonalization routine */
    if (Parameters_->diag_method == METHOD_RSP) {
 
-      CIvect Cvec(1, 1, 0, 0, CIblks_);
+      CIvect Cvec(1, 1, 0, 0, CIblks_, CalcInfo_, Parameters_, H0block_);
       //CIvect Cvec(CIblks_->vectlen, CIblks_->num_blocks, 1, Parameters_->Ms0,
       //   CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
       //   CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
@@ -302,8 +302,8 @@ void CIWavefunction::diag_h()
    else if (Parameters_->diag_method == METHOD_RSPTEST_OF_SEM) {
 
       // in-core CIvectors, shouldn't need to open files
-      CIvect Cvec(1, 1, 0, 0, CIblks_);
-      CIvect Hd(1, 1, 0, 0, CIblks_);
+      CIvect Cvec(1, 1, 0, 0, CIblks_, CalcInfo_, Parameters_, H0block_);
+      CIvect Hd(1, 1, 0, 0, CIblks_, CalcInfo_, Parameters_, H0block_);
       //CIvect Cvec(CIblks_->vectlen, CIblks_->num_blocks, 1, Parameters_->Ms0,
       //   CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
       //   CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
@@ -524,7 +524,7 @@ void CIWavefunction::diag_h()
       H0block_init(size);
 
       CIvect Hd(Parameters_->icore, 1, Parameters_->num_hd_tmp_units,
-                Parameters_->first_hd_tmp_unit, CIblks_);
+                Parameters_->first_hd_tmp_unit, CIblks_, CalcInfo_, Parameters_, H0block_);
       //CIvect Hd(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore,
       //   Parameters_->Ms0, CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size,
       //   CIblks_->Ib_size, CIblks_->offset, CIblks_->num_alp_codes,

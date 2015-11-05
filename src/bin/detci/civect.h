@@ -35,7 +35,9 @@ struct params;
 struct H_zero_block;
 struct ci_blks;
 class CIWavefunction;
+}}
 
+namespace psi { namespace detci {
 
 /*
 ** CIVECT.H
@@ -51,8 +53,8 @@ class CIvect {
    friend class CIWavefunction;
 
    protected:
-      struct calcinfo *CI_CalcInfo;
-      struct params *CI_Params;
+      struct calcinfo *CI_CalcInfo_;
+      struct params *CI_Params_;
       struct H_zero_block *CI_H0block_;
 
       void common_init();        /* common init func */
@@ -116,15 +118,19 @@ class CIvect {
       CIvect(BIGINT vl, int nb, int incor, int ms0, int *iac,
          int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc, 
          int nirr, int cdperirr, int maxvect, int nunits, 
-         int funit, int *fablk, int *lablk, int **dc);
-      CIvect(int incor, int maxvect, int nunits, int funit, struct ci_blks *CIblks);
+         int funit, int *fablk, int *lablk, int **dc,
+         struct calcinfo *CI_CalcInfo, struct params *CI_Params,
+         struct H_zero_block *CI_H0block, bool buf_init = true);
+      CIvect(int incor, int maxvect, int nunits, int funit, struct ci_blks *CIblks,
+         struct calcinfo *CI_CalcInfo, struct params *CI_Params,
+         struct H_zero_block *CI_H0block, bool buf_init = true);
       ~CIvect();
 
       double * buf_malloc(void);
       void set(int incor, int maxvect, int nunits, int funit, struct ci_blks *CIblks); 
       void set(BIGINT vl, int nb, int incor, int ms0, int *iac,
          int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc, 
-         int nirr, int cdperirr, int maxvect, int nunits, int funit, 
+         int nirr, int cdperirr, int maxvect, int nunits, int funit,
          int *fablk, int *lablk, int **dc);
       void print(std::string OutFileRMR);
       double operator*(CIvect &b);

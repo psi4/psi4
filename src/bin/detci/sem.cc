@@ -95,21 +95,22 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    std::string str;
    bool dvec_read_fail = false;
 
-   CIvect Cvec;
-   CIvect Cvec2;
-   CIvect Sigma;
-   CIvect Sigma2;
-   CIvect Dvec;
-   CIvect Dvec2;
 
-   Cvec.set(Parameters_->icore, maxnvect, Parameters_->num_c_tmp_units,
-            Parameters_->first_c_tmp_unit, CIblks_);  
-   Cvec2.set(Parameters_->icore, maxnvect, Parameters_->num_c_tmp_units,
-             Parameters_->first_c_tmp_unit, CIblks_);  
-   Sigma.set(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
-             Parameters_->first_s_tmp_unit, CIblks_);  
-   Sigma2.set(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
-              Parameters_->first_s_tmp_unit, CIblks_);  
+   // DGAS: This will cause problems, need to reexamine this
+   CIvect *Dvecp, *Dvec2p;
+
+   CIvect Cvec(Parameters_->icore, maxnvect, Parameters_->num_c_tmp_units,
+          Parameters_->first_c_tmp_unit, CIblks_, CalcInfo_, Parameters_,
+          H0block_, false);  
+   CIvect Cvec2(Parameters_->icore, maxnvect, Parameters_->num_c_tmp_units,
+          Parameters_->first_c_tmp_unit, CIblks_, CalcInfo_, Parameters_,
+          H0block_, false);  
+   CIvect Sigma(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
+                Parameters_->first_s_tmp_unit, CIblks_, CalcInfo_, Parameters_,
+                H0block_, false);  
+   CIvect Sigma2(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
+                 Parameters_->first_s_tmp_unit, CIblks_, CalcInfo_, Parameters_,
+                 H0block_, false);  
 
    //Cvec.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
    //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
@@ -136,10 +137,12 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    //   Parameters_->num_s_tmp_units, Parameters_->first_s_tmp_unit,
    //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
    if (!Parameters_->nodfile) {
-     Dvec.set(Parameters_->icore, nroots, Parameters_->num_d_tmp_units,
-              Parameters_->first_d_tmp_unit, CIblks_);  
-     Dvec2.set(Parameters_->icore, nroots, Parameters_->num_d_tmp_units,
-               Parameters_->first_d_tmp_unit, CIblks_);  
+     Dvecp = new CIvect(Parameters_->icore, nroots, Parameters_->num_d_tmp_units,
+              Parameters_->first_d_tmp_unit, CIblks_, CalcInfo_, Parameters_,
+              H0block_, false); 
+     Dvec2p = new CIvect(Parameters_->icore, nroots, Parameters_->num_d_tmp_units,
+               Parameters_->first_d_tmp_unit, CIblks_, CalcInfo_, Parameters_,
+               H0block_, false);
 
      //Dvec.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
      //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
@@ -153,12 +156,14 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
      //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, nroots,
      //   Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
      //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-     }
+   }
    else {
-     Dvec.set(Parameters_->icore, maxnvect, Parameters_->num_c_tmp_units,
-              Parameters_->first_c_tmp_unit, CIblks_);  
-     Dvec2.set(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
-               Parameters_->first_s_tmp_unit, CIblks_);  
+     Dvecp = new CIvect(Parameters_->icore, maxnvect, Parameters_->num_c_tmp_units,
+              Parameters_->first_c_tmp_unit, CIblks_, CalcInfo_, Parameters_,
+              H0block_, false); 
+     Dvec2p = new CIvect(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
+               Parameters_->first_s_tmp_unit, CIblks_, CalcInfo_, Parameters_,
+               H0block_, false);
 
      //Dvec.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
      //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
@@ -172,7 +177,10 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
      //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, maxnvect,
      //   Parameters_->num_s_tmp_units, Parameters_->first_s_tmp_unit,
      //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-     }
+   }
+
+   CIvect Dvec = *Dvecp;
+   CIvect Dvec2 = *Dvec2p;
 
    /* open the files: some of these CIvectors are logical vectors that
       point to the same files ... don't need to repeat the file opens
@@ -1426,6 +1434,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    free_matrix(tmpmat, maxnvect);  free(Lvec);
    free(buffer1);
    free(buffer2);
+
 }
 
 }} // namespace psi::detci

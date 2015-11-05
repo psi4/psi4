@@ -61,7 +61,7 @@ void CIWavefunction::opdm(struct stringwr **alplist, struct stringwr **betlist,
 	  int targetfile, int writeflag, int printflag)
 {
 
-  CIvect Ivec, Jvec;
+  //CIvect Ivec, Jvec;
   int i, j, k, l, klast, roots;
   int maxrows, maxcols;
   unsigned long bufsz;
@@ -89,7 +89,9 @@ void CIWavefunction::opdm(struct stringwr **alplist, struct stringwr **betlist,
     Jroot = 0; 
   if (Jroot > Jnroots) return;
 
-  Ivec.set(Parameters_->icore, Inroots, Inunits, Ifirstunit, CIblks_);  
+//  Ivec.set(Parameters_->icore, Inroots, Inunits, Ifirstunit, CIblks_);  
+  CIvect Ivec(Parameters_->icore, Inroots, Inunits, Ifirstunit, CIblks_, CalcInfo_, Parameters_,
+              H0block_, false);
   //Ivec.set(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore, Parameters_->Ms0,
   //         CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
   //         CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
@@ -97,7 +99,9 @@ void CIWavefunction::opdm(struct stringwr **alplist, struct stringwr **betlist,
   //         Ifirstunit, CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
   Ivec.init_io_files(true);
 
-  Jvec.set(Parameters_->icore, Jnroots, Jnunits, Jfirstunit, CIblks_);  
+//  Jvec.set(Parameters_->icore, Jnroots, Jnunits, Jfirstunit, CIblks_);  
+  CIvect Jvec(Parameters_->icore, Jnroots, Jnunits, Jfirstunit, CIblks_, CalcInfo_, Parameters_,
+              H0block_, false);
   //Jvec.set(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore, Parameters_->Ms0,
   //         CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
   //         CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,

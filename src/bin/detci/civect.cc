@@ -51,10 +51,10 @@
 #include <libpsio/psio.h>
 #include <libmints/mints.h>
 #include "structs.h"
-#include "globals.h"
 #include "ci_tol.h"
 #include "civect.h"
 #include "libparallel/ParallelPrinter.h"
+
 namespace psi { namespace detci {
 
 extern void transp_sigma(double **a, int rows, int cols, int phase);
@@ -91,21 +91,33 @@ CIvect::CIvect() // Default constructor
 CIvect::CIvect(BIGINT vl, int nb, int incor, int ms0, int *iac,
          int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc,
          int nirr, int cdpirr, int mxv, int nu,
-         int funit, int *fablk, int *lablk, int **dc)
+         int funit, int *fablk, int *lablk, int **dc,
+         struct calcinfo *CI_CalcInfo, struct params *CI_Params,
+         struct H_zero_block *CI_H0block, bool buf_init)
 {
    common_init();
+   CI_CalcInfo_ = CI_CalcInfo;
+   CI_Params_ = CI_Params;
+   CI_H0block_ = CI_H0block;
 
    set(vl, nb, incor, ms0, iac, ibc, ias, ibs, offs, nac, nbc,
          nirr, cdpirr, mxv, nu, funit, fablk, lablk, dc);
 
-   buffer = buf_malloc();
-   blocks[0][0] = buffer;
-   buf_lock(buffer);
+   if (buf_init){
+       buffer = buf_malloc();
+       blocks[0][0] = buffer;
+       buf_lock(buffer);
+   }
 
 }
-CIvect::CIvect(int incor, int maxvect, int nunits, int funit, struct ci_blks *CIblks)
+CIvect::CIvect(int incor, int maxvect, int nunits, int funit, struct ci_blks *CIblks,
+               struct calcinfo *CI_CalcInfo, struct params *CI_Params,
+               struct H_zero_block *CI_H0block, bool buf_init)
 {
   common_init();
+  CI_CalcInfo_ = CI_CalcInfo;
+  CI_Params_ = CI_Params;
+  CI_H0block_ = CI_H0block;
 
   set(CIblks->vectlen, CIblks->num_blocks, incor, CIblks->Ms0,
       CIblks->Ia_code, CIblks->Ib_code, CIblks->Ia_size, CIblks->Ib_size,
@@ -113,9 +125,11 @@ CIvect::CIvect(int incor, int maxvect, int nunits, int funit, struct ci_blks *CI
       CIblks->nirreps, CIblks->subgr_per_irrep, maxvect, nunits,
       funit, CIblks->first_iablk, CIblks->last_iablk, CIblks->decode);
 
-  buffer = buf_malloc();
-  blocks[0][0] = buffer;
-  buf_lock(buffer);
+  if (buf_init){
+      buffer = buf_malloc();
+      blocks[0][0] = buffer;
+      buf_lock(buffer);
+  }
 }
 
 void CIvect::common_init(void)
@@ -247,7 +261,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac,
       for (i=0,buf_per_vect=0; i<nirreps; i++) {
          j = first_ablk[i];
          if (j < 0) continue;
-         if (!Ms0 || CalcInfo.ref_sym==0) buf_per_vect++;
+         if (!Ms0 || CI_CalcInfo_->ref_sym==0) buf_per_vect++;
          else if (Ia_code[j]/codes_per_irrep > Ib_code[j]/codes_per_irrep)
             buf_per_vect++;
          }
@@ -258,7 +272,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac,
       for (i=0,j=0; i<nirreps; i++) {
          k = first_ablk[i];
          if (k < 0) continue;
-         if (!Ms0 || CalcInfo.ref_sym==0) {
+         if (!Ms0 || CI_CalcInfo_->ref_sym==0) {
             buf2blk[j] = i;
             j++;
             }
@@ -426,7 +440,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac,
      }
 
    // MLL 5/7/98: Want to know the subblock length of a vector //
-   //  if (Parameters.print_lvl) {
+   //  if (CI_Params_->print_lvl) {
    //     outfile->Printf("\n CI vector/subblock length = %ld\n", buffer_size);
    //     
    //     }
@@ -516,6 +530,7 @@ void CIvect::set_nvect(int i)
 ** Function returns the scalar product of two CI vectors.
 ** Assumes that diagonal blocks are full for Ms=0 cases
 */
+
 double CIvect::operator*(CIvect &b)
 {
    double dotprod=0.0, tval;
@@ -635,11 +650,11 @@ double CIvect::blk_max_abs_vals(int i, int offdiag, int nval, int *iac,
                   break;
                   }
                }
-            H0block.spin_cp_vals = minval;
+            CI_H0block_->spin_cp_vals = minval;
             minval = coeff[nval-1];
             }
          if (offdiag) {
-            if (Parameters.Ms0 && ((int) Parameters.S % 2) &&
+            if (CI_Params_->Ms0 && ((int) CI_Params_->S % 2) &&
                 (!neg_only)) value -= value;
             if (abs_value >= minval) {
                for (m=0; m<nval; m++) {
@@ -659,7 +674,7 @@ double CIvect::blk_max_abs_vals(int i, int offdiag, int nval, int *iac,
                      break;
                      }
                   }
-               H0block.spin_cp_vals = minval;
+               CI_H0block_->spin_cp_vals = minval;
                minval = coeff[nval-1];
                }
             }
@@ -667,9 +682,9 @@ double CIvect::blk_max_abs_vals(int i, int offdiag, int nval, int *iac,
       }
 
  /*
-   for (i=0; i<H0block.size+H0block.coupling_size; i++)
-      outfile->Printf("H0block.H00[%d] = %lf\n",i,H0block.H00[i]);
-   outfile->Printf("H0block.spin_cp_vals = %lf\n",H0block.spin_cp_vals);
+   for (i=0; i<CI_H0block_->size+CI_H0block_->coupling_size; i++)
+      outfile->Printf("CI_H0block_->H00[%d] = %lf\n",i,CI_H0block_->H00[i]);
+   outfile->Printf("CI_H0block_->spin_cp_vals = %lf\n",CI_H0block_->spin_cp_vals);
    outfile->Printf("minval = %lf\n",minval);
    outfile->Printf("printed in civect::blk_max_abs_vals\n");
  */
@@ -739,21 +754,21 @@ void CIvect::diag_mat_els(struct stringwr **alplist, struct stringwr
                oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == Z_HD_KAVE)
            calc_hd_block_z_ave(alplist[iac], betlist[ibc], blocks[block],
-              Parameters.perturbation_parameter, tei, edrc, ias, ibs, na,
+              CI_Params_->perturbation_parameter, tei, edrc, ias, ibs, na,
               nb, nbf);
          else {
            throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
            }
 
-         if (Parameters.hd_otf && H0block.size) {
+         if (CI_Params_->hd_otf && CI_H0block_->size) {
             minval = blk_max_abs_vals(block, 0,
-                    (H0block.size+H0block.coupling_size), H0block.alplist,
-                    H0block.betlist, H0block.alpidx, H0block.betidx,
-                    H0block.H00, minval, Parameters.neg_only);
+                    (CI_H0block_->size+CI_H0block_->coupling_size), CI_H0block_->alplist,
+                    CI_H0block_->betlist, CI_H0block_->alpidx, CI_H0block_->betidx,
+                    CI_H0block_->H00, minval, CI_Params_->neg_only);
            }
 
          }
-      if (!Parameters.hd_otf) write(0,0);
+      if (!CI_Params_->hd_otf) write(0,0);
 
       /*
       outfile->Printf("Diagonal matrix elements\n");
@@ -786,22 +801,22 @@ void CIvect::diag_mat_els(struct stringwr **alplist, struct stringwr
                  oei, tei, edrc, ias, ibs, na, nb, nbf);
             else if (method == Z_HD_KAVE)
               calc_hd_block_z_ave(alplist[iac], betlist[ibc], blocks[block],
-              Parameters.perturbation_parameter, tei, edrc, ias, ibs, na,
+              CI_Params_->perturbation_parameter, tei, edrc, ias, ibs, na,
               nb, nbf);
             else {
               throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
               }
 
-            if (Parameters.hd_otf && H0block.size) {
+            if (CI_Params_->hd_otf && CI_H0block_->size) {
               minval = blk_max_abs_vals(block, buf_offdiag[buf],
-                    (H0block.size+H0block.coupling_size),
-                    H0block.alplist, H0block.betlist,
-                    H0block.alpidx, H0block.betidx, H0block.H00,
-                    minval, Parameters.neg_only);
+                    (CI_H0block_->size+CI_H0block_->coupling_size),
+                    CI_H0block_->alplist, CI_H0block_->betlist,
+                    CI_H0block_->alpidx, CI_H0block_->betidx, CI_H0block_->H00,
+                    minval, CI_Params_->neg_only);
               }
 
             }
-         if (!Parameters.hd_otf) write(0,buf);
+         if (!CI_Params_->hd_otf) write(0,buf);
          }
 
       } /* end icore==2 */
@@ -830,18 +845,18 @@ void CIvect::diag_mat_els(struct stringwr **alplist, struct stringwr
               oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == Z_HD_KAVE)
            calc_hd_block_z_ave(alplist[iac], betlist[ibc], blocks[block],
-              Parameters.perturbation_parameter, tei, edrc, ias, ibs, na,
+              CI_Params_->perturbation_parameter, tei, edrc, ias, ibs, na,
               nb, nbf);
          else {
            throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
            }
-         if (Parameters.hd_otf && H0block.size) {
+         if (CI_Params_->hd_otf && CI_H0block_->size) {
             minval = blk_max_abs_vals(block, buf_offdiag[buf],
-                    (H0block.size+H0block.coupling_size),
-                    H0block.alplist, H0block.betlist, H0block.alpidx,
-                    H0block.betidx, H0block.H00, minval, Parameters.neg_only);
+                    (CI_H0block_->size+CI_H0block_->coupling_size),
+                    CI_H0block_->alplist, CI_H0block_->betlist, CI_H0block_->alpidx,
+                    CI_H0block_->betidx, CI_H0block_->H00, minval, CI_Params_->neg_only);
            }
-         if (!Parameters.hd_otf) write(0,buf);
+         if (!CI_Params_->hd_otf) write(0,buf);
          }
       } /* end icore==0 */
 
@@ -881,7 +896,7 @@ void CIvect::diag_mat_els_otf(struct stringwr **alplist, struct stringwr
                oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == Z_HD_KAVE)
            calc_hd_block_z_ave(alplist[iac], betlist[ibc], blocks[block],
-              Parameters.perturbation_parameter, tei, edrc, ias, ibs, na,
+              CI_Params_->perturbation_parameter, tei, edrc, ias, ibs, na,
               nb, nbf);
          else {
            throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
@@ -913,7 +928,7 @@ void CIvect::diag_mat_els_otf(struct stringwr **alplist, struct stringwr
                  oei, tei, edrc, ias, ibs, na, nb, nbf);
             else if (method == Z_HD_KAVE)
               calc_hd_block_z_ave(alplist[iac], betlist[ibc], blocks[block],
-              Parameters.perturbation_parameter, tei, edrc, ias, ibs, na,
+              CI_Params_->perturbation_parameter, tei, edrc, ias, ibs, na,
               nb, nbf);
             else {
               throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
@@ -944,7 +959,7 @@ void CIvect::diag_mat_els_otf(struct stringwr **alplist, struct stringwr
               oei, tei, edrc, ias, ibs, na, nb, nbf);
          else if (method == Z_HD_KAVE)
            calc_hd_block_z_ave(alplist[iac], betlist[ibc], blocks[block],
-              Parameters.perturbation_parameter, tei, edrc, ias, ibs, na,
+              CI_Params_->perturbation_parameter, tei, edrc, ias, ibs, na,
               nb, nbf);
          else {
            throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
@@ -1019,9 +1034,9 @@ void CIvect::init_vals(int ivect, int nvals, int *alplist, int *alpidx,
    /* this used to read >= PARM_GUESS_VEC_H0_BLOCK... but these
       are now gathered from a symnorm so I'll comment this out
       CDS 8/03
-   if (Parameters.guess_vector == PARM_GUESS_VEC_H0_BLOCK) {
+   if (CI_Params_->guess_vector == PARM_GUESS_VEC_H0_BLOCK) {
      for (i=0; i<nvals; i++)
-        H0block.c0b[i] = value[i];
+        CI_H0block_->c0b[i] = value[i];
      }
    */
 
@@ -1089,9 +1104,9 @@ void CIvect::set_vals(int ivect, int nvals, int *alplist, int *alpidx,
    /* this used to read >= PARM_GUESS_VEC_H0_BLOCK... but these
       are now gathered from a symnorm so I'll comment this out
       CDS 8/03
-   if (Parameters.guess_vector == PARM_GUESS_VEC_H0_BLOCK) {
+   if (CI_Params_->guess_vector == PARM_GUESS_VEC_H0_BLOCK) {
      for (i=0; i<nvals; i++)
-        H0block.c0b[i] = value[i];
+        CI_H0block_->c0b[i] = value[i];
      }
    */
 
@@ -1163,9 +1178,9 @@ void CIvect::extract_vals(int ivect, int nvals, int *alplist, int *alpidx,
 
    tval = value[0];
 
-   if (Parameters.guess_vector == PARM_GUESS_VEC_H0_BLOCK) {
+   if (CI_Params_->guess_vector == PARM_GUESS_VEC_H0_BLOCK) {
      for (i=0; i<nvals; i++)
-        H0block.c0b[i] = value[i];
+        CI_H0block_->c0b[i] = value[i];
      }
 
    if (icore == 1) { /* whole vector in-core */
@@ -1256,8 +1271,8 @@ void CIvect::symnorm(double a, int vecode, int gather_vec)
       return;
       }
 
-   if (!Parameters.Ms0) phase = 1.0;
-   else phase = ((int) Parameters.S % 2) ? -1.0 : 1.0;
+   if (!CI_Params_->Ms0) phase = 1.0;
+   else phase = ((int) CI_Params_->S % 2) ? -1.0 : 1.0;
 
    if (icore == 1) {
 
@@ -1564,7 +1579,7 @@ void CIvect::symmetrize(double phase, int iblock)
       irrep = iblock;
 
       /* do only for diagonal irrep blocks */
-      if (CalcInfo.ref_sym != 0) return;
+      if (CI_CalcInfo_->ref_sym != 0) return;
 
       for (blk=first_ablk[irrep]; blk<=last_ablk[irrep]; blk++) {
          ac = Ia_code[blk];
@@ -1917,16 +1932,16 @@ int CIvect::schmidt_add2(CIvect &c, int first_vec, int last_vec,
    norm = sqrt(norm);
    /* outfile->Printf("sqrt Norm of %d vec = %20.15f\n",target_vec,norm); */
    /* There was a dangling else here:
-    * if (Parameters.mpn_schmidt)
+    * if (CI_Params_->mpn_schmidt)
     *   if (norm < MPn_NORM_TOL) return(0);
     *  else if (norm < SA_NORM_TOL) return(0);
     */
-   if (Parameters.mpn_schmidt) {
+   if (CI_Params_->mpn_schmidt) {
      if (norm < MPn_NORM_TOL) return(0);
      else if (norm < SA_NORM_TOL) return(0);
    }
  /*
-   if (norm < SA_NORM_TOL && !Parameters.mpn) return(0);
+   if (norm < SA_NORM_TOL && !CI_Params_->mpn) return(0);
  */
    norm = 1.0 / norm;
    /* outfile->Printf("1.0/sqrt(norm) of %d vec = %20.15f\n",target_vec,norm); */
@@ -1954,7 +1969,7 @@ int CIvect::schmidt_add2(CIvect &c, int first_vec, int last_vec,
       c.print(outfile);
      */
 
-      if (Parameters.mpn) {
+      if (CI_Params_->mpn) {
         zero_arr(dotchk,100);
         for (buf=0; buf<buf_per_vect; buf++) {
            read(source_vec, buf);
@@ -2079,13 +2094,13 @@ void CIvect::dcalc(int nr, int L, double **alpha, double *lambda,
       /* if (converged && root==nr-1 && L<nr) break; */
       for (buf=0; buf<buf_per_vect; buf++) {
          zero();
-         if (Parameters.update==UPDATE_OLSEN) {
+         if (CI_Params_->update==UPDATE_OLSEN) {
            read(root,buf);
            xeax(buffer, -E_est[root], buf_size[buf]);
            /* buffer is know E_est*C^k */
            }
          for (ivect=0; ivect<L; ivect++) {
-            if (Parameters.update == UPDATE_DAVIDSON) { /* DAVIDSON update formula */
+            if (CI_Params_->update == UPDATE_DAVIDSON) { /* DAVIDSON update formula */
               C.buf_lock(buf1);
               C.read(ivect, buf);
               tval = -alpha[ivect][root] * lambda[root];
@@ -2143,22 +2158,22 @@ double CIvect::dcalc2(int rootnum, double lambda, CIvect &Hd,
 
    for (buf=0; buf<buf_per_vect; buf++) {
       read(rootnum, buf);
-      if (Parameters.hd_otf == FALSE) Hd.read(0, buf);
-      else if (Parameters.hd_otf == TRUE) {
-        if (Parameters.mpn)
-          Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-             CalcInfo.twoel_ints, CalcInfo.e0_drc, CalcInfo.num_alp_expl,
-             CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
+      if (CI_Params_->hd_otf == FALSE) Hd.read(0, buf);
+      else if (CI_Params_->hd_otf == TRUE) {
+        if (CI_Params_->mpn)
+          Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
+             CI_CalcInfo_->twoel_ints, CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
+             CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
         else
-          Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-             CalcInfo.twoel_ints, CalcInfo.edrc, CalcInfo.num_alp_expl,
-             CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
+          Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
+             CI_CalcInfo_->twoel_ints, CI_CalcInfo_->edrc, CI_CalcInfo_->num_alp_expl,
+             CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
         }
 
-      if (Parameters.mpn) norm = calc_mpn_vec(buffer, lambda, Hd.buffer,
+      if (CI_Params_->mpn) norm = calc_mpn_vec(buffer, lambda, Hd.buffer,
                            buf_size[buf], 1.0, -1.0, DIV);
       else {
-        if (Parameters.precon >= PRECON_GEN_DAVIDSON)
+        if (CI_Params_->precon >= PRECON_GEN_DAVIDSON)
           h0block_gather_vec(CI_VEC);
         tval = calc_d2(buffer, lambda, Hd.buffer, buf_size[buf], precon);
        }
@@ -2167,7 +2182,7 @@ double CIvect::dcalc2(int rootnum, double lambda, CIvect &Hd,
       norm += tval;
       write(rootnum, buf);
       }
-   //if (!Parameters.mpn) errcod = H0block_calc(lambda); /* MLL */
+   //if (!CI_Params_->mpn) errcod = H0block_calc(lambda); /* MLL */
    return(norm);
 }
 
@@ -2206,16 +2221,16 @@ void CIvect::construct_kth_order_wf(CIvect &Hd, CIvect &S, CIvect &C,
 
      for (buf=0; buf<buf_per_vect; buf++) {
         Hd.buf_lock(buf2);
-        Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-             CalcInfo.twoel_ints, CalcInfo.e0_drc, CalcInfo.num_alp_expl,
-             CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
+        Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
+             CI_CalcInfo_->twoel_ints, CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
+             CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
         read(k-1, buf);
-        norm = calc_mpn_vec(buffer, (mp_energy[1]-CalcInfo.edrc),
+        norm = calc_mpn_vec(buffer, (mp_energy[1]-CI_CalcInfo_->edrc),
                 Hd.buffer, buf_size[buf], 1.0, 1.0, MULT);
         Hd.buf_unlock();
 
         C.buf_lock(buf2);
-        if (Parameters.mpn_schmidt) {
+        if (CI_Params_->mpn_schmidt) {
           for (i=0; i<=k-2; i++) {
              C.read(i, buf);
              tval = 0.0;
@@ -2241,15 +2256,15 @@ void CIvect::construct_kth_order_wf(CIvect &Hd, CIvect &S, CIvect &C,
         S.buf_unlock();
 
         Hd.buf_lock(buf2);
-        Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-             CalcInfo.twoel_ints, CalcInfo.e0_drc, CalcInfo.num_alp_expl,
-             CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
-        norm = calc_mpn_vec(buffer, CalcInfo.e0, Hd.buffer, buf_size[buf],
+        Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
+             CI_CalcInfo_->twoel_ints, CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
+             CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
+        norm = calc_mpn_vec(buffer, CI_CalcInfo_->e0, Hd.buffer, buf_size[buf],
                 -1.0, 1.0, DIV);
 
         if (Ms0) {
           block = buf2blk[buf];
-          if ((int) Parameters.S % 2) symmetrize(-1.0, block);
+          if ((int) CI_Params_->S % 2) symmetrize(-1.0, block);
           else symmetrize(1.0, block);
          }
         copy_zero_blocks(S);
@@ -2292,14 +2307,14 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
    /* First determine the overlap of kth order wavefunction with
    ** all previous order wavefunctions
    */
-   if (Parameters.mpn_schmidt) {
-     zero_mat(wfn_overlap, Parameters.maxnvect+1, Parameters.maxnvect+1);
+   if (CI_Params_->mpn_schmidt) {
+     zero_mat(wfn_overlap, CI_Params_->maxnvect+1, CI_Params_->maxnvect+1);
      /* for (i=0; i<k-1; i++) wfn_overlap[i][i] = 1.0; */
      }
 
    C.buf_lock(buf2);
    for (buf=0; buf<buf_per_vect; buf++) {
-      if (Parameters.mpn_schmidt) {
+      if (CI_Params_->mpn_schmidt) {
         for (i=0; i<=(k-kvec_offset); i++) {
            read(i, buf);
            for (j=i; j<=(k-kvec_offset); j++) {
@@ -2335,7 +2350,7 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
    C.buf_unlock();
 
 
-   if (Parameters.print_lvl > 3) {
+   if (CI_Params_->print_lvl > 3) {
      outfile->Printf("\nwfn_overlap = \n");
      print_mat(wfn_overlap, k+1, k+1, "outfile");
      outfile->Printf("\t\t\t\t");
@@ -2356,9 +2371,9 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
       E2kp1 += tval;
       S.buf_unlock();
       Hd.buf_lock(buf2);
-      Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-           CalcInfo.twoel_ints, CalcInfo.e0_drc, CalcInfo.num_alp_expl,
-           CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
+      Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
+           CI_CalcInfo_->twoel_ints, CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
+           CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
       xexy(Hd.buffer, buffer, buf_size[buf]);
       dot_arr(buffer, Hd.buffer, buf_size[buf], &tval);
       if (buf_offdiag[buf]) tval *= 2.0;
@@ -2370,7 +2385,7 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
       Hd.buf_unlock();
       }
 
-   if (Parameters.mpn_schmidt) {
+   if (CI_Params_->mpn_schmidt) {
    /*
      C.buf_lock(buf2);
      for (i=1; i<=k-2; i++) {
@@ -2436,10 +2451,10 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
                 tval*2.0*mp2k_energy[k+1-i]);
         */
         }
-     E2kp1 += (CalcInfo.edrc-mp2k_energy[1])*wfn_overlap[k][k];
+     E2kp1 += (CI_CalcInfo_->edrc-mp2k_energy[1])*wfn_overlap[k][k];
      E2kp1 -= 2.0*mp2k_energy[2]*wfn_overlap[k-1][k];
      E2kp1 -= mp2k_energy[3]*wfn_overlap[k-1][k-1];
-     E2k += (CalcInfo.edrc-mp2k_energy[1])*wfn_overlap[k][k-1];
+     E2k += (CI_CalcInfo_->edrc-mp2k_energy[1])*wfn_overlap[k][k-1];
      E2k -= mp2k_energy[2]*wfn_overlap[k-1][k-1];
      }
 
@@ -2467,9 +2482,9 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
         for (j=1; j<=k-2; j++)
            E2k -= mp2k_energy[2*k-i-j] * wfn_overlap[i][j];
         }
-     E2k += (CalcInfo.edrc-mp2k_energy[1]) * wfn_overlap[k][k-1];
+     E2k += (CI_CalcInfo_->edrc-mp2k_energy[1]) * wfn_overlap[k][k-1];
      E2k -= mp2k_energy[2] * wfn_overlap[k-1][k-1];
-     E2kp1 += (CalcInfo.edrc-mp2k_energy[1])*wfn_overlap[k][k];
+     E2kp1 += (CI_CalcInfo_->edrc-mp2k_energy[1])*wfn_overlap[k][k];
      E2kp1 -= mp2k_energy[3]*wfn_overlap[k-1][k-1];
      E2kp1 -= 2.0 * mp2k_energy[2] * wfn_overlap[k-1][k];
      }
@@ -2479,13 +2494,13 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
      for (i=1; i<=k; i++)
         for (j=1; j<=k; j++) {
            E2kp1 -= mp2k_energy[2*k+1-i-j] * wfn_overlap[i][j];
-           if ((i==k) && (j==k)) E2kp1 += CalcInfo.edrc * wfn_overlap[k][k];
+           if ((i==k) && (j==k)) E2kp1 += CI_CalcInfo_->edrc * wfn_overlap[k][k];
            }
 
      for (i=1; i<=k; i++)
         for (j=1; j<k; j++) {
            E2k -= mp2k_energy[2*k-i-j] * wfn_overlap[i][j];
-           if ((i==k) && (j==k-1)) E2k += CalcInfo.edrc * wfn_overlap[k][k-1];
+           if ((i==k) && (j==k-1)) E2k += CI_CalcInfo_->edrc * wfn_overlap[k][k-1];
            }
      }
 
@@ -2837,53 +2852,53 @@ void CIvect::h0block_buf_init(void)
    int i, cnt, irrep, buf, blk;
    int *tmparr;
 
-   H0block.nbuf = buf_per_vect;
-   H0block.buf_num = init_int_array(buf_per_vect);
-   if (H0block.size < 1) return;
+   CI_H0block_->nbuf = buf_per_vect;
+   CI_H0block_->buf_num = init_int_array(buf_per_vect);
+   if (CI_H0block_->size < 1) return;
 
-   tmparr = init_int_array(H0block.size+H0block.coupling_size);
+   tmparr = init_int_array(CI_H0block_->size+CI_H0block_->coupling_size);
 
    if (icore == 1) {
-      H0block.buf_member =
-        init_int_matrix(1, H0block.size+H0block.coupling_size);
-      for (i=0; i<(H0block.size+H0block.coupling_size); i++) {
-         H0block.buf_member[0][i] = i;
+      CI_H0block_->buf_member =
+        init_int_matrix(1, CI_H0block_->size+CI_H0block_->coupling_size);
+      for (i=0; i<(CI_H0block_->size+CI_H0block_->coupling_size); i++) {
+         CI_H0block_->buf_member[0][i] = i;
          }
-      H0block.buf_num[0] = H0block.size+H0block.coupling_size;
+      CI_H0block_->buf_num[0] = CI_H0block_->size+CI_H0block_->coupling_size;
       }
    else if (icore == 2) {
-      H0block.buf_member = (int **) malloc (buf_per_vect * sizeof(int *));
+      CI_H0block_->buf_member = (int **) malloc (buf_per_vect * sizeof(int *));
       for (buf=0; buf<buf_per_vect; buf++) {
          cnt = 0;
          irrep = buf2blk[buf];
          for (blk=first_ablk[irrep]; blk<=last_ablk[irrep]; blk++) {
-            for (i=0; i<H0block.size+H0block.coupling_size; i++) {
-               if (H0block.blknum[i] == blk) {
+            for (i=0; i<CI_H0block_->size+CI_H0block_->coupling_size; i++) {
+               if (CI_H0block_->blknum[i] == blk) {
                   tmparr[cnt++] = i;
                   }
                }
             }
-         H0block.buf_num[buf] = cnt;
-         if (cnt) H0block.buf_member[buf] = init_int_array(cnt);
+         CI_H0block_->buf_num[buf] = cnt;
+         if (cnt) CI_H0block_->buf_member[buf] = init_int_array(cnt);
          for (i=0; i<cnt; i++) {
-            H0block.buf_member[buf][i] = tmparr[i];
+            CI_H0block_->buf_member[buf][i] = tmparr[i];
             }
          } /* end loop over bufs */
       } /* end icore==2 */
    else {
-      H0block.buf_member = (int **) malloc (buf_per_vect * sizeof(int *));
+      CI_H0block_->buf_member = (int **) malloc (buf_per_vect * sizeof(int *));
       for (buf=0; buf<buf_per_vect; buf++) {
          cnt = 0;
          blk = buf2blk[buf];
-         for (i=0; i<H0block.size+H0block.coupling_size; i++) {
-            if (H0block.blknum[i] == blk) {
+         for (i=0; i<CI_H0block_->size+CI_H0block_->coupling_size; i++) {
+            if (CI_H0block_->blknum[i] == blk) {
                tmparr[cnt++] = i;
                }
             }
-         H0block.buf_num[buf] = cnt;
-         if (cnt) H0block.buf_member[buf] = init_int_array(cnt);
+         CI_H0block_->buf_num[buf] = cnt;
+         if (cnt) CI_H0block_->buf_member[buf] = init_int_array(cnt);
          for (i=0; i<cnt; i++) {
-            H0block.buf_member[buf][i] = tmparr[i];
+            CI_H0block_->buf_member[buf][i] = tmparr[i];
             }
          } /* end loop over bufs */
       } /* end icore==0 */
@@ -2905,28 +2920,28 @@ void CIvect::h0block_buf_ols(double *nx, double *ox, double *c1norm,double E_est
    int i, j, k, blk, al, bl;
    double c, cn, tval, c1;
 
-   for (i=0; i<H0block.buf_num[cur_buf]; i++) {
-      j = H0block.buf_member[cur_buf][i];
-      blk = H0block.blknum[j];
-      al = H0block.alpidx[j];
-      bl = H0block.betidx[j];
-      c = H0block.c0b[j];
+   for (i=0; i<CI_H0block_->buf_num[cur_buf]; i++) {
+      j = CI_H0block_->buf_member[cur_buf][i];
+      blk = CI_H0block_->blknum[j];
+      al = CI_H0block_->alpidx[j];
+      bl = CI_H0block_->betidx[j];
+      c = CI_H0block_->c0b[j];
       cn = blocks[blk][al][bl];
       c1 = cn - c;
       *nx -= cn * cn;
       *ox -= cn * c;
       *c1norm -= c1 * c1;
-      tval = c + E_est * H0block.c0bp[j];
-      tval -= H0block.s0bp[j];
+      tval = c + E_est * CI_H0block_->c0bp[j];
+      tval -= CI_H0block_->s0bp[j];
       blocks[blk][al][bl] = tval;
-      /* H0block.c0b[j] = tval; */ /* this should gather all of c0b. Norm later */
+      /* CI_H0block_->c0b[j] = tval; */ /* this should gather all of c0b. Norm later */
                               /* What about the effect of symmetrization? */
                               /* symmetrization was the bug MLL */
      /*
       if (buf_offdiag[cur_buf]) {
-         k = H0block.pair[j];
+         k = CI_H0block_->pair[j];
          if (k >= 0 && k != j) {
-            H0block.c0b[k] = tval * phase;
+            CI_H0block_->c0b[k] = tval * phase;
             }
          }
       */
@@ -2948,30 +2963,30 @@ void CIvect::h0block_gather_vec(int vecode)
    int buf, i, j, k, blk, al, bl;
    double c, cn, tval, phase, norm = 0.0;
 
-   if (!Parameters.Ms0) phase = 1.0;
-   else phase = ((int) Parameters.S % 2) ? -1.0 : 1.0;
+   if (!CI_Params_->Ms0) phase = 1.0;
+   else phase = ((int) CI_Params_->S % 2) ? -1.0 : 1.0;
 
-   for (i=0; i<H0block.buf_num[cur_buf]; i++) {
-      j = H0block.buf_member[cur_buf][i];
-      blk = H0block.blknum[j];
-      al = H0block.alpidx[j];
-      bl = H0block.betidx[j];
+   for (i=0; i<CI_H0block_->buf_num[cur_buf]; i++) {
+      j = CI_H0block_->buf_member[cur_buf][i];
+      blk = CI_H0block_->blknum[j];
+      al = CI_H0block_->alpidx[j];
+      bl = CI_H0block_->betidx[j];
       tval = blocks[blk][al][bl];
-      if (vecode) H0block.s0b[j] = tval;
-      else H0block.c0b[j] = tval;
+      if (vecode) CI_H0block_->s0b[j] = tval;
+      else CI_H0block_->c0b[j] = tval;
       if (buf_offdiag[cur_buf]) {
-        k = H0block.pair[j];
+        k = CI_H0block_->pair[j];
         if (k >= 0 && k != j) {
-        /* if (k >= 0 && k != j && Parameters.Ms0)  */
-          if (vecode) H0block.s0b[k] = tval * phase;
-          else H0block.c0b[k] = tval * phase;
+        /* if (k >= 0 && k != j && CI_Params_->Ms0)  */
+          if (vecode) CI_H0block_->s0b[k] = tval * phase;
+          else CI_H0block_->c0b[k] = tval * phase;
            }
         }
       }
     /*
      if (!vecode) {
        outfile->Printf("c0b in h0block_gather_vec = \n");
-       print_mat(&(H0block.c0b), 1, H0block.size, outfile);
+       print_mat(&(CI_H0block_->c0b), 1, CI_H0block_->size, outfile);
        }
     */
 }
@@ -2989,20 +3004,20 @@ void CIvect::h0block_gather_multivec(double *vec)
    int buf, i, j, k, blk, al, bl;
    double c, cn, tval, phase, norm = 0.0;
 
-   if (!Parameters.Ms0) phase = 1.0;
-   else phase = ((int) Parameters.S % 2) ? -1.0 : 1.0;
+   if (!CI_Params_->Ms0) phase = 1.0;
+   else phase = ((int) CI_Params_->S % 2) ? -1.0 : 1.0;
 
-   for (i=0; i<H0block.buf_num[cur_buf]; i++) {
-      j = H0block.buf_member[cur_buf][i];
-      blk = H0block.blknum[j];
-      al = H0block.alpidx[j];
-      bl = H0block.betidx[j];
+   for (i=0; i<CI_H0block_->buf_num[cur_buf]; i++) {
+      j = CI_H0block_->buf_member[cur_buf][i];
+      blk = CI_H0block_->blknum[j];
+      al = CI_H0block_->alpidx[j];
+      bl = CI_H0block_->betidx[j];
       tval = blocks[blk][al][bl];
       vec[j] = tval;
       if (buf_offdiag[cur_buf]) {
-        k = H0block.pair[j];
+        k = CI_H0block_->pair[j];
         if (k >= 0 && k != j) {
-        /* if (k >= 0 && k != j && Parameters.Ms0)  */
+        /* if (k >= 0 && k != j && CI_Params_->Ms0)  */
           vec[k] = tval * phase;
            }
         }
@@ -3022,29 +3037,29 @@ void CIvect::h0block_buf_precon(double *nx, int root)
    int i, j, k, blk, al, bl, buf;
    double c, cn, tval, phase, norm = 0.0;
 
-   if (!Parameters.Ms0) phase = 1.0;
-   else phase = ((int) Parameters.S % 2) ? -1.0 : 1.0;
+   if (!CI_Params_->Ms0) phase = 1.0;
+   else phase = ((int) CI_Params_->S % 2) ? -1.0 : 1.0;
 
    for (buf=0; buf<buf_per_vect; buf++) {
       read(root,buf);
-      for (i=0; i<H0block.buf_num[buf]; i++) {
-         j = H0block.buf_member[buf][i];
-         blk = H0block.blknum[j];
-         al = H0block.alpidx[j];
-         bl = H0block.betidx[j];
+      for (i=0; i<CI_H0block_->buf_num[buf]; i++) {
+         j = CI_H0block_->buf_member[buf][i];
+         blk = CI_H0block_->blknum[j];
+         al = CI_H0block_->alpidx[j];
+         bl = CI_H0block_->betidx[j];
          tval = blocks[blk][al][bl] * blocks[blk][al][bl];
          *nx -= tval;
          if (buf_offdiag[buf]) {
-           k = H0block.pair[j];
+           k = CI_H0block_->pair[j];
            if (k >= 0 && k!=j) *nx -= tval * phase;
            }
-         tval = H0block.c0bp[j] * H0block.c0bp[j];
+         tval = CI_H0block_->c0bp[j] * CI_H0block_->c0bp[j];
          *nx += tval;
          if (buf_offdiag[buf]) {
-           k = H0block.pair[j];
+           k = CI_H0block_->pair[j];
            if (k>= 0 && k!=j) *nx += tval * phase;
            }
-         blocks[blk][al][bl] = -H0block.c0bp[j];
+         blocks[blk][al][bl] = -CI_H0block_->c0bp[j];
          }
       write(root,buf);
       }
@@ -3071,7 +3086,7 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2,
    buf_lock(buffer1);
    read(vec_num, 0);
 
-   if (Parameters.print_lvl > 4) {
+   if (CI_Params_->print_lvl > 4) {
      for (i=0; i<num_blocks; i++) {
         ket_nas = Ia_size[i];
         ket_nbs = Ib_size[i];
@@ -3106,7 +3121,7 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2,
          tval2 = ssq(alplist[ket_ac], betlist[ket_bc], blocks[bra_block],
                    blocks[ket_block], ket_nas, ket_nbs, bra_ac, bra_bc);
          tval += tval2;
-         if (Parameters.print_lvl > 4) {
+         if (CI_Params_->print_lvl > 4) {
            outfile->Printf("\nbra_block = %d\n",bra_block);
            outfile->Printf("ket_block = %d\n",ket_block);
            outfile->Printf("Contribution to <S_S+> = %lf\n",tval2);
@@ -3115,15 +3130,15 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2,
 
     } /* end loop over ket_block */
 
-    Ms = 0.5 * (CalcInfo.num_alp_expl - CalcInfo.num_bet_expl);
-    if (Parameters.print_lvl > 1) {
+    Ms = 0.5 * (CI_CalcInfo_->num_alp_expl - CI_CalcInfo_->num_bet_expl);
+    if (CI_Params_->print_lvl > 1) {
       outfile->Printf("\n\n<S_z> = %lf\n", Ms);
       outfile->Printf("<S_z>^2 = %lf\n", Ms*Ms);
       outfile->Printf("<S_S+> = %lf\n", tval);
     }
-    S2 = CalcInfo.num_bet_expl + tval + Ms + Ms*Ms;
+    S2 = CI_CalcInfo_->num_bet_expl + tval + Ms + Ms*Ms;
 
-    if (Parameters.print_lvl) outfile->Printf("Computed <S^2> vector %d = %20.15f\n\n", vec_num, S2);
+    if (CI_Params_->print_lvl) outfile->Printf("Computed <S^2> vector %d = %20.15f\n\n", vec_num, S2);
 
   buf_unlock();
   return(S2);
@@ -3211,9 +3226,9 @@ void CIvect::scale_sigma(CIvect &Hd, CIvect &C,
       /* outfile->Printf(" i = %d\n", i);
       outfile->Printf("In scale_sigma\n"); */
       Hd.buf_lock(buf1);
-      Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-         CalcInfo.twoel_ints, CalcInfo.e0_drc, CalcInfo.num_alp_expl,
-         CalcInfo.num_bet_expl, CalcInfo.nmo, buf, ORB_ENER);
+      Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
+         CI_CalcInfo_->twoel_ints, CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
+         CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, ORB_ENER);
       C.buf_lock(buf2);
       C.read(i, buf);
       xexy(buf1, buf2, C.buf_size[buf]);
@@ -3221,7 +3236,7 @@ void CIvect::scale_sigma(CIvect &Hd, CIvect &C,
       buf_lock(buf2);
       read(i, buf);
       xexmy(buf2, buf1, buf_size[buf]);
-      xpeay(buf1, Parameters.perturbation_parameter, buf2, buf_size[buf]);
+      xpeay(buf1, CI_Params_->perturbation_parameter, buf2, buf_size[buf]);
       buf_unlock();
       Hd.buf_unlock();
       buf_lock(buf1);
@@ -3273,11 +3288,11 @@ double CIvect::dcalc_evangelisti(int rootnum, int num_vecs, double lambda,
       xpey(buf1, buf2, buf_size[buf]); /* -2*r_I*c_I + c_I*c_I */
       buf_unlock();
       Hd.buf_lock(buf2);
-      if (Parameters.hd_otf == FALSE) Hd.read(0, buf);
-      else if (Parameters.hd_otf == TRUE) {
-          Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
-             CalcInfo.twoel_ints, CalcInfo.edrc, CalcInfo.num_alp_expl,
-             CalcInfo.num_bet_expl, CalcInfo.nmo, buf, Parameters.hd_ave);
+      if (CI_Params_->hd_otf == FALSE) Hd.read(0, buf);
+      else if (CI_Params_->hd_otf == TRUE) {
+          Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
+             CI_CalcInfo_->twoel_ints, CI_CalcInfo_->edrc, CI_CalcInfo_->num_alp_expl,
+             CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
         }
       xpey(buf2, buf1, buf_size[buf]); /* Hd -2*r_I*c_I + c_I*c_I */
       buf_lock(buf1);
@@ -3701,7 +3716,7 @@ void CIvect::calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *
          value -= 0.5 * Kave * k_total; 
          /* outfile->Printf("Kave = %lf\n",Kave); */
 
-         if (Parameters.print_lvl > 5) {
+         if (CI_Params_->print_lvl > 5) {
            outfile->Printf("acnt = %d\t bcnt = %d\n",acnt,bcnt); 
            outfile->Printf("tval = %lf\n",tval);
            for(a1=0; a1<na; a1++)
@@ -3756,19 +3771,19 @@ void CIvect::calc_hd_block_orbenergy(struct stringwr *alplist_local,
 
    orb_e_diff_alp = init_array(nas);
    orb_e_diff_bet = init_array(nbs);
-  /* if (Parameters.Ms0) orb_e_diff_bet = &orb_e_diff_alp;
-   else orb_e_diff_bet = init_array(CalcInfo.num_bet_str);
+  /* if (CI_Params_->Ms0) orb_e_diff_bet = &orb_e_diff_alp;
+   else orb_e_diff_bet = init_array(CI_CalcInfo_->num_bet_str);
   */
 
    for (acnt=0; acnt<nas; acnt++) {
       orb_e_diff_alp[acnt] = 0.0;
       for (a1=0; a1<na; a1++) {
          i = (int) alplist_local->occs[a1];
-         i += CalcInfo.num_drc_orbs;
-         if(Parameters.zaptn) 
-           orb_e_diff_alp[acnt] += CalcInfo.scfeigvala[i];
+         i += CI_CalcInfo_->num_drc_orbs;
+         if(CI_Params_->zaptn) 
+           orb_e_diff_alp[acnt] += CI_CalcInfo_->scfeigvala[i];
          else
-           orb_e_diff_alp[acnt] += CalcInfo.scfeigval[i];
+           orb_e_diff_alp[acnt] += CI_CalcInfo_->scfeigval[i];
          }
       alplist_local++;
       }
@@ -3777,11 +3792,11 @@ void CIvect::calc_hd_block_orbenergy(struct stringwr *alplist_local,
       orb_e_diff_bet[bcnt] = 0.0;
       for (b1=0; b1<nb; b1++) {
          j = (int) betlist_local->occs[b1];
-         j += CalcInfo.num_drc_orbs;
-         if(Parameters.zaptn) 
-           orb_e_diff_bet[bcnt] += CalcInfo.scfeigvalb[j];
+         j += CI_CalcInfo_->num_drc_orbs;
+         if(CI_Params_->zaptn) 
+           orb_e_diff_bet[bcnt] += CI_CalcInfo_->scfeigvalb[j];
          else
-           orb_e_diff_bet[bcnt] += CalcInfo.scfeigval[j];
+           orb_e_diff_bet[bcnt] += CI_CalcInfo_->scfeigval[j];
          }
       betlist_local++;
       }
@@ -3853,16 +3868,16 @@ void CIvect::calc_hd_block_evangelisti(struct stringwr **alplist, struct stringw
    for (acnt=0; acnt<nas; acnt++) {
       orb_e_diff_alp[acnt] = 0.0;
       num_alp_diff = calc_orb_diff(na,
-                     alplist[CalcInfo.ref_alp_list][CalcInfo.ref_alp_rel].occs, 
+                     alplist[CI_CalcInfo_->ref_alp_list][CI_CalcInfo_->ref_alp_rel].occs, 
                      alplist_local->occs, orb_diff[0], orb_diff[1], &sign,
                      jnk, 1);
       for (a1=0; a1<num_alp_diff; a1++) {
          i = orb_diff[0][a1]; 
          j = orb_diff[1][a1]; 
-         i += CalcInfo.num_drc_orbs;
-         j += CalcInfo.num_drc_orbs;
-         orb_e_diff_alp[acnt] += CalcInfo.scfeigval[j] 
-                                 - CalcInfo.scfeigval[i]; 
+         i += CI_CalcInfo_->num_drc_orbs;
+         j += CI_CalcInfo_->num_drc_orbs;
+         orb_e_diff_alp[acnt] += CI_CalcInfo_->scfeigval[j] 
+                                 - CI_CalcInfo_->scfeigval[i]; 
          }
       alplist_local++;
       }
@@ -3870,16 +3885,16 @@ void CIvect::calc_hd_block_evangelisti(struct stringwr **alplist, struct stringw
    for (bcnt=0; bcnt<nbs; bcnt++) {
       orb_e_diff_bet[bcnt] = 0.0;
       num_bet_diff = calc_orb_diff(nb, 
-                     betlist[CalcInfo.ref_bet_list][CalcInfo.ref_bet_rel].occs,
+                     betlist[CI_CalcInfo_->ref_bet_list][CI_CalcInfo_->ref_bet_rel].occs,
                      betlist_local->occs, orb_diff[0], orb_diff[1], &sign, 
                      jnk, 1);
       for (b1=0; b1<num_bet_diff; b1++) {
          i = orb_diff[0][b1];
          j = orb_diff[1][b1];  
-         i += CalcInfo.num_drc_orbs;
-         j += CalcInfo.num_drc_orbs;
-         orb_e_diff_bet[bcnt] += CalcInfo.scfeigval[j]
-                                 - CalcInfo.scfeigval[i];
+         i += CI_CalcInfo_->num_drc_orbs;
+         j += CI_CalcInfo_->num_drc_orbs;
+         orb_e_diff_bet[bcnt] += CI_CalcInfo_->scfeigval[j]
+                                 - CI_CalcInfo_->scfeigval[i];
          }
       betlist_local++;
       } 
@@ -3889,7 +3904,7 @@ void CIvect::calc_hd_block_evangelisti(struct stringwr **alplist, struct stringw
 
    for (acnt=0; acnt<nas; acnt++) {
          /* add dropped core energy first */
-         tval = CalcInfo.escf - CalcInfo.enuc; 
+         tval = CI_CalcInfo_->escf - CI_CalcInfo_->enuc; 
          tval += orb_e_diff_alp[acnt]; 
       for (bcnt=0; bcnt<nbs; bcnt++) {
          value = 0.0;
@@ -3949,7 +3964,7 @@ void CIvect::calc_hd_block_mll(struct stringwr *alplist_local,
    oei_bet = init_array(nbs);
    orb_e_diff_alp = init_array(nas);
    orb_e_diff_bet = init_array(nbs);
-  /* if (Parameters.Ms0) orb_e_diff_bet = &orb_e_diff_alp;
+  /* if (CI_Params_->Ms0) orb_e_diff_bet = &orb_e_diff_alp;
    else orb_e_diff_bet = init_array(nbs);
   */
 
@@ -3958,9 +3973,9 @@ void CIvect::calc_hd_block_mll(struct stringwr *alplist_local,
       for (a1=0; a1<na; a1++) {
          i = (int) alplist_local->occs[a1];
          ii = ioff[i] + i;
-         i_offset = i + CalcInfo.num_drc_orbs;
+         i_offset = i + CI_CalcInfo_->num_drc_orbs;
          oei_alp[acnt] += oei[ii]; 
-         orb_e_diff_alp[acnt] += CalcInfo.scfeigval[i_offset] - oei[ii];
+         orb_e_diff_alp[acnt] += CI_CalcInfo_->scfeigval[i_offset] - oei[ii];
          }
       alplist_local++;
       }
@@ -3970,9 +3985,9 @@ void CIvect::calc_hd_block_mll(struct stringwr *alplist_local,
       for (b1=0; b1<nb; b1++) {
          j = (int) betlist_local->occs[b1];
          jj = ioff[j] + j;
-         j_offset = j + CalcInfo.num_drc_orbs;
+         j_offset = j + CI_CalcInfo_->num_drc_orbs;
          oei_bet[bcnt] += oei[jj];
-         orb_e_diff_bet[bcnt] += CalcInfo.scfeigval[j_offset] - oei[jj];
+         orb_e_diff_bet[bcnt] += CI_CalcInfo_->scfeigval[j_offset] - oei[jj];
          }
       betlist_local++;
       }
@@ -4046,7 +4061,7 @@ void CIvect::calc_hd_block_z_ave(struct stringwr *alplist_local,
          /* loop over alpha occs */
          for (a1=0; a1<na; a1++) {
             i = (int) alplist_local->occs[a1];
-            value += CalcInfo.scfeigval[i+CalcInfo.num_drc_orbs];
+            value += CI_CalcInfo_->scfeigval[i+CI_CalcInfo_->num_drc_orbs];
             ii = ioff[i] + i;
             /* h_ii bar alpha alpha */
             iii = ioff[ii];
@@ -4072,7 +4087,7 @@ void CIvect::calc_hd_block_z_ave(struct stringwr *alplist_local,
          /* loop over beta occs */
          for (b1=0; b1<nb; b1++) {
             i = (int) betlist_local->occs[b1];
-            value += CalcInfo.scfeigval[i+CalcInfo.num_drc_orbs];
+            value += CI_CalcInfo_->scfeigval[i+CI_CalcInfo_->num_drc_orbs];
             ii = ioff[i] + i;
             iii = ioff[ii];
 
@@ -4134,7 +4149,7 @@ void CIvect::calc_hd_block_z_ave(struct stringwr *alplist_local,
          value += 0.5 * Kave * k_total * pert_param;
          /* outfile->Printf("Kave = %lf\n",Kave); */
 
-         if (Parameters.print_lvl > 5) {
+         if (CI_Params_->print_lvl > 5) {
            outfile->Printf("acnt = %d\t bcnt = %d\n",acnt,bcnt);
            outfile->Printf("tval = %lf\n",tval);
            for(a1=0; a1<na; a1++)
@@ -4175,7 +4190,7 @@ double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist,
    /* First determine the expection value of <S_S+> */
 
    /* loop over Ia */
-   if (Parameters.print_lvl > 2) {
+   if (CI_Params_->print_lvl > 2) {
      outfile->Printf("number of alpha strings = %d\n",nas);
    }
    for (Ia=alplist,Ia_idx=0; Ia_idx < nas; Ia_idx++,Ia++) {
@@ -4189,11 +4204,11 @@ double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist,
          ji = *Iaij++;
          Ja_idx = *Iaridx++;
          Ja_sgn = *Iasgn++;
-         i1 = ji/CalcInfo.num_ci_orbs;
-         j1 = ji%CalcInfo.num_ci_orbs;
+         i1 = ji/CI_CalcInfo_->num_ci_orbs;
+         j1 = ji%CI_CalcInfo_->num_ci_orbs;
 
          /* loop over Ib */
-         if (Parameters.print_lvl > 2) {
+         if (CI_Params_->print_lvl > 2) {
            outfile->Printf("number of beta strings = %d\n",nbs);
          }
          for (Ib=betlist, Ib_idx=0; Ib_idx < nbs; Ib_idx++, Ib++) {
@@ -4209,12 +4224,12 @@ double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist,
                ij = *Ibij++;
                Jb_idx = *Ibridx++;
                Jb_sgn = *Ibsgn++;
-               i2 = ij/CalcInfo.num_ci_orbs;
-               j2 = ij%CalcInfo.num_ci_orbs; 
+               i2 = ij/CI_CalcInfo_->num_ci_orbs;
+               j2 = ij%CI_CalcInfo_->num_ci_orbs; 
                if (i1!=j2 || i2!=j1) continue;
                tval += CR[Ia_idx][Ib_idx] * CL[Ja_idx][Jb_idx] *
                    (double) Ja_sgn * (double) Jb_sgn;
-               if (Parameters.print_lvl > 3) {
+               if (CI_Params_->print_lvl > 3) {
                  outfile->Printf("\n\nIa_idx = %d\n",Ia_idx);
                  outfile->Printf("Ib_idx = %d\n",Ib_idx);
                  outfile->Printf("Ja_idx = %d\n",Ja_idx);
