@@ -87,7 +87,7 @@ extern void s1_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
    double **C, double **S,
    double *oei, double *tei, double *F, int nlists, int nas, int nbs,
    int Ib_list, int Jb_list, int Jb_list_nbs, struct olsen_graph *BetaG,
-   struct calcinfo *CIinfo);
+   struct calcinfo *CIinfo, unsigned char ***Occs);
 extern void s2_block_vfci_thread(struct stringwr **alplist, 
    struct stringwr **betlist, 
    double **C, double **S, double *oei, double *tei, double *F,
@@ -111,7 +111,7 @@ extern void s2_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
    double **C, double **S,
    double *oei, double *tei, double *F, int nlists, int nas, int nbs,
    int Ia_list, int Ja_list, int Ja_list_nbs, struct olsen_graph *AlphaG,
-   struct olsen_graph *BetaG, struct calcinfo *CIinfo);
+   struct olsen_graph *BetaG, struct calcinfo *CIinfo, unsigned char ***Occs);
 extern void s3_block_vdiag(struct stringwr *alplist,
    struct stringwr *betlist,
    double **C, double **S, double *tei, int nas, int nbs, int cnas,
@@ -136,7 +136,6 @@ extern void s3_block_vdiag_rotf(int *Cnt[2], int **Ij[2], int **Ridx[2],
    double **Cprime, double *F, double *V, double *Sgn, int *L, int *R,
    int norbs, int *orbsym);
 
-extern unsigned char ***Occs;
 
 
 /*
@@ -194,7 +193,8 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
 
       /* test out the on-the-fly replacement routines */
       /*
-      b2brepl_test(Occs,SigmaData_->Jcnt[0],SigmaData_->Jij[0],SigmaData_->Joij[0],SigmaData_->Jridx[0],SigmaData_->Jsgn[0],AlphaG);
+      b2brepl_test(Occs_,SigmaData_->Jcnt[0],SigmaData_->Jij[0],
+                   SigmaData_->Joij[0],SigmaData_->Jridx[0],SigmaData_->Jsgn[0],AlphaG);
       */
       }
 
@@ -681,7 +681,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
               s2_block_vras_rotf(SigmaData_->Jcnt, SigmaData_->Jij, SigmaData_->Joij,
                                  SigmaData_->Jridx, SigmaData_->Jsgn,
                                  SigmaData_->Toccs, cmat, smat, oei, tei, SigmaData_->F, cnac, 
-                                 nas, nbs, sac, cac, cnas, AlphaG_, BetaG_, CalcInfo_);
+                                 nas, nbs, sac, cac, cnas, AlphaG_, BetaG_, CalcInfo_, Occs_);
             }
           else if (Parameters_->nthreads > 1) {
             s2_block_vras_thread(alplist, betlist, cmat, smat, 
@@ -721,7 +721,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
                s1_block_vras_rotf(SigmaData_->Jcnt, SigmaData_->Jij, SigmaData_->Joij,
                   SigmaData_->Jridx, SigmaData_->Jsgn,
                   SigmaData_->Toccs, cmat, smat, oei, tei, SigmaData_->F, cnbc, nas, nbs,
-                  sbc, cbc, cnbs, BetaG_, CalcInfo_);
+                  sbc, cbc, cnbs, BetaG_, CalcInfo_, Occs_);
                }
             else if (Parameters_->nthreads > 1) {
                s1_block_vras_thread(alplist, betlist, cmat, smat, oei, tei, SigmaData_->F, cnbc, 
@@ -751,10 +751,10 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
 
       if (!Ms0 || (sac != sbc)) {
          if (Parameters_->repl_otf) {
-            b2brepl(Occs[sac], SigmaData_->Jcnt[0], SigmaData_->Jij[0],
+            b2brepl(Occs_[sac], SigmaData_->Jcnt[0], SigmaData_->Jij[0],
                SigmaData_->Joij[0], SigmaData_->Jridx[0],
                SigmaData_->Jsgn[0], AlphaG_, sac, cac, nas, CalcInfo_);  
-            b2brepl(Occs[sbc], SigmaData_->Jcnt[1], SigmaData_->Jij[1],
+            b2brepl(Occs_[sbc], SigmaData_->Jcnt[1], SigmaData_->Jij[1],
                     SigmaData_->Joij[1], SigmaData_->Jridx[1],
                     SigmaData_->Jsgn[1], BetaG_, sbc, cbc, nbs, CalcInfo_);  
             s3_block_vrotf(SigmaData_->Jcnt, SigmaData_->Jij, SigmaData_->Jridx,
@@ -781,10 +781,10 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
 
       else {
          if (Parameters_->repl_otf) {
-            b2brepl(Occs[sac], SigmaData_->Jcnt[0], SigmaData_->Jij[0],
+            b2brepl(Occs_[sac], SigmaData_->Jcnt[0], SigmaData_->Jij[0],
                     SigmaData_->Joij[0], SigmaData_->Jridx[0],
                     SigmaData_->Jsgn[0], AlphaG_, sac, cac, nas, CalcInfo_);  
-            b2brepl(Occs[sbc], SigmaData_->Jcnt[1], SigmaData_->Jij[1],
+            b2brepl(Occs_[sbc], SigmaData_->Jcnt[1], SigmaData_->Jij[1],
                     SigmaData_->Joij[1], SigmaData_->Jridx[1],
                     SigmaData_->Jsgn[1], BetaG_, sbc, cbc, nbs, CalcInfo_);  
             s3_block_vdiag_rotf(SigmaData_->Jcnt, SigmaData_->Jij, SigmaData_->Jridx,
@@ -950,14 +950,14 @@ void CIWavefunction::sigma_get_contrib_rotf(CIvect &C, CIvect &S,
          if (sac == cac) {
             found = 0;
             for (Kb_list=0; Kb_list < S.num_betcodes && !found; Kb_list++) {
-               b2brepl(Occs[sbc], Cnt[0], Ij[0], Oij[0], Ridx[0],
+               b2brepl(Occs_[sbc], Cnt[0], Ij[0], Oij[0], Ridx[0],
                   Sgn[0], BetaG_, sbc, Kb_list, nbs, CalcInfo_);
                for (Ibidx=0; Ibidx < nbs && !found; Ibidx++) {
                   Ibcnt = Cnt[0][Ibidx];
                   if (Ibcnt) {
                      for (i=0; i<Ibcnt; i++) {
                         j = Ridx[0][Ibidx][i];
-                        Toccs[i] = Occs[Kb_list][j];
+                        Toccs[i] = Occs_[Kb_list][j];
                         }
                      b2brepl(Toccs, Cnt[1], Ij[1], Oij[1], Ridx[1], Sgn[1],
                         BetaG_, Kb_list, cbc, Ibcnt, CalcInfo_);
@@ -974,14 +974,14 @@ void CIWavefunction::sigma_get_contrib_rotf(CIvect &C, CIvect &S,
          if (sbc == cbc) {
             found = 0;
             for (Ka_list=0; Ka_list < S.num_alpcodes && !found; Ka_list++) {
-               b2brepl(Occs[sac], Cnt[0], Ij[0], Oij[0], Ridx[0],
+               b2brepl(Occs_[sac], Cnt[0], Ij[0], Oij[0], Ridx[0],
                   Sgn[0], AlphaG_, sac, Ka_list, nas, CalcInfo_);
                for (Iaidx=0; Iaidx < nas && !found; Iaidx++) {
                   Iacnt = Cnt[0][Iaidx];
                   if (Iacnt) {
                      for (i=0; i<Iacnt; i++) {
                         j = Ridx[0][Iaidx][i];
-                        Toccs[i] = Occs[Ka_list][j];
+                        Toccs[i] = Occs_[Ka_list][j];
                         }
                      b2brepl(Toccs, Cnt[1], Ij[1], Oij[1], Ridx[1], Sgn[1],
                         AlphaG_, Ka_list, cac, Iacnt, CalcInfo_);
@@ -995,14 +995,14 @@ void CIWavefunction::sigma_get_contrib_rotf(CIvect &C, CIvect &S,
             }
 
          /* does this c block contribute to sigma3? */
-         b2brepl(Occs[sac], Cnt[0], Ij[0], Oij[0], Ridx[0],
+         b2brepl(Occs_[sac], Cnt[0], Ij[0], Oij[0], Ridx[0],
             Sgn[0], AlphaG_, sac, cac, nas, CalcInfo_);
          for (Iaidx=0,found=0; Iaidx<S.Ia_size[sblock]; Iaidx++) {
             if (Cnt[0][Iaidx]) found=1;
             }
          if (found) { /* see if beta is ok */
             found=0;
-            b2brepl(Occs[sbc], Cnt[0], Ij[0], Oij[0], Ridx[0],
+            b2brepl(Occs_[sbc], Cnt[0], Ij[0], Oij[0], Ridx[0],
                Sgn[0], BetaG_, sbc, cbc, nbs, CalcInfo_);
             for (Ibidx=0; Ibidx<S.Ib_size[sblock]; Ibidx++) {
                if (Cnt[0][Ibidx]) found=1;

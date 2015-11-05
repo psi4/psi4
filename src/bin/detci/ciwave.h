@@ -214,6 +214,7 @@ private:
     int **s1_contrib_, **s2_contrib_, **s3_contrib_;
     int ***OV_;
     int *ioff_;
+    unsigned char ***Occs_;
 
     /// => H0block functions <= //
     void H0block_init(unsigned int size);
