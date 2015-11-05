@@ -318,21 +318,23 @@ void CIWavefunction::set_opdm(bool use_old_d)
 
   char opdm_key[80];
   psio_open(Parameters_->opdm_file, PSIO_OPEN_OLD);
-  if (!options_["FOLLOW_ROOT"].has_changed()) {
-    psio_read_entry(Parameters_->opdm_file, "MO-basis Alpha OPDM", (char *) opdm_ap,
-                    npop*npop*sizeof(double));
-    psio_read_entry(Parameters_->opdm_file, "MO-basis Beta OPDM", (char *) opdm_bp,
-                    npop*npop*sizeof(double));
-  }
-  else {
-    int root = options_.get_int("FOLLOW_ROOT");
-    sprintf(opdm_key, "MO-basis OPDM Alpha Root %d", root);
-    psio_read_entry(Parameters_->opdm_file, opdm_key, (char *) opdm_ap,
-                    npop*npop*sizeof(double));
-    sprintf(opdm_key, "MO-basis OPDM Beta Root %d", root);
-    psio_read_entry(Parameters_->opdm_file, opdm_key, (char *) opdm_bp,
-                    npop*npop*sizeof(double));
-  }
+  // CDS help: I think this is right.
+  //if (!options_["FOLLOW_ROOT"].has_changed()) {
+  psio_read_entry(Parameters_->opdm_file, "MO-basis Alpha OPDM", (char *) opdm_ap,
+                  npop*npop*sizeof(double));
+  psio_read_entry(Parameters_->opdm_file, "MO-basis Beta OPDM", (char *) opdm_bp,
+                  npop*npop*sizeof(double));
+  //}
+  //else {
+  //  int root = options_.get_int("FOLLOW_ROOT");
+  //  outfile->Printf("following a root %d !\n", root);
+  //  sprintf(opdm_key, "MO-basis Alpha OPDM Root %d", root);
+  //  psio_read_entry(Parameters_->opdm_file, opdm_key, (char *) opdm_ap,
+  //                  npop*npop*sizeof(double));
+  //  sprintf(opdm_key, "MO-basis Beta OPDM Root %d", root);
+  //  psio_read_entry(Parameters_->opdm_file, opdm_key, (char *) opdm_bp,
+  //                  npop*npop*sizeof(double));
+  //}
   psio_close(Parameters_->opdm_file, 1);
 
   Da_ = opdm_a;
