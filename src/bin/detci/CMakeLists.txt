@@ -1,6 +1,6 @@
 set(headers_list "")
 # List of headers
-list(APPEND headers_list tpool.h globals.h civect.h ci_tol.h ciwave.h odometer.h structs.h slaterd.h )
+list(APPEND headers_list tpool.h civect.h ci_tol.h ciwave.h odometer.h structs.h slaterd.h )
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)

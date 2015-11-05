@@ -44,7 +44,6 @@
 #include <cstdio>
 #include <libmints/mints.h>
 #include "structs.h"
-#include "globals.h"
 #include "ciwave.h"
 
 namespace psi { namespace detci {
