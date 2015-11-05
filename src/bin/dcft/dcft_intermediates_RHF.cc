@@ -52,7 +52,7 @@ DCFTSolver::build_cumulant_intermediates_RHF()
     /*
      * G_IjAb += Sum_Cd gbar_CdAb lambda_IjCd
      */
-    if (options_.get_str("AO_BASIS") == "NONE" && options_.get_str("DCFT_TYPE") == "EXACT"){
+    if (options_.get_str("AO_BASIS") == "NONE" && options_.get_str("DCFT_TYPE") == "CONV"){
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                                 ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>"); // MO Ints <Vv|Vv> 
         global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
