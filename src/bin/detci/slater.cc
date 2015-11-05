@@ -44,9 +44,9 @@ int calc_orb_diff(int cnt, unsigned char *I, unsigned char *J,
       int *I_alpha_diff, int *J_alpha_diff, int *sign, int *same, 
       int extended)
 {
-   register int i = 0; 
-   register int j = 0; 
-   register int k = 0; 
+   int i = 0; 
+   int j = 0; 
+   int k = 0; 
    int icnt = 0;  /* number of counts in I array */
    int jcnt = 0;  /* number of counts in J array */ 
    int flipI = 0; /* number of flips in I string to have max coincidence */ 

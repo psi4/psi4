@@ -44,7 +44,6 @@ namespace psi { namespace detci {
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 #define MAXIJ 100000
-extern unsigned char ***Occs;
 
 
 /*
@@ -86,7 +85,7 @@ void free_stringwr_temps(int nsym);
 **    single replacements using the Olsen Graph structures.
 **
 */
-void stringlist(struct olsen_graph *Graph, struct stringwr **slist, int repl_otf)
+void stringlist(struct olsen_graph *Graph, struct stringwr **slist, int repl_otf, unsigned char ***Occs)
 {
 
    int i;
@@ -105,23 +104,28 @@ void stringlist(struct olsen_graph *Graph, struct stringwr **slist, int repl_otf
    if (!repl_otf) {
       init_stringwr_temps(Graph->num_el_expl, Graph->num_orb, nirreps * ncodes);
    }
+   else {
+      // CDS help: This effectively allocates Occs twice if alplist != betlist
+      Occs = (unsigned char ***) malloc (nirreps * ncodes * sizeof(unsigned
+         char **));
+   }
 
-   Occs = (unsigned char ***) malloc (nirreps * ncodes * sizeof(unsigned
-      char **));
 
    for (irrep=0,listnum=0; irrep < nirreps; irrep++) {
       for (code = 0; code < ncodes; code++,listnum++) { 
 
-         Occs[listnum] = NULL;
+         if (repl_otf) Occs[listnum] = NULL;
 
          subgraph = Graph->sg[irrep] + code;
          if (!subgraph->num_strings) continue;
 
-         Occs[listnum] = (unsigned char **) malloc (subgraph->num_strings * 
-            sizeof(unsigned char *));
-         for (i=0; i<subgraph->num_strings; i++) 
-            Occs[listnum][i] = (unsigned char *) malloc (nel_expl * 
-                                sizeof(unsigned char));
+         if (repl_otf){
+            Occs[listnum] = (unsigned char **) malloc (subgraph->num_strings * 
+               sizeof(unsigned char *));
+            for (i=0; i<subgraph->num_strings; i++) 
+               Occs[listnum][i] = (unsigned char *) malloc (nel_expl * 
+                                   sizeof(unsigned char));
+         }
 
          slist[listnum] = (struct stringwr *)
             malloc (subgraph->num_strings * sizeof(struct stringwr));
@@ -138,8 +142,10 @@ void stringlist(struct olsen_graph *Graph, struct stringwr **slist, int repl_otf
                printf("(stringlist): Impossible string addr\n");
             }
 
-            for (i=0; i<nel_expl; i++) 
-               Occs[listnum][addr][i] = (unsigned char) occs[i];
+            if (repl_otf){
+               for (i=0; i<nel_expl; i++) 
+                  Occs[listnum][addr][i] = (unsigned char) occs[i];
+            }
 
             form_stringwr(slist[irrep * ncodes + code], occs, 
                nel_expl, Graph->num_orb, subgraph, Graph, 

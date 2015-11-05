@@ -51,7 +51,7 @@
 
 namespace psi { namespace detci {
 
-extern void stringlist(struct olsen_graph *Graph, struct stringwr **slist, int repl_otf);
+extern void stringlist(struct olsen_graph *Graph, struct stringwr **slist, int repl_otf, unsigned char ***Occs);
 extern void print_ci_space(struct stringwr *strlist, int num_strings,
    int nirreps, int strtypes, int nel, int repl_otf);
 extern void str_abs2rel(int absidx, int *relidx, int *listnum,
@@ -106,7 +106,7 @@ void CIWavefunction::form_strings(void)
    alplist_ = (struct stringwr **) malloc(nlists * sizeof(struct stringwr *));
    for (i=0; i<nlists; i++) alplist_[i] = NULL;
 
-   stringlist(AlphaG_, alplist_, Parameters_->repl_otf);
+   stringlist(AlphaG_, alplist_, Parameters_->repl_otf, Occs_);
 
    if (Parameters_->print_lvl>=4) {
       for (irrep=0,listnum=0; irrep < nirreps; irrep++) {
@@ -143,7 +143,7 @@ void CIWavefunction::form_strings(void)
       for (i=0; i<nlists; i++) betlist_[i] = NULL;
 
 
-      stringlist(BetaG_, betlist_, Parameters_->repl_otf);
+      stringlist(BetaG_, betlist_, Parameters_->repl_otf, Occs_);
 
       if (Parameters_->print_lvl>=4) {
          for (irrep=0; irrep < nirreps; irrep++) {

@@ -52,8 +52,6 @@
 
 namespace psi { namespace detci {
 
-unsigned char ***Occs;
-
 PsiReturnType detci(Options &options);
 
 }} // namespace psi::detci
@@ -122,10 +120,6 @@ PsiReturnType detci(Options &options)
    Process::environment.set_wavefunction((static_cast<boost::shared_ptr<Wavefunction> > (ciwfn)));
    return Success;
 }
-
-
-
-
 
 
 

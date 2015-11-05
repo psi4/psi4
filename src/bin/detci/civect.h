@@ -29,7 +29,6 @@
 
 namespace psi { namespace detci {
 // Forward declarations
-//typedef unsigned long long int BIGINT;
 typedef unsigned long int BIGINT;
 struct calcinfo;
 struct params;
@@ -249,43 +248,6 @@ class CIvect {
          double *tei, double edrc, int nas, int nbs, int na,
          int nb, int nbf);
 
-      //friend void sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist, 
-      //   struct stringwr **betlist);
-      //friend void sigma(struct stringwr **alplist, struct stringwr **betlist,
-      //   CIvect& C, CIvect& S, double *oei, double *tei, int fci, int iter);
-      //friend void sigma_a(struct stringwr **alplist, struct stringwr **betlist,
-      //   CIvect& C, CIvect& S, double *oei, double *tei, int fci, int iter);
-      //friend void sigma_b(struct stringwr **alplist, struct stringwr **betlist,
-      //   CIvect& C, CIvect& S, double *oei, double *tei, int fci, int iter);
-      //friend void sigma_c(struct stringwr **alplist, struct stringwr **betlist,
-      //   CIvect& C, CIvect& S, double *oei, double *tei, int fci, int iter);
-      //friend void sigma_get_contrib(struct stringwr **alplist, struct
-      //   stringwr **betlist, CIvect &C, CIvect &S, int **s1_contrib, 
-      //   int **s2_contrib, int **s3_contrib);
-      //friend void sigma_get_contrib_rotf(CIvect &C, CIvect &S, 
-      //   int **s1_contrib, int **s2_contrib, int **s3_contrib,
-      //   int *Jcnt[2], int **Jij[2], int **Joij[2], int **Jridx[2],
-      //   signed char **Jsgn[2], unsigned char **Toccs);
-      //friend void olsen_iter_xy(CIvect &C, CIvect &S, CIvect &Hd, double *x, 
-      //   double *y, double *buf1, double *buf2, double E, int curvect, 
-      //   int L, double **alpha, struct stringwr **alplist, 
-      //   struct stringwr **betlist);
-      //friend void olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, 
-      //   double E_est, double *norm, double *c1norm, double *ovrlap, 
-      //   double *buffer1, double *buffer2, int curr, int next, std::string out,
-      //   int iter, struct stringwr **alplist, struct stringwr **betlist);
-      //friend void mitrush_update(CIvect &C, CIvect &S, double norm, double
-      //   acur, double alast, double *buffer1, double *buffer2, int curr,
-      //   int next);
-      //friend void opdm(struct stringwr **alplist, struct stringwr **betlist,
-      //    int transdens, int dipmom,
-      //    int Inroots, int Iroot, int Inunits, int Ifirstunit,
-      //    int Jnroots, int Jroot, int Jnunits, int Jfirstunit,
-      //    int targetfile, int writeflag, int printflag);
-      //friend void tpdm(struct stringwr **alplist, struct stringwr **betlist,
-      //    int Inroots, int Inunits, int Ifirstunit,
-      //    int Jnroots, int Jnunits, int Jfirstunit,
-      //    int targetfile, int writeflag, int printflag);
 };
 
 }} // namespace psi::detci

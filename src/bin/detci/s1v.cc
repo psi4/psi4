@@ -49,7 +49,6 @@
 
 namespace psi { namespace detci {
 
-extern unsigned char ***Occs;
 
 extern void b2brepl(unsigned char **occs, int *Jcnt, int **Jij, int **Joij, 
       int **Jridx, signed char **Jsgn, struct olsen_graph *Graph,
@@ -667,7 +666,7 @@ void s1_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
       double **C, double **S,
       double *oei, double *tei, double *F, int nlists, int nas, int nbs,
       int Ib_list, int Jb_list, int Jb_list_nbs, struct olsen_graph *BetaG,
-      struct calcinfo *CIinfo)
+      struct calcinfo *CIinfo, unsigned char ***Occs)
 {
    int Ia_idx, Ib_idx, Kb_idx, Jb_idx;
    int Ibcnt, Kbcnt, Kb_list, Ib_ex, Kb_ex;
