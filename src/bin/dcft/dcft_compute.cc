@@ -43,8 +43,8 @@ DCFTSolver::compute_energy()
     if (options_.get_str("SCF_TYPE") == "DF" || options_.get_str("SCF_TYPE") == "CD" || options_.get_str("SCF_TYPE") == "DIRECT"){
         if (!options_["DCFT_TYPE"].has_changed())
             options_.set_global_str("DCFT_TYPE", "DF");
-        else if (options_.get_str("DCFT_TYPE") == "EXACT")
-            throw PSIEXCEPTION("Please set SCF_TYPE to PK or OUT_OF_CORE in order to use DCFT_TYPE=EXACT.");
+        else if (options_.get_str("DCFT_TYPE") == "CONV")
+            throw PSIEXCEPTION("Please set SCF_TYPE to PK or OUT_OF_CORE in order to use DCFT_TYPE=CONV.");
     }
 
     if (options_.get_str("DCFT_TYPE") == "DF" && (!options_["AO_BASIS"].has_changed()))

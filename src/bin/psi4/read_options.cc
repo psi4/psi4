@@ -1164,7 +1164,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Level shift applied to the diagonal of the density-weighted Fock operator. While this shift can improve convergence, it does change the DCFT energy. !expert-*/
       options.add_double("ENERGY_LEVEL_SHIFT", 0.0);
       /*- What algorithm to use for the DCFT computation -*/
-      options.add_str("DCFT_TYPE", "EXACT", "EXACT DF");
+      options.add_str("DCFT_TYPE", "CONV", "CONV DF");
       /*- Auxiliary basis set for DCFT density fitting computations.
       :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
       options.add_str("DF_BASIS_DCFT","");

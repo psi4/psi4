@@ -55,6 +55,7 @@ double DCFTSolver::compute_energy_RHF()
 
     // Print out information about the job
     outfile->Printf( "\n\tDCFT Functional:    \t\t %s", options_.get_str("DCFT_FUNCTIONAL").c_str());
+    outfile->Printf( "\n\tDCFT Type:          \t\t %s", options_.get_str("DCFT_TYPE").c_str());
     outfile->Printf( "\n\tAlgorithm:          \t\t %s", options_.get_str("ALGORITHM").c_str());
     outfile->Printf( "\n\tAO-Basis Integrals: \t\t %s", options_.get_str("AO_BASIS").c_str());
     if (options_.get_str("ALGORITHM") == "QC") {
@@ -102,9 +103,11 @@ double DCFTSolver::compute_energy_RHF()
     if(!orbitalsDone_ || !cumulantDone_ || !densityConverged_)
         throw ConvergenceError<int>("DCFT", maxiter_, cumulant_threshold_, cumulant_convergence_, __FILE__, __LINE__);
 
-    outfile->Printf("\n\t*%6s SCF Energy                                 = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), scf_energy_);
-    outfile->Printf("\t*%6s Lambda Energy                              = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), lambda_energy_);
-    outfile->Printf("\t*%6s Total Energy                               = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), new_total_energy_);
+    std::string prefix = options_.get_str("DCFT_TYPE") == "DF"? "DF-" : " ";
+
+    outfile->Printf("\n\t*%3s%6s SCF Energy                                 = %20.15f\n", prefix.c_str(), options_.get_str("DCFT_FUNCTIONAL").c_str(), scf_energy_);
+    outfile->Printf(  "\t*%3s%6s Lambda Energy                              = %20.15f\n", prefix.c_str(), options_.get_str("DCFT_FUNCTIONAL").c_str(), lambda_energy_);
+    outfile->Printf(  "\t*%3s%6s Total Energy                               = %20.15f\n", prefix.c_str(), options_.get_str("DCFT_FUNCTIONAL").c_str(), new_total_energy_);
 
     Process::environment.globals["CURRENT ENERGY"] = new_total_energy_;
     Process::environment.globals["DCFT TOTAL ENERGY"] = new_total_energy_;

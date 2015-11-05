@@ -57,7 +57,7 @@ DCFTSolver::mp2_guess_RHF()
     _ints->set_keep_dpd_so_ints(true);
     dpd_set_default(_ints->get_dpd_id());
 
-    outfile->Printf( "\n\n\tTransforming two-electron integrals for RHF reference ...\n");
+    outfile->Printf( "\n\n\tTransforming two-electron integrals (transformation type: restricted)...\n");
     transform_integrals_RHF();
 
     std::string guess = options_.get_str("DCFT_GUESS");
@@ -66,8 +66,6 @@ DCFTSolver::mp2_guess_RHF()
         outfile->Printf( "\tComputing MP2 amplitude guess...\n\n");
 
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-
-        outfile->Printf( "\n\tThis is a closed-shell molecule so the spin adapted code is used!\n");
 
         dpdbuf4 I, D;
 

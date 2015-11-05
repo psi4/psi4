@@ -61,7 +61,7 @@ DCFTSolver::gradient_init_RHF()
 
     // If the <VV|VV> integrals were not used for the energy computation (AO_BASIS = DISK) -> compute them for the gradients
     dcft_timer_on("DCFTSolver::Transform_VVVV");
-    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCFT_TYPE") == "EXACT")
+    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCFT_TYPE") == "CONV")
         _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
     else if(options_.get_str("DCFT_TYPE") == "DF"){
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);

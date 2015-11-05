@@ -103,7 +103,7 @@ DCFTSolver::transform_integrals()
 
     sort_OOVV_integrals();
 
-    if(options_.get_str("AO_BASIS") == "NONE" && options_.get_str("DCFT_TYPE") == "EXACT")
+    if(options_.get_str("AO_BASIS") == "NONE" && options_.get_str("DCFT_TYPE") == "CONV")
         sort_VVVV_integrals();
 
     // VVVO and OOOV integrals are needed for the QC algorithm
