@@ -23,6 +23,8 @@
 #include <libmints/mints.h>
 #include <libqt/qt.h>
 #include <libpsio/psio.hpp>
+#include <liboptions/liboptions_python.h>
+
 #include <psi4-dec.h>
 #include <libfock/v.h>
 #include <libfunctional/superfunctional.h>
@@ -253,27 +255,27 @@ SharedMatrix SCFGrad::compute_gradient()
         gradients["Potential"]->set_name("Potential Gradient");
         gradients["Potential"]->zero();
 
-        // Thread count
-        int threads = 1;
-        #ifdef _OPENMP
-            threads = omp_get_max_threads();
-        #endif
+            // Thread count
+            int threads = 1;
+            #ifdef _OPENMP
+                threads = omp_get_max_threads();
+            #endif
 
-        // Potential derivatives
-        std::vector<boost::shared_ptr<OneBodyAOInt> > Vint;
-        std::vector<SharedMatrix> Vtemps;
-        for (int t = 0; t < threads; t++) { 
-            Vint.push_back(boost::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
-            Vtemps.push_back(SharedMatrix(gradients["Potential"]->clone()));
-        }
-       
-        // Lower Triangle
-        std::vector<std::pair<int,int> > PQ_pairs;
-        for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q <= P; Q++) {
-                PQ_pairs.push_back(std::pair<int,int>(P,Q));
+            // Potential derivatives
+            std::vector<boost::shared_ptr<OneBodyAOInt> > Vint;
+            std::vector<SharedMatrix> Vtemps;
+            for (int t = 0; t < threads; t++) {
+                Vint.push_back(boost::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
+                Vtemps.push_back(SharedMatrix(gradients["Potential"]->clone()));
             }
-        }
+
+            // Lower Triangle
+            std::vector<std::pair<int,int> > PQ_pairs;
+            for (int P = 0; P < basisset_->nshell(); P++) {
+                for (int Q = 0; Q <= P; Q++) {
+                    PQ_pairs.push_back(std::pair<int,int>(P,Q));
+                }
+            }
 
         #pragma omp parallel for schedule(dynamic) num_threads(threads)
         for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
@@ -288,7 +290,7 @@ SharedMatrix SCFGrad::compute_gradient()
 
             Vint[thread]->compute_shell_deriv1(P,Q);
             const double* buffer = Vint[thread]->buffer();
-                            
+
             int nP = basisset_->shell(P).nfunction();
             int oP = basisset_->shell(P).function_index();
             int aP = basisset_->shell(P).ncenter();
@@ -321,6 +323,16 @@ SharedMatrix SCFGrad::compute_gradient()
         }
     }
     timer_off("Grad: V");
+
+    // If an external field exists, add it to the one-electron Hamiltonian
+    boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
+    boost::shared_ptr<ExternalPotential> external = boost::python::extract<boost::shared_ptr<ExternalPotential> >(pyExtern);
+    if (external) {
+        gradient_terms.push_back("External Potential");
+        timer_on("Grad: External");
+        gradients["External Potential"] = external->computePotentialGradients(basisset_, Dt);
+        timer_off("Grad: External");
+    }  // end external
 
     // => Overlap Gradient <= //
     timer_on("Grad: S");
