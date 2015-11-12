@@ -47,8 +47,14 @@ DCFTSolver::compute_energy()
             throw PSIEXCEPTION("Please set SCF_TYPE to PK or OUT_OF_CORE in order to use DCFT_TYPE=CONV.");
     }
 
-    if (options_.get_str("DCFT_TYPE") == "DF" && (!options_["AO_BASIS"].has_changed()))
-        options_.set_str("DCFT", "AO_BASIS", "NONE");
+    if (options_.get_str("DCFT_TYPE") == "DF"){
+        if (!options_["AO_BASIS"].has_changed())
+            options_.set_str("DCFT", "AO_BASIS", "NONE");
+        else if (options_.get_str("AO_BASIS") == "DISK"){
+            outfile->Printf("\n\n\t**** Warning: AO_BASIS=DISK not implemented in density-fitted DCFT. Switch to AO_BASIS=NONE ****\n");
+            options_.set_str("DCFT", "AO_BASIS", "NONE");
+        }
+    }
 
 
     if(options_.get_str("REFERENCE") == "RHF")
@@ -56,7 +62,7 @@ DCFTSolver::compute_energy()
     else if (options_.get_str("REFERENCE") == "UHF")
         total_energy = compute_energy_UHF();
     else if (options_.get_str("REFERENCE") == "ROHF"){
-        outfile->Printf("\n\n\t**** Warning: ROHF reference, then unrestricted DCFT ****\n\n");
+        outfile->Printf("\n\n\t**** Warning: ROHF reference, then unrestricted DCFT ****\n");
         total_energy = compute_energy_UHF();
     }
     else
