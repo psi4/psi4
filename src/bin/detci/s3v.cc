@@ -117,7 +117,7 @@ void s3_block_vdiag(struct stringwr *alplist, struct stringwr *betlist,
 
           /* loop over Ia */
           if (nthreads > 1) {
-              timer_on("DETCI: s3_mt");
+              timer_on("CIWAVE: s3_mt");
               tpool_queue_open(thread_pool);
               for (Ia=alplist, Ia_idx=0; Ia_idx<nas; Ia_idx++, Ia++) {
                   thread_info[Ia_idx]->nas = nas;
@@ -133,7 +133,7 @@ void s3_block_vdiag(struct stringwr *alplist, struct stringwr *betlist,
                   tpool_add_work(thread_pool , s3_block_vdiag_pthread, (void *) thread_info[Ia_idx]); 
                 }
               tpool_queue_close(thread_pool, 1);
-              timer_off("DETCI: s3_mt");
+              timer_off("CIWAVE: s3_mt");
 
             }
           else {
@@ -332,7 +332,7 @@ void s3_block_v(struct stringwr *alplist, struct stringwr *betlist,
 
        /* loop over Ia */
        if (nthreads > 1) {
-           timer_on("DETCI: s3_mt");
+           timer_on("CIWAVE: s3_mt");
            tpool_queue_open(thread_pool);
            for (Ia=alplist, Ia_idx=0; Ia_idx<nas; Ia_idx++, Ia++) {
                thread_info[Ia_idx]->nas = nas;
@@ -348,11 +348,11 @@ void s3_block_v(struct stringwr *alplist, struct stringwr *betlist,
                tpool_add_work(thread_pool, s3_block_v_pthread, (void *) thread_info[Ia_idx]);
              }
            tpool_queue_close(thread_pool, 1);
-           timer_off("DETCI: s3_mt");
+           timer_off("CIWAVE: s3_mt");
 
          }
        else {
-           timer_on("DETCI: s3_mt");
+           timer_on("CIWAVE: s3_mt");
            for (Ia=alplist, Ia_idx=0; Ia_idx<nas; Ia_idx++, Ia++) {
 
                /* loop over excitations E^a_{kl} from |A(I_a)> */
@@ -389,7 +389,7 @@ void s3_block_v(struct stringwr *alplist, struct stringwr *betlist,
                  }
 
              } /* end loop over Ia */
-           timer_off("DETCI: s3_mt");
+           timer_off("CIWAVE: s3_mt");
          }
        
      } /* end loop over j */

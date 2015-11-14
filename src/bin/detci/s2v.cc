@@ -181,7 +181,7 @@ void s2_block_vfci_thread(struct stringwr **alplist, struct stringwr **betlist,
 
   tpool_queue_open(thread_pool);
 
-  timer_on("DETCI: s2_mt");
+  timer_on("CIWAVE: s2_mt");
 
   /* loop over I_a */
   for (Ia=alplist[Ia_list], Ia_idx=0; Ia_idx < nas; Ia_idx++, Ia++) {
@@ -203,7 +203,7 @@ void s2_block_vfci_thread(struct stringwr **alplist, struct stringwr **betlist,
     } /* end loop over Ia */
   tpool_queue_close(thread_pool, 1);
 
-  timer_off("DETCI: s2_mt");
+  timer_off("CIWAVE: s2_mt");
 
   for (i=0; i<nas; i++) free(thread_info[i]);
 }
@@ -460,7 +460,7 @@ void s2_block_vras_thread(struct stringwr **alplist, struct stringwr **betlist,
 
   tpool_queue_open(thread_pool);
 
-  timer_on("DETCI: s2_mt");
+  timer_on("CIWAVE: s2_mt");
 
  
   /* loop over I_a */
@@ -483,7 +483,7 @@ void s2_block_vras_thread(struct stringwr **alplist, struct stringwr **betlist,
     } /* end loop over Ia */
 
   tpool_queue_close(thread_pool, 1);
-  timer_off("DETCI: s2_mt");
+  timer_off("CIWAVE: s2_mt");
 
 
   for (i=0; i<nas; i++) free(thread_info[i]);
