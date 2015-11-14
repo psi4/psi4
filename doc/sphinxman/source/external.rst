@@ -43,8 +43,8 @@ If uncertain, `start here <https://github.com/psi4/psi4public/wiki/1_Obtaining#q
 .. index:: scratch files, psirc, psi4rc
 .. _`sec:psirc`:
 
-Scratch Files and the |psirc| File
-==================================
+Scratch Files, |psirc| File and Elementary Restart
+==================================================
 
 One very important part of user configuration at the end of the
 installation process (:ref:`details here <sec:install_III_7>`)
@@ -52,7 +52,7 @@ is to tell |PSIfour| where to write its temporary
 ("scratch") files.  Electronic structure packages like |PSIfour| can
 create rather large temporary disk files.  It is very important to 
 ensure that |PSIfour| is writing its temporary files to a disk drive
-phsyically attached to the computer running the computation.  If it
+physically attached to the computer running the computation.  If it
 is not, it will significantly slow down the program and the network.
 By default, |PSIfour| will write temporary files to ``/tmp``, but this
 directory is often not large enough for typical computations.  Therefore,
@@ -109,7 +109,21 @@ A guide to the contents of individual scratch files may be found at :ref:`apdx:p
 To circumvent difficulties with running multiple jobs in the same scratch, the
 process ID (PID) of the |PSIfour| instance is incorporated into the full file
 name; therefore, it is safe to use the same scratch directory for calculations
-running simultaneously.
+running simultaneously. This also means that if the user want |PSIfour| to use
+information from a previous file, like molecular orbitals, he needs to provide the
+name of the file. This can be done through the ``restart_file`` option ::
+
+  energy('scf',restart_file='./psi.PID.name.filenumber')
+
+where by default, PID is the process number, name the name of the molecule,
+and filenumber is listed in :ref:`content <apdx:psiFiles>`. Only the filenumber
+is necessary for the driver to appropriately rename the file for the next |PSIfour|
+job, and if none is found it defaults to 32, a checkpoint file. If two or more files
+are to be read, they need to be provided as a Python list ::
+
+  energy('scf',restart_file=['./file1.filenumber','./file2.filenumber'])
+
+Note that the ``restart_file`` options is only available for energy procedures up to now.
 
 To override any of these defaults for selected jobs, simply place the
 appropriate commands from the snippets above in the input file itself.  During

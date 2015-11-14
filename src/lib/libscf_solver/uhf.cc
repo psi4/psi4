@@ -68,6 +68,7 @@ void UHF::common_init()
 {
 
     Drms_ = 0.0;
+    // TODO: Move that to the base object
     step_scale_ = options_.get_double("FOLLOW_STEP_SCALE");
     step_increment_ = options_.get_double("FOLLOW_STEP_INCREMENT");
 
@@ -304,9 +305,9 @@ bool UHF::diis()
     return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get());
 }
 
-void UHF::stability_analysis_pk()
+bool UHF::stability_analysis_pk()
 {
-    // ==> Legacy old stability code <==
+    // ==> Old legacy stability code <==
 
     outfile->Printf("WARNING: PK integrals extremely slow for stability analysis.\n");
     outfile->Printf("Proceeding, but feel free to kill the computation and use other integrals.\n");
@@ -534,21 +535,11 @@ void UHF::stability_analysis_pk()
 
     outfile->Printf( "%s", status.c_str());
 
-    if(redo){
-        if(attempt_number_ > 1){
-            // Make sure we don't get stuck in an infinite loop
-            outfile->Printf( "    There's still a negative eigenvalue.  Try increasing FOLLOW_STEP_SCALE");
-            return;
-        }
-        attempt_number_++;
-        outfile->Printf( "    Re-running the SCF, using the rotated orbitals\n");
-        diis_manager_->reset_subspace();
-        compute_energy();
-    }
+    return redo;
 
 }
 
-void UHF::stability_analysis()
+bool UHF::stability_analysis()
 {
     if(scf_type_ != "PK"){
         boost::shared_ptr<UStab> stab = boost::shared_ptr<UStab>(new UStab());
@@ -566,7 +557,6 @@ void UHF::stability_analysis()
         // And now, export the eigenvalues to a PSI4 array, mainly for testing purposes
 
         Process::environment.arrays["SCF STABILITY EIGENVALUES"] = eval_sym;
-
         if (stab->is_unstable() && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW") {
             if (attempt_number_ == 1 ) {
                 stab_val = stab->get_eigval();
@@ -584,23 +574,17 @@ void UHF::stability_analysis()
             stab->rotate_orbs(step_scale_);
            //     outfile->Printf( "NEW ORBS");
            //     Ca_->print();
-            if(attempt_number_ > max_attempts_) {
-                // Make sure we don't get stuck in an infinite loop
-                outfile->Printf( "    There's still a negative eigenvalue. Try modifying FOLLOW_STEP_SCALE\n");
-                outfile->Printf("    or increasing MAX_ATTEMPTS.\n");
-                return;
-            }
-            attempt_number_++;
 
-            outfile->Printf("    Running SCF again with the rotated orbitals.\n");
-            diis_manager_->reset_subspace();
-            compute_energy();
+           // Ask politely SCF control for a new set of iterations
+           return true;
         } else {
             outfile->Printf("    Stability analysis over.\n");
+            // We are done, no more iterations
+            return false;
         }
 
     }else{
-        stability_analysis_pk();
+        return stability_analysis_pk();
     }
 }
 
@@ -624,13 +608,13 @@ void UHF::compute_nos()
 
     // Print the NOONs -- code ripped off from OEProp::compute_no_occupations()
     int max_num;
-    if(options_.get_str("UHF_NOONS") == "ALL") max_num = nmo_;
-    else max_num = to_integer(options_.get_str("UHF_NOONS"));
+    if(options_.get_str("PRINT_NOONS") == "ALL") max_num = nmo_;
+    else max_num = to_integer(options_.get_str("PRINT_NOONS"));
 
     std::vector<boost::tuple<double, int, int> > metric;
     for (int h = 0; h < UHF_NOONs->nirrep(); h++)
       for (int i = 0; i < UHF_NOONs->dimpi()[h]; i++)
-        metric.push_back(boost::tuple<double,int,int>(UHF_NOONs->get(h,i), i ,h));
+        metric.push_back(boost::tuple<double,int,int>(UHF_NOONs->get(h,i), h ,i));
 
     std::sort(metric.begin(), metric.end(), std::greater<boost::tuple<double,int,int> >());
     int offset = nalpha_;
@@ -643,12 +627,12 @@ void UHF::compute_nos()
     for (int index = start_occ; index < stop_vir; index++) {
       if (index < offset) {
         outfile->Printf( "  HONO-%-2d: %4d%3s %9.7f\n", offset- index - 1,
-        boost::get<1>(metric[index])+1,labels[boost::get<2>(metric[index])],
+        boost::get<2>(metric[index])+1,labels[boost::get<1>(metric[index])],
         boost::get<0>(metric[index]));
       }
       else {
         outfile->Printf( "  LUNO+%-2d: %4d%3s %9.7f\n", index - offset,
-        boost::get<1>(metric[index])+1,labels[boost::get<2>(metric[index])],
+        boost::get<2>(metric[index])+1,labels[boost::get<1>(metric[index])],
         boost::get<0>(metric[index]));
       }
     }
@@ -662,7 +646,71 @@ void UHF::compute_nos()
         SharedMatrix SHalf_inv = S_->clone();
         SHalf_inv->power(-0.5);
         Ca_->gemm(false, false, 1.0,SHalf_inv,UHF_NOs, 0.0);
-        Cb_->copy(Ca_);
+
+        double actv_threshold = 0.02;
+
+        // Transform the average Fock matrix to the NO basis
+        SharedMatrix F_UHF_NOs = factory_->create_shared_matrix("Fock Matrix");
+        F_UHF_NOs->copy(Fa_);
+        F_UHF_NOs->add(Fb_);
+        F_UHF_NOs->transform(Ca_);
+
+        // Sort orbitals according to type (core,active,virtual) and energy
+        std::vector<boost::tuple<int, double, int, int> > sorted_nos;
+        for (int h = 0; h < UHF_NOONs->nirrep(); h++){
+            for (int i = 0; i < UHF_NOONs->dimpi()[h]; i++){
+                double noon = UHF_NOONs->get(h,i);
+                int type = 0; // core      NO >= 1.98
+                if (noon < actv_threshold){
+                    type = 2; // virtual   NO < 0.02
+                }else if (noon < 2.0 - actv_threshold){
+                    type = 1; // active    0.02 <= NO < 1.98
+                }
+                double epsilon = F_UHF_NOs->get(h,i,i);
+                sorted_nos.push_back(boost::tuple<int,double,int,int>(type,epsilon,h,i));
+            }
+        }
+        std::sort(sorted_nos.begin(), sorted_nos.end());
+
+        // Build the final set of UHF NOs
+        std::vector<int> irrep_count(nirrep_,0);
+
+        for (size_t i = 0; i < sorted_nos.size(); i++){
+            int h = boost::get<2>(sorted_nos[i]);
+            int Ca_p = boost::get<3>(sorted_nos[i]);
+            int Cb_p = irrep_count[h];
+            for (int mu = 0; mu < Ca_->colspi(h); mu++){
+                double value = Ca_->get(h,mu,Ca_p);
+                Cb_->set(h,mu,Cb_p,value);
+            }
+            irrep_count[h] += 1;
+        }
+
+        // Copy sorted orbitals to Ca
+        Ca_->copy(Cb_);
+
+        // Suggest an active space
+        Dimension corepi(nirrep_);
+        Dimension actvpi(nirrep_);
+        for (size_t i = 0; i < sorted_nos.size(); i++){
+            int type = boost::get<0>(sorted_nos[i]);
+            int h = boost::get<2>(sorted_nos[i]);
+            if (type == 0) corepi[h] += 1;
+            if (type == 1) actvpi[h] += 1;
+        }
+        outfile->Printf("\n  Active Space from UHF-NOs (NO threshold = %.4f):\n\n",actv_threshold);
+
+        outfile->Printf("    restricted_docc = [");
+        for (int h = 0; h < nirrep_; h++){
+            outfile->Printf("%s%d",h ? "," : "",corepi[h]);
+        }
+        outfile->Printf("]\n");
+
+        outfile->Printf("    active = [");
+        for (int h = 0; h < nirrep_; h++){
+            outfile->Printf("%s%d",h ? "," : "",actvpi[h]);
+        }
+        outfile->Printf("]\n");
     }
 }
 

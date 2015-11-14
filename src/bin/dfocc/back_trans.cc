@@ -721,14 +721,32 @@ else if (reference_ == "UNRESTRICTED") {
     //=========================
     // Correlation TPDM
     //=========================
+    // OO Block 
+    Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|OO>", nQ, noccA, noccA));
+    Gmo->read(psio_, PSIF_DFOCC_DENS);
+    G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|On)", nQ, noccA, nso_));
+    G->contract(false, true, nQ * noccA, nso_, noccA, Gmo, CoccA, 1.0, 0.0);
+    Gmo.reset();
+    Gao = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|nn)", nQ, nso_, nso_));
+    Gao->contract233(false, false, nso_, nso_, CoccA, G, 1.0, 0.0);
+    G.reset();
+
+    // oo Block 
+    Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|oo>", nQ, noccB, noccB));
+    Gmo->read(psio_, PSIF_DFOCC_DENS);
+    G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|on)", nQ, noccB, nso_));
+    G->contract(false, true, nQ * noccB, nso_, noccB, Gmo, CoccB, 1.0, 0.0);
+    Gmo.reset();
+    Gao->contract233(false, false, nso_, nso_, CoccB, G, 1.0, 1.0);
+    G.reset();
+
     // OV Block
     Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|OV>", nQ, noccA, nvirA));
     Gmo->read(psio_, PSIF_DFOCC_DENS);
     G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|On)", nQ, noccA, nso_));
     G->contract(false, true, nQ * noccA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
     Gmo.reset();
-    Gao = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|nn)", nQ, nso_, nso_));
-    Gao->contract233(false, false, nso_, nso_, CoccA, G, 2.0, 0.0);
+    Gao->contract233(false, false, nso_, nso_, CoccA, G, 2.0, 1.0);
     G.reset();
 
     // ov Block
@@ -738,6 +756,24 @@ else if (reference_ == "UNRESTRICTED") {
     G->contract(false, true, nQ * noccB, nso_, nvirB, Gmo, CvirB, 1.0, 0.0);
     Gmo.reset();
     Gao->contract233(false, false, nso_, nso_, CoccB, G, 2.0, 1.0);
+    G.reset();
+
+    // VV Block
+    Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|VV>", nQ, nvirA, nvirA));
+    Gmo->read(psio_, PSIF_DFOCC_DENS, true, true);
+    G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|Vn)", nQ, nvirA, nso_));
+    G->contract(false, true, nQ * nvirA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
+    Gmo.reset();
+    Gao->contract233(false, false, nso_, nso_, CvirA, G, 1.0, 1.0);
+    G.reset();
+
+    // vv Block
+    Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|vv>", nQ, nvirB, nvirB));
+    Gmo->read(psio_, PSIF_DFOCC_DENS, true, true);
+    G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|vn)", nQ, nvirB, nso_));
+    G->contract(false, true, nQ * nvirB, nso_, nvirB, Gmo, CvirB, 1.0, 0.0);
+    Gmo.reset();
+    Gao->contract233(false, false, nso_, nso_, CvirB, G, 1.0, 1.0);
     G.reset();
 
     // symmetrize : This is necessary since we only consider OV block

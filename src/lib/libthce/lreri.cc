@@ -478,33 +478,42 @@ void DFERI::transform()
     // > Maximum number of rows < //
 
     unsigned long int max_rows = (memory_ / per_row);
-    max_rows = (max_rows < auxiliary_->max_function_per_shell() ? auxiliary_->max_function_per_shell() : max_rows);
+    //max_rows = 3L * auxiliary_->max_function_per_shell(); // Debug
+    if (max_rows < auxiliary_->max_function_per_shell()) {
+        throw PSIEXCEPTION("Out of memory in DFERI.");
+    }
     max_rows = (max_rows > auxiliary_->nbf() ? auxiliary_->nbf() : max_rows);
 
     // > Shell block assignments < //
 
     std::vector<int> shell_starts;
     shell_starts.push_back(0);
-    int index = 0;
-    for (int Qshell = 1; Qshell < auxiliary_->nshell()-1; Qshell++) {
-        if (auxiliary_->shell(Qshell+1).function_index() - auxiliary_->shell(shell_starts[index]).function_index() > max_rows) {
-            shell_starts.push_back(Qshell);
-            index++;
+    int fcount = auxiliary_->shell(0).nfunction();
+    for (int Q = 1; Q < auxiliary_->nshell(); Q++) {
+        if (fcount + auxiliary_->shell(Q).nfunction() > max_rows) {
+            shell_starts.push_back(Q);
+            fcount = auxiliary_->shell(Q).nfunction();
+        } else {
+            fcount += auxiliary_->shell(Q).nfunction();
         }
     }
     shell_starts.push_back(auxiliary_->nshell());
 
-    for (int i=0; i<shell_starts.size()-1; i++) {
-        if (i == shell_starts.size() - 2) {
-            if (max_rows < auxiliary_->nbf() - auxiliary_->shell(shell_starts[i]).function_index()) {
-              throw PSIEXCEPTION("Out of memory in DFERI.");
-            }
-        } else {
-            if (max_rows < auxiliary_->shell(shell_starts[i+1]).function_index() - auxiliary_->shell(shell_starts[i]).function_index()) {
-              throw PSIEXCEPTION("Out of memory in DFERI.");
-            }
-        }
-    }
+    // > Task printing (Debug) < //
+
+    //outfile->Printf("Auxiliary Composition:\n\n");
+    //for (int Q = 0; Q < auxiliary_->nshell(); Q++) {
+    //    outfile->Printf("%3d: %2d\n", Q, auxiliary_->shell(Q).nfunction());
+    //}
+    //outfile->Printf("\n");
+
+    //outfile->Printf("Max Rows: %zu\n\n", max_rows);
+
+    //outfile->Printf("Task Starts:\n\n");
+    //for (int task = 0; task < shell_starts.size() - 1; task++) {
+    //    outfile->Printf("%3d: %3d\n", task, shell_starts[task]);
+    //}
+    //outfile->Printf("\n");
 
     // => ERI Objects <= //
 

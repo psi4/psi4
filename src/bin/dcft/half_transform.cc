@@ -27,7 +27,7 @@
 #include <libqt/qt.h>
 #include "defines.h"
 
-namespace psi { namespace dcft {
+namespace psi { namespace dcft{
 
 /* half_transform(): Routine to transform the last two indices of a dpdbuf4
  * between the MO and SO bases.

@@ -54,6 +54,10 @@ protected:
     void get_moinfo();
     void title();
     void title_grad();
+    void lambda_title();
+    void pt_title();
+    void pat_title();
+    void pdm_title();
     void ref_energy();
     void mp2_energy();
     void scs_mp2_energy();
@@ -132,6 +136,7 @@ protected:
     void ccl_energy();
     void ccl_energy2();
     void save_mo_to_wfn();
+    void remove_binary_file(int fileno);
 
     void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new);
     void sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec);
@@ -397,10 +402,15 @@ protected:
     void mp3_WabefT2BB();     
     void mp3_WabefT2AB();     
     void mp3_pdm_3index_intr();
+    void mp3_t2_1st_sc();
+    void mp3_t2_1st_gen();
+    void mp3l_energy();
 
     // OMP2.5
     void omp2_5_manager();
     void mp2_5_manager();
+    void omp2_5_manager_cd();
+    void mp2_5_manager_cd();
 
     // OCEPA
     void ocepa_manager();
@@ -470,8 +480,14 @@ protected:
     // CCSD(T)
     void ccsd_canonic_triples();
     void ccsd_canonic_triples_hm();
+    void ccsd_canonic_triples_disk();
     void ccsd_t_manager();
     void ccsd_t_manager_cd();
+
+    // Lambda-CCSD(T)
+    void ccsdl_canonic_triples_disk();
+    void ccsdl_t_manager();
+    void ccsdl_t_manager_cd();
 
     // CCD
     void ccd_manager();
@@ -748,6 +764,8 @@ protected:
      double EccsdLAB;
      double Eccsd_t;
      double E_t;
+     double Eccsd_at;
+     double E_at;
 
      // CCD
      double Eccd;

@@ -172,8 +172,9 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
     // s, p and s, p, d can be grouped together in Pople-style basis sets
     const string sp("SP"), spd("SPD");
 
+    char mo = (char)(-1);
     //                     a  b  c  d  e  f  g  h  i  j  k  l  m  n  o  p  q  r  s  t  u  v  w  x  y  z
-    char shell_to_am[] = {-1,-1,-1, 2,-1, 3, 4, 5, 6,-1, 7, 8, 9,10,11, 1,12,13, 0,14,15,16,17,18,19,20};
+    char shell_to_am[] = {mo,mo,mo, 2,mo, 3, 4, 5, 6,mo, 7, 8, 9,10,11, 1,12,13, 0,14,15,16,17,18,19,20};
 
     // Hold the result of a regex_match
     smatch what;

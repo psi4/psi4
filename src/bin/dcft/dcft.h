@@ -30,6 +30,8 @@
 #include <libciomr/libciomr.h>
 #include <libmints/dimension.h>
 
+#define DCFT_TIMER
+
 // Handy mints timer macros, requires libqt to be included
 #ifdef DCFT_TIMER
 #   include <libqt/qt.h>
@@ -485,6 +487,91 @@ protected:
 
     /// Used to align things in the output
     std::string indent;
+
+
+    // Density-Fitting DCFT
+    /// Density-fitted MP2 (DF-MP2) guess
+    void df_build_b_ao();
+    /// Calculate memory required for density-fitting
+    void df_memory();
+    /// Build density-fitted <VV||VV>, <vv||vv>, and <Vv|Vv> tensors in G intermediate
+    void build_DF_tensors_RHF();
+    void build_DF_tensors_UHF();
+    /// Form J(P|Q)^-1/2
+    void formJm12(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
+    /// Form AO basis b(Q|mu,nu)
+    void formb_ao(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
+    /// Transform AO-basis b(Q, mn) to MO-basis b(Q, pq)
+    void transform_b();
+    /// Transform b(Q|mu,nu) from AO basis to SO basis
+    void transform_b_ao2so();
+    /// Form MO-basis b(Q, ij)
+    void formb_oo();
+    /// Form MO-basis b(Q, ia)
+    void formb_ov();
+    /// Form MO-basis b(Q, ab)
+    void formb_vv();
+    /// Form MO-basis b(Q, pq)
+    void formb_pq();
+    /// Form density-fitted MO-basis TEI g(OV|OV) in chemists' notation
+    void form_df_g_ovov();
+    /// Form density-fitted MO-basis TEI g(OO|OO) in chemists' notation
+    void form_df_g_oooo();
+    /// Form density-fitted MO-basis TEI g(VV|OO) in chemists' notation
+    void form_df_g_vvoo();
+    /// Form density-fitted MO-basis TEI g(VO|OO) in chemists' notation
+    void form_df_g_vooo();
+    /// Form density-fitted MO-basis TEI g(OV|VV) in chemists' notation
+    void form_df_g_ovvv();
+    /// Form density-fitted MO-basis TEI g<VV|VV> in physists' notation
+    void form_df_g_vvvv();
+    /// Form MO-based Gbar*Gamma
+    void build_gbarGamma_RHF();
+    void build_gbarGamma_UHF();
+    /// Form gbar<ab|cd> * lambda <ij|cd>
+    void build_gbarlambda_RHF_v3mem();
+    void build_gbarlambda_UHF_v3mem();
+
+    // Density-Fitting DCFT
+    /// Auxiliary basis
+    boost::shared_ptr<BasisSet> auxiliary_;
+    /// Primary basis
+    boost::shared_ptr<BasisSet> primary_;
+    /// Number of total primary basis functions
+    int nn_;
+    /// Number of total auxilliary basis functions
+    int nQ_;
+    /// Number of alpha occupied orbitals
+    int naocc_;
+    /// J^-1/2 Matrix
+    double **Jm12_;
+    /// b(Q|mu,nu)
+    SharedMatrix bQmn_ao_;
+    SharedMatrix bQmn_so_;
+    /// b(Q|i, j)
+    SharedMatrix bQijA_mo_;
+    SharedMatrix bQijB_mo_;
+    /// b(Q|i, a)
+    SharedMatrix bQiaA_mo_;
+    SharedMatrix bQiaB_mo_;
+    /// b(Q|a, i)
+    SharedMatrix bQaiA_mo_;
+    SharedMatrix bQaiB_mo_;
+    /// b(Q|a, b)
+    SharedMatrix bQabA_mo_;
+    SharedMatrix bQabB_mo_;
+    /// b(Q|p, q)
+    SharedMatrix bQpqA_mo_;
+    SharedMatrix bQpqB_mo_;
+    /// The Tau in the MO basis (All)
+    SharedMatrix mo_tauA_;
+    SharedMatrix mo_tauB_;
+    /// MO-based (Gbar Tau + Gbar Kappa)
+    SharedMatrix mo_gbarGamma_A_;
+    SharedMatrix mo_gbarGamma_B_;
+    /// MO-based Gamma <r|s>
+    SharedMatrix mo_gammaA_;
+    SharedMatrix mo_gammaB_;
 };
 
 }} // Namespaces

@@ -24,7 +24,6 @@
 Module to provide lightweight definitions of functionals and
 SuperFunctionals
 """
-from __future__ import absolute_import
 #CUimport psi4
 import re
 import os
@@ -661,6 +660,14 @@ def build_wb88_x_functional(name):
 
     return fun
 
+def build_hf_x_functional(name):
+
+    # Call this first
+    fun = psi4.Functional.build_base('HF_X')
+
+    # => End User-Customization <= #
+
+    return fun
 
 def build_primitive_functional(name):
 
@@ -728,6 +735,7 @@ functionals = {
         'pw92a_c'     : build_primitive_functional,
         'wpbe_c'      : build_primitive_functional,
         'wpw92_c'     : build_primitive_functional,
+        'hf_x'        : build_hf_x_functional,
     }
 
 
@@ -1246,6 +1254,37 @@ def build_b3lyp_superfunctional(name, npoints, deriv):
     # => End User-Customization <= #
 
     # Call this last
+    sup.allocate()
+    return sup
+
+
+def build_hf_x_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = psi4.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('HF_X')
+    # Tab in, trailing newlines
+    sup.set_description('    Hartree-Fock Exchange Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    \n')
+
+    # Add member functionals
+    hf_x = build_functional('hf_x')
+    hf_x.set_alpha(1.0)
+    sup.add_x_functional(hf_x)
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(1.0)
+    sup.set_c_alpha(0.0)
+
     sup.allocate()
     return sup
 
@@ -3218,6 +3257,7 @@ superfunctionals = {
         'ft97'            : build_ft97_superfunctional,
         'b3lyp'           : build_b3lyp_superfunctional,
 #        'b3lyp5'          : build_b3lyp5_superfunctional,  # broken
+        'hf_x'            : build_hf_x_superfunctional,
         'pbe0'            : build_pbe0_superfunctional,
         'b97-0'           : build_b970_superfunctional,
         'b97-1'           : build_b971_superfunctional,

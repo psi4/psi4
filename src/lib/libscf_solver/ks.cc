@@ -236,9 +236,10 @@ void RKS::finalize()
 {
     RHF::finalize();
 }
-void RKS::stability_analysis()
+bool RKS::stability_analysis()
 {
     throw PSIEXCEPTION("DFT stabilty analysis has not been implemented yet.  Sorry :(");
+    return false;
 }
 
 UKS::UKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
@@ -312,7 +313,7 @@ void UKS::form_G()
     J_->add(J[1]);
     if (functional_->is_x_hybrid()) {
         Ka_ = K[0];
-        Kb_ = K[1];
+        Kb_ = K[1];;
     }
     if (functional_->is_x_lrc()) {
         wKa_ = wK[0];
@@ -418,9 +419,10 @@ void UKS::finalize()
 {
     UHF::finalize();
 }
-void UKS::stability_analysis()
+bool UKS::stability_analysis()
 {
     throw PSIEXCEPTION("DFT stabilty analysis has not been implemented yet.  Sorry :(");
+    return false;
 }
 
 }}

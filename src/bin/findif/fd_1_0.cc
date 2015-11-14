@@ -30,6 +30,7 @@
 #include <boost/python.hpp>
 #include <boost/python/list.hpp>
 #include <libmints/writer_file_prefix.h>
+#include <liboptions/liboptions_python.h>
 
 using namespace boost::python;
 
@@ -45,7 +46,10 @@ fd_1_0(Options &options, const boost::python::list& python_energies)
   int Natom = mol->natom();
   boost::shared_ptr<MatrixFactory> fact;
 
-  CdSalcList cdsalc(mol, fact, 0x1, true, true);
+  boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();
+  boost::shared_ptr<ExternalPotential> external = boost::python::extract<boost::shared_ptr<ExternalPotential> >(pyExtern);
+  bool noextern = external ? false : true;
+  CdSalcList cdsalc(mol, fact, 0x1, noextern, noextern);
   int Nsalc = cdsalc.ncd();
 
   // Compute number of displacements - check with number of energies passed in

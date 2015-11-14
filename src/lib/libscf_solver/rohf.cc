@@ -506,7 +506,7 @@ void ROHF::form_G()
     Gb_->subtract(Kb_);
 }
 
-void ROHF::stability_analysis()
+bool ROHF::stability_analysis()
 {
     if(scf_type_ == "DF" || scf_type_ == "CD"){
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
@@ -746,6 +746,8 @@ void ROHF::stability_analysis()
         print_stability_analysis(eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }
+    // FOLLOW not implemented yet for ROHF
+    return false;
 }
 
 

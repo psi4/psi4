@@ -76,37 +76,32 @@ procedures = {
             'cepa0'         : run_cepa0,
             'omp2.5'        : run_omp2_5,
             'df-omp2'       : run_dfomp2,
-            'dfomp2'        : run_dfomp2,
             'dfocc'         : run_dfocc,
             'df-omp3'       : run_dfomp3,
-            'dfomp3'        : run_dfomp3,
+            'df-omp2.5'     : run_dfomp2p5,
+            'df-olccd'      : run_dfolccd,
             'qchf'          : run_qchf,
-            'dfccsd2'       : run_dfccsd,
             'df-ccsd2'      : run_dfccsd,
             'ri-ccsd(t)'    : run_dfccsd_t,
-            'riccsd(t)'     : run_dfccsd_t,
-            'dfccd'         : run_dfccd,
+            'df-ccsd(at)'   : run_dfccsd_at,
             'df-ccd'        : run_dfccd,
-            'dfccsdl'       : run_dfccsdl,
             'df-ccsdl'      : run_dfccsdl,
-            'dfccdl'        : run_dfccdl,
             'df-ccdl'       : run_dfccdl,
-            'dfmp3'         : run_dfmp3,
             'df-mp3'        : run_dfmp3,
+            'df-mp2.5'      : run_dfmp2p5,
+            'df-lccd'       : run_dflccd,
             'cd-ccsd'       : run_cdccsd,
-            'cdccsd'        : run_cdccsd,
             'cd-ccsd(t)'    : run_cdccsd_t,
-            'cdccsd(t)'     : run_cdccsd_t,
+            'cd-ccsd(at)'   : run_cdccsd_at,
             'cd-ccd'        : run_cdccd,
-            'cdccd'         : run_cdccd,
-            'cdomp3'        : run_cdomp3,
             'cd-omp3'       : run_cdomp3,
+            'cd-omp2.5'     : run_cdomp2p5,
             'cd-mp3'        : run_cdmp3,
-            'cdmp3'         : run_cdmp3,
+            'cd-mp2.5'      : run_cdmp2p5,
             'cd-omp2'       : run_cdomp2,
-            'cdomp2'        : run_cdomp2,
             'cd-mp2'        : run_cdmp2,
-            'cdmp2'         : run_cdmp2,
+            'cd-olccd'      : run_cdolccd,
+            'cd-lccd'       : run_cdlccd,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
@@ -219,11 +214,12 @@ procedures = {
             'cepa0'         : run_cepa0_gradient,
             'ocepa'         : run_ocepa_gradient,
             'df-ccsd'       : run_dfccsd_gradient,
-            'dfccsd'        : run_dfccsd_gradient,
             'df-ccsd2'      : run_dfccsd_gradient,
-            'dfccsd2'       : run_dfccsd_gradient,
             'df-ccd'        : run_dfccd_gradient,
-            'dfccd'         : run_dfccd_gradient,
+            'df-omp3'       : run_dfomp3_gradient,
+            'df-mp3'        : run_dfmp3_gradient,
+            'df-omp2.5'     : run_dfomp2p5_gradient,
+            'df-mp2.5'      : run_dfmp2p5_gradient,
 #            'efp'           : run_efp_gradient,
             'hf'            : run_scf_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below
@@ -359,35 +355,39 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-omp2                 | density-fitted orbital-optimized MP2 :ref:`[manual] <sec:dfocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
+    | df-omp3                 | density-fitted orbital-optimized MP3 :ref:`[manual] <sec:dfocc>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-omp2.5               | density-fitted orbital-optimized MP2.5 :ref:`[manual] <sec:dfocc>`                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | cd-omp2                 | cholesky decomposed orbital-optimized MP2 :ref:`[manual] <sec:dfocc>`                 |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cd-omp3                 | cholesky decomposed orbital-optimized MP3 :ref:`[manual] <sec:dfocc>`                 |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cd-omp2.5               | cholesky decomposed orbital-optimized MP2.5 :ref:`[manual] <sec:dfocc>`               |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cd-mp2                  | cholesky decomposed MP2 :ref:`[manual] <sec:dfocc>`                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | df-ccsd2                | density-fitted CCSD from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
+    | cd-mp3                  | cholesky decomposed MP3 :ref:`[manual] <sec:dfocc>`                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | dfccsd2                 | density-fitted CCSD from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
+    | cd-mp2.5                | cholesky decomposed MP2.5 :ref:`[manual] <sec:dfocc>`                                 |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-ccsd2                | density-fitted CCSD from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ri-ccsd(t)              | density-fitted CCSD(T) from DFOCC module :ref:`[manual] <sec:dfocc>`                  |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | riccsd(t)               | density-fitted CCSD(T) from DFOCC module :ref:`[manual] <sec:dfocc>`                  |
+    | df-ccsd(at)             | density-fitted Lambda-CCSD(T) from DFOCC module :ref:`[manual] <sec:dfocc>`           |
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-ccd                  | density-fitted CCD from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-mp3                  | density-fitted MP3 from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | dfmp3                   | density-fitted MP3 from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
+    | df-mp2.5                | density-fitted MP2.5 from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | qchf                    | density-fitted QC-HF from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | dfccd                   | density-fitted CCD from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
-    +-------------------------+---------------------------------------------------------------------------------------+
     | df-ccsdl                | density-fitted CCSDL from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | dfccsdl                 | density-fitted CCSDL from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
-    +-------------------------+---------------------------------------------------------------------------------------+
     | df-ccdl                 | density-fitted CCDL from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | dfccdl                  | density-fitted CCDL from DFOCC module :ref:`[manual] <sec:dfocc>`                     |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cepa(0)                 | coupled electron pair approximation variant 0 :ref:`[manual] <sec:fnocepa>`           |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -1068,9 +1068,19 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | eom-ccsd                | equation of motion (EOM) CCSD :ref:`[manual] <sec:eomcc>`                             |
     +-------------------------+---------------------------------------------------------------------------------------+
+    | df-omp2                 | density-fitted orbital-optimized MP2 :ref:`[manual] <sec:dfocc>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-omp3                 | density-fitted orbital-optimized MP3 :ref:`[manual] <sec:dfocc>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-omp2.5               | density-fitted orbital-optimized MP2.5 :ref:`[manual] <sec:dfocc>`                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | df-ccsd                 | density-fitted CCSD (DF-CCSD) :ref:`[manual] <sec:dfocc>`                             |
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-ccd                  | density-fitted CCD (DF-CCD) :ref:`[manual] <sec:dfocc>`                               |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-mp3                  | density-fitted MP3 from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-mp2.5                | density-fitted MP2.5 from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | efp                     | efp-only optimizations                                                                |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -1619,9 +1629,9 @@ def hessian(name, **kwargs):
             fmaster = open('FREQ-master.in', 'wb')
             fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
             fmaster.write(p4util.format_molecule_for_input(molecule).encode('utf-8'))
-            fmaster.write(p4util.format_options_for_input())
+            fmaster.write(p4util.format_options_for_input(molecule, **kwargs))
             p4util.format_kwargs_for_input(fmaster, 2, **kwargs)
-            fmaster.write("""%s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername).encode('utf-8'))
+            fmaster.write(("""%s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
             fmaster.write(instructionsM.encode('utf-8'))
             fmaster.close()
             psi4.print_out(instructionsM)
@@ -1666,7 +1676,7 @@ def hessian(name, **kwargs):
                 freagent = open('%s.in' % (rfile), 'wb')
                 freagent.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
                 freagent.write(p4util.format_molecule_for_input(molecule).encode('utf-8'))
-                freagent.write(p4util.format_options_for_input().encode('utf-8'))
+                freagent.write(p4util.format_options_for_input(molecule, **kwargs).encode('utf-8'))
                 p4util.format_kwargs_for_input(freagent, **kwargs)
 
                 # S/R: Prepare function call and energy save
