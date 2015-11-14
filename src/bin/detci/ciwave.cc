@@ -222,7 +222,7 @@ void CIWavefunction::orbital_locations(const std::string& orbitals, int* start, 
       }
     }
     else{
-        throw PSIEXCEPTION("DETCI: Orbital subset is not defined, should be FZC, DOCC, ACT, VIR, FZV, or ALL");
+        throw PSIEXCEPTION("CIWAVE: Orbital subset is not defined, should be FZC, DOCC, ACT, VIR, FZV, or ALL");
     }
 }
 
@@ -371,7 +371,7 @@ SharedMatrix CIWavefunction::get_opdm(int root, int spin, bool transden)
         return opdm_a;
     }
     else {
-       throw PSIEXCEPTION("DETCI: option spin is not recognizable value.");
+       throw PSIEXCEPTION("CIWAVE: option spin is not recognizable value.");
     }
 }
 SharedMatrix CIWavefunction::get_active_opdm()
@@ -417,7 +417,7 @@ SharedVector CIWavefunction::get_tpdm(bool symmetrize, const std::string& tpdm_t
   else if (tpdm_type == "AA") tpdm_file = PSIF_MO_AA_TPDM;
   else if (tpdm_type == "BB") tpdm_file = PSIF_MO_BB_TPDM;
   else if (tpdm_type == "AB") tpdm_file = PSIF_MO_AB_TPDM;
-  else throw PSIEXCEPTION("DETCI: TPDM can only be SUM, AA, AB, or BB");
+  else throw PSIEXCEPTION("CIWAVE: TPDM can only be SUM, AA, AB, or BB");
 
   iwl_buf_init(&TBuff, tpdm_file, 0.0, 1, 1);
   int npop = CalcInfo_->num_ci_orbs + CalcInfo_->num_drc_orbs;
@@ -557,6 +557,24 @@ void CIWavefunction::cleanup(void)
     delete[] ioff_;
     sigma_free();
     if (Parameters_->nthreads > 1) tpool_destroy(thread_pool, 1);
+
+    // Free Bendazzoli OV arrays
+    //if (Parameters_->bendazzoli) free(OV);
+
+    // CalcInfo free
+    free(CalcInfo_->onel_ints);
+    free(CalcInfo_->twoel_ints);
+    free(CalcInfo_->maxK);
+    free_matrix(CalcInfo_->gmat, CalcInfo_->num_ci_orbs);
+
+    // Free strings and graphs
+
+    //delete MCSCF_Parameters_;
+    //delete CIblks_;
+    //delete SigmaData_;
+    //delete CalcInfo_;
+    //delete Parameters_;
+    //delete H0block_;
 }
 
 /*

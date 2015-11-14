@@ -1701,7 +1701,7 @@ int CIvect::read(int ivect, int ibuf)
    int blk;
    char key[20];
 
-   timer_on("DETCI: CIvect read");
+   timer_on("CIWAVE: CIvect read");
    if (nunits < 1) {
       cur_vect = ivect;
       cur_buf = ibuf;
@@ -1729,7 +1729,7 @@ int CIvect::read(int ivect, int ibuf)
    cur_vect = ivect;
    cur_buf = ibuf;
 
-   timer_off("DETCI: CIvect read");
+   timer_off("CIWAVE: CIvect read");
 
    return(1);
 }
@@ -1753,7 +1753,7 @@ int CIvect::write(int ivect, int ibuf)
    int blk;
    char key[20];
 
-   timer_on("DETCI: CIvect write");
+   timer_on("CIWAVE: CIvect write");
 
    if (nunits < 1) return(1);
 
@@ -1783,7 +1783,7 @@ int CIvect::write(int ivect, int ibuf)
    cur_vect = ivect;
    cur_buf = ibuf;
 
-   timer_off("DETCI: CIvect write");
+   timer_off("CIWAVE: CIvect write");
 
    return(1);
 }

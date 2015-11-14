@@ -204,7 +204,7 @@ void s1_block_vfci_thread(struct stringwr **alplist, struct stringwr **betlist,
   tpool_queue_open(thread_pool);
    
 
-  timer_on("DETCI: s1_mt");
+  timer_on("CIWAVE: s1_mt");
 
   /* loop over I_b */
   for (Ib=betlist[Ib_list], Ib_idx=0; Ib_idx < nbs; Ib_idx++, Ib++) {
@@ -226,7 +226,7 @@ void s1_block_vfci_thread(struct stringwr **alplist, struct stringwr **betlist,
     } /* end loop over Ib */
   tpool_queue_close(thread_pool, 1);
 
-  timer_off("DETCI: s1_mt");
+  timer_off("CIWAVE: s1_mt");
 
   for (i=0; i<nbs; i++) free(thread_info[i]);
 
@@ -494,7 +494,7 @@ void s1_block_vras_thread(struct stringwr **alplist, struct stringwr **betlist,
 
   tpool_queue_open(thread_pool);
  
-  timer_on("DETCI: s1_mt");
+  timer_on("CIWAVE: s1_mt");
 
   /* loop over I_b */
   for (Ib=betlist[Ib_list], Ib_idx=0; Ib_idx < nbs; Ib_idx++, Ib++) {
@@ -516,7 +516,7 @@ void s1_block_vras_thread(struct stringwr **alplist, struct stringwr **betlist,
     } /* end loop over Ib */
   tpool_queue_close(thread_pool, 1);
 
-  timer_off("DETCI: s1_mt"); 
+  timer_off("CIWAVE: s1_mt"); 
 
   for (i=0; i<nbs; i++) free(thread_info[i]);
 
