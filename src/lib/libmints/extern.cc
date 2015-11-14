@@ -27,6 +27,9 @@
 #include "extern.h"
 #include <physconst.h>
 #include "libparallel/ParallelPrinter.h"
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 using namespace boost;
 using namespace psi;
