@@ -106,7 +106,7 @@ class AtomData{
 };
 
 class AtomicData{
-      static boost::shared_ptr<std::vector<AtomData> > Data_;
+      boost::shared_ptr<std::vector<AtomData> > Data_;
    public:
       const AtomData& operator[](const int i)const{
          return (*Data_)[i];
