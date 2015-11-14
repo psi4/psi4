@@ -288,15 +288,31 @@ else if (reference_ == "UNRESTRICTED") {
     // Correlation Contribution
     //=========================
 
-    // Fij = \sum_{m} h_im G_mj
+    // Fij = \sum_{m} h_im G_mj 
     GFooA->gemm(false, false, HooA, G1c_ooA, 1.0, 1.0);
     GFooB->gemm(false, false, HooB, G1c_ooB, 1.0, 1.0);
 
- if (reference == "ROHF" && orb_opt_ == "FALSE") {
-    // Fij = \sum_{e} h_ie G_ej
+    // Fij = \sum_{e} h_ie G_ej : For CCSD
     GFooA->gemm(false, false, HovA, G1c_voA, 1.0, 1.0);
     GFooB->gemm(false, false, HovB, G1c_voB, 1.0, 1.0);
- }
+
+    // FIJ += \sum_{Q} \sum_{M} b_MI^Q G_MJ^Q
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA));
+    K->read(psio_, PSIF_DFOCC_INTS);
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
+    G->read(psio_, PSIF_DFOCC_DENS);
+    GFooA->contract(true, false, noccA, noccA, nQ * noccA, K, G, 1.0, 1.0);
+    K.reset();
+    G.reset();
+
+    // Fij += \sum_{Q} \sum_{m} b_mi^Q G_mj^Q
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|oo)", nQ, noccB, noccB));
+    K->read(psio_, PSIF_DFOCC_INTS);
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|oo)", nQ, noccB, noccB));
+    G->read(psio_, PSIF_DFOCC_DENS);
+    GFooB->contract(true, false, noccB, noccB, nQ * noccB, K, G, 1.0, 1.0);
+    K.reset();
+    G.reset();
 
     // F_IJ += \sum_{Q} \sum_{E} G_JE^Q b_IE^Q = \sum_{E} G_EJ^Q b_EI^Q
     K2 = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA));

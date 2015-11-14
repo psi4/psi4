@@ -24,7 +24,7 @@ SAPT: Symmetry-Adapted Perturbation Theory
    and before), frozen core was implemented incompletely and for
    only selected terms. Comparisons with papers published using early
    |PSIfour| SAPT code may show discrepancies of 0.01-0.10 kcal/mol in
-   individual terms, particularly E_{exch}^{(11)} and E_{exch}^{(12)}.
+   individual terms, particularly :math:`E_{exch}^{(11)}` and :math:`E_{exch}^{(12)}`.
 
 Symmetry-adapted perturbation theory (SAPT) provides a means of directly
 computing the noncovalent interaction between two molecules, that is, the

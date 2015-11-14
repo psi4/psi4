@@ -175,7 +175,7 @@ DCFTSolver::process_so_ints_RHF()
 
       bool buildTensors = (options_.get_str("AO_BASIS") == "DISK");
 
-      dcft_timer_on("Timing::g_AbCd lambda_IjCd");
+      dcft_timer_on("DCFTSolver::g_AbCd lambda_IjCd");
       if(buildTensors){
 
           counter = 0;
@@ -469,7 +469,7 @@ DCFTSolver::process_so_ints_RHF()
           free_int_matrix(Cd_row_start);
 
       }
-      dcft_timer_off("Timing::g_AbCd lambda_IjCd");
+      dcft_timer_off("DCFTSolver::g_AbCd lambda_IjCd");
 
       // Build the Fock matrices from the H and G matrices
       soOffset = 0;
@@ -514,8 +514,14 @@ DCFTSolver::compute_scf_energy_RHF()
     scf_energy_ = enuc_;
     scf_energy_ += kappa_so_a_->vector_dot(so_h_);
     scf_energy_ += tau_so_a_->vector_dot(so_h_);
-    scf_energy_ += kappa_so_a_->vector_dot(Fa_);
-    scf_energy_ += tau_so_a_->vector_dot(Fa_);
+
+    if(options_.get_str("DCFT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE"){
+        scf_energy_ += mo_gammaA_->vector_dot(moFa_);
+    }
+    else{
+        scf_energy_ += kappa_so_a_->vector_dot(Fa_);
+        scf_energy_ += tau_so_a_->vector_dot(Fa_);
+    }
 
     dcft_timer_off("DCFTSolver::compute_scf_energy");
 }

@@ -327,16 +327,76 @@ void FrozenNO::ComputeNaturalOrbitals(){
     int * newVirOrbsPI = new int[nirrep_];
 
     if (!options_["ACTIVE_NAT_ORBS"].has_changed()) {
-        // use occupancy tolerance:
-        for (int h = 0; h < nirrep_; h++) {
-            newVirOrbsPI[h] = 0;
-            double * vec = eigval->pointer(h);
-            for (int a = 0; a < aVirOrbsPI[h]; a++) {
-                if ( vec[a] > cutoff ) newVirOrbsPI[h]++;
+
+        if ( !options_["OCC_PERCENTAGE"].has_changed() ) {
+            // use occupancy tolerance:
+            for (int h = 0; h < nirrep_; h++) {
+                newVirOrbsPI[h] = 0;
+                double * vec = eigval->pointer(h);
+                for (int a = 0; a < aVirOrbsPI[h]; a++) {
+                    if ( vec[a] > cutoff ) newVirOrbsPI[h]++;
+                }
             }
+            outfile->Printf("        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
+            outfile->Printf("\n");
+        }else {
+            // retain orbitals with some percentage of total virtual occupation
+
+            // calculate total trace of vv OPDM
+            double occ_total = 0.0;
+            for (int h = 0; h < nirrep_; h++) {
+                newVirOrbsPI[h] = 0;
+                double * vec = eigval->pointer(h);
+                for (int a = 0; a < aVirOrbsPI[h]; a++) {
+                    occ_total += vec[a];
+                }
+            }
+
+            // choose virtuals from greatest occupation to least until
+            // ratio of occupations matches occ_fraction
+            double frac = options_.get_double("OCC_PERCENTAGE")/100.0;
+
+            int * skip = (int*)malloc(nvirt*sizeof(int));
+            memset((void*)skip,'\0',nvirt*sizeof(int));
+
+            double my_occ_total = 0.0;
+            for (int h = 0; h < nirrep_; h++) {
+                for (int a = 0; a < aVirOrbsPI[h]; a++) {
+
+                    int maxcount = -999;
+                    int maxh     = -999;
+                    int maxb     = -999;
+                    double max   = -9e99;
+
+                    int count = 0;
+                    for (int h2 = 0; h2 < nirrep_; h2++) {
+                        double * vec = eigval->pointer(h2);
+                        for (int b = 0; b < aVirOrbsPI[h2]; b++) {
+                            if ( !skip[count] && vec[b] > max ) {
+                                max      = vec[b];
+                                maxh     = h2;
+                                maxb     = b;
+                                maxcount = count;
+                            }
+                            count++;
+                        }
+                    }
+                    if ( maxcount < 0 ) {
+                        throw PsiException("having trouble sorting virtual NOs",__FILE__,__LINE__);
+                    }
+                    skip[maxcount] = 1;
+
+                    double my_occ = eigval->pointer(maxh)[maxb];
+                    if ( ( my_occ_total / occ_total ) < frac ) {
+                        my_occ_total += my_occ;
+                        newVirOrbsPI[maxh]++;
+                    }
+                }
+            }
+            free(skip);
+            outfile->Printf("        Cutoff for retaining NOs is %5.2lf%% occupancy\n",frac*100.0);
+            outfile->Printf("\n");
         }
-        outfile->Printf("        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
-        outfile->Printf("\n");
     }else{
         // use user-specified number of virtuals
         for (int h = 0; h < nirrep_; h++) {
@@ -477,10 +537,21 @@ void DFFrozenNO::ThreeIndexIntegrals() {
   // read integrals that were written to disk in the scf
   long int nQ_scf = Process::environment.globals["NAUX (SCF)"];
   if ( options_.get_str("SCF_TYPE") == "DF" ) {
+
+      boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(molecule(),
+          "BASIS", options_.get_str("BASIS"));
+
       boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(molecule(),
-            "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"));
+          "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
+          options_.get_str("BASIS"), primary->has_puream());
+
       nQ_scf = auxiliary->nbf();
       Process::environment.globals["NAUX (SCF)"] = nQ_scf;
+
+      //boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(molecule(),
+      //      "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"));
+      //nQ_scf = auxiliary->nbf();
+      //Process::environment.globals["NAUX (SCF)"] = nQ_scf;
   }
 
   boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ_scf,ntri));
@@ -775,10 +846,62 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
   nvirt_no = 0;
 
   if (!options_["ACTIVE_NAT_ORBS"].has_changed()) {
-      // use occupancy tolerance:
-      for (long int i=0; i<v; i++) if (eigvalDab[i]>cutoff) nvirt_no++;
-      outfile->Printf("        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
-      outfile->Printf("\n");
+
+      if ( !options_["OCC_PERCENTAGE"].has_changed() ) {
+
+          // use occupancy tolerance:
+          for (long int i=0; i<v; i++) if (eigvalDab[i]>cutoff) nvirt_no++;
+          outfile->Printf("        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
+          outfile->Printf("\n");
+      }else {
+
+          // retain orbitals with some percentage of total virtual occupation
+
+          // calculate total trace of vv OPDM
+          double occ_total = 0.0;
+          nvirt_no = 0.0;
+          for (int a = 0; a < v; a++) {
+              occ_total += eigvalDab[a];
+          }
+
+          // choose virtuals from greatest occupation to least until
+          // ratio of occupations matches occ_fraction
+          double frac = options_.get_double("OCC_PERCENTAGE")/100.0;
+
+          int * skip = (int*)malloc(v*sizeof(int));
+          memset((void*)skip,'\0',v*sizeof(int));
+
+          double my_occ_total = 0.0;
+          for (int a = 0; a < v; a++) {
+
+              int maxcount = -999;
+              int maxb     = -999;
+              double max   = -9e99;
+
+              int count = 0;
+              for (int b = 0; b < v; b++) {
+                  if ( !skip[count] && eigvalDab[b] > max ) {
+                      max      = eigvalDab[b];
+                      maxb     = b;
+                      maxcount = count;
+                  }
+                  count++;
+              }
+              if ( maxcount < 0 ) {
+                  throw PsiException("having trouble sorting virtual NOs",__FILE__,__LINE__);
+              }
+              skip[maxcount] = 1;
+
+              double my_occ = eigvalDab[maxb];
+              if ( ( my_occ_total / occ_total ) < frac ) {
+                  my_occ_total += my_occ;
+                  nvirt_no++;
+              }
+          }
+          free(skip);
+          outfile->Printf("        Cutoff for retaining NOs is %5.2lf%% occupancy\n",frac*100.0);
+          outfile->Printf("\n");
+      }
   }else{
       // use user-specified number of virtuals
       nvirt_no = (long int)options_["ACTIVE_NAT_ORBS"][0].to_double();

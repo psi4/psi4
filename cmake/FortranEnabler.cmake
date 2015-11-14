@@ -1,3 +1,5 @@
+
+
 # This macro enables Fortran as a language for the Psi project.
 # It relies on the FortranCInterface CMake module and will:
 # 1. check that C/C++ and Fortran ABIs are compatible. CMake will issue
@@ -27,6 +29,7 @@ macro(fortran_enabler)
                                                                                                   
           include(FortranCInterface)
           FortranCInterface_VERIFY(CXX)
+          include(GenericMacros)
           init_FCMangle()
                                                                                                   
           if ((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND (CMAKE_SYSTEM_VERSION VERSION_LESS 13))

@@ -29,6 +29,8 @@
 */
 
 #include "findif.h"
+#include <liboptions/liboptions_python.h>
+
 
 namespace psi { namespace findif {
 
@@ -51,7 +53,10 @@ std::vector< SharedMatrix > fd_geoms_hessian_0(Options &options) {
   // make all salcs for now, just in the case the symmetric ones don't come out identically
   // we'll try to restrict later
   boost::shared_ptr<MatrixFactory> fact;
-  CdSalcList salc_list(mol, fact, 0xFF, true, true);
+  boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();
+  boost::shared_ptr<ExternalPotential> external = boost::python::extract<boost::shared_ptr<ExternalPotential> >(pyExtern);
+  bool noextern = external ? false : true;
+  CdSalcList salc_list(mol, fact, 0xFF, noextern, noextern);
 
   int Natom = mol->natom();
   outfile->Printf("\tNumber of atoms is %d.\n", Natom);

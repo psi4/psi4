@@ -16,7 +16,7 @@ set(SRC ProgressBar.h
         Implementations/ProgressBar.cc
         Implementations/Exception2.cc
 )
-add_library(PsiUtil ${SRC})
+add_library(PsiUtil STATIC ${SRC})
 add_dependencies(PsiUtil parallel2)
 include_directories(libparallel2)
 set_property(GLOBAL APPEND PROPERTY LIBLIST PsiUtil)
