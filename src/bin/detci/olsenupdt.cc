@@ -35,7 +35,6 @@
 ** February 1996
 */
 
-#define EXTERN
 #include <cstdio>
 #include <cmath>
 #include "structs.h"

@@ -8,8 +8,6 @@
 #include "globaldefs.h"
 #include "ciwave.h"
 #include "structs.h"
-#define EXTERN
-#include "globaldefs.h"
 
 
 namespace psi { namespace detci {

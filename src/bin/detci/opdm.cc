@@ -25,8 +25,6 @@
     \brief Enter brief description of file here 
 */
 
-#define EXTERN
-
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>

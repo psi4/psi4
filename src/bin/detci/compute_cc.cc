@@ -34,16 +34,8 @@
 ** h and actually get g instead...
 */
 
-#define EXTERN
-
 #include <cstdio>
 #include <cstdlib>
-#include <cmath>
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
-#include <libqt/slaterdset.h>
-#include <libpsio/psio.h>
 #include <libmints/mints.h>
 #include "structs.h"
 #include "ciwave.h"

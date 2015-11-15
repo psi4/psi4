@@ -32,15 +32,12 @@
 **
 */
 
-#define EXTERN
-
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
 #include <boost/lexical_cast.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
-//#include <libchkpt/chkpt.h>
 #include <libpsio/psio.h>
 #include <psifiles.h>
 #include <libmints/mints.h>
@@ -1494,7 +1491,7 @@ void CIWavefunction::print_ras_parameters(void)
     CalcInfo_->num_alp_expl, CalcInfo_->num_bet_expl);
   outfile->Printf( "   IOPEN        =   %6s\n", CalcInfo_->iopen ? "yes" :
     "no");
-  if (!Parameters_->fci){
+  if (!Parameters_->fci & !Parameters_->cc){
     outfile->Printf( "   RAS1 LVL     =   %6d      A RAS3 MAX   =   %6d\n",
       Parameters_->ras1_lvl, Parameters_->a_ras3_max);
     outfile->Printf( "   RAS1 MIN     =   %6d      B RAS3 MAX   =   %6d\n",
