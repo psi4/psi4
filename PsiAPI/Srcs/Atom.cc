@@ -25,11 +25,12 @@
 #include "libPsiUtil/AtomicData.h"
 namespace PsiAPI{
 
-static psi::AtomicData CRC;
 
 Atom::Atom(size_t Z,const double* Carts, double Q, double Mass):
-   Z_(Z),Symbol_(CRC[Z].AtSym()),Carts_(Carts),Q_(Q),Mass_(Mass<0.0? CRC[Z].Mass() :Mass){
-
+	Z_(Z),Carts_(Carts),Q_(Q){
+	static const psi::AtomicData CRC;
+	Symbol_ = (CRC[Z].AtSym());
+	Mass_ = (Mass<0.0? CRC[Z].Mass() :Mass);
 }
 
 Atom::operator std::string()const{

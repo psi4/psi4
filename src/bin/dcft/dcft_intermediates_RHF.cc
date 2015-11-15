@@ -42,17 +42,17 @@ DCFTSolver::build_cumulant_intermediates_RHF()
     /*
      * G_IjAb = <Ij||Ab>
      */
-    dcft_timer_on("Timing::copy <Ij|Ab>");
+    dcft_timer_on("DCFTSolver::copy <Ij|Ab>");
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                            ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>"); // MO Ints <Oo|Vv>
     global_dpd_->buf4_copy(&I, PSIF_DCFT_DPD, "G <OO|VV>"); // G <Oo|Vv>
     global_dpd_->buf4_close(&I);
-    dcft_timer_off("Timing::copy <Ij|Ab>");
+    dcft_timer_off("DCFTSolver::copy <Ij|Ab>");
 
     /*
      * G_IjAb += Sum_Cd gbar_CdAb lambda_IjCd
      */
-    if (options_.get_str("AO_BASIS") == "NONE"){
+    if (options_.get_str("AO_BASIS") == "NONE" && options_.get_str("DCFT_TYPE") == "CONV"){
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                                 ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>"); // MO Ints <Vv|Vv> 
         global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -77,7 +77,7 @@ DCFTSolver::build_cumulant_intermediates_RHF()
     /*
      * G_IjAb += Sum_Kl gbar_IjKl lambda_KlAb
      */
-    dcft_timer_on("Timing::g_IjKl lambda_KlAb");
+    dcft_timer_on("DCFTSolver::g_IjKl lambda_KlAb");
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO|OO>"); // MO Ints <Oo|Oo>
     global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -88,12 +88,12 @@ DCFTSolver::build_cumulant_intermediates_RHF()
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
     global_dpd_->buf4_close(&G);
-    dcft_timer_off("Timing::g_IjKl lambda_KlAb");
+    dcft_timer_off("DCFTSolver::g_IjKl lambda_KlAb");
 
     /*
      * G_ijab -= P(ij)P(ab) Sum_kc gbar_jckb lambda_ikac
      */
-    dcft_timer_on("Timing::g_JcKb lambda_IkAc (4 times)")
+    dcft_timer_on("DCFTSolver::g_JcKb lambda_IkAc (4 times)")
     dpdbuf4 Laa, Lbb, Lab, Tab;
 
     global_dpd_->buf4_init(&Tab, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[O,V]"),
@@ -194,7 +194,7 @@ DCFTSolver::build_cumulant_intermediates_RHF()
 
     global_dpd_->buf4_close(&G);
     global_dpd_->buf4_close(&T);
-    dcft_timer_off("Timing::g_JcKb lambda_IkAc (4 times)")
+    dcft_timer_off("DCFTSolver::g_JcKb lambda_IkAc (4 times)")
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 

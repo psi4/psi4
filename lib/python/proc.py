@@ -66,24 +66,11 @@ def run_dcft(name, **kwargs):
     if (psi4.get_global_option('FREEZE_CORE') == 'TRUE'):
         raise ValidationError('Frozen core is not available for DCFT.')
 
-#    flag = False
-    if psi4.get_option('SCF', 'REFERENCE') == 'RHF' and psi4.get_option('DCFT', 'REFERENCE') == 'UHF':
-        optstash = p4util.OptionsState(
-            ['SCF', 'REFERENCE'],
-            ['DCFT', 'REFERENCE'])
-#        psi4.set_local_option('SCF', 'REFERENCE', 'UHF')
-#        psi4.set_local_option('DCFT', 'REFERENCE', 'UHF')
-        psi4.set_global_option('REFERENCE', 'UHF')
-#        flag = True
-
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
 
     psi4.dcft()
-
-#    if flag:
-#        optstash.restore()
 
 
 def run_dcft_gradient(name, **kwargs):

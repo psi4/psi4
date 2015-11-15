@@ -28,9 +28,6 @@
 #include "../Units.h"
 namespace psi{
 
-boost::shared_ptr<std::vector<AtomData> > AtomicData::Data_=
-      boost::shared_ptr<std::vector<AtomData> >(
-            new std::vector<AtomData>);
 
 void AtomData::AddIsotope(const std::string& Label,
       const double Mass){

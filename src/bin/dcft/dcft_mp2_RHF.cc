@@ -57,7 +57,7 @@ DCFTSolver::mp2_guess_RHF()
     _ints->set_keep_dpd_so_ints(true);
     dpd_set_default(_ints->get_dpd_id());
 
-    outfile->Printf( "\n\n\tTransforming two-electron integrals for RHF reference ...\n");
+    outfile->Printf( "\n\n\tTransforming two-electron integrals (transformation type: restricted)...\n");
     transform_integrals_RHF();
 
     std::string guess = options_.get_str("DCFT_GUESS");
@@ -67,8 +67,6 @@ DCFTSolver::mp2_guess_RHF()
 
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-        outfile->Printf( "\n\tThis is a closed-shell molecule so the spin adapted code is used!\n");
-
         dpdbuf4 I, D;
 
         /*
@@ -76,7 +74,7 @@ DCFTSolver::mp2_guess_RHF()
          */
 
         // L_IjAb = <Ij|Ab> / D_IjAb
-        dcft_timer_on("Timing::g_IJAB / D_IJAB");
+        dcft_timer_on("DCFTSolver::g_IJAB / D_IJAB");
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                       ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>"); // MO Ints <Oo|Vv>
         global_dpd_->buf4_copy(&I, PSIF_DCFT_DPD, "Lambda SF <OO|VV>"); // Lambda <Oo|Vv>
@@ -89,7 +87,7 @@ DCFTSolver::mp2_guess_RHF()
         global_dpd_->buf4_dirprd(&D, &I);
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_close(&D);
-        dcft_timer_off("Timing::g_IJAB / D_IJAB");
+        dcft_timer_off("DCFTSolver::g_IJAB / D_IJAB");
 
         /* build lambda <OO|VV> for tau and G intermediates */
         dpdbuf4 T;
@@ -107,7 +105,7 @@ DCFTSolver::mp2_guess_RHF()
         */
         dpdbuf4 L, M, temp;
 
-        dcft_timer_on("Timing::2 * g_IJAB - g_JIAB");
+        dcft_timer_on("DCFTSolver::2 * g_IJAB - g_JIAB");
         // M_IjAb = g_IjAb - g_JiAb
         global_dpd_->buf4_init(&M, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                                ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
@@ -120,9 +118,9 @@ DCFTSolver::mp2_guess_RHF()
         // M_IjAb += g_IjAb
         dpd_buf4_add(&M, &temp, 1.0);
         global_dpd_->buf4_close(&temp);
-        dcft_timer_off("Timing::2 * g_IJAB - g_JIAB");
+        dcft_timer_off("DCFTSolver::2 * g_IJAB - g_JIAB");
 
-        dcft_timer_on("Timing::lambda_IjAb M_IjAb");
+        dcft_timer_on("DCFTSolver::lambda_IjAb M_IjAb");
         global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                                ID("[O,O]"), ID("[V,V]"), 0, "Lambda SF <OO|VV>");
 
@@ -130,7 +128,7 @@ DCFTSolver::mp2_guess_RHF()
         double eMP2 = global_dpd_->buf4_dot(&L, &M);
         global_dpd_->buf4_close(&M);
         global_dpd_->buf4_close(&L);
-        dcft_timer_off("Timing::lambda_IjAb M_IjAb");
+        dcft_timer_off("DCFTSolver::lambda_IjAb M_IjAb");
 
         new_total_energy_ = scf_energy_ + eMP2;
         outfile->Printf( "\t*Total Hartree-Fock energy        = %20.15f\n", scf_energy_);
