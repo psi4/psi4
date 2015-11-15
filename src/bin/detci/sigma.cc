@@ -64,11 +64,6 @@ extern void s3_block_bz(int Ialist, int Iblist, int Jalist,
    struct calcinfo *CalcInfo, int ***OV);
 extern void set_row_ptrs(int rows, int cols, double **matrix);
 
-extern void s1_block_vfci_thread(struct stringwr **alplist, 
-   struct stringwr **betlist,
-   double **C, double **S, double *oei, double *tei, double *F,
-   int nlists, int nas, int nbs, int Ib_list, int Jb_list, 
-   int Jb_list_nbs);
 extern void s1_block_vfci(struct stringwr **alplist, 
    struct stringwr **betlist,
    double **C, double **S, double *oei, double *tei, double *F,
@@ -78,31 +73,18 @@ extern void s1_block_vras(struct stringwr **alplist,
    struct stringwr **betlist, 
    double **C, double **S, double *oei, double *tei, double *F, 
    int nlists, int nas, int nbs, int sbc, int cbc, int cnbs);
-extern void s1_block_vras_thread(struct stringwr **alplist, 
-   struct stringwr **betlist, 
-   double **C, double **S, double *oei, double *tei, double *F, 
-   int nlists, int nas, int nbs, int sbc, int cbc, int cnbs);
 extern void s1_block_vras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
    int **Ridx[2], signed char **Sgn[2], unsigned char **Toccs,
    double **C, double **S,
    double *oei, double *tei, double *F, int nlists, int nas, int nbs,
    int Ib_list, int Jb_list, int Jb_list_nbs, struct olsen_graph *BetaG,
    struct calcinfo *CIinfo, unsigned char ***Occs);
-extern void s2_block_vfci_thread(struct stringwr **alplist, 
-   struct stringwr **betlist, 
-   double **C, double **S, double *oei, double *tei, double *F,
-   int nlists, int nas, int nbs, int Ia_list, int Ja_list, 
-   int Ja_list_nas);
 extern void s2_block_vfci(struct stringwr **alplist, 
    struct stringwr **betlist, 
    double **C, double **S, double *oei, double *tei, double *F,
    int nlists, int nas, int nbs, int Ia_list, int Ja_list, 
    int Ja_list_nas);
 extern void s2_block_vras(struct stringwr **alplist, 
-   struct stringwr **betlist, 
-   double **C, double **S, double *oei, double *tei, double *F,
-   int nlists, int nas, int nbs, int sac, int cac, int cnas);
-extern void s2_block_vras_thread(struct stringwr **alplist, 
    struct stringwr **betlist, 
    double **C, double **S, double *oei, double *tei, double *F,
    int nlists, int nas, int nbs, int sac, int cac, int cnas);
@@ -117,12 +99,12 @@ extern void s3_block_vdiag(struct stringwr *alplist,
    double **C, double **S, double *tei, int nas, int nbs, int cnas,
    int Ib_list, int Ja_list, int Jb_list, int Ib_sym, int Jb_sym,
    double **Cprime, double *F, double *V, double *Sgn, int *L, int *R,
-   int norbs, int *orbsym, int nthreads);
+   int norbs, int *orbsym);
 extern void s3_block_v(struct stringwr *alplist,struct stringwr *betlist,
    double **C, double **S, double *tei, int nas, int nbs, int cnas,
    int Ib_list, int Ja_list, int Jb_list, int Ib_sym, int Jb_sym,
    double **Cprime, double *F, double *V, double *Sgn, int *L, int *R,
-   int norbs, int *orbsym, int nthreads);
+   int norbs, int *orbsym);
 extern void s3_block_vrotf(int *Cnt[2], int **Ij[2], int **Ridx[2],
    signed char **Sn[2], double **C, double **S, 
    double *tei, int nas, int nbs, int cnas,
@@ -145,8 +127,7 @@ extern void s3_block_vdiag_rotf(int *Cnt[2], int **Ij[2], int **Ridx[2],
 ** the sigma vector.
 **
 */
-void CIWavefunction::sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist, 
-      struct stringwr **betlist)
+void CIWavefunction::sigma_init(CIvect& C, CIvect &S)
 {
    int i,j;
    int maxcols=0, maxrows=0;
@@ -207,7 +188,7 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
          SigmaData_->Jcnt, SigmaData_->Jij, SigmaData_->Joij,
          SigmaData_->Jridx, SigmaData_->Jsgn, SigmaData_->Toccs);
    else  
-      sigma_get_contrib(alplist, betlist, C, S, s1_contrib_, s2_contrib_,
+      sigma_get_contrib(alplist_, betlist_, C, S, s1_contrib_, s2_contrib_,
          s3_contrib_);
 
    if ((C.icore==2 && C.Ms0 && CalcInfo_->ref_sym != 0) || (C.icore==0 &&
@@ -299,20 +280,21 @@ void CIWavefunction::sigma_free()
 ** Changed into a master function which calls the appropriate subfunction
 **
 */
-void CIWavefunction::sigma(struct stringwr **alplist, struct stringwr **betlist,
-      CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec)
+void CIWavefunction::sigma(CIvect& C, CIvect& S, double *oei, double *tei, int ivec)
 {
-   if (!CalcInfo_->sigma_initialized) sigma_init(C, S, alplist, betlist);
+
+   if (!CalcInfo_->sigma_initialized) sigma_init(C, S);
+   int fci = Parameters_->fci;
 
    switch (C.icore) {
       case 0: 
-         sigma_a(alplist, betlist, C, S, oei, tei, fci, ivec);
+         sigma_a(alplist_, betlist_, C, S, oei, tei, fci, ivec);
          break;
       case 1:
-         sigma_b(alplist, betlist, C, S, oei, tei, fci, ivec);
+         sigma_b(alplist_, betlist_, C, S, oei, tei, fci, ivec);
          break;
       case 2:
-         sigma_c(alplist, betlist, C, S, oei, tei, fci, ivec);
+         sigma_c(alplist_, betlist_, C, S, oei, tei, fci, ivec);
          break;
       default:
          outfile->Printf( "(sigma): Error, invalid icore option\n");
@@ -669,11 +651,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
     timer_on("CIWAVE: s2");
 
       if (fci) {
-          if (Parameters_->nthreads > 1)
-              s2_block_vfci_thread(alplist, betlist, cmat, smat, oei, tei, SigmaData_->F, 
-                 cnac, nas, nbs, sac, cac, cnas);
-          else
-              s2_block_vfci(alplist, betlist, cmat, smat, oei, tei, SigmaData_->F, cnac,
+          s2_block_vfci(alplist, betlist, cmat, smat, oei, tei, SigmaData_->F, cnac,
                             nas, nbs, sac, cac, cnas);
         }
       else {
@@ -682,10 +660,6 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
                                  SigmaData_->Jridx, SigmaData_->Jsgn,
                                  SigmaData_->Toccs, cmat, smat, oei, tei, SigmaData_->F, cnac, 
                                  nas, nbs, sac, cac, cnas, AlphaG_, BetaG_, CalcInfo_, Occs_);
-            }
-          else if (Parameters_->nthreads > 1) {
-            s2_block_vras_thread(alplist, betlist, cmat, smat, 
-                            oei, tei, SigmaData_->F, cnac, nas, nbs, sac, cac, cnas);  
             }
           else {
               s2_block_vras(alplist, betlist, cmat, smat, 
@@ -709,11 +683,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
 
       if (s1_contrib_[sblock][cblock]) {
           if (fci) { 
-              if (Parameters_->nthreads > 1)
-                  s1_block_vfci_thread(alplist, betlist, cmat, smat, oei, tei, SigmaData_->F, cnbc,
-                                       nas, nbs, sbc, cbc, cnbs);
-              else
-                  s1_block_vfci(alplist, betlist, cmat, smat, oei, tei, SigmaData_->F, cnbc,
+             s1_block_vfci(alplist, betlist, cmat, smat, oei, tei, SigmaData_->F, cnbc,
                                 nas, nbs, sbc, cbc, cnbs);
             } 
          else {
@@ -723,10 +693,6 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
                   SigmaData_->Toccs, cmat, smat, oei, tei, SigmaData_->F, cnbc, nas, nbs,
                   sbc, cbc, cnbs, BetaG_, CalcInfo_, Occs_);
                }
-            else if (Parameters_->nthreads > 1) {
-               s1_block_vras_thread(alplist, betlist, cmat, smat, oei, tei, SigmaData_->F, cnbc, 
-                  nas, nbs, sbc, cbc, cnbs);
-              }
             else {
                s1_block_vras(alplist, betlist, cmat, smat, oei, tei, SigmaData_->F, cnbc, 
                   nas, nbs, sbc, cbc, cnbs);
@@ -769,8 +735,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
                nas, nbs, cnas, sbc, cac, cbc, sbirr, cbirr, 
                SigmaData_->cprime, SigmaData_->F, SigmaData_->V,
                SigmaData_->Sgn, SigmaData_->L, SigmaData_->R,
-               CalcInfo_->num_ci_orbs, CalcInfo_->orbsym + CalcInfo_->num_drc_orbs,
-               Parameters_->nthreads);
+               CalcInfo_->num_ci_orbs, CalcInfo_->orbsym + CalcInfo_->num_drc_orbs);
             }
          }
 
@@ -799,8 +764,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
                            cnas, sbc, cac, cbc, sbirr, cbirr, SigmaData_->cprime,
                            SigmaData_->F, SigmaData_->V, SigmaData_->Sgn,
                            SigmaData_->L, SigmaData_->R, CalcInfo_->num_ci_orbs,
-                           CalcInfo_->orbsym + CalcInfo_->num_drc_orbs,
-                           Parameters_->nthreads);
+                           CalcInfo_->orbsym + CalcInfo_->num_drc_orbs);
             }
          }
 

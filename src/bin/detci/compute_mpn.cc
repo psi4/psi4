@@ -290,7 +290,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   //outfile->Printf("Sigma zero_blocks after set_zero_blocks_all.\n");
   //Sigma.print_zero_blocks(); 
   
-  sigma(alplist_, betlist_, Cvec, Sigma, oei, tei, Parameters_->fci, 0); 
+  sigma(Cvec, Sigma, oei, tei, 0); 
   if (Parameters_->print_lvl >= 5) {
     outfile->Printf("Sigma vector for 0 C vector\n");
     Sigma.read(0,0);
@@ -352,7 +352,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
      /* Form Sigma */
      Sigma.read(0, 0);
      Cvec.read((k-kvec_offset), 0);  /* Set Cvec up correctly ? */
-     sigma(alplist_, betlist_, Cvec, Sigma, oei, tei, Parameters_->fci, 0);
+     sigma(Cvec, Sigma, oei, tei, 0);
      //outfile->Printf("Sigma zero_blocks after sigma call.\n");
      //Sigma.print_zero_blocks(); 
 

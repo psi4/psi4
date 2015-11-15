@@ -651,7 +651,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
             Cvec.print("outfile");
             }
 
-         sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters_->fci, i);
+         sigma(Cvec, Sigma, oei, tei, i);
 
          if (Parameters_->z_scale_H) {
            Cvec.buf_unlock();
@@ -1027,7 +1027,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          if (1) {
            for (i=0; i<L; i++) {
               Cvec.read(i,0);
-              sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters_->fci, i);
+              sigma(Cvec, Sigma, oei, tei, i);
               if (print_lvl > 1) {
                 outfile->Printf(
                   "Exact Sigma: (redid multiplication) H * b[%d] = \n", i);

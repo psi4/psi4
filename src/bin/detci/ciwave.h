@@ -266,11 +266,9 @@ private:
 
     /// => Sigma Calculations <= //
     struct sigma_data *SigmaData_;
-    void sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
-          struct stringwr **betlist);
+    void sigma_init(CIvect& C, CIvect &S);
     void sigma_free(void);
-    void sigma(struct stringwr **alplist, struct stringwr **betlist,
-          CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec);
+    void sigma(CIvect& C, CIvect& S, double *oei, double *tei, int ivec);
 
     void sigma_a(struct stringwr **alplist, struct stringwr **betlist,
           CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec);
