@@ -79,20 +79,41 @@ DCFTSolver::run_simult_dcft_oo()
             refine_tau();
         }
         transform_tau();
-        // Copy core hamiltonian into the Fock matrix array: F = H
-        Fa_->copy(so_h_);
-        Fb_->copy(so_h_);
-        // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
-        process_so_ints();
-        // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
-        Fa_->add(g_tau_a_);
-        Fb_->add(g_tau_b_);
-        // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
-        moFa_->copy(Fa_);
-        moFb_->copy(Fb_);
-        // Transform the Fock matrix to the MO basis
-        moFa_->transform(Ca_);
-        moFb_->transform(Cb_);
+
+        if (options_.get_str("DCFT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE"){
+
+            build_DF_tensors_UHF();
+
+            SharedMatrix mo_h_A = SharedMatrix(new Matrix("MO-based H Alpha", nirrep_, nmopi_, nmopi_));
+            mo_h_A->copy(so_h_);
+            mo_h_A->transform(Ca_);
+
+            SharedMatrix mo_h_B = SharedMatrix(new Matrix("MO-based H Beta", nirrep_, nmopi_, nmopi_));
+            mo_h_B->copy(so_h_);
+            mo_h_B->transform(Cb_);
+
+            moFa_->copy(mo_h_A);
+            moFb_->copy(mo_h_B);
+
+            moFa_->add(mo_gbarGamma_A_);
+            moFb_->add(mo_gbarGamma_B_);
+        }
+        else{
+            // Copy core hamiltonian into the Fock matrix array: F = H
+            Fa_->copy(so_h_);
+            Fb_->copy(so_h_);
+            // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
+            process_so_ints();
+            // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
+            Fa_->add(g_tau_a_);
+            Fb_->add(g_tau_b_);
+            // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
+            moFa_->copy(Fa_);
+            moFb_->copy(Fb_);
+            // Transform the Fock matrix to the MO basis
+            moFa_->transform(Ca_);
+            moFb_->transform(Cb_);
+        }
         // Compute new SCF energy
         compute_scf_energy();
         // Save the old energy
@@ -202,6 +223,8 @@ DCFTSolver::run_simult_dc_guess()
 double
 DCFTSolver::compute_orbital_residual() {
 
+    dcft_timer_on("DCFTSolver::compute_orbital_residual()");
+
     dpdfile2 Xai, Xia;
 
     // Compute the unrelaxed densities for the orbital gradient
@@ -261,6 +284,8 @@ DCFTSolver::compute_orbital_residual() {
 
     global_dpd_->file2_close(&Xai);
     global_dpd_->file2_close(&Xia);
+
+    dcft_timer_off("DCFTSolver::compute_orbital_residual()");
 
     return maxGradient;
 }
@@ -857,6 +882,8 @@ DCFTSolver::compute_orbital_gradient_VO() {
 void
 DCFTSolver::compute_orbital_rotation_jacobi() {
 
+    dcft_timer_on("DCFTSolver::compute_orbital_rotation_jacobi()");
+
     // Determine the orbital rotation step
     // Alpha spin
     for(int h = 0; h < nirrep_; ++h){
@@ -884,11 +911,13 @@ DCFTSolver::compute_orbital_rotation_jacobi() {
     Xtotal_a_->add(X_a_);
     Xtotal_b_->add(X_b_);
 
+    dcft_timer_off("DCFTSolver::compute_orbital_rotation_jacobi()");
 }
 
 void
 DCFTSolver::rotate_orbitals()
 {
+    dcft_timer_on("DCFTSolver::rotate_orbitals()");
 
     // Initialize the orbital rotation matrix
     SharedMatrix U_a(new Matrix("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_));
@@ -933,6 +962,7 @@ DCFTSolver::rotate_orbitals()
     Ca_->gemm(false, false, 1.0, old_ca_, U_a, 0.0);
     Cb_->gemm(false, false, 1.0, old_cb_, U_b, 0.0);
 
+    dcft_timer_off("DCFTSolver::rotate_orbitals()");
 
 }
 

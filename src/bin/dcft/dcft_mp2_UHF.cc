@@ -58,7 +58,7 @@ DCFTSolver::mp2_guess()
     _ints->set_keep_dpd_so_ints(true);
     dpd_set_default(_ints->get_dpd_id());
 
-    outfile->Printf( "\n\n\tTransforming two-electron integrals...\n");
+    outfile->Printf( "\n\n\tTransforming two-electron integrals (transformation type: unrestricted)...\n");
     transform_integrals();
 
     std::string guess = options_.get_str("DCFT_GUESS");

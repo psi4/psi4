@@ -50,6 +50,7 @@ class PotentialInt : public OneBodyAOInt
     /// Computes integrals between two shell objects.
     void compute_pair(const GaussianShell&, const GaussianShell&);
     /// Computes integrals between two shell objects.
+    void compute_pair_deriv1_no_charge_term(const GaussianShell&, const GaussianShell& );
     void compute_pair_deriv1(const GaussianShell&, const GaussianShell& );
     void compute_pair_deriv2(const GaussianShell&, const GaussianShell& );
 
@@ -67,6 +68,12 @@ public:
 
     /// Computes the first derivatives and stores them in result
     virtual void compute_deriv1(std::vector<SharedMatrix > &result);
+
+    /// Computes the first derivatives and stores them in result
+    virtual void compute_deriv1_no_charge_term(std::vector<SharedMatrix > &result);
+    /// Computes the first derivatives, but neglects the derivatives on the third center.
+    /// This code is used for gradients in the presence of an external potential.
+    void compute_shell_deriv1_no_charge_term(int, int);
 
     /// Computes the second derivatives and store them in result
     virtual void compute_deriv2(std::vector<SharedMatrix>& result);

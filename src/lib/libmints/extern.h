@@ -71,6 +71,8 @@ public:
     
     /// Compute the external potential matrix in the given basis set
     SharedMatrix computePotentialMatrix(boost::shared_ptr<BasisSet> basis);
+    /// Compute the gradients due to the external potential
+    SharedMatrix computePotentialGradients(boost::shared_ptr<BasisSet> basis, boost::shared_ptr<Matrix> Dt);
     /// Compute the contribution to the nuclear repulsion energy for the given molecule
     double computeNuclearEnergy(boost::shared_ptr<Molecule> mol);
     

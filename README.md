@@ -11,6 +11,8 @@ Psi4: Open-Source Quantum Chemistry
 
 * **Forum** http://forum.psicode.org
 
+* **Communication & Support** http://psicode.org/psi4manual/master/introduction.html#technical-support
+
 * **Public Github**  https://github.com/psi4/psi4public (regularly synched from private github master)
 
 * **Private Github**  https://github.com/psi4/psi4

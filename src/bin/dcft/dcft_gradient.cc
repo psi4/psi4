@@ -32,6 +32,12 @@ namespace psi{ namespace dcft{
 
 SharedMatrix DCFTSolver::compute_gradient()
 {
+    // Print out the header
+    outfile->Printf("\n\n\t***********************************************************************************\n");
+    outfile->Printf(    "\t*                           DCFT Analytic Gradients Code                          *\n");
+    outfile->Printf(    "\t*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *\n");
+    outfile->Printf(    "\t***********************************************************************************\n\n");
+
     // If the system is closed-shell, then ...
     if(options_.get_str("REFERENCE") == "RHF"){
         compute_gradient_RHF();

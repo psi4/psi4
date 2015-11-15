@@ -591,7 +591,7 @@ rotation through the keyword |scf__follow_step_scale|::
 
   set follow_step_scale 0.5
 
-The rotation angle is (|scf__follow_step_scale|)*:math:`\pi / 2`. The default value of
+The rotation angle is :math:`\frac{\pi}{2}\mbox{ } \cdot` (|scf__follow_step_scale|). The default value of
 0.5 usually provides a good guess and modification is only recommended in difficult cases.
 The default behavior for the stability code is to stop after trying to reoptimize the orbitals once
 if the instability still exists. For more attempts, set |scf__max_attempts|::
