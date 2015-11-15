@@ -699,6 +699,16 @@ SharedMatrix MintsHelper::ao_f12_squared(boost::shared_ptr<CorrelationFactor> co
     boost::shared_ptr<TwoBodyAOInt> ints(integral_->f12_squared(corr));
     return ao_helper("AO F12 Squared Tensor", ints);
 }
+SharedMatrix MintsHelper::ao_f12_squared(boost::shared_ptr<CorrelationFactor> corr,
+                                 boost::shared_ptr<BasisSet> bs1,
+                                 boost::shared_ptr<BasisSet> bs2,
+                                 boost::shared_ptr<BasisSet> bs3,
+                                 boost::shared_ptr<BasisSet> bs4)
+{
+    IntegralFactory intf(bs1, bs2, bs3, bs4);
+    boost::shared_ptr<TwoBodyAOInt> ints(intf.f12_squared(corr));
+    return ao_helper("AO F12 Squared Tensor", ints);
+}
 
 SharedMatrix MintsHelper::ao_f12g12(boost::shared_ptr<CorrelationFactor> corr)
 {

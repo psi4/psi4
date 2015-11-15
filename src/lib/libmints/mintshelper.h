@@ -150,6 +150,11 @@ public:
                         boost::shared_ptr<BasisSet> bs4);
     /// MO F12 squared Integrals
     SharedMatrix ao_f12_squared(boost::shared_ptr<CorrelationFactor> corr);
+    SharedMatrix ao_f12_squared(boost::shared_ptr<CorrelationFactor> corr,
+                        boost::shared_ptr<BasisSet> bs1,
+                        boost::shared_ptr<BasisSet> bs2,
+                        boost::shared_ptr<BasisSet> bs3,
+                        boost::shared_ptr<BasisSet> bs4);
     /// MO F12G12 Integrals
     SharedMatrix ao_f12g12(boost::shared_ptr<CorrelationFactor> corr);
     /// MO F12 double commutator Integrals
