@@ -25,7 +25,6 @@
     \brief Enter brief description of file here 
 */
 
-#define EXTERN
 #include <cstdio>
 #include <cmath>
 #include "ci_tol.h"

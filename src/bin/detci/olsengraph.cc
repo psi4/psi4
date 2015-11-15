@@ -37,17 +37,15 @@
 **
 */
 
-#define EXTERN
 #include <cstdlib>
 #include <cstdio>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libmints/mints.h>
-#include "structs.h"
 #include <iostream>
 #include "odometer.h"
-#include <libmints/mints.h>
 #include "ciwave.h"
+#include "structs.h"
 
 namespace psi { namespace detci {
 

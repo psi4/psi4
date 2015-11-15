@@ -26,7 +26,6 @@
   \brief Contains code to do block-to-block single replacement lists
 */
 
-#define EXTERN
 #include <cstdio>
 #include <cstdlib>
 #include <libqt/qt.h>
