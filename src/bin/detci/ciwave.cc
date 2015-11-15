@@ -9,7 +9,6 @@
 #include "ciwave.h"
 #include "structs.h"
 #define EXTERN
-#include "tpool.h"
 #include "globaldefs.h"
 
 
@@ -107,10 +106,6 @@ void CIWavefunction::common_init()
 
     // Form Bendazzoli OV arrays
     if (Parameters_->bendazzoli) form_ov();
-
-    /* initialize thread pool */
-    if (Parameters_->nthreads > 1)
-      tpool_init(&thread_pool, Parameters_->nthreads, CalcInfo_->num_alp_str, 0);
 
     name_ = "CIWavefunction";
 }
@@ -556,7 +551,6 @@ void CIWavefunction::cleanup(void)
 {
     delete[] ioff_;
     sigma_free();
-    if (Parameters_->nthreads > 1) tpool_destroy(thread_pool, 1);
 
     // Free Bendazzoli OV arrays
     //if (Parameters_->bendazzoli) free(OV);
@@ -567,11 +561,12 @@ void CIWavefunction::cleanup(void)
     free(CalcInfo_->maxK);
     free_matrix(CalcInfo_->gmat, CalcInfo_->num_ci_orbs);
 
+    // DGAS main areas to track size of
     // Free strings and graphs
+    //delete SigmaData_;
 
     //delete MCSCF_Parameters_;
     //delete CIblks_;
-    //delete SigmaData_;
     //delete CalcInfo_;
     //delete Parameters_;
     //delete H0block_;

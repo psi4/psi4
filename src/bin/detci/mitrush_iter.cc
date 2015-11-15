@@ -245,7 +245,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
 
    Sigma.buf_lock(buffer2);
    Cvec.read(0, 0);
-   sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters_->fci, 0);
+   sigma(Cvec, Sigma, oei, tei, 0);
    Sigma.write_num_vecs(1);
 
    Cvec.copy_zero_blocks(Sigma);
@@ -360,7 +360,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
       Cvec.read(curr,0);
       /* Sigma.read(curr,0);
       */
-      sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters_->fci, curr);
+      sigma(Cvec, Sigma, oei, tei, curr);
       Cvec.copy_zero_blocks(Sigma);
       Cvec.read(curr,0);
       if (print_lvl > 4) {
