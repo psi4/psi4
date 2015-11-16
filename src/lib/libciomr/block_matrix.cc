@@ -37,16 +37,6 @@
 #endif
 #include <psiconfig.h>
 #include "psi4-dec.h"
-#ifdef HAVE_MKL
-#ifdef HAVE_MKL_MALLOC
-
-extern "C" {
-void* MKL_malloc(size_t size, int align);
-void MKL_free(void *ptr);
-}
-
-#endif
-#endif
 
 namespace psi {
 
