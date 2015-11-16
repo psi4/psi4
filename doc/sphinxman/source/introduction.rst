@@ -72,7 +72,7 @@ Density Cumulant Functional Theory (DCFT)
 functional theory (DCFT). The theory and benchmark of this theory are
 discussed in the following papers:
 
-DC-06 (also known as DCFT-06):  
+DC-06 (also known as DCFT-06):
 
 * "Density Cumulant Functional Theory: First Implementation and
   Benchmark Results for the DCFT-06 Model," A. C. Simmonett,
@@ -85,7 +85,7 @@ DC-06 (also known as DCFT-06):
   and H. F. Schaefer, *J. Chem. Phys.* **137**, 054105 (2012).
   (doi: `10.1063/1.4739423 <http://dx.doi.org/10.1063/1.4739423>`_).
 
-DC-12:  
+DC-12:
 
 * "Density cumulant functional theory: The DC-12 method, an improved 
   description of the one-particle density matrix," A. Yu. Sokolov, 
@@ -93,7 +93,7 @@ DC-12:
   (2013).
   (doi: `10.1063/1.4773580 <http://dx.doi.org/10.1063/1.4773580>`_).
 
-ODC-06 and ODC-12:  
+ODC-06 and ODC-12:
 
 * "Orbital-optimized density cumulant functional theory," A. Yu. Sokolov, and
   H. F. Schaefer, *J. Chem. Phys.*  **139**, 204110 (2013). 
@@ -195,7 +195,7 @@ Symmetry-Adapted Perturbation Theory (SAPT)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 |PSIfour| features an extremely efficient code to perform wavefunction-based
-Symmetry Adapted Perturbation Theory (SAPT).  A good review article for this 
+Symmetry Adapted Perturbation Theory (SAPT). A good review article for this 
 method is as follows:
 
 * "Perturbation Theory Approach to Intermolecular Potential Energy
@@ -204,7 +204,7 @@ method is as follows:
   (doi: `10.1021/cr00031a008 <http://dx.doi.org/10.1021/cr00031a008>`_).
 
 |PSIfour| benefits enormously from the introduction of density fitting (DF)
-into SAPT.  There are several SAPT truncations available in PSI.  For 
+into SAPT. There are several SAPT truncations available in |PSIfour|. For 
 guidance on which one to choose, see the SAPT section of the manual
 and refer to the following systematic study:
 
@@ -416,7 +416,7 @@ Capabilities
 
 |PSIfour| can perform *ab initio* computations employing basis
 sets of contrated Gaussian-type functions of virtually arbitrary
-orbital quantum number.  Many parts of |PSIfour| can recognize and
+orbital quantum number. Many parts of |PSIfour| can recognize and
 exploit the largest Abelian subgroup of the molecular point group.
 Table :ref:`Methods <table:methods>` displays the range of theoretical methods
 available in |PSIfour|.
@@ -535,7 +535,7 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+
 
 Geometry optimization can be performed using either analytic gradients
-or energy points.  Likewise, vibrational frequencies can be 
+or energy points. Likewise, vibrational frequencies can be 
 computed by analytic second derivatives, by finite
 differences of analytic gradients, or by finite differences of energies.
 |PSIfour| can also compute an extensive list of one-electron properties.
@@ -547,31 +547,46 @@ differences of analytic gradients, or by finite differences of energies.
 Technical Support
 =================
 
-The |PSIfour| package is
-distributed for free and without any guarantee of reliability,
-accuracy, or suitability for any particular purpose.  No obligation
-to provide technical support is expressed or implied.  As time
-allows, the developers will attempt to answer inquiries directed to
-`crawdad@vt.edu <mailto:crawdad@vt.edu>`_
-or `sherrill@gatech.edu <mailto:sherrill@gatech.edu>`_.
-For bug reports, specific and detailed information, with example
-inputs, would be appreciated.  Questions or comments regarding
-this user's manual may be sent to 
-`sherrill@gatech.edu <mailto:sherrill@gatech.edu>`_.
+The |PSIfour| package is distributed for free and without any guarantee of
+reliability, accuracy, or suitability for any particular purpose. No
+obligation to provide technical support is expressed or implied. As time
+allows, the developers will attempt to answer inquiries on the `forum
+<http://forum.psicode.org>`_ or `GitHub
+<https://github.com/psi4/psi4public/issues/new>`_. For bug reports,
+specific and detailed information, with example inputs, would be
+appreciated.
 
-Alternatively, bug reports and comments can be submitted to the `Issue
-tracker on GitHub <https://github.com/psi4/psi4public/issues/new>`_ . This site
-is viewable by all, but reporting bugs requires signing up for a `free
-GitHub account <https://github.com/signup/free>`_.
+Where-to-post summary:[#f6]_
+
+* How do I? -- `ask the forum <http://forum.psicode.org>`_
+
+* I got this error, why? -- `ask the forum <http://forum.psicode.org>`_
+
+* I got this error and I'm sure it's a bug -- `file a GitHub issue <https://github.com/psi4/psi4public/issues/new>`_
+
+* Can I open a discussion on this bit of code? -- `file a GitHub issue <https://github.com/psi4/psi4public/issues/new>`_
+
+* I have an idea/request and a plan -- `file a GitHub issue <https://github.com/psi4/psi4public/issues/new>`_
+
+* I have an idea/request -- `ask the forum <http://forum.psicode.org>`_
+
+* Why do you? -- `ask the forum <http://forum.psicode.org>`_
+
+* When will you? -- `ask the forum <http://forum.psicode.org>`_
+
+* I have an experience that can improve the build documentation -- `inform the forum <http://forum.psicode.org>`_ or `post on the wiki itself <https://github.com/psi4/psi4public/wiki>`_
+
+* Anything you want to share privately -- `crawdad@vt.edu <mailto:crawdad@vt.edu>`_ or `sherrill@gatech.edu <mailto:sherrill@gatech.edu>`_
 
 
 .. rubric:: Footnotes
 
 .. [#f1] UHF-CCSD(T) gradients only, as of |version|
-.. [#f2] Gradients are available for RHF and UHF references.  
+.. [#f2] Gradients are available for RHF and UHF references.
 .. [#f3] threading through BLAS routines only
 .. [#f4] DFT gradients only implemented for SCF type DF. LRC-DFT gradients not implemented yet. 
 .. [#f5] Both EFP/EFP and QM/EFP energies are available.
+.. [#f6] Adapted from `here <https://groups.google.com/forum/#!topic/google-collections-users/m8FnCcmtC88>`_.
 
 .. toctree::
    :hidden:

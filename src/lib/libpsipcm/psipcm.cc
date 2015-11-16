@@ -23,13 +23,15 @@
 #include "psipcm.h"
 #include "psi4-dec.h" //Gives us psi::outfile
 #include "pcmsolver.h"
+#include "PCMInput.h"
+
+extern "C" void host_writer(const char * message, size_t /* message_length */)
+{
+  psi::outfile->Printf(message);
+  psi::outfile->Printf("\n");
+}
 
 namespace psi {
-// Functions needed by PCMSolver. Could be implemented as lambda-s...
-int collect_nctot()
-{
-  return psi::Process::environment.molecule()->natom();
-}
 
 void collect_atoms(double charges[], double centers[])
 {
@@ -48,35 +50,39 @@ void collect_atoms(double charges[], double centers[])
     }
 }
 
-void host_writer(const char * message, size_t /* message_length */)
+PCMInput pcmsolver_input()
 {
-    outfile->Printf(message);
-    outfile->Printf("\n");
+  PCMInput host_input;
+
+  // These parameters would be set by the host input reading
+  // Length and area parameters are all assumed to be in Angstrom,
+  // the module will convert to Bohr internally
+  strcpy(host_input.cavity_type, "gepol");
+  host_input.patch_level  = 2;
+  host_input.coarsity     = 0.5;
+  host_input.area         = 0.2;
+  host_input.min_distance = 0.1;
+  host_input.der_order    = 4;
+  host_input.scaling      = true;
+  strcpy(host_input.radii_set, "bondi");
+  strcpy(host_input.restart_name, "cavity.npz");
+  host_input.min_radius   = 100.0;
+
+  strcpy(host_input.solver_type, "iefpcm");
+  strcpy(host_input.solvent, "water");
+  strcpy(host_input.equation_type, "secondkind");
+  host_input.correction    = 0.0;
+  host_input.probe_radius  = 1.0;
+
+  strcpy(host_input.inside_type, "vacuum");
+  host_input.outside_epsilon    = 1.0;
+  strcpy(host_input.outside_type, "uniformdielectric");
+
+  return host_input;
 }
 
-void set_point_group(int * nr_gen, int * gen1, int * gen2, int * gen3)
-{
-    /* Pass the number of generators in the point group and the
-     * integer representing the generator.
-     * The integer-to-operation mapping is according to PCMSolver
-     * internal convention:
-     *      zyx         Parity
-     *   0  000    E      1.0
-     *   1  001   Oyz    -1.0
-     *   2  010   Oxz    -1.0
-     *   3  011   C2z     1.0
-     *   4  100   Oxy    -1.0
-     *   5  101   C2y     1.0
-     *   6  110   C2x     1.0
-     *   7  111    i     -1.0
-     */
-    *nr_gen = 0;
-    *gen1   = 0;
-    *gen2   = 0;
-    *gen3   = 0;
-}
 
-PCM::PCM(Options &options, boost::shared_ptr<PSIO> psio, int nirrep, boost::shared_ptr<BasisSet> basisset)
+PCM::PCM(Options &options, boost::shared_ptr<PSIO> /* psio */, int nirrep, boost::shared_ptr<BasisSet> basisset)
 {
   if(!pcmsolver_is_compatible_library()) throw PSIEXCEPTION("Incompatible PCMSolver library version.");
   outfile->Printf("  **PSI4:PCMSOLVER Interface Active**\n");
@@ -100,13 +106,25 @@ PCM::PCM(Options &options, boost::shared_ptr<PSIO> psio, int nirrep, boost::shar
 
   /* PCMSolver needs to know who has to parse the input.
    * We should have something like this here:
-   * int PSI4_provides_input = 0;
+   * int PSI4_provides_input = false;
    * if (PSI4_has_pcmsolver_input) {
-   *    PSI4_provides_input = 1;
+   *    PSI4_provides_input = true;
    * }
    */
-  int PSI4_provides_input = 0;
-  context_ = pcmsolver_new(collect_nctot, collect_atoms, host_writer, set_point_group);
+  double * charges = new double[molecule->natom()];
+  double * coordinates = new double[3*molecule->natom()];
+  collect_atoms(charges, coordinates);
+  int symmetry_info[4] = {0, 0, 0, 0};
+  int PSI4_provides_input = false;
+  PCMInput host_input;
+  if (PSI4_provides_input) {
+    host_input = pcmsolver_input();
+    context_ = pcmsolver_new(PCMSOLVER_READER_HOST, molecule->natom(), charges, coordinates,
+                             symmetry_info, &host_input);
+  } else {
+    context_ = pcmsolver_new(PCMSOLVER_READER_OWN, molecule->natom(), charges, coordinates,
+                             symmetry_info, &host_input);
+  }
   pcmsolver_print(context_);
   ntess_ = pcmsolver_get_cavity_size(context_);
   ntessirr_ = pcmsolver_get_irreducible_cavity_size(context_);
@@ -411,13 +429,5 @@ SharedMatrix PCM::compute_V_electronic()
   if(basisset_->has_puream()) return V_pcm_pure;
   else return V_pcm_cart;
 }
-
-/*
-  void host_input(cavityInput * cav, solverInput * solv, greenInput * green)
-  {
-       * If input reading for PCMSolver was done host-side put
-       * the input data inside the cav, solv and green structs
-  }
-*/
 
 } // psi namespace
