@@ -67,11 +67,10 @@ loghandle.close()
 # run psi4 and collect testing status from any compare_* in input file
 pyexitcode = backtick([psi, infile, outfile, '-l', psidatadir])
 if sowreap == 'true':
-    print (""" Running sowreap Test""")
     try:
         retcode = subprocess.Popen(['python', '%s/reap.py' % (os.path.dirname(infile)), os.path.realpath(psi),os.path.realpath(outfile)])
-        print (['python', '%s/reap.py' % (os.path.dirname(infile)), os.path.realpath(psi),os.path.realpath(outfile),logfile])
-    except IOError as e:
+        print (['python', '%s/reap.py' % infile, outfile, logfile, psi])
+    except OSError as e:
         print("""Can't find reap script: %s """ % (e))
     while True:
         retcode.poll()
