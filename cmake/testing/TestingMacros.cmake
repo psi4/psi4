@@ -48,6 +48,18 @@ macro(add_regression_test _name _labels)
         endif()
     endif()
 
+    # AJ:
+    # Sow/Reap tests need helpers to test the full routine
+    # they should have the needhelp tag added 
+    # this should extend to other Sow/Reap routines, I think 
+    set(NEEDHELP false)
+    if(labels)
+        list(FIND labels "needhelp" _index)
+        if (${_index} GREATER -1)
+            set(NEEDHELP true)
+        endif()
+    endif()
+
     # Add the test
     if(MPI_FOUND)
         # If this was an MPI-build, we test on two processors
