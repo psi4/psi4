@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(pywrap-freq-e-sowreap "psi;quicktests;pywrap;needhelp")
+add_regression_test(pywrap-freq-e-sowreap "psi;quicktests;pywrap;sowreap")
