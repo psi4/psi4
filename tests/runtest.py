@@ -4,7 +4,7 @@ import sys
 import time
 import subprocess
 
-if len(sys.argv) not in [5, 6, 7]:
+if len(sys.argv) not in [5, 6, 7, 8]:
     print("""Usage: %s input_file logfile doperltest top_srcdir [alt_output_file alt_psi4_exe]""" % (sys.argv[0]))
     sys.exit(1)
 
@@ -18,10 +18,12 @@ if len(sys.argv) in [6, 7]:
     outfile = sys.argv[5]
 else:
     outfile = 'output.dat'
-if len(sys.argv) == 7:
+if len(sys.argv) in [7, 8]:
     psi = sys.argv[6]
 else:
     psi = '../../bin/psi4'
+if len(sys.argv) == 8:
+    sowreap=sys.argv[7]
 
 # open logfile and print test case header
 try:
@@ -64,7 +66,25 @@ def backtick(exelist):
 
 # run psi4 and collect testing status from any compare_* in input file
 pyexitcode = backtick([psi, infile, outfile, '-l', psidatadir])
+if sowreap == 'true':
+    try:
+        retcode = subprocess.Popen(['python', '%s/reap.py' % (os.path.dirname(infile)), os.path.realpath(psi)])
+    except IOError as e:
+        print("""Can't find reap script: %s """ % (e))
+    while True:
+        retcode.poll()
+        exstat = retcode.returncode
+        if exstat is not None:
+            reapexitcode = exstat
+            break
+        time.sleep(0.1)
+else:
+    reapexitcode = None
+
+
 loghandle.close()
+
+
 
 # additionally invoke autotest script comparing output.dat to output.ref
 if psiautotest == 'true':
