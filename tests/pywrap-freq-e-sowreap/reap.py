@@ -1,7 +1,8 @@
 # /usr/bin/env python
 # vim:ft=python
 
-# reap mode script
+# reap-sow helper script
+# executed after the sow step
 # AJ
 import os
 import re
