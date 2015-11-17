@@ -59,17 +59,17 @@ def backtick(exelist):
         if exstat is not None:
             return exstat
         time.sleep(0.1)
+    loghandle.close()
     # not sure why 2nd while loop needed, as 1st while loop has always
     #   been adequate for driver interfaces. nevertheless, to collect
     #   the proper exit code, 2nd while loop very necessary.
 
-loghandle.close()
 # run psi4 and collect testing status from any compare_* in input file
 pyexitcode = backtick([psi, infile, outfile, '-l', psidatadir])
 if sowreap == 'true':
     try:
-        retcode = subprocess.Popen(['python', '%s/reap.py' % (os.path.dirname(infile)), os.path.realpath(psi),os.path.realpath(outfile)])
-        print (['python', '%s/reap.py' % infile, outfile, logfile, psi])
+        print([sys.executable, '%s/reap.py' % os.path.dirname(infile),infile, outfile, logfile, psi])
+        retcode = subprocess.Popen([sys.executable, '%s/reap.py' % os.path.dirname(infile),infile, outfile, logfile, psi])
     except OSError as e:
         print("""Can't find reap script: %s """ % (e))
     while True:
