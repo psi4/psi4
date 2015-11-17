@@ -12,7 +12,7 @@ import subprocess
 root_directory = os.path.dirname(os.path.realpath(__file__))
 
 
-def sowList():
+def sowList(outfile):
     """read the output from the 'sow' step to the list of files
     to run before the 'reap' step """
     first_out = os.path.join(root_directory,"output.dat")
@@ -59,19 +59,25 @@ def runMaster(psi4Exe,theMasterFile):
     subprocess.call(cmd)
 
 
-def main(arg):
-    if os.path.isfile(arg):
-        filesList,masterFile= sowList()
+def main(argv):
+    if os.path.isfile(argv[0]):
+        filesList,masterFile= sowList(argv[1])
         tests=storeTests()
         reapMaster=os.path.join(root_directory,masterFile)
         addTests(reapMaster,tests)
 
-        runFiles(arg,filesList)
-        runMaster(arg,reapMaster)
+        runFiles(argv[0],filesList)
+        runMaster(argv[0],reapMaster)
+
+        sys.exit(0)
+    else:
+        sys.exit(1)
+
 
 
 if __name__=='__main__':
-    main(sys.argv[-1])
+    print sys.argv[1:]
+    main(sys.argv[1:])
 
 
 
