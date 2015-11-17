@@ -8,6 +8,7 @@ import os
 import re
 import sys
 import subprocess
+import time
 
 root_directory = os.path.dirname(os.path.realpath(__file__))
 
@@ -54,23 +55,59 @@ def runFiles(psi4Exe,theFileList):
         cmd = [psi4Exe,"-i",thisFile]
         subprocess.call(cmd)
 
-def runMaster(psi4Exe,theMasterFile):
+def runMaster(psi4Exe,theMasterFile,logfile):
     cmd = [psi4Exe,"-i",theMasterFile]
-    subprocess.call(cmd)
+    try:
+        loghandle = open(logfile, 'a')
+    except IOError as e:
+        print ("""I can't write to %s: %s""" %(logfile, e))
+        sys.exit(1)
+
+    try:
+        retcode = subprocess.Popen(cmd, bufsize=0, stdout=subprocess.PIPE, universal_newlines=True)
+    except OSError as e:
+        sys.stderr.write('Command %s execution failed: %s\n' % cmd, e.strerror)
+        sys.exit(1)
+    p4out = ''
+    while True:
+        data = retcode.stdout.readline()
+        if not data:
+            break
+        sys.stdout.write(data) # screen
+        loghandle.write(data) # file
+        loghandle.flush()
+        p4out+= data # string
+
+    while True:
+        retcode.poll()
+        exstat = retcode.returncode
+        if exstat is not None:
+            return exstat
+        time.sleep(0.1)
+
+
+
 
 
 def main(argv):
-    if os.path.isfile(argv[0]):
+    # check the psi4 path is there and is executable
+    if os.path.isfile(argv[0]) and os.access(argv[0],os.X_OK):
+        # get the list of intermediate input files
         filesList,masterFile= sowList(argv[1])
+        # get the commands from tests
         tests=storeTests()
+        # set the "reapmode" master file
         reapMaster=os.path.join(root_directory,masterFile)
+        # append the tests
         addTests(reapMaster,tests)
-
+        # run intermediates
         runFiles(argv[0],filesList)
-        runMaster(argv[0],reapMaster)
-
+        # run the master
+        runMaster(argv[0],reapMaster,argv[2])
+        # sucess
         sys.exit(0)
     else:
+        print("""psi4Exe incorrect check args path %s is not executable""" % (argv[0]))
         sys.exit(1)
 
 
