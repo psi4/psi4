@@ -5,7 +5,7 @@ import time
 import subprocess
 
 if len(sys.argv) not in [5, 6, 7, 8]:
-    print("""Usage: %s input_file logfile doperltest top_srcdir [alt_output_file alt_psi4_exe]""" % (sys.argv[0]))
+    print("""Usage: %s input_file logfile doperltest top_srcdir doreaptest [alt_output_file alt_psi4_exe]""" % (sys.argv[0]))
     sys.exit(1)
 
 # extract run condition from arguments
@@ -14,16 +14,15 @@ logfile = sys.argv[2]
 psiautotest = sys.argv[3]
 top_srcdir = sys.argv[4]
 psidatadir = top_srcdir + '/lib'
-if len(sys.argv) in [6, 7]:
-    outfile = sys.argv[5]
+sowreap=sys.argv[5]
+if len(sys.argv) in [7, 8]:
+    outfile = sys.argv[6]
 else:
     outfile = 'output.dat'
-if len(sys.argv) in [7, 8]:
-    psi = sys.argv[6]
+if len(sys.argv) == 8:
+    psi = sys.argv[7]
 else:
     psi = '../../bin/psi4'
-if len(sys.argv) == 8:
-    sowreap=sys.argv[7]
 
 # open logfile and print test case header
 try:
@@ -64,11 +63,14 @@ def backtick(exelist):
     #   been adequate for driver interfaces. nevertheless, to collect
     #   the proper exit code, 2nd while loop very necessary.
 
+loghandle.close()
 # run psi4 and collect testing status from any compare_* in input file
 pyexitcode = backtick([psi, infile, outfile, '-l', psidatadir])
 if sowreap == 'true':
+    print (""" Running sowreap Test""")
     try:
-        retcode = subprocess.Popen(['python', '%s/reap.py' % (os.path.dirname(infile)), os.path.realpath(psi)])
+        retcode = subprocess.Popen(['python', '%s/reap.py' % (os.path.dirname(infile)), os.path.realpath(psi),os.path.realpath(outfile)])
+        print (['python', '%s/reap.py' % (os.path.dirname(infile)), os.path.realpath(psi),os.path.realpath(outfile),logfile])
     except IOError as e:
         print("""Can't find reap script: %s """ % (e))
     while True:
@@ -82,7 +84,6 @@ else:
     reapexitcode = None
 
 
-loghandle.close()
 
 
 
@@ -104,6 +105,6 @@ else:
     plexitcode = None
 
 # combine, print, and return (0/1) testing status
-exitcode = 0 if (pyexitcode == 0 and (plexitcode is None or plexitcode == 0)) else 1
+exitcode = 0 if (pyexitcode == 0 and (plexitcode is None or plexitcode == 0) and reapexitcode is None or reapexitcode == 0 ) else 1
 print('Exit Status: infile (', pyexitcode, '); autotest (', plexitcode, '); overall (', exitcode, ')')
 sys.exit(exitcode)
