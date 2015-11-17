@@ -50,13 +50,13 @@ macro(add_regression_test _name _labels)
 
     # AJ:
     # Sow/Reap tests need helpers to test the full routine
-    # they should have the needhelp tag added 
+    # they should have the sowreap tag added 
     # this should extend to other Sow/Reap routines, I think 
-    set(NEEDHELP false)
+    set(SOWREAP false)
     if(labels)
-        list(FIND labels "needhelp" _index)
+        list(FIND labels "sowreap" _index)
         if (${_index} GREATER -1)
-            set(NEEDHELP true)
+            set(SOWREAP true)
         endif()
     endif()
 
@@ -68,13 +68,13 @@ macro(add_regression_test _name _labels)
         # but... most do not right now...
         add_test(NAME "${_name}"
             WORKING_DIRECTORY "${TEST_RUN_DIR}"
-            COMMAND "${MPIEXEC}" -n 2 "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${PROJECT_SOURCE_DIR}" "${OUTFILE}" "${PSIEXE}"
+            COMMAND "${MPIEXEC}" -n 2 "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${SOWREAP}" "${PROJECT_SOURCE_DIR}" "${OUTFILE}" "${PSIEXE}"
         )
     else()
         # Serial build
         add_test(NAME "${_name}"
             WORKING_DIRECTORY "${TEST_RUN_DIR}"
-            COMMAND "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${PROJECT_SOURCE_DIR}" "${OUTFILE}" "${PSIEXE}" "${NEEDHELP}"
+            COMMAND "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${SOWREAP}" "${PROJECT_SOURCE_DIR}" "${OUTFILE}" "${PSIEXE}"
         )
     endif()
 
