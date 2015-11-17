@@ -959,14 +959,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Denominator algorithm for PT methods. Laplace transformations
     are slightly more efficient. -*/
     options.add_str("DENOMINATOR_ALGORITHM", "LAPLACE", "LAPLACE CHOLESKY");
-    /*- The scale factor used for opposite-spin pairs in SCS computations.
-    SS/OS decomposition performed for $E@@{disp}^{(20)}$ and
-    $E@@{exch-disp}^{(20)}$ terms. -*/
-    options.add_double("SAPT_OS_SCALE", 6.0/5.0);
-    /*- The scale factor used for same-spin pairs in SCS computations. SS/OS
-    decomposition performed for $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$
-    terms. -*/
-    options.add_double("SAPT_SS_SCALE", 1.0/3.0);
     /*- The scope of core orbitals to freeze in evaluation of SAPT
     $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ terms. Recommended true
     for all SAPT computations -*/
