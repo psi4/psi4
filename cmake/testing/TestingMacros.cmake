@@ -68,13 +68,13 @@ macro(add_regression_test _name _labels)
         # but... most do not right now...
         add_test(NAME "${_name}"
             WORKING_DIRECTORY "${TEST_RUN_DIR}"
-            COMMAND "${MPIEXEC}" -n 2 "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${SOWREAP}" "${PROJECT_SOURCE_DIR}" "${OUTFILE}" "${PSIEXE}"
+            COMMAND "${MPIEXEC}" -n 2 "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${PROJECT_SOURCE_DIR}" "${SOWREAP}" "${OUTFILE}" "${PSIEXE}"
         )
     else()
         # Serial build
         add_test(NAME "${_name}"
             WORKING_DIRECTORY "${TEST_RUN_DIR}"
-            COMMAND "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${SOWREAP}" "${PROJECT_SOURCE_DIR}" "${OUTFILE}" "${PSIEXE}"
+            COMMAND "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${PROJECT_SOURCE_DIR}" "${SOWREAP}" "${OUTFILE}" "${PSIEXE}"
         )
     endif()
 
