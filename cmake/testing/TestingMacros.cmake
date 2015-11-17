@@ -74,7 +74,7 @@ macro(add_regression_test _name _labels)
         # Serial build
         add_test(NAME "${_name}"
             WORKING_DIRECTORY "${TEST_RUN_DIR}"
-            COMMAND "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${PROJECT_SOURCE_DIR}" "${OUTFILE}" "${PSIEXE}"
+            COMMAND "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${PROJECT_SOURCE_DIR}" "${OUTFILE}" "${PSIEXE}" "${NEEDHELP}"
         )
     endif()
 
