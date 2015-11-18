@@ -100,7 +100,7 @@ def format_molecule_for_input(mol, name=''):
     #return eval(commands)
 
 
-def format_options_for_input(molecule, **kwargs):
+def format_options_for_input(molecule=None, **kwargs):
     """Function to return a string of commands to replicate the
     current state of user-modified options. Used to capture C++
     options information for distributed (sow/reap) input files.
@@ -110,16 +110,18 @@ def format_options_for_input(molecule, **kwargs):
        - Does not cover local (as opposed to global) options.
 
     """
-    symmetry = molecule.find_point_group(0.00001).symbol()
+    if molecule is not None:
+        symmetry = molecule.find_point_group(0.00001).symbol()
     commands = ''
     commands += """\npsi4.set_memory(%s)\n\n""" % (psi4.get_memory())
     for chgdopt in psi4.get_global_option_list():
         if psi4.has_global_option_changed(chgdopt):
             chgdoptval = psi4.get_global_option(chgdopt)
 
-            if chgdopt.lower() in kwargs:
-                if symmetry in kwargs[chgdopt.lower()]:
-                    chgdoptval = kwargs[chgdopt.lower()][symmetry]
+            if molecule is not None:
+                if chgdopt.lower() in kwargs:
+                    if symmetry in kwargs[chgdopt.lower()]:
+                        chgdoptval = kwargs[chgdopt.lower()][symmetry]
 
             if isinstance(chgdoptval, basestring):
                 commands += """psi4.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
