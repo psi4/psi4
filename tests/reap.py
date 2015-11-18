@@ -17,7 +17,7 @@ def sowList(first_out):
     print first_out
     """read the output from the 'sow' step to the list of files
     to run before the 'reap' step """
-    find_cmd = re.compile("^(#|\s)\s+ psi4 -i (?P<infile>(?P<tag>[a-zA-Z]+)-[a-z0-9]+(-[a-z]+)?\.in)\s+-o (?P<outfile>[a-zA-Z]+-[a-z0-9]+(-[a-z]+)?\.out)")
+    find_cmd = re.compile("^(#|\s)\s+ psi4 -i (?P<infile>(?P<tag>[a-zA-Z]+)-[a-z0-9]+(-[a-z0-9]+)?\.in)\s+-o (?P<outfile>[a-zA-Z]+-[a-z0-9]+(-[a-z0-9]+)?\.out)")
     the_list = []
     with open(first_out,'r') as sow_out:
         for line in sow_out:
@@ -61,7 +61,7 @@ def runFiles(psi4,theFileList,runingDir):
         cmd = [psi4,"-i",thisInFile,"-o",thisOutFile]
         retcode = subprocess.call(cmd)
         if (retcode is not None):
-            sys.stdout.write('Multi-invocation %s exited with status %i' % (cmd, retcode))
+            sys.stdout.write('Multi-invocation %s exited with status %i\n' % (cmd, retcode))
 
 
 def runMaster(psi4, inMasterFile, outMasterFile,logfile,psi4datadir):
