@@ -68,7 +68,7 @@ def backtick(exelist):
 pyexitcode = backtick([psi, infile, outfile, '-l', psidatadir])
 if sowreap == 'true':
     try:
-        retcode = subprocess.Popen([sys.executable, '%s/reap.py' % os.path.dirname(infile),infile, outfile, logfile, psi, psidatadir])
+        retcode = subprocess.Popen([sys.executable, '%s/tests/reap.py' % (top_srcdir),infile, outfile, logfile, psi, psidatadir])
     except OSError as e:
         print("""Can't find reap script: %s """ % (e))
     while True:

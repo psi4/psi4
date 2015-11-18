@@ -17,7 +17,7 @@ def sowList(first_out):
     print first_out
     """read the output from the 'sow' step to the list of files
     to run before the 'reap' step """
-    find_cmd = re.compile("^#\s+ psi4 -i (?P<infile>(?P<tag>[a-zA-Z]+)-[0-9]+\.in)\s+-o\s+(?P<outfile>[a-zA-Z]+-[0-9]+\.out)")
+    find_cmd = re.compile("^(#|\s)\s+ psi4 -i (?P<infile>(?P<tag>[a-zA-Z]+)-[a-z0-9]+(-[a-z]+)?\.in)\s+-o (?P<outfile>[a-zA-Z]+-[a-z0-9]+(-[a-z]+)?\.out)")
     the_list = []
     with open(first_out,'r') as sow_out:
         for line in sow_out:
@@ -98,13 +98,14 @@ def runMaster(psi4, inMasterFile, outMasterFile,logfile,psi4datadir):
 
 def main(first_input,first_output,logfile, psi4,psi4datadir):
     # check the psi4 path is there and is executable
+    input_dir = os.path.dirname(first_input)
     output_dir = os.path.dirname(first_output)
     if os.path.isfile(psi4) and os.access(psi4,os.X_OK):
         # get the list of intermediate input files
         # files list and master file are not abolute paths just names
-        files_list,master_in,master_out= sowList(os.path.join(root_directory,"output.ref"))
+        files_list,master_in,master_out= sowList(first_output)
         # get the commands from tests
-        tests=storeTests(root_directory)
+        tests=storeTests(input_dir)
         # set the "reapmode" master file full path
         reap_master_in=os.path.join(output_dir,master_in.strip())
         reap_master_out=os.path.join(output_dir,master_out.strip())
