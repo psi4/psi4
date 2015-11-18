@@ -104,15 +104,6 @@ if(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local/psi4")
    set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT TRUE CACHE INTERNAL "")
 endif()
 
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-   set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/interfaces)
-   set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-   set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
-else()
-   set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/interfaces)
-   set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
-endif()
-
 # This section attempts to find some system libraries:
 #  a. libutil : needed for linking against static libpython (Linux only)
 #  b. libm    : needed for lib{int,deriv}_compiler (Linux only)
@@ -256,10 +247,8 @@ if(ENABLE_PCMSOLVER)
    else()
       add_definitions(-DHAVE_PCMSOLVER)
       message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
-      link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
-                       ${EXTERNAL_PROJECT_INSTALL_PREFIX})
+      link_directories(${PROJECT_BINARY_DIR}/interfaces/lib)
    endif()
-   set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
 endif()
 
 #If we have MPI we may want to also build JKFactory which makes J and K's
