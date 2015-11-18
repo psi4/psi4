@@ -1,6 +1,6 @@
 set(headers_list "")
 # List of headers
-list(APPEND headers_list chkpt.h config.h )
+list(APPEND headers_list chkpt.h config.h chkpt.hpp )
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
