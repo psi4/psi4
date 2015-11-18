@@ -231,9 +231,9 @@ include_directories(
 )
 
 
-set(headers_list "")
-set(headers_list include/compiler.h include/psi4-dec.h include/exception.h include/process.h)
-install_list_FILES("${headers_list}" include)
+###set(headers_list "")
+###set(headers_list include/compiler.h include/psi4-dec.h include/exception.h include/process.h)
+###install_list_FILES("${headers_list}" include)
 
 
 #
@@ -298,8 +298,9 @@ add_subdirectory(PsiAPI)
 set_property(GLOBAL APPEND PROPERTY PSILIB psiapi)
 
 # Handle creation of Makefile for plugins
+get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES) ###
 get_property(defs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS)
-set(dirs "${CMAKE_INSTALL_PREFIX}/include" "${PYTHON_INCLUDE_DIR}"  "${Boost_INCLUDE_DIRS}")
+###set(dirs "${CMAKE_INSTALL_PREFIX}/include" "${PYTHON_INCLUDE_DIR}"  "${Boost_INCLUDE_DIRS}")
 foreach(dir ${dirs})
     set(PLUGIN_INCLUDE_DIRECTORIES "-I${dir} ${PLUGIN_INCLUDE_DIRECTORIES}")
 endforeach()
@@ -314,7 +315,7 @@ string(STRIP ${PLUGIN_INCLUDE_DIRECTORIES} PLUGIN_INCLUDE_DIRECTORIES)
 string(STRIP ${PLUGIN_DEFINES} PLUGIN_DEFINES)
 string(STRIP ${PLUGIN_LDFLAGS} PLUGIN_LDFLAGS)
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
-install_list_FILES("${CMAKE_CURRENT_BINARY_DIR}/include/psiconfig.h" include/)
+###install_list_FILES("${CMAKE_CURRENT_BINARY_DIR}/include/psiconfig.h" include/)
 
 # Make known that the setup command given and the corresponding CMake
 # line are available in the file setup_command in the build directory
