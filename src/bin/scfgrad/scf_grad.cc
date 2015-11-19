@@ -624,181 +624,181 @@ SharedMatrix SCFGrad::compute_hessian()
     hessians["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv2().clone());
     hessians["Nuclear"]->set_name("Nuclear Hessian");
 
-    // => Kinetic Hessian <= //
-    timer_on("Hess: T");
-    {
-        double** Dp = Dt->pointer();
+//    // => Kinetic Hessian <= //
+//    timer_on("Hess: T");
+//    {
+//        double** Dp = Dt->pointer();
 
-        hessians["Kinetic"] = SharedMatrix(hessians["Nuclear"]->clone());
-        hessians["Kinetic"]->set_name("Kinetic Hessian");
-        hessians["Kinetic"]->zero();
-        double** Tp = hessians["Kinetic"]->pointer();
+//        hessians["Kinetic"] = SharedMatrix(hessians["Nuclear"]->clone());
+//        hessians["Kinetic"]->set_name("Kinetic Hessian");
+//        hessians["Kinetic"]->zero();
+//        double** Tp = hessians["Kinetic"]->pointer();
 
-        // Kinetic derivatives
-        boost::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(2));
-        const double* buffer = Tint->buffer();   
+//        // Kinetic derivatives
+//        boost::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(2));
+//        const double* buffer = Tint->buffer();
 
-        for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q <= P; Q++) {
+//        for (int P = 0; P < basisset_->nshell(); P++) {
+//            for (int Q = 0; Q <= P; Q++) {
 
-                Tint->compute_shell_deriv2(P,Q);
+//                Tint->compute_shell_deriv2(P,Q);
                                 
-                int nP = basisset_->shell(P).nfunction();
-                int oP = basisset_->shell(P).function_index();
-                int aP = basisset_->shell(P).ncenter();
+//                int nP = basisset_->shell(P).nfunction();
+//                int oP = basisset_->shell(P).function_index();
+//                int aP = basisset_->shell(P).ncenter();
  
-                int nQ = basisset_->shell(Q).nfunction();
-                int oQ = basisset_->shell(Q).function_index();
-                int aQ = basisset_->shell(Q).ncenter();
+//                int nQ = basisset_->shell(Q).nfunction();
+//                int oQ = basisset_->shell(Q).function_index();
+//                int aQ = basisset_->shell(Q).ncenter();
 
-                int offset = nP * nQ;
-                const double* ref = buffer;
-                double perm = (P == Q ? 1.0 : 2.0);
+//                int offset = nP * nQ;
+//                const double* ref = buffer;
+//                double perm = (P == Q ? 1.0 : 2.0);
 
-                int Px = 3 * aP + 0;
-                int Py = 3 * aP + 1;
-                int Pz = 3 * aP + 2;
+//                int Px = 3 * aP + 0;
+//                int Py = 3 * aP + 1;
+//                int Pz = 3 * aP + 2;
 
-                int Qx = 3 * aQ + 0;
-                int Qy = 3 * aQ + 1;
-                int Qz = 3 * aQ + 2;
+//                int Qx = 3 * aQ + 0;
+//                int Qy = 3 * aQ + 1;
+//                int Qz = 3 * aQ + 2;
                
-                // Px Qx 
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[Px][Qx] += perm * Dp[p + oP][q + oQ] * (*ref);
-                        if (aP != aQ)
-                            Tp[Qx][Px] += perm * Dp[p + oP][q + oQ] * (*ref);
-                        ref++;
-                    }
-                }
+//                // Px Qx
+//                for (int p = 0; p < nP; p++) {
+//                    for (int q = 0; q < nQ; q++) {
+//                        Tp[Px][Qx] += perm * Dp[p + oP][q + oQ] * (*ref);
+//                        if (aP != aQ)
+//                            Tp[Qx][Px] += perm * Dp[p + oP][q + oQ] * (*ref);
+//                        ref++;
+//                    }
+//                }
                
-                // Px Qy 
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[Px][Qy] += perm * Dp[p + oP][q + oQ] * (*ref);
-                        Tp[Qy][Px] += perm * Dp[p + oP][q + oQ] * (*ref);
-                        ref++;
-                    }
-                }
+//                // Px Qy
+//                for (int p = 0; p < nP; p++) {
+//                    for (int q = 0; q < nQ; q++) {
+//                        Tp[Px][Qy] += perm * Dp[p + oP][q + oQ] * (*ref);
+//                        Tp[Qy][Px] += perm * Dp[p + oP][q + oQ] * (*ref);
+//                        ref++;
+//                    }
+//                }
                
-                // Px Pz 
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[Px][Qz] += perm * Dp[p + oP][q + oQ] * (*ref);
-                        Tp[Qz][Px] += perm * Dp[p + oP][q + oQ] * (*ref);
-                        ref++;
-                    }
-                }
+//                // Px Pz
+//                for (int p = 0; p < nP; p++) {
+//                    for (int q = 0; q < nQ; q++) {
+//                        Tp[Px][Qz] += perm * Dp[p + oP][q + oQ] * (*ref);
+//                        Tp[Qz][Px] += perm * Dp[p + oP][q + oQ] * (*ref);
+//                        ref++;
+//                    }
+//                }
                
-                // Py Qy 
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[Py][Qy] += perm * Dp[p + oP][q + oQ] * (*ref);
-                        if (aP != aQ)
-                            Tp[Qy][Py] += perm * Dp[p + oP][q + oQ] * (*ref);
-                        ref++;
-                    }
-                }
+//                // Py Qy
+//                for (int p = 0; p < nP; p++) {
+//                    for (int q = 0; q < nQ; q++) {
+//                        Tp[Py][Qy] += perm * Dp[p + oP][q + oQ] * (*ref);
+//                        if (aP != aQ)
+//                            Tp[Qy][Py] += perm * Dp[p + oP][q + oQ] * (*ref);
+//                        ref++;
+//                    }
+//                }
                
-                // Py Qz 
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[Py][Qz] += perm * Dp[p + oP][q + oQ] * (*ref);
-                        Tp[Qz][Py] += perm * Dp[p + oP][q + oQ] * (*ref);
-                        ref++;
-                    }
-                }
+//                // Py Qz
+//                for (int p = 0; p < nP; p++) {
+//                    for (int q = 0; q < nQ; q++) {
+//                        Tp[Py][Qz] += perm * Dp[p + oP][q + oQ] * (*ref);
+//                        Tp[Qz][Py] += perm * Dp[p + oP][q + oQ] * (*ref);
+//                        ref++;
+//                    }
+//                }
                
-                // Pz Qz 
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Tp[Pz][Qz] += perm * Dp[p + oP][q + oQ] * (*ref);
-                        if (aP != aQ)
-                            Tp[Qz][Pz] += perm * Dp[p + oP][q + oQ] * (*ref);
-                        ref++;
-                    }
-                }
-            }
-        } 
-    }
-    timer_off("Hess: T");
+//                // Pz Qz
+//                for (int p = 0; p < nP; p++) {
+//                    for (int q = 0; q < nQ; q++) {
+//                        Tp[Pz][Qz] += perm * Dp[p + oP][q + oQ] * (*ref);
+//                        if (aP != aQ)
+//                            Tp[Qz][Pz] += perm * Dp[p + oP][q + oQ] * (*ref);
+//                        ref++;
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    timer_off("Hess: T");
 
-    // => Potential Hessian <= //
-    // TODO
-    timer_on("Hess: V");
-    {
-        double** Dp = Dt->pointer();
+//    // => Potential Hessian <= //
+//    // TODO
+//    timer_on("Hess: V");
+//    {
+//        double** Dp = Dt->pointer();
 
-        hessians["Potential"] = SharedMatrix(hessians["Nuclear"]->clone());
-        hessians["Potential"]->set_name("Potential Hessian");
-        hessians["Potential"]->zero();
+//        hessians["Potential"] = SharedMatrix(hessians["Nuclear"]->clone());
+//        hessians["Potential"]->set_name("Potential Hessian");
+//        hessians["Potential"]->zero();
 
-        // Thread count
-        int threads = 1;
-        #ifdef _OPENMP
-            threads = omp_get_max_threads();
-        #endif
+//        // Thread count
+//        int threads = 1;
+//        #ifdef _OPENMP
+//            threads = omp_get_max_threads();
+//        #endif
 
-        // Potential derivatives
-        std::vector<boost::shared_ptr<OneBodyAOInt> > Vint;
-        std::vector<SharedMatrix> Vtemps;
-        for (int t = 0; t < threads; t++) { 
-            Vint.push_back(boost::shared_ptr<OneBodyAOInt>(integral_->ao_potential(2)));
-            Vtemps.push_back(SharedMatrix(hessians["Potential"]->clone()));
-        }
+//        // Potential derivatives
+//        std::vector<boost::shared_ptr<OneBodyAOInt> > Vint;
+//        std::vector<SharedMatrix> Vtemps;
+//        for (int t = 0; t < threads; t++) {
+//            Vint.push_back(boost::shared_ptr<OneBodyAOInt>(integral_->ao_potential(2)));
+//            Vtemps.push_back(SharedMatrix(hessians["Potential"]->clone()));
+//        }
        
-        // Lower Triangle
-        std::vector<std::pair<int,int> > PQ_pairs;
-        for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q <= P; Q++) {
-                PQ_pairs.push_back(std::pair<int,int>(P,Q));
-            }
-        }
+//        // Lower Triangle
+//        std::vector<std::pair<int,int> > PQ_pairs;
+//        for (int P = 0; P < basisset_->nshell(); P++) {
+//            for (int Q = 0; Q <= P; Q++) {
+//                PQ_pairs.push_back(std::pair<int,int>(P,Q));
+//            }
+//        }
 
-        #pragma omp parallel for schedule(dynamic) num_threads(threads)
-        for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
+//        #pragma omp parallel for schedule(dynamic) num_threads(threads)
+//        for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
 
-            int P = PQ_pairs[PQ].first;
-            int Q = PQ_pairs[PQ].second;
+//            int P = PQ_pairs[PQ].first;
+//            int Q = PQ_pairs[PQ].second;
 
-            int thread = 0;
-            #ifdef _OPENMP
-                thread = omp_get_thread_num();
-            #endif
+//            int thread = 0;
+//            #ifdef _OPENMP
+//                thread = omp_get_thread_num();
+//            #endif
 
-            Vint[thread]->compute_shell_deriv2(P,Q);
-            const double* buffer = Vint[thread]->buffer();
+//            Vint[thread]->compute_shell_deriv2(P,Q);
+//            const double* buffer = Vint[thread]->buffer();
                             
-            int nP = basisset_->shell(P).nfunction();
-            int oP = basisset_->shell(P).function_index();
-            int aP = basisset_->shell(P).ncenter();
+//            int nP = basisset_->shell(P).nfunction();
+//            int oP = basisset_->shell(P).function_index();
+//            int aP = basisset_->shell(P).ncenter();
  
-            int nQ = basisset_->shell(Q).nfunction();
-            int oQ = basisset_->shell(Q).function_index();
-            int aQ = basisset_->shell(Q).ncenter();
+//            int nQ = basisset_->shell(Q).nfunction();
+//            int oQ = basisset_->shell(Q).function_index();
+//            int aQ = basisset_->shell(Q).ncenter();
 
-            double perm = (P == Q ? 1.0 : 2.0);
+//            double perm = (P == Q ? 1.0 : 2.0);
                 
-            double** Vp = Vtemps[thread]->pointer();
+//            double** Vp = Vtemps[thread]->pointer();
 
-            for (int alpha = 0; alpha < 3 * natom; alpha++) {
-                for (int beta = 0; beta < 3 * natom; beta++) {
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            double Vval = perm * Dp[p + oP][q + oQ];
-                            Vp[alpha][beta] += Vval * (*buffer++);
-                        }
-                    }
-                }
-            }
-        } 
+//            for (int alpha = 0; alpha < 3 * natom; alpha++) {
+//                for (int beta = 0; beta < 3 * natom; beta++) {
+//                    for (int p = 0; p < nP; p++) {
+//                        for (int q = 0; q < nQ; q++) {
+//                            double Vval = perm * Dp[p + oP][q + oQ];
+//                            Vp[alpha][beta] += Vval * (*buffer++);
+//                        }
+//                    }
+//                }
+//            }
+//        }
     
-        for (int t = 0; t < threads; t++) { 
-            hessians["Potential"]->add(Vtemps[t]);
-        }
-    }
-    timer_off("Hess: V");
+//        for (int t = 0; t < threads; t++) {
+//            hessians["Potential"]->add(Vtemps[t]);
+//        }
+//    }
+//    timer_off("Hess: V");
 
     // => Overlap Hessian <= //
     timer_on("Hess: S");
@@ -820,14 +820,14 @@ SharedMatrix SCFGrad::compute_hessian()
             C_DAXPY(nso,eps_ap[i], &Cap[0][i], nalpha, &temp[i], nalpha);
         }
 
-        C_DGEMM('N','T',nso,nso,nalpha,1.0,Cap[0],nalpha,temp,nalpha,0.0,Wp[0],nso);
+        C_DGEMM('N','T',nso,nso,nalpha,-1.0,Cap[0],nalpha,temp,nalpha,0.0,Wp[0],nso);
 
         ::memset((void*) temp, '\0', sizeof(double) * nso * nbeta);
         for (int i = 0; i < nbeta; i++) {
             C_DAXPY(nso,eps_bp[i], &Cbp[0][i], nbeta, &temp[i], nbeta);
         }
 
-        C_DGEMM('N','T',nso,nso,nbeta,1.0,Cbp[0],nbeta,temp,nbeta,1.0,Wp[0],nso);
+        C_DGEMM('N','T',nso,nso,nbeta,-1.0,Cbp[0],nbeta,temp,nbeta,1.0,Wp[0],nso);
         
         delete[] temp;
 
@@ -841,91 +841,138 @@ SharedMatrix SCFGrad::compute_hessian()
         const double* buffer = Sint->buffer();   
 
         for (int P = 0; P < basisset_->nshell(); P++) {
+            const GaussianShell& s1 = basisset_->shell(P);
+            int nP = s1.nfunction();
+            int oP = s1.function_index();
+            int aP = s1.ncenter();
+            int Px = 3 * aP + 0;
+            int Py = 3 * aP + 1;
+            int Pz = 3 * aP + 2;
             for (int Q = 0; Q <= P; Q++) {
 
                 Sint->compute_shell_deriv2(P,Q);
-                                
-                int nP = basisset_->shell(P).nfunction();
-                int oP = basisset_->shell(P).function_index();
-                int aP = basisset_->shell(P).ncenter();
- 
-                int nQ = basisset_->shell(Q).nfunction();
-                int oQ = basisset_->shell(Q).function_index();
-                int aQ = basisset_->shell(Q).ncenter();
 
-                int offset = nP * nQ;
-                const double* ref = buffer;
-                double perm = (P == Q ? 1.0 : 2.0);
-               
-                int Px = 3 * aP + 0;
-                int Py = 3 * aP + 1;
-                int Pz = 3 * aP + 2;
+                const GaussianShell& s2 = basisset_->shell(Q);
+                int nQ = s2.nfunction();
+                int oQ = s2.function_index();
+                int aQ = s2.ncenter();
 
                 int Qx = 3 * aQ + 0;
                 int Qy = 3 * aQ + 1;
                 int Qz = 3 * aQ + 2;
-               
-                // Px Qx 
+
+                size_t offset = nP*nQ;
+
+                double perm = (P == Q ? 1.0 : 2.0);
+
+                const double *pxx = buffer + 0*offset;
+                const double *pxy = buffer + 1*offset;
+                const double *pxz = buffer + 2*offset;
+                const double *pyy = buffer + 3*offset;
+                const double *pyz = buffer + 4*offset;
+                const double *pzz = buffer + 5*offset;
+
+                double diagscale = (aP == aQ ? 2.0 : 1.0);
+
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Sp[Px][Qx] += perm * Wp[p + oP][q + oQ] * (*ref);
-                        if (aP != aQ)
-                            Sp[Qx][Px] += perm * Wp[p + oP][q + oQ] * (*ref);
-                        ref++;
-                    }
-                }
-               
-                // Px Qy 
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[Px][Qy] += perm * Wp[p + oP][q + oQ] * (*ref);
-                        Sp[Qy][Px] += perm * Wp[p + oP][q + oQ] * (*ref);
-                        ref++;
-                    }
-                }
-               
-                // Px Pz 
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[Px][Qz] += perm * Wp[p + oP][q + oQ] * (*ref);
-                        Sp[Qz][Px] += perm * Wp[p + oP][q + oQ] * (*ref);
-                        ref++;
-                    }
-                }
-               
-                // Py Qy 
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[Py][Qy] += perm * Wp[p + oP][q + oQ] * (*ref);
-                        if (aP != aQ)
-                            Sp[Qy][Py] += perm * Wp[p + oP][q + oQ] * (*ref);
-                        ref++;
-                    }
-                }
-               
-                // Py Qz 
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[Py][Qz] += perm * Wp[p + oP][q + oQ] * (*ref);
-                        Sp[Qz][Py] += perm * Wp[p + oP][q + oQ] * (*ref);
-                        ref++;
-                    }
-                }
-               
-                // Pz Qz 
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Sp[Pz][Qz] += perm * Wp[p + oP][q + oQ] * (*ref);
-                        if (aP != aQ)
-                            Sp[Qz][Pz] += perm * Wp[p + oP][q + oQ] * (*ref);
-                        ref++;
+                        double Welem = perm * Wp[p + oP][q + oQ];
+                        double tmpxx = Welem * (*pxx);
+                        double tmpxy = Welem * (*pxy);
+                        double tmpxz = Welem * (*pxz);
+                        double tmpyy = Welem * (*pyy);
+                        double tmpyz = Welem * (*pyz);
+                        double tmpzz = Welem * (*pzz);
+
+                        /*
+                         * Translational invariance relationship for derivatives w.r.t. centers A and B:
+                         *
+                         *     ∂ S   ∂ S
+                         *     --- + ---  =  0
+                         *     ∂ A   ∂ B
+                         *
+                         * Take the derivative again, w.r.t. A and B to get
+                         *
+                         *     ∂^2 S   ∂^2 S
+                         *     ----- + -----  =  0
+                         *     ∂A ∂A   ∂B ∂A
+                         *
+                         *     ∂^2 S   ∂^2 S
+                         *     ----- + -----  =  0
+                         *     ∂A ∂A   ∂B ∂A
+                         *
+                         *  Therefore we have
+                         *
+                         *     ∂^2 S   ∂^2 S       ∂^2 S
+                         *     ----- = -----  =  - -----
+                         *     ∂A ∂A   ∂B ∂B       ∂A ∂B
+                         *
+                         *  Only the double derivative w.r.t. A is provided, so we need to fill in the blanks below.
+                         */
+
+                        // AxAx
+                        Sp[Px][Px] += tmpxx;
+                        // AxAy
+                        Sp[Px][Py] += tmpxy;
+                        // AxAz
+                        Sp[Px][Pz] += tmpxz;
+                        // AyAy
+                        Sp[Py][Py] += tmpyy;
+                        // AyAz
+                        Sp[Py][Pz] += tmpyz;
+                        // AzAz
+                        Sp[Pz][Pz] += tmpzz;
+                        // BxBx
+                        Sp[Qx][Qx] += tmpxx;
+                        // BxBy
+                        Sp[Qx][Qy] += tmpxy;
+                        // BxBz
+                        Sp[Qx][Qz] += tmpxz;
+                        // ByBy
+                        Sp[Qy][Qy] += tmpyy;
+                        // ByBz
+                        Sp[Qy][Qz] += tmpyz;
+                        // BzBz
+                        Sp[Qz][Qz] += tmpzz;
+                        // AxBx
+                        Sp[Px][Qx] += -diagscale*tmpxx;
+                        // AxBy
+                        Sp[Px][Qy] += -tmpxy;
+                        // AxBz
+                        Sp[Px][Qz] += -tmpxz;
+                        // AyBx
+                        Sp[Py][Qx] += -tmpxy;
+                        // AyBy
+                        Sp[Py][Qy] += -diagscale*tmpyy;
+                        // AyBz
+                        Sp[Py][Qz] += -tmpyz;
+                        // AzBx
+                        Sp[Pz][Qx] += -tmpxz;
+                        // AzBy
+                        Sp[Pz][Qy] += -tmpyz;
+                        // AzBz
+                        Sp[Pz][Qz] += -diagscale*tmpzz;
+
+                        ++pxx;
+                        ++pxy;
+                        ++pxz;
+                        ++pyy;
+                        ++pyz;
+                        ++pzz;
                     }
                 }
             }
         } 
+        // Symmetrize the result
+        int dim = hessians["Overlap"]->rowdim();
+        for (int row = 0; row < dim; ++row){
+            for (int col = 0; col < row; ++col){
+                Sp[row][col] = Sp[col][row] = (Sp[row][col] + Sp[col][row]);
+            }
+        }
+        timer_off("Hess: S");
+        hessians["Overlap"]->print();
     }
-    timer_off("Hess: S");
-
     // => Two-Electron Hessian <= //
     /**
 
