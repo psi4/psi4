@@ -241,7 +241,8 @@ OptReturnType optking(void) {
 
   // If first iteration, start optional xyz trajectory file.
   if (p_Opt_data->g_iteration() == 1)
-    if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz(-1);
+    if (Opt_params.print_trajectory_xyz_file && Opt_params.opt_type != OPT_PARAMS::IRC)
+      mol1->print_xyz(-1);
 
   mol1->update_fb_values(); // EFP values calculated from old opt_data
 
@@ -346,10 +347,9 @@ OptReturnType optking(void) {
     p_irc_data->progress_report(*mol1);
 
   if ( converged ) {
-    if (Opt_params.opt_type == OPT_PARAMS::IRC)
-    {
-      if(!p_irc_data->go)
-      {
+    if (Opt_params.opt_type == OPT_PARAMS::IRC) {
+
+      if(!p_irc_data->go) {
         oprintf_out("\n\t **** Optimization is complete! ****\n");
         p_Opt_data->write(); // save data to optimization binary file
         oprintf_out("\tFinal energy is %20.13lf\n", p_Opt_data->g_energy());
@@ -357,7 +357,6 @@ OptReturnType optking(void) {
         if (Opt_params.write_final_step_geometry) {
           oprintf_out("\tFinal (next step) structure:\n");
           mol1->print_geom_out();  // write geometry -> output file
-          if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
           oprintf_out("\tSaving final (next step) structure.\n");
         }
         else { // default - get last geometry and write that one
@@ -365,7 +364,6 @@ OptReturnType optking(void) {
           mol1->set_geom_array(x);
           oprintf_out("\tFinal (previous) structure:\n");
           mol1->print_geom_out();  // write geometry -> output file
-          if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
           oprintf_out("\tSaving final (previous) structure.\n");
         }
         p_irc_data->progress_report(*mol1);
@@ -379,14 +377,6 @@ OptReturnType optking(void) {
         close_output_dat();
         return OptReturnEndloop;
       }
-      std::cout << "Converged point!\nSize of opt_data is: " << p_Opt_data->nsteps() << "\n";
-//   TODO : could delete old opt_data entries
-      //delete all entries but those on reaction path
-      //assuming coord has already been incremented; is >=1
-//      while(p_Opt_data->nsteps() > 2)
-//        p_Opt_data->erase_step(1);
-//      p_Opt_data->H_update(*mol1);
-//      p_Opt_data->erase_step(0);
 
       INTCO_EXCEPT::dynamic_level = options.get_int("DYNAMIC_LEVEL"); // reset for future optimizations
       p_irc_data->point_converged(*mol1);
@@ -402,7 +392,8 @@ OptReturnType optking(void) {
       if (Opt_params.write_final_step_geometry) {
         oprintf_out("\tFinal (next step) structure:\n");
         mol1->print_geom_out();  // write geometry -> output file
-        if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
+        if (Opt_params.print_trajectory_xyz_file)
+          mol1->print_xyz();
         oprintf_out("\tSaving final (next step) structure.\n");
       }
       else { // default - get last geometry and write that one
@@ -454,7 +445,8 @@ OptReturnType optking(void) {
 
   oprintf_out("\tStructure for next step:\n");
   mol1->print_geom_out(); // write geometry for next step to output file
-  if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
+  if (Opt_params.print_trajectory_xyz_file && Opt_params.opt_type != OPT_PARAMS::IRC)
+    mol1->print_xyz();
 
   mol1->write_geom(); // write geometry -> chkpt (also output for QChem)
   print_end_out();
@@ -475,7 +467,8 @@ OptReturnType optking(void) {
 
       oprintf_out("\tStructure for next step:\n");
       mol1->print_geom_out(); // write geometry for next step to output file
-      if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
+      if (Opt_params.print_trajectory_xyz_file && Opt_params.opt_type != OPT_PARAMS::IRC)
+        mol1->print_xyz();
 
       mol1->write_geom(); // write geometry -> chkpt (also output for QChem)
       print_end_out();
