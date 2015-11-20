@@ -360,13 +360,14 @@ void MOLECULE::irc_step(void)
                               p_irc_data->step_length, p_irc_data->arc_length, p_irc_data->line_length);
 
     /* START PRINT CONVERGED POINT INFO */
+    int point_number = Opt_params.IRC_direction == OPT_PARAMS::FORWARD ? p_irc_data->size() - 1 : - (p_irc_data->size() - 1);
     set_geom_array(x);
     oprintf_out("\n@IRC\n");
     if(p_irc_data->size() == 1) {
-      oprintf_out("@IRC  **** Point %2d on IRC path ****\n", p_irc_data->size() - 1);
+      oprintf_out("@IRC  **** Point %2d on IRC path ****\n", point_number);
     }
     else {
-      oprintf_out("@IRC  **** Point %2d on IRC path is optimized ****\n", p_irc_data->size() - 1);
+      oprintf_out("@IRC  **** Point %2d on IRC path is optimized ****\n", point_number);
     }
     oprintf_out("@IRC    Final energy:         %20.13lf\n", p_Opt_data->g_energy());
     oprintf_out("@IRC    Arc path distance:    %20.13lf\n", p_irc_data->g_arc_dist());
@@ -374,7 +375,7 @@ void MOLECULE::irc_step(void)
     oprintf_out("@IRC\n");
     print_geom_out_irc();
     if (Opt_params.print_trajectory_xyz_file)
-      print_xyz_irc(p_irc_data->size() - 1, Opt_params.IRC_direction == OPT_PARAMS::FORWARD);
+      print_xyz_irc(point_number, Opt_params.IRC_direction == OPT_PARAMS::FORWARD);
     oprintf_out("@IRC\n");
     oprintf_out("@IRC\n\n");
     set_geom_array(x_pivot);
