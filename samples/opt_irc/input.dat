@@ -1,0 +1,29 @@
+# Compute the IRC for HOOH torsional rotation
+# at the RHF/DZP level of theory, and print
+# the path to a trajectory file for visualization
+# in Jmol.
+# grep '@IRC' on the output to see a nice printout
+# of the progress of your IRC computation.
+
+molecule {
+   symmetry c1
+   H
+   O 1 0.946347
+   O 2 1.397780 1  107.243777
+   H 3 0.946347 2  107.243777   1 0.0
+}
+
+# g_convergence needs to be tight for IRCs:
+set g_convergence gau_verytight
+
+set {
+  basis                      dzp
+  opt_type                   irc
+  geom_maxiter               50
+  print_trajectory_xyz_file  true
+  irc_direction              forward
+}
+
+frequencies('scf')
+optimize('scf')
+

@@ -139,12 +139,11 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
       f[i] -= overlap * Ginv_p[i];
     free_array(Ginv_p);
 
-    if (Opt_params.print_lvl >= 1) {
+    if (Opt_params.print_lvl >= 2) {
       oprintf_out("\tForces perpendicular to hypersphere.\n");
       oprint_array_out(f, Nintco);
     }
 
-    oprintf_out("\tFor IRC computations, the forces perpendicular to the rxnpath are tested.\n");
   }
 
   // Remove arbitrary forces for user-specified equilibrium values. 
@@ -165,44 +164,46 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   double max_force = array_abs_max(f, Nintco);
   double rms_force = array_rms(f, Nintco);
 
-  oprintf_out( "\n  ==> Convergence Check <==\n\n");
-  oprintf_out( "  Measures of convergence in internal coordinates in au.\n");
-  oprintf_out( "  Criteria marked as inactive (o), active & met (*), and active & unmet ( ).\n");
-
-  oprintf_out( "  ---------------------------------------------------------------------------------------------");
-  if (g_iteration() == 1) oprintf_out( " ~");
-  oprintf_out( "\n");
-
-  oprintf_out( "   Step     Total Energy     Delta E     MAX Force     RMS Force      MAX Disp      RMS Disp   ");
-  if (g_iteration() == 1) oprintf_out( " ~");
-  oprintf_out( "\n");
-
-  oprintf_out( "  ---------------------------------------------------------------------------------------------");
-  if (g_iteration() == 1) oprintf_out( " ~");
-  oprintf_out( "\n");
-
-  oprintf_out( "    Convergence Criteria");
-  Opt_params.i_max_DE    ? oprintf_out( "  %10.2e %1s", Opt_params.conv_max_DE,    "*") : oprintf_out("             %1s", "o");
-  Opt_params.i_max_force ? oprintf_out( "  %10.2e %1s", Opt_params.conv_max_force, "*") : oprintf_out("             %1s", "o");
-  Opt_params.i_rms_force ? oprintf_out( "  %10.2e %1s", Opt_params.conv_rms_force, "*") : oprintf_out("             %1s", "o");
-  Opt_params.i_max_disp  ? oprintf_out( "  %10.2e %1s", Opt_params.conv_max_disp,  "*") : oprintf_out("             %1s", "o");
-  Opt_params.i_rms_disp  ? oprintf_out( "  %10.2e %1s", Opt_params.conv_rms_disp,  "*") : oprintf_out("             %1s", "o");
-
-  if (g_iteration() == 1) oprintf_out( "  ~");
-  oprintf_out( "\n");
-
-  oprintf_out( "  ---------------------------------------------------------------------------------------------");
-  if (g_iteration() == 1) oprintf_out( " ~");
-  oprintf_out( "\n");
-
-  oprintf_out( "   %4d %16.8f  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  ~\n", iteration, g_energy(),
-    DE, (Opt_params.i_max_DE ? ((fabs(DE) < Opt_params.conv_max_DE) ? "*" : "") : "o"), 
-    max_force, (Opt_params.i_max_force ? ((fabs(max_force) < Opt_params.conv_max_force) ? "*" : "") : "o"),
-    rms_force, (Opt_params.i_rms_force ? ((fabs(rms_force) < Opt_params.conv_rms_force) ? "*" : "") : "o"),
-    max_disp, (Opt_params.i_max_disp ? ((fabs(max_disp) < Opt_params.conv_max_disp) ? "*" : "") : "o"),
-    rms_disp, (Opt_params.i_rms_disp ? ((fabs(rms_disp) < Opt_params.conv_rms_disp) ? "*" : "") : "o"));
-
-  oprintf_out( "  ---------------------------------------------------------------------------------------------\n\n");
+  if (Opt_params.opt_type != OPT_PARAMS::IRC) {
+      oprintf_out( "\n  ==> Convergence Check <==\n\n");
+      oprintf_out( "  Measures of convergence in internal coordinates in au.\n");
+      oprintf_out( "  Criteria marked as inactive (o), active & met (*), and active & unmet ( ).\n");
+  
+      oprintf_out( "  ---------------------------------------------------------------------------------------------");
+      if (g_iteration() == 1) oprintf_out( " ~");
+      oprintf_out( "\n");
+  
+      oprintf_out( "   Step     Total Energy     Delta E     MAX Force     RMS Force      MAX Disp      RMS Disp   ");
+      if (g_iteration() == 1) oprintf_out( " ~");
+      oprintf_out( "\n");
+  
+      oprintf_out( "  ---------------------------------------------------------------------------------------------");
+      if (g_iteration() == 1) oprintf_out( " ~");
+      oprintf_out( "\n");
+  
+      oprintf_out( "    Convergence Criteria");
+      Opt_params.i_max_DE    ? oprintf_out( "  %10.2e %1s", Opt_params.conv_max_DE,    "*") : oprintf_out("             %1s", "o");
+      Opt_params.i_max_force ? oprintf_out( "  %10.2e %1s", Opt_params.conv_max_force, "*") : oprintf_out("             %1s", "o");
+      Opt_params.i_rms_force ? oprintf_out( "  %10.2e %1s", Opt_params.conv_rms_force, "*") : oprintf_out("             %1s", "o");
+      Opt_params.i_max_disp  ? oprintf_out( "  %10.2e %1s", Opt_params.conv_max_disp,  "*") : oprintf_out("             %1s", "o");
+      Opt_params.i_rms_disp  ? oprintf_out( "  %10.2e %1s", Opt_params.conv_rms_disp,  "*") : oprintf_out("             %1s", "o");
+  
+      if (g_iteration() == 1) oprintf_out( "  ~");
+      oprintf_out( "\n");
+  
+      oprintf_out( "  ---------------------------------------------------------------------------------------------");
+      if (g_iteration() == 1) oprintf_out( " ~");
+      oprintf_out( "\n");
+  
+      oprintf_out( "   %4d %16.8f  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  ~\n", iteration, g_energy(),
+        DE, (Opt_params.i_max_DE ? ((fabs(DE) < Opt_params.conv_max_DE) ? "*" : "") : "o"), 
+        max_force, (Opt_params.i_max_force ? ((fabs(max_force) < Opt_params.conv_max_force) ? "*" : "") : "o"),
+        rms_force, (Opt_params.i_rms_force ? ((fabs(rms_force) < Opt_params.conv_rms_force) ? "*" : "") : "o"),
+        max_disp, (Opt_params.i_max_disp ? ((fabs(max_disp) < Opt_params.conv_max_disp) ? "*" : "") : "o"),
+        rms_disp, (Opt_params.i_rms_disp ? ((fabs(rms_disp) < Opt_params.conv_rms_disp) ? "*" : "") : "o"));
+  
+      oprintf_out( "  ---------------------------------------------------------------------------------------------\n\n");
+  }
 
   // Return forces to what they were when conv_check was called
   if (Opt_params.opt_type == OPT_PARAMS::IRC || mol.has_fixed_eq_vals()) {
