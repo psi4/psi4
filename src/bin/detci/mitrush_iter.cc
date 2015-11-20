@@ -568,7 +568,7 @@ void CIWavefunction::olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, do
    double nx=0.0, ox=0.0, tmp1, tmp2, normc1=0.0, tmpnorm=0.0;
    double rnorm=0.0, rnormtmp=0.0;
 
-   for (buf=0; buf<C.buf_per_vect; buf++) {
+   for (buf=0; buf<C.buf_per_vect_; buf++) {
       tmp1 = 0.0;
       tmp2 = 0.0;
       C.buf_lock(buffer1);
@@ -576,7 +576,7 @@ void CIWavefunction::olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, do
       C.read(curr, buf);
       S.read(curr, buf);
       /* C = E_est * C - S, C is buffer1*/
-      xeaxmy(buffer1, buffer2, E_est, C.buf_size[buf]);
+      xeaxmy(buffer1, buffer2, E_est, C.buf_size_[buf]);
       C.buf_unlock();
       S.buf_unlock();
       Hd.buf_lock(buffer2);
@@ -585,9 +585,9 @@ void CIWavefunction::olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, do
            CalcInfo_->twoel_ints, CalcInfo_->edrc, CalcInfo_->num_alp_expl,
            CalcInfo_->num_bet_expl, CalcInfo_->nmo, buf, Parameters_->hd_ave);
       /* Check norm of residual vector i.e. before preconditioning */
-      dot_arr(buffer1, buffer1, C.buf_size[buf], &rnormtmp);
+      dot_arr(buffer1, buffer1, C.buf_size_[buf], &rnormtmp);
       /* C = C/(Hd - E) */
-      buf_ols_denom(buffer1, buffer2, E, S.buf_size[buf]);
+      buf_ols_denom(buffer1, buffer2, E, S.buf_size_[buf]);
       /* buffer1 is now equal to C^1, i.e. the correction to C_i
       ** without the H0block correction
       */
@@ -595,10 +595,10 @@ void CIWavefunction::olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, do
       /* C_new = C_i + C^1 */
       C.buf_lock(buffer2);
       C.read(curr, buf);
-      buf_ols_updt(buffer1,buffer2,&tmp1,&tmp2,&tmpnorm,C.buf_size[buf]);
+      buf_ols_updt(buffer1,buffer2,&tmp1,&tmp2,&tmpnorm,C.buf_size_[buf]);
       if (Parameters_->precon >= PRECON_GEN_DAVIDSON)
         C.h0block_buf_ols(&tmp1,&tmp2,&tmpnorm,E_est);
-      if (C.buf_offdiag[buf]) {
+      if (C.buf_offdiag_[buf]) {
          tmp1 *= 2.0;
          tmp2 *= 2.0;
          tmpnorm *= 2.0;
@@ -666,7 +666,7 @@ void CIWavefunction::olsen_iter_xy(CIvect &C, CIvect &S, CIvect &Hd, double *x, 
      sigma0b1 = init_array(H0block_->size);
      sigma0b2 = init_array(H0block_->size);
      }
-   for (buf=0; buf<C.buf_per_vect; buf++) {
+   for (buf=0; buf<C.buf_per_vect_; buf++) {
       tx = ty = 0.0;
       C.buf_lock(buffer1);
       C.read(curvect,buf);
@@ -676,19 +676,19 @@ void CIWavefunction::olsen_iter_xy(CIvect &C, CIvect &S, CIvect &Hd, double *x, 
       else Hd.diag_mat_els_otf(alplist, betlist, CalcInfo_->onel_ints,
            CalcInfo_->twoel_ints, CalcInfo_->edrc, CalcInfo_->num_alp_expl,
            CalcInfo_->num_bet_expl, CalcInfo_->nmo, buf, Parameters_->hd_ave);
-      tx = buf_xy1(buffer1, buffer2, E, Hd.buf_size[buf]);
+      tx = buf_xy1(buffer1, buffer2, E, Hd.buf_size_[buf]);
       /* buffer2 = Hd * Ci */
       C.buf_unlock();
       S.buf_lock(buffer1);
       if (Parameters_->diag_method <= METHOD_MITRUSHENKOV) {
         /* Olsen and Mitrushenkov iterators */
         S.read(curvect,buf);
-        dot_arr(buffer1, buffer2, C.buf_size[buf], &ty);
+        dot_arr(buffer1, buffer2, C.buf_size_[buf], &ty);
         }
       else { /* Dot buffer2 with all Sigma vectors on disk */
         for (i=0; i<L; i++) {
            S.read(i,buf);
-           dot_arr(buffer1, buffer2, C.buf_size[buf], &tmpy);
+           dot_arr(buffer1, buffer2, C.buf_size_[buf], &tmpy);
            ty += tmpy * alpha[i][curvect];
            zero_arr(sigma0b1,H0block_->size);
            S.h0block_gather_multivec(sigma0b1);
@@ -697,7 +697,7 @@ void CIWavefunction::olsen_iter_xy(CIvect &C, CIvect &S, CIvect &Hd, double *x, 
            }
 
        }
-      if (C.buf_offdiag[buf]) {
+      if (C.buf_offdiag_[buf]) {
          *x += 2.0 * tx;
          *y += 2.0 * ty;
          }
@@ -732,13 +732,13 @@ void CIWavefunction::mitrush_update(CIvect &C, CIvect &S, double norm, double ac
    if (!Parameters_->Ms0) phase = 1.0;
    else phase = ((int) Parameters_->S % 2) ? -1.0 : 1.0;
 
-   for (buf=0; buf<C.buf_per_vect; buf++) {
+   for (buf=0; buf<C.buf_per_vect_; buf++) {
       C.buf_lock(buffer1);
       C.read(curr, buf);
       C.buf_unlock();
       C.buf_lock(buffer2);
       C.read(next, buf);
-      xeaxpby(buffer2, buffer1, alast, acur, C.buf_size[buf]);
+      xeaxpby(buffer2, buffer1, alast, acur, C.buf_size_[buf]);
       /* buffer2 is the new C(i) vector constructed from
       ** alpha(i-1)*C(i-1) + alpha(i)*C(i).
       ** However, this vector is not normalized or symmetrized yet.
@@ -753,13 +753,13 @@ void CIWavefunction::mitrush_update(CIvect &C, CIvect &S, double norm, double ac
    C.symnorm(norm,0,1);
    C.buf_unlock();
 
-   for (buf=0; buf<S.buf_per_vect; buf++) {
+   for (buf=0; buf<S.buf_per_vect_; buf++) {
       S.buf_lock(buffer1);
       S.read(curr, buf);
       S.buf_unlock();
       S.buf_lock(buffer2);
       S.read(next, buf);
-      xeaxpby(buffer2, buffer1, alast, acur, S.buf_size[buf]);
+      xeaxpby(buffer2, buffer1, alast, acur, S.buf_size_[buf]);
       S.write(curr, buf);
       S.buf_unlock();
       }
@@ -776,4 +776,3 @@ void CIWavefunction::mitrush_update(CIvect &C, CIvect &S, double norm, double ac
 
 
 }} // namespace psi::detci
-
