@@ -64,8 +64,8 @@ PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, boost::shared_pt
         maxnao1 *= 3*natom_;
     }
     else if (deriv == 2) {
-        set_chunks(3*natom_ * 3*natom_);  // x, y, z for A + x, y, z, for B
-        maxnao1 *= 3*natom_ * 3*natom_;
+        set_chunks(27*natom_ );
+        maxnao1 *= 27*natom_;
     }
 
     buffer_ = new double[maxnao1*maxnao2];
@@ -514,8 +514,6 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
 
     // size of the length of a perturbation
     const size_t size = s1.ncartesian() * s2.ncartesian();
-//    const size_t center_i_start_x = center_i * 9 * size;
-//    const size_t center_j_start_x = center_j * 9 * size;
 
     const int iz2 = 1;
     const int iy2 = am1 + 3;
@@ -524,17 +522,12 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
     const int jy2 = am2 + 3;
     const int jx2 = jy2 * jy2;
 
-//    outfile->Printf( "il1 %d im1 %d in1 %d\n", ix1, iy1, iz1);
-//    outfile->Printf( "jl1 %d jm1 %d jn1 %d\n", jx1, jy1, jz1);
-//    outfile->Printf( "il2 %d im2 %d in2 %d\n", ix2, iy2, iz2);
-//    outfile->Printf( "jl2 %d jm2 %d jn2 %d\n", jx2, jy2, jz2);
-
     double AB2 = 0.0;
     AB2 += (A[0] - B[0]) * (A[0] - B[0]);
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, 3*3*natom_*natom_ * size * sizeof(double));
+    memset(buffer_, 0, 27*natom_ * size * sizeof(double));
 
     double ***vi = potential_recur_->vi();
     double ***vx = potential_recur_->vx();
@@ -546,9 +539,6 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
     double ***vyy = potential_recur_->vyy();
     double ***vyz = potential_recur_->vyz();
     double ***vzz = potential_recur_->vzz();
-
-    double** Zxyzp = Zxyz_->pointer();
-    int ncharge = Zxyz_->rowspi()[0];
 
     for (int p1=0; p1<nprim1; ++p1) {
         double a1 = s1.exp(p1);
@@ -573,677 +563,204 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
 
             double over_pf = exp(-a1*a2*AB2*oog) * sqrt(M_PI*oog) * M_PI * oog * c1 * c2;
 
-            // Loop over atoms of basis set 1 (only works if bs1_ and bs2_ are on the same
-            // molecule)
-            for (int center_c=0; center_c<ncharge; ++center_c) {
-                double PC[3];
+            /*
+             *  Make sure that origin has been set before this function is called!
+             */
+            double PC[3];
+            PC[0] = P[0] - origin_[0];
+            PC[1] = P[1] - origin_[1];
+            PC[2] = P[2] - origin_[2];
 
-                double Z = Zxyzp[center_c][0];
+            // Do recursion
+            potential_recur_->compute(PA, PB, PC, gamma, am1+2, am2+2);
 
-                PC[0] = P[0] - Zxyzp[center_c][1];
-                PC[1] = P[1] - Zxyzp[center_c][2];
-                PC[2] = P[2] - Zxyzp[center_c][3];
+            ao12 = 0;
+            for(int ii = 0; ii <= am1; ii++) {
+                int l1 = am1 - ii;
+                for(int jj = 0; jj <= ii; jj++) {
+                    int m1 = ii - jj;
+                    int n1 = jj;
+                    /*--- create all am components of sj ---*/
+                    for(int kk = 0; kk <= am2; kk++) {
+                        int l2 = am2 - kk;
+                        for(int ll = 0; ll <= kk; ll++) {
+                            int m2 = kk - ll;
+                            int n2 = ll;
 
-                // Do recursion
-                potential_recur_->compute(PA, PB, PC, gamma, am1+2, am2+2);
+                            // Compute location in the recursion
+                            int iind = l1 * ix2 + m1 * iy2 + n1 * iz2;
+                            int jind = l2 * jx2 + m2 * jy2 + n2 * jz2;
 
-                ao12 = 0;
-                for(int ii = 0; ii <= am1; ii++) {
-                    int l1 = am1 - ii;
-                    for(int jj = 0; jj <= ii; jj++) {
-                        int m1 = ii - jj;
-                        int n1 = jj;
-                        /*--- create all am components of sj ---*/
-                        for(int kk = 0; kk <= am2; kk++) {
-                            int l2 = am2 - kk;
-                            for(int ll = 0; ll <= kk; ll++) {
-                                int m2 = kk - ll;
-                                int n2 = ll;
+                            const double pfac = over_pf;
 
-                                // Compute location in the recursion
-                                int iind = l1 * ix2 + m1 * iy2 + n1 * iz2;
-                                int jind = l2 * jx2 + m2 * jy2 + n2 * jz2;
+                            double v_int = vi[iind][jind][0];
 
-#if VDEBUG
-                                outfile->Printf( "%d %d %d %d %d %d\n", l1, m1, n1, l2, m2, n2);
-                                outfile->Printf( "%lf %lf\n", a1, a2);
-                                outfile->Printf( "iind %d jind %d\n", iind, jind);
-#endif
+                            // V_{\mu\nu}^{c_x a_x}
+                            double temp = 2.0*a1*vx[iind+ix2][jind][0];
+                            if (l1)
+                                temp -= l1*vx[iind-ix2][jind][0];
+                            buffer_[0*size + ao12] -= temp * pfac;
 
-                                const double pfac = over_pf * Z;
+                            // V_{\mu\nu}^{c_x a_y}
+                            temp = 2.0*a1*vx[iind+iy2][jind][0];
+                            if (m1)
+                                temp -= m1*vx[iind-iy2][jind][0];
+                            buffer_[1*size + ao12] -= temp * pfac;
 
-                                double v_int = vi[iind][jind][0];
+                            // V_{\mu\nu}^{c_x a_z}
+                            temp = 2.0*a1*vx[iind+iz2][jind][0];
+                            if (n1)
+                                temp -= n1*vx[iind-iz2][jind][0];
+                            buffer_[2*size + ao12] -= temp * pfac;
 
-                                //                                                x,y,z offset
-                                size_t a_x_start = 9 * natom_ * center_i * size + 0 * size;
-                                size_t a_y_start = 9 * natom_ * center_i * size + 3 * size;
-                                size_t a_z_start = 9 * natom_ * center_i * size + 6 * size;
+                            // V_{\mu\nu}^{c_y a_x}
+                            temp = 2.0*a1*vy[iind+ix2][jind][0];
+                            if (l1)
+                                temp -= l1*vy[iind-ix2][jind][0];
+                            buffer_[3*size + ao12] -= temp * pfac;
 
-                                size_t b_x_start = 9 * natom_ * center_j * size + 0 * size;
-                                size_t b_y_start = 9 * natom_ * center_j * size + 3 * size;
-                                size_t b_z_start = 9 * natom_ * center_j * size + 6 * size;
+                            // V_{\mu\nu}^{c_y a_y}
+                            temp = 2.0*a1*vy[iind+iy2][jind][0];
+                            if (m1)
+                                temp -= m1*vy[iind-iy2][jind][0];
+                            buffer_[4*size + ao12] -= temp * pfac;
 
-                                size_t c_x_start = 9 * natom_ * center_c * size + 0 * size;
-                                size_t c_y_start = 9 * natom_ * center_c * size + 3 * size;
-                                size_t c_z_start = 9 * natom_ * center_c * size + 6 * size;
+                            // V_{\mu\nu}^{c_y a_z}
+                            temp =  2.0*a1*vy[iind+iz2][jind][0];
+                            if (n1)
+                                temp -= n1*vy[iind-iz2][jind][0];
+                            buffer_[5*size + ao12] -= temp * pfac;
 
-                                // V_{\mu\nu}^{a_x a_x}
-                                double temp = 0.0;
-                                temp += 4.0*a1*a1*vi[iind+ix2+ix2][jind][0] - 2.0*a1*(2*l1+1)*v_int;
-                                if (l1 > 1)
-                                    temp += l1*(l1-1)*vi[iind-ix2-ix2][jind][0];
-                                //      center ax   center ax              x,y,z       ao offset
-                                buffer_[a_x_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "axax ax %d ax %d contrib %20.14lf\n", 3*center_i, 3*center_i, temp * pfac);
-                                outfile->Printf( "4a1 = %lf, 2a1 = %lf\n", 4.0*a1*a1*vi[iind+ix2+ix2][jind][0],  2.0*a1*(2*l1+1)*v_int);
-#endif
+                            // V_{\mu\nu}^{c_z a_x}
+                            temp = 2.0*a1*vz[iind+ix2][jind][0];
+                            if (l1)
+                                temp -= l1*vz[iind-ix2][jind][0];
+                            buffer_[6*size + ao12] -= temp * pfac;
 
-                                // V_{\mu\nu}^{a_x a_y}
-                                temp = 0.0;
-                                temp += 4.0*a1*a1*vi[iind+iy2+ix2][jind][0];
-                                if (l1)
-                                    temp -= 2.0*l1*a1*vi[iind-ix2+iy2][jind][0];
-                                if (m1)
-                                    temp -= 2.0*m1*a1*vi[iind+ix2-iy2][jind][0];
-                                if (l1 && m1)
-                                    temp += l1*m1*vi[iind-ix2-iy2][jind][0];
-                                //      center ax   center ay              x,y,z       ao offset
-                                buffer_[a_x_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
-                                //      center ay   center ax              x,y,z       ao offset
-                                buffer_[a_y_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "axay ax %d ay %d contrib %20.14lf\n", 3*center_i, 3*center_i+1, temp * pfac);
-#endif
+                            // V_{\mu\nu}^{c_z a_y}
+                            temp = 2.0*a1*vz[iind+iy2][jind][0];
+                            if (m1)
+                                temp -= m1*vz[iind-iy2][jind][0];
+                            buffer_[7*size + ao12] -= temp * pfac;
 
-                                // V_{\mu\nu}^{a_x a_z}
-                                temp = 0.0;
-                                temp += 4.0*a1*a1*vi[iind+iz2+ix2][jind][0];
-                                if (l1)
-                                    temp -= 2.0*l1*a1*vi[iind-ix2+iz2][jind][0];
-                                if (n1)
-                                    temp -= 2.0*n1*a1*vi[iind+ix2-iz2][jind][0];
-                                if (l1 && n1)
-                                    temp += l1*n1*vi[iind-ix2-iz2][jind][0];
-                                //      center ax   center az              x,y,z       ao offset
-                                buffer_[a_x_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
-                                //      center az   center ax              x,y,z       ao offset
-                                buffer_[a_z_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "axaz ax %d az %d contrib %20.14lf\n", 3*center_i, 3*center_i+2, temp * pfac);
-#endif
+                            // V_{\mu\nu}^{c_z a_z}
+                            temp = 2.0*a1*vz[iind+iz2][jind][0];
+                            if (n1)
+                                temp -= n1*vz[iind-iz2][jind][0];
+                            buffer_[8*size + ao12] -= temp * pfac;
 
-                                // V_{\mu\nu}^{a_y a_y}
-                                temp = 0.0;
-                                temp += 4.0*a1*a1*vi[iind+iy2+iy2][jind][0] - 2.0*a1*(2*m1+1)*v_int;
-                                if (m1 > 1)
-                                    temp += m1*(m1-1)*vi[iind-iy2-iy2][jind][0];
-                                //      center ay   center ay              x,y,z       ao offset
-                                buffer_[a_y_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "ayay ay %d ay %d contrib %20.14lf\n", 3*center_i+1, 3*center_i+1, temp * pfac);
-#endif
+                            // V_{\mu\nu}^{a_x a_x}
+                            temp = 4.0*a1*a1*vi[iind+ix2+ix2][jind][0] - 2.0*a1*(2*l1+1)*v_int;
+                            if (l1 > 1)
+                                temp += l1*(l1-1)*vi[iind-ix2-ix2][jind][0];
+                            buffer_[9*size + ao12] -= temp * pfac;
 
-                                // V_{\mu\nu}^{a_y a_z}
-                                temp = 0.0;
-                                temp += 4.0*a1*a1*vi[iind+iy2+iz2][jind][0];
-                                if (m1)
-                                    temp -= 2.0*m1*a1*vi[iind-iy2+iz2][jind][0];
-                                if (n1)
-                                    temp -= 2.0*n1*a1*vi[iind+iy2-iz2][jind][0];
-                                if (m1 && n1)
-                                    temp += m1*n1*vi[iind-iy2-iz2][jind][0];
-                                //      center ay   center az              x,y,z       ao offset
-                                buffer_[a_y_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
-                                //      center az   center ay              x,y,z       ao offset
-                                buffer_[a_z_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "ayaz ay %d az %d contrib %20.14lf\n", 3*center_i+1, 3*center_i+2, temp * pfac);
-#endif
+                            // V_{\mu\nu}^{a_x a_y}
+                            temp = 4.0*a1*a1*vi[iind+iy2+ix2][jind][0];
+                            if (l1)
+                                temp -= 2.0*l1*a1*vi[iind-ix2+iy2][jind][0];
+                            if (m1)
+                                temp -= 2.0*m1*a1*vi[iind+ix2-iy2][jind][0];
+                            if (l1 && m1)
+                                temp += l1*m1*vi[iind-ix2-iy2][jind][0];
+                            buffer_[10*size + ao12] -= temp * pfac;
 
-                                // V_{\mu\nu}^{a_z a_z}
-                                temp = 0.0;
-                                temp += 4.0*a1*a1*vi[iind+iz2+iz2][jind][0] - 2.0*a1*(2*n1+1)*v_int;
-                                if (n1 > 1)
-                                    temp += n1*(n1-1)*vi[iind-iz2-iz2][jind][0];
-                                //      center az   center az              x,y,z       ao offset
-                                buffer_[a_z_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "azaz az %d az %d contrib %20.14lf\n", 3*center_i+2, 3*center_i+2, temp * pfac);
-#endif
+                            // V_{\mu\nu}^{a_x a_z}
+                            temp = 4.0*a1*a1*vi[iind+iz2+ix2][jind][0];
+                            if (l1)
+                                temp -= 2.0*l1*a1*vi[iind-ix2+iz2][jind][0];
+                            if (n1)
+                                temp -= 2.0*n1*a1*vi[iind+ix2-iz2][jind][0];
+                            if (l1 && n1)
+                                temp += l1*n1*vi[iind-ix2-iz2][jind][0];
+                            buffer_[11*size + ao12] -= temp * pfac;
 
-                                // V_{\mu\nu}^{b_x b_x}
-                                temp = 0.0;
-                                temp += 4.0*a2*a2*vi[iind][jind+jx2+jx2][0] - 2.0*a2*(2*l2+1)*v_int;
-                                if (l2 > 1)
-                                    temp += l2*(l2-1)*vi[iind][jind-jx2-jx2][0];
-                                //      center bx   center bx              x,y,z       ao offset
-                                buffer_[b_x_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "bxbx bx %d bx %d contrib %20.14lf\n", 3*center_j+0, 3*center_j+0, temp * pfac);
-#endif
+                            // V_{\mu\nu}^{a_y a_y}
+                            temp = 4.0*a1*a1*vi[iind+iy2+iy2][jind][0] - 2.0*a1*(2*m1+1)*v_int;
+                            if (m1 > 1)
+                                temp += m1*(m1-1)*vi[iind-iy2-iy2][jind][0];
+                            buffer_[12*size + ao12] -= temp * pfac;
 
-                                // V_{\mu\nu}^{b_x b_y}
-                                temp = 0.0;
-                                temp += 4.0*a2*a2*vi[iind][jind+jx2+jy2][0];
-                                if (l2)
-                                    temp -= 2.0*l2*a2*vi[iind][jind-jx2+jy2][0];
-                                if (m2)
-                                    temp -= 2.0*m2*a2*vi[iind][jind+jx2-jy2][0];
-                                if (l2 && m2)
-                                    temp += l2*m2*vi[iind][jind-jx2-jy2][0];
-                                //      center bx   center by              x,y,z       ao offset
-                                buffer_[b_x_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
-                                //      center by   center bx              x,y,z       ao offset
-                                buffer_[b_x_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "bxby bx %d by %d contrib %20.14lf\n", 3*center_j+0, 3*center_j+1, temp * pfac);
-#endif
+                            // V_{\mu\nu}^{a_y a_z}
+                            temp = 4.0*a1*a1*vi[iind+iy2+iz2][jind][0];
+                            if (m1)
+                                temp -= 2.0*m1*a1*vi[iind-iy2+iz2][jind][0];
+                            if (n1)
+                                temp -= 2.0*n1*a1*vi[iind+iy2-iz2][jind][0];
+                            if (m1 && n1)
+                                temp += m1*n1*vi[iind-iy2-iz2][jind][0];
+                            buffer_[13*size + ao12] -= temp * pfac;
 
-                                // V_{\mu\nu}^{b_x b_z}
-                                temp = 0.0;
-                                temp += 4.0*a2*a2*vi[iind][jind+jx2+jz2][0];
-                                if (l2)
-                                    temp -= 2.0*l2*a2*vi[iind][jind-jx2+jz2][0];
-                                if (n2)
-                                    temp -= 2.0*n2*a2*vi[iind][jind+jx2-jz2][0];
-                                if (l2 && n2)
-                                    temp += l2*n2*vi[iind][jind-jx2-jz2][0];
-                                //      center bx   center bz              x,y,z       ao offset
-                                buffer_[b_x_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
-                                //      center bz   center bx              x,y,z       ao offset
-                                buffer_[b_z_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "bxbz bx %d bz %d contrib %20.14lf\n", 3*center_j+0, 3*center_j+2, temp * pfac);
-#endif
+                            // V_{\mu\nu}^{a_z a_z}
+                            temp = 4.0*a1*a1*vi[iind+iz2+iz2][jind][0] - 2.0*a1*(2*n1+1)*v_int;
+                            if (n1 > 1)
+                                temp += n1*(n1-1)*vi[iind-iz2-iz2][jind][0];
+                            buffer_[14*size + ao12] -= temp * pfac;
 
-                                // V_{\mu\nu}^{b_y b_y}
-                                temp = 0.0;
-                                temp += 4.0*a2*a2*vi[iind][jind+jy2+jy2][0] - 2.0*a2*(2*m2+1)*v_int;
-                                //outfile->Printf( "byby iind %d jind %d jy2 %d m2 %d v_int %lf vi %lf\n", iind, jind, jy2, m2, v_int, vi[iind][jind+jy2+jy2][0]);
-                                if (m2 > 1)
-                                    temp -= m2*(m2-1)*vi[iind][jind-jy2-jy2][0];
-                                //      center by   center by              x,y,z       ao offset
-                                buffer_[b_y_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "byby by %d by %d contrib %20.14lf\n", 3*center_j+1, 3*center_j+1, temp * pfac);
-#endif
+                            // V_{\mu\nu}^{b_x b_x}
+                            temp = 4.0*a2*a2*vi[iind][jind+jx2+jx2][0] - 2.0*a2*(2*l2+1)*v_int;
+                            if (l2 > 1)
+                                temp += l2*(l2-1)*vi[iind][jind-jx2-jx2][0];
+                            buffer_[15*size + ao12] -= temp * pfac;
 
-                                // V_{\mu\nu}^{b_y b_z}
-                                temp = 0.0;
-                                temp += 4.0*a2*a2*vi[iind][jind+jy2+jz2][0];
-                                if (m2)
-                                    temp -= 2.0*m2*a2*vi[iind][jind-jy2+jz2][0];
-                                if (n2)
-                                    temp -= 2.0*n2*a2*vi[iind][jind+jy2-jz2][0];
-                                if (m2 && n2)
-                                    temp += m2*n2*vi[iind][jind-jy2-jz2][0];
-                                //      center by   center bz              x,y,z       ao offset
-                                buffer_[b_y_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
-                                //      center bz   center by              x,y,z       ao offset
-                                buffer_[b_z_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "bybz by %d bz %d contrib %20.14lf\n", 3*center_j+1, 3*center_j+2, temp * pfac);
-#endif
+                            // V_{\mu\nu}^{b_x b_y}
+                            temp = 4.0*a2*a2*vi[iind][jind+jx2+jy2][0];
+                            if (l2)
+                                temp -= 2.0*l2*a2*vi[iind][jind-jx2+jy2][0];
+                            if (m2)
+                                temp -= 2.0*m2*a2*vi[iind][jind+jx2-jy2][0];
+                            if (l2 && m2)
+                                temp += l2*m2*vi[iind][jind-jx2-jy2][0];
+                            buffer_[16*size + ao12] -= temp * pfac;
 
-                                // V_{\mu\nu}^{b_z b_z}
-                                temp = 0.0;
-                                temp += 4.0*a2*a2*vi[iind][jind+jz2+jz2][0] - 2.0*a2*(2*n2+1)*v_int;
-                                if (n2 > 1)
-                                    temp -= n2*(n2-1)*vi[iind][jind-jz2-jz2][0];
-                                //      center bz   center bz              x,y,z       ao offset
-                                buffer_[b_z_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "bzbz bz %d bz %d contrib %20.14lf\n", 3*center_j+2, 3*center_j+2, temp * pfac);
-#endif
+                            // V_{\mu\nu}^{b_x b_z}
+                            temp = 4.0*a2*a2*vi[iind][jind+jx2+jz2][0];
+                            if (l2)
+                                temp -= 2.0*l2*a2*vi[iind][jind-jx2+jz2][0];
+                            if (n2)
+                                temp -= 2.0*n2*a2*vi[iind][jind+jx2-jz2][0];
+                            if (l2 && n2)
+                                temp += l2*n2*vi[iind][jind-jx2-jz2][0];
+                            buffer_[17*size + ao12] -= temp * pfac;
 
-                                // V_{\mu\nu}^{a_x b_x}
-                                temp = 0.0;
-                                temp += 4.0*a1*a2*vi[iind+ix2][jind+jx2][0];
-                                if (l1)
-                                    temp -= 2.0*a2*l1*vi[iind-ix2][jind+jx2][0];
-                                if (l2)
-                                    temp -= 2.0*a1*l2*vi[iind+ix2][jind-jx2][0];
-                                if (l1 && l2)
-                                    temp += l1*l2*vi[iind-ix2][jind-jx2][0];
-                                if (center_i == center_j)
-                                    temp *= 2.0;
-                                //      center ax   center bx              x,y,z       ao offset
-                                buffer_[a_x_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
-                                //      center bx   center ax              x,y,z       ao offset
-                                buffer_[b_x_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "axbx ax %d bx %d contrib %20.14lf\n", 3*center_i+0, 3*center_j+0, temp * pfac);
-#endif
+                            // V_{\mu\nu}^{b_y b_y}
+                            temp = 4.0*a2*a2*vi[iind][jind+jy2+jy2][0] - 2.0*a2*(2*m2+1)*v_int;
+                            if (m2 > 1)
+                                temp += m2*(m2-1)*vi[iind][jind-jy2-jy2][0];
+                            if (m2 > 1)
+                            buffer_[18*size + ao12] -= temp * pfac;
 
-                                // V_{\mu\nu}^{a_x b_y}
-                                temp = 0.0;
-                                temp += 4.0*a1*a2*vi[iind+ix2][jind+jy2][0];
-                                if (l1)
-                                    temp -= 2.0*a2*l1*vi[iind-ix2][jind+jy2][0];
-                                if (m2)
-                                    temp -= 2.0*a1*m2*vi[iind+ix2][jind-jy2][0];
-                                if (l1 && m2)
-                                    temp += l1*m2*vi[iind-ix2][jind-jy2][0];
-                                //      center ax   center by              x,y,z       ao offset
-                                buffer_[a_x_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
-                                //      center by   center ax              x,y,z       ao offset
-                                buffer_[b_y_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "axby ax %d by %d contrib %20.14lf\n", 3*center_i+0, 3*center_j+1, temp * pfac);
-#endif
+                            // V_{\mu\nu}^{b_y b_z}
+                            temp = 4.0*a2*a2*vi[iind][jind+jy2+jz2][0];
+                            if (m2)
+                                temp -= 2.0*m2*a2*vi[iind][jind-jy2+jz2][0];
+                            if (n2)
+                                temp -= 2.0*n2*a2*vi[iind][jind+jy2-jz2][0];
+                            if (m2 && n2)
+                                temp += m2*n2*vi[iind][jind-jy2-jz2][0];
+                            buffer_[19*size + ao12] -= temp * pfac;
 
-                                // V_{\mu\nu}^{a_x b_z}
-                                temp = 0.0;
-                                temp += 4.0*a1*a2*vi[iind+ix2][jind+jz2][0];
-                                if (l1)
-                                    temp -= 2.0*a2*l1*vi[iind-ix2][jind+jz2][0];
-                                if (n2)
-                                    temp -= 2.0*a1*n2*vi[iind+ix2][jind-jz2][0];
-                                if (l1 && n2)
-                                    temp += l1*n2*vi[iind-ix2][jind-jz2][0];
-                                //      center ax   center bz              x,y,z       ao offset
-                                buffer_[a_x_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
-                                //      center bz   center ax              x,y,z       ao offset
-                                buffer_[b_z_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "axbz ax %d bz %d contrib %20.14lf\n", 3*center_i+0, 3*center_j+2, temp * pfac);
-#endif
+                            // V_{\mu\nu}^{b_z b_z}
+                            temp = 4.0*a2*a2*vi[iind][jind+jz2+jz2][0] - 2.0*a2*(2*n2+1)*v_int;
+                            if (n2 > 1)
+                                temp += n2*(n2-1)*vi[iind][jind-jz2-jz2][0];
+                            buffer_[20*size + ao12] -= temp * pfac;
 
-                                // V_{\mu\nu}^{a_y b_x}
-                                temp = 0.0;
-                                temp += 4.0*a1*a2*vi[iind+iy2][jind+jx2][0];
-                                if (m1)
-                                    temp -= 2.0*a2*m1*vi[iind-iy2][jind+jx2][0];
-                                if (l2)
-                                    temp -= 2.0*a1*l2*vi[iind+iy2][jind-jx2][0];
-                                if (m1 && l2)
-                                    temp += m1*l2*vi[iind-iy2][jind-jx2][0];
-                                //      center ay   center bx              x,y,z       ao offset
-                                buffer_[a_y_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
-                                //      center bx   center ay              x,y,z       ao offset
-                                buffer_[b_x_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "aybx ay %d bx %d contrib %20.14lf\n", 3*center_i+1, 3*center_j+0, temp * pfac);
-#endif
 
-                                // V_{\mu\nu}^{a_y b_y}
-                                temp = 0.0;
-                                temp += 4.0*a1*a2*vi[iind+iy2][jind+jy2][0];
-                                if (m1)
-                                    temp -= 2.0*a2*m1*vi[iind-iy2][jind+jy2][0];
-                                if (m2)
-                                    temp -= 2.0*a1*m2*vi[iind+iy2][jind-jy2][0];
-                                if (m1 && m2)
-                                    temp += m1*m2*vi[iind-iy2][jind-jy2][0];
-                                if (center_i == center_j)
-                                    temp *= 2.0;
-                                //      center ay   center by              x,y,z       ao offset
-                                buffer_[a_y_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
-                                //      center by   center ay              x,y,z       ao offset
-                                buffer_[b_y_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "ayby ay %d by %d contrib %20.14lf\n", 3*center_i+1, 3*center_j+1, temp * pfac);
-#endif
+                            // V_{\mu\nu}^{c_x c_x}
+                            buffer_[21*size + ao12] -= vxx[iind][jind][0] * pfac;
+                            // V_{\mu\nu}^{c_x c_y}
+                            buffer_[22*size + ao12] -= vxy[iind][jind][0] * pfac;
+                            // V_{\mu\nu}^{c_x c_z}
+                            buffer_[23*size + ao12] -= vxz[iind][jind][0] * pfac;
+                            // V_{\mu\nu}^{c_y c_y}
+                            buffer_[24*size + ao12] -= vyy[iind][jind][0] * pfac;
+                            // V_{\mu\nu}^{c_y c_z}
+                            buffer_[25*size + ao12] -= vyz[iind][jind][0] * pfac;
+                            // V_{\mu\nu}^{c_z c_z}
+                            buffer_[26*size + ao12] -= vzz[iind][jind][0] * pfac;
 
-                                // V_{\mu\nu}^{a_y b_z}
-                                temp = 0.0;
-                                temp += 4.0*a1*a2*vi[iind+iy2][jind+jz2][0];
-                                if (m1)
-                                    temp -= 2.0*a2*m1*vi[iind-iy2][jind+jz2][0];
-                                if (n2)
-                                    temp -= 2.0*a1*n2*vi[iind+iy2][jind-jz2][0];
-                                if (m1 && n2)
-                                    temp += m1*n2*vi[iind-iy2][jind-jz2][0];
-                                //      center ay   center bz              x,y,z       ao offset
-                                buffer_[a_y_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
-                                //      center bz   center ay              x,y,z       ao offset
-                                buffer_[b_z_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "aybz ay %d bz %d contrib %20.14lf\n", 3*center_i+1, 3*center_j+2, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{a_z b_x}
-                                temp = 0.0;
-                                temp += 4.0*a1*a2*vi[iind+iz2][jind+jx2][0];
-                                if (n1)
-                                    temp -= 2.0*a2*n1*vi[iind-iz2][jind+jx2][0];
-                                if (l2)
-                                    temp -= 2.0*a1*l2*vi[iind+iz2][jind-jx2][0];
-                                if (n1 && l2)
-                                    temp += n1*l2*vi[iind-iz2][jind-jx2][0];
-                                //      center az   center bx              x,y,z       ao offset
-                                buffer_[a_z_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
-                                //      center bx   center az              x,y,z       ao offset
-                                buffer_[b_x_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "azbx az %d bx %d contrib %20.14lf\n", 3*center_i+2, 3*center_j+0, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{a_z b_y}
-                                temp = 0.0;
-                                temp += 4.0*a1*a2*vi[iind+iz2][jind+jy2][0];
-                                if (n1)
-                                    temp -= 2.0*a2*n1*vi[iind-iz2][jind+jy2][0];
-                                if (m2)
-                                    temp -= 2.0*a1*m2*vi[iind+iz2][jind-jy2][0];
-                                if (n1 && m2)
-                                    temp += n1*m2*vi[iind-iz2][jind-jy2][0];
-                                //      center az   center by              x,y,z       ao offset
-                                buffer_[a_z_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
-                                //      center by   center az              x,y,z       ao offset
-                                buffer_[b_y_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "azby az %d by %d contrib %20.14lf\n", 3*center_i+2, 3*center_j+1, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{a_z b_z}
-                                temp = 0.0;
-                                temp += 4.0*a1*a2*vi[iind+iz2][jind+jz2][0];
-                                if (n1)
-                                    temp -= 2.0*a2*n1*vi[iind-iz2][jind+jz2][0];
-                                if (n2)
-                                    temp -= 2.0*a1*n2*vi[iind+iz2][jind-jz2][0];
-                                if (n1 && n2)
-                                    temp += n1*n2*vi[iind-iz2][jind-jz2][0];
-                                if (center_i == center_j)
-                                    temp *= 2.0;
-                                //      center az   center bz              x,y,z       ao offset
-                                buffer_[a_z_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
-                                //      center bz   center az              x,y,z       ao offset
-                                buffer_[b_z_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "azbz az %d bz %d contrib %20.14lf\n", 3*center_i+2, 3*center_j+2, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_x a_x}
-                                temp = 0.0;
-                                temp += 2.0*a1*vx[iind+ix2][jind][0];
-                                if (l1)
-                                    temp -= l1*vx[iind-ix2][jind][0];
-                                if (center_i == center_c)
-                                    temp *= 2.0;
-                                //      center cx   center ax              x,y,z       ao offset
-                                buffer_[c_x_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
-                                //      center ax   center cx              x,y,z       ao offset
-                                buffer_[a_x_start + (3 * center_c * size + 0 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "cxax cx %d ax %d contrib %20.14lf\n", 3*center_c+0, 3*center_i+0, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_x a_y}
-                                temp = 0.0;
-                                temp += 2.0*a1*vx[iind+iy2][jind][0];
-                                if (m1)
-                                    temp -= m1*vx[iind-iy2][jind][0];
-                                //      center cx   center ay              x,y,z       ao offset
-                                buffer_[c_x_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
-                                //      center ay   center cx              x,y,z       ao offset
-                                buffer_[a_y_start + (3 * center_c * size + 0 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "cxay cx %d ay %d contrib %20.14lf\n", 3*center_c+0, 3*center_i+1, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_x a_z}
-                                temp = 0.0;
-                                temp += 2.0*a1*vx[iind+iz2][jind][0];
-                                if (n1)
-                                    temp -= n1*vx[iind-iz2][jind][0];
-                                //      center cx   center az              x,y,z       ao offset
-                                buffer_[c_x_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
-                                //      center az   center cx              x,y,z       ao offset
-                                buffer_[a_z_start + (3 * center_c * size + 0 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "cxaz cx %d az %d contrib %20.14lf\n", 3*center_c+0, 3*center_i+2, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_y a_x}
-                                temp = 0.0;
-                                temp += 2.0*a1*vy[iind+ix2][jind][0];
-                                if (l1)
-                                    temp -= l1*vy[iind-ix2][jind][0];
-                                //      center cy   center ax              x,y,z       ao offset
-                                buffer_[c_y_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
-                                //      center ax   center cy              x,y,z       ao offset
-                                buffer_[a_x_start + (3 * center_c * size + 1 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "cyax cy %d ax %d contrib %20.14lf\n", 3*center_c+1, 3*center_i+0, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_y a_y}
-                                temp = 0.0;
-                                temp += 2.0*a1*vy[iind+iy2][jind][0];
-                                if (m1)
-                                    temp -= m1*vy[iind-iy2][jind][0];
-                                if (center_i == center_c)
-                                    temp *= 2.0;
-                                //      center cy   center ay              x,y,z       ao offset
-                                buffer_[c_y_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
-                                //      center ay   center cy              x,y,z       ao offset
-                                buffer_[a_y_start + (3 * center_c * size + 1 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "cyay cy %d ay %d contrib %20.14lf\n", 3*center_c+1, 3*center_i+1, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_y a_z}
-                                temp = 0.0;
-                                temp += 2.0*a1*vy[iind+iz2][jind][0];
-                                if (n1)
-                                    temp -= n1*vy[iind-iz2][jind][0];
-                                //      center cy   center az              x,y,z       ao offset
-                                buffer_[c_y_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
-                                //      center az   center cy              x,y,z       ao offset
-                                buffer_[a_z_start + (3 * center_c * size + 1 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "cyaz cy %d az %d contrib %20.14lf\n", 3*center_c+1, 3*center_i+2, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_z a_x}
-                                temp = 0.0;
-                                temp += 2.0*a1*vz[iind+ix2][jind][0];
-                                if (l1)
-                                    temp -= l1*vz[iind-ix2][jind][0];
-                                //      center cz   center ax              x,y,z       ao offset
-                                buffer_[c_z_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
-                                //      center ax   center cz              x,y,z       ao offset
-                                buffer_[a_x_start + (3 * center_c * size + 2 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "czax cz %d ax %d contrib %20.14lf\n", 3*center_c+2, 3*center_i+0, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_z a_y}
-                                temp = 0.0;
-                                temp += 2.0*a1*vz[iind+iy2][jind][0];
-                                if (m1)
-                                    temp -= m1*vz[iind-iy2][jind][0];
-                                //      center cz   center ay              x,y,z       ao offset
-                                buffer_[c_z_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
-                                //      center ay   center cz              x,y,z       ao offset
-                                buffer_[a_y_start + (3 * center_c * size + 2 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "czay cz %d ay %d contrib %20.14lf\n", 3*center_c+2, 3*center_i+1, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_z a_z}
-                                temp = 0.0;
-                                temp += 2.0*a1*vz[iind+iz2][jind][0];
-                                if (n1)
-                                    temp -= n1*vz[iind-iz2][jind][0];
-                                if (center_i == center_c)
-                                    temp *= 2.0;
-                                //      center cz   center az              x,y,z       ao offset
-                                buffer_[c_z_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
-                                //      center az   center zz              x,y,z       ao offset
-                                buffer_[a_z_start + (3 * center_c * size + 2 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "czaz cz %d az %d contrib %20.14lf\n", 3*center_c+2, 3*center_i+2, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_x b_x}
-                                temp = 0.0;
-                                temp += 2.0*a2*vx[iind][jind+jx2][0];
-                                if (l2)
-                                    temp -= l2*vx[iind][jind-jx2][0];
-                                if (center_j == center_c)
-                                    temp *= 2.0;
-                                //      center cx   center bx              x,y,z       ao offset
-                                buffer_[c_x_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
-                                //      center bx   center cx              x,y,z       ao offset
-                                buffer_[b_x_start + (3 * center_c * size + 0 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "cxbx cx %d bx %d contrib %20.14lf\n", 3*center_c+2, 3*center_j+0, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_x b_y}
-                                temp = 0.0;
-                                temp += 2.0*a2*vx[iind][jind+jy2][0];
-                                if (m2)
-                                    temp -= m2*vx[iind][jind-jy2][0];
-                                //      center cx   center by              x,y,z       ao offset
-                                buffer_[c_x_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
-                                //      center by   center cx              x,y,z       ao offset
-                                buffer_[b_y_start + (3 * center_c * size + 0 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "cxby cx %d by %d contrib %20.14lf\n", 3*center_c+0, 3*center_j+1, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_x b_z}
-                                temp = 0.0;
-                                temp += 2.0*a2*vx[iind][jind+jz2][0];
-                                if (n2)
-                                    temp -= n2*vx[iind][jind-jz2][0];
-                                //      center cx   center bz              x,y,z       ao offset
-                                buffer_[c_x_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
-                                //      center bz   center cx              x,y,z       ao offset
-                                buffer_[b_z_start + (3 * center_c * size + 0 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "cxbz cx %d bz %d contrib %20.14lf\n", 3*center_c+0, 3*center_j+2, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_y b_x}
-                                temp = 0.0;
-                                temp += 2.0*a2*vy[iind][jind+jx2][0];
-                                if (l2)
-                                    temp -= l2*vy[iind][jind-jx2][0];
-                                //      center cy   center bx              x,y,z       ao offset
-                                buffer_[c_y_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
-                                //      center bx   center cy              x,y,z       ao offset
-                                buffer_[b_x_start + (3 * center_c * size + 1 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "cybx cy %d bx %d contrib %20.14lf\n", 3*center_c+1, 3*center_j+0, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_y b_y}
-                                temp = 0.0;
-                                temp += 2.0*a2*vy[iind][jind+jy2][0];
-                                if (m2)
-                                    temp -= m2*vy[iind][jind-jy2][0];
-                                if (center_j == center_c)
-                                    temp *= 2.0;
-                                //      center cy   center by              x,y,z       ao offset
-                                buffer_[c_y_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
-                                //      center by   center cy              x,y,z       ao offset
-                                buffer_[b_y_start + (3 * center_c * size + 1 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "cyby cy %d by %d contrib %20.14lf\n", 3*center_c+1, 3*center_j+1, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_y b_z}
-                                temp = 0.0;
-                                temp += 2.0*a2*vy[iind][jind+jz2][0];
-                                if (n2)
-                                    temp -= n2*vy[iind][jind-jz2][0];
-                                //      center cy   center bz              x,y,z       ao offset
-                                buffer_[c_y_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
-                                //      center bz   center cy              x,y,z       ao offset
-                                buffer_[b_z_start + (3 * center_c * size + 1 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "cybz cy %d bz %d contrib %20.14lf\n", 3*center_c+1, 3*center_j+2, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_z b_x}
-                                temp = 0.0;
-                                temp += 2.0*a2*vz[iind][jind+jx2][0];
-                                if (l2)
-                                    temp -= l2*vz[iind][jind-jx2][0];
-                                //      center cz   center bx              x,y,z       ao offset
-                                buffer_[c_z_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
-                                //      center bx   center cz              x,y,z       ao offset
-                                buffer_[b_x_start + (3 * center_c * size + 2 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "czbx cz %d bx %d contrib %20.14lf\n", 3*center_c+2, 3*center_j+0, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_z b_y}
-                                temp = 0.0;
-                                temp += 2.0*a2*vz[iind][jind+jy2][0];
-                                if (m2)
-                                    temp -= m2*vz[iind][jind-jy2][0];
-                                //      center cz   center by              x,y,z       ao offset
-                                buffer_[c_z_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
-                                //      center by   center cz              x,y,z       ao offset
-                                buffer_[b_y_start + (3 * center_c * size + 2 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "czby cz %d by %d contrib %20.14lf\n", 3*center_c+2, 3*center_j+1, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_z b_z}
-                                temp = 0.0;
-                                temp += 2.0*a2*vz[iind][jind+jz2][0];
-                                if (n2)
-                                    temp -= n2*vz[iind][jind-jz2][0];
-                                if (center_j == center_c)
-                                    temp *= 2.0;
-                                //      center cz   center bz              x,y,z       ao offset
-                                buffer_[c_z_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
-                                //      center bz   center cz              x,y,z       ao offset
-                                buffer_[b_z_start + (3 * center_c * size + 2 * size) + ao12     ] -= temp * pfac;
-#if VDEBUG
-                                outfile->Printf( "czbz cz %d bz %d contrib %20.14lf\n", 3*center_c+2, 3*center_j+2, temp * pfac);
-#endif
-
-                                // V_{\mu\nu}^{c_x c_x}
-                                //      center cx   center cx              x,y,z       ao offset
-                                buffer_[c_x_start + (3 * center_c * size + 0 * size) + ao12     ] -= vxx[iind][jind][0] * pfac;
-#if VDEBUG
-                                outfile->Printf( "cxcx cx %d cx %d contrib %20.14lf\n", 3*center_c+0, 3*center_c+0, vxx[iind][jind][0] * pfac);
-#endif
-                                // V_{\mu\nu}^{c_x c_y}
-                                //      center cx   center cy              x,y,z       ao offset
-                                buffer_[c_x_start + (3 * center_c * size + 1 * size) + ao12     ] -= vxy[iind][jind][0] * pfac;
-                                buffer_[c_y_start + (3 * center_c * size + 0 * size) + ao12     ] -= vxy[iind][jind][0] * pfac;
-#if VDEBUG
-                                outfile->Printf( "cxcy cx %d cy %d contrib %20.14lf\n", 3*center_c+0, 3*center_c+1, vxy[iind][jind][0] * pfac);
-#endif
-                                // V_{\mu\nu}^{c_x c_z}
-                                //      center cx   center cz              x,y,z       ao offset
-                                buffer_[c_x_start + (3 * center_c * size + 2 * size) + ao12     ] -= vxz[iind][jind][0] * pfac;
-                                buffer_[c_z_start + (3 * center_c * size + 0 * size) + ao12     ] -= vxz[iind][jind][0] * pfac;
- #if VDEBUG
-                                outfile->Printf( "cxcz cx %d cz %d contrib %20.14lf\n", 3*center_c+0, 3*center_c+2, vxz[iind][jind][0] * pfac);
-#endif
-                                // V_{\mu\nu}^{c_y c_y}
-                                //      center cy   center cy              x,y,z       ao offset
-                                buffer_[c_y_start + (3 * center_c * size + 1 * size) + ao12     ] -= vyy[iind][jind][0] * pfac;
-#if VDEBUG
-                                outfile->Printf( "cycy cy %d cy %d contrib %20.14lf\n", 3*center_c+1, 3*center_c+1, vyy[iind][jind][0] * pfac);
-#endif
-                                // V_{\mu\nu}^{c_y c_z}
-                                //      center cy   center cz              x,y,z       ao offset
-                                buffer_[c_y_start + (3 * center_c * size + 2 * size) + ao12     ] -= vyz[iind][jind][0] * pfac;
-                                buffer_[c_z_start + (3 * center_c * size + 1 * size) + ao12     ] -= vyz[iind][jind][0] * pfac;
-#if VDEBUG
-                                outfile->Printf( "cycz cy %d cz %d contrib %20.14lf\n", 3*center_c+1, 3*center_c+2, vyz[iind][jind][0] * pfac);
-#endif
-                                // V_{\mu\nu}^{c_z c_z}
-                                //      center cz   center cz              x,y,z       ao offset
-                                buffer_[c_z_start + (3 * center_c * size + 2 * size) + ao12     ] -= vzz[iind][jind][0] * pfac;
-#if VDEBUG
-                                outfile->Printf( "czcz cz %d cz %d contrib %20.14lf\n", 3*center_c+2, 3*center_c+2, vzz[iind][jind][0] * pfac);
-#endif
-
-                                ao12++;
-                            }
+                            ao12++;
                         }
                     }
                 }

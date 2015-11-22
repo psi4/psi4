@@ -624,6 +624,441 @@ SharedMatrix SCFGrad::compute_hessian()
     hessians["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv2().clone());
     hessians["Nuclear"]->set_name("Nuclear Hessian");
 
+    SharedMatrix Zxyz(new Matrix("Zxyz", 1, 4));
+
+    // => Potential Hessian <= //
+    timer_on("Hess: V");
+    {
+        double** Dp = Dt->pointer();
+
+        hessians["Potential"] = SharedMatrix(hessians["Nuclear"]->clone());
+        hessians["Potential"]->set_name("Potential Hessian");
+        hessians["Potential"]->zero();
+        double** Vp = hessians["Potential"]->pointer();
+
+        // Potential energy derivatives
+        boost::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(2));
+        const double* buffer = Vint->buffer();
+
+        for (int P = 0; P < basisset_->nshell(); P++) {
+            const GaussianShell& s1 = basisset_->shell(P);
+            int nP = s1.nfunction();
+            int oP = s1.function_index();
+            int aP = s1.ncenter();
+            int Px = 3 * aP + 0;
+            int Py = 3 * aP + 1;
+            int Pz = 3 * aP + 2;
+            for (int Q = 0; Q <= P; Q++) {
+
+
+                const GaussianShell& s2 = basisset_->shell(Q);
+                int nQ = s2.nfunction();
+                int oQ = s2.function_index();
+                int aQ = s2.ncenter();
+
+                int Qx = 3 * aQ + 0;
+                int Qy = 3 * aQ + 1;
+                int Qz = 3 * aQ + 2;
+
+                double perm = (P == Q ? 1.0 : 2.0);
+
+                size_t offset = nP*nQ;
+#define DEBUGINTS 0
+
+#if DEBUGINTS
+                outfile->Printf("AM1 %d AM2 %d a1 %f a2 %f center1 %d center2 %d\n", s1.am(), s2.am(), s1.exp(0), s2.exp(0), s1.ncenter(), s2.ncenter());
+#endif
+                for(int atom = 0; atom < natom; ++atom){
+                    int Cx = 3 * atom + 0;
+                    int Cy = 3 * atom + 1;
+                    int Cz = 3 * atom + 2;
+
+                    double Z = molecule_->Z(atom);
+                    Vint->set_origin(molecule_->xyz(atom));
+
+                    Vint->compute_shell_deriv2(P,Q);
+
+                    const double *CxAx = buffer +  0*offset;
+                    const double *CxAy = buffer +  1*offset;
+                    const double *CxAz = buffer +  2*offset;
+                    const double *CyAx = buffer +  3*offset;
+                    const double *CyAy = buffer +  4*offset;
+                    const double *CyAz = buffer +  5*offset;
+                    const double *CzAx = buffer +  6*offset;
+                    const double *CzAy = buffer +  7*offset;
+                    const double *CzAz = buffer +  8*offset;
+                    const double *AxAx = buffer +  9*offset;
+                    const double *AxAy = buffer + 10*offset;
+                    const double *AxAz = buffer + 11*offset;
+                    const double *AyAy = buffer + 12*offset;
+                    const double *AyAz = buffer + 13*offset;
+                    const double *AzAz = buffer + 14*offset;
+                    const double *BxBx = buffer + 15*offset;
+                    const double *BxBy = buffer + 16*offset;
+                    const double *BxBz = buffer + 17*offset;
+                    const double *ByBy = buffer + 18*offset;
+                    const double *ByBz = buffer + 19*offset;
+                    const double *BzBz = buffer + 20*offset;
+                    const double *CxCx = buffer + 21*offset;
+                    const double *CxCy = buffer + 22*offset;
+                    const double *CxCz = buffer + 23*offset;
+                    const double *CyCy = buffer + 24*offset;
+                    const double *CyCz = buffer + 25*offset;
+                    const double *CzCz = buffer + 26*offset;
+
+                    double ABscale = (aP == aQ ? 2.0 : 1.0);
+                    double ACscale = (aP == atom ? 2.0 : 1.0);
+                    double BCscale = (aQ == atom ? 2.0 : 1.0);
+
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            double Delem = perm * Z * Dp[p + oP][q + oQ];
+                            double tmpCxAx = Delem * (*CxAx);
+                            double tmpCxAy = Delem * (*CxAy);
+                            double tmpCxAz = Delem * (*CxAz);
+                            double tmpCyAx = Delem * (*CyAx);
+                            double tmpCyAy = Delem * (*CyAy);
+                            double tmpCyAz = Delem * (*CyAz);
+                            double tmpCzAx = Delem * (*CzAx);
+                            double tmpCzAy = Delem * (*CzAy);
+                            double tmpCzAz = Delem * (*CzAz);
+                            double tmpAxAx = Delem * (*AxAx);
+                            double tmpAxAy = Delem * (*AxAy);
+                            double tmpAxAz = Delem * (*AxAz);
+                            double tmpAyAy = Delem * (*AyAy);
+                            double tmpAyAz = Delem * (*AyAz);
+                            double tmpAzAz = Delem * (*AzAz);
+                            double tmpBxBx = Delem * (*BxBx);
+                            double tmpBxBy = Delem * (*BxBy);
+                            double tmpBxBz = Delem * (*BxBz);
+                            double tmpByBy = Delem * (*ByBy);
+                            double tmpByBz = Delem * (*ByBz);
+                            double tmpBzBz = Delem * (*BzBz);
+                            double tmpCxCx = Delem * (*CxCx);
+                            double tmpCxCy = Delem * (*CxCy);
+                            double tmpCxCz = Delem * (*CxCz);
+                            double tmpCyCy = Delem * (*CyCy);
+                            double tmpCyCz = Delem * (*CyCz);
+                            double tmpCzCz = Delem * (*CzCz);
+
+                            /*
+                             * Translational invariance relationship for derivatives w.r.t. centers A, B and C:
+                             *
+                             *     ∂ S   ∂ S   ∂ S
+                             *     --- + --- + ---  =  0
+                             *     ∂ A   ∂ B   ∂ C
+                             *
+                             * Take the derivative again, w.r.t. A, B and C to get relationships like
+                             *
+                             *     ∂^2 S   ∂^2 S   ∂^2 S
+                             *     ----- + ----- + -----  =  0
+                             *     ∂A ∂A   ∂B ∂A   ∂C ∂A
+                             *
+                             * which leads to the identies
+                             *
+                             *     ∂^2 S     ∂^2 S     ∂^2 S     ∂^2 S
+                             *     -----  =  -----  +  -----  -  -----
+                             *     ∂A ∂B     ∂C ∂C     ∂C ∂A     ∂B ∂B
+                             *
+                             * and
+                             *
+                             *     ∂^2 S     ∂^2 S     ∂^2 S     ∂^2 S
+                             *     -----  =  -----  +  -----  -  -----
+                             *     ∂B ∂C     ∂A ∂C     ∂A ∂A     ∂B ∂B
+                             *
+                             * Currently we compute all of the following
+                             *
+                             *     ∂^2 S     ∂^2 S     ∂^2 S     ∂^2 S
+                             *     -----     -----     -----     -----
+                             *     ∂A ∂C     ∂A ∂A     ∂B ∂B     ∂C ∂C
+                             *
+                             * and use the identities above to fill in the gaps
+                             *
+                             */
+#define INCLUDE_VAA 1
+#define INCLUDE_VCA 1
+#define INCLUDE_VCC 1
+
+#if INCLUDE_VAA
+                            // AxAx
+                            Vp[Px][Px] += tmpAxAx;
+#if DEBUGINTS
+                            outfile->Printf("AxAx %20.12f\n", tmpAxAx);
+#endif
+                            // AyAy
+                            Vp[Py][Py] += tmpAyAy;
+#if DEBUGINTS
+                            outfile->Printf("AyAy %20.12f\n", tmpAyAy);
+#endif
+                            // AzAz
+                            Vp[Pz][Pz] += tmpAzAz;
+#if DEBUGINTS
+                            outfile->Printf("AzAz %20.12f\n", tmpAzAz);
+#endif
+                            // AxAy
+                            Vp[Px][Py] += tmpAxAy;
+#if DEBUGINTS
+                            outfile->Printf("AxAy %20.12f\n", tmpAxAy);
+#endif
+                            // AxAz
+                            Vp[Px][Pz] += tmpAxAz;
+#if DEBUGINTS
+                            outfile->Printf("AxAz %20.12f\n", tmpAxAz);
+#endif
+                            // AyAz
+                            Vp[Py][Pz] += -tmpAyAz;
+#if DEBUGINTS
+                            outfile->Printf("AyAz %20.12f\n", tmpAyAz);
+#endif
+                            // BxBx
+                            Vp[Qx][Qx] += tmpBxBx;
+#if DEBUGINTS
+                            outfile->Printf("BxBx %20.12f\n", tmpBxBx);
+#endif
+                            // ByBy
+                            Vp[Qy][Qy] += tmpByBy;
+#if DEBUGINTS
+                            outfile->Printf("ByBy %20.12f\n", tmpByBy);
+#endif
+                            // BzBz
+                            Vp[Qz][Qz] += tmpBzBz;
+#if DEBUGINTS
+                            outfile->Printf("BzBz %20.12f\n", tmpBzBz);
+#endif
+                            // BxBy
+                            Vp[Qx][Qy] += tmpBxBy;
+#if DEBUGINTS
+                            outfile->Printf("BxBy %20.12f\n", tmpBxBy);
+#endif
+                            // BxBz
+                            Vp[Qx][Qz] += tmpBxBz;
+#if DEBUGINTS
+                            outfile->Printf("BxBz %20.12f\n", tmpBxBz);
+#endif
+                            // ByBz
+                            Vp[Qy][Qz] += tmpByBz;
+#if DEBUGINTS
+                            outfile->Printf("ByBz %20.12f\n", tmpByBz);
+#endif
+                            // AxBx
+                            Vp[Px][Qx] += ABscale*(tmpCxCx + tmpCxAx - tmpBxBx);
+#if DEBUGINTS
+                            outfile->Printf("AxBx %20.12f\n", ABscale*(tmpCxCx + tmpCxAx - tmpBxBx));
+#endif
+                            // AxBy
+                            Vp[Px][Qy] += tmpCxCy + tmpCxAy - tmpBxBy;
+#if DEBUGINTS
+                            outfile->Printf("AxBy %20.12f\n", tmpCxCy + tmpCxAy - tmpBxBy);
+#endif
+                            // AxBz
+                            Vp[Px][Qz] += tmpCxCz + tmpCxAz - tmpBxBz;
+#if DEBUGINTS
+                            outfile->Printf("AxBz %20.12f\n", tmpCxCz + tmpCxAz - tmpBxBz);
+#endif
+                            // AyBx
+                            Vp[Py][Qx] += tmpCxCy + tmpCyAx - tmpBxBy;
+#if DEBUGINTS
+                            outfile->Printf("AyBx %20.12f\n", tmpCxCy + tmpCyAx - tmpBxBy);
+#endif
+                            // AyBy
+                            Vp[Py][Qy] += ABscale*(tmpCyCy + tmpCyAy - tmpByBy);
+#if DEBUGINTS
+                            outfile->Printf("AyBy %20.12f\n", ABscale*(tmpCyCy + tmpCyAy - tmpByBy));
+#endif
+                            // AyBz
+                            Vp[Py][Qz] += tmpCyCz + tmpCyAz - tmpByBz;
+#if DEBUGINTS
+                            outfile->Printf("AyBz %20.12f\n", tmpCyCz + tmpCyAz - tmpByBz);
+#endif
+                            // AzBx
+                            Vp[Pz][Qx] += tmpCxCz + tmpCzAx - tmpBxBz;
+#if DEBUGINTS
+                            outfile->Printf("AzBx %20.12f\n", tmpCxCz + tmpCzAx - tmpBxBz);
+#endif
+                            // AzBy
+                            Vp[Pz][Qy] += tmpCyCz + tmpCzAy - tmpByBz;
+#if DEBUGINTS
+                            outfile->Printf("AzBy %20.12f\n", tmpCyCz + tmpCzAy - tmpByBz);
+#endif
+                            // AzBz
+                            Vp[Pz][Qz] += ABscale*(tmpCzCz + tmpCzAz - tmpBzBz);
+#if DEBUGINTS
+                            outfile->Printf("AzBz %20.12f\n", ABscale*(tmpCzCz + tmpCzAz - tmpBzBz));
+#endif
+#endif //VAA
+
+#if INCLUDE_VCA
+                            // CxAx
+                            Vp[Cx][Px] += ACscale*tmpCxAx;
+#if DEBUGINTS
+                            outfile->Printf("CxAx %20.12f\n",  ACscale*tmpCxAx);
+#endif
+                            // CxAy
+                            Vp[Cx][Py] += tmpCxAy;
+#if DEBUGINTS
+                            outfile->Printf("CxAy %20.12f\n",  tmpCxAy);
+#endif
+                            // CxAz
+                            Vp[Cx][Pz] += tmpCxAz;
+#if DEBUGINTS
+                            outfile->Printf("CxAz %20.12f\n",  tmpCxAz);
+#endif
+                            // CyAx
+                            Vp[Cy][Px] += tmpCyAx;
+#if DEBUGINTS
+                            outfile->Printf("CyAx %20.12f\n",  tmpCyAx);
+#endif
+                            // CyAy
+                            Vp[Cy][Py] += ACscale*tmpCyAy;
+#if DEBUGINTS
+                            outfile->Printf("CyAy %20.12f\n",  ACscale*tmpCyAy);
+#endif
+                            // CyAz
+                            Vp[Cy][Pz] += tmpCyAz;
+#if DEBUGINTS
+                            outfile->Printf("CyAz %20.12f\n",  tmpCyAz);
+#endif
+                            // CzAx
+                            Vp[Cz][Px] += tmpCzAx;
+#if DEBUGINTS
+                            outfile->Printf("CzAx %20.12f\n",  tmpCzAx);
+#endif
+                            // CzAy
+                            Vp[Cz][Py] += tmpCzAy;
+#if DEBUGINTS
+                            outfile->Printf("CzAy %20.12f\n",  tmpCzAy);
+#endif
+                            // CzAz
+                            Vp[Cz][Pz] += ACscale*tmpCzAz;
+#if DEBUGINTS
+                            outfile->Printf("CzAz %20.12f\n",  ACscale*tmpCzAz);
+#endif
+                            // CxBx
+                            Vp[Cx][Qx] += BCscale*(tmpCxAx + tmpAxAx - tmpBxBx);
+#if DEBUGINTS
+                            outfile->Printf("CxBx %20.12f\n",  BCscale*(tmpCxAx + tmpAxAx - tmpBxBx));
+#endif
+                            // CxBy
+                            Vp[Cx][Qy] += tmpCyAx + tmpAxAy - tmpBxBy;
+#if DEBUGINTS
+                            outfile->Printf("CxBy %20.12f\n",  tmpCyAx + tmpAxAy - tmpBxBy);
+#endif
+                            // CxBz
+                            Vp[Cx][Qz] += tmpCzAx + tmpAxAz - tmpBxBz;
+#if DEBUGINTS
+                            outfile->Printf("CxBz %20.12f\n",  tmpCzAx + tmpAxAz - tmpBxBz);
+#endif
+                            // CyBx
+                            Vp[Cy][Qx] += tmpCxAy + tmpAxAy - tmpBxBy;
+#if DEBUGINTS
+                            outfile->Printf("CyBx %20.12f\n",  tmpCxAy + tmpAxAy - tmpBxBy);
+#endif
+                            // CyBy
+                            Vp[Cy][Qy] += BCscale*(tmpCyAy + tmpAyAy - tmpByBy);
+#if DEBUGINTS
+                            outfile->Printf("CyBy %20.12f\n",  BCscale*(tmpCyAy + tmpAyAy - tmpByBy));
+#endif
+                            // CyBz
+                            Vp[Cy][Qz] += tmpCzAy + tmpAyAz - tmpByBz;
+#if DEBUGINTS
+                            outfile->Printf("CyBz %20.12f\n",  tmpCzAy + tmpAyAz - tmpByBz);
+#endif
+                            // CzBx
+                            Vp[Cz][Qx] += tmpCxAz + tmpAxAz - tmpBxBz;
+#if DEBUGINTS
+                            outfile->Printf("CzBx %20.12f\n",  tmpCxAz + tmpAxAz - tmpBxBz);
+#endif
+                            // CzBy
+                            Vp[Cz][Qy] += tmpCyAz + tmpAyAz - tmpByBz;
+#if DEBUGINTS
+                            outfile->Printf("CzBy %20.12f\n",  tmpCyAz + tmpAyAz - tmpByBz);
+#endif
+                            // CzBz
+                            Vp[Cz][Qz] += BCscale*(tmpCzAz + tmpAzAz - tmpBzBz);
+#if DEBUGINTS
+                            outfile->Printf("CzBy %20.12f\n",  BCscale*(tmpCzAz + tmpAzAz - tmpBzBz));
+#endif
+
+#endif // VCA
+
+#if INCLUDE_VCC
+                            // CxCx
+                            Vp[Cx][Cx] += tmpCxCx;
+#if DEBUGINTS
+                            outfile->Printf("CxCx %20.12f\n", tmpCxCx);
+#endif
+                            // CyCy
+                            Vp[Cy][Cy] += tmpCyCy;
+#if DEBUGINTS
+                            outfile->Printf("CyCy %20.12f\n", tmpCyCy);
+#endif
+                            // CzCz
+                            Vp[Cz][Cz] += tmpCzCz;
+#if DEBUGINTS
+                            outfile->Printf("CzCz %20.12f\n", tmpCzCz);
+#endif
+                            // CxCy
+                            Vp[Cx][Cy] += tmpCxCy;
+#if DEBUGINTS
+                            outfile->Printf("CxCy %20.12f\n", tmpCxCy);
+#endif
+                            // CxCz
+                            Vp[Cx][Cz] += tmpCxCz;
+#if DEBUGINTS
+                            outfile->Printf("CxCz %20.12f\n", tmpCxCz);
+#endif
+                            // CyCz
+                            Vp[Cy][Cz] += tmpCyCz;
+#if DEBUGINTS
+                            outfile->Printf("CyCz %20.12f\n", tmpCyCz);
+#endif
+
+#endif //VCC
+
+                            ++CxAx;
+                            ++CxAy;
+                            ++CxAz;
+                            ++CyAx;
+                            ++CyAy;
+                            ++CyAz;
+                            ++CzAx;
+                            ++CzAy;
+                            ++CzAz;
+                            ++AxAx;
+                            ++AxAy;
+                            ++AxAz;
+                            ++AyAy;
+                            ++AyAz;
+                            ++AzAz;
+                            ++BxBx;
+                            ++BxBy;
+                            ++BxBz;
+                            ++ByBy;
+                            ++ByBz;
+                            ++BzBz;
+                            ++CxCx;
+                            ++CxCy;
+                            ++CxCz;
+                            ++CyCy;
+                            ++CyCz;
+                            ++CzCz;
+                        }
+                    }
+                }
+            }
+        }
+        // Symmetrize the result
+        int dim = hessians["Potential"]->rowdim();
+        for (int row = 0; row < dim; ++row){
+            for (int col = 0; col < row; ++col){
+                Vp[row][col] = Vp[col][row] = (Vp[row][col] + Vp[col][row]);
+            }
+        }
+        timer_off("Hess: V");
+        hessians["Potential"]->print();
+    }
+
+
     // => Kinetic Hessian <= //
     timer_on("Hess: T");
     {
@@ -770,82 +1205,11 @@ SharedMatrix SCFGrad::compute_hessian()
         }
         timer_off("Hess: T");
         hessians["Kinetic"]->print();
+        SharedMatrix Hcore = hessians["Kinetic"]->clone();
+        Hcore->add(hessians["Potential"]);
+        Hcore->set_name("Core Hamiltonian Hessian");
+        Hcore->print();
     }
-//    // => Potential Hessian <= //
-//    // TODO
-//    timer_on("Hess: V");
-//    {
-//        double** Dp = Dt->pointer();
-
-//        hessians["Potential"] = SharedMatrix(hessians["Nuclear"]->clone());
-//        hessians["Potential"]->set_name("Potential Hessian");
-//        hessians["Potential"]->zero();
-
-//        // Thread count
-//        int threads = 1;
-//        #ifdef _OPENMP
-//            threads = omp_get_max_threads();
-//        #endif
-
-//        // Potential derivatives
-//        std::vector<boost::shared_ptr<OneBodyAOInt> > Vint;
-//        std::vector<SharedMatrix> Vtemps;
-//        for (int t = 0; t < threads; t++) {
-//            Vint.push_back(boost::shared_ptr<OneBodyAOInt>(integral_->ao_potential(2)));
-//            Vtemps.push_back(SharedMatrix(hessians["Potential"]->clone()));
-//        }
-       
-//        // Lower Triangle
-//        std::vector<std::pair<int,int> > PQ_pairs;
-//        for (int P = 0; P < basisset_->nshell(); P++) {
-//            for (int Q = 0; Q <= P; Q++) {
-//                PQ_pairs.push_back(std::pair<int,int>(P,Q));
-//            }
-//        }
-
-//        #pragma omp parallel for schedule(dynamic) num_threads(threads)
-//        for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
-
-//            int P = PQ_pairs[PQ].first;
-//            int Q = PQ_pairs[PQ].second;
-
-//            int thread = 0;
-//            #ifdef _OPENMP
-//                thread = omp_get_thread_num();
-//            #endif
-
-//            Vint[thread]->compute_shell_deriv2(P,Q);
-//            const double* buffer = Vint[thread]->buffer();
-                            
-//            int nP = basisset_->shell(P).nfunction();
-//            int oP = basisset_->shell(P).function_index();
-//            int aP = basisset_->shell(P).ncenter();
- 
-//            int nQ = basisset_->shell(Q).nfunction();
-//            int oQ = basisset_->shell(Q).function_index();
-//            int aQ = basisset_->shell(Q).ncenter();
-
-//            double perm = (P == Q ? 1.0 : 2.0);
-                
-//            double** Vp = Vtemps[thread]->pointer();
-
-//            for (int alpha = 0; alpha < 3 * natom; alpha++) {
-//                for (int beta = 0; beta < 3 * natom; beta++) {
-//                    for (int p = 0; p < nP; p++) {
-//                        for (int q = 0; q < nQ; q++) {
-//                            double Vval = perm * Dp[p + oP][q + oQ];
-//                            Vp[alpha][beta] += Vval * (*buffer++);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-    
-//        for (int t = 0; t < threads; t++) {
-//            hessians["Potential"]->add(Vtemps[t]);
-//        }
-//    }
-//    timer_off("Hess: V");
 
     // => Overlap Hessian <= //
     timer_on("Hess: S");
