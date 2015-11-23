@@ -1147,7 +1147,7 @@ def optimize(name, **kwargs):
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
 
-    full_hess_every = max(psi4.get_global_option('FULL_HESS_EVERY'), psi4.get_local_option('OPTKING', 'FULL_HESS_EVERY'))
+    full_hess_every = psi4.get_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
     hessian_with_method = name
     if ('hessian_with' in kwargs):
