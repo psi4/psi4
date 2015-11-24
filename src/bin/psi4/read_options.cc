@@ -473,6 +473,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- SUBSECTION Guess Vectors -*/
 
+    /*- What file do we start at for hd/c/s/d CIvects? Should be 50 for normal
+    CI calculations and 54 if we are going to do a second monomer. !expert -*/
+    options.add_int("CI_FILE_START", 50);
+
     /*- Guess vector type.  Accepted values are ``UNIT`` for a unit vector
     guess (|detci__num_roots| and |detci__num_init_vecs| must both be 1); ``H0_BLOCK`` to use
     eigenvectors from the H0 BLOCK submatrix (default); ``DFILE`` to use

@@ -117,7 +117,7 @@ void CIWavefunction::compute_mcscf()
     //outfile->Printf("Diag h\n");
     form_opdm();
     //outfile->Printf("opdm\n");
-    set_opdm();
+    //set_opdm();
     //outfile->Printf("tpdm\n");
     form_tpdm();
     //outfile->Printf("Formed matrices\n");
@@ -129,10 +129,10 @@ void CIWavefunction::compute_mcscf()
     SharedMatrix Cdocc = get_orbitals("DOCC");
     SharedMatrix Cact  = get_orbitals("ACT");
     SharedMatrix Cvir  = get_orbitals("VIR");
-    SharedMatrix actOPDM = get_active_opdm();
+//    SharedMatrix actOPDM = get_active_opdm();
     SharedMatrix actTPDM = get_active_tpdm();
 
-    somcscf->update(Cdocc, Cact, Cvir, actOPDM, actTPDM);
+    somcscf->update(Cdocc, Cact, Cvir, opdm_, actTPDM);
     grad_rms = somcscf->gradient_rms();
 
     outfile->Printf("%s Iter %3d:  % 5.16lf   % 1.5e  % 1.5e %s\n", mcscf_type.c_str(), iter,

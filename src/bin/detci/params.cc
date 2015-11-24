@@ -135,7 +135,7 @@ void CIWavefunction::get_parameters(Options &options)
 
   Parameters_->neg_only = 1;
   Parameters_->nunits = 1;
-  Parameters_->first_tmp_unit = 50;
+  Parameters_->first_tmp_unit = options["CI_FILE_START"].to_integer();
   Parameters_->first_hd_tmp_unit = 0;
   Parameters_->num_hd_tmp_units = 0;
   Parameters_->first_c_tmp_unit = 0;
@@ -558,9 +558,6 @@ void CIWavefunction::get_parameters(Options &options)
   //    Parameters_->wfn != "RASSCF")
   //{
 
-  //  chkpt_init(PSIO_OPEN_OLD);
-  //  i = chkpt_rd_phase_check();
-  //  chkpt_close();
 
   //  if (!i) {
   //    outfile->Printf( "Can't use d file guess: SCF phase not checked\n");

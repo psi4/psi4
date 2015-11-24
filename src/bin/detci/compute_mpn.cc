@@ -41,7 +41,6 @@
 #include <boost/lexical_cast.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
-#include <libchkpt/chkpt.h>
 #include <libmints/mints.h>
 #include "structs.h"
 #include "ci_tol.h"
@@ -519,9 +518,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
    /* 22 Nov 2003 - JMT 
     * Save the MPn or MP(2n-1) energy
     */
-   chkpt_init(PSIO_OPEN_OLD);
    if (Parameters_->save_mpn2 == 1 && Parameters_->wigner) {
-     chkpt_wt_etot(Empn2);
      Process::environment.globals["CURRENT ENERGY"] = Empn2;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = Empn2 - Process::environment.globals["CURRENT REFERENCE ENERGY"];
 
@@ -531,7 +528,6 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
        outfile->Printf( "\nMP%d energy saved\n", (Parameters_->maxnvect * 2) - 1);
    }
    else if (Parameters_->save_mpn2 == 2 && Parameters_->wigner) {
-     chkpt_wt_etot(Empn2a);
      Process::environment.globals["CURRENT ENERGY"] = Empn2a;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = Empn2a - Process::environment.globals["CURRENT REFERENCE ENERGY"];
      if(Parameters_->zaptn)
@@ -540,7 +536,6 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
        outfile->Printf( "\nMP%d energy saved\n", (Parameters_->maxnvect * 2) - 2);
    }
    else {
-     chkpt_wt_etot(Empn);
      Process::environment.globals["CURRENT ENERGY"] = Empn;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = Empn - Process::environment.globals["CURRENT REFERENCE ENERGY"];
      if(Parameters_->zaptn)
@@ -549,11 +544,10 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
        outfile->Printf( "\nMP%d energy saved\n", Parameters_->maxnvect);
    }
    if(Parameters_->zaptn)
-     outfile->Printf( "\nEZAPTn = %17.13lf\n", chkpt_rd_etot());
+     outfile->Printf( "\nEZAPTn = %17.13lf\n", Process::environment.globals["CURRENT ENERGY"]);
    else
-     outfile->Printf( "\nEMPn = %17.13lf\n", chkpt_rd_etot());
+     outfile->Printf( "\nEMPn = %17.13lf\n", Process::environment.globals["CURRENT ENERGY"]);
 
-   chkpt_close();
 
    outfile->Printf("\n");
 }

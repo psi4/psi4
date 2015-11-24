@@ -28,7 +28,6 @@
 #include <cstdlib>
 #include <boost/lexical_cast.hpp>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.h>
 #include <libmints/wavefunction.h>
 #include <libmints/molecule.h>
 #include <libmints/vector.h>
