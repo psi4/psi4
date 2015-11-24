@@ -45,6 +45,7 @@ void CIWavefunction::common_init()
     // by someone else who uses the CIWavefunction and expects them to
     // be available.
 
+    copy(reference_wavefunction_);
     title();
     init_ioff();
 
@@ -70,14 +71,15 @@ void CIWavefunction::common_init()
 
     // Wavefunction frozen nomenclature is equivalent to dropped in detci.
     // In detci frozen means doubly occupied, but no orbital rotations.
-    nirrep_     = reference_wavefunction_->nirrep();
-    nso_        = reference_wavefunction_->nso();
-    nmo_        = reference_wavefunction_->nmo();
+    //nirrep_     = reference_wavefunction_->nirrep();
+    //nso_        = reference_wavefunction_->nso();
+    //nmo_        = reference_wavefunction_->nmo();
     nalpha_     = CalcInfo_->num_alp; // Total number of alpha electrons, including core
     nbeta_      = CalcInfo_->num_bet;
     nfrzc_      = CalcInfo_->num_drc_orbs;
 
-    // Per irrep data
+    // Per irrep data, this is approximate and should typically not be used
+    // Data should come from get_dimension(space)
     for(int h = 0; h < nirrep_; ++h){
         frzcpi_[h] = CalcInfo_->dropped_docc[h];
         doccpi_[h] = CalcInfo_->docc[h];
@@ -88,12 +90,15 @@ void CIWavefunction::common_init()
         nsopi_[h]  = CalcInfo_->so_per_irr[h];
     }
 
-    H_ = reference_wavefunction_->H();
+    // Set relevant matrices
+    //H_ = reference_wavefunction_->H();
     Ca_ = reference_wavefunction_->Ca()->clone();
     Cb_ = Ca_; // We can only do RHF or ROHF reference wavefunctions.
-    psio_ = reference_wavefunction_->psio();
-    AO2SO_ = reference_wavefunction_->aotoso();
-    molecule_ = reference_wavefunction_->molecule();
+    Da_ = reference_wavefunction_->Da()->clone(); // This will only be overwritten if form_opdm is called
+    Db_ = reference_wavefunction_->Db()->clone();
+    //psio_ = reference_wavefunction_->psio();
+    //AO2SO_ = reference_wavefunction_->aotoso();
+    //molecule_ = reference_wavefunction_->molecule();
 
     // Set information
     ints_init_ = false;
@@ -140,12 +145,14 @@ double CIWavefunction::compute_energy()
    // Finished CI, setting wavefunction parameters
    if(!Parameters_->zaptn & Parameters_->opdm){
      form_opdm();
-     set_opdm();
+     //set_opdm();
    }
-   else{
-     set_opdm(true);
-   }
+   //else{
+   //  set_opdm(true);
+   //}
 
+   if (Parameters_->dipmom) opdm_properties();
+   //if (Parameters_->opdm_diag) ci_nat_orbs();
    if (Parameters_->tpdm) form_tpdm();
    if (Parameters_->print_lvl > 0){
      outfile->Printf("\t\t \"A good bug is a dead bug\" \n\n");
@@ -184,6 +191,36 @@ void CIWavefunction::orbital_locations(const std::string& orbitals, int* start, 
         end[h] = nmopi_[h] - CalcInfo_->dropped_uocc[h];
       }
     }
+    else if (orbitals == "RAS1"){
+      for (int h=0; h<nirrep_; h++){
+        start[h] = CalcInfo_->dropped_docc[h];
+        end[h] = start[h] + CalcInfo_->ras_opi[0][h];
+      }
+    }
+    else if (orbitals == "RAS2"){
+      for (int h=0; h<nirrep_; h++){
+        start[h] = CalcInfo_->dropped_docc[h] + CalcInfo_->ras_opi[0][h];
+        end[h] = start[h] + CalcInfo_->ras_opi[1][h];
+      }
+    }
+    else if (orbitals == "RAS3"){
+      for (int h=0; h<nirrep_; h++){
+        start[h] = CalcInfo_->dropped_docc[h] + CalcInfo_->ras_opi[0][h] + CalcInfo_->ras_opi[1][h];
+        end[h] = start[h] + CalcInfo_->ras_opi[2][h];
+      }
+    }
+    else if (orbitals == "RAS4"){
+      for (int h=0; h<nirrep_; h++){
+        start[h] = nmopi_[h] - CalcInfo_->dropped_uocc[h] - CalcInfo_->ras_opi[3][h];
+        end[h] = nmopi_[h] - CalcInfo_->dropped_uocc[h];
+      }
+    }
+    else if (orbitals == "POP"){
+      for (int h=0; h<nirrep_; h++){
+        start[h] = 0;
+        end[h] = nmopi_[h] - CalcInfo_->dropped_uocc[h];
+      }
+    }
     else if (orbitals == "DRV"){
       for (int h=0; h<nirrep_; h++){
         start[h] = nmopi_[h] - CalcInfo_->dropped_uocc[h];
@@ -215,7 +252,7 @@ void CIWavefunction::orbital_locations(const std::string& orbitals, int* start, 
       }
     }
     else{
-        throw PSIEXCEPTION("CIWAVE: Orbital subset is not defined, should be FZC, DOCC, ACT, VIR, FZV, or ALL");
+        throw PSIEXCEPTION("CIWAVE: Orbital subset is not defined, should be FZC, DOCC, ACT, RAS1, RAS2, RAS3, RAS4, POP, VIR, FZV, or ALL");
     }
 }
 
@@ -364,7 +401,7 @@ SharedMatrix CIWavefunction::get_opdm(int root, int spin, bool transden)
         return opdm_a;
     }
     else {
-       throw PSIEXCEPTION("CIWAVE: option spin is not recognizable value.");
+       throw PSIEXCEPTION("CIWAVE: Spin must be 0, 1, 2 (alpha, beta, sum)");
     }
 }
 SharedMatrix CIWavefunction::get_active_opdm()
@@ -508,29 +545,29 @@ SharedMatrix CIWavefunction::get_active_tpdm(const std::string& tpdm_type)
 }
 
 
-
-void CIWavefunction::form_opdm(void)
-{
-
-  /* don't need Parameters_->root since it writes all opdm's */
-  if (Parameters_->transdens) {
-    opdm(alplist_, betlist_, 1, Parameters_->dipmom,
-      Parameters_->num_roots, 0,
-      Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
-      Parameters_->num_roots, 0,
-      Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
-      Parameters_->opdm_file, 1, Parameters_->tdm_print);
-  }
-  if (Parameters_->opdm) {
-    opdm(alplist_, betlist_, 0, Parameters_->dipmom,
-      Parameters_->num_roots, 0,
-      Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
-      Parameters_->num_roots, 0,
-      Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
-      Parameters_->opdm_file, 1, Parameters_->opdm_print);
-  }
-
-}
+//
+//void CIWavefunction::form_opdm(void)
+//{
+//
+//  /* don't need Parameters_->root since it writes all opdm's */
+//  if (Parameters_->transdens) {
+//    opdm(alplist_, betlist_, 1, Parameters_->dipmom,
+//      Parameters_->num_roots, 0,
+//      Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
+//      Parameters_->num_roots, 0,
+//      Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
+//      Parameters_->opdm_file, 1, Parameters_->tdm_print);
+//  }
+//  if (Parameters_->opdm) {
+//    opdm(alplist_, betlist_, 0, Parameters_->dipmom,
+//      Parameters_->num_roots, 0,
+//      Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
+//      Parameters_->num_roots, 0,
+//      Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
+//      Parameters_->opdm_file, 1, Parameters_->opdm_print);
+//  }
+//
+//}
 
 
 void CIWavefunction::form_tpdm(void)

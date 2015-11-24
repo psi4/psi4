@@ -27,7 +27,6 @@
 #include <psifiles.h>
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.h>
 #include <libmints/mints.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
@@ -682,9 +681,7 @@ void CIWavefunction::diag_h()
       } /* end the Davidson-Liu/Mitrushenkov-Olsen-Davidson section */
 
    /* write the CI energy to PSIF_CHKPT: later fix this to loop over roots */
-   chkpt_init(PSIO_OPEN_OLD);
    tval = evals[Parameters_->root]+edrc+nucrep;
-   chkpt_wt_etot(tval);
 
    Process::environment.globals["CURRENT ENERGY"] = tval;
    Process::environment.globals["CURRENT CORRELATION ENERGY"] = tval - CalcInfo_->escf;
@@ -726,7 +723,6 @@ void CIWavefunction::diag_h()
    for (i=0; i<nroots; i++) {
      sprintf(e_label,"Root %2d energy",i);
      tval = evals[i]+edrc+nucrep;
-     chkpt_wt_e_labeled(e_label, tval);
 
      /*- Process::environment.globals["CI ROOT n TOTAL ENERGY"] -*/
      /*- Process::environment.globals["CI ROOT n CORRELATION ENERGY"] -*/
@@ -745,7 +741,6 @@ void CIWavefunction::diag_h()
      for (i=0; i<Parameters_->average_num; i++)
        tval += Parameters_->average_weights[i] *
                (edrc+nucrep+evals[Parameters_->average_states[i]]);
-     chkpt_wt_e_labeled("State averaged energy",tval);
      Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"] = tval;
      // eref seems wrong for open shells so replace it with escf below
      // until I fix it ---CDS 11/5/11
@@ -771,7 +766,6 @@ void CIWavefunction::diag_h()
       Process::environment.globals["CI TOTAL ENERGY"];
    }
 
-   chkpt_close();
 
 }
 

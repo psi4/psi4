@@ -3,7 +3,8 @@ How can we do the PK algorithm choice better?
 Why is the SCF converged to such crazy tolerences?
 Where should we put a MP2 nat orb calc?
 Read 4 index quantity from dpd without storing it in memory twice?
-
+Does anyone actually read CI NO's or OPDMs off disk?
+Need to test CI NO's
 
 -----
 David's list
@@ -17,6 +18,9 @@ Is this a phase issue?
 This is more of a warning, maybe its finding the wrong state. 
 
 -------
+Changes to SOMCSCF
+
 Dump dpd library at the end
 IncoreSOMCSCF that takes (aa|aa) (aa|aN) 
+
 

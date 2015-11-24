@@ -224,7 +224,7 @@ private:
     void H0block_pairup(int guess);
     void H0block_spin_cpl_chk(void);
     void H0block_filter_setup(void);
-    void H0block_fill();
+    void H0block_fill(void);
     void H0block_coupling_calc(double E);
     void print_config(int nbf, int num_alp_el, int num_bet_el,
        struct stringwr *stralp, struct stringwr *strbet, int num_drc_orbs,
@@ -299,17 +299,29 @@ private:
     void mpn_generator(CIvect &Hd); 
 
     /// => Density Matrix helpers <= //
-    void opdm(struct stringwr **alplist, struct stringwr **betlist,
-              int transdens, int dipmom,
-              int Inroots, int Iroot, int Inunits, int Ifirstunit,
-          int Jnroots, int Jroot, int Jnunits, int Jfirstunit,
-          int targetfile, int writeflag, int printflag);
+    std::vector<std::vector<SharedMatrix> > opdm(int root_start, int nroots, int Ifile,
+                                                 int Jfile, bool transden);
+    SharedMatrix opdm_add_inactive(SharedMatrix opdm, double value, bool virt=false);
+    void opdm_properties(void);
+
     void opdm_block(struct stringwr **alplist, struct stringwr **betlist,
             double **onepdm_a, double **onepdm_b, double **CJ, double **CI, int Ja_list,
             int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list,
             int Inas, int Inbs);
-    void opdm_ave(int targetfile);
+    //void opdm_ave(int targetfile);
     void opdm_ke(double **onepdm);
+    void ci_nat_orbs();
+
+    // OPDM holders, opdm_map holds lots of active-active opdms
+    // opdm_, opdm_a_, etc are for "the" current OPDM
+    bool opdm_called_;
+    std::map<std::string, SharedMatrix> opdm_map_;
+    std::map<std::string, SharedMatrix> cino_map_;
+    SharedMatrix opdm_;
+    SharedMatrix opdm_a_;
+    SharedMatrix opdm_b_;
+
+
     void tpdm(struct stringwr **alplist, struct stringwr **betlist,
           int Inroots, int Inunits, int Ifirstunit,
           int Jnroots, int Jnunits, int Jfirstunit,
@@ -319,6 +331,12 @@ private:
             double *twopdm_aa, double *twopdm_bb, double *twopdm_ab, double **CJ, double **CI, int Ja_list,
             int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list,
             int Inas, int Inbs, double weight);
+
+    bool tpdm_called_;
+    SharedMatrix tpdm_;
+    SharedMatrix tpdm_aa_;
+    SharedMatrix tpdm_ab_;
+    SharedMatrix tpdm_bb_;
 
 }; // End CIWavefunction
 
