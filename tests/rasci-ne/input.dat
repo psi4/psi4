@@ -34,9 +34,9 @@ set globals {
   ex_level 2
 }
 
-set detci {
-  nat_orbs_write true
-}
+#set detci {
+#  nat_orbs_write true
+#}
 
 set transqt2 {
   delete_tei false
@@ -56,7 +56,7 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
 
 clean()
 
-# !Warning: DGAS intentionally broke the second half here.
+# !Warning: DGAS intentionally broke the second half here, need to fix natural orbitals
 
 ## Now, run the RASCI
 #refnuc   =    0.0000000000    #TEST

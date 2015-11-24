@@ -114,10 +114,7 @@ void CIWavefunction::compute_mcscf()
 
     // Run CI and set quantities
     diag_h();
-    //outfile->Printf("Diag h\n");
     form_opdm();
-    //outfile->Printf("opdm\n");
-    //set_opdm();
     //outfile->Printf("tpdm\n");
     form_tpdm();
     //outfile->Printf("Formed matrices\n");
@@ -129,7 +126,6 @@ void CIWavefunction::compute_mcscf()
     SharedMatrix Cdocc = get_orbitals("DOCC");
     SharedMatrix Cact  = get_orbitals("ACT");
     SharedMatrix Cvir  = get_orbitals("VIR");
-//    SharedMatrix actOPDM = get_active_opdm();
     SharedMatrix actTPDM = get_active_tpdm();
 
     somcscf->update(Cdocc, Cact, Cvir, opdm_, actTPDM);

@@ -136,14 +136,15 @@ void CIWavefunction::get_parameters(Options &options)
   Parameters_->neg_only = 1;
   Parameters_->nunits = 1;
   Parameters_->first_tmp_unit = options["CI_FILE_START"].to_integer();
-  Parameters_->first_hd_tmp_unit = 0;
-  Parameters_->num_hd_tmp_units = 0;
-  Parameters_->first_c_tmp_unit = 0;
-  Parameters_->num_c_tmp_units = 0;
-  Parameters_->first_s_tmp_unit = 0;
-  Parameters_->num_s_tmp_units = 0;
-  Parameters_->first_d_tmp_unit = 0;
-  Parameters_->num_d_tmp_units = 0;
+  Parameters_->first_hd_tmp_unit = options["CI_FILE_START"].to_integer();
+  Parameters_->first_c_tmp_unit = options["CI_FILE_START"].to_integer() + 1;
+  Parameters_->first_s_tmp_unit = options["CI_FILE_START"].to_integer() + 2;
+  Parameters_->first_d_tmp_unit = options["CI_FILE_START"].to_integer() + 3;
+
+  Parameters_->num_hd_tmp_units = 1;
+  Parameters_->num_c_tmp_units = 1;
+  Parameters_->num_s_tmp_units = 1;
+  Parameters_->num_d_tmp_units = 1;
 
   Parameters_->cc = options["CC"].to_integer();
 
@@ -444,35 +445,9 @@ void CIWavefunction::get_parameters(Options &options)
   */
   }
 
-  if (Parameters_->first_hd_tmp_unit == 0)
-    Parameters_->first_hd_tmp_unit = Parameters_->first_tmp_unit;
-/*if ( (Parameters_->num_hd_tmp_units == 0) && (!Parameters_->hd_otf) ) */
-  if (Parameters_->num_hd_tmp_units == 0)
-    Parameters_->num_hd_tmp_units = 1;
-  if (Parameters_->first_c_tmp_unit == 0) Parameters_->first_c_tmp_unit =
-     Parameters_->first_hd_tmp_unit + Parameters_->num_hd_tmp_units;
-  if (Parameters_->num_c_tmp_units == 0) Parameters_->num_c_tmp_units =
-     Parameters_->nunits;
-  if (Parameters_->first_s_tmp_unit == 0) Parameters_->first_s_tmp_unit =
-     Parameters_->first_c_tmp_unit + Parameters_->num_c_tmp_units;
-  if (Parameters_->num_s_tmp_units == 0) Parameters_->num_s_tmp_units =
-     Parameters_->nunits;
-  if (Parameters_->first_d_tmp_unit == 0) Parameters_->first_d_tmp_unit =
-      Parameters_->first_s_tmp_unit + Parameters_->num_s_tmp_units;
-/*if ( (Parameters_->num_d_tmp_units == 0) && (!Parameters_->nodfile) ) */
-  if (Parameters_->num_d_tmp_units == 0)
-    Parameters_->num_d_tmp_units = 1;
 
   Parameters_->restart = options["RESTART"].to_integer();
 
- /* obsolete due to new restart procedure
-   errcod = ip_data("RESTART_ITER","%d",&(Parameters_->restart_iter),0);
-   errcod = ip_data("RESTART_VECS","%d",&(Parameters_->restart_vecs),0);
-   if (Parameters_->restart && (errcod!=IPE_OK || Parameters_->restart_vecs==0)) {
-      outfile->Printf( "For RESTART must specify nonzero RESTART_VECS\n");
-      exit(0);
-      }
- */
 
   Parameters_->bendazzoli = options["BENDAZZOLI"].to_integer();
   if (Parameters_->bendazzoli && !Parameters_->fci) Parameters_->bendazzoli=0;
