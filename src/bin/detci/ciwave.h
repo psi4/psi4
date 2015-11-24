@@ -74,7 +74,7 @@ public:
     /**!
      * Similar to wavefunction.Ca_subset(); however, this version knows about all of the CI
      * subspaces in the SO basis. We stick to the MCSCF definitions for now.
-     * @param  orbital_name FZC, DOCC, ACT, VIR, FZV
+     * @param  orbital_name fzc, drc, docc, act, ras1, ras2, ras3, ras4, pop, vir, fzv, drv, or all
      * @return C            Returns the appropriate orbitals in the SO basis.
      */
     SharedMatrix get_orbitals(const std::string& orbital_name);
@@ -82,7 +82,7 @@ public:
     /**!
      * Similar to wavefunction.Ca_subset(); however, this version knows about all of the CI
      * subspaces in the SO basis. We stick to the MCSCF definitions for now.
-     * @param  orbital_name FZC, DOCC, ACT, VIR, FZV
+     * @param  orbital_name FZC, DRC, DOCC, ACT, RAS1, RAS2, RAS3, RAS4, POP, VIR, FZV, DRV, or ALL
      * @param  orbitals     SharedMatrix to set
      * @return C            Returns the appropriate orbitals in the SO basis.
      */
@@ -90,35 +90,27 @@ public:
 
     /**!
      * Gets the dimension of the desired subspace.
-     * @param orbital_name FZC, DOCC, ACT, VIR, FZV
-     * @return dim         Dimension object
+     * @param  orbital_name FZC, DRC, DOCC, ACT, RAS1, RAS2, RAS3, RAS4, POP, VIR, FZV, DRV, or ALL
+     * @return dim          Dimension object
      */
     Dimension get_dimension(const std::string& orbital_name);
     /**
      * Transform the one and two electron integrals.
-     * The
      */
     void transform_ci_integrals(void);
 
     /**!
-     * Obtains the OPDM <root| Epq |root> from disk
-     * @param root       Root to obtain
-     * @param spin       0 returns alpha, 1 returns beta, 2 sums alpha and beta
-     * @param transden   Obtain <0 | Epq | root> transition density matrix
+     * Obtains the OPDM <Iroot| Epq |Jroot> from the ciwave object. If Jroot is
+     * negative then Iroot == Jroot, if both roots are -1 then the "special" CI
+     * OPDM is returned.
+     * @param Iroot      Left root
+     * @param Jroot      Right root
+     * @param spin       Which spin to return? A, B, or SUM
+     * @param full_space If false return only the active OPDM else return full OPDM 
      * @return OPDM or TDM shared matrix
      **/
-    SharedMatrix get_opdm(int root=0, int spin=2, bool transden=false);
-
-    /**!
-     Returns the symmetry block active OPDM
-     **/
-    SharedMatrix get_active_opdm();
-
-    /**!
-     * Loads the OPDM to the wavefunction Da_ and Db_
-     * @param use_old_d - If no new OPDM is calculated use the reference density matrices
-    **/
-    void set_opdm(bool use_old_d=false);
+    SharedMatrix get_opdm(int Iroot=-1, int Jroot=-1, const std::string& spin="SUM",
+                           bool full_space=false);
 
     /**!
      * Obtains the TPDM from disk
@@ -308,8 +300,6 @@ private:
             double **onepdm_a, double **onepdm_b, double **CJ, double **CI, int Ja_list,
             int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list,
             int Inas, int Inbs);
-    //void opdm_ave(int targetfile);
-    void opdm_ke(double **onepdm);
     void ci_nat_orbs();
 
     // OPDM holders, opdm_map holds lots of active-active opdms

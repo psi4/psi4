@@ -16,7 +16,6 @@ CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> ref_wfn)
     : Wavefunction(Process::environment.options, ref_wfn->psio())
 {
     set_reference_wavefunction(ref_wfn);
-    chkpt_.reset();
     common_init();
 }
 
@@ -25,13 +24,6 @@ CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> ref_wfn,
     : Wavefunction(options, ref_wfn->psio())
 {
     set_reference_wavefunction(ref_wfn);
-
-    // TODO-CDS:
-    // The CC codes destroy the checkpoint object created by Wavefunction.
-    // We'd like to be able to do the same here.  Need to convert everything
-    // such that we don't explicitly need checkpoint
-    // Destroy it. Otherwise we will see a "file already open" error.
-    chkpt_.reset();
     common_init();
 }
 CIWavefunction::~CIWavefunction()
@@ -39,13 +31,9 @@ CIWavefunction::~CIWavefunction()
 }
 void CIWavefunction::common_init()
 {
-    // We're copying this stuff over like it's done in ccenergy, but
-    // these Wavefunction member data are not actually used by the code
-    // yet (Sept 2011 CDS).  Copying these only in case they're needed
-    // by someone else who uses the CIWavefunction and expects them to
-    // be available.
-
+    // Copy the wavefuntion then update
     copy(reference_wavefunction_);
+
     title();
     init_ioff();
 
@@ -71,9 +59,6 @@ void CIWavefunction::common_init()
 
     // Wavefunction frozen nomenclature is equivalent to dropped in detci.
     // In detci frozen means doubly occupied, but no orbital rotations.
-    //nirrep_     = reference_wavefunction_->nirrep();
-    //nso_        = reference_wavefunction_->nso();
-    //nmo_        = reference_wavefunction_->nmo();
     nalpha_     = CalcInfo_->num_alp; // Total number of alpha electrons, including core
     nbeta_      = CalcInfo_->num_bet;
     nfrzc_      = CalcInfo_->num_drc_orbs;
@@ -96,9 +81,6 @@ void CIWavefunction::common_init()
     Cb_ = Ca_; // We can only do RHF or ROHF reference wavefunctions.
     Da_ = reference_wavefunction_->Da()->clone(); // This will only be overwritten if form_opdm is called
     Db_ = reference_wavefunction_->Db()->clone();
-    //psio_ = reference_wavefunction_->psio();
-    //AO2SO_ = reference_wavefunction_->aotoso();
-    //molecule_ = reference_wavefunction_->molecule();
 
     // Set information
     ints_init_ = false;
@@ -145,14 +127,10 @@ double CIWavefunction::compute_energy()
    // Finished CI, setting wavefunction parameters
    if(!Parameters_->zaptn & Parameters_->opdm){
      form_opdm();
-     //set_opdm();
    }
-   //else{
-   //  set_opdm(true);
-   //}
 
    if (Parameters_->dipmom) opdm_properties();
-   //if (Parameters_->opdm_diag) ci_nat_orbs();
+   if (Parameters_->opdm_diag) ci_nat_orbs();
    if (Parameters_->tpdm) form_tpdm();
    if (Parameters_->print_lvl > 0){
      outfile->Printf("\t\t \"A good bug is a dead bug\" \n\n");
@@ -161,7 +139,7 @@ double CIWavefunction::compute_energy()
      outfile->Printf("\t\t\t - Edward Valeev\n\n");
    }
 
-   cleanup(); 
+   cleanup();
 
    return Process::environment.globals["CURRENT ENERGY"];
 }
@@ -252,7 +230,7 @@ void CIWavefunction::orbital_locations(const std::string& orbitals, int* start, 
       }
     }
     else{
-        throw PSIEXCEPTION("CIWAVE: Orbital subset is not defined, should be FZC, DOCC, ACT, RAS1, RAS2, RAS3, RAS4, POP, VIR, FZV, or ALL");
+        throw PSIEXCEPTION("CIWAVE: Orbital subset is not defined, should be FZC, DRC, DOCC, ACT, RAS1, RAS2, RAS3, RAS4, POP, VIR, FZV, DRV, or ALL");
     }
 }
 
@@ -329,110 +307,40 @@ Dimension CIWavefunction::get_dimension(const std::string& orbital_name)
     return dim;
 }
 
-void CIWavefunction::set_opdm(bool use_old_d)
+SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot, const std::string& spin, bool full_space)
 {
 
-  // No new opdm
-  if(use_old_d){
-    Da_ = reference_wavefunction_->Da();
-    Db_ = reference_wavefunction_->Db();
-    return;
-  }
+    double inact_value = (spin == "SUM") ? 2.0 : 1.0;
+    SharedMatrix opdm;
 
-  int npop = CalcInfo_->num_ci_orbs + CalcInfo_->num_drc_orbs;
-  SharedMatrix opdm_a(new Matrix("MO-basis Alpha OPDM", npop, npop));
-  double *opdm_ap = opdm_a->pointer()[0];
-
-  SharedMatrix opdm_b(new Matrix("MO-basis Beta OPDM", npop, npop));
-  double *opdm_bp = opdm_b->pointer()[0];
-
-  char opdm_key[80];
-  psio_open(Parameters_->opdm_file, PSIO_OPEN_OLD);
-  // CDS help: I think this is right.
-  //if (!options_["FOLLOW_ROOT"].has_changed()) {
-  psio_read_entry(Parameters_->opdm_file, "MO-basis Alpha OPDM", (char *) opdm_ap,
-                  npop*npop*sizeof(double));
-  psio_read_entry(Parameters_->opdm_file, "MO-basis Beta OPDM", (char *) opdm_bp,
-                  npop*npop*sizeof(double));
-  //}
-  //else {
-  //  int root = options_.get_int("FOLLOW_ROOT");
-  //  outfile->Printf("following a root %d !\n", root);
-  //  sprintf(opdm_key, "MO-basis Alpha OPDM Root %d", root);
-  //  psio_read_entry(Parameters_->opdm_file, opdm_key, (char *) opdm_ap,
-  //                  npop*npop*sizeof(double));
-  //  sprintf(opdm_key, "MO-basis Beta OPDM Root %d", root);
-  //  psio_read_entry(Parameters_->opdm_file, opdm_key, (char *) opdm_bp,
-  //                  npop*npop*sizeof(double));
-  //}
-  psio_close(Parameters_->opdm_file, 1);
-
-  Da_ = opdm_a;
-  Db_ = opdm_b;
-
-}
-SharedMatrix CIWavefunction::get_opdm(int root, int spin, bool transden)
-{
-    int npop = CalcInfo_->num_ci_orbs + CalcInfo_->num_drc_orbs;
-    SharedMatrix opdm_a(new Matrix("One-Particle Alpha Density Matrix", npop, npop));
-    double *opdm_ap = opdm_a->pointer()[0];
-
-    SharedMatrix opdm_b(new Matrix("One-Particle Beta Density Matrix", npop, npop));
-    double *opdm_bp = opdm_b->pointer()[0];
-
-    char opdm_key[80];
-    psio_open(Parameters_->opdm_file, PSIO_OPEN_OLD);
-    sprintf(opdm_key, "MO-basis Alpha OPDM %s Root %d", transden ? "TDM" : "OPDM", root);
-    psio_read_entry(Parameters_->opdm_file, opdm_key, (char *) opdm_ap,
-                    npop*npop*sizeof(double));
-    sprintf(opdm_key, "MO-basis Beta OPDM %s Root %d", transden ? "TDM" : "OPDM", root);
-    psio_read_entry(Parameters_->opdm_file, opdm_key, (char *) opdm_bp,
-                        npop*npop*sizeof(double));
-    psio_close(Parameters_->opdm_file, 1);
-
-    if (spin == 2){
-        opdm_a->add(opdm_b);
-        return opdm_a;
-    }
-    else if (spin == 1){
-        return opdm_b;
-    }
-    else if (spin == 0){
-        return opdm_a;
+    if ((Iroot == -1) && (Jroot == -1)){
+        if (spin == "SUM") opdm = opdm_;
+        else if (spin == "A") opdm = opdm_a_;
+        else if (spin == "B") opdm = opdm_b_;
+        else throw PSIEXCEPTION("CIWavefunction::get_opdm: Spin type must be A, B, or SUM.");
     }
     else {
-       throw PSIEXCEPTION("CIWAVE: Spin must be 0, 1, 2 (alpha, beta, sum)");
-    }
-}
-SharedMatrix CIWavefunction::get_active_opdm()
-{
-  SharedMatrix actOPDM(new Matrix("OPDM", nirrep_, CalcInfo_->ci_orbs, CalcInfo_->ci_orbs));
-  double** OPDMa = Da_->pointer();
-  double** OPDMb = Db_->pointer();
+        if (Jroot == -1) Jroot = Iroot;
 
-  int offset = 0;
+        std::stringstream opdm_name;
+        if (spin == "SUM") opdm_name << "MO-basis OPDM <" << Iroot+1 << "| Etu |" << Jroot+1 << ">";
+        else if (spin == "A") opdm_name << "MO-basis Alpha OPDM <" << Iroot+1 << "| Etu |" << Jroot+1 << ">";
+        else if (spin == "B") opdm_name << "MO-basis Beta OPDM <" << Iroot+1 << "| Etu |" << Jroot+1 << ">";
+        else throw PSIEXCEPTION("CIWavefunction::get_opdm: Spin type must be A, B, or SUM.");
 
-  for (int h=0; h<nirrep_; h++){
-    offset += CalcInfo_->dropped_docc[h];
-    if (!CalcInfo_->ci_orbs[h]){
-      offset += CalcInfo_->dropped_uocc[h];
-      continue;
+        if (opdm_map_.find(opdm_name.str()) != opdm_map_.end()){
+            throw PSIEXCEPTION("CIWavefunction::get_opdm: Requested OPDM was not formed!\n");
+        }
+
+        opdm = opdm_map_[opdm_name.str()];
     }
 
-    double* actp = actOPDM->pointer(h)[0];
-
-    for (int i=0, target=0; i<CalcInfo_->ci_orbs[h]; i++){
-      int ni = CalcInfo_->reorder[i + offset];
-      for (int j=0; j<CalcInfo_->ci_orbs[h]; j++){
-        int nj = CalcInfo_->reorder[j + offset];
-
-        actp[target++] = OPDMa[ni][nj] + OPDMb[ni][nj];
-      }
+    if (full_space) {
+        return opdm_add_inactive(opdm, inact_value, true);
     }
-    offset += CalcInfo_->ci_orbs[h];
-    offset += CalcInfo_->dropped_uocc[h];
-  }
-  return actOPDM;
+    else {
+        return opdm;
+    }
 }
 SharedVector CIWavefunction::get_tpdm(bool symmetrize, const std::string& tpdm_type)
 {
@@ -543,31 +451,6 @@ SharedMatrix CIWavefunction::get_active_tpdm(const std::string& tpdm_type)
 
   return actTPDM;
 }
-
-
-//
-//void CIWavefunction::form_opdm(void)
-//{
-//
-//  /* don't need Parameters_->root since it writes all opdm's */
-//  if (Parameters_->transdens) {
-//    opdm(alplist_, betlist_, 1, Parameters_->dipmom,
-//      Parameters_->num_roots, 0,
-//      Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
-//      Parameters_->num_roots, 0,
-//      Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
-//      Parameters_->opdm_file, 1, Parameters_->tdm_print);
-//  }
-//  if (Parameters_->opdm) {
-//    opdm(alplist_, betlist_, 0, Parameters_->dipmom,
-//      Parameters_->num_roots, 0,
-//      Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
-//      Parameters_->num_roots, 0,
-//      Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
-//      Parameters_->opdm_file, 1, Parameters_->opdm_print);
-//  }
-//
-//}
 
 
 void CIWavefunction::form_tpdm(void)
