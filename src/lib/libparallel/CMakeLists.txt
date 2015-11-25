@@ -1,6 +1,6 @@
 set(headers_list "")
 # List of headers
-list(APPEND headers_list PsiFileImpl.h TableSpecs.h StreamBase.h ParallelScanner.h local.h elem.h openmp.h parallel.h PsiOutStream.h ParallelPrinter.h BasesBase.h PsiInStream.h mad.h serialize.h threaded_storage.h mpi_wrapper.h )
+list(APPEND headers_list PsiFileImpl.h TableSpecs.h StreamBase.h ParallelScanner.h local.h elem.h openmp.h parallel.h PsiOutStream.h ParallelPrinter.h BasesBase.h PsiInStream.h mad.h serialize.h threaded_storage.h mpi_wrapper.h libparallel.h )
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
