@@ -1,9 +1,9 @@
 #! DF-OMP3 cc-pVDZ gradients for the H2O+ cation.
 
 ref_vals = [                                                             #TEST
-             [ 0.000000000000,     0.00000000000000,    -0.03825485470567],  #TEST
-             [ 0.000000000000,     0.07747179902396,     0.01912742735284],  #TEST
-             [ 0.000000000000,    -0.07747179902396,     0.01912742735284]   #TEST
+             [ 0.000000000000,     0.000000000000,     0.046742189909],  #TEST
+             [ 0.000000000000,     0.040515769777,    -0.023371064690],  #TEST
+             [ 0.000000000000,    -0.040515769777,    -0.023371125219]   #TEST
            ]                                                             #TEST
 ref = psi4.Matrix(3, 3)                                                #TEST
 ref.set(ref_vals)
@@ -22,7 +22,7 @@ set {
   df_basis_scf cc-pvdz-jkfit
   df_basis_cc cc-pvdz-ri
   scf_type df
-  guess sad
+  guess gwh
   freeze_core true
   reference uhf
 }

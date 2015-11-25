@@ -61,6 +61,17 @@ void MOLECULE::print_geom_out(void) {
     fragments[i]->print_geom(psi_outfile, qc_outfile);
 }
 
+void MOLECULE::print_geom_out_irc(void) {
+#if defined(OPTKING_PACKAGE_QCHEM)
+  oprintf_out("@IRC    Cartesian Geometry (au)\n");
+#elif defined(OPTKING_PACKAGE_PSI)
+  oprintf_out("@IRC    Cartesian Geometry (in Angstrom)\n");
+#endif
+  
+  for (int i=0; i<fragments.size(); ++i)
+    fragments[i]->print_geom_irc(psi_outfile, qc_outfile);
+}
+
 // This function is only used for an optional trajectory file.
 // The awkward itershift is to decrement in the initial geometry to "iteration 0"
 void MOLECULE::print_xyz(int iter_shift) {
@@ -76,6 +87,36 @@ void MOLECULE::print_xyz(int iter_shift) {
 #if defined(OPTKING_PACKAGE_QCHEM)
   fclose(qc_fp);
 #endif
+  return;
+}
+
+void MOLECULE::print_xyz_irc(int point, bool forward) {
+  FILE *qc_fp;
+
+  if(forward) {
+#if defined(OPTKING_PACKAGE_QCHEM)
+    qc_fp = fopen("irc_forward.xyz", "a");
+#endif
+    oprintf("irc_forward.xyz", qc_fp, "%d\n", g_natom());
+    oprintf("irc_forward.xyz", qc_fp, "IRC point %d\n", point);
+    for (int i=0; i<fragments.size(); ++i)
+      fragments[i]->print_geom("irc_forward.xyz", qc_fp);
+#if defined(OPTKING_PACKAGE_QCHEM)
+    fclose(qc_fp);
+#endif
+  }
+  else {
+#if defined(OPTKING_PACKAGE_QCHEM)
+    qc_fp = fopen("irc_backward.xyz", "a");
+#endif
+    oprintf("irc_backward.xyz", qc_fp, "%d\n", g_natom());
+    oprintf("irc_backward.xyz", qc_fp, "IRC point %d\n", point);
+    for (int i=0; i<fragments.size(); ++i)
+      fragments[i]->print_geom("irc_backward.xyz", qc_fp);
+#if defined(OPTKING_PACKAGE_QCHEM)
+    fclose(qc_fp);
+#endif
+  }
   return;
 }
 

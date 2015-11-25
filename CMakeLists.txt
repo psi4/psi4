@@ -104,15 +104,6 @@ if(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local/psi4")
    set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT TRUE CACHE INTERNAL "")
 endif()
 
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-   set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/interfaces)
-   set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-   set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
-else()
-   set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/interfaces)
-   set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
-endif()
-
 # This section attempts to find some system libraries:
 #  a. libutil : needed for linking against static libpython (Linux only)
 #  b. libm    : needed for lib{int,deriv}_compiler (Linux only)
@@ -230,6 +221,12 @@ include_directories(
     ${PROJECT_BINARY_DIR}/interfaces/include
 )
 
+
+###set(headers_list "")
+###set(headers_list include/compiler.h include/psi4-dec.h include/exception.h include/process.h)
+###install_list_FILES("${headers_list}" include)
+
+
 #
 # The location of compiled libraries and executables
 #
@@ -250,10 +247,8 @@ if(ENABLE_PCMSOLVER)
    else()
       add_definitions(-DHAVE_PCMSOLVER)
       message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
-      link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
-                       ${EXTERNAL_PROJECT_INSTALL_PREFIX})
+      link_directories(${PROJECT_BINARY_DIR}/interfaces/lib)
    endif()
-   set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
 endif()
 
 #If we have MPI we may want to also build JKFactory which makes J and K's
@@ -292,8 +287,9 @@ add_subdirectory(PsiAPI)
 set_property(GLOBAL APPEND PROPERTY PSILIB psiapi)
 
 # Handle creation of Makefile for plugins
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES) ###
 get_property(defs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS)
+###set(dirs "${CMAKE_INSTALL_PREFIX}/include" "${PYTHON_INCLUDE_DIR}"  "${Boost_INCLUDE_DIRS}")
 foreach(dir ${dirs})
     set(PLUGIN_INCLUDE_DIRECTORIES "-I${dir} ${PLUGIN_INCLUDE_DIRECTORIES}")
 endforeach()
@@ -308,6 +304,7 @@ string(STRIP ${PLUGIN_INCLUDE_DIRECTORIES} PLUGIN_INCLUDE_DIRECTORIES)
 string(STRIP ${PLUGIN_DEFINES} PLUGIN_DEFINES)
 string(STRIP ${PLUGIN_LDFLAGS} PLUGIN_LDFLAGS)
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
+###install_list_FILES("${CMAKE_CURRENT_BINARY_DIR}/include/psiconfig.h" include/)
 
 # Make known that the setup command given and the corresponding CMake
 # line are available in the file setup_command in the build directory
