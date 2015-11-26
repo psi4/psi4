@@ -775,245 +775,96 @@ SharedMatrix SCFGrad::compute_hessian()
                              * and use the identities above to fill in the gaps
                              *
                              */
-#define INCLUDE_VAA 1
-#define INCLUDE_VCA 1
-#define INCLUDE_VCC 1
-
-#if INCLUDE_VAA
                             // AxAx
                             Vp[Px][Px] += tmpAxAx;
-#if DEBUGINTS
-                            outfile->Printf("AxAx %20.12f\n", tmpAxAx);
-#endif
                             // AyAy
                             Vp[Py][Py] += tmpAyAy;
-#if DEBUGINTS
-                            outfile->Printf("AyAy %20.12f\n", tmpAyAy);
-#endif
                             // AzAz
                             Vp[Pz][Pz] += tmpAzAz;
-#if DEBUGINTS
-                            outfile->Printf("AzAz %20.12f\n", tmpAzAz);
-#endif
                             // AxAy
                             Vp[Px][Py] += tmpAxAy;
-#if DEBUGINTS
-                            outfile->Printf("AxAy %20.12f\n", tmpAxAy);
-#endif
                             // AxAz
                             Vp[Px][Pz] += tmpAxAz;
-#if DEBUGINTS
-                            outfile->Printf("AxAz %20.12f\n", tmpAxAz);
-#endif
                             // AyAz
                             Vp[Py][Pz] += tmpAyAz;
-#if DEBUGINTS
-                            outfile->Printf("AyAz %20.12f\n", tmpAyAz);
-#endif
                             // BxBx
                             Vp[Qx][Qx] += tmpBxBx;
-#if DEBUGINTS
-                            outfile->Printf("BxBx %20.12f\n", tmpBxBx);
-#endif
                             // ByBy
                             Vp[Qy][Qy] += tmpByBy;
-#if DEBUGINTS
-                            outfile->Printf("ByBy %20.12f\n", tmpByBy);
-#endif
                             // BzBz
                             Vp[Qz][Qz] += tmpBzBz;
-#if DEBUGINTS
-                            outfile->Printf("BzBz %20.12f\n", tmpBzBz);
-#endif
                             // BxBy
                             Vp[Qx][Qy] += tmpBxBy;
-#if DEBUGINTS
-                            outfile->Printf("BxBy %20.12f\n", tmpBxBy);
-#endif
                             // BxBz
                             Vp[Qx][Qz] += tmpBxBz;
-#if DEBUGINTS
-                            outfile->Printf("BxBz %20.12f\n", tmpBxBz);
-#endif
                             // ByBz
                             Vp[Qy][Qz] += tmpByBz;
-#if DEBUGINTS
-                            outfile->Printf("ByBz %20.12f\n", tmpByBz);
-#endif
                             // AxBx
                             Vp[Px][Qx] += ABscale*(tmpCxCx + tmpCxAx - tmpBxBx);
-#if DEBUGINTS
-                            outfile->Printf("AxBx %20.12f\n", ABscale*(tmpCxCx + tmpCxAx - tmpBxBx));
-#endif
                             // AxBy
                             Vp[Px][Qy] += tmpCxCy + tmpCxAy - tmpBxBy;
-#if DEBUGINTS
-                            outfile->Printf("AxBy %20.12f\n", tmpCxCy + tmpCxAy - tmpBxBy);
-#endif
                             // AxBz
                             Vp[Px][Qz] += tmpCxCz + tmpCxAz - tmpBxBz;
-#if DEBUGINTS
-                            outfile->Printf("AxBz %20.12f\n", tmpCxCz + tmpCxAz - tmpBxBz);
-#endif
                             // AyBx
                             Vp[Py][Qx] += tmpCxCy + tmpCyAx - tmpBxBy;
-#if DEBUGINTS
-                            outfile->Printf("AyBx %20.12f\n", tmpCxCy + tmpCyAx - tmpBxBy);
-#endif
                             // AyBy
                             Vp[Py][Qy] += ABscale*(tmpCyCy + tmpCyAy - tmpByBy);
-#if DEBUGINTS
-                            outfile->Printf("AyBy %20.12f\n", ABscale*(tmpCyCy + tmpCyAy - tmpByBy));
-#endif
                             // AyBz
                             Vp[Py][Qz] += tmpCyCz + tmpCyAz - tmpByBz;
-#if DEBUGINTS
-                            outfile->Printf("AyBz %20.12f\n", tmpCyCz + tmpCyAz - tmpByBz);
-#endif
                             // AzBx
                             Vp[Pz][Qx] += tmpCxCz + tmpCzAx - tmpBxBz;
-#if DEBUGINTS
-                            outfile->Printf("AzBx %20.12f\n", tmpCxCz + tmpCzAx - tmpBxBz);
-#endif
                             // AzBy
                             Vp[Pz][Qy] += tmpCyCz + tmpCzAy - tmpByBz;
-#if DEBUGINTS
-                            outfile->Printf("AzBy %20.12f\n", tmpCyCz + tmpCzAy - tmpByBz);
-#endif
                             // AzBz
                             Vp[Pz][Qz] += ABscale*(tmpCzCz + tmpCzAz - tmpBzBz);
-#if DEBUGINTS
-                            outfile->Printf("AzBz %20.12f\n", ABscale*(tmpCzCz + tmpCzAz - tmpBzBz));
-#endif
-#endif //VAA
-
-#if INCLUDE_VCA
                             // CxAx
                             Vp[Cx][Px] += ACscale*tmpCxAx;
-#if DEBUGINTS
-                            outfile->Printf("CxAx %20.12f\n",  ACscale*tmpCxAx);
-#endif
                             // CxAy
                             Vp[Cx][Py] += tmpCxAy;
-#if DEBUGINTS
-                            outfile->Printf("CxAy %20.12f\n",  tmpCxAy);
-#endif
                             // CxAz
                             Vp[Cx][Pz] += tmpCxAz;
-#if DEBUGINTS
-                            outfile->Printf("CxAz %20.12f\n",  tmpCxAz);
-#endif
                             // CyAx
                             Vp[Cy][Px] += tmpCyAx;
-#if DEBUGINTS
-                            outfile->Printf("CyAx %20.12f\n",  tmpCyAx);
-#endif
                             // CyAy
                             Vp[Cy][Py] += ACscale*tmpCyAy;
-#if DEBUGINTS
-                            outfile->Printf("CyAy %20.12f\n",  ACscale*tmpCyAy);
-#endif
                             // CyAz
                             Vp[Cy][Pz] += tmpCyAz;
-#if DEBUGINTS
-                            outfile->Printf("CyAz %20.12f\n",  tmpCyAz);
-#endif
                             // CzAx
                             Vp[Cz][Px] += tmpCzAx;
-#if DEBUGINTS
-                            outfile->Printf("CzAx %20.12f\n",  tmpCzAx);
-#endif
                             // CzAy
                             Vp[Cz][Py] += tmpCzAy;
-#if DEBUGINTS
-                            outfile->Printf("CzAy %20.12f\n",  tmpCzAy);
-#endif
                             // CzAz
                             Vp[Cz][Pz] += ACscale*tmpCzAz;
-#if DEBUGINTS
-                            outfile->Printf("CzAz %20.12f\n",  ACscale*tmpCzAz);
-#endif
                             // CxBx
                             Vp[Cx][Qx] += BCscale*(tmpCxAx + tmpAxAx - tmpBxBx);
-#if DEBUGINTS
-                            outfile->Printf("CxBx %20.12f\n",  BCscale*(tmpCxAx + tmpAxAx - tmpBxBx));
-#endif
                             // CxBy
                             Vp[Cx][Qy] += tmpCyAx + tmpAxAy - tmpBxBy;
-#if DEBUGINTS
-                            outfile->Printf("CxBy %20.12f\n",  tmpCyAx + tmpAxAy - tmpBxBy);
-#endif
                             // CxBz
                             Vp[Cx][Qz] += tmpCzAx + tmpAxAz - tmpBxBz;
-#if DEBUGINTS
-                            outfile->Printf("CxBz %20.12f\n",  tmpCzAx + tmpAxAz - tmpBxBz);
-#endif
                             // CyBx
                             Vp[Cy][Qx] += tmpCxAy + tmpAxAy - tmpBxBy;
-#if DEBUGINTS
-                            outfile->Printf("CyBx %20.12f\n",  tmpCxAy + tmpAxAy - tmpBxBy);
-#endif
                             // CyBy
                             Vp[Cy][Qy] += BCscale*(tmpCyAy + tmpAyAy - tmpByBy);
-#if DEBUGINTS
-                            outfile->Printf("CyBy %20.12f\n",  BCscale*(tmpCyAy + tmpAyAy - tmpByBy));
-#endif
                             // CyBz
                             Vp[Cy][Qz] += tmpCzAy + tmpAyAz - tmpByBz;
-#if DEBUGINTS
-                            outfile->Printf("CyBz %20.12f\n",  tmpCzAy + tmpAyAz - tmpByBz);
-#endif
                             // CzBx
                             Vp[Cz][Qx] += tmpCxAz + tmpAxAz - tmpBxBz;
-#if DEBUGINTS
-                            outfile->Printf("CzBx %20.12f\n",  tmpCxAz + tmpAxAz - tmpBxBz);
-#endif
                             // CzBy
                             Vp[Cz][Qy] += tmpCyAz + tmpAyAz - tmpByBz;
-#if DEBUGINTS
-                            outfile->Printf("CzBy %20.12f\n",  tmpCyAz + tmpAyAz - tmpByBz);
-#endif
                             // CzBz
                             Vp[Cz][Qz] += BCscale*(tmpCzAz + tmpAzAz - tmpBzBz);
-#if DEBUGINTS
-                            outfile->Printf("CzBy %20.12f\n",  BCscale*(tmpCzAz + tmpAzAz - tmpBzBz));
-#endif
-
-#endif // VCA
-
-#if INCLUDE_VCC
                             // CxCx
                             Vp[Cx][Cx] += tmpCxCx;
-#if DEBUGINTS
-                            outfile->Printf("CxCx %20.12f\n", tmpCxCx);
-#endif
                             // CyCy
                             Vp[Cy][Cy] += tmpCyCy;
-#if DEBUGINTS
-                            outfile->Printf("CyCy %20.12f\n", tmpCyCy);
-#endif
                             // CzCz
                             Vp[Cz][Cz] += tmpCzCz;
-#if DEBUGINTS
-                            outfile->Printf("CzCz %20.12f\n", tmpCzCz);
-#endif
                             // CxCy
                             Vp[Cx][Cy] += tmpCxCy;
-#if DEBUGINTS
-                            outfile->Printf("CxCy %20.12f\n", tmpCxCy);
-#endif
                             // CxCz
                             Vp[Cx][Cz] += tmpCxCz;
-#if DEBUGINTS
-                            outfile->Printf("CxCz %20.12f\n", tmpCxCz);
-#endif
                             // CyCz
                             Vp[Cy][Cz] += tmpCyCz;
-#if DEBUGINTS
-                            outfile->Printf("CyCz %20.12f\n", tmpCyCz);
-#endif
-
-#endif //VCC
 
                             ++CxAx;
                             ++CxAy;
