@@ -727,7 +727,6 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                             temp = 4.0*a2*a2*vi[iind][jind+jy2+jy2][0] - 2.0*a2*(2*m2+1)*v_int;
                             if (m2 > 1)
                                 temp += m2*(m2-1)*vi[iind][jind-jy2-jy2][0];
-                            if (m2 > 1)
                             buffer_[18*size + ao12] -= temp * pfac;
 
                             // V_{\mu\nu}^{b_y b_z}

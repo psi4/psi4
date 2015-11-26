@@ -754,7 +754,7 @@ SharedMatrix SCFGrad::compute_hessian()
                              *     ----- + ----- + -----  =  0
                              *     ∂A ∂A   ∂B ∂A   ∂C ∂A
                              *
-                             * which leads to the identies
+                             * which leads to the identities
                              *
                              *     ∂^2 S     ∂^2 S     ∂^2 S     ∂^2 S
                              *     -----  =  -----  +  -----  -  -----
@@ -806,7 +806,7 @@ SharedMatrix SCFGrad::compute_hessian()
                             outfile->Printf("AxAz %20.12f\n", tmpAxAz);
 #endif
                             // AyAz
-                            Vp[Py][Pz] += -tmpAyAz;
+                            Vp[Py][Pz] += tmpAyAz;
 #if DEBUGINTS
                             outfile->Printf("AyAz %20.12f\n", tmpAyAz);
 #endif
