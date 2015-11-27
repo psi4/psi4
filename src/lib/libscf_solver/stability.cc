@@ -74,7 +74,7 @@ void UStab::common_init()
     debug_ = options_.get_int("DEBUG");
     bench_ = options_.get_int("BENCH");
     convergence_ = options_.get_double("SOLVER_CONVERGENCE");
-    memory_ = options_.get_double("MEMORY");
+    memory_ = Process::environment.get_memory();
 
 }
 
