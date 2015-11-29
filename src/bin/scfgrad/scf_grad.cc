@@ -1236,7 +1236,6 @@ SharedMatrix SCFGrad::compute_hessian()
         hessians["Overlap"]->print();
     }
     // => Two-Electron Hessian <= //
-    /**
 
     timer_on("Hess: JK");
 
@@ -1270,7 +1269,7 @@ SharedMatrix SCFGrad::compute_hessian()
     jk->print_header();
     jk->compute_hessian();    
 
-    std::map<std::string, SharedMatrix>& jk_hessians = jk->gradients();
+    std::map<std::string, SharedMatrix>& jk_hessians = jk->hessians();
     if (functional) {
         hessians["Coulomb"] = jk_hessians["Coulomb"];
         if (functional->is_x_hybrid()) {
@@ -1285,10 +1284,13 @@ SharedMatrix SCFGrad::compute_hessian()
         hessians["Coulomb"] = jk_hessians["Coulomb"];
         hessians["Exchange"] = jk_hessians["Exchange"];
         hessians["Exchange"]->scale(-1.0);
+        SharedMatrix tmp = hessians["Coulomb"]->clone();
+        tmp->add(hessians["Exchange"]);
+        tmp->set_name("Two electron hessian");
+        tmp->print();
     }
     timer_off("Hess: JK");
     
-    **/
 
     // => XC Hessian <= //
     timer_on("Hess: XC");
