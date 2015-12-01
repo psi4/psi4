@@ -386,7 +386,6 @@ SharedVector CIWavefunction::get_tpdm(bool symmetrize, const std::string& tpdm_t
   ntri = (npop * (npop + 1))/2;
   SharedVector symm_tpdm(new Vector("Symm TPDM", (ntri * (ntri + 1))/2));
   double* symm_tpdmp = symm_tpdm->pointer();
-
   for (p=0,target=0; p<npop; p++) {
     for (q=0; q<=p; q++) {
       for (r=0; r<=p; r++) {
@@ -421,26 +420,26 @@ SharedMatrix CIWavefunction::get_active_tpdm(const std::string& tpdm_type)
   SharedMatrix actTPDM(new Matrix("TPDM", nci*nci, nci*nci));
   double* actTPDMp = actTPDM->pointer()[0];
 
-  SharedVector fullTPDM = get_tpdm(true, tpdm_type);
-  double* fullTPDMp = fullTPDM->pointer();
+  //SharedVector fullTPDM = get_tpdm(true, tpdm_type);
+  //double* fullTPDMp = fullTPDM->pointer();
+  double* tpdmp = tpdm_->pointer();
 
+  int ndiff = 0;
   int nci2 = nci * nci;
   int nci3 = nci * nci * nci;
   for (int i=0; i<nci; i++){
   for (int j=0; j<nci; j++){
   for (int k=0; k<nci; k++){
   for (int l=0; l<nci; l++){
-      int r_i = CalcInfo_->act_reorder[i];
-      int r_j = CalcInfo_->act_reorder[j];
-      int r_k = CalcInfo_->act_reorder[k];
-      int r_l = CalcInfo_->act_reorder[l];
-      int r_ij = INDEX(ndocc + r_i, ndocc + r_j);
-      int r_kl = INDEX(ndocc + r_k, ndocc + r_l);
-      int r_ijkl = INDEX(r_ij, r_kl);
-      actTPDMp[i * nci3 + j * nci2 + k * nci + l] = fullTPDMp[r_ijkl];
-  }}}}
+      int ijkl = INDEX(INDEX(i,j), INDEX(k, l));
+      actTPDMp[i * nci3 + j * nci2 + k * nci + l] = tpdmp[ijkl];
 
-  fullTPDM.reset();
+  }}}}
+  //outfile->Printf("Ndiff = %d\n", ndiff);
+  //for (int i=0; i<nci; i++) outfile->Printf("%d %d\n", i, CalcInfo_->act_reorder[i]);
+//  throw PSIEXCEPTION("STOPPING");
+
+  //fullTPDM.reset();
 
   // Set numpy shape
   actTPDM->set_numpy_dims(4);
@@ -450,16 +449,6 @@ SharedMatrix CIWavefunction::get_active_tpdm(const std::string& tpdm_type)
   actTPDM->set_numpy_shape(shape);
 
   return actTPDM;
-}
-
-
-void CIWavefunction::form_tpdm(void)
-{
-  tpdm(alplist_, betlist_, Parameters_->num_roots,
-       Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
-       Parameters_->num_roots,
-       Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
-       Parameters_->tpdm_file, Parameters_->tpdm_write, Parameters_->tpdm_print);
 }
 
 /*

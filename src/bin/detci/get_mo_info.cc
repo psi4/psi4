@@ -267,12 +267,10 @@ void CIWavefunction::get_mo_info()
     CalcInfo_->num_fzv_orbs += CalcInfo_->frozen_uocc[i];
     CalcInfo_->num_rsv_orbs += CalcInfo_->rstr_uocc[i];
   }
+
   CalcInfo_->num_drc_orbs = CalcInfo_->num_fzc_orbs + CalcInfo_->num_rsc_orbs;
   CalcInfo_->num_drv_orbs = CalcInfo_->num_fzv_orbs + CalcInfo_->num_rsv_orbs;
   CalcInfo_->num_rot_orbs = CalcInfo_->nmo - CalcInfo_->num_fzc_orbs - CalcInfo_->num_fzv_orbs;
-
-  // calculate number of orbitals active in CI
-  // maybe this changes later for cor orbs, depends on where we go w/ it
   CalcInfo_->num_ci_orbs = CalcInfo_->nmo - CalcInfo_->num_drc_orbs -
     CalcInfo_->num_drv_orbs;
 
@@ -299,12 +297,16 @@ void CIWavefunction::get_mo_info()
 
   // Construct "active reordering array"
   CalcInfo_->act_reorder = init_int_array(CalcInfo_->num_ci_orbs);
+  CalcInfo_->act_order = init_int_array(CalcInfo_->num_ci_orbs);
   for (int h=0, target=0, pos=0; h<nirrep_; h++){
     target += CalcInfo_->dropped_docc[h];
     for (int i=0; i<CalcInfo_->ci_orbs[h]; i++){
       CalcInfo_->act_reorder[pos++] = CalcInfo_->reorder[target++] - CalcInfo_->num_drc_orbs;
     }
     target += CalcInfo_->dropped_uocc[h];
+  }
+  for (int i=0; i<CalcInfo_->num_ci_orbs; i++){
+    CalcInfo_->act_order[CalcInfo_->act_reorder[i]] = i;
   }
   // for (int i=0; i<CalcInfo_->num_ci_orbs; i++) outfile->Printf("Act_reorder %d \n", CalcInfo_->act_reorder[i]);
 

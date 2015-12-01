@@ -317,6 +317,7 @@ struct calcinfo {
    int *reorder;         /* map Pitzer-ordered orbitals to our ordering */
    int *act_reorder;     /* map Pitzer-ordered orbitals to our ordering for active only*/
    int *order;           /* map our ordering back to Pitzer ordering */
+   int *act_order;       /* map our ordering back to Pitzer ordering for active only*/
    double *scfeigval;    /* SCF eigenvalues */
    double *scfeigvala;    /* For ZAPTn, alpha and beta eigenvalues different */
    double *scfeigvalb;    /* in SOCC space */
