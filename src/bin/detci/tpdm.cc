@@ -43,13 +43,21 @@
 namespace psi { namespace detci {
 
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
-#define TPDMINDEX2(i,j,n) ((i)*(n) + (j))
 
+// DGAS this is still awkward, I think the TPDM code can be less general than the OPDM one for now.
+void CIWavefunction::form_tpdm(void)
+{
+  std::vector<SharedVector> tpdm_list;
+  tpdm_list = tpdm(Parameters_->num_roots, Parameters_->first_d_tmp_unit, Parameters_->first_d_tmp_unit);
+  tpdm_called_ = true;
+  tpdm_aa_ = tpdm_list[0];
+  tpdm_ab_ = tpdm_list[1];
+  tpdm_bb_ = tpdm_list[2];
+  tpdm_    = tpdm_list[3];
+}
 
-void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist, 
-          int Inroots, int Inunits, int Ifirstunit, 
-	  int Jnroots, int Jnunits, int Jfirstunit, 
-	  int targetfile, int writeflag, int printflag)
+// We always return the state-averaged tpdm here, not sure what else we really need.
+std::vector<SharedVector> CIWavefunction::tpdm(int nroots, int Ifirstunit, int Jfirstunit) 
 {
 
    //CIvect Ivec, Jvec;
@@ -77,33 +85,18 @@ void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist,
 
    ndrc = CalcInfo_->num_drc_orbs;
    populated_orbs = CalcInfo_->nmo - CalcInfo_->num_drv_orbs;
+   int writeflag = 1;
+   int printflag = 0;
+   int targetfile = Parameters_->tpdm_file;
 
-   if (ndrc) { // dropped core parts computed from OPDM
-     psio_open(Parameters_->opdm_file, PSIO_OPEN_OLD);
-     onepdm_a = block_matrix(populated_orbs, populated_orbs);
-     onepdm_b = block_matrix(populated_orbs, populated_orbs);
-   }
 
-   CIvect Ivec(Parameters_->icore, Inroots, Inunits, Ifirstunit, CIblks_, CalcInfo_, Parameters_,
+    
+   CIvect Ivec(Parameters_->icore, nroots, 1, Ifirstunit, CIblks_, CalcInfo_, Parameters_,
                H0block_, false);
-   //Ivec.set(Parameters_->icore, Inroots, Inunits, Ifirstunit, CIblks_);  
-//   Ivec.set(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore, 1,
-//	     CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
-//	     CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
-//	     CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Inroots, Inunits,
-//	     Ifirstunit, CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
-
-   CIvect Jvec(Parameters_->icore, Jnroots, Jnunits, Jfirstunit, CIblks_, CalcInfo_, Parameters_,
-               H0block_, false);
-   //Jvec.set(Parameters_->icore, Jnroots, Jnunits, Jfirstunit, CIblks_);  
-//   Jvec.set(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore, 1,
-//	     CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
-//	     CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
-//	     CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Jnroots, Jnunits,
-//	     Jfirstunit, CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
-
-   // Open I/O files for these CIvectors if not already open
    Ivec.init_io_files(true);
+
+   CIvect Jvec(Parameters_->icore, nroots, 1, Jfirstunit, CIblks_, CalcInfo_, Parameters_,
+               H0block_, false);
    Jvec.init_io_files(true);
 
    buffer1 = Ivec.buf_malloc();
@@ -113,9 +106,12 @@ void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist,
 
    ntri = CalcInfo_->num_ci_orbs * CalcInfo_->num_ci_orbs;
    ntri2 = (ntri * (ntri + 1)) / 2;
-   twopdm_aa = init_array(ntri2);
-   twopdm_bb = init_array(ntri2);
-   twopdm_ab = init_array(ntri * ntri);
+   SharedVector tpdm_aa(new Vector("MO-basis TPDM AA", ntri2));
+   SharedVector tpdm_ab(new Vector("MO-basis TPDM AB", ntri*ntri));
+   SharedVector tpdm_bb(new Vector("MO-basis TPDM BB", ntri2));
+   double* tpdm_aap = tpdm_aa->pointer();
+   double* tpdm_abp = tpdm_ab->pointer();
+   double* tpdm_bbp = tpdm_bb->pointer();
 
    if ((Ivec.icore_==2 && Ivec.Ms0_ && CalcInfo_->ref_sym != 0) || 
        (Ivec.icore_==0 && Ivec.Ms0_)) {
@@ -175,17 +171,17 @@ void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist,
            Jvec.read(Jroot, Jbuf);
 	 
            if (do_Jblock) {
-             tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs, 
-               Ivec.num_alpcodes_, Ivec.num_betcodes_, twopdm_aa, twopdm_bb, twopdm_ab, 
+             tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs, 
+               Ivec.num_alpcodes_, Ivec.num_betcodes_, tpdm_aap, tpdm_bbp, tpdm_abp, 
                Jvec.blocks_[Jblock], Ivec.blocks_[Iblock], 
                Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
            }
 	 
            if (do_Jblock2) {
              Jvec.transp_block(Jblock, transp_tmp);
-             tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs,
+             tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
                Ivec.num_alpcodes_, Ivec.num_betcodes_, 
-               twopdm_aa, twopdm_bb, twopdm_ab, transp_tmp, Ivec.blocks_[Iblock], 
+               tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, Ivec.blocks_[Iblock], 
                Jbc, Jac, Jnbs, Jnas, Iac, Ibc, Inas, Inbs, weight);
            }
 	 
@@ -221,18 +217,18 @@ void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist,
              Jvec.read(Jroot, Jbuf);
 	 
              if (do_Jblock) {
-               tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs, 
+               tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs, 
                  Ivec.num_alpcodes_, Ivec.num_betcodes_, 
-                 twopdm_aa, twopdm_bb, twopdm_ab, Jvec.blocks_[Jblock], 
+                 tpdm_aap, tpdm_bbp, tpdm_abp, Jvec.blocks_[Jblock], 
                  transp_tmp2, Jac, Jbc, Jnas,
                  Jnbs, Iac, Ibc, Inas, Inbs, weight);
              }
 	   
              if (do_Jblock2) {
                Jvec.transp_block(Jblock, transp_tmp);
-               tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs,
+               tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
                  Ivec.num_alpcodes_, Ivec.num_betcodes_,
-                 twopdm_aa, twopdm_bb, twopdm_ab, transp_tmp, transp_tmp2, 
+                 tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, transp_tmp2, 
                  Jbc, Jac, Jnbs, Jnas, Iac, Ibc, Inas, Inbs, weight);
              }
            } /* end loop over Jbuf */
@@ -264,9 +260,9 @@ void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist,
            Jnbs = Jvec.Ib_size_[Jblock];
            if (s1_contrib_[Iblock][Jblock] || s2_contrib_[Iblock][Jblock] ||
              s3_contrib_[Iblock][Jblock])
-             tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs,
+             tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
                Ivec.num_alpcodes_, Ivec.num_betcodes_, 
-               twopdm_aa, twopdm_bb, twopdm_ab, Jvec.blocks_[Jblock], Ivec.blocks_[Iblock], 
+               tpdm_aap, tpdm_bbp, tpdm_abp, Jvec.blocks_[Jblock], Ivec.blocks_[Iblock], 
                Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
          }
        } /* end loop over Iblock */
@@ -303,9 +299,9 @@ void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist,
    
                if (s1_contrib_[Iblock][Jblock] || s2_contrib_[Iblock][Jblock] ||
                  s3_contrib_[Iblock][Jblock])
-               tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs, 
+               tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs, 
                  Ivec.num_alpcodes_, Ivec.num_betcodes_,
-                 twopdm_aa, twopdm_bb, twopdm_ab, Jvec.blocks_[Jblock], Ivec.blocks_[Iblock], 
+                 tpdm_aap, tpdm_bbp, tpdm_abp, Jvec.blocks_[Jblock], Ivec.blocks_[Iblock], 
                  Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
 
                if (Jvec.buf_offdiag_[Jbuf]) {
@@ -314,9 +310,9 @@ void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist,
                    s2_contrib_[Iblock][Jblock2] ||
                    s3_contrib_[Iblock][Jblock2]) {
                    Jvec.transp_block(Jblock, transp_tmp);
-                   tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs,
+                   tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
                      Ivec.num_alpcodes_, Ivec.num_betcodes_,
-                     twopdm_aa, twopdm_bb, twopdm_ab, transp_tmp, Ivec.blocks_[Iblock], 
+                     tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, Ivec.blocks_[Iblock], 
                      Jbc, Jac, Jnbs, Jnas, Iac, Ibc, Inas, Inbs, weight);
                  }
                }
@@ -340,9 +336,9 @@ void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist,
 	   
                  if (s1_contrib_[Iblock2][Jblock] || s2_contrib_[Iblock2][Jblock]
                    || s3_contrib_[Iblock2][Jblock])
-                   tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs,
+                   tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
                      Ivec.num_alpcodes_, Ivec.num_betcodes_, 
-                     twopdm_aa, twopdm_bb, twopdm_ab, Jvec.blocks_[Jblock], transp_tmp2, 
+                     tpdm_aap, tpdm_bbp, tpdm_abp, Jvec.blocks_[Jblock], transp_tmp2, 
                      Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
 
                  if (Jvec.buf_offdiag_[Jbuf]) {
@@ -351,9 +347,9 @@ void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist,
                      s2_contrib_[Iblock][Jblock2] ||
                      s3_contrib_[Iblock][Jblock2]) {
                      Jvec.transp_block(Jblock, transp_tmp);
-                     tpdm_block(alplist, betlist, CalcInfo_->num_ci_orbs,
+                     tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
                      Ivec.num_alpcodes_, Ivec.num_betcodes_,
-                     twopdm_aa, twopdm_bb, twopdm_ab, transp_tmp, transp_tmp2, Jbc, Jac,
+                     tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, transp_tmp2, Jbc, Jac,
                      Jnbs, Jnas, Iac, Ibc, Inas, Inbs, weight);
                    }
                  }
@@ -368,8 +364,7 @@ void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist,
    } /* end icore==2 */
 
    else {
-     printf("tpdm: unrecognized core option!\n");
-     return;
+     throw PSIEXCEPTION("CIWavefunction::tpdm: unrecognized core option!\n");
    }
 
    /* write and/or print the tpdm
@@ -378,134 +373,91 @@ void CIWavefunction::tpdm(struct stringwr **alplist, struct stringwr **betlist,
       the total 2-pdm.
     */
 
-   if (writeflag) {
-     
-     if (printflag) outfile->Printf( "\nTwo-particle density matrix\n\n");
-     iwl_buf_init(&TBuff, targetfile, 0.0, 0, 0);
-     iwl_buf_init(&TBuff_aa, PSIF_MO_AA_TPDM, 0.0, 0, 0);
-     iwl_buf_init(&TBuff_bb, PSIF_MO_BB_TPDM, 0.0, 0, 0);
-     iwl_buf_init(&TBuff_ab, PSIF_MO_AB_TPDM, 0.0, 0, 0);
-     orbsym = CalcInfo_->orbsym + ndrc;
 
-     /* do the core-core and core-active part here */
-     if (ndrc) {
-         if (Parameters_->average_num == 1) 
-           sprintf(opdm_key, "MO-basis Alpha OPDM Root %d",
-             Parameters_->average_states[0]);
-         else
-           sprintf(opdm_key, "MO-basis Alpha OPDM");
 
-         psio_read_entry(Parameters_->opdm_file, opdm_key, (char *) onepdm_a[0],
-           populated_orbs * populated_orbs * sizeof(double));
+   // Build summed TPDM
+   SharedVector tpdm_ns(new Vector("MO-basis TPDM (unsymmetrized)", ntri2));
+   double* tpdm_nsp = tpdm_ns->pointer();
+   orbsym = CalcInfo_->orbsym + ndrc;
+   for (i=0; i<CalcInfo_->num_ci_orbs; i++) {
+   for (j=0; j<CalcInfo_->num_ci_orbs; j++) {
+   for (k=0; k<=i; k++) {
 
-         if (Parameters_->average_num == 1) 
-           sprintf(opdm_key, "MO-basis Beta OPDM Root %d",
-             Parameters_->average_states[0]);
-         else
-           sprintf(opdm_key, "MO-basis Beta OPDM");
+     if (k==i) lmax = j+1;
+     else lmax = CalcInfo_->num_ci_orbs;
+     ijksym = orbsym[i] ^ orbsym[j] ^ orbsym[k];
 
-         psio_read_entry(Parameters_->opdm_file, opdm_key, (char *) onepdm_b[0],
-           populated_orbs * populated_orbs * sizeof(double));
+     for (l=0; l<lmax; l++) {
+       if ((orbsym[l] ^ ijksym) != 0) continue;
+       ij = i * CalcInfo_->num_ci_orbs + j;
+       kl = k * CalcInfo_->num_ci_orbs + l;
+       long int ijkl_tri = INDEX(ij,kl);
+       long int ijkl = ij * ntri + kl;
+       long int klij = kl * ntri + ij;
+       
+       double value_aa = tpdm_aap[ijkl_tri];
+       double value_bb = tpdm_bbp[ijkl_tri];
+       double value_ab = tpdm_abp[ijkl];
+       double value_ba = tpdm_abp[klij];
+       // For PSI the factor of 1/2 is not pulled outside...so put
+       // it back inside now and then write out to the IWL buffer.
+       value = 0.5 * (value_aa + value_bb + value_ab + value_ba);
+       tpdm_nsp[INDEX(ij, kl)] = value;
+     }
+   }}}
 
-       /* core-core part */
-       for (i=0; i<ndrc; i++) {
-         for (j=0; j<i; j++) {
-           iwl_buf_wrt_val(&TBuff,i,i,j,j, 2.00,printflag,"outfile",0);
-           iwl_buf_wrt_val(&TBuff_aa,i,i,j,j, 1.00,0,"outfile",0);
-           iwl_buf_wrt_val(&TBuff_bb,i,i,j,j, 1.00,0,"outfile",0);
-           iwl_buf_wrt_val(&TBuff_ab,i,i,j,j, 1.00,0,"outfile",0);
-           iwl_buf_wrt_val(&TBuff_ab,j,j,i,i, 1.00,0,"outfile",0);
+   //outfile->Printf("Wrote MO-basis TPDM\n");
+   //outfile->Printf("Build MO-basis TPDM\n");
+   SharedVector tpdm(new Vector("MO-basis TPDM", (ntri * (ntri + 1))/2 ));
+   double* tpdmp = tpdm->pointer();
 
-           iwl_buf_wrt_val(&TBuff,i,j,j,i,-1.00,printflag,"outfile",0);
-           iwl_buf_wrt_val(&TBuff_aa,i,j,j,i,-1.00,0,"outfile",0);
-           iwl_buf_wrt_val(&TBuff_bb,i,j,j,i,-1.00,0,"outfile",0);
-         }
-         iwl_buf_wrt_val(&TBuff,i,i,i,i,1.0,printflag,"outfile",0);
-         iwl_buf_wrt_val(&TBuff_ab,i,i,i,i,1.0,0,"outfile",0);
-       }
+   // Symmetrize and reorder
+   for (int p=0, target=0; p<CalcInfo_->num_ci_orbs; p++) {
+     for (int q=0; q<=p; q++) {
+       for (int r=0; r<=p; r++) {
+         int smax = (p == r) ? q+1 : r+1;
+         for (int s=0; s<smax; s++) {
 
-       /* core-active part */
-       for (i=ndrc; i<populated_orbs; i++) {
-         for (j=ndrc; j<populated_orbs; j++) {
-           const double value_a = onepdm_a[i][j];
-           const double value_b = onepdm_b[i][j];
-           for (k=0; k<ndrc; k++) {
-             iwl_buf_wrt_val(&TBuff,i,j,k,k,value_a + value_b,printflag,"outfile",0);
-             iwl_buf_wrt_val(&TBuff_aa,i,j,k,k,value_a,0,"outfile",0);
-             iwl_buf_wrt_val(&TBuff_bb,i,j,k,k,value_b,0,"outfile",0);
-             iwl_buf_wrt_val(&TBuff_ab,i,j,k,k,value_a,0,"outfile",0);
-             iwl_buf_wrt_val(&TBuff_ab,k,k,i,j,value_b,0,"outfile",0);
+          int r_p = CalcInfo_->act_order[p];
+          int r_q = CalcInfo_->act_order[q];
+          int r_r = CalcInfo_->act_order[r];
+          int r_s = CalcInfo_->act_order[s];
+          int r_pq = INDEX(r_p, r_q);
+          int r_rs = INDEX(r_r, r_s);
+          int tpdm_idx = INDEX(r_pq, r_rs);
 
-             iwl_buf_wrt_val(&TBuff,i,k,k,j,-0.5*(value_a+value_b),printflag,"outfile",0);
-             iwl_buf_wrt_val(&TBuff_aa,i,k,k,j,-value_a,0,"outfile",0);
-             iwl_buf_wrt_val(&TBuff_bb,i,k,k,j,-value_b,0,"outfile",0);
-           }
+          int pq = p * CalcInfo_->num_ci_orbs + q;
+          int qp = q * CalcInfo_->num_ci_orbs + p;
+          int rs = r * CalcInfo_->num_ci_orbs + s;
+          int sr = s * CalcInfo_->num_ci_orbs + r;
+          int pqrs = INDEX(pq,rs);
+          int qprs = INDEX(qp,rs);
+          int pqsr = INDEX(pq,sr);
+          int qpsr = INDEX(qp,sr); 
+          /* would be 0.25 but the formulae I used for the diag hessian
+           * seem to define the TPDM with the 1/2 back outside */
+          tpdmp[tpdm_idx] = 0.5 * (tpdm_nsp[pqrs] + tpdm_nsp[qprs] +
+                         tpdm_nsp[pqsr] + tpdm_nsp[qpsr]);
+
          }
        }
      }
- 
-     for (i=0; i<CalcInfo_->num_ci_orbs; i++) {
-       i2 = i+ ndrc;
-       for (j=0; j<CalcInfo_->num_ci_orbs; j++) {
-         j2 = j + ndrc;
-	 for (k=0; k<=i; k++) {
-           k2 = k + ndrc;
-	   if (k==i) lmax = j+1;
-	   else lmax = CalcInfo_->num_ci_orbs;
-	   ijksym = orbsym[i] ^ orbsym[j] ^ orbsym[k];
-	   for (l=0; l<lmax; l++) {
-             l2 = l + ndrc;
-	     if ((orbsym[l] ^ ijksym) != 0) continue;
-	     ij = i * CalcInfo_->num_ci_orbs + j;
-	     kl = k * CalcInfo_->num_ci_orbs + l;
-	     const long int ijkl_tri = INDEX(ij,kl);
-         const long int ijkl = TPDMINDEX2(ij,kl,ntri);
-         const long int klij = TPDMINDEX2(kl,ij,ntri);
-	     
-         const double value_aa = twopdm_aa[ijkl_tri];
-         const double value_bb = twopdm_bb[ijkl_tri];
-         const double value_ab = twopdm_ab[ijkl];
-         const double value_ba = twopdm_ab[klij];
-             // For PSI the factor of 1/2 is not pulled outside...so put
-             // it back inside now and then write out to the IWL buffer.
-             value = 0.5 * (value_aa + value_bb + value_ab + value_ba);
-	     iwl_buf_wrt_val(&TBuff,i2,j2,k2,l2,value,printflag,"outfile",0);
-         iwl_buf_wrt_val(&TBuff_aa,i2,j2,k2,l2,value_aa,0,"outfile",0);
-         iwl_buf_wrt_val(&TBuff_bb,i2,j2,k2,l2,value_bb,0,"outfile",0);
-         iwl_buf_wrt_val(&TBuff_ab,i2,j2,k2,l2,value_ab,0,"outfile",0);
-         if (ij != kl)
-           iwl_buf_wrt_val(&TBuff_ab,k2,l2,i2,j2,value_ba,0,"outfile",0);
-	   }
-	 }
-       }
-     }
-     iwl_buf_flush(&TBuff, 1);
-     iwl_buf_close(&TBuff, 1);
-     iwl_buf_flush(&TBuff_aa, 1);
-     iwl_buf_close(&TBuff_aa, 1);
-     iwl_buf_flush(&TBuff_bb, 1);
-     iwl_buf_close(&TBuff_bb, 1);
-     iwl_buf_flush(&TBuff_ab, 1);
-     iwl_buf_close(&TBuff_ab, 1);
-     if (Parameters_->print_lvl) outfile->Printf( "\n");
    }
-
-
-   if (ndrc) {
-     psio_close(Parameters_->opdm_file, 1);
-     free_block(onepdm_a);
-     free_block(onepdm_b);
-   }
+   tpdm_ns.reset();
 
    Ivec.buf_unlock();
    Jvec.buf_unlock();
-   free(twopdm_aa);
-   free(twopdm_bb);
-   free(twopdm_ab);
    if (transp_tmp != NULL) free_block(transp_tmp);
    if (transp_tmp2 != NULL) free_block(transp_tmp2);
    free(buffer1);
    free(buffer2);
+
+  std::vector<SharedVector> ret_list;
+  ret_list.push_back(tpdm_aa); 
+  ret_list.push_back(tpdm_ab); 
+  ret_list.push_back(tpdm_bb); 
+  ret_list.push_back(tpdm); 
+  return ret_list;
 }
 
 
@@ -667,7 +619,7 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist, struct stringwr **bet
 	  Ib_sgn = (double) *Jbsgn++;
 	  C2 = CI[Ia_idx][Ib_idx];
 	  // alpha-beta matrix is stored without packing bra and ket together
-	  ijkl = TPDMINDEX2(oij, okl, nbf2);
+      ijkl = oij * nbf2 + okl;
 	  tval = Ib_sgn * Ia_sgn * C1 * C2;
 	  // in orbital (i.e. non-spi-orbital) code had to scale the diagonal by 2
 	  // because d(ij,kl) += d_ab(ij,kl) + d_ab(kl,ij), hence

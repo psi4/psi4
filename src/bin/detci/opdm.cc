@@ -141,6 +141,7 @@ void CIWavefunction::form_opdm(void)
     Da_ = opdm_add_inactive(opdm_a_, 1.0, true);
     Db_ = opdm_add_inactive(opdm_b_, 1.0, true);
   }
+  opdm_called_ = true;
 
 }
 /*
@@ -514,7 +515,6 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(int root_start, int
   scratch_a.reset();
   scratch_b.reset();
 
-  opdm_called_ = true;
   return opdm_list;
 }
 

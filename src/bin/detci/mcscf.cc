@@ -113,9 +113,11 @@ void CIWavefunction::compute_mcscf()
   for (int iter=1; iter<(MCSCF_Parameters_->max_iter + 1); iter++){
 
     // Run CI and set quantities
+    //outfile->Printf("Diag h\n");
     diag_h();
+    //outfile->Printf("OPDM\n");
     form_opdm();
-    //outfile->Printf("tpdm\n");
+    //outfile->Printf("TPDM\n");
     form_tpdm();
     //outfile->Printf("Formed matrices\n");
 

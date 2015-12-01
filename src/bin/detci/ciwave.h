@@ -311,11 +311,11 @@ private:
     SharedMatrix opdm_a_;
     SharedMatrix opdm_b_;
 
-
-    void tpdm(struct stringwr **alplist, struct stringwr **betlist,
-          int Inroots, int Inunits, int Ifirstunit,
-          int Jnroots, int Jnunits, int Jfirstunit,
-          int targetfile, int writeflag, int printflag);
+    std::vector<SharedVector> tpdm(int nroots, int Ifirstunit, int Jfirstunit);
+    //void tpdm(struct stringwr **alplist, struct stringwr **betlist,
+    //      int Inroots, int Inunits, int Ifirstunit,
+    //      int Jnroots, int Jnunits, int Jfirstunit,
+    //      int targetfile, int writeflag, int printflag);
     void tpdm_block(struct stringwr **alplist, struct stringwr **betlist,
             int nbf, int nalplists, int nbetlists,
             double *twopdm_aa, double *twopdm_bb, double *twopdm_ab, double **CJ, double **CI, int Ja_list,
@@ -323,10 +323,10 @@ private:
             int Inas, int Inbs, double weight);
 
     bool tpdm_called_;
-    SharedMatrix tpdm_;
-    SharedMatrix tpdm_aa_;
-    SharedMatrix tpdm_ab_;
-    SharedMatrix tpdm_bb_;
+    SharedVector tpdm_;
+    SharedVector tpdm_aa_;
+    SharedVector tpdm_ab_;
+    SharedVector tpdm_bb_;
 
 }; // End CIWavefunction
 
