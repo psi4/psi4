@@ -130,11 +130,6 @@ elif (lang == 'C'):
 else:
     f.write(glob_sources_fortran())
 
-f.write('# Write list of files to be passed to cloc for counting lines of code.\n')
-f.write('# Only files that are actually compiled are counted.\n')
-f.write('set(to_count "${sources_list}" "${headers_list}")\n')
-f.write('write_to_cloc_list("${to_count}")\n\n')
-
 f.write('# Build static library\n')
 f.write('add_library('+ libname + ' STATIC ${sources_list})\n')
 f.write('# Specify dependencies for the library (if any)\n')

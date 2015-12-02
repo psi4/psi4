@@ -28,10 +28,6 @@ if(NOT MPI_FOUND)
    list(REMOVE_ITEM sources_list "mpi_wrapper.cc")
 endif()
 
-# Write list of files to be passed to cloc for counting lines of code.
-# Only files that are actually compiled are counted.
-set(to_count "${sources_list}" "${headers_list}")
-write_to_cloc_list("${to_count}")
 
 # Build static library
 add_library(parallel STATIC ${sources_list})
