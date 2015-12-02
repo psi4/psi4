@@ -217,20 +217,20 @@ void CIWavefunction::orbital_locations(const std::string& orbitals, int* start, 
         end[h] = nmopi_[h];
       }
     }
-    else if (orbitals == "ALL"){
-      for (int h=0; h<nirrep_; h++){
-        start[h] = 0;
-        end[h] = nmopi_[h];
-      }
-    }
     else if (orbitals == "ROT"){
       for (int h=0; h<nirrep_; h++){
         start[h] = CalcInfo_->frozen_docc[h];
         end[h] = nmopi_[h] - CalcInfo_->frozen_uocc[h];
       }
     }
+    else if (orbitals == "ALL"){
+      for (int h=0; h<nirrep_; h++){
+        start[h] = 0;
+        end[h] = nmopi_[h];
+      }
+    }
     else{
-        throw PSIEXCEPTION("CIWAVE: Orbital subset is not defined, should be FZC, DRC, DOCC, ACT, RAS1, RAS2, RAS3, RAS4, POP, VIR, FZV, DRV, or ALL");
+        throw PSIEXCEPTION("CIWave: Orbital subset is not defined, should be FZC, DRC, DOCC, ACT, RAS1, RAS2, RAS3, RAS4, POP, VIR, FZV, DRV, or ALL");
     }
 }
 
@@ -328,7 +328,7 @@ SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot, const std::string& s
         else if (spin == "B") opdm_name << "MO-basis Beta OPDM <" << Iroot+1 << "| Etu |" << Jroot+1 << ">";
         else throw PSIEXCEPTION("CIWavefunction::get_opdm: Spin type must be A, B, or SUM.");
 
-        if (opdm_map_.find(opdm_name.str()) != opdm_map_.end()){
+        if (opdm_map_.count(opdm_name.str()) == 0){
             throw PSIEXCEPTION("CIWavefunction::get_opdm: Requested OPDM was not formed!\n");
         }
 
@@ -342,113 +342,59 @@ SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot, const std::string& s
         return opdm;
     }
 }
-SharedVector CIWavefunction::get_tpdm(bool symmetrize, const std::string& tpdm_type)
+SharedMatrix CIWavefunction::get_tpdm(const std::string& spin, bool symmetrize)
 {
+ 
+  if (symmetrize){
+    if (spin != "SUM")
+        throw PSIEXCEPTION("CIWavefunction::get_tpdm: Symmetrize is only available for SUM spin type.");
 
-  int sqnbf, ntri;
-  int *ioff_lt, i;                    /* offsets for left (or right) indices */
-  int p,q,r,s,smax,pq,qp,rs,sr,pqrs,qprs,pqsr,qpsr,target;
-  struct iwlbuf TBuff;
+    // Build
+    int nact = CalcInfo_->num_ci_orbs;
+    int nact2 = nact * nact;
 
-  int tpdm_file;
-  if (tpdm_type == "SUM") tpdm_file = Parameters_->tpdm_file;
-  else if (tpdm_type == "AA") tpdm_file = PSIF_MO_AA_TPDM;
-  else if (tpdm_type == "BB") tpdm_file = PSIF_MO_BB_TPDM;
-  else if (tpdm_type == "AB") tpdm_file = PSIF_MO_AB_TPDM;
-  else throw PSIEXCEPTION("CIWAVE: TPDM can only be SUM, AA, AB, or BB");
+    double** tpdm_nsp = tpdm_->pointer();
+    SharedMatrix ret(new Matrix("MO-basis TPDM (symmetrized)", nact2, nact2));
+    double** retp = ret->pointer();
 
-  iwl_buf_init(&TBuff, tpdm_file, 0.0, 1, 1);
-  int npop = CalcInfo_->num_ci_orbs + CalcInfo_->num_drc_orbs;
+    // Symmetrize
+    for (int p=0, target=0; p<CalcInfo_->num_ci_orbs; p++) {
+    for (int q=0; q<=p; q++) {
+    for (int r=0; r<=p; r++) {
 
-  sqnbf = npop * npop;
-  SharedVector tpdm(new Vector("TPDM", (sqnbf*(sqnbf+1))/2));
-  double* tpdmp = tpdm->pointer();
+      int smax = (p == r) ? q+1 : r+1;
+      for (int s=0; s<smax; s++) {
 
-  /* Construct the ioff_lt array (same here as ioff_rt) : different than
-   * regular ioff because there is no perm symmetry between left indices
-   * or right indices.
-   */
-  ioff_lt = init_int_array(nmo_);
-  for (i=0; i<npop; i++) {
-    ioff_lt[i] = i * npop;
-  }
+        // tpdm_nsp indices
+       int pq = p * nact + q;
+       int qp = q * nact + p;
+       int rs = r * nact + s;
+       int sr = s * nact + r;
 
- iwl_buf_rd_all(&TBuff, tpdmp, ioff_lt, ioff_lt, 1, ioff_,
-                false, "outfile");
+       /* would be 0.25 but the formulae I used for the diag hessian
+        * seem to define the TPDM with the 1/2 back outside */
+       double value = 0.5 * (tpdm_nsp[pq][rs] + tpdm_nsp[qp][rs] +
+                             tpdm_nsp[pq][sr] + tpdm_nsp[qp][sr]);
 
-  iwl_buf_close(&TBuff, 1);
-  free(ioff_lt);
+       // Write out 8 fold symmetry
+       retp[pq][rs] = retp[qp][rs] =
+       retp[pq][sr] = retp[qp][sr] =
+       retp[rs][pq] = retp[rs][qp] =
+       retp[sr][pq] = retp[sr][qp] = value;
 
-  if(!symmetrize){
-    return tpdm;
-  }
-
-  ntri = (npop * (npop + 1))/2;
-  SharedVector symm_tpdm(new Vector("Symm TPDM", (ntri * (ntri + 1))/2));
-  double* symm_tpdmp = symm_tpdm->pointer();
-  for (p=0,target=0; p<npop; p++) {
-    for (q=0; q<=p; q++) {
-      for (r=0; r<=p; r++) {
-        smax = (r==p) ? q+1 : r+1;
-        for (s=0; s<smax; s++,target++) {
-
-          pq = p * npop + q;
-          qp = q * npop + p;
-          rs = r * npop + s;
-          sr = s * npop + r;
-          pqrs = INDEX(pq,rs);
-          qprs = INDEX(qp,rs);
-          pqsr = INDEX(pq,sr);
-          qpsr = INDEX(qp,sr);
-          /* would be 0.25 but the formulae I used for the diag hessian
-           * seem to define the TPDM with the 1/2 back outside */
-          symm_tpdmp[target] = 0.5 * (tpdmp[pqrs] + tpdmp[qprs] +
-                         tpdmp[pqsr] + tpdmp[qpsr]);
-
-        }
       }
-    }
+    }}} 
+
+    // Return
+    return ret;
   }
-  tpdm.reset();
-  return symm_tpdm;
-}
-SharedMatrix CIWavefunction::get_active_tpdm(const std::string& tpdm_type)
-{
-  int nci   = CalcInfo_->num_ci_orbs;
-  int ndocc = CalcInfo_->num_drc_orbs;
-  int npop  = CalcInfo_->num_ci_orbs + CalcInfo_->num_drc_orbs;
-  SharedMatrix actTPDM(new Matrix("TPDM", nci*nci, nci*nci));
-  double* actTPDMp = actTPDM->pointer()[0];
-
-  //SharedVector fullTPDM = get_tpdm(true, tpdm_type);
-  //double* fullTPDMp = fullTPDM->pointer();
-  double* tpdmp = tpdm_->pointer();
-
-  int ndiff = 0;
-  int nci2 = nci * nci;
-  int nci3 = nci * nci * nci;
-  for (int i=0; i<nci; i++){
-  for (int j=0; j<nci; j++){
-  for (int k=0; k<nci; k++){
-  for (int l=0; l<nci; l++){
-      int ijkl = INDEX(INDEX(i,j), INDEX(k, l));
-      actTPDMp[i * nci3 + j * nci2 + k * nci + l] = tpdmp[ijkl];
-
-  }}}}
-  //outfile->Printf("Ndiff = %d\n", ndiff);
-  //for (int i=0; i<nci; i++) outfile->Printf("%d %d\n", i, CalcInfo_->act_reorder[i]);
-//  throw PSIEXCEPTION("STOPPING");
-
-  //fullTPDM.reset();
-
-  // Set numpy shape
-  actTPDM->set_numpy_dims(4);
-  int* shape = new int[4];
-  shape[0] = nci; shape[1] = nci;
-  shape[2] = nci; shape[3] = nci;
-  actTPDM->set_numpy_shape(shape);
-
-  return actTPDM;
+  else {
+    if (spin == "SUM")    return tpdm_;
+    else if (spin == "AA") return tpdm_aa_;
+    else if (spin == "AB") return tpdm_ab_;
+    else if (spin == "BB") return tpdm_bb_;
+    else throw PSIEXCEPTION("CIWavefunction::get_tpdm: Spin type must be AA, AB, BB, or SUM.");
+  }
 }
 
 /*

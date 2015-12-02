@@ -113,16 +113,9 @@ public:
                            bool full_space=false);
 
     /**!
-     * Obtains the TPDM from disk
-     * @param symmetrized Symmetrize the TPDM or not
-     * @return TPDM SharedVector
-     **/
-    SharedVector get_tpdm(bool symmetrized=true, const std::string& = "SUM");
-
-    /**!
      Returns the a full 4D active TPDM
      **/
-    SharedMatrix get_active_tpdm(const std::string& tpdm_type = "SUM");
+    SharedMatrix get_tpdm(const std::string& spin = "SUM", bool symmetrize=true);
 
     // Compute functions
     void compute_mcscf();
@@ -311,7 +304,7 @@ private:
     SharedMatrix opdm_a_;
     SharedMatrix opdm_b_;
 
-    std::vector<SharedVector> tpdm(int nroots, int Ifirstunit, int Jfirstunit);
+    std::vector<SharedMatrix> tpdm(int nroots, int Ifirstunit, int Jfirstunit);
     //void tpdm(struct stringwr **alplist, struct stringwr **betlist,
     //      int Inroots, int Inunits, int Ifirstunit,
     //      int Jnroots, int Jnunits, int Jfirstunit,
@@ -323,10 +316,10 @@ private:
             int Inas, int Inbs, double weight);
 
     bool tpdm_called_;
-    SharedVector tpdm_;
-    SharedVector tpdm_aa_;
-    SharedVector tpdm_ab_;
-    SharedVector tpdm_bb_;
+    SharedMatrix tpdm_;
+    SharedMatrix tpdm_aa_;
+    SharedMatrix tpdm_ab_;
+    SharedMatrix tpdm_bb_;
 
 }; // End CIWavefunction
 

@@ -188,7 +188,7 @@ void s3_block_v(struct stringwr *alplist, struct stringwr *betlist,
        }
 
 
-        timer_on("CIWAVE: s3_mt");
+        timer_on("CIWave: s3_mt");
         for (Ia=alplist, Ia_idx=0; Ia_idx<nas; Ia_idx++, Ia++) {
 
             /* loop over excitations E^a_{kl} from |A(I_a)> */
@@ -225,7 +225,7 @@ void s3_block_v(struct stringwr *alplist, struct stringwr *betlist,
               }
 
           } /* end loop over Ia */
-        timer_off("CIWAVE: s3_mt");
+        timer_off("CIWave: s3_mt");
        
      } /* end loop over j */
    } /* end loop over i */

@@ -47,7 +47,7 @@ namespace psi { namespace detci {
 // DGAS this is still awkward, I think the TPDM code can be less general than the OPDM one for now.
 void CIWavefunction::form_tpdm(void)
 {
-  std::vector<SharedVector> tpdm_list;
+  std::vector<SharedMatrix> tpdm_list;
   tpdm_list = tpdm(Parameters_->num_roots, Parameters_->first_d_tmp_unit, Parameters_->first_d_tmp_unit);
   tpdm_called_ = true;
   tpdm_aa_ = tpdm_list[0];
@@ -57,24 +57,14 @@ void CIWavefunction::form_tpdm(void)
 }
 
 // We always return the state-averaged tpdm here, not sure what else we really need.
-std::vector<SharedVector> CIWavefunction::tpdm(int nroots, int Ifirstunit, int Jfirstunit) 
+std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int Jfirstunit) 
 {
 
-   //CIvect Ivec, Jvec;
-   struct iwlbuf TBuff;
-   struct iwlbuf TBuff_aa;
-   struct iwlbuf TBuff_bb;
-   struct iwlbuf TBuff_ab;
-   int i, j, k, l, lmax, ij, kl, ijkl, ijksym;
-   int i2, j2, k2, l2, ndrc, populated_orbs;
-   int *orbsym;
-   int maxrows, maxcols, ntri, ntri2;
+   int maxrows, maxcols, nact2, ntri2;
    unsigned long bufsz;
    double **transp_tmp = NULL;
    double **transp_tmp2 = NULL;
    double *buffer1, *buffer2, value;
-   double **onepdm_a, **onepdm_b;
-   double *twopdm_aa, *twopdm_bb, *twopdm_ab;
    int Iroot, Jroot;
    int Iblock, Iblock2, Ibuf, Iac, Ibc, Inas, Inbs, Iairr;
    int Jblock, Jblock2, Jbuf, Jac, Jbc, Jnas, Jnbs, Jairr;
@@ -83,14 +73,7 @@ std::vector<SharedVector> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
    int root_idx;   /* what root we're on */
    double weight;  /* the weight of that root */
 
-   ndrc = CalcInfo_->num_drc_orbs;
-   populated_orbs = CalcInfo_->nmo - CalcInfo_->num_drv_orbs;
-   int writeflag = 1;
-   int printflag = 0;
-   int targetfile = Parameters_->tpdm_file;
-
-
-    
+   timer_on("CIWave: tpdm"); 
    CIvect Ivec(Parameters_->icore, nroots, 1, Ifirstunit, CIblks_, CalcInfo_, Parameters_,
                H0block_, false);
    Ivec.init_io_files(true);
@@ -104,18 +87,18 @@ std::vector<SharedVector> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
    Ivec.buf_lock(buffer1);
    Jvec.buf_lock(buffer2);
 
-   ntri = CalcInfo_->num_ci_orbs * CalcInfo_->num_ci_orbs;
-   ntri2 = (ntri * (ntri + 1)) / 2;
-   SharedVector tpdm_aa(new Vector("MO-basis TPDM AA", ntri2));
-   SharedVector tpdm_ab(new Vector("MO-basis TPDM AB", ntri*ntri));
-   SharedVector tpdm_bb(new Vector("MO-basis TPDM BB", ntri2));
+   nact2 = CalcInfo_->num_ci_orbs * CalcInfo_->num_ci_orbs;
+   ntri2 = (nact2 * (nact2 + 1)) / 2;
+   SharedVector tpdm_aa(new Vector("MO-basis TPDM AA (ci order)", ntri2));
+   SharedVector tpdm_ab(new Vector("MO-basis TPDM AB (ci order)", nact2*nact2));
+   SharedVector tpdm_bb(new Vector("MO-basis TPDM BB (ci order)", ntri2));
    double* tpdm_aap = tpdm_aa->pointer();
    double* tpdm_abp = tpdm_ab->pointer();
    double* tpdm_bbp = tpdm_bb->pointer();
 
    if ((Ivec.icore_==2 && Ivec.Ms0_ && CalcInfo_->ref_sym != 0) || 
        (Ivec.icore_==0 && Ivec.Ms0_)) {
-     for (i=0, maxrows=0, maxcols=0; i<Ivec.num_blocks_; i++) {
+     for (int i=0, maxrows=0, maxcols=0; i<Ivec.num_blocks_; i++) {
        if (Ivec.Ia_size_[i] > maxrows) maxrows = Ivec.Ia_size_[i];
        if (Ivec.Ib_size_[i] > maxcols) maxcols = Ivec.Ib_size_[i];
      }
@@ -367,83 +350,60 @@ std::vector<SharedVector> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
      throw PSIEXCEPTION("CIWavefunction::tpdm: unrecognized core option!\n");
    }
 
-   /* write and/or print the tpdm
-      total and spincases are written out. however, total 2-pdm must be scaled by 1/2
-      to conform the stupid psi convention. thus the sum of spincases does not equal
-      the total 2-pdm.
-    */
+   // Symmetrize and reorder the TPDM
+   SharedMatrix tpdm_aam(new Matrix("MO-basis TPDM AA", nact2, nact2));
+   SharedMatrix tpdm_abm(new Matrix("MO-basis TPDM AB", nact2, nact2));
+   SharedMatrix tpdm_bbm(new Matrix("MO-basis TPDM BB", nact2, nact2));
+   double** tpdm_aamp = tpdm_aam->pointer();
+   double** tpdm_abmp = tpdm_abm->pointer();
+   double** tpdm_bbmp = tpdm_bbm->pointer();
 
 
+   // Reorder our density matrices
+   for (int p=0; p<CalcInfo_->num_ci_orbs; p++) {
+   for (int q=0; q<CalcInfo_->num_ci_orbs; q++) {
+   for (int r=0; r<CalcInfo_->num_ci_orbs; r++) {
+   for (int s=0; s<CalcInfo_->num_ci_orbs; s++) {
 
-   // Build summed TPDM
-   SharedVector tpdm_ns(new Vector("MO-basis TPDM (unsymmetrized)", ntri2));
-   double* tpdm_nsp = tpdm_ns->pointer();
-   orbsym = CalcInfo_->orbsym + ndrc;
-   for (i=0; i<CalcInfo_->num_ci_orbs; i++) {
-   for (j=0; j<CalcInfo_->num_ci_orbs; j++) {
-   for (k=0; k<=i; k++) {
+    // Reorder index
+    int r_p = CalcInfo_->act_order[p];
+    int r_q = CalcInfo_->act_order[q];
+    int r_r = CalcInfo_->act_order[r];
+    int r_s = CalcInfo_->act_order[s];
+    int r_pq = r_p * CalcInfo_->num_ci_orbs + r_q;
+    int r_rs = r_r * CalcInfo_->num_ci_orbs + r_s;
 
-     if (k==i) lmax = j+1;
-     else lmax = CalcInfo_->num_ci_orbs;
-     ijksym = orbsym[i] ^ orbsym[j] ^ orbsym[k];
+     // aa/bb index
+    int pq = p * CalcInfo_->num_ci_orbs + q;
+    int rs = r * CalcInfo_->num_ci_orbs + s;
+    size_t pqrs = INDEX(pq,rs);
 
-     for (l=0; l<lmax; l++) {
-       if ((orbsym[l] ^ ijksym) != 0) continue;
-       ij = i * CalcInfo_->num_ci_orbs + j;
-       kl = k * CalcInfo_->num_ci_orbs + l;
-       long int ijkl_tri = INDEX(ij,kl);
-       long int ijkl = ij * ntri + kl;
-       long int klij = kl * ntri + ij;
-       
-       double value_aa = tpdm_aap[ijkl_tri];
-       double value_bb = tpdm_bbp[ijkl_tri];
-       double value_ab = tpdm_abp[ijkl];
-       double value_ba = tpdm_abp[klij];
-       // For PSI the factor of 1/2 is not pulled outside...so put
-       // it back inside now and then write out to the IWL buffer.
-       value = 0.5 * (value_aa + value_bb + value_ab + value_ba);
-       tpdm_nsp[INDEX(ij, kl)] = value;
-     }
-   }}}
+    tpdm_aamp[r_pq][r_rs] = tpdm_aap[pqrs];
+    tpdm_abmp[r_pq][r_rs] = tpdm_abp[pq * nact2 + rs];
+    tpdm_bbmp[r_pq][r_rs] = tpdm_bbp[pqrs];
+    
+   }}}}
+   tpdm_aa.reset();
+   tpdm_ab.reset();
+   tpdm_bb.reset();
 
-   //outfile->Printf("Wrote MO-basis TPDM\n");
-   //outfile->Printf("Build MO-basis TPDM\n");
-   SharedVector tpdm(new Vector("MO-basis TPDM", (ntri * (ntri + 1))/2 ));
-   double* tpdmp = tpdm->pointer();
+   // Build our spin summed density matrix
+   SharedMatrix tpdm(new Matrix("MO-basis TPDM", nact2, nact2));
+   double** tpdmp = tpdm->pointer();
 
-   // Symmetrize and reorder
-   for (int p=0, target=0; p<CalcInfo_->num_ci_orbs; p++) {
-     for (int q=0; q<=p; q++) {
-       for (int r=0; r<=p; r++) {
-         int smax = (p == r) ? q+1 : r+1;
-         for (int s=0; s<smax; s++) {
+   for (int p=0; p<CalcInfo_->num_ci_orbs; p++) {
+   for (int q=0; q<CalcInfo_->num_ci_orbs; q++) {
+   for (int r=0; r<CalcInfo_->num_ci_orbs; r++) {
+   for (int s=0; s<CalcInfo_->num_ci_orbs; s++) {
 
-          int r_p = CalcInfo_->act_order[p];
-          int r_q = CalcInfo_->act_order[q];
-          int r_r = CalcInfo_->act_order[r];
-          int r_s = CalcInfo_->act_order[s];
-          int r_pq = INDEX(r_p, r_q);
-          int r_rs = INDEX(r_r, r_s);
-          int tpdm_idx = INDEX(r_pq, r_rs);
+    int pq = p * CalcInfo_->num_ci_orbs + q;
+    int qp = q * CalcInfo_->num_ci_orbs + p;
+    int rs = r * CalcInfo_->num_ci_orbs + s;
+    int sr = s * CalcInfo_->num_ci_orbs + r;
 
-          int pq = p * CalcInfo_->num_ci_orbs + q;
-          int qp = q * CalcInfo_->num_ci_orbs + p;
-          int rs = r * CalcInfo_->num_ci_orbs + s;
-          int sr = s * CalcInfo_->num_ci_orbs + r;
-          int pqrs = INDEX(pq,rs);
-          int qprs = INDEX(qp,rs);
-          int pqsr = INDEX(pq,sr);
-          int qpsr = INDEX(qp,sr); 
-          /* would be 0.25 but the formulae I used for the diag hessian
-           * seem to define the TPDM with the 1/2 back outside */
-          tpdmp[tpdm_idx] = 0.5 * (tpdm_nsp[pqrs] + tpdm_nsp[qprs] +
-                         tpdm_nsp[pqsr] + tpdm_nsp[qpsr]);
-
-         }
-       }
-     }
-   }
-   tpdm_ns.reset();
+    tpdmp[pq][rs] = 0.5 * (tpdm_aamp[pq][rs] + tpdm_bbmp[pq][rs] + 
+                          tpdm_abmp[pq][rs] + tpdm_abmp[rs][pq]);
+   }}}}
 
    Ivec.buf_unlock();
    Jvec.buf_unlock();
@@ -452,12 +412,15 @@ std::vector<SharedVector> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
    free(buffer1);
    free(buffer2);
 
-  std::vector<SharedVector> ret_list;
-  ret_list.push_back(tpdm_aa); 
-  ret_list.push_back(tpdm_ab); 
-  ret_list.push_back(tpdm_bb); 
-  ret_list.push_back(tpdm); 
-  return ret_list;
+   std::vector<SharedMatrix> ret_list;
+   ret_list.push_back(tpdm_aam); 
+   ret_list.push_back(tpdm_abm); 
+   ret_list.push_back(tpdm_bbm); 
+   ret_list.push_back(tpdm); 
+
+   timer_off("CIWave: tpdm"); 
+
+   return ret_list;
 }
 
 

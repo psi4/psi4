@@ -648,7 +648,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
    /* SIGMA2 CONTRIBUTION */
   if (s2_contrib_[sblock][cblock]) {
 
-    timer_on("CIWAVE: s2");
+    timer_on("CIWave: s2");
 
       if (fci) {
           s2_block_vfci(alplist, betlist, cmat, smat, oei, tei, SigmaData_->F, cnac,
@@ -666,7 +666,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
                             oei, tei, SigmaData_->F, cnac, nas, nbs, sac, cac, cnas);
             }
         }
-    timer_off("CIWAVE: s2");
+    timer_off("CIWave: s2");
 
     } /* end sigma2 */
 
@@ -679,7 +679,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
 
    /* SIGMA1 CONTRIBUTION */
    if (!Ms0 || (sac != sbc)) {
-    timer_on("CIWAVE: s1");
+    timer_on("CIWave: s1");
 
       if (s1_contrib_[sblock][cblock]) {
           if (fci) { 
@@ -700,7 +700,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
             } 
          }
 
-      timer_off("CIWAVE: s1");
+      timer_off("CIWave: s1");
    } /* end sigma1 */
 
    if (Parameters_->print_lvl > 3) {
@@ -711,7 +711,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
 
    /* SIGMA3 CONTRIBUTION */
    if (s3_contrib_[sblock][cblock]) {
-      timer_on("CIWAVE: s3");
+      timer_on("CIWave: s3");
 
       /* zero_mat(smat, nas, nbs); */
 
@@ -774,7 +774,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
         print_mat(smat, nas, nbs, "outfile");
       }
       
-      timer_off("CIWAVE: s3");
+      timer_off("CIWave: s3");
 
       } /* end sigma3 */
 }
