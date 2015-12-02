@@ -128,7 +128,7 @@ void CIWavefunction::compute_mcscf()
     SharedMatrix Cdocc = get_orbitals("DOCC");
     SharedMatrix Cact  = get_orbitals("ACT");
     SharedMatrix Cvir  = get_orbitals("VIR");
-    SharedMatrix actTPDM = get_active_tpdm();
+    SharedMatrix actTPDM = get_tpdm("SUM", true);
 
     somcscf->update(Cdocc, Cact, Cvir, opdm_, actTPDM);
     grad_rms = somcscf->gradient_rms();

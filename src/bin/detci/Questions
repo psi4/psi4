@@ -11,6 +11,8 @@ David's list
 
 How do we free strings, graphs, SigmaData
 Occs array is created twice if alplist != betlist
+In the TPDM code it looks like the symmetrize call used to assume that the orbials were not real
+    i. e. pqrs != qpsr why is this?
 
 We seem to get the following a lot:
 (sem_iter): H0block_->H0b_diag[1][0] - H0block_->H0b_diag[2][0] = -0.393516 - 0.393516 = -0.787032 > 1.0E-8
