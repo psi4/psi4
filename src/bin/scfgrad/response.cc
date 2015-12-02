@@ -121,22 +121,25 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                         buffer2 = buffer + 0 * nP * nQ;                       
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc,(*buffer2++),Cop[q + oQ],1,Smixp[p + oP],1);
-                            } 
-                        } 
+                                C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smixp[p + oP],1);
+                                C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smixp[q + oQ],1);
+                            }
+                        }
                         // Py
-                        buffer2 = buffer + 1 * nP * nQ;                       
+                        buffer2 = buffer + 1 * nP * nQ;
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc,(*buffer2++),Cop[q + oQ],1,Smiyp[p + oP],1);
-                            } 
+                                C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smiyp[p + oP],1);
+                                C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smiyp[q + oQ],1);
+                            }
                         } 
                         // Pz
                         buffer2 = buffer + 2 * nP * nQ;                       
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc,(*buffer2++),Cop[q + oQ],1,Smizp[p + oP],1);
-                            } 
+                                C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smizp[p + oP],1);
+                                C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smizp[q + oQ],1);
+                            }
                         } 
                     }
                     if (aQ == A) { 
@@ -144,34 +147,37 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                         buffer2 = buffer + 3 * nP * nQ;                       
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc,(*buffer2++),Cop[q + oQ],1,Smixp[p + oP],1);
-                            } 
+                                C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smixp[p + oP],1);
+                                C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smixp[q + oQ],1);
+                            }
                         } 
                         // Qy
                         buffer2 = buffer + 4 * nP * nQ;                       
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc,(*buffer2++),Cop[q + oQ],1,Smiyp[p + oP],1);
-                            } 
+                                C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smiyp[p + oP],1);
+                                C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smiyp[q + oQ],1);
+                            }
                         } 
                         // Qz
                         buffer2 = buffer + 5 * nP * nQ;                       
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc,(*buffer2++),Cop[q + oQ],1,Smizp[p + oP],1);
-                            } 
+                                C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smizp[p + oP],1);
+                                C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smizp[q + oQ],1);
+                            }
                         } 
                     }
                 }
             }
             // Spi_x
-            C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Smixp[0],nocc,0.0,Spip[0],nocc);
+            C_DGEMM('T','N',nmo,nocc,nso,0.5,Cp[0],nmo,Smixp[0],nocc,0.0,Spip[0],nocc);
             psio_->write(PSIF_HESS,"Spi^A",(char*)Spip[0],nmo * nocc * sizeof(double),next_Spi,&next_Spi);
             // Spi_y
-            C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Smiyp[0],nocc,0.0,Spip[0],nocc);
+            C_DGEMM('T','N',nmo,nocc,nso,0.5,Cp[0],nmo,Smiyp[0],nocc,0.0,Spip[0],nocc);
             psio_->write(PSIF_HESS,"Spi^A",(char*)Spip[0],nmo * nocc * sizeof(double),next_Spi,&next_Spi);
             // Spi_z
-            C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Smizp[0],nocc,0.0,Spip[0],nocc);
+            C_DGEMM('T','N',nmo,nocc,nso,0.5,Cp[0],nmo,Smizp[0],nocc,0.0,Spip[0],nocc);
             psio_->write(PSIF_HESS,"Spi^A",(char*)Spip[0],nmo * nocc * sizeof(double),next_Spi,&next_Spi);
         }
     }
@@ -213,22 +219,25 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                         buffer2 = buffer + 0 * nP * nQ;                       
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc,(*buffer2++),Cop[q + oQ],1,Tmixp[p + oP],1);
+                                C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmixp[p + oP],1);
+                                C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmixp[q + oQ],1);
                             } 
                         } 
                         // Py
                         buffer2 = buffer + 1 * nP * nQ;                       
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc,(*buffer2++),Cop[q + oQ],1,Tmiyp[p + oP],1);
-                            } 
+                                C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmiyp[p + oP],1);
+                                C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmiyp[q + oQ],1);
+                            }
                         } 
                         // Pz
                         buffer2 = buffer + 2 * nP * nQ;                       
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc,(*buffer2++),Cop[q + oQ],1,Tmizp[p + oP],1);
-                            } 
+                                C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmizp[p + oP],1);
+                                C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmizp[q + oQ],1);
+                            }
                         } 
                     }
                     if (aQ == A) { 
@@ -236,34 +245,37 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                         buffer2 = buffer + 3 * nP * nQ;                       
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc,(*buffer2++),Cop[q + oQ],1,Tmixp[p + oP],1);
-                            } 
+                                C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmixp[p + oP],1);
+                                C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmixp[q + oQ],1);
+                            }
                         } 
                         // Qy
                         buffer2 = buffer + 4 * nP * nQ;                       
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc,(*buffer2++),Cop[q + oQ],1,Tmiyp[p + oP],1);
-                            } 
+                                C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmiyp[p + oP],1);
+                                C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmiyp[q + oQ],1);
+                            }
                         } 
                         // Qz
                         buffer2 = buffer + 5 * nP * nQ;                       
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc,(*buffer2++),Cop[q + oQ],1,Tmizp[p + oP],1);
+                                C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmizp[p + oP],1);
+                                C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmizp[q + oQ],1);
                             } 
                         } 
                     }
                 }
             }
             // Tpi_x
-            C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Tmixp[0],nocc,0.0,Tpip[0],nocc);
+            C_DGEMM('T','N',nmo,nocc,nso,0.5,Cp[0],nmo,Tmixp[0],nocc,0.0,Tpip[0],nocc);
             psio_->write(PSIF_HESS,"Tpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Tpi,&next_Tpi);
             // Tpi_y
-            C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Tmiyp[0],nocc,0.0,Tpip[0],nocc);
+            C_DGEMM('T','N',nmo,nocc,nso,0.5,Cp[0],nmo,Tmiyp[0],nocc,0.0,Tpip[0],nocc);
             psio_->write(PSIF_HESS,"Tpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Tpi,&next_Tpi);
             // Tpi_z
-            C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Tmizp[0],nocc,0.0,Tpip[0],nocc);
+            C_DGEMM('T','N',nmo,nocc,nso,0.5,Cp[0],nmo,Tmizp[0],nocc,0.0,Tpip[0],nocc);
             psio_->write(PSIF_HESS,"Tpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Tpi,&next_Tpi);
         }
     }
