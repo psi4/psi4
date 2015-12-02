@@ -219,6 +219,11 @@ void Wavefunction::map_irreps(std::vector<int*> &arrays)
     // If the parent symmetry hasn't been set, no displacements have been made
     if(!full) return;
     boost::shared_ptr<PointGroup> sub = molecule_->point_group();
+
+    // If the point group between the full and sub are the same return
+    if (full->symbol() == sub->symbol())
+        return;
+
     // Build the correlation table between full, and subgroup
     CorrelationTable corrtab(full, sub);
     int nirreps = corrtab.n();
@@ -847,7 +852,7 @@ bool Wavefunction::isDCFT()
 }
 /* Xiao Wang */
 
-boost::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const { 
+boost::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const {
     boost::shared_ptr<double[]> q = atomic_point_charges();
 
     int n = molecule_->natom();
