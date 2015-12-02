@@ -34,10 +34,6 @@ else()
    list(REMOVE_ITEM sources_list "")
 endif()
 
-# Write list of files to be passed to cloc for counting lines of code.
-# Only files that are actually compiled are counted.
-set(to_count "${sources_list}" "${headers_list}")
-write_to_cloc_list("${to_count}")
 
 get_property(from_src_bin GLOBAL PROPERTY PSILIB)
 get_property(from_src_lib GLOBAL PROPERTY LIBLIST)
