@@ -107,20 +107,20 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
    CIvect Sigma;
 
    Cvec.set(Parameters_->icore, maxnvect, Parameters_->num_c_tmp_units,
-            Parameters_->first_s_tmp_unit, CIblks_);  
+            Parameters_->s_filenum, CIblks_);  
    Sigma.set(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
-             Parameters_->first_s_tmp_unit, CIblks_);  
+             Parameters_->s_filenum, CIblks_);  
    //Cvec.set(CIblks.vectlen, CIblks.num_blocks, Parameters_->icore, Parameters_->Ms0,
    //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
    //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
    //   CalcInfo_->nirreps, AlphaG->subgr_per_irrep, maxnvect,
-   //   Parameters_->num_c_tmp_units, Parameters_->first_c_tmp_unit,
+   //   Parameters_->num_c_tmp_units, Parameters_->c_filenum,
    //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
    //Sigma.set(CIblks.vectlen, CIblks.num_blocks, Parameters_->icore,Parameters_->Ms0,
    //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
    //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
    //   CalcInfo_->nirreps, AlphaG->subgr_per_irrep, maxnvect,
-   //   Parameters_->num_s_tmp_units, Parameters_->first_s_tmp_unit,
+   //   Parameters_->num_s_tmp_units, Parameters_->s_filenum,
    //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
 
    // Open I/O files but not with OPEN_OLD

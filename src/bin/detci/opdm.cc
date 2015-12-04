@@ -53,7 +53,7 @@ void CIWavefunction::form_opdm(void)
   // if we're trying to follow a root, figure out which one here
   // CDS help: Why is this here and where can we move it?
   if (Parameters_->follow_vec_num > 0) {
-    CIvect Ivec(Parameters_->icore, Parameters_->num_roots, 1, Parameters_->first_d_tmp_unit,
+    CIvect Ivec(Parameters_->icore, Parameters_->num_roots, 1, Parameters_->d_filenum,
                 CIblks_, CalcInfo_, Parameters_, H0block_, false);
     Ivec.init_io_files(true);
     double max_overlap = 0.0, overlap = 0.0;
@@ -99,8 +99,8 @@ void CIWavefunction::form_opdm(void)
   std::vector<std::vector<SharedMatrix> > opdm_list;
   /* don't need Parameters_->root since it writes all opdm's */
   if (Parameters_->transdens) {
-    opdm_list = opdm(0, Parameters_->num_roots, Parameters_->first_d_tmp_unit,
-                     Parameters_->first_d_tmp_unit, true);
+    opdm_list = opdm(0, Parameters_->num_roots, Parameters_->d_filenum,
+                     Parameters_->d_filenum, true);
     for (int i=0; i<Parameters_->num_roots-1; i++){
         opdm_map_[opdm_list[i][0]->name()] = opdm_list[i][0];
         opdm_map_[opdm_list[i][1]->name()] = opdm_list[i][1];
@@ -109,8 +109,8 @@ void CIWavefunction::form_opdm(void)
   }
   // OPDMS
   if (Parameters_->opdm) {
-    opdm_list = opdm(0, Parameters_->num_roots, Parameters_->first_d_tmp_unit,
-                     Parameters_->first_d_tmp_unit, false);
+    opdm_list = opdm(0, Parameters_->num_roots, Parameters_->d_filenum,
+                     Parameters_->d_filenum, false);
     for (int i=0; i<Parameters_->num_roots; i++){
         opdm_map_[opdm_list[i][0]->name()] = opdm_list[i][0];
         opdm_map_[opdm_list[i][1]->name()] = opdm_list[i][1];

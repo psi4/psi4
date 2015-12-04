@@ -56,6 +56,7 @@ struct graph_set;
 struct H_zero_block;
 struct detci_timings;
 struct mcscf_params;
+typedef boost::shared_ptr<psi::detci::CIvect> SharedCIVector;
 }}
 
 namespace psi { namespace detci {
@@ -94,10 +95,16 @@ public:
      * @return dim          Dimension object
      */
     Dimension get_dimension(const std::string& orbital_name);
-    /**
-     * Transform the one and two electron integrals.
+
+    /**!
+     * Transform the one and two electron integrals for a CI computation.
      */
     void transform_ci_integrals(void);
+
+    /**!
+     * Transform the one and two electron integrals for a MCSCF computation.
+     */
+    void transform_mcscf_integrals(bool approx_only);
 
     /**!
      * Obtains the OPDM <Iroot| Epq |Jroot> from the ciwave object. If Jroot is
@@ -105,7 +112,7 @@ public:
      * OPDM is returned.
      * @param Iroot      Left root
      * @param Jroot      Right root
-     * @param spin       Which spin to return? A, B, or SUM
+     * @param spin       Selects which spin to return: A, B, or SUM
      * @param full_space If false return only the active OPDM else return full OPDM 
      * @return OPDM or TDM shared matrix
      **/
@@ -113,9 +120,23 @@ public:
                            bool full_space=false);
 
     /**!
-     Returns the a full 4D active TPDM
+     * Obtains the "special" TPDM, other TPDM roots are not held here.
+     * @param spin       Selects which spin to return AA, AB, BB, or SUM
+     * @param symmetrize Symmetrize the TPDM, only works for SUM currently
+     * @return           The request 4D active TPDM
      **/
     SharedMatrix get_tpdm(const std::string& spin = "SUM", bool symmetrize=true);
+
+    /**!
+     Builds and returns a new CIvect object.
+     * @param maxnvect  Maximum number of vectors in the CIvector
+     * @param filenum   File number to use for the on-disk data
+     * @param use_disk  If false CIvect disables read/write
+     * @param buf_init  If true initializes the buffers internally
+     * @return          SharedCIVector object
+     **/
+    SharedCIVector new_civector(int maxnvect, int filenum, bool use_disk=true,
+                                bool buf_init=true);
 
     // Compute functions
     void compute_mcscf();
@@ -129,6 +150,17 @@ public:
 
     // Extraneous
     void cleanup();
+
+
+    // Functions below this line should be used for debug use only
+
+    /**!
+     Builds the full CI hamiltonian for debugging purposes. Currently limits itself to a matrix
+     of 1GiB in size.
+     * @ return CI hamiltonian
+     **/
+    SharedMatrix hamiltonian();
+
 
 private:
 

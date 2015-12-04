@@ -83,13 +83,8 @@ void CIWavefunction::diag_h()
    /* Direct Method --- use RSP diagonalization routine */
    if (Parameters_->diag_method == METHOD_RSP) {
 
-      CIvect Cvec(1, 1, 0, 0, CIblks_, CalcInfo_, Parameters_, H0block_);
-      //CIvect Cvec(CIblks_->vectlen, CIblks_->num_blocks, 1, Parameters_->Ms0,
-      //   CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
-      //   CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
-      //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, 1, 0, 0,
-      //   CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
       // shouldn't need to open I/O files for this fake CIvec, unit=0
+      CIvect Cvec(1, 1, 0, 0, CIblks_, CalcInfo_, Parameters_, H0block_);
 
       double **H, **rsp_evecs;
       int Iarel, Ialist, Ibrel, Iblist;
@@ -303,16 +298,6 @@ void CIWavefunction::diag_h()
       // in-core CIvectors, shouldn't need to open files
       CIvect Cvec(1, 1, 0, 0, CIblks_, CalcInfo_, Parameters_, H0block_);
       CIvect Hd(1, 1, 0, 0, CIblks_, CalcInfo_, Parameters_, H0block_);
-      //CIvect Cvec(CIblks_->vectlen, CIblks_->num_blocks, 1, Parameters_->Ms0,
-      //   CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
-      //   CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
-      //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, 1, 0, 0,
-      //   CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
-      //CIvect Hd(CIblks_->vectlen, CIblks_->num_blocks, 1, Parameters_->Ms0,
-      //   CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
-      //   CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
-      //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, 1, 0, 0,
-      //   CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
 
       double **H, **b;
       int Ia, Ib, Iarel, Ialist, Ibrel, Iblist, ij, k, l, tmpi, L;
@@ -326,8 +311,6 @@ void CIWavefunction::diag_h()
       if (Parameters_->print_lvl) {
          outfile->Printf( "\nFind the roots by the SEM Test Method\n");
          outfile->Printf( "(n.b. this is for debugging purposes only!)\n");
-         //outfile->Printf( "Energy convergence = %3g\n", conv_e);
-         //outfile->Printf( "RMS CI vector convergence = %3g\n\n", conv_rms);
          }
 
       H0block_init(size);
@@ -346,7 +329,7 @@ void CIWavefunction::diag_h()
 
     /* MLL added this line 5-21-98 */
     /*
-      if (Parameters_->hd_otf) rclose(Parameters_->first_hd_tmp_unit,4);
+      if (Parameters_->hd_otf) rclose(Parameters_->hd_filenum,4);
     */
 
       H0block_setup(CIblks_->num_blocks, CIblks_->Ia_code, CIblks_->Ib_code);
@@ -523,13 +506,7 @@ void CIWavefunction::diag_h()
       H0block_init(size);
 
       CIvect Hd(Parameters_->icore, 1, Parameters_->num_hd_tmp_units,
-                Parameters_->first_hd_tmp_unit, CIblks_, CalcInfo_, Parameters_, H0block_);
-      //CIvect Hd(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore,
-      //   Parameters_->Ms0, CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size,
-      //   CIblks_->Ib_size, CIblks_->offset, CIblks_->num_alp_codes,
-      //   CIblks_->num_bet_codes, CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, 1,
-      //   Parameters_->num_hd_tmp_units, Parameters_->first_hd_tmp_unit,
-      //   CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
+                Parameters_->hd_filenum, CIblks_, CalcInfo_, Parameters_, H0block_);
 
       bool open_old = false;
       if (Parameters_->restart) open_old = true;
@@ -563,8 +540,7 @@ void CIWavefunction::diag_h()
               H0block_->betidx, H0block_->H00, Parameters_->neg_only);
          }
 
-      //if (Parameters_->hd_otf) rclose(Parameters_->first_hd_tmp_unit,4);
-      if (Parameters_->hd_otf) psio_close(Parameters_->first_hd_tmp_unit,1);
+      if (Parameters_->hd_otf) psio_close(Parameters_->hd_filenum,1);
 
       H0block_setup(CIblks_->num_blocks, CIblks_->Ia_code, CIblks_->Ib_code);
       if (Parameters_->filter_guess) H0block_filter_setup();

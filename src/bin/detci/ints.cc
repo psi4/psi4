@@ -163,6 +163,15 @@ void CIWavefunction::setup_dfmcscf_ints(){
 
   df_ints_init_ = true;
 }
+void CIWavefunction::transform_mcscf_integrals(bool approx_only)
+{
+    if (MCSCF_Parameters_->mcscf_type == "DF"){
+      transform_dfmcscf_ints(approx_only);
+    }
+    else {
+      transform_mcscf_ints(approx_only);
+    }
+}
 void CIWavefunction::transform_dfmcscf_ints(bool approx_only)
 {
 
