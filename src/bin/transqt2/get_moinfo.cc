@@ -34,6 +34,10 @@
 #include <libqt/qt.h>
 #include <psifiles.h>
 #include <psi4-dec.h>
+#include <libmints/wavefunction.h>
+#include <libmints/dimension.h>
+#include <libmints/molecule.h>
+#include <libmints/basisset.h>
 #define EXTERN
 #include "globals.h"
 
@@ -94,25 +98,31 @@ void get_moinfo(Options& options)
     int *reorder, *reorder_A, *reorder_B;
     double **TMP;
 
-    chkpt_init(PSIO_OPEN_OLD);
-    moinfo.nirreps = chkpt_rd_nirreps();
-    moinfo.nmo = chkpt_rd_nmo();
-    moinfo.nso = chkpt_rd_nso();
-    moinfo.nao = chkpt_rd_nao();
-    moinfo.labels = chkpt_rd_irr_labs();
-    moinfo.enuc = chkpt_rd_enuc();
-    escf = chkpt_rd_escf();
-    moinfo.sopi = chkpt_rd_sopi();
-    moinfo.mopi = chkpt_rd_orbspi();
-    moinfo.clsdpi = chkpt_rd_clsdpi();
-    moinfo.openpi = chkpt_rd_openpi();
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
 
+    chkpt_init(PSIO_OPEN_OLD);
+    moinfo.nirreps = wfn->nirrep();
+    moinfo.nmo = wfn->nmo();
+    moinfo.nso = wfn->nso();
+    moinfo.nao = wfn->basisset()->nao();
+    moinfo.labels = wfn->molecule()->irrep_labels();
+    moinfo.enuc = wfn->molecule()->nuclear_repulsion_energy();
+    escf = wfn->reference_energy(); // Is this the one I want? -TDC, 11/15/15
+
+    // Would like to replace these with Dimension objects, TDC 11/2015
     moinfo.frdocc = init_int_array(moinfo.nirreps);
     moinfo.fruocc = init_int_array(moinfo.nirreps);
-
+    moinfo.sopi = init_int_array(moinfo.nirreps);
+    moinfo.mopi = init_int_array(moinfo.nirreps);
+    moinfo.clsdpi = init_int_array(moinfo.nirreps);
+    moinfo.openpi = init_int_array(moinfo.nirreps);
    for (int h=0; h<moinfo.nirreps; h++) {
-     moinfo.frdocc[h] = Process::environment.wavefunction()->frzcpi()[h];
-     moinfo.fruocc[h] = Process::environment.wavefunction()->frzvpi()[h];
+     moinfo.frdocc[h] = wfn->frzcpi()[h];
+     moinfo.fruocc[h] = wfn->frzvpi()[h];
+     moinfo.sopi[h] = wfn->nsopi()[h];
+     moinfo.mopi[h] = wfn->nmopi()[h];
+     moinfo.clsdpi[h] = wfn->doccpi()[h];
+     moinfo.openpi[h] = wfn->soccpi()[h];
    }
 
     //moinfo.frdocc = Process::environment.wavefunction()->frzcpi();

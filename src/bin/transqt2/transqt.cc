@@ -253,9 +253,9 @@ PsiReturnType transqt2(Options & options)
         outfile->Printf( "\tFrozen-core energy = %20.15f\n", efzc);
         
     }
-    chkpt_init(PSIO_OPEN_OLD);
-    chkpt_wt_efzc(efzc);
-    chkpt_close();
+//    chkpt_init(PSIO_OPEN_OLD);
+//    chkpt_wt_efzc(efzc);
+//    chkpt_close();
     // Add frozen-core energy to wfn, too
     Process::environment.wavefunction()->set_efzc(efzc);
 
