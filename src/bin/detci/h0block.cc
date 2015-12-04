@@ -691,10 +691,6 @@ void CIWavefunction::H0block_fill()
    /* fill upper triangle */
    fill_sym_matrix(H0block_->H0b, H0block_->size);
 
-   /*
-   evals = init_array(H0block_->size);
-   evecs = init_matrix(H0block_->size, H0block_->size);
-   */
    evals = init_array(H0block_->guess_size);
    evecs = init_matrix(H0block_->guess_size, H0block_->guess_size);
 

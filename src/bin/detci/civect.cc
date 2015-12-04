@@ -449,36 +449,28 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac,
 
 CIvect::~CIvect()
 {
-   int i;
+    if (num_blocks_) {
+        if (buf_locked_) free(buffer_);
+        for (int i=0; i<num_blocks_; i++) {
+           free(blocks_[i]);
+           }
 
-   if (num_blocks_) {
-      if (buf_locked_) free(buffer_);
-      for (i=0; i<num_blocks_; i++) {
-         free(blocks_[i]);
-         }
-
-      /* this causes problems if more than one CIvect point to same file
-      for (i=0; i<nunits_; i++) {
-         rclose(units_[i], 3);
-         }
-      */
-
-      free(blocks_);
-      free(zero_blocks_);
-      free(Ia_code_);
-      free(Ib_code_);
-      free(Ia_size_);
-      free(Ib_size_);
-      free(units_);
-      free(file_number_);
-      free(buf_size_);
-      free(buf2blk_);
-      free(buf_offdiag_);
-      free(first_ablk_);
-      free(last_ablk_);
-      free_int_matrix(decode_);
-      free(offset_);
-      }
+        free(blocks_);
+        free(zero_blocks_);
+        free(Ia_code_);
+        free(Ib_code_);
+        free(Ia_size_);
+        free(Ib_size_);
+        free(units_);
+        free(file_number_);
+        free(buf_size_);
+        free(buf2blk_);
+        free(buf_offdiag_);
+        free(first_ablk_);
+        free(last_ablk_);
+        free_int_matrix(decode_);
+        free(offset_);
+    }
 
 }
 
@@ -519,6 +511,38 @@ double * CIvect::buf_malloc(void)
 void CIvect::set_nvect(int i)
 {
   nvect_ = i;
+}
+/*
+** CIvect::operator *
+**
+** Function returns the scalar product of two CI vectors.
+** Assumes that diagonal blocks are full for Ms=0 cases
+*/
+
+double CIvect::dot(SharedCIVector b)
+{
+   double dotprod=0.0, tval;
+
+   if (Ms0_) {
+      for (int buf=0; buf<buf_per_vect_; buf++) {
+         read(cur_vect_, buf);
+         b->read(b->cur_vect_, buf);
+         dot_arr(buffer_, b->buffer_, buf_size_[buf], &tval);
+         if (buf_offdiag_[buf]) tval *= 2.0;
+         dotprod += tval;
+         }
+      }
+
+   else {
+      for (int buf=0; buf<buf_per_vect_; buf++) {
+         read(cur_vect_, buf);
+         b->read(b->cur_vect_, buf);
+         dot_arr(buffer_, b->buffer_, buf_size_[buf], &tval);
+         dotprod += tval;
+         }
+      }
+
+   return(dotprod);
 }
 
 

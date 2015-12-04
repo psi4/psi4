@@ -135,11 +135,10 @@ void CIWavefunction::get_parameters(Options &options)
 
   Parameters_->neg_only = 1;
   Parameters_->nunits = 1;
-  Parameters_->first_tmp_unit = options["CI_FILE_START"].to_integer();
-  Parameters_->first_hd_tmp_unit = options["CI_FILE_START"].to_integer();
-  Parameters_->first_c_tmp_unit = options["CI_FILE_START"].to_integer() + 1;
-  Parameters_->first_s_tmp_unit = options["CI_FILE_START"].to_integer() + 2;
-  Parameters_->first_d_tmp_unit = options["CI_FILE_START"].to_integer() + 3;
+  Parameters_->hd_filenum = options["CI_FILE_START"].to_integer();
+  Parameters_->c_filenum = options["CI_FILE_START"].to_integer() + 1;
+  Parameters_->s_filenum = options["CI_FILE_START"].to_integer() + 2;
+  Parameters_->d_filenum = options["CI_FILE_START"].to_integer() + 3;
 
   Parameters_->num_hd_tmp_units = 1;
   Parameters_->num_c_tmp_units = 1;
@@ -1014,8 +1013,8 @@ void CIWavefunction::print_parameters(void)
            Parameters_->opdm ?  "yes":"no",
            Parameters_->transdens ? "yes":"no");
    outfile->Printf( "\n   FILES         = %3d %2d %2d %2d\n",
-      Parameters_->first_hd_tmp_unit, Parameters_->first_c_tmp_unit,
-      Parameters_->first_s_tmp_unit, Parameters_->first_d_tmp_unit);
+      Parameters_->hd_filenum, Parameters_->c_filenum,
+      Parameters_->s_filenum, Parameters_->d_filenum);
 
    outfile->Printf( "\n   EX ALLOW      = ");
    for (i=0;i<Parameters_->ex_lvl;i++) {

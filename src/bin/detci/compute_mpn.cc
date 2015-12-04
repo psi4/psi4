@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 /*
@@ -101,21 +101,11 @@ void CIWavefunction::compute_mpn()
         }
     }
 
-  //  zapt_shift(CalcInfo_->twoel_ints, CalcInfo_->nirreps, CalcInfo_->nmo,
-  //     CalcInfo_->docc, CalcInfo_->socc, CalcInfo_->orbs_per_irr,
-  //     CalcInfo_->dropped_docc, CalcInfo_->reorder);
   }
 
   H0block_init(CIblks_->vectlen);
-  //CIvect Hd;
-  CIvect Hd(Parameters_->icore, 1, Parameters_->num_hd_tmp_units,
-         Parameters_->first_hd_tmp_unit, CIblks_, CalcInfo_, Parameters_, H0block_);  
-  //CIvect Hd(CIblks_->vectlen, CIblks_->num_blocks, Parameters_->icore,
-  //       Parameters_->Ms0, CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size,
-  //       CIblks_->Ib_size, CIblks_->offset, CIblks_->num_alp_codes,
-  //       CIblks_->num_bet_codes, CIblks_->nirreps, CIblks_->subgr_per_irrep, 1,
-  //       Parameters_->num_hd_tmp_units, Parameters_->first_hd_tmp_unit,
-  //       CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
+  CIvect Hd(Parameters_->icore, 1, 1,
+         Parameters_->hd_filenum, CIblks_, CalcInfo_, Parameters_, H0block_);
 
   Hd.init_io_files(false);
 
@@ -183,35 +173,14 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   int i, j, k, order, did_vec=0;
   int kvec_offset; /* offset if c_0 is not stored on disk */
 
-  //CIvect Cvec;
-  //CIvect Cvec2;
-  //CIvect Sigma;
 
   CIvect Cvec(Parameters_->icore, Parameters_->maxnvect, Parameters_->num_c_tmp_units,
-           Parameters_->first_c_tmp_unit, CIblks_, CalcInfo_, Parameters_, H0block_, false); 
+           Parameters_->c_filenum, CIblks_, CalcInfo_, Parameters_, H0block_, false);
   CIvect Sigma(Parameters_->icore, 1, Parameters_->num_s_tmp_units,
-            Parameters_->first_s_tmp_unit, CIblks_, CalcInfo_, Parameters_, H0block_, false);
+            Parameters_->s_filenum, CIblks_, CalcInfo_, Parameters_, H0block_, false);
   CIvect Cvec2(Parameters_->icore, Parameters_->maxnvect, Parameters_->num_c_tmp_units,
-            Parameters_->first_c_tmp_unit, CIblks_, CalcInfo_, Parameters_, H0block_, false);
+            Parameters_->c_filenum, CIblks_, CalcInfo_, Parameters_, H0block_, false);
 
-  //Cvec.set(CIblks_->vectlen,CIblks_->num_blocks,Parameters_->icore,Parameters_->Ms0,
-  //   CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
-  //   CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
-  //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Parameters_->maxnvect,
-  //   Parameters_->num_c_tmp_units, Parameters_->first_c_tmp_unit,
-  //   CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
-  //Sigma.set(CIblks_->vectlen,CIblks_->num_blocks,Parameters_->icore,Parameters_->Ms0,
-  //   CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
-  //   CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
-  //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, 1,
-  //   Parameters_->num_s_tmp_units, Parameters_->first_s_tmp_unit,
-  //   CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
-  //Cvec2.set(CIblks_->vectlen,CIblks_->num_blocks,Parameters_->icore,Parameters_->Ms0,
-  //   CIblks_->Ia_code, CIblks_->Ib_code, CIblks_->Ia_size, CIblks_->Ib_size,
-  //   CIblks_->offset, CIblks_->num_alp_codes, CIblks_->num_bet_codes,
-  //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, Parameters_->maxnvect,
-  //   Parameters_->num_c_tmp_units, Parameters_->first_c_tmp_unit,
-  //   CIblks_->first_iablk, CIblks_->last_iablk, CIblks_->decode);
 
    // setup I/O files, don't open old versions of these files
    Cvec.init_io_files(false);
@@ -225,8 +194,8 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   Cvec.h0block_buf_init();
   buffer1 = *(Hd.blockptr(0));
   buffer2 = Hd.buf_malloc();
-  Hd.buf_unlock(); 
-  
+  Hd.buf_unlock();
+
   wfn_overlap = init_matrix(Parameters_->maxnvect+1, Parameters_->maxnvect+1);
   cvec_coeff = init_matrix(Parameters_->maxnvect+1, Parameters_->maxnvect+1);
   tmp_coeff = init_array(Parameters_->maxnvect+1);
@@ -234,12 +203,12 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   mpk_energy = init_array(Parameters_->maxnvect+1);
   mp2k_energy = init_array(2*(Parameters_->maxnvect+1)+1);
   mpk_energy[0] = mp2k_energy[0] = CalcInfo_->e0;
-  mpk_energy[1] = CalcInfo_->e1 = mp2k_energy[1] =  
+  mpk_energy[1] = CalcInfo_->e1 = mp2k_energy[1] =
        CalcInfo_->escf - CalcInfo_->e0 - CalcInfo_->enuc;
   if (CalcInfo_->iopen) kvec_offset = 0;
   else kvec_offset = 0;
- 
-  for (i=0; i<=Parameters_->maxnvect; i++) cvec_coeff[i][i] = 1.0; 
+
+  for (i=0; i<=Parameters_->maxnvect; i++) cvec_coeff[i][i] = 1.0;
   cvec_norm[0] = 1.0;
   wfn_overlap[0][0] = 1.0;
 
@@ -265,14 +234,14 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
       mpk_energy[0]+mpk_energy[1]+CalcInfo_->enuc);
   Empn = mpk_energy[0]+mpk_energy[1]+CalcInfo_->enuc;
   Empn2 = Empn;
-  
+
 
   Cvec.buf_lock(buffer1);
 
   Cvec.h0block_buf_init();
   tval = 1.0;
   Cvec.init_vals(0, 1, &(CalcInfo_->ref_alp_list), &(CalcInfo_->ref_alp_rel),
-      &(CalcInfo_->ref_bet_list), &(CalcInfo_->ref_bet_rel), H0block_->blknum, 
+      &(CalcInfo_->ref_bet_list), &(CalcInfo_->ref_bet_rel), H0block_->blknum,
       &tval);
   if (Parameters_->print_lvl >= 5) {
     outfile->Printf("Zeroth-order wavefunction\n");
@@ -281,22 +250,22 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
 
   Sigma.buf_lock(buffer2);
   Cvec.read(0, 0);  /* Set Cvec up correctly ? */
-  
+
   //outfile->Printf("Cvec zero_blocks:\n");
-  //Cvec.print_zero_blocks(); 
+  //Cvec.print_zero_blocks();
   Sigma.set_zero_blocks_all();
-  
+
   //outfile->Printf("Sigma zero_blocks after set_zero_blocks_all.\n");
-  //Sigma.print_zero_blocks(); 
-  
-  sigma(Cvec, Sigma, oei, tei, 0); 
+  //Sigma.print_zero_blocks();
+
+  sigma(Cvec, Sigma, oei, tei, 0);
   if (Parameters_->print_lvl >= 5) {
     outfile->Printf("Sigma vector for 0 C vector\n");
     Sigma.read(0,0);
     Sigma.print("outfile");
     }
   //outfile->Printf("Sigma zero_blocks after sigma call.\n");
-  //Sigma.print_zero_blocks(); 
+  //Sigma.print_zero_blocks();
 
   Cvec.read(0,0);  /* Set Cvec up correctly ? */
   Sigma.read(0,0); /* Set Sigma up correctly ? */
@@ -306,16 +275,16 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   //outfile->Printf(" <psi0|Hc|psi0> = %25.15f\n", tval);
   //outfile->Printf(" CalcInfo_->edrc = %25.15f\n", CalcInfo_->edrc);
   //outfile->Printf(" mpk_energy[0] = %25.15f\n", mpk_energy[0]);
- 
-  tval += CalcInfo_->edrc - mpk_energy[0]; 
- 
+
+  tval += CalcInfo_->edrc - mpk_energy[0];
+
   outfile->Printf("   1  %25.15f %25.15f\n", tval,
    tval+mpk_energy[0]+CalcInfo_->enuc);
-  if (tval - mpk_energy[1] > ZERO) 
+  if (tval - mpk_energy[1] > ZERO)
     outfile->Printf( "First-order energies do not agree!\n");
-  
 
-  Cvec.copy_zero_blocks(Sigma); /* Probably don't need this anymore */ 
+
+  Cvec.copy_zero_blocks(Sigma); /* Probably don't need this anymore */
   Cvec.copy(Sigma, (1-kvec_offset), 0);
   if (Parameters_->print_lvl >= 5) {
     outfile->Printf( "Cvec copying Sigma.\n");
@@ -323,7 +292,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   }
 
   Sigma.buf_unlock();
-  Hd.buf_lock(buffer2); 
+  Hd.buf_lock(buffer2);
 
   tval = Cvec.dcalc2(1, CalcInfo_->e0, Hd, 1, alplist_, betlist_);
   Hd.buf_unlock();
@@ -334,8 +303,8 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
     Cvec.print("outfile");
   }
   Cvec.read((1-kvec_offset),0);
-  Cvec.set_vals((1-kvec_offset), 1, &(CalcInfo_->ref_alp_list), 
-          &(CalcInfo_->ref_alp_rel), &(CalcInfo_->ref_bet_list), 
+  Cvec.set_vals((1-kvec_offset), 1, &(CalcInfo_->ref_alp_list),
+          &(CalcInfo_->ref_alp_rel), &(CalcInfo_->ref_bet_list),
           &(CalcInfo_->ref_bet_rel), H0block_->blknum, &tval);
   Sigma.buf_lock(buffer2);
 
@@ -345,7 +314,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
     }
 
   /* Here buffer1 = Cvec and buffer2 = Sigma */
-  k=1; 
+  k=1;
   while (k<Parameters_->maxnvect) {
 
      /* Form Sigma */
@@ -353,9 +322,9 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
      Cvec.read((k-kvec_offset), 0);  /* Set Cvec up correctly ? */
      sigma(Cvec, Sigma, oei, tei, 0);
      //outfile->Printf("Sigma zero_blocks after sigma call.\n");
-     //Sigma.print_zero_blocks(); 
+     //Sigma.print_zero_blocks();
 
-     /* Compute k+1, 2k, and 2k+1 th order energies from kth order wavefunction */ 
+     /* Compute k+1, 2k, and 2k+1 th order energies from kth order wavefunction */
      Sigma.read(0,0); /* S_k is located in first Sigma space */
      //Sigma.print(outfile);
 
@@ -366,17 +335,17 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
        outfile->Printf(" norm of Sigma = %20.10f\n", tval);
      #endif
 
-     if (CalcInfo_->iopen) { 
+     if (CalcInfo_->iopen) {
        Cvec.read(0,0); /* E_k = C_0 x S_k */
        tval = Cvec * Sigma;
        }
      else Sigma.extract_vals(0, 1, &(CalcInfo_->ref_alp_list),
           &(CalcInfo_->ref_alp_rel), &(CalcInfo_->ref_bet_list),
           &(CalcInfo_->ref_bet_rel), H0block_->blknum, &tval);
-     mpk_energy[k+1] = tval; 
+     mpk_energy[k+1] = tval;
      Empn += tval;
-     outfile->Printf("  %2d  %25.15f %25.15f", k+1, mpk_energy[k+1], Empn); 
- 
+     outfile->Printf("  %2d  %25.15f %25.15f", k+1, mpk_energy[k+1], Empn);
+
      std::string label = (Parameters_->zaptn) ? "ZAPT" : "MP";
 
      Sigma.buf_unlock();
@@ -387,10 +356,10 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
        outfile->Printf("\t %2d %25.15f %25.15f\n",2*k,mp2k_energy[2*k],Empn2);
 
        /*- strings so that variable-name psi variables get parsed in docs -*/
-       /*- Process::environment.globals["ZAPTn TOTAL ENERGY"] -*/ 
-       /*- Process::environment.globals["MPn TOTAL ENERGY"] -*/ 
-       /*- Process::environment.globals["ZAPTn CORRELATION ENERGY"] -*/ 
-       /*- Process::environment.globals["MPn CORRELATION ENERGY"] -*/ 
+       /*- Process::environment.globals["ZAPTn TOTAL ENERGY"] -*/
+       /*- Process::environment.globals["MPn TOTAL ENERGY"] -*/
+       /*- Process::environment.globals["ZAPTn CORRELATION ENERGY"] -*/
+       /*- Process::environment.globals["MPn CORRELATION ENERGY"] -*/
        std::stringstream s;
        s << label << (2*k) << " TOTAL ENERGY";
        Process::environment.globals[s.str()] = Empn2;
@@ -418,7 +387,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
        //s.str(std::string());
        //s << label << (2*k+1) << " CORRECTION ENERGY";
        //Process::environment.globals[s.str()] = mp2k_energy[2*k+1];
-        
+
        }
      else {
        outfile->Printf( "\n");
@@ -434,7 +403,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
        //Process::environment.globals[s.str()] = mpk_energy[k+1];
      }
 
-     
+
 
      if (k+1 == Parameters_->maxnvect) break;
 
@@ -445,7 +414,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
            (&cvec_norm[k-1]),&max_overlap)) did_vec = 1;
        else {
            std::string str = boost::lexical_cast<std::string>( 13);
-           str += " vector norm = "; 
+           str += " vector norm = ";
            char*str2 = new char[25];
            sprintf(str2,"%20.15lf",cvec_norm[k-1]);
            str += str2;
@@ -454,7 +423,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
            str += str2;
            delete str2;
            throw PsiException(str,__FILE__,__LINE__);
-           } 
+           }
        while (max_overlap > MPn_ZERO) {
          outfile->Printf("Second Schmidt-Orthogonalization performed.\n");
          Cvec.read(k-1,0);
@@ -471,7 +440,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
             &tmp_norm,&max_overlap)) did_vec = 1;
          else {
            std::string str = boost::lexical_cast<std::string>(13);
-           str += " vector norm = "; 
+           str += " vector norm = ";
            char*str2 = new char[25];
            sprintf(str2,"%20.15lf",cvec_norm[k-1]);
            str += str2;
@@ -481,7 +450,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
            delete str2;
            throw PsiException(str,__FILE__,__LINE__);
            }
-         for (i=0; i<k-1; i++) { 
+         for (i=0; i<k-1; i++) {
             outfile->Printf( "second coeff[%d] = %20.15f\n",i,tmp_coeff[i]);
             cvec_coeff[k-1][i] += (tmp_coeff[i]/cvec_norm[k-1]);
             }
@@ -497,7 +466,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
      /* Construct k+1th order wavefunction */
      Cvec.construct_kth_order_wf(Hd, Sigma, Cvec2, alplist_, betlist_, buffer1,
         buffer2, k+1, mpk_energy, cvec_coeff, cvec_norm);
-     
+
      // outfile->Printf( "Cvec %d = \n", k+1);
      // Cvec.print(outfile);
 
@@ -512,17 +481,17 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
              &tval);
      Sigma.buf_lock(buffer2);
      k++;
-     Cvec.copy_zero_blocks(Sigma); 
+     Cvec.copy_zero_blocks(Sigma);
      }
 
-   /* 22 Nov 2003 - JMT 
+   /* 22 Nov 2003 - JMT
     * Save the MPn or MP(2n-1) energy
     */
    if (Parameters_->save_mpn2 == 1 && Parameters_->wigner) {
      Process::environment.globals["CURRENT ENERGY"] = Empn2;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = Empn2 - Process::environment.globals["CURRENT REFERENCE ENERGY"];
 
-     if(Parameters_->zaptn) 
+     if(Parameters_->zaptn)
        outfile->Printf( "\nZAPT%d energy saved\n", (Parameters_->maxnvect * 2) - 1);
      else
        outfile->Printf( "\nMP%d energy saved\n", (Parameters_->maxnvect * 2) - 1);

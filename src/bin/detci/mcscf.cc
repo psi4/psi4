@@ -79,7 +79,6 @@ void CIWavefunction::compute_mcscf()
   SharedMatrix Cfzc = get_orbitals("FZC");
   somcscf->set_frozen_orbitals(Cfzc);
 
-
   /// => Start traditional two-step MCSCF <= //
   // Parameters
   int conv = 0;
@@ -113,13 +112,9 @@ void CIWavefunction::compute_mcscf()
   for (int iter=1; iter<(MCSCF_Parameters_->max_iter + 1); iter++){
 
     // Run CI and set quantities
-    //outfile->Printf("Diag h\n");
     diag_h();
-    //outfile->Printf("OPDM\n");
     form_opdm();
-    //outfile->Printf("TPDM\n");
     form_tpdm();
-    //outfile->Printf("Formed matrices\n");
 
     current_energy = Process::environment.globals["MCSCF TOTAL ENERGY"];
     ediff = current_energy - old_energy;
@@ -191,12 +186,7 @@ void CIWavefunction::compute_mcscf()
     set_orbitals("ROT", new_orbs);
 
     // Transform integrals
-    if (MCSCF_Parameters_->mcscf_type == "DF"){
-      transform_dfmcscf_ints(!MCSCF_Parameters_->orbital_so);
-    }
-    else {
-      transform_mcscf_ints(!MCSCF_Parameters_->orbital_so);
-    }
+    transform_mcscf_integrals(!MCSCF_Parameters_->orbital_so);
 
   }// End MCSCF
   diis_manager->delete_diis_file();

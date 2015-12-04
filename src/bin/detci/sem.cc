@@ -51,19 +51,6 @@
 
 namespace psi { namespace detci {
 
-//extern int H0block_calc(double E);
-//extern void H0block_xy(double *x, double *y, double E);
-//extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
-//   int *Iaidx, int *Ibidx, double *coeff,
-//   struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
-//   struct stringwr **alplist, struct stringwr **betlist,
-//   std::string out);
-//extern void parse_import_vector(SlaterDetSet *sdset, int *i_alplist,
-//   int *i_alpidx, int *i_betlist, int *i_betidx, int *i_blknums, struct ci_blks *CIblks,
-//   struct olsen_graph *AlphaG, struct olsen_graph *BetaG);
-
-//extern void H0block_coupling_calc(double E, struct stringwr **alplist,
-//   struct stringwr **betlist);
 
 #define MALPHA_TOLERANCE 1E-15
 
@@ -95,92 +82,35 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    std::string str;
    bool dvec_read_fail = false;
 
-
-   // DGAS: This will cause problems, need to reexamine this
-   CIvect *Dvecp, *Dvec2p;
-
-   CIvect Cvec(Parameters_->icore, maxnvect, Parameters_->num_c_tmp_units,
-          Parameters_->first_c_tmp_unit, CIblks_, CalcInfo_, Parameters_,
+   CIvect Cvec(Parameters_->icore, maxnvect, 1,
+          Parameters_->c_filenum, CIblks_, CalcInfo_, Parameters_,
           H0block_, false);  
-   CIvect Cvec2(Parameters_->icore, maxnvect, Parameters_->num_c_tmp_units,
-          Parameters_->first_c_tmp_unit, CIblks_, CalcInfo_, Parameters_,
+   CIvect Cvec2(Parameters_->icore, maxnvect, 1,
+          Parameters_->c_filenum, CIblks_, CalcInfo_, Parameters_,
           H0block_, false);  
-   CIvect Sigma(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
-                Parameters_->first_s_tmp_unit, CIblks_, CalcInfo_, Parameters_,
+   CIvect Sigma(Parameters_->icore, maxnvect, 1,
+                Parameters_->s_filenum, CIblks_, CalcInfo_, Parameters_,
                 H0block_, false);  
-   CIvect Sigma2(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
-                 Parameters_->first_s_tmp_unit, CIblks_, CalcInfo_, Parameters_,
+   CIvect Sigma2(Parameters_->icore, maxnvect, 1,
+                 Parameters_->s_filenum, CIblks_, CalcInfo_, Parameters_,
                  H0block_, false);  
 
-   //Cvec.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
-   //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-   //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-   //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, maxnvect,
-   //   Parameters_->num_c_tmp_units, Parameters_->first_c_tmp_unit,
-   //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-   //Cvec2.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
-   //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-   //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-   //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, maxnvect,
-   //   Parameters_->num_c_tmp_units, Parameters_->first_c_tmp_unit,
-   //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-   //Sigma.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
-   //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-   //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-   //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, maxnvect,
-   //   Parameters_->num_s_tmp_units, Parameters_->first_s_tmp_unit,
-   //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-   //Sigma2.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
-   //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-   //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-   //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, maxnvect,
-   //   Parameters_->num_s_tmp_units, Parameters_->first_s_tmp_unit,
-   //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-   if (!Parameters_->nodfile) {
-     Dvecp = new CIvect(Parameters_->icore, nroots, Parameters_->num_d_tmp_units,
-              Parameters_->first_d_tmp_unit, CIblks_, CalcInfo_, Parameters_,
-              H0block_, false); 
-     Dvec2p = new CIvect(Parameters_->icore, nroots, Parameters_->num_d_tmp_units,
-               Parameters_->first_d_tmp_unit, CIblks_, CalcInfo_, Parameters_,
-               H0block_, false);
-
-     //Dvec.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
-     //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-     //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-     //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, nroots,
-     //   Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
-     //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-     //Dvec2.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
-     //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-     //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-     //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, nroots,
-     //   Parameters_->num_d_tmp_units, Parameters_->first_d_tmp_unit,
-     //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+   int dvec_file, dvec2_file;
+   if (!Parameters_->nodfile){
+     dvec_file = Parameters_->d_filenum;
+     dvec2_file = Parameters_->d_filenum;
    }
-   else {
-     Dvecp = new CIvect(Parameters_->icore, maxnvect, Parameters_->num_c_tmp_units,
-              Parameters_->first_c_tmp_unit, CIblks_, CalcInfo_, Parameters_,
-              H0block_, false); 
-     Dvec2p = new CIvect(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
-               Parameters_->first_s_tmp_unit, CIblks_, CalcInfo_, Parameters_,
-               H0block_, false);
-
-     //Dvec.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
-     //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-     //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-     //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, maxnvect,
-     //   Parameters_->num_c_tmp_units, Parameters_->first_c_tmp_unit,
-     //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-     //Dvec2.set(CIblks.vectlen,CIblks.num_blocks,Parameters_->icore,Parameters_->Ms0,
-     //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-     //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-     //   CalcInfo_->nirreps, AlphaG_->subgr_per_irrep, maxnvect,
-     //   Parameters_->num_s_tmp_units, Parameters_->first_s_tmp_unit,
-     //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+   else{
+     dvec_file = Parameters_->c_filenum;
+     dvec2_file = Parameters_->s_filenum;
    }
 
-   CIvect Dvec = *Dvecp;
-   CIvect Dvec2 = *Dvec2p;
+   CIvect Dvec(Parameters_->icore, maxnvect, 1,
+               dvec_file, CIblks_, CalcInfo_, Parameters_,
+               H0block_, false);  
+   CIvect Dvec2(Parameters_->icore, maxnvect, 1,
+                dvec2_file, CIblks_, CalcInfo_, Parameters_,
+                H0block_, false);  
 
    /* open the files: some of these CIvectors are logical vectors that
       point to the same files ... don't need to repeat the file opens

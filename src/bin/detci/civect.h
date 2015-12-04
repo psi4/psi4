@@ -35,6 +35,8 @@ struct params;
 struct H_zero_block;
 struct ci_blks;
 class CIWavefunction;
+class CIvect;
+typedef boost::shared_ptr<psi::detci::CIvect> SharedCIVector;
 }}
 
 namespace psi { namespace detci {
@@ -133,6 +135,7 @@ class CIvect {
          int nirr, int cdperirr, int maxvect, int nunits, int funit,
          int *fablk, int *lablk, int **dc);
       void print(std::string OutFileRMR);
+      double dot(SharedCIVector b);
       double operator*(CIvect &b);
       void set_nvect(int i);
       void setarray(const double *a, BIGINT len);

@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <libmints/mints.h>
 #include <psi4-dec.h>
 #include <libiwl/iwl.h>
@@ -7,8 +29,9 @@
 
 #include "globaldefs.h"
 #include "ciwave.h"
+#include "civect.h"
 #include "structs.h"
-
+#include "slaterd.h"
 
 namespace psi { namespace detci {
 
@@ -343,7 +366,7 @@ SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot, const std::string& s
 }
 SharedMatrix CIWavefunction::get_tpdm(const std::string& spin, bool symmetrize)
 {
- 
+
   if (symmetrize){
     if (spin != "SUM")
         throw PSIEXCEPTION("CIWavefunction::get_tpdm: Symmetrize is only available for SUM spin type.");
@@ -382,7 +405,7 @@ SharedMatrix CIWavefunction::get_tpdm(const std::string& spin, bool symmetrize)
        retp[sr][pq] = retp[sr][qp] = value;
 
       }
-    }}} 
+    }}}
 
     // Return
     return ret;
@@ -469,10 +492,46 @@ void CIWavefunction::init_ioff(void)
 }
 
 
-// void CIWavefunction::finalize()
-// {
-//
-// }
+SharedCIVector CIWavefunction::new_civector(int maxnvect, int filenum, bool use_disk,
+                                            bool buf_init)
+{
+   SharedCIVector civect(new CIvect(Parameters_->icore, maxnvect, (int)use_disk,
+                         filenum, CIblks_, CalcInfo_, Parameters_, H0block_, buf_init));
+   return civect;
 
+}
+SharedMatrix CIWavefunction::hamiltonian(void)
+{
+    BIGINT size = CIblks_->vectlen;
+    double h_size_gb = (double)(8 * size * size) / 1E9;
+    if (h_size_gb > 1){
+        outfile->Printf("Requsted size of the hamiltonian is %lf!\n", h_size_gb);
+        throw PSIEXCEPTION("CIWave::hamiltonian: Size is too large for explicit hamiltonian build");
+    }
 
-}}
+    SharedMatrix H(new Matrix("CI Hamiltonian", (int)size, (int)size));
+    double** Hp = H->pointer();
+
+    CIvect Cvec(1, 1, 0, 0, CIblks_, CalcInfo_, Parameters_, H0block_);
+    SlaterDeterminant I, J;
+    int Iarel, Ialist, Ibrel, Iblist;
+    for (int ii=0; ii<size; ii++) {
+        Cvec.det2strings(ii, &Ialist, &Iarel, &Iblist, &Ibrel);
+        I.set(CalcInfo_->num_alp_expl,
+             alplist_[Ialist][Iarel].occs, CalcInfo_->num_bet_expl,
+             betlist_[Iblist][Ibrel].occs);
+        Hp[ii][ii] = matrix_element(&I, &I) + CalcInfo_->edrc;
+
+        /* introduce symmetry or other restrictions here */
+        for (int jj=0; jj<ii; jj++) {
+            Cvec.det2strings(jj, &Ialist, &Iarel, &Iblist, &Ibrel);
+            J.set(CalcInfo_->num_alp_expl,
+               alplist_[Ialist][Iarel].occs, CalcInfo_->num_bet_expl,
+               betlist_[Iblist][Ibrel].occs);
+            Hp[ii][jj] = Hp[jj][ii] = matrix_element(&I, &J);
+        }
+    }
+    return H;
+}
+
+}} // End Psi and CIWavefunction spaces

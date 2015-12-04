@@ -48,7 +48,7 @@ namespace psi { namespace detci {
 void CIWavefunction::form_tpdm(void)
 {
   std::vector<SharedMatrix> tpdm_list;
-  tpdm_list = tpdm(Parameters_->num_roots, Parameters_->first_d_tmp_unit, Parameters_->first_d_tmp_unit);
+  tpdm_list = tpdm(Parameters_->num_roots, Parameters_->d_filenum, Parameters_->d_filenum);
   tpdm_aa_ = tpdm_list[0];
   tpdm_ab_ = tpdm_list[1];
   tpdm_bb_ = tpdm_list[2];

@@ -33,35 +33,6 @@
 namespace psi { namespace detci {
 
 /*
-** calc_d()
-**
-** Function calculates a block of the numerators for the Davidson 
-** algorithm correction vector d.
-**
-** Parameters:
-**    target  = array to store result
-**    alpha   = coefficient
-**    sigma   = sigma block
-**    lambda  = energy coefficient
-**    c       = c vector block
-**    size    = size of block
-**
-** Returns: none
-*/
-//void calc_d(double *target, double alpha, double *sigma, double lambda,
-//      double *c, int size)
-//{
-//   int i;
-//   double tval;
-//
-//   for (i=0; i<size; i++) {
-//      tval = alpha * (sigma[i] - lambda * c[i]);
-//      target[i] += tval;
-//      }
-//}
-
-
-/*
 ** calc_d2()
 **
 ** Function calculates a block of the denominators for the Davidson 

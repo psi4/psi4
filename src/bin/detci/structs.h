@@ -50,6 +50,7 @@ namespace psi { namespace detci {
 typedef unsigned long long int BIGINT;
 */
 typedef unsigned long int BIGINT;
+//typedef boost::shared_ptr<psi::detci::CIvect> SharedCIVector;
 
 #define CI_BLK_MAX 5000
 #define IOFF_MAX 50604
@@ -486,13 +487,13 @@ struct params {
    double lse_tolerance;   /* energy converged to tol to perform lse */
    int neg_only;           /* 1(0) if get -(+) values of diag elements */
    int first_tmp_unit;     /* first number for the tmp files */
-   int first_hd_tmp_unit;  /* first tmp file for H diagonal */
+   int hd_filenum;  /* first tmp file for H diagonal */
    int num_hd_tmp_units;   /* the number of such files */
-   int first_c_tmp_unit;   /* first tmp file for CI coeffs */
+   int c_filenum;   /* first tmp file for CI coeffs */
    int num_c_tmp_units;    /* the number of such files */
-   int first_s_tmp_unit;   /* first tmp file for sigma coeffs */
+   int s_filenum;   /* first tmp file for sigma coeffs */
    int num_s_tmp_units;    /* the number of such files */
-   int first_d_tmp_unit;   /* first tmp file for D correction vectors */
+   int d_filenum;   /* first tmp file for D correction vectors */
    int num_d_tmp_units;    /* the number of such files */
    int num_init_vecs;      /* number of initial vectors for Davidson method */
    int restart;            /* restart flag, 0 or 1 */
