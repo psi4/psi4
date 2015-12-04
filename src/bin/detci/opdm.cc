@@ -199,8 +199,8 @@ SharedMatrix CIWavefunction::opdm_add_inactive(SharedMatrix opdm, double value, 
 std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(int root_start, int nroots, int Ifile,
                                                              int Jfile, bool transden)
 {
+  timer_on("CIWave: opdm");
 
-  //CIvect Ivec, Jvec;
   int i, maxrows, maxcols;
   unsigned long bufsz;
   double **transp_tmp = NULL;
@@ -514,6 +514,7 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(int root_start, int
 
   scratch_a.reset();
   scratch_b.reset();
+  timer_off("CIWave: opdm");
 
   return opdm_list;
 }

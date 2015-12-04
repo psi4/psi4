@@ -76,7 +76,6 @@ void CIWavefunction::common_init()
     }
 
     // Set relevant matrices
-    //H_ = reference_wavefunction_->H();
     Ca_ = reference_wavefunction_->Ca()->clone();
     Cb_ = Ca_; // We can only do RHF or ROHF reference wavefunctions.
     Da_ = reference_wavefunction_->Da()->clone(); // This will only be overwritten if form_opdm is called
@@ -423,6 +422,19 @@ void CIWavefunction::cleanup(void)
     //delete CalcInfo_;
     //delete Parameters_;
     //delete H0block_;
+
+    // Cleanup up MCSCF integral objects
+    if (Parameters_->mcscf){
+        jk_.reset();
+        if (MCSCF_Parameters_->mcscf_type == "DF"){
+            dferi_.reset();
+        }
+        else{
+            rot_space_.reset();
+            act_space_.reset();
+            ints_.reset();
+        }
+    }
 }
 
 /*
