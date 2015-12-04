@@ -79,7 +79,8 @@ void get_mo_info(Options &options)
   CalcInfo.socc = chkpt_rd_openpi();
   CalcInfo.enuc = chkpt_rd_enuc();
   CalcInfo.escf = chkpt_rd_escf();
-  CalcInfo.edrc = chkpt_rd_efzc();
+//  CalcInfo.edrc = chkpt_rd_efzc();
+  CalcInfo.edrc = Process::environment.wavefunction()->efzc();
   eig_unsrt = chkpt_rd_evals();
   chkpt_close();
 

@@ -113,9 +113,10 @@ void get_moinfo(void)
     }
 
     if(moinfo.nfzc) {
-        chkpt_init(PSIO_OPEN_OLD);
-        moinfo.efzc = chkpt_rd_efzc();
-        chkpt_close();
+//        chkpt_init(PSIO_OPEN_OLD);
+//        moinfo.efzc = chkpt_rd_efzc();
+//        chkpt_close();
+          moinfo.efzc = Process::environment.wavefunction()->efzc();
     }
     else moinfo.efzc = 0.0;
 
