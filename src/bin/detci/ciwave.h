@@ -305,10 +305,6 @@ private:
     SharedMatrix opdm_b_;
 
     std::vector<SharedMatrix> tpdm(int nroots, int Ifirstunit, int Jfirstunit);
-    //void tpdm(struct stringwr **alplist, struct stringwr **betlist,
-    //      int Inroots, int Inunits, int Ifirstunit,
-    //      int Jnroots, int Jnunits, int Jfirstunit,
-    //      int targetfile, int writeflag, int printflag);
     void tpdm_block(struct stringwr **alplist, struct stringwr **betlist,
             int nbf, int nalplists, int nbetlists,
             double *twopdm_aa, double *twopdm_bb, double *twopdm_ab, double **CJ, double **CI, int Ja_list,

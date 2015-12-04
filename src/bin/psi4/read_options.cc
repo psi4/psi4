@@ -411,7 +411,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do compute one-particle density matrix if not otherwise required? -*/
     options.add_bool("OPDM", false);
 
-    /*- Do compute two-particle density matrix if not otherwise required? -*/
+    /*- Do compute two-particle density matrix if not otherwise required?
+        Warning: This will hold 4 dense active TPDM's in memory !expert -*/
     options.add_bool("TPDM", false);
 
     /*- Do print the one-particle density matrix for each root? -*/

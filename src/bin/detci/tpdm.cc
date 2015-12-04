@@ -49,18 +49,18 @@ void CIWavefunction::form_tpdm(void)
 {
   std::vector<SharedMatrix> tpdm_list;
   tpdm_list = tpdm(Parameters_->num_roots, Parameters_->first_d_tmp_unit, Parameters_->first_d_tmp_unit);
-  tpdm_called_ = true;
   tpdm_aa_ = tpdm_list[0];
   tpdm_ab_ = tpdm_list[1];
   tpdm_bb_ = tpdm_list[2];
   tpdm_    = tpdm_list[3];
+  tpdm_called_ = true;
 }
 
 // We always return the state-averaged tpdm here, not sure what else we really need.
-std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int Jfirstunit) 
+std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int Jfirstunit)
 {
 
-   int maxrows, maxcols, nact2, ntri2;
+   int maxrows, maxcols;
    unsigned long bufsz;
    double **transp_tmp = NULL;
    double **transp_tmp2 = NULL;
@@ -73,7 +73,7 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
    int root_idx;   /* what root we're on */
    double weight;  /* the weight of that root */
 
-   timer_on("CIWave: tpdm"); 
+   timer_on("CIWave: tpdm");
    CIvect Ivec(Parameters_->icore, nroots, 1, Ifirstunit, CIblks_, CalcInfo_, Parameters_,
                H0block_, false);
    Ivec.init_io_files(true);
@@ -87,8 +87,10 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
    Ivec.buf_lock(buffer1);
    Jvec.buf_lock(buffer2);
 
-   nact2 = CalcInfo_->num_ci_orbs * CalcInfo_->num_ci_orbs;
-   ntri2 = (nact2 * (nact2 + 1)) / 2;
+   int nact = CalcInfo_->num_ci_orbs;
+   int nact2 = nact * nact;
+   int ntri2 = (nact2 * (nact2 + 1)) / 2;
+
    SharedVector tpdm_aa(new Vector("MO-basis TPDM AA (ci order)", ntri2));
    SharedVector tpdm_ab(new Vector("MO-basis TPDM AB (ci order)", nact2*nact2));
    SharedVector tpdm_bb(new Vector("MO-basis TPDM BB (ci order)", ntri2));
@@ -96,7 +98,7 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
    double* tpdm_abp = tpdm_ab->pointer();
    double* tpdm_bbp = tpdm_bb->pointer();
 
-   if ((Ivec.icore_==2 && Ivec.Ms0_ && CalcInfo_->ref_sym != 0) || 
+   if ((Ivec.icore_==2 && Ivec.Ms0_ && CalcInfo_->ref_sym != 0) ||
        (Ivec.icore_==0 && Ivec.Ms0_)) {
      for (int i=0, maxrows=0, maxcols=0; i<Ivec.num_blocks_; i++) {
        if (Ivec.Ia_size_[i] > maxrows) maxrows = Ivec.Ia_size_[i];
@@ -132,7 +134,7 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
          Ibc = Ivec.Ib_code_[Iblock];
          Inas = Ivec.Ia_size_[Iblock];
          Inbs = Ivec.Ib_size_[Iblock];
-       
+
          for (Jbuf=0; Jbuf<Jvec.buf_per_vect_; Jbuf++) {
            do_Jblock=0; do_Jblock2=0;
            Jblock = Jvec.buf2blk_[Jbuf];
@@ -143,7 +145,7 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
              Jnas = Jvec.Ia_size_[Jblock];
              Jnbs = Jvec.Ib_size_[Jblock];
              if (s1_contrib_[Iblock][Jblock] || s2_contrib_[Iblock][Jblock]
-               || s3_contrib_[Iblock][Jblock]) 
+               || s3_contrib_[Iblock][Jblock])
              do_Jblock = 1;
            if (Jvec.buf_offdiag_[Jbuf] && (s1_contrib_[Iblock][Jblock2] ||
              s2_contrib_[Iblock][Jblock2] ||
@@ -152,31 +154,31 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
            if (!do_Jblock && !do_Jblock2) continue;
 
            Jvec.read(Jroot, Jbuf);
-	 
+	
            if (do_Jblock) {
-             tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs, 
-               Ivec.num_alpcodes_, Ivec.num_betcodes_, tpdm_aap, tpdm_bbp, tpdm_abp, 
-               Jvec.blocks_[Jblock], Ivec.blocks_[Iblock], 
+             tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
+               Ivec.num_alpcodes_, Ivec.num_betcodes_, tpdm_aap, tpdm_bbp, tpdm_abp,
+               Jvec.blocks_[Jblock], Ivec.blocks_[Iblock],
                Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
            }
-	 
+	
            if (do_Jblock2) {
              Jvec.transp_block(Jblock, transp_tmp);
              tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
-               Ivec.num_alpcodes_, Ivec.num_betcodes_, 
-               tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, Ivec.blocks_[Iblock], 
+               Ivec.num_alpcodes_, Ivec.num_betcodes_,
+               tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, Ivec.blocks_[Iblock],
                Jbc, Jac, Jnbs, Jnas, Iac, Ibc, Inas, Inbs, weight);
            }
-	 
+	
          } /* end loop over Jbuf */
-       
+
          if (Ivec.buf_offdiag_[Ibuf]) { /* need to get contrib of transpose */
            Iblock2 = Ivec.decode_[Ibc][Iac];
            Iac = Ivec.Ia_code_[Iblock2];
            Ibc = Ivec.Ib_code_[Iblock2];
            Inas = Ivec.Ia_size_[Iblock2];
            Inbs = Ivec.Ib_size_[Iblock2];
-       
+
            Ivec.transp_block(Iblock, transp_tmp2);
 
            for (Jbuf=0; Jbuf<Jvec.buf_per_vect_; Jbuf++) {
@@ -189,29 +191,29 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
 	     Jnas = Jvec.Ia_size_[Jblock];
 	     Jnbs = Jvec.Ib_size_[Jblock];
 	     if (s1_contrib_[Iblock2][Jblock] || s2_contrib_[Iblock2][Jblock] ||
-	         s3_contrib_[Iblock2][Jblock]) 
+	         s3_contrib_[Iblock2][Jblock])
 	       do_Jblock = 1;
 	     if (Jvec.buf_offdiag_[Jbuf] && (s1_contrib_[Iblock2][Jblock2] ||
                s2_contrib_[Iblock2][Jblock2] ||
                s3_contrib_[Iblock2][Jblock2]))
                do_Jblock2 = 1;
              if (!do_Jblock && !do_Jblock2) continue;
-	   
+	
              Jvec.read(Jroot, Jbuf);
-	 
+	
              if (do_Jblock) {
-               tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs, 
-                 Ivec.num_alpcodes_, Ivec.num_betcodes_, 
-                 tpdm_aap, tpdm_bbp, tpdm_abp, Jvec.blocks_[Jblock], 
+               tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
+                 Ivec.num_alpcodes_, Ivec.num_betcodes_,
+                 tpdm_aap, tpdm_bbp, tpdm_abp, Jvec.blocks_[Jblock],
                  transp_tmp2, Jac, Jbc, Jnas,
                  Jnbs, Iac, Ibc, Inas, Inbs, weight);
              }
-	   
+	
              if (do_Jblock2) {
                Jvec.transp_block(Jblock, transp_tmp);
                tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
                  Ivec.num_alpcodes_, Ivec.num_betcodes_,
-                 tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, transp_tmp2, 
+                 tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, transp_tmp2,
                  Jbc, Jac, Jnbs, Jnas, Iac, Ibc, Inas, Inbs, weight);
              }
            } /* end loop over Jbuf */
@@ -244,8 +246,8 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
            if (s1_contrib_[Iblock][Jblock] || s2_contrib_[Iblock][Jblock] ||
              s3_contrib_[Iblock][Jblock])
              tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
-               Ivec.num_alpcodes_, Ivec.num_betcodes_, 
-               tpdm_aap, tpdm_bbp, tpdm_abp, Jvec.blocks_[Jblock], Ivec.blocks_[Iblock], 
+               Ivec.num_alpcodes_, Ivec.num_betcodes_,
+               tpdm_aap, tpdm_bbp, tpdm_abp, Jvec.blocks_[Jblock], Ivec.blocks_[Iblock],
                Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
          }
        } /* end loop over Iblock */
@@ -272,19 +274,19 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
              Ibc = Ivec.Ib_code_[Iblock];
              Inas = Ivec.Ia_size_[Iblock];
              Inbs = Ivec.Ib_size_[Iblock];
-   
+
              for (Jblock=Jvec.first_ablk_[Jairr]; Jblock<=Jvec.last_ablk_[Jairr];
                Jblock++) {
                Jac = Jvec.Ia_code_[Jblock];
                Jbc = Jvec.Ib_code_[Jblock];
                Jnas = Jvec.Ia_size_[Jblock];
                Jnbs = Jvec.Ib_size_[Jblock];
-   
+
                if (s1_contrib_[Iblock][Jblock] || s2_contrib_[Iblock][Jblock] ||
                  s3_contrib_[Iblock][Jblock])
-               tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs, 
+               tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
                  Ivec.num_alpcodes_, Ivec.num_betcodes_,
-                 tpdm_aap, tpdm_bbp, tpdm_abp, Jvec.blocks_[Jblock], Ivec.blocks_[Iblock], 
+                 tpdm_aap, tpdm_bbp, tpdm_abp, Jvec.blocks_[Jblock], Ivec.blocks_[Iblock],
                  Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
 
                if (Jvec.buf_offdiag_[Jbuf]) {
@@ -295,7 +297,7 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
                    Jvec.transp_block(Jblock, transp_tmp);
                    tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
                      Ivec.num_alpcodes_, Ivec.num_betcodes_,
-                     tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, Ivec.blocks_[Iblock], 
+                     tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, Ivec.blocks_[Iblock],
                      Jbc, Jac, Jnbs, Jnas, Iac, Ibc, Inas, Inbs, weight);
                  }
                }
@@ -309,19 +311,19 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
                Ibc = Ivec.Ib_code_[Iblock2];
                Inas = Ivec.Ia_size_[Iblock2];
                Inbs = Ivec.Ib_size_[Iblock2];
-	   
-               for (Jblock=Jvec.first_ablk_[Jairr]; 
+	
+               for (Jblock=Jvec.first_ablk_[Jairr];
                  Jblock<=Jvec.last_ablk_[Jairr]; Jblock++) {
                  Jac = Jvec.Ia_code_[Jblock];
                  Jbc = Jvec.Ib_code_[Jblock];
                  Jnas = Jvec.Ia_size_[Jblock];
                  Jnbs = Jvec.Ib_size_[Jblock];
-	   
+	
                  if (s1_contrib_[Iblock2][Jblock] || s2_contrib_[Iblock2][Jblock]
                    || s3_contrib_[Iblock2][Jblock])
                    tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
-                     Ivec.num_alpcodes_, Ivec.num_betcodes_, 
-                     tpdm_aap, tpdm_bbp, tpdm_abp, Jvec.blocks_[Jblock], transp_tmp2, 
+                     Ivec.num_alpcodes_, Ivec.num_betcodes_,
+                     tpdm_aap, tpdm_bbp, tpdm_abp, Jvec.blocks_[Jblock], transp_tmp2,
                      Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
 
                  if (Jvec.buf_offdiag_[Jbuf]) {
@@ -360,28 +362,28 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
 
 
    // Reorder our density matrices
-   for (int p=0; p<CalcInfo_->num_ci_orbs; p++) {
-   for (int q=0; q<CalcInfo_->num_ci_orbs; q++) {
-   for (int r=0; r<CalcInfo_->num_ci_orbs; r++) {
-   for (int s=0; s<CalcInfo_->num_ci_orbs; s++) {
+   for (int p=0; p<nact; p++) {
+   for (int q=0; q<nact; q++) {
+   for (int r=0; r<nact; r++) {
+   for (int s=0; s<nact; s++) {
 
     // Reorder index
     int r_p = CalcInfo_->act_order[p];
     int r_q = CalcInfo_->act_order[q];
     int r_r = CalcInfo_->act_order[r];
     int r_s = CalcInfo_->act_order[s];
-    int r_pq = r_p * CalcInfo_->num_ci_orbs + r_q;
-    int r_rs = r_r * CalcInfo_->num_ci_orbs + r_s;
+    int r_pq = r_p * nact + r_q;
+    int r_rs = r_r * nact + r_s;
 
      // aa/bb index
-    int pq = p * CalcInfo_->num_ci_orbs + q;
-    int rs = r * CalcInfo_->num_ci_orbs + s;
+    int pq = p * nact + q;
+    int rs = r * nact + s;
     size_t pqrs = INDEX(pq,rs);
 
     tpdm_aamp[r_pq][r_rs] = tpdm_aap[pqrs];
     tpdm_abmp[r_pq][r_rs] = tpdm_abp[pq * nact2 + rs];
     tpdm_bbmp[r_pq][r_rs] = tpdm_bbp[pqrs];
-    
+
    }}}}
    tpdm_aa.reset();
    tpdm_ab.reset();
@@ -391,17 +393,17 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
    SharedMatrix tpdm(new Matrix("MO-basis TPDM", nact2, nact2));
    double** tpdmp = tpdm->pointer();
 
-   for (int p=0; p<CalcInfo_->num_ci_orbs; p++) {
-   for (int q=0; q<CalcInfo_->num_ci_orbs; q++) {
-   for (int r=0; r<CalcInfo_->num_ci_orbs; r++) {
-   for (int s=0; s<CalcInfo_->num_ci_orbs; s++) {
+   for (int p=0; p<nact; p++) {
+   for (int q=0; q<nact; q++) {
+   for (int r=0; r<nact; r++) {
+   for (int s=0; s<nact; s++) {
 
-    int pq = p * CalcInfo_->num_ci_orbs + q;
-    int qp = q * CalcInfo_->num_ci_orbs + p;
-    int rs = r * CalcInfo_->num_ci_orbs + s;
-    int sr = s * CalcInfo_->num_ci_orbs + r;
+    int pq = p * nact + q;
+    int qp = q * nact + p;
+    int rs = r * nact + s;
+    int sr = s * nact + r;
 
-    tpdmp[pq][rs] = 0.5 * (tpdm_aamp[pq][rs] + tpdm_bbmp[pq][rs] + 
+    tpdmp[pq][rs] = 0.5 * (tpdm_aamp[pq][rs] + tpdm_bbmp[pq][rs] +
                           tpdm_abmp[pq][rs] + tpdm_abmp[rs][pq]);
    }}}}
 
@@ -413,12 +415,12 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
    free(buffer2);
 
    std::vector<SharedMatrix> ret_list;
-   ret_list.push_back(tpdm_aam); 
-   ret_list.push_back(tpdm_abm); 
-   ret_list.push_back(tpdm_bbm); 
-   ret_list.push_back(tpdm); 
+   ret_list.push_back(tpdm_aam);
+   ret_list.push_back(tpdm_abm);
+   ret_list.push_back(tpdm_bbm);
+   ret_list.push_back(tpdm);
 
-   timer_off("CIWave: tpdm"); 
+   timer_off("CIWave: tpdm");
 
    return ret_list;
 }
@@ -427,19 +429,19 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
 
 void CIWavefunction::tpdm_block(struct stringwr **alplist, struct stringwr **betlist,
 	        int nbf, int nalplists, int nbetlists,
-		double *twopdm_aa, double *twopdm_bb, double *twopdm_ab, double **CJ, double **CI, int Ja_list, 
-		int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list, 
+		double *twopdm_aa, double *twopdm_bb, double *twopdm_ab, double **CJ, double **CI, int Ja_list,
+		int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list,
 		int Inas, int Inbs, double weight)
 {
    const int nbf2 = nbf * nbf;
-   int Ia_idx, Ib_idx, Ja_idx, Jb_idx, Ja_ex, Jb_ex, Jbcnt, Jacnt; 
+   int Ia_idx, Ib_idx, Ja_idx, Jb_idx, Ja_ex, Jb_ex, Jbcnt, Jacnt;
    int Kbcnt, Kacnt, Kb_ex, Ka_ex, Kb_list, Ka_list, Kb_idx, Ka_idx;
    struct stringwr *Jb, *Ja, *Kb, *Ka;
    signed char *Jbsgn, *Jasgn, *Kbsgn, *Kasgn;
    unsigned int *Jbridx, *Jaridx, *Kbridx, *Karidx;
    double C1, C2, Ib_sgn, Ia_sgn, Kb_sgn, Ka_sgn, tval;
    int i, j, k, l, ij, kl, ijkl, oij, okl, *Jboij, *Jaoij, *Kboij, *Kaoij;
- 
+
   /* loop over Ia in Ia_list */
   if (Ia_list == Ja_list) {
     for (Ia_idx=0; Ia_idx<Inas; Ia_idx++) {
