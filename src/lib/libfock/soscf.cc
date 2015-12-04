@@ -1364,8 +1364,79 @@ void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
     timer_off("SOMCSCF: Qk matrix");
     */
 
-    throw PSIEXCEPTION("DiskMCSCF::Qk: Qk does not work quite yet, check back in after the break.");
+    throw PSIEXCEPTION("DiskSOMCSCF::Qk: Qk does not work quite yet, check back in after the break.");
 
+}// End DiskSOMCSCF object
+
+
+/// IncoreSOMCSCF class
+IncoreSOMCSCF::IncoreSOMCSCF(boost::shared_ptr<JK> jk,
+            SharedMatrix AOTOSO, SharedMatrix H) :
+            SOMCSCF(jk, AOTOSO, H)
+{
+    eri_tensor_set_ = false;
+}
+IncoreSOMCSCF::~IncoreSOMCSCF()
+{
+}
+void IncoreSOMCSCF::compute_Q()
+{
+    if (!eri_tensor_set_){
+        throw PSIEXCEPTION("IncoreSOMCSCF: Eri tensors were not set!");
+    }
+
+    timer_on("SOMCSCF: Q matrix");
+
+    // G_mwxy TPDM_vwxy -> Q_mv
+    SharedMatrix denQ(new Matrix("Dense Qvn", nact_, nmo_));
+    double** denQp = denQ->pointer();
+
+    int nact3 = nact_ * nact_ * nact_;
+    double** TPDMp = matrices_["TPDM"]->pointer();
+    double** aaaRp = mo_aaar_->pointer();
+    C_DGEMM('N','N',nact_,nmo_,nact3,1.0,TPDMp[0],nact3,aaaRp[0],nact3,1.0,denQp[0],nmo_);
+
+    // Symmetry block Q
+    matrices_["Q"] = SharedMatrix(new Matrix("Qvn", nirrep_, nactpi_, nmopi_));
+
+    int offset_act = 0;
+    int offset_nmo = 0;
+    for (int h=0; h<nirrep_; h++){
+        if (!nactpi_[h] || !nmopi_[h]){
+            offset_nmo += nmopi_[h];
+            continue;
+        }
+
+        double* Qp = matrices_["Q"]->pointer(h)[0];
+        for (int i=0, target=0; i<nactpi_[h]; i++){
+            for (int j=0; j<nmopi_[h]; j++){
+                Qp[target++] = denQp[offset_act + i][offset_nmo + j];
+            }
+        }
+        offset_act += nactpi_[h];
+        offset_nmo += nmopi_[h];
+    }
+
+    timer_off("SOMCSCF: Q matrix");
+}
+void IncoreSOMCSCF::set_act_MO(void)
+{
+    if (eri_tensor_set_){
+        matrices_["actMO"] = mo_aaaa_;
+    }
+    else{
+        throw PSIEXCEPTION("IncoreSOMCSCF: ERI tensors were not set!");
+    }
+}
+void IncoreSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
+{
+    throw PSIEXCEPTION("IncoreSOMCSCF::Qk: Qk does not yet.");
+}
+void IncoreSOMCSCF::set_eri_tensors(SharedMatrix aaaa, SharedMatrix aaar)
+{
+    mo_aaaa_ = aaaa;
+    mo_aaar_ = aaar;
+    eri_tensor_set_ = true;
 }// End DiskSOMCSCF object
 
 } // Namespace psi

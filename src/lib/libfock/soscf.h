@@ -226,9 +226,9 @@ protected:
 }; // DFSOMCSCF class
 
 /**
- * Class DFSOMCSCF
+ * Class DiskSOMCSCF
  *
- * Density fitted second-order MCSCF
+ * Disk-based fitted second-order MCSCF
  */
 class DiskSOMCSCF : public SOMCSCF {
 
@@ -250,6 +250,37 @@ protected:
     virtual void set_act_MO();
     virtual void compute_Q();
     virtual void compute_Qk(SharedMatrix U, SharedMatrix Uact);
+
+}; // DiskSOMCSCF class
+
+/**
+ * Class IncoreSOMCSCF
+ *
+ * Second-order MCSCF using inc ore tensors
+ * Note: set_eri_tensors should be called _before_ update. 
+ */
+class IncoreSOMCSCF : public SOMCSCF {
+
+public:
+    /**
+     * Initialize the DF SOMCSCF object.
+     * @param jk      JK object to use.
+     * @param H       Core hamiltonian in the SO basis.
+     */
+    IncoreSOMCSCF(boost::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H);
+
+    virtual ~IncoreSOMCSCF();
+
+protected:
+
+    virtual void set_act_MO();
+    virtual void compute_Q();
+    virtual void compute_Qk(SharedMatrix U, SharedMatrix Uact);
+
+    void set_eri_tensors(SharedMatrix aaaa, SharedMatrix aaar);
+    bool eri_tensor_set_;
+    SharedMatrix mo_aaaa_;
+    SharedMatrix mo_aaar_;
 
 }; // DFSOMCSCF class
 
