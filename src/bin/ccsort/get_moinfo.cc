@@ -29,13 +29,13 @@
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
 #include <psi4-dec.h>
 #include <libmints/dimension.h>
 #include <libmints/wavefunction.h>
 #include <libmints/basisset.h>
+#include <libmints/matrix.h>
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
@@ -45,7 +45,7 @@
 namespace psi { namespace ccsort {
 
 /* get_moinfo(): Routine to obtain basic orbital information from
-** chkpt and compute the associated lookup arrays.
+** Process::environment.wavefunction() and compute the associated lookup arrays.
 **
 ** Several loookup arrays are written to CC_INFO at the end of this
 ** routine for use in other CC programs.  I do this for two reasons:
@@ -74,7 +74,6 @@ void get_moinfo(void)
 
     boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
 
-    chkpt_init(PSIO_OPEN_OLD);
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
     moinfo.nso = wfn->nso();
@@ -94,17 +93,14 @@ void get_moinfo(void)
     for(int h = 0; h < moinfo.nirreps; ++h)
         moinfo.clsdpi[h] = wfn->doccpi()[h];
 
-    // TODO: Uncomment the following line.
-    //moinfo.usotao = chkpt_rd_usotao();
-    if(params.ref == 0) moinfo.scf = chkpt_rd_scf();
+    // This is for the local-CC simulation codes only; thus symmetry = C1
+    if(params.ref == 0) moinfo.scf = wfn->Ca()->pointer();
 
     /* Dump the reference wave function ID to CC_INFO */
-    psio_write_entry(PSIF_CC_INFO, "Reference Wavefunction",
-                     (char *) &(params.ref), sizeof(int));
+    psio_write_entry(PSIF_CC_INFO, "Reference Wavefunction", (char *) &(params.ref), sizeof(int));
 
     moinfo.frdocc = wfn->frzcpi();
     moinfo.fruocc = wfn->frzvpi();
-    chkpt_close();
 
     moinfo.nfzc = moinfo.nfzv = 0;
     for(i=0; i < moinfo.nirreps; i++) {
@@ -112,12 +108,7 @@ void get_moinfo(void)
         moinfo.nfzv += moinfo.fruocc[i];
     }
 
-    if(moinfo.nfzc) {
-//        chkpt_init(PSIO_OPEN_OLD);
-//        moinfo.efzc = chkpt_rd_efzc();
-//        chkpt_close();
-          moinfo.efzc = Process::environment.wavefunction()->efzc();
-    }
+    if(moinfo.nfzc) moinfo.efzc = Process::environment.wavefunction()->efzc();
     else moinfo.efzc = 0.0;
 
     /* Calculation consistency check */
@@ -130,7 +121,7 @@ void get_moinfo(void)
     }
     else if(!moinfo.nfzc && fabs(moinfo.efzc)) {
         outfile->Printf( "\tCCSORT Warning: No orbitals are frozen,\n");
-        outfile->Printf( "\tbut the frozen-core energy in chkpt is non-zero.\n");
+        outfile->Printf( "\tbut the frozen-core energy in wfn is non-zero.\n");
         outfile->Printf( "\tCalculation will continue with zero efzc...\n");
         
         moinfo.efzc = 0.0;
@@ -1002,8 +993,8 @@ void get_moinfo(void)
                 moinfo.clsdpi[i],moinfo.openpi[i],moinfo.uoccpi[i],
                 moinfo.fruocc[i]);
     }
-    outfile->Printf("\n\tNuclear Rep. energy (chkpt) =  %20.14f\n", moinfo.enuc);
-    outfile->Printf(  "\tSCF energy          (chkpt) =  %20.14f\n", escf);
+    outfile->Printf("\n\tNuclear Rep. energy (wfn)   =  %20.14f\n", moinfo.enuc);
+    outfile->Printf(  "\tSCF energy          (wfn)   =  %20.14f\n", escf);
 
     /* Lastly, build the active virtual orbital SCF eigenvector array for
      the AO-basis code (see CCENERGY) */
@@ -1016,14 +1007,13 @@ void get_moinfo(void)
             pitz_offset[h] = pitz_offset[h-1] + moinfo.orbspi[h-1];
         }
 
-        chkpt_init(PSIO_OPEN_OLD);
-
         evects_A = (double ***) malloc(moinfo.nirreps * sizeof(double **));
         scf_vector_A = (double ***) malloc(moinfo.nirreps * sizeof(double **));
 
         next = PSIO_ZERO;
+
         for(h=0; h < moinfo.nirreps; h++) {
-            evects_A[h] = chkpt_rd_alpha_scf_irrep(h); /* Pitzer-ordered MO's */
+            evects_A[h] = wfn->Ca()->pointer(h); /* Pitzer-ordered MO's */
 
             if(moinfo.avirtpi[h]) {
                 scf_vector_A[h] = block_matrix(moinfo.sopi[h], moinfo.avirtpi[h]);
@@ -1041,7 +1031,6 @@ void get_moinfo(void)
                 psio_write(PSIF_CC_INFO, "UHF Active Alpha Virtual Orbs", (char *) scf_vector_A[h][0],
                         moinfo.sopi[h]*moinfo.avirtpi[h]*sizeof(double), next, &next);
 
-                free_block(evects_A[h]);
                 free_block(scf_vector_A[h]);
 
             }
@@ -1055,7 +1044,7 @@ void get_moinfo(void)
 
         next = PSIO_ZERO;
         for(h=0; h < moinfo.nirreps; h++) {
-            evects_B[h] = chkpt_rd_beta_scf_irrep(h); /* Pitzer-ordered MO's */
+            evects_B[h] = wfn->Cb()->pointer(h); /* Pitzer-ordered MO's */
 
             if(moinfo.bvirtpi[h]) {
                 scf_vector_B[h] = block_matrix(moinfo.sopi[h], moinfo.bvirtpi[h]);
@@ -1073,7 +1062,6 @@ void get_moinfo(void)
                 psio_write(PSIF_CC_INFO, "UHF Active Beta Virtual Orbs", (char *) scf_vector_B[h][0],
                         moinfo.sopi[h]*moinfo.bvirtpi[h]*sizeof(double), next, &next);
 
-                free_block(evects_B[h]);
                 free_block(scf_vector_B[h]);
 
             }
@@ -1083,7 +1071,6 @@ void get_moinfo(void)
         free(evects_B);  free(scf_vector_B);
 
         free(pitz_offset);
-        chkpt_close();
     }
     else { /*** RHF/ROHF references ***/
 
@@ -1093,13 +1080,12 @@ void get_moinfo(void)
             pitz_offset[h] = pitz_offset[h-1] + moinfo.orbspi[h-1];
         }
 
-        chkpt_init(PSIO_OPEN_OLD);
         evects = (double ***) malloc(moinfo.nirreps * sizeof(double **));
         scf_vector = (double ***) malloc(moinfo.nirreps * sizeof(double **));
 
         next = PSIO_ZERO;
         for(h=0; h < moinfo.nirreps; h++) {
-            evects[h] = chkpt_rd_scf_irrep(h); /* Pitzer-order MO's */
+            evects[h] = wfn->Ca()->pointer(h); /* Pitzer-order MO's */
 
             /* Are there active virtuals in this irrep? */
             if(moinfo.virtpi[h]) {
@@ -1122,14 +1108,12 @@ void get_moinfo(void)
                         next, &next);
 
                 free_block(scf_vector[h]);
-
             }
-            free_block(evects[h]);
         }
 
         next = PSIO_ZERO;
         for(h=0; h < moinfo.nirreps; h++) {
-            evects[h] = chkpt_rd_scf_irrep(h); /* Pitzer-order MO's */
+            evects[h] = wfn->Ca()->pointer(h); /* Pitzer-order MO's */
             if(moinfo.occpi[h]) {
                 scf_vector[h] = block_matrix(moinfo.sopi[h],moinfo.occpi[h]);
 
@@ -1147,20 +1131,8 @@ void get_moinfo(void)
                            (char *) scf_vector[h][0],
                         moinfo.sopi[h]*moinfo.occpi[h]*sizeof(double),
                         next, &next);
-
                 free_block(scf_vector[h]);
-
             }
-
-            free_block(evects[h]);
-
-            /*
-      outfile->Printf( "\n\tOriginal SCF Eigenvectors:\n");
-      print_mat(evects[h], moinfo.sopi[h], moinfo.orbspi[h], outfile);
-
-      outfile->Printf( "\n\tRe-ordered Virtual SCF Eigenvectors:\n");
-      print_mat(scf_vector[h], moinfo.sopi[h], moinfo.virtpi[h], outfile);
-    */
         }
 
         C = (double ***) malloc(moinfo.nirreps * sizeof(double **));
@@ -1176,7 +1148,6 @@ void get_moinfo(void)
 
         free(evects);  free(scf_vector);
         free(pitz_offset);
-        chkpt_close();
     }
 }
 

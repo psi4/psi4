@@ -66,7 +66,7 @@ struct MOInfo {
   int *bvir_off;      /* beta virtual orbital offsets within each irrep */
   double conv;           /* Current convergence level */
   double enuc;           /* Nuclear repulsion energy */
-  double escf;           /* SCF energy (from chkpt) */
+  double escf;           /* SCF energy (from wfn) */
   double eref;           /* Reference energy (file100) */
   double ecc;            /* Current coupled cluster energy */
   double t1diag;         /* Standard open- or closed-shell T1 diagnostic */

@@ -125,7 +125,7 @@ void CCLambdaWavefunction::init()
 {
     // Wavefunction creates a chkpt object for you, but we're not going to use it.
     // Destroy it. Otherwise we will see a "file already open" error.
-    chkpt_.reset();
+    chkpt_.reset(); // TO BE REMOVED ONCE LIBCHKPT IS GONE -TDC, 12/2015
 
     copy(reference_wavefunction_);
 }

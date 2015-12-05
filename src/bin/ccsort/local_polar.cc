@@ -30,8 +30,7 @@
 #include <cstring>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
-#include <libiwl/iwl.h>
-#include <libchkpt/chkpt.h>
+#include <libmints/mints.h>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -40,25 +39,25 @@
 #define EXTERN
 #include "globals.h"
 
+using namespace std;
+
 namespace psi { namespace ccsort {
 
 void local_polar(const char *cart, int **domain, int *domain_len,
 		 int natom, int *aostart, int *aostop)
 {
   int i, j, ij, a, k, max, complete, *boolean, *rank;
-  int nao, nso, nmo,noei_ao;
-  double **TMP, *scratch, **X;
+  int nso, nmo;
+  double **TMP;
   double **MU, **Z;
-  double **C, **usotao;
+  double **C;
   double polar, polar_i, polar_k, polar_k_check, value, *polar_mo, *polar_mo_check, **polar_atom;
   dpdfile2 U;
   psio_address next;
   int stat;
 
-  nao = moinfo.nao;
   nso = moinfo.nso;
   nmo = moinfo.nmo;
-  noei_ao = nao*(nao+1)/2;
 
   /* grab the occupied MOs */
   next = PSIO_ZERO;
@@ -66,15 +65,7 @@ void local_polar(const char *cart, int **domain, int *domain_len,
   psio_read(PSIF_CC_INFO, "RHF/ROHF Active Occupied Orbitals", (char *) C[0],
 	    nso*moinfo.occpi[0]*sizeof(double), next, &next);
 
-  /* grab the usotao matrix */
-  chkpt_init(PSIO_OPEN_OLD);
-  usotao = chkpt_rd_usotao();
-  chkpt_close();
-
   MU = block_matrix(nso,moinfo.occpi[0]);
-  TMP = block_matrix(nao,nao);
-  X = block_matrix(nao, nao);
-  scratch = init_array(noei_ao);
   Z = block_matrix(nso, moinfo.occpi[0]);
   polar_mo = init_array(moinfo.occpi[0]);
   polar_mo_check = init_array(moinfo.occpi[0]);
@@ -82,18 +73,13 @@ void local_polar(const char *cart, int **domain, int *domain_len,
   boolean = init_int_array(natom);
   rank = (int *) malloc(natom * sizeof(int *));
 
+  MintsHelper mints(Process::environment.options, 0);
+  vector<SharedMatrix> dipole = mints.so_dipole();
+
   if (!strcmp(cart,"X")) {
-    stat = iwl_rdone(PSIF_OEI, PSIF_AO_MX, scratch, noei_ao, 0, 0, "outfile");
-    for(i=0, ij=0; i < nao; i++)
-      for(j=0; j <= i; j++,ij++)
-	TMP[i][j] = TMP[j][i] = scratch[ij];
+    double **TMP = dipole[0]->to_block_matrix();
 
-    C_DGEMM('n','t',nao,nso,nao,1,&(TMP[0][0]),nao,&(usotao[0][0]),nao,
-	    0,&(X[0][0]),nao);
-    C_DGEMM('n','n',nso,nso,nao,1,&(usotao[0][0]),nao,&(X[0][0]),nao,
-	    0,&(TMP[0][0]),nao);
-
-    C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
+    C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nso, &(C[0][0]), moinfo.occpi[0],
 	    0, &(MU[0][0]), moinfo.occpi[0]);
 
     global_dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Uf_X_AI");
@@ -175,17 +161,9 @@ void local_polar(const char *cart, int **domain, int *domain_len,
   }
 
   if (!strcmp(cart,"Y")) {
-    stat = iwl_rdone(PSIF_OEI, PSIF_AO_MY, scratch, noei_ao, 0, 0, "outfile");
-    for(i=0, ij=0; i < nao; i++)
-      for(j=0; j <= i; j++,ij++)
-	TMP[i][j] = TMP[j][i] = scratch[ij];
+    double **TMP = dipole[1]->to_block_matrix();
 
-    C_DGEMM('n','t',nao,nso,nao,1,&(TMP[0][0]),nao,&(usotao[0][0]),nao,
-	    0,&(X[0][0]),nao);
-    C_DGEMM('n','n',nso,nso,nao,1,&(usotao[0][0]),nao,&(X[0][0]),nao,
-	    0,&(TMP[0][0]),nao);
-
-    C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
+    C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nso, &(C[0][0]), moinfo.occpi[0],
 	    0, &(MU[0][0]), moinfo.occpi[0]);
 
     global_dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Uf_Y_AI");
@@ -266,17 +244,9 @@ void local_polar(const char *cart, int **domain, int *domain_len,
   }
 
   if (!strcmp(cart,"Z")) {
-    stat = iwl_rdone(PSIF_OEI, PSIF_AO_MZ, scratch, noei_ao, 0, 0, "outfile");
-    for(i=0, ij=0; i < nao; i++)
-      for(j=0; j <= i; j++,ij++)
-	TMP[i][j] = TMP[j][i] = scratch[ij];
+    double **TMP = dipole[2]->to_block_matrix();
 
-    C_DGEMM('n','t',nao,nso,nao,1,&(TMP[0][0]),nao,&(usotao[0][0]),nao,
-	    0,&(X[0][0]),nao);
-    C_DGEMM('n','n',nso,nso,nao,1,&(usotao[0][0]),nao,&(X[0][0]),nao,
-	    0,&(TMP[0][0]),nao);
-
-    C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
+    C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nso, &(C[0][0]), moinfo.occpi[0],
 	    0, &(MU[0][0]), moinfo.occpi[0]);
 
     global_dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Uf_Z_AI");
@@ -356,7 +326,6 @@ void local_polar(const char *cart, int **domain, int *domain_len,
     global_dpd_->file2_close(&U);
   }
 
-  free_block(TMP);
   free_block(MU);
 
   free_block(polar_atom);

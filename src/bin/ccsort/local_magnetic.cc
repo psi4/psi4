@@ -30,8 +30,7 @@
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
-#include <libiwl/iwl.h>
-#include <libchkpt/chkpt.h>
+#include <libmints/mints.h>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -41,24 +40,24 @@
 #define EXTERN
 #include "globals.h"
 
+using namespace std;
+
 namespace psi { namespace ccsort {
 
 void local_magnetic(const char *cart, int **domain, int *domain_len,
 		    int natom, int *aostart, int *aostop)
 {
   int i, j, ij, a, k, max, complete, *boolean, *rank;
-  int nao, nso, nmo,noei_ao;
-  double **TMP, *scratch, **X;
+  int nso, nmo;
+  double **TMP;
   double **L, **Z;
   double **C, **usotao;
   double mag, mag_i, mag_k, mag_k_check, value, *mag_mo, *mag_mo_check, **mag_atom;
   dpdfile2 U;
   psio_address next;
 
-  nao = moinfo.nao;
   nso = moinfo.nso;
   nmo = moinfo.nmo;
-  noei_ao = nao*(nao+1)/2;
 
   /* grab the occupied MOs */
   next = PSIO_ZERO;
@@ -66,15 +65,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
   psio_read(PSIF_CC_INFO, "RHF/ROHF Active Occupied Orbitals", (char *) C[0],
 	    nso*moinfo.occpi[0]*sizeof(double), next, &next);
 
-  /* grab the usotao matrix */
-  chkpt_init(PSIO_OPEN_OLD);
-  usotao = chkpt_rd_usotao();
-  chkpt_close();
-
   L = block_matrix(nso,moinfo.occpi[0]);
-  TMP = block_matrix(nao,nao);
-  X = block_matrix(nao, nao);
-  scratch = init_array(noei_ao);
   Z = block_matrix(nso, moinfo.occpi[0]);
   mag_mo = init_array(moinfo.occpi[0]);
   mag_mo_check = init_array(moinfo.occpi[0]);
@@ -82,20 +73,14 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
   boolean = init_int_array(natom);
   rank = (int *) malloc(natom * sizeof(int *));
 
+  MintsHelper mints(Process::environment.options, 0);
+  vector<SharedMatrix> angmom = mints.so_angular_momentum();
+
   if (!strcmp(cart, "X")) {
-    iwl_rdone(PSIF_OEI, PSIF_AO_LX, scratch, noei_ao, 0, 0, "outfile");
-    for(i=0,ij=0; i<nao; i++)
-      for(j=0; j<=i; j++,ij++) {
-	TMP[i][j] = -0.5 * scratch[ij];
-	TMP[j][i] = 0.5 * scratch[ij];
-      }
+    angmom[0]->scale(-0.5);
+    double **TMP = angmom[0]->to_block_matrix();
 
-    C_DGEMM('n','t',nao,nso,nao,1,&(TMP[0][0]),nao,&(usotao[0][0]),nao,
-	    0,&(X[0][0]),nao);
-    C_DGEMM('n','n',nso,nso,nao,1,&(usotao[0][0]),nao,&(X[0][0]),nao,
-	    0,&(TMP[0][0]),nao);
-
-    C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
+    C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nso, &(C[0][0]), moinfo.occpi[0],
 	    0, &(L[0][0]), moinfo.occpi[0]);
 
     global_dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_X_AI");
@@ -122,7 +107,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
     }
 
     for(i=0; i < moinfo.occpi[0]; i++) {
-      /* Rank the atomic contributions to the orbital's magizability */
+      /* Rank the atomic contributions to the orbital's magnetizability */
       for(j=0; j < natom; j++) {
 	rank[j] = 0;
 	boolean[j] = 0;
@@ -177,19 +162,10 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
   }
 
   if (!strcmp(cart, "Y")) {
-    iwl_rdone(PSIF_OEI, PSIF_AO_LY, scratch, noei_ao, 0, 0, "outfile");
-    for(i=0,ij=0; i<nao; i++)
-      for(j=0; j<=i; j++,ij++) {
-	TMP[i][j] = -0.5 * scratch[ij];
-	TMP[j][i] = 0.5 * scratch[ij];
-      }
+    angmom[1]->scale(-0.5);
+    double **TMP = angmom[1]->to_block_matrix();
 
-    C_DGEMM('n','t',nao,nso,nao,1,&(TMP[0][0]),nao,&(usotao[0][0]),nao,
-	    0,&(X[0][0]),nao);
-    C_DGEMM('n','n',nso,nso,nao,1,&(usotao[0][0]),nao,&(X[0][0]),nao,
-	    0,&(TMP[0][0]),nao);
-
-    C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
+    C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nso, &(C[0][0]), moinfo.occpi[0],
 	    0, &(L[0][0]), moinfo.occpi[0]);
 
     global_dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_Y_AI");
@@ -216,7 +192,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
     }
 
     for(i=0; i < moinfo.occpi[0]; i++) {
-      /* Rank the atomic contributions to the orbital's magizability */
+      /* Rank the atomic contributions to the orbital's magnetizability */
       for(j=0; j < natom; j++) {
 	rank[j] = 0;
 	boolean[j] = 0;
@@ -270,19 +246,10 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
   }
 
   if (!strcmp(cart, "Z")) {
-    iwl_rdone(PSIF_OEI, PSIF_AO_LZ, scratch, noei_ao, 0, 0, "outfile");
-    for(i=0,ij=0; i<nao; i++)
-      for(j=0; j<=i; j++,ij++) {
-	TMP[i][j] = -0.5 * scratch[ij];
-	TMP[j][i] = 0.5 * scratch[ij];
-      }
+    angmom[2]->scale(-0.5);
+    double **TMP = angmom[2]->to_block_matrix();
 
-    C_DGEMM('n','t',nao,nso,nao,1,&(TMP[0][0]),nao,&(usotao[0][0]),nao,
-	    0,&(X[0][0]),nao);
-    C_DGEMM('n','n',nso,nso,nao,1,&(usotao[0][0]),nao,&(X[0][0]),nao,
-	    0,&(TMP[0][0]),nao);
-
-    C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
+    C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nso, &(C[0][0]), moinfo.occpi[0],
 	    0, &(L[0][0]), moinfo.occpi[0]);
 
     global_dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_Z_AI");
@@ -309,7 +276,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
     }
 
     for(i=0; i < moinfo.occpi[0]; i++) {
-      /* Rank the atomic contributions to the orbital's magizability */
+      /* Rank the atomic contributions to the orbital's magnetizability */
       for(j=0; j < natom; j++) {
 	rank[j] = 0;
 	boolean[j] = 0;
@@ -362,7 +329,6 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
     global_dpd_->file2_close(&U);
   }
 
-  free_block(TMP);
   free_block(L);
 
   free_block(mag_atom);
