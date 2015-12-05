@@ -52,6 +52,7 @@ DCFTSolver::build_cumulant_intermediates_RHF()
     /*
      * G_IjAb += Sum_Cd gbar_CdAb lambda_IjCd
      */
+    dcft_timer_on("DCFTSolver::g_AbCd lambda_IjCd");
     if (options_.get_str("AO_BASIS") == "NONE" && options_.get_str("DCFT_TYPE") == "CONV"){
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                                 ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>"); // MO Ints <Vv|Vv> 
@@ -73,6 +74,7 @@ DCFTSolver::build_cumulant_intermediates_RHF()
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&G);
     }
+    dcft_timer_off("DCFTSolver::g_AbCd lambda_IjCd");
 
     /*
      * G_IjAb += Sum_Kl gbar_IjKl lambda_KlAb
