@@ -37,7 +37,6 @@
 #include <libpsio/psio.h>
 #include <libiwl/iwl.h>
 #include <libint/libint.h>
-#include <libchkpt/chkpt.h>
 #include <liboptions/liboptions.h>
 #include <libqt/qt.h>
 #include <libdpd/dpd.h>
@@ -115,16 +114,6 @@ void local_init(Options & options)
 
   int num_zero;
   double **RS;
-
-//  chkpt_init(PSIO_OPEN_OLD);
-//  C = chkpt_rd_scf();
-//  natom = chkpt_rd_natom();
-//  nshell = chkpt_rd_nshell();
-//  puream = chkpt_rd_puream();
-//  eps_all = chkpt_rd_evals();
-//  stype = chkpt_rd_stype();
-//  snuc = chkpt_rd_snuc();
-//  chkpt_close();
 
   boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
   C = wfn->Ca()->pointer();

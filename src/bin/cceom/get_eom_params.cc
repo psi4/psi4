@@ -29,7 +29,6 @@
 #include <string>
 #include <cmath>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.h>
 #include <psi4-dec.h>
 #include "MOInfo.h"
 #include "Params.h"
@@ -42,9 +41,7 @@ namespace psi { namespace cceom {
 void get_eom_params(Options &options)
 {
   // Number of excited states per irrep
-  chkpt_init(PSIO_OPEN_OLD);
-  if (chkpt_rd_override_occ()) eom_params.states_per_irrep = chkpt_rd_statespi();
-  else if (options["ROOTS_PER_IRREP"].has_changed()) {
+  if (options["ROOTS_PER_IRREP"].has_changed()) {
     if(options["ROOTS_PER_IRREP"].size() != moinfo.nirreps) 
       throw PsiException("ROOTS_PER_IRREP is wrong size. Should be number of irreps.", __FILE__, __LINE__);
     eom_params.states_per_irrep = new int[moinfo.nirreps];
@@ -52,7 +49,6 @@ void get_eom_params(Options &options)
       eom_params.states_per_irrep[h] = options["ROOTS_PER_IRREP"][h].to_integer();
   }
   else throw PsiException("Must provide roots_per_irrep vector in input.", __FILE__, __LINE__);
-  chkpt_close();
 
   // Number of guess vectors per irrep
   eom_params.cs_per_irrep = new int[moinfo.nirreps];
@@ -66,7 +62,7 @@ void get_eom_params(Options &options)
   eom_params.max_iter = 80 * moinfo.nirreps;
   eom_params.max_iter = options.get_int("MAXITER");
 
-  // Use prop_sym and prop_root only to determine what energy to write to chkpt
+  // Use prop_sym and prop_root only to determine what energy to save later
   if (options["PROP_SYM"].has_changed()) {
     eom_params.prop_sym = options.get_int("PROP_SYM");
     eom_params.prop_sym = (eom_params.prop_sym - 1)^moinfo.sym;

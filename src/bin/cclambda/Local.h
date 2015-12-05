@@ -30,7 +30,6 @@
 namespace psi { namespace cclambda {
 
 struct Local {
-  int natom;
   int nso;
   int nocc;
   int nvir;
