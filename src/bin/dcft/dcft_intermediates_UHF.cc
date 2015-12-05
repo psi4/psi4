@@ -65,6 +65,7 @@ DCFTSolver::compute_G_intermediate() {
     /*
      * G_ijab = 1/2 Sum_cd gbar_cdab lambda_ijcd
      */
+    dcft_timer_on("DCFTSolver::gbar_cdab lambda_ijcd");
     if(options_.get_str("AO_BASIS") == "NONE" && options_.get_str("DCFT_TYPE") == "CONV"){
         // G_IJAB += 1/2 Sum_CD gbar_CDAB lambda_IJCD
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V>V]-"), ID("[V>V]-"),
@@ -124,6 +125,7 @@ DCFTSolver::compute_G_intermediate() {
         global_dpd_->buf4_copy(&L, PSIF_DCFT_DPD, "G <Oo|Vv>");
         global_dpd_->buf4_close(&L);
     }
+    dcft_timer_off("DCFTSolver::gbar_cdab lambda_ijcd");
 
     /*
      * G_ijab += 1/2 Sum_kl gbar_ijkl lambda_klab
