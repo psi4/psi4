@@ -32,7 +32,6 @@ struct MOInfo {
   int nmo;               /* no. of molecular orbitals */
   int nso;               /* no. of symmetry orbitals */
   int iopen;             /* 0=closed shell; >0=open shell */
-  int phase;             /* Boolean for consistency of orbital phases */
   int *sopi;             /* no. of SOs per irrep */
   int *sosym;            /* orbital symmetry (Pitzer/SO) */
   int *orbspi;           /* no. of MOs per irrep */

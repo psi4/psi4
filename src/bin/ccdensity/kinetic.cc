@@ -28,9 +28,9 @@
 #include <cstdlib>
 #include <libciomr/libciomr.h>
 #include <libiwl/iwl.h>
-#include <libchkpt/chkpt.h>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
+#include <libmints/mints.h>
 #include <psifiles.h>
 #include "MOInfo.h"
 #include "Params.h"
@@ -73,9 +73,8 @@ void kinetic(void)
              order, moinfo.orbspi, moinfo.nirreps);
 
   /*** Reorder the SCF eigenvectors to QT ordering */
-  chkpt_init(PSIO_OPEN_OLD);
-  scf_pitzer = chkpt_rd_scf();
-  chkpt_close();
+  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+  scf_pitzer = wfn->Ca()->to_block_matrix();
 
   scf_qt = block_matrix(nmo, nmo);
   for(i=0; i < nmo; i++) {

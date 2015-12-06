@@ -58,6 +58,9 @@ void get_moinfo(void)
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
     moinfo.nso = wfn->nso();
+    moinfo.iopen = 0;
+    for(int h=0; h < moinfo.nirreps; h++)
+      moinfo.iopen += wfn->nsopi()[h];
     moinfo.irr_labs = wfn->molecule()->irrep_labels();
     moinfo.enuc = wfn->molecule()->nuclear_repulsion_energy();
     if(wfn->reference_wavefunction())
@@ -80,10 +83,9 @@ void get_moinfo(void)
 
     nirreps = moinfo.nirreps;
 
-    // Make lowercase irrep labels because pretty
     moinfo.irr_labs_lowercase = (char **) malloc(sizeof(char *) * nirreps);
     for(i=0; i < nirreps; i++) {
-    moinfo.irr_labs_lowercase[i] = (char *) malloc(4 * sizeof(char));
+      moinfo.irr_labs_lowercase[i] = (char *) malloc(4 * sizeof(char));
       moinfo.irr_labs_lowercase[i][0] = std::tolower(moinfo.irr_labs[i][0]);
       moinfo.irr_labs_lowercase[i][1] = std::tolower(moinfo.irr_labs[i][1]);
       moinfo.irr_labs_lowercase[i][2] = std::tolower(moinfo.irr_labs[i][2]);

@@ -567,8 +567,7 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
     if (dipmom){
 
       boost::shared_ptr<OEProp> oe(new OEProp());
-      boost::shared_ptr<Wavefunction> wfn = 
-        Process::environment.wavefunction(); 
+      boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction(); 
       boost::shared_ptr<Matrix> Ca = wfn->Ca(); 
       std::stringstream ss;
       ss << "CI " << (transdens ? "TDM" : "OPDM");
@@ -826,7 +825,8 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
          */
         if (k==0) {
 
-          scfvec = chkpt_rd_scf_irrep(irrep);
+          scfvec = Process::environment.wavefunction()->Ca()->pointer(irrep); 
+//          scfvec = chkpt_rd_scf_irrep(irrep);
 
             if (Parameters.print_lvl > 3) {
               outfile->Printf("Cvec for k==0, read in from chkpt original\n");
@@ -839,7 +839,7 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
           psio_write_entry(targetfile, opdm_key, (char *) scfvec[0],
             CalcInfo.orbs_per_irr[irrep] * CalcInfo.orbs_per_irr[irrep] *
             sizeof(double));
-	  free_block(scfvec);
+//	  free_block(scfvec);  // Don't free scfvec if it comes from wfn
         }
 
         zero_mat(opdm_eigvec, max_orb_per_irrep, max_orb_per_irrep);
@@ -1111,6 +1111,8 @@ void opdm_ke(double **onepdm)
   int noeints;
   double *T, **scfmat, **opdm_blk, **tmp_mat, ke, kei;
 
+  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+
   ke = kei = 0.0;
 
   /* read in the kinetic energy integrals */
@@ -1162,7 +1164,8 @@ void opdm_ke(double **onepdm)
               CalcInfo.so_per_irr[irrep],"outfile");
 
     /* transform back to SO basis */
-    scfmat = chkpt_rd_scf_irrep(irrep);
+//    scfmat = chkpt_rd_scf_irrep(irrep);
+    scfmat = wfn->Ca()->pointer(irrep);
     mmult(opdm_blk,0,scfmat,1,tmp_mat,0,CalcInfo.orbs_per_irr[irrep],
           CalcInfo.orbs_per_irr[irrep],CalcInfo.so_per_irr[irrep],0);
     mmult(scfmat,0,tmp_mat,0,opdm_blk,0,CalcInfo.so_per_irr[irrep],

@@ -69,9 +69,7 @@ void map_irreps(int* array)
 void get_eom_params(Options &options)
 {
   // Number of excited states per irrep
-  chkpt_init(PSIO_OPEN_OLD);
-  if (chkpt_rd_override_occ()) eom_params.states_per_irrep = chkpt_rd_statespi();
-  else if (options["ROOTS_PER_IRREP"].has_changed()) {
+  if (options["ROOTS_PER_IRREP"].has_changed()) {
     // map the symmetry of the input ROOTS_PER_IRREP to account for displacements.
     boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
     if (old_pg) {
@@ -110,7 +108,7 @@ void get_eom_params(Options &options)
   eom_params.max_iter = 80 * moinfo.nirreps;
   eom_params.max_iter = options.get_int("MAXITER");
 
-  // Use prop_sym and prop_root only to determine what energy to save later
+  // Use prop_sym and prop_root only to determine what energy to write
   if (options["PROP_SYM"].has_changed()) {
     eom_params.prop_sym = options.get_int("PROP_SYM");
     eom_params.prop_sym = (eom_params.prop_sym - 1)^moinfo.sym;

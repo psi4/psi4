@@ -32,7 +32,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libiwl/iwl.h>
-#include <libchkpt/chkpt.h>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -75,9 +74,7 @@ void densgrid_RHF(Options& options)
   nao = basis->nao();
   nso = moinfo.nso;
   nmo = moinfo.nmo;
-  chkpt_init(PSIO_OPEN_OLD);
-  scf_pitzer = chkpt_rd_scf();
-  chkpt_close();
+  scf_pitzer = wfn->Ca()->to_block_matrix();
 
   D = moinfo.opdm; // A block matrix
   delta = block_matrix(nmo, nmo); // Dirac delta function 
