@@ -30,7 +30,6 @@
 #include <libtrans/mospace.h>
 #include <libdpd/dpd.h>
 #include <libdiis/diismanager.h>
-#include <libchkpt/chkpt.hpp>
 
 using namespace boost;
 
