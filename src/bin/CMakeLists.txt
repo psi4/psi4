@@ -27,7 +27,7 @@ add_subdirectory(sapt)
 add_subdirectory(scf)
 add_subdirectory(scfgrad)
 add_subdirectory(thermo)
-add_subdirectory(transqt)
+#add_subdirectory(transqt)
 add_subdirectory(transqt2)
 
 if(ENABLE_CHEMPS2)
