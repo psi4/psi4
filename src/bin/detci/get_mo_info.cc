@@ -28,8 +28,8 @@
 #include <cstdlib>
 #include <boost/lexical_cast.hpp>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.h>
 #include <libmints/wavefunction.h>
+#include <libmints/mints.h>
 #include <libqt/qt.h>
 #include <libpsio/psio.h>
 #include "structs.h"
@@ -62,27 +62,38 @@ void get_mo_info(Options &options)
   int i, j, k, tmp, cnt, irrep, errcod, errbad;
   int size;
   double *eig_unsrt;
+//  boost::shared_ptr<Vector> eig_unsrt;
   int parsed_ras1=0, parsed_ras2=0, do_ras4;
 
   CalcInfo.maxKlist = 0.0;
   CalcInfo.sigma_initialized = 0;
 
-  chkpt_init(PSIO_OPEN_OLD);
-  CalcInfo.nirreps = chkpt_rd_nirreps();
-  CalcInfo.nso = chkpt_rd_nmo();
-  CalcInfo.nmo = chkpt_rd_nmo();
-  CalcInfo.iopen = chkpt_rd_iopen();
-  CalcInfo.labels = chkpt_rd_irr_labs();
-  CalcInfo.orbs_per_irr = chkpt_rd_orbspi();
-  CalcInfo.so_per_irr = chkpt_rd_sopi();
-  CalcInfo.docc = chkpt_rd_clsdpi();
-  CalcInfo.socc = chkpt_rd_openpi();
-  CalcInfo.enuc = chkpt_rd_enuc();
-  CalcInfo.escf = chkpt_rd_escf();
-//  CalcInfo.edrc = chkpt_rd_efzc();
-  CalcInfo.edrc = Process::environment.wavefunction()->efzc();
-  eig_unsrt = chkpt_rd_evals();
-  chkpt_close();
+  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+
+  CalcInfo.nirreps = wfn->nirrep();
+  CalcInfo.nso = wfn->nso();
+  CalcInfo.nmo = wfn->nmo();
+  CalcInfo.iopen = 0;
+    for(int h=0; h < CalcInfo.nirreps; h++)
+      CalcInfo.iopen += wfn->nsopi()[h];
+  CalcInfo.labels = wfn->molecule()->irrep_labels();
+  CalcInfo.orbs_per_irr = init_int_array(CalcInfo.nirreps);
+  CalcInfo.so_per_irr = init_int_array(CalcInfo.nirreps);
+  CalcInfo.docc = init_int_array(CalcInfo.nirreps);
+  CalcInfo.socc = init_int_array(CalcInfo.nirreps);
+  for(int h=0; h < CalcInfo.nirreps; h++) {
+    CalcInfo.orbs_per_irr[h] = wfn->nmopi()[h];
+    CalcInfo.so_per_irr[h] = wfn->nsopi()[h];
+    CalcInfo.docc[h] = wfn->doccpi()[h];
+    CalcInfo.socc[h] = wfn->soccpi()[h];
+  }
+  CalcInfo.enuc = wfn->molecule()->nuclear_repulsion_energy();
+  if(wfn->reference_wavefunction())
+      CalcInfo.escf = wfn->reference_wavefunction()->reference_energy();
+  else
+      CalcInfo.escf = wfn->reference_energy();
+  CalcInfo.edrc = wfn->efzc();
+  eig_unsrt = wfn->epsilon_a()->to_block_vector();
 
   if (CalcInfo.iopen && Parameters.opentype == PARM_OPENTYPE_NONE) {
     outfile->Printf( "Warning: iopen=1,opentype=none. Making iopen=0\n");

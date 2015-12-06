@@ -643,6 +643,16 @@ void Matrix::set(const double * const * const sq)
     }
 }
 
+void Matrix::set(const double * const * const sq, int h)
+{
+  if(sq == NULL)
+    throw PSIEXCEPTION("Matrix::set: Set call with a NULL double** matrix");
+
+  for(int i=0; i < rowspi_[h]; i++)
+    for(int j=0; j < colspi_[h]; j++)
+      matrix_[h][i][j] = sq[i][j];
+}
+
 void Matrix::set_diagonal(const Vector * const vec)
 {
     if (symmetry_) {

@@ -121,7 +121,7 @@ namespace dcft { PsiReturnType dcft(Options&); }
 namespace lmp2 { PsiReturnType lmp2(Options&); }
 namespace mcscf { PsiReturnType mcscf(Options&); }
 namespace psimrcc { PsiReturnType psimrcc(Options&); }
-namespace transqt { PsiReturnType transqt(Options&); }
+// namespace transqt { PsiReturnType transqt(Options&); }
 namespace transqt2 { PsiReturnType transqt2(Options&); }
 namespace ccsort { PsiReturnType ccsort(Options&); }
 //    namespace lmp2       { PsiReturnType lmp2(Options&);      }
@@ -477,12 +477,12 @@ double py_psi_fisapt()
         return 0.0;
 }
 
-double py_psi_transqt()
-{
-    py_psi_prepare_options_for_module("TRANSQT");
-    transqt::transqt(Process::environment.options);
-    return 0.0;
-}
+// double py_psi_transqt()
+// {
+//     py_psi_prepare_options_for_module("TRANSQT");
+//     transqt::transqt(Process::environment.options);
+//     return 0.0;
+// }
 
 double py_psi_transqt2()
 {
@@ -1663,7 +1663,7 @@ BOOST_PYTHON_MODULE (psi4)
     def("fisapt", py_psi_fisapt, "Runs the functional-group intramolecular symmetry adapted perturbation theory code.");
     def("psimrcc", py_psi_psimrcc, "Runs the multireference coupled cluster code.");
     def("optking", py_psi_optking, "Runs the geometry optimization / frequency analysis code.");
-    def("transqt", py_psi_transqt, "Runs the (deprecated) transformation code.");
+//    def("transqt", py_psi_transqt, "Runs the (deprecated) transformation code.");
     def("transqt2", py_psi_transqt2, "Runs the (deprecated) transformation code.");
     def("ccsort", py_psi_ccsort, "Runs CCSORT, which reorders integrals for use in the coupled cluster codes.");
     def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");

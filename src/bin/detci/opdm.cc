@@ -939,7 +939,9 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
             print_mat(opdm_blk, CalcInfo.so_per_irr[irrep],
                       CalcInfo.orbs_per_irr[irrep], "outfile");
           }
-          chkpt_wt_scf_irrep(opdm_blk, irrep);
+//          chkpt_wt_scf_irrep(opdm_blk, irrep);
+          Process::environment.wavefunction()->Ca()->set(opdm_blk, irrep);
+  
           outfile->Printf( "\n Warning: Natural Orbitals for the ");
 	  if (Parameters.opdm_ave)
             outfile->Printf( "Averaged OPDM ");
