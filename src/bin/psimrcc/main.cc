@@ -42,7 +42,6 @@
 // PSI libraries
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.hpp>
 #include <libmoinfo/libmoinfo.h>
 #include <liboptions/liboptions.h>
 #include <libpsi4util/libpsi4util.h>
@@ -51,7 +50,6 @@
 
 // PSI C++
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
 
 #include "blas.h"
 #include "git.h"

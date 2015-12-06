@@ -121,7 +121,6 @@ namespace dcft { PsiReturnType dcft(Options&); }
 namespace lmp2 { PsiReturnType lmp2(Options&); }
 namespace mcscf { PsiReturnType mcscf(Options&); }
 namespace psimrcc { PsiReturnType psimrcc(Options&); }
-// namespace transqt { PsiReturnType transqt(Options&); }
 namespace transqt2 { PsiReturnType transqt2(Options&); }
 namespace ccsort { PsiReturnType ccsort(Options&); }
 //    namespace lmp2       { PsiReturnType lmp2(Options&);      }
@@ -476,13 +475,6 @@ double py_psi_fisapt()
     else
         return 0.0;
 }
-
-// double py_psi_transqt()
-// {
-//     py_psi_prepare_options_for_module("TRANSQT");
-//     transqt::transqt(Process::environment.options);
-//     return 0.0;
-// }
 
 double py_psi_transqt2()
 {

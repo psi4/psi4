@@ -26,7 +26,6 @@
 #include <libmoinfo/libmoinfo.h>
 #include <libpsi4util/libpsi4util.h>
 #include <liboptions/liboptions.h>
-#include <libchkpt/chkpt.h>
 
 #include "idmrpt2.h"
 #include "matrix.h"

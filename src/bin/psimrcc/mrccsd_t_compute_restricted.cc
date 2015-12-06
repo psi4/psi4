@@ -30,7 +30,6 @@
 
 #include <liboptions/liboptions.h>
 #include <libmoinfo/libmoinfo.h>
-#include <libchkpt/chkpt.hpp>
 
 #include "blas.h"
 #include "debugging.h"
