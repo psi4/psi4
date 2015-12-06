@@ -30,7 +30,6 @@
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include <libiwl/iwl.h>
-#include <libchkpt/chkpt.h>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <psifiles.h>

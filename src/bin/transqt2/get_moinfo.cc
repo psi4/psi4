@@ -30,7 +30,6 @@
 #include <cstring>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
 #include <psi4-dec.h>
@@ -38,13 +37,14 @@
 #include <libmints/dimension.h>
 #include <libmints/molecule.h>
 #include <libmints/basisset.h>
+#include <libmints/matrix.h>
 #define EXTERN
 #include "globals.h"
 
 #include <libmints/wavefunction.h>
 
 /* get_moinfo(): Routine to obtain basic orbital information from
-** chkpt and compute the associated lookup arrays.
+** wfn and compute the associated lookup arrays.
 **
 ** Notes on some of the quantities computed here:
 **
@@ -100,7 +100,6 @@ void get_moinfo(Options& options)
 
     boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
 
-    chkpt_init(PSIO_OPEN_OLD);
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
     moinfo.nso = wfn->nso();
@@ -139,7 +138,6 @@ void get_moinfo(Options& options)
         for(int h = 0; h < moinfo.nirreps; ++h)
             moinfo.fruocc[h] = options["FROZEN_UOCC"][h].to_integer();
     }
-    chkpt_close();
 
     moinfo.nfzc = moinfo.nfzv = 0;
     for(i=0; i < moinfo.nirreps; i++) {
@@ -151,7 +149,8 @@ void get_moinfo(Options& options)
     for(i=0; i < moinfo.nirreps; i++)
         moinfo.uoccpi[i] = moinfo.mopi[i] - moinfo.clsdpi[i] - moinfo.openpi[i];
 
-    if(params.semicanonical) semicanonical_fock();
+    if(params.semicanonical)
+      Process::environment.wavefunction()->semicanonicalize();
 
     /* SO symmetry array */
     moinfo.sosym = init_int_array(moinfo.nso);
@@ -162,16 +161,14 @@ void get_moinfo(Options& options)
     /* AO/MO transformation matrix */
     if(params.ref == 0 || params.ref == 1) { /* RHF/ROHF */
         C = (double ***) malloc(moinfo.nirreps * sizeof(double **));
-        chkpt_init(PSIO_OPEN_OLD);
         for(h=0; h < moinfo.nirreps; h++) {
-            C[h] = chkpt_rd_scf_irrep(h);
+            C[h] = wfn->Ca()->pointer(h);
             if(params.print_lvl > 2) {
                 outfile->Printf( "\n\tMOs for irrep %d:\n",h);
                 mat_print(C[h], moinfo.sopi[h], moinfo.mopi[h], "outfile");
             }
         }
-        C_full = chkpt_rd_scf();
-        chkpt_close();
+        C_full = wfn->Ca()->to_block_matrix();
         moinfo.C = C;
         moinfo.C_full = C_full;
     }
@@ -179,22 +176,20 @@ void get_moinfo(Options& options)
     else if(params.ref == 2) { /* UHF */
         C_a = (double ***) malloc(moinfo.nirreps * sizeof(double **));
         C_b = (double ***) malloc(moinfo.nirreps * sizeof(double **));
-        chkpt_init(PSIO_OPEN_OLD);
         for(h=0; h < moinfo.nirreps; h++) {
-            C_a[h] = chkpt_rd_alpha_scf_irrep(h);
+            C_a[h] = wfn->Ca()->pointer(h);
             if(params.print_lvl > 2) {
                 outfile->Printf( "\n\tAlpha MOs for irrep %d:\n",h);
                 mat_print(C_a[h], moinfo.sopi[h], moinfo.mopi[h], "outfile");
             }
-            C_b[h] = chkpt_rd_beta_scf_irrep(h);
+            C_b[h] = wfn->Cb()->pointer(h);
             if(params.print_lvl > 2) {
                 outfile->Printf( "\n\tBeta MOs for irrep %d:\n",h);
                 mat_print(C_b[h], moinfo.sopi[h], moinfo.mopi[h], "outfile");
             }
         }
-        C_full_a = chkpt_rd_alpha_scf();
-        C_full_b = chkpt_rd_beta_scf();
-        chkpt_close();
+        C_full_a = wfn->Ca()->to_block_matrix();
+        C_full_b = wfn->Cb()->to_block_matrix();
         moinfo.C_a = C_a;
         moinfo.C_b = C_b;
         moinfo.C_full_a = C_full_a;
@@ -514,8 +509,8 @@ void get_moinfo(Options& options)
             free(rstr_docc);
             free(rstr_uocc);
         }
-        outfile->Printf("\n\tNuclear Rep. energy (chkpt) =  %20.14f\n", moinfo.enuc);
-        outfile->Printf(  "\tSCF energy          (chkpt) =  %20.14f\n", escf);
+        outfile->Printf("\n\tNuclear Rep. energy (wfn)   =  %20.14f\n", moinfo.enuc);
+        outfile->Printf(  "\tSCF energy          (wfn)   =  %20.14f\n", escf);
     }
  
 }
@@ -533,8 +528,8 @@ void cleanup(void)
     if(ci_wfn(params.wfn)) {
         free(moinfo.pitz2corr_one);
         free(moinfo.pitz2corr_two);
-        for(h=0; h < moinfo.nirreps; h++)
-            free_block(moinfo.C[h]);
+//        for(h=0; h < moinfo.nirreps; h++)
+//            free_block(moinfo.C[h]);
         free(moinfo.C);
     }
     else if(cc_wfn(params.wfn) || (params.wfn == "SCF") ||
@@ -542,8 +537,8 @@ void cleanup(void)
         if(params.ref == 0 || params.ref == 1) {
             free(moinfo.pitz2corr_one);
             free(moinfo.pitz2corr_two);
-            for(h=0; h < moinfo.nirreps; h++)
-                if(moinfo.sopi[h] && moinfo.mopi[h]) free_block(moinfo.C[h]);
+//            for(h=0; h < moinfo.nirreps; h++)
+//                if(moinfo.sopi[h] && moinfo.mopi[h]) free_block(moinfo.C[h]);
             free(moinfo.C);
         }
         else if(params.ref == 2) {
@@ -551,12 +546,12 @@ void cleanup(void)
             free(moinfo.pitz2corr_one_B);
             free(moinfo.pitz2corr_two_A);
             free(moinfo.pitz2corr_two_B);
-            for(h=0; h < moinfo.nirreps; h++) {
-                if(moinfo.sopi[h] && moinfo.mopi[h]) {
-                    free_block(moinfo.C_a[h]);
-                    free_block(moinfo.C_b[h]);
-                }
-            }
+//            for(h=0; h < moinfo.nirreps; h++) {
+//                if(moinfo.sopi[h] && moinfo.mopi[h]) {
+ //                   free_block(moinfo.C_a[h]);
+//                    free_block(moinfo.C_b[h]);
+//                }
+//            }
             free(moinfo.C_a); free(moinfo.C_b);
         }
     }

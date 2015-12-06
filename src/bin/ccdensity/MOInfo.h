@@ -32,7 +32,6 @@ struct MOInfo {
     int nmo;            /* no. of molecular orbitals */
     int nso;            /* no. of symmetry orbitals */
     int nactive;        /* no. of active orbitals */
-    int iopen;          /* 0=closed shell; >0=open shell */
     int *orbspi;        /* no. of MOs per irrep */
     int *clsdpi;        /* no. of closed-shells per irrep excl. frdocc */
     int *openpi;        /* no. of open-shells per irrep */
@@ -77,7 +76,7 @@ struct MOInfo {
     int *qt_avir;       /* CC->QT alpha active virtiual reordering array */
     int *qt_bvir;       /* CC->QT beta active virtiual reordering array */
     double enuc;        /* Nuclear repulsion energy */
-    double escf;        /* SCF energy from chkpt */
+    double escf;        /* SCF energy from wfn */
     double eref;        /* Reference energy */
     double ecc;         /* CC energy (CC2, CCSD, or CC3) from ccenergy */
     double et;          /* (T) energy from cctriples */

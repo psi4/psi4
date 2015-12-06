@@ -57,7 +57,6 @@
 #include <cstring>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
 #include <libiwl/iwl.h>
 #include <libqt/qt.h>
 #include <libdpd/dpd.h>
@@ -225,7 +224,7 @@ PsiReturnType transqt2(Options & options)
         }
     }
 
-    /* compute the frozen-core energy and write it to the chkpt file*/
+    /* compute the frozen-core energy and write it to the wfn */
     efzc = 0.0;
     if(params.ref == 0 || params.ref == 1) { /* RHF/ROHF */
         for(p=0; p < nso; p++) {
@@ -253,10 +252,7 @@ PsiReturnType transqt2(Options & options)
         outfile->Printf( "\tFrozen-core energy = %20.15f\n", efzc);
         
     }
-//    chkpt_init(PSIO_OPEN_OLD);
-//    chkpt_wt_efzc(efzc);
-//    chkpt_close();
-    // Add frozen-core energy to wfn, too
+    // Add frozen-core energy to wfn
     Process::environment.wavefunction()->set_efzc(efzc);
 
     /*** One-electron forward transforms.  Note that all orbitals are

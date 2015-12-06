@@ -145,23 +145,7 @@ CCEnergyWavefunction::~CCEnergyWavefunction()
 
 void CCEnergyWavefunction::init()
 {
-    // Wavefunction creates a chkpt object for you, but we're not going to use it.
-    // Destroy it. Otherwise we will see a "file already open" error.
-    chkpt_.reset(); // TO BE REMOVED ONCE LIBCHKPT IS GONE -TDC, 12/2015
-
     copy(reference_wavefunction_);
-
-    //    nso_        = reference_wavefunction_->nso();
-    //    nirrep_     = reference_wavefunction_->nirrep();
-    //    nmo_        = reference_wavefunction_->nmo();
-    //    for(int h = 0; h < nirrep_; ++h){
-    //        soccpi_[h] = reference_wavefunction_->soccpi()[h];
-    //        doccpi_[h] = reference_wavefunction_->doccpi()[h];
-    //        frzcpi_[h] = reference_wavefunction_->frzcpi()[h];
-    //        frzvpi_[h] = reference_wavefunction_->frzvpi()[h];
-    //        nmopi_[h]  = reference_wavefunction_->nmopi()[h];
-    //        nsopi_[h]  = reference_wavefunction_->nsopi()[h];
-    //    }
 }
 
 double CCEnergyWavefunction::compute_energy()
@@ -558,11 +542,6 @@ PsiReturnType ccenergy(Options &options)
                 moinfo.eref + moinfo.ecc + local.weak_pair_energy;
     }
     outfile->Printf( "\n");
-
-    /* Write total energy to the checkpoint file */
-//    chkpt_init(PSIO_OPEN_OLD);
-//    chkpt_wt_etot(moinfo.ecc+moinfo.eref);
-//    chkpt_close();
 
     /* Generate the spin-adapted RHF amplitudes for later codes */
     if(params.ref == 0) spinad_amps();

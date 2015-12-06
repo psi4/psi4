@@ -29,7 +29,6 @@
 #include <cstring>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -249,12 +248,6 @@ PsiReturnType cctriples(Options &options)
   } // UHF
 
   outfile->Printf( "\n");
-
-  /* Write total energy and (T) contribution to the checkpoint file */
-  chkpt_init(PSIO_OPEN_OLD);
-  chkpt_wt_etot(ET+moinfo.ecc+moinfo.eref);
-  chkpt_wt_e_t(ET);
-  chkpt_close();
 
   /* Dump triples energy to CC_INFO and the python environment*/
   psio_write_entry(PSIF_CC_INFO, "(T) Energy", (char *) &(ET), sizeof(double));
