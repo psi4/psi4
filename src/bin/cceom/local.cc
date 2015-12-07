@@ -34,7 +34,6 @@
 #include <libpsio/psio.h>
 #include <libiwl/iwl.h>
 #include <libint/libint.h>
-#include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
 #include <libdpd/dpd.h>
 #include <psifiles.h>
@@ -67,10 +66,6 @@ void local_init(void)
   double **X, **Y;
   dpdfile2 FMI, FAE;
   psio_address next;
-
-  chkpt_init(PSIO_OPEN_OLD);
-  local.natom = chkpt_rd_natom();
-  chkpt_close();
 
   local.nso = moinfo.nso;
   local.nocc = moinfo.occpi[0]; /* active doubly occupied orbitals */

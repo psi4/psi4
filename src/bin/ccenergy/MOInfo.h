@@ -35,8 +35,6 @@ struct MOInfo {
   int nmo;               /* no. of molecular orbitals */
   int nso;               /* no. of symmetry orbitals */
   int nao;               /* no. of atomic orbitals */
-  int iopen;             /* 0=closed shell; >0=open shell */
-  int phase;             /* Boolean for consistency of orbital phases */
   int *sopi;             /* no. of SOs per irrep (only used in AO-based algorithm) */
   int *sosym;            /* SO symmetry (Pitzer) */
   int *orbspi;           /* no. of MOs per irrep */
@@ -93,7 +91,7 @@ struct MOInfo {
   double emp2;           /* MP2 energy */
   double emp2_ss;        /* Same-spin MP2 correlation energy*/
   double emp2_os;        /* Opposite-spin MP2 correlation energy*/
-  double escf;           /* SCF energy (from chkpt) */
+  double escf;           /* SCF energy (from wfn) */
   double eref;           /* Reference energy (file100) */
   double ecc;            /* Current coupled cluster correlation energy */
   double ecc_ss;	 /* Same-spin coupled cluster correlation energy*/

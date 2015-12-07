@@ -64,9 +64,6 @@ psi4.xcodeproj
 do-configure*
 update_debug_latest.sh
 
-# Auto-generatred matplotlib scripts
-doc/cloc/matplotlib
-
 #Files created by Global Arrays when it is built
 include/armci.h
 include/chemio.h

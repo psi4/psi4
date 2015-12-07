@@ -359,7 +359,15 @@ void set_params(void)
 
     Opt_params.print_params = options.get_bool("PRINT_OPT_PARAMS");
 
-    Opt_params.print_trajectory_xyz_file = options.get_bool("PRINT_TRAJECTORY_XYZ_FILE");
+// make trajectory file printing the default for IRC.
+    if ((Opt_params.opt_type == OPT_PARAMS::IRC) &&
+        (options["PRINT_TRAJECTORY_XYZ_FILE"].has_changed() == false))
+      Opt_params.print_trajectory_xyz_file = true;
+    else
+      Opt_params.print_trajectory_xyz_file = options.get_bool("PRINT_TRAJECTORY_XYZ_FILE");
+
+// default 
+
 
 // Read cartesian Hessian.  Make reading the default for IRC.
     if ((Opt_params.opt_type == OPT_PARAMS::IRC) &&

@@ -58,12 +58,14 @@ set(EXTERNAL_LIBS)
 
 # Decide if Fortran is needed
 if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH)
+   include(FortranEnabler)
    enable_language(Fortran)
    # add_definitions(-DHAVE_FORTRAN)  # unused
    # This is to use the CMake generated macros and not those based on FC_SYMBOL
    add_definitions(-DUSE_FCMANGLE_H)
    set(FORTRAN_ENABLED TRUE)
    message(STATUS "Fortran ENABLED")
+   fortran_enabler()
 endif()
 
 # Include CMake modules as needed
@@ -91,8 +93,6 @@ include(CheckIncludeFiles)
 include(CheckFunctionExists)
 # Here we look for Perl, Sphinx, Doxygen and LaTeX
 include(ConfigDocumentation)
-# Access to the fortran_enabler macro
-include(FortranEnabler)
 
 if(NOT FORTRAN_ENABLED)
    # For linking to math subroutines use the FC_SYMBOL strategy, if Fortran was not enabled
@@ -102,15 +102,6 @@ endif()
 
 if(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local/psi4")
    set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT TRUE CACHE INTERNAL "")
-endif()
-
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-   set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/interfaces)
-   set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-   set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
-else()
-   set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/interfaces)
-   set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
 endif()
 
 # This section attempts to find some system libraries:
@@ -176,6 +167,12 @@ endif()
 # MKL_Free_Buffers NEEDS TO BE TESTED
 check_function_exists(MKL_Free_Buffers HAVE_MKL)
 
+# Check for mm_malloc.h for the _mm_malloc and _mm_free aligned memory allocation
+check_include_files(mm_malloc.h HAVE_MM_MALLOC_H)
+if(HAVE_MM_MALLOC_H)
+    add_definitions(-DHAVE_MM_MALLOC_H)
+endif()
+
 # Detection of erf, __builtin_expect, __builtin_prefetch, __builtin_constant_p
 # This step is skipped for GCC and Clang: they are all defined but for some reasons not detected by CMake
 if(CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
@@ -199,13 +196,12 @@ if(NOT HAVE_FUNC_ERF)
 endif()
 
 if(ENABLE_LIBERD)
-   message(WARNING "Building/Using LibERD instead of LibInts!!!!")
+   message(STATUS "Building LibERD in addition to LibInts! When able LibERD will be used by default.")
    add_definitions(-DHAVE_ERD)
 endif()
 
 if(ENABLE_DKH)
    message(STATUS "DKH in LibMints ENABLED")
-   fortran_enabler()
    add_definitions(-DHAVE_DKH)
 endif()
 
@@ -222,7 +218,14 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src/lib
     ${PROJECT_BINARY_DIR}/src/lib
+    ${PROJECT_BINARY_DIR}/interfaces/include
 )
+
+
+###set(headers_list "")
+###set(headers_list include/compiler.h include/psi4-dec.h include/exception.h include/process.h)
+###install_list_FILES("${headers_list}" include)
+
 
 #
 # The location of compiled libraries and executables
@@ -242,13 +245,10 @@ if(ENABLE_PCMSOLVER)
         # TODO ability to build psi4 against pre-built pcmsolver library like chemps2
         #message(FATAL_ERROR "No Zlib, no PCMSolver. Build against existing with -DPCMSOLVER_ROOT=/path/to/pcmsolver or skip with -DENABLE_PCMSOLVER=OFF")
    else()
-      fortran_enabler()
       add_definitions(-DHAVE_PCMSOLVER)
       message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
-      link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
-                       ${EXTERNAL_PROJECT_INSTALL_PREFIX})
+      link_directories(${PROJECT_BINARY_DIR}/interfaces/lib)
    endif()
-   set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
 endif()
 
 #If we have MPI we may want to also build JKFactory which makes J and K's
@@ -258,7 +258,6 @@ if(MPI_FOUND AND ENABLE_JKFACTORY)
    set(BUILD_JK_FACTORY TRUE)
 endif()
 if(BUILD_JK_FACTORY)
-      fortran_enabler()
    set(JK_BLAS_LIB "")
    set(JK_BLAS_INC "")
    if(EXPLICIT_BLAS_LIB)
@@ -283,9 +282,14 @@ add_subdirectory(src)
 # Add the library directory, for install purposes
 add_subdirectory(lib)
 
+# Add the New API directory
+add_subdirectory(PsiAPI)
+set_property(GLOBAL APPEND PROPERTY PSILIB psiapi)
+
 # Handle creation of Makefile for plugins
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES) ###
 get_property(defs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS)
+###set(dirs "${CMAKE_INSTALL_PREFIX}/include" "${PYTHON_INCLUDE_DIR}"  "${Boost_INCLUDE_DIRS}")
 foreach(dir ${dirs})
     set(PLUGIN_INCLUDE_DIRECTORIES "-I${dir} ${PLUGIN_INCLUDE_DIRECTORIES}")
 endforeach()
@@ -300,6 +304,7 @@ string(STRIP ${PLUGIN_INCLUDE_DIRECTORIES} PLUGIN_INCLUDE_DIRECTORIES)
 string(STRIP ${PLUGIN_DEFINES} PLUGIN_DEFINES)
 string(STRIP ${PLUGIN_LDFLAGS} PLUGIN_LDFLAGS)
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
+###install_list_FILES("${CMAKE_CURRENT_BINARY_DIR}/include/psiconfig.h" include/)
 
 # Make known that the setup command given and the corresponding CMake
 # line are available in the file setup_command in the build directory

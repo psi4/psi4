@@ -34,7 +34,7 @@
 #include <psi4-dec.h>
 #include <libmints/wavefunction.h>
 #include <libmints/molecule.h>
-#include <libchkpt/chkpt.h>
+#include <libmints/matrix.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -57,13 +57,11 @@ void get_moinfo(void)
     int nactive;
     double **scf_pitzer;
 
-    chkpt_init(PSIO_OPEN_OLD);
     boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
 
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
     moinfo.nso = wfn->nso();
-    moinfo.iopen = chkpt_rd_iopen();
     moinfo.labels = wfn->molecule()->irrep_labels();
     moinfo.enuc = wfn->molecule()->nuclear_repulsion_energy();
     if(wfn->reference_wavefunction())
@@ -75,8 +73,7 @@ void get_moinfo(void)
     moinfo.clsdpi = init_int_array(moinfo.nirreps);
     for(int h = 0; h < moinfo.nirreps; ++h)
         moinfo.clsdpi[h] = wfn->doccpi()[h];
-    scf_pitzer = chkpt_rd_scf();
-    chkpt_close();
+    scf_pitzer = wfn->Ca()->to_block_matrix();
 
     moinfo.sym = 0;
     for (i=0;i<moinfo.nirreps;++i)
@@ -250,8 +247,8 @@ void get_moinfo(void)
     psio_read_entry(PSIF_CC_INFO, "Reference Energy", (char *) &(moinfo.eref),
                     sizeof(double));
 
-    outfile->Printf("\n\tNuclear Rep. energy (chkpt)   = %20.15f\n",moinfo.enuc);
-    outfile->Printf(  "\tSCF energy          (chkpt)   = %20.15f\n",moinfo.escf);
+    outfile->Printf("\n\tNuclear Rep. energy (wfn)     = %20.15f\n",moinfo.enuc);
+    outfile->Printf(  "\tSCF energy          (wfn)     = %20.15f\n",moinfo.escf);
     outfile->Printf(  "\tReference energy    (file100) = %20.15f\n",moinfo.eref);
 
     if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {

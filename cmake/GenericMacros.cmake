@@ -12,21 +12,6 @@ macro(install_list_FILES list_of_files where)
 	endforeach()
 endmacro()
 
-# Writes list of files in given directory to a file to be used by the
-# cloc Perl script to count lines of code
-macro(write_to_cloc_list list_of_sources)
-     # It might be that sources are not under src/${lib} but under src/${dir}/${lib}
-     get_filename_component(dir ${CMAKE_CURRENT_SOURCE_DIR} PATH)
-     get_filename_component(dir ${dir} NAME)
-     get_filename_component(lib ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-     if(EXISTS "${PROJECT_BINARY_DIR}/doc/cloc/cloc_list-${lib}")
-     	file(REMOVE ${PROJECT_BINARY_DIR}/doc/cloc/cloc_list-${lib})
-     endif()
-     foreach(source ${list_of_sources})
-     	file(APPEND ${PROJECT_BINARY_DIR}/doc/cloc/cloc_list-${lib} "${PROJECT_SOURCE_DIR}/src/${dir}/${lib}/${source}\n")
-     endforeach()
-endmacro()
-
 # Generate the FCMangle header and post-process it to add the copyright notice
 #RMR-Added a check to see if it exists first.  Recompiling after touching a 
 #CMakeLists.txt was causing it to be rebuilt, which in turn caused any file that
@@ -148,16 +133,16 @@ endfunction(get_fc_symbol)
 # This macro configures all files that depend on some variables known only when 
 # the setup script or CMake are run
 macro(configure_files)
-    # Configure the counter utility script
-    configure_file(${PROJECT_SOURCE_DIR}/tools/counter.py.in counter.py)
-    file(COPY ${PROJECT_BINARY_DIR}/counter.py 
-      DESTINATION ${PROJECT_BINARY_DIR}/bin
-      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-      GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-    # Configure the create_bar_charts utility script
-    configure_file(${PROJECT_SOURCE_DIR}/tools/create_bar_charts.py.in create_bar_charts.py)
-    file(COPY ${PROJECT_BINARY_DIR}/create_bar_charts.py 
-      DESTINATION ${PROJECT_BINARY_DIR}/bin
-      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-      GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+    ## Configure the counter utility script
+    #configure_file(${PROJECT_SOURCE_DIR}/tools/counter.py.in counter.py)
+    #file(COPY ${PROJECT_BINARY_DIR}/counter.py 
+    #  DESTINATION ${PROJECT_BINARY_DIR}/bin
+    #  FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+    #  GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+    ## Configure the create_bar_charts utility script
+    #configure_file(${PROJECT_SOURCE_DIR}/tools/create_bar_charts.py.in create_bar_charts.py)
+    #file(COPY ${PROJECT_BINARY_DIR}/create_bar_charts.py 
+    #  DESTINATION ${PROJECT_BINARY_DIR}/bin
+    #  FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+    #  GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 endmacro()

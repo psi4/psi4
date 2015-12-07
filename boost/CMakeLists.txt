@@ -13,7 +13,7 @@ set(MPI_SENT "")
 if(ENABLE_MPI)
    set(MPI_SENT "using mpi ;")
 endif()
-if(ENABLE_UNIT_TESTS OR ENABLE_PCMSOLVER)
+if(ENABLE_UNIT_TESTS)
    # Replace unit_test_framework (used by CMake's find_package) with test (understood by Boost build toolchain)
    string(REPLACE "unit_test_framework" "test" b2_needed_components "${b2_needed_components}")
 endif()
@@ -40,12 +40,12 @@ message(STATUS "  Toolset to be used: ${toolset}")
 string(TOLOWER ${CMAKE_BUILD_TYPE} type)
 
 # Write the user-config.jam file
-file(WRITE ${BOOST_BUILD_DIR}/user-config.jam "${MPI_SENT}")  
+file(WRITE ${BOOST_BUILD_DIR}/user-config.jam "${MPI_SENT}")
 
 # Unpack Boost and copy boostcpp.jam
 add_custom_command(
-    OUTPUT boost.unpacked 
-    COMMAND ${CMAKE_COMMAND} -E tar xjf ${CMAKE_SOURCE_DIR}/boost/boost_${BOOSTVER}.tar.bz2 
+    OUTPUT boost.unpacked
+    COMMAND ${CMAKE_COMMAND} -E tar xjf ${CMAKE_SOURCE_DIR}/boost/boost_${BOOSTVER}.tar.bz2
     # Copy custom boostcpp.jam (to get versioned format as I want it!)
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/boost/boostcpp.jam ${BOOST_BUILD_DIR}
     COMMAND touch boost.unpacked
@@ -60,7 +60,7 @@ add_custom_command(
             --with-libraries="${b2_needed_components}"
 	    --with-python=${PYTHON_EXECUTABLE}
 	    --prefix=${CUSTOM_BOOST_LOCATION} 1> boost.configured.log 2> boost.configured.err
-    COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/boost/boost.configured	    
+    COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/boost/boost.configured
     WORKING_DIRECTORY ${BOOST_BUILD_DIR}
     DEPENDS boost.unpacked
     COMMENT "Configuring Boost")
@@ -72,7 +72,7 @@ add_custom_command(
     threading=multi --user-config=user-config.jam 1> boost.built.log 2> boost.built.err
     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/boost/boost.built
     WORKING_DIRECTORY ${BOOST_BUILD_DIR}
-    DEPENDS boost.configured 
+    DEPENDS boost.configured
     COMMENT "Building Boost")
 
 # Install Boost
@@ -82,7 +82,7 @@ add_custom_command(
     threading=multi --user-config=user-config.jam 1> boost.installed.log 2> boost.installed.err
     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/boost/boost.installed
     WORKING_DIRECTORY ${BOOST_BUILD_DIR}
-    DEPENDS boost.built 
+    DEPENDS boost.built
     COMMENT "Installing Boost")
 
 # Clean-up
@@ -91,7 +91,7 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${BOOST_BUILD_DIR}
     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/boost/boost.cleanedup
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/boost
-    DEPENDS boost.installed 
+    DEPENDS boost.installed
     COMMENT "Clean-up Boost")
 
 add_custom_target(custom_boost DEPENDS boost.cleanedup)

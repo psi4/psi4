@@ -30,8 +30,6 @@ namespace psi { namespace cctriples {
 struct MOInfo {
   int nirreps;        /* no. of irreducible representations */
   int nmo;            /* no. of molecular orbitals */
-  int iopen;          /* 0=closed shell; >0=open shell */
-  int phase;          /* Boolean for consistency of orbital phases */
   int *orbspi;        /* no. of MOs per irrep */
   int *clsdpi;        /* no. of closed-shells per irrep excl. frdocc */
   int *openpi;        /* no. of open-shells per irrep */
@@ -60,7 +58,7 @@ struct MOInfo {
   int iter;           /* Current lambda iteration */
   double conv;        /* Current convergence level */
   double enuc;        /* Nuclear repulsion energy */
-  double escf;        /* SCF energy from chkpt */
+  double escf;        /* SCF energy from wfn */
   double eref;        /* Reference energy (file100) */
   double ecc;         /* CC energy from ccenergy */
 };

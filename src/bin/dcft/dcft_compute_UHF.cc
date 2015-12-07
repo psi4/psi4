@@ -45,11 +45,16 @@ double DCFTSolver::compute_energy_UHF()
     energyConverged_ = false;
     // Perform SCF guess for the orbitals
     scf_guess();
+
+    // If DCFT computation type is density fitting, build b(Q|mn) in AO basis
+    if (options_.get_str("DCFT_TYPE") == "DF") df_build_b_ao();
+
     // Perform MP2 guess for the cumulant
     mp2_guess();
 
     // Print out information about the job
     outfile->Printf( "\n\tDCFT Functional:    \t\t %s", options_.get_str("DCFT_FUNCTIONAL").c_str());
+    outfile->Printf( "\n\tDCFT Type:          \t\t %s", options_.get_str("DCFT_TYPE").c_str());
     outfile->Printf( "\n\tAlgorithm:          \t\t %s", options_.get_str("ALGORITHM").c_str());
     outfile->Printf( "\n\tAO-Basis Integrals: \t\t %s", options_.get_str("AO_BASIS").c_str());
     if (options_.get_str("ALGORITHM") == "QC") {
@@ -69,6 +74,10 @@ double DCFTSolver::compute_energy_UHF()
         throw FeatureNotImplemented("Simultaneous QC", "AO_BASIS = DISK", __FILE__, __LINE__);
     if (!(options_.get_str("ALGORITHM") == "TWOSTEP") && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0")
         throw FeatureNotImplemented("CEPA0", "Requested DCFT algorithm", __FILE__, __LINE__);
+    if (!(options_.get_str("DCFT_FUNCTIONAL") == "ODC-06" || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") && options_.get_str("DCFT_TYPE") == "DF")
+        throw FeatureNotImplemented("DC-06/DC-12/ODC-13/CEPA0", "Density Fitting", __FILE__, __LINE__);
+    if (options_.get_str("THREE_PARTICLE") == "PERTURBATIVE" && options_.get_str("DCFT_TYPE") == "DF")
+        throw FeatureNotImplemented("Three-particle energy correction", "Density Fitting", __FILE__, __LINE__);
 
     // Orbital-optimized stuff
     if (options_.get_str("ALGORITHM") == "TWOSTEP" && orbital_optimized_)
@@ -97,9 +106,11 @@ double DCFTSolver::compute_energy_UHF()
     if(!orbitalsDone_ || !cumulantDone_ || !densityConverged_)
         throw ConvergenceError<int>("DCFT", maxiter_, cumulant_threshold_, cumulant_convergence_, __FILE__, __LINE__);
 
-    outfile->Printf("\n\t*%6s SCF Energy                                 = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), scf_energy_);
-    outfile->Printf("\t*%6s Lambda Energy                              = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), lambda_energy_);
-    outfile->Printf("\t*%6s Total Energy                               = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), new_total_energy_);
+    std::string prefix = options_.get_str("DCFT_TYPE") == "DF"? "DF-" : " ";
+
+    outfile->Printf("\n\t*%3s%6s SCF Energy                                 = %20.15f\n", prefix.c_str(), options_.get_str("DCFT_FUNCTIONAL").c_str(), scf_energy_);
+    outfile->Printf(  "\t*%3s%6s Lambda Energy                              = %20.15f\n", prefix.c_str(), options_.get_str("DCFT_FUNCTIONAL").c_str(), lambda_energy_);
+    outfile->Printf(  "\t*%3s%6s Total Energy                               = %20.15f\n", prefix.c_str(), options_.get_str("DCFT_FUNCTIONAL").c_str(), new_total_energy_);
 
 
     Process::environment.globals["DCFT SCF ENERGY"]    = scf_energy_;

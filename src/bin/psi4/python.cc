@@ -121,7 +121,6 @@ namespace dcft { PsiReturnType dcft(Options&); }
 namespace lmp2 { PsiReturnType lmp2(Options&); }
 namespace mcscf { PsiReturnType mcscf(Options&); }
 namespace psimrcc { PsiReturnType psimrcc(Options&); }
-namespace transqt { PsiReturnType transqt(Options&); }
 namespace transqt2 { PsiReturnType transqt2(Options&); }
 namespace ccsort { PsiReturnType ccsort(Options&); }
 //    namespace lmp2       { PsiReturnType lmp2(Options&);      }
@@ -143,7 +142,6 @@ namespace dmrg       { PsiReturnType dmrg(Options&);     }
 namespace fnocc { PsiReturnType fnocc(Options&); }
 namespace efp { PsiReturnType efp_init(Options&); }
 namespace efp { PsiReturnType efp_set_options(); }
-namespace stable { PsiReturnType stability(Options&); }
 namespace occwave { PsiReturnType occwave(Options&); }
 namespace dfoccwave { PsiReturnType dfoccwave(Options&); }
 namespace adc { PsiReturnType adc(Options&); }
@@ -227,12 +225,6 @@ void py_psi_prepare_options_for_module(std::string const& name)
     }
     // Now we've read in the defaults, make sure that user-specified options are recognized by the current module
     Process::environment.options.validate_options();
-}
-
-int py_psi_stability()
-{
-    py_psi_prepare_options_for_module("STABILITY");
-    return stable::stability(Process::environment.options);
 }
 
 int py_psi_optking()
@@ -482,13 +474,6 @@ double py_psi_fisapt()
     }
     else
         return 0.0;
-}
-
-double py_psi_transqt()
-{
-    py_psi_prepare_options_for_module("TRANSQT");
-    transqt::transqt(Process::environment.options);
-    return 0.0;
 }
 
 double py_psi_transqt2()
@@ -742,12 +727,20 @@ double py_psi_thermo()
 
 char const *py_psi_version()
 {
+#ifdef PSI_VERSION
     return PSI_VERSION;
+#else
+    return "";
+#endif
 }
 
 char const *py_psi_git_version()
 {
+#ifdef GIT_VERSION
     return GIT_VERSION;
+#else
+    return "";
+#endif
 }
 
 void py_psi_clean()
@@ -1660,10 +1653,9 @@ BOOST_PYTHON_MODULE (psi4)
     def("displace_atom", py_psi_displace_atom, "Displaces one coordinate of single atom.");
     def("sapt", py_psi_sapt, "Runs the symmetry adapted perturbation theory code.");
     def("fisapt", py_psi_fisapt, "Runs the functional-group intramolecular symmetry adapted perturbation theory code.");
-    def("stability", py_psi_stability, "Runs the (experimental version) of HF stability analysis.");
     def("psimrcc", py_psi_psimrcc, "Runs the multireference coupled cluster code.");
     def("optking", py_psi_optking, "Runs the geometry optimization / frequency analysis code.");
-    def("transqt", py_psi_transqt, "Runs the (deprecated) transformation code.");
+//    def("transqt", py_psi_transqt, "Runs the (deprecated) transformation code.");
     def("transqt2", py_psi_transqt2, "Runs the (deprecated) transformation code.");
     def("ccsort", py_psi_ccsort, "Runs CCSORT, which reorders integrals for use in the coupled cluster codes.");
     def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");

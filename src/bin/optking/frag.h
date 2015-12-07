@@ -214,6 +214,7 @@ class FRAG {
   void set_grad(double **grad_in);
 
   void print_geom(std::string psi_fp, FILE *qc_fp); // write cartesian geometry out for next step
+  void print_geom_irc(std::string psi_fp, FILE *qc_fp); // write cartesian geometry out for next step
 
   double ** H_guess(void);
   // function to help with Lindh guess hessian

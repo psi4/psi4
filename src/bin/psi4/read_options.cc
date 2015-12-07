@@ -208,7 +208,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add("CUBIC_GRID_OVERAGE", new ArrayType());
   /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
   options.add("CUBIC_GRID_SPACING", new ArrayType());
-
+  /* How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc */
+  options.add_str("PRINT_NOONS","3");
 
 
   if (name == "DETCI" || options.read_globals()) {
@@ -958,14 +959,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Denominator algorithm for PT methods. Laplace transformations
     are slightly more efficient. -*/
     options.add_str("DENOMINATOR_ALGORITHM", "LAPLACE", "LAPLACE CHOLESKY");
-    /*- The scale factor used for opposite-spin pairs in SCS computations.
-    SS/OS decomposition performed for $E@@{disp}^{(20)}$ and
-    $E@@{exch-disp}^{(20)}$ terms. -*/
-    options.add_double("SAPT_OS_SCALE", 6.0/5.0);
-    /*- The scale factor used for same-spin pairs in SCS computations. SS/OS
-    decomposition performed for $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$
-    terms. -*/
-    options.add_double("SAPT_SS_SCALE", 1.0/3.0);
     /*- The scope of core orbitals to freeze in evaluation of SAPT
     $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ terms. Recommended true
     for all SAPT computations -*/
@@ -1065,7 +1058,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       computations -*/
 
       /*- Reference wavefunction type -*/
-      options.add_str("REFERENCE", "RHF", "UHF RHF");
+      options.add_str("REFERENCE", "RHF", "UHF RHF ROHF");
       /*- Algorithm to use for the density cumulant and orbital updates in the DCFT energy computation.
       Two-step algorithm is usually more efficient for small
       systems, but for large systems simultaneous algorithm (default) is recommended.
@@ -1162,6 +1155,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("MOLDEN_WRITE", false);
       /*- Level shift applied to the diagonal of the density-weighted Fock operator. While this shift can improve convergence, it does change the DCFT energy. !expert-*/
       options.add_double("ENERGY_LEVEL_SHIFT", 0.0);
+      /*- What algorithm to use for the DCFT computation -*/
+      options.add_str("DCFT_TYPE", "CONV", "CONV DF");
+      /*- Auxiliary basis set for DCFT density fitting computations.
+      :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
+      options.add_str("DF_BASIS_DCFT","");
+
   }
   if (name == "MINTS"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Called at the beginning of SCF computations,
@@ -1902,6 +1901,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("ONEPDM_GRID_CUTOFF", 1.0e-30);
     /*- Stepsize (Angstrom) for one-particle density matrix values on a grid -*/
     options.add_double("ONEPDM_GRID_STEPSIZE", 0.1);
+    /* Do Write NOs (molden) */
+    options.add_bool("WRITE_NOS",false);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Solves for the Lagrange multipliers, which are needed whenever coupled cluster properties
@@ -1976,23 +1977,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 //    /*- Root to get OPDM -*/
 //    options.add_int("FOLLOW_ROOT",1);
 //  }
-  if(name == "STABILITY"|| options.read_globals()) {
-     /*- MODULEDESCRIPTION Performs wavefunction stability analysis. Called when specifically requested
-         by the user. -*/
-    /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE","RHF", "RHF UHF ROHF");
-    /*- -*/
-    options.add_int("CACHELEVEL",2);
-    /*- Do follow the most negative eigenvalue of the Hessian towards a lower
-    energy HF solution? Follow a UHF $\rightarrow$ UHF instability of same symmetry? -*/
-    options.add_bool("FOLLOW",false);
-    /*- Number of lowest MO Hessian eigenvalues to print -*/
-    options.add_int("NUM_VECS_PRINT",0);
-    /*- Method for following eigenvectors, either 0 by angles or 1 by antisymmetric matrix. -*/
-    options.add_int("ROTATION_SCHEME",0);
-    /*- Scale factor (between 0 and 1) for orbital rotation step -*/
-    options.add_double("SCALE",0.5);
-  }
   if(name == "ADC" || options.read_globals()) {
      /*- MODULEDESCRIPTION Performs Algebraic-Diagrammatic Construction (ADC) propagator computations for excited states. -*/
     /*- Reference wavefunction type -*/
@@ -3023,11 +3007,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
     options.add_double("MP2_SOS_SCALE2",1.2);
     /*- CEPA opposite-spin scaling value from SCS-CCSD -*/
-    options.add_double("CEPA_OS_SCALE",1.27);
+    //options.add_double("CEPA_OS_SCALE",1.27);
     /*- CEPA same-spin scaling value from SCS-CCSD -*/
-    options.add_double("CEPA_SS_SCALE",1.13);
+    //options.add_double("CEPA_SS_SCALE",1.13);
     /*- CEPA Spin-opposite scaling (SOS) value -*/
-    options.add_double("CEPA_SOS_SCALE",1.3);
+    //options.add_double("CEPA_SOS_SCALE",1.3);
     /*- Scaling value for 3rd order energy correction (S. Grimme, Vol. 24, pp. 1529, J. Comput. Chem.) -*/
     options.add_double("E3_SCALE",0.25);
     /*- OO scaling factor used in MSD -*/
@@ -3056,9 +3040,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Type of the SOS method -*/
     options.add_str("SOS_TYPE","SOS","SOS SOSPI");
     /*- Type of the wavefunction. -*/
-    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OLCCD DF-OMP2.5 DFGRAD DF-CCSD DF-CCD DF-CCSD(T) CD-OMP2 CD-CCSD CD-CCD CD-CCSD(T) CD-OMP3 QCHF");
+    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OLCCD DF-OMP2.5 DFGRAD DF-CCSD DF-CCD DF-CCSD(T) DF-CCSD(AT) QCHF");
     /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
-    options.add_str("CEPA_TYPE","CEPA(0)","CEPA(0)");
+    //options.add_str("CEPA_TYPE","CEPA(0)","CEPA(0)");
     /*- The algorithm that used for 4 index MO TEIs. -*/
     //options.add_str("CONV_TEI_TYPE","DIRECT","DIRECT DISK");
     /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
@@ -3068,7 +3052,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Type of the CCSD Wabef term. -*/
     options.add_str("WABEF_TYPE","AUTO","LOW_MEM HIGH_MEM AUTO");
     /*- The algorithm to handle (ia|bc) type integrals that used for (T) correction. -*/
-    options.add_str("TRIPLES_IABC_TYPE","AUTO","INCORE AUTO DIRECT");
+    options.add_str("TRIPLES_IABC_TYPE","DISK","INCORE AUTO DIRECT DISK");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
@@ -3106,7 +3090,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     .molden, and the prefix is determined by |globals__writer_file_label|
     (if set), or else by the name of the output file plus the name of
     the current molecule. -*/
-    options.add_bool("MOLDEN_WRITE", false);
+    options.add_bool("MOLDEN_WRITE",false);
+    /*- Do Cholesky decomposition of the ERI tensor -*/
+    options.add_bool("CHOLESKY",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
@@ -3198,13 +3184,23 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("COMPUTE_MP4_TRIPLES", false);
       /*- Do use MP2 NOs to truncate virtual space for QCISD/CCSD and (T)? -*/
       options.add_bool("NAT_ORBS", false);
-      /*- Cutoff for occupation of MP2 NO orbitals in FNO-QCISD/CCSD(T)
-          ( only valid if |fnocc__nat_orbs| = true ) -*/
+      /*- Cutoff for occupation of MP2 virtual NOs in FNO-QCISD/CCSD(T).  
+          Virtual NOs with occupations less than |fnocc__occ_tolerance| 
+          will be discarded. This option is only used if |fnocc__nat_orbs| = 
+          true. -*/
       options.add_double("OCC_TOLERANCE", 1.0e-6);
+      /*- Cutoff for occupation of MP2 virtual NOs in FNO-QCISD/CCSD(T).  
+          The number of virtual NOs is chosen so the occupation of the 
+          truncated virtual space is |fnocc__occ_percentage| percent of
+          occupation of the original MP2 virtual space. This option is only 
+          used if |fnocc__nat_orbs| = true. This keyword overrides 
+          |fnocc__occ_tolerance|. -*/
+      options.add_double("OCC_PERCENTAGE", 99.0);
       /*- An array containing the number of virtual natural orbitals per irrep
       (in Cotton order) so a user can specify the number of retained
       natural orbitals rather than determining them with |fnocc__occ_tolerance|.
-      This keyword overrides |fnocc__occ_tolerance|. -*/
+      This keyword overrides |fnocc__occ_tolerance| and 
+      |fnocc__occ_fraction|. -*/
       options.add("ACTIVE_NAT_ORBS", new ArrayType());
       /*- Do SCS-MP2? -*/
       options.add_bool("SCS_MP2", false);

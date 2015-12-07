@@ -94,11 +94,6 @@ void get_params(Options &options)
   params.convergence = options.get_double("R_CONVERGENCE");
   params.e_convergence = options.get_double("E_CONVERGENCE");
   params.restart = options.get_bool("RESTART");
-  /* If the MO orbital phases are screwed up, don't restart */
-  if(!moinfo.phase) params.restart = 0;
-  /* BUT, the user can force an override of the phase problem */
-  forceit = options.get_bool("FORCE_RESTART");
-  if(forceit) params.restart = 1;
 
   params.memory = Process::environment.get_memory();
 

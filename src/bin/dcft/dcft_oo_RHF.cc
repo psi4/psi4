@@ -31,8 +31,6 @@
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
-#include <libchkpt/chkpt.hpp>
 #include <libmints/mints.h>
 #include <psi4-dec.h>
 
@@ -91,19 +89,31 @@ DCFTSolver::run_simult_dcft_oo_RHF()
         }
         transform_tau_RHF();
 
-        // Copy core hamiltonian into the Fock matrix array: F = H
-        Fa_->copy(so_h_);
-        Fb_->copy(so_h_);
+        if(options_.get_str("DCFT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE"){
+            build_DF_tensors_RHF();
 
-        // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
-        process_so_ints_RHF();
+            SharedMatrix mo_h = SharedMatrix(new Matrix("MO-based H", nirrep_, nmopi_, nmopi_));
+            mo_h->copy(so_h_);
+            mo_h->transform(Ca_);
 
-        // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
-        Fa_->add(g_tau_a_);
-        // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
-        moFa_->copy(Fa_);
-        // Transform the Fock matrix to the MO basis
-        moFa_->transform(Ca_);
+            moFa_->copy(mo_h);
+            moFa_->add(mo_gbarGamma_A_);
+        }
+        else{
+            // Copy core hamiltonian into the Fock matrix array: F = H
+            Fa_->copy(so_h_);
+            Fb_->copy(so_h_);
+
+            // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
+            process_so_ints_RHF();
+
+            // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
+            Fa_->add(g_tau_a_);
+            // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
+            moFa_->copy(Fa_);
+            // Transform the Fock matrix to the MO basis
+            moFa_->transform(Ca_);
+        }
 
         // Compute new SCF energy
         compute_scf_energy_RHF();
@@ -200,6 +210,8 @@ DCFTSolver::run_simult_dcft_oo_RHF()
 
 double
 DCFTSolver::compute_orbital_residual_RHF() {
+    dcft_timer_on("DCFTSolver::compute_orbital_residual_RHF()");
+
     dpdfile2 Xai, Xia;
 
     // Compute the unrelaxed densities for the orbital gradient
@@ -237,6 +249,8 @@ DCFTSolver::compute_orbital_residual_RHF() {
     global_dpd_->file2_close(&Xai);
     global_dpd_->file2_close(&Xia);
 
+    dcft_timer_off("DCFTSolver::compute_orbital_residual_RHF()");
+
     return maxGradient;
 }
 
@@ -270,7 +284,7 @@ DCFTSolver::compute_orbital_gradient_OV_RHF() {
 
     // Compute contributions from VVVV density
     // 1. X_ia <-- <ib||cd> tau_ca tau_db
-    dcft_timer_on("Timing::g_IbCd tau_CA tau_DB");
+    dcft_timer_on("DCFTSolver::g_IbCd tau_CA tau_DB");
     global_dpd_->file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
 
     // Alpha contribution X_IA
@@ -294,7 +308,7 @@ DCFTSolver::compute_orbital_gradient_OV_RHF() {
 
     global_dpd_->file2_close(&Y2_OV);
     global_dpd_->file2_close(&T_VV);
-    dcft_timer_off("Timing::g_IbCd tau_CA tau_DB");
+    dcft_timer_off("DCFTSolver::g_IbCd tau_CA tau_DB");
 
     // 2. X_ia <-- 1/4 <ib||cd> lambda_abkl lambda_klcd
 
@@ -350,7 +364,7 @@ DCFTSolver::compute_orbital_gradient_OV_RHF() {
     //
 
     // X_IA += <BI||JK> Г_BAJK
-    dcft_timer_on("Timing::g_BiJk Gamma_BaJk");
+    dcft_timer_on("DCFTSolver::g_BiJk Gamma_BaJk");
     global_dpd_->file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"),
                   ID("[O,V]"), ID("[O,O]"), 1, "MO Ints <OV|OO>");
@@ -361,10 +375,10 @@ DCFTSolver::compute_orbital_gradient_OV_RHF() {
     global_dpd_->buf4_close(&G);
     global_dpd_->buf4_close(&I);
     global_dpd_->file2_close(&X);
-    dcft_timer_off("Timing::g_BiJk Gamma_BaJk");
+    dcft_timer_off("DCFTSolver::g_BiJk Gamma_BaJk");
 
     // X_IA += 2 * <Ib|Jk> Г_AbJk
-    dcft_timer_on("Timing::g_IbJk Gamma_AbJk");
+    dcft_timer_on("DCFTSolver::g_IbJk Gamma_AbJk");
     global_dpd_->file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"),
                   ID("[O,V]"), ID("[O,O]"), 0, "MO Ints <OV|OO>"); // MO Ints <Ov|Oo>
@@ -375,14 +389,14 @@ DCFTSolver::compute_orbital_gradient_OV_RHF() {
     global_dpd_->buf4_close(&G);
     global_dpd_->buf4_close(&I);
     global_dpd_->file2_close(&X);
-    dcft_timer_off("Timing::g_IbJk Gamma_AbJk");
+    dcft_timer_off("DCFTSolver::g_IbJk Gamma_AbJk");
 
     //
     // <OO||OV> Г_OVOV
     //
 
     // X_IA += <JB||KI> Г_JBKA
-    dcft_timer_on("Timing::g_JbKi Gamma_JbKa");
+    dcft_timer_on("DCFTSolver::g_JbKi Gamma_JbKa");
     global_dpd_->file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"),
                   ID("[O,V]"), ID("[O,O]"), 1, "MO Ints <OV|OO>");
@@ -393,7 +407,7 @@ DCFTSolver::compute_orbital_gradient_OV_RHF() {
     global_dpd_->buf4_close(&G);
     global_dpd_->buf4_close(&I);
     global_dpd_->file2_close(&X);
-    dcft_timer_off("Timing::g_JbKi Gamma_JbKa");
+    dcft_timer_off("DCFTSolver::g_JbKi Gamma_JbKa");
 
     // X_IA += <kB|jI> Г_kBjA
     global_dpd_->file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
@@ -468,7 +482,7 @@ DCFTSolver::compute_orbital_gradient_VO_RHF() {
     //
 
     // X_AI += 2 * <AJ||KL> Г_IJKL
-    dcft_timer_on("Timing::2 * g_AjKl Gamma_IjKl");
+    dcft_timer_on("DCFTSolver::2 * g_AjKl Gamma_IjKl");
     global_dpd_->file2_init(&X, PSIF_DCFT_DPD, 0, ID('V'), ID('O'), "X <V|O>");
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"),
                   ID("[O,V]"), ID("[O,O]"), 1, "MO Ints <OV|OO>");
@@ -479,7 +493,7 @@ DCFTSolver::compute_orbital_gradient_VO_RHF() {
     global_dpd_->buf4_close(&G);
     global_dpd_->buf4_close(&I);
     global_dpd_->file2_close(&X);
-    dcft_timer_off("Timing::2 * g_AjKl Gamma_IjKl");
+    dcft_timer_off("DCFTSolver::2 * g_AjKl Gamma_IjKl");
 
     // X_AI += 4 * <Aj|Kl> Г_IjKl
     global_dpd_->file2_init(&X, PSIF_DCFT_DPD, 0, ID('V'), ID('O'), "X <V|O>");
@@ -498,7 +512,7 @@ DCFTSolver::compute_orbital_gradient_VO_RHF() {
     //
 
     // X_AI += <JA||BC> Г_JIBC
-    dcft_timer_on("Timing::2 * g_JaBc Gamma_JiBc");
+    dcft_timer_on("DCFTSolver::2 * g_JaBc Gamma_JiBc");
     global_dpd_->file2_init(&X, PSIF_DCFT_DPD, 0, ID('V'), ID('O'), "X <V|O>");
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
                   ID("[O,V]"), ID("[V,V]"), 1, "MO Ints <OV|VV>");
@@ -509,7 +523,7 @@ DCFTSolver::compute_orbital_gradient_VO_RHF() {
     global_dpd_->buf4_close(&G);
     global_dpd_->buf4_close(&I);
     global_dpd_->file2_close(&X);
-    dcft_timer_off("Timing::2 * g_JaBc Gamma_JiBc");
+    dcft_timer_off("DCFTSolver::2 * g_JaBc Gamma_JiBc");
 
     // X_AI += <Aj|Bc> Г_IjBc
     global_dpd_->file2_init(&X, PSIF_DCFT_DPD, 0, ID('V'), ID('O'), "X <V|O>");
@@ -528,7 +542,7 @@ DCFTSolver::compute_orbital_gradient_VO_RHF() {
     //
 
     // X_AI += <JB||AC> Г_JBIC
-    dcft_timer_on("Timing::g_JbAc Gamma_JbIc");
+    dcft_timer_on("DCFTSolver::g_JbAc Gamma_JbIc");
     global_dpd_->file2_init(&X, PSIF_DCFT_DPD, 0, ID('V'), ID('O'), "X <V|O>");
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
                   ID("[O,V]"), ID("[V,V]"), 1, "MO Ints <OV|VV>");
@@ -539,7 +553,7 @@ DCFTSolver::compute_orbital_gradient_VO_RHF() {
     global_dpd_->buf4_close(&G);
     global_dpd_->buf4_close(&I);
     global_dpd_->file2_close(&X);
-    dcft_timer_off("Timing::g_JbAc Gamma_JbIc");
+    dcft_timer_off("DCFTSolver::g_JbAc Gamma_JbIc");
 
     // X_AI += <Jb|Ac> Г_JbIc
     global_dpd_->file2_init(&X, PSIF_DCFT_DPD, 0, ID('V'), ID('O'), "X <V|O>");
@@ -573,6 +587,9 @@ DCFTSolver::compute_orbital_gradient_VO_RHF() {
 
 void
 DCFTSolver::compute_orbital_rotation_jacobi_RHF() {
+
+    dcft_timer_on("DCFTSolver::ccompute_orbital_rotation_jacobi_RHF()");
+
     // Determine the orbital rotation step
     // Alpha spin
     for(int h = 0; h < nirrep_; ++h){
@@ -590,10 +607,15 @@ DCFTSolver::compute_orbital_rotation_jacobi_RHF() {
 
     // Copy alpha case to beta case
     Xtotal_b_->copy(Xtotal_a_);
+
+    dcft_timer_off("DCFTSolver::ccompute_orbital_rotation_jacobi_RHF()");
 }
 
 void
 DCFTSolver::rotate_orbitals_RHF() {
+
+    dcft_timer_on("DCFTSolver::rotate_orbitals_RHF()");
+
     // Initialize the orbital rotation matrix
     SharedMatrix U_a(new Matrix("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_));
 
@@ -624,6 +646,9 @@ DCFTSolver::rotate_orbitals_RHF() {
 
     // Copy alpha case to beta case
     Cb_->copy(Ca_);
+
+    dcft_timer_off("DCFTSolver::rotate_orbitals_RHF()");
+
 }
 
 }} // Namespace

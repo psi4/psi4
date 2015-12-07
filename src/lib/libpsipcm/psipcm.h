@@ -28,6 +28,8 @@
 #include <libpsio/psio.h>
 #include <boost/shared_ptr.hpp>
 
+#include "pcmsolver.h"
+
 namespace boost {
 template<class T> class shared_ptr;
 }
@@ -79,6 +81,9 @@ class PCM {
 
     /// Factory for the electrostatic integrals
     PCMPotentialInt* potential_int_;
+
+    /// Handle to stuff provided by PCMSolver
+    pcmsolver_context_t * context_;
 
     /// print level
     int pcm_print_;

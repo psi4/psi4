@@ -30,7 +30,6 @@
 #include <libpsi4util/libpsi4util.h>
 #include <liboptions/liboptions.h>
 #include <boost/shared_ptr.hpp>
-#include <libchkpt/chkpt.hpp>
 #include <psi4-dec.h>
 
 #include "mrcc.h"

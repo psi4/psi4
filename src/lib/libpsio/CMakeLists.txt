@@ -1,6 +1,6 @@
 set(headers_list "")
 # List of headers
-list(APPEND headers_list StringArray.h aiohandler.h MOFile.h BinaryFile.h psio.h config.h )
+list(APPEND headers_list StringArray.h aiohandler.h MOFile.h BinaryFile.h psio.h config.h psio.hpp )
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
@@ -22,10 +22,6 @@ else()
    list(REMOVE_ITEM sources_list "tocdel.cc")
 endif()
 
-# Write list of files to be passed to cloc for counting lines of code.
-# Only files that are actually compiled are counted.
-set(to_count "${sources_list}" "${headers_list}")
-write_to_cloc_list("${to_count}")
 
 # Build static library
 add_library(psio STATIC ${sources_list})

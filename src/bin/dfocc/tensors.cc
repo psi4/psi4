@@ -25,6 +25,7 @@
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
+#include <libpsio/psio.h>
 #include <libiwl/iwl.hpp>
 #include "tensors.h"
 #include "libparallel/ParallelPrinter.h"
@@ -1869,6 +1870,17 @@ void Tensor2d::write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
+void Tensor2d::write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end)
+{
+    // Check to see if the file is open
+    bool already_open = false;
+    if (psio->open_check(fileno)) already_open = true;
+    else psio->open(fileno, PSIO_OPEN_OLD);
+    ULI size_ = (ULI)dim1_*dim2_*sizeof(double);
+    psio->write(fileno, const_cast<char*>(name_.c_str()), (char*)A2d_[0], size_, start, end);
+    if (!already_open) psio->close(fileno, 1);     // Close and keep
+}//
+
 void Tensor2d::write(psi::PSIO* const psio, unsigned int fileno)
 {
     // Check to see if the file is open
@@ -1879,9 +1891,25 @@ void Tensor2d::write(psi::PSIO* const psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
+void Tensor2d::write(psi::PSIO* const psio, unsigned int fileno, psio_address start, psio_address *end)
+{
+    // Check to see if the file is open
+    bool already_open = false;
+    if (psio->open_check(fileno)) already_open = true;
+    else psio->open(fileno, PSIO_OPEN_OLD);
+    ULI size_ = (ULI)dim1_*dim2_*sizeof(double);
+    psio->write(fileno, const_cast<char*>(name_.c_str()), (char*)A2d_[0], size_, start, end);
+    if (!already_open) psio->close(fileno, 1);     // Close and keep
+}//
+
 void Tensor2d::write(psi::PSIO& psio, unsigned int fileno)
 {
     write(&psio, fileno);
+}//
+
+void Tensor2d::write(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end)
+{
+    write(&psio, fileno, start, end);
 }//
 
 void Tensor2d::write(boost::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno)
@@ -2032,6 +2060,17 @@ void Tensor2d::read(psi::PSIO* psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
+void Tensor2d::read(psi::PSIO* psio, unsigned int fileno, psio_address start, psio_address *end)
+{
+    // Check to see if the file is open
+    bool already_open = false;
+    if (psio->open_check(fileno)) already_open = true;
+    else psio->open(fileno, PSIO_OPEN_OLD);
+    ULI size_ = (ULI)dim1_*dim2_*sizeof(double);
+    psio->read(fileno, const_cast<char*>(name_.c_str()), (char*)A2d_[0], size_, start, end);
+    if (!already_open) psio->close(fileno, 1);     // Close and keep
+}
+
 void Tensor2d::read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
 {
     // Check to see if the file is open
@@ -2042,9 +2081,25 @@ void Tensor2d::read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
+void Tensor2d::read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end)
+{
+    // Check to see if the file is open
+    bool already_open = false;
+    if (psio->open_check(fileno)) already_open = true;
+    else psio->open(fileno, PSIO_OPEN_OLD);
+    ULI size_ = (ULI)dim1_*dim2_*sizeof(double);
+    psio->read(fileno, const_cast<char*>(name_.c_str()), (char*)A2d_[0], size_, start, end);
+    if (!already_open) psio->close(fileno, 1);     // Close and keep
+}
+
 void Tensor2d::read(psi::PSIO& psio, unsigned int fileno)
 {
     read(&psio, fileno);
+}//
+
+void Tensor2d::read(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end)
+{
+    read(&psio, fileno, start, end);
 }//
 
 void Tensor2d::read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm)
@@ -2215,6 +2270,111 @@ void Tensor2d::load(psi::PSIO& psio, unsigned int fileno, string name, int d1,in
 {
     init(name,d1,d2);
     read(&psio, fileno);
+}//
+
+void Tensor2d::mywrite(const string& filename)
+{
+      // write binary data
+      ofstream OutFile;
+      OutFile.open(const_cast<char*>(filename.c_str()), ios::out | ios::binary);
+      OutFile.write((char*)A2d_[0], dim1_*dim2_*sizeof(double));
+      OutFile.close();
+}//
+
+void Tensor2d::mywrite(int fileno)
+{
+      ostringstream convert;
+      convert << fileno;
+      std::string scr = PSIOManager::shared_object()->get_default_path();
+      std::string pid_ = psio_getpid();
+      //std::string fname = scr + "psi_dfocc." + convert.str();
+      std::string fname = scr + "psi." + pid_  + "." + convert.str();
+
+      // write binary data
+      ofstream OutFile;
+      OutFile.open(const_cast<char*>(fname.c_str()), ios::out | ios::binary);
+      OutFile.write((char*)A2d_[0], dim1_*dim2_*sizeof(double));
+      OutFile.close();
+}//
+
+void Tensor2d::mywrite(int fileno, bool append)
+{
+      ostringstream convert;
+      convert << fileno;
+      std::string scr = PSIOManager::shared_object()->get_default_path();
+      std::string pid_ = psio_getpid();
+      //std::string fname = scr + "psi_dfocc." + convert.str();
+      std::string fname = scr + "psi." + pid_  + "." + convert.str();
+
+      // write binary data
+      ofstream OutFile;
+      if (append) OutFile.open(const_cast<char*>(fname.c_str()), ios::out | ios::binary | ios::app);
+      else OutFile.open(const_cast<char*>(fname.c_str()), ios::out | ios::binary);
+      OutFile.write((char*)A2d_[0], dim1_*dim2_*sizeof(double));
+      OutFile.close();
+}//
+
+void Tensor2d::myread(const string& filename)
+{
+      // read binary data
+      ifstream InFile;
+      InFile.open(const_cast<char*>(filename.c_str()), ios::in | ios::binary);
+      InFile.read((char*)A2d_[0], dim1_*dim2_*sizeof(double));
+      InFile.close();
+
+}//
+
+void Tensor2d::myread(int fileno)
+{
+      ostringstream convert;
+      convert << fileno;
+      std::string scr = PSIOManager::shared_object()->get_default_path();
+      std::string pid_ = psio_getpid();
+      //std::string fname = scr + "psi_dfocc." + convert.str();
+      std::string fname = scr + "psi." + pid_  + "." + convert.str();
+
+      // read binary data
+      ifstream InFile;
+      InFile.open(const_cast<char*>(fname.c_str()), ios::in | ios::binary);
+      InFile.read((char*)A2d_[0], dim1_*dim2_*sizeof(double));
+      InFile.close();
+
+}//
+
+void Tensor2d::myread(int fileno, bool append)
+{
+      ostringstream convert;
+      convert << fileno;
+      std::string scr = PSIOManager::shared_object()->get_default_path();
+      std::string pid_ = psio_getpid();
+      //std::string fname = scr + "psi_dfocc." + convert.str();
+      std::string fname = scr + "psi." + pid_  + "." + convert.str();
+
+      // read binary data
+      ifstream InFile;
+      if (append) InFile.open(const_cast<char*>(fname.c_str()), ios::in | ios::binary | ios::app);
+      else InFile.open(const_cast<char*>(fname.c_str()), ios::in | ios::binary);
+      InFile.read((char*)A2d_[0], dim1_*dim2_*sizeof(double));
+      InFile.close();
+
+}//
+
+void Tensor2d::myread(int fileno, ULI start)
+{
+      ostringstream convert;
+      convert << fileno;
+      std::string scr = PSIOManager::shared_object()->get_default_path();
+      std::string pid_ = psio_getpid();
+      std::string fname = scr + "psi." + pid_  + "." + convert.str();
+      //std::string fname = scr + "psi_dfocc." + convert.str();
+
+      // read binary data
+      ifstream InFile;
+      InFile.open(const_cast<char*>(fname.c_str()), ios::in | ios::binary);
+      InFile.seekg(start, ios::beg);
+      InFile.read((char*)A2d_[0], dim1_*dim2_*sizeof(double));
+      InFile.close();
+
 }//
 
 double **Tensor2d::to_block_matrix()

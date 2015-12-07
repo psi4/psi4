@@ -32,7 +32,6 @@ struct MOInfo {
   int nmo;               /* no. of molecular orbitals */
   int nso;               /* no. of symmetry orbitals */
   int iopen;             /* 0=closed shell; >0=open shell */
-  int phase;             /* Boolean for consistency of orbital phases */
   int *sopi;             /* no. of SOs per irrep */
   int *sosym;            /* orbital symmetry (Pitzer/SO) */
   int *orbspi;           /* no. of MOs per irrep */
@@ -66,7 +65,7 @@ struct MOInfo {
   int *bvir_off;      /* beta virtual orbital offsets within each irrep */
   double conv;           /* Current convergence level */
   double enuc;           /* Nuclear repulsion energy */
-  double escf;           /* SCF energy (from chkpt) */
+  double escf;           /* SCF energy (from wfn) */
   double eref;           /* Reference energy (file100) */
   double ecc;            /* Current coupled cluster energy */
   double t1diag;         /* Standard open- or closed-shell T1 diagnostic */

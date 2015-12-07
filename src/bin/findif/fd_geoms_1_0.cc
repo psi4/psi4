@@ -27,6 +27,8 @@
 */
 
 #include "findif.h"
+#include <liboptions/liboptions_python.h>
+
 
 namespace psi { namespace findif {
 
@@ -52,7 +54,10 @@ std::vector< SharedMatrix > fd_geoms_1_0(Options &options) {
 
   // Get SALCS from libmints
   boost::shared_ptr<MatrixFactory> fact;
-  CdSalcList cdsalc(mol, fact, 0x1, true, true);
+  boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();
+  boost::shared_ptr<ExternalPotential> external = boost::python::extract<boost::shared_ptr<ExternalPotential> >(pyExtern);
+  bool noextern = external ? false : true;
+  CdSalcList cdsalc(mol, fact, 0x1, noextern, noextern);
 
   int Nsalc = cdsalc.ncd();
   outfile->Printf("\tNumber of symmetric SALC's is %d.\n", Nsalc);

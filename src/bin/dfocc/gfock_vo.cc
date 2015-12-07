@@ -259,8 +259,8 @@ else if (reference_ == "UNRESTRICTED") {
     //=========================
     GFvoA->zero();
     GFvoB->zero();
-    GFvoA->copy(FvoA);
-    GFvoB->copy(FvoB);
+    GFvoA->axpy(FvoA, 1.0);
+    GFvoB->axpy(FvoB, 1.0);
 
     //=========================
     // Correlation Contribution
@@ -269,11 +269,17 @@ else if (reference_ == "UNRESTRICTED") {
     // F_AI = \sum_{M} h_AM G_Mi
     GFvoA->gemm(false, false, HvoA, G1c_ooA, 1.0, 1.0);
 
- if (reference == "ROHF" && orb_opt_ == "FALSE") {
-    // Fai = \sum_{e} h_ae G_ei
+    // F_AI = \sum_{E} h_AE G_EI
     GFvoA->gemm(false, false, HvvA, G1c_voA, 1.0, 1.0);
-    GFvoB->gemm(false, false, HvvB, G1c_voB, 1.0, 1.0);
- }
+
+    // F_AI += \sum_{Q} \sum_{M} G_MI^Q b_MA^Q 
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA * noccA));
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
+    G->read(psio_, PSIF_DFOCC_DENS);
+    K->read(psio_, PSIF_DFOCC_INTS);
+    GFvoA->contract(true, false, nvirA, noccA, nQ * noccA, K, G, 1.0, 1.0);
+    G.reset();
+    K.reset();
 
     // F_AI += \sum_{Q} \sum_{E} G_IE^Q b_AE^Q = \sum_{E} G_EI^Q b_EA^Q
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VO)", nQ, nvirA, noccA));
@@ -286,6 +292,18 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Fai = \sum_{m} h_am G_mi
     GFvoB->gemm(false, false, HvoB, G1c_ooB, 1.0, 1.0);
+
+    // Fai = \sum_{e} h_ae G_ei
+    GFvoB->gemm(false, false, HvvB, G1c_voB, 1.0, 1.0);
+
+    // Fai += \sum_{Q} \sum_{m} G_mi^Q b_ma^Q 
+    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|oo)", nQ, noccB * noccB));
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB));
+    G->read(psio_, PSIF_DFOCC_DENS);
+    K->read(psio_, PSIF_DFOCC_INTS);
+    GFvoB->contract(true, false, nvirB, noccB, nQ * noccB, K, G, 1.0, 1.0);
+    G.reset();
+    K.reset();
 
     // Fai += \sum_{Q} \sum_{e} G_ie^Q b_ae^Q = \sum_{e} G_ei^Q b_ea^Q
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|vo)", nQ, nvirB, noccB));

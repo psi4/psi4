@@ -30,7 +30,6 @@
 #include <cstring>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
 #include <liboptions/liboptions.h>
 #include "psi4-dec.h"
 #include "libmints/wavefunction.h"
@@ -54,11 +53,9 @@ void get_moinfo(Options &options)
 {
     int i, h, errcod, nactive, nirreps;
     std::string junk;
-    chkpt_init(PSIO_OPEN_OLD);
     boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
-    moinfo.iopen = chkpt_rd_iopen();
     moinfo.labels = wfn->molecule()->irrep_labels();
     moinfo.enuc = wfn->molecule()->nuclear_repulsion_energy();
     if(wfn->reference_wavefunction())
@@ -70,8 +67,6 @@ void get_moinfo(Options &options)
     moinfo.clsdpi = init_int_array(moinfo.nirreps);
     for(int h = 0; h < moinfo.nirreps; ++h)
         moinfo.clsdpi[h] = wfn->doccpi()[h];
-    moinfo.phase = chkpt_rd_phase_check();
-    chkpt_close();
 
     nirreps = moinfo.nirreps;
 
@@ -216,8 +211,8 @@ void get_moinfo(Options &options)
     psio_read_entry(PSIF_CC_INFO, "CCSD Energy", (char *) &(moinfo.ecc),
                     sizeof(double));
 
-    outfile->Printf("\n\tNuclear Rep. energy (chkpt)   = %20.15f\n",moinfo.enuc);
-    outfile->Printf(  "\tSCF energy          (chkpt)   = %20.15f\n",moinfo.escf);
+    outfile->Printf("\n\tNuclear Rep. energy (wfn)     = %20.15f\n",moinfo.enuc);
+    outfile->Printf(  "\tSCF energy          (wfn)     = %20.15f\n",moinfo.escf);
     outfile->Printf(  "\tReference energy    (file100) = %20.15f\n",moinfo.eref);
     outfile->Printf(  "\tCCSD energy         (file100) = %20.15f\n",moinfo.ecc);
     outfile->Printf(  "\tTotal CCSD energy   (file100) = %20.15f\n",
