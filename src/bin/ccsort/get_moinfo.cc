@@ -88,7 +88,7 @@ void get_moinfo(void)
     moinfo.sopi = wfn->nsopi();
     moinfo.orbspi = wfn->nmopi();
     moinfo.openpi = wfn->soccpi();
-    // Why copy this one ?
+    // We copy this one because we modify its contents
     moinfo.clsdpi = init_int_array(moinfo.nirreps);
     for(int h = 0; h < moinfo.nirreps; ++h)
         moinfo.clsdpi[h] = wfn->doccpi()[h];
