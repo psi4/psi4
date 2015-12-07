@@ -27,6 +27,7 @@ A complete list of standard keywords is provided in Appendix
    detci
    sapt
    adc
+   relativistic
    optking
    oeprop
 
