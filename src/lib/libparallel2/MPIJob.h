@@ -34,7 +34,7 @@ namespace psi {
  *  some key terms.  To facilitate this, let  us work with a concrete
  *  parallel problem, namely let's assume we are parallelizing the
  *  calculation of an interaction energy between a water molecule, and a
- *  chloride ion, by giving each of the 3 calculations to it's own MPI
+ *  chloride ion, by giving each of the 3 calculations to its own MPI
  *  processes.  Then we define:
  *
  *  - Task:the series of commands that we are actually performing in parallel.

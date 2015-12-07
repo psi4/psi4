@@ -35,7 +35,6 @@
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libdpd/dpd.h>
-#include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
 #include <physconst.h>
 #include <psifiles.h>

@@ -134,10 +134,15 @@ class IRC_DATA {
         return steps.back()->g_coord_step() + 1;
     }
 
-    double g_energy(void) const
-    {
-      return steps[steps.size()-1]->g_energy();
-    }
+    int g_coord_step(void)  { return coord_step;  }
+    int g_sphere_step(void) { return sphere_step; }
+    double g_arc_dist(void) { return arc_dist;    }
+
+    double g_energy(void)    const { return steps.back()->g_energy()   ; }
+    double g_step_dist(void) const { return steps.back()->g_step_dist(); }
+    double g_arc_dist(void)  const { return steps.back()->g_arc_dist() ; }
+    double g_line_dist(void) const { return steps.back()->g_line_dist(); }
+
     double *g_q_pivot(void) const
     {
       return steps[steps.size()-1]->g_q_pivot();

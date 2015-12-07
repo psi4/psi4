@@ -30,7 +30,6 @@
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
 #include <libiwl/iwl.h>
-#include <libchkpt/chkpt.h>
 #include <exception.h>
 #define EXTERN
 #include "globals.h"
@@ -40,9 +39,11 @@
 #include <libmints/matrix.h>
 #include <libmints/vector.h>
 
+// This code is no longer used.  -TDC 12/2015
+
 /*
 ** semicanonical_fock(): Compute the alpha- and beta-spin Fock
-** matrices using the ROHF orbitals from the chkpt file and
+** matrices using the ROHF orbitals from the wfn and
 ** diagonalize the occ-occ and vir-vir blocks to form semicanonical
 ** orbitals, which are written in the checkpoint file for the
 ** subsequent transformation.  These orbitals are required for
@@ -73,7 +74,7 @@ void semicanonical_fock(void)
   nmo = moinfo.nmo;
 
   /* Write Semicanonical Alpha and Beta Fock Matrix Eigenvectors
-     and Eigenvalues to the Checkpoint File */
+     and Eigenvalues to the Wfn */
 
   Process::environment.wavefunction()->semicanonicalize();
 
@@ -85,13 +86,6 @@ void semicanonical_fock(void)
   beta_evals = init_array(nmo);
   alpha_evals = Process::environment.wavefunction()->epsilon_a()->to_block_vector();
   beta_evals = Process::environment.wavefunction()->epsilon_b()->to_block_vector();
-
-  chkpt_init(PSIO_OPEN_OLD);
-  chkpt_wt_alpha_evals(alpha_evals);
-  chkpt_wt_beta_evals(beta_evals);
-  chkpt_wt_alpha_scf(C_a);
-  chkpt_wt_beta_scf(C_b);
-  chkpt_close();
 
   if(params.print_lvl > 2) {
     outfile->Printf( "\nAlpha Eigenvalues\n");

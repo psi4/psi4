@@ -27,6 +27,8 @@
 */
 
 #include "findif.h"
+#include <liboptions/liboptions_python.h>
+
 
 namespace psi { namespace findif {
 
@@ -49,7 +51,10 @@ std::vector< SharedMatrix > fd_geoms_freq_1(Options &options, int freq_irrep_onl
 
   // Get SALCS from libmints: all modes with rotations and translations projected out
   boost::shared_ptr<MatrixFactory> fact;
-  CdSalcList salc_list(mol, fact);
+  boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();
+  boost::shared_ptr<ExternalPotential> external = boost::python::extract<boost::shared_ptr<ExternalPotential> >(pyExtern);
+  bool noextern = external ? false : true;
+  CdSalcList salc_list(mol, fact, 0xFF, noextern, noextern);
 
   int Natom = mol->natom();
   outfile->Printf("\tNumber of atoms is %d.\n", Natom);

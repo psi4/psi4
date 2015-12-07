@@ -23,8 +23,8 @@
 /*
  *  sad.cc
  *
- * Routines for the high-meantenance SAD guess
- * and daul-basis projections
+ * Routines for the high-maintenance SAD guess
+ * and dual-basis projections
  *
  */
 
@@ -48,7 +48,6 @@
 
 #include "hf.h"
 #include "sad.h"
-#include "../libPsiUtil/Exception2.h"
 
 using namespace boost;
 using namespace std;
@@ -75,7 +74,7 @@ void SADGuess::common_init()
     print_ = options_.get_int("SAD_PRINT");
     debug_ = options_.get_int("DEBUG");
     if(options_["SOCC"].size()>0||options_["DOCC"].size()>0)
-       PSIERROR("SAD guess not implemented for user-specified SOCCs and/or DOCCs yet");
+       PSIEXCEPTION("SAD guess not implemented for user-specified SOCCs and/or DOCCs yet");
 }
 void SADGuess::compute_guess()
 {
@@ -193,7 +192,7 @@ SharedMatrix SADGuess::form_D_AO()
         if (print_>1)
             outfile->Printf("  Atom %d, Z = %d, nelec = %d, nhigh = %d, nalpha = %d, nbeta = %d\n",A,Z,nelec[A],nhigh[A],nalpha[A],nbeta[A]);
     }
-    
+
 
     // Determine redundant atoms
     int* unique_indices = init_int_array(molecule_->natom()); // All atoms to representative unique atom
@@ -260,7 +259,7 @@ SharedMatrix SADGuess::form_D_AO()
     if (print_)
         outfile->Printf("\n");
 
-    
+
 
     //Add atomic_D into D (scale by 1/2, we like effective pairs)
     SharedMatrix DAO = SharedMatrix(new Matrix("D_SAD (AO)", basis_->nbf(), basis_->nbf()));
@@ -453,7 +452,7 @@ void SADGuess::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, i
     if (print_>1) {
         outfile->Printf( "\n  Initial Atomic UHF Energy:    %14.10f\n\n",E);
         outfile->Printf( "                                         Total Energy            Delta E              Density RMS\n\n");
-        
+
     }
     do {
 
@@ -659,7 +658,7 @@ void HF::compute_SAD_guess()
         soccpi_[h]   = 0;
     }
 
-    
+
 
     E_ = 0.0; // This is the -1th iteration
 }

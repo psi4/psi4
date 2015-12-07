@@ -31,6 +31,8 @@
 #include <boost/python/list.hpp>
 #include <libmints/writer_file_prefix.h>
 #include "libparallel/ParallelPrinter.h"
+#include <liboptions/liboptions_python.h>
+
 using namespace boost;
 using namespace boost::python;
 
@@ -46,7 +48,10 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   int Natom = mol->natom();
   boost::shared_ptr<MatrixFactory> fact;
-  CdSalcList salc_list(mol, fact);
+  boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();
+  boost::shared_ptr<ExternalPotential> external = boost::python::extract<boost::shared_ptr<ExternalPotential> >(pyExtern);
+  bool noextern = external ? false : true;
+  CdSalcList salc_list(mol, fact, 0xFF, noextern, noextern);
   int Nirrep = salc_list.nirrep();
 
   // *** Build vectors that list indices of salcs for each irrep
@@ -414,7 +419,7 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
   // Print a hessian file
   if ( options.get_bool("HESSIAN_WRITE") ) {
     std::string hess_fname = get_writer_file_prefix() + ".hess";
-    boost::shared_ptr<OutFile> printer(new OutFile(hess_fname,APPEND));
+    boost::shared_ptr<OutFile> printer(new OutFile(hess_fname,TRUNCATE));
     //FILE *of_Hx = fopen(hess_fname.c_str(),"w");
     printer->Printf("%5d", Natom);
     printer->Printf("%5d\n", 6*Natom);

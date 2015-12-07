@@ -26,15 +26,14 @@ else()
    list(REMOVE_ITEM sources_list "")
 endif()
 
-# Write list of files to be passed to cloc for counting lines of code.
-# Only files that are actually compiled are counted.
-set(to_count "${sources_list}" "${headers_list}")
-write_to_cloc_list("${to_count}")
 
 # Build static library
 add_library(scf_solver STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 add_dependencies(scf_solver mints)
+if(ENABLE_PCMSOLVER)
+   add_dependencies(scf_solver psipcm)
+endif()
 if(BUILD_JK_FACTORY)
   add_dependencies(scf_solver GTFockInt GTFockCInt)
 endif()

@@ -27,7 +27,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.h>
 #include <psi4-dec.h>
 #include <libmints/wavefunction.h>
 #include <libmints/molecule.h>
@@ -56,13 +55,13 @@ void get_moinfo(void)
     psio_address next;
 
     boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-    chkpt_init(PSIO_OPEN_OLD);
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
     moinfo.nso = wfn->nso();
-    moinfo.iopen = chkpt_rd_iopen();
+    moinfo.iopen = 0;
+    for(int h=0; h < moinfo.nirreps; h++)
+      moinfo.iopen += wfn->nsopi()[h];
     moinfo.irr_labs = wfn->molecule()->irrep_labels();
-    moinfo.irr_labs_lowercase = chkpt_rd_irr_labs_lowercase();
     moinfo.enuc = wfn->molecule()->nuclear_repulsion_energy();
     if(wfn->reference_wavefunction())
         moinfo.escf = wfn->reference_wavefunction()->reference_energy();
@@ -75,8 +74,6 @@ void get_moinfo(void)
     for(int h = 0; h < moinfo.nirreps; ++h)
         moinfo.clsdpi[h] = wfn->doccpi()[h];
     moinfo.openpi = wfn->soccpi();
-    moinfo.phase = chkpt_rd_phase_check();
-    chkpt_close();
 
     sym = 0;
     for (i=0;i<moinfo.nirreps;++i)
@@ -85,6 +82,15 @@ void get_moinfo(void)
     moinfo.sym = sym;
 
     nirreps = moinfo.nirreps;
+
+    moinfo.irr_labs_lowercase = (char **) malloc(sizeof(char *) * nirreps);
+    for(i=0; i < nirreps; i++) {
+      moinfo.irr_labs_lowercase[i] = (char *) malloc(4 * sizeof(char));
+      moinfo.irr_labs_lowercase[i][0] = std::tolower(moinfo.irr_labs[i][0]);
+      moinfo.irr_labs_lowercase[i][1] = std::tolower(moinfo.irr_labs[i][1]);
+      moinfo.irr_labs_lowercase[i][2] = std::tolower(moinfo.irr_labs[i][2]);
+      moinfo.irr_labs_lowercase[i][3] = '\0';
+    }
 
     psio_read_entry(PSIF_CC_INFO, "Reference Wavefunction", (char *) &(params.ref),
                     sizeof(int));
@@ -233,8 +239,8 @@ void get_moinfo(void)
     psio_read_entry(PSIF_CC_INFO, "Reference Energy", (char *) &(moinfo.eref),
                     sizeof(double));
 
-    outfile->Printf("\n\tNuclear Rep. energy (chkpt)   = %20.15f\n",moinfo.enuc);
-    outfile->Printf(  "\tSCF energy          (chkpt)   = %20.15f\n",moinfo.escf);
+    outfile->Printf("\n\tNuclear Rep. energy (wfn)     = %20.15f\n",moinfo.enuc);
+    outfile->Printf(  "\tSCF energy          (wfn)     = %20.15f\n",moinfo.escf);
     outfile->Printf(  "\tReference energy    (file100) = %20.15f\n",moinfo.eref);
 
     

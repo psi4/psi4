@@ -28,7 +28,6 @@
 #include <cstdlib>
 #include <cmath>
 #include <libdpd/dpd.h>
-#include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
 #include "MOInfo.h"
 #define EXTERN

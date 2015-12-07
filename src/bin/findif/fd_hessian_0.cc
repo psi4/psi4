@@ -31,6 +31,8 @@
 #include <boost/python/list.hpp>
 #include <libmints/writer_file_prefix.h>
 #include "libparallel/ParallelPrinter.h"
+#include <liboptions/liboptions_python.h>
+
 using namespace boost::python;
 
 #include <physconst.h>
@@ -53,7 +55,10 @@ PsiReturnType fd_hessian_0(Options &options, const boost::python::list& E_list)
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   boost::shared_ptr<MatrixFactory> fact;
   // do all for now at least
-  CdSalcList salc_list(mol, fact, 0xFF, true, true);
+  boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();
+  boost::shared_ptr<ExternalPotential> external = boost::python::extract<boost::shared_ptr<ExternalPotential> >(pyExtern);
+  bool noextern = external ? false : true;
+  CdSalcList salc_list(mol, fact, 0xFF, noextern, noextern);
 
   int Natom = mol->natom();
   outfile->Printf("\tNumber of atoms is %d.\n", Natom);
@@ -212,7 +217,7 @@ mat_print(tmat, 3*Natom, dim, "outfile");
     // Print a hessian file
     if ( options.get_bool("HESSIAN_WRITE") ) {
       std::string hess_fname = get_writer_file_prefix() + ".hess";
-      boost::shared_ptr<OutFile> printer(new OutFile(hess_fname,APPEND));
+      boost::shared_ptr<OutFile> printer(new OutFile(hess_fname,TRUNCATE));
       //FILE *of_Hx = fopen(hess_fname.c_str(),"w");
       printer->Printf("%5d", Natom);
       printer->Printf("%5d\n", 6*Natom);

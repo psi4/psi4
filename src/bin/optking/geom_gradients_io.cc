@@ -392,15 +392,8 @@ double ** OPT_DATA::read_cartesian_H(void) const {
 
 #endif
 
-  if (Opt_params.print_lvl >= 3) {
-    oprintf_out("\tCartesian Hessian matrix read: \n");
-    oprint_matrix_out(H_cart, Ncart, Ncart);
-    
-  }
-  else {
-      oprintf_out("\tCartesian Hessian matrix read in from external file.\n");
-      
-  }
+  oprintf_out("\tCartesian Hessian matrix read in from external file: \n");
+  oprint_matrix_out(H_cart, Ncart, Ncart);
 
   return H_cart;
 }

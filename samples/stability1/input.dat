@@ -1,0 +1,60 @@
+#! UHF->UHF stability analysis test for BH with cc-pVDZ
+
+
+
+
+
+
+memory 500 mb
+
+
+molecule bh {
+    1  2
+    b      0.0000        0.0000        0.0000
+    h      0.0000        0.0000        1.0000
+}
+
+set globals = {
+    reference uhf
+    scf_type   direct
+    basis      cc-pVDZ
+    docc [2,0,0,0]   # B1 and B2 are degenerate, we fix occupations
+    socc [0,0,1,0]   # for testing purposes
+    e_convergence 10
+    stability_analysis follow
+    solver_n_guess 6
+    solver_n_root 2
+}
+
+thisenergy = energy('scf')
+
+stab = get_array_variable("SCF STABILITY EIGENVALUES")
+
+
+
+
+
+molecule bh {
+    1  2
+    b      0.0000        0.0000        0.0000
+    h      0.0000        0.0000        1.0000
+symmetry c1
+}
+
+set globals = {
+    reference uhf
+    scf_type   direct
+    basis      cc-pVDZ
+    docc [2]   # B1 and B2 are degenerate, we fix occupations
+    socc [1]   # for testing purposes
+    e_convergence 10
+    stability_analysis follow
+    solver_n_guess 6
+    solver_n_root 2
+}
+
+thisenergy = energy('scf')
+
+stab = get_array_variable("SCF STABILITY EIGENVALUES")
+
+

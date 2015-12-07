@@ -32,8 +32,6 @@ struct MOInfo {
   int nmo;            /* no. of molecular orbitals */
   int nso;
   int nao;
-  int iopen;          /* 0=closed shell; >0=open shell */
-  int phase;          /* Boolean for consistency of orbital phases */
   int *sopi;          /* no. of SOs per irrep */
   int *sosym;         /* SO symmetry (Pitzer) */
   int *orbspi;        /* no. of MOs per irrep */
@@ -66,7 +64,7 @@ struct MOInfo {
   int sym; /* symmetry of converged CCSD state */
   double conv;        /* Current convergence level */
   double enuc;        /* Nuclear repulsion energy */
-  double escf;        /* SCF energy from chkpt */
+  double escf;        /* SCF energy from wfn */
   double eref;        /* Reference energy (file100) */
   double ecc;         /* CC energy from ccenergy */
   double lcc;         /* Current lambda pseudoenergy */

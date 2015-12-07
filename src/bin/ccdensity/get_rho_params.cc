@@ -29,7 +29,6 @@
 #include <cstring>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
-#include <libchkpt/chkpt.h>
 #include <liboptions/liboptions.h>
 #include "MOInfo.h"
 #include "Params.h"
@@ -52,14 +51,7 @@ void get_rho_params(Options& options)
 
   /* setup propery variables for excited states */
   if (!params.ground) {
-    chkpt_init(PSIO_OPEN_OLD);
-    if (chkpt_rd_override_occ()) {
-      states_per_irrep = chkpt_rd_statespi();
-    }
-    else {
-      states_per_irrep = options.get_int_array("ROOTS_PER_IRREP");
-    }
-    chkpt_close();
+    states_per_irrep = options.get_int_array("ROOTS_PER_IRREP");
 
     prop_all = 1;
     prop_all = options.get_bool("PROP_ALL");

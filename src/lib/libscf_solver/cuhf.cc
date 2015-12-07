@@ -389,9 +389,10 @@ bool CUHF::diis()
     return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get());
 }
 
-void CUHF::stability_analysis()
+bool CUHF::stability_analysis()
 {
     throw PSIEXCEPTION("CUHF stability analysis has not been implemented yet.  Sorry :(");
+    return false;
 }
 
 }}

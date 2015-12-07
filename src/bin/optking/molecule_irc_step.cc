@@ -64,16 +64,13 @@ inline double DE_nr_energy(double step, double grad, double hess)
 
 void IRC_DATA::point_converged(opt::MOLECULE &mol)
 {
-  if(!go)
-cout << "we made it.";
-  oprintf_out("\tPoint is converged. Setting sphere_step to 0, and calling irc_step().\n\n");
-  if(steps.size() > 1)
-  {
+
+  if(steps.size() > 1) {
     double f_dot = array_dot(steps[steps.size()-1]->g_f_q(), steps[steps.size()-2]->g_f_q(), mol.Ncoord());
-    oprintf_out("\nforce vector - current dotted with previous: %f\n", f_dot);
   }
 
   sphere_step = 0;
+
 
   mol.irc_step();
 }
@@ -89,31 +86,29 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
     sign = -1;
 
 //Printing Energies and Energy Changes for Each Step
-  oprintf_out(  "\t----------------------------------------------");
-  oprintf_out("\n\t            ****      IRC Report      ****\n");
-  oprintf_out(  "\t----------------------------------------------\n");
-  oprintf_out(  "\t Step    Energy              Change in Energy");
-  oprintf_out("\n");
-  oprintf_out(  "\t----------------------------------------------\n");
+  oprintf_out("@IRC ----------------------------------------------\n");
+  oprintf_out("@IRC            ****      IRC Report      ****\n");
+  oprintf_out("@IRC ----------------------------------------------\n");
+  oprintf_out("@IRC  Step    Energy              Change in Energy \n");
+  oprintf_out("@IRC ----------------------------------------------\n");
   for (int i=0; i<steps.size(); ++i)
   {
     if (i == 0) DE = g_step(i).g_energy();
     else DE = g_step(i).g_energy() - g_step(i-1).g_energy();
 
-    oprintf_out("\t %3d %18.12lf  %18.12lf\n", i, g_step(i).g_energy(), DE);
+    oprintf_out("@IRC  %3d %18.12lf  %18.12lf\n", i, g_step(i).g_energy(), DE);
   }
-  oprintf_out(  "\t----------------------------------------------\n");
-  oprintf_out("\n");
+  oprintf_out("@IRC ----------------------------------------------\n\n");
 
 //Printing Internal Coordinates for Each step
-  oprintf_out("\t--------------------------------------");
+  oprintf_out("@IRC --------------------------------------");
   for(int i=0; i<(dim/blocks)*blocks; i++)
   {
     oprintf_out("-------------");
   }
   oprintf_out("\n");
-  oprintf_out("\t              ****     IRC Steps     ****\n");
-  oprintf_out("\t--------------------------------------");
+  oprintf_out("@IRC              ****     IRC Steps     ****\n");
+  oprintf_out("@IRC --------------------------------------");
   for(int i=0; i<(dim/blocks)*blocks; i++)
   {
     oprintf_out("-------------");
@@ -121,14 +116,14 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
 
   for(int j=0; j < dim/blocks; j++)
   {
-    oprintf_out("\n\t        |          Distance         |\n");
-    oprintf_out("  \t Step   | Step    Arc       Line    |");
+    oprintf_out("\n@IRC        |          Distance         |\n");
+    oprintf_out(  "@IRC Step   | Step    Arc       Line    |");
     for(int i = (j*blocks); i < ((j+1)* blocks); i++)
     {
       oprintf_out("    Coord %3d", i);
     }
     oprintf_out("\n");
-    oprintf_out("\t--------------------------------------");
+    oprintf_out("@IRC --------------------------------------");
     for(int i = (j*blocks); i < ((j+1)* blocks); i++)
     {
       oprintf_out("-------------");
@@ -136,12 +131,12 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
     oprintf_out("\n");
     for (int i=0; i<steps.size(); ++i)
     {
-      oprintf_out("\t %3d %9.2lf %9.5lf  %9.5lf   ", i, sign*g_step(i).g_step_dist(), sign*g_step(i).g_arc_dist(), sign*g_step(i).g_line_dist());
+      oprintf_out("@IRC  %3d %9.2lf %9.5lf  %9.5lf   ", i, sign*g_step(i).g_step_dist(), sign*g_step(i).g_arc_dist(), sign*g_step(i).g_line_dist());
       for(int k = (j*blocks); k < ((j+1)*blocks); k++)
         oprintf_out("%13.8f",g_step(i).g_q()[k]);
       oprintf_out("\n");
     }
-    oprintf_out("\t--------------------------------------");
+    oprintf_out("@IRC --------------------------------------");
     for(int i = (j*blocks); i < ((j+1)* blocks); i++)
     {
       oprintf_out("-------------");
@@ -149,14 +144,14 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
   }
   if(dim % blocks != 0)
   {
-    oprintf_out("\n\t        |          Distance         |\n");
-    oprintf_out("  \t Step   | Step    Arc       Line    |");
+    oprintf_out("\n@IRC         |          Distance         |\n");
+    oprintf_out(  "@IRC  Step   | Step    Arc       Line    |");
     for(int i = (dim - (dim % blocks)); i < dim; i++)
     {
       oprintf_out("    Coord %3d", i);
     }
     oprintf_out("\n");
-    oprintf_out("\t--------------------------------------");
+    oprintf_out("@IRC --------------------------------------");
     for(int i = (dim - (dim % blocks)); i < dim; i++)
     {
       oprintf_out("-------------");
@@ -164,12 +159,12 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
     oprintf_out("\n");
     for (int i=0; i<steps.size(); ++i)
     {
-      oprintf_out("\t %3d %9.2lf %9.5lf  %9.5lf   ", i, sign*g_step(i).g_step_dist(), sign*g_step(i).g_arc_dist(), sign*g_step(i).g_line_dist());
+      oprintf_out("@IRC  %3d %9.2lf %9.5lf  %9.5lf   ", i, sign*g_step(i).g_step_dist(), sign*g_step(i).g_arc_dist(), sign*g_step(i).g_line_dist());
       for(int k = (dim - (dim % blocks)); k < dim; k++)
         oprintf_out("%13.8f",g_step(i).g_q()[k]);
       oprintf_out("\n");
     }
-    oprintf_out("\t--------------------------------------");
+    oprintf_out("@IRC --------------------------------------");
     for(int i = (dim - (dim % blocks)); i < dim; i++)
     {
       oprintf_out("-------------");
@@ -189,15 +184,10 @@ void MOLECULE::irc_step(void)
 {
   // Are we at the TS?  at_TS
   bool at_TS = !(p_irc_data->size());        
-  if (at_TS) oprintf_out("\n\tIRC_DATA is empty, so we are at the transition state.\n");
+  if (at_TS) oprintf_out("\n  IRC_DATA is empty, so we are at the transition state.\n");
 
   // Is this one the first step toward a new path point?  at_FS 
   bool at_FS = !(p_irc_data->sphere_step);    
-  if (at_FS) oprintf_out("\tIRC_DATA->sphere_step == 0, so now is time \
-for a first step toward new point on path.\n");
-
-  oprintf_out("\n\tRxn path step %d, constrained step %d\n", p_irc_data->size(),
-    p_irc_data->sphere_step);
 
   double s    = Opt_params.IRC_step_size;      //step size
   p_irc_data->step_length = s;
@@ -208,20 +198,16 @@ for a first step toward new point on path.\n");
   int Ncart = 3 * Natom;
   bool answer = 1;
 
+
   int opt_iter = p_Opt_data->g_iteration() - 1;
-  if(opt_iter > 2 && p_irc_data->in_min_range)
-  {
-cout << "DE01:    " << p_Opt_data->g_energy(opt_iter) - p_Opt_data->g_energy(opt_iter - 2) << "\n";
-cout << "DE02:    " << p_Opt_data->g_energy(opt_iter - 1) - p_Opt_data->g_energy(opt_iter - 3) << "\n";
+  if(opt_iter > 2 && p_irc_data->in_min_range) {
     if(    fabs(p_Opt_data->g_energy(opt_iter)     - p_Opt_data->g_energy(opt_iter - 2)) < 0.01e-03
-        && fabs(p_Opt_data->g_energy(opt_iter - 1) - p_Opt_data->g_energy(opt_iter - 3)) < 0.01e-03 )
-    {
+        && fabs(p_Opt_data->g_energy(opt_iter - 1) - p_Opt_data->g_energy(opt_iter - 3)) < 0.01e-03 ) {
       p_irc_data->go = 0;
     }
   }
 
-    if (p_irc_data->sphere_step == 1)
-    {
+    if (p_irc_data->sphere_step == 1) {
 
       double *u_f_q = init_array(Nintco);
       double *u_f_q_0 = init_array(Nintco);
@@ -230,32 +216,24 @@ cout << "DE02:    " << p_Opt_data->g_energy(opt_iter - 1) - p_Opt_data->g_energy
       array_normalize(u_f_q, Nintco);
       array_normalize(u_f_q_0, Nintco);
       double u_f_q_dot = array_dot(u_f_q, u_f_q_0, Nintco);
-      oprintf_out("\ninternal force vector dot - current with previous: %20.15f\n", u_f_q_dot);
-cout << "u_f_q_dot: " << u_f_q_dot << "\n";
-cout << "line_dist: " << p_irc_data->g_line_dist(p_irc_data->size()-1);
 
-      if(u_f_q_dot < -0.5)
-      {
+      if(u_f_q_dot < -0.5) {
         p_irc_data->in_min_range = 1;
       }
 
-      if(p_irc_data->size() > 3)
-      {
+      if(p_irc_data->size() > 3) {
         if (u_f_q_dot < -0.7 ||
             (
               fabs(p_irc_data->g_line_dist(p_irc_data->size()-1) - p_irc_data->g_line_dist(p_irc_data->size()-2)) < s*10e-03
             )
-           )
-        {
-          cout << "\nHouston, we've found a minimum!\n";
+           ) {
+          oprintf_out("\n@IRC\n@IRC Houston, we've found a minimum!\n@IRC\n");
 
-          if(Opt_params.IRC_stop == OPT_PARAMS::ASK)
-          {
+          if(Opt_params.IRC_stop == OPT_PARAMS::ASK) {
             cout << "Would you like to proceed? (1=yes, 0=no):";
             cin >> answer;
           }
-          if(Opt_params.IRC_stop == OPT_PARAMS::STOP || !answer)
-          {
+          if(Opt_params.IRC_stop == OPT_PARAMS::STOP || !answer) {
             p_irc_data->go = 0;
           }
         }
@@ -264,24 +242,6 @@ cout << "line_dist: " << p_irc_data->g_line_dist(p_irc_data->size()-1);
       free_array(u_f_q);
       free_array(u_f_q_0);
     }
-/*    if(!p_irc_data->go)
-    {
-      double *q = coord_values();
-      double *q_pivot = init_array(Nintco);
-
-      double *x = g_geom_array();
-      double *f_x = g_grad_array();
-      array_scm(f_x, -1, Ncart);
-      double *f_q_copy = init_array(Nintco);
-      array_copy(f_q, f_q_copy, Nintco);
-
-      p_irc_data->add_irc_point(p_irc_data->g_next_coord_step(), q_pivot, q, x, f_q_copy, f_x, g_energy(),
-                                p_irc_data->step_length, p_irc_data->arc_length, p_irc_data->line_length);
-
-      return;
-    }
-*/
-
 
   //The G matrix, its square root, and its inverse square root
   double **G         = compute_G(1);                          //G = BUB^t
@@ -290,7 +250,7 @@ cout << "line_dist: " << p_irc_data->g_line_dist(p_irc_data->size()-1);
   matrix_root(rootG_reg, Nintco, 0);
 
   if (Opt_params.print_lvl > 2) {
-    oprintf_out( "\nrootG matrix:\n");
+    oprintf_out( "\n@IRC rootG matrix:\n");
     oprint_matrix_out(rootG_reg, Nintco, Nintco);
   }
 
@@ -298,7 +258,7 @@ cout << "line_dist: " << p_irc_data->g_line_dist(p_irc_data->size()-1);
   matrix_root(rootG_inv, Nintco, 1);
 
   if (Opt_params.print_lvl > 2) {
-    oprintf_out( "G matrix:\n");
+    oprintf_out( "@IRC G matrix:\n");
     oprint_matrix_out(G, Nintco, Nintco);
   }
 
@@ -313,7 +273,7 @@ cout << "line_dist: " << p_irc_data->g_line_dist(p_irc_data->size()-1);
   free_matrix(T);
 
   if (Opt_params.print_lvl > 2) {
-    oprintf_out("Mass-weighted Hessian:\n");
+    oprintf_out("  Mass-weighted Hessian:\n");
     oprint_matrix_out(H_m, Nintco, Nintco);
   }
 
@@ -327,7 +287,6 @@ cout << "line_dist: " << p_irc_data->g_line_dist(p_irc_data->size()-1);
   //Pivot Point and Initial Working Geometry:
   //step along along normalized, mass-weighted v
   if(at_FS) {
-    oprintf_out( "\tFirst point of constrained optimization.\n");
     // If starting from TS, follow lowest-eigenvalued eigenvector.
     // Otherwise, follow the gradient (negative of the force vector).
     double *v;
@@ -336,14 +295,13 @@ cout << "line_dist: " << p_irc_data->g_line_dist(p_irc_data->size()-1);
       v = lowest_evector(H, Nintco);
 
       if(Opt_params.IRC_direction == OPT_PARAMS::FORWARD)
-        oprintf_out( "\tStepping in forward direction from TS.\n");
+        oprintf_out( "  Stepping in forward direction from TS.\n");
       else if (Opt_params.IRC_direction == OPT_PARAMS::BACKWARD) {
-        oprintf_out( "\tStepping in backward direction from TS.\n");
+        oprintf_out( "  Stepping in backward direction from TS.\n");
         array_scm(v, -1, Nintco);
       }
     }
     else {
-      oprintf_out( "\tStepping along IRC using gradient.\n");
       v = init_array(Nintco);
       for(int i=0; i<Nintco; i++)
         v[i] = -f_q[i];
@@ -358,30 +316,14 @@ cout << "line_dist: " << p_irc_data->g_line_dist(p_irc_data->size()-1);
       dq_pivot[i] = dq[i] / 2;
     }
 
-    oprintf_out( "\n\tVector to follow: \n");
-    oprint_array_out(v, Nintco);
-
     if (Opt_params.print_lvl > 2) {
-      oprintf_out( "\nDq to pivot point: \n");
+      oprintf_out( "\n@IRC Dq to pivot point: \n");
       oprint_array_out(dq_pivot, Nintco);
-      oprintf_out( "\nDq to next geometry: \n");
+      oprintf_out( "\n@IRC Dq to next geometry: \n");
       oprint_array_out(dq, Nintco);
     }
 
     free_array(v);
-
-/* // Check calculated step size.
-double **G_inv = symm_matrix_inv(G, Nintco, Nintco);
-double *G_inv_dq = init_array(Nintco);
-opt_matrix_mult(G_inv, 0, &dq, 1, &G_inv_dq, 1, Nintco, Nintco, 1, 0);
-double dq_norm = sqrt( array_dot(dq, G_inv_dq, Nintco) );
-oprintf_out( "\nCheck dq_norm to first point (dq G^-1 dq^t)^1/2: %20.15f\n", dq_norm);
-opt_matrix_mult(G_inv, 0, &dq_pivot, 1, &G_inv_dq, 1, Nintco, Nintco, 1, 0);
-dq_norm = sqrt( array_dot(dq_pivot, G_inv_dq, Nintco) );
-oprintf_out( "\nCheck dq_norm to pivot point (dq G^-1 dq^t)^1/2: %20.15f\n", dq_norm);
-free_array(G_inv_dq);
-free_matrix(G_inv);
-// */
 
     double *x = g_geom_array();
     double *f_x = g_grad_array();
@@ -390,17 +332,16 @@ free_matrix(G_inv);
     array_copy(f_q, f_q_copy, Nintco);
 
     // RAK 11-14 Try to calculate xyz coordinates of the pivot point
-    oprintf_out("Attempting to calculate xyz coordinates of pivot point.");
     for (int f=0; f<fragments.size(); ++f) {
       if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-        oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
+        oprintf_out("    Displacements for frozen fragment %d skipped.\n", f+1);
         continue;
       }
       fragments[f]->displace(&(dq_pivot[g_coord_offset(f)]), &(f_q[g_coord_offset(f)]), g_atom_offset(f));
     }
     for (int I=0; I<interfragments.size(); ++I) {
       if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-        oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+        oprintf_out("    Displacements for frozen interfragment %d skipped.\n", I+1);
         continue;
       }
       interfragments[I]->orient_fragment( &(dq_pivot[g_interfragment_coord_offset(I)]), &(f_q[g_interfragment_coord_offset(I)]) );
@@ -418,11 +359,32 @@ free_matrix(G_inv);
     p_irc_data->add_irc_point(p_irc_data->g_next_coord_step(), q_pivot, x_pivot, q, x, f_q_copy, f_x, g_energy(),
                               p_irc_data->step_length, p_irc_data->arc_length, p_irc_data->line_length);
 
+    /* START PRINT CONVERGED POINT INFO */
+    int point_number = Opt_params.IRC_direction == OPT_PARAMS::FORWARD ? p_irc_data->size() - 1 : - (p_irc_data->size() - 1);
+    set_geom_array(x);
+    oprintf_out("\n@IRC\n");
+    if(p_irc_data->size() == 1) {
+      oprintf_out("@IRC  **** Point %2d on IRC path ****\n", point_number);
+    }
+    else {
+      oprintf_out("@IRC  **** Point %2d on IRC path is optimized ****\n", point_number);
+    }
+    oprintf_out("@IRC    Final energy:         %20.13lf\n", p_Opt_data->g_energy());
+    oprintf_out("@IRC    Arc path distance:    %20.13lf\n", p_irc_data->g_arc_dist());
+    oprintf_out("@IRC    Linear path distance: %20.13lf\n", p_irc_data->g_line_dist());
+    oprintf_out("@IRC\n");
+    print_geom_out_irc();
+    if (Opt_params.print_trajectory_xyz_file)
+      print_xyz_irc(point_number, Opt_params.IRC_direction == OPT_PARAMS::FORWARD);
+    oprintf_out("@IRC\n");
+    oprintf_out("@IRC\n\n");
+    set_geom_array(x_pivot);
+    /* END PRINT CONVERGED POINT INFO */
+
     // Take step of dq_pivot length again since dq is 2*dq_pivot
-    oprintf_out("Attempting to calculate xyz coordinates of next point.");
     for (int f=0; f<fragments.size(); ++f) {
       if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-        oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
+        oprintf_out("    Displacements for frozen fragment %d skipped.\n", f+1);
         continue;
       }
       fragments[f]->displace(&(dq_pivot[g_coord_offset(f)]), &(f_q[g_coord_offset(f)]), g_atom_offset(f));
@@ -430,7 +392,7 @@ free_matrix(G_inv);
     // Do displacements for interfragment coordinates.
     for (int I=0; I<interfragments.size(); ++I) {
       if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-        oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+        oprintf_out("    Displacements for frozen interfragment %d skipped.\n", I+1);
         continue;
       }
       interfragments[I]->orient_fragment( &(dq_pivot[g_interfragment_coord_offset(I)]),
@@ -443,7 +405,7 @@ free_matrix(G_inv);
     // Save results to Opt_data.
     dq_n = sqrt( array_dot(dq, dq, Nintco) );
 
-    oprintf_out("\tNorm of target step-size %10.5lf\n", dq_n);
+    oprintf_out("     Norm of target step-size %10.5lf\n", dq_n);
 
     dq_u = init_array(Nintco);
     array_copy(dq, dq_u, Nintco);
@@ -455,11 +417,7 @@ free_matrix(G_inv);
     for(int i=0; i<Nintco; i++)
       dq_h += dq_u[i] * array_dot(H[i], dq_u, Nintco);
 
-    oprintf_out("\tGradient in step direction: %15.10lf\n", dq_g);
-    oprintf_out("\tHessian in step direction : %15.10lf\n", dq_h);
-
     DE_projected = DE_nr_energy(dq_n, dq_g, dq_h);
-    oprintf_out("\tProjected energy change for next step: %20.15lf\n", DE_projected);
 
     p_Opt_data->save_step_info(DE_projected, dq_u, dq_n, dq_g, dq_h);
     free_array(dq_u);
@@ -488,12 +446,10 @@ free_matrix(G_inv);
 
   if (Opt_params.print_lvl > 2) {
     for(int i=0; i<Nintco; i++) {
-      oprintf_out( "Eigenvector %i of mass-weighted Hessian:\n", i);
+      oprintf_out( "  Eigenvector %i of mass-weighted Hessian:\n", i);
       oprint_array_out(V[i], Nintco);
     }
   }
-  oprintf_out( "\n\tEigenvalues of the mass-weighted Hessian:\n");
-  oprint_array_out(h, Nintco);
 
 //2. Express p and g, in mass-weighted coordinates and in the eigenbasis of Hm, the mass-weighted Hessian.
 
@@ -544,11 +500,6 @@ free_matrix(G_inv);
   for(int i=0; i<Nintco; i++)
     g_m0[i] = array_dot(rootG_reg[i], g_0, Nintco);
 
-  oprintf_out( "\np_m before linear interpolation: ");
-  oprint_array_out(p_m, Nintco);
-  oprintf_out( "\ng_m before linear interpolation: ");
-  oprint_array_out(g_m, Nintco);
-
   if(0 && p_irc_data->sphere_step > 1) {
     if(0)
       GS_interpolation(p_m, p_m0, g_m, g_m0, s, Nintco);
@@ -556,11 +507,6 @@ free_matrix(G_inv);
       interpolation(p_m, p_m0, g_m, g_m0, s, Nintco);
   }
 
-  oprintf_out( "\np_m after linear interpolation:  ");
-  oprint_array_out(p_m, Nintco);
-  oprintf_out( "\ng_m after linear interpolation:  ");
-  oprint_array_out(g_m, Nintco);
-  
   double *p_h = init_array(Nintco);//in the basis of H_m
   for(int i=0; i<Nintco; i++)
     p_h[i] = array_dot(p_m, V[i], Nintco);
@@ -622,8 +568,7 @@ free_matrix(G_inv);
     lagrangian = lag_function(lambda, df, h, p_h, g_h, Nintco, s);
   }
 
-  oprintf_out( "\n\tDetermining lagrangian multiplier for constrained minimization.\n");
-  oprintf_out( "\t   Iter     Multiplier     Lagrangian\n");
+  oprintf_out( "\n    Determining lagrangian multiplier for constrained minimization.\n");
 
   while (fabs(lambda - old_lambda) > 1e-16)
   {
@@ -672,8 +617,6 @@ free_matrix(G_inv);
                              + 8*df[3] * h_f * h_f + df[4] * h_f * h_f * h_f);
     }
 
-    oprintf_out( "\t  %5d%15.3e%15.3e\n", lag_iter, lambda, lagrangian);
-
     ++lag_iter;
 
     if (++iter > 50)
@@ -685,6 +628,8 @@ free_matrix(G_inv);
     if (lag_iter > 200)
       throw(INTCO_EXCEPT("Could not converge lagrangian for constrained minimization"));
   }
+
+  oprintf_out( "\n    Lagrangian multiplier is converged.\n");
 
 
 //4. Find dq_m from equation 24 in Gonzalez & Schlegel (1990)
@@ -707,31 +652,11 @@ free_matrix(G_inv);
 //5. find dq ( = (G^1/2)dq_m) and do displacements
   opt_matrix_mult(rootG_reg, 0, &dq_m, 1, &dq, 1, Nintco, Nintco, 1, 0);
 
-// Check equations 22 and 23 
-/* double ss = 0.0;
-  for (int i=0; i<Nintco; ++i)
-    ss += (p_m[i] + dq_m[i]) * (p_m[i] + dq_m[i]) ;
-  ss -= (0.5 * s) * (0.5 * s);
-  oprintf_out("Eqn. 22 step size check %20.15lf\n", ss);
-
-  double *lhs1 = init_array(Nintco);
-  double *lhs2 = init_array(Nintco);
-  for (int i=0; i<Nintco; ++i) {
-    lhs1[i] = g_m[i] - lambda * p_m[i];
-    for (int j=0; j<Nintco; ++j)
-      lhs2[i] += H_m[i][j] * dq_m[j];
-  }
-  oprintf_out("Eqn. 23 check\n");
-  for (int i=0; i<Nintco; ++i)
-    oprintf_out( "%20.15lf\n", lhs1[i] + lhs2[i]);
-
-  free_array(lhs1);
-  free_array(lhs2); */
 
   // Do displacements for each fragment separately.
   for (int f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
+      oprintf_out("  Displacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
     fragments[f]->displace(&(dq[g_coord_offset(f)]), &(f_q[g_coord_offset(f)]), g_atom_offset(f));
@@ -739,7 +664,7 @@ free_matrix(G_inv);
   // Do displacements for interfragment coordinates.
   for (int I=0; I<interfragments.size(); ++I) {
     if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-      oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+      oprintf_out("  Displacements for frozen interfragment %d skipped.\n", I+1);
       continue;
     }
     interfragments[I]->orient_fragment( &(dq[g_interfragment_coord_offset(I)]),
@@ -806,14 +731,71 @@ free_matrix(G_inv);
   for(int i=0; i<Nintco; i++)
     dq_h += dq_u[i] * array_dot(H[i], dq_u, Nintco);
 
-  oprintf_out("\tGradient in step direction: %15.10lf\n", dq_g);
-  oprintf_out("\tHessian in step direction : %15.10lf\n", dq_h);
+  oprintf_out("  Gradient in step direction: %15.10lf\n", dq_g);
+  oprintf_out("  Hessian in step direction : %15.10lf\n", dq_h);
 
   DE_projected = DE_nr_energy(dq_n, dq_g, dq_h);
-  oprintf_out("\tProjected energy change for next step: %20.15lf\n", DE_projected);
+  oprintf_out("  Projected energy change for next step: %20.15lf\n", DE_projected);
 
   p_Opt_data->save_step_info(DE_projected, dq_u, dq_n, dq_g, dq_h);
   free_array(dq_u);
+
+  /* START PRINTING */
+  {
+    // for IRC only consider forces tangent to the hypersphere search surface
+    double **Ginv = symm_matrix_inv(G, Nintco, Nintco); 
+ 
+    // gradient perpendicular to p and tangent to hypersphere is:
+    // g_m' = g_m - (g_m^t p_m / p_m^t p_m) p_m, or
+    // g'   = g   - (g^t p / (p^t G^-1 p)) G^-1 p
+    double *Ginv_p = init_array(Nintco);
+    for(int i=0; i<Nintco; i++)
+      Ginv_p[i] = array_dot(Ginv[i], p, Nintco);
+    free_matrix(Ginv);
+
+    double overlap = array_dot(f_q, p, Nintco) / array_dot(p, Ginv_p, Nintco);
+
+    double* f_tan = init_array(Nintco);
+    array_copy(f_q, f_tan, Nintco);
+
+    for (int i=0; i<Nintco; ++i)
+      f_tan[i] -= overlap * Ginv_p[i];
+    free_array(Ginv_p);
+ 
+    double E  = p_Opt_data->g_energy();
+    double E0 = p_Opt_data->g_last_energy();
+    double DE = (p_Opt_data->g_iteration() > 1) ? E - E0 : E;
+    double max_force = array_abs_max(f_tan, Nintco);
+    double rms_force = array_rms(f_tan, Nintco);
+    double max_disp = array_abs_max(dq, Nintco);
+    double rms_disp = array_rms(dq, Nintco);
+    //double p_Opt_data->g_forces_pointer()
+ 
+    int point = at_FS ? p_irc_data->size() + 1 : p_irc_data->size();
+    if (p_irc_data->go) {
+      if (p_irc_data->sphere_step == 1) {
+        oprintf_out("\n@IRC");
+        oprintf_out("\n@IRC Point   Sphere Step       Energy          DE         MAX Force     RMS Force      MAX Disp      RMS Disp   \n");
+        oprintf_out(  "@IRC -----------------------------------------------------------------------------------------------------------\n");
+      }
+      else {
+        oprintf_out("\n     Point   Sphere Step       Energy          DE         MAX Force     RMS Force      MAX Disp      RMS Disp   \n");
+        oprintf_out(  "     -----------------------------------------------------------------------------------------------------------\n");
+      }
+      oprintf_out("@IRC %3d   %8d      %16.8f %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  ~\n",
+          point, p_irc_data->sphere_step, E,
+          DE, (Opt_params.i_max_DE ? ((fabs(DE) < Opt_params.conv_max_DE) ? "*" : "") : "o"),
+          max_force, (Opt_params.i_max_force ? ((fabs(max_force) < Opt_params.conv_max_force) ? "*" : "") : "o"),
+          rms_force, (Opt_params.i_rms_force ? ((fabs(rms_force) < Opt_params.conv_rms_force) ? "*" : "") : "o"),
+          max_disp, (Opt_params.i_max_disp ? ((fabs(max_disp) < Opt_params.conv_max_disp) ? "*" : "") : "o"),
+          rms_disp, (Opt_params.i_rms_disp ? ((fabs(rms_disp) < Opt_params.conv_rms_disp) ? "*" : "") : "o"));
+      oprintf_out("     -----------------------------------------------------------------------------------------------------------\n\n");
+    }
+  }
+  /* END PRINTING */
+
+
+
   p_irc_data->sphere_step++;
 
   //double **g2D = g_geom_2D();
@@ -821,6 +803,7 @@ free_matrix(G_inv);
   //oprint_matrix_out(g2D, Natom, 3);
   //free_matrix(g2D);
   symmetrize_geom();
+
 
   free_matrix(rootG_reg);
   free_matrix(rootG_inv);
@@ -849,8 +832,6 @@ double step_N_factor(double **G, double *g, int Nintco) {
     N += g[i] * (G[i][i] * g[i] + 2 * Ggsum);
   }
   N = 1 / sqrt(N);
-  if (Opt_params.print_lvl > 2)
-    oprintf_out("\tNormalizing factor N: %15.10lf\n", N);
 
   return N;
 }
@@ -873,8 +854,6 @@ double *lowest_evector(double **H, int Nintco)
   double *min_evector = init_array(Nintco);
   for(int i=0; i<Nintco; i++)
     min_evector[i] = sign * V[0][i];
-
-  cout << "making largest element of eigenvector positive\n";
 
   free_matrix(V);
   free_array(V_evals);
@@ -947,25 +926,12 @@ void interpolation(double *p, double *p_0, double *g, double *g_0, double s, int
 {
   double p_p = array_dot(p, p, dim);
   double p0_p0 = array_dot(p_0, p_0, dim);
-oprintf_out( "p_norm is %f\n", sqrt(p_p));
-oprintf_out( "p0_norm is %f\n", sqrt(p0_p0));
 
   double cosTh = array_dot(p, p_0, dim) / sqrt(p_p * p0_p0);
   double Th = acos( cosTh );
 
-oprint_array_out(p, dim);
-oprint_array_out(p_0, dim);
-oprint_array_out(g, dim);
-oprint_array_out(g_0, dim);
-oprintf_out( "step size is %f\n", s);
-oprintf_out( "p_p is %f\n", p_p);
-oprintf_out( "cosTh is %f\n", cosTh);
-oprintf_out( "Th is %f\n", Th);
-
   double g_p = array_dot(g, p, dim);
   double g0_p0 = array_dot(g_0, p_0, dim);
-oprintf_out( "g_p is %f\n", g_p);
-oprintf_out( "g0_p0 is %f\n", g0_p0);
 
   double proj;
   double proj_0;
@@ -987,20 +953,15 @@ oprintf_out( "g0_p0 is %f\n", g0_p0);
   gPer = sqrt(gPer);
   gPer_0 = sqrt(gPer_0);
 
-oprintf_out( "gPer is %f\n", gPer);
-oprintf_out( "gPer_0 is %f\n", gPer_0);
-
   double Th_i = (Th * gPer) / (gPer - gPer_0);
   double cosTh_i = cos( Th_i );
   double sinTh_i = sin( Th_i );
-oprintf_out( "Th_i is %f\n", Th_i);
 
   double *pPer = init_array(dim);
   for(int i=0; i<dim; i++)
     pPer[i] = p_0[i] - cosTh * p[i];
   array_normalize(pPer, dim);
   array_scm(pPer, sqrt(p0_p0), dim);
-oprint_array_out(pPer, dim);
 
   for(int i=0; i<dim; i++)
   {

@@ -30,7 +30,6 @@
 #include <psi4-dec.h>
 
 #include <boost/shared_ptr.hpp>
-#include <libchkpt/chkpt.hpp>
 
 extern FILE* outfile;
 
