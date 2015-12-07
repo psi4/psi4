@@ -1,4 +1,5 @@
 #! UHF->UHF stability analysis test for BH with cc-pVDZ
+#! Test direct SCF with and without symmetry, test PK without symmetry
 
 ref_vals_sym = [ 0.163530, 0.385029, 0.000000, 0.523085,   #TEST 
                -0.131403, 0.390496, 0.248212, 0.493736 ]   #TEST
@@ -75,6 +76,16 @@ set globals = {
     solver_n_guess 6
     solver_n_root 2
 }
+
+thisenergy = energy('scf')
+
+stab = get_array_variable("SCF STABILITY EIGENVALUES")
+
+compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
+compare_matrices(ref, stab, 5, "Stability eigenvalues without symmetry")                #TEST
+
+set scf_type pk
 
 thisenergy = energy('scf')
 
