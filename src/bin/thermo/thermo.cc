@@ -141,7 +141,7 @@ PsiReturnType thermo(Options &options) {
   }
 
   //Flag to only print low/imaginary frequency warnings once
-  bool WarnLowImag; //True if the warning was arlready printed
+  bool WarnLowImag; //True if the warning was already printed
 
   WarnLowImag = 0; //Reset to false before checking imaginary frequencies
   for (int i=0; i<nvib_freqs; ++i)
