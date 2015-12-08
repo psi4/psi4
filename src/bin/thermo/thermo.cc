@@ -206,7 +206,7 @@ PsiReturnType thermo(Options &options) {
   for(int i=0; i < nvib_freqs; i++) {
     double rT = vib_temp[i] / T; // reduced T
     if (vib_temp[i] < 900)
-      outfile->Printf("    Warning: used thermodynamic relations are not appropriate for low frequency modes.");
+      outfile->Printf("    Warning: used thermodynamic relations are not appropriate for low frequency modes.\n");
     Evib += vib_temp[i] * (0.5 + 1.0 / (exp(rT) - 1));
     Svib += rT/(exp(rT) - 1) - log(1 - exp(-rT));
     Cvvib += exp(rT) * pow(rT/(exp(rT)-1), 2);
