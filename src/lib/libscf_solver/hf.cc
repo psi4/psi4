@@ -630,7 +630,7 @@ double HF::finalize_E()
 
 }
 
-void HF::finalize() 
+void HF::finalize()
 {
     // Clean memory off, handle diis closeout, etc
 
@@ -1940,10 +1940,15 @@ void HF::iterations()
         double ediff = fabs(E_ - Eold_);
         if (soscf_enabled_ && (Drms_ < soscf_r_start_) && (ediff < soscf_e_start_) && (iteration_ > 1)){
             compute_orbital_gradient(false);
-            int nmicro = soscf_update();
-            find_occupation();
-            status += "SOSCF, nmicro = ";
-            status += psi::to_string(nmicro);
+            if (!test_convergency()){
+                int nmicro = soscf_update();
+                find_occupation();
+                status += "SOSCF, nmicro = ";
+                status += psi::to_string(nmicro);
+            }
+            else{
+                status += "SOSCF, conv";
+            }
         }
         else{ // Normal convergence procedures if we do not do SOSCF
 
@@ -2034,6 +2039,13 @@ void HF::iterations()
             options_.set_str("SCF","SCF_TYPE",old_scf_type_);
             old_scf_type_ = "DF";
             integrals();
+        }
+
+        // If we are doing SOSCF, we need to ensure orthogonal orbitals and set epsilon
+        if (converged_ && soscf_enabled_){
+            timer_on("Form C");
+            form_C();
+            timer_off("Form C");
         }
 
         // Call any postiteration callbacks
