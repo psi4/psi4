@@ -1805,9 +1805,9 @@ void HF::initialize()
 
         integrals();
 
-        timer_on("Form H");
+        timer_on("HF: Form H");
         form_H(); //Core Hamiltonian
-        timer_off("Form H");
+        timer_off("HF: Form H");
 
         // EFP: Add in permanent moment contribution and cache
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
@@ -1818,13 +1818,13 @@ void HF::initialize()
             outfile->Printf( "  QM/EFP: iterating Total Energy including QM/EFP Induction\n");
         }
 
-        timer_on("Form S/X");
+        timer_on("HF: Form S/X");
         form_Shalf(); //S and X Matrix
-        timer_off("Form S/X");
+        timer_off("HF: Form S/X");
 
-        timer_on("Guess");
+        timer_on("HF: Guess");
         guess(); // Guess
-        timer_off("Guess");
+        timer_off("HF: Guess");
 
     }else{
         // We're reading the orbitals from the previous set of iterations.
@@ -1870,17 +1870,17 @@ void HF::iterations()
 
         E_ = 0.0;
 
-        timer_on("Form G");
+        timer_on("HF: Form G");
         form_G();
-        timer_off("Form G");
+        timer_off("HF: Form G");
 
         // Reset fractional SAD occupation
         if (iteration_ == 0 && options_.get_str("GUESS") == "SAD")
             reset_SAD_occupation();
 
-        timer_on("Form F");
+        timer_on("HF: Form F");
         form_F();
-        timer_off("Form F");
+        timer_off("HF: Form F");
 
         if (print_>3) {
             Fa_->print("outfile");
@@ -1952,7 +1952,7 @@ void HF::iterations()
         }
         else{ // Normal convergence procedures if we do not do SOSCF
 
-            timer_on("DIIS");
+            timer_on("HF: DIIS");
             bool add_to_diis_subspace = false;
             if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
                 add_to_diis_subspace = true;
@@ -1964,7 +1964,7 @@ void HF::iterations()
             } else {
                 diis_performed_ = false;
             }
-            timer_off("DIIS");
+            timer_off("HF: DIIS");
 
             if (print_>4 && diis_performed_) {
                 outfile->Printf("  After DIIS:\n");
@@ -1992,14 +1992,14 @@ void HF::iterations()
                 status += "FRAC";
             }
 
-            timer_on("Form C");
+            timer_on("HF: Form C");
             form_C();
-            timer_off("Form C");
+            timer_off("HF: Form C");
         } // End SOSCF else
 
-        timer_on("Form D");
+        timer_on("HF: Form D");
         form_D();
-        timer_off("Form D");
+        timer_off("HF: Form D");
 
         Process::environment.globals["SCF ITERATION ENERGY"] = E_;
 
@@ -2043,9 +2043,9 @@ void HF::iterations()
 
         // If we are doing SOSCF, we need to ensure orthogonal orbitals and set epsilon
         if (converged_ && soscf_enabled_){
-            timer_on("Form C");
+            timer_on("HF: Form C");
             form_C();
-            timer_off("Form C");
+            timer_off("HF: Form C");
         }
 
         // Call any postiteration callbacks
