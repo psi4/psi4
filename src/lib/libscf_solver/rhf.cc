@@ -488,6 +488,7 @@ int RHF::soscf_update()
     SharedMatrix Gradient = SharedMatrix(new Matrix("Gradient", nirrep_, doccpi_, Cvir->colspi()));
     SharedMatrix Precon = SharedMatrix(new Matrix("Precon", nirrep_, doccpi_, Cvir->colspi()));
 
+    int grad_elements = 0;
     for (size_t h=0; h<nirrep_; h++){
 
         if (!nsopi_[h] || !doccpi_[h] || !Cvir->colspi()[h]) continue;
@@ -495,12 +496,11 @@ int RHF::soscf_update()
         double* denomp = Precon->pointer(h)[0];
         double** fp = IFock->pointer(h);
 
+        grad_elements += doccpi_[h] * nsopi_[h];
         for (size_t i=0, target=0; i<doccpi_[h]; i++){
-            double o_eps = fp[i][i];
-            for (size_t j=doccpi_[h]; j < nsopi_[h]; j++)
-            {
-                gp[target] = -4.0 * fp[i][j];
-                denomp[target++] = 4.0 * (fp[j][j] - o_eps);
+            for (size_t a=doccpi_[h]; a < nsopi_[h]; a++){
+                gp[target] = -4.0 * fp[i][a];
+                denomp[target++] = -4.0 * (fp[i][i] - fp[a][a]);
             }
         }
     }
@@ -510,16 +510,18 @@ int RHF::soscf_update()
     x->apply_denominator(Precon);
 
     // Calc hessian vector product, find residual and conditioned residual
-    SharedMatrix r = Gradient;
+    SharedMatrix r = Gradient->clone();
     SharedMatrix Ap = SharedMatrix(new Matrix("Ap", nirrep_, doccpi_, Cvir->colspi()));;
     Hx(x, IFock, Cocc, Cvir, Ap);
     r->subtract(Ap);
 
     // Print iteration 0 timings and rms
     double rconv = r->rms();
+    double grad_rms = Gradient->rms() * (double)grad_elements;
+    double rms = sqrt(rconv / grad_rms);
     stop = time(NULL);
     if (soscf_print_){
-        outfile->Printf("    %-4d %11.3E %10ld\n", 1, rconv, stop-start);
+        outfile->Printf("    %-5s %11.3E %10ld\n", "Guess", rms, stop-start);
     }
 
     // Build new p and z vectors
@@ -529,7 +531,8 @@ int RHF::soscf_update()
 
     // => CG iterations <= //
     int fock_builds = 1;
-    for (int cg_iter=2; cg_iter<(soscf_max_iter_+1); cg_iter++) {
+    double alpha = 0.0;
+    for (int cg_iter=1; cg_iter<soscf_max_iter_; cg_iter++) {
 
         // Calc hessian vector product
         Hx(p, IFock, Cocc, Cvir, Ap);
@@ -537,20 +540,24 @@ int RHF::soscf_update()
 
         // Find factors and scale
         double rzpre = r->vector_dot(z);
-        double alpha = rzpre / p->vector_dot(Ap);
+        alpha = rzpre / p->vector_dot(Ap);
+        if (isnan(alpha)){
+            alpha = 0.0;
+        }
 
         x->axpy(alpha, p);
         r->axpy(-alpha, Ap);
 
         // Get residual
         double rconv = r->rms();
+        double rms = sqrt(rconv / grad_rms);
         stop = time(NULL);
         if (soscf_print_){
-            outfile->Printf("    %-4d %11.3E %10ld\n", cg_iter, rconv, stop-start);
+            outfile->Printf("    %-5d %11.3E %10ld\n", cg_iter, rms, stop-start);
         }
 
         // Check convergence
-        if ((rconv < soscf_conv_) && (cg_iter >= soscf_min_iter_)) {
+        if (((rms < soscf_conv_) && (cg_iter >= soscf_min_iter_)) || (alpha==0.0)) {
             break;
         }
 
@@ -582,8 +589,8 @@ int RHF::soscf_update()
         // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
         for (size_t i=0, target=0; i<doccpi_[h]; i++){
             for (size_t a=doccpi_[h]; a < nsopi_[h]; a++){
-                tp[i][a] = -1.0 * xp[target];
-                tp[a][i] = xp[target++];
+                tp[a][i] = xp[target];
+                tp[i][a] = -1.0 * xp[target++];
             }
         }
     }
@@ -599,8 +606,8 @@ int RHF::soscf_update()
     U->gemm(false, false, 0.5, tmp, tmp, 1.0);
 
     // We did not fully exponentiate the matrix, need to orthogonalize
+    // We need QR here, shmidt isnt cutting it
     U->schmidt();
-
     tmp->gemm(false, false, 1.0, Ca_, U, 0.0);
     Ca_->copy(tmp);
 
