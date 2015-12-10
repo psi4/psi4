@@ -541,7 +541,7 @@ int RHF::soscf_update()
         // Find factors and scale
         double rzpre = r->vector_dot(z);
         alpha = rzpre / p->vector_dot(Ap);
-        if (isnan(alpha)){
+        if (std::isnan(alpha)){
             alpha = 0.0;
         }
 
