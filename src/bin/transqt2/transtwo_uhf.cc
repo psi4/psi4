@@ -31,7 +31,6 @@
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
 #include <libiwl/iwl.h>
-#include <libchkpt/chkpt.h>
 #include <libdpd/dpd.h>
 #define EXTERN
 #include "globals.h"

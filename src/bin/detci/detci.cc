@@ -1539,9 +1539,10 @@ void compute_mcscf(boost::shared_ptr<CIWavefunction> ciwfn, struct stringwr **al
     psi::transqt2::transqt2(transqt_options);
 
     // Need to grab the new edrc energy after transqt2 computations
-    chkpt_init(PSIO_OPEN_OLD);
-    CalcInfo.edrc = chkpt_rd_efzc();
-    chkpt_close();
+//    chkpt_init(PSIO_OPEN_OLD);
+//    CalcInfo.edrc = chkpt_rd_efzc();
+//    chkpt_close();
+    CalcInfo.edrc = Process::environment.wavefunction()->efzc();
 
     read_integrals();
     tf_onel_ints((Parameters.print_lvl>3), "outfile");

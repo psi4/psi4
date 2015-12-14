@@ -1,6 +1,6 @@
 set(headers_list "")
 # List of headers
-list(APPEND headers_list PsiFileImpl.h TableSpecs.h StreamBase.h ParallelScanner.h local.h elem.h openmp.h parallel.h PsiOutStream.h ParallelPrinter.h BasesBase.h PsiInStream.h mad.h serialize.h threaded_storage.h mpi_wrapper.h )
+list(APPEND headers_list PsiFileImpl.h TableSpecs.h StreamBase.h ParallelScanner.h local.h elem.h openmp.h parallel.h PsiOutStream.h ParallelPrinter.h BasesBase.h PsiInStream.h mad.h serialize.h threaded_storage.h mpi_wrapper.h libparallel.h )
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
@@ -28,10 +28,6 @@ if(NOT MPI_FOUND)
    list(REMOVE_ITEM sources_list "mpi_wrapper.cc")
 endif()
 
-# Write list of files to be passed to cloc for counting lines of code.
-# Only files that are actually compiled are counted.
-set(to_count "${sources_list}" "${headers_list}")
-write_to_cloc_list("${to_count}")
 
 # Build static library
 add_library(parallel STATIC ${sources_list})

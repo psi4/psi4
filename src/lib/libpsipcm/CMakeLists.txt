@@ -10,31 +10,32 @@ if(ENABLE_PCMSOLVER)
         set(PCM_BUILD_TYPE ${CMAKE_BUILD_TYPE})
     endif()
     list(APPEND PCMSolverCMakeArgs
-        -DCMAKE_BUILD_TYPE=${PCM_BUILD_TYPE}
-        -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/interfaces
-        -DSUBMODULES_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/interfaces
-        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-        -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-        -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
-	    -DENABLE_CXX11_SUPPORT=${ENABLE_CXX11_SUPPORT}
-	    -DBOOST_INCLUDEDIR=${BOOST_INCLUDE_DIRS}
-	    -DBOOST_LIBRARYDIR=${BOOST_LIBRARIES}
-        -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-        -DENABLE_TESTS=OFF
-        -DENABLE_LOGGER=OFF
-        -DENABLE_TIMER=OFF
-        -DBUILD_STANDALONE=OFF
-        -DZLIB_ROOT=${ZLIB_ROOT}
-        -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
+      -DCMAKE_BUILD_TYPE=${PCM_BUILD_TYPE}
+      -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/interfaces
+      -DSUBMODULES_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/interfaces
+      -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+      -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
+      -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+      -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
+      -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+      -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
+      -DENABLE_CXX11_SUPPORT=${ENABLE_CXX11_SUPPORT}
+      -DBOOST_INCLUDEDIR=${BOOST_INCLUDE_DIRS}
+      -DBOOST_LIBRARYDIR=${BOOST_LIBRARIES}
+      -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+      -DENABLE_TESTS=OFF
+      -DENABLE_LOGGER=OFF
+      -DENABLE_TIMER=OFF
+      -DBUILD_STANDALONE=OFF
+      -DENABLE_FORTRAN_API=OFF
+      -DZLIB_ROOT=${ZLIB_ROOT}
+      -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
      )
 
     add_external(pcmsolver "${PCMSolverCMakeArgs}")
 
     include_directories(${PROJECT_SOURCE_DIR}/interfaces/pcmsolver/api)
-    set(PCMSOLVER_PARSE_DIR ${PROJECT_BINARY_DIR}/interfaces/pcmsolver-build/bin)
+    set(PCMSOLVER_PARSE_DIR ${PROJECT_BINARY_DIR}/interfaces/bin)
     configure_file(${CMAKE_SOURCE_DIR}/lib/python/pcm_placeholder.py.in
 	           ${CMAKE_SOURCE_DIR}/lib/python/pcm_placeholder.py)
 endif()
@@ -63,10 +64,6 @@ else()
    list(REMOVE_ITEM sources_list "")
 endif()
 
-# Write list of files to be passed to cloc for counting lines of code.
-# Only files that are actually compiled are counted.
-set(to_count "${sources_list}" "${headers_list}")
-write_to_cloc_list("${to_count}")
 
 # Build static library
 add_library(psipcm STATIC ${sources_list})

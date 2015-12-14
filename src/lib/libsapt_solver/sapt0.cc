@@ -156,17 +156,12 @@ void SAPT0::print_header()
 void SAPT0::print_results()
 {
   e_sapt0_ = eHF_ + e_disp20_ + e_exch_disp20_;
-  double SOS = options_.get_double("SAPT_OS_SCALE");
-  double SSS = options_.get_double("SAPT_SS_SCALE");
-  e_sapt0_scs_ = eHF_ + SOS*(e_disp20_os_ + e_exch_disp20_os_)
-    + SSS*(e_disp20_ss_ + e_exch_disp20_ss_);
   double dHF = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + e_exch_ind20_);
 
   double tot_elst = e_elst10_;
   double tot_exch = e_exch10_;
   double tot_ind = e_ind20_ + e_exch_ind20_ + dHF;
   double tot_disp = e_disp20_ + e_exch_disp20_;
-  double tot_scs_disp = e_sapt0_scs_ - eHF_;
 
   outfile->Printf("\n    SAPT Results  \n");
   outfile->Printf("  -----------------------------------------------------------------------\n");
@@ -203,8 +198,6 @@ void SAPT0::print_results()
     e_disp20_*1000.0,e_disp20_*pc_hartree2kcalmol);
   outfile->Printf("      Exch-Disp20      %16.8lf mH %16.8lf kcal mol^-1\n\n",
     e_exch_disp20_*1000.0,e_exch_disp20_*pc_hartree2kcalmol);
-  outfile->Printf("    SCS Dispersion     %16.8lf mH %16.8lf kcal mol^-1\n",
-    tot_scs_disp*1000.0,tot_scs_disp*pc_hartree2kcalmol);
   outfile->Printf("      Disp20 (SS)      %16.8lf mH %16.8lf kcal mol^-1\n",
     e_disp20_ss_*1000.0,e_disp20_ss_*pc_hartree2kcalmol);
   outfile->Printf("      Disp20 (OS)      %16.8lf mH %16.8lf kcal mol^-1\n",
@@ -214,24 +207,28 @@ void SAPT0::print_results()
   outfile->Printf("      Exch-Disp20 (OS) %16.8lf mH %16.8lf kcal mol^-1\n\n",
     e_exch_disp20_os_*1000.0,e_exch_disp20_os_*pc_hartree2kcalmol);
 
-  outfile->Printf("    Same-Spin Scale        %11.3E\n", SSS);
-  outfile->Printf("    Opposite-Spin Scale    %11.3E\n\n", SOS);
-
   outfile->Printf("    Total HF           %16.8lf mH %16.8lf kcal mol^-1\n",
     eHF_*1000.0,eHF_*pc_hartree2kcalmol);
   outfile->Printf("    Total SAPT0        %16.8lf mH %16.8lf kcal mol^-1\n",
     e_sapt0_*1000.0,e_sapt0_*pc_hartree2kcalmol);
-  outfile->Printf("    Total SCS-SAPT0    %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_sapt0_scs_*1000.0,e_sapt0_scs_*pc_hartree2kcalmol);
 
   Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
+  Process::environment.globals["SAPT ELST10,R ENERGY"] = e_elst10_;
   Process::environment.globals["SAPT EXCH ENERGY"] = tot_exch;
+  Process::environment.globals["SAPT EXCH10 ENERGY"] = e_exch10_;
+  Process::environment.globals["SAPT EXCH10(S^2) ENERGY"] = e_exch10_s2_;
   Process::environment.globals["SAPT IND ENERGY"] = tot_ind;
+  Process::environment.globals["SAPT IND20,R ENERGY"] = e_ind20_;
+  Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = e_exch_ind20_;
   Process::environment.globals["SAPT CT ENERGY"] = e_ind20_ + e_exch_ind20_;
   Process::environment.globals["SAPT DISP ENERGY"] = tot_disp;
-  Process::environment.globals["SAPT SCS-DISP ENERGY"] = tot_scs_disp;
+  Process::environment.globals["SAPT DISP20 ENERGY"] = e_disp20_;
+  Process::environment.globals["SAPT EXCH-DISP20 ENERGY"] = e_exch_disp20_;
+  Process::environment.globals["SAPT DISP20(OS) ENERGY"] = e_disp20_os_;
+  Process::environment.globals["SAPT EXCH-DISP20(OS) ENERGY"] = e_exch_disp20_os_;
+  Process::environment.globals["SAPT DISP20(SS) ENERGY"] = e_disp20_ss_;
+  Process::environment.globals["SAPT EXCH-DISP20(SS) ENERGY"] = e_exch_disp20_ss_;
   Process::environment.globals["SAPT SAPT0 ENERGY"] = e_sapt0_;
-  Process::environment.globals["SAPT SCS-SAPT0 ENERGY"] = e_sapt0_scs_;
   Process::environment.globals["SAPT ENERGY"] = e_sapt0_;
   Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
 }

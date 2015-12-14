@@ -31,7 +31,6 @@
 #include <cstdio>
 #include <string>
 #include <cmath>
-#include <libchkpt/chkpt.h>
 #include <libpsio/psio.h>
 #include "MOInfo.h"
 #include "Params.h"
@@ -54,19 +53,18 @@ void write_Rs(int C_irr, double *evals, int *converged) {
     ++R_index;
 
     if (C_irr == eom_params.prop_sym) {
-		  if (i == eom_params.prop_root) {
-        chkpt_init(PSIO_OPEN_OLD);
+      if (i == eom_params.prop_root) {
         if (!params.full_matrix) {
-			    etot = evals[eom_params.prop_root]+moinfo.ecc+moinfo.eref;
-		    } else {
-			    etot = evals[eom_params.prop_root]+moinfo.eref;
-			  }
-        chkpt_wt_etot(etot);
-        outfile->Printf("Energy written to chkpt:Etot %15.10lf\n", etot);
-        chkpt_wt_statespi(eom_params.states_per_irrep);
-        outfile->Printf("States per irrep written to chkpt.\n");
-        chkpt_close();
-			}
+          etot = evals[eom_params.prop_root]+moinfo.ecc+moinfo.eref;
+        } 
+        else {
+          etot = evals[eom_params.prop_root]+moinfo.eref;
+        }
+        psio_write_entry(PSIF_CC_INFO, "Total energy", (char *) &etot, sizeof(double));
+        outfile->Printf("Energy written to CC_INFO:Etot %15.10lf\n", etot);
+        psio_write_entry(PSIF_CC_INFO, "States per irrep", (char *) eom_params.states_per_irrep, moinfo.nirreps * sizeof(int));
+        outfile->Printf("States per irrep written to CC_INFO.\n");
+      }
     }
     /* cclambda expects excitation energies */
     if (!params.full_matrix) {

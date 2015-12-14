@@ -29,10 +29,8 @@
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
 #include <libpsio/psio.hpp>
 #include <libparallel/parallel.h>
-#include <libchkpt/chkpt.hpp>
 #include <libiwl/iwl.h>
 #include <libqt/qt.h>
 

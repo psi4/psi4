@@ -123,10 +123,6 @@ CCLambdaWavefunction::~CCLambdaWavefunction()
 
 void CCLambdaWavefunction::init()
 {
-    // Wavefunction creates a chkpt object for you, but we're not going to use it.
-    // Destroy it. Otherwise we will see a "file already open" error.
-    chkpt_.reset();
-
     copy(reference_wavefunction_);
 }
 

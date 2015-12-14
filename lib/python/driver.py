@@ -1147,7 +1147,7 @@ def optimize(name, **kwargs):
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
 
-    full_hess_every = psi4.get_local_option('OPTKING', 'FULL_HESS_EVERY')
+    full_hess_every = psi4.get_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
     hessian_with_method = name
     if ('hessian_with' in kwargs):
@@ -1205,12 +1205,14 @@ def optimize(name, **kwargs):
                 if(psi4.me() == 0):
                     shutil.copy(restartfile, p4util.get_psifile(1))
 
+        if full_hess_every > -1:
+            psi4.set_global_option('HESSIAN_WRITE', True)
+
         # compute Hessian as requested; frequency wipes out gradient so stash it
         if ((full_hess_every > -1) and (n == 1)) or (steps_since_last_hessian + 1 == full_hess_every):
             G = psi4.get_gradient()
             psi4.IOManager.shared_object().set_specific_retention(1, True)
             psi4.IOManager.shared_object().set_specific_path(1, './')
-            psi4.set_global_option('HESSIAN_WRITE', True)
             frequencies(hessian_with_method, **kwargs)
             steps_since_last_hessian = 0
             psi4.set_gradient(G)

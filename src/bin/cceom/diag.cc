@@ -33,7 +33,6 @@
 #include <cstdlib>
 #include <string>
 #include <cmath>
-#include <libchkpt/chkpt.h>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
@@ -1074,16 +1073,6 @@ timer_off("INIT GUESS");
     free_block(alpha_old);
     free(converged);
   }
-
-  /* Save the energy vector to checkpoint */
-  chkpt_init(PSIO_OPEN_OLD);
-  keyw = chkpt_build_keyword("EOM Number of States");
-  psio_write_entry(PSIF_CHKPT, keyw, (char *) &(eom_params.number_of_states), sizeof(int));
-  free(keyw);
-  keyw = chkpt_build_keyword("EOM State Energies");
-  psio_write_entry(PSIF_CHKPT, keyw, (char *) eom_params.state_energies, eom_params.number_of_states * sizeof(double));
-  free(keyw);
-  chkpt_close();
 
   outfile->Printf("\tTotal # of sigma evaluations: %d\n",nsigma_evaluations);
   return;

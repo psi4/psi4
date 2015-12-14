@@ -25,7 +25,6 @@
 #include <libmoinfo/libmoinfo.h>
 #include <libpsi4util/libpsi4util.h>
 #include <liboptions/liboptions.h>
-#include <libchkpt/chkpt.hpp>
 
 #include "blas.h"
 #include "mp2_ccsd.h"

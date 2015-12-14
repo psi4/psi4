@@ -28,10 +28,10 @@
 #include <cstdlib>
 #include <cmath>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.h>
 #include <libdpd/dpd.h>
 #include <libiwl/iwl.h>
 #include <libqt/qt.h>
+#include <libmints/wavefunction.h>
 #include <psifiles.h>
 #include "Params.h"
 #include "MOInfo.h"
@@ -70,7 +70,7 @@ int rotate(void)
   int *offset;
   int phase_ok=1, max_col;
 
-  chkpt_init(PSIO_OPEN_OLD);
+  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
 
   nirreps = moinfo.nirreps;
   nso = moinfo.nso;
@@ -124,7 +124,6 @@ int rotate(void)
   if(fabs(max) <= params.bconv) {
     outfile->Printf( "\tBrueckner orbitals converged.  Maximum T1 = %15.12f\n",
 	    fabs(max));
-    chkpt_close();
     return(1);
   }
   else 
@@ -164,11 +163,10 @@ int rotate(void)
     global_dpd_->file2_mat_close(&T1);
     global_dpd_->file2_close(&T1);
 
-    scf = chkpt_rd_scf();
-    scf_orig = chkpt_rd_scf();
+    scf = wfn->Ca()->to_block_matrix();
+    scf_orig = wfn->Ca()->to_block_matrix();
     scf_new = block_matrix(nso, nmo);
-    C_DGEMM('n','t',nso,nmo,nmo,1,&(scf[0][0]),nmo,&(U[0][0]),nmo,
-	    0,&(scf_new[0][0]),nmo);
+    C_DGEMM('n','t',nso,nmo,nmo,1,&(scf[0][0]),nmo,&(U[0][0]),nmo, 0,&(scf_new[0][0]),nmo);
     free_block(U);
     free_block(scf);
 
@@ -335,7 +333,7 @@ int rotate(void)
     free_block(X);
     free_block(scf);
 
-    /* Reorder new MO's to Pitzer and write to chkpt */
+    /* Reorder new MO's to Pitzer and write to wfn */
     /*
     outfile->Printf( "\n\tSemicanonical Brueckner orbitals (Pitzer order):\n");
     mat_print(scf_new, nso, nmo, outfile);
@@ -381,7 +379,6 @@ int rotate(void)
     Process::environment.wavefunction()->Ca()->set(scf_new);
     Process::environment.wavefunction()->Cb()->set(scf_new);
 
-    chkpt_wt_scf(scf_new);
     free_block(scf_new);
     free_block(scf_orig);
 
@@ -409,8 +406,8 @@ int rotate(void)
     global_dpd_->file2_mat_close(&T1);
     global_dpd_->file2_close(&T1);
 
-    scf = chkpt_rd_alpha_scf();
-    scf_a_orig = chkpt_rd_alpha_scf();
+    scf = wfn->Ca()->to_block_matrix();
+    scf_a_orig = wfn->Ca()->to_block_matrix();
 
     scf_new = block_matrix(nso, nmo);
     C_DGEMM('n','t',nso,nmo,nmo,1,&(scf[0][0]),nmo,&(U[0][0]),nmo,
@@ -479,8 +476,8 @@ int rotate(void)
     global_dpd_->file2_mat_close(&T1);
     global_dpd_->file2_close(&T1);
 
-    scf = chkpt_rd_beta_scf();
-    scf_b_orig = chkpt_rd_beta_scf();
+    scf = wfn->Cb()->to_block_matrix();
+    scf_b_orig = wfn->Cb()->to_block_matrix();
 
     scf_new = block_matrix(nso, nmo);
     C_DGEMM('n','t',nso,nmo,nmo,1,&(scf[0][0]),nmo,&(U[0][0]),nmo,
@@ -660,8 +657,6 @@ int rotate(void)
 
     free_block(MO_S);
 
-    chkpt_wt_alpha_scf(scf_new);
-
     Process::environment.wavefunction()->Ca()->set(scf_new);
 
     free_block(scf_new);
@@ -764,8 +759,6 @@ int rotate(void)
 
     free_block(MO_S);
 
-    chkpt_wt_beta_scf(scf_new);
-
     Process::environment.wavefunction()->Cb()->set(scf_new);
 
     free_block(scf_new);
@@ -775,9 +768,6 @@ int rotate(void)
 
   free_block(SO_S);
   free(offset);
-
-  chkpt_wt_phase_check(phase_ok);
-  chkpt_close();
 
   return 0;
 }

@@ -28,7 +28,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.h>
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -58,9 +57,7 @@ void get_moinfo(void)
     psio_address next;
 
     boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-    chkpt_init(PSIO_OPEN_OLD);
     moinfo.nirreps = wfn->nirrep();
-    //  moinfo.nirreps = chkpt_rd_nirreps();
     moinfo.nmo = wfn->nmo();
     moinfo.nso = wfn->nso();
     moinfo.nao = wfn->basisset()->nao();
@@ -76,8 +73,6 @@ void get_moinfo(void)
     moinfo.clsdpi = init_int_array(moinfo.nirreps);
     for(int h = 0; h < moinfo.nirreps; ++h)
         moinfo.clsdpi[h] = wfn->doccpi()[h];
-    moinfo.phase = chkpt_rd_phase_check();
-    chkpt_close();
 
     nirreps = moinfo.nirreps;
 
@@ -307,8 +302,8 @@ void get_moinfo(void)
     psio_read_entry(PSIF_CC_INFO, "Reference Energy", (char *) &(moinfo.eref),
                     sizeof(double));
 
-    outfile->Printf("\n\tNuclear Rep. energy (chkpt)   = %20.15f\n",moinfo.enuc);
-    outfile->Printf(  "\tSCF energy          (chkpt)   = %20.15f\n",moinfo.escf);
+    outfile->Printf("\n\tNuclear Rep. energy (wfn)     = %20.15f\n",moinfo.enuc);
+    outfile->Printf(  "\tSCF energy          (wfn)     = %20.15f\n",moinfo.escf);
     outfile->Printf(  "\tReference energy    (file100) = %20.15f\n",moinfo.eref);
 }
 
@@ -318,36 +313,15 @@ void cleanup(void)
     int i, h;
     char *keyw=NULL;
 
-    /* Save the energy to PSIF_CHKPT as well */
-    chkpt_init(PSIO_OPEN_OLD);
-    if( params.wfn == "CC2" || params.wfn == "EOM_CC2" ) {
+    if( params.wfn == "CC2" || params.wfn == "EOM_CC2" )
         psio_write_entry(PSIF_CC_INFO, "CC2 Energy", (char *) &(moinfo.ecc),
                          sizeof(double));
-
-        keyw = chkpt_build_keyword("CC2 Energy");
-        psio_write_entry(PSIF_CHKPT, keyw, (char *) &(moinfo.ecc),
-                         sizeof(double));
-        free(keyw);
-    }
-    else if( params.wfn == "CC3"  || params.wfn == "EOM_CC3" ) {
+    else if( params.wfn == "CC3"  || params.wfn == "EOM_CC3" ) 
         psio_write_entry(PSIF_CC_INFO, "CC3 Energy", (char *) &(moinfo.ecc),
                          sizeof(double));
-
-        keyw = chkpt_build_keyword("CC3 Energy");
-        psio_write_entry(PSIF_CHKPT, keyw, (char *) &(moinfo.ecc),
-                         sizeof(double));
-        free(keyw);
-    }
-    else {
+    else
         psio_write_entry(PSIF_CC_INFO, "CCSD Energy", (char *) &(moinfo.ecc),
                          sizeof(double));
-
-        keyw = chkpt_build_keyword("CCSD Energy");
-        psio_write_entry(PSIF_CHKPT, keyw, (char *) &(moinfo.ecc),
-                         sizeof(double));
-        free(keyw);
-    }
-    chkpt_close();
 
     if(params.ref == 0 || params.ref == 1) {
         for(h=0; h < moinfo.nirreps; h++){
