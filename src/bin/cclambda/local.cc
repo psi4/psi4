@@ -33,7 +33,6 @@
 #include <libpsio/psio.h>
 #include <libiwl/iwl.h>
 #include <libint/libint.h>
-#include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
 #include <libdpd/dpd.h>
 #include <exception.h>
@@ -62,10 +61,6 @@ namespace psi { namespace cclambda {
 
 void local_init(void)
 {
-  chkpt_init(PSIO_OPEN_OLD);
-  local.natom = chkpt_rd_natom();
-  chkpt_close();
-
   local.nso = moinfo.nso;
   local.nocc = moinfo.occpi[0]; /* active doubly occupied orbitals */
   local.nvir = moinfo.virtpi[0]; /* active virtual orbitals */

@@ -15,12 +15,13 @@ H    1.23809    2.14444   0.00000
 }
 
 
-reference_energy = -230.72173960646708
+reference_energy = -230.72173960633896
 
 set {
 basis cc-pVDZ
 guess sad
 soscf true
+scf_type df
 }
 
 

@@ -174,7 +174,7 @@ class MOLECULE {
   void print_connectivity(std::string psi_fp, FILE *qc_fp) const {
     for (ULI i=0; i<fragments.size(); ++i)
       fragments[i]->print_connectivity(psi_fp, qc_fp, i, g_atom_offset(i));
-  }
+  }                        
 
   void print_geom(std::string psi_fp, FILE *qc_fp, bool print_mass = false) {
     for (ULI i=0; i<fragments.size(); ++i)
@@ -182,6 +182,7 @@ class MOLECULE {
   }
 
   void print_xyz(int iter_shift = 0);
+  void print_xyz_irc(int point, bool direction);
 
   void print_geom_grad(std::string psi_fp, FILE *qc_fp, bool print_mass = false) {
     for (ULI i=0; i<fragments.size(); ++i)
@@ -259,6 +260,7 @@ class MOLECULE {
   void write_geom(void);
   void symmetrize_geom(void);
   void print_geom_out(void);
+  void print_geom_out_irc(void);
 
   double ** compute_B(void) const;
   double ** compute_derivative_B(int coord_index) const ;

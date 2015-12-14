@@ -33,7 +33,6 @@
 #include <libpsio/psio.h>
 #include <libiwl/iwl.h>
 #include <libint/libint.h>
-#include <libchkpt/chkpt.h>
 #include <exception.h>
 #include <libqt/qt.h>
 #include <libdpd/dpd.h>

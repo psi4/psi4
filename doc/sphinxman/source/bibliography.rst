@@ -297,3 +297,20 @@ Bibliography
 .. [Parr:1989]
    R.G. Parr and W. Yang,
    *Density Functional Theory of Atoms and Molecules* **Oxford University Press, USA, 1989** ISBN:0195357736, 9780195357738
+
+.. [FW:1950]
+   Leslie L. Foldy and Wouthuysen, Siegfried A. Wouthuysen,
+   *Phys. Rev.* **78**, 29-36 (1950) 
+
+.. [Kutzelnigg:1984]
+   Werner Kutzelnigg,
+   *Int. J. Quantum Chem.* **25**, 107-129 (1984)
+ 
+.. [Cheng:084114]
+   Lan Cheng and Jürgen Gauss,
+   *J. Chem. Phys.* **135**, 084114 (2011)
+
+
+.. [Verma:2015]
+   P. Verma, W. D. Derricotte, F. A. Evangelista,
+   *J. Chem. Theory Comput.* **DOI: 10.1021/acs.jctc.5b00817** (2015).

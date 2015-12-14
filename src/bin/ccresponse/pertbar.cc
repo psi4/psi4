@@ -157,7 +157,6 @@ void pertbar(const char *pert, int irrep, int anti)
   global_dpd_->contract244(&f, &t2, &fbar2, 1, 2, 0, 1, 0);
   global_dpd_->buf4_close(&t2);
   global_dpd_->file2_close(&f);
-  global_dpd_->buf4_print(&fbar2, "outfile", 1);
   global_dpd_->buf4_close(&fbar2);
 
   /** LBAR_IjAb **/
@@ -202,7 +201,6 @@ void pertbar(const char *pert, int irrep, int anti)
   global_dpd_->buf4_close(&t2);
   global_dpd_->file2_close(&z);
 
-  global_dpd_->buf4_print(&fbar2, "outfile", 1);
   global_dpd_->buf4_close(&fbar2);
 }
 

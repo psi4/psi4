@@ -89,10 +89,24 @@ void FRAG::print_geom(std::string psi_fp, FILE *qc_fp) {
       Z_to_symbol[(int) Z[i]], geom[i][0], geom[i][1], geom[i][2]);
   fflush(fp_geom);
 }
+
+void FRAG::print_geom_irc(std::string psi_fp, FILE *qc_fp) {
+  for (int i=0; i<natom; ++i)
+    oprintf(psi_fp, qc_fp, "@IRC     %3s  %15.10lf%15.10lf%15.10lf\n",
+      Z_to_symbol[(int) Z[i]], geom[i][0], geom[i][1], geom[i][2]);
+  fflush(fp_geom);
+}
 #elif defined(OPTKING_PACKAGE_PSI)
 void FRAG::print_geom(std::string psi_fp, FILE *qc_fp) {
    for (int i=0; i<natom; ++i)
     oprintf(psi_fp, qc_fp, "\t  %3s  %15.10lf%15.10lf%15.10lf\n",
+      Z_to_symbol[(int) Z[i]], geom[i][0] * _bohr2angstroms, 
+      geom[i][1] * _bohr2angstroms, geom[i][2] * _bohr2angstroms);
+}
+
+void FRAG::print_geom_irc(std::string psi_fp, FILE *qc_fp) {
+   for (int i=0; i<natom; ++i)
+    oprintf(psi_fp, qc_fp, "@IRC     %3s  %15.10lf%15.10lf%15.10lf\n",
       Z_to_symbol[(int) Z[i]], geom[i][0] * _bohr2angstroms, 
       geom[i][1] * _bohr2angstroms, geom[i][2] * _bohr2angstroms);
 }

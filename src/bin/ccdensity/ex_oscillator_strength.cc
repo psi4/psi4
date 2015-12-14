@@ -29,7 +29,6 @@
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include <libiwl/iwl.h>
-#include <libchkpt/chkpt.h>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -65,21 +64,17 @@ void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
   double delta_ee;
   double einstein_a, einstein_b;
 
-  chkpt_init(PSIO_OPEN_OLD);
+  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+
   if ((params.ref == 0) || (params.ref == 1))
-    scf_pitzer = chkpt_rd_scf();
+    scf_pitzer = wfn->Ca()->to_block_matrix();
   else if(params.ref == 2) {
-    scf_pitzer_A = chkpt_rd_alpha_scf();
-    scf_pitzer_B = chkpt_rd_beta_scf();
+    scf_pitzer_A = wfn->Ca()->to_block_matrix();
+    scf_pitzer_B = wfn->Cb()->to_block_matrix();
   }
 
-  nso = chkpt_rd_nso();
-  nmo = chkpt_rd_nmo();
-  clsdpi = chkpt_rd_clsdpi();
-  openpi = chkpt_rd_openpi();
-  orbspi = chkpt_rd_orbspi();
-  nirreps = chkpt_rd_nirreps();
-  chkpt_close();
+  nso = wfn->nso();
+  nmo = wfn->nmo();
 
   lt_x = lt_y = lt_z = 0.0;
   rt_x = rt_y = rt_z = 0.0;

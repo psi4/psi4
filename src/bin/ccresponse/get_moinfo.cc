@@ -28,12 +28,12 @@
 #include <cstdlib>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
 #include <libmints/wavefunction.h>
 #include <libmints/molecule.h>
 #include <libmints/basisset.h>
+#include <libmints/matrix.h>
 #include <psi4-dec.h>
 #include "MOInfo.h"
 #include "Params.h"
@@ -62,7 +62,6 @@ void get_moinfo(void)
 
     boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
 
-    chkpt_init(PSIO_OPEN_OLD);
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
     moinfo.nso = wfn->nso();
@@ -75,7 +74,6 @@ void get_moinfo(void)
     for(int h = 0; h < moinfo.nirreps; ++h)
         moinfo.clsdpi[h] = wfn->doccpi()[h];
     moinfo.natom = wfn->molecule()->natom();
-    chkpt_close();
 
     nirreps = moinfo.nirreps;
 
@@ -225,14 +223,11 @@ void get_moinfo(void)
         actpi[h] = moinfo.orbspi[h] - moinfo.frdocc[h] - moinfo.fruocc[h];
     moinfo.actpi = actpi;
 
-    chkpt_init(PSIO_OPEN_OLD);
-
-    if(params.ref == 0 || params.ref == 1) {  /* RHF/ROHF */
-        moinfo.scf = chkpt_rd_scf();
-    }
+    if(params.ref == 0 || params.ref == 1) /* RHF/ROHF */
+        moinfo.scf = wfn->Ca()->to_block_matrix();
     else if(params.ref == 2) {  /* UHF */
-        moinfo.scf_alpha = chkpt_rd_alpha_scf();
-        moinfo.scf_beta = chkpt_rd_beta_scf();
+        moinfo.scf_alpha = wfn->Ca()->to_block_matrix();
+        moinfo.scf_beta = wfn->Cb()->to_block_matrix();
     }
 
     /* Get the active virtual orbitals */
@@ -249,8 +244,6 @@ void get_moinfo(void)
         }
         moinfo.C = C;
     }
-
-    chkpt_close();
 
     /* Prepare memory for property integrals */
     moinfo.MU = (double ***) malloc(3 * sizeof(double **));
@@ -289,7 +282,6 @@ void cleanup(void)
         free_block(moinfo.scf_beta);
     }
     else {
-        free_block(moinfo.scf);
         for(i=0; i < moinfo.nirreps; i++)
             if(moinfo.sopi[i] && moinfo.virtpi[i]) free_block(moinfo.C[i]);
         free(moinfo.C);
@@ -301,6 +293,7 @@ void cleanup(void)
         free(moinfo.vir_off);
         free(moinfo.qt_occ);
         free(moinfo.qt_vir);
+        free_block(moinfo.scf);
     }
 
 //    free(moinfo.sopi);

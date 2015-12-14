@@ -29,7 +29,6 @@
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include <libiwl/iwl.h>
-#include <libchkpt/chkpt.h>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -47,8 +46,8 @@ namespace psi { namespace ccdensity {
 
 void oscillator_strength(struct TD_Params *S)
 {
-  int nmo, nso, i, I, h, j, nirreps;
-  int *order, *order_A, *order_B, *doccpi, *clsdpi, *openpi, *orbspi;
+  int nmo, nso, i, I, h, j;
+  int *order, *order_A, *order_B, *doccpi;
   double **scf_pitzer, **scf_pitzer_A, **scf_pitzer_B;
   double **scf_qt, **scf_qt_A, **scf_qt_B, **X;
   double *mu_x_ints, *mu_y_ints, *mu_z_ints;
@@ -62,21 +61,17 @@ void oscillator_strength(struct TD_Params *S)
   double f_x, f_y, f_z;
   double f;
 
-  chkpt_init(PSIO_OPEN_OLD);
+  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+
   if ((params.ref == 0) || (params.ref == 1))
-    scf_pitzer = chkpt_rd_scf();
+    scf_pitzer = wfn->Ca()->to_block_matrix();
   else if(params.ref == 2) {
-    scf_pitzer_A = chkpt_rd_alpha_scf();
-    scf_pitzer_B = chkpt_rd_beta_scf();
+    scf_pitzer_A = wfn->Ca()->to_block_matrix();
+    scf_pitzer_B = wfn->Cb()->to_block_matrix();
   }
 
-  nso = chkpt_rd_nso();
-  nmo = chkpt_rd_nmo();
-  clsdpi = chkpt_rd_clsdpi();
-  openpi = chkpt_rd_openpi();
-  orbspi = chkpt_rd_orbspi();
-  nirreps = chkpt_rd_nirreps();
-  chkpt_close();
+  nso = wfn->nso();
+  nmo = wfn->nmo();
 
   lt_x = lt_y = lt_z = 0.0;
   rt_x = rt_y = rt_z = 0.0;

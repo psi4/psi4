@@ -175,7 +175,6 @@ DCFTSolver::process_so_ints_RHF()
 
       bool buildTensors = (options_.get_str("AO_BASIS") == "DISK");
 
-      dcft_timer_on("DCFTSolver::g_AbCd lambda_IjCd");
       if(buildTensors){
 
           counter = 0;
@@ -469,7 +468,6 @@ DCFTSolver::process_so_ints_RHF()
           free_int_matrix(Cd_row_start);
 
       }
-      dcft_timer_off("DCFTSolver::g_AbCd lambda_IjCd");
 
       // Build the Fock matrices from the H and G matrices
       soOffset = 0;

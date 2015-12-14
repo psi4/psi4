@@ -15,7 +15,7 @@ no_com
 }
 
 set {
-  basis STO-3G 
+  basis STO-3G
   scf_type pk
   pcm true
   pcm_scf_type total
@@ -26,16 +26,16 @@ pcm = {
    Medium {
    SolverType = IEFPCM
    Solvent = Water
-   }     
-        
+   }
+
    Cavity {
-   RadiiSet = UFF	   
+   RadiiSet = UFF
    Type = GePol
    Scaling = False
    Area = 0.3
    Mode = Implicit
    }
-}   
+}
 
 energy_scf1 = energy('scf')
 

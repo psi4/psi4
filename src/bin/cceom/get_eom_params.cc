@@ -22,15 +22,15 @@
 
 /*! \file
     \ingroup CCEOM
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include <string>
 #include <cmath>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.h>
 #include <psi4-dec.h>
+#include <libmints/mints.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -39,20 +39,62 @@
 
 namespace psi { namespace cceom {
 
+namespace {
+
+void map_irreps(int* array)
+{
+    boost::shared_ptr<PointGroup> full = Process::environment.parent_symmetry();
+    // If the parent symmetry hasn't been set, no displacements have been made
+    if(!full) return;
+    boost::shared_ptr<PointGroup> sub = Process::environment.molecule()->point_group();
+
+    // If the point group between the full and sub are the same return
+    if (full->symbol() == sub->symbol())
+        return;
+
+    // Build the correlation table between full, and subgroup
+    CorrelationTable corrtab(full, sub);
+    int nirreps = corrtab.n();
+    int temp[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+    for(int h = 0; h < nirreps; ++h){
+        int target = corrtab.gamma(h, 0);
+        temp[target] += array[h];
+    }
+    for(int h = 0; h < nirreps; ++h)
+        array[h] = temp[h];
+}
+
+}
+
 void get_eom_params(Options &options)
 {
   // Number of excited states per irrep
-  chkpt_init(PSIO_OPEN_OLD);
-  if (chkpt_rd_override_occ()) eom_params.states_per_irrep = chkpt_rd_statespi();
-  else if (options["ROOTS_PER_IRREP"].has_changed()) {
-    if(options["ROOTS_PER_IRREP"].size() != moinfo.nirreps) 
-      throw PsiException("ROOTS_PER_IRREP is wrong size. Should be number of irreps.", __FILE__, __LINE__);
-    eom_params.states_per_irrep = new int[moinfo.nirreps];
-    for (int h=0; h < moinfo.nirreps; ++h)
-      eom_params.states_per_irrep[h] = options["ROOTS_PER_IRREP"][h].to_integer();
+  if (options["ROOTS_PER_IRREP"].has_changed()) {
+    // map the symmetry of the input ROOTS_PER_IRREP to account for displacements.
+    boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
+    if (old_pg) {
+        // This is one of a series of displacements;  check the dimension against the parent point group
+        size_t full_nirreps = old_pg->char_table().nirrep();
+        if(options["ROOTS_PER_IRREP"].size() != full_nirreps)
+            throw PSIEXCEPTION("Input ROOTS_PER_IRREP array has the wrong dimensions");
+        int *temp_docc = new int[full_nirreps];
+        for(int h = 0; h < full_nirreps; ++h)
+            temp_docc[h] = options["ROOTS_PER_IRREP"][h].to_integer();
+        map_irreps(temp_docc);
+        eom_params.states_per_irrep = new int[moinfo.nirreps];
+        for (int h=0; h<moinfo.nirreps; h++)
+            eom_params.states_per_irrep[h] = temp_docc[h];
+        delete[] temp_docc;
+    }
+    else {
+      if(options["ROOTS_PER_IRREP"].size() != moinfo.nirreps)
+        throw PsiException("ROOTS_PER_IRREP is wrong size. Should be number of irreps.", __FILE__, __LINE__);
+      eom_params.states_per_irrep = new int[moinfo.nirreps];
+      for (int h=0; h < moinfo.nirreps; ++h)
+        eom_params.states_per_irrep[h] = options["ROOTS_PER_IRREP"][h].to_integer();
+    }
   }
   else throw PsiException("Must provide roots_per_irrep vector in input.", __FILE__, __LINE__);
-  chkpt_close();
 
   // Number of guess vectors per irrep
   eom_params.cs_per_irrep = new int[moinfo.nirreps];
@@ -66,7 +108,7 @@ void get_eom_params(Options &options)
   eom_params.max_iter = 80 * moinfo.nirreps;
   eom_params.max_iter = options.get_int("MAXITER");
 
-  // Use prop_sym and prop_root only to determine what energy to write to chkpt
+  // Use prop_sym and prop_root only to determine what energy to write
   if (options["PROP_SYM"].has_changed()) {
     eom_params.prop_sym = options.get_int("PROP_SYM");
     eom_params.prop_sym = (eom_params.prop_sym - 1)^moinfo.sym;
@@ -121,7 +163,7 @@ void get_eom_params(Options &options)
   outfile->Printf( "\n\tCCEOM parameters:\n");
   outfile->Printf( "\t-----------------\n");
   outfile->Printf( "\tStates sought per irrep     =");
-  for(int i = 0; i < moinfo.nirreps; ++i) 
+  for(int i = 0; i < moinfo.nirreps; ++i)
     outfile->Printf( " %s %d,", moinfo.irr_labs[i], eom_params.states_per_irrep[i]);
 
   outfile->Printf("\n");

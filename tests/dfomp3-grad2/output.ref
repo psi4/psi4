@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.3.49 Driver
+                              Psi4 0.3.236 Driver
 
-                          Git: Rev {master} 88ff8cf dirty
+                          Git: Rev {master} 25a6d03 
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,10 +16,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wed Oct  7 17:10:39 2015
+    Psi4 started on: Wed Nov 18 21:51:36 2015
 
-    Process ID:  40239
-    PSI4DATADIR: /Users/ugur/psi4/lib
+    Process ID:    499
+    PSI4DATADIR: /Users/ugur/test/psi4/lib
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -28,9 +28,9 @@
 #! DF-OMP3 cc-pVDZ gradients for the H2O+ cation.
 
 ref_vals = [                                                             #TEST
-             [ 0.000000000000,     0.00000000000000,    -0.03825485470567],  #TEST
-             [ 0.000000000000,     0.07747179902396,     0.01912742735284],  #TEST
-             [ 0.000000000000,    -0.07747179902396,     0.01912742735284]   #TEST
+             [ 0.000000000000,     0.000000000000,     0.046742189909],  #TEST
+             [ 0.000000000000,     0.040515769777,    -0.023371064690],  #TEST
+             [ 0.000000000000,    -0.040515769777,    -0.023371125219]   #TEST
            ]                                                             #TEST
 ref = psi4.Matrix(3, 3)                                                #TEST
 ref.set(ref_vals)
@@ -49,7 +49,7 @@ set {
   df_basis_scf cc-pvdz-jkfit
   df_basis_cc cc-pvdz-ri
   scf_type df
-  guess sad
+  guess gwh
   freeze_core true
   reference uhf
 }
@@ -66,7 +66,7 @@ gradient() will perform analytic gradient computation.
   DFOCC does not make use of molecular symmetry, further calculations in C1 point group.
 
 *** tstart() called on Ugurs-MacBook-Pro.local
-*** at Wed Oct  7 17:10:40 2015
+*** at Wed Nov 18 21:51:36 2015
 
 
          ---------------------------------------------------------
@@ -83,11 +83,11 @@ gradient() will perform analytic gradient computation.
 
     Geometry (in Angstrom), charge = 1, multiplicity = 2:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.065655108074
-           H          0.000000000000    -0.757365949175     0.520997104936
-           H          0.000000000000     0.757365949175     0.520997104936
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.065655108074    15.994914619560
+           H          0.000000000000    -0.757365949175     0.520997104936     1.007825032070
+           H          0.000000000000     0.757365949175     0.520997104936     1.007825032070
 
   Running in c1 symmetry.
 
@@ -107,7 +107,7 @@ gradient() will perform analytic gradient computation.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is SAD.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-10
   Integral threshold = 0.00e+00
@@ -160,40 +160,33 @@ gradient() will perform analytic gradient computation.
 
   Minimum eigenvalue in the overlap matrix is 3.4230868664E-02.
   Using Symmetric Orthogonalization.
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-UHF iter   0:   -70.77913151350013   -7.07791e+01   6.94514e-02 
-   @DF-UHF iter   1:   -75.41506851289348   -4.63594e+00   2.54812e-02 
-   @DF-UHF iter   2:   -75.52807062818533   -1.13002e-01   1.02590e-02 DIIS
-   @DF-UHF iter   3:   -75.55027079670552   -2.22002e-02   1.17512e-03 DIIS
-   @DF-UHF iter   4:   -75.55188985293937   -1.61906e-03   7.91527e-04 DIIS
-   @DF-UHF iter   5:   -75.55293983415444   -1.04998e-03   8.35268e-04 DIIS
-   @DF-UHF iter   6:   -75.54861407023765    4.32576e-03   5.01666e-04 DIIS
-   @DF-UHF iter   7:   -75.54732809054062    1.28598e-03   2.81546e-04 DIIS
-   @DF-UHF iter   8:   -75.54727598049605    5.21100e-05   9.49591e-05 DIIS
-   @DF-UHF iter   9:   -75.54727918360071   -3.20310e-06   3.80934e-05 DIIS
-   @DF-UHF iter  10:   -75.54727948053151   -2.96931e-07   1.19670e-05 DIIS
-   @DF-UHF iter  11:   -75.54727959183799   -1.11306e-07   3.85984e-06 DIIS
-   @DF-UHF iter  12:   -75.54727960227895   -1.04410e-08   7.96057e-07 DIIS
-   @DF-UHF iter  13:   -75.54727960274248   -4.63530e-10   3.33834e-07 DIIS
-   @DF-UHF iter  14:   -75.54727960289493   -1.52454e-10   2.25543e-07 DIIS
-   @DF-UHF iter  15:   -75.54727960299176   -9.68328e-11   1.49788e-07 DIIS
-   @DF-UHF iter  16:   -75.54727960301983   -2.80664e-11   3.87904e-08 DIIS
-   @DF-UHF iter  17:   -75.54727960302050   -6.67910e-13   6.62258e-09 DIIS
-   @DF-UHF iter  18:   -75.54727960302043    7.10543e-14   1.65971e-09 DIIS
-   @DF-UHF iter  19:   -75.54727960302044   -1.42109e-14   4.55166e-10 DIIS
-   @DF-UHF iter  20:   -75.54727960302047   -2.84217e-14   1.48246e-10 DIIS
-   @DF-UHF iter  21:   -75.54727960302046    1.42109e-14   7.34980e-11 DIIS
+   @DF-UHF iter   1:   -74.82646240386302   -7.48265e+01   6.91189e-02 
+   @DF-UHF iter   2:   -75.52518829212303   -6.98726e-01   2.26875e-02 DIIS
+   @DF-UHF iter   3:   -75.62908429296017   -1.03896e-01   2.84888e-03 DIIS
+   @DF-UHF iter   4:   -75.63165948805950   -2.57520e-03   6.39296e-04 DIIS
+   @DF-UHF iter   5:   -75.63186288024974   -2.03392e-04   1.62214e-04 DIIS
+   @DF-UHF iter   6:   -75.63188161353429   -1.87333e-05   6.61175e-05 DIIS
+   @DF-UHF iter   7:   -75.63188558205762   -3.96852e-06   1.70326e-05 DIIS
+   @DF-UHF iter   8:   -75.63188585489664   -2.72839e-07   2.72862e-06 DIIS
+   @DF-UHF iter   9:   -75.63188585979137   -4.89473e-09   3.71072e-07 DIIS
+   @DF-UHF iter  10:   -75.63188585986687   -7.55023e-11   7.99324e-08 DIIS
+   @DF-UHF iter  11:   -75.63188585987039   -3.52429e-12   1.56722e-08 DIIS
+   @DF-UHF iter  12:   -75.63188585987056   -1.70530e-13   3.00840e-09 DIIS
+   @DF-UHF iter  13:   -75.63188585987054    2.84217e-14   6.19250e-10 DIIS
+   @DF-UHF iter  14:   -75.63188585987049    4.26326e-14   1.70497e-10 DIIS
+   @DF-UHF iter  15:   -75.63188585987054   -4.26326e-14   1.85221e-11 DIIS
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   3.281722707E-03
+   @Spin Contamination Metric:   6.088362988E-03
    @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                7.532817227E-01
+   @S^2 Observed:                7.560883630E-01
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
@@ -202,33 +195,33 @@ gradient() will perform analytic gradient computation.
 
     Alpha Occupied:                                                       
 
-       1A    -21.118817     2A     -1.887716     3A     -1.209155  
-       4A     -1.196559     5A     -1.022448  
+       1A    -21.140108     2A     -1.913839     3A     -1.218286  
+       4A     -1.130138     5A     -1.097758  
 
     Alpha Virtual:                                                        
 
-       6A     -0.134265     7A     -0.059247     8A      0.369635  
-       9A      0.446153    10A      0.666878    11A      0.736855  
-      12A      0.825305    13A      0.997250    14A      1.059380  
-      15A      1.246572    16A      1.407817    17A      1.515820  
-      18A      1.980651    19A      2.030467    20A      2.735331  
-      21A      2.830224    22A      2.947293    23A      3.359841  
-      24A      3.609015  
+       6A     -0.141754     7A     -0.058330     8A      0.392754  
+       9A      0.447072    10A      0.672562    11A      0.714891  
+      12A      0.827259    13A      1.025012    14A      1.040096  
+      15A      1.239280    16A      1.385358    17A      1.532256  
+      18A      1.995814    19A      2.004215    20A      2.723224  
+      21A      2.773946    22A      3.001104    23A      3.326569  
+      24A      3.653004  
 
     Beta Occupied:                                                        
 
-       1A    -21.076630     2A     -1.748360     3A     -1.166219  
-       4A     -0.966831  
+       1A    -21.095033     2A     -1.757776     3A     -1.180066  
+       4A     -1.045873  
 
     Beta Virtual:                                                         
 
-       5A     -0.407217     6A     -0.112757     7A     -0.042240  
-       8A      0.417513     9A      0.479510    10A      0.761977  
-      11A      0.808924    12A      0.843185    13A      1.048300  
-      14A      1.064623    15A      1.278290    16A      1.457334  
-      17A      1.528882    18A      2.023187    19A      2.056732  
-      20A      2.825966    21A      2.855222    22A      3.052802  
-      23A      3.393881    24A      3.679414  
+       5A     -0.313549     6A     -0.127690     7A     -0.050138  
+       8A      0.391559     9A      0.463536    10A      0.736210  
+      11A      0.844622    12A      0.870089    13A      1.035726  
+      14A      1.070442    15A      1.269228    16A      1.437900  
+      17A      1.528744    18A      2.007304    19A      2.059863  
+      20A      2.827003    21A      2.878444    22A      3.032858  
+      23A      3.405026    24A      3.670625  
 
     Final Occupation by Irrep:
               A 
@@ -237,18 +230,18 @@ gradient() will perform analytic gradient computation.
 
   Energy converged.
 
-  @DF-UHF Final Energy:   -75.54727960302046
+  @DF-UHF Final Energy:   -75.63188585987054
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1873864214775924
-    One-Electron Energy =                -118.0765989263882716
-    Two-Electron Energy =                  33.3419329018902246
+    One-Electron Energy =                -118.0596668189947280
+    Two-Electron Energy =                  33.2403945376465941
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -75.5472796030204563
+    Total Energy =                        -75.6318858598705361
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -262,39 +255,39 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.9765
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.1628
+     X:     0.0000      Y:    -0.0000      Z:     0.0133
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.8138     Total:     0.8138
+     X:     0.0000      Y:    -0.0000      Z:     0.9898     Total:     0.9898
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     2.0684     Total:     2.0684
+     X:     0.0000      Y:    -0.0000      Z:     2.5158     Total:     2.5158
 
 
   Saving occupied orbitals to File 180.
 
   UHF NO Occupations:
-  HONO-2 :    3  A 1.9995806
-  HONO-1 :    4  A 1.9991120
+  HONO-2 :    3  A 1.9991846
+  HONO-1 :    4  A 1.9980708
   HONO-0 :    5  A 1.0000000
-  LUNO+0 :    6  A 0.0008880
-  LUNO+1 :    7  A 0.0004194
-  LUNO+2 :    8  A 0.0003336
+  LUNO+0 :    6  A 0.0019292
+  LUNO+1 :    7  A 0.0008154
+  LUNO+2 :    8  A 0.0003016
   LUNO+3 :    9  A 0.0000003
 
 
-*** tstop() called on Ugurs-MacBook-Pro.local at Wed Oct  7 17:10:40 2015
+*** tstop() called on Ugurs-MacBook-Pro.local at Wed Nov 18 21:51:36 2015
 Module time:
-	user time   =       0.59 seconds =       0.01 minutes
+	user time   =       0.17 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.59 seconds =       0.01 minutes
+	user time   =       0.17 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on Ugurs-MacBook-Pro.local
-*** at Wed Oct  7 17:10:40 2015
+*** at Wed Nov 18 21:51:36 2015
 
 
 
@@ -307,10 +300,7 @@ Total time:
   CC_LAMBDA                   => FALSE            
   CC_MAXITER                  => 50               
   CC_TYPE                     => CONVENTIONAL     
-  CEPA_OS_SCALE               => 1.27             
-  CEPA_SOS_SCALE              => 1.3              
-  CEPA_SS_SCALE               => 1.13             
-  CEPA_TYPE                   => CEPA(0)          
+  CHOLESKY                    => FALSE            
   CHOLESKY_TOLERANCE          => 0.0001           
   COMPUT_S2                   => FALSE            
   CUBEPROP_BASIS_FUNCTIONS    => [  ]             
@@ -372,6 +362,7 @@ Total time:
   PCM                         => FALSE            
   PCM_SCF_TYPE                => TOTAL            
   PRINT                       => 1                
+  PRINT_NOONS                 => 3                
   PROPERTIES                  => [  ]             
   PROPERTIES_ORIGIN           => [  ]             
   PUREAM                      => TRUE             
@@ -404,9 +395,9 @@ Total time:
  ============================================================================== 
  ============================================================================== 
 
-                       DF-OMP3 (DF-OO-MP3)   
+                     DF-OMP3 (DF-OO-MP3)   
               Program Written by Ugur Bozkaya
-              Latest Revision October 7, 2015
+              Latest Revision October 8, 2015
 
  ============================================================================== 
  ============================================================================== 
@@ -434,33 +425,33 @@ Total time:
 	Computing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	DF-HF Energy (a.u.)                :   -75.54727960302046
-	REF Energy (a.u.)                  :   -75.54727960302046
-	Alpha-Alpha Contribution (a.u.)    :    -0.02415809693563
-	Alpha-Beta Contribution (a.u.)     :    -0.11598792998259
-	Beta-Beta Contribution (a.u.)      :    -0.01199289966661
-	Scaled_SS Correlation Energy (a.u.):    -0.01205033220075
-	Scaled_OS Correlation Energy (a.u.):    -0.13918551597911
-	DF-SCS-MP2 Total Energy (a.u.)     :   -75.69851545120031
-	DF-SOS-MP2 Total Energy (a.u.)     :   -75.69806391199782
-	DF-SCSN-MP2 Total Energy (a.u.)    :   -75.61090535704039
-	DF-MP2 Correlation Energy (a.u.)   :    -0.15213892658483
-	DF-MP2 Total Energy (a.u.)         :   -75.69941852960528
+	DF-HF Energy (a.u.)                :   -75.63188585987054
+	REF Energy (a.u.)                  :   -75.63188585987054
+	Alpha-Alpha Contribution (a.u.)    :    -0.02406248683855
+	Alpha-Beta Contribution (a.u.)     :    -0.11584755201457
+	Beta-Beta Contribution (a.u.)      :    -0.01111175580314
+	Scaled_SS Correlation Energy (a.u.):    -0.01172474754723
+	Scaled_OS Correlation Energy (a.u.):    -0.13901706241749
+	DF-SCS-MP2 Total Energy (a.u.)     :   -75.78262766983526
+	DF-SOS-MP2 Total Energy (a.u.)     :   -75.78248767748948
+	DF-SCSN-MP2 Total Energy (a.u.)    :   -75.69379252691992
+	DF-MP2 Correlation Energy (a.u.)   :    -0.15102179465627
+	DF-MP2 Total Energy (a.u.)         :   -75.78290765452681
 	======================================================================= 
 
 	Computing DF-MP3 energy using SCF MOs (Canonical DF-MP3)... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	SCF Energy (a.u.)                  :   -75.54727960302046
-	REF Energy (a.u.)                  :   -75.54727960302046
-	Alpha-Alpha Contribution (a.u.)    :    -0.02403677811733
-	Alpha-Beta Contribution (a.u.)     :    -0.12956130387291
-	Beta-Beta Contribution (a.u.)      :    -0.01173034257460
-	3rd Order Energy (a.u.)            :    -0.01318949798001
-	DF-MP2.5 Correlation Energy (a.u.) :    -0.15873367557483
-	DF-MP2.5 Total Energy (a.u.)       :   -75.70601327859529
-	DF-MP3 Correlation Energy (a.u.)   :    -0.16532842456484
-	DF-MP3 Total Energy (a.u.)         :   -75.71260802758529
+	SCF Energy (a.u.)                  :   -75.63188585987054
+	REF Energy (a.u.)                  :   -75.63188585987054
+	Alpha-Alpha Contribution (a.u.)    :    -0.02402468735538
+	Alpha-Beta Contribution (a.u.)     :    -0.13008849109970
+	Beta-Beta Contribution (a.u.)      :    -0.01089488140856
+	3rd Order Energy (a.u.)            :    -0.01398626520736
+	DF-MP2.5 Correlation Energy (a.u.) :    -0.15801492725996
+	DF-MP2.5 Total Energy (a.u.)       :   -75.78990078713049
+	DF-MP3 Correlation Energy (a.u.)   :    -0.16500805986364
+	DF-MP3 Total Energy (a.u.)         :   -75.79689391973417
 	======================================================================= 
 
 	Number of alpha independent-pairs: 99
@@ -473,14 +464,15 @@ Total time:
 	            ------------------------------ 
  Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    
  ----    ---------------    ----------     -----------      -----------     ---------- 
-   1     -75.7131921188     -5.84e-04       1.37e-03         6.09e-03        5.65e-06 
-   2     -75.7132326243     -4.05e-05       5.81e-04         2.93e-03        8.46e-07 
-   3     -75.7132444180     -1.18e-05       3.03e-04         2.22e-03        4.68e-07 
-   4     -75.7132494824     -5.06e-06       2.26e-04         1.77e-03        2.60e-07 
-   5     -75.7132520902     -2.61e-06       1.54e-04         1.41e-03        1.55e-07 
-   6     -75.7132557248     -3.63e-06       4.88e-05         3.48e-04        2.54e-07 
-   7     -75.7132559627     -2.38e-07       7.39e-06         4.00e-05        7.21e-08 
-   8     -75.7132559659     -3.16e-09       4.41e-06         2.44e-05        8.03e-09 
+   1     -75.7976471499     -7.53e-04       1.90e-03         7.70e-03        5.87e-06 
+   2     -75.7977192280     -7.21e-05       6.96e-04         3.17e-03        1.28e-06 
+   3     -75.7977381071     -1.89e-05       4.22e-04         2.27e-03        6.06e-07 
+   4     -75.7977450065     -6.90e-06       2.53e-04         1.83e-03        2.92e-07 
+   5     -75.7977481741     -3.17e-06       1.52e-04         1.47e-03        1.72e-07 
+   6     -75.7977520248     -3.85e-06       1.12e-04         4.49e-04        2.78e-07 
+   7     -75.7977524883     -4.64e-07       2.39e-05         1.89e-04        8.61e-08 
+   8     -75.7977525585     -7.01e-08       9.84e-06         3.45e-05        3.69e-08 
+   9     -75.7977525612     -2.67e-09       8.66e-06         3.00e-05        9.31e-09 
 
  ============================================================================== 
  ======================== DF-OMP3 ITERATIONS ARE CONVERGED ==================== 
@@ -489,42 +481,42 @@ Total time:
 	Computing DF-MP3 energy using optimized MOs... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	SCF Energy (a.u.)                  :   -75.54727960302046
-	REF Energy (a.u.)                  :   -75.54673031602421
-	Alpha-Alpha Contribution (a.u.)    :    -0.02409615546598
-	Alpha-Beta Contribution (a.u.)     :    -0.13066956934107
-	Beta-Beta Contribution (a.u.)      :    -0.01175992501362
-	3rd Order Energy (a.u.)            :    -0.01383743623960
-	DF-MP2.5 Correlation Energy (a.u.) :    -0.15905764470462
-	DF-MP2.5 Total Energy (a.u.)       :   -75.70633724772509
-	DF-MP3 Correlation Energy (a.u.)   :    -0.16652564982067
-	DF-MP3 Total Energy (a.u.)         :   -75.71325596584488
+	SCF Energy (a.u.)                  :   -75.63188585987054
+	REF Energy (a.u.)                  :   -75.63119961069745
+	Alpha-Alpha Contribution (a.u.)    :    -0.02409019587265
+	Alpha-Beta Contribution (a.u.)     :    -0.13151677384159
+	Beta-Beta Contribution (a.u.)      :    -0.01094598165482
+	3rd Order Energy (a.u.)            :    -0.01484490753971
+	DF-MP2.5 Correlation Energy (a.u.) :    -0.15844424842613
+	DF-MP2.5 Total Energy (a.u.)       :   -75.79033010829667
+	DF-MP3 Correlation Energy (a.u.)   :    -0.16655295136906
+	DF-MP3 Total Energy (a.u.)         :   -75.79775256206652
 	======================================================================= 
 
 	======================================================================= 
 	================ DF-OMP3 FINAL RESULTS ================================ 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	DF-HF Energy (a.u.)                :   -75.54727960302046
-	REF Energy (a.u.)                  :   -75.54673031602421
-	DF-OMP3 Correlation Energy (a.u.)  :    -0.16597636286782
-	Edfomp3 - Eref (a.u.)              :    -0.16652564986407
-	DF-OMP3 Total Energy (a.u.)        :   -75.71325596588828
+	DF-HF Energy (a.u.)                :   -75.63188585987054
+	REF Energy (a.u.)                  :   -75.63119961069745
+	DF-OMP3 Correlation Energy (a.u.)  :    -0.16586670128345
+	Edfomp3 - Eref (a.u.)              :    -0.16655295045653
+	DF-OMP3 Total Energy (a.u.)        :   -75.79775256115398
 	======================================================================= 
 
 
-*** tstop() called on Ugurs-MacBook-Pro.local at Wed Oct  7 17:10:43 2015
+*** tstop() called on Ugurs-MacBook-Pro.local at Wed Nov 18 21:51:39 2015
 Module time:
-	user time   =       1.31 seconds =       0.02 minutes
-	system time =       1.42 seconds =       0.02 minutes
+	user time   =       0.73 seconds =       0.01 minutes
+	system time =       1.71 seconds =       0.03 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =       1.91 seconds =       0.03 minutes
-	system time =       1.43 seconds =       0.02 minutes
+	user time   =       0.90 seconds =       0.02 minutes
+	system time =       1.72 seconds =       0.03 minutes
 	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on Ugurs-MacBook-Pro.local
-*** at Wed Oct  7 17:10:43 2015
+*** at Wed Nov 18 21:51:39 2015
 
 
  ============================================================================== 
@@ -557,60 +549,60 @@ Total time:
   -Kinetic Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000004170    -0.000000000000     1.011492225707
-       2        0.000000002085     0.570482612688    -0.505746112854
-       3        0.000000002085    -0.570482612688    -0.505746112854
+       1       -0.000000000000    -0.000000000000     0.935926912908
+       2       -0.000000000000     0.629913159090    -0.467963456454
+       3        0.000000000000    -0.629913159090    -0.467963456454
 
 
   -Potential Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000037424     0.000000000001    -9.445178367889
-       2       -0.000000018712    -5.325437890345     4.722589183945
-       3       -0.000000018712     5.325437890344     4.722589183944
+       1        0.000000000000     0.000000000002    -8.271858135354
+       2        0.000000000000    -5.612678258131     4.135929067677
+       3       -0.000000000000     5.612678258129     4.135929067677
 
 
   -Overlap Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000005156     0.000000000000     0.858734713962
-       2        0.000000002578     0.424499314216    -0.429367330346
-       3        0.000000002578    -0.424499314216    -0.429367383616
+       1        0.000000000000    -0.000000000001     0.683373018319
+       2       -0.000000000000     0.454068452072    -0.341686478896
+       3        0.000000000000    -0.454068452071    -0.341686539424
 
 
   -One-Electron Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000033254     0.000000000001    -8.433686142181
-       2       -0.000000016627    -4.754955277657     4.216843071091
-       3       -0.000000016627     4.754955277656     4.216843071091
+       1        0.000000000000     0.000000000002    -7.335931222447
+       2        0.000000000000    -4.982765099041     3.667965611224
+       3       -0.000000000000     4.982765099039     3.667965611223
 
 
   -Two-Electron Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000025170    -0.000000000001     4.547148529128
-       2        0.000000012585     2.356127808671    -2.273574264564
-       3        0.000000012585    -2.356127808670    -2.273574264564
+       1       -0.000000000000    -0.000000000001     3.709746198618
+       2       -0.000000000000     2.517412412083    -1.854873099309
+       3        0.000000000000    -2.517412412081    -1.854873099309
 
 
   -Total Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000002927     0.000000000000    -0.038248703673
-       2       -0.000000001464     0.077471849893     0.019124378471
-       3       -0.000000001464    -0.077471849893     0.019124325201
+       1        0.000000000000     0.000000000000     0.046742189909
+       2        0.000000000000     0.040515769777    -0.023371064690
+       3       -0.000000000000    -0.040515769777    -0.023371125219
 
 
-*** tstop() called on Ugurs-MacBook-Pro.local at Wed Oct  7 17:10:44 2015
+*** tstop() called on Ugurs-MacBook-Pro.local at Wed Nov 18 21:51:40 2015
 Module time:
-	user time   =       0.35 seconds =       0.01 minutes
+	user time   =       0.22 seconds =       0.00 minutes
 	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.26 seconds =       0.04 minutes
-	system time =       1.48 seconds =       0.02 minutes
+	user time   =       1.12 seconds =       0.02 minutes
+	system time =       1.77 seconds =       0.03 minutes
 	total time  =          4 seconds =       0.07 minutes
-CURRENT ENERGY:  -75.7132559659
+CURRENT ENERGY:  -75.7977525612
 
 *** PSI4 exiting successfully. Buy a developer a beer!
