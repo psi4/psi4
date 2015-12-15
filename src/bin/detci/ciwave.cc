@@ -25,6 +25,7 @@
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
 #include <libqt/qt.h>
+#include <libscf_solver/hf.h>
 
 #include "globaldefs.h"
 #include "ciwave.h"
@@ -108,6 +109,7 @@ void CIWavefunction::common_init()
     df_ints_init_ = false;
 
     // Form strings
+    outfile->Printf("\n   ==> Setting up CI strings <==\n\n");
     form_strings();
 
     // Form Bendazzoli OV arrays

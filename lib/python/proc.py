@@ -3014,7 +3014,8 @@ def run_detcas(name, **kwargs):
 
     optstash = p4util.OptionsState(
         ['DETCI', 'WFN'],
-    )
+        ['SCF', 'SCF_TYPE']
+        )
 
     user_ref = psi4.get_option('DETCI', 'REFERENCE')
     if (user_ref != 'RHF') and (user_ref != 'ROHF'):
@@ -3027,12 +3028,15 @@ def run_detcas(name, **kwargs):
 
     # The DF case
     if psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF':
+
+        # Do NOT set global options in general, this is a bit of a hack
         if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
-            psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
+            psi4.set_global_option('SCF_TYPE', 'DF')
 
         # Make sure a valid JK algorithm is selected
-        if psi4.get_option('SCF', 'SCF_TYPE') == 'PK':
-            raise ValidationError("MCSCF: Must use a JK algorithm that supports non-symmetric density matrices.")
+        if (psi4.get_option('SCF', 'SCF_TYPE') == 'PK') and psi4.get_option('DETCI', 'MCSCF_SO'):
+            raise ValidationError("Second-order MCSCF: Must use a JK algorithm that supports non-symmetric density"\
+                                  " matrices or utilize approximate hessian updates.")
 
         # Bypass routine scf if user did something special to get it to converge
         if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
@@ -3042,10 +3046,11 @@ def run_detcas(name, **kwargs):
     else:
         if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
             # PK is faster than out_of_core, but PK cannot support non-symmetric density matrices
+            # Do NOT set global options in general, this is a bit of a hack
             if psi4.get_option('DETCI', 'MCSCF_SO'):
-                psi4.set_local_option('SCF', 'SCF_TYPE', 'PK')
+                psi4.set_global_option('SCF_TYPE', 'OUT_OF_CORE')
             else:
-                psi4.set_local_option('SCF', 'SCF_TYPE', 'OUT_OF_CORE')
+                psi4.set_global_option('SCF_TYPE', 'PK')
     
         # Make sure a valid JK algorithm is selected
         if (psi4.get_option('SCF', 'SCF_TYPE') == 'PK') and psi4.get_option('DETCI', 'MCSCF_SO'):

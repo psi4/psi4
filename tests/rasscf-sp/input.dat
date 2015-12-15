@@ -8,11 +8,8 @@ set {
   ras1                 [2, 0, 1, 1]
   ras3                 [1, 0, 0, 1]
   restricted_uocc      [8, 2, 3, 5]
-  mcscf_type           conv
   mcscf_maxiter        80
   mcscf_r_convergence  5.e-6
-  scf_type             out_of_core
-
   basis = 6-31G**
 }
 

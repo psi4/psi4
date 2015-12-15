@@ -58,8 +58,7 @@ void CIWavefunction::set_ciblks()
    xlvl = Parameters_->ex_lvl;
 
    if (Parameters_->print_lvl) {
-      outfile->Printf( "\nThere are %d alpha strings\n", CalcInfo_->num_alp_str);
-      outfile->Printf( "There are %d beta strings\n", CalcInfo_->num_bet_str);
+      outfile->Printf( "   There are %d alpha and %d beta strings\n", CalcInfo_->num_alp_str, CalcInfo_->num_bet_str);
       }
 
    /* Get the occupations for the reference alpha and beta strings.
@@ -317,9 +316,6 @@ void CIWavefunction::set_ciblks()
    /* calculate the offsets */
    CIblks_->num_blocks = nblocks;
 
-   if (Parameters_->print_lvl)
-      outfile->Printf( "CI space contains %4d blocks\n", nblocks);
-
    if (nblocks > CI_BLK_MAX) {
       std::string str = "nblocks = ";
       str += boost::lexical_cast<std::string>( nblocks) ;
@@ -340,9 +336,13 @@ void CIWavefunction::set_ciblks()
 
    if (Parameters_->print_lvl) {
      outfile->Printf(
-       "\nCI space requires %.0lf determinants\n\n", (double) CIblks_->vectlen);
+       "   The CI space requires %.0lf (%1.2E) determinants and %d blocks\n\n",
+       (double) CIblks_->vectlen, (double) CIblks_->vectlen, nblocks);
      
      }
+
+   //if (Parameters_->print_lvl)
+   //   outfile->Printf( "\n   CI space contains %4d blocks\n", nblocks);
 
    /* set up the decode array */
    for (i=0; i<CIblks_->num_alp_codes; i++) {

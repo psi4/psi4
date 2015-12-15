@@ -712,18 +712,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MCSCF_MAXITER", 30);
 
     /* - Do we run conventional or density fitted? -*/
-    options.add_str("MCSCF_TYPE", "DF", "DF CONV");
+    options.add_str("MCSCF_TYPE", "CONV", "DF CONV");
 
-    /*- Convergence algorithm to utilize. -*/
+    /*- Convergence algorithm to utilize. This is a flag for the future. !expert-*/
     options.add_str("MCSCF_ALGORITHM", "TWO_STEP", "ONE_STEP TWO_STEP");
 
-    /*- Do second-order orbital-orbital MCSCF -*/
+    /*- Do second-order orbital-orbital MCSCF. Without one-step this typically slows
+    the overall computation considerably !expert -*/
     options.add_bool("MCSCF_SO", false);
 
-    /*- Start second-order orbital-orbital MCSCF based on RMS of orbital gradient -*/
+    /*- Start second-order orbital-orbital MCSCF based on RMS of orbital gradient !expert -*/
     options.add_double("MCSCF_SO_START_GRAD", 1e-3);
 
-    /*- Start second-order orbital-orbital MCSCF based on energy convergence -*/
+    /*- Start second-order orbital-orbital MCSCF based on energy convergence !expert-*/
     options.add_double("MCSCF_SO_START_E", 1e-3);
 
     /*- Iteration to turn on DIIS -*/
@@ -736,8 +737,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MCSCF_DIIS_MAX_VECS", 8);
 
     /*- Maximum value in the rotation matrix. If a value is greater than this number
-    al values are scaled. -*/
+    all values are scaled. -*/
     options.add_double("MCSCF_MAX_ROT", 0.5);
+
+    /*- Auxiliary basis set for MCSCF density fitted ERI computations.
+    This only effects the "Q" matrix in Helgaker's language.
+    :ref:`Defaults <apdx:basisFamily>` to a JKFIT basis. -*/
+    options.add_str("DF_BASIS_MCSCF", "");
 
 
   }
