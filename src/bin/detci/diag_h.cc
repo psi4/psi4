@@ -742,7 +742,8 @@ void CIWavefunction::diag_h()
       Process::environment.globals["CI TOTAL ENERGY"];
    }
 
-
+   // form_opdm();
+   // form_tpdm();
 }
 
 

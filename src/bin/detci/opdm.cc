@@ -31,7 +31,6 @@
 #include <libmints/mints.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
-#include <libiwl/iwl.h>
 #include <psifiles.h>
 #include <physconst.h>
 #include "structs.h"
@@ -95,9 +94,8 @@ void CIWavefunction::form_opdm(void)
 
   }
 
-  // TDM's
+  // Transition-OPDM's
   std::vector<std::vector<SharedMatrix> > opdm_list;
-  /* don't need Parameters_->root since it writes all opdm's */
   if (Parameters_->transdens) {
     opdm_list = opdm(0, Parameters_->num_roots, Parameters_->d_filenum,
                      Parameters_->d_filenum, true);
@@ -107,7 +105,7 @@ void CIWavefunction::form_opdm(void)
         opdm_map_[opdm_list[i][2]->name()] = opdm_list[i][2];
     }
   }
-  // OPDMS
+  // OPDM's
   if (Parameters_->opdm) {
     opdm_list = opdm(0, Parameters_->num_roots, Parameters_->d_filenum,
                      Parameters_->d_filenum, false);
@@ -290,22 +288,22 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(int root_start, int
                                          s2_contrib_[Iblock][Jblock2]))
             do_Jblock2 = 1;
           if (!do_Jblock && !do_Jblock2) continue;
-	
+
           Jvec.read(Jroot, Jbuf);
-	
+
           if (do_Jblock) {
             opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, Jvec.blocks_[Jblock],
                        Ivec.blocks_[Iblock], Jac, Jbc, Jnas,
                        Jnbs, Iac, Ibc, Inas, Inbs);
             }
-	
+
           if (do_Jblock2) {
             Jvec.transp_block(Jblock, transp_tmp);
             opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, transp_tmp,
                        Ivec.blocks_[Iblock], Jbc, Jac, Jnbs,
                        Jnas, Iac, Ibc, Inas, Inbs);
           }
-	
+
         } /* end loop over Jbuf */
 
         if (Ivec.buf_offdiag_[Ibuf]) { /* need to get contrib of transpose */
@@ -332,15 +330,15 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(int root_start, int
                                            s2_contrib_[Iblock2][Jblock2]))
               do_Jblock2 = 1;
             if (!do_Jblock && !do_Jblock2) continue;
-	
+
             Jvec.read(Jroot, Jbuf);
-	
+
             if (do_Jblock) {
               opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, Jvec.blocks_[Jblock],
                          transp_tmp2, Jac, Jbc, Jnas,
                          Jnbs, Iac, Ibc, Inas, Inbs);
             }
-	
+
             if (do_Jblock2) {
               Jvec.transp_block(Jblock, transp_tmp);
               opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, transp_tmp,
@@ -382,21 +380,21 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(int root_start, int
         for (Jbuf=0; Jbuf<Jvec.buf_per_vect_; Jbuf++) {
           Jvec.read(Jroot, Jbuf);
           Jairr = Jvec.buf2blk_[Jbuf];
-	
+
         for (Iblock=Ivec.first_ablk_[Iairr]; Iblock<=Ivec.last_ablk_[Iairr];
              Iblock++) {
           Iac = Ivec.Ia_code_[Iblock];
           Ibc = Ivec.Ib_code_[Iblock];
           Inas = Ivec.Ia_size_[Iblock];
           Inbs = Ivec.Ib_size_[Iblock];
-	
+
           for (Jblock=Jvec.first_ablk_[Jairr]; Jblock<=Jvec.last_ablk_[Jairr];
                Jblock++) {
             Jac = Jvec.Ia_code_[Jblock];
             Jbc = Jvec.Ib_code_[Jblock];
             Jnas = Jvec.Ia_size_[Jblock];
             Jnbs = Jvec.Ib_size_[Jblock];
-	
+
             if (s1_contrib_[Iblock][Jblock] || s2_contrib_[Iblock][Jblock])
               opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, Jvec.blocks_[Jblock],
                          Ivec.blocks_[Iblock], Jac, Jbc, Jnas,
@@ -422,14 +420,14 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(int root_start, int
             Ibc = Ivec.Ib_code_[Iblock2];
             Inas = Ivec.Ia_size_[Iblock2];
             Inbs = Ivec.Ib_size_[Iblock2];
-	
+
             for (Jblock=Jvec.first_ablk_[Jairr]; Jblock<=Jvec.last_ablk_[Jairr];
               Jblock++) {
               Jac = Jvec.Ia_code_[Jblock];
               Jbc = Jvec.Ib_code_[Jblock];
               Jnas = Jvec.Ia_size_[Jblock];
               Jnbs = Jvec.Ib_size_[Jblock];
-	
+
               if (s1_contrib_[Iblock2][Jblock] || s2_contrib_[Iblock2][Jblock])
                 opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, Jvec.blocks_[Jblock],
                            transp_tmp2, Jac, Jbc, Jnas, Jnbs, Iac, Ibc,
@@ -560,7 +558,7 @@ void CIWavefunction::opdm_block(struct stringwr **alplist, struct stringwr **bet
     for (Ib_idx=0; Ib_idx<Inbs; Ib_idx++) {
       for (Ja=alplist[Ja_list], Ja_idx=0; Ja_idx<Jnas; Ja_idx++, Ja++) {
 	C1 = CJ[Ja_idx][Ib_idx];
-	
+
 	/* loop over excitations */
 	Jacnt = Ja->cnt[Ia_list];
 	Jaridx = Ja->ridx[Ia_list];
@@ -696,38 +694,21 @@ void CIWavefunction::opdm_properties()
 
 void CIWavefunction::ci_nat_orbs()
 {
-    throw PSIEXCEPTION("CIWavefunction::ci_nat_orbs: This is currently deprecated. Please post an issue on github if you need this.");
 
-    // FAE
-    // eigsort sometimes will swap the order of orbitals, for example
-    // in frozen core computations the focc may be mixed with docc and
-    // change the final result
+  // We can only do restricted orbitals
+  outfile->Printf("\n   Computing CI Natural Orbitals\n");
+  outfile->Printf("   !Warning: New orbitals will be sorted by occuption number,\n");
+  outfile->Printf("   orbital spaces (occ/act/vir) may change.\n\n");
 
-    //Loop over "populated"
-    //for (i=0;i<CalcInfo_->orbs_per_irr[irrep]-CalcInfo_->dropped_uocc[irrep];i++){
-    //  max_overlap = 0;
-    //  int m       = 0;
-    //   for (j=i;j<CalcInfo_->orbs_per_irr[irrep]-CalcInfo_->dropped_uocc[irrep];j++){
-    //     overlap = opdm_eigvec[i][j] * opdm_eigvec[i][j];
-    //     if(overlap > max_overlap){
-    //       m = j;
-    //       max_overlap = overlap;
-    //     }
-    //   }
-    //   for (j=0;j<CalcInfo_->orbs_per_irr[irrep];j++){
-    //       double temporary  = opdm_eigvec[j][i];
-    //       opdm_eigvec[j][i] = opdm_eigvec[j][m];
-    //       opdm_eigvec[j][m] = temporary;
-    //   }
-    //   double temporary = opdm_eigval[i];
-    //   opdm_eigval[i] = opdm_eigval[m];
-    //   opdm_eigval[m] = temporary;
+  SharedMatrix NO_vecs(new Matrix("OPDM Eigvecs", Da_->nirrep(), Da_->rowspi(), Da_->colspi()));
+  SharedVector NO_occ(new Vector("OPDM Occuption", Da_->nirrep(), Da_->rowspi()));
 
-    //}
-    //// End FAE changes, May 3 2007
+  SharedMatrix D = opdm_add_inactive(opdm_, 2.0, true);
+  D->diagonalize(NO_vecs, NO_occ, descending);
+
+  Ca_ = Matrix::doublet(Ca_, NO_vecs);
+  Cb_ = Ca_;
 }
-
-
 
 
 }} // namespace psi::detci

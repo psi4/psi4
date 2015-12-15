@@ -34,18 +34,9 @@ set globals {
   ex_level 2
 }
 
-#set detci {
-#  nat_orbs_write true
-#}
-
-set transqt2 {
-  delete_tei false
+set detci {
+  nat_orbs true
 }
-
-psioh = psi4.IOManager.shared_object()
-psioh.set_specific_retention(32, True)
-psioh.set_specific_retention(33, True)
-psioh.set_specific_retention(35, True)
 
 thisenergy = energy('detci')
 
@@ -54,48 +45,49 @@ compare_values(refscf, get_variable("SCF total energy"),     9, "SCF energy") #T
 compare_values(refci, thisenergy,                      7, "CI energy") #TEST
 compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
 
-clean()
+#clean()
 
 # !Warning: DGAS intentionally broke the second half here, need to fix natural orbitals
 
 ## Now, run the RASCI
-#refnuc   =    0.0000000000    #TEST
-#refscf   = -128.5434696591    #TEST
-#refci    = -128.8398832876687 #TEST
-#refcorr  = refci - refscf     #TEST
-#
-#set globals {
-#  wfn detci
-#  d_convergence 10
-#  docc            [2, 0, 0, 0, 0, 1, 1, 1]
-#  frozen_docc     [1, 0, 0, 0, 0, 0, 0, 0]
-#  ras1            [1, 0, 0, 0, 0, 1, 1, 1]
-#  ras2            [1, 0, 0, 0, 0, 1, 1, 1]
-#  ras3            [5, 2, 2, 2, 1, 3, 3, 3]
-#  ex_level 2
-#  val_ex_level 2
-#}
-#
-#set detci {
-#  maxiter 25
-#  nat_orbs_write false
-#
-#  # This keyword is at the heart of the "split-virtual" CISD[TQ].
-#  # If electrons are in RAS 4, do not allow the excitation to go beyond
-#  # that specified by ex_level (here, only singles & doubles allowed if
-#  # RAS 4 is populated)
-#  mixed4 false
-#  
-#  # this will just reduce the number of strings generated in the
-#  # computation; because of the mixed4=false specification above, not
-#  # all of the strings normally allowed by the RAS will actually be needed
-#  # in this computation
-#  r4s true
-#}
-#
-#thisenergy = energy('detci',bypass_scf='True')
-#
-#compare_values(refnuc, ne.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
-#compare_values(refscf, get_variable("SCF total energy"),     9, "SCF energy") #TEST
-#compare_values(refci, thisenergy,                      7, "CI energy") #TEST
-#compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
+refnuc   =    0.0000000000    #TEST
+refscf   = -128.5434696591    #TEST
+refci    = -128.8398832876687 #TEST
+refcorr  = refci - refscf     #TEST
+
+set globals {
+  wfn detci
+  d_convergence 10
+  docc            [2, 0, 0, 0, 0, 1, 1, 1]
+  frozen_docc     [1, 0, 0, 0, 0, 0, 0, 0]
+  ras1            [1, 0, 0, 0, 0, 1, 1, 1]
+  ras2            [1, 0, 0, 0, 0, 1, 1, 1]
+  ras3            [5, 2, 2, 2, 1, 3, 3, 3]
+  ras4            [6, 3, 3, 3, 1, 3, 3, 3]
+  ex_level 2
+  val_ex_level 2
+}
+
+set detci {
+  maxiter 25
+  nat_orbs false
+
+  # This keyword is at the heart of the "split-virtual" CISD[TQ].
+  # If electrons are in RAS 4, do not allow the excitation to go beyond
+  # that specified by ex_level (here, only singles & doubles allowed if
+  # RAS 4 is populated)
+  mixed4 false
+  
+  # this will just reduce the number of strings generated in the
+  # computation; because of the mixed4=false specification above, not
+  # all of the strings normally allowed by the RAS will actually be needed
+  # in this computation
+  r4s true
+}
+
+thisenergy = energy('detci',bypass_scf='True')
+
+compare_values(refnuc, ne.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
+compare_values(refscf, get_variable("SCF total energy"),     9, "SCF energy") #TEST
+compare_values(refci, thisenergy,                      7, "CI energy") #TEST
+compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST

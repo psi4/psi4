@@ -113,7 +113,7 @@ public:
      * @param Iroot      Left root
      * @param Jroot      Right root
      * @param spin       Selects which spin to return: A, B, or SUM
-     * @param full_space If false return only the active OPDM else return full OPDM 
+     * @param full_space If false return only the active OPDM else return full OPDM
      * @return OPDM or TDM shared matrix
      **/
     SharedMatrix get_opdm(int Iroot=-1, int Jroot=-1, const std::string& spin="SUM",
@@ -138,6 +138,7 @@ public:
     SharedCIVector new_civector(int maxnvect, int filenum, bool use_disk=true,
                                 bool buf_init=true);
 
+    SharedMatrix orbital_ci_block(int fi, int fj);
     // Compute functions
     void compute_mcscf();
     void compute_cc();
@@ -295,9 +296,9 @@ private:
           CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec);
 
     void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
-          double **cmat, double **smat, double *oei, double *tei, int fci, 
-          int cblock, int sblock, int nas, int nbs, int sac, int sbc, 
-          int cac, int cbc, int cnas, int cnbs, int cnac, int cnbc, 
+          double **cmat, double **smat, double *oei, double *tei, int fci,
+          int cblock, int sblock, int nas, int nbs, int sac, int sbc,
+          int cac, int cbc, int cnas, int cnbs, int cnac, int cnbc,
           int sbirr, int cbirr, int Ms0);
     void sigma_get_contrib(struct stringwr **alplist, struct stringwr **betlist,
           CIvect &C, CIvect &S, int **s1_contrib, int **s2_contrib,
@@ -313,7 +314,7 @@ private:
 
 
     /// => MPn helpers <= //
-    void mpn_generator(CIvect &Hd); 
+    void mpn_generator(CIvect &Hd);
 
     /// => Density Matrix helpers <= //
     std::vector<std::vector<SharedMatrix> > opdm(int root_start, int nroots, int Ifile,

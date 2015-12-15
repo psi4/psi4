@@ -503,8 +503,6 @@ struct params {
    int opdm_print;         /* print the opdm? */
    int opdm_file;          /* file number for opdm */
    int opdm_diag;          /* get ci natural orbitals? */
-   int opdm_wrtnos;        /* write ci natural orbitals to file 30? */
-   int opdm_ke;            /* get kinetic energy dotted with opdm? for TDC */
    int opdm_ave;           /* average the opdm over several states */
    int opdm_orbsfile;      /* file number to write various orbitals */
    int opdm_orbs_root;     /* write ci natural orbs of this root to checkpt */

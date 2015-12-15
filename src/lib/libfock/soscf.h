@@ -133,6 +133,11 @@ public:
     SharedMatrix solve(int max_iter=5, double conv=1.e-10, bool print=true);
 
     /**
+     * @return gradient Returns the MO gradient.
+     */
+    SharedMatrix gradient();
+
+    /**
      * @return gradient_rms Returns the RMS of the gradient.
      */
     double gradient_rms();

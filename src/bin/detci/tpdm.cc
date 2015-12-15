@@ -34,7 +34,6 @@
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
-#include <libiwl/iwl.h>
 #include <libmints/mints.h>
 #include "structs.h"
 #include "civect.h"
