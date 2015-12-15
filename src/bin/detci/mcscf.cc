@@ -90,14 +90,14 @@ void CIWavefunction::compute_mcscf()
   if (MCSCF_Parameters_->mcscf_type == "DF"){
     mcscf_type = "   @DF-MCSCF";
     outfile->Printf("\n   ==> Starting DF-MCSCF iterations <==\n\n");
-    outfile->Printf("                             "
-                      "Total Energy       Delta E      RMS Grad   NCI\n\n");
+    outfile->Printf("                           "
+                      "Total Energy        Delta E      RMS Grad   NCI\n\n");
   }
   else{
     mcscf_type = "   @MCSCF";
     outfile->Printf("\n   ==> Starting MCSCF iterations <==\n\n");
-    outfile->Printf("                         "
-                      "Total Energy       Delta E      RMS Grad   NCI\n\n");
+    outfile->Printf("                        "
+                      "Total Energy        Delta E      RMS Grad   NCI\n\n");
   }
 
 
