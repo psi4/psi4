@@ -1365,6 +1365,13 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    free(buffer1);
    free(buffer2);
 
+
+   //CIvect D(Parameters_->icore, maxnvect, 1,
+   //            Parameters_->d_filenum, CIblks_, CalcInfo_, Parameters_,
+   //            H0block_, true);  
+   //D.init_io_files(true);
+   //D.read(0,0);
+   //D.print("outfile");
 }
 
 }} // namespace psi::detci

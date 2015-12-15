@@ -180,7 +180,6 @@ void CIWavefunction::get_parameters(Options &options)
 
   Parameters_->opdm_file = PSIF_MO_OPDM;
   Parameters_->opdm_diag = 0;
-  Parameters_->opdm_wrtnos = 0;
   Parameters_->opdm_orbsfile = 76;
   Parameters_->tpdm_file = PSIF_MO_TPDM;
 
@@ -456,30 +455,14 @@ void CIWavefunction::get_parameters(Options &options)
    * function as the master switch for all other OPDM parameters.
    */
   Parameters_->opdm_print = options["OPDM_PRINT"].to_integer();
-  // Make this an internal parameter
-  // errcod = ip_data("OPDM_FILE","%d",&(Parameters_->opdm_file),0);
-  Parameters_->opdm_wrtnos = options["NAT_ORBS_WRITE"].to_integer();
-  // Make this an internal parameter, essentially same as NAT_ORBS_WRITE
-  // errcod = ip_boolean("OPDM_DIAG",&(Parameters_->opdm_diag),0);
+  Parameters_->opdm_diag = options["NAT_ORBS"].to_integer();
   Parameters_->opdm_ave = options["OPDM_AVG"].to_integer();
-  // Make an internal parameter
-  // errcod = ip_data("ORBSFILE","%d",&(Parameters_->opdm_orbsfile),0);
 
-  // User numbering starts from 1, but internal numbering starts from 0
-  Parameters_->opdm_orbs_root = options.get_int("NAT_ORBS_WRITE_ROOT");
-  Parameters_->opdm_orbs_root -= 1;
-  if (Parameters_->opdm_orbs_root < 0) Parameters_->opdm_orbs_root = 0;
-
-  Parameters_->opdm_ke = options["OPDM_KE"].to_integer();
-
-  if (Parameters_->opdm_wrtnos) Parameters_->opdm_diag = 1;
-  if (Parameters_->opdm_print || Parameters_->opdm_diag || Parameters_->opdm_wrtnos
-      || Parameters_->opdm_ave || Parameters_->opdm_ke) Parameters_->opdm = 1;
+  if (Parameters_->opdm_print || Parameters_->opdm_diag
+      || Parameters_->opdm_ave) Parameters_->opdm = 1;
   if (options["OPDM"].has_changed())
     Parameters_->opdm = options["OPDM"].to_integer();
   if (Parameters_->opdm) Parameters_->opdm_write = 1;
-//   No reason why the user would need to change this, make internal param
-//   errcod = ip_boolean("OPDM_WRITE",&(Parameters_->opdm_write),0);
 
   /* transition density matrices */
   Parameters_->tdm_print = 0; Parameters_->tdm_write = 0;

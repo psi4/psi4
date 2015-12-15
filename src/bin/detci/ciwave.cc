@@ -22,7 +22,6 @@
 
 #include <libmints/mints.h>
 #include <psi4-dec.h>
-#include <libiwl/iwl.h>
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
 #include <libqt/qt.h>
@@ -505,7 +504,7 @@ SharedMatrix CIWavefunction::hamiltonian(void)
     BIGINT size = CIblks_->vectlen;
     double h_size_gb = (double)(8 * size * size) / 1E9;
     if (h_size_gb > 1){
-        outfile->Printf("Requsted size of the hamiltonian is %lf!\n", h_size_gb);
+        outfile->Printf("CIWave::Requsted size of the hamiltonian is %lf!\n", h_size_gb);
         throw PSIEXCEPTION("CIWave::hamiltonian: Size is too large for explicit hamiltonian build");
     }
 
@@ -532,6 +531,107 @@ SharedMatrix CIWavefunction::hamiltonian(void)
         }
     }
     return H;
+}
+SharedMatrix CIWavefunction::orbital_ci_block(int fi, int fj)
+{
+ int filenum = Parameters_->d_filenum;
+ CIvect Ivec(Parameters_->icore, 1, 1, filenum, CIblks_, CalcInfo_, Parameters_,
+               H0block_, true);
+ Ivec.init_io_files(true);
+ Ivec.read(0, 0);
+
+ // SharedVector oc_block(new Vector("OC Block", size));
+ // double* oc_blockp = oc_block->pointer();
+ int nci = CalcInfo_->num_ci_orbs;
+ SharedMatrix ret(new Matrix("OPDM A Scratch", nci, nci));
+ double** retp = ret->pointer();
+
+
+  int Ia_idx, Ib_idx, Ja_idx, Jb_idx, Ja_ex, Jb_ex, Jbcnt, Jacnt;
+  struct stringwr *Jb, *Ja;
+  signed char *Jbsgn, *Jasgn;
+  unsigned int *Jbridx, *Jaridx;
+  double C1, C2, Ib_sgn, Ia_sgn;
+  int i, j, oij, ndrc, *Jboij, *Jaoij;
+
+  outfile->Printf("\n\nStarting my OPDM code\n");
+  for (int Iblock=0; Iblock<Ivec.num_blocks_; Iblock++) {
+    int Iac = Ivec.Ia_code_[Iblock];
+    int Ibc = Ivec.Ib_code_[Iblock];
+    int Inas = Ivec.Ia_size_[Iblock];
+    int Inbs = Ivec.Ib_size_[Iblock];
+    outfile->Printf("Iac = %d, Ibc = %d, Inas = %d, Inbs = %d\n", Iac, Ibc, Inas, Inbs);
+    if (Inas==0 || Inbs==0) continue;
+    for (int Jblock=0; Jblock<Ivec.num_blocks_; Jblock++) {
+      int Jac = Ivec.Ia_code_[Jblock];
+      int Jbc = Ivec.Ib_code_[Jblock];
+      int Jnas = Ivec.Ia_size_[Jblock];
+      int Jnbs = Ivec.Ib_size_[Jblock];
+      if (!(s1_contrib_[Iblock][Jblock] || s2_contrib_[Iblock][Jblock])) continue;
+      outfile->Printf("Jac = %d, Jbc = %d, Jnas = %d, Jnbs = %d\n", Jac, Jbc, Jnas, Jnbs);
+
+//         opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, Jvec.blocks_[Jblock],
+//                    Ivec.blocks_[Iblock], Jac, Jbc, Jnas,
+//                    Jnbs, Iac, Ibc, Inas, Inbs);
+// void CIWavefunction::opdm_block(struct stringwr **alplist, struct stringwr **betlist,
+//     double **onepdm_a, double **onepdm_b, double **CJ, double **CI, int Ja_list,
+//     int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list,
+//     int Inas, int Inbs)
+
+      /* loop over Ia in Iac */
+      if (Iac == Jac) {
+        for (Ia_idx=0; Ia_idx<Inas; Ia_idx++) {
+        for (Jb=betlist_[Jbc], Jb_idx=0; Jb_idx<Jnbs; Jb_idx++, Jb++) {
+        C1 = Ivec.blocks_[Jblock][Ia_idx][Jb_idx];
+
+        /* loop over excitations E^b_{ij} from |B(J_b)> */
+        Jbcnt = Jb->cnt[Ibc];
+        Jbridx = Jb->ridx[Ibc];
+        Jbsgn = Jb->sgn[Ibc];
+        Jboij = Jb->oij[Ibc];
+        for (Jb_ex=0; Jb_ex < Jbcnt; Jb_ex++) {
+          oij = *Jboij++;
+          Ib_idx = *Jbridx++;
+          Ib_sgn = (double) *Jbsgn++;
+          C2 = Ivec.blocks_[Iblock][Ia_idx][Ib_idx];
+                i = oij/CalcInfo_->num_ci_orbs;
+                j = oij%CalcInfo_->num_ci_orbs;
+          outfile->Printf("%d %d | %d | %d %d | %lf %lf %lf\n", Ia_idx, Jb_idx, Jb_ex, i, j, C1, C2, Ib_sgn);
+          retp[i][j] += C1 * C2 * Ib_sgn;
+        }
+        outfile->Printf("---\n");
+        }
+        }
+      }
+
+      /* loop over Ib in Ibc */
+      if (Ibc == Jbc) {
+        for (Ib_idx=0; Ib_idx<Inbs; Ib_idx++) {
+        for (Ja=alplist_[Jac], Ja_idx=0; Ja_idx<Jnas; Ja_idx++, Ja++) {
+        C1 = Ivec.blocks_[Jblock][Ja_idx][Ib_idx];
+
+        /* loop over excitations */
+        Jacnt = Ja->cnt[Iac];
+        Jaridx = Ja->ridx[Iac];
+        Jasgn = Ja->sgn[Iac];
+        Jaoij = Ja->oij[Iac];
+        for (Ja_ex=0; Ja_ex < Jacnt; Ja_ex++) {
+          oij = *Jaoij++;
+          Ia_idx = *Jaridx++;
+          Ia_sgn = (double) *Jasgn++;
+          C2 = Ivec.blocks_[Iblock][Ia_idx][Ib_idx];
+                i = oij/CalcInfo_->num_ci_orbs;
+                j = oij%CalcInfo_->num_ci_orbs;
+          retp[i][j] += C1 * C2 * Ia_sgn;
+        }
+        }
+        }
+      }
+
+    } /* end loop over Jblock */
+  } /* end loop over Iblock */
+  return ret;
+
 }
 
 }} // End Psi and CIWavefunction spaces

@@ -1686,7 +1686,6 @@ def run_detci_property(name, **kwargs):
         psi4.set_global_option('TDM', 'TRUE')
 
     optstash = p4util.OptionsState(
-        ['TRANSQT2', 'WFN'],
         ['DETCI', 'WFN'],
         ['DETCI', 'MAX_NUM_VECS'],
         ['DETCI', 'MPN_ORDER_SAVE'],
@@ -1699,7 +1698,6 @@ def run_detci_property(name, **kwargs):
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
     if name.lower() == 'zapt':
-        psi4.set_local_option('TRANSQT2', 'WFN', 'ZAPTN')
         psi4.set_local_option('DETCI', 'WFN', 'ZAPTN')
         level = kwargs['level']
         maxnvect = int((level + 1) / 2) + (level + 1) % 2
@@ -1709,7 +1707,6 @@ def run_detci_property(name, **kwargs):
         else:
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'detci-mp') or (name.lower() == 'mp'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'MPN', 'TRUE')
 
@@ -1721,23 +1718,18 @@ def run_detci_property(name, **kwargs):
         else:
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'fci'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'FCI', 'TRUE')
     elif (name.lower() == 'cisd'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 2)
     elif (name.lower() == 'cisdt'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 3)
     elif (name.lower() == 'cisdtq'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 4)
     elif (name.lower() == 'ci'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'WFN', 'DETCI')
         level = kwargs['level']
         psi4.set_local_option('DETCI', 'EX_LEVEL', level)
@@ -1954,7 +1946,6 @@ def run_detci(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['TRANSQT2', 'WFN'],
         ['DETCI', 'WFN'],
         ['DETCI', 'MAX_NUM_VECS'],
         ['DETCI', 'MPN_ORDER_SAVE'],
@@ -1967,7 +1958,6 @@ def run_detci(name, **kwargs):
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
     if (name.lower() == 'zapt'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'ZAPTN')
         psi4.set_local_option('DETCI', 'WFN', 'ZAPTN')
         level = kwargs['level']
         maxnvect = int((level + 1) / 2) + (level + 1) % 2
@@ -1977,7 +1967,6 @@ def run_detci(name, **kwargs):
         else:
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'detci-mp') or (name.lower() == 'mp'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'MPN', 'TRUE')
 
@@ -1989,23 +1978,18 @@ def run_detci(name, **kwargs):
         else:
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'fci'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'FCI', 'TRUE')
     elif (name.lower() == 'cisd'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 2)
     elif (name.lower() == 'cisdt'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 3)
     elif (name.lower() == 'cisdtq'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 4)
     elif (name.lower() == 'ci'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'WFN', 'DETCI')
         level = kwargs['level']
         psi4.set_local_option('DETCI', 'EX_LEVEL', level)

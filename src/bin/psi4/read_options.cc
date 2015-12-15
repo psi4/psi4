@@ -418,21 +418,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do print the one-particle density matrix for each root? -*/
     options.add_bool("OPDM_PRINT", false);
 
-    /*- Do write the natural orbitals? -*/
-    options.add_bool("NAT_ORBS_WRITE", false);
+    /*- Build natural orbitals? The orbtials will be reordered by occuption number.-*/
+    options.add_bool("NAT_ORBS", false);
 
     /*- Do average the OPDM over several roots in
     order to obtain a state-average one-particle density matrix?  This
     density matrix can be diagonalized to obtain the CI natural orbitals. -*/
     options.add_bool("OPDM_AVG", false);
-
-    /*- Sets the root number for which CI natural orbitals are written
-    to PSIF_CHKPT.  The default value is 1 (lowest root). -*/
-    options.add_int("NAT_ORBS_WRITE_ROOT", 1);
-
-    /*- Do compute the kinetic energy contribution from the correlated part of
-    the one-particle density matrix? !expert -*/
-    options.add_bool("OPDM_KE", false);
 
     /*- Do print the two-particle density matrix? (Warning: large tensor) -*/
     options.add_bool("TPDM_PRINT", false);

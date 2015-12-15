@@ -729,6 +729,10 @@ SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print)
     zero_redundant(best);
     return best;
 }
+SharedMatrix SOMCSCF::gradient()
+{
+   return matrices_["Gradient"];
+}
 double SOMCSCF::gradient_rms()
 {
    return matrices_["Gradient"]->rms();
