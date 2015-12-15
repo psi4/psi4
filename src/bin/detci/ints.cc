@@ -70,6 +70,7 @@ namespace psi { namespace detci {
 void CIWavefunction::transform_ci_integrals()
 {
 
+  outfile->Printf("\n   ==> Transforming CI integrals <==\n");
   // Grab orbitals
   SharedMatrix Cdrc = get_orbitals("DRC");
   SharedMatrix Cact = get_orbitals("ACT");
@@ -125,37 +126,43 @@ void CIWavefunction::transform_ci_integrals()
 }
 void CIWavefunction::setup_dfmcscf_ints(){
 
+  outfile->Printf("\n   ==> Setting up DF-MCSCF integrals <==\n\n");
   /// Grab and build basis sets
   boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(
     Process::environment.molecule(), "BASIS", options_.get_str("BASIS"));
   boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
-      "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
+      "DF_BASIS_SCF", options_.get_str("DF_BASIS_MCSCF"), "JKFIT",
       options_.get_str("BASIS"), primary->has_puream());
 
   /// Build JK object
-  DFJK* jk = new DFJK(primary,auxiliary);
-
-  if (options_["INTS_TOLERANCE"].has_changed())
-      jk->set_cutoff(options_.get_double("INTS_TOLERANCE"));
-  if (options_["PRINT"].has_changed())
-      jk->set_print(options_.get_int("PRINT"));
-  if (options_["DEBUG"].has_changed())
-      jk->set_debug(options_.get_int("DEBUG"));
-  if (options_["BENCH"].has_changed())
-      jk->set_bench(options_.get_int("BENCH"));
-  if (options_["DF_INTS_IO"].has_changed())
-      jk->set_df_ints_io(options_.get_str("DF_INTS_IO"));
-  if (options_["DF_FITTING_CONDITION"].has_changed())
-      jk->set_condition(options_.get_double("DF_FITTING_CONDITION"));
-  if (options_["DF_INTS_NUM_THREADS"].has_changed())
-      jk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
-
-  jk_ = boost::shared_ptr<JK>(jk);
-  jk_->set_memory(Process::environment.get_memory() * 0.8);
-
+  jk_ = JK::build_JK();
   jk_->set_do_J(true);
   jk_->set_do_K(true);
   jk_->initialize();
+  jk_->set_memory(Process::environment.get_memory() * 0.8);
+  // DFJK* jk = new DFJK(primary,auxiliary);
+
+  // if (options_["INTS_TOLERANCE"].has_changed())
+  //     jk->set_cutoff(options_.get_double("INTS_TOLERANCE"));
+  // if (options_["PRINT"].has_changed())
+  //     jk->set_print(options_.get_int("PRINT"));
+  // if (options_["DEBUG"].has_changed())
+  //     jk->set_debug(options_.get_int("DEBUG"));
+  // if (options_["BENCH"].has_changed())
+  //     jk->set_bench(options_.get_int("BENCH"));
+  // if (options_["DF_INTS_IO"].has_changed())
+  //     jk->set_df_ints_io(options_.get_str("DF_INTS_IO"));
+  // if (options_["DF_FITTING_CONDITION"].has_changed())
+  //     jk->set_condition(options_.get_double("DF_FITTING_CONDITION"));
+  // if (options_["DF_INTS_NUM_THREADS"].has_changed())
+  //     jk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
+
+  // jk_ = boost::shared_ptr<JK>(jk);
+  // jk_->set_memory(Process::environment.get_memory() * 0.8);
+
+  // jk_->set_do_J(true);
+  // jk_->set_do_K(true);
+  // jk_->initialize();
 
   /// Build DF object
   dferi_ = DFERI::build(primary,auxiliary,options_);
@@ -305,6 +312,7 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only)
 }
 void CIWavefunction::setup_mcscf_ints(){
   // We need to do a few weird things to make IntegralTransform work for us
+  outfile->Printf("\n   ==> Setting up MCSCF integrals <==\n\n");
 
   // Grab orbitals
   SharedMatrix Cdrc = get_orbitals("DRC");
@@ -362,14 +370,14 @@ void CIWavefunction::setup_mcscf_ints(){
   ints_->set_keep_dpd_so_ints(true);
   ints_->set_print(0);
 
-  ints_init_ = true;
-
   // Conventional JK build
   jk_ = JK::build_JK();
   jk_->set_do_J(true);
   jk_->set_do_K(true);
   jk_->initialize();
   jk_->set_memory(Process::environment.get_memory() * 0.8);
+
+  ints_init_ = true;
 
 }
 void CIWavefunction::transform_mcscf_ints(bool approx_only)
@@ -662,11 +670,6 @@ void CIWavefunction::form_gmat()
       }
    }
 
-   // if (printflag) {
-   //    outfile->Printf( "\ng matrix\n") ;
-   //    print_mat(CalcInfo_->gmat, nbf, nbf, "outfile") ;
-   //    outfile->Printf( "\n") ;
-   //    }
 }
 
 void CIWavefunction::onel_ints_from_jk()

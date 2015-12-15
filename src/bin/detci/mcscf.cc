@@ -89,12 +89,14 @@ void CIWavefunction::compute_mcscf()
   std::string mcscf_type;
   if (MCSCF_Parameters_->mcscf_type == "DF"){
     mcscf_type = "   @DF-MCSCF";
-    outfile->Printf("\n                             "
+    outfile->Printf("\n   ==> Starting DF-MCSCF iterations <==\n\n");
+    outfile->Printf("                             "
                       "Total Energy         Delta E       RMS Grad\n\n");
   }
   else{
     mcscf_type = "   @MCSCF";
-    outfile->Printf("\n                         "
+    outfile->Printf("\n   ==> Starting MCSCF iterations <==\n\n");
+    outfile->Printf("                         "
                       "Total Energy         Delta E       RMS Grad\n\n");
   }
 

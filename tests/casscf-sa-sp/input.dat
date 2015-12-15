@@ -12,7 +12,6 @@ set {
   docc                [2, 0, 0, 0, 0, 2, 1, 1]
   restricted_docc     [1, 0, 0, 0, 0, 1, 0, 0]
   active              [2, 0, 1, 1, 0, 2, 1, 1]
-  mcscf_type          conv
   mcscf_r_convergence 5.e-6
 }
 

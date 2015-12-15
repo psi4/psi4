@@ -332,7 +332,6 @@ private:
     // opdm_, opdm_a_, etc are for "the" current OPDM
     bool opdm_called_;
     std::map<std::string, SharedMatrix> opdm_map_;
-    std::map<std::string, SharedMatrix> cino_map_;
     SharedMatrix opdm_;
     SharedMatrix opdm_a_;
     SharedMatrix opdm_b_;
