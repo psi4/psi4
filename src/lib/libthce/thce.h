@@ -25,6 +25,9 @@
 
 #include <libmints/typedefs.h>
 
+#include <boost/tuple/tuple.hpp>
+//#include "boost/tuple/tuple_comparison.hpp"
+
 namespace psi {
 
 class Tensor;

@@ -137,6 +137,7 @@ void CubeProperties::compute_properties()
         } else if (task == "ORBITALS") {
             std::vector<int> indsa0;
             std::vector<int> indsb0;
+
             if (options_["CUBEPROP_ORBITALS"].size() == 0) {
                 for (int ind = 0; ind < Ca_->colspi()[0]; ind++) {
                     indsa0.push_back(ind);
@@ -158,13 +159,13 @@ void CubeProperties::compute_properties()
             std::vector<string> labelsb;
             CharacterTable ct = basisset_->molecule()->point_group()->char_table();
             for (size_t ind = 0; ind < indsa0.size(); ++ind){
-                int i = get<1>(info_a_[ind]);
-                int h = get<2>(info_a_[ind]);
+                int i = get<1>(info_a_[indsa0[ind]]);
+                int h = get<2>(info_a_[indsa0[ind]]);
                 labelsa.push_back(to_string(i + 1) + "-" + ct.gamma(h).symbol());
             }
             for (size_t ind = 0; ind < indsb0.size(); ++ind){
-                int i = get<1>(info_b_[ind]);
-                int h = get<2>(info_b_[ind]);
+                int i = get<1>(info_b_[indsb0[ind]]);
+                int h = get<2>(info_b_[indsb0[ind]]);
                 labelsb.push_back(to_string(i + 1) + "-" + ct.gamma(h).symbol());
             }
             if (indsa0.size()) compute_orbitals(Ca_, indsa0,labelsa, "Psi_a");
