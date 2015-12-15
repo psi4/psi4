@@ -478,6 +478,7 @@ struct params {
    int mpn_schmidt;        /* 1(0) if a orthonormal vector space is employed
                               rather than storing the kth order wfn */
    int wigner;             /* 1(0) if wigner formulas used in Empn series */
+   int diag_iters_taken;   /* Number of diagonalization iterations taken */
    int maxnvect;           /* maximum number of b vectors for SEM method */
    int nunits;             /* num of tmp files to use for CI vects and such */
    int collapse_size;      /* how many vectors to collapse to in SEM */
@@ -645,96 +646,9 @@ struct sigma_data {
    int max_dim;
 };
 
-
 /*
-** Structure for pthreads information in s3v.c (s3_block_vdiag)
-**
+** Structs for MCSCF variables
 */
-struct pthreads_s3diag {
-    int nas;                  /* number of alpha strings */
-    int jlen;                 /* number of single-excitations */
-    int ij;                   /* compound orbital index */
-    double **Cprime;          /* ptr to Cprime scratch matrix */
-    int Ja_list;              /* strings block offset */
-    double *Tptr;             /* Temp ptr */
-    double **S;               /* Sigma vector */
-    int *R;                   /* ket determinants for ij */
-    int thread_id;            /* thread id number */
-    struct stringwr *Ia_local; /* ptr to string replacement struct */
-    int Ia_idx_local;         /* index of c block string */
-};
-
-struct pthreads_s2vfci {
-    struct stringwr **alplist;
-    struct stringwr **betlist;
-    double **C;
-    double **S;
-    double *oei;
-    double *tei;
-    int nlists;
-    int nas;
-    int nbs;
-    int Ia_list;
-    int Ja_list;
-    int Ja_list_nas;
-    struct stringwr *Ia;
-    unsigned int Ia_idx;
-};
-
-struct pthreads_s1vfci {
-    struct stringwr **alplist;
-    struct stringwr **betlist;
-    double **C;
-    double **S;
-    double *oei;
-    double *tei;
-    int nlists;
-    int nas;
-    int nbs;
-    int Ib_list;
-    int Jb_list;
-    int Jb_list_nbs;
-    struct stringwr *Ib;
-    unsigned int Ib_idx;
-};
-
-struct detci_timings {
-   double s1_total_time;
-   double s1_before_time;
-   double s1_after_time;
-   double s2_total_time;
-   double s2_before_time;
-   double s2_after_time;
-   double s3_total_time;
-   double s3_before_time;
-   double s3_after_time;
-   double s1_mt_before_time;
-   double s1_mt_after_time;
-   double s1_mt_total_time;
-   double s2_mt_before_time;
-   double s2_mt_after_time;
-   double s2_mt_total_time;
-   double s3_mt_before_time;
-   double s3_mt_after_time;
-   double s3_mt_total_time;
-   double read_total_time;
-   double read_before_time;
-   double read_after_time;
-   double write_total_time;
-   double write_after_time;
-   double write_before_time;
-   double Hd_total_time;
-   double Hd_before_time;
-   double Hd_after_time;
-   double total_before_time;
-   double total_after_time;
-  };
-
-double wall_time_new(void);
-void init_time_new(struct detci_timings time);
-void print_time_new(struct detci_timings time);
-
-
 struct mcscf_params {
   double rms_grad_convergence; /* convergence on RMS of orbital grad           */
   double energy_convergence;   /* convergence on CI energy                     */

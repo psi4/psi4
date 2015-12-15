@@ -49,15 +49,6 @@
 
 namespace psi { namespace detci {
 
-//extern int H0block_calc(double E);
-//extern int H0block_coupling_calc(double E, struct stringwr *alplist,
-//   struct stringwr *betlist);
-//extern void H0block_xy(double *x, double *y, double E);
-//extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode, 
-//   int *Iaidx, int *Ibidx, double *coeff,
-//   struct olsen_graph *AlphaG, struct olsen_graph *BetaG, 
-//   struct stringwr **alplist, struct stringwr **betlist,
-//   std::string out);
 extern void xeaxmy(double *x, double *y, double a, int size);
 extern void xeaxpby(double *x, double *y, double a, double b, int size);
 extern void xexy(double *x, double *y, int size);
@@ -110,18 +101,6 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
             Parameters_->s_filenum, CIblks_);  
    Sigma.set(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
              Parameters_->s_filenum, CIblks_);  
-   //Cvec.set(CIblks.vectlen, CIblks.num_blocks, Parameters_->icore, Parameters_->Ms0,
-   //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-   //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-   //   CalcInfo_->nirreps, AlphaG->subgr_per_irrep, maxnvect,
-   //   Parameters_->num_c_tmp_units, Parameters_->c_filenum,
-   //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-   //Sigma.set(CIblks.vectlen, CIblks.num_blocks, Parameters_->icore,Parameters_->Ms0,
-   //   CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-   //   CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-   //   CalcInfo_->nirreps, AlphaG->subgr_per_irrep, maxnvect,
-   //   Parameters_->num_s_tmp_units, Parameters_->s_filenum,
-   //   CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
 
    // Open I/O files but not with OPEN_OLD
    Cvec.init_io_files(false);
@@ -538,6 +517,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
       outfile->Printf("    Delta_E %10.3E   Delta_C %10.3E\n",E-E_last,c1norm);
       
       iter++;
+      Parameters_->diag_iters_taken = iter;
       E_last = E;
       if (Parameters_->calc_ssq && Parameters_->icore==1)
         Cvec.calc_ssq(buffer1, buffer2, alplist, betlist, 0);
