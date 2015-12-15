@@ -1237,7 +1237,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
         iter++;
         iter2++;
       } /* end iteration */
-
+  Parameters_->diag_iters_taken = iter;
 
    /* Dump the vector to a PSIO file
       Added by Edward valeev (August 2002) */
