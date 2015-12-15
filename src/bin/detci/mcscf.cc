@@ -30,6 +30,7 @@
 #include <libdiis/diisentry.h>
 
 #include "ciwave.h"
+#include "civect.h"
 #include "structs.h"
 
 namespace psi { namespace detci {
@@ -86,8 +87,16 @@ void CIWavefunction::compute_mcscf()
   double old_energy = CalcInfo_->escf;
   std::string itertype = "Initial CI";
   std::string mcscf_type;
-  if (MCSCF_Parameters_->mcscf_type == "DF") mcscf_type = "   @DF-MCSCF";
-  else mcscf_type = "      @MCSCF";
+  if (MCSCF_Parameters_->mcscf_type == "DF"){
+    mcscf_type = "   @DF-MCSCF";
+    outfile->Printf("\n                             "
+                      "Total Energy         Delta E       RMS Grad\n\n");
+  }
+  else{
+    mcscf_type = "   @MCSCF";
+    outfile->Printf("\n                         "
+                      "Total Energy         Delta E       RMS Grad\n\n");
+  }
 
 
   // Setup the DIIS manager
@@ -105,8 +114,6 @@ void CIWavefunction::compute_mcscf()
   int diis_count = 0;
 
   // Energy header
-  outfile->Printf("\n                             "
-                    "Total Energy         Delta E       RMS Grad\n\n");
 
   // Iterate
   for (int iter=1; iter<(MCSCF_Parameters_->max_iter + 1); iter++){
@@ -134,7 +141,7 @@ void CIWavefunction::compute_mcscf()
     if (grad_rms < MCSCF_Parameters_->rms_grad_convergence &&
         (fabs(ediff) < fabs(MCSCF_Parameters_->energy_convergence)) &&
         (iter > 3)){
-      outfile->Printf("\n       MCSCF has converged!\n");
+      outfile->Printf("\n       MCSCF has converged!\n\n");
       break;
     }
     old_energy = current_energy;
@@ -193,19 +200,51 @@ void CIWavefunction::compute_mcscf()
   diis_manager.reset();
 
   // Print out the energy
-  outfile->Printf("\n\n    => Energetics <=\n\n");
-  outfile->Printf("    SCF energy =             %20.15f\n", CalcInfo_->escf);
-  outfile->Printf("    Total CI energy =        %20.15f\n", current_energy);
-  if (Parameters_->average_num > 1) {
-    std::stringstream s;
-    outfile->Printf("\n");
-    for (int i=0; i<Parameters_->average_num; i++){
-     s.str(std::string());
-     s << "CI ROOT " << (i+1) << " CORRELATION ENERGY";
-     outfile->Printf("    CI Root %2d energy =      %20.15f\n", i+1,
-         Process::environment.globals[s.str()] + CalcInfo_->escf);
-    }
+  if (MCSCF_Parameters_->mcscf_type == "DF"){
+    outfile->Printf("   @DF-MCSCF Final Energy:  %20.15f\n", current_energy);
   }
+  else{
+    outfile->Printf("   @MCSCF Final Energy:  %20.15f\n", current_energy);
+  }
+
+  // Print root information
+  int nroots = Parameters_->num_roots;
+  CIvect Dvec(Parameters_->icore, nroots, 1, Parameters_->d_filenum, CIblks_, CalcInfo_,
+              Parameters_, H0block_);
+  Dvec.init_io_files(true);
+
+  int* mi_iac = init_int_array(Parameters_->nprint);
+  int* mi_ibc = init_int_array(Parameters_->nprint);
+  int* mi_iaidx = init_int_array(Parameters_->nprint);
+  int* mi_ibidx = init_int_array(Parameters_->nprint);
+  double* mi_coeff = init_array(Parameters_->nprint);
+
+  outfile->Printf("\n\n   => Energetics <=\n\n");
+  outfile->Printf("   SCF energy =             %20.15f\n", CalcInfo_->escf);
+  outfile->Printf("   Total CI energy =        %20.15f\n\n", current_energy);
+
+  std::stringstream s;
+  outfile->Printf("\n");
+  for (int i=0; i<nroots; i++){
+
+   // Print root energy
+   s.str(std::string());
+   s << "CI ROOT " << (i+1) << " CORRELATION ENERGY";
+   outfile->Printf("   CI Root %2d energy =      %20.15f\n", i+1,
+       Process::environment.globals[s.str()] + CalcInfo_->escf);
+
+   // Print largest CI coefs
+   Dvec.read(i, 0);
+   zero_arr(mi_coeff, Parameters_->nprint);
+   Dvec.max_abs_vals(Parameters_->nprint, mi_iac, mi_ibc,
+      mi_iaidx, mi_ibidx, mi_coeff, Parameters_->neg_only);
+   print_vec(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
+      mi_coeff);
+   outfile->Printf("\n");
+ }
+ free(mi_iac);    free(mi_ibc);
+ free(mi_iaidx);  free(mi_ibidx);
+ free(mi_coeff);
 
 }
 

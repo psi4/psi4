@@ -84,16 +84,16 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
    CIvect Cvec(Parameters_->icore, maxnvect, 1,
           Parameters_->c_filenum, CIblks_, CalcInfo_, Parameters_,
-          H0block_, false);  
+          H0block_, false);
    CIvect Cvec2(Parameters_->icore, maxnvect, 1,
           Parameters_->c_filenum, CIblks_, CalcInfo_, Parameters_,
-          H0block_, false);  
+          H0block_, false);
    CIvect Sigma(Parameters_->icore, maxnvect, 1,
                 Parameters_->s_filenum, CIblks_, CalcInfo_, Parameters_,
-                H0block_, false);  
+                H0block_, false);
    CIvect Sigma2(Parameters_->icore, maxnvect, 1,
                  Parameters_->s_filenum, CIblks_, CalcInfo_, Parameters_,
-                 H0block_, false);  
+                 H0block_, false);
 
    int dvec_file, dvec2_file;
    if (!Parameters_->nodfile){
@@ -107,10 +107,10 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
    CIvect Dvec(Parameters_->icore, maxnvect, 1,
                dvec_file, CIblks_, CalcInfo_, Parameters_,
-               H0block_, false);  
+               H0block_, false);
    CIvect Dvec2(Parameters_->icore, maxnvect, 1,
                 dvec2_file, CIblks_, CalcInfo_, Parameters_,
-                H0block_, false);  
+                H0block_, false);
 
    /* open the files: some of these CIvectors are logical vectors that
       point to the same files ... don't need to repeat the file opens
@@ -200,7 +200,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
    if (Parameters_->lse) lse_tolerance = Parameters_->lse_tolerance;
 
-   if (Parameters_->nodfile == FALSE && 
+   if (Parameters_->nodfile == FALSE &&
      Parameters_->guess_vector == PARM_GUESS_VEC_DFILE) {
      if ((i = Dvec.read_num_vecs()) != nroots) {
        if (Parameters_->print_lvl) outfile->Printf( "D file contains %d not %d vectors.  Trying another guess.\n", i, nroots);
@@ -270,7 +270,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
       // Cvec.civect_psio_debug();
       // Sigma.civect_psio_debug();
       // Dvec.civect_psio_debug();
-      // 
+      //
 
       Cvec.buf_lock(buffer1);
       Sigma.buf_lock(buffer2);
@@ -540,7 +540,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    //Sigma.write_detfile(SIGMA_VEC);
    //if (Parameters_->print_lvl > 1)
    //  outfile->Printf("Restart info written.\n");
-   
+
 
    if (k < nroots) {
       str = "(sem_iter): Failure to get required number of guess vects.\n";
@@ -637,14 +637,14 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
           if (print_lvl > 2) {
             outfile->Printf("Sigma[%d] = ", i);
             Sigma.print("outfile");
-            
+
           }
           for (j=i; j<L; j++) {
              Sigma2.read(j, 0);
              if (print_lvl > 2) {
                outfile->Printf("Sigma2[%d] = ", j);
                Sigma2.print("outfile");
-               
+
              }
              sigma_overlap[i][j] = sigma_overlap[j][i] = Sigma * Sigma2;
           }
@@ -697,14 +697,14 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
           if (print_lvl > 2) {
             outfile->Printf("Sigma[%d] = ", i);
             Sigma.print("outfile");
-            
+
             }
           for (j=i; j<L; j++) {
              Sigma2.read(j, 0);
              if (print_lvl > 2) {
                outfile->Printf("Sigma2[%d] = ", j);
                Sigma2.print("outfile");
-               
+
                }
              sigma_overlap[i][j] = sigma_overlap[j][i] = Sigma * Sigma2;
              }
@@ -907,7 +907,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
         Sigma.write_detfile(SIGMA_VEC);
         if (Parameters_->print_lvl > 1)
           outfile->Printf("Restart info written.\n");
-        
+
     */
 
         if (Parameters_->nodfile) {
@@ -1071,7 +1071,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          }
 
       if (converged || iter == maxiter) {
-         
+
          Cvec.buf_lock(buffer1);
          Dvec.buf_lock(buffer2);
          //if (Parameters_->nodfile) Dvec.reset_detfile(CI_VEC);
@@ -1368,7 +1368,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
    //CIvect D(Parameters_->icore, maxnvect, 1,
    //            Parameters_->d_filenum, CIblks_, CalcInfo_, Parameters_,
-   //            H0block_, true);  
+   //            H0block_, true);
    //D.init_io_files(true);
    //D.read(0,0);
    //D.print("outfile");

@@ -25,11 +25,11 @@ molecule ne {
   Ne
 }
 
+# Compute CISD and use CISD NO's
 set globals {
   wfn detci
   basis cc-pVQZ
   d_convergence 10
-# docc            [2, 0, 0, 0, 0, 1, 1, 1]
   frozen_docc     [1, 0, 0, 0, 0, 0, 0, 0]
   ex_level 2
 }
@@ -44,10 +44,6 @@ compare_values(refnuc, ne.nuclear_repulsion_energy(), 9, "Nuclear repulsion ener
 compare_values(refscf, get_variable("SCF total energy"),     9, "SCF energy") #TEST
 compare_values(refci, thisenergy,                      7, "CI energy") #TEST
 compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
-
-#clean()
-
-# !Warning: DGAS intentionally broke the second half here, need to fix natural orbitals
 
 ## Now, run the RASCI
 refnuc   =    0.0000000000    #TEST

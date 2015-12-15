@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 /*
@@ -52,8 +52,8 @@ namespace psi { namespace detci {
 #define MIN_COEFF 1.0E-13
 
 void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo);
-//void print_config(int nbf, int num_alp_el, int num_bet_el, 
-//   struct stringwr *stralp, struct stringwr *strbet, 
+//void print_config(int nbf, int num_alp_el, int num_bet_el,
+//   struct stringwr *stralp, struct stringwr *strbet,
 //   int num_drc_orbs, char *outstring);
 extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
 
@@ -64,7 +64,7 @@ extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
 ** Print the Most Important Determinants in the CI vector
 ** David Sherrill, February 1995
 */
-void CIWavefunction::print_vec(unsigned int nprint, int *Ialist, int *Iblist, 
+void CIWavefunction::print_vec(unsigned int nprint, int *Ialist, int *Iblist,
       int *Iaidx, int *Ibidx, double *coeff)
 {
    int i,j,k;
@@ -74,14 +74,13 @@ void CIWavefunction::print_vec(unsigned int nprint, int *Ialist, int *Iblist,
    char configstring[CONFIG_STRING_MAX];
    int Ia_abs, Ib_abs;
 
-   #ifdef FLAG_NONBLOCKS 
+   #ifdef FLAG_NONBLOCKS
    int found_inblock=0;
    #endif
 
    /* print out the list of most important determinants */
-   outfile->Printf( "\n\nThe %d most important determinants\n\n", nprint) ;
+   outfile->Printf("\n\nThe %d most important determinants\n\n", nprint) ;
    for (i=0; i<nprint; i++) {
-
       if (fabs(coeff[i]) < MIN_COEFF) continue;
 
       Ia_abs = str_rel2abs(Iaidx[i], Ialist[i], AlphaG_);
@@ -89,35 +88,35 @@ void CIWavefunction::print_vec(unsigned int nprint, int *Ialist, int *Iblist,
 
       #ifdef FLAG_NONBLOCKS
       for (j=0, found_inblock=0; j<H0block_->size; j++) {
-         if (Iaidx[i] == H0block_->alpidx[j] && 
+         if (Iaidx[i] == H0block_->alpidx[j] &&
              Ibidx[i] == H0block_->betidx[j] &&
-             Ialist[i] == H0block_->alplist[j] && 
+             Ialist[i] == H0block_->alplist[j] &&
              Iblist[i] == H0block_->betlist[j]) {
             found_inblock = 1;
-            break; 
+            break;
             }
          }
-      outfile->Printf( "%c", found_inblock ? ' ' : '*');
+      outfile->Printf("%c", found_inblock ? ' ' : '*');
       #endif
 
-      outfile->Printf( "%4d  %10.6lf  (%5d,%5d)  ", i+1, coeff[i], 
+      outfile->Printf("%4d  %10.6lf  (%5d,%5d)  ", i+1, coeff[i],
          Ia_abs, Ib_abs);
 
       print_config(AlphaG_->num_orb, AlphaG_->num_el_expl, BetaG_->num_el_expl,
          alplist_[Ialist[i]] + Iaidx[i], betlist_[Iblist[i]] + Ibidx[i],
          AlphaG_->num_drc_orbs, configstring);
 
-      outfile->Printf( "%s\n", configstring);
+      outfile->Printf("%s\n", configstring);
 
       } /* end loop over important determinants */
 
-   outfile->Printf( "\n\n");
- 
+   outfile->Printf("\n");
+
 }
 
 
 
-/* 
+/*
 ** PRINT_CONFIG()
 **
 ** Function prints a configuration, given a list of
@@ -126,7 +125,7 @@ void CIWavefunction::print_vec(unsigned int nprint, int *Ialist, int *Iblist,
 ** David Sherrill, February 1995
 **
 */
-void CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el, 
+void CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el,
    struct stringwr *stralp, struct stringwr *strbet, int num_drc_orbs,
    char *outstring)
 {
@@ -162,7 +161,7 @@ void CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el,
       else if (bfound) strcat(outstring, "B  ");
       } /* end loop over orbitals */
 
-} 
+}
 
 /*
 ** orb2lbl(): Function converts an absolute orbital number into a
@@ -174,15 +173,15 @@ void CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el,
 **
 ** Needs Global (CalcInfo):
 **    orbs_per_irrep = number of orbitals per irrep
-**    order          = ordering array which maps a CI orbital to a 
-**                     Pitzer orbital (the opposite mapping from the 
+**    order          = ordering array which maps a CI orbital to a
+**                     Pitzer orbital (the opposite mapping from the
 **                     "reorder" array)
 **    irreps         = number of irreducible reps
 **    nmo            = num of molecular orbitals
 **    labels         = labels for all the irreps
 **
 ** Notes:
-**    If there are frozen core (FZC) orbitals, they are not included in the 
+**    If there are frozen core (FZC) orbitals, they are not included in the
 **       CI numbering (unless they're "restricted" or COR orbitals).  This
 **       is bothersome because some of the arrays constructed in the CI program
 **       do start numbering from FZC orbitals.  Thus, pass orbnum as the CI
@@ -199,7 +198,7 @@ void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo)
 
    /* get Pitzer ordering */
    pitzer_orb = Cinfo->order[orbnum];
-   
+
    if (pitzer_orb > Cinfo->nmo) {
       outfile->Printf( "(orb2lbl): pitzer_orb > nmo!\n");
       }
@@ -217,7 +216,7 @@ void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo)
    else if (rel_orb > Cinfo->orbs_per_irr[ir]) {
       outfile->Printf( "(orb2lbl): rel_orb > orbs_per_irrep[ir]\n");
       }
- 
+
    sprintf(label, "%d%s", rel_orb+1, Cinfo->labels[ir]);
 
 }
@@ -251,7 +250,7 @@ void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo)
 //     t = CalcInfo.labels[i];
 //     j = 0;
 //     while ((toupper(*s) == toupper(*t)) && (j < strlen(orblbl))) {
-//       s++; 
+//       s++;
 //       t++;
 //       j++;
 //     }
@@ -277,7 +276,7 @@ void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo)
 //   corr_orb -= CalcInfo.num_drc_orbs;
 //
 //   if (corr_orb < 0 || corr_orb > CalcInfo.num_ci_orbs) {
-//     outfile->Printf( "lbl2orb: error corr_orb out of bounds, %d\n", 
+//     outfile->Printf( "lbl2orb: error corr_orb out of bounds, %d\n",
 //       corr_orb);
 //     return(0);
 //   }
@@ -337,10 +336,10 @@ void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo)
 //
 //   outfile->Printf( "\nCI Block Summary:\n");
 //   for (blk=0; blk<CIblks.num_blocks; blk++) {
-//      outfile->Printf("Block %3d: Alp=%3d, Bet=%3d  Size = %4d x %4d = %ld\n", 
-//              blk, CIblks.Ia_code[blk], CIblks.Ib_code[blk], 
+//      outfile->Printf("Block %3d: Alp=%3d, Bet=%3d  Size = %4d x %4d = %ld\n",
+//              blk, CIblks.Ia_code[blk], CIblks.Ib_code[blk],
 //              CIblks.Ia_size[blk], CIblks.Ib_size[blk],
-//              (unsigned long) CIblks.Ia_size[blk] * 
+//              (unsigned long) CIblks.Ia_size[blk] *
 //              (unsigned long) CIblks.Ib_size[blk]);
 //      }
 //}
@@ -356,7 +355,7 @@ void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo)
 //  int i;
 //  boost::shared_ptr<OutFile> printer(new OutFile("detci_energies.dat",APPEND));
 //  //ffile(&efile,"detci_energies.dat",1);
-//  for (i=0; i<nroots; i++) { 
+//  for (i=0; i<nroots; i++) {
 //    printer->Printf("%8.6lf ", evals[i]+offset);
 //  }
 //  printer->Printf("\n");
