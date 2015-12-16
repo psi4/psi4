@@ -83,5 +83,7 @@ set detci {
 
 thisenergy = energy('detci',bypass_scf='True')
 
+compare_values(refnuc, ne.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
+compare_values(refscf, get_variable("current REFerence energy"),     9, "SCF energy") #TEST
 compare_values(refci, thisenergy,                      7, "CI energy") #TEST
 compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
