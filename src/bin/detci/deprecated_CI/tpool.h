@@ -91,6 +91,8 @@ int tpool_destroy(
     tpool_t          tpool,
     int              finish);
 
+// DGAS: This isnt great, cannot run parallel detci as a module
+// Will nuke tpool eventually and move to a omp task module
 EXTERN tpool_t thread_pool;
 
 void tpool_queue_open(tpool_t tpool);

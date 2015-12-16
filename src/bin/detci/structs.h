@@ -22,11 +22,11 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
 ** STRUCTS.H
-** 
+**
 ** C. David Sherrill
 ** Center for Computational Quantum Chemistry
 ** University of Georgia
@@ -47,9 +47,10 @@ namespace psi { namespace detci {
 
 /*** DEFINES ***/
 /*
-typedef unsigned long long int BIGINT; 
+typedef unsigned long long int BIGINT;
 */
-typedef unsigned long int BIGINT; 
+typedef unsigned long int BIGINT;
+//typedef boost::shared_ptr<psi::detci::CIvect> SharedCIVector;
 
 #define CI_BLK_MAX 5000
 #define IOFF_MAX 50604
@@ -100,7 +101,7 @@ struct stringwr {
    };
 
 
-struct level {   
+struct level {
    int num_j;
    int *a;
    int *b;
@@ -113,7 +114,7 @@ struct level {
 struct stringgraph {
    int offset;
    int num_strings;
-   struct level *lvl;       
+   struct level *lvl;
    int ***ktmp;             /* ktmp[case][row][level] */
    };
 
@@ -122,7 +123,7 @@ struct stringgraph {
 ** OLSEN_GRAPH structure.  This maintains a graphical
 ** representation of alpha and/or beta strings according to the method
 ** of Roos and Olsen, which maintains a different subgraph for each
-** possible combination of point-group irrep, #RAS I electrons, and 
+** possible combination of point-group irrep, #RAS I electrons, and
 ** #RAS III electrons.
 */
 struct olsen_graph {
@@ -150,14 +151,14 @@ struct olsen_graph {
    int *str_per_irrep;      /* array containing num strings per irrep */
    int ***decode;           /* decode[ras1_holes][ras3_e][ras4_e] */
    int **encode;            /* encode[0,1,2][code] gives ras1 e- (excl drc) and
-                               ras3 e- and ras4 e- */ 
-   struct stringgraph **sg; /* sg[irrep][code] */ 
+                               ras3 e- and ras4 e- */
+   struct stringgraph **sg; /* sg[irrep][code] */
    int *orbsym;             /* array for orbital irreps (incl. drc) */
    int *list_offset;        /* absolute offset for each list */
    };
 
 
-/* 
+/*
 ** FASTGRAPH structure.  Should provide a more straightforward (if
 ** also more restrictive) version of struct stringgraph.  Although
 ** somewhat more memory intensive, should allow for fast OTF
@@ -174,7 +175,7 @@ struct fastgraph {
 ** GRAPH_SET structure.  This maintains a graphical
 ** representation of alpha and/or beta strings according to the method
 ** of Roos and Olsen, which maintains a different subgraph for each
-** possible combination of point-group irrep, #RAS I electrons, and 
+** possible combination of point-group irrep, #RAS I electrons, and
 ** #RAS III electrons.  New implementation of previous olsen_graph
 ** structure; this one uses the more simplified fastgraph structure
 ** instead of stringgraph.
@@ -189,14 +190,14 @@ struct graph_set {
    int num_el_expl;         /* number of electrons (explicit) in graph */
    int num_orb;             /* number of orbitals explicitly treated */
    int ras1_lvl;            /* orbital number where RAS I ends (not including
-                               dropped core orbitals in the numbering), 
+                               dropped core orbitals in the numbering),
                                or the last level in RAS I */
    int ras1_min;            /* minimum number of electrons in RAS I (for
                                the _strings_), no longer incl. core
                                (either explicit core or dropped core) */
    int ras1_max;            /* max number of RAS I electrons (useful when
                                the RAS I level may extend beyond the last
-                               occupied orbital), no longer incl. core 
+                               occupied orbital), no longer incl. core
                                (either explicit core or dropped core) */
    int ras3_lvl;            /* orbital num where RAS III begins (less drc) */
    int ras3_max;            /* maximum number of electrons in RAS III */
@@ -207,7 +208,7 @@ struct graph_set {
    int num_codes;           /* possible number of subgraphs per irrep */
    int ***decode;           /* decode[ras1_holes][ras3_e][ras4_e] */
    int **encode;            /* encode[0,1,2][code] gives ras1 e- (excl drc) and
-                               ras3 e- and ras4 e- */ 
+                               ras3 e- and ras4 e- */
    struct fastgraph **AllGraph;
                             /* Pointers to all subgraphs */
    struct fastgraph **Graph;/* Pointers to allowed subgraphs */
@@ -230,7 +231,7 @@ struct H_zero_block {
    double *H00;                /* diag elements of H0 block */
    int size;                   /* size of H0 block */
    int osize;                  /* original (dimensioned size); can be reduced
-                                  for Ms=0 cases by H0block_pairup() */ 
+                                  for Ms=0 cases by H0block_pairup() */
    int guess_size;             /* size of initial H0 block guess which may
                                   differ from size */
    int oguess_size;            /* original guess size may change with
@@ -246,15 +247,15 @@ struct H_zero_block {
    int *alpidx;                /* relative index of alpha string */
    int *betidx;                /* relative index of beta string */
    int *blknum;                /* block number for each member */
-   int *pair;                  /* which H0block member is related by 
+   int *pair;                  /* which H0block member is related by
                                   interchange of alpha and beta indices */
    double **tmp1;              /* tmp matrix to hold (H0 - E) */
    int nbuf;                   /* number of buffers in CIvect */
    int *buf_num;               /* number of H0block elements per buffer */
    int **buf_member;           /* H0block members for each buffer */
-   double spin_cp_vals;       /* Values of dets which should be added 
+   double spin_cp_vals;       /* Values of dets which should be added
                                   to the h0block but were not due to size
-                                  restrictions of h0block.size */ 
+                                  restrictions of h0block.size */
    double *tmp_array1;         /* temporary array 1 */
    double *tmp_array2;         /* temporary array 2 */
    };
@@ -273,34 +274,35 @@ struct calcinfo {
    int nirreps;          /* number of irreducible representations in pt grp */
    int *docc;            /* number of doubly occupied orbitals per irrep */
    int *socc;            /* number of singly occupied orbitals per irrep */
-   int *dropped_docc;    /* number of core orbitals per irrep constrained to 
+   int *ci_orbs;         /* number of act orbitals per irrep */
+   int *dropped_docc;    /* number of core orbitals per irrep constrained to
                             be doubly occupied and dropped from explicit
-                            consideration in the CI computation; 
+                            consideration in the CI computation;
                             sum of frozen_docc and rstr_docc - CDS 4/15 */
    int *frozen_docc;     /* number of frozen doubly occupied orbs per irrep;
                             these are not explicitly present in the CI
                             and these orbitals are not allowed to optimize
                             in an MCSCF - CDS 4/15 */
-   int *rstr_docc;       /* number of restricted doubly occupied orbs per 
+   int *rstr_docc;       /* number of restricted doubly occupied orbs per
                             irrep; these are not explicitly present in the
                             CI and these orbitals are allowed to optimize
                             in an MCSCF - CDS 4/15 */
-   int *dropped_uocc;     /* number of unoccupied orbitals per irrep 
-                            constrained to be unoccupied and dropped from 
-                            explicit consideratin in the CI computation; 
+   int *dropped_uocc;     /* number of unoccupied orbitals per irrep
+                            constrained to be unoccupied and dropped from
+                            explicit consideratin in the CI computation;
                             sum of frozen_uocc and rstr_uocc - CDS 4/15 */
    int *frozen_uocc;     /* number of frozen unoccupied orbitals per irrep;
                             these are not explicitly present in the CI
                             and these orbitals are not allowed to optimize
                             in an MCSCF */
    int *rstr_uocc;       /* number of restricted unoccpied orbitals per irrep;
-                            these are not explicitly present in the CI 
+                            these are not explicitly present in the CI
                             and these orbitals are allowed to optimize in
                             an MCSCF */
    int iopen;            /* flag for whether open shell or not */
    double enuc;          /* nuclear repulsion energy */
    double escf;          /* scf energy */
-   double eref;          /* ref det energy as computed here in detci */
+   double efzc;          /* energy of the frozen core orbitals */
    double edrc;          /* energy of the dropped core orbitals */
    double e0;            /* E0, zeroth order energy */
    double e0_drc;        /* two times the sum of the dropped core orbitals */
@@ -314,7 +316,9 @@ struct calcinfo {
    int *so_per_irr;      /* symmetry orbitals per irrep */
    int *orbsym;          /* irrep for each orbital */
    int *reorder;         /* map Pitzer-ordered orbitals to our ordering */
+   int *act_reorder;     /* map Pitzer-ordered orbitals to our ordering for active only*/
    int *order;           /* map our ordering back to Pitzer ordering */
+   int *act_order;       /* map our ordering back to Pitzer ordering for active only*/
    double *scfeigval;    /* SCF eigenvalues */
    double *scfeigvala;    /* For ZAPTn, alpha and beta eigenvalues different */
    double *scfeigvalb;    /* in SOCC space */
@@ -327,16 +331,18 @@ struct calcinfo {
    double **fock;        /* fock matrix */
    int num_fzc_orbs;     /* number of frozen core orbitals */
    int num_rsc_orbs;     /* number of restricted core orbitals */
-   int num_drc_orbs;     /* number of dropped core orbitals 
+   int num_drc_orbs;     /* number of dropped core orbitals
                             (frozen + restricted) */
    int num_fzv_orbs;     /* number of frozen/deleted virtual orbitals */
    int num_rsv_orbs;     /* number of restricted virtual orbitals */
-   int num_drv_orbs;     /* number of dropped virtual orbitals 
+   int num_drv_orbs;     /* number of dropped virtual orbitals
                             (frozen + restricted) */
+   int num_rot_orbs;     /* number of rotatable orbitals
+                            (nmo - nfzc - nfzv) */
    int npop;             /* number of populated orbitals, nso - total virtual */
-   int num_expl_cor_orbs;/* number of explicit core orbitals, i.e., 
+   int num_expl_cor_orbs;/* number of explicit core orbitals, i.e.,
                             orbitals that are constrained to be doubly
-                            occupied in the CI and but are nevertheless 
+                            occupied in the CI and but are nevertheless
                             explicitly included in the CI computation (not
                             currently used for anything but kept because
                             lower-level routines allow it; it is set to 0) */
@@ -382,7 +388,7 @@ struct params {
    int maxiter;      /* maximum number of allowed iterations */
    int num_roots;    /* number of CI roots to find */
    int istop;        /* stop after setting up CI space */
-   int print_lvl;    /* print verbosity level */ 
+   int print_lvl;    /* print verbosity level */
    int print_ciblks; /* print a summary of the CI blocks? */
    double convergence;  /* convergence on RMS of the CI update vector */
                      /* (i.e. the Davidson/Liu d vector) applied to ea root */
@@ -428,7 +434,7 @@ struct params {
    int cc_a_ras34_max;/* as above but for CC */
    int cc_b_ras34_max;/* as above but for CC */
    int guess_vector; /* what kind of CI vector to start with; see #define */
-   int h0blocksize;  /* size of H0 block in preconditioner. */  
+   int h0blocksize;  /* size of H0 block in preconditioner. */
    int h0guess_size; /* size of H0 block for initial guess */
    int h0block_coupling_size; /* size of coupling block in preconditioner */
    int h0block_coupling; /* 1 if true; 0 otherwise */
@@ -460,18 +466,19 @@ struct params {
                               0 = Lanczos
                               1 = Davidson
                               2 = Generalized Davidson or H0block
-                              3 = H0block inverse */ 
-   int update;             /* update vector in diag method  
+                              3 = H0block inverse */
+   int update;             /* update vector in diag method
                               1 = Davidson
                               2 = Olsen */
    int mcscf;             /* 1(0) if computing MCSCF is TRUE(FALSE) */
    int mpn;                /* 1(0) if computing mpn series is TRUE(FALSE) */
    int zaptn;              /* 1(0) if computing zaptn series is TRUE(FALSE) */
-   int save_mpn2;          /* 0 = save MPn energy, 1 = save MP(2n-1) energy, 
+   int save_mpn2;          /* 0 = save MPn energy, 1 = save MP(2n-1) energy,
                               2 = save MP(2n-2) energy */
    int mpn_schmidt;        /* 1(0) if a orthonormal vector space is employed
-                              rather than storing the kth order wfn */ 
+                              rather than storing the kth order wfn */
    int wigner;             /* 1(0) if wigner formulas used in Empn series */
+   int diag_iters_taken;   /* Number of diagonalization iterations taken */
    int maxnvect;           /* maximum number of b vectors for SEM method */
    int nunits;             /* num of tmp files to use for CI vects and such */
    int collapse_size;      /* how many vectors to collapse to in SEM */
@@ -480,14 +487,14 @@ struct params {
    int lse;                /* 1(0) if lst sqr ext is TRUE or FALSE */
    double lse_tolerance;   /* energy converged to tol to perform lse */
    int neg_only;           /* 1(0) if get -(+) values of diag elements */
-   int first_tmp_unit;     /* first number for the tmp files */ 
-   int first_hd_tmp_unit;  /* first tmp file for H diagonal */
+   int first_tmp_unit;     /* first number for the tmp files */
+   int hd_filenum;  /* first tmp file for H diagonal */
    int num_hd_tmp_units;   /* the number of such files */
-   int first_c_tmp_unit;   /* first tmp file for CI coeffs */
+   int c_filenum;   /* first tmp file for CI coeffs */
    int num_c_tmp_units;    /* the number of such files */
-   int first_s_tmp_unit;   /* first tmp file for sigma coeffs */
+   int s_filenum;   /* first tmp file for sigma coeffs */
    int num_s_tmp_units;    /* the number of such files */
-   int first_d_tmp_unit;   /* first tmp file for D correction vectors */
+   int d_filenum;   /* first tmp file for D correction vectors */
    int num_d_tmp_units;    /* the number of such files */
    int num_init_vecs;      /* number of initial vectors for Davidson method */
    int restart;            /* restart flag, 0 or 1 */
@@ -497,15 +504,13 @@ struct params {
    int opdm_print;         /* print the opdm? */
    int opdm_file;          /* file number for opdm */
    int opdm_diag;          /* get ci natural orbitals? */
-   int opdm_wrtnos;        /* write ci natural orbitals to file 30? */
-   int opdm_ke;            /* get kinetic energy dotted with opdm? for TDC */
    int opdm_ave;           /* average the opdm over several states */
    int opdm_orbsfile;      /* file number to write various orbitals */
    int opdm_orbs_root;     /* write ci natural orbs of this root to checkpt */
    int **opdm_idxmat;      /* matrix of index values for the various
-                              roots and irreps of opdm in opdmfile */ 
+                              roots and irreps of opdm in opdmfile */
    int **orbs_idxmat;      /* matrix of index values for various
-                              roots and irreps of orbitals in orbsfile */ 
+                              roots and irreps of orbitals in orbsfile */
    int transdens;          /* compute transition densities? */
    int dipmom;             /* compute dipole moment or transition dip mom?  */
    int tdm_write;          /* write the transition density matrix/matrices? */
@@ -524,7 +529,7 @@ struct params {
    int export_ci_vector;   /* 1 if export the CI vector with string info,
                               useful for BODC */
    int num_export;         /* number of vectors to export */
-   int sf_restrict;        /* 1 if restrict CI space (CI blocks) to 
+   int sf_restrict;        /* 1 if restrict CI space (CI blocks) to
                               do only determinants (or their
                               spin-complements) in RASCI versions of
                               Krylov's SF CI */
@@ -587,138 +592,14 @@ struct params {
    int diis_max_vecs;      /* how many vectors maximum to hold?             */
    int cc_macro_on;        /* add restrictions to macroconfigurations       */
    int *cc_macro_parsed;   /* did the user specify a macro for this ex_lvl? */
-   int **cc_macro;         /* specify T vector macroconfigurations          
+   int **cc_macro;         /* specify T vector macroconfigurations
                               each ex_lvl has different specifications
-                              cc_macro[ex_lvl][0] = max I holes 
+                              cc_macro[ex_lvl][0] = max I holes
                                               [1] = max IV particles
                                               [2] = max (I h + IV p)        */
    int cc_variational;     /* variational energy expression?                */
 
 };
-
-/*
-** CalcInfo: Data Structure for MCSCF holding calculation information such
-**   as nuclear repulsion energy, number of atoms, number of basis functions,
-**   etc.
-*/
-struct mcscf_calcinfo {
-  int iter;              /* iteration number */
-  // int nmo;               /* number of molecular orbitals... the code often
-  //                          uses nbfso instead but it shouldn't in case
-  //                          of linear dependencies */
-  // int nso;               /* number of basis functions in symmetry orbitals */
-  // int nmotri;            /* num elements in lwr diag matrix nbfso big */
-  // int nbfao;             /* number of basis functions in atomic orbitals */
-  // int nirreps;           /* number of irreducible representations in pt grp */
-  // int num_fzc_orbs;      /* number of FZC orbitals (i.e. frozen core) */
-  // int num_cor_orbs;      /* number of COR orbitals (i.e. restricted core) */
-  // int num_vir_orbs;      /* number of VIR orbitals (i.e. restricted virtual) */
-  // int num_fzv_orbs;      /* number of frozen/deleted virtual orbitals */
-  // int npop;              /* number of populated orbitals, nbfso - nfzv */
-  // int max_orbs_per_irrep;/* max orbitals per irrep fzv not included */
-  // int max_pop_per_irrep; /* max populated orbitals per irrep fzv included */
-
-  // int *orbs_per_irr;     /* number of orbitals per irrep */
-  // int *docc;             /* doubly occupied orbitals per irrep */
-  // int *socc;             /* singly occupied orbitals per irrep */
-  // int *frozen_docc;      /* frozen doubly occupied orbs per irrep */
-  // int *frozen_uocc;      /* frozen virtual orbs per irrep */
-  // int *rstr_docc;        /* restricted doubly occupied orbs per irrep */
-  // int *rstr_uocc;        /* restricted virtual orbs per irrep */
-  // int *orbsym;           /* irrep for each orbital */
-  // int *pitz2ci;          /* map Pitzer-ordered orbitals to our ordering */
-  // int *ci2pitz;          /* map our ordering back to Pitzer ordering */
-  // int *ci2relpitz;       /* map CI ordering to _relative_ pitzer ordering */
-  // char **labels;         /* labels for irreps */
-  // int **ras_opi;         /* num orbs per irr per ras space ras_opi[ras][irr] */
-  // int **fzc_orbs;        /* frozen core orbitals numbers [irrep][orbnum] */
-  // int **cor_orbs;        /* restricted core orbitals numbers [irrep][orbnum] */
-  // int **vir_orbs;        /* restr virtual orbitals numbers [irrep][orbnum] */
-  // int **fzv_orbs;        /* frozen virtual orbitals numbers [irrep][orbnum] */
-
-  // int ***ras_orbs;       /* ras_orbs[ras][irr][cnt] gives an orbital number */
-
-  // int *first;            /* first orbital per irrep (in Pitzer order)    */
-  // int *last;             /* last  orbital per irrep (in Pitzer order)    */
-  // int *fstact;           /* first active orb per irrep (in Pitzer order) */
-  // int *lstact;           /* last  active orb per irrep (in Pitzer order) */
-  // int *active;           /* num active orbs per irrep                    */
-  // double enuc;           /* nuclear repulsion energy */
-  // double efzc;           /* frozen-core energy */
-  // double ***ref_mo_coeffs;   /* Reference matrix of molecular orbitals in Pitzer order */
-  // double ***cur_mo_coeffs;   /* Current matrix of molecular orbitals in Pitzer order */
-  double *onel_ints;     /* one-electron integrals */
-  double *onel_ints_bare;/* one-electron integrals, bare h only */
-  double *twoel_ints;    /* two-electron integrals */
-  double **opdm;         /* one-particle density matrix */
-  double *tpdm;          /* two-particle density matrix */
-  double **lag;          /* the MO Lagrangian */
-  double *F_act;         /* Active Fock Matrix */
-  double *mo_grad;       /* the MO gradient, dimension number of ind pairs */
-  double mo_grad_rms;    /* the RMS of the MO gradient */
-  double scaled_mo_grad_rms;
-  double *mo_hess_diag;  /* the MO Hessian, diagonal elements only         */
-  double **mo_hess;      /* full MO Hessian */
-  double *theta_cur;     /* current orbital rotation angles */
-  double *theta_step;    /* step in orbital rotation angles */
-
-  double energy;         /* Energy of current CI iteration */
-  double energy_old;     /* Energy of last CI iteration */
-  };
-
-
-/*
-** parameters structure: holds MCSCF run-time parameters
-*/
-struct mcscf_params {
-   std::string dertype;         /* derivative level: none, first, etc.          */
-   std::string wfn;             /* wavefunction, CASSCF, RASSCF, ..             */
-   int print_lvl;               /* print verbosity level                        */
-   bool print_mos;              /* print the molecular orbitals ?               */
-   double rms_grad_convergence; /* convergence on RMS of orbital grad           */
-   double energy_convergence;   /* convergence on CI energy                     */
-   int max_iter;                /* maximum number of casscf iterations          */
-   int oei_file;                /* file number for one-electron integrals       */
-   bool oei_erase;              /* erase onel ints after reading them?          */
-   int tei_file;                /* file number for two-electron integrals       */
-   bool tei_erase;              /* erase twoel ints after reading them?         */
-   int opdm_file;               /* file number for one-particle density matrix  */
-   bool opdm_erase;             /* erase onepdm ints after reading?             */
-   int tpdm_file;               /* file number for two-particle density matrix  */
-   bool tpdm_erase;             /* erase twopdm after reading?                  */
-   int lag_file;                /* file number for lagrangian                   */
-   bool lag_erase;              /* erase lagrangian after reading?              */
-   bool ignore_ras_ras;         /* ignore RAS/RAS rotations in independ pairs?  */
-   bool ignore_fz;              /* ignore FZC/FZV in independent pair list?     */
-   int filter_ints;             /* filter out the frozen orbital integrals?     */
-   bool scale_grad;             /* scale the orbital gradient by the appx Hess? */
-   int diis_start;              /* how many diis vectors built up before start  */
-   int diis_freq;               /* how many iters to go before a diis step      */
-   int diis_min_vecs;           /* how many vectors required before do diis?    */
-   int diis_max_vecs;           /* how many vectors maximum to hold?            */
-   double scale_step;           /* stepsize scaling factor                      */
-   std::string hessian;         /* string describing type of MO Hessian         */
-                                /* DIAG, APPROX_DIAG, or FULL                   */
-   bool use_fzc_h;              /* Use frozen-core operator h?(1) Or bare h?(0) */
-                                /* this determines which onel ints are read     */
-   bool level_shift;            /* Allow for level shifting of the hessian?     */
-   double shift;                /* How much do I level shift the hessian        */
-   double determ_min;           /* Min det of MO Hessian before levelshift      */
-   double step_max;             /* Biggest single allowed theta step            */
-   bool invert_hessian;         /* If=True, directly invert the Hessian,
-                                   if=False, solve linear equations H delta = -g*/
-   bool use_thetas;             /* If=True, use Givens matrix formalism,
-                                   if=False, use YY 2nd-order expansion U=e^R   */
-   bool force_step;             /* Ignore usual updating and force a user
-                                   specified step?  (For debugging)             */
-   int force_pair;              /* If force_step=True, which indep pair to step?*/
-   double force_value;          /* If force_step=True, how far to step?         */
-   double scale_act_act;        /* Scale the active-active Hessian by this      */
-   bool bfgs;                   /* Do BFGS update of Hessian?                   */
-   bool ds_hessian;             /* Do a DS Hessian update?                      */
-};
-
-
 
 /*
 ** CI Vector structure which keeps track of how many
@@ -730,8 +611,8 @@ struct mcscf_params {
 struct ci_blks {
    BIGINT vectlen;            /* total number of elements in the CI vector */
    int num_blocks;            /* number of blocks in the CI vector */
-   int Ia_code[CI_BLK_MAX];   /* gives the block's alpha string code */ 
-   int Ib_code[CI_BLK_MAX];   /* gives the block's beta string code */ 
+   int Ia_code[CI_BLK_MAX];   /* gives the block's alpha string code */
+   int Ib_code[CI_BLK_MAX];   /* gives the block's beta string code */
    int Ia_size[CI_BLK_MAX];   /* num of alp strings in the block */
    int Ib_size[CI_BLK_MAX];   /* num of bet strings in the block */
    BIGINT offset[CI_BLK_MAX];  /* offset for absolute numbering */
@@ -741,95 +622,49 @@ struct ci_blks {
    int num_bet_codes;         /* number of beta codes in decode matrix */
    int *first_iablk;          /* first blocknum for a given Ia irrep */
    int *last_iablk;           /* last blocknum for a given Ia irrep */
-   };
+   int subgr_per_irrep;       /* possible number of Olsen subgraphs per irrep */
+   int nirreps;               /* number of molecular irreps */
+   int Ms0;                   /* 1 if Ms=0, 0 otherwise */
+};
 
 /*
-** Structure for pthreads information in s3v.c (s3_block_vdiag)
-**
+** Struct to keep track of variable required in a sigma calculation
 */
-struct pthreads_s3diag {
-    int nas;                  /* number of alpha strings */
-    int jlen;                 /* number of single-excitations */
-    int ij;                   /* compound orbital index */
-    double **Cprime;          /* ptr to Cprime scratch matrix */
-    int Ja_list;              /* strings block offset */
-    double *Tptr;             /* Temp ptr */
-    double **S;               /* Sigma vector */
-    int *R;                   /* ket determinants for ij */
-    int thread_id;            /* thread id number */
-    struct stringwr *Ia_local; /* ptr to string replacement struct */
-    int Ia_idx_local;         /* index of c block string */
+struct sigma_data {
+   double *F;
+   int **Jij[2];
+   int **Joij[2];
+   int **Jridx[2];
+   int *Jcnt[2];
+   signed char **Jsgn[2];
+   unsigned char **Toccs;
+   double **transp_tmp;
+   double **cprime;
+   double  **sprime;
+   double *V, *Sgn;
+   int *L, *R;
+   int max_dim;
 };
 
-struct pthreads_s2vfci {
-    struct stringwr **alplist;
-    struct stringwr **betlist;
-    double **C;
-    double **S;
-    double *oei;
-    double *tei;
-    int nlists;
-    int nas;
-    int nbs;
-    int Ia_list;
-    int Ja_list;
-    int Ja_list_nas;
-    struct stringwr *Ia;
-    unsigned int Ia_idx;
+/*
+** Structs for MCSCF variables
+*/
+struct mcscf_params {
+  double rms_grad_convergence; /* convergence on RMS of orbital grad           */
+  double energy_convergence;   /* convergence on CI energy                     */
+  int max_iter;                /* maximum number of casscf iterations          */
+  std::string mcscf_type;      /* Is this df?                                  */
+  std::string algorithm;       /* What convergence algorithm do we use?        */
+  double max_rot;              /* Maximum value in the rotation matrix         */
+
+  bool orbital_so;             /* Do we do second-order orbital orbital?       */
+  double so_start_grad;        /* RMS of orbital grad threshold for one-step   */
+  double so_start_e;           /* energy convergence threshold for one-step    */
+
+  int diis_start;              /* Start DIIS at this iteration                 */
+  int diis_freq;               /* Do DIIS every n steps                        */
+  int diis_max_vecs;           /* Maximum number of DIIS vectors               */
 };
-
-struct pthreads_s1vfci {
-    struct stringwr **alplist;
-    struct stringwr **betlist;
-    double **C;
-    double **S;
-    double *oei;
-    double *tei;
-    int nlists;
-    int nas;
-    int nbs;
-    int Ib_list;
-    int Jb_list;
-    int Jb_list_nbs;
-    struct stringwr *Ib;
-    unsigned int Ib_idx;
-};    
-
-struct detci_timings {
-   double s1_total_time;
-   double s1_before_time;
-   double s1_after_time;
-   double s2_total_time;
-   double s2_before_time;
-   double s2_after_time;
-   double s3_total_time;
-   double s3_before_time;
-   double s3_after_time;
-   double s1_mt_before_time;
-   double s1_mt_after_time;
-   double s1_mt_total_time;
-   double s2_mt_before_time;
-   double s2_mt_after_time;
-   double s2_mt_total_time;
-   double s3_mt_before_time;
-   double s3_mt_after_time;
-   double s3_mt_total_time;
-   double read_total_time;
-   double read_before_time;
-   double read_after_time;
-   double write_total_time;
-   double write_after_time;
-   double write_before_time;
-   double Hd_total_time;
-   double Hd_before_time;
-   double Hd_after_time;
-   double total_before_time;
-   double total_after_time;
-  };
-
-double wall_time_new(void);
-void init_time_new(struct detci_timings time);
-void print_time_new(struct detci_timings time);
 
 }} // namespace psi::detci
 

@@ -182,6 +182,10 @@ class IntegralTransform{
         void set_write_dpd_so_tpdm(bool t_f) { write_dpd_so_tpdm_ = t_f; }
         /// Set the level of printing used during transformations (0 -> 6)
         void set_print(int n) {print_ = n;}
+        /// Sets the orbitals to the given C matrix. This is a hack for MCSCF wavefunctions.
+        /// Use with caution.
+        void set_orbitals(SharedMatrix C);
+
         /// The level of printing used during transformations
         int get_print() const {return print_;}
 
@@ -408,6 +412,8 @@ class IntegralTransform{
         bool useDPD_;
         // Has this object already pre-sorted?
         bool tpdmAlreadyPresorted_;
+        // This keeps track of which labels have been assigned by other spaces
+        std::map<char, int> labelsUsed_;
 };
 
 } // End namespaces

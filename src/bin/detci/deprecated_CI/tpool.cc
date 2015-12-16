@@ -43,10 +43,9 @@
 #include <cstring>
 #include <boost/lexical_cast.hpp>
 #include <pthread.h>
+#include <psi4-dec.h>
 #include "tpool.h"
 #include "structs.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace detci {
 

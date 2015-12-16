@@ -28,9 +28,8 @@
 #include <cstdio>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libmints/mints.h>
 #include "structs.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace detci {
 
@@ -48,129 +47,130 @@ namespace psi { namespace detci {
 ** to irreps for now; later we can make even more general.
 **
 */
-void s3_block_bz1(int Ialist, int Iblist, int Jalist, int Jblist, 
-      int nas, int nbs,
-      int cnbs, double *tei, double **C, double **S, 
-      double **Cprime, double **Sprime)
-{
 
-   int Iasym, Jasym, Ibsym, Jbsym;
-   int norbs, *orbsym;
-   int i, j, k, l, ij, fullij, fullji, kl, fullkl, fulllk, tmpi, tmpj;
-   int I, J, I1, I2, J1, J2, S2;   /* also try S2 as double */
-   int ilen, jlen;
-   double V, VS;
-   double *Tptr;
-   int *OVptr, *OVptr2;
-   int signmask, nsignmask;
-   double *SprimeI0, *SprimeI1, *SprimeI2, *SprimeI3;
-   double *SprimeI4, *SprimeI5, *SprimeI6, *SprimeI7;
-   double *CprimeI0, *CprimeI1, *CprimeI2, *CprimeI3;
-   double *CprimeI4, *CprimeI5, *CprimeI6, *CprimeI7;
-
-   orbsym = CalcInfo.orbsym + CalcInfo.num_drc_orbs;
-   Iasym = Ialist;
-   Jasym = Jalist;
-   Ibsym = Iblist;
-   Jbsym = Jblist;
-
-   norbs = CalcInfo.num_ci_orbs;
-
-   signmask = 1 << (sizeof(int)*8-1);
-   nsignmask = ~signmask;
-
-   /* loop over k,l */
-   for (k=0; k<norbs; k++) {
-      for (l=0; l<norbs; l++) {
-         if ((orbsym[k] ^ orbsym[l] ^ Jasym ^ Iasym) != 0) continue;
-
-         kl = INDEX(k,l);
-         Tptr = tei + ioff[kl];
-         fullkl = k * norbs + l;
-         fulllk = l * norbs + k;
-
-         ilen = OV[Jalist][fulllk][0];
-
-         if (ilen == 0) continue;
-
-         for (I=0,OVptr=OV[Jalist][fulllk]+1; I<ilen; I++) {
-            tmpi = *OVptr++;
-            I2 = tmpi & nsignmask;
-            S2 = (tmpi & signmask) ? -1 : 1;
-            for (J=0; J<cnbs; J++) {
-               Cprime[I][J] = C[I2][J] * S2;
-               }
-            zero_arr(Sprime[I], nbs);
-            } 
-
-         for (i=0; i<norbs; i++) {
-            for (j=0; j<norbs; j++) {
-               if ((orbsym[i] ^ orbsym[j] ^ Jbsym ^ Ibsym) != 0) continue;
-               ij = INDEX(i,j);
-               if (ij > kl) continue;
-               V = Tptr[ij];
-               if (ij==kl) V = V/2.0;
-               fullij = i * norbs + j;
-               fullji = j * norbs + i;
-               jlen = OV[Jblist][fullji][0];
-               OVptr = OV[Jblist][fullji] + 1;
-               OVptr2 = OV[Iblist][fullij] + 1;
-
-        
-               for (J=0; J<jlen; J++) {
-                  tmpi = OVptr[J];
-                  tmpj = OVptr2[J];
-                  J1 = tmpi & nsignmask;
-                  J2 = tmpj & nsignmask;
-                  VS = (tmpj & signmask) ? -V : V;
-                  for (I=0; I<ilen%8; I++) {
-                     Sprime[I][J2] += Cprime[I][J1] * VS;
-                     }
-                  }
-
-               for (; I<ilen; I+=8) {
-
-                  SprimeI0=Sprime[I];    SprimeI1=Sprime[I+1];
-                  SprimeI2=Sprime[I+2];  SprimeI3=Sprime[I+3];
-                  SprimeI4=Sprime[I+4];  SprimeI5=Sprime[I+5];
-                  SprimeI6=Sprime[I+6];  SprimeI7=Sprime[I+7];
-                  CprimeI0=Cprime[I];    CprimeI1=Cprime[I+1];
-                  CprimeI2=Cprime[I+2];  CprimeI3=Cprime[I+3];
-                  CprimeI4=Cprime[I+4];  CprimeI5=Cprime[I+5];
-                  CprimeI6=Cprime[I+6];  CprimeI7=Cprime[I+7];
-
-                  for (J=0; J<jlen; J++) {
-                     tmpi = OVptr[J];
-                     tmpj = OVptr2[J];
-                     J1 = tmpi & nsignmask;
-                     J2 = tmpj & nsignmask;
-                     VS = (tmpj & signmask) ? -V : V;
-                   
-                     SprimeI0[J2] += CprimeI0[J1] * VS;
-                     SprimeI1[J2] += CprimeI1[J1] * VS;
-                     SprimeI2[J2] += CprimeI2[J1] * VS;
-                     SprimeI3[J2] += CprimeI3[J1] * VS;
-                     SprimeI4[J2] += CprimeI4[J1] * VS;
-                     SprimeI5[J2] += CprimeI5[J1] * VS;
-                     SprimeI6[J2] += CprimeI6[J1] * VS;
-                     SprimeI7[J2] += CprimeI7[J1] * VS;
-                     }
-                  }
-                 
-               } /* end loop over j */
-            } /* end loop over i */
-
-         for (I=0,OVptr=OV[Ialist][fullkl]+1; I<ilen; I++) {
-            tmpi = *OVptr++;
-            I1 = tmpi & nsignmask; 
-            for (J=0; J<nbs; J++) {
-               S[I1][J] += Sprime[I][J];
-               }
-            }
-
-         } /* end loop over l */
-      } /* end loop over k */
-}
+//void s3_block_bz1(int Ialist, int Iblist, int Jalist, int Jblist, 
+//      int nas, int nbs,
+//      int cnbs, double *tei, double **C, double **S, 
+//      double **Cprime, double **Sprime)
+//{
+//
+//   int Iasym, Jasym, Ibsym, Jbsym;
+//   int norbs, *orbsym;
+//   int i, j, k, l, ij, fullij, fullji, kl, fullkl, fulllk, tmpi, tmpj;
+//   int I, J, I1, I2, J1, J2, S2;   /* also try S2 as double */
+//   int ilen, jlen;
+//   double V, VS;
+//   double *Tptr;
+//   int *OVptr, *OVptr2;
+//   int signmask, nsignmask;
+//   double *SprimeI0, *SprimeI1, *SprimeI2, *SprimeI3;
+//   double *SprimeI4, *SprimeI5, *SprimeI6, *SprimeI7;
+//   double *CprimeI0, *CprimeI1, *CprimeI2, *CprimeI3;
+//   double *CprimeI4, *CprimeI5, *CprimeI6, *CprimeI7;
+//
+//   orbsym = CalcInfo.orbsym + CalcInfo.num_drc_orbs;
+//   Iasym = Ialist;
+//   Jasym = Jalist;
+//   Ibsym = Iblist;
+//   Jbsym = Jblist;
+//
+//   norbs = CalcInfo.num_ci_orbs;
+//
+//   signmask = 1 << (sizeof(int)*8-1);
+//   nsignmask = ~signmask;
+//
+//   /* loop over k,l */
+//   for (k=0; k<norbs; k++) {
+//      for (l=0; l<norbs; l++) {
+//         if ((orbsym[k] ^ orbsym[l] ^ Jasym ^ Iasym) != 0) continue;
+//
+//         kl = INDEX(k,l);
+//         Tptr = tei + ioff[kl];
+//         fullkl = k * norbs + l;
+//         fulllk = l * norbs + k;
+//
+//         ilen = OV[Jalist][fulllk][0];
+//
+//         if (ilen == 0) continue;
+//
+//         for (I=0,OVptr=OV[Jalist][fulllk]+1; I<ilen; I++) {
+//            tmpi = *OVptr++;
+//            I2 = tmpi & nsignmask;
+//            S2 = (tmpi & signmask) ? -1 : 1;
+//            for (J=0; J<cnbs; J++) {
+//               Cprime[I][J] = C[I2][J] * S2;
+//               }
+//            zero_arr(Sprime[I], nbs);
+//            } 
+//
+//         for (i=0; i<norbs; i++) {
+//            for (j=0; j<norbs; j++) {
+//               if ((orbsym[i] ^ orbsym[j] ^ Jbsym ^ Ibsym) != 0) continue;
+//               ij = INDEX(i,j);
+//               if (ij > kl) continue;
+//               V = Tptr[ij];
+//               if (ij==kl) V = V/2.0;
+//               fullij = i * norbs + j;
+//               fullji = j * norbs + i;
+//               jlen = OV[Jblist][fullji][0];
+//               OVptr = OV[Jblist][fullji] + 1;
+//               OVptr2 = OV[Iblist][fullij] + 1;
+//
+//        
+//               for (J=0; J<jlen; J++) {
+//                  tmpi = OVptr[J];
+//                  tmpj = OVptr2[J];
+//                  J1 = tmpi & nsignmask;
+//                  J2 = tmpj & nsignmask;
+//                  VS = (tmpj & signmask) ? -V : V;
+//                  for (I=0; I<ilen%8; I++) {
+//                     Sprime[I][J2] += Cprime[I][J1] * VS;
+//                     }
+//                  }
+//
+//               for (; I<ilen; I+=8) {
+//
+//                  SprimeI0=Sprime[I];    SprimeI1=Sprime[I+1];
+//                  SprimeI2=Sprime[I+2];  SprimeI3=Sprime[I+3];
+//                  SprimeI4=Sprime[I+4];  SprimeI5=Sprime[I+5];
+//                  SprimeI6=Sprime[I+6];  SprimeI7=Sprime[I+7];
+//                  CprimeI0=Cprime[I];    CprimeI1=Cprime[I+1];
+//                  CprimeI2=Cprime[I+2];  CprimeI3=Cprime[I+3];
+//                  CprimeI4=Cprime[I+4];  CprimeI5=Cprime[I+5];
+//                  CprimeI6=Cprime[I+6];  CprimeI7=Cprime[I+7];
+//
+//                  for (J=0; J<jlen; J++) {
+//                     tmpi = OVptr[J];
+//                     tmpj = OVptr2[J];
+//                     J1 = tmpi & nsignmask;
+//                     J2 = tmpj & nsignmask;
+//                     VS = (tmpj & signmask) ? -V : V;
+//                   
+//                     SprimeI0[J2] += CprimeI0[J1] * VS;
+//                     SprimeI1[J2] += CprimeI1[J1] * VS;
+//                     SprimeI2[J2] += CprimeI2[J1] * VS;
+//                     SprimeI3[J2] += CprimeI3[J1] * VS;
+//                     SprimeI4[J2] += CprimeI4[J1] * VS;
+//                     SprimeI5[J2] += CprimeI5[J1] * VS;
+//                     SprimeI6[J2] += CprimeI6[J1] * VS;
+//                     SprimeI7[J2] += CprimeI7[J1] * VS;
+//                     }
+//                  }
+//                 
+//               } /* end loop over j */
+//            } /* end loop over i */
+//
+//         for (I=0,OVptr=OV[Ialist][fullkl]+1; I<ilen; I++) {
+//            tmpi = *OVptr++;
+//            I1 = tmpi & nsignmask; 
+//            for (J=0; J<nbs; J++) {
+//               S[I1][J] += Sprime[I][J];
+//               }
+//            }
+//
+//         } /* end loop over l */
+//      } /* end loop over k */
+//}
 
 /*
 ** S3_BLOCK_BZ2()
@@ -189,7 +189,7 @@ void s3_block_bz1(int Ialist, int Iblist, int Jalist, int Jblist,
 void s3_block_bz(int Ialist, int Iblist, int Jalist, int Jblist, 
       int nas, int nbs,
       int cnas, double *tei, double **C, double **S, 
-      double **Cprime, double **Sprime)
+      double **Cprime, double **Sprime, struct calcinfo *CInfo, int ***OV)
 {
 
    int Iasym, Jasym, Ibsym, Jbsym;
@@ -206,13 +206,13 @@ void s3_block_bz(int Ialist, int Iblist, int Jalist, int Jblist,
    double *SprimeI4,*SprimeI5,*SprimeI6,*SprimeI7;
    double *SI0, *SI1, *SI2, *SI3, *SI4, *SI5, *SI6, *SI7;
 
-   orbsym = CalcInfo.orbsym + CalcInfo.num_drc_orbs;
+   orbsym = CInfo->orbsym + CInfo->num_drc_orbs;
    Iasym = Ialist;
    Jasym = Jalist;
    Ibsym = Iblist;
    Jbsym = Jblist;
 
-   norbs = CalcInfo.num_ci_orbs;
+   norbs = CInfo->num_ci_orbs;
 
    signmask = 1 << (sizeof(int)*8-1);
    nsignmask = ~signmask;

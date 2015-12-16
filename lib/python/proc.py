@@ -2431,7 +2431,6 @@ def run_detci_property(name, **kwargs):
         psi4.set_global_option('TDM', 'TRUE')
 
     optstash = p4util.OptionsState(
-        ['TRANSQT2', 'WFN'],
         ['DETCI', 'WFN'],
         ['DETCI', 'MAX_NUM_VECS'],
         ['DETCI', 'MPN_ORDER_SAVE'],
@@ -2444,7 +2443,6 @@ def run_detci_property(name, **kwargs):
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
     if name.lower() == 'zapt':
-        psi4.set_local_option('TRANSQT2', 'WFN', 'ZAPTN')
         psi4.set_local_option('DETCI', 'WFN', 'ZAPTN')
         level = kwargs['level']
         maxnvect = int((level + 1) / 2) + (level + 1) % 2
@@ -2454,7 +2452,6 @@ def run_detci_property(name, **kwargs):
         else:
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'detci-mp') or (name.lower() == 'mp'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'MPN', 'TRUE')
 
@@ -2466,23 +2463,18 @@ def run_detci_property(name, **kwargs):
         else:
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'fci'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'FCI', 'TRUE')
     elif (name.lower() == 'cisd'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 2)
     elif (name.lower() == 'cisdt'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 3)
     elif (name.lower() == 'cisdtq'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 4)
     elif (name.lower() == 'ci'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'WFN', 'DETCI')
         level = kwargs['level']
         psi4.set_local_option('DETCI', 'EX_LEVEL', level)
@@ -2498,7 +2490,6 @@ def run_detci_property(name, **kwargs):
         if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
             psi4.MintsHelper().integrals()
 
-    psi4.transqt2()
     psi4.detci()
 
     optstash.restore()
@@ -2705,7 +2696,6 @@ def run_detci(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['TRANSQT2', 'WFN'],
         ['DETCI', 'WFN'],
         ['DETCI', 'MAX_NUM_VECS'],
         ['DETCI', 'MPN_ORDER_SAVE'],
@@ -2718,7 +2708,6 @@ def run_detci(name, **kwargs):
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
     if (name.lower() == 'zapt'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'ZAPTN')
         psi4.set_local_option('DETCI', 'WFN', 'ZAPTN')
         level = kwargs['level']
         maxnvect = int((level + 1) / 2) + (level + 1) % 2
@@ -2728,7 +2717,6 @@ def run_detci(name, **kwargs):
         else:
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'detci-mp') or (name.lower() == 'mp'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'MPN', 'TRUE')
 
@@ -2740,23 +2728,18 @@ def run_detci(name, **kwargs):
         else:
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'fci'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'FCI', 'TRUE')
     elif (name.lower() == 'cisd'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 2)
     elif (name.lower() == 'cisdt'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 3)
     elif (name.lower() == 'cisdtq'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 4)
     elif (name.lower() == 'ci'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'WFN', 'DETCI')
         level = kwargs['level']
         psi4.set_local_option('DETCI', 'EX_LEVEL', level)
@@ -2772,7 +2755,6 @@ def run_detci(name, **kwargs):
         if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
             psi4.MintsHelper().integrals()
 
-    psi4.transqt2()
     psi4.detci()
 
     optstash.restore()
@@ -3782,31 +3764,57 @@ def run_detcas(name, **kwargs):
     """
 
     optstash = p4util.OptionsState(
-        ['TRANSQT2', 'WFN'],
         ['DETCI', 'WFN'],
-    )
+        ['SCF', 'SCF_TYPE']
+        )
 
     user_ref = psi4.get_option('DETCI', 'REFERENCE')
     if (user_ref != 'RHF') and (user_ref != 'ROHF'):
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
     if (name.lower() == 'rasscf'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'RASSCF')
         psi4.set_local_option('DETCI', 'WFN', 'RASSCF')
     elif (name.lower() == 'casscf'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'CASSCF')
         psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
 
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
+    # The DF case
+    if psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF':
 
-        # If the scf type is DF/CD, then the AO integrals were never written to disk
-        if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') or (psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
-            psi4.MintsHelper().integrals()
+        # Do NOT set global options in general, this is a bit of a hack
+        if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+            psi4.set_global_option('SCF_TYPE', 'DF')
+
+        # Make sure a valid JK algorithm is selected
+        if (psi4.get_option('SCF', 'SCF_TYPE') == 'PK'):
+            raise ValidationError("Second-order MCSCF: Requires a JK algorithm that supports non-symmetric"\
+                                  " density matrices.")
+
+        # Bypass routine scf if user did something special to get it to converge
+        if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+            scf_helper(name, **kwargs)
+
+    # The non-DF case
+    else:
+        if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+            # PK is faster than out_of_core, but PK cannot support non-symmetric density matrices
+            # Do NOT set global options in general, this is a bit of a hack
+            psi4.set_global_option('SCF_TYPE', 'OUT_OF_CORE')
+    
+        # Make sure a valid JK algorithm is selected
+        if (psi4.get_option('SCF', 'SCF_TYPE') == 'PK'):
+            raise ValidationError("Second-order MCSCF: Requires a JK algorithm that supports non-symmetric"\
+                                  " density matrices.")
+
+        # Bypass routine scf if user did something special to get it to converge
+        if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+
+            scf_helper(name, **kwargs)
+
+            # If the scf type is DF/CD, then the AO integrals were never written to disk
+            if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') or (psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+                psi4.MintsHelper().integrals()
 
 
-    psi4.transqt2()
     psi4.detci()
 
     optstash.restore()

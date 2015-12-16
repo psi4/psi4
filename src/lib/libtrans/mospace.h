@@ -156,8 +156,6 @@ class MOSpace{
          * been used
          */
         const char label_;
-        // This keeps track of which labels have been assigned by other spaces
-        static std::map<char, int> labelsUsed;
         // The indices (Pitzer) of the alpha orbitals
         std::vector<int> aOrbs_;
         // The indices (Pitzer) of the beta orbitals
