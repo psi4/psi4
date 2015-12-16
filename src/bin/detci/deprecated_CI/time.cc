@@ -29,9 +29,8 @@
 #include <sys/time.h>
 #include <cstdlib>
 #include <cstdio>
+#include <psi4-dec.h>
 #include "structs.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace detci {
 

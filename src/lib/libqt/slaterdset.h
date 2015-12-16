@@ -74,7 +74,7 @@ typedef struct {
 /*!
   SlaterDetSet is a set of Slater determinants
 */
-typedef struct {
+typedef struct _SlaterDetSet {
   int size;
   SlaterDet *dets;
   StringSet *alphastrings, *betastrings;

@@ -28,9 +28,18 @@
 #define _psi_src_bin_detci_civect_h
 
 namespace psi { namespace detci {
-
-//typedef unsigned long long int BIGINT;
+// Forward declarations
 typedef unsigned long int BIGINT;
+struct calcinfo;
+struct params;
+struct H_zero_block;
+struct ci_blks;
+class CIWavefunction;
+class CIvect;
+typedef boost::shared_ptr<psi::detci::CIvect> SharedCIVector;
+}}
+
+namespace psi { namespace detci {
 
 /*
 ** CIVECT.H
@@ -43,70 +52,90 @@ typedef unsigned long int BIGINT;
 */
 
 class CIvect {
+   friend class CIWavefunction;
+
    protected:
-      BIGINT vectlen;            /* total vector length */ 
-      unsigned long buffer_size; /* size of largest in-core chunk */
-      int num_blocks;            /* number of blocks in vector */
-      int icore;                 /* in-core option. 1 = whole vector in-core,
+      struct calcinfo *CI_CalcInfo_;
+      struct params *CI_Params_;
+      struct H_zero_block *CI_H0block_;
+
+      void common_init();        /* common init func */
+
+      BIGINT vectlen_;            /* total vector length */ 
+      unsigned long buffer_size_; /* size of largest in-core chunk */
+      int num_blocks_;            /* number of blocks in vector */
+      int icore_;                 /* in-core option. 1 = whole vector in-core,
                                                     2 = symm block in-core,
                                                     0 = one subblock in-core */
-      int Ms0;                   /* is this a vector for M_s=0? 1=yes, 0=no */
-      int *Ia_code;              /* each block's alpha string id code */
-      int *Ib_code;              /* each block's beta string id code */
-      int *Ia_size;              /* num alp strings in each block */
-      int *Ib_size;              /* num bet strings in each block */
-      BIGINT *offset;            /* offsets for absolute numbering.  This
-                                    is a word offset, not a byte offset,
-                                    so unsigned long should be ok          */
-      int num_alpcodes;          /* number of possible (total) alpha codes */
-      int num_betcodes;          /* number of possible (total) beta codes */
-      int nirreps;               /* dimension of next four arrays */
-      int codes_per_irrep;       /* number of codes per irrep (for alpha) */
-      int buf_per_vect;          /* number of buffers per CI vector */
-      int buf_total;             /* number of total buffers (all vectors) */
-      int new_first_buf;         /* after collapse, buffs get renumbered */
-      int maxvect;               /* max number of CI vectors */
-      int nvect;                 /* number of CI vectors */
-      int nunits;                /* number of units (physical disk files) */
-      int cur_vect;              /* current vector number in core */
-      int cur_buf;               /* current buffer in core */
-      int buf_locked;            /* is a memory buffer locked in/available?  */
-      int *units;                /* file numbers */
-      int *file_number;          /* unit number for given vector/block */
-      unsigned long *buf_size;   /* size of each buffer on disk 
-                                    (0...buf_per_vect) */
-      int *buf2blk;              /* buffer number -> block number for
-                                    icore=0, else buf->irrep for icore=2 */
-      int *buf_offdiag;          /* is the buffer "off-diagonal"? only applies
-                                    to Ms=0.  If Ms<>0, always=0 */
-      int *first_ablk;           /* first blocknum with a given Ia irrep */
-      int *last_ablk;            /* last blocknum with a given Ia irrep */
-      int **decode;              /* gives block number for a (alp,bet) code */
-                                 /* dimensions num_alpcodes * num_betcodes */
-      double ***blocks;          /* a matrix for each block                */
-      double *buffer;            /* pointer to buffer, same as blocks[0][0] */
-      int *zero_blocks;          /* array for which blocks happen to be 0   */
-      int in_file;               /* increment for how many buffers in a file */
-      int extras;                /* accounts for extra buffers */
-      int units_used;            /* accounts for number of unit files used */  
-      int cur_unit;              /* current unit file */
-      int cur_size;              /* current size of buffer */
-      int first_unit;            /* first file unit number (if > 1) */ 
+      int Ms0_;                   /* is this a vector for M_s=0? 1=yes, 0=no */
+      int *Ia_code_;              /* each block's alpha string id code */
+      int *Ib_code_;              /* each block's beta string id code */
+      int *Ia_size_;              /* num alp strings in each block */
+      int *Ib_size_;              /* num bet strings in each block */
+      BIGINT *offset_;            /* offsets for absolute numbering.  This
+                                     is a word offset, not a byte offset,
+                                     so unsigned long should be ok          */
+      int num_alpcodes_;          /* number of possible (total) alpha codes */
+      int num_betcodes_;          /* number of possible (total) beta codes */
+      int nirreps_;               /* dimension of next four arrays */
+      int codes_per_irrep_;       /* number of codes per irrep (for alpha) */
+      int buf_per_vect_;          /* number of buffers per CI vector */
+      int buf_total_;             /* number of total buffers (all vectors) */
+      int new_first_buf_;         /* after collapse, buffs get renumbered */
+      int maxvect_;               /* max number of CI vectors */
+      int nvect_;                 /* number of CI vectors */
+      int nunits_;                /* number of units (physical disk files) */
+      int cur_vect_;              /* current vector number in core */
+      int cur_buf_;               /* current buffer in core */
+      int buf_locked_;            /* is a memory buffer locked in/available?  */
+      int *units_;                /* file numbers */
+      int *file_number_;          /* unit number for given vector/block */
+      unsigned long *buf_size_;   /* size of each buffer on disk 
+                                     (0...buf_per_vect) */
+      int *buf2blk_;              /* buffer number -> block number for
+                                     icore=0, else buf->irrep for icore=2 */
+      int *buf_offdiag_;          /* is the buffer "off-diagonal"? only applies
+                                     to Ms=0.  If Ms<>0, always=0 */
+      int *first_ablk_;           /* first blocknum with a given Ia irrep */
+      int *last_ablk_;            /* last blocknum with a given Ia irrep */
+      int **decode_;              /* gives block number for a (alp,bet) code */
+                                  /* dimensions num_alpcodes * num_betcodes */
+      double ***blocks_;          /* a matrix for each block                */
+      double *buffer_;            /* pointer to buffer, same as blocks[0][0] */
+      int *zero_blocks_;          /* array for which blocks happen to be 0   */
+      int in_file_;               /* increment for how many buffers in a file */
+      int extras_;                /* accounts for extra buffers */
+      int units_used_;            /* accounts for number of unit files used */  
+      int cur_unit_;              /* current unit file */
+      int cur_size_;              /* current size of buffer */
+      int first_unit_;            /* first file unit number (if > 1) */ 
+      int subgr_per_irrep_;       /* possible number of Olsen subgraphs per irrep */
+
+      double ssq(struct stringwr *alplist, struct stringwr *betlist,
+           double **CL, double **CR, int nas, int nbs,
+           int Ja_list, int Jb_list);
       
    public:
       CIvect();
       CIvect(BIGINT vl, int nb, int incor, int ms0, int *iac,
          int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc, 
          int nirr, int cdperirr, int maxvect, int nunits, 
-         int funit, int *fablk, int *lablk, int **dc);
+         int funit, int *fablk, int *lablk, int **dc,
+         struct calcinfo *CI_CalcInfo, struct params *CI_Params,
+         struct H_zero_block *CI_H0block, bool buf_init = true);
+      CIvect(int incor, int maxvect, int nunits, int funit, struct ci_blks *CIblks,
+         struct calcinfo *CI_CalcInfo, struct params *CI_Params,
+         struct H_zero_block *CI_H0block, bool buf_init = true);
       ~CIvect();
 
       double * buf_malloc(void);
+      void set(int incor, int maxvect, int nunits, int funit, struct ci_blks *CIblks); 
       void set(BIGINT vl, int nb, int incor, int ms0, int *iac,
          int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc, 
-         int nirr, int cdperirr, int maxvect, int nunits, int funit, 
+         int nirr, int cdperirr, int maxvect, int nunits, int funit,
          int *fablk, int *lablk, int **dc);
       void print(std::string OutFileRMR);
+      double dot(SharedCIVector b);
       double operator*(CIvect &b);
       void set_nvect(int i);
       void setarray(const double *a, BIGINT len);
@@ -204,43 +233,30 @@ class CIvect {
       double compute_follow_overlap(int troot, int ncoef, double *coef,
         int *Iac, int *Iaridx, int *Ibc, int *Ibridx);
 
-      friend void sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist, 
-         struct stringwr **betlist);
-      friend void sigma(struct stringwr **alplist, struct stringwr **betlist,
-         CIvect& C, CIvect& S, double *oei, double *tei, int fci, int iter);
-      friend void sigma_a(struct stringwr **alplist, struct stringwr **betlist,
-         CIvect& C, CIvect& S, double *oei, double *tei, int fci, int iter);
-      friend void sigma_b(struct stringwr **alplist, struct stringwr **betlist,
-         CIvect& C, CIvect& S, double *oei, double *tei, int fci, int iter);
-      friend void sigma_c(struct stringwr **alplist, struct stringwr **betlist,
-         CIvect& C, CIvect& S, double *oei, double *tei, int fci, int iter);
-      friend void sigma_get_contrib(struct stringwr **alplist, struct
-         stringwr **betlist, CIvect &C, CIvect &S, int **s1_contrib, 
-         int **s2_contrib, int **s3_contrib);
-      friend void sigma_get_contrib_rotf(CIvect &C, CIvect &S, 
-         int **s1_contrib, int **s2_contrib, int **s3_contrib,
-         int *Jcnt[2], int **Jij[2], int **Joij[2], int **Jridx[2],
-         signed char **Jsgn[2], unsigned char **Toccs);
-      friend void olsen_iter_xy(CIvect &C, CIvect &S, CIvect &Hd, double *x, 
-         double *y, double *buf1, double *buf2, double E, int curvect, 
-         int L, double **alpha, struct stringwr **alplist, 
-         struct stringwr **betlist);
-      friend void olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, 
-         double E_est, double *norm, double *c1norm, double *ovrlap, 
-         double *buffer1, double *buffer2, int curr, int next, std::string out,
-         int iter, struct stringwr **alplist, struct stringwr **betlist);
-      friend void mitrush_update(CIvect &C, CIvect &S, double norm, double
-         acur, double alast, double *buffer1, double *buffer2, int curr,
-         int next);
-      friend void opdm(struct stringwr **alplist, struct stringwr **betlist,
-          int transdens, int dipmom,
-          int Inroots, int Iroot, int Inunits, int Ifirstunit,
-          int Jnroots, int Jroot, int Jnunits, int Jfirstunit,
-          int targetfile, int writeflag, int printflag);
-      friend void tpdm(struct stringwr **alplist, struct stringwr **betlist,
-          int Inroots, int Inunits, int Ifirstunit,
-          int Jnroots, int Jnunits, int Jfirstunit,
-          int targetfile, int writeflag, int printflag);
+      void calc_hd_block(struct stringwr *alplist,
+         struct stringwr *betlist,
+         double **H0, double *oei, double *tei, double edrc,
+         int nas, int nbs, int na, int nb, int nbf);
+      void calc_hd_block_ave(struct stringwr *alplist,
+         struct stringwr *betlist, double **H0, double *tf_oei,
+         double *tei, double edrc, int nas, int nbs, int na, int nb, int nbf);
+      void calc_hd_block_z_ave(struct stringwr *alplist,
+         struct stringwr *betlist, double **H0, double pert_param,
+         double *tei, double edrc, int nas, int nbs, int na, int nb, int nbf);
+      void calc_hd_block_orbenergy(struct stringwr *alplist,
+         struct stringwr *betlist, double **H0, double *oei,
+         double *tei, double edrc, int nas, int nbs, int na,
+         int nb, int nbf);
+      void calc_hd_block_mll(struct stringwr *alplist,
+         struct stringwr *betlist, double **H0, double *oei,
+         double *tei, double edrc, int nas, int nbs, int na,
+         int nb, int nbf);
+      void calc_hd_block_evangelisti(struct stringwr **alplist,
+         struct stringwr **betlist, struct stringwr *alplist_local,
+         struct stringwr *betlist_local, double **H0, double *tf_oei,
+         double *tei, double edrc, int nas, int nbs, int na,
+         int nb, int nbf);
+
 };
 
 }} // namespace psi::detci

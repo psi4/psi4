@@ -1,0 +1,425 @@
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.1.266 Driver
+
+                          Git: Rev {ciwave} fe32e41 dirty
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: 12-15-2015  05:04:13 PM CST
+
+    Process ID:  37010
+    PSI4DATADIR: /Users/daniel/Gits/psi4/lib/
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Example of state-averaged CASSCF for the C2 molecule
+
+molecule butadiene {
+    0   1
+    H   1.080977  -2.558832   0.000000
+    H  -1.080977   2.558832   0.000000
+    H   2.103773  -1.017723   0.000000
+    H  -2.103773   1.017723   0.000000
+    H  -0.973565  -1.219040   0.000000
+    H   0.973565   1.219040   0.000000
+    C   0.000000   0.728881   0.000000
+    C   0.000000  -0.728881   0.000000
+    C   1.117962  -1.474815   0.000000
+    C  -1.117962   1.474815   0.000000
+    units angstrom
+}
+
+set {
+    reference RHF
+    restricted_docc [7, 0, 0, 6]
+    active          [0, 2, 2, 0]
+    mcscf_type      df
+    basis           sto-3g
+    num_roots       2
+    avg_states      [1, 2]
+}
+
+casscf_energy = energy('casscf')
+
+compare_values(-153.104345665210474, casscf_energy, 6, 'CASSCF Energy')  #TEST
+
+--------------------------------------------------------------------------
+
+*** tstart() called on Daniels-MacBook-Pro.local
+*** at Tue Dec 15 17:04:13 2015
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2h
+    Full point group: C2h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           H          1.080977000000    -2.558832000000     0.000000000000
+           H         -1.080977000000     2.558832000000     0.000000000000
+           H          2.103773000000    -1.017723000000     0.000000000000
+           H         -2.103773000000     1.017723000000     0.000000000000
+           H         -0.973565000000    -1.219040000000     0.000000000000
+           H          0.973565000000     1.219040000000     0.000000000000
+           C         -0.000000000000     0.728881000000     0.000000000000
+           C          0.000000000000    -0.728881000000     0.000000000000
+           C          1.117962000000    -1.474815000000     0.000000000000
+           C         -1.117962000000     1.474815000000     0.000000000000
+
+  Running in c2h symmetry.
+
+  Rotational constants: A =      1.39831  B =      0.14741  C =      0.13335 [cm^-1]
+  Rotational constants: A =  41920.28271  B =   4419.18033  C =   3997.74354 [MHz]
+  Nuclear repulsion =  103.516093773397515
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 30
+  Nalpha       = 15
+  Nbeta        = 15
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Number of shells: 18
+    Number of basis function: 26
+    Number of Cartesian functions: 26
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag        11      11       0       0       0       0
+     Bg         2       2       0       0       0       0
+     Au         2       2       0       0       0       0
+     Bu        11      11       0       0       0       0
+   -------------------------------------------------------
+    Total      26      26      15      15      15       0
+   -------------------------------------------------------
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               183
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: 
+    Number of shells: 108
+    Number of basis function: 308
+    Number of Cartesian functions: 354
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 1.8809327918E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   1:  -134.15392948071855   -1.34154e+02   1.19475e-01 
+   @DF-RHF iter   2:  -135.13655485627271   -9.82625e-01   1.66885e-01 DIIS
+   @DF-RHF iter   3:  -152.06105174295431   -1.69245e+01   7.53657e-02 DIIS
+   @DF-RHF iter   4:  -151.96362236780715    9.74294e-02   7.53444e-02 DIIS
+   @DF-RHF iter   5:  -151.98550179023437   -2.18794e-02   7.38943e-02 DIIS
+   @DF-RHF iter   6:  -152.49465252900160   -5.09151e-01   4.88332e-02 DIIS
+   @DF-RHF iter   7:  -152.92785813123555   -4.33206e-01   2.02184e-02 DIIS
+   @DF-RHF iter   8:  -153.01691784121346   -8.90597e-02   1.62405e-03 DIIS
+   @DF-RHF iter   9:  -153.01793999424501   -1.02215e-03   6.42164e-04 DIIS
+   @DF-RHF iter  10:  -153.01799862247560   -5.86282e-05   1.69455e-04 DIIS
+   @DF-RHF iter  11:  -153.01800253593717   -3.91346e-06   2.25887e-05 DIIS
+   @DF-RHF iter  12:  -153.01800264052429   -1.04587e-07   1.83760e-06 DIIS
+   @DF-RHF iter  13:  -153.01800264245605   -1.93177e-09   2.31384e-07 DIIS
+   @DF-RHF iter  14:  -153.01800264247015   -1.40972e-11   2.46193e-08 DIIS
+   @DF-RHF iter  15:  -153.01800264247026   -1.13687e-13   1.81411e-09 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Bu   -11.031410     1Ag   -11.031280     2Bu   -11.017238  
+       2Ag   -11.017225     3Ag    -1.030852     3Bu    -0.940326  
+       4Ag    -0.771701     4Bu    -0.706293     5Bu    -0.591013  
+       5Ag    -0.587087     6Bu    -0.497345     6Ag    -0.493541  
+       7Ag    -0.440286     1Au    -0.394349     1Bg    -0.260947  
+
+    Virtual:                                                              
+
+       2Au     0.241850     2Bg     0.416089     7Bu     0.588593  
+       8Ag     0.672620     8Bu     0.682153     9Bu     0.692748  
+       9Ag     0.699207    10Ag     0.871216    10Bu     0.904385  
+      11Bu     1.010471    11Ag     1.070241  
+
+    Final Occupation by Irrep:
+             Ag    Bg    Au    Bu 
+    DOCC [     7,    1,    1,    6 ]
+
+  Energy converged.
+
+  @DF-RHF Final Energy:  -153.01800264247026
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =            103.5160937733975146
+    One-Electron Energy =                -411.4464086661405986
+    Two-Electron Energy =                 154.9123122502727483
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -153.0180026424703215
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on Daniels-MacBook-Pro.local at Tue Dec 15 17:04:13 2015
+Module time:
+	user time   =       0.52 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.52 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+         ---------------------------------------------------------
+                                 D E T C I  
+
+                             C. David Sherrill
+                             Matt L. Leininger
+                               18 June 1999
+         ---------------------------------------------------------
+
+
+DETCI PARAMETERS: 
+   EX LEVEL      =        4      H0 BLOCKSIZE =      400
+   VAL EX LEVEL  =        0      H0 GUESS SIZE=      400
+   H0COUPLINGSIZE=        0      H0 COUPLING  =       no
+   MAXITER       =       12      NUM PRINT    =       20
+   NUM ROOTS     =        2      ICORE        =        1
+   PRINT         =        1      FCI          =      yes
+   R CONV        = 1.00e-07      MIXED        =      yes
+   E CONV        = 1.00e-06      MIXED4       =      yes
+   OEI FILE      =       35      R4S          =       no
+   REPL OTF      =       no
+   TEI FILE      =       72      DIAG METHOD  =      SEM
+   PRECONDITIONER= DAVIDSON      UPDATE       = DAVIDSON
+   S             =   0.0000      Ms0          =      yes
+   MAX NUM VECS  =       26
+   RESTART       =       no
+   GUESS VECTOR  =   D FILE      OPENTYPE     =     NONE
+   REF SYM       =     auto
+   COLLAPSE SIZE =        1      HD AVG       = EVANGELISTI
+   LSE           =       no      LSE ITER     =        0
+   HD OTF        =      yes      NO DFILE     =       no
+   MPN           =       no      MPN SCHMIDT  =       no
+   ZAPTN         =       no      MPN WIGNER   =       no
+   PERT Z        =   1.0000      FOLLOW ROOT  =        0
+   NUM THREADS   =        1
+   VECS WRITE    =       no      NUM VECS WRITE =      0
+   FILTER GUESS  =       no      SF RESTRICT  =       no
+   OPDM          =      yes      TRANS DENSITY=      yes
+
+   FILES         =  50 51 52 53
+
+   EX ALLOW      =  1  1  1  1 
+   STATE AVERAGE =  1(0.50)  2(0.50) 
+
+ORBITALS:
+   NMO          =       26
+   FROZEN CORE  =        0      RESTR CORE   =       13
+   FROZEN VIRT  =        0      RESTR VIRT   =        9
+   DROPPED CORE =       13      DROPPED VIRT =        9
+   EXPLICIT CORE=        0      ORBS IN CI   =        4
+   NUM ALP      =       15      NUM BET      =       15
+   NUM ALP EXPL =        2      NUM BET EXPL =        2
+   IOPEN        =       no
+
+   DOCC            =   7   1   1   6 
+   SOCC            =   0   0   0   0 
+
+   FROZEN DOCC     =   0   0   0   0 
+   RESTRICTED DOCC =   7   0   0   6 
+   ACTIVE          =   0   2   2   0 
+   RESTRICTED UOCC =   4   0   0   5 
+   FROZEN UOCC     =   0   0   0   0 
+         ---------------------------------------------------------
+
+
+   ==> Setting up CI strings <==
+
+   There are 6 alpha and 6 beta strings
+   The CI space requires 20 (2.00E+01) determinants and 2 blocks
+
+
+   ==> Setting up DF-MCSCF integrals <==
+
+  ==> DFERI: Density Fitted 3-Index Tensors <==
+
+    Schwarz cutoff =   1.000E-12
+    J cutoff       =   1.000E-12
+    Mem (GB)       =           0
+
+   => Auxiliary Basis <=
+
+  Basis Set: 
+    Number of shells: 108
+    Number of basis function: 308
+    Number of Cartesian functions: 354
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+
+   ==> Starting DF-MCSCF iterations <==
+
+                             Total Energy         Delta E       RMS Grad
+
+(sem_iter): H0block_->H0b_diag[1][1] - H0block_->H0b_diag[2][1] = 0.506584 - -0.506584 = 1.013167 > 1.0E-8
+   @DF-MCSCF Iter   1:  -152.9654719554380904    5.25307e-02   6.09287e-03 Initial CI
+   @DF-MCSCF Iter   2:  -152.9656552960068723   -1.83341e-04   9.96598e-04 APPROX
+   @DF-MCSCF Iter   3:  -152.9656611109224400   -5.81492e-06   2.01863e-04 APPROX
+   @DF-MCSCF Iter   4:  -152.9656613468835644   -2.35961e-07   4.26049e-05 APPROX
+   @DF-MCSCF Iter   5:  -152.9656613575962183   -1.07127e-08   9.41556e-06 APPROX, DIIS
+
+       MCSCF has converged!
+
+   @DF-MCSCF Final Energy:  -152.965661357596218
+
+
+   => Energetics <=
+
+   SCF energy =             -153.018002642470265
+   Total CI energy =        -152.965661357596218
+
+
+   CI Root  1 energy =      -153.104345665210644
+
+
+The 20 most important determinants
+
+    1    0.934555  (    2,    2)  1BgX  1AuX  
+    2   -0.215357  (    1,    1)  1AuX  2AuX  
+    3   -0.125673  (    3,    4)  1BgB  2BgA  1AuA  2AuB  
+    4   -0.125673  (    4,    3)  1BgA  2BgB  1AuB  2AuA  
+    5    0.098526  (    0,    1)  1BgA  2BgA  1AuB  2AuB  
+    6    0.098526  (    1,    0)  1BgB  2BgB  1AuA  2AuA  
+    7   -0.094773  (    0,    0)  1BgX  2BgX  
+    8   -0.090462  (    4,    4)  1BgX  2AuX  
+    9   -0.083627  (    3,    3)  2BgX  1AuX  
+   10    0.055464  (    5,    5)  2BgX  2AuX  
+   11   -0.027147  (    2,    5)  1BgA  2BgB  1AuA  2AuB  
+   12   -0.027147  (    5,    2)  1BgB  2BgA  1AuB  2AuA  
+   13   -0.010225  (    4,    5)  1BgA  2BgB  2AuX  
+   14   -0.010225  (    5,    4)  1BgB  2BgA  2AuX  
+   15    0.009571  (    3,    5)  2BgX  1AuA  2AuB  
+   16    0.009571  (    5,    3)  2BgX  1AuB  2AuA  
+   17    0.006622  (    3,    2)  1BgB  2BgA  1AuX  
+   18    0.006622  (    2,    3)  1BgA  2BgB  1AuX  
+   19   -0.004292  (    2,    4)  1BgX  1AuA  2AuB  
+   20   -0.004292  (    4,    2)  1BgX  1AuB  2AuA  
+
+
+   CI Root  2 energy =      -152.826977049981735
+
+
+The 20 most important determinants
+
+    1    0.557780  (    1,    1)  1AuX  2AuX  
+    2   -0.343772  (    4,    4)  1BgX  2AuX  
+    3   -0.308880  (    4,    2)  1BgX  1AuB  2AuA  
+    4   -0.308880  (    2,    4)  1BgX  1AuA  2AuB  
+    5   -0.302597  (    3,    3)  2BgX  1AuX  
+    6    0.266476  (    2,    3)  1BgA  2BgB  1AuX  
+    7    0.266476  (    3,    2)  1BgB  2BgA  1AuX  
+    8    0.184166  (    5,    2)  1BgB  2BgA  1AuB  2AuA  
+    9    0.184166  (    2,    5)  1BgA  2BgB  1AuA  2AuB  
+   10    0.163851  (    0,    0)  1BgX  2BgX  
+   11    0.135258  (    1,    0)  1BgB  2BgB  1AuA  2AuA  
+   12    0.135258  (    0,    1)  1BgA  2BgA  1AuB  2AuB  
+   13    0.071986  (    2,    2)  1BgX  1AuX  
+   14    0.048907  (    3,    4)  1BgB  2BgA  1AuA  2AuB  
+   15    0.048907  (    4,    3)  1BgA  2BgB  1AuB  2AuA  
+   16    0.038689  (    5,    3)  2BgX  1AuB  2AuA  
+   17    0.038689  (    3,    5)  2BgX  1AuA  2AuB  
+   18   -0.032199  (    4,    5)  1BgA  2BgB  2AuX  
+   19   -0.032199  (    5,    4)  1BgB  2BgA  2AuX  
+   20    0.000559  (    5,    5)  2BgX  2AuX  
+
+
+
+*** PSI4 exiting successfully. Buy a developer a beer!

@@ -1,0 +1,21 @@
+
+How can we do the PK algorithm choice better?
+Why is the SCF converged to such crazy tolerences?
+Read 4 index quantity from dpd without storing it in memory twice?
+Does anyone actually read CI NO's or OPDMs off disk?
+
+
+-----
+David's list
+
+How do we free strings, graphs, SigmaData
+Occs array is created twice if alplist != betlist
+In the TPDM code it looks like the symmetrize call used to assume that the orbials were not real
+    i.e. pqrs != qpsr why is this?
+
+We seem to get the following a lot:
+(sem_iter): H0block_->H0b_diag[1][0] - H0block_->H0b_diag[2][0] = -0.393516 - 0.393516 = -0.787032 > 1.0E-8
+Is this a phase issue?
+This is more of a warning, maybe its finding the wrong state. 
+
+

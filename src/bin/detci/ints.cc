@@ -22,14 +22,16 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 
 /*
 ** INTS.C
 **
-** Return values of one and two-electron integrals
+** Sets the one and two-electron integrals
+** For DPD X and R will denonte the active and rotatable space, respectively
+** For DFERI a and N will denonte the active and rotatable space, respectively
 **
 ** C. David Sherrill
 ** Center for Computational Quantum Chemistry
@@ -37,18 +39,27 @@
 **
 ** Updated 3/18/95 to exclude frozen virtual orbitals.
 ** Updated 3/28/95 to exclude frozen core orbitals.
+** DGAS: Rewrote 7/15/15 Now uses libtrans and DFERI objects
 */
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <libiwl/iwl.h>
+#include <libdpd/dpd.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
+#include <libmints/mints.h>
+#include <psi4-dec.h>
+
+#include <libtrans/integraltransform.h>
+#include <libthce/thce.h>
+#include <libthce/lreri.h>
+#include <libfock/jk.h>
+
 #include "structs.h"
-#define EXTERN
-#include "globals.h"
+#include "ciwave.h"
 #include "globaldefs.h"
 
 namespace psi { namespace detci {
@@ -56,141 +67,483 @@ namespace psi { namespace detci {
 // #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 // #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 
-void read_integrals()
+void CIWavefunction::transform_ci_integrals()
 {
-   int i, j, ij, k, l, kl, ijkl, ijij;
-   int nmotri, nmotri_full;
-   double value;
-   extern double check_energy(double *H, double *twoel_ints, int *docc, 
-      int *dropped_docc, int drc_flag, double escf, double enuc, double edrc, 
-      int nirreps, int *reorder, int *opi, int print_lvl, std::string out);
-   int junk;
-   double *tmp_onel_ints;
-   int *tmp_frdocc, *tmp_fruocc;
-   int nfilter_core, nfilter_vir;
 
-   /* allocate memory for one and two electron integrals */
-   nmotri_full = (CalcInfo.nmo * (CalcInfo.nmo + 1)) / 2;
-   nmotri = (CalcInfo.num_ci_orbs * (CalcInfo.num_ci_orbs + 1)) / 2 ;
-   CalcInfo.onel_ints = (double *) init_array(nmotri) ;
-   CalcInfo.twoel_ints = (double *) init_array(nmotri * (nmotri + 1) / 2);
-   CalcInfo.maxK = (double *) init_array(CalcInfo.num_ci_orbs);  
+  outfile->Printf("\n   ==> Transforming CI integrals <==\n");
+  // Grab orbitals
+  SharedMatrix Cdrc = get_orbitals("DRC");
+  SharedMatrix Cact = get_orbitals("ACT");
+  SharedMatrix Cvir = get_orbitals("VIR");
+  SharedMatrix Cfzv = get_orbitals("FZV");
 
-   /*
-     One-electron integrals: always filter what DETCI considers
-     dropped (whatever is in the drc arrays, which internally DETCI
-     uses for user's frozen core + restricted core)
-     because the one-electron integrals are written out as the full
-     size over all MO's regardless of the computation type.
-   */
+  // Build up active space
+  std::vector<boost::shared_ptr<MOSpace> > spaces;
 
-   tmp_onel_ints = init_array(nmotri_full);
-   iwl_rdone(Parameters.oei_file, PSIF_MO_FZC, tmp_onel_ints, nmotri_full,
-             0, (Parameters.print_lvl>4), "outfile");
-   filter(tmp_onel_ints, CalcInfo.onel_ints, ioff, CalcInfo.nmo, 
-	  CalcInfo.num_drc_orbs, CalcInfo.num_drv_orbs);
-   free(tmp_onel_ints);
+  // Indices should be empty
+  std::vector<int> indices(CalcInfo_->num_ci_orbs, 0);
 
-   /*
-     Two-electron integrals: filter out what we don't need.  TRANSQT2
-     supplies restricted orbitals always (well, for now).  It will also
-     supply frozen core if it's a gradient calculation (need for orbital
-     response) or an MCSCF (need for MO Hessian).  We normally want to
-     filter all these out of the CI energy computation.  Likewise, we
-     normally won't need restricted or frozen virtuals in the CI energy
-     computation and should filter them out if they are in the TEI file
-   */
+  std::vector<int> orbitals(CalcInfo_->num_ci_orbs, 0);
 
-  if (Parameters.filter_ints) {
-    nfilter_core = CalcInfo.num_drc_orbs;
-    nfilter_vir  = CalcInfo.num_drv_orbs;
-  }
-  else {
-    nfilter_core = 0;
-    nfilter_vir = 0;
+  for (int h = 0, cinum = 0, orbnum = 0; h < CalcInfo_->nirreps; h++){
+    orbnum += CalcInfo_->dropped_docc[h];
+    for (int i = 0; i < CalcInfo_->ci_orbs[h]; i++){
+      orbitals[cinum++] = orbnum++;
+    }
+    orbnum += CalcInfo_->dropped_uocc[h];
   }
 
-  iwl_rdtwo(Parameters.tei_file, CalcInfo.twoel_ints, ioff, CalcInfo.nmo,
-             nfilter_core, nfilter_vir, 
-             (Parameters.print_lvl>4), "outfile");
+  boost::shared_ptr<MOSpace> act_space(new MOSpace('X', orbitals, indices));
+  spaces.push_back(act_space);
 
-   /* Determine maximum K integral for use in averaging the diagonal */
-   /* Hamiltonian matrix elements over spin-coupling set */
-   if (Parameters.hd_ave) {
-     for(i=0; i<CalcInfo.num_ci_orbs; i++) 
-        for(j=0; j<CalcInfo.num_ci_orbs; j++) {
-           /* if (i==j) continue; */
-           ij = ioff[MAX0(i,j)] + MIN0(i,j);
-           ijij = ioff[ij] + ij;
-           value = CalcInfo.twoel_ints[ijij];
-           if(value > CalcInfo.maxK[i]) CalcInfo.maxK[i] = value;
-           }
-      for(i=0; i<CalcInfo.num_ci_orbs; i++) {
-        if(CalcInfo.maxK[i] > CalcInfo.maxKlist)
-          CalcInfo.maxKlist = CalcInfo.maxK[i];
-        if (Parameters.print_lvl > 4)
-          outfile->Printf("maxK[%d] = %lf\n",i, CalcInfo.maxK[i]);
-        } 
+  IntegralTransform *ints = new IntegralTransform(Cdrc, Cact, Cvir, Cfzv, spaces,
+                            IntegralTransform::Restricted,
+                            IntegralTransform::DPDOnly,
+                            IntegralTransform::PitzerOrder,
+                            IntegralTransform::OccAndVir,
+                            true);
+  ints_ = boost::shared_ptr<IntegralTransform> (ints);
+  ints_->set_memory(Process::environment.get_memory() * 0.8);
+
+  // Incase we do two ci runs
+  dpd_set_default(ints_->get_dpd_id());
+  ints_->set_keep_iwl_so_ints(true);
+  ints_->set_keep_dpd_so_ints(true);
+  ints_->transform_tei(act_space, act_space, act_space, act_space);
+
+  // Read drc energy
+  CalcInfo_->edrc = ints_->get_frozen_core_energy();
+
+  // Read integrals
+  read_dpd_ci_ints();
+
+  // Form auxiliary matrices
+  tf_onel_ints();
+  form_gmat();
+
+  // This is a build and burn call
+  ints_.reset();
+}
+void CIWavefunction::setup_dfmcscf_ints(){
+
+  outfile->Printf("\n   ==> Setting up DF-MCSCF integrals <==\n\n");
+  /// Grab and build basis sets
+  boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(
+    Process::environment.molecule(), "BASIS", options_.get_str("BASIS"));
+  boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
+      "DF_BASIS_SCF", options_.get_str("DF_BASIS_MCSCF"), "JKFIT",
+      options_.get_str("BASIS"), primary->has_puream());
+
+  /// Build JK object
+  jk_ = JK::build_JK();
+  jk_->set_do_J(true);
+  jk_->set_do_K(true);
+  jk_->initialize();
+  jk_->set_memory(Process::environment.get_memory() * 0.8);
+  // DFJK* jk = new DFJK(primary,auxiliary);
+
+  // if (options_["INTS_TOLERANCE"].has_changed())
+  //     jk->set_cutoff(options_.get_double("INTS_TOLERANCE"));
+  // if (options_["PRINT"].has_changed())
+  //     jk->set_print(options_.get_int("PRINT"));
+  // if (options_["DEBUG"].has_changed())
+  //     jk->set_debug(options_.get_int("DEBUG"));
+  // if (options_["BENCH"].has_changed())
+  //     jk->set_bench(options_.get_int("BENCH"));
+  // if (options_["DF_INTS_IO"].has_changed())
+  //     jk->set_df_ints_io(options_.get_str("DF_INTS_IO"));
+  // if (options_["DF_FITTING_CONDITION"].has_changed())
+  //     jk->set_condition(options_.get_double("DF_FITTING_CONDITION"));
+  // if (options_["DF_INTS_NUM_THREADS"].has_changed())
+  //     jk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
+
+  // jk_ = boost::shared_ptr<JK>(jk);
+  // jk_->set_memory(Process::environment.get_memory() * 0.8);
+
+  // jk_->set_do_J(true);
+  // jk_->set_do_K(true);
+  // jk_->initialize();
+
+  /// Build DF object
+  dferi_ = DFERI::build(primary,auxiliary,options_);
+  dferi_->print_header();
+
+  df_ints_init_ = true;
+}
+void CIWavefunction::transform_mcscf_integrals(bool approx_only)
+{
+    if (MCSCF_Parameters_->mcscf_type == "DF"){
+      transform_dfmcscf_ints(approx_only);
+    }
+    else {
+      transform_mcscf_ints(approx_only);
+    }
+}
+void CIWavefunction::transform_dfmcscf_ints(bool approx_only)
+{
+
+  if (!df_ints_init_) setup_dfmcscf_ints();
+  timer_on("CIWave: DFMCSCF integral transform");
+
+  // => AO C matrices <= //
+  // We want a pitzer order C matrix with appended Cact
+  SharedMatrix Cocc = get_orbitals("DOCC");
+  SharedMatrix Cact = get_orbitals("ACT");
+  SharedMatrix Cvir = get_orbitals("VIR");
+
+  int nao = AO2SO_->rowspi()[0];
+  int nact = CalcInfo_->num_ci_orbs;
+  int nrot = Cocc->ncol() + Cact->ncol() + Cvir->ncol();
+  int aoc_rowdim =  nrot + Cact->ncol();
+  SharedMatrix AO_C = SharedMatrix(new Matrix("AO_C", nao, aoc_rowdim));
+
+  double** AO_Cp = AO_C->pointer();
+  for (int h=0, offset=0, offset_act=0; h < nirrep_; h++){
+      int hnso = AO2SO_->colspi()[h];
+      if (hnso == 0) continue;
+      double** Up = AO2SO_->pointer(h);
+
+      int noccpih = Cocc->colspi()[h];
+      int nactpih = Cact->colspi()[h];
+      int nvirpih = Cvir->colspi()[h];
+      // occupied
+      if (noccpih){
+          double** CSOp = Cocc->pointer(h);
+          C_DGEMM('N','N',nao,noccpih,hnso,1.0,Up[0],hnso,CSOp[0],noccpih,0.0,&AO_Cp[0][offset],aoc_rowdim);
+          offset += noccpih;
       }
+      // active
+      if (nactpih){
+          double** CSOp = Cact->pointer(h);
+          C_DGEMM('N','N',nao,nactpih,hnso,1.0,Up[0],hnso,CSOp[0],nactpih,0.0,&AO_Cp[0][offset],aoc_rowdim);
+          offset += nactpih;
 
-   if (Parameters.print_lvl > 4) {
-      outfile->Printf( "\nOne-electron integrals\n") ;
-      for (i=0, ij=0; i<CalcInfo.num_ci_orbs; i++) {
-         for (j=0; j<=i; j++, ij++) {
-            outfile->Printf( "h(%d)(%d) = %11.7lf\n", i, j, 
-               CalcInfo.onel_ints[ij]) ;
-            }
+          C_DGEMM('N','N',nao,nactpih,hnso,1.0,Up[0],hnso,CSOp[0],nactpih,0.0,&AO_Cp[0][offset_act + nrot],aoc_rowdim);
+          offset_act += nactpih;
+      }
+      // virtual
+      if (nvirpih){
+          double** CSOp = Cvir->pointer(h);
+          C_DGEMM('N','N',nao,nvirpih,hnso,1.0,Up[0],hnso,CSOp[0],nvirpih,0.0,&AO_Cp[0][offset],aoc_rowdim);
+          offset += nvirpih;
+      }
+  }
+
+
+  // => Compute DF ints <= //
+  dferi_->clear();
+  dferi_->set_C(AO_C);
+  dferi_->add_space("R", 0, nrot);
+  dferi_->add_space("a", nrot, aoc_rowdim);
+  dferi_->add_space("F", 0, aoc_rowdim);
+
+  if (approx_only){
+    dferi_->add_pair_space("aaQ", "a", "a");
+    dferi_->add_pair_space("RaQ", "a", "R", -1.0/2.0, true);
+  }
+  else{
+    dferi_->add_pair_space("aaQ", "a", "a");
+    dferi_->add_pair_space("RaQ", "a", "R", -1.0/2.0, true);
+    dferi_->add_pair_space("RRQ", "R", "R");
+  }
+
+  dferi_->compute();
+  std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
+
+  // => Compute onel ints <= //
+  onel_ints_from_jk();
+
+  // => Compute twoel ints <= //
+  int nQ = dferi_->size_Q();
+
+  boost::shared_ptr<Tensor> aaQT = dfints["aaQ"];
+  SharedMatrix aaQ(new Matrix("aaQ", nact * nact, nQ));
+
+  double* aaQp = aaQ->pointer()[0];
+  FILE* aaQF = aaQT->file_pointer();
+  fseek(aaQF,0L,SEEK_SET);
+  fread(aaQp, sizeof(double), nact * nact * nQ, aaQF);
+  SharedMatrix actMO = Matrix::doublet(aaQ, aaQ, false, true);
+  aaQ.reset();
+
+  double** actMOp = actMO->pointer();
+  int irel, jrel, krel, lrel, lmax, ij, kl, ijrel, klrel;
+  int target = 0;
+  int ndrc = CalcInfo_->num_drc_orbs;
+  for (int i=0; i<nact; i++){
+    irel = CalcInfo_->act_reorder[i];
+
+    for (int j=0; j<=i; j++){
+      jrel = CalcInfo_->act_reorder[j];
+      ijrel = INDEX(irel, jrel);
+
+      for (int k=0; k<=i; k++){
+        krel = CalcInfo_->act_reorder[k];
+        lmax = (i==k) ? j+1 : k+1;
+
+        for (int l=0; l<lmax; l++){
+          lrel = CalcInfo_->act_reorder[l];
+          klrel = INDEX(krel, lrel);
+          CalcInfo_->twoel_ints[INDEX(ijrel, klrel)] = actMOp[i * nact + j][k *nact + l];
+  }}}}
+  actMO.reset();
+
+ /* Determine maximum K integral for use in averaging the diagonal */
+ /* Hamiltonian matrix elements over spin-coupling set */
+ if (Parameters_->hd_ave) {
+   for(int i=0; i<CalcInfo_->num_ci_orbs; i++)
+      for(int j=0; j<CalcInfo_->num_ci_orbs; j++) {
+         /* if (i==j) continue; */
+         int ij = ioff[MAX0(i,j)] + MIN0(i,j);
+         int ijij = ioff[ij] + ij;
+         double value = CalcInfo_->twoel_ints[ijij];
+         if(value > CalcInfo_->maxK[i]) CalcInfo_->maxK[i] = value;
          }
-      outfile->Printf( "\n") ;
+    for(int i=0; i<CalcInfo_->num_ci_orbs; i++) {
+      if(CalcInfo_->maxK[i] > CalcInfo_->maxKlist)
+        CalcInfo_->maxKlist = CalcInfo_->maxK[i];
+      if (Parameters_->print_lvl > 4)
+        outfile->Printf("maxK[%d] = %lf\n",i, CalcInfo_->maxK[i]);
       }
+  }
+  tf_onel_ints();
+  form_gmat();
+  timer_off("CIWave: DFMCSCF integral transform");
+}
+void CIWavefunction::setup_mcscf_ints(){
+  // We need to do a few weird things to make IntegralTransform work for us
+  outfile->Printf("\n   ==> Setting up MCSCF integrals <==\n\n");
 
-   if (Parameters.print_lvl > 4) {
-      outfile->Printf( "\nmaxKlist = %lf\n",CalcInfo.maxKlist);
-      outfile->Printf( "\nTwo-electron integrals\n");
-      for (i=0; i<CalcInfo.num_ci_orbs; i++) {
-         for (j=0; j<=i; j++) {
-            ij = ioff[MAX0(i,j)] + MIN0(i,j) ;
-            for (k=0; k<=i; k++) {
-               for (l=0; l<=k; l++) {
-                  kl = ioff[MAX0(k,l)] + MIN0(k,l) ;
-                  ijkl = ioff[MAX0(ij,kl)] + MIN0(ij,kl) ;
-                  outfile->Printf( "%2d %2d %2d %2d (%4d) = %10.6lf\n",
-                     i, j, k, l, ijkl, CalcInfo.twoel_ints[ijkl]);
-                  } 
-               }
-            }
-         }
+  // Grab orbitals
+  SharedMatrix Cdrc = get_orbitals("DRC");
+  SharedMatrix Cact = get_orbitals("ACT");
+  SharedMatrix Cvir = get_orbitals("VIR");
+  SharedMatrix Cfzv = get_orbitals("FZV");
+
+  // Need active and rot spaces
+  std::vector<boost::shared_ptr<MOSpace> > spaces;
+
+  std::vector<int> rot_orbitals(CalcInfo_->num_rot_orbs, 0);
+  std::vector<int> act_orbitals(CalcInfo_->num_ci_orbs, 0);
+
+  // Indices *should* be zero, DPD does not use it
+  std::vector<int> indices(CalcInfo_->num_ci_orbs, 0);
+
+  int act_orbnum = 0;
+  int rot_orbnum = 0;
+  for (int h = 0, rn = 0, an = 0; h < CalcInfo_->nirreps; h++){
+    act_orbnum += CalcInfo_->dropped_docc[h];
+    rot_orbnum += CalcInfo_->frozen_docc[h];
+
+    // Act space
+    for (int i = 0; i < CalcInfo_->ci_orbs[h]; i++){
+      act_orbitals[an++] = act_orbnum++;
+    }
+    act_orbnum += CalcInfo_->dropped_uocc[h];
+
+    int nrotorbs = CalcInfo_->rstr_docc[h] + CalcInfo_->ci_orbs[h] + CalcInfo_->rstr_uocc[h];
+    for (int i = 0; i < nrotorbs; i++){
+      rot_orbitals[rn++] = rot_orbnum++;
+    }
+    rot_orbnum += CalcInfo_->frozen_uocc[h];
+  }
+
+  rot_space_ = boost::shared_ptr<MOSpace>(new MOSpace('R', rot_orbitals, indices));
+  act_space_ = boost::shared_ptr<MOSpace>(new MOSpace('X', act_orbitals, indices));
+  spaces.push_back(rot_space_);
+  spaces.push_back(act_space_);
+
+
+  // Now the occ space is active, the vir space is our rot space (FZC to FZV)
+  IntegralTransform *ints = new IntegralTransform(Cdrc, Cact, Cvir, Cfzv, spaces,
+                                                IntegralTransform::Restricted,
+                                                IntegralTransform::DPDOnly,
+                                                IntegralTransform::PitzerOrder,
+                                                IntegralTransform::OccAndVir,
+                                                true);
+  ints_ = boost::shared_ptr<IntegralTransform> (ints);
+  ints_->set_memory(Process::environment.get_memory() * 0.8);
+
+  // Incase we do two ci runs
+  dpd_set_default(ints_->get_dpd_id());
+  ints_->set_keep_iwl_so_ints(true);
+  ints_->set_keep_dpd_so_ints(true);
+  ints_->set_print(0);
+
+  // Conventional JK build
+  jk_ = JK::build_JK();
+  jk_->set_do_J(true);
+  jk_->set_do_K(true);
+  jk_->initialize();
+  jk_->set_memory(Process::environment.get_memory() * 0.8);
+
+  ints_init_ = true;
+
+}
+void CIWavefunction::transform_mcscf_ints(bool approx_only)
+{
+
+  if (!ints_init_) setup_mcscf_ints();
+  timer_on("CIWave: MCSCF integral transform");
+
+  // The orbital matrix need to be identical to the previous one
+  ints_->set_orbitals(get_orbitals("ALL"));
+
+  if (approx_only){
+    // We only need (aa|aa), (aa|aN) for appoximate update
+    ints_->set_keep_ht_ints(true); // Save the aa half ints here
+    ints_->transform_tei_first_half(act_space_, act_space_);
+    ints_->transform_tei_second_half(act_space_, act_space_, act_space_, rot_space_);
+    ints_->set_keep_ht_ints(false); // Need to nuke the half ints after building act/act
+    ints_->transform_tei_second_half(act_space_, act_space_, act_space_, act_space_);
+  }
+  else{
+    // We need (aa|aa), (aa|aN), (aa|NN), (aN|aN)
+    ints_->set_keep_ht_ints(false); // Need to nuke the half ints after building
+    ints_->transform_tei(act_space_, rot_space_, act_space_, rot_space_);
+
+    // Half trans then work from there
+    ints_->set_keep_ht_ints(true); // Save the aa half ints here
+    ints_->transform_tei_first_half(act_space_, act_space_);
+    ints_->transform_tei_second_half(act_space_, act_space_, rot_space_, rot_space_);
+    ints_->transform_tei_second_half(act_space_, act_space_, act_space_, rot_space_);
+    ints_->set_keep_ht_ints(false); // Need to nuke the half ints after building act/act
+    ints_->transform_tei_second_half(act_space_, act_space_, act_space_, act_space_);
+  }
+
+  // Read DPD ints into memory
+  read_dpd_ci_ints();
+
+  // => Compute onel ints <= //
+  // Libtrans does NOT change efzc or MO_FZC unless presort is called.
+  // Presort is only called on initialize. As sort is very expensive, this
+  // is a good thing.
+  onel_ints_from_jk();
+
+  // Form auxiliary matrices
+  tf_onel_ints();
+  form_gmat();
+  timer_off("CIWave: MCSCF integral transform");
+
+}
+
+void CIWavefunction::read_dpd_ci_ints()
+{
+
+  // => Read one electron integrals <= //
+  // Build temporary desired arrays
+  int nmotri_full = (CalcInfo_->nmo * (CalcInfo_->nmo + 1)) / 2 ;
+  double* tmp_onel_ints = new double[nmotri_full];
+
+  // Read one electron integrals
+  iwl_rdone(PSIF_OEI, PSIF_MO_FZC, tmp_onel_ints, nmotri_full,
+               0, (Parameters_->print_lvl>4), "outfile");
+
+  // IntegralTransform does not properly order one electron integrals for whatever reason
+  for (int i=0, ij=0; i < CalcInfo_->num_ci_orbs; i++){
+    for (int j=0; j<=i; j++){
+      int si = i + CalcInfo_->num_drc_orbs;
+      int sj = j + CalcInfo_->num_drc_orbs;
+      int order_idx = INDEX(CalcInfo_->order[si],CalcInfo_->order[sj]);
+      CalcInfo_->onel_ints[ij++] = tmp_onel_ints[order_idx];
+    }
+  }
+
+  delete[] tmp_onel_ints;
+
+  // => Read two electron integral <= //
+  // This is not a good algorithm, stores two e's in memory twice!
+  // However, this CI is still limited to 256 basis functions
+
+  psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+  dpdbuf4 I;
+  global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0,
+                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"),
+                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "MO Ints (XX|XX)");
+
+  // Read everything into memory
+  for (int h=0; h<CalcInfo_->nirreps; h++){
+    global_dpd_->buf4_mat_irrep_init(&I, h);
+    global_dpd_->buf4_mat_irrep_rd(&I, h);
+  }
+
+  for(int p = 0; p < CalcInfo_->num_ci_orbs; p++){
+      int p_sym = I.params->psym[p];
+
+      for(int q = 0; q <= p; q++){
+          int q_sym = I.params->qsym[q];
+          int pq = I.params->rowidx[p][q];
+          int pq_sym = p_sym^q_sym;
+          int r_pq = INDEX(CalcInfo_->act_reorder[p], CalcInfo_->act_reorder[q]);
+
+          for(int r = 0; r <= p; r++){
+              int r_sym = I.params->rsym[r];
+              int smax = (p==r) ? q+1 : r+1;
+
+              for(int s = 0; s < smax; s++){
+                  int s_sym = I.params->ssym[s];
+                  int rs_sym = r_sym^s_sym;
+                  if (pq_sym != rs_sym) continue;
+                  int rs = I.params->colidx[r][s];
+
+                  double value = I.matrix[pq_sym][pq][rs];
+                  int r_rs = INDEX(CalcInfo_->act_reorder[r], CalcInfo_->act_reorder[s]);
+                  int r_pqrs = INDEX(r_pq, r_rs);
+
+                  CalcInfo_->twoel_ints[r_pqrs] = value;
+              }
+          }
       }
+  }
 
-   CalcInfo.eref = check_energy(CalcInfo.onel_ints, CalcInfo.twoel_ints, 
-      CalcInfo.docc, CalcInfo.dropped_docc, 1, CalcInfo.escf, 
-      CalcInfo.enuc, CalcInfo.edrc, CalcInfo.nirreps, CalcInfo.reorder, 
-      CalcInfo.orbs_per_irr, Parameters.print_lvl, "outfile");
+  // Close everything out
+  for (int h=0; h<CalcInfo_->nirreps; h++){
+    global_dpd_->buf4_mat_irrep_close(&I, h);
+  }
 
-} 
+  global_dpd_->buf4_close(&I);
+  psio_->close(PSIF_LIBTRANS_DPD, 1);
 
+  /* Determine maximum K integral for use in averaging the diagonal */
+  /* Hamiltonian matrix elements over spin-coupling set */
+  if (Parameters_->hd_ave) {
+    for(int i=0; i<CalcInfo_->num_ci_orbs; i++)
+       for(int j=0; j<CalcInfo_->num_ci_orbs; j++) {
+          /* if (i==j) continue; */
+          int ij = ioff[MAX0(i,j)] + MIN0(i,j);
+          int ijij = ioff[ij] + ij;
+          double value = CalcInfo_->twoel_ints[ijij];
+          if(value > CalcInfo_->maxK[i]) CalcInfo_->maxK[i] = value;
+          }
+     for(int i=0; i<CalcInfo_->num_ci_orbs; i++) {
+       if(CalcInfo_->maxK[i] > CalcInfo_->maxKlist)
+         CalcInfo_->maxKlist = CalcInfo_->maxK[i];
+       if (Parameters_->print_lvl > 4)
+         outfile->Printf("maxK[%d] = %lf\n",i, CalcInfo_->maxK[i]);
+       }
+   }
 
+}
 
-double get_onel(int i, int j)
+double CIWavefunction::get_onel(int i, int j)
 {
    int ij ;
    double value ;
 
    if (i > j) {
       ij = ioff[i] + j;
-      value = CalcInfo.onel_ints[ij] ;
+      value = CalcInfo_->onel_ints[ij] ;
       return(value) ;
       }
    else {
       ij = ioff[j] + i ;
-      value = CalcInfo.onel_ints[ij] ;
+      value = CalcInfo_->onel_ints[ij] ;
       return(value) ;
       }
-   return(CalcInfo.onel_ints[ij]) ;
+   return(CalcInfo_->onel_ints[ij]) ;
 }
 
-
-double get_twoel(int i, int j, int k, int l)
+double CIWavefunction::get_twoel(int i, int j, int k, int l)
 {
    int ij, kl, ijkl ;
 
@@ -202,10 +555,8 @@ double get_twoel(int i, int j, int k, int l)
    ijkl += MIN0(ij,kl) ;
 
 
-   return(CalcInfo.twoel_ints[ijkl]) ;
+   return(CalcInfo_->twoel_ints[ijkl]) ;
 }
-
-
 
 /*
 ** tf_onel_ints(): Function lumps together one-electron contributions
@@ -214,7 +565,7 @@ double get_twoel(int i, int j, int k, int l)
 **    equation (20) of Olsen, Roos, et. al. JCP 1988
 **
 */
-void tf_onel_ints(int printflag, std::string out)
+void CIWavefunction::tf_onel_ints()
 {
    int i, j, k, ij, ik, kj, ikkj ;
    int nbf ;
@@ -223,27 +574,26 @@ void tf_onel_ints(int printflag, std::string out)
    int ntri;
 
    /* set up some shorthand notation (speed up access) */
-   nbf = CalcInfo.num_ci_orbs ;
-   tei = CalcInfo.twoel_ints ;
-   ntri = (nbf * (nbf + 1)) / 2;
+   nbf = CalcInfo_->num_ci_orbs ;
+   tei = CalcInfo_->twoel_ints ;
 
    /* ok, new special thing for CASSCF...if there are *no* excitations
-      into restricted orbitals, and if Parameters.fci=TRUE, then we
+      into restricted orbitals, and if Parameters_->fci=TRUE, then we
       do *not* want to sum over the restricted virts in h' or else
       we would need to account for RAS-out-of-space contributions
       (requiring fci=false).
     */
-   if (Parameters.fci && (nbf > Parameters.ras3_lvl) && 
-       Parameters.ras34_max == 0)
-      nbf = Parameters.ras3_lvl;
+   if (Parameters_->fci && (nbf > Parameters_->ras3_lvl) &&
+       Parameters_->ras34_max == 0)
+      nbf = Parameters_->ras3_lvl;
 
-   /* allocate space for the new array */
-   CalcInfo.tf_onel_ints = init_array(ntri) ;
+   // /* allocate space for the new array */
+   // CalcInfo_->tf_onel_ints = init_array(ntri) ;
 
    /* fill up the new array */
    for (i=0,ij=0; i<nbf; i++)
       for (j=0; j<=i; j++) {
-         tval = CalcInfo.onel_ints[ij] ;
+         tval = CalcInfo_->onel_ints[ij] ;
 
          for (k=0; k<nbf; k++) {
             ik = ioff[MAX0(i,k)] + MIN0(i,k) ;
@@ -251,16 +601,16 @@ void tf_onel_ints(int printflag, std::string out)
             ikkj = ioff[ik] + kj ;
             teptr = tei + ikkj ;
             tval -= 0.5 * (*teptr) ;
-            } 
+            }
 
-         CalcInfo.tf_onel_ints[ij++] = tval ;
+         CalcInfo_->tf_onel_ints[ij++] = tval ;
          }
    /* print if necessary */
-   if (printflag) {
-      outfile->Printf( "\nh' matrix\n") ;
-      print_array(CalcInfo.tf_onel_ints, nbf, "outfile") ;
-      outfile->Printf( "\n") ;
-      }
+   // if (printflag) {
+   //    outfile->Printf( "\nh' matrix\n") ;
+   //    print_array(CalcInfo_->tf_onel_ints, nbf, "outfile") ;
+   //    outfile->Printf( "\n") ;
+   //    }
 }
 
 
@@ -271,7 +621,7 @@ void tf_onel_ints(int printflag, std::string out)
 **    See equations (28-29) in Olsen, Roos, et. al. JCP 1988
 **
 */
-void form_gmat(int printflag, std::string out)
+void CIWavefunction::form_gmat()
 {
    int nbf ;
    double *tei, *oei ;
@@ -280,17 +630,12 @@ void form_gmat(int printflag, std::string out)
 
 
    /* set up some shorthand notation (speed up access) */
-   nbf = CalcInfo.num_ci_orbs ;
-   oei = CalcInfo.onel_ints ;
-   tei = CalcInfo.twoel_ints ;
+   nbf = CalcInfo_->num_ci_orbs ;
+   oei = CalcInfo_->onel_ints ;
+   tei = CalcInfo_->twoel_ints ;
 
-   /* allocate space for the new array */
-   /* CalcInfo.gmat = init_matrix(nbf, nbf) ; */
-   /* why not use init_blockmatix here? */
-   CalcInfo.gmat = (double **) malloc (nbf * sizeof(double *));
-   CalcInfo.gmat[0] = (double *) malloc (nbf * nbf * sizeof(double));
    for (i=1; i<nbf; i++) {
-      CalcInfo.gmat[i] = CalcInfo.gmat[i-1] + nbf;
+      CalcInfo_->gmat[i] = CalcInfo_->gmat[i-1] + nbf;
       }
 
    /* fill up the new array */
@@ -303,10 +648,10 @@ void form_gmat(int printflag, std::string out)
             kj = ioff[j] + k ;
             ikkj = ioff[kj] + ik ;
             tval -= tei[ikkj] ;
-            }
-         CalcInfo.gmat[i][j] = tval ;
          }
-      } 
+         CalcInfo_->gmat[i][j] = tval ;
+      }
+   }
 
    for (i=0, ij=0; i<nbf; i++) {
       for (j=0; j<=i; j++,ij++) {
@@ -316,122 +661,64 @@ void form_gmat(int printflag, std::string out)
             kj = ioff[MAX0(k,j)] + MIN0(k,j) ;
             ikkj = ioff[ik] + kj ;
             tval -= tei[ikkj] ;
-            }
+         }
          ii = ioff[i] + i ;
          iiij = ioff[ii] + ij ;
          if (i==j) tval -= 0.5 * tei[iiij] ;
          else tval -= tei[iiij] ;
-         CalcInfo.gmat[i][j] = tval ;
-         }
+         CalcInfo_->gmat[i][j] = tval ;
       }
+   }
 
-   if (printflag) {
-      outfile->Printf( "\ng matrix\n") ;
-      print_mat(CalcInfo.gmat, nbf, nbf, "outfile") ;
-      outfile->Printf( "\n") ;
+}
+
+void CIWavefunction::onel_ints_from_jk()
+{
+  SharedMatrix Cact = get_orbitals("ACT");
+  SharedMatrix Cdrc = get_orbitals("DRC");
+  std::vector<SharedMatrix>& Cl = jk_->C_left();
+  std::vector<SharedMatrix>& Cr = jk_->C_right();
+  Cl.clear();
+  Cr.clear();
+  Cl.push_back(Cdrc);
+  jk_->compute();
+  Cl.clear();
+
+  const std::vector<SharedMatrix>& J = jk_->J();
+  const std::vector<SharedMatrix>& K = jk_->K();
+
+  J[0]->scale(2.0);
+  J[0]->subtract(K[0]);
+
+  J[0]->add(H_);
+  SharedMatrix onel_ints = Matrix::triplet(Cact, J[0], Cact, true, false, false);
+
+  // Set 1D onel ints
+  int nmotri = (CalcInfo_->num_ci_orbs * (CalcInfo_->num_ci_orbs + 1)) / 2 ;
+  double* tmp_onel_ints = (double *) init_array(nmotri);
+
+  for (int h=0, target=0, offset=0; h<nirrep_; h++){
+    int nactpih = Cact->colspi()[h];
+    if (!nactpih) continue;
+
+    double** onep = onel_ints->pointer(h);
+    for (int i=0; i<nactpih; i++){
+      target += offset;
+      for (int j=0; j<=i; j++){
+        int r_ij = INDEX(CalcInfo_->act_reorder[i+offset], CalcInfo_->act_reorder[j+offset]);
+        CalcInfo_->onel_ints[r_ij] = onep[i][j];
       }
-}
-
-/* Start MCSCF read*/
-
-void mcscf_read_integrals()
-{
-  int i, j, ij, k, l, kl, ijkl;
-  int nbstri;
-  double value;
-
-  /* allocate memory for one and two electron integrals */
-  nbstri = CalcInfo.nmotri;
-  MCSCF_CalcInfo.onel_ints = init_array(nbstri);
-  MCSCF_CalcInfo.onel_ints_bare = init_array(nbstri);
-  MCSCF_CalcInfo.twoel_ints = init_array(nbstri * (nbstri + 1) / 2);
-
-  /* now read them in */
-
-  if (MCSCF_Parameters.use_fzc_h) {
-    if (MCSCF_Parameters.print_lvl > 3) {
-      outfile->Printf("\n\tOne-electron integrals (frozen core operator):\n");
     }
-    // can't erase file, re-reading it below
-    iwl_rdone(MCSCF_Parameters.oei_file, PSIF_MO_FZC, MCSCF_CalcInfo.onel_ints, nbstri, 
-              0, (MCSCF_Parameters.print_lvl>3), "outfile");
-  }
-  else {
-    if (MCSCF_Parameters.print_lvl > 3) {
-      outfile->Printf("\n\tOne-electron integrals (bare):\n");
-    }
-    // can't erase file, re-reading it below
-    iwl_rdone(MCSCF_Parameters.oei_file, PSIF_MO_OEI, MCSCF_CalcInfo.onel_ints, nbstri, 
-              0, (MCSCF_Parameters.print_lvl>3), "outfile");
+    offset += nactpih;
   }
 
-  /* even if we utilize frozen core operator for some terms, the
-     current Lagrangian code is forced to use bare h, so let's grab
-     that, too (both should be available from the transformation code)
-     -CDS 10/3/14
-  */
-  if (MCSCF_Parameters.print_lvl > 3) { 
-    outfile->Printf("\n\tOne-electron integrals (bare):\n");
-    }
-  iwl_rdone(MCSCF_Parameters.oei_file, PSIF_MO_OEI, MCSCF_CalcInfo.onel_ints_bare, nbstri,
-            MCSCF_Parameters.oei_erase ? 0 : 1, (MCSCF_Parameters.print_lvl>3), "outfile");
+  // => Compute dropped core energy <= //
+  J[0]->add(H_);
 
-  
-  if (MCSCF_Parameters.print_lvl > 6) 
-    outfile->Printf("\n\tTwo-electron integrals:\n");
-
-  iwl_rdtwo(MCSCF_Parameters.tei_file, MCSCF_CalcInfo.twoel_ints, ioff, 
-     CalcInfo.nmo, MCSCF_Parameters.filter_ints ? CalcInfo.num_fzc_orbs : 0, 
-     MCSCF_Parameters.filter_ints ? CalcInfo.num_fzv_orbs : 0, 
-     (MCSCF_Parameters.print_lvl>6), "outfile");
-
-} 
-
-
-
-double mcscf_get_onel(int i, int j)
-{
-  int ij;
-
-  ij = INDEX(i,j);
-  return(MCSCF_CalcInfo.onel_ints[ij]);
-}
-
-
-double mcscf_get_twoel(int i, int j, int k, int l)
-{
-  int ij, kl, ijkl;
-
-  ij = INDEX(i,j);
-  kl = INDEX(k,l);
-  ijkl = INDEX(ij,kl);
-
-  return(MCSCF_CalcInfo.twoel_ints[ijkl]);
-}
-
-
-/*
-** mcscf_get_mat_block()
-**
-** This function gets an irrep block of a full matrix
-**
-** C. David Sherrill
-** May 1998
-*/
-void mcscf_get_mat_block(double **src, double **dst, int dst_dim, int dst_offset,
-                   int *dst2src)
-{
-
-  int P, Q, p, q;
-
-  for (P=0; P<dst_dim; P++) {
-    p = dst2src[P+dst_offset];
-    for (Q=0; Q<dst_dim; Q++) {
-      q = dst2src[Q+dst_offset];
-      dst[P][Q] = src[p][q];
-    } 
-  }
-
+  SharedMatrix D = Matrix::doublet(Cdrc, Cdrc, false, true);
+  CalcInfo_->edrc = J[0]->vector_dot(D);
+  Cdrc.reset();
+  D.reset();
 }
 
 }} // namespace psi::detci

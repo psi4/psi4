@@ -53,7 +53,7 @@ namespace psi { namespace detci {
 */
 double ssq(struct stringwr *alplist, struct stringwr *betlist,
      double **CL, double **CR, int nas, int nbs,
-     int Ja_list, int Jb_list) 
+     int Ja_list, int Jb_list, int num_ci_orbs, int print_lvl) 
 {
    struct stringwr *Ia, *Ib ;
    unsigned int Ia_ex, Ib_ex;

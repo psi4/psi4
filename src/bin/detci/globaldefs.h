@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup DETCAS
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
 ** GLOBALDEFS.H

@@ -27,7 +27,6 @@
 using namespace psi;
 
 /// Keeps track of which labels have been assigned, for safety
-std::map<char, int> MOSpace::labelsUsed;
 boost::shared_ptr<MOSpace> MOSpace::fzc(new MOSpace(MOSPACE_FZC));
 boost::shared_ptr<MOSpace> MOSpace::occ(new MOSpace(MOSPACE_OCC));
 boost::shared_ptr<MOSpace> MOSpace::vir(new MOSpace(MOSPACE_VIR));
@@ -48,8 +47,6 @@ MOSpace::MOSpace(char label):
         aIndex_(0),
         bIndex_(0)
 {
-    // Register this label as "taken"
-    ++labelsUsed[label_];
 }
 
 /**
@@ -71,13 +68,6 @@ MOSpace::MOSpace(const char label, const std::vector<int> aOrbs, const std::vect
         bIndex_(aIndex),
         placeholder_(false)
 {
-    if(labelsUsed.count(label)){
-        std::string error("Space ");
-        error += label;
-        error += " is already in use.  Choose a unique name for the custom MOSpace.";
-        throw SanityCheckError(error, __FILE__, __LINE__);
-    }
-    ++labelsUsed[label];
 }
 
 /**
@@ -103,13 +93,6 @@ MOSpace::MOSpace(const char label, const std::vector<int> aOrbs, const std::vect
         bIndex_(bIndex),
         placeholder_(false)
 {
-    if(labelsUsed.count(label)){
-        std::string error("Space ");
-        error += label;
-        error += " is already in use.  Choose a unique name for the custom MOSpace.";
-        throw SanityCheckError(error, __FILE__, __LINE__);
-    }
-    ++labelsUsed[label];
 }
 
 /**
@@ -124,17 +107,9 @@ MOSpace::MOSpace(const char label, const std::vector<int> orbsPI):
         aOrbs_(orbsPI),
         placeholder_(true)
 {
-    if(labelsUsed.count(label)){
-        std::string error("Space ");
-        error += label;
-        error += " is already in use.  Choose a unique name for the custom MOSpace.";
-        throw SanityCheckError(error, __FILE__, __LINE__);
-    }
-    ++labelsUsed[label];
 }
 
 
 MOSpace::~MOSpace()
 {
-    --labelsUsed[label_];
 }

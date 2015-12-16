@@ -2,7 +2,7 @@ set(headers_list "")
 # List of headers
 list(APPEND headers_list points.h direct_screening.h
             apps.h hamiltonian.h link.h cubature.h v.h solver.h
-            jk_independent.h jk.h jk_independent_impl.h gridblocker.h )
+            jk_independent.h jk.h jk_independent_impl.h gridblocker.h soscf.h)
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
@@ -18,7 +18,7 @@ set(sources_list "")
 list(APPEND sources_list apps.cc v.cc hamiltonian.cc points.cc
             cubature.cc solver.cc link.cc direct_screening.cc
             wrapper.cc jk.cc DiskJK.cc PKJK.cc DirectJK.cc DFJK.cc
-            CDJK.cc FastDFJK.cc PSJK.cc GTFockJK.cc)
+            CDJK.cc FastDFJK.cc PSJK.cc GTFockJK.cc soscf.cc)
 
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)
