@@ -40,6 +40,9 @@
 #include "direct_screening.h"
 #include "cubature.h"
 #include "points.h"
+#include "yoshimine.h"
+
+#include <JGtimer.h>
 
 #include<lib3index/cholesky.h>
 
@@ -90,10 +93,6 @@ void PKJK::preiterations()
 {
     psio_ = _default_psio_lib_;
 
-//    bool file_was_open = psio_->open_check(pk_file_);
-//    if(!file_was_open);
-        psio_->open(pk_file_, PSIO_OPEN_NEW);
-
     // Start by generating conventional integrals on disk
     boost::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
     mints->integrals();
@@ -104,12 +103,13 @@ void PKJK::preiterations()
     nso_ = nsopi_.sum();
     nirrep_ = nsopi_.n();
 
-    so2symblk_ = new int[nso_];
-    so2index_  = new int[nso_];
-    size_t so_count = 0;
-    size_t offset = 0;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nsopi_[h]; ++i) {
+    //TODO: Delete the following ?
+    so2symblk_ = new int[nso];
+    so2index_  = new int[nso];
+    int so_count = 0;
+    int offset = 0;
+    for (int h = 0; h < nirreps; ++h) {
+        for (int i = 0; i < sopi[h]; ++i) {
             so2symblk_[so_count] = h;
             so2index_[so_count] = so_count-offset;
             ++so_count;
@@ -135,6 +135,7 @@ void PKJK::preiterations()
     // Compute the number of pairs in PK
     pk_size_ = INDEX2(pk_pairs_-1, pk_pairs_-1) + 1;
 
+    // I still have to figure out why this piece of code exists.
     // Count the pairs
     size_t npairs = 0;
     size_t *pairpi = new size_t[nirrep_];
@@ -156,38 +157,72 @@ void PKJK::preiterations()
             }
         }
     }
+    delete [] orb_offset;
 
-    // TODO figure out a better scheme.  For now, use half of the memory
-    // 32 comes from 2 (use only half the mem) * 8 (bytes per double)
-    size_t memory = memory_ / 16;
+    // We need to access the option object to just get a few values
 
-    int nbatches      = 0;
-    size_t pq_incore  = 0;
-    size_t pqrs_index = 0;
+    Options& options = Process::environment.options;
+    /* Now we create the Yoshimine buffers for sorting. The PK supermatrix
+     containing integrals (ij|kl) has all indices ij on the rows and indices
+     kl on the columns. We need both the supermatrix for building the Coulomb
+     matrix J and the exchange matrix K. For J, integrals must be sorted so
+     that (ij|kl) goes to position (ij, kl) of the supermatrix. However, for K
+     we want (ij|kl) to go in both (ik, jl) and (il, jk) in the supermatrix (not
+     considering special cases for diagonal elements). As a result, we need
+     to sort integrals in different files for J and K. For this purpose, we are going
+     to use two Yoshimine buffers. They should each be initialized with half of the
+     available memory, because they will be used simultaneously for the pre-sorting.
+     */
+
+    string algo = options.get_str("PK_ALGO");
+
+    // Use a Yoshimine sorting, with objects adapted from TRANSQT implementation
+    // of Yoshimine.
+
+    int max_buckets = options.get_int("MAX_BUCKETS");
+
+    // Initialize each buffer with only half of the memory. memory_ is in doubles
+    // and already has a safety factor.
+    long pk_sort_mem = memory_;
+    long pk_presort_mem = memory_ * sizeof(double) / 2;
+
+    // First temporary file for pre-sorting.
+    int first_tmp_file_J = options.get_int("FIRST_TMP_FILE");
+
+    // Integral tolerance
+    double tolerance = options.get_double("INTS_TOLERANCE");
+
+//DEBUG    outfile->Printf("The pk_sort_mem is %li doubles, there are %i max_buckets\n", pk_sort_mem, max_buckets);
+//DEBUG    outfile->Printf("The first tmp file is %i and the integral tolerance %f\n", first_tmp_file_J, tolerance);
+    Yosh YBuffJ(pk_pairs_, pk_presort_mem, pk_sort_mem,
+                max_buckets, first_tmp_file_J, tolerance, psio_.get());
+    int first_tmp_file_K = first_tmp_file_J + YBuffJ.nbuckets();
+//DEBUG    outfile->Printf("The first tmp K file is %i \n", first_tmp_file_K);
+    Yosh YBuffK(pk_pairs_, pk_presort_mem, pk_sort_mem,
+                max_buckets, first_tmp_file_K, tolerance, psio_.get());
+
+//DEBUG    transqt::yosh_print(&YBuffJ, "outfile");
+//DEBUG    transqt::yosh_print(&YBuffK, "outfile");
+
+    // We copy the bucket info into our local arrays for later retrieval.
+    // Low and high pq indices and number of buckets should be the same
+    // between J and K
+
+    int nbatches      = YBuffJ.nbuckets();
     size_t totally_symmetric_pairs = pairpi[0];
+    delete [] pairpi;
     batch_pq_min_.clear();
     batch_pq_max_.clear();
     batch_index_min_.clear();
     batch_index_max_.clear();
-    batch_pq_min_.push_back(0);
-    batch_index_min_.push_back(0);
-    for(size_t pq = 0; pq < pk_pairs_; ++pq){
-        // Increment counters
-        if(pq_incore + pq + 1 > memory){
-            // The batch is full. Save info.
-            batch_pq_max_.push_back(pq);
-            batch_pq_min_.push_back(pq);
-            batch_index_max_.push_back(pqrs_index);
-            batch_index_min_.push_back(pqrs_index);
-            pq_incore = 0;
-            nbatches++;
-        }
-        pq_incore  += pq + 1;
-        pqrs_index += pq + 1;
+    for(int i = 0; i < YBuffJ.nbuckets(); ++i) {
+        int lowpq = (YBuffJ.buckets())[i]->lo();
+        int hipq = (YBuffJ.buckets())[i]->hi();
+        batch_pq_min_.push_back(lowpq);
+        batch_pq_max_.push_back(++hipq);
+        batch_index_min_.push_back( (size_t)(lowpq + 1L) * (size_t)lowpq / 2L);
+        batch_index_max_.push_back((size_t)hipq * (size_t)(hipq + 1L) / 2L);
     }
-    batch_pq_max_.push_back(totally_symmetric_pairs);
-    batch_index_max_.push_back(pk_size_);
-    nbatches++;
 
     for(int batch = 0; batch < nbatches; ++batch){
         outfile->Printf("\tBatch %3d pq = [%8zu,%8zu] index = [%14zu,%zu]\n",
@@ -196,10 +231,87 @@ void PKJK::preiterations()
                 batch_index_min_[batch],batch_index_max_[batch]);
     }
 
+    //Now, what we are doing depends on the selected algorithm and the
+    //number of buckets needed.
+
+    if(algo == "DIRECT") {
+        if(nbatches != 1) {
+            // lol direct cannot work with 2 batches lol
+            throw PSIEXCEPTION("Direct ? With 2 batches ? lol\n");
+        } else {
+            throw PSIEXCEPTION("Not implemented yet.\n");
+        }
+    } else if (algo == "NEW") {
+       // Proceed with Yoshimine sorting.
+
+    // Initiate buckets: allocate array memory and open temporary files.
+
+    timJG tbench;
+    tbench.start();
+    YBuffJ.init_buckets();
+    YBuffK.init_buckets();
+
+//    transqt::yosh_print(&YBuffJ, "outfile");
+//    transqt::yosh_print(&YBuffK, "outfile");
+   //Do the pre-sorting step in temporary files
+
+    //TODO: Solve the double sorting of K integrals that are not in the same
+    // bucket, we are writing more integrals to disk than anticipated.
+    YoshBase::rdtwo_pk(&YBuffJ,&YBuffK,PSIF_SO_TEI, 0, nirreps, so2index_, so2symblk_,
+                           pk_symoffset, (debug_ > 5));
+
+    // Close the buckets, but keep the temp. files.
+    YBuffJ.close_buckets(0);
+    YBuffK.close_buckets(0);
+
+    // Really proceed with the sorting and writing of the PK files
+
+    psio_->open(pk_file_, PSIO_OPEN_NEW);
+//    psio_->open(pk_file_, PSIO_OPEN_OLD);
+
+//DEBUG    outfile->Printf("Just before sorting\n");
+    YBuffJ.sort_pk(0, pk_file_, 0, so2index_, so2symblk_, pk_symoffset, (debug_ > 5));
+//    throw PSIEXCEPTION("Integral counting");
+    YBuffK.sort_pk(1, pk_file_, 0, so2index_, so2symblk_, pk_symoffset, (debug_ > 5));
+
+    tbench.stop("Creating PK file");
+    tbench.start();
+    IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, cutoff_, 1, 1);
+    bool last_buffer;
+    do{
+        last_buffer = iwl->last_buffer();
+        if (!last_buffer) {
+            iwl->fetch();
+        }
+    } while (!last_buffer);
+    delete iwl;
+    tbench.stop("Dummy Read original IWL file");
+    psio_->close(pk_file_, 1);
+
+    YBuffJ.done();
+    YBuffK.done();
+
+    } // End of condition for Yoshimine sorting, algo NEW
+    else if(algo == "JET") {
+        // Here we go for the old algorithm
+
+    // We can dismiss the Yoshimine buckets
+
+    YBuffJ.done();
+    YBuffK.done();
 
     // We might want to only build p in future...
     bool build_k = true;
 
+    // Set up some timers
+    timJG tread;
+    timJG twriteJ;
+    timJG twriteK;
+    timJG tbench;
+
+
+    tbench.start();
+    psio_->open(pk_file_, PSIO_OPEN_NEW);
     for(int batch = 0; batch < nbatches; ++batch){
         size_t min_index   = batch_index_min_[batch];
         size_t max_index   = batch_index_max_[batch];
@@ -209,7 +321,9 @@ void PKJK::preiterations()
         ::memset(j_block, '\0', batch_size * sizeof(double));
         ::memset(k_block, '\0', batch_size * sizeof(double));
 
+        tread.start();
         IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, cutoff_, 1, 1);
+        tread.cumulate();
         Label *lblptr = iwl->labels();
         Value *valptr = iwl->values();
         int labelIndex, pabs, qabs, rabs, sabs, prel, qrel, rrel, srel, psym, qsym, rsym, ssym;
@@ -233,6 +347,7 @@ void PKJK::preiterations()
                 rsym  = so2symblk_[rabs];
                 ssym  = so2symblk_[sabs];
                 value = (double) valptr[index];
+//                outfile->Printf("IWL <%d %d|%d %d>\n", pabs, qabs, rabs, sabs);
 
                 // J
                 if ((psym == qsym) && (rsym == ssym)) {
@@ -275,9 +390,16 @@ void PKJK::preiterations()
                     }
                 }
             }
-            if (!last_buffer) iwl->fetch();
+            if (!last_buffer) {
+                tread.start();
+                iwl->fetch();
+                tread.cumulate();
+            }
         } while (!last_buffer);
+        tread.start();
         delete iwl;
+        tread.cumulate();
+        tread.print("Read original IWL file");
 
         // Halve the diagonal elements held in core
         for(size_t pq = batch_pq_min_[batch]; pq < batch_pq_max_[batch]; ++pq){
@@ -287,22 +409,41 @@ void PKJK::preiterations()
         }
 
         char *label = new char[100];
+        twriteJ.start();
         sprintf(label, "J Block (Batch %d)", batch);
         psio_->write_entry(pk_file_, label, (char*) j_block, batch_size * sizeof(double));
+        twriteJ.stop("Write J batch");
+        twriteK.start();
         sprintf(label, "K Block (Batch %d)", batch);
         psio_->write_entry(pk_file_, label, (char*) k_block, batch_size * sizeof(double));
+        twriteK.stop("WriteK batch");
         delete [] label;
 
         delete [] j_block;
         delete [] k_block;
     } // End of loop over batches
+    tbench.stop("PK file creation");
 
+    tread.start();
+    IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, cutoff_, 1, 1);
+    bool last_buffer;
+    do{
+        last_buffer = iwl->last_buffer();
+        if (!last_buffer) {
+            iwl->fetch();
+        }
+    } while (!last_buffer);
+    delete iwl;
+    tread.stop("Dummy Read original IWL file");
+    psio_->close(pk_file_, 1);
+
+    } // End of algo conditional.
     /*
      * For omega, we only need exchange and it's done separately from conventional terms, so we can
      * use fewer batches in principle.  For now we just use the batching scheme that's already been
      * computed for the conventional J/K combo, above
      */
-    if(do_wK_){
+/*    if(do_wK_){
         for(int batch = 0; batch < nbatches; ++batch){
             size_t min_index   = batch_index_min_[batch];
             size_t max_index   = batch_index_max_[batch];
@@ -390,7 +531,7 @@ void PKJK::preiterations()
 
 //    if(!file_was_open);
         psio_->close(pk_file_, 1);
-
+*/
 }
 
 void PKJK::compute_JK()
@@ -571,6 +712,7 @@ void PKJK::compute_JK()
                         double J_pq = 0.0;
                         double *J_rs = J_vector;
                         for (size_t rs = 0; rs <= pq; ++rs) {
+//                            outfile->Printf("PK int (%lu|%lu) = %20.16f\n", pq, rs, *j_ptr);
                             J_pq  += *j_ptr * (*D_rs);
                             *J_rs += *j_ptr * D_pq;
                             ++D_rs;
@@ -585,6 +727,7 @@ void PKJK::compute_JK()
             delete[] j_block;
         }
     }
+//    throw PSIEXCEPTION("Reading PK file\n");
 
     for(size_t N = 0; N < J_.size(); ++N){
         if(C_left_[N] != C_right_[N]) {
@@ -666,6 +809,7 @@ void PKJK::compute_JK()
                         double K_pq = 0.0;
                         double *K_rs = K_vector;
                         for (size_t rs = 0; rs <= pq; ++rs) {
+//                            outfile->Printf("PK int (%lu|%lu) = %20.16f\n", pq, rs, *k_ptr);
                             K_pq  += *k_ptr * (*D_rs);
                             *K_rs += *k_ptr * D_pq;
                             ++D_rs;
@@ -679,6 +823,7 @@ void PKJK::compute_JK()
             delete[] label;
             delete[] k_block;
         }
+//        throw PSIEXCEPTION("Reading K blocks\n");
     }
 
     for(size_t N = 0; N < K_.size(); ++N){
@@ -788,6 +933,7 @@ void PKJK::compute_JK()
 }
 
 
+//TODO: We may not need this anymore.
 void PKJK::postiterations()
 {
     delete[] so2symblk_;
