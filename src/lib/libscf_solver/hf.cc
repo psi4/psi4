@@ -404,7 +404,47 @@ int HF::soscf_update()
                        "type of SCF wavefunction yet.");
     return 0;
 }
+void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x)
+{
+    // => Rotate orbitals <= //
+    SharedMatrix tmp(new Matrix("Ck", nirrep_, nsopi_, nsopi_));
 
+    // Form full antisymmetric matrix
+    for (size_t h=0; h<nirrep_; h++){
+
+        if (!nsopi_[h] || !doccpi_[h] || !x->colspi()[h]) continue;
+        double** tp = tmp->pointer(h);
+        double*  xp = x->pointer(h)[0];
+        size_t doccpih = (size_t)x->rowspi()[h];
+
+        // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
+        for (size_t i=0, target=0; i<doccpih; i++){
+            for (size_t a=doccpih; a < nsopi_[h]; a++){
+                tp[a][i] = xp[target];
+                tp[i][a] = -1.0 * xp[target++];
+            }
+        }
+    }
+
+    // Build exp(U) = 1 + U + 0.5 U U
+    SharedMatrix U = tmp->clone();
+    for (size_t h=0; h<nirrep_; h++){
+        double** Up = U->pointer(h);
+        for (size_t i=0; i<U->rowspi()[h]; i++){
+            Up[i][i] += 1.0;
+        }
+    }
+    U->gemm(false, false, 0.5, tmp, tmp, 1.0);
+
+    // We did not fully exponentiate the matrix, need to orthogonalize
+    // We need QR here, shmidt isnt cutting it
+    U->schmidt();
+    tmp->gemm(false, false, 1.0, C, U, 0.0);
+    C->copy(tmp);
+
+    U.reset();
+    tmp.reset();
+}
 void HF::integrals()
 {
     if (print_ )
