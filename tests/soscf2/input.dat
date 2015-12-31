@@ -1,0 +1,56 @@
+#### UHF Oxygen energy, triplet
+molecule mol {
+    0 3
+    O
+    O 1 1.2
+}
+
+# DF case
+set {
+    basis cc-pVDZ
+    guess sad
+    soscf true
+    scf_type df
+    reference uhf
+}
+
+df_uhf_energy = energy('HF')
+df_triplet_energy = -149.6286212486618865
+compare_values(df_triplet_energy, df_uhf_energy, 6, 'DF-UHF Energy')
+
+# Non-DF case
+set {
+    scf_type out_of_core
+}
+
+uhf_energy = energy('HF')
+triplet_energy = -149.6289923133230104
+compare_values(triplet_energy, uhf_energy, 6, 'UHF Energy')
+
+
+
+#### RHF Oxygen energy, singlet
+molecule mol {
+    0 1
+    O
+    O 1 1.2
+}
+
+# DF case
+set {
+    scf_type df
+    reference rhf
+}
+
+df_rhf_energy = energy('HF')
+df_singlet_energy = -149.5439580186044850
+compare_values(df_singlet_energy, df_rhf_energy, 6, 'DF-RHF Energy')
+
+# Non-DF case
+set {
+    scf_type out_of_core
+}
+
+uhf_energy = energy('HF')
+singlet_energy = -149.5442147477362198
+compare_values(singlet_energy, uhf_energy, 6, 'RHF Energy')
