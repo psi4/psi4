@@ -448,7 +448,6 @@ void RHF::Hx(SharedMatrix x, SharedMatrix IFock, SharedMatrix Cocc, SharedMatrix
 
     // Cleaup
     R.reset();
-
 }
 
 int RHF::soscf_update()
@@ -480,7 +479,6 @@ int RHF::soscf_update()
     SharedMatrix Gradient = SharedMatrix(new Matrix("Gradient", nirrep_, doccpi_, virpi));
     SharedMatrix Precon = SharedMatrix(new Matrix("Precon", nirrep_, doccpi_, virpi));
 
-    int grad_elements = 0;
     for (size_t h=0; h<nirrep_; h++){
 
         if (!doccpi_[h] || !virpi[h]) continue;
@@ -488,7 +486,6 @@ int RHF::soscf_update()
         double* denomp = Precon->pointer(h)[0];
         double** fp = IFock->pointer(h);
 
-        grad_elements += doccpi_[h] * nsopi_[h];
         for (size_t i=0, target=0; i<doccpi_[h]; i++){
             for (size_t a=doccpi_[h]; a < nsopi_[h]; a++){
                 gp[target] = -4.0 * fp[i][a];
@@ -508,8 +505,11 @@ int RHF::soscf_update()
     r->subtract(Ap);
 
     // Print iteration 0 timings and rms
-    double rconv = r->rms();
-    double grad_rms = Gradient->rms() * (double)grad_elements;
+    double rconv = r->sum_of_squares();
+    double grad_rms = Gradient->sum_of_squares();
+    if (grad_rms < 1.e-14){
+        grad_rms = 1.e-14; // Prevent rel denom from being too small
+    }
     double rms = sqrt(rconv / grad_rms);
     stop = time(NULL);
     if (soscf_print_){
@@ -540,7 +540,7 @@ int RHF::soscf_update()
         r->axpy(-alpha, Ap);
 
         // Get residual
-        double rconv = r->rms();
+        double rconv = r->sum_of_squares();
         double rms = sqrt(rconv / grad_rms);
         stop = time(NULL);
         if (soscf_print_){
