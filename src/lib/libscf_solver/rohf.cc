@@ -461,14 +461,14 @@ double ROHF::compute_initial_E()
     return 0.5 * (compute_E() + nuclearrep_);
 }
 
-double ROHF::compute_E() 
+double ROHF::compute_E()
 {
     double one_electron_E = Da_->vector_dot(H_) + Db_->vector_dot(H_);;
-    double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);   
- 
+    double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);
+
     energies_["Nuclear"] = nuclearrep_;
     energies_["One-Electron"] = one_electron_E;
-    energies_["Two-Electron"] = two_electron_E; 
+    energies_["Two-Electron"] = two_electron_E;
     energies_["XC"] = 0.0;
     energies_["-D"] = 0.0;
 
@@ -485,21 +485,33 @@ double ROHF::compute_E()
 void ROHF::form_G()
 {
 
-      std::vector<SharedMatrix> & C = jk_->C_left();
-      C.clear();
-      C.push_back(Ca_subset("SO", "OCC"));
-      C.push_back(Cb_subset("SO", "OCC"));
-    
-      // Run the JK object
-      jk_->compute();
+    std::vector<SharedMatrix> & C = jk_->C_left();
+    C.clear();
+    Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
 
-      // Pull the J and K matrices off
-      const std::vector<SharedMatrix> & J = jk_->J();
-      const std::vector<SharedMatrix> & K = jk_->K();
-      Ga_->copy(J[0]);
-      Ga_->add(J[1]);
-      Ka_ = K[0];
-      Kb_ = K[1];
+    // Push back the docc orbitals
+    View vCdocc(Ca_, nsopi_, doccpi_);
+    SharedMatrix Cdocc = vCdocc();
+    C.push_back(Cdocc);
+
+    // Push back the socc orbitals
+    View vCsocc(Ca_, nsopi_, soccpi_, dim_zero, doccpi_);
+    SharedMatrix Csocc = vCsocc();
+    C.push_back(Csocc);
+
+    // Run the JK object
+    jk_->compute();
+
+    // Pull the J and K matrices off
+    const std::vector<SharedMatrix> & J = jk_->J();
+    const std::vector<SharedMatrix> & K = jk_->K();
+    Ga_->copy(J[0]);
+    Ga_->scale(2.0);
+    Ga_->add(J[1]);
+
+    Ka_->copy(K[0]);
+    Ka_->add(K[1]);
+    Kb_ = K[0];
 
     Gb_->copy(Ga_);
     Ga_->subtract(Ka_);
