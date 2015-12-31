@@ -1,4 +1,4 @@
-# Benzene
+# Second-order SCF convergnece: Benzene
 molecule mol {
 C    1.39410    0.00000   0.00000
 C    0.69705   -1.20732   0.00000
@@ -14,9 +14,6 @@ H   -1.23809    2.14444   0.00000
 H    1.23809    2.14444   0.00000
 }
 
-
-reference_energy = -230.72173960633896
-
 set {
 basis cc-pVDZ
 guess sad
@@ -24,7 +21,7 @@ soscf true
 scf_type df
 }
 
-
 rhf_energy = energy('HF')
 
-compare_values(-230.72173960646708, rhf_energy, 6, 'RHF Energy')
+reference_energy = -230.72173960646708
+compare_values(reference_energy, rhf_energy, 6, 'RHF Energy')

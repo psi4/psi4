@@ -369,10 +369,6 @@ void HF::common_init()
     soscf_max_iter_ = options_.get_int("SOSCF_MAX_ITER");
     soscf_conv_ = options_.get_double("SOSCF_CONV");
     soscf_print_ = options_.get_bool("SOSCF_PRINT");
-    if (soscf_conv_ == 0.0) {
-        soscf_conv_ = energy_threshold_;
-    }
-
 
     // MOM convergence acceleration
     MOM_enabled_ = (options_.get_int("MOM_START") != 0);
@@ -409,17 +405,23 @@ void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x)
     // => Rotate orbitals <= //
     SharedMatrix tmp(new Matrix("Ck", nirrep_, nsopi_, nsopi_));
 
+    // We guess occ x vir block size by the size of x to make this method easy to use
+    Dimension tsize = x->colspi() + x->rowspi();
+    if (tsize != nmopi_){
+        throw PSIEXCEPTION("HF::rotate_orbitals: x dimension do not match nmo_ dimension.");
+    }
+
     // Form full antisymmetric matrix
     for (size_t h=0; h<nirrep_; h++){
 
-        if (!nsopi_[h] || !doccpi_[h] || !x->colspi()[h]) continue;
+        size_t doccpih = (size_t)x->rowspi()[h];
+        if (!doccpih || !x->colspi()[h]) continue;
         double** tp = tmp->pointer(h);
         double*  xp = x->pointer(h)[0];
-        size_t doccpih = (size_t)x->rowspi()[h];
 
         // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
         for (size_t i=0, target=0; i<doccpih; i++){
-            for (size_t a=doccpih; a < nsopi_[h]; a++){
+            for (size_t a=doccpih; a < nmopi_[h]; a++){
                 tp[a][i] = xp[target];
                 tp[i][a] = -1.0 * xp[target++];
             }
@@ -1987,7 +1989,11 @@ void HF::iterations()
                 status += psi::to_string(nmicro);
             }
             else{
+                // We need to ensure orthogonal orbitals and set epsilon
                 status += "SOSCF, conv";
+                timer_on("HF: Form C");
+                form_C();
+                timer_off("HF: Form C");
             }
         }
         else{ // Normal convergence procedures if we do not do SOSCF
@@ -2079,13 +2085,6 @@ void HF::iterations()
             options_.set_str("SCF","SCF_TYPE",old_scf_type_);
             old_scf_type_ = "DF";
             integrals();
-        }
-
-        // If we are doing SOSCF, we need to ensure orthogonal orbitals and set epsilon
-        if (converged_ && soscf_enabled_){
-            timer_on("HF: Form C");
-            form_C();
-            timer_off("HF: Form C");
         }
 
         // Call any postiteration callbacks
