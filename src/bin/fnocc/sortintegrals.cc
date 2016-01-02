@@ -24,6 +24,7 @@
 #include<psifiles.h>
 #include<libiwl/iwl.h>
 #include <libpsio/psio.hpp>
+#include<libqt/qt.h>
 
 #include"ccsd.h"
 #include"blas.h"
@@ -660,13 +661,13 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
       psio->read(PSIF_DCC_ABCI3,"E2abci3",(char*)&tmp[0],binsize*sizeof(double),abci3_addr[0],&abci3_addr[0]);
       psio->read(PSIF_DCC_ABCI2,"E2abci2",(char*)&tmp2[0],binsize*sizeof(double),abci5_addr[0],&abci5_addr[0]);
       psio->write(PSIF_DCC_ABCI5,"E2abci5",(char*)&tmp2[0],binsize*sizeof(double),abci5a_addr,&abci5a_addr);
-      F_DAXPY(binsize,-2.0,tmp,1,tmp2,1);
+      C_DAXPY(binsize,-2.0,tmp,1,tmp2,1);
       psio->write(PSIF_DCC_ABCI2,"E2abci2",(char*)&tmp2[0],binsize*sizeof(double),abci2_addr,&abci2_addr);
   }
   psio->read(PSIF_DCC_ABCI3,"E2abci3",(char*)&tmp[0],lastbin*sizeof(double),abci3_addr[0],&abci3_addr[0]);
   psio->read(PSIF_DCC_ABCI2,"E2abci2",(char*)&tmp2[0],lastbin*sizeof(double),abci5_addr[0],&abci5_addr[0]);
   psio->write(PSIF_DCC_ABCI5,"E2abci5",(char*)&tmp2[0],lastbin*sizeof(double),abci5a_addr,&abci5a_addr);
-  F_DAXPY(lastbin,-2.0,tmp,1,tmp2,1);
+  C_DAXPY(lastbin,-2.0,tmp,1,tmp2,1);
   psio->write(PSIF_DCC_ABCI2,"E2abci2",(char*)&tmp2[0],lastbin*sizeof(double),abci2_addr,&abci2_addr);
   psio->close(PSIF_DCC_ABCI2,1);
   psio->close(PSIF_DCC_ABCI3,1);
@@ -693,18 +694,18 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   for (ULI i=0; i<nbins-1; i++){
       psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_addr[0],&abcd1_addr[0]);
       psio->read(PSIF_DCC_ABCD2,"E2abcd2",(char*)&tmp2[0],binsize*sizeof(double),abcd2_addr[0],&abcd2_addr[0]);
-      F_DAXPY(binsize,-1.0,tmp2,1,tmp,1);
+      C_DAXPY(binsize,-1.0,tmp2,1,tmp,1);
       psio->write(PSIF_DCC_ABCD2,"E2abcd2",(char*)&tmp[0],binsize*sizeof(double),abcd2_new,&abcd2_new);
       psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_again,&abcd1_again);
-      F_DAXPY(binsize,1.0,tmp2,1,tmp,1);
+      C_DAXPY(binsize,1.0,tmp2,1,tmp,1);
       psio->write(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_new,&abcd1_new);
   }
   psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_addr[0],&abcd1_addr[0]);
   psio->read(PSIF_DCC_ABCD2,"E2abcd2",(char*)&tmp2[0],lastbin*sizeof(double),abcd2_addr[0],&abcd2_addr[0]);
-  F_DAXPY(lastbin,-1.0,tmp2,1,tmp,1);
+  C_DAXPY(lastbin,-1.0,tmp2,1,tmp,1);
   psio->write(PSIF_DCC_ABCD2,"E2abcd2",(char*)&tmp[0],lastbin*sizeof(double),abcd2_new,&abcd2_new);
   psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_again,&abcd1_again);
-  F_DAXPY(lastbin,1.0,tmp2,1,tmp,1);
+  C_DAXPY(lastbin,1.0,tmp2,1,tmp,1);
   psio->write(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_new,&abcd1_new);
   psio->close(PSIF_DCC_ABCD1,1);
   psio->close(PSIF_DCC_ABCD2,1);
@@ -2244,13 +2245,13 @@ void Sort_OV3_LowMemory(long int memory, long int o,long int v,bool islocal){
   for (ULI i=0; i<nbins-1; i++){
       psio->read(PSIF_DCC_ABCI3,"E2abci3",(char*)&tmp[0],binsize*sizeof(double),abci3_addr,&abci3_addr);
       psio->read(PSIF_DCC_ABCI2,"E2abci2",(char*)&tmp2[0],binsize*sizeof(double),abci5_addr,&abci5_addr);
-      F_DAXPY(binsize,2.0,tmp,1,tmp2,1);
+      C_DAXPY(binsize,2.0,tmp,1,tmp2,1);
       // this is for the local triples
       psio->write(PSIF_DCC_ABCI4,"E2abci4",(char*)&tmp2[0],binsize*sizeof(double),abci4_addr,&abci4_addr);
   }
   psio->read(PSIF_DCC_ABCI3,"E2abci3",(char*)&tmp[0],lastbin*sizeof(double),abci3_addr,&abci3_addr);
   psio->read(PSIF_DCC_ABCI2,"E2abci2",(char*)&tmp2[0],lastbin*sizeof(double),abci5_addr,&abci5_addr);
-  F_DAXPY(lastbin,2.0,tmp,1,tmp2,1);
+  C_DAXPY(lastbin,2.0,tmp,1,tmp2,1);
   psio->write(PSIF_DCC_ABCI4,"E2abci4",(char*)&tmp2[0],lastbin*sizeof(double),abci4_addr,&abci4_addr);
   psio->close(PSIF_DCC_ABCI2,0);
   psio->close(PSIF_DCC_ABCI3,1);

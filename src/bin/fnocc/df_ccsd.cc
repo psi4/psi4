@@ -172,10 +172,10 @@ double DFCoupledCluster::compute_energy() {
 
       // write (oo|ov) integrals, formerly E2ijak, for (t)
       F_DGEMM('n','t',o*o,o*v,nQ,1.0,Qoo,o*o,Qov,o*v,0.0,temp1,o*o);
-      for (int i=0; i<o; i++){
-          for (int j=0; j<o; j++){
-              for (int k=0; k<o; k++){
-                  for (int a=0; a<v; a++){
+      for (long int i=0; i<o; i++){
+          for (long int j=0; j<o; j++){
+              for (long int k=0; k<o; k++){
+                  for (long int a=0; a<v; a++){
                       temp2[j*o*o*v+i*o*v+k*v+a] = temp1[i*o*o*v+a*o*o+j*o+k];
                   }
               }
@@ -344,6 +344,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       if (timer) start = omp_get_wtime();
       T1Fock();
       T1Integrals();
+
       if (timer) {
           outfile->Printf("        T1-transformed integrals                                        %6.2lf\n",omp_get_wtime() - start);
           outfile->Printf("\n");
@@ -412,10 +413,10 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
   boost::shared_ptr<Matrix>eigvec (new Matrix(o,o));
   boost::shared_ptr<Vector>eigval (new Vector(o));
   double ** Tp = T->pointer();
-  for (int i = 0; i < o; i++) {
-      for (int j = 0; j < o; j++) {
+  for (long int i = 0; i < o; i++) {
+      for (long int j = 0; j < o; j++) {
           double dum = 0.0;
-          for (int a = 0; a < v; a++) {
+          for (long int a = 0; a < v; a++) {
               dum += t1[a*o+i] * t1[a*o+j];
           }
           Tp[i][j] = dum;
@@ -495,7 +496,6 @@ double DFCoupledCluster::CheckEnergy(){
 
     long int v  = nvirt;
     long int o  = ndoccact;
-    long int rs = nmo;
   
     // df (ia|bj) formerly E2klcd
     F_DGEMM('n','t',o*v,o*v,nQ,1.0,Qov,o*v,Qov,o*v,0.0,integrals,o*v);
@@ -508,14 +508,14 @@ double DFCoupledCluster::CheckEnergy(){
         tb = tempv;
     }
     double energy = 0.0;
-    for (long int a=o; a<rs; a++){
-        for (long int b=o; b<rs; b++){
-            for (long int i=0; i<o; i++){
-                for (long int j=0; j<o; j++){
-                    long int ijab = (a-o)*v*o*o+(b-o)*o*o+i*o+j;
-                    long int iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
-                    long int jaib = iajb + (i-j)*v*(1-v*o);
-                    energy += (2.*integrals[iajb]-integrals[jaib])*(tb[ijab]+t1[(a-o)*o+i]*t1[(b-o)*o+j]);
+    for (long int a = 0; a < v; a++){
+        for (long int b = 0; b < v; b++){
+            for (long int i = 0; i < o; i++){
+                for (long int j = 0; j < o; j++){
+                    long int ijab = a*v*o*o + b*o*o + i*o + j;
+                    long int iajb = i*v*v*o + a*v*o + j*v + b;
+                    long int jaib = j*v*v*o + a*v*o + i*v + b;
+                    energy += (2.0*integrals[iajb]-integrals[jaib])*(tb[ijab]+t1[a*o+i]*t1[b*o+j]);
                 }
             }
         }
@@ -747,14 +747,13 @@ void DFCoupledCluster::UpdateT1(){
   }
   // error vector for diis is in tempv:
   C_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
-  F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
+  C_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
   C_DCOPY(o*v,w1,1,t1,1);
 }
 void DFCoupledCluster::UpdateT2(){
 
   long int v = nvirt;
   long int o = ndoccact;
-  long int rs = nmo;
 
   boost::shared_ptr<PSIO> psio(new PSIO());
 
@@ -770,37 +769,38 @@ void DFCoupledCluster::UpdateT2(){
   psio->close(PSIF_DCC_R2,1);
  
   #pragma omp parallel for schedule (static)
-  for (long int a=o; a<rs; a++){
-      double da = eps[a];
-      for (long int b=o; b<rs; b++){
-          double dab = da + eps[b];
-          for (long int i=0; i<o; i++){
+  for (long int a = 0; a < v; a++){
+      double da = eps[a+o];
+      for (long int b = 0; b < v; b++){
+          double dab = da + eps[b+o];
+          for (long int i = 0; i < o; i++){
               double dabi = dab - eps[i];
-              for (long int j=0; j<o; j++){
+              for (long int j = 0; j < o; j++){
 
-                  long int iajb = (a-o)*v*o*o+i*v*o+(b-o)*o+j;
-                  long int jaib = iajb + (i-j)*v*(1-v*o);
-                  long int ijab = (a-o)*v*o*o+(b-o)*o*o+i*o+j;
+                  long int iajb = a*v*o*o + i*v*o + b*o + j;
+                  long int ijab = a*v*o*o + b*o*o + i*o + j;
 
                   double dijab = dabi-eps[j];
+
                   double tnew  = - (integrals[iajb] + tempv[ijab])/dijab;
                   tempt[ijab]  = tnew;
               }
           }
       }
   }
-    // error vector is just dt
-    C_DCOPY(o*o*v*v,tempt,1,tempv,1);
+  // error vector is just dt
+  C_DCOPY(o*o*v*v,tempt,1,tempv,1);
 
-    if (t2_on_disk){
-        psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-        psio->read_entry(PSIF_DCC_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
-        F_DAXPY(o*o*v*v,1.0,tempt,1,integrals,1);
-        psio->write_entry(PSIF_DCC_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
-        psio->close(PSIF_DCC_T2,1);
-    }else {
-        F_DAXPY(o*o*v*v,1.0,tempt,1,tb,1);
-    }
+  if (t2_on_disk){
+      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+      psio->read_entry(PSIF_DCC_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
+      C_DAXPY(o*o*v*v,1.0,tempt,1,integrals,1);
+      psio->write_entry(PSIF_DCC_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
+      psio->close(PSIF_DCC_T2,1);
+  }else {
+      C_DAXPY(o*o*v*v,1.0,tempt,1,tb,1);
+  }
+
 }
 
 /**

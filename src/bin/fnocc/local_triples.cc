@@ -243,7 +243,7 @@ PsiReturnType CoupledCluster::local_triples() {
          F_DGEMM('t','n',o*o,o,o,-1.0,E2ijak+c*o*o*o,o,tempt+b*o*o*v+a*o*o,o,1.0,Z2[thread],o*o);
          for (int i=0; i<o; i++){
              for (int j=0; j<o; j++){
-                 F_DAXPY(o,1.0,Z2[thread]+j*o*o+i*o,1,Z[thread]+i*o*o+j*o,1);
+                 C_DAXPY(o,1.0,Z2[thread]+j*o*o+i*o,1,Z[thread]+i*o*o+j*o,1);
              }
          }
 
@@ -255,7 +255,7 @@ PsiReturnType CoupledCluster::local_triples() {
          F_DGEMM('t','n',o*o,o,o,-1.0,E2ijak+b*o*o*o,o,tempt+a*o*o*v+c*o*o,o,1.0,Z2[thread],o*o);
          for (int i=0; i<o; i++){
              for (int j=0; j<o; j++){
-                 F_DAXPY(o,1.0,Z2[thread]+i*o*o+j,o,Z[thread]+i*o*o+j*o,1);
+                 C_DAXPY(o,1.0,Z2[thread]+i*o*o+j,o,Z[thread]+i*o*o+j*o,1);
              }
          }
          addr = psio_get_address(PSIO_ZERO,(long int)(b*v*v*o+a*v*o)*sizeof(double));
