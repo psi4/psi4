@@ -69,20 +69,20 @@ void DFCoupledCluster::T1Fock(){
     }
 
     #pragma omp parallel for schedule (static)
-    for (int mu = 0; mu < nso; mu++) {
-        for (int a = 0; a < v; a++) {
+    for (long int mu = 0; mu < nso; mu++) {
+        for (long int a = 0; a < v; a++) {
             double dum = 0.0;
-            for (int i = 0; i < o; i++) {
+            for (long int i = 0; i < o; i++) {
                 dum += Catemp[mu*full+i+nfzc] * t1[a*o+i];
             }
             Ca_L[mu*full + a + ndocc] -= dum;
         }
     }
     #pragma omp parallel for schedule (static)
-    for (int mu = 0; mu < nso; mu++) {
-        for (int i = 0; i < o; i++) {
+    for (long int mu = 0; mu < nso; mu++) {
+        for (long int i = 0; i < o; i++) {
             double dum = 0.0;
-            for (int a = 0; a < v; a++) {
+            for (long int a = 0; a < v; a++) {
                 dum += Catemp[mu*full+a+ndocc] * t1[a*o+i];
             }
             Ca_R[mu*full + i + nfzc] += dum;
@@ -110,13 +110,13 @@ void DFCoupledCluster::T1Fock(){
     }
     long int lastrowsize = nQ_scf - (nrows - 1L) * rowsize;
     long int * rowdims = new long int [nrows];
-    for (int i = 0; i < nrows-1; i++) rowdims[i] = rowsize;
+    for (long int i = 0; i < nrows-1; i++) rowdims[i] = rowsize;
     rowdims[nrows-1] = lastrowsize;
-    for (int row = 0; row < nrows; row++) {
+    for (long int row = 0; row < nrows; row++) {
         psio->read(PSIF_DCC_QSO,"Qso SCF",(char*)&integrals[0],rowdims[row]*nso*nso*sizeof(double),addr1,&addr1);
         F_DGEMM('n','n',full,nso*rowdims[row],nso,1.0,Ca_L,full,integrals,nso,0.0,tempv,full);
-        for (int q = 0; q < rowdims[row]; q++) {
-            for (int mu = 0; mu < nso; mu++) {
+        for (long int q = 0; q < rowdims[row]; q++) {
+            for (long int mu = 0; mu < nso; mu++) {
                 C_DCOPY(full,tempv+q*nso*full+mu*full,1,integrals+q*nso*full+mu,nso);
             }
         }
@@ -135,19 +135,19 @@ void DFCoupledCluster::T1Fock(){
     // transform H
     double ** hp = H->pointer();
     double * h = (double*)malloc(nmo*nmo*sizeof(double));
-    for (int mu = 0; mu < nso; mu++) {
-        for (int p = 0; p < nmo; p++) {
+    for (long int mu = 0; mu < nso; mu++) {
+        for (long int p = 0; p < nmo; p++) {
             double dum = 0.0;
-            for (int nu = 0; nu < nso; nu++) {
+            for (long int nu = 0; nu < nso; nu++) {
                 dum += Ca_L[nu*full + p + nfzc] * hp[nu][mu];
             }
             integrals[p*nso+mu] = dum;
         }
     }
-    for (int p = 0; p < nmo; p++) {
-        for (int q = 0; q < nmo; q++) {
+    for (long int p = 0; p < nmo; p++) {
+        for (long int q = 0; q < nmo; q++) {
             double dum = 0.0;
-            for (int nu = 0; nu < nso; nu++) {
+            for (long int nu = 0; nu < nso; nu++) {
                 dum += Ca_R[nu*full+q+nfzc] * integrals[p*nso+nu];
             }
             h[p*nmo+q] = dum;
@@ -169,58 +169,58 @@ void DFCoupledCluster::T1Fock(){
     }
     lastrowsize = nQ_scf - (nrows - 1L) * rowsize;
     rowdims = new long int [nrows];
-    for (int i = 0; i < nrows-1; i++) rowdims[i] = rowsize;
+    for (long int i = 0; i < nrows-1; i++) rowdims[i] = rowsize;
     rowdims[nrows-1] = lastrowsize;
-    for (int row = 0; row < nrows; row++) {
+    for (long int row = 0; row < nrows; row++) {
         psio->read(PSIF_DCC_QSO,"Qmo SCF",(char*)&integrals[0],rowdims[row]*full*full*sizeof(double),addr,&addr);
-        for (int q = 0; q < rowdims[row]; q++) {
+        for (long int q = 0; q < rowdims[row]; q++) {
             // sum k (q|rk) (q|ks)
             F_DGEMM('n','n',full,full,ndocc,-1.0,integrals+q*full*full,full,integrals+q*full*full,full,1.0,temp3,full);
 
             // sum k (q|kk) (q|rs)
             double dum = 0.0;
-            for (int k = 0; k < ndocc; k++) {
+            for (long int k = 0; k < ndocc; k++) {
                 dum += integrals[q*full*full+k*full + k];
             }
-            F_DAXPY(full*full,2.0 * dum,integrals+q*full*full,1,temp3,1);
+            C_DAXPY(full*full,2.0 * dum,integrals+q*full*full,1,temp3,1);
         }
     }
     delete[] rowdims;
     psio->close(PSIF_DCC_QSO,1);
 
     // Fij
-    for (int i = 0; i < o; i++) {
-        for (int j = 0; j < o; j++) {
+    for (long int i = 0; i < o; i++) {
+        for (long int j = 0; j < o; j++) {
             Fij[i*o+j] = h[i*nmo+j] + temp3[(i+nfzc)*full+(j+nfzc)];
         }
     }
 
     // Fia
-    for (int i = 0; i < o; i++) {
-        for (int a = 0; a < v; a++) {
+    for (long int i = 0; i < o; i++) {
+        for (long int a = 0; a < v; a++) {
             Fia[i*v+a] = h[i*nmo+a+o] + temp3[(i+nfzc)*full+(a+ndocc)];
         }
     }
 
     // Fai
-    for (int a = 0; a < v; a++) {
-        for (int i = 0; i < o; i++) {
+    for (long int a = 0; a < v; a++) {
+        for (long int i = 0; i < o; i++) {
             Fai[a*o+i] = h[(a+o)*nmo+i] + temp3[(a+ndocc)*full+(i+nfzc)];
         }
     }
 
     // Fab
-    for (int a = 0; a < v; a++) {
-        for (int b = 0; b < v; b++) {
+    for (long int a = 0; a < v; a++) {
+        for (long int b = 0; b < v; b++) {
             Fab[a*v+b] = h[(a+o)*nmo+b+o] + temp3[(a+ndocc)*full+(b+ndocc)];
         }
     }
 
     // replace eps
-    for (int i = 0; i < o; i++) {
+    for (long int i = 0; i < o; i++) {
         eps[i] = Fij[i*o+i];
     }
-    for (int a = 0; a < v; a++) {
+    for (long int a = 0; a < v; a++) {
         eps[a+o] = Fab[a*v+a];
     }
 
@@ -250,20 +250,20 @@ void DFCoupledCluster::T1Integrals(){
     }
 
     #pragma omp parallel for schedule (static)
-    for (int mu = 0; mu < nso; mu++) {
-        for (int a = 0; a < v; a++) {
+    for (long int mu = 0; mu < nso; mu++) {
+        for (long int a = 0; a < v; a++) {
             double dum = 0.0;
-            for (int i = 0; i < o; i++) {
+            for (long int i = 0; i < o; i++) {
                 dum += Catemp[mu*full+i+nfzc] * t1[a*o+i];
             }
             Ca_L[mu*full + a + ndocc] -= dum;
         }
     }
     #pragma omp parallel for schedule (static)
-    for (int mu = 0; mu < nso; mu++) {
-        for (int i = 0; i < o; i++) {
+    for (long int mu = 0; mu < nso; mu++) {
+        for (long int i = 0; i < o; i++) {
             double dum = 0.0;
-            for (int a = 0; a < v; a++) {
+            for (long int a = 0; a < v; a++) {
                 dum += Catemp[mu*full+a+ndocc] * t1[a*o+i];
             }
             Ca_R[mu*full + i + nfzc] += dum;
@@ -286,13 +286,13 @@ void DFCoupledCluster::T1Integrals(){
     }
     long int lastrowsize = nQ - (nrows - 1L) * rowsize;
     long int * rowdims = new long int [nrows];
-    for (int i = 0; i < nrows-1; i++) rowdims[i] = rowsize;
+    for (long int i = 0; i < nrows-1; i++) rowdims[i] = rowsize;
     rowdims[nrows-1] = lastrowsize;
-    for (int row = 0; row < nrows; row++) {
+    for (long int row = 0; row < nrows; row++) {
         psio->read(PSIF_DCC_QSO,"Qso CC",(char*)&integrals[0],rowdims[row]*nso*nso*sizeof(double),addr1,&addr1);
         F_DGEMM('n','n',full,nso*rowdims[row],nso,1.0,Ca_L,full,integrals,nso,0.0,tempv,full);
-        for (int q = 0; q < rowdims[row]; q++) {
-            for (int mu = 0; mu < nso; mu++) {
+        for (long int q = 0; q < rowdims[row]; q++) {
+            for (long int mu = 0; mu < nso; mu++) {
                 C_DCOPY(full,tempv+q*nso*full+mu*full,1,integrals+q*nso*full+mu,nso);
             }
         }
@@ -300,27 +300,27 @@ void DFCoupledCluster::T1Integrals(){
 
         // Qoo
         #pragma omp parallel for schedule (static)
-        for (int q = 0; q < rowdims[row]; q++) {
-            for (int i = 0; i < o; i++) {
-                for (int j = 0; j < o; j++) {
+        for (long int q = 0; q < rowdims[row]; q++) {
+            for (long int i = 0; i < o; i++) {
+                for (long int j = 0; j < o; j++) {
                     Qoo[(q+rowdims[0]*row)*o*o+i*o+j] = tempv[q*full*full+(i+nfzc)*full+(j+nfzc)];
                 }
             }
         }
         // Qov
         #pragma omp parallel for schedule (static)
-        for (int q = 0; q < rowdims[row]; q++) {
-            for (int i = 0; i < o; i++) {
-                for (int a = 0; a < v; a++) {
+        for (long int q = 0; q < rowdims[row]; q++) {
+            for (long int i = 0; i < o; i++) {
+                for (long int a = 0; a < v; a++) {
                     Qov[(q+rowdims[0]*row)*o*v+i*v+a] = tempv[q*full*full+(i+nfzc)*full+(a+ndocc)];
                 }
             }
         }
         // Qvo
         #pragma omp parallel for schedule (static)
-        for (int q = 0; q < rowdims[row]; q++) {
-            for (int a = 0; a < v; a++) {
-                for (int i = 0; i < o; i++) {
+        for (long int q = 0; q < rowdims[row]; q++) {
+            for (long int a = 0; a < v; a++) {
+                for (long int i = 0; i < o; i++) {
                     integrals[q*o*v+a*o+i] = tempv[q*full*full+(a+ndocc)*full+(i+nfzc)];
                 }
             }
@@ -328,9 +328,9 @@ void DFCoupledCluster::T1Integrals(){
         psio->write(PSIF_DCC_QSO,"qvo",(char*)&integrals[0],rowdims[row]*o*v*sizeof(double),addrvo,&addrvo);
         // Qvv
         #pragma omp parallel for schedule (static)
-        for (int q = 0; q < rowdims[row]; q++) {
-            for (int a = 0; a < v; a++) {
-                for (int b = 0; b < v; b++) {
+        for (long int q = 0; q < rowdims[row]; q++) {
+            for (long int a = 0; a < v; a++) {
+                for (long int b = 0; b < v; b++) {
                     Qvv[(q+rowdims[0]*row)*v*v+a*v+b] = tempv[q*full*full+(a+ndocc)*full+(b+ndocc)];
                 }
             }
