@@ -105,5 +105,20 @@ int DPD::buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, int pqnum, int rsnum,
     return 0;
 }
 
+// Wrapper for the main buf4_init() using strings rather than pair numbers
+int DPD::buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, string pq, string rs,
+                   string file_pq, string file_rs, int anti, const char *label)
+{
+  return buf4_init(Buf, inputfile, irrep, pairnum(pq), pairnum(rs), 
+                   pairnum(file_pq), pairnum(file_rs), anti, label);
+}
+
+// Wrapper for the main buf4_init() using strings rather than pair numbers and assuming the buf4 and file4 pairs are
+// identical (common case)
+int DPD::buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, string pq, string rs, int anti, const char *label)
+{
+  return buf4_init(Buf, inputfile, irrep, pairnum(pq), pairnum(rs), pairnum(pq), pairnum(rs), anti, label);
+}
+
 }
 

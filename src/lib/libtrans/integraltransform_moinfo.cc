@@ -183,7 +183,7 @@ IntegralTransform::process_spaces()
             int numAVir = 0, aVirCount = 0;
             for(int h = 0; h < nirreps_; ++h){
                 if(transformationType_ == Restricted){
-                    aOrbsPI[h] = mopi_[h] - nalphapi_[h] - frzvpi_[h];
+                    aOrbsPI[h] = mopi_[h] - nbetapi_[h] - frzvpi_[h]; // TDC -- keep soccs
                 }else{
                     aOrbsPI[h] = mopi_[h] - nalphapi_[h] - frzvpi_[h];
                 }
