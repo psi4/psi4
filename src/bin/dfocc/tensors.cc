@@ -2022,8 +2022,19 @@ void Tensor2d::write_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno
 void Tensor2d::write_anti_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
 {
         // Form Lower triangular part
-        int ntri_row = 0.5 * d1_ * (d1_ - 1);
-        int ntri_col = 0.5 * d3_ * (d3_ - 1);
+	int ntri_row, ntri_col;
+	if (dim1_ > 1) {
+            ntri_row = 0.5 * d1_ * (d1_ - 1);
+	}
+	else if (dim1_ == 1) {
+            ntri_row = 1;
+	}
+	if (dim2_ > 1) {
+            ntri_col = 0.5 * d3_ * (d3_ - 1);
+	}
+	else if (dim2_ == 1) {
+            ntri_col = 1;
+	}
         SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", ntri_row, ntri_col));
         #pragma omp parallel for
         for (int p = 1; p < d1_; p++) {
@@ -2167,8 +2178,21 @@ void Tensor2d::read_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
 void Tensor2d::read_anti_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
 {
         // Form Lower triangular part
-        int ntri_row = 0.5 * d1_ * (d1_ - 1);
-        int ntri_col = 0.5 * d3_ * (d3_ - 1);
+	int ntri_row, ntri_col;
+	if (dim1_ > 1) {
+            ntri_row = 0.5 * d1_ * (d1_ - 1);
+	}
+	else if (dim1_ == 1) {
+            ntri_row = 1;
+	}
+	if (dim2_ > 1) {
+            ntri_col = 0.5 * d3_ * (d3_ - 1);
+	}
+	else if (dim2_ == 1) {
+            ntri_col = 1;
+	}
+
+	
         SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", ntri_row, ntri_col));
 
         // Check to see if the file is open

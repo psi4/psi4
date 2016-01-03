@@ -41,7 +41,7 @@ outfile->Printf(" ==============================================================
 if (wfn_type_ == "DF-OMP2" && do_cd == "FALSE") outfile->Printf(" ================ Performing DF-OMP2 iterations... ============================ \n");  
 else if (wfn_type_ == "DF-OMP3" && do_cd == "FALSE") outfile->Printf(" ================ Performing DF-OMP3 iterations... ============================ \n");  
 else if (wfn_type_ == "DF-OMP2.5" && do_cd == "FALSE") outfile->Printf(" ================ Performing DF-OMP2.5 iterations... ========================== \n");  
-else if (wfn_type_ == "DF-OLCCD" && do_cd == "FALSE") outfile->Printf(" ================ Performing DF-OCEPA iterations... =========================== \n");  
+else if (wfn_type_ == "DF-OLCCD" && do_cd == "FALSE") outfile->Printf(" ================ Performing DF-OLCCD iterations... =========================== \n");  
 else if (wfn_type_ == "DF-OMP2" && do_cd == "TRUE") outfile->Printf(" ================ Performing CD-OMP2 iterations... ============================ \n");  
 else if (wfn_type_ == "DF-OMP3" && do_cd == "TRUE") outfile->Printf(" ================ Performing CD-OMP3 iterations... ============================ \n");  
 else if (wfn_type_ == "DF-OMP2.5" && do_cd == "TRUE") outfile->Printf(" ================ Performing CD-OMP2.5 iterations... ============================ \n");  
@@ -139,35 +139,49 @@ do
 //==========================================================================================
 //========================= New Amplitudes =================================================
 //==========================================================================================
-     if (wfn_type_ == "DF-OMP2" || wfn_type_ == "CD-OMP2") t2_1st_gen();
+     if (wfn_type_ == "DF-OMP2") t2_1st_gen();
 
-     else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3" || wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") {
+     else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5") {
 	mp3_t2_1st_gen();
         timer_on("T2(2)");
 	t2_2nd_gen();  
         timer_off("T2(2)");
      }
 
+     else if (wfn_type_ == "DF-OLCCD") {
+        timer_on("T2");
+	Fint_zero();
+	lccd_t2_amps();
+        timer_off("T2");
+     }
+
 //==========================================================================================
 //========================= PDMs ===========================================================
 //==========================================================================================
-	if (wfn_type_ == "DF-OMP2"  || wfn_type_ == "CD-OMP2") {
+	if (wfn_type_ == "DF-OMP2") {
 	    omp2_opdm();
 	    omp2_tpdm();
             separable_tpdm();
         }
 
-        else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3" || wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") {
+        else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5") {
 	    mp3_pdm_3index_intr();
 	    omp3_opdm();
 	    omp3_tpdm();
+	    sep_tpdm_cc();
+        }
+
+        else if (wfn_type_ == "DF-OLCCD") {
+	    lccd_pdm_3index_intr();
+	    omp3_opdm();
+	    olccd_tpdm();
 	    sep_tpdm_cc();
         }
         
 //==========================================================================================
 //========================= GFM ============================================================
 //==========================================================================================
-	if (wfn_type_ == "DF-OMP2"  || wfn_type_ == "CD-OMP2") {
+	if (wfn_type_ == "DF-OMP2") {
             gfock_vo();
             gfock_ov();
             gfock_oo();
@@ -185,13 +199,10 @@ do
 //==========================================================================================
 //========================= CCL ============================================================
 //==========================================================================================
-        // reference energy
-        //ref_energy();
+        if (wfn_type_ == "DF-OMP2") mp2l_energy();
+        else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5") mp3l_energy();
+        else if (wfn_type_ == "DF-OLCCD") lccdl_energy();
 
-        if (wfn_type_ == "DF-OMP2" || wfn_type_ == "CD-OMP2") mp2l_energy();
-        else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3" || wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") {
-		 mp3l_energy();
-	}
 
 //==========================================================================================
 //========================= MO Grad ========================================================
@@ -221,13 +232,13 @@ do
 	rms_t2=MAX0(rms_t2,rms_t2AB);
     }
 	
-if(wfn_type_ == "DF-OMP2" || wfn_type_ == "CD-OMP2") {
+if(wfn_type_ == "DF-OMP2") {
 	outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_t2);
 }
-else if(wfn_type_ == "DF-OMP3" || wfn_type_ == "CD-OMP3" || wfn_type_ == "DF-OMP2.5" || wfn_type_ == "CD-OMP2.5") {
+else if(wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5") {
 	outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
 }
-else if(wfn_type_ == "DF-OCEPA") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,EcepaL,DE,rms_wog,biggest_mograd,rms_t2);
+else if(wfn_type_ == "DF-OLCCD") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,ElccdL,DE,rms_wog,biggest_mograd,rms_t2);
 
 
 //==========================================================================================
