@@ -24,31 +24,23 @@
     \ingroup DPD
     \brief Enter brief description of file here
 */
-#include <cstdio>
 #include "dpd.h"
 
 namespace psi {
 
 double DPD::file2_trace(dpdfile2 *InFile)
 {
-    int h, nirreps;
-    int row, col;
-    double trace;
+  file2_mat_init(InFile);
+  file2_mat_rd(InFile);
 
-    nirreps = InFile->params->nirreps;
+  double trace = 0.0;
+  for(int h=0; h < InFile->params->nirreps; h++)
+    for(int row=0; row < InFile->params->rowtot[h]; row++)
+      trace += InFile->matrix[h][row][row];
 
-    file2_mat_init(InFile);
-    file2_mat_rd(InFile);
+  file2_mat_close(InFile);
 
-    trace = 0.0;
-    for(h=0; h < nirreps; h++)
-        for(row=0; row < InFile->params->rowtot[h]; row++)
-            trace += InFile->matrix[h][row][row];
-
-    file2_mat_close(InFile);
-
-    return trace;
+  return trace;
 }
-
 
 }
