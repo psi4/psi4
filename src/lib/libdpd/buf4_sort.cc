@@ -116,7 +116,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
     int Grow, Gcol;
     int out_rows_per_bucket, out_nbuckets, out_rows_left, out_row_start, n;
     int in_rows_per_bucket, in_nbuckets, in_rows_left, in_row_start, m;
-    int rows_per_bucket, nbuckets, rows_left, row_start;
+    int rows_per_bucket, nbuckets, rows_left;
 
     nirreps = InBuf->params->nirreps;
     my_irrep = InBuf->file.my_irrep;
@@ -1969,6 +1969,12 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 #endif
 
     return 0;
+}
+
+int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
+                    string pq, string rs, const char *label)
+{
+  buf4_sort(InBuf, outfilenum, index, pairnum(pq), pairnum(rs), label);
 }
 
 }
