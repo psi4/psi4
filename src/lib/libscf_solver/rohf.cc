@@ -307,7 +307,7 @@ void ROHF::compute_orbital_gradient(bool save_diis)
     SharedMatrix Cav = vCav();
 
     // Back transform MOgradient
-    SharedMatrix gradient = Matrix::triplet(Cia, IFock, Cav, false, false, true);
+    SharedMatrix gradient = Matrix::triplet(Cia, MOgradient, Cav, false, false, true);
     Drms_ = gradient->rms();
 
     if(save_diis){
