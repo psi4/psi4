@@ -1201,25 +1201,25 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("MOM_OCC", new ArrayType());
     /*- The absolute indices of orbitals to excite to in MOM (+/- for alpha/beta) -*/
     options.add("MOM_VIR", new ArrayType());
+    /*- Do use second-order SCF convergence methods? -*/
+    options.add_bool("SOSCF", false);
+    /*- When to start second-order SCF iterations based on energy congergence.-*/
+    options.add_double("SOSCF_E_START", 1.0E-2);
+    /*- When to start second-order SCF iterations based on gradient RMS. -*/
+    options.add_double("SOSCF_R_START", 1.0E-2);
+    /*- Minimum number of second-order microiterations to perform. -*/
+    options.add_int("SOSCF_MIN_ITER", 1);
+    /*- Maximum number of second-order microiterations to perform. -*/
+    options.add_int("SOSCF_MAX_ITER", 4);
+    /*- Secord order convergence threshold. -*/
+    options.add_double("SOSCF_CONV", 5.0E-3);
+    /*- Do we print the SOSCF microiterations?. -*/
+    options.add_bool("SOSCF_PRINT", false);
     /*- Whether to perform stability analysis after convergence.  NONE prevents analysis being
         performed. CHECK will print out the analysis of the wavefunction stability at the end of
         the computation.  FOLLOW will perform the analysis and, if a totally symmetric instability
         is found, will attemp to follow the eigenvector and re-run the computations to find a stable
         solution. -*/
-    options.add_bool("SOSCF", false);
-    /*- Do use second-order SCF convergence methods? -*/
-    options.add_double("SOSCF_E_START", 1.0E-2);
-    /*- Do use second-order SCF convergence methods? -*/
-    options.add_double("SOSCF_R_START", 1.0E-2);
-    /*- When to start second-order SCF iterations based on gradient RMS -*/
-    options.add_int("SOSCF_MIN_ITER", 2);
-    /*- Minimum number of second-order microiterations to perform. -*/
-    options.add_int("SOSCF_MAX_ITER", 4);
-    /*- Maximum number of second-order microiterations to perform. -*/
-    options.add_double("SOSCF_CONV", 0.0);
-    /*- Secord order convergence threshold. -*/
-    options.add_bool("SOSCF_PRINT", false);
-    /*- Do we print the SOSCF microiterations?. -*/
     options.add_str("STABILITY_ANALYSIS", "NONE", "NONE CHECK FOLLOW");
     /*- When using STABILITY_ANALYSIS = FOLLOW, how much to scale the step along the eigenvector
         by. A full step of pi/2 corresponds to a value of 1.0. !expert -*/
@@ -3099,22 +3099,22 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("COMPUTE_MP4_TRIPLES", false);
       /*- Do use MP2 NOs to truncate virtual space for QCISD/CCSD and (T)? -*/
       options.add_bool("NAT_ORBS", false);
-      /*- Cutoff for occupation of MP2 virtual NOs in FNO-QCISD/CCSD(T).  
-          Virtual NOs with occupations less than |fnocc__occ_tolerance| 
-          will be discarded. This option is only used if |fnocc__nat_orbs| = 
+      /*- Cutoff for occupation of MP2 virtual NOs in FNO-QCISD/CCSD(T).
+          Virtual NOs with occupations less than |fnocc__occ_tolerance|
+          will be discarded. This option is only used if |fnocc__nat_orbs| =
           true. -*/
       options.add_double("OCC_TOLERANCE", 1.0e-6);
-      /*- Cutoff for occupation of MP2 virtual NOs in FNO-QCISD/CCSD(T).  
-          The number of virtual NOs is chosen so the occupation of the 
+      /*- Cutoff for occupation of MP2 virtual NOs in FNO-QCISD/CCSD(T).
+          The number of virtual NOs is chosen so the occupation of the
           truncated virtual space is |fnocc__occ_percentage| percent of
-          occupation of the original MP2 virtual space. This option is only 
-          used if |fnocc__nat_orbs| = true. This keyword overrides 
+          occupation of the original MP2 virtual space. This option is only
+          used if |fnocc__nat_orbs| = true. This keyword overrides
           |fnocc__occ_tolerance|. -*/
       options.add_double("OCC_PERCENTAGE", 99.0);
       /*- An array containing the number of virtual natural orbitals per irrep
       (in Cotton order) so a user can specify the number of retained
       natural orbitals rather than determining them with |fnocc__occ_tolerance|.
-      This keyword overrides |fnocc__occ_tolerance| and 
+      This keyword overrides |fnocc__occ_tolerance| and
       |fnocc__occ_fraction|. -*/
       options.add("ACTIVE_NAT_ORBS", new ArrayType());
       /*- Do SCS-MP2? -*/
