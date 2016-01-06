@@ -147,7 +147,7 @@ sub print_hash
           @OrderedSubsection = @{$ModuleSubsections{$Module}};
      }
      foreach my $Subsection (@OrderedSubsection) {
-       if (defined(%{$hash{$Module}{$Subsection}})) { 
+       if (exists($hash{$Module}{$Subsection})) {
          if($Subsection){
              if ($print_description) { 
                  my $Secdivider = "_" x (length($Subsection)-1);
