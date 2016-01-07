@@ -223,26 +223,6 @@ protected:
     /// If normal modes are available, they will be here:
     boost::shared_ptr<Vector> normalmodes_;
 
-    /// Flag to tell if this is a CIM calculation
-    bool isCIM_;
-
-    /// Quasicanonical LMO -> LMO transformation matrix (for CIM)
-    SharedMatrix QLMO_to_LMO_;
-
-    /// Factors to scale contributions to the CIM correlation energy
-    SharedVector CIM_orbital_factors_;
-
-    /// Orbital energies for a CIM computation
-    SharedVector CIM_orbital_energies_;
-
-    /// Number of active occupied orbitals in a CIM computation
-    int CIM_nactive_occupied_;
-    int * CIM_nactive_occupied_pointer_;
-
-    /// Number of active virtual orbitals in a CIM computation
-    int CIM_nactive_virtual_;
-    int * CIM_nactive_virtual_pointer_;
-
     /* Xiao Wang */
     /// Flag to tell if this is a DCFT computation
     bool isDCFT_;
@@ -521,27 +501,6 @@ public:
 
     /// Save the wavefunction to checkpoint
     virtual void save() const;
-
-    /// Returns the quasicanonical LMO->LMO transformation matrix (for CIM)
-    SharedMatrix CIMTransformationMatrix();
-
-    /// Returns factors to scale contributions to the CIM correlation energy
-    SharedVector CIMOrbitalFactors();
-
-    /// Returns orbital energies for CIM computation
-    SharedVector CIMOrbitalEnergies();
-
-    /// Returns the number of active occupied orbitals in a CIM computation
-    int CIMActiveOccupied();
-
-    /// Returns the number of active occupied virtual in a CIM computation
-    int CIMActiveVirtual();
-
-    /// Returns true if this is a CIM computation
-    bool isCIM();
-
-    /// Set if this is a CIM computation
-    void CIMSet(bool value,int nactive_occupied);
 
     /* Xiao Wang */
     /// Returns true if this is a DCFT computation
