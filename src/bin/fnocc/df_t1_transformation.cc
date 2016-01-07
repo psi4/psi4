@@ -20,7 +20,6 @@
  *@END LICENSE
  */
 
-#define PSIF_CIM 273 // TODO: move to psifiles.h
 #include"psi4-dec.h"
 #include<libmints/vector.h>
 #include<libmints/matrix.h>
@@ -55,18 +54,9 @@ void DFCoupledCluster::T1Fock(){
     // Ca_L = C(1-t1^T)
     // Ca_R = C(1+t1)
     double * Catemp = (double*)malloc(nso*full*sizeof(double));
-    if ( reference_wavefunction_->isCIM() ) {
-        boost::shared_ptr<PSIO> psio (new PSIO());
-        psio->open(PSIF_CIM,PSIO_OPEN_OLD);
-        psio->read_entry(PSIF_CIM,"C matrix",(char*)&Catemp[0],nso*full*sizeof(double));
-        psio->close(PSIF_CIM,1);
-        C_DCOPY(nso*full,&Catemp[0],1,Ca_L,1);
-        C_DCOPY(nso*full,&Catemp[0],1,Ca_R,1);
-    }else {
-        C_DCOPY(nso*full,&Ca[0][0],1,Ca_L,1);
-        C_DCOPY(nso*full,&Ca[0][0],1,Ca_R,1);
-        C_DCOPY(nso*full,&Ca[0][0],1,Catemp,1);
-    }
+    C_DCOPY(nso*full,&Ca[0][0],1,Ca_L,1);
+    C_DCOPY(nso*full,&Ca[0][0],1,Ca_R,1);
+    C_DCOPY(nso*full,&Ca[0][0],1,Catemp,1);
 
     #pragma omp parallel for schedule (static)
     for (long int mu = 0; mu < nso; mu++) {
@@ -236,18 +226,9 @@ void DFCoupledCluster::T1Integrals(){
     // Ca_L = C(1-t1^T)
     // Ca_R = C(1+t1)
     double * Catemp = (double*)malloc(nso*full*sizeof(double));
-    if ( reference_wavefunction_->isCIM() ) {
-        boost::shared_ptr<PSIO> psio (new PSIO());
-        psio->open(PSIF_CIM,PSIO_OPEN_OLD);
-        psio->read_entry(PSIF_CIM,"C matrix",(char*)&Catemp[0],nso*full*sizeof(double));
-        psio->close(PSIF_CIM,1);
-        C_DCOPY(nso*full,&Catemp[0],1,Ca_L,1);
-        C_DCOPY(nso*full,&Catemp[0],1,Ca_R,1);
-    }else {
-        C_DCOPY(nso*full,&Ca[0][0],1,Ca_L,1);
-        C_DCOPY(nso*full,&Ca[0][0],1,Ca_R,1);
-        C_DCOPY(nso*full,&Ca[0][0],1,Catemp,1);
-    }
+    C_DCOPY(nso*full,&Ca[0][0],1,Ca_L,1);
+    C_DCOPY(nso*full,&Ca[0][0],1,Ca_R,1);
+    C_DCOPY(nso*full,&Ca[0][0],1,Catemp,1);
 
     #pragma omp parallel for schedule (static)
     for (long int mu = 0; mu < nso; mu++) {
