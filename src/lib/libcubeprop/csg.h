@@ -166,8 +166,8 @@ public:
     void compute_esp(boost::shared_ptr<Matrix> D, const std::string& name, const std::string& type = "CUBE");
     /// Compute a set of basis function-type properties and drop files corresponding to name, index, and type
     void compute_basis_functions(const std::vector<int>& indices, const std::string& name, const std::string& type = "CUBE");
-    /// Compute a set of orbital-type properties and drop files corresponding to name, index, and type
-    void compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::string& name, const std::string& type = "CUBE");
+    /// Compute a set of orbital-type properties and drop files corresponding to name, index, symmetry label, and type
+    void compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::vector<std::string>& labels, const std::string& name, const std::string& type = "CUBE");
     /// Compute a LOL-type property and drop a file corresponding to name and type
     void compute_LOL(boost::shared_ptr<Matrix> D, const std::string& name, const std::string& type = "CUBE");
     /// Compute an ELF-type property and drop a file corresponding to name and type (TODO: this seems very unstable)

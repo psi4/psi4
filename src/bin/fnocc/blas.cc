@@ -50,14 +50,6 @@ void F_DGEMM(char transa,char transb, integer m, integer n, integer k,
 }
 
 /**
- * daxpy
- */
-void F_DAXPY(integer n,doublereal da,doublereal*dx,integer incx,doublereal*dy,
-             integer incy){
-    DAXPY(n,da,dx,incx,dy,incy);
-}
-
-/**
  *  Diagonalize a real symmetric matrix
  */
 void Diagonalize(integer N,doublereal*A,doublereal*W){
