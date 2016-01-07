@@ -50,6 +50,8 @@ ccsd_opdm.cc              ccsd_tpdm.cc              ccd_pdm_3index_intr.cc
 ccd_opdm.cc               ccd_tpdm.cc               ccsd_triples.cc 
 mp3_W_intr.cc             t2_2nd_sc.cc              t2_2nd_gen.cc             
 omp3_opdm.cc              omp3_tpdm.cc              mp3_pdm_3index_intr.cc
+lccd_iterations.cc        olccd_tpdm.cc             lccd_W_intr.cc
+lccd_pdm_3index_intr.cc   lccd_t2_amps.cc
 )
 
 # If you want to remove some sources specify them explictly here

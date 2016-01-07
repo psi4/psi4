@@ -408,7 +408,6 @@ if (reference_ == "RESTRICTED") {
     U.reset();
     K.reset();
     Emp2 = Eref + Ecorr;
-    Eccd = Emp2;
 
 }// end if (reference_ == "RESTRICTED")
 
@@ -426,6 +425,15 @@ else if (reference_ == "UNRESTRICTED") {
     t2_1AA->copy(K);
     t2_1AA->apply_denom(nfrzc, noccA, FockA);
     t2_1AA->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+
+    // Form T2(IA|JB) 
+    t2p_1 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    t2p_1->sort(1324, t2_1AA, 1.0, 0.0);
+    t2p_1->write_symm(psio_, PSIF_DFOCC_AMPS);
+    //t2p_1->write(psio_, PSIF_DFOCC_AMPS);
+    t2p_1.reset();
+
+    // Energy
     Emp2AA = 0.25 * t2_1AA->vector_dot(K);
     K.reset();
     t2_1AA.reset();
@@ -445,6 +453,14 @@ else if (reference_ == "UNRESTRICTED") {
     t2_1BB->copy(K);
     t2_1BB->apply_denom(nfrzc, noccB, FockB);
     t2_1BB->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+
+    // Form T2(ia|jb) 
+    t2p_1 = SharedTensor2d(new Tensor2d("T2 (ia|jb)", naoccB, navirB, naoccB, navirB));
+    t2p_1->sort(1324, t2_1BB, 1.0, 0.0);
+    t2p_1->write_symm(psio_, PSIF_DFOCC_AMPS);
+    t2p_1.reset();
+
+    // Energy
     Emp2BB = 0.25 * t2_1BB->vector_dot(K);
     K.reset();
     t2_1BB.reset();
@@ -461,6 +477,14 @@ else if (reference_ == "UNRESTRICTED") {
     t2_1AB->copy(K);
     t2_1AB->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
     t2_1AB->write(psio_, PSIF_DFOCC_AMPS);
+
+    // Form T2(IA|jb) 
+    t2p_1 = SharedTensor2d(new Tensor2d("T2 (IA|jb)", naoccA, navirA, naoccB, navirB));
+    t2p_1->sort(1324, t2_1AB, 1.0, 0.0);
+    t2p_1->write(psio_, PSIF_DFOCC_AMPS);
+    t2p_1.reset();
+
+    // Energy
     Emp2AB = t2_1AB->vector_dot(K);
     K.reset();
     t2_1AB.reset();
@@ -491,8 +515,9 @@ else if (reference_ == "UNRESTRICTED") {
     Escsmp2 = Eref + Escsmp2AA + Escsmp2AB + Escsmp2BB;
     Esosmp2 = Eref + Esosmp2AB;
     Escsnmp2 = Eref + Escsnmp2AA + Escsnmp2BB;
-    Eccsd = Emp2;
 }// else if (reference_ == "UNRESTRICTED")
+    Eccd = Emp2;
+    Elccd = Emp2;
     timer_off("MP2");
 }// end of ccd_mp2
 
@@ -529,7 +554,6 @@ if (reference_ == "RESTRICTED") {
     U.reset();
     K.reset();
     Emp2 = Eref + Ecorr;
-    Eccd = Emp2;
 
 }// end if (reference_ == "RESTRICTED")
 
@@ -612,8 +636,9 @@ else if (reference_ == "UNRESTRICTED") {
     Escsmp2 = Eref + Escsmp2AA + Escsmp2AB + Escsmp2BB;
     Esosmp2 = Eref + Esosmp2AB;
     Escsnmp2 = Eref + Escsnmp2AA + Escsnmp2BB;
-    Eccd = Emp2;
 }// else if (reference_ == "UNRESTRICTED")
+    Eccd = Emp2;
+    Elccd = Emp2;
     timer_off("MP2");
 }// end of ccd_mp2_low
 
