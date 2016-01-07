@@ -99,9 +99,20 @@ PsiReturnType fnocc(Options &options) {
           wfn = Process::environment.wavefunction();
       }
       // ccsd(t)!
-      boost::shared_ptr<DFCoupledCluster> ccsd (new DFCoupledCluster(wfn,options));
-      ccsd->compute_energy();
+
+      #ifdef GPUCC
+          boost::shared_ptr<GPUDFCoupledCluster> ccsd (new GPUDFCoupledCluster(wfn,options));
+          ccsd->compute_energy();
+      #else
+          boost::shared_ptr<DFCoupledCluster> ccsd (new DFCoupledCluster(wfn,options));
+          ccsd->compute_energy();
+      #endif
+
       tstop();
+
+
+
+
   }
 
   return  Success;

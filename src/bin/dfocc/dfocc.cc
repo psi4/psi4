@@ -64,9 +64,9 @@ void DFOCC::common_init()
     ss_scale=options_.get_double("MP2_SS_SCALE");
     sos_scale=options_.get_double("MP2_SOS_SCALE");
     sos_scale2=options_.get_double("MP2_SOS_SCALE2");
-    cepa_os_scale_=options_.get_double("CEPA_OS_SCALE");
-    cepa_ss_scale_=options_.get_double("CEPA_SS_SCALE");
-    cepa_sos_scale_=options_.get_double("CEPA_SOS_SCALE");
+    //cepa_os_scale_=options_.get_double("CEPA_OS_SCALE");
+    //cepa_ss_scale_=options_.get_double("CEPA_SS_SCALE");
+    //cepa_sos_scale_=options_.get_double("CEPA_SOS_SCALE");
     e3_scale=options_.get_double("E3_SCALE");
     tol_Eod=options_.get_double("E_CONVERGENCE");
     tol_t2=options_.get_double("R_CONVERGENCE");
@@ -150,9 +150,9 @@ void DFOCC::common_init()
     else if (reference == "UHF" || reference == "UKS" || reference == "ROHF") reference_ = "UNRESTRICTED";
     if (reference == "ROHF") reference_wavefunction_->semicanonicalize();
 
-    // Only ROHF-MP2 energy is available, not the gradients
+    // Only ROHF-CC energy is available, not the gradients
     if (reference == "ROHF" && orb_opt_ == "FALSE" && dertype == "FIRST") {
-             throw PSIEXCEPTION("ROHF DF-MP2 analytic gradients are not available, UHF DF-MP2 is recommended.");
+             throw PSIEXCEPTION("ROHF DF-CC analytic gradients are not available, UHF DF-CC is recommended.");
     }
 
     // DIIS
@@ -371,9 +371,11 @@ void DFOCC::title()
    else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE" && do_cd == "TRUE") outfile->Printf("                    CD-MP3   \n");
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE" && do_cd == "TRUE") outfile->Printf("                   CD-OMP2.5 (CD-OO-MP2.5)   \n");
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE" && do_cd == "TRUE") outfile->Printf("                    CD-MP2.5   \n");
+   else if (wfn_type_ == "DF-OLCCD" && orb_opt_ == "TRUE" && do_cd == "TRUE") outfile->Printf("                    CD-OLCCD (CD-OO-LCCD)   \n");
+   else if (wfn_type_ == "DF-OLCCD" && orb_opt_ == "FALSE" && do_cd == "TRUE") outfile->Printf("                    CD-LCCD   \n");
    else if (wfn_type_ == "QCHF") outfile->Printf("                      QCHF   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
-   outfile->Printf("              Latest Revision October 8, 2015\n") ;
+   outfile->Printf("              Latest Revision December 2, 2015\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
@@ -493,6 +495,8 @@ double DFOCC::compute_energy()
         else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE" && do_cd == "FALSE") mp3_manager();
         else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE" && do_cd == "FALSE") omp2_5_manager();
         else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE" && do_cd == "FALSE") mp2_5_manager();
+        else if (wfn_type_ == "DF-OLCCD" && orb_opt_ == "TRUE" && do_cd == "FALSE") olccd_manager();
+        else if (wfn_type_ == "DF-OLCCD" && orb_opt_ == "FALSE" && do_cd == "FALSE") lccd_manager();
         else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "TRUE" && do_cd == "TRUE") cd_omp2_manager();
         else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE" && do_cd == "TRUE") cd_mp2_manager();
         else if (wfn_type_ == "DF-CCSD" && do_cd == "TRUE") ccsd_manager_cd();
@@ -503,8 +507,8 @@ double DFOCC::compute_energy()
         else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE" && do_cd == "TRUE") mp3_manager_cd();
         else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE" && do_cd == "TRUE") omp2_5_manager_cd();
         else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE" && do_cd == "TRUE") mp2_5_manager_cd();
-        //else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "TRUE") ocepa_manager();
-        //else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "FALSE") cepa_manager();
+        else if (wfn_type_ == "DF-OLCCD" && orb_opt_ == "TRUE" && do_cd == "TRUE") olccd_manager_cd();
+        else if (wfn_type_ == "DF-OLCCD" && orb_opt_ == "FALSE" && do_cd == "TRUE") lccd_manager_cd();
         else if (wfn_type_ == "QCHF") qchf_manager();
         else {
              throw PSIEXCEPTION("Unrecognized WFN_TYPE!");
@@ -517,8 +521,8 @@ double DFOCC::compute_energy()
         else if (wfn_type_ == "DF-CCD") Etotal = Eccd;
         else if (wfn_type_ == "DF-OMP3") Etotal = Emp3L;
         else if (wfn_type_ == "DF-OMP2.5") Etotal = Emp3L;
+        else if (wfn_type_ == "DF-OLCCD") Etotal = ElccdL;
         else if (wfn_type_ == "QCHF") Etotal = Eref;
-        //else if (wfn_type_ == "DF-OCEPA") Etotal = EcepaL;
 
         return Etotal;
 

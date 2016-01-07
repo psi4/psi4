@@ -53,7 +53,11 @@ protected:
     boost::shared_ptr<Matrix> Ca_;
     /// AO-basis (C1) SCF orbital coefficients for beta electrons
     boost::shared_ptr<Matrix> Cb_;
-     
+    /// Info for alpha electrons (epsilon,rel. index,irrep)
+    std::vector<boost::tuple<double, int, int> > info_a_;
+    /// Info for beta electrons (epsilon,rel. index,irrep)
+    std::vector<boost::tuple<double, int, int> > info_b_;
+
     // => Computers <= //
 
     /// Grid-based property computer
@@ -86,7 +90,7 @@ public:
     /// Compute an ESP grid task (Dt.cube and ESP.cube)
     void compute_esp(boost::shared_ptr<Matrix> Dt);
     /// Compute an orbital task (key_N.cube, for 0-based indices of C)
-    void compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::string& key);
+    void compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::vector<std::string>& labels, const std::string& key);
     /// Compute a basis function task (key_N.cube, for 0-based indices of basisset_)
     void compute_basis_functions(const std::vector<int>& indices, const std::string& key);
     /// Compute a LOL grid task (key.cube)

@@ -49,14 +49,14 @@ void CoupledCluster::CPU_t1_vmeai_linear(CCTaskParams params){
   psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);
-  F_DAXPY(o*o*v*v,-2.0,integrals,1,tempv,1);
+  C_DAXPY(o*o*v*v,-2.0,integrals,1,tempv,1);
   
   for (i=0; i<o; i++){
       C_DCOPY(v,t1+i,o,tempt+i*v,1);
   }
   F_DGEMV('n',o*v,o*v,-1.0,tempv,o*v,tempt,1,0.0,integrals,1);
   for (a=0; a<v; a++){
-      F_DAXPY(o,1.0,integrals+a,v,w1+a*o,1);
+      C_DAXPY(o,1.0,integrals+a,v,w1+a*o,1);
   }
 
   psio.reset();
@@ -172,12 +172,12 @@ void CoupledCluster::CPU_I2p_abci_refactored_term1_linear(CCTaskParams params){
   psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
   for (a=0; a<v; a++){
   for (b=0; b<v; b++){
-      F_DAXPY(o*o,1.0,tempt+b*v*o*o+a*o*o,1,tempv+a*v*o*o+b*o*o,1);
+      C_DAXPY(o*o,1.0,tempt+b*v*o*o+a*o*o,1,tempv+a*v*o*o+b*o*o,1);
   }}
   for (a=0; a<v; a++){
   for (b=0; b<v; b++){
   for (i=0; i<o; i++){
-      F_DAXPY(o,1.0,tempt+a*v*o*o+b*o*o+i,o,tempv+a*v*o*o+b*o*o+i*o,1);
+      C_DAXPY(o,1.0,tempt+a*v*o*o+b*o*o+i,o,tempv+a*v*o*o+b*o*o+i*o,1);
   }}}
   psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_R2,1);
@@ -209,7 +209,7 @@ void CoupledCluster::UpdateT1_mp4(long int iter){
   }
   // error vector for diis is in tempv:
   C_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
-  F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
+  C_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
   C_DCOPY(o*v,w1,1,t1,1);
 }
 void CoupledCluster::UpdateT2_mp4(long int iter){
@@ -386,11 +386,11 @@ void CoupledCluster::I2ijkl_linear(CCTaskParams params){
   // contribute to residual
   psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  F_DAXPY(o*o*v*v,1.0,tempv,1,tempt,1);
+  C_DAXPY(o*o*v*v,1.0,tempv,1,tempt,1);
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
-              F_DAXPY(o,1.0,tempv+b*v*o*o+a*o*o+i,o,tempt+a*v*o*o+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempv+b*v*o*o+a*o*o+i,o,tempt+a*v*o*o+b*o*o+i*o,1);
           }
       }
   }
@@ -418,11 +418,11 @@ void CoupledCluster::I2piajk_linear(CCTaskParams params){
   // contribute to residual
   psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  F_DAXPY(o*o*v*v,1.0,tempt,1,tempv,1);
+  C_DAXPY(o*o*v*v,1.0,tempt,1,tempv,1);
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
-              F_DAXPY(o,1.0,tempt+b*v*o*o+a*o*o+i,o,tempv+a*v*o*o+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempt+b*v*o*o+a*o*o+i,o,tempv+a*v*o*o+b*o*o+i*o,1);
           }
       }
   }

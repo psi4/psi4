@@ -540,7 +540,7 @@ void CoupledPair::UpdateT2() {
   }else{
      C_DCOPY(o*o*v*v,tb,1,tempv,1);
   }
-  F_DAXPY(o*o*v*v,-1.0,tempt,1,tempv,1);
+  C_DAXPY(o*o*v*v,-1.0,tempt,1,tempv,1);
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
      psio->write_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
@@ -589,7 +589,7 @@ void CoupledPair::UpdateT1() {
   }
   // error vector for diis is in tempv:
   C_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
-  F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
+  C_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
   C_DCOPY(o*v,w1,1,t1,1);
 }
 
