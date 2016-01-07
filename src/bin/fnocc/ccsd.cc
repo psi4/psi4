@@ -20,7 +20,6 @@
  *@END LICENSE
  */
 
-#define PSIF_CIM 273 // TODO: move to psifiles.h
 #include"psi4-dec.h"
 #include<libmints/vector.h>
 #include<libmints/matrix.h>
@@ -60,7 +59,7 @@ void DefineQuadraticTasks();
 
 // sort
 void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options,bool iscim);
-void Sort_OV3_LowMemory(long int memory,long int o,long int v,bool islocal);
+void Sort_OV3_LowMemory(long int memory,long int o,long int v);
 
 // coupled cluster constructor
 CoupledCluster::CoupledCluster(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options):
@@ -107,20 +106,13 @@ void CoupledCluster::common_init() {
       nmo    += nmopi_[h]-frzcpi_[h]-frzvpi_[h];
       ndocc  += doccpi_[h];
   }
-  if (reference_wavefunction_->isCIM()){
-     ndoccact = reference_wavefunction_->CIMActiveOccupied();
-     nvirt    = reference_wavefunction_->CIMActiveVirtual();
-     nfzc     = ndocc - ndoccact;
-     nmo      = ndoccact + nvirt;
-     nfzv     = nmopi_[0] - ndocc - nvirt;
-  }else{
-     ndoccact = ndocc - nfzc;
-     nvirt    = nmo - ndoccact;
+  ndoccact = ndocc - nfzc;
+  nvirt    = nmo - ndoccact;
+
+  if (ndoccact <= 0) {
+      throw PSIEXCEPTION("Number of active orbitals is zero.");
   }
 
-    if (ndoccact <= 0) {
-        throw PSIEXCEPTION("Number of active orbitals is zero.");
-    }
   // for triples, we use nvirt_no in case we've truncated the virtual space:
   nvirt_no = nvirt;
 
@@ -183,13 +175,9 @@ double CoupledCluster::compute_energy() {
   }
 
   // integral sort
-  if (!reference_wavefunction_->isCIM()) {
-      tstart();
-      SortIntegrals(nfzc,nfzv,nmo+nfzc+nfzv,ndoccact,nvirt,options_,reference_wavefunction_->isCIM());
-      tstop();
-  }
- 
-
+  tstart();
+  SortIntegrals(nfzc,nfzv,nmo+nfzc+nfzv,ndoccact,nvirt,options_,false);
+  tstop();
 
   // MP4(SDQ)
   tstart();
@@ -264,9 +252,9 @@ double CoupledCluster::compute_energy() {
      long int o = ndoccact;
      long int v = nvirt;
 
-     // if low memory or CIM, need to generate one last set of integrals
-     if (reference_wavefunction_->isCIM() || isLowMemory){
-        Sort_OV3_LowMemory(memory - 8L*(long int)(!t2_on_disk)*o*o*v*v,o,v,reference_wavefunction_->isCIM());
+     // if low memory, need to generate one last set of integrals
+     if ( isLowMemory ){
+        Sort_OV3_LowMemory(memory - 8L*(long int)(!t2_on_disk)*o*o*v*v,o,v);
      }
 
      // now there should be space for t2
@@ -283,76 +271,65 @@ double CoupledCluster::compute_energy() {
 
      tstart();
      // triples
-     if (reference_wavefunction_->isCIM()){
-        if (do_cc) {
-           status = local_triples();
-        }
-        if (do_mp) {
-           ccmethod = 2;
-           status = local_triples();
-        }
-     }
-     else{
-        if (isLowMemory){
-           if (do_cc) {
-              status = lowmemory_triples();
-           }
-           if (do_mp) {
-              ccmethod = 2;
-              status = lowmemory_triples();
-           }
-        }else{
-           if (do_cc) {
-              status = triples();
-           }
-           if (do_mp) {
-              ccmethod = 2;
-              status = triples();
-           }
-        }
+     if (isLowMemory){
+         if (do_cc) {
+             status = lowmemory_triples();
+         }
+         if (do_mp) {
+             ccmethod = 2;
+             status = lowmemory_triples();
+         }
+     }else{
+         if (do_cc) {
+             status = triples();
+         }
+         if (do_mp) {
+             ccmethod = 2;
+             status = triples();
+         }
      }
      if (status == Failure){
-        throw PsiException(
-           "Whoops, the (T) correction died.",__FILE__,__LINE__);
+         throw PsiException(
+            "Whoops, the (T) correction died.",__FILE__,__LINE__);
      }
      tstop();
 
      // ccsd(t) energy
      if (do_cc) {
-        Process::environment.globals["(T) CORRECTION ENERGY"] = et;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] = eccsd + et;
-        Process::environment.globals["CURRENT ENERGY"] = eccsd + et + escf;
-        if (isccsd) {
-           Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = eccsd + et;
-           Process::environment.globals["CCSD(T) TOTAL ENERGY"] = eccsd + et + escf;
-        }else {
-           Process::environment.globals["QCISD(T) CORRELATION ENERGY"] = eccsd + et;
-           Process::environment.globals["QCISD(T) TOTAL ENERGY"] = eccsd + et + escf;
-        }
+         Process::environment.globals["(T) CORRECTION ENERGY"] = et;
+         Process::environment.globals["CURRENT CORRELATION ENERGY"] = eccsd + et;
+         Process::environment.globals["CURRENT ENERGY"] = eccsd + et + escf;
+         if (isccsd) {
+             Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = eccsd + et;
+             Process::environment.globals["CCSD(T) TOTAL ENERGY"] = eccsd + et + escf;
+         }else {
+             Process::environment.globals["QCISD(T) CORRELATION ENERGY"] = eccsd + et;
+             Process::environment.globals["QCISD(T) TOTAL ENERGY"] = eccsd + et + escf;
+         }
      }
 
      if (do_mp) {
-        // mp4 triples:
-        Process::environment.globals["MP4(T) CORRECTION ENERGY"] = emp4_t;
-        Process::environment.globals["MP4(SDTQ) CORRELATION ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t;
-        Process::environment.globals["MP4(SDTQ) TOTAL ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t+escf;
-        Process::environment.globals["MP4 CORRELATION ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t;
-        Process::environment.globals["MP4 TOTAL ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t+escf;
-        if (!do_cc){
-           Process::environment.globals["CURRENT CORRELATION ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t;
-           Process::environment.globals["CURRENT ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t+escf;
-        }
+         // mp4 triples:
+         Process::environment.globals["MP4(T) CORRECTION ENERGY"] = emp4_t;
+         Process::environment.globals["MP4(SDTQ) CORRELATION ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t;
+         Process::environment.globals["MP4(SDTQ) TOTAL ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t+escf;
+         Process::environment.globals["MP4 CORRELATION ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t;
+         Process::environment.globals["MP4 TOTAL ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t+escf;
+         if (!do_cc){
+            Process::environment.globals["CURRENT CORRELATION ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t;
+            Process::environment.globals["CURRENT ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t+escf;
+         }
      }
 
      // if we allocated t2 just for triples, free it
      if (t2_on_disk){
-        free(tb);
+         free(tb);
      }
   }
 
   // free remaining memory
   if (!t2_on_disk){
-     free(tb);
+      free(tb);
   }
   free(t1);
 
@@ -525,13 +502,7 @@ PsiReturnType CoupledCluster::CCSDIterations() {
         throw PsiException("  QCISD iterations did not converge.",__FILE__,__LINE__);
   }
 
-  if (reference_wavefunction_->isCIM()){
-     Local_SCS_CCSD();
-     Local_SCS_MP2();
-  }
-  else{
-     SCS_CCSD();
-  }
+  SCS_CCSD();
 
   outfile->Printf("\n");
   if (isccsd)
@@ -780,29 +751,18 @@ void CoupledCluster::AllocateMemory() {
 
   }
   // orbital energies:
-  if (!reference_wavefunction_->isCIM()){
-      int count=0;
-      eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
-      boost::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
-      for (int h=0; h<nirrep_; h++){
-          for (int norb = frzcpi_[h]; norb<doccpi_[h]; norb++){
-              eps[count++] = eps_test->get(h,norb);
-          }
+  int count=0;
+  eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
+  boost::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
+  for (int h=0; h<nirrep_; h++){
+      for (int norb = frzcpi_[h]; norb<doccpi_[h]; norb++){
+          eps[count++] = eps_test->get(h,norb);
       }
-      for (int h=0; h<nirrep_; h++){
-          for (int norb = doccpi_[h]; norb<nmopi_[h]-frzvpi_[h]; norb++){
-              eps[count++] = eps_test->get(h,norb);
-          }
+  }
+  for (int h=0; h<nirrep_; h++){
+      for (int norb = doccpi_[h]; norb<nmopi_[h]-frzvpi_[h]; norb++){
+          eps[count++] = eps_test->get(h,norb);
       }
-  }else{
-     // orbital energies in qt ordering:
-     long int count = 0;
-     eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
-     boost::shared_ptr<Vector> eps_test = reference_wavefunction_->CIMOrbitalEnergies();
-     for (int i = 0; i < ndoccact + nvirt; i++){
-         eps[i] = eps_test->get(0,i+nfzc);
-     }
-     eps_test.reset();
   }
   if (options_.get_bool("RUN_MP2")) return;
 
@@ -1925,144 +1885,6 @@ void CoupledCluster::UpdateT1(long int iter){
    SCS functions.  get energy in terms of spin components
 
 ================================================================*/
-void CoupledCluster::Local_SCS_CCSD(){
-
-  long int v = nvirt;
-  long int o = ndoccact;
-  long int rs = nmo;
-  long int i,j,a,b;
-  long int iajb,ijab=0;
-  double ssenergy = 0.0;
-  double osenergy = 0.0;
-  boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_DCC_IAJB,1);
-
-  SharedMatrix Rii = reference_wavefunction_->CIMTransformationMatrix();
-  // the dimension of the Rii transformation matrix:
-  int nocc = Rii->colspi()[0];
-  double**Rii_pointer = Rii->pointer();
-  // transform E2iajb back from quasi-canonical basis
-  F_DGEMM('N','T',v*v*o,o,o,1.0,tempt,v*v*o,&Rii_pointer[0][0],nocc,0.0,integrals,v*v*o);
-
-  double fac = isccsd ? 1.0 : 0.0;
-  if (t2_on_disk){
-     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_DCC_T2,1);
-     tb = tempv;
-  }
-  // transform t2 back from quasi-canonical basis
-  for (a=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  tb[a*o*o*v+b*o*o+i*o+j] += fac*t1[a*o+i]*t1[b*o+j];
-              }
-          }
-      }
-  }
-  F_DGEMM('N','N',o,v*v*o,o,1.0,&Rii_pointer[0][0],nocc,tb,o,0.0,tempt,o);
-  // resort t(abji) -> t(abij)
-  for (int ab = 0; ab < v*v; ab++){
-      for (i = 0; i < o; i++){
-          for (j = 0; j < o; j++){
-              I1[i*o+j] = tempt[ab*o*o+j*o+i];
-          }
-      }
-      C_DCOPY(o*o,I1,1,tempt+ab*o*o,1);
-  }
-  for (a=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  tb[a*o*o*v+b*o*o+i*o+j] -= fac*t1[a*o+i]*t1[b*o+j];
-              }
-          }
-      }
-  }
-
-  // energy
-  SharedVector factor = reference_wavefunction_->CIMOrbitalFactors();
-  double*factor_pointer = factor->pointer();
-  for (b=o; b<rs; b++){
-      for (a=o; a<rs; a++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
-                  osenergy += integrals[iajb]*(tempt[ijab])*factor_pointer[i];
-                  ssenergy += integrals[iajb]*(tempt[ijab]-tempt[(a-o)*o*o*v+(b-o)*o*o+i*o+j])*factor_pointer[i];
-                  ijab++;
-              }
-          }
-      }
-  }
-  eccsd_os = osenergy;
-  eccsd_ss = ssenergy;
-  eccsd = eccsd_os + eccsd_ss;
-
-  psio.reset();
-}
-void CoupledCluster::Local_SCS_MP2(){
-
-  long int v = nvirt;
-  long int o = ndoccact;
-  long int rs = nmo;
-  long int i,j,a,b;
-  long int iajb,ijab=0;
-  double ssenergy = 0.0;
-  double osenergy = 0.0;
-  boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_DCC_IAJB,1);
-
-  SharedMatrix Rii = reference_wavefunction_->CIMTransformationMatrix();
-  // the dimension of the Rii transformation matrix:
-  int nocc = Rii->colspi()[0];
-  double**Rii_pointer = Rii->pointer();
-  // transform E2iajb back from quasi-canonical basis
-  F_DGEMM('N','T',v*v*o,o,o,1.0,tempt,v*v*o,&Rii_pointer[0][0],nocc,0.0,integrals,v*v*o);
-
-  psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_DCC_T2,1);
-
-  // transform t2 back from quasi-canonical basis
-  F_DGEMM('N','N',o,v*v*o,o,1.0,Rii_pointer[0],nocc,tempv,o,0.0,tempt,o);
-
-  // resort t(abji) -> t(abij)
-  for (int ab = 0; ab < v*v; ab++){
-      for (i = 0; i < o; i++){
-          for (j = 0; j < o; j++){
-              I1[i*o+j] = tempt[ab*o*o+j*o+i];
-          }
-      }
-      C_DCOPY(o*o,I1,1,tempt+ab*o*o,1);
-  }
-
-  SharedVector factor = reference_wavefunction_->CIMOrbitalFactors();
-  double*factor_pointer = factor->pointer();
-  for (b=o; b<rs; b++){
-      for (a=o; a<rs; a++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-
-                  iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
-                  osenergy += integrals[iajb]*(tempt[ijab])*factor_pointer[i];
-                  ssenergy += integrals[iajb]*(tempt[ijab]-tempt[(a-o)*o*o*v+(b-o)*o*o+i*o+j])*factor_pointer[i];
-                  ijab++;
-              }
-          }
-      }
-  }
-  emp2_os = osenergy;
-  emp2_ss = ssenergy;
-  emp2 = emp2_ss + emp2_os;
-
-  psio.reset();
-}
 void CoupledCluster::SCS_CCSD(){
 
   long int v = nvirt;

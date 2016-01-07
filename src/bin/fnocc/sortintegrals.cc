@@ -2207,11 +2207,11 @@ void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIF
  * ordering than the efficient default routine.  this function writes the
  * integrals to disk in the proper ordering.
  */
-void Sort_OV3_LowMemory(long int memory, long int o,long int v,bool islocal){
+void Sort_OV3_LowMemory(long int memory, long int o,long int v){
 
   outfile->Printf("\n");
   outfile->Printf("\n");
-  outfile->Printf("        ==> Resort (ov|vv) integrals for %s computation <==\n",islocal ? "CIM (T)" : "low-memory (T)");
+  outfile->Printf("        ==> Resort (ov|vv) integrals for low-memory (T) computation <==\n");
   outfile->Printf("\n");
 
   long int maxelem = memory / 8 / 2;

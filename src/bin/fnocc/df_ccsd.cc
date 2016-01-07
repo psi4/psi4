@@ -51,7 +51,7 @@ void DefineQuadraticTasks();
 
 // sort
 void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options,bool iscim);
-void Sort_OV3_LowMemory(long int memory,long int o,long int v,bool islocal);
+void Sort_OV3_LowMemory(long int memory,long int o,long int v);
 
 // coupled cluster constructor
 DFCoupledCluster::DFCoupledCluster(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options):
@@ -106,7 +106,7 @@ double DFCoupledCluster::compute_energy() {
       long int o = ndoccact;
       long int v = nvirt;
 
-      if (!isLowMemory && !reference_wavefunction_->isCIM() ) {
+      if ( !isLowMemory ) {
           // write (ov|vv) integrals, formerly E2abci, for (t)
           double *tempq = (double*)malloc(v*nQ*sizeof(double));
           // the buffer integrals was at least 2v^3, so these should definitely fit.
@@ -211,7 +211,6 @@ double DFCoupledCluster::compute_energy() {
 
       ccmethod = 0;
       if (isLowMemory)                           status = lowmemory_triples();
-      else if (reference_wavefunction_->isCIM()) status = local_triples();
       else                                       status = triples();
 
       if (status == Failure){
@@ -375,12 +374,8 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       
       iter++;
       if (iter==1){
-         emp2 = eccsd;
-         if ( reference_wavefunction_->isCIM() ) {
-             Local_SCS_MP2();
-         }else {
-             SCS_MP2();
-         }
+          emp2 = eccsd;
+          SCS_MP2();
       }
 
       // energy and amplitude convergence check
@@ -393,13 +388,9 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
   double sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
 
   if (iter==maxiter){
-     throw PsiException("  CCSD iterations did not converge.",__FILE__,__LINE__);
+      throw PsiException("  CCSD iterations did not converge.",__FILE__,__LINE__);
   }
-  if (reference_wavefunction_->isCIM()){
-      Local_SCS_CCSD();
-  }else{
-      SCS_CCSD();
-  }
+  SCS_CCSD();
 
   outfile->Printf("\n");
   outfile->Printf("  CCSD iterations converged!\n");
@@ -539,29 +530,18 @@ void DFCoupledCluster::AllocateMemory() {
   nQ_scf      = (int)Process::environment.globals["NAUX (SCF)"];
 
   // orbital energies
-  if (!reference_wavefunction_->isCIM()){
-      int count=0;
-      eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
-      boost::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
-      for (int h=0; h<nirrep_; h++){
-          for (int norb = frzcpi_[h]; norb<doccpi_[h]; norb++){
-              eps[count++] = eps_test->get(h,norb);
-          }
+  int count=0;
+  eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
+  boost::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
+  for (int h=0; h<nirrep_; h++){
+      for (int norb = frzcpi_[h]; norb<doccpi_[h]; norb++){
+          eps[count++] = eps_test->get(h,norb);
       }
-      for (int h=0; h<nirrep_; h++){
-          for (int norb = doccpi_[h]; norb<nmopi_[h]-frzvpi_[h]; norb++){
-              eps[count++] = eps_test->get(h,norb);
-          }
+  }
+  for (int h=0; h<nirrep_; h++){
+      for (int norb = doccpi_[h]; norb<nmopi_[h]-frzvpi_[h]; norb++){
+          eps[count++] = eps_test->get(h,norb);
       }
-  }else{
-     // orbital energies in qt ordering:
-     long int count = 0;
-     eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
-     boost::shared_ptr<Vector> eps_test = reference_wavefunction_->CIMOrbitalEnergies();
-     for (int i = 0; i < ndoccact + nvirt; i++){
-         eps[i] = eps_test->get(0,i+nfzc);
-     }
-     eps_test.reset();
   }
 
   long int o = ndoccact;
