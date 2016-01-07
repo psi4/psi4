@@ -99,6 +99,7 @@ protected:
     void orb_resp_pcg_rhf();
     void orb_resp_pcg_uhf();
     void kappa_diag_hess();
+    void kappa_qchf();
     void update_mo();
     void update_hfmo();
     void semi_canonic();
@@ -412,9 +413,29 @@ protected:
     void omp2_5_manager_cd();
     void mp2_5_manager_cd();
 
-    // OCEPA
-    void ocepa_manager();
-    void cepa_manager();
+    // OLCCD
+    void olccd_manager();
+    void lccd_manager();
+    void olccd_manager_cd();
+    void lccd_manager_cd();
+    void olccd_tpdm();
+    void lccd_iterations();
+    void lccd_t2_1st_sc();
+    void lccd_t2_amps();
+    void lccd_WmnijT2();
+    void lccd_WmbejT2();
+    void lccd_WabefT2();     
+    void lccd_WmnijT2AA();
+    void lccd_WmnijT2BB();
+    void lccd_WmnijT2AB();
+    void lccd_WmbejT2AA();
+    void lccd_WmbejT2BB();
+    void lccd_WmbejT2AB();
+    void lccd_WabefT2AA();     
+    void lccd_WabefT2BB();     
+    void lccd_WabefT2AB();     
+    void lccd_pdm_3index_intr();
+    void lccdl_energy();
 
     // CCSD
     void ccsd_manager();
@@ -546,6 +567,9 @@ protected:
 
     // DIIS
     boost::shared_ptr<DIISManager> ccsdDiisManager;
+    boost::shared_ptr<DIISManager> ccsdDiisManagerAA;
+    boost::shared_ptr<DIISManager> ccsdDiisManagerBB;
+    boost::shared_ptr<DIISManager> ccsdDiisManagerAB;
     boost::shared_ptr<DIISManager> ccsdlDiisManager;
 
     // Gradients
@@ -579,6 +603,10 @@ protected:
      int ntri_ijBB;
      int ntri_abAA;
      int ntri_abBB;
+     int ntri_anti_ijAA;
+     int ntri_anti_ijBB;
+     int ntri_anti_abAA;
+     int ntri_anti_abBB;
      int nQ;          // numer of aux-basis
      int nQ_ref;      // numer of aux-basis for DF_BASIS_SCF
      int nso2_;       // nso * nso
@@ -695,10 +723,6 @@ protected:
      double sos_scale;
      double sos_scale2;
      double e3_scale;
-     double cepa_os_scale_;
-     double cepa_ss_scale_;
-     double cepa_sos_scale_;
-     double sos_scale_ocepa;
      double rms_t2;
      double rms_t2AA;
      double rms_t2AB;
@@ -733,20 +757,14 @@ protected:
      double Esosmp3AB;
      double Esosmp3;
 
-     // OCEPA
-     double Ecepa;
-     double Ecepa_old;
-     double EcepaAA;
-     double EcepaBB;
-     double EcepaAB;
-     double EcepaL;
-     double EcepaL_old;
-     double EscscepaBB;
-     double EscscepaAA;
-     double EscscepaAB;
-     double Escscepa;
-     double EsoscepaAB;
-     double Esoscepa;
+     // OLCCD
+     double Elccd;
+     double Elccd_old;
+     double ElccdAA;
+     double ElccdBB;
+     double ElccdAB;
+     double ElccdL;
+     double ElccdL_old;
 
      // CCSD
      double Eccsd;

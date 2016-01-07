@@ -72,7 +72,7 @@ void CoupledCluster::CPU_I1ab_quadratic(CCTaskParams params){
   for (m=0,id=0; m<o; m++){
       for (e=0; e<v; e++){
           for (n=0; n<o; n++){
-              F_DAXPY(v,-0.5,integrals+m*o*v*v+n*v+e,o*v,tempv+m*o*v*v+e*o*v+n*v,1);
+              C_DAXPY(v,-0.5,integrals+m*o*v*v+n*v+e,o*v,tempv+m*o*v*v+e*o*v+n*v,1);
           }
       }
   }
@@ -103,8 +103,8 @@ void CoupledCluster::CPU_I1ab_quadratic(CCTaskParams params){
   for (a=0,id=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
-              F_DAXPY(o,1.0,tempv+a*v*o+i*v+b,v*v*o,tempt+a*o*o*v+b*o*o+i*o,1);
-              F_DAXPY(o,1.0,tempv+i*v*v*o+b*v*o+a,v,tempt+a*o*o*v+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempv+a*v*o+i*v+b,v*v*o,tempt+a*o*o*v+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempv+i*v*v*o+b*v*o+a,v,tempt+a*o*o*v+b*o*o+i*o,1);
           }
       }
   }
@@ -135,7 +135,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem_quadratic(CCTaskParams params){
   //for (i=0; i<o; i++){
   //    for (a=0; a<v; a++){
   //        for (m=0; m<o; m++){
-  //            F_DAXPY(v,-0.5,integrals+i*o*v*v+m*v+a,o*v,tempv+i*v*v*o+a*v*o+m*v,1);
+  //            C_DAXPY(v,-0.5,integrals+i*o*v*v+m*v+a,o*v,tempv+i*v*v*o+a*v*o+m*v,1);
   //        }
   //    }
   //}
@@ -154,7 +154,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem_quadratic(CCTaskParams params){
       for (e=0; e<v; e++){
           for (j=0; j<o; j++){
               C_DCOPY(v,tb+e*o*o*v+m*o+j,o*o,tempt+m*o*v*v+e*o*v+j*v,1);
-              F_DAXPY(v,-0.5,tb+e*o*o*v+j*o+m,o*o,tempt+m*o*v*v+e*o*v+j*v,1);
+              C_DAXPY(v,-0.5,tb+e*o*o*v+j*o+m,o*o,tempt+m*o*v*v+e*o*v+j*v,1);
           }
       }
   }
@@ -162,7 +162,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem_quadratic(CCTaskParams params){
   // use I1(i,a) -> w1
   //F_DGEMV('n',o*v,o*v,2.0,tempt,o*v,I1,1,0.0,tempv,1);
   //for (i=0; i<o; i++){
-  //    F_DAXPY(v,1.0,tempv+i*v,1,w1+i,o);
+  //    C_DAXPY(v,1.0,tempv+i*v,1,w1+i,o);
   //}
 
   // build I1'(i,j)
@@ -178,7 +178,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem_quadratic(CCTaskParams params){
   //    for (j=0; j<o; j++){
   //        for (e=0; e<v; e++){
   //            C_DCOPY(o,tempt+i*o*v+j*v+e,o*o*v,tempv+i*o*o*v+j*o*v+e*o,1);
-  //            F_DAXPY(o,-2.0,tempt+i*o*o*v+j*v+e,o*v,tempv+i*o*o*v+j*o*v+e*o,1);
+  //            C_DAXPY(o,-2.0,tempt+i*o*o*v+j*v+e,o*v,tempv+i*o*o*v+j*o*v+e*o,1);
   //        }
   //    }
   //}
@@ -216,8 +216,8 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem_quadratic(CCTaskParams params){
   for (a=0,id=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
-              F_DAXPY(o,1.0,tempv+a*o*o*v+b*o+i,v*o,tempt+a*o*o*v+b*o*o+i*o,1);
-              F_DAXPY(o,1.0,tempv+b*o*o*v+i*v*o+a*o,1,tempt+a*o*o*v+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempv+a*o*o*v+b*o+i,v*o,tempt+a*o*o*v+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempv+b*o*o*v+i*v*o+a*o,1,tempt+a*o*o*v+b*o*o+i*o,1);
           }
       }
   }
@@ -267,11 +267,11 @@ void CoupledCluster::I2ijkl_quadratic(CCTaskParams params){
   // contribute to residual
   psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  F_DAXPY(o*o*v*v,1.0,tempv,1,tempt,1);
+  C_DAXPY(o*o*v*v,1.0,tempv,1,tempt,1);
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
-              F_DAXPY(o,1.0,tempv+b*v*o*o+a*o*o+i,o,tempt+a*v*o*o+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempv+b*v*o*o+a*o*o+i,o,tempt+a*v*o*o+b*o*o+i*o,1);
           }
       }
   }
@@ -326,7 +326,7 @@ void CoupledCluster::I2iabj_quadratic(CCTaskParams params){
   for (i=0; i<o; i++){
       for (b=0; b<v; b++){
           for (j=0; j<o; j++){
-              F_DAXPY(v,-0.5,tempt+i*v*v*o+j*v+b,v*o,tempv+i*o*v*v+b*o*v+j*v,1);
+              C_DAXPY(v,-0.5,tempt+i*v*v*o+j*v+b,v*o,tempv+i*o*v*v+b*o*v+j*v,1);
           }
       }
   }
@@ -351,7 +351,7 @@ void CoupledCluster::I2iabj_quadratic(CCTaskParams params){
   psio->open(PSIF_DCC_TEMP,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_TEMP,"temporary",(char*)&tempv[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_TEMP,0);
-  F_DAXPY(o*o*v*v,1.0,tempt,1,tempv,1);
+  C_DAXPY(o*o*v*v,1.0,tempt,1,tempv,1);
 
   // use I2iabj
   if (t2_on_disk){
@@ -364,7 +364,7 @@ void CoupledCluster::I2iabj_quadratic(CCTaskParams params){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
               C_DCOPY(v,tb+b*o*o+i*o+j,o*o*v,tempt+j*o*v*v+b*o*v+i*v,1);
-              F_DAXPY(v,-0.5,tb+b*o*o*v+i*o+j,o*o,tempt+j*o*v*v+b*o*v+i*v,1);
+              C_DAXPY(v,-0.5,tb+b*o*o*v+i*o+j,o*o,tempt+j*o*v*v+b*o*v+i*v,1);
           }
       }
   }
@@ -379,8 +379,8 @@ void CoupledCluster::I2iabj_quadratic(CCTaskParams params){
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
-              F_DAXPY(o,1.0,integrals+b*v*o+i*v+a,o*v*v,tempt+a*o*o*v+b*o*o+i*o,1);
-              F_DAXPY(o,1.0,integrals+i*o*v*v+a*v*o+b,v,tempt+a*o*o*v+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,integrals+b*v*o+i*v+a,o*v*v,tempt+a*o*o*v+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,integrals+i*o*v*v+a*v*o+b,v,tempt+a*o*o*v+b*o*o+i*o,1);
           }
       }
   }
@@ -457,8 +457,8 @@ void CoupledCluster::I2iajb_quadratic(CCTaskParams params){
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
-              F_DAXPY(o,1.0,tempv+b*v*o+i*v+a,o*v*v,integrals+a*o*o*v+b*o*o+i*o,1);
-              F_DAXPY(o,1.0,tempv+i*o*v*v+a*v*o+b,v,integrals+a*o*o*v+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempv+b*v*o+i*v+a,o*v*v,integrals+a*o*o*v+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempv+i*o*v*v+a*v*o+b,v,integrals+a*o*o*v+b*o*o+i*o,1);
           }
       }
   }
@@ -491,8 +491,8 @@ void CoupledCluster::I2iajb_quadratic(CCTaskParams params){
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
           for (j=0; j<o; j++){
-              F_DAXPY(o,1.0,integrals+j*o*v*v+b*v*o+a,v,tempv+a*o*o*v+b*o*o+j*o,1);
-              F_DAXPY(o,1.0,integrals+a*v*o+j*v+b,o*v*v,tempv+a*o*o*v+b*o*o+j*o,1);
+              C_DAXPY(o,1.0,integrals+j*o*v*v+b*v*o+a,v,tempv+a*o*o*v+b*o*o+j*o,1);
+              C_DAXPY(o,1.0,integrals+a*v*o+j*v+b,o*v*v,tempv+a*o*o*v+b*o*o+j*o,1);
           }
       }
   }
