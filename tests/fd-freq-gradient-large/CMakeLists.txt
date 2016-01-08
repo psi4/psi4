@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(fd-freq-gradient-large "psi;longertests;findif")
+add_regression_test(fd-freq-gradient-large "psi;shorttests;findif")
