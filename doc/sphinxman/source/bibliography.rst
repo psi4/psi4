@@ -145,12 +145,13 @@ Bibliography
    F. A. Evangelista, A. C. Simmonett, W. D. Allen, H. F. Schaefer, III, and J. Gauss, 
    *J. Chem. Phys.* **128**, 124104 (2008).    
 
-.. [Verma:2015]
-   P. Verma, W. D. Derricotte, F. A. Evangelista (2015).
-
 .. [Cheng:084114]
    L. Cheng and J. Gauss,
    *J. Chem. Phys.* **135**, 084114 (2011).
+
+.. [Verma:2015]
+   P. Verma, W. D. Derricotte, F. A. Evangelista,
+   *J. Chem. Theory Comput.* **DOI: 10.1021/acs.jctc.5b00817** (2015).
 
 .. [Jeziorski:1981:1668]
    B. Jeziorski and H. J. Monkhorst,
@@ -299,18 +300,10 @@ Bibliography
    *Density Functional Theory of Atoms and Molecules* **Oxford University Press, USA, 1989** ISBN:0195357736, 9780195357738
 
 .. [FW:1950]
-   Leslie L. Foldy and Wouthuysen, Siegfried A. Wouthuysen,
+   L. L. Foldy and S. A. Wouthuysen,
    *Phys. Rev.* **78**, 29-36 (1950) 
 
 .. [Kutzelnigg:1984]
-   Werner Kutzelnigg,
+   W. Kutzelnigg,
    *Int. J. Quantum Chem.* **25**, 107-129 (1984)
  
-.. [Cheng:084114]
-   Lan Cheng and Jürgen Gauss,
-   *J. Chem. Phys.* **135**, 084114 (2011)
-
-
-.. [Verma:2015]
-   P. Verma, W. D. Derricotte, F. A. Evangelista,
-   *J. Chem. Theory Comput.* **DOI: 10.1021/acs.jctc.5b00817** (2015).
