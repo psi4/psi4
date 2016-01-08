@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(pywrap-basis "psi;longertests;pywrap")
+add_regression_test(pywrap-basis "psi;shorttests;pywrap")
