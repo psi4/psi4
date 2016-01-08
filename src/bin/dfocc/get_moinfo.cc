@@ -208,6 +208,15 @@ else if (reference_ == "UNRESTRICTED") {
         ntri_abAA = 0.5*navirA*(navirA+1);
         ntri_abBB = 0.5*navirB*(navirB+1);
 
+        if (naoccA > 1) ntri_anti_ijAA = 0.5*naoccA*(naoccA-1);
+	else ntri_anti_ijAA = 1;
+        if (naoccB > 1) ntri_anti_ijBB = 0.5*naoccB*(naoccB-1);
+	else ntri_anti_ijBB = 1;
+        if (navirA > 1) ntri_anti_abAA = 0.5*navirA*(navirA-1);
+	else ntri_anti_abAA = 1;
+        if (navirB > 1) ntri_anti_abBB = 0.5*navirB*(navirB-1);
+	else ntri_anti_abBB = 1;
+
 /********************************************************************************************/
 /************************** Read orbital coefficients ***************************************/
 /********************************************************************************************/

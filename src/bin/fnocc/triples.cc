@@ -195,7 +195,7 @@ PsiReturnType CoupledCluster::triples(){
       F_DGEMM('n','t',v,vv,o,-1.0,E2ijak+i*o*o*v+k*o*v,v,tempt+j*vvo,vv,1.0,Z2[thread],v);
       for (long int a=0; a<v; a++){
           for (long int b=0; b<v; b++){
-              F_DAXPY(v,1.0,Z2[thread]+b*vv+a*v,1,Z[thread]+a*vv+b*v,1);
+              C_DAXPY(v,1.0,Z2[thread]+b*vv+a*v,1,Z[thread]+a*vv+b*v,1);
           }
       }
 
@@ -206,7 +206,7 @@ PsiReturnType CoupledCluster::triples(){
       F_DGEMM('n','t',v,vv,o,-1.0,E2ijak+k*voo+j*vo,v,tempt+i*vvo,vv,1.0,Z2[thread],v);
       for (long int a=0; a<v; a++){
           for (long int b=0; b<v; b++){
-              F_DAXPY(v,1.0,Z2[thread]+a*vv+b,v,Z[thread]+a*vv+b*v,1);
+              C_DAXPY(v,1.0,Z2[thread]+a*vv+b,v,Z[thread]+a*vv+b*v,1);
           }
       }
 
@@ -215,7 +215,7 @@ PsiReturnType CoupledCluster::triples(){
       F_DGEMM('n','t',v,vv,o,-1.0,E2ijak+i*voo+j*vo,v,tempt+k*vvo,vv,1.0,Z2[thread],v);
       for (long int a=0; a<v; a++){
           for (long int b=0; b<v; b++){
-              F_DAXPY(v,1.0,Z2[thread]+a*v+b,vv,Z[thread]+a*vv+b*v,1);
+              C_DAXPY(v,1.0,Z2[thread]+a*v+b,vv,Z[thread]+a*vv+b*v,1);
           }
       }
 
@@ -226,7 +226,7 @@ PsiReturnType CoupledCluster::triples(){
       F_DGEMM('n','t',v,vv,o,-1.0,E2ijak+j*voo+i*vo,v,tempt+k*vvo,vv,1.0,Z2[thread],v);
       for (long int a=0; a<v; a++){
           for (long int b=0; b<v; b++){
-              F_DAXPY(v,1.0,Z2[thread]+b*v+a,vv,Z[thread]+a*vv+b*v,1);
+              C_DAXPY(v,1.0,Z2[thread]+b*v+a,vv,Z[thread]+a*vv+b*v,1);
           }
       }
 
@@ -235,7 +235,7 @@ PsiReturnType CoupledCluster::triples(){
       F_DGEMM('n','t',v,vv,o,-1.0,E2ijak+k*voo+i*vo,v,tempt+j*vvo,vv,1.0,Z2[thread],v);
       for (long int a=0; a<v; a++){
           for (long int b=0; b<v; b++){
-              F_DAXPY(v,1.0,Z2[thread]+b*vv+a,v,Z[thread]+a*vv+b*v,1);
+              C_DAXPY(v,1.0,Z2[thread]+b*vv+a,v,Z[thread]+a*vv+b*v,1);
           }
       }
 

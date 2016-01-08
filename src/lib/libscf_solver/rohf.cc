@@ -280,9 +280,34 @@ void ROHF::save_information()
 
 void ROHF::compute_orbital_gradient(bool save_diis)
 {
-    SharedMatrix gradient(Feff_);
-    gradient->zero_diagonal();
-    gradient->back_transform(Ct_);
+
+    // Only the inact-act, inact-vir, and act-vir rotations are non-redundant
+    Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
+    Dimension noccpi = doccpi_ + soccpi_;
+    Dimension virpi = nmopi_ - doccpi_;
+    View vMOgradient(Feff_, noccpi, virpi, dim_zero, doccpi_);
+    SharedMatrix MOgradient = vMOgradient();
+
+    // Zero out act-act part
+    for (size_t h=0; h < nirrep_; h++){
+        if (!soccpi_[h]) continue;
+
+        for (size_t i=0; i < soccpi_[h]; i++){
+            for (size_t j=0; j < soccpi_[h]; j++){
+                MOgradient->set(h, i + doccpi_[h], j, 0.0);
+            }
+        }
+    }
+
+    // Grab inact-act and act-vir orbs
+    View vCia(Ca_, nsopi_, noccpi, dim_zero, dim_zero);
+    SharedMatrix Cia = vCia();
+
+    View vCav(Ca_, nsopi_, virpi, dim_zero, doccpi_);
+    SharedMatrix Cav = vCav();
+
+    // Back transform MOgradient
+    SharedMatrix gradient = Matrix::triplet(Cia, MOgradient, Cav, false, false, true);
     Drms_ = gradient->rms();
 
     if(save_diis){
@@ -461,14 +486,14 @@ double ROHF::compute_initial_E()
     return 0.5 * (compute_E() + nuclearrep_);
 }
 
-double ROHF::compute_E() 
+double ROHF::compute_E()
 {
     double one_electron_E = Da_->vector_dot(H_) + Db_->vector_dot(H_);;
-    double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);   
- 
+    double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);
+
     energies_["Nuclear"] = nuclearrep_;
     energies_["One-Electron"] = one_electron_E;
-    energies_["Two-Electron"] = two_electron_E; 
+    energies_["Two-Electron"] = two_electron_E;
     energies_["XC"] = 0.0;
     energies_["-D"] = 0.0;
 
@@ -485,21 +510,33 @@ double ROHF::compute_E()
 void ROHF::form_G()
 {
 
-      std::vector<SharedMatrix> & C = jk_->C_left();
-      C.clear();
-      C.push_back(Ca_subset("SO", "OCC"));
-      C.push_back(Cb_subset("SO", "OCC"));
-    
-      // Run the JK object
-      jk_->compute();
+    std::vector<SharedMatrix> & C = jk_->C_left();
+    C.clear();
 
-      // Pull the J and K matrices off
-      const std::vector<SharedMatrix> & J = jk_->J();
-      const std::vector<SharedMatrix> & K = jk_->K();
-      Ga_->copy(J[0]);
-      Ga_->add(J[1]);
-      Ka_ = K[0];
-      Kb_ = K[1];
+    // Push back docc orbitals
+    View vCdocc(Ca_, nsopi_, doccpi_);
+    SharedMatrix Cdocc = vCdocc();
+    C.push_back(Cdocc);
+
+    // Push back socc orbitals
+    Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
+    View vCsocc(Ca_, nsopi_, soccpi_, dim_zero, doccpi_);
+    SharedMatrix Csocc = vCsocc();
+    C.push_back(Csocc);
+
+    // Run the JK object
+    jk_->compute();
+
+    // Pull the J and K matrices off
+    const std::vector<SharedMatrix> & J = jk_->J();
+    const std::vector<SharedMatrix> & K = jk_->K();
+    Ga_->copy(J[0]);
+    Ga_->scale(2.0);
+    Ga_->add(J[1]);
+
+    Ka_->copy(K[0]);
+    Ka_->add(K[1]);
+    Kb_ = K[0];
 
     Gb_->copy(Ga_);
     Ga_->subtract(Ka_);
