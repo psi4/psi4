@@ -74,10 +74,14 @@ std::string PSIOManager::get_file_path(int fileno)
 }
 void PSIOManager::set_specific_retention(int fileno, bool retain)
 {
-    if (retain)
+    if (retain) { 
         specific_retains_.insert(fileno);
-    else
+    }
+    else {
         specific_retains_.erase(fileno);
+        std::string filenum = std::to_string(fileno);
+        retained_files_.erase((get_file_path(fileno) + "psi." + pid_ + "."+ PSIO::get_default_namespace() + "." + filenum).c_str());
+    }
     mirror_to_disk();
 }
 
