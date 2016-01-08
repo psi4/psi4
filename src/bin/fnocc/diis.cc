@@ -222,9 +222,9 @@ void CoupledCluster::DIISNewAmplitudes(int diis_iter,int&replace_diis_iter){
       addr = PSIO_ZERO;
       sprintf(oldvector,"oldvector%li",j);
       psio->read(PSIF_DCC_OVEC,oldvector,(char*)&tempt[0],arraysize*sizeof(double),addr,&addr);
-      F_DAXPY(arraysize,diisvec[j-1],tempt,1,tb,1);
+      C_DAXPY(arraysize,diisvec[j-1],tempt,1,tb,1);
       psio->read(PSIF_DCC_OVEC,oldvector,(char*)&tempt[0],o*v*sizeof(double),addr,&addr);
-      F_DAXPY(o*v,diisvec[j-1],tempt,1,t1,1);
+      C_DAXPY(o*v,diisvec[j-1],tempt,1,t1,1);
       //if ( fabs( diisvec[j-1] ) < min ) {
       //    min = fabs( diisvec[j-1] );
       //    replace_diis_iter = j;

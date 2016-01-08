@@ -20,7 +20,6 @@
  *@END LICENSE
  */
 
-#define PSIF_CIM 273 // TODO: move to psifiles.h
 #include"psi4-dec.h"
 #include<libmints/vector.h>
 #include<libmints/matrix.h>
@@ -60,7 +59,7 @@ void DefineQuadraticTasks();
 
 // sort
 void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options,bool iscim);
-void Sort_OV3_LowMemory(long int memory,long int o,long int v,bool islocal);
+void Sort_OV3_LowMemory(long int memory,long int o,long int v);
 
 // coupled cluster constructor
 CoupledCluster::CoupledCluster(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options):
@@ -107,20 +106,13 @@ void CoupledCluster::common_init() {
       nmo    += nmopi_[h]-frzcpi_[h]-frzvpi_[h];
       ndocc  += doccpi_[h];
   }
-  if (reference_wavefunction_->isCIM()){
-     ndoccact = reference_wavefunction_->CIMActiveOccupied();
-     nvirt    = reference_wavefunction_->CIMActiveVirtual();
-     nfzc     = ndocc - ndoccact;
-     nmo      = ndoccact + nvirt;
-     nfzv     = nmopi_[0] - ndocc - nvirt;
-  }else{
-     ndoccact = ndocc - nfzc;
-     nvirt    = nmo - ndoccact;
+  ndoccact = ndocc - nfzc;
+  nvirt    = nmo - ndoccact;
+
+  if (ndoccact <= 0) {
+      throw PSIEXCEPTION("Number of active orbitals is zero.");
   }
 
-    if (ndoccact <= 0) {
-        throw PSIEXCEPTION("Number of active orbitals is zero.");
-    }
   // for triples, we use nvirt_no in case we've truncated the virtual space:
   nvirt_no = nvirt;
 
@@ -183,13 +175,9 @@ double CoupledCluster::compute_energy() {
   }
 
   // integral sort
-  if (!reference_wavefunction_->isCIM()) {
-      tstart();
-      SortIntegrals(nfzc,nfzv,nmo+nfzc+nfzv,ndoccact,nvirt,options_,reference_wavefunction_->isCIM());
-      tstop();
-  }
- 
-
+  tstart();
+  SortIntegrals(nfzc,nfzv,nmo+nfzc+nfzv,ndoccact,nvirt,options_,false);
+  tstop();
 
   // MP4(SDQ)
   tstart();
@@ -264,9 +252,9 @@ double CoupledCluster::compute_energy() {
      long int o = ndoccact;
      long int v = nvirt;
 
-     // if low memory or CIM, need to generate one last set of integrals
-     if (reference_wavefunction_->isCIM() || isLowMemory){
-        Sort_OV3_LowMemory(memory - 8L*(long int)(!t2_on_disk)*o*o*v*v,o,v,reference_wavefunction_->isCIM());
+     // if low memory, need to generate one last set of integrals
+     if ( isLowMemory ){
+        Sort_OV3_LowMemory(memory - 8L*(long int)(!t2_on_disk)*o*o*v*v,o,v);
      }
 
      // now there should be space for t2
@@ -283,76 +271,65 @@ double CoupledCluster::compute_energy() {
 
      tstart();
      // triples
-     if (reference_wavefunction_->isCIM()){
-        if (do_cc) {
-           status = local_triples();
-        }
-        if (do_mp) {
-           ccmethod = 2;
-           status = local_triples();
-        }
-     }
-     else{
-        if (isLowMemory){
-           if (do_cc) {
-              status = lowmemory_triples();
-           }
-           if (do_mp) {
-              ccmethod = 2;
-              status = lowmemory_triples();
-           }
-        }else{
-           if (do_cc) {
-              status = triples();
-           }
-           if (do_mp) {
-              ccmethod = 2;
-              status = triples();
-           }
-        }
+     if (isLowMemory){
+         if (do_cc) {
+             status = lowmemory_triples();
+         }
+         if (do_mp) {
+             ccmethod = 2;
+             status = lowmemory_triples();
+         }
+     }else{
+         if (do_cc) {
+             status = triples();
+         }
+         if (do_mp) {
+             ccmethod = 2;
+             status = triples();
+         }
      }
      if (status == Failure){
-        throw PsiException(
-           "Whoops, the (T) correction died.",__FILE__,__LINE__);
+         throw PsiException(
+            "Whoops, the (T) correction died.",__FILE__,__LINE__);
      }
      tstop();
 
      // ccsd(t) energy
      if (do_cc) {
-        Process::environment.globals["(T) CORRECTION ENERGY"] = et;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] = eccsd + et;
-        Process::environment.globals["CURRENT ENERGY"] = eccsd + et + escf;
-        if (isccsd) {
-           Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = eccsd + et;
-           Process::environment.globals["CCSD(T) TOTAL ENERGY"] = eccsd + et + escf;
-        }else {
-           Process::environment.globals["QCISD(T) CORRELATION ENERGY"] = eccsd + et;
-           Process::environment.globals["QCISD(T) TOTAL ENERGY"] = eccsd + et + escf;
-        }
+         Process::environment.globals["(T) CORRECTION ENERGY"] = et;
+         Process::environment.globals["CURRENT CORRELATION ENERGY"] = eccsd + et;
+         Process::environment.globals["CURRENT ENERGY"] = eccsd + et + escf;
+         if (isccsd) {
+             Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = eccsd + et;
+             Process::environment.globals["CCSD(T) TOTAL ENERGY"] = eccsd + et + escf;
+         }else {
+             Process::environment.globals["QCISD(T) CORRELATION ENERGY"] = eccsd + et;
+             Process::environment.globals["QCISD(T) TOTAL ENERGY"] = eccsd + et + escf;
+         }
      }
 
      if (do_mp) {
-        // mp4 triples:
-        Process::environment.globals["MP4(T) CORRECTION ENERGY"] = emp4_t;
-        Process::environment.globals["MP4(SDTQ) CORRELATION ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t;
-        Process::environment.globals["MP4(SDTQ) TOTAL ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t+escf;
-        Process::environment.globals["MP4 CORRELATION ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t;
-        Process::environment.globals["MP4 TOTAL ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t+escf;
-        if (!do_cc){
-           Process::environment.globals["CURRENT CORRELATION ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t;
-           Process::environment.globals["CURRENT ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t+escf;
-        }
+         // mp4 triples:
+         Process::environment.globals["MP4(T) CORRECTION ENERGY"] = emp4_t;
+         Process::environment.globals["MP4(SDTQ) CORRELATION ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t;
+         Process::environment.globals["MP4(SDTQ) TOTAL ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t+escf;
+         Process::environment.globals["MP4 CORRELATION ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t;
+         Process::environment.globals["MP4 TOTAL ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t+escf;
+         if (!do_cc){
+            Process::environment.globals["CURRENT CORRELATION ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t;
+            Process::environment.globals["CURRENT ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t+escf;
+         }
      }
 
      // if we allocated t2 just for triples, free it
      if (t2_on_disk){
-        free(tb);
+         free(tb);
      }
   }
 
   // free remaining memory
   if (!t2_on_disk){
-     free(tb);
+      free(tb);
   }
   free(t1);
 
@@ -525,13 +502,7 @@ PsiReturnType CoupledCluster::CCSDIterations() {
         throw PsiException("  QCISD iterations did not converge.",__FILE__,__LINE__);
   }
 
-  if (reference_wavefunction_->isCIM()){
-     Local_SCS_CCSD();
-     Local_SCS_MP2();
-  }
-  else{
-     SCS_CCSD();
-  }
+  SCS_CCSD();
 
   outfile->Printf("\n");
   if (isccsd)
@@ -780,29 +751,18 @@ void CoupledCluster::AllocateMemory() {
 
   }
   // orbital energies:
-  if (!reference_wavefunction_->isCIM()){
-      int count=0;
-      eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
-      boost::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
-      for (int h=0; h<nirrep_; h++){
-          for (int norb = frzcpi_[h]; norb<doccpi_[h]; norb++){
-              eps[count++] = eps_test->get(h,norb);
-          }
+  int count=0;
+  eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
+  boost::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
+  for (int h=0; h<nirrep_; h++){
+      for (int norb = frzcpi_[h]; norb<doccpi_[h]; norb++){
+          eps[count++] = eps_test->get(h,norb);
       }
-      for (int h=0; h<nirrep_; h++){
-          for (int norb = doccpi_[h]; norb<nmopi_[h]-frzvpi_[h]; norb++){
-              eps[count++] = eps_test->get(h,norb);
-          }
+  }
+  for (int h=0; h<nirrep_; h++){
+      for (int norb = doccpi_[h]; norb<nmopi_[h]-frzvpi_[h]; norb++){
+          eps[count++] = eps_test->get(h,norb);
       }
-  }else{
-     // orbital energies in qt ordering:
-     long int count = 0;
-     eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
-     boost::shared_ptr<Vector> eps_test = reference_wavefunction_->CIMOrbitalEnergies();
-     for (int i = 0; i < ndoccact + nvirt; i++){
-         eps[i] = eps_test->get(0,i+nfzc);
-     }
-     eps_test.reset();
   }
   if (options_.get_bool("RUN_MP2")) return;
 
@@ -895,14 +855,14 @@ void CoupledCluster::CPU_t1_vmeai(CCTaskParams params){
   psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);
-  F_DAXPY(o*o*v*v,-2.0,integrals,1,tempv,1);
+  C_DAXPY(o*o*v*v,-2.0,integrals,1,tempv,1);
   
   for (i=0; i<o; i++){
       C_DCOPY(v,t1+i,o,tempt+i*v,1);
   }
   F_DGEMV('n',o*v,o*v,-1.0,tempv,o*v,tempt,1,0.0,integrals,1);
   for (a=0; a<v; a++){
-      F_DAXPY(o,1.0,integrals+a,v,w1+a*o,1);
+      C_DAXPY(o,1.0,integrals+a,v,w1+a*o,1);
   }
   psio.reset();
 }
@@ -927,7 +887,7 @@ void CoupledCluster::CPU_t1_vmeni(CCTaskParams params){
       for (m=0; m<o; m++){
           for (n=0; n<o; n++){
               C_DCOPY(v,tb+a*v*o*o+m*o+n,o*o,tempt+a*o*o*v+m*o*v+n*v,1);
-              F_DAXPY(v,-2.0,tb+a*o*o+m*o+n,o*o*v,tempt+a*o*o*v+m*o*v+n*v,1);
+              C_DAXPY(v,-2.0,tb+a*o*o+m*o+n,o*o*v,tempt+a*o*o*v+m*o*v+n*v,1);
           }
       }
   }
@@ -959,7 +919,7 @@ void CoupledCluster::CPU_t1_vmaef(CCTaskParams params){
       for (m=0; m<o; m++){
           for (e=0; e<v; e++){
               C_DCOPY(o,tb+e*v*o*o+f*o*o+m*o,1,tempt+f*o*o*v+m*o*v+e*o,1);
-              F_DAXPY(o,-0.5,tb+e*v*o*o+f*o*o+m,o,tempt+f*o*o*v+m*o*v+e*o,1);
+              C_DAXPY(o,-0.5,tb+e*v*o*o+f*o*o+m,o,tempt+f*o*o*v+m*o*v+e*o,1);
           }
       }
   }
@@ -1029,7 +989,7 @@ void CoupledCluster::CPU_I1ab(CCTaskParams params){
   for (m=0,id=0; m<o; m++){
       for (e=0; e<v; e++){
           for (n=0; n<o; n++){
-              F_DAXPY(v,-0.5,integrals+m*o*v*v+n*v+e,o*v,tempv+m*o*v*v+e*o*v+n*v,1);
+              C_DAXPY(v,-0.5,integrals+m*o*v*v+n*v+e,o*v,tempv+m*o*v*v+e*o*v+n*v,1);
           }
       }
   }
@@ -1094,8 +1054,8 @@ void CoupledCluster::CPU_I1ab(CCTaskParams params){
   for (a=0,id=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
-              F_DAXPY(o,1.0,tempv+a*v*o+i*v+b,v*v*o,tempt+a*o*o*v+b*o*o+i*o,1);
-              F_DAXPY(o,1.0,tempv+i*v*v*o+b*v*o+a,v,tempt+a*o*o*v+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempv+a*v*o+i*v+b,v*v*o,tempt+a*o*o*v+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempv+i*v*v*o+b*v*o+a,v,tempt+a*o*o*v+b*o*o+i*o,1);
           }
       }
   }
@@ -1132,11 +1092,11 @@ void CoupledCluster::CPU_I2p_abci_refactored_term2(CCTaskParams params){
   // contribute to residual
   psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  F_DAXPY(o*o*v*v,1.0,tempv,1,tempt,1);
+  C_DAXPY(o*o*v*v,1.0,tempv,1,tempt,1);
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
-              F_DAXPY(o,1.0,tempv+a*v*o*o+b*o*o+i*o,1,tempt+b*v*o*o+a*o*o+i,o);
+              C_DAXPY(o,1.0,tempv+a*v*o*o+b*o*o+i*o,1,tempt+b*v*o*o+a*o*o+i,o);
           }
       }
   }
@@ -1166,7 +1126,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params){
   for (i=0; i<o; i++){
       for (a=0; a<v; a++){
           for (m=0; m<o; m++){
-              F_DAXPY(v,-0.5,integrals+i*o*v*v+m*v+a,o*v,tempv+i*v*v*o+a*v*o+m*v,1);
+              C_DAXPY(v,-0.5,integrals+i*o*v*v+m*v+a,o*v,tempv+i*v*v*o+a*v*o+m*v,1);
           }
       }
   }
@@ -1187,13 +1147,13 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params){
       for (e=0; e<v; e++){
           for (j=0; j<o; j++){
               C_DCOPY(v,tb+e*o*o*v+m*o+j,o*o,tempt+m*o*v*v+e*o*v+j*v,1);
-              F_DAXPY(v,-0.5,tb+e*o*o*v+j*o+m,o*o,tempt+m*o*v*v+e*o*v+j*v,1);
+              C_DAXPY(v,-0.5,tb+e*o*o*v+j*o+m,o*o,tempt+m*o*v*v+e*o*v+j*v,1);
           }
       }
   }
   F_DGEMV('n',o*v,o*v,2.0,tempt,o*v,I1,1,0.0,tempv,1);
   for (i=0; i<o; i++){
-      F_DAXPY(v,1.0,tempv+i*v,1,w1+i,o);
+      C_DAXPY(v,1.0,tempv+i*v,1,w1+i,o);
   }
 
   // build I1'(i,j)
@@ -1209,7 +1169,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params){
          for (j=0; j<o; j++){
              for (e=0; e<v; e++){
                  C_DCOPY(o,tempt+i*o*v+j*v+e,o*o*v,tempv+i*o*o*v+j*o*v+e*o,1);
-                 F_DAXPY(o,-2.0,tempt+i*o*o*v+j*v+e,o*v,tempv+i*o*o*v+j*o*v+e*o,1);
+                 C_DAXPY(o,-2.0,tempt+i*o*o*v+j*v+e,o*v,tempv+i*o*o*v+j*o*v+e*o,1);
              }
          }
      }
@@ -1248,8 +1208,8 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params){
   for (a=0,id=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
-              F_DAXPY(o,1.0,tempv+a*o*o*v+b*o+i,v*o,tempt+a*o*o*v+b*o*o+i*o,1);
-              F_DAXPY(o,1.0,tempv+b*o*o*v+i*v*o+a*o,1,tempt+a*o*o*v+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempv+a*o*o*v+b*o+i,v*o,tempt+a*o*o*v+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempv+b*o*o*v+i*v*o+a*o,1,tempt+a*o*o*v+b*o*o+i*o,1);
           }
       }
   }
@@ -1313,11 +1273,11 @@ void CoupledCluster::I2ijkl(CCTaskParams params){
   // contribute to residual
   psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  F_DAXPY(o*o*v*v,1.0,tempv,1,tempt,1);
+  C_DAXPY(o*o*v*v,1.0,tempv,1,tempt,1);
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
-              F_DAXPY(o,1.0,tempv+b*v*o*o+a*o*o+i,o,tempt+a*v*o*o+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempv+b*v*o*o+a*o*o+i,o,tempt+a*v*o*o+b*o*o+i*o,1);
           }
       }
   }
@@ -1381,7 +1341,7 @@ void CoupledCluster::I2piajk(CCTaskParams params){
      for (j=0; j<o; j++){
          for (a=0; a<v; a++){
              for (i=0; i<o; i++){
-                 F_DAXPY(o,1.0,tempt+i*o*o*v+a*o+j,o*v,tempv+j*o*o*v+a*o*o+i*o,1);
+                 C_DAXPY(o,1.0,tempt+i*o*o*v+a*o+j,o*v,tempv+j*o*o*v+a*o*o+i*o,1);
              }
          }
      }
@@ -1393,11 +1353,11 @@ void CoupledCluster::I2piajk(CCTaskParams params){
   // contribute to residual
   psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  F_DAXPY(o*o*v*v,1.0,tempt,1,tempv,1);
+  C_DAXPY(o*o*v*v,1.0,tempt,1,tempv,1);
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
-              F_DAXPY(o,1.0,tempt+b*v*o*o+a*o*o+i,o,tempv+a*v*o*o+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempt+b*v*o*o+a*o*o+i,o,tempv+a*v*o*o+b*o*o+i*o,1);
           }
       }
   }
@@ -1576,7 +1536,7 @@ void CoupledCluster::K(CCTaskParams params){
       for (i=0; i<o; i++){
           for (b=0; b<v; b++){
               for (j=0; j<o; j++){
-                  F_DAXPY(v,1.0,tempv+b*o*o+i*o+j,o*o*v,tempt+i*o*v*v+b*o*v+j*v,1);
+                  C_DAXPY(v,1.0,tempv+b*o*o+i*o+j,o*o*v,tempt+i*o*v*v+b*o*v+j*v,1);
               }
           }
       }
@@ -1591,7 +1551,7 @@ void CoupledCluster::K(CCTaskParams params){
       for (i=0; i<o; i++){
           for (b=0; b<v; b++){
               for (j=0; j<o; j++){
-                  F_DAXPY(v,1.0,tempv+i*o*v+b*o+j,o*o*v,tempt+i*o*v*v+b*o*v+j*v,1);
+                  C_DAXPY(v,1.0,tempv+i*o*v+b*o+j,o*o*v,tempt+i*o*v*v+b*o*v+j*v,1);
               }
           }
       }
@@ -1663,9 +1623,9 @@ void CoupledCluster::K(CCTaskParams params){
       for (b=0; b<v; b++){
           for (j=0; j<o; j++){
               C_DCOPY(o,    integrals+j*o*v*v+b*v*o+a,v,tempt+a*o*o*v+b*o*o+j*o,1);
-              F_DAXPY(o,1.0,integrals+a*v*o+j*v+b,o*v*v,tempt+a*o*o*v+b*o*o+j*o,1);
-              F_DAXPY(o,0.5,integrals+j*o*v*v+a*v*o+b,v,tempt+a*o*o*v+b*o*o+j*o,1);
-              F_DAXPY(o,0.5,integrals+b*v*o+j*v+a,o*v*v,tempt+a*o*o*v+b*o*o+j*o,1);
+              C_DAXPY(o,1.0,integrals+a*v*o+j*v+b,o*v*v,tempt+a*o*o*v+b*o*o+j*o,1);
+              C_DAXPY(o,0.5,integrals+j*o*v*v+a*v*o+b,v,tempt+a*o*o*v+b*o*o+j*o,1);
+              C_DAXPY(o,0.5,integrals+b*v*o+j*v+a,o*v*v,tempt+a*o*o*v+b*o*o+j*o,1);
           }
       }
   }
@@ -1698,7 +1658,7 @@ void CoupledCluster::TwoJminusK(CCTaskParams params){
       for (i=0; i<o; i++){
           for (b=0; b<v; b++){
               for (j=0; j<o; j++){
-                  F_DAXPY(v,1.0,tempt+i*o*v+j*v+b,o*o*v,tempv+i*o*v*v+b*o*v+j*v,1);
+                  C_DAXPY(v,1.0,tempt+i*o*v+j*v+b,o*o*v,tempv+i*o*v*v+b*o*v+j*v,1);
               }
           }
       }
@@ -1767,7 +1727,7 @@ void CoupledCluster::TwoJminusK(CCTaskParams params){
       for (i=0; i<o; i++){
           for (a=0; a<v; a++){
               for (b=0; b<v; b++){
-                  F_DAXPY(o,1.0,tempv+i*o*v*v+a*o*v+b*o,1,tempt+i*o*v*v+b*o*v+a,v);
+                  C_DAXPY(o,1.0,tempv+i*o*v*v+a*o*v+b*o,1,tempt+i*o*v*v+b*o*v+a,v);
               }
           }
       }
@@ -1780,8 +1740,8 @@ void CoupledCluster::TwoJminusK(CCTaskParams params){
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
-              F_DAXPY(o,1.0,tempv+i*v*v*o+b*o*v+a*o,1,integrals+a*v*o*o+b*o*o+i*o,1);
-              F_DAXPY(o,1.0,tempv+i+a*o*v+b*o,v*v*o,integrals+a*v*o*o+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempv+i*v*v*o+b*o*v+a*o,1,integrals+a*v*o*o+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,tempv+i+a*o*v+b*o,v*v*o,integrals+a*v*o*o+b*o*o+i*o,1);
           }
       }
   }
@@ -1792,7 +1752,7 @@ void CoupledCluster::TwoJminusK(CCTaskParams params){
   psio->open(PSIF_DCC_TEMP,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_TEMP,"temporary_J",(char*)&tempv[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_TEMP,1);
-  F_DAXPY(o*o*v*v,1.0,tempt,1,tempv,1);
+  C_DAXPY(o*o*v*v,1.0,tempt,1,tempv,1);
 
   // term from K stored as ibja
   psio->open(PSIF_DCC_TEMP,PSIO_OPEN_OLD);
@@ -1817,7 +1777,7 @@ void CoupledCluster::TwoJminusK(CCTaskParams params){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
               C_DCOPY(v,tb+b*o*o+i*o+j,o*o*v,tempt+j*o*v*v+b*o*v+i*v,1);
-              F_DAXPY(v,-0.5,tb+b*o*o*v+i*o+j,o*o,tempt+j*o*v*v+b*o*v+i*v,1);
+              C_DAXPY(v,-0.5,tb+b*o*o*v+i*o+j,o*o,tempt+j*o*v*v+b*o*v+i*v,1);
           }
       }
   }
@@ -1830,8 +1790,8 @@ void CoupledCluster::TwoJminusK(CCTaskParams params){
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
-              F_DAXPY(o,1.0,integrals+b*v*o+i*v+a,o*v*v,tempt+a*o*o*v+b*o*o+i*o,1);
-              F_DAXPY(o,1.0,integrals+i*o*v*v+a*v*o+b,v,tempt+a*o*o*v+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,integrals+b*v*o+i*v+a,o*v*v,tempt+a*o*o*v+b*o*o+i*o,1);
+              C_DAXPY(o,1.0,integrals+i*o*v*v+a*v*o+b,v,tempt+a*o*o*v+b*o*o+i*o,1);
           }
       }
   }
@@ -1889,7 +1849,7 @@ void CoupledCluster::UpdateT2(long int iter){
   }else{
      C_DCOPY(o*o*v*v,tb,1,tempv,1);
   }
-  F_DAXPY(o*o*v*v,-1.0,tempt,1,tempv,1);
+  C_DAXPY(o*o*v*v,-1.0,tempt,1,tempv,1);
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
      psio->write_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
@@ -1915,7 +1875,7 @@ void CoupledCluster::UpdateT1(long int iter){
   }
   // error vector for diis is in tempv:
   C_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
-  F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
+  C_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
   C_DCOPY(o*v,w1,1,t1,1);
 }
 
@@ -1925,144 +1885,6 @@ void CoupledCluster::UpdateT1(long int iter){
    SCS functions.  get energy in terms of spin components
 
 ================================================================*/
-void CoupledCluster::Local_SCS_CCSD(){
-
-  long int v = nvirt;
-  long int o = ndoccact;
-  long int rs = nmo;
-  long int i,j,a,b;
-  long int iajb,ijab=0;
-  double ssenergy = 0.0;
-  double osenergy = 0.0;
-  boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_DCC_IAJB,1);
-
-  SharedMatrix Rii = reference_wavefunction_->CIMTransformationMatrix();
-  // the dimension of the Rii transformation matrix:
-  int nocc = Rii->colspi()[0];
-  double**Rii_pointer = Rii->pointer();
-  // transform E2iajb back from quasi-canonical basis
-  F_DGEMM('N','T',v*v*o,o,o,1.0,tempt,v*v*o,&Rii_pointer[0][0],nocc,0.0,integrals,v*v*o);
-
-  double fac = isccsd ? 1.0 : 0.0;
-  if (t2_on_disk){
-     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_DCC_T2,1);
-     tb = tempv;
-  }
-  // transform t2 back from quasi-canonical basis
-  for (a=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  tb[a*o*o*v+b*o*o+i*o+j] += fac*t1[a*o+i]*t1[b*o+j];
-              }
-          }
-      }
-  }
-  F_DGEMM('N','N',o,v*v*o,o,1.0,&Rii_pointer[0][0],nocc,tb,o,0.0,tempt,o);
-  // resort t(abji) -> t(abij)
-  for (int ab = 0; ab < v*v; ab++){
-      for (i = 0; i < o; i++){
-          for (j = 0; j < o; j++){
-              I1[i*o+j] = tempt[ab*o*o+j*o+i];
-          }
-      }
-      C_DCOPY(o*o,I1,1,tempt+ab*o*o,1);
-  }
-  for (a=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  tb[a*o*o*v+b*o*o+i*o+j] -= fac*t1[a*o+i]*t1[b*o+j];
-              }
-          }
-      }
-  }
-
-  // energy
-  SharedVector factor = reference_wavefunction_->CIMOrbitalFactors();
-  double*factor_pointer = factor->pointer();
-  for (b=o; b<rs; b++){
-      for (a=o; a<rs; a++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
-                  osenergy += integrals[iajb]*(tempt[ijab])*factor_pointer[i];
-                  ssenergy += integrals[iajb]*(tempt[ijab]-tempt[(a-o)*o*o*v+(b-o)*o*o+i*o+j])*factor_pointer[i];
-                  ijab++;
-              }
-          }
-      }
-  }
-  eccsd_os = osenergy;
-  eccsd_ss = ssenergy;
-  eccsd = eccsd_os + eccsd_ss;
-
-  psio.reset();
-}
-void CoupledCluster::Local_SCS_MP2(){
-
-  long int v = nvirt;
-  long int o = ndoccact;
-  long int rs = nmo;
-  long int i,j,a,b;
-  long int iajb,ijab=0;
-  double ssenergy = 0.0;
-  double osenergy = 0.0;
-  boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_DCC_IAJB,1);
-
-  SharedMatrix Rii = reference_wavefunction_->CIMTransformationMatrix();
-  // the dimension of the Rii transformation matrix:
-  int nocc = Rii->colspi()[0];
-  double**Rii_pointer = Rii->pointer();
-  // transform E2iajb back from quasi-canonical basis
-  F_DGEMM('N','T',v*v*o,o,o,1.0,tempt,v*v*o,&Rii_pointer[0][0],nocc,0.0,integrals,v*v*o);
-
-  psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_DCC_T2,1);
-
-  // transform t2 back from quasi-canonical basis
-  F_DGEMM('N','N',o,v*v*o,o,1.0,Rii_pointer[0],nocc,tempv,o,0.0,tempt,o);
-
-  // resort t(abji) -> t(abij)
-  for (int ab = 0; ab < v*v; ab++){
-      for (i = 0; i < o; i++){
-          for (j = 0; j < o; j++){
-              I1[i*o+j] = tempt[ab*o*o+j*o+i];
-          }
-      }
-      C_DCOPY(o*o,I1,1,tempt+ab*o*o,1);
-  }
-
-  SharedVector factor = reference_wavefunction_->CIMOrbitalFactors();
-  double*factor_pointer = factor->pointer();
-  for (b=o; b<rs; b++){
-      for (a=o; a<rs; a++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-
-                  iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
-                  osenergy += integrals[iajb]*(tempt[ijab])*factor_pointer[i];
-                  ssenergy += integrals[iajb]*(tempt[ijab]-tempt[(a-o)*o*o*v+(b-o)*o*o+i*o+j])*factor_pointer[i];
-                  ijab++;
-              }
-          }
-      }
-  }
-  emp2_os = osenergy;
-  emp2_ss = ssenergy;
-  emp2 = emp2_ss + emp2_os;
-
-  psio.reset();
-}
 void CoupledCluster::SCS_CCSD(){
 
   long int v = nvirt;
@@ -2399,7 +2221,7 @@ void CoupledCluster::MP4_SDQ(){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
      psio->read_entry(PSIF_DCC_T2,"second",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
-     F_DAXPY(o*o*v*v,1.0,tempt,1,tb,1);
+     C_DAXPY(o*o*v*v,1.0,tempt,1,tb,1);
   }
 }
 

@@ -91,14 +91,11 @@ class CoupledCluster: public Wavefunction{
 
     /// SCS-CCSD function and variables
     void SCS_CCSD();
-    void Local_SCS_CCSD();
-    void Local_SCS_MP2();
     double eccsd, eccsd_os, eccsd_ss, eccsd_os_fac, eccsd_ss_fac;
 
     /// cc or qci (t)
     PsiReturnType triples();
     PsiReturnType lowmemory_triples();
-    PsiReturnType local_triples();
     double et;
 
     /// mp4 triples
@@ -275,10 +272,6 @@ class DFCoupledCluster : public CoupledCluster{
 
     /// SCS-CCSD function and variables
     virtual void SCS_CCSD();
-
-    /// CIM SCS-CCSD function and variables
-    virtual void Local_SCS_CCSD();
-    virtual void Local_SCS_MP2();
 };
 
 // coupled pair class
@@ -323,7 +316,6 @@ class CoupledPair : public CoupledCluster{
 
     /// scs functions 
     void SCS_CEPA();
-    void Local_SCS_CEPA();
 
     /// compute opdm - only valid for cisd, acpf, aqcc, and cepa(0)
     void OPDM();

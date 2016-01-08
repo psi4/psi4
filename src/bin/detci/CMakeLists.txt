@@ -22,12 +22,17 @@ else()
    list(REMOVE_ITEM sources_list "graphset.cc")
 endif()
 
+SET_SOURCE_FILES_PROPERTIES(s1v.cc PROPERTIES COMPILE_FLAGS -O3)
+SET_SOURCE_FILES_PROPERTIES(s2v.cc PROPERTIES COMPILE_FLAGS -O3)
+SET_SOURCE_FILES_PROPERTIES(s3v.cc PROPERTIES COMPILE_FLAGS -O3)
+SET_SOURCE_FILES_PROPERTIES(vector.cc PROPERTIES COMPILE_FLAGS -O3)
 
 # Build static library
 add_library(detci STATIC ${sources_list})
 # Specify dependencies for the library (if any)
 add_dependencies(detci mints thce trans)
 set_property(GLOBAL APPEND PROPERTY PSILIB detci)
+
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(detci custom_boost)
 endif()
