@@ -1,10 +1,8 @@
 TODO:
-* DF-OLCCD
 * DF-OCCD
 * Consider perm symmetry in T2(1) in t2_1st_gen.cc
 * Re-build Gij and Gab for DF-OMP2
 * Adjust timer for (T), exclude int trans
-* Re-build ABCD terms for UHF-MP3, consider only antisymmetric components
 
 NOTES:
 

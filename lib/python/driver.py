@@ -226,6 +226,8 @@ procedures = {
             'df-mp3'        : run_dfmp3_gradient,
             'df-omp2.5'     : run_dfomp2p5_gradient,
             'df-mp2.5'      : run_dfmp2p5_gradient,
+	    'df-olccd'      : run_dfolccd_gradient,
+	    'df-lccd'       : run_dflccd_gradient,
 #            'efp'           : run_efp_gradient,
             'hf'            : run_scf_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below

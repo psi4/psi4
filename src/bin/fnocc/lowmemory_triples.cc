@@ -272,7 +272,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
          F_DGEMM('t','n',o*o,o,o,-1.0,E2ijak+c*ooo,o,tempt+b*voo+a*oo,o,1.0,Z2[thread],oo);
          for (long int i=0; i<o; i++){
              for (long int j=0; j<o; j++){
-                 F_DAXPY(o,1.0,Z2[thread]+j*oo+i*o,1,Z[thread]+i*oo+j*o,1);
+                 C_DAXPY(o,1.0,Z2[thread]+j*oo+i*o,1,Z[thread]+i*oo+j*o,1);
              }
          }
 
@@ -284,7 +284,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
          F_DGEMM('t','n',oo,o,o,-1.0,E2ijak+b*ooo,o,tempt+a*voo+c*oo,o,1.0,Z2[thread],oo);
          for (long int i=0; i<o; i++){
              for (long int j=0; j<o; j++){
-                 F_DAXPY(o,1.0,Z2[thread]+i*oo+j,o,Z[thread]+i*oo+j*o,1);
+                 C_DAXPY(o,1.0,Z2[thread]+i*oo+j,o,Z[thread]+i*oo+j*o,1);
              }
          }
          addr = psio_get_address(PSIO_ZERO,(b*vvo+a*vo)*sizeof(double));
