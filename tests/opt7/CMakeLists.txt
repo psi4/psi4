@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(opt7 "psi;longertests;opt")
+add_regression_test(opt7 "psi;shorttests;opt")
