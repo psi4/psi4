@@ -2782,7 +2782,10 @@ def run_dfmp2(name, **kwargs):
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    if not 'restart_file' in kwargs:
+    # Bypass routine scf if user did something special to get it to converge
+    cond1 = bool(('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf'])))
+    cond2 = 'restart_file' in kwargs
+    if not (cond1 or cond2):
         scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
@@ -2991,19 +2994,19 @@ def run_sapt(name, **kwargs):
     if nfrag != 2:
         raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
 
+    do_delta_mp2 = True if name.lower().endswith('dmp2') else False
+
     sapt_basis = 'dimer'
     if 'sapt_basis' in kwargs:
         sapt_basis = kwargs.pop('sapt_basis')
     sapt_basis = sapt_basis.lower()
 
-    if (sapt_basis == 'dimer'):
-        #molecule.update_geometry()
+    if sapt_basis == 'dimer':
         monomerA = molecule.extract_subsets(1, 2)
         monomerA.set_name('monomerA')
         monomerB = molecule.extract_subsets(2, 1)
         monomerB.set_name('monomerB')
-    elif (sapt_basis == 'monomer'):
-        #molecule.update_geometry()
+    elif sapt_basis == 'monomer':
         monomerA = molecule.extract_subsets(1)
         monomerA.set_name('monomerA')
         monomerB = molecule.extract_subsets(2)
@@ -3018,14 +3021,17 @@ def run_sapt(name, **kwargs):
     psi4.print_out('\n')
     p4util.banner('Dimer HF')
     psi4.print_out('\n')
-    if (sapt_basis == 'dimer'):
+    if sapt_basis == 'dimer':
         psi4.set_global_option('DF_INTS_IO', 'SAVE')
     e_dimer = scf_helper('RHF', **kwargs)
-    if (sapt_basis == 'dimer'):
+    if do_delta_mp2:
+        run_mp2_select(name, bypass_scf=True, **kwargs)
+        mp2_corl_interaction_e = psi4.get_variable('MP2 CORRELATION ENERGY')
+    if sapt_basis == 'dimer':
         psi4.set_global_option('DF_INTS_IO', 'LOAD')
 
     activate(monomerA)
-    if (ri == 'DF' and sapt_basis == 'dimer'):
+    if sapt_basis == 'dimer':
         psi4.IO.change_file_namespace(97, 'dimer', 'monomerA')
     psi4.IO.set_default_namespace('monomerA')
     psi4.set_local_option('SCF', 'SAPT', '2-monomer_A')
@@ -3033,9 +3039,12 @@ def run_sapt(name, **kwargs):
     p4util.banner('Monomer A HF')
     psi4.print_out('\n')
     e_monomerA = scf_helper('RHF', **kwargs)
+    if do_delta_mp2:
+        run_mp2_select(name, bypass_scf=True, **kwargs)
+        mp2_corl_interaction_e -= psi4.get_variable('MP2 CORRELATION ENERGY')
 
     activate(monomerB)
-    if (ri == 'DF' and sapt_basis == 'dimer'):
+    if sapt_basis == 'dimer':
         psi4.IO.change_file_namespace(97, 'monomerA', 'monomerB')
     psi4.IO.set_default_namespace('monomerB')
     psi4.set_local_option('SCF', 'SAPT', '2-monomer_B')
@@ -3043,6 +3052,10 @@ def run_sapt(name, **kwargs):
     p4util.banner('Monomer B HF')
     psi4.print_out('\n')
     e_monomerB = scf_helper('RHF', **kwargs)
+    if do_delta_mp2:
+        run_mp2_select(name, bypass_scf=True, **kwargs)
+        mp2_corl_interaction_e -= psi4.get_variable('MP2 CORRELATION ENERGY')
+        psi4.set_variable('SA MP2 CORRELATION ENERGY', mp2_corl_interaction_e)
     psi4.set_global_option('DF_INTS_IO', df_ints_io)
 
     psi4.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
@@ -3052,29 +3065,29 @@ def run_sapt(name, **kwargs):
     psi4.IO.set_default_namespace('dimer')
     psi4.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
     psi4.set_local_option('SAPT', 'D_CONVERGENCE', 10e-10)
-    if (name.lower() == 'sapt0'):
+    if name.lower() == 'sapt0':
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT0')
-    elif (name.lower() == 'sapt2'):
+    elif name.lower() == 'sapt2':
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2')
-    elif (name.lower() == 'sapt2+'):
+    elif name.lower() in ['sapt2+', 'sapt2+dmp2']:
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', False)
-    elif (name.lower() == 'sapt2+(3)'):
+    elif name.lower() in ['sapt2+(3)', 'sapt2+(3)']:
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         psi4.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', False)
-    elif (name.lower() == 'sapt2+3'):
+    elif name.lower() in ['sapt2+3', 'sapt2+3dmp2']:
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         psi4.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', False)
-    elif (name.lower() == 'sapt2+(ccd)'):
+    elif name.lower() in ['sapt2+(ccd)', 'sapt2+(ccd)dmp2']:
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', True)
-    elif (name.lower() == 'sapt2+(3)(ccd)'):
+    elif name.lower() in ['sapt2+(3)(ccd)', 'sapt2+(3)(ccd)dmp2']:
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         psi4.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', True)
-    elif (name.lower() == 'sapt2+3(ccd)'):
+    elif name.lower() in ['sapt2+3(ccd)', 'sapt2+3(ccd)dmp2']:
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         psi4.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', True)
@@ -3087,6 +3100,8 @@ def run_sapt(name, **kwargs):
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
 
+    from qcdb.psivardefs import sapt_psivars
+    p4util.expand_psivars(sapt_psivars())
     optstash.restore()
     return e_sapt
 
