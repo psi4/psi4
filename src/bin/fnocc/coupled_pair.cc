@@ -20,7 +20,6 @@
  *@END LICENSE
  */
 
-#define PSIF_CIM 273 // TODO: move to psifiles.h
 #include"psi4-dec.h"
 #include<libmints/vector.h>
 #include<libmints/matrix.h>
@@ -52,7 +51,7 @@ void DefineQuadraticTasks();
 
 // sort
 void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options,bool iscim);
-void Sort_OV3_LowMemory(long int memory,long int o,long int v,bool islocal);
+void Sort_OV3_LowMemory(long int memory,long int o,long int v);
 
 CoupledPair::CoupledPair(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options):
         CoupledCluster(reference_wavefunction,options)
@@ -139,7 +138,7 @@ double CoupledPair::compute_energy() {
 
   // integral sort
   tstart();
-  SortIntegrals(nfzc,nfzv,nmo+nfzc+nfzv,ndoccact,nvirt,options_,reference_wavefunction_->isCIM());
+  SortIntegrals(nfzc,nfzv,nmo+nfzc+nfzv,ndoccact,nvirt,options_,false);
   tstop();
 
   // solve cepa equations
@@ -202,8 +201,8 @@ double CoupledPair::compute_energy() {
   Process::environment.globals["CURRENT ENERGY"] = eccsd + escf;
   Process::environment.globals["CURRENT CORRELATION ENERGY"] = eccsd;
 
-  // build opdm in case we want properties.  don't build if cim.
-  if ( cepa_level<=0 && !reference_wavefunction_->isCIM() ) {
+  // build opdm in case we want properties.  
+  if ( cepa_level<=0 ) {
       if (options_.get_bool("NAT_ORBS")) {
           //outfile->Printf("\n");
           //outfile->Printf("\n");
@@ -356,14 +355,7 @@ PsiReturnType CoupledPair::CEPAIterations(){
      throw PsiException("  CEPA iterations did not converge.",__FILE__,__LINE__);
   }
 
-  // is this a cim-cepa computation?
-  if (reference_wavefunction_->isCIM()){
-     Local_SCS_CEPA();
-     eccsd = eccsd_os + eccsd_ss;
-  }
-  else{
-     SCS_CEPA();
-  }
+  SCS_CEPA();
 
   outfile->Printf("\n");
   outfile->Printf("  %s iterations converged!\n",cepa_type);
@@ -540,7 +532,7 @@ void CoupledPair::UpdateT2() {
   }else{
      C_DCOPY(o*o*v*v,tb,1,tempv,1);
   }
-  F_DAXPY(o*o*v*v,-1.0,tempt,1,tempv,1);
+  C_DAXPY(o*o*v*v,-1.0,tempt,1,tempv,1);
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
      psio->write_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
@@ -589,87 +581,10 @@ void CoupledPair::UpdateT1() {
   }
   // error vector for diis is in tempv:
   C_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
-  F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
+  C_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
   C_DCOPY(o*v,w1,1,t1,1);
 }
 
-void CoupledPair::Local_SCS_CEPA(){
-
-  long int v = nvirt;
-  long int o = ndoccact;
-  long int rs = nmo;
-
-  boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_DCC_IAJB,1);
-
-  SharedMatrix Rii = reference_wavefunction_->CIMTransformationMatrix();
-  double**Rii_pointer = Rii->pointer();
-
-  // transform E2iajb back from quasi-canonical basis
-  for (long int i=0; i<o; i++){
-      for (long int a=0; a<v; a++){
-          for (long int j=0; j<o; j++){
-              for (long int b=0; b<v; b++){
-                  double dum = 0.0;
-                  for (int ip=0; ip<o; ip++){
-                      dum += tempt[ip*o*v*v+a*o*v+j*v+b]*Rii_pointer[ip][i];
-                  }
-                  integrals[i*o*v*v+a*o*v+j*v+b] = dum;
-              }
-          }
-      }
-  }
-
-
-  if (t2_on_disk){
-     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_DCC_T2,1);
-     tb = tempv;
-  }
-
-  // transform t2 back from quasi-canonical basis
-  for (long int a=0; a<v; a++){
-      for (long int b=0; b<v; b++){
-          for (long int i=0; i<o; i++){
-              for (long int j=0; j<o; j++){
-                  double dum = 0.0;
-                  for (int ip=0; ip<o; ip++){
-                      dum += tb[a*o*o*v+b*o*o+ip*o+j]*Rii_pointer[ip][i];
-                  }
-                  tempt[a*o*o*v+b*o*o+i*o+j] = dum;
-              }
-          }
-      }
-  }
-
-  SharedVector factor = reference_wavefunction_->CIMOrbitalFactors();
-  double*factor_pointer = factor->pointer();
-
-  double ssenergy = 0.0;
-  double osenergy = 0.0;
-  for (long int a=o; a<rs; a++){
-      for (long int b=o; b<rs; b++){
-          for (long int i=0; i<o; i++){
-              for (long int j=0; j<o; j++){
-
-                  long int iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
-                  long int jaib = iajb + (i-j)*v*(1-v*o);
-                  long int ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
-
-                  osenergy += integrals[iajb]*(tempt[ijab])*factor_pointer[i];
-                  ssenergy += integrals[iajb]*(tempt[ijab]-tempt[(b-o)*o*o*v+(a-o)*o*o+i*o+j])*factor_pointer[i];
-              }
-          }
-      }
-  }
-  eccsd_os = osenergy;
-  eccsd_ss = ssenergy;
-
-  psio.reset();
-}
 void CoupledPair::SCS_CEPA(){
 
   long int v = nvirt;
