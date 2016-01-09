@@ -71,6 +71,8 @@ void KS::common_init()
         "BASIS", options_.get_str("BASIS"));
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
     sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, fact));
+    outfile->Printf("DGAS Warning! We should not be reaching this point.\n");
+    outfile->Printf("We are grabbing the molecule from global\n");
 
     potential_ = VBase::build_V(KS::options_,(options_.get_str("REFERENCE") == "RKS" ? "RV" : "UV"));
     potential_->initialize();
@@ -85,8 +87,8 @@ RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkp
 {
     common_init();
 }
-RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio) :
-    RHF(options, psio), KS(options,psio)
+RKS::RKS(SharedWavefunction ref_wfn, Options & options, boost::shared_ptr<PSIO> psio) :
+    RHF(ref_wfn, options, psio), KS(options,psio)
 {
     common_init();
 }
@@ -102,7 +104,7 @@ void RKS::integrals()
     HF::integrals();
 
     if (!functional_->is_x_lrc()) return;
-           
+
     if (KS::options_.get_str("SCF_TYPE") == "DIRECT") {
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
     } else if (KS::options_.get_str("SCF_TYPE") == "OUT_OF_CORE") {
@@ -117,11 +119,11 @@ void RKS::form_V()
     std::vector<SharedMatrix> & C = potential_->C();
     C.clear();
     C.push_back(Ca_subset("SO", "OCC"));
-    
+
     // Run the potential object
     potential_->compute();
 
-    // Pull the V matrices off 
+    // Pull the V matrices off
     const std::vector<SharedMatrix> & V = potential_->V();
     V_ = V[0];
 }
@@ -135,7 +137,7 @@ void RKS::form_G()
     std::vector<SharedMatrix> & C = jk_->C_left();
     C.clear();
     C.push_back(Ca_subset("SO", "OCC"));
-    
+
     // Run the JK object
     jk_->compute();
 
@@ -151,9 +153,9 @@ void RKS::form_G()
     if (functional_->is_x_lrc()) {
         wK_ = wK[0];
     }
-    
+
     G_->copy(J_);
-        
+
     G_->add(V_);
 
     double alpha = functional_->x_alpha();
@@ -187,8 +189,8 @@ double RKS::compute_E()
     // E_DFT = 2.0 D*H + 2.0 D*J - \alpha D*K + E_xc
     double one_electron_E = 2.0*D_->vector_dot(H_);
     double coulomb_E = D_->vector_dot(J_);
-    
-    std::map<std::string, double>& quad = potential_->quadrature_values();  
+
+    std::map<std::string, double>& quad = potential_->quadrature_values();
     double XC_E = quad["FUNCTIONAL"];
     double exchange_E = 0.0;
     double alpha = functional_->x_alpha();
@@ -211,7 +213,7 @@ double RKS::compute_E()
     Etotal += one_electron_E;
     Etotal += coulomb_E;
     Etotal += exchange_E;
-    Etotal += XC_E; 
+    Etotal += XC_E;
     Etotal += dashD_E;
 
     energies_["Nuclear"] = nuclearrep_;
@@ -226,7 +228,7 @@ double RKS::compute_E()
         outfile->Printf( "    One-Electron Energy =      %24.14f\n", one_electron_E);
         outfile->Printf( "    Coulomb Energy =           %24.14f\n", coulomb_E);
         outfile->Printf( "    Hybrid Exchange Energy =   %24.14f\n", exchange_E);
-        outfile->Printf( "    XC Functional Energy =     %24.14f\n", XC_E); 
+        outfile->Printf( "    XC Functional Energy =     %24.14f\n", XC_E);
         outfile->Printf( "    -D Energy =                %24.14f\n\n", dashD_E);
     }
 
@@ -247,8 +249,8 @@ UKS::UKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkp
 {
     common_init();
 }
-UKS::UKS(Options & options, boost::shared_ptr<PSIO> psio) :
-    UHF(options, psio), KS(options,psio)
+UKS::UKS(SharedWavefunction ref_wfn, Options & options, boost::shared_ptr<PSIO> psio) :
+    UHF(ref_wfn, options, psio), KS(options,psio)
 {
     common_init();
 }
@@ -265,14 +267,14 @@ void UKS::integrals()
     HF::integrals();
 
     if (!functional_->is_x_lrc()) return;
-           
+
     if (KS::options_.get_str("SCF_TYPE") == "DIRECT") {
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
     } else if (KS::options_.get_str("SCF_TYPE") == "OUT_OF_CORE") {
     } else if (KS::options_.get_str("SCF_TYPE") == "PK") {
     } else {
         throw PSIEXCEPTION("SCF_TYPE is not supported by RC functionals");
-    }    
+    }
 }
 void UKS::form_V()
 {
@@ -281,11 +283,11 @@ void UKS::form_V()
     C.clear();
     C.push_back(Ca_subset("SO", "OCC"));
     C.push_back(Cb_subset("SO", "OCC"));
-    
+
     // Run the potential object
     potential_->compute();
 
-    // Pull the V matrices off 
+    // Pull the V matrices off
     const std::vector<SharedMatrix> & V = potential_->V();
     Va_ = V[0];
     Vb_ = V[1];
@@ -301,7 +303,7 @@ void UKS::form_G()
     C.clear();
     C.push_back(Ca_subset("SO", "OCC"));
     C.push_back(Cb_subset("SO", "OCC"));
-    
+
     // Run the JK object
     jk_->compute();
 
@@ -321,7 +323,7 @@ void UKS::form_G()
     }
     Ga_->copy(J_);
     Gb_->copy(J_);
-        
+
     Ga_->add(Va_);
     Gb_->add(Vb_);
 
@@ -369,7 +371,7 @@ double UKS::compute_E()
     double coulomb_E = Da_->vector_dot(J_);
     coulomb_E += Db_->vector_dot(J_);
 
-    std::map<std::string, double>& quad = potential_->quadrature_values();  
+    std::map<std::string, double>& quad = potential_->quadrature_values();
     double XC_E = quad["FUNCTIONAL"];
     double exchange_E = 0.0;
     double alpha = functional_->x_alpha();
@@ -394,7 +396,7 @@ double UKS::compute_E()
     Etotal += one_electron_E;
     Etotal += 0.5 * coulomb_E;
     Etotal += 0.5 * exchange_E;
-    Etotal += XC_E; 
+    Etotal += XC_E;
     Etotal += dashD_E;
 
     energies_["Nuclear"] = nuclearrep_;
@@ -409,7 +411,7 @@ double UKS::compute_E()
         outfile->Printf( "    One-Electron Energy =      %24.14f\n", one_electron_E);
         outfile->Printf( "    Coulomb Energy =           %24.14f\n", 0.5 * coulomb_E);
         outfile->Printf( "    Hybrid Exchange Energy =   %24.14f\n", 0.5 * exchange_E);
-        outfile->Printf( "    XC Functional Energy =     %24.14f\n", XC_E); 
+        outfile->Printf( "    XC Functional Energy =     %24.14f\n", XC_E);
         outfile->Printf( "    -D Energy =                %24.14f\n", dashD_E);
     }
 

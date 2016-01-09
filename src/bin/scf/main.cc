@@ -51,7 +51,7 @@ using namespace std;
 
 namespace psi { namespace scf {
 
-PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
+SharedWavefunction scf(SharedWavefunction ref_wfn, Options & options, PyObject* pre, PyObject* post)
 {
     tstart();
 
@@ -64,22 +64,22 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
 
 
     if (reference == "RHF") {
-        scf = boost::shared_ptr<Wavefunction>(new RHF(options, psio));
+        scf = boost::shared_ptr<Wavefunction>(new RHF(ref_wfn, options, psio));
     }
     else if (reference == "ROHF") {
-        scf = boost::shared_ptr<Wavefunction>(new ROHF(options, psio));
+        scf = boost::shared_ptr<Wavefunction>(new ROHF(ref_wfn, options, psio));
     }
     else if (reference == "UHF") {
-        scf = boost::shared_ptr<Wavefunction>(new UHF(options, psio));
+        scf = boost::shared_ptr<Wavefunction>(new UHF(ref_wfn, options, psio));
     }
     else if (reference == "CUHF") {
-        scf = boost::shared_ptr<Wavefunction>(new CUHF(options, psio));
+        scf = boost::shared_ptr<Wavefunction>(new CUHF(ref_wfn, options, psio));
     }
     else if (reference == "RKS") {
-        scf = boost::shared_ptr<Wavefunction>(new RKS(options, psio));
+        scf = boost::shared_ptr<Wavefunction>(new RKS(ref_wfn, options, psio));
     }
     else if (reference == "UKS") {
-        scf = boost::shared_ptr<Wavefunction>(new UKS(options, psio));
+        scf = boost::shared_ptr<Wavefunction>(new UKS(ref_wfn, options, psio));
     }
     else {
         throw InputException("Unknown reference " + reference, "REFERENCE", __FILE__, __LINE__);
@@ -103,7 +103,6 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
 
     energy = scf->compute_energy();
 
-
     // Print a molden file
     if ( options.get_bool("MOLDEN_WRITE") ) {
        boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(scf));
@@ -126,10 +125,9 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     Process::environment.globals["CURRENT REFERENCE ENERGY"] = energy;
 
     // Shut down psi.
-
     tstop();
 
-    return Success;
+    return scf;
 }
 
 }}

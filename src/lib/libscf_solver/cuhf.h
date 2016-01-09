@@ -36,30 +36,30 @@ namespace psi { namespace scf {
 
     Constrained Unrestricted Hartree-Fock
 
-    Reference: T. Tsuchimochi and G.E. Scuseria, J. Chem. Phys. 133, 
+    Reference: T. Tsuchimochi and G.E. Scuseria, J. Chem. Phys. 133,
                141102 (2010)
 
-    This is an alternative formulation of ROHF as a contrained UHF. A 
-    Lagrangian constraint is placed on the usual UHF procedure to remove 
-    the spin contamination. The result is an ROHF energy and semicanonical 
-    ROHF orbitals. The need to pick coupling coefficients is removed. 
+    This is an alternative formulation of ROHF as a contrained UHF. A
+    Lagrangian constraint is placed on the usual UHF procedure to remove
+    the spin contamination. The result is an ROHF energy and semicanonical
+    ROHF orbitals. The need to pick coupling coefficients is removed.
     Koopmans' theorem is valid for CUHF orbital energes.
 
     It is claimed that CUHF does not suffer from the convergence problems
     of certain ROHF implementations (not sure how PSI's ROHF code does).
-    CUHF retains the UHF-like trait that Ca != Cb. Also, the converged CUHF 
-    wavefunction yields the correct value for <S^2>, however, this is only 
-    true at convergence. It is possible that this increased flexibility 
+    CUHF retains the UHF-like trait that Ca != Cb. Also, the converged CUHF
+    wavefunction yields the correct value for <S^2>, however, this is only
+    true at convergence. It is possible that this increased flexibility
     improves convergence.
 
     -- EGH, August 15th, 2011
 
     TODO:
 
-    Probably can't handle NSO != NMO right now, should either fix this code 
+    Probably can't handle NSO != NMO right now, should either fix this code
     or the transform functions from Matrix.
 
-    Using the UHF form for the Lagrangian, this is probably correct, but 
+    Using the UHF form for the Lagrangian, this is probably correct, but
     should be checked.
 
 */
@@ -101,9 +101,9 @@ protected:
     virtual void finalize();
 
 public:
-    CUHF(Options& options, boost::shared_ptr<PSIO> psio, 
+    CUHF(Options& options, boost::shared_ptr<PSIO> psio,
         boost::shared_ptr<Chkpt> chkpt);
-    CUHF(Options& options, boost::shared_ptr<PSIO> psio);
+    CUHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~CUHF();
 
     virtual bool same_a_b_orbs() const { return false; }
