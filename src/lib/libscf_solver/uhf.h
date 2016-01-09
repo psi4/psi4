@@ -83,7 +83,7 @@ protected:
 
 public:
     UHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
-    UHF(Options& options, boost::shared_ptr<PSIO> psio);
+    UHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~UHF();
 
     virtual bool same_a_b_orbs() const { return false; }

@@ -84,7 +84,7 @@ protected:
 
 public:
     RHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
-    RHF(Options& options, boost::shared_ptr<PSIO> psio);
+    RHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~RHF();
 
 
