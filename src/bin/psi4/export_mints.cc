@@ -848,6 +848,7 @@ void export_mints()
             def("fit", &DFChargeFitter::fit, "docstring");
 
     class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>("Wavefunction", "docstring", no_init).
+            // def(init<boost::shared_ptr<Molecule>, const std::string&, Options& >()).
             def("nfrzc", &Wavefunction::nfrzc, "docstring").
             def("nalpha", &Wavefunction::nalpha, "docstring").
             def("nbeta", &Wavefunction::nbeta, "docstring").

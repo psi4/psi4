@@ -76,6 +76,7 @@ class PSIO;
 
 typedef boost::shared_ptr<psi::Matrix> SharedMatrix;
 typedef boost::shared_ptr<psi::Vector> SharedVector;
+typedef boost::shared_ptr<psi::Wavefunction> SharedWavefunction;
 
 // Useful when working with SO-TEIs
 template<typename T>

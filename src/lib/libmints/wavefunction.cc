@@ -56,6 +56,45 @@ double df[MAX_DF];
 double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
 
+Wavefunction::Wavefunction(boost::shared_ptr<Molecule> molecule, const std::string& basis,
+                           Options & options) :
+                           options_(options)
+{
+    Wavefunction::initialize_singletons();
+
+    // Load in molecule and basis
+    molecule_ = molecule;
+    basisset_ = BasisSet::pyconstruct_orbital(molecule_, "BASIS", basis);
+
+    // Check the point group of the molecule. If it is not set, set it.
+    if (!molecule_->point_group()) {
+        molecule_->set_point_group(molecule_->find_point_group());
+    }
+
+    // Create an SO basis...we need the point group for this part.
+    integral_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
+
+    boost::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral_));
+    AO2SO_ = pet->aotoso();
+
+    // Obtain the dimension object to initialize the factory.
+    nsopi_ = sobasisset_->dimension();
+    nsopi_.set_name("SOs per irrep");
+    nso_ = basisset_->nbf();
+
+    factory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
+    factory_->init_with(nsopi_, nsopi_);
+
+    nirrep_ = nsopi_.n();
+
+    S_ = factory_->create_shared_matrix("S");
+    boost::shared_ptr<OneBodySOInt> Sint(integral_->so_overlap());
+    Sint->compute(S_);
+    common_init();
+
+}
+
 Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio) :
     options_(options), psio_(psio)
 {
@@ -67,6 +106,11 @@ Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boos
     options_(options), psio_(psio), chkpt_(chkpt)
 {
     common_init();
+}
+
+Wavefunction::Wavefunction(Options & options) :
+    options_(options)
+{
 }
 
 Wavefunction::~Wavefunction()
@@ -128,39 +172,39 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
 
 void Wavefunction::common_init()
 {
-    Wavefunction::initialize_singletons();
+    // Wavefunction::initialize_singletons();
 
-    // Take the molecule from the environment
-    molecule_ = Process::environment.molecule();
+    // // Take the molecule from the environment
+    // molecule_ = Process::environment.molecule();
 
-    // Load in the basis set
-    basisset_ = BasisSet::pyconstruct_orbital(molecule_, "BASIS", options_.get_str("BASIS"));
+    // // Load in the basis set
+    // basisset_ = BasisSet::pyconstruct_orbital(molecule_, "BASIS", options_.get_str("BASIS"));
 
-    // Check the point group of the molecule. If it is not set, set it.
-    if (!molecule_->point_group()) {
-        molecule_->set_point_group(molecule_->find_point_group());
-    }
+    // // Check the point group of the molecule. If it is not set, set it.
+    // if (!molecule_->point_group()) {
+    //     molecule_->set_point_group(molecule_->find_point_group());
+    // }
 
-    // Create an SO basis...we need the point group for this part.
-    integral_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-    sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
+    // // Create an SO basis...we need the point group for this part.
+    // integral_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    // sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
 
-    boost::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral_));
-    AO2SO_ = pet->aotoso();
+    // boost::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral_));
+    // AO2SO_ = pet->aotoso();
 
-    // Obtain the dimension object to initialize the factory.
-    const Dimension dimension = sobasisset_->dimension();
-    factory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
-    factory_->init_with(dimension, dimension);
+    // // Obtain the dimension object to initialize the factory.
+    // const Dimension dimension = sobasisset_->dimension();
+    // factory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
+    // factory_->init_with(dimension, dimension);
 
-    nirrep_ = dimension.n();
+    // nirrep_ = dimension.n();
 
-    S_ = factory_->create_shared_matrix("S");
-    boost::shared_ptr<OneBodySOInt> Sint(integral_->so_overlap());
-    Sint->compute(S_);
+    // S_ = factory_->create_shared_matrix("S");
+    // boost::shared_ptr<OneBodySOInt> Sint(integral_->so_overlap());
+    // Sint->compute(S_);
 
     // Initialize array that hold dimensionality information
-    nsopi_    = Dimension(nirrep_, "SOs per irrep");
+    // nsopi_    = Dimension(nirrep_, "SOs per irrep");
     nmopi_    = Dimension(nirrep_, "MOs per irrep");
     nalphapi_ = Dimension(nirrep_, "Alpha electrons per irrep");
     nbetapi_  = Dimension(nirrep_, "Beta electrons per irrep");
@@ -172,10 +216,10 @@ void Wavefunction::common_init()
     // Obtain memory amount from the environment
     memory_ = Process::environment.get_memory();
 
-    nso_ = basisset_->nbf();
+    // nso_ = basisset_->nbf();
     nmo_ = basisset_->nbf();
     for (int k = 0; k < nirrep_; k++) {
-        nsopi_[k] = dimension[k];
+        // nsopi_[k] = dimension[k];
         nmopi_[k] = 0;
         doccpi_[k] = 0;
         soccpi_[k] = 0;

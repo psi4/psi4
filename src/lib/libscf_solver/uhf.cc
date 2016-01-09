@@ -55,7 +55,8 @@ UHF::UHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt
     common_init();
 }
 
-UHF::UHF(Options& options, boost::shared_ptr<PSIO> psio) : HF(options, psio)
+UHF::UHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio)
+    : HF(ref_wfn, options, psio)
 {
     common_init();
 }
