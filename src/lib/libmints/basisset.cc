@@ -148,7 +148,6 @@ boost::shared_ptr<BasisSet> BasisSet::build(boost::shared_ptr<Molecule> /*molecu
     //    basis->refresh();
 
     throw NotImplementedException();
-
     return basis;
 }
 
@@ -462,7 +461,12 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_orbital(const boost::shared_pt
         const std::string& key, const std::string& target,
         const int forced_puream)
 {
-    boost::shared_ptr<BasisSet> basisset = pyconstruct_auxiliary(mol, key, target, "BASIS", "", forced_puream);
+    boost::shared_ptr<BasisSet> basisset = pyconstruct_auxiliary(mol, key, target, "BASIS", "", forced_puream); 
+    // Uncontract the primary basis set
+    bool decontract = Process::environment.options.get_bool("DECONTRACT");
+    if(decontract){
+        basisset = basisset->decontract();
+    }   
     return basisset;
 }
 
@@ -806,7 +810,6 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
     //TODO ACS is this still needed?
     // This step is very important. Without it the basis set is useless.
     basisset->refresh();
-
     basisset->name_.clear();
     for (map<string, int>::iterator iter = names.begin(), end = names.end();
          iter != end;
