@@ -1969,7 +1969,10 @@ def scf_helper(name, **kwargs):
         efp.print_out()
 
     # the SECOND scf call
-    e_scf = psi4.scf(precallback, postcallback)
+    new_wfn = psi4.new_wavefunction(psi4.get_active_molecule(),
+                                    psi4.get_global_option('BASIS')) 
+    scf_wfn = psi4.scf(new_wfn, precallback, postcallback)
+    e_scf = psi4.get_variable('CURRENT ENERGY')
 
     optstash.restore()
     return e_scf

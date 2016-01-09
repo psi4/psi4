@@ -55,8 +55,8 @@ ROHF::ROHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chk
     common_init();
 }
 
-ROHF::ROHF(Options& options, boost::shared_ptr<PSIO> psio)
-    : HF(options, psio)
+ROHF::ROHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio)
+    : HF(ref_wfn, options, psio)
 {
     common_init();
 }

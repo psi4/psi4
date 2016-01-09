@@ -384,7 +384,7 @@ protected:
 
 public:
     HF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
-    HF(Options& options, boost::shared_ptr<PSIO> psio);
+    HF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
 
     virtual ~HF();
 

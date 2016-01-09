@@ -105,12 +105,13 @@ psi::PsiReturnType optking(psi::Options&);
 void opt_clean(void);
 }
 
+// Forward declare /src/bin/ methods
 namespace psi {
 namespace mints { PsiReturnType mints(Options&); }
 namespace deriv { PsiReturnType deriv(Options&); }
 namespace scfgrad { PsiReturnType scfgrad(Options&); }
 namespace scfgrad { PsiReturnType scfhess(Options&); }
-namespace scf { PsiReturnType scf(Options&, PyObject *pre, PyObject *post); }
+namespace scf { SharedWavefunction scf(SharedWavefunction ref_wfn, Options&, PyObject *pre, PyObject *post); }
 namespace scf { PsiReturnType scf_dummy(Options&); }
 namespace libfock { PsiReturnType libfock(Options&); }
 namespace dfmp2 { PsiReturnType dfmp2(Options&); }
@@ -288,15 +289,15 @@ int py_psi_libfock()
     return libfock::libfock(Process::environment.options);
 }
 
-double py_psi_scf_callbacks(PyObject *precallback, PyObject *postcallback)
-{
-    py_psi_prepare_options_for_module("SCF");
-    if (scf::scf(Process::environment.options, precallback, postcallback) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
-}
+// double py_psi_scf_callbacks(PyObject *precallback, PyObject *postcallback)
+// {
+//     py_psi_prepare_options_for_module("SCF");
+//     if (scf::scf(Process::environment.options, precallback, postcallback) == Success) {
+//         return Process::environment.globals["CURRENT ENERGY"];
+//     }
+//     else
+//         return 0.0;
+// }
 
 /*double py_psi_lmp2()
 {
@@ -405,9 +406,11 @@ SharedMatrix py_psi_displace_atom(SharedMatrix geom, const int atom,
     return findif::displace_atom(geom, atom, coord, sign, disp_size);
 }
 
-double py_psi_scf()
+SharedWavefunction py_psi_scf(SharedWavefunction ref_wfn, PyObject *precallback,
+                              PyObject *postcallback)
 {
-    return py_psi_scf_callbacks(Py_None, Py_None);
+    py_psi_prepare_options_for_module("SCF");
+    return scf::scf(ref_wfn, Process::environment.options, precallback, postcallback);
 }
 
 double py_psi_scf_dummy()
@@ -1252,6 +1255,12 @@ boost::shared_ptr<Wavefunction> py_psi_wavefunction()
 {
     return Process::environment.wavefunction();
 }
+SharedWavefunction py_psi_new_wavefunction(boost::shared_ptr<Molecule> molecule,
+                                           const std::string& basis)
+{
+    // Ultimately options will not go here
+    return SharedWavefunction(new Wavefunction(molecule, basis, Process::environment.options));
+}
 
 string py_psi_get_input_directory()
 {
@@ -1470,6 +1479,9 @@ BOOST_PYTHON_MODULE (psi4)
     def("wavefunction",
         py_psi_wavefunction,
         "Returns the current wavefunction object from the most recent computation.");
+    def("new_wavefunction",
+        py_psi_new_wavefunction,
+        "Builds a new wavefunction from scratch.");
     def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
     def("set_gradient",
         py_psi_set_gradient,
@@ -1613,7 +1625,7 @@ BOOST_PYTHON_MODULE (psi4)
     typedef double (*scf_module_none)();
     typedef double (*scf_module_two)(PyObject *, PyObject *);
 
-    def("scf", py_psi_scf_callbacks, "Runs the SCF code.");
+    // def("scf", py_psi_scf_callbacks, "Runs the SCF code.");
     def("scf", py_psi_scf, "Runs the SCF code.");
     def("scf_dummy", py_psi_scf_dummy, "Builds SCF wavefunctionobject only. Does not execute scf.");
     def("dcft", py_psi_dcft, "Runs the density cumulant functional theory code.");

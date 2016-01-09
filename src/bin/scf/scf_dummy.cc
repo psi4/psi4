@@ -61,28 +61,28 @@ PsiReturnType scf_dummy(Options & options)
     string reference = options.get_str("REFERENCE");
     boost::shared_ptr<Wavefunction> scf;
 
-    if (reference == "RHF") {
-        scf = boost::shared_ptr<Wavefunction>(new RHF(options, psio));
-    }
-    else if (reference == "ROHF") {
-        scf = boost::shared_ptr<Wavefunction>(new ROHF(options, psio));
-    }
-    else if (reference == "UHF") {
-        scf = boost::shared_ptr<Wavefunction>(new UHF(options, psio));
-    }
-    else if (reference == "CUHF") {
-        scf = boost::shared_ptr<Wavefunction>(new CUHF(options, psio));
-    }
-    else if (reference == "RKS") {
-        scf = boost::shared_ptr<Wavefunction>(new RKS(options, psio));
-    }
-    else if (reference == "UKS") {
-        scf = boost::shared_ptr<Wavefunction>(new UKS(options, psio));
-    }
-    else {
-        throw InputException("Unknown reference " + reference, "REFERENCE", __FILE__, __LINE__);
-        energy = 0.0;
-    }
+    // if (reference == "RHF") {
+    //     scf = boost::shared_ptr<Wavefunction>(new RHF(options, psio));
+    // }
+    // else if (reference == "ROHF") {
+    //     scf = boost::shared_ptr<Wavefunction>(new ROHF(options, psio));
+    // }
+    // else if (reference == "UHF") {
+    //     scf = boost::shared_ptr<Wavefunction>(new UHF(options, psio));
+    // }
+    // else if (reference == "CUHF") {
+    //     scf = boost::shared_ptr<Wavefunction>(new CUHF(options, psio));
+    // }
+    // else if (reference == "RKS") {
+    //     scf = boost::shared_ptr<Wavefunction>(new RKS(options, psio));
+    // }
+    // else if (reference == "UKS") {
+    //     scf = boost::shared_ptr<Wavefunction>(new UKS(options, psio));
+    // }
+    // else {
+    //     throw InputException("Unknown reference " + reference, "REFERENCE", __FILE__, __LINE__);
+    //     energy = 0.0;
+    // }
 
     outfile->Printf("\tWarning: Constructing empty scf wavefunction object.\n");
     outfile->Printf("\tLoading _some_ variables from chkpt (not all coded yet).\n");

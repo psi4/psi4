@@ -48,7 +48,8 @@ CUHF::CUHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chk
     common_init();
 }
 
-CUHF::CUHF(Options& options, boost::shared_ptr<PSIO> psio) : HF(options, psio)
+CUHF::CUHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio)
+    : HF(ref_wfn, options, psio)
 {
     common_init();
 }
@@ -130,7 +131,7 @@ void CUHF::form_G()
     C.clear();
     C.push_back(Ca_subset("SO", "OCC"));
     C.push_back(Cb_subset("SO", "OCC"));
-    
+
     // Run the JK object
     jk_->compute();
 
@@ -342,11 +343,11 @@ double CUHF::compute_initial_E()
 double CUHF::compute_E()
 {
     double one_electron_E = Dt_->vector_dot(H_);
-    double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);   
- 
+    double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);
+
     energies_["Nuclear"] = nuclearrep_;
     energies_["One-Electron"] = one_electron_E;
-    energies_["Two-Electron"] = two_electron_E; 
+    energies_["Two-Electron"] = two_electron_E;
     energies_["XC"] = 0.0;
     energies_["-D"] = 0.0;
 
