@@ -2116,8 +2116,12 @@ def run_ccenergy(name, **kwargs):
         mints = psi4.MintsHelper()
         mints.integrals()
 
-    psi4.transqt2()
-    psi4.ccsort()
+#    if (psi4.get_global_option('FREEZE_CORE') == 'TRUE'):
+#        psi4.transqt2()
+#        psi4.ccsort()
+#    else
+    psi4.plugin('/Users/crawdad/src/cctransort/cctransort.so')
+
     psi4.ccenergy()
 
     if (lowername == 'ccsd(at)' or lowername == 'a-ccsd(t)'):

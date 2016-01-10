@@ -40,6 +40,19 @@ DPDMOSpace::DPDMOSpace(const char label, const string &indices, vector<int> orbs
       orbSym_.push_back(i);
 }
 
+DPDMOSpace::DPDMOSpace(const char label, const string &indices, Dimension orbspi)
+{
+  label_ = label;
+  indices_ = dpd_split(indices);
+  nIrrep_ = orbspi.n();
+  for(int i=0; i < nIrrep_; i++) 
+    orbPI_.push_back(orbspi[i]);
+  nOrb_ = 0;
+  for(int i=0; i < nIrrep_; i++)
+    for(int j=0; j < orbPI_[i]; j++,nOrb_++)
+      orbSym_.push_back(i);
+}
+
 DPDMOSpace::DPDMOSpace()
 {
 
