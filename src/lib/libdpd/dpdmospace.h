@@ -26,6 +26,7 @@
 
 #include <vector>
 #include <string>
+#include <libmints/mints.h>
 
 using namespace std;
 
@@ -50,6 +51,7 @@ class DPDMOSpace {
 
   public:
     DPDMOSpace(const char label, const string &indices, vector<int> orbspi);
+    DPDMOSpace(const char label, const string &indices, Dimension orbspi);
     DPDMOSpace();
     ~DPDMOSpace();
 
