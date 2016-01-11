@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(rasci-h2o "psi;quicktests;rasci")
+add_regression_test(rasci-h2o "psi;shorttests;rasci")
