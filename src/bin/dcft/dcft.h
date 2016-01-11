@@ -57,7 +57,7 @@ namespace dcft{
 class DCFTSolver:public Wavefunction
 {
 public:
-    DCFTSolver(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
+    DCFTSolver(SharedWavefunction ref_wfn, Options &options);
     ~DCFTSolver();
 
     double compute_energy();
@@ -88,7 +88,6 @@ protected:
     void transform_tau();
     void build_gtau();
     void print_opdm();
-    void write_orbitals_to_checkpoint();
     void check_n_representability();
     void print_orbital_energies();
     void build_cumulant_intermediates();
