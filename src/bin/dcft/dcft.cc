@@ -36,10 +36,12 @@ using namespace boost;
 
 namespace psi{ namespace dcft{
 
-DCFTSolver::DCFTSolver(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options):
-        Wavefunction(options, _default_psio_lib_)
+DCFTSolver::DCFTSolver(SharedWavefunction ref_wfn, Options &options):
+        Wavefunction(options)
 {
-    reference_wavefunction_ = reference_wavefunction;
+    reference_wavefunction_ = ref_wfn;
+    copy(ref_wfn);
+
     maxiter_            = options.get_int("MAXITER");
     print_              = options.get_int("PRINT");
     maxdiis_            = options.get_int("DIIS_MAX_VECS");
@@ -71,8 +73,7 @@ DCFTSolver::DCFTSolver(boost::shared_ptr<Wavefunction> reference_wavefunction, O
 /**
  * Computes A = A + alpha * B, writing the result back to A
  */
-void
-DCFTSolver::dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha)
+void DCFTSolver::dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha)
 {
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(A, h);
