@@ -135,7 +135,7 @@ void scatter(Options&, double step, std::vector<SharedMatrix> dip, std::vector<S
              std::vector<SharedMatrix> quad);
 }
 namespace cceom { PsiReturnType cceom(Options&); }
-namespace detci { PsiReturnType detci(Options&); }
+namespace detci { SharedWavefunction detci(SharedWavefunction ref_wfn, Options& options); }
 #ifdef ENABLE_CHEMPS2
 namespace dmrg       { PsiReturnType dmrg(Options&);     }
 #endif
@@ -569,14 +569,10 @@ double py_psi_fnocc()
         return 0.0;
 }
 
-double py_psi_detci()
+SharedWavefunction py_psi_detci(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("DETCI");
-    if (detci::detci(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return detci::detci(ref_wfn, Process::environment.options);
 }
 
 #ifdef ENABLE_CHEMPS2

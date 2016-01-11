@@ -116,6 +116,14 @@ void HF::common_init()
         nmo_ += nmopi_[h]; //For now
     }
 
+    // Read in energy convergence threshold
+    energy_threshold_ = options_.get_double("E_CONVERGENCE");
+
+    // Read in density convergence threshold
+    density_threshold_ = options_.get_double("D_CONVERGENCE");;
+
+    density_fitted_ = false;
+
     Eold_    = 0.0;
     E_       = 0.0;
     maxiter_ = 40;

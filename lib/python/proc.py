@@ -1934,7 +1934,9 @@ def scf_helper(name, **kwargs):
     # the FIRST scf call
     if cast or do_broken:
         # Perform the guess scf
-        psi4.scf()
+        new_wfn = psi4.new_wavefunction(psi4.get_active_molecule(),
+                                        psi4.get_global_option('BASIS')) 
+        psi4.scf(new_wfn, precallback, postcallback)
 
     # broken clean-up
     if do_broken:
@@ -1975,7 +1977,7 @@ def scf_helper(name, **kwargs):
     e_scf = psi4.get_variable('CURRENT ENERGY')
 
     optstash.restore()
-    return e_scf
+    return scf_wfn
 
 
 def run_mp2_select(name, **kwargs):
@@ -2526,15 +2528,18 @@ def run_detci_property(name, **kwargs):
 
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
+        scf_wfn = scf_helper(name, **kwargs)
 
         # If the scf type is DF/CD, then the AO integrals were never written to disk
         if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
             psi4.MintsHelper().integrals()
+    else:
+        scf_wfn = psi4.wavefunction()
 
-    psi4.detci()
+    ciwfn = psi4.detci(scf_wfn)
 
     optstash.restore()
+    return ciwfn
 
 
 def run_eom_cc(name, **kwargs):
@@ -2791,15 +2796,19 @@ def run_detci(name, **kwargs):
 
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
+        scf_wfn = scf_helper(name, **kwargs)
 
         # If the scf type is DF/CD, then the AO integrals were never written to disk
         if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
             psi4.MintsHelper().integrals()
+    else:
+        scf_wfn = psi4.wavefunction()
 
-    psi4.detci()
+    ci_wfn = psi4.detci(scf_wfn)
 
     optstash.restore()
+    return ci_wfn
+
 
 
 def run_dfmp2(name, **kwargs):
@@ -3848,7 +3857,9 @@ def run_detcas(name, **kwargs):
 
         # Bypass routine scf if user did something special to get it to converge
         if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-            scf_helper(name, **kwargs)
+            e_scf, scf_wfn = scf_helper(name, return_wfn=True, **kwargs)
+        else:
+            scf_wfn = psi4.wavefunction()
 
     # The non-DF case
     else:
@@ -3865,18 +3876,20 @@ def run_detcas(name, **kwargs):
         # Bypass routine scf if user did something special to get it to converge
         if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
 
-            scf_helper(name, **kwargs)
+            scf_wfn = scf_helper(name, return_wfn=True, **kwargs)
 
             # If the scf type is DF/CD, then the AO integrals were never written to disk
             if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') or (psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
                 psi4.MintsHelper().integrals()
+        else:
+            scf_wfn = psi4.wavefunction()
 
 
-    psi4.detci()
+    ciwfn = psi4.detci(scf_wfn)
 
     optstash.restore()
 
-    return psi4.get_variable("CURRENT ENERGY")
+    return ciwfn
 
 
 def run_efp(name, **kwargs):

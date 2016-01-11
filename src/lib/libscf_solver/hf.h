@@ -70,6 +70,12 @@ protected:
     /// Old C Beta matrix (if needed for MOM)
     SharedMatrix Cb_old_;
 
+    /// Energy convergence threshold
+    double energy_threshold_;
+
+    /// Density convergence threshold
+    double density_threshold_;
+
     /// Previous iteration's energy and current energy
     double Eold_;
     double E_;
