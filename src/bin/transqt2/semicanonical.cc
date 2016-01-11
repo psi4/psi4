@@ -76,7 +76,8 @@ void semicanonical_fock(void)
   /* Write Semicanonical Alpha and Beta Fock Matrix Eigenvectors
      and Eigenvalues to the Wfn */
 
-  Process::environment.wavefunction()->semicanonicalize();
+  throw PSIEXCEPTION("SemiCanonical transform does not work at the moment");
+  //Process::environment.wavefunction()->semicanonicalize();
 
   C_a = block_matrix(nmo,nmo);
   C_b = block_matrix(nmo,nmo);

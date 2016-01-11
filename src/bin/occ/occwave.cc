@@ -175,7 +175,9 @@ void OCCWave::common_init()
         }
 
     cutoff = pow(10.0,-exp_cutoff);
-    if (reference == "ROHF") reference_wavefunction_->semicanonicalize();
+    if (reference == "ROHF")
+        throw PSIEXCEPTION("SemiCanonical transform does not work at the moment");
+        //reference_wavefunction_->semicanonicalize();
     get_moinfo();
 
 

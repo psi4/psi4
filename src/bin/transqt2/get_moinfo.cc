@@ -150,7 +150,8 @@ void get_moinfo(Options& options)
         moinfo.uoccpi[i] = moinfo.mopi[i] - moinfo.clsdpi[i] - moinfo.openpi[i];
 
     if(params.semicanonical)
-      Process::environment.wavefunction()->semicanonicalize();
+      throw PSIEXCEPTION("SemiCanonical transform does not work at the moment");
+      //Process::environment.wavefunction()->semicanonicalize();
 
     /* SO symmetry array */
     moinfo.sosym = init_int_array(moinfo.nso);
