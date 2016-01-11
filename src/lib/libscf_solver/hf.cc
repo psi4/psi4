@@ -720,6 +720,11 @@ void HF::finalize()
 
 }
 
+void HF::semicanonicalize()
+{
+    throw PSIEXCEPTION("This type of wavefunction cannot be semicanonicalized!");
+}
+
 void HF::find_occupation()
 {
     // Don't mess with the occ, MOM's got it!

@@ -49,9 +49,10 @@ using namespace boost;
 namespace psi {
 namespace scfgrad {
 
-SCFGrad::SCFGrad() :
-    Wavefunction(Process::environment.options,_default_psio_lib_) 
+SCFGrad::SCFGrad(SharedWavefunction ref_wfn, Options& options) :
+    Wavefunction(options) 
 {
+    copy(ref_wfn);
     common_init();
 }
 SCFGrad::~SCFGrad()
@@ -59,16 +60,16 @@ SCFGrad::~SCFGrad()
 }
 void SCFGrad::common_init()
 {
-    reference_wavefunction_ = Process::environment.wavefunction();
+//    reference_wavefunction_ = Process::environment.wavefunction();
     
-    if (!reference_wavefunction_) {
-        throw PSIEXCEPTION("SCFGrad: Run SCF first");
-    }
+    // if (!reference_wavefunction_) {
+    //     throw PSIEXCEPTION("SCFGrad: Run SCF first");
+    // }
 
-    if (options_.get_str("REFERENCE") == "ROHF" || options_.get_str("REFERENCE") == "CUHF")
-        reference_wavefunction_->semicanonicalize();
+    //if (options_.get_str("REFERENCE") == "ROHF" || options_.get_str("REFERENCE") == "CUHF")
+    //    reference_wavefunction_->semicanonicalize();
 
-    copy(reference_wavefunction_);
+    //copy(reference_wavefunction_);
     
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");

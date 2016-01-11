@@ -113,12 +113,12 @@ namespace adc { SharedWavefunction     adc(SharedWavefunction, Options&); }
 namespace dcft { SharedWavefunction   dcft(SharedWavefunction, Options&); }
 namespace detci { SharedWavefunction detci(SharedWavefunction, Options&); }
 namespace scf { SharedWavefunction     scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
+namespace scfgrad { SharedMatrix   scfgrad(SharedWavefunction, Options&); }
+namespace scfgrad { SharedMatrix   scfhess(SharedWavefunction, Options&); }
 
 // Incomplete
 namespace mints { PsiReturnType mints(Options&); }
 namespace deriv { PsiReturnType deriv(Options&); }
-namespace scfgrad { PsiReturnType scfgrad(Options&); }
-namespace scfgrad { PsiReturnType scfhess(Options&); }
 namespace scf { PsiReturnType scf_dummy(Options&); }
 namespace libfock { PsiReturnType libfock(Options&); }
 namespace dfmp2 { PsiReturnType dfmp2(Options&); }
@@ -249,16 +249,16 @@ int py_psi_mints()
     return mints::mints(Process::environment.options);
 }
 
-int py_psi_scfgrad()
+SharedMatrix py_psi_scfgrad(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("SCF");
-    return scfgrad::scfgrad(Process::environment.options);
+    return scfgrad::scfgrad(ref_wfn, Process::environment.options);
 }
 
-int py_psi_scfhess()
+SharedMatrix py_psi_scfhess(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("SCF");
-    return scfgrad::scfhess(Process::environment.options);
+    return scfgrad::scfhess(ref_wfn, Process::environment.options);
 }
 
 int py_psi_deriv()

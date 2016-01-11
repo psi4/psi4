@@ -83,10 +83,12 @@ def run_dcft_gradient(name, **kwargs):
         ['GLOBALS', 'DERTYPE'])
 
     psi4.set_global_option('DERTYPE', 'FIRST')
-    run_dcft(name, **kwargs)
-    psi4.deriv()
+    dcft_wfn = run_dcft(name, **kwargs)
+    grad = psi4.deriv(dcft_wfn)
+    dcft_wfn.set_gradient(grad)
 
     optstash.restore()
+    return dcft_wfn
 
 
 def run_dfomp2(name, **kwargs):
@@ -1735,9 +1737,10 @@ def run_scf(name, **kwargs):
 
 
      
-    scf_helper(name, **kwargs)
+    scf_wfn = scf_helper(name, **kwargs)
 
     optstash.restore()
+    return scf_wfn
 
 
 def run_scf_gradient(name, **kwargs):
@@ -1773,10 +1776,15 @@ def run_scf_gradient(name, **kwargs):
             else:
                 psi4.set_local_option('SCF','REFERENCE','UHF')
 
-    run_scf(name, **kwargs)
+    scf_wfn = run_scf(name, **kwargs)
+    if psi4.get_option('SCF', 'REFERENCE') in ['ROHF', 'CUHF']:
+        scf_wfn.semicanonicalize()
 
-    psi4.scfgrad()
+    grad = psi4.scfgrad(scf_wfn)
+    scf_wfn.set_gradient(grad)
     optstash.restore()
+    return grad
+
 
 
 def run_libfock(name, **kwargs):

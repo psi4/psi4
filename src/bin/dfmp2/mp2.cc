@@ -161,7 +161,8 @@ void DFMP2::common_init()
     }
 
     if (options_.get_str("REFERENCE") == "ROHF" || options_.get_str("REFERENCE") == "CUHF")
-        reference_wavefunction_->semicanonicalize();
+        throw PSIEXCEPTION("SemiCanonical transform does not work at the moment");
+        //reference_wavefunction_->semicanonicalize();
 
     copy(reference_wavefunction_);
     name_ = "DF-MP2";

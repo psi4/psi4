@@ -35,6 +35,8 @@
 #include <lib3index/3index.h>
 #include <libscf_solver/hf.h>
 #include <libscf_solver/rhf.h>
+#include <libscf_solver/rohf.h>
+#include <libscf_solver/cuhf.h>
 
 #include <libfock/jk.h>
 #include <../bin/detci/ciwave.h>
@@ -876,6 +878,7 @@ void export_mints()
             def("sobasisset", &Wavefunction::sobasisset, "docstring").
             def("energy", &Wavefunction::reference_energy, "docstring").
             def("gradient", &Wavefunction::gradient, "docstring").
+            def("set_gradient", &Wavefunction::set_gradient, "docstring").
             def("frequencies", &Wavefunction::frequencies, "docstring").
             def("atomic_point_charges", &Wavefunction::get_atomic_point_charges, "docstring").
             def("normalmodes", &Wavefunction::normalmodes, "docstring").
@@ -893,8 +896,14 @@ void export_mints()
             def("nalpha", &Wavefunction::nalpha, "docstring").
             def("nbeta", &Wavefunction::nbeta, "docstring");
 
-    class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", "docstring", no_init);
+    class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", "docstring", no_init).
+            def("semicanonicalize", &scf::HF::semicanonicalize, "docstring");
+
     class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", "docstring", no_init);
+
+    class_<scf::ROHF, boost::shared_ptr<scf::ROHF>, bases<scf::HF, Wavefunction> >("ROHF", "docstring", no_init);
+
+    class_<scf::CUHF, boost::shared_ptr<scf::CUHF>, bases<scf::HF, Wavefunction> >("CUHF", "docstring", no_init);
 
     typedef boost::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, boost::shared_ptr<BasisSet>, boost::shared_ptr<Matrix>);
 
