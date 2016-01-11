@@ -238,7 +238,7 @@ int MintsHelper::nbf() const
 
 void MintsHelper::integrals()
 {
-    outfile->Printf( " MINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
+    if(print_){outfile->Printf( " MINTS: Wrapper to libmints.\n   by Justin Turney\n\n");}
 
     // Get ERI object
     std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
@@ -246,21 +246,24 @@ void MintsHelper::integrals()
         tb.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri()));
     boost::shared_ptr<TwoBodySOInt> eri(new TwoBodySOInt(tb, integral_));
 
-    // Print out some useful information
-    outfile->Printf( "   Calculation information:\n");
-    outfile->Printf( "      Number of atoms:                %4d\n", molecule_->natom());
-    outfile->Printf( "      Number of AO shells:            %4d\n", basisset_->nshell());
-    outfile->Printf( "      Number of SO shells:            %4d\n", sobasis_->nshell());
-    outfile->Printf( "      Number of primitives:           %4d\n", basisset_->nprimitive());
-    outfile->Printf( "      Number of atomic orbitals:      %4d\n", basisset_->nao());
-    outfile->Printf( "      Number of basis functions:      %4d\n\n", basisset_->nbf());
-    outfile->Printf( "      Number of irreps:               %4d\n", sobasis_->nirrep());
-    outfile->Printf( "      Integral cutoff                 %4.2e\n", cutoff_);
-    outfile->Printf( "      Number of functions per irrep: [");
-    for (int i=0; i<sobasis_->nirrep(); ++i) {
-        outfile->Printf( "%4d ", sobasis_->nfunction_in_irrep(i));
+    //// Print out some useful information
+    if(print_)
+    {
+        outfile->Printf( "   Calculation information:\n");
+        outfile->Printf( "      Number of atoms:                %4d\n", molecule_->natom());
+        outfile->Printf( "      Number of AO shells:            %4d\n", basisset_->nshell());
+        outfile->Printf( "      Number of SO shells:            %4d\n", sobasis_->nshell());
+        outfile->Printf( "      Number of primitives:           %4d\n", basisset_->nprimitive());
+        outfile->Printf( "      Number of atomic orbitals:      %4d\n", basisset_->nao());
+        outfile->Printf( "      Number of basis functions:      %4d\n\n", basisset_->nbf());
+        outfile->Printf( "      Number of irreps:               %4d\n", sobasis_->nirrep());
+        outfile->Printf( "      Integral cutoff                 %4.2e\n", cutoff_);
+        outfile->Printf( "      Number of functions per irrep: [");
+        for (int i=0; i<sobasis_->nirrep(); ++i) {
+            outfile->Printf( "%4d ", sobasis_->nfunction_in_irrep(i));
+        }
+        outfile->Printf( "]\n\n");
     }
-    outfile->Printf( "]\n\n");
 
     // Compute one-electron integrals.
     one_electron_integrals();
@@ -270,7 +273,7 @@ void MintsHelper::integrals()
     IWLWriter writer(ERIOUT);
 
     // Let the user know what we're doing.
-    outfile->Printf( "      Computing two-electron integrals...");
+    if(print_){outfile->Printf( "      Computing two-electron integrals...");}
 
     SOShellCombinationsIterator shellIter(sobasis_, sobasis_, sobasis_, sobasis_);
     for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
@@ -284,9 +287,12 @@ void MintsHelper::integrals()
     ERIOUT.set_keep_flag(true);
     ERIOUT.close();
 
-    outfile->Printf( "done\n");
-    outfile->Printf( "      Computed %lu non-zero two-electron integrals.\n"
+    if(print_)
+    {
+        outfile->Printf( "done\n");
+        outfile->Printf( "      Computed %lu non-zero two-electron integrals.\n"
                      "        Stored in file %d.\n\n", writer.count(), PSIF_SO_TEI);
+    }
 }
 
 void MintsHelper::integrals_erf(double w)
@@ -416,8 +422,8 @@ void MintsHelper::one_electron_integrals()
         m->save(psio_, PSIF_OEI);
     }
 
-    outfile->Printf( " OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
-                     "         stored in file %d.\n\n", PSIF_OEI);
+    if(print_){outfile->Printf( " OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
+                     "         stored in file %d.\n\n", PSIF_OEI);}
 }
 
 void MintsHelper::integral_gradients()
