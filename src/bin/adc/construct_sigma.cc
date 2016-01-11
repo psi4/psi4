@@ -37,7 +37,7 @@ namespace psi{ namespace adc{
 //
     
 void 
-ADC::rhf_construct_sigma(int irrep, int root)
+ADCWfn::rhf_construct_sigma(int irrep, int root)
 {
     bool do_pr = options_.get_bool("PR");
     char lbl[32], ampname[32];
