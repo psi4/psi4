@@ -79,6 +79,7 @@ public:
     virtual ~ROHF();
     virtual bool same_a_b_orbs() const { return restricted_; }
     virtual bool same_a_b_dens() const { return false; }
+
 };
 
 }}

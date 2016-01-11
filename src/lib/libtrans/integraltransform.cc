@@ -282,7 +282,8 @@ IntegralTransform::initialize()
 
     // We have to redefine the MO coefficients for a UHF-like treatment
     if(transformationType_ == SemiCanonical){
-        wfn_->semicanonicalize();
+        throw PSIEXCEPTION("SemiCanonical transform does not work at the moment");
+        //wfn_->semicanonicalize();
         Cb_ = wfn_->Cb();
     }
     process_eigenvectors();
