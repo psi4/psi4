@@ -96,7 +96,6 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
    double* tpdm_abp = tpdm_ab->pointer();
    double* tpdm_bbp = tpdm_bb->pointer();
 
-   int maxcols=0, maxrows=0;
    if ((Ivec.icore_==2 && Ivec.Ms0_ && CalcInfo_->ref_sym != 0) ||
        (Ivec.icore_==0 && Ivec.Ms0_)) {
      int maxrows=0, maxcols=0;
