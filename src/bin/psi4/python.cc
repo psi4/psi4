@@ -107,6 +107,11 @@ void opt_clean(void);
 
 // Forward declare /src/bin/ methods
 namespace psi {
+
+// Pass 1 complete
+namespace adc { SharedWavefunction adc(SharedWavefunction ref_wfn, Options& options); }
+
+// Incomplete
 namespace mints { PsiReturnType mints(Options&); }
 namespace deriv { PsiReturnType deriv(Options&); }
 namespace scfgrad { PsiReturnType scfgrad(Options&); }
@@ -145,7 +150,6 @@ namespace efp { PsiReturnType efp_init(Options&); }
 namespace efp { PsiReturnType efp_set_options(); }
 namespace occwave { PsiReturnType occwave(Options&); }
 namespace dfoccwave { PsiReturnType dfoccwave(Options&); }
-namespace adc { PsiReturnType adc(Options&); }
 namespace thermo { PsiReturnType thermo(Options&); }
 namespace mrcc {
 PsiReturnType mrcc_generate_input(Options&, const boost::python::dict&);
@@ -707,14 +711,11 @@ double py_psi_psimrcc()
     return 0.0;
 }
 
-double py_psi_adc()
+SharedWavefunction py_psi_adc(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("ADC");
-    if (adc::adc(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    SharedWavefunction adc_wfn = adc::adc(ref_wfn, Process::environment.options);
+    return adc_wfn;
 }
 
 double py_psi_thermo()

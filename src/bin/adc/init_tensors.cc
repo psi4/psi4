@@ -30,7 +30,7 @@
 namespace psi{ namespace adc {
     
 double
-ADC::rhf_init_tensors()
+ADCWfn::rhf_init_tensors()
 {
     bool do_pr;
     double ePR2, sq_norm, energy;
