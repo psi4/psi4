@@ -414,6 +414,13 @@ public:
     /// Clears memory and closes files (Should they be open) prior to correlated code execution
     /// Derived classes override it for additional operations and then call HF::finalize()
     virtual void finalize();
+
+    /// Semicanonicalizes ROHF/CUHF orbitals, breaking the alpha-beta degeneracy
+    /// On entrance, there's only one set of orbitals and orbital energies.  On
+    /// exit, the alpha and beta Fock matrices correspond to those in the semicanonical
+    /// basis, and there are distinct alpha and beta C and epsilons, also in the
+    /// semicanonical basis.
+    virtual void semicanonicalize();
 };
 
 }} // Namespaces

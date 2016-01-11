@@ -70,7 +70,8 @@ void THCEW::common_init()
     }
 
     if (options_.get_str("REFERENCE") == "ROHF" || options_.get_str("REFERENCE") == "CUHF")
-        reference_wavefunction_->semicanonicalize();
+        throw PSIEXCEPTION("Does not currently work for non RHF references. Blame DGAS.");
+        // reference_wavefunction_->semicanonicalize();
 
     copy(reference_wavefunction_);
 

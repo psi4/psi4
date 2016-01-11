@@ -278,11 +278,6 @@ void Wavefunction::initialize_singletons()
     done = true;
 }
 
-void Wavefunction::semicanonicalize()
-{
-    throw PSIEXCEPTION("This type of wavefunction cannot be semicanonicalized!");
-}
-
 boost::shared_ptr<Molecule> Wavefunction::molecule() const
 {
     return molecule_;

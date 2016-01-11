@@ -360,12 +360,6 @@ public:
     /// Returns the core Hamiltonian matrix
     SharedMatrix H() const { return H_; }
 
-    /** Semicanonicalizes ROHF orbitals, breaking the alpha-beta degeneracy
-     * On entrance, there's only one set of orbitals and orbital energies.  On
-     * exit, the alpha and beta Fock matrices correspond to those in the semicanonical
-     * basis, and there are distinct alpha and beta C and epsilons, also in the
-     * semicanonical basis. */
-    virtual void semicanonicalize();
     /// Returns the alpha electrons MO coefficients
     SharedMatrix Ca() const;
     /// Returns the beta electrons MO coefficients
