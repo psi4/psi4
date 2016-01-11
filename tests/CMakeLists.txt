@@ -7,8 +7,11 @@ set(TestsNotSetUpRight cfour optking testgrendel)
 # The following labels are defined:
 #
 #  longtests   = The (as of right now) 4 really long tests
-#  longertests = Every test in the test folder less longtests
-#  quicktests  = Proper subset of tests deemed to run quickly
+#  shorttests  = Every test in the test folder less longtests
+#  quicktests  = Proper subset of tests deemed to run quickly (ideally
+#                in 60 seconds or less).  This subset is chosen to provide
+#                one or more tests for each major module, but it does not
+#                necessarily cover all features of every module.
 #
 # It is possible to specify more than one label per test. CMake
 # expects a ;-separated list, e.g. "psi;quicktests;scf"

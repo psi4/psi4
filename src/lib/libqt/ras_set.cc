@@ -82,9 +82,9 @@ namespace psi {
 **                        to make up any remaining orbitals)
 **  \param core_guess  =  array of the core orbitals per irrep to drop
 **                        (must be provided).  This is copied into
-**                        FROZEN_DOCC (if is_mcscf == true) or 
-**                        RESTRICTED_DOCC (if is_mcscf == false), if either
-**                        of those two arrays are not in input
+**                        FROZEN_DOCC (if is_mcscf == false) or 
+**                        RESTRICTED_DOCC (if is_mcscf == true), if both
+**                        of those two arrays are absent from input
 **  \param order       =  array nmo big which maps Pitzer to Correlated order
 **                        (returned by function, but allocate before call)
 **  \param ras_type    =  if 1, put docc and socc together in same RAS space
@@ -102,9 +102,15 @@ namespace psi {
 **      given in user input, in which case the guess arrays are overwritten
 **      by the user input in this routine
 **   2. FROZEN_DOCC and RESTRICTED_DOCC will be as given by the user.  If
-**      FROZEN_DOCC is not given in input, it will default to the parameter
-**      core_guess (if not an MCSCF).  If RESTRICTED_DOCC is not given in
-**      input, it will default to the parameter core_guess (if an MCSCF).
+**      the user does not specify either of these keywords, then maybe
+**      they specified FREEZE_CORE = TRUE instead, and we want to support
+**      that.  If neither FROZEN_DOCC nor RESTRICTED_DOCC is specified, then
+**      we will use the array core_guess[] to get them.  This array is
+**      obtained from whatever routine figures out how many orbitals per
+**      irrep to freeze when FREEZE_CORE = true (passed down as an argument
+**      into this function).  If the computation is an MCSCF, then we'll
+**      copy core_guess into RESTRICTED_DOCC.  If it's not an MCSCF, then
+**      we'll copy it into FROZEN_DOCC.
 **   3. The user can give either ACTIVE (for a CAS type computation, where
 **      internally this is basically like RAS 2), or RAS keywords.  Not both.
 **   4. By default, unused virtual orbitals go into FROZEN_UOCC unless
