@@ -9,6 +9,6 @@
 void export_libfrag(){
     using namespace psi::LibFrag;
 	using namespace boost::python;
-	class_<LibFragDriver>("LibFragDriver",init<std::string>());
+	//class_<LibFragDriver>("LibFragDriver",init<std::string>());
 }
 
