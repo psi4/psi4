@@ -118,15 +118,6 @@ protected:
     /// Print flag
     unsigned int print_;
 
-    /// Whether this wavefunction was obtained using density fitting
-    bool density_fitted_;
-
-    /// Energy convergence threshold
-    double energy_threshold_;
-
-    /// Density convergence threshold
-    double density_threshold_;
-
     /// Total alpha and beta electrons
     int nalpha_, nbeta_;
 
@@ -150,6 +141,9 @@ protected:
     Dimension nsopi_;
     /// Number of mo per irrep
     Dimension nmopi_;
+
+    /// Whether this wavefunction was obtained using density fitting
+    bool density_fitted_;
 
     /// The energy associated with this wavefunction
     double energy_;

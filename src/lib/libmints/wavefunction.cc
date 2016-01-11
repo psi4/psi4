@@ -58,46 +58,17 @@ double fac[MAX_FAC];
 
 Wavefunction::Wavefunction(boost::shared_ptr<Molecule> molecule, const std::string& basis,
                            Options & options) :
-                           options_(options)
+                           options_(options), molecule_(molecule)
 {
-    Wavefunction::initialize_singletons();
-
     // Load in molecule and basis
-    molecule_ = molecule;
     basisset_ = BasisSet::pyconstruct_orbital(molecule_, "BASIS", basis);
-
-    // Check the point group of the molecule. If it is not set, set it.
-    if (!molecule_->point_group()) {
-        molecule_->set_point_group(molecule_->find_point_group());
-    }
-
-    // Create an SO basis...we need the point group for this part.
-    integral_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-    sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
-
-    boost::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral_));
-    AO2SO_ = pet->aotoso();
-
-    // Obtain the dimension object to initialize the factory.
-    nsopi_ = sobasisset_->dimension();
-    nsopi_.set_name("SOs per irrep");
-    nso_ = basisset_->nbf();
-
-    factory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
-    factory_->init_with(nsopi_, nsopi_);
-
-    nirrep_ = nsopi_.n();
-
-    S_ = factory_->create_shared_matrix("S");
-    boost::shared_ptr<OneBodySOInt> Sint(integral_->so_overlap());
-    Sint->compute(S_);
     common_init();
-
 }
 
 Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio) :
     options_(options), psio_(psio)
 {
+    outfile->Printf("DGAS Warning! Deprecated constructor!\n");
     chkpt_ = boost::shared_ptr<Chkpt>(new Chkpt(psio.get(), PSIO_OPEN_OLD));
     common_init();
 }
@@ -105,6 +76,7 @@ Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio) :
 Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
     options_(options), psio_(psio), chkpt_(chkpt)
 {
+    outfile->Printf("DGAS Warning! Deprecated constructor!\n");
     common_init();
 }
 
@@ -134,9 +106,6 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
     memory_ = other->memory_;
     print_ = other->print_;
     debug_ = other->debug_;
-    density_fitted_ = other->density_fitted_;
-    energy_threshold_ = other->energy_threshold_;
-    density_threshold_ = other->density_threshold_;
     nalpha_ = other->nalpha_;
     nbeta_ = other->nbeta_;
     nfrzc_ = other->nfrzc_;
@@ -172,39 +141,34 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
 
 void Wavefunction::common_init()
 {
-    // Wavefunction::initialize_singletons();
+    Wavefunction::initialize_singletons();
 
-    // // Take the molecule from the environment
-    // molecule_ = Process::environment.molecule();
+    // Check the point group of the molecule. If it is not set, set it.
+    if (!molecule_->point_group()) {
+        molecule_->set_point_group(molecule_->find_point_group());
+    }
 
-    // // Load in the basis set
-    // basisset_ = BasisSet::pyconstruct_orbital(molecule_, "BASIS", options_.get_str("BASIS"));
+    // Create an SO basis...we need the point group for this part.
+    integral_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
 
-    // // Check the point group of the molecule. If it is not set, set it.
-    // if (!molecule_->point_group()) {
-    //     molecule_->set_point_group(molecule_->find_point_group());
-    // }
+    boost::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral_));
+    AO2SO_ = pet->aotoso();
 
-    // // Create an SO basis...we need the point group for this part.
-    // integral_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-    // sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
+    // Obtain the dimension object to initialize the factory.
+    nsopi_ = sobasisset_->dimension();
+    nsopi_.set_name("SOs per irrep");
 
-    // boost::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral_));
-    // AO2SO_ = pet->aotoso();
+    factory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
+    factory_->init_with(nsopi_, nsopi_);
 
-    // // Obtain the dimension object to initialize the factory.
-    // const Dimension dimension = sobasisset_->dimension();
-    // factory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
-    // factory_->init_with(dimension, dimension);
+    nirrep_ = nsopi_.n();
 
-    // nirrep_ = dimension.n();
-
-    // S_ = factory_->create_shared_matrix("S");
-    // boost::shared_ptr<OneBodySOInt> Sint(integral_->so_overlap());
-    // Sint->compute(S_);
+    S_ = factory_->create_shared_matrix("S");
+    boost::shared_ptr<OneBodySOInt> Sint(integral_->so_overlap());
+    Sint->compute(S_);
 
     // Initialize array that hold dimensionality information
-    // nsopi_    = Dimension(nirrep_, "SOs per irrep");
     nmopi_    = Dimension(nirrep_, "MOs per irrep");
     nalphapi_ = Dimension(nirrep_, "Alpha electrons per irrep");
     nbetapi_  = Dimension(nirrep_, "Beta electrons per irrep");
@@ -216,10 +180,9 @@ void Wavefunction::common_init()
     // Obtain memory amount from the environment
     memory_ = Process::environment.get_memory();
 
-    // nso_ = basisset_->nbf();
+    nso_ = basisset_->nbf();
     nmo_ = basisset_->nbf();
     for (int k = 0; k < nirrep_; k++) {
-        // nsopi_[k] = dimension[k];
         nmopi_[k] = 0;
         doccpi_[k] = 0;
         soccpi_[k] = 0;
@@ -227,19 +190,12 @@ void Wavefunction::common_init()
         nbetapi_[k] = 0;
     }
 
+    density_fitted_ = false;
     energy_ = 0.0;
 
     // Read in the debug flag
     debug_ = options_.get_int("DEBUG");
     print_ = options_.get_int("PRINT");
-
-    // Read in energy convergence threshold
-    energy_threshold_ = options_.get_double("E_CONVERGENCE");
-
-    // Read in density convergence threshold
-    density_threshold_ = options_.get_double("D_CONVERGENCE");;
-
-    density_fitted_ = false;
 
     /* Xiao Wang */
     // not a DCFT computation by default

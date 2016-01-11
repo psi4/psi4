@@ -48,7 +48,7 @@
 
 namespace psi { namespace detci {
 
-PsiReturnType detci(Options &options);
+SharedWavefunction detci(SharedWavefunction ref_wfn, Options &options);
 
 }} // namespace psi::detci
 
@@ -56,7 +56,7 @@ PsiReturnType detci(Options &options);
 namespace psi { namespace detci {
 
 
-PsiReturnType detci(Options &options)
+SharedWavefunction detci(SharedWavefunction ref_wfn, Options &options)
 {
 
    boost::shared_ptr<Wavefunction> refwfn = Process::environment.wavefunction();
@@ -64,8 +64,9 @@ PsiReturnType detci(Options &options)
 
    ciwfn->compute_energy();
 
-   Process::environment.set_wavefunction((static_cast<boost::shared_ptr<Wavefunction> > (ciwfn)));
-   return Success;
+   SharedWavefunction base_ciwfn = static_cast<SharedWavefunction>(ciwfn);
+   Process::environment.set_wavefunction(base_ciwfn);
+   return base_ciwfn;
 }
 
 
