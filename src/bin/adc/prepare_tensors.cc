@@ -43,7 +43,7 @@
 namespace psi{ namespace adc{
     
 void 
-ADC::rhf_prepare_tensors()
+ADCWfn::rhf_prepare_tensors()
 {    
     bool do_pr = options_.get_bool("PR");
     char lbl[32], ampname[32];

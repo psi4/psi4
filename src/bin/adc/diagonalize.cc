@@ -42,7 +42,7 @@ namespace psi{ namespace adc{
 //
     
 void 
-ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, double *eps)
+ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, double *eps)
 {
     char lbl[32];
     int iter, converged, prev_length, length, *conv, skip_check, maxdim, *residual_ok;

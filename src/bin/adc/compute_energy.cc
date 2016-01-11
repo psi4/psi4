@@ -36,7 +36,7 @@ struct lambda{
 };
 
 double 
-ADC::compute_energy()
+ADCWfn::compute_energy()
 {   
     int nprint;
     char lbl[32];
