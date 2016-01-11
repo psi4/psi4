@@ -27,8 +27,8 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <libmints/matrix.h>
+#include <libmints/molecule.h>
 #include <libmints/wavefunction.h>
-#include <libchkpt/chkpt.hpp>
 #include <libtrans/integraltransform.h>
 #include "defines.h"
 
@@ -36,20 +36,6 @@ using namespace boost;
 using namespace std;
 
 namespace psi{ namespace dcft{
-
-  /**
-  * Dumps the current Fock matrix eigenvectors to the checkpoint file
-  */
-  void
-  DCFTSolver::write_orbitals_to_checkpoint()
-  {
-      double **aEvecs = Ca_->to_block_matrix();
-      chkpt_->wt_alpha_scf(aEvecs);
-      free_block(aEvecs);
-      double **bEvecs = Cb_->to_block_matrix();
-      chkpt_->wt_beta_scf(bEvecs);
-      free_block(bEvecs);
-  }
 
 
   /**
@@ -249,7 +235,7 @@ namespace psi{ namespace dcft{
 
       int *aIrrepCount = init_int_array(nirrep_);
       int *bIrrepCount = init_int_array(nirrep_);
-      char **irrepLabels = chkpt_->rd_irr_labs();
+      char **irrepLabels = molecule_->irrep_labels();
 
       outfile->Printf( "\n\tOrbital energies (a.u.):\n\t\tAlpha occupied orbitals\n\t\t");
       for (int i = 0, count = 0; i < nalpha_; ++i, ++count) {
@@ -332,38 +318,15 @@ namespace psi{ namespace dcft{
       so_h_->add(V);
 
       std::string guess = options_.get_str("DCFT_GUESS");
-      if(guess != "DCFT"){
-          epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
-          epsilon_b_->copy(reference_wavefunction_->epsilon_b().get());
-          Ca_->copy(reference_wavefunction_->Ca());
-          Cb_->copy(reference_wavefunction_->Cb());
-          moFa_->copy(reference_wavefunction_->Fa());
-          moFa_->transform(Ca_);
-          moFb_->copy(reference_wavefunction_->Fb());
-          moFb_->transform(Cb_);
-          update_scf_density();
-      }
-      else {
-          outfile->Printf( "\n\n\tReading orbitals from previous job");
-          // Read the orbitals from the checkpoint file
-          double **aEvecs = chkpt_->rd_alpha_scf();
-          Ca_->set(aEvecs);
-          free_block(aEvecs);
-          double **bEvecs = chkpt_->rd_beta_scf();
-          Cb_->set(bEvecs);
-          free_block(bEvecs);
-
-          Fa_ = SharedMatrix(new Matrix("Alpha SO-basis Fock matrix", nirrep_, nsopi_, nsopi_));
-          Fb_ = SharedMatrix(new Matrix("Beta SO-basis Fock matrix", nirrep_, nsopi_, nsopi_));
-          Fa_->copy(so_h_);
-          Fb_->copy(so_h_);
-          moFa_->copy(so_h_);
-          moFb_->copy(so_h_);
-          moFa_->transform(Ca_);
-          moFb_->transform(Cb_);
-          update_scf_density();
-
-      }
+      epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
+      epsilon_b_->copy(reference_wavefunction_->epsilon_b().get());
+      Ca_->copy(reference_wavefunction_->Ca());
+      Cb_->copy(reference_wavefunction_->Cb());
+      moFa_->copy(reference_wavefunction_->Fa());
+      moFa_->transform(Ca_);
+      moFb_->copy(reference_wavefunction_->Fb());
+      moFb_->transform(Cb_);
+      update_scf_density();
 
       dcft_timer_off("DCFTSolver::scf_guess");
   }

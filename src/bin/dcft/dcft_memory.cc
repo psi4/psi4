@@ -71,8 +71,8 @@ DCFTSolver::init()
     bvir_c_      = SharedMatrix(new Matrix("Beta Virtual MO Coefficients", nirrep_, nsopi_, nbvirpi_));
     scf_error_a_ = SharedMatrix(new Matrix("Alpha SCF Error Vector", nirrep_, nsopi_, nsopi_));
     scf_error_b_ = SharedMatrix(new Matrix("Beta SCF Error Vector", nirrep_, nsopi_, nsopi_));
-    Fa_          = SharedMatrix(reference_wavefunction_->Fa());
-    Fb_          = SharedMatrix(reference_wavefunction_->Fb());
+    Fa_          = reference_wavefunction_->Fa()->clone();
+    Fb_          = reference_wavefunction_->Fb()->clone();
     moF0a_         = SharedMatrix(new Matrix("Alpha MO F0 Matrix", nirrep_, nmopi_, nmopi_));
     moF0b_         = SharedMatrix(new Matrix("Beta MO F0 Matrix", nirrep_, nmopi_, nmopi_));
     Ftilde_a_      = SharedMatrix(new Matrix("Alpha MO Ftilde Matrix", nirrep_, nmopi_, nmopi_));
@@ -198,7 +198,6 @@ void
 DCFTSolver::finalize()
 {
     psio_->close(PSIF_DCFT_DPD, 1);
-    chkpt_.reset();
     delete _ints;
 
     aocc_c_.reset();

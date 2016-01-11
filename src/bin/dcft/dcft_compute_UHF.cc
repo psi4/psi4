@@ -409,8 +409,6 @@ DCFTSolver::run_twostep_dcft_orbital_updates() {
         if (fabs(orbitals_convergence_) > 100.0) throw PSIEXCEPTION("DCFT orbital updates diverged");
 
     }
-    // Write orbitals to the checkpoint file
-    write_orbitals_to_checkpoint();
     orbitalsDone_ = nSCFCycles == 1;
     energyConverged_ = false;
     // Transform the Fock matrix to the MO basis
@@ -545,8 +543,6 @@ DCFTSolver::run_simult_dcft()
             outfile->Printf("\t\tThere was a problem correcting the MO phases.\n"
                             "\t\tIf this does not converge, try ALGORITHM=TWOSTEP\n");
         }
-        // Write orbitals to the checkpoint file
-        write_orbitals_to_checkpoint();
         // Transform two-electron integrals to the MO basis using new orbitals, build denominators
         transform_integrals();
         // Update SCF density (Kappa) and check its RMS

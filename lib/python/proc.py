@@ -68,9 +68,10 @@ def run_dcft(name, **kwargs):
 
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
+        scf_wfn = scf_helper(name, **kwargs)
 
-    psi4.dcft()
+    dcft_wfn = psi4.dcft(scf_wfn)
+    return dcft_wfn
 
 
 def run_dcft_gradient(name, **kwargs):

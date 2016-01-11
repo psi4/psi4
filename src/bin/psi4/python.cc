@@ -109,21 +109,22 @@ void opt_clean(void);
 namespace psi {
 
 // Pass 1 complete
-namespace adc { SharedWavefunction adc(SharedWavefunction ref_wfn, Options& options); }
+namespace adc { SharedWavefunction     adc(SharedWavefunction, Options&); }
+namespace dcft { SharedWavefunction   dcft(SharedWavefunction, Options&); }
+namespace detci { SharedWavefunction detci(SharedWavefunction, Options&); }
+namespace scf { SharedWavefunction     scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
 
 // Incomplete
 namespace mints { PsiReturnType mints(Options&); }
 namespace deriv { PsiReturnType deriv(Options&); }
 namespace scfgrad { PsiReturnType scfgrad(Options&); }
 namespace scfgrad { PsiReturnType scfhess(Options&); }
-namespace scf { SharedWavefunction scf(SharedWavefunction ref_wfn, Options&, PyObject *pre, PyObject *post); }
 namespace scf { PsiReturnType scf_dummy(Options&); }
 namespace libfock { PsiReturnType libfock(Options&); }
 namespace dfmp2 { PsiReturnType dfmp2(Options&); }
 namespace dfmp2 { PsiReturnType dfmp2grad(Options&); }
 namespace sapt { PsiReturnType sapt(Options&); }
 namespace fisapt { PsiReturnType fisapt(Options&); }
-namespace dcft { PsiReturnType dcft(Options&); }
 namespace lmp2 { PsiReturnType lmp2(Options&); }
 namespace mcscf { PsiReturnType mcscf(Options&); }
 namespace psimrcc { PsiReturnType psimrcc(Options&); }
@@ -140,7 +141,6 @@ void scatter(Options&, double step, std::vector<SharedMatrix> dip, std::vector<S
              std::vector<SharedMatrix> quad);
 }
 namespace cceom { PsiReturnType cceom(Options&); }
-namespace detci { SharedWavefunction detci(SharedWavefunction ref_wfn, Options& options); }
 #ifdef ENABLE_CHEMPS2
 namespace dmrg       { PsiReturnType dmrg(Options&);     }
 #endif
@@ -423,14 +423,10 @@ double py_psi_scf_dummy()
     return scf::scf_dummy(Process::environment.options);
 }
 
-double py_psi_dcft()
+SharedWavefunction py_psi_dcft(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("DCFT");
-    if (dcft::dcft(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return dcft::dcft(ref_wfn, Process::environment.options);
 }
 
 double py_psi_lmp2()
