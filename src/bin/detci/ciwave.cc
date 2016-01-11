@@ -38,14 +38,17 @@ namespace psi { namespace detci {
 CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> ref_wfn)
     : Wavefunction(Process::environment.options, ref_wfn->psio())
 {
+    outfile->Printf("DGAS Warning! Deprecated constructor\n");
     set_reference_wavefunction(ref_wfn);
     common_init();
 }
 
 CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> ref_wfn,
                                Options &options)
-    : Wavefunction(options, ref_wfn->psio())
+    : Wavefunction(options)
 {
+    // Copy the wavefuntion then update
+    copy(ref_wfn);
     set_reference_wavefunction(ref_wfn);
     common_init();
 }
@@ -54,8 +57,6 @@ CIWavefunction::~CIWavefunction()
 }
 void CIWavefunction::common_init()
 {
-    // Copy the wavefuntion then update
-    copy(reference_wavefunction_);
 
     title();
     init_ioff();
