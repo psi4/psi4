@@ -59,7 +59,6 @@ void CIWavefunction::form_tpdm(void)
 std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int Jfirstunit)
 {
 
-   int maxrows, maxcols;
    unsigned long bufsz;
    double **transp_tmp = NULL;
    double **transp_tmp2 = NULL;
