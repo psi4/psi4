@@ -282,10 +282,6 @@ add_subdirectory(src)
 # Add the library directory, for install purposes
 add_subdirectory(lib)
 
-# Add the New API directory
-add_subdirectory(PsiAPI)
-set_property(GLOBAL APPEND PROPERTY PSILIB psiapi)
-
 # Handle creation of Makefile for plugins
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES) ###
 get_property(defs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS)
