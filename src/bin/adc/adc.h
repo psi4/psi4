@@ -39,7 +39,7 @@ namespace boost {
     template<class T> class shared_ptr;
 }
 
-namespace psi{ 
+namespace psi{
 
 class Options;
 class PSIO;
@@ -51,21 +51,21 @@ typedef boost::shared_ptr<Matrix> SharedMatrix;
 typedef boost::shared_ptr<Vector> SharedVector;
 
 namespace adc{
-    
+
 struct pole{
-    int    iter;              // Iterated time 
+    int    iter;              // Iterated time
     double iter_value;        // Converged value of the excitation energy
     double ps_value;          // Pseudo-pertirbative value of the excitation energy
     double osc_strength;      // Oscillator strength
     double renorm_factor;     // Residue of the propagator, which is identical to the squared norm of the singly excited vector
     double rot_angle;         // Rotation angle from corresponding CIS vector
 };
-        
-class ADC: public Wavefunction
+
+class ADCWfn: public Wavefunction
 {
 public:
-    ADC();
-    ~ADC();
+    ADCWfn(SharedWavefunction ref_wfn, Options& options);
+    ~ADCWfn();
     double compute_energy();
     virtual bool same_a_b_orbs() const { return reference_wavefunction_->same_a_b_orbs(); }
     virtual bool same_a_b_dens() const { return reference_wavefunction_->same_a_b_dens(); }
@@ -93,7 +93,7 @@ protected:
     int pole_max_;
     // MAximum iteration number in simultaneous expansion method
     int sem_max_;
-    // Norm tolerance for the residual vector 
+    // Norm tolerance for the residual vector
     double norm_tol_;
     // Number of components of transition amplitudes printed in outfile
     int num_amps_;
@@ -114,7 +114,7 @@ protected:
     // Irreps for X, Y and Z
     int *irrep_axis_;
     // Ground state energy
-    double gs_energy_; 
+    double gs_energy_;
     // An array containing alpha occupied orbital energies in DPD order
     double *aocce_;
     // An array containing alpha virtual orbital energies in DPD order
@@ -130,7 +130,7 @@ protected:
     // Guesses for the correlated excitation energies, which are given as CIS/ADC(1) energies
     SharedVector omega_guess_;
 };
-    
+
 }}
 
 #endif
