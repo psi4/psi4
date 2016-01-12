@@ -894,7 +894,9 @@ void export_mints()
             def("frzcpi", &Wavefunction::frzcpi, return_value_policy<copy_const_reference>(), "docstring").
             def("frzvpi", &Wavefunction::frzvpi, return_value_policy<copy_const_reference>(), "docstring").
             def("nalpha", &Wavefunction::nalpha, "docstring").
-            def("nbeta", &Wavefunction::nbeta, "docstring");
+            def("nbeta", &Wavefunction::nbeta, "docstring").
+            def("compute_energy", &Wavefunction::compute_energy, "docstring").
+            def("compute_gradient", &Wavefunction::compute_gradient, "docstring");
 
     class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", "docstring", no_init).
             def("semicanonicalize", &scf::HF::semicanonicalize, "docstring");

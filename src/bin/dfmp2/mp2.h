@@ -76,7 +76,7 @@ protected:
     virtual void form_Pij() = 0;
     // Form the small gamma
     virtual void form_gamma() = 0;
-    // Transpose the G 
+    // Transpose the G
     virtual void form_G_transpose() = 0;
     // Form the (A|B)^x contribution to the gradient
     virtual void form_AB_x_terms() = 0;
@@ -109,19 +109,19 @@ protected:
     virtual void apply_B_transpose(unsigned int file, unsigned long int naux, unsigned long int naocc, unsigned long int navir);
 
     // Debugging-routine: prints block sizing
-    void block_status(std::vector<int> inds, const char* file, int line); 
-    void block_status(std::vector<unsigned long int> inds, const char* file, int line); 
+    void block_status(std::vector<int> inds, const char* file, int line);
+    void block_status(std::vector<unsigned long int> inds, const char* file, int line);
 
     void compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, SharedMatrix Cno, SharedVector occ);
 
 public:
-    DFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    DFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     virtual ~DFMP2();
 
     double compute_energy();
     virtual SharedMatrix compute_gradient();
 
-}; 
+};
 
 class RDFMP2 : public DFMP2 {
 
@@ -131,7 +131,7 @@ protected:
     SharedMatrix Caocc_;
     SharedMatrix Cavir_;
     SharedMatrix Cfvir_;
-    
+
     SharedVector eps_focc_;
     SharedVector eps_aocc_;
     SharedVector eps_avir_;
@@ -157,7 +157,7 @@ protected:
     virtual void form_Pij();
     // Form the small gamma
     virtual void form_gamma();
-    // Transpose the G 
+    // Transpose the G
     virtual void form_G_transpose();
     // Form the (A|B)^x contribution to the gradient
     virtual void form_AB_x_terms();
@@ -175,7 +175,7 @@ protected:
     virtual void form_gradient();
 
 public:
-    RDFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    RDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     virtual ~RDFMP2();
 
     virtual bool same_a_b_orbs() const { return true; }
@@ -190,7 +190,7 @@ protected:
     SharedMatrix Cavir_a_;
     SharedMatrix Caocc_b_;
     SharedMatrix Cavir_b_;
-    
+
     SharedVector eps_aocc_a_;
     SharedVector eps_avir_a_;
     SharedVector eps_aocc_b_;
@@ -216,7 +216,7 @@ protected:
     virtual void form_Pij();
     // Form the small gamma
     virtual void form_gamma();
-    // Transpose the G 
+    // Transpose the G
     virtual void form_G_transpose();
     // Form the (A|B)^x contribution to the gradient
     virtual void form_AB_x_terms();
@@ -234,7 +234,7 @@ protected:
     virtual void form_gradient();
 
 public:
-    UDFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    UDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     virtual ~UDFMP2();
 
     virtual bool same_a_b_orbs() const { return false; }
@@ -252,7 +252,7 @@ protected:
     virtual void print_header();
 
 public:
-    RODFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    RODFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     virtual ~RODFMP2();
 
     virtual bool same_a_b_orbs() const { return true; }

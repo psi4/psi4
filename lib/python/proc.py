@@ -1806,7 +1806,15 @@ def run_libfock(name, **kwargs):
     if (name.lower() == 'tddft'):
         psi4.set_global_option('MODULE', 'RTDDFT')
 
-    psi4.libfock()
+    bypass = ('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))
+    if not bypass:
+        scf_wfn = scf_helper(name, **kwargs)
+    else:
+        scf_wfn = psi4.wavefunction()
+
+    libfock_wfn = psi4.libfock(scf_wfn)
+    libfock_wfn.compute_energy()
+    return libfock_wfn
 
 
 def run_mcscf(name, **kwargs):
@@ -2052,22 +2060,23 @@ def run_dfmp2_gradient(name, **kwargs):
         raise ValidationError('DF-MP2 gradients need DF-SCF reference, for now.')
 
     if not 'restart_file' in kwargs:
-        scf_helper(name, **kwargs)
+        scf_wfn = scf_helper(name, **kwargs)
+    else:
+        scf_wfn = psi4.wavefunction()
 
     psi4.print_out('\n')
     p4util.banner('DFMP2')
     psi4.print_out('\n')
 
-    psi4.dfmp2grad()
+    dfmp2_wfn = psi4.dfmp2(scf_wfn)
+    grad = dfmp2_wfn.compute_gradient()
+    dfmp2_wfn.set_gradient(grad)
     e_dfmp2 = psi4.get_variable('MP2 TOTAL ENERGY')
     e_scs_dfmp2 = psi4.get_variable('SCS-MP2 TOTAL ENERGY')
 
     optstash.restore()
 
-    if (name.upper() == 'SCS-MP2'):
-        return e_scs_dfmp2
-    elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2') or (name.upper() == 'MP2'):
-        return e_dfmp2
+    return dfmp2_wfn
 
 
 def run_ccenergy(name, **kwargs):
@@ -2837,21 +2846,17 @@ def run_dfmp2(name, **kwargs):
     cond1 = bool(('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf'])))
     cond2 = 'restart_file' in kwargs
     if not (cond1 or cond2):
-        scf_helper(name, **kwargs)
+        scf_wfn = scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
     p4util.banner('DFMP2')
     psi4.print_out('\n')
 
-    e_dfmp2 = psi4.dfmp2()
-    e_scs_dfmp2 = psi4.get_variable('SCS-MP2 TOTAL ENERGY')
+    dfmp2_wfn = psi4.dfmp2(scf_wfn)
+    dfmp2_wfn.compute_energy()
 
     optstash.restore()
-
-    if (name.upper() == 'SCS-MP2'):
-        return e_scs_dfmp2
-    elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2') or (name.upper() == 'MP2'):
-        return e_dfmp2
+    return dfmp2_wfn
 
 
 def run_dmrgscf(name, **kwargs):

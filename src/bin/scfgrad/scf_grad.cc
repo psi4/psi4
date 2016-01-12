@@ -50,7 +50,7 @@ namespace psi {
 namespace scfgrad {
 
 SCFGrad::SCFGrad(SharedWavefunction ref_wfn, Options& options) :
-    Wavefunction(options) 
+    Wavefunction(options)
 {
     copy(ref_wfn);
     common_init();
@@ -61,7 +61,7 @@ SCFGrad::~SCFGrad()
 void SCFGrad::common_init()
 {
 //    reference_wavefunction_ = Process::environment.wavefunction();
-    
+
     // if (!reference_wavefunction_) {
     //     throw PSIEXCEPTION("SCFGrad: Run SCF first");
     // }
@@ -70,7 +70,7 @@ void SCFGrad::common_init()
     //    reference_wavefunction_->semicanonicalize();
 
     //copy(reference_wavefunction_);
-    
+
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 }
@@ -80,9 +80,9 @@ SharedMatrix SCFGrad::compute_gradient()
 
     outfile->Printf( "\n");
     outfile->Printf( "         ------------------------------------------------------------\n");
-    outfile->Printf( "                                   SCF GRAD                          \n"); 
-    outfile->Printf( "                          Rob Parrish, Justin Turney,                \n"); 
-    outfile->Printf( "                       Andy Simmonett, and Alex Sokolov              \n"); 
+    outfile->Printf( "                                   SCF GRAD                          \n");
+    outfile->Printf( "                          Rob Parrish, Justin Turney,                \n");
+    outfile->Printf( "                       Andy Simmonett, and Alex Sokolov              \n");
     outfile->Printf( "         ------------------------------------------------------------\n\n");
 
     outfile->Printf( "  ==> Geometry <==\n\n");
@@ -130,7 +130,7 @@ SharedMatrix SCFGrad::compute_gradient()
     SharedMatrix Cb;
     SharedVector eps_a;
     SharedVector eps_b;
-   
+
     Ca = Ca_subset("AO", "OCC");
     eps_a = epsilon_a_subset("AO", "OCC");
     if (options_.get_str("REFERENCE") == "RHF" || options_.get_str("REFERENCE") == "RKS") {
@@ -146,13 +146,13 @@ SharedMatrix SCFGrad::compute_gradient()
     boost::shared_ptr<VBase> potential;
 
     if (options_.get_str("REFERENCE") == "RKS") {
-        potential = VBase::build_V(options_, "RV"); 
+        potential = VBase::build_V(options_, "RV");
         potential->initialize();
         std::vector<SharedMatrix>& C = potential->C();
         C.push_back(Ca_subset("SO", "OCC"));
         functional = potential->functional();
-    } else if (options_.get_str("REFERENCE") == "UKS") { 
-        potential = VBase::build_V(options_, "UV"); 
+    } else if (options_.get_str("REFERENCE") == "UKS") {
+        potential = VBase::build_V(options_, "UV");
         potential->initialize();
         std::vector<SharedMatrix>& C = potential->C();
         C.push_back(Ca_subset("SO", "OCC"));
@@ -165,7 +165,7 @@ SharedMatrix SCFGrad::compute_gradient()
     int nso = basisset_->nbf();
     int nalpha = Ca->colspi()[0];
     int nbeta = Cb->colspi()[0];
-     
+
     // => Nuclear Gradient <= //
     gradients["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1().clone());
     gradients["Nuclear"]->set_name("Nuclear Gradient");
@@ -182,17 +182,17 @@ SharedMatrix SCFGrad::compute_gradient()
 
         // Kinetic derivatives
         boost::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
-        const double* buffer = Tint->buffer();   
+        const double* buffer = Tint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             for (int Q = 0; Q <= P; Q++) {
 
                 Tint->compute_shell_deriv1(P,Q);
-                                
+
                 int nP = basisset_->shell(P).nfunction();
                 int oP = basisset_->shell(P).function_index();
                 int aP = basisset_->shell(P).ncenter();
- 
+
                 int nQ = basisset_->shell(Q).nfunction();
                 int oQ = basisset_->shell(Q).function_index();
                 int aQ = basisset_->shell(Q).ncenter();
@@ -200,50 +200,50 @@ SharedMatrix SCFGrad::compute_gradient()
                 int offset = nP * nQ;
                 const double* ref = buffer;
                 double perm = (P == Q ? 1.0 : 2.0);
-               
-                // Px 
+
+                // Px
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aP][0] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Py 
+
+                // Py
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aP][1] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Pz 
+
+                // Pz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aP][2] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
 
-                // Qx 
+                // Qx
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aQ][0] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Qy 
+
+                // Qy
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aQ][1] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Qz 
+
+                // Qz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aQ][2] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
             }
-        } 
+        }
     }
     timer_off("Grad: T");
 
@@ -295,15 +295,15 @@ SharedMatrix SCFGrad::compute_gradient()
             int nP = basisset_->shell(P).nfunction();
             int oP = basisset_->shell(P).function_index();
             int aP = basisset_->shell(P).ncenter();
- 
+
             int nQ = basisset_->shell(Q).nfunction();
             int oQ = basisset_->shell(Q).function_index();
             int aQ = basisset_->shell(Q).ncenter();
 
             double perm = (P == Q ? 1.0 : 2.0);
-                
+
             double** Vp = Vtemps[thread]->pointer();
-            
+
             for (int A = 0; A < natom; A++) {
                 const double* ref0 = &buffer[3 * A * nP * nQ + 0 * nP * nQ];
                 const double* ref1 = &buffer[3 * A * nP * nQ + 1 * nP * nQ];
@@ -317,9 +317,9 @@ SharedMatrix SCFGrad::compute_gradient()
                     }
                 }
             }
-        } 
-    
-        for (int t = 0; t < threads; t++) { 
+        }
+
+        for (int t = 0; t < threads; t++) {
             gradients["Potential"]->add(Vtemps[t]);
         }
     }
@@ -341,15 +341,15 @@ SharedMatrix SCFGrad::compute_gradient()
         // Energy weighted density matrix
         SharedMatrix W(Da->clone());
         W->set_name("W");
-        
+
         double** Wp = W->pointer();
-        double** Cap = Ca->pointer(); 
-        double** Cbp = Cb->pointer(); 
-        double* eps_ap = eps_a->pointer(); 
-        double* eps_bp = eps_b->pointer(); 
+        double** Cap = Ca->pointer();
+        double** Cbp = Cb->pointer();
+        double* eps_ap = eps_a->pointer();
+        double* eps_bp = eps_b->pointer();
 
         double* temp = new double[nso * (ULI) nalpha];
-        
+
         ::memset((void*) temp, '\0', sizeof(double) * nso * nalpha);
         for (int i = 0; i < nalpha; i++) {
             C_DAXPY(nso,eps_ap[i], &Cap[0][i], nalpha, &temp[i], nalpha);
@@ -363,7 +363,7 @@ SharedMatrix SCFGrad::compute_gradient()
         }
 
         C_DGEMM('N','T',nso,nso,nbeta,1.0,Cbp[0],nbeta,temp,nbeta,1.0,Wp[0],nso);
-        
+
         delete[] temp;
 
         gradients["Overlap"] = SharedMatrix(gradients["Nuclear"]->clone());
@@ -373,17 +373,17 @@ SharedMatrix SCFGrad::compute_gradient()
 
         // Overlap derivatives
         boost::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
-        const double* buffer = Sint->buffer();   
+        const double* buffer = Sint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             for (int Q = 0; Q <= P; Q++) {
 
                 Sint->compute_shell_deriv1(P,Q);
-                                
+
                 int nP = basisset_->shell(P).nfunction();
                 int oP = basisset_->shell(P).function_index();
                 int aP = basisset_->shell(P).ncenter();
- 
+
                 int nQ = basisset_->shell(Q).nfunction();
                 int oQ = basisset_->shell(Q).function_index();
                 int aQ = basisset_->shell(Q).ncenter();
@@ -391,50 +391,50 @@ SharedMatrix SCFGrad::compute_gradient()
                 int offset = nP * nQ;
                 const double* ref = buffer;
                 double perm = (P == Q ? 1.0 : 2.0);
-               
-                // Px 
+
+                // Px
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aP][0] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Py 
+
+                // Py
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aP][1] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Pz 
+
+                // Pz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aP][2] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
 
-                // Qx 
+                // Qx
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aQ][0] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Qy 
+
+                // Qy
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aQ][1] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Qz 
+
+                // Qz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aQ][2] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
             }
-        } 
+        }
     }
     timer_off("Grad: S");
 
@@ -443,33 +443,33 @@ SharedMatrix SCFGrad::compute_gradient()
 
     boost::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(1);
     jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
-    
+
     jk->set_Ca(Ca);
     jk->set_Cb(Cb);
     jk->set_Da(Da);
     jk->set_Db(Db);
     jk->set_Dt(Dt);
     if (functional) {
-        jk->set_do_J(true); 
+        jk->set_do_J(true);
         if (functional->is_x_hybrid()) {
             jk->set_do_K(true);
-        } else { 
+        } else {
             jk->set_do_K(false);
         }
         if (functional->is_x_lrc()) {
             jk->set_do_wK(true);
             jk->set_omega(functional->x_omega());
-        } else { 
+        } else {
             jk->set_do_wK(false);
         }
     } else {
-        jk->set_do_J(true); 
+        jk->set_do_J(true);
         jk->set_do_K(true);
         jk->set_do_wK(false);
     }
 
     jk->print_header();
-    jk->compute_gradient();    
+    jk->compute_gradient();
 
     std::map<std::string, SharedMatrix>& jk_gradients = jk->gradients();
     if (functional) {
@@ -477,7 +477,7 @@ SharedMatrix SCFGrad::compute_gradient()
         if (functional->is_x_hybrid()) {
             gradients["Exchange"] = jk_gradients["Exchange"];
             gradients["Exchange"]->scale(-(functional->x_alpha()));
-        } 
+        }
         if (functional->is_x_lrc()) {
             gradients["Exchange,LR"] = jk_gradients["Exchange,LR"];
             gradients["Exchange,LR"]->scale(-(1.0 - functional->x_alpha()));
@@ -508,25 +508,25 @@ SharedMatrix SCFGrad::compute_gradient()
 
     for (int i = 0; i < gradient_terms.size(); i++) {
         if (gradients.count(gradient_terms[i])) {
-            total->add(gradients[gradient_terms[i]]); 
+            total->add(gradients[gradient_terms[i]]);
         }
     }
 
-    gradients["Total"] = total; 
+    gradients["Total"] = total;
     gradients["Total"]->set_name("Total Gradient");
 
     // => Final Printing <= //
     if (print_ > 1) {
         for (int i = 0; i < gradient_terms.size(); i++) {
             if (gradients.count(gradient_terms[i])) {
-                gradients[gradient_terms[i]]->print_atom_vector(); 
+                gradients[gradient_terms[i]]->print_atom_vector();
             }
         }
     } else {
         gradients["Total"]->print_atom_vector();
     }
 
-    return gradients["Total"]; 
+    return gradients["Total"];
 }
 SharedMatrix SCFGrad::compute_hessian()
 {
@@ -534,9 +534,9 @@ SharedMatrix SCFGrad::compute_hessian()
 
     outfile->Printf( "\n");
     outfile->Printf( "         ------------------------------------------------------------\n");
-    outfile->Printf( "                                   SCF HESS                          \n"); 
-    outfile->Printf( "                          Rob Parrish, Justin Turney,                \n"); 
-    outfile->Printf( "                       Andy Simmonett, and Alex Sokolov              \n"); 
+    outfile->Printf( "                                   SCF HESS                          \n");
+    outfile->Printf( "                          Rob Parrish, Justin Turney,                \n");
+    outfile->Printf( "                       Andy Simmonett, and Alex Sokolov              \n");
     outfile->Printf( "         ------------------------------------------------------------\n\n");
 
     outfile->Printf( "  ==> Geometry <==\n\n");
@@ -585,7 +585,7 @@ SharedMatrix SCFGrad::compute_hessian()
     SharedMatrix Cb;
     SharedVector eps_a;
     SharedVector eps_b;
-   
+
     Ca = Ca_subset("AO", "OCC");
     eps_a = epsilon_a_subset("AO", "OCC");
     if (options_.get_str("REFERENCE") == "RHF" || options_.get_str("REFERENCE") == "RKS") {
@@ -601,13 +601,13 @@ SharedMatrix SCFGrad::compute_hessian()
     boost::shared_ptr<VBase> potential;
 
     if (options_.get_str("REFERENCE") == "RKS") {
-        potential = VBase::build_V(options_, "RV"); 
+        potential = VBase::build_V(options_, "RV");
         potential->initialize();
         std::vector<SharedMatrix>& C = potential->C();
         C.push_back(Ca_subset("SO", "OCC"));
         functional = potential->functional();
-    } else if (options_.get_str("REFERENCE") == "UKS") { 
-        potential = VBase::build_V(options_, "UV"); 
+    } else if (options_.get_str("REFERENCE") == "UKS") {
+        potential = VBase::build_V(options_, "UV");
         potential->initialize();
         std::vector<SharedMatrix>& C = potential->C();
         C.push_back(Ca_subset("SO", "OCC"));
@@ -620,7 +620,7 @@ SharedMatrix SCFGrad::compute_hessian()
     int nso = basisset_->nbf();
     int nalpha = Ca->colspi()[0];
     int nbeta = Cb->colspi()[0];
-     
+
     // => Nuclear Hessian <= //
     hessians["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv2().clone());
     hessians["Nuclear"]->set_name("Nuclear Hessian");
@@ -637,17 +637,17 @@ SharedMatrix SCFGrad::compute_hessian()
 
         // Kinetic derivatives
         boost::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(2));
-        const double* buffer = Tint->buffer();   
+        const double* buffer = Tint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             for (int Q = 0; Q <= P; Q++) {
 
                 Tint->compute_shell_deriv2(P,Q);
-                                
+
                 int nP = basisset_->shell(P).nfunction();
                 int oP = basisset_->shell(P).function_index();
                 int aP = basisset_->shell(P).ncenter();
- 
+
                 int nQ = basisset_->shell(Q).nfunction();
                 int oQ = basisset_->shell(Q).function_index();
                 int aQ = basisset_->shell(Q).ncenter();
@@ -663,8 +663,8 @@ SharedMatrix SCFGrad::compute_hessian()
                 int Qx = 3 * aQ + 0;
                 int Qy = 3 * aQ + 1;
                 int Qz = 3 * aQ + 2;
-               
-                // Px Qx 
+
+                // Px Qx
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[Px][Qx] += perm * Dp[p + oP][q + oQ] * (*ref);
@@ -673,8 +673,8 @@ SharedMatrix SCFGrad::compute_hessian()
                         ref++;
                     }
                 }
-               
-                // Px Qy 
+
+                // Px Qy
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[Px][Qy] += perm * Dp[p + oP][q + oQ] * (*ref);
@@ -682,8 +682,8 @@ SharedMatrix SCFGrad::compute_hessian()
                         ref++;
                     }
                 }
-               
-                // Px Pz 
+
+                // Px Pz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[Px][Qz] += perm * Dp[p + oP][q + oQ] * (*ref);
@@ -691,8 +691,8 @@ SharedMatrix SCFGrad::compute_hessian()
                         ref++;
                     }
                 }
-               
-                // Py Qy 
+
+                // Py Qy
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[Py][Qy] += perm * Dp[p + oP][q + oQ] * (*ref);
@@ -701,8 +701,8 @@ SharedMatrix SCFGrad::compute_hessian()
                         ref++;
                     }
                 }
-               
-                // Py Qz 
+
+                // Py Qz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[Py][Qz] += perm * Dp[p + oP][q + oQ] * (*ref);
@@ -710,8 +710,8 @@ SharedMatrix SCFGrad::compute_hessian()
                         ref++;
                     }
                 }
-               
-                // Pz Qz 
+
+                // Pz Qz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[Pz][Qz] += perm * Dp[p + oP][q + oQ] * (*ref);
@@ -721,7 +721,7 @@ SharedMatrix SCFGrad::compute_hessian()
                     }
                 }
             }
-        } 
+        }
     }
     timer_off("Hess: T");
 
@@ -744,11 +744,11 @@ SharedMatrix SCFGrad::compute_hessian()
         // Potential derivatives
         std::vector<boost::shared_ptr<OneBodyAOInt> > Vint;
         std::vector<SharedMatrix> Vtemps;
-        for (int t = 0; t < threads; t++) { 
+        for (int t = 0; t < threads; t++) {
             Vint.push_back(boost::shared_ptr<OneBodyAOInt>(integral_->ao_potential(2)));
             Vtemps.push_back(SharedMatrix(hessians["Potential"]->clone()));
         }
-       
+
         // Lower Triangle
         std::vector<std::pair<int,int> > PQ_pairs;
         for (int P = 0; P < basisset_->nshell(); P++) {
@@ -770,17 +770,17 @@ SharedMatrix SCFGrad::compute_hessian()
 
             Vint[thread]->compute_shell_deriv2(P,Q);
             const double* buffer = Vint[thread]->buffer();
-                            
+
             int nP = basisset_->shell(P).nfunction();
             int oP = basisset_->shell(P).function_index();
             int aP = basisset_->shell(P).ncenter();
- 
+
             int nQ = basisset_->shell(Q).nfunction();
             int oQ = basisset_->shell(Q).function_index();
             int aQ = basisset_->shell(Q).ncenter();
 
             double perm = (P == Q ? 1.0 : 2.0);
-                
+
             double** Vp = Vtemps[thread]->pointer();
 
             for (int alpha = 0; alpha < 3 * natom; alpha++) {
@@ -793,9 +793,9 @@ SharedMatrix SCFGrad::compute_hessian()
                     }
                 }
             }
-        } 
-    
-        for (int t = 0; t < threads; t++) { 
+        }
+
+        for (int t = 0; t < threads; t++) {
             hessians["Potential"]->add(Vtemps[t]);
         }
     }
@@ -807,15 +807,15 @@ SharedMatrix SCFGrad::compute_hessian()
         // Energy weighted density matrix
         SharedMatrix W(Da->clone());
         W->set_name("W");
-        
+
         double** Wp = W->pointer();
-        double** Cap = Ca->pointer(); 
-        double** Cbp = Cb->pointer(); 
-        double* eps_ap = eps_a->pointer(); 
-        double* eps_bp = eps_b->pointer(); 
+        double** Cap = Ca->pointer();
+        double** Cbp = Cb->pointer();
+        double* eps_ap = eps_a->pointer();
+        double* eps_bp = eps_b->pointer();
 
         double* temp = new double[nso * (ULI) nalpha];
-        
+
         ::memset((void*) temp, '\0', sizeof(double) * nso * nalpha);
         for (int i = 0; i < nalpha; i++) {
             C_DAXPY(nso,eps_ap[i], &Cap[0][i], nalpha, &temp[i], nalpha);
@@ -829,7 +829,7 @@ SharedMatrix SCFGrad::compute_hessian()
         }
 
         C_DGEMM('N','T',nso,nso,nbeta,1.0,Cbp[0],nbeta,temp,nbeta,1.0,Wp[0],nso);
-        
+
         delete[] temp;
 
         hessians["Overlap"] = SharedMatrix(hessians["Nuclear"]->clone());
@@ -839,17 +839,17 @@ SharedMatrix SCFGrad::compute_hessian()
 
         // Overlap derivatives
         boost::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(2));
-        const double* buffer = Sint->buffer();   
+        const double* buffer = Sint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             for (int Q = 0; Q <= P; Q++) {
 
                 Sint->compute_shell_deriv2(P,Q);
-                                
+
                 int nP = basisset_->shell(P).nfunction();
                 int oP = basisset_->shell(P).function_index();
                 int aP = basisset_->shell(P).ncenter();
- 
+
                 int nQ = basisset_->shell(Q).nfunction();
                 int oQ = basisset_->shell(Q).function_index();
                 int aQ = basisset_->shell(Q).ncenter();
@@ -857,7 +857,7 @@ SharedMatrix SCFGrad::compute_hessian()
                 int offset = nP * nQ;
                 const double* ref = buffer;
                 double perm = (P == Q ? 1.0 : 2.0);
-               
+
                 int Px = 3 * aP + 0;
                 int Py = 3 * aP + 1;
                 int Pz = 3 * aP + 2;
@@ -865,8 +865,8 @@ SharedMatrix SCFGrad::compute_hessian()
                 int Qx = 3 * aQ + 0;
                 int Qy = 3 * aQ + 1;
                 int Qz = 3 * aQ + 2;
-               
-                // Px Qx 
+
+                // Px Qx
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[Px][Qx] += perm * Wp[p + oP][q + oQ] * (*ref);
@@ -875,8 +875,8 @@ SharedMatrix SCFGrad::compute_hessian()
                         ref++;
                     }
                 }
-               
-                // Px Qy 
+
+                // Px Qy
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[Px][Qy] += perm * Wp[p + oP][q + oQ] * (*ref);
@@ -884,8 +884,8 @@ SharedMatrix SCFGrad::compute_hessian()
                         ref++;
                     }
                 }
-               
-                // Px Pz 
+
+                // Px Pz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[Px][Qz] += perm * Wp[p + oP][q + oQ] * (*ref);
@@ -893,8 +893,8 @@ SharedMatrix SCFGrad::compute_hessian()
                         ref++;
                     }
                 }
-               
-                // Py Qy 
+
+                // Py Qy
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[Py][Qy] += perm * Wp[p + oP][q + oQ] * (*ref);
@@ -903,8 +903,8 @@ SharedMatrix SCFGrad::compute_hessian()
                         ref++;
                     }
                 }
-               
-                // Py Qz 
+
+                // Py Qz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[Py][Qz] += perm * Wp[p + oP][q + oQ] * (*ref);
@@ -912,8 +912,8 @@ SharedMatrix SCFGrad::compute_hessian()
                         ref++;
                     }
                 }
-               
-                // Pz Qz 
+
+                // Pz Qz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[Pz][Qz] += perm * Wp[p + oP][q + oQ] * (*ref);
@@ -923,7 +923,7 @@ SharedMatrix SCFGrad::compute_hessian()
                     }
                 }
             }
-        } 
+        }
     }
     timer_off("Hess: S");
 
@@ -934,33 +934,33 @@ SharedMatrix SCFGrad::compute_hessian()
 
     boost::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(2);
     jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
-    
+
     jk->set_Ca(Ca);
     jk->set_Cb(Cb);
     jk->set_Da(Da);
     jk->set_Db(Db);
     jk->set_Dt(Dt);
     if (functional) {
-        jk->set_do_J(true); 
+        jk->set_do_J(true);
         if (functional->is_x_hybrid()) {
             jk->set_do_K(true);
-        } else { 
+        } else {
             jk->set_do_K(false);
         }
         if (functional->is_x_lrc()) {
             jk->set_do_wK(true);
             jk->set_omega(functional->x_omega());
-        } else { 
+        } else {
             jk->set_do_wK(false);
         }
     } else {
-        jk->set_do_J(true); 
+        jk->set_do_J(true);
         jk->set_do_K(true);
         jk->set_do_wK(false);
     }
 
     jk->print_header();
-    jk->compute_hessian();    
+    jk->compute_hessian();
 
     std::map<std::string, SharedMatrix>& jk_hessians = jk->gradients();
     if (functional) {
@@ -968,7 +968,7 @@ SharedMatrix SCFGrad::compute_hessian()
         if (functional->is_x_hybrid()) {
             hessians["Exchange"] = jk_hessians["Exchange"];
             hessians["Exchange"]->scale(-(functional->x_alpha()));
-        } 
+        }
         if (functional->is_x_lrc()) {
             hessians["Exchange,LR"] = jk_hessians["Exchange,LR"];
             hessians["Exchange,LR"]->scale(-(1.0 - functional->x_alpha()));
@@ -979,7 +979,7 @@ SharedMatrix SCFGrad::compute_hessian()
         hessians["Exchange"]->scale(-1.0);
     }
     timer_off("Hess: JK");
-    
+
     **/
 
     // => XC Hessian <= //
@@ -1010,11 +1010,11 @@ SharedMatrix SCFGrad::compute_hessian()
 
     for (int i = 0; i < hessian_terms.size(); i++) {
         if (hessians.count(hessian_terms[i])) {
-            total->add(hessians[hessian_terms[i]]); 
+            total->add(hessians[hessian_terms[i]]);
         }
     }
 
-    hessians["Total"] = total; 
+    hessians["Total"] = total;
     hessians["Total"]->set_name("Total Hessian");
 
     // => Final Printing <= //
@@ -1028,7 +1028,7 @@ SharedMatrix SCFGrad::compute_hessian()
         hessians["Total"]->print();
     }
 
-    return hessians["Total"]; 
+    return hessians["Total"];
 }
 
 }} // Namespaces
