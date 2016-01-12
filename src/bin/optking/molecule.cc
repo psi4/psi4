@@ -158,6 +158,18 @@ bool MOLECULE::has_fixed_eq_vals(void) {
   return false;
 }
 
+// Is any coordinate present that is not a cartesian.
+bool MOLECULE::is_noncart_present(void) const {
+
+  if (interfragments.size()) return true;
+
+  for (int f=0; f<fragments.size(); ++f)
+    if (fragments[f]->is_noncart_present())
+      return true;
+
+  return false;
+}
+
 // Apply extra forces for internal coordinates with user-defined
 // equilibrium values.
 void MOLECULE::apply_constraint_forces(void) {
@@ -480,7 +492,7 @@ bool MOLECULE::cartesian_H_to_internals(double **H_cart) const {
   double **H_int = p_Opt_data->g_H_pointer();
 
   // If the "internals" are really cartesian, do nothing.
-  if ( Opt_params.coordinates == OPT_PARAMS::CARTESIAN ) {
+  if (Opt_params.coordinates == OPT_PARAMS::CARTESIAN && !is_noncart_present()) {
     opt_matrix_copy(H_cart, H_int, Ncart, Ncart);
     return true;
   }
