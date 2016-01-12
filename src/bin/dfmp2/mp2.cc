@@ -142,9 +142,14 @@ void DFMP2::block_status(std::vector<unsigned long int> inds, const char* file, 
     printf("%s:%d %zu %s %zu %zu\n", file, line, inds.size(), (gimp ? "GIMP" : "NOT GIMP"), inds[1] - inds[0], inds[inds.size() - 1] - inds[inds.size()-2]);
 }
 
-DFMP2::DFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
-    Wavefunction(options,psio,chkpt)
+DFMP2::DFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
+    Wavefunction(options)
 {
+    copy(ref_wfn);
+    reference_wavefunction_ = ref_wfn;
+    psio_ = psio;
+    chkpt_ = chkpt;
+
     common_init();
 }
 DFMP2::~DFMP2()
@@ -155,16 +160,16 @@ void DFMP2::common_init()
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 
-    reference_wavefunction_ = Process::environment.wavefunction();
-    if (!reference_wavefunction_) {
-        throw PSIEXCEPTION("DFMP2: Run SCF first");
-    }
+    //reference_wavefunction_ = Process::environment.wavefunction();
+    //if (!reference_wavefunction_) {
+    //    throw PSIEXCEPTION("DFMP2: Run SCF first");
+    //}
 
     if (options_.get_str("REFERENCE") == "ROHF" || options_.get_str("REFERENCE") == "CUHF")
         throw PSIEXCEPTION("SemiCanonical transform does not work at the moment");
         //reference_wavefunction_->semicanonicalize();
 
-    copy(reference_wavefunction_);
+    //copy(reference_wavefunction_);
     name_ = "DF-MP2";
 
     energies_["Singles Energy"] = 0.0;
@@ -175,8 +180,8 @@ void DFMP2::common_init()
     sss_ = options_.get_double("MP2_SS_SCALE");
     oss_ = options_.get_double("MP2_OS_SCALE");
 
-    ribasis_ = BasisSet::pyconstruct_auxiliary(molecule_, 
-        "DF_BASIS_MP2", options_.get_str("DF_BASIS_MP2"), 
+    ribasis_ = BasisSet::pyconstruct_auxiliary(molecule_,
+        "DF_BASIS_MP2", options_.get_str("DF_BASIS_MP2"),
         "RIFIT", options_.get_str("BASIS"));
 }
 double DFMP2::compute_energy()
@@ -271,7 +276,7 @@ SharedMatrix DFMP2::compute_gradient()
 
     print_gradients();
 
-    return gradients_["Total"]; 
+    return gradients_["Total"];
 }
 void DFMP2::form_singles()
 {
@@ -378,7 +383,7 @@ SharedMatrix DFMP2::form_inverse_metric()
     if (options_.get_str("DF_INTS_IO") == "LOAD") {
 
         SharedMatrix Jm12(new Matrix("SO Basis Fitting Inverse (Eig)", naux, naux));
-        outfile->Printf("\t Will attempt to load fitting metric from file %d.\n\n", PSIF_DFSCF_BJ); 
+        outfile->Printf("\t Will attempt to load fitting metric from file %d.\n\n", PSIF_DFSCF_BJ);
         psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
         psio_->read_entry(PSIF_DFSCF_BJ, "DFMP2 Jm12", (char*) Jm12->pointer()[0], sizeof(double) * naux * naux);
         psio_->close(PSIF_DFSCF_BJ, 1);
@@ -396,7 +401,7 @@ SharedMatrix DFMP2::form_inverse_metric()
 
         // Save inverse metric to the SCF three-index integral file if it exists
         if (options_.get_str("DF_INTS_IO") == "SAVE") {
-            outfile->Printf("\t Will save fitting metric to file %d.\n\n", PSIF_DFSCF_BJ); 
+            outfile->Printf("\t Will save fitting metric to file %d.\n\n", PSIF_DFSCF_BJ);
             psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
             psio_->write_entry(PSIF_DFSCF_BJ, "DFMP2 Jm12", (char*) Jm12->pointer()[0], sizeof(double) * naux * naux);
             psio_->close(PSIF_DFSCF_BJ, 1);
@@ -588,7 +593,7 @@ void DFMP2::apply_gamma(unsigned int file, ULI naux, ULI nia)
 
         // g_PQ = G_ia^P C_ia^Q
         timer_on("DFMP2 g");
-        C_DGEMM('T','N',naux,naux,ncols,1.0,Aiap[0],naux,Qiap[0],naux,1.0,Gp[0],naux); 
+        C_DGEMM('T','N',naux,naux,ncols,1.0,Aiap[0],naux,Qiap[0],naux,1.0,Gp[0],naux);
         timer_off("DFMP2 g");
     }
 
@@ -626,7 +631,7 @@ void DFMP2::apply_G_transpose(unsigned int file, ULI naux, ULI nia)
         psio_->write(file,"(G|ia) T",(char*)temp,sizeof(double)*nia,next_QIA,&next_QIA);
     }
     delete[] temp;
-    next_QIA = PSIO_ZERO; 
+    next_QIA = PSIO_ZERO;
 
     // Tensor blocks
     SharedMatrix Aia(new Matrix("Aia", naux, max_nia));
@@ -650,7 +655,7 @@ void DFMP2::apply_G_transpose(unsigned int file, ULI naux, ULI nia)
         // Transpose
         for (int Q = 0; Q < naux; Q++) {
             C_DCOPY(ncols, &Qiap[0][Q], naux, Aiap[Q], 1);
-        } 
+        }
 
         // Write Gia^\dagger
         timer_on("DFMP2 aiG Write");
@@ -673,7 +678,7 @@ void DFMP2::apply_B_transpose(unsigned int file, ULI naux, ULI naocc, ULI navir)
     // Block sizing
     std::vector<int> a_starts;
     a_starts.push_back(0);
-    for (int a = 0; a < navir; a+= max_A) { 
+    for (int a = 0; a < navir; a+= max_A) {
         if (a + max_A >= navir) {
             a_starts.push_back(navir);
         } else {
@@ -683,20 +688,20 @@ void DFMP2::apply_B_transpose(unsigned int file, ULI naux, ULI naocc, ULI navir)
     //block_status(a_starts, __FILE__,__LINE__);
 
     // Buffers
-    SharedMatrix iaQ(new Matrix("iaQ", max_A * naocc, naux)); 
+    SharedMatrix iaQ(new Matrix("iaQ", max_A * naocc, naux));
     double** iaQp = iaQ->pointer();
-    
+
     // Loop through blocks
     psio_->open(file, PSIO_OPEN_OLD);
     psio_address next_AIA = PSIO_ZERO;
     psio_address next_QIA = PSIO_ZERO;
     for (int block = 0; block < a_starts.size() - 1; block++) {
-    
+
         // Sizing
         int a_start = a_starts[block];
         int a_stop  = a_starts[block+1];
         int na = a_stop - a_start;
-            
+
         // Read iaQ
         for (int a = 0; a < na; a++) {
             for (int i = 0; i < naocc; i++) {
@@ -740,7 +745,7 @@ void DFMP2::print_energies()
     outfile->Printf( "\t %-25s = %24.16f [H]\n", "SCS Total Energy",         energies_["SCS Total Energy"]);
     outfile->Printf( "\t----------------------------------------------------------\n");
     outfile->Printf( "\n");
-    
+
 
     Process::environment.globals["CURRENT ENERGY"] = energies_["Total Energy"];
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = energies_["Correlation Energy"];
@@ -768,7 +773,7 @@ void DFMP2::print_gradients()
     if (print_ > 1) {
         for (int i = 0; i < gradient_terms.size(); i++) {
             if (gradients_.count(gradient_terms[i])) {
-                gradients_[gradient_terms[i]]->print_atom_vector(); 
+                gradients_[gradient_terms[i]]->print_atom_vector();
             }
         }
     } else {
@@ -777,8 +782,8 @@ void DFMP2::print_gradients()
 
 }
 
-RDFMP2::RDFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
-    DFMP2(options,psio,chkpt)
+RDFMP2::RDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
+    DFMP2(ref_wfn, options,psio,chkpt)
 {
     common_init();
 }
@@ -1153,7 +1158,7 @@ void RDFMP2::form_Pab()
         throw PSIEXCEPTION("Not enough memory in DFMP2");
     }
     max_i = (max_i <= 0 ? 1 : max_i);
-    max_i = (max_i > naocc ? naocc : max_i);    
+    max_i = (max_i > naocc ? naocc : max_i);
 
     // Blocks
     std::vector<ULI> i_starts;
@@ -1188,7 +1193,7 @@ void RDFMP2::form_Pab()
     double** Ip = I->pointer();
     double** Tp = T->pointer();
 
-    ULI nIv = max_i * (ULI) navir; 
+    ULI nIv = max_i * (ULI) navir;
 
     double* eps_aoccp = eps_aocc_->pointer();
     double* eps_avirp = eps_avir_->pointer();
@@ -1235,7 +1240,7 @@ void RDFMP2::form_Pab()
             psio_->read(PSIF_DFMP2_AIA,"(B|ia)",(char*)Cjbp[0],sizeof(double)*(nj * navir * naux),next_AIA,&next_AIA);
             timer_off("DFMP2 Cia Read");
 
-            // Form the integrals (ia|jb) = B_ia^Q B_jb^Q    
+            // Form the integrals (ia|jb) = B_ia^Q B_jb^Q
             timer_on("DFMP2 I");
             C_DGEMM('N','T',ni * (ULI) navir, nj * (ULI) navir, naux, 1.0, Qiap[0], naux, Qjbp[0], naux, 0.0, Ip[0], nIv);
             timer_off("DFMP2 I");
@@ -1278,8 +1283,8 @@ void RDFMP2::form_Pab()
 
             // Form the Gamma tensor G_ia^P = t_ia^jb C_jb^P
             timer_on("DFMP2 G");
-            C_DGEMM('N','N',ni * (ULI) navir, naux, nj * (ULI) navir, 2.0, Tp[0], nIv, Cjbp[0], naux, 1.0, Giap[0], naux); 
-            timer_off("DFMP2 G");            
+            C_DGEMM('N','N',ni * (ULI) navir, naux, nj * (ULI) navir, 2.0, Tp[0], nIv, Cjbp[0], naux, 1.0, Giap[0], naux);
+            timer_off("DFMP2 G");
 
             // Sort the gimp column blocks, if gimp occurred. The idea is to get a contiguous iajb tensor
             if (nj != max_i) {
@@ -1342,7 +1347,7 @@ void RDFMP2::form_Pij()
         throw PSIEXCEPTION("Not enough memory in DFMP2");
     }
     max_a = (max_a <= 0 ? 1 : max_a);
-    max_a = (max_a > navir ? navir : max_a);    
+    max_a = (max_a > navir ? navir : max_a);
 
     // Blocks
     std::vector<ULI> a_starts;
@@ -1355,7 +1360,7 @@ void RDFMP2::form_Pij()
         }
     }
     //block_status(a_starts, __FILE__,__LINE__);
-    
+
     // 2-Index Tensor blocks
     SharedMatrix Pij(new Matrix("Pij", naocc, naocc));
     double** Pijp = Pij->pointer();
@@ -1373,7 +1378,7 @@ void RDFMP2::form_Pij()
     double** Ip = I->pointer();
     double** Tp = T->pointer();
 
-    ULI nVi = max_a * (ULI) naocc; 
+    ULI nVi = max_a * (ULI) naocc;
 
     double* eps_aoccp = eps_aocc_->pointer();
     double* eps_avirp = eps_avir_->pointer();
@@ -1411,7 +1416,7 @@ void RDFMP2::form_Pij()
             }
             timer_off("DFMP2 Qai Read");
 
-            // Form the integrals (ia|jb) = B_ia^Q B_jb^Q    
+            // Form the integrals (ia|jb) = B_ia^Q B_jb^Q
             timer_on("DFMP2 I");
             C_DGEMM('N','T',na * (ULI) naocc, nb * (ULI) naocc, naux, 1.0, Qiap[0], naux, Qjbp[0], naux, 0.0, Ip[0], nVi);
             timer_off("DFMP2 I");
@@ -1503,7 +1508,7 @@ void RDFMP2::form_AB_x_terms()
     psio_->read_entry(PSIF_DFMP2_AIA, "G_PQ", (char*) Vp[0], sizeof(double) * naux * naux);
     psio_->close(PSIF_DFMP2_AIA, 1);
 
-    // => Thread Count <= //    
+    // => Thread Count <= //
 
     int num_threads = 1;
     #ifdef _OPENMP
@@ -1515,7 +1520,7 @@ void RDFMP2::form_AB_x_terms()
     boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(ribasis_,BasisSet::zero_ao_basis_set(),ribasis_,BasisSet::zero_ao_basis_set()));
     std::vector<boost::shared_ptr<TwoBodyAOInt> > Jint;
     for (int t = 0; t < num_threads; t++) {
-        Jint.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));        
+        Jint.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
     }
 
     // => Temporary Gradients <= //
@@ -1523,12 +1528,12 @@ void RDFMP2::form_AB_x_terms()
     std::vector<SharedMatrix> Ktemps;
     for (int t = 0; t < num_threads; t++) {
         Ktemps.push_back(SharedMatrix(new Matrix("Ktemp", natom, 3)));
-    } 
+    }
 
     std::vector<std::pair<int,int> > PQ_pairs;
     for (int P = 0; P < ribasis_->nshell(); P++) {
         for (int Q = 0; Q <= P; Q++) {
-            PQ_pairs.push_back(std::pair<int,int>(P,Q));    
+            PQ_pairs.push_back(std::pair<int,int>(P,Q));
         }
     }
 
@@ -1541,11 +1546,11 @@ void RDFMP2::form_AB_x_terms()
         int thread = 0;
         #ifdef _OPENMP
             thread = omp_get_thread_num();
-        #endif 
+        #endif
 
         Jint[thread]->compute_shell_deriv1(P,0,Q,0);
         const double* buffer = Jint[thread]->buffer();
-        
+
         int nP = ribasis_->shell(P).nfunction();
         int cP = ribasis_->shell(P).ncartesian();
         int aP = ribasis_->shell(P).ncenter();
@@ -1567,9 +1572,9 @@ void RDFMP2::form_AB_x_terms()
         double perm = (P == Q ? 1.0 : 2.0);
 
         double** grad_Kp = Ktemps[thread]->pointer();
-    
+
         for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) { 
+            for (int q = 0; q < nQ; q++) {
 
                 double Vval = perm * (0.5 * (Vp[p + oP][q + oQ] + Vp[q + oQ][p + oP]));;
                 grad_Kp[aP][0] -= Vval * (*Px);
@@ -1610,8 +1615,8 @@ void RDFMP2::form_Amn_x_terms()
 
     boost::shared_ptr<ERISieve> sieve(new ERISieve(basisset_,options_.get_double("INTS_TOLERANCE")));
     const std::vector<std::pair<int,int> >& shell_pairs = sieve->shell_pairs();
-    int npairs = shell_pairs.size(); 
- 
+    int npairs = shell_pairs.size();
+
     // => Gradient Contribution <= //
 
     gradients_["(A|mn)^x"] = SharedMatrix(new Matrix("(A|mn)^x Gradient", natom, 3));
@@ -1626,8 +1631,8 @@ void RDFMP2::form_Amn_x_terms()
     row_cost += nso * (ULI) naocc;
     row_cost += naocc * (ULI) navir;
     ULI rows = memory / row_cost;
-    rows = (rows > naux ? naux : rows);   
-    rows = (rows < maxP ? maxP : rows);   
+    rows = (rows > naux ? naux : rows);
+    rows = (rows < maxP ? maxP : rows);
     max_rows = (int) rows;
 
     // => Block Sizing <= //
@@ -1659,7 +1664,7 @@ void RDFMP2::form_Amn_x_terms()
     double** Caoccp = Caocc_->pointer();
     double** Cavirp = Cavir_->pointer();
 
-    // => Thread Count <= //    
+    // => Thread Count <= //
 
     int num_threads = 1;
     #ifdef _OPENMP
@@ -1671,7 +1676,7 @@ void RDFMP2::form_Amn_x_terms()
     boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(ribasis_,BasisSet::zero_ao_basis_set(),basisset_,basisset_));
     std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < num_threads; t++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));        
+        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
     }
 
     // => Temporary Gradients <= //
@@ -1679,7 +1684,7 @@ void RDFMP2::form_Amn_x_terms()
     std::vector<SharedMatrix> Ktemps;
     for (int t = 0; t < num_threads; t++) {
         Ktemps.push_back(SharedMatrix(new Matrix("Ktemp", natom, 3)));
-    } 
+    }
 
     // => PSIO <= //
 
@@ -1687,11 +1692,11 @@ void RDFMP2::form_Amn_x_terms()
     psio_address next_AIA = PSIO_ZERO;
 
     // => Master Loop <= //
-    
+
     for (int block = 0; block < Pstarts.size() - 1; block++) {
-    
+
         // > Sizing < //
-    
+
         int Pstart = Pstarts[block];
         int Pstop  = Pstarts[block+1];
         int NP = Pstop - Pstart;
@@ -1701,13 +1706,13 @@ void RDFMP2::form_Amn_x_terms()
         int np = pstop - pstart;
 
         // > G_ia^P -> G_mn^P < //
-        
+
         psio_->read(PSIF_DFMP2_AIA, "(G|ia) T", (char*) Giap[0], sizeof(double) * np * nia, next_AIA, &next_AIA);
-        
+
         #pragma omp parallel for num_threads(num_threads)
         for (int p = 0; p < np; p++) {
             C_DGEMM('N','T', nso, naocc, navir, 1.0, Cavirp[0], navir, Giap[p], navir, 0.0, Gmip[p], naocc);
-        } 
+        }
 
         C_DGEMM('N','T', np * (ULI) nso, nso, naocc, 1.0, Gmip[0], naocc, Caoccp[0], naocc, 0.0, Gmnp[0], nso);
 
@@ -1724,8 +1729,8 @@ void RDFMP2::form_Amn_x_terms()
             int MN = PMN % npairs;
             int M = shell_pairs[MN].first;
             int N = shell_pairs[MN].second;
-         
-            eri[thread]->compute_shell_deriv1(P,0,M,N); 
+
+            eri[thread]->compute_shell_deriv1(P,0,M,N);
 
             const double* buffer = eri[thread]->buffer();
 
@@ -1762,8 +1767,8 @@ void RDFMP2::form_Amn_x_terms()
             for (int p = 0; p < nP; p++) {
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++) {
-                        
-                        double Jval = 2.0 * perm * (0.5 * (Gmnp[p + oP][(m + oM) * nso + (n + oN)] + Gmnp[p + oP][(n + oN) * nso + (m + oM)])); 
+
+                        double Jval = 2.0 * perm * (0.5 * (Gmnp[p + oP][(m + oM) * nso + (n + oN)] + Gmnp[p + oP][(n + oN) * nso + (m + oM)]));
                         grad_Kp[aP][0] += Jval * (*Px);
                         grad_Kp[aP][1] += Jval * (*Py);
                         grad_Kp[aP][2] += Jval * (*Pz);
@@ -1774,16 +1779,16 @@ void RDFMP2::form_Amn_x_terms()
                         grad_Kp[aN][1] += Jval * (*Ny);
                         grad_Kp[aN][2] += Jval * (*Nz);
 
-                        Px++; 
-                        Py++; 
-                        Pz++; 
-                        Mx++; 
-                        My++; 
-                        Mz++; 
-                        Nx++; 
-                        Ny++; 
-                        Nz++; 
-                    }                   
+                        Px++;
+                        Py++;
+                        Pz++;
+                        Mx++;
+                        My++;
+                        Mz++;
+                        Nx++;
+                        Ny++;
+                        Nz++;
+                    }
                 }
             }
         }
@@ -1811,8 +1816,8 @@ void RDFMP2::form_L()
 
     boost::shared_ptr<ERISieve> sieve(new ERISieve(basisset_,options_.get_double("INTS_TOLERANCE")));
     const std::vector<std::pair<int,int> >& shell_pairs = sieve->shell_pairs();
-    int npairs = shell_pairs.size(); 
- 
+    int npairs = shell_pairs.size();
+
     // => Memory Constraints <= //
 
     ULI memory = ((ULI) (options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
@@ -1827,8 +1832,8 @@ void RDFMP2::form_L()
     row_cost += nso * (ULI) navir;
     row_cost += naocc * (ULI) navir;
     ULI rows = memory / row_cost;
-    rows = (rows > naux ? naux : rows);   
-    rows = (rows < maxP ? maxP : rows);   
+    rows = (rows > naux ? naux : rows);
+    rows = (rows < maxP ? maxP : rows);
     max_rows = (int) rows;
 
     // => Block Sizing <= //
@@ -1871,7 +1876,7 @@ void RDFMP2::form_L()
     double** Lmip = Lmi->pointer();
     double** Lmap = Lma->pointer();
 
-    // => Thread Count <= //    
+    // => Thread Count <= //
 
     int num_threads = 1;
     #ifdef _OPENMP
@@ -1883,7 +1888,7 @@ void RDFMP2::form_L()
     boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(ribasis_,BasisSet::zero_ao_basis_set(),basisset_,basisset_));
     std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < num_threads; t++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri()));        
+        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
     }
 
     // => PSIO <= //
@@ -1892,11 +1897,11 @@ void RDFMP2::form_L()
     psio_address next_AIA = PSIO_ZERO;
 
     // => Master Loop <= //
-    
+
     for (int block = 0; block < Pstarts.size() - 1; block++) {
-    
+
         // > Sizing < //
-    
+
         int Pstart = Pstarts[block];
         int Pstop  = Pstarts[block+1];
         int NP = Pstop - Pstart;
@@ -1906,9 +1911,9 @@ void RDFMP2::form_L()
         int np = pstop - pstart;
 
         // > G_ia^P Read < //
-        
+
         psio_->read(PSIF_DFMP2_AIA, "(G|ia) T", (char*) Giap[0], sizeof(double) * np * nia, next_AIA, &next_AIA);
-        
+
         // > Integrals < //
         Gmn->zero();
         #pragma omp parallel for schedule(dynamic) num_threads(num_threads)
@@ -1923,8 +1928,8 @@ void RDFMP2::form_L()
             int MN = PMN % npairs;
             int M = shell_pairs[MN].first;
             int N = shell_pairs[MN].second;
-         
-            eri[thread]->compute_shell(P,0,M,N); 
+
+            eri[thread]->compute_shell(P,0,M,N);
 
             const double* buffer = eri[thread]->buffer();
 
@@ -1940,16 +1945,16 @@ void RDFMP2::form_L()
             for (int p = 0; p < nP; p++) {
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++) {
-                        Gmnp[p + oP][(m + oM) * nso + (n + oN)] =     
-                        Gmnp[p + oP][(n + oN) * nso + (m + oM)] =     
+                        Gmnp[p + oP][(m + oM) * nso + (n + oN)] =
+                        Gmnp[p + oP][(n + oN) * nso + (m + oM)] =
                         (*buffer++);
-                    }                   
+                    }
                 }
             }
         }
 
         // => L_ma <= //
-        
+
         #pragma omp parallel for
         for (int p = 0; p < np; p++) {
             C_DGEMM('T','N',naocc,nso,nso,1.0,Caoccp[0],naocc,Gmnp[p],nso,0.0,Gimp[p],nso);
@@ -1966,7 +1971,7 @@ void RDFMP2::form_L()
         }
 
         // => L_mi <= //
-        
+
         #pragma omp parallel for
         for (int p = 0; p < np; p++) {
             C_DGEMM('T','N',navir,nso,nso,1.0,Cavirp[0],navir,Gmnp[p],nso,0.0,Gamp[p],nso);
@@ -1994,22 +1999,22 @@ void RDFMP2::form_P()
     int navir = Cavir_->colspi()[0];
     int naocc = Caocc_->colspi()[0];
     int nfvir = Cfvir_->colspi()[0];
-    int nmo = nfocc + naocc + navir + nfvir; 
-    
+    int nmo = nfocc + naocc + navir + nfvir;
+
     // => Tensors <= //
 
     SharedMatrix Pij(new Matrix("Pij", naocc, naocc));
     SharedMatrix Pab(new Matrix("Pab", navir, navir));
     SharedMatrix PIj(new Matrix("PIj", nfocc, naocc));
     SharedMatrix PAb(new Matrix("PAb", nfvir, navir));
-    SharedMatrix Ppq(new Matrix("Ppq", nmo, nmo)); 
+    SharedMatrix Ppq(new Matrix("Ppq", nmo, nmo));
 
     double** Pijp = Pij->pointer();
     double** Pabp = Pab->pointer();
     double** PIjp = PIj->pointer();
     double** PAbp = PAb->pointer();
     double** Ppqp = Ppq->pointer();
-    
+
     SharedMatrix Lmi(new Matrix("Lmi", nso, naocc));
     SharedMatrix Lma(new Matrix("Lma", nso, navir));
 
@@ -2026,11 +2031,11 @@ void RDFMP2::form_P()
 
 
     // => Occ-Occ/Virt-Virt <= //
-    
+
     for (int i = 0; i < naocc; i++) {
         ::memcpy((void*) &Ppqp[nfocc + i][nfocc], (void*) Pijp[i], sizeof(double) * naocc);
     }
-    
+
     for (int a = 0; a < navir; a++) {
         ::memcpy((void*) &Ppqp[nfocc + naocc + a][nfocc + naocc], (void*) Pabp[a], sizeof(double) * navir);
     }
@@ -2045,7 +2050,7 @@ void RDFMP2::form_P()
         C_DGEMM('T','N',nfocc,naocc,nso,1.0,Cfoccp[0],nfocc,Lmip[0],naocc,0.0,PIjp[0],naocc);
         for (int i = 0; i < naocc; i++) {
             for (int J = 0; J < nfocc; J++) {
-                PIjp[J][i] /= (eps_aoccp[i] - eps_foccp[J]); 
+                PIjp[J][i] /= (eps_aoccp[i] - eps_foccp[J]);
             }
         }
 
@@ -2063,7 +2068,7 @@ void RDFMP2::form_P()
         C_DGEMM('T','N',nfvir,navir,nso,1.0,Cfvirp[0],nfvir,Lmap[0],navir,0.0,PAbp[0],navir);
         for (int b = 0; b < navir; b++) {
             for (int A = 0; A < nfvir; A++) {
-                PAbp[A][b] /= -(eps_avirp[b] - eps_fvirp[A]); 
+                PAbp[A][b] /= -(eps_avirp[b] - eps_fvirp[A]);
             }
         }
 
@@ -2093,14 +2098,14 @@ void RDFMP2::form_W()
     int navir = Cavir_->colspi()[0];
     int naocc = Caocc_->colspi()[0];
     int nfvir = Cfvir_->colspi()[0];
-    int nmo = nfocc + naocc + navir + nfvir; 
-    
+    int nmo = nfocc + naocc + navir + nfvir;
+
     // => Tensors <= //
 
-    SharedMatrix Wpq1(new Matrix("Wpq1", nmo, nmo)); 
+    SharedMatrix Wpq1(new Matrix("Wpq1", nmo, nmo));
     double** Wpq1p = Wpq1->pointer();
-    
-    SharedMatrix Ppq(new Matrix("Ppq", nmo, nmo)); 
+
+    SharedMatrix Ppq(new Matrix("Ppq", nmo, nmo));
     double** Ppqp = Ppq->pointer();
 
     SharedMatrix Lmi(new Matrix("Lmi", nso, naocc));
@@ -2131,28 +2136,28 @@ void RDFMP2::form_W()
     C_DGEMM('T','N',naocc,naocc,nso,-0.5,Caoccp[0],naocc,Lmip[0],naocc,0.0,&Wpq1p[nfocc][nfocc],nmo);
     if (nfocc) {
         C_DGEMM('T','N',nfocc,naocc,nso,-0.5,Cfoccp[0],nfocc,Lmip[0],naocc,0.0,&Wpq1p[0][nfocc],nmo);
-    }   
- 
+    }
+
     // > Vir-Vir < //
     C_DGEMM('T','N',navir,navir,nso,-0.5,Cavirp[0],navir,Lmap[0],navir,0.0,&Wpq1p[nfocc + naocc][nfocc + naocc],nmo);
     if (nfvir) {
         C_DGEMM('T','N',nfvir,navir,nso,-0.5,Cfvirp[0],nfvir,Lmap[0],navir,0.0,&Wpq1p[nfocc + naocc + navir][nfocc + naocc],nmo);
-    }   
+    }
 
     // > Occ-Vir < //
     C_DGEMM('T','N',naocc,navir,nso,-0.5,Caoccp[0],naocc,Lmap[0],navir,0.0,&Wpq1p[nfocc][nfocc + naocc], nmo);
     if (nfocc) {
         C_DGEMM('T','N',nfocc,navir,nso,-0.5,Cfoccp[0],nfocc,Lmap[0],navir,0.0,&Wpq1p[0][nfocc + naocc], nmo);
-    }   
+    }
 
     // > Vir-Occ < //
     C_DGEMM('T','N',navir,naocc,nso,-0.5,Cavirp[0],navir,Lmip[0],naocc,0.0,&Wpq1p[nfocc + naocc][nfocc], nmo);
     if (nfvir) {
         C_DGEMM('T','N',nfvir,naocc,nso,-0.5,Cfvirp[0],nfvir,Lmip[0],naocc,0.0,&Wpq1p[nfocc + naocc + navir][nfocc], nmo);
-    }   
+    }
 
     // => Lia (L contributions) <= //
-    
+
     // Multiply by 2 to remove factor of 0.5 applied above
     for (int i = 0; i < (nfocc + naocc); i++) {
         for (int a = 0; a < (nfvir + navir); a++) {
@@ -2163,11 +2168,11 @@ void RDFMP2::form_W()
     // > Symmetrize the result < //
     Wpq1->hermitivitize();
     Wpq1->scale(2.0); // Spin Integration
-     
+
     // => Write-out <= //
 
     //Lia->print();
-    //Wpq1->print();    
+    //Wpq1->print();
 
     psio_->write_entry(PSIF_DFMP2_AIA, "Lia", (char*) Liap[0], sizeof(double) * (naocc + nfocc) * (navir + nfvir));
     psio_->write_entry(PSIF_DFMP2_AIA, "W", (char*) Wpq1p[0], sizeof(double) * nmo * nmo);
@@ -2182,20 +2187,20 @@ void RDFMP2::form_Z()
     int navir = Cavir_->colspi()[0];
     int naocc = Caocc_->colspi()[0];
     int nfvir = Cfvir_->colspi()[0];
-    int nmo = nfocc + naocc + navir + nfvir; 
-    int nocc = nfocc + naocc;    
-    int nvir = nfvir + navir;    
+    int nmo = nfocc + naocc + navir + nfvir;
+    int nocc = nfocc + naocc;
+    int nvir = nfvir + navir;
 
     // => Tensors <= //
 
-    SharedMatrix Wpq1(new Matrix("Wpq1", nmo, nmo)); 
+    SharedMatrix Wpq1(new Matrix("Wpq1", nmo, nmo));
     double** Wpq1p = Wpq1->pointer();
-    SharedMatrix Wpq2(new Matrix("Wpq2", nmo, nmo)); 
+    SharedMatrix Wpq2(new Matrix("Wpq2", nmo, nmo));
     double** Wpq2p = Wpq2->pointer();
-    SharedMatrix Wpq3(new Matrix("Wpq3", nmo, nmo)); 
+    SharedMatrix Wpq3(new Matrix("Wpq3", nmo, nmo));
     double** Wpq3p = Wpq3->pointer();
-    
-    SharedMatrix Ppq(new Matrix("Ppq", nmo, nmo)); 
+
+    SharedMatrix Ppq(new Matrix("Ppq", nmo, nmo));
     double** Ppqp = Ppq->pointer();
 
     SharedMatrix Lia(new Matrix("Lia", naocc + nfocc, navir + nfvir));
@@ -2209,7 +2214,7 @@ void RDFMP2::form_Z()
     double** Caoccp = Caocc_->pointer();
     double** Cavirp = Cavir_->pointer();
     double** Cfvirp = Cfvir_->pointer();
-    
+
     double** Coccp = Cocc->pointer();
     double** Cvirp = Cvir->pointer();
     double** Cp    = C->pointer();
@@ -2221,7 +2226,7 @@ void RDFMP2::form_Z()
 
     // => CPHF/JK Object <= //
 
-    boost::shared_ptr<RCPHF> cphf(new RCPHF());
+    boost::shared_ptr<RCPHF> cphf(new RCPHF(reference_wavefunction_, options_));
     cphf->set_C(C);
     cphf->set_Caocc(Cocc);
     cphf->set_Cavir(Cvir);
@@ -2388,7 +2393,7 @@ void RDFMP2::form_Z()
         return;
     }
     //Zia->print();
- 
+
     // => Wik -= 1/2 A_pqik P_pq (relaxed) <= //
 
     // > Factor the relaxation contribution dP^(2) (hopefully low rank) < //
@@ -2403,7 +2408,7 @@ void RDFMP2::form_Z()
 
     // > Back-transform the transition orbitals < //
     SharedMatrix P2AO(new Matrix("P AO", nso, P2->colspi()[0]));
-    SharedMatrix N2AO(new Matrix("N AO", nso, N2->colspi()[0])); 
+    SharedMatrix N2AO(new Matrix("N AO", nso, N2->colspi()[0]));
     double** P2AOp = P2AO->pointer();
     double** N2AOp = N2AO->pointer();
 
@@ -2414,17 +2419,17 @@ void RDFMP2::form_Z()
     if (N2->colspi()[0]) {
         C_DGEMM('N','N',nso,N2->colspi()[0],nmo,1.0,Cp[0],nmo,N2p[0],N2->colspi()[0],0.0,N2AOp[0],N2->colspi()[0]);
     }
-    
+
     // > Form the J/K-like matrices (P,N contributions are separable) < //
     Cl.clear();
     Cr.clear();
     Cl.push_back(P2AO);
     Cl.push_back(N2AO);
-    
+
     jk->compute();
-    
-    SharedMatrix J2 = J[0]; 
-    SharedMatrix K2 = K[0]; 
+
+    SharedMatrix J2 = J[0];
+    SharedMatrix K2 = K[0];
     J2->subtract(J[1]);
     K2->subtract(K[1]);
     double** J2p = J2->pointer();
@@ -2464,13 +2469,13 @@ void RDFMP2::form_Z()
     Wpq1->add(Wpq2);
     Wpq1->add(Wpq3);
     Wpq1->set_name("Wpq");
-        
+
     //Wpq1->print();
-        
+
     psio_->write_entry(PSIF_DFMP2_AIA,"W",(char*) Wpq1p[0], sizeof(double) * nmo * nmo);
 
     // => Final P <= //
-    
+
     //Ppq->print();
 
     psio_->write_entry(PSIF_DFMP2_AIA,"P",(char*) Ppqp[0], sizeof(double) * nmo * nmo);
@@ -2489,16 +2494,16 @@ void RDFMP2::form_gradient()
     int naocc = Caocc_->colspi()[0];
     int navir = Cavir_->colspi()[0];
     int nfvir = Cfvir_->colspi()[0];
-    int nmo = nfocc + naocc + navir + nfvir; 
-    int nocc = nfocc + naocc;    
-    int nvir = nfvir + navir;    
+    int nmo = nfocc + naocc + navir + nfvir;
+    int nocc = nfocc + naocc;
+    int nvir = nfvir + navir;
 
     // => Tensors <= //
 
-    SharedMatrix W(new Matrix("W", nmo, nmo)); 
+    SharedMatrix W(new Matrix("W", nmo, nmo));
     double** Wp = W->pointer();
-    
-    SharedMatrix P2(new Matrix("P", nmo, nmo)); 
+
+    SharedMatrix P2(new Matrix("P", nmo, nmo));
     double** P2p = P2->pointer();
 
     SharedMatrix Cocc = reference_wavefunction_->Ca_subset("AO", "OCC");
@@ -2549,7 +2554,7 @@ void RDFMP2::form_gradient()
     double** N1p = N1->pointer();
 
     // => Back-transform <= //
-    
+
     SharedMatrix T1(new Matrix("T", nmo, nso));
     SharedMatrix PAO(new Matrix("P AO", nso, nso));
     SharedMatrix PFAO(new Matrix("PF AO", nso, nso));
@@ -2566,29 +2571,29 @@ void RDFMP2::form_gradient()
 
     C_DGEMM('N','T',nmo,nso,nmo,1.0,P2p[0],nmo,Cp[0],nmo,0.0,T1p[0],nso);
     C_DGEMM('N','N',nso,nso,nmo,1.0,Cp[0],nmo,T1p[0],nso,0.0,PAOp[0],nso);
-    
+
     C_DGEMM('N','T',nmo,nso,nmo,1.0,P2Fp[0],nmo,Cp[0],nmo,0.0,T1p[0],nso);
     C_DGEMM('N','N',nso,nso,nmo,1.0,Cp[0],nmo,T1p[0],nso,0.0,PFAOp[0],nso);
-    
+
     C_DGEMM('N','T',nmo,nso,nmo,1.0,Wp[0],nmo,Cp[0],nmo,0.0,T1p[0],nso);
     C_DGEMM('N','N',nso,nso,nmo,1.0,Cp[0],nmo,T1p[0],nso,0.0,WAOp[0],nso);
-    
+
     //P2->print();
     //PAO->print();
 
     if (P1->colspi()[0]) {
         C_DGEMM('N','N',nso,P1->colspi()[0],nmo,1.0,Cp[0],nmo,P1p[0],P1->colspi()[0],0.0,P1AOp[0],P1->colspi()[0]);
     }
-    
+
     if (N1->colspi()[0]) {
         C_DGEMM('N','N',nso,N1->colspi()[0],nmo,1.0,Cp[0],nmo,N1p[0],N1->colspi()[0],0.0,N1AOp[0],N1->colspi()[0]);
     }
 
     // => Random extra drivers for the JK gradients <= //
 
-    SharedMatrix D(PAO->clone()); 
+    SharedMatrix D(PAO->clone());
     double** Dp = D->pointer();
-    C_DGEMM('N','T',nso,nso,nocc,2.0,Coccp[0],nocc,Coccp[0],nocc,0.0,Dp[0],nso);    
+    C_DGEMM('N','T',nso,nso,nocc,2.0,Coccp[0],nocc,Coccp[0],nocc,0.0,Dp[0],nso);
 
     //D->print();
 
@@ -2612,7 +2617,7 @@ void RDFMP2::form_gradient()
 
     // => Sizings <= //
     int natom = molecule_->natom();
-     
+
     // => Nuclear Gradient <= //
     gradients_["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1().clone());
     gradients_["Nuclear"]->set_name("Nuclear Gradient");
@@ -2627,17 +2632,17 @@ void RDFMP2::form_gradient()
 
         // Kinetic derivatives
         boost::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
-        const double* buffer = Tint->buffer();   
+        const double* buffer = Tint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             for (int Q = 0; Q <= P; Q++) {
 
                 Tint->compute_shell_deriv1(P,Q);
-                                
+
                 int nP = basisset_->shell(P).nfunction();
                 int oP = basisset_->shell(P).function_index();
                 int aP = basisset_->shell(P).ncenter();
- 
+
                 int nQ = basisset_->shell(Q).nfunction();
                 int oQ = basisset_->shell(Q).function_index();
                 int aQ = basisset_->shell(Q).ncenter();
@@ -2645,50 +2650,50 @@ void RDFMP2::form_gradient()
                 int offset = nP * nQ;
                 const double* ref = buffer;
                 double perm = (P == Q ? 1.0 : 2.0);
-               
-                // Px 
+
+                // Px
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aP][0] += perm * PAOp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Py 
+
+                // Py
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aP][1] += perm * PAOp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Pz 
+
+                // Pz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aP][2] += perm * PAOp[p + oP][q + oQ] * (*ref++);
                     }
                 }
 
-                // Qx 
+                // Qx
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aQ][0] += perm * PAOp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Qy 
+
+                // Qy
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aQ][1] += perm * PAOp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Qz 
+
+                // Qz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aQ][2] += perm * PAOp[p + oP][q + oQ] * (*ref++);
                     }
                 }
             }
-        } 
+        }
     }
     timer_off("Grad: T");
 
@@ -2708,11 +2713,11 @@ void RDFMP2::form_gradient()
         // Potential derivatives
         std::vector<boost::shared_ptr<OneBodyAOInt> > Vint;
         std::vector<SharedMatrix> Vtemps;
-        for (int t = 0; t < threads; t++) { 
+        for (int t = 0; t < threads; t++) {
             Vint.push_back(boost::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
             Vtemps.push_back(SharedMatrix(gradients_["Potential"]->clone()));
         }
-       
+
         // Lower Triangle
         std::vector<std::pair<int,int> > PQ_pairs;
         for (int P = 0; P < basisset_->nshell(); P++) {
@@ -2734,19 +2739,19 @@ void RDFMP2::form_gradient()
 
             Vint[thread]->compute_shell_deriv1(P,Q);
             const double* buffer = Vint[thread]->buffer();
-                            
+
             int nP = basisset_->shell(P).nfunction();
             int oP = basisset_->shell(P).function_index();
             int aP = basisset_->shell(P).ncenter();
- 
+
             int nQ = basisset_->shell(Q).nfunction();
             int oQ = basisset_->shell(Q).function_index();
             int aQ = basisset_->shell(Q).ncenter();
 
             double perm = (P == Q ? 1.0 : 2.0);
-                
+
             double** Vp = Vtemps[thread]->pointer();
-            
+
             for (int A = 0; A < natom; A++) {
                 const double* ref0 = &buffer[3 * A * nP * nQ + 0 * nP * nQ];
                 const double* ref1 = &buffer[3 * A * nP * nQ + 1 * nP * nQ];
@@ -2760,9 +2765,9 @@ void RDFMP2::form_gradient()
                     }
                 }
             }
-        } 
-    
-        for (int t = 0; t < threads; t++) { 
+        }
+
+        for (int t = 0; t < threads; t++) {
             gradients_["Potential"]->add(Vtemps[t]);
         }
     }
@@ -2785,17 +2790,17 @@ void RDFMP2::form_gradient()
 
         // Overlap derivatives
         boost::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
-        const double* buffer = Sint->buffer();   
+        const double* buffer = Sint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             for (int Q = 0; Q <= P; Q++) {
 
                 Sint->compute_shell_deriv1(P,Q);
-                                
+
                 int nP = basisset_->shell(P).nfunction();
                 int oP = basisset_->shell(P).function_index();
                 int aP = basisset_->shell(P).ncenter();
- 
+
                 int nQ = basisset_->shell(Q).nfunction();
                 int oQ = basisset_->shell(Q).function_index();
                 int aQ = basisset_->shell(Q).ncenter();
@@ -2803,64 +2808,64 @@ void RDFMP2::form_gradient()
                 int offset = nP * nQ;
                 const double* ref = buffer;
                 double perm = (P == Q ? 1.0 : 2.0);
-               
-                // Px 
+
+                // Px
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aP][0] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Py 
+
+                // Py
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aP][1] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Pz 
+
+                // Pz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aP][2] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
                     }
                 }
 
-                // Qx 
+                // Qx
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aQ][0] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Qy 
+
+                // Qy
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aQ][1] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Qz 
+
+                // Qz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aQ][2] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
                     }
                 }
             }
-        } 
+        }
     }
     timer_off("Grad: S");
 
     // => Two-Electron Gradient <= //
-    
+
     timer_on("Grad: JK");
-    
+
     boost::shared_ptr<CorrGrad> jk = CorrGrad::build_CorrGrad();
     jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
     jk->set_Ca(Cocc);
     jk->set_Cb(Cocc);
-    jk->set_La(P1AO); 
-    jk->set_Lb(P1AO); 
+    jk->set_La(P1AO);
+    jk->set_Lb(P1AO);
     jk->set_Ra(N1AO);
     jk->set_Rb(N1AO);
     jk->set_Da(Ds);
@@ -2868,10 +2873,10 @@ void RDFMP2::form_gradient()
     jk->set_Dt(D);
     jk->set_Pa(PFAOs);
     jk->set_Pb(PFAOs);
-    jk->set_Pt(PFAO); 
+    jk->set_Pt(PFAO);
 
     jk->print_header();
-    jk->compute_gradient();    
+    jk->compute_gradient();
 
     std::map<std::string, SharedMatrix>& jk_gradients = jk->gradients();
     gradients_["Coulomb"] = jk_gradients["Coulomb"];
@@ -2891,8 +2896,8 @@ void RDFMP2::form_gradient()
 
     SharedMatrix correlation = SharedMatrix(gradients_["Nuclear"]->clone());
     correlation->zero();
-    correlation->add(gradients_["(A|mn)^x"]); 
-    correlation->add(gradients_["(A|B)^x"]); 
+    correlation->add(gradients_["(A|mn)^x"]);
+    correlation->add(gradients_["(A|B)^x"]);
     gradients_["Correlation"] = correlation;
     gradients_["Correlation"]->set_name("Correlation Gradient");
 
@@ -2902,11 +2907,11 @@ void RDFMP2::form_gradient()
 
     for (int i = 0; i < gradient_terms.size(); i++) {
         if (gradients_.count(gradient_terms[i])) {
-            total->add(gradients_[gradient_terms[i]]); 
+            total->add(gradients_[gradient_terms[i]]);
         }
     }
 
-    gradients_["Total"] = total; 
+    gradients_["Total"] = total;
     gradients_["Total"]->set_name("Total Gradient");
 
     // => Finalize <= //
@@ -2914,8 +2919,8 @@ void RDFMP2::form_gradient()
     psio_->close(PSIF_DFMP2_AIA,1);
 }
 
-UDFMP2::UDFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
-    DFMP2(options,psio,chkpt)
+UDFMP2::UDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
+    DFMP2(ref_wfn, options,psio,chkpt)
 {
     common_init();
 }
@@ -3597,8 +3602,8 @@ void UDFMP2::form_gradient()
     throw PSIEXCEPTION("UDFMP2: Gradients not yet implemented");
 }
 
-RODFMP2::RODFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
-    UDFMP2(options,psio,chkpt)
+RODFMP2::RODFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
+    UDFMP2(ref_wfn, options,psio,chkpt)
 {
     common_init();
 }

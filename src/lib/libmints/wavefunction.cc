@@ -68,6 +68,7 @@ Wavefunction::Wavefunction(boost::shared_ptr<Molecule> molecule, const std::stri
 Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio) :
     options_(options), psio_(psio)
 {
+    outfile->Printf("Wavefunction constructor 2\n");
     outfile->Printf("DGAS Warning! Deprecated constructor!\n");
     chkpt_ = boost::shared_ptr<Chkpt>(new Chkpt(psio.get(), PSIO_OPEN_OLD));
     common_init();
@@ -76,6 +77,7 @@ Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio) :
 Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
     options_(options), psio_(psio), chkpt_(chkpt)
 {
+    outfile->Printf("Wavefunction constructor 3\n");
     outfile->Printf("DGAS Warning! Deprecated constructor!\n");
     common_init();
 }
@@ -88,9 +90,17 @@ Wavefunction::Wavefunction(Options & options) :
 Wavefunction::~Wavefunction()
 {
 }
-
-void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
+void Wavefunction::copy(SharedWavefunction other)
 {
+    copy(other.get());
+}
+
+void Wavefunction::copy(const Wavefunction* other)
+{
+
+    // outfile->Printf("Reference wavefunction needs to die, serious reference issues\n");
+    // reference_wavefunction_ = SharedWavefunction(other);
+
     name_ = other->name_;
     basisset_ = other->basisset_;
     sobasisset_ = other->sobasisset_;
@@ -102,7 +112,6 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
     chkpt_ = other->chkpt_;
     integral_ = other->integral_;
     factory_ = other->factory_;
-    reference_wavefunction_ = other;
     memory_ = other->memory_;
     print_ = other->print_;
     debug_ = other->debug_;
@@ -243,11 +252,6 @@ void Wavefunction::map_irreps(Dimension &array)
     std::vector<int*> vec;
     vec.push_back(int_array);
     map_irreps(vec);
-}
-
-double Wavefunction::compute_energy()
-{
-    return 0.0;
 }
 
 void Wavefunction::initialize_singletons()

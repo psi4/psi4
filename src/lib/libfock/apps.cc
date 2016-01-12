@@ -50,106 +50,36 @@ using namespace boost;
 
 namespace psi {
 
-RBase::RBase() :
-    Wavefunction(Process::environment.options,_default_psio_lib_)
+RBase::RBase(SharedWavefunction ref_wfn, Options& options) :
+    Wavefunction(options)
 {
-    common_init();
-}
-RBase::RBase(bool flag) :
-    Wavefunction(Process::environment.options,_default_psio_lib_) 
-{
-    outfile->Printf( "Dirty hack %s\n\n", (flag ? "true" : "false"));
-}
-RBase::~RBase()
-{
-    postiterations();
-}
-void RBase::common_init()
-{
-    boost::shared_ptr<Wavefunction> ref = Process::environment.wavefunction();
-    
-    if (!ref) {
-        // Try to build an RHF from Checkpoint
-        outfile->Printf( "    Attempting to build reference from Chkpt.\n\n");
-        // WTF init_with_chkpt is not defined
+    copy(ref_wfn);
 
-        // Sizing
-        double E_scf = chkpt_->rd_escf();
-        int nirrep = chkpt_->rd_nirreps();
-        int* clsdpi = chkpt_->rd_clsdpi();
-        int* orbspi = chkpt_->rd_orbspi();
-        int* frzcpi = chkpt_->rd_frzcpi();
-        int* frzvpi = chkpt_->rd_frzvpi();
-        int nso = chkpt_->rd_nso();
-        int nmo = 0;
-        for (int h = 0;h < nirrep; h++) {
-            nmo += orbspi[h];
-        }
-
-        // C/epsilon
-        SharedMatrix C = SharedMatrix(new Matrix("C Matrix", nso, nmo));
-        SharedVector epsilon = boost::shared_ptr<Vector>(new Vector(nmo));
-
-        double **vectors;
-        double *orbital_energies;
-
-        vectors = chkpt_->rd_scf();
-        orbital_energies = chkpt_->rd_evals();
-
-        C_DCOPY(nso*nmo, vectors[0], 1, C->pointer()[0], 1);
-        C_DCOPY(nmo, orbital_energies, 1, epsilon->pointer(), 1);
-
-        free(orbital_energies);
-        free(vectors[0]);
-        free(vectors);
-
-        // Hack on a hack
-        psio_->close(32,1);
-
-        RBase* refp = new RBase(true);
-    
-        for (int h = 0;h < nirrep; h++) {
-            refp->nmopi_[h] = orbspi[h];
-            refp->frzcpi_[h] = frzcpi[h];
-            refp->frzvpi_[h] = frzvpi[h];
-            refp->doccpi_[h] = clsdpi[h];
-            refp->nalphapi_[h] = clsdpi[h];
-            refp->nbetapi_[h] = clsdpi[h];
-        }
-        
-        refp->energy_ = E_scf;
-        refp->nso_ = nso;   
-        refp->nmo_ = refp->nmopi_.sum();
-        refp->nalpha_ = refp->nalphapi_.sum();
-        refp->nbeta_ = refp->nbetapi_.sum();
-
-        refp->Ca_ = C;
-        refp->epsilon_a_ = epsilon;
-
-        ref = boost::shared_ptr<Wavefunction>(refp);
-        Process::environment.set_wavefunction(ref); 
-    }
-
-    set_reference(ref);
+    set_reference(ref_wfn);
 
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
     bench_ = options_.get_int("BENCH");
     convergence_ = options_.get_double("SOLVER_CONVERGENCE");
 }
-void RBase::set_reference(boost::shared_ptr<Wavefunction> wfn)
+RBase::RBase(bool flag) :
+    Wavefunction(Process::environment.options,_default_psio_lib_)
 {
-    reference_wavefunction_ = wfn;
+    throw PSIEXCEPTION("DGAS: Lets not let RMP do dirty hacks!\n");
+    outfile->Printf( "Dirty hack %s\n\n", (flag ? "true" : "false"));
+}
+RBase::~RBase()
+{
+    postiterations();
+}
+void RBase::set_reference(SharedWavefunction ref_wfn)
+{
+    reference_wavefunction_ = ref_wfn;
 
-    if (!reference_wavefunction_) {
-        throw PSIEXCEPTION("RBase: Run SCF first");
-    }
-
-    if (!reference_wavefunction_->same_a_b_dens()) {
-        throw PSIEXCEPTION("RBase: Reference is not restricted");
-    }
-
-    copy(reference_wavefunction_);
+    outfile->Printf("DGAS Warning! /src/lib/libfock/apps.cc:80 is not currently checking restricted\n");
+    // if (!reference_wavefunction_->same_a_b_dens()) {
+    //     throw PSIEXCEPTION("RBase: Reference is not restricted");
+    // }
 
     Eref_ = reference_wavefunction_->reference_energy();
 
@@ -196,7 +126,8 @@ void RBase::postiterations()
     jk_.reset();
 }
 
-RCPHF::RCPHF()
+RCPHF::RCPHF(SharedWavefunction ref_wfn, Options& options) :
+    RBase(ref_wfn, options)
 {
 }
 RCPHF::~RCPHF()
@@ -386,7 +317,8 @@ double RCPHF::compute_energy()
     return 0.0;
 }
 
-RCIS::RCIS()
+RCIS::RCIS(SharedWavefunction ref_wfn, Options& options) :
+           RBase(ref_wfn, options)
 {
 }
 RCIS::~RCIS()
@@ -1178,7 +1110,8 @@ double RCIS::compute_energy()
     return 0.0;
 }
 
-RTDHF::RTDHF()
+RTDHF::RTDHF(SharedWavefunction ref_wfn, Options& options) :
+           RBase(ref_wfn, options)
 {
 }
 RTDHF::~RTDHF()
@@ -1299,7 +1232,8 @@ double RTDHF::compute_energy()
     return 0.0;
 }
 
-RCPKS::RCPKS() : RCPHF()
+RCPKS::RCPKS(SharedWavefunction ref_wfn, Options& options) :
+             RCPHF(ref_wfn, options)
 {
 }
 RCPKS::~RCPKS()
@@ -1397,7 +1331,7 @@ double RCPKS::compute_energy()
     return 0.0;
 }
 
-RTDA::RTDA() : RCIS()
+RTDA::RTDA(SharedWavefunction ref_wfn, Options& options) : RCIS(ref_wfn, options)
 {
 }
 RTDA::~RTDA()
@@ -1547,7 +1481,8 @@ double RTDA::compute_energy()
     return 0.0;
 }
 
-RTDDFT::RTDDFT() : RTDHF()
+RTDDFT::RTDDFT(SharedWavefunction ref_wfn, Options& options) :
+              RTDHF(ref_wfn, options)
 {
 }
 RTDDFT::~RTDDFT()

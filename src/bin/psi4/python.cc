@@ -112,7 +112,11 @@ namespace psi {
 namespace adc { SharedWavefunction     adc(SharedWavefunction, Options&); }
 namespace dcft { SharedWavefunction   dcft(SharedWavefunction, Options&); }
 namespace detci { SharedWavefunction detci(SharedWavefunction, Options&); }
+namespace dfmp2 { SharedWavefunction dfmp2(SharedWavefunction, Options&); }
 namespace scf { SharedWavefunction     scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
+namespace libfock { SharedWavefunction libfock(SharedWavefunction, Options&); }
+
+
 namespace scfgrad { SharedMatrix   scfgrad(SharedWavefunction, Options&); }
 namespace scfgrad { SharedMatrix   scfhess(SharedWavefunction, Options&); }
 
@@ -120,9 +124,7 @@ namespace scfgrad { SharedMatrix   scfhess(SharedWavefunction, Options&); }
 namespace mints { PsiReturnType mints(Options&); }
 namespace deriv { PsiReturnType deriv(Options&); }
 namespace scf { PsiReturnType scf_dummy(Options&); }
-namespace libfock { PsiReturnType libfock(Options&); }
-namespace dfmp2 { PsiReturnType dfmp2(Options&); }
-namespace dfmp2 { PsiReturnType dfmp2grad(Options&); }
+// namespace dfmp2 { PsiReturnType dfmp2grad(Options&); }
 namespace sapt { PsiReturnType sapt(Options&); }
 namespace fisapt { PsiReturnType fisapt(Options&); }
 namespace lmp2 { PsiReturnType lmp2(Options&); }
@@ -287,10 +289,10 @@ double py_psi_dfocc()
         return 0.0;
 }
 
-int py_psi_libfock()
+SharedWavefunction py_psi_libfock(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CPHF");
-    return libfock::libfock(Process::environment.options);
+    return libfock::libfock(ref_wfn, Process::environment.options);
 }
 
 // double py_psi_scf_callbacks(PyObject *precallback, PyObject *postcallback)
@@ -439,25 +441,21 @@ double py_psi_lmp2()
         return 0.0;
 }
 
-double py_psi_dfmp2()
+SharedWavefunction py_psi_dfmp2(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("DFMP2");
-    if (dfmp2::dfmp2(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return dfmp2::dfmp2(ref_wfn, Process::environment.options);
 }
 
-double py_psi_dfmp2grad()
-{
-    py_psi_prepare_options_for_module("DFMP2");
-    if (dfmp2::dfmp2grad(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
-}
+// double py_psi_dfmp2grad()
+// {
+//     py_psi_prepare_options_for_module("DFMP2");
+//     if (dfmp2::dfmp2grad(Process::environment.options) == Success) {
+//         return Process::environment.globals["CURRENT ENERGY"];
+//     }
+//     else
+//         return 0.0;
+// }
 
 double py_psi_sapt()
 {
@@ -1625,7 +1623,7 @@ BOOST_PYTHON_MODULE (psi4)
     def("lmp2", py_psi_lmp2, "Runs the local MP2 code.");
     def("libfock", py_psi_libfock, "Runs a CPHF calculation, using libfock.");
     def("dfmp2", py_psi_dfmp2, "Runs the DF-MP2 code.");
-    def("dfmp2grad", py_psi_dfmp2grad, "Runs the DF-MP2 gradient.");
+    // def("dfmp2grad", py_psi_dfmp2grad, "Runs the DF-MP2 gradient.");
 //    def("mp2", py_psi_mp2, "Runs the conventional (slow) MP2 code.");
     def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
     def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");

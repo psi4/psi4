@@ -268,16 +268,15 @@ public:
     *  reference wavefunction's data.
     **/
     void copy(boost::shared_ptr<Wavefunction> other);
+    void copy(const Wavefunction* other);
 
     virtual ~Wavefunction();
 
     /// Compute energy. Subclasses override this function to compute its energy.
-    virtual double compute_energy();
-
-
-    virtual SharedMatrix compute_gradient() {throw PSIEXCEPTION("Analytic gradients are not available for this wavefunction.");}
+    virtual double compute_energy() {throw PSIEXCEPTION("Compute energy has not been implemented for this wavefunction.");}
 
     /// Compute gradient.  Subclasses override this function to compute the gradient.
+    virtual SharedMatrix compute_gradient() {throw PSIEXCEPTION("Analytic gradients are not available for this wavefunction.");}
 
     /// Initialize internal variables from checkpoint file.
     //void init_with_chkpt(); // Does this function exist??
