@@ -304,6 +304,10 @@ class FRAG {
   bool apply_fixed_constraints(std::string R_string, std::string B_string, std::string D_string);
 
   void erase_combo_coord(int index) { coords.erase_combo(index); } ;
+
+  /* Are any coordinates present that are not cartesians? */
+  bool is_noncart_present(void) const;
+
 };
 
 }
