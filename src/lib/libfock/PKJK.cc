@@ -523,8 +523,8 @@ void PKJK::compute_JK()
                         }
                     }
                     if(K_.size()) {
-                        for(int p = 0; p < sopi[0]; ++p) {
-                            D_vec[p * sopi[0] + p] = D_vec[p * sopi[0] + p] * 2.0;
+                        for(int idx = 0; idx < sopi[0]; ++idx) {
+                            D_vec[idx * sopi[0] + idx] = D_vec[idx * sopi[0] + idx] * 2.0;
                         }
                         K_[N]->zero();
                         double **K_vector = K_[N]->pointer();

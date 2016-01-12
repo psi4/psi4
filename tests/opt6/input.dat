@@ -1,4 +1,5 @@
 #! Various constrained energy minimizations of HOOH with cc-pvdz RHF
+#! Internal-coordinate constraints in internal-coordinate optimizations.
 
 memory 250 mb
 
@@ -26,7 +27,7 @@ set optking {
   ")
 }
 thisenergy = optimize('scf')
-compare_values(OH_frozen_stre_rhf , thisenergy, 7, "O-H frozen RHF energy")  #TEST
+compare_values(OH_frozen_stre_rhf , thisenergy, 7, "Int. Coord. RHF opt of HOOH with O-H frozen, energy")  #TEST
 
 # Constrained minimization with O-O-H angles frozen.
 molecule {
@@ -44,7 +45,7 @@ set optking {
   ")
 }
 thisenergy = optimize('scf')
-compare_values(OOH_frozen_bend_rhf , thisenergy, 7, "O-O-H frozen bends RHF energy") #TEST
+compare_values(OOH_frozen_bend_rhf , thisenergy, 7, "Int. Coord. RHF opt of HOOH with O-O-H frozen, energy") #TEST
 
 # Constrained minimization with H-O-O-H dihedral frozen.
 molecule {
@@ -62,5 +63,5 @@ set optking {
   ")
 }
 thisenergy = optimize('scf')
-compare_values(HOOH_frozen_dihedral_rhf , thisenergy, 7, "H-O-O-H frozen dihedral RHF energy") #TEST
+compare_values(HOOH_frozen_dihedral_rhf , thisenergy, 7, "Int. Coord. RHF opt of HOOH with H-O-O-H frozen, energy") #TEST
 
