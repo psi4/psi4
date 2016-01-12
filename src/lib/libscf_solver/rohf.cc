@@ -300,10 +300,10 @@ void ROHF::compute_orbital_gradient(bool save_diis)
     }
 
     // Grab inact-act and act-vir orbs
-    View vCia(Ca_, nsopi_, noccpi, dim_zero, dim_zero);
+    View vCia(Ct_, nsopi_, noccpi, dim_zero, dim_zero);
     SharedMatrix Cia = vCia();
 
-    View vCav(Ca_, nsopi_, virpi, dim_zero, doccpi_);
+    View vCav(Ct_, nsopi_, virpi, dim_zero, doccpi_);
     SharedMatrix Cav = vCav();
 
     // Back transform MOgradient
