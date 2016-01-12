@@ -1634,7 +1634,7 @@ int mat_schmidt_tol(double **C, double **S, int nrow, int ncol, double tolerance
 void Matrix::schmidt()
 {
     for (int h=0; h<nirrep(); ++h){
-        if ((rowspi(h) == 0) || (colspi(h) == 0)) continue;
+        if (!rowspi(h) || !colspi(h)) continue;
         psi::schmidt(matrix_[h], rowspi(h), colspi(h), "STUPID");
     }
 }

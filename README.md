@@ -27,6 +27,8 @@ Psi4: Open-Source Quantum Chemistry
 
 * **Build Dashboard** https://testboard.org/cdash/index.php?project=Psi
 
+<!---* **Video Tutorials** https://www.youtube.com/psitutorials)--->
+
 Psi4 is an open-source suite of ab initio quantum chemistry programs
 designed for efficient, high-accuracy simulations of a variety of
 molecular properties. We can routinely perform computations with more

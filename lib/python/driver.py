@@ -110,6 +110,12 @@ procedures = {
             'sapt2+(ccd)'   : run_sapt,
             'sapt2+(3)(ccd)': run_sapt,
             'sapt2+3(ccd)'  : run_sapt,
+            'sapt2+dmp2'    : run_sapt,
+            'sapt2+(3)dmp2' : run_sapt,
+            'sapt2+3dmp2'   : run_sapt,
+            'sapt2+(ccd)dmp2' : run_sapt,
+            'sapt2+(3)(ccd)dmp2' : run_sapt,
+            'sapt2+3(ccd)dmp2' : run_sapt,
             'sapt0-ct'      : run_sapt_ct,
             'sapt2-ct'      : run_sapt_ct,
             'sapt2+-ct'     : run_sapt_ct,
@@ -454,6 +460,18 @@ def energy(name, **kwargs):
     | sapt2+(3)(ccd)          | SAPT2+(3) with CC-based dispersion :ref:`[manual] <sec:sapt>`                         |
     +-------------------------+---------------------------------------------------------------------------------------+
     | sapt2+3(ccd)            | SAPT2+3 with CC-based dispersion :ref:`[manual] <sec:sapt>`                           |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | sapt2+dmp2              | SAPT including all 2nd-order terms and MP2 correction :ref:`[manual] <sec:sapt>`      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | sapt2+(3)dmp2           | SAPT including perturbative triples and MP2 correction :ref:`[manual] <sec:sapt>`     |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | sapt2+3dmp2             | SAPT including all 3rd-order terms and MP2 correction :ref:`[manual] <sec:sapt>`      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | sapt2+(ccd)dmp2         | SAPT2+ with CC-based dispersion and MP2 correction :ref:`[manual] <sec:sapt>`         |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | sapt2+(3)(ccd)dmp2      | SAPT2+(3) with CC-based dispersion and MP2 correction :ref:`[manual] <sec:sapt>`      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | sapt2+3(ccd)dmp2        | SAPT2+3 with CC-based dispersion and MP2 correction :ref:`[manual] <sec:sapt>`        |
     +-------------------------+---------------------------------------------------------------------------------------+
     | sapt0-ct                | 0th-order SAPT plus charge transfer (CT) calculation :ref:`[manual] <sec:saptct>`     |
     +-------------------------+---------------------------------------------------------------------------------------+

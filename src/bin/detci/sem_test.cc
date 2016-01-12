@@ -50,9 +50,9 @@
 #include <boost/lexical_cast.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libmints/mints.h>
 #include "structs.h"
-#define EXTERN
-#include "globals.h"
+#include "ciwave.h"
 
 namespace psi { namespace detci {
 
@@ -120,9 +120,9 @@ std::string OutFileRMR ;
 **
 ** Returns: none
 */
-void sem_test(double **A, int N, int M, int L, double **evecs, double *evals, 
+void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, double *evals, 
       double **b, double conv_e, double conv_rms, int maxiter, double offst, 
-      int *vu, int maxnvect, std::string out)
+      int *vu, int maxnvect)
 {
    double *tmp_vec, **tmp_mat ;
    double **jnk;
@@ -139,8 +139,8 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
    int converged=0, iter=1;
    int iter2=0; /* iterations since last collapse */
    double *lastroot;
-   int lse_do=0, last_lse_collapse_num=-Parameters.lse_collapse, collapse_num=0;
-   double lse_tolerance=Parameters.lse_tolerance;
+   int lse_do=0, last_lse_collapse_num=-Parameters_->lse_collapse, collapse_num=0;
+   double lse_tolerance=Parameters_->lse_tolerance;
    double **sigma_overlap, ***Mmatrix;
    int *Lvec;
 
@@ -152,7 +152,7 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
 
 
    for (I=0; I<N; I++)
-      A[I][I] -= CalcInfo.edrc;
+      A[I][I] -= CalcInfo_->edrc;
    
 
    /* make space for temp vector */
@@ -192,7 +192,7 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
       /* solve the L x L eigenvalue problem G a = lambda a for M roots */
       sq_rsp(L, L, G, lambda, 1, alpha, 1E-14);
  
-      if (N<100 && Parameters.print_lvl >=3) {
+      if (N<100 && Parameters_->print_lvl >=3) {
         outfile->Printf("\n b matrix\n");
         print_mat(b,L,N,"outfile");
         outfile->Printf("\n sigma matrix\n");
@@ -204,9 +204,9 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
         }
 
       lse_do = 0;
-      if (Parameters.lse && (maxnvect-L <= M*Parameters.collapse_size) && L>2 &&
+      if (Parameters_->lse && (maxnvect-L <= M*Parameters_->collapse_size) && L>2 &&
          (lse_tolerance > fabs(lambda[0]-lastroot[0])) && iter>=3 &&
-         ((collapse_num-last_lse_collapse_num)>= Parameters.lse_collapse)) 
+         ((collapse_num-last_lse_collapse_num)>= Parameters_->lse_collapse)) 
         lse_do = 1;
       if (lse_do) {
         /* Form sigma_overlap matrix */
@@ -226,7 +226,7 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
              }
           } /* end loop over k (nroots) */
 
-         if (Parameters.print_lvl > 2) {
+         if (Parameters_->print_lvl > 2) {
            outfile->Printf( "\nsigma_overlap matrix (%2d) = \n", iter-1);
            print_mat(sigma_overlap, L, L, "outfile");
 
@@ -240,7 +240,7 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
         /* solve the L x L eigenvalue problem M a = lambda a for M roots */
        for (k=0; k<M; k++) {
           sq_rsp(L, L, Mmatrix[k], m_lambda[k], 1, m_alpha[k], 1.0E-14);
-          if (Parameters.print_lvl > 2) {
+          if (Parameters_->print_lvl > 2) {
             outfile->Printf( "\n M eigenvectors and eigenvalues root %d:\n",k);
             eivout(m_alpha[k], m_lambda[k], L, L, "outfile");
             }
@@ -248,8 +248,8 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
 
         } /* end if lse_do */ 
 
-      if ((Parameters.collapse_size>0) && (iter2-Parameters.collapse_size+1 > 0)
-         && (Lvec[iter2-Parameters.collapse_size+1]+M*Parameters.collapse_size 
+      if ((Parameters_->collapse_size>0) && (iter2-Parameters_->collapse_size+1 > 0)
+         && (Lvec[iter2-Parameters_->collapse_size+1]+M*Parameters_->collapse_size 
          > maxnvect) && iter!=maxiter) {
 
         collapse_num++;
@@ -290,7 +290,7 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
         /* solve the L x L eigenvalue problem G a = lambda a for M roots */
         sq_rsp(L, L, G, lambda, 1, alpha, 1E-14);
         
-        if (N<100 && Parameters.print_lvl >= 3) {
+        if (N<100 && Parameters_->print_lvl >= 3) {
         outfile->Printf(" Reformed G matrix (%d)\n",iter-1);
         print_mat(G,L,L,"outfile");
         outfile->Printf("\n");
@@ -311,7 +311,7 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
             }
          }
 
-      if (N<100 && Parameters.print_lvl >= 3) {
+      if (N<100 && Parameters_->print_lvl >= 3) {
         outfile->Printf(" D vectors for iter (%d)\n",iter-1);
         print_mat(d,M,N,"outfile");
         }

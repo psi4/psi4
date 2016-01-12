@@ -35,10 +35,8 @@
 ** February 1996
 */
 
-#define EXTERN
 #include <cstdio>
 #include <cmath>
-#include "globals.h"
 #include "structs.h"
 #include "ci_tol.h"
 
@@ -105,7 +103,7 @@ void buf_ols_denom(double *a, double *hd, double E, int len)
 **
 */
 void buf_ols_updt(double *a, double *c, double *norm, double *ovrlap,  
-      double *tmpnorm, int len, std::string OutFileRMR)
+      double *tmpnorm, int len)
 {
    int i;
    double tval1, tval2, nx = 0.0, ox = 0.0, c1norm = 0.0;

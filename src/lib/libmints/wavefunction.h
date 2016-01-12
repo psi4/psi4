@@ -461,7 +461,7 @@ public:
     /// Set the gradient for the wavefunction
     void set_gradient(SharedMatrix& grad);
 
-    /// Return active part of the TPDM
+    /// Returns the active part of the TPDM
     SharedMatrix TPDM() const;
 
     /// Returns the atomic point charges

@@ -36,29 +36,26 @@
 **
 */
 
-#define EXTERN 
-
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libmints/mints.h>
 #include "structs.h"
-#include "globals.h"
 #include "civect.h"
 #include "ci_tol.h"
+#include "ciwave.h"
 
 namespace psi { namespace detci {
 
-extern int H0block_calc(double E);
-extern int H0block_coupling_calc(double E, struct stringwr *alplist,
-   struct stringwr *betlist);
-extern void H0block_xy(double *x, double *y, double E);
-extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode, 
-   int *Iaidx, int *Ibidx, double *coeff,
-   struct olsen_graph *AlphaG, struct olsen_graph *BetaG, 
-   struct stringwr **alplist, struct stringwr **betlist,
-   std::string out);
+extern void xeaxmy(double *x, double *y, double a, int size);
+extern void xeaxpby(double *x, double *y, double a, double b, int size);
+extern void xexy(double *x, double *y, int size);
+extern void buf_ols_denom(double *a, double *hd, double E, int len);
+extern void buf_ols_updt(double *a, double *c, double *norm, double *ovrlap,
+   double *c1norm, int len);
+extern double buf_xy1(double *c, double *hd, double E, int len);
 
 
 #define MITRUSH_E_DIFF_MIN 5.0E-6
@@ -75,10 +72,13 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
 ** 19 June 1995
 **
 */
-void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
+void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       **betlist, int nroots, double *evals, double conv_rms, double conv_e, 
       double enuc, double edrc, int maxiter, int maxnvect, std::string out,
       int print_lvl)
+//void mitrush_iter(CIvect &Hd, int nroots, double *evals, double conv_rms, double conv_e, 
+//      double enuc, double edrc, int maxiter, int maxnvect, std::string out,
+//      int print_lvl)
 {
 
    int i, j, ij, k, l, curr, last, iter=0, L, tmpi;
@@ -97,18 +97,10 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    CIvect Cvec;
    CIvect Sigma;
 
-   Cvec.set(CIblks.vectlen, CIblks.num_blocks, Parameters.icore, Parameters.Ms0,
-      CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-      CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-      CalcInfo.nirreps, AlphaG->subgr_per_irrep, maxnvect,
-      Parameters.num_c_tmp_units, Parameters.first_c_tmp_unit,
-      CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
-   Sigma.set(CIblks.vectlen, CIblks.num_blocks, Parameters.icore,Parameters.Ms0,
-      CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
-      CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
-      CalcInfo.nirreps, AlphaG->subgr_per_irrep, maxnvect,
-      Parameters.num_s_tmp_units, Parameters.first_s_tmp_unit,
-      CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+   Cvec.set(Parameters_->icore, maxnvect, Parameters_->num_c_tmp_units,
+            Parameters_->s_filenum, CIblks_);  
+   Sigma.set(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
+             Parameters_->s_filenum, CIblks_);  
 
    // Open I/O files but not with OPEN_OLD
    Cvec.init_io_files(false);
@@ -123,8 +115,8 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    Cvec.h0block_buf_init();
 
    curr = 0;  
-   last = (Parameters.diag_method == METHOD_MITRUSHENKOV) ? 1 : 0;
-   diag_method = Parameters.diag_method;
+   last = (Parameters_->diag_method == METHOD_MITRUSHENKOV) ? 1 : 0;
+   diag_method = Parameters_->diag_method;
 
    /* set buffer pointers */
 
@@ -134,19 +126,19 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
    /* get some of the stuff from CalcInfo for easier access */
 
-   num_alp_str = CalcInfo.num_alp_str;
-   num_bet_str = CalcInfo.num_bet_str;
-   if (Parameters.fci) oei = CalcInfo.tf_onel_ints;
-   else oei = CalcInfo.gmat[0];
-   tei = CalcInfo.twoel_ints;
+   num_alp_str = CalcInfo_->num_alp_str;
+   num_bet_str = CalcInfo_->num_bet_str;
+   if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints;
+   else oei = CalcInfo_->gmat[0];
+   tei = CalcInfo_->twoel_ints;
 
    /* small arrays to hold most important config information */
 
-   mi_iac = init_int_array(Parameters.nprint);
-   mi_ibc = init_int_array(Parameters.nprint);
-   mi_iaidx = init_int_array(Parameters.nprint);
-   mi_ibidx = init_int_array(Parameters.nprint);
-   mi_coeff = init_array(Parameters.nprint);
+   mi_iac = init_int_array(Parameters_->nprint);
+   mi_ibc = init_int_array(Parameters_->nprint);
+   mi_iaidx = init_int_array(Parameters_->nprint);
+   mi_ibidx = init_int_array(Parameters_->nprint);
+   mi_coeff = init_array(Parameters_->nprint);
 
 
    /* stuff for the 2x2 Davidson procedure */
@@ -159,7 +151,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
    /* setup initial guess vector */
 
-   if (Parameters.restart) {
+   if (Parameters_->restart) {
      outfile->Printf("\nAttempting Restart with 1 vector\n");
      if ((i=Cvec.read_num_vecs())< 1) {
        throw PsiException("CI vector file should contain only 1 vector.",__FILE__,__LINE__);
@@ -172,13 +164,13 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
      " Attempting to correct by renormalizing.\n"); 
      Cvec.symnorm(tval,CI_VEC,TRUE);
      }
-   else if (Parameters.guess_vector == PARM_GUESS_VEC_UNIT && nroots == 1 &&
-      Parameters.num_init_vecs == 1) { /* use unit vector */
+   else if (Parameters_->guess_vector == PARM_GUESS_VEC_UNIT && nroots == 1 &&
+      Parameters_->num_init_vecs == 1) { /* use unit vector */
       tval = 1.0;
       Cvec.buf_lock(buffer1);
-      Cvec.init_vals(0, 1, &(CalcInfo.ref_alp_list), &(CalcInfo.ref_alp_rel),
-                     &(CalcInfo.ref_bet_list), &(CalcInfo.ref_bet_rel), 
-                     H0block.blknum, &tval);
+      Cvec.init_vals(0, 1, &(CalcInfo_->ref_alp_list), &(CalcInfo_->ref_alp_rel),
+                     &(CalcInfo_->ref_bet_list), &(CalcInfo_->ref_bet_rel), 
+                     H0block_->blknum, &tval);
       Cvec.write_num_vecs(1);
       k = 1;
       Cvec.read(0, 0);
@@ -187,31 +179,31 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       }
 
    else { /* use H0BLOCK eigenvector guess */
-      if (Parameters.precon == PRECON_GEN_DAVIDSON) L = H0block.size;
-      else L = H0block.guess_size;
+      if (Parameters_->precon == PRECON_GEN_DAVIDSON) L = H0block_->size;
+      else L = H0block_->guess_size;
       sm_evals = init_array(L);
       /* need to fill out sm_evecs into b (pad w/ 0's) */
       outfile->Printf( "Using %d initial trial vectors\n",
-         Parameters.num_init_vecs);
+         Parameters_->num_init_vecs);
 
       Cvec.buf_lock(buffer1);
       for (i=0,k=0; i<L && k<1; i++) {
 
          /* check sm_evecs[i] to see if it has the correct spin symmetry */
          /* if Ms=0 ... */
-         for (j=0,tmpi=0; j<L && !tmpi && Parameters.Ms0; j++) {
-            l = H0block.pair[j];
+         for (j=0,tmpi=0; j<L && !tmpi && Parameters_->Ms0; j++) {
+            l = H0block_->pair[j];
             if (l == -1) { tmpi = 1; break; }
-            tval = H0block.H0b_diag[l][i];
-            if ((int) Parameters.S % 2) tval = -tval;
-            if (H0block.H0b_diag[j][i] - tval > 1.0E-8) tmpi = 1;
+            tval = H0block_->H0b_diag[l][i];
+            if ((int) Parameters_->S % 2) tval = -tval;
+            if (H0block_->H0b_diag[j][i] - tval > 1.0E-8) tmpi = 1;
             }
          if (tmpi) continue;
 
-         for (j=0; j<L; j++) sm_evals[j] = H0block.H0b_diag[j][i];
+         for (j=0; j<L; j++) sm_evals[j] = H0block_->H0b_diag[j][i];
 
-         Cvec.init_vals(k, L, H0block.alplist, H0block.alpidx,
-            H0block.betlist, H0block.betidx, H0block.blknum, sm_evals);
+         Cvec.init_vals(k, L, H0block_->alplist, H0block_->alpidx,
+            H0block_->betlist, H0block_->betidx, H0block_->blknum, sm_evals);
          Cvec.write_num_vecs(1);
          k++;
          /* MLL added 6-15-98 */
@@ -230,7 +222,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
    Sigma.buf_lock(buffer2);
    Cvec.read(0, 0);
-   sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters.fci, 0);
+   sigma(Cvec, Sigma, oei, tei, 0);
    Sigma.write_num_vecs(1);
 
    Cvec.copy_zero_blocks(Sigma);
@@ -244,7 +236,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    /* get H00 */
    E = Cvec * Sigma; 
    E += edrc;
-   E_last = CalcInfo.escf - CalcInfo.enuc;
+   E_last = CalcInfo_->escf - CalcInfo_->enuc;
 
    /* Cvec.print(outfile); */
    Cvec.buf_unlock();
@@ -259,12 +251,12 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    olsen_iter_xy(Cvec,Sigma,Hd,&x,&y,buffer1,buffer2,E,curr,1,alpha,alplist,
                  betlist);
 
-   if (Parameters.print_lvl > 3) {
+   if (Parameters_->print_lvl > 3) {
      outfile->Printf( "Straight x = %12.6lf\n", x);
      outfile->Printf( "Straight y = %12.6lf\n", y);
      }
 
-   if (Parameters.precon >= PRECON_GEN_DAVIDSON && H0block.size) {
+   if (Parameters_->precon >= PRECON_GEN_DAVIDSON && H0block_->size) {
        detH0 = 1;
        /* 
        detH0 = H0block_calc(E); 
@@ -274,13 +266,13 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          outfile->Printf( "H0block inverse is nearly nonsingular:");
          outfile->Printf(" initiating DAVIDSON preconditioner\n");
          
-         Parameters.precon = PRECON_DAVIDSON;
+         Parameters_->precon = PRECON_DAVIDSON;
          }
-       if (Parameters.precon >= PRECON_GEN_DAVIDSON) {
+       if (Parameters_->precon >= PRECON_GEN_DAVIDSON) {
          /* 
          H0block_xy(&x,&y,E); 
          */
-         if (Parameters.print_lvl > 3) {
+         if (Parameters_->print_lvl > 3) {
             outfile->Printf( "x = %12.6lf\n", x);
             outfile->Printf( "y = %12.6lf\n", y);
             }
@@ -288,7 +280,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
      }
 
    E_est = y / x;  /* should I add fzc here? */
-   if (Parameters.print_lvl > 2) {
+   if (Parameters_->print_lvl > 2) {
       outfile->Printf( "E_est = %12.6lf E-edrc = %12.6lf E = %12.6lf\n", 
            E_est,E-edrc,E);
        outfile->Printf( "x = %lf  y = %lf\n",x,y);
@@ -303,7 +295,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    Cvec.symnorm(norm,CI_VEC,TRUE); 
    S *= norm;
    Cvec.buf_unlock();
-   if (Parameters.calc_ssq && Parameters.icore==1)
+   if (Parameters_->calc_ssq && Parameters_->icore==1)
      Cvec.calc_ssq(buffer1, buffer2, alplist, betlist, 0);
 
   /*
@@ -324,7 +316,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    
 
    iter = 1;
-   if (Parameters.diag_method == METHOD_MITRUSHENKOV) {
+   if (Parameters_->diag_method == METHOD_MITRUSHENKOV) {
       curr = 1; last = 0;
       }
 
@@ -345,7 +337,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       Cvec.read(curr,0);
       /* Sigma.read(curr,0);
       */
-      sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters.fci, curr);
+      sigma(Cvec, Sigma, oei, tei, curr);
       Cvec.copy_zero_blocks(Sigma);
       Cvec.read(curr,0);
       if (print_lvl > 4) {
@@ -375,7 +367,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
       /* if the 2x2 matrix diagonalization can be done, take Mitrush Step */
 
-      if (Parameters.diag_method==METHOD_MITRUSHENKOV && 
+      if (Parameters_->diag_method==METHOD_MITRUSHENKOV && 
           diag_method==METHOD_MITRUSHENKOV && S < S_MAX && 
           fabs(E_last-E_curr) > MITRUSH_E_DIFF_MIN) {
         outfile->Printf( "Taking Mitrushenkov step (S =%10.6lf <%10.6lf)\n",
@@ -425,7 +417,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       else {
          Cvec.buf_unlock();
          Sigma.buf_unlock();
-         if (Parameters.diag_method==METHOD_MITRUSHENKOV && 
+         if (Parameters_->diag_method==METHOD_MITRUSHENKOV && 
              diag_method==METHOD_MITRUSHENKOV)
            { 
             diag_method = METHOD_OLSEN;
@@ -440,23 +432,23 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       olsen_iter_xy(Cvec,Sigma,Hd,&x,&y,buffer1,buffer2,E,curr,1,alpha, 
                     alplist, betlist);
 
-      if (Parameters.print_lvl > 3) {
+      if (Parameters_->print_lvl > 3) {
         outfile->Printf( "Straight x = %12.6lf\n", x);
         outfile->Printf( "Straight y = %12.6lf\n", y);
         }
 
-      if (Parameters.precon >= PRECON_GEN_DAVIDSON && H0block.size) {
+      if (Parameters_->precon >= PRECON_GEN_DAVIDSON && H0block_->size) {
         detH0 = H0block_calc(E);
         /* outfile->Printf("detH0 = %d\n", detH0);
          */
         if (detH0 == 0) {
           outfile->Printf( "H0block inverse is nearly singular:");
           outfile->Printf(" initiating DAVIDSON preconditioner\n");
-          Parameters.precon = PRECON_DAVIDSON;
+          Parameters_->precon = PRECON_DAVIDSON;
           }
-        if (Parameters.precon >= PRECON_GEN_DAVIDSON) {
+        if (Parameters_->precon >= PRECON_GEN_DAVIDSON) {
           H0block_xy(&x,&y,E);
-          if (Parameters.print_lvl > 3) {
+          if (Parameters_->print_lvl > 3) {
             outfile->Printf( "x = %12.6lf\n", x);
             outfile->Printf( "y = %12.6lf\n", y);
             }
@@ -464,7 +456,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         }
 
       E_est = y / x;
-      if (Parameters.print_lvl > 2) {
+      if (Parameters_->print_lvl > 2) {
         outfile->Printf( "E_est = %12.6lf E = %12.6lf\n", 
                 E_est+edrc+enuc, E+enuc);
         /* outfile->Printf( "x = %lf  y = %lf\n",x,y); */
@@ -478,7 +470,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       Cvec.buf_lock(buffer1);
       Cvec.read(last, 0);
       S *= norm; 
-      if (Parameters.precon >= PRECON_GEN_DAVIDSON && 
+      if (Parameters_->precon >= PRECON_GEN_DAVIDSON && 
           diag_method==METHOD_MITRUSHENKOV && S<S_MAX) 
         Cvec.symnorm(norm,CI_VEC,FALSE); 
       else Cvec.symnorm(norm,CI_VEC,TRUE);
@@ -510,10 +502,10 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         free_matrix(evecs2x2,2);
         outfile->Printf( "\n\n* ROOT 1 CI total energy = %19.15lf\n", E + enuc);
 
-        Cvec.max_abs_vals(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx,
-           mi_ibidx, mi_coeff, Parameters.neg_only);
-        print_vec(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
-           mi_coeff, AlphaG, BetaG, alplist, betlist, "outfile");
+        Cvec.max_abs_vals(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx,
+           mi_ibidx, mi_coeff, Parameters_->neg_only);
+        print_vec(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
+           mi_coeff);
         free(mi_iac);  free(mi_ibc); free(mi_iaidx);  free(mi_ibidx);
         free(mi_coeff);
         return;
@@ -525,12 +517,242 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       outfile->Printf("    Delta_E %10.3E   Delta_C %10.3E\n",E-E_last,c1norm);
       
       iter++;
+      Parameters_->diag_iters_taken = iter;
       E_last = E;
-      if (Parameters.calc_ssq && Parameters.icore==1)
+      if (Parameters_->calc_ssq && Parameters_->icore==1)
         Cvec.calc_ssq(buffer1, buffer2, alplist, betlist, 0);
       } /* end while (1) */
 
 }
 
-}} // namespace psi::detci
+/*
+** olsen_update()
+**
+** Update the CI vector according to the Olsen method.
+** Try to assume storage of only one C, one S, and Hd on disk.  Let
+** the mitrush_update() function assume two C and two S.  No, can't
+** assume that or we'll never get Mitrush started.  Just fix it so that
+** Cn can be identical to Cc.
+** The update formula is c0' = c0 + (Ho-Eo)^-1(E_est*Co - sigma_o)
+** this is the same formula as the davidson procedure except lambda_i
+** has been substituted by E_est
+*/
+void CIWavefunction::olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, double E_est,
+      double *norm, double *c1norm, double *ovrlap, double *buffer1,
+      double *buffer2,
+      int curr, int next, std::string out, int iter, struct stringwr **alplist,
+      struct stringwr **betlist)
+{
 
+   int buf;
+   double nx=0.0, ox=0.0, tmp1, tmp2, normc1=0.0, tmpnorm=0.0;
+   double rnorm=0.0, rnormtmp=0.0;
+
+   for (buf=0; buf<C.buf_per_vect_; buf++) {
+      tmp1 = 0.0;
+      tmp2 = 0.0;
+      C.buf_lock(buffer1);
+      S.buf_lock(buffer2);
+      C.read(curr, buf);
+      S.read(curr, buf);
+      /* C = E_est * C - S, C is buffer1*/
+      xeaxmy(buffer1, buffer2, E_est, C.buf_size_[buf]);
+      C.buf_unlock();
+      S.buf_unlock();
+      Hd.buf_lock(buffer2);
+      if (Parameters_->hd_otf == FALSE) Hd.read(0,buf);
+      else Hd.diag_mat_els_otf(alplist, betlist, CalcInfo_->onel_ints,
+           CalcInfo_->twoel_ints, CalcInfo_->edrc, CalcInfo_->num_alp_expl,
+           CalcInfo_->num_bet_expl, CalcInfo_->nmo, buf, Parameters_->hd_ave);
+      /* Check norm of residual vector i.e. before preconditioning */
+      dot_arr(buffer1, buffer1, C.buf_size_[buf], &rnormtmp);
+      /* C = C/(Hd - E) */
+      buf_ols_denom(buffer1, buffer2, E, S.buf_size_[buf]);
+      /* buffer1 is now equal to C^1, i.e. the correction to C_i
+      ** without the H0block correction
+      */
+      Hd.buf_unlock();
+      /* C_new = C_i + C^1 */
+      C.buf_lock(buffer2);
+      C.read(curr, buf);
+      buf_ols_updt(buffer1,buffer2,&tmp1,&tmp2,&tmpnorm,C.buf_size_[buf]);
+      if (Parameters_->precon >= PRECON_GEN_DAVIDSON)
+        C.h0block_buf_ols(&tmp1,&tmp2,&tmpnorm,E_est);
+      if (C.buf_offdiag_[buf]) {
+         tmp1 *= 2.0;
+         tmp2 *= 2.0;
+         tmpnorm *= 2.0;
+         rnormtmp *= 2.0;
+         }
+      normc1 += tmpnorm;
+      nx += tmp1;
+      ox += tmp2;
+      rnorm += rnormtmp;
+      C.write(next, buf);
+      C.buf_unlock();
+ }
+
+   *norm = nx;
+   /* outfile->Printf("\n ovrlap(ox) = %20.16f\n", ox); */
+   *ovrlap = ox;
+   if (normc1 <= 1.0E-13) {
+     outfile->Printf("Norm of correction vector = %5.4e\n", normc1);
+     outfile->Printf("This may cause numerical errors which would" \
+         " deteriorate the diagonalization procedure.\n");
+     }
+   *c1norm = sqrt(rnorm);
+   normc1 = sqrt(normc1);
+}
+
+/*
+** olsen_iter_xy(): This function evaluates the quantities x and y defined by
+**    x = C^(i) * (Hd - E)^-1 * C^(i)
+**    y = C^(i) * (Hd - E)^-1 * sigma^(i)
+**    The diagonal elements of H (Hd) are used in this routine.
+**    These quantities are subtracted out and substituted in later
+**    routines if the gen_davidson or h0block_inv preconditioners
+**    are used. A very intelligent approach originally implimented
+**    by a fellow Jedi.
+**
+** Parameters:
+**   C       =  reference of current iteration's ci vector
+**   S       =  reference of current iteration's sigma vector
+**   Hd      =  reference of vector of diagonal elements of H
+**   x       =  pointer to double to hold x
+**   y       =  pointer to double to hold y
+**   buffer1 = pointer to first I/O buffer
+**   buffer2 = pointer to second I/O buffer
+**   E       =  current iteration's energy
+**   curvect = current vector
+**   L       = number of vectors in b or sigma files
+**   alplist = alpha string list for use with diag energies on the fly
+**   betlist = beta string list for use with diag energies on the fly
+**
+** Returns: none
+*/
+void CIWavefunction::olsen_iter_xy(CIvect &C, CIvect &S, CIvect &Hd, double *x, double *y,
+      double *buffer1, double *buffer2, double E, int curvect, int L,
+      double **alpha, struct stringwr **alplist, struct stringwr **betlist)
+{
+
+   int buf, i,j;
+   double tx = 0.0, ty = 0.0, tmpy = 0.0;
+   double *sigma0b1, *sigma0b2;
+   *x = 0.0;
+   *y = 0.0;
+
+   Hd.buf_lock(buffer2);
+   if (Parameters_->diag_method==METHOD_DAVIDSON_LIU_SEM) {
+     sigma0b1 = init_array(H0block_->size);
+     sigma0b2 = init_array(H0block_->size);
+     }
+   for (buf=0; buf<C.buf_per_vect_; buf++) {
+      tx = ty = 0.0;
+      C.buf_lock(buffer1);
+      C.read(curvect,buf);
+      if (Parameters_->diag_method==METHOD_DAVIDSON_LIU_SEM)
+        C.h0block_gather_vec(CI_VEC);
+      if (Parameters_->hd_otf == FALSE) Hd.read(0,buf);
+      else Hd.diag_mat_els_otf(alplist, betlist, CalcInfo_->onel_ints,
+           CalcInfo_->twoel_ints, CalcInfo_->edrc, CalcInfo_->num_alp_expl,
+           CalcInfo_->num_bet_expl, CalcInfo_->nmo, buf, Parameters_->hd_ave);
+      tx = buf_xy1(buffer1, buffer2, E, Hd.buf_size_[buf]);
+      /* buffer2 = Hd * Ci */
+      C.buf_unlock();
+      S.buf_lock(buffer1);
+      if (Parameters_->diag_method <= METHOD_MITRUSHENKOV) {
+        /* Olsen and Mitrushenkov iterators */
+        S.read(curvect,buf);
+        dot_arr(buffer1, buffer2, C.buf_size_[buf], &ty);
+        }
+      else { /* Dot buffer2 with all Sigma vectors on disk */
+        for (i=0; i<L; i++) {
+           S.read(i,buf);
+           dot_arr(buffer1, buffer2, C.buf_size_[buf], &tmpy);
+           ty += tmpy * alpha[i][curvect];
+           zero_arr(sigma0b1,H0block_->size);
+           S.h0block_gather_multivec(sigma0b1);
+           for (j=0; j<H0block_->size; j++)
+              sigma0b2[j] += alpha[i][curvect] * sigma0b1[j];
+           }
+
+       }
+      if (C.buf_offdiag_[buf]) {
+         *x += 2.0 * tx;
+         *y += 2.0 * ty;
+         }
+      else {
+         *x += tx;
+         *y += ty;
+         }
+      S.buf_unlock();
+      }
+
+   Hd.buf_unlock();
+   if (Parameters_->diag_method==METHOD_DAVIDSON_LIU_SEM) {
+     for (j=0; j<H0block_->size; j++)
+        H0block_->s0b[j] = sigma0b2[j];
+     free(sigma0b1);
+     free(sigma0b2);
+     }
+
+}
+
+/*
+** mitrush_update()
+** Perform the Mitrushenkov update.  New version 3/96
+**
+*/
+void CIWavefunction::mitrush_update(CIvect &C, CIvect &S, double norm, double acur,
+   double alast, double *buffer1, double *buffer2, int curr, int next)
+{
+   int i, j, k, buf, blk, al, bl;
+   double phase, tval;
+
+   if (!Parameters_->Ms0) phase = 1.0;
+   else phase = ((int) Parameters_->S % 2) ? -1.0 : 1.0;
+
+   for (buf=0; buf<C.buf_per_vect_; buf++) {
+      C.buf_lock(buffer1);
+      C.read(curr, buf);
+      C.buf_unlock();
+      C.buf_lock(buffer2);
+      C.read(next, buf);
+      xeaxpby(buffer2, buffer1, alast, acur, C.buf_size_[buf]);
+      /* buffer2 is the new C(i) vector constructed from
+      ** alpha(i-1)*C(i-1) + alpha(i)*C(i).
+      ** However, this vector is not normalized or symmetrized yet.
+      ** Still need to construct the olsen_update of this new
+      ** C(i) vector.
+      */
+      C.write(curr, buf);
+      C.buf_unlock();
+      }
+   C.buf_lock(buffer1);
+   C.read(curr,0);
+   C.symnorm(norm,0,1);
+   C.buf_unlock();
+
+   for (buf=0; buf<S.buf_per_vect_; buf++) {
+      S.buf_lock(buffer1);
+      S.read(curr, buf);
+      S.buf_unlock();
+      S.buf_lock(buffer2);
+      S.read(next, buf);
+      xeaxpby(buffer2, buffer1, alast, acur, S.buf_size_[buf]);
+      S.write(curr, buf);
+      S.buf_unlock();
+      }
+   S.buf_lock(buffer1);
+   S.read(curr,0);
+   S.symnorm(norm,1,1);
+   S.buf_unlock();
+}
+
+
+
+
+
+
+
+}} // namespace psi::detci

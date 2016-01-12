@@ -21,6 +21,7 @@
 #
 
 """Module with utility functions used by several Python functions."""
+from __future__ import print_function
 import os
 import sys
 import pickle
@@ -363,3 +364,38 @@ def format_currentstate_for_input(func, name, allButMol=False, **kwargs):
     commands += ')\n\n'
 
     return commands
+
+
+def expand_psivars(pvdefs):
+    """Dictionary *pvdefs* has keys with names of PsiVariables to be
+    created and values with dictionary of two keys: 'args', the
+    PsiVariables that contribute to the key and 'func', a function (or
+    lambda) to combine them. This function builds those PsiVariables if
+    all the contributors are available. Helpful printing is available when
+    PRINT > 2.
+
+    """
+    verbose = psi4.get_global_option('PRINT')
+
+    for pvar, action in pvdefs.iteritems():
+        if verbose >= 2:
+            print("""building %s %s""" % (pvar, '.' * (50 - len(pvar))), end='')
+
+        psivars = psi4.get_variables()
+        data_rich_args = []
+
+        for pv in action['args']:
+            if isinstance(pv, basestring):
+                if pv in psivars:
+                    data_rich_args.append(psivars[pv])
+                else:
+                    if verbose >= 2:
+                        print("""FAILED, missing {}""".format(pv))
+                    break
+            else:
+                data_rich_args.append(pv)
+        else:
+            result = action['func'](data_rich_args)
+            psi4.set_variable(pvar, result)
+            if verbose >= 2:
+                print("""SUCCESS""")

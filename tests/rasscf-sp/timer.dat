@@ -1,0 +1,108 @@
+
+Host: Daniels-iMac.local
+
+Timers On : Tue Sep 22 08:32:52 2015
+Timers Off: Tue Sep 22 08:33:02 2015
+
+Wall Time:       10.00 seconds
+
+JK: (A|mn)  :       0.02u       0.00s       0.00w      1 call
+JK: (A|Q)^-1/2:       0.03u       0.00s       0.00w      1 call
+JK: (Q|mn)  :       0.00u       0.00s       0.00w      1 call
+Form H      :       0.00u       0.00s       0.00w      1 call
+Form S/X    :       0.00u       0.00s       0.00w      1 call
+Guess       :       0.00u       0.00s       0.00w      1 call
+Form G      :       0.03u       0.02s       0.00w     18 calls
+JK: D       :       0.00u       0.00s       0.00w     96 calls
+JK: USO2AO  :       0.00u       0.00s       0.00w     12 calls
+JK: JK      :       0.10u       0.08s       1.00w     96 calls
+JK: J       :       0.00u       0.00s       0.00w     12 calls
+JK: J1      :       0.00u       0.00s       0.00w     12 calls
+JK: J2      :       0.00u       0.00s       0.00w     12 calls
+JK: K       :       0.00u       0.00s       0.00w     12 calls
+JK: K1      :       0.00u       0.00s       0.00w     12 calls
+JK: K2      :       0.00u       0.00s       0.00w     12 calls
+JK: AO2USO  :       0.02u       0.00s       0.00w     12 calls
+Form F      :       0.00u       0.00s       0.00w     18 calls
+DIIS        :       0.00u       0.02s       0.00w     18 calls
+DIISManager::add_entry:       0.00u       0.02s       0.00w     53 calls
+Form C      :       0.00u       0.00s       0.00w     18 calls
+Form D      :       0.00u       0.00s       0.00w     18 calls
+DIISManager::extrapolate:       0.02u       0.02s       0.00w     52 calls
+DIISManager::extrapolate: bMatrix setup:       0.00u       0.00s       0.00w     52 calls
+DIISManager::extrapolate: bMatrix pseudoinverse:       0.02u       0.02s       0.00w     52 calls
+DIISManager::extrapolate: form new data:       0.00u       0.00s       0.00w     52 calls
+
+***********************************************************
+
+Host: Daniels-iMac.local
+
+Timers On : Tue Sep 22 08:33:40 2015
+Timers Off: Tue Sep 22 08:33:50 2015
+
+Wall Time:       10.00 seconds
+
+JK: (A|mn)  :       0.00u       0.00s       0.00w      1 call
+JK: (A|Q)^-1/2:       0.05u       0.00s       0.00w      1 call
+JK: (Q|mn)  :       0.00u       0.00s       0.00w      1 call
+Form H      :       0.00u       0.00s       0.00w      1 call
+Form S/X    :       0.00u       0.00s       0.00w      1 call
+Guess       :       0.00u       0.00s       0.00w      1 call
+Form G      :       0.03u       0.00s       0.00w     18 calls
+JK: D       :       0.00u       0.00s       0.00w     96 calls
+JK: USO2AO  :       0.00u       0.00s       0.00w     12 calls
+JK: JK      :       0.13u       0.00s       0.00w     96 calls
+JK: J       :       0.00u       0.00s       0.00w     12 calls
+JK: J1      :       0.00u       0.00s       0.00w     12 calls
+JK: J2      :       0.00u       0.00s       0.00w     12 calls
+JK: K       :       0.02u       0.00s       0.00w     12 calls
+JK: K1      :       0.00u       0.00s       0.00w     12 calls
+JK: K2      :       0.02u       0.00s       0.00w     12 calls
+JK: AO2USO  :       0.00u       0.00s       0.00w     12 calls
+Form F      :       0.00u       0.00s       0.00w     18 calls
+DIIS        :       0.00u       0.00s       0.00w     18 calls
+DIISManager::add_entry:       0.00u       0.00s       0.00w     53 calls
+Form C      :       0.00u       0.00s       0.00w     18 calls
+Form D      :       0.00u       0.00s       0.00w     18 calls
+DIISManager::extrapolate:       0.00u       0.00s       0.00w     52 calls
+DIISManager::extrapolate: bMatrix setup:       0.00u       0.00s       0.00w     52 calls
+DIISManager::extrapolate: bMatrix pseudoinverse:       0.00u       0.00s       0.00w     52 calls
+DIISManager::extrapolate: form new data:       0.00u       0.00s       0.00w     52 calls
+
+***********************************************************
+
+Host: Daniels-iMac.local
+
+Timers On : Tue Sep 22 08:33:54 2015
+Timers Off: Tue Sep 22 08:34:04 2015
+
+Wall Time:       10.00 seconds
+
+JK: (A|mn)  :       0.00u       0.00s       0.00w      1 call
+JK: (A|Q)^-1/2:       0.05u       0.00s       0.00w      1 call
+JK: (Q|mn)  :       0.00u       0.00s       0.00w      1 call
+Form H      :       0.00u       0.00s       0.00w      1 call
+Form S/X    :       0.00u       0.00s       0.00w      1 call
+Guess       :       0.00u       0.00s       0.00w      1 call
+Form G      :       0.02u       0.00s       0.00w     18 calls
+JK: D       :       0.00u       0.00s       0.00w     96 calls
+JK: USO2AO  :       0.00u       0.00s       0.00w     12 calls
+JK: JK      :       0.13u       0.03s       1.00w     96 calls
+JK: J       :       0.00u       0.00s       0.00w     12 calls
+JK: J1      :       0.00u       0.00s       0.00w     12 calls
+JK: J2      :       0.00u       0.00s       0.00w     12 calls
+JK: K       :       0.00u       0.00s       0.00w     12 calls
+JK: K1      :       0.00u       0.00s       0.00w     12 calls
+JK: K2      :       0.00u       0.00s       0.00w     12 calls
+JK: AO2USO  :       0.00u       0.00s       0.00w     12 calls
+Form F      :       0.00u       0.00s       0.00w     18 calls
+DIIS        :       0.02u       0.00s       0.00w     18 calls
+DIISManager::add_entry:       0.00u       0.00s       0.00w     53 calls
+Form C      :       0.00u       0.00s       0.00w     18 calls
+Form D      :       0.00u       0.00s       0.00w     18 calls
+DIISManager::extrapolate:       0.05u       0.02s       0.00w     52 calls
+DIISManager::extrapolate: bMatrix setup:       0.00u       0.00s       0.00w     52 calls
+DIISManager::extrapolate: bMatrix pseudoinverse:       0.03u       0.02s       0.00w     52 calls
+DIISManager::extrapolate: form new data:       0.00u       0.00s       0.00w     52 calls
+
+***********************************************************

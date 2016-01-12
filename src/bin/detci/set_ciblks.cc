@@ -29,9 +29,9 @@
 #include <boost/lexical_cast.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libmints/mints.h>
 #include "structs.h"
-#define EXTERN
-#include "globals.h"
+#include "ciwave.h"
 
 namespace psi { namespace detci {
 
@@ -40,7 +40,7 @@ extern int og_lex_addr(struct olsen_graph *Graph, int *occs, int nel,
 extern void print_ciblk_summary(std::string out);
 
 
-void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
+void CIWavefunction::set_ciblks()
 {
    int *occs, *occs2;
    int i, j, k, l, m, irrep, cnt, cnt2, betirrep;
@@ -53,17 +53,16 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
    double orbsum = 0.0;
    int set = 0;
 
-   CalcInfo.num_alp_str = AlphaG->num_str;
-   CalcInfo.num_bet_str = BetaG->num_str;
-   xlvl = Parameters.ex_lvl;
+   CalcInfo_->num_alp_str = AlphaG_->num_str;
+   CalcInfo_->num_bet_str = BetaG_->num_str;
+   xlvl = Parameters_->ex_lvl;
 
-   if (Parameters.print_lvl) {
-      outfile->Printf( "\nThere are %d alpha strings\n", CalcInfo.num_alp_str);
-      outfile->Printf( "There are %d beta strings\n", CalcInfo.num_bet_str);
+   if (Parameters_->print_lvl) {
+      outfile->Printf( "   There are %d alpha and %d beta strings\n", CalcInfo_->num_alp_str, CalcInfo_->num_bet_str);
       }
 
    /* Get the occupations for the reference alpha and beta strings.
-    * This used to be one line (occupy orbitals 0 to CalcInfo.num_alp_expl)
+    * This used to be one line (occupy orbitals 0 to CalcInfo_->num_alp_expl)
     * but now it's got to be more complicated due to orbital renumbering
     * (now by RAS then by symm then by energy) and due to open-shell
     * cases.  Assume that occupied orbs in reference belong only to RAS I 
@@ -71,169 +70,169 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
     * routine is by MLL and CDS 11/96.  Modified to put RAS II occs in
     * separate array because otherwise you get strings like |0 1 3 2>.
     */ 
-   occs = init_int_array(CalcInfo.num_alp_expl);
-   occs2 = init_int_array(CalcInfo.num_alp_expl);
+   occs = init_int_array(CalcInfo_->num_alp_expl);
+   occs2 = init_int_array(CalcInfo_->num_alp_expl);
 
    betsocc = 0; cnt = 0; cnt2 = 0;
-   for (i=0; i<CalcInfo.nirreps; i++) {
-      j = CalcInfo.docc[i] - CalcInfo.dropped_docc[i];
-      k = CalcInfo.ras_opi[0][i];
+   for (i=0; i<CalcInfo_->nirreps; i++) {
+      j = CalcInfo_->docc[i] - CalcInfo_->dropped_docc[i];
+      k = CalcInfo_->ras_opi[0][i];
       l = (j<k) ? j : k;
       for (m=0; m<l; m++) /* RAS I part */
-         occs[cnt++] = CalcInfo.ras_orbs[0][i][m];
+         occs[cnt++] = CalcInfo_->ras_orbs[0][i][m];
       for (; m<j; m++)    /* RAS II part */
-         occs2[cnt2++] = CalcInfo.ras_orbs[1][i][m-k];
-      if (CalcInfo.socc[i] != 0) {
-         if (Parameters.opentype == PARM_OPENTYPE_NONE)
+         occs2[cnt2++] = CalcInfo_->ras_orbs[1][i][m-k];
+      if (CalcInfo_->socc[i] != 0) {
+         if (Parameters_->opentype == PARM_OPENTYPE_NONE)
             outfile->Printf("Warning: ignoring socc since opentype=none\n");
-         else if (Parameters.opentype == PARM_OPENTYPE_HIGHSPIN) {
-            j += CalcInfo.socc[i];
+         else if (Parameters_->opentype == PARM_OPENTYPE_HIGHSPIN) {
+            j += CalcInfo_->socc[i];
             l = (j<k) ? j : k;
             for (; m<l; m++) /* RAS I part */
-               occs[cnt++] = CalcInfo.ras_orbs[0][i][m];
+               occs[cnt++] = CalcInfo_->ras_orbs[0][i][m];
             for (; m<j; m++) /* RAS II part */
-               occs2[cnt2++] = CalcInfo.ras_orbs[1][i][m-k];
+               occs2[cnt2++] = CalcInfo_->ras_orbs[1][i][m-k];
             }
-         else if (Parameters.opentype == PARM_OPENTYPE_SINGLET) {
-            if (betsocc + CalcInfo.socc[i] <= CalcInfo.spab)
-               betsocc += CalcInfo.socc[i];
+         else if (Parameters_->opentype == PARM_OPENTYPE_SINGLET) {
+            if (betsocc + CalcInfo_->socc[i] <= CalcInfo_->spab)
+               betsocc += CalcInfo_->socc[i];
             else {
-               j += CalcInfo.socc[i];
-               m += CalcInfo.spab - betsocc;
-               betsocc = CalcInfo.spab;
+               j += CalcInfo_->socc[i];
+               m += CalcInfo_->spab - betsocc;
+               betsocc = CalcInfo_->spab;
                l = (j<k) ? j : k;
                for (; m<l; m++) /* RAS I part */
-                  occs[cnt++] = CalcInfo.ras_orbs[0][i][m];
+                  occs[cnt++] = CalcInfo_->ras_orbs[0][i][m];
                for (; m<j; m++) /* RAS II part */
-                  occs2[cnt2++] = CalcInfo.ras_orbs[1][i][m-k];
+                  occs2[cnt2++] = CalcInfo_->ras_orbs[1][i][m-k];
                }                                
             }
          } /* end socc[i] != 0 */
       }
 
    for (i=0; i<cnt2; i++) occs[cnt++] = occs2[i];
-   CalcInfo.ref_alp_rel = og_lex_addr(AlphaG, occs, CalcInfo.num_alp_expl,
-      &(CalcInfo.ref_alp_list));
-   CalcInfo.ref_alp = CalcInfo.ref_alp_rel + 
-      AlphaG->list_offset[CalcInfo.ref_alp_list];
-   alp_sym = CalcInfo.ref_alp_list / AlphaG->subgr_per_irrep;
+   CalcInfo_->ref_alp_rel = og_lex_addr(AlphaG_, occs, CalcInfo_->num_alp_expl,
+      &(CalcInfo_->ref_alp_list));
+   CalcInfo_->ref_alp = CalcInfo_->ref_alp_rel + 
+      AlphaG_->list_offset[CalcInfo_->ref_alp_list];
+   alp_sym = CalcInfo_->ref_alp_list / AlphaG_->subgr_per_irrep;
 
 
-   if (CalcInfo.iopen) {
+   if (CalcInfo_->iopen) {
       betsocc = 0; cnt = 0; cnt2 = 0;
-      zero_int_array(occs, CalcInfo.num_alp_expl);
-      for (i=0; i<CalcInfo.nirreps; i++) {
-         j = CalcInfo.docc[i] - CalcInfo.dropped_docc[i];
-         k = CalcInfo.ras_opi[0][i];
+      zero_int_array(occs, CalcInfo_->num_alp_expl);
+      for (i=0; i<CalcInfo_->nirreps; i++) {
+         j = CalcInfo_->docc[i] - CalcInfo_->dropped_docc[i];
+         k = CalcInfo_->ras_opi[0][i];
          l = (j<k) ? j : k;
          for (m=0; m<l; m++) /* RAS I part */
-            occs[cnt++] = CalcInfo.ras_orbs[0][i][m];
+            occs[cnt++] = CalcInfo_->ras_orbs[0][i][m];
          for (; m<j; m++)    /* RAS II part */
-            occs2[cnt2++] = CalcInfo.ras_orbs[1][i][m-k];
-         if (CalcInfo.socc[i] != 0) {
-            if (Parameters.opentype == PARM_OPENTYPE_NONE)
+            occs2[cnt2++] = CalcInfo_->ras_orbs[1][i][m-k];
+         if (CalcInfo_->socc[i] != 0) {
+            if (Parameters_->opentype == PARM_OPENTYPE_NONE)
                outfile->Printf("Warning: ignoring socc since opentype=none\n");
-            else if (Parameters.opentype == PARM_OPENTYPE_SINGLET &&
-                     betsocc < CalcInfo.spab) {
-               if (betsocc + CalcInfo.socc[i] <= CalcInfo.spab) {
-                  j += CalcInfo.socc[i];
-                  betsocc += CalcInfo.socc[i];
+            else if (Parameters_->opentype == PARM_OPENTYPE_SINGLET &&
+                     betsocc < CalcInfo_->spab) {
+               if (betsocc + CalcInfo_->socc[i] <= CalcInfo_->spab) {
+                  j += CalcInfo_->socc[i];
+                  betsocc += CalcInfo_->socc[i];
                   l = (j<k) ? j : k;
                   for (; m<l; m++) /* RAS I part */
-                     occs[cnt++] = CalcInfo.ras_orbs[0][i][m];
+                     occs[cnt++] = CalcInfo_->ras_orbs[0][i][m];
                   for (; m<j; m++) /* RAS II part */
-                     occs2[cnt2++] = CalcInfo.ras_orbs[1][i][m-k];
+                     occs2[cnt2++] = CalcInfo_->ras_orbs[1][i][m-k];
                   }
                else {
-                  j += CalcInfo.spab - betsocc;
-                  betsocc = CalcInfo.spab;
+                  j += CalcInfo_->spab - betsocc;
+                  betsocc = CalcInfo_->spab;
                   l = (j<k) ? j : k;
                   for (; m<l; m++) /* RAS I part */
-                     occs[cnt++] = CalcInfo.ras_orbs[0][i][m];
+                     occs[cnt++] = CalcInfo_->ras_orbs[0][i][m];
                   for (; m<j; m++) /* RAS II part */
-                     occs2[cnt2++] = CalcInfo.ras_orbs[1][i][m-k];
+                     occs2[cnt2++] = CalcInfo_->ras_orbs[1][i][m-k];
                   }
                }
             }
          } /* end loop over irreps */
 
       for (i=0; i<cnt2; i++) occs[cnt++] = occs2[i];
-      CalcInfo.ref_bet_rel = og_lex_addr(BetaG, occs, CalcInfo.num_bet_expl,
-         &(CalcInfo.ref_bet_list));
-      CalcInfo.ref_bet = CalcInfo.ref_bet_rel + 
-         BetaG->list_offset[CalcInfo.ref_bet_list];
-      bet_sym = CalcInfo.ref_bet_list / BetaG->subgr_per_irrep;
+      CalcInfo_->ref_bet_rel = og_lex_addr(BetaG_, occs, CalcInfo_->num_bet_expl,
+         &(CalcInfo_->ref_bet_list));
+      CalcInfo_->ref_bet = CalcInfo_->ref_bet_rel + 
+         BetaG_->list_offset[CalcInfo_->ref_bet_list];
+      bet_sym = CalcInfo_->ref_bet_list / BetaG_->subgr_per_irrep;
       }
 
    else { /* closed-shell case */
-      CalcInfo.ref_bet = CalcInfo.ref_alp;
+      CalcInfo_->ref_bet = CalcInfo_->ref_alp;
       bet_sym = alp_sym;
-      CalcInfo.ref_bet_list = CalcInfo.ref_alp_list;
-      CalcInfo.ref_bet_rel = CalcInfo.ref_alp_rel;
+      CalcInfo_->ref_bet_list = CalcInfo_->ref_alp_list;
+      CalcInfo_->ref_bet_rel = CalcInfo_->ref_alp_rel;
       }
 
-   if (Parameters.ref_sym == -1)
-      CalcInfo.ref_sym = alp_sym ^ bet_sym;
+   if (Parameters_->ref_sym == -1)
+      CalcInfo_->ref_sym = alp_sym ^ bet_sym;
    else 
-      CalcInfo.ref_sym = Parameters.ref_sym;
+      CalcInfo_->ref_sym = Parameters_->ref_sym;
 
 
    /* form the new CIvect structure...watch for codex's with no strings...*/
-   CIblks.num_blocks = 0;
-   CIblks.num_alp_codes = AlphaG->nirreps * AlphaG->subgr_per_irrep;
-   CIblks.num_bet_codes = BetaG->nirreps * BetaG->subgr_per_irrep;
-   CIblks.decode = init_int_matrix(CIblks.num_alp_codes, CIblks.num_bet_codes);
+   CIblks_->num_blocks = 0;
+   CIblks_->num_alp_codes = AlphaG_->nirreps * AlphaG_->subgr_per_irrep;
+   CIblks_->num_bet_codes = BetaG_->nirreps * BetaG_->subgr_per_irrep;
+   CIblks_->decode = init_int_matrix(CIblks_->num_alp_codes, CIblks_->num_bet_codes);
 
    /* figure out the possible alpha/beta combinations */
  
-   if (Parameters.fci_strings) {
-      for (irrep=0; irrep<AlphaG->nirreps; irrep++) {
-         betirrep = irrep ^ CalcInfo.ref_sym;
-         if (AlphaG->sg[irrep][0].num_strings && 
-             BetaG->sg[betirrep][0].num_strings) {
-            CIblks.Ia_code[nblocks] = irrep;
-            CIblks.Ib_code[nblocks] = betirrep;
-            CIblks.Ia_size[nblocks] = AlphaG->sg[irrep][0].num_strings;
-            CIblks.Ib_size[nblocks] = BetaG->sg[betirrep][0].num_strings;
+   if (Parameters_->fci_strings) {
+      for (irrep=0; irrep<AlphaG_->nirreps; irrep++) {
+         betirrep = irrep ^ CalcInfo_->ref_sym;
+         if (AlphaG_->sg[irrep][0].num_strings && 
+             BetaG_->sg[betirrep][0].num_strings) {
+            CIblks_->Ia_code[nblocks] = irrep;
+            CIblks_->Ib_code[nblocks] = betirrep;
+            CIblks_->Ia_size[nblocks] = AlphaG_->sg[irrep][0].num_strings;
+            CIblks_->Ib_size[nblocks] = BetaG_->sg[betirrep][0].num_strings;
             nblocks++;
             }
          }
       }
    else {
-      for (irrep=0; irrep<AlphaG->nirreps; irrep++) {
-         for (nalp1=AlphaG->ras1_max; nalp1>=AlphaG->ras1_min; nalp1--) {
-            for (nalp3=0; nalp3<=AlphaG->ras3_max; nalp3++) {
-               for (nalp4=0; nalp4<=AlphaG->ras4_max; nalp4++) {
+      for (irrep=0; irrep<AlphaG_->nirreps; irrep++) {
+         for (nalp1=AlphaG_->ras1_max; nalp1>=AlphaG_->ras1_min; nalp1--) {
+            for (nalp3=0; nalp3<=AlphaG_->ras3_max; nalp3++) {
+               for (nalp4=0; nalp4<=AlphaG_->ras4_max; nalp4++) {
 
-                  alpcode=AlphaG->decode[nalp1-AlphaG->ras1_min][nalp3][nalp4];
+                  alpcode=AlphaG_->decode[nalp1-AlphaG_->ras1_min][nalp3][nalp4];
                   if (alpcode == -1) continue;
-                  nas = AlphaG->sg[irrep][alpcode].num_strings;
+                  nas = AlphaG_->sg[irrep][alpcode].num_strings;
                   if (!nas) continue;
 
-                  for (nbet1=BetaG->ras1_max; (nbet1>=Parameters.ras1_min-nalp1
-                     && nbet1>=BetaG->ras1_min); nbet1--) {
-                     for (nbet3=0; (nbet3<=Parameters.ras3_max-nalp3 &&
-                           nbet3<=BetaG->ras3_max); nbet3++) {
+                  for (nbet1=BetaG_->ras1_max; (nbet1>=Parameters_->ras1_min-nalp1
+                     && nbet1>=BetaG_->ras1_min); nbet1--) {
+                     for (nbet3=0; (nbet3<=Parameters_->ras3_max-nalp3 &&
+                           nbet3<=BetaG_->ras3_max); nbet3++) {
 
-                        if (!Parameters.mixed && (nalp3 || nbet3) &&
-                             (AlphaG->ras1_max - nalp1 + BetaG->ras1_max -
+                        if (!Parameters_->mixed && (nalp3 || nbet3) &&
+                             (AlphaG_->ras1_max - nalp1 + BetaG_->ras1_max -
                               nbet1 > xlvl)) continue;
 
-                        for (nbet4=0; (nbet4<=Parameters.ras4_max-nalp4 &&
-                           nbet4<=BetaG->ras4_max); nbet4++) {
+                        for (nbet4=0; (nbet4<=Parameters_->ras4_max-nalp4 &&
+                           nbet4<=BetaG_->ras4_max); nbet4++) {
 
                            if (nalp3 + nalp4 + nbet3 + nbet4 > 
-                               Parameters.ras34_max) continue;
+                               Parameters_->ras34_max) continue;
 
-                           if (!Parameters.mixed4 && (nalp4 || nbet4) &&
-                              (AlphaG->ras1_max - nalp1 + BetaG->ras1_max -
+                           if (!Parameters_->mixed4 && (nalp4 || nbet4) &&
+                              (AlphaG_->ras1_max - nalp1 + BetaG_->ras1_max -
                                nbet1 > xlvl)) continue;
 
-                           if (!Parameters.cc_mixed && 
+                           if (!Parameters_->cc_mixed && 
                                nalp3+nalp4+nbet3+nbet4 > xlvl &&
                                (nalp4>2 || nbet4>2 || 
-                                nalp1-AlphaG->ras1_min > 2 ||
-                                nbet1-BetaG->ras1_min > 2)) continue;
+                                nalp1-AlphaG_->ras1_min > 2 ||
+                                nbet1-BetaG_->ras1_min > 2)) continue;
 
                            /* add special constraint if we want to kick 
                               out any determinants which would not be
@@ -241,28 +240,28 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
                               of Anna Krylov's SF-CI stuff
                               CDS 3/19/02
                             */
-                           if (Parameters.sf_restrict && (nalp4 || nbet4)
-                               && (nalp1<AlphaG->ras1_max || 
-                                   nbet1<BetaG->ras1_max) && 
+                           if (Parameters_->sf_restrict && (nalp4 || nbet4)
+                               && (nalp1<AlphaG_->ras1_max || 
+                                   nbet1<BetaG_->ras1_max) && 
                                   (nalp3+nbet3==0)) continue;
 
                            betcode = 
-                             BetaG->decode[nbet1-BetaG->ras1_min][nbet3][nbet4];
+                             BetaG_->decode[nbet1-BetaG_->ras1_min][nbet3][nbet4];
                            if (betcode == -1) continue;
-                           betirrep = irrep ^ CalcInfo.ref_sym;
-                           nbs = BetaG->sg[betirrep][betcode].num_strings;
+                           betirrep = irrep ^ CalcInfo_->ref_sym;
+                           nbs = BetaG_->sg[betirrep][betcode].num_strings;
                            if (!nbs) continue;
 
                            /* add nonstandard excitation types, such as
 			      CID, CIST, CIDTQ, etc.
-			      Parameters.ex_allow[0] = Single excitations
-			      Parameters.ex_allow[1] = Double excitations
+			      Parameters_->ex_allow[0] = Single excitations
+			      Parameters_->ex_allow[1] = Double excitations
 			      etc.
 			      MLA 12/16/03
 			   */
 			   set = 0;
-			   for (i=0; i<Parameters.ex_lvl; i++) {
-			     if (Parameters.ex_allow[i] == 0) {
+			   for (i=0; i<Parameters_->ex_lvl; i++) {
+			     if (Parameters_->ex_allow[i] == 0) {
 			       if (nalp3+nbet3 == i+1) set = 1;
 			     }
 			   }
@@ -276,12 +275,12 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
 			   if (nalp3+nbet3==2)
 			     continue;*/ 
 			   
-                           CIblks.Ia_code[nblocks] = AlphaG->subgr_per_irrep * 
+                           CIblks_->Ia_code[nblocks] = AlphaG_->subgr_per_irrep * 
                               irrep + alpcode;
-                           CIblks.Ia_size[nblocks] = nas;
-                           CIblks.Ib_code[nblocks] = BetaG->subgr_per_irrep * 
+                           CIblks_->Ia_size[nblocks] = nas;
+                           CIblks_->Ib_code[nblocks] = BetaG_->subgr_per_irrep * 
                               betirrep + betcode;
-                           CIblks.Ib_size[nblocks] = nbs;
+                           CIblks_->Ib_size[nblocks] = nbs;
                            nblocks++;
                            } /* end loop over nbet4 */
                         } /* end loop over nbet3 */
@@ -293,32 +292,29 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
       } /* end RAS case */
 
    /* get the first_iablk[] and last_iablk[] arrays */
-   CIblks.first_iablk = init_int_array(AlphaG->nirreps);
-   CIblks.last_iablk = init_int_array(AlphaG->nirreps);
+   CIblks_->first_iablk = init_int_array(AlphaG_->nirreps);
+   CIblks_->last_iablk = init_int_array(AlphaG_->nirreps);
  
-   for (irrep=0; irrep < AlphaG->nirreps; irrep++) {
+   for (irrep=0; irrep < AlphaG_->nirreps; irrep++) {
       for (i=0; i<nblocks; i++) {
-         j = CIblks.Ia_code[i] / AlphaG->subgr_per_irrep;
+         j = CIblks_->Ia_code[i] / AlphaG_->subgr_per_irrep;
          if (j == irrep) break;
          }
-      if (j == irrep) CIblks.first_iablk[irrep] = i;
-      else CIblks.first_iablk[irrep] = -1;
+      if (j == irrep) CIblks_->first_iablk[irrep] = i;
+      else CIblks_->first_iablk[irrep] = -1;
       } 
-   for (irrep=0; irrep < AlphaG->nirreps; irrep++) {
+   for (irrep=0; irrep < AlphaG_->nirreps; irrep++) {
       maxblk = -2;
       for (i=0; i<nblocks; i++) {
-         j = CIblks.Ia_code[i] / AlphaG->subgr_per_irrep;
+         j = CIblks_->Ia_code[i] / AlphaG_->subgr_per_irrep;
          if (j == irrep && i > maxblk) maxblk = i;
          }
-      CIblks.last_iablk[irrep] = maxblk;
+      CIblks_->last_iablk[irrep] = maxblk;
       }
 
 
    /* calculate the offsets */
-   CIblks.num_blocks = nblocks;
-
-   if (Parameters.print_lvl)
-      outfile->Printf( "CI space contains %4d blocks\n", nblocks);
+   CIblks_->num_blocks = nblocks;
 
    if (nblocks > CI_BLK_MAX) {
       std::string str = "nblocks = ";
@@ -328,35 +324,56 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
       throw PsiException(str,__FILE__,__LINE__);
       }
 
-   CIblks.offset[0] = 0;
+   CIblks_->offset[0] = 0;
    for (i=1; i<nblocks; i++) {
-      CIblks.offset[i] = CIblks.offset[i-1] +
-         (BIGINT) CIblks.Ia_size[i-1] * 
-         (BIGINT) CIblks.Ib_size[i-1];
+      CIblks_->offset[i] = CIblks_->offset[i-1] +
+         (BIGINT) CIblks_->Ia_size[i-1] * 
+         (BIGINT) CIblks_->Ib_size[i-1];
       }
-   CIblks.vectlen = CIblks.offset[nblocks-1] + 
-                    (BIGINT) CIblks.Ia_size[nblocks-1] *
-                    (BIGINT) CIblks.Ib_size[nblocks-1];
+   CIblks_->vectlen = CIblks_->offset[nblocks-1] + 
+                    (BIGINT) CIblks_->Ia_size[nblocks-1] *
+                    (BIGINT) CIblks_->Ib_size[nblocks-1];
 
-   if (Parameters.print_lvl) {
+   if (Parameters_->print_lvl) {
      outfile->Printf(
-       "\nCI space requires %.0lf determinants\n", (double) CIblks.vectlen);
+       "   The CI space requires %.0lf (%1.2E) determinants and %d blocks\n\n",
+       (double) CIblks_->vectlen, (double) CIblks_->vectlen, nblocks);
      
      }
 
+   //if (Parameters_->print_lvl)
+   //   outfile->Printf( "\n   CI space contains %4d blocks\n", nblocks);
+
    /* set up the decode array */
-   for (i=0; i<CIblks.num_alp_codes; i++) {
-     for (j=0; j<CIblks.num_bet_codes; j++) {
-        CIblks.decode[i][j] = -1;
+   for (i=0; i<CIblks_->num_alp_codes; i++) {
+     for (j=0; j<CIblks_->num_bet_codes; j++) {
+        CIblks_->decode[i][j] = -1;
         for (k=0; k<nblocks; k++) {
-           if (CIblks.Ia_code[k] == i && CIblks.Ib_code[k] == j)
-              CIblks.decode[i][j] = k;
+           if (CIblks_->Ia_code[k] == i && CIblks_->Ib_code[k] == j)
+              CIblks_->decode[i][j] = k;
            }
         } 
      }
    free(occs);  free(occs2);
 
-   if (Parameters.print_ciblks) print_ciblk_summary("outfile");
+   if (Parameters_->print_ciblks){
+     int blk;
+  
+     outfile->Printf( "\nCI Block Summary:\n");
+     for (blk=0; blk<CIblks_->num_blocks; blk++) {
+        outfile->Printf("Block %3d: Alp=%3d, Bet=%3d  Size = %4d x %4d = %ld\n", 
+                blk, CIblks_->Ia_code[blk], CIblks_->Ib_code[blk], 
+                CIblks_->Ia_size[blk], CIblks_->Ib_size[blk],
+                (unsigned long) CIblks_->Ia_size[blk] * 
+                (unsigned long) CIblks_->Ib_size[blk]);
+         
+     }; 
+   };
+
+   // Copy a few things to make CIblks self contained
+   CIblks_->subgr_per_irrep = AlphaG_->subgr_per_irrep;
+   CIblks_->nirreps = CalcInfo_->nirreps;
+   CIblks_->Ms0 = Parameters_->Ms0;
 }
 
 }} // namespace psi::detci

@@ -32,7 +32,7 @@ class CoreTensor;
 class DiskTensor;
 
 class LRERI {
-    
+
 protected:
 
     // => Utility <= //
@@ -50,18 +50,18 @@ protected:
 
     /// Primary orbital basis (nso)
     boost::shared_ptr<BasisSet> primary_;
-    
+
     // => Orbital Spaces <= //
-    
+
     /// Occupation matrix coefficients (nso x nmo)
-    boost::shared_ptr<Matrix> C_; 
-    /// Orbital spaces, each defined by a keyword and the index range in <start, end+1>. 
-    std::map<std::string, std::pair<int, int> > spaces_; 
+    boost::shared_ptr<Matrix> C_;
+    /// Orbital spaces, each defined by a keyword and the index range in <start, end+1>.
+    std::map<std::string, std::pair<int, int> > spaces_;
     /// Orbital spaces order buffer, to keep the printing nice.
     std::vector<std::string> spaces_order_;
 
     // => Utility Routines <= //
-    
+
     /// Set defaults
     void common_init();
 
@@ -85,18 +85,18 @@ public:
 
     /// R: Set the overall C matrix (calls clear before starting)
     void set_C(boost::shared_ptr<Matrix> C);
-    /// R: Add an orbital subspace to the queue. The subspace will be referred to by key, and ranges from start to end-1.  
-    void add_space(const std::string& key, int start, int end); 
+    /// R: Add an orbital subspace to the queue. The subspace will be referred to by key, and ranges from start to end-1.
+    void add_space(const std::string& key, int start, int end);
     /// Clear the C matrix and orbital spaces list
     virtual void clear();
 
-    // => Computers <= // 
+    // => Computers <= //
 
     /// Print info
     virtual void print_header(int level = 1) = 0;
     /// R: Compute the desired ERI factorization
-    virtual void compute() = 0; 
-    
+    virtual void compute() = 0;
+
     // => Setters <= //
 
     /// Set the print flag
@@ -125,11 +125,11 @@ protected:
     double J_cutoff_;
     /// Schwarz sieve tolerance
     double schwarz_cutoff_;
-    
+
     // => HACK for LRC-ERIs <= //
-    
+
     double omega_;
-    
+
     // => Targets <= //
 
     /// Three-center integrals, by name, sorted e.g. (ov|Q), DiskTensor
@@ -143,11 +143,11 @@ protected:
     /// Order of pair spaces, to keep printing nice
     std::vector<std::string> pair_spaces_order_;
 
-    /// Keep the raw (Q|ia)-type integrals? 
+    /// Keep the raw (Q|ia)-type integrals?
     bool keep_raw_integrals_;
 
     // => Utility Routines <= //
-    
+
     /// Set defaults
     void common_init();
 
@@ -166,7 +166,7 @@ public:
     static boost::shared_ptr<DFERI> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, Options& options, boost::shared_ptr<Wavefunction> ref);
 
     // => Defaults <= //
-    
+
     /// O: Load the usual options objects
     virtual void load_options(Options& options);
 
@@ -179,10 +179,12 @@ public:
     // Clear this DFERI object of pair spaces
     virtual void clear_pair_spaces();
 
-    // => Computers <= // 
+    // => Computers <= //
 
     /// Print info
     virtual void print_header(int level = 1);
+    /// The size of the auxiliary basis
+    int size_Q();
     /// R: Compute the requested DF 3-index integrals
     virtual void compute();
     /// Handle to computed disk tensors, by name in add_pair above
@@ -201,7 +203,7 @@ public:
 
     /// Set the omega value. ALL integrals and metrics will use this value if set.
     void set_omega(double omega) { omega_ = omega; }
-    
+
 };
 
 /**
@@ -239,22 +241,22 @@ protected:
     std::vector<std::string> eri_spaces_order_;
 
     // => Utility Routines <= //
-    
+
     /// Set defaults
     void common_init();
 
     /// Build all requred X matrices (np x nP, core)
     std::map<std::string, boost::shared_ptr<Tensor> > build_X(bool meth = false);
     /// Build all required E matrices (nA x nP, disk) [deleted]
-    std::map<std::string, boost::shared_ptr<Tensor> > build_E(std::map<std::string, boost::shared_ptr<Tensor> >& Xs); 
+    std::map<std::string, boost::shared_ptr<Tensor> > build_E(std::map<std::string, boost::shared_ptr<Tensor> >& Xs);
     /// Build all required inverse S matrices (nP x nP, core, swapped)
     std::map<std::string, boost::shared_ptr<Tensor> > build_S(std::map<std::string, boost::shared_ptr<Tensor> >& Xs, bool meth = false);
     /// Build all requred L matrices (nP x nA, core, swapped)
-    std::map<std::string, boost::shared_ptr<Tensor> > build_L(std::map<std::string, boost::shared_ptr<Tensor> >& Es, 
-                                                              std::map<std::string, boost::shared_ptr<Tensor> >& Ss); 
+    std::map<std::string, boost::shared_ptr<Tensor> > build_L(std::map<std::string, boost::shared_ptr<Tensor> >& Es,
+                                                              std::map<std::string, boost::shared_ptr<Tensor> >& Ss);
     /// Build all required Z matrices (nP x nP, core, swapped)
-    std::map<std::string, boost::shared_ptr<Tensor> > build_Z(std::map<std::string, boost::shared_ptr<Tensor> >& Ls); 
-    /// Pack up the integrals 
+    std::map<std::string, boost::shared_ptr<Tensor> > build_Z(std::map<std::string, boost::shared_ptr<Tensor> >& Ls);
+    /// Pack up the integrals
     void pack(std::map<std::string, boost::shared_ptr<Tensor> >& Xs,
               std::map<std::string, boost::shared_ptr<Tensor> >& Zs,
               std::map<std::string, boost::shared_ptr<Tensor> >& Ls,
@@ -275,7 +277,7 @@ public:
     static boost::shared_ptr<LSTHCERI> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X, Options& options, boost::shared_ptr<Wavefunction> ref);
 
     // => Defaults <= //
-    
+
     /// O: Load the usual options objects
     virtual void load_options(Options& options);
 
@@ -286,7 +288,7 @@ public:
     // Clear this LSTHCERI object of tasks
     virtual void clear();
 
-    // => Computers <= // 
+    // => Computers <= //
 
     /// Print info
     virtual void print_header(int level = 1);
@@ -309,7 +311,7 @@ public:
     /// Set the schwarz sieve cutoff
     void set_schwarz_cutoff(double schwarz_cutoff) { schwarz_cutoff_ = schwarz_cutoff; }
     /// Set to balance or not?
-    void set_balance(bool balance) { balance_ = balance; } 
+    void set_balance(bool balance) { balance_ = balance; }
 };
 
 

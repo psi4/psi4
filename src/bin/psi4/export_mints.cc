@@ -37,6 +37,7 @@
 #include <libscf_solver/rhf.h>
 
 #include <libfock/jk.h>
+#include <../bin/detci/ciwave.h>
 
 #include <string>
 
@@ -406,6 +407,7 @@ void export_mints()
             def("schmidt", &Matrix::schmidt).
             def("invert", &Matrix::invert, "docstring").
             def("power", &Matrix::power, "docstring").
+            def("doublet", &Matrix::doublet, "docstring").
             def("get", matrix_get3(&Matrix::get), "docstring").
             def("get", matrix_get2(&Matrix::get), "docstring").
             def("set", matrix_set3(&Matrix::set), "docstring").
@@ -961,5 +963,22 @@ void export_mints()
             .def("Qvv", &DFTensor::Qvv, "doctsring")
             .def("Imo", &DFTensor::Imo, "doctsring")
             .def("Idfmo", &DFTensor::Idfmo, "doctsring");
+
+
+    // Looks like this has to go here.
+    class_<detci::CIWavefunction, boost::shared_ptr<detci::CIWavefunction>, bases<Wavefunction> >("CIWavefunction", "docstring", no_init)
+        .def(init<boost::shared_ptr<Wavefunction> >())
+        .def("get_dimension", &detci::CIWavefunction::get_dimension, "docstring")
+        .def("diag_h", &detci::CIWavefunction::diag_h, "docstring")
+        .def("compute_mcscf", &detci::CIWavefunction::compute_mcscf, "docstring")
+        .def("transform_ci_integrals", &detci::CIWavefunction::transform_ci_integrals, "docstring")
+        .def("transform_mcscf_integrals", &detci::CIWavefunction::transform_mcscf_integrals, "docstring")
+        .def("get_orbitals", &detci::CIWavefunction::get_orbitals, "docstring")
+        .def("set_orbitals", &detci::CIWavefunction::set_orbitals, "docstring")
+        .def("get_opdm", &detci::CIWavefunction::get_opdm, "docstring")
+        .def("get_tpdm", &detci::CIWavefunction::get_tpdm, "docstring")
+        .def("hamiltonian", &detci::CIWavefunction::hamiltonian, "docstring")
+        .def("orbital_ci_block", &detci::CIWavefunction::orbital_ci_block, "docstring");
+
 
 }
