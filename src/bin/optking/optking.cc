@@ -188,20 +188,21 @@ OptReturnType optking(void) {
       mol1->freeze_interfragment_asymm(); // Try to remove some assymetric problematic ones.
     }
 
-    if (Opt_params.coordinates == OPT_PARAMS::REDUNDANT ||
-        Opt_params.coordinates == OPT_PARAMS::BOTH)
-      mol1->form_trivial_coord_combinations();
-    else if (Opt_params.coordinates == OPT_PARAMS::DELOCALIZED)
-      mol1->form_delocalized_coord_combinations();
-    else if (Opt_params.coordinates == OPT_PARAMS::NATURAL)
-      mol1->form_natural_coord_combinations();
-
-    if ( Opt_params.coordinates == OPT_PARAMS::CARTESIAN ||
-         Opt_params.coordinates == OPT_PARAMS::BOTH )
-      mol1->add_cartesians(); // also adds trivial combos
+    if ( Opt_params.coordinates == OPT_PARAMS::CARTESIAN )
+      mol1->add_cartesians();
 
     // In the future, which all types of constraints will be support?
     mol1->apply_input_constraints();
+
+    if (Opt_params.coordinates == OPT_PARAMS::DELOCALIZED)
+      mol1->form_delocalized_coord_combinations();
+    else if (Opt_params.coordinates == OPT_PARAMS::NATURAL)
+      mol1->form_natural_coord_combinations();
+    else
+      mol1->form_trivial_coord_combinations(); // Add trivial combinations.
+
+    if ( Opt_params.coordinates == OPT_PARAMS::BOTH )
+      mol1->add_cartesians(); // also adds trivial combos
 
     // print out internal coordinates for future steps
     FILE *qc_intco;
