@@ -518,7 +518,12 @@ X->print();
     }
 
     // Construct a RCPHF Object
-    boost::shared_ptr<RCPHF> cphf(new RCPHF());
+    outfile->Printf("DGAS: Grabbing options and wavefunction from global! In src/bin/mrcc.cc\n");
+    Options& options = Process::environment.options;
+    SharedWavefunction wfn = Process::environment.wavefunction();
+
+    boost::shared_ptr<RCPHF> cphf(new RCPHF(wfn, options));
+    //boost::shared_ptr<RCPHF> cphf(new RCPHF());
     cphf->preiterations();
 
     // TODO: Add pre-CPHF A-matrix correction
