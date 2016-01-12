@@ -72,7 +72,7 @@ class COMBO_COORDINATES {
   // Clear current combination coordinates. Leave simples in place.
   void clear_combos(void);
 
-  // Remove a particular combination coordinate by inded.
+  // Remove a particular combination coordinate by index.
   void erase_combo(int cc);
 
   // Print s vectors.
