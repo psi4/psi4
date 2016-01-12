@@ -34,22 +34,15 @@
 ** h and actually get g instead...
 */
 
-#define EXTERN
-
 #include <cstdio>
 #include <cstdlib>
-#include <cmath>
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
-#include <libqt/slaterdset.h>
-#include <libpsio/psio.h>
+#include <libmints/mints.h>
 #include "structs.h"
-#include "globals.h"
+#include "ciwave.h"
 
 namespace psi { namespace detci {
 
-int cc_reqd_sblocks[CI_BLK_MAX];
+//int cc_reqd_sblocks[CI_BLK_MAX];
 
 /*
 ** compute_cc()
@@ -58,9 +51,9 @@ int cc_reqd_sblocks[CI_BLK_MAX];
 ** computation
 **
 */
-void compute_cc(void)
+void CIWavefunction::compute_cc(void)
 {
-  printf("compute_cc: Not yet available\n");
+  outfile->Printf("compute_cc: Not yet available\n");
 }
 
 }} // namespace psi::detci

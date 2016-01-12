@@ -322,6 +322,9 @@ protected:
     /** Applies second-order convergence acceleration */
     virtual int soscf_update();
 
+    /** Rotates orbitals inplace C' = exp(U) C, U = antisymmetric matrix from x */
+    void rotate_orbitals(SharedMatrix C, const SharedMatrix x);
+
     /** Compute the MO coefficients (C_) */
     virtual void form_C() =0;
 
@@ -396,7 +399,7 @@ public:
     ///  This function should be called once orbitals are ready for energy/property computations,
     /// usually after iterations() is called.
     virtual double finalize_E();
-   
+
     /// Base class Wavefunction requires this function. Here it is simply a wrapper around
     /// initialize(), iterations(), finalize_E(). It returns the SCF energy computed by
     /// finalize_E()

@@ -25,43 +25,12 @@
     \brief Enter brief description of file here 
 */
 
-#define EXTERN
 #include <cstdio>
 #include <cmath>
 #include "ci_tol.h"
 #include "structs.h"
-#include "globals.h"
 
 namespace psi { namespace detci {
-
-/*
-** calc_d()
-**
-** Function calculates a block of the numerators for the Davidson 
-** algorithm correction vector d.
-**
-** Parameters:
-**    target  = array to store result
-**    alpha   = coefficient
-**    sigma   = sigma block
-**    lambda  = energy coefficient
-**    c       = c vector block
-**    size    = size of block
-**
-** Returns: none
-*/
-void calc_d(double *target, double alpha, double *sigma, double lambda,
-      double *c, int size)
-{
-   register int i;
-   double tval;
-
-   for (i=0; i<size; i++) {
-      tval = alpha * (sigma[i] - lambda * c[i]);
-      target[i] += tval;
-      }
-}
-
 
 /*
 ** calc_d2()
@@ -80,7 +49,7 @@ void calc_d(double *target, double alpha, double *sigma, double lambda,
 */
 double calc_d2(double *target, double lambda, double *Hd, int size, int precon)
 {
-   register int i;
+   int i;
    double norm = 0.0, tval, tval2;
 
    for (i=0; i<size; i++) {
@@ -115,7 +84,7 @@ double calc_d2(double *target, double lambda, double *Hd, int size, int precon)
 double calc_mpn_vec(double *target, double energy, double *Hd, int size, double
         sign1, double sign2, int precon)
 {
-   register int i;
+   int i;
    double norm = 0.0, tval, tval2;
 
    for (i=0; i<size; i++) {

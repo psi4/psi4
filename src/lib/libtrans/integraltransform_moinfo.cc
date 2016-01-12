@@ -94,10 +94,20 @@ IntegralTransform::process_spaces()
     bool qt_order = (moOrdering_ == QTOrder);  // If false, we assume Pitzer below
 
     for(space = uniqueSpaces_.begin(); space != uniqueSpaces_.end(); ++space){
+
         shared_ptr<MOSpace> moSpace = *space;
         int *aOrbsPI = new int[nirreps_];
         int *aIndex;
         int *aOrbSym;
+
+        char label = moSpace->label();
+        if(labelsUsed_.count(label)){
+            std::string error("Space ");
+            error += label;
+            error += " is already in use.  Choose a unique name for the custom MOSpace.";
+            throw SanityCheckError(error, __FILE__, __LINE__);
+        }
+        ++labelsUsed_[label];
 
         if(moSpace->label() == MOSPACE_FZC){
             // This is the frozen occupied space
@@ -563,7 +573,17 @@ IntegralTransform::update_orbitals()
     process_eigenvectors();
     generate_oei();
 }
-
+/**
+ * Sets the orbital matrix, but touches nothing else. This is used for a MCSCF wavefunction
+ * and is a bit of a hack, use at your own risk.
+**/
+void
+IntegralTransform::set_orbitals(SharedMatrix C)
+{
+    Ca_ = C->clone();
+    Cb_ = Ca_;
+    process_eigenvectors();
+}
 
 /**
  * Sets up the eigenvectors for the transformation by querying the MO spaces
