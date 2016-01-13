@@ -110,18 +110,27 @@ def run_dfomp2(name, **kwargs):
     if user_pg != 'c1':
         psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
-    #psi4.set_global_option('SCF_TYPE', 'DF')
+    psi4.set_global_option('SCF_TYPE', 'DF')
     psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
+        scf_wfn = scf_helper(name, **kwargs)
+    else:
+        scf_wfn = wavefunction()
+    psi4.set_global_option('WFN_TYPE', 'DF-OMP2')
+    #psi4.set_global_option('CHOLESKY', 'TRUE')
 
-    psi4.dfocc()
+    print("About to build the wavefunction")
+    print(name)
+    print(psi4.get_global_option('WFN_TYPE'))
+    dfocc_wfn = psi4.dfocc(scf_wfn)
+    print("Build the wavefunction")
+    dfocc_wfn.compute_energy()
 
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
 
-    return psi4.get_variable("CURRENT ENERGY")
+    return dfocc_wfn
 
 
 def run_dfomp2_gradient(name, **kwargs):

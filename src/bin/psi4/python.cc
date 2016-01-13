@@ -109,28 +109,33 @@ void opt_clean(void);
 namespace psi {
 
 // Pass 1 complete
+
+// Wavefunction returns
 namespace adc { SharedWavefunction     adc(SharedWavefunction, Options&); }
 namespace dcft { SharedWavefunction   dcft(SharedWavefunction, Options&); }
 namespace detci { SharedWavefunction detci(SharedWavefunction, Options&); }
 namespace dfmp2 { SharedWavefunction dfmp2(SharedWavefunction, Options&); }
 namespace scf { SharedWavefunction     scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
 namespace libfock { SharedWavefunction libfock(SharedWavefunction, Options&); }
+namespace dfoccwave { SharedWavefunction dfoccwave(SharedWavefunction, Options&); }
 
-
+// Matrix returns
 namespace scfgrad { SharedMatrix   scfgrad(SharedWavefunction, Options&); }
 namespace scfgrad { SharedMatrix   scfhess(SharedWavefunction, Options&); }
+namespace deriv   { SharedMatrix     deriv(SharedWavefunction, Options&); }
 
 // Incomplete
 namespace mints { PsiReturnType mints(Options&); }
-namespace deriv { PsiReturnType deriv(Options&); }
-namespace scf { PsiReturnType scf_dummy(Options&); }
+// namespace scf { PsiReturnType scf_dummy(Options&); }
 // namespace dfmp2 { PsiReturnType dfmp2grad(Options&); }
 namespace sapt { PsiReturnType sapt(Options&); }
 namespace fisapt { PsiReturnType fisapt(Options&); }
 namespace lmp2 { PsiReturnType lmp2(Options&); }
 namespace mcscf { PsiReturnType mcscf(Options&); }
 namespace psimrcc { PsiReturnType psimrcc(Options&); }
+
 namespace transqt2 { PsiReturnType transqt2(Options&); }
+
 namespace ccsort { PsiReturnType ccsort(Options&); }
 //    namespace lmp2       { PsiReturnType lmp2(Options&);      }
 namespace cctriples { PsiReturnType cctriples(Options&); }
@@ -151,7 +156,6 @@ namespace fnocc { PsiReturnType fnocc(Options&); }
 namespace efp { PsiReturnType efp_init(Options&); }
 namespace efp { PsiReturnType efp_set_options(); }
 namespace occwave { PsiReturnType occwave(Options&); }
-namespace dfoccwave { PsiReturnType dfoccwave(Options&); }
 namespace thermo { PsiReturnType thermo(Options&); }
 namespace mrcc {
 PsiReturnType mrcc_generate_input(Options&, const boost::python::dict&);
@@ -263,10 +267,10 @@ SharedMatrix py_psi_scfhess(SharedWavefunction ref_wfn)
     return scfgrad::scfhess(ref_wfn, Process::environment.options);
 }
 
-int py_psi_deriv()
+SharedMatrix py_psi_deriv(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("DERIV");
-    return deriv::deriv(Process::environment.options);
+    return deriv::deriv(ref_wfn, Process::environment.options);
 }
 
 double py_psi_occ()
@@ -279,14 +283,9 @@ double py_psi_occ()
         return 0.0;
 }
 
-double py_psi_dfocc()
+SharedWavefunction py_psi_dfocc(SharedWavefunction ref_wfn)
 {
-    py_psi_prepare_options_for_module("DFOCC");
-    if (dfoccwave::dfoccwave(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return dfoccwave::dfoccwave(ref_wfn, Process::environment.options);
 }
 
 SharedWavefunction py_psi_libfock(SharedWavefunction ref_wfn)
@@ -419,11 +418,11 @@ SharedWavefunction py_psi_scf(SharedWavefunction ref_wfn, PyObject *precallback,
     return scf::scf(ref_wfn, Process::environment.options, precallback, postcallback);
 }
 
-double py_psi_scf_dummy()
-{
-    py_psi_prepare_options_for_module("SCF");
-    return scf::scf_dummy(Process::environment.options);
-}
+// double py_psi_scf_dummy()
+// {
+//     py_psi_prepare_options_for_module("SCF");
+//     return scf::scf_dummy(Process::environment.options);
+// }
 
 SharedWavefunction py_psi_dcft(SharedWavefunction ref_wfn)
 {
@@ -1618,7 +1617,7 @@ BOOST_PYTHON_MODULE (psi4)
 
     // def("scf", py_psi_scf_callbacks, "Runs the SCF code.");
     def("scf", py_psi_scf, "Runs the SCF code.");
-    def("scf_dummy", py_psi_scf_dummy, "Builds SCF wavefunctionobject only. Does not execute scf.");
+    // def("scf_dummy", py_psi_scf_dummy, "Builds SCF wavefunctionobject only. Does not execute scf.");
     def("dcft", py_psi_dcft, "Runs the density cumulant functional theory code.");
     def("lmp2", py_psi_lmp2, "Runs the local MP2 code.");
     def("libfock", py_psi_libfock, "Runs a CPHF calculation, using libfock.");

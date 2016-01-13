@@ -41,7 +41,7 @@ class DFOCC : public Wavefunction
     void common_init();
     
 public:
-    DFOCC(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
+    DFOCC(SharedWavefunction ref_wfn, Options &options);
 
     virtual ~DFOCC();
     virtual bool same_a_b_orbs() const { return reference_wavefunction_->same_a_b_orbs(); }
