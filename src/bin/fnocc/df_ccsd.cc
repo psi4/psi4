@@ -54,10 +54,9 @@ void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&op
 void Sort_OV3_LowMemory(long int memory,long int o,long int v);
 
 // coupled cluster constructor
-DFCoupledCluster::DFCoupledCluster(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options):
-        CoupledCluster(reference_wavefunction,options)
+DFCoupledCluster::DFCoupledCluster(SharedWavefunction ref_wfn, Options &options):
+        CoupledCluster(ref_wfn, options)
 {
-    reference_wavefunction_ = reference_wavefunction;
     common_init();
 }
 

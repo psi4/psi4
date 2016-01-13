@@ -214,7 +214,7 @@ class CoupledCluster: public Wavefunction{
 class DFCoupledCluster : public CoupledCluster{
 
   public:
-    DFCoupledCluster(boost::shared_ptr<psi::Wavefunction>wfn,Options&options);
+    DFCoupledCluster(SharedWavefunction ref_wfn, Options&options);
     ~DFCoupledCluster();
 
     double compute_energy();

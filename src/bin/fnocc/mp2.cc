@@ -57,7 +57,7 @@ void CoupledCluster::MP2(){
     outfile->Printf("\n");
     outfile->Printf("        ==> Transform (OV|OV) integrals <==\n");
     outfile->Printf("\n");
-    boost::shared_ptr<psi::Wavefunction> wfn = Process::environment.wavefunction();
+    boost::shared_ptr<psi::Wavefunction> wfn = reference_wavefunction_;
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
