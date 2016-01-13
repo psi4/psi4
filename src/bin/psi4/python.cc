@@ -124,6 +124,9 @@ namespace scfgrad { SharedMatrix   scfgrad(SharedWavefunction, Options&); }
 namespace scfgrad { SharedMatrix   scfhess(SharedWavefunction, Options&); }
 namespace deriv   { SharedMatrix     deriv(SharedWavefunction, Options&); }
 
+// Does not create a wavefunction
+namespace dmrg       { PsiReturnType dmrg(SharedWavefunction, Options&);     }
+
 // Incomplete
 namespace mints { PsiReturnType mints(Options&); }
 // namespace scf { PsiReturnType scf_dummy(Options&); }
@@ -149,7 +152,6 @@ void scatter(Options&, double step, std::vector<SharedMatrix> dip, std::vector<S
 }
 namespace cceom { PsiReturnType cceom(Options&); }
 #ifdef ENABLE_CHEMPS2
-namespace dmrg       { PsiReturnType dmrg(Options&);     }
 #endif
 //    namespace detcas     { PsiReturnType detcas(Options&);     }
 namespace fnocc { PsiReturnType fnocc(Options&); }
@@ -303,17 +305,6 @@ SharedWavefunction py_psi_libfock(SharedWavefunction ref_wfn)
 //     else
 //         return 0.0;
 // }
-
-/*double py_psi_lmp2()
-{
-    py_psi_prepare_options_for_module("LMP2");
-    if (lmp2::lmp2(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
-}
-*/
 
 double py_psi_mcscf()
 {
@@ -490,29 +481,24 @@ double py_psi_ccsort()
     return 0.0;
 }
 
-double py_psi_ccenergy()
+SharedWavefunction py_psi_ccenergy(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCENERGY");
-    boost::shared_ptr<Wavefunction> ccwave(new ccenergy::CCEnergyWavefunction(
-            Process::environment.wavefunction(),
+    SharedWavefunction ccwave(new ccenergy::CCEnergyWavefunction(
+            ref_wfn,
             Process::environment.options)
     );
 
     std::string name = Process::environment.wavefunction()->name();
-    std::string wfn = Process::environment.options.get_str("WFN");
-    if (wfn != name) {
-        ccwave->set_name(wfn);
+    std::string wfn_name = Process::environment.options.get_str("WFN");
+    if (wfn_name != name) {
+        ccwave->set_name(wfn_name);
         Process::environment.set_wavefunction(ccwave);
     }
 
-    double energy = ccwave->compute_energy();
-    return energy;
+    // double energy = ccwave->compute_energy();
+    return ccwave;
 
-//    if (ccenergy::ccenergy(Process::environment.options) == Success) {
-//        return Process::environment.globals["CURRENT ENERGY"];
-//    }
-//    else
-//        return 0.0;
 }
 
 /*
@@ -573,10 +559,10 @@ SharedWavefunction py_psi_detci(SharedWavefunction ref_wfn)
 }
 
 #ifdef ENABLE_CHEMPS2
-double py_psi_dmrg()
+double py_psi_dmrg(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("DMRG");
-    if (dmrg::dmrg(Process::environment.options) == Success) {
+    if (dmrg::dmrg(ref_wfn, Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
