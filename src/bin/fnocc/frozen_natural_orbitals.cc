@@ -54,11 +54,12 @@ using namespace boost;
 
 namespace psi{namespace fnocc{
 
-FrozenNO::FrozenNO(boost::shared_ptr<Wavefunction>wfn,Options&options):
-  Wavefunction(options, _default_psio_lib_)
+FrozenNO::FrozenNO(SharedWavefunction wfn,Options&options):
+  Wavefunction(options)
 {
     // copy wave function.
     copy(wfn);
+    reference_wavefunction_ = wfn;
     common_init();
 }
 FrozenNO::~FrozenNO()
@@ -115,7 +116,7 @@ void FrozenNO::ComputeNaturalOrbitals(){
     std::vector<shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+    boost::shared_ptr<Wavefunction> wfn = reference_wavefunction_;
     boost::shared_ptr<IntegralTransform> ints(new IntegralTransform(wfn, spaces, IntegralTransform::Restricted,
                IntegralTransform::DPDOnly, IntegralTransform::QTOrder, IntegralTransform::OccAndVir, false));
     ints->set_dpd_id(0);
@@ -947,7 +948,7 @@ void DFFrozenNO::ModifyCa(double*Dab){
 
   long int v = nvirt;
 
-  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.wavefunction();
+  boost::shared_ptr<psi::Wavefunction> ref = reference_wavefunction_;
 
   boost::shared_ptr<Matrix> Caomo = ref->Ca();
 
@@ -975,7 +976,7 @@ void DFFrozenNO::ModifyCa_occ(double*Dij){
 
   long int o = ndoccact;
 
-  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.wavefunction();
+  boost::shared_ptr<psi::Wavefunction> ref = reference_wavefunction_;
 
   boost::shared_ptr<Matrix> Caomo = ref->Ca();
 
