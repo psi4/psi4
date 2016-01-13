@@ -129,15 +129,18 @@ namespace scfgrad { SharedMatrix   scfhess(SharedWavefunction, Options&); }
 // Does not create a wavefunction
 namespace dmrg       { PsiReturnType dmrg(SharedWavefunction, Options&);     }
 namespace psimrcc { PsiReturnType psimrcc(SharedWavefunction, Options&); }
+namespace fisapt { PsiReturnType fisapt(SharedWavefunction, Options&); }
 
 // Incomplete
 namespace mints { PsiReturnType mints(Options&); }
 namespace sapt { PsiReturnType sapt(Options&); }
-namespace fisapt { PsiReturnType fisapt(Options&); }
 namespace lmp2 { PsiReturnType lmp2(Options&); }
 
+// Needs to be deprecated
 namespace transqt2 { PsiReturnType transqt2(Options&); }
 
+
+// TODO
 namespace ccsort { PsiReturnType ccsort(Options&); }
 //    namespace lmp2       { PsiReturnType lmp2(Options&);      }
 namespace cctriples { PsiReturnType cctriples(Options&); }
@@ -152,15 +155,17 @@ void scatter(Options&, double step, std::vector<SharedMatrix> dip, std::vector<S
 namespace cceom { PsiReturnType cceom(Options&); }
 #ifdef ENABLE_CHEMPS2
 #endif
-//    namespace detcas     { PsiReturnType detcas(Options&);     }
+
 namespace efp { PsiReturnType efp_init(Options&); }
 namespace efp { PsiReturnType efp_set_options(); }
 namespace occwave { PsiReturnType occwave(Options&); }
 namespace thermo { PsiReturnType thermo(Options&); }
+
 namespace mrcc {
 PsiReturnType mrcc_generate_input(Options&, const boost::python::dict&);
 PsiReturnType mrcc_load_ccdensities(Options&, const boost::python::dict&);
 }
+
 namespace findif {
 std::vector<boost::shared_ptr<Matrix> > fd_geoms_1_0(Options&);
 //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
@@ -451,10 +456,10 @@ double py_psi_sapt()
         return 0.0;
 }
 
-double py_psi_fisapt()
+double py_psi_fisapt(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("FISAPT");
-    if (fisapt::fisapt(Process::environment.options) == Success) {
+    if (fisapt::fisapt(ref_wfn, Process::environment.options) == Success) {
         return Process::environment.globals["SAPT ENERGY"];
     }
     else

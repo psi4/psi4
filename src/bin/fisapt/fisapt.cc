@@ -25,8 +25,8 @@ namespace psi {
 
 namespace fisapt {
 
-FISAPT::FISAPT(boost::shared_ptr<Wavefunction> scf) :
-    options_(Process::environment.options),
+FISAPT::FISAPT(SharedWavefunction scf, Options& options) :
+    options_(options),
     reference_(scf)
 {
     common_init();
@@ -133,7 +133,7 @@ void FISAPT::localize()
     ranges.push_back(vectors_["eps_focc"]->dimpi()[0]);
     ranges.push_back(vectors_["eps_occ"]->dimpi()[0]);
 
-    boost::shared_ptr<fisapt::IBOLocalizer2> local = fisapt::IBOLocalizer2::build(primary_, matrices_["Cocc"]);
+    boost::shared_ptr<fisapt::IBOLocalizer2> local = fisapt::IBOLocalizer2::build(primary_, matrices_["Cocc"], options_);
     local->print_header();
     std::map<std::string, boost::shared_ptr<Matrix> > ret = local->localize(matrices_["Cocc"], Focc, ranges);
 
@@ -714,7 +714,8 @@ void FISAPT::scf()
         matrices_["T"],
         matrices_["VA"],
         matrices_["WC"],
-        matrices_["LoccA"]
+        matrices_["LoccA"],
+        options_
         ));
     scfA->compute_energy();
 
@@ -737,7 +738,8 @@ void FISAPT::scf()
         matrices_["T"],
         matrices_["VB"],
         matrices_["WC"],
-        matrices_["LoccB"]
+        matrices_["LoccB"],
+        options_
         ));
     scfB->compute_energy();
 
@@ -2220,7 +2222,7 @@ void FISAPT::plot()
     boost::filesystem::path dir(filepath);
     boost::filesystem::create_directory(dir);
 
-    boost::shared_ptr<fisapt::CubicScalarGrid> csg(new fisapt::CubicScalarGrid(primary_));
+    boost::shared_ptr<fisapt::CubicScalarGrid> csg(new fisapt::CubicScalarGrid(primary_, options_));
     csg->set_filepath(filepath);
     csg->print_header();
 
@@ -2304,7 +2306,7 @@ void FISAPT::flocalize()
         boost::shared_ptr<Matrix> Focc(new Matrix("Focc", vectors_["eps_occ0A"]->dimpi()[0], vectors_["eps_occ0A"]->dimpi()[0]));
         Focc->set_diagonal(vectors_["eps_occ0A"]);
 
-        boost::shared_ptr<fisapt::IBOLocalizer2> local = fisapt::IBOLocalizer2::build(primary_, matrices_["Cocc0A"]);
+        boost::shared_ptr<fisapt::IBOLocalizer2> local = fisapt::IBOLocalizer2::build(primary_, matrices_["Cocc0A"], options_);
         local->print_header();
         std::map<std::string, boost::shared_ptr<Matrix> > ret = local->localize(matrices_["Cocc0A"], Focc, ranges);
 
@@ -2370,7 +2372,7 @@ void FISAPT::flocalize()
         boost::shared_ptr<Matrix> Focc(new Matrix("Focc", vectors_["eps_occ0B"]->dimpi()[0], vectors_["eps_occ0B"]->dimpi()[0]));
         Focc->set_diagonal(vectors_["eps_occ0B"]);
 
-        boost::shared_ptr<fisapt::IBOLocalizer2> local = fisapt::IBOLocalizer2::build(primary_, matrices_["Cocc0B"]);
+        boost::shared_ptr<fisapt::IBOLocalizer2> local = fisapt::IBOLocalizer2::build(primary_, matrices_["Cocc0B"], options_);
         local->print_header();
         std::map<std::string, boost::shared_ptr<Matrix> > ret = local->localize(matrices_["Cocc0B"], Focc, ranges);
 
@@ -2462,7 +2464,7 @@ void FISAPT::felst()
         options_.get_str("BASIS"), primary_->has_puream());
     size_t nQ = jkfit->nbf();
 
-    boost::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,Process::environment.options);
+    boost::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,options_);
     df->clear();
 
     std::vector<boost::shared_ptr<Matrix> > Cs;
@@ -2627,7 +2629,7 @@ void FISAPT::fexch()
         options_.get_str("BASIS"), primary_->has_puream());
     int nQ = jkfit->nbf();
 
-    boost::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,Process::environment.options);
+    boost::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,options_);
     df->clear();
 
     std::vector<boost::shared_ptr<Matrix> > Cs;
@@ -2878,7 +2880,7 @@ void FISAPT::find()
         options_.get_str("BASIS"), primary_->has_puream());
     size_t nQ = jkfit->nbf();
 
-    boost::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,Process::environment.options);
+    boost::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,options_);
     df->clear();
 
     std::vector<boost::shared_ptr<Matrix> > Cs;
@@ -3521,7 +3523,7 @@ void FISAPT::fdisp()
 
     // => Integrals from the THCE <= //
 
-    boost::shared_ptr<DFERI> df = DFERI::build(primary_,auxiliary,Process::environment.options);
+    boost::shared_ptr<DFERI> df = DFERI::build(primary_,auxiliary,options_);
     df->clear();
 
     std::vector<boost::shared_ptr<Matrix> > Cs;
@@ -3975,9 +3977,10 @@ FISAPTSCF::FISAPTSCF(
     boost::shared_ptr<Matrix> T,
     boost::shared_ptr<Matrix> V,
     boost::shared_ptr<Matrix> W,
-    boost::shared_ptr<Matrix> C
+    boost::shared_ptr<Matrix> C,
+    Options& options
     ) :
-    options_(Process::environment.options),
+    options_(options),
     jk_(jk)
 {
     scalars_["E NUC"] = enuc;
