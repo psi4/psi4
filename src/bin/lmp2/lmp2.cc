@@ -37,9 +37,9 @@ private:
 };
 
 Lmp2::Lmp2(boost::shared_ptr<Wavefunction> reference_wavefunction, Options& options)
-    : Wavefunction(options, _default_psio_lib_)
+    : Wavefunction(options)
 {
-//    Process::environment.set_wavefunction(reference_wavefunction);
+    copy(reference_wavefunction);
     reference_wavefunction_ = reference_wavefunction;
     common_init();
 }
@@ -397,8 +397,8 @@ double Lmp2::compute_energy()
         throw PSIEXCEPTION("LMP2 only works for RHF reference.");
     }
 
-    double convergence = Process::environment.options.get_double("E_CONVERGENCE");
-    int maxiter = Process::environment.options.get_int("MAXITER");
+    double convergence = options_.get_double("E_CONVERGENCE");
+    int maxiter = options_.get_int("MAXITER");
 
     SharedMatrix C_focc = reference_wavefunction_->Ca_subset("SO", "FROZEN_OCC");
     SharedMatrix C_occ  = reference_wavefunction_->Ca_subset("SO", "ACTIVE_OCC");
@@ -752,13 +752,13 @@ double Lmp2::compute_energy()
     return energy+Process::environment.globals["HF TOTAL ENERGY"];
 }
 
-PsiReturnType lmp2(Options& options)
+SharedWavefunction lmp2(SharedWavefunction ref_wfn, Options& options)
 {
-    boost::shared_ptr<Wavefunction> wave(new Lmp2(Process::environment.wavefunction(), options));
+    boost::shared_ptr<Wavefunction> wave(new Lmp2(ref_wfn, options));
     wave->compute_energy();
     Process::environment.set_wavefunction(wave);
 
-    return Success;
+    return wave;
 }
 
 }} // End namespaces

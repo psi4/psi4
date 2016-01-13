@@ -29,11 +29,11 @@ using namespace boost;
 
 namespace psi { namespace mints {
 
-PsiReturnType mints(Options & options)
+PsiReturnType mints(boost::shared_ptr<BasisSet> basis)
 {
     tstart();
 
-    boost::shared_ptr<MintsHelper> mints(new MintsHelper(options));
+    boost::shared_ptr<MintsHelper> mints(new MintsHelper(basis));
     mints->integrals();
 
     tstop();

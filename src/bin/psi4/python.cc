@@ -38,7 +38,7 @@
 #include <iomanip>
 
 #include <libefp_solver/efp_solver.h>
-#include <libmints/mints.h>
+// #include <libmints/mints.h>
 #include <libplugin/plugin.h>
 #include "libparallel/mpi_wrapper.h"
 #include "libparallel/local.h"
@@ -120,6 +120,7 @@ namespace libfock { SharedWavefunction libfock(SharedWavefunction, Options&); }
 namespace fnocc { SharedWavefunction fnocc(SharedWavefunction, Options&); }
 namespace mcscf { SharedWavefunction mcscf(SharedWavefunction, Options&); }
 namespace scf { SharedWavefunction     scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
+namespace lmp2 { SharedWavefunction lmp2(SharedWavefunction, Options&); }
 
 // Matrix returns
 namespace deriv   { SharedMatrix     deriv(SharedWavefunction, Options&); }
@@ -127,14 +128,16 @@ namespace scfgrad { SharedMatrix   scfgrad(SharedWavefunction, Options&); }
 namespace scfgrad { SharedMatrix   scfhess(SharedWavefunction, Options&); }
 
 // Does not create a wavefunction
-namespace dmrg       { PsiReturnType dmrg(SharedWavefunction, Options&);     }
 namespace psimrcc { PsiReturnType psimrcc(SharedWavefunction, Options&); }
 namespace fisapt { PsiReturnType fisapt(SharedWavefunction, Options&); }
 
+#ifdef ENABLE_CHEMPS2
+namespace dmrg       { PsiReturnType dmrg(SharedWavefunction, Options&);     }
+#endif
+
 // Incomplete
-namespace mints { PsiReturnType mints(Options&); }
+// namespace mints { PsiReturnType mints(Options&); }
 namespace sapt { PsiReturnType sapt(Options&); }
-namespace lmp2 { PsiReturnType lmp2(Options&); }
 
 // Needs to be deprecated
 namespace transqt2 { PsiReturnType transqt2(Options&); }
@@ -153,8 +156,6 @@ void scatter(Options&, double step, std::vector<SharedMatrix> dip, std::vector<S
              std::vector<SharedMatrix> quad);
 }
 namespace cceom { PsiReturnType cceom(Options&); }
-#ifdef ENABLE_CHEMPS2
-#endif
 
 namespace efp { PsiReturnType efp_init(Options&); }
 namespace efp { PsiReturnType efp_set_options(); }
@@ -254,11 +255,11 @@ void py_psi_opt_clean(void)
     opt::opt_clean();
 }
 
-int py_psi_mints()
-{
-    py_psi_prepare_options_for_module("MINTS");
-    return mints::mints(Process::environment.options);
-}
+// int py_psi_mints()
+// {
+//     py_psi_prepare_options_for_module("MINTS");
+//     return mints::mints(Process::environment.options);
+// }
 
 SharedMatrix py_psi_scfgrad(SharedWavefunction ref_wfn)
 {
@@ -420,14 +421,10 @@ SharedWavefunction py_psi_dcft(SharedWavefunction ref_wfn)
     return dcft::dcft(ref_wfn, Process::environment.options);
 }
 
-double py_psi_lmp2()
+SharedWavefunction py_psi_lmp2(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("LMP2");
-    if (lmp2::lmp2(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return lmp2::lmp2(ref_wfn, Process::environment.options);
 }
 
 SharedWavefunction py_psi_dfmp2(SharedWavefunction ref_wfn)
@@ -564,7 +561,7 @@ double py_psi_dmrg(SharedWavefunction ref_wfn)
         return 0.0;
 }
 #else
-double py_psi_dmrg()
+double py_psi_dmrg(SharedWavefunction ref_wfn)
 {
     throw PSIEXCEPTION("DMRG not enabled.");
 }
@@ -1586,7 +1583,7 @@ BOOST_PYTHON_MODULE (psi4)
         "Redirects output to /dev/null.  To switch back to regular output mode, use reopen_outfile()");
 
     // modules
-    def("mints", py_psi_mints, "Runs mints, which generate molecular integrals on disk.");
+    // def("mints", py_psi_mints, "Runs mints, which generate molecular integrals on disk.");
     def("deriv",
         py_psi_deriv,
         "Runs deriv, which contracts density matrices with derivative integrals, to compute gradients.");
