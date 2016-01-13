@@ -3363,14 +3363,14 @@ def run_fisapt(name, **kwargs):
         raise ValidationError('FISAPT requires requires \"reference rhf\".')
 
     activate(molecule)
-    scf_helper('RHF', **kwargs)
-    e_sapt = psi4.fisapt()
+    scf_wfn = scf_helper('RHF', **kwargs)
+    fisapt_wfn = psi4.fisapt(scf_wfn)
 
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
 
     optstash.restore()
-    return e_sapt
+    return fisapt_wfn
 
 def run_mrcc(name, **kwargs):
     """Function that prepares environment and input files
