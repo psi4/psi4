@@ -2879,7 +2879,9 @@ def run_dmrgscf(name, **kwargs):
     # Bypass routine scf if user did something special to get it to converge
     bypass = ('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))
     if not bypass:
-        scf_helper(name, **kwargs)
+        scf_wfn = scf_helper(name, **kwargs)
+    else:
+        scf_wfn = psi4.wavefunction()
 
     # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
     # written to disk
@@ -2890,10 +2892,11 @@ def run_dmrgscf(name, **kwargs):
         mints = psi4.MintsHelper()
         mints.integrals()
 
-    e_dmrg = psi4.dmrg()
+    dmrg_wfn = psi4.dmrg(scf_wfn)
     optstash.restore()
 
-    return e_dmrg
+    print('DMRG does not have a wavefunction /lib/python/proc.py:2898')
+    return dmrg_wfn
 
 def run_dmrgci(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -2907,7 +2910,9 @@ def run_dmrgci(name, **kwargs):
     # Bypass routine scf if user did something special to get it to converge
     bypass = ('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))
     if not bypass:
-        scf_helper(name, **kwargs)
+        scf_wfn = scf_helper(name, **kwargs)
+    else:
+        scf_wfn = psi4.wavefunction()
 
     # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
     # written to disk
@@ -2920,10 +2925,11 @@ def run_dmrgci(name, **kwargs):
 
     psi4.set_local_option('DMRG', 'DMRG_MAXITER', 1)
 
-    e_dmrg = psi4.dmrg()
+    dmrg_wfn = psi4.dmrg(scf_wfn)
     optstash.restore()
 
-    return e_dmrg
+    print('DMRG does not have a wavefunction /lib/python/proc.py:2930')
+    return dmrg_wfn
 
 def run_psimrcc(name, **kwargs):
     """Function encoding sequence of PSI module calls for a PSIMRCC computation

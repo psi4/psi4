@@ -190,7 +190,7 @@ void buildHamDMRG( boost::shared_ptr<IntegralTransform> ints, boost::shared_ptr<
         half.gemm(true, false, 1.0, wfn->Ca(), soOei, 0.0);
         moOei.gemm(false, false, 1.0, half, wfn->Ca(), 0.0);
 
-        double Econstant = Process::environment.molecule()->nuclear_repulsion_energy();
+        double Econstant = wfn->molecule()->nuclear_repulsion_energy();
         for (int h = 0; h < iHandler->getNirreps(); h++){
             const int NOCC = iHandler->getNOCC(h);
             for (int froz = 0; froz < NOCC; froz++){
@@ -366,7 +366,7 @@ void update_WFNco( CheMPS2::DMRGSCFmatrix * Coeff_orig, CheMPS2::DMRGSCFindices 
 }
 
 
-PsiReturnType dmrg(Options &options)
+PsiReturnType dmrg(SharedWavefunction ref_wfn, Options &options)
 {
     tstart();
 
@@ -376,7 +376,7 @@ PsiReturnType dmrg(Options &options)
      *   Environment information   *
      *******************************/
     boost::shared_ptr<PSIO> psio(_default_psio_lib_); // Grab the global (default) PSIO object, for file I/O
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction(); // The reference (SCF) wavefunction
+    boost::shared_ptr<Wavefunction> wfn = ref_wfn; // The reference (SCF) wavefunction
     if (!wfn){ throw PSIEXCEPTION("SCF has not been run yet!"); }
 
     /*************************
@@ -415,7 +415,7 @@ PsiReturnType dmrg(Options &options)
      *   Check if the input is consistent   *
      ****************************************/
 
-    const int SyGroup= chemps2_groupnumber( Process::environment.molecule()->sym_label() );
+    const int SyGroup= chemps2_groupnumber( ref_wfn->molecule()->sym_label() );
     const int nmo    = wfn->nmo();
     const int nirrep = wfn->nirrep();
     int * orbspi     = wfn->nmopi();
