@@ -69,7 +69,7 @@ Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio) :
     options_(options), psio_(psio)
 {
     outfile->Printf("Wavefunction constructor 2\n");
-    outfile->Printf("DGAS Warning! Deprecated constructor!\n");
+    throw PSIEXCEPTION("DGAS Warning! Deprecated constructor!");
     chkpt_ = boost::shared_ptr<Chkpt>(new Chkpt(psio.get(), PSIO_OPEN_OLD));
     common_init();
 }
@@ -78,7 +78,7 @@ Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boos
     options_(options), psio_(psio), chkpt_(chkpt)
 {
     outfile->Printf("Wavefunction constructor 3\n");
-    outfile->Printf("DGAS Warning! Deprecated constructor!\n");
+    throw PSIEXCEPTION("DGAS Warning! Deprecated constructor!");
     common_init();
 }
 
@@ -108,16 +108,22 @@ void Wavefunction::copy(const Wavefunction* other)
     S_ = other->S_;
     H_ = other->H_;
     molecule_ = other->molecule_;
+
     psio_ = other->psio_;
     chkpt_ = other->chkpt_;
     integral_ = other->integral_;
     factory_ = other->factory_;
     memory_ = other->memory_;
-    print_ = other->print_;
-    debug_ = other->debug_;
     nalpha_ = other->nalpha_;
     nbeta_ = other->nbeta_;
     nfrzc_ = other->nfrzc_;
+
+    print_ = other->print_;
+    debug_ = other->debug_;
+    density_fitted_ = other->density_fitted_;
+
+    energy_ = other->energy_;
+    efzc_ = other->efzc_;
 
     doccpi_ = other->doccpi_;
     soccpi_ = other->soccpi_;
@@ -127,9 +133,6 @@ void Wavefunction::copy(const Wavefunction* other)
     nbetapi_ = other->nbetapi_;
     nsopi_ = other->nsopi_;
     nmopi_ = other->nmopi_;
-
-    energy_ = other->energy_;
-    efzc_ = other->efzc_;
 
     nso_ = other->nso_;
     nmo_ = other->nmo_;
