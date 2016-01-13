@@ -67,8 +67,9 @@ def run_dcft(name, **kwargs):
         raise ValidationError('Frozen core is not available for DCFT.')
 
     # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_wfn = scf_helper(name, **kwargs)
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
 
     dcft_wfn = psi4.dcft(scf_wfn)
     return dcft_wfn
@@ -2897,7 +2898,7 @@ def run_dmrgscf(name, **kwargs):
     IsDirect = psi4.get_option('SCF', 'SCF_TYPE') == 'DIRECT'
     if bypass or IsDF or IsCD or IsDirect:
         mints = psi4.MintsHelper()
-        mints.integrals()
+        mints.integrals(scf_wfn.basisset())
 
     dmrg_wfn = psi4.dmrg(scf_wfn)
     optstash.restore()
@@ -2926,8 +2927,9 @@ def run_dmrgci(name, **kwargs):
     IsDF = psi4.get_option('SCF', 'SCF_TYPE') == 'DF'
     IsCD = psi4.get_option('SCF', 'SCF_TYPE') == 'CD'
     IsDirect = psi4.get_option('SCF', 'SCF_TYPE') == 'DIRECT'
+
     if bypass or IsDF or IsCD or IsDirect:
-        mints = psi4.MintsHelper()
+        mints = psi4.MintsHelper(scf_wfn.basisset())
         mints.integrals()
 
     psi4.set_local_option('DMRG', 'DMRG_MAXITER', 1)
@@ -3907,7 +3909,7 @@ def run_detcas(name, **kwargs):
 
             # If the scf type is DF/CD, then the AO integrals were never written to disk
             if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') or (psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
-                psi4.MintsHelper().integrals()
+                psi4.MintsHelper(scf_wfn.basisset()).integrals()
         else:
             scf_wfn = psi4.wavefunction()
 
