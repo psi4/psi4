@@ -1831,7 +1831,14 @@ def run_mcscf(name, **kwargs):
     a multiconfigurational self-consistent-field calculation.
 
     """
-    return psi4.mcscf()
+    bypass = ('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))
+    if not bypass:
+        new_wfn = psi4.new_wavefunction(psi4.get_active_molecule(),
+                                        psi4.get_global_option('BASIS')) 
+    else:
+        scf_wfn = psi4.wavefunction()
+
+    return psi4.mcscf(new_wfn)
 
 
 def scf_helper(name, **kwargs):
@@ -2936,9 +2943,9 @@ def run_psimrcc(name, **kwargs):
      using a reference from the MCSCF module
 
     """
-    run_mcscf(name, **kwargs)
-    psi4.psimrcc()
-    return psi4.get_variable("CURRENT ENERGY")
+    mcscf_wfn = run_mcscf(name, **kwargs)
+    psimrcc_wfn = psi4.psimrcc(mcscf_wfn)
+    return psimrcc_wfn
 
 
 def run_psimrcc_scf(name, **kwargs):
@@ -2948,10 +2955,12 @@ def run_psimrcc_scf(name, **kwargs):
     """
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
+        scf_wfn = scf_helper(name, **kwargs)
+    else:
+        scf_wfn = wavefunction()
 
-    psi4.psimrcc()
-    return psi4.get_variable("CURRENT ENERGY")
+    psimrcc_wfn = psi4.psimrcc(scf_wfn)
+    return psimrcc_wfn
 
 
 def run_mp2c(name, **kwargs):

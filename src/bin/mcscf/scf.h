@@ -42,7 +42,7 @@ enum ReferenceType {rhf, rohf, uhf, tcscf};
 class SCF  : public Wavefunction
 {
 public:
-  explicit SCF(Options& options_, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt_);
+  explicit SCF(SharedWavefunction ref_wfn, Options& options_, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt_);
   ~SCF();
   double compute_energy();
   virtual bool same_a_b_orbs() const { return same_orbs_; }

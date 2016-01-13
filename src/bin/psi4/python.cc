@@ -118,6 +118,7 @@ namespace dfmp2 { SharedWavefunction dfmp2(SharedWavefunction, Options&); }
 namespace scf { SharedWavefunction     scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
 namespace libfock { SharedWavefunction libfock(SharedWavefunction, Options&); }
 namespace dfoccwave { SharedWavefunction dfoccwave(SharedWavefunction, Options&); }
+namespace mcscf { SharedWavefunction mcscf(SharedWavefunction, Options&); }
 
 // Matrix returns
 namespace scfgrad { SharedMatrix   scfgrad(SharedWavefunction, Options&); }
@@ -126,16 +127,13 @@ namespace deriv   { SharedMatrix     deriv(SharedWavefunction, Options&); }
 
 // Does not create a wavefunction
 namespace dmrg       { PsiReturnType dmrg(SharedWavefunction, Options&);     }
+namespace psimrcc { PsiReturnType psimrcc(SharedWavefunction, Options&); }
 
 // Incomplete
 namespace mints { PsiReturnType mints(Options&); }
-// namespace scf { PsiReturnType scf_dummy(Options&); }
-// namespace dfmp2 { PsiReturnType dfmp2grad(Options&); }
 namespace sapt { PsiReturnType sapt(Options&); }
 namespace fisapt { PsiReturnType fisapt(Options&); }
 namespace lmp2 { PsiReturnType lmp2(Options&); }
-namespace mcscf { PsiReturnType mcscf(Options&); }
-namespace psimrcc { PsiReturnType psimrcc(Options&); }
 
 namespace transqt2 { PsiReturnType transqt2(Options&); }
 
@@ -306,14 +304,10 @@ SharedWavefunction py_psi_libfock(SharedWavefunction ref_wfn)
 //         return 0.0;
 // }
 
-double py_psi_mcscf()
+SharedWavefunction py_psi_mcscf(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("MCSCF");
-    if (mcscf::mcscf(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return mcscf::mcscf(ref_wfn, Process::environment.options);
 }
 
 PsiReturnType py_psi_mrcc_generate_input(const boost::python::dict& level)
@@ -683,10 +677,10 @@ double py_psi_cceom()
         return 0.0;
 }
 
-double py_psi_psimrcc()
+double py_psi_psimrcc(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("PSIMRCC");
-    psimrcc::psimrcc(Process::environment.options);
+    psimrcc::psimrcc(ref_wfn, Process::environment.options);
     return 0.0;
 }
 

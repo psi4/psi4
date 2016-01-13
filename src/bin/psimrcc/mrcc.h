@@ -35,7 +35,7 @@ class CCMRCC : public CCManyBody
 {
 public:
   // Constructor and destructor
-  CCMRCC(Options &options);
+  CCMRCC(SharedWavefunction ref_wfn, Options &options);
   virtual ~CCMRCC();
 
   // CCSD
