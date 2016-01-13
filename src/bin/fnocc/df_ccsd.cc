@@ -50,10 +50,9 @@ void DefineLinearTasks();
 void DefineQuadraticTasks();
 
 // coupled cluster constructor
-DFCoupledCluster::DFCoupledCluster(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options):
-        CoupledCluster(reference_wavefunction,options)
+DFCoupledCluster::DFCoupledCluster(SharedWavefunction ref_wfn, Options &options):
+        CoupledCluster(ref_wfn, options)
 {
-    reference_wavefunction_ = reference_wavefunction;
     common_init();
 }
 

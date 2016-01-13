@@ -115,15 +115,16 @@ namespace adc { SharedWavefunction     adc(SharedWavefunction, Options&); }
 namespace dcft { SharedWavefunction   dcft(SharedWavefunction, Options&); }
 namespace detci { SharedWavefunction detci(SharedWavefunction, Options&); }
 namespace dfmp2 { SharedWavefunction dfmp2(SharedWavefunction, Options&); }
-namespace scf { SharedWavefunction     scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
-namespace libfock { SharedWavefunction libfock(SharedWavefunction, Options&); }
 namespace dfoccwave { SharedWavefunction dfoccwave(SharedWavefunction, Options&); }
+namespace libfock { SharedWavefunction libfock(SharedWavefunction, Options&); }
+namespace fnocc { SharedWavefunction fnocc(SharedWavefunction, Options&); }
 namespace mcscf { SharedWavefunction mcscf(SharedWavefunction, Options&); }
+namespace scf { SharedWavefunction     scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
 
 // Matrix returns
+namespace deriv   { SharedMatrix     deriv(SharedWavefunction, Options&); }
 namespace scfgrad { SharedMatrix   scfgrad(SharedWavefunction, Options&); }
 namespace scfgrad { SharedMatrix   scfhess(SharedWavefunction, Options&); }
-namespace deriv   { SharedMatrix     deriv(SharedWavefunction, Options&); }
 
 // Does not create a wavefunction
 namespace dmrg       { PsiReturnType dmrg(SharedWavefunction, Options&);     }
@@ -152,7 +153,6 @@ namespace cceom { PsiReturnType cceom(Options&); }
 #ifdef ENABLE_CHEMPS2
 #endif
 //    namespace detcas     { PsiReturnType detcas(Options&);     }
-namespace fnocc { PsiReturnType fnocc(Options&); }
 namespace efp { PsiReturnType efp_init(Options&); }
 namespace efp { PsiReturnType efp_set_options(); }
 namespace occwave { PsiReturnType occwave(Options&); }
@@ -536,14 +536,10 @@ void py_psi_efp_set_options()
     Process::environment.get_efp()->set_options();
 }
 
-double py_psi_fnocc()
+SharedWavefunction py_psi_fnocc(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("FNOCC");
-    if (fnocc::fnocc(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return fnocc::fnocc(ref_wfn, Process::environment.options);
 }
 
 SharedWavefunction py_psi_detci(SharedWavefunction ref_wfn)

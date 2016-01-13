@@ -30,7 +30,7 @@ using namespace boost;
 
 namespace psi{ namespace fnocc{
 
-PsiReturnType fnocc(Options &options) {
+SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
 
   boost::shared_ptr<Wavefunction> wfn;
 
@@ -39,12 +39,12 @@ PsiReturnType fnocc(Options &options) {
       // frozen natural orbital ccsd(t)
       if (options.get_bool("NAT_ORBS")) {
 
-          boost::shared_ptr<FrozenNO> fno(new FrozenNO(Process::environment.wavefunction(),options));
+          boost::shared_ptr<FrozenNO> fno(new FrozenNO(ref_wfn, options));
           fno->ComputeNaturalOrbitals();
           wfn = (boost::shared_ptr<Wavefunction>)fno;
 
       }else {
-          wfn = Process::environment.wavefunction();
+          wfn = ref_wfn;
       }
 
       // transform integrals
@@ -76,7 +76,7 @@ PsiReturnType fnocc(Options &options) {
   }else {
 
       tstart();
-      
+
       outfile->Printf("\n\n");
       outfile->Printf( "        *******************************************************\n");
       outfile->Printf( "        *                                                     *\n");
@@ -87,16 +87,16 @@ PsiReturnType fnocc(Options &options) {
       outfile->Printf( "        *                                                     *\n");
       outfile->Printf( "        *******************************************************\n");
       outfile->Printf("\n\n");
-      
+
 
       // three-index integrals are generated/read by fno class
-      boost::shared_ptr<DFFrozenNO> fno(new DFFrozenNO(Process::environment.wavefunction(),options));
+      boost::shared_ptr<DFFrozenNO> fno(new DFFrozenNO(ref_wfn,options));
       fno->ThreeIndexIntegrals();
       if ( options.get_bool("NAT_ORBS") ) {
           fno->ComputeNaturalOrbitals();
           wfn = (boost::shared_ptr<Wavefunction>)fno;
       }else {
-          wfn = Process::environment.wavefunction();
+          wfn = ref_wfn;
       }
       // ccsd(t)!
 
@@ -111,11 +111,9 @@ PsiReturnType fnocc(Options &options) {
       tstop();
 
 
-
-
   }
 
-  return  Success;
+  return wfn;
 } // end fnocc
 
 }} // end namespaces
