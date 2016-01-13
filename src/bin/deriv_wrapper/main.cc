@@ -35,22 +35,22 @@ using namespace boost;
 
 namespace psi { namespace deriv {
 
-PsiReturnType deriv(Options &)
+SharedMatrix deriv(SharedWavefunction ref_wfn, Options &)
 {
     tstart();
 
     outfile->Printf( " DERIV: Derivative code.\n   by Justin Turney\n\n");
 
-    Deriv test(Process::environment.wavefunction(),
-               0x1,
-               false,
-               false);
-    test.compute();
+    Deriv deriv_obj(ref_wfn,
+                    0x1,
+                    false,
+                    false);
+    SharedMatrix grad = deriv_obj.compute();
 
     // Shut down psi
     tstop();
 
-    return Success;
+    return grad;
 }
 
 }} // namespaces
