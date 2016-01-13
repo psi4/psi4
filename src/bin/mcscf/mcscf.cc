@@ -66,7 +66,7 @@ using namespace std;
  * @param argv[]
  * @return PSI_RETURN_SUCCESS if the program ran without any problem
  */
-PsiReturnType mcscf(Options& options)
+SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options)
 {
   using namespace psi;
   boost::shared_ptr<PSIO> psio(new PSIO);
@@ -78,6 +78,7 @@ PsiReturnType mcscf(Options& options)
   psio->open(PSIF_MCSCF,PSIO_OPEN_NEW);
   init_psi(options);
 
+  SharedWavefunction wfn;
   if(options.get_str("REFERENCE") == "RHF"  ||
      options.get_str("REFERENCE") == "ROHF" ||
      options.get_str("REFERENCE") == "UHF"  ||
@@ -88,7 +89,7 @@ PsiReturnType mcscf(Options& options)
       mints->integrals();
       delete mints;
       // Now, set the reference wavefunction for subsequent codes to use
-      boost::shared_ptr<Wavefunction> wfn(new SCF(options,psio,chkpt));
+      wfn = SharedWavefunction(new SCF(ref_wfn,options,psio,chkpt));
       Process::environment.set_wavefunction(wfn);
       moinfo_scf      = new psi::MOInfoSCF(options);
       wfn->compute_energy();
@@ -96,16 +97,14 @@ PsiReturnType mcscf(Options& options)
       Process::environment.globals["CURRENT REFERENCE ENERGY"] = wfn->reference_energy();
       Process::environment.globals["SCF TOTAL ENERGY"] = wfn->reference_energy();
   }else if(options.get_str("REFERENCE") == "MCSCF"){
-      outfile->Printf("\n\nREFERENCE = MCSCF not implemented yet");
-      
-      return Failure;
+      throw PSIEXCEPTION("REFERENCE = MCSCF not implemented yet");
   }
   if(moinfo_scf)     delete moinfo_scf;
   if(memory_manager) delete memory_manager;
 
   close_psi(options);
   psio->close(PSIF_MCSCF,1);
-  return Success;
+  return wfn;
 }
 
 /**

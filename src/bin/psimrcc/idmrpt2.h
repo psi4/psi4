@@ -42,7 +42,7 @@ class Updater;
 class IDMRPT2 : public CCManyBody
 {
 public:
-  IDMRPT2(Options &options);
+  IDMRPT2(SharedWavefunction ref_wfn, Options &options);
   virtual ~IDMRPT2();
   void compute_mrpt2_energy(Updater* updater);
 private:

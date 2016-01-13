@@ -49,10 +49,10 @@ using namespace std;
  * Runs a MRPT2 and a MRCCSD computation
  * @todo move this code in the CCMRCC class
  */
-void mrccsd(Options & options)
+void mrccsd(SharedWavefunction ref_wfn, Options & options)
 {
   // Initialize the mp2 module (integrals,fock matrix(ces),denominators)
-  CCMRCC        mrcc(options);
+  CCMRCC        mrcc(ref_wfn, options);
 
   if(options.get_bool("PERTURB_CBS") && options.get_bool("PERTURB_CBS_COUPLING")){
     mrcc.compute_first_order_amps();
@@ -81,10 +81,10 @@ void mrccsd(Options & options)
 /*!
  * Runs a CCSD_MP2 computation
  */
-void mp2_ccsd(Options &options)
+void mp2_ccsd(SharedWavefunction ref_wfn, Options &options)
 {
   // Initialize the mp2 module (integrals,fock matrix(ces),denominators)
-  MP2_CCSD        mp2_ccsd(options);
+  MP2_CCSD        mp2_ccsd(ref_wfn, options);
 
   // Compute the initial amplitudes and CCSD_MP2 energy
   mp2_ccsd.compute_mp2_ccsd_energy();
@@ -97,10 +97,10 @@ void mp2_ccsd(Options &options)
 /*!
  * Runs a MRPT2 computation
  */
-void mrpt2(Options &options)
+void mrpt2(SharedWavefunction ref_wfn, Options &options)
 {
   // Initialize the mp2 module (integrals,fock matrix(ces),denominators)
-  IDMRPT2        idmrpt2(options);
+  IDMRPT2        idmrpt2(ref_wfn, options);
 
   Updater* updater = dynamic_cast<Updater*>(new MkUpdater(options));
 
