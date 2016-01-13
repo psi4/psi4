@@ -58,8 +58,8 @@ using namespace std;
  * Allocate the effective Hamiltonian matrices and eigenvectors
  * @todo wrap the current operations in an init() function
  */
-CCManyBody::CCManyBody(Options &options):
-        options_(options)
+CCManyBody::CCManyBody(SharedWavefunction ref_wfn, Options &options):
+        ref_wfn_(ref_wfn), options_(options)
 {
   // Allocate memory for the eigenvector and the effective Hamiltonian
   allocate1(double,zeroth_order_eigenvector,moinfo->get_nrefs());
@@ -105,7 +105,7 @@ void CCManyBody::generate_integrals()
   )
   // CCSort reads the one and two electron integrals
   // and creates the Fock matrices
-  sorter   = new CCSort(out_of_core_sort);
+  sorter   = new CCSort(ref_wfn_, out_of_core_sort);
 //   blas->show_storage();
   blas->compute_storage_strategy();
 //   blas->show_storage();

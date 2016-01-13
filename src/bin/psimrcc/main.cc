@@ -79,7 +79,7 @@ namespace psi{
     MemoryManager       *memory_manager;
 
 PsiReturnType
-psimrcc(Options &options)
+psimrcc(SharedWavefunction ref_wfn, Options &options)
 {
   using namespace psi::psimrcc;
   _default_psio_lib_->open(PSIF_PSIMRCC_INTEGRALS,PSIO_OPEN_NEW);
@@ -117,9 +117,9 @@ psimrcc(Options &options)
   blas   = new CCBLAS(options);
   trans  = new CCTransform();
   if(options.get_str("CORR_WFN")=="PT2"){
-    mrpt2(options);
+    mrpt2(ref_wfn, options);
   }else{
-    mrccsd(options);
+    mrccsd(ref_wfn, options);
     if(nactel > 2 and nactmo > 2){
         outfile->Printf("\n   WARNING: PSIMRCC detected that you are not using a CAS(2,n) or CAS(m,2) active space");
         outfile->Printf("\n            You requested a CAS(%d,%d) space.  In this case the program will run",nactel,nactmo);

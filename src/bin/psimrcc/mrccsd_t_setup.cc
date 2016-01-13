@@ -416,7 +416,7 @@ void MRCCSD_T::check_intruders()
               double D_ijk = e_oo[mu][i_abs] + e_oo[mu][j_abs] + e_oo[mu][k_abs];
               double D_abc = e_vv[mu][a_abs] + e_vv[mu][b_abs] + e_vv[mu][c_abs];
               double denominator = D_ijk - D_abc;
-              if(abs(denominator) < 0.1){
+              if(std::abs(denominator) < 0.1){
                 std::vector<short> T3;
                 T3.push_back(i_abs);
                 T3.push_back(j_abs);
@@ -437,7 +437,7 @@ void MRCCSD_T::check_intruders()
               double D_ijk = e_oo[mu][i_abs] + e_oo[mu][j_abs] + e_OO[mu][k_abs];
               double D_abc = e_vv[mu][a_abs] + e_vv[mu][b_abs] + e_VV[mu][c_abs];
               double denominator = D_ijk - D_abc;
-              if(abs(denominator) < 0.1){
+              if(std::abs(denominator) < 0.1){
                 std::vector<short> T3;
                 T3.push_back(i_abs);
                 T3.push_back(j_abs);
