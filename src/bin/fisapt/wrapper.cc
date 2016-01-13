@@ -32,11 +32,11 @@ namespace psi{
 
 namespace fisapt {
 
-PsiReturnType fisapt(Options& options)
+PsiReturnType fisapt(SharedWavefunction ref_wfn, Options& options)
 {
     tstart();
 
-    boost::shared_ptr<fisapt::FISAPT> intra(new fisapt::FISAPT(Process::environment.wavefunction()));
+    boost::shared_ptr<fisapt::FISAPT> intra(new fisapt::FISAPT(ref_wfn, options));
     intra->compute_energy();
 
     tstop();
