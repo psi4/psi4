@@ -41,7 +41,7 @@ namespace psi{ namespace psimrcc{
 
 using namespace std;
 
-IDMRPT2::IDMRPT2(Options &options):CCManyBody(options)
+IDMRPT2::IDMRPT2(SharedWavefunction ref_wfn, Options &options):CCManyBody(ref_wfn, options)
 {
   triples_type = pt2;
   add_matrices();
@@ -382,7 +382,7 @@ void IDMRPT2::read_mrpt2_integrals()
 
   // CCSort reads the one and two electron integrals
   // and creates the Fock matrices
-  sorter = new CCSort(mrpt2_sort);
+  sorter = new CCSort(ref_wfn_, mrpt2_sort);
 
   END_TIMER(1);
 }

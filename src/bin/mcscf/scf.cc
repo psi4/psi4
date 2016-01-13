@@ -39,9 +39,12 @@ namespace mcscf{
 
 extern MemoryManager* memory_manager;
 
-SCF::SCF(Options& options_, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
-: Wavefunction(options_, psio, chkpt)
+SCF::SCF(SharedWavefunction ref_wfn, Options& options_, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
+: Wavefunction(options_)
 {
+    copy(ref_wfn);
+    psio_ = psio;
+    chkpt_ = chkpt;
 //  startup();
 }
 
