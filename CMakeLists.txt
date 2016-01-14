@@ -27,7 +27,7 @@ option(ENABLE_XHOST          "Enable processor-specific optimizations"     ON)
 option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
 option(ENABLE_PLUGINS        "Enable compilation of example plugins"       OFF)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
-option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     OFF)
+option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     ON)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
 # Modules requiring Fortran
 if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH)
@@ -40,7 +40,7 @@ CMAKE_DEPENDENT_OPTION(
        ENABLE_DKH            "Enable DKH in libmints"                      ON
                              "CMAKE_Fortran_COMPILER"                      OFF)
 CMAKE_DEPENDENT_OPTION(
-       ENABLE_PCMSOLVER      "Enable PCMSolver library"                    OFF
+       ENABLE_PCMSOLVER      "Enable PCMSolver library"                    ON
                              "CMAKE_Fortran_COMPILER"                      OFF)
 CMAKE_DEPENDENT_OPTION(
        ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF
