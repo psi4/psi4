@@ -671,8 +671,6 @@ double HF::finalize_E()
 
     // Orbitals are always saved, in case an MO guess is requested later
     save_orbitals();
-    if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
-        save_sapt_info();
 
     finalize();
 

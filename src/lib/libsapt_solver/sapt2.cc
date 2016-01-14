@@ -25,8 +25,10 @@
 
 namespace psi { namespace sapt {
 
-SAPT2::SAPT2(Options& options, boost::shared_ptr<PSIO> psio,
-  boost::shared_ptr<Chkpt> chkpt) : SAPT(options, psio, chkpt),
+SAPT2::SAPT2(SharedWavefunction Dimer, SharedWavefunction MonomerA,
+            SharedWavefunction MonomerB, Options& options,
+            boost::shared_ptr<PSIO>psio, boost::shared_ptr<Chkpt> chkpt)
+             : SAPT(Dimer, MonomerA, MonomerB, options, psio, chkpt),
   e_elst10_(0.0),
   e_elst12_(0.0),
   e_exch10_(0.0),

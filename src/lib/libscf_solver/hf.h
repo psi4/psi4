@@ -382,9 +382,6 @@ protected:
     /** Load orbitals from previous computation, projecting if needed **/
     virtual void load_orbitals();
 
-    /** Save SAPT info (TODO: Move to Python driver **/
-    virtual void save_sapt_info() {}
-
     /** Saves all wavefunction information to the checkpoint file*/
     void dump_to_checkpoint();
 
