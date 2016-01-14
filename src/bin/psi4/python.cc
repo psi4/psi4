@@ -38,7 +38,8 @@
 #include <iomanip>
 
 #include <libefp_solver/efp_solver.h>
-// #include <libmints/mints.h>
+#include <libmints/mints.h>
+#include <libmints/matrix.h>
 #include <libplugin/plugin.h>
 #include "libparallel/mpi_wrapper.h"
 #include "libparallel/local.h"
@@ -130,6 +131,7 @@ namespace scfgrad { SharedMatrix   scfhess(SharedWavefunction, Options&); }
 // Does not create a wavefunction
 namespace psimrcc { PsiReturnType psimrcc(SharedWavefunction, Options&); }
 namespace fisapt { PsiReturnType fisapt(SharedWavefunction, Options&); }
+namespace sapt { PsiReturnType sapt(SharedWavefunction, SharedWavefunction, SharedWavefunction, Options&); }
 
 #ifdef ENABLE_CHEMPS2
 namespace dmrg       { PsiReturnType dmrg(SharedWavefunction, Options&);     }
@@ -137,7 +139,6 @@ namespace dmrg       { PsiReturnType dmrg(SharedWavefunction, Options&);     }
 
 // Incomplete
 // namespace mints { PsiReturnType mints(Options&); }
-namespace sapt { PsiReturnType sapt(Options&); }
 
 // Needs to be deprecated
 namespace transqt2 { PsiReturnType transqt2(Options&); }
@@ -443,10 +444,11 @@ SharedWavefunction py_psi_dfmp2(SharedWavefunction ref_wfn)
 //         return 0.0;
 // }
 
-double py_psi_sapt()
+double py_psi_sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA,
+                   SharedWavefunction MonomerB)
 {
     py_psi_prepare_options_for_module("SAPT");
-    if (sapt::sapt(Process::environment.options) == Success) {
+    if (sapt::sapt(Dimer, MonomerA, MonomerB, Process::environment.options) == Success) {
         return Process::environment.globals["SAPT ENERGY"];
     }
     else

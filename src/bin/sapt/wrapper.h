@@ -27,7 +27,8 @@
 
 namespace psi { namespace sapt {
 
-PsiReturnType sapt(Options & options);
+PsiReturnType sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA,
+                   SharedWavefunction MonomerB, Options & options);
 
 }}
 

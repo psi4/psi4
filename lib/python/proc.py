@@ -2860,16 +2860,15 @@ def run_dfmp2(name, **kwargs):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     # Bypass routine scf if user did something special to get it to converge
-    cond1 = bool(('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf'])))
-    cond2 = 'restart_file' in kwargs
-    if not (cond1 or cond2):
-        scf_wfn = scf_helper(name, **kwargs)
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
     p4util.banner('DFMP2')
     psi4.print_out('\n')
 
-    dfmp2_wfn = psi4.dfmp2(scf_wfn)
+    dfmp2_wfn = psi4.dfmp2(ref_wfn)
     dfmp2_wfn.compute_energy()
 
     optstash.restore()
@@ -2985,7 +2984,6 @@ def run_mp2c(name, **kwargs):
     # inquire if above at all applies to dfmp2
 
     psi4.IO.set_default_namespace('dimer')
-    psi4.set_local_option('SCF', 'SAPT', '2-dimer')
     psi4.print_out('\n')
     p4util.banner('Dimer HF')
     psi4.print_out('\n')
@@ -3001,7 +2999,6 @@ def run_mp2c(name, **kwargs):
     if (ri == 'DF'):
         psi4.IO.change_file_namespace(97, 'dimer', 'monomerA')
     psi4.IO.set_default_namespace('monomerA')
-    psi4.set_local_option('SCF', 'SAPT', '2-monomer_A')
     psi4.print_out('\n')
     p4util.banner('Monomer A HF')
     psi4.print_out('\n')
@@ -3015,7 +3012,6 @@ def run_mp2c(name, **kwargs):
     if (ri == 'DF'):
         psi4.IO.change_file_namespace(97, 'monomerA', 'monomerB')
     psi4.IO.set_default_namespace('monomerB')
-    psi4.set_local_option('SCF', 'SAPT', '2-monomer_B')
     psi4.print_out('\n')
     p4util.banner('Monomer B HF')
     psi4.print_out('\n')
@@ -3099,15 +3095,14 @@ def run_sapt(name, **kwargs):
     # inquire if above at all applies to dfmp2
 
     psi4.IO.set_default_namespace('dimer')
-    psi4.set_local_option('SCF', 'SAPT', '2-dimer')
     psi4.print_out('\n')
     p4util.banner('Dimer HF')
     psi4.print_out('\n')
     if sapt_basis == 'dimer':
         psi4.set_global_option('DF_INTS_IO', 'SAVE')
-    e_dimer = scf_helper('RHF', **kwargs)
+    dimer_wfn = scf_helper('RHF', **kwargs)
     if do_delta_mp2:
-        run_mp2_select(name, bypass_scf=True, **kwargs)
+        run_mp2_select(name, ref_wfn=dimer_wfn, **kwargs)
         mp2_corl_interaction_e = psi4.get_variable('MP2 CORRELATION ENERGY')
     if sapt_basis == 'dimer':
         psi4.set_global_option('DF_INTS_IO', 'LOAD')
@@ -3116,26 +3111,24 @@ def run_sapt(name, **kwargs):
     if sapt_basis == 'dimer':
         psi4.IO.change_file_namespace(97, 'dimer', 'monomerA')
     psi4.IO.set_default_namespace('monomerA')
-    psi4.set_local_option('SCF', 'SAPT', '2-monomer_A')
     psi4.print_out('\n')
     p4util.banner('Monomer A HF')
     psi4.print_out('\n')
-    e_monomerA = scf_helper('RHF', **kwargs)
+    monomerA_wfn = scf_helper('RHF', **kwargs)
     if do_delta_mp2:
-        run_mp2_select(name, bypass_scf=True, **kwargs)
+        run_mp2_select(name, ref_wfn=monomerA_wfn, **kwargs)
         mp2_corl_interaction_e -= psi4.get_variable('MP2 CORRELATION ENERGY')
 
     activate(monomerB)
     if sapt_basis == 'dimer':
         psi4.IO.change_file_namespace(97, 'monomerA', 'monomerB')
     psi4.IO.set_default_namespace('monomerB')
-    psi4.set_local_option('SCF', 'SAPT', '2-monomer_B')
     psi4.print_out('\n')
     p4util.banner('Monomer B HF')
     psi4.print_out('\n')
-    e_monomerB = scf_helper('RHF', **kwargs)
+    monomerB_wfn = scf_helper('RHF', **kwargs)
     if do_delta_mp2:
-        run_mp2_select(name, bypass_scf=True, **kwargs)
+        run_mp2_select(name, ref_wfn=monomerB_wfn, **kwargs)
         mp2_corl_interaction_e -= psi4.get_variable('MP2 CORRELATION ENERGY')
         psi4.set_variable('SA MP2 CORRELATION ENERGY', mp2_corl_interaction_e)
     psi4.set_global_option('DF_INTS_IO', df_ints_io)
@@ -3177,7 +3170,7 @@ def run_sapt(name, **kwargs):
     psi4.print_out('\n')
     p4util.banner(name.upper())
     psi4.print_out('\n')
-    e_sapt = psi4.sapt()
+    e_sapt = psi4.sapt(dimer_wfn, monomerA_wfn, monomerB_wfn)
 
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
@@ -3230,50 +3223,45 @@ def run_sapt_ct(name, **kwargs):
     # inquire if above at all applies to dfmp2
 
     psi4.IO.set_default_namespace('dimer')
-    psi4.set_local_option('SCF', 'SAPT', '2-dimer')
     psi4.print_out('\n')
     p4util.banner('Dimer HF')
     psi4.print_out('\n')
     psi4.set_global_option('DF_INTS_IO', 'SAVE')
-    e_dimer = scf_helper('RHF', **kwargs)
+    dimer_wfn = scf_helper('RHF', **kwargs)
     psi4.set_global_option('DF_INTS_IO', 'LOAD')
 
     activate(monomerA)
     if (ri == 'DF'):
         psi4.IO.change_file_namespace(97, 'dimer', 'monomerA')
     psi4.IO.set_default_namespace('monomerA')
-    psi4.set_local_option('SCF', 'SAPT', '2-monomer_A')
     psi4.print_out('\n')
     p4util.banner('Monomer A HF (Dimer Basis)')
     psi4.print_out('\n')
-    e_monomerA = scf_helper('RHF', **kwargs)
+    monomerA_wfn = scf_helper('RHF', **kwargs)
 
     activate(monomerB)
     if (ri == 'DF'):
         psi4.IO.change_file_namespace(97, 'monomerA', 'monomerB')
     psi4.IO.set_default_namespace('monomerB')
-    psi4.set_local_option('SCF', 'SAPT', '2-monomer_B')
     psi4.print_out('\n')
     p4util.banner('Monomer B HF (Dimer Basis)')
     psi4.print_out('\n')
-    e_monomerB = scf_helper('RHF', **kwargs)
+    monomerB_wfn = scf_helper('RHF', **kwargs)
     psi4.set_global_option('DF_INTS_IO', df_ints_io)
 
     activate(monomerAm)
     psi4.IO.set_default_namespace('monomerAm')
-    psi4.set_local_option('SCF', 'SAPT', '2-monomer_A')
     psi4.print_out('\n')
     p4util.banner('Monomer A HF (Monomer Basis)')
     psi4.print_out('\n')
-    e_monomerA = scf_helper('RHF', **kwargs)
+    monomerAm_wfn = scf_helper('RHF', **kwargs)
 
     activate(monomerBm)
     psi4.IO.set_default_namespace('monomerBm')
-    psi4.set_local_option('SCF', 'SAPT', '2-monomer_B')
     psi4.print_out('\n')
     p4util.banner('Monomer B HF (Monomer Basis)')
     psi4.print_out('\n')
-    e_monomerB = scf_helper('RHF', **kwargs)
+    monomerBm_wfn = scf_helper('RHF', **kwargs)
 
     activate(molecule)
     psi4.IO.set_default_namespace('dimer')
@@ -3311,7 +3299,7 @@ def run_sapt_ct(name, **kwargs):
     psi4.print_out('\n')
     psi4.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
     psi4.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
-    e_sapt = psi4.sapt()
+    e_sapt = psi4.sapt(dimer_wfn, monomerA_wfn, monomerB_wfn)
     CTd = psi4.get_variable('SAPT CT ENERGY')
 
     psi4.print_out('\n')
@@ -3319,7 +3307,7 @@ def run_sapt_ct(name, **kwargs):
     psi4.print_out('\n')
     psi4.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerAm', 'dimer')
     psi4.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerBm', 'dimer')
-    e_sapt = psi4.sapt()
+    e_sapt = psi4.sapt(dimer_wfn, monomerAm_wfn, monomerBm_wfn)
     CTm = psi4.get_variable('SAPT CT ENERGY')
     CT = CTd - CTm
 
