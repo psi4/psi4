@@ -12,7 +12,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
 
 
     # Static-doc reST files
-    set(STATICDOC abbr_accents.rst adc.rst appendices.rst basissets.rst basissets_byelement.rst bestpractices_py.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst cp.rst customizing.rst db.rst detci.rst dfmp2.rst diatomic.rst documentation.rst energy.rst external.rst freq.rst glossary_psivariables.rst index.rst intercalls.rst interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst oeprop.rst opt.rst optking.rst plugins.rst programming.rst prop.rst psithonfunc.rst psithoninput.rst quickaddalias.rst basissets_tables.rst quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst fnocc.rst installfile.rst optionshandling.rst basissets_byfamily.rst psipep.rst pep0001.rst dftd3.rst occ.rst molden.rst cubeprop.rst dcft.rst relativistic.rst dkh.rst proc_py.rst psithonmol.rst cfour.rst mrcc_table_energy.rst cfour_table_energy.rst cfour_table_grad.rst prog_basissets.rst libefp.rst conda.rst)
+    set(STATICDOC abbr_accents.rst adc.rst appendices.rst basissets.rst basissets_byelement.rst bestpractices_py.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst cp.rst customizing.rst db.rst detci.rst dfmp2.rst diatomic.rst documentation.rst energy.rst external.rst freq.rst glossary_psivariables.rst index.rst intercalls.rst interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst oeprop.rst opt.rst optking.rst plugins.rst programming.rst prop.rst psithonfunc.rst psithoninput.rst quickaddalias.rst basissets_tables.rst quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst fnocc.rst installfile.rst optionshandling.rst basissets_byfamily.rst psipep.rst pep0001.rst dftd3.rst occ.rst molden.rst cubeprop.rst dcft.rst relativistic.rst dkh.rst proc_py.rst psithonmol.rst cfour.rst mrcc_table_energy.rst cfour_table_energy.rst cfour_table_grad.rst prog_basissets.rst libefp.rst conda.rst pcmsolver.rst)
     # * compute relative path btwn top_srcdir and objdir/doc/sphinxman
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
         "import sys; import os; print('/' + os.path.relpath('${CMAKE_SOURCE_DIR}', '${CCBD}') + '/../')"
@@ -277,7 +277,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
         # * full, proper build with latex builder
         add_custom_command(
             TARGET sphinxpdf POST_BUILD
-            COMMAND ${SPHINX_EXECUTABLE} 
+            COMMAND ${SPHINX_EXECUTABLE}
                 -b latex              # builder
                 -d ${CCBD}/_doctrees  # cache w/ pickled reST
                 -c ${CCBD}/source     # whereabouts of conf.py
@@ -287,7 +287,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
         add_custom_command(
             TARGET sphinxpdf POST_BUILD
             COMMAND ${PDFLATEX_COMPILER}
-                -interaction=nonstopmode 
+                -interaction=nonstopmode
                 "Psi4.tex" > /dev/null 2>&1
             WORKING_DIRECTORY ${CCBD}/latex
             COMMENT "Building remarkably ugly PDF documentation from LaTeX ... (ignore the make exit error)")
