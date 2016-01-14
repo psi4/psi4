@@ -38,7 +38,7 @@
 namespace psi { namespace thermo {
   void title(void);
 
-PsiReturnType thermo(Options &options) {
+PsiReturnType thermo(SharedWavefunction ref_wfn, Options &options) {
   title();
 
 
@@ -46,22 +46,22 @@ PsiReturnType thermo(Options &options) {
   double P = options.get_double("P"); // P in Pascals
 
   // Read in essential data
-  const boost::shared_ptr<Wavefunction> wf = psi::Process::environment.wavefunction();
+//  const boost::shared_ptr<Wavefunction> wf = psi::Process::environment.wavefunction();
 
-  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
+  const boost::shared_ptr<Molecule> mol = ref_wfn->molecule();
 
   // use this one?
   double E_elec = psi::Process::environment.globals["CURRENT ENERGY"];
 
   int Natom = mol->natom();
   int multiplicity = mol->multiplicity();
-  boost::shared_ptr<Vector> vib_freqs;
+  boost::shared_ptr<Vector> vib_freqs = ref_wfn->frequencies();
 
-  if (psi::Process::environment.wavefunction()) {
-    vib_freqs = psi::Process::environment.wavefunction()->frequencies();
-  } else {
-    vib_freqs = psi::Process::environment.frequencies();
-  }
+  //if (psi::Process::environment.wavefunction()) {
+  //  vib_freqs = psi::Process::environment.wavefunction()->frequencies();
+  //} else {
+  //  vib_freqs = psi::Process::environment.frequencies();
+  //}
 
   Vector rot_const = mol->rotational_constants();
   RotorType rot_type = mol->rotor_type();
