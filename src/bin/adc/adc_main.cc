@@ -58,7 +58,6 @@ SharedWavefunction adc(SharedWavefunction ref_wfn, Options &options)
     outfile->Printf( "(: 3)))== kskkskkskksk         BOOOoooooOOOON!\n");
     outfile->Printf( "  ∪==\n");
 
-
     SharedWavefunction base_adcwfn = static_cast<SharedWavefunction>(adcwfn);
     Process::environment.set_wavefunction(base_adcwfn);
     return base_adcwfn;

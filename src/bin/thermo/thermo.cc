@@ -51,7 +51,7 @@ PsiReturnType thermo(SharedWavefunction ref_wfn, Options &options) {
   const boost::shared_ptr<Molecule> mol = ref_wfn->molecule();
 
   // use this one?
-  double E_elec = psi::Process::environment.globals["CURRENT ENERGY"];
+  double E_elec = ref_wfn->reference_energy();
 
   int Natom = mol->natom();
   int multiplicity = mol->multiplicity();
@@ -103,9 +103,9 @@ PsiReturnType thermo(SharedWavefunction ref_wfn, Options &options) {
     nvib_freqs = 3 * Natom - 6;
   if (vib_freqs->dim() != nvib_freqs) {
     outfile->Printf("\n");
-    outfile->Printf("    Not all frequencies have been computed, skipping thermodynamic analysis.\n");
-    return Failure;
-    //throw PsiException("thermo(): Wrong number of vibrational frequencies provided.", __FILE__, __LINE__);
+    // outfile->Printf("    Not all frequencies have been computed, skipping thermodynamic analysis.\n");
+    // return Failure;
+    throw PsiException("thermo(): Wrong number of vibrational frequencies provided.", __FILE__, __LINE__);
     //outfile->Printf( "    ERROR: Number of vibrational frequencies provided inconsistent with rotor type and number of atoms.\n");
   }
 

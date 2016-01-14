@@ -36,8 +36,9 @@ ADCWfn::ADCWfn(SharedWavefunction ref_wfn, Options& options) :
 {
 
     copy(ref_wfn);
+    reference_wavefunction_ = ref_wfn;
 
-    char **irreps_      = Process::environment.molecule()->irrep_labels();
+    char **irreps_      = molecule_->irrep_labels();
     aoccpi_             = new int[nirrep_];
     boccpi_             = new int[nirrep_];
     avirpi_             = new int[nirrep_];
