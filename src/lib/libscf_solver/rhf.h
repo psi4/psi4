@@ -56,12 +56,6 @@ protected:
     virtual double compute_E();
     virtual bool stability_analysis();
 
-    //Some stuff for Ed Hohenstein's SAPT code
-    // TODO: This must be removed for a conforming SCF module
-    // The SAPT driver should save the three references and extract info from
-    // That point
-    void save_sapt_info();
-
     virtual void form_F();
     virtual void form_G();
     virtual void compute_orbital_gradient(bool save_fock);

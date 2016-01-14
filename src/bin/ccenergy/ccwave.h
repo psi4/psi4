@@ -23,6 +23,7 @@
 #ifndef CCWAVE_H
 #define CCWAVE_H
 
+#include <libmints/wavefunction.h>
 // Forward declarations
 namespace boost {
 template<class T> class shared_ptr;
