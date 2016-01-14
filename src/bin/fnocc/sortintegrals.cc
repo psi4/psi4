@@ -37,7 +37,7 @@ struct integral{
   ULI ind;
   double val;
 };
-void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options,bool iscim);
+void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options);
 void klcd_terms_incore(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,double*klcd);
 void ijkl_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI&nijkl,struct integral*ijkl);
 void ijak_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nijak,struct integral*ijak);
@@ -65,7 +65,7 @@ void SortBlockNewNew(ULI*nelem,ULI blockdim,struct integral*buffer,double*tmp,UL
 }}
 
 namespace psi{namespace fnocc{
-void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options,bool iscim){
+void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options){
   struct iwlbuf Buf;
   iwl_buf_init(&Buf,PSIF_MO_TEI,0.0,1,1);
   
@@ -78,11 +78,11 @@ void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&op
   outfile->Printf("\n");
   outfile->Printf("\n");
   
-  SortAllIntegrals(&Buf,nfzc,nfzv,norbs,ndoccact,nvirt,options,iscim);
+  SortAllIntegrals(&Buf,nfzc,nfzv,norbs,ndoccact,nvirt,options);
 
   iwl_buf_close(&Buf,1);
 }
-void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options,bool iscim){
+void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options){
 
   double val;
   ULI o = ndoccact;
@@ -300,22 +300,18 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   /**
     * first buffer (read in when Buf was initialized)
     */
-  bool fnocc = options.get_bool("NAT_ORBS") || options.get_bool("USE_DF_INTS");
-  if (iscim) fnocc = true;
   for (idx=4*Buf->idx; Buf->idx<Buf->inbuf; Buf->idx++) {
       p = (ULI) lblptr[idx++];
       q = (ULI) lblptr[idx++];
       r = (ULI) lblptr[idx++];
       s = (ULI) lblptr[idx++];
 
-      if (fnocc){
-         if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
-         if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
-         p -= fstact;
-         q -= fstact;
-         r -= fstact;
-         s -= fstact;
-      }
+      if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
+      if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
+      p -= fstact;
+      q -= fstact;
+      r -= fstact;
+      s -= fstact;
 
       pq   = Position(p,q);
       rs   = Position(r,s);
@@ -411,14 +407,12 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
           r = (ULI) lblptr[idx++];
           s = (ULI) lblptr[idx++];
 
-          if (fnocc){
-             if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
-             if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
-             p -= fstact;
-             q -= fstact;
-             r -= fstact;
-             s -= fstact;
-          }
+          if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
+          if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
+          p -= fstact;
+          q -= fstact;
+          r -= fstact;
+          s -= fstact;
 
           pq   = Position(p,q);
           rs   = Position(r,s);

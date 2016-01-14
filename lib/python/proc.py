@@ -3669,12 +3669,6 @@ def run_fnocc(name, **kwargs):
             mints = psi4.MintsHelper()
             mints.integrals()
 
-    # if this is not cim or FNO-CC, run transqt2.  otherwise, libtrans will be used
-    if psi4.get_option('FNOCC', 'NAT_ORBS') == False and psi4.get_option('FNOCC', 'RUN_MP2') == False:
-        if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
-            psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD')
-            psi4.transqt2()
-
     # run ccsd
     psi4.fnocc()
 
@@ -3783,11 +3777,6 @@ def run_cepa(name, **kwargs):
         if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
             mints = psi4.MintsHelper()
             mints.integrals()
-
-    if psi4.get_option('FNOCC', 'NAT_ORBS') == False:
-        if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
-            psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD')
-            psi4.transqt2()
 
     # run cepa
     psi4.fnocc()
