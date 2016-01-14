@@ -30,9 +30,10 @@ if(PERL_FOUND AND SPHINX_FOUND)
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/psi4.py ${CCBD}/source)
     # * copy logo image file (configure_file corrupts file)
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/psi4banner.png ${CCBD}/source)
-
     # * copy favicon image file (configure_file corrupts file)
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/favicon-psi4.ico ${CCBD}/source)
+    # * copy vmd orbital image file (configure_file corrupts file)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/AlphaMOs.png ${CCBD}/source)
 
 
     # Autodoc basis sets
