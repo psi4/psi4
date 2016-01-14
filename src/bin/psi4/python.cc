@@ -119,6 +119,7 @@ namespace dfmp2 { SharedWavefunction dfmp2(SharedWavefunction, Options&); }
 namespace dfoccwave { SharedWavefunction dfoccwave(SharedWavefunction, Options&); }
 namespace libfock { SharedWavefunction libfock(SharedWavefunction, Options&); }
 namespace fnocc { SharedWavefunction fnocc(SharedWavefunction, Options&); }
+namespace occwave { SharedWavefunction occwave(SharedWavefunction, Options&); }
 namespace mcscf { SharedWavefunction mcscf(SharedWavefunction, Options&); }
 namespace scf { SharedWavefunction     scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
 namespace lmp2 { SharedWavefunction lmp2(SharedWavefunction, Options&); }
@@ -180,7 +181,6 @@ namespace cceom { PsiReturnType cceom(Options&); }
 
 namespace efp { PsiReturnType efp_init(Options&); }
 namespace efp { PsiReturnType efp_set_options(); }
-namespace occwave { PsiReturnType occwave(Options&); }
 
 namespace mrcc {
 PsiReturnType mrcc_generate_input(Options&, const boost::python::dict&);
@@ -282,18 +282,15 @@ SharedMatrix py_psi_deriv(SharedWavefunction ref_wfn)
     return deriv::deriv(ref_wfn, Process::environment.options);
 }
 
-double py_psi_occ()
+SharedWavefunction py_psi_occ(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("OCC");
-    if (occwave::occwave(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return occwave::occwave(ref_wfn, Process::environment.options);
 }
 
 SharedWavefunction py_psi_dfocc(SharedWavefunction ref_wfn)
 {
+    ref_wfn->Ca()->print();
     return dfoccwave::dfoccwave(ref_wfn, Process::environment.options);
 }
 

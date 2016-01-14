@@ -151,6 +151,63 @@ void Wavefunction::copy(const Wavefunction* other)
     tpdm_gradient_contribution_ = other->tpdm_gradient_contribution_;
 }
 
+SharedWavefunction Wavefunction::make_ghost_wavefunction()
+{
+    // Because we are terrible at C++
+    SharedWavefunction ghost(new Wavefunction(options_));
+
+    ghost->name_ = name_;
+    ghost->basisset_ = basisset_;
+    ghost->sobasisset_ = sobasisset_;
+    ghost->AO2SO_ = AO2SO_;
+    ghost->S_ = S_;
+    ghost->H_ = H_;
+    ghost->molecule_ = molecule_;
+
+    ghost->psio_ = psio_;
+    ghost->chkpt_ = chkpt_;
+    ghost->integral_ = integral_;
+    ghost->factory_ = factory_;
+    ghost->memory_ = memory_;
+    ghost->nalpha_ = nalpha_;
+    ghost->nbeta_ = nbeta_;
+    ghost->nfrzc_ = nfrzc_;
+
+    ghost->print_ = print_;
+    ghost->debug_ = debug_;
+    ghost->density_fitted_ = density_fitted_;
+
+    ghost->energy_ = energy_;
+    ghost->efzc_ = efzc_;
+
+    ghost->doccpi_ = doccpi_;
+    ghost->soccpi_ = soccpi_;
+    ghost->frzcpi_ = frzcpi_;
+    ghost->frzvpi_ = frzvpi_;
+    ghost->nalphapi_ = nalphapi_;
+    ghost->nbetapi_ = nbetapi_;
+    ghost->nsopi_ = nsopi_;
+    ghost->nmopi_ = nmopi_;
+
+    ghost->nso_ = nso_;
+    ghost->nmo_ = nmo_;
+    ghost->nirrep_ = nirrep_;
+
+    ghost->Ca_ = Ca_;
+    ghost->Cb_ = Cb_;
+    ghost->Da_ = Da_;
+    ghost->Db_ = Db_;
+    ghost->Fa_ = Fa_;
+    ghost->Fb_ = Fb_;
+    ghost->epsilon_a_ = epsilon_a_;
+    ghost->epsilon_b_ = epsilon_b_;
+
+    ghost->gradient_ = gradient_;
+
+    ghost->tpdm_gradient_contribution_ = tpdm_gradient_contribution_;
+    return ghost;
+}
+
 void Wavefunction::common_init()
 {
     Wavefunction::initialize_singletons();
@@ -769,6 +826,7 @@ void Wavefunction::set_normalmodes(boost::shared_ptr<Vector>& norms)
 void Wavefunction::save() const
 {
 }
+
 
 /* Xiao Wang */
 void Wavefunction::set_DCFT(bool val)

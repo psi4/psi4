@@ -66,7 +66,7 @@ ADCWfn::rhf_prepare_tensors()
     global_dpd_->buf4_sort_axpy(&V, PSIF_ADC, prqs, ID("[O,V]"), ID("[O,V]"), "A1234", 2.0);
     global_dpd_->buf4_close(&V);
     global_dpd_->buf4_init(&Aovov, PSIF_ADC, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A1234");
-    char **irrep_      = Process::environment.molecule()->irrep_labels();
+    char **irrep_      = molecule_->irrep_labels();
     for(int h = 0;h < nirrep_;h++){
         global_dpd_->buf4_mat_irrep_init(&Aovov, h);
         global_dpd_->buf4_mat_irrep_rd(&Aovov, h);
