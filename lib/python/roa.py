@@ -108,7 +108,7 @@ def generate_inputs(name,db):
     natom = molecule.natom()
 
     # Get list of displacements
-    displacement_geoms = psi4.atomic_displacements()
+    displacement_geoms = psi4.atomic_displacements(molecule)
 
     # Sanity check!
     # Until we append the original geometry

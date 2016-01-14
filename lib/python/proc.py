@@ -2703,7 +2703,7 @@ def run_dft(name, **kwargs):
     elif (user_ref == 'CUHF'):
         raise ValidationError('CUHF reference for DFT is not available.')
 
-    run_scf(name, **kwargs)
+    scf_wfn = run_scf(name, **kwargs)
     returnvalue = psi4.get_variable('CURRENT ENERGY')
 
     for ssuper in superfunctional_list():
@@ -2714,11 +2714,14 @@ def run_dft(name, **kwargs):
         if dfun.is_c_scs_hybrid():
             psi4.set_local_option('DFMP2', 'MP2_OS_SCALE', dfun.c_os_alpha())
             psi4.set_local_option('DFMP2', 'MP2_SS_SCALE', dfun.c_ss_alpha())
-            psi4.dfmp2()
+            dfmp2_wfn = psi4.dfmp2(scf_wfn)
+            dfmp2_wfn.compute_energy()
+
             vdh = dfun.c_alpha() * psi4.get_variable('SCS-MP2 CORRELATION ENERGY')
 
         else:
-            psi4.dfmp2()
+            dfmp2_wfn = psi4.dfmp2(scf_wfn)
+            dfmp2_wfn.compute_energy()
             vdh = dfun.c_alpha() * psi4.get_variable('MP2 CORRELATION ENERGY')
 
         # TODO: delete these variables, since they don't mean what they look to mean?

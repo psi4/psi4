@@ -41,7 +41,7 @@ namespace psi { namespace findif {
 
 int iE0(std::vector<int> & symm_salcs, int pts, int ii, int jj, int disp_i, int disp_j);
 
-PsiReturnType fd_hessian_0(Options &options, const boost::python::list& E_list)
+SharedMatrix fd_hessian_0(boost::shared_ptr<Molecule> mol, Options &options, const boost::python::list& E_list)
 {
   int pts = options.get_int("POINTS");
   double disp_size = options.get_double("DISP_SIZE");
@@ -52,7 +52,7 @@ PsiReturnType fd_hessian_0(Options &options, const boost::python::list& E_list)
   outfile->Printf( "  Computing totally symmetric second-derivative force constants\n");
   outfile->Printf( "  from symmetry-adapted, cartesian coordinates (fd_hessian_0).\n");
 
-  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
+//  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   boost::shared_ptr<MatrixFactory> fact;
   // do all for now at least
   boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();
@@ -207,7 +207,9 @@ mat_print(B, dim, 3*Natom, "outfile");
 outfile->Printf( "\n\tTmat.\n");
 mat_print(tmat, 3*Natom, dim, "outfile");
 
-    double **Hx = block_matrix(3*Natom, 3*Natom);
+//    double **Hx = block_matrix(3*Natom, 3*Natom);
+    SharedMatrix mat_Hx = SharedMatrix(new Matrix("Hessian", 3*Natom, 3*Natom));
+    double** Hx = mat_Hx->pointer(); 
 
     C_DGEMM('n', 'n', 3*Natom, 3*Natom, dim, 1.0, tmat[0], dim, B[0], 3*Natom, 0, Hx[0], 3*Natom);
 
@@ -233,12 +235,12 @@ mat_print(tmat, 3*Natom, dim, "outfile");
         }
       }
     }
-    free_block(Hx);
+    //free_block(Hx);
     free_block(tmat);
 
   outfile->Printf("\n-------------------------------------------------------------\n");
 
-  return Success;
+  return mat_Hx;
 }
 
 /* iE0() returns index for the energy of a displacement, according to the order

@@ -801,7 +801,7 @@ def gradient(name, **kwargs):
             print('Performing finite difference calculations')
 
         # Obtain list of displacements
-        displacements = psi4.fd_geoms_1_0()
+        displacements = psi4.fd_geoms_1_0(molecule)
         ndisp = len(displacements)
 
         # This version is pretty dependent on the reference geometry being last (as it is now)
@@ -911,7 +911,7 @@ def gradient(name, **kwargs):
             psi4.set_variable('CURRENT ENERGY', energies[-1])
 
         # Obtain the gradient
-        psi4.fd_1_0(energies)
+        psi4.fd_1_0(molecule, energies)
         # The last item in the list is the reference energy, return it
         optstash.restore()
         return energies[-1]
@@ -1537,7 +1537,7 @@ def hessian(name, **kwargs):
             raise ValidationError('Frequency execution mode \'sow\' not yet implemented for finite difference of analytic gradient calculation.')
 
         # Obtain list of displacements
-        displacements = psi4.fd_geoms_freq_1(irrep)
+        displacements = psi4.fd_geoms_freq_1(molecule, irrep)
 
         molecule.reinterpret_coordentry(False)
         molecule.fix_orientation(True)
@@ -1572,7 +1572,7 @@ def hessian(name, **kwargs):
             # clean may be necessary when changing irreps of displacements
             psi4.clean()
 
-        psi4.fd_freq_1(gradients, irrep)
+        psi4.fd_freq_1(molecule, gradients, irrep)
 
         print(' Computation complete.')
 
@@ -1611,7 +1611,7 @@ def hessian(name, **kwargs):
                 psi4.set_global_option('E_CONVERGENCE', 10)
 
         # Obtain list of displacements
-        displacements = psi4.fd_geoms_freq_0(irrep)
+        displacements = psi4.fd_geoms_freq_0(molecule, irrep)
         molecule.fix_orientation(True)
         molecule.reinterpret_coordentry(False)
         # Make a note of the undisplaced molecule's symmetry
@@ -1719,7 +1719,7 @@ def hessian(name, **kwargs):
             return None
 
         # Obtain the gradient. This function stores the gradient in the wavefunction.
-        psi4.fd_freq_0(energies, irrep)
+        psi4.fd_freq_0(molecule, energies, irrep)
 
         print(' Computation complete.')
 
