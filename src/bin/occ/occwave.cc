@@ -33,10 +33,11 @@ using namespace boost;
 
 namespace psi { namespace occwave{
 
-OCCWave::OCCWave(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
-    : Wavefunction(options, _default_psio_lib_)
+OCCWave::OCCWave(SharedWavefunction ref_wfn, Options &options)
+    : Wavefunction(options)
 {
-    reference_wavefunction_ = reference_wavefunction;
+    copy(ref_wfn);
+    reference_wavefunction_ = ref_wfn;
     common_init();
 }//
 
@@ -262,7 +263,7 @@ if (reference_ == "RESTRICTED") {
     spaces.push_back(MOSpace::vir);
 
 if (wfn_type_ == "OMP2" && incore_iabc_ == 0) {
-    ints = new IntegralTransform(reference_wavefunction_, spaces,
+    ints = new IntegralTransform(make_ghost_wavefunction(), spaces,
                            IntegralTransform::Restricted,
                            IntegralTransform::IWLAndDPD,
                            IntegralTransform::QTOrder,
@@ -271,7 +272,7 @@ if (wfn_type_ == "OMP2" && incore_iabc_ == 0) {
 }
 
 else {
-    ints = new IntegralTransform(reference_wavefunction_, spaces,
+    ints = new IntegralTransform(make_ghost_wavefunction(), spaces,
                            IntegralTransform::Restricted,
                            IntegralTransform::DPDOnly,
                            IntegralTransform::QTOrder,
@@ -345,7 +346,7 @@ else if (reference_ == "UNRESTRICTED") {
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
 
-    ints = new IntegralTransform(reference_wavefunction_, spaces,
+    ints = new IntegralTransform(make_ghost_wavefunction(), spaces,
                            IntegralTransform::Unrestricted,
                            IntegralTransform::DPDOnly,
                            IntegralTransform::QTOrder,

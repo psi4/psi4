@@ -1805,11 +1805,12 @@ def frequency(name, **kwargs):
     kwargs = p4util.kwargs_lower(kwargs)
 
     # Compute the hessian
-    hessian(name, **kwargs)
+    hess = hessian(name, **kwargs)
 
     if not (('mode' in kwargs) and (kwargs['mode'].lower() == 'sow')):
         # call thermo module
-        psi4.thermo()
+        raise Exception('Thermo will fail because we are not yet passing it a wavefunction') 
+        psi4.thermo(hess)
 
     for postcallback in hooks['frequency']['post']:
         postcallback(lowername, **kwargs)

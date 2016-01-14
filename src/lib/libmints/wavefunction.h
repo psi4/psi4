@@ -270,6 +270,9 @@ public:
     void copy(boost::shared_ptr<Wavefunction> other);
     void copy(const Wavefunction* other);
 
+    /// Returns a shallow copy of this
+    SharedWavefunction make_ghost_wavefunction();
+
     virtual ~Wavefunction();
 
     /// Compute energy. Subclasses override this function to compute its energy.

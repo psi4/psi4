@@ -67,11 +67,12 @@ def run_dcft(name, **kwargs):
         raise ValidationError('Frozen core is not available for DCFT.')
 
     # Bypass routine scf if user did something special to get it to converge
-    ref_wfn = kwargs.get('ref_wfn', None)
-    if ref_wfn is None:
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         ref_wfn = scf_helper(name, **kwargs)
+    else:
+        ref_wfn = wavefunction()
 
-    dcft_wfn = psi4.dcft(scf_wfn)
+    dcft_wfn = psi4.dcft(ref_wfn)
     return dcft_wfn
 
 
@@ -124,9 +125,10 @@ def run_dfomp2(name, **kwargs):
     print("About to build the wavefunction")
     print(name)
     print(psi4.get_global_option('WFN_TYPE'))
+    print(scf_wfn);
     dfocc_wfn = psi4.dfocc(scf_wfn)
     print("Build the wavefunction")
-    dfocc_wfn.compute_energy()
+#    dfocc_wfn.compute_energy()
 
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
@@ -1231,9 +1233,11 @@ def run_conv_omp2(name, **kwargs):
         ['SCF', 'SCF_TYPE'])
 
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
+        scf_wfn = scf_helper(name, **kwargs)
+    else:
+        scf_wfn = wavefunction()
 
-    psi4.occ()
+    psi4.occ(scf_wfn)
 
     #return psi4.occ()
     optstash.restore()
@@ -1397,7 +1401,9 @@ def run_omp3(name, **kwargs):
 
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, **kwargs)
+    else:
+        ref_wfn = wavefunction()
 
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
     # If the scf type is DF/CD, then the AO integrals were never written to disk
@@ -1405,7 +1411,7 @@ def run_omp3(name, **kwargs):
         psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
         psi4.MintsHelper().integrals()
 
-    psi4.occ()
+    psi4.occ(ref_wfn)
 
     optstash.restore()
 
