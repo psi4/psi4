@@ -36,14 +36,14 @@ common solvents, etc.) listed :ref:`here <sec:availableEFPFragments>`
 with source :source:`lib/efpfrag`.  Any of these may be used directly in
 a |PSIfour| input file as described :ref:`here <sec:usingEFPFragments>`.
 
-.. note:: The built-in fragment library distributed with Q-Chem (as of version 4.0.1) is *not*
-   equivalent to that distributed with LIBEFP. Although many of the same
-   molecules are present and should perform similarly in computations,
-   exact matches of fragment geometries or efp energies should not be
-   expected. See files in test case directories :source:`qchem-efp-sp
-   <tests/libefp/qchem-efp-sp>` and :source:`qchem-qmefp-sp
-   <tests/libefp/qchem-qmefp-sp>` for equivalent Q-Chem and |PSIfour|
-   EFP input files.
+.. comment .. note:: The built-in fragment library distributed with Q-Chem (as of version 4.0.1) is *not*
+.. comment    equivalent to that distributed with LIBEFP. Although many of the same
+.. comment    molecules are present and should perform similarly in computations,
+.. comment    exact matches of fragment geometries or efp energies should not be
+.. comment    expected. See files in test case directories :source:`qchem-efp-sp
+.. comment    <tests/libefp/qchem-efp-sp>` and :source:`qchem-qmefp-sp
+.. comment    <tests/libefp/qchem-qmefp-sp>` for equivalent Q-Chem and |PSIfour|
+.. comment    EFP input files.
 
 Creating new efp fragments requires the `GAMESS
 <http://www.msg.ameslab.gov/gamess/>`_ quantum chemistry package.
