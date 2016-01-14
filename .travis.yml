@@ -300,5 +300,5 @@ before_script:
 - python setup --cxx=${CXX_COMPILER} --cc=${C_COMPILER} --fc=${Fortran_COMPILER} --type=${BUILD_TYPE} objdir
 - cd objdir
 script:
-- VERBOSE=1 make -j 2
+- make -j 2
   #- ctest -V
