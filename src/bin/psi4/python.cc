@@ -129,13 +129,33 @@ namespace scfgrad { SharedMatrix   scfgrad(SharedWavefunction, Options&); }
 namespace scfgrad { SharedMatrix   scfhess(SharedWavefunction, Options&); }
 
 // Does not create a wavefunction
-namespace psimrcc { PsiReturnType psimrcc(SharedWavefunction, Options&); }
 namespace fisapt { PsiReturnType fisapt(SharedWavefunction, Options&); }
+namespace psimrcc { PsiReturnType psimrcc(SharedWavefunction, Options&); }
 namespace sapt { PsiReturnType sapt(SharedWavefunction, SharedWavefunction, SharedWavefunction, Options&); }
+namespace thermo { PsiReturnType thermo(SharedWavefunction, Options&); }
 
 #ifdef ENABLE_CHEMPS2
 namespace dmrg       { PsiReturnType dmrg(SharedWavefunction, Options&);     }
 #endif
+
+// Finite difference cases
+namespace findif {
+std::vector<SharedMatrix> fd_geoms_1_0(boost::shared_ptr<Molecule>, Options&);
+std::vector<SharedMatrix> fd_geoms_freq_0(boost::shared_ptr<Molecule>, Options&,
+                                          int irrep = -1);
+std::vector<SharedMatrix> fd_geoms_freq_1(boost::shared_ptr<Molecule>, Options&,
+                                          int irrep = -1);
+std::vector<SharedMatrix> fd_geoms_hessian_0(boost::shared_ptr<Molecule>, Options&);
+std::vector<SharedMatrix> atomic_displacements(boost::shared_ptr<Molecule>, Options&);
+
+SharedMatrix fd_1_0(boost::shared_ptr<Molecule>, Options&, const boost::python::list&);
+SharedMatrix fd_freq_0(boost::shared_ptr<Molecule>, Options&, const boost::python::list&, int irrep = -1);
+SharedMatrix fd_freq_1(boost::shared_ptr<Molecule>, Options&, const boost::python::list&, int irrep = -1);
+SharedMatrix fd_hessian_0(boost::shared_ptr<Molecule>, Options&, const boost::python::list&);
+SharedMatrix displace_atom(SharedMatrix geom, const int atom,
+                           const int coord, const int sign,
+                           const double disp_size);
+}
 
 // Incomplete
 // namespace mints { PsiReturnType mints(Options&); }
@@ -161,30 +181,12 @@ namespace cceom { PsiReturnType cceom(Options&); }
 namespace efp { PsiReturnType efp_init(Options&); }
 namespace efp { PsiReturnType efp_set_options(); }
 namespace occwave { PsiReturnType occwave(Options&); }
-namespace thermo { PsiReturnType thermo(Options&); }
 
 namespace mrcc {
 PsiReturnType mrcc_generate_input(Options&, const boost::python::dict&);
 PsiReturnType mrcc_load_ccdensities(Options&, const boost::python::dict&);
 }
 
-namespace findif {
-std::vector<boost::shared_ptr<Matrix> > fd_geoms_1_0(Options&);
-//std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
-std::vector<boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options&, int irrep = -1);
-std::vector<boost::shared_ptr<Matrix> > fd_geoms_freq_1(Options&, int irrep = -1);
-std::vector<boost::shared_ptr<Matrix> > fd_geoms_hessian_0(Options&);
-std::vector<boost::shared_ptr<Matrix> > atomic_displacements(Options&);
-
-PsiReturnType fd_1_0(Options&, const boost::python::list&);
-//PsiReturnType fd_2_0(Options &, const boost::python::list&);
-PsiReturnType fd_freq_0(Options&, const boost::python::list&, int irrep = -1);
-PsiReturnType fd_freq_1(Options&, const boost::python::list&, int irrep = -1);
-PsiReturnType fd_hessian_0(Options&, const boost::python::list&);
-SharedMatrix displace_atom(SharedMatrix geom, const int atom,
-                           const int coord, const int sign,
-                           const double disp_size);
-}
 
 extern int read_options(const std::string& name, Options& options, bool suppress_printing = false);
 extern void print_version(std::string);
@@ -329,71 +331,58 @@ PsiReturnType py_psi_mrcc_load_densities(const boost::python::dict& level)
     return mrcc::mrcc_load_ccdensities(Process::environment.options, level);
 }
 
-std::vector<SharedMatrix> py_psi_fd_geoms_1_0()
+std::vector<SharedMatrix> py_psi_fd_geoms_1_0(boost::shared_ptr<Molecule> mol)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_1_0(Process::environment.options);
+    return findif::fd_geoms_1_0(mol, Process::environment.options);
 }
 
-
-//std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_2_0()
-//{
-//py_psi_prepare_options_for_module("FINDIF");
-//return findif::fd_geoms_2_0(Process::environment.options);
-//}
-
-std::vector<SharedMatrix> py_psi_fd_geoms_freq_0(int irrep)
+std::vector<SharedMatrix> py_psi_fd_geoms_freq_0(boost::shared_ptr<Molecule> mol, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_freq_0(Process::environment.options, irrep);
+    return findif::fd_geoms_freq_0(mol, Process::environment.options, irrep);
 }
 
-std::vector<SharedMatrix> py_psi_fd_geoms_hessian_0()
+std::vector<SharedMatrix> py_psi_fd_geoms_freq_1(boost::shared_ptr<Molecule> mol, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_hessian_0(Process::environment.options);
+    return findif::fd_geoms_freq_1(mol, Process::environment.options, irrep);
 }
 
-std::vector<SharedMatrix> py_psi_fd_geoms_freq_1(int irrep)
+std::vector<SharedMatrix> py_psi_fd_geoms_hessian_0(boost::shared_ptr<Molecule> mol)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_freq_1(Process::environment.options, irrep);
+    return findif::fd_geoms_hessian_0(mol, Process::environment.options);
 }
 
-PsiReturnType py_psi_fd_1_0(const boost::python::list& energies)
+std::vector<SharedMatrix> py_psi_atomic_displacements(boost::shared_ptr<Molecule> mol)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_1_0(Process::environment.options, energies);
+    return findif::atomic_displacements(mol, Process::environment.options);
 }
 
-//PsiReturnType py_psi_fd_2_0(const boost::python::list& energies)
-//{
-//py_psi_prepare_options_for_module("FINDIF");
-//return findif::fd_2_0(Process::environment.options, energies);
-//}
-
-PsiReturnType py_psi_fd_freq_0(const boost::python::list& energies, int irrep)
+SharedMatrix py_psi_fd_1_0(boost::shared_ptr<Molecule> mol, const boost::python::list& energies)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_freq_0(Process::environment.options, energies, irrep);
+    return findif::fd_1_0(mol, Process::environment.options, energies);
 }
 
-PsiReturnType py_psi_fd_hessian_0(const boost::python::list& energies)
+SharedMatrix py_psi_fd_freq_0(boost::shared_ptr<Molecule> mol, const boost::python::list& energies, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_hessian_0(Process::environment.options, energies);
+    return findif::fd_freq_0(mol, Process::environment.options, energies, irrep);
 }
 
-PsiReturnType py_psi_fd_freq_1(const boost::python::list& grads, int irrep)
+SharedMatrix py_psi_fd_freq_1(boost::shared_ptr<Molecule> mol, const boost::python::list& grads, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_freq_1(Process::environment.options, grads, irrep);
+    return findif::fd_freq_1(mol, Process::environment.options, grads, irrep);
 }
 
-std::vector<SharedMatrix> py_psi_atomic_displacements()
+SharedMatrix py_psi_fd_hessian_0(boost::shared_ptr<Molecule> mol, const boost::python::list& energies)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::atomic_displacements(Process::environment.options);
+    return findif::fd_hessian_0(mol, Process::environment.options, energies);
 }
 
 SharedMatrix py_psi_displace_atom(SharedMatrix geom, const int atom,
@@ -691,10 +680,10 @@ SharedWavefunction py_psi_adc(SharedWavefunction ref_wfn)
     return adc_wfn;
 }
 
-double py_psi_thermo()
+double py_psi_thermo(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("THERMO");
-    thermo::thermo(Process::environment.options);
+    thermo::thermo(ref_wfn, Process::environment.options);
     return 0.0;
 }
 
