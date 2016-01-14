@@ -41,6 +41,12 @@ DCFTSolver::DCFTSolver(SharedWavefunction ref_wfn, Options &options):
 {
     reference_wavefunction_ = ref_wfn;
     copy(ref_wfn);
+    Ca_ = ref_wfn->Ca()->clone();
+    Cb_ = ref_wfn->Cb()->clone();
+    Da_ = ref_wfn->Da()->clone();
+    Db_ = ref_wfn->Db()->clone();
+    Fa_ = ref_wfn->Fa()->clone();
+    Fb_ = ref_wfn->Fb()->clone();
 
     maxiter_            = options.get_int("MAXITER");
     print_              = options.get_int("PRINT");

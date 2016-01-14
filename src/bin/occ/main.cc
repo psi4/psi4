@@ -26,20 +26,19 @@ using namespace boost;
 
 namespace psi{ namespace occwave {
 
-PsiReturnType
-occwave(Options &options)
+SharedWavefunction occwave(SharedWavefunction ref_wfn, Options &options)
 {
     // Start the timers
     tstart();
    
-    boost::shared_ptr<Wavefunction> occ = boost::shared_ptr<Wavefunction>(new OCCWave(Process::environment.wavefunction(), options));
+    SharedWavefunction occ = SharedWavefunction(new OCCWave(ref_wfn, options));
     Process::environment.set_wavefunction(occ);
     occ->compute_energy();
     
     // Shut down the timers
     tstop();
 
-    return Success;
+    return occ;
 }
 }} // End Namespaces
 
