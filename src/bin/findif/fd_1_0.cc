@@ -36,13 +36,12 @@ using namespace boost::python;
 
 namespace psi { namespace findif {
 
-PsiReturnType
-fd_1_0(Options &options, const boost::python::list& python_energies)
+SharedMatrix fd_1_0(boost::shared_ptr<Molecule> mol, Options &options, const boost::python::list& python_energies)
 {
   int pts = options.get_int("POINTS");
   double disp_size = options.get_double("DISP_SIZE");
 
-  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
+//  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   int Natom = mol->natom();
   boost::shared_ptr<MatrixFactory> fact;
 
@@ -154,7 +153,7 @@ fd_1_0(Options &options, const boost::python::list& python_energies)
   }
   outfile->Printf("\n-------------------------------------------------------------\n");
 
-  return Success;
+  return sgradient;
 }
 
 }}

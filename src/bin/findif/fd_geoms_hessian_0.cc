@@ -34,7 +34,7 @@
 
 namespace psi { namespace findif {
 
-std::vector< SharedMatrix > fd_geoms_hessian_0(Options &options) {
+std::vector< SharedMatrix > fd_geoms_hessian_0(boost::shared_ptr<Molecule> mol, Options &options) {
 
   outfile->Printf("\n-------------------------------------------------------------\n\n");
 
@@ -48,7 +48,7 @@ std::vector< SharedMatrix > fd_geoms_hessian_0(Options &options) {
   double disp_size = options.get_double("DISP_SIZE");
   outfile->Printf("\tDisplacement size will be %6.2e.\n", disp_size);
 
-  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
+//  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
 
   // make all salcs for now, just in the case the symmetric ones don't come out identically
   // we'll try to restrict later
@@ -109,28 +109,28 @@ std::vector< SharedMatrix > fd_geoms_hessian_0(Options &options) {
 
     if (pts == 3) {
       SharedMatrix geom1(ref_geom->clone());
-      displace_cart(geom1, salc_list, salc_i, -1, disp_size);
+      displace_cart(mol, geom1, salc_list, salc_i, -1, disp_size);
       disp_geoms.push_back(geom1);
 
       SharedMatrix geom2(ref_geom->clone());
-      displace_cart(geom2, salc_list, salc_i, +1, disp_size);
+      displace_cart(mol, geom2, salc_list, salc_i, +1, disp_size);
       disp_geoms.push_back(geom2);
     }
     else if (pts == 5) {
       SharedMatrix geom1(ref_geom->clone());
-      displace_cart(geom1, salc_list, salc_i, -2, disp_size);
+      displace_cart(mol, geom1, salc_list, salc_i, -2, disp_size);
       disp_geoms.push_back(geom1);
 
       SharedMatrix geom2(ref_geom->clone());
-      displace_cart(geom2, salc_list, salc_i, -1, disp_size);
+      displace_cart(mol, geom2, salc_list, salc_i, -1, disp_size);
       disp_geoms.push_back(geom2);
 
       SharedMatrix geom3(ref_geom->clone());
-      displace_cart(geom3, salc_list, salc_i, +1, disp_size);
+      displace_cart(mol, geom3, salc_list, salc_i, +1, disp_size);
       disp_geoms.push_back(geom3);
 
       SharedMatrix geom4(ref_geom->clone());
-      displace_cart(geom4, salc_list, salc_i, +2, disp_size);
+      displace_cart(mol, geom4, salc_list, salc_i, +2, disp_size);
       disp_geoms.push_back(geom4);
     }
   } // i, salcs of this irrep
@@ -144,44 +144,44 @@ std::vector< SharedMatrix > fd_geoms_hessian_0(Options &options) {
 
       if (pts == 3) {
         SharedMatrix geom1(ref_geom->clone());
-        displace_cart(geom1, salc_list, salc_i, salc_j, +1, +1, disp_size);
+        displace_cart(mol, geom1, salc_list, salc_i, salc_j, +1, +1, disp_size);
         disp_geoms.push_back(geom1);
 
         SharedMatrix geom2(ref_geom->clone());
-        displace_cart(geom2, salc_list, salc_i, salc_j, -1, -1, disp_size);
+        displace_cart(mol, geom2, salc_list, salc_i, salc_j, -1, -1, disp_size);
         disp_geoms.push_back(geom2);
       }
       else if (pts == 5) {
         SharedMatrix geom1(ref_geom->clone());
-        displace_cart(geom1, salc_list, salc_i, salc_j, -1, -2, disp_size);
+        displace_cart(mol, geom1, salc_list, salc_i, salc_j, -1, -2, disp_size);
         disp_geoms.push_back(geom1);
 
         SharedMatrix geom2(ref_geom->clone());
-        displace_cart(geom2, salc_list, salc_i, salc_j, -2, -1, disp_size);
+        displace_cart(mol, geom2, salc_list, salc_i, salc_j, -2, -1, disp_size);
         disp_geoms.push_back(geom2);
 
         SharedMatrix geom3(ref_geom->clone());
-        displace_cart(geom3, salc_list, salc_i, salc_j, -1, -1, disp_size);
+        displace_cart(mol, geom3, salc_list, salc_i, salc_j, -1, -1, disp_size);
         disp_geoms.push_back(geom3);
 
         SharedMatrix geom4(ref_geom->clone());
-        displace_cart(geom4, salc_list, salc_i, salc_j, +1, -1, disp_size);
+        displace_cart(mol, geom4, salc_list, salc_i, salc_j, +1, -1, disp_size);
         disp_geoms.push_back(geom4);
 
         SharedMatrix geom5(ref_geom->clone());
-        displace_cart(geom5, salc_list, salc_i, salc_j, -1, +1, disp_size);
+        displace_cart(mol, geom5, salc_list, salc_i, salc_j, -1, +1, disp_size);
         disp_geoms.push_back(geom5);
 
         SharedMatrix geom6(ref_geom->clone());
-        displace_cart(geom6, salc_list, salc_i, salc_j, +1, +1, disp_size);
+        displace_cart(mol, geom6, salc_list, salc_i, salc_j, +1, +1, disp_size);
         disp_geoms.push_back(geom6);
 
         SharedMatrix geom7(ref_geom->clone());
-        displace_cart(geom7, salc_list, salc_i, salc_j, +2, +1, disp_size);
+        displace_cart(mol, geom7, salc_list, salc_i, salc_j, +2, +1, disp_size);
         disp_geoms.push_back(geom7);
 
         SharedMatrix geom8(ref_geom->clone());
-        displace_cart(geom8, salc_list, salc_i, salc_j, +1, +2, disp_size);
+        displace_cart(mol, geom8, salc_list, salc_i, salc_j, +1, +2, disp_size);
         disp_geoms.push_back(geom8);
       } // pts == 5
     } // m, salc_j
