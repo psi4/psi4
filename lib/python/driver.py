@@ -48,7 +48,6 @@ procedures = {
             'mcscf'         : run_mcscf,
             'dcft'          : run_dcft,
             'lmp2'          : run_lmp2,
-            'oldmp2'        : run_oldmp2,
             'dfmp2'         : run_dfmp2,
             'df-mp2'        : run_dfmp2,
             'rimp2'         : run_rimp2,
@@ -125,7 +124,6 @@ procedures = {
             'sapt2+(3)(ccd)-ct'  : run_sapt_ct,
             'sapt2+3(ccd)-ct'    : run_sapt_ct,
             'fisapt0'       : run_fisapt,
-            'mp2c'          : run_mp2c,
             'ccenergy'      : run_ccenergy,  # full control over ccenergy
             'ccsd'          : run_ccenergy,
             'ccsd(t)'       : run_ccenergy,

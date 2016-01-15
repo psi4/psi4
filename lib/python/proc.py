@@ -66,11 +66,10 @@ def run_dcft(name, **kwargs):
     if (psi4.get_global_option('FREEZE_CORE') == 'TRUE'):
         raise ValidationError('Frozen core is not available for DCFT.')
 
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        ref_wfn = scf_helper(name, **kwargs)
-    else:
-        ref_wfn = wavefunction()
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs) 
 
     dcft_wfn = psi4.dcft(ref_wfn)
     return dcft_wfn
@@ -1277,41 +1276,12 @@ def run_mp2(name, **kwargs):
 
     # If the scf type is DF/CD, then the AO integrals were never written to disk
     if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
+            print('DGAS Warning: We do not have  wavefunction at this point')
             mints = psi4.MintsHelper()
             mints.integrals()
 
     psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
     run_conv_omp2(name, **kwargs)
-
-    optstash.restore()
-
-
-def run_oldmp2(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a MP2 calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['TRANSQT2', 'WFN'],
-        ['CCSORT', 'WFN'],
-        ['MP2', 'WFN'])
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-        # If the scf type is DF/CD, then the AO integrals were never written to disk
-        if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
-            mints = psi4.MintsHelper()
-            mints.integrals()
-
-    psi4.set_local_option('TRANSQT2', 'WFN', 'MP2')
-    psi4.set_local_option('CCSORT', 'WFN', 'MP2')
-    psi4.set_local_option('MP2', 'WFN', 'MP2')
-
-    psi4.transqt2()
-    psi4.ccsort()
-    psi4.mp2()
 
     optstash.restore()
 
@@ -1838,14 +1808,13 @@ def run_mcscf(name, **kwargs):
     a multiconfigurational self-consistent-field calculation.
 
     """
-    bypass = ('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))
-    if not bypass:
-        new_wfn = psi4.new_wavefunction(psi4.get_active_molecule(),
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = psi4.new_wavefunction(psi4.get_active_molecule(),
                                         psi4.get_global_option('BASIS')) 
-    else:
-        scf_wfn = psi4.wavefunction()
 
-    return psi4.mcscf(new_wfn)
+    return psi4.mcscf(ref_wfn)
 
 
 def scf_helper(name, **kwargs):
@@ -1855,6 +1824,8 @@ def scf_helper(name, **kwargs):
     output file types for SCF).
 
     """
+    ### DGAS: Lori, we need to support passing of ref_wfn here
+
     optstash = p4util.OptionsState(
         ['PUREAM'],
         ['BASIS'],
@@ -2076,16 +2047,17 @@ def run_dfmp2_gradient(name, **kwargs):
 
     # Alter default algorithm
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
-        #psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')  # insufficient b/c SCF option read in DFMP2
         psi4.set_global_option('SCF_TYPE', 'DF')
 
     if not psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
+        # DGAS: I dont understand why this is?
+        # Probably 3-index integrals?
         raise ValidationError('DF-MP2 gradients need DF-SCF reference, for now.')
 
-    if not 'restart_file' in kwargs:
-        scf_wfn = scf_helper(name, **kwargs)
-    else:
-        scf_wfn = psi4.wavefunction()
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
     p4util.banner('DFMP2')
@@ -2567,17 +2539,15 @@ def run_detci_property(name, **kwargs):
     elif name.lower() == 'detci':
         pass
 
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_wfn = scf_helper(name, **kwargs)
-
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs) 
         # If the scf type is DF/CD, then the AO integrals were never written to disk
-        if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
+        if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
             psi4.MintsHelper().integrals()
-    else:
-        scf_wfn = psi4.wavefunction()
 
-    ciwfn = psi4.detci(scf_wfn)
+    ciwfn = psi4.detci(ref_wfn)
 
     optstash.restore()
     return ciwfn
@@ -2673,11 +2643,12 @@ def run_adc(name, **kwargs):
     if (psi4.get_option('ADC', 'REFERENCE') != 'RHF'):
         raise ValidationError('ADC requires reference RHF')
 
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_wfn = scf_helper(name, **kwargs)
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
 
-    return psi4.adc(scf_wfn)
+    return psi4.adc(ref_wfn)
 
 
 def run_dft(name, **kwargs):
@@ -2747,6 +2718,7 @@ def run_dft(name, **kwargs):
         psi4.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
 
     optstash.restore()
+    return scf_wfn
 
 
 def run_dft_gradient(name, **kwargs):
@@ -2775,9 +2747,10 @@ def run_dft_gradient(name, **kwargs):
     elif (user_ref == 'CUHF'):
         raise ValidationError('CUHF reference for DFT is not available.')
 
-    run_scf_gradient(name, **kwargs)
+    grad = run_scf_gradient(name, **kwargs)
 
     optstash.restore()
+    return grad
 
 
 def run_detci(name, **kwargs):
@@ -2834,26 +2807,21 @@ def run_detci(name, **kwargs):
         psi4.set_local_option('DETCI', 'WFN', 'DETCI')
         level = kwargs['level']
         psi4.set_local_option('DETCI', 'EX_LEVEL', level)
-    # Call a plain energy('detci') and have full control over options
     elif(name.lower() == 'detci'):
         pass
 
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_wfn = scf_helper(name, **kwargs)
-
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs) 
         # If the scf type is DF/CD, then the AO integrals were never written to disk
-        if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
-            psi4.MintsHelper().integrals()
-    else:
-        scf_wfn = psi4.wavefunction()
+        if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
+            psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
-    ci_wfn = psi4.detci(scf_wfn)
+    ci_wfn = psi4.detci(ref_wfn)
 
     optstash.restore()
     return ci_wfn
-
-
 
 def run_dfmp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -2892,12 +2860,10 @@ def run_dmrgscf(name, **kwargs):
     optstash = p4util.OptionsState(
         ['SCF', 'SCF_TYPE'])
 
-    # Bypass routine scf if user did something special to get it to converge
-    bypass = ('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))
-    if not bypass:
-        scf_wfn = scf_helper(name, **kwargs)
-    else:
-        scf_wfn = psi4.wavefunction()
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs) 
 
     # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
     # written to disk
@@ -2905,10 +2871,10 @@ def run_dmrgscf(name, **kwargs):
     IsCD = psi4.get_option('SCF', 'SCF_TYPE') == 'CD'
     IsDirect = psi4.get_option('SCF', 'SCF_TYPE') == 'DIRECT'
     if bypass or IsDF or IsCD or IsDirect:
-        mints = psi4.MintsHelper()
-        mints.integrals(scf_wfn.basisset())
+        mints = psi4.MintsHelper(ref_wfn.basisset())
+        mints.integrals()
 
-    dmrg_wfn = psi4.dmrg(scf_wfn)
+    dmrg_wfn = psi4.dmrg(ref_wfn)
     optstash.restore()
 
     print('DMRG does not have a wavefunction /lib/python/proc.py:2898')
@@ -2923,26 +2889,22 @@ def run_dmrgci(name, **kwargs):
         ['SCF', 'SCF_TYPE'],
         ['DMRG', 'DMRG_MAXITER'])
 
-    # Bypass routine scf if user did something special to get it to converge
-    bypass = ('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))
-    if not bypass:
-        scf_wfn = scf_helper(name, **kwargs)
-    else:
-        scf_wfn = psi4.wavefunction()
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs) 
 
     # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
     # written to disk
     IsDF = psi4.get_option('SCF', 'SCF_TYPE') == 'DF'
     IsCD = psi4.get_option('SCF', 'SCF_TYPE') == 'CD'
     IsDirect = psi4.get_option('SCF', 'SCF_TYPE') == 'DIRECT'
-
     if bypass or IsDF or IsCD or IsDirect:
-        mints = psi4.MintsHelper(scf_wfn.basisset())
-        mints.integrals()
+        psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
     psi4.set_local_option('DMRG', 'DMRG_MAXITER', 1)
 
-    dmrg_wfn = psi4.dmrg(scf_wfn)
+    dmrg_wfn = psi4.dmrg(ref_wfn)
     optstash.restore()
 
     print('DMRG does not have a wavefunction /lib/python/proc.py:2930')
@@ -2963,95 +2925,13 @@ def run_psimrcc_scf(name, **kwargs):
      using a reference from the SCF module
 
     """
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_wfn = scf_helper(name, **kwargs)
-    else:
-        scf_wfn = wavefunction()
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs) 
 
-    psimrcc_wfn = psi4.psimrcc(scf_wfn)
+    psimrcc_wfn = psi4.psimrcc(ref_wfn)
     return psimrcc_wfn
-
-
-def run_mp2c(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a coupled MP2 calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['DF_BASIS_MP2'])
-
-    molecule = psi4.get_active_molecule()
-    molecule.update_geometry()
-    monomerA = molecule.extract_subsets(1, 2)
-    monomerA.set_name('monomerA')
-    monomerB = molecule.extract_subsets(2, 1)
-    monomerB.set_name('monomerB')
-
-    ri = psi4.get_option('SCF', 'SCF_TYPE')
-    df_ints_io = psi4.get_option('SCF', 'DF_INTS_IO')
-    # inquire if above at all applies to dfmp2
-
-    psi4.IO.set_default_namespace('dimer')
-    psi4.print_out('\n')
-    p4util.banner('Dimer HF')
-    psi4.print_out('\n')
-    psi4.set_global_option('DF_INTS_IO', 'SAVE')
-    e_dimer = scf_helper('RHF', **kwargs)
-    psi4.print_out('\n')
-    p4util.banner('Dimer DFMP2')
-    psi4.print_out('\n')
-    e_dimer_mp2 = psi4.dfmp2()
-    psi4.set_global_option('DF_INTS_IO', 'LOAD')
-
-    activate(monomerA)
-    if (ri == 'DF'):
-        psi4.IO.change_file_namespace(97, 'dimer', 'monomerA')
-    psi4.IO.set_default_namespace('monomerA')
-    psi4.print_out('\n')
-    p4util.banner('Monomer A HF')
-    psi4.print_out('\n')
-    e_monomerA = scf_helper('RHF', **kwargs)
-    psi4.print_out('\n')
-    p4util.banner('Monomer A DFMP2')
-    psi4.print_out('\n')
-    e_monomerA_mp2 = psi4.dfmp2()
-
-    activate(monomerB)
-    if (ri == 'DF'):
-        psi4.IO.change_file_namespace(97, 'monomerA', 'monomerB')
-    psi4.IO.set_default_namespace('monomerB')
-    psi4.print_out('\n')
-    p4util.banner('Monomer B HF')
-    psi4.print_out('\n')
-    e_monomerB = scf_helper('RHF', **kwargs)
-    psi4.print_out('\n')
-    p4util.banner('Monomer B DFMP2')
-    psi4.print_out('\n')
-    e_monomerB_mp2 = psi4.dfmp2()
-    psi4.set_global_option('DF_INTS_IO', df_ints_io)
-
-    psi4.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
-    psi4.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
-
-    activate(molecule)
-    psi4.IO.set_default_namespace('dimer')
-    psi4.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
-    psi4.set_local_option('SAPT', 'D_CONVERGENCE', 10e-10)
-    psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'MP2C')
-    psi4.print_out('\n')
-    p4util.banner('MP2C')
-    psi4.print_out('\n')
-
-    psi4.set_variable('MP2C DIMER MP2 ENERGY', e_dimer_mp2)
-    psi4.set_variable('MP2C MONOMER A MP2 ENERGY', e_monomerA_mp2)
-    psi4.set_variable('MP2C MONOMER B MP2 ENERGY', e_monomerB_mp2)
-
-    e_sapt = psi4.sapt()
-
-    optstash.restore()
-    return e_sapt
-
 
 def run_sapt(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -3061,6 +2941,8 @@ def run_sapt(name, **kwargs):
     optstash = p4util.OptionsState(
         ['SCF', 'SCF_TYPE'])
 
+    if 'ref_wfn' in kwargs:
+        psi4.print_out('\nWarning! Argument ref_wfn is not valid for sapt computations\n')
     # Alter default algorithm
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
@@ -3197,6 +3079,9 @@ def run_sapt_ct(name, **kwargs):
     """
     optstash = p4util.OptionsState(
         ['SCF', 'SCF_TYPE'])
+
+    if 'ref_wfn' in kwargs:
+        psi4.print_out('\nWarning! Argument ref_wfn is not valid for sapt computations\n')
 
     # Alter default algorithm
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
@@ -3362,8 +3247,9 @@ def run_fisapt(name, **kwargs):
         raise ValidationError('FISAPT requires requires \"reference rhf\".')
 
     activate(molecule)
-    scf_wfn = scf_helper('RHF', **kwargs)
-    fisapt_wfn = psi4.fisapt(scf_wfn)
+    if ref_wfn is None:
+        ref_wfn = scf_helper('RHF', **kwargs)
+    fisapt_wfn = psi4.fisapt(ref_wfn)
 
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
@@ -3377,7 +3263,9 @@ def run_mrcc(name, **kwargs):
 
     """
     # TODO: Check to see if we really need to run the SCF code.
-    scf_helper(name, **kwargs)
+    ref_wfn = kwargs.get('ref_wfn', None):
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
     vscf = psi4.get_variable('SCF TOTAL ENERGY')
 
     # The parse_arbitrary_order method provides us the following information
@@ -3604,9 +3492,11 @@ def run_fnodfcc(name, **kwargs):
     # save DF or CD ints generated by SCF for use in CC
     psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
 
-    scf_wfn = scf_helper(name, **kwargs)
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
 
-    fnocc_wfn = psi4.fnocc(scf_wfn)
+    fnocc_wfn = psi4.fnocc(ref_wfn)
 
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
@@ -3708,18 +3598,19 @@ def run_fnocc(name, **kwargs):
     if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
 
-    # scf
-    scf_wfn = scf_helper(name, **kwargs)
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs) 
 
     # if the scf type is df/cd, then the ao integrals were never written to disk.
     if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
         # do we generate 4-index eri's with 3-index ones, or do we want conventional eri's?
         if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
-            mints = psi4.MintsHelper()
-            mints.integrals()
+            psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
     # run ccsd
-    fnocc_wfn = psi4.fnocc(scf_wfn)
+    fnocc_wfn = psi4.fnocc(ref_wfn)
 
     # set current correlation energy and total energy.  only need to treat mpn here.
     if lowername == 'fnocc-mp' and level == 3:
@@ -3818,17 +3709,17 @@ def run_cepa(name, **kwargs):
     if (psi4.get_option('SCF', 'REFERENCE') != 'RHF'):
         raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
 
-    psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD')
-    scf_wfn = scf_helper(name, **kwargs)
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
 
     # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
+    if psi4.get_options('SCF', 'SCF_TYPE') in ['DF', 'CD']:
         if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
-            mints = psi4.MintsHelper()
-            mints.integrals()
+            psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
     # run cepa
-    fnocc_wfn = psi4.fnocc(scf_wfn)
+    fnocc_wfn = psi4.fnocc(ref_wfn)
 
     # one-electron properties
     if psi4.get_option('FNOCC', 'DIPMOM'):
@@ -3869,6 +3760,10 @@ def run_detcas(name, **kwargs):
     elif (name.lower() == 'casscf'):
         psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
 
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
+
     # The DF case
     if psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF':
 
@@ -3880,12 +3775,6 @@ def run_detcas(name, **kwargs):
         if (psi4.get_option('SCF', 'SCF_TYPE') == 'PK'):
             raise ValidationError("Second-order MCSCF: Requires a JK algorithm that supports non-symmetric"\
                                   " density matrices.")
-
-        # Bypass routine scf if user did something special to get it to converge
-        if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-             scf_wfn = scf_helper(name, **kwargs)
-        else:
-            scf_wfn = psi4.wavefunction()
 
     # The non-DF case
     else:
@@ -3899,19 +3788,12 @@ def run_detcas(name, **kwargs):
             raise ValidationError("Second-order MCSCF: Requires a JK algorithm that supports non-symmetric"\
                                   " density matrices.")
 
-        # Bypass routine scf if user did something special to get it to converge
-        if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-
-            scf_wfn = scf_helper(name, **kwargs)
-
-            # If the scf type is DF/CD, then the AO integrals were never written to disk
-            if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') or (psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
-                psi4.MintsHelper(scf_wfn.basisset()).integrals()
-        else:
-            scf_wfn = psi4.wavefunction()
+        # If the scf type is DF/CD, then the AO integrals were never written to disk
+        if psi4.get_options('SCF', 'SCF_TYPE') in ['DF', 'CD']:
+            psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
 
-    ciwfn = psi4.detci(scf_wfn)
+    ciwfn = psi4.detci(ref_wfn)
 
     optstash.restore()
 
