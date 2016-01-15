@@ -2545,7 +2545,9 @@ def run_detci_property(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs) 
         # If the scf type is DF/CD, then the AO integrals were never written to disk
         if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
-            psi4.MintsHelper().integrals()
+            psi4.MintsHelper(ref_wfn.basisset()).integrals()
+    else:
+        scf_wfn = psi4.wavefunction()
 
     ciwfn = psi4.detci(ref_wfn)
 
@@ -2899,6 +2901,7 @@ def run_dmrgci(name, **kwargs):
     IsDF = psi4.get_option('SCF', 'SCF_TYPE') == 'DF'
     IsCD = psi4.get_option('SCF', 'SCF_TYPE') == 'CD'
     IsDirect = psi4.get_option('SCF', 'SCF_TYPE') == 'DIRECT'
+
     if bypass or IsDF or IsCD or IsDirect:
         psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
@@ -3794,7 +3797,6 @@ def run_detcas(name, **kwargs):
 
 
     ciwfn = psi4.detci(ref_wfn)
-
     optstash.restore()
 
     return ciwfn
