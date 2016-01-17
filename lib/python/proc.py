@@ -2120,7 +2120,7 @@ def run_ccenergy(name, **kwargs):
 #        psi4.transqt2()
 #        psi4.ccsort()
 #    else
-    psi4.plugin('/Users/crawdad/src/cctransort/cctransort.so')
+    psi4.plugin('/Users/crawdad/src/devel/cctransort/cctransort.so')
 
     psi4.ccenergy()
 
