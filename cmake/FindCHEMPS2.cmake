@@ -52,7 +52,9 @@ list(APPEND _CHEMPS2_SEARCHES _CHEMPS2_SEARCH_NORMAL)
 
 set(CHEMPS2_NAMES chemps2)
 #set(_hold_suffix ${CMAKE_FIND_LIBRARY_SUFFIXES})
-#set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+if(DETECT_EXTERNAL_STATIC)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+endif()
 
 # Try each search configuration.
 foreach(search ${_CHEMPS2_SEARCHES})
