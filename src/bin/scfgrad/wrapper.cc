@@ -39,7 +39,6 @@ SharedMatrix scfgrad(SharedWavefunction ref_wfn, Options &options)
     Process::environment.arrays["SCF TOTAL GRADIENT"] = G;
     Process::environment.arrays["CURRENT GRADIENT"] = G;
     Process::environment.set_gradient(G); 
-//    Process::environment.wavefunction()->set_gradient(G);
 
     tstop();
     return G;

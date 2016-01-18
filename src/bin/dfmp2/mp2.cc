@@ -160,11 +160,6 @@ void DFMP2::common_init()
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 
-    //reference_wavefunction_ = Process::environment.wavefunction();
-    //if (!reference_wavefunction_) {
-    //    throw PSIEXCEPTION("DFMP2: Run SCF first");
-    //}
-
     if (options_.get_str("REFERENCE") == "ROHF" || options_.get_str("REFERENCE") == "CUHF")
         throw PSIEXCEPTION("SemiCanonical transform does not work at the moment");
         //reference_wavefunction_->semicanonicalize();

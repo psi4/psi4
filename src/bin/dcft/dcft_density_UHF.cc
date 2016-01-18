@@ -2154,7 +2154,7 @@ DCFTSolver::write_molden_file() {
     bAONO->gemm(false, false, 1.0, Cb_, bevecs, 0.0);
 
     // Write to MOLDEN file
-    boost::shared_ptr<Wavefunction> dcft_ = Process::environment.wavefunction();
+    boost::shared_ptr<Wavefunction> dcft_ = make_ghost_wavefunction();
     boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(dcft_));
     std::string filename = get_writer_file_prefix() + ".molden";
 

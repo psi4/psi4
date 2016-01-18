@@ -557,10 +557,9 @@ bool ROHF::stability_analysis()
         std::vector<boost::shared_ptr<MOSpace> > spaces;
         spaces.push_back(MOSpace::occ);
         spaces.push_back(MOSpace::vir);
-        // Ref wfn is really "this"
-        boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
 #define ID(x) ints.DPD_ID(x)
-        IntegralTransform ints(wfn, spaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly,
+        IntegralTransform ints(make_ghost_wavefunction(), spaces, IntegralTransform::Restricted,
+                               IntegralTransform::DPDOnly,
                                IntegralTransform::QTOrder, IntegralTransform::None);
         ints.set_keep_dpd_so_ints(true);
         ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);

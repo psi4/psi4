@@ -3266,7 +3266,7 @@ def run_mrcc(name, **kwargs):
 
     """
     # TODO: Check to see if we really need to run the SCF code.
-    ref_wfn = kwargs.get('ref_wfn', None):
+    ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
     vscf = psi4.get_variable('SCF TOTAL ENERGY')

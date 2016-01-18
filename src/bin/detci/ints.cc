@@ -140,29 +140,6 @@ void CIWavefunction::setup_dfmcscf_ints(){
   jk_->set_do_K(true);
   jk_->initialize();
   jk_->set_memory(Process::environment.get_memory() * 0.8);
-  // DFJK* jk = new DFJK(primary,auxiliary);
-
-  // if (options_["INTS_TOLERANCE"].has_changed())
-  //     jk->set_cutoff(options_.get_double("INTS_TOLERANCE"));
-  // if (options_["PRINT"].has_changed())
-  //     jk->set_print(options_.get_int("PRINT"));
-  // if (options_["DEBUG"].has_changed())
-  //     jk->set_debug(options_.get_int("DEBUG"));
-  // if (options_["BENCH"].has_changed())
-  //     jk->set_bench(options_.get_int("BENCH"));
-  // if (options_["DF_INTS_IO"].has_changed())
-  //     jk->set_df_ints_io(options_.get_str("DF_INTS_IO"));
-  // if (options_["DF_FITTING_CONDITION"].has_changed())
-  //     jk->set_condition(options_.get_double("DF_FITTING_CONDITION"));
-  // if (options_["DF_INTS_NUM_THREADS"].has_changed())
-  //     jk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
-
-  // jk_ = boost::shared_ptr<JK>(jk);
-  // jk_->set_memory(Process::environment.get_memory() * 0.8);
-
-  // jk_->set_do_J(true);
-  // jk_->set_do_K(true);
-  // jk_->initialize();
 
   /// Build DF object
   dferi_ = DFERI::build(primary,auxiliary,options_);
