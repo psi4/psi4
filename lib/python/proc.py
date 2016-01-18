@@ -2041,32 +2041,39 @@ def run_ccenergy(name, **kwargs):
     if (lowername == 'ccsd'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD')
         psi4.set_local_option('CCSORT', 'WFN', 'CCSD')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'CCSD')
         psi4.set_local_option('CCENERGY', 'WFN', 'CCSD')
     elif (lowername == 'ccsd(t)'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD_T')
         psi4.set_local_option('CCSORT', 'WFN', 'CCSD_T')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'CCSD_T')
         psi4.set_local_option('CCENERGY', 'WFN', 'CCSD_T')
     elif (lowername == 'ccsd(at)' or lowername == 'a-ccsd(t)'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD_AT')
         psi4.set_local_option('CCSORT', 'WFN', 'CCSD_AT')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'CCSD_AT')
         psi4.set_local_option('CCENERGY', 'WFN', 'CCSD_AT')
         psi4.set_local_option('CCHBAR', 'WFN', 'CCSD_AT')
         psi4.set_local_option('CCLAMBDA', 'WFN', 'CCSD_AT')
     elif (lowername == 'cc2'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CC2')
         psi4.set_local_option('CCSORT', 'WFN', 'CC2')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'CC2')
         psi4.set_local_option('CCENERGY', 'WFN', 'CC2')
     elif (lowername == 'cc3'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CC3')
         psi4.set_local_option('CCSORT', 'WFN', 'CC3')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'CC3')
         psi4.set_local_option('CCENERGY', 'WFN', 'CC3')
     elif (lowername == 'eom-cc2'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'EOM_CC2')
         psi4.set_local_option('CCSORT', 'WFN', 'EOM_CC2')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'EOM_CC2')
         psi4.set_local_option('CCENERGY', 'WFN', 'EOM_CC2')
     elif (lowername == 'eom-ccsd'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'EOM_CCSD')
         psi4.set_local_option('CCSORT', 'WFN', 'EOM_CCSD')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'EOM_CCSD')
         psi4.set_local_option('CCENERGY', 'WFN', 'EOM_CCSD')
     # Call a plain energy('ccenergy') and have full control over options, incl. wfn
     elif(lowername == 'ccenergy'):
@@ -2086,11 +2093,11 @@ def run_ccenergy(name, **kwargs):
         mints = psi4.MintsHelper()
         mints.integrals()
 
-#    if (psi4.get_global_option('FREEZE_CORE') == 'TRUE'):
-#        psi4.transqt2()
-#        psi4.ccsort()
-#    else
-    psi4.plugin('/Users/crawdad/src/devel/cctransort/cctransort.so')
+    if (psi4.get_global_option('RUN_CCTRANSORT')):
+        psi4.cctransort()
+    else:
+        psi4.transqt2()
+        psi4.ccsort()
 
     psi4.ccenergy()
 

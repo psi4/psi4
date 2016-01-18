@@ -46,6 +46,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   // dodoc == "GLOBALS" fake line to make document_options_and_tests.pl generate a GLOBALS doc section
 
+  // Temporary: turn on/off cctransort module -TDC
+  options.add_bool("RUN_CCTRANSORT", true);
+
   /*- Units used in geometry specification -*/
   options.add_str("UNITS", "ANGSTROMS", "BOHR AU A.U. ANGSTROMS ANG ANGSTROM");
 
@@ -1702,6 +1705,27 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     // in MCSCF) -*/
     // options.add("RESTRICTED_UOCC", new ArrayType());
 
+  }
+  if(name == "CCTRANSORT"|| options.read_globals()) {
+      /*- MODULEDESCRIPTION Transforms and sorts integrals for CC codes. Called before (non-density-fitted) MP2 and coupled cluster computations. -*/
+    /*- Wavefunction type !expert -*/
+    options.add_str("WFN", "");
+    /*- Reference wavefunction type -*/
+    options.add_str("REFERENCE", "RHF");
+    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
+    options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
+    /*- Do retain the input two-electron integrals? -*/
+    options.add_bool("KEEP_TEIFILE", false);
+    /*- Cacheing level for libdpd governing the storage of amplitudes,
+    integrals, and intermediates in the CC procedure. A value of 0 retains
+    no quantities in cache, while a level of 6 attempts to store all
+    quantities in cache.  For particularly large calculations, a value of
+    0 may help with certain types of memory problems.  The default is 2,
+    which means that all four-index quantites with up to two virtual-orbital
+    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
+    options.add_int("CACHELEVEL", 2);
+    /*- Convert ROHF MOs to semicanonical MOs -*/
+    options.add_bool("SEMICANONICAL", true);
   }
   if(name == "CCSORT"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Sorts integrals for efficiency. Called before (non density-fitted) MP2 and

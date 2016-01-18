@@ -73,6 +73,7 @@ void init_amps(void)
        !psio_tocscan(PSIF_CC_OEI, "tia")) {
 
       global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
+      global_dpd_->file2_print(&fIA, "outfile");
       global_dpd_->file2_copy(&fIA, PSIF_CC_OEI, "tIA");
       global_dpd_->file2_close(&fIA);
       global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
@@ -80,6 +81,7 @@ void init_amps(void)
       global_dpd_->file2_close(&tIA);
   
       global_dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 0, 1, "fia");
+      global_dpd_->file2_print(&fia, "outfile");
       global_dpd_->file2_copy(&fia, PSIF_CC_OEI, "tia");
       global_dpd_->file2_close(&fia);
       global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
@@ -88,12 +90,14 @@ void init_amps(void)
 
       global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
       global_dpd_->file2_init(&dIA, PSIF_CC_OEI, 0, 0, 1, "dIA");
+      global_dpd_->file2_print(&dIA, "outfile");
       global_dpd_->file2_dirprd(&dIA, &tIA);
       global_dpd_->file2_close(&tIA);
       global_dpd_->file2_close(&dIA);
 
       global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
       global_dpd_->file2_init(&dia, PSIF_CC_OEI, 0, 0, 1, "dia");
+      global_dpd_->file2_print(&dia, "outfile");
       global_dpd_->file2_dirprd(&dia, &tia);
       global_dpd_->file2_close(&tia);
       global_dpd_->file2_close(&dia);
@@ -104,6 +108,7 @@ void init_amps(void)
        !psio_tocscan(PSIF_CC_TAMPS, "tIJAB") || !psio_tocscan(PSIF_CC_TAMPS, "tijab")) {
 
       global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <ij||ab> (i>j,a>b)");
+      global_dpd_->buf4_print(&D, "outfile", 1);
       global_dpd_->buf4_copy(&D, PSIF_CC_TAMPS, "tIJAB");
       global_dpd_->buf4_copy(&D, PSIF_CC_TAMPS, "tijab");
       global_dpd_->buf4_close(&D);
@@ -121,6 +126,7 @@ void init_amps(void)
       global_dpd_->buf4_close(&dijab);
 
       global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+      global_dpd_->buf4_print(&D, "outfile", 1);
       global_dpd_->buf4_copy(&D, PSIF_CC_TAMPS, "tIjAb");
       global_dpd_->buf4_close(&D);
   
