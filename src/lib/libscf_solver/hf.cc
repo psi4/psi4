@@ -582,13 +582,11 @@ double HF::finalize_E()
 #ifdef HAVE_PCMSOLVER
         if(pcm_enabled_) {
             // Prepare the density
-            SharedMatrix D_pcm;
+            SharedMatrix D_pcm(Da_->clone());
             if(same_a_b_orbs()) {
-              D_pcm = Da_;
               D_pcm->scale(2.0); // PSI4's density doesn't include the occupation
             }
             else {
-              D_pcm = Da_;
               D_pcm->add(Db_);
             }
 
@@ -1942,13 +1940,11 @@ void HF::iterations()
         // energy computation, not in form_F()
         if(pcm_enabled_) {
           // Prepare the density
-          SharedMatrix D_pcm;
+          SharedMatrix D_pcm(Da_->clone());
           if(same_a_b_orbs()) {
-            D_pcm = Da_;
             D_pcm->scale(2.0); // PSI4's density doesn't include the occupation
           }
           else {
-            D_pcm = Da_;
             D_pcm->add(Db_);
           }
 

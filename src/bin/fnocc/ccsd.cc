@@ -58,7 +58,7 @@ void DefineLinearTasks();
 void DefineQuadraticTasks();
 
 // sort
-void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options,bool iscim);
+void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options);
 void Sort_OV3_LowMemory(long int memory,long int o,long int v);
 
 // coupled cluster constructor
@@ -176,7 +176,7 @@ double CoupledCluster::compute_energy() {
 
   // integral sort
   tstart();
-  SortIntegrals(nfzc,nfzv,nmo+nfzc+nfzv,ndoccact,nvirt,options_,false);
+  SortIntegrals(nfzc,nfzv,nmo+nfzc+nfzv,ndoccact,nvirt,options_);
   tstop();
 
   // MP4(SDQ)

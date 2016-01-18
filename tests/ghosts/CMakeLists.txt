@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(ghosts "psi;longertests;misc")
+add_regression_test(ghosts "psi;shorttests;misc")

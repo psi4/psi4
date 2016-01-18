@@ -59,7 +59,6 @@ void CIWavefunction::form_tpdm(void)
 std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int Jfirstunit)
 {
 
-   int maxrows, maxcols;
    unsigned long bufsz;
    double **transp_tmp = NULL;
    double **transp_tmp2 = NULL;
@@ -99,7 +98,8 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
 
    if ((Ivec.icore_==2 && Ivec.Ms0_ && CalcInfo_->ref_sym != 0) ||
        (Ivec.icore_==0 && Ivec.Ms0_)) {
-     for (int i=0, maxrows=0, maxcols=0; i<Ivec.num_blocks_; i++) {
+     int maxrows=0, maxcols=0;
+     for (int i=0; i<Ivec.num_blocks_; i++) {
        if (Ivec.Ia_size_[i] > maxrows) maxrows = Ivec.Ia_size_[i];
        if (Ivec.Ib_size_[i] > maxcols) maxcols = Ivec.Ib_size_[i];
      }
@@ -153,14 +153,14 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
            if (!do_Jblock && !do_Jblock2) continue;
 
            Jvec.read(Jroot, Jbuf);
-	
+
            if (do_Jblock) {
              tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
                Ivec.num_alpcodes_, Ivec.num_betcodes_, tpdm_aap, tpdm_bbp, tpdm_abp,
                Jvec.blocks_[Jblock], Ivec.blocks_[Iblock],
                Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
            }
-	
+
            if (do_Jblock2) {
              Jvec.transp_block(Jblock, transp_tmp);
              tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
@@ -168,7 +168,7 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
                tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, Ivec.blocks_[Iblock],
                Jbc, Jac, Jnbs, Jnas, Iac, Ibc, Inas, Inbs, weight);
            }
-	
+
          } /* end loop over Jbuf */
 
          if (Ivec.buf_offdiag_[Ibuf]) { /* need to get contrib of transpose */
@@ -197,9 +197,9 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
                s3_contrib_[Iblock2][Jblock2]))
                do_Jblock2 = 1;
              if (!do_Jblock && !do_Jblock2) continue;
-	
+
              Jvec.read(Jroot, Jbuf);
-	
+
              if (do_Jblock) {
                tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
                  Ivec.num_alpcodes_, Ivec.num_betcodes_,
@@ -207,7 +207,7 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
                  transp_tmp2, Jac, Jbc, Jnas,
                  Jnbs, Iac, Ibc, Inas, Inbs, weight);
              }
-	
+
              if (do_Jblock2) {
                Jvec.transp_block(Jblock, transp_tmp);
                tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
@@ -310,14 +310,14 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
                Ibc = Ivec.Ib_code_[Iblock2];
                Inas = Ivec.Ia_size_[Iblock2];
                Inbs = Ivec.Ib_size_[Iblock2];
-	
+
                for (Jblock=Jvec.first_ablk_[Jairr];
                  Jblock<=Jvec.last_ablk_[Jairr]; Jblock++) {
                  Jac = Jvec.Ia_code_[Jblock];
                  Jbc = Jvec.Ib_code_[Jblock];
                  Jnas = Jvec.Ia_size_[Jblock];
                  Jnbs = Jvec.Ib_size_[Jblock];
-	
+
                  if (s1_contrib_[Iblock2][Jblock] || s2_contrib_[Iblock2][Jblock]
                    || s3_contrib_[Iblock2][Jblock])
                    tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,

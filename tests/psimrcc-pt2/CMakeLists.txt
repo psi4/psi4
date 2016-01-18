@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(psimrcc-pt2 "psi;longertests;psimrcc")
+add_regression_test(psimrcc-pt2 "psi;shorttests;psimrcc")

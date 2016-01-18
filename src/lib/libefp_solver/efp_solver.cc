@@ -282,16 +282,16 @@ efp_result electron_density_field_fn(size_t n_pt, const double *xyz, double *fie
     boost::shared_ptr<BasisSet> basis = wfn->basisset();
     boost::shared_ptr<OneBodyAOInt> field_ints(wfn->integral()->electric_field());
 
-    int nao = basis->nao();
+    int nbf = basis->nbf();
     std::vector<SharedMatrix> intmats;
-    intmats.push_back(SharedMatrix(new Matrix("Ex integrals", nao, nao)));
-    intmats.push_back(SharedMatrix(new Matrix("Ey integrals", nao, nao)));
-    intmats.push_back(SharedMatrix(new Matrix("Ez integrals", nao, nao)));
+    intmats.push_back(SharedMatrix(new Matrix("Ex integrals", nbf, nbf)));
+    intmats.push_back(SharedMatrix(new Matrix("Ey integrals", nbf, nbf)));
+    intmats.push_back(SharedMatrix(new Matrix("Ez integrals", nbf, nbf)));
 
-    SharedMatrix Da = wfn->Da_subset("CartAO");
+    SharedMatrix Da = wfn->Da();
     SharedMatrix Db;
     if (!wfn->same_a_b_orbs())
-        Db = wfn->Db_subset("CartAO");
+        Db = wfn->Db();
 
     for (size_t n=0; n<n_pt; ++n) {
         field_ints->set_origin(Vector3(xyz[3*n], xyz[3*n+1], xyz[3*n+2]));
@@ -459,14 +459,14 @@ boost::shared_ptr<Matrix> EFP::modify_Fock_permanent()
     //   XXX       YYY       ZZZ       XXY       XXZ       XYY       YYZ       XZZ       YZZ       XYZ
       1.0/15.0, 1.0/15.0, 1.0/15.0, 3.0/15.0, 3.0/15.0, 3.0/15.0, 3.0/15.0, 3.0/15.0, 3.0/15.0, 6.0/15.0};
 
-    int nao = wfn->basisset()->nao();
+    int nbf = wfn->basisset()->nbf();
     std::vector<SharedMatrix> mats;
     for(int i=0; i<20; ++i) {
-        mats.push_back(SharedMatrix(new Matrix(nao, nao)));
+        mats.push_back(SharedMatrix(new Matrix(nbf, nbf)));
     }
 
     // Cartesian basis one-electron EFP perturbation
-    SharedMatrix V2(new Matrix("EFP permanent moment contribution to the Fock Matrix", nao, nao));
+    SharedMatrix V2(new Matrix("EFP permanent moment contribution to the Fock Matrix", nbf, nbf));
 
     // multipole contributions to Fock matrix
     double * xyz_p  = xyz->pointer();
@@ -520,13 +520,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock_permanent()
     }
     free(atoms);
 
-    boost::shared_ptr<PetiteList> pet(new PetiteList(wfn->basisset(),wfn->integral(),true));
-    boost::shared_ptr<Matrix> U = pet->aotoso();
-
-    boost::shared_ptr<Matrix> V = Matrix::triplet(U,V2,U,true,false,false);
-    V->set_name("EFP permanent moment contribution to the Fock Matrix");
-
-    return V;
+    return V2;
 }
 
 /*
@@ -566,13 +560,13 @@ boost::shared_ptr<Matrix> EFP::modify_Fock_induced()
     boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     boost::shared_ptr<OneBodyAOInt> field_ints(wfn->integral()->electric_field());
 
-    int nao = wfn->basisset()->nao();
+    int nbf = wfn->basisset()->nbf();
     std::vector<SharedMatrix> mats;
     for (int i=0; i<3; ++i)
-        mats.push_back(SharedMatrix(new Matrix(nao, nao)));
+        mats.push_back(SharedMatrix(new Matrix(nbf, nbf)));
 
     // Cartesian basis one-electron EFP perturbation
-    SharedMatrix V2(new Matrix("EFP induced dipole contribution to the Fock Matrix", nao, nao));
+    SharedMatrix V2(new Matrix("EFP induced dipole contribution to the Fock Matrix", nbf, nbf));
 
     // induced dipole contributions to Fock matrix
     // multipole contributions to Fock matrix
@@ -592,12 +586,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock_induced()
         }
     }
 
-    boost::shared_ptr<PetiteList> pet(new PetiteList(wfn->basisset(),wfn->integral(),true));
-    boost::shared_ptr<Matrix> U = pet->aotoso();
-    boost::shared_ptr<Matrix> V = Matrix::triplet(U,V2,U,true,false,false);
-    V->set_name("EFP induced dipole contribution to the Fock Matrix");
-
-    return V;
+    return V2;
 }
 
 /*
