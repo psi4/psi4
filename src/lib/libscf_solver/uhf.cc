@@ -580,7 +580,7 @@ bool UHF::diis()
 
 bool UHF::stability_analysis()
 {
-    boost::shared_ptr<UStab> stab = boost::shared_ptr<UStab>(new UStab());
+    boost::shared_ptr<UStab> stab = boost::shared_ptr<UStab>(new UStab(make_ghost_wavefunction(), options_));
     stab->compute_energy();
     SharedMatrix eval_sym = stab->analyze();
     outfile->Printf( "    Lowest UHF->UHF stability eigenvalues: \n");

@@ -43,19 +43,22 @@ namespace psi{
 
 namespace scf {
 
-PsiReturnType stability(Options& options)
+PsiReturnType stability(SharedWavefunction ref_wfn, Options& options)
 {
 
     tstart();
-    boost::shared_ptr<UStab> stab = boost::shared_ptr<UStab>(new UStab());
+    boost::shared_ptr<UStab> stab = boost::shared_ptr<UStab>(new UStab(ref_wfn, options));
     stab->compute_energy();
     tstop();
 
     return Success;
 }
 
-UStab::UStab() : options_(Process::environment.options) {
+UStab::UStab(SharedWavefunction ref_wfn, Options& options) :
+       options_(options)
+{
     common_init();
+    set_reference(ref_wfn);
 }
 
 UStab::~UStab() {
@@ -63,12 +66,6 @@ UStab::~UStab() {
 
 void UStab::common_init()
 {
-    boost::shared_ptr<Wavefunction> ref = Process::environment.wavefunction();
-    if (!ref) {
-        throw PSIEXCEPTION("Need an SCF wavefunction in Process::environment !!");
-    }
-
-    set_reference(ref);
 
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");

@@ -54,7 +54,6 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm):
 {
 
   // Use libtrans to generate MO basis integrals in Pitzer order
-//  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
   std::vector<boost::shared_ptr<MOSpace> > spaces;
   spaces.push_back(MOSpace::all);
   IntegralTransform *ints = new IntegralTransform(ref_wfn, spaces,
