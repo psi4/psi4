@@ -89,7 +89,7 @@ IntegralTransform::IntegralTransform(shared_ptr<Wavefunction> wfn,
     // is possible in case any of these variables need to be changed before setup.
     memory_ = Process::environment.get_memory();
 
-    labels_  = Process::environment.molecule()->irrep_labels();
+    labels_  = wfn->molecule()->irrep_labels();
     nirreps_ = wfn->nirrep();
     nmo_     = wfn->nmo();
     nso_     = wfn->nso();

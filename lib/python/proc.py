@@ -3717,7 +3717,7 @@ def run_cepa(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)
 
     # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if psi4.get_options('SCF', 'SCF_TYPE') in ['DF', 'CD']:
+    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
         if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
             psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
@@ -3792,7 +3792,7 @@ def run_detcas(name, **kwargs):
                                   " density matrices.")
 
         # If the scf type is DF/CD, then the AO integrals were never written to disk
-        if psi4.get_options('SCF', 'SCF_TYPE') in ['DF', 'CD']:
+        if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
             psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
 

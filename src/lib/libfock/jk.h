@@ -348,7 +348,9 @@ public:
     * using knobs in options.
     * @return abstract JK object, tuned in with preset options
     */
-    static boost::shared_ptr<JK> build_JK();
+//    static boost::shared_ptr<JK> build_JK();
+    static boost::shared_ptr<JK> build_JK(boost::shared_ptr<BasisSet> primary,
+                                          Options& options);
 
     // => Knobs <= //
 
@@ -596,6 +598,13 @@ class PKJK : public JK {
 
     /// Common initialization
     void common_init();
+
+    /// Total number of SOs
+    int nso_;
+    /// Number of irreps
+    int nirrep_;
+    /// Number of so per irrep
+    Dimension nsopi_;
 
 public:
     // => Constructors < = //
@@ -892,7 +901,7 @@ public:
 /**
  * Class CDJK
  *
- * JK implementation using 
+ * JK implementation using
  * cholesky decomposition technology
  */
 class CDJK : public DFJK {
@@ -1015,8 +1024,8 @@ protected:
     void build_auxiliary_partition();
     void build_Bpq();
     void bump(boost::shared_ptr<Matrix> J,
-              const std::vector<double>& bump_atoms, 
-              const std::vector<int>& auxiliary_atoms, 
+              const std::vector<double>& bump_atoms,
+              const std::vector<int>& auxiliary_atoms,
               bool bump_diagonal);
     void build_J(boost::shared_ptr<Matrix> Z,
                  const std::vector<boost::shared_ptr<Matrix> >& D,
@@ -1024,7 +1033,7 @@ protected:
     void build_K(boost::shared_ptr<Matrix> Z,
                  const std::vector<boost::shared_ptr<Matrix> >& D,
                  const std::vector<boost::shared_ptr<Matrix> >& K);
-    
+
 public:
     // => Constructors < = //
 
@@ -1053,7 +1062,7 @@ public:
      */
     void set_condition(double condition) { condition_ = condition; }
     /**
-     * Metric for FastDF fitting 
+     * Metric for FastDF fitting
      * @param metric COULOMB or EWALD,
      *       defaults to COULOMB
      */
@@ -1075,7 +1084,7 @@ public:
      */
     void set_df_bump_R1(double R1) { bump_R1_ = R1; }
     /**
-     * Range-Separation parameter for EWALD metric fitting 
+     * Range-Separation parameter for EWALD metric fitting
      * @param theta theta ~ 0 is COULOMB, theta ~ INF is OVERLAP,
      *       defaults to 1.0
      */

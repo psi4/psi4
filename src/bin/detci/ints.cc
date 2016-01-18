@@ -135,7 +135,7 @@ void CIWavefunction::setup_dfmcscf_ints(){
       options_.get_str("BASIS"), primary->has_puream());
 
   /// Build JK object
-  jk_ = JK::build_JK();
+  jk_ = JK::build_JK(basisset_, options_);
   jk_->set_do_J(true);
   jk_->set_do_K(true);
   jk_->initialize();
@@ -348,7 +348,7 @@ void CIWavefunction::setup_mcscf_ints(){
   ints_->set_print(0);
 
   // Conventional JK build
-  jk_ = JK::build_JK();
+  jk_ = JK::build_JK(basisset_, options_);
   jk_->set_do_J(true);
   jk_->set_do_K(true);
   jk_->initialize();

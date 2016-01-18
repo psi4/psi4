@@ -53,28 +53,21 @@ using namespace boost;
 
 namespace psi { namespace scf {
 
-KS::KS(Options & options, boost::shared_ptr<PSIO> psio) :
+KS::KS(SharedWavefunction ref_wfn, Options & options, boost::shared_ptr<PSIO> psio) :
     options_(options), psio_(psio)
 {
-    common_init();
+    common_init(ref_wfn);
 }
 KS::~KS()
 {
 }
-void KS::common_init()
+void KS::common_init(SharedWavefunction ref_wfn)
 {
-    // Take the molecule from the environment
-    molecule_ = Process::environment.molecule();
+    molecule_ = ref_wfn->molecule();
+    basisset_ = ref_wfn->basisset();
+    sobasisset_ = ref_wfn->sobasisset();
 
-    // Load in the basis set
-    basisset_ = BasisSet::pyconstruct_orbital(molecule_,
-        "BASIS", options_.get_str("BASIS"));
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
-    sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, fact));
-    outfile->Printf("DGAS Warning! We should not be reaching this point.\n");
-    outfile->Printf("We are grabbing the molecule from global\n");
-
-    potential_ = VBase::build_V(KS::options_,(options_.get_str("REFERENCE") == "RKS" ? "RV" : "UV"));
+    potential_ = VBase::build_V(basisset_,KS::options_,(options_.get_str("REFERENCE") == "RKS" ? "RV" : "UV"));
     potential_->initialize();
     functional_ = potential_->functional();
 
@@ -82,13 +75,8 @@ void KS::common_init()
     potential_->print_header();
 
 }
-RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
-    RHF(options, psio, chkpt), KS(options,psio)
-{
-    common_init();
-}
 RKS::RKS(SharedWavefunction ref_wfn, Options & options, boost::shared_ptr<PSIO> psio) :
-    RHF(ref_wfn, options, psio), KS(options,psio)
+    RHF(ref_wfn, options, psio), KS(ref_wfn, options, psio)
 {
     common_init();
 }
@@ -243,14 +231,8 @@ bool RKS::stability_analysis()
     throw PSIEXCEPTION("DFT stabilty analysis has not been implemented yet.  Sorry :(");
     return false;
 }
-
-UKS::UKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
-    UHF(options, psio, chkpt), KS(options,psio)
-{
-    common_init();
-}
 UKS::UKS(SharedWavefunction ref_wfn, Options & options, boost::shared_ptr<PSIO> psio) :
-    UHF(ref_wfn, options, psio), KS(options,psio)
+    UHF(ref_wfn, options, psio), KS(ref_wfn, options,psio)
 {
     common_init();
 }

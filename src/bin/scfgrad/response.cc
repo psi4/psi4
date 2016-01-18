@@ -783,7 +783,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         }
     }
 
-    boost::shared_ptr<JK> jk = JK::build_JK();
+    boost::shared_ptr<JK> jk = JK::build_JK(basisset_, options_);
     size_t mem = 0.9 * memory_ / 8L;
     size_t per_A = 3L * nso * nso + 1L * nocc * nso;
     size_t max_A = (mem / 2L) / per_A;

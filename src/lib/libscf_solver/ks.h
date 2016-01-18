@@ -75,10 +75,10 @@ protected:
     /// Compute E_xc and the V matrix
     virtual void form_V() = 0;
     /// Build functional, grid, etc
-    void common_init();
+    void common_init(SharedWavefunction ref_wfn);
 
 public:
-    KS(Options & options, boost::shared_ptr<PSIO> psio);
+    KS(SharedWavefunction ref_wfn, Options & options, boost::shared_ptr<PSIO> psio);
     virtual ~KS();
 };
 

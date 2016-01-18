@@ -645,7 +645,7 @@ void FISAPT::coulomb()
 
     // => Global JK Object <= //
 
-    jk_ = JK::build_JK();
+    jk_ = JK::build_JK(primary_, options_);
     jk_->set_memory(doubles_);
 
     // => Build J and K for embedding <= //
@@ -3173,7 +3173,7 @@ void FISAPT::find()
 
         // => JK Object <= //
 
-        boost::shared_ptr<JK> jk = JK::build_JK();
+        boost::shared_ptr<JK> jk = JK::build_JK(primary_, options_);
 
         // TODO: Account for 2-index overhead in memory
         int nso = primary_->nbf();

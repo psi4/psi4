@@ -145,13 +145,13 @@ SharedMatrix SCFGrad::compute_gradient()
     boost::shared_ptr<VBase> potential;
 
     if (options_.get_str("REFERENCE") == "RKS") {
-        potential = VBase::build_V(options_, "RV");
+        potential = VBase::build_V(basisset_, options_, "RV");
         potential->initialize();
         std::vector<SharedMatrix>& C = potential->C();
         C.push_back(Ca_subset("SO", "OCC"));
         functional = potential->functional();
     } else if (options_.get_str("REFERENCE") == "UKS") {
-        potential = VBase::build_V(options_, "UV");
+        potential = VBase::build_V(basisset_, options_, "UV");
         potential->initialize();
         std::vector<SharedMatrix>& C = potential->C();
         C.push_back(Ca_subset("SO", "OCC"));
@@ -600,13 +600,13 @@ SharedMatrix SCFGrad::compute_hessian()
     boost::shared_ptr<VBase> potential;
 
     if (options_.get_str("REFERENCE") == "RKS") {
-        potential = VBase::build_V(options_, "RV");
+        potential = VBase::build_V(basisset_, options_, "RV");
         potential->initialize();
         std::vector<SharedMatrix>& C = potential->C();
         C.push_back(Ca_subset("SO", "OCC"));
         functional = potential->functional();
     } else if (options_.get_str("REFERENCE") == "UKS") {
-        potential = VBase::build_V(options_, "UV");
+        potential = VBase::build_V(basisset_, options_, "UV");
         potential->initialize();
         std::vector<SharedMatrix>& C = potential->C();
         C.push_back(Ca_subset("SO", "OCC"));

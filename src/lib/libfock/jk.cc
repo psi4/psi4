@@ -58,11 +58,8 @@ JK::JK( boost::shared_ptr<BasisSet> primary) :
 JK::~JK()
 {
 }
-boost::shared_ptr<JK> JK::build_JK()
+boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options& options)
 {
-    Options& options = Process::environment.options;
-    boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(Process::environment.molecule(), 
-        "BASIS", options.get_str("BASIS"));
     if (options.get_str("SCF_TYPE") == "CD") {
 
         CDJK* jk = new CDJK(primary,options.get_double("CHOLESKY_TOLERANCE"));
@@ -199,7 +196,7 @@ boost::shared_ptr<JK> JK::build_JK()
       // direct with screening (does either or both)
       // LinK (only does K) - will need another with it
       JK* jk;
-      
+
       std::string J_type = options.get_str("INDEPENDENT_J_TYPE");
 
       std::string K_type = options.get_str("INDEPENDENT_K_TYPE");
@@ -220,9 +217,9 @@ boost::shared_ptr<JK> JK::build_JK()
         jk->set_debug(options.get_int("DEBUG"));
       if (options["BENCH"].has_changed())
         jk->set_bench(options.get_int("BENCH"));
-      
+
       return boost::shared_ptr<JK>(jk);
-      
+
     }else {
         throw PSIEXCEPTION("JK::build_JK: Unknown SCF Type");
     }
@@ -596,7 +593,7 @@ void JK::compute()
             J_[N]->print("outfile");
             K_[N]->print("outfile");
         }
-        
+
     }
 
     if (lr_symmetric_) {
