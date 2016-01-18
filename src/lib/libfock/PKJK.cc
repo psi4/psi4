@@ -50,8 +50,8 @@ using namespace psi;
 namespace psi {
 
 
-PKJK::PKJK(boost::shared_ptr<BasisSet> primary) :
-    JK(primary)
+PKJK::PKJK(boost::shared_ptr<BasisSet> primary, Options& options) :
+    JK(primary), options_(options)
 {
     common_init();
 }
@@ -90,7 +90,7 @@ void PKJK::preiterations()
         psio_->open(pk_file_, PSIO_OPEN_NEW);
 
     // Start by generating conventional integrals on disk
-    boost::shared_ptr<MintsHelper> mints(new MintsHelper(primary_));
+    boost::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
     mints->integrals();
     if(do_wK_)
         mints->integrals_erf(omega_);

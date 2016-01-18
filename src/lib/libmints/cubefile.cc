@@ -33,9 +33,8 @@
 #include "libparallel/ParallelPrinter.h"
 namespace psi{
 
-CubeFile::CubeFile()
+CubeFile::CubeFile(boost::shared_ptr<Wavefunction> wfn) : wfn_(wfn)
 {
-    wfn_ = Process::environment.wavefunction();
     nptsx_ = nptsy_ = nptsz_ = 50;
     buffer_region_ = 5.0;
     filename_ = "psi4.cube";

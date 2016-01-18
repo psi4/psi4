@@ -730,7 +730,7 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
         outfile->Printf( "               https://github.com/psi4/psi4public/issues\n\n");
 
         // Integrals do not exist on disk. Compute them.
-        MintsHelper helper;
+        MintsHelper helper(wave->basisset(), options, 0);
         helper.integrals();
     }
     // Create integral transformation object

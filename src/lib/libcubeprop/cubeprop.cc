@@ -43,10 +43,9 @@ using namespace std;
 
 namespace psi {
 
-CubeProperties::CubeProperties() :
-    options_(Process::environment.options)
+CubeProperties::CubeProperties(SharedWavefunction wfn, Options& options) :
+    options_(options)
 {
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     basisset_ = wfn->basisset();
 
     Ca_ = wfn->Ca_subset("AO", "ALL");

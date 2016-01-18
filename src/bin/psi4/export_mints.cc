@@ -570,7 +570,7 @@ void export_mints()
     typedef SharedMatrix (MintsHelper::*oneelectron)();
     typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis)(boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
 
-    class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
+    class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring", no_init).
             def(init<boost::shared_ptr<BasisSet> >()).
             def("integral", &MintsHelper::integral, "docstring").
             def("integrals", &MintsHelper::integrals, "docstring").

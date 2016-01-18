@@ -35,6 +35,7 @@
 #include <physconst.h>
 #include <libmints/wavefunction.h>
 #include <libmints/molecule.h>
+#include <libmints/factory.h>
 #include <libmints/integral.h>
 #include <libmints/multipolesymmetry.h>
 #include "MOInfo.h"
@@ -125,9 +126,10 @@ void get_params(Options &options)
 
   boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
   boost::shared_ptr<Molecule> mol = wfn->molecule();
-  boost::shared_ptr<IntegralFactory> fact = wfn->integral();
+  boost::shared_ptr<IntegralFactory> intfact = wfn->integral();
+  boost::shared_ptr<MatrixFactory> matfact = wfn->matrix_factory();
 
-  OperatorSymmetry dipsym(1, mol, fact);
+  OperatorSymmetry dipsym(1, mol, intfact, matfact);
   moinfo.mu_irreps = init_int_array(3);
   moinfo.mu_irreps[0] = dipsym.component_symmetry(0);
   moinfo.mu_irreps[1] = dipsym.component_symmetry(1);

@@ -2373,7 +2373,7 @@ void RDFMP2::form_Z()
         cphf->postiterations();
 
         // Compute one-electron properties
-        boost::shared_ptr<OEProp> oe(new OEProp());
+        boost::shared_ptr<OEProp> oe(new OEProp(make_ghost_wavefunction()));
         oe->set_Da_so(Da_);
 
         oe->add("DIPOLE");

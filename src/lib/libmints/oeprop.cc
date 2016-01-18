@@ -718,10 +718,6 @@ OEProp::OEProp(boost::shared_ptr<Wavefunction> wfn) : Prop(wfn)
 {
     common_init();
 }
-OEProp::OEProp() : Prop(Process::environment.wavefunction())
-{
-    common_init();
-}
 OEProp::~OEProp()
 {
 }

@@ -85,7 +85,7 @@ SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options)
      options.get_str("REFERENCE") == "TWOCON")
   {
       // We need to start by generating some integrals
-      MintsHelper* mints = new MintsHelper;
+      MintsHelper* mints = new MintsHelper(ref_wfn->basisset(), options, 0);
       mints->integrals();
       delete mints;
       // Now, set the reference wavefunction for subsequent codes to use

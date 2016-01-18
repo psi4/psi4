@@ -102,24 +102,29 @@ public:
     size_t count() const { return count_; }
 };
 
+MintsHelper::MintsHelper(boost::shared_ptr<BasisSet> basis, Options& options, int print)
+    : options_(options), print_(print)
+{
+    init_helper(basis);
+}
 
 MintsHelper::MintsHelper(Options & options, int print)
     : options_(options), print_(print)
 {
     init_helper();
 }
-
-MintsHelper::MintsHelper(boost::shared_ptr<BasisSet> basis)
-    : options_(Process::environment.options), print_(0)
-{
-    init_helper(basis);
-}
-
-MintsHelper::MintsHelper()
-    : options_(Process::environment.options), print_(0)
-{
-    init_helper();
-}
+//
+//MintsHelper::MintsHelper(boost::shared_ptr<BasisSet> basis)
+//    : options_(Process::environment.options), print_(0)
+//{
+//    init_helper(basis);
+//}
+//
+//MintsHelper::MintsHelper()
+//    : options_(Process::environment.options), print_(0)
+//{
+//    init_helper();
+//}
 
 MintsHelper::MintsHelper(boost::shared_ptr<Wavefunction> wavefunction)
     : options_(wavefunction->options())
@@ -398,7 +403,7 @@ void MintsHelper::one_electron_integrals()
         SharedMatrix so_overlap_x2c = so_overlap();
         SharedMatrix so_kinetic_x2c = so_kinetic();
         SharedMatrix so_potential_x2c = so_potential();
-        x2cint.compute(so_overlap_x2c,so_kinetic_x2c,so_potential_x2c,options_);
+        x2cint.compute(molecule_, so_overlap_x2c, so_kinetic_x2c, so_potential_x2c, options_);
 
         // Overlap
         so_overlap_x2c->save(psio_, PSIF_OEI);

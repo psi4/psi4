@@ -519,6 +519,9 @@ class DiskJK : public JK {
     /// Absolute AO index to irrep
     int* so2symblk_;
 
+    /// Options object
+    Options& options_;
+
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const { return false; }
     /// Setup integrals, files, etc
@@ -541,7 +544,7 @@ public:
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    DiskJK(boost::shared_ptr<BasisSet> primary);
+    DiskJK(boost::shared_ptr<BasisSet> primary, Options& options);
     /// Destructor
     virtual ~DiskJK();
 
@@ -564,6 +567,9 @@ class PKJK : public JK {
 
     /// The PSIO instance to use for I/O
     boost::shared_ptr<PSIO> psio_;
+
+    /// Options object
+    Options& options_;
 
     /// Absolute AO index to relative SO index
     int* so2index_;
@@ -617,7 +623,7 @@ public:
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    PKJK(boost::shared_ptr<BasisSet> primary);
+    PKJK(boost::shared_ptr<BasisSet> primary, Options& options);
     /// Destructor
     virtual ~PKJK();
 

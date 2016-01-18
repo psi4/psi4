@@ -2076,7 +2076,7 @@ DCFTSolver::compute_oe_properties() {
 
     // Compute one-electron properties
 
-    boost::shared_ptr<OEProp> oe(new OEProp());
+    boost::shared_ptr<OEProp> oe(new OEProp(make_ghost_wavefunction()));
     oe->set_title(options_.get_str("DCFT_FUNCTIONAL").c_str());
 
     oe->set_Da_mo(a_opdm);

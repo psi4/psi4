@@ -615,7 +615,7 @@ double HF::finalize_E()
 
         // Properties
         if (print_) {
-            boost::shared_ptr<OEProp> oe(new OEProp());
+            boost::shared_ptr<OEProp> oe(new OEProp(make_ghost_wavefunction()));
             oe->set_title("SCF");
             oe->add("DIPOLE");
 
@@ -880,7 +880,7 @@ void HF::form_H()
         int nao = basisset_->nao();
 
         // Set up AO->SO transformation matrix (u)
-        MintsHelper helper(options_, 0);
+        MintsHelper helper(basisset_, options_, 0);
         SharedMatrix aotoso = helper.petite_list(true)->aotoso();
         int *col_offset = new int[nirrep_];
         col_offset[0] = 0;
@@ -1484,7 +1484,7 @@ void HF::save_orbitals()
                 Ctemp_b->set(h,m,i,Cb_->get(h,m,i));
     Ctemp_b->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
     // Write Fock matrix to file 280 after removing symmetry
-    MintsHelper helper(options_, 0);
+    MintsHelper helper(basisset_, options_, 0);
     SharedMatrix sotoao = helper.petite_list()->sotoao();
     SharedMatrix Fa(new Matrix(nbf,nbf));
     SharedMatrix Fb(new Matrix(nbf,nbf));
@@ -1528,7 +1528,7 @@ void HF::load_fock()
   int nbf = basisset_->nbf();
   psio_->open(PSIF_SCF_MOS,PSIO_OPEN_OLD);
   // Read Fock matrix from file 280, applying current symmetry
-  MintsHelper helper(options_, 0);
+  MintsHelper helper(basisset_, options_, 0);
   SharedMatrix aotoso = helper.petite_list()->aotoso();
   SharedMatrix Fa(new Matrix("ALPHA FOCK C1",nbf,nbf));
   SharedMatrix Fb(new Matrix("BETA FOCK C1",nbf,nbf));
@@ -1855,7 +1855,7 @@ void HF::initialize()
     }
 
     if(attempt_number_ == 1){
-        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
+        boost::shared_ptr<MintsHelper> mints (new MintsHelper(basisset_, options_, 0));
         mints->one_electron_integrals();
 
         integrals();
