@@ -259,42 +259,53 @@ def parse_input():
             help='enable undefined behaviour sanitizer (UBSan) build [default: %(default)s]')
 
     group = parser.add_argument_group('External quantum chemistry libraries')
+    # For the external QC libraries section, let's explicitly set no
+    #  defaults and defer the logic to CMakeLists.txt. This setup script
+    #  will translate explicit user prefs into CMake options but let CMake
+    #  handle user indifference.
+
     # ERD package
     group.add_argument('--erd',
             action='store',
             choices=('on', 'off'),
-            default='off',
-            help='Add support for the ERD integral package [default: %(default)s]')
-    #JK_Factory
+            default=None,
+            help="""Add support for the ERD integral package (requires Fortran). If this is left blank,
+            LibERD will not be included.""")
+    # JK_Factory
     group.add_argument('--jkfactory',
             action='store',
             choices=('on', 'off'),
-            default='off',
-            help='enable distributed J and K builds [default: %(default)s]')
+            default=None,
+            help="""Enable distributed J and K builds (requires Fortran). If this is left blank,
+            JKFactory will not be included.""")
     # GPU_DFCC package
     group.add_argument('--gpu-dfcc',
             action='store',
             choices=('on', 'off'),
-            default='off',
-            help='Enable GPU_DFCC external project [default: %(default)s]')
+            default=None,
+            help="""Enable GPU_DFCC external project. If this is left blank,
+            GPU_DFCC will not be included.""")
     # Dummy plugin
     group.add_argument('--dummy-plugin',
             action='store',
             choices=('on', 'off'),
-            default='off',
-            help='Enable dummy plugin external project [default: %(default)s]')
+            default=None,
+            help="""Enable dummy plugin external project. If this is left blank,
+            the dummy plugin will not be included.""")
     # PCMSolver package
     group.add_argument('--pcmsolver',
             action='store',
             choices=('on', 'off'),
-            default='on',
-            help='Enable PCMSolver [default: %(default)s]')
+            default=None,
+            help="""Enable PCMSolver external project (requires Fortran, zlib). If this is left blank, 
+            PCMSolver will be included if Fortran compiler specified, otherwise not.""")
     # CheMPS2 package
     group.add_argument('--chemps2',
             action='store',
             choices=('on', 'off'),
-            default='off',
-            help='Enable CheMPS2 external project [default: %(default)s]')
+            default=None,
+            help="""Enable CheMPS2 external project (requires hdf5, gsl, zlib). If this is left blank, 
+            CheMPS2 will be included.""")
     group.add_argument('--chemps2-dir',
             action='store',
             default=None,
@@ -382,15 +393,20 @@ def check_cmake_exists(cmake_command):
         print('   >>> module load cmake')
         sys.exit()
 
-def translate_cmake(s):
-    if s == 'on':
-        return 'ON'
+
+def translate_cmake(cmakevar, s):
+    cmakeformat = ' -D{}={{}}'.format(cmakevar)
+    if s is None:
+        return ''
+    elif s == 'on':
+        return cmakeformat.format('ON')
     elif s == 'off':
-        return 'OFF'
+        return cmakeformat.format('OFF')
     elif s:
-        return 'ON'
+        return cmakeformat.format('ON')
     else:
-        return 'OFF'
+        return cmakeformat.format('OFF')
+
 
 def gen_cmake_command(args):
     # create cmake command from flags
@@ -406,23 +422,23 @@ def gen_cmake_command(args):
 
     command = ' %s ' % args.cmake + command
 
-    command += ' -DENABLE_MPI=%s'            % translate_cmake(args.mpi)
-    command += ' -DENABLE_SGI_MPT=%s'        % translate_cmake(args.sgi_mpt)
-    command += ' -DENABLE_OMP=%s'            % translate_cmake(args.omp)
-    command += ' -DENABLE_VECTORIZATION=%s'  % translate_cmake(args.vectorization)
-    command += ' -DENABLE_CSR=%s'            % translate_cmake(args.csr)
-    command += ' -DENABLE_SCALAPACK=%s'      % translate_cmake(args.scalapack)
-    command += ' -DENABLE_SCALASCA=%s'       % translate_cmake(args.scalasca)
-    command += ' -DENABLE_UNIT_TESTS=%s'     % translate_cmake(args.unit_tests)
-    command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
-    command += ' -DENABLE_PLUGINS=%s'        % translate_cmake(args.plugins)
-    command += ' -DENABLE_LIBERD=%s'         % translate_cmake(args.erd)
-    command += ' -DENABLE_JKFACTORY=%s'      % translate_cmake(args.jkfactory)
-    command += ' -DENABLE_GPU_DFCC=%s'       % translate_cmake(args.gpu_dfcc)
-    command += ' -DENABLE_DUMMY_PLUGIN=%s'   % translate_cmake(args.dummy_plugin)
-    command += ' -DENABLE_PCMSOLVER=%s'      % translate_cmake(args.pcmsolver)
-    command += ' -DENABLE_CHEMPS2=%s'        % translate_cmake(args.chemps2)
-    command += ' -DENABLE_CXX11_SUPPORT=%s'  % translate_cmake(args.cxx11)
+    command += translate_cmake('ENABLE_MPI',            args.mpi)
+    command += translate_cmake('ENABLE_SGI_MPT',        args.sgi_mpt)
+    command += translate_cmake('ENABLE_OMP',            args.omp)
+    command += translate_cmake('ENABLE_VECTORIZATION',  args.vectorization)
+    command += translate_cmake('ENABLE_CSR',            args.csr)
+    command += translate_cmake('ENABLE_SCALAPACK',      args.scalapack)
+    command += translate_cmake('ENABLE_SCALASCA',       args.scalasca)
+    command += translate_cmake('ENABLE_UNIT_TESTS',     args.unit_tests)
+    command += translate_cmake('ENABLE_STATIC_LINKING', args.static)
+    command += translate_cmake('ENABLE_PLUGINS',        args.plugins)
+    command += translate_cmake('ENABLE_LIBERD',         args.erd)
+    command += translate_cmake('ENABLE_JKFACTORY',      args.jkfactory)
+    command += translate_cmake('ENABLE_GPU_DFCC',       args.gpu_dfcc)
+    command += translate_cmake('ENABLE_DUMMY_PLUGIN',   args.dummy_plugin)
+    command += translate_cmake('ENABLE_PCMSOLVER',      args.pcmsolver)
+    command += translate_cmake('ENABLE_CHEMPS2',        args.chemps2)
+    command += translate_cmake('ENABLE_CXX11_SUPPORT',  args.cxx11)
     command += ' -DLIBINT_OPT_AM={0}'.format(args.max_am_eri)
     command += ' -DEXECUTABLE_SUFFIX={0}'.format(args.suffix)
 

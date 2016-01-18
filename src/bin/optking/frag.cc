@@ -544,6 +544,15 @@ int FRAG::add_cartesians(void) {
   return nadded;
 }
 
+bool FRAG::is_noncart_present(void) const {
+  for (ULI k=0; k<coords.simples.size(); ++k) {
+    if (coords.simples[k]->g_type() != INTCO_TYPE::cart_type)
+      return true;
+  }
+
+  return false;
+}
+
 // given any simple coordinate - this function looks to see if that coordinate
 // is already present in the set.  If so, it returns the index.
 // If not, it returns the index of the end + 1.

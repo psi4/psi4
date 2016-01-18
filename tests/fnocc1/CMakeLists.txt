@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(fnocc1 "psi;longertests;fnocc")
+add_regression_test(fnocc1 "psi;shorttests;fnocc")
