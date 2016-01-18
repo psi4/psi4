@@ -72,7 +72,8 @@ public:
     // => Constructors <= //
     
     /// Construct a CubeProperties object from a Wavefunction (possibly with symmetry in wfn)
-    CubeProperties();
+    CubeProperties(SharedWavefunction wfn, Options& options);
+
     /// Common Destructor
     virtual ~CubeProperties();
 

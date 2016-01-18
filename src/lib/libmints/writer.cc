@@ -459,7 +459,7 @@ void NBOWriter::write(const std::string &filename)
         { 351, 352, 353, 354, 355, 356, 357 } //f
     };
 
-    MintsHelper helper;
+    MintsHelper helper(wavefunction_->basisset(), wavefunction_->options(), 0);
     SharedMatrix sotoao = helper.petite_list()->sotoao();
     boost::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
 

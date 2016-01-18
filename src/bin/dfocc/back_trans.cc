@@ -437,7 +437,7 @@ void DFOCC::oeprop()
     }
 
     // Compute oeprop
-    boost::shared_ptr<OEProp> oe(new OEProp());
+    boost::shared_ptr<OEProp> oe(new OEProp(make_ghost_wavefunction()));
     oe->set_Da_mo(Da_);
     if (reference_ == "UNRESTRICTED") oe->set_Db_mo(Db_);
     oe->add("DIPOLE");

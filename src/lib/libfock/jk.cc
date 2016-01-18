@@ -143,7 +143,7 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
 
     } else if (options.get_str("SCF_TYPE") == "PK") {
 
-        PKJK* jk = new PKJK(primary);
+        PKJK* jk = new PKJK(primary, options);
 
         if (options["INTS_TOLERANCE"].has_changed())
             jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
@@ -156,7 +156,7 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
 
     } else if (options.get_str("SCF_TYPE") == "OUT_OF_CORE") {
 
-        DiskJK* jk = new DiskJK(primary);
+        DiskJK* jk = new DiskJK(primary, options);
 
         if (options["INTS_TOLERANCE"].has_changed())
             jk->set_cutoff(options.get_double("INTS_TOLERANCE"));

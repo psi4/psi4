@@ -402,17 +402,19 @@ void Wavefunction::add_postiteration_callback(PyObject *pyobject)
 void Wavefunction::call_preiteration_callbacks()
 {
     std::vector<void*>::const_iterator iter;
+    SharedWavefunction this_wfn = make_ghost_wavefunction();
     for (iter = precallbacks_.begin(); iter != precallbacks_.end(); ++iter) {
         if ((PyObject*)*iter != Py_None)
-            boost::python::call<void>((PyObject*)*iter, Process::environment.wavefunction());
+            boost::python::call<void>((PyObject*)*iter, this_wfn);
     }
 }
 void Wavefunction::call_postiteration_callbacks()
 {
     std::vector<void*>::const_iterator iter;
+    SharedWavefunction this_wfn = make_ghost_wavefunction();
     for (iter = postcallbacks_.begin(); iter != postcallbacks_.end(); ++iter) {
         if ((PyObject*)*iter != Py_None)
-            boost::python::call<void>((PyObject*)*iter, Process::environment.wavefunction());
+            boost::python::call<void>((PyObject*)*iter, this_wfn);
     }
 }
 

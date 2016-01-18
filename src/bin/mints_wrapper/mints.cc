@@ -33,7 +33,7 @@ PsiReturnType mints(boost::shared_ptr<BasisSet> basis)
 {
     tstart();
 
-    boost::shared_ptr<MintsHelper> mints(new MintsHelper(basis));
+    boost::shared_ptr<MintsHelper> mints(new MintsHelper(basis, Process::environment.options, 0));
     mints->integrals();
 
     tstop();

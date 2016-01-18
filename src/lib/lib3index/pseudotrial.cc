@@ -711,7 +711,7 @@ void PseudoTrial::form_A()
 
 void PseudoTrial::form_I()
 {
-    boost::shared_ptr<MintsHelper> mints(new MintsHelper());
+    boost::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
     I_ = mints->ao_eri();
     I_->print();
 }

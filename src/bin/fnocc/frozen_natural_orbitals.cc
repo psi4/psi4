@@ -54,7 +54,7 @@ using namespace boost;
 
 namespace psi{namespace fnocc{
 
-FrozenNO::FrozenNO(SharedWavefunction wfn,Options&options):
+FrozenNO::FrozenNO(SharedWavefunction wfn, Options& options):
   Wavefunction(options)
 {
     // copy wave function.
@@ -1055,7 +1055,7 @@ void DFFrozenNO::BuildFock(long int nQ,double*Qso,double*F) {
 
     // transform H
     // one-electron integrals
-    boost::shared_ptr<MintsHelper> mints(new MintsHelper());
+    boost::shared_ptr<MintsHelper> mints(new MintsHelper(basisset_, options_, 0));
     SharedMatrix H = mints->so_kinetic();
     H->add(mints->so_potential());
 

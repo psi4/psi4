@@ -689,7 +689,7 @@ void DFCoupledCluster::AllocateMemory() {
   Ca = reference_wavefunction_->Ca()->pointer();
 
   // one-electron integrals
-  boost::shared_ptr<MintsHelper> mints(new MintsHelper());
+  boost::shared_ptr<MintsHelper> mints(new MintsHelper(basisset_, options_, 0));
   H = mints->so_kinetic();
   H->add(mints->so_potential());
 
