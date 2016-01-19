@@ -1,3 +1,4 @@
+import os
 import sys
 import subprocess
 
@@ -18,6 +19,15 @@ def write_version(branch, mmp, ghash, status):
     with open('gitversion.h.tmp', 'w') as handle:
         handle.write(version_str)
         handle.write(mmp_str)
+
+    with open('../../../include/psi4-config.tmp', 'r') as handle:
+        f = handle.read()
+    with open('../../../bin/psi4-config', 'w') as handle:
+        handle.write(f)
+        handle.write('    psiver = "%s"\n' % (mmp))
+        handle.write('    githash = "{%s} %s %s"\n' % (branch, ghash, status))
+        handle.write('    sys.exit(main(sys.argv))\n\n')
+    os.chmod('../../../bin/psi4-config', 0o755)
 
 
 # Use Git to find current branch name
