@@ -210,7 +210,7 @@ class IntegralTransform{
         void set_tpdm_already_presorted(bool val) {tpdmAlreadyPresorted_ = val;}
 
         /// Whether SO intergals are already presorted
-        bool get_tei_already_presorted(bool val) {return alreadyPresorted_;}
+        bool get_tei_already_presorted() {return alreadyPresorted_;}
         void set_tei_already_presorted(bool val) {alreadyPresorted_ = val;}
 
         /// Set the memory (in MB) available to the library

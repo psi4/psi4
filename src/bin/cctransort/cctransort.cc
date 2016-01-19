@@ -316,6 +316,7 @@ PsiReturnType cctransort(Options& options)
   outfile->Printf("\tNumber of irreps     = %d\n", nirreps);
   outfile->Printf("\tNumber of MOs        = %d\n", nmo);
   outfile->Printf("\tNumber of active MOs = %d\n", nactive);
+  outfile->Printf("\tAO-Basis             = %s\n", options.get_str("AO_BASIS").c_str());
   outfile->Printf("\tSemicanonical        = %s\n", semicanonical ? "true" : "false");
   if(semicanonical) 
     outfile->Printf("\tReference            = ROHF changed to UHF for semicanonical orbitals\n");
@@ -355,7 +356,7 @@ PsiReturnType cctransort(Options& options)
 
   dpd_set_default(ints->get_dpd_id());
   ints->set_keep_dpd_so_ints(true);
-  if(!options.get_bool("DELETE_TEI")) {
+  if(!options.get_bool("DELETE_TEI") || options.get_str("AO_BASIS") == "DISK") {
     outfile->Printf("\tIWL integrals will be retained.\n");
     ints->set_keep_iwl_so_ints(true);
   }
@@ -365,7 +366,9 @@ PsiReturnType cctransort(Options& options)
   }
 
   // On the second and later passes of Brueckner, the presort is already done
+  // TDC: Always re-compute the presorted integrals until the frozen-core operator is included
   bool presort_predone = false;
+  /*
   if(psio->tocentry_exists(PSIF_SO_PRESORT, "SO Ints (nn|nn)")) {
     outfile->Printf("\tPresorted integrals already available.\n");
     ints->set_tei_already_presorted(true);
@@ -375,6 +378,7 @@ PsiReturnType cctransort(Options& options)
     outfile->Printf("\tPresorted integrals will be generated.\n");
     ints->set_tei_already_presorted(false);
   }
+  */
 
   outfile->Printf("\t(OO|OO)...\n");
   ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ, IntegralTransform::MakeAndKeep);
