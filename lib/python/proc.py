@@ -2187,6 +2187,7 @@ def run_bccd(name, **kwargs):
     if (name.lower() == 'bccd'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'BCCD')
         psi4.set_local_option('CCSORT', 'WFN', 'BCCD')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'BCCD')
         psi4.set_local_option('CCENERGY', 'WFN', 'BCCD')
 
     # Bypass routine scf if user did something special to get it to converge
@@ -2199,10 +2200,14 @@ def run_bccd(name, **kwargs):
             mints.integrals()
 
     psi4.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
+    psi4.set_local_option('CCTRANSORT', 'DELETE_TEI', 'false')
 
     while True:
-        psi4.transqt2()
-        psi4.ccsort()
+        if (psi4.get_global_option("RUN_CCTRANSORT")):
+            psi4.cctransort()
+        else:
+            psi4.transqt2()
+            psi4.ccsort()
         psi4.ccenergy()
         psi4.print_out('Brueckner convergence check: %d\n' % psi4.get_variable('BRUECKNER CONVERGED'))
         if (psi4.get_variable('BRUECKNER CONVERGED') == True):

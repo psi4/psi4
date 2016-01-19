@@ -1713,15 +1713,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE", "RHF");
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-    /*- Do retain the input two-electron integrals? -*/
-    options.add_bool("KEEP_TEIFILE", false);
-    /*- Cacheing level for libdpd governing the storage of amplitudes,
-    integrals, and intermediates in the CC procedure. A value of 0 retains
-    no quantities in cache, while a level of 6 attempts to store all
-    quantities in cache.  For particularly large calculations, a value of
-    0 may help with certain types of memory problems.  The default is 2,
-    which means that all four-index quantites with up to two virtual-orbital
-    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
+    /*- Delete the SO two-electron integrals after the transformation? -*/
+    options.add_bool("DELETE_TEI", true);
+    /*- Cacheing level for libdpd -*/
     options.add_int("CACHELEVEL", 2);
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
