@@ -1,0 +1,245 @@
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.3.434 Driver
+
+                          Git: Rev {master} 49b8e11 dirty
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Tue Jan 19 12:07:39 2016
+
+    Process ID:  34689
+    PSI4DATADIR: /Users/wderri2/Source/psi4/lib
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+# Testing decontract option for the basis sets
+
+
+ref_energy = -460.08989223006836
+memory 250 mb
+
+import cdft
+
+molecule {
+0 1
+CL        0.000000000000  0.000000000000  -0.035925275852
+H         0.000000000000  0.000000000000   1.246511684916
+    symmetry c1
+}
+
+set {
+  basis cc-pvdz-decontract
+  df_basis_scf cc-pvdz-jkfit
+  reference rhf
+
+}
+
+energy('scf')
+
+compare_values(ref_energy, get_variable("SCF TOTAL ENERGY"), 9, "RHF energy")
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+/Users/wderri2/Source/cdft/cdft.so loaded.
+
+*** tstart() called on dhcp190-136.emerson.emory.edu
+*** at Tue Jan 19 12:07:40 2016
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C_inf_v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+          CL          0.000000000000     0.000000000000    -0.035925275852    34.968852682000
+           H          0.000000000000     0.000000000000     1.246511684916     1.007825032070
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =     10.46355  C =     10.46355 [cm^-1]
+  Rotational constants: A = ************  B = 313689.27813  C = 313689.27813 [MHz]
+  Nuclear repulsion =    7.014779533991790
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 18
+  Nalpha       = 9
+  Nbeta        = 9
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ-DECONTRACT
+    Number of shells: 26
+    Number of basis function: 48
+    Number of Cartesian functions: 49
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         48      48       0       0       0       0
+   -------------------------------------------------------
+    Total      48      48       9       9       9       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: CC-PVDZ-JKFIT
+    Number of shells: 45
+    Number of basis function: 135
+    Number of Cartesian functions: 155
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 6.7811280623E-03.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   1:  -400.50615581375229   -4.00506e+02   6.41156e-01 
+   @DF-RHF iter   2:  -438.95335529506610   -3.84472e+01   2.79521e-01 DIIS
+   @DF-RHF iter   3:  -457.62394823362678   -1.86706e+01   8.27294e-02 DIIS
+   @DF-RHF iter   4:  -460.07065435408225   -2.44671e+00   4.68567e-03 DIIS
+   @DF-RHF iter   5:  -460.08879319020281   -1.81388e-02   9.54772e-04 DIIS
+   @DF-RHF iter   6:  -460.08983205645171   -1.03887e-03   1.82920e-04 DIIS
+   @DF-RHF iter   7:  -460.08988919760128   -5.71411e-05   3.58023e-05 DIIS
+   @DF-RHF iter   8:  -460.08989210350256   -2.90590e-06   7.58035e-06 DIIS
+   @DF-RHF iter   9:  -460.08989222333042   -1.19828e-07   1.71785e-06 DIIS
+   @DF-RHF iter  10:  -460.08989223006819   -6.73776e-09   2.50897e-07 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A   -104.843664     2A    -10.568798     3A     -8.036175  
+       4A     -8.033324     5A     -8.033324     6A     -1.112578  
+       7A     -0.619333     8A     -0.471624     9A     -0.471624  
+
+    Virtual:                                                              
+
+      10A      0.145931    11A      0.425673    12A      0.702217  
+      13A      0.702217    14A      0.718953    15A      0.880301  
+      16A      0.880301    17A      0.941883    18A      0.981171  
+      19A      0.981171    20A      1.261146    21A      1.703032  
+      22A      1.703032    23A      2.399348    24A      3.375537  
+      25A      4.084845    26A      4.084845    27A      4.327849  
+      28A      9.657304    29A     17.236334    30A     17.236334  
+      31A     17.389414    32A     22.070502    33A     61.166775  
+      34A     63.344241    35A     63.344241    36A     63.474813  
+      37A    234.280837    38A    234.280837    39A    234.373875  
+      40A    253.774012    41A    867.497469    42A   1047.097197  
+      43A   1047.097197    44A   1047.162493    45A   2889.391446  
+      46A   10291.783548    47A   42995.530913    48A   253368.777009  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     9 ]
+
+  Energy converged.
+
+  @DF-RHF Final Energy:  -460.08989223006819
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              7.0147795339917902
+    One-Electron Energy =                -649.8284091018053914
+    Two-Electron Energy =                 182.7237373377454048
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -460.0898922300681306
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.2015
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:    -0.6414
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.5600     Total:     0.5600
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:     1.4235     Total:     1.4235
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on dhcp190-136.emerson.emory.edu at Tue Jan 19 12:07:40 2016
+Module time:
+	user time   =       0.26 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.26 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!
