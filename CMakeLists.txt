@@ -239,18 +239,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 set_property(GLOBAL PROPERTY PSILIB)
 
-# PCMSolver
+# PCMSolver Detection
 if(ENABLE_PCMSOLVER)
-   find_package(ZLIB)
-    if (NOT ZLIB_FOUND)
-        message(FATAL_ERROR "No Zlib, no PCMSolver. Skip with -DENABLE_PCMSOLVER=OFF")
-        # TODO ability to build psi4 against pre-built pcmsolver library like chemps2
-        #message(FATAL_ERROR "No Zlib, no PCMSolver. Build against existing with -DPCMSOLVER_ROOT=/path/to/pcmsolver or skip with -DENABLE_PCMSOLVER=OFF")
-   else()
-      add_definitions(-DHAVE_PCMSOLVER)
-      message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
-      link_directories(${PROJECT_BINARY_DIR}/interfaces/lib)
-   endif()
+  include(ConfigPCMSolver)
 endif()
 
 #If we have MPI we may want to also build JKFactory which makes J and K's

@@ -60,6 +60,9 @@ target_link_libraries(psi4 ${LINKLIBS})
 if(ENABLE_CHEMPS2)
     target_link_libraries(psi4 CHEMPS2::CHEMPS2)
 endif()
+if(ENABLE_PCMSOLVER)
+  target_link_libraries(psi4 PCMSolver::PCMSolver)
+endif()
 
 # standalone python module psi4.so
 add_executable(psi4so EXCLUDE_FROM_ALL ${sources_list})
