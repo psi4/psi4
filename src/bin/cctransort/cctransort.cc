@@ -334,6 +334,7 @@ PsiReturnType cctransort(Options& options)
 
   // Transformation
 
+  outfile->Printf("\tTransforming integrals...\n");
   std::vector<boost::shared_ptr<MOSpace> > transspaces;
   transspaces.push_back(MOSpace::occ);
   transspaces.push_back(MOSpace::vir);
@@ -354,8 +355,27 @@ PsiReturnType cctransort(Options& options)
 
   dpd_set_default(ints->get_dpd_id());
   ints->set_keep_dpd_so_ints(true);
+  if(!options.get_bool("DELETE_TEI")) {
+    outfile->Printf("\tIWL integrals will be retained.\n");
+    ints->set_keep_iwl_so_ints(true);
+  }
+  else {
+    outfile->Printf("\tIWL integrals will be deleted.\n");
+    ints->set_keep_iwl_so_ints(false);
+  }
 
-  outfile->Printf("\tTransforming integrals...\n");
+  // On the second and later passes of Brueckner, the presort is already done
+  bool presort_predone = false;
+  if(psio->tocentry_exists(PSIF_SO_PRESORT, "SO Ints (nn|nn)")) {
+    outfile->Printf("\tPresorted integrals already available.\n");
+    ints->set_tei_already_presorted(true);
+    presort_predone = true;
+  }
+  else {
+    outfile->Printf("\tPresorted integrals will be generated.\n");
+    ints->set_tei_already_presorted(false);
+  }
+
   outfile->Printf("\t(OO|OO)...\n");
   ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ, IntegralTransform::MakeAndKeep);
   outfile->Printf("\t(OO|OV)...\n");
@@ -370,7 +390,8 @@ PsiReturnType cctransort(Options& options)
   outfile->Printf("\t(OV|VV)...\n");
   ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir, IntegralTransform::ReadAndNuke);
 
-  ints->set_keep_dpd_so_ints(false);
+  if(options.get_bool("DELETE_TEI")) ints->set_keep_dpd_so_ints(false);
+
   outfile->Printf("\t(VV|OO)...\n");
   ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::occ, IntegralTransform::MakeAndKeep);
   outfile->Printf("\t(VV|OV)...\n");
@@ -378,8 +399,14 @@ PsiReturnType cctransort(Options& options)
   outfile->Printf("\t(VV|VV)...\n");
   ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir, IntegralTransform::ReadAndNuke);
 
-  double efzc = ints->get_frozen_core_energy();
-
+  double efzc;
+  psio->open(PSIF_CC_INFO, PSIO_OPEN_OLD);
+  if(presort_predone) psio->read_entry(PSIF_CC_INFO, "Frozen-Core Energy", (char *) &(efzc), sizeof(double));
+  else {
+    efzc = ints->get_frozen_core_energy();
+    psio->write_entry(PSIF_CC_INFO, "Frozen-Core Energy", (char *) &(efzc), sizeof(double));
+  }
+  psio->close(PSIF_CC_INFO, 1);
   outfile->Printf(  "\tFrozen core energy     =  %20.14f\n", efzc);
 
   if(nfzc && (fabs(efzc) < 1e-7)) {

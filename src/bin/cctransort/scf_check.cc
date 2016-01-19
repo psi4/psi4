@@ -29,6 +29,12 @@ double scf_check(int reference, Dimension &openpi)
     E2AB = global_dpd_->buf4_trace(&A);
     global_dpd_->buf4_close(&A);
 
+    outfile->Printf( "\tOne-electron energy          =  %20.14f\n", E1A + E1B);
+    outfile->Printf( "\tTwo-electron (AA) energy     =  %20.14f\n", E2AA);
+    outfile->Printf( "\tTwo-electron (BB) energy     =  %20.14f\n", E2BB);
+    outfile->Printf( "\tTwo-electron (AB) energy     =  %20.14f\n", E2AB);
+    outfile->Printf( "\tTwo-electron energy          =  %20.14f\n", E2AA + E2BB + E2AB);
+
     return E1A + E1B + E2AA + E2BB + E2AB;
   }
   else if(reference == 1) { // ROHF
@@ -83,6 +89,13 @@ double scf_check(int reference, Dimension &openpi)
       global_dpd_->buf4_mat_irrep_close(&A, h);
     }
     global_dpd_->buf4_close(&A);
+
+    outfile->Printf( "\tOne-electron energy          =  %20.14f\n", E1A+E1B);
+    outfile->Printf( "\tTwo-electron (AA) energy     =  %20.14f\n", E2AA);
+    outfile->Printf( "\tTwo-electron (BB) energy     =  %20.14f\n", E2BB);
+    outfile->Printf( "\tTwo-electron (AB) energy     =  %20.14f\n", E2AB);
+    outfile->Printf( "\tTwo-electron energy          =  %20.14f\n", E1A+E1B+E2AA+E2BB+E2AB);
+
     return E1A + E1B + E2AA + E2BB + E2AB;
   }
   else { // RHF
@@ -93,6 +106,9 @@ double scf_check(int reference, Dimension &openpi)
     global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, "ij", "kl", 0, "A 2<ij|kl> - <ij|lk>");
     E2AB = global_dpd_->buf4_trace(&A);
     global_dpd_->buf4_close(&A);
+
+    outfile->Printf( "\tOne-electron energy          =  %20.14f\n", E1A);
+    outfile->Printf( "\tTwo-electron energy          =  %20.14f\n", E2AB);
 
     return E1A + E2AB;
   }
