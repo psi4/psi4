@@ -176,8 +176,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Relativistic Hamiltonian type !expert -*/
     options.add_str("RELATIVISTIC", "NO","NO X2C");
 #endif
-    /*- Decontract Primary Basis? (Recommended for all X2C calculations) If Using Density Fitting, you must specify an auxiliary basis. At the moment this could have unintended consequences -*/
-  options.add_bool("DECONTRACT", false);
   /*- Whether to uncontract the basis set in a dual basis calculation -*/
   options.add_str("REL_BASIS","");
 
