@@ -54,7 +54,7 @@ if (reference_ == "RESTRICTED") {
         natom   = molecule_->natom();
 
 	// Read in nuclear repulsion energy
-	Enuc = Process::environment.molecule()->nuclear_repulsion_energy();
+	Enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy();
 	
 	// Read SCF energy
         Escf=reference_wavefunction_->reference_energy();
@@ -159,7 +159,7 @@ else if (reference_ == "UNRESTRICTED") {
         natom   = molecule_->natom();
 
 	// Read in nuclear repulsion energy
-	Enuc = Process::environment.molecule()->nuclear_repulsion_energy();
+	Enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy();
 	
 	// Read SCF energy
         Escf=reference_wavefunction_->reference_energy();

@@ -290,7 +290,7 @@ SharedWavefunction py_psi_occ(SharedWavefunction ref_wfn)
 
 SharedWavefunction py_psi_dfocc(SharedWavefunction ref_wfn)
 {
-    ref_wfn->Ca()->print();
+    py_psi_prepare_options_for_module("DFOCC");
     return dfoccwave::dfoccwave(ref_wfn, Process::environment.options);
 }
 

@@ -99,6 +99,7 @@ def run_dfomp2(name, **kwargs):
     """
     optstash = p4util.OptionsState(
         ['SCF', 'DF_INTS_IO'],
+        ['SCF', 'DFT_CUSTOM_FUNCTIONAL'],
         ['DF_BASIS_SCF'],
         ['GLOBALS', 'DF_BASIS_CC'])
 
@@ -111,23 +112,13 @@ def run_dfomp2(name, **kwargs):
     if user_pg != 'c1':
         psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
-    psi4.set_global_option('SCF_TYPE', 'DF')
     psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_wfn = scf_helper(name, **kwargs)
-    else:
-        scf_wfn = wavefunction()
-    psi4.set_global_option('WFN_TYPE', 'DF-OMP2')
-    #psi4.set_global_option('CHOLESKY', 'TRUE')
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs) 
 
-    print("About to build the wavefunction")
-    print(name)
-    print(psi4.get_global_option('WFN_TYPE'))
-    print(scf_wfn);
-    dfocc_wfn = psi4.dfocc(scf_wfn)
-    print("Build the wavefunction")
-#    dfocc_wfn.compute_energy()
+    dfocc_wfn = psi4.dfocc(ref_wfn)
 
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
@@ -2063,7 +2054,7 @@ def run_dfmp2_gradient(name, **kwargs):
     p4util.banner('DFMP2')
     psi4.print_out('\n')
 
-    dfmp2_wfn = psi4.dfmp2(scf_wfn)
+    dfmp2_wfn = psi4.dfmp2(ref_wfn)
     grad = dfmp2_wfn.compute_gradient()
     dfmp2_wfn.set_gradient(grad)
     e_dfmp2 = psi4.get_variable('MP2 TOTAL ENERGY')
