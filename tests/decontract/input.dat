@@ -1,4 +1,5 @@
-#! RHF/cc-pvdz-decontract HCl single-point energy
+#! RHF/cc-pvdz-decontract HCl single-point energy 
+#! Testing the in line -decontract option for basis sets
 
 
 ref_energy = -460.08989223006836
