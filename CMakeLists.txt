@@ -220,6 +220,7 @@ include_directories(
     ${PROJECT_BINARY_DIR}/src/lib
     ${PROJECT_BINARY_DIR}/interfaces/include
 )
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION include)
 
 
 ###set(headers_list "")
