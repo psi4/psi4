@@ -297,14 +297,21 @@ def parse_input():
             action='store',
             choices=('on', 'off'),
             default=None,
-            help="""Enable PCMSolver external project (requires Fortran, zlib). If this is left blank, 
+            help="""Enable PCMSolver external project (requires Fortran, zlib). If this is left blank,
             PCMSolver will be included if Fortran compiler specified, otherwise not.""")
+    group.add_argument('--pcmsolver-dir',
+            action='store',
+            default=None,
+            help="""The install directory for a pre-built PCMSolver.
+            'lib/libpcm.so' and 'include/pcmsolver/pcmsolver.h' should be in this directory.
+            If this is left blank cmake will build one for you.""",
+            metavar='PATH')
     # CheMPS2 package
     group.add_argument('--chemps2',
             action='store',
             choices=('on', 'off'),
             default=None,
-            help="""Enable CheMPS2 external project (requires hdf5, gsl, zlib). If this is left blank, 
+            help="""Enable CheMPS2 external project (requires hdf5, gsl, zlib). If this is left blank,
             CheMPS2 will be included.""")
     group.add_argument('--chemps2-dir',
             action='store',
@@ -514,6 +521,8 @@ def gen_cmake_command(args):
     if args.hdf5_dir:
         command += ' -DHDF5_ROOT={0}'.format(args.hdf5_dir)
 
+    if args.pcmsolver_dir:
+        command += ' -DPCMSOLVER_ROOT={0}'.format(args.pcmsolver_dir)
     if args.chemps2_dir:
         command += ' -DCHEMPS2_ROOT={0}'.format(args.chemps2_dir)
 
