@@ -77,11 +77,6 @@ PsiReturnType cctransort(Options& options)
 
   int print = options.get_int("PRINT");
 
-  if(options.get_bool("RUN_CCTRANSORT") == true)
-    outfile->Printf("RUN_CCTRANSORT is true.\n");
-  else
-    outfile->Printf("RUN_CCTRANSORT is false.\n");
-
   bool semicanonical = false;
   int reference = 0;
   if(options.get_str("REFERENCE") =="RHF") reference = 0;
