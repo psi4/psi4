@@ -295,9 +295,7 @@ void DFOCC::save_mo_to_wfn()
     if (reference_ == "RESTRICTED") {
 	SharedMatrix Ca = SharedMatrix(new Matrix("Alpha MO Coefficients", nso_, nmo_));
 	CmoA->to_shared_matrix(Ca);
-	SharedMatrix moA = Process::environment.wavefunction()->Ca();
-	moA->copy(Ca);
-	moA.reset();
+    Ca_->copy(Ca);
 
       if (options_.get_str("MOLDEN_WRITE") == "TRUE") {
 	// Diagonalize OPDM to obtain NOs
@@ -316,8 +314,7 @@ void DFOCC::save_mo_to_wfn()
 	aAONO->gemm(false, false, 1.0, Ca, aevecs, 0.0);
 
 	// Write to MOLDEN file
-	boost::shared_ptr<Wavefunction> dfocc_ = Process::environment.wavefunction();
-	boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(dfocc_));
+	boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(make_ghost_wavefunction()));
 	std::string filename = get_writer_file_prefix() + "_dfocc.molden";
 
         // For now use zeros instead of energies, and DCFT NO occupation numbers as occupation numbers
@@ -343,12 +340,8 @@ void DFOCC::save_mo_to_wfn()
 	CmoA->to_shared_matrix(Ca);
 	CmoB->to_shared_matrix(Cb);
 
-	SharedMatrix moA = Process::environment.wavefunction()->Ca();
-	SharedMatrix moB = Process::environment.wavefunction()->Ca();
-	moA->copy(Ca);
-	moB->copy(Cb);
-	moA.reset();
-	moB.reset();
+    Ca_->copy(Ca);
+    Cb_->copy(Cb);
 
       if (options_.get_str("MOLDEN_WRITE") == "TRUE") {
 	// Diagonalize OPDM to obtain NOs
@@ -372,8 +365,7 @@ void DFOCC::save_mo_to_wfn()
 	bAONO->gemm(false, false, 1.0, Cb, bevecs, 0.0);
 
 	// Write to MOLDEN file
-	boost::shared_ptr<Wavefunction> dfocc_ = Process::environment.wavefunction();
-	boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(dfocc_));
+	boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(make_ghost_wavefunction()));
 	std::string filename = get_writer_file_prefix() + "_dfocc.molden";
 
         // For now use zeros instead of energies, and DCFT NO occupation numbers as occupation numbers
