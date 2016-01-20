@@ -687,8 +687,15 @@ PsiReturnType cctransort(Options& options)
         psio->write(PSIF_CC_INFO, "RHF/ROHF Active Occupied Orbitals", (char *) Ca_occ->pointer(h)[0],
                     nsopi[h]*occpi[h]*sizeof(double), next, &next);
 
-    View VCa_vir(ref->Ca(), nsopi, virpi, zero, frzcpi+occpi-openpi);
-    Ca_vir = VCa_vir();
+//    View VCa_vir(ref->Ca(), nsopi, virpi, zero, frzcpi+occpi-openpi);
+//    Ca_vir = VCa_vir();
+
+    View Vavir(ref->Ca(), nsopi, uoccpi, zero, frzcpi+clsdpi+openpi);
+    View Vasoc(ref->Ca(), nsopi, openpi, zero, frzcpi+clsdpi);
+    std::vector<SharedMatrix> virandsoc;
+    virandsoc.push_back(Vavir());
+    virandsoc.push_back(Vasoc());
+    Ca_vir = Matrix::horzcat(virandsoc);
     Ca_vir->set_name("Virtual orbitals");
 
     next = PSIO_ZERO;
