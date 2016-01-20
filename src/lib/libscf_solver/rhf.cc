@@ -296,12 +296,12 @@ void RHF::save_sapt_info()
 {
     if (factory_->nirrep() != 1)
     {
-        outfile->Printf("Must run in C1. Period.\n"); 
+        outfile->Printf("Must run in C1. Period.\n");
         abort();
     }
     if (soccpi_[0] != 0)
     {
-        outfile->Printf("Aren't we in RHF Here? Pair those electrons up cracker!\n"); 
+        outfile->Printf("Aren't we in RHF Here? Pair those electrons up cracker!\n");
         abort();
     }
 
@@ -398,30 +398,23 @@ void RHF::save_sapt_info()
 void RHF::Hx(SharedMatrix x, SharedMatrix IFock, SharedMatrix Cocc, SharedMatrix Cvir, SharedMatrix ret)
 {
     // => Effective one electron part <= //
-    SharedMatrix Focc(new Matrix("Focc", nirrep_, doccpi_, doccpi_));
-    SharedMatrix Fvir(new Matrix("Fvir", nirrep_, Cvir->colspi(), Cvir->colspi()));
-
+    Dimension virpi = Cvir->colspi();
     for (size_t h=0; h<nirrep_; h++){
-        if (!nsopi_[h] || !doccpi_[h] || !Cvir->colspi()[h]) continue;
+        if (!doccpi_[h] || !virpi[h]) continue;
         double** IFp = IFock->pointer(h);
-        double* Foccp = Focc->pointer(h)[0];
-        double* Fvirp = Fvir->pointer(h)[0];
+        double** retp = ret->pointer(h);
+        double** xp = x->pointer(h);
 
-        for (size_t i=0, target=0; i<doccpi_[h]; i++){
-            for (size_t j=0; j < doccpi_[h]; j++){
-                Foccp[target++] = IFp[i][j];
-            }
-        }
+        // ret_ia = F_ij X_ja
+        C_DGEMM('N','N',doccpi_[h],virpi[h],doccpi_[h],1.0,
+                IFp[0],nsopi_[h],
+                xp[0],virpi[h],0.0,retp[0],virpi[h]);
 
-        for (size_t i=doccpi_[h], target=0; i<nsopi_[h]; i++){
-            for (size_t j=doccpi_[h]; j < nsopi_[h]; j++){
-                Fvirp[target++] = IFp[i][j];
-            }
-        }
+        // ret_ia -= X_ib F_ba
+        C_DGEMM('N','N',doccpi_[h],virpi[h],virpi[h],-1.0,
+                xp[0],virpi[h],
+                (IFp[doccpi_[h]]+doccpi_[h]),nsopi_[h],1.0,retp[0],virpi[h]);
     }
-
-    ret->gemm(false, false, 1.0, Focc, x, 0.0);
-    ret->gemm(false, false, -1.0, x, Fvir, 1.0);
 
     // => Two electron part <= //
     std::vector<SharedMatrix>& Cl = jk_->C_left();
@@ -444,20 +437,17 @@ void RHF::Hx(SharedMatrix x, SharedMatrix IFock, SharedMatrix Cocc, SharedMatrix
     const std::vector<SharedMatrix>& J = jk_->J();
     const std::vector<SharedMatrix>& K = jk_->K();
 
+    // D_nm = Cocc_ni x_ia Cvir_ma
+    // Cocc_ni (4 * J[D]_nm - K[D]_nm - K[D]_mn) C_vir_ma
     J[0]->scale(4.0);
     J[0]->subtract(K[0]);
     J[0]->subtract(K[0]->transpose());
-    SharedMatrix M = Matrix::triplet(Cocc, J[0], Cvir, true, false, false);
-
-    ret->add(M);
+    R->gemm(false, false, 1.0, J[0], Cocc, 0.0);
+    ret->gemm(true, false, 1.0, R, Cvir, 1.0);
     ret->scale(-4.0);
 
     // Cleaup
-    M.reset();
     R.reset();
-    Focc.reset();
-    Fvir.reset();
-
 }
 
 int RHF::soscf_update()
@@ -475,32 +465,31 @@ int RHF::soscf_update()
 
     time_t start, stop;
     start = time(NULL);
-    
+
     // => Build gradient and preconditioner <= //
 
     // Grab occ and vir orbitals
     SharedMatrix Cocc = Ca_subset("SO", "OCC");
     SharedMatrix Cvir = Ca_subset("SO", "VIR");
+    Dimension virpi = Cvir->colspi();
 
     // MO Fock Matrix (Inactive Fock in Helgaker's language)
     SharedMatrix IFock = Matrix::triplet(Ca_, Fa_, Ca_, true, false, false);
 
-    SharedMatrix Gradient = SharedMatrix(new Matrix("Gradient", nirrep_, doccpi_, Cvir->colspi()));
-    SharedMatrix Precon = SharedMatrix(new Matrix("Precon", nirrep_, doccpi_, Cvir->colspi()));
+    SharedMatrix Gradient = SharedMatrix(new Matrix("Gradient", nirrep_, doccpi_, virpi));
+    SharedMatrix Precon = SharedMatrix(new Matrix("Precon", nirrep_, doccpi_, virpi));
 
     for (size_t h=0; h<nirrep_; h++){
 
-        if (!nsopi_[h] || !doccpi_[h] || !Cvir->colspi()[h]) continue;
+        if (!doccpi_[h] || !virpi[h]) continue;
         double* gp = Gradient->pointer(h)[0];
         double* denomp = Precon->pointer(h)[0];
         double** fp = IFock->pointer(h);
 
         for (size_t i=0, target=0; i<doccpi_[h]; i++){
-            double o_eps = fp[i][i];
-            for (size_t j=doccpi_[h]; j < nsopi_[h]; j++)
-            {
-                gp[target] = -4.0 * fp[i][j];
-                denomp[target++] = 4.0 * (fp[j][j] - o_eps);
+            for (size_t a=doccpi_[h]; a < nsopi_[h]; a++){
+                gp[target] = -4.0 * fp[i][a];
+                denomp[target++] = -4.0 * (fp[i][i] - fp[a][a]);
             }
         }
     }
@@ -510,16 +499,21 @@ int RHF::soscf_update()
     x->apply_denominator(Precon);
 
     // Calc hessian vector product, find residual and conditioned residual
-    SharedMatrix r = Gradient;
-    SharedMatrix Ap = SharedMatrix(new Matrix("Ap", nirrep_, doccpi_, Cvir->colspi()));;
+    SharedMatrix r = Gradient->clone();
+    SharedMatrix Ap = SharedMatrix(new Matrix("Ap", nirrep_, doccpi_, virpi));
     Hx(x, IFock, Cocc, Cvir, Ap);
     r->subtract(Ap);
 
     // Print iteration 0 timings and rms
-    double rconv = r->rms();
+    double rconv = r->sum_of_squares();
+    double grad_rms = Gradient->sum_of_squares();
+    if (grad_rms < 1.e-14){
+        grad_rms = 1.e-14; // Prevent rel denom from being too small
+    }
+    double rms = sqrt(rconv / grad_rms);
     stop = time(NULL);
     if (soscf_print_){
-        outfile->Printf("    %-4d %11.3E %10ld\n", 1, rconv, stop-start);
+        outfile->Printf("    %-5s %11.3E %10ld\n", "Guess", rms, stop-start);
     }
 
     // Build new p and z vectors
@@ -529,7 +523,7 @@ int RHF::soscf_update()
 
     // => CG iterations <= //
     int fock_builds = 1;
-    for (int cg_iter=2; cg_iter<(soscf_max_iter_+1); cg_iter++) {
+    for (int cg_iter=1; cg_iter<soscf_max_iter_; cg_iter++) {
 
         // Calc hessian vector product
         Hx(p, IFock, Cocc, Cvir, Ap);
@@ -538,19 +532,23 @@ int RHF::soscf_update()
         // Find factors and scale
         double rzpre = r->vector_dot(z);
         double alpha = rzpre / p->vector_dot(Ap);
+        if (std::isnan(alpha)){
+            alpha = 0.0;
+        }
 
         x->axpy(alpha, p);
         r->axpy(-alpha, Ap);
 
         // Get residual
-        double rconv = r->rms();
+        double rconv = r->sum_of_squares();
+        double rms = sqrt(rconv / grad_rms);
         stop = time(NULL);
         if (soscf_print_){
-            outfile->Printf("    %-4d %11.3E %10ld\n", cg_iter, rconv, stop-start);
+            outfile->Printf("    %-5d %11.3E %10ld\n", cg_iter, rms, stop-start);
         }
 
         // Check convergence
-        if ((rconv < soscf_conv_) && (cg_iter >= soscf_min_iter_)) {
+        if (((rms < soscf_conv_) && (cg_iter >= soscf_min_iter_)) || (alpha==0.0)) {
             break;
         }
 
@@ -570,39 +568,7 @@ int RHF::soscf_update()
     }
 
     // => Rotate orbitals <= //
-    SharedMatrix tmp(new Matrix("Ck", nirrep_, nsopi_, nsopi_));
-
-    // Form full antisymmetric matrix
-    for (size_t h=0; h<nirrep_; h++){
-
-        if (!nsopi_[h] || !doccpi_[h] || !Cvir->colspi()[h]) continue;
-        double** tp = tmp->pointer(h);
-        double*  xp = x->pointer(h)[0];
-
-        // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
-        for (size_t i=0, target=0; i<doccpi_[h]; i++){
-            for (size_t a=doccpi_[h]; a < nsopi_[h]; a++){
-                tp[i][a] = -1.0 * xp[target];
-                tp[a][i] = xp[target++];
-            }
-        }
-    }
-
-    // Build exp(U) = 1 + U + 0.5 U U
-    SharedMatrix U = tmp->clone();
-    for (size_t h=0; h<nirrep_; h++){
-        double** Up = U->pointer(h);
-        for (size_t i=0; i<U->rowspi()[h]; i++){
-            Up[i][i] += 1.0;
-        }
-    }
-    U->gemm(false, false, 0.5, tmp, tmp, 1.0);
-
-    // We did not fully exponentiate the matrix, need to orthogonalize
-    U->schmidt();
-
-    tmp->gemm(false, false, 1.0, Ca_, U, 0.0);
-    Ca_->copy(tmp);
+    rotate_orbitals(Ca_, x);
 
     // => Cleanup <= //
     Cocc.reset();
@@ -614,8 +580,6 @@ int RHF::soscf_update()
     z.reset();
     r.reset();
     p.reset();
-    U.reset();
-    tmp.reset();
 
     return fock_builds;
 }

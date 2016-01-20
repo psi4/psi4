@@ -319,6 +319,7 @@ void SAPT2p::print_results()
   Process::environment.globals["SAPT IND22 ENERGY"] = e_ind22_;
   Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = e_exch_ind20_;
   Process::environment.globals["SAPT EXCH-IND22 ENERGY"] = e_exch_ind22_;
+  Process::environment.globals["SAPT HF TOTAL ENERGY"] = eHF_;
 
   Process::environment.globals["SAPT CT ENERGY"] = tot_ct;
 

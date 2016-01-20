@@ -43,25 +43,25 @@ PsiReturnType fnocc(Options &options) {
           fno->ComputeNaturalOrbitals();
           wfn = (boost::shared_ptr<Wavefunction>)fno;
 
-          // transform integrals
-          tstart();
-          outfile->Printf("        ==> Transform all two-electron integrals <==\n");
-          outfile->Printf("\n");
-
-          std::vector<shared_ptr<MOSpace> > spaces;
-          spaces.push_back(MOSpace::all);
-          boost::shared_ptr<IntegralTransform> ints(new IntegralTransform(wfn, spaces, IntegralTransform::Restricted,
-                     IntegralTransform::IWLOnly, IntegralTransform::QTOrder, IntegralTransform::OccAndVir, false));
-          ints->set_dpd_id(0);
-          ints->set_keep_iwl_so_ints(true);
-          ints->set_keep_dpd_so_ints(true);
-          ints->initialize();
-          ints->transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
-          tstop();
-
       }else {
           wfn = Process::environment.wavefunction();
       }
+
+      // transform integrals
+      tstart();
+      outfile->Printf("        ==> Transform all two-electron integrals <==\n");
+      outfile->Printf("\n");
+
+      std::vector<shared_ptr<MOSpace> > spaces;
+      spaces.push_back(MOSpace::all);
+      boost::shared_ptr<IntegralTransform> ints(new IntegralTransform(wfn, spaces, IntegralTransform::Restricted,
+                 IntegralTransform::IWLOnly, IntegralTransform::QTOrder, IntegralTransform::OccAndVir, false));
+      ints->set_dpd_id(0);
+      ints->set_keep_iwl_so_ints(true);
+      ints->set_keep_dpd_so_ints(true);
+      ints->initialize();
+      ints->transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
+      tstop();
 
       if ( !options.get_bool("RUN_CEPA") ) {
           boost::shared_ptr<CoupledCluster> ccsd(new CoupledCluster(wfn,options));
@@ -99,9 +99,20 @@ PsiReturnType fnocc(Options &options) {
           wfn = Process::environment.wavefunction();
       }
       // ccsd(t)!
-      boost::shared_ptr<DFCoupledCluster> ccsd (new DFCoupledCluster(wfn,options));
-      ccsd->compute_energy();
+
+      #ifdef GPUCC
+          boost::shared_ptr<GPUDFCoupledCluster> ccsd (new GPUDFCoupledCluster(wfn,options));
+          ccsd->compute_energy();
+      #else
+          boost::shared_ptr<DFCoupledCluster> ccsd (new DFCoupledCluster(wfn,options));
+          ccsd->compute_energy();
+      #endif
+
       tstop();
+
+
+
+
   }
 
   return  Success;

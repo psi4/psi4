@@ -121,4 +121,95 @@ CUBIC_GRID_OVERAGE
     directions.
     The default value is [4.0,4.0,4.0] |AA|\ ngstroms.
 
+Orbital Visualization with VMD
+==============================
+
+Included in |PSIfour| is functionality to automatically render specified surfaces, including molecular orbitals,
+densities, and basis functions, using VMD. The vmd_cube.py script takes the .cube files generated
+in a calculation and generates images alinged with user-input specifications. The script is located
+in :source:`/lib/scripts/vmd_cube.py`.
+
+Script Prerequisites
+--------------------
+
+1. VMD must be installed, and it can be downloaded for free at (http://www.ks.uiuc.edu/Research/vmd/). Additionally,
+   the script needs to know where to find the VMD executable, and this is defined as VMDPATH. VMDPATH must be defined as
+   an environment variable.
+
+2. To generate images with multiple surfaces, ImageMagick must also be installed. ImageMagick is a free program which
+   can be installed using homebrew/pip or from http://www.imagemagick.org/script/binary-releases.php .
+
+3. With ImageMagick installed, an environment variable called montage needs to be created which points to the montage executable.
+   This executable can be found in the /bin/ sub-directory wherever ImageMagick was installed.
+
+
+Running the Script
+------------------
+
+1. Run a |PSIfour| calculation, generating .cube files as detailed in the above documentation.
+
+2. Copy vmd_script.py into a directory where the image files are desired, and pass the directory
+   pointing to the .cube files as an argument to run::
+	
+	python vmd_cube.py /path/to/cube/files/
+
+   Alternatively, the script can be run in the same directory as the cube files with no need to pass the
+   directory as an argument.
+
+3. For an additional image containing all surfaces in an array (very useful for hand-picking orbital spaces), set the montage
+   flag to True::
+
+	python vmd_cube.py /path/to/cube/files/ --montage=True
+
+3. As an example, take the cube files generated from the water calculation from the above input file. Using the script and montage,
+   the alpha molecular orbitals, for example, can be rendered and output in one image with::
+
+	python vmd_cube.py /path/to/cube/files/ --montage=True --opacity=0.5 --rx=90 --ry=60
+
+The desired image in this case is called "AlphaMOs.tga", and looks like	this:
+
+.. image:: /AlphaMos.png
+    :align: center
+    :scale: 100%
+    :alt: Alpha MOs	
+
+
+Script Options
+--------------
+
+    >>> ./vmd_cube.py --help
+    usage: vmd_cube.py [-h] [--color1 [<integer>]] [--color2 [<integer>]]
+                       [--iso [<isovalue>]] [--rx [<angle>]] [--ry [<angle>]]
+                       [--rz [<angle>]] [--tx [<angle>]] [--ty [<angle>]]
+                       [--tz [<angle>]] [--opacity [<opacity>]]
+                       [--scale [<factor>]] [--montage [MONTAGE]]
+                       [--imagesize [<integer>]] [--fontsize [<integer>]]
+                       [<cubefile dir>]
+                                                                    .
+    vmd_cube is a script to render cube files with vmd. To generate cube files
+    with Psi4 add the command cubeprop() at the end of your input file.
+                                                                    .
+    positional arguments:
+      <cubefile dir>        The directory containing the cube files.
+                                                                    .
+    optional arguments:
+      -h, --help            show this help message and exit
+      --color1 [<integer>]  the color ID of surface 1 (integer, default = 3)
+      --color2 [<integer>]  the color ID of surface 2 (integer, default = 23)
+      --iso [<isovalue>]    the isosurface value (float, default = 0.05)
+      --rx [<angle>]        the x-axis rotation angle (float, default = 30.0)
+      --ry [<angle>]        the y-axis rotation angle (float, default = 40.0)
+      --rz [<angle>]        the z-axis rotation angle (float, default = 15.0)
+      --tx [<angle>]        the x-axis translation (float, default = 0.0)
+      --ty [<angle>]        the y-axis translation (float, default = 0.0)
+      --tz [<angle>]        the z-axis translation (float, default = 0.0)
+      --opacity [<opacity>]
+                            opacity of the isosurface (float, default = 1.0)
+      --scale [<factor>]    the scaling factor (float, default = 1.0)
+      --montage [MONTAGE]   call montage to combine images. (string, default =
+                            false)
+      --imagesize [<integer>]
+                            the size of each image (integer, default = 250)
+      --fontsize [<integer>]
+                            the font size (integer, default = 20)
 

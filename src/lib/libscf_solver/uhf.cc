@@ -277,6 +277,278 @@ double UHF::compute_E()
     double Etotal = nuclearrep_ + Eelec;
     return Etotal;
 }
+void UHF::Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a,
+             SharedMatrix Cvir_a, SharedMatrix ret_a,
+             SharedMatrix x_b, SharedMatrix IFock_b, SharedMatrix Cocc_b,
+             SharedMatrix Cvir_b, SharedMatrix ret_b)
+{
+    // => Effective one electron part <= //
+    Dimension virpi_a = Cvir_a->colspi();
+    Dimension virpi_b = Cvir_b->colspi();
+    for (size_t h=0; h<nirrep_; h++){
+        // Alpha
+        if (nalphapi_[h] && virpi_a[h]){
+            double** IFp = IFock_a->pointer(h);
+            double** retp = ret_a->pointer(h);
+            double** xp = x_a->pointer(h);
+
+            // ret_ia = F_ij X_ja
+            C_DGEMM('N','N',nalphapi_[h],virpi_a[h],nalphapi_[h],1.0,
+                    IFp[0],nsopi_[h],
+                    xp[0],virpi_a[h],0.0,retp[0],virpi_a[h]);
+
+            // ret_ia -= X_ib F_ba
+            C_DGEMM('N','N',nalphapi_[h],virpi_a[h],virpi_a[h],-1.0,
+                    xp[0],virpi_a[h],
+                    (IFp[nalphapi_[h]]+nalphapi_[h]),nsopi_[h],1.0,retp[0],virpi_a[h]);
+
+        }
+        // Beta
+        if (nbetapi_[h] && virpi_b[h]){
+            double** IFp = IFock_b->pointer(h);
+            double** retp = ret_b->pointer(h);
+            double** xp = x_b->pointer(h);
+
+            // ret_ia = F_ij X_ja
+            C_DGEMM('N','N',nbetapi_[h],virpi_b[h],nbetapi_[h],1.0,
+                    IFp[0],nsopi_[h],
+                    xp[0],virpi_b[h],0.0,retp[0],virpi_b[h]);
+
+            // ret_ia -= X_ib F_ba
+            C_DGEMM('N','N',nbetapi_[h],virpi_b[h],virpi_b[h],-1.0,
+                    xp[0],virpi_b[h],
+                    (IFp[nbetapi_[h]]+nbetapi_[h]),nsopi_[h],1.0,retp[0],virpi_b[h]);
+
+        }
+    }
+
+    // => Two electron part <= //
+    std::vector<SharedMatrix>& Cl = jk_->C_left();
+    std::vector<SharedMatrix>& Cr = jk_->C_right();
+    Cl.clear();
+    Cr.clear();
+
+    Cl.push_back(Cocc_a);
+    Cl.push_back(Cocc_b);
+
+    SharedMatrix R_a = Matrix::doublet(Cvir_a, x_a, false, true);
+    SharedMatrix R_b = Matrix::doublet(Cvir_b, x_b, false, true);
+    R_a->scale(-1.0);
+    R_b->scale(-1.0);
+    Cr.push_back(R_a);
+    Cr.push_back(R_b);
+
+    jk_->compute();
+
+    // Just in case someone only clears out Cleft and gets very strange errors
+    Cl.clear();
+    Cr.clear();
+
+    const std::vector<SharedMatrix>& J = jk_->J();
+    const std::vector<SharedMatrix>& K = jk_->K();
+
+    // D_nm = Cocc_ni x_ia Cvir_ma
+    // Cocc_ni (4 * J[D]_nm - K[D]_nm - K[D]_mn) C_vir_ma
+    J[0]->add(J[1]);
+    J[0]->scale(2.0);
+    J[1]->copy(J[0]);
+
+    J[0]->subtract(K[0]);
+    J[0]->subtract(K[0]->transpose());
+    R_a->gemm(false, false, 1.0, J[0], Cocc_a, 0.0);
+    ret_a->gemm(true, false, 1.0, R_a, Cvir_a, 1.0);
+    ret_a->scale(-4.0);
+
+    J[1]->subtract(K[1]);
+    J[1]->subtract(K[1]->transpose());
+    R_b->gemm(false, false, 1.0, J[1], Cocc_b, 0.0);
+    ret_b->gemm(true, false, 1.0, R_b, Cvir_b, 1.0);
+    ret_b->scale(-4.0);
+
+    // Cleaup
+    R_a.reset();
+    R_b.reset();
+
+}
+int UHF::soscf_update(void)
+{
+    if (soscf_print_){
+        outfile->Printf("\n");
+        outfile->Printf("    ==> SOUHF Iterations <==\n");
+        outfile->Printf("    Maxiter     = %11d\n", soscf_max_iter_);
+        outfile->Printf("    Miniter     = %11d\n", soscf_min_iter_);
+        outfile->Printf("    Convergence = %11.3E\n", soscf_conv_);
+        outfile->Printf("    ---------------------------------------\n");
+        outfile->Printf("    %-4s   %11s     %10s\n", "Iter", "Residual RMS", "Time [s]");
+        outfile->Printf("    ---------------------------------------\n");
+    }
+
+    time_t start, stop;
+    start = time(NULL);
+
+    // => Build gradient and preconditioner <= //
+
+    // Grab occ and vir orbitals
+    SharedMatrix Cocc_a = Ca_subset("SO", "OCC");
+    SharedMatrix Cvir_a = Ca_subset("SO", "VIR");
+    Dimension virpi_a = Cvir_a->colspi();
+
+    SharedMatrix Cocc_b = Cb_subset("SO", "OCC");
+    SharedMatrix Cvir_b = Cb_subset("SO", "VIR");
+    Dimension virpi_b = Cvir_b->colspi();
+
+    // MO Fock Matrix (Inactive Fock in Helgaker's language)
+    SharedMatrix IFock_a = Matrix::triplet(Ca_, Fa_, Ca_, true, false, false);
+    SharedMatrix Gradient_a = SharedMatrix(new Matrix("Alpha Gradient",
+                                           nirrep_, nalphapi_, virpi_a));
+    SharedMatrix Precon_a = SharedMatrix(new Matrix("Alpha Precon",
+                                         nirrep_, nalphapi_, virpi_a));
+
+    SharedMatrix IFock_b = Matrix::triplet(Cb_, Fb_, Cb_, true, false, false);
+    SharedMatrix Gradient_b = SharedMatrix(new Matrix("Beta Gradient",
+                                           nirrep_, nbetapi_, virpi_b));
+    SharedMatrix Precon_b = SharedMatrix(new Matrix("Beta Precon",
+                                         nirrep_, nbetapi_, virpi_b));
+
+    for (size_t h=0; h<nirrep_; h++){
+
+        if (nalphapi_[h] && virpi_a[h]){
+            double* gp = Gradient_a->pointer(h)[0];
+            double* denomp = Precon_a->pointer(h)[0];
+            double** fp = IFock_a->pointer(h);
+
+            for (size_t i=0, target=0; i<nalphapi_[h]; i++){
+                for (size_t a=nalphapi_[h]; a < nsopi_[h]; a++){
+                    gp[target] = -4.0 * fp[i][a];
+                    denomp[target++] = -4.0 * (fp[i][i] - fp[a][a]);
+                }
+            }
+        }
+        if (nbetapi_[h] && virpi_b[h]){
+            double* gp = Gradient_b->pointer(h)[0];
+            double* denomp = Precon_b->pointer(h)[0];
+            double** fp = IFock_b->pointer(h);
+
+            for (size_t i=0, target=0; i<nbetapi_[h]; i++){
+                for (size_t a=nbetapi_[h]; a < nsopi_[h]; a++){
+                    gp[target] = -4.0 * fp[i][a];
+                    denomp[target++] = -4.0 * (fp[i][i] - fp[a][a]);
+                }
+            }
+        }
+    }
+
+    // => Initial CG guess <= //
+    SharedMatrix x_a = Gradient_a->clone();
+    x_a->apply_denominator(Precon_a);
+    SharedMatrix x_b = Gradient_b->clone();
+    x_b->apply_denominator(Precon_b);
+
+    // Calc hessian vector product, find residual and conditioned residual
+    SharedMatrix r_a = Gradient_a->clone();
+    SharedMatrix Ap_a = SharedMatrix(new Matrix("Ap_a", nirrep_, nalphapi_, virpi_a));
+    SharedMatrix r_b = Gradient_b->clone();
+    SharedMatrix Ap_b = SharedMatrix(new Matrix("Ap_b", nirrep_, nbetapi_, virpi_b));
+
+    Hx(x_a, IFock_a, Cocc_a, Cvir_a, Ap_a,
+       x_b, IFock_b, Cocc_b, Cvir_b, Ap_b);
+    r_a->subtract(Ap_a);
+    r_b->subtract(Ap_b);
+
+    // Print iteration 0 timings and rms
+    double rconv = r_a->sum_of_squares() + r_b->sum_of_squares();
+    double grad_rms = Gradient_a->sum_of_squares() + Gradient_b->sum_of_squares();
+    if (grad_rms < 1.e-14){
+        grad_rms = 1.e-14; // Prevent rel denom from being too small
+    }
+    double rms = 0.5 * sqrt(rconv / grad_rms);
+    stop = time(NULL);
+    if (soscf_print_){
+        outfile->Printf("    %-5s %11.3E %10ld\n", "Guess", rms, stop-start);
+    }
+
+    // Build new p and z vectors
+    SharedMatrix z_a = r_a->clone();
+    z_a->apply_denominator(Precon_a);
+    SharedMatrix p_a = z_a->clone();
+
+    SharedMatrix z_b = r_b->clone();
+    z_b->apply_denominator(Precon_b);
+    SharedMatrix p_b = z_b->clone();
+
+    // => CG iterations <= //
+    int fock_builds = 1;
+    for (int cg_iter=1; cg_iter<soscf_max_iter_; cg_iter++) {
+
+        // Calc hessian vector product
+        Hx(p_a, IFock_a, Cocc_a, Cvir_a, Ap_a,
+           p_b, IFock_b, Cocc_b, Cvir_b, Ap_b);
+        fock_builds += 1;
+
+        // Find factors and scale
+        double rzpre = r_a->vector_dot(z_a) + r_b->vector_dot(z_b);
+        double alpha = rzpre / (p_a->vector_dot(Ap_a) + p_b->vector_dot(Ap_b));
+        if (std::isnan(alpha)){
+            alpha = 0.0;
+        }
+
+        x_a->axpy(alpha, p_a);
+        r_a->axpy(-alpha, Ap_a);
+
+        x_b->axpy(alpha, p_b);
+        r_b->axpy(-alpha, Ap_b);
+
+        // Get residual
+        double rconv = r_a->sum_of_squares() + r_b->sum_of_squares();
+        double rms = 0.5 * sqrt(rconv / grad_rms);
+        stop = time(NULL);
+        if (soscf_print_){
+            outfile->Printf("    %-5d %11.3E %10ld\n", cg_iter, rms, stop-start);
+        }
+
+        // Check convergence
+        if (((rms < soscf_conv_) && (cg_iter >= soscf_min_iter_)) || (alpha==0.0)) {
+            break;
+        }
+
+        // Update p and z
+        z_a->copy(r_a);
+        z_a->apply_denominator(Precon_a);
+
+        z_b->copy(r_b);
+        z_b->apply_denominator(Precon_b);
+
+        double beta = (r_a->vector_dot(z_a) + r_b->vector_dot(z_b)) / rzpre;
+
+        p_a->scale(beta);
+        p_a->add(z_a);
+
+        p_b->scale(beta);
+        p_b->add(z_b);
+
+    }
+    if (soscf_print_){
+        outfile->Printf("    ---------------------------------------\n");
+        outfile->Printf("\n");
+    }
+
+    // => Rotate orbitals <= //
+    rotate_orbitals(Ca_, x_a);
+    rotate_orbitals(Cb_, x_b);
+
+    // => Cleanup <= //
+    Cocc_a.reset();     Cocc_b.reset();
+    Cvir_a.reset();     Cvir_b.reset();
+    IFock_a.reset();    IFock_b.reset();
+    Precon_a.reset();   Precon_b.reset();
+    Gradient_a.reset(); Gradient_b.reset();
+    Ap_a.reset();       Ap_b.reset();
+    z_a.reset();        z_b.reset();
+    r_a.reset();        r_b.reset();
+    p_a.reset();        p_b.reset();
+
+    return fock_builds;
+}
 
 void UHF::compute_orbital_gradient(bool save_fock)
 {
@@ -305,287 +577,49 @@ bool UHF::diis()
     return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get());
 }
 
-bool UHF::stability_analysis_pk()
-{
-    // ==> Old legacy stability code <==
-
-    outfile->Printf("WARNING: PK integrals extremely slow for stability analysis.\n");
-    outfile->Printf("Proceeding, but feel free to kill the computation and use other integrals.\n");
-    // Build the Fock Matrix
-    SharedMatrix aMoF(new Matrix("Alpha MO basis fock matrix", nmopi_, nmopi_));
-    SharedMatrix bMoF(new Matrix("Beta MO basis fock matrix", nmopi_, nmopi_));
-    aMoF->transform(Fa_, Ca_);
-    bMoF->transform(Fb_, Cb_);
-
-    std::vector<boost::shared_ptr<MOSpace> > spaces;
-    spaces.push_back(MOSpace::occ);
-    spaces.push_back(MOSpace::vir);
-    // Ref wfn is really "this"
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-#define ID(x) ints->DPD_ID(x)
-    IntegralTransform* ints = new IntegralTransform(wfn, spaces, IntegralTransform::Unrestricted, IntegralTransform::DPDOnly,
-                           IntegralTransform::QTOrder, IntegralTransform::None);
-    ints->set_keep_dpd_so_ints(true);
-    ints->set_keep_iwl_so_ints(true);
-    ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
-    ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
-    dpd_set_default(ints->get_dpd_id());
-    dpdbuf4 Aaa, Aab, Abb, I;
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
-                  ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
-    // A_IA_jb = 2 (IA|jb)
-    global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "UHF Hessian (IA|jb)", 2.0);
-    global_dpd_->buf4_close(&I);
-
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-    // A_IA_JB = 2 (IA|JB)
-    global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "UHF Hessian (IA|JB)", 2.0);
-    // A_IA_JB -= (IB|JA)
-    global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq,
-                       ID("[O,V]"), ID("[O,V]"), "UHF Hessian (IA|JB)", -1.0);
-    global_dpd_->buf4_close(&I);
-
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
-                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
-    // A_ia_jb = 2 (ia|jb)
-    global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "UHF Hessian (ia|jb)", 2.0);
-    // A_ia_jb -= (ib|ja)
-    global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq,
-                       ID("[o,v]"), ID("[o,v]"), "UHF Hessian (ia|jb)", -1.0);
-    global_dpd_->buf4_close(&I);
-
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O>=O]+"), ID("[V>=V]+"), 0, "MO Ints (OO|VV)");
-    // A_IA_JB -= (IJ|AB)
-    global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, prqs,
-                       ID("[O,V]"), ID("[O,V]"), "UHF Hessian (IA|JB)", -1.0);
-    global_dpd_->buf4_close(&I);
-
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o>=o]+"), ID("[v>=v]+"), 0, "MO Ints (oo|vv)");
-    // A_ia_jb -= (ij|ab)
-    global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, prqs,
-                       ID("[o,v]"), ID("[o,v]"), "UHF Hessian (ia|jb)", -1.0);
-    global_dpd_->buf4_close(&I);
-
-    global_dpd_->buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "UHF Hessian (IA|JB)");
-    for(int h = 0; h < Aaa.params->nirreps; ++h){
-        global_dpd_->buf4_mat_irrep_init(&Aaa, h);
-        global_dpd_->buf4_mat_irrep_rd(&Aaa, h);
-        for(int ia = 0; ia < Aaa.params->rowtot[h]; ++ia){
-            int iabs = Aaa.params->roworb[h][ia][0];
-            int aabs = Aaa.params->roworb[h][ia][1];
-            int isym = Aaa.params->psym[iabs];
-            int asym = Aaa.params->qsym[aabs];
-            int irel = iabs - Aaa.params->poff[isym];
-            int arel = aabs - Aaa.params->qoff[asym] + soccpi_[asym] + doccpi_[asym];
-            for(int jb = 0; jb < Aaa.params->coltot[h]; ++jb){
-                int jabs = Aaa.params->colorb[h][jb][0];
-                int babs = Aaa.params->colorb[h][jb][1];
-                int jsym = Aaa.params->rsym[jabs];
-                int bsym = Aaa.params->ssym[babs];
-                int jrel = jabs - Aaa.params->roff[jsym];
-                int brel = babs - Aaa.params->soff[bsym] + soccpi_[asym] + doccpi_[asym];
-                // A_IA_JB += delta_IJ F_AB - delta_AB F_IJ
-                if((iabs == jabs) && (asym == bsym))
-                    Aaa.matrix[h][ia][jb] += aMoF->get(asym, arel, brel);
-                if((aabs == babs) && (isym == jsym))
-                    Aaa.matrix[h][ia][jb] -= aMoF->get(isym, irel, jrel);
-            }
-        }
-        global_dpd_->buf4_mat_irrep_wrt(&Aaa, h);
-    }
-    global_dpd_->buf4_close(&Aaa);
-
-    global_dpd_->buf4_init(&Abb, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
-                  ID("[o,v]"), ID("[o,v]"), 0, "UHF Hessian (ia|jb)");
-
-    for(int h = 0; h < Abb.params->nirreps; ++h){
-        global_dpd_->buf4_mat_irrep_init(&Abb, h);
-        global_dpd_->buf4_mat_irrep_rd(&Abb, h);
-        for(int ia = 0; ia < Abb.params->rowtot[h]; ++ia){
-            int iabs = Abb.params->roworb[h][ia][0];
-            int aabs = Abb.params->roworb[h][ia][1];
-            int isym = Abb.params->psym[iabs];
-            int asym = Abb.params->qsym[aabs];
-            int irel = iabs - Abb.params->poff[isym];
-            int arel = aabs - Abb.params->qoff[asym] + doccpi_[asym];
-            for(int jb = 0; jb < Abb.params->coltot[h]; ++jb){
-                int jabs = Abb.params->colorb[h][jb][0];
-                int babs = Abb.params->colorb[h][jb][1];
-                int jsym = Abb.params->rsym[jabs];
-                int bsym = Abb.params->ssym[babs];
-                int jrel = jabs - Abb.params->roff[jsym];
-                int brel = babs - Abb.params->soff[bsym] + doccpi_[asym];
-                // A_ia_jb += delta_ij F_ab - delta_ab F_ij
-                if((iabs == jabs) && (asym == bsym))
-                    Abb.matrix[h][ia][jb] += bMoF->get(asym, arel, brel);
-                if((aabs == babs) && (isym == jsym))
-                    Abb.matrix[h][ia][jb] -= bMoF->get(isym, irel, jrel);
-            }
-        }
-        global_dpd_->buf4_mat_irrep_wrt(&Abb, h);
-    }
-    global_dpd_->buf4_close(&Abb);
-
-    /*
-     *  Perform the stability analysis
-     */
-    std::vector<std::pair<double, int> >eval_sym;
-
-    std::string status;
-    bool redo = false;
-    global_dpd_->buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "UHF Hessian (IA|JB)");
-    global_dpd_->buf4_init(&Aab, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
-                  ID("[O,V]"), ID("[o,v]"), 0, "UHF Hessian (IA|jb)");
-    global_dpd_->buf4_init(&Abb, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
-                  ID("[o,v]"), ID("[o,v]"), 0, "UHF Hessian (ia|jb)");
-    for(int h = 0; h < Aaa.params->nirreps; ++h) {
-        int aDim = Aaa.params->rowtot[h];
-        int bDim = Abb.params->rowtot[h];
-        int dim =  aDim + bDim;
-        if(dim == 0) continue;
-        double *evals = init_array(dim);
-        double **evecs = block_matrix(dim, dim);
-        double **A = block_matrix(dim, dim);
-
-        // Alpha-alpha contribution to the Hessian
-        global_dpd_->buf4_mat_irrep_init(&Aaa, h);
-        global_dpd_->buf4_mat_irrep_rd(&Aaa, h);
-        for(int ia = 0; ia < aDim; ++ia)
-            for(int jb = 0; jb < aDim; ++jb)
-                A[ia][jb] = Aaa.matrix[h][ia][jb];
-        global_dpd_->buf4_mat_irrep_close(&Aaa, h);
-
-        // Alpha-beta and beta-alpha contribution to the Hessian
-        global_dpd_->buf4_mat_irrep_init(&Aab, h);
-        global_dpd_->buf4_mat_irrep_rd(&Aab, h);
-        for(int ia = 0; ia < aDim; ++ia)
-            for(int jb = 0; jb < bDim; ++jb)
-                A[ia][jb + aDim] = A[jb + aDim][ia] = Aab.matrix[h][ia][jb];
-        global_dpd_->buf4_mat_irrep_close(&Aab, h);
-        // Beta-beta contribution to the Hessian
-        global_dpd_->buf4_mat_irrep_init(&Abb, h);
-        global_dpd_->buf4_mat_irrep_rd(&Abb, h);
-        for(int ia = 0; ia < bDim; ++ia)
-            for(int jb = 0; jb < bDim; ++jb)
-                A[ia + aDim][jb + aDim] = Abb.matrix[h][ia][jb];
-        global_dpd_->buf4_mat_irrep_close(&Abb, h);
-
-        sq_rsp(dim, dim, A, evals, 1, evecs, 1e-12);
-
-        int mindim = dim < 5 ? dim : 5;
-        for(int i = 0; i < mindim; i++)
-            eval_sym.push_back(std::make_pair(evals[i], h));
-
-        // Perform totally symmetric rotations, if necessary
-        if(h == 0 && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW"){
-            if(evals[0] < 0.0){
-                redo = true;
-                status = "    Negative hessian eigenvalue detected: rotating orbitals.\n";
-                double scale = pc_pi*options_.get_double("FOLLOW_STEP_SCALE")/2.0;
-                // Rotate the alpha orbitals
-//                outfile->Printf( "OLD ORBS");
-//                Ca_->print();
-                for(int ia = 0; ia < Aaa.params->rowtot[h]; ++ia){
-                    int iabs = Aaa.params->roworb[h][ia][0];
-                    int aabs = Aaa.params->roworb[h][ia][1];
-                    int isym = Aaa.params->psym[iabs];
-                    int asym = Aaa.params->qsym[aabs];
-                    int irel = iabs - Aaa.params->poff[isym];
-                    int arel = aabs - Aaa.params->qoff[asym] + doccpi_[asym] + soccpi_[asym];
-
-                    Ca_->rotate_columns(isym, irel, arel, scale*evecs[ia][0]);
-                    outfile->Printf( "Rotating %d and %d in irrep %d by %f\n",
-                            irel, arel, isym, scale*evecs[ia][0]);
-                }
-//                outfile->Printf( "NEW ORBS");
-//                Ca_->print();
-                // Rotate the beta orbitals
-                for(int ia = 0; ia < Abb.params->rowtot[h]; ++ia){
-                    int iabs = Abb.params->roworb[h][ia][0];
-                    int aabs = Abb.params->roworb[h][ia][1];
-                    int isym = Abb.params->psym[iabs];
-                    int asym = Abb.params->qsym[aabs];
-                    int irel = iabs - Abb.params->poff[isym];
-                    int arel = aabs - Abb.params->qoff[asym] + doccpi_[asym];
-                    Cb_->rotate_columns(isym, irel, arel, scale*evecs[ia+aDim][0]);
-                }
-            }else{
-                status =  "    No totally symmetric instabilities detected: "
-                          "no rotation will be performed.\n";
-            }
-        }
-
-        free_block(A);
-        free_block(evecs);
-        delete [] evals;
-    }
-
-    outfile->Printf( "    Lowest UHF->UHF stability eigenvalues:-\n");
-    print_stability_analysis(eval_sym);
-
-    psio_->close(PSIF_LIBTRANS_DPD, 1);
-    delete ints;
-
-    outfile->Printf( "%s", status.c_str());
-
-    return redo;
-
-}
-
 bool UHF::stability_analysis()
 {
-    if(scf_type_ != "PK"){
-        boost::shared_ptr<UStab> stab = boost::shared_ptr<UStab>(new UStab());
-        stab->compute_energy();
-        SharedMatrix eval_sym = stab->analyze();
-        outfile->Printf( "    Lowest UHF->UHF stability eigenvalues: \n");
-        std::vector < std::pair < double,int > >  eval_print;
-        for (int h = 0; h < eval_sym->nirrep(); ++h) {
-            for (int i = 0; i < eval_sym->rowdim(h); ++i) {
-                eval_print.push_back(make_pair(eval_sym->get(h,i,0),h));
-            }
+    boost::shared_ptr<UStab> stab = boost::shared_ptr<UStab>(new UStab());
+    stab->compute_energy();
+    SharedMatrix eval_sym = stab->analyze();
+    outfile->Printf( "    Lowest UHF->UHF stability eigenvalues: \n");
+    std::vector < std::pair < double,int > >  eval_print;
+    for (int h = 0; h < eval_sym->nirrep(); ++h) {
+        for (int i = 0; i < eval_sym->rowdim(h); ++i) {
+            eval_print.push_back(make_pair(eval_sym->get(h,i,0),h));
         }
-        print_stability_analysis(eval_print);
-
-        // And now, export the eigenvalues to a PSI4 array, mainly for testing purposes
-
-        Process::environment.arrays["SCF STABILITY EIGENVALUES"] = eval_sym;
-        if (stab->is_unstable() && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW") {
-            if (attempt_number_ == 1 ) {
-                stab_val = stab->get_eigval();
-            } else if (stab_val - stab->get_eigval() < 1e-4) {
-                // We probably fell on the same minimum, increase step_scale_
-                outfile->Printf("    Negative eigenvalue similar to previous one, wavefunction\n");
-                outfile->Printf("    likely to be in the same minimum.\n");
-                step_scale_ += step_increment_;
-                outfile->Printf("    Modifying FOLLOW_STEP_SCALE to %f.\n", step_scale_);
-            } else {
-                stab_val = stab->get_eigval();
-            }
-           //     outfile->Printf( "OLD ORBS");
-           //     Ca_->print();
-            stab->rotate_orbs(step_scale_);
-           //     outfile->Printf( "NEW ORBS");
-           //     Ca_->print();
-
-           // Ask politely SCF control for a new set of iterations
-           return true;
-        } else {
-            outfile->Printf("    Stability analysis over.\n");
-            // We are done, no more iterations
-            return false;
-        }
-
-    }else{
-        return stability_analysis_pk();
     }
+    print_stability_analysis(eval_print);
+
+    // And now, export the eigenvalues to a PSI4 array, mainly for testing purposes
+
+    Process::environment.arrays["SCF STABILITY EIGENVALUES"] = eval_sym;
+    if (stab->is_unstable() && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW") {
+        if (attempt_number_ == 1 ) {
+            stab_val = stab->get_eigval();
+        } else if (stab_val - stab->get_eigval() < 1e-4) {
+            // We probably fell on the same minimum, increase step_scale_
+            outfile->Printf("    Negative eigenvalue similar to previous one, wavefunction\n");
+            outfile->Printf("    likely to be in the same minimum.\n");
+            step_scale_ += step_increment_;
+            outfile->Printf("    Modifying FOLLOW_STEP_SCALE to %f.\n", step_scale_);
+        } else {
+            stab_val = stab->get_eigval();
+        }
+       //     outfile->Printf( "OLD ORBS");
+       //     Ca_->print();
+        stab->rotate_orbs(step_scale_);
+       //     outfile->Printf( "NEW ORBS");
+       //     Ca_->print();
+
+       // Ask politely SCF control for a new set of iterations
+       return true;
+    } else {
+        outfile->Printf("    Stability analysis over.\n");
+        // We are done, no more iterations
+        return false;
+    }
+
 }
 
 void UHF::compute_nos()

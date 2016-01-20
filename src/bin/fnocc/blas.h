@@ -47,12 +47,6 @@ void F_DGEMM(char transa,char transb, integer m, integer n, integer k,
             doublereal beta,doublereal*C,integer ldc);
 
 /**
- * daxpy
- */
-void F_DAXPY(integer n,doublereal da,doublereal*dx,integer incx,doublereal*dy,
-             integer incy);
-
-/**
  * name mangling for fortran-ordered dgemv
  */
 extern "C" {
@@ -88,18 +82,6 @@ inline void DCOPY(integer&n,doublereal*dx,integer&incx,doublereal*dy,
             integer&incy){
     dcopy(n,dx,incx,dy,incy);
 }
-/**
- * name mangling daxpy
- */
-extern "C" {
-   void daxpy(integer&n,doublereal&da,doublereal*dx,integer&incx,
-        doublereal*dy,integer&incy);
-};
-inline void DAXPY(integer&n,doublereal&da,doublereal*dx,integer&incx,
-            doublereal*dy,integer&incy)
-{
-    daxpy(n,da,dx,incx,dy,incy);
-};
 /**
  * name mangling dnrm2
  */

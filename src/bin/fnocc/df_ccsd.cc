@@ -49,10 +49,6 @@ namespace psi{ namespace fnocc{
 void DefineLinearTasks();
 void DefineQuadraticTasks();
 
-// sort
-void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options,bool iscim);
-void Sort_OV3_LowMemory(long int memory,long int o,long int v,bool islocal);
-
 // coupled cluster constructor
 DFCoupledCluster::DFCoupledCluster(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options):
         CoupledCluster(reference_wavefunction,options)
@@ -106,7 +102,7 @@ double DFCoupledCluster::compute_energy() {
       long int o = ndoccact;
       long int v = nvirt;
 
-      if (!isLowMemory && !reference_wavefunction_->isCIM() ) {
+      if ( !isLowMemory ) {
           // write (ov|vv) integrals, formerly E2abci, for (t)
           double *tempq = (double*)malloc(v*nQ*sizeof(double));
           // the buffer integrals was at least 2v^3, so these should definitely fit.
@@ -172,10 +168,10 @@ double DFCoupledCluster::compute_energy() {
 
       // write (oo|ov) integrals, formerly E2ijak, for (t)
       F_DGEMM('n','t',o*o,o*v,nQ,1.0,Qoo,o*o,Qov,o*v,0.0,temp1,o*o);
-      for (int i=0; i<o; i++){
-          for (int j=0; j<o; j++){
-              for (int k=0; k<o; k++){
-                  for (int a=0; a<v; a++){
+      for (long int i=0; i<o; i++){
+          for (long int j=0; j<o; j++){
+              for (long int k=0; k<o; k++){
+                  for (long int a=0; a<v; a++){
                       temp2[j*o*o*v+i*o*v+k*v+a] = temp1[i*o*o*v+a*o*o+j*o+k];
                   }
               }
@@ -211,7 +207,6 @@ double DFCoupledCluster::compute_energy() {
 
       ccmethod = 0;
       if (isLowMemory)                           status = lowmemory_triples();
-      else if (reference_wavefunction_->isCIM()) status = local_triples();
       else                                       status = triples();
 
       if (status == Failure){
@@ -344,6 +339,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       if (timer) start = omp_get_wtime();
       T1Fock();
       T1Integrals();
+
       if (timer) {
           outfile->Printf("        T1-transformed integrals                                        %6.2lf\n",omp_get_wtime() - start);
           outfile->Printf("\n");
@@ -374,12 +370,8 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       
       iter++;
       if (iter==1){
-         emp2 = eccsd;
-         if ( reference_wavefunction_->isCIM() ) {
-             Local_SCS_MP2();
-         }else {
-             SCS_MP2();
-         }
+          emp2 = eccsd;
+          SCS_MP2();
       }
 
       // energy and amplitude convergence check
@@ -392,13 +384,9 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
   double sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
 
   if (iter==maxiter){
-     throw PsiException("  CCSD iterations did not converge.",__FILE__,__LINE__);
+      throw PsiException("  CCSD iterations did not converge.",__FILE__,__LINE__);
   }
-  if (reference_wavefunction_->isCIM()){
-      Local_SCS_CCSD();
-  }else{
-      SCS_CCSD();
-  }
+  SCS_CCSD();
 
   outfile->Printf("\n");
   outfile->Printf("  CCSD iterations converged!\n");
@@ -412,10 +400,10 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
   boost::shared_ptr<Matrix>eigvec (new Matrix(o,o));
   boost::shared_ptr<Vector>eigval (new Vector(o));
   double ** Tp = T->pointer();
-  for (int i = 0; i < o; i++) {
-      for (int j = 0; j < o; j++) {
+  for (long int i = 0; i < o; i++) {
+      for (long int j = 0; j < o; j++) {
           double dum = 0.0;
-          for (int a = 0; a < v; a++) {
+          for (long int a = 0; a < v; a++) {
               dum += t1[a*o+i] * t1[a*o+j];
           }
           Tp[i][j] = dum;
@@ -495,7 +483,6 @@ double DFCoupledCluster::CheckEnergy(){
 
     long int v  = nvirt;
     long int o  = ndoccact;
-    long int rs = nmo;
   
     // df (ia|bj) formerly E2klcd
     F_DGEMM('n','t',o*v,o*v,nQ,1.0,Qov,o*v,Qov,o*v,0.0,integrals,o*v);
@@ -508,14 +495,14 @@ double DFCoupledCluster::CheckEnergy(){
         tb = tempv;
     }
     double energy = 0.0;
-    for (long int a=o; a<rs; a++){
-        for (long int b=o; b<rs; b++){
-            for (long int i=0; i<o; i++){
-                for (long int j=0; j<o; j++){
-                    long int ijab = (a-o)*v*o*o+(b-o)*o*o+i*o+j;
-                    long int iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
-                    long int jaib = iajb + (i-j)*v*(1-v*o);
-                    energy += (2.*integrals[iajb]-integrals[jaib])*(tb[ijab]+t1[(a-o)*o+i]*t1[(b-o)*o+j]);
+    for (long int a = 0; a < v; a++){
+        for (long int b = 0; b < v; b++){
+            for (long int i = 0; i < o; i++){
+                for (long int j = 0; j < o; j++){
+                    long int ijab = a*v*o*o + b*o*o + i*o + j;
+                    long int iajb = i*v*v*o + a*v*o + j*v + b;
+                    long int jaib = j*v*v*o + a*v*o + i*v + b;
+                    energy += (2.0*integrals[iajb]-integrals[jaib])*(tb[ijab]+t1[a*o+i]*t1[b*o+j]);
                 }
             }
         }
@@ -539,29 +526,18 @@ void DFCoupledCluster::AllocateMemory() {
   nQ_scf      = (int)Process::environment.globals["NAUX (SCF)"];
 
   // orbital energies
-  if (!reference_wavefunction_->isCIM()){
-      int count=0;
-      eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
-      boost::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
-      for (int h=0; h<nirrep_; h++){
-          for (int norb = frzcpi_[h]; norb<doccpi_[h]; norb++){
-              eps[count++] = eps_test->get(h,norb);
-          }
+  int count=0;
+  eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
+  boost::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
+  for (int h=0; h<nirrep_; h++){
+      for (int norb = frzcpi_[h]; norb<doccpi_[h]; norb++){
+          eps[count++] = eps_test->get(h,norb);
       }
-      for (int h=0; h<nirrep_; h++){
-          for (int norb = doccpi_[h]; norb<nmopi_[h]-frzvpi_[h]; norb++){
-              eps[count++] = eps_test->get(h,norb);
-          }
+  }
+  for (int h=0; h<nirrep_; h++){
+      for (int norb = doccpi_[h]; norb<nmopi_[h]-frzvpi_[h]; norb++){
+          eps[count++] = eps_test->get(h,norb);
       }
-  }else{
-     // orbital energies in qt ordering:
-     long int count = 0;
-     eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
-     boost::shared_ptr<Vector> eps_test = reference_wavefunction_->CIMOrbitalEnergies();
-     for (int i = 0; i < ndoccact + nvirt; i++){
-         eps[i] = eps_test->get(0,i+nfzc);
-     }
-     eps_test.reset();
   }
 
   long int o = ndoccact;
@@ -747,14 +723,13 @@ void DFCoupledCluster::UpdateT1(){
   }
   // error vector for diis is in tempv:
   C_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
-  F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
+  C_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
   C_DCOPY(o*v,w1,1,t1,1);
 }
 void DFCoupledCluster::UpdateT2(){
 
   long int v = nvirt;
   long int o = ndoccact;
-  long int rs = nmo;
 
   boost::shared_ptr<PSIO> psio(new PSIO());
 
@@ -770,37 +745,38 @@ void DFCoupledCluster::UpdateT2(){
   psio->close(PSIF_DCC_R2,1);
  
   #pragma omp parallel for schedule (static)
-  for (long int a=o; a<rs; a++){
-      double da = eps[a];
-      for (long int b=o; b<rs; b++){
-          double dab = da + eps[b];
-          for (long int i=0; i<o; i++){
+  for (long int a = 0; a < v; a++){
+      double da = eps[a+o];
+      for (long int b = 0; b < v; b++){
+          double dab = da + eps[b+o];
+          for (long int i = 0; i < o; i++){
               double dabi = dab - eps[i];
-              for (long int j=0; j<o; j++){
+              for (long int j = 0; j < o; j++){
 
-                  long int iajb = (a-o)*v*o*o+i*v*o+(b-o)*o+j;
-                  long int jaib = iajb + (i-j)*v*(1-v*o);
-                  long int ijab = (a-o)*v*o*o+(b-o)*o*o+i*o+j;
+                  long int iajb = a*v*o*o + i*v*o + b*o + j;
+                  long int ijab = a*v*o*o + b*o*o + i*o + j;
 
                   double dijab = dabi-eps[j];
+
                   double tnew  = - (integrals[iajb] + tempv[ijab])/dijab;
                   tempt[ijab]  = tnew;
               }
           }
       }
   }
-    // error vector is just dt
-    C_DCOPY(o*o*v*v,tempt,1,tempv,1);
+  // error vector is just dt
+  C_DCOPY(o*o*v*v,tempt,1,tempv,1);
 
-    if (t2_on_disk){
-        psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-        psio->read_entry(PSIF_DCC_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
-        F_DAXPY(o*o*v*v,1.0,tempt,1,integrals,1);
-        psio->write_entry(PSIF_DCC_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
-        psio->close(PSIF_DCC_T2,1);
-    }else {
-        F_DAXPY(o*o*v*v,1.0,tempt,1,tb,1);
-    }
+  if (t2_on_disk){
+      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+      psio->read_entry(PSIF_DCC_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
+      C_DAXPY(o*o*v*v,1.0,tempt,1,integrals,1);
+      psio->write_entry(PSIF_DCC_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
+      psio->close(PSIF_DCC_T2,1);
+  }else {
+      C_DAXPY(o*o*v*v,1.0,tempt,1,tb,1);
+  }
+
 }
 
 /**

@@ -36,18 +36,19 @@
 #include "CanonicalMBE.h"
 #include "VMFCnMBE.h"
 #include "libmolecule/Utils/BSSEFactory.h"
-#include "../../PsiAPI/Molecule.h"
-#include "../../PsiAPI/GaussianBasis.h"
+//#include "../../PsiAPI/Molecule.h"
+//#include "../../PsiAPI/GaussianBasis.h"
 #include "../libmints/basisset.h"
 //#include "libmm/MMParamAssigner.h"
 
-typedef boost::python::str PyStr;
+/*typedef boost::python::str PyStr;
 namespace psi {
 namespace LibFrag {
 typedef boost::shared_ptr<Molecule> SharedMol;
 typedef boost::shared_ptr<LibMolecule::FragmentedSystem> SharedFrags;
 typedef boost::shared_ptr<LibMolecule::Fragment> SharedFrag;
 typedef LibMolecule::FragmentedSystem::iterator FragItr;
+
 static boost::shared_ptr<LibMolecule::UnitCell>
    MakeUC(boost::shared_ptr<LibMolecule::Molecule> MyMol){
    std::vector<double> Sides(3,0.0),Angles(3,0.0);
@@ -111,14 +112,14 @@ void CalcEnergy(Expansion<T>& Expansion_,
          (*outfile)<<Expansion_.PrintOut()<<std::endl;
       }
 }
-
+*/
 LibFragDriver::LibFragDriver(const std::string& MethodName){
    outfile->MakeBanner("Many-Body Expansion Module");
 
 
    Options options=psi::Process::environment.options;
    SharedMol AMol=psi::Process::environment.molecule();
-   boost::shared_ptr<LibMolecule::Molecule> MyMol(new LibMolecule::Molecule);
+   /*boost::shared_ptr<LibMolecule::Molecule> MyMol(new LibMolecule::Molecule);
    PsiAPI::Molecule MyNewMol(AMol->molecular_charge(),AMol->multiplicity());
    for (int i=0; i<AMol->natom(); ++i) {
       std::vector<double> Carts(3, 0.0);
@@ -176,7 +177,7 @@ LibFragDriver::LibFragDriver(const std::string& MethodName){
       Expansion<VMFCnMBE> Expansion_(N);
       CalcEnergy(Expansion_,Frags_,Energies_);
    }
-
+  */
 }
 
 typedef MPITask<SharedFrag> Task_t;

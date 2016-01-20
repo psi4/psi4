@@ -301,9 +301,9 @@ def process_basis_block(matchobj):
     cleanbas = basname(name).replace('-', '')  # further remove hyphens so can be function name
     command_lines = re.split('\n', matchobj.group(4))
 
-    symbol_re = re.compile(r'^\s*assign\s+(?P<symbol>[A-Z]{1,3})\s+(?P<basis>[-*\(\)\w]+)\s*$', re.IGNORECASE)
-    label_re = re.compile(r'^\s*assign\s+(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)\s+(?P<basis>[-*\(\)\w]+)\s*$', re.IGNORECASE)
-    all_re = re.compile(r'^\s*assign\s+(?P<basis>[-*\(\)\w]+)\s*$', re.IGNORECASE)
+    symbol_re = re.compile(r'^\s*assign\s+(?P<symbol>[A-Z]{1,3})\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
+    label_re = re.compile(r'^\s*assign\s+(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
+    all_re = re.compile(r'^\s*assign\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
     basislabel = re.compile(r'\s*\[\s*([-*\(\)\w]+)\s*\]\s*')
 
     result = """%sdef basisspec_psi4_yo__%s(mol, role):\n""" % (spaces, cleanbas)
@@ -364,7 +364,7 @@ def process_pcm_command(matchobj):
     fp.write(block)
     fp.close()
     import pcm_placeholder
-    sys.path.append(pcm_placeholder.PCMSOLVER_PARSE_DIR)
+    sys.path.append(pcm_placeholder.PCMSolver_PARSE_DIR)
     import pcmsolver
     pcmsolver.parse_pcm_input('pcmsolver.inp')
     return "" # The file has been written to disk; nothing needed in Psi4 input

@@ -391,6 +391,25 @@ Density Matrix Renormalization Group (DMRG)
   S. Wouters and D. Van Neck, *Eur. Phys. J. D* **68** (9), 272 (2014).
   (doi: `10.1140/epjd/e2014-50500-1 <http://dx.doi.org/10.1140/epjd/e2014-50500-1>`_).
 
+Scalar Relativistic Corrections
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+General theory for the exact two-component approach (X2C)
+
+* "Analytic energy gradients for the spin-free exact two-component theory
+  using an exact block diagonalization for the one-electron Dirac
+  Hamiltonian,"
+  L. Cheng and J. Gauss, *J. Chem. Phys.* **135**, 084114 (2011).
+  (doi: `10.1063/1.3624397 <http://dx.doi.org/10.1063/1.3624397>`_).
+
+Implementation within Psi4
+
+* "Predicting Near Edge X-ray Absorption Spectra with the Spin-Free
+  Exact-Two-Component Hamiltonian and Orthogonality Constrained Density
+  Functional Theory,"
+  P. Verma, W. D. Derricotte and F. A. Evangelista,
+  *J. Chem. Theory Comput.* (2015).
+  (doi: `10.1021/acs.jctc.5b00817 <http://dx.doi.org/10.1021/acs.jctc.5b00817>`_).
 
 .. index:: architectures
 .. index:: compilers
@@ -448,6 +467,8 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DF-MP2.5                | Y         | Y         | RHF/UHF              | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | DF-LCCD                 | Y         | Y         | RHF/UHF              | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | MP3                     | Y         | Y         | RHF/UHF              | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | MP2.5                   | Y         | Y         | RHF/UHF              | threaded [#f3]_             |
@@ -469,6 +490,8 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     | DF-OMP3                 | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DF-OMP2.5               | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | DF-OLCCD                | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | OCEPA                   | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+

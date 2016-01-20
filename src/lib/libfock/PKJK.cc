@@ -121,8 +121,8 @@ void PKJK::preiterations()
 
     // Compute PK symmetry mapping
     int *pk_symoffset = new int[nirreps];
-    pk_size_ = 0;
-    pk_pairs_ = 0;
+    pk_size_ = 0;  // Size of PK matrix triangle, i.e. ncol*(ncol - 1)/2 + ncol
+    pk_pairs_ = 0; // Number of pk pairs, i.e. ncol of PK matrix
     for(int h = 0; h < nirreps; ++h){
         pk_symoffset[h] = pk_pairs_;
         // Add up possible pair combinations that yield A1 symmetry
@@ -404,35 +404,91 @@ void PKJK::compute_JK()
     std::vector<double*> K_vectors;
     std::vector<double*> D_vectors;
 
+    // We do some more preliminary work in case a density matrix is asymmetric
+
+    int *qind = NULL;
+    int *pind = NULL;
+    bool asym = false;
+    bool asym_only = true;
+    size_t square_dim = 0;
+
+    for(size_t N = 0; N < D_.size(); ++N) {
+        if(C_left_[N] == C_right_[N]) {
+            asym_only = false;
+        }
+    }
+
+    for(size_t N = 0; N < D_.size(); ++N) {
+        if(C_left_[N] != C_right_[N]) {
+            asym = true;
+            // Limited support for asymmetric density matrices: only C1 symmetry.
+            if ( nirreps != 1 ) {
+                throw PSIEXCEPTION("PK integrals can be used for this type of calculation only in C1 symmetry");
+            }
+            square_dim = sopi[0] * sopi[0];
+            // So we are going to do something dumb and store
+            // explicitly all indices first.
+            pind = new int[pk_pairs_];
+            qind = new int[pk_pairs_];
+            int counter = 0;
+            for(int p = 0; p < sopi[0]; ++p) {
+                for(int q = 0; q <= p; ++q) {
+                    pind[counter] = p;
+                    qind[counter] = q;
+                    ++counter;
+                }
+            }
+            break;
+        }
+    }
+
     /*
      * The J terms
      */
     for(size_t N = 0; N < J_.size(); ++N){
         if(D_[N]->symmetry())
             throw PSIEXCEPTION("PK integrals cannot be used for this type of calculation.");
-        double *J_vector = new double[pk_pairs_];
-        ::memset(J_vector,  0, pk_pairs_ * sizeof(double));
-        J_vectors.push_back(J_vector);
-        double *D_vector = new double[pk_pairs_];
-        ::memset(D_vector,  0, pk_pairs_ * sizeof(double));
-        D_vectors.push_back(D_vector);
-        // The off-diagonal terms need to be doubled here
-        size_t pqval = 0;
-        for (int h = 0; h < nirreps; ++h) {
-            for (int p = 0; p < sopi[h]; ++p) {
-                for (int q = 0; q <= p; ++q) {
-                    if (p != q) {
-                        D_vector[pqval] = 2.0 * D_[N]->get(h, p, q);
-                    }else{
-                        D_vector[pqval] = D_[N]->get(h, p, q);
+        if(C_left_[N] != C_right_[N]) {
+            // Placeholder value to preserve proper ordering.
+            J_vectors.push_back(NULL);
+            // We need to halve diagonal elements of the density matrix
+            double *D_vector = new double[square_dim];
+            ::memset(D_vector, 0, square_dim * sizeof(double));
+            D_vectors.push_back(D_vector);
+            for(int p = 0; p < sopi[0]; ++p) {
+                for(int q = 0; q < sopi[0]; ++q) {
+                    if(p != q) {
+                        D_vector[p*sopi[0] + q] = D_[N]->get(p,q);
+                    } else {
+                        D_vector[p*sopi[0] + q] = 0.5 * D_[N]->get(p,q);
                     }
-                    ++pqval;
+                }
+            }
+        } else {
+            double *J_vector = new double[pk_pairs_];
+            ::memset(J_vector,  0, pk_pairs_ * sizeof(double));
+            J_vectors.push_back(J_vector);
+            double *D_vector = new double[pk_pairs_];
+            ::memset(D_vector,  0, pk_pairs_ * sizeof(double));
+            D_vectors.push_back(D_vector);
+            // The off-diagonal terms need to be doubled here
+            size_t pqval = 0;
+            for (int h = 0; h < nirreps; ++h) {
+                for (int p = 0; p < sopi[h]; ++p) {
+                    for (int q = 0; q <= p; ++q) {
+                        if (p != q) {
+                            D_vector[pqval] = 2.0 * D_[N]->get(h, p, q);
+                        }else{
+                            D_vector[pqval] = D_[N]->get(h, p, q);
+                        }
+                        ++pqval;
+                    }
                 }
             }
         }
     }
 
-    if(J_.size()){
+    if(J_.size() || (K_.size() && asym)) {
         for(int batch = 0; batch < nbatches; ++batch){
             size_t min_pq      = batch_pq_min_[batch];
             size_t max_pq      = batch_pq_max_[batch];
@@ -447,22 +503,84 @@ void PKJK::compute_JK()
 
             int nvectors = J_.size();
             for(int N = 0; N < nvectors; ++N){
-                double *D_vector = D_vectors[N];
-                double *J_vector = J_vectors[N];
-                double *j_ptr = j_block;
-                for (size_t pq = min_pq; pq < max_pq; ++pq) {
-                    double D_pq = D_vector[pq];
-                    double *D_rs = D_vector;
-                    double J_pq = 0.0;
-                    double *J_rs = J_vector;
-                    for (size_t rs = 0; rs <= pq; ++rs) {
-                        J_pq  += *j_ptr * (*D_rs);
-                        *J_rs += *j_ptr * D_pq;
-                        ++D_rs;
-                        ++J_rs;
-                        ++j_ptr;
+                if (C_left_[N] != C_right_[N]) {
+                    J_[N]->zero();
+                    double **J_vector = J_[N]->pointer();
+                    double *D_vec = D_vectors[N];
+                    double *j_ptr = j_block;
+                    int p, q, r, s;
+                    for (size_t pq = min_pq; pq < max_pq; ++pq) {
+                        for (size_t rs = 0; rs <= pq; ++rs) {
+                            p = pind[pq];
+                            q = qind[pq];
+                            r = pind[rs];
+                            s = qind[rs];
+                            J_vector[p][q] += *j_ptr * (D_vec[r * sopi[0] + s] + D_vec[s * sopi[0] + r]);
+                            J_vector[q][p] += *j_ptr * (D_vec[r * sopi[0] + s] + D_vec[s * sopi[0] + r]);
+                            J_vector[r][s] += *j_ptr * (D_vec[p * sopi[0] + q] + D_vec[q * sopi[0] + p]);
+                            J_vector[s][r] += *j_ptr * (D_vec[p * sopi[0] + q] + D_vec[q * sopi[0] + p]);
+                            ++j_ptr;
+                        }
                     }
-                    J_vector[pq] += J_pq;
+                    if(K_.size()) {
+                        for(int idx = 0; idx < sopi[0]; ++idx) {
+                            D_vec[idx * sopi[0] + idx] = D_vec[idx * sopi[0] + idx] * 2.0;
+                        }
+                        K_[N]->zero();
+                        double **K_vector = K_[N]->pointer();
+                        j_ptr = j_block;
+                        double fac;
+                        // Each integral has a symmetry factor. Ugly in-loop condition
+                        // is ugly. This is only a quickfix to get asymmetric density matrices.
+                        // Better code to come later. -JFG
+                        for (size_t pq = min_pq; pq < max_pq; ++pq) {
+                            for (size_t rs = 0; rs <= pq; ++rs) {
+                                fac = 1.0;
+                                p = pind[pq];
+                                q = qind[pq];
+                                r = pind[rs];
+                                s = qind[rs];
+                                if (p == q && r == s && p == r) {
+                                    fac = 0.25; // Divide only be 4, PK stores integral with a
+                                    // factor 0.5 on the (pq|pq) diagonal.
+                                } else if ( (p == q && q == r) || (q == r && r == s) ) {
+                                    fac = 0.5;
+                                } else if ( p == q && r == s) {
+                                    fac = 0.25;
+                                } else if (p == q || r == s) {
+                                    fac = 0.5;
+                                }
+                                K_vector[p][r] += fac * (*j_ptr) * D_[N]->get(q, s);
+                                K_vector[r][p] += fac * (*j_ptr) * D_[N]->get(s, q);
+                                K_vector[q][r] += fac * (*j_ptr) * D_[N]->get(p, s);
+                                K_vector[p][s] += fac * (*j_ptr) * D_[N]->get(q, r);
+                                K_vector[s][p] += fac * (*j_ptr) * D_[N]->get(r, q);
+                                K_vector[r][q] += fac * (*j_ptr) * D_[N]->get(s, p);
+                                K_vector[s][q] += fac * (*j_ptr) * D_[N]->get(r, p);
+                                K_vector[q][s] += fac * (*j_ptr) * D_[N]->get(p, r);
+                                ++j_ptr;
+                            }
+                        }
+                    }
+
+                } else if (J_.size()) {
+                    double *D_vector = D_vectors[N];
+                    double *J_vector = J_vectors[N];
+                    double *j_ptr = j_block;
+                    for (size_t pq = min_pq; pq < max_pq; ++pq) {
+                        double D_pq = D_vector[pq];
+                        double *D_rs = D_vector;
+                        double J_pq = 0.0;
+                        double *J_rs = J_vector;
+                        for (size_t rs = 0; rs <= pq; ++rs) {
+                            J_pq  += *j_ptr * (*D_rs);
+                            *J_rs += *j_ptr * D_pq;
+                            ++D_rs;
+                            ++J_rs;
+                            ++j_ptr;
+                        }
+                        J_vector[pq] += J_pq;
+                    }
                 }
             }
             delete[] label;
@@ -471,18 +589,25 @@ void PKJK::compute_JK()
     }
 
     for(size_t N = 0; N < J_.size(); ++N){
-        // Copy the results from the vector to the buffer
-        double *J = J_vectors[N];
-        for (int h = 0; h < nirreps; ++h) {
-            for (int p = 0; p < sopi[h]; ++p) {
-                for (int q = 0; q <= p; ++q) {
-                    J_[N]->set(h, p, q, *J++);
+        if(C_left_[N] != C_right_[N]) {
+            for(int p = 0; p < sopi[0]; ++p) {
+                J_[N]->set(p, p, J_[N]->get(p,p) * 0.5);
+            }
+            delete [] D_vectors[N];
+        } else {
+            // Copy the results from the vector to the buffer
+            double *J = J_vectors[N];
+            for (int h = 0; h < nirreps; ++h) {
+                for (int p = 0; p < sopi[h]; ++p) {
+                    for (int q = 0; q <= p; ++q) {
+                        J_[N]->set(h, p, q, *J++);
+                    }
                 }
             }
+            J_[N]->copy_lower_to_upper();
+            delete [] D_vectors[N];
+            delete [] J_vectors[N];
         }
-        J_[N]->copy_lower_to_upper();
-        delete [] D_vectors[N];
-        delete [] J_vectors[N];
     }
 
     /*
@@ -490,29 +615,35 @@ void PKJK::compute_JK()
      */
     D_vectors.clear();
     for(size_t N = 0; N < K_.size(); ++N){
-        double *K_vector = new double[pk_pairs_];
-        ::memset(K_vector,  0, pk_pairs_ * sizeof(double));
-        K_vectors.push_back(K_vector);
-        double *D_vector = new double[pk_pairs_];
-        ::memset(D_vector,  0, pk_pairs_ * sizeof(double));
-        D_vectors.push_back(D_vector);
-        // The off-diagonal terms need to be doubled here
-        size_t pqval = 0;
-        for (int h = 0; h < nirreps; ++h) {
-            for (int p = 0; p < sopi[h]; ++p) {
-                for (int q = 0; q <= p; ++q) {
-                    if (p != q) {
-                        D_vector[pqval] = 2.0 * D_[N]->get(h, p, q);
-                    }else{
-                        D_vector[pqval] = D_[N]->get(h, p, q);
+        if(C_left_[N] != C_right_[N]) {
+            // Fill in dummy vectors so that the ordering is not messed up.
+            K_vectors.push_back(NULL);
+            D_vectors.push_back(NULL);
+        } else {
+            double *K_vector = new double[pk_pairs_];
+            ::memset(K_vector,  0, pk_pairs_ * sizeof(double));
+            K_vectors.push_back(K_vector);
+            double *D_vector = new double[pk_pairs_];
+            ::memset(D_vector,  0, pk_pairs_ * sizeof(double));
+            D_vectors.push_back(D_vector);
+            // The off-diagonal terms need to be doubled here
+            size_t pqval = 0;
+            for (int h = 0; h < nirreps; ++h) {
+                for (int p = 0; p < sopi[h]; ++p) {
+                    for (int q = 0; q <= p; ++q) {
+                        if (p != q) {
+                            D_vector[pqval] = 2.0 * D_[N]->get(h, p, q);
+                        }else{
+                            D_vector[pqval] = D_[N]->get(h, p, q);
+                        }
+                        ++pqval;
                     }
-                    ++pqval;
                 }
             }
         }
     }
 
-    if(K_.size()){
+    if(K_.size() && !asym_only){
         for(int batch = 0; batch < nbatches; ++batch){
             size_t min_pq      = batch_pq_min_[batch];
             size_t max_pq      = batch_pq_max_[batch];
@@ -527,22 +658,24 @@ void PKJK::compute_JK()
 
             int nvectors = K_.size();
             for(int N = 0; N < nvectors; ++N){
-                double *D_vector = D_vectors[N];
-                double *K_vector = K_vectors[N];
-                double *k_ptr = k_block;
-                for (size_t pq = min_pq; pq < max_pq; ++pq) {
-                    double D_pq = D_vector[pq];
-                    double *D_rs = D_vector;
-                    double K_pq = 0.0;
-                    double *K_rs = K_vector;
-                    for (size_t rs = 0; rs <= pq; ++rs) {
-                        K_pq  += *k_ptr * (*D_rs);
-                        *K_rs += *k_ptr * D_pq;
-                        ++D_rs;
-                        ++K_rs;
-                        ++k_ptr;
+                if (C_left_[N] == C_right_[N]) {
+                    double *D_vector = D_vectors[N];
+                    double *K_vector = K_vectors[N];
+                    double *k_ptr = k_block;
+                    for (size_t pq = min_pq; pq < max_pq; ++pq) {
+                        double D_pq = D_vector[pq];
+                        double *D_rs = D_vector;
+                        double K_pq = 0.0;
+                        double *K_rs = K_vector;
+                        for (size_t rs = 0; rs <= pq; ++rs) {
+                            K_pq  += *k_ptr * (*D_rs);
+                            *K_rs += *k_ptr * D_pq;
+                            ++D_rs;
+                            ++K_rs;
+                            ++k_ptr;
+                        }
+                        K_vector[pq] += K_pq;
                     }
-                    K_vector[pq] += K_pq;
                 }
             }
             delete[] label;
@@ -551,18 +684,20 @@ void PKJK::compute_JK()
     }
 
     for(size_t N = 0; N < K_.size(); ++N){
-        // Copy the results from the vector to the buffer
-        double *K = K_vectors[N];
-        for (int h = 0; h < nirreps; ++h) {
-            for (int p = 0; p < sopi[h]; ++p) {
-                for (int q = 0; q <= p; ++q) {
-                    K_[N]->set(h, p, q, *K++);
+        if(C_left_[N] == C_right_[N]) {
+            // Copy the results from the vector to the buffer
+            double *K = K_vectors[N];
+            for (int h = 0; h < nirreps; ++h) {
+                for (int p = 0; p < sopi[h]; ++p) {
+                    for (int q = 0; q <= p; ++q) {
+                        K_[N]->set(h, p, q, *K++);
+                    }
                 }
             }
+            K_[N]->copy_lower_to_upper();
+            delete [] D_vectors[N];
+            delete [] K_vectors[N];
         }
-        K_[N]->copy_lower_to_upper();
-        delete [] D_vectors[N];
-        delete [] K_vectors[N];
     }
 
     /*
@@ -571,6 +706,9 @@ void PKJK::compute_JK()
     std::vector<double*> wK_vectors;
     D_vectors.clear();
     for(size_t N = 0; N < wK_.size(); ++N){
+        if(D_[N]->symmetry()) {
+            throw PSIEXCEPTION("PK integrals cannot be used for this type of calculation.");
+        }
         double *K_vector = new double[pk_pairs_];
         ::memset(K_vector,  0, pk_pairs_ * sizeof(double));
         wK_vectors.push_back(K_vector);

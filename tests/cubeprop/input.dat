@@ -15,10 +15,10 @@ set cubic_grid_overage [1.0,1.0,1.0]
 energy('scf')
 cubeprop()
 
-for n in [1,2,3,4,5]:
-    ref_cube = open('Psi_a_%d.cube.ref' % n,'r').read()
-    this_cube = open('Psi_a_%d.cube' % n,'r').read()
-    compare_cubes(ref_cube,this_cube,"Comparing MO %d" % n) #TEST
+for n in ['1_1-A1','2_2-A1','3_1-B2','4_3-A1','5_1-B1']:
+    ref_cube = open('Psi_a_%s.cube.ref' % n,'r').read()
+    this_cube = open('Psi_a_%s.cube' % n,'r').read()
+    compare_cubes(ref_cube,this_cube,"Comparing MO %s" % n) #TEST
 
 for s in ['Da','Db','Dt','Ds']:
     ref_cube = open('%s.cube.ref' % s,'r').read()

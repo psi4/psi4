@@ -140,9 +140,14 @@ PsiReturnType thermo(Options &options) {
     }
   }
 
+  //Flag to only print low/imaginary frequency warnings once
+  bool WarnLowImag; //True if the warning was already printed
+
+  WarnLowImag = 0; //Reset to false before checking imaginary frequencies
   for (int i=0; i<nvib_freqs; ++i)
-    if (vib_freqs->get(i) < 0) {
+    if ((vib_freqs->get(i) < 0) and (!WarnLowImag)) {
       outfile->Printf( "    WARNING: At least one vibrational frequency is imaginary!\n");
+      WarnLowImag = 1; //Do not print a second message
     }
 
   Vector vib_temp(nvib_freqs);
@@ -203,10 +208,14 @@ PsiReturnType thermo(Options &options) {
   for (int i=0; i<nvib_freqs; ++i)
     outfile->Printf( "    %3i  %20.3f          %10.3f\n", i+1,vib_freqs->get(i), vib_temp[i]);
 
+  WarnLowImag = 0; //Reset to false before checking low frequencies
   for(int i=0; i < nvib_freqs; i++) {
     double rT = vib_temp[i] / T; // reduced T
-    if (vib_temp[i] < 900)
-      outfile->Printf("    Warning: used thermodynamic relations are not appropriate for low frequency modes.");
+    if ((vib_temp[i] < 900) and (!WarnLowImag))
+    {
+      outfile->Printf("    Warning: used thermodynamic relations are not appropriate for low frequency modes.\n");
+      WarnLowImag = 1; //Do not print a second message
+    }
     Evib += vib_temp[i] * (0.5 + 1.0 / (exp(rT) - 1));
     Svib += rT/(exp(rT) - 1) - log(1 - exp(-rT));
     Cvvib += exp(rT) * pow(rT/(exp(rT)-1), 2);

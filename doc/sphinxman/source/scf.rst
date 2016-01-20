@@ -605,11 +605,10 @@ of |scf__follow_step_scale| is recommended over increasing |scf__max_attempts|.
 The main algorithm available in |PSIfour| is the Direct Inversion algorithm. It can *only*
 work with |scf__scf_type| ``PK``, and it explicitly builds the full electronic Hessian
 matrix before explicitly inverting it. As such, this algorithm is very slow and it should
-be avoided whenever possible. Direct Inversion is automatically invoked if |scf__scf_type| = ``PK``.
+be avoided whenever possible. Direct Inversion is automatically invoked if the newer algorithm
+is not available.
 
-The Davidson algorithm for stability analysis was implemented recently. Due to limitations of
-the |scf__scf_type| ``PK``, Davidson *cannot* be used with these integrals, but supports both
-|scf__scf_type| ``DIRECT`` and ``DF``. 
+The Davidson algorithm for stability analysis was implemented recently. 
 Only the lowest eigenvalues of the electronic Hessian are computed, and Hessian-vector
 products are computed instead of the full Hessian. This algorithm is thus
 much more efficient than the Direct Inversion, but is at present only available for UHF->UHF stability
@@ -625,13 +624,11 @@ analysis. The capabilities of both algorithms are summarized below:
     |                  |       RHF        | Internal, External (->UHF) | PK only         |
     +                  +------------------+----------------------------+-----------------+
     | Direct Inversion |       ROHF       | Internal                   | PK only         |
-    +                  +------------------+----------------------------+-----------------+
-    |                  |       UHF        | Internal                   | PK only         |
     +------------------+------------------+----------------------------+-----------------+
-    |   Davidson       |       UHF        | Internal                   | Anything but PK |
+    |   Davidson       |       UHF        | Internal                   |   Anything      |
     +------------------+------------------+----------------------------+-----------------+
 
-The algorithm corresponding to the current integral choice is automatically selected.
+The best algorithm is automatically selected, i.e. Davidson for UHF->UHF and Direct Inversion otherwise.
 
 In addition to the options available for Direct Inversion, the Davidson algorithm can automatically
 adapt |scf__follow_step_scale| to find a new SCF minimum. If |scf__max_attempts| > 1, additional attempts 

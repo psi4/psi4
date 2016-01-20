@@ -74,6 +74,13 @@ protected:
     // Compute UHF NOs
     void compute_nos();
 
+    // Second-order convergence code
+    void Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a,
+            SharedMatrix Cvir_a, SharedMatrix ret_a,
+            SharedMatrix x_b, SharedMatrix IFock_b, SharedMatrix Cocc_b,
+            SharedMatrix Cvir_b, SharedMatrix ret_b);
+    virtual int soscf_update(void);
+
 public:
     UHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     UHF(Options& options, boost::shared_ptr<PSIO> psio);

@@ -33,9 +33,11 @@
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include "psi4-dec.h"
-namespace psi {
 
-struct iwlstruct;
+// Testing -TDC
+#include "dpdmospace.h"
+
+namespace psi {
 
 #define T3_TIMER_ON (0)
 
@@ -257,9 +259,14 @@ public:
     dpdparams2 **params2;
     dpdparams4 **params4;
 
+    vector<DPDMOSpace> moSpaces;
+
     DPD(int dpd_num, int nirreps, long int memory, int cachetype,
         int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
         int num_subspaces, std::vector<int*> &spaceArrays);
+    DPD(int dpd_num, int nirreps, long int memory, int cachetype,
+        int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
+        int num_subspaces, std::vector<DPDMOSpace> &moSpaces);
     DPD();
 
     ~DPD();
@@ -345,6 +352,11 @@ public:
 
     int buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, int pqnum, int rsnum,
                   int file_pqnum, int file_rsnum, int anti, const char *label);
+    int buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, string pq, string rs,
+                  string file_pq, string file_rs, int anti, const char *label);
+    int buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, string pq, string rs, int anti, const char *label);
+    int pairnum(string);
+    double buf4_trace(dpdbuf4 *Buf);
     int buf4_close(dpdbuf4 *Buf);
     int buf4_mat_irrep_init(dpdbuf4 *Buf, int irrep);
     int buf4_mat_irrep_close(dpdbuf4 *Buf, int irrep);
@@ -354,6 +366,8 @@ public:
     int buf4_copy(dpdbuf4 *InBuf, int outfilenum, const char *label);
     int buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                   int pqnum, int rsnum, const char *label);
+    int buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
+                    string pq, string rs, const char *label);
     int buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                       int pqnum, int rsnum, const char *label);
     int buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
@@ -385,7 +399,6 @@ public:
     int buf4_dump(dpdbuf4 *DPDBuf, struct iwlbuf *IWLBuf,
                   int *prel, int *qrel, int *rrel, int *srel,
                   int bk_pack, int swap23);
-
     int trans4_init(dpdtrans4 *Trans, dpdbuf4 *Buf);
     int trans4_close(dpdtrans4 *Trans);
     int trans4_mat_irrep_init(dpdtrans4 *Trans, int irrep);

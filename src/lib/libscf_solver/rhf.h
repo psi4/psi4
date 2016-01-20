@@ -78,7 +78,7 @@ protected:
 
     void save_density_and_energy();
 
-    // Compute hessian vector product and place the result in ret
+    // Second-order convergence code
     void Hx(SharedMatrix x, SharedMatrix IFock, SharedMatrix Cocc, SharedMatrix Cvir, SharedMatrix ret);
     virtual int soscf_update(void);
 

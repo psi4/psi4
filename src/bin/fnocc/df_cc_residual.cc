@@ -209,7 +209,7 @@ void DFCoupledCluster::CCResidual(){
     }
     psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
-    F_DAXPY(o*o*v*v,1.0,tempv,1,tempt,1);
+    C_DAXPY(o*o*v*v,1.0,tempv,1,tempt,1);
     psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
     psio->close(PSIF_DCC_R2,1);
     if (timer) {
@@ -229,7 +229,7 @@ void DFCoupledCluster::CCResidual(){
     for (int b = 0; b < v; b++) {
         for (int d = 0; d < v; d++) {
             for (int k = 0; k < o; k++) {
-                F_DAXPY(o,-0.5,tb+b*o*o*v+d*o*o+k,o,tempt+b*o*o*v+d*o*o+k*o,1);
+                C_DAXPY(o,-0.5,tb+b*o*o*v+d*o*o+k,o,tempt+b*o*o*v+d*o*o+k*o,1);
             }
         }
     }
@@ -275,7 +275,7 @@ void DFCoupledCluster::CCResidual(){
     }
     psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
-    F_DAXPY(o*o*v*v,1.0,tempv,1,tempt,1);
+    C_DAXPY(o*o*v*v,1.0,tempv,1,tempt,1);
     psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
     psio->close(PSIF_DCC_R2,1);
     if (timer) {
@@ -367,7 +367,7 @@ void DFCoupledCluster::CCResidual(){
 
     psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-    F_DAXPY(o*o*v*v,1.0,tempt,1,integrals,1);
+    C_DAXPY(o*o*v*v,1.0,tempt,1,integrals,1);
     psio->write_entry(PSIF_DCC_R2,"residual",(char*)&integrals[0],o*o*v*v*sizeof(double));
     psio->close(PSIF_DCC_R2,1);
 
@@ -429,7 +429,7 @@ void DFCoupledCluster::CCResidual(){
     for (int a = 0; a < v; a++) {
         for (int c = 0; c < v; c++) {
             for (int k = 0; k < o; k++) {
-                F_DAXPY(o,-0.5,tb+a*o*o*v+c*o*o+k,o,tempt+a*o*o*v+c*o*o+k*o,1);
+                C_DAXPY(o,-0.5,tb+a*o*o*v+c*o*o+k,o,tempt+a*o*o*v+c*o*o+k*o,1);
             }
         }
     }

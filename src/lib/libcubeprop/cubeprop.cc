@@ -24,7 +24,11 @@
 
 #include <psi4-dec.h>
 
+#include <libpsi4util/libpsi4util.h>
 #include <libmints/mints.h>
+
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
 
 #include "cubeprop.h"
 #include "csg.h"
@@ -59,6 +63,22 @@ CubeProperties::CubeProperties() :
     } else { 
         Db_ = wfn->Db_subset("AO");
     }
+
+    int nirrep = wfn->nirrep();
+    Dimension nmopi = wfn->nmopi();
+    // Gather orbital information
+    for (int h = 0; h < nirrep; h++) {
+        for (int i = 0; i < (int)nmopi[h]; i++) {
+            info_a_.push_back(boost::tuple<double,int,int>(wfn->epsilon_a()->get(h,i),i,h));
+        }
+    }
+    std::sort(info_a_.begin(), info_a_.end(), std::less<boost::tuple<double,int,int> >()); // Sort as in wfn
+    for (int h = 0; h < nirrep; h++) {
+        for (int i = 0; i < (int)nmopi[h]; i++) {
+            info_b_.push_back(boost::tuple<double,int,int>(wfn->epsilon_b()->get(h,i),i,h));
+        }
+    }
+    std::sort(info_b_.begin(), info_b_.end(), std::less<boost::tuple<double,int,int> >()); // Sort as in wfn
 
     common_init();
 }
@@ -117,6 +137,7 @@ void CubeProperties::compute_properties()
         } else if (task == "ORBITALS") {
             std::vector<int> indsa0;
             std::vector<int> indsb0;
+
             if (options_["CUBEPROP_ORBITALS"].size() == 0) {
                 for (int ind = 0; ind < Ca_->colspi()[0]; ind++) {
                     indsa0.push_back(ind);
@@ -134,8 +155,21 @@ void CubeProperties::compute_properties()
                     }
                 }
             }
-            if (indsa0.size()) compute_orbitals(Ca_, indsa0, "Psi_a");
-            if (indsb0.size()) compute_orbitals(Cb_, indsb0, "Psi_b");
+            std::vector<string> labelsa;
+            std::vector<string> labelsb;
+            CharacterTable ct = basisset_->molecule()->point_group()->char_table();
+            for (size_t ind = 0; ind < indsa0.size(); ++ind){
+                int i = get<1>(info_a_[indsa0[ind]]);
+                int h = get<2>(info_a_[indsa0[ind]]);
+                labelsa.push_back(to_string(i + 1) + "-" + ct.gamma(h).symbol());
+            }
+            for (size_t ind = 0; ind < indsb0.size(); ++ind){
+                int i = get<1>(info_b_[indsb0[ind]]);
+                int h = get<2>(info_b_[indsb0[ind]]);
+                labelsb.push_back(to_string(i + 1) + "-" + ct.gamma(h).symbol());
+            }
+            if (indsa0.size()) compute_orbitals(Ca_, indsa0,labelsa, "Psi_a");
+            if (indsb0.size()) compute_orbitals(Cb_, indsb0,labelsb, "Psi_b");
         } else if (task == "BASIS_FUNCTIONS") {
             std::vector<int> inds0;
             if (options_["CUBEPROP_BASIS_FUNCTIONS"].size() == 0) {
@@ -168,9 +202,9 @@ void CubeProperties::compute_esp(boost::shared_ptr<Matrix> Dt)
     grid_->compute_density(Dt, "Dt");
     grid_->compute_esp(Dt, "ESP"); 
 }
-void CubeProperties::compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::string& key)
+void CubeProperties::compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::vector<std::string>& labels, const std::string& key)
 {
-    grid_->compute_orbitals(C, indices, key);
+    grid_->compute_orbitals(C, indices, labels, key);
 }
 void CubeProperties::compute_basis_functions(const std::vector<int>& indices, const std::string& key)
 {

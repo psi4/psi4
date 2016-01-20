@@ -55,24 +55,26 @@
 #include <string>
 namespace psi { namespace detci {
 
+class CIWavefunction;
+
 class SlaterDeterminant {
+   friend class CIWavefunction;
 
    protected:
-      unsigned nalp;
-      unsigned nbet;
-      unsigned char *Occs[2];
+      unsigned nalp_;
+      unsigned nbet_;
+      unsigned char *Occs_[2];
 
    public:
-      SlaterDeterminant() { nalp=0; nbet=0; Occs[0]=NULL; Occs[1]=NULL; }
+      SlaterDeterminant() { nalp_=0; nbet_=0; Occs_[0]=NULL; Occs_[1]=NULL; }
       ~SlaterDeterminant() { 
-         if (Occs[0] != NULL) free(Occs[0]);
-         if (Occs[1] != NULL) free(Occs[1]);
+         if (Occs_[0] != NULL) free(Occs_[0]);
+         if (Occs_[1] != NULL) free(Occs_[1]);
          }
       void set(unsigned int nalp, unsigned char *alpoccs, 
          unsigned int nbet, unsigned char *betoccs);
       void print(void);
-      void print(std::string OutFileRMR);
-      void print_config(std::string OutFileRMR) ;
+      void print_config(void);
       SlaterDeterminant& operator=(const SlaterDeterminant& s) ;
       friend int operator==(SlaterDeterminant& s1, SlaterDeterminant& s2) ;
       friend double matrix_element(SlaterDeterminant* I, SlaterDeterminant* J);
