@@ -46,9 +46,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   // dodoc == "GLOBALS" fake line to make document_options_and_tests.pl generate a GLOBALS doc section
 
-  // Temporary: turn on/off cctransort module -TDC
-  options.add_bool("RUN_CCTRANSORT", true);
-
   /*- Units used in geometry specification -*/
   options.add_str("UNITS", "ANGSTROMS", "BOHR AU A.U. ANGSTROMS ANG ANGSTROM");
 
@@ -212,6 +209,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add("CUBIC_GRID_SPACING", new ArrayType());
   /* How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc */
   options.add_str("PRINT_NOONS","3");
+
+  // Temporary: turn on/off cctransort module.  Remove after stability is proven. -TDC (1/19/2016)
+  options.add_bool("RUN_CCTRANSORT", true);
 
 
   if (name == "DETCI" || options.read_globals()) {
