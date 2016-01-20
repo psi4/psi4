@@ -31,9 +31,8 @@
 #include <libqt/qt.h>
 #include "MOInfo.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 #include "libparallel/ParallelPrinter.h"
+#include "libciomr/libciomr.h"
 namespace psi { namespace ccenergy {
 
 
@@ -48,7 +47,7 @@ void CCEnergyWavefunction::analyze(void)
   dpdfile2 T1;
   dpdbuf4 I, T2, D;
 
-  nirreps = moinfo.nirreps;
+  nirreps = moinfo_.nirreps;
   num_div = 500;
   max = 9;
   min = 0;
@@ -56,9 +55,9 @@ void CCEnergyWavefunction::analyze(void)
   boost::shared_ptr<OutFile> printer(new OutFile("tamps.dat",APPEND));
   amp_array = init_array(num_div);
 
-  nvir = moinfo.virtpi[0];
-  nocc = moinfo.occpi[0];
-  nso = moinfo.nso;
+  nvir = moinfo_.virtpi[0];
+  nocc = moinfo_.occpi[0];
+  nso = moinfo_.nso;
 
   global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
   global_dpd_->buf4_mat_irrep_init(&T2, 0);
@@ -70,8 +69,8 @@ void CCEnergyWavefunction::analyze(void)
   for(ij=0; ij<T2.params->rowtot[0]; ij++) {
 
     C_DGEMM('n', 't', nvir, nso, nvir, 1.0, &(T2.matrix[0][ij][0]), nvir, 
-	    &(moinfo.Cv[0][0][0]), nvir, 0.0, &(tmp[0][0]), nso);
-    C_DGEMM('n', 'n', nso, nso, nvir, 1.0, &(moinfo.Cv[0][0][0]), nvir,
+        &(moinfo_.Cv[0][0][0]), nvir, 0.0, &(tmp[0][0]), nso);
+    C_DGEMM('n', 'n', nso, nso, nvir, 1.0, &(moinfo_.Cv[0][0][0]), nvir,
 	    tmp[0], nso, 0.0, T2trans[ij], nso);
 
     for(ab=0; ab<nso*nso; ab++) {

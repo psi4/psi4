@@ -31,18 +31,15 @@
 #include <libqt/qt.h>
 #include "Params.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
-#include "MOInfo.h"
 
 namespace psi { namespace ccenergy {
 
 double CCEnergyWavefunction::energy(void)
 {
   double e = 0.0;
-  if(params.ref == 0) e = rhf_energy();
-  else if(params.ref == 1) e = rohf_energy();
-  else if(params.ref == 2) e = uhf_energy();
+  if(params_.ref == 0) e = rhf_energy();
+  else if(params_.ref == 1) e = rohf_energy();
+  else if(params_.ref == 2) e = uhf_energy();
 
   return e;
 }
@@ -70,8 +67,8 @@ double CCEnergyWavefunction::rhf_energy(void)
   os_energy = global_dpd_->buf4_dot(&S, &tauIjAb);
   ss_energy = (tauIjAb_energy - os_energy);
 
-  moinfo.ecc_ss = ss_energy;
-  moinfo.ecc_os = os_energy;
+  moinfo_.ecc_ss = ss_energy;
+  moinfo_.ecc_os = os_energy;
 
   global_dpd_->buf4_close(&S);
   global_dpd_->buf4_close(&tauIjAb);
@@ -132,8 +129,8 @@ double CCEnergyWavefunction::rohf_energy(void)
 
   // Store the same-spin and opposite-spin pair energies
   // (not including singles here)
-  moinfo.ecc_ss = tauIJAB_energy + tauijab_energy;
-  moinfo.ecc_os = tauIjAb_energy;
+  moinfo_.ecc_ss = tauIJAB_energy + tauijab_energy;
+  moinfo_.ecc_os = tauIjAb_energy;
 
   return (tIA_energy + tia_energy +
       tauIJAB_energy + tauijab_energy + tauIjAb_energy);
@@ -192,8 +189,8 @@ double CCEnergyWavefunction::uhf_energy(void)
 
   // Store the same-spin and opposite-spin pair energies
   // (not including singles here)
-  moinfo.ecc_ss = E2AA + E2BB;
-  moinfo.ecc_os = E2AB;
+  moinfo_.ecc_ss = E2AA + E2BB;
+  moinfo_.ecc_os = E2AB;
 
   return(T1A + T1B + E2AA + E2BB + E2AB);
 }

@@ -26,9 +26,8 @@
 */
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
+#include "libciomr/libciomr.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 

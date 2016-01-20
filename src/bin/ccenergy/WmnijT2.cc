@@ -30,8 +30,6 @@
 #include <libqt/qt.h>
 #include "Params.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -41,7 +39,7 @@ void CCEnergyWavefunction::WmnijT2(void)
   dpdbuf4 WMNIJ, Wmnij, WMnIj;
   dpdbuf4 tauIJAB, tauijab, tauIjAb;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->buf4_init(&newtIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
     global_dpd_->buf4_init(&WMnIj, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
     global_dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
@@ -50,7 +48,7 @@ void CCEnergyWavefunction::WmnijT2(void)
     global_dpd_->buf4_close(&WMnIj);
     global_dpd_->buf4_close(&newtIjAb);
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
     global_dpd_->buf4_init(&newtIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
     global_dpd_->buf4_init(&WMNIJ, PSIF_CC_HBAR, 0, 2, 2, 2, 2, 0, "WMNIJ");
     global_dpd_->buf4_init(&tauIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauIJAB");
@@ -75,7 +73,7 @@ void CCEnergyWavefunction::WmnijT2(void)
     global_dpd_->buf4_close(&WMnIj);
     global_dpd_->buf4_close(&newtIjAb);
   }
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
 
     global_dpd_->buf4_init(&newtIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
     global_dpd_->buf4_init(&WMNIJ, PSIF_CC_HBAR, 0, 2, 2, 2, 2, 0, "WMNIJ");

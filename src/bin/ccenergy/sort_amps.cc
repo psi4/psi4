@@ -30,8 +30,6 @@
 #include <libqt/qt.h>
 #include "Params.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -39,7 +37,7 @@ void CCEnergyWavefunction::sort_amps(void)
 {
   dpdbuf4 t2, t2B;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     /* T(iJ,aB) */
     global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
     global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, qpsr, 0, 5, "tiJaB");
@@ -82,7 +80,7 @@ void CCEnergyWavefunction::sort_amps(void)
     global_dpd_->buf4_close(&t2);
 
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
     /* T(iJ,aB) */
     global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
     global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, qpsr, 0, 5, "tiJaB");
@@ -117,7 +115,7 @@ void CCEnergyWavefunction::sort_amps(void)
     global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, rspq, 10, 10, "tjAIb");
     global_dpd_->buf4_close(&t2);
   }
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
 
     /* TIJAB (IA,JB) */
     global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");

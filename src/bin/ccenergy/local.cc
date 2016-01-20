@@ -40,8 +40,6 @@
 #include "Params.h"
 #include "MOInfo.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -63,16 +61,16 @@ void CCEnergyWavefunction::local_init(void)
 {
   int i, k, ij, nocc;
 
-  local.nso = moinfo.nso;
-  local.nocc = moinfo.occpi[0]; /* active doubly occupied orbitals */
-  local.nvir = moinfo.virtpi[0]; /* active virtual orbitals */
-  nocc = local.nocc;
+  local_.nso = moinfo_.nso;
+  local_.nocc = moinfo_.occpi[0]; /* active doubly occupied orbitals */
+  local_.nvir = moinfo_.virtpi[0]; /* active virtual orbitals */
+  nocc = local_.nocc;
 
-  local.weak_pair_energy = 0.0;
+  local_.weak_pair_energy = 0.0;
 
-  local.weak_pairs = init_int_array(nocc*nocc);
-  psio_read_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *) local.weak_pairs,
-		  local.nocc*local.nocc*sizeof(int));
+  local_.weak_pairs = init_int_array(nocc*nocc);
+  psio_read_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *) local_.weak_pairs,
+          local_.nocc*local_.nocc*sizeof(int));
 
   outfile->Printf( "\tLocalization parameters ready.\n\n");
   
@@ -91,42 +89,42 @@ void CCEnergyWavefunction::local_filter_T1(dpdfile2 *T1)
   double *T1tilde, *T1bar;
   psio_address next;
 
-  nocc = local.nocc;
-  nvir = local.nvir;
+  nocc = local_.nocc;
+  nvir = local_.nvir;
 
 /*   local.weak_pairs = init_int_array(nocc*nocc); */
-  local.pairdom_len = init_int_array(nocc*nocc);
-  local.pairdom_nrlen = init_int_array(nocc*nocc);
-  local.eps_occ = init_array(nocc);
+  local_.pairdom_len = init_int_array(nocc*nocc);
+  local_.pairdom_nrlen = init_int_array(nocc*nocc);
+  local_.eps_occ = init_array(nocc);
 /*   psio_read_entry(CC_INFO, "Local Weak Pairs", (char *) local.weak_pairs, */
 /* 		  local.nocc*local.nocc*sizeof(int)); */
-  psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *) local.pairdom_len,
+  psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *) local_.pairdom_len,
 		  nocc*nocc*sizeof(int));
-  psio_read_entry(PSIF_CC_INFO, "Local Pair Domain NR Length", (char *) local.pairdom_nrlen,
+  psio_read_entry(PSIF_CC_INFO, "Local Pair Domain NR Length", (char *) local_.pairdom_nrlen,
 		  nocc*nocc*sizeof(int));
-  psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) local.eps_occ,
+  psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) local_.eps_occ,
 		  nocc*sizeof(double));
 
-  local.W = (double ***) malloc(nocc * nocc * sizeof(double **));
-  local.V = (double ***) malloc(nocc * nocc * sizeof(double **));
-  local.eps_vir = (double **) malloc(nocc * nocc * sizeof(double *));
+  local_.W = (double ***) malloc(nocc * nocc * sizeof(double **));
+  local_.V = (double ***) malloc(nocc * nocc * sizeof(double **));
+  local_.eps_vir = (double **) malloc(nocc * nocc * sizeof(double *));
   next = PSIO_ZERO;
   for(ij=0; ij < nocc*nocc; ij++) {
-      local.eps_vir[ij] = init_array(local.pairdom_nrlen[ij]);
-      psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *) local.eps_vir[ij],
-		local.pairdom_nrlen[ij]*sizeof(double), next, &next);
+      local_.eps_vir[ij] = init_array(local_.pairdom_nrlen[ij]);
+      psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *) local_.eps_vir[ij],
+        local_.pairdom_nrlen[ij]*sizeof(double), next, &next);
     }
   next = PSIO_ZERO;
   for(ij=0; ij < nocc*nocc; ij++) {
-      local.V[ij] = block_matrix(nvir,local.pairdom_len[ij]);
-      psio_read(PSIF_CC_INFO, "Local Residual Vector (V)", (char *) local.V[ij][0],
-		nvir*local.pairdom_len[ij]*sizeof(double), next, &next);
+      local_.V[ij] = block_matrix(nvir,local_.pairdom_len[ij]);
+      psio_read(PSIF_CC_INFO, "Local Residual Vector (V)", (char *) local_.V[ij][0],
+        nvir*local_.pairdom_len[ij]*sizeof(double), next, &next);
     }
   next = PSIO_ZERO;
   for(ij=0; ij < nocc*nocc; ij++) {
-      local.W[ij] = block_matrix(local.pairdom_len[ij],local.pairdom_nrlen[ij]);
-      psio_read(PSIF_CC_INFO, "Local Transformation Matrix (W)", (char *) local.W[ij][0],
-		local.pairdom_len[ij]*local.pairdom_nrlen[ij]*sizeof(double), next, &next);
+      local_.W[ij] = block_matrix(local_.pairdom_len[ij],local_.pairdom_nrlen[ij]);
+      psio_read(PSIF_CC_INFO, "Local Transformation Matrix (W)", (char *) local_.W[ij][0],
+        local_.pairdom_len[ij]*local_.pairdom_nrlen[ij]*sizeof(double), next, &next);
     }
 
   global_dpd_->file2_mat_init(T1);
@@ -135,33 +133,33 @@ void CCEnergyWavefunction::local_filter_T1(dpdfile2 *T1)
   for(i=0; i<nocc; i++) {
     ii = i*nocc + i;  /* diagonal element of pair matrices */
 
-    if(!local.pairdom_len[ii]) {
+    if(!local_.pairdom_len[ii]) {
       outfile->Printf( "\n\tlocal_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n",ii);
       throw PsiException("local_filter_T1: Pair ii is zero-length, which makes no sense.", __FILE__, __LINE__);
     }
 
-    T1tilde = init_array(local.pairdom_len[ii]);
-    T1bar = init_array(local.pairdom_nrlen[ii]);
+    T1tilde = init_array(local_.pairdom_len[ii]);
+    T1bar = init_array(local_.pairdom_nrlen[ii]);
 
     /* Transform the virtuals to the redundant projected virtual basis */
-    C_DGEMV('t', nvir, local.pairdom_len[ii], 1.0, &(local.V[ii][0][0]), local.pairdom_len[ii], 
+    C_DGEMV('t', nvir, local_.pairdom_len[ii], 1.0, &(local_.V[ii][0][0]), local_.pairdom_len[ii],
 	    &(T1->matrix[0][i][0]), 1, 0.0, &(T1tilde[0]), 1);
 
     /* Transform the virtuals to the non-redundant virtual basis */
-    C_DGEMV('t', local.pairdom_len[ii], local.pairdom_nrlen[ii], 1.0, &(local.W[ii][0][0]), local.pairdom_nrlen[ii], 
+    C_DGEMV('t', local_.pairdom_len[ii], local_.pairdom_nrlen[ii], 1.0, &(local_.W[ii][0][0]), local_.pairdom_nrlen[ii],
 	    &(T1tilde[0]), 1, 0.0, &(T1bar[0]), 1);
 
     /* Apply the denominators */
-    for(a=0; a < local.pairdom_nrlen[ii]; a++)
-      T1bar[a] /= (local.eps_occ[i] - local.eps_vir[ii][a]);
+    for(a=0; a < local_.pairdom_nrlen[ii]; a++)
+      T1bar[a] /= (local_.eps_occ[i] - local_.eps_vir[ii][a]);
 
     /* Transform the new T1's to the redundant projected virtual basis */
-    C_DGEMV('n', local.pairdom_len[ii], local.pairdom_nrlen[ii], 1.0, &(local.W[ii][0][0]), local.pairdom_nrlen[ii],
+    C_DGEMV('n', local_.pairdom_len[ii], local_.pairdom_nrlen[ii], 1.0, &(local_.W[ii][0][0]), local_.pairdom_nrlen[ii],
 	    &(T1bar[0]), 1, 0.0, &(T1tilde[0]), 1);
 
 
     /* Transform the new T1's to the MO basis */
-    C_DGEMV('n', nvir, local.pairdom_len[ii], 1.0, &(local.V[ii][0][0]), local.pairdom_len[ii], 
+    C_DGEMV('n', nvir, local_.pairdom_len[ii], 1.0, &(local_.V[ii][0][0]), local_.pairdom_len[ii],
 	    &(T1tilde[0]), 1, 0.0, &(T1->matrix[0][i][0]), 1);
 
     free(T1bar);
@@ -173,17 +171,17 @@ void CCEnergyWavefunction::local_filter_T1(dpdfile2 *T1)
   global_dpd_->file2_mat_close(T1);
 
   for(ij=0; ij<nocc*nocc; ij++) {
-      free_block(local.W[ij]);
-      free_block(local.V[ij]);
-      free(local.eps_vir[ij]);
+      free_block(local_.W[ij]);
+      free_block(local_.V[ij]);
+      free(local_.eps_vir[ij]);
     }
-  free(local.W);
-  free(local.V);
-  free(local.eps_vir);
+  free(local_.W);
+  free(local_.V);
+  free(local_.eps_vir);
 
-  free(local.eps_occ);
-  free(local.pairdom_len);
-  free(local.pairdom_nrlen);
+  free(local_.eps_occ);
+  free(local_.pairdom_len);
+  free(local_.pairdom_nrlen);
 /*   free(local.weak_pairs); */
 }
 
@@ -194,43 +192,43 @@ void CCEnergyWavefunction::local_filter_T2(dpdbuf4 *T2)
   double **X1, **X2, **T2tilde, **T2bar;
   psio_address next;
 
-  nso = local.nso;
-  nocc = local.nocc;
-  nvir = local.nvir;
+  nso = local_.nso;
+  nocc = local_.nocc;
+  nvir = local_.nvir;
 
 /*   local.weak_pairs = init_int_array(nocc*nocc); */
-  local.pairdom_len = init_int_array(nocc*nocc);
-  local.pairdom_nrlen = init_int_array(nocc*nocc);
-  local.eps_occ = init_array(nocc);
+  local_.pairdom_len = init_int_array(nocc*nocc);
+  local_.pairdom_nrlen = init_int_array(nocc*nocc);
+  local_.eps_occ = init_array(nocc);
 /*   psio_read_entry(CC_INFO, "Local Weak Pairs", (char *) local.weak_pairs, */
 /* 		  local.nocc*local.nocc*sizeof(int)); */
-  psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *) local.pairdom_len,
+  psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *) local_.pairdom_len,
 		  nocc*nocc*sizeof(int));
-  psio_read_entry(PSIF_CC_INFO, "Local Pair Domain NR Length", (char *) local.pairdom_nrlen,
+  psio_read_entry(PSIF_CC_INFO, "Local Pair Domain NR Length", (char *) local_.pairdom_nrlen,
 		  nocc*nocc*sizeof(int));
-  psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) local.eps_occ,
+  psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) local_.eps_occ,
 		  nocc*sizeof(double));
 
-  local.W = (double ***) malloc(nocc * nocc * sizeof(double **));
-  local.V = (double ***) malloc(nocc * nocc * sizeof(double **));
-  local.eps_vir = (double **) malloc(nocc * nocc * sizeof(double *));
+  local_.W = (double ***) malloc(nocc * nocc * sizeof(double **));
+  local_.V = (double ***) malloc(nocc * nocc * sizeof(double **));
+  local_.eps_vir = (double **) malloc(nocc * nocc * sizeof(double *));
   next = PSIO_ZERO;
   for(ij=0; ij < nocc*nocc; ij++) {
-      local.eps_vir[ij] = init_array(local.pairdom_nrlen[ij]);
-      psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *) local.eps_vir[ij],
-		local.pairdom_nrlen[ij]*sizeof(double), next, &next);
+      local_.eps_vir[ij] = init_array(local_.pairdom_nrlen[ij]);
+      psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *) local_.eps_vir[ij],
+        local_.pairdom_nrlen[ij]*sizeof(double), next, &next);
     }
   next = PSIO_ZERO;
   for(ij=0; ij < nocc*nocc; ij++) {
-      local.V[ij] = block_matrix(nvir,local.pairdom_len[ij]);
-      psio_read(PSIF_CC_INFO, "Local Residual Vector (V)", (char *) local.V[ij][0],
-		nvir*local.pairdom_len[ij]*sizeof(double), next, &next);
+      local_.V[ij] = block_matrix(nvir,local_.pairdom_len[ij]);
+      psio_read(PSIF_CC_INFO, "Local Residual Vector (V)", (char *) local_.V[ij][0],
+        nvir*local_.pairdom_len[ij]*sizeof(double), next, &next);
     }
   next = PSIO_ZERO;
   for(ij=0; ij < nocc*nocc; ij++) {
-      local.W[ij] = block_matrix(local.pairdom_len[ij],local.pairdom_nrlen[ij]);
-      psio_read(PSIF_CC_INFO, "Local Transformation Matrix (W)", (char *) local.W[ij][0],
-		local.pairdom_len[ij]*local.pairdom_nrlen[ij]*sizeof(double), next, &next);
+      local_.W[ij] = block_matrix(local_.pairdom_len[ij],local_.pairdom_nrlen[ij]);
+      psio_read(PSIF_CC_INFO, "Local Transformation Matrix (W)", (char *) local_.W[ij][0],
+        local_.pairdom_len[ij]*local_.pairdom_nrlen[ij]*sizeof(double), next, &next);
     }
 
   /* Grab the MO-basis T2's */
@@ -245,37 +243,37 @@ void CCEnergyWavefunction::local_filter_T2(dpdbuf4 *T2)
   for(i=0,ij=0; i<nocc; i++) {
     for(j=0; j<nocc; j++,ij++) {
  
-      if(!local.weak_pairs[ij]) {
+      if(!local_.weak_pairs[ij]) {
 
 	/* Transform the virtuals to the redundant projected virtual basis */
-	C_DGEMM('t', 'n', local.pairdom_len[ij], nvir, nvir, 1.0, &(local.V[ij][0][0]), local.pairdom_len[ij],
+    C_DGEMM('t', 'n', local_.pairdom_len[ij], nvir, nvir, 1.0, &(local_.V[ij][0][0]), local_.pairdom_len[ij],
 		&(T2->matrix[0][ij][0]), nvir, 0.0, &(X1[0][0]), nvir);
-	C_DGEMM('n', 'n', local.pairdom_len[ij], local.pairdom_len[ij], nvir, 1.0, &(X1[0][0]), nvir,
-		&(local.V[ij][0][0]), local.pairdom_len[ij], 0.0, &(T2tilde[0][0]), nso);
+    C_DGEMM('n', 'n', local_.pairdom_len[ij], local_.pairdom_len[ij], nvir, 1.0, &(X1[0][0]), nvir,
+        &(local_.V[ij][0][0]), local_.pairdom_len[ij], 0.0, &(T2tilde[0][0]), nso);
 
 	/* Transform the virtuals to the non-redundant virtual basis */
-	C_DGEMM('t', 'n', local.pairdom_nrlen[ij], local.pairdom_len[ij], local.pairdom_len[ij], 1.0,
-		&(local.W[ij][0][0]), local.pairdom_nrlen[ij], &(T2tilde[0][0]), nso, 0.0, &(X2[0][0]), nso);
-	C_DGEMM('n', 'n', local.pairdom_nrlen[ij], local.pairdom_nrlen[ij], local.pairdom_len[ij], 1.0,
-		&(X2[0][0]), nso, &(local.W[ij][0][0]), local.pairdom_nrlen[ij], 0.0, &(T2bar[0][0]), nvir);
+    C_DGEMM('t', 'n', local_.pairdom_nrlen[ij], local_.pairdom_len[ij], local_.pairdom_len[ij], 1.0,
+        &(local_.W[ij][0][0]), local_.pairdom_nrlen[ij], &(T2tilde[0][0]), nso, 0.0, &(X2[0][0]), nso);
+    C_DGEMM('n', 'n', local_.pairdom_nrlen[ij], local_.pairdom_nrlen[ij], local_.pairdom_len[ij], 1.0,
+        &(X2[0][0]), nso, &(local_.W[ij][0][0]), local_.pairdom_nrlen[ij], 0.0, &(T2bar[0][0]), nvir);
 
 	/* Divide the new amplitudes by the denominators */
-	for(a=0; a < local.pairdom_nrlen[ij]; a++)
-	  for(b=0; b < local.pairdom_nrlen[ij]; b++)
-	    T2bar[a][b] /= (local.eps_occ[i] + local.eps_occ[j]
-			    - local.eps_vir[ij][a] - local.eps_vir[ij][b]);
+    for(a=0; a < local_.pairdom_nrlen[ij]; a++)
+      for(b=0; b < local_.pairdom_nrlen[ij]; b++)
+        T2bar[a][b] /= (local_.eps_occ[i] + local_.eps_occ[j]
+                - local_.eps_vir[ij][a] - local_.eps_vir[ij][b]);
 
 	/* Transform the new T2's to the redundant virtual basis */
-	C_DGEMM('n', 'n', local.pairdom_len[ij], local.pairdom_nrlen[ij], local.pairdom_nrlen[ij], 1.0,
-		&(local.W[ij][0][0]), local.pairdom_nrlen[ij], &(T2bar[0][0]), nvir, 0.0, &(X1[0][0]), nvir);
-	C_DGEMM('n','t', local.pairdom_len[ij], local.pairdom_len[ij], local.pairdom_nrlen[ij], 1.0,
-		&(X1[0][0]), nvir, &(local.W[ij][0][0]), local.pairdom_nrlen[ij], 0.0, &(T2tilde[0][0]), nso);
+    C_DGEMM('n', 'n', local_.pairdom_len[ij], local_.pairdom_nrlen[ij], local_.pairdom_nrlen[ij], 1.0,
+        &(local_.W[ij][0][0]), local_.pairdom_nrlen[ij], &(T2bar[0][0]), nvir, 0.0, &(X1[0][0]), nvir);
+    C_DGEMM('n','t', local_.pairdom_len[ij], local_.pairdom_len[ij], local_.pairdom_nrlen[ij], 1.0,
+        &(X1[0][0]), nvir, &(local_.W[ij][0][0]), local_.pairdom_nrlen[ij], 0.0, &(T2tilde[0][0]), nso);
 
 	/* Transform the new T2's to the MO basis */
-	C_DGEMM('n', 'n', nvir, local.pairdom_len[ij], local.pairdom_len[ij], 1.0,
-		&(local.V[ij][0][0]), local.pairdom_len[ij], &(T2tilde[0][0]), nso, 0.0, &(X2[0][0]), nso);
-	C_DGEMM('n', 't', nvir, nvir, local.pairdom_len[ij], 1.0, &(X2[0][0]), nso,
-		&(local.V[ij][0][0]), local.pairdom_len[ij], 0.0, &(T2->matrix[0][ij][0]), nvir);
+    C_DGEMM('n', 'n', nvir, local_.pairdom_len[ij], local_.pairdom_len[ij], 1.0,
+        &(local_.V[ij][0][0]), local_.pairdom_len[ij], &(T2tilde[0][0]), nso, 0.0, &(X2[0][0]), nso);
+    C_DGEMM('n', 't', nvir, nvir, local_.pairdom_len[ij], 1.0, &(X2[0][0]), nso,
+        &(local_.V[ij][0][0]), local_.pairdom_len[ij], 0.0, &(T2->matrix[0][ij][0]), nvir);
       }
       else  /* This must be a neglected weak pair; force it to zero */
 	memset((void *) T2->matrix[0][ij], 0, nvir*nvir*sizeof(double));
@@ -293,17 +291,17 @@ void CCEnergyWavefunction::local_filter_T2(dpdbuf4 *T2)
   global_dpd_->buf4_mat_irrep_close(T2, 0);
 
   for(i=0; i<nocc*nocc; i++) {
-      free_block(local.W[i]);
-      free_block(local.V[i]);
-      free(local.eps_vir[i]);
+      free_block(local_.W[i]);
+      free_block(local_.V[i]);
+      free(local_.eps_vir[i]);
     }
-  free(local.W);
-  free(local.V);
-  free(local.eps_vir);
+  free(local_.W);
+  free(local_.V);
+  free(local_.eps_vir);
 
-  free(local.eps_occ);
-  free(local.pairdom_len);
-  free(local.pairdom_nrlen);
+  free(local_.eps_occ);
+  free(local_.pairdom_len);
+  free(local_.pairdom_nrlen);
 /*   free(local.weak_pairs); */
 }
 }} // namespace psi::ccenergy

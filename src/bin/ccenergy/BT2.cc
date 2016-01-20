@@ -35,8 +35,6 @@
 #include "Params.h"
 #include "MOInfo.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -56,8 +54,8 @@ void CCEnergyWavefunction::BT2(void)
   int nrows, ncols, nlinks;
   psio_address next;
 
-  if(params.ref == 0) { /** RHF **/
-    if(params.df){
+  if(params_.ref == 0) { /** RHF **/
+    if(params_.df){
       dpdbuf4 B;
       // Transpose, for faster DAXPY operations inside contract444_df
       global_dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
@@ -75,7 +73,7 @@ void CCEnergyWavefunction::BT2(void)
       global_dpd_->buf4_close(&Z1);
       global_dpd_->buf4_close(&B);
       global_dpd_->buf4_close(&tauIjAb);
-    }else if(params.abcd == "OLD") {
+    }else if(params_.abcd == "OLD") {
 #ifdef TIME_CCENERGY
       timer_on("ABCD:old");
 #endif
@@ -91,7 +89,7 @@ void CCEnergyWavefunction::BT2(void)
       timer_off("ABCD:old");
 #endif
     }
-    else if(params.abcd == "NEW") {
+    else if(params_.abcd == "NEW") {
 
 #ifdef TIME_CCENERGY
       timer_on("ABCD:new");
@@ -128,11 +126,11 @@ void CCEnergyWavefunction::BT2(void)
       global_dpd_->buf4_init(&tau, PSIF_CC_TAMPS, 0, 3, 8, 3, 8, 0, "tau(+)(ij,ab)");
       global_dpd_->buf4_mat_irrep_init(&tau, 0);
       global_dpd_->buf4_mat_irrep_rd(&tau, 0);
-      tau_diag = global_dpd_->dpd_block_matrix(tau.params->rowtot[0], moinfo.nvirt);
+      tau_diag = global_dpd_->dpd_block_matrix(tau.params->rowtot[0], moinfo_.nvirt);
       for(ij=0; ij < tau.params->rowtot[0]; ij++)
-	for(Gc=0; Gc < moinfo.nirreps; Gc++)
-	  for(C=0; C < moinfo.virtpi[Gc]; C++) {
-	    c = C + moinfo.vir_off[Gc];
+    for(Gc=0; Gc < moinfo_.nirreps; Gc++)
+      for(C=0; C < moinfo_.virtpi[Gc]; C++) {
+        c = C + moinfo_.vir_off[Gc];
 	    cc = tau.params->colidx[c][c];
 	    tau_diag[ij][c] = tau.matrix[0][ij][cc];
 	  }
@@ -143,15 +141,15 @@ void CCEnergyWavefunction::BT2(void)
       global_dpd_->buf4_mat_irrep_init(&S, 0);
       global_dpd_->buf4_mat_irrep_rd(&S, 0);
 
-      rows_per_bucket = dpd_memfree()/(B_s.params->coltot[0] + moinfo.nvirt);
+      rows_per_bucket = dpd_memfree()/(B_s.params->coltot[0] + moinfo_.nvirt);
       if(rows_per_bucket > B_s.params->rowtot[0]) rows_per_bucket = B_s.params->rowtot[0];
       nbuckets = (int) ceil((double) B_s.params->rowtot[0]/(double) rows_per_bucket);
       rows_left = B_s.params->rowtot[0] % rows_per_bucket;
 
-      B_diag = global_dpd_->dpd_block_matrix(rows_per_bucket, moinfo.nvirt);
+      B_diag = global_dpd_->dpd_block_matrix(rows_per_bucket, moinfo_.nvirt);
       next = PSIO_ZERO;
       ncols = tau.params->rowtot[0];
-      nlinks = moinfo.nvirt;
+      nlinks = moinfo_.nvirt;
       for(m=0; m < (rows_left ? nbuckets-1:nbuckets); m++) {
 	row_start = m * rows_per_bucket;
 	nrows = rows_per_bucket;
@@ -175,8 +173,8 @@ void CCEnergyWavefunction::BT2(void)
       global_dpd_->buf4_mat_irrep_close(&S, 0);
       global_dpd_->buf4_close(&S);
       global_dpd_->buf4_close(&B_s);
-      global_dpd_->free_dpd_block(B_diag, rows_per_bucket, moinfo.nvirt);
-      global_dpd_->free_dpd_block(tau_diag, tau.params->rowtot[0], moinfo.nvirt);
+      global_dpd_->free_dpd_block(B_diag, rows_per_bucket, moinfo_.nvirt);
+      global_dpd_->free_dpd_block(tau_diag, tau.params->rowtot[0], moinfo_.nvirt);
       global_dpd_->buf4_close(&tau);
 
 #ifdef TIME_CCENERGY
@@ -208,7 +206,7 @@ void CCEnergyWavefunction::BT2(void)
 #endif
     }
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
 
     global_dpd_->buf4_init(&newtIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
     global_dpd_->buf4_init(&newtijab, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tijab");
@@ -259,7 +257,7 @@ void CCEnergyWavefunction::BT2(void)
     global_dpd_->buf4_close(&newtIjAb);
 
   }
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
 
     global_dpd_->buf4_init(&newtIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
     global_dpd_->buf4_init(&newtijab, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");

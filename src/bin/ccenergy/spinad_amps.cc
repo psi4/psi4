@@ -31,8 +31,6 @@
 #include <psifiles.h>
 #include "Params.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -60,7 +58,7 @@ void CCEnergyWavefunction::spinad_amps(void)
   dpdfile2 T1, F;
   dpdbuf4 T2AB1, T2AB2, T2, W, W1, W2;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
 
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_copy(&T1, PSIF_CC_OEI, "tia");
@@ -82,7 +80,7 @@ void CCEnergyWavefunction::spinad_amps(void)
     global_dpd_->buf4_copy(&T2AB1, PSIF_CC_TAMPS, "tijab");
     global_dpd_->buf4_close(&T2AB1);
 
-    if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
+    if(params_.wfn == "CC2" || params_.wfn == "EOM_CC2") {
 
       /*** Wmbej intermediates ***/
       global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");

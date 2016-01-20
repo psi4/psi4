@@ -35,8 +35,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -70,7 +68,7 @@ void CCEnergyWavefunction::diis_UHF(int iter)
   double **B, *C, **vector;
   double product, determinant, maximum;
 
-  nirreps = moinfo.nirreps;
+  nirreps = moinfo_.nirreps;
 
   /* Compute the length of a single error vector */
   global_dpd_->file2_init(&T1a, PSIF_CC_TMP0, 0, 0, 1, "tIA");

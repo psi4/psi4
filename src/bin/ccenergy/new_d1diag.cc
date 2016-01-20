@@ -33,8 +33,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -42,9 +40,7 @@ namespace psi { namespace ccenergy {
  * published.
  * */
 
-double d1diag_t1_rhf(void);
-
-static double new_d1diag_t1_rohf(void)
+double CCEnergyWavefunction::new_d1diag_t1_rohf(void)
 {
   int h, nirreps, i, j;
   int nclsd, nuocc, nopen;
@@ -53,7 +49,7 @@ static double new_d1diag_t1_rohf(void)
   double max_hp=0.0, max_xp=0.0, max_hx=0.0, max;
   dpdfile2 T1_a, T1_b;
 
-  nirreps = moinfo.nirreps;
+  nirreps = moinfo_.nirreps;
 
   global_dpd_->file2_init(&T1_a, PSIF_CC_OEI, 0, 0, 1, "tIA");
   global_dpd_->file2_mat_init(&T1_a);
@@ -64,9 +60,9 @@ static double new_d1diag_t1_rohf(void)
   global_dpd_->file2_mat_rd(&T1_b);
 
   for(h=0; h < nirreps; h++) {
-    nclsd = moinfo.clsdpi[h];
-    nuocc = moinfo.uoccpi[h];
-    nopen = moinfo.openpi[h];
+    nclsd = moinfo_.clsdpi[h];
+    nuocc = moinfo_.uoccpi[h];
+    nopen = moinfo_.openpi[h];
 
     if(nclsd && nuocc) {
       T1_hp = block_matrix(nclsd, nuocc);
@@ -154,10 +150,10 @@ double CCEnergyWavefunction::new_d1diag(void)
 {
   double norm = 0.0;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     norm = d1diag_t1_rhf();
   }
-  else if (params.ref == 1) { /** ROHF **/
+  else if (params_.ref == 1) { /** ROHF **/
     norm = new_d1diag_t1_rohf();
   }
   return norm;

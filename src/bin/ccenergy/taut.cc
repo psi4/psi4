@@ -30,8 +30,6 @@
 #include "Params.h"
 #include "MOInfo.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -44,9 +42,9 @@ void CCEnergyWavefunction::taut_build(void)
   dpdbuf4 tIJAB, tijab, tIjAb;
   dpdfile2 tIA, tia;
 
-  nirreps = moinfo.nirreps;
+  nirreps = moinfo_.nirreps;
 
-  if(params.ref == 0) { /*** RHF ***/
+  if(params_.ref == 0) { /*** RHF ***/
 
     global_dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
     global_dpd_->buf4_copy(&tIjAb, PSIF_CC_TAMPS, "tautIjAb");
@@ -95,7 +93,7 @@ void CCEnergyWavefunction::taut_build(void)
     global_dpd_->file2_close(&tIA);
 
   }
-  else if(params.ref == 1) { /*** ROHF ***/
+  else if(params_.ref == 1) { /*** ROHF ***/
 
     global_dpd_->buf4_init(&tIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
     global_dpd_->buf4_copy(&tIJAB, PSIF_CC_TAMPS, "tautIJAB");
@@ -233,7 +231,7 @@ void CCEnergyWavefunction::taut_build(void)
     global_dpd_->file2_close(&tia);
 
   }
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
 
     global_dpd_->buf4_init(&tIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
     global_dpd_->buf4_copy(&tIJAB, PSIF_CC_TAMPS, "tautIJAB");

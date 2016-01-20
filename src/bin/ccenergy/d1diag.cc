@@ -33,8 +33,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -50,13 +48,13 @@ namespace psi { namespace ccenergy {
  *
  * */
 
-double d1diag_t1_rhf(void)
+double CCEnergyWavefunction::d1diag_t1_rhf(void)
 {
   int h, nirreps, i;
   double **T, **C, *E, max;
   dpdfile2 T1;
 
-  nirreps = moinfo.nirreps;
+  nirreps = moinfo_.nirreps;
   max = 0.0;
 
   global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
@@ -140,15 +138,14 @@ d1diag_subblock(double **Tave, int row0, int rown, int col0, int coln)
   return max;
 }
 
-static double
-d1diag_t1_rohf()
+double CCEnergyWavefunction::d1diag_t1_rohf()
 {
   int h, nirreps, i, j;
   double **Tave, tmp, max;
   double max_ph=0.0, max_xp=0.0, max_hx=0.0;
   dpdfile2 T1_a, T1_b;
 
-  nirreps = moinfo.nirreps;
+  nirreps = moinfo_.nirreps;
 
   global_dpd_->file2_init(&T1_a, PSIF_CC_OEI, 0, 0, 1, "tia");
   global_dpd_->file2_mat_init(&T1_a);
@@ -161,7 +158,7 @@ d1diag_t1_rohf()
   for(h=0; h < nirreps; h++) {
       int nrow = T1_a.params->rowtot[h];
       int ncol = T1_a.params->coltot[h];
-      int nopen = moinfo.openpi[h];
+      int nopen = moinfo_.openpi[h];
       if(nrow && ncol) {
          Tave = block_matrix(nrow, ncol);
 
@@ -209,10 +206,10 @@ double CCEnergyWavefunction::d1diag(void)
 {
   double norm = 0.0;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     norm = d1diag_t1_rhf();
   }
-  else if (params.ref == 1) { /** ROHF **/
+  else if (params_.ref == 1) { /** ROHF **/
     norm = d1diag_t1_rohf();
   }
   return norm;

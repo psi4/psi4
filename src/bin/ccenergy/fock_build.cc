@@ -33,8 +33,6 @@
 #include <psifiles.h>
 #include "MOInfo.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 #include <libmints/wavefunction.h>
 #include <libtrans/mospace.h>
@@ -54,7 +52,7 @@ void CCEnergyWavefunction::rhf_fock_build(double **fock, double  **D)
   Label *lblptr;
   struct iwlbuf InBuf;
 
-  nso = moinfo.nso;
+  nso = moinfo_.nso;
   ntri = nso * (nso+1)/2;
 
   double **H = Process::environment.wavefunction()->H()->to_block_matrix();
@@ -193,7 +191,7 @@ void CCEnergyWavefunction::uhf_fock_build(double **fock_a, double **fock_b, doub
   struct iwlbuf InBuf;
   double **Dt;
 
-  nso = moinfo.nso;
+  nso = moinfo_.nso;
   ntri = nso * (nso+1)/2;
   ntei = ntri * (ntri+1)/2;
 
