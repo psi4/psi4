@@ -70,11 +70,14 @@ CCEnergyWavefunction::CCEnergyWavefunction(boost::shared_ptr<Wavefunction> refer
 {
     set_reference_wavefunction(reference_wavefunction);
     init();
+    #define NUM_ENTRIES 113
+    cache_priority_list_ = new dpd_file4_cache_entry[NUM_ENTRIES];
 }
 
 CCEnergyWavefunction::~CCEnergyWavefunction()
 {
-
+    if(cache_priority_list_)
+        delete [] cache_priority_list_;
 }
 
 void CCEnergyWavefunction::init()
@@ -113,7 +116,6 @@ PsiReturnType CCEnergyWavefunction::run_ccenergy(Options &options)
     double **geom, *zvals, value;
     FILE *efile;
     int **cachelist, *cachefiles;
-    struct dpd_file4_cache_entry *priority;
     dpdfile2 t1;
     dpdbuf4 t2;
     double *emp2_aa, *emp2_ab, *ecc_aa, *ecc_ab, tval;
@@ -151,7 +153,7 @@ PsiReturnType CCEnergyWavefunction::run_ccenergy(Options &options)
         dpd_set_default(0);
 
         if( params_.df ){
-            form_df_ints(options, cachelist, cachefiles, priority);
+            form_df_ints(options, cachelist, cachefiles, cache_priority_list_);
         }else if( params_.aobasis != "NONE" ) { /* Set up new DPD's for AO-basis algorithm */
             std::vector<int*> aospaces;
             aospaces.push_back(moinfo_.aoccpi);
@@ -170,17 +172,17 @@ PsiReturnType CCEnergyWavefunction::run_ccenergy(Options &options)
     else { /** RHF or ROHF **/
         cachelist = cacheprep_rhf(params_.cachelev, cachefiles);
 
-        priority = priority_list();
+        init_priority_list();
         std::vector<int*> spaces;
         spaces.push_back(moinfo_.occpi);
         spaces.push_back(moinfo_.occ_sym);
         spaces.push_back(moinfo_.virtpi);
         spaces.push_back(moinfo_.vir_sym);
 
-        dpd_init(0, moinfo_.nirreps, params_.memory, params_.cachetype, cachefiles, cachelist, priority, 2, spaces);
+        dpd_init(0, moinfo_.nirreps, params_.memory, params_.cachetype, cachefiles, cachelist, cache_priority_list_, 2, spaces);
 
         if( params_.df ){
-            form_df_ints(options, cachelist, cachefiles, priority);
+            form_df_ints(options, cachelist, cachefiles, cache_priority_list_);
         }else if( params_.aobasis != "NONE") { /* Set up new DPD for AO-basis algorithm */
             std::vector<int*> aospaces;
             aospaces.push_back(moinfo_.occpi);
