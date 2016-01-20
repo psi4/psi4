@@ -28,9 +28,6 @@
 #include <libqt/qt.h>
 #include "Params.h"
 #include "ccwave.h"
-#define EXTERN
-#include "MOInfo.h"
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -42,21 +39,19 @@ namespace psi { namespace ccenergy {
 ** TDC, Feb 2004
 */
 
-void purge_cc2_Wmnij(void);
-
 void CCEnergyWavefunction::cc2_Wmnij_build(void)
 {
   dpdbuf4 A, E, D, Z, W, Z1, X;
   dpdfile2 t1, tIA, tia;
 
   timer_on("A->Wmnij");
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     /* Wmnij <- <mn||ij> */
     global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
     global_dpd_->buf4_copy(&A, PSIF_CC2_HET1, "CC2 WMnIj");
     global_dpd_->buf4_close(&A);
   }
-  else if (params.ref == 1) { /** ROHF **/
+  else if (params_.ref == 1) { /** ROHF **/
     /** W(M>N,I>J) <--- <MN||IJ> **/
     /** W(m>n,i>j) <--- <mn||ij> **/
     global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 2, 2, 0, 0, 1, "A <ij|kl>");
@@ -69,7 +64,7 @@ void CCEnergyWavefunction::cc2_Wmnij_build(void)
     global_dpd_->buf4_copy(&A, PSIF_CC2_HET1, "CC2 WMnIj");
     global_dpd_->buf4_close(&A);
   }
-  else if (params.ref == 2) { /** UHF **/
+  else if (params_.ref == 2) { /** UHF **/
     /** W(M>N,I>J) <--- <MN||IJ> **/
     global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 2, 2, 0, 0, 1, "A <IJ|KL>");
     global_dpd_->buf4_copy(&A, PSIF_CC2_HET1, "CC2 WMNIJ (M>N,I>J)");
@@ -88,7 +83,7 @@ void CCEnergyWavefunction::cc2_Wmnij_build(void)
   timer_off("A->Wmnij");
 
   timer_on("E->Wmnij");
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
 
     global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
 
@@ -106,7 +101,7 @@ void CCEnergyWavefunction::cc2_Wmnij_build(void)
 
     global_dpd_->file2_close(&t1);
   }
-  else if (params.ref == 1) { /** ROHF **/
+  else if (params_.ref == 1) { /** ROHF **/
 
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
@@ -160,7 +155,7 @@ void CCEnergyWavefunction::cc2_Wmnij_build(void)
     global_dpd_->file2_close(&tIA);
     global_dpd_->file2_close(&tia);
   }
-  else if (params.ref == 2) { /** UHF **/
+  else if (params_.ref == 2) { /** UHF **/
 
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 2, 3, "tia");
@@ -217,7 +212,7 @@ void CCEnergyWavefunction::cc2_Wmnij_build(void)
   timer_off("E->Wmnij");
 
   timer_on("D->Wmnij");
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
 
     global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
 
@@ -238,7 +233,7 @@ void CCEnergyWavefunction::cc2_Wmnij_build(void)
 
     global_dpd_->file2_close(&t1);
   }
-  else if (params.ref == 1) { /** ROHF **/
+  else if (params_.ref == 1) { /** ROHF **/
 
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
@@ -281,7 +276,7 @@ void CCEnergyWavefunction::cc2_Wmnij_build(void)
 
     purge_cc2_Wmnij();
   }
-  else if (params.ref == 2) { /** UHF **/
+  else if (params_.ref == 2) { /** UHF **/
 
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 2, 3, "tia");
@@ -327,7 +322,7 @@ void CCEnergyWavefunction::cc2_Wmnij_build(void)
 }
 
 
-void purge_cc2_Wmnij(void) {
+void CCEnergyWavefunction::purge_cc2_Wmnij(void) {
   dpdfile2 FAE, Fmi, FME, Fme;
   dpdfile4 W;
   int *occpi, *virtpi;
@@ -339,11 +334,11 @@ void purge_cc2_Wmnij(void) {
   int *occ_sym, *vir_sym;
   int *openpi, nirreps;
 
-  nirreps = moinfo.nirreps;
-  occpi = moinfo.occpi; virtpi = moinfo.virtpi;
-  occ_off = moinfo.occ_off; vir_off = moinfo.vir_off;
-  occ_sym = moinfo.occ_sym; vir_sym = moinfo.vir_sym;
-  openpi = moinfo.openpi;
+  nirreps = moinfo_.nirreps;
+  occpi = moinfo_.occpi; virtpi = moinfo_.virtpi;
+  occ_off = moinfo_.occ_off; vir_off = moinfo_.vir_off;
+  occ_sym = moinfo_.occ_sym; vir_sym = moinfo_.vir_sym;
+  openpi = moinfo_.openpi;
 
   /* Purge Wmnij matrix elements */
   global_dpd_->file4_init(&W, PSIF_CC2_HET1, 0, 2, 2,"CC2 Wmnij (m>n,i>j)");

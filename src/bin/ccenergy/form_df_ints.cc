@@ -36,8 +36,6 @@
 #include "libtrans/mospace.h"
 #include "lib3index/3index.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -87,31 +85,31 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
      * Set up the DPD machinery
      */
     std::vector<int*> aospaces;
-    if(params.ref == 2){ // UHF
-        aospaces.push_back(moinfo.aoccpi);
-        aospaces.push_back(moinfo.aocc_sym);
-        aospaces.push_back(moinfo.sopi);
-        aospaces.push_back(moinfo.sosym);
-        aospaces.push_back(moinfo.boccpi);
-        aospaces.push_back(moinfo.bocc_sym);
-        aospaces.push_back(moinfo.sopi);
-        aospaces.push_back(moinfo.sosym);
-        aospaces.push_back(moinfo.avirtpi);
-        aospaces.push_back(moinfo.avir_sym);
-        aospaces.push_back(moinfo.bvirtpi);
-        aospaces.push_back(moinfo.bvir_sym);
+    if(params_.ref == 2){ // UHF
+        aospaces.push_back(moinfo_.aoccpi);
+        aospaces.push_back(moinfo_.aocc_sym);
+        aospaces.push_back(moinfo_.sopi);
+        aospaces.push_back(moinfo_.sosym);
+        aospaces.push_back(moinfo_.boccpi);
+        aospaces.push_back(moinfo_.bocc_sym);
+        aospaces.push_back(moinfo_.sopi);
+        aospaces.push_back(moinfo_.sosym);
+        aospaces.push_back(moinfo_.avirtpi);
+        aospaces.push_back(moinfo_.avir_sym);
+        aospaces.push_back(moinfo_.bvirtpi);
+        aospaces.push_back(moinfo_.bvir_sym);
     }else{ // R(O)HF
-        aospaces.push_back(moinfo.occpi);
-        aospaces.push_back(moinfo.occ_sym);
-        aospaces.push_back(moinfo.sopi);
-        aospaces.push_back(moinfo.sosym);
-        aospaces.push_back(moinfo.virtpi);
-        aospaces.push_back(moinfo.vir_sym);
+        aospaces.push_back(moinfo_.occpi);
+        aospaces.push_back(moinfo_.occ_sym);
+        aospaces.push_back(moinfo_.sopi);
+        aospaces.push_back(moinfo_.sosym);
+        aospaces.push_back(moinfo_.virtpi);
+        aospaces.push_back(moinfo_.vir_sym);
     }
-    int *dforbspi = new int[moinfo.nirreps];
-    int *dummyorbspi = new int[moinfo.nirreps];
+    int *dforbspi = new int[moinfo_.nirreps];
+    int *dummyorbspi = new int[moinfo_.nirreps];
     int count = 0;
-    for(int h = 0; h < moinfo.nirreps; ++h){
+    for(int h = 0; h < moinfo_.nirreps; ++h){
         dummyorbspi[h] = 0;
         int norb = dfAOtoSO->coldim(h);
         dforbspi[h] = norb;
@@ -122,7 +120,7 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
     int *dummyorbsym = new int[1];
     dummyorbsym[0] = 0;
     count = 0;
-    for(int h = 0; h < moinfo.nirreps; ++h)
+    for(int h = 0; h < moinfo_.nirreps; ++h)
         for(int orb = 0; orb < dforbspi[h]; ++orb)
             dforbsym[count++] = h;
     aospaces.push_back(dforbspi);
@@ -130,7 +128,7 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
     aospaces.push_back(dummyorbspi);
     aospaces.push_back(dummyorbsym);
 
-    dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, aospaces.size()/2, aospaces);
+    dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles, cachelist, NULL, aospaces.size()/2, aospaces);
 
     delete [] dforbspi;
     delete [] dforbsym;
@@ -147,7 +145,7 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
      */
     dpdbuf4 I;
 
-    if(params.ref == 2){
+    if(params_.ref == 2){
         throw PSIEXCEPTION("UHF Density fitting NYI");
     }else{
         // Transform the AO indices to the SO basis
@@ -198,20 +196,20 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
                 for(int Gr=0; Gr < nirreps; Gr++) {
                     // Transform ( Q | SO SO ) -> ( Q | SO V )
                     int Gs = h^Gr;
-                    int nrows = moinfo.sopi[Gr];
-                    int ncols = moinfo.virtpi[Gs];
-                    int nlinks = moinfo.sopi[Gs];
+                    int nrows = moinfo_.sopi[Gr];
+                    int ncols = moinfo_.virtpi[Gs];
+                    int nlinks = moinfo_.sopi[Gs];
                     int rs = I.col_offset[h][Gr];
-                    double **pc4a = moinfo.Cv[Gs];
+                    double **pc4a = moinfo_.Cv[Gs];
                     if(nrows && ncols && nlinks)
                         C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0,  &I.matrix[h][pq][rs],
                                 nlinks, pc4a[0], ncols, 0.0, htints, nbf);
                     // Transform ( Q | SO V ) -> ( Q | O V )
-                    nrows = moinfo.occpi[Gr];
-                    ncols = moinfo.virtpi[Gs];
-                    nlinks = moinfo.sopi[Gr];
+                    nrows = moinfo_.occpi[Gr];
+                    ncols = moinfo_.virtpi[Gs];
+                    nlinks = moinfo_.sopi[Gr];
                     rs = OV.col_offset[h][Gr];
-                    double **pc3a = moinfo.Co[Gr];
+                    double **pc3a = moinfo_.Co[Gr];
                     if(nrows && ncols && nlinks)
                         C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, pc3a[0], nrows,
                                 htints, nbf, 0.0, &OV.matrix[h][pq][rs], ncols);
@@ -238,20 +236,20 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
                 for(int Gr=0; Gr < nirreps; Gr++) {
                     // Transform ( Q | SO SO ) -> ( Q | SO V )
                     int Gs = h^Gr;
-                    int nrows = moinfo.sopi[Gr];
-                    int ncols = moinfo.virtpi[Gs];
-                    int nlinks = moinfo.sopi[Gs];
+                    int nrows = moinfo_.sopi[Gr];
+                    int ncols = moinfo_.virtpi[Gs];
+                    int nlinks = moinfo_.sopi[Gs];
                     int rs = I.col_offset[h][Gr];
-                    double **pc4a = moinfo.Cv[Gs];
+                    double **pc4a = moinfo_.Cv[Gs];
                     if(nrows && ncols && nlinks)
                         C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0,  &I.matrix[h][pq][rs],
                                 nlinks, pc4a[0], ncols, 0.0, htints, nbf);
                     // Transform ( Q | SO V ) -> ( Q | V V )
-                    nrows = moinfo.virtpi[Gr];
-                    ncols = moinfo.virtpi[Gs];
-                    nlinks = moinfo.sopi[Gr];
+                    nrows = moinfo_.virtpi[Gr];
+                    ncols = moinfo_.virtpi[Gs];
+                    nlinks = moinfo_.sopi[Gr];
                     rs = VV.col_offset[h][Gr];
-                    double **pc3a = moinfo.Cv[Gr];
+                    double **pc3a = moinfo_.Cv[Gr];
                     if(nrows && ncols && nlinks)
                         C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, pc3a[0], nrows,
                                 htints, nbf, 0.0, &VV.matrix[h][pq][rs], ncols);

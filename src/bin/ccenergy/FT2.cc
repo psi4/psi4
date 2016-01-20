@@ -32,8 +32,6 @@
 #include "Params.h"
 #include "MOInfo.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -45,7 +43,7 @@ void CCEnergyWavefunction::FT2(void)
     dpdbuf4 Z, X;
     int Gie, Gij, Gab, nrows, ncols, nlinks, Gi, Ge, Gj, i, I;
 
-    if(params.ref == 0) { /** RHF **/
+    if(params_.ref == 0) { /** RHF **/
 
         /*     dpd_buf4_init(&newtIjAb, CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb"); */
 
@@ -67,7 +65,7 @@ void CCEnergyWavefunction::FT2(void)
 
         /* t(ij,ab) <-- t(j,e) * <ie|ab> + t(i,e) * <je|ba> */
         /* OOC code added 3/23/05, TDC */
-        if(params.df){
+        if(params_.df){
             dpdbuf4 OV, VV, Tov, Tovov, Toovv;
             // (Q|ia) = (Q|ea) t_ie
             dpd_set_default(1);
@@ -103,21 +101,21 @@ void CCEnergyWavefunction::FT2(void)
             global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
             global_dpd_->file2_mat_init(&t1);
             global_dpd_->file2_mat_rd(&t1);
-            for(Gie=0; Gie < moinfo.nirreps; Gie++) {
+            for(Gie=0; Gie < moinfo_.nirreps; Gie++) {
                 Gab = Gie; /* F is totally symmetric */
                 Gij = Gab; /* T2 is totally symmetric */
                 global_dpd_->buf4_mat_irrep_init(&X, Gij);
                 ncols = F.params->coltot[Gie];
 
-                for(Gi=0; Gi < moinfo.nirreps; Gi++) {
+                for(Gi=0; Gi < moinfo_.nirreps; Gi++) {
                     Gj = Ge = Gi^Gie; /* T1 is totally symmetric */
 
-                    nlinks = moinfo.virtpi[Ge];
-                    nrows = moinfo.occpi[Gj];
+                    nlinks = moinfo_.virtpi[Ge];
+                    nrows = moinfo_.occpi[Gj];
 
                     global_dpd_->buf4_mat_irrep_init_block(&F, Gie, nlinks);
 
-                    for(i=0; i < moinfo.occpi[Gi]; i++) {
+                    for(i=0; i < moinfo_.occpi[Gi]; i++) {
                         I = F.params->poff[Gi] + i;
                         global_dpd_->buf4_mat_irrep_rd_block(&F, Gie, F.row_offset[Gie][I], nlinks);
 
@@ -142,7 +140,7 @@ void CCEnergyWavefunction::FT2(void)
             global_dpd_->buf4_close(&X);
         }
     }
-    else if(params.ref == 1) { /** ROHF **/
+    else if(params_.ref == 1) { /** ROHF **/
 
         global_dpd_->buf4_init(&newtIJAB, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "New tIJAB");
         global_dpd_->buf4_init(&newtijab, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "New tijab");
@@ -197,7 +195,7 @@ void CCEnergyWavefunction::FT2(void)
         global_dpd_->buf4_close(&newtijab);
         global_dpd_->buf4_close(&newtIjAb);
     }
-    else if(params.ref == 2) { /*** UHF ***/
+    else if(params_.ref == 2) { /*** UHF ***/
 
         global_dpd_->buf4_init(&newtIJAB, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "New tIJAB");
         global_dpd_->buf4_init(&newtijab, PSIF_CC_TAMPS, 0, 10, 17, 12, 17, 0, "New tijab");

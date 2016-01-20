@@ -24,6 +24,10 @@
 #define CCWAVE_H
 
 #include "libdpd/dpd.h"
+#include "MOInfo.h"
+#include "Params.h"
+#include "Local.h"
+
 // Forward declarations
 namespace boost {
 template<class T> class shared_ptr;
@@ -113,6 +117,14 @@ private:
     void checkpoint(void);
     void form_df_ints(Options &options, int **cachelist, int *cachefiles, dpd_file4_cache_entry *priority);
 
+    void purge_cc2_Wmnij(void);
+    void purge_cc2_Wmbij(void);
+    void purge_cc2_Wabei(void);
+    void purge_Wabei(void);
+    void purge_Wmnij(void);
+    void purge_Wmnie(void);
+    void purge_Wmbij(void);
+    void purge_Wamef(void);
     /* local correlation functions */
     void local_filter_T1(dpdfile2 *T1);
     void local_filter_T2(dpdbuf4 *T2);
@@ -143,7 +155,10 @@ private:
     int AO_contribute(struct iwlbuf *InBuf, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO);
 
 
-
+    double d1diag_t1_rhf(void);
+    double d1diag_t1_rohf(void);
+    double d2diag_rhf(void);
+    double new_d1diag_t1_rohf(void);
     double rhf_energy(void);
     double uhf_energy(void);
     double rohf_energy(void);
@@ -154,10 +169,17 @@ private:
     void diis_UHF(int);
     void diis_invert_B(double** B, double* C, int dimension, double tolerance);
 
+    /*
+     * Member variables
+     */
+    int *ioff_;
+    MOInfo moinfo_;
+    Params params_;
+    Local local_;
 
 #define NUM_ENTRIES 113
 
-    dpd_file4_cache_entry list[NUM_ENTRIES];
+    dpd_file4_cache_entry list_[NUM_ENTRIES];
 };
 
 }}

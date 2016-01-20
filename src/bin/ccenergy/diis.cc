@@ -35,8 +35,6 @@
 #include <psifiles.h>
 #include "Params.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -61,9 +59,9 @@ namespace psi { namespace ccenergy {
 
 void CCEnergyWavefunction::diis(int iter)
 {
-  if(params.ref == 0) diis_RHF(iter);
-  else if(params.ref == 1) diis_ROHF(iter);
-  else if(params.ref == 2) diis_UHF(iter);
+  if(params_.ref == 0) diis_RHF(iter);
+  else if(params_.ref == 1) diis_ROHF(iter);
+  else if(params_.ref == 2) diis_UHF(iter);
 
   return;
 }

@@ -31,8 +31,6 @@
 #include <libqt/qt.h>
 #include "Params.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -44,12 +42,12 @@ void CCEnergyWavefunction::Wmnij_build(void)
   dpdbuf4 Eijka, Eijka_anti, Eaijk, Eaijk_anti;
   dpdbuf4 D_anti, D, tauIJAB, tauijab, tauIjAb;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
     global_dpd_->buf4_copy(&A, PSIF_CC_HBAR, "WMnIj");
     global_dpd_->buf4_close(&A);
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
     global_dpd_->buf4_init(&A_anti, PSIF_CC_AINTS, 0, 2, 2, 0, 0, 1, "A <ij|kl>");
     global_dpd_->buf4_copy(&A_anti, PSIF_CC_HBAR, "WMNIJ");
     global_dpd_->buf4_copy(&A_anti, PSIF_CC_HBAR, "Wmnij");
@@ -59,7 +57,7 @@ void CCEnergyWavefunction::Wmnij_build(void)
     global_dpd_->buf4_copy(&A, PSIF_CC_HBAR, "WMnIj");
     global_dpd_->buf4_close(&A);
   }
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
     global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 2, 2, 0, 0, 1, "A <IJ|KL>");
     global_dpd_->buf4_copy(&A, PSIF_CC_HBAR, "WMNIJ");
     global_dpd_->buf4_close(&A);
@@ -73,7 +71,7 @@ void CCEnergyWavefunction::Wmnij_build(void)
     global_dpd_->buf4_close(&A);
   }
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->buf4_init(&WMnIj, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
 
@@ -88,7 +86,7 @@ void CCEnergyWavefunction::Wmnij_build(void)
     global_dpd_->file2_close(&tIA);
     global_dpd_->buf4_close(&WMnIj);
   }
-  else if(params.ref == 1) { /** ROHF **/  
+  else if(params_.ref == 1) { /** ROHF **/
     global_dpd_->buf4_init(&WMNIJ, PSIF_CC_HBAR, 0, 2, 0, 2, 2, 0, "WMNIJ");
     global_dpd_->buf4_init(&Wmnij, PSIF_CC_HBAR, 0, 2, 0, 2, 2, 0, "Wmnij");
     global_dpd_->buf4_init(&WMnIj, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
@@ -128,7 +126,7 @@ void CCEnergyWavefunction::Wmnij_build(void)
     global_dpd_->buf4_close(&Wmnij);
     global_dpd_->buf4_close(&WMnIj);
   }
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
 
     global_dpd_->buf4_init(&WMNIJ, PSIF_CC_HBAR, 0, 2, 0, 2, 2, 0, "WMNIJ");
     global_dpd_->buf4_init(&Wmnij, PSIF_CC_HBAR, 0, 12, 10, 12, 12, 0, "Wmnij");
@@ -173,7 +171,7 @@ void CCEnergyWavefunction::Wmnij_build(void)
 
   }
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->buf4_init(&WMnIj, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
     global_dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
@@ -182,7 +180,7 @@ void CCEnergyWavefunction::Wmnij_build(void)
     global_dpd_->buf4_close(&D);
     global_dpd_->buf4_close(&WMnIj);
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
     global_dpd_->buf4_init(&WMNIJ, PSIF_CC_HBAR, 0, 2, 2, 2, 2, 0, "WMNIJ");
     global_dpd_->buf4_init(&Wmnij, PSIF_CC_HBAR, 0, 2, 2, 2, 2, 0, "Wmnij");
     global_dpd_->buf4_init(&WMnIj, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
@@ -209,7 +207,7 @@ void CCEnergyWavefunction::Wmnij_build(void)
     global_dpd_->buf4_close(&Wmnij);
     global_dpd_->buf4_close(&WMnIj);
   }
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
     global_dpd_->buf4_init(&WMNIJ, PSIF_CC_HBAR, 0, 2, 2, 2, 2, 0, "WMNIJ");
     global_dpd_->buf4_init(&Wmnij, PSIF_CC_HBAR, 0, 12, 12, 12, 12, 0, "Wmnij");
     global_dpd_->buf4_init(&WMnIj, PSIF_CC_HBAR, 0, 22, 22, 22, 22, 0, "WMnIj");

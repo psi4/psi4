@@ -33,8 +33,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -44,7 +42,7 @@ namespace psi { namespace ccenergy {
  *
  * */
 
-double d2diag_rhf(void)
+double CCEnergyWavefunction::d2diag_rhf(void)
 {
   int h, nirreps, i;
   double **Co, *Eo, max;
@@ -53,7 +51,7 @@ double d2diag_rhf(void)
   dpdbuf4 Tijac, Tijbc;
   dpdfile2 To, Tv;
 
-  nirreps = moinfo.nirreps;
+  nirreps = moinfo_.nirreps;
   max = 0.0;
 
   global_dpd_->buf4_init(&Tikab, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
@@ -177,7 +175,7 @@ double CCEnergyWavefunction::d2diag(void)
 {
   double norm = 0.0;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     norm = d2diag_rhf();
   }
   return norm;

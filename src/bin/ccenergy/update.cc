@@ -27,15 +27,13 @@
 #include <cstdio>
 #include "MOInfo.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
 void CCEnergyWavefunction::update(void)
 {
   outfile->Printf("  %4d      %20.15f    %4.3e    %7.6f    %7.6f    %7.6f    %7.6f\n",
-          moinfo.iter,moinfo.ecc,moinfo.conv,moinfo.t1diag,moinfo.d1diag,moinfo.new_d1diag,moinfo.d2diag);
+          moinfo_.iter,moinfo_.ecc,moinfo_.conv,moinfo_.t1diag,moinfo_.d1diag,moinfo_.new_d1diag,moinfo_.d2diag);
   
 }
 }} // namespace psi::ccenergy

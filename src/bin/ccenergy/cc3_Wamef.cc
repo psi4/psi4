@@ -28,8 +28,6 @@
 #include "Params.h"
 #include "MOInfo.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -48,7 +46,7 @@ void CCEnergyWavefunction::cc3_Wamef(void)
   dpdbuf4 F, D, W;
   dpdfile2 t1,tia,tIA;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
 
     global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
     global_dpd_->buf4_sort(&F, PSIF_CC3_HET1, qpsr, 11, 5, "CC3 WAmEf (Am,Ef)");
@@ -64,7 +62,7 @@ void CCEnergyWavefunction::cc3_Wamef(void)
     global_dpd_->buf4_close(&W);
   }
 
-  else if (params.ref == 1) { /** ROHF **/
+  else if (params_.ref == 1) { /** ROHF **/
 
     /** W(AM,E>F) <--- <AM||EF> **/
     /** W(am,e>f) <--- <am||ef> **/
@@ -127,7 +125,7 @@ void CCEnergyWavefunction::cc3_Wamef(void)
     purge_Wamef();
   }
   
-  else if (params.ref == 2) {
+  else if (params_.ref == 2) {
 
     global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 2, 3, "tia");
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
@@ -195,7 +193,7 @@ void CCEnergyWavefunction::cc3_Wamef(void)
   }
 }
 
-void purge_Wamef(void) {
+void CCEnergyWavefunction::purge_Wamef(void) {
   dpdfile2 FAE, Fmi, FME, Fme;
   dpdfile4 W; 
   int *occpi, *virtpi;
@@ -207,11 +205,11 @@ void purge_Wamef(void) {
   int *occ_sym, *vir_sym;
   int *openpi, nirreps;
   
-  nirreps = moinfo.nirreps;
-  occpi = moinfo.occpi; virtpi = moinfo.virtpi;
-  occ_off = moinfo.occ_off; vir_off = moinfo.vir_off;
-  occ_sym = moinfo.occ_sym; vir_sym = moinfo.vir_sym;
-  openpi = moinfo.openpi;
+  nirreps = moinfo_.nirreps;
+  occpi = moinfo_.occpi; virtpi = moinfo_.virtpi;
+  occ_off = moinfo_.occ_off; vir_off = moinfo_.vir_off;
+  occ_sym = moinfo_.occ_sym; vir_sym = moinfo_.vir_sym;
+  openpi = moinfo_.openpi;
 
   /* Purge Wamef matrix elements */
   global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 11, 7,"CC3 WAMEF (AM,E>F)");

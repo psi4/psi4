@@ -31,8 +31,6 @@
 #include "Params.h"
 #include "MOInfo.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -62,7 +60,7 @@ void CCEnergyWavefunction::Wmbej_build(void)
 
   /* W(mb,je) <-- <mb||ej> */
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
     global_dpd_->buf4_scmcopy(&C, PSIF_CC_TMP0, "WMbeJ", -1);
     global_dpd_->buf4_close(&C);
@@ -71,7 +69,7 @@ void CCEnergyWavefunction::Wmbej_build(void)
     global_dpd_->buf4_copy(&D, PSIF_CC_TMP0, "WMbEj");
     global_dpd_->buf4_close(&D);
   }
-  else if(params.ref == 1) { /*** ROHF ***/
+  else if(params_.ref == 1) { /*** ROHF ***/
 
     global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 11, 10, 11, 0, "C <ia||jb> (ia,bj)");
     global_dpd_->buf4_scmcopy(&C, PSIF_CC_TMP0, "WMBEJ", -1);
@@ -89,7 +87,7 @@ void CCEnergyWavefunction::Wmbej_build(void)
     global_dpd_->buf4_close(&D);
 
   }
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
 
     global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 20, 21, 20, 21, 0, "C <IA||JB> (IA,BJ)");
     global_dpd_->buf4_scmcopy(&C, PSIF_CC_TMP0, "WMBEJ", -1);
@@ -122,7 +120,7 @@ void CCEnergyWavefunction::Wmbej_build(void)
   timer_on("F->Wmbej");
 #endif
   
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
 
     global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
@@ -154,7 +152,7 @@ void CCEnergyWavefunction::Wmbej_build(void)
     global_dpd_->file2_mat_init(&tIA);
     global_dpd_->file2_mat_rd(&tIA);
 
-    for(Gmb=0; Gmb < moinfo.nirreps; Gmb++) {
+    for(Gmb=0; Gmb < moinfo_.nirreps; Gmb++) {
       global_dpd_->buf4_mat_irrep_row_init(&W, Gmb);
       global_dpd_->buf4_mat_irrep_row_init(&F, Gmb);
 
@@ -162,13 +160,13 @@ void CCEnergyWavefunction::Wmbej_build(void)
 	global_dpd_->buf4_mat_irrep_row_rd(&W, Gmb, mb);
 	global_dpd_->buf4_mat_irrep_row_rd(&F, Gmb, mb);
 
-	for(Gj=0; Gj < moinfo.nirreps; Gj++) {
+    for(Gj=0; Gj < moinfo_.nirreps; Gj++) {
 	  Gf = Gj;  /* T1 is totally symmetric */
 	  Ge = Gmb ^ Gf; /* <mb|fe> is totally symmetric */
 
-	  nrows = moinfo.occpi[Gj];
-	  ncols = moinfo.virtpi[Ge];
-	  nlinks = moinfo.virtpi[Gf];
+      nrows = moinfo_.occpi[Gj];
+      ncols = moinfo_.virtpi[Ge];
+      nlinks = moinfo_.virtpi[Gf];
 	  if(nrows && ncols && nlinks)
 	    C_DGEMM('n','n',nrows,ncols,nlinks,-1.0,tIA.matrix[Gj][0],nlinks,
 		    &F.matrix[Gmb][0][F.col_offset[Gmb][Gf]],ncols,1.0,
@@ -188,7 +186,7 @@ void CCEnergyWavefunction::Wmbej_build(void)
 
     global_dpd_->file2_close(&tIA);
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
 
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
@@ -221,7 +219,7 @@ void CCEnergyWavefunction::Wmbej_build(void)
     global_dpd_->file2_close(&tIA);
     global_dpd_->file2_close(&tia);
   }
-  else if(params.ref == 2) { /** UHF **/
+  else if(params_.ref == 2) { /** UHF **/
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 2, 3, "tia");
 
@@ -270,7 +268,7 @@ void CCEnergyWavefunction::Wmbej_build(void)
   timer_on("E->Wmbej");
 #endif
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
 
     global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 11, 0, 11, 0, 0, "E <ai|jk>");
@@ -287,7 +285,7 @@ void CCEnergyWavefunction::Wmbej_build(void)
 
     global_dpd_->file2_close(&tIA);  
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
 
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
@@ -322,7 +320,7 @@ void CCEnergyWavefunction::Wmbej_build(void)
     global_dpd_->file2_close(&tIA);  
     global_dpd_->file2_close(&tia);
   }
-  else if(params.ref == 2) { /** UHF **/
+  else if(params_.ref == 2) { /** UHF **/
 
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 2, 3, "tia");
@@ -373,7 +371,7 @@ void CCEnergyWavefunction::Wmbej_build(void)
 
   /* Convert to (ME,JB) for remaining terms */
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
 
     global_dpd_->buf4_init(&WMbEj, PSIF_CC_TMP0, 0, 10, 11, 10, 11, 0, "WMbEj");
     global_dpd_->buf4_sort(&WMbEj, PSIF_CC_HBAR, prsq, 10, 10, "WMbEj");
@@ -384,7 +382,7 @@ void CCEnergyWavefunction::Wmbej_build(void)
     global_dpd_->buf4_close(&WMbeJ);
 
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
 
     global_dpd_->buf4_init(&WMBEJ, PSIF_CC_TMP0, 0, 10, 11, 10, 11, 0, "WMBEJ");
     global_dpd_->buf4_sort(&WMBEJ, PSIF_CC_HBAR, prsq, 10, 10, "WMBEJ");
@@ -410,7 +408,7 @@ void CCEnergyWavefunction::Wmbej_build(void)
     global_dpd_->buf4_sort(&WmBEj, PSIF_CC_HBAR, psrq, 10, 10, "WmBEj");
     global_dpd_->buf4_close(&WmBEj);
   }
-  else if(params.ref == 2) { /** UHF **/
+  else if(params_.ref == 2) { /** UHF **/
 
     global_dpd_->buf4_init(&W, PSIF_CC_TMP0, 0, 20, 21, 20, 21, 0, "WMBEJ");
     global_dpd_->buf4_sort(&W, PSIF_CC_HBAR, prsq, 20, 20, "WMBEJ");
@@ -441,7 +439,7 @@ void CCEnergyWavefunction::Wmbej_build(void)
   timer_on("X->Wmbej");
 #endif
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
 
     /*** ABAB ***/
@@ -489,7 +487,7 @@ void CCEnergyWavefunction::Wmbej_build(void)
 
     global_dpd_->file2_close(&tIA);
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
 
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
@@ -631,7 +629,7 @@ void CCEnergyWavefunction::Wmbej_build(void)
     global_dpd_->file2_close(&tIA);
     global_dpd_->file2_close(&tia);
   }
-  else if(params.ref == 2) { /** UHF **/
+  else if(params_.ref == 2) { /** UHF **/
 
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 2, 3, "tia");

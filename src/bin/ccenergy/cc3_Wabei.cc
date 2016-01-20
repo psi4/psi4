@@ -29,8 +29,6 @@
 #include "Params.h"
 #include "MOInfo.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -61,7 +59,7 @@ void CCEnergyWavefunction::cc3_Wabei(void)
   int EE, e;
   int nrows, ncols, nlinks;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
 
     global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 11, 5, 11, 5, 0, "F <ai|bc>");
     global_dpd_->buf4_copy(&F, PSIF_CC_TMP0, "CC3 Z(Ei,Ab)");
@@ -86,27 +84,27 @@ void CCEnergyWavefunction::cc3_Wabei(void)
     global_dpd_->file2_mat_rd(&T1);  
     global_dpd_->buf4_init(&Z1, PSIF_CC_TMP0, 0, 11, 8, 11, 8, 0, "Z1(ei,a>=b)");
     global_dpd_->buf4_scm(&Z1, 0.0); /* this scm is necessary for cases with empty occpi or virtpi irreps */
-    for(Gef=0; Gef < moinfo.nirreps; Gef++) {    
+    for(Gef=0; Gef < moinfo_.nirreps; Gef++) {
       Gei = Gab = Gef; /* W and B are totally symmetric */
-      for(Ge=0; Ge < moinfo.nirreps; Ge++) {      
+      for(Ge=0; Ge < moinfo_.nirreps; Ge++) {
         Gf = Ge ^ Gef; Gi = Gf;  /* T1 is totally symmetric */
-        B.matrix[Gef] = global_dpd_->dpd_block_matrix(moinfo.virtpi[Gf],B.params->coltot[Gef]);
-        Z1.matrix[Gef] = global_dpd_->dpd_block_matrix(moinfo.occpi[Gi],Z1.params->coltot[Gei])
+        B.matrix[Gef] = global_dpd_->dpd_block_matrix(moinfo_.virtpi[Gf],B.params->coltot[Gef]);
+        Z1.matrix[Gef] = global_dpd_->dpd_block_matrix(moinfo_.occpi[Gi],Z1.params->coltot[Gei])
 ;
-        nrows = moinfo.occpi[Gi]; 
+        nrows = moinfo_.occpi[Gi];
         ncols = Z1.params->coltot[Gef]; 
-        nlinks = moinfo.virtpi[Gf];
+        nlinks = moinfo_.virtpi[Gf];
         if(nrows && ncols && nlinks) {        
-          for(EE=0; EE < moinfo.virtpi[Ge]; EE++) {
-            e = moinfo.vir_off[Ge] + EE;
-            global_dpd_->buf4_mat_irrep_rd_block(&B, Gef, B.row_offset[Gef][e], moinfo.virtpi[Gf]);
+          for(EE=0; EE < moinfo_.virtpi[Ge]; EE++) {
+            e = moinfo_.vir_off[Ge] + EE;
+            global_dpd_->buf4_mat_irrep_rd_block(&B, Gef, B.row_offset[Gef][e], moinfo_.virtpi[Gf]);
             C_DGEMM('n','n',nrows,ncols,nlinks,0.5,T1.matrix[Gi][0],nlinks,
                     B.matrix[Gef][0],ncols,0.0,Z1.matrix[Gei][0],ncols);
-            global_dpd_->buf4_mat_irrep_wrt_block(&Z1,Gei,Z1.row_offset[Gei][e],moinfo.occpi[Gi]);
+            global_dpd_->buf4_mat_irrep_wrt_block(&Z1,Gei,Z1.row_offset[Gei][e],moinfo_.occpi[Gi]);
           }
         }
-        global_dpd_->free_dpd_block(B.matrix[Gef], moinfo.virtpi[Gf], B.params->coltot[Gef]);
-        global_dpd_->free_dpd_block(Z1.matrix[Gef], moinfo.occpi[Gi], Z1.params->coltot[Gei]);
+        global_dpd_->free_dpd_block(B.matrix[Gef], moinfo_.virtpi[Gf], B.params->coltot[Gef]);
+        global_dpd_->free_dpd_block(Z1.matrix[Gef], moinfo_.occpi[Gi], Z1.params->coltot[Gei]);
       }
     }
     global_dpd_->buf4_close(&Z1);
@@ -120,26 +118,26 @@ void CCEnergyWavefunction::cc3_Wabei(void)
     global_dpd_->file2_mat_rd(&T1);
     global_dpd_->buf4_init(&Z2, PSIF_CC_TMP0, 0, 11, 9, 11, 9, 0, "Z2(ei,a>=b)");
     global_dpd_->buf4_scm(&Z2, 0.0); /* this scm is necessary for cases with empty occpi or virtpi irreps */
-    for(Gef=0; Gef < moinfo.nirreps; Gef++) {
+    for(Gef=0; Gef < moinfo_.nirreps; Gef++) {
       Gei = Gab = Gef; /* W and B are totally symmetric */
-      for(Ge=0; Ge < moinfo.nirreps; Ge++) {
+      for(Ge=0; Ge < moinfo_.nirreps; Ge++) {
         Gf = Ge ^ Gef; Gi = Gf;  /* T1 is totally symmetric */
-        B.matrix[Gef] = global_dpd_->dpd_block_matrix(moinfo.virtpi[Gf],B.params->coltot[Gef]);
-        Z2.matrix[Gef] = global_dpd_->dpd_block_matrix(moinfo.occpi[Gi],Z2.params->coltot[Gei]);
-        nrows = moinfo.occpi[Gi]; 
+        B.matrix[Gef] = global_dpd_->dpd_block_matrix(moinfo_.virtpi[Gf],B.params->coltot[Gef]);
+        Z2.matrix[Gef] = global_dpd_->dpd_block_matrix(moinfo_.occpi[Gi],Z2.params->coltot[Gei]);
+        nrows = moinfo_.occpi[Gi];
         ncols = Z2.params->coltot[Gef]; 
-        nlinks = moinfo.virtpi[Gf];
+        nlinks = moinfo_.virtpi[Gf];
         if(nrows && ncols && nlinks) {
-          for(EE=0; EE < moinfo.virtpi[Ge]; EE++) {
-            e = moinfo.vir_off[Ge] + EE;
-            global_dpd_->buf4_mat_irrep_rd_block(&B, Gef, B.row_offset[Gef][e], moinfo.virtpi[Gf]);
+          for(EE=0; EE < moinfo_.virtpi[Ge]; EE++) {
+            e = moinfo_.vir_off[Ge] + EE;
+            global_dpd_->buf4_mat_irrep_rd_block(&B, Gef, B.row_offset[Gef][e], moinfo_.virtpi[Gf]);
             C_DGEMM('n','n',nrows,ncols,nlinks,0.5,T1.matrix[Gi][0],nlinks,
                     B.matrix[Gef][0],ncols,0.0,Z2.matrix[Gei][0],ncols);
-            global_dpd_->buf4_mat_irrep_wrt_block(&Z2, Gei, Z2.row_offset[Gei][e], moinfo.occpi[Gi]);
+            global_dpd_->buf4_mat_irrep_wrt_block(&Z2, Gei, Z2.row_offset[Gei][e], moinfo_.occpi[Gi]);
           }
         }
-        global_dpd_->free_dpd_block(B.matrix[Gef], moinfo.virtpi[Gf], B.params->coltot[Gef]);
-        global_dpd_->free_dpd_block(Z2.matrix[Gef], moinfo.occpi[Gi], Z2.params->coltot[Gei]);
+        global_dpd_->free_dpd_block(B.matrix[Gef], moinfo_.virtpi[Gf], B.params->coltot[Gef]);
+        global_dpd_->free_dpd_block(Z2.matrix[Gef], moinfo_.occpi[Gi], Z2.params->coltot[Gei]);
       }
     }
     global_dpd_->buf4_close(&Z2);
@@ -217,7 +215,7 @@ void CCEnergyWavefunction::cc3_Wabei(void)
     global_dpd_->file2_close(&t1);
   }
 
-  else if (params.ref == 1) { /* ROHF */
+  else if (params_.ref == 1) { /* ROHF */
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
 
@@ -619,7 +617,7 @@ void CCEnergyWavefunction::cc3_Wabei(void)
     global_dpd_->buf4_close(&W);
   }
 
-  else if (params.ref == 2) { /* UHF */
+  else if (params_.ref == 2) { /* UHF */
 
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 2, 3, "tia");
@@ -1027,7 +1025,7 @@ void CCEnergyWavefunction::cc3_Wabei(void)
   }
 }
 
-void purge_Wabei(void) {
+void CCEnergyWavefunction::purge_Wabei(void) {
   dpdfile4 W;
   int *occpi, *virtpi;
   int h, a, b, e, f, i, j, m, n;
@@ -1038,11 +1036,11 @@ void purge_Wabei(void) {
   int *occ_sym, *vir_sym;
   int *openpi, nirreps;
 
-  nirreps = moinfo.nirreps;
-  occpi = moinfo.occpi; virtpi = moinfo.virtpi;
-  occ_off = moinfo.occ_off; vir_off = moinfo.vir_off;
-  occ_sym = moinfo.occ_sym; vir_sym = moinfo.vir_sym;
-  openpi = moinfo.openpi;
+  nirreps = moinfo_.nirreps;
+  occpi = moinfo_.occpi; virtpi = moinfo_.virtpi;
+  occ_off = moinfo_.occ_off; vir_off = moinfo_.vir_off;
+  occ_sym = moinfo_.occ_sym; vir_sym = moinfo_.vir_sym;
+  openpi = moinfo_.openpi;
 
   /* Purge Wabei matrix elements */
   global_dpd_->file4_init(&W, PSIF_CC_TMP2, 0, 11, 7,"CC3 WABEI (EI,A>B)");

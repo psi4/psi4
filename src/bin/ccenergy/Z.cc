@@ -30,8 +30,6 @@
 #include <libqt/qt.h>
 #include "Params.h"
 #include "ccwave.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace ccenergy {
 
@@ -45,7 +43,7 @@ void CCEnergyWavefunction::Z_build(void)
   timer_on("Z");
 #endif
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     /* ZMbIj = <Mb|Ef> * tau(Ij,Ef) */
     /* OOC code added 3/23/05  -TDC */
     global_dpd_->buf4_init(&Z, PSIF_CC_MISC, 0, 10, 0, 10, 0, 0, "ZMbIj");
@@ -80,7 +78,7 @@ void CCEnergyWavefunction::Z_build(void)
     global_dpd_->buf4_close(&F);
     global_dpd_->buf4_close(&Z);  
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
     global_dpd_->buf4_init(&ZIJMA, PSIF_CC_MISC, 0, 2, 10, 2, 10, 0, "ZIJMA");
     global_dpd_->buf4_init(&Zijma, PSIF_CC_MISC, 0, 2, 10, 2, 10, 0, "Zijma");
     global_dpd_->buf4_init(&ZIjMa, PSIF_CC_MISC, 0, 0, 10, 0, 10, 0, "ZIjMa");
@@ -116,7 +114,7 @@ void CCEnergyWavefunction::Z_build(void)
     global_dpd_->buf4_close(&ZIjMa);  
     global_dpd_->buf4_close(&ZIjmA);
   }
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
 
     global_dpd_->buf4_init(&ZIJMA, PSIF_CC_MISC, 0, 2, 20, 2, 20, 0, "ZIJMA");
     global_dpd_->buf4_init(&Zijma, PSIF_CC_MISC, 0, 12, 30, 12, 30, 0, "Zijma");
