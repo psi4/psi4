@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(dft3 "psi;longertests;dft;scf")
+add_regression_test(dft3 "psi;shorttests;dft;scf")

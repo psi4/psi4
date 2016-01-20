@@ -456,6 +456,21 @@ def run_dfolccd(name, **kwargs):
     return psi4.get_variable("CURRENT ENERGY")
 
 
+def run_dfolccd_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted OO-LCCD gradient computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
+
+    psi4.set_global_option('DERTYPE', 'FIRST')
+    run_dfolccd(name, **kwargs)
+
+    optstash.restore()
+
+
 def run_dfccsd(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an density-fitted CCSD computation
@@ -762,44 +777,6 @@ def run_dfmp3(name, **kwargs):
     return psi4.get_variable("CURRENT ENERGY")
 
 
-def run_dflccd(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted linearized CCD computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['SCF','DF_INTS_IO'],
-        ['DF_BASIS_SCF'],
-        ['DFOCC', 'ORB_OPT'],
-        ['DFOCC', 'WFN_TYPE'],
-        ['GLOBALS', 'DF_BASIS_CC'])
-
-    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
-
-    # override symmetry:
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
-    if user_pg != 'c1':
-        psi4.print_out('  DF-MP3 does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
-    #psi4.set_global_option('SCF_TYPE', 'DF')
-    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.dfocc()
-
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
-
-    return psi4.get_variable("CURRENT ENERGY")
-
-
 def run_dfmp3_gradient(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an density-fitted MP3 gradient computation
@@ -864,6 +841,59 @@ def run_dfmp2p5_gradient(name, **kwargs):
 
     psi4.set_global_option('DERTYPE', 'FIRST')
     run_dfmp2p5(name, **kwargs)
+
+    optstash.restore()
+
+
+def run_dflccd(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted linearized CCD computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF','DF_INTS_IO'],
+        ['DF_BASIS_SCF'],
+        ['DFOCC', 'ORB_OPT'],
+        ['DFOCC', 'WFN_TYPE'],
+        ['GLOBALS', 'DF_BASIS_CC'])
+
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
+
+    # override symmetry:
+    molecule = psi4.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(1)
+    molecule.update_geometry()
+    if user_pg != 'c1':
+        psi4.print_out('  DF-MP3 does not make use of molecular symmetry, further calculations in C1 point group.\n')
+
+    #psi4.set_global_option('SCF_TYPE', 'DF')
+    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    psi4.dfocc()
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
+
+    return psi4.get_variable("CURRENT ENERGY")
+
+
+def run_dflccd_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted MP3 gradient computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
+
+    psi4.set_global_option('DERTYPE', 'FIRST')
+    run_dflccd(name, **kwargs)
 
     optstash.restore()
 
@@ -1802,6 +1832,15 @@ def scf_helper(name, **kwargs):
         ['SCF', 'SCF_TYPE'],
         ['SCF', 'DF_INTS_IO'])
 
+    # Second-order SCF requires non-symmetrix density matrix support
+    if (
+        psi4.get_option('SCF', 'SOSCF') and
+        (psi4.get_option('SCF', 'SCF_TYPE') not in  ['DF', 'CD', 'OUT_OF_CORE'])
+        ):
+        raise ValidationError("Second-order SCF: Requires a JK algorithm that supports non-symmetric"\
+                                  " density matrices.")
+
+
     # sort out cast_up settings. no need to stash these since only read, never reset
     cast = False
     if psi4.has_option_changed('SCF', 'BASIS_GUESS'):
@@ -2032,32 +2071,39 @@ def run_ccenergy(name, **kwargs):
     if (lowername == 'ccsd'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD')
         psi4.set_local_option('CCSORT', 'WFN', 'CCSD')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'CCSD')
         psi4.set_local_option('CCENERGY', 'WFN', 'CCSD')
     elif (lowername == 'ccsd(t)'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD_T')
         psi4.set_local_option('CCSORT', 'WFN', 'CCSD_T')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'CCSD_T')
         psi4.set_local_option('CCENERGY', 'WFN', 'CCSD_T')
     elif (lowername == 'ccsd(at)' or lowername == 'a-ccsd(t)'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD_AT')
         psi4.set_local_option('CCSORT', 'WFN', 'CCSD_AT')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'CCSD_AT')
         psi4.set_local_option('CCENERGY', 'WFN', 'CCSD_AT')
         psi4.set_local_option('CCHBAR', 'WFN', 'CCSD_AT')
         psi4.set_local_option('CCLAMBDA', 'WFN', 'CCSD_AT')
     elif (lowername == 'cc2'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CC2')
         psi4.set_local_option('CCSORT', 'WFN', 'CC2')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'CC2')
         psi4.set_local_option('CCENERGY', 'WFN', 'CC2')
     elif (lowername == 'cc3'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CC3')
         psi4.set_local_option('CCSORT', 'WFN', 'CC3')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'CC3')
         psi4.set_local_option('CCENERGY', 'WFN', 'CC3')
     elif (lowername == 'eom-cc2'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'EOM_CC2')
         psi4.set_local_option('CCSORT', 'WFN', 'EOM_CC2')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'EOM_CC2')
         psi4.set_local_option('CCENERGY', 'WFN', 'EOM_CC2')
     elif (lowername == 'eom-ccsd'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'EOM_CCSD')
         psi4.set_local_option('CCSORT', 'WFN', 'EOM_CCSD')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'EOM_CCSD')
         psi4.set_local_option('CCENERGY', 'WFN', 'EOM_CCSD')
     # Call a plain energy('ccenergy') and have full control over options, incl. wfn
     elif(lowername == 'ccenergy'):
@@ -2077,8 +2123,12 @@ def run_ccenergy(name, **kwargs):
         mints = psi4.MintsHelper()
         mints.integrals()
 
-    psi4.transqt2()
-    psi4.ccsort()
+    if (psi4.get_global_option('RUN_CCTRANSORT')):
+        psi4.cctransort()
+    else:
+        psi4.transqt2()
+        psi4.ccsort()
+
     psi4.ccenergy()
 
     if (lowername == 'ccsd(at)' or lowername == 'a-ccsd(t)'):
@@ -2137,6 +2187,7 @@ def run_bccd(name, **kwargs):
     if (name.lower() == 'bccd'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'BCCD')
         psi4.set_local_option('CCSORT', 'WFN', 'BCCD')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'BCCD')
         psi4.set_local_option('CCENERGY', 'WFN', 'BCCD')
 
     # Bypass routine scf if user did something special to get it to converge
@@ -2149,10 +2200,14 @@ def run_bccd(name, **kwargs):
             mints.integrals()
 
     psi4.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
+    psi4.set_local_option('CCTRANSORT', 'DELETE_TEI', 'false')
 
     while True:
-        psi4.transqt2()
-        psi4.ccsort()
+        if (psi4.get_global_option("RUN_CCTRANSORT")):
+            psi4.cctransort()
+        else:
+            psi4.transqt2()
+            psi4.ccsort()
         psi4.ccenergy()
         psi4.print_out('Brueckner convergence check: %d\n' % psi4.get_variable('BRUECKNER CONVERGED'))
         if (psi4.get_variable('BRUECKNER CONVERGED') == True):
@@ -2431,7 +2486,6 @@ def run_detci_property(name, **kwargs):
         psi4.set_global_option('TDM', 'TRUE')
 
     optstash = p4util.OptionsState(
-        ['TRANSQT2', 'WFN'],
         ['DETCI', 'WFN'],
         ['DETCI', 'MAX_NUM_VECS'],
         ['DETCI', 'MPN_ORDER_SAVE'],
@@ -2444,7 +2498,6 @@ def run_detci_property(name, **kwargs):
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
     if name.lower() == 'zapt':
-        psi4.set_local_option('TRANSQT2', 'WFN', 'ZAPTN')
         psi4.set_local_option('DETCI', 'WFN', 'ZAPTN')
         level = kwargs['level']
         maxnvect = int((level + 1) / 2) + (level + 1) % 2
@@ -2454,7 +2507,6 @@ def run_detci_property(name, **kwargs):
         else:
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'detci-mp') or (name.lower() == 'mp'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'MPN', 'TRUE')
 
@@ -2466,23 +2518,18 @@ def run_detci_property(name, **kwargs):
         else:
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'fci'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'FCI', 'TRUE')
     elif (name.lower() == 'cisd'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 2)
     elif (name.lower() == 'cisdt'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 3)
     elif (name.lower() == 'cisdtq'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 4)
     elif (name.lower() == 'ci'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'WFN', 'DETCI')
         level = kwargs['level']
         psi4.set_local_option('DETCI', 'EX_LEVEL', level)
@@ -2498,7 +2545,6 @@ def run_detci_property(name, **kwargs):
         if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
             psi4.MintsHelper().integrals()
 
-    psi4.transqt2()
     psi4.detci()
 
     optstash.restore()
@@ -2705,7 +2751,6 @@ def run_detci(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['TRANSQT2', 'WFN'],
         ['DETCI', 'WFN'],
         ['DETCI', 'MAX_NUM_VECS'],
         ['DETCI', 'MPN_ORDER_SAVE'],
@@ -2718,7 +2763,6 @@ def run_detci(name, **kwargs):
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
     if (name.lower() == 'zapt'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'ZAPTN')
         psi4.set_local_option('DETCI', 'WFN', 'ZAPTN')
         level = kwargs['level']
         maxnvect = int((level + 1) / 2) + (level + 1) % 2
@@ -2728,7 +2772,6 @@ def run_detci(name, **kwargs):
         else:
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'detci-mp') or (name.lower() == 'mp'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'MPN', 'TRUE')
 
@@ -2740,23 +2783,18 @@ def run_detci(name, **kwargs):
         else:
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'fci'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'FCI', 'TRUE')
     elif (name.lower() == 'cisd'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 2)
     elif (name.lower() == 'cisdt'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 3)
     elif (name.lower() == 'cisdtq'):
-            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 4)
     elif (name.lower() == 'ci'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'WFN', 'DETCI')
         level = kwargs['level']
         psi4.set_local_option('DETCI', 'EX_LEVEL', level)
@@ -2772,7 +2810,6 @@ def run_detci(name, **kwargs):
         if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
             psi4.MintsHelper().integrals()
 
-    psi4.transqt2()
     psi4.detci()
 
     optstash.restore()
@@ -2791,7 +2828,10 @@ def run_dfmp2(name, **kwargs):
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    if not 'restart_file' in kwargs:
+    # Bypass routine scf if user did something special to get it to converge
+    cond1 = bool(('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf'])))
+    cond2 = 'restart_file' in kwargs
+    if not (cond1 or cond2):
         scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
@@ -3000,19 +3040,19 @@ def run_sapt(name, **kwargs):
     if nfrag != 2:
         raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
 
+    do_delta_mp2 = True if name.lower().endswith('dmp2') else False
+
     sapt_basis = 'dimer'
     if 'sapt_basis' in kwargs:
         sapt_basis = kwargs.pop('sapt_basis')
     sapt_basis = sapt_basis.lower()
 
-    if (sapt_basis == 'dimer'):
-        #molecule.update_geometry()
+    if sapt_basis == 'dimer':
         monomerA = molecule.extract_subsets(1, 2)
         monomerA.set_name('monomerA')
         monomerB = molecule.extract_subsets(2, 1)
         monomerB.set_name('monomerB')
-    elif (sapt_basis == 'monomer'):
-        #molecule.update_geometry()
+    elif sapt_basis == 'monomer':
         monomerA = molecule.extract_subsets(1)
         monomerA.set_name('monomerA')
         monomerB = molecule.extract_subsets(2)
@@ -3027,14 +3067,17 @@ def run_sapt(name, **kwargs):
     psi4.print_out('\n')
     p4util.banner('Dimer HF')
     psi4.print_out('\n')
-    if (sapt_basis == 'dimer'):
+    if sapt_basis == 'dimer':
         psi4.set_global_option('DF_INTS_IO', 'SAVE')
     e_dimer = scf_helper('RHF', **kwargs)
-    if (sapt_basis == 'dimer'):
+    if do_delta_mp2:
+        run_mp2_select(name, bypass_scf=True, **kwargs)
+        mp2_corl_interaction_e = psi4.get_variable('MP2 CORRELATION ENERGY')
+    if sapt_basis == 'dimer':
         psi4.set_global_option('DF_INTS_IO', 'LOAD')
 
     activate(monomerA)
-    if (ri == 'DF' and sapt_basis == 'dimer'):
+    if sapt_basis == 'dimer':
         psi4.IO.change_file_namespace(97, 'dimer', 'monomerA')
     psi4.IO.set_default_namespace('monomerA')
     psi4.set_local_option('SCF', 'SAPT', '2-monomer_A')
@@ -3042,9 +3085,12 @@ def run_sapt(name, **kwargs):
     p4util.banner('Monomer A HF')
     psi4.print_out('\n')
     e_monomerA = scf_helper('RHF', **kwargs)
+    if do_delta_mp2:
+        run_mp2_select(name, bypass_scf=True, **kwargs)
+        mp2_corl_interaction_e -= psi4.get_variable('MP2 CORRELATION ENERGY')
 
     activate(monomerB)
-    if (ri == 'DF' and sapt_basis == 'dimer'):
+    if sapt_basis == 'dimer':
         psi4.IO.change_file_namespace(97, 'monomerA', 'monomerB')
     psi4.IO.set_default_namespace('monomerB')
     psi4.set_local_option('SCF', 'SAPT', '2-monomer_B')
@@ -3052,6 +3098,10 @@ def run_sapt(name, **kwargs):
     p4util.banner('Monomer B HF')
     psi4.print_out('\n')
     e_monomerB = scf_helper('RHF', **kwargs)
+    if do_delta_mp2:
+        run_mp2_select(name, bypass_scf=True, **kwargs)
+        mp2_corl_interaction_e -= psi4.get_variable('MP2 CORRELATION ENERGY')
+        psi4.set_variable('SA MP2 CORRELATION ENERGY', mp2_corl_interaction_e)
     psi4.set_global_option('DF_INTS_IO', df_ints_io)
 
     psi4.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
@@ -3061,29 +3111,29 @@ def run_sapt(name, **kwargs):
     psi4.IO.set_default_namespace('dimer')
     psi4.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
     psi4.set_local_option('SAPT', 'D_CONVERGENCE', 10e-10)
-    if (name.lower() == 'sapt0'):
+    if name.lower() == 'sapt0':
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT0')
-    elif (name.lower() == 'sapt2'):
+    elif name.lower() == 'sapt2':
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2')
-    elif (name.lower() == 'sapt2+'):
+    elif name.lower() in ['sapt2+', 'sapt2+dmp2']:
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', False)
-    elif (name.lower() == 'sapt2+(3)'):
+    elif name.lower() in ['sapt2+(3)', 'sapt2+(3)']:
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         psi4.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', False)
-    elif (name.lower() == 'sapt2+3'):
+    elif name.lower() in ['sapt2+3', 'sapt2+3dmp2']:
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         psi4.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', False)
-    elif (name.lower() == 'sapt2+(ccd)'):
+    elif name.lower() in ['sapt2+(ccd)', 'sapt2+(ccd)dmp2']:
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', True)
-    elif (name.lower() == 'sapt2+(3)(ccd)'):
+    elif name.lower() in ['sapt2+(3)(ccd)', 'sapt2+(3)(ccd)dmp2']:
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         psi4.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', True)
-    elif (name.lower() == 'sapt2+3(ccd)'):
+    elif name.lower() in ['sapt2+3(ccd)', 'sapt2+3(ccd)dmp2']:
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         psi4.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', True)
@@ -3096,6 +3146,8 @@ def run_sapt(name, **kwargs):
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
 
+    from qcdb.psivardefs import sapt_psivars
+    p4util.expand_psivars(sapt_psivars())
     optstash.restore()
     return e_sapt
 
@@ -3633,12 +3685,6 @@ def run_fnocc(name, **kwargs):
             mints = psi4.MintsHelper()
             mints.integrals()
 
-    # if this is not cim or FNO-CC, run transqt2.  otherwise, libtrans will be used
-    if psi4.get_option('FNOCC', 'NAT_ORBS') == False and psi4.get_option('FNOCC', 'RUN_MP2') == False:
-        if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
-            psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD')
-            psi4.transqt2()
-
     # run ccsd
     psi4.fnocc()
 
@@ -3748,11 +3794,6 @@ def run_cepa(name, **kwargs):
             mints = psi4.MintsHelper()
             mints.integrals()
 
-    if psi4.get_option('FNOCC', 'NAT_ORBS') == False:
-        if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
-            psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD')
-            psi4.transqt2()
-
     # run cepa
     psi4.fnocc()
 
@@ -3782,31 +3823,57 @@ def run_detcas(name, **kwargs):
     """
 
     optstash = p4util.OptionsState(
-        ['TRANSQT2', 'WFN'],
         ['DETCI', 'WFN'],
-    )
+        ['SCF', 'SCF_TYPE']
+        )
 
     user_ref = psi4.get_option('DETCI', 'REFERENCE')
     if (user_ref != 'RHF') and (user_ref != 'ROHF'):
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
     if (name.lower() == 'rasscf'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'RASSCF')
         psi4.set_local_option('DETCI', 'WFN', 'RASSCF')
     elif (name.lower() == 'casscf'):
-        psi4.set_local_option('TRANSQT2', 'WFN', 'CASSCF')
         psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
 
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
+    # The DF case
+    if psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF':
 
-        # If the scf type is DF/CD, then the AO integrals were never written to disk
-        if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') or (psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
-            psi4.MintsHelper().integrals()
+        # Do NOT set global options in general, this is a bit of a hack
+        if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+            psi4.set_global_option('SCF_TYPE', 'DF')
+
+        # Make sure a valid JK algorithm is selected
+        if (psi4.get_option('SCF', 'SCF_TYPE') == 'PK'):
+            raise ValidationError("Second-order MCSCF: Requires a JK algorithm that supports non-symmetric"\
+                                  " density matrices.")
+
+        # Bypass routine scf if user did something special to get it to converge
+        if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+            scf_helper(name, **kwargs)
+
+    # The non-DF case
+    else:
+        if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+            # PK is faster than out_of_core, but PK cannot support non-symmetric density matrices
+            # Do NOT set global options in general, this is a bit of a hack
+            psi4.set_global_option('SCF_TYPE', 'OUT_OF_CORE')
+    
+        # Make sure a valid JK algorithm is selected
+        if (psi4.get_option('SCF', 'SCF_TYPE') == 'PK'):
+            raise ValidationError("Second-order MCSCF: Requires a JK algorithm that supports non-symmetric"\
+                                  " density matrices.")
+
+        # Bypass routine scf if user did something special to get it to converge
+        if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+
+            scf_helper(name, **kwargs)
+
+            # If the scf type is DF/CD, then the AO integrals were never written to disk
+            if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') or (psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+                psi4.MintsHelper().integrals()
 
 
-    psi4.transqt2()
     psi4.detci()
 
     optstash.restore()

@@ -24,6 +24,7 @@
 #include<psifiles.h>
 #include<libiwl/iwl.h>
 #include <libpsio/psio.hpp>
+#include<libqt/qt.h>
 
 #include"ccsd.h"
 #include"blas.h"
@@ -36,7 +37,7 @@ struct integral{
   ULI ind;
   double val;
 };
-void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options,bool iscim);
+void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options);
 void klcd_terms_incore(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,double*klcd);
 void ijkl_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI&nijkl,struct integral*ijkl);
 void ijak_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nijak,struct integral*ijak);
@@ -64,7 +65,7 @@ void SortBlockNewNew(ULI*nelem,ULI blockdim,struct integral*buffer,double*tmp,UL
 }}
 
 namespace psi{namespace fnocc{
-void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options,bool iscim){
+void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options){
   struct iwlbuf Buf;
   iwl_buf_init(&Buf,PSIF_MO_TEI,0.0,1,1);
   
@@ -77,11 +78,11 @@ void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&op
   outfile->Printf("\n");
   outfile->Printf("\n");
   
-  SortAllIntegrals(&Buf,nfzc,nfzv,norbs,ndoccact,nvirt,options,iscim);
+  SortAllIntegrals(&Buf,nfzc,nfzv,norbs,ndoccact,nvirt,options);
 
   iwl_buf_close(&Buf,1);
 }
-void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options,bool iscim){
+void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options){
 
   double val;
   ULI o = ndoccact;
@@ -299,22 +300,18 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   /**
     * first buffer (read in when Buf was initialized)
     */
-  bool fnocc = options.get_bool("NAT_ORBS") || options.get_bool("USE_DF_INTS");
-  if (iscim) fnocc = true;
   for (idx=4*Buf->idx; Buf->idx<Buf->inbuf; Buf->idx++) {
       p = (ULI) lblptr[idx++];
       q = (ULI) lblptr[idx++];
       r = (ULI) lblptr[idx++];
       s = (ULI) lblptr[idx++];
 
-      if (fnocc){
-         if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
-         if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
-         p -= fstact;
-         q -= fstact;
-         r -= fstact;
-         s -= fstact;
-      }
+      if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
+      if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
+      p -= fstact;
+      q -= fstact;
+      r -= fstact;
+      s -= fstact;
 
       pq   = Position(p,q);
       rs   = Position(r,s);
@@ -410,14 +407,12 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
           r = (ULI) lblptr[idx++];
           s = (ULI) lblptr[idx++];
 
-          if (fnocc){
-             if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
-             if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
-             p -= fstact;
-             q -= fstact;
-             r -= fstact;
-             s -= fstact;
-          }
+          if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
+          if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
+          p -= fstact;
+          q -= fstact;
+          r -= fstact;
+          s -= fstact;
 
           pq   = Position(p,q);
           rs   = Position(r,s);
@@ -660,13 +655,13 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
       psio->read(PSIF_DCC_ABCI3,"E2abci3",(char*)&tmp[0],binsize*sizeof(double),abci3_addr[0],&abci3_addr[0]);
       psio->read(PSIF_DCC_ABCI2,"E2abci2",(char*)&tmp2[0],binsize*sizeof(double),abci5_addr[0],&abci5_addr[0]);
       psio->write(PSIF_DCC_ABCI5,"E2abci5",(char*)&tmp2[0],binsize*sizeof(double),abci5a_addr,&abci5a_addr);
-      F_DAXPY(binsize,-2.0,tmp,1,tmp2,1);
+      C_DAXPY(binsize,-2.0,tmp,1,tmp2,1);
       psio->write(PSIF_DCC_ABCI2,"E2abci2",(char*)&tmp2[0],binsize*sizeof(double),abci2_addr,&abci2_addr);
   }
   psio->read(PSIF_DCC_ABCI3,"E2abci3",(char*)&tmp[0],lastbin*sizeof(double),abci3_addr[0],&abci3_addr[0]);
   psio->read(PSIF_DCC_ABCI2,"E2abci2",(char*)&tmp2[0],lastbin*sizeof(double),abci5_addr[0],&abci5_addr[0]);
   psio->write(PSIF_DCC_ABCI5,"E2abci5",(char*)&tmp2[0],lastbin*sizeof(double),abci5a_addr,&abci5a_addr);
-  F_DAXPY(lastbin,-2.0,tmp,1,tmp2,1);
+  C_DAXPY(lastbin,-2.0,tmp,1,tmp2,1);
   psio->write(PSIF_DCC_ABCI2,"E2abci2",(char*)&tmp2[0],lastbin*sizeof(double),abci2_addr,&abci2_addr);
   psio->close(PSIF_DCC_ABCI2,1);
   psio->close(PSIF_DCC_ABCI3,1);
@@ -693,18 +688,18 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   for (ULI i=0; i<nbins-1; i++){
       psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_addr[0],&abcd1_addr[0]);
       psio->read(PSIF_DCC_ABCD2,"E2abcd2",(char*)&tmp2[0],binsize*sizeof(double),abcd2_addr[0],&abcd2_addr[0]);
-      F_DAXPY(binsize,-1.0,tmp2,1,tmp,1);
+      C_DAXPY(binsize,-1.0,tmp2,1,tmp,1);
       psio->write(PSIF_DCC_ABCD2,"E2abcd2",(char*)&tmp[0],binsize*sizeof(double),abcd2_new,&abcd2_new);
       psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_again,&abcd1_again);
-      F_DAXPY(binsize,1.0,tmp2,1,tmp,1);
+      C_DAXPY(binsize,1.0,tmp2,1,tmp,1);
       psio->write(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_new,&abcd1_new);
   }
   psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_addr[0],&abcd1_addr[0]);
   psio->read(PSIF_DCC_ABCD2,"E2abcd2",(char*)&tmp2[0],lastbin*sizeof(double),abcd2_addr[0],&abcd2_addr[0]);
-  F_DAXPY(lastbin,-1.0,tmp2,1,tmp,1);
+  C_DAXPY(lastbin,-1.0,tmp2,1,tmp,1);
   psio->write(PSIF_DCC_ABCD2,"E2abcd2",(char*)&tmp[0],lastbin*sizeof(double),abcd2_new,&abcd2_new);
   psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_again,&abcd1_again);
-  F_DAXPY(lastbin,1.0,tmp2,1,tmp,1);
+  C_DAXPY(lastbin,1.0,tmp2,1,tmp,1);
   psio->write(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_new,&abcd1_new);
   psio->close(PSIF_DCC_ABCD1,1);
   psio->close(PSIF_DCC_ABCD2,1);
@@ -2206,11 +2201,11 @@ void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIF
  * ordering than the efficient default routine.  this function writes the
  * integrals to disk in the proper ordering.
  */
-void Sort_OV3_LowMemory(long int memory, long int o,long int v,bool islocal){
+void Sort_OV3_LowMemory(long int memory, long int o,long int v){
 
   outfile->Printf("\n");
   outfile->Printf("\n");
-  outfile->Printf("        ==> Resort (ov|vv) integrals for %s computation <==\n",islocal ? "CIM (T)" : "low-memory (T)");
+  outfile->Printf("        ==> Resort (ov|vv) integrals for low-memory (T) computation <==\n");
   outfile->Printf("\n");
 
   long int maxelem = memory / 8 / 2;
@@ -2244,13 +2239,13 @@ void Sort_OV3_LowMemory(long int memory, long int o,long int v,bool islocal){
   for (ULI i=0; i<nbins-1; i++){
       psio->read(PSIF_DCC_ABCI3,"E2abci3",(char*)&tmp[0],binsize*sizeof(double),abci3_addr,&abci3_addr);
       psio->read(PSIF_DCC_ABCI2,"E2abci2",(char*)&tmp2[0],binsize*sizeof(double),abci5_addr,&abci5_addr);
-      F_DAXPY(binsize,2.0,tmp,1,tmp2,1);
+      C_DAXPY(binsize,2.0,tmp,1,tmp2,1);
       // this is for the local triples
       psio->write(PSIF_DCC_ABCI4,"E2abci4",(char*)&tmp2[0],binsize*sizeof(double),abci4_addr,&abci4_addr);
   }
   psio->read(PSIF_DCC_ABCI3,"E2abci3",(char*)&tmp[0],lastbin*sizeof(double),abci3_addr,&abci3_addr);
   psio->read(PSIF_DCC_ABCI2,"E2abci2",(char*)&tmp2[0],lastbin*sizeof(double),abci5_addr,&abci5_addr);
-  F_DAXPY(lastbin,2.0,tmp,1,tmp2,1);
+  C_DAXPY(lastbin,2.0,tmp,1,tmp2,1);
   psio->write(PSIF_DCC_ABCI4,"E2abci4",(char*)&tmp2[0],lastbin*sizeof(double),abci4_addr,&abci4_addr);
   psio->close(PSIF_DCC_ABCI2,0);
   psio->close(PSIF_DCC_ABCI3,1);

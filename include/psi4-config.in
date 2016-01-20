@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+# vim:ft=python
+
+import sys
+from collections import OrderedDict
+
+
+def main(argv):
+    info = OrderedDict()
+    info['--cc'] = '@CMAKE_C_COMPILER@'
+    info['--cxx'] = '@CMAKE_CXX_COMPILER@'  # aka PLUGIN_CXX
+    info['--fc'] = '@CMAKE_Fortran_COMPILER@'
+    info['--version'] = psiver
+    info['--githash'] = githash
+    if '@ENABLE_CONDA_DEST@' == 'ON':
+        info['--prefix'] = '/opt/anaconda1anaconda2anaconda3'
+    else:
+        info['--prefix'] = '@CMAKE_INSTALL_PREFIX@'
+    info['--top-level-psi4-dir'] = '@CMAKE_SOURCE_DIR@'
+    info['--max-am-eri'] = '@LIBINT_OPT_AM@'
+    info['--python-version'] = '@_PYTHON_VERSION@'
+    info['--has-pcmsolver'] = '@ENABLE_PCMSOLVER@'
+    info['--has-chemps2'] = '@ENABLE_CHEMPS2@'
+    info['--includes'] = '@PLUGIN_INCLUDE_DIRECTORIES@'  # aka PLUGIN_INCLUDES
+    info['--defines'] = '@PLUGIN_DEFINES@'
+    info['--ldflags'] = '@CMAKE_CXX_LINK_FLAGS@'  # aka PLUGIN_LDFLAGS. skipping LIBC_INTERJECT
+    info['--flags'] = '@CXX_FLAGS_PLUGIN@'  # aka PLUGIN_FLAGS
+    info['--libs'] = sep_cmake_list('@EXTERNAL_LIBS@')
+
+    if len(argv) == 1:
+        retstr = """Build conditions of Psi4. Usage:
+>>> psi4-config --all
+>>> psi4-config --flags --libs
+"""
+    elif argv[1] == '--all':
+        retstr = ''
+        for k, v in info.iteritems():
+            retstr += """%-20s --> %s\n""" % (k, v)
+    else:
+        retstr = []
+        for arg in sys.argv[1:]:
+            retstr.append(info[arg])
+        retstr = ' '.join(retstr)
+
+    return retstr
+
+
+def sep_cmake_list(cmlist):
+    return ' '.join(cmlist.split(';'))
+
+
+if __name__ == '__main__':
+    pass

@@ -369,10 +369,6 @@ void HF::common_init()
     soscf_max_iter_ = options_.get_int("SOSCF_MAX_ITER");
     soscf_conv_ = options_.get_double("SOSCF_CONV");
     soscf_print_ = options_.get_bool("SOSCF_PRINT");
-    if (soscf_conv_ == 0.0) {
-        soscf_conv_ = energy_threshold_;
-    }
-
 
     // MOM convergence acceleration
     MOM_enabled_ = (options_.get_int("MOM_START") != 0);
@@ -404,7 +400,53 @@ int HF::soscf_update()
                        "type of SCF wavefunction yet.");
     return 0;
 }
+void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x)
+{
+    // => Rotate orbitals <= //
+    SharedMatrix tmp(new Matrix("Ck", nirrep_, nsopi_, nsopi_));
 
+    // We guess occ x vir block size by the size of x to make this method easy to use
+    Dimension tsize = x->colspi() + x->rowspi();
+    if (tsize != nmopi_){
+        throw PSIEXCEPTION("HF::rotate_orbitals: x dimension do not match nmo_ dimension.");
+    }
+
+    // Form full antisymmetric matrix
+    for (size_t h=0; h<nirrep_; h++){
+
+        size_t doccpih = (size_t)x->rowspi()[h];
+        if (!doccpih || !x->colspi()[h]) continue;
+        double** tp = tmp->pointer(h);
+        double*  xp = x->pointer(h)[0];
+
+        // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
+        for (size_t i=0, target=0; i<doccpih; i++){
+            for (size_t a=doccpih; a < nmopi_[h]; a++){
+                tp[a][i] = xp[target];
+                tp[i][a] = -1.0 * xp[target++];
+            }
+        }
+    }
+
+    // Build exp(U) = 1 + U + 0.5 U U
+    SharedMatrix U = tmp->clone();
+    for (size_t h=0; h<nirrep_; h++){
+        double** Up = U->pointer(h);
+        for (size_t i=0; i<U->rowspi()[h]; i++){
+            Up[i][i] += 1.0;
+        }
+    }
+    U->gemm(false, false, 0.5, tmp, tmp, 1.0);
+
+    // We did not fully exponentiate the matrix, need to orthogonalize
+    // We need QR here, shmidt isnt cutting it
+    U->schmidt();
+    tmp->gemm(false, false, 1.0, C, U, 0.0);
+    C->copy(tmp);
+
+    U.reset();
+    tmp.reset();
+}
 void HF::integrals()
 {
     if (print_ )
@@ -540,13 +582,11 @@ double HF::finalize_E()
 #ifdef HAVE_PCMSOLVER
         if(pcm_enabled_) {
             // Prepare the density
-            SharedMatrix D_pcm;
+            SharedMatrix D_pcm(Da_->clone());
             if(same_a_b_orbs()) {
-              D_pcm = Da_;
               D_pcm->scale(2.0); // PSI4's density doesn't include the occupation
             }
             else {
-              D_pcm = Da_;
               D_pcm->add(Db_);
             }
 
@@ -630,7 +670,7 @@ double HF::finalize_E()
 
 }
 
-void HF::finalize() 
+void HF::finalize()
 {
     // Clean memory off, handle diis closeout, etc
 
@@ -1805,9 +1845,9 @@ void HF::initialize()
 
         integrals();
 
-        timer_on("Form H");
+        timer_on("HF: Form H");
         form_H(); //Core Hamiltonian
-        timer_off("Form H");
+        timer_off("HF: Form H");
 
         // EFP: Add in permanent moment contribution and cache
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
@@ -1818,13 +1858,13 @@ void HF::initialize()
             outfile->Printf( "  QM/EFP: iterating Total Energy including QM/EFP Induction\n");
         }
 
-        timer_on("Form S/X");
+        timer_on("HF: Form S/X");
         form_Shalf(); //S and X Matrix
-        timer_off("Form S/X");
+        timer_off("HF: Form S/X");
 
-        timer_on("Guess");
+        timer_on("HF: Guess");
         guess(); // Guess
-        timer_off("Guess");
+        timer_off("HF: Guess");
 
     }else{
         // We're reading the orbitals from the previous set of iterations.
@@ -1870,17 +1910,17 @@ void HF::iterations()
 
         E_ = 0.0;
 
-        timer_on("Form G");
+        timer_on("HF: Form G");
         form_G();
-        timer_off("Form G");
+        timer_off("HF: Form G");
 
         // Reset fractional SAD occupation
         if (iteration_ == 0 && options_.get_str("GUESS") == "SAD")
             reset_SAD_occupation();
 
-        timer_on("Form F");
+        timer_on("HF: Form F");
         form_F();
-        timer_off("Form F");
+        timer_off("HF: Form F");
 
         if (print_>3) {
             Fa_->print("outfile");
@@ -1900,13 +1940,11 @@ void HF::iterations()
         // energy computation, not in form_F()
         if(pcm_enabled_) {
           // Prepare the density
-          SharedMatrix D_pcm;
+          SharedMatrix D_pcm(Da_->clone());
           if(same_a_b_orbs()) {
-            D_pcm = Da_;
             D_pcm->scale(2.0); // PSI4's density doesn't include the occupation
           }
           else {
-            D_pcm = Da_;
             D_pcm->add(Db_);
           }
 
@@ -1940,14 +1978,23 @@ void HF::iterations()
         double ediff = fabs(E_ - Eold_);
         if (soscf_enabled_ && (Drms_ < soscf_r_start_) && (ediff < soscf_e_start_) && (iteration_ > 1)){
             compute_orbital_gradient(false);
-            int nmicro = soscf_update();
-            find_occupation();
-            status += "SOSCF, nmicro = ";
-            status += psi::to_string(nmicro);
+            if (!test_convergency()){
+                int nmicro = soscf_update();
+                find_occupation();
+                status += "SOSCF, nmicro = ";
+                status += psi::to_string(nmicro);
+            }
+            else{
+                // We need to ensure orthogonal orbitals and set epsilon
+                status += "SOSCF, conv";
+                timer_on("HF: Form C");
+                form_C();
+                timer_off("HF: Form C");
+            }
         }
         else{ // Normal convergence procedures if we do not do SOSCF
 
-            timer_on("DIIS");
+            timer_on("HF: DIIS");
             bool add_to_diis_subspace = false;
             if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
                 add_to_diis_subspace = true;
@@ -1959,7 +2006,7 @@ void HF::iterations()
             } else {
                 diis_performed_ = false;
             }
-            timer_off("DIIS");
+            timer_off("HF: DIIS");
 
             if (print_>4 && diis_performed_) {
                 outfile->Printf("  After DIIS:\n");
@@ -1987,14 +2034,14 @@ void HF::iterations()
                 status += "FRAC";
             }
 
-            timer_on("Form C");
+            timer_on("HF: Form C");
             form_C();
-            timer_off("Form C");
+            timer_off("HF: Form C");
         } // End SOSCF else
 
-        timer_on("Form D");
+        timer_on("HF: Form D");
         form_D();
-        timer_off("Form D");
+        timer_off("HF: Form D");
 
         Process::environment.globals["SCF ITERATION ENERGY"] = E_;
 

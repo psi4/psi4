@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.2.65 Driver
+                              Psi4 (no tag) Driver
 
-                          Git: Rev {master} 90899d8 dirty
+                          Git: Rev {master} 0cd0b11 dirty
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,10 +16,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Sun Jul  5 20:42:36 2015
+    Psi4 started on: Fri Jan  8 11:21:40 2016
 
-    Process ID:  30348
-    PSI4DATADIR: /Users/francesco/Source/psi4/lib
+    Process ID:  16285
+    PSI4DATADIR: /Users/brandonbakr/psi4/lib
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -37,13 +37,13 @@ H
 H 1 3.0
 symmetry c1
 }
-
+set reference uhf
 set e_convergence 12
 set basis cc-pvdz
 
-thisSCF = energy('uhf')
+thisSCF = energy('scf')
 set guess_mix true
-thisBSSCF = energy('uhf')
+thisBSSCF = energy('scf')
 
 compare_values(refENuc, h2.nuclear_repulsion_energy(),                      #TEST
                10, "Nuclear repulsion energy")                              #TEST
@@ -51,8 +51,8 @@ compare_values(refSCF, thisSCF, 10, "Reference energy")                     #TES
 compare_values(refBSSCF, thisBSSCF, 10, "Reference broken-symmetry energy") #TEST
 --------------------------------------------------------------------------
 
-*** tstart() called on che-fevange-01i
-*** at Sun Jul  5 20:42:37 2015
+*** tstart() called on lawn-128-61-75-188.lawn.gatech.edu
+*** at Fri Jan  8 11:21:48 2016
 
 
          ---------------------------------------------------------
@@ -69,10 +69,10 @@ compare_values(refBSSCF, thisBSSCF, 10, "Reference broken-symmetry energy") #TES
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           H          0.000000000000     0.000000000000    -1.500000000000
-           H          0.000000000000     0.000000000000     1.500000000000
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           H          0.000000000000     0.000000000000    -1.500000000000     1.007825032070
+           H          0.000000000000     0.000000000000     1.500000000000     1.007825032070
 
   Running in c1 symmetry.
 
@@ -155,14 +155,14 @@ compare_values(refBSSCF, thisBSSCF, 10, "Reference broken-symmetry energy") #TES
    @DF-UHF iter   2:    -0.82592760804565   -1.94468e-02   2.07783e-03 DIIS
    @DF-UHF iter   3:    -0.82648405662725   -5.56449e-04   1.52749e-05 DIIS
    @DF-UHF iter   4:    -0.82648407748726   -2.08600e-08   6.36134e-07 DIIS
-   @DF-UHF iter   5:    -0.82648407752154   -3.42808e-11   1.57365e-10 DIIS
-   @DF-UHF iter   6:    -0.82648407752154   -2.22045e-16   1.93087e-13 DIIS
+   @DF-UHF iter   5:    -0.82648407752154   -3.42806e-11   1.57365e-10 DIIS
+   @DF-UHF iter   6:    -0.82648407752154   -2.22045e-16   1.93103e-13 DIIS
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   1.110223025E-15
+   @Spin Contamination Metric:   8.881784197E-16
    @S^2 Expected:                0.000000000E+00
-   @S^2 Observed:                1.110223025E-15
+   @S^2 Observed:                8.881784197E-16
    @S   Expected:                0.000000000E+00
    @S   Observed:                0.000000000E+00
 
@@ -202,12 +202,12 @@ compare_values(refBSSCF, thisBSSCF, 10, "Reference broken-symmetry energy") #TES
 
     Nuclear Repulsion Energy =              0.1763924028633333
     One-Electron Energy =                  -1.3590907619679640
-    Two-Electron Energy =                   0.3562142815830871
+    Two-Electron Energy =                   0.3562142815830870
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                         -0.8264840775215436
+    Total Energy =                         -0.8264840775215437
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -232,18 +232,26 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on che-fevange-01i at Sun Jul  5 20:42:37 2015
-Module time:
-	user time   =       0.19 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.19 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+  UHF NO Occupations:
+  HONO-0 :    1  A 2.0000000
+  LUNO+0 :    2  A 0.0000000
+  LUNO+1 :    3  A 0.0000000
+  LUNO+2 :    4  A 0.0000000
+  LUNO+3 :    5  A 0.0000000
 
-*** tstart() called on che-fevange-01i
-*** at Sun Jul  5 20:42:37 2015
+
+*** tstop() called on lawn-128-61-75-188.lawn.gatech.edu at Fri Jan  8 11:21:49 2016
+Module time:
+	user time   =       0.18 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.18 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on lawn-128-61-75-188.lawn.gatech.edu
+*** at Fri Jan  8 11:21:49 2016
 
 
          ---------------------------------------------------------
@@ -260,10 +268,10 @@ Total time:
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           H          0.000000000000     0.000000000000    -1.500000000000
-           H          0.000000000000     0.000000000000     1.500000000000
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           H          0.000000000000     0.000000000000    -1.500000000000     1.007825032070
+           H          0.000000000000     0.000000000000     1.500000000000     1.007825032070
 
   Running in c1 symmetry.
 
@@ -349,9 +357,9 @@ Total time:
    @DF-UHF iter   3:    -0.99871960587578   -1.34059e-04   1.05084e-04 DIIS
    @DF-UHF iter   4:    -0.99872132548771   -1.71961e-06   1.20127e-05 DIIS
    @DF-UHF iter   5:    -0.99872135069226   -2.52046e-08   1.58942e-06 DIIS
-   @DF-UHF iter   6:    -0.99872135103596   -3.43700e-10   1.25919e-07 DIIS
-   @DF-UHF iter   7:    -0.99872135103893   -2.97184e-12   2.59576e-08 DIIS
-   @DF-UHF iter   8:    -0.99872135103903   -9.70335e-14   1.59561e-12 DIIS
+   @DF-UHF iter   6:    -0.99872135103596   -3.43701e-10   1.25919e-07 DIIS
+   @DF-UHF iter   7:    -0.99872135103893   -2.97162e-12   2.59576e-08 DIIS
+   @DF-UHF iter   8:    -0.99872135103903   -9.72555e-14   1.59559e-12 DIIS
 
   ==> Post-Iterations <==
 
@@ -396,13 +404,13 @@ Total time:
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.1763924028633333
-    One-Electron Energy =                  -1.3518351355714495
-    Two-Electron Energy =                   0.1767213816690851
+    One-Electron Energy =                  -1.3518351355714504
+    Two-Electron Energy =                   0.1767213816690853
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                         -0.9987213510390311
+    Total Energy =                         -0.9987213510390318
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -416,25 +424,33 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on che-fevange-01i at Sun Jul  5 20:42:37 2015
+  UHF NO Occupations:
+  HONO-0 :    1  A 1.0715596
+  LUNO+0 :    2  A 0.9284404
+  LUNO+1 :    3  A 0.0000000
+  LUNO+2 :    4  A 0.0000000
+  LUNO+3 :    5  A 0.0000000
+
+
+*** tstop() called on lawn-128-61-75-188.lawn.gatech.edu at Fri Jan  8 11:21:49 2016
 Module time:
-	user time   =       0.19 seconds =       0.00 minutes
+	user time   =       0.17 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.41 seconds =       0.01 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.38 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

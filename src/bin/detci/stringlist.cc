@@ -35,9 +35,8 @@
 #include <cstdio>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libmints/mints.h>
 #include "structs.h"
-#define EXTERN
-#include "globals.h"
 
 namespace psi { namespace detci {
 
@@ -45,10 +44,13 @@ namespace psi { namespace detci {
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 #define MAXIJ 100000
-extern unsigned char ***Occs;
 
 
-/* GLOBALS for this module */
+/*
+GLOBALS for this module
+DGAS: I think this is ok, it uses and cleans up all globals upon
+a single stringlist call. 
+*/
 struct level *sbgr_tr_head;
 int sbgr_tr_orbs;
 int **sbgr_tr_out;
@@ -71,13 +73,11 @@ void subgr_trav_init(struct level *head, int ci_orbs, int **outarr, int
 void subgr_traverse(int i, int j);
 void form_stringwr(struct stringwr *strlist, int *occs, int N,
       int num_ci_orbs, struct stringgraph *subgraph, struct olsen_graph
-      *Graph, int first_orb_active);
+      *Graph, int first_orb_active, int repl_otf);
 void og_form_repinfo(struct stringwr *string, int num_ci_orbs, 
       struct olsen_graph *Graph, int first_orb_active);
 void init_stringwr_temps(int nel, int num_ci_orbs, int nsym);
 void free_stringwr_temps(int nsym);
-
-
 
 
 /*
@@ -85,7 +85,7 @@ void free_stringwr_temps(int nsym);
 **    single replacements using the Olsen Graph structures.
 **
 */
-void stringlist(struct olsen_graph *Graph, struct stringwr **slist)
+void stringlist(struct olsen_graph *Graph, struct stringwr **slist, int repl_otf, unsigned char ***Occs)
 {
 
    int i;
@@ -101,32 +101,38 @@ void stringlist(struct olsen_graph *Graph, struct stringwr **slist)
    outarr = init_int_matrix(nel_expl, Graph->max_str_per_irrep);
    occs = init_int_array(nel_expl);
 
-   if (!Parameters.repl_otf) {
+   if (!repl_otf) {
       init_stringwr_temps(Graph->num_el_expl, Graph->num_orb, nirreps * ncodes);
-      }
+   }
+   else {
+      // CDS help: This effectively allocates Occs twice if alplist != betlist
+      Occs = (unsigned char ***) malloc (nirreps * ncodes * sizeof(unsigned
+         char **));
+   }
 
-   Occs = (unsigned char ***) malloc (nirreps * ncodes * sizeof(unsigned
-      char **));
 
    for (irrep=0,listnum=0; irrep < nirreps; irrep++) {
       for (code = 0; code < ncodes; code++,listnum++) { 
 
-         Occs[listnum] = NULL;
+         if (repl_otf) Occs[listnum] = NULL;
 
          subgraph = Graph->sg[irrep] + code;
          if (!subgraph->num_strings) continue;
 
-         Occs[listnum] = (unsigned char **) malloc (subgraph->num_strings * 
-            sizeof(unsigned char *));
-         for (i=0; i<subgraph->num_strings; i++) 
-            Occs[listnum][i] = (unsigned char *) malloc (nel_expl * 
-                                sizeof(unsigned char));
+         if (repl_otf){
+            Occs[listnum] = (unsigned char **) malloc (subgraph->num_strings * 
+               sizeof(unsigned char *));
+            for (i=0; i<subgraph->num_strings; i++) 
+               Occs[listnum][i] = (unsigned char *) malloc (nel_expl * 
+                                   sizeof(unsigned char));
+         }
 
          slist[listnum] = (struct stringwr *)
             malloc (subgraph->num_strings * sizeof(struct stringwr));
    
          subgr_trav_init(subgraph->lvl, Graph->num_orb, outarr, 0);
          subgr_traverse(0, 0);
+         free(sbgr_tr_alist);
 
          for (walk=0; walk<subgraph->num_strings; walk++) {
             for (i=0; i<nel_expl; i++) occs[i]= outarr[i][walk];
@@ -134,26 +140,27 @@ void stringlist(struct olsen_graph *Graph, struct stringwr **slist)
 
             if (addr < 0) {
                printf("(stringlist): Impossible string addr\n");
-               }
+            }
 
-            for (i=0; i<nel_expl; i++) 
-               Occs[listnum][addr][i] = (unsigned char) occs[i];
+            if (repl_otf){
+               for (i=0; i<nel_expl; i++) 
+                  Occs[listnum][addr][i] = (unsigned char) occs[i];
+            }
 
             form_stringwr(slist[irrep * ncodes + code], occs, 
                nel_expl, Graph->num_orb, subgraph, Graph, 
-               Graph->num_expl_cor_orbs);
-            }
-         } /* end loop over subgraph codes */
-      } /* end loop over irreps */
+               Graph->num_expl_cor_orbs, repl_otf);
+         }
+      } /* end loop over subgraph codes */
+   } /* end loop over irreps */
 
    /* free the stringwr scratch space */
-   if (!Parameters.repl_otf) {
+   if (!repl_otf) {
       free_stringwr_temps(nirreps * ncodes);
-      }
+   }
 
    free_int_matrix(outarr);
    free(occs);
-   free(sbgr_tr_alist);
 }
 
 
@@ -208,7 +215,7 @@ void subgr_traverse(int i, int j)
 */
 void form_stringwr(struct stringwr *strlist, int *occs, int N,
       int num_ci_orbs, struct stringgraph *subgraph, struct olsen_graph
-      *Graph, int first_orb_active)
+      *Graph, int first_orb_active, int repl_otf)
 {
    unsigned char *occlist;
    unsigned int addr;
@@ -229,7 +236,7 @@ void form_stringwr(struct stringwr *strlist, int *occs, int N,
    node = strlist + addr;
    node->occs = occlist;
 
-   if (!Parameters.repl_otf) {
+   if (!repl_otf) {
       og_form_repinfo(node, num_ci_orbs, Graph, first_orb_active);
       }
 }

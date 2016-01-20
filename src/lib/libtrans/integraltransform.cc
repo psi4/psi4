@@ -36,7 +36,7 @@
 using namespace boost;
 using namespace psi;
 
-IntegralTransform::IntegralTransform(shared_ptr<Wavefunction> wfn,
+IntegralTransform::IntegralTransform(boost::shared_ptr<Wavefunction> wfn,
                                      SpaceVec spaces,
                                      TransformationType transformationType,
                                      OutputType outputType,
@@ -172,15 +172,17 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
 {
     memory_ = Process::environment.get_memory();
 
-    nirreps_ = c->nirrep();
-    nmo_     = c->ncol() + i->ncol() + a->ncol() + v->ncol();
-    nso_     = i->nrow();
-    sopi_    = i->rowspi();   // use i for this since there will always be occupied orbitals
-    mopi_    = c->colspi() + i->colspi() + a->colspi() + v->colspi();
-    clsdpi_  = i->colspi()+c->colspi();
-    openpi_  = Dimension(nirreps_); // This is the restricted constructor, there are no unpaired electrons
-    frzcpi_  = c->colspi();
-    frzvpi_  = v->colspi();
+    nirreps_  = c->nirrep();
+    nmo_      = c->ncol() + i->ncol() + a->ncol() + v->ncol();
+    nso_      = i->nrow();
+    sopi_     = i->rowspi();   // use i for this since there will always be occupied orbitals
+    mopi_     = c->colspi() + i->colspi() + a->colspi() + v->colspi();
+    clsdpi_   = i->colspi()+c->colspi();
+    openpi_   = Dimension(nirreps_); // This is the restricted constructor, there are no unpaired electrons
+    frzcpi_   = c->colspi();
+    frzvpi_   = v->colspi();
+    nalphapi_ = clsdpi_ + frzcpi_; // Restricted constructor
+    nbetapi_  = clsdpi_ + frzcpi_;
     frozen_core_energy_ = 0.0;
 
     // Need to smash together the C's only for them to be ripped apart elsewhere.

@@ -738,7 +738,7 @@ public:
      */
     void apply_symmetry(const SharedMatrix& a, const SharedMatrix& transformer);
 
-    /** Special function to transform a symmetry matrix into 
+    /** Special function to transform a symmetry matrix into
      *  a SimpleMatrix (no symmetry).
      *
      *  \param a symmetry matrix to transform

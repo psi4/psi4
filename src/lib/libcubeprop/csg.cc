@@ -637,7 +637,7 @@ void CubicScalarGrid::compute_basis_functions(const std::vector<int>& indices, c
     }   
     free_block(v);
 }
-void CubicScalarGrid::compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::string& name, const std::string& type)
+void CubicScalarGrid::compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::vector<std::string>& labels, const std::string& name, const std::string& type)
 {
     boost::shared_ptr<Matrix> C2(new Matrix(primary_->nbf(), indices.size()));  
     double** Cp  = C->pointer();
@@ -650,7 +650,7 @@ void CubicScalarGrid::compute_orbitals(boost::shared_ptr<Matrix> C, const std::v
     add_orbitals(v, C2);
     for (int k = 0; k < indices.size(); k++) {
         std::stringstream ss; 
-        ss << name << "_" << (indices[k] + 1);
+        ss << name << "_" << (indices[k] + 1) << "_" << labels[k];
         write_gen_file(v[k],ss.str(),type);
     }   
     free_block(v);

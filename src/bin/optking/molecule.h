@@ -406,6 +406,9 @@ class MOLECULE {
   // Tell if coord i is a fixed coordinate
   bool is_coord_fixed(int coord_index);
 
+  // Does the current set of coordinates includes ANYTHING that is not a cartesian.
+  bool is_noncart_present() const;
+
 };
 
 }

@@ -116,7 +116,21 @@ for defining basis sets, as detailed in :ref:`sec:basisUserDefined`.
 .. index::
    pair: basis set; adding new
 
-.. _`sec:basisUserDefined`:
+.. _`sec:basisDecontracted`:
+
+Decontracted Basis Sets
+=======================
+Decontraction of the basis set can be useful in certain situations. In order to 
+decontract a given basis set, simply add "-decontract" to the name of the primary basis set. ::
+
+
+	set basis cc-pvdz-decontract
+
+Obviously this will add significantly to the computational cost of any given calculation, however it can
+be useful when checking the basis set dependence of a particular calculated property or in certain situations
+where a large basis set is critical. Currently it is recommended that a decontracted basis is always used when performing realtivistic calculations using the :ref:`X2C Hamiltonian <sec:relativistic>`.
+
+.. _`sec:basisUserDefined`: 
 
 User-Defined Basis Sets
 =======================
@@ -227,5 +241,3 @@ Use ``assign`` statements to actually request the basis set. (See
    [addl]
    ...
    }
-
-

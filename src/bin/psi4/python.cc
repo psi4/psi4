@@ -123,6 +123,7 @@ namespace mcscf { PsiReturnType mcscf(Options&); }
 namespace psimrcc { PsiReturnType psimrcc(Options&); }
 namespace transqt2 { PsiReturnType transqt2(Options&); }
 namespace ccsort { PsiReturnType ccsort(Options&); }
+namespace cctransort { PsiReturnType cctransort(Options&); }
 //    namespace lmp2       { PsiReturnType lmp2(Options&);      }
 namespace cctriples { PsiReturnType cctriples(Options&); }
 namespace cchbar { PsiReturnType cchbar(Options&); }
@@ -487,6 +488,13 @@ double py_psi_ccsort()
 {
     py_psi_prepare_options_for_module("CCSORT");
     ccsort::ccsort(Process::environment.options);
+    return 0.0;
+}
+
+double py_psi_cctransort()
+{
+    py_psi_prepare_options_for_module("CCTRANSORT");
+    cctransort::cctransort(Process::environment.options);
     return 0.0;
 }
 
@@ -1262,7 +1270,7 @@ void py_psi_print_variable_map()
 {
     int largest_key = 0;
     for (std::map<string, double>::iterator it = Process::environment.globals.begin();
-         it != Process::environment.globals.end(); it++) {
+         it != Process::environment.globals.end(); ++it) {
         if (it->first.size() > largest_key)
             largest_key = it->first.size();
     }
@@ -1271,7 +1279,7 @@ void py_psi_print_variable_map()
     std::stringstream line;
     std::string first_tmp;
     for (std::map<string, double>::iterator it = Process::environment.globals.begin();
-         it != Process::environment.globals.end(); it++) {
+         it != Process::environment.globals.end(); ++it) {
         first_tmp = "\"" + it->first + "\"";
         line << "  " << std::left << std::setw(largest_key) << first_tmp << " => " << std::setw(20) << std::right <<
         std::fixed << std::setprecision(12) << it->second << std::endl;
@@ -1658,6 +1666,7 @@ BOOST_PYTHON_MODULE (psi4)
 //    def("transqt", py_psi_transqt, "Runs the (deprecated) transformation code.");
     def("transqt2", py_psi_transqt2, "Runs the (deprecated) transformation code.");
     def("ccsort", py_psi_ccsort, "Runs CCSORT, which reorders integrals for use in the coupled cluster codes.");
+    def("cctransort", py_psi_cctransort, "Runs CCTRANSORT, which transforms and reorders integrals for use in the coupled cluster codes.");
     def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");
     def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");

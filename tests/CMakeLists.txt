@@ -7,8 +7,11 @@ set(TestsNotSetUpRight cfour optking testgrendel)
 # The following labels are defined:
 #
 #  longtests   = The (as of right now) 4 really long tests
-#  longertests = Every test in the test folder less longtests
-#  quicktests  = Proper subset of tests deemed to run quickly
+#  shorttests  = Every test in the test folder less longtests
+#  quicktests  = Proper subset of tests deemed to run quickly (ideally
+#                in 60 seconds or less).  This subset is chosen to provide
+#                one or more tests for each major module, but it does not
+#                necessarily cover all features of every module.
 #
 # It is possible to specify more than one label per test. CMake
 # expects a ;-separated list, e.g. "psi;quicktests;scf"
@@ -120,6 +123,9 @@ add_subdirectory(dcft6)
 add_subdirectory(dcft7)
 add_subdirectory(dcft8)
 add_subdirectory(dcft9)
+add_subdirectory(dfcasscf-sa-sp)
+add_subdirectory(dfcasscf-fzc-sp)
+add_subdirectory(dfcasscf-sp)
 add_subdirectory(dfccd1)
 add_subdirectory(dfccdl1)
 add_subdirectory(dfccd-grad1)
@@ -150,6 +156,7 @@ add_subdirectory(dfomp2p5-1)
 add_subdirectory(dfomp2p5-2)
 add_subdirectory(dfomp2p5-grad1)
 add_subdirectory(dfomp2p5-grad2)
+add_subdirectory(dfrasscf-sp)
 add_subdirectory(dfscf-bz2)
 add_subdirectory(dft-b2plyp)
 add_subdirectory(dft-dldf)
@@ -241,6 +248,8 @@ add_subdirectory(opt4)
 add_subdirectory(opt5)
 add_subdirectory(opt6)
 add_subdirectory(opt7)
+add_subdirectory(opt8)
+add_subdirectory(opt9)
 add_subdirectory(props1)
 add_subdirectory(props2)
 add_subdirectory(props3)
@@ -280,6 +289,7 @@ add_subdirectory(sapt2)
 add_subdirectory(sapt3)
 add_subdirectory(sapt4)
 add_subdirectory(sapt5)
+add_subdirectory(sapt6)
 add_subdirectory(scf-bz2)
 add_subdirectory(scf-guess-read)
 add_subdirectory(scf-bs)
@@ -291,6 +301,7 @@ add_subdirectory(scf4)
 add_subdirectory(scf5)
 add_subdirectory(scf6)
 add_subdirectory(soscf1)
+add_subdirectory(soscf2)
 add_subdirectory(stability1)
 add_subdirectory(tu1-h2o-energy)
 add_subdirectory(tu2-ch2-energy)
@@ -364,6 +375,7 @@ endif()
 if(ENABLE_PCMSOLVER)
    add_subdirectory(pcm_scf)
    add_subdirectory(pcm_dft)
+   add_subdirectory(pcm_dipole)
 endif()
 
 if(NOT PERL_FOUND)

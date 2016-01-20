@@ -148,7 +148,6 @@ boost::shared_ptr<BasisSet> BasisSet::build(boost::shared_ptr<Molecule> /*molecu
     //    basis->refresh();
 
     throw NotImplementedException();
-
     return basis;
 }
 
@@ -462,7 +461,15 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_orbital(const boost::shared_pt
         const std::string& key, const std::string& target,
         const int forced_puream)
 {
-    boost::shared_ptr<BasisSet> basisset = pyconstruct_auxiliary(mol, key, target, "BASIS", "", forced_puream);
+    boost::shared_ptr<BasisSet> basisset = pyconstruct_auxiliary(mol, key, target, "BASIS", "", forced_puream); 
+    // Uncontract the primary basis set
+    std::string str = Process::environment.options.get_str("BASIS");
+    if (str.size() > 11){
+       std::size_t pos = str.find("-DECONTRACT");
+       if (pos != std::string::npos){
+           return basisset->decontract();
+       }
+    } 
     return basisset;
 }
 
@@ -806,7 +813,6 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
     //TODO ACS is this still needed?
     // This step is very important. Without it the basis set is useless.
     basisset->refresh();
-
     basisset->name_.clear();
     for (map<string, int>::iterator iter = names.begin(), end = names.end();
          iter != end;
@@ -1446,9 +1452,10 @@ boost::shared_ptr<BasisSet> BasisSet::decontract()
     std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > shell_map;
     shell_map["DECONTRACTED_BASIS"] = u_shells;
 
-    molecule_->set_basis_all_atoms("DECONTRACTED_BASIS",name_ + "-DECONTRACTED");
-
-    return boost::shared_ptr<BasisSet>(new BasisSet(name_ + "-DECONTRACTED",molecule_,shell_map));
+    //molecule_->set_basis_all_atoms("DECONTRACTED_BASIS",name_ + "-DECONTRACTED");
+    molecule_->set_basis_all_atoms("DECONTRACTED_BASIS",name_);
+    //return boost::shared_ptr<BasisSet>(new BasisSet(name_ + "-DECONTRACTED",molecule_,shell_map));
+    return boost::shared_ptr<BasisSet>(new BasisSet(name_,molecule_,shell_map));
 }
 
 void BasisSet::compute_phi(double *phi_ao, double x, double y, double z)
