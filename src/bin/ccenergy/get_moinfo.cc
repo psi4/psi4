@@ -55,23 +55,23 @@ void CCEnergyWavefunction::get_moinfo(void)
     double ***Co, ***Cv, ***Ca, ***Cb;
     psio_address next;
 
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-    moinfo_.nirreps = wfn->nirrep();
-    moinfo_.nmo = wfn->nmo();
-    moinfo_.nso = wfn->nso();
-    moinfo_.nao = wfn->basisset()->nao();
-    moinfo_.labels = wfn->molecule()->irrep_labels();
-    moinfo_.enuc = wfn->molecule()->nuclear_repulsion_energy();
-    if(wfn->reference_wavefunction())
-        moinfo_.escf = wfn->reference_wavefunction()->reference_energy();
+    moinfo_.nirreps = nirrep_;
+    moinfo_.nmo = nmo_;
+    moinfo_.nso = nso_;
+    moinfo_.nao = basisset_->nao();
+    moinfo_.labels = molecule_->irrep_labels();
+    moinfo_.enuc = molecule_->nuclear_repulsion_energy();
+    if(reference_wavefunction_)
+        moinfo_.escf = reference_wavefunction_->reference_energy();
     else
-        moinfo_.escf = wfn->reference_energy();
-    moinfo_.sopi = wfn->nsopi();
-    moinfo_.orbspi = wfn->nmopi();
-    moinfo_.openpi = wfn->soccpi();
+        moinfo_.escf = energy_;
+    moinfo_.sopi = nsopi_;
+    moinfo_.orbspi = nmopi_;
+    moinfo_.openpi = soccpi_;
     moinfo_.clsdpi = init_int_array(moinfo_.nirreps);
+    // TODO: figure out why I can't just directly assign doccpi_ here, the same as soccpi_.
     for(int h = 0; h < moinfo_.nirreps; ++h)
-        moinfo_.clsdpi[h] = wfn->doccpi()[h];
+        moinfo_.clsdpi[h] = doccpi_[h];
 
     nirreps = moinfo_.nirreps;
 

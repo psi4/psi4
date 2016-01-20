@@ -67,8 +67,6 @@ int CCEnergyWavefunction::rotate(void)
     int *offset;
     int phase_ok=1, max_col;
 
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-
     nirreps = moinfo_.nirreps;
     nso = moinfo_.nso;
     nmo = moinfo_.nmo;
@@ -160,8 +158,8 @@ int CCEnergyWavefunction::rotate(void)
         global_dpd_->file2_mat_close(&T1);
         global_dpd_->file2_close(&T1);
 
-        scf = wfn->Ca()->to_block_matrix();
-        scf_orig = wfn->Ca()->to_block_matrix();
+        scf = Ca_->to_block_matrix();
+        scf_orig = Ca_->to_block_matrix();
         scf_new = block_matrix(nso, nmo);
         C_DGEMM('n','t',nso,nmo,nmo,1,&(scf[0][0]),nmo,&(U[0][0]),nmo, 0,&(scf_new[0][0]),nmo);
         free_block(U);
@@ -218,8 +216,8 @@ int CCEnergyWavefunction::rotate(void)
         rhf_fock_build(fock, D);
         free_block(D);
 
-        Process::environment.wavefunction()->Fa()->set(fock);
-        Process::environment.wavefunction()->Fb()->set(fock);
+        Fa_->set(fock);
+        Fb_->set(fock);
 
         /*
     outfile->Printf( "\n\tSO-basis Fock matrix:\n");
@@ -373,8 +371,8 @@ int CCEnergyWavefunction::rotate(void)
     mat_print(scf_new, nso, nmo, outfile);
     */
 
-        Process::environment.wavefunction()->Ca()->set(scf_new);
-        Process::environment.wavefunction()->Cb()->set(scf_new);
+        Ca_->set(scf_new);
+        Cb_->set(scf_new);
 
         free_block(scf_new);
         free_block(scf_orig);
@@ -403,8 +401,8 @@ int CCEnergyWavefunction::rotate(void)
         global_dpd_->file2_mat_close(&T1);
         global_dpd_->file2_close(&T1);
 
-        scf = wfn->Ca()->to_block_matrix();
-        scf_a_orig = wfn->Ca()->to_block_matrix();
+        scf = Ca_->to_block_matrix();
+        scf_a_orig = Ca_->to_block_matrix();
 
         scf_new = block_matrix(nso, nmo);
         C_DGEMM('n','t',nso,nmo,nmo,1,&(scf[0][0]),nmo,&(U[0][0]),nmo,
@@ -473,8 +471,8 @@ int CCEnergyWavefunction::rotate(void)
         global_dpd_->file2_mat_close(&T1);
         global_dpd_->file2_close(&T1);
 
-        scf = wfn->Cb()->to_block_matrix();
-        scf_b_orig = wfn->Cb()->to_block_matrix();
+        scf = Cb_->to_block_matrix();
+        scf_b_orig = Cb_->to_block_matrix();
 
         scf_new = block_matrix(nso, nmo);
         C_DGEMM('n','t',nso,nmo,nmo,1,&(scf[0][0]),nmo,&(U[0][0]),nmo,
@@ -541,8 +539,8 @@ int CCEnergyWavefunction::rotate(void)
         free_block(D_a);
         free_block(D_b);
 
-        Process::environment.wavefunction()->Fa()->set(fock_a);
-        Process::environment.wavefunction()->Fb()->set(fock_b);
+        Fa_->set(fock_a);
+        Fb_->set(fock_b);
 
         /* transform the fock matrices to the new alpha and beta MO bases */
         X = block_matrix(nso,nso);
@@ -654,7 +652,7 @@ int CCEnergyWavefunction::rotate(void)
 
         free_block(MO_S);
 
-        Process::environment.wavefunction()->Ca()->set(scf_new);
+        Ca_->set(scf_new);
 
         free_block(scf_new);
         free_block(scf_a_orig);
@@ -756,7 +754,7 @@ int CCEnergyWavefunction::rotate(void)
 
         free_block(MO_S);
 
-        Process::environment.wavefunction()->Cb()->set(scf_new);
+        Cb_->set(scf_new);
 
         free_block(scf_new);
         free_block(scf_b_orig);

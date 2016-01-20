@@ -55,7 +55,7 @@ void CCEnergyWavefunction::rhf_fock_build(double **fock, double  **D)
   nso = moinfo_.nso;
   ntri = nso * (nso+1)/2;
 
-  double **H = Process::environment.wavefunction()->H()->to_block_matrix();
+  double **H = H_->to_block_matrix();
 
   for(i=0; i < nso; i++) {
       for(j=0; j <= i; j++) {
@@ -202,7 +202,7 @@ void CCEnergyWavefunction::uhf_fock_build(double **fock_a, double **fock_b, doub
 
   /* one-electron contributions */
 
-  double **H = Process::environment.wavefunction()->H()->to_block_matrix();
+  double **H = H_->to_block_matrix();
 
   for(i=0; i < nso; i++) {
       for(j=0; j <= i; j++) {
