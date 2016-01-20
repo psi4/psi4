@@ -36,20 +36,14 @@
 #include <psifiles.h>
 #include "Params.h"
 #include "MOInfo.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double ***C1, double ***C2,
-               int nirreps, int **mo_row, int **so_row, int *mospi_left, int *mospi_right,
-               int *sospi, int type, double alpha, double beta);
 
-int AO_contribute(struct iwlbuf *InBuf, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO);
-
-
-
-void BT2_AO(void)
+void CCEnergyWavefunction::BT2_AO(void)
 {
     int h, nirreps, i, Gc, Gd, Ga, Gb, ij;
     double ***C, **X;

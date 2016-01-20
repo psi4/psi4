@@ -27,9 +27,10 @@
 #include <cstdio>
 #include "psi4-dec.h"
 #include "libparallel/ParallelPrinter.h"
+#include "ccwave.h"
 namespace psi { namespace ccenergy {
 
-void status(const char *s, std::string out)
+void CCEnergyWavefunction::status(const char *s, std::string out)
 {
    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
            boost::shared_ptr<OutFile>(new OutFile(out)));

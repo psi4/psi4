@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include <libdpd/dpd.h>
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
@@ -35,7 +36,7 @@ namespace psi { namespace ccenergy {
 
 void local_filter_T2(dpdbuf4 *T2);
 
-void dijabT2(void)
+void CCEnergyWavefunction::dijabT2(void)
 {
   dpdbuf4 newtIJAB, newtijab, newtIjAb, tIjAb;
   dpdbuf4 dIJAB, dijab, dIjAb;

@@ -29,12 +29,13 @@
 #include <libdpd/dpd.h>
 #include "Params.h"
 #include "MOInfo.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-void Fmi_build(void)
+void CCEnergyWavefunction::Fmi_build(void)
 {
   int h,m,i;
   dpdfile2 FMI, Fmi, FMIt, Fmit, fIJ, fij, fIA, fia;

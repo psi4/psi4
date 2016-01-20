@@ -26,12 +26,13 @@
 */
 #include <libdpd/dpd.h>
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-void FT2_CC2(void)
+void CCEnergyWavefunction::FT2_CC2(void)
 {
   dpdbuf4 newT2, T2, Z;
   dpdfile2 F;

@@ -30,6 +30,7 @@
 #include <libdpd/dpd.h>
 #include <psifiles.h>
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
@@ -54,7 +55,7 @@ namespace psi { namespace ccenergy {
 ** FME = Fme
 */
 
-void spinad_amps(void)
+void CCEnergyWavefunction::spinad_amps(void)
 {
   dpdfile2 T1, F;
   dpdbuf4 T2AB1, T2AB2, T2, W, W1, W2;

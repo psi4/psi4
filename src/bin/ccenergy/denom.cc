@@ -29,6 +29,7 @@
 #include <libdpd/dpd.h>
 #include "Params.h"
 #include "Local.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
@@ -39,7 +40,7 @@ void dijabT2(void);
 
 /* apply denominators to t1 and t2 */
 
-void denom(void)
+void CCEnergyWavefunction::denom(void)
 {
   dpdfile2 newtIA, dIA, tIA, newtia, dia, tia;
 

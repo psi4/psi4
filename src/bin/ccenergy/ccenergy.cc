@@ -53,72 +53,7 @@ namespace psi { namespace ccenergy {
 
 #define IOFF_MAX 32641
 
-void init_io();
-void init_ioff(void);
-void title(void);
-void get_moinfo(void);
-void get_params(Options &);
-void init_amps(void);
-void tau_build(void);
-void taut_build(void);
-double energy(void);
-double mp2_energy(void);
-void sort_amps(void);
-void Fae_build(void);
-void Fmi_build(void);
-void Fme_build(void);
-void t1_build(void);
-void Wmnij_build(void);
-void Z_build(void);
-void Y_build(void);
-void X_build(void);
-void Wmbej_build(void);
-void t2_build(void);
-void tsave(void);
-int converged(double);
-double diagnostic(void);
-double d1diag(void);
-double new_d1diag(void);
-double d2diag(void);
-void exit_io(void);
-void cleanup(void);
-void update(void);
-void diis(int iter);
-void ccdump(void);
-int **cacheprep_uhf(int level, int *cachefiles);
-int **cacheprep_rhf(int level, int *cachefiles);
-void cachedone_rhf(int **cachelist);
-void cachedone_uhf(int **cachelist);
-struct dpd_file4_cache_entry *priority_list(void);
-void spinad_amps(void);
-void status(const char *, std::string );
-void lmp2(void);
-void amp_write(void);
-void amp_write(void);
-int rotate(void);
-double **fock_build(double **D);
-void analyze(void);
-void cc3_Wmnie(void);
-void cc3_Wamef(void);
-void cc3_Wmnij(void);
-void cc3_Wmbij(void);
-void cc3_Wabei(void);
-void cc3(void);
-void cc2_Wmnij_build(void);
-void cc2_Wmbij_build(void);
-void cc2_Wabei_build(void);
-void cc2_t2_build(void);
-void one_step(void);
-void denom(void);
-void pair_energies(double** epair_aa, double** epair_ab);
-void print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa,
-                         double* ecc_ab);
-void checkpoint(void);
-void form_df_ints(Options &options, int **cachelist, int *cachefiles, dpd_file4_cache_entry *priority);
 
-/* local correlation functions */
-void local_init(void);
-void local_done(void);
 
 PsiReturnType ccenergy(Options &options);
 
@@ -152,7 +87,7 @@ double CCEnergyWavefunction::compute_energy()
 {
     energy_ = 0.0;
     PsiReturnType ccsd_return;
-    if ((ccsd_return = psi::ccenergy::ccenergy(options_)) == Success) {
+    if ((ccsd_return = run_ccenergy(options_)) == Success) {
         // Get the total energy of the CCSD wavefunction
         energy_ = Process::environment.globals["CURRENT ENERGY"];
     }
@@ -172,7 +107,7 @@ double CCEnergyWavefunction::compute_energy()
     return energy_;
 }
 
-PsiReturnType ccenergy(Options &options)
+PsiReturnType CCEnergyWavefunction::run_ccenergy(Options &options)
 {
     int done=0, brueckner_done=0;
     int h, i, j, a, b, row, col, natom;
@@ -598,12 +533,8 @@ PsiReturnType ccenergy(Options &options)
     return Success;
 }
 
-}} //namespace psi::ccenergy
 
-
-namespace psi { namespace ccenergy {
-
-void init_io()
+void CCEnergyWavefunction::init_io()
 {
     params.just_energy = 0;
     params.just_residuals = 0;
@@ -611,7 +542,7 @@ void init_io()
     for(int i =PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i,1);
 }
 
-void title(void)
+void CCEnergyWavefunction::title(void)
 {
     outfile->Printf( "\t\t\t**************************\n");
     outfile->Printf( "\t\t\t*                        *\n");
@@ -620,7 +551,7 @@ void title(void)
     outfile->Printf( "\t\t\t**************************\n");
 }
 
-void exit_io(void)
+void CCEnergyWavefunction::exit_io(void)
 {
     int i;
     for(i=PSIF_CC_MIN; i < PSIF_CC_TMP; i++) psio_close(i,1);
@@ -630,7 +561,7 @@ void exit_io(void)
 
 }
 
-void init_ioff(void)
+void CCEnergyWavefunction::init_ioff(void)
 {
     int i;
     ioff = init_int_array(IOFF_MAX);
@@ -639,7 +570,7 @@ void init_ioff(void)
 }
 
 
-void checkpoint(void)
+void CCEnergyWavefunction::checkpoint(void)
 {
     int i;
 
@@ -648,7 +579,7 @@ void checkpoint(void)
 }
 
 /* just use T's on disk and don't iterate */
-void one_step(void) {
+void CCEnergyWavefunction::one_step(void) {
     dpdfile2 t1;
     dpdbuf4 t2;
     double tval;

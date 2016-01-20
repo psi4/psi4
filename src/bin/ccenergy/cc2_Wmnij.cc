@@ -27,6 +27,7 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "MOInfo.h"
 #include "globals.h"
@@ -43,7 +44,7 @@ namespace psi { namespace ccenergy {
 
 void purge_cc2_Wmnij(void);
 
-void cc2_Wmnij_build(void)
+void CCEnergyWavefunction::cc2_Wmnij_build(void)
 {
   dpdbuf4 A, E, D, Z, W, Z1, X;
   dpdfile2 t1, tIA, tia;

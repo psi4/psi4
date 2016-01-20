@@ -31,6 +31,7 @@
 #include <libqt/qt.h>
 #include "Params.h"
 #include "MOInfo.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
@@ -38,7 +39,7 @@ namespace psi { namespace ccenergy {
 
 void purge_cc2_Wmbij(void);
 
-void cc2_Wmbij_build(void)
+void CCEnergyWavefunction::cc2_Wmbij_build(void)
 {
 
   dpdfile2 t1, tIA, tia;

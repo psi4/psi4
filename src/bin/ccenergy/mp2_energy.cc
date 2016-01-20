@@ -30,16 +30,15 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 #include "MOInfo.h"
 
 namespace psi { namespace ccenergy {
 
-double rhf_mp2_energy(void);
-double uhf_mp2_energy(void);
 
-double mp2_energy(void)
+double CCEnergyWavefunction::mp2_energy(void)
 {
 	/* Note that if we reach this point and ref=1 (ROHF), then we aren't using 
 	 * semicanonical orbitals and so we can't compute a non-iterative MBPT(2) 
@@ -50,7 +49,7 @@ double mp2_energy(void)
   
 }
 
-double rhf_mp2_energy(void)
+double CCEnergyWavefunction::rhf_mp2_energy(void)
 {
   double T2_energy, T1_energy;
   dpdfile2 F, T1, D1;
@@ -102,7 +101,7 @@ double rhf_mp2_energy(void)
   return (T2_energy+T1_energy);
 }
 
-double uhf_mp2_energy(void)
+double CCEnergyWavefunction::uhf_mp2_energy(void)
 {
   double E2AA, E2BB, E2AB, T1A, T1B;
   dpdbuf4 T2, D;

@@ -33,12 +33,11 @@
 #include "Params.h"
 #include "Local.h"
 #include "MOInfo.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
-
-void local_filter_T2(dpdbuf4 *T2);
 
 /* lmp2(): Computes the local-MP2 energy and the local-MP2 weak-pair energy.
 **
@@ -65,7 +64,7 @@ void local_filter_T2(dpdbuf4 *T2);
 ** TDC, June 2002
 */
 
-void lmp2(void)
+void CCEnergyWavefunction::lmp2(void)
 {
   int i, j, k, ij, ab, iter, conv, row, col, nocc, nvir, natom, weak;
   double energy, rms, weak_pair_energy;

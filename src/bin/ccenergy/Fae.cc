@@ -30,12 +30,13 @@
 #include <libqt/qt.h>
 #include "MOInfo.h"
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-void Fae_build(void)
+void CCEnergyWavefunction::Fae_build(void)
 {
   int h,a,e,nirreps;
   int ma,fe,ef,m,f,M,A,Gm,Ga,Ge,Gf,Gma,nrows,ncols;

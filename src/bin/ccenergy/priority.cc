@@ -30,15 +30,13 @@
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
 #include <libdpd/dpd.h>
-
+#include "ccwave.h"
 namespace psi { namespace ccenergy {
 
-#define NUM_ENTRIES 113
-struct dpd_file4_cache_entry list[NUM_ENTRIES];
 
-struct dpd_file4_cache_entry *priority_list(void)
+
+dpd_file4_cache_entry *CCEnergyWavefunction::priority_list(void)
 {
-  extern struct dpd_file4_cache_entry list[NUM_ENTRIES];
 
   strcpy(list[  0].label, "D <ij||ab> (i>j,a>b)");
   list[  0].filenum = 105;

@@ -28,12 +28,13 @@
 #include <cstdlib>
 #include <libdpd/dpd.h>
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-void Fme_build(void)
+void CCEnergyWavefunction::Fme_build(void)
 {
   dpdfile2 FME, Fme, fIA, fia, tIA, tia;
   dpdbuf4 D_anti, D;

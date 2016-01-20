@@ -29,6 +29,7 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
@@ -111,7 +112,7 @@ namespace psi { namespace ccenergy {
 ** Last revised October 2001
 */
 
-void WmbejT2(void)
+void CCEnergyWavefunction::WmbejT2(void)
 {
   dpdbuf4 T2new, T2, W, T2B, W1, W2, Z;
 

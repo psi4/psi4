@@ -30,14 +30,13 @@
 #include <libpsio/psio.h>
 #include <libdpd/dpd.h>
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-void local_filter_T2(dpdbuf4 *T2);
-
-void init_amps(void)
+void CCEnergyWavefunction::init_amps(void)
 {
   dpdfile2 tIA, tia, fIA, fia, dIA, dia;
   dpdbuf4 tIJAB, tijab, tIjAb, D, dIJAB, dijab, dIjAb;

@@ -30,12 +30,13 @@
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-void cc2_WabeiT2(void) {
+void CCEnergyWavefunction::cc2_WabeiT2(void) {
 
   int rowx, colx, rowz, colz, ab;
   int GX, GZ, Ge, Gi, Gj, hxbuf, hzbuf;

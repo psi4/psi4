@@ -32,6 +32,7 @@
 #include <libqt/qt.h>
 #include "MOInfo.h"
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
@@ -172,7 +173,7 @@ double d2diag_rhf(void)
 
 }
 
-double d2diag(void)
+double CCEnergyWavefunction::d2diag(void)
 {
   double norm = 0.0;
 

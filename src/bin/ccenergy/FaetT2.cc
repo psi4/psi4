@@ -28,12 +28,13 @@
 #include <cstdlib>
 #include <libdpd/dpd.h>
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-void FaetT2(void)
+void CCEnergyWavefunction::FaetT2(void)
 {
   dpdfile2 FAEt, Faet;
   dpdbuf4 newtIJAB, newtijab, newtIjAb;

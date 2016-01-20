@@ -30,6 +30,7 @@
 #include <cmath>
 #include <libdpd/dpd.h>
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 #include "libparallel/ParallelPrinter.h"
@@ -55,7 +56,7 @@ void twostack_insert(struct twostack *stack, double value, int i, int j,
 void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string OutFileRMR);
 void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string OutFileRMR);
 
-void amp_write(void)
+void CCEnergyWavefunction::amp_write(void)
 {
   dpdfile2 T1;
   dpdbuf4 T2;
