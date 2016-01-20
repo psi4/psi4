@@ -44,31 +44,24 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
     /*
      * Set up the DF tensor machinery
      */
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
-    boost::shared_ptr<BasisSet> aoBasis = BasisSet::pyconstruct_orbital(molecule,
-        "BASIS", options.get_str("BASIS"));
-    boost::shared_ptr<BasisSet> dfBasis = BasisSet::pyconstruct_auxiliary(molecule,
+    boost::shared_ptr<BasisSet> dfBasis = BasisSet::pyconstruct_auxiliary(molecule_,
         "DF_BASIS_CC", options.get_str("DF_BASIS_CC"), "RIFIT", options.get_str("BASIS"));
-    int nmo = wfn->nmo();
-    int nocc = wfn->doccpi().sum();
-    int nvir = nmo - nocc;
-    int nirreps = wfn->nirrep();
-    int nbf = aoBasis->nbf();
+    int nocc = doccpi_.sum();
+    int nvir = nmo_ - nocc;
+    int nbf = basisset_->nbf();
     int nbf2 = nbf*nbf;
-    SharedMatrix Ca = wfn->Ca_subset("AO");
-    DFTensor dfints(aoBasis, dfBasis, Ca, nocc, nvir, nocc, nvir, options);
+    SharedMatrix Ca = Ca_subset("AO");
+    DFTensor dfints(basisset_, dfBasis, Ca, nocc, nvir, nocc, nvir, options);
     SharedMatrix Qao = dfints.Qso();
 
     // Build the symmetrization matrix for the RI basis
-    SharedMatrix aoAOtoSO = wfn->aotoso();
-    PetiteList petite(dfBasis, wfn->integral(), false);
+    PetiteList petite(dfBasis, integral_, false);
     SharedMatrix dfAOtoSO = petite.aotoso();
-    const Dimension &soDim = aoAOtoSO->colspi();
+    const Dimension &soDim = AO2SO_->colspi();
     const Dimension &dfDim = dfAOtoSO->colspi();
-    SharedMatrix symQao(new Matrix(nirreps, (const int*)dfDim, nbf2));
+    SharedMatrix symQao(new Matrix(nirrep_, (const int*)dfDim, nbf2));
     double **pQao = Qao->pointer();
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         double **pAOSO = dfAOtoSO->pointer(h);
         double **pSymQao = symQao->pointer(h);
         int nQso = dfAOtoSO->coldim(h);
@@ -150,19 +143,19 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
     }else{
         // Transform the AO indices to the SO basis
         global_dpd_->buf4_init(&I, PSIF_CC_OEI, 0, 43, 5, 43, 8, 0, "B(Q|pq)");
-        for(int h = 0; h < nirreps; ++h){
+        for(int h = 0; h < nirrep_; ++h){
             global_dpd_->buf4_mat_irrep_init(&I, h);
 
             double **pQao = symQao->pointer(h);
             for(int pq = 0; pq < I.params->rowtot[h]; ++pq){
-                for(int Gr=0; Gr < nirreps; Gr++) {
+                for(int Gr=0; Gr < nirrep_; Gr++) {
                     // Transform ( Q | AO AO ) -> ( Q | AO SO )
                     int Gs = h^Gr;
                     int nrows = nbf;
                     int ncols = soDim[Gs];
                     int nlinks = nbf;
                     int rs = I.col_offset[h][Gr];
-                    double **pc4a = aoAOtoSO->pointer(Gs);
+                    double **pc4a = AO2SO_->pointer(Gs);
                     if(nrows && ncols && nlinks)
                         C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, pQao[pq],
                                 nlinks, pc4a[0], ncols, 0.0, htints, nbf);
@@ -171,7 +164,7 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
                     ncols = soDim[Gs];
                     nlinks = nbf;
                     rs = I.col_offset[h][Gr];
-                    double **pc3a = aoAOtoSO->pointer(Gr);
+                    double **pc3a = AO2SO_->pointer(Gr);
                     if(nrows && ncols && nlinks)
                         C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, pc3a[0], nrows,
                                 htints, nbf, 0.0, &I.matrix[h][pq][rs], ncols);
@@ -187,13 +180,13 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
         // (OV|Q)
         dpdbuf4 OV;
         global_dpd_->buf4_init(&OV, PSIF_CC_OEI, 0, 43, 27, 43, 27, 0, "B(Q|OV)");
-        for(int h = 0; h < nirreps; ++h){
+        for(int h = 0; h < nirrep_; ++h){
             global_dpd_->buf4_mat_irrep_init(&OV, h);
             global_dpd_->buf4_mat_irrep_init(&I, h);
             global_dpd_->buf4_mat_irrep_rd(&I, h);
 
             for(int pq = 0; pq < I.params->rowtot[h]; ++pq){
-                for(int Gr=0; Gr < nirreps; Gr++) {
+                for(int Gr=0; Gr < nirrep_; Gr++) {
                     // Transform ( Q | SO SO ) -> ( Q | SO V )
                     int Gs = h^Gr;
                     int nrows = moinfo_.sopi[Gr];
@@ -227,13 +220,13 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
         // This could be done using the half-transformed intermediate above, but with extra memory cost
         dpdbuf4 VV;
         global_dpd_->buf4_init(&VV, PSIF_CC_OEI, 0, 43, 10, 43, 13, 0, "B(Q|VV)");
-        for(int h = 0; h < nirreps; ++h){
+        for(int h = 0; h < nirrep_; ++h){
             global_dpd_->buf4_mat_irrep_init(&VV, h);
             global_dpd_->buf4_mat_irrep_init(&I, h);
             global_dpd_->buf4_mat_irrep_rd(&I, h);
 
             for(int pq = 0; pq < I.params->rowtot[h]; ++pq){
-                for(int Gr=0; Gr < nirreps; Gr++) {
+                for(int Gr=0; Gr < nirrep_; Gr++) {
                     // Transform ( Q | SO SO ) -> ( Q | SO V )
                     int Gs = h^Gr;
                     int nrows = moinfo_.sopi[Gr];
