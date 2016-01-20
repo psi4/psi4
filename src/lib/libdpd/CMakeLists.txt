@@ -26,7 +26,7 @@ endif()
 # Build static library
 add_library(dpd STATIC ${sources_list})
 # Specify dependencies for the library (if any)
-#add_dependencies(dpd )
+add_dependencies(dpd mints)
 set_property(GLOBAL APPEND PROPERTY LIBLIST dpd)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(dpd custom_boost)
