@@ -26,6 +26,8 @@ X2C calculations require the use of special (alternatively fully uncontracted) b
 calculations.  Common choices include the Dunning Douglass--Kroll basis sets
 (cc-pVXZ-DK, cc-pCVXZ-DK, cc-pwCVXZ-DK) and Roos' ANO basis sets.
 
+.. _`sec:ScalarRelativistic`:
+
 A First Example
 ^^^^^^^^^^^^^^^
 
@@ -39,12 +41,11 @@ using the X2C Hamiltonian. ::
 
     set {
         scf_type pk
-        basis cc-pvdz-dk
+        basis cc-pvdz-decontract
         relativistic x2c
     }
 
     energy('hf')
-
 
 This computation yields the following result::
 
@@ -68,7 +69,6 @@ while a non-relativistic calculation yields the following energy::
     Two-Electron Energy =                  45.4843082290795309
     Total Energy =                       -100.0104168384725796
 
-
 Basis sets options
 ^^^^^^^^^^^^^^^^^^
 
@@ -83,9 +83,11 @@ basis set to solve the modified Dirac equation.::
         rel_basis cc-pvtz-dk
         relativistic x2c
     }
-Based on our experience, we recommend the use of a fully uncontracted basis as the computational
-basis throughout the computation. If this is not feasible, this recontraction technique should be helpful.
-Publications resulting from the use of X2C should cite the following publication: [Verma:2015]_
+It is recommended that when employing the X2C relativistic Hamiltonian, that you use a fully
+decontracted basis set. This can be done simply in the input by adding "-decontract" to the 
+name of the primary basis you want to use for the calculation as detailed in 
+:ref:`Decontracted Basis Sets <sec:basisDecontracted>`. Publications resulting from the use 
+of X2C should cite the following publication: [Verma:2015]_
 
 
 Theory
