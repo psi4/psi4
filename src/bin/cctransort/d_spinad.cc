@@ -1,7 +1,10 @@
 /*
- *@BEGIN LICENSE
- *
  * PSI4: an ab initio quantum chemistry software package
+ *
+ * Copyright (c) 2007-2015 The PSI4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,14 +19,8 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *@END LICENSE
  */
 
-/*! \file
-    \ingroup CCSORT
-    \brief Enter brief description of file here 
-*/
 #include <libdpd/dpd.h>
 
 namespace psi { namespace cctransort {

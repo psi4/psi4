@@ -197,11 +197,6 @@ void sort_tei(void)
     file_build(&D, FIRST_TMP+3, tolerance, 0, 0, 1, 0);
     global_dpd_->file4_close(&D);
 
-    dpdbuf4 Buf;
-    global_dpd_->buf4_init(&Buf, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-    global_dpd_->buf4_print(&Buf, "outfile", 1);
-    global_dpd_->buf4_close(&Buf);
-
     global_dpd_->file4_init_nocache(&E, PSIF_CC_EINTS, 0, 11, 0, "E <ai|jk>");
     file_build(&E, FIRST_TMP+4, tolerance, 0, 1, 0, 0);
     global_dpd_->file4_close(&E);
