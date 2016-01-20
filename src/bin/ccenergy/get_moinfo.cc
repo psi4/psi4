@@ -37,6 +37,7 @@
 #include <libmints/basisset.h>
 #include "MOInfo.h"
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
@@ -50,7 +51,7 @@ namespace psi { namespace ccenergy {
 ** Modified by TDC, March 1999
 */
 
-void get_moinfo(void)
+void CCEnergyWavefunction::get_moinfo(void)
 {
     int i, j, h, p, q, errcod, nactive, nirreps;
     double ***Co, ***Cv, ***Ca, ***Cb;
@@ -308,7 +309,7 @@ void get_moinfo(void)
 }
 
 /* Frees memory allocated in get_moinfo() and dumps out the energy. */
-void cleanup(void)
+void CCEnergyWavefunction::cleanup(void)
 {
     int i, h;
     char *keyw=NULL;

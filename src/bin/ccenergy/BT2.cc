@@ -34,12 +34,13 @@
 #include <libqt/qt.h>
 #include "Params.h"
 #include "MOInfo.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-void BT2(void)
+void CCEnergyWavefunction::BT2(void)
 {
   int h;
   dpdbuf4 newtIJAB, newtijab, newtIjAb;

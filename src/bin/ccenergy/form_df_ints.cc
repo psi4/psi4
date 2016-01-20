@@ -35,12 +35,13 @@
 #include "libtrans/integraltransform.h"
 #include "libtrans/mospace.h"
 #include "lib3index/3index.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-void form_df_ints(Options &options, int **cachelist, int *cachefiles, dpd_file4_cache_entry *priority)
+void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *cachefiles, dpd_file4_cache_entry *priority)
 {
     /*
      * Set up the DF tensor machinery

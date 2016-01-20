@@ -30,6 +30,7 @@
 #include <psifiles.h>
 #include "Params.h"
 #include "MOInfo.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
@@ -43,7 +44,7 @@ namespace psi { namespace ccenergy {
 **
 */
 
-void pair_energies(double** epair_aa, double** epair_ab)
+void CCEnergyWavefunction::pair_energies(double** epair_aa, double** epair_ab)
 {
   dpdbuf4 tau, D, E;
 
@@ -143,7 +144,7 @@ void pair_energies(double** epair_aa, double** epair_ab)
   
 }
 
-void print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, double* ecc_ab)
+void CCEnergyWavefunction::print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, double* ecc_ab)
 {
   if(params.ref == 0) { /** RHF **/
 

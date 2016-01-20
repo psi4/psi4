@@ -34,6 +34,7 @@
 #include <libqt/qt.h>
 #include <psifiles.h>
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
@@ -57,11 +58,8 @@ namespace psi { namespace ccenergy {
 ** -RMP 04/02/13
 */
 
-void diis_RHF(int);
-void diis_ROHF(int);
-void diis_UHF(int);
 
-void diis(int iter)
+void CCEnergyWavefunction::diis(int iter)
 {
   if(params.ref == 0) diis_RHF(iter);
   else if(params.ref == 1) diis_ROHF(iter);
@@ -69,7 +67,8 @@ void diis(int iter)
 
   return;
 }
-void diis_invert_B(double** B, double* C, int dimension, double tolerance)
+
+void CCEnergyWavefunction::diis_invert_B(double** B, double* C, int dimension, double tolerance)
 {
     SharedMatrix B2(new Matrix("B2", dimension, dimension));
     double** Bp = B2->pointer();

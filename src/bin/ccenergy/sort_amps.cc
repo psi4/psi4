@@ -29,12 +29,13 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-void sort_amps(void)
+void CCEnergyWavefunction::sort_amps(void)
 {
   dpdbuf4 t2, t2B;
 

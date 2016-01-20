@@ -39,6 +39,7 @@
 #include "Local.h"
 #include "Params.h"
 #include "MOInfo.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
@@ -58,7 +59,7 @@ namespace psi { namespace ccenergy {
 ** TDC, Jan-June 2002
 */
 
-void local_init(void)
+void CCEnergyWavefunction::local_init(void)
 {
   int i, k, ij, nocc;
 
@@ -77,13 +78,13 @@ void local_init(void)
   
 }
 
-void local_done(void)
+void CCEnergyWavefunction::local_done(void)
 {
   outfile->Printf( "\tLocal parameters free.\n");
   
 }
 
-void local_filter_T1(dpdfile2 *T1)
+void CCEnergyWavefunction::local_filter_T1(dpdfile2 *T1)
 {
   int i, a, ij, ii;
   int nocc, nvir;
@@ -186,7 +187,7 @@ void local_filter_T1(dpdfile2 *T1)
 /*   free(local.weak_pairs); */
 }
 
-void local_filter_T2(dpdbuf4 *T2)
+void CCEnergyWavefunction::local_filter_T2(dpdbuf4 *T2)
 {
   int ij, i, j, a, b;
   int nso, nocc, nvir;

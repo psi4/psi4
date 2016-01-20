@@ -32,6 +32,7 @@
 #include <libqt/qt.h>
 #include "MOInfo.h"
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
@@ -204,7 +205,7 @@ d1diag_t1_rohf()
   return max;
 }
 
-double d1diag(void)
+double CCEnergyWavefunction::d1diag(void)
 {
   double norm = 0.0;
 

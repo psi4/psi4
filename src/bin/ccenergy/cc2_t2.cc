@@ -28,20 +28,14 @@
 #include <cstdlib>
 #include <libdpd/dpd.h>
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-void dijabT2(void);
-void cc2_faeT2(void);
-void cc2_fmiT2(void);
-void cc2_WmbijT2(void);
-void cc2_WabeiT2(void);
-void DT2(void);
-void status(const char *s, std::string out);
 
-void cc2_t2_build(void)
+void CCEnergyWavefunction::cc2_t2_build(void)
 {
 
   DT2();

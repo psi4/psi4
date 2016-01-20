@@ -30,14 +30,13 @@
 #include <libqt/qt.h>
 #include "Params.h"
 #include "MOInfo.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-void local_filter_T1(dpdfile2 *T1);
-
-void t1_build(void)
+void CCEnergyWavefunction::t1_build(void)
 {
   dpdfile2 newtIA, newtia, tIA, tia, fIA, fia;
   dpdfile2 FAE, Fae, FMI, Fmi, FME, Fme;

@@ -31,12 +31,13 @@
 #include <libqt/qt.h>
 #include "MOInfo.h"
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-int converged(double ediff)
+int CCEnergyWavefunction::converged(double ediff)
 {
   int row,col,h,nirreps;
   double rms=0.0;

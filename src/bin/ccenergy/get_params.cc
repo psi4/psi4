@@ -33,12 +33,13 @@
 #include "Params.h"
 #include "Local.h"
 #include "MOInfo.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-void get_params(Options &options)
+void CCEnergyWavefunction::get_params(Options &options)
 {
   int errcod, iconv, forceit;
   std::string cachetype = "";

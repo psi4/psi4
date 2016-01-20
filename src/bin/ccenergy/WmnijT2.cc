@@ -29,12 +29,13 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-void WmnijT2(void)
+void CCEnergyWavefunction::WmnijT2(void)
 {
   dpdbuf4 newtIJAB, newtijab, newtIjAb;
   dpdbuf4 WMNIJ, Wmnij, WMnIj;

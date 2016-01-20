@@ -30,15 +30,14 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include "MOInfo.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 #include "libparallel/ParallelPrinter.h"
 namespace psi { namespace ccenergy {
 
-double **Build_R(void);
-double **Build_U(void);
 
-void analyze(void)
+void CCEnergyWavefunction::analyze(void)
 {
   int nirreps, h, i, j, a, b, ij, ab, u, v;
   int position, num_div, tot1, tot2, nvir, nso, nocc;

@@ -29,6 +29,7 @@
 #include <libdpd/dpd.h>
 #include "Params.h"
 #include "MOInfo.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
@@ -41,7 +42,7 @@ namespace psi { namespace ccenergy {
  * Denominators are subsequently applied in denom()
 */
 
-void cc3(void)
+void CCEnergyWavefunction::cc3(void)
 {
   dpdfile2 TIA_new, Tia_new, FME, Fme;
   dpdbuf4 TIJAB_new, Tijab_new, TIjAb_new;

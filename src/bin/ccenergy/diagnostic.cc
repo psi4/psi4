@@ -31,12 +31,13 @@
 #include <libdpd/dpd.h>
 #include "MOInfo.h"
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-double diagnostic(void)
+double CCEnergyWavefunction::diagnostic(void)
 {
   int h, nirreps, Gi, Ga;
   int i, a, I, A, row, col;

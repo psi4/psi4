@@ -30,6 +30,7 @@
 #include <libqt/qt.h>
 #include "Params.h"
 #include "MOInfo.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
@@ -48,7 +49,7 @@ namespace psi { namespace ccenergy {
 ** May 2000
 */
 
-void Wmbej_build(void)
+void CCEnergyWavefunction::Wmbej_build(void)
 {
   dpdbuf4 WMBEJ, Wmbej, WMbEj, WmBeJ, WmBEj, WMbeJ, W; 
   dpdbuf4 C, D, E, F, X, tIAjb, tiaJB, t2, Y, Z;

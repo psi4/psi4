@@ -30,17 +30,14 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 #include "MOInfo.h"
 
 namespace psi { namespace ccenergy {
 
-double rhf_energy(void);
-double rohf_energy(void);
-double uhf_energy(void);
-
-double energy(void)
+double CCEnergyWavefunction::energy(void)
 {
   double e = 0.0;
   if(params.ref == 0) e = rhf_energy();
@@ -50,7 +47,7 @@ double energy(void)
   return e;
 }
 
-double rhf_energy(void)
+double CCEnergyWavefunction::rhf_energy(void)
 {
   double tauIjAb_energy, tIA_energy;
   dpdfile2 fIA, tIA;
@@ -87,7 +84,7 @@ double rhf_energy(void)
   return (tauIjAb_energy+tIA_energy);
 }
 
-double rohf_energy(void)
+double CCEnergyWavefunction::rohf_energy(void)
 {
   double tIA_energy, tia_energy, tauIJAB_energy, tauijab_energy, tauIjAb_energy;
   dpdfile2 tIA, tia, fIA, fia;
@@ -142,7 +139,7 @@ double rohf_energy(void)
       tauIJAB_energy + tauijab_energy + tauIjAb_energy);
 }
 
-double uhf_energy(void)
+double CCEnergyWavefunction::uhf_energy(void)
 {
   double E2AA, E2BB, E2AB, T1A, T1B;
   dpdbuf4 T2, D;

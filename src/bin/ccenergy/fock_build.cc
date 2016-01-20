@@ -32,6 +32,7 @@
 #include <libqt/qt.h>
 #include <psifiles.h>
 #include "MOInfo.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
@@ -43,7 +44,7 @@ namespace psi { namespace ccenergy {
 
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 
-void rhf_fock_build(double **fock, double  **D)
+void CCEnergyWavefunction::rhf_fock_build(double **fock, double  **D)
 {
   int i, j;
   int nso, ntri;
@@ -180,7 +181,7 @@ void rhf_fock_build(double **fock, double  **D)
   iwl_buf_close(&InBuf, 1);
 }
 
-void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b)
+void CCEnergyWavefunction::uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b)
 {
   int i, j, ij;
   int nso, ntri, ntei, stat;
@@ -364,4 +365,5 @@ void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b
 
   free_block(Dt);
 }
+
 }} // namespace psi::ccenergy

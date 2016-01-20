@@ -34,12 +34,12 @@
 #include <psifiles.h>
 #include "MOInfo.h"
 #include "Params.h"
+#include "ccwave.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
 
-void diis_invert_B(double**, double*, int, double);
 
 /*
 ** DIIS: Direct inversion in the iterative subspace routine to
@@ -55,7 +55,7 @@ void diis_invert_B(double**, double*, int, double);
 ** -TDC  12/22/01
 */
 
-void diis_ROHF(int iter)
+void CCEnergyWavefunction::diis_ROHF(int iter)
 {
   int nvector=8;  /* Number of error vectors to keep */
   int h, nirreps;
