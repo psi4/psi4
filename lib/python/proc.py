@@ -887,26 +887,26 @@ def run_cdomp(name, **kwargs):
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
     elif lowername == 'cd-omp2.5':
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
-    elif lowername = 'cd-omp3':
+    elif lowername == 'cd-omp3':
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
-    elif lowername = 'cd-olccd':
+    elif lowername == 'cd-olccd':
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
 
-    elif lowername = 'cd-mp2':
+    elif lowername == 'cd-mp2':
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
-    elif lowername = 'cd-mp2.5':
+    elif lowername == 'cd-mp2.5':
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
-    elif lowername = 'cd-mp3':
+    elif lowername == 'cd-mp3':
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
-    elif lowername = 'cd-lccd':
+    elif lowername == 'cd-lccd':
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
-    elif lowername = 'cd-ccd':
+    elif lowername == 'cd-ccd':
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
-    elif lowername = 'cd-ccsd':
+    elif lowername == 'cd-ccsd':
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
-    elif lowername = 'cd-ccsd(t)':
+    elif lowername == 'cd-ccsd(t)':
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
-    elif lowername = 'cd-ccsd(at)':
+    elif lowername == 'cd-ccsd(at)':
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(AT)')
         psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
 
@@ -2574,7 +2574,7 @@ def run_dmrgscf(name, **kwargs):
     IsDF = psi4.get_option('SCF', 'SCF_TYPE') == 'DF'
     IsCD = psi4.get_option('SCF', 'SCF_TYPE') == 'CD'
     IsDirect = psi4.get_option('SCF', 'SCF_TYPE') == 'DIRECT'
-    if bypass or IsDF or IsCD or IsDirect:
+    if IsDF or IsCD or IsDirect:
         mints = psi4.MintsHelper(ref_wfn.basisset())
         mints.integrals()
 
@@ -2604,7 +2604,7 @@ def run_dmrgci(name, **kwargs):
     IsCD = psi4.get_option('SCF', 'SCF_TYPE') == 'CD'
     IsDirect = psi4.get_option('SCF', 'SCF_TYPE') == 'DIRECT'
 
-    if bypass or IsDF or IsCD or IsDirect:
+    if IsDF or IsCD or IsDirect:
         psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
     psi4.set_local_option('DMRG', 'DMRG_MAXITER', 1)
