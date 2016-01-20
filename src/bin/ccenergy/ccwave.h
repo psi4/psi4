@@ -36,6 +36,7 @@ template<class T> class shared_ptr;
 namespace psi {
 class Wavefunction;
 class Options;
+struct dpd_file4_cache_entry;
 }
 
 namespace psi { namespace ccenergy {
@@ -91,7 +92,7 @@ private:
     int **cacheprep_rhf(int level, int *cachefiles);
     void cachedone_rhf(int **cachelist);
     void cachedone_uhf(int **cachelist);
-    struct dpd_file4_cache_entry *priority_list(void);
+    void init_priority_list(void);
     void spinad_amps(void);
     void status(const char *, std::string );
     void lmp2(void);
@@ -176,10 +177,7 @@ private:
     MOInfo moinfo_;
     Params params_;
     Local local_;
-
-#define NUM_ENTRIES 113
-
-    dpd_file4_cache_entry list_[NUM_ENTRIES];
+    dpd_file4_cache_entry *cache_priority_list_;
 };
 
 }}
