@@ -167,6 +167,7 @@ class IntegralTransform{
         void backtransform_tpdm_restricted();
         void backtransform_tpdm_unrestricted();
         void print_dpd_lookup();
+        std::vector<SharedMatrix> compute_fock_like_matrices(SharedMatrix Hcore, std::vector<SharedMatrix> Cmats);
 
         int DPD_ID(const char c);
         int DPD_ID(char *str);
@@ -236,9 +237,9 @@ class IntegralTransform{
         /// called before each transformation in order to override the default name.
         void set_bb_int_name(const std::string& name) { bbIntName_ = name; }
 
-        // Get the alpha correlated to Pitzer ordering array, used in backtransforms
+        /// Get the alpha correlated to Pitzer ordering array, used in backtransforms
         const int *alpha_corr_to_pitzer() const { return aCorrToPitzer_; }
-        // Get the beta correlated to Pitzer ordering array, used in backtransforms
+        /// Get the beta correlated to Pitzer ordering array, used in backtransforms
         const int *beta_corr_to_pitzer() const { return bCorrToPitzer_; }
 
         int nirrep() const { return nirreps_; }
