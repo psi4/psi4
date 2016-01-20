@@ -1,3 +1,26 @@
+/*
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * Copyright (c) 2007-2015 The PSI4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
 #include <vector>
 #include <psifiles.h>
 #include <libmints/mints.h>
@@ -28,6 +51,12 @@ double scf_check(int reference, Dimension &openpi)
     global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, "Ij", "Kl", "Ij", "Kl", 0, "A <Ij|Kl>");
     E2AB = global_dpd_->buf4_trace(&A);
     global_dpd_->buf4_close(&A);
+
+    outfile->Printf( "\tOne-electron energy          =  %20.14f\n", E1A + E1B);
+    outfile->Printf( "\tTwo-electron (AA) energy     =  %20.14f\n", E2AA);
+    outfile->Printf( "\tTwo-electron (BB) energy     =  %20.14f\n", E2BB);
+    outfile->Printf( "\tTwo-electron (AB) energy     =  %20.14f\n", E2AB);
+    outfile->Printf( "\tTwo-electron energy          =  %20.14f\n", E2AA + E2BB + E2AB);
 
     return E1A + E1B + E2AA + E2BB + E2AB;
   }
@@ -83,6 +112,13 @@ double scf_check(int reference, Dimension &openpi)
       global_dpd_->buf4_mat_irrep_close(&A, h);
     }
     global_dpd_->buf4_close(&A);
+
+    outfile->Printf( "\tOne-electron energy          =  %20.14f\n", E1A+E1B);
+    outfile->Printf( "\tTwo-electron (AA) energy     =  %20.14f\n", E2AA);
+    outfile->Printf( "\tTwo-electron (BB) energy     =  %20.14f\n", E2BB);
+    outfile->Printf( "\tTwo-electron (AB) energy     =  %20.14f\n", E2AB);
+    outfile->Printf( "\tTwo-electron energy          =  %20.14f\n", E1A+E1B+E2AA+E2BB+E2AB);
+
     return E1A + E1B + E2AA + E2BB + E2AB;
   }
   else { // RHF
@@ -93,6 +129,9 @@ double scf_check(int reference, Dimension &openpi)
     global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, "ij", "kl", 0, "A 2<ij|kl> - <ij|lk>");
     E2AB = global_dpd_->buf4_trace(&A);
     global_dpd_->buf4_close(&A);
+
+    outfile->Printf( "\tOne-electron energy          =  %20.14f\n", E1A);
+    outfile->Printf( "\tTwo-electron energy          =  %20.14f\n", E2AB);
 
     return E1A + E2AB;
   }
