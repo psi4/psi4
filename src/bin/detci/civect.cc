@@ -44,6 +44,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <boost/python.hpp>
+#include <boost/python/dict.hpp>
+#include <boost/python/tuple.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libpsio/psio.h>
@@ -75,7 +78,7 @@ extern double ssq(struct stringwr *alplist, struct stringwr *betlist,
 extern int calc_orb_diff(int cnt, unsigned char *I, unsigned char *J,
    int *I_alpha_diff, int *J_alpha_diff, int *sign, int *same, int extended);
 
- 
+
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 
@@ -180,7 +183,7 @@ void CIvect::set(int incor, int maxvect, int nunits, int funit, struct ci_blks *
       CIblks->offset, CIblks->num_alp_codes, CIblks->num_bet_codes,
       CIblks->nirreps, CIblks->subgr_per_irrep, maxvect, nunits,
       funit, CIblks->first_iablk, CIblks->last_iablk, CIblks->decode);
-} 
+}
 
 void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac,
          int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc,
@@ -440,7 +443,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac,
    // MLL 5/7/98: Want to know the subblock length of a vector //
    //  if (CI_Params_->print_lvl) {
    //     outfile->Printf("\n CI vector/subblock length = %ld\n", buffer_size);
-   //     
+   //
    //     }
 
 
@@ -513,21 +516,26 @@ void CIvect::set_nvect(int i)
   nvect_ = i;
 }
 /*
-** CIvect::operator *
+** CIvect::vdot
 **
 ** Function returns the scalar product of two CI vectors.
 ** Assumes that diagonal blocks are full for Ms=0 cases
+** tvec and ovec are this and other vector numbers, respectively.
 */
 
-double CIvect::dot(SharedCIVector b)
+double CIvect::vdot(SharedCIVector b, int tvec, int ovec)
 {
-   double dotprod=0.0, tval;
 
+   tvec = (tvec == -1) ? cur_vect_ : tvec;
+   ovec = (ovec == -1) ? b->cur_vect_ : ovec;
+
+   double dotprod = 0.0;
    if (Ms0_) {
       for (int buf=0; buf<buf_per_vect_; buf++) {
-         read(cur_vect_, buf);
-         b->read(b->cur_vect_, buf);
-         dot_arr(buffer_, b->buffer_, buf_size_[buf], &tval);
+         read(tvec, buf);
+         b->read(ovec, buf);
+         double tval = C_DDOT(buf_size_[buf], buffer_, 1, b->buffer_, 1);
+          // dot_arr(buffer_, b->buffer_, buf_size_[buf], &tval);
          if (buf_offdiag_[buf]) tval *= 2.0;
          dotprod += tval;
          }
@@ -535,16 +543,173 @@ double CIvect::dot(SharedCIVector b)
 
    else {
       for (int buf=0; buf<buf_per_vect_; buf++) {
-         read(cur_vect_, buf);
-         b->read(b->cur_vect_, buf);
-         dot_arr(buffer_, b->buffer_, buf_size_[buf], &tval);
+         read(tvec, buf);
+         b->read(ovec, buf);
+         double tval = C_DDOT(buf_size_[buf], buffer_, 1, b->buffer_, 1);
+         // dot_arr(buffer_, b->buffer_, buf_size_[buf], &tval);
          dotprod += tval;
          }
       }
 
-   return(dotprod);
+   return dotprod;
+}
+void CIvect::axpy(double a, SharedCIVector X, int yvec, int xvec)
+{
+   // Y += a * X
+   for (int buf=0; buf<buf_per_vect_; buf++) {
+      X->read(xvec, buf);
+      read(yvec, buf);
+      C_DAXPY(buf_size_[buf], a, X->buffer_, 1, buffer_, 1);
+      write(yvec, buf);
+    }
 }
 
+void CIvect::scale(double a, int vec)
+{
+   // this *= a
+   for (int buf=0; buf<buf_per_vect_; buf++) {
+      read(vec, buf);
+      C_DSCAL(buf_size_[buf], a, buffer_, 1);
+      write(vec, buf);
+    }
+}
+
+void CIvect::copy(SharedCIVector src, int tvec, int ovec)
+{
+   for (int buf=0; buf<buf_per_vect_; buf++) {
+      src->read(ovec, buf);
+      read(tvec, buf);
+      C_DCOPY(buf_size_[buf], src->buffer_, 1, buffer_, 1);
+      int blk = buf2blk_[buf];
+      if ( (zero_blocks_[blk]==0) || (src->zero_blocks_[blk]==0) ) zero_blocks_[blk] = 0;
+      write(tvec, buf);
+      }
+}
+
+boost::python::dict CIvect::numpy_array_interface()
+{
+    // Why is this so complex other places?
+    if (!buf_locked_) throw PSIEXCEPTION("CIVector::matrix_array_interface: No buffer is locked.");
+    boost::python::dict rv;
+    rv["shape"] = boost::python::make_tuple(buffer_size_);
+    rv["data"] = boost::python::make_tuple((long)buffer_, false);
+    std::string typestr = is_big_endian() ? ">" : "<";
+    typestr += "f" + psi::to_string((int)sizeof(double));
+    rv["typestr"] = typestr;
+    return rv;
+}
+
+double CIvect::dcalc3(double lambda, SharedCIVector Hd, int rootnum)
+{
+    double normsq = 0.0;
+    for (int buf=0; buf<buf_per_vect_; buf++) {
+      read(rootnum, buf);
+      Hd->read(0, buf);
+      // if (CI_Params_->precon >= PRECON_GEN_DAVIDSON)
+      // h0block_gather_vec(CI_VEC);
+
+      double tval = 0.0;
+      for (size_t i=0; i<(size_t)buf_size_[buf]; i++){
+        double divisor = (lambda - Hd->buffer_[i]);
+        if (std::fabs(divisor) > HD_MIN){
+          buffer_[i] /= divisor;
+          tval += buffer_[i] * buffer_[i];
+        }
+        else{
+          buffer_[i] = 0.0;
+        }
+      }
+
+      if (buf_offdiag_[buf]) tval *= 2.0;
+      normsq += tval;
+      write(rootnum, buf);
+    }
+    double norm = std::sqrt(normsq);
+    return(norm);
+}
+
+void CIvect::symnormalize(double a, int tvec)
+{
+    int i,j;
+    int blk,buf,irrep,ac,bc,len,upper;
+    double **mat,*arr, phase, tval;
+
+    if (!Ms0_) {
+        scale(a, tvec);
+        return;
+    }
+
+    if (!CI_Params_->Ms0) phase = 1.0;
+    else phase = ((int) CI_Params_->S % 2) ? -1.0 : 1.0;
+
+    if (icore_ == 1) {
+
+      read(tvec, 0);
+      for (blk=0; blk<num_blocks_; blk++) {
+         ac = Ia_code_[blk];
+         bc = Ib_code_[blk];
+         mat = blocks_[blk];
+         if (ac == bc) { /* diagonal block */
+            for (i=0; i<Ia_size_[blk]; i++) {
+               mat[i][i] *= a;
+               for (j=0; j<i; j++) {
+                  mat[i][j] *= a;
+                  mat[j][i] = mat[i][j] * phase;
+                  }
+               }
+            }
+
+         if (ac > bc) { /* off-diagonal block */
+            // xeax(blocks_[blk][0], a, Ia_size_[blk] * Ib_size_[blk]);
+            C_DSCAL(Ia_size_[blk] * Ib_size_[blk], a, blocks_[blk][0], 1);
+            upper = decode_[bc][ac];
+            if (upper >= 0) {
+               zero_blocks_[upper] = zero_blocks_[blk];
+               for (i=0; i<Ia_size_[blk]; i++) {
+                  for (j=0; j<Ib_size_[blk]; j++) {
+                     blocks_[upper][j][i] = mat[i][j] * phase;
+                     }
+                  }
+               }
+            }
+         } /* end loop over blocks */
+
+      write(tvec, 0);
+
+    } /* end icore_ == 1 */
+
+    else {
+        printf("(CIvect::symnorm): Only support incore=1 at the moment\n");
+        return;
+    }
+
+}
+
+double CIvect::norm(int tvec)
+{
+
+   tvec = (tvec == -1) ? cur_vect_ : tvec;
+
+   double dotprod = 0.0;
+   if (Ms0_) {
+      for (int buf=0; buf<buf_per_vect_; buf++) {
+         read(tvec, buf);
+         double tval = C_DDOT(buf_size_[buf], buffer_, 1, buffer_, 1);
+         if (buf_offdiag_[buf]) tval *= 2.0;
+         dotprod += tval;
+         }
+      }
+
+   else {
+      for (int buf=0; buf<buf_per_vect_; buf++) {
+         read(tvec, buf);
+         double tval = C_DDOT(buf_size_[buf], buffer_, 1, buffer_, 1);
+         dotprod += tval;
+         }
+      }
+
+   return std::sqrt(dotprod);
+}
 
 /*
 ** CIvect::operator *
@@ -1727,11 +1892,13 @@ int CIvect::read(int ivect, int ibuf)
    if (nunits_ < 1) {
       cur_vect_ = ivect;
       cur_buf_ = ibuf;
+      timer_off("CIWave: CIvect read");
       return(1);
       }
 
    if (ivect < 0 || ibuf < 0) {
       printf("(CIvect::read): Called with negative argument\n");
+      timer_off("CIWave: CIvect read");
       return(0);
       }
 
@@ -1779,15 +1946,15 @@ int CIvect::write(int ivect, int ibuf)
 
    if (nunits_ < 1) return(1);
 
-   if (ivect >= maxvect_) {
-      outfile->Printf( "(CIvect::write): ivect >= maxvect\n");
-      return(0);
-      }
 
-   if (ivect > nvect_) {
-      outfile->Printf( "(CIvect::write): ivect > nvect\n");
-      return(0);
-      }
+   if (ivect >= maxvect_) throw PSIEXCEPTION("(CIvect::write): ivect >= maxvect");
+   if (ivect > nvect_) throw PSIEXCEPTION("(CIvect::write): ivect > nvect");
+   // {
+   //    outfile->Printf( "(CIvect::write): ivect >= maxvect\n");
+   //    timer_off("CIWave: CIvect write");
+   //    return(0);
+   //    }
+
 
    if (icore_ == 1) ibuf = 0;
    buf = ivect * buf_per_vect_ + ibuf;
@@ -3518,12 +3685,12 @@ double CIvect::compute_follow_overlap(int troot, int ncoef, double *coef,
 **    H0      = matrix to hold results (stored as H0[alpidx][betidx])
 **    oei     = one-electron integrals
 **    tei     = two-electron integrals
-**    na      = number of explicit alpha electrons 
+**    na      = number of explicit alpha electrons
 **    nb      = number of explicit beta electrons
 **    nbf     = number of orbitals in CI
 **    edrc    = energy of the dropped core orbitals
 **
-*/ 
+*/
 void CIvect::calc_hd_block(struct stringwr *alplist_local, struct stringwr *betlist_local,
       double **H0, double *oei, double *tei, double edrc,
       int nas, int nbs, int na, int nb, int nbf)
@@ -3537,19 +3704,19 @@ void CIvect::calc_hd_block(struct stringwr *alplist_local, struct stringwr *betl
    betlist0 = betlist_local;
 
    for (acnt=0; acnt<nas; acnt++) {
-      
+
       for (bcnt=0, betlist_local=betlist0; bcnt<nbs; bcnt++) {
 
          /* add dropped core energy first */
 /************************************************/
-         value = edrc; 
+         value = edrc;
 
          /* loop over alpha occs */
          for (a1=0; a1<na; a1++) {
             i = (int) alplist_local->occs[a1];
             ii = ioff[i] + i;
-            value += oei[ii];  
-            /* outfile->Printf("oei[%d] = %lf\n",ii,oei[ii]); */ 
+            value += oei[ii];
+            /* outfile->Printf("oei[%d] = %lf\n",ii,oei[ii]); */
             iii = ioff[ii];
 
             for (a2=0; a2<a1; a2++) {
@@ -3558,21 +3725,21 @@ void CIvect::calc_hd_block(struct stringwr *alplist_local, struct stringwr *betl
                iijj = iii + jj;
                ij = ioff[i] + j;
                ijij = ioff[ij] + ij;
-               value += tei[iijj] - tei[ijij]; 
+               value += tei[iijj] - tei[ijij];
                }
 
             for (b1=0; b1<nb; b1++) {
                j = (int) betlist_local->occs[b1];
                jj = ioff[j] + j;
                iijj = ioff[MAX0(ii,jj)] + MIN0(ii,jj);
-               value += tei[iijj]; 
+               value += tei[iijj];
                }
            }
 
          for (b1=0; b1<nb; b1++) {
             i = (int) betlist_local->occs[b1];
             ii = ioff[i] + i;
-            value += oei[ii]; 
+            value += oei[ii];
             iii = ioff[ii];
 
             for (b2=0; b2<b1; b2++) {
@@ -3581,14 +3748,14 @@ void CIvect::calc_hd_block(struct stringwr *alplist_local, struct stringwr *betl
                iijj = iii + jj;
                ij = ioff[i] + j;
                ijij = ioff[ij] + ij;
-               value += tei[iijj] - tei[ijij]; 
+               value += tei[iijj] - tei[ijij];
                }
-            } 
+            }
 
          H0[acnt][bcnt] = value;
-      /*   
-         outfile->Printf("H0[%d][%d] = %lf\n",acnt,bcnt,value); 
-      */ 
+      /*
+         outfile->Printf("H0[%d][%d] = %lf\n",acnt,bcnt,value);
+      */
          betlist_local++;
          } /* end loop over bcnt */
 
@@ -3599,7 +3766,7 @@ void CIvect::calc_hd_block(struct stringwr *alplist_local, struct stringwr *betl
 /*
 ** calc_hd_block_ave(): Function calculates a block of H0 and the diagonal elements
 ** of the Hamiltonian matrix averaged over spin-coupling sets to correct any
-** spin contamination of the c and sigma vectors. 
+** spin contamination of the c and sigma vectors.
 **
 ** Parameters:
 **    alplist_local = list of alpha strings with replacements (used to get occs)
@@ -3609,12 +3776,12 @@ void CIvect::calc_hd_block(struct stringwr *alplist_local, struct stringwr *betl
 **    H0      = matrix to hold results (stored as H0[alpidx][betidx])
 **    oei     = one-electron integrals
 **    tei     = two-electron integrals
-**    na      = number of explicit alpha electrons 
+**    na      = number of explicit alpha electrons
 **    nb      = number of explicit beta electrons
 **    nbf     = number of orbitals in CI
 **    edrc    = energy of the dropped core orbitals
 **
-*/ 
+*/
 void CIvect::calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *betlist_local,
       double **H0, double *tf_oei, double *tei, double edrc,
       int nas, int nbs, int na, int nb, int nbf)
@@ -3630,19 +3797,19 @@ void CIvect::calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *
    int num_el;  /* total number of electrons explicitly treated */
    int num_unique; /* number of unique orbitals */
    betlist0 = betlist_local;
-   
 
-   k_total = combinations(na,2) + combinations(nb,2); 
+
+   k_total = combinations(na,2) + combinations(nb,2);
 
    num_el = na + nb;
    unique_occs = init_int_array(num_el);
 
    for (acnt=0; acnt<nas; acnt++) {
-      
+
       for (bcnt=0, betlist_local=betlist0; bcnt<nbs; bcnt++) {
 
          /* add dropped core energy first */
-         value = edrc; 
+         value = edrc;
 
          /* loop over alpha occs */
          for (a1=0; a1<na; a1++) {
@@ -3659,7 +3826,7 @@ void CIvect::calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *
                jj = ioff[j] + j;
                iijj = iii + jj;
                /* J alpha alpha */
-               value += tei[iijj]; 
+               value += tei[iijj];
                }
 
             /* loop over beta occs */
@@ -3667,7 +3834,7 @@ void CIvect::calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *
                j = (int) betlist_local->occs[b1];
                jj = ioff[j] + j;
                iijj = ioff[MAX0(ii,jj)] + MIN0(ii,jj);
-               value += tei[iijj]; 
+               value += tei[iijj];
                }
            }
 
@@ -3684,16 +3851,16 @@ void CIvect::calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *
                j = (int) betlist_local->occs[b2];
                jj = ioff[j] + j;
                iijj = iii + jj;
-               ij = ioff[i] + j; 
+               ij = ioff[i] + j;
                ijij = ioff[ij] + ij;
-               value += tei[iijj];  
+               value += tei[iijj];
                }
             }
 
          /* determine average K over spin-coupling set */
          num_unique = 0;
          for (a1=0; a1<na; a1++) unique_occs[num_unique++] = (int) alplist_local->occs[a1];
-         /* for (j=0; j<num_unique; j++) 
+         /* for (j=0; j<num_unique; j++)
             outfile->Printf("unique_occs[%d] = %d\n",j,unique_occs[j]); */
             for (b1=0; b1<nb; b1++) {
                j = (int) betlist_local->occs[b1];
@@ -3707,16 +3874,16 @@ void CIvect::calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *
          */
          if (num_unique>num_el) outfile->Printf("WARNING: The number of explicit electrons" \
                              "!= num_el\n");
-               
-       /*   
-         for (j=0; j<na; j++) 
+
+       /*
+         for (j=0; j<na; j++)
             outfile->Printf("alp_occs[%d] = %d\n",j,(int)alplist_local->occs[j]);
-         for (j=0; j<nb; j++) 
+         for (j=0; j<nb; j++)
             outfile->Printf("bet_occs[%d] = %d\n",j,(int)betlist_local->occs[j]);
-         for (j=0; j<num_unique; j++) 
+         for (j=0; j<num_unique; j++)
             outfile->Printf("unique_occs[%d] = %d\n",j,unique_occs[j]);
        */
- 
+
          Kave = 0.0;
          for (a1=0; a1<num_unique; a1++) {
             i = unique_occs[a1];
@@ -3725,21 +3892,21 @@ void CIvect::calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *
                ij = ioff[MAX0(i,j)] + MIN0(i,j);
                ijij = ioff[ij] + ij;
                Kave += tei[ijij];
-               /* outfile->Printf("tei[%d] = %lf\n",ijij,tei[ijij]); */ 
+               /* outfile->Printf("tei[%d] = %lf\n",ijij,tei[ijij]); */
                }
             }
-         
+
          /* outfile->Printf("num_unique = %d\n",num_unique);
          outfile->Printf("ioff[num_unique-1] = %d\n",ioff[num_unique]);
          outfile->Printf("k_total = %d\n",k_total);
          */
 
          if (num_unique > 1) Kave /= ioff[num_unique-1];
-         value -= 0.5 * Kave * k_total; 
+         value -= 0.5 * Kave * k_total;
          /* outfile->Printf("Kave = %lf\n",Kave); */
 
          if (CI_Params_->print_lvl > 5) {
-           outfile->Printf("acnt = %d\t bcnt = %d\n",acnt,bcnt); 
+           outfile->Printf("acnt = %d\t bcnt = %d\n",acnt,bcnt);
            outfile->Printf("tval = %lf\n",tval);
            for(a1=0; a1<na; a1++)
              outfile->Printf(" %d",alplist_local->occs[a1]);
@@ -3747,7 +3914,7 @@ void CIvect::calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *
            for(b1=0; b1<nb; b1++)
              outfile->Printf(" %d",betlist_local->occs[b1]);
            outfile->Printf(" \n");
-           } 
+           }
 
          H0[acnt][bcnt] = value;
          /* outfile->Printf("H0[%d][%d] = %lf\n",acnt,bcnt,value); */
@@ -3761,7 +3928,7 @@ void CIvect::calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *
 
 /*
 ** calc_hd_block_orbenergy(): Function calculates a block of H0 and the diagonal elements
-** of the Hamiltonian matrix as the sum of orbital energies. 
+** of the Hamiltonian matrix as the sum of orbital energies.
 **
 ** Parameters:
 **    alplist_local = list of alpha strings with replacements (used to get occs)
@@ -3771,25 +3938,25 @@ void CIvect::calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *
 **    H0      = matrix to hold results (stored as H0[alpidx][betidx])
 **    oei     = one-electron integrals
 **    tei     = two-electron integrals
-**    na      = number of explicit alpha electrons 
+**    na      = number of explicit alpha electrons
 **    nb      = number of explicit beta electrons
 **    nbf     = number of orbitals in CI
 **    edrc    = energy of the dropped core orbitals
 **
-*/ 
-void CIvect::calc_hd_block_orbenergy(struct stringwr *alplist_local, 
-      struct stringwr *betlist_local, double **H0, double *oei, 
+*/
+void CIvect::calc_hd_block_orbenergy(struct stringwr *alplist_local,
+      struct stringwr *betlist_local, double **H0, double *oei,
       double *tei, double edrc, int nas, int nbs, int na, int nb, int nbf)
 {
    int acnt, bcnt;
-   int a1, b1, i,j; 
+   int a1, b1, i,j;
    double value, tval;
    struct stringwr *betlist0, *alplist0;
    double *orb_e_diff_alp, *orb_e_diff_bet;
    double sum_orb_energies = 0.0;
 
    betlist0 = betlist_local;
-   alplist0 = alplist_local; 
+   alplist0 = alplist_local;
 
    orb_e_diff_alp = init_array(nas);
    orb_e_diff_bet = init_array(nbs);
@@ -3802,7 +3969,7 @@ void CIvect::calc_hd_block_orbenergy(struct stringwr *alplist_local,
       for (a1=0; a1<na; a1++) {
          i = (int) alplist_local->occs[a1];
          i += CI_CalcInfo_->num_drc_orbs;
-         if(CI_Params_->zaptn) 
+         if(CI_Params_->zaptn)
            orb_e_diff_alp[acnt] += CI_CalcInfo_->scfeigvala[i];
          else
            orb_e_diff_alp[acnt] += CI_CalcInfo_->scfeigval[i];
@@ -3815,7 +3982,7 @@ void CIvect::calc_hd_block_orbenergy(struct stringwr *alplist_local,
       for (b1=0; b1<nb; b1++) {
          j = (int) betlist_local->occs[b1];
          j += CI_CalcInfo_->num_drc_orbs;
-         if(CI_Params_->zaptn) 
+         if(CI_Params_->zaptn)
            orb_e_diff_bet[bcnt] += CI_CalcInfo_->scfeigvalb[j];
          else
            orb_e_diff_bet[bcnt] += CI_CalcInfo_->scfeigval[j];
@@ -3827,13 +3994,13 @@ void CIvect::calc_hd_block_orbenergy(struct stringwr *alplist_local,
    betlist_local = betlist0;
 
    for (acnt=0; acnt<nas; acnt++) {
-         tval = edrc + orb_e_diff_alp[acnt]; 
+         tval = edrc + orb_e_diff_alp[acnt];
       for (bcnt=0; bcnt<nbs; bcnt++) {
-         value = orb_e_diff_bet[bcnt] + tval; 
+         value = orb_e_diff_bet[bcnt] + tval;
          H0[acnt][bcnt] = value;
-        /* 
-         outfile->Printf("H0[%d][%d] = %lf\n",acnt,bcnt,value); 
-        */ 
+        /*
+         outfile->Printf("H0[%d][%d] = %lf\n",acnt,bcnt,value);
+        */
          betlist_local++;
          } /* end loop over bcnt */
       alplist_local++;
@@ -3849,7 +4016,7 @@ free(orb_e_diff_bet);
 /*
 ** calc_hd_block_evangelisti(): Function calculates a block of H0 and the diagonal elements
 ** of the Hamiltonian matrix averaged over spin-coupling sets to correct any
-** spin contamination of the c and sigma vectors. 
+** spin contamination of the c and sigma vectors.
 **
 ** Parameters:
 **    alplist_local = list of alpha strings with replacements (used to get occs)
@@ -3859,19 +4026,19 @@ free(orb_e_diff_bet);
 **    H0      = matrix to hold results (stored as H0[alpidx][betidx])
 **    oei     = one-electron integrals
 **    tei     = two-electron integrals
-**    na      = number of explicit alpha electrons 
+**    na      = number of explicit alpha electrons
 **    nb      = number of explicit beta electrons
 **    nbf     = number of orbitals in CI
 **    edrc    = energy of the dropped core orbitals
 **
-*/ 
+*/
 void CIvect::calc_hd_block_evangelisti(struct stringwr **alplist, struct stringwr **betlist,
      struct stringwr *alplist_local, struct stringwr *betlist_local,
       double **H0, double *tf_oei, double *tei, double edrc,
       int nas, int nbs, int na, int nb, int nbf)
 {
    int acnt, bcnt;
-   int a1, b1, i,j; 
+   int a1, b1, i,j;
    double value, tval;
    struct stringwr *betlist0, *alplist0;
    double *orb_e_diff_alp, *orb_e_diff_bet;
@@ -3880,7 +4047,7 @@ void CIvect::calc_hd_block_evangelisti(struct stringwr **alplist, struct stringw
    int sign;
 
    betlist0 = betlist_local;
-   alplist0 = alplist_local; 
+   alplist0 = alplist_local;
 
    orb_diff = init_int_matrix(2,na);
    jnk = init_int_array(na);
@@ -3890,49 +4057,49 @@ void CIvect::calc_hd_block_evangelisti(struct stringwr **alplist, struct stringw
    for (acnt=0; acnt<nas; acnt++) {
       orb_e_diff_alp[acnt] = 0.0;
       num_alp_diff = calc_orb_diff(na,
-                     alplist[CI_CalcInfo_->ref_alp_list][CI_CalcInfo_->ref_alp_rel].occs, 
+                     alplist[CI_CalcInfo_->ref_alp_list][CI_CalcInfo_->ref_alp_rel].occs,
                      alplist_local->occs, orb_diff[0], orb_diff[1], &sign,
                      jnk, 1);
       for (a1=0; a1<num_alp_diff; a1++) {
-         i = orb_diff[0][a1]; 
-         j = orb_diff[1][a1]; 
+         i = orb_diff[0][a1];
+         j = orb_diff[1][a1];
          i += CI_CalcInfo_->num_drc_orbs;
          j += CI_CalcInfo_->num_drc_orbs;
-         orb_e_diff_alp[acnt] += CI_CalcInfo_->scfeigval[j] 
-                                 - CI_CalcInfo_->scfeigval[i]; 
+         orb_e_diff_alp[acnt] += CI_CalcInfo_->scfeigval[j]
+                                 - CI_CalcInfo_->scfeigval[i];
          }
       alplist_local++;
       }
 
    for (bcnt=0; bcnt<nbs; bcnt++) {
       orb_e_diff_bet[bcnt] = 0.0;
-      num_bet_diff = calc_orb_diff(nb, 
+      num_bet_diff = calc_orb_diff(nb,
                      betlist[CI_CalcInfo_->ref_bet_list][CI_CalcInfo_->ref_bet_rel].occs,
-                     betlist_local->occs, orb_diff[0], orb_diff[1], &sign, 
+                     betlist_local->occs, orb_diff[0], orb_diff[1], &sign,
                      jnk, 1);
       for (b1=0; b1<num_bet_diff; b1++) {
          i = orb_diff[0][b1];
-         j = orb_diff[1][b1];  
+         j = orb_diff[1][b1];
          i += CI_CalcInfo_->num_drc_orbs;
          j += CI_CalcInfo_->num_drc_orbs;
          orb_e_diff_bet[bcnt] += CI_CalcInfo_->scfeigval[j]
                                  - CI_CalcInfo_->scfeigval[i];
          }
       betlist_local++;
-      } 
+      }
 
    alplist_local = alplist0;
    betlist_local = betlist0;
 
    for (acnt=0; acnt<nas; acnt++) {
          /* add dropped core energy first */
-         tval = CI_CalcInfo_->escf - CI_CalcInfo_->enuc; 
-         tval += orb_e_diff_alp[acnt]; 
+         tval = CI_CalcInfo_->escf - CI_CalcInfo_->enuc;
+         tval += orb_e_diff_alp[acnt];
       for (bcnt=0; bcnt<nbs; bcnt++) {
          value = 0.0;
-         value = orb_e_diff_bet[bcnt] + tval; 
+         value = orb_e_diff_bet[bcnt] + tval;
          H0[acnt][bcnt] = value;
-         /* outfile->Printf("H0[%d][%d] = %lf\n",acnt,bcnt,value); */ 
+         /* outfile->Printf("H0[%d][%d] = %lf\n",acnt,bcnt,value); */
          betlist_local++;
          } /* end loop over bcnt */
       alplist_local++;
@@ -3952,7 +4119,7 @@ free(orb_diff);
 
 /*
 ** calc_hd_block_mll(): Function calculates a block of H0 and the diagonal elements
-** of the Hamiltonian matrix as the sum of orbital energies. 
+** of the Hamiltonian matrix as the sum of orbital energies.
 **
 ** Parameters:
 **    alplist_local = list of alpha strings with replacements (used to get occs)
@@ -3962,25 +4129,25 @@ free(orb_diff);
 **    H0      = matrix to hold results (stored as H0[alpidx][betidx])
 **    oei     = one-electron integrals
 **    tei     = two-electron integrals
-**    na      = number of explicit alpha electrons 
+**    na      = number of explicit alpha electrons
 **    nb      = number of explicit beta electrons
 **    nbf     = number of orbitals in CI
 **    edrc    = energy of the dropped core orbitals
 **
-*/ 
-void CIvect::calc_hd_block_mll(struct stringwr *alplist_local, 
-      struct stringwr *betlist_local, double **H0, double *oei, 
+*/
+void CIvect::calc_hd_block_mll(struct stringwr *alplist_local,
+      struct stringwr *betlist_local, double **H0, double *oei,
       double *tei, double edrc, int nas, int nbs, int na, int nb, int nbf)
 {
    int acnt, bcnt;
-   int a1, b1, i,j, i_offset, j_offset, ii, jj; 
+   int a1, b1, i,j, i_offset, j_offset, ii, jj;
    double value, tval;
    struct stringwr *betlist0, *alplist0;
    double *orb_e_diff_alp, *orb_e_diff_bet;
    double *oei_alp, *oei_bet, *eigval;
 
    betlist0 = betlist_local;
-   alplist0 = alplist_local; 
+   alplist0 = alplist_local;
 
    oei_alp = init_array(nas);
    oei_bet = init_array(nbs);
@@ -3996,7 +4163,7 @@ void CIvect::calc_hd_block_mll(struct stringwr *alplist_local,
          i = (int) alplist_local->occs[a1];
          ii = ioff[i] + i;
          i_offset = i + CI_CalcInfo_->num_drc_orbs;
-         oei_alp[acnt] += oei[ii]; 
+         oei_alp[acnt] += oei[ii];
          orb_e_diff_alp[acnt] += CI_CalcInfo_->scfeigval[i_offset] - oei[ii];
          }
       alplist_local++;
@@ -4018,9 +4185,9 @@ void CIvect::calc_hd_block_mll(struct stringwr *alplist_local,
    betlist_local = betlist0;
 
    for (acnt=0; acnt<nas; acnt++) {
-         tval = edrc + 0.5 * orb_e_diff_alp[acnt] + oei_alp[acnt]; 
+         tval = edrc + 0.5 * orb_e_diff_alp[acnt] + oei_alp[acnt];
       for (bcnt=0; bcnt<nbs; bcnt++) {
-         value = 0.5 * orb_e_diff_bet[bcnt] + oei_bet[bcnt] + tval; 
+         value = 0.5 * orb_e_diff_bet[bcnt] + oei_bet[bcnt] + tval;
          H0[acnt][bcnt] = value;
          betlist_local++;
          } /* end loop over bcnt */
@@ -4034,8 +4201,8 @@ void CIvect::calc_hd_block_mll(struct stringwr *alplist_local,
 }
 
 /*
-** calc_hd_block_z_ave(): Function calculates a block of H0 and the diagonal 
-** elements of the Hamiltonian matrix averaged over spin-coupling sets to 
+** calc_hd_block_z_ave(): Function calculates a block of H0 and the diagonal
+** elements of the Hamiltonian matrix averaged over spin-coupling sets to
 ** correct any spin contamination of the c and sigma vectors.
 **
 ** Parameters:
@@ -4052,8 +4219,8 @@ void CIvect::calc_hd_block_mll(struct stringwr *alplist_local,
 **    edrc    = energy of the dropped core orbitals
 **
 */
-void CIvect::calc_hd_block_z_ave(struct stringwr *alplist_local, 
-  struct stringwr *betlist_local, double **H0, double pert_param, 
+void CIvect::calc_hd_block_z_ave(struct stringwr *alplist_local,
+  struct stringwr *betlist_local, double **H0, double pert_param,
   double *tei, double edrc, int nas, int nbs, int na, int nb, int nbf)
 {
    int acnt, bcnt;
@@ -4194,7 +4361,7 @@ void CIvect::calc_hd_block_z_ave(struct stringwr *alplist_local,
 }
 double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist,
      double **CL, double **CR, int nas, int nbs,
-     int Ja_list, int Jb_list) 
+     int Ja_list, int Jb_list)
 {
    struct stringwr *Ia, *Ib ;
    unsigned int Ia_ex, Ib_ex;
@@ -4240,14 +4407,14 @@ double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist,
             Ibridx = Ib->ridx[Jb_list];
             Ibsgn = Ib->sgn[Jb_list];
             Ibij = Ib->oij[Jb_list];
- 
+
             tval = 0.0;
             for (Ib_ex=0; Ib_ex < Jbcnt; Ib_ex++) {
                ij = *Ibij++;
                Jb_idx = *Ibridx++;
                Jb_sgn = *Ibsgn++;
                i2 = ij/CI_CalcInfo_->num_ci_orbs;
-               j2 = ij%CI_CalcInfo_->num_ci_orbs; 
+               j2 = ij%CI_CalcInfo_->num_ci_orbs;
                if (i1!=j2 || i2!=j1) continue;
                tval += CR[Ia_idx][Ib_idx] * CL[Ja_idx][Jb_idx] *
                    (double) Ja_sgn * (double) Jb_sgn;
@@ -4264,10 +4431,10 @@ double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist,
                }
             }
             smin_spls += tval;
-      
+
           } /* end loop over Ib */
-       } /* end loop over Ia excitations */ 
-     } /* end loop over Ia */ 
+       } /* end loop over Ia excitations */
+     } /* end loop over Ia */
 
    S2 = -smin_spls;
 

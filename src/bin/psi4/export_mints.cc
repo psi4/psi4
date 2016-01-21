@@ -40,6 +40,7 @@
 
 #include <libfock/jk.h>
 #include <../bin/detci/ciwave.h>
+#include <../bin/detci/civect.h>
 
 #include <string>
 
@@ -977,11 +978,16 @@ void export_mints()
             .def("Idfmo", &DFTensor::Idfmo, "doctsring");
 
 
+    void (detci::CIWavefunction::*py_ci_sigma)(boost::shared_ptr<psi::detci::CIvect>,
+                                            boost::shared_ptr<psi::detci::CIvect>, int, int) =
+                                            &detci::CIWavefunction::sigma;
+
     // Looks like this has to go here.
     class_<detci::CIWavefunction, boost::shared_ptr<detci::CIWavefunction>, bases<Wavefunction> >("CIWavefunction", "docstring", no_init)
         .def(init<boost::shared_ptr<Wavefunction> >())
         .def("get_dimension", &detci::CIWavefunction::get_dimension, "docstring")
         .def("diag_h", &detci::CIWavefunction::diag_h, "docstring")
+        .def("ndet", &detci::CIWavefunction::ndet, "docstring")
         .def("compute_mcscf", &detci::CIWavefunction::compute_mcscf, "docstring")
         .def("transform_ci_integrals", &detci::CIWavefunction::transform_ci_integrals, "docstring")
         .def("transform_mcscf_integrals", &detci::CIWavefunction::transform_mcscf_integrals, "docstring")
@@ -990,7 +996,33 @@ void export_mints()
         .def("get_opdm", &detci::CIWavefunction::get_opdm, "docstring")
         .def("get_tpdm", &detci::CIWavefunction::get_tpdm, "docstring")
         .def("hamiltonian", &detci::CIWavefunction::hamiltonian, "docstring")
-        .def("orbital_ci_block", &detci::CIWavefunction::orbital_ci_block, "docstring");
+        .def("orbital_ci_block", &detci::CIWavefunction::orbital_ci_block, "docstring")
+        .def("new_civector", &detci::CIWavefunction::new_civector, "docstring")
+        .def("Hd_vector", &detci::CIWavefunction::Hd_vector, "docstring")
+        .def("sigma", py_ci_sigma, "docstring");
+
+    void (detci::CIvect::*py_civ_copy)(boost::shared_ptr<psi::detci::CIvect>, int, int) =
+                                            &detci::CIvect::copy;
+    void (detci::CIvect::*py_civ_scale)(double, int) = &detci::CIvect::scale;
+
+    class_<detci::CIvect, boost::shared_ptr<detci::CIvect> >("CIVector", "docstring", no_init)
+        .def("vdot", &detci::CIvect::vdot, "docstring")
+        .def("axpy", &detci::CIvect::axpy, "docstring")
+        .def("copy", py_civ_copy, "docstring")
+        .def("zero", &detci::CIvect::zero, "docstring")
+        .def("scale", py_civ_scale, "docstring")
+        .def("norm", &detci::CIvect::norm, "docstring")
+
+        .def("dcalc", &detci::CIvect::dcalc3, "docstring")
+        .def("symnormalize", &detci::CIvect::symnormalize, "docstring")
+
+        .def("read", &detci::CIvect::read, "docstring")
+        .def("write", &detci::CIvect::write, "docstring")
+        .def("init_io_files", &detci::CIvect::init_io_files, "docstring")
+        .def("close_io_files", &detci::CIvect::close_io_files, "docstring")
+        .def("set_nvec", &detci::CIvect::set_nvect, "docstring")
+        .add_property("__array_interface__", &detci::CIvect::numpy_array_interface, "docstring");
+        // .def("blank", &detci::CIWavefunction::blank, "docstring")
 
 
 }
