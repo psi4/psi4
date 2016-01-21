@@ -117,6 +117,29 @@ DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype,
              priority, num_subspaces, spaceArrays);
 }
 
+/* Another constructor to use new DPDMOSpaces for determining pair indices directly from strings */
+DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype,
+             int *cachefiles, int **cachelist,
+             dpd_file4_cache_entry *priority, int num_subspaces, std::vector<DPDMOSpace> &spaces)
+{
+  std::vector<int*> spaceArrays;
+  int *tmparray;
+
+  for(int i=0; i < num_subspaces; i++) {
+    tmparray = init_int_array(nirreps);
+    for(int j=0; j < spaces[i].nIrrep(); j++) tmparray[j] = spaces[i].orbPI()[j];
+    spaceArrays.push_back(tmparray);
+
+    tmparray = init_int_array(spaces[i].nOrb());
+    for(int j=0; j < spaces[i].nOrb(); j++) tmparray[j] = spaces[i].orbSym()[j];
+    spaceArrays.push_back(tmparray);
+
+    moSpaces.push_back(spaces[i]);
+  }
+
+  init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
+}
+
 /* This is the original function call, but is now just a wrapper to the same function
  * that takes the spaces in a vector instead of using variable argument lists */
 int DPD::init(int dpd_num, int nirreps, long int memory, int cachetype,

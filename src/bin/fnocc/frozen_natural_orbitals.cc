@@ -113,7 +113,7 @@ void FrozenNO::ComputeNaturalOrbitals(){
     outfile->Printf("        ==> Transform (OV|OV) integrals <==\n");
     outfile->Printf("\n");
 
-    std::vector<shared_ptr<MOSpace> > spaces;
+    std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
     boost::shared_ptr<Wavefunction> wfn = reference_wavefunction_;
