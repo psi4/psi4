@@ -87,30 +87,6 @@ void CCEnergyWavefunction::init()
 
 double CCEnergyWavefunction::compute_energy()
 {
-    energy_ = 0.0;
-    PsiReturnType ccsd_return;
-    if ((ccsd_return = run_ccenergy(options_)) == Success) {
-        // Get the total energy of the CCSD wavefunction
-        energy_ = Process::environment.globals["CURRENT ENERGY"];
-    }
-
-    if ((options_.get_str("WFN") == "CCSD_T")) {
-        // Make sure ccenergy returned Success
-        if (ccsd_return != Success)
-            throw PSIEXCEPTION("CCEnergyWavefunction: CCSD did not converge, will not proceed to (T) correction.");
-
-        // Run cctriples
-        if (psi::cctriples::cctriples(options_) == Success)
-            energy_ = Process::environment.globals["CURRENT ENERGY"];
-        else
-            energy_ = 0.0;
-    }
-
-    return energy_;
-}
-
-PsiReturnType CCEnergyWavefunction::run_ccenergy(Options &options)
-{
     int done=0, brueckner_done=0;
     int h, i, j, a, b, row, col, natom;
     double **geom, *zvals, value;
@@ -131,7 +107,7 @@ PsiReturnType CCEnergyWavefunction::run_ccenergy(Options &options)
 #endif
 
     get_moinfo();
-    get_params(options);
+    get_params(options_);
 
     cachefiles = init_int_array(PSIO_MAXUNIT);
 
@@ -153,7 +129,7 @@ PsiReturnType CCEnergyWavefunction::run_ccenergy(Options &options)
         dpd_set_default(0);
 
         if( params_.df ){
-            form_df_ints(options, cachelist, cachefiles, cache_priority_list_);
+            form_df_ints(options_, cachelist, cachefiles, cache_priority_list_);
         }else if( params_.aobasis != "NONE" ) { /* Set up new DPD's for AO-basis algorithm */
             std::vector<int*> aospaces;
             aospaces.push_back(moinfo_.aoccpi);
@@ -182,7 +158,7 @@ PsiReturnType CCEnergyWavefunction::run_ccenergy(Options &options)
         dpd_init(0, moinfo_.nirreps, params_.memory, params_.cachetype, cachefiles, cachelist, cache_priority_list_, 2, spaces);
 
         if( params_.df ){
-            form_df_ints(options, cachelist, cachefiles, cache_priority_list_);
+            form_df_ints(options_, cachelist, cachefiles, cache_priority_list_);
         }else if( params_.aobasis != "NONE") { /* Set up new DPD for AO-basis algorithm */
             std::vector<int*> aospaces;
             aospaces.push_back(moinfo_.occpi);
@@ -235,7 +211,7 @@ PsiReturnType CCEnergyWavefunction::run_ccenergy(Options &options)
     moinfo_.t1diag = diagnostic();
     moinfo_.d1diag = d1diag();
     moinfo_.new_d1diag = new_d1diag();
-    
+
     moinfo_.d2diag = d2diag();
     update();
     checkpoint();
@@ -345,7 +321,7 @@ PsiReturnType CCEnergyWavefunction::run_ccenergy(Options &options)
             sort_amps();
             update();
             outfile->Printf( "\n\tIterations converged.\n");
-            
+
             outfile->Printf( "\n");
             amp_write();
             if (params_.analyze != 0) analyze();
@@ -367,7 +343,7 @@ PsiReturnType CCEnergyWavefunction::run_ccenergy(Options &options)
     if(!done) {
         outfile->Printf( "\t ** Wave function not converged to %2.1e ** \n",
                 params_.convergence);
-        
+
         if( params_.aobasis != "NONE" ) dpd_close(1);
         dpd_close(0);
         cleanup();
@@ -521,6 +497,7 @@ PsiReturnType CCEnergyWavefunction::run_ccenergy(Options &options)
     timer_off("CCEnergy");
 #endif
 
+    energy_ = moinfo_.ecc + moinfo_.eref;
     Process::environment.globals["CURRENT ENERGY"] = moinfo_.ecc+moinfo_.eref;
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = moinfo_.ecc;
     //Process::environment.globals["CC TOTAL ENERGY"] = moinfo.ecc+moinfo.eref;
@@ -531,7 +508,16 @@ PsiReturnType CCEnergyWavefunction::run_ccenergy(Options &options)
     //  if(params.brueckner && brueckner_done)
     //     throw FeatureNotImplemented("CCENERGY", "Brueckner end loop", __FILE__, __LINE__);
     //else
-    return Success;
+
+    if ((options_.get_str("WFN") == "CCSD_T")) {
+        // Run cctriples
+        if (psi::cctriples::cctriples(options_) == Success)
+            energy_ = Process::environment.globals["CURRENT ENERGY"];
+        else
+            energy_ = 0.0;
+    }
+
+    return energy_;
 }
 
 
