@@ -624,7 +624,8 @@ void export_mints()
             def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring").
             def("play", &MintsHelper::play, "docstring");
 
-    class_<FittingMetric, boost::shared_ptr<FittingMetric> >("FittingMetric", "docstring").
+    class_<FittingMetric, boost::shared_ptr<FittingMetric> >("FittingMetric", "docstring", no_init).
+            def(init<boost::shared_ptr<BasisSet>, bool>()).
             def("get_algorithm", &FittingMetric::get_algorithm, "docstring").
             def("is_poisson", &FittingMetric::is_poisson, "docstring").
             def("is_inverted", &FittingMetric::is_inverted, "docstring").
