@@ -132,7 +132,7 @@ PsiReturnType cctriples(Options &options);
 namespace psi { namespace ccenergy {
 
 CCEnergyWavefunction::CCEnergyWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
-    : Wavefunction(options, _default_psio_lib_)
+    : Wavefunction(options)
 {
     set_reference_wavefunction(reference_wavefunction);
     init();
