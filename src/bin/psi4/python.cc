@@ -121,7 +121,6 @@ namespace fnocc { SharedWavefunction fnocc(SharedWavefunction, Options&); }
 namespace occwave { SharedWavefunction occwave(SharedWavefunction, Options&); }
 namespace mcscf { SharedWavefunction mcscf(SharedWavefunction, Options&); }
 namespace scf { SharedWavefunction     scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
-namespace lmp2 { SharedWavefunction lmp2(SharedWavefunction, Options&); }
 
 // Matrix returns
 namespace deriv   { SharedMatrix     deriv(SharedWavefunction, Options&); }
@@ -164,7 +163,6 @@ SharedMatrix displace_atom(SharedMatrix geom, const int atom,
 // TODO
 namespace ccsort { PsiReturnType ccsort(Options&); }
 namespace cctransort { PsiReturnType cctransort(Options&); }
-//    namespace lmp2       { PsiReturnType lmp2(Options&);      }
 namespace cctriples { PsiReturnType cctriples(Options&); }
 namespace cchbar { PsiReturnType cchbar(Options&); }
 namespace cclambda { PsiReturnType cclambda(Options&); }
@@ -403,12 +401,6 @@ SharedWavefunction py_psi_dcft(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("DCFT");
     return dcft::dcft(ref_wfn, Process::environment.options);
-}
-
-SharedWavefunction py_psi_lmp2(SharedWavefunction ref_wfn)
-{
-    py_psi_prepare_options_for_module("LMP2");
-    return lmp2::lmp2(ref_wfn, Process::environment.options);
 }
 
 SharedWavefunction py_psi_dfmp2(SharedWavefunction ref_wfn)
@@ -1574,21 +1566,14 @@ BOOST_PYTHON_MODULE (psi4)
         "Redirects output to /dev/null.  To switch back to regular output mode, use reopen_outfile()");
 
     // modules
-    // def("mints", py_psi_mints, "Runs mints, which generate molecular integrals on disk.");
     def("deriv",
         py_psi_deriv,
         "Runs deriv, which contracts density matrices with derivative integrals, to compute gradients.");
     def("scfgrad", py_psi_scfgrad, "Run scfgrad, which is a specialized DF-SCF gradient program.");
     def("scfhess", py_psi_scfhess, "Run scfhess, which is a specialized DF-SCF hessian program.");
 
-    typedef double (*scf_module_none)();
-    typedef double (*scf_module_two)(PyObject *, PyObject *);
-
-    // def("scf", py_psi_scf_callbacks, "Runs the SCF code.");
     def("scf", py_psi_scf, "Runs the SCF code.");
-    // def("scf_dummy", py_psi_scf_dummy, "Builds SCF wavefunctionobject only. Does not execute scf.");
     def("dcft", py_psi_dcft, "Runs the density cumulant functional theory code.");
-    def("lmp2", py_psi_lmp2, "Runs the local MP2 code.");
     def("libfock", py_psi_libfock, "Runs a CPHF calculation, using libfock.");
     def("dfmp2", py_psi_dfmp2, "Runs the DF-MP2 code.");
     // def("dfmp2grad", py_psi_dfmp2grad, "Runs the DF-MP2 gradient.");

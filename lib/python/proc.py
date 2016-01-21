@@ -45,18 +45,6 @@ from roa import *
 # consult http://sirius.chem.vt.edu/psi4manual/master/proc_py.html
 
 
-def run_lmp2(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an LMP2 theory calculation.
-
-    """
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-    psi4.lmp2()
-
-
 def run_dcft(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a density cumulant functional theory calculation.
