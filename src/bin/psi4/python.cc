@@ -139,6 +139,9 @@ namespace thermo { PsiReturnType thermo(SharedWavefunction, Options&); }
 namespace dmrg       { PsiReturnType dmrg(SharedWavefunction, Options&);     }
 #endif
 
+// Should die soon
+namespace transqt2 { PsiReturnType transqt2(SharedWavefunction, Options&); }
+
 // Finite difference cases
 namespace findif {
 std::vector<SharedMatrix> fd_geoms_1_0(boost::shared_ptr<Molecule>, Options&);
@@ -157,12 +160,6 @@ SharedMatrix displace_atom(SharedMatrix geom, const int atom,
                            const int coord, const int sign,
                            const double disp_size);
 }
-
-// Incomplete
-// namespace mints { PsiReturnType mints(Options&); }
-
-// Needs to be deprecated
-namespace transqt2 { PsiReturnType transqt2(Options&); }
 
 
 // TODO
@@ -452,10 +449,10 @@ double py_psi_fisapt(SharedWavefunction ref_wfn)
         return 0.0;
 }
 
-double py_psi_transqt2()
+double py_psi_transqt2(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("TRANSQT2");
-    transqt2::transqt2(Process::environment.options);
+    transqt2::transqt2(ref_wfn, Process::environment.options);
     return 0.0;
 }
 

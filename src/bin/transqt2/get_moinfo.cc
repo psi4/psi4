@@ -87,7 +87,7 @@ namespace transqt2 {
 
 void semicanonical_fock(void);
 
-void get_moinfo(Options& options)
+void get_moinfo(SharedWavefunction wfn, Options& options)
 {
     int i, j, k, h, p, q, count;
     double escf;
@@ -97,8 +97,6 @@ void get_moinfo(Options& options)
     double **C_full, **C_full_a, **C_full_b;
     int *reorder, *reorder_A, *reorder_B;
     double **TMP;
-
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
 
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
@@ -124,14 +122,12 @@ void get_moinfo(Options& options)
      moinfo.openpi[h] = wfn->soccpi()[h];
    }
 
-    //moinfo.frdocc = Process::environment.wavefunction()->frzcpi();
     if(options["FROZEN_DOCC"].has_changed()){
         if(options["FROZEN_DOCC"].size() != moinfo.nirreps)
             throw PSIEXCEPTION("FROZEN_DOCC array should be the same size as the number of irreps.");
         for(int h = 0; h < moinfo.nirreps; ++h)
             moinfo.frdocc[h] = options["FROZEN_DOCC"][h].to_integer();
     }
-    //moinfo.fruocc = Process::environment.wavefunction()->frzvpi();
     if(options["FROZEN_UOCC"].has_changed()){
         if(options["FROZEN_UOCC"].size() != moinfo.nirreps)
             throw PSIEXCEPTION("FROZEN_UOCC array should be the same size as the number of irreps.");
@@ -197,121 +193,7 @@ void get_moinfo(Options& options)
         moinfo.C_full_b = C_full_b;
     }
 
-    if(ci_wfn(params.wfn)) {
-
-        /** Compute CI spatial-orbial reordering array(s) for the one-electron transformation **/
-        rstr_docc = init_int_array(moinfo.nirreps);
-        rstr_uocc = init_int_array(moinfo.nirreps);
-        ras_opi = init_int_matrix(4,moinfo.nirreps);
-        int *core_guess = init_int_array(moinfo.nirreps);
-        for (h=0; h<moinfo.nirreps; h++) {
-          core_guess[h] = Process::environment.wavefunction()->frzcpi()[h];
-        }
-        bool is_mcscf;
-
-
-        if((params.wfn == "MCSCF") || (params.wfn == "CASSCF") ||
-                (params.wfn == "RASSCF") || (params.wfn == "DETCAS"))
-            is_mcscf = true;
-        else
-            is_mcscf = false;
-
-        // below, we need frdocc and fruocc as they appear in input, i.e., they
-        // should not be zeroed out even if the frozen orbitals are to be
-        // transformed
-        moinfo.pitz2corr_one = init_int_array(moinfo.nmo);
-
-        if (!ras_set3(moinfo.nirreps, moinfo.nmo, 
-                      moinfo.mopi, moinfo.clsdpi, moinfo.openpi,
-                      moinfo.frdocc, moinfo.fruocc,
-                      rstr_docc, rstr_uocc,
-                      ras_opi, core_guess, moinfo.pitz2corr_one, 1, 
-                      is_mcscf, options))
-        {
-            throw PsiException("Error in ras_set(). Aborting.", __FILE__, __LINE__);
-        }
-        free(core_guess);
-
-        /* "core" array needed for frozen-core operator */
-        /* core for CI wfns is frozen-docc plus restricted-docc */
-        moinfo.core = init_int_array(moinfo.nirreps);
-        moinfo.ncore = 0;
-        for(h=0; h < moinfo.nirreps; h++) {
-            moinfo.core[h] = moinfo.frdocc[h] + rstr_docc[h];
-            moinfo.ncore += moinfo.core[h];
-        }
-
-        /* Definition of nactive, actpi, and actsym varies depending
-       on the type of CI calculation */
-
-        if((params.wfn == "MCSCF") || (params.wfn == "CASSCF") ||
-                (params.wfn == "RASSCF") || (params.wfn == "DETCAS") ||
-                params.dertype == 1) {
-
-            /* Include all orbtials; partial transforms to come later */
-            moinfo.nactive = moinfo.nmo;
-
-            moinfo.actpi = init_int_array(moinfo.nirreps);
-            for(h=0; h < moinfo.nirreps; h++)
-                moinfo.actpi[h] = moinfo.mopi[h];
-
-            moinfo.actsym = init_int_array(moinfo.nactive);
-            for(h=0,count=0; h < moinfo.nirreps; h++)
-                for(i=0; i < moinfo.actpi[h]; i++,count++)
-                    moinfo.actsym[count] = h;
-
-            /** Compute CI spatial-orbial reordering array(s) for the two-electron transformation **/
-
-            // Now we need to translate the full Pitzer -> correlated mapping
-            // array to one that involves only the active orbitals
-            moinfo.pitz2corr_two = init_int_array(moinfo.nactive);
-            for (h=0,j=0,k=0; h<moinfo.nirreps; h++) {
-                for (i=0; i<moinfo.mopi[h]; i++,j++) {
-                    // j is now an absolute Pitzer MO index
-                    // k is an index for Pitzer orbitals NOT including frozen ones
-                    moinfo.pitz2corr_two[k++] = moinfo.pitz2corr_one[j];
-                }
-            }
-
-            /* zero offsets for MCSCF wfns and derivs b/c all orbitals needed */
-            moinfo.C_offset = init_int_array(moinfo.nirreps);
-        }
-        else {
-            /* Otherwise leave out fzc/fzv */
-            moinfo.nactive = moinfo.nmo - moinfo.nfzc - moinfo.nfzv;
-
-            moinfo.actpi = init_int_array(moinfo.nirreps);
-            for(h=0; h < moinfo.nirreps; h++)
-                moinfo.actpi[h] = moinfo.mopi[h] - moinfo.frdocc[h] - moinfo.fruocc[h];
-
-            moinfo.actsym = init_int_array(moinfo.nactive);
-            for(h=0,count=0; h < moinfo.nirreps; h++)
-                for(i=0; i < moinfo.actpi[h]; i++,count++)
-                    moinfo.actsym[count] = h;
-
-            /** Compute CI spatial-orbial reordering array(s) for the two-electron transformation **/
-
-            // Now we need to translate the full Pitzer -> correlated mapping
-            // array to one that involves only the active orbitals
-            moinfo.pitz2corr_two = init_int_array(moinfo.nactive);
-            for (h=0,j=0,k=0; h<moinfo.nirreps; h++) {
-                for (i=0; i<moinfo.mopi[h]; i++,j++) {
-                    // j is now an absolute Pitzer MO index
-                    // k is an index for Pitzer orbitals NOT including frozen ones
-                    if (i < moinfo.frdocc[h] || i >= (moinfo.mopi[h]-moinfo.fruocc[h]))
-                        continue;
-                    moinfo.pitz2corr_two[k++] = moinfo.pitz2corr_one[j] - moinfo.nfzc;
-                }
-            }
-
-            /* frozen-core offsets for truncated-CI energies */
-            moinfo.C_offset = init_int_array(moinfo.nirreps);
-            for(h=0; h < moinfo.nirreps; h++)
-                moinfo.C_offset[h] = moinfo.frdocc[h];
-        }
-
-    }
-    else if(cc_wfn(params.wfn) || (params.wfn == "MP2")) {
+    if(cc_wfn(params.wfn) || (params.wfn == "MP2")) {
 
         /* Leave out fzc/fzv */
         moinfo.nactive = moinfo.nmo - moinfo.nfzc - moinfo.nfzv;

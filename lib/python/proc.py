@@ -1830,26 +1830,23 @@ def run_ccenergy(name, **kwargs):
         pass
 
     # Bypass routine scf if user did something special to get it to converge
-    bypass = ('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))
-    if not bypass:
-        scf_helper(name, **kwargs)
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
 
     # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
     # written to disk
-    IsDF = psi4.get_option('SCF', 'SCF_TYPE') == 'DF'
-    IsCD = psi4.get_option('SCF', 'SCF_TYPE') == 'CD'
-    IsDirect = psi4.get_option('SCF', 'SCF_TYPE') == 'DIRECT'
-    if bypass or IsDF or IsCD or IsDirect:
-        mints = psi4.MintsHelper()
+    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD', 'DIRECT']:
+        mints = psi4.MintsHelper(ref_wfn.basisset())
         mints.integrals()
 
     if (psi4.get_global_option('RUN_CCTRANSORT')):
         psi4.cctransort()
     else:
-        psi4.transqt2()
+        psi4.transqt2(ref_wfn)
         psi4.ccsort()
 
-    psi4.ccenergy()
+    psi4.ccenergy(ref_wfn)
 
     if (lowername == 'ccsd(at)' or lowername == 'a-ccsd(t)'):
         psi4.cchbar()
