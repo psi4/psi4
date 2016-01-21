@@ -494,142 +494,9 @@ def run_mp2_gradient(name, **kwargs):
     optstash.restore()
 
 
-def run_scs_omp2(name, **kwargs):
+def run_omp(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    a spin-component scaled OMP2 computation
-
-    """
-    lowername = name.lower()
-
-    optstash = p4util.OptionsState(
-        ['OCC', 'SCS_TYPE'],
-        ['OCC', 'DO_SCS'])
-
-    # what type of scs?
-    if (lowername == 'scs-omp2'):
-        psi4.set_local_option('OCC', 'SCS_TYPE', 'SCS')
-    elif (lowername == 'scsn-omp2'):
-        psi4.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
-    #elif (lowername == 'scs-mi-omp2'):
-    #    psi4.set_local_option('OCC', 'SCS_TYPE', 'SCSMI')
-    elif (lowername == 'scs-omp2-vdw'):
-        psi4.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
-    psi4.occ()
-
-    optstash.restore()
-
-
-def run_sos_omp2(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a spin-opposite scaled OMP2 computation
-
-    """
-    lowername = name.lower()
-
-    optstash = p4util.OptionsState(
-        ['OCC', 'SOS_TYPE'],
-        ['OCC', 'DO_SOS'])
-
-    # what type of sos?
-    if (lowername == 'sos-omp2'):
-        psi4.set_local_option('OCC', 'SOS_TYPE', 'SOS')
-    elif (lowername == 'sos-pi-omp2'):
-        psi4.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
-    psi4.occ()
-
-    optstash.restore()
-
-
-def run_omp3(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an orbital-optimized MP3 computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['OCC', 'WFN_TYPE'])
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        ref_wfn = scf_helper(name, **kwargs)
-    else:
-        ref_wfn = wavefunction()
-
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-    # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or
-        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
-        psi4.MintsHelper().integrals()
-
-    psi4.occ(ref_wfn)
-
-    optstash.restore()
-
-
-def run_omp3_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    OMP3 gradient calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['OCC', 'WFN_TYPE'],
-        ['GLOBALS', 'DERTYPE'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-    run_omp3(name, **kwargs)
-    psi4.deriv()
-
-    optstash.restore()
-
-
-def run_mp3(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a MP3 calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['OCC', 'ORB_OPT'])
-
-    psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_omp3(name, **kwargs)
-
-    optstash.restore()
-
-
-def run_mp3_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a MP3 gradient calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['GLOBALS', 'DERTYPE'],
-        ['OCC', 'WFN_TYPE'],
-        ['OCC', 'ORB_OPT'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-    psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_omp3(name, **kwargs)
-    psi4.deriv()
-
-    optstash.restore()
-
-
-def run_scs_omp3(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a spin-component scaled OMP3 computation
+    a conventional integral (O)MPN computation
 
     """
     lowername = name.lower()
@@ -637,208 +504,140 @@ def run_scs_omp3(name, **kwargs):
     optstash = p4util.OptionsState(
         ['OCC', 'SCS_TYPE'],
         ['OCC', 'DO_SCS'],
+        ['OCC', 'SOS_TYPE'],
+        ['OCC', 'DO_SOS'],
+        ['OCC', 'ORB_OPT'],
         ['OCC', 'WFN_TYPE'])
 
-    # what type of scs?
-    if (lowername == 'scs-omp3'):
+    if lowername == 'scs-omp2':
         psi4.set_local_option('OCC', 'SCS_TYPE', 'SCS')
-    elif (lowername == 'scsn-omp3'):
+        psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+    elif lowername == 'scs(n)-omp2':
         psi4.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
-    #elif (lowername == 'scs-mi-omp3'):
-    #    psi4.set_local_option('OCC', 'SCS_TYPE', 'SCSMI')
+        psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+    elif lowername == 'scs-omp2-vdw':
+        psi4.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
+        psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+    elif (lowername == 'sos-omp2'):
+        psi4.set_local_option('OCC', 'SOS_TYPE', 'SOS')
+        psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+    elif (lowername == 'sos-pi-omp2'):
+        psi4.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
+        psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+
+    elif lowername == 'mp2.5':
+        psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
+    elif lowername == 'omp2.5':
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
+
+    elif lowername == 'mp3':
+        psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    elif lowername == 'omp3':
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    elif lowername == 'scs-omp3':
+        psi4.set_local_option('OCC', 'SCS_TYPE', 'SCS')
+        psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    elif lowername == 'scs(n)-omp3':
+        psi4.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
+        psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
     elif (lowername == 'scs-omp3-vdw'):
         psi4.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
+        psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    elif lowername == 'sos-omp3':
+        psi4.set_local_option('OCC', 'SOS_TYPE', 'SOS')
+        psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    elif lowername == 'sos-pi-omp3':
+        psi4.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
+        psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
 
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
+    elif lowername == 'cepa0':
+        psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+    elif lowername == 'ocepa':
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
 
-    psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
+
     # If the scf type is DF/CD, then the AO integrals were never written to disk
     if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or
         psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
         psi4.MintsHelper().integrals()
-    psi4.occ()
+
+    occ_wfn = psi4.occ(ref_wfn)
 
     optstash.restore()
+    return occ_wfn
+
+    ## Bypass routine scf if user did something special to get it to converge
+    #if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+    #    ref_wfn = scf_helper(name, **kwargs)
+    #else:
+    #    ref_wfn = wavefunction()
 
 
-def run_sos_omp3(name, **kwargs):
+def run_omp_gradient(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    a spin-opposite scaled OMP3 computation
+    a conventional integral (O)MPN computation
 
     """
     lowername = name.lower()
 
     optstash = p4util.OptionsState(
-        ['OCC', 'SOS_TYPE'],
-        ['OCC', 'DO_SOS'],
-        ['OCC', 'WFN_TYPE'])
-
-    # what type of sos?
-    if (lowername == 'sos-omp3'):
-        psi4.set_local_option('OCC', 'SOS_TYPE', 'SOS')
-    elif (lowername == 'sos-pi-omp3'):
-        psi4.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-    # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or
-        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
-        psi4.MintsHelper().integrals()
-    psi4.occ()
-
-    optstash.restore()
-
-
-def run_ocepa(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an orbital-optimized CEPA computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['OCC', 'WFN_TYPE'])
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-    # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or
-        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
-        psi4.MintsHelper().integrals()
-    psi4.occ()
-
-    optstash.restore()
-
-
-def run_ocepa_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    OCEPA gradient calculation.
-
-    """
-    optstash = p4util.OptionsState(
+        ['OCC', 'ORB_OPT'],
+        ['OCC', 'WFN_TYPE'],
         ['GLOBALS', 'DERTYPE'])
 
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    run_ocepa(name, **kwargs)
-    psi4.deriv()
+    if lowername == 'mp2.5':
+        psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
+    elif lowername == 'omp2.5':
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
 
-    optstash.restore()
+    elif lowername == 'mp3':
+        psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    elif lowername == 'omp3':
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
 
-
-def run_cepa0(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a CEPA (LCCD) computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['OCC', 'WFN_TYPE'],
-        ['OCC', 'ORB_OPT'])
-
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-    psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_ocepa(name, **kwargs)
-
-    optstash.restore()
-
-
-def run_cepa0_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a CEPA(0) gradient calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['GLOBALS', 'DERTYPE'],
-        ['OCC', 'WFN_TYPE'],
-        ['OCC', 'ORB_OPT'])
+    elif lowername == 'cepa0':
+        psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+    elif lowername == 'ocepa':
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
 
     psi4.set_global_option('DERTYPE', 'FIRST')
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-    psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_ocepa(name, **kwargs)
-    psi4.deriv()
 
-    optstash.restore()
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
 
-
-def run_omp2_5(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an orbital-optimized MP2.5 computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['OCC', 'WFN_TYPE'])
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
     # If the scf type is DF/CD, then the AO integrals were never written to disk
     if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or
         psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
         psi4.MintsHelper().integrals()
-    psi4.occ()
+
+    occ_wfn = psi4.occ(ref_wfn)
+    grad = psi4.deriv(occ_wfn)
+    occ_wfn.set_gradient(grad)
 
     optstash.restore()
-
-
-def run_omp2_5_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    OMP2.5 gradient calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['GLOBALS', 'DERTYPE'],
-        ['OCC', 'WFN_TYPE'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
-    run_omp2_5(name, **kwargs)
-    psi4.deriv()
-
-    optstash.restore()
-
-
-def run_mp2_5(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a MP2.5 calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['OCC', 'ORB_OPT'])
-
-    psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_omp2_5(name, **kwargs)
-
-    optstash.restore()
-
-
-def run_mp2_5_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a MP3 gradient calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['GLOBALS', 'DERTYPE'],
-        ['OCC', 'WFN_TYPE'],
-        ['OCC', 'ORB_OPT'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
-    psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_omp2_5(name, **kwargs)
-    psi4.deriv()
-
-    optstash.restore()
+    return occ_wfn
 
 
 def parse_scf_cases(name):
