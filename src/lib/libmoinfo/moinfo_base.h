@@ -43,10 +43,11 @@ typedef std::vector<bool>                   boolvec;
 namespace psi {
 
 class Options;
+class Wavefunction;
 
 class MOInfoBase{
 public:
-  MOInfoBase(Options& options_, bool silent_ = false);
+  MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_ = false);
   ~MOInfoBase();
 
   double      get_nuclear_energy()               const {return(nuclear_energy);}
@@ -84,6 +85,7 @@ protected:
   void        cleanup();
   void        compute_ioff();
 
+  Wavefunction& ref_wfn;
   Options&    options;
   int         nirreps;
   int         wfn_sym;

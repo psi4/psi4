@@ -98,7 +98,7 @@ public:
   };
 public:
   friend class SlaterDeterminant;
-  MOInfo(Options& options_, bool silent_ = false);
+  MOInfo(Wavefunction& ref_wf_, Options& options_, bool silent_ = false);
   ~MOInfo();
 
   // DGEMM timing
