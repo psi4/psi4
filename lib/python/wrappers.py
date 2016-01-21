@@ -392,27 +392,6 @@ def new_new_run_calc(methodname, moleculelist,**kwargs):
     return PMan.Synch(Energies,len(energylist))
               
 
-def mbe(name, **kwargs):
-    r"""The driver routine for running calculations with the MBE or the 
-    GMBE.    
-
-    :type name: string
-    :param name: ``'scf'`` || ``'ccsd(t)'`` || etc.
-
-        First argument, usually unlabeled. Indicates the computational method
-        to be applied to the molecule. May be any valid argument to
-        :py:func:`~driver.energy`; however, SAPT is not appropriate.
-
-    """
-
-    if 'molecule' in kwargs:
-        activate(kwargs['molecule'])
-        del kwargs['molecule']
-    molecule = psi4.get_active_molecule()
-    molecule.update_geometry()
-    psi4.prepare_options_for_module("LIBFRAG")
-    Driver=psi4.LibFragDriver(name);
-
 #######################
 ##  Start of n_body  ##
 #######################

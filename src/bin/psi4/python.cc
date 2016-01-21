@@ -85,7 +85,6 @@ void export_mints();
 void export_functional();
 void export_oeprop();
 void export_cubefile();
-void export_libfrag();
 void export_libparallel();
 void export_efp();
 void export_cubeprop();
@@ -1656,7 +1655,6 @@ BOOST_PYTHON_MODULE (psi4)
     export_chkpt();
     export_mints();
     export_functional();
-    export_libfrag();
     export_libparallel();
 
     typedef string (Process::Environment::*environmentStringFunction)(const string&);
