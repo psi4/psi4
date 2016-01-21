@@ -24,6 +24,7 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libmints/matrix.h>
+#include <libmints/mints.h>
 #include <libiwl/iwl.hpp>
 #define EXTERN
 #include "libdpd/dpd.gbl"
@@ -44,7 +45,7 @@ using namespace boost;
  * Fock matrix construction.
  */
 void
-IntegralTransform::transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2,
+IntegralTransform::transform_oei(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2,
                                  const char *label)
 {
     check_initialized();

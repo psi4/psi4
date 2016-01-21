@@ -167,6 +167,7 @@ namespace transqt2 { PsiReturnType transqt2(Options&); }
 
 // TODO
 namespace ccsort { PsiReturnType ccsort(Options&); }
+namespace cctransort { PsiReturnType cctransort(Options&); }
 //    namespace lmp2       { PsiReturnType lmp2(Options&);      }
 namespace cctriples { PsiReturnType cctriples(Options&); }
 namespace cchbar { PsiReturnType cchbar(Options&); }
@@ -465,6 +466,12 @@ double py_psi_ccsort()
     return 0.0;
 }
 
+double py_psi_cctransort()
+{
+    py_psi_prepare_options_for_module("CCTRANSORT");
+    cctransort::cctransort(Process::environment.options);
+    return 0.0;
+}
 SharedWavefunction py_psi_ccenergy(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCENERGY");
@@ -1626,6 +1633,7 @@ BOOST_PYTHON_MODULE (psi4)
 //    def("transqt", py_psi_transqt, "Runs the (deprecated) transformation code.");
     def("transqt2", py_psi_transqt2, "Runs the (deprecated) transformation code.");
     def("ccsort", py_psi_ccsort, "Runs CCSORT, which reorders integrals for use in the coupled cluster codes.");
+    def("cctransort", py_psi_cctransort, "Runs CCTRANSORT, which transforms and reorders integrals for use in the coupled cluster codes.");
     def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");
     def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
