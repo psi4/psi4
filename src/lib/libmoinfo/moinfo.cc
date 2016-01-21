@@ -50,8 +50,8 @@ using namespace std;
 
 namespace psi {
 
-MOInfo::MOInfo(Options& options_, bool silent_)
-    : MOInfoBase(options_, silent_)
+MOInfo::MOInfo(Wavefunction& ref_wfn_, Options& options_, bool silent_)
+    : MOInfoBase(ref_wfn_, options_, silent_)
 {
     /***************
     Set defaults
@@ -115,11 +115,11 @@ void MOInfo::read_info()
      * Read Nuclear, SCF and other stuff
      */
     read_data();
-    nmo            = Process::environment.wavefunction()->nmo();
+    nmo            = ref_wfn.nmo();
     compute_number_of_electrons();
-    scf_energy     = Process::environment.wavefunction()->reference_energy();
-    mopi           = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->nmopi());
-    SharedMatrix matCa = Process::environment.wavefunction()->Ca();
+    scf_energy     = ref_wfn.reference_energy();
+    mopi           = convert_int_array_to_vector(nirreps, ref_wfn.nmopi());
+    SharedMatrix matCa = ref_wfn.Ca();
     scf            = block_matrix(nso, nmo);
     unsigned int soOffset = 0;
     unsigned int moOffset = 0;
@@ -265,9 +265,9 @@ void MOInfo::read_mo_spaces()
         intvec fvir_ref;
 //        intvec actv_docc_ref;
 
-        focc_ref = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->frzcpi());
-        docc_ref = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->doccpi());
-        actv_ref = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->soccpi());
+        focc_ref = convert_int_array_to_vector(nirreps, ref_wfn.frzcpi());
+        docc_ref = convert_int_array_to_vector(nirreps, ref_wfn.doccpi());
+        actv_ref = convert_int_array_to_vector(nirreps, ref_wfn.soccpi());
         fvir_ref.assign(nirreps_ref,0);
 //        actv_docc_ref.assign(nirreps_ref,0);
 
@@ -286,7 +286,7 @@ void MOInfo::read_mo_spaces()
 
 
         boost::shared_ptr<PointGroup> full = Process::environment.parent_symmetry();
-        boost::shared_ptr<PointGroup> sub =  Process::environment.molecule()->point_group();
+        boost::shared_ptr<PointGroup> sub =  ref_wfn.molecule()->point_group();
         // Build the correlation table between full, and subgroup
         CorrelationTable corrtab(full, sub);
 
@@ -306,9 +306,9 @@ void MOInfo::read_mo_spaces()
         // For a single-point only
         outfile->Printf("\n  For a single-point only"); 
 
-        focc = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->frzcpi());
-        docc = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->doccpi());
-        actv = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->soccpi());
+        focc = convert_int_array_to_vector(nirreps, ref_wfn.frzcpi());
+        docc = convert_int_array_to_vector(nirreps, ref_wfn.doccpi());
+        actv = convert_int_array_to_vector(nirreps, ref_wfn.soccpi());
 
         for (int h = 0; h < nirreps; h++)
             docc[h] -= focc[h];

@@ -30,13 +30,14 @@
 
 #include <string>
 
+#include <libmints/wavefunction.h>
 #include "moinfo_base.h"
 
 namespace psi {
 
 class MOInfoSCF : public MOInfoBase {
 public:
-  MOInfoSCF(Options& options_, bool silent_ = false);
+  MOInfoSCF(Wavefunction& ref_wfn_, Options& options_, bool silent_ = false);
   ~MOInfoSCF();
 private:
   void read_mo_spaces();

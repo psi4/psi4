@@ -91,7 +91,7 @@ SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options)
       // Now, set the reference wavefunction for subsequent codes to use
       wfn = SharedWavefunction(new SCF(ref_wfn,options,psio,chkpt));
       Process::environment.set_wavefunction(wfn);
-      moinfo_scf      = new psi::MOInfoSCF(options);
+      moinfo_scf      = new psi::MOInfoSCF(*(wfn.get()), options);
       wfn->compute_energy();
       Process::environment.globals["CURRENT ENERGY"] = wfn->reference_energy();
       Process::environment.globals["CURRENT REFERENCE ENERGY"] = wfn->reference_energy();

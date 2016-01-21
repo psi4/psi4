@@ -38,8 +38,8 @@ using namespace std;
 
 namespace psi {
 
-MOInfoSCF::MOInfoSCF(Options& options_, bool silent_)
-    : MOInfoBase(options_, silent_)
+MOInfoSCF::MOInfoSCF(Wavefunction& ref_wfn_, Options& options_, bool silent_)
+    : MOInfoBase(ref_wfn_, options_, silent_)
 {
     read_data();
     // Determine the wave function irrep
@@ -102,7 +102,7 @@ void MOInfoSCF::read_mo_spaces()
 
         // Build the correlation table between full, and subgroup
         boost::shared_ptr<PointGroup> full = Process::environment.parent_symmetry();
-        boost::shared_ptr<PointGroup> sub =  Process::environment.molecule()->point_group();
+        boost::shared_ptr<PointGroup> sub =  ref_wfn.molecule()->point_group();
         CorrelationTable corrtab(full, sub);
 
         // Find the occupation in the subgroup

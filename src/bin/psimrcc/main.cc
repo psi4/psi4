@@ -95,7 +95,7 @@ psimrcc(SharedWavefunction ref_wfn, Options &options)
 
   global_timer = new Timer;
   debugging = new Debugging(options);
-  moinfo = new MOInfo(options);
+  moinfo = new MOInfo(*(ref_wfn.get()), options);
 
   memory_manager = new MemoryManager(Process::environment.get_memory());
   model_space = new ModelSpace(moinfo);
