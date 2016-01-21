@@ -25,6 +25,7 @@
     \brief Enter brief description of file here 
 */
 #include <cstdio>
+#include "psi4-dec.h"
 #include "MOInfo.h"
 #include "ccwave.h"
 

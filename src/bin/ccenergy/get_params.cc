@@ -30,6 +30,7 @@
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
+#include "psi4-dec.h"
 #include "Params.h"
 #include "Local.h"
 #include "MOInfo.h"
