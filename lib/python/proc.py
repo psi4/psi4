@@ -283,19 +283,6 @@ def run_dfomp_property(name, **kwargs):
     return dfocc_wfn
 
 
-
-
-
-
-
-def run_omp2(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an orbital-optimized MP2 computation
-
-    """
-    run_dfomp2(name, **kwargs)
-
-
 def run_qchf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an density-fitted orbital-optimized MP2 computation
@@ -424,48 +411,6 @@ def run_cdomp(name, **kwargs):
     return dfocc_wfn
 
 
-def run_conv_omp2(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an orbital-optimized MP2 computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'])
-
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_wfn = scf_helper(name, **kwargs)
-    else:
-        scf_wfn = wavefunction()
-
-    psi4.occ(scf_wfn)
-
-    #return psi4.occ()
-    optstash.restore()
-
-
-def run_omp2_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    OMP2 gradient calculation.
-
-    """
-    run_dfomp2_gradient(name, **kwargs)
-
-
-def run_conv_omp2_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    OMP2 gradient calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['REFERENCE'],
-        ['GLOBALS', 'DERTYPE'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    run_conv_omp2(name, **kwargs)
-    psi4.deriv()
-
-    optstash.restore()
-
 
 def run_mp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -519,7 +464,12 @@ def run_omp(name, **kwargs):
         ['OCC', 'ORB_OPT'],
         ['OCC', 'WFN_TYPE'])
 
-    if lowername == 'scs-omp2':
+    if lowername == 'mp2':
+        psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+    elif lowername in ['omp2', 'conv-omp2']:
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+    elif lowername == 'scs-omp2':
         psi4.set_local_option('OCC', 'SCS_TYPE', 'SCS')
         psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
         psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
@@ -614,7 +564,13 @@ def run_omp_gradient(name, **kwargs):
         ['OCC', 'WFN_TYPE'],
         ['GLOBALS', 'DERTYPE'])
 
-    if lowername == 'mp2.5':
+    if lowername == 'mp2':
+        psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+    elif lowername in ['omp2', 'conv-omp2']:
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+
+    elif lowername == 'mp2.5':
         psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
     elif lowername == 'omp2.5':
@@ -1001,7 +957,7 @@ def run_mp2_select(name, **kwargs):
 
     """
     if (psi4.get_option("DFMP2", "MP2_TYPE") == "CONV") or (psi4.get_option("OCC", "MP2_TYPE") == "CONV"):
-        return run_mp2(name, **kwargs)
+        return run_omp(name, **kwargs)
     else:
         return run_dfmp2(name, **kwargs)
 
@@ -1011,15 +967,15 @@ def run_mp2_select_gradient(name, **kwargs):
     and directing toward the OCC (conv MP2) or the DFMP2 modules.
 
     """
-    optstash = p4util.OptionsState(
-        ['DFOCC', 'ORB_OPT'])
+    #optstash = p4util.OptionsState(
+    #    ['DFOCC', 'ORB_OPT'])
 
     if (psi4.get_option("DFMP2", "MP2_TYPE") == "CONV") or (psi4.get_option("OCC", "MP2_TYPE") == "CONV"):
-        return run_mp2_gradient(name, **kwargs)
+        return run_omp_gradient(name, **kwargs)
     else:
-        if (psi4.get_option("SCF", "REFERENCE") == "UHF") or (psi4.get_option("SCF", "REFERENCE") == "UKS"):
-            psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-            return run_dfomp2_gradient(name, **kwargs)
+        if psi4.get_option("SCF", "REFERENCE") in ['UHF', 'UKS']:
+    #        psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+            return run_dfomp_gradient(name, **kwargs)
         else:
             return run_dfmp2_gradient(name, **kwargs)
 
@@ -1029,12 +985,12 @@ def run_dfmp2_select_gradient(name, **kwargs):
     and directing toward the OCC (conv MP2) or the DFMP2 modules.
 
     """
-    optstash = p4util.OptionsState(
-        ['DFOCC', 'ORB_OPT'])
+#    optstash = p4util.OptionsState(
+#        ['DFOCC', 'ORB_OPT'])
 
-    if (psi4.get_option("SCF", "REFERENCE") == "UHF") or (psi4.get_option("SCF", "REFERENCE") == "UKS"):
-        psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-        return run_dfomp2_gradient(name, **kwargs)
+    if psi4.get_option("SCF", "REFERENCE") in ['UHF', 'UKS']:
+#        psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+        return run_dfomp_gradient(name, **kwargs)
     else:
         return run_dfmp2_gradient(name, **kwargs)
 
