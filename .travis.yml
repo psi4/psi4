@@ -300,6 +300,6 @@ before_script:
 - python setup --cxx=${CXX_COMPILER} --cc=${C_COMPILER} --fc=${Fortran_COMPILER} --type=${BUILD_TYPE} objdir
 - cd objdir
 script:
-- make |& tee ${TRAVIS_BUILD_DIR}/build.log | grep "Building" && ctest -L quicktests
-after_failure: tail -1000 ${TRAVIS_BUILD_DIR}/build.log
-after_success: tail -1000 ${TRAVIS_BUILD_DIR}/build.log
+- ../.scripts/travis_build.sh
+#after_failure: tail -1000 ${TRAVIS_BUILD_DIR}/build.log
+#after_success: tail -1000 ${TRAVIS_BUILD_DIR}/build.log
