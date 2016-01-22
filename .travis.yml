@@ -300,6 +300,6 @@ before_script:
 - python setup --cxx=${CXX_COMPILER} --cc=${C_COMPILER} --fc=${Fortran_COMPILER} --type=${BUILD_TYPE} objdir
 - cd objdir
 script:
-- make -j 2 >& build.log
+- make -j 2 |& tee build.log | grep "Building"
   #- ctest -V
 after_failure: cat ./build.log
