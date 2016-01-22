@@ -47,7 +47,6 @@ procedures = {
             'scf'           : run_scf,
             'mcscf'         : run_mcscf,
             'dcft'          : run_dcft,
-            'lmp2'          : run_lmp2,
             'df-mp2'        : run_dfmp2,
             'ri-mp2'        : run_dfomp,
             'conv-mp2'      : run_mp2,
