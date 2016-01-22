@@ -156,6 +156,8 @@ def run_dfomp(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
 
+    if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
+        ref_wfn.semicanonicalize()
     dfocc_wfn = psi4.dfocc(ref_wfn)
 
     molecule.reset_point_group(user_pg)
@@ -220,6 +222,8 @@ def run_dfomp_gradient(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
 
+    if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
+        ref_wfn.semicanonicalize()
     dfocc_wfn = psi4.dfocc(ref_wfn)
 
     molecule.reset_point_group(user_pg)
@@ -269,6 +273,8 @@ def run_dfomp_property(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
 
+    if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
+        ref_wfn.semicanonicalize()
     dfocc_wfn = psi4.dfocc(ref_wfn)
 
     molecule.reset_point_group(user_pg)
@@ -327,6 +333,8 @@ def run_qchf(name, **kwargs):
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
 
+    if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
+        ref_wfn.semicanonicalize()
     psi4.dfocc()
 
     molecule.reset_point_group(user_pg)
@@ -406,6 +414,8 @@ def run_cdomp(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
 
+    if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
+        ref_wfn.semicanonicalize()
     dfocc_wfn = psi4.dfocc(ref_wfn)
 
     molecule.reset_point_group(user_pg)
@@ -578,6 +588,8 @@ def run_omp(name, **kwargs):
         psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
         psi4.MintsHelper().integrals()
 
+    if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
+        ref_wfn.semicanonicalize()
     occ_wfn = psi4.occ(ref_wfn)
 
     optstash.restore()
@@ -632,6 +644,8 @@ def run_omp_gradient(name, **kwargs):
         psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
         psi4.MintsHelper().integrals()
 
+    if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
+        ref_wfn.semicanonicalize()
     occ_wfn = psi4.occ(ref_wfn)
     grad = psi4.deriv(occ_wfn)
     occ_wfn.set_gradient(grad)
