@@ -304,8 +304,8 @@ def call_montage(options,cube_files):
 
 
 def main(argv):
-    find_vmd(options)
     read_options(options)
+    find_vmd(options)
     save_setup_command(argv)
     cube_files = find_cubes(options)
     write_and_run_vmd_script(options,cube_files)
