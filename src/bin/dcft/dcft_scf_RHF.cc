@@ -493,6 +493,8 @@ DCFTSolver::compute_scf_energy_RHF()
     scf_energy_ += tau_so_a_->vector_dot(so_h_);
 
     if(options_.get_str("DCFT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE"){
+        mo_gammaA_->add(kappa_mo_a_);
+
         scf_energy_ += mo_gammaA_->vector_dot(moFa_);
     }
     else{
