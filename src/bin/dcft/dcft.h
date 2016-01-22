@@ -498,20 +498,26 @@ protected:
     void build_DF_tensors_UHF();
     /// Form J(P|Q)^-1/2
     void formJm12(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
+    void formJm12_scf(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
     /// Form AO basis b(Q|mu,nu)
     void formb_ao(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
+    void formb_ao_scf(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
     /// Transform AO-basis b(Q, mn) to MO-basis b(Q, pq)
     void transform_b();
     /// Transform b(Q|mu,nu) from AO basis to SO basis
     void transform_b_ao2so();
+    void transform_b_ao2so_scf();
     /// Form MO-basis b(Q, ij)
     void formb_oo();
+    void formb_oo_scf();
     /// Form MO-basis b(Q, ia)
     void formb_ov();
     /// Form MO-basis b(Q, ab)
     void formb_vv();
     /// Form MO-basis b(Q, pq)
     void formb_pq();
+    void formb_pq_scf();
+
     /// Form density-fitted MO-basis TEI g(OV|OV) in chemists' notation
     void form_df_g_ovov();
     /// Form density-fitted MO-basis TEI g(OO|OO) in chemists' notation
@@ -527,6 +533,9 @@ protected:
     /// Form MO-based Gbar*Gamma
     void build_gbarGamma_RHF();
     void build_gbarGamma_UHF();
+    /// Form MO-based Gbar*Kappa
+    void build_gbarKappa_RHF();
+    void build_gbarKappa_UHF();
     /// Form gbar<ab|cd> * lambda <ij|cd>
     void build_gbarlambda_RHF_v3mem();
     void build_gbarlambda_UHF_v3mem();
@@ -534,22 +543,31 @@ protected:
     // Density-Fitting DCFT
     /// Auxiliary basis
     boost::shared_ptr<BasisSet> auxiliary_;
+    /// Auxiliary basis for SCF terms in DCT
+    boost::shared_ptr<BasisSet> auxiliary_scf_;
     /// Primary basis
     boost::shared_ptr<BasisSet> primary_;
     /// Number of total primary basis functions
     int nn_;
     /// Number of total auxilliary basis functions
     int nQ_;
+    int nQ_scf_;
     /// Number of alpha occupied orbitals
     int naocc_;
     /// J^-1/2 Matrix
     double **Jm12_;
+    double **Jm12_scf_;
     /// b(Q|mu,nu)
     SharedMatrix bQmn_ao_;
     SharedMatrix bQmn_so_;
+    SharedMatrix bQmn_ao_scf_;
+    SharedMatrix bQmn_so_scf_;
     /// b(Q|i, j)
     SharedMatrix bQijA_mo_;
     SharedMatrix bQijB_mo_;
+    SharedMatrix bQijA_mo_scf_;
+    SharedMatrix bQijB_mo_scf_;
+
     /// b(Q|i, a)
     SharedMatrix bQiaA_mo_;
     SharedMatrix bQiaB_mo_;
@@ -562,12 +580,17 @@ protected:
     /// b(Q|p, q)
     SharedMatrix bQpqA_mo_;
     SharedMatrix bQpqB_mo_;
+    SharedMatrix bQpqA_mo_scf_;
+    SharedMatrix bQpqB_mo_scf_;
+
     /// The Tau in the MO basis (All)
     SharedMatrix mo_tauA_;
     SharedMatrix mo_tauB_;
     /// MO-based (Gbar Tau + Gbar Kappa)
     SharedMatrix mo_gbarGamma_A_;
     SharedMatrix mo_gbarGamma_B_;
+    SharedMatrix mo_gbarKappa_A_;
+    SharedMatrix mo_gbarKappa_B_;
     /// MO-based Gamma <r|s>
     SharedMatrix mo_gammaA_;
     SharedMatrix mo_gammaB_;
