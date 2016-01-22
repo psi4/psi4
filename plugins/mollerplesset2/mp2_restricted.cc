@@ -11,9 +11,9 @@
 
 namespace psi{ namespace mollerplesset2{
 
-double plugin_mp2_restricted(Options &options, shared_ptr<Chkpt> chkpt)
+double plugin_mp2_restricted(Options &options, boost::shared_ptr<Chkpt> chkpt)
 {
-    std::vector<shared_ptr<MOSpace> > spaces;
+    std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
     boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();

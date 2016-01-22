@@ -37,10 +37,10 @@ backtrans(Options &options)
     dpdbuf4 I, G;
     int print = options.get_int("PRINT");
 
-    shared_ptr<PSIO> psio(_default_psio_lib_);
+    boost::shared_ptr<PSIO> psio(_default_psio_lib_);
 
 
-    std::vector<shared_ptr<MOSpace> > spaces;
+    std::vector<boost::shared_ptr<MOSpace> > spaces;
   
     std::string reference = options.get_str("REFERENCE");
 
