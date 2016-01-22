@@ -36,7 +36,7 @@
 using namespace boost;
 using namespace psi;
 
-IntegralTransform::IntegralTransform(shared_ptr<Wavefunction> wfn,
+IntegralTransform::IntegralTransform(boost::shared_ptr<Wavefunction> wfn,
                                      SpaceVec spaces,
                                      TransformationType transformationType,
                                      OutputType outputType,

@@ -390,7 +390,7 @@ def expand_psivars(pvdefs):
                     data_rich_args.append(psivars[pv])
                 else:
                     if verbose >= 2:
-                        print("""FAILED, missing {}""".format(pv))
+                        print("""EMPTY, missing {}""".format(pv))
                     break
             else:
                 data_rich_args.append(pv)

@@ -74,8 +74,8 @@ namespace transqt2 {
 
 void init_io();
 void title(void);
-void get_params(Options & options);
-void get_moinfo(Options& options);
+void get_params(Options& options);
+void get_moinfo(SharedWavefunction ref_wfn, Options& options);
 void cleanup(void);
 void exit_io(void);
 int **cacheprep_rhf(int level, int *cachefiles);
@@ -86,7 +86,7 @@ void transtwo_rhf(void);
 void transtwo_uhf(void);
 void transone(int,int,double *,double *,double **,int,int *);
 
-PsiReturnType transqt2(Options & options)
+PsiReturnType transqt2(SharedWavefunction ref_wfn, Options & options)
 {
     int nso, nmo, ntri_so, ntri_mo, nirreps;
     int **cachelist, *cachefiles;
@@ -101,9 +101,9 @@ PsiReturnType transqt2(Options & options)
 
     init_io();
     title();
-    //options.print(); //debug
+
     get_params(options);
-    get_moinfo(options);
+    get_moinfo(ref_wfn, options);
 
     nso = moinfo.nso;
     nmo = moinfo.nmo;
@@ -202,9 +202,9 @@ PsiReturnType transqt2(Options & options)
     /* read the bare one-electron integrals */
 
     boost::shared_ptr<PSIO> psio_;
-    psio_ = Process::environment.wavefunction()->psio();
+    psio_ = ref_wfn->psio();
 
-    SharedMatrix H_so = Process::environment.wavefunction()->H()->clone();
+    SharedMatrix H_so = ref_wfn->H()->clone();
     H_so->set_name(PSIF_SO_H);
     H_so->save(psio_, PSIF_OEI);
 
