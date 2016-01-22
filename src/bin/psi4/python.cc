@@ -85,7 +85,6 @@ void export_mints();
 void export_functional();
 void export_oeprop();
 void export_cubefile();
-void export_libfrag();
 void export_libparallel();
 void export_efp();
 void export_cubeprop();
@@ -122,7 +121,6 @@ namespace fnocc { SharedWavefunction fnocc(SharedWavefunction, Options&); }
 namespace occwave { SharedWavefunction occwave(SharedWavefunction, Options&); }
 namespace mcscf { SharedWavefunction mcscf(SharedWavefunction, Options&); }
 namespace scf { SharedWavefunction     scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
-namespace lmp2 { SharedWavefunction lmp2(SharedWavefunction, Options&); }
 
 // Matrix returns
 namespace deriv   { SharedMatrix     deriv(SharedWavefunction, Options&); }
@@ -138,6 +136,9 @@ namespace thermo { PsiReturnType thermo(SharedWavefunction, Options&); }
 #ifdef ENABLE_CHEMPS2
 namespace dmrg       { PsiReturnType dmrg(SharedWavefunction, Options&);     }
 #endif
+
+// Should die soon
+namespace transqt2 { PsiReturnType transqt2(SharedWavefunction, Options&); }
 
 // Finite difference cases
 namespace findif {
@@ -158,16 +159,10 @@ SharedMatrix displace_atom(SharedMatrix geom, const int atom,
                            const double disp_size);
 }
 
-// Incomplete
-// namespace mints { PsiReturnType mints(Options&); }
-
-// Needs to be deprecated
-namespace transqt2 { PsiReturnType transqt2(Options&); }
-
 
 // TODO
 namespace ccsort { PsiReturnType ccsort(Options&); }
-//    namespace lmp2       { PsiReturnType lmp2(Options&);      }
+namespace cctransort { PsiReturnType cctransort(Options&); }
 namespace cctriples { PsiReturnType cctriples(Options&); }
 namespace cchbar { PsiReturnType cchbar(Options&); }
 namespace cclambda { PsiReturnType cclambda(Options&); }
@@ -408,12 +403,6 @@ SharedWavefunction py_psi_dcft(SharedWavefunction ref_wfn)
     return dcft::dcft(ref_wfn, Process::environment.options);
 }
 
-SharedWavefunction py_psi_lmp2(SharedWavefunction ref_wfn)
-{
-    py_psi_prepare_options_for_module("LMP2");
-    return lmp2::lmp2(ref_wfn, Process::environment.options);
-}
-
 SharedWavefunction py_psi_dfmp2(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("DFMP2");
@@ -451,10 +440,10 @@ double py_psi_fisapt(SharedWavefunction ref_wfn)
         return 0.0;
 }
 
-double py_psi_transqt2()
+double py_psi_transqt2(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("TRANSQT2");
-    transqt2::transqt2(Process::environment.options);
+    transqt2::transqt2(ref_wfn, Process::environment.options);
     return 0.0;
 }
 
@@ -465,6 +454,12 @@ double py_psi_ccsort()
     return 0.0;
 }
 
+double py_psi_cctransort()
+{
+    py_psi_prepare_options_for_module("CCTRANSORT");
+    cctransort::cctransort(Process::environment.options);
+    return 0.0;
+}
 SharedWavefunction py_psi_ccenergy(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCENERGY");
@@ -1571,21 +1566,14 @@ BOOST_PYTHON_MODULE (psi4)
         "Redirects output to /dev/null.  To switch back to regular output mode, use reopen_outfile()");
 
     // modules
-    // def("mints", py_psi_mints, "Runs mints, which generate molecular integrals on disk.");
     def("deriv",
         py_psi_deriv,
         "Runs deriv, which contracts density matrices with derivative integrals, to compute gradients.");
     def("scfgrad", py_psi_scfgrad, "Run scfgrad, which is a specialized DF-SCF gradient program.");
     def("scfhess", py_psi_scfhess, "Run scfhess, which is a specialized DF-SCF hessian program.");
 
-    typedef double (*scf_module_none)();
-    typedef double (*scf_module_two)(PyObject *, PyObject *);
-
-    // def("scf", py_psi_scf_callbacks, "Runs the SCF code.");
     def("scf", py_psi_scf, "Runs the SCF code.");
-    // def("scf_dummy", py_psi_scf_dummy, "Builds SCF wavefunctionobject only. Does not execute scf.");
     def("dcft", py_psi_dcft, "Runs the density cumulant functional theory code.");
-    def("lmp2", py_psi_lmp2, "Runs the local MP2 code.");
     def("libfock", py_psi_libfock, "Runs a CPHF calculation, using libfock.");
     def("dfmp2", py_psi_dfmp2, "Runs the DF-MP2 code.");
     // def("dfmp2grad", py_psi_dfmp2grad, "Runs the DF-MP2 gradient.");
@@ -1626,6 +1614,7 @@ BOOST_PYTHON_MODULE (psi4)
 //    def("transqt", py_psi_transqt, "Runs the (deprecated) transformation code.");
     def("transqt2", py_psi_transqt2, "Runs the (deprecated) transformation code.");
     def("ccsort", py_psi_ccsort, "Runs CCSORT, which reorders integrals for use in the coupled cluster codes.");
+    def("cctransort", py_psi_cctransort, "Runs CCTRANSORT, which transforms and reorders integrals for use in the coupled cluster codes.");
     def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");
     def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
@@ -1651,7 +1640,6 @@ BOOST_PYTHON_MODULE (psi4)
     export_chkpt();
     export_mints();
     export_functional();
-    export_libfrag();
     export_libparallel();
 
     typedef string (Process::Environment::*environmentStringFunction)(const string&);

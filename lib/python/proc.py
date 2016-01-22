@@ -45,18 +45,6 @@ from roa import *
 # consult http://sirius.chem.vt.edu/psi4manual/master/proc_py.html
 
 
-def run_lmp2(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an LMP2 theory calculation.
-
-    """
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-    psi4.lmp2()
-
-
 def run_dcft(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a density cumulant functional theory calculation.
@@ -1049,54 +1037,62 @@ def run_ccenergy(name, **kwargs):
     if (lowername == 'ccsd'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD')
         psi4.set_local_option('CCSORT', 'WFN', 'CCSD')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'CCSD')
         psi4.set_local_option('CCENERGY', 'WFN', 'CCSD')
     elif (lowername == 'ccsd(t)'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD_T')
         psi4.set_local_option('CCSORT', 'WFN', 'CCSD_T')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'CCSD_T')
         psi4.set_local_option('CCENERGY', 'WFN', 'CCSD_T')
     elif (lowername == 'ccsd(at)' or lowername == 'a-ccsd(t)'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD_AT')
         psi4.set_local_option('CCSORT', 'WFN', 'CCSD_AT')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'CCSD_AT')
         psi4.set_local_option('CCENERGY', 'WFN', 'CCSD_AT')
         psi4.set_local_option('CCHBAR', 'WFN', 'CCSD_AT')
         psi4.set_local_option('CCLAMBDA', 'WFN', 'CCSD_AT')
     elif (lowername == 'cc2'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CC2')
         psi4.set_local_option('CCSORT', 'WFN', 'CC2')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'CC2')
         psi4.set_local_option('CCENERGY', 'WFN', 'CC2')
     elif (lowername == 'cc3'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CC3')
         psi4.set_local_option('CCSORT', 'WFN', 'CC3')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'CC3')
         psi4.set_local_option('CCENERGY', 'WFN', 'CC3')
     elif (lowername == 'eom-cc2'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'EOM_CC2')
         psi4.set_local_option('CCSORT', 'WFN', 'EOM_CC2')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'EOM_CC2')
         psi4.set_local_option('CCENERGY', 'WFN', 'EOM_CC2')
     elif (lowername == 'eom-ccsd'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'EOM_CCSD')
         psi4.set_local_option('CCSORT', 'WFN', 'EOM_CCSD')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'EOM_CCSD')
         psi4.set_local_option('CCENERGY', 'WFN', 'EOM_CCSD')
     # Call a plain energy('ccenergy') and have full control over options, incl. wfn
     elif(lowername == 'ccenergy'):
         pass
 
     # Bypass routine scf if user did something special to get it to converge
-    bypass = ('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))
-    if not bypass:
-        scf_helper(name, **kwargs)
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
 
     # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
     # written to disk
-    IsDF = psi4.get_option('SCF', 'SCF_TYPE') == 'DF'
-    IsCD = psi4.get_option('SCF', 'SCF_TYPE') == 'CD'
-    IsDirect = psi4.get_option('SCF', 'SCF_TYPE') == 'DIRECT'
-    if bypass or IsDF or IsCD or IsDirect:
-        mints = psi4.MintsHelper()
+    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD', 'DIRECT']:
+        mints = psi4.MintsHelper(ref_wfn.basisset())
         mints.integrals()
 
-    psi4.transqt2()
-    psi4.ccsort()
-    psi4.ccenergy()
+    if (psi4.get_global_option('RUN_CCTRANSORT')):
+        psi4.cctransort()
+    else:
+        psi4.transqt2(ref_wfn)
+        psi4.ccsort()
+
+    psi4.ccenergy(ref_wfn)
 
     if (lowername == 'ccsd(at)' or lowername == 'a-ccsd(t)'):
         psi4.cchbar()
@@ -1154,6 +1150,7 @@ def run_bccd(name, **kwargs):
     if (name.lower() == 'bccd'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'BCCD')
         psi4.set_local_option('CCSORT', 'WFN', 'BCCD')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'BCCD')
         psi4.set_local_option('CCENERGY', 'WFN', 'BCCD')
 
     # Bypass routine scf if user did something special to get it to converge
@@ -1166,10 +1163,14 @@ def run_bccd(name, **kwargs):
             mints.integrals()
 
     psi4.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
+    psi4.set_local_option('CCTRANSORT', 'DELETE_TEI', 'false')
 
     while True:
-        psi4.transqt2()
-        psi4.ccsort()
+        if (psi4.get_global_option("RUN_CCTRANSORT")):
+            psi4.cctransort()
+        else:
+            psi4.transqt2()
+            psi4.ccsort()
         psi4.ccenergy()
         psi4.print_out('Brueckner convergence check: %d\n' % psi4.get_variable('BRUECKNER CONVERGED'))
         if (psi4.get_variable('BRUECKNER CONVERGED') == True):

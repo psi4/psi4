@@ -82,7 +82,6 @@ void CIWavefunction::transform_ci_integrals()
 
   // Indices should be empty
   std::vector<int> indices(CalcInfo_->num_ci_orbs, 0);
-
   std::vector<int> orbitals(CalcInfo_->num_ci_orbs, 0);
 
   for (int h = 0, cinum = 0, orbnum = 0; h < CalcInfo_->nirreps; h++){
