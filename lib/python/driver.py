@@ -630,7 +630,7 @@ def energy(name, **kwargs):
                 targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.' + str(filenum)
                 shutil.copy(item, targetfile)
 
-        procedures['energy'][lowername](lowername, **kwargs)
+        wfn = procedures['energy'][lowername](lowername, **kwargs)
 
     except KeyError:
         alternatives = ""
@@ -643,7 +643,10 @@ def energy(name, **kwargs):
         postcallback(lowername, **kwargs)
 
     optstash.restore()
-    return psi4.get_variable('CURRENT ENERGY')
+    if 'return_wfn' in kwargs and yes.match(str(kwargs['return_wfn'])):
+        return wfn
+    else:
+        return psi4.get_variable('CURRENT ENERGY')
 
 
 def gradient(name, **kwargs):
