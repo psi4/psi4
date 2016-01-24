@@ -23,11 +23,13 @@ option(ENABLE_CSR            "Enable MKL compressed sparse row"            OFF)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                            OFF)
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"               OFF)
 option(ENABLE_STATIC_LINKING "Enable mostly static libraries linking"      OFF)
+option(DETECT_EXTERNAL_STATIC "Detect external projects static libraries"  OFF)
 option(ENABLE_XHOST          "Enable processor-specific optimizations"     ON)
+option(ENABLE_CONDA_DEST     "Enable destination as conda package"         OFF)
 option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
 option(ENABLE_PLUGINS        "Enable compilation of example plugins"       OFF)
 option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
-option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     OFF)
+option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     ON)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
 # Modules requiring Fortran
 if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH)
@@ -40,7 +42,7 @@ CMAKE_DEPENDENT_OPTION(
        ENABLE_DKH            "Enable DKH in libmints"                      ON
                              "CMAKE_Fortran_COMPILER"                      OFF)
 CMAKE_DEPENDENT_OPTION(
-       ENABLE_PCMSOLVER      "Enable PCMSolver library"                    OFF
+       ENABLE_PCMSOLVER      "Enable PCMSolver library"                    ON
                              "CMAKE_Fortran_COMPILER"                      OFF)
 CMAKE_DEPENDENT_OPTION(
        ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF
@@ -220,6 +222,7 @@ include_directories(
     ${PROJECT_BINARY_DIR}/src/lib
     ${PROJECT_BINARY_DIR}/interfaces/include
 )
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION include)
 
 
 ###set(headers_list "")
@@ -237,18 +240,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 set_property(GLOBAL PROPERTY PSILIB)
 
-# PCMSolver
+# PCMSolver Detection
 if(ENABLE_PCMSOLVER)
-   find_package(ZLIB)
-    if (NOT ZLIB_FOUND)
-        message(FATAL_ERROR "No Zlib, no PCMSolver. Skip with -DENABLE_PCMSOLVER=OFF")
-        # TODO ability to build psi4 against pre-built pcmsolver library like chemps2
-        #message(FATAL_ERROR "No Zlib, no PCMSolver. Build against existing with -DPCMSOLVER_ROOT=/path/to/pcmsolver or skip with -DENABLE_PCMSOLVER=OFF")
-   else()
-      add_definitions(-DHAVE_PCMSOLVER)
-      message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
-      link_directories(${PROJECT_BINARY_DIR}/interfaces/lib)
-   endif()
+  include(ConfigPCMSolver)
 endif()
 
 #If we have MPI we may want to also build JKFactory which makes J and K's
@@ -300,6 +294,7 @@ string(STRIP ${PLUGIN_INCLUDE_DIRECTORIES} PLUGIN_INCLUDE_DIRECTORIES)
 string(STRIP ${PLUGIN_DEFINES} PLUGIN_DEFINES)
 string(STRIP ${PLUGIN_LDFLAGS} PLUGIN_LDFLAGS)
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
+configure_file(include/psi4-config.in include/psi4-config.tmp)
 ###install_list_FILES("${CMAKE_CURRENT_BINARY_DIR}/include/psiconfig.h" include/)
 
 # Make known that the setup command given and the corresponding CMake
@@ -313,6 +308,7 @@ endif()
 
 #FILE(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4-config DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
 # Install samples directory
 INSTALL(

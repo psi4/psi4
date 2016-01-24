@@ -463,10 +463,13 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_orbital(const boost::shared_pt
 {
     boost::shared_ptr<BasisSet> basisset = pyconstruct_auxiliary(mol, key, target, "BASIS", "", forced_puream); 
     // Uncontract the primary basis set
-    bool decontract = Process::environment.options.get_bool("DECONTRACT");
-    if(decontract){
-        basisset = basisset->decontract();
-    }   
+    std::string str = Process::environment.options.get_str("BASIS");
+    if (str.size() > 11){
+       std::size_t pos = str.find("-DECONTRACT");
+       if (pos != std::string::npos){
+           return basisset->decontract();
+       }
+    } 
     return basisset;
 }
 
@@ -1449,9 +1452,10 @@ boost::shared_ptr<BasisSet> BasisSet::decontract()
     std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > shell_map;
     shell_map["DECONTRACTED_BASIS"] = u_shells;
 
-    molecule_->set_basis_all_atoms("DECONTRACTED_BASIS",name_ + "-DECONTRACTED");
-
-    return boost::shared_ptr<BasisSet>(new BasisSet(name_ + "-DECONTRACTED",molecule_,shell_map));
+    //molecule_->set_basis_all_atoms("DECONTRACTED_BASIS",name_ + "-DECONTRACTED");
+    molecule_->set_basis_all_atoms("DECONTRACTED_BASIS",name_);
+    //return boost::shared_ptr<BasisSet>(new BasisSet(name_ + "-DECONTRACTED",molecule_,shell_map));
+    return boost::shared_ptr<BasisSet>(new BasisSet(name_,molecule_,shell_map));
 }
 
 void BasisSet::compute_phi(double *phi_ao, double x, double y, double z)
