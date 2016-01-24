@@ -24,7 +24,7 @@
 #define PLUGIN_LDFLAGS "@PLUGIN_LDFLAGS@"
 
 /* The PSI4 Datadir */
-#define INSTALLEDPSIDATADIR "@CMAKE_INSTALL_PREFIX@/share/psi"
+#define INSTALLEDPSIDATADIR "@CMAKE_INSTALL_PREFIX@/share/psi4"
 
 /* MPI? */
 #cmakedefine HAVE_MPI
