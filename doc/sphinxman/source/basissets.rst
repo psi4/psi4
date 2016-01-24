@@ -227,5 +227,3 @@ Use ``assign`` statements to actually request the basis set. (See
    [addl]
    ...
    }
-
-
