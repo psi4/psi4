@@ -11,6 +11,7 @@ matrix:
         - ubuntu-toolchain-r-test
         - boost-latest
         - george-edison55-precise-backports
+        - george-edison55/cmake-3.x
         packages:
         - cmake
         - cmake-data
@@ -39,6 +40,7 @@ matrix:
         - ubuntu-toolchain-r-test
         - boost-latest
         - george-edison55-precise-backports
+        - george-edison55/cmake-3.x
         packages:
         - cmake
         - cmake-data
@@ -67,6 +69,7 @@ matrix:
         - ubuntu-toolchain-r-test
         - boost-latest
         - george-edison55-precise-backports
+        - george-edison55/cmake-3.x
         packages:
         - cmake
         - cmake-data
@@ -94,6 +97,7 @@ matrix:
       - ubuntu-toolchain-r-test
       - boost-latest
       - george-edison55-precise-backports
+      - george-edison55/cmake-3.x
       packages:
       - cmake
       - cmake-data
@@ -109,6 +113,7 @@ matrix:
       - libboost-thread1.55-dev
       - gfortran
     env: CXX_COMPILER='clang++-3.8' C_COMPILER='clang-3.8' Fortran_COMPILER='gfortran' BUILD_TYPE='debug'
+# No release version for 3.8 because of a bug in that version of the compiler
 
 
   - os: linux
@@ -118,6 +123,7 @@ matrix:
         sources:
         - ubuntu-toolchain-r-test
         - george-edison55-precise-backports
+        - george-edison55/cmake-3.x
         packages:
         - cmake
         - cmake-data
@@ -125,11 +131,11 @@ matrix:
         - g++-4.7
         - gcc-4.7
         - gfortran-4.7
-    env: CXX_COMPILER='g++-4.7' C_COMPILER='gcc-4.7' Fortran_COMPILER='gfortran-4.7' BUILD_TYPE='release' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.7"
+    env: CXX_COMPILER='g++-4.7' C_COMPILER='gcc-4.7' Fortran_COMPILER='gfortran-4.7' BUILD_TYPE='release' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.7" OMP_NUM_THREADS=2
   - os: linux
     compiler: gcc
     addons: *6
-    env: CXX_COMPILER='g++-4.7' C_COMPILER='gcc-4.7' Fortran_COMPILER='gfortran-4.7' BUILD_TYPE='debug' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.7"
+    env: CXX_COMPILER='g++-4.7' C_COMPILER='gcc-4.7' Fortran_COMPILER='gfortran-4.7' BUILD_TYPE='debug' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.7" OMP_NUM_THREADS=2
   - os: linux
     compiler: gcc
     addons: &7
@@ -137,6 +143,7 @@ matrix:
         sources:
         - ubuntu-toolchain-r-test
         - george-edison55-precise-backports
+        - george-edison55/cmake-3.x
         packages:
         - cmake
         - cmake-data
@@ -144,11 +151,11 @@ matrix:
         - g++-4.8
         - gcc-4.8
         - gfortran-4.8
-    env: CXX_COMPILER='g++-4.8' C_COMPILER='gcc-4.8' Fortran_COMPILER='gfortran-4.8' BUILD_TYPE='release' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.8"
+    env: CXX_COMPILER='g++-4.8' C_COMPILER='gcc-4.8' Fortran_COMPILER='gfortran-4.8' BUILD_TYPE='release' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.8" OMP_NUM_THREADS=2
   - os: linux
     compiler: gcc
     addons: *7
-    env: CXX_COMPILER='g++-4.8' C_COMPILER='gcc-4.8' Fortran_COMPILER='gfortran-4.8' BUILD_TYPE='debug' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.8"
+    env: CXX_COMPILER='g++-4.8' C_COMPILER='gcc-4.8' Fortran_COMPILER='gfortran-4.8' BUILD_TYPE='debug' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.8" OMP_NUM_THREADS=2
   - os: linux
     compiler: gcc
     addons: &8
@@ -156,6 +163,7 @@ matrix:
         sources:
         - ubuntu-toolchain-r-test
         - george-edison55-precise-backports
+        - george-edison55/cmake-3.x
         packages:
         - cmake
         - cmake-data
@@ -163,11 +171,11 @@ matrix:
         - g++-4.9
         - gcc-4.9
         - gfortran-4.9
-    env: CXX_COMPILER='g++-4.9' C_COMPILER='gcc-4.9' Fortran_COMPILER='gfortran-4.9' BUILD_TYPE='release' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.9"
+    env: CXX_COMPILER='g++-4.9' C_COMPILER='gcc-4.9' Fortran_COMPILER='gfortran-4.9' BUILD_TYPE='release' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.9" OMP_NUM_THREADS=2
   - os: linux
     compiler: gcc
     addons: *8
-    env: CXX_COMPILER='g++-4.9' C_COMPILER='gcc-4.9' Fortran_COMPILER='gfortran-4.9' BUILD_TYPE='debug' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.9"
+    env: CXX_COMPILER='g++-4.9' C_COMPILER='gcc-4.9' Fortran_COMPILER='gfortran-4.9' BUILD_TYPE='debug' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.9" OMP_NUM_THREADS=2
   - os: linux
     compiler: gcc
     addons: &9
@@ -182,11 +190,11 @@ matrix:
         - g++-5
         - gcc-5
         - gfortran-5
-    env: CXX_COMPILER='g++-5' C_COMPILER='gcc-5' Fortran_COMPILER='gfortran-5' BUILD_TYPE='release' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 5"
+    env: CXX_COMPILER='g++-5' C_COMPILER='gcc-5' Fortran_COMPILER='gfortran-5' BUILD_TYPE='release' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 5" OMP_NUM_THREADS=2
   - os: linux
     compiler: gcc
     addons: *9
-    env: CXX_COMPILER='g++-5' C_COMPILER='gcc-5' Fortran_COMPILER='gfortran-5' BUILD_TYPE='debug' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 5"
+    env: CXX_COMPILER='g++-5' C_COMPILER='gcc-5' Fortran_COMPILER='gfortran-5' BUILD_TYPE='debug' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 5" OMP_NUM_THREADS=2
 
 #  - os: osx
 #    osx_image: xcode6.4
