@@ -32,8 +32,7 @@
 #include <libqt/qt.h>
 #include <psifiles.h>
 #include "MOInfo.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 #include <libmints/wavefunction.h>
 #include <libtrans/mospace.h>
@@ -43,7 +42,7 @@ namespace psi { namespace ccenergy {
 
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 
-void rhf_fock_build(double **fock, double  **D)
+void CCEnergyWavefunction::rhf_fock_build(double **fock, double  **D)
 {
   int i, j;
   int nso, ntri;
@@ -53,10 +52,10 @@ void rhf_fock_build(double **fock, double  **D)
   Label *lblptr;
   struct iwlbuf InBuf;
 
-  nso = moinfo.nso;
+  nso = moinfo_.nso;
   ntri = nso * (nso+1)/2;
 
-  double **H = Process::environment.wavefunction()->H()->to_block_matrix();
+  double **H = H_->to_block_matrix();
 
   for(i=0; i < nso; i++) {
       for(j=0; j <= i; j++) {
@@ -180,7 +179,7 @@ void rhf_fock_build(double **fock, double  **D)
   iwl_buf_close(&InBuf, 1);
 }
 
-void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b)
+void CCEnergyWavefunction::uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b)
 {
   int i, j, ij;
   int nso, ntri, ntei, stat;
@@ -192,7 +191,7 @@ void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b
   struct iwlbuf InBuf;
   double **Dt;
 
-  nso = moinfo.nso;
+  nso = moinfo_.nso;
   ntri = nso * (nso+1)/2;
   ntei = ntri * (ntri+1)/2;
 
@@ -203,7 +202,7 @@ void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b
 
   /* one-electron contributions */
 
-  double **H = Process::environment.wavefunction()->H()->to_block_matrix();
+  double **H = H_->to_block_matrix();
 
   for(i=0; i < nso; i++) {
       for(j=0; j <= i; j++) {
@@ -364,4 +363,5 @@ void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b
 
   free_block(Dt);
 }
+
 }} // namespace psi::ccenergy

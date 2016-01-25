@@ -31,21 +31,20 @@
 #include <libqt/qt.h>
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
-int converged(double ediff)
+int CCEnergyWavefunction::converged(double ediff)
 {
   int row,col,h,nirreps;
   double rms=0.0;
   dpdfile2 T1, T1old;
   dpdbuf4 T2, T2old;
 
-  nirreps = moinfo.nirreps;
+  nirreps = moinfo_.nirreps;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
 
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
     global_dpd_->file2_mat_init(&T1);
@@ -82,7 +81,7 @@ int converged(double ediff)
     global_dpd_->buf4_close(&T2);
 
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
 
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
     global_dpd_->file2_mat_init(&T1);
@@ -169,7 +168,7 @@ int converged(double ediff)
     global_dpd_->buf4_close(&T2old);
     global_dpd_->buf4_close(&T2);
   }
-  else if(params.ref == 2) { /** UHF **/
+  else if(params_.ref == 2) { /** UHF **/
 
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
     global_dpd_->file2_mat_init(&T1);
@@ -258,9 +257,9 @@ int converged(double ediff)
   }
 
   rms = sqrt(rms);
-  moinfo.conv = rms;
+  moinfo_.conv = rms;
 
-  if((rms < params.convergence) && (fabs(ediff) < params.e_convergence)) return 1;
+  if((rms < params_.convergence) && (fabs(ediff) < params_.e_convergence)) return 1;
   else return 0;
 }
 }} // namespace psi::ccenergy

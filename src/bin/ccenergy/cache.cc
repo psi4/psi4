@@ -29,6 +29,7 @@
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
 #include <exception.h>
+#include "ccwave.h"
 
 namespace psi {
 
@@ -48,7 +49,7 @@ void cache_iajb_uhf(int **cachelist);
 void cache_ijka_uhf(int **cachelist);
 void cache_ijkl_uhf(int **cachelist);
 
-int **cacheprep_uhf(int level, int *cachefiles)
+int **CCEnergyWavefunction::cacheprep_uhf(int level, int *cachefiles)
 {
   int **cachelist;
 
@@ -114,7 +115,7 @@ int **cacheprep_uhf(int level, int *cachefiles)
   }
 }
 
-int **cacheprep_rhf(int level, int *cachefiles)
+int **CCEnergyWavefunction::cacheprep_rhf(int level, int *cachefiles)
 {
   int **cachelist;
 
@@ -739,12 +740,12 @@ void cache_ijkl_uhf(int **cachelist)
   cachelist[23][23] = 1;
 }
 
-void cachedone_uhf(int **cachelist)
+void CCEnergyWavefunction::cachedone_uhf(int **cachelist)
 {
   free_int_matrix(cachelist);
 }
 
-void cachedone_rhf(int **cachelist)
+void CCEnergyWavefunction::cachedone_rhf(int **cachelist)
 {
   free_int_matrix(cachelist);
 }

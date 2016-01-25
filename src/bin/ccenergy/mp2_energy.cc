@@ -30,27 +30,23 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
-#include "MOInfo.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
-double rhf_mp2_energy(void);
-double uhf_mp2_energy(void);
 
-double mp2_energy(void)
+double CCEnergyWavefunction::mp2_energy(void)
 {
 	/* Note that if we reach this point and ref=1 (ROHF), then we aren't using 
 	 * semicanonical orbitals and so we can't compute a non-iterative MBPT(2) 
 	 * energy */
-  if(params.ref == 0) return(rhf_mp2_energy());
-  else if(params.ref == 2) return(uhf_mp2_energy());
+  if(params_.ref == 0) return(rhf_mp2_energy());
+  else if(params_.ref == 2) return(uhf_mp2_energy());
   else return 0.0;
   
 }
 
-double rhf_mp2_energy(void)
+double CCEnergyWavefunction::rhf_mp2_energy(void)
 {
   double T2_energy, T1_energy;
   dpdfile2 F, T1, D1;
@@ -93,8 +89,8 @@ double rhf_mp2_energy(void)
   global_dpd_->buf4_close(&S);
   ss_energy = (T2_energy - os_energy);
 
-  moinfo.emp2_ss = ss_energy;
-  moinfo.emp2_os = os_energy;
+  moinfo_.emp2_ss = ss_energy;
+  moinfo_.emp2_os = os_energy;
 
   global_dpd_->buf4_close(&T2);
   global_dpd_->buf4_close(&D);
@@ -102,7 +98,7 @@ double rhf_mp2_energy(void)
   return (T2_energy+T1_energy);
 }
 
-double uhf_mp2_energy(void)
+double CCEnergyWavefunction::uhf_mp2_energy(void)
 {
   double E2AA, E2BB, E2AB, T1A, T1B;
   dpdbuf4 T2, D;
@@ -186,8 +182,8 @@ double uhf_mp2_energy(void)
 
   // We define EMP2_SS as the same-spin pair energy, and EMP2_OS as the 
   // opposite-spin pair energy (singles not included)
-  moinfo.emp2_ss = E2AA + E2BB;
-  moinfo.emp2_os = E2AB;
+  moinfo_.emp2_ss = E2AA + E2BB;
+  moinfo_.emp2_os = E2AB;
 
   return(T1A + T1B + E2AA + E2BB + E2AB);
 }
