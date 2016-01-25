@@ -198,9 +198,6 @@ protected:
     /// The TPDM contribution to the gradient
     boost::shared_ptr<Matrix> tpdm_gradient_contribution_;
 
-    /// The active part of the TPDM
-    SharedMatrix TPDM_;
-
     /// Helpers for C/D/epsilon transformers
     SharedMatrix C_subset_helper(SharedMatrix C, const Dimension& noccpi, SharedVector epsilon, const std::string& basis, const std::string& subset);
     SharedMatrix D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string& basis);
@@ -217,30 +214,9 @@ protected:
     /// If normal modes are available, they will be here:
     boost::shared_ptr<Vector> normalmodes_;
 
-    /// Flag to tell if this is a CIM calculation
-    bool isCIM_;
-
-    /// Quasicanonical LMO -> LMO transformation matrix (for CIM)
-    SharedMatrix QLMO_to_LMO_;
-
-    /// Factors to scale contributions to the CIM correlation energy
-    SharedVector CIM_orbital_factors_;
-
-    /// Orbital energies for a CIM computation
-    SharedVector CIM_orbital_energies_;
-
-    /// Number of active occupied orbitals in a CIM computation
-    int CIM_nactive_occupied_;
-    int * CIM_nactive_occupied_pointer_;
-
-    /// Number of active virtual orbitals in a CIM computation
-    int CIM_nactive_virtual_;
-    int * CIM_nactive_virtual_pointer_;
-
-    /* Xiao Wang */
-    /// Flag to tell if this is a DCFT computation
-    bool isDCFT_;
-    /* Xiao Wang */
+    /// Same orbs or dens
+    bool same_a_b_dens_;
+    bool same_a_b_orbs_;
 
 private:
     // Wavefunction() {}
@@ -256,8 +232,8 @@ public:
     Wavefunction(Options & options);
 
     /// Set the PSIO object.
-    Wavefunction(Options & options, boost::shared_ptr<PSIO> psio);
-    Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    // Wavefunction(Options & options, boost::shared_ptr<PSIO> psio);
+    // Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     /**
     * Copy the contents of another Wavefunction into this one.
     * Useful at the beginning of correlated wavefunction computations.
@@ -267,10 +243,10 @@ public:
     *  so if you change these, you must reallocate to avoid compromising the
     *  reference wavefunction's data.
     **/
-    void copy(boost::shared_ptr<Wavefunction> other);
-    void copy(const Wavefunction* other);
+    void shallow_copy(SharedWavefunction other);
+    void shallow_copy(const Wavefunction* other);
 
-    /// Returns a shallow copy of this
+    /// Returns a shallow copy of this wrapped into a SharedWavefunction
     SharedWavefunction make_ghost_wavefunction();
 
     virtual ~Wavefunction();
@@ -286,8 +262,8 @@ public:
     void load_values_from_chkpt();
 
     /// Is this a restricted wavefunction?
-    virtual bool same_a_b_orbs() const { return true;  }
-    virtual bool same_a_b_dens() const { return false; }
+    bool same_a_b_orbs() const { return same_a_b_orbs_; }
+    bool same_a_b_dens() const { return same_a_b_dens_; }
 
     /// Takes an irrep-by-irrep array (e.g. DOCC) and maps it into the current point group
     void map_irreps(std::vector<int*> &arrays);
@@ -479,9 +455,6 @@ public:
     /// Set the gradient for the wavefunction
     void set_gradient(SharedMatrix& grad);
 
-    /// Returns the active part of the TPDM
-    SharedMatrix TPDM() const;
-
     /// Returns the atomic point charges
     boost::shared_ptr<double[]> atomic_point_charges()const{
        return atomic_point_charges_;
@@ -510,7 +483,6 @@ public:
     /// Returns the wavefunction name
     const std::string& name() const { return name_; }
 
-
     // Set the print flag level
     void set_print(unsigned int print) { print_ = print; }
 
@@ -519,34 +491,6 @@ public:
 
     /// Save the wavefunction to checkpoint
     virtual void save() const;
-
-    /// Returns the quasicanonical LMO->LMO transformation matrix (for CIM)
-    SharedMatrix CIMTransformationMatrix();
-
-    /// Returns factors to scale contributions to the CIM correlation energy
-    SharedVector CIMOrbitalFactors();
-
-    /// Returns orbital energies for CIM computation
-    SharedVector CIMOrbitalEnergies();
-
-    /// Returns the number of active occupied orbitals in a CIM computation
-    int CIMActiveOccupied();
-
-    /// Returns the number of active occupied virtual in a CIM computation
-    int CIMActiveVirtual();
-
-    /// Returns true if this is a CIM computation
-    bool isCIM();
-
-    /// Set if this is a CIM computation
-    void CIMSet(bool value,int nactive_occupied);
-
-    /* Xiao Wang */
-    /// Returns true if this is a DCFT computation
-    bool isDCFT();
-    /// Set if this is a DCFT computation
-    void set_DCFT(bool val);
-    /* Xiao Wang */
 };
 
 }

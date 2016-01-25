@@ -61,8 +61,6 @@ public:
     ~DCFTSolver();
 
     double compute_energy();
-    virtual bool same_a_b_orbs() const { if(options_.get_str("REFERENCE") == "RHF") return true; else return false; }
-    virtual bool same_a_b_dens() const { if(options_.get_str("REFERENCE") == "RHF") return true; else return false; }
 
 protected:
     IntegralTransform *_ints;

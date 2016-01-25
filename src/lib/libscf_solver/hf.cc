@@ -65,21 +65,12 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
-HF::HF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
-    : Wavefunction(options, psio, chkpt),
-      nuclear_dipole_contribution_(3),
-      nuclear_quadrupole_contribution_(6)
-{
-    throw PSIEXCEPTION("HF::HF INIT_WITH_CHKPT: THIS SHOULD BE DEPRERECATED!");
-    common_init();
-}
-
 HF::HF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio)
     : Wavefunction(options),
       nuclear_dipole_contribution_(3),
       nuclear_quadrupole_contribution_(6)
 {
-    copy(ref_wfn);
+    shallow_copy(ref_wfn);
     psio_ = psio;
     chkpt_ = boost::shared_ptr<Chkpt>(new Chkpt(psio.get(), PSIO_OPEN_OLD));
     common_init();

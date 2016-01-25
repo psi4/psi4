@@ -41,8 +41,6 @@ class FrozenNO : public Wavefunction {
     ~FrozenNO();
 
     double compute_energy();
-    virtual bool same_a_b_orbs() const { return true; }
-    virtual bool same_a_b_dens() const { return true; }
     void ComputeNaturalOrbitals();
 
   protected:
@@ -60,8 +58,6 @@ class DFFrozenNO : public FrozenNO {
     ~DFFrozenNO();
 
     double compute_energy();
-    virtual bool same_a_b_orbs() const { return true; }
-    virtual bool same_a_b_dens() const { return true; }
 
     /// computes MP2 natural orbitals
     void ComputeNaturalOrbitals();

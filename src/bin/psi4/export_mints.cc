@@ -855,6 +855,8 @@ void export_mints()
             // def(init<boost::shared_ptr<Molecule>, const std::string&, Options& >()).
             def("reference_wavefunction", &Wavefunction::reference_wavefunction, "docstring").
             def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring").
+            def("same_a_b_orbs", &Wavefunction::same_a_b_orbs, "docstring").
+            def("same_a_b_dens", &Wavefunction::same_a_b_dens, "docstring").
             def("nfrzc", &Wavefunction::nfrzc, "docstring").
             def("nalpha", &Wavefunction::nalpha, "docstring").
             def("nbeta", &Wavefunction::nbeta, "docstring").
@@ -872,7 +874,6 @@ void export_mints()
             def("Da", &Wavefunction::Da, "docstring").
             def("Db", &Wavefunction::Db, "docstring").
             def("X", &Wavefunction::X, "docstring").
-            def("TPDM", &Wavefunction::TPDM, "docstring").
             def("aotoso", &Wavefunction::aotoso, "docstring").
             def("epsilon_a", &Wavefunction::epsilon_a, "docstring").
             def("epsilon_b", &Wavefunction::epsilon_b, "docstring").

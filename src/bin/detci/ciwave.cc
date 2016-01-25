@@ -39,7 +39,7 @@ CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> ref_wfn)
     : Wavefunction(Process::environment.options)
 {
     // Copy the wavefuntion then update
-    copy(ref_wfn);
+    shallow_copy(ref_wfn);
     set_reference_wavefunction(ref_wfn);
     common_init();
 }
@@ -49,7 +49,7 @@ CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> ref_wfn,
     : Wavefunction(options)
 {
     // Copy the wavefuntion then update
-    copy(ref_wfn);
+    shallow_copy(ref_wfn);
     set_reference_wavefunction(ref_wfn);
     common_init();
 }

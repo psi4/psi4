@@ -145,7 +145,7 @@ void DFMP2::block_status(std::vector<unsigned long int> inds, const char* file, 
 DFMP2::DFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
     Wavefunction(options)
 {
-    copy(ref_wfn);
+    shallow_copy(ref_wfn);
     reference_wavefunction_ = ref_wfn;
     psio_ = psio;
     chkpt_ = chkpt;

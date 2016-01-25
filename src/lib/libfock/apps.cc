@@ -53,7 +53,7 @@ namespace psi {
 RBase::RBase(SharedWavefunction ref_wfn, Options& options) :
     Wavefunction(options)
 {
-    copy(ref_wfn);
+    shallow_copy(ref_wfn);
 
     set_reference(ref_wfn);
 
@@ -63,8 +63,9 @@ RBase::RBase(SharedWavefunction ref_wfn, Options& options) :
     convergence_ = options_.get_double("SOLVER_CONVERGENCE");
 }
 RBase::RBase(bool flag) :
-    Wavefunction(Process::environment.options,_default_psio_lib_)
+    Wavefunction(Process::environment.options)
 {
+    psio_ = _default_psio_lib_;
     throw PSIEXCEPTION("DGAS: Lets not let RMP do dirty hacks!\n");
     outfile->Printf( "Dirty hack %s\n\n", (flag ? "true" : "false"));
 }

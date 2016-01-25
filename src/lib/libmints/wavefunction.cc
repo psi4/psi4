@@ -65,22 +65,22 @@ Wavefunction::Wavefunction(boost::shared_ptr<Molecule> molecule, const std::stri
     common_init();
 }
 
-Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio) :
-    options_(options), psio_(psio)
-{
-    outfile->Printf("Wavefunction constructor 2\n");
-    throw PSIEXCEPTION("DGAS Warning! Deprecated constructor!");
-    chkpt_ = boost::shared_ptr<Chkpt>(new Chkpt(psio.get(), PSIO_OPEN_OLD));
-    common_init();
-}
+// Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio) :
+//     options_(options), psio_(psio)
+// {
+//     outfile->Printf("Wavefunction constructor 2\n");
+//     throw PSIEXCEPTION("DGAS Warning! Deprecated constructor!");
+//     chkpt_ = boost::shared_ptr<Chkpt>(new Chkpt(psio.get(), PSIO_OPEN_OLD));
+//     common_init();
+// }
 
-Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
-    options_(options), psio_(psio), chkpt_(chkpt)
-{
-    outfile->Printf("Wavefunction constructor 3\n");
-    throw PSIEXCEPTION("DGAS Warning! Deprecated constructor!");
-    common_init();
-}
+// Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
+//     options_(options), psio_(psio), chkpt_(chkpt)
+// {
+//     outfile->Printf("Wavefunction constructor 3\n");
+//     throw PSIEXCEPTION("DGAS Warning! Deprecated constructor!");
+//     common_init();
+// }
 
 Wavefunction::Wavefunction(Options & options) :
     options_(options)
@@ -90,16 +90,13 @@ Wavefunction::Wavefunction(Options & options) :
 Wavefunction::~Wavefunction()
 {
 }
-void Wavefunction::copy(SharedWavefunction other)
+void Wavefunction::shallow_copy(SharedWavefunction other)
 {
-    copy(other.get());
+    shallow_copy(other.get());
 }
 
-void Wavefunction::copy(const Wavefunction* other)
+void Wavefunction::shallow_copy(const Wavefunction* other)
 {
-
-    // outfile->Printf("Reference wavefunction needs to die, serious reference issues\n");
-    // reference_wavefunction_ = SharedWavefunction(other);
 
     name_ = other->name_;
     basisset_ = other->basisset_;
@@ -149,7 +146,8 @@ void Wavefunction::copy(const Wavefunction* other)
 
     gradient_ = other->gradient_;
     tpdm_gradient_contribution_ = other->tpdm_gradient_contribution_;
-    isDCFT_ = other->isDCFT_;
+    same_a_b_dens_ = other->same_a_b_dens_;
+    same_a_b_orbs_ = other->same_a_b_orbs_;
 }
 
 SharedWavefunction Wavefunction::make_ghost_wavefunction()
@@ -204,9 +202,10 @@ SharedWavefunction Wavefunction::make_ghost_wavefunction()
     ghost->epsilon_b_ = epsilon_b_;
 
     ghost->gradient_ = gradient_;
-
     ghost->tpdm_gradient_contribution_ = tpdm_gradient_contribution_;
-    ghost->isDCFT_ = isDCFT_;
+    ghost->same_a_b_dens_ = same_a_b_dens_;
+    ghost->same_a_b_orbs_ = same_a_b_orbs_;
+
     return ghost;
 }
 
@@ -263,15 +262,12 @@ void Wavefunction::common_init()
 
     density_fitted_ = false;
     energy_ = 0.0;
+    same_a_b_dens_ = true;
+    same_a_b_orbs_ = false;
 
     // Read in the debug flag
     debug_ = options_.get_int("DEBUG");
     print_ = options_.get_int("PRINT");
-
-    /* Xiao Wang */
-    // not a DCFT computation by default
-    isDCFT_ = false;
-    /* Xiao Wang */
 }
 
 void Wavefunction::map_irreps(std::vector<int*> &arrays)
@@ -802,11 +798,6 @@ void Wavefunction::set_gradient(SharedMatrix& grad)
     gradient_ = grad;
 }
 
-SharedMatrix Wavefunction::TPDM() const
-{
-    return TPDM_;
-}
-
 boost::shared_ptr<Vector> Wavefunction::frequencies() const
 {
     return frequencies_;
@@ -830,19 +821,6 @@ void Wavefunction::set_normalmodes(boost::shared_ptr<Vector>& norms)
 void Wavefunction::save() const
 {
 }
-
-
-/* Xiao Wang */
-void Wavefunction::set_DCFT(bool val)
-{
-    isDCFT_ = val;
-}
-
-bool Wavefunction::isDCFT()
-{
-    return isDCFT_;
-}
-/* Xiao Wang */
 
 boost::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const {
     boost::shared_ptr<double[]> q = atomic_point_charges();

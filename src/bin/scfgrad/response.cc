@@ -915,7 +915,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
     // => CPHF (Uai) <= //
     {
         SharedWavefunction wfn(new Wavefunction(options_));
-        wfn->copy(this);
+        wfn->shallow_copy(this);
                 
         boost::shared_ptr<RCPHF> cphf(new RCPHF(wfn, options_));     
         cphf->set_jk(jk);

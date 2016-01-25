@@ -69,10 +69,14 @@ def run_dcft_gradient(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['GLOBALS', 'DERTYPE'])
+        ['GLOBALS', 'DERTYPE'],
+        ['DERIV', 'DERIV_TPDM_PRESORTED'])
+
 
     psi4.set_global_option('DERTYPE', 'FIRST')
     dcft_wfn = run_dcft(name, **kwargs)
+    if dcft_wfn.same_a_b_orbs():
+        psi4.set_global_option('DERIV_TPDM_PRESORTED', True)
     grad = psi4.deriv(dcft_wfn)
     dcft_wfn.set_gradient(grad)
 
