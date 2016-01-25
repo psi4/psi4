@@ -44,4 +44,4 @@ add_custom_command(
 # This target is always executed
 add_custom_target(libint ALL DEPENDS libint.compiled)
 set_property(GLOBAL APPEND PROPERTY LIBLIST int)
-install_list_FILES("${PROJECT_BINARY_DIR}/src/lib/libint/libint.h" include/libint)
+install_list_FILES("${PROJECT_BINARY_DIR}/src/lib/libint/libint.h" include/psi4/libint)

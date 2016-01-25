@@ -55,7 +55,7 @@ main conda environment at ``$HOME/miniconda/bin/psi4``.
     >>> conda update --yes --all
     >>> conda config --add channels http://conda.anaconda.org/psi4
     >>> conda install --yes psi4
-    >>> psi4 "$(dirname $(which psi4))"/../share/psi/samples/scf1/input.dat -o stdout  # test installation. works b/c PSI_SCRATCH defaults to /tmp
+    >>> psi4 "$(dirname $(which psi4))"/../share/psi4/samples/scf1/input.dat -o stdout  # test installation. works b/c PSI_SCRATCH defaults to /tmp
 
 That last command tested that ``psi4`` is in your path, and it's finding
 all the libraries it needs. Now you need only specify a scratch directory
