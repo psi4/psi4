@@ -25,7 +25,6 @@
 #include <liboptions/liboptions.h>
 #include <libtrans/integraltransform.h>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.h>
 #include <libpsio/psio.hpp>
 #include "adc.h"
 

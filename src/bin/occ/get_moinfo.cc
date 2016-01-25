@@ -367,7 +367,7 @@ if (reference_ == "RESTRICTED") {
 /********************************************************************************************/
 /************************** Read orbital coefficients ***************************************/
 /********************************************************************************************/
-        // read orbital coefficients from chkpt
+        // read orbital coefficients from reference
 	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
 	Ca_ref = boost::shared_ptr<Matrix>(new Matrix("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_));
 	
@@ -731,7 +731,7 @@ else if (reference_ == "UNRESTRICTED") {
 /********************************************************************************************/
 /************************** Read orbital coefficients ***************************************/
 /********************************************************************************************/
-        // read orbital coefficients from chkpt
+        // read orbital coefficients from reference
 	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
         Cb_ = SharedMatrix(reference_wavefunction_->Cb());
 	Ca_ref = boost::shared_ptr<Matrix>(new Matrix("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_));

@@ -560,7 +560,6 @@ outfile->Printf("\n");
 
 void OCCWave::mem_release()
 {
-    chkpt_.reset();
     delete ints;
     delete [] pitzer2symblk;
     delete [] pitzer2symirrep;

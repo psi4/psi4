@@ -100,7 +100,6 @@ protected:
 
     // PSI file access variables
     boost::shared_ptr<PSIO> psio_;
-    boost::shared_ptr<Chkpt> chkpt_;
 
     /// Integral factory
     boost::shared_ptr<IntegralFactory> integral_;
@@ -231,9 +230,6 @@ public:
     /// Blank constructor for derived classes
     Wavefunction(Options & options);
 
-    /// Set the PSIO object.
-    // Wavefunction(Options & options, boost::shared_ptr<PSIO> psio);
-    // Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     /**
     * Copy the contents of another Wavefunction into this one.
     * Useful at the beginning of correlated wavefunction computations.
@@ -256,10 +252,6 @@ public:
 
     /// Compute gradient.  Subclasses override this function to compute the gradient.
     virtual SharedMatrix compute_gradient() {throw PSIEXCEPTION("Analytic gradients are not available for this wavefunction.");}
-
-    /// Initialize internal variables from checkpoint file.
-    //void init_with_chkpt(); // Does this function exist??
-    void load_values_from_chkpt();
 
     /// Is this a restricted wavefunction?
     bool same_a_b_orbs() const { return same_a_b_orbs_; }

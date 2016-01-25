@@ -27,7 +27,6 @@
 #include <algorithm>
 #include <cstdio>
 
-#include <libchkpt/chkpt.hpp>
 #include <libmoinfo/libmoinfo.h>
 
 #include "scf.h"

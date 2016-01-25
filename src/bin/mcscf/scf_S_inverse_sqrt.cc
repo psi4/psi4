@@ -21,8 +21,6 @@
  */
 
 #include <cmath>
-
-#include <libchkpt/chkpt.hpp>
 #include "scf.h"
 
 namespace psi{ namespace mcscf{

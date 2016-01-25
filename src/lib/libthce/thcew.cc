@@ -53,7 +53,6 @@ namespace psi {
 
 THCEW::THCEW() :
     Wavefunction(Process::environment.options)
-    //Wavefunction(Process::environment.options, boost::shared_ptr<PSIO>(new PSIO()), _default_chkpt_lib_)
 {
     common_init();
 }

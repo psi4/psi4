@@ -29,7 +29,6 @@
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
 #include <libiwl/iwl.h>
 #include <libqt/qt.h>
 #include <libparallel/parallel.h>
@@ -65,23 +64,6 @@ Wavefunction::Wavefunction(boost::shared_ptr<Molecule> molecule, const std::stri
     common_init();
 }
 
-// Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio) :
-//     options_(options), psio_(psio)
-// {
-//     outfile->Printf("Wavefunction constructor 2\n");
-//     throw PSIEXCEPTION("DGAS Warning! Deprecated constructor!");
-//     chkpt_ = boost::shared_ptr<Chkpt>(new Chkpt(psio.get(), PSIO_OPEN_OLD));
-//     common_init();
-// }
-
-// Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
-//     options_(options), psio_(psio), chkpt_(chkpt)
-// {
-//     outfile->Printf("Wavefunction constructor 3\n");
-//     throw PSIEXCEPTION("DGAS Warning! Deprecated constructor!");
-//     common_init();
-// }
-
 Wavefunction::Wavefunction(Options & options) :
     options_(options)
 {
@@ -107,7 +89,6 @@ void Wavefunction::shallow_copy(const Wavefunction* other)
     molecule_ = other->molecule_;
 
     psio_ = other->psio_;
-    chkpt_ = other->chkpt_;
     integral_ = other->integral_;
     factory_ = other->factory_;
     memory_ = other->memory_;
@@ -164,7 +145,6 @@ SharedWavefunction Wavefunction::make_ghost_wavefunction()
     ghost->molecule_ = molecule_;
 
     ghost->psio_ = psio_;
-    ghost->chkpt_ = chkpt_;
     ghost->integral_ = integral_;
     ghost->factory_ = factory_;
     ghost->memory_ = memory_;
@@ -830,164 +810,5 @@ boost::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const {
     for (int i=0; i<n; ++i)
       q_vector->set(i, q[i]);
     return q_vector;
-}
-
-void Wavefunction::load_values_from_chkpt()
-{
-/*
- Below is a list of all quantities that could be stored in the chkpt file as of August 2014.
- Presumably, not all of them are still in use.  At present, I am bothering to code the
- reading of variables into the wavefunction object necessary for single-point CC
- computations.  Other variables may have to be added to support other kinds of restarts.
-- RAK
-*/
-
-// Symmetry information
-    nirrep_ = chkpt_->rd_nirreps();
-
-// ** Orbital information (closed, frozen, etc., per irrep)
-//    int nfzc
-//    int nfzv
-//    nalphapi_ = Dimension(nirrep_, "Alpha electrons per irrep");
-//    nbetapi_  = Dimension(nirrep_, "Beta electrons per irrep");
-
-    int *v;
-    if (chkpt_->exist_add_prefix("SO's per irrep")) {
-      v = chkpt_->rd_sopi();
-      for (int i=0; i<nirrep_; ++i) nsopi_[i] = v[i];
-      free(v);
-    }
-
-    if (chkpt_->exist_add_prefix("MO's per irrep")) {
-      v = chkpt_->rd_orbspi();
-      for (int i=0; i<nirrep_; ++i) nmopi_[i] = v[i];
-      free(v);
-    }
-
-    if (chkpt_->exist_add_prefix("Open shells per irrep")) {
-      v = chkpt_->rd_openpi();
-      for (int i=0; i<nirrep_; ++i) soccpi_[i] = v[i];
-      free(v);
-    }
-
-    if (chkpt_->exist_add_prefix("Closed shells per irrep")) {
-      v = chkpt_->rd_clsdpi();
-      for (int i=0; i<nirrep_; ++i) doccpi_[i] = v[i];
-      free(v);
-    }
-
-    if (chkpt_->exist_add_prefix("Frozen DOCC per irrep")) {
-      v = chkpt_->rd_frzcpi();
-      for (int i=0; i<nirrep_; ++i) frzcpi_[i] = v[i];
-      free(v);
-    }
-
-    if (chkpt_->exist_add_prefix("Frozen UOCC per irrep")) {
-      v = chkpt_->rd_frzvpi();
-      for (int i=0; i<nirrep_; ++i) frzvpi_[i] = v[i];
-      free(v);
-    }
-
-// Necessary for restarting complex calculations (e.g., multiple irrep ones)
-/*
-int ref
-char *prefix             const char label               int disp
-int disp_irrep           int ncalcs                     int override_occ
-int *rd_statespi(void)   double *rd_vib_freqs(void)
-*/
-
-// Variables which store current energies, gradient
-    energy_ = chkpt_->rd_escf();
-/*
-double eref	double ecorr
-double efzc	double etot
-double eccsd	double e_t	double emp2
-double *grad	double e_labeled (varies, const char *key)
-*/
-
-// Geometry information
-/*
-    nuclearrep_ = chkpt_->rd_enuc();
-int *atom_dummy
-int *atom_position
-char **felement
-double **fgeom
-double **geom
-int iopen
-int nallatom
-int natom
-int num_unique_atom
-double **rref
-struct z_entry *rd_zmat(void);
-double *rd_zvals(void);
-int rottype
-int rd_nfragment(void);
-int *rd_natom_per_fragment(void);
-int *rd_nallatom_per_fragment(void);
-int *rd_nref_per_fragment(void);
-double *rd_rotconst(void);
-double ***rd_fragment_coeff(void);
-int rd_rot_symm_num(void);
-*/
-
-    nmo_ = chkpt_->rd_nmo();
-    nso_ = chkpt_->rd_nso();
-
-// basis-set/symmetry info
-/*
-nao  ; initialized by basis set object we hope ?
-irrep_labels
-int *am2canon_shell_order
-double **cartrep
-double **cdsalc2cd
-double *contr
-double **contr_full
-double *exps (varies, const char *key)
-int **ict
-char **irr_labels
-char **irr_labels_lowercase
-int max_am(varies, const char *key2 = "");
-bool puream(varies, const char *key2 = "");
-int nprim
-int nshell
-int nsymhf
-int num_unique_shell
-int **rd_shell_transm(const char *key2 = "");
-int *rd_sloc(const char *key2 = "");
-int *rd_shells_per_am(const char *key2 = "");
-int *rd_sloc_new(const char *key2 = "");
-int *rd_snuc(const char *key2 = "");
-int *rd_snumg(const char *key2 = "");
-int *rd_ua2a(void);
-int *rd_us2s(const char *key2 = "");
-double **rd_usotao(const char *key2 = "");
-double **rd_usotbf(const char *key2 = "");
-int *rd_cdsalcpi();
-int *rd_sprim(const char *key2 = "");
-int *rd_stype(const char *key2 = "");
-char *rd_sym_label(void);
-int *rd_symoper(void);
-*/
-
-// scf solution
-/*
-double **ccvecs
-double *evals
-double *alpha_evals
-double *beta_evals
-double *fock
-double **lagr
-double **alpha_lagr
-double **beta_lagr
-double **rd_scf(void);
-double **rd_alpha_scf(void);
-double **rd_beta_scf(void);
-double **rd_local_scf(void);
-double **rd_scf_irrep(int irrep);
-double **rd_alpha_scf_irrep(int irrep);
-double **rd_beta_scf_irrep(int irrep);
-double **set_mo_phases(double**, int, int);
-int phase_check
-*/
 }
 

@@ -29,9 +29,7 @@
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
 #include <libiwl/iwl.h>
 #include <libqt/qt.h>
 #include <libmints/mints.h>
@@ -48,15 +46,14 @@ SharedWavefunction dfmp2(SharedWavefunction ref_wfn, Options & options)
     tstart();
 
     boost::shared_ptr<PSIO> psio(new PSIO);
-    boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
     boost::shared_ptr<Wavefunction> dfmp2;
     if (options.get_str("REFERENCE") == "RHF" || options.get_str("REFERENCE") == "RKS") {
-        dfmp2 = boost::shared_ptr<Wavefunction>(new RDFMP2(ref_wfn, options,psio,chkpt));
+        dfmp2 = boost::shared_ptr<Wavefunction>(new RDFMP2(ref_wfn, options, psio));
     } else if (options.get_str("REFERENCE") == "UHF" || options.get_str("REFERENCE") == "UKS") {
-        dfmp2 = boost::shared_ptr<Wavefunction>(new UDFMP2(ref_wfn, options,psio,chkpt));
+        dfmp2 = boost::shared_ptr<Wavefunction>(new UDFMP2(ref_wfn, options, psio));
     } else if (options.get_str("REFERENCE") == "ROHF") {
-        dfmp2 = boost::shared_ptr<Wavefunction>(new RODFMP2(ref_wfn, options,psio,chkpt));
+        dfmp2 = boost::shared_ptr<Wavefunction>(new RODFMP2(ref_wfn, options, psio));
     } else {
         throw PSIEXCEPTION("DFMP2: Unrecognized reference");
     }

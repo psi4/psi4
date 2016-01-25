@@ -30,7 +30,6 @@
 #include "plugin.h"
 
 #include <libparallel/parallel.h>
-#include <libchkpt/chkpt.hpp>
 #include <libpsio/psio.hpp>
 
 using namespace boost;
