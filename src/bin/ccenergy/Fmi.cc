@@ -29,12 +29,11 @@
 #include <libdpd/dpd.h>
 #include "Params.h"
 #include "MOInfo.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
-void Fmi_build(void)
+void CCEnergyWavefunction::Fmi_build(void)
 {
   int h,m,i;
   dpdfile2 FMI, Fmi, FMIt, Fmit, fIJ, fij, fIA, fia;
@@ -42,12 +41,12 @@ void Fmi_build(void)
   dpdbuf4 E_anti, E, D_anti, D;
   dpdbuf4 tautIJAB, tautijab, tautIjAb;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     global_dpd_->file2_copy(&fIJ, PSIF_CC_OEI, "FMI");
     global_dpd_->file2_close(&fIJ);
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
     global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     global_dpd_->file2_copy(&fIJ, PSIF_CC_OEI, "FMI");
     global_dpd_->file2_close(&fIJ);
@@ -56,7 +55,7 @@ void Fmi_build(void)
     global_dpd_->file2_copy(&fij, PSIF_CC_OEI, "Fmi");
     global_dpd_->file2_close(&fij);
   }
-  else if(params.ref == 2) { /** UHF **/
+  else if(params_.ref == 2) { /** UHF **/
     global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     global_dpd_->file2_copy(&fIJ, PSIF_CC_OEI, "FMI");
     global_dpd_->file2_close(&fIJ);
@@ -66,7 +65,7 @@ void Fmi_build(void)
     global_dpd_->file2_close(&fij);
   }
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
     global_dpd_->file2_mat_init(&FMI);
     global_dpd_->file2_mat_rd(&FMI);
@@ -82,7 +81,7 @@ void Fmi_build(void)
     global_dpd_->file2_mat_close(&FMI);
     global_dpd_->file2_close(&FMI);
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
     global_dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
     global_dpd_->file2_init(&Fmi, PSIF_CC_OEI, 0, 0, 0, "Fmi");
 
@@ -91,7 +90,7 @@ void Fmi_build(void)
     global_dpd_->file2_mat_init(&Fmi);
     global_dpd_->file2_mat_rd(&Fmi);
 
-    for(h=0; h < moinfo.nirreps; h++) {
+    for(h=0; h < moinfo_.nirreps; h++) {
       for(m=0; m < FMI.params->rowtot[h]; m++) 
 	FMI.matrix[h][m][m] = 0;
 
@@ -107,7 +106,7 @@ void Fmi_build(void)
     global_dpd_->file2_close(&FMI);
     global_dpd_->file2_close(&Fmi);
   }
-  else if(params.ref == 2) { /** UHF **/
+  else if(params_.ref == 2) { /** UHF **/
     global_dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
     global_dpd_->file2_init(&Fmi, PSIF_CC_OEI, 0, 2, 2, "Fmi");
 
@@ -116,7 +115,7 @@ void Fmi_build(void)
     global_dpd_->file2_mat_init(&Fmi);
     global_dpd_->file2_mat_rd(&Fmi);
 
-    for(h=0; h < moinfo.nirreps; h++) {
+    for(h=0; h < moinfo_.nirreps; h++) {
       for(m=0; m < FMI.params->rowtot[h]; m++) 
 	FMI.matrix[h][m][m] = 0;
 
@@ -133,7 +132,7 @@ void Fmi_build(void)
     global_dpd_->file2_close(&Fmi);
   }
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
 
     global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
@@ -175,7 +174,7 @@ void Fmi_build(void)
 
     global_dpd_->file2_close(&FMIt);
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
 
     global_dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
     global_dpd_->file2_init(&Fmi, PSIF_CC_OEI, 0, 0, 0, "Fmi");
@@ -253,7 +252,7 @@ void Fmi_build(void)
     global_dpd_->file2_close(&FMIt);
     global_dpd_->file2_close(&Fmit);
   }
-  else if(params.ref == 2) { /** UHF **/
+  else if(params_.ref == 2) { /** UHF **/
 
     global_dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
     global_dpd_->file2_init(&Fmi, PSIF_CC_OEI, 0, 2, 2, "Fmi");

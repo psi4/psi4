@@ -1,6 +1,6 @@
 set(headers_list "")
 # List of headers
-list(APPEND headers_list MOInfo.h globals.h Params.h ccwave.h Local.h )
+list(APPEND headers_list MOInfo.h Params.h ccwave.h Local.h )
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)

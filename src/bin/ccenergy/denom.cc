@@ -29,8 +29,7 @@
 #include <libdpd/dpd.h>
 #include "Params.h"
 #include "Local.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
@@ -39,17 +38,17 @@ void dijabT2(void);
 
 /* apply denominators to t1 and t2 */
 
-void denom(void)
+void CCEnergyWavefunction::denom(void)
 {
   dpdfile2 newtIA, dIA, tIA, newtia, dia, tia;
 
-  if (params.ref == 0) {
+  if (params_.ref == 0) {
     global_dpd_->file2_init(&newtIA, PSIF_CC_OEI, 0, 0, 1, "New tIA");
     global_dpd_->file2_copy(&newtIA, PSIF_CC_OEI, "New tIA Increment");
     global_dpd_->file2_close(&newtIA);
 
     global_dpd_->file2_init(&newtIA, PSIF_CC_OEI, 0, 0, 1, "New tIA Increment");
-    if(params.local && local.filter_singles) {
+    if(params_.local && local_.filter_singles) {
       local_filter_T1(&newtIA);
     }
     else {
@@ -69,7 +68,7 @@ void denom(void)
     global_dpd_->file2_close(&tIA);
     global_dpd_->file2_close(&newtIA);
   }
-  else if (params.ref == 1) {
+  else if (params_.ref == 1) {
     global_dpd_->file2_init(&newtIA, PSIF_CC_OEI, 0, 0, 1, "New tIA");
     global_dpd_->file2_init(&dIA, PSIF_CC_OEI, 0, 0, 1, "dIA");
     global_dpd_->file2_dirprd(&dIA, &newtIA);
@@ -82,7 +81,7 @@ void denom(void)
     global_dpd_->file2_close(&dia);
     global_dpd_->file2_close(&newtia);
   }
-  else if (params.ref == 2) {
+  else if (params_.ref == 2) {
     global_dpd_->file2_init(&newtIA, PSIF_CC_OEI, 0, 0, 1, "New tIA");
     global_dpd_->file2_init(&dIA, PSIF_CC_OEI, 0, 0, 1, "dIA");
     global_dpd_->file2_dirprd(&dIA, &newtIA);
