@@ -38,7 +38,7 @@
 namespace psi { namespace thermo {
   void title(void);
 
-PsiReturnType thermo(SharedWavefunction ref_wfn, Options &options) {
+PsiReturnType thermo(SharedWavefunction ref_wfn, SharedVector vib_freqs, Options &options) {
   title();
 
 
@@ -52,8 +52,6 @@ PsiReturnType thermo(SharedWavefunction ref_wfn, Options &options) {
 
   int Natom = mol->natom();
   int multiplicity = mol->multiplicity();
-  throw PSIEXCEPTION("Thermo needs vib_freq data passed in");
-  boost::shared_ptr<Vector> vib_freqs = ref_wfn->frequencies();
 
   Vector rot_const = mol->rotational_constants();
   RotorType rot_type = mol->rotor_type();

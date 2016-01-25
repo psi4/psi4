@@ -644,7 +644,7 @@ def energy(name, **kwargs):
 
     optstash.restore()
     if 'return_wfn' in kwargs and yes.match(str(kwargs['return_wfn'])):
-        return wfn
+        return (psi4.get_variable('CURRENT ENERGY'), wfn)
     else:
         return psi4.get_variable('CURRENT ENERGY')
 

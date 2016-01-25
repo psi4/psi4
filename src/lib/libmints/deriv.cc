@@ -603,6 +603,7 @@ SharedMatrix Deriv::compute()
             dpd_set_default(ints_transform->get_dpd_id());
 
             /* Xiao Wang */
+            outfile->Printf("wfn isDCT: %d", (int)wfn_->isDCFT());
             if(wfn_->isDCFT() && wfn_->same_a_b_orbs()) ints_transform->set_tpdm_already_presorted(true);
             /* Xiao Wang */
 

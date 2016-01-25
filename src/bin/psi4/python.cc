@@ -129,7 +129,7 @@ namespace scfgrad { SharedMatrix   scfhess(SharedWavefunction, Options&); }
 namespace fisapt { PsiReturnType fisapt(SharedWavefunction, Options&); }
 namespace psimrcc { PsiReturnType psimrcc(SharedWavefunction, Options&); }
 namespace sapt { PsiReturnType sapt(SharedWavefunction, SharedWavefunction, SharedWavefunction, Options&); }
-namespace thermo { PsiReturnType thermo(SharedWavefunction, Options&); }
+namespace thermo { PsiReturnType thermo(SharedWavefunction, SharedVector, Options&); }
 
 #ifdef ENABLE_CHEMPS2
 namespace dmrg       { PsiReturnType dmrg(SharedWavefunction, Options&);     }
@@ -176,8 +176,8 @@ namespace efp { PsiReturnType efp_init(Options&); }
 namespace efp { PsiReturnType efp_set_options(); }
 
 namespace mrcc {
-PsiReturnType mrcc_generate_input(Options&, const boost::python::dict&);
-PsiReturnType mrcc_load_ccdensities(Options&, const boost::python::dict&);
+PsiReturnType mrcc_generate_input(SharedWavefunction, Options&, const boost::python::dict&);
+PsiReturnType mrcc_load_ccdensities(SharedWavefunction, Options&, const boost::python::dict&);
 }
 
 
@@ -309,16 +309,16 @@ SharedWavefunction py_psi_mcscf(SharedWavefunction ref_wfn)
     return mcscf::mcscf(ref_wfn, Process::environment.options);
 }
 
-PsiReturnType py_psi_mrcc_generate_input(const boost::python::dict& level)
+PsiReturnType py_psi_mrcc_generate_input(SharedWavefunction ref_wfn, const boost::python::dict& level)
 {
     py_psi_prepare_options_for_module("MRCC");
-    return mrcc::mrcc_generate_input(Process::environment.options, level);
+    return mrcc::mrcc_generate_input(ref_wfn, Process::environment.options, level);
 }
 
-PsiReturnType py_psi_mrcc_load_densities(const boost::python::dict& level)
+PsiReturnType py_psi_mrcc_load_densities(SharedWavefunction ref_wfn, const boost::python::dict& level)
 {
     py_psi_prepare_options_for_module("MRCC");
-    return mrcc::mrcc_load_ccdensities(Process::environment.options, level);
+    return mrcc::mrcc_load_ccdensities(ref_wfn, Process::environment.options, level);
 }
 
 std::vector<SharedMatrix> py_psi_fd_geoms_1_0(boost::shared_ptr<Molecule> mol)
@@ -662,10 +662,10 @@ SharedWavefunction py_psi_adc(SharedWavefunction ref_wfn)
     return adc_wfn;
 }
 
-double py_psi_thermo(SharedWavefunction ref_wfn)
+double py_psi_thermo(SharedWavefunction ref_wfn, SharedVector vib_freqs)
 {
     py_psi_prepare_options_for_module("THERMO");
-    thermo::thermo(ref_wfn, Process::environment.options);
+    thermo::thermo(ref_wfn, vib_freqs, Process::environment.options);
     return 0.0;
 }
 

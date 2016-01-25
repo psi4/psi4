@@ -43,23 +43,23 @@ using namespace std;
 
 namespace psi {
 
-CubeProperties::CubeProperties(SharedWavefunction wfn, Options& options) :
-    options_(options)
+CubeProperties::CubeProperties(SharedWavefunction wfn) :
+    options_(Process::environment.options)
 {
     basisset_ = wfn->basisset();
 
     Ca_ = wfn->Ca_subset("AO", "ALL");
     Da_ = wfn->Da_subset("AO");
 
-    if (wfn->same_a_b_orbs()) { 
+    if (wfn->same_a_b_orbs()) {
         Cb_ = Ca_;
-    } else { 
+    } else {
         Cb_ = wfn->Cb_subset("AO", "ALL");
     }
 
-    if (wfn->same_a_b_dens()) { 
+    if (wfn->same_a_b_dens()) {
         Db_ = Da_;
-    } else { 
+    } else {
         Db_ = wfn->Db_subset("AO");
     }
 
@@ -118,8 +118,8 @@ void CubeProperties::compute_properties()
         std::string task = options_["CUBEPROP_TASKS"][ind].to_string();
 
         if (task == "DENSITY") {
-            boost::shared_ptr<Matrix> Dt(Da_->clone());        
-            boost::shared_ptr<Matrix> Ds(Da_->clone());        
+            boost::shared_ptr<Matrix> Dt(Da_->clone());
+            boost::shared_ptr<Matrix> Ds(Da_->clone());
             Dt->copy(Da_);
             Ds->copy(Da_);
             Dt->add(Db_);
@@ -129,7 +129,7 @@ void CubeProperties::compute_properties()
             compute_density(Da_, "Da");
             compute_density(Db_, "Db");
         } else if (task == "ESP") {
-            boost::shared_ptr<Matrix> Dt(Da_->clone());        
+            boost::shared_ptr<Matrix> Dt(Da_->clone());
             Dt->copy(Da_);
             Dt->add(Db_);
             compute_esp(Dt);
@@ -140,17 +140,17 @@ void CubeProperties::compute_properties()
             if (options_["CUBEPROP_ORBITALS"].size() == 0) {
                 for (int ind = 0; ind < Ca_->colspi()[0]; ind++) {
                     indsa0.push_back(ind);
-                } 
+                }
                 for (int ind = 0; ind < Cb_->colspi()[0]; ind++) {
                     indsb0.push_back(ind);
-                } 
+                }
             } else {
                 for (size_t ind = 0; ind < options_["CUBEPROP_ORBITALS"].size(); ind++) {
                     int val = options_["CUBEPROP_ORBITALS"][ind].to_integer();
                     if (val > 0) {
-                        indsa0.push_back(abs(val) - 1); 
+                        indsa0.push_back(abs(val) - 1);
                     } else {
-                        indsb0.push_back(abs(val) - 1); 
+                        indsb0.push_back(abs(val) - 1);
                     }
                 }
             }
@@ -174,7 +174,7 @@ void CubeProperties::compute_properties()
             if (options_["CUBEPROP_BASIS_FUNCTIONS"].size() == 0) {
                 for (int ind = 0; ind < basisset_->nbf(); ind++) {
                     inds0.push_back(ind);
-                } 
+                }
             } else {
                 for (size_t ind = 0; ind < options_["CUBEPROP_BASIS_FUNCTIONS"].size(); ind++) {
                     inds0.push_back(options_["CUBEPROP_BASIS_FUNCTIONS"][ind].to_integer() - 1);
@@ -199,7 +199,7 @@ void CubeProperties::compute_density(boost::shared_ptr<Matrix> D, const std::str
 void CubeProperties::compute_esp(boost::shared_ptr<Matrix> Dt)
 {
     grid_->compute_density(Dt, "Dt");
-    grid_->compute_esp(Dt, "ESP"); 
+    grid_->compute_esp(Dt, "ESP");
 }
 void CubeProperties::compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::vector<std::string>& labels, const std::string& key)
 {

@@ -129,27 +129,33 @@ def run_dfomp(name, **kwargs):
         psi4.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
 
 
-    # override symmetry:
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
-    if user_pg != 'c1':
-        psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
     psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
+        # override symmetry:
+        molecule = psi4.get_active_molecule()
+        user_pg = molecule.schoenflies_symbol()
+        molecule.reset_point_group('c1')
+        molecule.fix_orientation(True)
+        molecule.fix_com(True)
+        molecule.update_geometry()
+        if user_pg != 'c1':
+            psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
         ref_wfn = scf_helper(name, **kwargs)
+    else:
+        user_pg = None
+        if ref_wfn.molecule().schoenflies_symbol() != 'c1':
+            raise ValidationError('  DFOCC does not make use of molecular symmetry, the reference wavefunction must be C1.\n')
 
     if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
     dfocc_wfn = psi4.dfocc(ref_wfn)
 
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
+    if user_pg:
+        molecule.reset_point_group(user_pg)
+        molecule.update_geometry()
 
     return dfocc_wfn
 
@@ -1158,14 +1164,6 @@ def run_bccd(name, **kwargs):
         psi4.set_local_option('CCENERGY', 'WFN', 'BCCD')
 
     # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-        # If the scf type is DF/CD, then the AO integrals were never written to disk
-        if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
-            mints = psi4.MintsHelper()
-            mints.integrals()
-
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
@@ -1603,16 +1601,18 @@ def run_eom_cc_gradient(name, **kwargs):
     psi4.set_local_option('CCLAMBDA', 'ZETA', 'FALSE')
     psi4.set_local_option('CCDENSITY', 'ZETA', 'FALSE')
     psi4.set_local_option('CCDENSITY', 'XI', 'TRUE')
-    psi4.cclambda()
-    psi4.ccdensity()
+    psi4.cclambda(ref_wfn)
+    psi4.ccdensity(ref_wfn)
     psi4.set_local_option('CCLAMBDA', 'ZETA', 'TRUE')
     psi4.set_local_option('CCDENSITY', 'ZETA', 'TRUE')
     psi4.set_local_option('CCDENSITY', 'XI', 'FALSE')
-    psi4.cclambda()
-    psi4.ccdensity()
-    psi4.deriv()
+    psi4.cclambda(ref_wfn)
+    psi4.ccdensity(ref_wfn)
+    grad = psi4.deriv(ref_wfn)
+    ref_wfn.set_gradient(grad)
 
     optstash.restore()
+    return ref_wfn
 
 
 def run_adc(name, **kwargs):
@@ -2715,7 +2715,7 @@ def run_cepa(name, **kwargs):
             psi4.print_out("    Error: one-electron properties not implemented for %s\n" % lowername)
             psi4.print_out("\n")
         else:
-            p4util.oeprop('DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'NO_OCCUPATIONS', title=cepa_level)
+            p4util.oeprop(fnocc_wfn, 'DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'NO_OCCUPATIONS', title=cepa_level)
 
     # restore options
     optstash.restore()

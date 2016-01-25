@@ -48,7 +48,7 @@ boost::shared_ptr<Molecule> molecule;
 boost::shared_ptr<BasisSet> basis;
 boost::shared_ptr<Wavefunction> wfn;
 
-void dx_write(Options& options,double **D)
+void dx_write(boost::shared_ptr<Wavefunction> wfn, Options& options,double **D)
 {
   double dens;
   double **delta;
@@ -56,7 +56,7 @@ void dx_write(Options& options,double **D)
   double xmin, xmax, ymin, ymax, zmin, zmax;
   double xstep, ystep, zstep;
   int *order;
-  wfn = Process::environment.wavefunction();
+//  wfn = Process::environment.wavefunction();
   molecule = wfn->molecule();
   basis = wfn->basisset();
   chkpt_init(PSIO_OPEN_OLD);

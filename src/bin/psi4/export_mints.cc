@@ -853,6 +853,8 @@ void export_mints()
 
     class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>("Wavefunction", "docstring", no_init).
             // def(init<boost::shared_ptr<Molecule>, const std::string&, Options& >()).
+            def("reference_wavefunction", &Wavefunction::reference_wavefunction, "docstring").
+            def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring").
             def("nfrzc", &Wavefunction::nfrzc, "docstring").
             def("nalpha", &Wavefunction::nalpha, "docstring").
             def("nbeta", &Wavefunction::nbeta, "docstring").

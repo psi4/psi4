@@ -299,7 +299,7 @@ PsiReturnType ccdensity(boost::shared_ptr<Wavefunction> ref_wfn, Options& option
       outfile->Printf( "  ==> Properties: Root %d <==\n\n", i);
       dipole(ref_wfn);
 
-      if(params.onepdm_grid_dump) dx_write(options, moinfo.opdm);
+      if(params.onepdm_grid_dump) dx_write(ref_wfn, options, moinfo.opdm);
  
       dump_RHF(&OutBuf, rho_params[i]);
 
@@ -312,6 +312,9 @@ PsiReturnType ccdensity(boost::shared_ptr<Wavefunction> ref_wfn, Options& option
 
       add_core_ROHF(&OutBuf);
       add_ref_ROHF(&OutBuf);
+
+      // ==> One-Electron Properties <== //
+      outfile->Printf( "  ==> Properties: Root %d <==\n\n", i);
       dipole(ref_wfn);
 
       dump_ROHF(&OutBuf, rho_params[i]);
