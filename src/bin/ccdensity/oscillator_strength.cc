@@ -61,8 +61,6 @@ void oscillator_strength(boost::shared_ptr<Wavefunction> wfn, struct TD_Params *
   double f_x, f_y, f_z;
   double f;
 
-//  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-
   if ((params.ref == 0) || (params.ref == 1))
     scf_pitzer = wfn->Ca()->to_block_matrix();
   else if(params.ref == 2) {

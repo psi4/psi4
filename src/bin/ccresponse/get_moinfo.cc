@@ -60,8 +60,6 @@ void get_moinfo(boost::shared_ptr<Wavefunction> wfn)
     psio_read_entry(PSIF_CC_INFO, "Reference Wavefunction", (char *) &(params.ref),
                     sizeof(int));
 
-//    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
     moinfo.nso = wfn->nso();

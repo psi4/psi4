@@ -57,8 +57,6 @@ void get_moinfo(boost::shared_ptr<Wavefunction> wfn)
     int nactive;
     double **scf_pitzer;
 
-//    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
     moinfo.nso = wfn->nso();
