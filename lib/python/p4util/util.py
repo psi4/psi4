@@ -37,8 +37,8 @@ def cubefile(filename='psi4.cube', nptsx=50, nptsy=50, nptsz=50, buffer_size=5.0
     else:
         raise ValidationError('%s is not a valid property')
 
-def oeprop(*args, **kwargs):
-    oe = psi4.OEProp()
+def oeprop(wfn, *args, **kwargs):
+    oe = psi4.OEProp(wfn)
     if 'title' in kwargs:
         oe.set_title(kwargs['title'])
     for prop in args:

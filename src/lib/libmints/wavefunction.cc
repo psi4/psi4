@@ -149,6 +149,7 @@ void Wavefunction::copy(const Wavefunction* other)
 
     gradient_ = other->gradient_;
     tpdm_gradient_contribution_ = other->tpdm_gradient_contribution_;
+    isDCFT_ = other->isDCFT_;
 }
 
 SharedWavefunction Wavefunction::make_ghost_wavefunction()
@@ -205,6 +206,7 @@ SharedWavefunction Wavefunction::make_ghost_wavefunction()
     ghost->gradient_ = gradient_;
 
     ghost->tpdm_gradient_contribution_ = tpdm_gradient_contribution_;
+    ghost->isDCFT_ = isDCFT_;
     return ghost;
 }
 

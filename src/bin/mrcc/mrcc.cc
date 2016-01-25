@@ -371,13 +371,12 @@ public:
   * \param active_mopi Dimension object of the MOs per irrep, needed to form OPDM matrix
   * \param ints IntegralTransform object needed to determine DPD ID numbers.
   */
-void load_restricted(FILE* ccdensities, double tolerance, const Dimension& active_mopi, IntegralTransform& ints)
+void load_restricted(SharedWavefunction ref, FILE* ccdensities, double tolerance, const Dimension& active_mopi, IntegralTransform& ints)
 {
     // => Sizing <= //
 
     int debug = Process::environment.options.get_int("DEBUG");
 
-    boost::shared_ptr<Wavefunction> ref = Process::environment.wavefunction();
     Dimension focc = ref->frzcpi();
     Dimension docc = ref->doccpi();
     Dimension nmopi = ref->nmopi();
@@ -452,7 +451,7 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
                    "X (2e contribution)");
 
     // Check energy
-    double enuc = Process::environment.molecule()->nuclear_repulsion_energy();
+    double enuc = ref->molecule()->nuclear_repulsion_energy();
     double E1e = one_particle->vector_dot(H);
     double E2e = global_dpd_->buf4_dot(&G, &D);
     outfile->Printf( "\tEnergies recomputed from MRCC's density matrices:\n");
@@ -518,12 +517,9 @@ X->print();
     }
 
     // Construct a RCPHF Object
-    outfile->Printf("DGAS: Grabbing options and wavefunction from global! In src/bin/mrcc.cc\n");
     Options& options = Process::environment.options;
-    SharedWavefunction wfn = Process::environment.wavefunction();
 
-    boost::shared_ptr<RCPHF> cphf(new RCPHF(wfn, options));
-    //boost::shared_ptr<RCPHF> cphf(new RCPHF());
+    boost::shared_ptr<RCPHF> cphf(new RCPHF(ref, options));
     cphf->preiterations();
 
     // TODO: Add pre-CPHF A-matrix correction
@@ -572,7 +568,7 @@ X->print();
 
 } // namespace anonymous
 
-PsiReturnType mrcc_load_ccdensities(Options& options, const boost::python::dict& level)
+PsiReturnType mrcc_load_ccdensities(SharedWavefunction wave, Options& options, const boost::python::dict& level)
 {
     tstart();
 
@@ -606,7 +602,6 @@ PsiReturnType mrcc_load_ccdensities(Options& options, const boost::python::dict&
         throw PSIEXCEPTION("Perturbative methods not implemented for ROHF references.");
 
     // Use libtrans to initialize DPD
-    boost::shared_ptr<Wavefunction> wave = Process::environment.wavefunction();
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::all);
     IntegralTransform ints(wave, spaces, restricted ? IntegralTransform::Restricted : IntegralTransform::Unrestricted);
@@ -621,8 +616,11 @@ PsiReturnType mrcc_load_ccdensities(Options& options, const boost::python::dict&
 
     const Dimension active_mopi = wave->nmopi() - wave->frzcpi() - wave->frzvpi();
     if (restricted) {
-        load_restricted(ccdensities, options.get_double("INTS_TOLERANCE"),
+        load_restricted(wave, ccdensities, options.get_double("INTS_TOLERANCE"),
                         active_mopi, ints);
+    }
+    else{
+        throw PSIEXCEPTION("MRCC: Load unrestricted does not work.");
     }
 //    else
 //        load_unrestricted_tpdm(ccdensities);
@@ -631,7 +629,7 @@ PsiReturnType mrcc_load_ccdensities(Options& options, const boost::python::dict&
     return Success;
 }
 
-PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& level)
+PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options& options, const boost::python::dict& level)
 {
     tstart();
 
@@ -658,11 +656,11 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
     boost::shared_ptr<Wavefunction> wave;
     //   freeze MP2 natural virtual orbitals?
     if ( options.get_bool("NAT_ORBS") ) {
-        boost::shared_ptr<psi::fnocc::FrozenNO> fno(new psi::fnocc::FrozenNO(Process::environment.wavefunction(),options));
+        boost::shared_ptr<psi::fnocc::FrozenNO> fno(new psi::fnocc::FrozenNO(ref_wfn, options));
         fno->ComputeNaturalOrbitals();
         wave = (boost::shared_ptr<Wavefunction>)fno;
     }else {
-        wave = Process::environment.wavefunction();
+        wave = ref_wfn;
     }
     boost::shared_ptr<Molecule>     molecule = wave->molecule();
 
