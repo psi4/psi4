@@ -73,7 +73,6 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   tstart();
 
   boost::shared_ptr<PSIO> psio(_default_psio_lib_);
-//  boost::shared_ptr<Wavefunction> ref = Process::environment.wavefunction();
   if(!ref) throw PSIEXCEPTION("SCF has not been run yet!");
 
   int print = options.get_int("PRINT");
