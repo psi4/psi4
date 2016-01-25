@@ -2,7 +2,6 @@
 #include <libmints/mints.h>
 #include <liboptions/liboptions.h>
 #include <libplugin/plugin.h>
-#include "libchkpt/chkpt.h"
 #include "psifiles.h"
 #include "globals.h"
 
@@ -34,9 +33,6 @@ mollerplesset2(Options &options)
     if (print > 2) options.print();
    
     psio = _default_psio_lib_;
-    // Open the default checkpoint object
-    //shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
-    shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
     eSCF = Process::environment.wavefunction()->reference_energy();
 
@@ -106,11 +102,11 @@ mollerplesset2(Options &options)
 
     double eMP2;
     if(options.get_str("REFERENCE") == "UHF"){
-        eMP2 = plugin_mp2_unrestricted(options, chkpt);
+        eMP2 = plugin_mp2_unrestricted(options);
     }else if(options.get_str("REFERENCE") == "ROHF"){
-        eMP2 = plugin_mp2_unrestricted(options, chkpt);
+        eMP2 = plugin_mp2_unrestricted(options);
     }else if(options.get_str("REFERENCE") == "RHF"){
-        eMP2 = plugin_mp2_restricted(options, chkpt);
+        eMP2 = plugin_mp2_restricted(options);
     }else{
          std::string str1 = options.get_str("REFERENCE");
          std::string str2 = "reference in mollerplesset2";

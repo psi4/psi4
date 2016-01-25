@@ -47,7 +47,7 @@ void SCF::save_info()
     nmo_ = nso_;
 
     // figure out how many frozen orbitals per irrep
-    int nfrzc = Process::environment.molecule()->nfrozen_core();
+    int nfrzc = molecule_->nfrozen_core();
     intvec frz;
     for(int h = 0; h < nirreps; ++h) frz.push_back(0);
     vector<std::pair<double, int> > sorted_evals;
@@ -101,7 +101,6 @@ void SCF::save_info()
     Process::environment.globals["CURRENT ENERGY"] = total_energy;
     Process::environment.globals["CURRENT REFERENCE ENERGY"] = total_energy;
     energy_ = total_energy;
-    psio_->close(PSIF_CHKPT, 1);
     cleanup();
 
     return;
