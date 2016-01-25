@@ -69,11 +69,10 @@ SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options)
 {
   using namespace psi;
   boost::shared_ptr<PSIO> psio(new PSIO);
-//  psiopp_ipv1_config(psio);
 
   memory_manager = new MemoryManager(Process::environment.get_memory());
 
-  psio->open(PSIF_MCSCF,PSIO_OPEN_NEW);
+  psio->open(PSIF_MCSCF, PSIO_OPEN_NEW);
   init_psi(options);
 
   SharedWavefunction wfn;
@@ -86,22 +85,26 @@ SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options)
       MintsHelper* mints = new MintsHelper(ref_wfn->basisset(), options, 0);
       mints->integrals();
       delete mints;
+
       // Now, set the reference wavefunction for subsequent codes to use
-      wfn = SharedWavefunction(new SCF(ref_wfn,options,psio));
+      wfn = SharedWavefunction(new SCF(ref_wfn, options, psio));
       Process::environment.set_wavefunction(wfn);
       moinfo_scf      = new psi::MOInfoSCF(*(wfn.get()), options);
       wfn->compute_energy();
+
       Process::environment.globals["CURRENT ENERGY"] = wfn->reference_energy();
       Process::environment.globals["CURRENT REFERENCE ENERGY"] = wfn->reference_energy();
       Process::environment.globals["SCF TOTAL ENERGY"] = wfn->reference_energy();
+
   }else if(options.get_str("REFERENCE") == "MCSCF"){
       throw PSIEXCEPTION("REFERENCE = MCSCF not implemented yet");
   }
+
   if(moinfo_scf)     delete moinfo_scf;
   if(memory_manager) delete memory_manager;
 
   close_psi(options);
-  psio->close(PSIF_MCSCF,1);
+  psio->close(PSIF_MCSCF, 1);
   return wfn;
 }
 

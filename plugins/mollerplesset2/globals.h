@@ -1,6 +1,5 @@
 #include <liboptions/liboptions.h>
 #include <libtrans/integraltransform.h>
-#include <libchkpt/chkpt.hpp>
 
 #ifdef EXTERN
     #undef EXTERN
@@ -24,6 +23,6 @@ namespace psi{ namespace mollerplesset2{
     EXTERN double eSCF;
     EXTERN double *aOccEvals, *bOccEvals, *aVirEvals, *bVirEvals;
     
-    EXTERN double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt);
-    EXTERN double plugin_mp2_restricted(Options &options, shared_ptr<Chkpt> chkpt);
+    EXTERN double plugin_mp2_unrestricted(Options &options);
+    EXTERN double plugin_mp2_restricted(Options &options);
 }} // Namespaces

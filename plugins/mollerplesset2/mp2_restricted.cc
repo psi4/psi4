@@ -11,7 +11,7 @@
 
 namespace psi{ namespace mollerplesset2{
 
-double plugin_mp2_restricted(Options &options, boost::shared_ptr<Chkpt> chkpt)
+double plugin_mp2_restricted(Options &options)
 {
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);

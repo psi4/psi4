@@ -2,7 +2,6 @@
 #include <libmints/mints.h>
 #include "libciomr/libciomr.h"
 #include <liboptions/liboptions.h>
-#include "libchkpt/chkpt.h"
 #include "libdpd/dpd.h"
 #include "psifiles.h"
 #include "libiwl/iwl.h"

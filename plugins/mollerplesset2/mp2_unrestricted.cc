@@ -13,7 +13,7 @@
 
 namespace psi{ namespace mollerplesset2{
 
-double plugin_mp2_unrestricted(Options &options, boost::shared_ptr<Chkpt> chkpt)
+double plugin_mp2_unrestricted(Options &options)
 {
     bool ROHF = options.get_str("REFERENCE") == "ROHF";
 
