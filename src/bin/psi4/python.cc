@@ -135,6 +135,11 @@ namespace thermo { PsiReturnType thermo(SharedWavefunction, SharedVector, Option
 namespace dmrg       { PsiReturnType dmrg(SharedWavefunction, Options&);     }
 #endif
 
+namespace mrcc {
+PsiReturnType mrcc_generate_input(SharedWavefunction, Options&, const boost::python::dict&);
+PsiReturnType mrcc_load_ccdensities(SharedWavefunction, Options&, const boost::python::dict&);
+}
+
 // Should die soon
 namespace transqt2 { PsiReturnType transqt2(SharedWavefunction, Options&); }
 
@@ -174,11 +179,6 @@ namespace cceom { PsiReturnType cceom(SharedWavefunction, Options&); }
 // No idea what to do with these yet
 namespace efp { PsiReturnType efp_init(Options&); }
 namespace efp { PsiReturnType efp_set_options(); }
-
-namespace mrcc {
-PsiReturnType mrcc_generate_input(SharedWavefunction, Options&, const boost::python::dict&);
-PsiReturnType mrcc_load_ccdensities(SharedWavefunction, Options&, const boost::python::dict&);
-}
 
 
 extern int read_options(const std::string& name, Options& options, bool suppress_printing = false);
@@ -478,21 +478,6 @@ SharedWavefunction py_psi_ccenergy(SharedWavefunction ref_wfn)
 
 }
 
-/*
-double py_psi_mp2()
-{
-    py_psi_prepare_options_for_module("MP2");
-    boost::shared_ptr<Wavefunction> mp2wave(new mp2::MP2Wavefunction(
-                                                Process::environment.wavefunction(),
-                                                Process::environment.options)
-                                           );
-    Process::environment.set_wavefunction(mp2wave);
-
-    double energy = mp2wave->compute_energy();
-    return energy;
-}
-*/
-
 double py_psi_cctriples(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCTRIPLES");
@@ -553,13 +538,6 @@ void py_psi_cchbar(SharedWavefunction ref_wfn)
     py_psi_prepare_options_for_module("CCHBAR");
     cchbar::cchbar(ref_wfn, Process::environment.options);
 }
-
-// double py_psi_cclambda()
-// {
-//     py_psi_prepare_options_for_module("CCLAMBDA");
-//     cclambda::cclambda(Process::environment.options);
-//     return 0.0;
-// }
 
 SharedWavefunction py_psi_cclambda(SharedWavefunction ref_wfn)
 {
@@ -1196,6 +1174,10 @@ boost::shared_ptr<Wavefunction> py_psi_wavefunction()
 {
     return Process::environment.wavefunction();
 }
+void py_psi_set_wavefunction(SharedWavefunction wfn)
+{
+    Process::environment.set_wavefunction(wfn);
+}
 SharedWavefunction py_psi_new_wavefunction(boost::shared_ptr<Molecule> molecule,
                                            const std::string& basis)
 {
@@ -1419,6 +1401,9 @@ BOOST_PYTHON_MODULE (psi4)
     def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
     def("wavefunction",
         py_psi_wavefunction,
+        "Returns the current wavefunction object from the most recent computation.");
+    def("set_wavefunction",
+        py_psi_set_wavefunction,
         "Returns the current wavefunction object from the most recent computation.");
     def("new_wavefunction",
         py_psi_new_wavefunction,

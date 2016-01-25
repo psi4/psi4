@@ -1141,6 +1141,7 @@ def run_cc_gradient(name, **kwargs):
     psi4.ccdensity(ccwfn)
     grad = psi4.deriv(ccwfn)
     ccwfn.set_gradient(grad)
+    psi4.set_wavefunction(ccwfn)
 
     optstash.restore()
     return ccwfn
@@ -1572,6 +1573,7 @@ def run_eom_cc(name, **kwargs):
     psi4.cceom(ref_wfn)
 
     optstash.restore()
+    return ref_wfn
 
 
 def run_eom_cc_gradient(name, **kwargs):
@@ -1610,6 +1612,7 @@ def run_eom_cc_gradient(name, **kwargs):
     psi4.ccdensity(ref_wfn)
     grad = psi4.deriv(ref_wfn)
     ref_wfn.set_gradient(grad)
+    psi4.set_wavefunction(ref_wfn)
 
     optstash.restore()
     return ref_wfn

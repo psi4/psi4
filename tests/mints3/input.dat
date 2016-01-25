@@ -19,7 +19,8 @@ set globals {
   basis sto-3g
 }
 
-mints = MintsHelper()
+wfn = psi4.new_wavefunction(h2o, psi4.get_global_option('BASIS'))
+mints = MintsHelper(wfn.basisset())
 factory = mints.factory()                                            #TEST
 
 Li = mints.so_angular_momentum()
@@ -45,7 +46,8 @@ set globals {
   basis 6-311G**
 }
 
-mints = MintsHelper()
+wfn = psi4.new_wavefunction(h2o, psi4.get_global_option('BASIS'))
+mints = MintsHelper(wfn.basisset())
 factory = mints.factory()                                            #TEST
 
 Li = mints.so_angular_momentum()
@@ -71,7 +73,8 @@ set globals {
   basis cc-pVTZ
 }
 
-mints = MintsHelper()
+wfn = psi4.new_wavefunction(h2o, psi4.get_global_option('BASIS'))
+mints = MintsHelper(wfn.basisset())
 factory = mints.factory()                                            #TEST
 
 Li = mints.so_angular_momentum()
@@ -101,7 +104,8 @@ set globals {
   basis sto-3g
 }
 
-mints = MintsHelper()
+wfn = psi4.new_wavefunction(h2o, psi4.get_global_option('BASIS'))
+mints = MintsHelper(wfn.basisset())
 factory = mints.factory()                                            #TEST
 
 Pi = mints.so_nabla()
@@ -127,7 +131,8 @@ set globals {
   basis 6-311G**
 }
 
-mints = MintsHelper()
+wfn = psi4.new_wavefunction(h2o, psi4.get_global_option('BASIS'))
+mints = MintsHelper(wfn.basisset())
 factory = mints.factory()                                            #TEST
 
 Pi = mints.so_nabla()
@@ -153,7 +158,8 @@ set globals {
   basis cc-pVTZ
 }
 
-mints = MintsHelper()
+wfn = psi4.new_wavefunction(h2o, psi4.get_global_option('BASIS'))
+mints = MintsHelper(wfn.basisset())
 factory = mints.factory()                                            #TEST
 
 Pi = mints.so_nabla()
