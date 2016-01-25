@@ -12,8 +12,8 @@ set cubeprop_tasks ['orbitals','density']
 set cubeprop_orbitals [1,2,3,4,5]
 set cubic_grid_overage [1.0,1.0,1.0]
 
-energy('scf')
-cubeprop()
+wfn = energy('scf', return_wfn=True)
+cubeprop(wfn)
 
 for n in ['1_1-A1','2_2-A1','3_1-B2','4_3-A1','5_1-B1']:
     ref_cube = open('Psi_a_%s.cube.ref' % n,'r').read()

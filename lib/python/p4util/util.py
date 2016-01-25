@@ -45,7 +45,7 @@ def oeprop(*args, **kwargs):
         oe.add(prop)
     oe.compute()
 
-def cubeprop(*args, **kwargs):
+def cubeprop(wfn, *args, **kwargs):
     """Evaluate properties on a grid and generate cube files.
 
     """
@@ -53,7 +53,7 @@ def cubeprop(*args, **kwargs):
     if not psi4.has_global_option_changed('CUBEPROP_TASKS'):
         psi4.set_global_option('CUBEPROP_TASKS',['ORBITALS'])
 
-    cp = psi4.CubeProperties()
+    cp = psi4.CubeProperties(wfn)
     cp.compute_properties()
 
 def set_memory(bytes):

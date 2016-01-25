@@ -149,9 +149,6 @@ void DFOCC::common_init()
     // Figure out REF
     if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
     else if (reference == "UHF" || reference == "UKS" || reference == "ROHF") reference_ = "UNRESTRICTED";
-    if (reference == "ROHF")
-        // reference_wavefunction_->semicanonicalize();
-        throw PSIEXCEPTION("SemiCanonical transform does not work at the moment");
 
     // Only ROHF-CC energy is available, not the gradients
     if (reference == "ROHF" && orb_opt_ == "FALSE" && dertype == "FIRST") {
