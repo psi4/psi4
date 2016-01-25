@@ -35,6 +35,7 @@ __pycache__
 _coverage_html
 
 # Files resulting from running PSI4
+ijk.dat
 output.dat
 *.32
 *.clean
