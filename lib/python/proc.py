@@ -80,16 +80,54 @@ def run_dcft_gradient(name, **kwargs):
     return dcft_wfn
 
 
-def run_dfomp2(name, **kwargs):
+def run_dfomp(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    an density-fitted orbital-optimized MP2 computation
+    an density-fitted (non-)orbital-optimized MPN or CC computation.
 
     """
+    lowername = name.lower()
+
     optstash = p4util.OptionsState(
         ['SCF', 'DF_INTS_IO'],
         ['SCF', 'DFT_CUSTOM_FUNCTIONAL'],
-        ['DF_BASIS_SCF'],
-        ['GLOBALS', 'DF_BASIS_CC'])
+        ['DFOCC', 'WFN_TYPE'],
+        ['DFOCC', 'ORB_OPT'],
+        ['DFOCC', 'CC_LAMBDA'])
+
+    if lowername in ['ri-mp2', 'df-omp2']:
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
+    elif lowername in ['df-mp2.5', 'df-omp2.5']:
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
+    elif lowername in ['df-mp3', 'df-omp3']:
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
+    elif lowername in ['df-lccd', 'df-olccd']:
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
+    elif lowername in ['df-ccd']:
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
+    elif lowername in ['df-ccsd2']:
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
+    elif lowername in ['ri-ccsd(t)']:
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
+    elif lowername in ['df-ccsd(at)']:
+        psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(AT)')
+    elif lowername in['df-ccdl']:
+        psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
+    elif lowername in['df-ccsdl']:
+        psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
+    else:
+        raise ValidationError('Unidentified method ' % (lowername))
+
+    if lowername in ['ri-mp2', 'df-mp2.5', 'df-mp3',
+                     'df-lccd', 'df-ccd', 'df-ccsd2', 'ri-ccsd(t)', 'df-ccsd(at)',
+                     'df-ccdl', 'df-ccsdl']:
+        psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    elif lowername in ['df-omp2', 'df-omp2.5', 'df-omp3',
+                     'df-olccd']:
+        psi4.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
+
 
     # override symmetry:
     molecule = psi4.get_active_molecule()
@@ -104,8 +142,10 @@ def run_dfomp2(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs) 
+        ref_wfn = scf_helper(name, **kwargs)
 
+    if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
+        ref_wfn.semicanonicalize()
     dfocc_wfn = psi4.dfocc(ref_wfn)
 
     molecule.reset_point_group(user_pg)
@@ -114,88 +154,46 @@ def run_dfomp2(name, **kwargs):
     return dfocc_wfn
 
 
-def run_dfomp2_gradient(name, **kwargs):
+def run_dfomp_gradient(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    DF-OMP2 gradient calculation.
+    an density-fitted (non-)orbital-optimized MPN or CC computation.
 
     """
-    optstash = p4util.OptionsState(
-        ['REFERENCE'],
-        ['GLOBALS', 'DERTYPE'])
+    lowername = name.lower()
 
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    run_dfomp2(name, **kwargs)
-
-    optstash.restore()
-
-
-def run_dfomp2_property(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    DF-OMP2 gradient calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['DFOCC', 'OEPROP'])
-
-    psi4.set_local_option('DFOCC', 'OEPROP', 'TRUE')
-    run_dfomp2(name, **kwargs)
-
-    optstash.restore()
-
-
-def run_rimp2(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a density-fitted MP2 computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['DFOCC', 'ORB_OPT'])
-
-    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    run_dfomp2(name, **kwargs)
-
-
-def run_rimp2_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a density-fitted MP2 computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['DFOCC', 'ORB_OPT'])
-
-    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    run_dfomp2_gradient(name, **kwargs)
-
-
-def run_rimp2_property(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a cholesky-decomposed MP2 computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['DFOCC', 'ORB_OPT'])
-
-    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    run_dfomp2_property(name, **kwargs)
-
-
-def run_omp2(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an orbital-optimized MP2 computation
-
-    """
-    run_dfomp2(name, **kwargs)
-
-
-def run_dfocc(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted orbital-optimized MP2 computation
-
-    """
     optstash = p4util.OptionsState(
         ['SCF', 'DF_INTS_IO'],
-        ['DF_BASIS_SCF'],
-        ['GLOBALS', 'DF_BASIS_CC'])
+#        ['SCF', 'DFT_CUSTOM_FUNCTIONAL'],
+        ['REFERENCE'],
+        ['DFOCC', 'WFN_TYPE'],
+        ['DFOCC', 'ORB_OPT'],
+        ['DFOCC', 'CC_LAMBDA'],
+        ['GLOBALS', 'DERTYPE'])
+
+    if lowername in ['ri-mp2', 'df-omp2']:
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
+    elif lowername in ['df-mp2.5', 'df-omp2.5']:
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
+    elif lowername in ['df-mp3', 'df-omp3']:
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
+    elif lowername in ['df-lccd', 'df-olccd']:
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
+    elif lowername in ['df-ccd']:
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
+    elif lowername in ['df-ccsd2']:
+        psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
+    else:
+        raise ValidationError('Unidentified method ' % (lowername))
+
+    if lowername in ['ri-mp2', 'df-mp2.5', 'df-mp3',
+                     'df-lccd', 'df-ccd', 'df-ccsd2']:
+        psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    elif lowername in ['df-omp2', 'df-omp2.5', 'df-omp3',
+                     'df-olccd']:
+        psi4.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
+
+    psi4.set_global_option('DERTYPE', 'FIRST')
 
     # override symmetry:
     molecule = psi4.get_active_molecule()
@@ -206,18 +204,71 @@ def run_dfocc(name, **kwargs):
     if user_pg != 'c1':
         psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
-    #psi4.set_global_option('SCF_TYPE', 'DF')
     psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
 
-    psi4.dfocc()
+    if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
+        ref_wfn.semicanonicalize()
+    dfocc_wfn = psi4.dfocc(ref_wfn)
 
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
 
-    return psi4.get_variable("CURRENT ENERGY")
+    return dfocc_wfn
+
+
+def run_dfomp_property(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted (non-)orbital-optimized MPN or CC computation.
+
+    """
+    lowername = name.lower()
+
+    optstash = p4util.OptionsState(
+        ['SCF', 'DF_INTS_IO'],
+        ['SCF', 'DFT_CUSTOM_FUNCTIONAL'],
+        ['DFOCC', 'WFN_TYPE'],
+        ['DFOCC', 'ORB_OPT'],
+        ['DFOCC', 'OEPROP'])
+
+    if lowername in ['ri-mp2', 'df-omp2']:
+        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
+    else:
+        raise ValidationError('Unidentified method ' % (lowername))
+
+    if lowername in ['ri-mp2']:
+        psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    elif lowername in ['df-omp2']:
+        psi4.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
+
+    psi4.set_local_option('DFOCC', 'OEPROP', 'TRUE')
+
+    # override symmetry:
+    molecule = psi4.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(1)
+    molecule.update_geometry()
+    if user_pg != 'c1':
+        psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
+
+    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
+
+    if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
+        ref_wfn.semicanonicalize()
+    dfocc_wfn = psi4.dfocc(ref_wfn)
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
+
+    return dfocc_wfn
 
 
 def run_qchf(name, **kwargs):
@@ -257,6 +308,8 @@ def run_qchf(name, **kwargs):
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
 
+    if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
+        ref_wfn.semicanonicalize()
     psi4.dfocc()
 
     molecule.reset_point_group(user_pg)
@@ -265,590 +318,6 @@ def run_qchf(name, **kwargs):
     return psi4.get_variable("CURRENT ENERGY")
 
 
-def run_dfomp3(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted orbital-optimized MP3 computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['SCF', 'DF_INTS_IO'],
-        ['DF_BASIS_SCF'],
-        ['DFOCC', 'WFN_TYPE'],
-        ['DFOCC', 'ORB_OPT'],
-        ['GLOBALS', 'DF_BASIS_CC'])
-
-    psi4.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
-    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
-
-    # override symmetry:
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
-    if user_pg != 'c1':
-        psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
-    #psi4.set_global_option('SCF_TYPE', 'DF')
-    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.dfocc()
-
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
-
-    return psi4.get_variable("CURRENT ENERGY")
-
-
-def run_dfomp3_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted OO-MP3 gradient computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['REFERENCE'],
-        ['GLOBALS', 'DERTYPE'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    run_dfomp3(name, **kwargs)
-
-    optstash.restore()
-
-
-def run_dfomp2p5(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted orbital-optimized MP2.5 computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['SCF', 'DF_INTS_IO'],
-        ['DF_BASIS_SCF'],
-        ['DFOCC', 'WFN_TYPE'],
-        ['DFOCC', 'ORB_OPT'],
-        ['GLOBALS', 'DF_BASIS_CC'])
-
-    psi4.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
-    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
-
-    # override symmetry:
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
-    if user_pg != 'c1':
-        psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
-    #psi4.set_global_option('SCF_TYPE', 'DF')
-    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.dfocc()
-
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
-
-    return psi4.get_variable("CURRENT ENERGY")
-
-
-def run_dfomp2p5_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted OO-MP3 gradient computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['REFERENCE'],
-        ['GLOBALS', 'DERTYPE'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    run_dfomp2p5(name, **kwargs)
-
-    optstash.restore()
-
-
-def run_dfolccd(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted orbital-optimized linearized CCD computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['SCF', 'DF_INTS_IO'],
-        ['DF_BASIS_SCF'],
-        ['DFOCC', 'WFN_TYPE'],
-        ['DFOCC', 'ORB_OPT'],
-        ['GLOBALS', 'DF_BASIS_CC'])
-
-    psi4.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
-    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
-
-    # override symmetry:
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
-    if user_pg != 'c1':
-        psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
-    #psi4.set_global_option('SCF_TYPE', 'DF')
-    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.dfocc()
-
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
-
-    return psi4.get_variable("CURRENT ENERGY")
-
-
-def run_dfolccd_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted OO-LCCD gradient computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['REFERENCE'],
-        ['GLOBALS', 'DERTYPE'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    run_dfolccd(name, **kwargs)
-
-    optstash.restore()
-
-
-def run_dfccsd(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted CCSD computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['SCF', 'DF_INTS_IO'],
-        ['DF_BASIS_SCF'],
-        ['DFOCC', 'ORB_OPT'],
-        ['DFOCC', 'WFN_TYPE'],
-        ['GLOBALS', 'DF_BASIS_CC'])
-
-    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
-
-    # override symmetry:
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
-    if user_pg != 'c1':
-        psi4.print_out('  DF-CCSD does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
-    #psi4.set_global_option('SCF_TYPE', 'DF')
-    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.dfocc()
-
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
-
-    return psi4.get_variable("CURRENT ENERGY")
-
-
-def run_dfccsd_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted CCSD gradient computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['REFERENCE'],
-        ['DFOCC', 'CC_LAMBDA'],
-        ['GLOBALS', 'DERTYPE'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
-    run_dfccsd(name, **kwargs)
-
-    optstash.restore()
-
-
-def run_dfccsd_t(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted CCSD(T) computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['SCF', 'DF_INTS_IO'],
-        ['DF_BASIS_SCF'],
-        ['DFOCC', 'ORB_OPT'],
-        ['DFOCC', 'WFN_TYPE'],
-        ['GLOBALS', 'DF_BASIS_CC'])
-
-    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
-
-    # override symmetry:
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
-    if user_pg != 'c1':
-        psi4.print_out('  DF-CCSD(T) does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
-    #psi4.set_global_option('SCF_TYPE', 'DF')
-    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.dfocc()
-
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
-
-    return psi4.get_variable("CURRENT ENERGY")
-
-
-def run_dfccsd_at(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted Lambda-CCSD(T) computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['SCF', 'DF_INTS_IO'],
-        ['DF_BASIS_SCF'],
-        ['DFOCC', 'ORB_OPT'],
-        ['DFOCC', 'WFN_TYPE'],
-        ['DFOCC', 'CC_LAMBDA'],
-        ['GLOBALS', 'DF_BASIS_CC'])
-
-    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
-    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(AT)')
-
-    # override symmetry:
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
-    if user_pg != 'c1':
-        psi4.print_out('  DF-CCSD(AT) does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
-    #psi4.set_global_option('SCF_TYPE', 'DF')
-    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.dfocc()
-
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
-
-    return psi4.get_variable("CURRENT ENERGY")
-
-
-def run_dfccd(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted CCD computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['SCF', 'DF_INTS_IO'],
-        ['DF_BASIS_SCF'],
-        ['DFOCC', 'ORB_OPT'],
-        ['DFOCC', 'WFN_TYPE'],
-        ['GLOBALS', 'DF_BASIS_CC'])
-
-    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
-
-    # override symmetry:
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
-    if user_pg != 'c1':
-        psi4.print_out('  DF-CCD does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
-    #psi4.set_global_option('SCF_TYPE', 'DF')
-    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.dfocc()
-
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
-
-    return psi4.get_variable("CURRENT ENERGY")
-
-
-def run_dfccd_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted CCD gradient computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['REFERENCE'],
-        ['DFOCC', 'CC_LAMBDA'],
-        ['GLOBALS', 'DERTYPE'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
-    run_dfccd(name, **kwargs)
-
-    optstash.restore()
-
-
-def run_dfccsdl(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted CCSD Lambda computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['SCF', 'DF_INTS_IO'],
-        ['DF_BASIS_SCF'],
-        ['DFOCC', 'ORB_OPT'],
-        ['DFOCC', 'WFN_TYPE'],
-        ['DFOCC', 'CC_LAMBDA'],
-        ['GLOBALS', 'DF_BASIS_CC'])
-
-    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
-    psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
-
-    # override symmetry:
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
-    if user_pg != 'c1':
-        psi4.print_out('  DF-CCSD does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
-    #psi4.set_global_option('SCF_TYPE', 'DF')
-    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.dfocc()
-
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
-
-    return psi4.get_variable("CURRENT ENERGY")
-
-
-def run_dfccdl(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted CCSD Lambda computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['SCF', 'DF_INTS_IO'],
-        ['DF_BASIS_SCF'],
-        ['DFOCC', 'ORB_OPT'],
-        ['DFOCC', 'WFN_TYPE'],
-        ['DFOCC', 'CC_LAMBDA'],
-        ['GLOBALS', 'DF_BASIS_CC'])
-
-    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
-    psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
-
-    # override symmetry:
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
-    if user_pg != 'c1':
-        psi4.print_out('  DF-CCD does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
-    #psi4.set_global_option('SCF_TYPE', 'DF')
-    psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.dfocc()
-
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
-
-    return psi4.get_variable("CURRENT ENERGY")
-
-
-def run_dfmp3(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted MP3 computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['SCF','DF_INTS_IO'],
-        ['DF_BASIS_SCF'],
-        ['DFOCC', 'ORB_OPT'],
-        ['DFOCC', 'WFN_TYPE'],
-        ['GLOBALS', 'DF_BASIS_CC'])
-
-    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
-
-    # override symmetry:
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
-    if user_pg != 'c1':
-        psi4.print_out('  DF-MP3 does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
-    #psi4.set_global_option('SCF_TYPE', 'DF')
-    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.dfocc()
-
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
-
-    return psi4.get_variable("CURRENT ENERGY")
-
-
-def run_dfmp3_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted MP3 gradient computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['REFERENCE'],
-        ['GLOBALS', 'DERTYPE'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    run_dfmp3(name, **kwargs)
-
-    optstash.restore()
-
-
-def run_dfmp2p5(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted MP2.5 computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['SCF','DF_INTS_IO'],
-        ['DF_BASIS_SCF'],
-        ['DFOCC', 'ORB_OPT'],
-        ['DFOCC', 'WFN_TYPE'],
-        ['GLOBALS', 'DF_BASIS_CC'])
-
-    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
-
-    # override symmetry:
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
-    if user_pg != 'c1':
-        psi4.print_out('  DF-MP2.5 does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
-    #psi4.set_global_option('SCF_TYPE', 'DF')
-    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.dfocc()
-
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
-
-    return psi4.get_variable("CURRENT ENERGY")
-
-
-def run_dfmp2p5_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted MP2.5 gradient computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['REFERENCE'],
-        ['GLOBALS', 'DERTYPE'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    run_dfmp2p5(name, **kwargs)
-
-    optstash.restore()
-
-
-def run_dflccd(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted linearized CCD computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['SCF','DF_INTS_IO'],
-        ['DF_BASIS_SCF'],
-        ['DFOCC', 'ORB_OPT'],
-        ['DFOCC', 'WFN_TYPE'],
-        ['GLOBALS', 'DF_BASIS_CC'])
-
-    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
-
-    # override symmetry:
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
-    if user_pg != 'c1':
-        psi4.print_out('  DF-MP3 does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
-    #psi4.set_global_option('SCF_TYPE', 'DF')
-    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.dfocc()
-
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
-
-    return psi4.get_variable("CURRENT ENERGY")
-
-
-def run_dflccd_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an density-fitted MP3 gradient computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['REFERENCE'],
-        ['GLOBALS', 'DERTYPE'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    run_dflccd(name, **kwargs)
-
-    optstash.restore()
 
 
 def run_cdomp(name, **kwargs):
@@ -866,10 +335,14 @@ def run_cdomp(name, **kwargs):
         ['DFOCC', 'CC_LAMBDA'],
         ['DFOCC', 'WFN_TYPE'])
 
-    # overwrite symmetry
+    # override symmetry
     molecule = psi4.get_active_molecule()
-    molecule.update_geometry()
+    user_pg = molecule.schoenflies_symbol()
     molecule.reset_point_group('c1')
+    molecule.fix_orientation(1)
+    molecule.update_geometry()
+    if user_pg != 'c1':
+        psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
     if lowername == 'cd-omp2':
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
@@ -897,63 +370,34 @@ def run_cdomp(name, **kwargs):
     elif lowername == 'cd-ccsd(at)':
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(AT)')
         psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+    else:
+        pass
 
     if lowername in ['cd-omp2', 'cd-omp2.5', 'cd-omp3', 'cd-olccd']:
         psi4.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
     elif lowername in ['cd-mp2', 'cd-mp2.5', 'cd-mp3', 'cd-lccd', 'cd-ccd', 'cd-ccsd', 'cd-ccsd(t)', 'cd-ccsd(at)']:
         psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    else:
+        pass
 
     psi4.set_local_option('DFOCC', 'CHOLESKY', 'TRUE')
 
     psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
 
-    return psi4.dfocc()
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
 
+    if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
+        ref_wfn.semicanonicalize()
+    dfocc_wfn = psi4.dfocc(ref_wfn)
 
-def run_conv_omp2(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an orbital-optimized MP2 computation
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
 
-    """
-    optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'])
+    return dfocc_wfn
 
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_wfn = scf_helper(name, **kwargs)
-    else:
-        scf_wfn = wavefunction()
-
-    psi4.occ(scf_wfn)
-
-    #return psi4.occ()
-    optstash.restore()
-
-
-def run_omp2_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    OMP2 gradient calculation.
-
-    """
-    run_dfomp2_gradient(name, **kwargs)
-
-
-def run_conv_omp2_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    OMP2 gradient calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['REFERENCE'],
-        ['GLOBALS', 'DERTYPE'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    run_conv_omp2(name, **kwargs)
-    psi4.deriv()
-
-    optstash.restore()
 
 
 def run_mp2(name, **kwargs):
@@ -993,142 +437,9 @@ def run_mp2_gradient(name, **kwargs):
     optstash.restore()
 
 
-def run_scs_omp2(name, **kwargs):
+def run_omp(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    a spin-component scaled OMP2 computation
-
-    """
-    lowername = name.lower()
-
-    optstash = p4util.OptionsState(
-        ['OCC', 'SCS_TYPE'],
-        ['OCC', 'DO_SCS'])
-
-    # what type of scs?
-    if (lowername == 'scs-omp2'):
-        psi4.set_local_option('OCC', 'SCS_TYPE', 'SCS')
-    elif (lowername == 'scsn-omp2'):
-        psi4.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
-    #elif (lowername == 'scs-mi-omp2'):
-    #    psi4.set_local_option('OCC', 'SCS_TYPE', 'SCSMI')
-    elif (lowername == 'scs-omp2-vdw'):
-        psi4.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
-    psi4.occ()
-
-    optstash.restore()
-
-
-def run_sos_omp2(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a spin-opposite scaled OMP2 computation
-
-    """
-    lowername = name.lower()
-
-    optstash = p4util.OptionsState(
-        ['OCC', 'SOS_TYPE'],
-        ['OCC', 'DO_SOS'])
-
-    # what type of sos?
-    if (lowername == 'sos-omp2'):
-        psi4.set_local_option('OCC', 'SOS_TYPE', 'SOS')
-    elif (lowername == 'sos-pi-omp2'):
-        psi4.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
-    psi4.occ()
-
-    optstash.restore()
-
-
-def run_omp3(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an orbital-optimized MP3 computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['OCC', 'WFN_TYPE'])
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        ref_wfn = scf_helper(name, **kwargs)
-    else:
-        ref_wfn = wavefunction()
-
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-    # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or
-        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
-        psi4.MintsHelper().integrals()
-
-    psi4.occ(ref_wfn)
-
-    optstash.restore()
-
-
-def run_omp3_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    OMP3 gradient calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['OCC', 'WFN_TYPE'],
-        ['GLOBALS', 'DERTYPE'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-    run_omp3(name, **kwargs)
-    psi4.deriv()
-
-    optstash.restore()
-
-
-def run_mp3(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a MP3 calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['OCC', 'ORB_OPT'])
-
-    psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_omp3(name, **kwargs)
-
-    optstash.restore()
-
-
-def run_mp3_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a MP3 gradient calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['GLOBALS', 'DERTYPE'],
-        ['OCC', 'WFN_TYPE'],
-        ['OCC', 'ORB_OPT'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-    psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_omp3(name, **kwargs)
-    psi4.deriv()
-
-    optstash.restore()
-
-
-def run_scs_omp3(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a spin-component scaled OMP3 computation
+    a conventional integral (O)MPN computation
 
     """
     lowername = name.lower()
@@ -1136,208 +447,155 @@ def run_scs_omp3(name, **kwargs):
     optstash = p4util.OptionsState(
         ['OCC', 'SCS_TYPE'],
         ['OCC', 'DO_SCS'],
+        ['OCC', 'SOS_TYPE'],
+        ['OCC', 'DO_SOS'],
+        ['OCC', 'ORB_OPT'],
         ['OCC', 'WFN_TYPE'])
 
-    # what type of scs?
-    if (lowername == 'scs-omp3'):
+    if lowername == 'mp2':
+        psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+    elif lowername in ['omp2', 'conv-omp2']:
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+    elif lowername == 'scs-omp2':
         psi4.set_local_option('OCC', 'SCS_TYPE', 'SCS')
-    elif (lowername == 'scsn-omp3'):
+        psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+    elif lowername == 'scs(n)-omp2':
         psi4.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
-    #elif (lowername == 'scs-mi-omp3'):
-    #    psi4.set_local_option('OCC', 'SCS_TYPE', 'SCSMI')
+        psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+    elif lowername == 'scs-omp2-vdw':
+        psi4.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
+        psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+    elif (lowername == 'sos-omp2'):
+        psi4.set_local_option('OCC', 'SOS_TYPE', 'SOS')
+        psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+    elif (lowername == 'sos-pi-omp2'):
+        psi4.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
+        psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+
+    elif lowername == 'mp2.5':
+        psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
+    elif lowername == 'omp2.5':
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
+
+    elif lowername == 'mp3':
+        psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    elif lowername == 'omp3':
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    elif lowername == 'scs-omp3':
+        psi4.set_local_option('OCC', 'SCS_TYPE', 'SCS')
+        psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    elif lowername == 'scs(n)-omp3':
+        psi4.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
+        psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
     elif (lowername == 'scs-omp3-vdw'):
         psi4.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
+        psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    elif lowername == 'sos-omp3':
+        psi4.set_local_option('OCC', 'SOS_TYPE', 'SOS')
+        psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    elif lowername == 'sos-pi-omp3':
+        psi4.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
+        psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
 
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
+    elif lowername == 'cepa0':
+        psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+    elif lowername == 'ocepa':
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
 
-    psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
+
     # If the scf type is DF/CD, then the AO integrals were never written to disk
     if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or
         psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
         psi4.MintsHelper().integrals()
-    psi4.occ()
+
+    if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
+        ref_wfn.semicanonicalize()
+    occ_wfn = psi4.occ(ref_wfn)
 
     optstash.restore()
+    return occ_wfn
+
+    ## Bypass routine scf if user did something special to get it to converge
+    #if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+    #    ref_wfn = scf_helper(name, **kwargs)
+    #else:
+    #    ref_wfn = wavefunction()
 
 
-def run_sos_omp3(name, **kwargs):
+def run_omp_gradient(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    a spin-opposite scaled OMP3 computation
+    a conventional integral (O)MPN computation
 
     """
     lowername = name.lower()
 
     optstash = p4util.OptionsState(
-        ['OCC', 'SOS_TYPE'],
-        ['OCC', 'DO_SOS'],
-        ['OCC', 'WFN_TYPE'])
-
-    # what type of sos?
-    if (lowername == 'sos-omp3'):
-        psi4.set_local_option('OCC', 'SOS_TYPE', 'SOS')
-    elif (lowername == 'sos-pi-omp3'):
-        psi4.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-    # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or
-        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
-        psi4.MintsHelper().integrals()
-    psi4.occ()
-
-    optstash.restore()
-
-
-def run_ocepa(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an orbital-optimized CEPA computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['OCC', 'WFN_TYPE'])
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-    # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or
-        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
-        psi4.MintsHelper().integrals()
-    psi4.occ()
-
-    optstash.restore()
-
-
-def run_ocepa_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    OCEPA gradient calculation.
-
-    """
-    optstash = p4util.OptionsState(
+        ['OCC', 'ORB_OPT'],
+        ['OCC', 'WFN_TYPE'],
         ['GLOBALS', 'DERTYPE'])
 
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    run_ocepa(name, **kwargs)
-    psi4.deriv()
+    if lowername == 'mp2':
+        psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+    elif lowername in ['omp2', 'conv-omp2']:
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
 
-    optstash.restore()
+    elif lowername == 'mp2.5':
+        psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
+    elif lowername == 'omp2.5':
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
 
+    elif lowername == 'mp3':
+        psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    elif lowername == 'omp3':
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
 
-def run_cepa0(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a CEPA (LCCD) computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['OCC', 'WFN_TYPE'],
-        ['OCC', 'ORB_OPT'])
-
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-    psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_ocepa(name, **kwargs)
-
-    optstash.restore()
-
-
-def run_cepa0_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a CEPA(0) gradient calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['GLOBALS', 'DERTYPE'],
-        ['OCC', 'WFN_TYPE'],
-        ['OCC', 'ORB_OPT'])
+    elif lowername == 'cepa0':
+        psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+    elif lowername == 'ocepa':
+        psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
 
     psi4.set_global_option('DERTYPE', 'FIRST')
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-    psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_ocepa(name, **kwargs)
-    psi4.deriv()
 
-    optstash.restore()
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
 
-
-def run_omp2_5(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an orbital-optimized MP2.5 computation
-
-    """
-    optstash = p4util.OptionsState(
-        ['OCC', 'WFN_TYPE'])
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
     # If the scf type is DF/CD, then the AO integrals were never written to disk
     if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or
         psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
         psi4.MintsHelper().integrals()
-    psi4.occ()
+
+    if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
+        ref_wfn.semicanonicalize()
+    occ_wfn = psi4.occ(ref_wfn)
+    grad = psi4.deriv(occ_wfn)
+    occ_wfn.set_gradient(grad)
 
     optstash.restore()
-
-
-def run_omp2_5_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    OMP2.5 gradient calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['GLOBALS', 'DERTYPE'],
-        ['OCC', 'WFN_TYPE'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
-    run_omp2_5(name, **kwargs)
-    psi4.deriv()
-
-    optstash.restore()
-
-
-def run_mp2_5(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a MP2.5 calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['OCC', 'ORB_OPT'])
-
-    psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_omp2_5(name, **kwargs)
-
-    optstash.restore()
-
-
-def run_mp2_5_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a MP3 gradient calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['GLOBALS', 'DERTYPE'],
-        ['OCC', 'WFN_TYPE'],
-        ['OCC', 'ORB_OPT'])
-
-    psi4.set_global_option('DERTYPE', 'FIRST')
-    psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
-    psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_omp2_5(name, **kwargs)
-    psi4.deriv()
-
-    optstash.restore()
+    return occ_wfn
 
 
 def parse_scf_cases(name):
@@ -1687,7 +945,7 @@ def run_mp2_select(name, **kwargs):
 
     """
     if (psi4.get_option("DFMP2", "MP2_TYPE") == "CONV") or (psi4.get_option("OCC", "MP2_TYPE") == "CONV"):
-        return run_mp2(name, **kwargs)
+        return run_omp(name, **kwargs)
     else:
         return run_dfmp2(name, **kwargs)
 
@@ -1697,15 +955,15 @@ def run_mp2_select_gradient(name, **kwargs):
     and directing toward the OCC (conv MP2) or the DFMP2 modules.
 
     """
-    optstash = p4util.OptionsState(
-        ['DFOCC', 'ORB_OPT'])
+    #optstash = p4util.OptionsState(
+    #    ['DFOCC', 'ORB_OPT'])
 
     if (psi4.get_option("DFMP2", "MP2_TYPE") == "CONV") or (psi4.get_option("OCC", "MP2_TYPE") == "CONV"):
-        return run_mp2_gradient(name, **kwargs)
+        return run_omp_gradient(name, **kwargs)
     else:
-        if (psi4.get_option("SCF", "REFERENCE") == "UHF") or (psi4.get_option("SCF", "REFERENCE") == "UKS"):
-            psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-            return run_dfomp2_gradient(name, **kwargs)
+        if psi4.get_option("SCF", "REFERENCE") in ['UHF', 'UKS']:
+    #        psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+            return run_dfomp_gradient(name, **kwargs)
         else:
             return run_dfmp2_gradient(name, **kwargs)
 
@@ -1715,12 +973,12 @@ def run_dfmp2_select_gradient(name, **kwargs):
     and directing toward the OCC (conv MP2) or the DFMP2 modules.
 
     """
-    optstash = p4util.OptionsState(
-        ['DFOCC', 'ORB_OPT'])
+#    optstash = p4util.OptionsState(
+#        ['DFOCC', 'ORB_OPT'])
 
-    if (psi4.get_option("SCF", "REFERENCE") == "UHF") or (psi4.get_option("SCF", "REFERENCE") == "UKS"):
-        psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-        return run_dfomp2_gradient(name, **kwargs)
+    if psi4.get_option("SCF", "REFERENCE") in ['UHF', 'UKS']:
+#        psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+        return run_dfomp_gradient(name, **kwargs)
     else:
         return run_dfmp2_gradient(name, **kwargs)
 
