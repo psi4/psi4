@@ -386,7 +386,6 @@ protected:
     void dump_to_checkpoint();
 
 public:
-    HF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     HF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
 
     virtual ~HF();

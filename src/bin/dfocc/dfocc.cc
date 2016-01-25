@@ -35,7 +35,7 @@ DFOCC::DFOCC(SharedWavefunction ref_wfn, Options &options)
     : Wavefunction(options)
 {
     reference_wavefunction_ = ref_wfn;
-    copy(ref_wfn);
+    shallow_copy(ref_wfn);
     common_init();
 }//
 

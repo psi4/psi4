@@ -52,12 +52,6 @@ using namespace std;
 
 namespace psi { namespace scf {
 
-RHF::RHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
-    : HF(options, psio, chkpt)
-{
-    common_init();
-}
-
 RHF::RHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio)
     : HF(ref_wfn, options, psio)
 {
@@ -89,6 +83,8 @@ void RHF::common_init()
     J_         = SharedMatrix(factory_->create_matrix("J"));
     K_         = SharedMatrix(factory_->create_matrix("K"));
 
+    same_a_b_dens_ = true;
+    same_a_b_orbs_ = true;
 }
 
 void RHF::finalize()

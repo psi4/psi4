@@ -35,7 +35,7 @@ ADCWfn::ADCWfn(SharedWavefunction ref_wfn, Options& options) :
     Wavefunction(options)
 {
 
-    copy(ref_wfn);
+    shallow_copy(ref_wfn);
     reference_wavefunction_ = ref_wfn;
 
     char **irreps_      = molecule_->irrep_labels();

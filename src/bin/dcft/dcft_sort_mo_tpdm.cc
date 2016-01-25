@@ -169,8 +169,6 @@ void DCFTSolver::presort_mo_tpdm_AB()
 
     dpd_set_default(currentActiveDPD);
 
-    set_DCFT(true);
-
     global_dpd_->file4_close(&I);
     psio_->close(PSIF_TPDM_PRESORT, 1);
 }
@@ -312,8 +310,6 @@ void DCFTSolver::presort_mo_tpdm_AA()
     free(bucketSize);
 
     dpd_set_default(currentActiveDPD);
-
-    set_DCFT(true);
 
     global_dpd_->file4_close(&I);
 

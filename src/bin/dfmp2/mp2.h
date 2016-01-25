@@ -177,9 +177,6 @@ protected:
 public:
     RDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     virtual ~RDFMP2();
-
-    virtual bool same_a_b_orbs() const { return true; }
-    virtual bool same_a_b_dens() const { return true; }
 };
 
 class UDFMP2 : public DFMP2 {
@@ -236,10 +233,6 @@ protected:
 public:
     UDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     virtual ~UDFMP2();
-
-    virtual bool same_a_b_orbs() const { return false; }
-    virtual bool same_a_b_dens() const { return false; }
-
 };
 
 class RODFMP2 : public UDFMP2 {
@@ -254,9 +247,6 @@ protected:
 public:
     RODFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     virtual ~RODFMP2();
-
-    virtual bool same_a_b_orbs() const { return true; }
-    virtual bool same_a_b_dens() const { return false; }
 };
 
 }}

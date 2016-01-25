@@ -88,7 +88,7 @@ SharedWavefunction scf(SharedWavefunction ref_wfn, Options & options, PyObject* 
 
     // print the basis set
     if ( options.get_bool("PRINT_BASIS") ) {
-        boost::shared_ptr<BasisSet> basisset = BasisSet::pyconstruct_orbital(Process::environment.molecule(),
+        boost::shared_ptr<BasisSet> basisset = BasisSet::pyconstruct_orbital(scf->molecule(),
             "BASIS", options.get_str("BASIS"));
         basisset->print_detail();
     }

@@ -76,7 +76,7 @@ void THCEW::common_init()
         throw PSIEXCEPTION("Does not currently work for non RHF references. Blame DGAS.");
         // reference_wavefunction_->semicanonicalize();
 
-    copy(reference_wavefunction_);
+    shallow_copy(reference_wavefunction_);
 
     thce_ = boost::shared_ptr<THCE>(new THCE());
 }

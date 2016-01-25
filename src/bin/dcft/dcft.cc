@@ -40,7 +40,7 @@ DCFTSolver::DCFTSolver(SharedWavefunction ref_wfn, Options &options):
         Wavefunction(options)
 {
     reference_wavefunction_ = ref_wfn;
-    copy(ref_wfn);
+    shallow_copy(ref_wfn);
     Ca_ = ref_wfn->Ca()->clone();
     Cb_ = ref_wfn->Cb()->clone();
     Da_ = ref_wfn->Da()->clone();

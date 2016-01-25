@@ -36,7 +36,7 @@ namespace psi { namespace occwave{
 OCCWave::OCCWave(SharedWavefunction ref_wfn, Options &options)
     : Wavefunction(options)
 {
-    copy(ref_wfn);
+    shallow_copy(ref_wfn);
     reference_wavefunction_ = ref_wfn;
     common_init();
 }//
