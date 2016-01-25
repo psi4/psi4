@@ -18,6 +18,8 @@ set {
    docc [3, 0, 0, 0]
    basis cc-pvqz
    freeze_core true
+   df_scf_guess false
+   scf_type pk
    r_convergence 10
    e_convergence 10
    d_convergence 10
