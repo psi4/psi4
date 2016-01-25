@@ -108,8 +108,6 @@ void opt_clean(void);
 // Forward declare /src/bin/ methods
 namespace psi {
 
-// Pass 1 complete
-
 // Wavefunction returns
 namespace adc { SharedWavefunction     adc(SharedWavefunction, Options&); }
 namespace dcft { SharedWavefunction   dcft(SharedWavefunction, Options&); }
@@ -140,7 +138,7 @@ namespace dmrg       { PsiReturnType dmrg(SharedWavefunction, Options&);     }
 // Should die soon
 namespace transqt2 { PsiReturnType transqt2(SharedWavefunction, Options&); }
 
-// Finite difference cases
+// Finite difference functions
 namespace findif {
 std::vector<SharedMatrix> fd_geoms_1_0(boost::shared_ptr<Molecule>, Options&);
 std::vector<SharedMatrix> fd_geoms_freq_0(boost::shared_ptr<Molecule>, Options&,
@@ -159,21 +157,21 @@ SharedMatrix displace_atom(SharedMatrix geom, const int atom,
                            const double disp_size);
 }
 
-
-// TODO
+// CC functions
 namespace ccsort { PsiReturnType ccsort(Options&); }
-namespace cctransort { PsiReturnType cctransort(Options&); }
-namespace cctriples { PsiReturnType cctriples(Options&); }
-namespace cchbar { PsiReturnType cchbar(Options&); }
-namespace cclambda { PsiReturnType cclambda(Options&); }
-namespace ccdensity { PsiReturnType ccdensity(Options&); }
+namespace cctransort { PsiReturnType cctransort(SharedWavefunction, Options&); }
+namespace cctriples { PsiReturnType cctriples(SharedWavefunction, Options&); }
+namespace cchbar { PsiReturnType cchbar(SharedWavefunction, Options&); }
+namespace cclambda { PsiReturnType cclambda(SharedWavefunction, Options&); }
+namespace ccdensity { PsiReturnType ccdensity(SharedWavefunction, Options&); }
 namespace ccresponse {
-PsiReturnType ccresponse(Options&);
+PsiReturnType ccresponse(SharedWavefunction, Options&);
 void scatter(Options&, double step, std::vector<SharedMatrix> dip, std::vector<SharedMatrix> rot,
              std::vector<SharedMatrix> quad);
 }
-namespace cceom { PsiReturnType cceom(Options&); }
+namespace cceom { PsiReturnType cceom(SharedWavefunction, Options&); }
 
+// No idea what to do with these yet
 namespace efp { PsiReturnType efp_init(Options&); }
 namespace efp { PsiReturnType efp_set_options(); }
 
@@ -454,11 +452,11 @@ double py_psi_ccsort()
     return 0.0;
 }
 
-double py_psi_cctransort()
+void py_psi_cctransort(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCTRANSORT");
-    cctransort::cctransort(Process::environment.options);
-    return 0.0;
+    cctransort::cctransort(ref_wfn, Process::environment.options);
+    // return 0.0;
 }
 SharedWavefunction py_psi_ccenergy(SharedWavefunction ref_wfn)
 {
@@ -475,7 +473,7 @@ SharedWavefunction py_psi_ccenergy(SharedWavefunction ref_wfn)
         Process::environment.set_wavefunction(ccwave);
     }
 
-    // double energy = ccwave->compute_energy();
+    double energy = ccwave->compute_energy();
     return ccwave;
 
 }
@@ -495,10 +493,10 @@ double py_psi_mp2()
 }
 */
 
-double py_psi_cctriples()
+double py_psi_cctriples(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCTRIPLES");
-    if (cctriples::cctriples(Process::environment.options) == Success) {
+    if (cctriples::cctriples(ref_wfn, Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
@@ -550,18 +548,10 @@ double py_psi_dmrg(SharedWavefunction ref_wfn)
 }
 #endif
 
-// DGAS
-// double py_psi_detcas()
-// {
-//     py_psi_prepare_options_for_module("DETCAS");
-//     return detcas::detcas(Process::environment.options);
-// }
-
-double py_psi_cchbar()
+void py_psi_cchbar(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCHBAR");
-    cchbar::cchbar(Process::environment.options);
-    return 0.0;
+    cchbar::cchbar(ref_wfn, Process::environment.options);
 }
 
 // double py_psi_cclambda()
@@ -571,31 +561,31 @@ double py_psi_cchbar()
 //     return 0.0;
 // }
 
-double py_psi_cclambda()
+SharedWavefunction py_psi_cclambda(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCLAMBDA");
     boost::shared_ptr<Wavefunction> cclambda(new cclambda::CCLambdaWavefunction(
-            Process::environment.wavefunction(),
+            ref_wfn,
             Process::environment.options)
     );
     Process::environment.set_wavefunction(cclambda);
 
     double energy = cclambda->compute_energy();
-    return energy;
+    return cclambda;
 }
 
 
-double py_psi_ccdensity()
+double py_psi_ccdensity(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCDENSITY");
-    ccdensity::ccdensity(Process::environment.options);
+    ccdensity::ccdensity(ref_wfn, Process::environment.options);
     return 0.0;
 }
 
-double py_psi_ccresponse()
+double py_psi_ccresponse(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCRESPONSE");
-    ccresponse::ccresponse(Process::environment.options);
+    ccresponse::ccresponse(ref_wfn, Process::environment.options);
     return 0.0;
 }
 
@@ -648,10 +638,10 @@ void py_psi_scatter(double step, python::list dip_polar_list, python::list opt_r
     ccresponse::scatter(Process::environment.options, step, dip_polar_tensors, opt_rot_tensors, dip_quad_polar_tensors);
 }
 
-double py_psi_cceom()
+double py_psi_cceom(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCEOM");
-    if (cceom::cceom(Process::environment.options) == Success) {
+    if (cceom::cceom(ref_wfn, Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else

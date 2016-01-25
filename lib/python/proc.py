@@ -1087,18 +1087,20 @@ def run_ccenergy(name, **kwargs):
         mints.integrals()
 
     if (psi4.get_global_option('RUN_CCTRANSORT')):
-        psi4.cctransort()
+        psi4.cctransort(ref_wfn)
     else:
         psi4.transqt2(ref_wfn)
         psi4.ccsort()
 
-    psi4.ccenergy(ref_wfn)
+
+    ccwfn = psi4.ccenergy(ref_wfn)
 
     if (lowername == 'ccsd(at)' or lowername == 'a-ccsd(t)'):
-        psi4.cchbar()
-        psi4.cclambda()
+        psi4.cchbar(ref_wfn)
+        psi4.cclambda(ref_wfn)
 
     optstash.restore()
+    return ccwfn
 
 
 def run_cc_gradient(name, **kwargs):
@@ -1116,7 +1118,7 @@ def run_cc_gradient(name, **kwargs):
     if (psi4.get_global_option('FREEZE_CORE') == 'TRUE'):
         raise ValidationError('Frozen core is not available for the CC gradients.')
 
-    run_ccenergy(name, **kwargs)
+    ccwfn = run_ccenergy(name, **kwargs)
     if (name.lower() == 'ccsd'):
         psi4.set_local_option('CCLAMBDA', 'WFN', 'CCSD')
         psi4.set_local_option('CCDENSITY', 'WFN', 'CCSD')
@@ -1128,12 +1130,14 @@ def run_cc_gradient(name, **kwargs):
         if (user_ref != 'UHF'):
             raise ValidationError('Reference %s for CCSD(T) gradients is not available.' % user_ref)
 
-    psi4.cchbar()
-    psi4.cclambda()
-    psi4.ccdensity()
-    psi4.deriv()
+    psi4.cchbar(ccwfn)
+    psi4.cclambda(ccwfn)
+    psi4.ccdensity(ccwfn)
+    grad = psi4.deriv(ccwfn)
+    ccwfn.set_gradient(grad)
 
     optstash.restore()
+    return ccwfn
 
 
 def run_bccd(name, **kwargs):
@@ -1162,21 +1166,30 @@ def run_bccd(name, **kwargs):
             mints = psi4.MintsHelper()
             mints.integrals()
 
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
+
+    if psi4.get_option('SCF', 'SCF_TYPE') in ['CD', 'DF']:
+        mints = psi4.MintsHelper(ref_wfn.molecule().basisset())
+        mints.integrals()
+
     psi4.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
     psi4.set_local_option('CCTRANSORT', 'DELETE_TEI', 'false')
 
     while True:
         if (psi4.get_global_option("RUN_CCTRANSORT")):
-            psi4.cctransort()
+            psi4.cctransort(ref_wfn)
         else:
-            psi4.transqt2()
+            psi4.transqt2(ref_wfn)
             psi4.ccsort()
-        psi4.ccenergy()
+        ref_wfn = psi4.ccenergy(ref_wfn)
         psi4.print_out('Brueckner convergence check: %d\n' % psi4.get_variable('BRUECKNER CONVERGED'))
         if (psi4.get_variable('BRUECKNER CONVERGED') == True):
             break
 
     optstash.restore()
+    return ref_wfn
 
 
 def run_bccd_t(name, **kwargs):
@@ -1194,10 +1207,11 @@ def run_bccd_t(name, **kwargs):
     psi4.set_local_option('CCSORT', 'WFN', 'BCCD_T')
     psi4.set_local_option('CCENERGY', 'WFN', 'BCCD_T')
     psi4.set_local_option('CCTRIPLES', 'WFN', 'BCCD_T')
-    run_bccd(name, **kwargs)
-    psi4.cctriples()
+    bccd_wfn = run_bccd(name, **kwargs)
+    psi4.cctriples(bccd_wfn)
 
     optstash.restore()
+    return bccd_wfn
 
 
 def run_scf_property(name, **kwargs):
@@ -1386,14 +1400,15 @@ def run_dfmp2_property(name, **kwargs):
     if not psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
         raise ValidationError('DF-MP2 properties need DF-SCF reference, for now.')
 
-    if not 'restart_file' in kwargs:
-        scf_helper(name, **kwargs)
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
     p4util.banner('DFMP2')
     psi4.print_out('\n')
 
-    psi4.dfmp2grad()
+    psi4.dfmp2grad(ref_wfn)
     e_dfmp2 = psi4.get_variable('MP2 TOTAL ENERGY')
     e_scs_dfmp2 = psi4.get_variable('SCS-MP2 TOTAL ENERGY')
 
@@ -1534,7 +1549,7 @@ def run_eom_cc(name, **kwargs):
         psi4.set_local_option('CCENERGY', 'WFN', 'EOM_CCSD')
         psi4.set_local_option('CCHBAR', 'WFN', 'EOM_CCSD')
         psi4.set_local_option('CCEOM', 'WFN', 'EOM_CCSD')
-        run_ccenergy('ccsd', **kwargs)
+        ref_wfn = run_ccenergy('ccsd', **kwargs)
     elif (name.lower() == 'eom-cc2'):
 
         user_ref = psi4.get_option('CCENERGY', 'REFERENCE')
@@ -1546,17 +1561,17 @@ def run_eom_cc(name, **kwargs):
         psi4.set_local_option('CCENERGY', 'WFN', 'EOM_CC2')
         psi4.set_local_option('CCHBAR', 'WFN', 'EOM_CC2')
         psi4.set_local_option('CCEOM', 'WFN', 'EOM_CC2')
-        run_ccenergy('cc2', **kwargs)
+        ref_wfn = run_ccenergy('cc2', **kwargs)
     elif (name.lower() == 'eom-cc3'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'EOM_CC3')
         psi4.set_local_option('CCSORT', 'WFN', 'EOM_CC3')
         psi4.set_local_option('CCENERGY', 'WFN', 'EOM_CC3')
         psi4.set_local_option('CCHBAR', 'WFN', 'EOM_CC3')
         psi4.set_local_option('CCEOM', 'WFN', 'EOM_CC3')
-        run_ccenergy('cc3', **kwargs)
+        ref_wfn = run_ccenergy('cc3', **kwargs)
 
-    psi4.cchbar()
-    psi4.cceom()
+    psi4.cchbar(ref_wfn)
+    psi4.cceom(ref_wfn)
 
     optstash.restore()
 
@@ -1579,7 +1594,11 @@ def run_eom_cc_gradient(name, **kwargs):
     if (name.lower() == 'eom-ccsd'):
         psi4.set_local_option('CCLAMBDA', 'WFN', 'EOM_CCSD')
         psi4.set_local_option('CCDENSITY', 'WFN', 'EOM_CCSD')
-        run_eom_cc(name, **kwargs)
+        ref_wfn = run_eom_cc(name, **kwargs)
+    else:
+        psi4.print_out('DGAS: proc.py:1599 hitting an undefined sequence')
+        psi4.clean()
+        raise ValueError('Hit a wall in proc.py:1599')
 
     psi4.set_local_option('CCLAMBDA', 'ZETA', 'FALSE')
     psi4.set_local_option('CCDENSITY', 'ZETA', 'FALSE')

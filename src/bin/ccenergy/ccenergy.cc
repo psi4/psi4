@@ -52,15 +52,11 @@ namespace psi { namespace ccenergy {
 
 #define IOFF_MAX 32641
 
-
-
-PsiReturnType ccenergy(Options &options);
-
 }} //namespace psi::ccenergy
 
 // Forward declaration to call cctriples
 namespace psi { namespace cctriples {
-PsiReturnType cctriples(Options &options);
+PsiReturnType cctriples(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
 }}
 
 namespace psi { namespace ccenergy {
@@ -511,7 +507,7 @@ double CCEnergyWavefunction::compute_energy()
 
     if ((options_.get_str("WFN") == "CCSD_T")) {
         // Run cctriples
-        if (psi::cctriples::cctriples(options_) == Success)
+        if (psi::cctriples::cctriples(reference_wavefunction_, options_) == Success)
             energy_ = Process::environment.globals["CURRENT ENERGY"];
         else
             energy_ = 0.0;

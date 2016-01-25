@@ -43,7 +43,7 @@
 namespace psi { namespace cceom {
 
 void init_io(void);
-void get_moinfo(void);
+void get_moinfo(boost::shared_ptr<Wavefunction>);
 void cleanup(void);
 void exit_io(void);
 void diag(void);
@@ -63,7 +63,7 @@ void local_done(void);
 
 namespace psi { namespace cceom {
 
-PsiReturnType cceom(Options &options)
+PsiReturnType cceom(boost::shared_ptr<Wavefunction> ref_wfn, Options &options)
 {
   int i, h, done=0, *cachefiles, **cachelist;
   init_io();
@@ -71,7 +71,7 @@ PsiReturnType cceom(Options &options)
   outfile->Printf("\t*  CCEOM: An Equation of Motion Coupled Cluster Program  *\n");
   outfile->Printf("\t**********************************************************\n");
 
-  get_moinfo();
+  get_moinfo(ref_wfn);
   
   get_params(options);
   get_eom_params(options);

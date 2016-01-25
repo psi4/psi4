@@ -46,7 +46,7 @@
 
 namespace psi { namespace ccresponse {
 
-void get_params(Options &options)
+void get_params(boost::shared_ptr<Wavefunction> wfn, Options &options)
 {
   int i, errcod, ref, count, iconv, *tmpi;
   std::string units;
@@ -124,7 +124,7 @@ void get_params(Options &options)
     }
   }
 
-  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+//  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
   boost::shared_ptr<Molecule> mol = wfn->molecule();
   boost::shared_ptr<IntegralFactory> intfact = wfn->integral();
   boost::shared_ptr<MatrixFactory> matfact = wfn->matrix_factory();
