@@ -22,8 +22,6 @@
 
 #include <iostream>
 #include <cstdio>
-
-#include <libchkpt/chkpt.hpp>
 #include <libmoinfo/libmoinfo.h>
 #include <libpsi4util/libpsi4util.h>
 

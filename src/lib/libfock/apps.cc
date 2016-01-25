@@ -23,7 +23,6 @@
 #include <libmints/mints.h>
 #include <libqt/qt.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
 #include <psi4-dec.h>
 #include <physconst.h>
 #include "apps.h"

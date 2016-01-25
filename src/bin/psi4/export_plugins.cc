@@ -26,7 +26,6 @@
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
 
 #include <string>
 #include <vector>

@@ -23,7 +23,6 @@
 #include <libmints/mints.h>
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
-#include <libchkpt/chkpt.h>
 #include "psi4-dec.h"
 #include "adc.h"
 

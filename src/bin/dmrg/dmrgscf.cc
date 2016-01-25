@@ -11,7 +11,6 @@
 //Header above this comment contains typedef boost::shared_ptr<psi::Matrix> SharedMatrix;
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
-#include <libchkpt/chkpt.h>
 #include <libfock/jk.h>
 #include <libmints/writer_file_prefix.h>
 //Header above allows to obtain "filename.moleculename" with psi::get_writer_file_prefix()
@@ -366,7 +365,7 @@ void update_WFNco( CheMPS2::DMRGSCFmatrix * Coeff_orig, CheMPS2::DMRGSCFindices 
 }
 
 
-PsiReturnType dmrg(SharedWavefunction ref_wfn, Options &options)
+PsiReturnType dmrg(SharedWavefunction wfn, Options &options)
 {
     tstart();
 
@@ -376,8 +375,6 @@ PsiReturnType dmrg(SharedWavefunction ref_wfn, Options &options)
      *   Environment information   *
      *******************************/
     boost::shared_ptr<PSIO> psio(_default_psio_lib_); // Grab the global (default) PSIO object, for file I/O
-    boost::shared_ptr<Wavefunction> wfn = ref_wfn; // The reference (SCF) wavefunction
-    if (!wfn){ throw PSIEXCEPTION("SCF has not been run yet!"); }
 
     /*************************
      *   Fetch the options   *
@@ -415,7 +412,7 @@ PsiReturnType dmrg(SharedWavefunction ref_wfn, Options &options)
      *   Check if the input is consistent   *
      ****************************************/
 
-    const int SyGroup= chemps2_groupnumber( ref_wfn->molecule()->sym_label() );
+    const int SyGroup= chemps2_groupnumber( wfn->molecule()->sym_label() );
     const int nmo    = wfn->nmo();
     const int nirrep = wfn->nirrep();
     int * orbspi     = wfn->nmopi();

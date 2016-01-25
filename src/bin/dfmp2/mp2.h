@@ -115,7 +115,7 @@ protected:
     void compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, SharedMatrix Cno, SharedVector occ);
 
 public:
-    DFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    DFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~DFMP2();
 
     double compute_energy();
@@ -175,7 +175,7 @@ protected:
     virtual void form_gradient();
 
 public:
-    RDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    RDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~RDFMP2();
 };
 
@@ -231,7 +231,7 @@ protected:
     virtual void form_gradient();
 
 public:
-    UDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    UDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~UDFMP2();
 };
 
@@ -245,7 +245,7 @@ protected:
     virtual void print_header();
 
 public:
-    RODFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    RODFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~RODFMP2();
 };
 

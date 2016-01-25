@@ -153,8 +153,6 @@ void CoupledCluster::finalize() {
           free(CCTasklist[i].name);
       }
   }
-  // there is something weird with chkpt_ ... reset it
-  chkpt_.reset();
 }
 
 double CoupledCluster::compute_energy() {

@@ -35,7 +35,6 @@
 
 // PSI C++ libraries
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
 
 // PSI libraries
 #include <psifiles.h>
@@ -71,7 +70,6 @@ SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options)
   using namespace psi;
   boost::shared_ptr<PSIO> psio(new PSIO);
 //  psiopp_ipv1_config(psio);
-  boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
   memory_manager = new MemoryManager(Process::environment.get_memory());
 
@@ -89,7 +87,7 @@ SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options)
       mints->integrals();
       delete mints;
       // Now, set the reference wavefunction for subsequent codes to use
-      wfn = SharedWavefunction(new SCF(ref_wfn,options,psio,chkpt));
+      wfn = SharedWavefunction(new SCF(ref_wfn,options,psio));
       Process::environment.set_wavefunction(wfn);
       moinfo_scf      = new psi::MOInfoSCF(*(wfn.get()), options);
       wfn->compute_energy();

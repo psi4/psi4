@@ -99,7 +99,6 @@ protected:
 
     void common_init();
 public:
-    RKS(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     RKS(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~RKS();
 };
@@ -125,7 +124,6 @@ protected:
 
     void common_init();
 public:
-    UKS(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     UKS(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~UKS();
 };

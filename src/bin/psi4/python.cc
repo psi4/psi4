@@ -80,7 +80,6 @@ void export_benchmarks();
 void export_blas_lapack();
 void export_plugins();
 void export_psio();
-void export_chkpt();
 void export_mints();
 void export_functional();
 void export_oeprop();
@@ -1612,7 +1611,6 @@ BOOST_PYTHON_MODULE (psi4)
 
     // Define library classes
     export_psio();
-    export_chkpt();
     export_mints();
     export_functional();
     export_libparallel();

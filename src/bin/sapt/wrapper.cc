@@ -40,27 +40,22 @@ PsiReturnType sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA,
   tstart();
 
   boost::shared_ptr<PSIO> psio(new PSIO);
-  boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
   if (options.get_str("SAPT_LEVEL") == "SAPT0") {
-    SAPT0 sapt(Dimer, MonomerA, MonomerB, options, psio, chkpt);
+    SAPT0 sapt(Dimer, MonomerA, MonomerB, options, psio);
     sapt.compute_energy();
   } else if (options.get_str("SAPT_LEVEL") == "SAPT2") {
-    SAPT2 sapt(Dimer, MonomerA, MonomerB, options, psio, chkpt);
+    SAPT2 sapt(Dimer, MonomerA, MonomerB, options, psio);
     sapt.compute_energy();
   } else if (options.get_str("SAPT_LEVEL") == "SAPT2+") {
-    SAPT2p sapt(Dimer, MonomerA, MonomerB, options, psio, chkpt);
+    SAPT2p sapt(Dimer, MonomerA, MonomerB, options, psio);
     sapt.compute_energy();
   } else if (options.get_str("SAPT_LEVEL") == "SAPT2+3") {
-    SAPT2p3 sapt(Dimer, MonomerA, MonomerB, options, psio, chkpt);
+    SAPT2p3 sapt(Dimer, MonomerA, MonomerB, options, psio);
     sapt.compute_energy();
-//  } else if (options.get_str("SAPT_LEVEL") == "MP2C") {
-//    MP2C sapt(options, psio, chkpt);
-//    sapt.compute_energy();
   } else {
     throw PSIEXCEPTION("Unrecognized SAPT type");
   }
-
   // Shut down psi.
 
   tstop();

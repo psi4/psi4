@@ -116,7 +116,7 @@ protected:
 public:
   SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA,
        SharedWavefunction MonomerB, Options& options,
-       boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+       boost::shared_ptr<PSIO> psio);
   virtual ~SAPT();
 
   virtual double compute_energy()=0;
