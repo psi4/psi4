@@ -52,8 +52,8 @@ namespace psi { namespace ccresponse {
 void init_io(void);
 void init_ioff(void);
 void title(void);
-void get_moinfo(void);
-void get_params(Options &);
+void get_moinfo(boost::shared_ptr<Wavefunction>);
+void get_params(boost::shared_ptr<Wavefunction>, Options&);
 void cleanup(void);
 void exit_io(void);
 int **cacheprep_rhf(int level, int *cachefiles);
@@ -74,15 +74,15 @@ void roa(void);
 
 void preppert(void);
 
-int ccresponse(Options &options)
+int ccresponse(boost::shared_ptr<Wavefunction> ref_wfn, Options &options)
 {
   int **cachelist, *cachefiles;
 
   init_io();
   init_ioff();
   title();
-  get_moinfo();
-  get_params(options);
+  get_moinfo(ref_wfn);
+  get_params(ref_wfn, options);
 
   timer_on("ccresponse");
 

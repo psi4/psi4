@@ -44,7 +44,7 @@ using namespace std;
 namespace psi { namespace ccdensity {
 #include <physconst.h>
 
-void oscillator_strength(struct TD_Params *S)
+void oscillator_strength(boost::shared_ptr<Wavefunction> wfn, struct TD_Params *S)
 {
   int nmo, nso, i, I, h, j;
   int *order, *order_A, *order_B, *doccpi;
@@ -61,7 +61,7 @@ void oscillator_strength(struct TD_Params *S)
   double f_x, f_y, f_z;
   double f;
 
-  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+//  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
 
   if ((params.ref == 0) || (params.ref == 1))
     scf_pitzer = wfn->Ca()->to_block_matrix();

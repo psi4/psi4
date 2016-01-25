@@ -40,21 +40,21 @@
 namespace psi { namespace cclambda {
 
 /*
-** get_moinfo():  Routine to obtain basic orbital information from
-** CHKPT and CC_INFO.
+** get_moinfo(wfn):  Routine to obtain basic orbital information from
+** the passed wavefunction object.
 **
 ** T. Daniel Crawford, October 1996.
 ** Modified by TDC, March 1999.
 ** Modified for UHF references by TDC, June 2002.
 */
 
-void get_moinfo(void)
+void get_moinfo(boost::shared_ptr<Wavefunction> wfn)
 {
     int i,j, h, p, q, errcod, nactive, nirreps, sym;
     double ***C, ***Ca, ***Cb;
     psio_address next;
 
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+//    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
 
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();

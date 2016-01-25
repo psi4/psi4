@@ -49,11 +49,11 @@ namespace psi { namespace cctriples {
     ** Modified by TDC, March 1999.
     */
 
-void get_moinfo(Options &options)
+void get_moinfo(boost::shared_ptr<Wavefunction> wfn, Options &options)
 {
     int i, h, errcod, nactive, nirreps;
     std::string junk;
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+//    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
     moinfo.labels = wfn->molecule()->irrep_labels();

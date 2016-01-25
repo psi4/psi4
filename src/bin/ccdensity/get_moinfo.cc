@@ -51,13 +51,13 @@ namespace psi { namespace ccdensity {
 ** Modified by TDC, March 1999.
 */
 
-void get_moinfo(void)
+void get_moinfo(boost::shared_ptr<Wavefunction> wfn)
 {
     int i, j, h, errcod;
     int nactive;
     double **scf_pitzer;
 
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+//    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
 
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
