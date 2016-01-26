@@ -10,9 +10,18 @@ molecule bh {
     h      0.0000        0.0000        1.0000
 }
 
+# Get a reasonable guess, to save some iterations
+set globals = {
+    scf_type   pk
+    basis      cc-pVQZ
+    df_scf_guess false
+    e_convergence 6
+}
+energy('scf')
+
 set globals = {
     scf_type   direct
-    basis      cc-pVQZ
+    guess      read
     e_convergence 10
 }
 

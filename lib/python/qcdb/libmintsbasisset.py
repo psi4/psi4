@@ -683,7 +683,10 @@ class BasisSet(object):
                 #   or symbol (N) (in that order; don't want to restrict use of atom
                 #   labels to basis set spec), look everywhere (don't just look
                 #   in library)
-                seek['basis'] = [requested_basname]
+		if(requested_basname.endswith("DECONTRACT")):
+                	seek['basis'] = [requested_basname[:-11]]
+		else:
+			seek['basis'] = [requested_basname]
                 seek['entry'] = [symbol] if symbol == label else [label, symbol]
                 seek['path'] = basisPath
                 seek['strings'] = '' if basstrings is None else list(basstrings.keys())
