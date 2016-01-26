@@ -409,7 +409,7 @@ def check_cmake_exists(cmake_command):
 
 
 def translate_cmake(cmakevar, s):
-    cmakeformat = ' -D{}={{}}'.format(cmakevar)
+    cmakeformat = ' -D{0}={{0}}'.format(cmakevar)
     if s is None:
         return ''
     elif s == 'on':
