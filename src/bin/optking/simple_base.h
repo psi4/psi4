@@ -90,7 +90,7 @@ class SIMPLE_COORDINATE {
     virtual bool is_inverse_stre(void) const { return false; }
 
     // do-nothing function overridden by bend class
-    virtual bool is_linear_bend(void) const { return false; }
+    virtual int g_bend_type(void) const { return -1; }
 
     // do-nothing function overridden by cartesian class
     virtual int g_xyz(void) const { return 0; }

@@ -474,21 +474,24 @@ bool FRAG::read_coord(vector<string> & s, int offset) {
 
     return true;
   }
-  else if ((s[0] == "B") || (s[0] == "L")) {
+  else if ((s[0] == "B") || (s[0] == "L") || s[0] == "l") {
     if (s.size() != 4 && s.size() != 5)
-      throw(INTCO_EXCEPT("Format of bend entry is \"B atom_1 atom_2 atom_3\""));
+      throw(INTCO_EXCEPT("Format of bend entry is \"B[L,l] atom_1 atom_2 atom_3\""));
     if ( s.size() == 5 ) {
       if (stof(s[4], &eq_val))
         has_eq_val = true;
       else
-        throw(INTCO_EXCEPT("Format of bend entry is \"B atom_1 atom_2 atom_3 (eq_val)\""));
+        throw(INTCO_EXCEPT("Format of bend entry is \"B[L,l] atom_1 atom_2 atom_3 (eq_val)\""));
     }
     if ( !stoi(s[1], &a) || !stoi(s[2], &b) || !stoi(s[3], &c) )
-      throw(INTCO_EXCEPT("Format of bend entry is \"B atom_1 atom_2 atom_3\""));
+      throw(INTCO_EXCEPT("Format of bend entry is \"B[L,l] atom_1 atom_2 atom_3\""));
     --a; --b; --c;
 
     BEND *one_bend = new BEND(a-offset, b-offset, c-offset, frozen);
-    if (s[0] == "L") one_bend->make_linear_bend();
+
+    if (s[0] == "L") one_bend->make_lb_normal();
+    else if (s[0] == "l") one_bend->make_lb_complement();
+
     if (has_eq_val) one_bend->set_fixed_eq_val(eq_val);
 
     if ( !present(one_bend) )
