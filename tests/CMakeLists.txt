@@ -379,6 +379,7 @@ endif()
 if(ENABLE_PCMSOLVER)
    add_subdirectory(pcm_scf)
    add_subdirectory(pcm_dft)
+   add_subdirectory(pcm_dipole)
 endif()
 
 if(NOT PERL_FOUND)
