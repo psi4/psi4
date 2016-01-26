@@ -249,7 +249,6 @@ OptReturnType optking(void) {
 
   // print internal coordinate definitions and values
   mol1->print_coords(psi_outfile, qc_outfile);
-  //mol1->print_simples(psi_outfile, qc_outfile);
 
   if (Opt_params.test_B)
     mol1->test_B();

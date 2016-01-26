@@ -30,11 +30,6 @@
 
 //#include "mem.h"
 #include "v3d.h"
-//#include "atom_data.h"
-//#include "cov_radii.h"
-//#include "opt_data.h"
-//#include "physconst.h"
-//#include "linear_algebra.h"
 #include "psi4-dec.h"
 #include "print.h"
 #define EXTERN
@@ -267,22 +262,24 @@ int FRAG::form_natural_coord_combinations(void) {
 
     // (2, 0) like H2O or CO2; Also (1, 1) like -O-H; Also (0, 2) like C-O-C
     if ( CN[i] == 2 ) {
-      // add regular bend
-      BEND *pA = new BEND( bond_to_T[i][0], i, bond_to_T[i][1]);
-      int A = find(pA);
-      cc_index.push_back(A); cc_coeff.push_back(1.0);
-      coords.index.push_back(cc_index); coords.coeff.push_back(cc_coeff);
-      cc_index.clear(); cc_coeff.clear();
-
       // This code mimics FRAG::add_bend_by_connectivity to check for need for linear bend complement
-      ok = v3d_angle(geom[bond_to_T[i][0]], geom[i], geom[bond_to_T[i][1]], val);
-      if (ok && val > Opt_params.linear_bend_threshold) { // ~175 degrees
-        BEND *pB = new BEND(bond_to_T[i][0], i, bond_to_T[i][1]);
-        pB->make_linear_bend();
-        A = find(pB);
+      if (v3d_angle(geom[bond_to_T[i][0]], geom[i], geom[bond_to_T[i][1]], val)) { // computable
+        BEND *pA = new BEND( bond_to_T[i][0], i, bond_to_T[i][1]);
+        if (val > Opt_params.linear_bend_threshold) // ~175 degrees
+          pA->make_lb_normal();
+        int A = find(pA);
         cc_index.push_back(A); cc_coeff.push_back(1.0);
         coords.index.push_back(cc_index); coords.coeff.push_back(cc_coeff);
         cc_index.clear(); cc_coeff.clear();
+  
+        if (val > Opt_params.linear_bend_threshold) { // ~175 degrees
+          BEND *pB = new BEND(bond_to_T[i][0], i, bond_to_T[i][1]);
+          pB->make_lb_complement();
+          A = find(pB);
+          cc_index.push_back(A); cc_coeff.push_back(1.0);
+          coords.index.push_back(cc_index); coords.coeff.push_back(cc_coeff);
+          cc_index.clear(); cc_coeff.clear();
+        }
       }
     }
     // *** Coordination == 3 cases ***

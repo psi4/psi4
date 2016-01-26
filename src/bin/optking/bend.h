@@ -34,14 +34,19 @@ namespace opt {
 
 class BEND : public SIMPLE_COORDINATE {
 
-    // if true, this bend is a secondary complement to another linear bend
-    bool linear_bend;
+    int _bend_type;  // 0 = ordinary bend
+                     // 1 = linear bend - normal
+                     // 2 = linear bend - orthogonal complement
+
+    mutable double x[3];       // angle bisector for bend
+    mutable double w[3];       // orthogonal axis for bend
+    bool axes_fixed; // have w and x been fixed for displacements
 
   public:
 
     BEND(int A_in, int B_in, int C_in, bool freeze_in=false);
 
-    ~BEND() { } // also calls ~SIMPLE_COORDINATE()
+    ~BEND() { ; } //calls ~SIMPLE_COORDINATE()
 
     double value(GeomType geom) const;
 
@@ -59,8 +64,17 @@ class BEND : public SIMPLE_COORDINATE {
     bool operator==(const SIMPLE_COORDINATE & s2) const;
     std::string get_definition_string(int atom_offset=0) const;
 
-    void make_linear_bend(void) { linear_bend = true; }
-    bool is_linear_bend(void) const { return linear_bend; }
+    void make_lb_normal(void)     { _bend_type = 1; }
+    void make_lb_complement(void) { _bend_type = 2; }
+
+    bool is_linear_bend(void) const { return ((_bend_type == 1) || (_bend_type == 2)); }
+    bool is_lb_normal(void) const     { (_bend_type == 1) ? true : false; }
+    bool is_lb_complement(void) const { (_bend_type == 2) ? true : false; }
+
+    int  g_bend_type(void) const { return _bend_type; }
+    void compute_axes(GeomType geom) const;
+    void fix_axes(void)   { axes_fixed = true; }
+    bool unfix_axes(void) { axes_fixed = false; }
 
 };
 

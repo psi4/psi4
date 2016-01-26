@@ -359,6 +359,19 @@ class MOLECULE {
       interfragments[I]->fix_tors_near_180();
   }
 
+  void fix_bend_axes(void) {
+    for (ULI f=0; f<fragments.size(); ++f)
+      fragments[f]->fix_bend_axes();
+    for (ULI I=0; I<interfragments.size(); ++I)
+      interfragments[I]->fix_bend_axes();
+  }
+  void unfix_bend_axes(void) {
+    for (ULI f=0; f<fragments.size(); ++f)
+      fragments[f]->unfix_bend_axes();
+    for (ULI I=0; I<interfragments.size(); ++I)
+      interfragments[I]->unfix_bend_axes();
+  }
+
   void fix_oofp_near_180(void) {
     for (ULI f=0; f<fragments.size(); ++f)
       fragments[f]->fix_oofp_near_180();
