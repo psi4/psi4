@@ -148,6 +148,7 @@ void Wavefunction::copy(const Wavefunction* other)
     epsilon_b_ = other->epsilon_b_;
 
     gradient_ = other->gradient_;
+    hessian_ = other->hessian_;
     tpdm_gradient_contribution_ = other->tpdm_gradient_contribution_;
     isDCFT_ = other->isDCFT_;
 }
@@ -204,6 +205,7 @@ SharedWavefunction Wavefunction::make_ghost_wavefunction()
     ghost->epsilon_b_ = epsilon_b_;
 
     ghost->gradient_ = gradient_;
+    ghost->hessian_ = hessian_;
 
     ghost->tpdm_gradient_contribution_ = tpdm_gradient_contribution_;
     ghost->isDCFT_ = isDCFT_;
@@ -800,6 +802,16 @@ SharedMatrix Wavefunction::gradient() const
 void Wavefunction::set_gradient(SharedMatrix& grad)
 {
     gradient_ = grad;
+}
+
+SharedMatrix Wavefunction::hessian() const
+{
+    return hessian_;
+}
+
+void Wavefunction::set_hessian(SharedMatrix& hess)
+{
+    hessian_ = hess;
 }
 
 SharedMatrix Wavefunction::TPDM() const
