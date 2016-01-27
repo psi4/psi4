@@ -77,7 +77,6 @@ protected:
     virtual int soscf_update(void);
 
 public:
-    RHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     RHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~RHF();
 

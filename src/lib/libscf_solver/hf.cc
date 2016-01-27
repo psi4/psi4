@@ -38,7 +38,6 @@
 #include <physconst.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
-#include <libchkpt/chkpt.hpp>
 #include <libparallel/parallel.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
@@ -65,23 +64,13 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
-HF::HF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
-    : Wavefunction(options, psio, chkpt),
-      nuclear_dipole_contribution_(3),
-      nuclear_quadrupole_contribution_(6)
-{
-    throw PSIEXCEPTION("HF::HF INIT_WITH_CHKPT: THIS SHOULD BE DEPRERECATED!");
-    common_init();
-}
-
 HF::HF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio)
     : Wavefunction(options),
       nuclear_dipole_contribution_(3),
       nuclear_quadrupole_contribution_(6)
 {
-    copy(ref_wfn);
+    shallow_copy(ref_wfn);
     psio_ = psio;
-    chkpt_ = boost::shared_ptr<Chkpt>(new Chkpt(psio.get(), PSIO_OPEN_OLD));
     common_init();
 }
 
@@ -700,8 +689,6 @@ void HF::finalize()
     compute_fvpi();
     energy_ = E_;
 
-    dump_to_checkpoint();
-
     //Sphalf_.reset();
     X_.reset();
     T_.reset();
@@ -710,9 +697,6 @@ void HF::finalize()
     diag_F_temp_.reset();
     diag_C_temp_.reset();
 
-    // Close the chkpt
-    if(psio_->open_check(PSIF_CHKPT))
-        psio_->close(PSIF_CHKPT, 1);
 
 }
 
@@ -1743,88 +1727,6 @@ void HF::check_phases()
     }
 }
 
-void HF::dump_to_checkpoint()
-{
-    // avoid overwriting TOC entries if nmo has changed by writing
-    // an all-new checkpoint file every time!  (Will delete any
-    // post-HF stuff, hopefully don't need that in a future iteration)
-    // CDS 3/19/14
-    /*
-    if(!psio_->open_check(PSIF_CHKPT))
-        psio_->open(PSIF_CHKPT, PSIO_OPEN_OLD);
-    */
-    if(psio_->open_check(PSIF_CHKPT)) psio_->close(PSIF_CHKPT, 0);
-    psio_->open(PSIF_CHKPT, PSIO_OPEN_NEW);
-
-    chkpt_->wt_nirreps(nirrep_);
-    char **labels = molecule_->irrep_labels();
-    chkpt_->wt_irr_labs(labels);
-    for(int h = 0; h < nirrep_; ++h)
-        free(labels[h]);
-    free(labels);
-    chkpt_->wt_nmo(nmo_);
-    chkpt_->wt_nso(nso_);
-    chkpt_->wt_nao(basisset_->nao());
-    chkpt_->wt_ref(0);
-    chkpt_->wt_etot(E_);
-    chkpt_->wt_escf(E_);
-    chkpt_->wt_eref(E_);
-    chkpt_->wt_enuc(nuclearrep_);
-    chkpt_->wt_orbspi(nmopi_);
-    chkpt_->wt_clsdpi(doccpi_);
-    chkpt_->wt_openpi(soccpi_);
-    chkpt_->wt_phase_check(1); // Jet's phase check supposed to always work?
-    chkpt_->wt_sopi(nsopi_);
-    // Figure out total number of frozen docc/uocc orbitals
-    int nfzc = 0;
-    int nfzv = 0;
-    for (int h = 0; h < nirrep_; h++) {
-        nfzc += frzcpi_[h];
-        nfzv += frzvpi_[h];
-    }
-    chkpt_->wt_nfzc(nfzc);
-    chkpt_->wt_nfzv(nfzv);
-    // These were computed by HF::finalize()
-    chkpt_->wt_frzcpi(frzcpi_);
-    chkpt_->wt_frzvpi(frzvpi_);
-
-    int m = 0;
-    for(int h = 0; h < nirrep_; ++h)
-        if(soccpi_[h]) ++m;
-    chkpt_->wt_iopen(m*(m+1)/2);
-
-    if(options_.get_str("REFERENCE") == "UHF" ||
-        options_.get_str("REFERENCE") == "CUHF"){
-
-        double* values = epsilon_a_->to_block_vector();
-        chkpt_->wt_alpha_evals(values);
-        delete[] values;
-        values = epsilon_b_->to_block_vector();
-        chkpt_->wt_beta_evals(values);
-        delete[] values;
-        double** vectors = Ca_->to_block_matrix();
-        chkpt_->wt_alpha_scf(vectors);
-        delete[] vectors[0];
-        delete[] vectors;
-        vectors = Cb_->to_block_matrix();
-        chkpt_->wt_beta_scf(vectors);
-        delete[] vectors[0];
-        delete[] vectors;
-    }else{
-        // All other reference type yield restricted orbitals
-        double* values = epsilon_a_->to_block_vector();
-        chkpt_->wt_evals(values);
-        delete[] values;
-        double** vectors = Ca_->to_block_matrix();
-        chkpt_->wt_scf(vectors);
-        delete[] vectors[0];
-        delete[] vectors;
-        double *ftmp = Fa_->to_lower_triangle();
-        chkpt_->wt_fock(ftmp);
-        delete[] ftmp;
-    }
-    psio_->close(PSIF_CHKPT, 1);
-}
 
 void HF::initialize()
 {

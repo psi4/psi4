@@ -65,7 +65,7 @@ void Sort_OV3_LowMemory(long int memory,long int o,long int v);
 CoupledCluster::CoupledCluster(SharedWavefunction ref_wfn, Options &options):
         Wavefunction(options)
 {
-    copy(ref_wfn);
+    shallow_copy(ref_wfn);
     reference_wavefunction_ = ref_wfn;
     common_init();
 }
@@ -153,8 +153,6 @@ void CoupledCluster::finalize() {
           free(CCTasklist[i].name);
       }
   }
-  // there is something weird with chkpt_ ... reset it
-  chkpt_.reset();
 }
 
 double CoupledCluster::compute_energy() {

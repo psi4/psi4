@@ -142,13 +142,12 @@ void DFMP2::block_status(std::vector<unsigned long int> inds, const char* file, 
     printf("%s:%d %zu %s %zu %zu\n", file, line, inds.size(), (gimp ? "GIMP" : "NOT GIMP"), inds[1] - inds[0], inds[inds.size() - 1] - inds[inds.size()-2]);
 }
 
-DFMP2::DFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
+DFMP2::DFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio) :
     Wavefunction(options)
 {
-    copy(ref_wfn);
+    shallow_copy(ref_wfn);
     reference_wavefunction_ = ref_wfn;
     psio_ = psio;
-    chkpt_ = chkpt;
 
     common_init();
 }
@@ -777,8 +776,8 @@ void DFMP2::print_gradients()
 
 }
 
-RDFMP2::RDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
-    DFMP2(ref_wfn, options,psio,chkpt)
+RDFMP2::RDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio) :
+    DFMP2(ref_wfn, options,psio)
 {
     common_init();
 }
@@ -2914,8 +2913,8 @@ void RDFMP2::form_gradient()
     psio_->close(PSIF_DFMP2_AIA,1);
 }
 
-UDFMP2::UDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
-    DFMP2(ref_wfn, options,psio,chkpt)
+UDFMP2::UDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio) :
+    DFMP2(ref_wfn, options,psio)
 {
     common_init();
 }
@@ -3597,8 +3596,8 @@ void UDFMP2::form_gradient()
     throw PSIEXCEPTION("UDFMP2: Gradients not yet implemented");
 }
 
-RODFMP2::RODFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
-    UDFMP2(ref_wfn, options,psio,chkpt)
+RODFMP2::RODFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio) :
+    UDFMP2(ref_wfn, options,psio)
 {
     common_init();
 }

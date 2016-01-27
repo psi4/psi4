@@ -27,7 +27,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libiwl/iwl.h>
-#include <libchkpt/chkpt.h>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
@@ -56,15 +55,12 @@ void dx_write(boost::shared_ptr<Wavefunction> wfn, Options& options,double **D)
   double xmin, xmax, ymin, ymax, zmin, zmax;
   double xstep, ystep, zstep;
   int *order;
-//  wfn = Process::environment.wavefunction();
   molecule = wfn->molecule();
   basis = wfn->basisset();
-  chkpt_init(PSIO_OPEN_OLD);
   nao = basis->nao();
-  nso = chkpt_rd_nso();
-  nmo = chkpt_rd_nmo();
-  scf = chkpt_rd_scf();
-  chkpt_close();
+  nso = wfn->nso();
+  nmo = wfn->nmo();
+  scf = wfn->Ca()->to_block_matrix();
 
  // D = moinfo.opdm; // A block matrix
   delta = block_matrix(nmo, nmo); // Dirac delta function 

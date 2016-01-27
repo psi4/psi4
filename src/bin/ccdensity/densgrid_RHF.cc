@@ -67,7 +67,6 @@ void densgrid_RHF(boost::shared_ptr<Wavefunction> wfn, Options& options)
   int *order;
   double **scf_pitzer;
 
-//  wfn = Process::environment.wavefunction();
   molecule = wfn->molecule();
   basis = wfn->basisset();
 

@@ -121,8 +121,8 @@ if (reference_ == "RESTRICTED") {
             }
         }
 
-        // Read orbital coefficients from chkpt
-	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
+        // Read orbital coefficients from reference_wavefunction
+    	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
         CmoA = SharedTensor2d(new Tensor2d("Alpha MO Coefficients", nso_, nmo_));
         CmoA->set(Ca_);
         if (orb_opt_ == "TRUE" || qchf_ == "TRUE") {
@@ -275,8 +275,8 @@ else if (reference_ == "UNRESTRICTED") {
             }
         }
 
-        // Read orbital coefficients from chkpt
-	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
+        // Read orbital coefficients from reference_wavefunction
+    	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
         CmoA = SharedTensor2d(new Tensor2d("Alpha MO Coefficients", nso_, nmo_));
         CmoA->set(Ca_);
         if (print_ > 2) CmoA->print();

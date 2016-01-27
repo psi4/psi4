@@ -69,10 +69,14 @@ def run_dcft_gradient(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['GLOBALS', 'DERTYPE'])
+        ['GLOBALS', 'DERTYPE'],
+        ['DERIV', 'DERIV_TPDM_PRESORTED'])
+
 
     psi4.set_global_option('DERTYPE', 'FIRST')
     dcft_wfn = run_dcft(name, **kwargs)
+    if dcft_wfn.same_a_b_orbs():
+        psi4.set_global_option('DERIV_TPDM_PRESORTED', True)
     grad = psi4.deriv(dcft_wfn)
     dcft_wfn.set_gradient(grad)
 
@@ -1299,25 +1303,16 @@ def run_cc_property(name, **kwargs):
     if (n_one > 0 or n_two > 0) and (n_response > 0):
         print("Computing both density- and response-based properties.")
 
-    if (name.lower() == 'ccsd'):
-        psi4.set_global_option('WFN', 'CCSD')
-        run_ccenergy('ccsd', **kwargs)
-        psi4.set_global_option('WFN', 'CCSD')
-    elif (name.lower() == 'cc2'):
-        psi4.set_global_option('WFN', 'CC2')
-        run_ccenergy('cc2', **kwargs)
-        psi4.set_global_option('WFN', 'CC2')
-    elif (name.lower() == 'eom-ccsd'):
-        psi4.set_global_option('WFN', 'EOM_CCSD')
-        run_ccenergy('eom-ccsd', **kwargs)
-        psi4.set_global_option('WFN', 'EOM_CCSD')
-    elif (name.lower() == 'eom-cc2'):
-        psi4.set_global_option('WFN', 'EOM_CC2')
-        run_ccenergy('eom-cc2', **kwargs)
-        psi4.set_global_option('WFN', 'EOM_CC2')
+    if name.lower() in ['ccsd', 'cc2', 'eom-ccsd', 'eom-cc2']:
+        this_name = name.upper().replace('-', '_')
+        psi4.set_global_option('WFN', this_name)
+        ccwfn = run_ccenergy(name.lower(), **kwargs)
+        psi4.set_global_option('WFN', this_name)
+    else:
+        raise ValidationError("CC property name %s not recognized" % name.upper())
 
     # Need cchbar for everything
-    psi4.cchbar()
+    psi4.cchbar(ccwfn)
 
     # Need ccdensity at this point only for density-based props
     if (n_one > 0 or n_two > 0):
@@ -1325,24 +1320,24 @@ def run_cc_property(name, **kwargs):
             psi4.set_global_option('WFN', 'EOM_CCSD')
             psi4.set_global_option('DERTYPE', 'NONE')
             psi4.set_global_option('ONEPDM', 'TRUE')
-            psi4.cceom()
+            psi4.cceom(ccwfn)
         elif (name.lower() == 'eom-cc2'):
             psi4.set_global_option('WFN', 'EOM_CC2')
             psi4.set_global_option('DERTYPE', 'NONE')
             psi4.set_global_option('ONEPDM', 'TRUE')
-            psi4.cceom()
+            psi4.cceom(ccwfn)
         psi4.set_global_option('DERTYPE', 'NONE')
         psi4.set_global_option('ONEPDM', 'TRUE')
-        psi4.cclambda()
-        psi4.ccdensity()
+        psi4.cclambda(ccwfn)
+        psi4.ccdensity(ccwfn)
 
     # Need ccresponse only for response-type props
     if (n_response > 0):
         psi4.set_global_option('DERTYPE', 'RESPONSE')
-        psi4.cclambda()
+        psi4.cclambda(ccwfn)
         for prop in response:
             psi4.set_global_option('PROPERTY', prop)
-            psi4.ccresponse()
+            psi4.ccresponse(ccwfn)
 
     # Excited-state transition properties
     if (n_excited > 0):
@@ -1358,14 +1353,15 @@ def run_cc_property(name, **kwargs):
         psi4.set_local_option('CCLAMBDA','R_CONVERGENCE',1e-4)
         psi4.set_local_option('CCEOM','R_CONVERGENCE',1e-4)
         psi4.set_local_option('CCEOM','E_CONVERGENCE',1e-5)
-        psi4.cceom()
-        psi4.cclambda()
-        psi4.ccdensity()
+        psi4.cceom(ccwfn)
+        psi4.cclambda(ccwfn)
+        psi4.ccdensity(ccwfn)
 
     psi4.set_global_option('WFN', 'SCF')
     psi4.revoke_global_option_changed('WFN')
     psi4.set_global_option('DERTYPE', 'NONE')
     psi4.revoke_global_option_changed('DERTYPE')
+    return ccwfn
 
 
 def run_dfmp2_property(name, **kwargs):

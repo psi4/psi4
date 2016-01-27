@@ -39,12 +39,11 @@ namespace mcscf{
 
 extern MemoryManager* memory_manager;
 
-SCF::SCF(SharedWavefunction ref_wfn, Options& options_, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
+SCF::SCF(SharedWavefunction ref_wfn, Options& options_, boost::shared_ptr<PSIO> psio)
 : Wavefunction(options_)
 {
-    copy(ref_wfn);
+    shallow_copy(ref_wfn);
     psio_ = psio;
-    chkpt_ = chkpt;
 //  startup();
 }
 
@@ -83,23 +82,23 @@ void SCF::startup()
 
   if(options_.get_str("REFERENCE")=="RHF"){
     reference = rhf;
-    same_orbs_ = true;
-    same_dens_ = true;
+    same_a_b_orbs_ = true;
+    same_a_b_dens_ = true;
   }
   else if(options_.get_str("REFERENCE")=="ROHF"){
     reference = rohf;
-    same_orbs_ = true;
-    same_dens_ = false;
+    same_a_b_orbs_ = true;
+    same_a_b_dens_ = false;
   }
   else if(options_.get_str("REFERENCE")=="UHF"){
     reference = uhf;
-    same_orbs_ = false;
-    same_dens_ = false;
+    same_a_b_orbs_ = false;
+    same_a_b_dens_ = false;
   }
   else if(options_.get_str("REFERENCE")=="TWOCON"){
     reference = tcscf;
-    same_orbs_ = true;
-    same_dens_ = false;
+    same_a_b_orbs_ = true;
+    same_a_b_dens_ = false;
     if(moinfo_scf->get_guess_occupation()){
       printf("\n  ERROR:  MCSCF cannot guess the active orbital occupation\n");
       outfile->Printf("\n\n  MCSCF cannot guess the active orbital occupation\n");

@@ -58,7 +58,7 @@ FrozenNO::FrozenNO(SharedWavefunction wfn, Options& options):
   Wavefunction(options)
 {
     // copy wave function.
-    copy(wfn);
+    shallow_copy(wfn);
     reference_wavefunction_ = wfn;
     common_init();
 }

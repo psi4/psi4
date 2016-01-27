@@ -122,7 +122,7 @@ CCLambdaWavefunction::~CCLambdaWavefunction()
 
 void CCLambdaWavefunction::init()
 {
-    copy(reference_wavefunction_);
+    shallow_copy(reference_wavefunction_);
 }
 
 double CCLambdaWavefunction::compute_energy()

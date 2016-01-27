@@ -25,7 +25,6 @@
 #include <liboptions/liboptions.h>
 #include <libtrans/integraltransform.h>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.h>
 #include <libpsio/psio.hpp>
 #include "adc.h"
 
@@ -35,7 +34,7 @@ ADCWfn::ADCWfn(SharedWavefunction ref_wfn, Options& options) :
     Wavefunction(options)
 {
 
-    copy(ref_wfn);
+    shallow_copy(ref_wfn);
     reference_wavefunction_ = ref_wfn;
 
     char **irreps_      = molecule_->irrep_labels();

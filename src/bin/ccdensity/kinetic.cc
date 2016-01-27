@@ -73,7 +73,6 @@ void kinetic(boost::shared_ptr<Wavefunction> wfn)
              order, moinfo.orbspi, moinfo.nirreps);
 
   /*** Reorder the SCF eigenvectors to QT ordering */
-//  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
   scf_pitzer = wfn->Ca()->to_block_matrix();
 
   scf_qt = block_matrix(nmo, nmo);

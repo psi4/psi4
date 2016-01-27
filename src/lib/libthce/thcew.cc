@@ -53,7 +53,6 @@ namespace psi {
 
 THCEW::THCEW() :
     Wavefunction(Process::environment.options)
-    //Wavefunction(Process::environment.options, boost::shared_ptr<PSIO>(new PSIO()), _default_chkpt_lib_)
 {
     common_init();
 }
@@ -76,7 +75,7 @@ void THCEW::common_init()
         throw PSIEXCEPTION("Does not currently work for non RHF references. Blame DGAS.");
         // reference_wavefunction_->semicanonicalize();
 
-    copy(reference_wavefunction_);
+    shallow_copy(reference_wavefunction_);
 
     thce_ = boost::shared_ptr<THCE>(new THCE());
 }

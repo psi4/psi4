@@ -115,7 +115,7 @@ protected:
     void compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, SharedMatrix Cno, SharedVector occ);
 
 public:
-    DFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    DFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~DFMP2();
 
     double compute_energy();
@@ -175,11 +175,8 @@ protected:
     virtual void form_gradient();
 
 public:
-    RDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    RDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~RDFMP2();
-
-    virtual bool same_a_b_orbs() const { return true; }
-    virtual bool same_a_b_dens() const { return true; }
 };
 
 class UDFMP2 : public DFMP2 {
@@ -234,12 +231,8 @@ protected:
     virtual void form_gradient();
 
 public:
-    UDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    UDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~UDFMP2();
-
-    virtual bool same_a_b_orbs() const { return false; }
-    virtual bool same_a_b_dens() const { return false; }
-
 };
 
 class RODFMP2 : public UDFMP2 {
@@ -252,11 +245,8 @@ protected:
     virtual void print_header();
 
 public:
-    RODFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    RODFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~RODFMP2();
-
-    virtual bool same_a_b_orbs() const { return true; }
-    virtual bool same_a_b_dens() const { return false; }
 };
 
 }}
