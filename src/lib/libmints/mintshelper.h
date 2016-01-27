@@ -75,7 +75,7 @@ public:
     /// Constructor, just lines references up
     MintsHelper(boost::shared_ptr<BasisSet> basis,
                 Options& options = Process::environment.options,
-                int print = 1);
+                int print = 0);
 
     /// Constructor, just lines references up
     MintsHelper(Options&, int print = 1);

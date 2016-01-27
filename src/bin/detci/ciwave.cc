@@ -339,6 +339,9 @@ Dimension CIWavefunction::get_dimension(const std::string& orbital_name)
 SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot, const std::string& spin, bool full_space)
 {
 
+    if (!opdm_called_){
+      throw PSIEXCEPTION("CIWavefunction::get_opdm: OPDM was not formed!");
+    }
     double inact_value = (spin == "SUM") ? 2.0 : 1.0;
     SharedMatrix opdm;
 
@@ -373,6 +376,9 @@ SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot, const std::string& s
 }
 SharedMatrix CIWavefunction::get_tpdm(const std::string& spin, bool symmetrize)
 {
+   if (!tpdm_called_){
+     throw PSIEXCEPTION("CIWavefunction::get_opdm: OPDM was not formed!");
+   }
 
   if (symmetrize){
     if (spin != "SUM")

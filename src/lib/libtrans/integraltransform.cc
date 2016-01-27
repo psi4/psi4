@@ -282,7 +282,7 @@ IntegralTransform::initialize()
 
     // We have to redefine the MO coefficients for a UHF-like treatment
     if(transformationType_ == SemiCanonical){
-        throw PSIEXCEPTION("SemiCanonical transform does not work at the moment");
+        throw PSIEXCEPTION("Semicanonical is deprecated in Libtrans. Please pre-semicanonicalize before passing to libtrans.");
         //wfn_->semicanonicalize();
         Cb_ = wfn_->Cb();
     }
