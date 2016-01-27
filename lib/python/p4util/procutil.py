@@ -30,6 +30,7 @@ import inspect
 #CUimport psi4
 #CUimport inputparser
 from p4xcpt import *
+from p4regex import *
 
 
 if sys.version_info[0] > 2:
@@ -39,17 +40,19 @@ def kwargs_lower(kwargs):
     """Function to rebuild and return *kwargs* dictionary
     with all keys made lowercase. Should be called by every
     function that could be called directly by the user.
+    Also turns boolean-like values into actual booleans.
 
     """
     caseless_kwargs = {}
-    if sys.hexversion < 0x03000000:
-        # Python 2; we have to explicitly use an iterator
-        for key, value in kwargs.items():
-            caseless_kwargs[key.lower()] = value
-    else:
-        # Python 3; an iterator is implicit
-        for key, value in kwargs.items():
-            caseless_kwargs[key.lower()] = value
+    # items() inefficient on Py2 but this is small dict
+    for key, value in kwargs.iteritems():
+        lkey = key.lower()
+        if yes.match(str(key)) and 'dertype' not in lkey:
+            caseless_kwargs[lkey] = True
+        elif no.match(str(key)) and 'dertype' not in lkey:
+            caseless_kwargs[lkey] = False
+        else:
+            caseless_kwargs[lkey] = value
     return caseless_kwargs
 
 

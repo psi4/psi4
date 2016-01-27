@@ -564,6 +564,7 @@ def energy(name, **kwargs):
     """
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
+    return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
 
     optstash = p4util.OptionsState(
@@ -643,7 +644,7 @@ def energy(name, **kwargs):
         postcallback(lowername, **kwargs)
 
     optstash.restore()
-    if 'return_wfn' in kwargs and yes.match(str(kwargs['return_wfn'])):
+    if return_wfn:  # TODO current energy safer than wfn.energy() for now, but should be revisited
         return (psi4.get_variable('CURRENT ENERGY'), wfn)
     else:
         return psi4.get_variable('CURRENT ENERGY')
@@ -656,6 +657,7 @@ def gradient(name, **kwargs):
     """
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
+    return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
     dertype = 1
 
@@ -768,7 +770,7 @@ def gradient(name, **kwargs):
         psi4.print_out("gradient() will perform analytic gradient computation.\n")
         # Nothing to it but to do it. Gradient information is saved
         # into the current reference wavefunction
-        procedures['gradient'][lowername](lowername, **kwargs)
+        wfn = procedures['gradient'][lowername](lowername, **kwargs)
 
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
             raise ValidationError('Optimize execution mode \'sow\' not valid for analytic gradient calculation.')
@@ -777,7 +779,11 @@ def gradient(name, **kwargs):
 
         optstash.restore()
         psi4.print_out('CURRENT ENERGY: %15.10f\n' % psi4.get_variable('CURRENT ENERGY'))
-        return psi4.get_variable('CURRENT ENERGY')
+        #return psi4.get_variable('CURRENT ENERGY')
+        if return_wfn:
+            return (wfn.gradient(), wfn)
+        else:
+            return wfn.gradient()
 
     else:
         # If not, perform finite difference of energies
@@ -861,7 +867,7 @@ def gradient(name, **kwargs):
 
                 # Perform the energy calculation
                 #E = func(lowername, **kwargs)
-                func(lowername, **kwargs)
+                E, wfn = func(lowername, return_wfn=True, **kwargs)
                 E = psi4.get_variable('CURRENT ENERGY')
                 #E = func(**kwargs)
 
@@ -900,10 +906,19 @@ def gradient(name, **kwargs):
             psi4.set_variable('CURRENT ENERGY', energies[-1])
 
         # Obtain the gradient
-        psi4.fd_1_0(molecule, energies)
+        psi4.set_local_option('FINDIF', 'GRADIENT_WRITE', True)
+        G = psi4.fd_1_0(molecule, energies)
+        wfn.set_gradient(G)
+
         # The last item in the list is the reference energy, return it
         optstash.restore()
-        return energies[-1]
+#        return energies[-1]
+#        psi4.set_wavefunction(wfn)
+
+        if return_wfn:
+            return (wfn.gradient(), wfn)
+        else:
+            return wfn.gradient()
 
 
 def property(name, **kwargs):
@@ -966,6 +981,7 @@ def property(name, **kwargs):
     """
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
+    return_wfn = kwargs.pop('return_wfn', False)
 
     optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
@@ -1005,7 +1021,7 @@ def property(name, **kwargs):
             if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
                 psi4.set_global_option('E_CONVERGENCE', 8)
 
-        returnvalue = procedures['property'][lowername](lowername, **kwargs)
+        wfn = procedures['property'][lowername](lowername, **kwargs)
 
     except KeyError:
         alternatives = ""
@@ -1015,7 +1031,10 @@ def property(name, **kwargs):
         raise ValidationError('Property method %s not available.%s' % (lowername, alternatives))
 
     optstash.restore()
-    return returnvalue
+    if return_wfn:
+        return (psi4.get_variable('CURRENT ENERGY'), wfn)
+    else:
+        return psi4.get_variable('CURRENT ENERGY')
 
 
 # Aliases
@@ -1155,6 +1174,7 @@ def optimize(name, **kwargs):
     """
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
+    return_wfn = kwargs.pop('return_wfn', False)
 
     full_hess_every = psi4.get_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
@@ -1197,7 +1217,10 @@ def optimize(name, **kwargs):
             psi4.set_local_option('SCF', 'GUESS', 'READ')
 
         # Compute the gradient
-        thisenergy = gradient(name, **kwargs)
+        G, wfn = gradient(name, return_wfn=True, **kwargs)
+        thisenergy = psi4.get_variable('CURRENT ENERGY')
+        # above, used to be getting energy as last of energy list from gradient()
+        # thisenergy below should ultimately be testing on wfn.energy()
 
         # S/R: Quit after getting new displacements or if forming gradient fails
         if ('mode' in kwargs) and (kwargs['mode'].lower() == 'sow'):
@@ -1219,7 +1242,7 @@ def optimize(name, **kwargs):
 
         # compute Hessian as requested; frequency wipes out gradient so stash it
         if ((full_hess_every > -1) and (n == 1)) or (steps_since_last_hessian + 1 == full_hess_every):
-            G = psi4.get_gradient()
+            G = psi4.get_gradient()  # TODO
             psi4.IOManager.shared_object().set_specific_retention(1, True)
             psi4.IOManager.shared_object().set_specific_path(1, './')
             frequencies(hessian_with_method, **kwargs)
@@ -1282,7 +1305,11 @@ def optimize(name, **kwargs):
             psi4.opt_clean()
 
     optstash.restore()
-    return 0.0
+    #return 0.0
+    if return_wfn:
+        return (psi4.get_variable('CURRENT ENERGY'), wfn)
+    else:
+        return psi4.get_variable('CURRENT ENERGY')
 
 # Aliases
 opt = optimize
@@ -1383,6 +1410,7 @@ def hessian(name, **kwargs):
     """
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
+    return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
     dertype = 2
 
@@ -1505,7 +1533,7 @@ def hessian(name, **kwargs):
     # Does an analytic procedure exist for the requested method?
     if (dertype == 2):
         # We have the desired method. Do it.
-        procedures['hessian'][lowername](lowername, **kwargs)
+        wfn = procedures['hessian'][lowername](lowername, **kwargs)
         optstash.restore()
 
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
@@ -1552,16 +1580,20 @@ def hessian(name, **kwargs):
             molecule.set_geometry(displacement)
 
             # Perform the gradient calculation
-            func(lowername, **kwargs)
+            wfn = func(lowername, **kwargs)
+            G = wfn.gradient()
 
             # Save the gradient
-            G = psi4.get_gradient()
+#TODO            G = psi4.get_gradient()
             gradients.append(G)
 
             # clean may be necessary when changing irreps of displacements
             psi4.clean()
 
-        psi4.fd_freq_1(molecule, gradients, irrep)
+#        psi4.fd_freq_1(molecule, gradients, irrep)
+        psi4.set_local_option('FINDIF', 'HESSIAN_WRITE', True)
+        H = psi4.fd_freq_1(molecule, gradients, irrep)
+        wfn.set_hessian(H)
 
         print(' Computation complete.')
 
@@ -1576,6 +1608,10 @@ def hessian(name, **kwargs):
         optstash.restore()
         # TODO: add return statement of hessian matrix
         # TODO: set current energy to un-displaced energy
+        if return_wfn:
+            return (wfn.hessian(), wfn)
+        else:
+            return wfn.hessian()
 
     else:
         # If not, perform finite difference of energies
@@ -1671,7 +1707,7 @@ def hessian(name, **kwargs):
                 molecule.set_geometry(displacement)
 
                 # Perform the energy calculation
-                func(lowername, **kwargs)
+                E, wfn = func(lowername, return_wfn=True, **kwargs)
 
                 # Save the energy
                 energies.append(psi4.get_variable('CURRENT ENERGY'))
@@ -1708,7 +1744,11 @@ def hessian(name, **kwargs):
             return None
 
         # Obtain the gradient. This function stores the gradient in the wavefunction.
-        psi4.fd_freq_0(molecule, energies, irrep)
+#        wfn = psi4.new_wavefunction(psi4.get_active_molecule(),
+#                                        psi4.get_global_option('BASIS'))
+        psi4.set_local_option('FINDIF', 'HESSIAN_WRITE', True)
+        H = psi4.fd_freq_0(molecule, energies, irrep)
+        wfn.set_hessian(H)
 
         print(' Computation complete.')
 
@@ -1727,7 +1767,10 @@ def hessian(name, **kwargs):
         optstash.restore()
         psi4.set_variable('CURRENT ENERGY', energies[-1])
 
-        #TODO: return hessian matrix
+        if return_wfn:
+            return (wfn.hessian(), wfn)
+        else:
+            return wfn.hessian()
 
 
 def frequency(name, **kwargs):
@@ -1792,20 +1835,29 @@ def frequency(name, **kwargs):
     """
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
+    return_wfn = kwargs.pop('return_wfn', False)
 
     # Compute the hessian
-    hess = hessian(name, **kwargs)
-
-    if not (('mode' in kwargs) and (kwargs['mode'].lower() == 'sow')):
+    H, wfn = hessian(name, return_wfn=True, **kwargs)
+    
+    if not (kwargs.get('mode') == 'sow'):
+    #if not (('mode' in kwargs) and (kwargs['mode'].lower() == 'sow')):
         # call thermo module
-        raise Exception('Thermo will fail because we are not yet passing it a wavefunction') 
-        psi4.thermo(hess)
+#        raise Exception('Thermo will fail because we are not yet passing it a wavefunction') 
+#        psi4.thermo(wfn.get_frequencies())
+        psi4.set_wavefunction(wfn)
+
+        psi4.thermo(wfn, wfn.frequencies())
 
     for postcallback in hooks['frequency']['post']:
         postcallback(lowername, **kwargs)
 
     #TODO add return current energy once satisfied that's set to energy at eq, not a findif
-    return psi4.get_variable('CURRENT ENERGY')
+    #return psi4.get_variable('CURRENT ENERGY')
+    if return_wfn:
+        return (psi4.get_variable('CURRENT ENERGY'), wfn)
+    else:
+        return psi4.get_variable('CURRENT ENERGY')
 
 # Aliases
 frequencies = frequency
@@ -1817,6 +1869,7 @@ def molden(filename):
     format to *filename*
 
     """
+    #TODO
     m = psi4.MoldenWriter(psi4.wavefunction())
     m.write(filename)
 

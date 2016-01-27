@@ -194,6 +194,9 @@ protected:
     /// If a gradient is available it will be here:
     SharedMatrix gradient_;
 
+    /// If a Hessian is available it will be here:
+    SharedMatrix hessian_;
+
     /// The TPDM contribution to the gradient
     boost::shared_ptr<Matrix> tpdm_gradient_contribution_;
 
@@ -252,6 +255,9 @@ public:
 
     /// Compute gradient.  Subclasses override this function to compute the gradient.
     virtual SharedMatrix compute_gradient() {throw PSIEXCEPTION("Analytic gradients are not available for this wavefunction.");}
+
+    /// Compute Hessian.  Subclasses override this function to compute the Hessian.
+    virtual SharedMatrix compute_hessian() {throw PSIEXCEPTION("Analytic Hessians are not available for this wavefunction.");}
 
     /// Is this a restricted wavefunction?
     bool same_a_b_orbs() const { return same_a_b_orbs_; }
@@ -446,6 +452,11 @@ public:
     SharedMatrix gradient() const;
     /// Set the gradient for the wavefunction
     void set_gradient(SharedMatrix& grad);
+
+    /// Returns the Hessian
+    SharedMatrix hessian() const;
+    /// Set the Hessian for the wavefunction
+    void set_hessian(SharedMatrix& hess);
 
     /// Returns the atomic point charges
     boost::shared_ptr<double[]> atomic_point_charges()const{

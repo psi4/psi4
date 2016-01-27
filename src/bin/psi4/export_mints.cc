@@ -886,6 +886,8 @@ void export_mints()
             def("energy", &Wavefunction::reference_energy, "docstring").
             def("gradient", &Wavefunction::gradient, "docstring").
             def("set_gradient", &Wavefunction::set_gradient, "docstring").
+            def("hessian", &Wavefunction::hessian, "docstring").
+            def("set_hessian", &Wavefunction::set_hessian, "docstring").
             def("frequencies", &Wavefunction::frequencies, "docstring").
             def("atomic_point_charges", &Wavefunction::get_atomic_point_charges, "docstring").
             def("normalmodes", &Wavefunction::normalmodes, "docstring").
