@@ -1894,8 +1894,9 @@ def run_psimrcc(name, **kwargs):
 
     """
     mcscf_wfn = run_mcscf(name, **kwargs)
-    psimrcc_wfn = psi4.psimrcc(mcscf_wfn)
-    return psimrcc_wfn
+    psimrcc_e = psi4.psimrcc(mcscf_wfn)
+    print('PSIMRCC does not have a wavefunction (returning mcscf) /lib/python/proc.py:1899')
+    return mcscf_wfn
 
 
 def run_psimrcc_scf(name, **kwargs):
@@ -1908,8 +1909,9 @@ def run_psimrcc_scf(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
 
-    psimrcc_wfn = psi4.psimrcc(ref_wfn)
-    return psimrcc_wfn
+    psimrcc_e = psi4.psimrcc(ref_wfn)
+    print('PSIMRCC does not have a wavefunction (returning scf) /lib/python/proc.py:1914')
+    return ref_wfn
 
 
 def run_sapt(name, **kwargs):
@@ -2293,7 +2295,7 @@ def run_mrcc(name, **kwargs):
     os.chdir(mrcc_tmpdir)
 
     # Generate integrals and input file (dumps files to the current directory)
-    psi4.mrcc_generate_input(level)
+    psi4.mrcc_generate_input(ref_wfn, level)
 
     # Load the fort.56 file
     # and dump a copy into the outfile

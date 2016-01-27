@@ -791,11 +791,6 @@ void Wavefunction::set_hessian(SharedMatrix& hess)
     hessian_ = hess;
 }
 
-SharedMatrix Wavefunction::TPDM() const
-{
-    return TPDM_;
-}
-
 boost::shared_ptr<Vector> Wavefunction::frequencies() const
 {
     return frequencies_;
