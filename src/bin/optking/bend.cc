@@ -60,6 +60,9 @@ BEND::BEND(int A_in, int B_in, int C_in, bool freeze_in) : SIMPLE_COORDINATE(ben
     s_atom[0] = C_in;
     s_atom[2] = A_in;
   }
+
+  x[0] = x[1] = x[2] = 0.0;
+  w[0] = w[1] = w[2] = 0.0;
 }
 
 void BEND::compute_axes(GeomType geom) const {
