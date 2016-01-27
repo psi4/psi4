@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
+set -o pipefail
 ctest -j2 -L quicktests 2>&1 | tee run.log
+RESULT=$?
 
 # Now we scrape the run log, looking for any failures
 while read p; do
@@ -12,3 +14,5 @@ while read p; do
     cat tests/${badtest}/output.dat
   fi
 done <run.log
+
+exit $RESULT
