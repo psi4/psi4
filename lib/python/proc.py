@@ -57,7 +57,7 @@ def run_dcft(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs) 
+        ref_wfn = scf_helper(name, **kwargs)
 
     dcft_wfn = psi4.dcft(ref_wfn)
     return dcft_wfn
@@ -311,19 +311,18 @@ def run_qchf(name, **kwargs):
     psi4.set_local_option('SCF', 'DIE_IF_NOT_CONVERGED', 'FALSE')
     psi4.set_local_option('SCF', 'MAXITER', 1)
     # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
 
     if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
-    psi4.dfocc()
+    dfocc_wfn = psi4.dfocc(ref_wfn)
 
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
 
-    return psi4.get_variable("CURRENT ENERGY")
-
-
+    return dfocc_wfn
 
 
 def run_cdomp(name, **kwargs):
@@ -403,7 +402,6 @@ def run_cdomp(name, **kwargs):
     molecule.update_geometry()
 
     return dfocc_wfn
-
 
 
 def run_mp2(name, **kwargs):
@@ -539,12 +537,6 @@ def run_omp(name, **kwargs):
     optstash.restore()
     return occ_wfn
 
-    ## Bypass routine scf if user did something special to get it to converge
-    #if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-    #    ref_wfn = scf_helper(name, **kwargs)
-    #else:
-    #    ref_wfn = wavefunction()
-
 
 def run_omp_gradient(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -663,7 +655,7 @@ def run_scf(name, **kwargs):
             psi4.set_local_option('SCF','REFERENCE','RHF')
         elif psi4.get_option('SCF','REFERENCE') == 'UKS':
             psi4.set_local_option('SCF','REFERENCE','UHF')
-    elif lowername == 'scf': 
+    elif lowername == 'scf':
         if psi4.get_option('SCF','REFERENCE') == 'RKS':
             if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
                 pass
@@ -676,7 +668,7 @@ def run_scf(name, **kwargs):
                 psi4.set_local_option('SCF','REFERENCE','UHF')
 
 
-     
+
     scf_wfn = scf_helper(name, **kwargs)
 
     optstash.restore()
@@ -704,7 +696,7 @@ def run_scf_gradient(name, **kwargs):
             psi4.set_local_option('SCF','REFERENCE','RHF')
         elif psi4.get_option('SCF','REFERENCE') == 'UKS':
             psi4.set_local_option('SCF','REFERENCE','UHF')
-    elif lowername == 'scf': 
+    elif lowername == 'scf':
         if psi4.get_option('SCF','REFERENCE') == 'RKS':
             if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
                 pass
@@ -719,12 +711,11 @@ def run_scf_gradient(name, **kwargs):
     scf_wfn = run_scf(name, **kwargs)
     if psi4.get_option('SCF', 'REFERENCE') in ['ROHF', 'CUHF']:
         scf_wfn.semicanonicalize()
-
     grad = psi4.scfgrad(scf_wfn)
     scf_wfn.set_gradient(grad)
-    optstash.restore()
-    return grad
 
+    optstash.restore()
+    return scf_wfn
 
 
 def run_libfock(name, **kwargs):
@@ -746,13 +737,12 @@ def run_libfock(name, **kwargs):
     if (name.lower() == 'tddft'):
         psi4.set_global_option('MODULE', 'RTDDFT')
 
-    bypass = ('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))
-    if not bypass:
-        scf_wfn = scf_helper(name, **kwargs)
-    else:
-        scf_wfn = psi4.wavefunction()
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
 
-    libfock_wfn = psi4.libfock(scf_wfn)
+    libfock_wfn = psi4.libfock(ref_wfn)
     libfock_wfn.compute_energy()
     return libfock_wfn
 
@@ -766,7 +756,7 @@ def run_mcscf(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = psi4.new_wavefunction(psi4.get_active_molecule(),
-                                        psi4.get_global_option('BASIS')) 
+                                        psi4.get_global_option('BASIS'))
 
     return psi4.mcscf(ref_wfn)
 
@@ -900,7 +890,7 @@ def scf_helper(name, **kwargs):
     if cast or do_broken:
         # Perform the guess scf
         new_wfn = psi4.new_wavefunction(psi4.get_active_molecule(),
-                                        psi4.get_global_option('BASIS')) 
+                                        psi4.get_global_option('BASIS'))
         psi4.scf(new_wfn, precallback, postcallback)
 
     # broken clean-up
@@ -937,7 +927,7 @@ def scf_helper(name, **kwargs):
 
     # the SECOND scf call
     new_wfn = psi4.new_wavefunction(psi4.get_active_molecule(),
-                                    psi4.get_global_option('BASIS')) 
+                                    psi4.get_global_option('BASIS'))
     scf_wfn = psi4.scf(new_wfn, precallback, postcallback)
     e_scf = psi4.get_variable('CURRENT ENERGY')
 
@@ -964,7 +954,8 @@ def run_mp2_select_gradient(name, **kwargs):
     #optstash = p4util.OptionsState(
     #    ['DFOCC', 'ORB_OPT'])
 
-    if (psi4.get_option("DFMP2", "MP2_TYPE") == "CONV") or (psi4.get_option("OCC", "MP2_TYPE") == "CONV"):
+    if psi4.get_option("DFMP2", "MP2_TYPE") == "CONV" or \
+       psi4.get_option("OCC", "MP2_TYPE") == "CONV":
         return run_omp_gradient(name, **kwargs)
     else:
         if psi4.get_option("SCF", "REFERENCE") in ['UHF', 'UKS']:
@@ -1024,7 +1015,6 @@ def run_dfmp2_gradient(name, **kwargs):
     e_scs_dfmp2 = psi4.get_variable('SCS-MP2 TOTAL ENERGY')
 
     optstash.restore()
-
     return dfmp2_wfn
 
 
@@ -1235,7 +1225,7 @@ def run_scf_property(name, **kwargs):
             psi4.set_local_option('SCF','REFERENCE','RHF')
         elif psi4.get_option('SCF','REFERENCE') == 'UKS':
             psi4.set_local_option('SCF','REFERENCE','UHF')
-    elif lowername == 'scf': 
+    elif lowername == 'scf':
         if psi4.get_option('SCF','REFERENCE') == 'RKS':
             if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
                 pass
@@ -1407,16 +1397,18 @@ def run_dfmp2_property(name, **kwargs):
     p4util.banner('DFMP2')
     psi4.print_out('\n')
 
-    psi4.dfmp2grad(ref_wfn)
+    dfmp2_wfn = psi4.dfmp2grad(ref_wfn)
     e_dfmp2 = psi4.get_variable('MP2 TOTAL ENERGY')
     e_scs_dfmp2 = psi4.get_variable('SCS-MP2 TOTAL ENERGY')
 
     optstash.restore()
 
-    if (name.upper() == 'SCS-MP2'):
-        return e_scs_dfmp2
-    elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2') or (name.upper() == 'MP2'):
-        return e_dfmp2
+    # TODO not nearly enough. E not set in wfn. CURR CORL not set. etc.
+    if name.upper() == 'SCS-MP2':
+        psi4.set_variable('CURRENT ENERGY', e_scs_dfmp2)
+    elif name.upper() in ['DF-MP2', 'DFMP2', 'MP2']:
+        psi4.set_variable('CURRENT ENERGY', e_dfmp2)
+    return dfmp2_wfn
 
 
 def run_detci_property(name, **kwargs):
@@ -1517,7 +1509,7 @@ def run_detci_property(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs) 
+        ref_wfn = scf_helper(name, **kwargs)
         # If the scf type is DF/CD, then the AO integrals were never written to disk
         if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
             psi4.MintsHelper(ref_wfn.basisset()).integrals()
@@ -1574,6 +1566,7 @@ def run_eom_cc(name, **kwargs):
 
     optstash.restore()
     return ref_wfn
+    # TODO ask if all these cc modules not actually changing wfn
 
 
 def run_eom_cc_gradient(name, **kwargs):
@@ -1732,10 +1725,10 @@ def run_dft_gradient(name, **kwargs):
     elif (user_ref == 'CUHF'):
         raise ValidationError('CUHF reference for DFT is not available.')
 
-    grad = run_scf_gradient(name, **kwargs)
+    wfn = run_scf_gradient(name, **kwargs)
 
     optstash.restore()
-    return grad
+    return wfn
 
 
 def run_detci(name, **kwargs):
@@ -1798,7 +1791,7 @@ def run_detci(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs) 
+        ref_wfn = scf_helper(name, **kwargs)
         # If the scf type is DF/CD, then the AO integrals were never written to disk
         if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
             psi4.MintsHelper(ref_wfn.basisset()).integrals()
@@ -1807,6 +1800,7 @@ def run_detci(name, **kwargs):
 
     optstash.restore()
     return ci_wfn
+
 
 def run_dfmp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -1848,7 +1842,7 @@ def run_dmrgscf(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs) 
+        ref_wfn = scf_helper(name, **kwargs)
 
     # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
     # written to disk
@@ -1865,6 +1859,7 @@ def run_dmrgscf(name, **kwargs):
     print('DMRG does not have a wavefunction /lib/python/proc.py:2898')
     return dmrg_wfn
 
+
 def run_dmrgci(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an DMRG calculation.
@@ -1877,7 +1872,7 @@ def run_dmrgci(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs) 
+        ref_wfn = scf_helper(name, **kwargs)
 
     # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
     # written to disk
@@ -1895,6 +1890,7 @@ def run_dmrgci(name, **kwargs):
 
     print('DMRG does not have a wavefunction /lib/python/proc.py:2930')
     return dmrg_wfn
+
 
 def run_psimrcc(name, **kwargs):
     """Function encoding sequence of PSI module calls for a PSIMRCC computation
@@ -1914,10 +1910,11 @@ def run_psimrcc_scf(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs) 
+        ref_wfn = scf_helper(name, **kwargs)
 
     psimrcc_wfn = psi4.psimrcc(ref_wfn)
     return psimrcc_wfn
+
 
 def run_sapt(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -2055,6 +2052,7 @@ def run_sapt(name, **kwargs):
     from qcdb.psivardefs import sapt_psivars
     p4util.expand_psivars(sapt_psivars())
     optstash.restore()
+    print('SAPT does not have a wavefunction /lib/python/proc.py:2056')  # TODO
     return e_sapt
 
 
@@ -2206,7 +2204,9 @@ def run_sapt_ct(name, **kwargs):
     molecule.update_geometry()
 
     optstash.restore()
+    print('SAPT does not have a wavefunction /lib/python/proc.py:2208')  # TODO
     return e_sapt
+
 
 def run_fisapt(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -2224,7 +2224,7 @@ def run_fisapt(name, **kwargs):
     user_pg = molecule.schoenflies_symbol()
     molecule.reset_point_group('c1')
     molecule.fix_orientation(True)
-    molecule.fix_com(True)  
+    molecule.fix_com(True)
     molecule.update_geometry()
     if user_pg != 'c1':
         psi4.print_out('  FISAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
@@ -2241,7 +2241,9 @@ def run_fisapt(name, **kwargs):
     molecule.update_geometry()
 
     optstash.restore()
+    print('DMRG does not have a wavefunction /lib/python/proc.py:2245')  # TODO
     return fisapt_wfn
+
 
 def run_mrcc(name, **kwargs):
     """Function that prepares environment and input files
@@ -2366,22 +2368,22 @@ def run_mrcc(name, **kwargs):
             os.environ['OMP_NUM_THREADS'] = omp_num_threads_user
 
     # Scan iface file and grab the file energy.
-    e = 0.0
+    ene = 0.0
     for line in open('iface'):
         fields = line.split()
         m = fields[1]
         try:
-            e = float(fields[5])
+            ene = float(fields[5])
             if m == "MP(2)":
                 m = "MP2"
-            psi4.set_variable(m + ' TOTAL ENERGY', e)
-            psi4.set_variable(m + ' CORRELATION ENERGY', e - vscf)
+            psi4.set_variable(m + ' TOTAL ENERGY', ene)
+            psi4.set_variable(m + ' CORRELATION ENERGY', ene - vscf)
         except ValueError:
             continue
 
-    # The last 'e' in iface is the one the user requested.
-    psi4.set_variable('CURRENT ENERGY', e)
-    psi4.set_variable('CURRENT CORRELATION ENERGY', e - vscf)
+    # The last 'ene' in iface is the one the user requested.
+    psi4.set_variable('CURRENT ENERGY', ene)
+    psi4.set_variable('CURRENT CORRELATION ENERGY', ene - vscf)
 
     # Load the iface file
     iface = open('iface', 'r')
@@ -2413,7 +2415,9 @@ def run_mrcc(name, **kwargs):
     psi4.print_out('\n')
     psi4.print_out(iface_contents)
 
-    return e
+    #return ene
+    print('MRCC does not have a wavefunction /lib/python/proc.py:2420')  # TODO
+    return ref_wfn
 
 
 def run_fnodfcc(name, **kwargs):
@@ -2489,7 +2493,6 @@ def run_fnodfcc(name, **kwargs):
 
     # restore options
     optstash.restore()
-
     return fnocc_wfn
 
 
@@ -2587,7 +2590,7 @@ def run_fnocc(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs) 
+        ref_wfn = scf_helper(name, **kwargs)
 
     # if the scf type is df/cd, then the ao integrals were never written to disk.
     if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
@@ -2632,7 +2635,6 @@ def run_fnocc(name, **kwargs):
 
     # restore options
     optstash.restore()
-
     return fnocc_wfn
 
 
@@ -2722,7 +2724,6 @@ def run_cepa(name, **kwargs):
 
     # restore options
     optstash.restore()
-
     return fnocc_wfn
 
 
@@ -2768,7 +2769,7 @@ def run_detcas(name, **kwargs):
             # PK is faster than out_of_core, but PK cannot support non-symmetric density matrices
             # Do NOT set global options in general, this is a bit of a hack
             psi4.set_global_option('SCF_TYPE', 'OUT_OF_CORE')
-    
+
         # Make sure a valid JK algorithm is selected
         if (psi4.get_option('SCF', 'SCF_TYPE') == 'PK'):
             raise ValidationError("Second-order MCSCF: Requires a JK algorithm that supports non-symmetric"\
@@ -2781,7 +2782,6 @@ def run_detcas(name, **kwargs):
 
     ciwfn = psi4.detci(ref_wfn)
     optstash.restore()
-
     return ciwfn
 
 
@@ -2802,6 +2802,7 @@ def run_efp(name, **kwargs):
 
     efp.print_out()
     returnvalue = efp.compute()
+    print('EFP does not have a wavefunction /lib/python/proc.py:2806')  # TODO
     return returnvalue
 
 
