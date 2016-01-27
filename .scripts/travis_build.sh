@@ -12,5 +12,3 @@ else
   tail -500 build.log
   exit 1
 fi
-
-ctest -j2 -L quicktests
