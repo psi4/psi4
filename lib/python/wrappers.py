@@ -889,7 +889,12 @@ def cp(name, **kwargs):
     psi4.print_out("\n")
     p4util.banner("CP Computation: Complex.\nFull Basis Set.")
     psi4.print_out("\n")
-    e_dimer = call_function_in_1st_argument(func, **kwargs)
+
+    if val == 'gradient':
+        dimer_quantity, dimer_wfn = gradient('MP2/ADZ', return_wfn)
+
+    dimer_quantity = procedures['gradient']['CCSD(T)/CBS'](func, **kwargs)
+#    e_dimer = call_function_in_1st_argument(func, **kwargs)
     #e_dimer = energy(name, **kwargs)
 
     psi4.clean()
@@ -962,6 +967,15 @@ def cp(name, **kwargs):
         cp_table["Totals:"] = [e_full, e_bsse, e_full - e_bsse]
 
         psi4.set_variable('UNCP-CORRECTED 2-BODY INTERACTION ENERGY', e_full)
+
+    cp_energy = dimer_wfn.energy()
+    cp_gradient = dimer_wfn.gradient()
+    for iter_wfn in wfn_list:
+        cp_energy -= iter_wfn.energy()
+        cp_gradient.subtract(iter_wfn.gradient)
+        #e_full = e_full - e_monomer_full[cluster_n]
+        #e_bsse = e_bsse - e_monomer_bsse[cluster_n]
+
 
     psi4.print_out("\n")
     p4util.banner("CP Computation: Results.")

@@ -191,61 +191,11 @@ void HF::common_init()
             soccpi_[i] = 0;
     }
 
-
-
     // Read information from checkpoint
     nuclearrep_ = molecule_->nuclear_repulsion_energy();
-
-    // Determine the number of electrons in the system
     charge_ = molecule_->molecular_charge();
-    nelectron_  = 0;
-    for (int i=0; i<molecule_->natom(); ++i)
-        nelectron_ += (int)molecule_->Z(i);
-    nelectron_ -= charge_;
-
-    // If the user told us the multiplicity, read it from the input
-    if(molecule_->multiplicity_specified()){
-        multiplicity_ = molecule_->multiplicity();
-    }else{
-        if(nelectron_%2){
-            multiplicity_ = 2;
-            molecule_->set_multiplicity(2);
-
-            // There are an odd number of electrons
-                outfile->Printf("    There are an odd number of electrons - assuming doublet.\n"
-                            "    Specify the multiplicity with the MULTP option in the\n"
-                            "    input if this is incorrect\n\n");
-
-        }else{
-            multiplicity_ = 1;
-            // There are an even number of electrons
-
-                outfile->Printf("    There are an even number of electrons - assuming singlet.\n"
-                            "    Specify the multiplicity with the MULTP option in the\n"
-                            "    input if this is incorrect\n\n");
-
-        }
-    }
-
-    // Make sure that the multiplicity is reasonable
-    if(multiplicity_ - 1 > nelectron_){
-        char *str = new char[100];
-        sprintf(str, "There are not enough electrons for multiplicity = %d, \n"
-                     "please check your input and use the MULTP keyword", multiplicity_);
-        throw SanityCheckError(str, __FILE__, __LINE__);
-        delete [] str;
-    }
-    if(multiplicity_%2 == nelectron_%2){
-        char *str = new char[100];
-        sprintf(str, "A multiplicity of %d with %d electrons is impossible.\n"
-                     "Please check your input and use the MULTP and/or CHARGE keywords",
-                     multiplicity_, nelectron_);
-        throw SanityCheckError(str, __FILE__, __LINE__);
-        delete [] str;
-    }
-
-    nbeta_  = (nelectron_ - multiplicity_ + 1)/2;
-    nalpha_ = nbeta_ + multiplicity_ - 1;
+    multiplicity_ = molecule_->multiplicity();
+    nelectron_ = nbeta_ + nalpha_;
 
     if (input_socc_ || input_docc_) {
         for (int h = 0; h < nirrep_; h++) {

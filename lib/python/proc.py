@@ -189,6 +189,7 @@ def run_dfomp_gradient(name, **kwargs):
     elif lowername in ['df-lccd', 'df-olccd']:
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
     elif lowername in ['df-ccd']:
+        psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
     elif lowername in ['df-ccsd2']:
         psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
@@ -196,6 +197,7 @@ def run_dfomp_gradient(name, **kwargs):
     else:
         raise ValidationError('Unidentified method ' % (lowername))
 
+    print('Lori: We are ignoring if the user specifies ORB_OPT, causing most of the failing Uger cases')
     if lowername in ['ri-mp2', 'df-mp2.5', 'df-mp3',
                      'df-lccd', 'df-ccd', 'df-ccsd2']:
         psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
@@ -439,6 +441,7 @@ def run_mp2_gradient(name, **kwargs):
 
     psi4.set_global_option('DERTYPE', 'FIRST')
     psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+    print('No such thing as run_conv_omp2 gradient')
     run_conv_omp2(name, **kwargs)
     psi4.deriv()
 
@@ -1085,6 +1088,12 @@ def run_ccenergy(name, **kwargs):
     if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD', 'DIRECT']:
         mints = psi4.MintsHelper(ref_wfn.basisset())
         mints.integrals()
+    
+    # Obtain semicanonical orbitals
+    if (psi4.get_option('SCF', 'REFERENCE') == 'ROHF') and \
+            ((lowername in ['ccsd(t)', 'ccsd(at)', 'a-ccsd(t)', 'cc2', 'cc3', 'eom-cc2', 'eom-cc3']) or 
+              psi4.get_option('CCTRANSORT', 'SEMICANONICAL')):
+        ref_wfn.semicanonicalize()
 
     if (psi4.get_global_option('RUN_CCTRANSORT')):
         psi4.cctransort(ref_wfn)
