@@ -195,6 +195,9 @@ protected:
     /// If a gradient is available it will be here:
     SharedMatrix gradient_;
 
+    /// If a Hessian is available it will be here:
+    SharedMatrix hessian_;
+
     /// The TPDM contribution to the gradient
     boost::shared_ptr<Matrix> tpdm_gradient_contribution_;
 
@@ -280,6 +283,9 @@ public:
 
     /// Compute gradient.  Subclasses override this function to compute the gradient.
     virtual SharedMatrix compute_gradient() {throw PSIEXCEPTION("Analytic gradients are not available for this wavefunction.");}
+
+    /// Compute Hessian.  Subclasses override this function to compute the Hessian.
+    virtual SharedMatrix compute_hessian() {throw PSIEXCEPTION("Analytic Hessians are not available for this wavefunction.");}
 
     /// Initialize internal variables from checkpoint file.
     //void init_with_chkpt(); // Does this function exist??
@@ -478,6 +484,11 @@ public:
     SharedMatrix gradient() const;
     /// Set the gradient for the wavefunction
     void set_gradient(SharedMatrix& grad);
+
+    /// Returns the Hessian
+    SharedMatrix hessian() const;
+    /// Set the Hessian for the wavefunction
+    void set_hessian(SharedMatrix& hess);
 
     /// Returns the active part of the TPDM
     SharedMatrix TPDM() const;
