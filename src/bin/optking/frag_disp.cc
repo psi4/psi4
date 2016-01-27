@@ -127,7 +127,9 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
         array_copy(g, orig_geom, 3*g_natom());
         free_array(g);
 
+        fix_bend_axes();
         conv = displace_util(dq, false);
+        unfix_bend_axes();
         if (!conv) {
           oprintf_out("\tCouldn't converge this mini-step, so quitting with previous geometry.\n");
           set_geom_array(orig_geom);
@@ -138,7 +140,9 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
     free_array(orig_geom);
   }
   else { // try to back-transform, but continue either way
+    fix_bend_axes();
     displace_util(dq, false);
+    unfix_bend_axes();
   }
 
   /* Algorithms that compute DQ, and the backtransformation above may
@@ -158,7 +162,9 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
         dq_adjust_frozen[i] = q_orig[i] - q_before_adjustment[i];
 
     oprintf_out("\n\tBack-transformation to cartesian coordinates to adjust frozen coordinates...\n");
+    fix_bend_axes();
     displace_util(dq_adjust_frozen, true);
+    unfix_bend_axes();
 
     free_array(q_before_adjustment);
     free_array(dq_adjust_frozen);

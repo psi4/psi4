@@ -75,6 +75,7 @@ void MOLECULE::test_B(void) {
   // account for changes in sign of dihedral
   fix_tors_near_180();
   fix_oofp_near_180();
+  fix_bend_axes();
 
   try {
 
@@ -128,13 +129,14 @@ void MOLECULE::test_B(void) {
   string coord_def = get_coord_definition_from_global_index(max_error_intco);
   oprintf_out("\t\tThis coordinate is %s\n", coord_def.c_str() );
   if (max_error > MAX_ERROR) {
-    oprintf_out( "\t\tB-matrix could be in error.  However, numerical test will fail for ");
-    oprintf_out( "linear bond angles.  This is OK.\n");
+    oprintf_out("\tB-matrix could be in error. However, numerical test will slightly\n");
+    oprintf_out("\tfail for linear bond angles.  This is OK.\n");
   }
   else {
     oprintf_out("\t...Passed.\n");
   }
 
+  unfix_bend_axes();
   free_matrix(B_analytic);
   free_matrix(B_fd);
   
@@ -201,7 +203,6 @@ void MOLECULE::test_derivative_B(void) {
         free_matrix(B_p2); free_matrix(B_m2);
       }
     } // atom_a
-
 
     if (Opt_params.print_lvl >= 3) {
       oprintf_out("\nNumerical B' matrix by values in au, disp_size = %lf\n",disp_size);
