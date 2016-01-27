@@ -13,11 +13,11 @@
 
 namespace psi{ namespace mollerplesset2{
 
-double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
+double plugin_mp2_unrestricted(Options &options, boost::shared_ptr<Chkpt> chkpt)
 {
     bool ROHF = options.get_str("REFERENCE") == "ROHF";
 
-    std::vector<shared_ptr<MOSpace> > spaces;
+    std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
     boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
