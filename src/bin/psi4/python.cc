@@ -150,7 +150,6 @@ std::vector<SharedMatrix> fd_geoms_freq_0(boost::shared_ptr<Molecule>, Options&,
                                           int irrep = -1);
 std::vector<SharedMatrix> fd_geoms_freq_1(boost::shared_ptr<Molecule>, Options&,
                                           int irrep = -1);
-std::vector<SharedMatrix> fd_geoms_hessian_0(boost::shared_ptr<Molecule>, Options&);
 std::vector<SharedMatrix> atomic_displacements(boost::shared_ptr<Molecule>, Options&);
 
 SharedMatrix fd_1_0(boost::shared_ptr<Molecule>, Options&, const boost::python::list&);
@@ -336,12 +335,6 @@ std::vector<SharedMatrix> py_psi_fd_geoms_freq_1(boost::shared_ptr<Molecule> mol
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_freq_1(mol, Process::environment.options, irrep);
-}
-
-std::vector<SharedMatrix> py_psi_fd_geoms_hessian_0(boost::shared_ptr<Molecule> mol)
-{
-    py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_hessian_0(mol, Process::environment.options);
 }
 
 std::vector<SharedMatrix> py_psi_atomic_displacements(boost::shared_ptr<Molecule> mol)
@@ -1549,26 +1542,17 @@ BOOST_PYTHON_MODULE (psi4)
     def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
     def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");
     def("mrcc_load_densities", py_psi_mrcc_load_densities, "Reads in the density matrices from Kallay's MRCC code.");
-    def("fd_geoms_1_0",
-        py_psi_fd_geoms_1_0,
-        "Gets the list of displacements needed for a finite difference gradient computation, from energy points.");
-    //def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
-    def("fd_geoms_freq_0",
-        py_psi_fd_geoms_freq_0,
-        "Gets the list of displacements needed for a finite difference frequency computation, from energy points, for a given irrep.");
-    def("fd_geoms_freq_1",
-        py_psi_fd_geoms_freq_1,
-        "Gets the list of displacements needed fof a finite difference frequency computation, from gradients, for a given irrep");
-    def("fd_geoms_hessian_0",
-        py_psi_fd_geoms_hessian_0,
-        "Gets the list of displacements needed fof a finite difference frequency computation, from energy points.");
-    def("fd_1_0", py_psi_fd_1_0, "Performs a finite difference gradient computation, from energy points.");
-    //def("fd_2_0", py_psi_fd_2_0);
-    def("fd_freq_0",
-        py_psi_fd_freq_0,
+    def("fd_geoms_1_0", py_psi_fd_geoms_1_0,
+        "Gets list of displacements needed for a finite difference gradient computation, from energy points.");
+    def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0,
+        "Gets list of displacements needed for a finite difference frequency computation, from energy points, for a given irrep.");
+    def("fd_geoms_freq_1", py_psi_fd_geoms_freq_1,
+        "Gets list of displacements needed fof a finite difference frequency computation, from gradients, for a given irrep");
+    def("fd_1_0", py_psi_fd_1_0,
+        "Performs a finite difference gradient computation, from energy points.");
+    def("fd_freq_0", py_psi_fd_freq_0,
         "Performs a finite difference frequency computation, from energy points, for a given irrep.");
-    def("fd_freq_1",
-        py_psi_fd_freq_1,
+    def("fd_freq_1", py_psi_fd_freq_1,
         "Performs a finite difference frequency computation, from gradients, for a given irrep.");
     def("atomic_displacements",
         py_psi_atomic_displacements,
