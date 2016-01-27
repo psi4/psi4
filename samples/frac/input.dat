@@ -76,8 +76,12 @@ set reference uhf            # Reference is UHF
 E0 = energy('scf')
 
 # Lists of occupation numbers 
-low_occs  = [0.5, 0.6, 0.7, 0.8, 0.9]
-high_occs = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+#low_occs  = [0.5, 0.6, 0.7, 0.8, 0.9]
+#high_occs = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+# notoriously difficult to converge and we can't get a full scan to work on 
+#   all computers at once, so truncating
+low_occs  = [0.5, 0.6]
+high_occs = []
 
 # Initialize the result lists
 occs = []

@@ -2,16 +2,14 @@
 #! will default to only singles and doubles in the active space
 
 set {
-  MCSCF_MAXITER = 80
-  # the next 2 lines should be the Psi3 defaults
-  MCSCF_DIIS_MAX_VECS = 8
-  MCSCF_DIIS_FREQ = 1
   reference = rhf
-  restricted_docc = [1, 0, 0, 0]
-  ras1            = [2, 0, 1, 1]
-  ras3            = [1, 0, 0, 1]
-  restricted_uocc = [8, 2, 3, 5]
 
+  restricted_docc      [1, 0, 0, 0]
+  ras1                 [2, 0, 1, 1]
+  ras3                 [1, 0, 0, 1]
+  restricted_uocc      [8, 2, 3, 5]
+  mcscf_maxiter        80
+  mcscf_r_convergence  5.e-6
   basis = 6-31G**
 }
 
